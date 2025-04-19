@@ -46,6 +46,20 @@ build_webui("build") {
     ]
   }
 
+  if (is_mac || is_win) {
+    if (is_chrome_branded) {
+      static_files += [
+        "images/screenlock_reauth_promo.svg",
+        "images/screenlock_reauth_promo_dark.svg",
+      ]
+    } else {
+      static_files += [
+        "images/screenlock_reauth_promo_non_branded.svg",
+        "images/screenlock_reauth_promo_dark_non_branded.svg",
+      ]
+    }
+  }
+
   web_component_files = [
     "checkup_section.ts",
     "checkup_details_section.ts",
@@ -62,6 +76,7 @@ build_webui("build") {
     "dialogs/move_passwords_dialog.ts",
     "dialogs/move_single_password_dialog.ts",
     "dialogs/password_preview_item.ts",
+    "full_data_reset.ts",
     "credential_details/credential_note.ts",
     "credential_details/credential_field.ts",
     "credential_details/passkey_details_card.ts",

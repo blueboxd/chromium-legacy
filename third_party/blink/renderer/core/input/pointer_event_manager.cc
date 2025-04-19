@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/core/input/pointer_event_manager.h"
 
 #include "base/auto_reset.h"
@@ -29,7 +34,6 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar.h"
 #include "third_party/blink/renderer/core/timing/event_timing.h"
-#include "third_party/blink/renderer/platform/geometry/layout_size.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -718,7 +722,7 @@ WebInputEventResult PointerEventManager::HandlePointerEvent(
           pointer_event_target.target_element,
           pointer_event_factory_.CreatePointerCancelEvent(
               core_pointer_event->pointerId(), event.TimeStamp(),
-              core_pointer_event->deviceProperties()->uniqueId()),
+              core_pointer_event->persistentDeviceId()),
           event.hovering);
     }
 
@@ -786,8 +790,10 @@ WebInputEventResult PointerEventManager::HandlePointerEvent(
 bool PointerEventManager::HandleScrollbarTouchDrag(const WebPointerEvent& event,
                                                    Scrollbar* scrollbar) {
   if (!scrollbar ||
-      event.pointer_type != WebPointerProperties::PointerType::kTouch)
+      (event.pointer_type != WebPointerProperties::PointerType::kTouch &&
+       event.pointer_type != WebPointerProperties::PointerType::kPen)) {
     return false;
+  }
 
   if (event.GetType() == WebInputEvent::Type::kPointerDown) {
     captured_scrollbar_ = scrollbar;

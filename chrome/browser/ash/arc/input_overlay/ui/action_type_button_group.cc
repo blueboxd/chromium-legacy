@@ -15,6 +15,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view_utils.h"
 
@@ -41,7 +42,7 @@ ActionTypeButtonGroup::~ActionTypeButtonGroup() = default;
 
 bool ActionTypeButtonGroup::HandleArrowKeyPressed(ActionTypeButton* button,
                                                   const ui::KeyEvent& event) {
-  DCHECK(event.type() == ui::ET_KEY_PRESSED);
+  DCHECK(event.type() == ui::EventType::kKeyPressed);
 
   const size_t selected_index = std::distance(
       buttons_.begin(), std::find(buttons_.begin(), buttons_.end(), button));
@@ -99,8 +100,8 @@ void ActionTypeButtonGroup::Init() {
       NOTREACHED_IN_MIGRATION();
   }
 
-  SetAccessibilityProperties(ax::mojom::Role::kRadioGroup);
-  SetAccessibleName(
+  GetViewAccessibility().SetProperties(ax::mojom::Role::kRadioGroup);
+  GetViewAccessibility().SetName(
       l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_BUTTON_OPTIONS_BUTTON_TYPE));
 }
 

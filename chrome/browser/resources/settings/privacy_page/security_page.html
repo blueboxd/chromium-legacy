@@ -81,52 +81,16 @@
             name="[[safeBrowsingSettingEnum_.ENHANCED]]"
             pref="[[prefs.generated.safe_browsing]]"
             label="$i18n{safeBrowsingEnhanced}"
-            sub-label="[[getSafeBrowsingEnhancedSubLabel_(
-                        enableFriendlierSafeBrowsingSettings_)]]"
+            sub-label="$i18n{safeBrowsingEnhancedDesc}"
             indicator-aria-label="$i18n{controlledSettingPolicy}"
             expand-aria-label="$i18n{safeBrowsingEnhancedExpandA11yLabel}"
             on-expand-clicked="onEnhancedProtectionExpandButtonClicked_"
             no-automatic-collapse>
-          <template is="dom-if" if="[[!enableFriendlierSafeBrowsingSettings_]]">
-            <div slot="collapse">
-              <div class="bullet-line">
-                <iron-icon icon="cr:security"></iron-icon>
-                <div class="cr-secondary-text">
-                  $i18n{safeBrowsingEnhancedBulOne}
-                </div>
-              </div>
-              <div class="bullet-line">
-                <iron-icon icon="settings20:googleg"></iron-icon>
-                <div class="cr-secondary-text">
-                  $i18n{safeBrowsingEnhancedBulTwo}
-                </div>
-              </div>
-              <div class="bullet-line">
-                <iron-icon icon="settings:public"></iron-icon>
-                <div class="cr-secondary-text">
-                  $i18n{safeBrowsingEnhancedBulThree}
-                </div>
-              </div>
-              <div class="bullet-line">
-                <iron-icon icon="settings20:vpn-key"></iron-icon>
-                <div class="cr-secondary-text">
-                  $i18n{safeBrowsingEnhancedBulFour}
-                </div>
-              </div>
-              <div class="bullet-line last-collapse-item">
-                <iron-icon icon="settings20:data"></iron-icon>
-                <div class="cr-secondary-text cr-padded-text">
-                  $i18n{safeBrowsingEnhancedBulFive}
-                </div>
-              </div>
-            </div>
-          </template>
-          <template is="dom-if" if="[[enableFriendlierSafeBrowsingSettings_]]">
             <div id="enhancedProtectionDescContainer" slot="collapse"
                 class="settings-columned-section">
               <div class="column">
                 <h3 class="description-header">
-                  $i18n{safeBrowsingEnhancedWhenOnLabel}
+                  $i18n{columnHeadingWhenOn}
                 </h3>
                 <ul class="icon-bulleted-list">
                   <li>
@@ -168,7 +132,7 @@
               </div>
               <div class="column">
                 <h3 class="description-header">
-                  $i18n{safeBrowsingEnhancedThingsToConsiderLabel}
+                  $i18n{columnHeadingConsider}
                 </h3>
                 <ul class="icon-bulleted-list">
                   <li>
@@ -195,53 +159,33 @@
                 </div>
               </div>
             </div>
-          </template>
         </settings-collapse-radio-button>
         <settings-collapse-radio-button id="safeBrowsingStandard"
             name="[[safeBrowsingSettingEnum_.STANDARD]]"
             pref="[[prefs.generated.safe_browsing]]"
             label="$i18n{safeBrowsingStandard}"
             sub-label="[[getSafeBrowsingStandardSubLabel_(
-                        enableFriendlierSafeBrowsingSettings_,
                         enableHashPrefixRealTimeLookups_)]]"
             indicator-aria-label="$i18n{controlledSettingPolicy}"
             expand-aria-label="$i18n{safeBrowsingStandardExpandA11yLabel}"
             info-opened="{{infoOpened_}}"
             on-expand-clicked="onStandardProtectionExpandButtonClicked_"
             no-automatic-collapse>
-          <template is="dom-if" if="[[!enableFriendlierSafeBrowsingSettings_]]">
-            <div slot="collapse">
-              <div class="bullet-line">
-                <iron-icon icon="cr:security"></iron-icon>
-                <div class="cr-secondary-text">
-                  $i18n{safeBrowsingStandardBulOne}
-                </div>
-              </div>
-              <div class="bullet-line">
-                <iron-icon icon="settings20:data"></iron-icon>
-                <div id="safeBrowsingStandardBulTwo"
-                    class="cr-secondary-text cr-padded-text">
-                  [[getSafeBrowsingStandardBulTwo_(
-                    enableHashPrefixRealTimeLookups_)]]
-                </div>
-              </div>
-            </div>
-          </template>
           <div slot="noSelectionCollapse">
-            <settings-toggle-button id="safeBrowsingReportingToggle"
+            <template is="dom-if" if="[[!hideExtendedReportingRadioButton_]]">
+              <settings-toggle-button id="safeBrowsingReportingToggle"
                 pref="{{prefs.safebrowsing.scout_reporting_enabled}}"
                 label="$i18n{safeBrowsingStandardReportingLabel}"
                 sub-label="$i18n{safeBrowsingEnableExtendedReportingDesc}"
                 on-change="onSafeBrowsingExtendedReportingChange_"
                 disabled="[[getDisabledExtendedSafeBrowsing_(
                               prefs.generated.safe_browsing.*)]]">
-            </settings-toggle-button>
+              </settings-toggle-button>
+            </template>
             <settings-toggle-button id="passwordsLeakToggle"
-                label="[[getPasswordsLeakToggleLabel_(
-                        enableFriendlierSafeBrowsingSettings_)]]"
+                label="$i18n{passwordsLeakDetectionLabel}"
                 pref="{{prefs.generated.password_leak_detection}}"
                 sub-label="[[getPasswordsLeakToggleSubLabel_(
-                              enableFriendlierSafeBrowsingSettings_,
                               prefs.profile.password_manager_leak_detection.*,
                               prefs.generated.password_leak_detection.*)]]">
             </settings-toggle-button>
@@ -251,8 +195,7 @@
             name="[[safeBrowsingSettingEnum_.DISABLED]]"
             pref="[[prefs.generated.safe_browsing]]"
             label="$i18n{safeBrowsingNone}"
-            sub-label="[[getSafeBrowsingDisabledSubLabel_(
-                        enableFriendlierSafeBrowsingSettings_)]]"
+            sub-label="$i18n{safeBrowsingNoneDesc}"
             indicator-aria-label="$i18n{controlledSettingPolicy}">
         </settings-collapse-radio-button>
       </settings-radio-group>
@@ -270,42 +213,41 @@
       </settings-toggle-button>
     </template>
     <template is="dom-if" if="[[enableHttpsFirstModeNewSettings_]]">
-      <div id="httpsFirstModeSettingHeader" class="cr-row first">
-        <div class="cr-padded-text">
-          <div>$i18n{httpsFirstModeSectionLabel}</div>
-          <div class="cr-secondary-text">
-            $i18n{httpsFirstModeSectionSubLabel}
-          </div>
+      <settings-toggle-button id="httpsOnlyModeToggle"
+          pref="{{prefs.generated.https_first_mode_enabled}}"
+          label="$i18n{httpsFirstModeSectionTitle}"
+          sub-label="$i18n{httpsFirstModeSectionDescription}"
+          numeric-unchecked-values="[[httpsFirstModeUncheckedValues_]]"
+          numeric-checked-value=
+              "[[httpsFirstModeSettingEnum_.ENABLED_BALANCED]]">
+      </settings-toggle-button>
+      <cr-collapse id="httpsFirstModeRadioGroupCollapse"
+          opened="[[isHttpsFirstModeEnabled_(
+                      prefs.generated.https_first_mode_enabled.value)]]">
+        <div class="cr-row continuation https-first-mode-radio-group">
+          <settings-radio-group id="httpsFirstModeRadioGroup"
+              pref="{{prefs.generated.https_first_mode_enabled}}">
+            <controlled-radio-button id="httpsFirstModeEnabledStrict"
+                name="[[getName_(httpsFirstModeSettingEnum_.ENABLED_FULL)]]"
+                pref="[[prefs.generated.https_first_mode_enabled]]"
+                label="$i18n{httpsFirstModeEnabledStrictLabel}"
+                class="list-item">
+              <div class="cr-secondary-text">
+                $i18n{httpsFirstModeEnabledStrictSubLabel}
+              </div>
+            </controlled-radio-button>
+            <controlled-radio-button id="httpsFirstModeEnabledBalanced"
+                name="[[getName_(httpsFirstModeSettingEnum_.ENABLED_BALANCED)]]"
+                pref="[[prefs.generated.https_first_mode_enabled]]"
+                label="$i18n{httpsFirstModeEnabledBalancedLabel}"
+                class="list-item">
+              <div class="cr-secondary-text">
+                $i18n{httpsFirstModeEnabledBalancedSubLabel}
+              </div>
+            </controlled-radio-button>
+          </settings-radio-group>
         </div>
-      </div>
-      <div class="list-frame">
-        <settings-radio-group id="httpsFirstModeRadioGroup"
-            pref="{{prefs.generated.https_first_mode_enabled}}">
-          <controlled-radio-button id="httpsFirstModeEnabledFull"
-              name="[[getName_(httpsFirstModeSettingEnum_.ENABLED_FULL)]]"
-              pref="[[prefs.generated.https_first_mode_enabled]]"
-              label="$i18n{httpsFirstModeEnabledFullLabel}" class="list-item">
-            <div class="cr-secondary-text">
-              $i18n{httpsFirstModeEnabledFullSubLabel}
-            </div>
-          </controlled-radio-button>
-          <controlled-radio-button id="httpsFirstModeEnabledIncognito"
-              name="[[getName_(httpsFirstModeSettingEnum_.ENABLED_INCOGNITO)]]"
-              pref="[[prefs.generated.https_first_mode_enabled]]"
-              label="$i18n{httpsFirstModeEnabledIncognitoLabel}"
-              class="list-item hr">
-            <div class="cr-secondary-text">
-              $i18n{httpsFirstModeEnabledIncognitoSubLabel}</div>
-          </controlled-radio-button>
-          <controlled-radio-button id="httpsFirstModeDisabled"
-              name="[[getName_(httpsFirstModeSettingEnum_.DISABLED)]]"
-              pref="[[prefs.generated.https_first_mode_enabled]]"
-              label="$i18n{httpsFirstModeDisabledLabel}" class="list-item hr">
-            <div class="cr-secondary-text">$i18n{httpsFirstModeDisabledSubLabel}
-            </div>
-          </controlled-radio-button>
-        </settings-radio-group>
-      </div>
+      </cr-collapse>
     </template>
     <template is="dom-if" if="[[showSecureDnsSetting_]]">
       <settings-secure-dns prefs="{{prefs}}"></settings-secure-dns>
@@ -344,12 +286,11 @@
 
 <if expr="chrome_root_store_cert_management_ui">
     <template is="dom-if" if="[[enableCertManagementUIV2_]]">
-      <cr-link-row id="manageCertificatesLinkRow"
-          class="hr"
+      <cr-link-row id="manageCertificatesLinkRow" class="hr"
           role-description="$i18n{subpageArrowRoleDescription}"
           label="$i18n{manageCertificates}"
           sub-label="$i18n{manageCertificatesDescription}"
-          on-click="onNewManageCertificatesClick_">
+          on-click="onNewManageCertificatesClick_" external>
       </cr-link-row>
     </template>
 

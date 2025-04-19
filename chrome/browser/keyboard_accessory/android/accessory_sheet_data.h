@@ -19,21 +19,16 @@ namespace autofill {
 // Represents a selectable item within a UserInfo or a PromoCodeInfo in the
 // manual fallback UI, such as the username or a credit card number or a promo
 // code.
-class AccessorySheetField {
+class AccessorySheetField final {
  public:
-  AccessorySheetField(std::u16string display_text,
-                      std::u16string text_to_fill,
-                      std::u16string a11y_description,
-                      std::string id,
-                      bool is_obfuscated,
-                      bool selectable);
-  AccessorySheetField(const AccessorySheetField& field);
-  AccessorySheetField(AccessorySheetField&& field);
+  class Builder;
+
+  AccessorySheetField(const AccessorySheetField&);
+  AccessorySheetField& operator=(const AccessorySheetField&);
+  AccessorySheetField(AccessorySheetField&&);
+  AccessorySheetField& operator=(AccessorySheetField&&);
 
   ~AccessorySheetField();
-
-  AccessorySheetField& operator=(const AccessorySheetField& field);
-  AccessorySheetField& operator=(AccessorySheetField&& field);
 
   const std::u16string& display_text() const { return display_text_; }
 
@@ -47,15 +42,35 @@ class AccessorySheetField {
 
   bool selectable() const { return selectable_; }
 
-  bool operator==(const AccessorySheetField& field) const;
+  int icon_id() const { return icon_id_; }
 
-  // Estimates dynamic memory usage.
-  // See base/trace_event/memory_usage_estimator.h for more info.
-  size_t EstimateMemoryUsage() const;
+  bool operator==(const AccessorySheetField&) const = default;
 
  private:
-  // IMPORTANT(https://crbug.com/1169167): Add the size of newly added strings
-  // to the memory estimation member!
+  friend class Builder;
+
+  AccessorySheetField();
+
+  void set_display_text(std::u16string display_text) {
+    display_text_ = std::move(display_text);
+  }
+
+  void set_text_to_fill(std::u16string text_to_fill) {
+    text_to_fill_ = std::move(text_to_fill);
+  }
+
+  void set_a11y_description(std::u16string a11y_description) {
+    a11y_description_ = std::move(a11y_description);
+  }
+
+  void set_id(std::string id) { id_ = std::move(id); }
+
+  void set_is_obfuscated(bool is_obfuscated) { is_obfuscated_ = is_obfuscated; }
+
+  void set_selectable(bool selectable) { selectable_ = selectable; }
+
+  void set_icon_id(int icon_id) { icon_id_ = icon_id; }
+
   std::u16string display_text_;
   // The string that would be used to fill in the form, for cases when it is
   // different from |display_text_|. For example: For unmasked credit cards,
@@ -64,16 +79,50 @@ class AccessorySheetField {
   std::u16string text_to_fill_;
   std::u16string a11y_description_;
   std::string id_;  // Optional, if needed to complete filling.
-  bool is_obfuscated_;
-  bool selectable_;
-  size_t estimated_memory_use_by_strings_ = 0;
+  int icon_id_ = 0;
+  bool is_obfuscated_ = false;
+  bool selectable_ = false;
+};
+
+class AccessorySheetField::Builder final {
+ public:
+  Builder();
+  Builder(const Builder&) = default;
+  Builder& operator=(const Builder&) = default;
+  Builder(Builder&&) = default;
+  Builder& operator=(Builder&&) = default;
+  ~Builder();
+
+  Builder&& SetDisplayText(std::u16string display_text) &&;
+
+  Builder&& SetTextToFill(std::u16string text_to_fill) &&;
+
+  Builder&& SetA11yDescription(std::u16string a11y_description) &&;
+
+  Builder&& SetId(std::string id) &&;
+
+  Builder&& SetIsObfuscated(bool is_obfuscated) &&;
+
+  Builder&& SetSelectable(bool selectable) &&;
+
+  Builder&& SetIconId(int icon_id) &&;
+
+  // This class returns the constructed AccessorySheetField object. Since this
+  // would render the builder unusable, it's required to destroy the object
+  // afterwards. So if you hold the class in a variable, invoke like this:
+  //   AccessorySheetField::Builder b;
+  //   std::move(b).Build();
+  AccessorySheetField&& Build() &&;
+
+ private:
+  AccessorySheetField accessory_sheet_field_;
 };
 
 // Represents user data to be shown on the manual fallback UI (e.g. a Profile,
 // or a Credit Card, or the credentials for a website). For credentials,
 // 'is_exact_match' is used to determine the origin (first-party match, a PSL or
 // affiliated match) of the credential.
-class UserInfo {
+class UserInfo final {
  public:
   using IsExactMatch = base::StrongAlias<class IsExactMatchTag, bool>;
 
@@ -82,70 +131,80 @@ class UserInfo {
   UserInfo(std::string origin, IsExactMatch is_exact_match);
   UserInfo(std::string origin, GURL icon_url);
   UserInfo(std::string origin, IsExactMatch is_exact_match, GURL icon_url);
-  UserInfo(const UserInfo& user_info);
-  UserInfo(UserInfo&& field);
+
+  UserInfo(const UserInfo&);
+  UserInfo& operator=(const UserInfo&);
+  UserInfo(UserInfo&&);
+  UserInfo& operator=(UserInfo&&);
 
   ~UserInfo();
 
-  UserInfo& operator=(const UserInfo& user_info);
-  UserInfo& operator=(UserInfo&& user_info);
-
   void add_field(AccessorySheetField field) {
-    estimated_dynamic_memory_use_ += field.EstimateMemoryUsage();
     fields_.push_back(std::move(field));
   }
 
   const std::vector<AccessorySheetField>& fields() const { return fields_; }
   const std::string& origin() const { return origin_; }
   IsExactMatch is_exact_match() const { return is_exact_match_; }
-  const GURL icon_url() const { return icon_url_; }
+  const GURL& icon_url() const { return icon_url_; }
 
-  bool operator==(const UserInfo& user_info) const;
-
-  // Estimates dynamic memory usage.
-  // See base/trace_event/memory_usage_estimator.h for more info.
-  size_t EstimateMemoryUsage() const;
+  bool operator==(const UserInfo&) const = default;
 
  private:
-  // IMPORTANT(https://crbug.com/1169167): Add the size of newly added strings
-  // to the memory estimation member!
   std::string origin_;
   // True means it's neither PSL match nor affiliated match, false otherwise.
   IsExactMatch is_exact_match_{true};
   std::vector<AccessorySheetField> fields_;
   GURL icon_url_;
-  size_t estimated_dynamic_memory_use_ = 0;
 };
 
 std::ostream& operator<<(std::ostream& out, const AccessorySheetField& field);
 std::ostream& operator<<(std::ostream& out, const UserInfo& user_info);
 
+class PlusAddressSection final {
+ public:
+  PlusAddressSection(std::string origin, std::u16string plus_address);
+
+  PlusAddressSection(const PlusAddressSection&);
+  PlusAddressSection& operator=(const PlusAddressSection&);
+  PlusAddressSection(PlusAddressSection&&);
+  PlusAddressSection& operator=(PlusAddressSection&&);
+
+  ~PlusAddressSection();
+
+  const std::string& origin() const { return origin_; }
+  const AccessorySheetField& plus_address() const { return plus_address_; }
+
+  bool operator==(const PlusAddressSection&) const = default;
+
+ private:
+  std::string origin_;
+  AccessorySheetField plus_address_;
+};
+
+std::ostream& operator<<(std::ostream& out, const PlusAddressSection& field);
+
 // Represents a passkey entry shown in the password accessory.
-class PasskeySection {
+class PasskeySection final {
  public:
   PasskeySection(std::string display_name, std::vector<uint8_t> passkey_id);
-  PasskeySection(const PasskeySection& passkey_section);
-  PasskeySection(PasskeySection&& passkey_section);
+
+  PasskeySection(const PasskeySection&);
+  PasskeySection& operator=(const PasskeySection&);
+  PasskeySection(PasskeySection&&);
+  PasskeySection& operator=(PasskeySection&&);
 
   ~PasskeySection();
 
-  PasskeySection& operator=(const PasskeySection& passkey_section);
-  PasskeySection& operator=(PasskeySection&& passkey_section);
+  const std::string& display_name() const { return display_name_; }
 
-  const std::string display_name() const { return display_name_; }
+  const std::vector<uint8_t>& passkey_id() const { return passkey_id_; }
 
-  const std::vector<uint8_t> passkey_id() const { return passkey_id_; }
-
-  bool operator==(const PasskeySection& passkey_section) const;
-
-  // Estimates dynamic memory usage.
-  // See base/trace_event/memory_usage_estimator.h for more info.
-  size_t EstimateMemoryUsage() const;
+  bool operator==(const PasskeySection&) const = default;
 
  private:
   std::string display_name_;
   std::vector<uint8_t> passkey_id_;
-  size_t estimated_dynamic_memory_use_ = 0;
 };
 
 std::ostream& operator<<(std::ostream& out,
@@ -153,31 +212,26 @@ std::ostream& operator<<(std::ostream& out,
 
 // Represents data pertaining to promo code offers to be shown on the Payments
 // tab of manual fallback UI.
-class PromoCodeInfo {
+class PromoCodeInfo final {
  public:
   PromoCodeInfo(std::u16string promo_code, std::u16string details_text);
-  PromoCodeInfo(const PromoCodeInfo& promo_code_info);
-  PromoCodeInfo(PromoCodeInfo&& promo_code_info);
+
+  PromoCodeInfo(const PromoCodeInfo&);
+  PromoCodeInfo& operator=(const PromoCodeInfo&);
+  PromoCodeInfo(PromoCodeInfo&&);
+  PromoCodeInfo& operator=(PromoCodeInfo&&);
 
   ~PromoCodeInfo();
 
-  PromoCodeInfo& operator=(const PromoCodeInfo& promo_code_info);
-  PromoCodeInfo& operator=(PromoCodeInfo&& promo_code_info);
+  const AccessorySheetField& promo_code() const { return promo_code_; }
 
-  const AccessorySheetField promo_code() const { return promo_code_; }
+  const std::u16string& details_text() const { return details_text_; }
 
-  const std::u16string details_text() const { return details_text_; }
-
-  bool operator==(const PromoCodeInfo& promo_code_info) const;
-
-  // Estimates dynamic memory usage.
-  // See base/trace_event/memory_usage_estimator.h for more info.
-  size_t EstimateMemoryUsage() const;
+  bool operator==(const PromoCodeInfo&) const = default;
 
  private:
   AccessorySheetField promo_code_;
   std::u16string details_text_;
-  size_t estimated_dynamic_memory_use_ = 0;
 };
 
 std::ostream& operator<<(std::ostream& out,
@@ -185,60 +239,48 @@ std::ostream& operator<<(std::ostream& out,
 
 // Represents data pertaining to IBANs to be shown on the Payments methods
 // tab of manual fallback UI.
-class IbanInfo {
+class IbanInfo final {
  public:
   IbanInfo(std::u16string value, std::u16string text_to_fill, std::string id);
-  IbanInfo(const IbanInfo& iban_info);
-  IbanInfo(IbanInfo&& iban_info);
+
+  IbanInfo(const IbanInfo&);
+  IbanInfo& operator=(const IbanInfo&);
+  IbanInfo(IbanInfo&&);
+  IbanInfo& operator=(IbanInfo&&);
 
   ~IbanInfo();
 
-  IbanInfo& operator=(const IbanInfo& iban_info);
-  IbanInfo& operator=(IbanInfo&& iban_info);
+  const AccessorySheetField& value() const { return value_; }
 
-  const AccessorySheetField value() const { return value_; }
-
-  bool operator==(const IbanInfo& iban_info) const;
-
-  // Estimates dynamic memory usage.
-  // See base/trace_event/memory_usage_estimator.h for more info.
-  size_t EstimateMemoryUsage() const;
+  bool operator==(const IbanInfo&) const = default;
 
  private:
   AccessorySheetField value_;
-  size_t estimated_dynamic_memory_use_ = 0;
 };
 
 std::ostream& operator<<(std::ostream& out, const IbanInfo& iban);
 
 // Represents a command below the suggestions, such as "Manage password...".
-class FooterCommand {
+class FooterCommand final {
  public:
   FooterCommand(std::u16string display_text, AccessoryAction action);
-  FooterCommand(const FooterCommand& footer_command);
-  FooterCommand(FooterCommand&& footer_command);
+
+  FooterCommand(const FooterCommand&);
+  FooterCommand& operator=(const FooterCommand&);
+  FooterCommand(FooterCommand&&);
+  FooterCommand& operator=(FooterCommand&&);
 
   ~FooterCommand();
-
-  FooterCommand& operator=(const FooterCommand& footer_command);
-  FooterCommand& operator=(FooterCommand&& footer_command);
 
   const std::u16string& display_text() const { return display_text_; }
 
   AccessoryAction accessory_action() const { return accessory_action_; }
 
-  bool operator==(const FooterCommand& fc) const;
-
-  // Estimates dynamic memory usage.
-  // See base/trace_event/memory_usage_estimator.h for more info.
-  size_t EstimateMemoryUsage() const;
+  bool operator==(const FooterCommand&) const = default;
 
  private:
-  // IMPORTANT(https://crbug.com/1169167): Add the size of newly added strings
-  // to the memory estimation member!
   std::u16string display_text_;
   AccessoryAction accessory_action_;
-  size_t estimated_memory_use_by_strings_ = 0;
 };
 
 std::ostream& operator<<(std::ostream& out, const FooterCommand& fc);
@@ -247,18 +289,18 @@ std::ostream& operator<<(std::ostream& out, const AccessoryTabType& type);
 
 // Toggle to be displayed above the suggestions. One such toggle can be used,
 // for example, to turn password saving on for the current origin.
-class OptionToggle {
+class OptionToggle final {
  public:
   OptionToggle(std::u16string display_text,
                bool enabled,
                AccessoryAction accessory_action);
-  OptionToggle(const OptionToggle& option_toggle);
-  OptionToggle(OptionToggle&& option_toggle);
+
+  OptionToggle(const OptionToggle&);
+  OptionToggle& operator=(const OptionToggle&);
+  OptionToggle(OptionToggle&&);
+  OptionToggle& operator=(OptionToggle&&);
 
   ~OptionToggle();
-
-  OptionToggle& operator=(const OptionToggle& option_toggle);
-  OptionToggle& operator=(OptionToggle&& option_toggle);
 
   const std::u16string& display_text() const { return display_text_; }
 
@@ -266,24 +308,17 @@ class OptionToggle {
 
   AccessoryAction accessory_action() const { return accessory_action_; }
 
-  bool operator==(const OptionToggle& option_toggle) const;
-
-  // Estimates dynamic memory usage.
-  // See base/trace_event/memory_usage_estimator.h for more info.
-  size_t EstimateMemoryUsage() const;
+  bool operator==(const OptionToggle&) const = default;
 
  private:
-  // IMPORTANT(https://crbug.com/1169167): Add the size of newly added strings
-  // to the memory estimation member!
   std::u16string display_text_;
   bool enabled_;
   AccessoryAction accessory_action_;
-  size_t estimated_memory_use_by_strings_ = 0;
 };
 
 // Represents the contents of a bottom sheet tab below the keyboard accessory,
 // which can correspond to passwords, credit cards, or profiles data.
-class AccessorySheetData {
+class AccessorySheetData final {
  public:
   class Builder;
 
@@ -291,13 +326,13 @@ class AccessorySheetData {
   AccessorySheetData(AccessoryTabType sheet_type,
                      std::u16string title,
                      std::u16string warning);
-  AccessorySheetData(const AccessorySheetData& data);
-  AccessorySheetData(AccessorySheetData&& data);
+
+  AccessorySheetData(const AccessorySheetData&);
+  AccessorySheetData& operator=(const AccessorySheetData&);
+  AccessorySheetData(AccessorySheetData&&);
+  AccessorySheetData& operator=(AccessorySheetData&&);
 
   ~AccessorySheetData();
-
-  AccessorySheetData& operator=(const AccessorySheetData& data);
-  AccessorySheetData& operator=(AccessorySheetData&& data);
 
   const std::u16string& title() const { return title_; }
   AccessoryTabType get_sheet_type() const { return sheet_type_; }
@@ -316,12 +351,20 @@ class AccessorySheetData {
     user_info_list_.emplace_back(std::move(user_info));
   }
 
+  void add_plus_address_section(PlusAddressSection plus_address_section) {
+    plus_address_section_list_.emplace_back(std::move(plus_address_section));
+  }
+
   void add_passkey_section(PasskeySection passkey_section) {
     passkey_section_list_.emplace_back(std::move(passkey_section));
   }
 
   const std::vector<UserInfo>& user_info_list() const {
     return user_info_list_;
+  }
+
+  const std::vector<PlusAddressSection>& plus_address_section_list() const {
+    return plus_address_section_list_;
   }
 
   const std::vector<PasskeySection>& passkey_section_list() const {
@@ -354,17 +397,14 @@ class AccessorySheetData {
     return footer_commands_;
   }
 
-  bool operator==(const AccessorySheetData& data) const;
-
-  // Estimates dynamic memory usage.
-  // See base/trace_event/memory_usage_estimator.h for more info.
-  size_t EstimateMemoryUsage() const;
+  bool operator==(const AccessorySheetData&) const = default;
 
  private:
   AccessoryTabType sheet_type_;
   std::u16string title_;
   std::u16string warning_;
   std::optional<OptionToggle> option_toggle_;
+  std::vector<PlusAddressSection> plus_address_section_list_;
   std::vector<PasskeySection> passkey_section_list_;
   std::vector<UserInfo> user_info_list_;
   std::vector<PromoCodeInfo> promo_code_info_list_;
@@ -387,7 +427,7 @@ std::ostream& operator<<(std::ostream& out, const AccessorySheetData& data);
 //           .AppendField(...)
 //           .AppendField(...)
 //       .Build();
-class AccessorySheetData::Builder {
+class AccessorySheetData::Builder final {
  public:
   Builder(AccessoryTabType type, std::u16string title);
   ~Builder();
@@ -441,6 +481,20 @@ class AccessorySheetData::Builder {
                        std::string id,
                        bool is_obfuscated,
                        bool selectable) &;
+
+  Builder&& AppendField(std::u16string display_text,
+                        std::u16string text_to_fill,
+                        std::u16string a11y_description,
+                        std::string id,
+                        int icon_id,
+                        bool is_obfuscated,
+                        bool selectable) &&;
+
+  // Adds a new PlusAddressSection `accessory_sheet_data_`.
+  Builder&& AddPlusAddressSection(std::string origin,
+                                  std::u16string plus_address) &&;
+  Builder& AddPlusAddressSection(std::string origin,
+                                 std::u16string plus_address) &;
 
   // Adds a new PasskeySection `accessory_sheet_data_`.
   Builder&& AddPasskeySection(std::string username,

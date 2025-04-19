@@ -56,7 +56,9 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rounded_corners_f.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/animation_builder.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/webview/webview.h"
@@ -151,6 +153,8 @@ BrowserNonClientFrameViewChromeOS::BrowserNonClientFrameViewChromeOS(
   // TODO: b/330360595 - Confirm if this is needed in Lacros.
   aura::Window* frame_window = frame->GetNativeWindow();
   frame_window->SetProperty(kBrowserNonClientFrameViewChromeOSKey, this);
+
+  GetViewAccessibility().SetRole(ax::mojom::Role::kTitleBar);
 }
 
 BrowserNonClientFrameViewChromeOS::~BrowserNonClientFrameViewChromeOS() {
@@ -278,18 +282,17 @@ int BrowserNonClientFrameViewChromeOS::GetTopInset(bool restored) const {
     }
   }
 
+  if (browser_view()->GetTabStripVisible()) {
+    return 0;
+  }
+
   Browser* browser = browser_view()->browser();
 
   int header_height = frame_header_ ? frame_header_->GetHeaderHeight() : 0;
-  auto toolbar_size = browser_view()->GetWebAppFrameToolbarPreferredSize();
+  const gfx::Size toolbar_size =
+      browser_view()->GetWebAppFrameToolbarPreferredSize();
   if (!toolbar_size.IsEmpty()) {
     header_height = std::max(header_height, toolbar_size.height());
-  }
-  if (browser_view()->GetTabStripVisible()) {
-    if (features::IsChromeRefresh2023()) {
-      return 0;
-    }
-    return header_height - browser_view()->GetTabStripHeight();
   }
 
   return UsePackagedAppHeaderStyle(browser)
@@ -488,11 +491,6 @@ void BrowserNonClientFrameViewChromeOS::Layout(PassKey) {
   }
 }
 
-void BrowserNonClientFrameViewChromeOS::GetAccessibleNodeData(
-    ui::AXNodeData* node_data) {
-  node_data->role = ax::mojom::Role::kTitleBar;
-}
-
 gfx::Size BrowserNonClientFrameViewChromeOS::GetMinimumSize() const {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // System web apps (e.g. Settings) may have a fixed minimum size.
@@ -503,6 +501,15 @@ gfx::Size BrowserNonClientFrameViewChromeOS::GetMinimumSize() const {
       return minimum_size;
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+  // The minimum size of a borderless window is only limited by the window's
+  // `highlight_border_overlay_`.
+  if (browser_view()->IsBorderlessModeEnabled()) {
+    // `CalculateImageSourceSize()` returns the minimum size needed to draw the
+    // highlight border, which in turn is the minimum size of a borderless
+    // window.
+    return highlight_border_overlay_->CalculateImageSourceSize();
+  }
 
   gfx::Size min_client_view_size(frame()->client_view()->GetMinimumSize());
   const int min_frame_width =
@@ -526,22 +533,11 @@ gfx::Size BrowserNonClientFrameViewChromeOS::GetMinimumSize() const {
     min_height = min_height + caption_button_container_->size().height();
   }
 
-  if (browser_view()->IsBorderlessModeEnabled()) {
-    gfx::Size border_size =
-        highlight_border_overlay_->CalculateImageSourceSize();
-    // The minimum size of a borderless window is only limited by the window's
-    // `highlight_border_overlay_`s. The minimum size for the window is then
-    // twice as much as there are always two overlays vertically or
-    // horizontally.
-    min_width = 2 * border_size.width();
-    min_height = 2 * border_size.height();
-  }
-
   const int window_corner_radius = frame()->GetNativeWindow()->GetProperty(
       aura::client::kWindowCornerRadiusKey);
   if (chromeos::features::IsRoundedWindowsEnabled() &&
       window_corner_radius > 0) {
-    // Include bottom rounded corners region.
+    // Include bottom rounded corners region. See b/294588040.
     min_height = min_height + window_corner_radius;
   }
 

@@ -20,11 +20,12 @@ import './add_site_dialog.js';
 import './edit_exception_dialog.js';
 import './site_list_entry.js';
 
+import type {CrTooltipElement} from 'chrome://resources/cr_elements/cr_tooltip/cr_tooltip.js';
+import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {ListPropertyUpdateMixin} from 'chrome://resources/cr_elements/list_property_update_mixin.js';
 import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
 import {assert} from 'chrome://resources/js/assert.js';
 import {focusWithoutInk} from 'chrome://resources/js/focus_without_ink.js';
-import type {CrTooltipElement} from 'chrome://resources/cr_elements/cr_tooltip/cr_tooltip.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {TooltipMixin} from '../tooltip_mixin.js';
@@ -40,12 +41,13 @@ export interface SiteListElement {
     addSite: HTMLElement,
     category: HTMLElement,
     listContainer: HTMLElement,
+    listHeader: HTMLElement,
     tooltip: CrTooltipElement,
   };
 }
 
 const SiteListElementBase = TooltipMixin(ListPropertyUpdateMixin(
-    SiteSettingsMixin(WebUiListenerMixin(PolymerElement))));
+    SiteSettingsMixin(WebUiListenerMixin(I18nMixin(PolymerElement)))));
 
 export class SiteListElement extends SiteListElementBase {
   static get is() {
@@ -388,13 +390,23 @@ export class SiteListElement extends SiteListElementBase {
   }
 
   private onAllowClick_() {
+    // Removing the last visible item should focus the list's header.
+    const shouldMoveFocus = this.getFilteredSites_().length === 1;
     this.setContentSettingForActionMenuSite_(ContentSetting.ALLOW);
     this.closeActionMenu_();
+    if (shouldMoveFocus) {
+      this.$.listHeader.focus();
+    }
   }
 
   private onBlockClick_() {
+    // Removing the last visible item should focus the list's header.
+    const shouldMoveFocus = this.getFilteredSites_().length === 1;
     this.setContentSettingForActionMenuSite_(ContentSetting.BLOCK);
     this.closeActionMenu_();
+    if (shouldMoveFocus) {
+      this.$.listHeader.focus();
+    }
   }
 
   private onSessionOnlyClick_() {
@@ -419,11 +431,16 @@ export class SiteListElement extends SiteListElementBase {
   }
 
   private onResetClick_() {
+    // Removing the last visible item should focus the list's header.
+    const shouldMoveFocus = this.getFilteredSites_().length === 1;
     assert(this.actionMenuSite_);
     this.browserProxy.resetCategoryPermissionForPattern(
         this.actionMenuSite_.origin, this.actionMenuSite_.embeddingOrigin,
         this.category, this.actionMenuSite_.incognito);
     this.closeActionMenu_();
+    if (shouldMoveFocus) {
+      this.$.listHeader.focus();
+    }
   }
 
   private onShowActionMenu_(
@@ -432,6 +449,13 @@ export class SiteListElement extends SiteListElementBase {
     this.actionMenuSite_ = e.detail.model;
     this.shadowRoot!.querySelector('cr-action-menu')!.showAt(
         this.activeDialogAnchor_);
+  }
+
+  private onResetEntry_() {
+    // Removing the last visible item should focus the list's header.
+    if (this.getFilteredSites_().length === 1) {
+      this.$.listHeader.focus();
+    }
   }
 
   private closeActionMenu_() {
@@ -455,6 +479,16 @@ export class SiteListElement extends SiteListElementBase {
     return this.sites.filter(
         site => propNames.some(
             propName => site[propName].toLowerCase().includes(searchFilter)));
+  }
+
+  private getAddButtonLabel_(): string {
+    if (this.categorySubtype === ContentSetting.ALLOW) {
+      return this.i18n('siteDataPageAddSiteToAllowListLabel');
+    } else if (this.categorySubtype === ContentSetting.BLOCK) {
+      return this.i18n('siteDataPageAddSiteToBlockListLabel');
+    } else {
+      return '';
+    }
   }
 }
 

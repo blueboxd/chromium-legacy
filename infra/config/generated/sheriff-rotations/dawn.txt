@@ -7,7 +7,6 @@ ci/Dawn Android arm Release (Pixel 4)
 ci/Dawn Android arm64 Builder
 ci/Dawn Android arm64 DEPS Builder
 ci/Dawn Android arm64 DEPS Release (Pixel 6)
-ci/Dawn Android arm64 Experimental Release (Pixel 6)
 ci/Dawn Android arm64 Release (Pixel 6)
 ci/Dawn Android arm64 Release (Samsung S24)
 ci/Dawn ChromeOS Skylab Release (volteer)
@@ -17,6 +16,7 @@ ci/Dawn Linux x64 DEPS Builder
 ci/Dawn Linux x64 DEPS Release (Intel UHD 630)
 ci/Dawn Linux x64 DEPS Release (NVIDIA)
 ci/Dawn Linux x64 Experimental Release (Intel UHD 630)
+ci/Dawn Linux x64 Experimental Release (NVIDIA GTX 1660)
 ci/Dawn Linux x64 Release (Intel UHD 630)
 ci/Dawn Linux x64 Release (Intel UHD 770)
 ci/Dawn Linux x64 Release (NVIDIA)

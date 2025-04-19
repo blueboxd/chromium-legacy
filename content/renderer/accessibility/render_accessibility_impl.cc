@@ -150,6 +150,8 @@ void RenderAccessibilityImpl::DidCommitProvisionalLoad(
   // serialization sent by the old document.
   ax_context_->OnSerializationCancelled();
   weak_factory_for_pending_events_.InvalidateWeakPtrs();
+
+  loading_stage_ = LoadingStage::kPreload;
 }
 
 void RenderAccessibilityImpl::NotifyAccessibilityModeChange(
@@ -211,6 +213,16 @@ void RenderAccessibilityImpl::set_reset_token(uint32_t reset_token) {
     ax_context_->SetSerializationResetToken(reset_token);
   }
 }
+
+#if BUILDFLAG(IS_CHROMEOS)
+void RenderAccessibilityImpl::FireLayoutComplete() {
+  if (ax_context_) {
+    ax_context_->AddEventToSerializationQueue(
+        ui::AXEvent(ComputeRoot().AxID(), ax::mojom::Event::kLayoutComplete),
+        true);
+  }
+}
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 void RenderAccessibilityImpl::FireLoadCompleteIfLoaded() {
   if (GetMainDocument().IsLoaded() &&
@@ -420,21 +432,11 @@ void RenderAccessibilityImpl::MarkWebAXObjectDirty(
                                          event_intents);
 }
 
-// TODO(accessibility): Replace all instances of HandleAXEvent with
-// ax_context_->AddEventToSerializationQueue(event, true);. But we'll need to
-// make sure to handle the loading_stage_ variable below.
 void RenderAccessibilityImpl::HandleAXEvent(const ui::AXEvent& event) {
   DCHECK(ax_context_);
 
-  if (event.event_type == ax::mojom::Event::kLoadStart) {
-    loading_stage_ = LoadingStage::kPreload;
-  } else if (event.event_type == ax::mojom::Event::kLoadComplete) {
-    loading_stage_ = LoadingStage::kLoadCompleted;
-  }
-
-  ax_context_->AddEventToSerializationQueue(
-      event, true);  // All events sent to AXObjectCache from RAI need
-  // immediate serialization!
+  // All events sent to AXObjectCache from RAI need immediate serialization.
+  ax_context_->AddEventToSerializationQueue(event, /* immediate */ true);
 }
 
 // TODO(accessibility): When legacy mode is deleted, calls to this function may
@@ -467,8 +469,15 @@ bool RenderAccessibilityImpl::SendAccessibilitySerialization(
     std::vector<ui::AXTreeUpdate> updates,
     std::vector<ui::AXEvent> events,
     bool had_load_complete_messages) {
-  TRACE_EVENT0("accessibility",
-               "RenderAccessibilityImpl::SendPendingAccessibilityEvents");
+  if (had_load_complete_messages) {
+    loading_stage_ = LoadingStage::kLoadCompleted;
+  }
+
+  TRACE_EVENT0(
+      "accessibility",
+      loading_stage_ == LoadingStage::kPostLoad
+          ? "RenderAccessibilityImpl::SendPendingAccessibilityEvents"
+          : "RenderAccessibilityImpl::SendPendingAccessibilityEventsLoading");
   base::ElapsedTimer timer;
 
   DCHECK(!accessibility_mode_.is_mode_off());
@@ -525,22 +534,21 @@ bool RenderAccessibilityImpl::SendAccessibilitySerialization(
   }
 #endif
 
-  blink::mojom::AXUpdatesAndEventsPtr updates_and_events =
-      blink::mojom::AXUpdatesAndEvents::New();
-  updates_and_events->updates = std::move(updates);
-  updates_and_events->events = std::move(events);
+  ui::AXUpdatesAndEvents updates_and_events;
+  updates_and_events.updates = std::move(updates);
+  updates_and_events.events = std::move(events);
 
-  for (auto& update : updates_and_events->updates) {
+  for (auto& update : updates_and_events.updates) {
     ax_annotators_manager_->Annotate(document, &update,
                                      had_load_complete_messages);
   }
 
-  ax_annotators_manager_->AddDebuggingAttributes(updates_and_events->updates);
+  ax_annotators_manager_->AddDebuggingAttributes(updates_and_events.updates);
 
   CHECK(!weak_factory_for_pending_events_.HasWeakPtrs());
   CHECK(reset_token_);
   render_accessibility_manager_->HandleAccessibilityEvents(
-      std::move(updates_and_events), *reset_token_,
+      updates_and_events, *reset_token_,
       base::BindOnce(&RenderAccessibilityImpl::OnSerializationReceived,
                      weak_factory_for_pending_events_.GetWeakPtr()));
 

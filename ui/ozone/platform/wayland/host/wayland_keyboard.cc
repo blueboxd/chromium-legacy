@@ -367,7 +367,7 @@ void WaylandKeyboard::FlushInput(base::OnceClosure closure) {
   // wl_display_sync gives a chance for any key "up" events to arrive.
   // With a well behaved wayland compositor this should ensure we never
   // get spurious repeats.
-  sync_callback_.reset(wl_display_sync(connection_->display_wrapper()));
+  sync_callback_.reset(connection_->GetSyncCallback());
 
   static constexpr wl_callback_listener kSyncCallbackListener = {
       .done = &OnSyncDone,
@@ -437,8 +437,8 @@ void WaylandKeyboard::DispatchKey(unsigned int key,
   // Pass empty DomKey and KeyboardCode here so the delegate can pre-process
   // and decode it when needed.
   uint32_t result = delegate_->OnKeyboardKeyEvent(
-      down ? ET_KEY_PRESSED : ET_KEY_RELEASED, dom_code, repeat, serial,
-      timestamp, device_id, kind);
+      down ? EventType::kKeyPressed : EventType::kKeyReleased, dom_code, repeat,
+      serial, timestamp, device_id, kind);
 
   if (extended_keyboard_ && !(result & POST_DISPATCH_STOP_PROPAGATION) &&
       serial.has_value()) {

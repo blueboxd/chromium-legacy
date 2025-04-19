@@ -27,4 +27,24 @@ bool FakeUserManagerDelegate::IsUserSessionRestoreInProgress() {
   return false;
 }
 
+std::optional<UserType> FakeUserManagerDelegate::GetDeviceLocalAccountUserType(
+    std::string_view email) {
+  NOTIMPLEMENTED();
+  return std::nullopt;
+}
+
+void FakeUserManagerDelegate::CheckProfileOnLogin(const User& user) {
+  // Do nothing.
+}
+
+void FakeUserManagerDelegate::RemoveProfileByAccountId(
+    const AccountId& account_id) {
+  // Do nothing.
+}
+
+void FakeUserManagerDelegate::RemoveCryptohomeAsync(
+    const AccountId& account_id) {
+  // Do nothing.
+}
+
 }  // namespace user_manager

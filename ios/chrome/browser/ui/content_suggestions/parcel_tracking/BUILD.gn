@@ -18,12 +18,17 @@ source_set("parcel_tracking") {
     "//base",
     "//base:i18n",
     "//components/commerce/core:shopping_service",
+    "//components/prefs",
+    "//components/prefs/ios",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser/parcel_tracking:features",
     "//ios/chrome/browser/parcel_tracking:metrics",
     "//ios/chrome/browser/parcel_tracking:prefs",
     "//ios/chrome/browser/parcel_tracking:tracking_source",
     "//ios/chrome/browser/parcel_tracking:util",
     "//ios/chrome/browser/shared/model/application_context",
+    "//ios/chrome/browser/shared/model/prefs:pref_names",
+    "//ios/chrome/browser/shared/public/features",
     "//ios/chrome/browser/shared/ui/symbols",
     "//ios/chrome/browser/shared/ui/table_view",
     "//ios/chrome/browser/shared/ui/table_view:utils",
@@ -48,10 +53,17 @@ source_set("parcel_tracking") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [ "parcel_tracking_mediator_unittest.mm" ]
+  sources = [
+    "parcel_tracking_mediator_unittest.mm",
+    "parcel_tracking_view+testing.h",
+    "parcel_tracking_view_unittest.mm",
+  ]
   deps = [
     ":parcel_tracking",
     "//components/commerce/core:shopping_service_test_support",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/browser/parcel_tracking:prefs",
+    "//ios/chrome/browser/shared/model/application_context",
     "//ios/chrome/browser/shared/model/browser/test:test_support",
     "//ios/chrome/browser/shared/model/browser_state:test_support",
     "//ios/chrome/browser/shared/model/prefs:pref_names",

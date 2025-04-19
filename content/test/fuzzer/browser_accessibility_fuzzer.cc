@@ -17,6 +17,7 @@
 #include "content/public/test/browser_task_environment.h"
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_content_client.h"
+#include "ui/accessibility/platform/test_ax_node_id_delegate.h"
 #include "ui/accessibility/platform/test_ax_platform_tree_manager_delegate.h"
 
 struct Env {
@@ -123,7 +124,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   tree.nodes[0].id = 1;
   tree.nodes[0].role = ax::mojom::Role::kRootWebArea;
   tree.nodes[0].child_ids = {2, 3, 4};
-  AddStates(fdp, &tree.nodes[0]);
+  // The root node cannot be ignored, so we'll only try invisible.
+  if (fdp.ConsumeBool()) {
+    tree.nodes[0].AddState(ax::mojom::State::kInvisible);
+  }
 
   tree.nodes[1].id = 2;
   tree.nodes[1].role = GetInterestingRole(fdp);
@@ -172,10 +176,12 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   VLOG(1) << child_tree.ToString();
 
   ui::TestAXPlatformTreeManagerDelegate delegate;
+  ui::TestAXNodeIdDelegate node_id_delegate;
   std::unique_ptr<BrowserAccessibilityManager> manager(
-      BrowserAccessibilityManager::Create(tree, &delegate));
+      BrowserAccessibilityManager::Create(tree, node_id_delegate, &delegate));
   std::unique_ptr<BrowserAccessibilityManager> child_manager(
-      BrowserAccessibilityManager::Create(child_tree, &delegate));
+      BrowserAccessibilityManager::Create(child_tree, node_id_delegate,
+                                          &delegate));
 
   // We want to call a bunch of functions but we don't care what the
   // return values are. To ensure the compiler doesn't optimize the calls
@@ -212,7 +218,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   // Add a node, possibly clearing old children.
   int node_id = num_nodes + 1;
-  int parent = fdp.ConsumeIntegralInRange(0, num_nodes);
+  int parent = fdp.ConsumeIntegralInRange(1, num_nodes);
 
   ui::AXTreeUpdate update;
   update.nodes.resize(2);

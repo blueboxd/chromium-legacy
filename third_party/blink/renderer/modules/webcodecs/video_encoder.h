@@ -30,6 +30,7 @@ struct VideoEncoderOutput;
 
 namespace blink {
 
+class VideoEncoderBuffer;
 class VideoEncoderConfig;
 class VideoEncoderInit;
 class VideoEncoderEncodeOptions;
@@ -52,6 +53,7 @@ class MODULES_EXPORT VideoEncoderTraits {
 
     std::optional<String> not_supported_error_message;
 
+    String ToString();
     void Trace(Visitor*) const {}
   };
 
@@ -80,6 +82,9 @@ class MODULES_EXPORT VideoEncoder : public EncoderBase<VideoEncoderTraits> {
 
   static ScriptPromise<VideoEncoderSupport>
   isConfigSupported(ScriptState*, const VideoEncoderConfig*, ExceptionState&);
+
+  HeapVector<Member<VideoEncoderBuffer>> getAllFrameBuffers(ScriptState*,
+                                                            ExceptionState&);
 
   // EventTarget interface
   const AtomicString& InterfaceName() const override;

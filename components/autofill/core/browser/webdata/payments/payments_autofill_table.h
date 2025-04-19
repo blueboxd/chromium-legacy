@@ -16,7 +16,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/data_model/credit_card_benefit.h"
-#include "components/sync/base/model_type.h"
+#include "components/sync/base/data_type.h"
+#include "components/sync/protocol/autofill_specifics.pb.h"
 #include "components/webdata/common/web_database_table.h"
 
 class WebDatabase;
@@ -27,7 +28,6 @@ class Time;
 
 namespace autofill {
 
-struct AutofillMetadata;
 class AutofillOfferData;
 class AutofillTableEncryptor;
 class BankAccount;
@@ -35,6 +35,7 @@ class CreditCard;
 struct CreditCardCloudTokenData;
 class Iban;
 struct PaymentsCustomerData;
+struct PaymentsMetadata;
 class VirtualCardUsageData;
 // Helper struct to better group server cvc related variables for better
 // passing last_updated_timestamp, which is needed for sync bridge. Limited
@@ -335,6 +336,15 @@ struct ServerCvc {
 //   merchant_domain    Origin for merchant websites on which this benefit
 //                      would apply.
 // -----------------------------------------------------------------------------
+// generic_payment_instruments
+//                      Contains serialized versions of payment instruments such
+//                      as eWallets.
+//
+//   instrument_id      The server-generated ID for the payment instrument.
+//   serialized_value_encrypted
+//                      A byte-encoded representation of the payment
+//                      instrument's protobuf, encrypted.
+// -----------------------------------------------------------------------------
 class PaymentsAutofillTable : public WebDatabaseTable {
  public:
   PaymentsAutofillTable();
@@ -436,16 +446,16 @@ class PaymentsAutofillTable : public WebDatabaseTable {
   // occurred.
   // TODO (crbug.com/1504063): Merge Add/UpdateServerCardMetadata into a single
   // method AddOrUpdateServerCardMetadata.
-  bool AddServerCardMetadata(const AutofillMetadata& card_metadata);
+  bool AddServerCardMetadata(const PaymentsMetadata& card_metadata);
   bool UpdateServerCardMetadata(const CreditCard& credit_card);
-  bool UpdateServerCardMetadata(const AutofillMetadata& card_metadata);
+  bool UpdateServerCardMetadata(const PaymentsMetadata& card_metadata);
   bool RemoveServerCardMetadata(const std::string& id);
   bool GetServerCardsMetadata(
-      std::vector<AutofillMetadata>& cards_metadata) const;
-  bool AddOrUpdateServerIbanMetadata(const AutofillMetadata& iban_metadata);
+      std::vector<PaymentsMetadata>& cards_metadata) const;
+  bool AddOrUpdateServerIbanMetadata(const PaymentsMetadata& iban_metadata);
   bool RemoveServerIbanMetadata(const std::string& instrument_id);
   bool GetServerIbansMetadata(
-      std::vector<AutofillMetadata>& ibans_metadata) const;
+      std::vector<PaymentsMetadata>& ibans_metadata) const;
 
   // Method to add the server cards independently from the metadata.
   void SetServerCardsData(const std::vector<CreditCard>& credit_cards);
@@ -469,7 +479,7 @@ class PaymentsAutofillTable : public WebDatabaseTable {
 
   // Overwrite the server IBANs and server IBAN metadata with the given `ibans`.
   // This distinction is necessary compared with above method, because metadata
-  // and data are synced through separate model types in prod code, while this
+  // and data are synced through separate data types in prod code, while this
   // method is an easy way to set up during tests.
   void SetServerIbansForTesting(const std::vector<Iban>& ibans);
 
@@ -492,14 +502,13 @@ class PaymentsAutofillTable : public WebDatabaseTable {
   // table
   bool AddOrUpdateVirtualCardUsageData(
       const VirtualCardUsageData& virtual_card_usage_data);
-  std::unique_ptr<VirtualCardUsageData> GetVirtualCardUsageData(
+  std::optional<VirtualCardUsageData> GetVirtualCardUsageData(
       const std::string& usage_data_id);
   bool RemoveVirtualCardUsageData(const std::string& usage_data_id);
   void SetVirtualCardUsageData(
       const std::vector<VirtualCardUsageData>& virtual_card_usage_data);
   bool GetAllVirtualCardUsageData(
-      std::vector<std::unique_ptr<VirtualCardUsageData>>*
-          virtual_card_usage_data);
+      std::vector<VirtualCardUsageData>& virtual_card_usage_data);
   bool RemoveAllVirtualCardUsageData();
 
   // Deletes all data from the server card tables. Returns true if any data was
@@ -515,15 +524,15 @@ class PaymentsAutofillTable : public WebDatabaseTable {
   // TODO(crbug.com/40151750): This function is solely used to remove browsing
   // data. Once explicit save dialogs are fully launched, it can be removed.
   bool RemoveAutofillDataModifiedBetween(
-      const base::Time& delete_begin,
-      const base::Time& delete_end,
+      base::Time delete_begin,
+      base::Time delete_end,
       std::vector<std::unique_ptr<CreditCard>>* credit_cards);
 
   // Removes origin URLs from the credit_cards tables if they were written on or
   // after `delete_begin` and strictly before `delete_end`. Returns true if all
   // rows were successfully updated and false on a database error.
-  bool RemoveOriginURLsModifiedBetween(const base::Time& delete_begin,
-                                       const base::Time& delete_end);
+  bool RemoveOriginURLsModifiedBetween(base::Time delete_begin,
+                                       base::Time delete_end);
 
   // Set, get, and clear the `credit_card_benefits` table and the
   // 'benefit_merchant_domains' table. Return true if the operation
@@ -538,6 +547,13 @@ class PaymentsAutofillTable : public WebDatabaseTable {
       std::optional<int64_t> instrument_id,
       std::vector<CreditCardBenefit>& credit_card_benefits);
   bool ClearAllCreditCardBenefits();
+
+  // Sets and gets the `payment_instruments` table. Return true if the operation
+  // succeeded.
+  bool SetPaymentInstruments(
+      const std::vector<sync_pb::PaymentInstrument>& payment_instruments);
+  bool GetPaymentInstruments(
+      std::vector<sync_pb::PaymentInstrument>& payment_instruments);
 
   // Testing helper to access the database for checking the result of database
   // update.
@@ -570,6 +586,8 @@ class PaymentsAutofillTable : public WebDatabaseTable {
   bool
   MigrateToVersion124AndDeletePaymentInstrumentRelatedTablesAndAddMaskedBankAccountTable();
   bool MigrateToVersion125DeleteFullServerCardsTable();
+  bool MigrateToVersion129AddGenericPaymentInstrumentsTable();
+  bool MigrateToVersion131RemoveGenericPaymentInstrumentTypeColumn();
 
  private:
   // Adds to |masked_credit_cards| and updates |server_card_metadata|.
@@ -601,6 +619,7 @@ class PaymentsAutofillTable : public WebDatabaseTable {
   bool InitMaskedBankAccountsMetadataTable();
   bool InitMaskedCreditCardBenefitsTable();
   bool InitBenefitMerchantDomainsTable();
+  bool InitGenericPaymentInstrumentsTable();
 
   std::unique_ptr<AutofillTableEncryptor> autofill_table_encryptor_;
 };

@@ -16,7 +16,7 @@ UnhandledKeyboardEventHandler::UnhandledKeyboardEventHandler() = default;
 UnhandledKeyboardEventHandler::~UnhandledKeyboardEventHandler() = default;
 
 bool UnhandledKeyboardEventHandler::HandleKeyboardEvent(
-    const content::NativeWebKeyboardEvent& event,
+    const input::NativeWebKeyboardEvent& event,
     FocusManager* focus_manager) {
   CHECK(focus_manager);
 
@@ -48,6 +48,14 @@ bool UnhandledKeyboardEventHandler::HandleKeyboardEvent(
     // ProcessAccelerator didn't handle the accelerator, so we know both
     // that |this| is still valid, and that we didn't want to set the flag.
     ignore_next_char_event_ = false;
+  }
+
+  if (event.GetType() == blink::WebInputEvent::Type::kKeyUp) {
+    const ui::Accelerator accelerator =
+        ui::GetAcceleratorFromNativeWebKeyboardEvent(event);
+    if (focus_manager->ProcessAccelerator(accelerator)) {
+      return true;
+    }
   }
 
   if (event.os_event) {

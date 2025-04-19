@@ -12,6 +12,7 @@ import '//resources/cr_elements/cr_toggle/cr_toggle.js';
 import '/shared/settings/prefs/prefs.js';
 import '../controls/settings_toggle_button.js';
 import '../people_page/signout_dialog.js';
+import 'chrome://resources/cr_elements/md_select.css.js';
 // <if expr="not chromeos_ash">
 import '../relaunch_confirmation_dialog.js';
 // </if>
@@ -34,7 +35,6 @@ import {PrefsMixin} from '/shared/settings/prefs/prefs_mixin.js';
 import type {MetricsReporting, PrivacyPageBrowserProxy} from '/shared/settings/privacy_page/privacy_page_browser_proxy.js';
 import {PrivacyPageBrowserProxyImpl} from '/shared/settings/privacy_page/privacy_page_browser_proxy.js';
 import {HelpBubbleMixin} from 'chrome://resources/cr_components/help_bubble/help_bubble_mixin.js';
-import type {CrRadioGroupElement} from 'chrome://resources/cr_elements/cr_radio_group/cr_radio_group.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 
 import type {SettingsToggleButtonElement} from '../controls/settings_toggle_button.js';
@@ -54,7 +54,7 @@ export interface SettingsPersonalizationOptionsElement {
     metricsReportingControl: SettingsToggleButtonElement,
     metricsReportingLink: CrLinkRowElement,
     urlCollectionToggle: SettingsToggleButtonElement,
-    chromeSigninUserChoiceRadioGroup: CrRadioGroupElement,
+    chromeSigninUserChoiceSelection: HTMLSelectElement,
   };
 }
 
@@ -138,6 +138,13 @@ export class SettingsPersonalizationOptionsElement extends
           return loadTimeData.getBoolean('enablePageContentSetting');
         },
       },
+
+      showHistorySearchControl_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean('showHistorySearchControl');
+        },
+      },
     };
   }
 
@@ -160,6 +167,7 @@ export class SettingsPersonalizationOptionsElement extends
   // </if>
 
   private enablePageContentSetting_: boolean;
+  private showHistorySearchControl_: boolean;
 
   private browserProxy_: PrivacyPageBrowserProxy =
       PrivacyPageBrowserProxyImpl.getInstance();
@@ -378,6 +386,11 @@ export class SettingsPersonalizationOptionsElement extends
     router.navigateTo(router.getRoutes().PAGE_CONTENT);
   }
 
+  private onHistorySearchRowClick_() {
+    const router = Router.getInstance();
+    router.navigateTo(router.getRoutes().HISTORY_SEARCH);
+  }
+
   private computePageContentRowSublabel_() {
     return this.getPref('page_content_collection.enabled').value ?
         this.i18n('pageContentLinkRowSublabelOn') :
@@ -388,12 +401,12 @@ export class SettingsPersonalizationOptionsElement extends
   private setChromeSigninUserChoiceInfo_(info: ChromeSigninUserChoiceInfo) {
     this.chromeSigninUserChoiceInfo_ = info;
     if (info.choice !== ChromeSigninUserChoice.NO_CHOICE) {
-      this.$.chromeSigninUserChoiceRadioGroup.selected = info.choice.toString();
+      this.$.chromeSigninUserChoiceSelection.value = info.choice.toString();
     }
   }
 
-  private onChromeSigninChoiceChanged_() {
-    const selected = Number(this.$.chromeSigninUserChoiceRadioGroup.selected);
+  private onChromeSigninChoiceSelectionChanged_() {
+    const selected = Number(this.$.chromeSigninUserChoiceSelection.value);
     assert(selected !== ChromeSigninUserChoice.NO_CHOICE);
     this.syncBrowserProxy_.setChromeSigninUserChoice(
         selected, this.chromeSigninUserChoiceInfo_.signedInEmail);

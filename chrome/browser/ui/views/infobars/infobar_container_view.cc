@@ -22,6 +22,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/skia_paint_util.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/cascading_property.h"
 #include "ui/views/controls/focus_ring.h"
@@ -78,6 +79,10 @@ InfoBarContainerView::InfoBarContainerView(Delegate* delegate)
                                         kColorToolbar);
   SetBackground(
       views::CreateThemedSolidBackground(kColorInfoBarContentAreaSeparator));
+
+  GetViewAccessibility().SetRole(ax::mojom::Role::kGroup);
+  GetViewAccessibility().SetName(
+      l10n_util::GetStringUTF8(IDS_ACCNAME_INFOBAR_CONTAINER));
 }
 
 InfoBarContainerView::~InfoBarContainerView() {
@@ -109,12 +114,6 @@ void InfoBarContainerView::Layout(PassKey) {
   // shadow is drawn outside the container bounds).
   content_shadow_->SetBounds(0, top, width(),
                              content_shadow_->GetPreferredSize().height());
-}
-
-void InfoBarContainerView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ax::mojom::Role::kGroup;
-  node_data->SetNameChecked(
-      l10n_util::GetStringUTF8(IDS_ACCNAME_INFOBAR_CONTAINER));
 }
 
 gfx::Size InfoBarContainerView::CalculatePreferredSize(

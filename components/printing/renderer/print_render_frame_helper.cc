@@ -61,6 +61,7 @@
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/mojom/fenced_frame/fenced_frame.mojom.h"
+#include "third_party/blink/public/mojom/page/prerender_page_param.mojom.h"
 #include "third_party/blink/public/mojom/page/widget.mojom.h"
 #include "third_party/blink/public/mojom/widget/platform_widget.mojom.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -662,8 +663,8 @@ class HeaderAndFooterContext {
       const blink::WebLocalFrame& source_frame) {
     auto* view = blink::WebView::Create(
         /*client=*/nullptr,
-        /*is_hidden=*/false, /*is_prerendering=*/false,
-        /*is_inside_portal=*/false,
+        /*is_hidden=*/false,
+        /*prerender_param=*/nullptr,
         /*fenced_frame_mode=*/std::nullopt,
         /*compositing_enabled=*/false, /*widgets_never_composited=*/false,
         /*opener=*/nullptr, mojo::NullAssociatedReceiver(),
@@ -678,8 +679,8 @@ class HeaderAndFooterContext {
 
   blink::WebLocalFrame* CreateFrame() {
     return blink::WebLocalFrame::CreateMainFrame(
-        web_view_, &frame_client_, nullptr, blink::LocalFrameToken(),
-        blink::DocumentToken(), nullptr);
+        web_view_, &frame_client_, nullptr, mojo::NullRemote(),
+        blink::LocalFrameToken(), blink::DocumentToken(), nullptr);
   }
 
   void InitWebView() {
@@ -938,8 +939,7 @@ void PrepareFrameAndViewForPrint::CopySelection(
   blink::WebView* web_view = blink::WebView::Create(
       /*client=*/this,
       /*is_hidden=*/false,
-      /*is_prerendering=*/false,
-      /*is_inside_portal=*/false,
+      /*prerender_param=*/nullptr,
       /*fenced_frame_mode=*/std::nullopt,
       /*compositing_enabled=*/false,
       /*widgets_never_composited=*/false,
@@ -951,8 +951,8 @@ void PrepareFrameAndViewForPrint::CopySelection(
       /*color_provider_colors=*/nullptr);
   blink::WebView::ApplyWebPreferences(prefs, web_view);
   blink::WebLocalFrame* main_frame = blink::WebLocalFrame::CreateMainFrame(
-      web_view, this, nullptr, blink::LocalFrameToken(), blink::DocumentToken(),
-      nullptr);
+      web_view, this, nullptr, mojo::NullRemote(), blink::LocalFrameToken(),
+      blink::DocumentToken(), nullptr);
   frame_.Reset(main_frame);
   mojo::AssociatedRemote<blink::mojom::FrameWidget> frame_widget;
   mojo::PendingAssociatedReceiver<blink::mojom::FrameWidget>

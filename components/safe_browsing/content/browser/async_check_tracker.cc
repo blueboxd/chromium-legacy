@@ -83,6 +83,9 @@ AsyncCheckTracker::AsyncCheckTracker(content::WebContents* web_contents,
 
 AsyncCheckTracker::~AsyncCheckTracker() {
   DeletePendingCheckers(/*excluded_navigation_id=*/std::nullopt);
+  for (auto& observer : observers_) {
+    observer.OnAsyncSafeBrowsingCheckTrackerDestructed();
+  }
 }
 
 void AsyncCheckTracker::TransferUrlChecker(
@@ -133,6 +136,11 @@ void AsyncCheckTracker::PendingCheckerCompleted(
     // proceed is true, because PendingCheckerCompleted may be called multiple
     // times during server redirects.
     MaybeDeleteChecker(navigation_id);
+  }
+  if (result.all_checks_completed) {
+    for (auto& observer : observers_) {
+      observer.OnAsyncSafeBrowsingCheckCompleted();
+    }
   }
 }
 
@@ -257,6 +265,14 @@ void AsyncCheckTracker::DeleteExpiredNavigationTimestamps() {
                   return base::TimeTicks::Now() - id_timestamp_pair.second >
                          kNavigationTimestampExpiration;
                 });
+}
+
+void AsyncCheckTracker::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void AsyncCheckTracker::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 size_t AsyncCheckTracker::PendingCheckersSizeForTesting() {

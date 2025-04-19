@@ -4,11 +4,15 @@
 
 #include "ash/picker/model/picker_model.h"
 
+#include "ash/constants/ash_pref_names.h"
 #include "ash/picker/model/picker_mode_type.h"
 #include "ash/public/cpp/picker/picker_category.h"
 #include "base/check_deref.h"
+#include "chromeos/components/editor_menu/public/cpp/editor_helpers.h"
+#include "components/prefs/pref_service.h"
 #include "ui/base/ime/ash/ime_keyboard.h"
 #include "ui/base/ime/text_input_client.h"
+#include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/range/range.h"
 
 namespace ash {
@@ -25,22 +29,53 @@ std::u16string GetSelectedText(ui::TextInputClient* client) {
   return u"";
 }
 
+gfx::Range GetSelectionRange(ui::TextInputClient* client) {
+  gfx::Range selection_range;
+  return client && client->GetEditableSelectionRange(&selection_range)
+             ? selection_range
+             : gfx::Range();
+}
+
+ui::TextInputType GetTextInputType(ui::TextInputClient* client) {
+  return client ? client->GetTextInputType()
+                : ui::TextInputType::TEXT_INPUT_TYPE_NONE;
+}
+
+bool GetIsGifsEnabled(PrefService* prefs) {
+  // prefs can be null in some tests.
+  if (prefs == nullptr) {
+    return false;
+  }
+
+  if (const PrefService::Preference* pref =
+          prefs->FindPreference(prefs::kEmojiPickerGifSupportEnabled)) {
+    return pref->GetValue()->GetBool();
+  }
+  return false;
+}
+
 }  // namespace
 
-PickerModel::PickerModel(ui::TextInputClient* focused_client,
+PickerModel::PickerModel(PrefService* prefs,
+                         ui::TextInputClient* focused_client,
                          input_method::ImeKeyboard* ime_keyboard,
                          EditorStatus editor_status)
-    : has_focus_(focused_client != nullptr),
+    : has_focus_(focused_client != nullptr &&
+                 focused_client->GetTextInputType() !=
+                     ui::TextInputType::TEXT_INPUT_TYPE_NONE),
       selected_text_(GetSelectedText(focused_client)),
+      should_do_learning_(focused_client == nullptr ||
+                          focused_client->ShouldDoLearning()),
+      selection_range_(GetSelectionRange(focused_client)),
       is_caps_lock_enabled_(CHECK_DEREF(ime_keyboard).IsCapsLockEnabled()),
-      editor_status_(editor_status) {}
+      editor_status_(editor_status),
+      text_input_type_(GetTextInputType(focused_client)),
+      is_gifs_enabled_(GetIsGifsEnabled(prefs)) {}
 
 std::vector<PickerCategory> PickerModel::GetAvailableCategories() const {
   switch (GetMode()) {
     case PickerModeType::kUnfocused:
       return std::vector<PickerCategory>{
-          is_caps_lock_enabled_ ? PickerCategory::kCapsOff
-                                : PickerCategory::kCapsOn,
           PickerCategory::kLinks,
           PickerCategory::kDriveFiles,
           PickerCategory::kLocalFiles,
@@ -50,24 +85,18 @@ std::vector<PickerCategory> PickerModel::GetAvailableCategories() const {
       if (editor_status_ == EditorStatus::kEnabled) {
         categories.push_back(PickerCategory::kEditorRewrite);
       }
-      categories.insert(categories.end(), {
-                                              PickerCategory::kUpperCase,
-                                              PickerCategory::kLowerCase,
-                                              PickerCategory::kSentenceCase,
-                                              PickerCategory::kTitleCase,
-                                          });
       return categories;
     }
     case PickerModeType::kNoSelection: {
-      std::vector<PickerCategory> categories{is_caps_lock_enabled_
-                                                 ? PickerCategory::kCapsOff
-                                                 : PickerCategory::kCapsOn};
+      std::vector<PickerCategory> categories;
       if (editor_status_ == EditorStatus::kEnabled) {
         categories.push_back(PickerCategory::kEditorWrite);
       }
+      categories.push_back(PickerCategory::kLinks);
+      if (text_input_type_ != ui::TextInputType::TEXT_INPUT_TYPE_URL) {
+        categories.push_back(PickerCategory::kEmojisGifs);
+      }
       categories.insert(categories.end(), {
-                                              PickerCategory::kLinks,
-                                              PickerCategory::kExpressions,
                                               PickerCategory::kClipboard,
                                               PickerCategory::kDriveFiles,
                                               PickerCategory::kLocalFiles,
@@ -76,6 +105,9 @@ std::vector<PickerCategory> PickerModel::GetAvailableCategories() const {
                                           });
 
       return categories;
+    }
+    case PickerModeType::kPassword: {
+      return {};
     }
   }
 }
@@ -96,16 +128,31 @@ std::u16string_view PickerModel::selected_text() const {
   return selected_text_;
 }
 
+bool PickerModel::should_do_learning() const {
+  return should_do_learning_;
+}
+
+bool PickerModel::is_caps_lock_enabled() const {
+  return is_caps_lock_enabled_;
+}
+
 PickerModeType PickerModel::GetMode() const {
   if (!has_focus_) {
     return PickerModeType::kUnfocused;
   }
 
-  if (selected_text_.empty()) {
-    return PickerModeType::kNoSelection;
+  if (text_input_type_ == ui::TextInputType::TEXT_INPUT_TYPE_PASSWORD) {
+    return PickerModeType::kPassword;
   }
 
-  return PickerModeType::kHasSelection;
+  return chromeos::editor_helpers::NonWhitespaceAndSymbolsLength(
+             selected_text_, gfx::Range(0, selected_text_.size())) == 0
+             ? PickerModeType::kNoSelection
+             : PickerModeType::kHasSelection;
+}
+
+bool PickerModel::IsGifsEnabled() const {
+  return is_gifs_enabled_;
 }
 
 }  // namespace ash

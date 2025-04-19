@@ -377,6 +377,7 @@ TEST_F(CellularMetricsLoggerTest, NoEuiccCachedProfiles) {
 }
 
 TEST_F(CellularMetricsLoggerTest, ActiveProfileExists) {
+  InitCellular();
   AddESimProfile(hermes::profile::State::kActive, kTestESimCellularServicePath);
   InitMetricsLogger();
   histogram_tester_->ExpectTotalCount(kESimFeatureUsageMetric, 2);
@@ -437,6 +438,22 @@ TEST_F(CellularMetricsLoggerTest, CellularServiceAtLoginTest) {
       LoginState::LoggedInUserType::LOGGED_IN_USER_KIOSK);
   ValidateServiceCount(0, 2);
   histogram_tester_->ExpectTotalCount(kESimPolicyServiceAtLoginHistogram, 2);
+}
+
+TEST_F(CellularMetricsLoggerTest, AllowApnModificationTest) {
+  InitMetricsLogger();
+  ON_CALL(*mock_managed_network_configuration_handler_, AllowApnModification())
+      .WillByDefault(::testing::Return(false));
+
+  LoginState::Get()->SetLoggedInState(
+      LoginState::LoggedInState::LOGGED_IN_NONE,
+      LoginState::LoggedInUserType::LOGGED_IN_USER_NONE);
+  LoginState::Get()->SetLoggedInState(
+      LoginState::LoggedInState::LOGGED_IN_ACTIVE,
+      LoginState::LoggedInUserType::LOGGED_IN_USER_OWNER);
+
+  histogram_tester_->ExpectBucketCount(
+      "Network.Ash.Cellular.Apn.Login.AllowApnModification", false, 1);
 }
 
 TEST_F(CellularMetricsLoggerTest, CellularUsageCountTest) {

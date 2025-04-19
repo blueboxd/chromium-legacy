@@ -18,7 +18,9 @@ static_library("safe_browsing") {
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
-  public_deps = []
+  public_deps = [ "//chrome/browser:browser_public_dependencies" ]
+
+  allow_circular_includes_from = []
 
   deps = [
     "//build:branding_buildflags",
@@ -27,6 +29,7 @@ static_library("safe_browsing") {
     "//chrome/browser/google",
     "//chrome/browser/profiles",
     "//chrome/browser/profiles:profile",
+    "//chrome/browser/sync",
     "//chrome/common",
     "//chrome/common:constants",
     "//components/browser_sync",
@@ -72,7 +75,17 @@ static_library("safe_browsing") {
   ]
 
   if (is_android) {
-    deps += [ "//chrome/browser/password_manager/android:utils" ]
+    deps += [
+      "//chrome/browser/password_manager/android:utils",
+      "//components/safe_browsing/android:safe_browsing_api_handler",
+      "//components/safe_browsing/android:safe_browsing_api_handler_util",
+    ]
+  }
+
+  if (is_chromeos_ash) {
+    deps += [ "//chrome/browser/ash/file_manager" ]
+
+    allow_circular_includes_from += [ "//chrome/browser/ash/file_manager" ]
   }
 
   if (safe_browsing_mode != 0) {
@@ -377,7 +390,7 @@ static_library("safe_browsing") {
         "//chrome/services/file_util/public/cpp",
         "//components/content_settings/core/browser",
         "//components/enterprise/common/proto:connectors_proto",
-        "//components/enterprise/connectors",
+        "//components/enterprise/connectors/core",
         "//components/file_access",
         "//components/gcm_driver",
         "//components/gcm_driver/instance_id",
@@ -445,6 +458,10 @@ static_library("safe_browsing") {
           "//components/messages/android:android",
           "//components/safe_browsing/android:remote_database_manager",
           "//ui/android:android",
+
+          # TODO(crbug.com/41437292): Use //chrome/browser after fixing cyclic
+          # dependency.
+          "//chrome/browser/page_info:page_info_buildflags",
         ]
       }
       deps += [
@@ -468,6 +485,7 @@ source_set("verdict_cache_manager_factory") {
     "//chrome/browser:browser_process",
     "//chrome/browser/profiles",
     "//chrome/browser/profiles:profile",
+    "//chrome/browser/sync",
     "//chrome/common",
     "//components/content_settings/core/browser",
     "//components/history/core/browser",

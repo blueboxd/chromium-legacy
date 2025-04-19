@@ -125,10 +125,14 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
   void GetSandboxedFileSystem(
       const BindingContext& binding_context,
       const std::optional<storage::BucketLocator>& bucket,
+      const std::vector<std::string>& directory_path_components,
       GetSandboxedFileSystemCallback callback);
 
   // blink::mojom::FileSystemAccessManager:
   void GetSandboxedFileSystem(GetSandboxedFileSystemCallback callback) override;
+  void GetSandboxedFileSystemForDevtools(
+      const std::vector<std::string>& directory_path_components,
+      GetSandboxedFileSystemCallback callback) override;
   void ChooseEntries(blink::mojom::FilePickerOptionsPtr options,
                      ChooseEntriesCallback callback) override;
   void GetFileHandleFromToken(
@@ -236,6 +240,11 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
   // Gets the `ancestor_lock_type_` for testing.
   [[nodiscard]] FileSystemAccessLockManager::LockType
   GetAncestorLockTypeForTesting() const;
+
+  // Gets a `WeakPtr` of the `FileSystemAccessLockManager` for testing if its
+  // been destroyed.
+  base::WeakPtr<FileSystemAccessLockManager> GetLockManagerWeakPtrForTesting()
+      const;
 
   // Creates a new FileSystemAccessFileWriterImpl for a given target and
   // swap file URLs. Assumes the passed in URLs are valid and represent files.
@@ -471,11 +480,18 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
                                    base::FilePath default_directory,
                                    ChooseEntriesCallback callback,
                                    bool default_directory_exists);
-  void DidOpenSandboxedFileSystem(const BindingContext& binding_context,
-                                  GetSandboxedFileSystemCallback callback,
-                                  const storage::FileSystemURL& root,
-                                  const std::string& filesystem_name,
-                                  base::File::Error result);
+  void DidOpenSandboxedFileSystem(
+      const BindingContext& binding_context,
+      GetSandboxedFileSystemCallback callback,
+      const storage::FileSystemURL& root,
+      const std::string& filesystem_name,
+      base::File::Error result,
+      const std::vector<std::string>& directory_path_components);
+  void DidResolveUrlAfterOpeningSandboxedFileSystem(
+      const BindingContext& binding_context,
+      GetSandboxedFileSystemCallback callback,
+      const storage::FileSystemURL& url,
+      base::File::Error result);
 
   void DidChooseEntries(const BindingContext& binding_context,
                         const FileSystemChooser::Options& options,
@@ -631,7 +647,7 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
   // and `access_handle_host_receivers_`. The locks held by file writers and
   // access handles dereference the lock manager on destruction, so it should
   // outlive them.
-  std::unique_ptr<FileSystemAccessLockManager> lock_manager_
+  scoped_refptr<FileSystemAccessLockManager> lock_manager_
       GUARDED_BY_CONTEXT(sequence_checker_);
 
   FileSystemAccessWatcherManager watcher_manager_

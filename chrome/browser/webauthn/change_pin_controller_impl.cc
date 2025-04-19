@@ -5,18 +5,21 @@
 #include "chrome/browser/webauthn/change_pin_controller_impl.h"
 
 #include <memory>
+#include <string>
+#include <utility>
 
+#include "base/check.h"
+#include "base/check_op.h"
+#include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
 #include "chrome/browser/webauthn/chrome_authenticator_request_delegate.h"
 #include "chrome/browser/webauthn/enclave_manager.h"
 #include "chrome/browser/webauthn/enclave_manager_factory.h"
-#include "components/sync/base/user_selectable_type.h"
-#include "components/sync/service/sync_service.h"
-#include "components/sync/service/sync_user_settings.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "device/fido/features.h"
@@ -24,22 +27,19 @@
 using Step = AuthenticatorRequestDialogModel::Step;
 
 ChangePinControllerImpl::ChangePinControllerImpl(
-    content::WebContents* web_contents)
-    : content::WebContentsUserData<ChangePinControllerImpl>(*web_contents),
+    content::RenderFrameHost* render_frame_host)
+    : content::DocumentUserData<ChangePinControllerImpl>(render_frame_host),
       enclave_enabled_(
           base::FeatureList::IsEnabled(device::kWebAuthnEnclaveAuthenticator)) {
   if (!enclave_enabled_) {
     return;
   }
   Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+      Profile::FromBrowserContext(render_frame_host->GetBrowserContext());
   enclave_manager_ =
       EnclaveManagerFactory::GetAsEnclaveManagerForProfile(profile);
-  sync_service_ = SyncServiceFactory::IsSyncAllowed(profile)
-                      ? SyncServiceFactory::GetForProfile(profile)
-                      : nullptr;
-  model_ = std::make_unique<AuthenticatorRequestDialogModel>(
-      web_contents->GetPrimaryMainFrame());
+  model_ =
+      base::MakeRefCounted<AuthenticatorRequestDialogModel>(render_frame_host);
   model_observation_.Observe(model_.get());
 }
 
@@ -49,58 +49,73 @@ ChangePinControllerImpl::~ChangePinControllerImpl() {
   }
 }
 
-bool ChangePinControllerImpl::IsChangePinFlowAvailable() {
+void ChangePinControllerImpl::IsChangePinFlowAvailable(
+    PinAvailableCallback callback) {
   if (!enclave_enabled_) {
-    return false;
+    std::move(callback).Run(false);
+    return;
   }
-  bool sync_enabled = sync_service_ && sync_service_->IsSyncFeatureEnabled() &&
-                      sync_service_->GetUserSettings()->GetSelectedTypes().Has(
-                          syncer::UserSelectableType::kPasswords);
-  bool enclave_valid = enclave_enabled_ && enclave_manager_->is_ready() &&
-                       enclave_manager_->has_wrapped_pin();
-  return sync_enabled && enclave_valid;
+  if (enclave_manager_->is_loaded()) {
+    NotifyPinAvailability(std::move(callback));
+    return;
+  }
+  enclave_manager_->Load(
+      base::BindOnce(&ChangePinControllerImpl::NotifyPinAvailability,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void ChangePinControllerImpl::StartChangePin(SuccessCallback callback) {
-  if (!IsChangePinFlowAvailable()) {
+  if (notify_pin_change_callback_) {
     std::move(callback).Run(false);
     return;
   }
   notify_pin_change_callback_ = std::move(callback);
-  // TODO(enclave): use local UV instead of GPM reauth when available.
   model_->SetStep(Step::kGPMReauthForPinReset);
+  RecordHistogram(ChangePinEvent::kFlowStartedFromSettings);
 }
 
 void ChangePinControllerImpl::CancelAuthenticatorRequest() {
   // User clicked "Cancel" in the GPM dialog.
   Reset(/*success=*/false);
+  RecordHistogram(ChangePinEvent::kNewPinCancelled);
 }
 
 void ChangePinControllerImpl::OnReauthComplete(std::string rapt) {
   CHECK_EQ(model_->step(), Step::kGPMReauthForPinReset);
   rapt_ = std::move(rapt);
-  model_->SetStep(Step::kGPMCreatePin);
+  model_->SetStep(Step::kGPMChangePin);
+  RecordHistogram(ChangePinEvent::kReauthCompleted);
 }
 
 void ChangePinControllerImpl::OnRecoverSecurityDomainClosed() {
   // User closed the reauth window.
   Reset(/*success=*/false);
+  RecordHistogram(ChangePinEvent::kReauthCancelled);
 }
 
 void ChangePinControllerImpl::OnGPMPinEntered(const std::u16string& pin) {
-  CHECK(rapt_.has_value() && (model_->step() == Step::kGPMCreatePin ||
-                              model_->step() == Step::kGPMCreateArbitraryPin));
+  CHECK(rapt_.has_value() && (model_->step() == Step::kGPMChangePin ||
+                              model_->step() == Step::kGPMChangeArbitraryPin));
+  model_->DisableUiOrShowLoadingDialog();
   enclave_manager_->ChangePIN(
-      base::UTF16ToUTF8(pin), std::move(rapt_),
+      base::UTF16ToUTF8(pin), std::move(*rapt_),
       base::BindOnce(&ChangePinControllerImpl::OnGpmPinChanged,
                      weak_ptr_factory_.GetWeakPtr()));
+  rapt_.reset();
+  RecordHistogram(ChangePinEvent::kNewPinEntered);
 }
 
 void ChangePinControllerImpl::OnGPMPinOptionChanged(bool is_arbitrary) {
-  CHECK(model_->step() == Step::kGPMCreatePin ||
-        model_->step() == Step::kGPMCreateArbitraryPin);
-  model_->SetStep(is_arbitrary ? Step::kGPMCreateArbitraryPin
-                               : Step::kGPMCreatePin);
+  CHECK(model_->step() == Step::kGPMChangePin ||
+        model_->step() == Step::kGPMChangeArbitraryPin);
+  model_->SetStep(is_arbitrary ? Step::kGPMChangeArbitraryPin
+                               : Step::kGPMChangePin);
+}
+
+// static
+void ChangePinControllerImpl::RecordHistogram(ChangePinEvent event) {
+  base::UmaHistogramEnumeration("WebAuthentication.Enclave.ChangePinEvents",
+                                event);
 }
 
 void ChangePinControllerImpl::Reset(bool success) {
@@ -108,16 +123,25 @@ void ChangePinControllerImpl::Reset(bool success) {
     std::move(notify_pin_change_callback_).Run(success);
   }
 
-  model_->SetStep(Step::kNotStarted);
   rapt_.reset();
+  model_->SetStep(Step::kNotStarted);
 }
 
 void ChangePinControllerImpl::OnGpmPinChanged(bool success) {
   if (!success) {
     model_->SetStep(Step::kGPMError);
+    RecordHistogram(ChangePinEvent::kFailed);
     return;
   }
   Reset(/*success=*/true);
+  RecordHistogram(ChangePinEvent::kCompletedSuccessfully);
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(ChangePinControllerImpl);
+void ChangePinControllerImpl::NotifyPinAvailability(
+    PinAvailableCallback callback) {
+  std::move(callback).Run(enclave_manager_->is_registered() &&
+                          enclave_manager_->is_ready() &&
+                          enclave_manager_->has_wrapped_pin());
+}
+
+DOCUMENT_USER_DATA_KEY_IMPL(ChangePinControllerImpl);

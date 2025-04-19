@@ -5,11 +5,13 @@
 #include "components/safe_browsing/core/browser/hashprefix_realtime/ohttp_key_service.h"
 
 #include "base/base64.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/rand_util.h"
 #include "base/strings/escape.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/browser/utils/backoff_operator.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/hashprefix_realtime/hash_realtime_utils.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/common/utils.h"
@@ -28,8 +30,11 @@ constexpr base::TimeDelta kKeyFetchTimeout = base::Seconds(3);
 
 constexpr char kKeyFetchServerUrl[] =
     "https://safebrowsingohttpgateway.googleapis.com/v1/ohttp/hpkekeyconfig";
-// Key older than 7 days is considered expired and should be refetched.
-constexpr base::TimeDelta kKeyExpirationDuration = base::Days(7);
+// Key older than 3 days is considered expired and should be refetched.
+constexpr base::TimeDelta kKeyExpirationDuration = base::Days(3);
+// For slower rotated keys (the old mechanism), key older than 7 days is
+// considered expired and should be refetched.
+constexpr base::TimeDelta kSlowerKeyExpirationDuration = base::Days(7);
 
 // Async fetch will kick in if the key is close to the expiration threshold.
 constexpr base::TimeDelta kKeyCloseToExpirationThreshold = base::Days(1);
@@ -190,6 +195,10 @@ void OhttpKeyService::SetEnabled(bool enable) {
     async_fetch_timer_.Stop();
     return;
   }
+  base::UmaHistogramBoolean(
+      "SafeBrowsing.HPRT.OhttpKeyService.IsFasterOhttpKeyRotationEnabled",
+      base::FeatureList::IsEnabled(
+          kHashPrefixRealTimeLookupsFasterOhttpKeyRotation));
   base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(&OhttpKeyService::MaybeStartOrRescheduleAsyncFetch,
@@ -295,6 +304,10 @@ void OhttpKeyService::StartFetch(Callback callback,
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = GetKeyFetchingUrl();
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
+  if (base::FeatureList::IsEnabled(
+          kHashPrefixRealTimeLookupsFasterOhttpKeyRotation)) {
+    resource_request->headers.SetHeader("X-OhttpPublickey-Fst", "true");
+  }
   url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                  kOhttpKeyTrafficAnnotation);
   url_loader_->SetTimeoutDuration(kKeyFetchTimeout);
@@ -324,7 +337,12 @@ void OhttpKeyService::OnURLLoaderComplete(
   bool is_key_fetch_successful =
       response_body && net_error == net::OK && response_code == net::HTTP_OK;
   if (is_key_fetch_successful) {
-    ohttp_key_ = {*response_body, base::Time::Now() + kKeyExpirationDuration};
+    ohttp_key_ = {*response_body,
+                  base::Time::Now() +
+                      (base::FeatureList::IsEnabled(
+                           kHashPrefixRealTimeLookupsFasterOhttpKeyRotation)
+                           ? kKeyExpirationDuration
+                           : kSlowerKeyExpirationDuration)};
     StoreKeyToPref();
     has_received_lookup_response_from_current_key_ = false;
     backoff_operator_->ReportSuccess();

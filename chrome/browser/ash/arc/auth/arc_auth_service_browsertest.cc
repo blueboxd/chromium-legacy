@@ -305,8 +305,12 @@ class ArcAuthServiceTest : public InProcessBrowserTest,
         ash::standalone_browser::GetFeatureRefs();
     lacros.push_back(
         ash::standalone_browser::features::kLacrosForSupervisedUsers);
+    lacros.push_back(
+        ash::features::kSecondaryAccountAllowedInArcPolicy);
     if (IsArcAccountRestrictionsEnabled()) {
       feature_list_.InitWithFeatures(lacros, {});
+      scoped_command_line_.GetProcessCommandLine()->AppendSwitch(
+          ash::switches::kEnableLacrosForTesting);
     } else {
       feature_list_.InitWithFeatures({}, lacros);
     }
@@ -601,6 +605,7 @@ class ArcAuthServiceTest : public InProcessBrowserTest,
   std::unique_ptr<AccountAppsAvailabilitySetter> arc_availability_setter_;
   std::unique_ptr<TestSettingsWindowManager> settings_window_manager_;
   base::test::ScopedFeatureList feature_list_;
+  base::test::ScopedCommandLine scoped_command_line_;
 
   // Not owned.
   raw_ptr<ArcAuthService, DanglingUntriaged> auth_service_ = nullptr;
@@ -1147,7 +1152,9 @@ class ArcRobotAccountAuthServiceTest : public ArcAuthServiceTest {
 
 // Tests that when ARC requests account info for a demo session account,
 // Chrome supplies the info configured in SetAccountAndProfile() above.
-IN_PROC_BROWSER_TEST_P(ArcRobotAccountAuthServiceTest, GetDemoAccount) {
+// TODO(crbug.com/355199222): Flaky test
+IN_PROC_BROWSER_TEST_P(ArcRobotAccountAuthServiceTest,
+                       DISABLED_GetDemoAccount) {
   ash::DemoSession::SetDemoConfigForTesting(
       ash::DemoSession::DemoModeConfig::kOnline);
   ash::test::LockDemoDeviceInstallAttributes();
@@ -1172,8 +1179,9 @@ IN_PROC_BROWSER_TEST_P(ArcRobotAccountAuthServiceTest, GetDemoAccount) {
   EXPECT_FALSE(auth_instance().account_info()->is_managed);
 }
 
+// TODO(crbug.com/354131115): Flaky test
 IN_PROC_BROWSER_TEST_P(ArcRobotAccountAuthServiceTest,
-                       GetDemoAccountOnAuthTokenFetchFailure) {
+                       DISABLED_GetDemoAccountOnAuthTokenFetchFailure) {
   ash::DemoSession::SetDemoConfigForTesting(
       ash::DemoSession::DemoModeConfig::kOnline);
   ash::test::LockDemoDeviceInstallAttributes();
@@ -1229,8 +1237,9 @@ IN_PROC_BROWSER_TEST_P(ArcRobotAccountAuthServiceTest,
   EXPECT_TRUE(auth_instance().account_info()->is_managed);
 }
 
+// TODO(crbug.com/352951605): Flaky test
 IN_PROC_BROWSER_TEST_P(ArcRobotAccountAuthServiceTest,
-                       RequestPublicAccountInfo) {
+                       DISABLED_RequestPublicAccountInfo) {
   SetAccountAndProfile(user_manager::UserType::kPublicAccount);
   profile()->GetProfilePolicyConnector()->OverrideIsManagedForTesting(true);
 
@@ -1273,7 +1282,8 @@ IN_PROC_BROWSER_TEST_P(ArcAuthServiceTest, ChildAccountFetch) {
   EXPECT_FALSE(auth_instance().account_info()->is_managed);
 }
 
-IN_PROC_BROWSER_TEST_P(ArcAuthServiceTest, ChildTransition) {
+// TODO(crbug.com/347393999): Re-enable this test.
+IN_PROC_BROWSER_TEST_P(ArcAuthServiceTest, DISABLED_ChildTransition) {
   SetAccountAndProfile(user_manager::UserType::kChild);
 
   session_manager::SessionManager::Get()

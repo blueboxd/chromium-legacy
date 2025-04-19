@@ -6,14 +6,14 @@
 
 #include "base/check_is_test.h"
 #include "base/logging.h"
+#include "media/base/video_codecs.h"
 #include "media/gpu/windows/format_utils.h"
 #include "media/gpu/windows/supported_profile_helpers.h"
 #include "third_party/microsoft_dxheaders/src/include/directx/d3dx12_core.h"
 
 namespace media {
 
-D3D12ReferenceFrameList::D3D12ReferenceFrameList(
-    Microsoft::WRL::ComPtr<ID3D12VideoDecoderHeap> heap)
+D3D12ReferenceFrameList::D3D12ReferenceFrameList(ComD3D12VideoDecoderHeap heap)
     : heap_(std::move(heap)) {
   std::fill(heaps_.begin(), heaps_.end(), heap_.Get());
 }
@@ -39,7 +39,7 @@ void D3D12ReferenceFrameList::emplace(size_t index,
   subresources_[index] = subresource;
 }
 
-Microsoft::WRL::ComPtr<ID3D12Device> CreateD3D12Device(IDXGIAdapter* adapter) {
+ComD3D12Device CreateD3D12Device(IDXGIAdapter* adapter) {
   if (!adapter) {
     // We've had at least a couple of scenarios where two calls to EnumAdapters
     // return different default adapters on multi-adapter systems due to race
@@ -48,7 +48,7 @@ Microsoft::WRL::ComPtr<ID3D12Device> CreateD3D12Device(IDXGIAdapter* adapter) {
     CHECK_IS_TEST();
   }
 
-  Microsoft::WRL::ComPtr<ID3D12Device> device;
+  ComD3D12Device device;
   HRESULT hr =
       D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device));
   if (FAILED(hr)) {
@@ -100,7 +100,11 @@ GUID GetD3D12VideoDecodeGUID(VideoCodecProfile profile,
     case VP9PROFILE_PROFILE2:
       return D3D12_VIDEO_DECODE_PROFILE_VP9_10BIT_PROFILE2;
 #if BUILDFLAG(ENABLE_HEVC_PARSER_AND_HW_DECODER)
+    // Per DirectX Video Acceleration Specification for High Efficiency Video
+    // Coding - 7.4, DXVA_ModeHEVC_VLD_Main GUID can be used for both main and
+    // main still picture profile.
     case HEVCPROFILE_MAIN:
+    case HEVCPROFILE_MAIN_STILL_PICTURE:
       return D3D12_VIDEO_DECODE_PROFILE_HEVC_MAIN;
     case HEVCPROFILE_MAIN10:
       return D3D12_VIDEO_DECODE_PROFILE_HEVC_MAIN10;

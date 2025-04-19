@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/342213636): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "content/web_test/renderer/test_runner.h"
 
 #include <stddef.h>
@@ -2174,7 +2179,7 @@ void TestRunnerBindings::CopyImageThen(int x,
     return;
   }
   mojo::Remote<blink::mojom::ClipboardHost> remote_clipboard;
-  frame_->GetBrowserInterfaceBroker()->GetInterface(
+  frame_->GetBrowserInterfaceBroker().GetInterface(
       remote_clipboard.BindNewPipeAndPassReceiver());
 
   blink::ClipboardSequenceNumberToken sequence_number_before;
@@ -2351,13 +2356,14 @@ void TestRunnerBindings::ZoomPageIn() {
     return;
   }
 
-  blink::WebView* web_view = GetWebFrame()->View();
+  blink::WebFrameWidget* web_frame_widget =
+      frame_->GetLocalRootWebFrameWidget();
   // TODO(danakj): This should be an async call through the browser process.
   // JS can wait for `matchMedia("screen and (min-resolution: 2dppx)").matches`
   // for the operation to complete, if it can tell which number to use in
   // min-resolution.
-  frame_->GetLocalRootWebFrameWidget()->SetZoomLevelForTesting(
-      web_view->ZoomLevel() + 1);
+  web_frame_widget->SetZoomLevelForTesting(web_frame_widget->GetZoomLevel() +
+                                           1);
 }
 
 void TestRunnerBindings::ZoomPageOut() {
@@ -2371,13 +2377,14 @@ void TestRunnerBindings::ZoomPageOut() {
   if (!frame_->IsMainFrame())
     return;
 
-  blink::WebView* web_view = GetWebFrame()->View();
+  blink::WebFrameWidget* web_frame_widget =
+      frame_->GetLocalRootWebFrameWidget();
   // TODO(danakj): This should be an async call through the browser process.
   // JS can wait for `matchMedia("screen and (min-resolution: 2dppx)").matches`
   // for the operation to complete, if it can tell which number to use in
   // min-resolution.
-  frame_->GetLocalRootWebFrameWidget()->SetZoomLevelForTesting(
-      web_view->ZoomLevel() - 1);
+  web_frame_widget->SetZoomLevelForTesting(web_frame_widget->GetZoomLevel() -
+                                           1);
 }
 
 void TestRunnerBindings::SetPageZoomFactor(double zoom_factor) {
@@ -2397,7 +2404,7 @@ void TestRunnerBindings::SetPageZoomFactor(double zoom_factor) {
   // for the operation to complete, if it can tell which number to use in
   // min-resolution.
   frame_->GetLocalRootWebFrameWidget()->SetZoomLevelForTesting(
-      blink::PageZoomFactorToZoomLevel(zoom_factor));
+      blink::ZoomFactorToZoomLevel(zoom_factor));
 }
 
 std::string TestRunnerBindings::TooltipText() {

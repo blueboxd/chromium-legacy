@@ -11,37 +11,48 @@
 #include "ash/picker/picker_asset_fetcher.h"
 #include "ash/picker/views/picker_item_view.h"
 #include "ash/picker/views/picker_section_view.h"
+#include "base/containers/adapters.h"
 #include "base/ranges/algorithm.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
-#include "ui/views/layout/flex_layout.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_types.h"
 #include "ui/views/view.h"
 #include "ui/views/view_utils.h"
 
 namespace ash {
 
-PickerSectionListView::PickerSectionListView(int section_width,
-                                             PickerAssetFetcher* asset_fetcher)
-    : section_width_(section_width), asset_fetcher_(asset_fetcher) {
-  SetLayoutManager(std::make_unique<views::FlexLayout>())
-      ->SetOrientation(views::LayoutOrientation::kVertical)
-      .SetCrossAxisAlignment(views::LayoutAlignment::kStretch);
+PickerSectionListView::PickerSectionListView(
+    int section_width,
+    PickerAssetFetcher* asset_fetcher,
+    PickerSubmenuController* submenu_controller)
+    : section_width_(section_width),
+      asset_fetcher_(asset_fetcher),
+      submenu_controller_(submenu_controller) {
+  SetLayoutManager(
+      std::make_unique<views::BoxLayout>(views::LayoutOrientation::kVertical))
+      ->set_cross_axis_alignment(views::LayoutAlignment::kStretch);
 }
 
 PickerSectionListView::~PickerSectionListView() = default;
 
 views::View* PickerSectionListView::GetTopItem() {
-  return children().empty()
-             ? nullptr
-             : views::AsViewClass<PickerSectionView>(children().front().get())
-                   ->GetTopItem();
+  for (views::View* section : children()) {
+    if (views::View* top_item =
+            views::AsViewClass<PickerSectionView>(section)->GetTopItem()) {
+      return top_item;
+    }
+  }
+  return nullptr;
 }
 
 views::View* PickerSectionListView::GetBottomItem() {
-  return children().empty()
-             ? nullptr
-             : views::AsViewClass<PickerSectionView>(children().back().get())
-                   ->GetBottomItem();
+  for (views::View* section : base::Reversed(children())) {
+    if (views::View* bottom_item =
+            views::AsViewClass<PickerSectionView>(section)->GetBottomItem()) {
+      return bottom_item;
+    }
+  }
+  return nullptr;
 }
 
 views::View* PickerSectionListView::GetItemAbove(views::View* item) {
@@ -105,13 +116,14 @@ views::View* PickerSectionListView::GetItemRightOf(views::View* item) {
 }
 
 PickerSectionView* PickerSectionListView::AddSection() {
-  return AddChildView(
-      std::make_unique<PickerSectionView>(section_width_, asset_fetcher_));
+  return AddChildView(std::make_unique<PickerSectionView>(
+      section_width_, asset_fetcher_, submenu_controller_));
 }
 
 PickerSectionView* PickerSectionListView::AddSectionAt(size_t index) {
   return AddChildViewAt(
-      std::make_unique<PickerSectionView>(section_width_, asset_fetcher_),
+      std::make_unique<PickerSectionView>(section_width_, asset_fetcher_,
+                                          submenu_controller_),
       index);
 }
 

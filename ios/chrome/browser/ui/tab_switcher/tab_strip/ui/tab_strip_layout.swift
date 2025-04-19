@@ -17,7 +17,7 @@ class TabStripLayout: UICollectionViewFlowLayout {
   /// The tab strip new tab button.
   public var newTabButton: UIView?
 
-  /// Wether the selected cell is animated, used only on iOS 16.
+  /// Whether the selected cell is animated, used only on iOS 16.
   /// On iOS 16, the scroll animation after opening a new tab is delayed, the
   /// selected cell should remain in an animated state until the end of the
   /// (scroll) animation.
@@ -67,15 +67,27 @@ class TabStripLayout: UICollectionViewFlowLayout {
   override var collectionViewContentSize: CGSize {
     let contentSize = super.collectionViewContentSize
 
-    if !TabStripFeaturesUtils.isModernTabStripNewTabButtonDynamic() { return contentSize }
+    if !TabStripFeaturesUtils.isModernTabStripNewTabButtonDynamic { return contentSize }
     guard
       let collectionView = collectionView,
       let newTabButton = newTabButton,
       let newTabButtonSuperView = newTabButton.superview
     else { return contentSize }
 
-    let updatedConstant = min(
-      contentSize.width, collectionView.bounds.width)
+    var offset: CGFloat =
+      TabStripFeaturesUtils.isTabStripCloserNTBEnabled
+        || TabStripFeaturesUtils.isTabStripCloserNTBDarkerBackgroundEnabled ? 8 : 0
+
+    // Compare with "width - 1" to avoid floating comparison issues.
+    if contentSize.width >= collectionView.bounds.width - 1 {
+      // When the contentSize width is greater or equals to the collection view width, the
+      // offset should be reduced to allow spacing for the separators.
+      offset = 6
+    }
+
+    let updatedConstant =
+      min(
+        contentSize.width, collectionView.bounds.width) - offset
 
     if newTabButtonLeadingConstraint == nil {
       newTabButtonLeadingConstraint = newTabButton.leadingAnchor.constraint(
@@ -229,6 +241,8 @@ class TabStripLayout: UICollectionViewFlowLayout {
 
     guard let cell = cell else { return layoutAttributes }
 
+    layoutAttributes.zIndex = 0
+
     let contentOffset = collectionView.contentOffset
     var frame = layoutAttributes.frame
     let collectionViewWidth = collectionView.bounds.size.width
@@ -241,11 +255,13 @@ class TabStripLayout: UICollectionViewFlowLayout {
     let isNextCellSelected = (indexPath.item + 1) == selectedIndexPath?.item
     cell.trailingSeparatorHidden = isNextCellSelected
 
-    /// Hide the `leadingSeparator` if the previous cell is selected or the
-    /// collection view is not scrollable, or the previous cell is a group.
+    /// Hide the `leadingSeparator` if the previous cell is selected or this is the first cell and collection
+    /// view is not scrollable, or the previous cell is a group.
     let indexPathOfPreviousItem = IndexPath(item: indexPath.item - 1, section: indexPath.section)
+    let isFirstCellAndNotScrollable = !isScrollable && (indexPath.item == 0)
     let isPreviousCellSelected = indexPathOfPreviousItem == selectedIndexPath
-    cell.leadingSeparatorHidden = isPreviousCellSelected || !isScrollable || cell.isFirstTabInGroup
+    cell.leadingSeparatorHidden =
+      isPreviousCellSelected || isFirstCellAndNotScrollable || cell.isFirstTabInGroup
 
     if UIAccessibility.isVoiceOverRunning {
       // Prevent frame resizing while VoiceOver is active.
@@ -617,6 +633,9 @@ class TabStripLayout: UICollectionViewFlowLayout {
     }
 
     if indexPathsOfDeletingItems.contains(itemIndexPath) {
+      tabCell?.leadingSeparatorHidden = true
+      tabCell?.trailingSeparatorHidden = true
+
       // Animate the disappearing item by fading it out and translating it down
       // by its height.
       attributes.alpha = 0

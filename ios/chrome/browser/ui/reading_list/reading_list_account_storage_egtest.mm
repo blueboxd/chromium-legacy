@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "base/i18n/message_formatter.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "components/reading_list/features/reading_list_switches.h"
@@ -39,7 +38,8 @@ using chrome_test_util::ReadingListMarkAsReadButton;
 using chrome_test_util::SecondarySignInButton;
 using chrome_test_util::SettingsDoneButton;
 using reading_list_test_utils::AddedToLocalReadingListSnackbar;
-using reading_list_test_utils::AddURLToReadingList;
+using reading_list_test_utils::AddURLToReadingListWithoutSnackbarDismiss;
+using reading_list_test_utils::AddURLToReadingListWithSnackbarDismiss;
 using reading_list_test_utils::OpenReadingList;
 using reading_list_test_utils::ReadingListItem;
 using reading_list_test_utils::VisibleLocalItemIcon;
@@ -64,17 +64,6 @@ id<GREYMatcher> SignedInSnackbar(NSString* email) {
 
 id<GREYMatcher> SignedInSnackbarUndoButton() {
   return grey_accessibilityID(kSigninSnackbarUndo);
-}
-
-id<GREYMatcher> AddedToAccountReadingListSnackbar(NSString* email) {
-  std::u16string pattern = l10n_util::GetStringUTF16(
-      IDS_IOS_READING_LIST_SNACKBAR_MESSAGE_FOR_ACCOUNT);
-  std::u16string utf16Text = base::i18n::MessageFormatter::FormatWithNamedArgs(
-      pattern, "count", 1, "email", base::SysNSStringToUTF16(email));
-  NSString* snackbarMessage = base::SysUTF16ToNSString(utf16Text);
-  return grey_allOf(
-      grey_accessibilityID(@"MDCSnackbarMessageTitleAutomationIdentifier"),
-      grey_text(snackbarMessage), nil);
 }
 
 id<GREYMatcher> AddedToAccountReadingListSnackbarUndoButton() {
@@ -145,25 +134,13 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   // before [super tearDown] which calls sign-out.
   // TODO(crbug.com/40065405): Remove this when ChromeTestCase will always wait
   // for sign-out completion.
-  [ChromeEarlGrey signOutAndClearIdentitiesAndWaitForCompletion];
+  [ChromeEarlGrey signOutAndClearIdentities];
   [ChromeEarlGrey waitForSyncEngineInitialized:NO
                                    syncTimeout:kSyncInitializedTimeout];
   // Shutdown network process after tests run to avoid hanging from
   // clearing browsing history.
   [ChromeEarlGrey killWebKitNetworkProcess];
   [super tearDown];
-}
-
-- (AppLaunchConfiguration)appConfigurationForTestCase {
-  AppLaunchConfiguration config;
-  if ([self isRunningTest:@selector(testPromoNotShownWhenSyncDataNotRemoved)]) {
-    config.features_disabled.push_back(kEnableBatchUploadFromBookmarksManager);
-  }
-  if ([self isRunningTest:@selector
-            (testPromoShownWhenSyncDataNotRemovedWithBookmarksUpload)]) {
-    config.features_enabled.push_back(kEnableBatchUploadFromBookmarksManager);
-  }
-  return config;
 }
 
 #pragma mark - Sign-in promo and snackbar
@@ -359,25 +336,11 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   // Sign-in with sync with `fakeIdentity1`.
   [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   // Sign-out and remove data.
-  [ChromeEarlGrey signOutAndClearIdentitiesAndWaitForCompletion];
+  [ChromeEarlGrey signOutAndClearIdentities];
 
   OpenReadingList();
   [SigninEarlGreyUI
       verifySigninPromoVisibleWithMode:SigninPromoViewModeNoAccounts];
-}
-
-// Tests that the signin promo is not shown when last signed-in user did not
-// remove data during sign-out.
-- (void)testPromoNotShownWhenSyncDataNotRemoved {
-  // Simulate data from a previous account being leftover by setting
-  // kGoogleServicesLastSyncingGaiaId.
-  FakeSystemIdentity* fakeIdentity1 = [FakeSystemIdentity fakeIdentity1];
-  [SigninEarlGrey addFakeIdentity:fakeIdentity1];
-  [ChromeEarlGrey setStringValue:fakeIdentity1.gaiaID
-                     forUserPref:prefs::kGoogleServicesLastSyncingGaiaId];
-
-  OpenReadingList();
-  [SigninEarlGreyUI verifySigninPromoNotVisible];
 }
 
 // Tests that the signin promo is shown when last syncing user did not remove
@@ -441,7 +404,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 // "Added to Reading List" snackbar is shown and there's no cloud icon on the
 // new item.
 - (void)testAddItemWhenSignedOut {
-  AddURLToReadingList(self.testServer->GetURL(kPage1URL));
+  AddURLToReadingListWithoutSnackbarDismiss(self.testServer->GetURL(kPage1URL));
   // Verify that the right snackbar appears and there's no undo button on it.
   [ChromeEarlGrey
       waitForUIElementToAppearWithMatcher:AddedToLocalReadingListSnackbar()];
@@ -463,7 +426,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 // Add a page when signed-out and another after sign-in with the Reading List
 // promo. Test that only the first item has the cloud icon in the Reading List.
 - (void)testAddItemWithAccountStorage {
-  AddURLToReadingList(self.testServer->GetURL(kPage1URL));
+  AddURLToReadingListWithoutSnackbarDismiss(self.testServer->GetURL(kPage1URL));
   // Dismiss the snackbar.
   [[EarlGrey selectElementWithMatcher:AddedToLocalReadingListSnackbar()]
       performAction:grey_tap()];
@@ -493,14 +456,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       performAction:grey_tap()];
   // Add Page 2 to the Reading List and verify that the snackbar containing the
   // user's email and an undo button appears.
-  AddURLToReadingList(self.testServer->GetURL(kPage2URL));
-  [ChromeEarlGrey
-      waitForUIElementToAppearWithMatcher:AddedToAccountReadingListSnackbar(
-                                              fakeIdentity.userEmail)];
-  // Dismiss the snackbar.
-  [[EarlGrey selectElementWithMatcher:AddedToAccountReadingListSnackbar(
-                                          fakeIdentity.userEmail)]
-      performAction:grey_tap()];
+  AddURLToReadingListWithSnackbarDismiss(self.testServer->GetURL(kPage2URL),
+                                         fakeIdentity.userEmail);
 
   // Verify that both items are visible in the Reading List, and that there's
   // one cloud icon on the first item, but none on the second.
@@ -537,7 +494,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
                                           kTableViewNavigationDismissButtonId)]
       performAction:grey_tap()];
   // Add Page 1 to the Reading List.
-  AddURLToReadingList(self.testServer->GetURL(kPage1URL));
+  AddURLToReadingListWithoutSnackbarDismiss(self.testServer->GetURL(kPage1URL));
   // Tap on undo when the snackbar appears.
   [ChromeEarlGrey
       waitForAndTapButton:grey_allOf(
@@ -551,10 +508,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
 // Test that the item added to account Reading List disappears when signed-out.
 - (void)testAddAccountItemThenSignOut {
-  AddURLToReadingList(self.testServer->GetURL(kPage1URL));
-  // Dismiss the snackbar.
-  [[EarlGrey selectElementWithMatcher:AddedToLocalReadingListSnackbar()]
-      performAction:grey_tap()];
+  AddURLToReadingListWithSnackbarDismiss(self.testServer->GetURL(kPage1URL),
+                                         nil);
 
   // Sign-in with fakeIdentity in the Reading List.
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
@@ -575,11 +530,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
                                           kTableViewNavigationDismissButtonId)]
       performAction:grey_tap()];
   // Add Page 2 to the Reading List.
-  AddURLToReadingList(self.testServer->GetURL(kPage2URL));
-  // Dismiss the snackbar.
-  [[EarlGrey selectElementWithMatcher:AddedToAccountReadingListSnackbar(
-                                          fakeIdentity.userEmail)]
-      performAction:grey_tap()];
+  AddURLToReadingListWithSnackbarDismiss(self.testServer->GetURL(kPage2URL),
+                                         fakeIdentity.userEmail);
 
   // Sign-out.
   [SigninEarlGrey signOut];
@@ -620,14 +572,10 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
                                           kTableViewNavigationDismissButtonId)]
       performAction:grey_tap()];
   // Add pages to the Reading List and dismiss the snackbars.
-  AddURLToReadingList(self.testServer->GetURL(kPage1URL));
-  [[EarlGrey selectElementWithMatcher:AddedToAccountReadingListSnackbar(
-                                          fakeIdentity.userEmail)]
-      performAction:grey_tap()];
-  AddURLToReadingList(self.testServer->GetURL(kPage2URL));
-  [[EarlGrey selectElementWithMatcher:AddedToAccountReadingListSnackbar(
-                                          fakeIdentity.userEmail)]
-      performAction:grey_tap()];
+  AddURLToReadingListWithSnackbarDismiss(self.testServer->GetURL(kPage1URL),
+                                         fakeIdentity.userEmail);
+  AddURLToReadingListWithSnackbarDismiss(self.testServer->GetURL(kPage2URL),
+                                         fakeIdentity.userEmail);
   // Remove Page 1 from the Reading List.
   OpenReadingList();
   [[EarlGrey selectElementWithMatcher:VisibleReadingListItem(kPage1Title)]
@@ -683,14 +631,10 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
                                           kTableViewNavigationDismissButtonId)]
       performAction:grey_tap()];
   // Add pages to the Reading List and dismiss the snackbars.
-  AddURLToReadingList(self.testServer->GetURL(kPage1URL));
-  [[EarlGrey selectElementWithMatcher:AddedToAccountReadingListSnackbar(
-                                          fakeIdentity.userEmail)]
-      performAction:grey_tap()];
-  AddURLToReadingList(self.testServer->GetURL(kPage2URL));
-  [[EarlGrey selectElementWithMatcher:AddedToAccountReadingListSnackbar(
-                                          fakeIdentity.userEmail)]
-      performAction:grey_tap()];
+  AddURLToReadingListWithSnackbarDismiss(self.testServer->GetURL(kPage1URL),
+                                         fakeIdentity.userEmail);
+  AddURLToReadingListWithSnackbarDismiss(self.testServer->GetURL(kPage2URL),
+                                         fakeIdentity.userEmail);
 
   // Mark Page 1 as read.
   OpenReadingList();

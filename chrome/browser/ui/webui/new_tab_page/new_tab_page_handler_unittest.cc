@@ -12,7 +12,6 @@
 
 #include "base/json/json_writer.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/raw_ptr_exclusion.h"
 #include "base/memory/raw_ref.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_refptr.h"
@@ -37,7 +36,7 @@
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/hats/hats_service_factory.h"
 #include "chrome/browser/ui/hats/mock_hats_service.h"
-#include "chrome/browser/ui/side_panel/customize_chrome/customize_chrome_tab_helper.h"
+#include "chrome/browser/ui/views/side_panel/customize_chrome/side_panel_controller_views.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page.mojom.h"
 #include "chrome/browser/ui/webui/side_panel/customize_chrome/customize_chrome_section.h"
 #include "chrome/browser/ui/webui/webui_util_desktop.h"
@@ -68,7 +67,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/theme_provider.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/color/color_mixer.h"
 #include "ui/color/color_provider_source.h"
 #include "ui/color/color_recipe.h"
@@ -200,27 +198,26 @@ class MockPromoService : public PromoService {
   MOCK_METHOD(void, Refresh, (), (override));
 };
 
-class MockCustomizeChromeTabHelper : public CustomizeChromeTabHelper {
+class MockCustomizeChromeTabHelper
+    : public customize_chrome::SidePanelController {
  public:
-  static MockCustomizeChromeTabHelper* CreateForWebContents(
-      content::WebContents* contents) {
-    DCHECK(contents);
-    DCHECK(!contents->GetUserData(UserDataKey()));
-    contents->SetUserData(
-        UserDataKey(),
-        base::WrapUnique(new MockCustomizeChromeTabHelper(contents)));
-    return static_cast<MockCustomizeChromeTabHelper*>(
-        contents->GetUserData(UserDataKey()));
-  }
+  ~MockCustomizeChromeTabHelper() override = default;
 
+  MOCK_METHOD(bool, IsCustomizeChromeEntryAvailable, (), (const, override));
+  MOCK_METHOD(bool, IsCustomizeChromeEntryShowing, (), (const, override));
   MOCK_METHOD(void,
-              SetCustomizeChromeSidePanelVisible,
-              (bool, CustomizeChromeSection),
+              SetEntryChangedCallback,
+              (StateChangedCallBack),
               (override));
+  MOCK_METHOD(void,
+              OpenSidePanel,
+              (SidePanelOpenTrigger, std::optional<CustomizeChromeSection>),
+              (override));
+  MOCK_METHOD(void, CloseSidePanel, (), (override));
 
- private:
-  explicit MockCustomizeChromeTabHelper(content::WebContents* web_contents)
-      : CustomizeChromeTabHelper(web_contents) {}
+ protected:
+  MOCK_METHOD(void, CreateAndRegisterEntry, (), (override));
+  MOCK_METHOD(void, DeregisterEntry, (), (override));
 };
 
 class MockFeaturePromoHelper : public NewTabPageFeaturePromoHelper {
@@ -286,8 +283,7 @@ class NewTabPageHandlerTest : public testing::Test {
         mock_feature_promo_helper_ptr_(std::unique_ptr<MockFeaturePromoHelper>(
             mock_feature_promo_helper_)),
         mock_customize_chrome_tab_helper_(
-            MockCustomizeChromeTabHelper::CreateForWebContents(
-                web_contents_.get())) {
+            std::make_unique<MockCustomizeChromeTabHelper>()) {
     mock_hats_service_ = static_cast<MockHatsService*>(
         HatsServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_.get(), base::BindRepeating(&BuildMockHatsService)));
@@ -330,7 +326,7 @@ class NewTabPageHandlerTest : public testing::Test {
         &mock_ntp_custom_background_service_, &mock_theme_service_,
         &mock_logo_service_, web_contents_,
         std::move(mock_feature_promo_helper_ptr_), base::Time::Now(),
-        &module_id_names);
+        &module_id_names, mock_customize_chrome_tab_helper_.get());
     mock_page_.FlushForTesting();
     EXPECT_EQ(handler_.get(), theme_service_observer_);
     EXPECT_EQ(handler_.get(), ntp_custom_background_service_observer_);
@@ -387,23 +383,18 @@ class NewTabPageHandlerTest : public testing::Test {
   // Pointer to mock that will eventually be solely owned by the handler.
   raw_ptr<MockFeaturePromoHelper, DanglingUntriaged> mock_feature_promo_helper_;
   std::unique_ptr<MockFeaturePromoHelper> mock_feature_promo_helper_ptr_;
-  raw_ptr<MockCustomizeChromeTabHelper> mock_customize_chrome_tab_helper_;
+  std::unique_ptr<MockCustomizeChromeTabHelper>
+      mock_customize_chrome_tab_helper_;
   base::HistogramTester histogram_tester_;
   std::unique_ptr<NewTabPageHandler> handler_;
-  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
-  // #addr-of
-  RAW_PTR_EXCLUSION ThemeServiceObserver* theme_service_observer_;
-  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
-  // #addr-of
-  RAW_PTR_EXCLUSION NtpCustomBackgroundServiceObserver*
+  raw_ptr<ThemeServiceObserver> theme_service_observer_;
+  raw_ptr<NtpCustomBackgroundServiceObserver>
       ntp_custom_background_service_observer_;
-  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
-  // #addr-of
-  RAW_PTR_EXCLUSION PromoServiceObserver* promo_service_observer_;
+  raw_ptr<PromoServiceObserver> promo_service_observer_;
 
  private:
   const std::vector<std::pair<const std::string, int>> module_id_names = {
-      {"recipe_tasks", IDS_NTP_MODULES_RECIPE_TASKS_SENTENCE}};
+      {"drive", IDS_NTP_MODULES_DRIVE_SENTENCE}};
   raw_ptr<MockHatsService> mock_hats_service_;
 };
 
@@ -715,22 +706,6 @@ TEST_F(NewTabPageHandlerTest, Histograms) {
       std::string(NewTabPageHandler::kModuleRestoredHistogram) +
           ".kaleidoscope",
       1);
-
-  // NewTabPage.Modules.FreOptIn and NewTabPage.Modules.FreOptOut log how many
-  // times the FRE is shown, so we increment the shown count to make sure the
-  // histogram is logging correctly
-  handler_->IncrementModulesShownCount();
-  handler_->LogModulesFreOptInStatus(
-      new_tab_page::mojom::OptInStatus::kExplicitOptIn);
-  histogram_tester_.ExpectTotalCount("NewTabPage.Modules.FreExplicitOptIn", 1);
-  ASSERT_EQ(1, histogram_tester_.GetBucketCount(
-                   "NewTabPage.Modules.FreExplicitOptIn", 1));
-
-  handler_->IncrementModulesShownCount();
-  handler_->LogModulesFreOptInStatus(new_tab_page::mojom::OptInStatus::kOptOut);
-  histogram_tester_.ExpectTotalCount("NewTabPage.Modules.FreOptOut", 1);
-  ASSERT_EQ(
-      1, histogram_tester_.GetBucketCount("NewTabPage.Modules.FreOptOut", 2));
 }
 
 TEST_F(NewTabPageHandlerTest, GetAnimatedDoodle) {
@@ -924,11 +899,11 @@ TEST_F(NewTabPageHandlerTest, GetModulesIdNames) {
           }));
   base::test::ScopedFeatureList features;
   features.InitWithFeatures(
-      /*enabled_features=*/{ntp_features::kNtpRecipeTasksModule},
+      /*enabled_features=*/{ntp_features::kNtpDriveModule},
       /*disabled_features=*/{});
   handler_->GetModulesIdNames(callback.Get());
   EXPECT_EQ(modules_details.size(), 1u);
-  EXPECT_EQ(modules_details.front()->id, "recipe_tasks");
+  EXPECT_EQ(modules_details.front()->id, "drive");
 }
 
 TEST_F(NewTabPageHandlerTest, GetModulesOrder) {
@@ -957,14 +932,15 @@ TEST_F(NewTabPageHandlerTest, SurveyLaunchedEligibleModulesCriteria) {
       {
           {features::kHappinessTrackingSurveysForDesktopNtpModules,
            {{ntp_features::kNtpModulesEligibleForHappinessTrackingSurveyParam,
-             "recipe_tasks,drive"}}},
+             "google_calendar,drive"}}},
       },
       {});
 
   EXPECT_CALL(*mock_hats_service(),
               LaunchDelayedSurveyForWebContents(_, _, _, _, _, _, _, _, _, _))
       .Times(1);
-  const std::vector<std::string> module_ids = {"recipe_tasks", "cart"};
+  const std::vector<std::string> module_ids = {"google_calendar",
+                                               "tab_resumption"};
   handler_->OnModulesLoadedWithData(module_ids);
 
   for (const auto& module_id : module_ids) {
@@ -987,7 +963,7 @@ TEST_F(NewTabPageHandlerTest, SurveyLaunchSkippedEligibleModulesCriteria) {
   EXPECT_CALL(*mock_hats_service(),
               LaunchDelayedSurveyForWebContents(_, _, _, _, _, _, _, _, _, _))
       .Times(0);
-  const std::vector<std::string> module_ids = {"recipe_tasks"};
+  const std::vector<std::string> module_ids = {"google_calendar"};
   handler_->OnModulesLoadedWithData(module_ids);
 
   for (const auto& module_id : module_ids) {
@@ -995,87 +971,6 @@ TEST_F(NewTabPageHandlerTest, SurveyLaunchSkippedEligibleModulesCriteria) {
         1, GetDictPrefKeyCount(profile_.get(),
                                prefs::kNtpModulesLoadedCountDict, module_id));
   }
-}
-
-TEST_F(NewTabPageHandlerTest, UpdateNtpModulesFreVisibility) {
-  bool expected_visibility = true;
-  profile_->GetPrefs()->SetBoolean(prefs::kNtpModulesFreVisible,
-                                   expected_visibility);
-
-  EXPECT_EQ(profile_->GetPrefs()->GetBoolean(prefs::kNtpModulesFreVisible),
-            expected_visibility);
-
-  expected_visibility = false;
-  EXPECT_CALL(mock_page_, SetModulesFreVisibility)
-      .Times(1)
-      .WillOnce(testing::Invoke(
-          [&](bool arg) { EXPECT_EQ(expected_visibility, arg); }));
-
-  handler_->SetModulesFreVisible(expected_visibility);
-
-  EXPECT_EQ(profile_->GetPrefs()->GetBoolean(prefs::kNtpModulesFreVisible),
-            expected_visibility);
-
-  mock_page_.FlushForTesting();
-}
-
-TEST_F(NewTabPageHandlerTest, IncrementModulesShownCount) {
-  EXPECT_EQ(profile_->GetPrefs()->GetInteger(prefs::kNtpModulesShownCount), 0);
-  EXPECT_EQ(profile_->GetPrefs()->GetTime(prefs::kNtpModulesFirstShownTime),
-            base::Time());
-
-  handler_->IncrementModulesShownCount();
-
-  EXPECT_EQ(profile_->GetPrefs()->GetInteger(prefs::kNtpModulesShownCount), 1);
-  EXPECT_NE(profile_->GetPrefs()->GetTime(prefs::kNtpModulesFirstShownTime),
-            base::Time());
-
-  mock_page_.FlushForTesting();
-}
-
-TEST_F(NewTabPageHandlerTest,
-       UpdateModulesFreVisibilityUsingModulesShownCount) {
-  handler_->SetModulesFreVisible(true);
-  profile_->GetPrefs()->SetInteger(prefs::kNtpModulesShownCount, 7);
-
-  handler_->UpdateModulesFreVisibility();
-
-  EXPECT_EQ(profile_->GetPrefs()->GetBoolean(prefs::kNtpModulesFreVisible),
-            true);
-
-  profile_->GetPrefs()->SetInteger(prefs::kNtpModulesShownCount, 8);
-
-  handler_->UpdateModulesFreVisibility();
-
-  EXPECT_EQ(profile_->GetPrefs()->GetBoolean(prefs::kNtpModulesFreVisible),
-            false);
-  histogram_tester_.ExpectTotalCount("NewTabPage.Modules.FreImplicitOptIn", 1);
-  ASSERT_EQ(1, histogram_tester_.GetBucketCount(
-                   "NewTabPage.Modules.FreImplicitOptIn", true));
-
-  mock_page_.FlushForTesting();
-}
-
-TEST_F(NewTabPageHandlerTest,
-       UpdateModulesFreVisibilityUsingModulesFirstShownTime) {
-  handler_->SetModulesFreVisible(true);
-  profile_->GetPrefs()->SetTime(prefs::kNtpModulesFirstShownTime,
-                                base::Time::Now());
-
-  handler_->UpdateModulesFreVisibility();
-
-  EXPECT_EQ(profile_->GetPrefs()->GetBoolean(prefs::kNtpModulesFreVisible),
-            true);
-
-  profile_->GetPrefs()->SetTime(prefs::kNtpModulesFirstShownTime,
-                                base::Time::Now() - base::Days(2));
-
-  handler_->UpdateModulesFreVisibility();
-
-  EXPECT_EQ(profile_->GetPrefs()->GetBoolean(prefs::kNtpModulesFreVisible),
-            false);
-
-  mock_page_.FlushForTesting();
 }
 
 TEST_F(NewTabPageHandlerTest, SetModuleDisabledTriggersPageCall) {
@@ -1090,13 +985,12 @@ TEST_F(NewTabPageHandlerTest, ModulesVisiblePrefChangeTriggersPageCall) {
   mock_page_.FlushForTesting();
 }
 
-TEST_F(NewTabPageHandlerTest, SetCustomizeChromeSidePanelVisible) {
-  bool visible;
-  CustomizeChromeSection section;
-  EXPECT_CALL(*mock_customize_chrome_tab_helper_,
-              SetCustomizeChromeSidePanelVisible)
+TEST_F(NewTabPageHandlerTest, OpenSidePanel) {
+  SidePanelOpenTrigger trigger;
+  std::optional<CustomizeChromeSection> section;
+  EXPECT_CALL(*mock_customize_chrome_tab_helper_, OpenSidePanel)
       .Times(1)
-      .WillOnce(testing::DoAll(testing::SaveArg<0>(&visible),
+      .WillOnce(testing::DoAll(testing::SaveArg<0>(&trigger),
                                testing::SaveArg<1>(&section)));
   EXPECT_CALL(
       *mock_feature_promo_helper_,
@@ -1109,26 +1003,17 @@ TEST_F(NewTabPageHandlerTest, SetCustomizeChromeSidePanelVisible) {
       /*visible=*/true,
       new_tab_page::mojom::CustomizeChromeSection::kAppearance);
 
-  EXPECT_TRUE(visible);
+  EXPECT_EQ(SidePanelOpenTrigger::kNewTabPage, trigger);
   EXPECT_EQ(CustomizeChromeSection::kAppearance, section);
 }
 
-TEST_F(NewTabPageHandlerTest, SetCustomizeChromeSidePanelInvisible) {
-  bool visible;
-  CustomizeChromeSection section;
-  EXPECT_CALL(*mock_customize_chrome_tab_helper_,
-              SetCustomizeChromeSidePanelVisible)
-      .Times(1)
-      .WillOnce(testing::DoAll(testing::SaveArg<0>(&visible),
-                               testing::SaveArg<1>(&section)));
+TEST_F(NewTabPageHandlerTest, CloseSidePanel) {
+  EXPECT_CALL(*mock_customize_chrome_tab_helper_, CloseSidePanel).Times(1);
   EXPECT_CALL(*mock_feature_promo_helper_, RecordFeatureUsage).Times(0);
   EXPECT_CALL(*mock_feature_promo_helper_, CloseFeaturePromo).Times(0);
 
   handler_->SetCustomizeChromeSidePanelVisible(
       /*visible=*/false, new_tab_page::mojom::CustomizeChromeSection::kModules);
-
-  EXPECT_FALSE(visible);
-  EXPECT_EQ(CustomizeChromeSection::kModules, section);
 }
 
 TEST_F(NewTabPageHandlerTest, IncrementCustomizeChromeButtonOpenCount) {
@@ -1152,10 +1037,7 @@ TEST_F(NewTabPageHandlerTest, IncrementCustomizeChromeButtonOpenCount) {
 }
 
 // TODO (crbug/1521350): Fails when ChromeRefresh2023 is enabled.
-TEST_F(NewTabPageHandlerTest, MaybeShowFeaturePromo_CustomizeChrome) {
-  if (features::IsChromeRefresh2023()) {
-    GTEST_SKIP();
-  }
+TEST_F(NewTabPageHandlerTest, DISABLED_MaybeShowFeaturePromo_CustomizeChrome) {
   EXPECT_CALL(*mock_feature_promo_helper_, IsSigninModalDialogOpen)
       .WillRepeatedly(testing::Return(false));
   EXPECT_EQ(profile_->GetPrefs()->GetInteger(
@@ -1245,6 +1127,20 @@ TEST_F(NewTabPageHandlerTest, DoNotShowWebstoreToastOnCountExceeded) {
   profile_->GetPrefs()->SetInteger(prefs::kSeedColorChangeCount, 4);
 
   EXPECT_CALL(mock_page_, ShowWebstoreToast).Times(0);
+  mock_page_.FlushForTesting();
+}
+
+TEST_F(NewTabPageHandlerTest, IncrementWallpaperSearchButtonShownCount) {
+  EXPECT_EQ(profile_->GetPrefs()->GetInteger(
+                prefs::kNtpWallpaperSearchButtonShownCount),
+            0);
+
+  handler_->IncrementWallpaperSearchButtonShownCount();
+
+  EXPECT_EQ(profile_->GetPrefs()->GetInteger(
+                prefs::kNtpWallpaperSearchButtonShownCount),
+            1);
+
   mock_page_.FlushForTesting();
 }
 

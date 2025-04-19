@@ -17,6 +17,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/not_fatal_until.h"
 #include "base/ranges/algorithm.h"
 #include "base/token.h"
 #include "build/build_config.h"
@@ -175,9 +176,9 @@ VideoCaptureController::BufferContext::CloneBufferHandle() {
   } else if (buffer_handle_->is_read_only_shmem_region()) {
     return media::mojom::VideoBufferHandle::NewReadOnlyShmemRegion(
         buffer_handle_->get_read_only_shmem_region().Duplicate());
-  } else if (buffer_handle_->is_shared_image_handles()) {
-    return media::mojom::VideoBufferHandle::NewSharedImageHandles(
-        buffer_handle_->get_shared_image_handles()->Clone());
+  } else if (buffer_handle_->is_shared_image_handle()) {
+    return media::mojom::VideoBufferHandle::NewSharedImageHandle(
+        buffer_handle_->get_shared_image_handle()->Clone());
   } else if (buffer_handle_->is_gpu_memory_buffer_handle()) {
     return media::mojom::VideoBufferHandle::NewGpuMemoryBufferHandle(
         buffer_handle_->get_gpu_memory_buffer_handle().Clone());
@@ -216,7 +217,8 @@ void VideoCaptureController::AddClient(
     const VideoCaptureControllerID& id,
     VideoCaptureControllerEventHandler* event_handler,
     const media::VideoCaptureSessionId& session_id,
-    const media::VideoCaptureParams& params) {
+    const media::VideoCaptureParams& params,
+    std::optional<url::Origin> origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   std::ostringstream string_stream;
   string_stream << "VideoCaptureController::AddClient(): id = " << id
@@ -247,8 +249,10 @@ void VideoCaptureController::AddClient(
   }
 
   // If this is the first client added to the controller, cache the parameters.
-  if (controller_clients_.empty())
+  if (controller_clients_.empty()) {
     video_capture_format_ = params.requested_format;
+    first_client_origin_ = origin;
+  }
 
   // Signal error in case device is already in error state.
   if (state_ == blink::VIDEO_CAPTURE_STATE_ERROR) {
@@ -399,6 +403,11 @@ VideoCaptureController::GetVideoCaptureFormat() const {
   return video_capture_format_;
 }
 
+const std::optional<url::Origin> VideoCaptureController::GetFirstClientOrigin()
+    const {
+  return first_client_origin_;
+}
+
 void VideoCaptureController::OnCaptureConfigurationChanged() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   EmitLogMessage(__func__, 3);
@@ -489,7 +498,8 @@ ReadyBuffer VideoCaptureController::MakeReadyBufferAndSetContextFeedbackId(
     media::mojom::VideoFrameInfoPtr frame_info,
     BufferContext** out_buffer_context) {
   auto buffer_context_iter = FindUnretiredBufferContextFromBufferId(buffer_id);
-  DCHECK(buffer_context_iter != buffer_contexts_.end());
+  CHECK(buffer_context_iter != buffer_contexts_.end(),
+        base::NotFatalUntil::M130);
   BufferContext* buffer_context = &(*buffer_context_iter);
   buffer_context->set_frame_feedback_id(frame_feedback_id);
   DCHECK(!buffer_context->HasConsumers());
@@ -527,7 +537,8 @@ void VideoCaptureController::OnBufferRetired(int buffer_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   auto buffer_context_iter = FindUnretiredBufferContextFromBufferId(buffer_id);
-  DCHECK(buffer_context_iter != buffer_contexts_.end());
+  CHECK(buffer_context_iter != buffer_contexts_.end(),
+        base::NotFatalUntil::M130);
 
   // If there are any clients still using the buffer, we need to allow them
   // to finish up. We need to hold on to the BufferContext entry until then,
@@ -817,7 +828,8 @@ void VideoCaptureController::OnClientFinishedConsumingBuffer(
     const media::VideoCaptureFeedback& feedback) {
   auto buffer_context_iter =
       FindBufferContextFromBufferContextId(buffer_context_id);
-  DCHECK(buffer_context_iter != buffer_contexts_.end());
+  CHECK(buffer_context_iter != buffer_contexts_.end(),
+        base::NotFatalUntil::M130);
 
   buffer_context_iter->RecordConsumerUtilization(feedback);
   buffer_context_iter->DecreaseConsumerCount();

@@ -41,11 +41,10 @@
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/navigation_request_info.h"
-#include "content/browser/service_worker/service_worker_container_host.h"
+#include "content/browser/service_worker/service_worker_client.h"
 #include "content/browser/service_worker/service_worker_main_resource_handle.h"
 #include "content/browser/service_worker/service_worker_main_resource_loader_interceptor.h"
 #include "content/browser/storage_partition_impl.h"
-#include "content/browser/url_loader_factory_getter.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
@@ -92,7 +91,6 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "services/network/public/cpp/attribution_reporting_runtime_features.h"
 #include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/parsed_headers.h"
@@ -295,7 +293,7 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   int load_flags = request_info.begin_params->load_flags;
   if (request_info.is_outermost_main_frame) {
     load_flags |= net::LOAD_MAIN_FRAME_DEPRECATED;
-    load_flags |= net::LOAD_CAN_USE_RESTRICTED_PREFETCH;
+    load_flags |= net::LOAD_CAN_USE_RESTRICTED_PREFETCH_FOR_MAIN_FRAME;
   }
 
   // Sync loads should have maximum priority and should be the only
@@ -331,8 +329,8 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
         *request_info.begin_params->trust_token_params;
   }
 
-  new_request->has_storage_access =
-      request_info.begin_params->has_storage_access;
+  new_request->storage_access_api_status =
+      request_info.begin_params->storage_access_api_status;
 
   WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
       WebContents::FromFrameTreeNodeId(frame_tree_node->frame_tree_node_id()));
@@ -345,11 +343,6 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
       request_info.begin_params->impression.has_value()
           ? network::mojom::AttributionReportingEligibility::kNavigationSource
           : network::mojom::AttributionReportingEligibility::kUnset;
-
-  if (request_info.begin_params->impression.has_value()) {
-    new_request->attribution_reporting_runtime_features =
-        request_info.begin_params->impression->runtime_features;
-  }
 
   new_request->shared_storage_writable_eligible =
       request_info.shared_storage_writable_eligible;
@@ -394,7 +387,16 @@ bool IsSameOriginRedirect(const std::vector<GURL>& url_chain) {
   return previous_origin.IsSameOriginWith(url_chain[url_chain.size() - 1]);
 }
 
-#if DCHECK_IS_ON()
+// TODO(https://crbug.com/346000235) there is a known failure with extensions
+// See test: ExtensionWebRequestApiTestWithContextType.HSTSUpgradeAfterRedirect
+// We still want to check this in debug mode to avoid further regressions, but
+// because it was affecting to many developers with DCHECK_IS_ON() this was
+// downgraded as a DEBUG only check.
+// After getting the approval to rewrite the CSP parser in Rust, we should be
+// able to remove "pre-parsing" of CSP in the network process and directly
+// parse them later in the browser process. This will make this check to become
+// unnecessary.
+#ifndef NDEBUG
 void CheckParsedHeadersEquals(const network::mojom::ParsedHeadersPtr& lhs,
                               const network::mojom::ParsedHeadersPtr& rhs,
                               const GURL& url) {
@@ -463,7 +465,7 @@ void CheckParsedHeadersEquals(const network::mojom::ParsedHeadersPtr& lhs,
          "field does not match. Please add a DCHECK before this one "
          "checking for the missing field.";
 }
-#endif
+#endif  // NDEBUG
 
 }  // namespace
 
@@ -600,6 +602,7 @@ void NavigationURLLoaderImpl::CreateInterceptors() {
           GetContentClient()->browser()->WillCreateURLLoaderRequestInterceptors(
               navigation_ui_data_.get(), frame_tree_node_id_,
               request_info_->navigation_id,
+              request_info_->force_no_https_upgrade,
               GetUIThreadTaskRunner(
                   {BrowserTaskType::kNavigationNetworkResponse}));
   if (!browser_interceptors.empty()) {
@@ -671,32 +674,8 @@ void NavigationURLLoaderImpl::MaybeStartLoader(
     }
 
     // Intercept the request with `interceptor_result->single_request_factory`.
-    std::vector<std::unique_ptr<blink::URLLoaderThrottle>> additional_throttles;
-    // Intercepted requests need MimeSniffingThrottle to do mime sniffing.
-    // Non-intercepted requests usually go through the regular network
-    // URLLoader, which does mime sniffing.
-    additional_throttles.push_back(
-        std::make_unique<blink::MimeSniffingThrottle>(GetUIThreadTaskRunner(
-            {BrowserTaskType::kNavigationNetworkResponse})));
-
-    default_loader_used_ = false;
-    // If `url_loader_` already exists, this means we are following a redirect
-    // using an interceptor. In this case we should make sure to reset the
-    // loader, similar to what is done in Restart().
-    if (url_loader_) {
-      url_loader_->ResetForFollowRedirect(
-          *resource_request_.get(), url_loader_removed_headers_,
-          url_loader_modified_headers_,
-          url_loader_modified_cors_exempt_headers_);
-      url_loader_removed_headers_.clear();
-      url_loader_modified_headers_.Clear();
-      url_loader_modified_cors_exempt_headers_.Clear();
-      url_loader_.reset();
-    }
-
-    CreateThrottlingLoaderAndStart(
-        std::move(interceptor_result->single_request_factory),
-        std::move(additional_throttles));
+    StartInterceptedRequest(
+        std::move(interceptor_result->single_request_factory));
     return;
   }
 
@@ -717,6 +696,33 @@ void NavigationURLLoaderImpl::MaybeStartLoader(
                      weak_factory_.GetWeakPtr(), next_interceptor_index + 1),
       base::BindOnce(&NavigationURLLoaderImpl::FallbackToNonInterceptedRequest,
                      weak_factory_.GetWeakPtr()));
+}
+
+void NavigationURLLoaderImpl::StartInterceptedRequest(
+    scoped_refptr<network::SharedURLLoaderFactory> single_request_factory) {
+  std::vector<std::unique_ptr<blink::URLLoaderThrottle>> additional_throttles;
+  // Intercepted requests need MimeSniffingThrottle to do mime sniffing.
+  // Non-intercepted requests usually go through the regular network
+  // URLLoader, which does mime sniffing.
+  additional_throttles.push_back(std::make_unique<blink::MimeSniffingThrottle>(
+      GetUIThreadTaskRunner({BrowserTaskType::kNavigationNetworkResponse})));
+
+  default_loader_used_ = false;
+  // If `url_loader_` already exists, this means we are following a redirect
+  // using an interceptor. In this case we should make sure to reset the
+  // loader, similar to what is done in Restart().
+  if (url_loader_) {
+    url_loader_->ResetForFollowRedirect(
+        *resource_request_.get(), url_loader_removed_headers_,
+        url_loader_modified_headers_, url_loader_modified_cors_exempt_headers_);
+    url_loader_removed_headers_.clear();
+    url_loader_modified_headers_.Clear();
+    url_loader_modified_cors_exempt_headers_.Clear();
+    url_loader_.reset();
+  }
+
+  CreateThrottlingLoaderAndStart(std::move(single_request_factory),
+                                 std::move(additional_throttles));
 }
 
 void NavigationURLLoaderImpl::StartNonInterceptedRequest(
@@ -932,8 +938,8 @@ void NavigationURLLoaderImpl::OnReceiveEarlyHints(
       FrameTreeNode::GloballyFindByID(frame_tree_node_id_);
 
   // Allow Early Hints preload only for outermost main frames. Calculating
-  // appropriate parameters to create URLLoaderFactory for subframes, fenced
-  // frames or portal are complicated and not supported yet.
+  // appropriate parameters to create URLLoaderFactory for subframes and fenced
+  // frames are complicated and not supported yet.
   if (frame_tree_node->GetParentOrOuterDocument())
     return;
 
@@ -1412,7 +1418,7 @@ void NavigationURLLoaderImpl::ParseHeaders(
   // - ServiceWorker
   // - WebUI
   if (head->parsed_headers) {
-#if DCHECK_IS_ON()
+#ifndef NDEBUG
     // In debug mode, force reparsing the headers and check that they match.
     auto check = [](base::OnceClosure continuation,
                     network::mojom::URLResponseHead* head, GURL url,
@@ -1423,9 +1429,9 @@ void NavigationURLLoaderImpl::ParseHeaders(
     GetNetworkService()->ParseHeaders(
         url, head->headers,
         base::BindOnce(check, std::move(continuation), head, url));
-#else
+#else   // NDEBUG
     std::move(continuation).Run();
-#endif
+#endif  // NDEBUG
     return;
   }
 
@@ -1710,6 +1716,10 @@ bool NavigationURLLoaderImpl::SetNavigationTimeout(base::TimeDelta timeout) {
                      base::Unretained(this),
                      network::URLLoaderCompletionStatus(net::ERR_TIMED_OUT)));
   return true;
+}
+
+void NavigationURLLoaderImpl::CancelNavigationTimeout() {
+  timeout_timer_.Stop();
 }
 
 void NavigationURLLoaderImpl::NotifyResponseStarted(

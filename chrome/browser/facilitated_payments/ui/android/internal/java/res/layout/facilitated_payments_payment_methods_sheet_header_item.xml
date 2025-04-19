@@ -10,8 +10,8 @@ found in the LICENSE file.
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_height="wrap_content"
     android:layout_width="match_parent"
-    android:layout_marginHorizontal="8dp"
-    android:layout_marginBottom="16dp"
+    android:layout_marginHorizontal="@dimen/facilitated_payments_horizontal_margin"
+    android:layout_marginBottom="@dimen/facilitated_payments_header_bottom_margin"
     android:orientation="vertical">
 
   <ImageView

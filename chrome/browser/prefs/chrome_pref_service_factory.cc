@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
 
 #include <stddef.h>
@@ -17,6 +22,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
+#include "base/strings/stringprintf.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
@@ -25,12 +31,14 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/enterprise/signin/enterprise_signin_prefs.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/prefs/chrome_command_line_pref_store.h"
 #include "chrome/browser/prefs/chrome_pref_model_associator_client.h"
 #include "chrome/browser/prefs/profile_pref_store_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
+#include "chrome/browser/sync/prefs/chrome_syncable_prefs_database.h"
 #include "chrome/browser/ui/profiles/profile_error_dialog.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_constants.h"
@@ -51,13 +59,14 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_store.h"
 #include "components/prefs/pref_value_store.h"
+#include "components/prefs/wrap_with_prefix_pref_store.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/search_engines/default_search_manager.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/supervised_user/core/browser/supervised_user_pref_store.h"
+#include "components/sync/base/data_type.h"
 #include "components/sync/base/features.h"
-#include "components/sync/base/model_type.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync_preferences/pref_model_associator.h"
 #include "components/sync_preferences/pref_service_syncable.h"
@@ -156,12 +165,6 @@ const prefs::TrackedPreferenceMetadata kTrackedPrefs[] = {
      PrefTrackingStrategy::ATOMIC, ValueType::IMPERSONAL},
     {23, prefs::kGoogleServicesAccountId, EnforcementLevel::ENFORCE_ON_LOAD,
      PrefTrackingStrategy::ATOMIC, ValueType::PERSONAL},
-    // This is being migrated to `kGoogleServicesLastSyncingGaiaId` since
-    // 2022/10, and should move to `CleanupDeprecatedTrackedPreferences()` in
-    // pref_hash_filter.cc when that migration completes.
-    {24, prefs::kGoogleServicesLastSyncingAccountIdDeprecated,
-     EnforcementLevel::ENFORCE_ON_LOAD, PrefTrackingStrategy::ATOMIC,
-     ValueType::PERSONAL},
     {29, prefs::kMediaStorageIdSalt, EnforcementLevel::ENFORCE_ON_LOAD,
      PrefTrackingStrategy::ATOMIC, ValueType::IMPERSONAL},
 #if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -176,6 +179,9 @@ const prefs::TrackedPreferenceMetadata kTrackedPrefs[] = {
     {33, prefs::kGoogleServicesLastSignedInUsername,
      EnforcementLevel::ENFORCE_ON_LOAD, PrefTrackingStrategy::ATOMIC,
      ValueType::PERSONAL},
+    {34, enterprise_signin::prefs::kPolicyRecoveryToken,
+     EnforcementLevel::ENFORCE_ON_LOAD, PrefTrackingStrategy::ATOMIC,
+     ValueType::IMPERSONAL},
 
     // See note at top, new items added here also need to be added to
     // histograms.xml's TrackedPreference enum.
@@ -224,6 +230,7 @@ GetTrackingConfiguration() {
   const SettingsEnforcementGroup enforcement_group =
       GetSettingsEnforcementGroup();
 
+  browser_sync::ChromeSyncablePrefsDatabase syncable_prefs_db;
   std::vector<prefs::mojom::TrackedPreferenceMetadataPtr> result;
   for (size_t i = 0; i < std::size(kTrackedPrefs); ++i) {
     prefs::mojom::TrackedPreferenceMetadataPtr data =
@@ -248,6 +255,16 @@ GetTrackingConfiguration() {
       data->enforcement_level = EnforcementLevel::ENFORCE_ON_LOAD;
     }
 #endif
+    // Add the account value equivalent for syncable prefs for tracking, by
+    // prefixing the pref name with `kAccountPreferencesPrefix`.
+    if (base::FeatureList::IsEnabled(
+            syncer::kEnablePreferencesAccountStorage) &&
+        syncable_prefs_db.IsPreferenceSyncable(data->name)) {
+      auto account_data = data->Clone();
+      account_data->name = base::StringPrintf(
+          "%s.%s", chrome_prefs::kAccountPreferencesPrefix, data->name.c_str());
+      result.push_back(std::move(account_data));
+    }
 
     result.push_back(std::move(data));
   }
@@ -364,6 +381,8 @@ class ResetOnLoadObserverImpl : public prefs::mojom::ResetOnLoadObserver {
 
 namespace chrome_prefs {
 
+const char kAccountPreferencesPrefix[] = "account_values";
+
 std::unique_ptr<PrefService> CreateLocalState(
     const base::FilePath& pref_filename,
     scoped_refptr<PersistentPrefStore> pref_store,
@@ -423,19 +442,74 @@ std::unique_ptr<sync_preferences::PrefServiceSyncable> CreateProfilePrefs(
 #endif
 
   PrepareFactory(&factory, profile_path, policy_service,
-                 supervised_user_settings, std::move(user_pref_store),
+                 supervised_user_settings, user_pref_store,
                  std::move(extension_prefs),
                  std::move(standalone_browser_prefs), async, connector);
 
   if (base::FeatureList::IsEnabled(syncer::kEnablePreferencesAccountStorage)) {
-    // Note: Only mobile platforms are targeted as part of the experiment,
-    // which do not require preference protection. Hence pref filters and
-    // ProfilePrefStoreManager::CreateProfilePrefStore() can be avoided.
+    // Desktop and Mobile platforms have different implementation for account
+    // preferences. Mobile platforms have a separate file to store account
+    // preferences. Whereas, desktop platforms would store account preferences
+    // as a dictionary in the main preference file.
+    // TODO(crbug.com/346508597): Migrate Mobile platforms to the desktop
+    // implementation.
+#if BUILDFLAG(IS_ANDROID)
+    // Mobile platforms do not require preference protection. Hence pref
+    // filters and ProfilePrefStoreManager::CreateProfilePrefStore() can be
+    // avoided.
     factory.SetAccountPrefStore(base::MakeRefCounted<JsonPrefStore>(
         /*pref_filename=*/profile_path.Append(
             chrome::kAccountPreferencesFilename),
         /*pref_filter=*/nullptr,
         /*file_task_runner=*/io_task_runner));
+#else
+    /**
+     * Account values will live under `kAccountPreferencesPrefix` as a
+     * dictionary in the main preference file and will be operated upon by a
+     * WrapWithPrefixPrefStore.
+     * {
+     *   "A": ...
+     *   "B": ...
+     *   "C": ...
+     *   "account_values": {
+     *     "A": ...
+     *     "B": ...
+     *     "D": ...
+     *   }
+     * }
+     *
+     * To achieve the above, a WrapWithPrefixPrefStore is used to prefix the
+     * prefs with `kAccountPreferencesPrefix` to allow easy access to the
+     * account values. A DualLayerUserPrefStore then wraps this pref store along
+     * with the main pref store. The callers of the DualLayerUserPrefStore will
+     * be unaware of where a preference value is coming from, the local store or
+     * the account store.
+     *
+     * +---------------------+   +------------------+   +-------------+
+     * | DualLayerUserPref   |   | SegregatedPref   |   | Secure      |
+     * | Store               |   | Store            |   | Preferences |
+     * | +------------+      |   | +--------------+ |   | .json       |
+     * | | Local Pref |      |   | |Protected Pref|-|-->|             |
+     * | | Store      |---- -|-->| |Store         | |   |             |
+     * | +------------+      |   | +--------------+ |   |             |
+     * |                     |   |                  |   +-------------+
+     * | +-----------------+ |   |                  |   +-------------+
+     * | | WrapWithPrefix  | |   |                  |   | Preferences |
+     * | | PrefStore       | |   | +-------------+  |   | .json       |
+     * | | +-------------+ | |   | |Unprotected  |--|-->|             |
+     * | | | Local Pref  | | |   | |Pref Store   |  |   |             |
+     * | | | Store (same | | |
+     * | | | as above)   | | |   | +-------------+  |   |             |
+     * | | +-------------+ | |   +------------------+   +-------------+
+     * | +-----------------+ |
+     * +---------------------+
+     */
+    factory.SetAccountPrefStore(base::MakeRefCounted<WrapWithPrefixPrefStore>(
+        std::move(user_pref_store), kAccountPreferencesPrefix));
+    // Register `kAccountPreferencesPrefix` as dictionary pref. This prevents
+    // others from using the prefix as a preference.
+    pref_registry->RegisterDictionaryPref(kAccountPreferencesPrefix);
+#endif
   }
 
   return factory.CreateSyncable(std::move(pref_registry));

@@ -16,7 +16,9 @@
 #import "components/autofill/core/browser/ui/payments/virtual_card_enroll_ui_model.h"
 #import "components/autofill/ios/browser/autofill_driver_ios.h"
 #import "components/autofill/ios/form_util/form_activity_params.h"
+#import "components/password_manager/core/browser/features/password_features.h"
 #import "components/password_manager/core/common/password_manager_features.h"
+#import "components/password_manager/ios/password_manager_java_script_feature.h"
 #import "components/plus_addresses/plus_address_types.h"
 #import "components/prefs/pref_service.h"
 #import "ios/chrome/browser/autofill/model/bottom_sheet/autofill_bottom_sheet_java_script_feature.h"
@@ -81,10 +83,10 @@ void AutofillBottomSheetTabHelper::ShowPlusAddressesBottomSheet(
 }
 
 void AutofillBottomSheetTabHelper::ShowVirtualCardEnrollmentBottomSheet(
-    autofill::VirtualCardEnrollUiModel model,
+    std::unique_ptr<autofill::VirtualCardEnrollUiModel> model,
     autofill::VirtualCardEnrollmentCallbacks callbacks) {
   virtual_card_enrollment_callbacks_ = std::move(callbacks);
-  [commands_handler_ showVirtualCardEnrollmentBottomSheet:model];
+  [commands_handler_ showVirtualCardEnrollmentBottomSheet:std::move(model)];
 }
 
 void AutofillBottomSheetTabHelper::ShowEditAddressBottomSheet() {
@@ -94,6 +96,11 @@ void AutofillBottomSheetTabHelper::ShowEditAddressBottomSheet() {
 void AutofillBottomSheetTabHelper::SetAutofillBottomSheetHandler(
     id<AutofillCommands> commands_handler) {
   commands_handler_ = commands_handler;
+}
+
+void AutofillBottomSheetTabHelper::SetPasswordGenerationProvider(
+    id<PasswordGenerationProvider> generation_provider) {
+  generation_provider_ = generation_provider;
 }
 
 void AutofillBottomSheetTabHelper::AddObserver(
@@ -120,11 +127,15 @@ void AutofillBottomSheetTabHelper::OnFormMessageReceived(
       base::Contains(registered_password_renderer_ids_[frame_id], renderer_id);
   bool is_payments_related =
       base::Contains(registered_payments_renderer_ids_[frame_id], renderer_id);
+  bool is_password_generation_related = base::Contains(
+      registered_password_generation_renderer_ids_[frame_id], renderer_id);
 
   if (is_password_related) {
     ShowPasswordBottomSheet(params);
   } else if (is_payments_related) {
     ShowPaymentsBottomSheet(params);
+  } else if (is_password_generation_related) {
+    ShowProactivePasswordGenerationBottomSheet(params);
   }
 }
 
@@ -141,14 +152,31 @@ void AutofillBottomSheetTabHelper::ShowPaymentsBottomSheet(
   [commands_handler_ showPaymentsBottomSheet:params];
 }
 
+void AutofillBottomSheetTabHelper::ShowProactivePasswordGenerationBottomSheet(
+    const autofill::FormActivityParams& params) {
+  if (!web_state_) {
+    return;
+  }
+
+  web::WebFrame* frame =
+      password_manager::PasswordManagerJavaScriptFeature::GetInstance()
+          ->GetWebFramesManager(web_state_)
+          ->GetFrameWithId(params.frame_id);
+  if (!frame) {
+    return;
+  }
+  [generation_provider_
+      triggerPasswordGenerationForFormId:params.form_renderer_id
+                         fieldIdentifier:params.field_renderer_id
+                                 inFrame:frame
+                               proactive:YES];
+}
+
 void AutofillBottomSheetTabHelper::AttachPasswordListeners(
     const std::vector<autofill::FieldRendererId>& renderer_ids,
     const std::string& frame_id) {
-  // Verify that the password bottom sheet feature is enabled and that it hasn't
-  // been dismissed too many times.
-  if (!base::FeatureList::IsEnabled(
-          password_manager::features::kIOSPasswordBottomSheet) ||
-      HasReachedDismissLimit()) {
+  // Verify that the password bottom sheet hasn't been dismissed too many times.
+  if (HasReachedPasswordSuggestionDismissLimit()) {
     return;
   }
 
@@ -158,6 +186,23 @@ void AutofillBottomSheetTabHelper::AttachPasswordListeners(
 
   AttachListeners(renderer_ids, registered_password_renderer_ids_[frame_id],
                   frame_id, allow_autofocus);
+}
+
+void AutofillBottomSheetTabHelper::AttachPasswordGenerationListeners(
+    const std::vector<autofill::FieldRendererId>& renderer_ids,
+    const std::string& frame_id) {
+  // Verify that the proactive password generation bottom sheet feature is
+  // enabled and that it hasn't been dismissed too many times.
+  if (!base::FeatureList::IsEnabled(
+          password_manager::features::
+              kIOSProactivePasswordGenerationBottomSheet) ||
+      HasReachedPasswordGenerationDismissLimit()) {
+    return;
+  }
+
+  AttachListeners(renderer_ids,
+                  registered_password_generation_renderer_ids_[frame_id],
+                  frame_id, /*allow_autofocus=*/true);
 }
 
 void AutofillBottomSheetTabHelper::AttachListeners(
@@ -201,10 +246,7 @@ void AutofillBottomSheetTabHelper::AttachListeners(
 void AutofillBottomSheetTabHelper::DetachPasswordListeners(
     const std::string& frame_id,
     bool refocus) {
-  // Verify that the password bottom sheet feature is enabled.
-  if (!base::FeatureList::IsEnabled(
-          password_manager::features::kIOSPasswordBottomSheet) ||
-      !web_state_) {
+  if (!web_state_) {
     return;
   }
 
@@ -218,13 +260,23 @@ void AutofillBottomSheetTabHelper::DetachPasswordListeners(
 }
 
 void AutofillBottomSheetTabHelper::DetachPasswordListenersForAllFrames() {
-  // Verify that the password bottom sheet feature is enabled.
+  for (auto& registered_renderer_ids : registered_password_renderer_ids_) {
+    DetachListenersForFrame(registered_renderer_ids.first,
+                            registered_renderer_ids.second, /*refocus=*/true);
+  }
+}
+
+void AutofillBottomSheetTabHelper::
+    DetachPasswordGenerationListenersForAllFrames() {
+  // Verify that the password generation bottom sheet feature is enabled.
   if (!base::FeatureList::IsEnabled(
-          password_manager::features::kIOSPasswordBottomSheet)) {
+          password_manager::features::
+              kIOSProactivePasswordGenerationBottomSheet)) {
     return;
   }
 
-  for (auto& registered_renderer_ids : registered_password_renderer_ids_) {
+  for (auto& registered_renderer_ids :
+       registered_password_generation_renderer_ids_) {
     DetachListenersForFrame(registered_renderer_ids.first,
                             registered_renderer_ids.second, /*refocus=*/true);
   }
@@ -303,9 +355,20 @@ void AutofillBottomSheetTabHelper::WebFrameBecameAvailable(
 
 // autofill::AutofillManager::Observer
 
-void AutofillBottomSheetTabHelper::OnAutofillManagerDestroyed(
-    autofill::AutofillManager& manager) {
-  autofill_manager_observations_.RemoveObservation(&manager);
+void AutofillBottomSheetTabHelper::OnAutofillManagerStateChanged(
+    autofill::AutofillManager& manager,
+    autofill::AutofillManager::LifecycleState old_state,
+    autofill::AutofillManager::LifecycleState new_state) {
+  using enum autofill::AutofillManager::LifecycleState;
+  switch (new_state) {
+    case kInactive:
+    case kActive:
+    case kPendingReset:
+      break;
+    case kPendingDeletion:
+      autofill_manager_observations_.RemoveObservation(&manager);
+      break;
+  }
 }
 
 void AutofillBottomSheetTabHelper::OnFieldTypesDetermined(
@@ -359,9 +422,9 @@ AutofillBottomSheetTabHelper::GetVirtualCardEnrollmentCallbacks() {
 
 // Private methods
 
-bool AutofillBottomSheetTabHelper::HasReachedDismissLimit() {
-  PrefService* const pref_service =
-      ChromeBrowserState ::FromBrowserState(web_state_->GetBrowserState())
+bool AutofillBottomSheetTabHelper::HasReachedPasswordSuggestionDismissLimit() {
+  const PrefService* pref_service =
+      ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState())
           ->GetPrefs();
   bool dismissLimitReached =
       pref_service->GetInteger(prefs::kIosPasswordBottomSheetDismissCount) >=
@@ -369,6 +432,15 @@ bool AutofillBottomSheetTabHelper::HasReachedDismissLimit() {
   base::UmaHistogramBoolean("IOS.IsEnabled.Password.BottomSheet",
                             !dismissLimitReached);
   return dismissLimitReached;
+}
+
+bool AutofillBottomSheetTabHelper::HasReachedPasswordGenerationDismissLimit() {
+  const PrefService* pref_service =
+      ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState())
+          ->GetPrefs();
+  return pref_service->GetInteger(
+             prefs::kIosPasswordGenerationBottomSheetDismissCount) >=
+         kPasswordGenerationBottomSheetMaxDismissCount;
 }
 
 WEB_STATE_USER_DATA_KEY_IMPL(AutofillBottomSheetTabHelper)

@@ -76,3 +76,85 @@ wallpaper-grid-item.sea-pen-image {
   top: 28px;
   width: 20px;
 }
+
+iron-icon[icon^='personalization-shared-illo:'] {
+  --iron-icon-width: 400px;
+  --iron-icon-height: 177px;
+  top: -24px;
+}
+
+.illustration-container {
+  align-items: center;
+  display: flex;
+  flex-flow: column nowrap;
+  height: 100%;
+  justify-content: center;
+  text-align: center;
+  width: 100%;
+}
+
+.illustration-message {
+  color: var(--cros-sys-on_surface);
+  font: var(--cros-title-1-font);
+  margin: 0 12px 0 12px;
+  max-width: 420px;
+  position: relative;
+  top: -25px;
+  white-space: pre-line;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.fade-in-900ms {
+  animation-direction: normal;
+  animation-duration: 900ms;
+  animation-iteration-count: 1;
+  animation-name: fade-in;
+  animation-timing-function: ease-in-out;
+}
+
+.fade-in-200ms {
+  animation-direction: normal;
+  animation-duration: 200ms;
+  animation-iteration-count: 1;
+  animation-name: fade-in;
+  animation-timing-function: linear;
+}
+
+#searchButtons {
+  align-items: center;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  margin-block: 24px;
+  position: relative;
+  width: 100%;
+}
+
+#searchButtons cr-button {
+  margin: 0 4px;
+  padding-inline-end: 16px;
+}
+
+#inspireMeAnimation {
+  height: 20px;
+  width: 20px;
+}
+
+#inspire:not(:hover) #inspireMeAnimation,
+#inspire:hover #inspireIcon {
+  display: none;
+}
+
+#inspire:hover #inspireMeAnimation,
+#inspire:not(:hover) #inspireIcon {
+  display: block;
+}

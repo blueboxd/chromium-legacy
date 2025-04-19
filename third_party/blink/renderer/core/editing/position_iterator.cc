@@ -23,6 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/core/editing/position_iterator.h"
 
 #include "base/numerics/safe_conversions.h"
@@ -537,7 +542,7 @@ void FastPositionIteratorAlgorithm<Strategy>::AssertOffsetInContainerIsValid()
 template <typename Strategy>
 void FastPositionIteratorAlgorithm<Strategy>::AssertOffsetStackIsValid() const {
 #if DCHECK_IS_ON()
-  const auto* it = offset_stack_.begin();
+  auto it = offset_stack_.begin();
   for (const Node& ancestor : Strategy::AncestorsOf(*container_node_)) {
     if (it == offset_stack_.end())
       break;

@@ -5,6 +5,7 @@
 #include "chrome/browser/profiles/renderer_updater.h"
 
 #include <utility>
+#include <vector>
 
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
@@ -130,7 +131,7 @@ void RendererUpdater::InitializeRenderer(
   content_settings::ContentSettingsManagerImpl::Create(
       render_process_host,
       content_settings_manager.InitWithNewPipeAndPassReceiver(),
-      std::make_unique<chrome::ContentSettingsManagerDelegate>());
+      std::make_unique<ContentSettingsManagerDelegate>());
   mojo::PendingRemote<chrome::mojom::BoundSessionRequestThrottledHandler>
       bound_session_request_throttled_handler;
 #if BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
@@ -199,13 +200,13 @@ void RendererUpdater::OnSessionRestoreStateChanged(
 #endif
 
 #if BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
-chrome::mojom::BoundSessionThrottlerParamsPtr
+std::vector<chrome::mojom::BoundSessionThrottlerParamsPtr>
 RendererUpdater::GetBoundSessionThrottlerParams() const {
   if (bound_session_cookie_refresh_service_) {
     return bound_session_cookie_refresh_service_
         ->GetBoundSessionThrottlerParams();
   }
-  return chrome::mojom::BoundSessionThrottlerParamsPtr();
+  return {};
 }
 #endif  // BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
 

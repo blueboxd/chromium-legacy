@@ -10,9 +10,9 @@
 #include "components/commerce/core/commerce_feature_list.h"
 #include "components/data_sharing/public/features.h"
 #include "components/sync/base/command_line_switches.h"
+#include "components/sync/base/data_type.h"
 #include "components/sync/base/features.h"
-#include "components/sync/base/model_type.h"
-#include "components/sync/service/model_type_controller.h"
+#include "components/sync/service/data_type_controller.h"
 #include "components/sync/service/sync_service_impl.h"
 #include "ios/chrome/browser/favicon/model/favicon_service_factory.h"
 #include "ios/chrome/browser/history/model/history_service_factory.h"
@@ -38,7 +38,7 @@ class SyncServiceFactoryTest : public PlatformTest {
     browser_state_builder.AddTestingFactory(
         ios::WebDataServiceFactory::GetInstance(),
         ios::WebDataServiceFactory::GetDefaultFactory());
-    chrome_browser_state_ = browser_state_builder.Build();
+    chrome_browser_state_ = std::move(browser_state_builder).Build();
   }
 
   void TearDown() override {
@@ -47,12 +47,12 @@ class SyncServiceFactoryTest : public PlatformTest {
 
  protected:
   // Returns the collection of default datatypes.
-  syncer::ModelTypeSet DefaultDatatypes() {
-    static_assert(53 == syncer::GetNumModelTypes(),
+  syncer::DataTypeSet DefaultDatatypes() {
+    static_assert(53 == syncer::GetNumDataTypes(),
                   "When adding a new type, you probably want to add it here as "
                   "well (assuming it is already enabled).");
 
-    syncer::ModelTypeSet datatypes;
+    syncer::DataTypeSet datatypes;
 
     // Common types. This excludes PASSWORDS,
     // INCOMING_PASSWORD_SHARING_INVITATION and
@@ -69,7 +69,7 @@ class SyncServiceFactoryTest : public PlatformTest {
     datatypes.Put(syncer::AUTOFILL_WALLET_METADATA);
     datatypes.Put(syncer::AUTOFILL_WALLET_OFFER);
     datatypes.Put(syncer::BOOKMARKS);
-    if (base::FeatureList::IsEnabled(commerce::kProductSpecificationsSync)) {
+    if (base::FeatureList::IsEnabled(commerce::kProductSpecifications)) {
       datatypes.Put(syncer::PRODUCT_COMPARISON);
     }
     datatypes.Put(syncer::CONTACT_INFO);
@@ -125,10 +125,10 @@ TEST_F(SyncServiceFactoryTest, CreateSyncServiceImplDefault) {
   syncer::SyncServiceImpl* sync_service =
       SyncServiceFactory::GetAsSyncServiceImplForBrowserStateForTesting(
           chrome_browser_state());
-  syncer::ModelTypeSet types = sync_service->GetRegisteredDataTypesForTest();
-  const syncer::ModelTypeSet default_types = DefaultDatatypes();
+  syncer::DataTypeSet types = sync_service->GetRegisteredDataTypesForTest();
+  const syncer::DataTypeSet default_types = DefaultDatatypes();
   EXPECT_EQ(default_types.size(), types.size());
-  for (syncer::ModelType type : default_types) {
+  for (syncer::DataType type : default_types) {
     EXPECT_TRUE(types.Has(type)) << type << " not found in datatypes map";
   }
 }

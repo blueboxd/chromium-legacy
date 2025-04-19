@@ -33,6 +33,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
+#include "components/download/public/common/download_item_rename_handler.h"
 #include "components/download/public/common/mock_download_item.h"
 #include "components/safe_browsing/core/common/features.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
@@ -144,6 +145,16 @@ bool TestChromeDownloadManagerDelegate::IsOpenInBrowserPreferredForFile(
     const base::FilePath& path) {
   return true;
 }
+
+class FakeRenameHandler : public download::DownloadItemRenameHandler {
+ public:
+  explicit FakeRenameHandler(DownloadItem* download_item)
+      : DownloadItemRenameHandler(download_item) {}
+  ~FakeRenameHandler() override = default;
+
+  // DownloadItemRenameHandler interface:
+  bool ShowRenameProgress() override { return true; }
+};
 
 }  // namespace
 
@@ -539,6 +550,10 @@ TEST_F(DownloadItemModelTest, CompletedStatus) {
       {base::Seconds(50), "", "2 B \xE2\x80\xA2 Done"},
       {base::Seconds(60), "", "2 B \xE2\x80\xA2 1 minute ago"},
       {base::Hours(23), "", "2 B \xE2\x80\xA2 23 hours ago"},
+      // Negative TimeDeltas may happen if the system time is adjusted
+      // backwards.
+      {base::Seconds(-10), "", "2 B \xE2\x80\xA2 Done"},
+      {base::Minutes(-10), "", "2 B \xE2\x80\xA2 Done"},
   };
   for (const auto& test_case : kTimeElapsedTestCases) {
     SetupCompletedDownloadItem(test_case.time_since_download_complete);
@@ -930,6 +945,17 @@ TEST_F(DownloadItemModelTest, ShouldShowDropdown) {
     Mock::VerifyAndClearExpectations(&item());
     Mock::VerifyAndClearExpectations(&model());
   }
+}
+
+TEST_F(DownloadItemModelTest, RenamingProgress) {
+  FakeRenameHandler fake_handler(&item());
+  EXPECT_CALL(item(), GetRenameHandler()).WillRepeatedly(Return(&fake_handler));
+  EXPECT_CALL(item(), GetReceivedBytes()).WillRepeatedly(Return(10));
+  EXPECT_CALL(item(), GetUploadedBytes()).WillRepeatedly(Return(2));
+  EXPECT_CALL(item(), GetTotalBytes()).WillRepeatedly(Return(10));
+
+  EXPECT_EQ(6, model().GetCompletedBytes());
+  EXPECT_EQ(60, model().PercentComplete());
 }
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)

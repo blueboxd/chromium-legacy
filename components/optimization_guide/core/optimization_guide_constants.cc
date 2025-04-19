@@ -26,6 +26,12 @@ const char kOptimizationGuideServiceModelQualtiyDefaultURL[] =
 const char kLoadedHintLocalHistogramString[] =
     "OptimizationGuide.LoadedHint.Result";
 
+const char kModelValidationErrorHistogramString[] =
+    "OptimizationGuide.ModelValidation.OnDevice.DidError";
+
+const char kOptimizationGuideLanguageOverrideHeaderKey[] =
+    "x-optimization-guide-language-override";
+
 const base::FilePath::CharType kOptimizationGuideHintStore[] =
     FILE_PATH_LITERAL("optimization_guide_hint_cache_store");
 

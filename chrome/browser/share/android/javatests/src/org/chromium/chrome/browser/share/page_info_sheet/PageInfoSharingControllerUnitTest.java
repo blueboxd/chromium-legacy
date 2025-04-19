@@ -43,7 +43,6 @@ import org.hamcrest.MatcherAssert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
@@ -57,7 +56,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.FeatureList;
 import org.chromium.base.FeatureList.TestValues;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.HistogramWatcher;
@@ -66,6 +64,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.content_extraction.InnerTextBridge;
 import org.chromium.chrome.browser.content_extraction.InnerTextBridgeJni;
 import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncher;
+import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncherFactory;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.model_execution.ExecutionResult;
 import org.chromium.chrome.browser.model_execution.ExecutionResult.ExecutionError;
@@ -96,8 +95,6 @@ import java.util.Optional;
 public class PageInfoSharingControllerUnitTest {
     @Rule public final MockitoRule mMockitoRule = MockitoJUnit.rule();
 
-    @Rule public TestRule mFeatureProcessor = new Features.JUnitProcessor();
-
     @Rule public JniMocker mJniMocker = new JniMocker();
 
     @Rule
@@ -126,6 +123,7 @@ public class PageInfoSharingControllerUnitTest {
     @Before
     public void setUp() {
         PageInfoSharingControllerImpl.resetForTesting();
+        HelpAndFeedbackLauncherFactory.setInstanceForTesting(mMockFeedbackLauncher);
         mJniMocker.mock(InnerTextBridgeJni.TEST_HOOKS, mInnerTextJniMock);
         mJniMocker.mock(DomDistillerUrlUtilsJni.TEST_HOOKS, mDomDistillerUrlUtilsJni);
         mJniMocker.mock(PageInfoSharingBridgeJni.TEST_HOOKS, mPageInfoSharingBridgeJni);
@@ -167,12 +165,7 @@ public class PageInfoSharingControllerUnitTest {
         setInnerTextExtractionResult("Inner text of web page");
 
         PageInfoSharingControllerImpl.getInstance()
-                .sharePageInfo(
-                        context,
-                        mBottomSheetController,
-                        mChromeOptionShareCallback,
-                        mMockFeedbackLauncher,
-                        tab);
+                .sharePageInfo(context, mBottomSheetController, mChromeOptionShareCallback, tab);
 
         verify(mBottomSheetController)
                 .requestShowContent(bottomSheetContentCaptor.capture(), anyBoolean());
@@ -307,7 +300,6 @@ public class PageInfoSharingControllerUnitTest {
                                     activity,
                                     mBottomSheetController,
                                     mChromeOptionShareCallback,
-                                    mMockFeedbackLauncher,
                                     firstTab);
                     assertFalse(
                             "Page sharing process should only happen for one tab at a time",
@@ -336,7 +328,6 @@ public class PageInfoSharingControllerUnitTest {
                                     activity,
                                     mBottomSheetController,
                                     mChromeOptionShareCallback,
-                                    mMockFeedbackLauncher,
                                     tab);
                     verify(mBottomSheetController).requestShowContent(any(), anyBoolean());
                     histogramWatcher.assertExpected();
@@ -370,7 +361,6 @@ public class PageInfoSharingControllerUnitTest {
                                     activity,
                                     mBottomSheetController,
                                     mChromeOptionShareCallback,
-                                    mMockFeedbackLauncher,
                                     tab);
 
                     verify(mBottomSheetController)
@@ -416,7 +406,6 @@ public class PageInfoSharingControllerUnitTest {
                                     activity,
                                     mBottomSheetController,
                                     mChromeOptionShareCallback,
-                                    mMockFeedbackLauncher,
                                     tab);
 
                     verify(mBottomSheetController)
@@ -473,7 +462,6 @@ public class PageInfoSharingControllerUnitTest {
                                     activity,
                                     mBottomSheetController,
                                     mChromeOptionShareCallback,
-                                    mMockFeedbackLauncher,
                                     tab);
 
                     verify(mBottomSheetController)
@@ -554,7 +542,6 @@ public class PageInfoSharingControllerUnitTest {
                                     activity,
                                     mBottomSheetController,
                                     mChromeOptionShareCallback,
-                                    mMockFeedbackLauncher,
                                     tab);
 
                     // Verify page text extraction was requested.
@@ -593,7 +580,6 @@ public class PageInfoSharingControllerUnitTest {
                                     activity,
                                     mBottomSheetController,
                                     mChromeOptionShareCallback,
-                                    mMockFeedbackLauncher,
                                     tab);
 
                     verify(mBottomSheetController)
@@ -667,7 +653,6 @@ public class PageInfoSharingControllerUnitTest {
                                     activity,
                                     mBottomSheetController,
                                     mChromeOptionShareCallback,
-                                    mMockFeedbackLauncher,
                                     tab);
 
                     verify(mBottomSheetController)

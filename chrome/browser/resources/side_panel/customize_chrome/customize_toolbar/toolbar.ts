@@ -3,23 +3,29 @@
 // found in the LICENSE file.
 
 import 'chrome://customize-chrome-side-panel.top-chrome/shared/sp_heading.js';
+import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.js';
 
 import type {SpHeadingElement} from 'chrome://customize-chrome-side-panel.top-chrome/shared/sp_heading.js';
+import {WebUiListenerMixinLit} from 'chrome://resources/cr_elements/web_ui_listener_mixin_lit.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {CrLitElement} from 'chrome://resources/lit/v3_0/lit.rollup.js';
 
-import type {Action, CustomizeToolbarHandlerInterface} from '../customize_toolbar.mojom-webui.js';
+import type {Action, Category, CustomizeToolbarHandlerInterface} from '../customize_toolbar.mojom-webui.js';
 
 import {CustomizeToolbarApiProxy} from './customize_toolbar_api_proxy.js';
 import {getCss} from './toolbar.css.js';
 import {getHtml} from './toolbar.html.js';
 
+const ToolbarElementBase = WebUiListenerMixinLit(CrLitElement);
+
 export interface ToolbarElement {
   $: {
     heading: SpHeadingElement,
+    pinningSelectionCard: HTMLDivElement,
   };
 }
 
-export class ToolbarElement extends CrLitElement {
+export class ToolbarElement extends ToolbarElementBase {
   static get is() {
     return 'customize-chrome-toolbar';
   }
@@ -35,6 +41,8 @@ export class ToolbarElement extends CrLitElement {
   static override get properties() {
     return {
       actions_: {type: Array},
+      categories_: {type: Array},
+      resetToDefaultDisabled_: {type: Boolean},
     };
   }
 
@@ -42,14 +50,14 @@ export class ToolbarElement extends CrLitElement {
   private listenerIds_: number[] = [];
 
   protected actions_: Action[] = [];
+  protected categories_: Category[] = [];
+  protected resetToDefaultDisabled_: boolean = true;
 
   constructor() {
     super();
     this.handler_ = CustomizeToolbarApiProxy.getInstance().handler;
 
-    this.handler_.listActions().then(({actions}) => {
-      this.actions_ = actions;
-    });
+    this.populateUi_();
   }
 
   override connectedCallback() {
@@ -58,6 +66,10 @@ export class ToolbarElement extends CrLitElement {
         CustomizeToolbarApiProxy.getInstance().callbackRouter;
     this.listenerIds_.push(callbackRouter.setActionPinned.addListener(
         this.setActionPinned_.bind(this)));
+    this.listenerIds_.push(callbackRouter.notifyActionsUpdated.addListener(
+        this.populateUi_.bind(this)));
+
+    this.addWebUiListener('theme-changed', this.populateUi_.bind(this));
   }
 
   override disconnectedCallback() {
@@ -76,6 +88,10 @@ export class ToolbarElement extends CrLitElement {
     this.fire('back-click');
   }
 
+  protected onResetToDefaultClicked_() {
+    this.handler_.resetToDefault();
+  }
+
   protected getActionToggleHandler_(actionId: number) {
     return (event: CustomEvent<boolean>) =>
                this.handler_.pinAction(actionId, event.detail);
@@ -88,6 +104,28 @@ export class ToolbarElement extends CrLitElement {
       }
 
       return action;
+    });
+
+    this.updateResetToDefaultDisabled();
+  }
+
+  private populateUi_() {
+    this.handler_.listActions().then(({actions}) => {
+      this.actions_ = actions;
+      assert(this.actions_.every(
+          action => action.iconUrl.url.startsWith('data:')));
+    });
+
+    this.handler_.listCategories().then(({categories}) => {
+      this.categories_ = categories;
+    });
+
+    this.updateResetToDefaultDisabled();
+  }
+
+  private updateResetToDefaultDisabled() {
+    this.handler_.getIsCustomized().then(({customized}) => {
+      this.resetToDefaultDisabled_ = !customized;
     });
   }
 }

@@ -58,6 +58,12 @@ std::unique_ptr<WebNavigationParams> WebNavigationParams::CreateFromInfo(
 
 // static
 std::unique_ptr<WebNavigationParams>
+WebNavigationParams::CreateWithEmptyHTMLForTesting(const WebURL& base_url) {
+  return CreateWithHTMLStringForTesting(base::span<const char>(), base_url);
+}
+
+// static
+std::unique_ptr<WebNavigationParams>
 WebNavigationParams::CreateWithHTMLStringForTesting(base::span<const char> html,
                                                     const WebURL& base_url) {
   auto result = std::make_unique<WebNavigationParams>();
@@ -66,28 +72,12 @@ WebNavigationParams::CreateWithHTMLStringForTesting(base::span<const char> html,
   return result;
 }
 
-#if INSIDE_BLINK
-// static
-std::unique_ptr<WebNavigationParams>
-WebNavigationParams::CreateWithHTMLBufferForTesting(
-    scoped_refptr<SharedBuffer> buffer,
-    const KURL& base_url) {
-  auto result = std::make_unique<WebNavigationParams>();
-  result->url = base_url;
-  FillStaticResponse(result.get(), "text/html", "UTF-8",
-                     base::make_span(buffer->Data(), buffer->size()));
-  return result;
-}
-#endif
-
 // static
 void WebNavigationParams::FillBodyLoader(WebNavigationParams* params,
                                          base::span<const char> data) {
   params->response.SetExpectedContentLength(data.size());
-  auto body_loader = std::make_unique<StaticDataNavigationBodyLoader>();
-  body_loader->Write(data.data(), data.size());
-  body_loader->Finish();
-  params->body_loader = std::move(body_loader);
+  params->body_loader = StaticDataNavigationBodyLoader::CreateWithData(
+      SharedBuffer::Create(data));
   params->is_static_data = true;
 }
 
@@ -96,11 +86,8 @@ void WebNavigationParams::FillBodyLoader(WebNavigationParams* params,
                                          WebData data) {
   params->response.SetExpectedContentLength(data.size());
   auto body_loader = std::make_unique<StaticDataNavigationBodyLoader>();
-  scoped_refptr<SharedBuffer> buffer = data;
-  if (buffer)
-    body_loader->Write(*buffer);
-  body_loader->Finish();
-  params->body_loader = std::move(body_loader);
+  params->body_loader = StaticDataNavigationBodyLoader::CreateWithData(
+      scoped_refptr<SharedBuffer>(data));
   params->is_static_data = true;
 }
 
@@ -114,6 +101,18 @@ void WebNavigationParams::FillStaticResponse(WebNavigationParams* params,
   params->response.SetTextEncodingName(text_encoding);
   params->response.SetHttpStatusCode(params->http_status_code);
   FillBodyLoader(params, data);
+}
+
+// static
+void WebNavigationParams::FillStaticResponse(WebNavigationParams* params,
+                                             WebString mime_type,
+                                             WebString text_encoding,
+                                             SharedBuffer* data) {
+  params->response = WebURLResponse(params->url);
+  params->response.SetMimeType(mime_type);
+  params->response.SetTextEncodingName(text_encoding);
+  params->response.SetHttpStatusCode(params->http_status_code);
+  FillBodyLoader(params, WebData(data));
 }
 
 WebNavigationParams::PrefetchedSignedExchange::PrefetchedSignedExchange() =

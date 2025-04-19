@@ -71,7 +71,7 @@ TEST_F(SupervisedUserServiceFactoryTest, CreateService) {
 TEST_F(SupervisedUserServiceFactoryTest,
        ReturnsNullOnOffTheRecordBrowserState) {
   ChromeBrowserState* otr_browser_state =
-      browser_state_->CreateOffTheRecordBrowserStateWithTestingFactories({});
+      browser_state_->CreateOffTheRecordBrowserStateWithTestingFactories();
   CHECK(otr_browser_state);
   supervised_user::SupervisedUserService* service =
       SupervisedUserServiceFactory::GetForBrowserState(otr_browser_state);
@@ -122,7 +122,8 @@ TEST_F(SupervisedUserServiceFactoryTest,
 
   TestChromeBrowserState::Builder builder;
   builder.SetPrefService(std::move(testing_prefs));
-  std::unique_ptr<TestChromeBrowserState> browser_state = builder.Build();
+  std::unique_ptr<TestChromeBrowserState> browser_state =
+      std::move(builder).Build();
 
   ASSERT_FALSE(supervised_user::ShouldShowFirstTimeBanner(browser_state.get()));
 }

@@ -464,16 +464,10 @@ Standard: [SecureContext](https://webidl.spec.whatwg.org/#SecureContext)
 
 Summary: Interfaces and interface members with a `SecureContext` attribute are exposed only inside ["Secure Contexts"](https://w3c.github.io/webappsec-secure-contexts/).
 
-**Non-standard:** Blink supports adding a value to the `SecureContext` attribute, which specifies a runtime-enabled flag used to control whether or not the restriction applies. This is intended for use when deprecating legacy APIs, and should not be used for new APIs.
-
-For example: we intend to lock `window.applicationCache` to secure contexts, but need to do so in a way that allows some subset of users (enterprises) to opt out. We can do so by defining a `RestrictAppCacheToSecureContexts` runtime flag, and specifying it in IDL as follows:
-
 ```webidl
-interface Window {
-  ...
-  [SecureContext=RestrictAppCacheToSecureContexts] readonly attribute ApplicationCache applicationCache;
-  ...
-}
+interface PointerEvent : MouseEvent {
+    [SecureContext] sequence<PointerEvent> getCoalescedEvents();
+};
 ```
 
 ### [Serializable]
@@ -1190,16 +1184,6 @@ reads would leak cross-origin information.
 ```
 With both `Getter` and `Setter`, allows both cross-origin reads and cross-origin
 writes. This is used for the `Window.location` attribute.
-
-### [FlexibleArrayBufferView]
-
-Summary: `[FlexibleArrayBufferView]` wraps a parameter that is known to be an ArrayBufferView (or a subtype of, e.g. typed arrays) with a FlexibleArrayBufferView.
-
-The FlexibleArrayBufferView itself can then either refer to an actual ArrayBufferView or a temporary copy (for small payloads) that may even live on the stack. The idea is that copying the payload on the stack and referring to the temporary copy saves creating global handles (resulting in weak roots) in V8. Note that `[FlexibleArrayBufferView]`  will actually result in a TypedFlexibleArrayBufferView wrapper for typed arrays.
-
-The FlexibleArrayBufferView extended attribute always requires the AllowShared extended attribute.
-
-Usage: Applies to arguments of methods. See modules/webgl/WebGLRenderingContextBase.idl for an example.
 
 ### [HasAsyncIteratorReturnAlgorithm]
 

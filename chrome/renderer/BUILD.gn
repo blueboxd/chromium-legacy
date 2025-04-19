@@ -48,6 +48,7 @@ grit("resources") {
       # The JS binding files of seal.mojom will be imported to Google3 via
       # copybara.
       "//chrome/browser/ui/webui/ash/emoji:seal_mojom_js",
+      "//chrome/browser/ui/webui/ash/lobster:lobster_mojom_js",
       "//chromeos/ash/components/enhanced_network_tts/mojom:mojom_js",
       "//chromeos/ash/services/ime/public/mojom:mojom_js",
       "//chromeos/ash/services/orca/public/mojom:mojom_js",
@@ -117,15 +118,6 @@ static_library("renderer") {
     "worker_content_settings_client.h",
   ]
 
-  if (enable_bound_session_credentials) {
-    sources += [
-      "bound_session_credentials/bound_session_request_throttled_handler_renderer_impl.cc",
-      "bound_session_credentials/bound_session_request_throttled_handler_renderer_impl.h",
-      "bound_session_credentials/bound_session_request_throttled_in_renderer_manager.cc",
-      "bound_session_credentials/bound_session_request_throttled_in_renderer_manager.h",
-    ]
-  }
-
   defines = []
 
   public_deps = [
@@ -162,7 +154,6 @@ static_library("renderer") {
     "//components/dom_distiller/content/renderer",
     "//components/facilitated_payments/content/renderer",
     "//components/facilitated_payments/core/features",
-    "//components/feed:buildflags",
     "//components/feed:feature_list",
     "//components/feed/content/renderer:feed_renderer",
     "//components/google/core/common",
@@ -246,6 +237,15 @@ static_library("renderer") {
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
+  if (enable_bound_session_credentials) {
+    sources += [
+      "bound_session_credentials/bound_session_request_throttled_handler_renderer_impl.cc",
+      "bound_session_credentials/bound_session_request_throttled_handler_renderer_impl.h",
+      "bound_session_credentials/bound_session_request_throttled_in_renderer_manager.cc",
+      "bound_session_credentials/bound_session_request_throttled_in_renderer_manager.h",
+    ]
+  }
+
   if (enable_nacl) {
     deps += [ "//components/nacl/renderer" ]
 
@@ -301,13 +301,6 @@ static_library("renderer") {
     ]
   }
 
-  if (is_chromeos_ash) {
-    deps += [
-      "//ash/constants",
-      "//ash/webui/file_manager:constants",
-    ]
-  }
-
   if (enable_widevine_cdm_component) {
     deps += [ "//third_party/widevine/cdm:headers" ]
   }
@@ -322,10 +315,6 @@ static_library("renderer") {
   if (safe_browsing_mode != 0) {
     deps +=
         [ "//components/safe_browsing/content/renderer/phishing_classifier" ]
-  }
-
-  if (enable_feed_v2) {
-    deps += [ "//components/feed/content/renderer:feed_renderer" ]
   }
 
   if (enable_extensions) {
@@ -368,6 +357,13 @@ static_library("renderer") {
     ]
     public_deps += [ "//ipc" ]
   }
+
+  # TODO(https://crbug.com/356905053): Add more dependencies here and merge this
+  # block with the `enable_extensions` block above.
+  if (enable_desktop_android_extensions) {
+    deps += [ "//extensions/renderer" ]
+  }
+
   if (enable_spellcheck) {
     deps += [ "//components/spellcheck/renderer:renderer" ]
   }
@@ -397,36 +393,35 @@ static_library("renderer") {
     ]
   }
 
-  if (is_chromeos) {
+  if (is_android) {
     sources += [
-      "extensions/api/file_browser_handler_custom_bindings.cc",
-      "extensions/api/file_browser_handler_custom_bindings.h",
-      "extensions/api/platform_keys_natives.cc",
-      "extensions/api/platform_keys_natives.h",
+      "net/available_offline_content_helper.cc",
+      "net/available_offline_content_helper.h",
+      "net/page_auto_fetcher_helper_android.cc",
+      "net/page_auto_fetcher_helper_android.h",
+      "sandbox_status_extension_android.cc",
+      "sandbox_status_extension_android.h",
+      "wallet/boarding_pass_extractor.cc",
+      "wallet/boarding_pass_extractor.h",
     ]
-    if (use_cups) {
-      sources += [
-        "extensions/api/printing_hooks_delegate.cc",
-        "extensions/api/printing_hooks_delegate.h",
-      ]
-    }
-  }
-
-  if (is_chromeos_ash) {
-    sources += [
-      "extensions/api/file_manager_private_custom_bindings.cc",
-      "extensions/api/file_manager_private_custom_bindings.h",
+    deps += [
+      "//chrome/common/wallet:mojo_bindings",
+      "//components/feed/content/renderer:feed_renderer",
     ]
-  }
-
-  if (!is_android) {
+  } else {
     sources += [
       "accessibility/ax_tree_distiller.cc",
       "accessibility/ax_tree_distiller.h",
+      "accessibility/read_aloud_app_model.cc",
+      "accessibility/read_aloud_app_model.h",
+      "accessibility/read_aloud_traversal_utils.cc",
+      "accessibility/read_aloud_traversal_utils.h",
       "accessibility/read_anything_app_controller.cc",
       "accessibility/read_anything_app_controller.h",
       "accessibility/read_anything_app_model.cc",
       "accessibility/read_anything_app_model.h",
+      "accessibility/read_anything_node_utils.cc",
+      "accessibility/read_anything_node_utils.h",
       "media/chrome_speech_recognition_client.cc",
       "media/chrome_speech_recognition_client.h",
       "searchbox/searchbox.cc",
@@ -446,18 +441,19 @@ static_library("renderer") {
     ]
   }
 
-  if (is_android) {
+  if (is_chromeos) {
     sources += [
-      "net/available_offline_content_helper.cc",
-      "net/available_offline_content_helper.h",
-      "net/page_auto_fetcher_helper_android.cc",
-      "net/page_auto_fetcher_helper_android.h",
-      "sandbox_status_extension_android.cc",
-      "sandbox_status_extension_android.h",
-      "wallet/boarding_pass_extractor.cc",
-      "wallet/boarding_pass_extractor.h",
+      "extensions/api/file_browser_handler_custom_bindings.cc",
+      "extensions/api/file_browser_handler_custom_bindings.h",
+      "extensions/api/platform_keys_natives.cc",
+      "extensions/api/platform_keys_natives.h",
     ]
-    deps += [ "//chrome/common/wallet:mojo_bindings" ]
+    if (use_cups) {
+      sources += [
+        "extensions/api/printing_hooks_delegate.cc",
+        "extensions/api/printing_hooks_delegate.h",
+      ]
+    }
   }
 
   if (is_chromeos_ash) {
@@ -466,10 +462,15 @@ static_library("renderer") {
       "ash_merge_session_loader_throttle.h",
       "chromeos_delayed_callback_group.cc",
       "chromeos_delayed_callback_group.h",
+      "extensions/api/file_manager_private_custom_bindings.cc",
+      "extensions/api/file_manager_private_custom_bindings.h",
     ]
-  }
 
-  if (is_chromeos_ash) {
+    deps += [
+      "//ash/constants",
+      "//ash/webui/file_manager:constants",
+    ]
+
     if (target_cpu == "x64") {
       sources += [
         "performance_manager/mechanisms/userspace_swap_impl_chromeos.cc",

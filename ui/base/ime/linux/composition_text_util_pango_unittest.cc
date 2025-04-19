@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ui/base/ime/linux/composition_text_util_pango.h"
 
 #include <pango/pango-attributes.h>
@@ -135,7 +140,7 @@ TEST(CompositionTextUtilPangoTest, ExtractCompositionText) {
           pango_attr = pango_attr_background_new(0, 0, 0);
           break;
         default:
-          NOTREACHED_IN_MIGRATION();
+          NOTREACHED();
       }
       pango_attr->start_index =
           g_utf8_offset_to_pointer(text, attrs[a].start_offset) - text;

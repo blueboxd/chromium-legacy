@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #ifndef COMPONENTS_VIZ_COMMON_QUADS_TEXTURE_DRAW_QUAD_H_
 #define COMPONENTS_VIZ_COMMON_QUADS_TEXTURE_DRAW_QUAD_H_
 
@@ -14,7 +19,6 @@
 #include "components/viz/common/viz_common_export.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/hdr_metadata.h"
 #include "ui/gfx/video_types.h"
 
 namespace viz {
@@ -83,8 +87,6 @@ class VIZ_COMMON_EXPORT TextureDrawQuad : public DrawQuad {
   // and not like blend mode 'kSrc' which would copy the alpha.
   bool force_rgbx : 1 = false;
 
-  gfx::HDRMetadata hdr_metadata;
-
   // kClear if the contents do not require any special protection. See enum of a
   // list of protected content types. Protected contents cannot be displayed via
   // regular display path. They need either a protected output or a protected
@@ -144,6 +146,7 @@ class VIZ_COMMON_EXPORT TextureDrawQuad : public DrawQuad {
   OverlayResources overlay_resources;
 
   ResourceId resource_id() const { return resources.ids[kResourceIdIndex]; }
+  // TODO(crbug/354862211): Consider removing post LaCros sunset.
   const gfx::Size& resource_size_in_pixels() const {
     return overlay_resources.size_in_pixels;
   }

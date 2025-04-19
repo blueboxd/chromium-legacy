@@ -87,25 +87,18 @@ class ContentCache {
   // cached files are deleted or changes.
   virtual void Notify(ProvidedFileSystemObserver::Changes& changes) = 0;
 
+  // Called with the most recently seen `version_tag` for the file with
+  // `entry_path` on the FSP. If the `version_tag` does not match the one stored
+  // for the copy in the cache, Evict() the out of date copy.
+  virtual void ObservedVersionTag(const base::FilePath& entry_path,
+                                  const std::string& version_tag) = 0;
+
   // Evict the item with path `file_path` from the cache, if it exists. The item
   // is still accessible to current FSP requests but inaccessible to new FSP
   // requests. It will be removed from the disk and the database if there are no
   // current FSP requests. Otherwise it be be removed once the last FSP request
   // completes with `CloseFile()`.
   virtual void Evict(const base::FilePath& file_path) = 0;
-
-  // A struct of size information pertaining to this cache instance.
-  struct SizeInfo {
-    int64_t max_bytes_on_disk = 0;
-    int64_t total_bytes_on_disk = 0;
-  };
-
-  // Helper methods to get and set size information.
-  virtual const SizeInfo GetSize() const = 0;
-  virtual void SetMaxBytesOnDisk(int64_t max_bytes_on_disk) = 0;
-
-  // Returns a `base::WeakPtr`.
-  virtual base::WeakPtr<ContentCache> GetWeakPtr() = 0;
 
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;

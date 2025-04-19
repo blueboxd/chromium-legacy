@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "media/capture/video/win/video_capture_device_factory_win.h"
 
 #include <objbase.h>
@@ -18,18 +23,22 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/containers/contains.h"
+#include "base/containers/fixed_flat_set.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
+#include "base/not_fatal_until.h"
 #include "base/ranges/algorithm.h"
+#include "base/strings/cstring_view.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/system/system_monitor.h"
@@ -38,6 +47,7 @@
 #include "base/win/core_winrt_util.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_variant.h"
+#include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "media/base/media_switches.h"
 #include "media/base/win/mf_helpers.h"
@@ -119,46 +129,51 @@ static_assert(std::size(kBlockedCameraNames) == BLOCKED_CAMERA_MAX + 1,
               "BlockedCameraNames enum");
 
 // Use this list only for USB webcams.
-const char* const kModelIdsBlockedForMediaFoundation[] = {
-    // Devices using Empia 2860 or 2820 chips, see https://crbug.com/849636.
-    "eb1a:2860", "eb1a:2820", "1ce6:2820",
-    // Elgato HD60 Pro
-    "12ab:0380",
-    // Sensoray 2253
-    "1943:2253",
-    // Dell E5440
-    "0c45:64d0", "0c45:64d2",
-    // Dell E7440
-    "1bcf:2985",
-    // Lenovo Thinkpad Model 20CG0006FMZ front and rear cameras, see
-    // also https://crbug.com/924528.
-    "04ca:7047", "04ca:7048",
-    // HP Elitebook 840 G1
-    "04f2:b3ed", "04f2:b3ca", "05c8:035d", "05c8:0369",
-    // HP HD Camera. See https://crbug.com/1011888.
-    "04ca:7095",
-    // RBG/IR camera for Windows Hello Face Auth. See https://crbug.com/984864.
-    "13d3:5257",
-    // Acer Aspire f5-573g. See https://crbug.com/1034644.
-    "0bda:57f2",
-    // Elgato Camlink 4k
-    "0fd9:0066",
-    // ACER Aspire VN7-571G. See https://crbug.com/1327948.
-    "04f2:b469",
-    // Hauppauge USB-Live2. See https://crbug.com/1447113.
-    "2040:c200"};
+constexpr auto kModelIdsBlockedForMediaFoundation =
+    base::MakeFixedFlatSet<std::string_view>(
+        {// Devices using Empia 2860 or 2820 chips, see
+         // https://crbug.com/849636.
+         "eb1a:2860", "eb1a:2820", "1ce6:2820",
+         // Elgato HD60 Pro
+         "12ab:0380",
+         // Sensoray 2253
+         "1943:2253",
+         // Dell E5440
+         "0c45:64d0", "0c45:64d2",
+         // Dell E7440
+         "1bcf:2985",
+         // Lenovo Thinkpad Model 20CG0006FMZ front and rear cameras, see
+         // also https://crbug.com/924528.
+         "04ca:7047", "04ca:7048",
+         // HP Elitebook 840 G1
+         "04f2:b3ed", "04f2:b3ca", "05c8:035d", "05c8:0369",
+         // HP HD Camera. See https://crbug.com/1011888.
+         "04ca:7095",
+         // RBG/IR camera for Windows Hello Face Auth. See
+         // https://crbug.com/984864.
+         "13d3:5257",
+         // Acer Aspire f5-573g. See https://crbug.com/1034644.
+         "0bda:57f2",
+         // Elgato Camlink 4k
+         "0fd9:0066",
+         // ACER Aspire VN7-571G. See https://crbug.com/1327948.
+         "04f2:b469",
+         // Hauppauge USB-Live2. See https://crbug.com/1447113.
+         "2040:c200"});
 
 // Use this list only for USB webcams.
-const char* const kModelIdsBlockedForMediaFoundationD3D11VideoCapture[] = {
-    // D3D11 calls on textures produced by these cameras take so much time
-    // that MFCaptureEngine fails with E_MF_SAMPLEALLOCATOREMPTY error
-    "05a3:9331", "04f2:b6bf"};
+constexpr auto kModelIdsBlockedForMediaFoundationD3D11VideoCapture =
+    base::MakeFixedFlatSet<std::string_view>(
+        {// D3D11 calls on textures produced by these cameras take so much time
+         // that MFCaptureEngine fails with E_MF_SAMPLEALLOCATOREMPTY error
+         "05a3:9331", "04f2:b6bf"});
 
 // Use this list only for non-USB webcams.
-const char* const kDisplayNamesBlockedForMediaFoundation[] = {
-    // VMware Virtual Webcams cause hangs when there is no physical Webcam.
-    // See https://crbug.com/1044974.
-    "VMware Virtual Webcam"};
+constexpr auto kDisplayNamesBlockedForMediaFoundation =
+    base::MakeFixedFlatSet<std::string_view>(
+        {// VMware Virtual Webcams cause hangs when there is no physical Webcam.
+         // See https://crbug.com/1044974.
+         "VMware Virtual Webcam"});
 
 const std::vector<
     std::pair<VideoCaptureApi, std::vector<std::pair<GUID, GUID>>>>&
@@ -196,30 +211,33 @@ bool IsDeviceBlockedForQueryingDetailedFrameRates(
 }
 
 bool IsDeviceBlockedForMediaFoundationByModelId(const std::string& model_id) {
-  return base::Contains(kModelIdsBlockedForMediaFoundation, model_id);
+  return kModelIdsBlockedForMediaFoundation.contains(model_id);
 }
 
 bool IsDeviceBlockedForMediaFoundationD3D11ByModelId(
     const std::string& model_id) {
   return base::FeatureList::IsEnabled(
              kMediaFoundationD3D11VideoCaptureBlocklist) &&
-         base::Contains(kModelIdsBlockedForMediaFoundationD3D11VideoCapture,
-                        model_id);
+         kModelIdsBlockedForMediaFoundationD3D11VideoCapture.contains(model_id);
 }
 
 bool IsDeviceBlockedForMediaFoundationByDisplayName(
     const std::string& display_name) {
-  return base::Contains(kDisplayNamesBlockedForMediaFoundation, display_name);
+  return kDisplayNamesBlockedForMediaFoundation.contains(display_name);
 }
 
-HMODULE ExpandEnvironmentStringsAndLoadLibrary(const wchar_t* path) {
-  wchar_t expanded_path[MAX_PATH] = {0};
-  ExpandEnvironmentStringsW(path, expanded_path, std::size(expanded_path));
-  return LoadLibraryExW(expanded_path, nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
+HMODULE ExpandEnvironmentStringsAndLoadLibrary(base::wcstring_view path) {
+  auto expanded_path = base::win::ExpandEnvironmentVariables(path);
+  if (!expanded_path) {
+    return nullptr;
+  }
+
+  return LoadLibraryExW(expanded_path->c_str(), nullptr,
+                        LOAD_WITH_ALTERED_SEARCH_PATH);
 }
 
 bool LoadMediaFoundationDlls() {
-  static const wchar_t* const kMfDLLs[] = {
+  static constexpr base::wcstring_view kMfDLLs[] = {
       L"%WINDIR%\\system32\\mf.dll", L"%WINDIR%\\system32\\mfplat.dll",
       L"%WINDIR%\\system32\\mfreadwrite.dll",
       L"%WINDIR%\\system32\\MFCaptureEngine.dll"};
@@ -229,7 +247,7 @@ bool LoadMediaFoundationDlls() {
   SCOPED_MAY_LOAD_LIBRARY_AT_BACKGROUND_PRIORITY_REPEATEDLY();
 
   // Load required DLLs.
-  for (const wchar_t* kMfDLL : kMfDLLs) {
+  for (const auto& kMfDLL : kMfDLLs) {
     if (!ExpandEnvironmentStringsAndLoadLibrary(kMfDLL)) {
       return false;
     }
@@ -962,7 +980,7 @@ void VideoCaptureDeviceFactoryWin::ComThreadData::FoundAllDevicesUWP(
                                 std::move(result_callback)));
 
   auto it = async_ops_.find(operation);
-  DCHECK(it != async_ops_.end());
+  CHECK(it != async_ops_.end(), base::NotFatalUntil::M130);
   (*it)->Release();
   async_ops_.erase(it);
 }

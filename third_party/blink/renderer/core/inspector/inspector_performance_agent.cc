@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/core/inspector/inspector_performance_agent.h"
 
 #include <utility>
@@ -275,12 +280,13 @@ protocol::Response InspectorPerformanceAgent::getMetrics(
   return protocol::Response::Success();
 }
 
-void InspectorPerformanceAgent::ConsoleTimeStamp(const String& title) {
+void InspectorPerformanceAgent::ConsoleTimeStamp(v8::Isolate* isolate,
+                                                 v8::Local<v8::String> label) {
   if (!enabled_.Get())
     return;
   std::unique_ptr<protocol::Array<protocol::Performance::Metric>> metrics;
   getMetrics(&metrics);
-  GetFrontend()->metrics(std::move(metrics), title);
+  GetFrontend()->metrics(std::move(metrics), ToCoreString(isolate, label));
 }
 
 void InspectorPerformanceAgent::ScriptStarts() {

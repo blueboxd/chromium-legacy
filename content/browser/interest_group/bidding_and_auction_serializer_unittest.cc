@@ -58,6 +58,7 @@ scoped_refptr<StorageInterestGroups> CreateInterestGroups(url::Origin owner) {
                      /*size_group=*/std::nullopt,
                      /*buyer_reporting_id=*/std::nullopt,
                      /*buyer_and_seller_reporting_id=*/std::nullopt,
+                     /*selectable_buyer_and_seller_reporting_ids=*/std::nullopt,
                      /*ad_render_id=*/base::NumberToString(i));
   }
   std::vector<StorageInterestGroup> groups;
@@ -103,9 +104,9 @@ TEST_F(BiddingAndAuctionSerializerTest, SerializeWithDefaultConfig) {
   AddGroupsToSerializer(serializer);
 
   BiddingAndAuctionData data = serializer.Build();
-  EXPECT_EQ(data.request.size(), 4096u - kEncryptionOverhead);
+  EXPECT_EQ(data.request.size(), 5 * 1024 - kEncryptionOverhead);
   histogram_tester.ExpectTotalCount(
-      "Ads.InterestGroup.ServerAuction.Request.NumIterations", 0);
+      "Ads.InterestGroup.ServerAuction.Request.NumIterations", 4);
   histogram_tester.ExpectUniqueSample(
       "Ads.InterestGroup.ServerAuction.Request.NumGroups", 400, 1);
   histogram_tester.ExpectUniqueSample(
@@ -138,7 +139,9 @@ TEST_F(BiddingAndAuctionSerializerTest, SerializeWithLargeRequestSize) {
       "Ads.InterestGroup.ServerAuction.Request.RelativeCompressedSize", 1, 1);
 }
 
-TEST_F(BiddingAndAuctionSerializerTest, SerializeWithSmallRequestSize) {
+// TODO(crbug.com/355013095): Re-enable this test
+TEST_F(BiddingAndAuctionSerializerTest,
+       DISABLED_SerializeWithSmallRequestSize) {
   base::HistogramTester histogram_tester;
 
   const size_t kRequestSize = 2000;
@@ -373,6 +376,61 @@ TEST_F(BiddingAndAuctionSerializerTest, SerializeWithFixedSizeGroups) {
       "Ads.InterestGroup.ServerAuction.Request.NumGroups", 95, 1);
   histogram_tester.ExpectUniqueSample(
       "Ads.InterestGroup.ServerAuction.Request.RelativeCompressedSize", 1, 1);
+}
+
+// Test that the encrypted request still has the full size even when the
+// specified buyers are not on the device.
+TEST_F(BiddingAndAuctionSerializerTest, SerializeWithNoGroupsSetBuyersFixed) {
+  const size_t kRequestSize = 3000;
+  blink::mojom::AuctionDataConfigPtr config =
+      blink::mojom::AuctionDataConfig::New();
+  config->request_size = kRequestSize;
+
+  config->per_buyer_configs[kOriginA] =
+      blink::mojom::AuctionDataBuyerConfig::New(/*size=*/100);
+  config->per_buyer_configs[kOriginB] =
+      blink::mojom::AuctionDataBuyerConfig::New(/*size=*/100);
+  config->per_buyer_configs[kOriginC] =
+      blink::mojom::AuctionDataBuyerConfig::New(/*size=*/100);
+  config->per_buyer_configs[kOriginD] =
+      blink::mojom::AuctionDataBuyerConfig::New();
+
+  BiddingAndAuctionSerializer serializer;
+  serializer.SetPublisher("foo");
+  serializer.SetGenerationId(
+      base::Uuid::ParseCaseInsensitive("00000000-0000-0000-0000-000000000000"));
+  serializer.SetConfig(std::move(config));
+
+  BiddingAndAuctionData data = serializer.Build();
+  EXPECT_EQ(data.request.size(), kRequestSize - kEncryptionOverhead);
+}
+
+// Test that the encrypted request still has the full size even when the
+// specified buyers are not on the device.
+TEST_F(BiddingAndAuctionSerializerTest,
+       SerializeWithNoGroupsSetBuyersProportional) {
+  const size_t kRequestSize = 3000;
+  blink::mojom::AuctionDataConfigPtr config =
+      blink::mojom::AuctionDataConfig::New();
+  config->request_size = kRequestSize;
+
+  config->per_buyer_configs[kOriginA] =
+      blink::mojom::AuctionDataBuyerConfig::New(/*size=*/100);
+  config->per_buyer_configs[kOriginB] =
+      blink::mojom::AuctionDataBuyerConfig::New(/*size=*/100);
+  config->per_buyer_configs[kOriginC] =
+      blink::mojom::AuctionDataBuyerConfig::New(/*size=*/100);
+  config->per_buyer_configs[kOriginD] =
+      blink::mojom::AuctionDataBuyerConfig::New(/*size=*/100);
+
+  BiddingAndAuctionSerializer serializer;
+  serializer.SetPublisher("foo");
+  serializer.SetGenerationId(
+      base::Uuid::ParseCaseInsensitive("00000000-0000-0000-0000-000000000000"));
+  serializer.SetConfig(std::move(config));
+
+  BiddingAndAuctionData data = serializer.Build();
+  EXPECT_EQ(data.request.size(), kRequestSize - kEncryptionOverhead);
 }
 
 class TargetSizeEstimatorTest : public testing::Test {

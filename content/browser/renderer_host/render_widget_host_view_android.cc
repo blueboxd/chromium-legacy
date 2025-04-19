@@ -27,7 +27,10 @@
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "cc/base/math_util.h"
+#include "cc/input/browser_controls_offset_tags_info.h"
 #include "cc/slim/layer.h"
+#include "components/input/input_router.h"
+#include "components/input/render_widget_host_input_event_router.h"
 #include "components/input/web_input_event_builders_android.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/quads/compositor_frame.h"
@@ -54,14 +57,11 @@
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
-#include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/visible_time_request_trigger.h"
 #include "content/browser/screen_orientation/screen_orientation_provider.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/features.h"
 #include "content/common/input/events_helper.h"
-#include "content/common/input/input_router.h"
-#include "content/public/android/content_jni_headers/RenderWidgetHostViewImpl_jni.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/android/synchronous_compositor_client.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -100,6 +100,9 @@
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/touch_selection/selection_event_type.h"
 #include "ui/touch_selection/touch_selection_controller.h"
+
+// Must come after all headers that specialize FromJniType() / ToJniType().
+#include "content/public/android/content_jni_headers/RenderWidgetHostViewImpl_jni.h"
 
 namespace content {
 
@@ -1058,11 +1061,6 @@ void RenderWidgetHostViewAndroid::OnRenderFrameMetadataChangedAfterActivation(
             "viz", "RenderWidgetHostViewAndroid::RotationEmbed",
             TRACE_ID_LOCAL(rotation_target.second.hash()), activation_time,
             "duration(ms)", duration.InMillisecondsF());
-        // Report the total time from the first notification of rotation
-        // beginning, until the Renderer has submitted and activated a
-        // corresponding surface.
-        UMA_HISTOGRAM_TIMES("Android.Rotation.BeginToRendererFrameActivation",
-                            duration);
         rotation_metrics_.pop_front();
       } else {
         // The embedded surface may have updated the
@@ -1431,13 +1429,14 @@ bool RenderWidgetHostViewAndroid::OnTouchEvent(
   if (web_event.GetType() == blink::WebInputEvent::Type::kUndefined)
     return false;
 
-  ui::LatencyInfo latency_info(ui::SourceEventType::TOUCH);
+  ui::LatencyInfo latency_info;
   latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT);
   if (ShouldRouteEvents()) {
     host()->delegate()->GetInputEventRouter()->RouteTouchEvent(this, &web_event,
                                                                latency_info);
   } else {
-    host()->ForwardTouchEventWithLatencyInfo(web_event, latency_info);
+    host()->GetRenderInputRouter()->ForwardTouchEventWithLatencyInfo(
+        web_event, latency_info);
   }
 
   // Send a proactive BeginFrame for this vsync to reduce scroll latency for
@@ -1476,7 +1475,7 @@ void RenderWidgetHostViewAndroid::ResetGestureDetection() {
   std::unique_ptr<ui::MotionEvent> cancel_event = current_down_event->Cancel();
   if (gesture_provider_.OnTouchEvent(*cancel_event).succeeded) {
     bool causes_scrolling = false;
-    ui::LatencyInfo latency_info(ui::SourceEventType::TOUCH);
+    ui::LatencyInfo latency_info;
     latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT);
     blink::WebTouchEvent web_event = ui::CreateWebTouchEventFromMotionEvent(
         *cancel_event, causes_scrolling /* may_cause_scrolling */,
@@ -1485,7 +1484,8 @@ void RenderWidgetHostViewAndroid::ResetGestureDetection() {
       host()->delegate()->GetInputEventRouter()->RouteTouchEvent(
           this, &web_event, latency_info);
     } else {
-      host()->ForwardTouchEventWithLatencyInfo(web_event, latency_info);
+      host()->GetRenderInputRouter()->ForwardTouchEventWithLatencyInfo(
+          web_event, latency_info);
     }
   }
 }
@@ -2145,8 +2145,23 @@ gfx::Rect RenderWidgetHostViewAndroid::GetBoundsInRootWindow() {
   return GetViewBounds();
 }
 
+const viz::LocalSurfaceId&
+RenderWidgetHostViewAndroid::IncrementSurfaceIdForNavigation() {
+  local_surface_id_allocator_.GenerateId();
+
+  if (delegated_frame_host_) {
+    delegated_frame_host_->EmbedSurface(
+        local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
+        GetCompositorViewportPixelSize(),
+        cc::DeadlinePolicy::UseDefaultDeadline(),
+        host()->delegate()->IsFullscreen());
+  }
+
+  return local_surface_id_allocator_.GetCurrentLocalSurfaceId();
+}
+
 void RenderWidgetHostViewAndroid::ProcessAckedTouchEvent(
-    const TouchEventWithLatencyInfo& touch,
+    const input::TouchEventWithLatencyInfo& touch,
     blink::mojom::InputEventResultState ack_result) {
   TRACE_EVENT0("input", "RenderWidgetHostViewAndroid::ProcessAckedTouchEvent");
   const bool event_consumed =
@@ -2177,6 +2192,7 @@ void RenderWidgetHostViewAndroid::ProcessAckedTouchEvent(
 
 void RenderWidgetHostViewAndroid::GestureEventAck(
     const blink::WebGestureEvent& event,
+    blink::mojom::InputEventResultSource ack_source,
     blink::mojom::InputEventResultState ack_result) {
   if (overscroll_controller_)
     overscroll_controller_->OnGestureEventAck(event, ack_result);
@@ -2260,7 +2276,7 @@ void RenderWidgetHostViewAndroid::UnlockPointer() {
 // Methods called from the host to the render
 
 void RenderWidgetHostViewAndroid::SendKeyEvent(
-    const NativeWebKeyboardEvent& event) {
+    const input::NativeWebKeyboardEvent& event) {
   if (!host())
     return;
 
@@ -2279,10 +2295,6 @@ void RenderWidgetHostViewAndroid::SendKeyEvent(
     text_suggestion_host_->OnKeyEvent();
 
   ui::LatencyInfo latency_info;
-  if (event.GetType() == blink::WebInputEvent::Type::kRawKeyDown ||
-      event.GetType() == blink::WebInputEvent::Type::kChar) {
-    latency_info.set_source_event_type(ui::SourceEventType::KEY_PRESS);
-  }
   latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT);
   target_host->ForwardKeyboardEventWithLatencyInfo(event, latency_info);
 }
@@ -2330,7 +2342,7 @@ void RenderWidgetHostViewAndroid::SendMouseWheelEvent(
   if (!host() || !host()->delegate())
     return;
 
-  ui::LatencyInfo latency_info(ui::SourceEventType::WHEEL);
+  ui::LatencyInfo latency_info;
   latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT);
   blink::WebMouseWheelEvent wheel_event(event);
   bool should_route_events = ShouldRouteEvents();
@@ -2387,8 +2399,7 @@ void RenderWidgetHostViewAndroid::SendGestureEvent(
     }
   }
 
-  ui::LatencyInfo latency_info =
-      ui::WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(event);
+  ui::LatencyInfo latency_info;
   if (event.SourceDevice() == blink::WebGestureDevice::kTouchscreen) {
     if (event.GetType() == blink::WebInputEvent::Type::kGestureScrollBegin) {
       // If there is a current scroll going on and a new scroll that isn't
@@ -2415,7 +2426,8 @@ void RenderWidgetHostViewAndroid::SendGestureEvent(
     host()->delegate()->GetInputEventRouter()->RouteGestureEvent(
         this, &gesture_event, latency_info);
   } else {
-    host()->ForwardGestureEventWithLatencyInfo(event, latency_info);
+    host()->GetRenderInputRouter()->ForwardGestureEventWithLatencyInfo(
+        event, latency_info);
   }
 }
 
@@ -2614,8 +2626,8 @@ bool RenderWidgetHostViewAndroid::OnMouseEvent(
                       : 1;
   }
 
-  SendMouseEvent(WebMouseEventBuilder::Build(event, webMouseEventType,
-                                             click_count, action_button),
+  SendMouseEvent(input::WebMouseEventBuilder::Build(event, webMouseEventType,
+                                                    click_count, action_button),
                  ui::LatencyInfo());
 
   return true;
@@ -2623,15 +2635,15 @@ bool RenderWidgetHostViewAndroid::OnMouseEvent(
 
 bool RenderWidgetHostViewAndroid::OnMouseWheelEvent(
     const ui::MotionEventAndroid& event) {
-  SendMouseWheelEvent(WebMouseWheelEventBuilder::Build(event));
+  SendMouseWheelEvent(input::WebMouseWheelEventBuilder::Build(event));
   return true;
 }
 
 void RenderWidgetHostViewAndroid::OnGestureEvent(
     const ui::GestureEventData& gesture) {
-  if ((gesture.type() == ui::ET_GESTURE_PINCH_BEGIN ||
-       gesture.type() == ui::ET_GESTURE_PINCH_UPDATE ||
-       gesture.type() == ui::ET_GESTURE_PINCH_END) &&
+  if ((gesture.type() == ui::EventType::kGesturePinchBegin ||
+       gesture.type() == ui::EventType::kGesturePinchUpdate ||
+       gesture.type() == ui::EventType::kGesturePinchEnd) &&
       !IsPinchToZoomEnabled()) {
     return;
   }
@@ -2816,7 +2828,7 @@ void RenderWidgetHostViewAndroid::OnStylusSelectTap(base::TimeTicks time,
                                                     float y) {
   // Treat the stylus tap as a long press, activating either a word selection or
   // context menu depending on the targetted content.
-  blink::WebGestureEvent long_press = WebGestureEventBuilder::Build(
+  blink::WebGestureEvent long_press = input::WebGestureEventBuilder::Build(
       blink::WebInputEvent::Type::kGestureLongPress, time, x, y);
   SendGestureEvent(long_press);
 }
@@ -2829,14 +2841,14 @@ void RenderWidgetHostViewAndroid::ComputeEventLatencyOSTouchHistograms(
   switch (event.GetAction()) {
     case ui::MotionEvent::Action::DOWN:
     case ui::MotionEvent::Action::POINTER_DOWN:
-      event_type = ui::ET_TOUCH_PRESSED;
+      event_type = ui::EventType::kTouchPressed;
       break;
     case ui::MotionEvent::Action::MOVE:
-      event_type = ui::ET_TOUCH_MOVED;
+      event_type = ui::EventType::kTouchMoved;
       break;
     case ui::MotionEvent::Action::UP:
     case ui::MotionEvent::Action::POINTER_UP:
-      event_type = ui::ET_TOUCH_RELEASED;
+      event_type = ui::EventType::kTouchReleased;
       break;
     default:
       return;
@@ -2977,17 +2989,6 @@ display::ScreenInfo RenderWidgetHostViewAndroid::GetScreenInfo() const {
   display::DisplayUtil::DisplayToScreenInfo(
       &screen_info, window->GetDisplayWithWindowColorSpace());
   return screen_info;
-}
-
-std::vector<std::unique_ptr<ui::TouchEvent>>
-RenderWidgetHostViewAndroid::ExtractAndCancelActiveTouches() {
-  ResetGestureDetection();
-  return {};
-}
-
-void RenderWidgetHostViewAndroid::TransferTouches(
-    const std::vector<std::unique_ptr<ui::TouchEvent>>& touches) {
-  // Touch transfer for Android is not implemented in content/.
 }
 
 void RenderWidgetHostViewAndroid::ObserveDevicePosturePlatformProvider() {
@@ -3344,6 +3345,20 @@ const cc::slim::SurfaceLayer* RenderWidgetHostViewAndroid::GetSurfaceLayer()
     return nullptr;
   }
   return delegated_frame_host_->content_layer();
+}
+
+void RenderWidgetHostViewAndroid::RegisterOffsetTags(
+    const cc::BrowserControlsOffsetTagsInfo& tags_info) {
+  if (delegated_frame_host_) {
+    delegated_frame_host_->RegisterOffsetTags(tags_info);
+  }
+}
+
+void RenderWidgetHostViewAndroid::UnregisterOffsetTags(
+    const cc::BrowserControlsOffsetTagsInfo& tags_info) {
+  if (delegated_frame_host_) {
+    delegated_frame_host_->UnregisterOffsetTags(tags_info);
+  }
 }
 
 void RenderWidgetHostViewAndroid::BeginRotationBatching() {

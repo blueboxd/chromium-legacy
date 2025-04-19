@@ -34,19 +34,31 @@ class OobeScreensHandlerFactory
 
  private:
   // screens_factory::mojom::ScreensFactory:
+  void EstablishAiIntroScreenPipe(
+      mojo::PendingReceiver<screens_common::mojom::AiIntroPageHandler> receiver,
+      EstablishAiIntroScreenPipeCallback callback) override;
+
+  void EstablishAppDownloadingScreenPipe(
+      mojo::PendingReceiver<screens_common::mojom::AppDownloadingPageHandler>
+          receiver) override;
+
   void EstablishDrivePinningScreenPipe(
       mojo::PendingReceiver<screens_common::mojom::DrivePinningPageHandler>
           receiver,
       EstablishDrivePinningScreenPipeCallback callback) override;
 
-  void EstablishGestureNavigationScreenPipe(
-      mojo::PendingReceiver<screens_common::mojom::GestureNavigationPageHandler>
-          receiver) override;
-
   void EstablishGaiaInfoScreenPipe(
       mojo::PendingReceiver<screens_common::mojom::GaiaInfoPageHandler>
           receiver,
       EstablishGaiaInfoScreenPipeCallback callback) override;
+
+  void EstablishGeminiIntroScreenPipe(
+      mojo::PendingReceiver<screens_common::mojom::GeminiIntroPageHandler>
+          receiver) override;
+
+  void EstablishGestureNavigationScreenPipe(
+      mojo::PendingReceiver<screens_common::mojom::GestureNavigationPageHandler>
+          receiver) override;
 
   void EstablishConsumerUpdateScreenPipe(
       mojo::PendingReceiver<screens_oobe::mojom::ConsumerUpdatePageHandler>
@@ -56,6 +68,27 @@ class OobeScreensHandlerFactory
   void EstablishPackagedLicenseScreenPipe(
       mojo::PendingReceiver<screens_oobe::mojom::PackagedLicensePageHandler>
           receiver) override;
+
+  void EstablishArcVmDataMigrationScreenPipe(
+      mojo::PendingReceiver<screens_login::mojom::ArcVmDataMigrationPageHandler>
+          receiver,
+      EstablishArcVmDataMigrationScreenPipeCallback callback) override;
+
+  void EstablishEncryptionMigrationScreenPipe(
+      mojo::PendingReceiver<
+          screens_login::mojom::EncryptionMigrationPageHandler> receiver,
+      EstablishEncryptionMigrationScreenPipeCallback callback) override;
+
+  void EstablishLacrosDataBackwardMigrationScreenPipe(
+      mojo::PendingReceiver<
+          screens_login::mojom::LacrosDataBackwardMigrationPageHandler>
+          receiver,
+      EstablishLacrosDataBackwardMigrationScreenPipeCallback callback) override;
+
+  void EstablishLacrosDataMigrationScreenPipe(
+      mojo::PendingReceiver<
+          screens_login::mojom::LacrosDataMigrationPageHandler> receiver,
+      EstablishLacrosDataMigrationScreenPipeCallback callback) override;
 
   void EstablishLocalDataLossWarningScreenPipe(
       mojo::PendingReceiver<

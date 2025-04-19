@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 
 #include <objbase.h>
@@ -807,16 +812,14 @@ gfx::ImageSkia OSExchangeDataProviderWin::GetDragImage() const {
   // This class sets the image on data_object() so it shouldn't be used in
   // situations where the drag image is later queried. In that case a different
   // OSExchangeDataProvider should be used.
-  NOTREACHED_IN_MIGRATION();
-  return gfx::ImageSkia();
+  NOTREACHED();
 }
 
 gfx::Vector2d OSExchangeDataProviderWin::GetDragImageOffset() const {
   // This class sets the image on data_object() so it shouldn't be used in
   // situations where the drag image is later queried. In that case a different
   // OSExchangeDataProvider should be used.
-  NOTREACHED_IN_MIGRATION();
-  return gfx::Vector2d();
+  NOTREACHED();
 }
 
 void OSExchangeDataProviderWin::SetSource(

@@ -62,9 +62,9 @@ namespace {
 // Utility method that tries to find a field in `form` whose `id_attribute`
 // matches `id`. Returns nullptr if no such field exists.
 const FormFieldData* FindFieldById(const FormData& form, std::string_view id) {
-  auto it = base::ranges::find(form.fields, base::UTF8ToUTF16(id),
+  auto it = base::ranges::find(form.fields(), base::UTF8ToUTF16(id),
                                &FormFieldData::id_attribute);
-  return it != form.fields.end() ? &*it : nullptr;
+  return it != form.fields().end() ? &*it : nullptr;
 }
 
 class FakeContentAutofillDriver : public mojom::AutofillDriver {
@@ -94,36 +94,36 @@ class FakeContentAutofillDriver : public mojom::AutofillDriver {
                      mojom::SubmissionSource source) override {}
 
   void CaretMovedInFormField(const FormData& form,
-                             const FormFieldData& field,
+                             FieldRendererId field_id,
                              const gfx::Rect& caret_bounds) override {}
 
   void TextFieldDidChange(const FormData& form,
-                          const FormFieldData& field,
+                          FieldRendererId field_id,
                           base::TimeTicks timestamp) override {}
 
   void TextFieldDidScroll(const FormData& form,
-                          const FormFieldData& field) override {}
+                          FieldRendererId field_id) override {}
 
   void SelectControlDidChange(const FormData& form,
-                              const FormFieldData& field) override {}
+                              FieldRendererId field_id) override {}
 
   void JavaScriptChangedAutofilledValue(const FormData& form,
-                                        const FormFieldData& field,
+                                        FieldRendererId field_id,
                                         const std::u16string& old_value,
                                         bool formatting_only) override {}
 
   void AskForValuesToFill(
       const FormData& form,
-      const FormFieldData& field,
+      FieldRendererId field_id,
       const gfx::Rect& caret_bounds,
       AutofillSuggestionTriggerSource trigger_source) override {}
 
   void HidePopup() override {}
 
-  void FocusOnNonFormField(bool had_interacted_form) override {}
+  void FocusOnNonFormField() override {}
 
   void FocusOnFormField(const FormData& form,
-                        const FormFieldData& field) override {}
+                        FieldRendererId field_id) override {}
 
   void DidFillAutofillFormData(const FormData& form,
                                base::TimeTicks timestamp) override {}
@@ -355,7 +355,7 @@ WebElement PasswordGenerationAgentTest::GetElementById(
   WebDocument document = GetMainFrame()->GetDocument();
   WebElement element =
       document.GetElementById(blink::WebString::FromUTF8(element_id));
-  CHECK(!element.IsNull());
+  CHECK(element);
   return element;
 }
 
@@ -565,10 +565,10 @@ TEST_F(PasswordGenerationAgentTest, FillTest) {
 
   WebElement element =
       document.GetElementById(WebString::FromUTF8("first_password"));
-  ASSERT_FALSE(element.IsNull());
+  ASSERT_TRUE(element);
   WebInputElement first_password_element = element.To<WebInputElement>();
   element = document.GetElementById(WebString::FromUTF8("second_password"));
-  ASSERT_FALSE(element.IsNull());
+  ASSERT_TRUE(element);
   WebInputElement second_password_element = element.To<WebInputElement>();
 
   // Both password fields should be empty.
@@ -596,7 +596,7 @@ TEST_F(PasswordGenerationAgentTest, FillTest) {
 
   // Check that focus returns to previously focused element.
   element = document.GetElementById(WebString::FromUTF8("address"));
-  ASSERT_FALSE(element.IsNull());
+  ASSERT_TRUE(element);
   EXPECT_EQ(element, document.FocusedElement());
 }
 
@@ -611,10 +611,10 @@ TEST_F(PasswordGenerationAgentTest, EditingTest) {
   WebDocument document = GetMainFrame()->GetDocument();
   WebElement element =
       document.GetElementById(WebString::FromUTF8("first_password"));
-  ASSERT_FALSE(element.IsNull());
+  ASSERT_TRUE(element);
   WebInputElement first_password_element = element.To<WebInputElement>();
   element = document.GetElementById(WebString::FromUTF8("second_password"));
-  ASSERT_FALSE(element.IsNull());
+  ASSERT_TRUE(element);
   WebInputElement second_password_element = element.To<WebInputElement>();
 
   std::u16string password = u"random_password";
@@ -629,14 +629,19 @@ TEST_F(PasswordGenerationAgentTest, EditingTest) {
   EXPECT_EQ(password, second_password_element.Value().Utf16());
 
   // After editing the first field they are still the same.
-  std::string edited_password_ascii = "edited_password";
-  std::u16string edited_password = base::ASCIIToUTF16(edited_password_ascii);
+  std::u16string appended_chars = u"123";
+  std::u16string edited_password = password + appended_chars;
   EXPECT_CALL(fake_pw_client_,
               PresaveGeneratedPassword(_, Eq(edited_password)));
   EXPECT_CALL(fake_pw_client_, ShowPasswordEditingPopup).Times(AtLeast(1));
   FocusField("first_password");
-  SimulateUserInputChangeForElement(&first_password_element,
-                                    edited_password_ascii);
+  SimulateUserTypingASCIICharacter(ui::VKEY_END, /*flush_message_loop=*/false);
+  for (size_t i = 0; i < appended_chars.size(); i++) {
+    SimulateUserTypingASCIICharacter(appended_chars[i],
+                                     /*flush_message_loop=*/false);
+  }
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_EQ(edited_password, first_password_element.Value().Utf16());
   EXPECT_EQ(edited_password, second_password_element.Value().Utf16());
   EXPECT_TRUE(first_password_element.IsAutofilled());
@@ -660,6 +665,8 @@ TEST_F(PasswordGenerationAgentTest, EditingTest) {
   EXPECT_EQ(std::u16string(), second_password_element.Value().Utf16());
   EXPECT_FALSE(first_password_element.IsAutofilled());
   EXPECT_FALSE(second_password_element.IsAutofilled());
+  EXPECT_FALSE(first_password_element.ShouldRevealPassword());
+  EXPECT_FALSE(second_password_element.ShouldRevealPassword());
   ASSERT_TRUE(fake_driver_.form_data_maybe_submitted().has_value());
   EXPECT_THAT(FindFieldById(*fake_driver_.form_data_maybe_submitted(),
                             "first_password"),
@@ -752,7 +759,7 @@ TEST_F(PasswordGenerationAgentTest, MaximumCharsForGenerationOffer) {
   WebDocument document = GetMainFrame()->GetDocument();
   WebElement element =
       document.GetElementById(WebString::FromUTF8("first_password"));
-  ASSERT_FALSE(element.IsNull());
+  ASSERT_TRUE(element);
   WebInputElement first_password_element = element.To<WebInputElement>();
 
   // Make a password just under maximum offer size.
@@ -844,10 +851,10 @@ TEST_F(PasswordGenerationAgentTest, MinimumLengthForEditedPassword) {
   WebDocument document = GetMainFrame()->GetDocument();
   WebElement element =
       document.GetElementById(WebString::FromUTF8("first_password"));
-  ASSERT_FALSE(element.IsNull());
+  ASSERT_TRUE(element);
   WebInputElement first_password_element = element.To<WebInputElement>();
   element = document.GetElementById(WebString::FromUTF8("second_password"));
-  ASSERT_FALSE(element.IsNull());
+  ASSERT_TRUE(element);
   WebInputElement second_password_element = element.To<WebInputElement>();
   EXPECT_NE(std::u16string(), first_password_element.Value().Utf16());
   EXPECT_EQ(std::u16string(), second_password_element.Value().Utf16());
@@ -971,7 +978,7 @@ TEST_F(PasswordGenerationAgentTest, DesktopContextMenuGenerationNoIds) {
       "document.getElementsByClassName('first_password')[0].focus();");
   WebInputElement first_password_element =
       document.FocusedElement().To<WebInputElement>();
-  ASSERT_FALSE(first_password_element.IsNull());
+  ASSERT_TRUE(first_password_element);
   SelectGenerationFallbackAndExpect(true);
 
   // Simulate that the user accepts a generated password.
@@ -990,7 +997,7 @@ TEST_F(PasswordGenerationAgentTest, DesktopContextMenuGenerationNoIds) {
       "document.getElementsByClassName('second_password')[0].focus();");
   WebInputElement second_password_element =
       document.FocusedElement().To<WebInputElement>();
-  ASSERT_FALSE(second_password_element.IsNull());
+  ASSERT_TRUE(second_password_element);
   EXPECT_EQ(password, second_password_element.Value().Utf16());
   EXPECT_TRUE(second_password_element.IsAutofilled());
 }
@@ -1137,7 +1144,7 @@ TEST_F(PasswordGenerationAgentTest, RevealPassword) {
 
     WebDocument document = GetMainFrame()->GetDocument();
     WebElement element = GetElementById(kGenerationElementId);
-    ASSERT_FALSE(element.IsNull());
+    ASSERT_TRUE(element);
     blink::WebInputElement input = element.To<WebInputElement>();
     EXPECT_TRUE(input.ShouldRevealPassword());
 
@@ -1293,7 +1300,7 @@ TEST_F(PasswordGenerationAgentTest, PasswordUnmaskedUntilCompleteDeletion) {
   // Check that the characters remain unmasked.
   WebDocument document = GetMainFrame()->GetDocument();
   WebElement element = GetElementById(kGenerationElementId);
-  ASSERT_FALSE(element.IsNull());
+  ASSERT_TRUE(element);
   blink::WebInputElement input = element.To<WebInputElement>();
   EXPECT_TRUE(input.ShouldRevealPassword());
 
@@ -1345,7 +1352,7 @@ TEST_F(PasswordGenerationAgentTest, ShortPasswordMaskedAfterChangingFocus) {
   // Check that the characters remain unmasked.
   WebDocument document = GetMainFrame()->GetDocument();
   WebElement element = GetElementById(kGenerationElementId);
-  ASSERT_FALSE(element.IsNull());
+  ASSERT_TRUE(element);
   blink::WebInputElement input = element.To<WebInputElement>();
   EXPECT_TRUE(input.ShouldRevealPassword());
 
@@ -1406,10 +1413,10 @@ TEST_F(PasswordGenerationAgentTest, SuggestionPreviewedAndClearedTest) {
 
   WebElement element =
       document.GetElementById(WebString::FromUTF8("first_password"));
-  ASSERT_FALSE(element.IsNull());
+  ASSERT_TRUE(element);
   WebInputElement first_password_element = element.To<WebInputElement>();
   element = document.GetElementById(WebString::FromUTF8("second_password"));
-  ASSERT_FALSE(element.IsNull());
+  ASSERT_TRUE(element);
   WebInputElement second_password_element = element.To<WebInputElement>();
 
   std::u16string password = u"random_password";
@@ -1440,10 +1447,10 @@ TEST_F(PasswordGenerationAgentTest, SuggestionPreviewedAndFilledTest) {
 
   WebElement element =
       document.GetElementById(WebString::FromUTF8("first_password"));
-  ASSERT_FALSE(element.IsNull());
+  ASSERT_TRUE(element);
   WebInputElement first_password_element = element.To<WebInputElement>();
   element = document.GetElementById(WebString::FromUTF8("second_password"));
-  ASSERT_FALSE(element.IsNull());
+  ASSERT_TRUE(element);
   WebInputElement second_password_element = element.To<WebInputElement>();
 
   std::u16string password = u"random_password";
@@ -1479,6 +1486,53 @@ TEST_F(PasswordGenerationAgentTest, AdvancesFocusToNextFieldAfterPasswords) {
   WebDocument document = GetMainFrame()->GetDocument();
   EXPECT_EQ(document.FocusedElement(),
             document.GetElementById(WebString::FromUTF8("address")));
+}
+
+TEST_F(PasswordGenerationAgentTest,
+       MasksPasswordAfterReplacingTextBySelectingAll) {
+  LoadHTMLWithUserGesture(kAccountCreationFormHTML);
+  SetFoundFormEligibleForGeneration(password_generation_,
+                                    GetMainFrame()->GetDocument(),
+                                    /*new_password_id=*/"first_password",
+                                    /*confirm_password_id=*/"second_password");
+
+  WebDocument document = GetMainFrame()->GetDocument();
+  WebElement element =
+      document.GetElementById(WebString::FromUTF8("first_password"));
+  ASSERT_TRUE(element);
+  WebInputElement first_password_element = element.To<WebInputElement>();
+  element = document.GetElementById(WebString::FromUTF8("second_password"));
+  ASSERT_TRUE(element);
+  WebInputElement second_password_element = element.To<WebInputElement>();
+
+  // Generate password.
+  ExpectAutomaticGenerationAvailable("first_password", kAvailable);
+  std::u16string password = u"random_password";
+  EXPECT_CALL(fake_pw_client_, PresaveGeneratedPassword(_, Eq(password)));
+  password_generation_->GeneratedPasswordAccepted(password);
+  fake_pw_client_.Flush();
+  testing::Mock::VerifyAndClearExpectations(&fake_pw_client_);
+
+  // Verify that values in both fields are mirrored.
+  EXPECT_EQ(first_password_element.Value().Utf16(), password);
+  EXPECT_EQ(second_password_element.Value().Utf16(), password);
+
+  // Focus first password field, select all characters and type a letter.
+  EXPECT_CALL(fake_pw_client_, ShowPasswordEditingPopup).Times(AtLeast(1));
+  FocusField("first_password");
+  first_password_element.SetSelectionRange(0, password.length());
+  fake_pw_client_.Flush();
+  testing::Mock::VerifyAndClearExpectations(&fake_pw_client_);
+  EXPECT_CALL(fake_pw_client_, PasswordNoLongerGenerated);
+  EXPECT_CALL(fake_pw_client_, AutomaticGenerationAvailable).Times(AtLeast(1));
+  SimulateUserTypingASCIICharacter('X', /*flush_message_loop=*/true);
+
+  // First field should contain the typed letter, second field should be empty
+  // since the password is no longer generated. Both fields should be masked.
+  EXPECT_EQ(first_password_element.Value().Utf16(), u"X");
+  EXPECT_TRUE(second_password_element.Value().Utf16().empty());
+  EXPECT_FALSE(first_password_element.ShouldRevealPassword());
+  EXPECT_FALSE(second_password_element.ShouldRevealPassword());
 }
 
 }  // namespace autofill

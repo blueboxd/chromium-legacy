@@ -11,6 +11,7 @@
 #import "components/reading_list/ios/reading_list_model_bridge_observer.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/browser_coordinator_commands.h"
+#import "ios/chrome/browser/shared/public/commands/whats_new_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/signin/model/authentication_service.h"
 #import "ios/chrome/browser/signin/model/authentication_service_factory.h"
@@ -66,10 +67,8 @@
     _shortcutsConfig.shortcutItems = [self shortcutItems];
     _shortcutsConfig.consumerSource = self;
     _shortcutsConfig.commandHandler = self;
-    if (IsIOSMagicStackCollectionViewEnabled()) {
-      _consumers = [ShortcutsConsumerList
-          observersWithProtocol:@protocol(ShortcutsConsumer)];
-    }
+    _consumers = [ShortcutsConsumerList
+        observersWithProtocol:@protocol(ShortcutsConsumer)];
   }
   return self;
 }
@@ -103,7 +102,6 @@
 #pragma mark - ShortcutsConsumerSource
 
 - (void)addConsumer:(id<ShortcutsConsumer>)consumer {
-  DCHECK(IsIOSMagicStackCollectionViewEnabled());
   [_consumers addObserver:consumer];
 }
 
@@ -161,11 +159,7 @@
   _readingListModelIsLoaded = model->loaded();
   if (_readingListItem) {
     _shortcutsConfig.shortcutItems = [self shortcutItems];
-    if (IsIOSMagicStackCollectionViewEnabled()) {
-      [_consumers shortcutsItemConfigDidChange:_readingListItem];
-    } else {
-      [self.consumer setShortcutTilesConfig:_shortcutsConfig];
-    }
+    [_consumers shortcutsItemConfigDidChange:_readingListItem];
   }
 }
 

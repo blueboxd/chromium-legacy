@@ -11,8 +11,10 @@
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" /> Threads, <ph name="CPU_MAX_CLOCK_SPEED" /> GHz)</translation>
 <translation id="1047773237499189053">Neue Funktion verfügbar. Verwende den Aufwärtspfeil, um mehr zu erfahren.</translation>
 <translation id="1049663189809099096">pastellgelb</translation>
+<translation id="1053371972724535586">Meine Aufnahmen</translation>
 <translation id="1056898198331236512">Warnung</translation>
 <translation id="1059913517121127803">Scan konnte nicht gestartet werden</translation>
+<translation id="1061864016440983342">Ohne Standortzugriff verwenden</translation>
 <translation id="1062823486781306604"><ph name="INDEX" /> von <ph name="COUNT" />, <ph name="NAME" />.</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">Firewall erkannt</translation>
@@ -34,6 +36,7 @@
 <translation id="1164939766849482256">Bildschirmschoner – Sonnenauf- bis -untergang</translation>
 <translation id="1167755866710282443">Öffne das Menü, um die Schlüssel anzupassen. Ziehe das Menü zum Verschieben.</translation>
 <translation id="1171349345463658120">Sandlagune</translation>
+<translation id="1173894706177603556">Umbenennen</translation>
 <translation id="1174073918202301297">Verknüpfung hinzugefügt</translation>
 <translation id="11743817593307477">Mit den Pfeiltasten kannst du das Steuerelement zur gewünschten Aktion im Spiel bewegen. Wenn du das Steuerelement platzieren möchtest, drücke die Eingabetaste. Wenn du die Aktion abbrechen möchtest, drücke die Esc-Taste.</translation>
 <translation id="1175697296044146566">Dieses Gerät (<ph name="DEVICE_TYPE" />) wird von <ph name="MANAGER" /> verwaltet.</translation>
@@ -59,6 +62,7 @@
 <translation id="1290331692326790741">Schwaches Signal</translation>
 <translation id="1300115153046603471">APN hat den Typ „Standard“ und „<ph name="ATTACH" />“.</translation>
 <translation id="1301069673413256657">GSM</translation>
+<translation id="1304014921944666344">Erstellungsdatum</translation>
 <translation id="1308754910631152188">Wird aktualisiert (<ph name="PERCENTAGE_VALUE" /> % abgeschlossen)</translation>
 <translation id="1309341072016605398"><ph name="MINUTES" /> Minuten</translation>
 <translation id="1310380015393971138">Kein Netzwerk (<ph name="NETWORK_NAME" />) verfügbar</translation>
@@ -81,6 +85,7 @@
 <translation id="1413240736185167732">Fehlgeschlagen – Filter funktioniert nicht</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
 <translation id="1418991483994088776">Orchidee</translation>
+<translation id="142205161612889714">WEBM</translation>
 <translation id="142228117786570094">Ich habe ein Schlüsselpaar</translation>
 <translation id="1423591390236870726">Die Taste „<ph name="KEY_NAME" />“ ist nicht gedrückt</translation>
 <translation id="1432110487435300883"><ph name="CATEGORY_TEXT" /> durch <ph name="CONVERSION_RATE" /> dividieren, um ein ungefähres Ergebnis zu erhalten</translation>
@@ -98,9 +103,10 @@
 <translation id="1483493594462132177">Senden</translation>
 <translation id="1488850966314959671">Mit den aktivierten benutzerdefinierten APNs kann keine Verbindung zu diesem Netzwerk hergestellt werden. Wende dich für weitere Informationen an deinen Mobilfunkanbieter.</translation>
 <translation id="1499041187027566160">Lautstärke erhöhen</translation>
-<translation id="1499900233129743732"><ph name="MANAGER" /> verwaltet diesen Nutzer und kann per Remotezugriff Einstellungen ändern und die Nutzeraktivität überwachen.</translation>
+<translation id="1499900233129743732"><ph name="MANAGER" /> verwaltet diesen Nutzer und kann per Remote-Zugriff Einstellungen ändern und die Nutzeraktivität überwachen.</translation>
 <translation id="150962533380566081">Ungültiger PUK.</translation>
 <translation id="1510238584712386396">Launcher</translation>
+<translation id="1514446283880973949">Mit mehr Sicherheit schreiben, Inhalte zusammenfassen, Definitionen abrufen und mehr</translation>
 <translation id="1515129336378114413">Browser-Startseite</translation>
 <translation id="1526389707933164996">Bildschirmschoneranimation</translation>
 <translation id="152892567002884378">Lauter</translation>
@@ -113,6 +119,8 @@
 <translation id="1567064801249837505">Alben</translation>
 <translation id="1572585716423026576">Als Hintergrund festlegen</translation>
 <translation id="1578784163189013834">Hintergrund für den Bildschirmschoner auswählen</translation>
+<translation id="1588438908519853928">Normal</translation>
+<translation id="1591562245178063882">Aktueller Monat</translation>
 <translation id="1593528591614229756">Lege nur APNs fest, die von deinem Mobilfunkanbieter oder Administrator bereitgestellt wurden. Wenn du einen APN festlegst, werden alle benutzerdefinierten APNs deaktiviert. Ungültige APNs können dazu führen, dass deine Mobilfunkverbindung unterbrochen wird. <ph name="LINK_BEGIN" />Weitere Informationen<ph name="LINK_END" /></translation>
 <translation id="160633243685262989">Bild in der Vorschau anzeigen</translation>
 <translation id="1611649489706141841">Weiter</translation>
@@ -149,6 +157,7 @@
 <translation id="1738949837603788263">Bereich <ph name="ZONE_NUMBER" /></translation>
 <translation id="1745577949879301685">Bilder konnten nicht geladen werden. Prüfe die Netzwerkverbindung oder versuch noch einmal, die Bilder zu laden.</translation>
 <translation id="1751249301761991853">Personalisierung</translation>
+<translation id="1751335846119670066">Leseübersicht</translation>
 <translation id="1753496554272155572">Hintergrundvorschau beenden</translation>
 <translation id="1754578112426924640">Schaltfläche zum Bearbeiten von „<ph name="ACCELERATOR_INFO" />“.</translation>
 <translation id="1755556344721611131">Diagnose-App</translation>
@@ -185,6 +194,7 @@
 <translation id="1874612839560830905">MTU</translation>
 <translation id="1876997008435570708">Schmetterlinge</translation>
 <translation id="188114911237521550">Dunklen Modus ausschalten</translation>
+<translation id="1884794756658039602">Weitere Informationen zu Labels für Sprecher</translation>
 <translation id="1885577615937958993">Medien vorspulen</translation>
 <translation id="1887850431809612466">Hardware-Version</translation>
 <translation id="189221451253258459">neongrünen</translation>
@@ -193,6 +203,7 @@
 <translation id="1908234395526491708">Fehlgeschlagene UDP-Anfragen</translation>
 <translation id="1908394185991500139">Pfeil nach links</translation>
 <translation id="1923388006036088459">Akzentfarben</translation>
+<translation id="1945403655450283000">Rekorder</translation>
 <translation id="1947737735496445907">Gedruckt</translation>
 <translation id="1951012854035635156">Assistant</translation>
 <translation id="1954818433534793392">Gebäude</translation>
@@ -217,14 +228,20 @@
 <translation id="2080070583977670716">Weitere Einstellungen</translation>
 <translation id="2082932131694554252">Zugewiesene Taste</translation>
 <translation id="2085089206770112532">Displayhelligkeit verringern</translation>
+<translation id="2085876078937250610">Speichern…</translation>
+<translation id="2086091080968010660">Zeitbasierte Änderungen können ungenau sein. Aktiviere den Standortzugriff für Systemdienste in den Einstellungen.</translation>
 <translation id="2102231663024125441">Textbearbeitung</translation>
+<translation id="2102648867808308635">Hilfe beim Lesen dieser Seite</translation>
 <translation id="2105810540595158374">Das Gerät ist ein Controller.</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, Version <ph name="MILESTONE_VERSION" /></translation>
+<translation id="2124643134650336457">Derzeit nur auf Englisch (USA) verfügbar</translation>
 <translation id="2126937207024182736"><ph name="AVAILABLE_MEMORY" /> GB von <ph name="TOTAL_MEMORY" /> GB sind verfügbar</translation>
 <translation id="2135668738111962377"><ph name="ACTION_NAME" /> bearbeiten</translation>
 <translation id="2138109643290557664">Einfach treiben lassen</translation>
 <translation id="2141644705054017895"><ph name="PERCENTAGE_VALUE" /> %</translation>
+<translation id="2148716181193084225">Heute</translation>
 <translation id="2152882202543497059"><ph name="NUMBER" /> Fotos</translation>
+<translation id="2156072344042480449">Dies sind deine letzten 2 Prompts. Du kannst sie nur verwenden, solange du dich auf dieser Seite befindest.</translation>
 <translation id="2157660087437850958">Emoji-Auswahl</translation>
 <translation id="2157959690810728433">IN WARTESCHLANGE</translation>
 <translation id="2158971754079422508"><ph name="DESC_TEXT" />: Wiederholen</translation>
@@ -236,7 +253,6 @@
 <translation id="2189104374785738357">APN-Details bearbeiten</translation>
 <translation id="2195732836444333448">Das Tool ist derzeit ausgelastet. Versuche es später noch einmal.</translation>
 <translation id="2201758491318984023">Fahrrad</translation>
-<translation id="2203222757805818543">Aktueller Zeitplan: <ph name="SUNRISE" />–<ph name="SUNSET" />. Wenn der Zeitplan für den dunklen Modus automatisch aktualisiert werden soll, <ph name="BEGIN_LINK" />aktiviere den Standortzugriff<ph name="END_LINK" />.</translation>
 <translation id="2203272733515928691">Thermalquelle</translation>
 <translation id="2203642483788377106">Klippe</translation>
 <translation id="2208388655216963643">Impressionismus</translation>
@@ -256,9 +272,11 @@
 <translation id="2267285889943769271">Screenshot hinzufügen</translation>
 <translation id="2271469253353559191">Zeitplan für dunklen Modus</translation>
 <translation id="2276999893457278469">Häufig gelesene Hilfeartikel</translation>
+<translation id="2277631741861284101">Audioinhalte mühelos aufnehmen und teilen</translation>
 <translation id="2279051792571591988">Standardeinstellungen wiederherstellen</translation>
 <translation id="2286454467119466181">Einfach</translation>
 <translation id="2287186687001756809">Kein Bild verfügbar. Du kannst Fotos unter <ph name="LINK" /> hinzufügen.</translation>
+<translation id="2294577623958216786">Aktueller Zeitplan: <ph name="SUNRISE" />–<ph name="SUNSET" />. Wenn der Zeitplan für Sonnenuntergang und Sonnenaufgang automatisch aktualisiert werden soll, aktiviere den Standortzugriff für Systemdienste.</translation>
 <translation id="2305172810646967500">Schwarz</translation>
 <translation id="2307344026739914387">Aktuelles Schlüsselpaar verwenden</translation>
 <translation id="2308243864813041101">Ziehe zum Fortsetzen des Updates das USB-Kabel des Geräts „<ph name="DEVICE_NAME" />“ ab</translation>
@@ -280,6 +298,7 @@
 <translation id="2414886740292270097">Dunkel</translation>
 <translation id="2418150275289244458">In den Einstellungen öffnen</translation>
 <translation id="2421798028054665193">Bild <ph name="CURRENT_PAGE" /> von <ph name="TOTAL_PAGES" /></translation>
+<translation id="242825218556404975">Es wurde kein gesprochener Text erkannt</translation>
 <translation id="2446553403094072641">Gleitkommagenauigkeit</translation>
 <translation id="2448312741937722512">Art</translation>
 <translation id="2472215337771558851">Mit der Funktion „Formuliere für mich“, die auf Google AI basiert, kannst du Entwürfe erstellen oder vorhandene Texte optimieren</translation>
@@ -303,6 +322,8 @@
 <translation id="2538719227433767804">+<ph name="NUM_HIDDEN_OPTIONS" /> weitere</translation>
 <translation id="2561093647892030937">Zitronen</translation>
 <translation id="2570743873672969996">Test für <ph name="TEST_NAME" /> wird ausgeführt…</translation>
+<translation id="2575552334616524665">Du kannst diese Funktion in den Einstellungen oder über das <ph name="THREE_DOTS_MENU_ICON" />‑Menü aktivieren</translation>
+<translation id="2576253868710695442">Das erfordert bis zu 2 GB Speicherplatz</translation>
 <translation id="2584547424703650812">Leuchtende Landschaften</translation>
 <translation id="2584559707064218956">Gehe für die Einrichtung zu den Einstellungen</translation>
 <translation id="2586146417912237930">blau und indigoblau</translation>
@@ -313,6 +334,7 @@
 <translation id="2618015542787108131">Sanddüne</translation>
 <translation id="2619761439309613843">Tägliche Aktualisierung</translation>
 <translation id="2620436844016719705">System</translation>
+<translation id="2637303424821734920">AUS – Wenn du das lokale Wetter sehen möchtest, <ph name="BEGIN_LINK" />aktiviere den Standortzugriff für das System<ph name="END_LINK" /></translation>
 <translation id="2638662041295312666">Log-in-Bild</translation>
 <translation id="2640549051766135490">Album <ph name="TITLE" /> <ph name="DESC" /> ausgewählt</translation>
 <translation id="2645380101799517405">Steuerelemente</translation>
@@ -322,6 +344,7 @@
 <translation id="2656001153562991489">Exklusiv bei Chromebook Plus</translation>
 <translation id="2665671725390405060">Aussprache anhören</translation>
 <translation id="267442004702508783">Aktualisieren</translation>
+<translation id="2675392311492541028">Transkript und Zusammenfassung</translation>
 <translation id="268270014981824665">Tastatur dimmen</translation>
 <translation id="2712812801627182647">TLS-Authentifizierungsschlüssel</translation>
 <translation id="2713444072780614174">Weiß</translation>
@@ -335,6 +358,7 @@
 <translation id="2780756493585863768">Zuletzt verwendete Hintergründe powered by Google AI</translation>
 <translation id="2783010256799387990">BESTANDEN</translation>
 <translation id="2786429550992142861">Leinen</translation>
+<translation id="2787237339470862294">Diese Sprache wird derzeit nicht unterstützt</translation>
 <translation id="2787435249130282949">Tastatur heller</translation>
 <translation id="2805756323405976993">Apps</translation>
 <translation id="28232023175184696">Keine Verbindung zum Internet. Zum Wiederholen klicken.</translation>
@@ -361,6 +385,7 @@
 <translation id="3017079585324758401">Hintergrund</translation>
 <translation id="3027578600144895987">Kamera schließen</translation>
 <translation id="3031560714565892478">Das Gerät ist eine Videokamera.</translation>
+<translation id="3042927241478734594">Soll die Aufnahme beendet werden?</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> mA</translation>
 <translation id="3056720590588772262">Endpunkt</translation>
 <translation id="3060579846059757016">Übersicht</translation>
@@ -374,6 +399,7 @@
 <translation id="3102119246920354026">Cache</translation>
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3122614491980756867">Schwimmbecken</translation>
+<translation id="3122883569442693641">Weitere Details</translation>
 <translation id="3124039320086536031">Das Gerät ist verbunden.</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{Seite entfernen?}=1{Seite {PAGE_NUMBER} entfernen?}other{Seite {PAGE_NUMBER} entfernen?}}</translation>
 <translation id="3140130301071865159">Schnee</translation>
@@ -421,6 +447,7 @@
 <translation id="33736539805963175">Hintergrund in <ph name="LETTERS_COLOR" /> mit dem Buchstaben „<ph name="LETTERS_LETTER" />“</translation>
 <translation id="3383623117265110236">Exklusiv</translation>
 <translation id="3404249063913988450">Bildschirmschoner aktivieren</translation>
+<translation id="3410165745972100556">Transkriptfunktion ist deaktiviert</translation>
 <translation id="3413935475507503304">Klicke zum Fortsetzen der Aktualisierung auf „Weiter“.</translation>
 <translation id="3428551088151258685">Outdoor</translation>
 <translation id="3428971106895559033">Pastelltönen</translation>
@@ -435,6 +462,7 @@
 <translation id="346423161771747987">Strom</translation>
 <translation id="346539236881580388">Neu aufnehmen</translation>
 <translation id="3484914941826596830">Während die Firmware aktualisiert wird, darf dieses externe Gerät nicht getrennt oder der Computer heruntergefahren werden. Du kannst dieses Fenster minimieren. Die Aktualisierung dauert einige Minuten und dein externes Gerät funktioniert während dieser Zeit eventuell nicht.</translation>
+<translation id="3485555238092220889">Aktion für Bedienungshilfen</translation>
 <translation id="3486220673238053218">Definition</translation>
 <translation id="3487866404496702283">Feedback zur Mahi-Funktion</translation>
 <translation id="3488065109653206955">Teilweise aktiviert</translation>
@@ -454,6 +482,7 @@
 <translation id="3577473026931028326">Ein Fehler ist aufgetreten. Versuche es noch einmal.</translation>
 <translation id="357889014807611375">Kostenpflichtiges WLAN</translation>
 <translation id="3583278742022654445">Schwaches Signal. Gehe näher an die Quelle des WLAN-Signals heran.</translation>
+<translation id="3588034708467091142">Achte darauf, dass du mit dem Internet verbunden bist, und versuche es noch einmal.</translation>
 <translation id="3594280220611906414">„<ph name="USER_FRIENDLY_APN_NAME" />“ ist der nutzerfreundliche Name für „<ph name="APN_NAME" />“.</translation>
 <translation id="3595596368722241419">Akku voll</translation>
 <translation id="3600339377155080675">Display spiegeln</translation>
@@ -466,6 +495,7 @@
 <translation id="3621072146987826699">Elefanten</translation>
 <translation id="3632040286124154621">Guter Vorschlag</translation>
 <translation id="3632579075709132555">Privatsphärefunktion</translation>
+<translation id="3639873154908477486">Name (A bis Z)</translation>
 <translation id="3644695927181369554">Unpassender Vorschlag</translation>
 <translation id="3651050199673793219">Temperatureinheit auswählen</translation>
 <translation id="3661106764436337772">Schneller und mit mehr Sicherheit schreiben</translation>
@@ -477,6 +507,7 @@
 <translation id="3708186454126126312">Zuletzt verbundene Geräte</translation>
 <translation id="3715651196924935218">Status „Unverankert“ beenden</translation>
 <translation id="3716250181321371108">Steuerelement erstellen</translation>
+<translation id="3716830479327464973">Wenn du dies zulässt, analysiert Rekorder deine Audioaufnahmen, um Folgendes zu tun:</translation>
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (<ph name="AGGREGATED_COUNT" /> Rezensionen)</translation>
 <translation id="3748026146096797577">Nicht verbunden</translation>
 <translation id="3749289110408117711">Dateiname</translation>
@@ -484,7 +515,6 @@
 <translation id="3780740315729837296">Tastenbelegung zuweisen</translation>
 <translation id="3784455785234192852">Sperre</translation>
 <translation id="3785643128701396311">Pixel-Art</translation>
-<translation id="3790109258688020991">Pointillismus</translation>
 <translation id="380097101658023925">RGB-Einstellungen</translation>
 <translation id="38114475217616659">Gesamten Verlauf löschen</translation>
 <translation id="3820172043799983114">Ungültige PIN.</translation>
@@ -504,6 +534,7 @@
 <translation id="3869314628814282185">Tüll</translation>
 <translation id="387301095347517405">Wie oft der Akku vollständig aufgeladen wurde</translation>
 <translation id="3877066159641251281">Übersetzung anhören</translation>
+<translation id="3880601782712134623">Unterschiedliche Stimmen automatisch erkennen und jedem Sprecher ein generisches Label zuweisen, z. B. „Sprecher 1“ und „Sprecher 2“</translation>
 <translation id="3885327323343477505">Bildschirmschoner ändern</translation>
 <translation id="3889914174935857450">Datum für die Zurücksetzung</translation>
 <translation id="3897092660631435901">Menü</translation>
@@ -528,10 +559,14 @@
 <translation id="401147258241215701">Obsidian</translation>
 <translation id="4021031199988160623">Zum Testen in den Laptop-Modus wechseln</translation>
 <translation id="4034824040120875894">Drucker</translation>
+<translation id="4035877632587724847">Nicht zulassen</translation>
+<translation id="4042658354407913408">Zusammenfassung ist deaktiviert</translation>
 <translation id="4044093238444069296">Gateway kann nicht kontaktiert werden</translation>
 <translation id="4046123991198612571">Nächster Titel</translation>
 <translation id="404928562651467259">Warnung</translation>
+<translation id="4050208988451295487">Einige Optionen:</translation>
 <translation id="4054683689023980771">Bild wird heruntergeladen</translation>
+<translation id="4059839844193047929">Wenn du diese Seite verlässt, wird die aktuelle Aufnahme beendet</translation>
 <translation id="4063039537646912479">hellblau</translation>
 <translation id="4070799384363688067">Anime</translation>
 <translation id="4086271957099059213">Weiteres Steuerelement erstellen</translation>
@@ -559,9 +594,12 @@
 <translation id="4171077696775491955">Helligkeit verringern</translation>
 <translation id="4176463684765177261">Deaktiviert</translation>
 <translation id="4176659219503619100">Steuerfeld</translation>
+<translation id="4193496492959950834">Rekorder-Einstellungen</translation>
 <translation id="4198398257084619072">Pandas</translation>
 <translation id="420283545744377356">Bildschirmschoner deaktivieren</translation>
+<translation id="4210636113897977670">Speichern und beenden</translation>
 <translation id="4210659479607886331">Gletscherfluss</translation>
+<translation id="42126664696688958">Exportieren</translation>
 <translation id="4213104098953699324">USB-Tastatur</translation>
 <translation id="4227825898293920515">Passwort läuft in <ph name="TIME" /> ab</translation>
 <translation id="4238516577297848345">Keine laufenden Druckaufträge</translation>
@@ -582,6 +620,7 @@
 <translation id="4310735698903592804">Zuletzt verwendete Hintergründe, die auf Google AI basieren</translation>
 <translation id="4320904097188876154">neonrosa</translation>
 <translation id="4333390807948134856">Die Taste „<ph name="KEY_NAME" />“ wird gedrückt</translation>
+<translation id="4334293042716981313">Du kannst auch <ph name="BEGIN_LINK_FREEFORM_SUBPAGE" />deine eigenen Prompts schreiben<ph name="END_LINK_FREEFORM_SUBPAGE" /></translation>
 <translation id="4354430579665871434">Taste</translation>
 <translation id="4361257691546579041">APN-Typ ist „Standard“.</translation>
 <translation id="437294888293595148">Alle Tastenkombinationen zurücksetzen</translation>
@@ -599,15 +638,18 @@
 <translation id="4422041425070339732">Abwärtspfeil</translation>
 <translation id="4425149324548788773">Meine Ablage</translation>
 <translation id="4428374560396076622"><ph name="NETWORK_NAME" /> ist deaktiviert</translation>
+<translation id="4428840632568803690">Sprecher <ph name="SPEAKER_LABEL" /></translation>
 <translation id="4429881212383817840">Kerberos-Ticket läuft bald ab</translation>
 <translation id="4431821876790500265">Bericht ansehen</translation>
 <translation id="4443192710976771874">roten</translation>
+<translation id="4447592701292766824">Für diesen Inhalt kann keine Zusammenfassung erstellt werden</translation>
 <translation id="4448096106102522892">Insel</translation>
 <translation id="445059817448385655">Altes Passwort</translation>
 <translation id="4453205916657964690">Subnetzmaske</translation>
 <translation id="4454245904991689773">Speichern unter</translation>
 <translation id="4456812688969919973">Schaltfläche „APN speichern“ ist jetzt deaktiviert</translation>
 <translation id="4469288414739283461">Earth Flow-Bildschirmschoner</translation>
+<translation id="4474142134969976028">Keine passenden Ergebnisse</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Das nicht standardmäßige Netzwerk-Gateway konnte nicht kontaktiert werden</translation>
 <translation id="4500722292849917410">Tastenkombination nicht verfügbar. Drücke eine neue Tastenkombination unter Verwendung einer Modifikatortaste (Strg, Alt, Umschalttaste oder <ph name="META_KEY" />).</translation>
@@ -627,13 +669,16 @@
 <translation id="456077979087158257">Stadtansicht</translation>
 <translation id="4561801978359312462">SIM-Karte entsperrt</translation>
 <translation id="4562494484721939086">Dienst nicht verfügbar</translation>
+<translation id="4570558255126759859">Gemini-Modell herunterladen, um Aufnahmen zusammenzufassen?</translation>
 <translation id="4573777384450697571">Fehler – Zertifikat abgelaufen</translation>
 <translation id="458794348635939462">Es konnten nicht alle Hosts aufgelöst werden</translation>
 <translation id="4593212453765072419">Proxy-Authentifizierung erforderlich</translation>
+<translation id="4594021849294327751">Transkript erstellen</translation>
+<translation id="4607282946861182308">Dafür können keine Bilder erstellt werden. Versuche es mit einem anderen Prompt.</translation>
 <translation id="4609350030397390689">Tastaturhelligkeit verringern</translation>
-<translation id="4617553623719764431">Informationen zum Wetter werden nicht angezeigt, da dein Aufenthaltsort unbekannt ist. Wenn du das Wetter an deinem Standort sehen möchtest, <ph name="BEGIN_LINK" />aktiviere den Standortzugriff<ph name="END_LINK" />.</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> von <ph name="TOTAL_PAGE_NUMBER" />. Wenn du den Druckauftrag abbrechen möchtest, drücke die Eingabetaste.</translation>
 <translation id="463791356324567266">Scannen wird abgebrochen…</translation>
+<translation id="4644611440022666152">Aktivieren und herunterladen</translation>
 <translation id="4646949265910132906">Sichere WLAN-Verbindung</translation>
 <translation id="4650608062294027130">Umschalttaste rechts</translation>
 <translation id="4654549501020883054">Täglich ändern</translation>
@@ -702,9 +747,11 @@
 <translation id="4981003703840817201">Blau und Rosa</translation>
 <translation id="498186245079027698">Prüfe den Scanner und versuche es noch einmal. Sieh nach, ob ausreichend lokaler Speicherplatz vorhanden ist, um die gescannten Dateien zu speichern.</translation>
 <translation id="4982627662315910959">Tastenkombination nicht verfügbar. Drücke eine neue Tastenkombination unter Verwendung der Umschalttaste und einer weiteren Modifikatortaste (Strg, Alt oder <ph name="META_KEY" />).</translation>
+<translation id="4983216687482551672">Chromebook-Audio</translation>
 <translation id="4985509611418653372">Ausführen</translation>
 <translation id="4987769320337599931">Firewall</translation>
 <translation id="4988526792673242964">Seiten</translation>
+<translation id="4989542687859782284">Nicht verfügbar</translation>
 <translation id="4999333166442584738">Bericht ausblenden</translation>
 <translation id="500920857929044050">Test beenden</translation>
 <translation id="5017508259293544172">LEAP</translation>
@@ -714,6 +761,7 @@
 <translation id="5049856988445523908">SIM-Karte gesperrt (<ph name="LOCK_TYPE" />)</translation>
 <translation id="5050042263972837708">Gruppenname</translation>
 <translation id="5051044138948155788">Das ist die einzige Seite. Du gelangst dann zum Startbildschirm für den Scanvorgang.</translation>
+<translation id="5078711626843651677">Sprachmodelle werden vorübergehend auf dem Gerät gespeichert, bis die Sprecherlabels erstellt sind. Du kannst diese Funktion jederzeit wieder in den Einstellungen deaktivieren.</translation>
 <translation id="5078983345702708852">futuristisch</translation>
 <translation id="5087864757604726239">zurück</translation>
 <translation id="5088172560898466307">Hostname des Servers</translation>
@@ -729,6 +777,7 @@
 <translation id="5144311987923128508">Schaltfläche „Bestätigen“ ist jetzt deaktiviert</translation>
 <translation id="5144887194300568405">Übersetzung kopieren</translation>
 <translation id="5145081769226915336">Dunklen Modus automatisch aktivieren?</translation>
+<translation id="5145331109270917438">Änderungsdatum</translation>
 <translation id="5154917547274118687">Speicher</translation>
 <translation id="5160857336552977725">Auf deinem <ph name="DEVICE_TYPE" /> anmelden</translation>
 <translation id="5168185087976003268">Akkuzustand</translation>
@@ -738,8 +787,11 @@
 <translation id="5180712487038406644">Ausdrucksstark</translation>
 <translation id="5190187232518914472">Die schönsten Erinnerungen immer vor Augen. Wenn du Alben hinzufügst oder bearbeiten möchtest, gehe zu <ph name="LINK_BEGIN" />Google Fotos<ph name="LINK_END" />.</translation>
 <translation id="5212593641110061691">Tabloid</translation>
+<translation id="5220549459260334974"><ph name="PROGRESS_PERCENTAGE" /> % heruntergeladen</translation>
 <translation id="5222676887888702881">Abmelden</translation>
 <translation id="522307662484862935">E-Mail-Adresse nicht einfügen</translation>
+<translation id="5223226274641517059">Während der Aufnahme wird ein automatisches Transkript angezeigt. Du kannst diese Funktion jederzeit wieder in den Einstellungen deaktivieren.</translation>
+<translation id="5226879510707344687">Transkript exportieren</translation>
 <translation id="5227902338748591677">Zeitplan für dunkles Design</translation>
 <translation id="5229344016299762883">Status „Vollbild“ beenden</translation>
 <translation id="5234764350956374838">Schließen</translation>
@@ -762,10 +814,13 @@
 <translation id="5315873049536339193">Identität</translation>
 <translation id="5317780077021120954">Speichern</translation>
 <translation id="5318334351163689047">Fehlgeschlagene TCP-Anfragen</translation>
+<translation id="53196409393069519">Möchtest du die Transkription aktivieren?</translation>
 <translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
+<translation id="5327248766486351172">Name</translation>
 <translation id="5332948983412042822">Bitte lege jetzt ein neues fest</translation>
 <translation id="5333530671332546086">Unbekannter Portal-Status</translation>
 <translation id="5335373365677455232">rosa</translation>
+<translation id="5344619683981067131">Ausgewählter Text wird durch Vorschlag ersetzt</translation>
 <translation id="5346687412805619883">Lokales Netzwerk</translation>
 <translation id="5358174242040570474">Es gab ein Problem. Wähle noch einmal einen Hintergrund aus oder öffne die App ein weiteres Mal.</translation>
 <translation id="5372659122375744710">WLAN ist nicht sicher</translation>
@@ -817,9 +872,11 @@
 <translation id="5662240986744577912">Datenschutzbildschirm aktivieren oder deaktivieren</translation>
 <translation id="5669267381087807207">Wird aktiviert</translation>
 <translation id="5670702108860320605">BSSID</translation>
+<translation id="5674943355143004615">Beschreibe das Hintergrundbild, das du erstellen möchtest</translation>
 <translation id="5680504961595602662"><ph name="SURREAL_LANDSCAPE" /> (surreal) mit <ph name="SURREAL_SUBJECT" /></translation>
 <translation id="5685478548317291523">Kirschen</translation>
 <translation id="5691511426247308406">Familie</translation>
+<translation id="5692395212036914927">Zusammenfassung der Aufnahme und Namenserstellung</translation>
 <translation id="5695599963893094957">Drücke eine beliebige Taste auf der Tastatur. Du kannst maximal 4 Tasten gleichzeitig drücken.</translation>
 <translation id="5701381305118179107">Zentrieren</translation>
 <translation id="5703716265115423771">Lautstärke verringern</translation>
@@ -831,10 +888,10 @@
 <translation id="5760715441271661976">Portal-Status</translation>
 <translation id="5763838252932650682">„<ph name="APP_NAME" />“ neu starten und aktualisieren</translation>
 <translation id="576835345334454681">Displayhelligkeit erhöhen</translation>
+<translation id="5779818640587041940">Bildschirm bei Aufnahme anlassen</translation>
 <translation id="57838592816432529">Stummschalten</translation>
 <translation id="5784136236926853061">Hohe HTTP-Latenz</translation>
 <translation id="5790391387506209808">Lapislazuli</translation>
-<translation id="5810296156135698005">Barock</translation>
 <translation id="5816802250591013230">Keine Tastenkombination zugewiesen</translation>
 <translation id="5826644637650799838">Informationen zum Bild</translation>
 <translation id="5832805196449965646">Person hinzufügen</translation>
@@ -862,6 +919,7 @@
 <translation id="5928411637936685857">Schaltfläche zum Löschen von „<ph name="ACCELERATOR_INFO" />“.</translation>
 <translation id="5930669310554144537">Dreamscape</translation>
 <translation id="5931523347251946569">Datei nicht gefunden</translation>
+<translation id="5938286923316838007">Für diesen Inhalt können keine Aufzeichnungsnamen erstellt werden</translation>
 <translation id="5939518447894949180">Zurücksetzen</translation>
 <translation id="594552776027197022">Zufälliges Schlüsselpaar generieren</translation>
 <translation id="5946538341867151940">Du bist noch nicht verbunden. Wenn dein Mobilfunkanbieter einen benutzerdefinierten APN empfiehlt, wähle die Option „Neuer APN“ aus, um die APN-Informationen einzugeben.</translation>
@@ -870,6 +928,7 @@
 <translation id="594989847980441553">Wähle „Erstellen“ aus, um ein Bild mit künstlicher Intelligenz zu erstellen.
         Alle erstellten Bilder werden automatisch hier angezeigt.</translation>
 <translation id="5972388717451707488">Update Engine</translation>
+<translation id="5972801171078377748">Nicht mehr anzeigen</translation>
 <translation id="5975130252842127517">korallenrot</translation>
 <translation id="5984145644188835034">Standardhintergrund</translation>
 <translation id="5996832681196460718">Seide</translation>
@@ -880,12 +939,14 @@
 <translation id="6040143037577758943">Schließen</translation>
 <translation id="6040852767465482106">Anonyme Identität</translation>
 <translation id="604124094241169006">Automatisch</translation>
+<translation id="6042308850641462728">Mehr</translation>
 <translation id="6048107060512778456">Fehlgeschlagen – Papierstau</translation>
 <translation id="6050189528197190982">Graustufen</translation>
 <translation id="6054711098834486579">Expressionismus</translation>
 <translation id="6058625436358447366">Gib zum Schluss dein altes und dein neues Passwort ein</translation>
 <translation id="6061772781719867950">Fehlgeschlagene HTTPS-Anfragen</translation>
 <translation id="6073292342939316679">Tastaturhelligkeit verringern</translation>
+<translation id="6073451960410192870">Aufnahme beenden</translation>
 <translation id="6075872808778243331">(Android) HTTP-Latenz</translation>
 <translation id="6078323886959318429">Verknüpfung</translation>
 <translation id="6091080061796993741">gelben</translation>
@@ -897,6 +958,7 @@
 <translation id="6113701710518389813">Aufwärtspfeil</translation>
 <translation id="6116005346231504406">Erstes Steuerelement erstellen</translation>
 <translation id="6117895505466548728"><ph name="TITLE" />, +<ph name="NUMBER" /> weitere Alben</translation>
+<translation id="6120815036186828722">Warten auf Spracheingabe…</translation>
 <translation id="6122191549521593678">Online</translation>
 <translation id="6122277663991249694">Dienst für die Chrome OS-Eingabemethoden</translation>
 <translation id="6127426868813166163">weiß</translation>
@@ -918,16 +980,15 @@
 <translation id="6231648282154119906">Verdächtige Dateien werden im Rahmen des von dir ausgewählten erweiterten Schutzes automatisch von Google Safe Browsing gescannt</translation>
 <translation id="6232017090690406397">Akku</translation>
 <translation id="6234024205316847054">Umrisse anzeigen</translation>
-<translation id="6235460611964961764">Datennutzung manuell zurücksetzen</translation>
 <translation id="6243280677745499710">Derzeit festgelegt</translation>
 <translation id="6250316632541035980">Eier mit Speck</translation>
-<translation id="6255213378196499011">Einstellungen für „Formuliere für mich“</translation>
 <translation id="6265268291107409527">Die ausgewählte Taste ist „<ph name="KEYS" />“. <ph name="ASSIGN_INSTRUCTION" /></translation>
 <translation id="6275224645089671689">Rechtspfeil</translation>
 <translation id="6278428485366576908">Design</translation>
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6283581480003247988">Blau und Lila</translation>
 <translation id="6284632978374966585">Dunkles Design einschalten</translation>
+<translation id="6285260286443238386">Aufzeichnung exportieren</translation>
 <translation id="628726841779494414">Du kannst deine Drucker in den Druckereinstellungen verwalten</translation>
 <translation id="6292095526077353682">Beim Laden Bildschirmschoner</translation>
 <translation id="629550705077076970">Dimmen der Tastatur</translation>
@@ -941,9 +1002,11 @@
 <translation id="6327262166342360252">Dieser Hintergrund wurde mit KI anhand des Prompts „<ph name="PROMPT" />“ erstellt.</translation>
 <translation id="6331191339300272798">Automatisches dunkles Design</translation>
 <translation id="6340526405444716530">Personalisierung</translation>
+<translation id="6348252528297699679">Du kannst die Standortermittlung deaktivieren, indem du die Einstellungen &gt; „Datenschutz und Sicherheit“ &gt; „Datenschutzeinstellungen“ &gt; „Standortzugriff“ aufrufst. <ph name="LINK_BEGIN" />Weitere Informationen<ph name="LINK_END" /></translation>
 <translation id="6348738456043757611">Nutzername und Passwort</translation>
 <translation id="6352210854422428614">anderer Planet</translation>
 <translation id="6359706544163531585">Helles Design deaktivieren</translation>
+<translation id="6359919876285606596">Die Aktion kann nicht rückgängig gemacht werden</translation>
 <translation id="636850387210749493">Enterprise-Registrierung</translation>
 <translation id="6373461326814131011">Teich</translation>
 <translation id="6379086450106841622">Touchscreen</translation>
@@ -960,8 +1023,9 @@
 <translation id="6411934471898487866">Tastaturhelligkeit</translation>
 <translation id="6412715219990689313">Eingebaute Tastatur</translation>
 <translation id="6417265370957905582">Google Assistant</translation>
+<translation id="6419454453018688975">Standortzugriff für Systemdienste aktivieren</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
-<translation id="6438073885402882007">Dadurch können Systemdienste mit dieser Berechtigung deinen Standorts verwenden. Der Standortdienst nutzt möglicherweise Quellen wie WLANs, Mobilfunknetze und Sensoren, um den Standort deines Geräts zu ermitteln. <ph name="LINK_BEGIN" />Weitere Informationen<ph name="LINK_END" /></translation>
+<translation id="6437513277380808188">TXT</translation>
 <translation id="6439505561246192797">Schwach (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">Kontoeinstellungen aufrufen</translation>
 <translation id="6462978824459367242">Schaltfläche „APN hinzufügen“ ist jetzt aktiviert</translation>
@@ -972,6 +1036,7 @@
 <translation id="6480327114083866287">Verwaltet von <ph name="MANAGER" /></translation>
 <translation id="6488559935020624631">Exklusiver <ph name="PRODUCT_NAME" />-Bildschirmschoner</translation>
 <translation id="649050271426829538">Angehalten – Papierstau</translation>
+<translation id="6490861263572002431">Automatisches Scrollen</translation>
 <translation id="6492891353338939218">besorgt</translation>
 <translation id="6494974875566443634">Anpassung</translation>
 <translation id="6500818810472529210">Ergebnis in der Google Suche anzeigen</translation>
@@ -995,8 +1060,10 @@
 <translation id="6576005492601044801">links</translation>
 <translation id="6579509898032828423">Dieses Foto verwenden</translation>
 <translation id="6587870930887634392">Sukkulente</translation>
+<translation id="6595046262780525922">Transkriptfunktion aktivieren und Transkriptmodell herunterladen?</translation>
 <translation id="6596816719288285829">IP-Adresse</translation>
 <translation id="6599673642868607614">Vielen Dank für das Feedback! Dein Feedback wird von unserem Team gelesen und hilft uns dabei, Chromebooks noch weiter zu verbessern. Da wir sehr viele Rückmeldungen erhalten, können wir dir nicht persönlich antworten.</translation>
+<translation id="660846213831377756">Maustasten</translation>
 <translation id="6618744767048954150">Läuft</translation>
 <translation id="6620487321149975369">Druckaufträge erscheinen im Verlauf, solange sie nicht manuell gelöscht werden</translation>
 <translation id="6624819909909965616">Dateien mit einer Größe von 10 MB oder mehr können nicht hochgeladen werden</translation>
@@ -1019,6 +1086,7 @@
 <translation id="6723839937902243910">Leistung</translation>
 <translation id="6723847290197874913">Hintergrundbeleuchtung der Tastatur</translation>
 <translation id="672609503628871915">Neuigkeiten</translation>
+<translation id="6738867403308150051">Wird heruntergeladen...</translation>
 <translation id="6740695858234317715">creme- und orangefarben</translation>
 <translation id="6741823073189174383">Boot</translation>
 <translation id="6744441848304920043">Dschungel</translation>
@@ -1037,6 +1105,7 @@
 <translation id="680983167891198932">Schlüssel</translation>
 <translation id="6816797338148849397">Informationen in Bezug auf deine Auswahl sind verfügbar. Verwende für Zugriff den Aufwärtspfeil.</translation>
 <translation id="6853312040151791195">Entladestrom</translation>
+<translation id="6862416241246624313">Feedback gesendet</translation>
 <translation id="6866732840889595464">Gänseblümchen</translation>
 <translation id="6871256179359663621">hellviolett</translation>
 <translation id="6889786074662672253">Während des Neustarts darf dieses externe Gerät nicht getrennt oder der Computer heruntergefahren werden. Du kannst das Fenster aber minimieren. Der Vorgang kann einige Minuten dauern. Unter Umständen funktioniert dein externes Gerät während dieser Zeit nicht.</translation>
@@ -1045,8 +1114,11 @@
 <translation id="6905163627763043954">Jetzt ausprobieren</translation>
 <translation id="6905724422583748843">Zurück zu <ph name="PAGE_NAME" /></translation>
 <translation id="6910312834584889076">Die Abdeckung des Scanners ist offen. Schließe sie und versuche es noch einmal.</translation>
+<translation id="6910845598686542904">Modelle der Stimmen in der Aufnahme erstellen</translation>
 <translation id="6911383237894364323">Verbindung zu Medienservern kann nicht hergestellt werden</translation>
+<translation id="6930242544192836755">Dauer</translation>
 <translation id="6930597342185648547">Informationen zum Hintergrund</translation>
+<translation id="6939667434404433010">Aufnahme suchen</translation>
 <translation id="6939766318048400022">Café</translation>
 <translation id="6943893908656559156">Remote-Identität (optional)</translation>
 <translation id="6953137545147683679">goldenen</translation>
@@ -1075,6 +1147,7 @@
 <translation id="7028979494427204405"><ph name="MANAGER" /> verwaltet dieses Gerät und hat Zugriff auf alle Nutzeraktivitäten, einschließlich besuchter Webseiten, Passwörter und E-Mails.</translation>
 <translation id="7035168792582749309">Kartoffeln</translation>
 <translation id="7040230719604914234">Operator</translation>
+<translation id="7040729769968826896">Sprechererkennung zulassen</translation>
 <translation id="7041549558901442110">Das Gerät ist nicht verbunden.</translation>
 <translation id="7046522406494308071">Alle Tastenkombinationen auf Standardeinstellungen zurücksetzen?</translation>
 <translation id="7058278511608979688">Speichern und beenden</translation>
@@ -1108,7 +1181,7 @@
 <translation id="7170236477717446850">Profilbild</translation>
 <translation id="7171919371520438592">Fenster an kleinerem Teil des Bildschirms fixieren (<ph name="DIRECTION" />)</translation>
 <translation id="7172721935181587524">1 Bild</translation>
-<translation id="7177485034254901881">Dieses <ph name="DEVICE_TYPE" /> wird von <ph name="MANAGER" /> verwaltet. Administratoren können das Gerät per Remotezugriff konfigurieren.</translation>
+<translation id="7177485034254901881">Dieses <ph name="DEVICE_TYPE" /> wird von <ph name="MANAGER" /> verwaltet. Administratoren können das Gerät per Remote-Zugriff konfigurieren.</translation>
 <translation id="7180611975245234373">Aktualisieren</translation>
 <translation id="7180865173735832675">Anpassen</translation>
 <translation id="7182063559013288142">Instant-Hotspot</translation>
@@ -1118,6 +1191,7 @@
 <translation id="7212547870105584639">Hier kannst du die APN-Netzwerkeinstellungen verwalten. APNs stellen eine Verbindung zwischen einem Mobilfunknetz und dem Internet her. <ph name="BEGIN_LINK_LEARN_MORE" />Weitere Informationen<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="7212734716605298123">Firmwareupdates für externe Geräte</translation>
 <translation id="7216409898977639127">Mobilfunkanbieter</translation>
+<translation id="7223952304612664117">Dadurch dürfen Systemdienste die Einstellung „Standortgenauigkeit“ nutzen, um deinen Standort zu ermitteln. „Standortgenauigkeit“ verwendet Informationen zu drahtlosen Signalen sowie Sensordaten, um den Standort des Geräts einzuschätzen.</translation>
 <translation id="7233782086689993269">Tastenkombination wiederhergestellt</translation>
 <translation id="725133483556299729">E-Mail-Adresse auswählen</translation>
 <translation id="7255187042098209569">rosa und lila</translation>
@@ -1146,10 +1220,13 @@
 <translation id="7343649194310845056">Netzwerkgeräte</translation>
 <translation id="7344788170842919262">erdig</translation>
 <translation id="7346768383111016081">Steuerelement auf der Spielaktion platzieren, um über die Tastatur zu spielen</translation>
+<translation id="7352651011704765696">Ein Problem ist aufgetreten.</translation>
 <translation id="7353413232959255829">Suchergebnis <ph name="LIST_POSITION" /> von <ph name="LIST_SIZE" />: <ph name="SEARCH_RESULT_TEXT" />. Drücke die Eingabetaste, um die Tastenkombination aufzurufen.</translation>
 <translation id="7359657277149375382">Dateityp</translation>
 <translation id="73631062356239394">Diagnosedaten teilen</translation>
 <translation id="7375053625150546623">EAP</translation>
+<translation id="7378170410161264436">Mit der Rekorder App kannst du Transkripte zu Aufnahmen mit gesprochenem Text erstellen lassen.
+Wenn du das möchtest, lade das Transkriptmodell (bis zu 100 MB) herunter.</translation>
 <translation id="7384004438856720753">Palast</translation>
 <translation id="7388959671917308825">Eingebautes Touchpad</translation>
 <translation id="7397270852490618635">Helles Design ausschalten</translation>
@@ -1165,15 +1242,18 @@
 <translation id="7487067081878637334">Technik</translation>
 <translation id="7490813197707563893">MAC-Adresse</translation>
 <translation id="7497215489070763236">CA-Serverzertifikat</translation>
+<translation id="7500205272584643581">Willst du der Rekorder App erlauben, Sprecher zu erkennen und mit Labels zu versehen?</translation>
 <translation id="7501957181231305652">oder</translation>
 <translation id="7502658306369382406">IPv6-Adresse</translation>
 <translation id="7507061649493508884"><ph name="FLOWER_TYPE" /> in einem strahlenden <ph name="FLOWER_COLOR" /></translation>
 <translation id="7513770521371759388">unten</translation>
+<translation id="7514365320538308">Herunterladen</translation>
 <translation id="7515998400212163428">Android</translation>
 <translation id="7525067979554623046">Erstellen</translation>
 <translation id="7528507600602050979">Hilfeinhalte nicht verfügbar</translation>
 <translation id="7535791657097741517">Helles Design einschalten</translation>
 <translation id="7544126681856613971">nebliger Wald</translation>
+<translation id="7544853251252956727">Zufallsmix</translation>
 <translation id="7550715992156305117">Diagnoseroutinen</translation>
 <translation id="7551123448725492271">Das Gerät ist ein Audiogerät.</translation>
 <translation id="7559239713112547082">Screenshot in der Vorschau anzeigen</translation>
@@ -1185,6 +1265,7 @@
 <translation id="7613724632293948900">Mit Maus oder Pfeiltasten neu positionieren.</translation>
 <translation id="7618774594543487847">Neutral</translation>
 <translation id="7620771111601174153">Weitere Informationen in der Hilfe</translation>
+<translation id="7625095758347640998">KI‑Hintergründe</translation>
 <translation id="763165478673169849">Zuletzt zurückgesetzt</translation>
 <translation id="7633068090678117093">Hintergrundbild</translation>
 <translation id="763873111564339966">indigoblauen</translation>
@@ -1210,13 +1291,15 @@
 <translation id="7763470514545477072">Domain-Suffix stimmt überein</translation>
 <translation id="7769672763586021400">Modell-ID</translation>
 <translation id="7778717409420828014">Dein Feedback wird von unserem Team gelesen und hilft uns dabei, Chromebooks noch weiter zu verbessern. Da wir sehr viele Rückmeldungen erhalten, können wir dir nicht persönlich antworten.</translation>
+<translation id="7781829728241885113">Gestern</translation>
 <translation id="7784116172884276937">Es sind keine DNS-Server eingerichtet</translation>
 <translation id="7791543448312431591">Hinzufügen</translation>
 <translation id="779591286616261875">Neuen Bericht senden</translation>
 <translation id="7799817062559422778">Heller Modus</translation>
 <translation id="7802764839223122985">Keine Taste zugewiesen. <ph name="REASSIGN_INSTRUCTION" /></translation>
-<translation id="780301667611848630">Nein, danke</translation>
+<translation id="780301667611848630">Nein danke</translation>
 <translation id="7805768142964895445">Status</translation>
+<translation id="7811024689617730980">Wähle einen Tag für die automatische Zurücksetzung aus (zwischen 1 und 31, beide inklusive)</translation>
 <translation id="7813073042185856802">Berg</translation>
 <translation id="7819857487979277519">PSK (WPA oder RSN)</translation>
 <translation id="7824219488248240180">Post-Impressionismus</translation>
@@ -1225,6 +1308,7 @@
 <translation id="7846634333498149051">Tastatur</translation>
 <translation id="7849030488395653706">Polarlichter</translation>
 <translation id="7849737607196682401">Spitze</translation>
+<translation id="7850320739366109486">Bitte nicht stören</translation>
 <translation id="7850847810298646851">Auf Google AI basierender Hintergrund</translation>
 <translation id="785170686607360576">Tulpe</translation>
 <translation id="7856267634822906833">Bluetooth-Touchscreen</translation>
@@ -1235,6 +1319,7 @@
 <translation id="7882501334836096755">Öffentlicher Schlüssel</translation>
 <translation id="78957024357676568">Links</translation>
 <translation id="7897043345768902965">Fußgängerweg</translation>
+<translation id="7902285181767404769">Benachrichtigungen während der Aufnahme stumm schalten</translation>
 <translation id="7903695460270716054">Ausgewählte Kunstwerke und Bilder auswählen</translation>
 <translation id="7915220255123750251">Hier kannst du die APN-Netzwerkeinstellungen verwalten. APNs stellen eine Verbindung zwischen einem Mobilfunknetz und dem Internet her.</translation>
 <translation id="7936303884198020182">Es wurden keine Nameserver gefunden</translation>
@@ -1253,6 +1338,7 @@
 <translation id="8004582292198964060">Browser</translation>
 <translation id="8017679124341497925">Verknüpfung bearbeitet</translation>
 <translation id="802154636333426148">Downloadfehler</translation>
+<translation id="8028993641010258682">Größe</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Automatischen Farbmodus aktivieren</translation>
 <translation id="8041089156583427627">Feedback geben</translation>
@@ -1281,12 +1367,15 @@
 <translation id="8156233298086717232">magisch</translation>
 <translation id="8162776280680283326">Füchse</translation>
 <translation id="8167413449582155132">Hintergrund powered by Google AI</translation>
+<translation id="8171020708598805594">Du kannst automatisch Transkripte erstellen, mithilfe von Google AI Zusammenfassungen von Aufnahmen erstellen und in Audioinhalten suchen. Aufnahmen können auch ohne Internetverbindung erstellt werden.</translation>
 <translation id="8179976553408161302">Eingabetaste</translation>
 <translation id="8183975772394450380">Strand</translation>
+<translation id="819278132617411009">Mit Google AI produktiver sein</translation>
 <translation id="8206859287963243715">Mobil</translation>
 <translation id="8208861521865154048">Vorteile</translation>
 <translation id="8226628635270268143">Hier kannst du deine bevorzugten Fotos und Alben auswählen</translation>
 <translation id="8227119283605456246">Datei anhängen</translation>
+<translation id="8227488649450500937">Probiere einen dieser Prompts aus oder sieh dir die <ph name="BEGIN_LINK_PROMPTING_GUIDE" />Anleitung zu Prompts<ph name="END_LINK_PROMPTING_GUIDE" /> an</translation>
 <translation id="8230672074305416752">Das standardmäßige Netzwerk-Gateway konnte nicht kontaktiert werden</translation>
 <translation id="8238771987802558562">APN festlegen</translation>
 <translation id="8246209727385807362">Unbekannter Mobilfunkanbieter</translation>
@@ -1295,6 +1384,7 @@
 <translation id="8261506727792406068">Löschen</translation>
 <translation id="8262870577632766028">1 Stunde</translation>
 <translation id="827422111966801947">Indigo</translation>
+<translation id="8281886186245836920">Überspringen</translation>
 <translation id="8286154143153872371">Stelle bitte eine Verbindung zu einem Netzwerk her und lade die Seite neu, um den Hintergrund anzusehen.</translation>
 <translation id="8291967909914612644">Land des Homepageanbieters</translation>
 <translation id="8294431847097064396">Quelle</translation>
@@ -1326,9 +1416,11 @@
 <translation id="8420955526972171689">Tests und Fehlerbehebungsschritte bei Hardwareproblemen</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8424039430705546751">Nach unten</translation>
+<translation id="8428213095426709021">Einstellungen</translation>
 <translation id="8431300646573772016">Neues bei Chrome OS</translation>
 <translation id="843568408673868420">Internetverbindung</translation>
 <translation id="844521431886043384">DNS ist nicht eingerichtet</translation>
+<translation id="8456200178779628126">Mit Google AI Unterstützung beim Lesen und Schreiben erhalten</translation>
 <translation id="8456761643544401578">Automatischer dunkler Modus</translation>
 <translation id="8461329675984532579">Name des Homepageanbieters</translation>
 <translation id="8475690821716466388">Das WLAN ist mit dem schwachen Protokoll WEP PSK gesichert</translation>
@@ -1342,6 +1434,7 @@
 <translation id="8498220429738806196">Traffic-Zähler</translation>
 <translation id="8503813439785031346">Nutzername</translation>
 <translation id="8503836310948963452">Nur noch ein paar Minuten…</translation>
+<translation id="8505011850330200833">Das Gemini-Modell zum Verarbeiten von Transkripten und Erstellen von Zusammenfassungen erfordert 2 GB Speicherplatz</translation>
 <translation id="8508640263392900755">APN-Details</translation>
 <translation id="8522687886059337719">Du hast jetzt Zugriff auf neue <ph name="BEGIN_LINK_WALLPAPER_SUBPAGE" />Hintergründe<ph name="END_LINK_WALLPAPER_SUBPAGE" /> und <ph name="BEGIN_LINK_SCREENSAVER_SUBPAGE" />Bildschirmschoner<ph name="END_LINK_SCREENSAVER_SUBPAGE" /></translation>
 <translation id="8528615187455571738">Crosvm</translation>
@@ -1355,10 +1448,12 @@
 <translation id="8620617069779373398">Roaming-Status</translation>
 <translation id="8626489604350149811">Weitere Aktionen für „<ph name="APN_NAME" />“</translation>
 <translation id="86356131183441916">Hellviolett</translation>
+<translation id="8647595191512746911">Audiotranskript</translation>
 <translation id="8651481478098336970">Stummschalten</translation>
 <translation id="8655295600908251630">Kanal</translation>
 <translation id="8655828773034788261">URL teilen:</translation>
 <translation id="8660881923941176839">Pfund</translation>
+<translation id="8670057600920888023">Generative KI ist experimentell und die Inhalte können fehlerhaft, irreführend oder anstößig sein.</translation>
 <translation id="8670574982334489519">rechts</translation>
 <translation id="8675354002693747642">Vorinstallierter Schlüssel</translation>
 <translation id="8677859815076891398">Keine Alben. Ein Album in <ph name="LINK_BEGIN" />Google Fotos<ph name="LINK_END" /> erstellen.</translation>
@@ -1367,6 +1462,7 @@
 <translation id="8709616837707653427"><ph name="DESC_TEXT" /> Verwende zum Verwalten dieser Funktion den Rechts- und Linkspfeil.</translation>
 <translation id="8712637175834984815">Ok</translation>
 <translation id="871560550817059752">Fehlgeschlagen – Keine Tinte</translation>
+<translation id="8721554916373590179">Beispielprompts</translation>
 <translation id="8723108084122415655">Das nicht standardmäßige Netzwerk hat den Latenzgrenzwert überschritten</translation>
 <translation id="8725066075913043281">Erneut versuchen</translation>
 <translation id="8726019395068607495">Angehalten – Druckerklappe offen</translation>
@@ -1376,6 +1472,7 @@
 <translation id="8749478549112817787">Kamerahintergrund</translation>
 <translation id="8755946156089753497">Turm</translation>
 <translation id="8756235582947991808">Wie du Inhalte mithilfe von KI erstellst und was du beachten solltest</translation>
+<translation id="8760616037557661287">Vorherige Prompts</translation>
 <translation id="8764414543112028321">WireGuard</translation>
 <translation id="87646919272181953">Google Fotos-Album</translation>
 <translation id="8775713578693478175">Modem‑APN</translation>
@@ -1410,6 +1507,7 @@
 <translation id="8918637186205009138"><ph name="DEVICE_TYPE" /> von <ph name="GIVEN_NAME" /></translation>
 <translation id="8918813738569491921">Salzgestein</translation>
 <translation id="8919837981463578619">Fehlgeschlagen – Fach fehlt</translation>
+<translation id="8924154518905976972">Audio exportieren</translation>
 <translation id="8928727111548978589">Fehlgeschlagen – Kein Papier</translation>
 <translation id="8930521118335213258">Peer</translation>
 <translation id="8930622219860340959">Drahtlos</translation>
@@ -1438,6 +1536,8 @@
 <translation id="9025198690966128418">Als persönliches Gerät nutzen</translation>
 <translation id="902638246363752736">Tastatureinstellungen</translation>
 <translation id="9028832514430399253">Aktiviere die Ein-/Aus-Schaltfläche, um die Bildschirmschoner-Optionen auszuwählen</translation>
+<translation id="9030883440316693822">Aufnahme löschen?</translation>
+<translation id="9036971622563146214">Ergebnisse</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9045842401566197375">Bücher</translation>
 <translation id="9049868303458988905">Schaltfläche „APN speichern“ ist jetzt aktiviert</translation>
@@ -1455,6 +1555,7 @@
 <translation id="910415269708673980">Aktualisiere das Ticket für <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9106415115617144481">Seite <ph name="PAGE_NUMBER" /> wird gescannt</translation>
 <translation id="9111102763498581341">Entsperren</translation>
+<translation id="9122492456897874028">Inhalte zusammenfassen, Definitionen abrufen und mehr</translation>
 <translation id="9122602430962285795">Gehe zu den Einstellungen, um die Verbindung wiederherzustellen</translation>
 <translation id="9122865513525855321">Zen</translation>
 <translation id="9126720536733509015">Mehrere Seiten in einem PDF speichern</translation>
@@ -1480,6 +1581,7 @@
 <translation id="939519157834106403">SSID</translation>
 <translation id="945522503751344254">Feedback geben</translation>
 <translation id="950520315903467048">Taste für „<ph name="DIRECTION" />“ fehlt. <ph name="ASSIGN_INSTRUCTION" /></translation>
+<translation id="951780398843003443">Stimmen in der Aufnahme vergleichen, damit im Transkript korrekt wiedergegeben wird, welcher Sprecher wann spricht</translation>
 <translation id="952992212772159698">Nicht aktiviert</translation>
 <translation id="95718197892796296">Lehm</translation>
 <translation id="960719561871045870">Betreibercode</translation>

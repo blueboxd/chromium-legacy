@@ -18,10 +18,24 @@ extern const char kHistogramGWSNavigationStartToFinalLoaderCallback[];
 extern const char kHistogramGWSNavigationStartToFirstRequestStart[];
 extern const char kHistogramGWSNavigationStartToFirstResponseStart[];
 extern const char kHistogramGWSNavigationStartToFirstLoaderCallback[];
+extern const char kHistogramGWSNavigationStartToOnComplete[];
+
+extern const char kHistogramGWSConnectTimingFirstRequestDomainLookupDelay[];
+extern const char kHistogramGWSConnectTimingFirstRequestConnectDelay[];
+extern const char kHistogramGWSConnectTimingFirstRequestSslDelay[];
+extern const char kHistogramGWSConnectTimingFinalRequestDomainLookupDelay[];
+extern const char kHistogramGWSConnectTimingFinalRequestConnectDelay[];
+extern const char kHistogramGWSConnectTimingFinalRequestSslDelay[];
+
+extern const char kHistogramGWSAFTEnd[];
+extern const char kHistogramGWSAFTStart[];
 
 extern const char kHistogramGWSFirstContentfulPaint[];
 extern const char kHistogramGWSLargestContentfulPaint[];
 extern const char kHistogramGWSParseStart[];
+extern const char kHistogramGWSConnectStart[];
+extern const char kHistogramGWSDomainLookupStart[];
+extern const char kHistogramGWSDomainLookupEnd[];
 
 }  // namespace internal
 
@@ -35,6 +49,9 @@ class GWSPageLoadMetricsObserver
       delete;
 
   // page_load_metrics::PageLoadMetricsObserver implementation:
+  ObservePolicy OnStart(content::NavigationHandle* navigation_handle,
+                        const GURL& currently_committed_url,
+                        bool started_in_foreground) override;
   ObservePolicy OnCommit(content::NavigationHandle* navigation_handle) override;
 
   ObservePolicy OnPrerenderStart(content::NavigationHandle* navigation_handle,
@@ -51,8 +68,17 @@ class GWSPageLoadMetricsObserver
       const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnParseStart(
       const page_load_metrics::mojom::PageLoadTiming& timing) override;
+  void OnConnectStart(
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
+  void OnDomainLookupStart(
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
+  void OnDomainLookupEnd(
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnComplete(
       const page_load_metrics::mojom::PageLoadTiming& timing) override;
+  void OnCustomUserTimingMarkObserved(
+      const std::vector<page_load_metrics::mojom::CustomUserTimingMarkPtr>&
+          timings) override;
 
  private:
   void LogMetricsOnComplete();

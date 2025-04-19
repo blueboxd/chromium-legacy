@@ -19,6 +19,8 @@ build_webui("build") {
     "js/data/capabilities_manager.ts",
     "js/data/destination_constants.ts",
     "js/data/destination_manager.ts",
+    "js/data/destination_provider_composite.ts",
+    "js/data/print_preview_page_handler_composite.ts",
     "js/data/preview_ticket_manager.ts",
     "js/data/print_ticket_manager.ts",
     "js/data/ticket_constants.ts",
@@ -44,7 +46,20 @@ build_webui("build") {
     "js/summary_panel.ts",
   ]
 
+  mojo_files = [
+    "$root_gen_dir/ash/webui/print_preview_cros/mojom/destination_provider.mojom-webui.ts",
+    "$root_gen_dir/ash/webui/print_preview_cros/mojom/printer_capabilities.mojom-webui.ts",
+    "$root_gen_dir/printing/mojom/print.mojom-webui.ts",
+  ]
+
+  mojo_files_deps = [
+    "//ash/webui/print_preview_cros/mojom:mojom_ts__generator",
+    "//printing/mojom:mojom_ts__generator",
+  ]
+
   ts_composite = true
+
+  ts_definitions = [ "//tools/typescript/definitions/chrome_send.d.ts" ]
 
   ts_deps = [
     "//ash/webui/common/resources:build_ts",

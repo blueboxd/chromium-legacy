@@ -14,7 +14,10 @@
 namespace arc {
 
 // Please keep alphabetized.
-BASE_DECLARE_FEATURE(kArcOnDemandFeature);
+BASE_DECLARE_FEATURE(kArcExchangeVersionOnMojoHandshake);
+BASE_DECLARE_FEATURE(kArcOnDemandV2);
+extern const base::FeatureParam<bool> kArcOnDemandActivateOnAppLaunch;
+extern const base::FeatureParam<base::TimeDelta> kArcOnDemandInactiveInterval;
 BASE_DECLARE_FEATURE(kArcVmGki);
 BASE_DECLARE_FEATURE(kBlockIoScheduler);
 extern const base::FeatureParam<bool> kEnableDataBlockIoScheduler;
@@ -25,6 +28,7 @@ BASE_DECLARE_FEATURE(kDeferArcActivationUntilUserSessionStartUpTaskCompletion);
 extern const base::FeatureParam<int> kDeferArcActivationHistoryWindow;
 extern const base::FeatureParam<int> kDeferArcActivationHistoryThreshold;
 BASE_DECLARE_FEATURE(kDocumentsProviderUnknownSizeFeature);
+BASE_DECLARE_FEATURE(kEnableArcAttestation);
 BASE_DECLARE_FEATURE(kEnableArcIdleManager);
 extern const base::FeatureParam<bool> kEnableArcIdleManagerIgnoreBatteryForPLT;
 extern const base::FeatureParam<int> kEnableArcIdleManagerDelayMs;
@@ -33,6 +37,7 @@ extern const base::FeatureParam<bool>
 BASE_DECLARE_FEATURE(kEnableArcNearbyShareFuseBox);
 BASE_DECLARE_FEATURE(kEnableArcS2Idle);
 BASE_DECLARE_FEATURE(kEnableArcVmDataMigration);
+BASE_DECLARE_FEATURE(kEnableFriendlierErrorDialog);
 BASE_DECLARE_FEATURE(kEnableLazyWebViewInit);
 BASE_DECLARE_FEATURE(kEnablePerVmCoreScheduling);
 BASE_DECLARE_FEATURE(kEnableReadOnlyPermissions);
@@ -40,6 +45,9 @@ BASE_DECLARE_FEATURE(kEnableUnifiedAudioFocusFeature);
 BASE_DECLARE_FEATURE(kEnableUnmanagedToManagedTransitionFeature);
 BASE_DECLARE_FEATURE(kEnableVirtioBlkForData);
 BASE_DECLARE_FEATURE(kEnableVirtioBlkMultipleWorkers);
+BASE_DECLARE_FEATURE(kExtendInputAnrTimeout);
+BASE_DECLARE_FEATURE(kExtendIntentAnrTimeout);
+BASE_DECLARE_FEATURE(kExtendServiceAnrTimeout);
 BASE_DECLARE_FEATURE(kExternalStorageAccess);
 BASE_DECLARE_FEATURE(kGhostWindowNewStyle);
 BASE_DECLARE_FEATURE(kVirtioBlkDataConfigOverride);
@@ -54,6 +62,7 @@ extern const base::FeatureParam<bool> kGuestReclaimEnabled;
 extern const base::FeatureParam<bool> kGuestReclaimOnlyAnonymous;
 extern const base::FeatureParam<bool> kVirtualSwapEnabled;
 extern const base::FeatureParam<int> kVirtualSwapIntervalMs;
+BASE_DECLARE_FEATURE(kArcVmPvclock);
 BASE_DECLARE_FEATURE(kIgnoreHoverEventAnr);
 BASE_DECLARE_FEATURE(kInstantResponseWindowOpen);
 BASE_DECLARE_FEATURE(kLockGuestMemory);
@@ -79,7 +88,6 @@ BASE_DECLARE_FEATURE(kSwitchToKeyMintOnT);
 BASE_DECLARE_FEATURE(kSwitchToKeyMintOnTOverride);
 BASE_DECLARE_FEATURE(kSyncInstallPriority);
 BASE_DECLARE_FEATURE(kTouchscreenEmulation);
-BASE_DECLARE_FEATURE(kUnaffiliatedDeviceArcRestriction);
 BASE_DECLARE_FEATURE(kUnthrottleOnActiveAudio);
 BASE_DECLARE_FEATURE(kUsbStorageUIFeature);
 BASE_DECLARE_FEATURE(kUseDalvikMemoryProfile);

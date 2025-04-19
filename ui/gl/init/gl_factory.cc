@@ -18,7 +18,6 @@
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_utils.h"
-#include "ui/gl/gl_version_info.h"
 #include "ui/gl/init/gl_initializer.h"
 
 #if BUILDFLAG(IS_OZONE)
@@ -31,23 +30,7 @@ namespace init {
 
 namespace {
 
-bool g_is_angle_enabled = true;
-
-bool ShouldFallbackToSoftwareGL() {
-  const base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
-  std::string requested_implementation_gl_name =
-      cmd->GetSwitchValueASCII(switches::kUseGL);
-
-  if (cmd->HasSwitch(switches::kUseGL) &&
-      requested_implementation_gl_name == "any") {
-    return true;
-  } else {
-    return false;
-  }
-}
-
-GLImplementationParts GetRequestedGLImplementation(
-    bool* fallback_to_software_gl) {
+GLImplementationParts GetRequestedGLImplementation() {
   const base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
   std::string requested_implementation_gl_name =
       cmd->GetSwitchValueASCII(switches::kUseGL);
@@ -65,12 +48,8 @@ GLImplementationParts GetRequestedGLImplementation(
   std::vector<GLImplementationParts> allowed_impls =
       GetAllowedGLImplementations();
 
-  if (GetGlWorkarounds().disable_es3gl_context_for_testing) {
-    GLVersionInfo::DisableES3ForTesting();
-  }
-
   // If the passthrough command decoder is enabled, put ANGLE first if allowed
-  if (g_is_angle_enabled && UsePassthroughCommandDecoder(cmd)) {
+  if (UsePassthroughCommandDecoder(cmd)) {
     std::vector<GLImplementationParts> angle_impls = {};
     bool software_gl_allowed = false;
     auto iter = allowed_impls.begin();
@@ -99,9 +78,8 @@ GLImplementationParts GetRequestedGLImplementation(
     return GLImplementationParts(kGLImplementationNone);
   }
 
-  *fallback_to_software_gl = false;
   std::optional<GLImplementationParts> impl_from_cmdline =
-      GetRequestedGLImplementationFromCommandLine(cmd, fallback_to_software_gl);
+      GetRequestedGLImplementationFromCommandLine(cmd);
 
   // The default implementation is always the first one in list.
   if (!impl_from_cmdline)
@@ -128,13 +106,11 @@ GLDisplay* InitializeGLOneOffPlatformHelper(bool init_extensions,
   TRACE_EVENT1("gpu,startup", "gl::init::InitializeGLOneOffPlatformHelper",
                "init_extensions", init_extensions);
 
-  bool fallback_to_software_gl = ShouldFallbackToSoftwareGL();
   const base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
   bool disable_gl_drawing = cmd->HasSwitch(switches::kDisableGLDrawingForTests);
 
   return InitializeGLOneOffPlatformImplementation(
-      fallback_to_software_gl, disable_gl_drawing, init_extensions,
-      gpu_preference);
+      disable_gl_drawing, init_extensions, gpu_preference);
 }
 
 }  // namespace
@@ -169,9 +145,7 @@ GLDisplay* InitializeGLNoExtensionsOneOff(bool init_bindings,
 bool InitializeStaticGLBindingsOneOff() {
   DCHECK_EQ(kGLImplementationNone, GetGLImplementation());
 
-  bool fallback_to_software_gl = false;
-  GLImplementationParts impl =
-      GetRequestedGLImplementation(&fallback_to_software_gl);
+  GLImplementationParts impl = GetRequestedGLImplementation();
   if (impl.gl == kGLImplementationDisabled) {
     SetGLImplementation(kGLImplementationDisabled);
     return true;
@@ -179,21 +153,11 @@ bool InitializeStaticGLBindingsOneOff() {
     return false;
   }
 
-  return InitializeStaticGLBindingsImplementation(impl,
-                                                  fallback_to_software_gl);
+  return InitializeStaticGLBindingsImplementation(impl);
 }
 
-bool InitializeStaticGLBindingsImplementation(GLImplementationParts impl,
-                                              bool fallback_to_software_gl) {
-  if (IsSoftwareGLImplementation(impl))
-    fallback_to_software_gl = false;
-
-  bool initialized = InitializeStaticGLBindings(impl);
-  if (!initialized && fallback_to_software_gl) {
-    ShutdownGL(nullptr, /*due_to_fallback*/ true);
-    initialized = InitializeStaticGLBindings(GetSoftwareGLImplementation());
-  }
-  if (!initialized) {
+bool InitializeStaticGLBindingsImplementation(GLImplementationParts impl) {
+  if (!InitializeStaticGLBindings(impl)) {
     ShutdownGL(nullptr, /*due_to_fallback*/ false);
     return false;
   }
@@ -201,13 +165,9 @@ bool InitializeStaticGLBindingsImplementation(GLImplementationParts impl,
 }
 
 GLDisplay* InitializeGLOneOffPlatformImplementation(
-    bool fallback_to_software_gl,
     bool disable_gl_drawing,
     bool init_extensions,
     gl::GpuPreference gpu_preference) {
-  if (IsSoftwareGLImplementation(GetGLImplementationParts()))
-    fallback_to_software_gl = false;
-
   GLDisplay* display = InitializeGLOneOffPlatform(gpu_preference);
   bool initialized = !!display;
 
@@ -218,13 +178,7 @@ GLDisplay* InitializeGLOneOffPlatformImplementation(
     display = InitializeGLOneOffPlatform(gl::GpuPreference::kDefault);
     initialized = !!display;
   }
-  if (!initialized && fallback_to_software_gl) {
-    ShutdownGL(nullptr, /*due_to_fallback=*/true);
-    if (InitializeStaticGLBindings(GetSoftwareGLImplementation())) {
-      display = InitializeGLOneOffPlatform(gpu_preference);
-      initialized = !!display;
-    }
-  }
+
   if (initialized && init_extensions) {
     initialized = InitializeExtensionSettingsOneOffPlatform(display);
   }
@@ -253,8 +207,7 @@ GLDisplay* GetOrInitializeGLOneOffPlatformImplementation(
   }
 
   display = gl::init::InitializeGLOneOffPlatformImplementation(
-      /*fallback_to_software_gl=*/false, /*disable_gl_drawing=*/false,
-      /*init_extensions=*/true,
+      /*disable_gl_drawing=*/false, /*init_extensions=*/true,
       /*gpu_preference=*/gpu_preference);
 
   return display;
@@ -265,11 +218,6 @@ void ShutdownGL(GLDisplay* display, bool due_to_fallback) {
 
   UnloadGLNativeLibraries(due_to_fallback);
   SetGLImplementation(kGLImplementationNone);
-}
-
-void DisableANGLE() {
-  DCHECK_NE(GetGLImplementation(), kGLImplementationEGLANGLE);
-  g_is_angle_enabled = false;
 }
 
 }  // namespace init

@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/strings/stringprintf.h"
+#include "ui/gfx/geometry/outsets_f.h"
 
 namespace viz {
 
@@ -37,11 +38,17 @@ OffsetTagConstraints::OffsetTagConstraints(float min_x,
   DCHECK(IsValid());
 }
 
-gfx::Vector2dF OffsetTagConstraints::Clamp(const OffsetTagValue& value) const {
+gfx::Vector2dF OffsetTagConstraints::Clamp(gfx::Vector2dF value) const {
   DCHECK(IsValid());
-  return gfx::Vector2dF(
-      std::clamp(value.offset.x(), min_offset.x(), max_offset.x()),
-      std::clamp(value.offset.y(), min_offset.y(), max_offset.y()));
+  return gfx::Vector2dF(std::clamp(value.x(), min_offset.x(), max_offset.x()),
+                        std::clamp(value.y(), min_offset.y(), max_offset.y()));
+}
+
+void OffsetTagConstraints::ExpandVisibleRect(
+    gfx::RectF& visible_rect_in_target) const {
+  DCHECK(IsValid());
+  visible_rect_in_target.Outset(gfx::OutsetsF::TLBR(
+      max_offset.y(), max_offset.x(), -min_offset.y(), -min_offset.x()));
 }
 
 bool OffsetTagConstraints::IsValid() const {
@@ -56,6 +63,12 @@ std::string OffsetTagConstraints::ToString() const {
 }
 
 OffsetTagDefinition::OffsetTagDefinition() = default;
+
+OffsetTagDefinition::OffsetTagDefinition(
+    const OffsetTag& tag,
+    const SurfaceRange& provider,
+    const OffsetTagConstraints& constraints)
+    : tag(tag), provider(provider), constraints(constraints) {}
 
 OffsetTagDefinition::OffsetTagDefinition(const OffsetTagDefinition& other) =
     default;

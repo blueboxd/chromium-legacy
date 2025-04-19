@@ -6,18 +6,22 @@
 
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/style/rounded_rect_cutout_path_builder.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/animated_image_view.h"
 #include "ui/views/controls/image_view.h"
 
 namespace ash {
 namespace {
 
-constexpr auto kCutoutSize = gfx::SizeF(24.f, 24.f);
-constexpr int kCutoutInnerCornerRadius = 8;
+constexpr auto kCutoutSize = gfx::SizeF(28.f, 28.f);
+constexpr int kCutoutInnerCornerRadius = 16;
+constexpr int kCutoutOuterCornerRadius = 10;
 constexpr int kSinglePlaylistViewWidth = 72;
 constexpr int kIconSize = 20;
 constexpr int kMediaActionIconSpacing = 6;
@@ -38,10 +42,6 @@ std::unique_ptr<lottie::Animation> GetEqualizerAnimation() {
 PlaylistImageButton::PlaylistImageButton() {
   gfx::Size preferred_size(kSinglePlaylistViewWidth, kSinglePlaylistViewWidth);
   SetPreferredSize(preferred_size);
-
-  // Disable the button until we populate it with the correct playlist
-  // information.
-  SetEnabled(false);
 
   image_view_ = AddChildView(std::make_unique<views::ImageView>());
   image_view_->SetImageSize(preferred_size);
@@ -115,15 +115,23 @@ void PlaylistImageButton::SetIsSelected(bool is_selected) {
     builder
         .AddCutout(RoundedRectCutoutPathBuilder::Corner::kUpperLeft,
                    kCutoutSize)
+        .CutoutOuterCornerRadius(kCutoutOuterCornerRadius)
         .CutoutInnerCornerRadius(kCutoutInnerCornerRadius);
   }
   image_view_->SetClipPath(builder.Build());
+
+  // Update the accessible description for this view once the selected state
+  // changed.
+  GetViewAccessibility().SetDescription(l10n_util::GetStringUTF16(
+      is_selected
+          ? IDS_ASH_STATUS_TRAY_FOCUS_MODE_SOUNDS_PLAYLIST_SELECTED_ACCESSIBLE_DESCRIPTION
+          : IDS_ASH_STATUS_TRAY_FOCUS_MODE_SOUNDS_PLAYLIST_UNSELECTED_ACCESSIBLE_DESCRIPTION));
+  NotifyAccessibilityEvent(ax::mojom::Event::kStateChanged, true);
 
   OnPropertyChanged(&is_selected_, views::kPropertyEffectsPaint);
 }
 
 void PlaylistImageButton::UpdateContents(const gfx::ImageSkia& image) {
-  SetEnabled(true);
   image_view_->SetImage(image);
 }
 

@@ -25,6 +25,7 @@
 #include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-blink.h"
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
 #include "third_party/blink/renderer/core/core_probes_inl.h"
+#include "third_party/blink/renderer/core/css/container_query_evaluator.h"
 #include "third_party/blink/renderer/core/css/css_light_dark_value_pair.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/dom/node.h"
@@ -72,9 +73,11 @@ StyleResolverState::StyleResolverState(
       element_type_(style_request.IsPseudoStyleRequest()
                         ? ElementType::kPseudoElement
                         : ElementType::kElement),
-      container_unit_context_(style_recalc_context
-                                  ? style_recalc_context->container
-                                  : element.ParentOrShadowHostElement()),
+      container_unit_context_(
+          style_recalc_context
+              ? style_recalc_context->container
+              : ContainerQueryEvaluator::ParentContainerCandidateElement(
+                    element)),
       anchor_evaluator_(style_recalc_context
                             ? style_recalc_context->anchor_evaluator
                             : nullptr),
@@ -161,9 +164,9 @@ void StyleResolverState::UpdateLengthConversionData() {
       *style_builder_, ParentStyle(), RootElementStyle(),
       GetDocument().GetStyleEngine().GetViewportSize(),
       CSSToLengthConversionData::ContainerSizes(container_unit_context_),
-      CSSToLengthConversionData::AnchorData(anchor_evaluator_,
-                                            StyleBuilder().PositionAnchor(),
-                                            StyleBuilder().InsetAreaOffsets()),
+      CSSToLengthConversionData::AnchorData(
+          anchor_evaluator_, StyleBuilder().PositionAnchor(),
+          StyleBuilder().PositionAreaOffsets()),
       StyleBuilder().EffectiveZoom(), length_conversion_flags_);
   element_style_resources_.UpdateLengthConversionData(
       &css_to_length_conversion_data_);
@@ -184,7 +187,7 @@ CSSToLengthConversionData StyleResolverState::UnzoomedLengthConversionData(
       container_unit_context_);
   CSSToLengthConversionData::AnchorData anchor_data(
       anchor_evaluator_, StyleBuilder().PositionAnchor(),
-      StyleBuilder().InsetAreaOffsets());
+      StyleBuilder().PositionAreaOffsets());
   return CSSToLengthConversionData(
       StyleBuilder().GetWritingMode(), font_sizes, line_height_size,
       viewport_size, container_sizes, anchor_data, 1, length_conversion_flags_);
@@ -279,10 +282,18 @@ void StyleResolverState::SetTextSizeAdjust(
   if (StyleBuilder().GetTextSizeAdjust() == new_text_size_adjust) {
     return;
   }
+
+  if (!new_text_size_adjust.IsAuto()) {
+    GetDocument().CountUse(WebFeature::kTextSizeAdjustNotAuto);
+    if (new_text_size_adjust.Multiplier() != 1.f) {
+      GetDocument().CountUse(WebFeature::kTextSizeAdjustPercentNot100);
+    }
+  }
+
   StyleBuilder().SetTextSizeAdjust(new_text_size_adjust);
-  // When `NewTextSizeAdjust` is enabled, text-size-adjust affects font-size
-  // during style building.
-  if (RuntimeEnabledFeatures::NewTextSizeAdjustEnabled()) {
+  // When `TextSizeAdjustImprovements` is enabled, text-size-adjust affects
+  // font-size during style building.
+  if (RuntimeEnabledFeatures::TextSizeAdjustImprovementsEnabled()) {
     UpdateLengthConversionData();
     font_builder_.DidChangeTextSizeAdjust();
   }
@@ -301,18 +312,18 @@ void StyleResolverState::SetPositionAnchor(ScopedCSSName* position_anchor) {
     css_to_length_conversion_data_.SetAnchorData(
         CSSToLengthConversionData::AnchorData(
             anchor_evaluator_, position_anchor,
-            StyleBuilder().InsetAreaOffsets()));
+            StyleBuilder().PositionAreaOffsets()));
   }
 }
 
-void StyleResolverState::SetInsetAreaOffsets(
-    const std::optional<InsetAreaOffsets>& inset_area_offsets) {
-  if (StyleBuilder().InsetAreaOffsets() != inset_area_offsets) {
-    StyleBuilder().SetInsetAreaOffsets(inset_area_offsets);
+void StyleResolverState::SetPositionAreaOffsets(
+    const std::optional<PositionAreaOffsets>& position_area_offsets) {
+  if (StyleBuilder().PositionAreaOffsets() != position_area_offsets) {
+    StyleBuilder().SetPositionAreaOffsets(position_area_offsets);
     css_to_length_conversion_data_.SetAnchorData(
         CSSToLengthConversionData::AnchorData(anchor_evaluator_,
                                               StyleBuilder().PositionAnchor(),
-                                              inset_area_offsets));
+                                              position_area_offsets));
   }
 }
 

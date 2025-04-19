@@ -34,6 +34,7 @@ from typing import Optional, Set, Tuple
 
 import re
 import collections
+import copy
 import dataclasses
 import enum
 import importlib
@@ -344,43 +345,57 @@ class _Variant():
         params = {
             'desc': '',
             'size': [100, 50],
-            'variant_names': [],
+            # Test name, which ultimately is used as filename. File variant
+            # dimension names are appended to this to produce unique filenames.
+            'name': '',
+            # List of this variant grid dimension names. This uniquely
+            # identifies a single variant in a variant grid file.
             'grid_variant_names': [],
+            # List of this variant dimension names, including both file and grid
+            # dimensions.
+            'variant_names': [],
+            # Same as `variant_names`, but concatenated into a single string.
+            # This is a useful shorthand for tests having a single variant
+            # dimension.
+            'variant_name': '',
             'images': [],
             'svgimages': [],
+            'fonts': [],
         }
         params.update(test)
         return _Variant(params)
 
     def merge_params(self, params: _TestParams) -> '_Variant':
         """Returns a new `_Variant` that merges `self.params` and `params`."""
-        new_params = {}
-        new_params.update(self.params)
+        new_params = copy.deepcopy(self._params)
         new_params.update(params)
         return _Variant(new_params)
 
+    def _add_variant_name(self, name: str) -> None:
+        self._params['variant_name'] += (
+            ('.' if self.params['variant_name'] else '') + name)
+        self._params['variant_names'] += [name]
+
     def with_grid_variant_name(self, name: str) -> '_Variant':
         """Addend a variant name to include in the grid element label."""
-        self._params.update({
-            'variant_names': (self.params['variant_names'] + [name]),
-            'grid_variant_names': (self.params['grid_variant_names'] + [name]),
-        })
+        self._add_variant_name(name)
+        self._params['grid_variant_names'] += [name]
         return self
 
     def with_file_variant_name(self, name: str) -> '_Variant':
         """Addend a variant name to include in the generated file name."""
-        self._params.update({
-            'variant_names': (self.params['variant_names'] + [name]),
-        })
+        self._add_variant_name(name)
         if self.params.get('append_variants_to_name', True):
-            self._params['name'] = self.params['name'] + '.' + name
+            self._params['name'] += '.' + name
         return self
 
     def _render_param(self, jinja_env: jinja2.Environment,
-                      param_name: str) -> str:
-        """Get the specified variant parameter and render it with Jinja."""
-        value = self.params[param_name]
-        return jinja_env.from_string(value).render(self.params)
+                      param_name: str) -> None:
+        """Render the specified parameter in-place in the `params` dict."""
+        value = self.params.get(param_name)
+        if value and isinstance(value, str):
+            self._params[param_name] = (
+                jinja_env.from_string(value).render(self.params))
 
 
     def _get_file_name(self) -> str:
@@ -419,8 +434,8 @@ class _Variant():
                         variant_id: int) -> None:
         """Finalize this variant by adding computed param fields."""
         self._params['id'] = variant_id
-        self._params['name'] = self._render_param(jinja_env, 'name')
-        self._params['desc'] = self._render_param(jinja_env, 'desc')
+        for param_name in ('name', 'desc', 'attributes'):
+            self._render_param(jinja_env, param_name)
         self._params['file_name'] = self._get_file_name()
         self._params['canvas_types'] = self._get_canvas_types()
         self._params['template_type'] = self._get_template_type()
@@ -625,6 +640,7 @@ class _VariantGrid:
             'notes': self._unique_param('notes'),
             'images': self._param_set('images'),
             'svgimages': self._param_set('svgimages'),
+            'fonts': self._param_set('fonts'),
         }
         if self.template_type in (_TemplateType.REFERENCE,
                                   _TemplateType.HTML_REFERENCE):

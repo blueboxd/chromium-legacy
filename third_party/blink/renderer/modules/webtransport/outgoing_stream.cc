@@ -2,14 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/modules/webtransport/outgoing_stream.h"
 
 #include <cstring>
 #include <utility>
 
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc.h"
 #include "base/numerics/safe_conversions.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
+#include "partition_alloc/partition_alloc.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
@@ -422,16 +427,13 @@ size_t OutgoingStream::WriteDataSynchronously(base::span<const uint8_t> data) {
            << " data=(" << data.data() << ", " << data.size() << ")";
   DCHECK(data_pipe_);
 
-  // This use of saturated cast means that we will fallback to asynchronous
-  // sending if |data| is larger than 4GB. In practice we'd never be able to
-  // send 4GB synchronously anyway.
-  size_t num_bytes = data.size();
-  MojoResult result =
-      data_pipe_->WriteData(data.data(), &num_bytes, MOJO_WRITE_DATA_FLAG_NONE);
+  size_t actually_written_bytes = 0;
+  MojoResult result = data_pipe_->WriteData(data, MOJO_WRITE_DATA_FLAG_NONE,
+                                            actually_written_bytes);
   switch (result) {
     case MOJO_RESULT_OK:
     case MOJO_RESULT_SHOULD_WAIT:
-      return num_bytes;
+      return actually_written_bytes;
 
     case MOJO_RESULT_FAILED_PRECONDITION:
       HandlePipeClosed();

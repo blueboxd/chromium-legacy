@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ui/ozone/platform/drm/gpu/fake_drm_device.h"
 
 #include <utility>
@@ -31,7 +36,7 @@ constexpr uint32_t kCommitModesetFlags = DRM_MODE_ATOMIC_ALLOW_MODESET;
 // pageflip, or other atomic property changes that do not require modesetting.
 constexpr uint32_t kSeamlessModesetFlags = 0;
 
-const std::vector<uint32_t> kBlobProperyIds = {kEdidBlobPropId};
+const std::vector<uint32_t> kBlobPropertyIds = {kEdidBlobPropId};
 
 const ResolutionAndRefreshRate kStandardMode =
     ResolutionAndRefreshRate{gfx::Size(1920, 1080), 60u};
@@ -58,6 +63,11 @@ const std::map<uint32_t, std::string> kConnectorRequiredPropertyNames = {
     {kEdidBlobPropId, "EDID"},
 };
 
+const std::map<uint32_t, std::string> kConnectorOptionalPropertyNames = {
+    {kTileBlobPropId, "TILE"},
+    {kVrrCapablePropId, "vrr_capable"},
+};
+
 const std::map<uint32_t, std::string> kPlaneRequiredPropertyNames = {
     // Add all required properties.
     {kPlaneCrtcId, "CRTC_ID"},
@@ -74,6 +84,11 @@ const std::map<uint32_t, std::string> kPlaneRequiredPropertyNames = {
     {kTypePropId, "type"},
     {kInFormatsPropId, "IN_FORMATS"},
     {kRotationPropId, "rotation"},
+};
+
+const std::map<uint32_t, std::string> kPlaneOptionalPropertyNames = {
+    {kColorEncodingPropId, "COLOR_ENCODING"},
+    {kColorRangePropId, "COLOR_RANGE"},
 };
 
 template <class T>
@@ -123,7 +138,7 @@ uint32_t GetUniqueNumber() {
 }
 
 bool IsPropertyValueBlob(uint32_t prop_id) {
-  return base::Contains(kBlobProperyIds, prop_id);
+  return base::Contains(kBlobPropertyIds, prop_id);
 }
 
 }  // namespace
@@ -174,6 +189,10 @@ void FakeDrmDevice::ResetStateWithAllProperties() {
   // tests will append the property to the planes on a case-by-case basis.
   drm_state_.property_names.insert(kCrtcOptionalPropertyNames.begin(),
                                    kCrtcOptionalPropertyNames.end());
+  drm_state_.property_names.insert(kConnectorOptionalPropertyNames.begin(),
+                                   kConnectorOptionalPropertyNames.end());
+  drm_state_.property_names.insert(kPlaneOptionalPropertyNames.begin(),
+                                   kPlaneOptionalPropertyNames.end());
 }
 
 FakeDrmDevice::FakeDrmState& FakeDrmDevice::ResetStateWithDefaultObjects(
@@ -534,10 +553,13 @@ ScopedDrmConnectorPtr FakeDrmDevice::GetConnector(uint32_t connector_id) const {
   connector->count_modes = count_modes;
   connector->modes = DrmAllocator<drmModeModeInfo>(count_modes);
   for (uint32_t i = 0; i < count_modes; ++i) {
-    const gfx::Size resoluton = mock_connector->modes[i].first;
+    const gfx::Size resolution = mock_connector->modes[i].first;
     const uint32_t vrefresh = mock_connector->modes[i].second;
-    connector->modes[i].hdisplay = resoluton.width();
-    connector->modes[i].vdisplay = resoluton.height();
+    connector->modes[i].clock = resolution.GetArea() * vrefresh / 1000;
+    connector->modes[i].hdisplay = resolution.width();
+    connector->modes[i].htotal = resolution.width();
+    connector->modes[i].vdisplay = resolution.height();
+    connector->modes[i].vtotal = resolution.height();
     connector->modes[i].vrefresh = vrefresh;
   }
 
@@ -643,8 +665,13 @@ ScopedDrmPropertyPtr FakeDrmDevice::GetProperty(uint32_t id) const {
   ScopedDrmPropertyPtr property(DrmAllocator<drmModePropertyRes>());
   property->prop_id = id;
   strcpy(property->name, it->second.c_str());
-  if (IsPropertyValueBlob(property->prop_id))
+
+  if (IsPropertyValueBlob(property->prop_id)) {
     property->flags = DRM_MODE_PROP_BLOB;
+  } else if (IsPropertyValueEnum(property->prop_id)) {
+    FillPossibleValuesForEnumProperty(property.get());
+    property->flags = DRM_MODE_PROP_ENUM;
+  }
 
   return property;
 }
@@ -934,6 +961,35 @@ void FakeDrmDevice::AddProperty(uint32_t object_id,
   DCHECK(!IsInitialized());
   UpdateProperty(object_id, property.id, property.value,
                  /*add_property_if_needed=*/true);
+}
+
+void FakeDrmDevice::SetPossibleValuesForEnumProperty(
+    uint32_t property_id,
+    std::vector<std::pair<uint64_t /* value */, std::string /* name */>>
+        values) {
+  DCHECK(!IsInitialized());
+  DCHECK(!values.empty());
+  drm_state_.enum_values[property_id] = std::move(values);
+}
+
+bool FakeDrmDevice::IsPropertyValueEnum(uint32_t prop_id) const {
+  return drm_state_.enum_values.find(prop_id) != drm_state_.enum_values.end();
+}
+
+void FakeDrmDevice::FillPossibleValuesForEnumProperty(
+    drmModePropertyRes* property) const {
+  DCHECK(IsPropertyValueEnum(property->prop_id));
+
+  const std::vector<std::pair<uint64_t, std::string>>& enum_values =
+      drm_state_.enum_values.find(property->prop_id)->second;
+
+  property->count_enums = enum_values.size();
+  property->enums = DrmAllocator<drm_mode_property_enum>(enum_values.size());
+
+  for (size_t i = 0; i < enum_values.size(); i++) {
+    property->enums[i].value = enum_values[i].first;
+    strcpy(property->enums[i].name, enum_values[i].second.c_str());
+  }
 }
 
 bool FakeDrmDevice::UpdateProperty(uint32_t id,

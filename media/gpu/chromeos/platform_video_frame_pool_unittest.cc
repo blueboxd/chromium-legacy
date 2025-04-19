@@ -41,14 +41,12 @@ CroStatus::Or<scoped_refptr<FrameResource>> CreateGpuMemoryBufferFrameResource(
   std::optional<gfx::BufferFormat> gfx_format =
       VideoPixelFormatToGfxBufferFormat(format);
   DCHECK(gfx_format);
-  scoped_refptr<gpu::ClientSharedImage> empty_shared_image;
   return static_cast<scoped_refptr<FrameResource>>(
       VideoFrameResource::Create(VideoFrame::WrapExternalGpuMemoryBuffer(
           visible_rect, natural_size,
           std::make_unique<FakeGpuMemoryBuffer>(coded_size, *gfx_format,
                                                 modifier),
-          empty_shared_image, gpu::SyncToken(), /*texture_target=*/0,
-          base::NullCallback(), timestamp)));
+          timestamp)));
 }
 
 CroStatus::Or<scoped_refptr<FrameResource>>
@@ -141,7 +139,7 @@ class PlatformVideoFramePoolTest
       public testing::WithParamInterface<VideoPixelFormat> {};
 
 constexpr VideoPixelFormat kPixelFormats[] = {
-    PIXEL_FORMAT_YV12, PIXEL_FORMAT_NV12, PIXEL_FORMAT_P016LE};
+    PIXEL_FORMAT_YV12, PIXEL_FORMAT_NV12, PIXEL_FORMAT_P010LE};
 INSTANTIATE_TEST_SUITE_P(
     All,
     PlatformVideoFramePoolTest,
@@ -281,12 +279,12 @@ TEST_P(PlatformVideoFramePoolTest, GetOriginalFrame) {
   scoped_refptr<FrameResource> frame_2 = frame_1->CreateWrappingFrame();
   EXPECT_EQ(pool_->GetOriginalFrame(frame_1->GetSharedMemoryId()),
             pool_->GetOriginalFrame(frame_2->GetSharedMemoryId()));
-  EXPECT_EQ(frame_1->GetGpuMemoryBuffer(), frame_2->GetGpuMemoryBuffer());
+  EXPECT_EQ(frame_1->GetSharedMemoryId().id, frame_2->GetSharedMemoryId().id);
 
   scoped_refptr<FrameResource> frame_3 = GetFrame(20);
   EXPECT_NE(pool_->GetOriginalFrame(frame_1->GetSharedMemoryId()),
             pool_->GetOriginalFrame(frame_3->GetSharedMemoryId()));
-  EXPECT_NE(frame_1->GetGpuMemoryBuffer(), frame_3->GetGpuMemoryBuffer());
+  EXPECT_NE(frame_1->GetSharedMemoryId().id, frame_3->GetSharedMemoryId().id);
 }
 
 TEST_P(PlatformVideoFramePoolTest,
@@ -386,7 +384,7 @@ TEST_P(PlatformVideoFramePoolWithMediaCompressionTest,
   const VideoPixelFormat pixel_format = std::get<0>(GetParam());
   const uint64_t modifier = std::get<1>(GetParam());
   if (pixel_format != PIXEL_FORMAT_NV12 &&
-      pixel_format != PIXEL_FORMAT_P016LE) {
+      pixel_format != PIXEL_FORMAT_P010LE) {
     GTEST_SKIP() << "Pixel format doesn't support compressed GPU memory buffer";
   }
   const auto fourcc = Fourcc::FromVideoPixelFormat(pixel_format);
@@ -403,8 +401,7 @@ TEST_P(PlatformVideoFramePoolWithMediaCompressionTest,
   EXPECT_EQ(layout_->planes().size(), kExpectedNumberOfPlanes);
   scoped_refptr<FrameResource> frame = GetFrame(10);
   EXPECT_EQ(frame->layout().num_planes(), kExpectedNumberOfPlanes);
-  EXPECT_EQ(frame->GetGpuMemoryBuffer()
-                ->CloneHandle()
+  EXPECT_EQ(frame->GetGpuMemoryBufferHandleForTesting()
                 .native_pixmap_handle.planes.size(),
             kExpectedNumberOfPlanes);
 }

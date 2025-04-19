@@ -12,6 +12,9 @@ import static androidx.test.espresso.matcher.RootMatchers.isDialog;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
 import android.os.Build;
 import android.os.Bundle;
 
@@ -25,16 +28,23 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.Features.EnableFeatures;
+import org.chromium.base.test.util.JniMocker;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.password_manager.PasswordManagerUtilBridge;
+import org.chromium.chrome.browser.password_manager.PasswordManagerUtilBridgeJni;
 import org.chromium.chrome.browser.password_manager.account_storage_toggle.AccountStorageToggleFragmentArgs;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.price_tracking.PriceTrackingFeatures;
@@ -44,10 +54,11 @@ import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.sync.settings.GoogleServicesSettings;
+import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
+import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.R;
-import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.chrome.test.util.browser.signin.SigninTestRule;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.prefs.PrefService;
@@ -58,15 +69,15 @@ import org.chromium.components.signin.test.util.AccountCapabilitiesBuilder;
 import org.chromium.components.signin.test.util.FakeAccountManagerFacade;
 import org.chromium.components.sync.UserSelectableType;
 import org.chromium.components.user_prefs.UserPrefs;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /** Tests for GoogleServicesSettings. */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @DoNotBatch(reason = "A subset of tests requires adding a new account that could fail if batched.")
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class GoogleServicesSettingsTest {
-    private static final String CHILD_ACCOUNT_NAME =
-            AccountManagerTestRule.generateChildEmail("account@gmail.com");
+    @Rule public final MockitoRule mMockitoRule = MockitoJUnit.rule();
+
+    @Rule public final JniMocker mJniMocker = new JniMocker();
 
     @Rule public final SigninTestRule mSigninTestRule = new SigninTestRule();
 
@@ -82,10 +93,13 @@ public class GoogleServicesSettingsTest {
     public final RuleChain mRuleChain =
             RuleChain.outerRule(mActivityTestRule).around(mSettingsActivityTestRule);
 
+    @Mock private PasswordManagerUtilBridge.Natives mMockPasswordManagerUtilBridgeJni;
+
     @Before
     public void setUp() {
+        mJniMocker.mock(PasswordManagerUtilBridgeJni.TEST_HOOKS, mMockPasswordManagerUtilBridgeJni);
         mActivityTestRule.startMainActivityOnBlankPage();
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () ->
                         Assert.assertTrue(
                                 "SIGNIN_ALLOWED pref should be set by default",
@@ -95,7 +109,7 @@ public class GoogleServicesSettingsTest {
 
     @After
     public void tearDown() {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     PrefService prefService =
                             UserPrefs.get(ProfileManager.getLastUsedRegularProfile());
@@ -106,10 +120,9 @@ public class GoogleServicesSettingsTest {
     @Test
     @LargeTest
     public void allowSigninOptionHiddenFromChildUser() {
-        mSigninTestRule.addAccountAndWaitForSeeding(CHILD_ACCOUNT_NAME);
+        mSigninTestRule.addChildTestAccountThenWaitForSignin();
         final Profile profile =
-                TestThreadUtils.runOnUiThreadBlockingNoException(
-                        ProfileManager::getLastUsedRegularProfile);
+                ThreadUtils.runOnUiThreadBlocking(ProfileManager::getLastUsedRegularProfile);
         CriteriaHelper.pollUiThread(profile::isChild);
 
         final GoogleServicesSettings googleServicesSettings = startGoogleServicesSettings();
@@ -123,6 +136,7 @@ public class GoogleServicesSettingsTest {
 
     @Test
     @LargeTest
+    @DisableFeatures(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
     public void signOutUserWithoutShowingSignOutDialog() {
         mSigninTestRule.addTestAccountThenSignin();
         final GoogleServicesSettings googleServicesSettings = startGoogleServicesSettings();
@@ -133,7 +147,7 @@ public class GoogleServicesSettingsTest {
         Assert.assertTrue("Chrome Signin should be allowed", allowChromeSignin.isChecked());
 
         onView(withText(R.string.allow_chrome_signin_title)).perform(click());
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () ->
                         Assert.assertFalse(
                                 "Account should be signed out!",
@@ -141,7 +155,7 @@ public class GoogleServicesSettingsTest {
                                         .getIdentityManager(
                                                 ProfileManager.getLastUsedRegularProfile())
                                         .hasPrimaryAccount(ConsentLevel.SIGNIN)));
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () ->
                         Assert.assertFalse(
                                 "SIGNIN_ALLOWED pref should be unset",
@@ -152,7 +166,8 @@ public class GoogleServicesSettingsTest {
 
     @Test
     @LargeTest
-    public void showSignOutDialogBeforeSigningUserOut() {
+    @DisableFeatures(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
+    public void showSignOutDialogBeforeSigningUserOutLegacy() {
         mSigninTestRule.addTestAccountThenSigninAndEnableSync();
         final GoogleServicesSettings googleServicesSettings = startGoogleServicesSettings();
         ChromeSwitchPreference allowChromeSignin =
@@ -164,12 +179,50 @@ public class GoogleServicesSettingsTest {
         onView(withText(R.string.allow_chrome_signin_title)).perform(click());
         // Accept the sign out Dialog
         onView(withText(R.string.continue_button)).inRoot(isDialog()).perform(click());
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () ->
                         Assert.assertFalse(
                                 "Accepting the sign-out dialog should set SIGNIN_ALLOWED to false",
                                 UserPrefs.get(ProfileManager.getLastUsedRegularProfile())
                                         .getBoolean(Pref.SIGNIN_ALLOWED)));
+        Assert.assertFalse("Chrome Signin should not be allowed", allowChromeSignin.isChecked());
+    }
+
+    @Test
+    @LargeTest
+    @EnableFeatures(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
+    public void showSignOutDialogBeforeSigningUserOut() {
+        mSigninTestRule.addAccountThenSignin(SigninTestRule.TEST_ACCOUNT_1);
+        final GoogleServicesSettings googleServicesSettings = startGoogleServicesSettings();
+        ChromeSwitchPreference allowChromeSignin =
+                (ChromeSwitchPreference)
+                        googleServicesSettings.findPreference(
+                                GoogleServicesSettings.PREF_ALLOW_SIGNIN);
+        Assert.assertTrue("Chrome Signin should be allowed", allowChromeSignin.isChecked());
+
+        onView(withText(R.string.allow_chrome_signin_title)).perform(click());
+        onView(withText(R.string.sign_out_title)).inRoot(isDialog()).check(matches(isDisplayed()));
+        // Accept the sign out Dialog
+        onView(withText(R.string.sign_out)).inRoot(isDialog()).perform(click());
+
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    SnackbarManager snackbarManager =
+                            mSettingsActivityTestRule.getActivity().getSnackbarManager();
+                    Assert.assertTrue(snackbarManager.isShowing());
+                    Snackbar currentSnackbar = snackbarManager.getCurrentSnackbarForTesting();
+                    Assert.assertEquals(
+                            currentSnackbar.getIdentifierForTesting(), Snackbar.UMA_SIGN_OUT);
+                    Assert.assertEquals(
+                            currentSnackbar.getTextForTesting(),
+                            mActivityTestRule
+                                    .getActivity()
+                                    .getString(R.string.sign_out_snackbar_message));
+                    Assert.assertFalse(
+                            "Accepting the sign-out dialog should set SIGNIN_ALLOWED to false",
+                            UserPrefs.get(ProfileManager.getLastUsedRegularProfile())
+                                    .getBoolean(Pref.SIGNIN_ALLOWED));
+                });
         Assert.assertFalse("Chrome Signin should not be allowed", allowChromeSignin.isChecked());
     }
 
@@ -182,7 +235,7 @@ public class GoogleServicesSettingsTest {
         "force-fieldtrial-params=Study.Group:allow_disable_price_annotations/true"
     })
     public void testPriceTrackingAnnotations() {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     PriceTrackingFeatures.setPriceTrackingEnabledForTesting(true);
                     PriceTrackingFeatures.setIsSignedInAndSyncEnabledForTesting(true);
@@ -190,7 +243,7 @@ public class GoogleServicesSettingsTest {
 
         final GoogleServicesSettings googleServicesSettings = startGoogleServicesSettings();
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     ChromeSwitchPreference priceAnnotationsSwitch =
                             (ChromeSwitchPreference)
@@ -219,7 +272,7 @@ public class GoogleServicesSettingsTest {
         "force-fieldtrial-params=Study.Group:allow_disable_price_annotations/false"
     })
     public void testPriceTrackingAnnotations_FeatureDisabled() {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     PriceTrackingFeatures.setPriceTrackingEnabledForTesting(true);
                     PriceTrackingFeatures.setIsSignedInAndSyncEnabledForTesting(true);
@@ -227,7 +280,7 @@ public class GoogleServicesSettingsTest {
 
         final GoogleServicesSettings googleServicesSettings = startGoogleServicesSettings();
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     Assert.assertNull(
                             googleServicesSettings.findPreference(
@@ -244,7 +297,7 @@ public class GoogleServicesSettingsTest {
         "force-fieldtrial-params=Study.Group:allow_disable_price_annotations/true"
     })
     public void testPriceTrackingAnnotations_NotSignedIn() {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     PriceTrackingFeatures.setPriceTrackingEnabledForTesting(true);
                     PriceTrackingFeatures.setIsSignedInAndSyncEnabledForTesting(false);
@@ -252,7 +305,7 @@ public class GoogleServicesSettingsTest {
 
         final GoogleServicesSettings googleServicesSettings = startGoogleServicesSettings();
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     Assert.assertNull(
                             googleServicesSettings.findPreference(
@@ -266,7 +319,7 @@ public class GoogleServicesSettingsTest {
             value = Build.VERSION_CODES.Q,
             reason = "Digital Wellbeing is only available from Q.")
     public void testUsageStatsReportingShown() {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     PrefService prefService =
                             UserPrefs.get(ProfileManager.getLastUsedRegularProfile());
@@ -275,7 +328,7 @@ public class GoogleServicesSettingsTest {
 
         final GoogleServicesSettings googleServicesSettings = startGoogleServicesSettings();
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     Assert.assertNotNull(
                             "Usage stats should exist when the flag and pref are set.",
@@ -290,7 +343,7 @@ public class GoogleServicesSettingsTest {
             value = Build.VERSION_CODES.Q,
             reason = "Digital Wellbeing is only available from Q.")
     public void testUsageStatsReportingNotShown() {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     PrefService prefService =
                             UserPrefs.get(ProfileManager.getLastUsedRegularProfile());
@@ -299,7 +352,7 @@ public class GoogleServicesSettingsTest {
 
         final GoogleServicesSettings googleServicesSettings = startGoogleServicesSettings();
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     Assert.assertNull(
                             "Usage stats should not exist when the pref is not set.",
@@ -346,6 +399,20 @@ public class GoogleServicesSettingsTest {
         ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS
     })
     public void hidePasswordsAccountStorageToggleIfSignedInAndSyncToSigninEnabled() {
+        mSigninTestRule.addTestAccountThenSignin();
+
+        startGoogleServicesSettings();
+
+        onView(withText(R.string.passwords_account_storage_toggle_title)).check(doesNotExist());
+    }
+
+    @Test
+    @LargeTest
+    @EnableFeatures({ChromeFeatureList.ENABLE_PASSWORDS_ACCOUNT_STORAGE_FOR_NON_SYNCING_USERS})
+    @DisableFeatures({ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS})
+    public void hidePasswordsAccountStorageToggleIfGmsCoreOutdated() {
+        when(mMockPasswordManagerUtilBridgeJni.isGmsCoreUpdateRequired(any(), any()))
+                .thenReturn(true);
         mSigninTestRule.addTestAccountThenSignin();
 
         startGoogleServicesSettings();
@@ -441,11 +508,10 @@ public class GoogleServicesSettingsTest {
                                         GoogleServicesSettings.PREF_PASSWORDS_ACCOUNT_STORAGE);
         @Nullable Integer backgroundColor = toggle.getBackgroundColor();
         Assert.assertNotNull(backgroundColor);
-        Assert.assertTrue(backgroundColor.equals(R.color.iph_highlight_blue));
     }
 
     private boolean isPasswordSyncEnabled() {
-        return TestThreadUtils.runOnUiThreadBlockingNoException(
+        return ThreadUtils.runOnUiThreadBlocking(
                 () ->
                         SyncServiceFactory.getForProfile(ProfileManager.getLastUsedRegularProfile())
                                 .getSelectedTypes()

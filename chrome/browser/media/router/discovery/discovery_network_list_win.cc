@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/media/router/discovery/discovery_network_list_win.h"
 
 #include <winsock2.h>
@@ -22,6 +27,7 @@
 #include "base/threading/scoped_thread_priority.h"
 #include "base/win/hstring_reference.h"
 #include "base/win/scoped_hstring.h"
+#include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/media/router/discovery/discovery_network_list.h"
 
@@ -82,14 +88,19 @@ class WlanApi {
   const WlanFreeMemoryFunction wlan_free_memory;
 
   static std::unique_ptr<WlanApi> Create() {
-    static const wchar_t* kWlanDllPath = L"%WINDIR%\\system32\\wlanapi.dll";
-    wchar_t path[MAX_PATH] = {0};
-    ExpandEnvironmentStrings(kWlanDllPath, path, std::size(path));
+    static constexpr wchar_t kWlanDllPath[] =
+        L"%WINDIR%\\system32\\wlanapi.dll";
+    auto path = base::win::ExpandEnvironmentVariables(kWlanDllPath);
+    if (!path) {
+      return nullptr;
+    }
+
     HINSTANCE library =
-        LoadLibraryEx(path, nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
+        LoadLibraryEx(path->c_str(), nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
     if (!library) {
       return nullptr;
     }
+
     return base::WrapUnique(new WlanApi(library));
   }
 

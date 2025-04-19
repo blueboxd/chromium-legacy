@@ -20,11 +20,13 @@
 #import "ios/chrome/browser/shared/public/commands/omnibox_commands.h"
 #import "ios/chrome/browser/shared/public/commands/open_lens_input_selection_command.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/ui/elements/extended_touch_target_button.h"
 #import "ios/chrome/browser/shared/ui/elements/new_feature_badge_view.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/util/layout_guide_names.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/shared/ui/util/util_swift.h"
+#import "ios/chrome/browser/start_surface/ui_bundled/start_surface_features.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/lens/lens_entrypoint.h"
@@ -32,13 +34,15 @@
 #import "ios/chrome/browser/ui/ntp/metrics/new_tab_page_metrics_recorder.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller_delegate.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_commands.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_view.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_view_controller_delegate.h"
-#import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
 #import "ios/chrome/browser/ui/toolbar/public/fakebox_focuser.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
+#import "ios/chrome/common/material_timing.h"
+#import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/common/ui/util/ui_util.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -88,6 +92,7 @@ const CGFloat kFakeLocationBarHeightMargin = 2;
 
 @implementation NewTabPageHeaderViewController {
   BOOL _useNewBadgeForLensButton;
+  BOOL _hasAccountError;
 }
 
 - (instancetype)initWithUseNewBadgeForLensButton:
@@ -284,6 +289,10 @@ const CGFloat kFakeLocationBarHeightMargin = 2;
     // needs to respond to user taps first.
     [self addIdentityDisc];
 
+    if (IsHomeCustomizationEnabled()) {
+      [self addCustomizationMenu];
+    }
+
     UIEdgeInsets safeAreaInsets = self.baseViewController.view.safeAreaInsets;
     width = std::max<CGFloat>(
         0, width - safeAreaInsets.left - safeAreaInsets.right);
@@ -313,6 +322,25 @@ const CGFloat kFakeLocationBarHeightMargin = 2;
   _allowFontScaleAnimation = allowFontScaleAnimation;
   self.headerView.allowFontScaleAnimation = allowFontScaleAnimation;
 }
+
+- (void)omniboxDidResignFirstResponder {
+  // Return early if the view is already showing.
+  if (self.view.alpha == 1) {
+    return;
+  }
+  [self.headerView hideFakeboxButtons];
+  self.view.alpha = 1;
+
+  __weak __typeof(self) weakSelf = self;
+  [UIView animateWithDuration:kMaterialDuration6
+                        delay:0.0
+                      options:UIViewAnimationOptionCurveEaseOut
+                   animations:^{
+                     [weakSelf.headerView showFakeboxButtons];
+                   }
+                   completion:nil];
+}
+
 #pragma mark - Private
 
 // Initialize and add a search field tap target and a voice search button.
@@ -441,6 +469,37 @@ const CGFloat kFakeLocationBarHeightMargin = 2;
     [self updateIdentityDiscState];
   }
   [self.headerView setIdentityDiscView:self.identityDiscButton];
+}
+
+// Creates the Home customization menu and adds it to the header view.
+- (void)addCustomizationMenu {
+  UIButton* customizationMenuButton =
+      [[ExtendedTouchTargetButton alloc] initWithFrame:CGRectZero];
+  UIButtonConfiguration* buttonConfiguration =
+      [UIButtonConfiguration plainButtonConfiguration];
+  buttonConfiguration.image = DefaultSymbolTemplateWithPointSize(
+      kPencilSymbol, ntp_home::kCustomizationMenuIconSize);
+  buttonConfiguration.background.backgroundColor =
+      [[UIColor colorNamed:@"fake_omnibox_solid_background_color"]
+          colorWithAlphaComponent:0.8];
+  buttonConfiguration.baseForegroundColor =
+      [UIColor colorNamed:kTextSecondaryColor];
+  customizationMenuButton.layer.cornerRadius =
+      ntp_home::kCustomizationMenuButtonCornerRadius;
+  customizationMenuButton.pointerInteractionEnabled = YES;
+  customizationMenuButton.clipsToBounds = YES;
+
+  customizationMenuButton.accessibilityIdentifier =
+      kNTPCustomizationMenuButtonIdentifier;
+
+  // TODO(crbug.com/350990359): Add a11y label.
+
+  customizationMenuButton.configuration = buttonConfiguration;
+  [customizationMenuButton addTarget:self.commandHandler
+                              action:@selector(customizationMenuWasTapped:)
+                    forControlEvents:UIControlEventTouchUpInside];
+
+  [self.headerView setCustomizationMenuButton:customizationMenuButton];
 }
 
 // Configures `identityDiscButton` with the current state of
@@ -682,11 +741,26 @@ const CGFloat kFakeLocationBarHeightMargin = 2;
   [self updateVoiceSearchDisplay];
 }
 
+- (void)updateADPBadgeWithErrorFound:(BOOL)hasAccountError {
+  CHECK(base::FeatureList::IsEnabled(kIdentityDiscAccountMenu));
+
+  if (hasAccountError == _hasAccountError) {
+    return;
+  }
+
+  _hasAccountError = hasAccountError;
+  if (_hasAccountError) {
+    [self.headerView setIdentityDiscErrorBadge];
+  } else {
+    [self.headerView removeIdentityDiscErrorBadge];
+  }
+}
+
 #pragma mark - UserAccountImageUpdateDelegate
 
 - (void)setSignedOutAccountImage {
   self.identityDiscImage = DefaultSymbolTemplateWithPointSize(
-      kPersonCropCircleSymbol, ntp_home::kSignedOutIdentityIconDimension);
+      kPersonCropCircleSymbol, ntp_home::kSignedOutIdentityIconSize);
 
   self.identityDiscAccessibilityLabel = l10n_util::GetNSString(
       IDS_IOS_IDENTITY_DISC_SIGNED_OUT_ACCESSIBILITY_LABEL);
@@ -754,6 +828,12 @@ const CGFloat kFakeLocationBarHeightMargin = 2;
       beamWithPreferredLength:interaction.view.bounds.size.height / 2
                          axis:UIAxisVertical];
   return [UIPointerStyle styleWithEffect:effect shape:shape];
+}
+
+#pragma mark - Getters
+
+- (UIButton*)customizationMenuButton {
+  return [self.headerView customizationMenuButton];
 }
 
 @end

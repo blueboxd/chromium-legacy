@@ -8,9 +8,13 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.content.res.Resources.Theme;
 import android.graphics.Rect;
 import android.net.Uri;
+import android.os.Build;
+import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
+import android.util.ArraySet;
 import android.util.DisplayMetrics;
 import android.view.ContextThemeWrapper;
 import android.view.InflateException;
@@ -24,6 +28,7 @@ import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.asynclayoutinflater.appcompat.AsyncAppCompatFactory;
+import androidx.core.content.res.ResourcesCompat;
 
 import org.jni_zero.JniType;
 import org.jni_zero.NativeMethods;
@@ -42,6 +47,7 @@ import org.chromium.chrome.browser.app.tab_activity_glue.ReparentingTask;
 import org.chromium.chrome.browser.content.WebContentsFactory;
 import org.chromium.chrome.browser.crash.ChromePureJavaExceptionReporter;
 import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -53,9 +59,12 @@ import org.chromium.chrome.browser.toolbar.ControlContainer;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
+import org.chromium.net.NetId;
 import org.chromium.ui.LayoutInflaterUtils;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.display.DisplayUtil;
+import org.chromium.url.GURL;
+import org.chromium.url.Origin;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -149,6 +158,7 @@ public class WarmupManager {
     private ViewGroup mMainView;
     @VisibleForTesting WebContents mSpareWebContents;
     private RenderProcessGoneObserver mObserver;
+    private boolean mIsCCTPrewarmTabEnabled;
 
     // Stores a prebuilt tab. To load a URL, this can be used if available instead of creating one
     // from scratch.
@@ -379,6 +389,8 @@ public class WarmupManager {
         CctContextWrapper context =
                 new CctContextWrapper(
                         applyContextOverrides(baseContext), ActivityUtils.getThemeId());
+        applyThemeOverlays(context);
+
         mMainView = inflateViewHierarchy(context, toolbarContainerId, toolbarId);
         mToolbarContainerId = toolbarContainerId;
     }
@@ -391,7 +403,27 @@ public class WarmupManager {
             DisplayUtil.scaleUpConfigurationForAutomotive(baseContext, config);
             return baseContext.createConfigurationContext(config);
         }
+
         return baseContext;
+    }
+
+    static void applyThemeOverlays(Context context) {
+        // TODO(twellington): Look at improving code sharing with ChromeBaseAppCompatActivity
+        // if the number of these overlays grows. The two below are experimental / are planned to be
+        // removed by mid 2025 or sooner.
+        if (ChromeFeatureList.sAndroidElegantTextHeight.isEnabled()) {
+            int elegantTextHeightOverlay = R.style.ThemeOverlay_BrowserUI_ElegantTextHeight;
+            context.getTheme().applyStyle(elegantTextHeightOverlay, true);
+        }
+
+        if (Build.VERSION.SDK_INT >= VERSION_CODES.TIRAMISU
+                && ChromeFeatureList.sAndroidGoogleSansText.isEnabled()) {
+            int defaultFontFamilyOverlay =
+                    ChromeBaseAppCompatActivity.DEFAULT_FONT_FAMILY_TESTING.getValue()
+                            ? R.style.ThemeOverlay_BrowserUI_DevTestingDefaultFontFamilyThemeOverlay
+                            : R.style.ThemeOverlay_BrowserUI_DefaultFontFamilyThemeOverlay;
+            context.getTheme().applyStyle(defaultFontFamilyOverlay, true);
+        }
     }
 
     /**
@@ -413,14 +445,13 @@ public class WarmupManager {
                             LayoutInflaterUtils.inflate(
                                     layoutInflater, R.layout.main, contentHolder);
             if (toolbarContainerId != ActivityUtils.NO_RESOURCE_ID) {
-                ViewStub stub = (ViewStub) mainView.findViewById(R.id.control_container_stub);
+                ViewStub stub = mainView.findViewById(R.id.control_container_stub);
                 stub.setLayoutResource(toolbarContainerId);
                 stub.inflate();
             }
             // It cannot be assumed that the result of toolbarContainerStub.inflate() will be
             // the control container since it may be wrapped in another view.
-            ControlContainer controlContainer =
-                    (ControlContainer) mainView.findViewById(R.id.control_container);
+            ControlContainer controlContainer = mainView.findViewById(R.id.control_container);
 
             if (toolbarId != ActivityUtils.NO_RESOURCE_ID && controlContainer != null) {
                 controlContainer.initWithToolbar(toolbarId);
@@ -450,6 +481,7 @@ public class WarmupManager {
     public void transferViewHierarchyTo(ViewGroup contentView) {
         ThreadUtils.assertOnUiThread();
         ViewGroup from = mMainView;
+        Set<Theme> rebasedThemes = new ArraySet<Theme>(from.getChildCount());
         mMainView = null;
         if (from == null) return;
         ((CctContextWrapper) from.getContext()).mActivityContext = contentView.getContext();
@@ -457,6 +489,14 @@ public class WarmupManager {
             View currentChild = from.getChildAt(0);
             from.removeView(currentChild);
             contentView.addView(currentChild);
+            // Purge any previously cached resources and ensure the Theme is rebased to match
+            // the Theme of the view hierarchy the reused views are attached to.
+            var theme = currentChild.getContext().getTheme();
+            if (!rebasedThemes.contains(theme)) {
+                ResourcesCompat.ThemeCompat.rebase(theme);
+                ResourcesCompat.clearCachesForTheme(theme);
+                rebasedThemes.add(theme);
+            }
         }
     }
 
@@ -584,6 +624,50 @@ public class WarmupManager {
     }
 
     /**
+     * Request the browser to start navigational prefetch to the page that will be used for future
+     * navigations.
+     *
+     * @param url The url to be prefetched for future navigations.
+     * @param usePrefetchProxy The flag whether the private prefetch proxy is used in requested
+     *     prefetch.
+     * @param verifiedSourceOrigin The origin that prefetch is requested from. Currently, this is
+     *     always null.
+     */
+    public void startPrefetchFromCCT(
+            String url, boolean usePrefetchProxy, @Nullable String verifiedSourceOrigin) {
+        try (TraceEvent e = TraceEvent.scoped("WarmupManager.startPrefetchFromCCT")) {
+            ThreadUtils.assertOnUiThread();
+            if (!ChromeFeatureList.sCctNavigationalPrefetch.isEnabled()) {
+                Log.e(TAG, "Prefetch failed because CCTNavigationalPrefetch is not enabled.");
+                return;
+            }
+
+            WebContents webContents = null;
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_PREWARM_TAB)
+                    && mSpareTab != null) {
+                webContents = mSpareTab.getWebContents();
+            } else {
+                webContents = mSpareWebContents;
+            }
+
+            if (webContents == null) {
+                Log.e(
+                        TAG,
+                        "Prefetch failed because spare WebContents is null. warmup() is required"
+                                + " beforehand.");
+                return;
+            }
+            final GURL gurl = new GURL(url);
+            Origin origin = Origin.createOpaqueOrigin();
+            if (verifiedSourceOrigin != null) {
+                origin = Origin.create(new GURL(verifiedSourceOrigin));
+            }
+            WarmupManagerJni.get()
+                    .startPrefetchFromCCT(webContents, gurl, usePrefetchProxy, origin);
+        }
+    }
+
+    /**
      * Creates and initializes a spare WebContents, to be used in a subsequent navigation.
      *
      * <p>This creates a renderer that is suitable for any navigation. It can be picked up by any
@@ -597,7 +681,9 @@ public class WarmupManager {
             mSpareWebContents =
                     new WebContentsFactory()
                             .createWebContentsWithWarmRenderer(
-                                    profile, /* initiallyHidden= */ true);
+                                    profile,
+                                    /* initiallyHidden= */ true,
+                                    /* targetNetwork= */ NetId.INVALID);
             mObserver = new RenderProcessGoneObserver();
             mSpareWebContents.addObserver(mObserver);
         }
@@ -648,10 +734,28 @@ public class WarmupManager {
         mObserver = null;
     }
 
+    // We do some cleanup on Activity teardown, so to avoid activating the experiment for all users
+    // regardless of whether they actually interact with the feature, cache the flag here.
+    // This only works if no non-test code calls
+    // ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_PREWARM_TAB) directly.
+    public boolean isCCTPrewarmTabFeatureEnabled(boolean activateExperiment) {
+        if (activateExperiment) {
+            mIsCCTPrewarmTabEnabled =
+                    ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_PREWARM_TAB);
+        }
+        return mIsCCTPrewarmTabEnabled;
+    }
+
     @NativeMethods
     interface Natives {
         void startPreconnectPredictorInitialization(@JniType("Profile*") Profile profile);
 
         void preconnectUrlAndSubresources(@JniType("Profile*") Profile profile, String url);
+
+        void startPrefetchFromCCT(
+                WebContents webcontents,
+                GURL url,
+                boolean usePrefetchProxy,
+                org.chromium.url.Origin verifiedSourceOrigin);
     }
 }

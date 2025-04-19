@@ -23,6 +23,7 @@
 #if BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
 #include "chrome/browser/signin/bound_session_credentials/bound_session_cookie_refresh_service.h"
 #include "chrome/browser/signin/bound_session_credentials/bound_session_cookie_refresh_service_factory.h"
+#include "chrome/browser/signin/bound_session_credentials/bound_session_debug_info.h"
 #endif  // BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
 
 namespace {
@@ -39,7 +40,8 @@ class MockBoundSessionCookieRefreshService
 
   MOCK_METHOD(void,
               MaybeTerminateSession,
-              (const net::HttpResponseHeaders* headers),
+              (const GURL& response_url,
+               const net::HttpResponseHeaders* headers),
               (override));
   MOCK_METHOD(void,
               CreateRegistrationRequest,
@@ -51,7 +53,7 @@ class MockBoundSessionCookieRefreshService
               RegisterNewBoundSession,
               (const bound_session_credentials::BoundSessionParams& params),
               (override));
-  MOCK_METHOD(chrome::mojom::BoundSessionThrottlerParamsPtr,
+  MOCK_METHOD(std::vector<chrome::mojom::BoundSessionThrottlerParamsPtr>,
               GetBoundSessionThrottlerParams,
               (),
               (const, override));
@@ -66,7 +68,8 @@ class MockBoundSessionCookieRefreshService
               (override));
   MOCK_METHOD(void,
               HandleRequestBlockedOnCookie,
-              (HandleRequestBlockedOnCookieCallback resume_blocked_request),
+              (const GURL&,
+               HandleRequestBlockedOnCookieCallback resume_blocked_request),
               (override));
   MOCK_METHOD(base::WeakPtr<BoundSessionCookieRefreshService>,
               GetWeakPtr,
@@ -74,6 +77,10 @@ class MockBoundSessionCookieRefreshService
               (override));
   MOCK_METHOD(void, AddObserver, (Observer* observer), (override));
   MOCK_METHOD(void, RemoveObserver, (Observer* observer), (override));
+  MOCK_METHOD((std::vector<BoundSessionDebugInfo>),
+              GetBoundSessionDebugInfo,
+              (),
+              (const, override));
 };
 
 class TestResponseAdapter : public signin::ResponseAdapter {
@@ -160,8 +167,8 @@ void SetValidRegistrationHeader(TestResponseAdapter* response_adapter) {
 void SetValidRegistrationListHeader(TestResponseAdapter* response_adapter) {
   response_adapter->SetHeader(
       "Sec-Session-Google-Registration-List",
-      "\"startsession\";es256;challenge=\"Y2hhbGxlbmdl\","
-      "\"startsession2\";es256;challenge=\"Y2hhbGxlbmdlMg==\"");
+      "(ES256);path=\"startsession\";challenge=\"Y2hhbGxlbmdl\","
+      "(ES256);path=\"startsession2\";challenge=\"Y2hhbGxlbmdlMg==\"");
 }
 
 class BoundSessionHeaderModificationDelegateImplTest : public testing::Test {
@@ -185,8 +192,8 @@ class BoundSessionHeaderModificationDelegateImplTest : public testing::Test {
 };
 
 TEST_F(BoundSessionHeaderModificationDelegateImplTest, GaiaResponse) {
-  TestResponseAdapter gaia_response_adapter(
-      GURL("https://accounts.google.com"));
+  const GURL response_url("https://accounts.google.com");
+  TestResponseAdapter gaia_response_adapter(response_url);
   SetValidRegistrationHeader(&gaia_response_adapter);
   ASSERT_THAT(
       BoundSessionRegistrationFetcherParam::CreateFromHeaders(
@@ -197,8 +204,8 @@ TEST_F(BoundSessionHeaderModificationDelegateImplTest, GaiaResponse) {
       GetMockBoundSessionCookieRefreshService(testing_profile());
   ASSERT_TRUE(mock_service);
 
-  EXPECT_CALL(*mock_service, MaybeTerminateSession(_));
-  EXPECT_CALL(*mock_service, CreateRegistrationRequest(_));
+  EXPECT_CALL(*mock_service, MaybeTerminateSession(response_url, _));
+  EXPECT_CALL(*mock_service, CreateRegistrationRequest);
   header_modification_delegate().ProcessResponse(&gaia_response_adapter,
                                                  GURL());
 }
@@ -207,8 +214,8 @@ TEST_F(BoundSessionHeaderModificationDelegateImplTest,
        GaiaMultiSessionResponse) {
   base::test::ScopedFeatureList feature_list_{
       kBoundSessionRegistrationListHeaderSupport};
-  TestResponseAdapter gaia_response_adapter(
-      GURL("https://accounts.google.com"));
+  const GURL response_url("https://accounts.google.com");
+  TestResponseAdapter gaia_response_adapter(response_url);
   SetValidRegistrationListHeader(&gaia_response_adapter);
   ASSERT_THAT(
       BoundSessionRegistrationFetcherParam::CreateFromHeaders(
@@ -219,8 +226,8 @@ TEST_F(BoundSessionHeaderModificationDelegateImplTest,
       GetMockBoundSessionCookieRefreshService(testing_profile());
   ASSERT_TRUE(mock_service);
 
-  EXPECT_CALL(*mock_service, MaybeTerminateSession(_));
-  EXPECT_CALL(*mock_service, CreateRegistrationRequest(_)).Times(2);
+  EXPECT_CALL(*mock_service, MaybeTerminateSession(response_url, _));
+  EXPECT_CALL(*mock_service, CreateRegistrationRequest).Times(2);
   header_modification_delegate().ProcessResponse(&gaia_response_adapter,
                                                  GURL());
 }
@@ -229,8 +236,8 @@ TEST_F(BoundSessionHeaderModificationDelegateImplTest,
 // frames get handled.
 TEST_F(BoundSessionHeaderModificationDelegateImplTest,
        GaiaGoogleOriginResponse) {
-  TestResponseAdapter gaia_response_adapter(
-      GURL("https://accounts.google.com"));
+  const GURL response_url("https://accounts.google.com");
+  TestResponseAdapter gaia_response_adapter(response_url);
   gaia_response_adapter.SetRequestTopFrameOrigin(
       url::Origin::Create(GURL("https://mail.google.com")));
   SetValidRegistrationHeader(&gaia_response_adapter);
@@ -243,8 +250,8 @@ TEST_F(BoundSessionHeaderModificationDelegateImplTest,
       GetMockBoundSessionCookieRefreshService(testing_profile());
   ASSERT_TRUE(mock_service);
 
-  EXPECT_CALL(*mock_service, MaybeTerminateSession(_));
-  EXPECT_CALL(*mock_service, CreateRegistrationRequest(_));
+  EXPECT_CALL(*mock_service, MaybeTerminateSession(response_url, _));
+  EXPECT_CALL(*mock_service, CreateRegistrationRequest);
   header_modification_delegate().ProcessResponse(&gaia_response_adapter,
                                                  GURL());
 }
@@ -267,7 +274,7 @@ TEST_F(BoundSessionHeaderModificationDelegateImplTest, GaiaThirdPartyResponse) {
       GetMockBoundSessionCookieRefreshService(testing_profile());
   ASSERT_TRUE(mock_service);
 
-  EXPECT_CALL(*mock_service, MaybeTerminateSession(_)).Times(0);
+  EXPECT_CALL(*mock_service, MaybeTerminateSession).Times(0);
   EXPECT_CALL(*mock_service, CreateRegistrationRequest(_)).Times(0);
   header_modification_delegate().ProcessResponse(&gaia_response_adapter,
                                                  GURL());
@@ -283,8 +290,8 @@ TEST_F(BoundSessionHeaderModificationDelegateImplTest, NonGaiaResponse) {
       GetMockBoundSessionCookieRefreshService(testing_profile());
   ASSERT_TRUE(mock_service);
 
-  EXPECT_CALL(*mock_service, MaybeTerminateSession(_)).Times(0);
-  EXPECT_CALL(*mock_service, CreateRegistrationRequest(_)).Times(0);
+  EXPECT_CALL(*mock_service, MaybeTerminateSession).Times(0);
+  EXPECT_CALL(*mock_service, CreateRegistrationRequest).Times(0);
   header_modification_delegate().ProcessResponse(&response_adapter, GURL());
 }
 
@@ -310,8 +317,8 @@ TEST(BoundSessionDisabledHeaderModificationDelegateImplTest,
           gaia_response_adapter.GetUrl(), gaia_response_adapter.GetHeaders()),
       testing::SizeIs(1));
 
-  EXPECT_CALL(*mock_service, MaybeTerminateSession(_)).Times(0);
-  EXPECT_CALL(*mock_service, CreateRegistrationRequest(_)).Times(0);
+  EXPECT_CALL(*mock_service, MaybeTerminateSession).Times(0);
+  EXPECT_CALL(*mock_service, CreateRegistrationRequest).Times(0);
   header_modification_delegate.ProcessResponse(&gaia_response_adapter, GURL());
 }
 #endif  // BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)

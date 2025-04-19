@@ -13,19 +13,31 @@
 #include "base/functional/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
+#include "components/commerce/core/commerce_feature_list.h"
 #include "components/commerce/core/commerce_types.h"
+#include "components/commerce/core/commerce_utils.h"
 #include "components/commerce/core/compare/candidate_product.h"
+#include "components/commerce/core/compare/cluster_server_proxy.h"
 #include "components/commerce/core/compare/product_group.h"
 #include "components/commerce/core/product_specifications/mock_product_specifications_service.h"
 #include "components/commerce/core/product_specifications/product_specifications_service.h"
 #include "components/commerce/core/product_specifications/product_specifications_set.h"
 #include "components/commerce/core/proto/product_category.pb.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+using testing::_;
+
 namespace commerce {
 namespace {
+static const uint64_t kProductID1 = 1;
+static const uint64_t kProductID2 = 2;
+static const uint64_t kProductID3 = 3;
+static const uint64_t kProductID4 = 4;
+static const uint64_t kProductID5 = 5;
+
 const std::string kTestUrl1 = "http://www.foo1.com";
 const std::string kTestUrl2 = "http://www.foo2.com";
 const std::string kTestUrl3 = "http://www.foo3.com";
@@ -35,7 +47,7 @@ const std::string kCategoryLamp = "Lamp";
 const std::string kCategoryChair = "Chair";
 const std::string kCategoryGamingChair = "GamingChair";
 const std::string kProductGroupName = "Furniture";
-}  // namespace
+const std::string kClusterTitle = "ClusteredProduct";
 
 class MockObserver : public ClusterManager::Observer {
  public:
@@ -45,22 +57,47 @@ class MockObserver : public ClusterManager::Observer {
               (override));
 };
 
+class MockClusterServerProxy : public ClusterServerProxy {
+ public:
+  MockClusterServerProxy(
+      signin::IdentityManager* identity_manager,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+      : ClusterServerProxy(identity_manager, url_loader_factory) {}
+  MockClusterServerProxy(const MockClusterServerProxy&) = delete;
+  MockClusterServerProxy operator=(const MockClusterServerProxy&) = delete;
+  ~MockClusterServerProxy() override = default;
+
+  MOCK_METHOD(void,
+              GetComparableProducts,
+              (const std::vector<uint64_t>&,
+               ClusterServerProxy::GetComparableProductsCallback),
+              (override));
+};
+}  // namespace
+
 class ClusterManagerTest : public testing::Test {
  public:
-  ClusterManagerTest() = default;
+  ClusterManagerTest()
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
   ~ClusterManagerTest() override = default;
 
   void SetUp() override {
     product_specification_service_ =
         std::make_unique<MockProductSpecificationsService>();
-    EXPECT_CALL(*product_specification_service_, GetAllProductSpecifications())
+    EXPECT_CALL(
+        *product_specification_service_,
+        GetAllProductSpecifications(
+            testing::An<ProductSpecificationsService::GetAllCallback>()))
         .Times(1);
+    auto proxy = std::make_unique<MockClusterServerProxy>(nullptr, nullptr);
+    server_proxy_ = proxy.get();
     cluster_manager_ = std::make_unique<ClusterManager>(
-        product_specification_service_.get(),
+        product_specification_service_.get(), std::move(proxy),
         base::BindRepeating(&ClusterManagerTest::GetProductInfo,
                             base::Unretained(this)),
         base::BindRepeating(&ClusterManagerTest::url_infos,
                             base::Unretained(this)));
+    base::RunLoop().RunUntilIdle();
     InitializeProductInfos();
   }
 
@@ -108,6 +145,15 @@ class ClusterManagerTest : public testing::Test {
 
  protected:
   ProductSpecificationsSet CreateProductSpecificationsSet(
+      std::vector<GURL> url_group,
+      int64_t update_time_usec_since_epoch) {
+    base::Uuid uuid = base::Uuid::GenerateRandomV4();
+    return ProductSpecificationsSet(uuid.AsLowercaseString(), 0,
+                                    update_time_usec_since_epoch, url_group,
+                                    kProductGroupName);
+  }
+
+  ProductSpecificationsSet CreateProductSpecificationsSet(
       const std::string& url,
       int64_t update_time_usec_since_epoch) {
     base::Uuid uuid = base::Uuid::GenerateRandomV4();
@@ -119,23 +165,51 @@ class ClusterManagerTest : public testing::Test {
 
   ProductSpecificationsSet CreateProductSpecificationsSet(
       const std::string& url) {
-    return CreateProductSpecificationsSet(url, 0);
+    return CreateProductSpecificationsSet(
+        url, base::Time::Now().InMillisecondsSinceUnixEpoch());
   }
 
-  ProductInfo CreateProductInfo(const std::string& label) {
+  void AddCategoryLabel(ProductCategory* product_category,
+                        const std::string& default_label,
+                        const std::string short_label = "",
+                        bool should_trigger_cluster = true) {
+    auto* category_label = product_category->add_category_labels();
+    category_label->set_category_default_label(default_label);
+    category_label->set_category_short_label(short_label);
+    category_label->set_should_trigger_clustering(should_trigger_cluster);
+  }
+
+  ProductInfo CreateProductInfo(const std::string& label, int64_t product_id) {
     ProductInfo product_info = ProductInfo();
-    product_info.category_data.add_product_categories()
-        ->add_category_labels()
-        ->set_category_default_label(label);
+    product_info.product_cluster_id = product_id;
+    auto* product_category =
+        product_info.category_data.add_product_categories();
+    AddCategoryLabel(product_category, label);
+    return product_info;
+  }
+
+  ProductInfo CreateProductInfoWithShortLabel(const std::string& default_label,
+                                              const std::string& short_label,
+                                              int64_t product_id) {
+    ProductInfo product_info = ProductInfo();
+    product_info.product_cluster_id = product_id;
+    auto* product_category =
+        product_info.category_data.add_product_categories();
+    AddCategoryLabel(product_category, default_label, short_label, true);
     return product_info;
   }
 
   void InitializeProductInfos() {
-    product_infos_[GURL(kTestUrl1)] = CreateProductInfo(kCategoryLamp);
-    product_infos_[GURL(kTestUrl2)] = CreateProductInfo(kCategoryChair);
-    product_infos_[GURL(kTestUrl3)] = CreateProductInfo(kCategoryLamp);
-    product_infos_[GURL(kProduct1Url)] = CreateProductInfo(kCategoryLamp);
-    product_infos_[GURL(kProduct2Url)] = CreateProductInfo(kCategoryChair);
+    product_infos_[GURL(kTestUrl1)] =
+        CreateProductInfo(kCategoryLamp, kProductID1);
+    product_infos_[GURL(kTestUrl2)] =
+        CreateProductInfo(kCategoryChair, kProductID2);
+    product_infos_[GURL(kTestUrl3)] =
+        CreateProductInfo(kCategoryLamp, kProductID3);
+    product_infos_[GURL(kProduct1Url)] =
+        CreateProductInfo(kCategoryLamp, kProductID4);
+    product_infos_[GURL(kProduct2Url)] =
+        CreateProductInfo(kCategoryChair, kProductID5);
   }
 
   void GetEntryPointInfoForNavigation(const GURL& url,
@@ -165,10 +239,24 @@ class ClusterManagerTest : public testing::Test {
     run_loop.Run();
   }
 
+  void GetComparableProducts(const EntryPointInfo& entry_point_info,
+                             std::optional<EntryPointInfo>* result) {
+    base::RunLoop run_loop;
+    cluster_manager_->GetComparableProducts(
+        entry_point_info,
+        base::BindOnce(
+            [](std::optional<EntryPointInfo>* ret,
+               std::optional<EntryPointInfo> info) { *ret = std::move(info); },
+            result)
+            .Then(run_loop.QuitClosure()));
+    run_loop.Run();
+  }
+
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<MockProductSpecificationsService>
       product_specification_service_;
   std::unique_ptr<ClusterManager> cluster_manager_;
+  raw_ptr<MockClusterServerProxy> server_proxy_;
   std::map<GURL, ProductInfo> product_infos_;
   std::vector<UrlInfo> url_infos_;
 };
@@ -189,25 +277,32 @@ TEST_F(ClusterManagerTest, AddAndRemoveCandidateProduct) {
 
 TEST_F(ClusterManagerTest,
        ClusterManagerInitializationWithExistingProductSpecificationsSets) {
-  ProductSpecificationsSet set1 =
-      CreateProductSpecificationsSet(kProduct1Url, 0);
-  ProductSpecificationsSet set2 =
-      CreateProductSpecificationsSet(kProduct2Url, 0);
-  ON_CALL(*product_specification_service_, GetAllProductSpecifications())
+  ProductSpecificationsSet set1 = CreateProductSpecificationsSet(kProduct1Url);
+  ProductSpecificationsSet set2 = CreateProductSpecificationsSet(kProduct2Url);
+  std::vector<ProductSpecificationsSet> sets({set1, set2});
+  ON_CALL(*product_specification_service_,
+          GetAllProductSpecifications(
+              testing::An<ProductSpecificationsService::GetAllCallback>()))
       .WillByDefault(
-          testing::Return(std::vector<ProductSpecificationsSet>{set1, set2}));
-  EXPECT_CALL(*product_specification_service_, GetAllProductSpecifications())
+          [sets](ProductSpecificationsService::GetAllCallback callback) {
+            std::move(callback).Run(sets);
+          });
+  EXPECT_CALL(*product_specification_service_,
+              GetAllProductSpecifications(
+                  testing::An<ProductSpecificationsService::GetAllCallback>()))
       .Times(1);
+  server_proxy_ = nullptr;
   cluster_manager_ = std::make_unique<ClusterManager>(
       product_specification_service_.get(),
+      std::make_unique<ClusterServerProxy>(nullptr, nullptr),
       base::BindRepeating(&ClusterManagerTest::GetProductInfo,
                           base::Unretained(this)),
       base::BindRepeating(&ClusterManagerTest::url_infos,
                           base::Unretained(this)));
+  base::RunLoop().RunUntilIdle();
   ASSERT_EQ(GetProductGroupMap()->size(), 2u);
   ASSERT_EQ(GetProductGroupMap()->count(set1.uuid()), 1u);
   ASSERT_EQ(GetProductGroupMap()->count(set2.uuid()), 1u);
-  base::RunLoop().RunUntilIdle();
 
   ProductGroup* product1 = (*GetProductGroupMap())[set1.uuid()].get();
   ASSERT_EQ(product1->categories.size(), 1u);
@@ -225,6 +320,123 @@ TEST_F(ClusterManagerTest,
             kCategoryChair);
 }
 
+TEST_F(ClusterManagerTest, ClusterManagerInitialization_SkipInvalidSet) {
+  // Mock that set1 is no longer valid for clustering.
+  ProductSpecificationsSet set1 = CreateProductSpecificationsSet(
+      kProduct1Url, (base::Time::Now() -
+                     kProductSpecificationsSetValidForClusteringTime.Get())
+                        .InMillisecondsSinceUnixEpoch());
+  // Mock that set2 is no longer valid for clustering but there is a product
+  // specifications page open for this set.
+  ProductSpecificationsSet set2 = CreateProductSpecificationsSet(
+      kProduct2Url, (base::Time::Now() -
+                     kProductSpecificationsSetValidForClusteringTime.Get())
+                        .InMillisecondsSinceUnixEpoch());
+  UpdateUrlInfos(
+      std::vector<GURL>{GURL(GetProductSpecsTabUrlForID(set2.uuid()))});
+
+  ProductSpecificationsSet set3 = CreateProductSpecificationsSet(kTestUrl3);
+  std::vector<ProductSpecificationsSet> sets({set1, set2, set3});
+  ON_CALL(*product_specification_service_,
+          GetAllProductSpecifications(
+              testing::An<ProductSpecificationsService::GetAllCallback>()))
+      .WillByDefault(
+          [sets](ProductSpecificationsService::GetAllCallback callback) {
+            std::move(callback).Run(sets);
+          });
+  EXPECT_CALL(*product_specification_service_,
+              GetAllProductSpecifications(
+                  testing::An<ProductSpecificationsService::GetAllCallback>()))
+      .Times(1);
+  server_proxy_ = nullptr;
+  cluster_manager_ = std::make_unique<ClusterManager>(
+      product_specification_service_.get(),
+      std::make_unique<ClusterServerProxy>(nullptr, nullptr),
+      base::BindRepeating(&ClusterManagerTest::GetProductInfo,
+                          base::Unretained(this)),
+      base::BindRepeating(&ClusterManagerTest::url_infos,
+                          base::Unretained(this)));
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_EQ(GetProductGroupMap()->size(), 2u);
+  ASSERT_EQ(GetProductGroupMap()->count(set1.uuid()), 0u);
+  ASSERT_EQ(GetProductGroupMap()->count(set2.uuid()), 1u);
+  ASSERT_EQ(GetProductGroupMap()->count(set3.uuid()), 1u);
+}
+
+TEST_F(ClusterManagerTest, ClusterManagerInitialization_KickOffRemoving) {
+  ProductSpecificationsSet set1 = CreateProductSpecificationsSet(kProduct1Url);
+  std::vector<ProductSpecificationsSet> sets({set1});
+  ON_CALL(*product_specification_service_,
+          GetAllProductSpecifications(
+              testing::An<ProductSpecificationsService::GetAllCallback>()))
+      .WillByDefault(
+          [sets](ProductSpecificationsService::GetAllCallback callback) {
+            std::move(callback).Run(sets);
+          });
+  EXPECT_CALL(*product_specification_service_,
+              GetAllProductSpecifications(
+                  testing::An<ProductSpecificationsService::GetAllCallback>()))
+      .Times(1);
+  server_proxy_ = nullptr;
+  cluster_manager_ = std::make_unique<ClusterManager>(
+      product_specification_service_.get(),
+      std::make_unique<ClusterServerProxy>(nullptr, nullptr),
+      base::BindRepeating(&ClusterManagerTest::GetProductInfo,
+                          base::Unretained(this)),
+      base::BindRepeating(&ClusterManagerTest::url_infos,
+                          base::Unretained(this)));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(GetProductGroupMap()->size(), 1u);
+  ASSERT_EQ(GetProductGroupMap()->count(set1.uuid()), 1u);
+
+  // Add one set that will become invalid in one day and another set that will
+  // become invalid in two days.
+  std::vector<GURL> url_group1({GURL(kProduct2Url), GURL(kTestUrl1)});
+  ProductSpecificationsSet set2 = CreateProductSpecificationsSet(
+      url_group1,
+      (base::Time::Now() -
+       kProductSpecificationsSetValidForClusteringTime.Get() + base::Days(1))
+          .InMillisecondsSinceUnixEpoch());
+  cluster_manager_->OnProductSpecificationsSetAdded(set2);
+  std::vector<GURL> url_group2({GURL(kTestUrl2)});
+  ProductSpecificationsSet set3 = CreateProductSpecificationsSet(
+      url_group2,
+      (base::Time::Now() -
+       kProductSpecificationsSetValidForClusteringTime.Get() + base::Days(2))
+          .InMillisecondsSinceUnixEpoch());
+  cluster_manager_->OnProductSpecificationsSetAdded(set3);
+
+  ASSERT_EQ(GetProductGroupMap()->size(), 3u);
+  ASSERT_EQ(GetProductGroupMap()->count(set1.uuid()), 1u);
+  ASSERT_EQ(GetProductGroupMap()->count(set2.uuid()), 1u);
+  ASSERT_EQ(GetProductGroupMap()->count(set3.uuid()), 1u);
+
+  // Mock that one URL in the soon-to-be invalid set is open.
+  UpdateUrlInfos(std::vector<GURL>{GURL(kProduct2Url)});
+
+  // Fast forward one day. The first set would become invalid and the open URLs
+  // in the set will be added back to candidate products.
+  ASSERT_EQ(0u, GetCandidateProductMap()->size());
+  task_environment_.FastForwardBy(base::Days(1));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(GetProductGroupMap()->size(), 2u);
+  ASSERT_EQ(GetProductGroupMap()->count(set1.uuid()), 1u);
+  ASSERT_EQ(GetProductGroupMap()->count(set2.uuid()), 0u);
+  ASSERT_EQ(GetProductGroupMap()->count(set3.uuid()), 1u);
+  ASSERT_EQ(1u, GetCandidateProductMap()->size());
+
+  // Fast forward one more day, the second set would become invalid and be
+  // removed.
+  task_environment_.FastForwardBy(base::Days(1));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(GetProductGroupMap()->size(), 1u);
+  ASSERT_EQ(GetProductGroupMap()->count(set1.uuid()), 1u);
+  ASSERT_EQ(GetProductGroupMap()->count(set2.uuid()), 0u);
+  ASSERT_EQ(GetProductGroupMap()->count(set3.uuid()), 0u);
+  ASSERT_EQ(1u, GetCandidateProductMap()->size());
+}
+
 TEST_F(ClusterManagerTest, GetEntryPointInfoForNavigation) {
   GURL foo1(kTestUrl1);
   GURL foo2(kTestUrl2);
@@ -240,18 +452,22 @@ TEST_F(ClusterManagerTest, GetEntryPointInfoForNavigation) {
 
   std::optional<EntryPointInfo> info;
   GetEntryPointInfoForNavigation(foo1, &info);
-  ASSERT_EQ(info->similar_candidate_products_urls.size(), 2u);
-  ASSERT_EQ(info->similar_candidate_products_urls.count(foo1), 1u);
-  ASSERT_EQ(info->similar_candidate_products_urls.count(foo3), 1u);
+  ASSERT_EQ(info->similar_candidate_products.size(), 2u);
+  ASSERT_EQ(info->similar_candidate_products.count(foo1), 1u);
+  ASSERT_EQ(info->similar_candidate_products[foo1], kProductID1);
+  ASSERT_EQ(info->similar_candidate_products.count(foo3), 1u);
+  ASSERT_EQ(info->similar_candidate_products[foo3], kProductID3);
   ASSERT_EQ(info->title, "Lamp");
 
   GetEntryPointInfoForNavigation(foo2, &info);
   ASSERT_FALSE(info);
 
   GetEntryPointInfoForNavigation(foo3, &info);
-  ASSERT_EQ(info->similar_candidate_products_urls.size(), 2u);
-  ASSERT_EQ(info->similar_candidate_products_urls.count(foo1), 1u);
-  ASSERT_EQ(info->similar_candidate_products_urls.count(foo3), 1u);
+  ASSERT_EQ(info->similar_candidate_products.size(), 2u);
+  ASSERT_EQ(info->similar_candidate_products.count(foo1), 1u);
+  ASSERT_EQ(info->similar_candidate_products[foo1], kProductID1);
+  ASSERT_EQ(info->similar_candidate_products.count(foo3), 1u);
+  ASSERT_EQ(info->similar_candidate_products[foo3], kProductID3);
   ASSERT_EQ(info->title, "Lamp");
 }
 
@@ -271,48 +487,6 @@ TEST_F(ClusterManagerTest, GetEntryPointInfoForNavigationWithInvalidUrl) {
 }
 
 TEST_F(ClusterManagerTest,
-       GetEntryPointInfoForNavigationWithMultiLabelProduct) {
-  GURL foo1(kTestUrl1);
-  GURL foo2(kTestUrl2);
-  GURL foo3(kTestUrl3);
-  UpdateUrlInfos(std::vector<GURL>{foo1, foo2, foo3});
-
-  // Product 1 belongs to 2 categories.
-  product_infos_[foo1].category_data.add_product_categories()
-        ->add_category_labels()
-        ->set_category_default_label(kCategoryChair);
-  cluster_manager_->DidNavigatePrimaryMainFrame(foo1);
-  // Product 2's category label has 2 levels, Chair -> GamingChair.
-  product_infos_[foo2].category_data.mutable_product_categories(0)
-        ->add_category_labels()
-        ->set_category_default_label(kCategoryGamingChair);
-  cluster_manager_->DidNavigatePrimaryMainFrame(foo2);
-  cluster_manager_->DidNavigatePrimaryMainFrame(foo3);
-  base::RunLoop().RunUntilIdle();
-  ASSERT_EQ(3u, GetCandidateProductMap()->size());
-
-  std::optional<EntryPointInfo> info;
-  GetEntryPointInfoForNavigation(foo1, &info);
-  ASSERT_EQ(info->similar_candidate_products_urls.size(), 3u);
-  ASSERT_EQ(info->similar_candidate_products_urls.count(foo1), 1u);
-  ASSERT_EQ(info->similar_candidate_products_urls.count(foo2), 1u);
-  ASSERT_EQ(info->similar_candidate_products_urls.count(foo3), 1u);
-  ASSERT_EQ(info->title, "Lamp");
-
-  GetEntryPointInfoForNavigation(foo2, &info);
-  ASSERT_EQ(info->similar_candidate_products_urls.size(), 2u);
-  ASSERT_EQ(info->similar_candidate_products_urls.count(foo1), 1u);
-  ASSERT_EQ(info->similar_candidate_products_urls.count(foo2), 1u);
-  ASSERT_EQ(info->title, "GamingChair");
-
-  GetEntryPointInfoForNavigation(foo3, &info);
-  ASSERT_EQ(info->similar_candidate_products_urls.size(), 2u);
-  ASSERT_EQ(info->similar_candidate_products_urls.count(foo1), 1u);
-  ASSERT_EQ(info->similar_candidate_products_urls.count(foo3), 1u);
-  ASSERT_EQ(info->title, "Lamp");
-}
-
-TEST_F(ClusterManagerTest,
        GetEntryPointInfoForNavigationAfterRemoveingCandidateProduct) {
   GURL foo1(kTestUrl1);
   GURL foo2(kTestUrl2);
@@ -327,9 +501,9 @@ TEST_F(ClusterManagerTest,
   ASSERT_EQ(3u, GetCandidateProductMap()->size());
   std::optional<EntryPointInfo> info;
   GetEntryPointInfoForNavigation(foo1, &info);
-  ASSERT_EQ(info->similar_candidate_products_urls.size(), 2u);
-  ASSERT_EQ(info->similar_candidate_products_urls.count(foo1), 1u);
-  ASSERT_EQ(info->similar_candidate_products_urls.count(foo3), 1u);
+  ASSERT_EQ(info->similar_candidate_products.size(), 2u);
+  ASSERT_EQ(info->similar_candidate_products.count(foo1), 1u);
+  ASSERT_EQ(info->similar_candidate_products.count(foo3), 1u);
   ASSERT_EQ(info->title, "Lamp");
   GetEntryPointInfoForNavigation(foo2, &info);
   ASSERT_FALSE(info);
@@ -343,6 +517,33 @@ TEST_F(ClusterManagerTest,
   ASSERT_FALSE(info);
   GetEntryPointInfoForNavigation(foo2, &info);
   ASSERT_FALSE(info);
+}
+
+TEST_F(ClusterManagerTest, PrioritizeShortCategoryLabels) {
+  const std::string kCategoryShortLabel = "S";
+  GURL foo1(kTestUrl1);
+  GURL foo2(kTestUrl2);
+  UpdateUrlInfos(std::vector<GURL>{foo1, foo2});
+  // Add 2 products with the same category and both have short category labels.
+  product_infos_[GURL(kTestUrl1)] = CreateProductInfoWithShortLabel(
+      kCategoryLamp, kCategoryShortLabel, kProductID1);
+  product_infos_[GURL(kTestUrl2)] = CreateProductInfoWithShortLabel(
+      kCategoryLamp, kCategoryShortLabel, kProductID2);
+
+  cluster_manager_->DidNavigatePrimaryMainFrame(foo1);
+  cluster_manager_->DidNavigatePrimaryMainFrame(foo2);
+
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(2u, GetCandidateProductMap()->size());
+
+  std::optional<EntryPointInfo> info;
+  GetEntryPointInfoForNavigation(foo1, &info);
+  ASSERT_EQ(info->similar_candidate_products.size(), 2u);
+  ASSERT_EQ(info->similar_candidate_products.count(foo1), 1u);
+  ASSERT_EQ(info->similar_candidate_products[foo1], kProductID1);
+  ASSERT_EQ(info->similar_candidate_products.count(foo2), 1u);
+  ASSERT_EQ(info->similar_candidate_products[foo2], kProductID2);
+  ASSERT_EQ(info->title, kCategoryShortLabel);
 }
 
 TEST_F(ClusterManagerTest,
@@ -447,26 +648,25 @@ TEST_F(ClusterManagerTest,
 
   std::optional<EntryPointInfo> info;
   GetEntryPointInfoForNavigation(foo2, &info);
-  ASSERT_EQ(3u, info->similar_candidate_products_urls.size());
-  ASSERT_EQ(info->similar_candidate_products_urls.count(foo1), 1u);
-  ASSERT_EQ(info->similar_candidate_products_urls.count(foo2), 1u);
-  ASSERT_EQ(info->similar_candidate_products_urls.count(foo4), 1u);
+  ASSERT_EQ(3u, info->similar_candidate_products.size());
+  ASSERT_EQ(info->similar_candidate_products.count(foo1), 1u);
+  ASSERT_EQ(info->similar_candidate_products.count(foo2), 1u);
+  ASSERT_EQ(info->similar_candidate_products.count(foo4), 1u);
   GetEntryPointInfoForNavigation(foo1, &info);
-  ASSERT_EQ(3u, info->similar_candidate_products_urls.size());
-  ASSERT_EQ(info->similar_candidate_products_urls.count(foo1), 1u);
-  ASSERT_EQ(info->similar_candidate_products_urls.count(foo2), 1u);
-  ASSERT_EQ(info->similar_candidate_products_urls.count(foo4), 1u);
+  ASSERT_EQ(3u, info->similar_candidate_products.size());
+  ASSERT_EQ(info->similar_candidate_products.count(foo1), 1u);
+  ASSERT_EQ(info->similar_candidate_products.count(foo2), 1u);
+  ASSERT_EQ(info->similar_candidate_products.count(foo4), 1u);
 
   // Similar candidates will not include `foo1` if it is added to a product
   // group.
-  ProductSpecificationsSet set1 =
-      CreateProductSpecificationsSet(kProduct1Url, 0);
+  ProductSpecificationsSet set1 = CreateProductSpecificationsSet(kProduct1Url);
   cluster_manager_->OnProductSpecificationsSetAdded(set1);
 
   GetEntryPointInfoForNavigation(foo2, &info);
-  ASSERT_EQ(2u, info->similar_candidate_products_urls.size());
-  ASSERT_EQ(info->similar_candidate_products_urls.count(foo2), 1u);
-  ASSERT_EQ(info->similar_candidate_products_urls.count(foo4), 1u);
+  ASSERT_EQ(2u, info->similar_candidate_products.size());
+  ASSERT_EQ(info->similar_candidate_products.count(foo2), 1u);
+  ASSERT_EQ(info->similar_candidate_products.count(foo4), 1u);
   GetEntryPointInfoForNavigation(foo1, &info);
   ASSERT_FALSE(info);
 }
@@ -474,12 +674,12 @@ TEST_F(ClusterManagerTest,
 TEST_F(ClusterManagerTest,
        FindSimilarCandidateProductForMultiLabelProductGroup) {
   ProductInfo product_info = ProductInfo();
-  product_info.category_data.add_product_categories()
-      ->add_category_labels()
-      ->set_category_default_label(kCategoryLamp);
-  product_info.category_data.add_product_categories()
-      ->add_category_labels()
-      ->set_category_default_label(kCategoryChair);
+  auto* product_categories_1 =
+      product_info.category_data.add_product_categories();
+  AddCategoryLabel(product_categories_1, kCategoryLamp);
+  auto* product_categories_2 =
+      product_info.category_data.add_product_categories();
+  AddCategoryLabel(product_categories_2, kCategoryChair);
   product_infos_[GURL(kProduct1Url)] = product_info;
 
   base::Uuid uuid = AddProductSpecificationSet().uuid();
@@ -509,10 +709,8 @@ TEST_F(ClusterManagerTest,
 
 TEST_F(ClusterManagerTest,
        FindSimilarCandidateProductsForProductGroupWithProductsAlreadyInGroup) {
-  ProductSpecificationsSet set1 =
-      CreateProductSpecificationsSet(kProduct1Url, 0);
-  ProductSpecificationsSet set2 =
-      CreateProductSpecificationsSet(kProduct2Url, 0);
+  ProductSpecificationsSet set1 = CreateProductSpecificationsSet(kProduct1Url);
+  ProductSpecificationsSet set2 = CreateProductSpecificationsSet(kProduct2Url);
   cluster_manager_->OnProductSpecificationsSetAdded(set1);
   cluster_manager_->OnProductSpecificationsSetAdded(set2);
   GURL foo1(kProduct1Url);
@@ -573,8 +771,7 @@ TEST_F(ClusterManagerTest, GetProductGroupForCandidateProduct) {
 }
 
 TEST_F(ClusterManagerTest, GetProductGroupForCandidateProductAlreadyInGroup) {
-  ProductSpecificationsSet set1 =
-      CreateProductSpecificationsSet(kProduct1Url, 0);
+  ProductSpecificationsSet set1 = CreateProductSpecificationsSet(kProduct1Url);
   cluster_manager_->OnProductSpecificationsSetAdded(set1);
   GURL foo1(kProduct1Url);
   GURL foo2(kTestUrl1);
@@ -592,7 +789,9 @@ TEST_F(ClusterManagerTest, GetProductGroupForCandidateProductAlreadyInGroup) {
 }
 
 TEST_F(ClusterManagerTest, MultipleSimilarProductGroupForCandidateProduct) {
-  ProductSpecificationsSet set1 = CreateProductSpecificationsSet(kTestUrl1, 0);
+  ProductSpecificationsSet set1 = CreateProductSpecificationsSet(
+      kTestUrl1,
+      (base::Time::Now() - base::Days(1)).InMillisecondsSinceUnixEpoch());
   cluster_manager_->OnProductSpecificationsSetAdded(set1);
   GURL foo(kProduct1Url);
   UpdateUrlInfos(std::vector<GURL>{foo});
@@ -603,8 +802,8 @@ TEST_F(ClusterManagerTest, MultipleSimilarProductGroupForCandidateProduct) {
       cluster_manager_->GetProductGroupForCandidateProduct(foo);
   ASSERT_EQ(product_group->uuid, set1.uuid());
 
-  ProductSpecificationsSet set2 =
-      CreateProductSpecificationsSet(kTestUrl3, 100);
+  ProductSpecificationsSet set2 = CreateProductSpecificationsSet(
+      kTestUrl3, base::Time::Now().InMillisecondsSinceUnixEpoch());
   cluster_manager_->OnProductSpecificationsSetAdded(set2);
   base::RunLoop().RunUntilIdle();
   product_group = cluster_manager_->GetProductGroupForCandidateProduct(foo);
@@ -644,9 +843,11 @@ TEST_F(ClusterManagerTest, GetEntryPointInfoForSelection) {
   GetEntryPointInfoForSelection(foo1, foo3, &info);
   ASSERT_TRUE(info);
   ASSERT_EQ(info->title, "Lamp");
-  ASSERT_EQ(info->similar_candidate_products_urls.size(), 2u);
-  ASSERT_EQ(info->similar_candidate_products_urls.count(foo1), 1u);
-  ASSERT_EQ(info->similar_candidate_products_urls.count(foo3), 1u);
+  ASSERT_EQ(info->similar_candidate_products.size(), 2u);
+  ASSERT_EQ(info->similar_candidate_products.count(foo1), 1u);
+  ASSERT_EQ(info->similar_candidate_products[foo1], kProductID1);
+  ASSERT_EQ(info->similar_candidate_products.count(foo3), 1u);
+  ASSERT_EQ(info->similar_candidate_products[foo3], kProductID3);
 }
 
 TEST_F(ClusterManagerTest,
@@ -657,16 +858,14 @@ TEST_F(ClusterManagerTest,
   UpdateUrlInfos(std::vector<GURL>{foo1, foo2, foo3});
 
   // Product 1 belongs to 2 categories.
-  product_infos_[foo1]
-      .category_data.add_product_categories()
-      ->add_category_labels()
-      ->set_category_default_label(kCategoryChair);
+  auto* product_category_1 =
+      product_infos_[foo1].category_data.add_product_categories();
+  AddCategoryLabel(product_category_1, kCategoryChair);
   cluster_manager_->DidNavigatePrimaryMainFrame(foo1);
   // Product 2's category label has 2 levels, Chair -> GamingChair.
-  product_infos_[foo2]
-      .category_data.mutable_product_categories(0)
-      ->add_category_labels()
-      ->set_category_default_label(kCategoryGamingChair);
+  auto* product_category_2 =
+      product_infos_[foo2].category_data.mutable_product_categories(0);
+  AddCategoryLabel(product_category_2, kCategoryGamingChair);
   cluster_manager_->DidNavigatePrimaryMainFrame(foo2);
   cluster_manager_->DidNavigatePrimaryMainFrame(foo3);
   base::RunLoop().RunUntilIdle();
@@ -676,17 +875,17 @@ TEST_F(ClusterManagerTest,
   GetEntryPointInfoForSelection(foo1, foo2, &info);
   ASSERT_TRUE(info);
   ASSERT_EQ(info->title, "Lamp");
-  ASSERT_EQ(info->similar_candidate_products_urls.size(), 3u);
-  ASSERT_EQ(info->similar_candidate_products_urls.count(foo1), 1u);
-  ASSERT_EQ(info->similar_candidate_products_urls.count(foo2), 1u);
-  ASSERT_EQ(info->similar_candidate_products_urls.count(foo3), 1u);
+  ASSERT_EQ(info->similar_candidate_products.size(), 3u);
+  ASSERT_EQ(info->similar_candidate_products.count(foo1), 1u);
+  ASSERT_EQ(info->similar_candidate_products.count(foo2), 1u);
+  ASSERT_EQ(info->similar_candidate_products.count(foo3), 1u);
 
   GetEntryPointInfoForSelection(foo1, foo3, &info);
   ASSERT_EQ(info->title, "Lamp");
-  ASSERT_EQ(info->similar_candidate_products_urls.size(), 3u);
-  ASSERT_EQ(info->similar_candidate_products_urls.count(foo1), 1u);
-  ASSERT_EQ(info->similar_candidate_products_urls.count(foo2), 1u);
-  ASSERT_EQ(info->similar_candidate_products_urls.count(foo3), 1u);
+  ASSERT_EQ(info->similar_candidate_products.size(), 3u);
+  ASSERT_EQ(info->similar_candidate_products.count(foo1), 1u);
+  ASSERT_EQ(info->similar_candidate_products.count(foo2), 1u);
+  ASSERT_EQ(info->similar_candidate_products.count(foo3), 1u);
 
   GetEntryPointInfoForSelection(foo2, foo3, &info);
   ASSERT_FALSE(info);
@@ -709,4 +908,227 @@ TEST_F(ClusterManagerTest, ClusterManagerObserver) {
   cluster_manager_->DidNavigatePrimaryMainFrame(foo2);
   base::RunLoop().RunUntilIdle();
 }
+
+TEST_F(ClusterManagerTest, TabClosedWhenGetComparableProducts) {
+  std::vector<uint64_t> product_ids{kProductID1, kProductID2, kProductID3};
+  EXPECT_CALL(*server_proxy_, GetComparableProducts(product_ids, _))
+      .WillRepeatedly(
+          [](std::vector<uint64_t> ids,
+             ClusterServerProxy::GetComparableProductsCallback callback) {
+            std::move(callback).Run(ids);
+          });
+  GURL foo1(kTestUrl1);
+  GURL foo2(kTestUrl2);
+  GURL foo3(kTestUrl3);
+  std::map<GURL, uint64_t> comparable_products;
+  comparable_products.emplace(foo1, kProductID1);
+  comparable_products.emplace(foo2, kProductID2);
+  comparable_products.emplace(foo3, kProductID3);
+  UpdateUrlInfos(std::vector<GURL>{foo1, foo2, foo3});
+  EntryPointInfo info(kClusterTitle, comparable_products);
+  std::optional<EntryPointInfo> result_info;
+  GetComparableProducts(info, &result_info);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(result_info->similar_candidate_products, comparable_products);
+  ASSERT_EQ(result_info->title, kClusterTitle);
+
+  UpdateUrlInfos(std::vector<GURL>{foo1, foo2});
+  GetComparableProducts(info, &result_info);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(result_info->similar_candidate_products.size(), 2u);
+  ASSERT_TRUE(base::Contains(result_info->similar_candidate_products, foo1));
+  ASSERT_TRUE(base::Contains(result_info->similar_candidate_products, foo2));
+  ASSERT_EQ(result_info->title, kClusterTitle);
+}
+
+TEST_F(ClusterManagerTest, GetComparableProductsWithPartialProductsComparable) {
+  std::vector<uint64_t> product_ids{kProductID1, kProductID2, kProductID3};
+  EXPECT_CALL(*server_proxy_, GetComparableProducts(product_ids, _))
+      .WillRepeatedly(
+          [](std::vector<uint64_t> ids,
+             ClusterServerProxy::GetComparableProductsCallback callback) {
+            std::move(callback).Run(
+                std::vector<uint64_t>{kProductID1, kProductID2});
+          });
+  GURL foo1(kTestUrl1);
+  GURL foo2(kTestUrl2);
+  GURL foo3(kTestUrl3);
+  std::map<GURL, uint64_t> comparable_products;
+  comparable_products.emplace(foo1, kProductID1);
+  comparable_products.emplace(foo2, kProductID2);
+  comparable_products.emplace(foo3, kProductID3);
+  UpdateUrlInfos(std::vector<GURL>{foo1, foo2, foo3});
+  EntryPointInfo info(kClusterTitle, comparable_products);
+  std::optional<EntryPointInfo> result_info;
+  GetComparableProducts(info, &result_info);
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_EQ(result_info->similar_candidate_products.size(), 2u);
+  ASSERT_TRUE(base::Contains(result_info->similar_candidate_products, foo1));
+  ASSERT_TRUE(base::Contains(result_info->similar_candidate_products, foo2));
+  ASSERT_EQ(result_info->title, kClusterTitle);
+}
+
+TEST_F(ClusterManagerTest, GetEntryPointInfoTitle_MostCommonBottomLabel) {
+  GURL urlA = GURL("https://example.com/xbox");
+  GURL urlB = GURL("https://example.com/ps5");
+  UpdateUrlInfos(std::vector<GURL>{urlA, urlB});
+
+  // Product A has three categories:
+  // Gaming > Gaming Console
+  // Gaming > XBox Console
+  // Gaming > Game Console
+  product_infos_[urlA] = CreateProductInfo("Gaming", kProductID1);
+  auto* product_categories_A_1 =
+      product_infos_[urlA].category_data.mutable_product_categories(0);
+  AddCategoryLabel(product_categories_A_1, "Gaming Console");
+  auto* product_categories_A_2 =
+      product_infos_[urlA].category_data.add_product_categories();
+  AddCategoryLabel(product_categories_A_2, "Gaming");
+  AddCategoryLabel(product_categories_A_2, "XBox Console");
+  auto* product_categories_A_3 =
+      product_infos_[urlA].category_data.add_product_categories();
+  AddCategoryLabel(product_categories_A_3, "Gaming");
+  AddCategoryLabel(product_categories_A_3, "Game Console");
+  cluster_manager_->DidNavigatePrimaryMainFrame(urlA);
+
+  // Product B has three categories:
+  // Gaming > Gaming Console
+  // Gaming > PS5 Console
+  // Gaming > Game Console
+  product_infos_[urlB] = CreateProductInfo("Gaming", kProductID2);
+  auto* product_categories_B_1 =
+      product_infos_[urlB].category_data.mutable_product_categories(0);
+  AddCategoryLabel(product_categories_B_1, "Gaming Console");
+  auto* product_categories_B_2 =
+      product_infos_[urlB].category_data.add_product_categories();
+  AddCategoryLabel(product_categories_B_2, "Gaming");
+  AddCategoryLabel(product_categories_B_2, "PS5 Console");
+  auto* product_categories_B_3 =
+      product_infos_[urlB].category_data.add_product_categories();
+  AddCategoryLabel(product_categories_B_3, "Gaming");
+  AddCategoryLabel(product_categories_B_3, "Game Console");
+  cluster_manager_->DidNavigatePrimaryMainFrame(urlB);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(2u, GetCandidateProductMap()->size());
+
+  // Bottom label shared by all products will be picked. In a tie, pick the
+  // shorter one.
+  std::optional<EntryPointInfo> info;
+  GetEntryPointInfoForSelection(urlA, urlB, &info);
+  ASSERT_TRUE(info);
+  ASSERT_EQ(info->title, "Game Console");
+}
+
+TEST_F(ClusterManagerTest, GetEntryPointInfoTitle_MostCommonLabel) {
+  GURL urlA = GURL("https://example.com/chair1");
+  GURL urlB = GURL("https://example.com/chair2");
+  GURL urlC = GURL("https://example.com/chair3");
+  UpdateUrlInfos(std::vector<GURL>{urlA, urlB, urlC});
+
+  // Product A has one category:
+  // Furniture > Chair
+  product_infos_[urlA] = CreateProductInfo("Furniture", kProductID1);
+  auto* product_categories_A =
+      product_infos_[urlA].category_data.mutable_product_categories(0);
+  AddCategoryLabel(product_categories_A, "Chair");
+  cluster_manager_->DidNavigatePrimaryMainFrame(urlA);
+
+  // Product B has one category:
+  // Chair > Office Chair
+  product_infos_[urlB] = CreateProductInfo("Chair", kProductID1);
+  auto* product_categories_B =
+      product_infos_[urlB].category_data.mutable_product_categories(0);
+  AddCategoryLabel(product_categories_B, "Office Chair");
+  cluster_manager_->DidNavigatePrimaryMainFrame(urlB);
+
+  // Product C has one category:
+  // Chair > Office Chair
+  product_infos_[urlC] = CreateProductInfo("Chair", kProductID1);
+  auto* product_categories_C =
+      product_infos_[urlC].category_data.mutable_product_categories(0);
+  AddCategoryLabel(product_categories_C, "Office Chair");
+  cluster_manager_->DidNavigatePrimaryMainFrame(urlC);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(3u, GetCandidateProductMap()->size());
+
+  // Chair gets picked because it's considered a bottom label as long as it's a
+  // bottom label in at least one product.
+  std::optional<EntryPointInfo> info;
+  GetEntryPointInfoForNavigation(urlA, &info);
+  ASSERT_TRUE(info);
+  ASSERT_EQ(info->title, "Chair");
+}
+
+TEST_F(ClusterManagerTest, GetEntryPointInfoTitle_SecondToBottomLabel) {
+  GURL urlA = GURL("https://example.com/chair1");
+  GURL urlB = GURL("https://example.com/chair2");
+  GURL urlC = GURL("https://example.com/chair3");
+  UpdateUrlInfos(std::vector<GURL>{urlA, urlB, urlC});
+
+  // Product A has two categories:
+  // Chair > Ergonomic Chair
+  // Chair > Office Chair
+  product_infos_[urlA] = CreateProductInfo("Chair", kProductID1);
+  auto* product_categories_A_1 =
+      product_infos_[urlA].category_data.mutable_product_categories(0);
+  AddCategoryLabel(product_categories_A_1, "Ergonomic Chair");
+  auto* product_categories_A_2 =
+      product_infos_[urlA].category_data.add_product_categories();
+  AddCategoryLabel(product_categories_A_2, "Chair");
+  AddCategoryLabel(product_categories_A_2, "Office Chair");
+  cluster_manager_->DidNavigatePrimaryMainFrame(urlA);
+
+  // Product B has one category:
+  // Chair > Ergonomic Chair
+  product_infos_[urlB] = CreateProductInfo("Chair", kProductID1);
+  auto* product_categories_B =
+      product_infos_[urlB].category_data.mutable_product_categories(0);
+  AddCategoryLabel(product_categories_B, "Ergonomic Chair");
+  cluster_manager_->DidNavigatePrimaryMainFrame(urlB);
+
+  // Product C has one category:
+  // Chair > Office Chair
+  product_infos_[urlC] = CreateProductInfo("Chair", kProductID1);
+  auto* product_categories_C =
+      product_infos_[urlC].category_data.mutable_product_categories(0);
+  AddCategoryLabel(product_categories_C, "Office Chair");
+  cluster_manager_->DidNavigatePrimaryMainFrame(urlC);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(3u, GetCandidateProductMap()->size());
+
+  // There is no bottom label shared by all products, so the second-to-bottom
+  // label that is shared by all products will be picked.
+  std::optional<EntryPointInfo> info;
+  GetEntryPointInfoForNavigation(urlA, &info);
+  ASSERT_TRUE(info);
+  ASSERT_EQ(info->title, "Chair");
+}
+
+TEST_F(ClusterManagerTest, NoClusterForNonTriggerCategory) {
+  GURL urlA = GURL("https://example.com/chair1");
+  GURL urlB = GURL("https://example.com/chair2");
+  UpdateUrlInfos(std::vector<GURL>{urlA, urlB});
+
+  // Product A and B have the same category: Chair > Office Chair, and Office
+  // Chair should not trigger clustering.
+  product_infos_[urlA] = CreateProductInfo("Chair", kProductID1);
+  auto* product_categories_A =
+      product_infos_[urlA].category_data.mutable_product_categories(0);
+  AddCategoryLabel(product_categories_A, "Office Chair", "", false);
+  cluster_manager_->DidNavigatePrimaryMainFrame(urlA);
+
+  product_infos_[urlB] = CreateProductInfo("Chair", kProductID1);
+  auto* product_categories_B =
+      product_infos_[urlB].category_data.mutable_product_categories(0);
+  AddCategoryLabel(product_categories_B, "Office Chair", "", false);
+  cluster_manager_->DidNavigatePrimaryMainFrame(urlB);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(2u, GetCandidateProductMap()->size());
+
+  std::optional<EntryPointInfo> info;
+  GetEntryPointInfoForSelection(urlA, urlB, &info);
+  ASSERT_FALSE(info);
+}
+
 }  // namespace commerce

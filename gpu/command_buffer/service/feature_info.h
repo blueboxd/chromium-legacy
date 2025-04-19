@@ -68,10 +68,7 @@ class GPU_GLES2_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool angle_pack_reverse_row_order = false;
     bool arb_texture_rectangle = false;
     bool angle_instanced_arrays = false;
-    bool occlusion_query = false;
     bool occlusion_query_boolean = false;
-    bool use_arb_occlusion_query2_for_occlusion_query_boolean = false;
-    bool use_arb_occlusion_query_for_occlusion_query_boolean = false;
     bool native_vertex_array_object = false;
     bool ext_texture_format_astc = false;
     bool ext_texture_format_astc_hdr = false;
@@ -105,8 +102,6 @@ class GPU_GLES2_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool ext_multisample_compatibility = false;
     bool ext_blend_func_extended = false;
     bool ext_read_format_bgra = false;
-    bool desktop_srgb_support = false;
-    bool arb_es3_compatibility = false;
     bool chromium_color_buffer_float_rgb = false;
     bool chromium_color_buffer_float_rgba = false;
     bool angle_robust_client_memory = false;

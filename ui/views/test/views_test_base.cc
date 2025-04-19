@@ -123,8 +123,9 @@ Widget::InitParams ViewsTestBase::CreateParams(Widget::InitParams::Type type) {
 }
 
 std::unique_ptr<Widget> ViewsTestBase::CreateTestWidget(
+    Widget::InitParams::Ownership ownership,
     Widget::InitParams::Type type) {
-  return CreateTestWidget(CreateParamsForTestWidget(type));
+  return CreateTestWidget(CreateParamsForTestWidget(ownership, type));
 }
 
 std::unique_ptr<Widget> ViewsTestBase::CreateTestWidget(

@@ -263,7 +263,7 @@ ClipboardHistoryItemView::ClipboardHistoryItemView(
     : item_id_(item_id),
       clipboard_history_(clipboard_history),
       container_(container) {
-  SetAccessibleRole(ax::mojom::Role::kMenuItem);
+  GetViewAccessibility().SetRole(ax::mojom::Role::kMenuItem);
 }
 
 bool ClipboardHistoryItemView::AdvancePseudoFocus(bool reverse) {
@@ -317,8 +317,10 @@ void ClipboardHistoryItemView::HandleMainButtonPressEvent(
 
   // When an item view is under gesture tap, it may be not under pseudo
   // focus yet.
-  if (event.type() == ui::ET_GESTURE_TAP)
+  if (event.type() == ui::EventType::kGestureTap) {
     pseudo_focus_ = PseudoFocus::kMainButton;
+    UpdateAccessiblitySelectionAttribute();
+  }
 
   Activate(CalculateActionForMainButtonClick(), event.flags());
 }
@@ -332,19 +334,20 @@ void ClipboardHistoryItemView::MaybeHandleGestureEventFromMainButton(
     ui::GestureEvent* event) {
   // `event` is always handled here if the menu item view is under the gesture
   // long press. It prevents other event handlers from introducing side effects.
-  // For example, if `main_button_` handles the ui::ET_GESTURE_END event,
-  // `main_button_`'s state will be reset. However, `main_button_` is expected
-  // to be at the "hovered" state when the menu item is selected.
+  // For example, if `main_button_` handles the ui::EventType::kGestureEnd
+  // event, `main_button_`'s state will be reset. However, `main_button_` is
+  // expected to be at the "hovered" state when the menu item is selected.
   if (under_gesture_long_press_) {
-    DCHECK_NE(ui::ET_GESTURE_LONG_PRESS, event->type());
-    if (event->type() == ui::ET_GESTURE_END)
+    DCHECK_NE(ui::EventType::kGestureLongPress, event->type());
+    if (event->type() == ui::EventType::kGestureEnd) {
       under_gesture_long_press_ = false;
+    }
 
     event->SetHandled();
     return;
   }
 
-  if (event->type() == ui::ET_GESTURE_LONG_PRESS) {
+  if (event->type() == ui::EventType::kGestureLongPress) {
     under_gesture_long_press_ = true;
     switch (pseudo_focus_) {
       case PseudoFocus::kEmpty:
@@ -415,19 +418,6 @@ gfx::Size ClipboardHistoryItemView::CalculatePreferredSize(
       GetLayoutManager()->GetPreferredHeightForWidth(this, preferred_width));
 }
 
-void ClipboardHistoryItemView::GetAccessibleNodeData(ui::AXNodeData* data) {
-  // A valid role must be set in the AXNodeData prior to setting the name
-  // via AXNodeData::SetName.
-  data->role = ax::mojom::Role::kMenuItem;
-  data->SetNameChecked(GetAccessibleName());
-
-  // In fitting with existing conventions for menu items, we treat clipboard
-  // history items as "selected" from an accessibility standpoint if pressing
-  // Enter will perform the item's default expected action: pasting.
-  data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected,
-                         IsMainButtonPseudoFocused());
-}
-
 void ClipboardHistoryItemView::Init() {
   views::Builder<views::View>(this)
       .SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY)
@@ -474,7 +464,7 @@ Action ClipboardHistoryItemView::CalculateActionForMainButtonClick() const {
       return Action::kDelete;
     case PseudoFocus::kEmpty:
     case PseudoFocus::kMaxValue:
-      DUMP_WILL_BE_NOTREACHED_NORETURN();
+      DUMP_WILL_BE_NOTREACHED();
       return Action::kEmpty;
   }
 }
@@ -518,6 +508,7 @@ void ClipboardHistoryItemView::SetPseudoFocus(PseudoFocus new_pseudo_focus) {
                                    new_pseudo_focus == PseudoFocus::kMainButton;
 
   pseudo_focus_ = new_pseudo_focus;
+  UpdateAccessiblitySelectionAttribute();
   if (IsMainButtonPseudoFocused()) {
     NotifyAccessibilityEvent(ax::mojom::Event::kSelection,
                              /*send_native_event=*/true);
@@ -535,6 +526,13 @@ void ClipboardHistoryItemView::SetPseudoFocus(PseudoFocus new_pseudo_focus) {
   if (repaint_main_button) {
     main_button_->SchedulePaint();
   }
+}
+
+void ClipboardHistoryItemView::UpdateAccessiblitySelectionAttribute() {
+  // In fitting with existing conventions for menu items, we treat clipboard
+  // history items as "selected" from an accessibility standpoint if pressing
+  // Enter will perform the item's default expected action: pasting.
+  GetViewAccessibility().SetIsSelected(IsMainButtonPseudoFocused());
 }
 
 BEGIN_METADATA(ClipboardHistoryItemView, ContentsView)

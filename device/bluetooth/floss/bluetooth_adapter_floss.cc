@@ -188,6 +188,7 @@ void BluetoothAdapterFloss::RemoveAdapterObservers() {
   // Clean up observers
   FlossDBusManager::Get()->GetAdapterClient()->RemoveObserver(this);
   FlossDBusManager::Get()->GetLEScanClient()->RemoveObserver(this);
+  FlossDBusManager::Get()->GetBatteryManagerClient()->RemoveObserver(this);
 #if BUILDFLAG(IS_CHROMEOS)
   FlossDBusManager::Get()->GetAdminClient()->RemoveObserver(this);
 #endif  // BUILDFLAG(IS_CHROMEOS)
@@ -520,8 +521,9 @@ void BluetoothAdapterFloss::OnStopDiscovery(
 
 void BluetoothAdapterFloss::OnInitializeDeviceProperties(
     BluetoothDeviceFloss* device_ptr) {
-  for (auto& observer : observers_)
+  for (auto& observer : observers_) {
     observer.DeviceAdded(this, device_ptr);
+  }
 }
 
 void BluetoothAdapterFloss::OnDeviceUuidsChanged(
@@ -585,6 +587,16 @@ void BluetoothAdapterFloss::OnGetBondState(const FlossDeviceId& device_id,
   if (device->HasReadProperties()) {
     NotifyDevicePairedChanged(device, device->IsPaired());
   }
+}
+
+void BluetoothAdapterFloss::OnGetBatteryInformation(
+    DBusResult<std::optional<BatterySet>> battery_set) {
+  if (!battery_set.has_value() || !battery_set.value().has_value()) {
+    return;
+  }
+
+  auto set = battery_set.value().value();
+  BatteryInfoUpdated(set.address, set);
 }
 
 // Announce to observers a change in the adapter state.
@@ -805,6 +817,12 @@ void BluetoothAdapterFloss::UpdateDeviceProperties(
         base::BindOnce(&BluetoothAdapterFloss::OnGetConnectionState,
                        weak_ptr_factory_.GetWeakPtr(), device_found),
         device_found);
+
+    FlossDBusManager::Get()->GetBatteryManagerClient()->GetBatteryInformation(
+        base::BindOnce(&BluetoothAdapterFloss::OnGetBatteryInformation,
+                       weak_ptr_factory_.GetWeakPtr()),
+        new_device_ptr->AsFlossDeviceId());
+
     return;
   }
 
@@ -1675,7 +1693,18 @@ void BluetoothAdapterFloss::AdvertisementLost(uint8_t scanner_id,
 
 void BluetoothAdapterFloss::RemovePairingDelegateInternal(
     device::BluetoothDevice::PairingDelegate* pairing_delegate) {
-  NOTIMPLEMENTED();
+  // Check if any device is using the pairing delegate.
+  // If so, clear the pairing context which will make any responses no-ops.
+  for (auto& [_, device] : devices_) {
+    BluetoothDeviceFloss* device_floss =
+        static_cast<BluetoothDeviceFloss*>(device.get());
+
+    BluetoothPairingFloss* pairing = device_floss->pairing();
+    if (pairing && pairing->pairing_delegate() == pairing_delegate) {
+      BLUETOOTH_LOG(DEBUG) << __func__ << ": " << device_floss->GetAddress();
+      device_floss->ResetPairing();
+    }
+  }
 }
 
 base::WeakPtr<device::BluetoothAdapter> BluetoothAdapterFloss::GetWeakPtr() {

@@ -3064,6 +3064,30 @@ TEST_F(StyleCascadeTest, VerticalAlignBaselineSourceReversed) {
   EXPECT_EQ("auto", cascade.ComputedValue("baseline-source"));
 }
 
+TEST_F(StyleCascadeTest, WebkitBoxDecorationBreakOverlap) {
+  ScopedBoxDecorationBreakForTest scoped_feature(true);
+
+  TestCascade cascade(GetDocument());
+  cascade.Add("-webkit-box-decoration-break", "slice");
+  cascade.Add("box-decoration-break", "clone");
+  cascade.Apply();
+
+  EXPECT_EQ("clone", cascade.ComputedValue("box-decoration-break"));
+  EXPECT_EQ("clone", cascade.ComputedValue("-webkit-box-decoration-break"));
+}
+
+TEST_F(StyleCascadeTest, WebkitBoxDecorationBreakOverlapReverse) {
+  ScopedBoxDecorationBreakForTest scoped_feature(true);
+
+  TestCascade cascade(GetDocument());
+  cascade.Add("box-decoration-break", "slice");
+  cascade.Add("-webkit-box-decoration-break", "clone");
+  cascade.Apply();
+
+  EXPECT_EQ("clone", cascade.ComputedValue("box-decoration-break"));
+  EXPECT_EQ("clone", cascade.ComputedValue("-webkit-box-decoration-break"));
+}
+
 TEST_F(StyleCascadeTest, InitialDirection) {
   TestCascade cascade(GetDocument());
   cascade.Add("margin-inline-start:10px");
@@ -3108,7 +3132,7 @@ TEST_F(StyleCascadeTest, NonInitialWritingMode) {
 
 TEST_F(StyleCascadeTest, InitialTextSizeAdjust) {
   GetDocument().GetSettings()->SetTextAutosizingEnabled(true);
-  ScopedNewTextSizeAdjustForTest scoped_feature(true);
+  ScopedTextSizeAdjustImprovementsForTest scoped_feature(true);
 
   TestCascade cascade(GetDocument());
   cascade.Add("font-size:10px");
@@ -3121,7 +3145,7 @@ TEST_F(StyleCascadeTest, InitialTextSizeAdjust) {
 
 TEST_F(StyleCascadeTest, NonInitialTextSizeAdjust) {
   GetDocument().GetSettings()->SetTextAutosizingEnabled(true);
-  ScopedNewTextSizeAdjustForTest scoped_feature(true);
+  ScopedTextSizeAdjustImprovementsForTest scoped_feature(true);
 
   TestCascade cascade(GetDocument());
   cascade.Add("font-size:10px");
@@ -4152,16 +4176,16 @@ class TopAnchorEvaluator : public AnchorEvaluator {
   std::optional<LayoutUnit> Evaluate(
       const AnchorQuery&,
       const ScopedCSSName* position_anchor,
-      const std::optional<InsetAreaOffsets>&) override {
+      const std::optional<PositionAreaOffsets>&) override {
     if (GetMode() == Mode::kTop) {
       return LayoutUnit(1);
     }
     return std::nullopt;
   }
-  std::optional<InsetAreaOffsets> ComputeInsetAreaOffsetsForLayout(
+  std::optional<PositionAreaOffsets> ComputePositionAreaOffsetsForLayout(
       const ScopedCSSName*,
-      InsetArea) override {
-    return InsetAreaOffsets();
+      PositionArea) override {
+    return PositionAreaOffsets();
   }
   std::optional<PhysicalOffset> ComputeAnchorCenterOffsets(
       const ComputedStyleBuilder&) override {

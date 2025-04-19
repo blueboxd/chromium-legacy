@@ -1,11 +1,11 @@
 // Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 #include "components/manta/sparky/sparky_provider.h"
 
 #include <memory>
 #include <optional>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -25,6 +25,7 @@
 #include "components/manta/proto/sparky.pb.h"
 #include "components/manta/sparky/sparky_delegate.h"
 #include "components/manta/sparky/sparky_util.h"
+#include "components/manta/sparky/system_info_delegate.h"
 #include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -75,33 +76,40 @@ void OnQAServerResponseOrErrorReceived(
 SparkyProvider::SparkyProvider(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     signin::IdentityManager* identity_manager,
-    bool is_demo_mode,
-    const std::string& chrome_version,
-    std::unique_ptr<SparkyDelegate> sparky_delegate)
-    : BaseProvider(url_loader_factory,
-                   identity_manager,
-                   is_demo_mode,
-                   chrome_version),
-      sparky_delegate_(std::move(sparky_delegate)) {}
+    const ProviderParams& provider_params,
+    std::unique_ptr<SparkyDelegate> sparky_delegate,
+    std::unique_ptr<SystemInfoDelegate> system_info_delegate)
+    : BaseProvider(url_loader_factory, identity_manager, provider_params),
+      sparky_delegate_(std::move(sparky_delegate)),
+      system_info_delegate_(std::move(system_info_delegate)) {}
 
 SparkyProvider::SparkyProvider(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     signin::IdentityManager* identity_manager,
-    std::unique_ptr<SparkyDelegate> sparky_delegate)
-    : SparkyProvider(url_loader_factory,
-                     identity_manager,
-                     false,
-                     std::string(),
-                     std::move(sparky_delegate)) {}
+    std::unique_ptr<SparkyDelegate> sparky_delegate,
+    std::unique_ptr<SystemInfoDelegate> system_info_delegate)
+    : BaseProvider(url_loader_factory, identity_manager),
+      sparky_delegate_(std::move(sparky_delegate)),
+      system_info_delegate_(std::move(system_info_delegate)) {}
 
 SparkyProvider::~SparkyProvider() = default;
 
+std::vector<manta::FileData> SparkyProvider::GetFilesSummary() {
+  return sparky_delegate_->GetFileSummaries();
+}
+
 void SparkyProvider::QuestionAndAnswer(
-    const std::string& original_content,
-    const std::vector<SparkyQAPair> QAHistory,
-    const std::string& question,
-    proto::Task task,
+    std::unique_ptr<SparkyContext> sparky_context,
     SparkyShowAnswerCallback done_callback) {
+  sparky_delegate_->GetScreenshot(base::BindOnce(
+      &SparkyProvider::OnScreenshotObtained, weak_ptr_factory_.GetWeakPtr(),
+      std::move(sparky_context), std::move(done_callback)));
+}
+
+void SparkyProvider::OnScreenshotObtained(
+    std::unique_ptr<SparkyContext> sparky_context,
+    SparkyShowAnswerCallback done_callback,
+    scoped_refptr<base::RefCountedMemory> jpeg_screenshot) {
   proto::Request request;
   request.set_feature_name(proto::FeatureName::CHROMEOS_SPARKY);
 
@@ -110,36 +118,54 @@ void SparkyProvider::QuestionAndAnswer(
 
   auto* sparky_context_data = input_data->mutable_sparky_context_data();
 
-  auto* input_text = sparky_context_data->add_q_and_a();
-  input_text->set_tag("new_question");
-  input_text->set_text(question);
+  AddDialogToSparkyContext(sparky_context->dialog, sparky_context_data);
 
-  for (const auto& [previous_question, previous_answer] : QAHistory) {
-    input_text = sparky_context_data->add_q_and_a();
-    input_text->set_tag("previous_question");
-    input_text->set_text(previous_question);
-
-    input_text = sparky_context_data->add_q_and_a();
-    input_text->set_tag("previous_answer");
-    input_text->set_text(previous_answer);
+  sparky_context_data->set_task(sparky_context->task);
+  if (sparky_context->page_url.has_value()) {
+    auto* web_contents = sparky_context_data->mutable_web_contents();
+    web_contents->set_page_url(sparky_context->page_url.value());
+    if (sparky_context->page_content.has_value()) {
+      web_contents->set_page_contents(sparky_context->page_content.value());
+    }
   }
 
-  sparky_context_data->set_task(task);
-  sparky_context_data->set_page_contents(original_content);
+  if (jpeg_screenshot) {
+    proto::Image* image_proto = sparky_context_data->mutable_screenshot();
+    image_proto->set_serialized_bytes(
+        std::string(base::as_string_view(*jpeg_screenshot)));
+  }
+  auto* apps_data = sparky_context_data->mutable_apps_data();
+  AddAppsData(sparky_delegate_->GetAppsList(), apps_data);
 
-  if (task == proto::Task::TASK_SETTINGS) {
+  if (sparky_context->collect_settings) {
     auto* settings_list = sparky_delegate_->GetSettingsList();
     if (settings_list) {
       auto* settings_data = sparky_context_data->mutable_settings_data();
       AddSettingsProto(*settings_list, settings_data);
     }
   }
+  if (sparky_context->diagnostics_data) {
+    auto* diagnostics_proto = sparky_context_data->mutable_diagnostics_data();
+    AddDiagnosticsProto(sparky_context->diagnostics_data, diagnostics_proto);
+  }
+  if (!sparky_context->files.empty()) {
+    auto* files_proto = sparky_context_data->mutable_files_data();
+    AddFilesData(sparky_context->files, files_proto);
+  }
+
+  // This parameter contains the address of one of the backends which the
+  // request is passed through to once it is pushed up in a manta request.
+  if (sparky_context->server_url) {
+    proto::ServerConfig* server_config =
+        sparky_context_data->mutable_server_config();
+    server_config->set_server_url(sparky_context->server_url.value());
+  }
 
   MantaProtoResponseCallback internal_callback = base::BindOnce(
       &OnQAServerResponseOrErrorReceived,
       base::BindOnce(&SparkyProvider::OnResponseReceived,
                      weak_ptr_factory_.GetWeakPtr(), std::move(done_callback),
-                     original_content, QAHistory, question));
+                     std::move(sparky_context)));
 
   // TODO(b:338501686): MISSING_TRAFFIC_ANNOTATION should be resolved before
   // launch.
@@ -150,109 +176,190 @@ void SparkyProvider::QuestionAndAnswer(
 
 void SparkyProvider::OnResponseReceived(
     SparkyShowAnswerCallback done_callback,
-    const std::string& original_content,
-    const std::vector<SparkyQAPair> QAHistory,
-    const std::string& question,
+    std::unique_ptr<SparkyContext> sparky_context,
     std::unique_ptr<proto::SparkyResponse> sparky_response,
     manta::MantaStatus status) {
   if (status.status_code != manta::MantaStatusCode::kOk) {
-    std::move(done_callback).Run("", status);
+    std::move(done_callback).Run(status, nullptr);
     return;
+  }
+
+  if (sparky_response->has_update()) {
+    if (sparky_response->update().has_files_with_summary()) {
+      auto files_proto = sparky_response->update().files_with_summary();
+      sparky_delegate_->UpdateFileSummaries(GetFileDataFromProto(files_proto));
+    }
   }
 
   if (sparky_response->has_context_request()) {
     RequestAdditionalInformation(sparky_response->context_request(),
-                                 original_content, QAHistory, question,
+                                 std::move(sparky_context),
                                  std::move(done_callback), status);
     return;
-  } else if (sparky_response->has_final_response()) {
-    OnActionResponse(sparky_response->final_response(),
+  }
+  if (sparky_response->has_latest_reply()) {
+    OnDialogResponse(std::move(sparky_context), sparky_response->latest_reply(),
                      std::move(done_callback), status);
     return;
   }
 
   // Occurs if the response cannot be parsed correctly.
-  std::move(done_callback).Run("", status);
+  std::move(done_callback).Run(status, nullptr);
   return;
 }
 
 void SparkyProvider::RequestAdditionalInformation(
     proto::ContextRequest context_request,
-    const std::string& original_content,
-    const std::vector<SparkyQAPair> QAHistory,
-    const std::string& question,
+    std::unique_ptr<SparkyContext> sparky_context,
     SparkyShowAnswerCallback done_callback,
     manta::MantaStatus status) {
   if (context_request.has_settings()) {
     if (!sparky_delegate_->GetSettingsList()->empty()) {
-      QuestionAndAnswer(original_content, QAHistory, question,
-                        proto::TASK_SETTINGS, std::move(done_callback));
-      return;
-    } else {
-      std::move(done_callback).Run("Unable to find settings list", status);
+      sparky_context->collect_settings = true;
+      sparky_context->task = proto::TASK_SETTINGS;
+      QuestionAndAnswer(std::move(sparky_context), std::move(done_callback));
       return;
     }
+    std::move(done_callback).Run(status, nullptr);
+    return;
   }
-  std::move(done_callback).Run("", status);
+  if (context_request.has_diagnostics()) {
+    auto diagnostics_vector =
+        ObtainDiagnosticsVectorFromProto(context_request.diagnostics());
+    if (!diagnostics_vector.empty()) {
+      if (std::find(diagnostics_vector.begin(), diagnostics_vector.end(),
+                    Diagnostics::kStorage) != diagnostics_vector.end()) {
+        sparky_delegate_->ObtainStorageInfo(base::BindOnce(
+            &SparkyProvider::OnStorageReceived, weak_ptr_factory_.GetWeakPtr(),
+            std::move(sparky_context), std::move(done_callback), status,
+            diagnostics_vector));
+        return;
+      }
+      system_info_delegate_->ObtainDiagnostics(
+          diagnostics_vector,
+          base::BindOnce(&SparkyProvider::OnDiagnosticsReceived,
+                         weak_ptr_factory_.GetWeakPtr(),
+                         std::move(sparky_context), std::move(done_callback),
+                         status, nullptr));
+      return;
+    }
+    std::move(done_callback).Run(status, nullptr);
+    return;
+  }
+  if (context_request.has_files()) {
+    std::set<std::string> files = GetSelectedFilePaths(context_request.files());
+    sparky_delegate_->GetMyFiles(
+        base::BindOnce(
+            &SparkyProvider::OnFilesObtained, weak_ptr_factory_.GetWeakPtr(),
+            std::move(sparky_context), std::move(done_callback), status),
+        /*obtain_bytes=*/true, /*allowed_file_paths=*/files);
+    return;
+  }
+
+  // Occurs if no valid request can be found.
+  std::move(done_callback).Run(status, nullptr);
 }
 
-void SparkyProvider::OnActionResponse(proto::FinalResponse final_response,
+void SparkyProvider::OnStorageReceived(
+    std::unique_ptr<SparkyContext> sparky_context,
+    SparkyShowAnswerCallback done_callback,
+    manta::MantaStatus status,
+    std::vector<Diagnostics> diagnostics_vector,
+    std::unique_ptr<StorageData> storage_data) {
+  bool get_system_diagnostics = false;
+  for (auto diagnostic : diagnostics_vector) {
+    if (diagnostic == Diagnostics::kBattery ||
+        diagnostic == Diagnostics::kCpu || diagnostic == Diagnostics::kMemory) {
+      get_system_diagnostics = true;
+      break;
+    }
+  }
+  if (get_system_diagnostics) {
+    system_info_delegate_->ObtainDiagnostics(
+        diagnostics_vector,
+        base::BindOnce(&SparkyProvider::OnDiagnosticsReceived,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       std::move(sparky_context), std::move(done_callback),
+                       status, std::move(storage_data)));
+    return;
+  }
+  sparky_context->diagnostics_data = std::make_optional<DiagnosticsData>(
+      std::nullopt, std::nullopt, std::nullopt,
+      std::make_optional(*storage_data));
+  QuestionAndAnswer(std::move(sparky_context), std::move(done_callback));
+}
+
+void SparkyProvider::OnDiagnosticsReceived(
+    std::unique_ptr<SparkyContext> sparky_context,
+    SparkyShowAnswerCallback done_callback,
+    manta::MantaStatus status,
+    std::unique_ptr<StorageData> storage_data,
+    std::unique_ptr<DiagnosticsData> diagnostics_data) {
+  if (diagnostics_data) {
+    diagnostics_data->storage_data = std::make_optional(*storage_data);
+    sparky_context->diagnostics_data = std::make_optional(*diagnostics_data);
+    sparky_context->task = proto::TASK_DIAGNOSTICS;
+    QuestionAndAnswer(std::move(sparky_context), std::move(done_callback));
+    return;
+  }
+  std::move(done_callback).Run(status, nullptr);
+}
+
+void SparkyProvider::OnDialogResponse(std::unique_ptr<SparkyContext>,
+                                      proto::Turn latest_reply,
                                       SparkyShowAnswerCallback done_callback,
                                       manta::MantaStatus status) {
-  if (!final_response.answer().empty()) {
-    auto answer = final_response.answer();
-    if (final_response.has_action()) {
-      auto action = final_response.action();
-      if (action.has_settings()) {
-        const bool setting_was_updated = UpdateSettings(action.settings());
-        if (!setting_was_updated) {
-          std::move(done_callback)
-              .Run("Unable to update the setting for that value", status);
+  // If the response does not contain any dialog then return an error.
+  if (!latest_reply.has_message()) {
+    std::move(done_callback).Run(status, nullptr);
+    return;
+  }
+  if (latest_reply.action_size() > 0) {
+    auto actions_repeated_field = latest_reply.action();
+    for (const proto::Action& action : actions_repeated_field) {
+      if (action.has_update_setting()) {
+        std::unique_ptr<SettingsData> setting_data =
+            ObtainSettingFromProto(action.update_setting());
+        if (!setting_data) {
+          // Return an error if the setting cannot be converted correctly from
+          // the proto.
+          DVLOG(1) << "Invalid setting action requested.";
+          std::move(done_callback).Run(status, nullptr);
+          return;
         }
+        sparky_delegate_->SetSettings(std::move(setting_data));
+      }
+      if (action.has_launch_app_id()) {
+        sparky_delegate_->LaunchApp(action.launch_app_id());
+      }
+      if (action.has_click()) {
+        sparky_delegate_->Click(action.click().x_pos(), action.click().y_pos());
+      }
+      if (action.has_text_entry()) {
+        sparky_delegate_->KeyboardEntry(action.text_entry().text());
+      }
+      if (action.has_file_action() &&
+          action.file_action().has_launch_file_path()) {
+        sparky_delegate_->LaunchFile(action.file_action().launch_file_path());
       }
     }
-    std::move(done_callback).Run(answer, status);
-  } else {
-    std::move(done_callback).Run("", status);
   }
+
+  DialogTurn latest_dialog_struct = ConvertDialogToStruct(&latest_reply);
+  std::move(done_callback).Run(status, &latest_dialog_struct);
 }
 
-bool SparkyProvider::UpdateSettings(proto::SettingsData settings) {
-  int settings_length = settings.setting_size();
-  // TODO (b:338483338) Add in error handling for the case where one setting is
-  // set correctly, and a different one is not set correctly.
-  bool has_set = false;
-  for (int index = 0; index < settings_length; index++) {
-    auto setting = settings.setting(index);
-    std::unique_ptr<SettingsData> setting_data = nullptr;
-    if (setting.type() == proto::SettingType::SETTING_TYPE_BOOL &&
-        setting.value().has_bool_val()) {
-      setting_data = std::make_unique<SettingsData>(
-          setting.settings_id(), PrefType::kBoolean,
-          std::make_optional<base::Value>(setting.value().bool_val()));
-    } else if (setting.type() == proto::SettingType::SETTING_TYPE_DOUBLE &&
-               setting.value().has_double_val()) {
-      setting_data = std::make_unique<SettingsData>(
-          setting.settings_id(), PrefType::kDouble,
-          std::make_optional<base::Value>(setting.value().double_val()));
-    } else if (setting.type() == proto::SettingType::SETTING_TYPE_INTEGER &&
-               setting.value().has_int_val()) {
-      setting_data = std::make_unique<SettingsData>(
-          setting.settings_id(), PrefType::kInt,
-          std::make_optional<base::Value>(setting.value().int_val()));
-    } else if (setting.type() == proto::SettingType::SETTING_TYPE_STRING &&
-               setting.value().has_text_val()) {
-      setting_data = std::make_unique<SettingsData>(
-          setting.settings_id(), PrefType::kString,
-          std::make_optional<base::Value>(setting.value().text_val()));
-    }
-
-    if (setting_data != nullptr) {
-      has_set = true;
-      sparky_delegate_->SetSettings(std::move(setting_data));
-    }
+void SparkyProvider::OnFilesObtained(
+    std::unique_ptr<SparkyContext> sparky_context,
+    SparkyShowAnswerCallback done_callback,
+    manta::MantaStatus status,
+    std::vector<FileData> files_data) {
+  if (!files_data.empty()) {
+    sparky_context->files = std::move(files_data);
+    QuestionAndAnswer(std::move(sparky_context), std::move(done_callback));
+  } else {
+    std::move(done_callback).Run(status, nullptr);
   }
-  return has_set;
 }
 
 }  // namespace manta

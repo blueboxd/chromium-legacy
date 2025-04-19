@@ -9,6 +9,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.ObserverList;
 import org.chromium.base.lifetime.Destroyable;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omaha.UpdateStatusProvider;
@@ -17,25 +18,34 @@ import org.chromium.chrome.browser.password_manager.PasswordManagerHelper;
 import org.chromium.chrome.browser.password_manager.PasswordManagerUtilBridge;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.sync.SyncServiceFactory;
+import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
+import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskInfo;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.signin.base.CoreAccountInfo;
-import org.chromium.components.sync.SyncService;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
+import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.components.user_prefs.UserPrefs;
 
 import java.util.concurrent.TimeUnit;
 
 /** Manages the scheduling of Safety Hub fetch jobs. */
-public class SafetyHubFetchService implements SyncService.SyncStateChangedListener, Destroyable {
+public class SafetyHubFetchService implements SigninManager.SignInStateObserver, Destroyable {
+    interface Observer {
+        void compromisedPasswordCountChanged();
+
+        void updateStatusChanged();
+    }
+
     private static final int SAFETY_HUB_JOB_INTERVAL_IN_DAYS = 1;
     private final Profile mProfile;
 
     private final Callback<UpdateStatusProvider.UpdateStatus> mUpdateCallback =
             status -> {
                 mUpdateStatus = status;
+                notifyUpdateStatusChanged();
             };
 
     /*
@@ -43,26 +53,35 @@ public class SafetyHubFetchService implements SyncService.SyncStateChangedListen
      * null} if the status hasn't been determined yet.
      */
     private @Nullable UpdateStatusProvider.UpdateStatus mUpdateStatus;
+    private final ObserverList<Observer> mObservers = new ObserverList<>();
+    private final SigninManager mSigninManager;
 
     @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
     SafetyHubFetchService(Profile profile) {
         assert profile != null;
         mProfile = profile;
 
-        SyncService syncService = SyncServiceFactory.getForProfile(mProfile);
-        if (syncService != null) {
-            syncService.addSyncStateChangedListener(this);
+        mSigninManager = IdentityServicesProvider.get().getSigninManager(mProfile);
+        if (mSigninManager != null) {
+            mSigninManager.addSignInStateObserver(this);
         }
 
         // Fetch latest update status.
         UpdateStatusProvider.getInstance().addObserver(mUpdateCallback);
     }
 
+    void addObserver(Observer observer) {
+        mObservers.addObserver(observer);
+    }
+
+    void removeObserver(Observer observer) {
+        mObservers.removeObserver(observer);
+    }
+
     @Override
     public void destroy() {
-        SyncService syncService = SyncServiceFactory.getForProfile(mProfile);
-        if (syncService != null) {
-            syncService.removeSyncStateChangedListener(this);
+        if (mSigninManager != null) {
+            mSigninManager.removeSignInStateObserver(this);
         }
 
         UpdateStatusProvider.getInstance().removeObserver(mUpdateCallback);
@@ -113,14 +132,19 @@ public class SafetyHubFetchService implements SyncService.SyncStateChangedListen
 
     private boolean checkConditions() {
         PasswordManagerHelper passwordManagerHelper = PasswordManagerHelper.getForProfile(mProfile);
-        SyncService syncService = SyncServiceFactory.getForProfile(mProfile);
+        IdentityManager identityManager =
+                IdentityServicesProvider.get().getIdentityManager(mProfile);
+        boolean isSignedIn = identityManager.hasPrimaryAccount(ConsentLevel.SIGNIN);
         String accountEmail =
-                (syncService != null)
-                        ? CoreAccountInfo.getEmailFrom(syncService.getAccountInfo())
+                (mSigninManager != null)
+                        ? CoreAccountInfo.getEmailFrom(
+                                mSigninManager
+                                        .getIdentityManager()
+                                        .getPrimaryAccountInfo(ConsentLevel.SIGNIN))
                         : null;
 
         return ChromeFeatureList.isEnabled(ChromeFeatureList.SAFETY_HUB)
-                && PasswordManagerHelper.hasChosenToSyncPasswords(syncService)
+                && isSignedIn
                 && PasswordManagerUtilBridge.areMinUpmRequirementsMet()
                 && passwordManagerHelper.canUseUpm()
                 && accountEmail != null;
@@ -139,16 +163,21 @@ public class SafetyHubFetchService implements SyncService.SyncStateChangedListen
 
         PasswordManagerHelper passwordManagerHelper = PasswordManagerHelper.getForProfile(mProfile);
         PrefService prefService = UserPrefs.get(mProfile);
-        SyncService syncService = SyncServiceFactory.getForProfile(mProfile);
 
-        assert syncService != null;
-        String accountEmail = CoreAccountInfo.getEmailFrom(syncService.getAccountInfo());
+        assert mSigninManager != null;
+        String accountEmail =
+                CoreAccountInfo.getEmailFrom(
+                        mSigninManager
+                                .getIdentityManager()
+                                .getPrimaryAccountInfo(ConsentLevel.SIGNIN));
 
         passwordManagerHelper.getBreachedCredentialsCount(
                 PasswordCheckReferrer.SAFETY_CHECK,
                 accountEmail,
                 count -> {
                     prefService.setInteger(Pref.BREACHED_CREDENTIALS_COUNT, count);
+                    notifyCompromisedPasswordCountChanged();
+
                     onFinishedCallback.onResult(/* needsReschedule= */ false);
                     scheduleNextFetchJob();
                 },
@@ -167,9 +196,21 @@ public class SafetyHubFetchService implements SyncService.SyncStateChangedListen
         } else {
             // Clean up account specific prefs.
             PrefService prefService = UserPrefs.get(mProfile);
-            prefService.setInteger(Pref.BREACHED_CREDENTIALS_COUNT, 0);
+            prefService.clearPref(Pref.BREACHED_CREDENTIALS_COUNT);
 
             cancelFetchJob();
+        }
+    }
+
+    private void notifyCompromisedPasswordCountChanged() {
+        for (Observer observer : mObservers) {
+            observer.compromisedPasswordCountChanged();
+        }
+    }
+
+    private void notifyUpdateStatusChanged() {
+        for (Observer observer : mObservers) {
+            observer.updateStatusChanged();
         }
     }
 
@@ -181,7 +222,12 @@ public class SafetyHubFetchService implements SyncService.SyncStateChangedListen
     }
 
     @Override
-    public void syncStateChanged() {
+    public void onSignedIn() {
+        scheduleOrCancelFetchJob(/* delayMs= */ 0);
+    }
+
+    @Override
+    public void onSignedOut() {
         scheduleOrCancelFetchJob(/* delayMs= */ 0);
     }
 }

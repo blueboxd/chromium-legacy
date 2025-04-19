@@ -22,8 +22,6 @@
 #include "components/webdata/common/web_database_backend.h"
 #include "components/webdata/common/web_database_service.h"
 
-using base::Time;
-
 namespace autofill {
 
 AutofillWebDataService::AutofillWebDataService(
@@ -34,7 +32,7 @@ AutofillWebDataService::AutofillWebDataService(
       ui_task_runner_(std::move(ui_task_runner)),
       db_task_runner_(std::move(db_task_runner)),
       autofill_backend_(nullptr) {
-  base::RepeatingCallback<void(syncer::ModelType)>
+  base::RepeatingCallback<void(syncer::DataType)>
       on_autofill_changed_by_sync_callback = base::BindRepeating(
           &AutofillWebDataService::NotifyOnAutofillChangedBySyncOnUISequence,
           weak_ptr_factory_.GetWeakPtr());
@@ -82,7 +80,8 @@ WebDataServiceBase::Handle AutofillWebDataService::GetFormValuesForElementName(
 }
 
 void AutofillWebDataService::RemoveFormElementsAddedBetween(
-    const Time& delete_begin, const Time& delete_end) {
+    base::Time delete_begin,
+    base::Time delete_end) {
   wdbs_->ScheduleDBTask(
       FROM_HERE,
       base::BindOnce(
@@ -139,8 +138,10 @@ WebDataServiceBase::Handle AutofillWebDataService::GetAutofillProfiles(
 }
 
 WebDataServiceBase::Handle
-    AutofillWebDataService::GetCountOfValuesContainedBetween(
-        const Time& begin, const Time& end, WebDataServiceConsumer* consumer) {
+AutofillWebDataService::GetCountOfValuesContainedBetween(
+    base::Time begin,
+    base::Time end,
+    WebDataServiceConsumer* consumer) {
   return wdbs_->ScheduleDBTaskWithResult(
       FROM_HERE,
       base::BindOnce(
@@ -353,8 +354,8 @@ void AutofillWebDataService::UpdateServerCardMetadata(
 }
 
 void AutofillWebDataService::RemoveAutofillDataModifiedBetween(
-    const Time& delete_begin,
-    const Time& delete_end) {
+    base::Time delete_begin,
+    base::Time delete_end) {
   wdbs_->ScheduleDBTask(
       FROM_HERE,
       base::BindOnce(
@@ -363,7 +364,8 @@ void AutofillWebDataService::RemoveAutofillDataModifiedBetween(
 }
 
 void AutofillWebDataService::RemoveOriginURLsModifiedBetween(
-    const Time& delete_begin, const Time& delete_end) {
+    base::Time delete_begin,
+    base::Time delete_end) {
   wdbs_->ScheduleDBTask(
       FROM_HERE,
       base::BindOnce(
@@ -435,10 +437,10 @@ void AutofillWebDataService::AddServerCreditCardForTesting(
 AutofillWebDataService::~AutofillWebDataService() = default;
 
 void AutofillWebDataService::NotifyOnAutofillChangedBySyncOnUISequence(
-    syncer::ModelType model_type) {
+    syncer::DataType data_type) {
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
   for (auto& ui_observer : ui_observer_list_)
-    ui_observer.OnAutofillChangedBySync(model_type);
+    ui_observer.OnAutofillChangedBySync(data_type);
 }
 
 }  // namespace autofill

@@ -20,14 +20,12 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
@@ -49,7 +47,6 @@ import org.chromium.ui.resources.ResourceManager;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, qualifiers = "sw600dp")
 public class TabStripSceneLayerTest {
-    @Rule public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
     @Rule public JniMocker mJniMocker = new JniMocker();
     @Mock private TabStripSceneLayer.Natives mTabStripSceneMock;
     @Mock private StripLayoutHelperManager mStripLayoutHelperManager;
@@ -146,20 +143,17 @@ public class TabStripSceneLayerTest {
 
         // Verify JNI calls.
         verify(mTabStripSceneMock)
-                .updateModelSelectorButtonBackground(
+                .updateModelSelectorButton(
                         1L,
                         mTabStripSceneLayer,
                         mModelSelectorButton.getResourceId(),
                         ((TintedCompositorButton) mModelSelectorButton).getBackgroundResourceId(),
                         mModelSelectorButton.getDrawX(),
                         mModelSelectorButton.getDrawY(),
-                        mModelSelectorButton.getWidth() * mDpToPx,
-                        mModelSelectorButton.getHeight() * mDpToPx,
-                        false,
                         true,
+                        false,
                         ((TintedCompositorButton) mModelSelectorButton).getTint(),
                         ((TintedCompositorButton) mModelSelectorButton).getBackgroundTint(),
-                        false,
                         mModelSelectorButton.getOpacity(),
                         mResourceManager);
         verify(mTabStripSceneMock)
@@ -168,12 +162,12 @@ public class TabStripSceneLayerTest {
                         eq(mTabStripSceneLayer),
                         /* resourceId= */ anyInt(),
                         /* backgroundResourceId= */ anyInt(),
-                        /* isHovered= */ eq(mNewTabButton.isHovered()),
                         /* x= */ eq(mNewTabButton.getDrawX() * mDpToPx),
                         /* y= */ eq(mNewTabButton.getDrawY() * mDpToPx),
                         /* topPadding= */ eq(topPadding),
                         /* touchTargetOffset= */ anyFloat(),
                         /* visible= */ eq(mNewTabButton.isVisible()),
+                        /* isHovered= */ eq(mNewTabButton.isHovered()),
                         /* tint= */ anyInt(),
                         /* backgroundTint= */ anyInt(),
                         /* buttonAlpha= */ anyFloat(),

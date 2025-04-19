@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "cc/metrics/compositor_frame_reporting_controller.h"
 
 #include <string>
@@ -271,7 +276,7 @@ class CompositorFrameReportingControllerTest : public testing::Test {
     const base::TimeTicks arrived_in_browser_main_timestamp = AdvanceNowByMs(3);
     AdvanceNowByMs(10);
     return SetupEventMetrics(ScrollEventMetrics::CreateForTesting(
-        ui::ET_GESTURE_SCROLL_BEGIN, input_type,
+        ui::EventType::kGestureScrollBegin, input_type,
         /*is_inertial=*/false, event_time, arrived_in_browser_main_timestamp,
         &test_tick_clock_));
   }
@@ -285,7 +290,7 @@ class CompositorFrameReportingControllerTest : public testing::Test {
     const base::TimeTicks arrived_in_browser_main_timestamp = AdvanceNowByMs(3);
     AdvanceNowByMs(10);
     return SetupEventMetrics(ScrollUpdateEventMetrics::CreateForTesting(
-        ui::ET_GESTURE_SCROLL_UPDATE, input_type, is_inertial,
+        ui::EventType::kGestureScrollUpdate, input_type, is_inertial,
         scroll_update_type, /*delta=*/10.0f, event_time,
         arrived_in_browser_main_timestamp, &test_tick_clock_, trace_id));
   }
@@ -319,7 +324,6 @@ class CompositorFrameReportingControllerTest : public testing::Test {
   // before and destroyed after that.
   base::SimpleTestTickClock test_tick_clock_;
 
-  TestCompositorFrameReportingController reporting_controller_;
   viz::BeginFrameArgs args_;
   viz::BeginFrameId current_id_;
   viz::BeginFrameId last_activated_id_;
@@ -334,6 +338,7 @@ class CompositorFrameReportingControllerTest : public testing::Test {
   viz::FrameTokenGenerator current_token_;
   DroppedFrameCounter dropped_counter_;
   TotalFrameCounter total_frame_counter_;
+  TestCompositorFrameReportingController reporting_controller_;
   ::base::test::TracingEnvironment tracing_environment_;
 };
 
@@ -1219,9 +1224,9 @@ TEST_F(CompositorFrameReportingControllerTest,
   base::HistogramTester histogram_tester;
 
   std::unique_ptr<EventMetrics> event_metrics_ptrs[] = {
-      CreateEventMetrics(ui::ET_TOUCH_PRESSED, std::nullopt),
-      CreateEventMetrics(ui::ET_TOUCH_MOVED, std::nullopt),
-      CreateEventMetrics(ui::ET_TOUCH_MOVED, std::nullopt),
+      CreateEventMetrics(ui::EventType::kTouchPressed, std::nullopt),
+      CreateEventMetrics(ui::EventType::kTouchMoved, std::nullopt),
+      CreateEventMetrics(ui::EventType::kTouchMoved, std::nullopt),
   };
   EXPECT_THAT(event_metrics_ptrs, Each(NotNull()));
   EventMetrics::List events_metrics(
@@ -1477,13 +1482,13 @@ TEST_F(CompositorFrameReportingControllerTest,
   base::HistogramTester histogram_tester;
 
   std::unique_ptr<EventMetrics> event_metrics_ptrs[] = {
-      CreatePinchEventMetrics(ui::ET_GESTURE_PINCH_BEGIN,
+      CreatePinchEventMetrics(ui::EventType::kGesturePinchBegin,
                               ui::ScrollInputType::kWheel),
-      CreatePinchEventMetrics(ui::ET_GESTURE_PINCH_UPDATE,
+      CreatePinchEventMetrics(ui::EventType::kGesturePinchUpdate,
                               ui::ScrollInputType::kWheel),
-      CreatePinchEventMetrics(ui::ET_GESTURE_PINCH_BEGIN,
+      CreatePinchEventMetrics(ui::EventType::kGesturePinchBegin,
                               ui::ScrollInputType::kTouchscreen),
-      CreatePinchEventMetrics(ui::ET_GESTURE_PINCH_UPDATE,
+      CreatePinchEventMetrics(ui::EventType::kGesturePinchUpdate,
                               ui::ScrollInputType::kTouchscreen),
   };
   EXPECT_THAT(event_metrics_ptrs, Each(NotNull()));
@@ -1553,9 +1558,9 @@ TEST_F(CompositorFrameReportingControllerTest,
   base::HistogramTester histogram_tester;
 
   std::unique_ptr<EventMetrics> event_metrics_ptrs[] = {
-      CreateEventMetrics(ui::ET_TOUCH_PRESSED, std::nullopt),
-      CreateEventMetrics(ui::ET_TOUCH_MOVED, std::nullopt),
-      CreateEventMetrics(ui::ET_TOUCH_MOVED, std::nullopt),
+      CreateEventMetrics(ui::EventType::kTouchPressed, std::nullopt),
+      CreateEventMetrics(ui::EventType::kTouchMoved, std::nullopt),
+      CreateEventMetrics(ui::EventType::kTouchMoved, std::nullopt),
   };
   EXPECT_THAT(event_metrics_ptrs, Each(NotNull()));
   EventMetrics::List events_metrics(
@@ -2584,7 +2589,7 @@ TEST_F(CompositorFrameReportingControllerTest, EmitsEventLatencyId) {
       base::IdType64<class ui::LatencyInfo>(14));
 
   std::unique_ptr<EventMetrics> metrics_2 = CreateEventMetrics(
-      ui::ET_TOUCH_PRESSED, base::IdType64<class ui::LatencyInfo>(15));
+      ui::EventType::kTouchPressed, base::IdType64<class ui::LatencyInfo>(15));
 
   EventMetrics::List metrics_list_1;
   metrics_list_1.push_back(std::move(metrics_1));
@@ -2638,7 +2643,7 @@ TEST_F(CompositorFrameReportingControllerTest, JankyScrolledFrameArg) {
       EventMetrics::DispatchStage::kGenerated);
 
   std::unique_ptr<EventMetrics> non_scroll_event =
-      CreateEventMetrics(ui::ET_TOUCH_PRESSED, std::nullopt);
+      CreateEventMetrics(ui::EventType::kTouchPressed, std::nullopt);
 
   base::TimeDelta vsync_interval = event2_generation_ts - event1_generation_ts;
   args_.interval = vsync_interval;
@@ -2723,7 +2728,7 @@ TEST_F(CompositorFrameReportingControllerTest, VsyncIntervalArg) {
       ScrollUpdateEventMetrics::ScrollUpdateType::kContinued, std::nullopt);
 
   std::unique_ptr<EventMetrics> non_scroll_event =
-      CreateEventMetrics(ui::ET_TOUCH_PRESSED, std::nullopt);
+      CreateEventMetrics(ui::EventType::kTouchPressed, std::nullopt);
 
   // First BeginFrame with a 32ms interval.
   args_.interval = base::Milliseconds(32);

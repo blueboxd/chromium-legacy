@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/ash/arc/input_overlay/ui/action_label.h"
 
 #include <set>
@@ -26,6 +31,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/view_utils.h"
@@ -285,8 +291,8 @@ void ActionLabel::Init() {
   SetRequestFocusOnPress(true);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
   SetBorder(views::CreateEmptyBorder(gfx::Insets::VH(0, kSideInset)));
-  SetAccessibilityProperties(ax::mojom::Role::kLabelText,
-                             CalculateAccessibleName());
+  GetViewAccessibility().SetProperties(ax::mojom::Role::kLabelText,
+                                       CalculateAccessibleName());
 }
 
 ActionLabel::ActionLabel(MouseAction mouse_action)
@@ -306,7 +312,7 @@ ActionLabel::~ActionLabel() = default;
 
 void ActionLabel::SetTextActionLabel(const std::u16string& text) {
   label()->SetText(text);
-  SetAccessibleName(CalculateAccessibleName());
+  GetViewAccessibility().SetName(CalculateAccessibleName());
 
   if (!IsBeta()) {
     return;
@@ -321,7 +327,7 @@ void ActionLabel::SetTextActionLabel(const std::u16string& text) {
 
 void ActionLabel::SetImageActionLabel(MouseAction mouse_action) {
   set_mouse_action(mouse_action);
-  SetAccessibleName(CalculateAccessibleName());
+  GetViewAccessibility().SetName(CalculateAccessibleName());
 }
 
 void ActionLabel::SetDisplayMode(DisplayMode mode) {

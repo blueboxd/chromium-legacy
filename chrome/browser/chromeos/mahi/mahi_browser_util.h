@@ -24,10 +24,11 @@ struct WebContentState {
   std::u16string title;
   gfx::ImageSkia favicon = gfx::ImageSkia();
   std::optional<bool> is_distillable = std::nullopt;
+  bool is_incognito = true;
 
   ukm::SourceId ukm_source_id = ukm::kInvalidSourceId;
   ui::AXTreeUpdate snapshot;
-  // It's not a raw_ptr because we only use its address as identifier and never
+  // RAW_PTR_EXCLUSION: We only use its address as an identifier and never
   // dereference it.
   RAW_PTR_EXCLUSION aura::Window* top_level_native_window = nullptr;
 

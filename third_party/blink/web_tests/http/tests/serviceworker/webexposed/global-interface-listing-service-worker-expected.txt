@@ -1,4 +1,33 @@
 [INTERFACES]
+interface AI
+    attribute @@toStringTag
+    getter summarizer
+    method canCreateTextSession
+    method constructor
+    method createTextSession
+    method textModelInfo
+interface AISummarizer
+    attribute @@toStringTag
+    method constructor
+    method destroy
+    method summarize
+    method summarizeStreaming
+interface AISummarizerCapabilities
+    attribute @@toStringTag
+    getter available
+    method constructor
+interface AISummarizerFactory
+    attribute @@toStringTag
+    method capabilities
+    method constructor
+    method create
+interface AITextSession
+    attribute @@toStringTag
+    method clone
+    method constructor
+    method destroy
+    method prompt
+    method promptStreaming
 interface AbortController
     attribute @@toStringTag
     getter signal
@@ -456,8 +485,8 @@ interface EventTarget
     method addEventListener
     method constructor
     method dispatchEvent
-    method on
     method removeEventListener
+    method when
 interface ExtendableCookieChangeEvent : ExtendableEvent
     attribute @@toStringTag
     getter changed
@@ -616,6 +645,7 @@ interface GPU
 interface GPUAdapter
     attribute @@toStringTag
     getter features
+    getter info
     getter isCompatibilityMode
     getter isFallbackAdapter
     getter limits
@@ -1101,6 +1131,10 @@ interface InstallEvent : ExtendableEvent
     attribute @@toStringTag
     method addRoutes
     method constructor
+interface LanguageDetector
+    attribute @@toStringTag
+    method constructor
+    method detect
 interface LanguageTranslator
     attribute @@toStringTag
     method constructor
@@ -1343,7 +1377,6 @@ interface OffscreenCanvasRenderingContext2D
     method clearRect
     method clip
     method closePath
-    method commit
     method constructor
     method createConicGradient
     method createImageData
@@ -1385,8 +1418,8 @@ interface OffscreenCanvasRenderingContext2D
     method stroke
     method strokeRect
     method strokeText
-    method transferFromWebGPU
-    method transferToWebGPU
+    method transferBackFromGPUTexture
+    method transferToGPUTexture
     method transform
     method translate
     setter direction
@@ -1592,6 +1625,28 @@ interface PushSubscriptionOptions
     attribute @@toStringTag
     getter applicationServerKey
     getter userVisibleOnly
+    method constructor
+interface RTCRtpAcks
+    attribute @@toStringTag
+    getter explicitCongestionNotification
+    getter receivedTime
+    getter remoteSendTimestamp
+    method acks
+    method constructor
+interface RTCRtpSendResult
+    attribute @@toStringTag
+    getter sent
+    getter unsent
+    method constructor
+interface RTCRtpSendStream
+    attribute @@toStringTag
+    method constructor
+    method sendRtp
+interface RTCRtpSent
+    attribute @@toStringTag
+    getter ackId
+    getter size
+    getter time
     method constructor
 interface ReadableByteStreamController
     attribute @@toStringTag
@@ -1869,7 +1924,9 @@ interface TextMetrics
     getter hangingBaseline
     getter ideographicBaseline
     getter width
+    method caretPositionFromPoint
     method constructor
+    method getActualBoundingBox
     method getSelectionRects
 interface TimestampTrigger
     attribute @@toStringTag
@@ -1889,8 +1946,10 @@ interface TransformStreamDefaultController
     method terminate
 interface Translation
     attribute @@toStringTag
+    method canDetect
     method canTranslate
     method constructor
+    method createDetector
     method createTranslator
 interface TrustedHTML
     static method fromLiteral
@@ -3389,6 +3448,7 @@ interface WindowClient : Client
     method navigate
 interface WorkerGlobalScope : EventTarget
     attribute @@toStringTag
+    getter ai
     getter caches
     getter crossOriginEmbedderPolicy
     getter crossOriginIsolated
@@ -3422,6 +3482,7 @@ interface WorkerGlobalScope : EventTarget
     method setInterval
     method setTimeout
     method structuredClone
+    setter ai
     setter onerror
     setter onlanguagechange
     setter onrejectionhandled

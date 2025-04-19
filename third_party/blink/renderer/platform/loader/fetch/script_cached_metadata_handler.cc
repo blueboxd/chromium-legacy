@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/platform/loader/fetch/script_cached_metadata_handler.h"
 
 #include "base/metrics/histogram_macros.h"
@@ -220,9 +225,7 @@ ScriptCachedMetadataHandlerWithHashing::GetSerializedCachedMetadata() const {
              offsetof(CachedMetadataHeaderWithHash, hash));
     serialized_data.Append(hash_, kSha256Bytes);
     CHECK_EQ(serialized_data.size(), sizeof(CachedMetadataHeaderWithHash));
-    base::span<const uint8_t> data = cached_metadata_->SerializedData();
-    serialized_data.Append(data.data(),
-                           base::checked_cast<wtf_size_t>(data.size()));
+    serialized_data.AppendSpan(cached_metadata_->SerializedData());
   }
   return serialized_data;
 }

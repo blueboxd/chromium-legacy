@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ash/webui/sanitize_ui/sanitize_ui.h"
 
 #include "ash/webui/common/trusted_types_util.h"
@@ -24,6 +29,7 @@ SanitizeDialogUI::SanitizeDialogUI(content::WebUI* web_ui)
       network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources chrome://webui-test 'self';");
   ash::EnableTrustedTypesCSP(html_source);
+  html_source->UseStringsJs();
   html_source->EnableReplaceI18nInJS();
 
   const auto resources =
@@ -34,9 +40,59 @@ SanitizeDialogUI::SanitizeDialogUI(content::WebUI* web_ui)
   html_source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER_JS);
   html_source->AddResourcePath("test_loader_util.js",
                                IDR_WEBUI_JS_TEST_LOADER_UTIL_JS);
+
+  webui::LocalizedString kLocalizedStrings[] = {
+      {"sanitizeDoneTitle", IDS_SANITIZE_DONE_HEADING},
+      {"sanitizeDoneExplanation", IDS_SANITIZE_DONE_DESCRIPTION},
+      {"sanitizeDoneRollback", IDS_SANITIZE_DONE_ROLLBACK},
+      {"sanitizeDoneButton", IDS_SANITIZE_DONE},
+      {"sanitizeDoneAccordionExtensionsTitle",
+       IDS_SANITIZE_DONE_ACCORDION_EXTENSIONS_TITLE},
+      {"sanitizeDoneAccordionExtensionsReenable",
+       IDS_SANITIZE_DONE_ACCORDION_EXTENSIONS_REENABLE},
+      {"sanitizeDoneAccordionChromeOsTitle",
+       IDS_SANITIZE_DONE_ACCORDION_CHROMEOS_TITLE},
+      {"sanitizeDoneAccordionChromeOsInput",
+       IDS_SANITIZE_DONE_ACCORDION_CHROMEOS_INPUT},
+      {"sanitizeDoneAccordionChromeOsNetwork",
+       IDS_SANITIZE_DONE_ACCORDION_CHROMEOS_NETWORK},
+      {"sanitizeDoneAccordionChromeTitle",
+       IDS_SANITIZE_DONE_ACCORDION_CHROME_TITLE},
+      {"sanitizeDoneAccordionChromeSiteContent",
+       IDS_SANITIZE_DONE_ACCORDION_CHROME_SITE_CONTENT},
+      {"sanitizeDoneAccordionChromeStartup",
+       IDS_SANITZIE_DONE_ACCORDION_CHROME_STARTUP},
+      {"sanitizeDoneAccordionChromeHomepage",
+       IDS_SANITIZE_DONE_ACCORDION_CHROME_HOMEPAGE},
+      {"sanitizeDoneAccordionChromeLanguages",
+       IDS_SANITIZE_DONE_ACCORDION_CHROME_LANGUAGES},
+      {"sanitizeDoneButtonExtensions", IDS_SANITIZE_DONE_BUTTON_EXTENSIONS},
+      {"sanitizeDoneButtonChromeOSInput",
+       IDS_SANITIZE_DONE_BUTTON_CHROMEOS_INPUT},
+      {"sanitizeDoneButtonChromeOSNetwork",
+       IDS_SANITIZE_DONE_BUTTON_CHROMEOS_NETWORK},
+      {"sanitizeDoneButtonChromeStartup",
+       IDS_SANITIZE_DONE_BUTTON_CHROME_STARTUP},
+      {"sanitizeDoneButtonChromeHomepage",
+       IDS_SANITIZE_DONE_BUTTON_CHROME_HOMEPAGE},
+      {"sanitizeDoneButtonChromeLanguages",
+       IDS_SANITIZE_DONE_BUTTON_CHROME_LANGUAGES},
+      {"sanitizeDescription", IDS_SANITIZE_DESCRIPTION},
+      {"sanitizeDialogTitle", IDS_SANITIZE_HEADING},
+      {"sanitizeDialogExplanation", IDS_SANITIZE_WARNING},
+      {"sanitizeDialogButton", IDS_SANITIZE},
+      {"sanitizeFeedback", IDS_SANITIZE_FEEDBACK},
+      {"sanitizeCancel", IDS_SANITIZE_CANCEL}};
+  html_source->AddLocalizedStrings(kLocalizedStrings);
 }
 
 SanitizeDialogUI::~SanitizeDialogUI() {}
+
+void SanitizeDialogUI::BindInterface(
+    mojo::PendingReceiver<color_change_listener::mojom::PageHandler> receiver) {
+  color_provider_handler_ = std::make_unique<ui::ColorChangeHandler>(
+      web_ui()->GetWebContents(), std::move(receiver));
+}
 
 WEB_UI_CONTROLLER_TYPE_IMPL(SanitizeDialogUI)
 

@@ -4,6 +4,7 @@
 
 #include "gpu/command_buffer/service/shared_image/shared_image_backing.h"
 
+#include "base/not_fatal_until.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "base/trace_event/process_memory_dump.h"
@@ -76,7 +77,7 @@ SharedImageBacking::SharedImageBacking(
     const gfx::ColorSpace& color_space,
     GrSurfaceOrigin surface_origin,
     SkAlphaType alpha_type,
-    uint32_t usage,
+    SharedImageUsageSet usage,
     std::string debug_label,
     size_t estimated_size,
     bool is_thread_safe,
@@ -203,8 +204,13 @@ std::unique_ptr<SkiaImageRepresentation> SharedImageBacking::ProduceSkia(
     case gpu::GrContextType::kNone:
       // `kNone` signifies that the GPU process is being used only for WebGL via
       // SwiftShader. Skia is not initialized and should never be used in this
-      // case.
-      NOTREACHED_NORETURN();
+      // case but renderer/extension processes find out about software
+      // compositing fallback asynchronously. They could issue GPU work before
+      // finding out.
+      // TODO(crbug.com/335279173): This would never be reached if clients found
+      // out about compositing mode from the GPU process when they initialize a
+      // GPU channel.
+      return nullptr;
     case gpu::GrContextType::kGL:
     case gpu::GrContextType::kVulkan:
       return ProduceSkiaGanesh(manager, tracker, context_state);
@@ -250,13 +256,6 @@ std::unique_ptr<OverlayImageRepresentation> SharedImageBacking::ProduceOverlay(
   return nullptr;
 }
 
-std::unique_ptr<VaapiImageRepresentation> SharedImageBacking::ProduceVASurface(
-    SharedImageManager* manager,
-    MemoryTypeTracker* tracker,
-    VaapiDependenciesFactory* dep_factory) {
-  return nullptr;
-}
-
 std::unique_ptr<MemoryImageRepresentation> SharedImageBacking::ProduceMemory(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker) {
@@ -281,7 +280,8 @@ std::unique_ptr<VulkanImageRepresentation> SharedImageBacking::ProduceVulkan(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker,
     gpu::VulkanDeviceQueue* vulkan_device_queue,
-    gpu::VulkanImplementation& vulkan_impl) {
+    gpu::VulkanImplementation& vulkan_impl,
+    bool needs_detiling) {
   return nullptr;
 }
 #endif
@@ -340,7 +340,7 @@ void SharedImageBacking::ReleaseRef(SharedImageRepresentation* representation) {
   DCHECK(is_ref_counted_);
 
   auto found = base::ranges::find(refs_, representation);
-  DCHECK(found != refs_.end());
+  CHECK(found != refs_.end(), base::NotFatalUntil::M130);
 
   // If the found representation is the first (owning) ref, free the attributed
   // memory.
@@ -438,7 +438,7 @@ ClearTrackingSharedImageBacking::ClearTrackingSharedImageBacking(
     const gfx::ColorSpace& color_space,
     GrSurfaceOrigin surface_origin,
     SkAlphaType alpha_type,
-    uint32_t usage,
+    gpu::SharedImageUsageSet usage,
     std::string debug_label,
     size_t estimated_size,
     bool is_thread_safe,

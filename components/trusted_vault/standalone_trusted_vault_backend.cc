@@ -95,7 +95,7 @@ void WriteDataToDiskImpl(const trusted_vault_pb::LocalTrustedVault& data,
   file_proto.set_md5_digest_hex_string(
       base::MD5String(file_proto.serialized_local_trusted_vault()));
   bool success = base::ImportantFileWriter::WriteFileAtomically(
-      file_path, file_proto.SerializeAsString());
+      file_path, file_proto.SerializeAsString(), "TrustedVault");
   if (!success) {
     DLOG(ERROR) << "Failed to write trusted vault file.";
   }
@@ -909,12 +909,12 @@ StandaloneTrustedVaultBackend::MaybeRegisterDevice() {
             GetTrustedVaultKeysWithVersions(
                 GetAllVaultKeys(*per_user_vault),
                 per_user_vault->last_vault_key_version()),
-            key_pair->public_key(), PhysicalDevice(),
+            key_pair->public_key(), LocalPhysicalDevice(),
             base::BindOnce(&StandaloneTrustedVaultBackend::OnDeviceRegistered,
                            base::Unretained(this)));
   } else {
     ongoing_device_registration_request_ =
-        connection_->RegisterDeviceWithoutKeys(
+        connection_->RegisterLocalDeviceWithoutKeys(
             *primary_account_, key_pair->public_key(),
             base::BindOnce(
                 &StandaloneTrustedVaultBackend::OnDeviceRegisteredWithoutKeys,

@@ -3,11 +3,12 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/platform/scheduler/public/dummy_schedulers.h"
+
 #include <memory>
 
 #include "base/memory/raw_ptr.h"
 #include "base/task/single_thread_task_runner.h"
-#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/platform/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/platform/scheduler/common/simple_main_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/public/agent_group_scheduler.h"
@@ -54,7 +55,8 @@ class DummyWidgetScheduler final : public WidgetScheduler {
       WebInputEvent::Type web_input_event_type,
       const WebInputEventAttribution& web_input_event_attribution) override {}
   void DidHandleInputEventOnMainThread(const WebInputEvent& web_input_event,
-                                       WebInputEventResult result) override {}
+                                       WebInputEventResult result,
+                                       bool frame_requested) override {}
   void DidRunBeginMainFrame() override {}
   void SetHidden(bool hidden) override {}
 };
@@ -380,12 +382,6 @@ class DummyAgentGroupScheduler : public AgentGroupScheduler {
   }
   WebThreadScheduler& GetMainThreadScheduler() override {
     return *main_thread_scheduler_;
-  }
-  void BindInterfaceBroker(
-      mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker> remote_broker)
-      override {}
-  BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() override {
-    return GetEmptyBrowserInterfaceBroker();
   }
   v8::Isolate* Isolate() override { return main_thread_scheduler_->Isolate(); }
   void AddAgent(Agent* agent) override {}

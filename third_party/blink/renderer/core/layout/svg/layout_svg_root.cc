@@ -67,8 +67,8 @@ void LayoutSVGRoot::Trace(Visitor* visitor) const {
 }
 
 void LayoutSVGRoot::UnscaledIntrinsicSizingInfo(
-    IntrinsicSizingInfo& intrinsic_sizing_info,
-    bool use_correct_viewbox) const {
+    const SVGRect* override_viewbox,
+    IntrinsicSizingInfo& intrinsic_sizing_info) const {
   NOT_DESTROYED();
   // https://www.w3.org/TR/SVG/coords.html#IntrinsicSizing
 
@@ -85,9 +85,8 @@ void LayoutSVGRoot::UnscaledIntrinsicSizingInfo(
   if (!intrinsic_sizing_info.size.IsEmpty()) {
     intrinsic_sizing_info.aspect_ratio = intrinsic_sizing_info.size;
   } else {
-    const SVGRect& view_box = use_correct_viewbox
-                                  ? svg->CurrentViewBox()
-                                  : *svg->viewBox()->CurrentValue();
+    const SVGRect& view_box =
+        override_viewbox ? *override_viewbox : svg->CurrentViewBox();
     const gfx::SizeF view_box_size = view_box.Rect().size();
     if (!view_box_size.IsEmpty()) {
       // The viewBox can only yield an intrinsic ratio, not an intrinsic size.
@@ -138,11 +137,11 @@ double LayoutSVGRoot::LogicalSizeScaleFactorForPercentageLengths() const {
     return 1;
   }
   // This will return the zoom factor which is different from the typical usage
-  // of "zoom factor" in blink (e.g., |LocalFrame::PageZoomFactor()|) which
+  // of "zoom factor" in blink (e.g., |LocalFrame::LayoutZoomFactor()|) which
   // includes CSS zoom and the device scale factor (if use-zoom-for-dsf is
   // enabled). For this special-case, we only want to include the user's zoom
   // factor, as all other types of zoom should not scale a percentage-sized svg.
-  return GetFrame()->GetChromeClient().UserZoomFactor();
+  return GetFrame()->GetChromeClient().UserZoomFactor(GetFrame());
 }
 
 void LayoutSVGRoot::LayoutRoot(const PhysicalRect& content_rect) {
@@ -329,6 +328,8 @@ void LayoutSVGRoot::AddChild(LayoutObject* child, LayoutObject* before_child) {
 void LayoutSVGRoot::RemoveChild(LayoutObject* child) {
   NOT_DESTROYED();
   LayoutReplaced::RemoveChild(child);
+
+  content_.MarkBoundsDirtyFromRemovedChild();
 
   bool had_non_isolated_descendants =
       (child->IsBlendingAllowed() && child->StyleRef().HasBlendMode()) ||

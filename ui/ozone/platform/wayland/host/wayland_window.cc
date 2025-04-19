@@ -42,6 +42,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/overlay_priority_hint.h"
 #include "ui/ozone/common/bitmap_cursor.h"
+#include "ui/ozone/common/features.h"
 #include "ui/ozone/platform/wayland/common/wayland_overlay_config.h"
 #include "ui/ozone/platform/wayland/host/dump_util.h"
 #include "ui/ozone/platform/wayland/host/wayland_bubble.h"
@@ -142,30 +143,10 @@ void WaylandWindow::OnWindowLostCapture() {
 }
 
 void WaylandWindow::UpdateWindowScale(bool update_bounds) {
-  DCHECK(connection_->wayland_output_manager());
-
-  const auto* output_manager = connection_->wayland_output_manager();
-  auto preferred_outputs_id = GetPreferredEnteredOutputId();
-  if (!preferred_outputs_id.has_value()) {
-    // If no output was entered yet, use primary output. This is similar to what
-    // PlatformScreen implementation is expected to return to higher layer.
-    auto* primary_output = output_manager->GetPrimaryOutput();
-    // Primary output is unknown. i.e: WaylandScreen was not created yet.
-    if (!primary_output) {
-      return;
-    }
-    preferred_outputs_id = primary_output->output_id();
-  }
-
-  auto* output = output_manager->GetOutput(preferred_outputs_id.value());
-  // There can be a race between sending leave output event and destroying
-  // wl_outputs. Thus, explicitly check if the output exist.
-  if (!output || !output->IsReady()) {
-    return;
-  }
-
-  float new_scale = output->scale_factor();
-  SetWindowScale(new_scale);
+  const auto scale_factor = connection_->UsePerSurfaceScaling()
+                                ? GetPreferredScaleFactor()
+                                : GetScaleFactorFromEnteredOutputs();
+  SetWindowScale(scale_factor.value_or(1.0f));
 
   // Propagate update to the popups.
   if (child_popup_) {
@@ -176,6 +157,16 @@ void WaylandWindow::UpdateWindowScale(bool update_bounds) {
   for (auto bubble : child_bubbles_) {
     bubble->UpdateWindowScale(update_bounds);
   }
+}
+
+void WaylandWindow::OnEnteredOutputScaleChanged() {
+  // Display scale changes should not lead to surface scale updates unless
+  // either per-surface scaling is disabled or wp-fractional-scale-v1 protocol
+  // is unavailable.
+  if (connection_->UsePerSurfaceScaling()) {
+    return;
+  }
+  UpdateWindowScale(/*update_bounds=*/true);
 }
 
 WaylandZAuraSurface* WaylandWindow::GetZAuraSurface() {
@@ -230,6 +221,30 @@ void WaylandWindow::SetWindowScale(float new_scale) {
   // immediately, since that's what PlatformWindow expects. Also, RequestState
   // may modify the state before applying it.
   RequestStateFromClient(state);
+}
+
+std::optional<float> WaylandWindow::GetScaleFactorFromEnteredOutputs() {
+  DCHECK(connection_->wayland_output_manager());
+  const auto* output_manager = connection_->wayland_output_manager();
+  auto preferred_outputs_id = GetPreferredEnteredOutputId();
+  if (!preferred_outputs_id.has_value()) {
+    // If no output was entered yet, use primary output. This is similar to what
+    // PlatformScreen implementation is expected to return to higher layer.
+    auto* primary_output = output_manager->GetPrimaryOutput();
+    // Primary output is unknown. i.e: WaylandScreen was not created yet.
+    if (!primary_output) {
+      return std::nullopt;
+    }
+    preferred_outputs_id = primary_output->output_id();
+  }
+
+  auto* output = output_manager->GetOutput(preferred_outputs_id.value());
+  // There can be a race between sending leave output event and destroying
+  // wl_outputs. Thus, explicitly check if the output exist.
+  if (!output || !output->IsReady()) {
+    return std::nullopt;
+  }
+  return output->scale_factor();
 }
 
 std::optional<WaylandOutput::Id> WaylandWindow::GetPreferredEnteredOutputId() {
@@ -291,15 +306,21 @@ std::optional<WaylandOutput::Id> WaylandWindow::GetPreferredEnteredOutputId() {
   return preferred_id;
 }
 
+std::optional<float> WaylandWindow::GetPreferredScaleFactor() const {
+  if (!root_surface_) {
+    return std::nullopt;
+  }
+  return root_surface_->preferred_scale_factor();
+}
+
 void WaylandWindow::OnPointerFocusChanged(bool focused) {
   // Whenever the window gets the pointer focus back, the cursor shape must be
   // updated. Otherwise, it is invalidated upon wl_pointer::leave and is not
   // restored by the Wayland compositor.
 #if BUILDFLAG(IS_LINUX)
   if (focused && async_cursor_) {
-    async_cursor_->AddCursorLoadedCallback(
-        base::BindOnce(&WaylandWindow::OnCursorLoaded,
-                       weak_ptr_factory_.GetWeakPtr(), async_cursor_));
+    async_cursor_->AddCursorLoadedCallback(base::BindOnce(
+        &WaylandWindow::OnCursorLoaded, AsWeakPtr(), async_cursor_));
   }
 #else
   if (focused && cursor_) {
@@ -341,7 +362,7 @@ bool WaylandWindow::StartDrag(
   base::RunLoop drag_loop(base::RunLoop::Type::kNestableTasksAllowed);
   drag_loop_quit_closure_ = drag_loop.QuitClosure();
 
-  auto alive = weak_ptr_factory_.GetWeakPtr();
+  auto alive = AsWeakPtr();
   drag_loop.Run();
   if (!alive) {
     return false;
@@ -562,9 +583,8 @@ void WaylandWindow::SetCursor(scoped_refptr<PlatformCursor> platform_cursor) {
   }
 
   async_cursor_ = async_cursor;
-  async_cursor->AddCursorLoadedCallback(
-      base::BindOnce(&WaylandWindow::OnCursorLoaded,
-                     weak_ptr_factory_.GetWeakPtr(), async_cursor));
+  async_cursor->AddCursorLoadedCallback(base::BindOnce(
+      &WaylandWindow::OnCursorLoaded, AsWeakPtr(), async_cursor));
 #else
   if (cursor_ == platform_cursor) {
     return;
@@ -865,7 +885,14 @@ void WaylandWindow::OnDragSessionClose(DragOperation operation) {
     return;
   }
   std::move(drag_finished_callback_).Run(operation);
-  connection()->event_source()->ResetPointerFlags();
+  // Skip releasing any pointer buttons for the case of a window drag driven by
+  // the data drag controller.
+  // TODO: crbug.com/40238145 - Refactor this per discussion at
+  // crrev.com/c/5570335/comment/0b8811fc_818028c9/.
+  if (!connection()->data_drag_controller()->IsWindowDragSessionRunning()) {
+    connection()->event_source()->ReleasePressedPointerButtons(
+        this, EventTimeForNow());
+  }
   std::move(drag_loop_quit_closure_).Run();
 }
 
@@ -875,6 +902,8 @@ bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
     LOG(ERROR) << "Failed to create wl_surface";
     return false;
   }
+
+  SetWaylandExtension(this, this);
 
   PlatformWindowDelegate::State state;
   state.window_state = PlatformWindowState::kUnknown;
@@ -973,8 +1002,7 @@ void WaylandWindow::OnEnteredOutput() {
   if (AsWaylandPopup()) {
     return;
   }
-
-  UpdateWindowScale(true);
+  OnEnteredOutputScaleChanged();
 }
 
 void WaylandWindow::OnLeftOutput() {
@@ -984,8 +1012,7 @@ void WaylandWindow::OnLeftOutput() {
   if (AsWaylandPopup()) {
     return;
   }
-
-  UpdateWindowScale(true);
+  OnEnteredOutputScaleChanged();
 }
 
 WaylandWindow* WaylandWindow::GetTopMostChildWindow() {
@@ -1620,6 +1647,29 @@ void WaylandWindow::MaybeApplyLatestStateRequest(bool force) {
 PlatformWindowDelegate::State WaylandWindow::GetLatestRequestedState() const {
   return in_flight_requests_.empty() ? applied_state_
                                      : in_flight_requests_.back().state;
+}
+
+void WaylandWindow::RoundTripQueue() {
+  connection()->RoundTripQueue();
+}
+
+bool WaylandWindow::HasInFlightRequestsForState() const {
+  CHECK(UseTestConfigForPlatformWindows());
+  return WaylandWindow::HasInFlightRequestsForStateForTesting();
+}
+
+int64_t WaylandWindow::GetVizSequenceIdForAppliedState() const {
+  CHECK(UseTestConfigForPlatformWindows());
+  return latest_applied_viz_seq_for_testing_;
+}
+
+int64_t WaylandWindow::GetVizSequenceIdForLatchedState() const {
+  CHECK(UseTestConfigForPlatformWindows());
+  return latest_latched_viz_seq_for_testing_;
+}
+
+void WaylandWindow::SetLatchImmediately(bool latch_immediately) {
+  latch_immediately_for_testing_ = latch_immediately;
 }
 
 void WaylandWindow::ForceApplyWindowStateDoNotUse(

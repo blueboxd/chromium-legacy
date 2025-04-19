@@ -26,6 +26,7 @@
 #include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/animation_builder.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/controls/label.h"
@@ -77,28 +78,35 @@ OverviewItemView::OverviewItemView(
     views::Button::PressedCallback close_callback,
     aura::Window* window,
     bool show_preview)
-    : WindowMiniView(window),
+    : WindowMiniView(window, /*use_custom_focus_predicate=*/false),
       overview_item_(overview_item),
       event_handler_delegate_(event_handler_delegate),
       close_button_(header_view()->icon_label_view()->AddChildView(
           std::make_unique<CloseButton>(std::move(close_callback),
                                         CloseButton::Type::kMediumFloating))) {
   CHECK(overview_item_);
-  // This should not be focusable. It's also to avoid accessibility error when
-  // |window->GetTitle()| is empty.
-  SetFocusBehavior(FocusBehavior::NEVER);
+  // Focusable so we can add accelerators to this view.
+  SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
 
   views::InkDrop::Get(close_button_)
       ->SetMode(views::InkDropHost::InkDropMode::ON_NO_GESTURE_HANDLER);
-  close_button_->SetAccessibleName(
+  close_button_->GetViewAccessibility().SetName(
       l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));
   close_button_->SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY);
 
   header_view()->UpdateIconView(window);
 
+  AddAccelerator(ui::Accelerator(ui::VKEY_W, ui::EF_CONTROL_DOWN));
+  AddAccelerator(ui::Accelerator(ui::VKEY_RETURN, 0));
+  AddAccelerator(ui::Accelerator(ui::VKEY_SPACE, 0));
+
   // Call this last as it triggers layout, which relies on some of the other
   // elements existing.
   SetShowPreview(show_preview);
+
+  // TODO: This doesn't allow |this| to be navigated by ChromeVox, find a way
+  // to allow |this| as well as the title and close button.
+  GetViewAccessibility().SetRole(ax::mojom::Role::kGenericContainer);
 }
 
 OverviewItemView::~OverviewItemView() = default;
@@ -153,6 +161,11 @@ void OverviewItemView::RefreshPreviewView() {
   DeprecatedLayoutImmediately();
 }
 
+void OverviewItemView::AcceptSelection(OverviewSession* overview_session) {
+  CHECK(overview_session);
+  overview_session->SelectWindow(overview_item_);
+}
+
 gfx::Size OverviewItemView::GetPreviewViewSize() const {
   // The preview should expand to fit the bounds allocated for the content,
   // except if it is letterboxed or pillarboxed.
@@ -204,51 +217,6 @@ void OverviewItemView::RefreshItemVisuals() {
   ResetRoundedCorners();
 }
 
-views::View* OverviewItemView::GetView() {
-  return this;
-}
-
-OverviewItemBase* OverviewItemView::GetOverviewItem() {
-  return overview_item_;
-}
-
-void OverviewItemView::MaybeActivateFocusedView() {
-  if (overview_item_) {
-    overview_item_->OnFocusedViewActivated();
-  }
-}
-
-void OverviewItemView::MaybeCloseFocusedView(bool primary_action) {
-  if (overview_item_ && primary_action)
-    overview_item_->OnFocusedViewClosed();
-}
-
-void OverviewItemView::MaybeSwapFocusedView(bool right) {}
-
-bool OverviewItemView::MaybeActivateFocusedViewOnOverviewExit(
-    OverviewSession* overview_session) {
-  DCHECK(overview_session);
-  overview_session->SelectWindow(overview_item_);
-  return true;
-}
-
-void OverviewItemView::OnFocusableViewFocused() {
-  UpdateFocusState(/*focus=*/true);
-}
-
-void OverviewItemView::OnFocusableViewBlurred() {
-  UpdateFocusState(/*focus=*/false);
-}
-
-gfx::Point OverviewItemView::GetMagnifierFocusPointInScreen() {
-  // When this item is tabbed into, put the magnifier focus on the front of the
-  // title, so that users can read the title first thing.
-  const gfx::Rect title_bounds =
-      header_view()->title_label()->GetBoundsInScreen();
-  return gfx::Point(GetMirroredXInView(title_bounds.x()),
-                    title_bounds.CenterPoint().y());
-}
-
 bool OverviewItemView::OnMousePressed(const ui::MouseEvent& event) {
   if (!event_handler_delegate_) {
     return views::View::OnMousePressed(event);
@@ -288,8 +256,8 @@ void OverviewItemView::OnGestureEvent(ui::GestureEvent* event) {
 bool OverviewItemView::CanAcceptEvent(const ui::Event& event) {
   bool accept_events = true;
   // Do not process or accept press down events that are on the border.
-  static ui::EventType press_types[] = {ui::ET_GESTURE_TAP_DOWN,
-                                        ui::ET_MOUSE_PRESSED};
+  static ui::EventType press_types[] = {ui::EventType::kGestureTapDown,
+                                        ui::EventType::kMousePressed};
   if (event.IsLocatedEvent() && base::Contains(press_types, event.type())) {
     const gfx::Rect content_bounds = GetContentsBounds();
     if (!content_bounds.Contains(event.AsLocatedEvent()->location()))
@@ -304,16 +272,39 @@ void OverviewItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
   // TODO: This doesn't allow |this| to be navigated by ChromeVox, find a way
   // to allow |this| as well as the title and close button.
-  node_data->role = ax::mojom::Role::kGenericContainer;
+  const bool is_group_item = [&]() {
+    auto* snap_group_controller = SnapGroupController::Get();
+    return snap_group_controller &&
+           snap_group_controller->GetSnapGroupForGivenWindow(source_window());
+  }();
   node_data->AddStringAttribute(
       ax::mojom::StringAttribute::kDescription,
       l10n_util::GetStringUTF8(
-          IDS_ASH_OVERVIEW_CLOSABLE_HIGHLIGHT_ITEM_A11Y_EXTRA_TIP));
+          is_group_item
+              ? IDS_ASH_SNAP_GROUP_WINDOW_CYCLE_DESCRIPTION
+              : IDS_ASH_OVERVIEW_CLOSABLE_HIGHLIGHT_ITEM_A11Y_EXTRA_TIP));
 }
 
-void OverviewItemView::OnThemeChanged() {
-  WindowMiniView::OnThemeChanged();
-  UpdateFocusState(is_focused());
+bool OverviewItemView::AcceleratorPressed(const ui::Accelerator& accelerator) {
+  if (accelerator.IsCtrlDown() && accelerator.key_code() == ui::VKEY_W) {
+    if (overview_item_) {
+      overview_item_->OnFocusedViewClosed();
+    }
+    return true;
+  }
+
+  if (accelerator.key_code() == ui::VKEY_RETURN ||
+      accelerator.key_code() == ui::VKEY_SPACE) {
+    if (overview_item_) {
+      overview_item_->OnFocusedViewActivated();
+    }
+    return true;
+  }
+  return WindowMiniView::AcceleratorPressed(accelerator);
+}
+
+bool OverviewItemView::CanHandleAccelerators() const {
+  return HasFocus() && WindowMiniView::CanHandleAccelerators();
 }
 
 BEGIN_METADATA(OverviewItemView)

@@ -6,17 +6,20 @@
 #define MEDIA_TEST_PIPELINE_INTEGRATION_TEST_BASE_H_
 
 #include <stdint.h>
+
 #include <memory>
 
 #include "base/functional/callback_forward.h"
 #include "base/hash/md5.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_run_loop_timeout.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "media/audio/clockless_audio_sink.h"
 #include "media/audio/null_audio_sink.h"
 #include "media/base/demuxer.h"
+#include "media/base/media_switches.h"
 #include "media/base/mock_media_log.h"
 #include "media/base/null_video_sink.h"
 #include "media/base/pipeline_impl.h"
@@ -25,6 +28,10 @@
 #include "media/renderers/audio_renderer_impl.h"
 #include "media/renderers/video_renderer_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
+
+#if BUILDFLAG(IS_WIN)
+#include "base/win/scoped_com_initializer.h"
+#endif  // BUILDFLAG(IS_WIN)
 
 using ::testing::NiceMock;
 
@@ -145,6 +152,7 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
       std::optional<RendererType> renderer_type);
 
  protected:
+  base::test::ScopedFeatureList scoped_feature_list_{kBuiltInH264Decoder};
   NiceMock<MockMediaLog> media_log_;
   base::test::TaskEnvironment task_environment_;
   base::MD5Context md5_context_;
@@ -278,6 +286,11 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
   // different behavior around exiting the seek.
   void OnBufferingStateChangeForSeek(BufferingState state,
                                      BufferingStateChangeReason reason);
+
+#if BUILDFLAG(IS_WIN)
+  // MediaFoundationAudioDecoder calls CoInitialize() when creating the decoder.
+  base::win::ScopedCOMInitializer com_initializer_;
+#endif  // BUILDFLAG(IS_WIN)
 
   CreateVideoDecodersCB prepend_video_decoders_cb_;
   CreateAudioDecodersCB prepend_audio_decoders_cb_;

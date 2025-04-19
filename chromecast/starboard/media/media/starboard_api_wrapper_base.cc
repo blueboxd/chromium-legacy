@@ -232,8 +232,9 @@ void StarboardApiWrapperBase::DestroyPlayer(void* player) {
 void* StarboardApiWrapperBase::CreateDrmSystem(
     const char* key_system,
     const StarboardDrmSystemCallbackHandler* callback_handler) {
-  // TODO(b/334171644): verify that this does not break any apps.
-  CHECK(g_drm_system == nullptr) << "An SbDrmSystem already exists";
+  if (g_drm_system) {
+    LOG(INFO) << "An SbDrmSystem already exists; creating a new one.";
+  }
 
   LOG(INFO) << "Creating SbDrmSystem";
   g_drm_system = SbDrmCreateSystem(
@@ -290,10 +291,10 @@ bool StarboardApiWrapperBase::DrmIsServerCertificateUpdatable(
 }
 
 void StarboardApiWrapperBase::DrmDestroySystem(void* drm_system) {
-  CHECK_EQ(drm_system, reinterpret_cast<void*>(g_drm_system));
-
   LOG(INFO) << "Destroying SbDrmSystem";
-  g_drm_system = nullptr;
+  if (reinterpret_cast<void*>(g_drm_system) == drm_system) {
+    g_drm_system = nullptr;
+  }
   SbDrmDestroySystem(static_cast<SbDrmSystem>(drm_system));
 }
 
@@ -390,6 +391,13 @@ void StarboardApiWrapperBase::WriteSample(void* player,
   CallWriteSamples(static_cast<SbPlayer>(player),
                    static_cast<SbMediaType>(type), samples.data(),
                    sample_infos_count);
+}
+
+StarboardMediaSupportType StarboardApiWrapperBase::CanPlayMimeAndKeySystem(
+    const char* mime,
+    const char* key_system) {
+  return static_cast<StarboardMediaSupportType>(
+      SbMediaCanPlayMimeAndKeySystem(mime, key_system));
 }
 
 }  // namespace media

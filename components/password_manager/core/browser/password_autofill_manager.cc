@@ -6,46 +6,58 @@
 
 #include <stddef.h>
 
-#include <iterator>
+#include <memory>
 #include <string>
-#include <tuple>
 #include <utility>
 #include <vector>
 
-#include "base/feature_list.h"
+#include "base/check.h"
+#include "base/containers/span.h"
 #include "base/functional/bind.h"
-#include "base/logging.h"
+#include "base/i18n/rtl.h"
+#include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/notreached.h"
 #include "base/ranges/algorithm.h"
-#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/affiliations/core/browser/affiliation_utils.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_driver.h"
+#include "components/autofill/core/browser/filling_product.h"
 #include "components/autofill/core/browser/ui/popup_open_enums.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
+#include "components/autofill/core/browser/ui/suggestion_hiding_reason.h"
 #include "components/autofill/core/browser/ui/suggestion_type.h"
-#include "components/autofill/core/common/autofill_constants.h"
+#include "components/autofill/core/common/aliases.h"
 #include "components/autofill/core/common/autofill_data_validation.h"
 #include "components/autofill/core/common/autofill_util.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/autofill/core/common/password_generation_util.h"
+#include "components/autofill/core/common/unique_ids.h"
 #include "components/device_reauth/device_authenticator.h"
 #include "components/favicon/core/favicon_util.h"
+#include "components/favicon_base/favicon_types.h"
+#include "components/password_manager/core/browser/manage_passwords_referrer.h"
 #include "components/password_manager/core/browser/password_feature_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manual_fallback_flow.h"
+#include "components/password_manager/core/browser/password_manual_fallback_metrics_recorder.h"
+#include "components/password_manager/core/browser/password_suggestion_flow.h"
+#include "components/password_manager/core/browser/password_suggestion_generator.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
 #include "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
 #include "components/password_manager/core/browser/webauthn_credentials_delegate.h"
-#include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
 namespace password_manager {
@@ -109,7 +121,7 @@ std::vector<Suggestion> SetUnlockLoadingState(
 
 std::vector<autofill::Suggestion> PrepareLoadingStateSuggestions(
     std::vector<autofill::Suggestion> current_suggestions,
-    autofill::Suggestion selected_suggestion) {
+    const autofill::Suggestion& selected_suggestion) {
   auto modifier_fun = [&selected_suggestion](auto& suggestion) {
     if (suggestion == selected_suggestion) {
       suggestion.is_loading = IsLoading(true);
@@ -120,6 +132,16 @@ std::vector<autofill::Suggestion> PrepareLoadingStateSuggestions(
   };
   base::ranges::for_each(current_suggestions, modifier_fun);
   return current_suggestions;
+}
+
+bool AreNewSuggestionsTheSame(
+    const std::vector<autofill::Suggestion>& new_suggestions,
+    const std::vector<autofill::Suggestion>& old_suggestions) {
+  return base::ranges::equal(
+      new_suggestions, old_suggestions, [](const auto& lhs, const auto& rhs) {
+        return lhs.main_text == rhs.main_text && lhs.type == rhs.type &&
+               lhs.icon == rhs.icon && lhs.payload == rhs.payload;
+      });
 }
 
 void LogAccountStoredPasswordsCountInFillDataAfterUnlock(
@@ -148,10 +170,16 @@ PasswordAutofillManager::PasswordAutofillManager(
     : suggestion_generator_(password_manager_driver, password_client),
       password_manager_driver_(password_manager_driver),
       autofill_client_(autofill_client),
-      password_client_(password_client) {}
+      password_client_(password_client),
+      manual_fallback_metrics_recorder_(
+          std::make_unique<PasswordManualFallbackMetricsRecorder>()) {}
 
 PasswordAutofillManager::~PasswordAutofillManager() {
   CancelBiometricReauthIfOngoing();
+  // `manual_fallback_flow_` holds a raw pointer to
+  // `manual_fallback_metrics_recorder_`, so the flow should be reset first.
+  manual_fallback_flow_.reset();
+  manual_fallback_metrics_recorder_.reset();
 }
 
 absl::variant<autofill::AutofillDriver*, PasswordManagerDriver*>
@@ -211,7 +239,6 @@ void PasswordAutofillManager::DidAcceptSuggestion(
     const Suggestion& suggestion,
     const SuggestionPosition& position) {
   using metrics_util::PasswordDropdownSelectedOption;
-  bool should_hide_popup = true;
   switch (suggestion.type) {
     case autofill::SuggestionType::kGeneratePasswordEntry:
       password_client_->GeneratePassword(PasswordGenerationType::kAutomatic);
@@ -255,7 +282,6 @@ void PasswordAutofillManager::DidAcceptSuggestion(
       metrics_util::LogPasswordDropdownItemSelected(
           PasswordDropdownSelectedOption::kWebAuthn,
           password_client_->IsOffTheRecord());
-      should_hide_popup = false;
       password_client_
           ->GetWebAuthnCredentialsDelegateForDriver(password_manager_driver_)
           ->SelectPasskey(GetBackendId(suggestion),
@@ -286,7 +312,7 @@ void PasswordAutofillManager::DidAcceptSuggestion(
           password_client_->GetDeviceAuthenticator();
       // Note: this is currently only implemented on Android, Mac and Windows.
       // For other platforms, the `authenticator` will be null.
-      if (!password_client_->CanUseBiometricAuthForFilling(
+      if (!password_client_->IsReauthBeforeFillingRequired(
               authenticator.get())) {
         bool success = FillSuggestion(
             GetUsernameFromSuggestion(suggestion.main_text.value),
@@ -317,7 +343,9 @@ void PasswordAutofillManager::DidAcceptSuggestion(
       break;
   }
 
-  if (should_hide_popup) {
+  if (!password_client_
+           ->GetWebAuthnCredentialsDelegateForDriver(password_manager_driver_)
+           ->HasPendingPasskeySelection()) {
     autofill_client_->HideAutofillSuggestions(
         autofill::SuggestionHidingReason::kAcceptSuggestion);
   }
@@ -410,6 +438,7 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
     if (!manual_fallback_flow_) {
       manual_fallback_flow_ = std::make_unique<PasswordManualFallbackFlow>(
           password_manager_driver_, autofill_client_, password_client_,
+          manual_fallback_metrics_recorder_.get(),
           password_client_->GetPasswordManager()->GetPasswordFormCache(),
           std::make_unique<SavedPasswordsPresenter>(
               password_client_->GetAffiliationService(),
@@ -460,7 +489,11 @@ void PasswordAutofillManager::DidNavigateMainFrame() {
   CancelBiometricReauthIfOngoing();
   favicon_tracker_.TryCancelAll();
   page_favicon_ = gfx::Image();
+  // `manual_fallback_flow_` holds a raw pointer to
+  // `manual_fallback_metrics_recorder_`, so the flow should be reset first.
   manual_fallback_flow_.reset();
+  manual_fallback_metrics_recorder_ =
+      std::make_unique<PasswordManualFallbackMetricsRecorder>();
 }
 
 bool PasswordAutofillManager::FillSuggestionForTest(
@@ -516,12 +549,18 @@ bool PasswordAutofillManager::ShowPopup(
         autofill::SuggestionHidingReason::kNoSuggestions);
     return false;
   }
-  LogMetricsForSuggestions(suggestions);
-  // TODO(crbug.com/41474723): Set the right `form_control_ax_id`.
-  last_popup_open_args_ = autofill::AutofillClient::PopupOpenArgs(
-      bounds, text_direction, suggestions,
-      autofill::AutofillSuggestionTriggerSource::kPasswordManager,
-      /*form_control_ax_id=*/0, autofill::PopupAnchorType::kField);
+  if (!password_client_
+           ->GetWebAuthnCredentialsDelegateForDriver(password_manager_driver_)
+           ->HasPendingPasskeySelection() ||
+      !AreNewSuggestionsTheSame(suggestions,
+                                last_popup_open_args_.suggestions)) {
+    LogMetricsForSuggestions(suggestions);
+    // TODO(crbug.com/41474723): Set the right `form_control_ax_id`.
+    last_popup_open_args_ = autofill::AutofillClient::PopupOpenArgs(
+        bounds, text_direction, suggestions,
+        autofill::AutofillSuggestionTriggerSource::kPasswordManager,
+        /*form_control_ax_id=*/0, autofill::PopupAnchorType::kField);
+  }
   autofill_client_->ShowAutofillSuggestions(last_popup_open_args_,
                                             weak_ptr_factory_.GetWeakPtr());
   return true;

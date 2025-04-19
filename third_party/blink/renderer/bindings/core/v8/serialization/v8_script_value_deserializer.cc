@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/bindings/core/v8/serialization/v8_script_value_deserializer.h"
 
 #include <limits>
@@ -105,7 +110,7 @@ size_t ReadVersionEnvelope(SerializedScriptValue* serialized_script_value,
     if (i >= length)
       return 0;
     uint8_t byte = raw_data[i];
-    if (LIKELY(shift < 32)) {
+    if (shift < 32) [[likely]] {
       version |= static_cast<uint32_t>(byte & 0x7f) << shift;
       shift += 7;
     }
@@ -856,7 +861,7 @@ V8ScriptValueDeserializer::GetOrCreateBlobDataHandle(const String& uuid,
 v8::MaybeLocal<v8::Object> V8ScriptValueDeserializer::ReadHostObject(
     v8::Isolate* isolate) {
   DCHECK_EQ(isolate, script_state_->GetIsolate());
-  ExceptionState exception_state(isolate, ExceptionContextType::kUnknown,
+  ExceptionState exception_state(isolate, v8::ExceptionContext::kUnknown,
                                  nullptr, nullptr);
   ScriptWrappable* wrappable = nullptr;
   SerializationTag tag = kVersionTag;
@@ -901,7 +906,7 @@ V8ScriptValueDeserializer::GetSharedArrayBufferFromId(v8::Isolate* isolate,
     DCHECK(wrapper->IsSharedArrayBuffer());
     return v8::Local<v8::SharedArrayBuffer>::Cast(wrapper);
   }
-  ExceptionState exception_state(isolate, ExceptionContextType::kUnknown,
+  ExceptionState exception_state(isolate, v8::ExceptionContext::kUnknown,
                                  nullptr, nullptr);
   exception_state.ThrowDOMException(DOMExceptionCode::kDataCloneError,
                                     "Unable to deserialize SharedArrayBuffer.");
@@ -918,7 +923,7 @@ V8ScriptValueDeserializer::GetSharedValueConveyor(v8::Isolate* isolate) {
           serialized_script_value_->MaybeGetSharedValueConveyor()) {
     return conveyor;
   }
-  ExceptionState exception_state(isolate, ExceptionContextType::kUnknown,
+  ExceptionState exception_state(isolate, v8::ExceptionContext::kUnknown,
                                  nullptr, nullptr);
   exception_state.ThrowDOMException(DOMExceptionCode::kDataCloneError,
                                     "Unable to deserialize shared JS value.");

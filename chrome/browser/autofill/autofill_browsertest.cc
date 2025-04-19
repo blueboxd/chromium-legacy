@@ -34,7 +34,6 @@
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
-#include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/content/browser/test_autofill_manager_injector.h"
 #include "components/autofill/core/browser/address_data_manager.h"
 #include "components/autofill/core/browser/address_data_manager_test_api.h"
@@ -111,10 +110,7 @@ class AutofillTest : public InProcessBrowserTest {
         {AutofillManagerEvent::kFormsSeen}};
   };
 
-  AutofillTest() {
-    feature_list_.InitAndEnableFeature(
-        features::kAutofillDetectRemovedFormControls);
-  }
+  AutofillTest() {}
 
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
@@ -135,8 +131,8 @@ class AutofillTest : public InProcessBrowserTest {
     // causing this test to fail.
     base::RunLoop().RunUntilIdle();
     // Make sure to close any showing popups prior to tearing down the UI.
-    ContentAutofillDriverFactory::FromWebContents(web_contents())
-        ->DriverForFrame(web_contents()->GetPrimaryMainFrame())
+    ContentAutofillDriver::GetForRenderFrameHost(
+        web_contents()->GetPrimaryMainFrame())
         ->GetAutofillManager()
         .client()
         .HideAutofillSuggestions(SuggestionHidingReason::kTabGone);
@@ -151,7 +147,8 @@ class AutofillTest : public InProcessBrowserTest {
   }
 
   PersonalDataManager* personal_data_manager() {
-    return PersonalDataManagerFactory::GetForProfile(browser()->profile());
+    return PersonalDataManagerFactory::GetForBrowserContext(
+        browser()->profile());
   }
 
   typedef std::map<std::string, std::string> FormMap;
@@ -620,7 +617,13 @@ IN_PROC_BROWSER_TEST_F(AutofillTest,
                                                   .size()));
 }
 
-IN_PROC_BROWSER_TEST_F(AutofillTest, DynamicForm_DiscoverRemovedFormFields) {
+class AutofillElementRemovalDetectionTest : public AutofillTest {
+  base::test::ScopedFeatureList scoped_feature_list_{
+      features::kAutofillDetectRemovedFormControls};
+};
+
+IN_PROC_BROWSER_TEST_F(AutofillElementRemovalDetectionTest,
+                       DynamicForm_DiscoverRemovedFormFields) {
   // Load a form that contains 3 fields.
   GURL url = embedded_test_server()->GetURL(
       "/autofill/dynamic_form_element_removed.html");
@@ -828,7 +831,7 @@ class AutofillTestPrerendering : public InProcessBrowserTest {
                 (override));
     MOCK_METHOD(void,
                 OnFocusOnFormFieldImpl,
-                (const FormData&, const FormFieldData&),
+                (const FormData&, const FieldGlobalId&),
                 (override));
   };
 

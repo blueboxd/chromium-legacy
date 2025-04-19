@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -314,6 +315,18 @@ TEST(OptionalRefTest, Star) {
   }
 }
 
+TEST(OptionalRefTest, BoolConversion) {
+  {
+    optional_ref<int> r;
+    EXPECT_FALSE(r);
+  }
+  {
+    int i;
+    base::optional_ref<int> r = i;
+    EXPECT_TRUE(r);
+  }
+}
+
 TEST(OptionalRefTest, Value) {
   // has_value() and value() are generally covered by the construction tests.
   // Make sure value() doesn't somehow break const-ness here.
@@ -392,6 +405,16 @@ TEST(OptionalRefTest, EqualityComparisonWithNullOpt) {
     EXPECT_NE(r, std::nullopt);
     EXPECT_NE(std::nullopt, r);
   }
+}
+
+TEST(OptionalRefTest, CompatibilityWithOptionalMatcher) {
+  using ::testing::Optional;
+
+  int x = 45;
+  optional_ref<int> r(x);
+  EXPECT_THAT(r, Optional(x));
+  EXPECT_THAT(r, Optional(45));
+  EXPECT_THAT(r, ::testing::Not(Optional(46)));
 }
 
 TEST(OptionalRefDeathTest, ArrowOnEmpty) {

@@ -13,6 +13,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
+#include "ui/base/interaction/element_identifier.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -20,6 +21,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/view_class_properties.h"
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
@@ -27,9 +29,9 @@
 #include "ui/web_dialogs/web_dialog_delegate.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 
-using content::NativeWebKeyboardEvent;
 using content::WebContents;
 using content::WebUIMessageHandler;
+using input::NativeWebKeyboardEvent;
 using ui::WebDialogDelegate;
 using ui::WebDialogUIBase;
 using ui::WebDialogWebContentsDelegate;
@@ -91,6 +93,9 @@ WebDialogView::WebDialogView(content::BrowserContext* context,
   if (web_contents) {
     web_view_->SetWebContents(web_contents);
   }
+  web_view_->SetProperty(
+      views::kElementIdentifierKey,
+      delegate_ ? delegate_->web_view_element_id() : ui::ElementIdentifier());
 }
 
 WebDialogView::~WebDialogView() = default;
@@ -257,10 +262,10 @@ const views::Widget* WebDialogView::GetWidget() const {
 ////////////////////////////////////////////////////////////////////////////////
 // WebDialogDelegate implementation:
 
-ui::ModalType WebDialogView::GetDialogModalType() const {
+ui::mojom::ModalType WebDialogView::GetDialogModalType() const {
   if (delegate_)
     return delegate_->GetDialogModalType();
-  return ui::MODAL_TYPE_NONE;
+  return ui::mojom::ModalType::kNone;
 }
 
 std::u16string WebDialogView::GetDialogTitle() const {
@@ -376,8 +381,9 @@ void WebDialogView::SetContentsBounds(WebContents* source,
 // A simplified version of BrowserView::HandleKeyboardEvent().
 // We don't handle global keyboard shortcuts here, but that's fine since
 // they're all browser-specific. (This may change in the future.)
-bool WebDialogView::HandleKeyboardEvent(content::WebContents* source,
-                                        const NativeWebKeyboardEvent& event) {
+bool WebDialogView::HandleKeyboardEvent(
+    content::WebContents* source,
+    const input::NativeWebKeyboardEvent& event) {
   if (!event.os_event) {
     return false;
   }

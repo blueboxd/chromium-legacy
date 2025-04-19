@@ -60,6 +60,15 @@ const char kParentApprovalOAuth2Scope[] =
 const char kPeopleApiReadOnlyOAuth2Scope[] =
     "https://www.googleapis.com/auth/peopleapi.readonly";
 
+// OAuth2 scope for access to the people API (read-write).
+const char kPeopleApiReadWriteOAuth2Scope[] =
+    "https://www.googleapis.com/auth/peopleapi.readwrite";
+
+// OAuth2 scope for access to the people API person's locale preferences
+// (read-only).
+const char kProfileLanguageReadOnlyOAuth2Scope[] =
+    "https://www.googleapis.com/auth/profile.language.read";
+
 // OAuth2 scope for access to the programmatic challenge API (read-only).
 const char kProgrammaticChallengeOAuth2Scope[] =
     "https://www.googleapis.com/auth/accounts.programmaticchallenge";
@@ -200,6 +209,8 @@ const char kClassroomReadOnlyCourseWorkSelfOAuth2Scope[] =
     "https://www.googleapis.com/auth/classroom.coursework.me.readonly";
 const char kClassroomReadOnlyStudentSubmissionsSelfOAuth2Scope[] =
     "https://www.googleapis.com/auth/classroom.student-submissions.me.readonly";
+const char kClassroomReadOnlyRostersOAuth2Scope[] =
+    "https://www.googleapis.com/auth/classroom.rosters.readonly";
 
 // OAuth2 scopes for Optimization Guide.
 const char kOptimizationGuideServiceGetHintsOAuth2Scope[] =

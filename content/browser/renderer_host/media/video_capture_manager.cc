@@ -373,12 +373,13 @@ void VideoCaptureManager::OnDeviceLaunched(VideoCaptureController* controller) {
 
   auto it = photo_request_queue_.begin();
   while (it != photo_request_queue_.end()) {
-    auto request = it++;
     VideoCaptureController* maybe_entry =
-        LookupControllerBySessionId(request->first);
+        LookupControllerBySessionId(it->first);
     if (maybe_entry && maybe_entry->IsDeviceAlive()) {
-      std::move(request->second).Run();
-      photo_request_queue_.erase(request);
+      std::move(it->second).Run();
+      it = photo_request_queue_.erase(it);
+    } else {
+      ++it;
     }
   }
 
@@ -420,6 +421,7 @@ void VideoCaptureManager::ConnectClient(
     const media::VideoCaptureParams& params,
     VideoCaptureControllerID client_id,
     VideoCaptureControllerEventHandler* client_handler,
+    std::optional<url::Origin> origin,
     DoneCB done_cb,
     BrowserContext* browser_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -441,10 +443,21 @@ void VideoCaptureManager::ConnectClient(
     return;
   }
 
+  bool client_exist =
+      controller->HasActiveClient() || controller->HasPausedClient();
+  base::UmaHistogramBoolean("Media.VideoCapture.StreamShared", client_exist);
+  if (client_exist) {
+    std::optional<url::Origin> first_client_origin =
+        controller->GetFirstClientOrigin();
+    bool same_origin = first_client_origin.has_value() && origin.has_value() &&
+                       *first_client_origin == *origin;
+    base::UmaHistogramBoolean("Media.VideoCapture.StreamSharedSameOrigin",
+                              same_origin);
+  }
+
   // First client starts the device. Device can't be started while the screen is
   // locked.
-  if (!controller->HasActiveClient() && !controller->HasPausedClient() &&
-      lock_time_.is_null()) {
+  if (!client_exist && lock_time_.is_null()) {
     std::ostringstream string_stream;
     string_stream
         << "VideoCaptureManager queueing device start for device_id = "
@@ -468,7 +481,7 @@ void VideoCaptureManager::ConnectClient(
 
   // Run the callback first, as AddClient() may trigger OnFrameInfo().
   std::move(done_cb).Run(controller->GetWeakPtrForIOThread());
-  controller->AddClient(client_id, client_handler, session_id, params);
+  controller->AddClient(client_id, client_handler, session_id, params, origin);
 }
 
 void VideoCaptureManager::DisconnectClient(

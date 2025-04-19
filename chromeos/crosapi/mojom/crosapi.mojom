@@ -77,7 +77,9 @@ import "chromeos/crosapi/mojom/login_state.mojom";
 import "chromeos/crosapi/mojom/policy_namespace.mojom";
 import "chromeos/crosapi/mojom/policy_service.mojom";
 import "chromeos/crosapi/mojom/message_center.mojom";
+import "chromeos/crosapi/mojom/magic_boost.mojom";
 import "chromeos/crosapi/mojom/mahi.mojom";
+import "chromeos/crosapi/mojom/media_app.mojom";
 import "chromeos/crosapi/mojom/metrics.mojom";
 import "chromeos/crosapi/mojom/metrics_reporting.mojom";
 import "chromeos/crosapi/mojom/multi_capture_service.mojom";
@@ -168,8 +170,8 @@ struct BrowserInfo {
 // please note the milestone when you added it, to help us reason about
 // compatibility between the client applications and older ash-chrome binaries.
 //
-// Next version: 142
-// Next method id: 144
+// Next version: 145
+// Next method id: 147
 [Stable, Uuid="8b79c34f-2bf8-4499-979a-b17cac522c1e",
  RenamedFrom="crosapi.mojom.AshChromeService"]
 interface Crosapi {
@@ -547,6 +549,12 @@ interface Crosapi {
   [MinVersion=17] BindMachineLearningService@22(
       pending_receiver<chromeos.machine_learning.mojom.MachineLearningService> receiver);
 
+  // MagicBoostController is a service to allow lacros to open the magic boost
+  // opt-in flow.
+  // Added in M127.
+  [MinVersion=142] BindMagicBoostController@144(
+      pending_receiver<MagicBoostController> receiver);
+
   // Binds the mahi browser delegate to the mahi browser client.
   // Added in M123.
   [MinVersion=132] BindMahiBrowserDelegate@134(
@@ -701,12 +709,24 @@ interface Crosapi {
   [MinVersion=134]
   BindSuggestionService@136(pending_receiver<SuggestionService> receiver);
 
-  // Binds TrustedVaultBackend, which allows lacros-chrome to access data stored
-  // by ash-chrome TrustedVaultClient.
+  // Binds TrustedVaultBackend for the `chromesync` security domain, which
+  // allows lacros-chrome to access data stored by ash-chrome
+  // TrustedVaultClient.
+  // TODO(crbug.com/342239249): Deprecate in favor of
+  // `BindTrustedVaultBackendService` two milestones after that is rolled out,
+  // and we can stop relying on this method as a fallback (M129).
   // Added in M119.
   [MinVersion=119]
   BindTrustedVaultBackend@121(
       pending_receiver<TrustedVaultBackend> receiver);
+
+  // Binds TrustedVaultBackendService, which allows lacros-chrome to bind to
+  // TrustedVaultBackend instances to access data stored by ash-chrome
+  // TrustedVaultClients.
+  // Added in M127.
+  [MinVersion=143]
+  BindTrustedVaultBackendService@145(
+      pending_receiver<TrustedVaultBackendService> receiver);
 
   // Binds the HidManager interface for support HID devices.
   // Added in M87.
@@ -724,6 +744,11 @@ interface Crosapi {
   // Added in M95.
   [MinVersion=46]
   BindFieldTrialService@51(pending_receiver<FieldTrialService> receiver);
+
+  // Binds the Media App interface for special functions of Media App
+  // Added in M128.
+  [MinVersion=144] BindMediaApp@146(
+      pending_remote<MediaApp> receiver);
 
   // Binds the Media Session service (controller) for enabling media playback
   // control.
@@ -1643,10 +1668,9 @@ struct BrowserInitParams {
   [MinVersion=80]
   bool is_orca_enabled@80;
 
-  // Set to true when the `chromeos::features::kCrosMall` flag is enabled in
-  // Ash.
+  // Set to true when the Mall web app is enabled in Ash.
   [MinVersion=81]
-  bool is_cros_mall_enabled@81;
+  bool is_cros_mall_web_app_enabled@81;
 
   // If true, "Mahi" will be enabled.
   [MinVersion=82]
@@ -1660,10 +1684,11 @@ struct BrowserInitParams {
   [MinVersion=84]
   bool is_orca_use_l10n_strings_enabled@84;
 
+  // Deprecated in M118. Do not use.
   // Set to true if the Mahi feature is supported and the feature key check has
   // been satisfied.
   [MinVersion=85]
-  bool is_mahi_supported_with_correct_feature_key@85;
+  bool is_mahi_supported_with_correct_feature_key_deprecated@85;
 
   // Set to true when both the
   // `chromeos::features::kFileSystemProviderContentCache` and
@@ -1780,8 +1805,9 @@ struct BrowserPostLoginParams {
   [MinVersion=1]
   bool is_current_user_ephemeral@19;
 
+  // Deprecated in M118. Do not use.
   // Set to true if the Mahi feature is supported and the feature key check has
   // been satisfied.
   [MinVersion=2]
-  bool is_mahi_supported_with_correct_feature_key@20;
+  bool is_mahi_supported_with_correct_feature_key_deprecated@20;
 };

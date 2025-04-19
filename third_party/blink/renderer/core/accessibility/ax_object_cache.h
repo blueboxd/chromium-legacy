@@ -28,6 +28,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_ACCESSIBILITY_AX_OBJECT_CACHE_H_
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/stack_allocated.h"
 #include "third_party/blink/renderer/core/accessibility/axid.h"
 #include "third_party/blink/renderer/core/accessibility/blink_ax_event_intent.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -157,8 +158,7 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
 
   // Handle any notifications which arrived while layout was dirty.
   // If |force|, then process regardless of any active batching or pauses.
-  virtual void ProcessDeferredAccessibilityEvents(Document&,
-                                                  bool force = false) = 0;
+  virtual void CommitAXUpdates(Document&, bool force) = 0;
 
   // Changes to virtual Accessibility Object Model nodes.
   virtual void HandleAttributeChanged(const QualifiedName& attr_name,
@@ -294,7 +294,9 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
   static AXObjectCacheCreateFunction create_function_;
 };
 
-class ScopedFreezeAXCache : public GarbageCollected<ScopedFreezeAXCache> {
+class ScopedFreezeAXCache {
+  STACK_ALLOCATED();
+
  public:
   explicit ScopedFreezeAXCache(AXObjectCache& cache) : cache_(&cache) {
     cache.Freeze();
@@ -308,10 +310,8 @@ class ScopedFreezeAXCache : public GarbageCollected<ScopedFreezeAXCache> {
     cache_->Thaw();
   }
 
-  void Trace(Visitor* visitor) const { visitor->Trace(cache_); }
-
  private:
-  WeakMember<AXObjectCache> cache_;
+  AXObjectCache* cache_;
 };
 
 }  // namespace blink

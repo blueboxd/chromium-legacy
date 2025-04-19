@@ -22,7 +22,7 @@
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
-// Must come after other includes, because FromJniType() uses Profile.
+// Must come after all headers that specialize FromJniType() / ToJniType().
 #include "chrome/android/chrome_jni_headers/ContextualSearchSceneLayer_jni.h"
 
 using base::android::JavaParamRef;
@@ -107,6 +107,7 @@ void ContextualSearchSceneLayer::UpdateContextualSearchLayer(
     jfloat search_panel_height,
     jfloat search_bar_margin_side,
     jfloat search_bar_margin_top,
+    jfloat search_bar_margin_bottom,
     jfloat search_bar_height,
     jfloat search_context_opacity,
     jfloat search_text_layer_min_height,
@@ -174,11 +175,12 @@ void ContextualSearchSceneLayer::UpdateContextualSearchLayer(
       related_searches_in_bar_height, related_searches_in_bar_redundant_padding,
       // Panel position etc
       search_panel_x, search_panel_y, search_panel_width, search_panel_height,
-      search_bar_margin_side, search_bar_margin_top, search_bar_height,
-      search_context_opacity, search_text_layer_min_height, search_term_opacity,
-      search_term_caption_spacing, search_caption_animation_percentage,
-      search_caption_visible, search_bar_border_visible,
-      search_bar_border_height, quick_action_icon_visible, thumbnail_visible,
+      search_bar_margin_side, search_bar_margin_top, search_bar_margin_bottom,
+      search_bar_height, search_context_opacity, search_text_layer_min_height,
+      search_term_opacity, search_term_caption_spacing,
+      search_caption_animation_percentage, search_caption_visible,
+      search_bar_border_visible, search_bar_border_height,
+      quick_action_icon_visible, thumbnail_visible,
       custom_image_visibility_percentage, bar_image_size, icon_color,
       drag_handlebar_color, close_icon_opacity, progress_bar_visible,
       progress_bar_height, progress_bar_opacity, progress_bar_completion,

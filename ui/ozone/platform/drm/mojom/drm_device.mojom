@@ -58,13 +58,15 @@ interface DrmDevice {
   ShouldDisplayEventTriggerConfiguration(map<string, string> event_props) =>
       (bool should_trigger);
 
-  // Configures (Enables/Disables) DRM displays, returns whether or not the
-  // configuration was successful. Adjusts the behavior of the commit according
-  // to |modeset_flag| (see display::ModesetFlag).
+  // Configures (Enables/Disables) DRM displays, returning the final requests
+  // which were used (they may differ from the input requests) and whether or
+  // not the configuration was successful. Adjusts the behavior of the commit
+  // according to |modeset_flag| (see display::ModesetFlag).
   ConfigureNativeDisplays(
       array<display.mojom.DisplayConfigurationParams> config_requests,
       display.mojom.ModesetFlags modeset_flags) =>
-    (bool config_success);
+      (array<display.mojom.DisplayConfigurationParams> request_results,
+       bool config_success);
 
   // Sets the HDCP Key Property in the connector attached to the |display_id|.
   SetHdcpKeyProp(int64 display_id, string key) =>
@@ -94,16 +96,6 @@ interface DrmDevice {
   // Set the display profile space gamma adjustment for the specified display.
   SetGammaAdjustment(int64 display_id,
                      display.mojom.GammaAdjustment adjustment);
-
-  // Sets a 3x3 color transform matrix on the display hardware.
-  // TODO: Consider using a different type for the color matrix.
-  // https://crbug.com/846975.
-  SetColorMatrix(int64 display_id, array<float, 9> color_matrix);
-
-  // Sets a color correction gamma lookup table.
-  SetGammaCorrection(int64 display_id,
-                     display.mojom.GammaCurve degamma,
-                     display.mojom.GammaCurve gamma);
 
   // Sets the state of the privacy screen feature, returns whether or not the
   // configuration was successful.

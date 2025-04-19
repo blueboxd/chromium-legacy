@@ -16,6 +16,7 @@
 #include "base/functional/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "build/build_config.h"
 #include "cc/base/rtree.h"
 #include "content/browser/accessibility/browser_accessibility.h"
@@ -40,14 +41,16 @@
 #include "ui/base/buildflags.h"
 #include "ui/gfx/native_widget_types.h"
 
+namespace ui {
+class AXNodeIdDelegate;
+}
+
 namespace content {
 
 // Required by the several platform specific
 // `BrowserAccessibilityManager::ToBrowserAccessibilityManager...()` methods
 // declared below.
-#if BUILDFLAG(IS_ANDROID)
-class BrowserAccessibilityManagerAndroid;
-#elif BUILDFLAG(IS_WIN)
+#if BUILDFLAG(IS_WIN)
 class BrowserAccessibilityManagerWin;
 #elif BUILDFLAG(USE_ATK)
 class BrowserAccessibilityManagerAuraLinux;
@@ -108,8 +111,10 @@ class CONTENT_EXPORT BrowserAccessibilityManager
   // Creates the platform-specific BrowserAccessibilityManager.
   static BrowserAccessibilityManager* Create(
       const ui::AXTreeUpdate& initial_tree,
+      ui::AXNodeIdDelegate& node_id_delegate,
       ui::AXPlatformTreeManagerDelegate* delegate);
   static BrowserAccessibilityManager* Create(
+      ui::AXNodeIdDelegate& node_id_delegate,
       ui::AXPlatformTreeManagerDelegate* delegate);
 
   static BrowserAccessibilityManager* FromID(ui::AXTreeID ax_tree_id);
@@ -282,10 +287,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager
   // highlighted matches are deactivated.
   virtual void OnFindInPageTermination() {}
 
-#if BUILDFLAG(IS_ANDROID)
-  BrowserAccessibilityManagerAndroid* ToBrowserAccessibilityManagerAndroid();
-#endif
-
 #if BUILDFLAG(IS_WIN)
   BrowserAccessibilityManagerWin* ToBrowserAccessibilityManagerWin();
 #endif
@@ -405,7 +406,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager
 
   // AXTreeManager overrides.
   ui::AXNode* GetNode(const ui::AXNodeID node_id) const override;
-  void CleanUp() override;
   void UpdateAttributesOnParent(ui::AXNode* parent) override;
 
   // AXPlatformTreeManager overrides.
@@ -489,11 +489,20 @@ class CONTENT_EXPORT BrowserAccessibilityManager
       BrowserAccessibility* node,
       RetargetEventType type) const;
 
+  // Returns the unique identifier for `node` for exposure to the native
+  // platform.
+  ui::AXPlatformNodeId GetNodeUniqueId(const BrowserAccessibility* node);
+
  protected:
   FRIEND_TEST_ALL_PREFIXES(BrowserAccessibilityManagerTest,
                            TestShouldFireEventForNode);
+  FRIEND_TEST_ALL_PREFIXES(BrowserAccessibilityManagerTest,
+                           TestShouldFireEventForAlertEventWithEmptyName);
+  FRIEND_TEST_ALL_PREFIXES(BrowserAccessibilityManagerTest,
+                           TestShouldFireEventForAlertEventWithNonEmptyName);
 
   explicit BrowserAccessibilityManager(
+      ui::AXNodeIdDelegate& node_id_delegate,
       ui::AXPlatformTreeManagerDelegate* delegate);
 
   // Send platform-specific notifications to each of these objects that
@@ -512,6 +521,9 @@ class CONTENT_EXPORT BrowserAccessibilityManager
 
   bool ShouldFireEventForNode(BrowserAccessibility* node) const;
 
+  virtual std::unique_ptr<BrowserAccessibility> CreateBrowserAccessibility(
+      ui::AXNode* node);
+
   // An object that can retrieve information or perform actions on our behalf,
   // based on which layer this code is running on, Web vs. Views.
   raw_ptr<ui::AXPlatformTreeManagerDelegate> delegate_;
@@ -529,6 +541,10 @@ class CONTENT_EXPORT BrowserAccessibilityManager
   // If the load complete event is suppressed due to CanFireEvents() returning
   // false, this is set to true and the event will be fired later.
   bool defer_load_complete_event_ = false;
+
+  // If the load complete has been received in a previous serialization, this
+  // is set to true.
+  bool is_post_load_ = false;
 
   BrowserAccessibilityFindInPageInfo find_in_page_info_;
 
@@ -596,6 +612,9 @@ class CONTENT_EXPORT BrowserAccessibilityManager
   // called first.
   BrowserAccessibility* AXTreeHitTest(
       const gfx::Point& blink_screen_point) const;
+
+  // A delegate responsible for assigning window-unique identifiers for nodes.
+  const raw_ref<ui::AXNodeIdDelegate> node_id_delegate_;
 
   // Only used on the root node for AXTree hit testing as an alternative to
   // ApproximateHitTest when used without a renderer.

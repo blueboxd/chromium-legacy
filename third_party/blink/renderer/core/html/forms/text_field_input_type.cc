@@ -231,18 +231,20 @@ void TextFieldInputType::HandleKeydownEvent(KeyboardEvent& event) {
 void TextFieldInputType::HandleKeydownEventForSpinButton(KeyboardEvent& event) {
   if (GetElement().IsDisabledOrReadOnly())
     return;
-  const String& key = event.key();
-  bool is_horizontal =
+  const AtomicString key(event.key());
+  const PhysicalToLogical<const AtomicString*> key_mapper(
       GetElement().GetComputedStyle()
-          ? GetElement().GetComputedStyle()->IsHorizontalWritingMode()
-          : true;
+          ? GetElement().GetComputedStyle()->GetWritingDirection()
+          : WritingDirectionMode(WritingMode::kHorizontalTb,
+                                 TextDirection::kLtr),
+      &keywords::kArrowUp, &keywords::kArrowRight, &keywords::kArrowDown,
+      &keywords::kArrowLeft);
+  const AtomicString* key_up = key_mapper.LineOver();
+  const AtomicString* key_down = key_mapper.LineUnder();
 
-  if ((is_horizontal && key == "ArrowUp") ||
-      (!is_horizontal && key == "ArrowRight")) {
+  if (key == *key_up) {
     SpinButtonStepUp();
-  } else if (((is_horizontal && key == "ArrowDown") ||
-              (!is_horizontal && key == "ArrowLeft")) &&
-             !event.altKey()) {
+  } else if (key == *key_down && !event.altKey()) {
     SpinButtonStepDown();
   } else {
     return;
@@ -543,6 +545,13 @@ void TextFieldInputType::HandleBeforeTextInsertedEvent(
   event_text.Replace('\n', ' ');
 
   event.SetText(LimitLength(event_text, appendable_length));
+
+  if (ChromeClient* chrome_client = GetChromeClient()) {
+    if (selection_length == old_length && selection_length != 0 &&
+        !event_text.empty()) {
+      chrome_client->DidClearValueInTextField(GetElement());
+    }
+  }
 }
 
 bool TextFieldInputType::ShouldRespectListAttribute() {
@@ -623,8 +632,12 @@ void TextFieldInputType::OpenPopupView() {
 void TextFieldInputType::DidSetValueByUserEdit() {
   if (!GetElement().IsFocused())
     return;
-  if (ChromeClient* chrome_client = GetChromeClient())
+  if (ChromeClient* chrome_client = GetChromeClient()) {
+    if (GetElement().Value().empty()) {
+      chrome_client->DidClearValueInTextField(GetElement());
+    }
     chrome_client->DidChangeValueInTextField(GetElement());
+  }
 }
 
 void TextFieldInputType::SpinButtonStepDown() {

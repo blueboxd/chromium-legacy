@@ -5,14 +5,25 @@
 import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
 
 import {getVcBackgroundTemplates, getWallpaperTemplates} from './constants_generated.js';
-import {isSeaPenTextInputEnabled} from './load_time_booleans.js';
 import {SeaPenTemplateChip, SeaPenTemplateId, SeaPenTemplateOption} from './sea_pen_generated.mojom-webui.js';
 
 export type Query = 'Query';
+export const QUERY: Query = 'Query';
+
+/** Enumeration of supported tabs. */
+export enum FreeformTab {
+  SAMPLE_PROMPTS = 'sample_prompts',
+  RESULTS = 'results',
+}
 
 // SeaPen images are identified by a positive integer. For a newly generated
 // thumbnail, this is `SeaPenThumbnail.id`.
 export type SeaPenImageId = number;
+
+export interface SeaPenSamplePrompt {
+  prompt: string;
+  preview: Url;
+}
 
 export interface SeaPenOption {
   // `value` is the actual option value to be sent to the server side.
@@ -38,19 +49,6 @@ export function getSeaPenTemplates(): SeaPenTemplate[] {
   const templates = window.location.origin === 'chrome://personalization' ?
       getWallpaperTemplates() :
       getVcBackgroundTemplates();
-
-  if (isSeaPenTextInputEnabled()) {
-    templates.push({
-      preview: [{
-        url:
-            'chrome://resources/ash/common/sea_pen/sea_pen_images/sea_pen_tile.jpg',
-      }],
-      title: 'Freeform',
-      text: 'Freeform',
-      id: 'Query',
-      options: new Map(),
-    });
-  }
   return templates;
 }
 

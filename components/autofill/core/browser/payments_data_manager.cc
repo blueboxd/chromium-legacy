@@ -33,8 +33,9 @@
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
+#include "components/autofill/core/common/credit_card_number_validation.h"
 #include "components/prefs/pref_service.h"
-#include "components/sync/base/model_type.h"
+#include "components/sync/base/data_type.h"
 #include "components/sync/service/sync_user_settings.h"
 
 #if BUILDFLAG(IS_ANDROID)
@@ -237,7 +238,7 @@ PaymentsDataManager::PaymentsDataManager(
       this, profile_database, account_database);
   SetPrefService(pref_service);
   if (pref_service_) {
-    autofill_metrics::LogIsAutofillCreditCardEnabledAtStartup(
+    autofill_metrics::LogIsAutofillPaymentMethodsEnabledAtStartup(
         IsAutofillPaymentMethodsEnabled());
     if (IsAutofillPaymentMethodsEnabled()) {
       autofill_metrics::LogIsAutofillPaymentsCvcStorageEnabledAtStartup(
@@ -246,6 +247,9 @@ PaymentsDataManager::PaymentsDataManager(
         autofill_metrics::LogIsCreditCardBenefitsEnabledAtStartup(
             prefs::IsPaymentCardBenefitsEnabled(pref_service_));
       }
+    } else {
+      autofill_metrics::LogAutofillPaymentMethodsDisabledReasonAtStartup(
+          *pref_service_);
     }
   }
   if (sync_service_) {
@@ -266,13 +270,12 @@ void PaymentsDataManager::Shutdown() {
   sync_observer_.Reset();
 }
 
-void PaymentsDataManager::OnAutofillChangedBySync(
-    syncer::ModelType model_type) {
-  if (model_type == syncer::AUTOFILL_WALLET_CREDENTIAL ||
-      model_type == syncer::AUTOFILL_WALLET_DATA ||
-      model_type == syncer::AUTOFILL_WALLET_METADATA ||
-      model_type == syncer::AUTOFILL_WALLET_OFFER ||
-      model_type == syncer::AUTOFILL_WALLET_USAGE) {
+void PaymentsDataManager::OnAutofillChangedBySync(syncer::DataType data_type) {
+  if (data_type == syncer::AUTOFILL_WALLET_CREDENTIAL ||
+      data_type == syncer::AUTOFILL_WALLET_DATA ||
+      data_type == syncer::AUTOFILL_WALLET_METADATA ||
+      data_type == syncer::AUTOFILL_WALLET_OFFER ||
+      data_type == syncer::AUTOFILL_WALLET_USAGE) {
     Refresh();
   }
 }
@@ -686,7 +689,7 @@ std::vector<Iban> PaymentsDataManager::GetOrderedIbansToSuggest() const {
     return iban->record_type() == Iban::kLocalIban &&
            base::ranges::any_of(
                server_ibans_, [&](const std::unique_ptr<Iban>& server_iban) {
-                 return server_iban->MatchesPrefixSuffixAndLength(*iban);
+                 return server_iban->MatchesPrefixAndSuffix(*iban);
                });
   });
 
@@ -798,7 +801,7 @@ gfx::Image* PaymentsDataManager::GetCreditCardArtImageForUrl(
     return cached_image;
   }
 
-  FetchImagesForURLs(base::make_span(&card_art_url, 1u));
+  FetchImagesForURLs(base::span_from_ref(card_art_url));
   return nullptr;
 }
 
@@ -1017,28 +1020,17 @@ std::string PaymentsDataManager::OnAcceptedLocalIbanSave(Iban imported_iban) {
 }
 
 bool PaymentsDataManager::IsKnownCard(const CreditCard& credit_card) const {
-  const auto stripped_pan = CreditCard::StripSeparators(credit_card.number());
+  const auto stripped_pan = StripCardNumberSeparators(credit_card.number());
   for (const auto& card : local_credit_cards_) {
-    if (stripped_pan == CreditCard::StripSeparators(card->number())) {
+    if (stripped_pan == StripCardNumberSeparators(card->number())) {
       return true;
     }
   }
 
   const auto masked_info = credit_card.NetworkAndLastFourDigits();
   for (const auto& card : server_credit_cards_) {
-    switch (card->record_type()) {
-      case CreditCard::RecordType::kFullServerCard:
-        if (stripped_pan == CreditCard::StripSeparators(card->number())) {
-          return true;
-        }
-        break;
-      case CreditCard::RecordType::kMaskedServerCard:
-        if (masked_info == card->NetworkAndLastFourDigits()) {
-          return true;
-        }
-        break;
-      default:
-        NOTREACHED_IN_MIGRATION();
+    if (masked_info == card->NetworkAndLastFourDigits()) {
+      return true;
     }
   }
 
@@ -1079,8 +1071,10 @@ bool PaymentsDataManager::ShouldShowCardsFromAccountOption() const {
   bool is_opted_in = prefs::IsUserOptedInWalletSyncTransport(
       pref_service_, sync_service_->GetAccountInfo().account_id);
 
-  // The option should only be shown if the user has not already opted-in.
-  return !is_opted_in;
+  // The option should only be shown if the user has not already opted-in and
+  // the flag to remove the dropdown is disabled.
+  return !is_opted_in && !base::FeatureList::IsEnabled(
+                             features::kAutofillRemovePaymentsButterDropdown);
 #else
   return false;
 #endif  // #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS) ||
@@ -1165,20 +1159,16 @@ bool PaymentsDataManager::IsPaymentCvcStorageEnabled() {
          prefs::IsPaymentCvcStorageEnabled(pref_service_);
 }
 
-std::vector<VirtualCardUsageData*>
+base::span<const VirtualCardUsageData>
 PaymentsDataManager::GetVirtualCardUsageData() const {
   if (!IsAutofillWalletImportEnabled() || !IsAutofillPaymentMethodsEnabled()) {
     return {};
   }
-  std::vector<VirtualCardUsageData*> result;
-  result.reserve(autofill_virtual_card_usage_data_.size());
-  for (const auto& data : autofill_virtual_card_usage_data_) {
-    result.push_back(data.get());
-  }
-  return result;
+  return autofill_virtual_card_usage_data_;
 }
 
-std::vector<CreditCard*> PaymentsDataManager::GetCreditCardsToSuggest() const {
+std::vector<CreditCard*> PaymentsDataManager::GetCreditCardsToSuggest(
+    bool should_use_legacy_algorithm) const {
   if (!IsAutofillPaymentMethodsEnabled()) {
     return {};
   }
@@ -1203,13 +1193,15 @@ std::vector<CreditCard*> PaymentsDataManager::GetCreditCardsToSuggest() const {
   base::Time comparison_time = AutofillClock::Now();
   if (cards_to_suggest.size() > 1) {
     std::sort(cards_to_suggest.begin(), cards_to_suggest.end(),
-              [comparison_time](const CreditCard* a, const CreditCard* b) {
+              [comparison_time, should_use_legacy_algorithm](
+                  const CreditCard* a, const CreditCard* b) {
                 const bool a_is_expired = a->IsExpired(comparison_time);
                 if (a_is_expired != b->IsExpired(comparison_time)) {
                   return !a_is_expired;
                 }
 
-                return a->HasGreaterRankingThan(b, comparison_time);
+                return a->HasGreaterRankingThan(*b, comparison_time,
+                                                should_use_legacy_algorithm);
               });
   }
 
@@ -1598,16 +1590,18 @@ void PaymentsDataManager::RecordUseOfIban(Iban& iban) {
 }
 
 // The priority ranking for deduping a duplicate card is:
-// 1. RecordType::kFullServerCard
-// 2. RecordType::kMaskedServerCard
-// 3. RecordType::kLocalCard
-// Note- Duplicate kMaskedServerCard and kFullServerCard cannot be present on
-// the same client at the same time.
+// 1. RecordType::kMaskedServerCard
+// 2. RecordType::kLocalCard
 // static
 void PaymentsDataManager::DedupeCreditCardToSuggest(
     std::list<CreditCard*>* cards_to_suggest) {
   for (auto outer_it = cards_to_suggest->begin();
        outer_it != cards_to_suggest->end(); ++outer_it) {
+    // Full server cards should never be suggestions, as they exist only as a
+    // cached state post-fill.
+    CHECK_NE((*outer_it)->record_type(),
+             CreditCard::RecordType::kFullServerCard);
+
     for (auto inner_it = cards_to_suggest->begin();
          inner_it != cards_to_suggest->end();) {
       auto inner_it_copy = inner_it++;
@@ -1663,11 +1657,16 @@ bool PaymentsDataManager::ShouldSuggestServerPaymentMethods() const {
   // TODO(crbug.com/40066949): Simplify once ConsentLevel::kSync and
   // SyncService::IsSyncFeatureEnabled() are deleted from the codebase.
   if (!sync_service_->IsSyncFeatureEnabled()) {
-    // For SyncTransport, only show server payment methods if the user has opted
-    // in to seeing them in the dropdown.
+    // For SyncTransport, only show server payment methods if the user has
+    // opted in to seeing them in the dropdown.
     if (!prefs::IsUserOptedInWalletSyncTransport(
             pref_service_, sync_service_->GetAccountInfo().account_id)) {
-      return false;
+      // If the AutofillRemovePaymentsButterDropdown feature is enabled, all
+      // users can see server payment methods, even in SyncTransport mode.
+      if (!base::FeatureList::IsEnabled(
+              features::kAutofillRemovePaymentsButterDropdown)) {
+        return false;
+      }
     }
   }
 

@@ -39,26 +39,30 @@ class FakeSystemIdentityManager final : public SystemIdentityManager {
       SystemIdentityManager* manager);
 
   // Adds `identity` to the available idendities.
-  // Does nothing if the identity is already in the manager.
+  // DCHECK failure will be triggered if the identity was already added.
   void AddIdentity(id<SystemIdentity> identity);
 
   // Adds `identity` to the available idendities without setting up
   // capabilities.
+  // DCHECK failure will be triggered if the identity was already added.
   void AddIdentityWithUnknownCapabilities(id<SystemIdentity> identity);
 
-  // Adds fake identities given their names. Ignore the identities that are
-  // already added.
-  void AddIdentities(NSArray<NSString*>* names);
-
-  // Adds fake managed identities given their names.
-  void AddManagedIdentities(NSArray<NSString*>* names);
+  // Adds `identity` and set the capabilities before firing the list changed
+  // notification.
+  // DCHECK failure will be triggered if the identity was already added.
+  void AddIdentityWithCapabilities(
+      id<SystemIdentity> identity,
+      NSDictionary<NSString*, NSNumber*>* capabilities);
 
   // Simulates `identity` removed from another application.
   void ForgetIdentityFromOtherApplication(id<SystemIdentity> identity);
 
   // Returns a test object that enables changes to capability state.
-  AccountCapabilitiesTestMutator* GetCapabilitiesMutator(
+  AccountCapabilitiesTestMutator* GetPendingCapabilitiesMutator(
       id<SystemIdentity> identity);
+
+  // Returns the list of account capabilities associated with the identity.
+  AccountCapabilities GetVisibleCapabilities(id<SystemIdentity> identity);
 
   // Simulates reloading the identities from the keychain.
   void FireSystemIdentityReloaded();
@@ -68,6 +72,9 @@ class FakeSystemIdentityManager final : public SystemIdentityManager {
 
   // Waits until all asynchronous callbacks have been completed.
   void WaitForServiceCallbacksToComplete();
+
+  // Returns YES if the identity was already added.
+  bool ContainsIdentity(id<SystemIdentity> identity);
 
   // Simulates a failure next time the access token for `identity` would be
   // fetched and return the error that would be sent to the observers. The
@@ -99,6 +106,7 @@ class FakeSystemIdentityManager final : public SystemIdentityManager {
   void IterateOverIdentities(IdentityIteratorCallback callback) final;
   void ForgetIdentity(id<SystemIdentity> identity,
                       ForgetIdentityCallback callback) final;
+  bool IdentityRemovedByUser(NSString* gaia_id) final;
   void GetAccessToken(id<SystemIdentity> identity,
                       const std::set<std::string>& scopes,
                       AccessTokenCallback callback) final;
@@ -127,7 +135,8 @@ class FakeSystemIdentityManager final : public SystemIdentityManager {
   // Helper used to implement the asynchronous part of `ForgetIdentity`.
   void ForgetIdentityAsync(id<SystemIdentity> identity,
                            ForgetIdentityCallback callback,
-                           bool notify_user);
+                           bool notify_user,
+                           bool removed_by_user);
 
   // Helper used to implement the asynchronous part of `GetAccessToken`.
   void GetAccessTokenAsync(id<SystemIdentity> identity,
@@ -162,6 +171,9 @@ class FakeSystemIdentityManager final : public SystemIdentityManager {
 
   // Stores identities.
   __strong FakeSystemIdentityManagerStorage* storage_ = nil;
+  // List of gaia ids for identities that has been removed by calling
+  // `ForgetIdentity()` (instead of `ForgetIdentityFromOtherApplication()`).
+  __strong NSMutableSet<NSString*>* gaia_ids_removed_by_user_ = nil;
 
   base::WeakPtrFactory<FakeSystemIdentityManager> weak_ptr_factory_{this};
 };

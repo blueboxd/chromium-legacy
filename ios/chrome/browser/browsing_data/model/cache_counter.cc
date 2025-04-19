@@ -63,12 +63,13 @@ class IOThreadCacheCounter {
                                            ->http_transaction_factory()
                                            ->GetCache();
 
-          rv = http_cache->GetBackend(
-              &backend_, base::BindRepeating(
-                             [](IOThreadCacheCounter* self, int rv) {
-                               self->CountInternal(static_cast<int64_t>(rv));
-                             },
-                             base::Unretained(this)));
+          std::tie(rv, backend_) = http_cache->GetBackend(base::BindOnce(
+              [](IOThreadCacheCounter* self,
+                 net::HttpCache::GetBackendResult result) {
+                self->backend_ = result.second;
+                self->CountInternal(static_cast<int64_t>(result.first));
+              },
+              base::Unretained(this)));
           break;
         }
 
@@ -108,7 +109,7 @@ class IOThreadCacheCounter {
   scoped_refptr<net::URLRequestContextGetter> context_getter_;
   net::Int64CompletionRepeatingCallback result_callback_;
   int64_t result_;
-  disk_cache::Backend* backend_;
+  raw_ptr<disk_cache::Backend> backend_;
 };
 
 }  // namespace

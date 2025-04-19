@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/base/supported_video_decoder_config.h"
+#include "media/base/svc_scalability_mode.h"
 #include "media/base/video_codecs.h"
 #include "mojo/public/cpp/platform/platform_handle.h"
 
@@ -117,6 +118,11 @@ size_t GetNumPlanesOfV4L2PixFmt(uint32_t pix_fmt);
 std::optional<VideoFrameLayout> V4L2FormatToVideoFrameLayout(
     const struct v4l2_format& format);
 
+// Query the driver to see what scalability modes are supported for the driver.
+std::vector<SVCScalabilityMode> GetSupportedScalabilityModesForV4L2Codec(
+    const IoctlAsCallback& ioctl_cb,
+    VideoCodecProfile media_profile);
+
 // Enumerates the supported VideoCodecProfiles for a given device (accessed via
 // |ioctl_cb|) and for |codec_as_pix_fmt| (e.g. V4L2_PIX_FMT_VP9). Returns an
 // empty vector if |codec_as_pix_fmt| is not supported by Chrome, or the
@@ -160,6 +166,9 @@ std::optional<SupportedVideoDecoderConfigs> GetSupportedV4L2DecoderConfigs();
 
 // Queries the driver to see if it supports stateful decoding.
 bool IsV4L2DecoderStateful();
+
+// Returns a readable description of |ctrls|.
+std::string V4L2ControlsToString(const struct v4l2_ext_controls* ctrls);
 
 }  // namespace media
 

@@ -8,6 +8,7 @@
 #include <optional>
 #include <string>
 
+#include "base/auto_reset.h"
 #include "base/component_export.h"
 #include "base/time/time.h"
 #include "build/buildflag.h"
@@ -21,17 +22,17 @@ namespace chromeos::switches {
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kContainerAppPreinstallActivationTimeThreshold[];
 
-#if !BUILDFLAG(IS_CHROMEOS_LACROS)
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const char kContainerAppPreinstallKey[];
-#endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
+extern const char kContainerAppPreinstallDebugKey[];
 
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 std::optional<base::Time> GetContainerAppPreinstallActivationTimeThreshold();
 
-#if !BUILDFLAG(IS_CHROMEOS_LACROS)
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS) std::string GetContainerAppPreinstallKey();
-#endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+bool IsContainerAppPreinstallDebugKeyMatched();
+
+[[nodiscard]] COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+    base::AutoReset<bool> SetIgnoreContainerAppPreinstallDebugKeyForTesting();
 
 }  // namespace chromeos::switches
 

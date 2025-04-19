@@ -79,13 +79,15 @@ class SublevelManagerMacTest
 
 // Disabled widgets are ignored when its siblings are re-ordered.
 TEST_P(SublevelManagerMacTest, ExplicitUntrack) {
-  std::unique_ptr<Widget> root = CreateTestWidget();
-  std::unique_ptr<Widget> root2 = CreateTestWidget();
-  std::unique_ptr<Widget> children[3];
+  std::unique_ptr<Widget> root =
+      CreateTestWidget(Widget::InitParams::CLIENT_OWNS_WIDGET);
+  std::unique_ptr<Widget> root2 =
+      CreateTestWidget(Widget::InitParams::CLIENT_OWNS_WIDGET);
+  std::array<std::unique_ptr<Widget>, 3> children;
 
   ShowWidget(root);
   ShowWidget(root2);
-  for (int i = 0; i < 3; i++) {
+  for (size_t i = 0; i < children.size(); i++) {
     children[i] = CreateChildWidget(
         root.get(), ui::ZOrderLevel::kNormal, i,
         std::get<Widget::InitParams::Activatable>(GetParam()));

@@ -5,6 +5,7 @@
 import * as fill_constants from '//components/autofill/ios/form_util/resources/fill_constants.js';
 import {isTextAreaElement} from '//components/autofill/ios/form_util/resources/fill_element_inference_util.js';
 import {getFrameId} from '//ios/web/public/js_messaging/resources/frame_id.js';
+import {gCrWeb} from '//ios/web/public/js_messaging/resources/gcrweb.js';
 import {sendWebKitMessage} from '//ios/web/public/js_messaging/resources/utils.js';
 
 /**
@@ -13,7 +14,7 @@ import {sendWebKitMessage} from '//ios/web/public/js_messaging/resources/utils.j
  * It scans the DOM, extracting and storing forms and returns a JSON string
  * representing an array of objects, each of which represents an Autofill form
  * with information about a form to be filled and/or submitted and it can be
- * translated to struct FormData
+ * translated to class FormData
  * (chromium/src/components/autofill/core/common/form_data.h) for further
  * processing.
  */
@@ -87,6 +88,10 @@ const FORM_FILLED_COMMAND = 'formFilled';
  * @return {boolean} Whether the form is sufficiently interesting.
  */
 function isFormInteresting_(form) {
+  if (form.child_frames && form.child_frames.length > 0) {
+    return true;
+  }
+
   // If the form has at least one field with an autocomplete attribute, or one
   // non-checkable field, it is a candidate for autofill.
   for (let i = 0; i < form.fields.length; ++i) {
@@ -120,28 +125,40 @@ function countEditableElements_(elements) {
 }
 
 /**
+ * Returns the unowned iframes in the document. An unowned iframe doesn't have a
+ * <form> as a direct or indirect ancestor.
+ * @returns {Element[]} An array containing the unowned iframe elements. Is
+ *     empty if no match.
+ */
+function getUnownedIframes() {
+  return Array.from(gCrWeb.form.getIframeElements(document))
+      .filter(e => !e.closest('form'));
+}
+
+/**
  * Scans the page for fields not owned by a form, and returns a synthetic form
  * containing them, if any are found. Returns null otherwise.
- * @param {number} extractMask Bitmask use for filtering elements. See
- *     fill_constants.ts.
  * @param {boolean} restrictUnownedFieldsToFormlessCheckout Whether extraction
  *     should exclude fields outside checkout fields.
  * @return {AutofillFormData|null} A form containing the unowned fields, or null
  *     if no such fields were found.
  */
-function extractUnownedFields(
-    extractMask, restrictUnownedFieldsToFormlessCheckout) {
+function extractUnownedFields(restrictUnownedFieldsToFormlessCheckout) {
   const fieldsets = [];
   const unownedControlElements =
       __gCrWeb.fill.getUnownedAutofillableFormFieldElements(
           document.all, fieldsets);
   const numEditableUnownedElements =
       countEditableElements_(unownedControlElements);
-  if (numEditableUnownedElements > 0) {
+  const iframeElements =
+      gCrWeb.autofill_form_features.isAutofillAcrossIframesEnabled() ?
+      getUnownedIframes() :
+      [];
+  if (numEditableUnownedElements > 0 || iframeElements.length > 0) {
     const unownedForm = new __gCrWeb['common'].JSONSafeObject();
     const hasUnownedForm =
         __gCrWeb.fill.unownedFormElementsAndFieldSetsToFormData(
-            window, fieldsets, unownedControlElements, extractMask,
+            window, fieldsets, unownedControlElements, iframeElements,
             restrictUnownedFieldsToFormlessCheckout, unownedForm);
     if (hasUnownedForm) {
       return unownedForm;
@@ -294,16 +311,13 @@ __gCrWeb.autofill['fillForm'] = function(data, forceFillFieldID) {
   const reportFormFill = function(_form, _delay) {
     window.setTimeout(() => {
       let formData = new __gCrWeb['common'].JSONSafeObject();
-      const extractMask = fill_constants.EXTRACT_MASK_VALUE |
-          fill_constants.EXTRACT_MASK_OPTIONS;
       if (_form) {
         if (!__gCrWeb.fill.webFormElementToFormData(
-                window, _form, null, extractMask, formData, null /* field */)) {
+                window, _form, null, formData, /*field=*/ null)) {
           formData = null;
         }
       } else {
         formData = extractUnownedFields(
-            extractMask,
             /*restrictUnownedFieldsToFormlessCheckout=*/ false);
       }
       if (formData) {
@@ -446,8 +460,6 @@ __gCrWeb.autofill.extractNewForms = function(
   /** @type {HTMLCollection} */
   const webForms = document.forms;
 
-  const extractMask =
-      fill_constants.EXTRACT_MASK_VALUE | fill_constants.EXTRACT_MASK_OPTIONS;
   let numFieldsSeen = 0;
   for (let formIndex = 0; formIndex < webForms.length; ++formIndex) {
     /** @type {HTMLFormElement} */
@@ -455,14 +467,18 @@ __gCrWeb.autofill.extractNewForms = function(
     const controlElements =
         __gCrWeb.autofill.extractAutofillableElementsInForm(formElement);
     const numEditableElements = countEditableElements_(controlElements);
+    const hasChildFrames =
+        gCrWeb.autofill_form_features.isAutofillAcrossIframesEnabled() ?
+        formElement.getElementsByTagName('iframe').length > 0 :
+        false;
 
-    if (numEditableElements === 0) {
+    if (numEditableElements === 0 && !hasChildFrames) {
       continue;
     }
 
     const form = new __gCrWeb['common'].JSONSafeObject();
     if (!__gCrWeb.fill.webFormElementToFormData(
-            window, formElement, null, extractMask, form, null /* field */)) {
+            window, formElement, null, form, /*field=*/ null)) {
       continue;
     }
 
@@ -477,8 +493,8 @@ __gCrWeb.autofill.extractNewForms = function(
   }
 
   // Look for more extractable fields outside of forms.
-  const unownedForm = extractUnownedFields(
-      extractMask, restrictUnownedFieldsToFormlessCheckout);
+  const unownedForm =
+      extractUnownedFields(restrictUnownedFieldsToFormlessCheckout);
 
   if (unownedForm) {
     numFieldsSeen += unownedForm['fields'].length;

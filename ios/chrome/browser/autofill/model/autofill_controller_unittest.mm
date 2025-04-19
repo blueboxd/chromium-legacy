@@ -15,6 +15,7 @@
 #import "base/test/ios/wait_util.h"
 #import "base/test/metrics/histogram_tester.h"
 #import "base/test/scoped_feature_list.h"
+#import "base/types/id_type.h"
 #import "base/uuid.h"
 #import "components/autofill/core/browser/address_data_manager.h"
 #import "components/autofill/core/browser/address_data_manager_test_api.h"
@@ -30,7 +31,9 @@
 #import "components/autofill/core/common/autofill_clock.h"
 #import "components/autofill/core/common/autofill_features.h"
 #import "components/autofill/core/common/field_data_manager.h"
+#import "components/autofill/core/common/form_data.h"
 #import "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
+#import "components/autofill/core/common/unique_ids.h"
 #import "components/autofill/ios/browser/autofill_agent.h"
 #import "components/autofill/ios/browser/autofill_driver_ios.h"
 #import "components/autofill/ios/browser/autofill_driver_ios_factory.h"
@@ -46,12 +49,13 @@
 #import "components/password_manager/core/browser/password_store/mock_password_store_interface.h"
 #import "ios/chrome/browser/autofill/model/form_suggestion_controller.h"
 #import "ios/chrome/browser/autofill/model/personal_data_manager_factory.h"
+#import "ios/chrome/browser/autofill/ui_bundled/chrome_autofill_client_ios.h"
+#import "ios/chrome/browser/autofill/ui_bundled/form_input_accessory/form_input_accessory_mediator.h"
 #import "ios/chrome/browser/infobars/model/infobar_manager_impl.h"
 #import "ios/chrome/browser/passwords/model/ios_chrome_profile_password_store_factory.h"
 #import "ios/chrome/browser/passwords/model/password_controller.h"
+#import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
-#import "ios/chrome/browser/ui/autofill/chrome_autofill_client_ios.h"
-#import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_mediator.h"
 #import "ios/chrome/browser/web/model/chrome_web_client.h"
 #import "ios/chrome/browser/webdata_services/model/web_data_service_factory.h"
 #import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
@@ -168,9 +172,13 @@ NSString* const kProfileFormlessHtml =
      "<input type='submit' id='submit' value='Submit'>"
      "</div>";
 
+using ::testing::AllOf;
 using ::testing::AssertionFailure;
 using ::testing::AssertionResult;
 using ::testing::AssertionSuccess;
+using ::testing::ElementsAre;
+using ::testing::IsTrue;
+using ::testing::Property;
 
 // FAIL if a field with the supplied `name` and `fieldType` is not present on
 // the `form`.
@@ -208,6 +216,17 @@ void ForceViewRendering(UIView* view) {
   UIGraphicsEndImageContext();
 }
 
+// Returns a matcher to verify a child frame in the FormData.
+auto ChildFrameMatcher(int expected_predecessor) {
+  const auto valid_token_matcher = ::testing::Field(
+      &FrameTokenWithPredecessor::token,
+      ::testing::VariantWith<RemoteFrameToken>(::testing::IsTrue()));
+  const auto predecessor_matcher =
+      ::testing::Field(&FrameTokenWithPredecessor::predecessor,
+                       testing::Eq(expected_predecessor));
+  return AllOf(valid_token_matcher, predecessor_matcher);
+}
+
 // WebDataServiceConsumer for receiving vectors of strings and making them
 // available to tests.
 class TestConsumer : public WebDataServiceConsumer {
@@ -238,7 +257,7 @@ class AutofillControllerTest : public PlatformTest {
     // default.
     builder.AddTestingFactory(ios::WebDataServiceFactory::GetInstance(),
                               ios::WebDataServiceFactory::GetDefaultFactory());
-    browser_state_ = builder.Build();
+    browser_state_ = std::move(builder).Build();
 
     web::WebState::CreateParams params(browser_state_.get());
     web_state_ = web::WebState::Create(params);
@@ -290,7 +309,8 @@ class AutofillControllerTest : public PlatformTest {
   // This processing must find `expected_size` forms.
   [[nodiscard]] bool LoadHtmlAndWaitForFormFetched(
       NSString* html,
-      size_t expected_number_of_forms);
+      size_t expected_number_of_forms,
+      size_t expected_number_of_calls = 1);
 
   void LoadHtmlAndInitRendererIds(NSString* html);
 
@@ -307,12 +327,26 @@ class AutofillControllerTest : public PlatformTest {
   // dispatching a TextEvent with value 'field_value'.
   void SimulateTextInputEvent(NSString* field_id, NSString* field_value);
 
+  // Returns the AutofillManager for the main frame.
+  BrowserAutofillManager* autofill_manager_for_main_frame() {
+    web::WebFramesManager* frames_manager =
+        AutofillJavaScriptFeature::GetInstance()->GetWebFramesManager(
+            web_state());
+    web::WebFrame* main_frame = frames_manager->GetMainWebFrame();
+    return &AutofillDriverIOS::FromWebStateAndWebFrame(web_state(), main_frame)
+                ->GetAutofillManager();
+  }
+
+  PrefService* local_state() {
+    return GetApplicationContext()->GetLocalState();
+  }
+
  protected:
   web::WebState* web_state() { return web_state_.get(); }
 
   web::ScopedTestingWebClient web_client_;
   web::WebTaskEnvironment task_environment_;
-  IOSChromeScopedTestingLocalState local_state_;
+  IOSChromeScopedTestingLocalState scoped_testing_local_state_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   std::unique_ptr<web::WebState> web_state_;
   bool processed_a_task_ = false;
@@ -360,7 +394,7 @@ void AutofillControllerTest::SetUp() {
   autofill_client_->GetPersonalDataManager()
       ->address_data_manager()
       .get_alternative_state_name_map_updater_for_testing()
-      ->set_local_state_for_testing(local_state_.Get());
+      ->set_local_state_for_testing(local_state());
 
   std::string locale("en");
   autofill::AutofillDriverIOSFactory::CreateForWebState(
@@ -416,11 +450,12 @@ void AutofillControllerTest::WaitForSuggestionRetrieval(BOOL wait_for_trigger) {
 
 bool AutofillControllerTest::LoadHtmlAndWaitForFormFetched(
     NSString* html,
-    size_t expected_number_of_forms) {
+    size_t expected_number_of_forms,
+    size_t expected_number_of_calls) {
   web::test::LoadHtml(html, web_state());
   TestAutofillManager* autofill_manager =
       autofill_manager_injector_->GetForMainFrame();
-  return autofill_manager->waiter().Wait(1) &&
+  return autofill_manager->waiter().Wait(expected_number_of_calls) &&
          autofill_manager->form_structures().size() == expected_number_of_forms;
 }
 
@@ -471,6 +506,83 @@ TEST_F(AutofillControllerTest, ReadForm) {
   ExpectMetric("Autofill.IsEnabled.PageLoad", 1);
 }
 
+// Checks that when autofill across iframes is enabled the child frames are
+// carried over for their parent form.
+TEST_F(AutofillControllerTest, ReadForm_WithChildFrames) {
+  ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kAutofillAcrossIframesIos);
+
+  // A form with iframes and inputs where some of the iframes have predecessors.
+  NSString* const test_page =
+      @"<form id='form1'>"
+       "<iframe></iframe>"
+       "Name <input id='name' type='text' name='name' />"
+       "<iframe></iframe>"
+       "<iframe></iframe>"
+       "Address <input type='text' name='address'>"
+       "City <input type='text' name='city'>"
+       "<iframe></iframe>"
+       "State <input type='text' name='state'>"
+       "</form>";
+
+  ASSERT_TRUE(LoadHtmlAndWaitForFormFetched(test_page,
+                                            /*expected_number_of_forms=*/1,
+                                            /*expected_number_of_calls=*/5));
+
+  // Verify that the child frames are present in the form data.
+  std::vector<FormData> form_data;
+  for (const auto& [_, form] :
+       autofill_manager_for_main_frame()->form_structures()) {
+    form_data.push_back(form->ToFormData());
+  }
+  EXPECT_THAT(
+      form_data,
+      ElementsAre(AllOf(
+          Property(&FormData::renderer_id, IsTrue()),
+          Property(&FormData::child_frames,
+                   ElementsAre(ChildFrameMatcher(-1), ChildFrameMatcher(0),
+                               ChildFrameMatcher(0), ChildFrameMatcher(2))))));
+}
+
+// Checks that when autofill across iframes is enabled the child frames are
+// carried over for their synthetic form.
+TEST_F(AutofillControllerTest, ReadForm_WithChildFrames_Synthetic) {
+  ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kAutofillAcrossIframesIos);
+
+  // A syntethic form with iframes and inputs where some of the iframes have
+  // predecessors.
+  NSString* const test_page =
+      @"<html><body><div id='div'>"
+       "<iframe></iframe>"
+       "Name <input id='name' type='text' name='name' />"
+       "<iframe></iframe>"
+       "<iframe></iframe>"
+       "Address <input type='text' name='address'>"
+       "City <input type='text' name='city'>"
+       "<iframe></iframe>"
+       "State <input type='text' name='state'>"
+       "</div></html></body>";
+
+  ASSERT_TRUE(LoadHtmlAndWaitForFormFetched(test_page,
+                                            /*expected_number_of_forms=*/1,
+                                            /*expected_number_of_calls=*/3));
+
+  // Verify that the child frames are present in the form data.
+  std::vector<FormData> form_data;
+  for (const auto& [_, form] :
+       autofill_manager_for_main_frame()->form_structures()) {
+    form_data.push_back(form->ToFormData());
+  }
+  EXPECT_THAT(
+      form_data,
+      ElementsAre(AllOf(
+          Property(&FormData::renderer_id, ::testing::IsFalse()),
+          Property(&FormData::child_frames,
+                   ElementsAre(ChildFrameMatcher(-1), ChildFrameMatcher(0),
+                               ChildFrameMatcher(0), ChildFrameMatcher(2))))));
+}
+
 // Checks that viewing an HTML page containing a form with an 'id' results in
 // the form being registered as a FormStructure by the BrowserAutofillManager,
 // and the name is correctly set.
@@ -517,17 +629,15 @@ TEST_F(AutofillControllerTest, ProfileImport) {
   });
   const std::vector<const AutofillProfile*>& profiles =
       personal_data_manager->address_data_manager().GetProfiles();
-  if (profiles.size() != 1)
+  if (profiles.size() != 1) {
     FAIL() << "Not exactly one profile found after attempted import";
+  }
   const AutofillProfile& profile = *profiles[0];
-  EXPECT_EQ(u"Homer Simpson",
-            profile.GetInfo(AutofillType(NAME_FULL), "en-US"));
-  EXPECT_EQ(u"123 Main Street",
-            profile.GetInfo(AutofillType(ADDRESS_HOME_LINE1), "en-US"));
-  EXPECT_EQ(u"Springfield",
-            profile.GetInfo(AutofillType(ADDRESS_HOME_CITY), "en-US"));
-  EXPECT_EQ(u"IL", profile.GetInfo(AutofillType(ADDRESS_HOME_STATE), "en-US"));
-  EXPECT_EQ(u"55123", profile.GetInfo(AutofillType(ADDRESS_HOME_ZIP), "en-US"));
+  EXPECT_EQ(u"Homer Simpson", profile.GetInfo(NAME_FULL, "en-US"));
+  EXPECT_EQ(u"123 Main Street", profile.GetInfo(ADDRESS_HOME_LINE1, "en-US"));
+  EXPECT_EQ(u"Springfield", profile.GetInfo(ADDRESS_HOME_CITY, "en-US"));
+  EXPECT_EQ(u"IL", profile.GetInfo(ADDRESS_HOME_STATE, "en-US"));
+  EXPECT_EQ(u"55123", profile.GetInfo(ADDRESS_HOME_ZIP, "en-US"));
 }
 
 void AutofillControllerTest::SetUpForSuggestions(
@@ -850,14 +960,12 @@ TEST_F(AutofillControllerTest, CreditCardImport) {
       personal_data_manager->payments_data_manager().GetCreditCards();
   ASSERT_EQ(1U, credit_cards.size());
   const CreditCard& credit_card = *credit_cards[0];
-  EXPECT_EQ(u"Superman",
-            credit_card.GetInfo(AutofillType(CREDIT_CARD_NAME_FULL), "en-US"));
+  EXPECT_EQ(u"Superman", credit_card.GetInfo(CREDIT_CARD_NAME_FULL, "en-US"));
   EXPECT_EQ(u"4000444444444444",
-            credit_card.GetInfo(AutofillType(CREDIT_CARD_NUMBER), "en-US"));
-  EXPECT_EQ(u"11",
-            credit_card.GetInfo(AutofillType(CREDIT_CARD_EXP_MONTH), "en-US"));
-  EXPECT_EQ(u"2999", credit_card.GetInfo(
-                         AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR), "en-US"));
+            credit_card.GetInfo(CREDIT_CARD_NUMBER, "en-US"));
+  EXPECT_EQ(u"11", credit_card.GetInfo(CREDIT_CARD_EXP_MONTH, "en-US"));
+  EXPECT_EQ(u"2999",
+            credit_card.GetInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, "en-US"));
 
   histogram_tester_->ExpectUniqueSample(
       /*name=*/kAutofillSubmissionDetectionSourceHistogram,
@@ -921,14 +1029,12 @@ TEST_F(AutofillControllerTest, CreditCardImportAfterFormRemoval) {
       personal_data_manager->payments_data_manager().GetCreditCards();
   ASSERT_EQ(1U, credit_cards.size());
   const CreditCard& credit_card = *credit_cards[0];
-  EXPECT_EQ(u"Superman",
-            credit_card.GetInfo(AutofillType(CREDIT_CARD_NAME_FULL), "en-US"));
+  EXPECT_EQ(u"Superman", credit_card.GetInfo(CREDIT_CARD_NAME_FULL, "en-US"));
   EXPECT_EQ(u"4000444444444444",
-            credit_card.GetInfo(AutofillType(CREDIT_CARD_NUMBER), "en-US"));
-  EXPECT_EQ(u"11",
-            credit_card.GetInfo(AutofillType(CREDIT_CARD_EXP_MONTH), "en-US"));
-  EXPECT_EQ(u"2999", credit_card.GetInfo(
-                         AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR), "en-US"));
+            credit_card.GetInfo(CREDIT_CARD_NUMBER, "en-US"));
+  EXPECT_EQ(u"11", credit_card.GetInfo(CREDIT_CARD_EXP_MONTH, "en-US"));
+  EXPECT_EQ(u"2999",
+            credit_card.GetInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, "en-US"));
 
   histogram_tester_->ExpectUniqueSample(
       /*name=*/kAutofillSubmissionDetectionSourceHistogram,
@@ -1020,14 +1126,12 @@ TEST_F(AutofillControllerTest,
   ASSERT_EQ(1U, credit_cards.size());
   const CreditCard& credit_card = *credit_cards[0];
 
-  EXPECT_EQ(u"Chuck",
-            credit_card.GetInfo(AutofillType(CREDIT_CARD_NAME_FULL), "en-US"));
+  EXPECT_EQ(u"Chuck", credit_card.GetInfo(CREDIT_CARD_NAME_FULL, "en-US"));
   EXPECT_EQ(u"5425233430109903",
-            credit_card.GetInfo(AutofillType(CREDIT_CARD_NUMBER), "en-US"));
-  EXPECT_EQ(u"12",
-            credit_card.GetInfo(AutofillType(CREDIT_CARD_EXP_MONTH), "en-US"));
-  EXPECT_EQ(u"2998", credit_card.GetInfo(
-                         AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR), "en-US"));
+            credit_card.GetInfo(CREDIT_CARD_NUMBER, "en-US"));
+  EXPECT_EQ(u"12", credit_card.GetInfo(CREDIT_CARD_EXP_MONTH, "en-US"));
+  EXPECT_EQ(u"2998",
+            credit_card.GetInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, "en-US"));
 }
 
 // Checks that an HTML page containing a profile-type formless form which is
@@ -1072,14 +1176,11 @@ TEST_F(AutofillControllerTest, ProfileImportAfterFormlessFormRemoval) {
     FAIL() << "Not exactly one profile found after attempted import";
   }
   const AutofillProfile& profile = *profiles[0];
-  EXPECT_EQ(u"Homer Simpson",
-            profile.GetInfo(AutofillType(NAME_FULL), "en-US"));
-  EXPECT_EQ(u"123 Main Street",
-            profile.GetInfo(AutofillType(ADDRESS_HOME_LINE1), "en-US"));
-  EXPECT_EQ(u"Springfield",
-            profile.GetInfo(AutofillType(ADDRESS_HOME_CITY), "en-US"));
-  EXPECT_EQ(u"IL", profile.GetInfo(AutofillType(ADDRESS_HOME_STATE), "en-US"));
-  EXPECT_EQ(u"55123", profile.GetInfo(AutofillType(ADDRESS_HOME_ZIP), "en-US"));
+  EXPECT_EQ(u"Homer Simpson", profile.GetInfo(NAME_FULL, "en-US"));
+  EXPECT_EQ(u"123 Main Street", profile.GetInfo(ADDRESS_HOME_LINE1, "en-US"));
+  EXPECT_EQ(u"Springfield", profile.GetInfo(ADDRESS_HOME_CITY, "en-US"));
+  EXPECT_EQ(u"IL", profile.GetInfo(ADDRESS_HOME_STATE, "en-US"));
+  EXPECT_EQ(u"55123", profile.GetInfo(ADDRESS_HOME_ZIP, "en-US"));
 
   histogram_tester_->ExpectUniqueSample(
       /*name=*/kAutofillSubmissionDetectionSourceHistogram,

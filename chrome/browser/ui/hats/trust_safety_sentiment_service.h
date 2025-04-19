@@ -26,6 +26,7 @@ using PasswordProtectionUIType = safe_browsing::WarningUIType;
 using PasswordProtectionUIAction = safe_browsing::WarningAction;
 
 const base::TimeDelta kPasswordChangeInactivity = base::Minutes(30);
+const base::TimeDelta kSafetyHubSurveyDelay = base::Minutes(10);
 
 // Service which receives events from Trust & Safety features and determines
 // whether or not to launch a HaTS survey on the NTP for the user.
@@ -132,7 +133,9 @@ class TrustSafetySentimentService
     kSafeBrowsingInterstitial = 19,
     kDownloadWarningUI = 20,
     kPasswordProtectionUI = 21,
-    kMaxValue = kPasswordProtectionUI,
+    kSafetyHubNotification = 22,
+    kSafetyHubInteracted = 23,
+    kMaxValue = kSafetyHubInteracted,
   };
 
   // Called when the user interacts with Privacy Sandbox 4, `feature_area`
@@ -166,15 +169,6 @@ class TrustSafetySentimentService
   // warning.
   virtual void PhishedPasswordUpdateFinished();
 
-  // Called when the user interacts with a module of Safety Hub.
-  virtual void SafetyHubModuleInteracted();
-
-  // Called when the user clicks a menu notification from Safety Hub.
-  virtual void SafetyHubNotificationClicked();
-
-  // Called when the user visits the Safety Hub page.
-  virtual void SafetyHubVisited();
-
   // Checks that this feature area is valid for the current version.
   static bool VersionCheck(FeatureArea feature_area);
 
@@ -184,6 +178,12 @@ class TrustSafetySentimentService
   // Performs a FeatureArea and Version-specific dice roll.
   // Returns true if succeeds, else false.
   static bool ProbabilityCheck(FeatureArea feature_area);
+
+  // Triggers a survey for Safety Hub for the given feature area (visiting SH or
+  // seeing a notification).
+  virtual void TriggerSafetyHubSurvey(
+      TrustSafetySentimentService::FeatureArea feature_area,
+      std::map<std::string, bool> product_specific_data);
 
  private:
   friend class TrustSafetySentimentServiceTest;
@@ -271,14 +271,6 @@ class TrustSafetySentimentService
     bool finished_action = false;
   };
 
-  // Struct that represents the Safety Hub state, and more specifically the
-  // user's interactions with it.
-  struct SafetyHubInteractionState {
-    bool has_visited = false;
-    bool has_interacted_with_module = false;
-    bool has_clicked_notification = false;
-  };
-
   void SettingsWatcherComplete();
 
   // Record that a trigger occurred, placing it in the set of pending triggers.
@@ -302,16 +294,11 @@ class TrustSafetySentimentService
   void MaybeTriggerPasswordProtectionSurvey(PasswordProtectionUIType ui_type,
                                             PasswordProtectionUIAction action);
 
-  // Returns the product specific data related to surveys triggered for Safety
-  // Hub.
-  std::map<std::string, bool> GetSafetyHubProductSpecificData();
-
   const raw_ptr<Profile> profile_;
   std::map<FeatureArea, PendingTrigger> pending_triggers_;
   std::unique_ptr<SettingsWatcher> settings_watcher_;
   std::unique_ptr<PageInfoState> page_info_state_;
   std::unique_ptr<PhishedPasswordChangeState> phished_password_change_state_;
-  std::unique_ptr<SafetyHubInteractionState> safety_hub_interaction_state_;
   base::ScopedMultiSourceObservation<Profile, ProfileObserver>
       observed_profiles_{this};
   bool performed_control_group_dice_roll_;

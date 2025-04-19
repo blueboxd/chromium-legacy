@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "services/network/p2p/socket_udp.h"
 
 #include <tuple>
@@ -553,6 +558,9 @@ void P2PSocketUdp::SetOption(P2PSocketOption option, int32_t value) {
     case P2P_SOCKET_OPT_DSCP:
       SetSocketDiffServCodePointInternal(
           static_cast<net::DiffServCodePoint>(value));
+      break;
+    case P2P_SOCKET_OPT_RECV_ECN:
+      socket_->SetRecvTos();
       break;
     default:
       NOTREACHED_IN_MIGRATION();

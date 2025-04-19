@@ -2,12 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ash/webui/print_preview_cros/print_preview_cros_ui.h"
+
+#include <memory>
+#include <utility>
 
 #include "ash/constants/ash_features.h"
 #include "ash/webui/common/trusted_types_util.h"
 #include "ash/webui/grit/ash_print_preview_cros_app_resources.h"
 #include "ash/webui/grit/ash_print_preview_cros_app_resources_map.h"
+#include "ash/webui/print_preview_cros/backend/destination_provider.h"
+#include "ash/webui/print_preview_cros/mojom/destination_provider.mojom.h"
 #include "ash/webui/print_preview_cros/url_constants.h"
 #include "base/containers/span.h"
 #include "content/public/browser/web_contents.h"
@@ -72,6 +82,12 @@ void PrintPreviewCrosUI::BindInterface(
     mojo::PendingReceiver<color_change_listener::mojom::PageHandler> receiver) {
   color_provider_handler_ = std::make_unique<ui::ColorChangeHandler>(
       web_ui()->GetWebContents(), std::move(receiver));
+}
+
+void PrintPreviewCrosUI::BindInterface(
+    mojo::PendingReceiver<mojom::DestinationProvider> receiver) {
+  destination_provider_ = std::make_unique<DestinationProvider>();
+  destination_provider_->BindInterface(std::move(receiver));
 }
 
 WEB_UI_CONTROLLER_TYPE_IMPL(PrintPreviewCrosUI)

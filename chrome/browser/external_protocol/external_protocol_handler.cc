@@ -9,6 +9,8 @@
 #include <utility>
 
 #include "base/check_op.h"
+#include "base/containers/fixed_flat_map.h"
+#include "base/containers/fixed_flat_set.h"
 #include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -62,7 +64,7 @@ bool g_accept_requests = true;
 ExternalProtocolHandler::Delegate* g_external_protocol_handler_delegate =
     nullptr;
 
-constexpr const char* kDeniedSchemes[] = {
+constexpr auto kDeniedSchemes = base::MakeFixedFlatSet<std::string_view>({
     "afp",
     "data",
     "disk",
@@ -86,7 +88,7 @@ constexpr const char* kDeniedSchemes[] = {
     // want to shellexecute it.
     "view-source",
     "vnd.ms.radio",
-};
+});
 
 void AddMessageToConsole(const content::WeakDocumentPtr& document,
                          blink::mojom::ConsoleMessageLevel level,
@@ -317,6 +319,36 @@ bool IsSchemeOriginPairAllowedByPolicy(const std::string& scheme,
   return !matching_set.empty();
 }
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+// LINT.IfChange(LoggedScheme)
+enum class LoggedScheme {
+  OTHER = 0,
+  SEARCH_MS = 1,
+  SEARCH = 2,
+  MAILTO = 3,
+  MICROSOFT_EDGE = 4,
+  kMaxValue = MICROSOFT_EDGE,
+};
+// LINT.ThenChange(/tools/metrics/histograms/metadata/permissions/enums.xml:ExternalProtocolScheme)
+
+void LogRequestForScheme(const std::string& scheme) {
+  constexpr auto kSchemeToBucket =
+      base::MakeFixedFlatMap<std::string_view, LoggedScheme>(
+          {{"search-ms", LoggedScheme::SEARCH_MS},
+           {"search", LoggedScheme::SEARCH},
+           {"mailto", LoggedScheme::MAILTO},
+           {"microsoft-edge", LoggedScheme::MICROSOFT_EDGE}});
+  static_assert(kSchemeToBucket.size() ==
+                static_cast<size_t>(LoggedScheme::kMaxValue));
+  auto iterator = kSchemeToBucket.find(scheme);
+  LoggedScheme scheme_bucket = iterator != kSchemeToBucket.end()
+                                   ? iterator->second
+                                   : LoggedScheme::OTHER;
+  base::UmaHistogramEnumeration("BrowserDialogs.ExternalProtocol.Scheme",
+                                scheme_bucket);
+}
+
 }  // namespace
 
 const char ExternalProtocolHandler::kBlockStateMetric[] =
@@ -342,6 +374,8 @@ ExternalProtocolHandler::BlockState ExternalProtocolHandler::GetBlockState(
     Profile* profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  LogRequestForScheme(scheme);
+
   // If we are being flooded with requests, block the request.
   if (!g_accept_requests)
     return BLOCK;
@@ -354,12 +388,10 @@ ExternalProtocolHandler::BlockState ExternalProtocolHandler::GetBlockState(
   }
 
   // Always block the hard-coded denied schemes.
-  for (const auto* candidate : kDeniedSchemes) {
-    if (candidate == scheme) {
-      base::UmaHistogramEnumeration(kBlockStateMetric,
-                                    BlockStateMetric::kDeniedDefault);
-      return BLOCK;
-    }
+  if (kDeniedSchemes.contains(scheme)) {
+    base::UmaHistogramEnumeration(kBlockStateMetric,
+                                  BlockStateMetric::kDeniedDefault);
+    return BLOCK;
   }
 
   // The mailto scheme is allowed explicitly because of its ubiquity on the web

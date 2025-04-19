@@ -16,6 +16,7 @@
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
+#include "ui/base/accelerators/ash/right_alt_event_property.h"
 #include "ui/base/ime/ash/input_method_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_features.h"
@@ -127,9 +128,9 @@ const base::flat_map<ui::KeyboardCode, std::u16string>& GetKeyDisplayMap() {
           {ui::KeyboardCode::VKEY_MULTIPLY, u"numpad *"},
           {ui::KeyboardCode::VKEY_SUBTRACT, u"numpad -"},
           {ui::KeyboardCode::VKEY_CAPITAL, u"caps lock"},
+          {ui::KeyboardCode::VKEY_ACCESSIBILITY, u"Accessibility"},
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-          {ui::KeyboardCode::VKEY_RIGHT_ALT,
-           l10n_util::GetStringUTF16(IDS_KEYBOARD_RIGHT_ALT_LABEL)},
+          {ui::KeyboardCode::VKEY_RIGHT_ALT, u"RightAlt"},
 #else
           {ui::KeyboardCode::VKEY_RIGHT_ALT, u"right alt"},
 #endif
@@ -405,6 +406,10 @@ AcceleratorKeyInputType GetKeyInputTypeFromKeyEvent(
     return AcceleratorKeyInputType::kNumberPad;
   }
 
+  if (HasRightAltProperty(key_event)) {
+    return AcceleratorKeyInputType::kRightAlt;
+  }
+
   switch (key_event.code()) {
     case ui::DomCode::META_LEFT:
       return AcceleratorKeyInputType::kMetaLeft;
@@ -425,6 +430,8 @@ AcceleratorKeyInputType GetKeyInputTypeFromKeyEvent(
       return AcceleratorKeyInputType::kShiftLeft;
     case ui::DomCode::SHIFT_RIGHT:
       return AcceleratorKeyInputType::kShiftRight;
+    case ui::DomCode::FN:
+      return AcceleratorKeyInputType::kFunction;
     default:
       break;
   }
@@ -450,6 +457,8 @@ AcceleratorKeyInputType GetKeyInputTypeFromKeyEvent(
       return AcceleratorKeyInputType::kRightArrow;
     case ui::VKEY_LEFT:
       return AcceleratorKeyInputType::kLeftArrow;
+    case ui::VKEY_ASSISTANT:
+      return AcceleratorKeyInputType::kAssistant;
     default:
       break;
   }

@@ -4,12 +4,15 @@
 
 #include "components/attribution_reporting/aggregatable_trigger_data.h"
 
+#include <stddef.h>
+
+#include <limits>
 #include <optional>
 #include <string>
 #include <utility>
 
 #include "base/check.h"
-#include "base/not_fatal_until.h"
+#include "base/containers/flat_set.h"
 #include "base/ranges/algorithm.h"
 #include "base/types/expected.h"
 #include "base/types/expected_macros.h"
@@ -40,7 +43,7 @@ base::expected<absl::uint128, TriggerRegistrationError> ParseKeyPiece(
         TriggerRegistrationError::kAggregatableTriggerDataKeyPieceMissing);
   }
 
-  return ParseAggregationKeyPiece(*v).transform_error([](ParseError error) {
+  return ParseAggregationKeyPiece(*v).transform_error([](ParseError) {
     return TriggerRegistrationError::kAggregatableTriggerDataKeyPieceInvalid;
   });
 }
@@ -57,20 +60,13 @@ ParseSourceKeys(base::Value::Dict& registration) {
         TriggerRegistrationError::kAggregatableTriggerDataSourceKeysInvalid);
   }
 
-  AggregatableTriggerData::Keys source_keys;
-  source_keys.reserve(l->size());
-
-  for (auto& maybe_string_value : *l) {
-    std::string* s = maybe_string_value.GetIfString();
-    if (!s || !AggregationKeyIdHasValidLength(*s)) {
-      return base::unexpected(
-          TriggerRegistrationError::kAggregatableTriggerDataSourceKeysInvalid);
-    }
-
-    source_keys.emplace_back(std::move(*s));
-  }
-
-  return source_keys;
+  return ExtractStringSet(std::move(*l),
+                          /*max_string_size=*/kMaxBytesPerAggregationKeyId,
+                          /*max_set_size=*/std::numeric_limits<size_t>::max())
+      .transform_error([](StringSetError) {
+        return TriggerRegistrationError::
+            kAggregatableTriggerDataSourceKeysInvalid;
+      });
 }
 
 void SerializeSourceKeysIfNotEmpty(base::Value::Dict& dict,
@@ -78,7 +74,7 @@ void SerializeSourceKeysIfNotEmpty(base::Value::Dict& dict,
   if (keys.empty())
     return;
 
-  base::Value::List list;
+  auto list = base::Value::List::with_capacity(keys.size());
   for (const std::string& key : keys) {
     list.Append(key);
   }
@@ -123,7 +119,7 @@ AggregatableTriggerData::AggregatableTriggerData(absl::uint128 key_piece,
     : key_piece_(key_piece),
       source_keys_(std::move(source_keys)),
       filters_(std::move(filters)) {
-  CHECK(AreSourceKeysValid(source_keys_), base::NotFatalUntil::M128);
+  CHECK(AreSourceKeysValid(source_keys_));
 }
 
 AggregatableTriggerData::~AggregatableTriggerData() = default;

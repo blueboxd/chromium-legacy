@@ -25,6 +25,7 @@ GPU_EXPORT BASE_DECLARE_FEATURE(kUseGles2ForOopR);
 // alongside the definition of their values in the .cc file.
 #if BUILDFLAG(IS_ANDROID)
 GPU_EXPORT BASE_DECLARE_FEATURE(kAndroidSurfaceControl);
+GPU_EXPORT BASE_DECLARE_FEATURE(kEnableGpuMemoryBufferImplAHB);
 GPU_EXPORT BASE_DECLARE_FEATURE(kWebViewSurfaceControl);
 GPU_EXPORT BASE_DECLARE_FEATURE(kWebViewSurfaceControlForTV);
 GPU_EXPORT BASE_DECLARE_FEATURE(kAImageReader);
@@ -39,17 +40,11 @@ GPU_EXPORT BASE_DECLARE_FEATURE(kDefaultEnableGpuRasterization);
 GPU_EXPORT BASE_DECLARE_FEATURE(kCanvasOopRasterization);
 #endif
 
-GPU_EXPORT BASE_DECLARE_FEATURE(kCanvasOopWithoutGpuTileRaster);
-
 GPU_EXPORT BASE_DECLARE_FEATURE(kEnableMSAAOnNewIntelGPUs);
 
-GPU_EXPORT BASE_DECLARE_FEATURE(kDefaultEnableANGLEValidation);
-
-GPU_EXPORT BASE_DECLARE_FEATURE(kCanvasContextLostInBackground);
+GPU_EXPORT BASE_DECLARE_FEATURE(kDawnSIRepsUseClientProvidedInternalUsages);
 
 #if BUILDFLAG(IS_WIN)
-GPU_EXPORT BASE_DECLARE_FEATURE(kGpuProcessHighPriorityWin);
-
 GPU_EXPORT BASE_DECLARE_FEATURE(kDisableVideoOverlayIfMoving);
 
 GPU_EXPORT BASE_DECLARE_FEATURE(kNoUndamagedOverlayPromotion);
@@ -60,7 +55,7 @@ GPU_EXPORT BASE_DECLARE_FEATURE(kNoUndamagedOverlayPromotion);
 GPU_EXPORT BASE_DECLARE_FEATURE(kAdjustGpuProcessPriority);
 #endif
 
-GPU_EXPORT BASE_DECLARE_FEATURE(kGenGpuDiskCacheKeyPrefixInGpuService);
+GPU_EXPORT BASE_DECLARE_FEATURE(kClearGrShaderDiskCacheOnInvalidPrefix);
 
 GPU_EXPORT BASE_DECLARE_FEATURE(kVaapiJpegImageDecodeAcceleration);
 
@@ -87,11 +82,7 @@ GPU_EXPORT BASE_DECLARE_FEATURE(kNoDiscardableMemoryForGpuDecodePath);
 
 GPU_EXPORT BASE_DECLARE_FEATURE(kEnableDrDc);
 
-GPU_EXPORT BASE_DECLARE_FEATURE(kForceRestartGpuKillSwitch);
-
 GPU_EXPORT BASE_DECLARE_FEATURE(kPruneOldTransferCacheEntries);
-
-GPU_EXPORT BASE_DECLARE_FEATURE(kPurgeOldCacheEntriesOnTimer);
 
 GPU_EXPORT BASE_DECLARE_FEATURE(kUseGpuSchedulerDfs);
 
@@ -110,15 +101,18 @@ GPU_EXPORT extern const base::FeatureParam<std::string> kWGSLUnsafeFeatures;
 
 GPU_EXPORT BASE_DECLARE_FEATURE(kIncreasedCmdBufferParseSlice);
 
-GPU_EXPORT BASE_DECLARE_FEATURE(kGpuCleanupInBackground);
-
 GPU_EXPORT BASE_DECLARE_FEATURE(kDeferredOverlaysRelease);
+
+#if BUILDFLAG(IS_WIN)
+GPU_EXPORT BASE_DECLARE_FEATURE(kD3DBackingUploadWithUpdateSubresource);
+#endif
+
+GPU_EXPORT BASE_DECLARE_FEATURE(kHandleOverlaysSwapFailure);
 
 GPU_EXPORT bool UseGles2ForOopR();
 GPU_EXPORT bool IsUsingVulkan();
 GPU_EXPORT bool IsDrDcEnabled();
 GPU_EXPORT bool NeedThreadSafeAndroidMedia();
-GPU_EXPORT bool IsANGLEValidationEnabled();
 GPU_EXPORT bool IsSkiaGraphiteEnabled(const base::CommandLine* command_line);
 GPU_EXPORT bool EnablePurgeGpuImageDecodeCache();
 GPU_EXPORT bool EnablePruneOldTransferCacheEntries();
@@ -131,6 +125,12 @@ GPU_EXPORT bool LimitAImageReaderMaxSizeToOne();
 GPU_EXPORT bool IncreaseBufferCountForHighFrameRate();
 GPU_EXPORT bool IncreaseBufferCountForWebViewOverlays();
 #endif
+
+// Don't directly check this flag. Instead, please call
+// IsSyncPointGraphValidationEnabled().
+GPU_EXPORT BASE_DECLARE_FEATURE(kSyncPointGraphValidation);
+
+GPU_EXPORT bool IsSyncPointGraphValidationEnabled();
 
 }  // namespace features
 

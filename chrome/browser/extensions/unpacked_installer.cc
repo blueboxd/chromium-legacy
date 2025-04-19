@@ -32,10 +32,12 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/install_flag.h"
+#include "extensions/browser/install_prefs_helper.h"
 #include "extensions/browser/path_util.h"
 #include "extensions/browser/policy_check.h"
 #include "extensions/browser/preload_check_group.h"
 #include "extensions/browser/requirements_checker.h"
+#include "extensions/browser/ruleset_parse_result.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_features.h"
@@ -296,7 +298,7 @@ bool UnpackedInstaller::IndexAndPersistRulesIfNeeded(std::string* error) {
   // TODO(crbug.com/40538050): IndexStaticRulesetsUnsafe will read and parse
   // JSON synchronously. Change this so that we don't need to parse JSON in the
   // browser process.
-  declarative_net_request::InstallIndexHelper::Result result =
+  RulesetParseResult result =
       declarative_net_request::InstallIndexHelper::IndexStaticRulesetsUnsafe(
           *extension(), ruleset_filter, parse_flags);
   if (result.error) {
@@ -393,7 +395,7 @@ void UnpackedInstaller::InstallExtension() {
     prefs->SetIsIncognitoEnabled(extension()->id(), *allow_incognito_access_);
   }
   if (install_param_.has_value()) {
-    prefs->SetInstallParam(extension()->id(), *install_param_);
+    SetInstallParam(prefs, extension()->id(), *install_param_);
   }
 
   PermissionsUpdater perms_updater(service_weak_->profile());
@@ -402,7 +404,7 @@ void UnpackedInstaller::InstallExtension() {
 
   service_weak_->OnExtensionInstalled(extension(), syncer::StringOrdinal(),
                                       kInstallFlagInstallImmediately,
-                                      ruleset_install_prefs_);
+                                      std::move(ruleset_install_prefs_));
 
   // Record metrics here since the registry would contain the extension by now.
   RecordCommandLineDeveloperModeMetrics();

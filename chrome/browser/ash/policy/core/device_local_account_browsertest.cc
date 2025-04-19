@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/ash/policy/core/device_local_account.h"
 
 #include <stddef.h>
@@ -39,6 +44,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/test/gtest_tags.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/test_future.h"
 #include "base/threading/thread_restrictions.h"
@@ -52,6 +58,7 @@
 #include "chrome/browser/ash/login/helper.h"
 #include "chrome/browser/ash/login/screens/base_screen.h"
 #include "chrome/browser/ash/login/session/chrome_session_manager.h"
+#include "chrome/browser/ash/login/session/session_length_limiter.h"
 #include "chrome/browser/ash/login/session/user_session_manager.h"
 #include "chrome/browser/ash/login/session/user_session_manager_test_api.h"
 #include "chrome/browser/ash/login/signin_specifics.h"
@@ -75,7 +82,6 @@
 #include "chrome/browser/ash/policy/external_data/cloud_external_data_manager_base_test_util.h"
 #include "chrome/browser/ash/policy/test_support/embedded_policy_test_server_mixin.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/ash/session_length_limiter.h"
 #include "chrome/browser/ash/system/timezone_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -118,6 +124,7 @@
 #include "chromeos/components/mgs/managed_guest_session_utils.h"
 #include "components/crx_file/crx_verifier.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
+#include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
@@ -1517,8 +1524,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, UserAvatarImage) {
   const base::FilePath saved_image_path =
       user_data_dir.Append(account_id_1_.GetUserEmail()).AddExtension("jpg");
 
-  EXPECT_FALSE(user->HasDefaultImage());
-  EXPECT_EQ(user_manager::User::USER_IMAGE_EXTERNAL, user->image_index());
+  EXPECT_EQ(user_manager::UserImage::Type::kExternal, user->image_index());
   EXPECT_TRUE(ash::test::AreImagesEqual(policy_image, user->GetImage()));
   const base::Value::Dict& images_pref =
       g_browser_process->local_state()->GetDict("user_image_info");
@@ -1529,7 +1535,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, UserAvatarImage) {
   const std::string* image_path = image_properties->FindString("path");
   ASSERT_TRUE(image_index.has_value());
   ASSERT_TRUE(image_path);
-  EXPECT_EQ(user_manager::User::USER_IMAGE_EXTERNAL, image_index.value());
+  EXPECT_EQ(user_manager::UserImage::Type::kExternal, image_index.value());
   EXPECT_EQ(saved_image_path.value(), *image_path);
 
   gfx::ImageSkia saved_image = ash::test::ImageLoader(saved_image_path).Load();
@@ -2137,7 +2143,99 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, PublicSessionWithLocaleSwitch) {
             icu::Locale::getDefault().getLanguage());
 }
 
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, PolicyForExtensions) {
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LoginWarningShown) {
+  UploadAndInstallDeviceLocalAccountPolicy();
+  AddPublicSessionToDevicePolicy(kAccountId1);
+
+  WaitForPolicy();
+
+  ExpandPublicSessionPod(false);
+
+  // Click the link that switches the pod to its advanced form. Verify that the
+  // pod switches from basic to advanced.
+  ash::LoginScreenTestApi::ClickPublicExpandedAdvancedViewButton();
+  ASSERT_TRUE(ash::LoginScreenTestApi::IsExpandedPublicSessionAdvanced());
+  ASSERT_TRUE(ash::LoginScreenTestApi::IsPublicSessionWarningShown());
+}
+
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, SessionLengthLimit) {
+  base::AddFeatureIdTagToTestResult(
+      DeviceLocalAccountTest::kSessionLengthLimitTag);
+  constexpr int kThreeHoursInMs = 3 * 60 * 60 * 1000;
+  constexpr int kTwoHoursInMs = 2 * 60 * 60 * 1000;
+
+  PolicyTestAppTerminationObserver observer;
+
+  // Install and refresh the device policy now. This will also fetch the initial
+  // user policy for the device-local account now.
+  SetSessionLengthLimitPolicy(kThreeHoursInMs);
+
+  ASSERT_NO_FATAL_FAILURE(StartLogin(std::string(), std::string()));
+  WaitForSessionStart();
+
+  // Setup a fake delegate to advance clock.
+  auto delegate_ptr = std::make_unique<FakeDelegateImpl>();
+  auto* delegate = delegate_ptr.get();
+  static_cast<ash::ChromeSessionManager*>(
+      session_manager::SessionManager::Get())
+      ->GetSessionLengthLimiterForTesting()
+      ->SetDelegateForTesting(std::move(delegate_ptr));
+
+  // Ensure the SessionLengthLimit is updated.
+  LocalStateValueWaiter(prefs::kSessionLengthLimit,
+                        base::Value(kThreeHoursInMs))
+      .Wait();
+
+  // The session is not terminated.
+  EXPECT_FALSE(observer.WasAppTerminated());
+  EXPECT_FALSE(delegate->session_stopped());
+
+  // Advance the clock by 3 hours.
+  delegate->AdvanceClock(base::Hours(3));
+
+  // Update the SessionLengthLimit policy to limit the session by two hours.
+  // The session is expected to be terminated asap, because the current time is
+  // later than the max session length.
+  SetSessionLengthLimitPolicy(kTwoHoursInMs);
+
+  // Fetch the policy update.
+  {
+    DeviceLocalAccountPolicyBroker* broker =
+        GetDeviceLocalAccountPolicyBroker(account_id_1_);
+    ASSERT_TRUE(broker);
+    broker->core()->client()->FetchPolicy(PolicyFetchReason::kTest);
+  }
+  // Ensure the SessionLengthLimit is updated.
+  LocalStateValueWaiter(prefs::kSessionLengthLimit, base::Value(kTwoHoursInMs))
+      .Wait();
+
+  // The session is terminated.
+  EXPECT_TRUE(observer.WasAppTerminated());
+  EXPECT_TRUE(delegate->session_stopped());
+}
+
+struct FeaturesTestParam {
+  std::vector<base::test::FeatureRef> enabled_features;
+  std::vector<base::test::FeatureRef> disabled_features;
+};
+class DeviceLocalAccountPolicyFetchSha256Test
+    : public DeviceLocalAccountTest,
+      public ::testing::WithParamInterface<FeaturesTestParam> {
+ public:
+  DeviceLocalAccountPolicyFetchSha256Test() {
+    const FeaturesTestParam& features_test_param = GetParam();
+    scoped_feature_list_.InitWithFeatures(
+        features_test_param.enabled_features,
+        features_test_param.disabled_features);
+  }
+  ~DeviceLocalAccountPolicyFetchSha256Test() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_P(DeviceLocalAccountPolicyFetchSha256Test,
+                       PolicyForExtensions) {
   // Set up a test update server for the Show Managed Storage app.
   ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
   scoped_refptr<TestingUpdateManifestProvider> testing_update_manifest_provider(
@@ -2224,76 +2322,13 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, PolicyForExtensions) {
   EXPECT_EQ(expected_new_value, *new_value);
 }
 
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LoginWarningShown) {
-  UploadAndInstallDeviceLocalAccountPolicy();
-  AddPublicSessionToDevicePolicy(kAccountId1);
-
-  WaitForPolicy();
-
-  ExpandPublicSessionPod(false);
-
-  // Click the link that switches the pod to its advanced form. Verify that the
-  // pod switches from basic to advanced.
-  ash::LoginScreenTestApi::ClickPublicExpandedAdvancedViewButton();
-  ASSERT_TRUE(ash::LoginScreenTestApi::IsExpandedPublicSessionAdvanced());
-  ASSERT_TRUE(ash::LoginScreenTestApi::IsPublicSessionWarningShown());
-}
-
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, SessionLengthLimit) {
-  base::AddFeatureIdTagToTestResult(
-      DeviceLocalAccountTest::kSessionLengthLimitTag);
-  constexpr int kThreeHoursInMs = 3 * 60 * 60 * 1000;
-  constexpr int kTwoHoursInMs = 2 * 60 * 60 * 1000;
-
-  PolicyTestAppTerminationObserver observer;
-
-  // Install and refresh the device policy now. This will also fetch the initial
-  // user policy for the device-local account now.
-  SetSessionLengthLimitPolicy(kThreeHoursInMs);
-
-  ASSERT_NO_FATAL_FAILURE(StartLogin(std::string(), std::string()));
-  WaitForSessionStart();
-
-  // Setup a fake delegate to advance clock.
-  auto delegate_ptr = std::make_unique<FakeDelegateImpl>();
-  auto* delegate = delegate_ptr.get();
-  static_cast<ash::ChromeSessionManager*>(
-      session_manager::SessionManager::Get())
-      ->GetSessionLengthLimiterForTesting()
-      ->SetDelegateForTesting(std::move(delegate_ptr));
-
-  // Ensure the SessionLengthLimit is updated.
-  LocalStateValueWaiter(prefs::kSessionLengthLimit,
-                        base::Value(kThreeHoursInMs))
-      .Wait();
-
-  // The session is not terminated.
-  EXPECT_FALSE(observer.WasAppTerminated());
-  EXPECT_FALSE(delegate->session_stopped());
-
-  // Advance the clock by 3 hours.
-  delegate->AdvanceClock(base::Hours(3));
-
-  // Update the SessionLengthLimit policy to limit the session by two hours.
-  // The session is expected to be terminated asap, because the current time is
-  // later than the max session length.
-  SetSessionLengthLimitPolicy(kTwoHoursInMs);
-
-  // Fetch the policy update.
-  {
-    DeviceLocalAccountPolicyBroker* broker =
-        GetDeviceLocalAccountPolicyBroker(account_id_1_);
-    ASSERT_TRUE(broker);
-    broker->core()->client()->FetchPolicy(PolicyFetchReason::kTest);
-  }
-  // Ensure the SessionLengthLimit is updated.
-  LocalStateValueWaiter(prefs::kSessionLengthLimit, base::Value(kTwoHoursInMs))
-      .Wait();
-
-  // The session is terminated.
-  EXPECT_TRUE(observer.WasAppTerminated());
-  EXPECT_TRUE(delegate->session_stopped());
-}
+INSTANTIATE_TEST_SUITE_P(
+    DeviceLocalAccountPolicyFetchSha256Test,
+    DeviceLocalAccountPolicyFetchSha256Test,
+    ::testing::Values(
+        FeaturesTestParam{.enabled_features = {policy::kPolicyFetchWithSha256}},
+        FeaturesTestParam{
+            .disabled_features = {policy::kPolicyFetchWithSha256}}));
 
 class DeviceLocalAccountWarnings : public DeviceLocalAccountTest {
   void SetUpInProcessBrowserTestFixture() override {

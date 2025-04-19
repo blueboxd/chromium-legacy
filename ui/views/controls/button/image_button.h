@@ -90,7 +90,7 @@ class VIEWS_EXPORT ImageButton : public Button {
   void UpdateButtonBackground(ui::ResourceScaleFactor scale_factor);
 
   // The images used to render the different states of this button.
-  ui::ImageModel images_[STATE_COUNT];
+  std::array<ui::ImageModel, STATE_COUNT> images_;
 
   gfx::ImageSkia background_image_;
 
@@ -180,11 +180,13 @@ class VIEWS_EXPORT ToggleImageButton : public ImageButton {
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnPaintBackground(gfx::Canvas* canvas) override;
 
+  void UpdateAccessibleRoleIfNeeded();
+
  private:
   // The parent class's images_ member is used for the current images,
   // and this array is used to hold the alternative images.
   // We swap between the two when toggling.
-  ui::ImageModel alternate_images_[STATE_COUNT];
+  std::array<ui::ImageModel, STATE_COUNT> alternate_images_;
 
   // True if the button is currently toggled.
   bool toggled_ = false;

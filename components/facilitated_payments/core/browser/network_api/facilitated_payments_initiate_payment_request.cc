@@ -7,9 +7,11 @@
 #include <string>
 #include <vector>
 
+#include "base/base64.h"
 #include "base/json/json_writer.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "components/autofill/core/browser/payments/payments_autofill_client.h"
 
 namespace payments::facilitated {
 
@@ -57,9 +59,9 @@ std::string FacilitatedPaymentsInitiatePaymentRequest::GetRequestContent() {
   risk_data.Set("value", request_details_->risk_data_);
   request_dict.Set("risk_data_encoded", std::move(risk_data));
 
-  request_dict.Set("client_token", base::Value(std::string(
-                                       request_details_->client_token_.begin(),
-                                       request_details_->client_token_.end())));
+  request_dict.Set(
+      "client_token",
+      base::Value(base::Base64Encode(request_details_->client_token_)));
 
   base::Value::Dict context;
   context.Set("language_code", app_locale_);
@@ -74,11 +76,11 @@ std::string FacilitatedPaymentsInitiatePaymentRequest::GetRequestContent() {
   }
   request_dict.Set("context", std::move(context));
 
-  if (request_details_->merchant_payment_page_url_.has_value()) {
+  if (request_details_->merchant_payment_page_hostname_.has_value()) {
     base::Value::Dict merchant_info;
     merchant_info.Set(
         "merchant_checkout_page_url",
-        request_details_->merchant_payment_page_url_.value().spec());
+        request_details_->merchant_payment_page_hostname_.value());
     request_dict.Set("merchant_info", std::move(merchant_info));
   }
 
@@ -117,8 +119,11 @@ void FacilitatedPaymentsInitiatePaymentRequest::ParseResponse(
           response.FindDict("trigger_purchase_manager")) {
     if (const std::string* action_token =
             trigger_purchase_manager->FindString("o2_action_token")) {
-      response_details_->action_token_.assign(action_token->begin(),
-                                              action_token->end());
+      std::optional<std::vector<uint8_t>> decoded_bytes =
+          base::Base64Decode(*action_token);
+      if (decoded_bytes.has_value()) {
+        response_details_->action_token_ = std::move(*decoded_bytes);
+      }
     }
   }
 }
@@ -128,7 +133,7 @@ bool FacilitatedPaymentsInitiatePaymentRequest::IsResponseComplete() {
 }
 
 void FacilitatedPaymentsInitiatePaymentRequest::RespondToDelegate(
-    autofill::AutofillClient::PaymentsRpcResult result) {
+    autofill::payments::PaymentsAutofillClient::PaymentsRpcResult result) {
   std::move(response_callback_).Run(result, std::move(response_details_));
 }
 

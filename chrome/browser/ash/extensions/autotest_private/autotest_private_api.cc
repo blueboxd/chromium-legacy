@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/ash/extensions/autotest_private/autotest_private_api.h"
 
 #include <deque>
@@ -965,6 +970,8 @@ class DisplaySmoothnessTracker {
       return false;
     }
 
+    start_time_ = base::TimeTicks::Now();
+
     DCHECK(root_window_tracker_.windows().empty());
     root_window_tracker_.Add(root_window);
 
@@ -978,18 +985,21 @@ class DisplaySmoothnessTracker {
     return true;
   }
 
-  void Stop(ReportCallback callback) {
+  bool Stop(ReportCallback callback) {
     stopping_ = true;
     throughtput_timer_.Stop();
     callback_ = std::move(callback);
-    tracker_->Stop();
+    return tracker_->Stop();
   }
+
+  void CancelReport() { tracker_->CancelReport(); }
 
   ReportCallback TakeCallback() { return std::move(callback_); }
   std::vector<int> TakeThroughput() { return std::move(throughput_); }
 
   bool stopping() const { return stopping_; }
   bool has_error() const { return has_error_; }
+  base::TimeTicks start_time() const { return start_time_; }
 
  private:
   void OnThroughputTimerFired() {
@@ -1016,6 +1026,7 @@ class DisplaySmoothnessTracker {
   ReportCallback callback_;
   bool stopping_ = false;
   bool has_error_ = false;
+  base::TimeTicks start_time_;
 
   base::RepeatingTimer throughtput_timer_;
   std::vector<int> throughput_;
@@ -1207,8 +1218,8 @@ class EventGenerator {
   void ScheduleMouseEvent(ui::EventType type,
                           gfx::PointF location_in_screen,
                           int flags) {
-    if (flags == 0 &&
-        (type == ui::ET_MOUSE_PRESSED || type == ui::ET_MOUSE_RELEASED)) {
+    if (flags == 0 && (type == ui::EventType::kMousePressed ||
+                       type == ui::EventType::kMouseReleased)) {
       LOG(ERROR) << "No flags specified for mouse button changes";
     }
     tasks_.push_back(Task(type, location_in_screen, flags));
@@ -1254,9 +1265,9 @@ class EventGenerator {
     // the operation does not finish and the nested loop does not quit.
     task->status = Task::kScheduled;
     switch (task->type) {
-      case ui::ET_MOUSE_PRESSED:
-      case ui::ET_MOUSE_RELEASED: {
-        bool pressed = (task->type == ui::ET_MOUSE_PRESSED);
+      case ui::EventType::kMousePressed:
+      case ui::EventType::kMouseReleased: {
+        bool pressed = (task->type == ui::EventType::kMousePressed);
         if (task->flags & ui::EF_LEFT_MOUSE_BUTTON) {
           input_injector_->InjectMouseButton(ui::EF_LEFT_MOUSE_BUTTON, pressed);
         }
@@ -1277,7 +1288,7 @@ class EventGenerator {
         }
         break;
       }
-      case ui::ET_MOUSE_MOVED: {
+      case ui::EventType::kMouseMoved: {
         display::Display display =
             display::Screen::GetScreen()->GetDisplayNearestPoint(
                 gfx::ToFlooredPoint((task->location_in_screen)));
@@ -1325,8 +1336,8 @@ class EventGenerator {
     auto closure = base::BindOnce(&EventGenerator::SendEvent,
                                   weak_ptr_factory_.GetWeakPtr());
     // Non moving tasks can be done immediately.
-    if (tasks_.empty() || tasks_.front().type == ui::ET_MOUSE_PRESSED ||
-        tasks_.front().type == ui::ET_MOUSE_RELEASED) {
+    if (tasks_.empty() || tasks_.front().type == ui::EventType::kMousePressed ||
+        tasks_.front().type == ui::EventType::kMouseReleased) {
       runner->PostTask(FROM_HERE, std::move(closure));
       return;
     }
@@ -1472,11 +1483,11 @@ ExtensionFunction::ResponseAction AutotestPrivateLoginStatusFunction::Run() {
 
       std::string user_image;
       switch (user->image_index()) {
-        case user_manager::User::USER_IMAGE_EXTERNAL:
+        case user_manager::UserImage::Type::kExternal:
           user_image = "file";
           break;
 
-        case user_manager::User::USER_IMAGE_PROFILE:
+        case user_manager::UserImage::Type::kProfile:
           user_image = "profile";
           break;
 
@@ -2585,7 +2596,7 @@ AutotestPrivateGetClipboardTextDataFunction::Run() {
   // shouldn't see a notification if the clipboard is restricted by the rules of
   // data leak prevention policy.
   ui::DataTransferEndpoint data_dst = ui::DataTransferEndpoint(
-      ui::EndpointType::kDefault, /*notify_if_restricted=*/false);
+      ui::EndpointType::kDefault, {.notify_if_restricted = false});
   ui::Clipboard::GetForCurrentThread()->ReadText(
       ui::ClipboardBuffer::kCopyPaste, &data_dst, &data);
   return RespondNow(WithArguments(data));
@@ -5280,10 +5291,10 @@ ExtensionFunction::ResponseAction AutotestPrivateMouseClickFunction::Run() {
       root_window->GetHost(),
       base::BindOnce(&AutotestPrivateMouseClickFunction::Respond, this,
                      NoArguments()));
-  event_generator_->ScheduleMouseEvent(ui::ET_MOUSE_PRESSED, location_in_host,
-                                       flags);
-  event_generator_->ScheduleMouseEvent(ui::ET_MOUSE_RELEASED, location_in_host,
-                                       flags);
+  event_generator_->ScheduleMouseEvent(ui::EventType::kMousePressed,
+                                       location_in_host, flags);
+  event_generator_->ScheduleMouseEvent(ui::EventType::kMouseReleased,
+                                       location_in_host, flags);
   event_generator_->Run();
 
   return RespondLater();
@@ -5324,8 +5335,8 @@ ExtensionFunction::ResponseAction AutotestPrivateMousePressFunction::Run() {
       root_window->GetHost(),
       base::BindOnce(&AutotestPrivateMousePressFunction::Respond, this,
                      NoArguments()));
-  event_generator_->ScheduleMouseEvent(ui::ET_MOUSE_PRESSED, location_in_host,
-                                       input_flags);
+  event_generator_->ScheduleMouseEvent(ui::EventType::kMousePressed,
+                                       location_in_host, input_flags);
   event_generator_->Run();
 
   return RespondLater();
@@ -5368,8 +5379,8 @@ ExtensionFunction::ResponseAction AutotestPrivateMouseReleaseFunction::Run() {
       root_window->GetHost(),
       base::BindOnce(&AutotestPrivateMouseReleaseFunction::Respond, this,
                      NoArguments()));
-  event_generator_->ScheduleMouseEvent(ui::ET_MOUSE_RELEASED, location_in_host,
-                                       input_flags);
+  event_generator_->ScheduleMouseEvent(ui::EventType::kMouseReleased,
+                                       location_in_host, input_flags);
   event_generator_->Run();
 
   return RespondLater();
@@ -5416,7 +5427,8 @@ ExtensionFunction::ResponseAction AutotestPrivateMouseMoveFunction::Run() {
                                       location_in_screen.x()),
         gfx::Tween::FloatValueBetween(progress, last_mouse_location.y(),
                                       location_in_screen.y()));
-    event_generator_->ScheduleMouseEvent(ui::ET_MOUSE_MOVED, point, flags);
+    event_generator_->ScheduleMouseEvent(ui::EventType::kMouseMoved, point,
+                                         flags);
   }
   event_generator_->Run();
   return RespondLater();
@@ -5867,24 +5879,40 @@ AutotestPrivateStopSmoothnessTrackingFunction::Run() {
                             base::NumberToString(display_id)})));
   }
 
-  if (it->second->stopping()) {
+  auto& [_, tracker] = *it;
+  if (tracker->stopping()) {
     return RespondNow(Error(
         base::StrCat({"stopSmoothnessTracking already called for display: ",
                       base::NumberToString(display_id)})));
   }
 
-  const bool has_error = it->second->has_error();
+  const bool has_error = tracker->has_error();
+
+#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER) ||  \
+    defined(MEMORY_SANITIZER) || defined(THREAD_SANITIZER) || \
+    defined(UNDEFINED_SANITIZER)
+  // Use a longer report timeout for sanitizers. See http://crbug.com/41491890.
+  constexpr base::TimeDelta kReportTimeout = base::Seconds(20);
+#else
+  constexpr base::TimeDelta kReportTimeout = base::Seconds(5);
+#endif
 
   // DisplaySmoothnessTracker::Stop does not invoke the report callback when
   // gpu-process crashes and has no valid data to report. Start a timer to
   // handle this case.
   timeout_timer_.Start(
-      FROM_HERE, base::Seconds(5),
+      FROM_HERE, kReportTimeout,
       base::BindOnce(&AutotestPrivateStopSmoothnessTrackingFunction::OnTimeOut,
                      this, display_id));
 
-  it->second->Stop(base::BindOnce(
-      &AutotestPrivateStopSmoothnessTrackingFunction::OnReportData, this));
+  if (!tracker->Stop(base::BindOnce(
+          &AutotestPrivateStopSmoothnessTrackingFunction::OnReportData, this,
+          tracker->start_time()))) {
+    timeout_timer_.AbandonAndStop();
+    trackers->erase(it);
+    return RespondNow(
+        Error("No smoothness report, GPU process may have crashed"));
+  }
 
   // Trigger a repaint after ThroughputTracker::Stop() to generate a frame to
   // ensure the tracker report will be sent back.
@@ -5901,6 +5929,7 @@ AutotestPrivateStopSmoothnessTrackingFunction::Run() {
 }
 
 void AutotestPrivateStopSmoothnessTrackingFunction::OnReportData(
+    base::TimeTicks start_time,
     const cc::FrameSequenceMetrics::CustomReportData& frame_data,
     std::vector<int>&& throughput) {
   if (did_respond()) {
@@ -5909,12 +5938,25 @@ void AutotestPrivateStopSmoothnessTrackingFunction::OnReportData(
 
   timeout_timer_.AbandonAndStop();
 
+  std::vector<int> jank_timestamps;  // In milliseconds.
+  std::vector<int> jank_durations;   // In milliseconds.
+  jank_timestamps.reserve(frame_data.janks.size());
+  jank_durations.reserve(frame_data.janks.size());
+
+  for (auto jank : frame_data.janks) {
+    jank_timestamps.emplace_back(
+        (jank.start_time - start_time).InMilliseconds());
+    jank_durations.emplace_back(jank.duration.InMilliseconds());
+  }
+
   api::autotest_private::DisplaySmoothnessData result_data;
   result_data.frames_expected = frame_data.frames_expected_v3;
   result_data.frames_produced =
       frame_data.frames_expected_v3 - frame_data.frames_dropped_v3;
   result_data.jank_count = frame_data.jank_count_v3;
   result_data.throughput = std::move(throughput);
+  result_data.jank_timestamps = std::move(jank_timestamps);
+  result_data.jank_durations = std::move(jank_durations);
 
   Respond(ArgumentList(
       api::autotest_private::StopSmoothnessTracking::Results::Create(
@@ -5933,6 +5975,7 @@ void AutotestPrivateStopSmoothnessTrackingFunction::OnTimeOut(
   if (it == trackers->end()) {
     return;
   }
+  it->second->CancelReport();
   trackers->erase(it);
 
   Respond(Error("Smoothness is not available"));
@@ -6564,9 +6607,9 @@ AutotestPrivateStartFrameCountingFunction::Run() {
   aura::Env::GetInstance()
       ->context_factory()
       ->GetHostFrameSinkManager()
-      ->StartFrameCountingForTest(  // IN-TEST
-          base::TimeTicks::Now(),
-          base::Seconds(params->bucket_size_in_seconds));
+      ->GetFrameSinksMetricsRecorderForTest()  // IN-TEST
+      .StartFrameCounting(base::TimeTicks::Now(),
+                          base::Seconds(params->bucket_size_in_seconds));
   return RespondNow(NoArguments());
 }
 
@@ -6587,7 +6630,8 @@ AutotestPrivateStopFrameCountingFunction::Run() {
   aura::Env::GetInstance()
       ->context_factory()
       ->GetHostFrameSinkManager()
-      ->StopFrameCountingForTest(std::move(callback));  // IN-TEST
+      ->GetFrameSinksMetricsRecorderForTest()  // IN-TEST
+      .StopFrameCounting(std::move(callback));
   return RespondLater();
 }
 
@@ -6646,6 +6690,146 @@ void AutotestPrivateStopFrameCountingFunction::OnDataReceived(
 
   Respond(ArgumentList(
       api::autotest_private::StopFrameCounting::Results::Create(result)));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateStartOverdrawTrackingFunction
+//////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateStartOverdrawTrackingFunction::
+    AutotestPrivateStartOverdrawTrackingFunction() = default;
+
+AutotestPrivateStartOverdrawTrackingFunction::
+    ~AutotestPrivateStartOverdrawTrackingFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateStartOverdrawTrackingFunction::Run() {
+  std::optional<api::autotest_private::StartOverdrawTracking::Params> params =
+      api::autotest_private::StartOverdrawTracking::Params::Create(args());
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  int64_t target_display_id;
+  if (!GetDisplayIdFromOptionalArg(params->display_id, &target_display_id)) {
+    return RespondNow(
+        Error(base::StrCat({"Invalid displayId: ", *params->display_id})));
+  }
+
+  DVLOG(1) << "AutotestPrivateStopOverdrawTrackingFunction displayId:"
+           << target_display_id;
+
+  // Validate display id.
+  bool found_display = false;
+  for (aura::Window* const window : ash::Shell::GetAllRootWindows()) {
+    const int64_t display_id =
+        display::Screen::GetScreen()->GetDisplayNearestWindow(window).id();
+    if (display_id == target_display_id) {
+      found_display = true;
+    }
+  }
+
+  if (!found_display) {
+    return RespondNow(Error(base::StringPrintf(
+        "Invalid displayId; no display found for the display id %" PRId64,
+        target_display_id)));
+  }
+
+  if (params->bucket_size_in_seconds <= 0) {
+    return RespondNow(
+        Error("Invalid bucketSizeInSeconds; must be greater than 0s"));
+  }
+
+  const ui::Compositor* compositor =
+      ash::Shell::GetRootWindowForDisplayId(target_display_id)
+          ->layer()
+          ->GetCompositor();
+
+  aura::Env::GetInstance()
+      ->context_factory()
+      ->GetHostFrameSinkManager()
+      ->GetFrameSinksMetricsRecorderForTest()  // IN-TEST
+      .StartOverdrawTracking(compositor->frame_sink_id(),
+                             base::Seconds(params->bucket_size_in_seconds));
+
+  return RespondNow(NoArguments());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateStopOverdrawTrackingFunction
+//////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateStopOverdrawTrackingFunction::
+    AutotestPrivateStopOverdrawTrackingFunction() = default;
+
+AutotestPrivateStopOverdrawTrackingFunction::
+    ~AutotestPrivateStopOverdrawTrackingFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateStopOverdrawTrackingFunction::Run() {
+  std::optional<api::autotest_private::StopOverdrawTracking::Params> params =
+      api::autotest_private::StopOverdrawTracking::Params::Create(args());
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  int64_t target_display_id;
+  if (!GetDisplayIdFromOptionalArg(params->display_id, &target_display_id)) {
+    return RespondNow(
+        Error(base::StrCat({"Invalid displayId: ", *params->display_id})));
+  }
+
+  DVLOG(1) << "AutotestPrivateStopOverdrawTrackingFunction displayId:"
+           << target_display_id;
+
+  // Validate display id.
+  bool found_display = false;
+  for (aura::Window* const window : ash::Shell::GetAllRootWindows()) {
+    const int64_t display_id =
+        display::Screen::GetScreen()->GetDisplayNearestWindow(window).id();
+    if (display_id == target_display_id) {
+      found_display = true;
+    }
+  }
+
+  if (!found_display) {
+    return RespondNow(Error(base::StringPrintf(
+        "Invalid displayId; no display found for the display id %" PRId64,
+        target_display_id)));
+  }
+
+  const ui::Compositor* compositor =
+      ash::Shell::GetRootWindowForDisplayId(target_display_id)
+          ->layer()
+          ->GetCompositor();
+
+  auto callback = base::BindOnce(
+      &AutotestPrivateStopOverdrawTrackingFunction::OnDataReceived, this);
+  aura::Env::GetInstance()
+      ->context_factory()
+      ->GetHostFrameSinkManager()
+      ->GetFrameSinksMetricsRecorderForTest()  // IN-TEST
+      .StopOverdrawTracking(compositor->frame_sink_id(), std::move(callback));
+
+  return RespondLater();
+}
+
+void AutotestPrivateStopOverdrawTrackingFunction::OnDataReceived(
+    viz::mojom::OverdrawDataPtr data_ptr) {
+  // Data can be missing if gpu process is restarted in middle of test
+  // and test scripts still calls `stopOverdrawTracking`.
+  if (!data_ptr || data_ptr->average_overdraws.empty()) {
+    Respond(
+        Error("No overdraw data; maybe forgot to call startOverdrawTracking or "
+              "no UI changes between start and stop calls"));
+    return;
+  }
+
+  api::autotest_private::OverdrawData result;
+  result.average_overdraws.reserve(data_ptr->average_overdraws.size());
+
+  std::copy(data_ptr->average_overdraws.begin(),
+            data_ptr->average_overdraws.end(),
+            std::back_inserter(result.average_overdraws));
+
+  Respond(ArgumentList(
+      api::autotest_private::StopOverdrawTracking::Results::Create(result)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

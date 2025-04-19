@@ -14,6 +14,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.Token;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -35,7 +36,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.batch.BlankCTATabInitialStateRule;
 import org.chromium.chrome.test.util.ByteBufferTestUtils;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.io.File;
@@ -96,7 +96,7 @@ public class TabStateFlatBufferTest {
 
     @Test
     @LargeTest
-    @DisableFeatures(ChromeFeatureList.TAB_STATE_FLATBUFFER)
+    @DisableFeatures(ChromeFeatureList.TAB_STATE_FLAT_BUFFER)
     public void testFlatBufferCleanup() throws IOException, TimeoutException, ExecutionException {
         List<File> flatBufferFiles = new ArrayList<>();
         List<File> legacyHandWrittenFiles = new ArrayList<>();
@@ -157,7 +157,7 @@ public class TabStateFlatBufferTest {
 
     @Test
     @LargeTest
-    @EnableFeatures(ChromeFeatureList.TAB_STATE_FLATBUFFER)
+    @EnableFeatures(ChromeFeatureList.TAB_STATE_FLAT_BUFFER)
     public void testFlatBufferMetrics() throws ExecutionException, IOException {
         TabState state = getTestTabState(false);
         File file = getTestFile(1, false);
@@ -174,7 +174,7 @@ public class TabStateFlatBufferTest {
 
     @Test
     @LargeTest
-    @EnableFeatures(ChromeFeatureList.TAB_STATE_FLATBUFFER)
+    @EnableFeatures(ChromeFeatureList.TAB_STATE_FLAT_BUFFER)
     public void testLegacyHandWrittenMetrics() throws ExecutionException, IOException {
         TabState state = getTestTabState(false);
         File file = getLegacyTestFile(1, false);
@@ -191,7 +191,7 @@ public class TabStateFlatBufferTest {
 
     @Test
     @LargeTest
-    @EnableFeatures(ChromeFeatureList.TAB_STATE_FLATBUFFER)
+    @EnableFeatures(ChromeFeatureList.TAB_STATE_FLAT_BUFFER)
     public void testCorruptTabStateFile() throws ExecutionException, IOException {
         File legacyFile = getLegacyTestFile(1, false);
         FileOutputStream legacyOutputStream = new FileOutputStream(legacyFile);
@@ -213,7 +213,7 @@ public class TabStateFlatBufferTest {
 
     @Test
     @LargeTest
-    @EnableFeatures(ChromeFeatureList.TAB_STATE_FLATBUFFER)
+    @EnableFeatures(ChromeFeatureList.TAB_STATE_FLAT_BUFFER)
     public void testFlatBufferFormatIncognito() throws ExecutionException {
         TabState state = getTestTabState(/* isIncognito= */ true);
         TabStateFileManager.saveStateInternal(
@@ -242,8 +242,7 @@ public class TabStateFlatBufferTest {
         String url = sTestServer.getURL(TEST_URL);
         Tab tab = sActivityTestRule.loadUrlInNewTab(url);
         state.contentsState =
-                TestThreadUtils.runOnUiThreadBlocking(
-                        () -> TabStateExtractor.getWebContentsState(tab));
+                ThreadUtils.runOnUiThreadBlocking(() -> TabStateExtractor.getWebContentsState(tab));
         state.openerAppId = "openerAppId";
         return state;
     }

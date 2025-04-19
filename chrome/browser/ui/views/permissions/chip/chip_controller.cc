@@ -276,7 +276,7 @@ void ChipController::InitializePermissionPrompt(
   std::move(callback).Run();
 }
 
-void ChipController::ShowPermissionPrompt(
+void ChipController::ShowPermissionUi(
     base::WeakPtr<permissions::PermissionPrompt::Delegate> delegate) {
   if (permission_dashboard_controller_ &&
       permission_dashboard_controller_->SuppressVerboseIndicator()) {
@@ -338,6 +338,18 @@ void ChipController::ShowPermissionPrompt(
   } else {
     StartDismissTimer();
   }
+}
+
+void ChipController::ShowPermissionChip(
+    base::WeakPtr<permissions::PermissionPrompt::Delegate> delegate) {
+  is_bubble_suppressed_ = true;
+  ShowPermissionUi(delegate);
+}
+
+void ChipController::ShowPermissionPrompt(
+    base::WeakPtr<permissions::PermissionPrompt::Delegate> delegate) {
+  is_bubble_suppressed_ = false;
+  ShowPermissionUi(delegate);
 }
 
 void ChipController::RemoveBubbleObserverAndResetTimersAndChipCallbacks() {
@@ -460,7 +472,6 @@ void ChipController::HandleConfirmation(
       permission_prompt_model_->CanDisplayConfirmation()) {
     is_confirmation_showing_ = true;
 
-    // AnimateToFit isn't working for `PermissionDashboardView`.
     if (chip_->GetVisible()) {
       chip_->AnimateToFit(GetAnimationDuration(base::Milliseconds(200)));
     } else {
@@ -473,8 +484,11 @@ void ChipController::HandleConfirmation(
                                            weak_factory_.GetWeakPtr()));
     AnnouncePermissionRequestForAccessibility(
         permission_prompt_model_->GetAccessibilityChipText());
-    collapse_timer_.Start(FROM_HERE, kConfirmationDisplayDuration, this,
-                          &ChipController::CollapseConfirmation);
+
+    if (!do_no_collapse_for_testing_) {
+      collapse_timer_.Start(FROM_HERE, kConfirmationDisplayDuration, this,
+                            &ChipController::CollapseConfirmation);
+    }
   } else {
     ResetPermissionPromptChip();
   }
@@ -506,7 +520,8 @@ void ChipController::OnExpandAnimationEnded() {
     return;
   }
 
-  if (permission_prompt_model_->ShouldBubbleStartOpen()) {
+  if (permission_prompt_model_->ShouldBubbleStartOpen() &&
+      !is_bubble_suppressed_) {
     OpenPermissionPromptBubble();
   } else {
     StartCollapseTimer();
@@ -555,9 +570,10 @@ void ChipController::OpenPermissionPromptBubble() {
     return;
   }
 
-  disallowed_custom_cursors_scope_ = permission_prompt_model_->GetDelegate()
-                                         ->GetAssociatedWebContents()
-                                         ->CreateDisallowCustomCursorScope();
+  disallowed_custom_cursors_scope_ =
+      permission_prompt_model_->GetDelegate()
+          ->GetAssociatedWebContents()
+          ->CreateDisallowCustomCursorScope(/*max_dimension_dips=*/0);
 
   // Prevent chip from collapsing while prompt bubble is open.
   ResetTimers();

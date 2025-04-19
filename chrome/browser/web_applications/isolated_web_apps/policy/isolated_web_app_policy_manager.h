@@ -24,6 +24,7 @@
 #include "chrome/browser/web_applications/isolated_web_apps/update_manifest/update_manifest_fetcher.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "net/base/backoff_entry.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
 #include "services/data_decoder/public/mojom/json_parser.mojom.h"
 
@@ -46,6 +47,7 @@ enum class IwaInstallerResultType {
   kErrorWebBundleUrlCantBeDetermined,
   kErrorCantDownloadWebBundle,
   kErrorCantInstallFromWebBundle,
+  kErrorManagedGuestSessionInstallDisabled,
 };
 
 class IwaInstallerResult {
@@ -158,6 +160,26 @@ class IwaInstaller {
   base::WeakPtrFactory<IwaInstaller> weak_factory_{this};
 };
 
+class IwaInstallerFactory {
+ public:
+  using IwaInstallerFactoryCallback =
+      base::RepeatingCallback<std::unique_ptr<IwaInstaller>(
+          IsolatedWebAppExternalInstallOptions,
+          scoped_refptr<network::SharedURLLoaderFactory>,
+          base::Value::List&,
+          WebAppProvider*,
+          IwaInstaller::ResultCallback)>;
+
+  static std::unique_ptr<IwaInstaller> Create(
+      IsolatedWebAppExternalInstallOptions install_options,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      base::Value::List& log,
+      WebAppProvider* provider,
+      IwaInstaller::ResultCallback callback);
+
+  static IwaInstallerFactoryCallback& GetIwaInstallerFactory();
+};
+
 std::ostream& operator<<(std::ostream& os,
                          IwaInstallerResultType install_result_type);
 
@@ -167,6 +189,8 @@ std::ostream& operator<<(std::ostream& os,
 // of the policy installed IWAs.
 class IsolatedWebAppPolicyManager {
  public:
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
   explicit IsolatedWebAppPolicyManager(Profile* profile);
 
   IsolatedWebAppPolicyManager(const IsolatedWebAppPolicyManager&) = delete;
@@ -180,7 +204,10 @@ class IsolatedWebAppPolicyManager {
   base::Value GetDebugValue() const;
 
  private:
-  void ProcessPolicy();
+  void CleanupAndProcessPolicyOnSessionStart();
+  int GetPendingInitCount();
+  void SetPendingInitCount(int pending_count);
+  void ProcessPolicy(base::OnceClosure finished_closure);
   void DoProcessPolicy(AllAppsLock& lock, base::Value::Dict& debug_info);
   void OnPolicyProcessed();
 
@@ -192,10 +219,16 @@ class IsolatedWebAppPolicyManager {
       WebAppManagement::Type source,
       webapps::UninstallResultCode uninstall_code);
 
-  void OnInstallTaskCompleted(web_package::SignedWebBundleId web_bundle_id,
-                              internal::IwaInstaller::Result install_result);
+  void OnInstallTaskCompleted(
+      web_package::SignedWebBundleId web_bundle_id,
+      base::RepeatingCallback<void(internal::IwaInstaller::Result)> callback,
+      internal::IwaInstaller::Result install_result);
+  void OnAllInstallTasksCompleted(
+      std::vector<internal::IwaInstaller::Result> install_results);
 
   void MaybeStartNextInstallTask();
+
+  void CleanupOrphanedBundles(base::OnceClosure finished_closure);
 
   // Keeps track of the last few processing logs for debugging purposes.
   // Automatically discards older logs to keep at most `kMaxEntries`.
@@ -223,6 +256,8 @@ class IsolatedWebAppPolicyManager {
   bool reprocess_policy_needed_ = false;
   bool policy_is_being_processed_ = false;
   base::Value::Dict current_process_log_;
+
+  net::BackoffEntry install_retry_backoff_entry_;
 
   // We must execute install tasks in a queue, because each task uses a
   // `WebContents`, and installing an unbound number of apps in parallel would

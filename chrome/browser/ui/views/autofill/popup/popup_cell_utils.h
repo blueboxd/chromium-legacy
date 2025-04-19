@@ -7,12 +7,13 @@
 
 #include <memory>
 #include <optional>
+#include <string>
+#include <vector>
 
-#include "components/autofill/core/browser/filling_product.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/browser/ui/suggestion_type.h"
+#include "ui/base/models/image_model.h"
 #include "ui/gfx/vector_icon_types.h"
-#include "ui/views/style/typography.h"
 
 namespace views {
 class View;
@@ -62,6 +63,8 @@ namespace autofill::popup_cell_utils {
 //  PopupRowView::GetHorizontalMargin()
 gfx::Insets GetMarginsForContentCell();
 
+std::optional<ui::ImageModel> GetIconImageModelFromIcon(Suggestion::Icon icon);
+
 std::u16string GetVoiceOverStringFromSuggestion(const Suggestion& suggestion);
 
 std::unique_ptr<views::ImageView> GetIconImageView(
@@ -92,8 +95,8 @@ void AddSuggestionContentTableToView(
 
 // Creates the content structure shared by autocomplete, address, credit card,
 // and password suggestions.
-// - `minor_text_label`, `description_label`, and `subtext_labels` may all be
-// null or empty.
+// - `main/minor_text_label`, `description_label`, `subtext_views` and
+// `icon` may all be null or empty.
 // - `content_view` is the (assumed to be empty) view to which the content
 // structure for the `suggestion` is added.
 void AddSuggestionContentToView(
@@ -102,11 +105,11 @@ void AddSuggestionContentToView(
     std::unique_ptr<views::Label> minor_text_label,
     std::unique_ptr<views::Label> description_label,
     std::vector<std::unique_ptr<views::View>> subtext_views,
+    std::unique_ptr<views::View> icon,
     PopupRowContentView& content_view);
 
-std::unique_ptr<views::ImageView> ImageViewFromVectorIcon(
-    const gfx::VectorIcon& vector_icon,
-    int icon_size);
+ui::ImageModel ImageModelFromVectorIcon(const gfx::VectorIcon& vector_icon,
+                                        int icon_size);
 
 // Appplies a grayed-out disabled style to views conveying that it is
 // deactivated and non-acceptable.

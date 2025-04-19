@@ -28,6 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
 
 #include <algorithm>
@@ -51,6 +56,7 @@
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/animation/inert_effect.h"
+#include "third_party/blink/renderer/core/animation/interpolable_length.h"
 #include "third_party/blink/renderer/core/animation/interpolation.h"
 #include "third_party/blink/renderer/core/animation/interpolation_environment.h"
 #include "third_party/blink/renderer/core/animation/interpolation_type.h"
@@ -347,8 +353,7 @@ StringKeyframeVector ProcessKeyframesRule(
     const Document& document,
     const ComputedStyle* parent_style,
     TimingFunction* default_timing_function,
-    WritingMode writing_mode,
-    TextDirection text_direction,
+    WritingDirectionMode writing_direction,
     bool& has_named_range_keyframes) {
   StringKeyframeVector keyframes;
   const HeapVector<Member<StyleRuleKeyframe>>& style_keyframes =
@@ -393,8 +398,7 @@ StringKeyframeVector ProcessKeyframesRule(
       } else if (!CSSAnimations::IsAnimationAffectingProperty(property)) {
         // Map Logical to physical property name.
         const CSSProperty& physical_property =
-            property.ResolveDirectionAwareProperty(text_direction,
-                                                   writing_mode);
+            property.ResolveDirectionAwareProperty(writing_direction);
         const CSSPropertyName& name = physical_property.GetCSSPropertyName();
         keyframe->SetCSSPropertyValue(name, property_reference.Value());
       }
@@ -505,10 +509,10 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
   //    the offset specified in the keyframe selector, and iterate over the
   //    result in reverse applying the following steps:
   bool has_named_range_keyframes = false;
-  keyframes = ProcessKeyframesRule(
-      keyframes_rule, find_result.tree_scope, element.GetDocument(),
-      parent_style, default_timing_function, writing_direction.GetWritingMode(),
-      writing_direction.Direction(), has_named_range_keyframes);
+  keyframes = ProcessKeyframesRule(keyframes_rule, find_result.tree_scope,
+                                   element.GetDocument(), parent_style,
+                                   default_timing_function, writing_direction,
+                                   has_named_range_keyframes);
 
   std::optional<double> last_offset;
   wtf_size_t merged_frame_count = 0;
@@ -992,9 +996,8 @@ const StylePropertyShorthand& PropertiesForTransitionAllDiscrete(
     const ExecutionContext* execution_context) {
   DEFINE_STATIC_LOCAL(Vector<const CSSProperty*>, properties,
                       (PropertiesForTransitionAll(true, execution_context)));
-  DEFINE_STATIC_LOCAL(
-      StylePropertyShorthand, property_shorthand,
-      (CSSPropertyID::kInvalid, properties.begin(), properties.size()));
+  DEFINE_STATIC_LOCAL(StylePropertyShorthand, property_shorthand,
+                      (CSSPropertyID::kInvalid, properties));
   return property_shorthand;
 }
 
@@ -1002,9 +1005,8 @@ const StylePropertyShorthand& PropertiesForTransitionAllNormal(
     const ExecutionContext* execution_context) {
   DEFINE_STATIC_LOCAL(Vector<const CSSProperty*>, properties,
                       (PropertiesForTransitionAll(false, execution_context)));
-  DEFINE_STATIC_LOCAL(
-      StylePropertyShorthand, property_shorthand,
-      (CSSPropertyID::kInvalid, properties.begin(), properties.size()));
+  DEFINE_STATIC_LOCAL(StylePropertyShorthand, property_shorthand,
+                      (CSSPropertyID::kInvalid, properties));
   return property_shorthand;
 }
 
@@ -1614,8 +1616,7 @@ void CSSAnimations::CalculateAnimationUpdate(
       Animation* animation = entry.key;
       if (auto* keyframe_effect =
               DynamicTo<KeyframeEffect>(animation->effect())) {
-        keyframe_effect->SetLogicalPropertyResolutionContext(
-            writing_direction.Direction(), writing_direction.GetWritingMode());
+        keyframe_effect->SetLogicalPropertyResolutionContext(writing_direction);
         animation->UpdateIfNecessary();
       }
     }
@@ -1869,10 +1870,6 @@ bool AffectsBackgroundColor(const AnimationEffect& effect) {
   return effect.Affects(PropertyHandle(GetCSSPropertyBackgroundColor()));
 }
 
-bool AffectsClipPath(const AnimationEffect& effect) {
-  return effect.Affects(PropertyHandle(GetCSSPropertyClipPath()));
-}
-
 void UpdateAnimationFlagsForEffect(const AnimationEffect& effect,
                                    ComputedStyleBuilder& builder) {
   if (effect.Affects(PropertyHandle(GetCSSPropertyOpacity())))
@@ -1891,9 +1888,6 @@ void UpdateAnimationFlagsForEffect(const AnimationEffect& effect,
     builder.SetHasCurrentBackdropFilterAnimation(true);
   if (AffectsBackgroundColor(effect))
     builder.SetHasCurrentBackgroundColorAnimation(true);
-  if (AffectsClipPath(effect)) {
-    builder.SetHasCurrentClipPathAnimation(true);
-  }
 }
 
 // Called for animations that are newly created or updated.
@@ -2046,8 +2040,10 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
       animation->Update(kTimingUpdateOnDemand);
   }
 
-  for (const auto& animation : pending_update_.UpdatedCompositorKeyframes())
-    animation->SetCompositorPending(true);
+  for (const auto& animation : pending_update_.UpdatedCompositorKeyframes()) {
+    animation->SetCompositorPending(
+        Animation::CompositorPendingReason::kPendingEffectChange);
+  }
 
   for (const auto& entry : pending_update_.AnimationsWithUpdates()) {
     if (entry.animation->effect()) {
@@ -2322,8 +2318,10 @@ void CSSAnimations::CalculateTransitionUpdateForPropertyHandle(
   }
 
   CSSInterpolationTypesMap map(registry, state.animating_element.GetDocument());
-  CSSInterpolationEnvironment old_environment(map, *state.before_change_style);
-  CSSInterpolationEnvironment new_environment(map, state.base_style);
+  CSSInterpolationEnvironment old_environment(map, *state.before_change_style,
+                                              state.base_style);
+  CSSInterpolationEnvironment new_environment(map, state.base_style,
+                                              state.base_style);
   const InterpolationType* transition_type = nullptr;
   InterpolationValue start = nullptr;
   InterpolationValue end = nullptr;
@@ -2339,6 +2337,7 @@ void CSSAnimations::CalculateTransitionUpdateForPropertyHandle(
     if (!end) {
       continue;
     }
+
     // If MaybeMergeSingles succeeds, then the two values have a defined
     // interpolation behavior. However, some properties like display and
     // content-visibility have an interpolation which behaves like a discrete
@@ -2534,8 +2533,7 @@ void CSSAnimations::CalculateTransitionUpdateForStandardProperty(
     DCHECK_GE(longhand_id, kFirstCSSProperty);
     const CSSProperty& property =
         CSSProperty::Get(longhand_id)
-            .ResolveDirectionAwareProperty(writing_direction.Direction(),
-                                           writing_direction.GetWritingMode());
+            .ResolveDirectionAwareProperty(writing_direction);
     PropertyHandle property_handle = PropertyHandle(property);
 
     CalculateTransitionUpdateForPropertyHandle(
@@ -3103,7 +3101,7 @@ void CSSAnimations::TransitionEventDelegate::Trace(Visitor* visitor) const {
 const StylePropertyShorthand& CSSAnimations::PropertiesForTransitionAll(
     bool with_discrete,
     const ExecutionContext* execution_context) {
-  if (UNLIKELY(with_discrete)) {
+  if (with_discrete) [[unlikely]] {
     return PropertiesForTransitionAllDiscrete(execution_context);
   }
   return PropertiesForTransitionAllNormal(execution_context);
@@ -3139,6 +3137,7 @@ bool CSSAnimations::IsAnimationAffectingProperty(const CSSProperty& property) {
     case CSSPropertyID::kContainerName:
     case CSSPropertyID::kContainerType:
     case CSSPropertyID::kDirection:
+    case CSSPropertyID::kInterpolateSize:
     case CSSPropertyID::kScrollTimelineAxis:
     case CSSPropertyID::kScrollTimelineName:
     case CSSPropertyID::kTextCombineUpright:

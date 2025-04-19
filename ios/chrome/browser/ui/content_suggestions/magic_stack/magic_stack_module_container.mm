@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/shared/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_tile_layout_util.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/most_visited_tiles_config.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/magic_stack/magic_stack_constants.h"
@@ -20,7 +21,6 @@
 #import "ios/chrome/browser/ui/content_suggestions/magic_stack/magic_stack_module_container_delegate.h"
 #import "ios/chrome/browser/ui/content_suggestions/magic_stack/magic_stack_module_content_view_delegate.h"
 #import "ios/chrome/browser/ui/content_suggestions/magic_stack/magic_stack_module_contents_factory.h"
-#import "ios/chrome/browser/ui/content_suggestions/magic_stack/most_visited_tiles_config.h"
 #import "ios/chrome/browser/ui/content_suggestions/safety_check/safety_check_state.h"
 #import "ios/chrome/browser/ui/content_suggestions/safety_check/utils.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -72,10 +72,10 @@ const CGFloat kSeparatorHeight = 0.5;
   UIStackView* _stackView;
   UIImageView* _placeholderImage;
   UIStackView* _titleStackView;
-    MagicStackModuleContentsFactory* _magicStackModuleContentsFactory;
-    NSLayoutConstraint* _containerHeightAnchor;
-    NSLayoutConstraint* _contentStackViewBottomMarginAnchor;
-    UIContextMenuInteraction* _contextMenuInteraction;
+  MagicStackModuleContentsFactory* _magicStackModuleContentsFactory;
+  NSLayoutConstraint* _containerHeightAnchor;
+  NSLayoutConstraint* _contentStackViewBottomMarginAnchor;
+  UIContextMenuInteraction* _contextMenuInteraction;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame {
@@ -102,7 +102,7 @@ const CGFloat kSeparatorHeight = 0.5;
     _title.font = [self fontForTitle];
     _title.textColor = [UIColor colorNamed:kTextPrimaryColor];
     _title.numberOfLines = 1;
-    _title.lineBreakMode = NSLineBreakByWordWrapping;
+    _title.lineBreakMode = NSLineBreakByTruncatingTail;
     _title.accessibilityTraits |= UIAccessibilityTraitHeader;
     [_title setContentHuggingPriority:UILayoutPriorityDefaultLow
                               forAxis:UILayoutConstraintAxisHorizontal];
@@ -214,6 +214,10 @@ const CGFloat kSeparatorHeight = 0.5;
   return self;
 }
 
+- (void)dealloc {
+  [self resetCell];
+}
+
 - (void)configureWithConfig:(MagicStackModule*)config {
   [self resetCell];
   // Ensures that the modules conforms to a height of kModuleMaxHeight. For
@@ -245,11 +249,6 @@ const CGFloat kSeparatorHeight = 0.5;
       _contextMenuInteraction =
           [[UIContextMenuInteraction alloc] initWithDelegate:self];
       [self addInteraction:_contextMenuInteraction];
-    }
-  } else {
-    if (_contextMenuInteraction) {
-      [self removeInteraction:_contextMenuInteraction];
-      _contextMenuInteraction = nil;
     }
   }
 
@@ -431,6 +430,7 @@ const CGFloat kSeparatorHeight = 0.5;
     [actions addObject:[self toggleTipsNotificationsAction]];
   }
   [actions addObject:[self hideAction]];
+  [actions addObject:[self customizeCardAction]];
   return actions;
 }
 
@@ -445,6 +445,21 @@ const CGFloat kSeparatorHeight = 0.5;
                 [weakSelf.delegate neverShowModuleType:weakSelf.type];
               }];
   hideAction.attributes = UIMenuElementAttributesDestructive;
+  return hideAction;
+}
+
+// Returns the menu action to hide this module type.
+- (UIAction*)customizeCardAction {
+  __weak __typeof(self) weakSelf = self;
+  UIAction* hideAction = [UIAction
+      actionWithTitle:
+          l10n_util::GetNSString(
+              IDS_IOS_MAGIC_STACK_CONTEXT_MENU_CUSTOMIZE_CARDS_TITLE)
+                image:DefaultSymbolWithPointSize(kSliderHorizontalSymbol, 18)
+           identifier:nil
+              handler:^(UIAction* action) {
+                [weakSelf.delegate customizeCardsWasTapped];
+              }];
   return hideAction;
 }
 
@@ -535,8 +550,9 @@ const CGFloat kSeparatorHeight = 0.5;
     case ContentSuggestionsModuleType::kSetUpListAllSet:
     case ContentSuggestionsModuleType::kSetUpListNotifications:
     case ContentSuggestionsModuleType::kSafetyCheck:
-    case ContentSuggestionsModuleType::kTabResumption:
       return YES;
+    case ContentSuggestionsModuleType::kTabResumption:
+      return !IsTabResumption1_5Enabled();
     default:
       return NO;
   }
@@ -603,6 +619,10 @@ const CGFloat kSeparatorHeight = 0.5;
   if (_contentView) {
     [_contentView removeFromSuperview];
     _contentView = nil;
+  }
+  if (_contextMenuInteraction) {
+    [self removeInteraction:_contextMenuInteraction];
+    _contextMenuInteraction = nil;
   }
 }
 

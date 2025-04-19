@@ -229,8 +229,6 @@ def generate_sharding_map(benchmarks_to_shard,
           benchmark_config['begin'] = begin
         if end:
           benchmark_config['end'] = end
-        benchmark_config['abridged'] = benchmark_name_to_config[
-            benchmark].abridged
       elif len(merged_sections) > 1:
         for section in merged_sections:
           sections_config.append({'begin': section[0], 'end': section[1]})
@@ -238,7 +236,17 @@ def generate_sharding_map(benchmarks_to_shard,
             'sections': sections_config,
             'abridged': benchmark_name_to_config[benchmark].abridged
         }
+
+      abridged = benchmark_name_to_config[benchmark].abridged
+      benchmark_config['abridged'] = abridged
+
+      pageset_repeat_override = benchmark_name_to_config[
+          benchmark].pageset_repeat_override
+      if pageset_repeat_override:
+        benchmark_config['pageset_repeat'] = pageset_repeat_override
+
       new_benchmark_configs[benchmark] = benchmark_config
+
     sharding_map[str(i)]['benchmarks'] = new_benchmark_configs
     if i != num_shards - 1:
       total_time -= shard_time
@@ -284,13 +292,16 @@ def _add_benchmarks_to_shard(sharding_map, shard_index, stories_in_shard,
   for b in benchmarks:
     config = benchmark_name_to_config[b]
     if isinstance(config, core.bot_platforms.CrossbenchConfig):
-      crossbench_in_shard[b] = {'crossbench_name': config.crossbench_name}
+      crossbench_in_shard[config.crossbench_name] = {
+          'display_name': b,
+          'arguments': config.arguments,
+      }
       first_story = all_stories[b].index(benchmarks[b][0])
       last_story = all_stories[b].index(benchmarks[b][-1]) + 1
       if first_story != 0:
-        crossbench_in_shard[b]['begin'] = first_story
+        crossbench_in_shard[config.crossbench_name]['begin'] = first_story
       if last_story != len(all_stories[b]):
-        crossbench_in_shard[b]['end'] = last_story
+        crossbench_in_shard[config.crossbench_name]['end'] = last_story
     elif config.is_telemetry:
       benchmarks_in_shard[b] = {}
       first_story = all_stories[b].index(benchmarks[b][0])

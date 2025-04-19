@@ -16,9 +16,7 @@ import androidx.annotation.Nullable;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -29,7 +27,6 @@ import org.chromium.base.FeatureList;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
@@ -81,8 +78,6 @@ public class BaseButtonDataProviderTest {
         public void onClick(View view) {}
     }
 
-    @Rule public TestRule mFeaturesProcessor = new Features.JUnitProcessor();
-
     private Activity mActivity;
     @Mock private Tab mMockTab;
     @Mock private ObservableSupplier<Tab> mMockTabSupplier;
@@ -102,7 +97,6 @@ public class BaseButtonDataProviderTest {
     @Test
     public void testButtonData_QuietVariation() {
         FeatureList.TestValues testValues = new FeatureList.TestValues();
-        testValues.addFeatureFlagOverride(ChromeFeatureList.CONTEXTUAL_PAGE_ACTIONS, true);
         testValues.addFeatureFlagOverride(
                 ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR_CUSTOMIZATION_V2, true);
         FeatureList.setTestValues(testValues);
@@ -127,7 +121,6 @@ public class BaseButtonDataProviderTest {
     @Test
     public void testButtonData_ActionChipVariation() {
         FeatureList.TestValues testValues = new FeatureList.TestValues();
-        testValues.addFeatureFlagOverride(ChromeFeatureList.CONTEXTUAL_PAGE_ACTIONS, true);
         testValues.addFeatureFlagOverride(
                 ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR_CUSTOMIZATION_V2, true);
         FeatureList.setTestValues(testValues);

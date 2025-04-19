@@ -47,6 +47,8 @@ class CAPTURE_EXPORT CrosCameraEffectsObserver
       cros::mojom::CameraPrivacySwitchState state) override;
 
   void CameraEffectChange(cros::mojom::EffectsConfigPtr config) override;
+  void AutoFramingStateChange(
+      cros::mojom::CameraAutoFramingState state) override;
 
   void ConnectToCameraService();
 

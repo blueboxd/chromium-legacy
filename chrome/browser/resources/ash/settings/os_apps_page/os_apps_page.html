@@ -35,11 +35,13 @@
         <div id="appParentalControls"
             class="settings-box"
             actionable$=
-                "[[prefs.on_device_app_controls.setup_completed.value]]"
+                "[[isParentalControlsSetupCompleted_]]"
             on-click="onClickParentalControls_">
-          <iron-icon id="parentalControlsRowIcon"
-              icon="[[rowIcons_.parentalControls]]">
-          </iron-icon>
+          <template is="dom-if" if="[[isRevampWayfindingEnabled_]]">
+            <iron-icon id="parentalControlsRowIcon"
+                icon="[[rowIcons_.parentalControls]]">
+            </iron-icon>
+          </template>
           <div class="start settings-box-text">
             $i18n{appParentalControlsTitle}
             <div class="secondary">
@@ -50,49 +52,58 @@
             </div>
           </div>
           <template is="dom-if"
-              if="[[!prefs.on_device_app_controls.setup_completed.value]]">
+              if="[[!isParentalControlsSetupCompleted_]]"
+              restamp>
             <div class="separator"></div>
             <cr-button
                 on-click="setUpParentalControls_"
                 aria-label="$i18n{appParentalControlsTitle}"
-                aria-roledescription="$i18n{appParentalControlsSetUpButton}">
+                aria-roledescription="$i18n{appParentalControlsSetUpButton}"
+                deep-link-focus-id$="[[Setting.kAppParentalControls]]">
               $i18n{appParentalControlsSetUpButton}
             </cr-button>
           </template>
           <template is="dom-if"
-              if="[[prefs.on_device_app_controls.setup_completed.value]]">
+              if="[[isParentalControlsSetupCompleted_]]"
+              restamp>
             <cr-icon-button class="subpage-arrow"
                 aria-label="$i18n{appParentalControlsTitle}"
-                aria-describedby="secondaryText"
-                aria-roledescription="$i18n{subpageArrowRoleDescription}">
+                aria-description="$i18n{appParentalControlsSubtitleDescription}"
+                aria-roledescription="$i18n{subpageArrowRoleDescription}"
+                deep-link-focus-id$="[[Setting.kAppParentalControls]]">
             </cr-icon-button>
             <div class="separator"></div>
             <cr-toggle id="toggle"
-                checked="[[prefs.on_device_app_controls.setup_completed.value]]"
+                aria-label="$i18n{appParentalControlsTitle}"
+                checked="[[isParentalControlsSetupCompleted_]]"
                 on-change="disableParentalControls_">
             </cr-toggle>
           </template>
-          <template is="dom-if" if="[[showParentalControlsSetupPinDialog_]]"
-              restamp>
-            <app-setup-pin-dialog id="setupPin"
-                on-close="onSetupPinDialogClose_"
-                on-success="onSetupPinSuccess_"
-                prefs="{{prefs}}">
-            </app-setup-pin-dialog>
-          </template>
-          <template is="dom-if" if="[[showParentalControlsVerifyPinDialog_]]"
-              restamp>
-            <app-verify-pin-dialog id="verifyPin"
-                on-close="onVerifyPinDialogClose_">
-            </app-verify-pin-dialog>
-          </template>
-          <template is="dom-if" if="[[showParentalControlsDisablePinDialog_]]"
-              restamp>
-            <app-verify-pin-dialog id="disableDialog"
-                on-close="onDisablePinDialogClose_">
-            </app-verify-pin-dialog>
-          </template>
         </div>
+        <template is="dom-if" if="[[showParentalControlsSetupPinDialog_]]"
+            restamp>
+          <app-setup-pin-dialog id="setupPin"
+              on-close="onSetupPinDialogClose_"
+              on-success="onSetupPinSuccess_"
+              prefs="{{prefs}}">
+          </app-setup-pin-dialog>
+        </template>
+        <template is="dom-if" if="[[showParentalControlsVerifyPinDialog_]]"
+            restamp>
+          <app-verify-pin-dialog id="verifyPin"
+              on-close="onVerifyPinDialogClose_"
+              on-pin-verified="onAccessPinVerified_"
+              prefs="{{prefs}}">
+          </app-verify-pin-dialog>
+        </template>
+        <template is="dom-if" if="[[showParentalControlsDisablePinDialog_]]"
+            restamp>
+          <app-verify-pin-dialog id="disableDialog"
+              on-close="onDisablePinDialogClose_"
+              on-pin-verified="onDisablePinVerified_"
+              prefs="{{prefs}}">
+          </app-verify-pin-dialog>
+        </template>
       </template>
       <template is="dom-if" if="[[showAndroidApps_]]">
         <template is="dom-if" if="[[isPlayStoreAvailable_]]" restamp>
@@ -118,6 +129,7 @@
             <template is="dom-if" if="[[androidAppsInfo.playStoreEnabled]]">
               <cr-icon-button class="subpage-arrow"
                   aria-label="$i18n{androidAppsPageTitle}"
+                  aria-description="$i18n{androidAppsSubtextDescription}"
                   aria-roledescription="$i18n{subpageArrowRoleDescription}">
               </cr-icon-button>
             </template>
@@ -231,7 +243,8 @@
   <template is="dom-if" if="[[isArcVmManageUsbAvailable_]]" restamp>
     <template is="dom-if" route-path="/androidAppsDetails/sharedUsbDevices">
       <os-settings-subpage page-title="$i18n{guestOsSharedUsbDevicesLabel}">
-         <settings-guest-os-shared-usb-devices guest-os-type="arcvm">
+         <settings-guest-os-shared-usb-devices guest-os-type="arcvm"
+           prefs="{{prefs}}">
          </settings-guest-os-shared-usb-devices>
       </os-settings-subpage>
     </template>
@@ -249,7 +262,8 @@
     <template is="dom-if"
         route-path="/app-management/pluginVm/sharedUsbDevices">
       <os-settings-subpage page-title="$i18n{guestOsSharedUsbDevicesLabel}">
-        <settings-guest-os-shared-usb-devices guest-os-type="pluginVm">
+        <settings-guest-os-shared-usb-devices guest-os-type="pluginVm"
+          prefs="{{prefs}}">
         </settings-guest-os-shared-usb-devices>
       </os-settings-subpage>
     </template>

@@ -35,6 +35,7 @@ using crypto::SymmetricKey;
 const size_t kDerivedKeySizeInBits = 128;
 const size_t kDerivedKeySizeInBytes = kDerivedKeySizeInBits / 8;
 const size_t kHashSize = 32;
+const size_t kDefaultScryptCostParameter = 8192;  // 2^13.
 
 namespace syncer {
 
@@ -46,8 +47,7 @@ class NigoriStream {
   // Append the big-endian representation of the length of |value| with 32 bits,
   // followed by |value| itself to the stream.
   NigoriStream& operator<<(const std::string& value) {
-    stream_ << base::as_string_view(
-        base::numerics::U32ToBigEndian(value.size()));
+    stream_ << base::as_string_view(base::U32ToBigEndian(value.size()));
     stream_ << value;
     return *this;
   }
@@ -56,9 +56,8 @@ class NigoriStream {
   // followed by the big-endian representation of the value of |type|, with 32
   // bits, to the stream.
   NigoriStream& operator<<(const Nigori::Type type) {
-    stream_ << base::as_string_view(
-        base::numerics::U32ToBigEndian(sizeof(uint32_t)));
-    stream_ << base::as_string_view(base::numerics::U32ToBigEndian(type));
+    stream_ << base::as_string_view(base::U32ToBigEndian(sizeof(uint32_t)));
+    stream_ << base::as_string_view(base::U32ToBigEndian(type));
     return *this;
   }
 
@@ -81,10 +80,24 @@ const char* GetHistogramSuffixForKeyDerivationMethod(
   return "";
 }
 
+size_t& GetScryptCostParameter() {
+  // Non-const to allow overriding by tests.
+  static size_t scrypt_cost_parameter = kDefaultScryptCostParameter;
+  return scrypt_cost_parameter;
+}
+
 }  // namespace
 
 Nigori::Keys::Keys() = default;
 Nigori::Keys::~Keys() = default;
+
+void Nigori::SetUseScryptCostParameterForTesting(bool use_low_scrypt_cost) {
+  if (use_low_scrypt_cost) {
+    GetScryptCostParameter() = 32;
+  } else {
+    GetScryptCostParameter() = kDefaultScryptCostParameter;
+  }
+}
 
 void Nigori::Keys::InitByDerivationUsingPbkdf2(const std::string& password) {
   // Previously (<=M70) this value has been recalculated every time based on a
@@ -123,7 +136,7 @@ void Nigori::Keys::InitByDerivationUsingPbkdf2(const std::string& password) {
 
 void Nigori::Keys::InitByDerivationUsingScrypt(const std::string& salt,
                                                const std::string& password) {
-  const size_t kCostParameter = 8192;  // 2^13.
+  const size_t kCostParameter = GetScryptCostParameter();
   const size_t kBlockSize = 8;
   const size_t kParallelizationParameter = 11;
   const size_t kMaxMemoryBytes = 32 * 1024 * 1024;  // 32 MiB.

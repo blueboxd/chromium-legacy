@@ -13,6 +13,7 @@
 <translation id="1036672894875463507">Én vagyok az Ön Google Segédje, egész nap állok szolgálatára!
 Íme, kezdésként néhány kipróbálható lehetőség.</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> hozzáadva</translation>
+<translation id="1038106730571050514">Javaslatok megjelenítése</translation>
 <translation id="1047017786576569492">részleges</translation>
 <translation id="1052916631016577720">Elemek keresése</translation>
 <translation id="1056775291175587022">Nincs hálózat</translation>
@@ -45,6 +46,7 @@
 <translation id="1163437384438183174">A Telefonközpont eltávolítása a polcról</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Előfordulhat, hogy az USB-C kábellel nem csatlakoztathatók megfelelően a kijelzők</translation>
+<translation id="1173268871892601910">A ChromeOS Jelszókezelő alkalmazása szeretné ellenőrizni az Ön személyazonosságát</translation>
 <translation id="1175572348579024023">Görgetés</translation>
 <translation id="1175944128323889279">Jelenlegi akkumulátorszint: <ph name="BATTERY_PERCENTAGE" />%, <ph name="TIME" /> van hátra</translation>
 <translation id="1178581264944972037">Szünet</translation>
@@ -57,7 +59,6 @@
 <translation id="118437560755358292">A nagyobb biztonság érdekében adja meg a jelszót vagy a PIN-kódot</translation>
 <translation id="118532027333893379">Koppintson bárhova teljes képernyőkép készítéséhez</translation>
 <translation id="1190609913194133056">Értesítési központ</translation>
-<translation id="1190678134285018527">Az eszköznek vissza kell térnie a korábbi verzióhoz</translation>
 <translation id="1195412055398077112">túlpásztázás</translation>
 <translation id="1195667586424773550">A link húzása a lap címsávjára</translation>
 <translation id="119944043368869598">Összes törlése</translation>
@@ -65,7 +66,6 @@
 <translation id="1201402288615127009">Tovább</translation>
 <translation id="1210557957257435379">felvétel készítése a képernyőről</translation>
 <translation id="121097972571826261">Előrelépés szavanként</translation>
-<translation id="1217633719248931900">Ugrás az alkalmazásra</translation>
 <translation id="1218444235442067213"><ph name="APP_NAME" />, Play Áruház alkalmazás</translation>
 <translation id="1225748608451425081">Chromebookját ismert probléma miatt zároltuk. Ennyi idő után jelentkezhet be újra: <ph name="TIME_LEFT" />.</translation>
 <translation id="1229194443904279055">Kijelölés leállítása</translation>
@@ -73,6 +73,7 @@
 <translation id="1235458158152011030">Ismert hálózatok</translation>
 <translation id="1239161794459865856">A(z) <ph name="FEATURE_NAME" /> csatlakozik.</translation>
 <translation id="1240638468526743569">Az egyik alkalmazás</translation>
+<translation id="1242198791279543032">Az értesítések némítva vannak</translation>
 <translation id="1242883863226959074">eszközén</translation>
 <translation id="1245644940275736236">Ugrás a Segédhez</translation>
 <translation id="124678866338384709">Az aktuális lap bezárása</translation>
@@ -81,10 +82,12 @@
 <translation id="1247519845643687288">Legutóbbi alkalmazások</translation>
 <translation id="1252999807265626933">Töltési forrás: <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Milyen idő van?</translation>
+<translation id="1256734167083229794">Lenyomta a teljes képernyős nagyító billentyűparancsát. A(z) <ph name="ZOOM_IN_ACCELERATOR" /> billentyűparanccsal nagyíthat, a <ph name="ZOOM_OUT_ACCELERATOR" /> billentyűparanccsal pedig kicsinyíthet. Nagyított nézetben a Ctrl + Alt + nyílbillentyűk billentyűparanccsal mozoghat.</translation>
 <translation id="1269405891096105529">A periféria nem támogatott vendég módban</translation>
 <translation id="1270290102613614947">Képernyő-billentyűzet kikapcsolva</translation>
 <translation id="1272079795634619415">Leállítás</translation>
 <translation id="1275285675049378717">A következő töltése: <ph name="POWER_SOURCE" />…</translation>
+<translation id="1275718070701477396">Kijelölve</translation>
 <translation id="1276975447697633661">Válassza ki a fájlt, majd nyomja meg a(z) <ph name="KEY" /> billentyűt</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1285992161347843613">Telefon helymeghatározása</translation>
@@ -97,10 +100,11 @@
 <translation id="1293556467332435079">Fájlok</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1294046132466831888">A Felfedezés megnyitása</translation>
+<translation id="129469256578833241">Vissza az összesítéshez</translation>
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1301513122398173424">Bármikor megnyomhatja a(z) <ph name="LAUNCHER_KEY_NAME" /> + g billentyűkombinációt</translation>
 <translation id="1306549533752902673">AJÁNLOTT ALKALMAZÁSOK</translation>
-<translation id="1311294419381837540">Folyamatban van egy lap átküldése. Az átküldést bármikor szüneteltetheti vagy leállíthatja.</translation>
+<translation id="1310396869741602366">Hangszín módosítása</translation>
 <translation id="1312604459020188865">Jelerősség: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">Mindig látsszon a polc</translation>
 <translation id="132346741904777634">Kamera a bal felső sarokhoz igazítva. Ütközés a rendszerfelülettel.</translation>
@@ -108,9 +112,11 @@
 <translation id="1333308631814936910"><ph name="DISPLAY_NAME" /> csatlakoztatva</translation>
 <translation id="1340378040547539434">Kicsinyítés az oldalon</translation>
 <translation id="1341651618736211726">Túlcsordulás</translation>
-<translation id="1344141078024003905">A képernyő átküldése folyamatban van. Bármikor szüneteltetheti vagy leállíthatja a képernyő átküldését.</translation>
+<translation id="1341926407152459446">A(z) „<ph name="DEVICE_NAME" />” használata hangbemenethez és -kimenethez</translation>
 <translation id="1346748346194534595">Jobbra</translation>
+<translation id="1350494136075914725">Folyamatban · Váltás a lapra</translation>
 <translation id="1351937230027495976">Menü összecsukása</translation>
+<translation id="1352537790882153971">Vezetékes fejhallgatóval ellenőrizheti a mikrofonon át érkező hangot. A leállításhoz zárja be a panelt.</translation>
 <translation id="1360220746312242196">Oldalkereséskor ugrás az előző keresési találatra</translation>
 <translation id="1360788414852622716">A profil letiltása folyamatban van. Ez eltarthat néhány percig.</translation>
 <translation id="1364382257761975320">A Chromebook zárolásának feloldásához használja ujjlenyomatát.</translation>
@@ -120,6 +126,7 @@
 <translation id="1383876407941801731">Keresés</translation>
 <translation id="1391102559483454063">Be</translation>
 <translation id="1394698770495054737">Teljes homályosítás</translation>
+<translation id="1395878931462960119">{DAYS,plural, =1{1 napja}other{# napja}}</translation>
 <translation id="1404963891829069586">Összpontosítást segítő hangok</translation>
 <translation id="1407069428457324124">Sötét téma</translation>
 <translation id="1410568680128842168"><ph name="DATE_CELL_TOOL_TIP" />. A dátumok között a nyílbillentyűkkel navigálhat.</translation>
@@ -131,8 +138,11 @@
 <translation id="1420408895951708260">Éjszakai fény be-/kikapcsolása. <ph name="STATE_TEXT" /></translation>
 <translation id="1426410128494586442">Igen</translation>
 <translation id="1435537621343861112">Nem sikerült elindítani a diktálást. A mikrofon ki van kapcsolva.</translation>
+<translation id="1445031758921122223">Arcvezérlési fájlok letöltve</translation>
+<translation id="1447907279406111651">Most ⋅ Ekkor ér véget: <ph name="END_TIME" /></translation>
 <translation id="1448963928642384376">Eszközhotspotok</translation>
 <translation id="1455242230282523554">Nyelvi beállítások megjelenítése</translation>
+<translation id="1459693405370120464">Időjárás</translation>
 <translation id="1460620680449458626">Hang némítva.</translation>
 <translation id="14648076227129703">Ezzel engedélyezi a kamerához való hozzáférést a(z) <ph name="APP1_NAME" />, a(z) <ph name="APP2_NAME" />, valamint a kamerahasználati engedéllyel rendelkező összes alkalmazás és webhely számára</translation>
 <translation id="1467432559032391204">Balra</translation>
@@ -141,10 +151,13 @@
 <translation id="147310119694673958">Telefon akkumulátora: <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="1475340220124222168">Hotspot be- vagy kikapcsolása. A hotspot be van kapcsolva; 1 eszköz csatlakozik.</translation>
 <translation id="1479909375538722835">Kisegítő lehetőségek lebegő menüje</translation>
+<translation id="1483493594462132177">Küldés</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1486307154719069822">A diktálás funkció segítségével a hangjával is gépelhet. Szövegmezőben nyomja meg a diktálás gombot, vagy válassza a képernyő alján lévő mikrofon ikont. A diktálás nyelve a következő: <ph name="LANGUAGE" />. A beszéd elküldve a Google-nak feldolgozásra. A diktálás nyelvét bármikor módosíthatja a következő pontban: Beállítások &gt; Kisegítő lehetőségek.</translation>
 <translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> lecserélve erre: <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1500926532737552529">Az összes javaslat megjelenítése</translation>
+<translation id="1501946871587957338">Hangforrást szeretne váltani?</translation>
+<translation id="1505542291183484463">Ablak mozaikszerű átméretezése lefelé</translation>
 <translation id="1510238584712386396">Indító</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Értesítési beállítások megjelenítése. Az értesítések egyetlen alkalmazásnál vannak kikapcsolva}other{Értesítési beállítások megjelenítése. Az értesítések # alkalmazásnál ki vannak kapcsolva}}</translation>
 <translation id="1523032696246003">Akkumulátor <ph name="BATTERY_PERCENTAGE" />%-on | <ph name="TIME" /> a teljes feltöltésig</translation>
@@ -175,6 +188,8 @@
 <translation id="1610778689852195798">„Undo” (Visszavonás)</translation>
 <translation id="1611993646327628135">Be</translation>
 <translation id="1620510694547887537">Kamera</translation>
+<translation id="1623768535032616219">A Google Tanterem összecsukása</translation>
+<translation id="163032029566320584">A(z) <ph name="UNAVAILABLE_DLC" /> nem áll rendelkezésre.</translation>
 <translation id="1632985212731562677">A Kapcsolóalapú hozzáférés a Beállítások Kisegítő lehetőségek pontjában kapcsolható ki.</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> eszköz</translation>
 <translation id="1639239467298939599">Betöltés</translation>
@@ -183,11 +198,13 @@
 <translation id="1654477262762802994">Hangalapú lekérdezés indítása</translation>
 <translation id="1668469839109562275">Beépített VPN</translation>
 <translation id="1673232940951031776">Összpontosítási üzemmód befejezése. <ph name="REMAINING_TIME" /> van hátra.</translation>
+<translation id="1675570947608765064">Mások láthatják, ha Ön módosítja ezt a feladatot</translation>
 <translation id="1675844249244994876">A jobb oldali ablak frissítése</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> van hátra</translation>
 <translation id="1677507110654891115">A(z) <ph name="FEATURE_NAME" /> nem csatlakozik.</translation>
 <translation id="1677582821739292812">Valaki az Ön képernyőjét nézi</translation>
 <translation id="1679841710523778799">Fényerő növelése</translation>
+<translation id="1680659827022803830">Videohívás vezérlői</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1698080062160024910">Időzítő a következő időtartamra: <ph name="TOTAL_TIME" />   <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">IPv6-cím: <ph name="ADDRESS" /></translation>
@@ -204,22 +221,26 @@
 <translation id="174102739345480129">Jelölő kikapcsolva.</translation>
 <translation id="1743570585616704562">Nem sikerült felismerni</translation>
 <translation id="1743927604032653654">A következővel kapcsolatos értesítés összecsukása: <ph name="NOTIFICATION_TITLE" /></translation>
+<translation id="1744435831291625602">{HOURS,plural, =0{Kevesebb mint 1 órája}=1{1 órája}other{# órája}}</translation>
 <translation id="1746730358044914197">A rendszergazda állította be a beviteli módszereket.</translation>
 <translation id="1747336645387973286">határidő: <ph name="DUE_DATE" /></translation>
 <translation id="1747827819627189109">Képernyő-billentyűzet bekapcsolva</translation>
 <translation id="1749109475624620922">Az ablak (<ph name="WINDOW_TITLE" />) minden asztalhoz hozzá van rendelve</translation>
 <translation id="1750088060796401187">Csak <ph name="MAX_DESK_LIMIT" /> asztal engedélyezett. Távolítsa el valamelyik asztalt, ha újat kíván nyitni.</translation>
+<translation id="1751335846119670066">Segítség az olvasáshoz</translation>
+<translation id="1755408179247123630">Bekapcsolja a Felolvasás funkciót?</translation>
 <translation id="1755556344721611131">Diagnosztika alkalmazás</translation>
 <translation id="1756833229520115364">Nem sikerült a sablon mentése. Túl sok ablak vagy lap van megnyitva.</translation>
 <translation id="1757857692711134412">Kikapcsolva napnyugtáig</translation>
 <translation id="1768366657309696705">A(z) <ph name="LAUNCHER_KEY_NAME" /> + pont billentyűkombináció módosult. A Beillesztés billentyű használatához nyomja le a(z) <ph name="LAUNCHER_KEY_NAME" /> + Shift + Backspace billentyűkombinációt.</translation>
 <translation id="1770726142253415363">Áthelyezve ide: <ph name="ROW_NUMBER" />. sor, <ph name="COLUMN_NUMBER" />. oszlop.</translation>
 <translation id="1771761307086386028">Görgetés jobbra</translation>
+<translation id="17722141032474077">Számítások</translation>
 <translation id="1774796056689732716">Naptár, <ph name="CURRENT_MONTH_YEAR" />, jelenleg kijelölt dátum: <ph name="DATE" /></translation>
-<translation id="1775598828170459419"><ph name="NUM_TOTAL_ITEMS" />/<ph name="NUM_SHOWN_ITEMS" /> feladat látható</translation>
 <translation id="178347895271755507">A telefonján lévő legutóbbi fotók, médiatartalmak és értesítések megtekintésének beállítása</translation>
 <translation id="1787955149152357925">Ki</translation>
 <translation id="1796561540704213354">Webhelyek, például a felkeresett oldalak és a megnyitott oldalak</translation>
+<translation id="179842970735685253">A Google Általános Szerződési Feltételei</translation>
 <translation id="181103072419391116">Jelerősség: <ph name="SIGNAL_STRENGTH" />, a rendszergazdája kezeli</translation>
 <translation id="1816896987747843206">Ezzel engedélyezi a kamerához való hozzáférést a kamerahasználati engedéllyel rendelkező összes alkalmazás és webhely számára</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
@@ -228,11 +249,12 @@
 <translation id="1831565490995294689">Válassza ki a(z) <ph name="APP_TO_OPEN" /> megnyitásához</translation>
 <translation id="1838011306813517425">Összpontosítási üzemmód beállításai</translation>
 <translation id="1838895407229022812">Az Éjszakai fény ki van kapcsolva.</translation>
+<translation id="1840920496749066704">°C</translation>
 <translation id="1854180393107901205">Átküldés leállítása</translation>
 <translation id="1862077610023398675">Vezérlők elrejtése</translation>
 <translation id="1862380676329487333">Frissítés és kijelentkezés</translation>
 <translation id="1864454756846565995">C típusú USB-vel kompatibilis eszköz (hátsó port)</translation>
-<translation id="1869497990620230175">Gyorsfájlok</translation>
+<translation id="1867566089293859645">A módosítások a következő bejelentkezéskor lépnek érvénybe. Bármikor frissítheti preferenciáit a Beállítások &gt; Rendszerbeállítások &gt; Indítás menüpontban.</translation>
 <translation id="1871023081802165724">Médiatartalom lejátszása</translation>
 <translation id="1871915835366697861">Ehhez a játékhoz nem áll rendelkezésre</translation>
 <translation id="1879018240766558464">Az inkognitó ablakok jelenleg nem támogatottak. Az egyéb alkalmazásokat menti a rendszer.</translation>
@@ -240,12 +262,15 @@
 <translation id="1882897271359938046">Tükrözés: <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Feloldás ujjlenyomattal</translation>
 <translation id="1894024878080591367">Állítsa be a billentyűzettel való játékhoz</translation>
+<translation id="1896383923047738322">Billentyűzet személyre szabása</translation>
 <translation id="1904997243703671177">A Bluetooth kikapcsolásakor megszakad a(z) Ön <ph name="DEVICE_TYPE" /> eszköze és a következő <ph name="DEVICE_COUNT" /> külső eszköz közötti kapcsolat:</translation>
 <translation id="1908992311423394684">Frissen telepítve</translation>
 <translation id="1915307458270490472">Hívás befejezése</translation>
 <translation id="1918022425394817322">Kamera a jobb felső sarokhoz igazítva</translation>
 <translation id="1923539912171292317">Automatikus kattintások</translation>
+<translation id="1925320505152357008">1 percnél kevesebb</translation>
 <translation id="1928739107511554905">A frissítés alkalmazásához és a csatlakoztatott billentyűzet használatához indítsa újra a Chromebookot az érintőképernyő segítségével.</translation>
+<translation id="1929331825127010451">Vissza a kérdéshez</translation>
 <translation id="1948405482892809935">Váltás a következő felhasználóra</translation>
 <translation id="1951012854035635156">Segéd</translation>
 <translation id="1954252331066828794">A képernyőfelvétel elkészült</translation>
@@ -257,6 +282,7 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1971815855639997522">Az asztal és az ablakok eltávolítva. A művelet visszavonásához nyomja meg a Control + Z billentyűkombinációt.</translation>
 <translation id="1972950159383891558">Üdv, <ph name="USERNAME" />!</translation>
+<translation id="1977686871076551563">Színinvertálás mód engedélyezve. A kikapcsoláshoz nyomja meg újra a(z) <ph name="ACCELERATOR" /> billentyűparancsot.</translation>
 <translation id="1978498689038657292">Szöveges bevitel</translation>
 <translation id="1980808257969311265">Csatlakozás a következőhöz: <ph name="EVENT_SUMMARY" /></translation>
 <translation id="1982717156487272186">Az előző hét megjelenítése</translation>
@@ -272,8 +298,10 @@
 <translation id="2018630726571919839">Mondj egy viccet</translation>
 <translation id="2021864487439853900">Kattintson a feloldáshoz</translation>
 <translation id="2034971124472263449">Mentés mindenképp</translation>
+<translation id="2041220428661959602">Akkumulátor töltöttségi szintje: <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="204259843076055848">A(z) <ph name="SIX_PACK_KEY_NAME" /> billentyűparancsa jelenleg ki van kapcsolva</translation>
 <translation id="2049240716062114887">Az asztal neve a következőre változott: <ph name="DESK_NAME" /></translation>
+<translation id="2050339315714019657">Álló</translation>
 <translation id="2064048859448024834">Kamera-előnézet bekapcsolva</translation>
 <translation id="2067602449040652523">Billentyűzet világossága</translation>
 <translation id="2075520525463668108"><ph name="CAPTURE_MEDIUM" /> be-/kikapcsolása. A <ph name="CAPTURE_MEDIUM" /> <ph name="CAPTURE_STATE" /> van.</translation>
@@ -290,16 +318,22 @@
 <translation id="2135456203358955318">Dokkolt nagyító</translation>
 <translation id="2148716181193084225">Ma</translation>
 <translation id="2149229036084364364">Ugrás az előző számra</translation>
+<translation id="2152796271648108398">Jelenlegi időjárás</translation>
 <translation id="2152895518047545149">A jelek szerint semmi sem hiányzik. Szép munka!</translation>
+<translation id="2159568970844941445">Nincsenek képek a Fájlok alkalmazásban</translation>
 <translation id="2161132820593978283">Próbálja ki a keretezést, hogy videohívás közben a képernyő közepére kerüljön. Ezt a funkciót a Gyorsbeállításokban kapcsolhatja be.</translation>
+<translation id="216955976692983107">Ablak mozaikszerű átméretezése jobbra</translation>
 <translation id="2185166372312820725">Ugrás az előző lapra</translation>
 <translation id="2185444992308415167">Lapozás az 1–8. lapon</translation>
+<translation id="2195732836444333448">Jelenleg nincs szabad kapacitás. Nézzen vissza kicsit később.</translation>
 <translation id="2198625180564913276">A profil hozzáadása folyamatban van. Ez eltarthat néhány percig.</translation>
 <translation id="219905428774326614">Indító, minden alkalmazás</translation>
 <translation id="2201071101391734388"><ph name="INDEX" />. fénykép a legutóbbi <ph name="TOTAL_COUNT" /> fénykép közül.</translation>
+<translation id="2201687081523799384">A Google Tasks összecsukása</translation>
 <translation id="2208323208084708176">Egységes asztali mód</translation>
 <translation id="2220572644011485463">PIN-kód vagy jelszó</translation>
 <translation id="2222841058024245321">7. asztal</translation>
+<translation id="2223384056430485343">Osztott képernyőn</translation>
 <translation id="2224075387478458881">Nem engedélyezett felvétel készítése a képernyőről, ha védett tartalom látható rajta</translation>
 <translation id="2227179592712503583">Javaslat eltávolítása</translation>
 <translation id="2248634276911611268">Link megnyitása új lapon, majd váltás erre az új lapra</translation>
@@ -317,7 +351,6 @@
 <translation id="2293443480080733021">Mire szeretne összpontosítani? A feladat hozzáadásához nyomja meg az Enter billentyűt.</translation>
 <translation id="229397294990920565">Mobiladat-kapcsolat kikapcsolása…</translation>
 <translation id="2295777434187870477">A mikrofon be van kapcsolva, a gombra kattintva elnémítja.</translation>
-<translation id="2298170939937364391">Teljes képernyős nagyító bekapcsolva. A kikapcsoláshoz nyomja le ismét a Ctrl + Keresés + M billentyűparancsot.</translation>
 <translation id="2302092602801625023">Ezt a fiókot a Family Linkkel kezelik</translation>
 <translation id="2303600792989757991">Ablakáttekintési mód váltása</translation>
 <translation id="2305738328104302723">Google-feladatlista: <ph name="GLANCEABLES_TASKS_LIST_NAME" /></translation>
@@ -336,17 +369,18 @@
 <translation id="2359808026110333948">Tovább</translation>
 <translation id="2360398059912971776">akkumulátor</translation>
 <translation id="2361210043495191221">Wi-Fi be-/kikapcsolása. <ph name="STATE" />.</translation>
+<translation id="236574664504281623">A(z) <ph name="SESSION_NAME" /> eszközről</translation>
 <translation id="2367186422933365202">Nem lehet bejelentkezni a Chromebookra</translation>
 <translation id="2367972762794486313">Alkalmazások megjelenítése</translation>
 <translation id="2368828502825385061">Helymeghatározás</translation>
 <translation id="2369165858548251131">„Helló” kínai nyelven</translation>
 <translation id="2370971919968699910">Ez adatforgalmi költségekkel járhat.
 <ph name="DEVICECOUNT" /> eszköz van csatlakoztatva.</translation>
-<translation id="2382875860893882175">Az átküldés jelenleg szünetel. Bármikor folytathatja vagy leállíthatja az átküldést.</translation>
 <translation id="2386292613071805067">Az oldalon lévő összes elem kijelölése</translation>
 <translation id="2392659840443812875">Nincs rendelkezésre álló hotspot. Győződjön meg arról, hogy az eszköze a közelben van, és be van kapcsolva rajta a Bluetooth.</translation>
 <translation id="2397416548179033562">A Chrome-menü megjelenítése</translation>
 <translation id="240006516586367791">Médiaelemek vezérlője</translation>
+<translation id="240155812475001919">Google-dokumentum</translation>
 <translation id="2402411679569069051">A Chromebook zárolásának feloldásához használja ujjlenyomatát, vagy oldja fel telefonja zárolását.</translation>
 <translation id="240545663114741956">A kijelentkezéshez nyomja meg kétszer a <ph name="ACCELERATOR" /> billentyűkombinációt.</translation>
 <translation id="2405664212338326887">Nincs kapcsolat</translation>
@@ -358,6 +392,7 @@
 <translation id="2427507373259914951">Kattintás bal egérgombbal</translation>
 <translation id="2429753432712299108">A(z) „<ph name="DEVICE_NAME" />” Bluetooth-eszköz engedélyt kér a párosításra. Mielőtt elfogadná, ellenőrizze, hogy ez a biztonsági kód látható-e azon az eszközön is: <ph name="PASSKEY" /></translation>
 <translation id="2435457462613246316">Jelszó megjelenítése</translation>
+<translation id="2437771564543046790">Alacsony töltöttség. Akkumulátorkímélő mód bekapcsolva</translation>
 <translation id="243878895369688216">Tegnap nyitotta meg</translation>
 <translation id="2440978926514840421">GIF-felvétel rögzítve</translation>
 <translation id="2441427462554639370">Felvétel megszakítva a kritikusan kevés tárhely miatt</translation>
@@ -366,6 +401,7 @@
 <translation id="2453860139492968684">Befejezés</translation>
 <translation id="2455994958736234930">www. és .com felvétele a címsávba, majd a webhely megnyitása</translation>
 <translation id="2456008742792828469">Naptár, <ph name="CURRENT_MONTH_YEAR" /></translation>
+<translation id="246052086404491029">Részletezés</translation>
 <translation id="2465145153332031561">Akkumulátor állapota: <ph name="BATTERY_HEALTH_PERCENTAGE" />%, ciklusok száma: <ph name="CYCLE_COUNT" /></translation>
 <translation id="2473177541599297363">Felbontás megerősítése</translation>
 <translation id="2475982808118771221">Hiba történt</translation>
@@ -375,6 +411,7 @@
 <translation id="2486214324139475545"><ph name="DESK_NAME" /> előnézete. Aktív asztal.</translation>
 <translation id="2486405091093637109">A(z) „<ph name="DISPLAY_NAME" />” felbontása <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Hz) értékre módosult. Megerősítés nélkül a rendszer visszaállítja a korábbi beállításokat <ph name="TIMEOUT_SECONDS" /> múlva.</translation>
 <translation id="2487915095798731898">Csatlakozás</translation>
+<translation id="2496180316473517155">Böngészés előzményei</translation>
 <translation id="2499445554382787206">Asztali profil menüje. <ph name="DESK_NAME" /></translation>
 <translation id="2501920221385095727">Beragadó billentyűk</translation>
 <translation id="2504454902900101003">A telefonján lévő legutóbbi fotók, médiatartalmak és értesítések megtekintésére vonatkozó beállítás elvetése</translation>
@@ -384,6 +421,7 @@
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2516416533263263796">Az Összpontosítási mód be van kapcsolva, 10 perc van hátra</translation>
 <translation id="2516637483312286228">Játékvezérlők módosítása</translation>
+<translation id="252054055865191167">Jelölő eszköz</translation>
 <translation id="2526581474998477112">Az ablakok zárolásának feloldása</translation>
 <translation id="2528111225373402384">A hotspot beállításai</translation>
 <translation id="253007620291357635"><ph name="NETWORK_NAME" /> · <ph name="SERVICE_PROVIDER" /></translation>
@@ -398,7 +436,6 @@
 <translation id="2573588302192866788">Nem sikerült csatlakozni a következőhöz: <ph name="NAME" /></translation>
 <translation id="2575685495496069081">A többfiókos bejelentkezés le van tiltva</translation>
 <translation id="2579264398927991698">Firmware-frissítések</translation>
-<translation id="2582112259361606227">Újraindítás és frissítés</translation>
 <translation id="2586657967955657006">Vágólap</translation>
 <translation id="2595239820337756193">5000 mérföld</translation>
 <translation id="2596078834055697711">Képernyőkép készítése az ablakról</translation>
@@ -406,6 +443,7 @@
 <translation id="2607678425161541573">Online bejelentkezés szükséges</translation>
 <translation id="2612072250312279703">tevékenységfigyelő</translation>
 <translation id="2612614436418177118">Egy alkalmazásikon áthelyezése az alkalmazásrácson belül</translation>
+<translation id="2619052155095999743">Beillesztés</translation>
 <translation id="2619326010008283367">A bemutató <ph name="STEP" />. lépése az összesen <ph name="TOTAL_STEPS" /> lépésből. Az eszköz beállításait az Indítóban találja. Próbálja meg személyre szabni <ph name="PRODUCT_NAME" /> eszközét a Beállításokban: például módosítsa a háttérképet, vagy állítson be képernyőkímélőt.</translation>
 <translation id="2620016719323068571">Keresés a következők között: <ph name="CATEGORY" />, fájlok, alkalmazások és egyebek…</translation>
 <translation id="2620436844016719705">Rendszer</translation>
@@ -420,6 +458,7 @@
 <translation id="2653659639078652383">Küldés</translation>
 <translation id="2658778018866295321">Kattintás és húzás</translation>
 <translation id="2665788051462227163">A(z) <ph name="UNAVAILABLE_APPS_ONE" /> és a(z) <ph name="UNAVAILABLE_APPS_TWO" /> alkalmazás nincs telepítve erre az eszközre.</translation>
+<translation id="2670350619068134931">Csökkentett animációk</translation>
 <translation id="2673968385134502798">Játékok</translation>
 <translation id="2678852583403169292">Felolvasás menü</translation>
 <translation id="2687510499067466116">A billentyűparancs módosult</translation>
@@ -462,6 +501,7 @@
 <translation id="2825619548187458965">Polc</translation>
 <translation id="2831035692318564937">Bekapcsolva napkeltéig</translation>
 <translation id="2834813915651407382">Nemrégiben nyitotta meg</translation>
+<translation id="2838589015763961627">Lépjen ki a teljes képernyős módból az átméretezéshez</translation>
 <translation id="2840766858109427815">Ugrás a következő oldalra</translation>
 <translation id="2841907151129139818">Visszaváltott táblagép módra</translation>
 <translation id="2844169650293029770">C típusú USB-vel kompatibilis eszköz (bal első port)</translation>
@@ -480,6 +520,7 @@
 <translation id="2894949423239620203">A kábel befolyásolhatja a teljesítményt</translation>
 <translation id="2914580577416829331">Képernyőfelvételek</translation>
 <translation id="2924416280450782352">Nem sikerült megjeleníteni az elemeket. Próbálja meg újra megnyitni ezt a panelt.</translation>
+<translation id="292506373491190801">A folyamatban lévő eseményből</translation>
 <translation id="2931572158271115754">Semmi sincs a teendőlistán.</translation>
 <translation id="2932487126591186298">10 perc hozzáadva. <ph name="REMAINING_TIME" /> van hátra.</translation>
 <translation id="2935225303485967257">Profilok kezelése</translation>
@@ -495,11 +536,12 @@
 <translation id="2963773877003373896">mod3</translation>
 <translation id="2965227184985674128">Aktiválja a mikrofon-hozzáférést?</translation>
 <translation id="296762781903199866">Nem sikerült letölteni a(z) <ph name="LANGUAGE" /> nyelvű beszédfájlokat</translation>
+<translation id="2968761508099987738">Az Ön aktuális tartózkodási helye jelenleg nem támogatott.</translation>
 <translation id="2970920913501714344">Alkalmazások, bővítmények és témák telepítése</translation>
 <translation id="2977598380246111477">Következő szám</translation>
 <translation id="2985148236010982088">Összes alkalmazás megjelenítése</translation>
+<translation id="2992272421330787632">Az összes médiajavaslat elrejtése</translation>
 <translation id="2992327365391326550">Az eszköz mikrofongombját kikapcsolták.</translation>
-<translation id="2996462380875591307">Dokkolt nagyító bekapcsolva. A kikapcsoláshoz nyomja le ismét a Ctrl+Keresés+D billentyűparancsot.</translation>
 <translation id="3000461861112256445">Monó hang</translation>
 <translation id="3001391739687111021">Képernyőméret módosítása</translation>
 <translation id="3009178788565917040">Kimenet</translation>
@@ -524,6 +566,7 @@
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">Menü kibontása</translation>
 <translation id="3087734570205094154">Alja</translation>
+<translation id="3090214513075567547">Helyi menü megnyitása</translation>
 <translation id="3090989381251959936"><ph name="FEATURE_NAME" /> be-/kikapcsolása. <ph name="STATE_TEXT" /></translation>
 <translation id="3093423061078042895">Hiányzik</translation>
 <translation id="3095995014811312755">verzió</translation>
@@ -538,7 +581,8 @@
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3125690294288312932">Feladat típusa</translation>
 <translation id="3126026824346185272">Ctrl</translation>
-<translation id="3126069444801937830">Indítsa újra a frissítéshez</translation>
+<translation id="3130793786899299931">Hossz módosítása</translation>
+<translation id="3134486240968249588">Néhány fontos tudnivaló</translation>
 <translation id="3139188263101386725">A frissített billentyűparancs használata</translation>
 <translation id="3139942575505304791">1. asztal</translation>
 <translation id="315116470104423982">Mobiladatok</translation>
@@ -548,6 +592,7 @@
 <translation id="316086887565479535">Nem támogatott alkalmazások találhatók a sablonban</translation>
 <translation id="3160929076476941240">2 óra</translation>
 <translation id="316356270129335934">A(z) <ph name="MANAGER" /> visszaállítja <ph name="DEVICE_TYPE" /> eszköze korábbi verzióját. Eszköze újra fog indulni, és minden adat törlődik róla.</translation>
+<translation id="316798519864381606">Google-dia</translation>
 <translation id="3171170659304083361">Beviteli módszerek beállításai</translation>
 <translation id="3176221688814061633">Chromebookja vagy Bluetooth-eszköze régebbi Bluetooth-verziót használ. Kapcsolja be a szuperfelbontású Bluetootht, vagy használjon belső mikrofont a jobb hangminőség érdekében.</translation>
 <translation id="3181441307743005334">Az újraindítás eltarthat egy ideig</translation>
@@ -562,14 +607,17 @@
 <translation id="3226991577105957773">+<ph name="COUNT" /> további</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3233611303007751344">Akkumulátorkímélő mód kikapcsolva</translation>
+<translation id="3238409143297336341">Szülői felügyelet beállítása alkalmazásokhoz</translation>
 <translation id="324366796737464147">Zajszűrés</translation>
 <translation id="3249513730522716925">A(z) „<ph name="WINDOW_TITLE" />” ablak át lett helyezve a(z) „<ph name="ACTIVE_DESK" />” asztalról a(z) „<ph name="TARGET_DESK" />” asztalra</translation>
 <translation id="3253743281242075461">Feladat típusa: <ph name="GLANCEABLES_CLASSROOM_LIST_NAME" /></translation>
 <translation id="3255483164551725916">Mit lehet csinálni?</translation>
 <translation id="3256109297135787951">A kiemelés eltávolítása a polcon található elemről</translation>
 <translation id="3260969790895726815">A beszéd feldolgozása helyben történik, a diktálás pedig offline is működik, egyes hangalapú utasítások azonban nem lesznek használhatók.</translation>
+<translation id="3264031581203585083">Az összes Google Drive-javaslat elrejtése</translation>
 <translation id="3265032511221679826">Bekapcsolja a pontos helyhez való hozzáférést?</translation>
 <translation id="3269597722229482060">Kattintás jobb egérgombbal</translation>
+<translation id="3273040715184276344">Caps Lock kikapcsolva</translation>
 <translation id="3274634049061007184">A telefon alkalmazásainak megtekintése</translation>
 <translation id="3289364673986435196">Bekapcsológombhoz tartozó menü</translation>
 <translation id="3289544412142055976">A Linux-alkalmazások jelenleg nem támogatottak.</translation>
@@ -593,18 +641,18 @@
 <translation id="334927402682780278">Szöveg kijelölése a kurzortól a sor végéig</translation>
 <translation id="3349345708646875009">Feladatkezelő megnyitása</translation>
 <translation id="3364721542077212959">Érintőceruza eszközök</translation>
+<translation id="3365281428003534650">Időzítő és feladat beállítása</translation>
 <translation id="3365977133351922112">Telefonja túl távol van. Hozza közelebb a telefont.</translation>
 <translation id="3368922792935385530">Kapcsolódva</translation>
 <translation id="3369111525500416043">Hamarosan esedékes</translation>
 <translation id="3371140690572404006">C típusú USB-vel kompatibilis eszköz (jobb első port)</translation>
 <translation id="3375634426936648815">Csatlakozva</translation>
-<translation id="3378438761594387761">Itt találja a legutóbbi letöltéseket és képernyőfelvételeket</translation>
 <translation id="3386978599540877378">teljes képernyős nagyító</translation>
 <translation id="3387527074123400161">ChromiumOS</translation>
 <translation id="3389599499324569679">Bekapcsolja a Diktálás funkciót?</translation>
 <translation id="3394432020929931914">, kibontva</translation>
+<translation id="3401474642070997151">A javaslatok személyre szabásához kattintson jobb egérgombbal, vagy tartsa nyomva valamelyik javaslatot</translation>
 <translation id="3405101454990027959">Mikrofon-hozzáférés aktiválása</translation>
-<translation id="3408735331120433841">Jelenleg folyamatban van a képernyő átküldése.</translation>
 <translation id="3409584356742878290">A Fejlesztői eszközök ellenőrző paneljének megjelenítése vagy elrejtése</translation>
 <translation id="3410336247007142655">Sötét téma beállításainak megjelenítése</translation>
 <translation id="3413817803639110246">Itt most nem látható semmi</translation>
@@ -620,6 +668,7 @@
 <translation id="3439896670700055005">Az aktuális oldal újratöltése gyorsítótárazott tartalom használata nélkül</translation>
 <translation id="3441920967307853524"><ph name="TOTAL_BYTES" />/<ph name="RECEIVED_BYTES" /></translation>
 <translation id="3443917186865471894">Személyre szabhatja az egerét</translation>
+<translation id="3444385531800624797">Eredmények betöltése…</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> perc</translation>
 <translation id="3445925074670675829">C típusú USB-vel kompatibilis eszköz</translation>
 <translation id="3454555520521576458">Újraméretezhető</translation>
@@ -636,6 +685,7 @@
 <translation id="3509391053705095206">Telefonja nem található. Ne felejtse el bekapcsolni a telefon Bluetooth funkcióját.</translation>
 <translation id="3510164367642747937">Egérmutató kiemelése</translation>
 <translation id="3513798432020909783">A fiókot a(z) <ph name="MANAGER_EMAIL" /> kezeli</translation>
+<translation id="3516000762115478502">Ablak mozaikszerű átméretezése felfelé</translation>
 <translation id="3517037892157925473">Feladatok legutóbb frissítve: <ph name="DATE" />, <ph name="TIME" />.</translation>
 <translation id="352245152354538528">{0,plural, =1{1 percen belül frissítse az eszközt}other{# percen belül frissítse az eszközt}}</translation>
 <translation id="3522979239100719575">Folyamatban van a rendelkezésre álló profilok keresése. Ez eltarthat néhány percig.</translation>
@@ -665,6 +715,7 @@
 <translation id="3593646411856133110">Felfelé csúsztatva és nyomva tartva megjelenik a többi alkalmazás</translation>
 <translation id="3595596368722241419">Akkumulátor feltöltve</translation>
 <translation id="3596012367874587041">Alkalmazásbeállítások</translation>
+<translation id="3597890697379254532">Csak a fekvő tájolás áll rendelkezésre</translation>
 <translation id="3598452309062311481">keresés + h</translation>
 <translation id="3600061223661453002">Ki</translation>
 <translation id="3604801046548457007">Létrehozta a(z) „<ph name="DESK_TITILE" />” asztalt</translation>
@@ -684,7 +735,6 @@
 <translation id="363473492175527493">A feladat, amelyre összpontosítani szeretne, be van állítva: <ph name="TASK_NAME" />. A feladat szerkesztéséhez nyomja meg az Enter billentyűt.</translation>
 <translation id="3638400994746983214">Adatvédelmi képernyő be- és kikapcsolása. <ph name="STATE_TEXT" />.</translation>
 <translation id="3649256019230929621">Ablak kis méretre állítása</translation>
-<translation id="3649505501900178324">Esedékes a frissítés</translation>
 <translation id="3653999174677652346"><ph name="EVENT_POSITION" />
         <ph name="EVENT_SUMMARY" />,
         ettől: <ph name="START_TIME" />
@@ -708,6 +758,7 @@ Csatlakoztassa az eszközt áramforráshoz.</translation>
 <translation id="3702846122927433391">Nigéria népessége</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3706423975342040244">Szórakozás</translation>
+<translation id="3707093869106077605">A(z) <ph name="UNAVAILABLE_DLC_ONE" /> és a(z) <ph name="UNAVAILABLE_DLC_TWO" /> nem áll rendelkezésre.</translation>
 <translation id="3708186454126126312">Korábban csatlakoztatva</translation>
 <translation id="3712143870407382523">Válasszon ablakot ehhez az oldalhoz</translation>
 <translation id="371370241367527062">Elülső mikrofon</translation>
@@ -718,9 +769,11 @@ Csatlakoztassa az eszközt áramforráshoz.</translation>
 <translation id="3738664582935948253">Mostantól megjelenítheti a kattintásokat és a billentyűparancsokat a képernyőfelvételeken</translation>
 <translation id="3742055079367172538">Képernyőkép elkészítve</translation>
 <translation id="3743775386021959186">Összpontosítási üzemmód bekapcsolva, <ph name="REMAINING_TIME" /> van hátra</translation>
+<translation id="3750403286520637847">Időjárási javaslat elrejtése</translation>
 <translation id="3756485814916578707">Képernyőtartalom átküldése</translation>
 <translation id="3765841382945324995">A(z) <ph name="SIX_PACK_KEY_NAME" /> billentyűparancsa a(z) <ph name="NEW_SHORTCUT" /> billentyűparancsra módosult a következőről: <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="3765841986579723851">Ma szerkesztette</translation>
+<translation id="3772109172035555611">TrackPoint személyre szabása</translation>
 <translation id="3773700760453577392">Egy rendszergazda letiltotta a többfiókos bejelentkezést <ph name="USER_EMAIL" /> számára.
 Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="3779139509281456663">Csatlakozás: <ph name="NAME" /></translation>
@@ -754,10 +807,10 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="3899995891769452915">Hangbevitel</translation>
 <translation id="3900355044994618856">Munkamenete <ph name="SESSION_TIME_REMAINING" /> elteltével lejár</translation>
 <translation id="3901991538546252627">Csatlakozás a következőhöz: <ph name="NAME" /></translation>
-<translation id="3906954721959377182">Táblagép</translation>
-<translation id="3922427723338465344">{0,plural, =1{Eszköz módosítása az előző verzióra 1 percen belül}other{Eszköz módosítása az előző verzióra # percen belül}}</translation>
+<translation id="3904768293285573640">Ablak mozaikszerű átméretezése balra</translation>
 <translation id="3923494859158167397">Nincs beállítva mobilhálózat</translation>
 <translation id="3925540965556789199"><ph name="DATE" />, események betöltése…</translation>
+<translation id="3927049937406914450">Nem állnak rendelkezésre az időjárási adatok, mert a helyhozzáférés ki van kapcsolva. Ezt a beállításokban módosíthatja.</translation>
 <translation id="3932043219784172185">Nincs csatlakoztatott eszköz</translation>
 <translation id="3934456833412894880">Az adaptív töltés be van kapcsolva. Az akkumulátor töltöttségi szintje 80%-on marad az akkumulátor-élettartam növelése érdekében, és teljesen feltöltődik, ha szükséges.</translation>
 <translation id="3943857333388298514">Beillesztés</translation>
@@ -767,12 +820,16 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="3950272133184491871">Kijelentkezik most?</translation>
 <translation id="3950820424414687140">Bejelentkezés</translation>
 <translation id="3953130726459169782">Még nincsenek befejezve feladatok.</translation>
+<translation id="3958714870339660776">Egész nap</translation>
 <translation id="3962859241508114581">Előző szám</translation>
+<translation id="3963124517343721543">Az előző ablakok és lapok megnyitásával egyszerűen folytathatja ott, ahol abbahagyta. Emellett személyre szabott javaslatokat is láthat a következő műveletekre.</translation>
 <translation id="3969043077941541451">Kikapcsolva</translation>
 <translation id="3970324493235864154">A telefon értesítéseinek megtekintése</translation>
 <translation id="397105322502079400">Számítás…</translation>
 <translation id="397726367135689299">Előfordulhat, hogy nem megbízható az akkumulátor töltése.</translation>
 <translation id="3977512764614765090">Az akkumulátor töltöttsége <ph name="PERCENTAGE" />%, és a töltés jelenleg is folyamatban van.</translation>
+<translation id="397808938113646171">Az idő lejárt! Kiváló!</translation>
+<translation id="3982013579989864579">Másik hangkimenetre szeretne váltani?</translation>
 <translation id="3984536049089846927">Következő oldal</translation>
 <translation id="3986082989454912832">Fogadás</translation>
 <translation id="3990002060657467458">A gyakran használt vezérlők (például a Wi-Fi, a Bluetooth és a hangerő) a Gyorsbeállításokban találhatók. Itt képernyőképeket is készíthet.</translation>
@@ -781,6 +838,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="4002066346123236978">Cím</translation>
 <translation id="40062176907008878">Kézírás</translation>
 <translation id="4011112806063830608">A Ne zavarjanak mód be van kapcsolva.</translation>
+<translation id="4015144849380506405">Az egérgombok szüneteltetése/folytatása, ha be van kapcsolva</translation>
 <translation id="4017989525502048489">Lézermutató</translation>
 <translation id="401993194061514265">A jelölő nem áll rendelkezésre. Nyissa meg újra a Screencastot.</translation>
 <translation id="4021716437419160885">Görgetés lefelé</translation>
@@ -795,13 +853,17 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="404437169852192935">Többé nem kap frissítést</translation>
 <translation id="4049230407053723315">Gyorsbeállítások</translation>
 <translation id="4057003836560082631">Böngészőlap: <ph name="TOTAL_COUNT" />/<ph name="INDEX" />. <ph name="SITE_TITLE" />, <ph name="SITE_URL" /></translation>
+<translation id="4059696795118403455">A következő műveletekre vonatkozó személyre szabott javaslatok megtekintéséhez nyomja meg az Áttekintés billentyűt</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Ki, 1 appnál}other{Ki, # appnál}}</translation>
 <translation id="4066027111132117168">Bekapcsolva, <ph name="REMAINING_TIME" /></translation>
+<translation id="4067635609339702874">A ChromeOS Beállítások alkalmazása szeretné ellenőrizni az Ön személyazonosságát</translation>
 <translation id="4069532248403319695">Letöltések oldal megnyitása</translation>
 <translation id="4072264167173457037">Közepes jel</translation>
+<translation id="4072805772816336153">Próbálja újra később</translation>
 <translation id="4086921558679520050">A fizikai mikrofon kapcsolójának bekapcsolása az eszközön</translation>
 <translation id="4101772068965291327"> megnyitása</translation>
 <translation id="4112140312785995938">Ugrás visszafelé</translation>
+<translation id="4113030288477039509">A rendszergazdája kezeli</translation>
 <translation id="4114315158543974537">Phone Hub bekapcsolása</translation>
 <translation id="4115378294792113321">Magenta</translation>
 <translation id="411881149140864134">Asztal aktiválása a bal oldalon</translation>
@@ -816,6 +878,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="4150201353443180367">Megjelenítés</translation>
 <translation id="4156293514828496577">Az akkumulátor töltöttségi szintje: <ph name="PERCENTAGE" />% (körülbelül <ph name="TIME_LEFT" />).
 Az akkumulátor-élettartam növelése érdekében egyes funkciók korlátozottan használhatók.</translation>
+<translation id="4160919062868802509">Több hangforrás észlelve</translation>
 <translation id="4165275524535002941">Előfordulhat, hogy a kábel nem támogatja a kijelzőket</translation>
 <translation id="4177415338862979658">Kattintson ide a részletekért</translation>
 <translation id="4177913004758410636">{0,plural, =1{1 napon belül frissítse az eszközt}other{# napon belül frissítse az eszközt}}</translation>
@@ -834,12 +897,12 @@ Az akkumulátor-élettartam növelése érdekében egyes funkciók korlátozotta
 <translation id="4201033867194214117">A(z) <ph name="FEATURE_NAME" /> nem áll rendelkezésre.</translation>
 <translation id="4201051445878709314">Az előző hónap megjelenítése</translation>
 <translation id="4209973997261364186">Wi-Fi bekapcsolva</translation>
+<translation id="4212246570487010370">Böngészés folytatása</translation>
 <translation id="4212472694152630271">Váltás PIN-kódra</translation>
 <translation id="4215497585250573029">VPN-beállítások</translation>
 <translation id="4217571870635786043">Diktálás</translation>
 <translation id="4221957499226645091"><ph name="APP_NAME" />, telepített alkalmazás, szüneteltetve</translation>
 <translation id="4228078597006700451">A vezérlők nincsenek beállítva</translation>
-<translation id="4231053948789591973">Az átküldés jelenleg szünetel. Bármikor folytathatja vagy leállíthatja a képernyő átküldését.</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4240486403425279990">Áttekintési mód</translation>
 <translation id="4242533952199664413">Beállítások megnyitása</translation>
@@ -848,14 +911,17 @@ Az akkumulátor-élettartam növelése érdekében egyes funkciók korlátozotta
 <translation id="425364040945105958">Nincs SIM</translation>
 <translation id="4261870227682513959">Az értesítési beállítások megjelenítése. Az értesítések ki vannak kapcsolva</translation>
 <translation id="4264977415328155183">, összecsukva</translation>
+<translation id="4265259722091164182">Szókezdő Nagybetűk</translation>
 <translation id="4269883910223712419">Az eszköz rendszergazdája a következőket végezheti el:</translation>
 <translation id="4274537685965975248">A Ctrl + Alt + Lefelé nyíl billentyűparancs módosult. Az End billentyű használatához nyomja le a következő billentyűparancsot: <ph name="LAUNCHER_KEY_NAME" /> + Jobbra nyíl.</translation>
 <translation id="4275283744500212192">Ablakelrendezési beállítások megnyitása</translation>
+<translation id="4275663329226226506">Média</translation>
 <translation id="4279490309300973883">Tükrözés</translation>
 <translation id="4280601795273309128">A továbbiakban már nem érkeznek biztonsági frissítések. Váltson újabb eszközre.</translation>
 <translation id="4283888303416325161">A nagyobb biztonság érdekében adja meg a jelszót</translation>
 <translation id="4285498937028063278">Rögzítés megszüntetése</translation>
 <translation id="428715201724021596">Csatlakozás a profilhoz. Ez eltarthat néhány percig.</translation>
+<translation id="4287250812980588583">Chrome-ablak</translation>
 <translation id="4294319844246081198">Jó reggelt, <ph name="GIVEN_NAME" />!</translation>
 <translation id="4296136865091727875">Az összes (<ph name="COUNT" />) értesítés törlése</translation>
 <translation id="4300272766492248925">Alkalmazás megnyitása</translation>
@@ -863,10 +929,12 @@ Az akkumulátor-élettartam növelése érdekében egyes funkciók korlátozotta
 <translation id="4302592941791324970">Nem áll rendelkezésre</translation>
 <translation id="4303223480529385476">Állapotsor kibontása</translation>
 <translation id="4305133312001648038">Nagyítási szint visszaállítása az oldalon</translation>
+<translation id="4305817255990598646">Váltás</translation>
 <translation id="4307713728991152670">A telefonján lévő legutóbbi fotók, médiatartalmak és alkalmazások megtekintésének beállítása</translation>
 <translation id="4312840429157639164">Kamera a jobb felső sarokhoz igazítva. Ütközés a rendszerfelülettel.</translation>
 <translation id="4316910396681052118">MINDEN ALKALMAZÁS</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4322385711258710213">A Chrome böngésző összes javaslatának elrejtése</translation>
 <translation id="4322742403972824594">A Ctrl + Alt + Felfelé nyíl billentyűparancs módosult. A Home billentyű használatához nyomja le a következő billentyűparancsot: <ph name="LAUNCHER_KEY_NAME" /> + Balra nyíl.</translation>
 <translation id="4324840740119394760">Ezzel engedélyezi a kamerához való hozzáférést a(z) <ph name="APP_NAME" />, valamint a kamerahasználati engedéllyel rendelkező összes alkalmazás és webhely számára</translation>
 <translation id="4327147325944669226">Játék felvétele</translation>
@@ -877,19 +945,20 @@ Az akkumulátor-élettartam növelése érdekében egyes funkciók korlátozotta
 <translation id="4364101114148522660"><ph name="DURATION" />  Felvétel…</translation>
 <translation id="4371348193907997655">Átküldés beállításai</translation>
 <translation id="4375482231364171368">Keresés a címsávban</translation>
-<translation id="4378154925671717803">Telefon</translation>
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />, jelerősség: <ph name="SIGNAL_STRENGTH" /> százalék</translation>
 <translation id="4378551569595875038">Kapcsolódás…</translation>
 <translation id="4379531060876907730">Ezek az érintőceruza-eszközök</translation>
 <translation id="4381031910344220229">Ezzel engedélyezi a mikrofonhoz való hozzáférést a(z) <ph name="APP_NAME" />, illetve a mikrofonhasználati engedéllyel rendelkező összes alkalmazás és webhely számára</translation>
 <translation id="4382340674111381977">Vissza az előző oldalra</translation>
 <translation id="4389184120735010762">Lenyomta a dokkolt nagyító billentyűparancsát. Bekapcsolja a funkciót?</translation>
+<translation id="4394466652057229831">Kattintson a jobb gombbal az összefoglaláshoz</translation>
 <translation id="439598569299422042">Szünetel, <ph name="SIZE_INFO" /></translation>
 <translation id="440113666232554208">Nem sikerült a képernyőfelvétel mentése</translation>
 <translation id="4405151984121254935">A csatlakoztatott perifériatípus nem támogatott</translation>
 <translation id="4406883609789734330">Élő feliratozás</translation>
 <translation id="4412698727486357573">Súgó</translation>
 <translation id="4412944820643904175"><ph name="FEATURE_NAME" /> kikapcsolva.</translation>
+<translation id="4417647906073317561">Összpontosítási üzemmód beállításai. Állítson be időzítőt, feladatot és zenét, hogy lendületbe kerüljön.</translation>
 <translation id="4424159417645388645">5. asztal</translation>
 <translation id="4430019312045809116">Hangerő</translation>
 <translation id="4441283832827406317">Az alkalmazások név szerint rendezettek</translation>
@@ -898,6 +967,7 @@ Az akkumulátor-élettartam növelése érdekében egyes funkciók korlátozotta
 <translation id="4450893287417543264">Ne jelenjen meg többé</translation>
 <translation id="4451374464530248585">Az Alt + Lefelé nyíl billentyűparancs módosult. A Lefelé nyíl billentyű használatához nyomja le a következő billentyűparancsot: <ph name="LAUNCHER_KEY_NAME" /> + Lefelé nyíl.</translation>
 <translation id="4453876312474547652">A Ctrl + V billentyűparancs nyomva tartásakor megjelenik a vágólap. A billentyűparancs kikapcsolásához tiltsa le a #clipboard-history-longpress jelzőt a chrome://flags oldalon (Lacros használata esetén: os://flags).</translation>
+<translation id="445765352722456792">Javaslatok személyre szabása</translation>
 <translation id="445864333228800152">Jó estét!</translation>
 <translation id="4458688154122353284">Képernyőfelvétel leállítása</translation>
 <translation id="445923051607553918">Belépés Wi-Fi hálózatra</translation>
@@ -918,14 +988,17 @@ Az akkumulátor-élettartam növelése érdekében egyes funkciók korlátozotta
 <translation id="4513946894732546136">Visszajelzés</translation>
 <translation id="4518404433291145981">A Chromebook zárolásának feloldásához először oldja fel a telefonja zárolását.</translation>
 <translation id="4527045527269911712">A(z) „<ph name="DEVICE_NAME" />” Bluetooth-eszköz engedélyt kér a párosításra.</translation>
+<translation id="4531536770443562276">Csak a teljes képernyős mód áll rendelkezésre</translation>
 <translation id="4533343294786968049">Az akkumulátor élettartamának növelése. Az akkumulátor a következő időpontig teljesen feltöltődik: <ph name="FULLY_CHARGE_TIME" />.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> a teljes feltöltésig</translation>
 <translation id="4538824937723742295">Teljes képernyős képernyőkép készítése</translation>
 <translation id="4539127209940689201">Aktuális oldal nyomtatása</translation>
+<translation id="4541505619120536051">Mindig nyitva</translation>
 <translation id="4541706525461326392">Profil eltávolítása. Ez eltarthat néhány percig.</translation>
 <translation id="4544483149666270818">Jelölje ki a felvenni kívánt ablakot</translation>
 <translation id="4545950850562423083">Az aktuális oldal mentése könyvjelzőként</translation>
 <translation id="4548482551627849548">Aktív ablak áthelyezése a bal oldali asztalra</translation>
+<translation id="4552748006424994716">A visszhang elkerülése érdekében a mikrofonon érkező hangot csak vezetékes fejhallgatóval hallhatja.</translation>
 <translation id="4560576029703263363">Be</translation>
 <translation id="4561267230861221837">3G</translation>
 <translation id="4565377596337484307">Jelszó elrejtése</translation>
@@ -940,18 +1013,20 @@ Az akkumulátor-élettartam növelése érdekében egyes funkciók korlátozotta
 <translation id="4585337515783392668">Ismeretlen fogadó eszközre történő átküldés leállítása</translation>
 <translation id="4596144739579517758">Sötét téma kikapcsolva.</translation>
 <translation id="4596442969149038771"><ph name="USER" /> megosztotta</translation>
+<translation id="4610493115106525653">Jó kimenet</translation>
 <translation id="4611292653554630842">Bejelentkezés</translation>
 <translation id="462160925400706389"><ph name="NAME" /> csatlakoztatva</translation>
 <translation id="4623167406982293031">Fiók ellenőrzése</translation>
 <translation id="4628757576491864469">Eszközök</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, <ph name="RATING_SCORE" /> csillagos értékelés</translation>
-<translation id="4633185660152240791">{0,plural, =1{Eszköz módosítása az előző verzióra egy napon belül}other{Eszköz módosítása az előző verzióra # napon belül}}</translation>
 <translation id="4633636853437260449">A törléshez nyomja meg a Ctrl + W billentyűkombinációt.</translation>
+<translation id="4635501805800894201">{0,plural, =0{Eszköz frissítése az előző verzióra most}=1{Eszköz frissítése az előző verzióra 1 másodpercen belül}other{Eszköz frissítése az előző verzióra # másodpercen belül}}</translation>
 <translation id="4642092649622328492">Részleges képernyőkép készítése</translation>
 <translation id="4644727592819780893">A terület túl kicsi, a kamera nem tud előnézetet készíteni róla</translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, javasolt alkalmazás</translation>
 <translation id="4649019912155580914">Ön szerkesztette</translation>
 <translation id="4654916960643280876"><ph name="PROFILE_NAME" /> <ph name="EMAIL" />, jelölőnégyzet bejelölve</translation>
+<translation id="465686131535918331">Személyre szabhatja a(z) <ph name="PERIPHERAL_NAME" /> beállításait</translation>
 <translation id="4657775630156561295">A következő javaslatot véglegesen törli a rendszer a fiók javaslatelőzményeiből:
 
 <ph name="QUERY" /></translation>
@@ -960,9 +1035,11 @@ Az akkumulátor-élettartam növelése érdekében egyes funkciók korlátozotta
 <translation id="4667099493359681081"><ph name="FILENAME" /> letöltése</translation>
 <translation id="4672539464599646374">Akkumulátorkímélő mód bekapcsolva</translation>
 <translation id="4673427585974421255">Bekapcsolva hagyom</translation>
+<translation id="4677040906536311086">Google-táblázat</translation>
 <translation id="468293128311738995">Alkalmazások a telefonjáról</translation>
 <translation id="4690510401873698237">A polc alul található</translation>
 <translation id="4696813013609194136">Zárolás feloldása szülői kóddal</translation>
+<translation id="4697357603686181098">Ebben nem tudok segíteni. Próbálkozzon egy másik kéréssel.</translation>
 <translation id="4702647871202761252">Az adatvédelmi képernyő ki van kapcsolva</translation>
 <translation id="4706121060329443414">A letöltést később kísérli meg a rendszer. A beszédet a rendszer egyelőre elküldi a Google-nak feldolgozásra.</translation>
 <translation id="470644585772471629">Színek invertálása</translation>
@@ -974,8 +1051,10 @@ Az akkumulátor-élettartam növelése érdekében egyes funkciók korlátozotta
 <translation id="4733161265940833579"><ph name="BATTERY_PERCENTAGE" />% (bal)</translation>
 <translation id="4734965478015604180">Vízszintes</translation>
 <translation id="4735944890391795473">12. asztal</translation>
+<translation id="4736732123074402682">Ellenőrizze a kapcsolatot, majd próbálja meg újra.</translation>
 <translation id="473775607612524610">Frissítés</translation>
 <translation id="4740516757091333363">Törli a mentett asztalt?</translation>
+<translation id="4746798685375253449">{0,plural, =1{Eszköz frissítése az előző verzióra 1 napon belül}other{Eszköz frissítése az előző verzióra # napon belül}}</translation>
 <translation id="4747410141429390146">Oldja fel a zárolást az értesítések megtekintéséhez</translation>
 <translation id="4752784485658729358">Csak hat mentett asztal engedélyezett. Távolítsa el valamelyiket, ha új asztalt szeretne menteni.</translation>
 <translation id="4759238208242260848">Letöltések</translation>
@@ -990,6 +1069,7 @@ Az akkumulátor-élettartam növelése érdekében egyes funkciók korlátozotta
 <translation id="4778095205580009397">A Google Segéd nem áll rendelkezésre bemutató munkamenetben.</translation>
 <translation id="4789348252524569426">Nem sikerült telepíteni a beszédfájlokat. Szükség van az eszköz frissítésére. Indítsa újra az eszközt, és próbálkozzon újra.</translation>
 <translation id="478959186716341421">Átküldés folyamatban</translation>
+<translation id="4798403412327076414">A következő bejelentkezéskor látni fogja az előzőleg megnyitott ablakokat és alkalmazásokat</translation>
 <translation id="4798622944000246716">Mobilhálózata nem támogatja a hotspot használatát</translation>
 <translation id="4798888871844665150">A másolt elem már a vágólapon van. A megtekintéshez használja a(z) <ph name="SHORTCUT_KEY_NAME" /> + V billentyűparancsot.</translation>
 <translation id="479989351350248267">search</translation>
@@ -1013,14 +1093,18 @@ Az akkumulátor-élettartam növelése érdekében egyes funkciók korlátozotta
 <translation id="4868492592575313542">aktiválva</translation>
 <translation id="4871905435473761992">Hotspotadatok megjelenítése. Mobilhálózata nem támogatja a hotspot lehetőséget.</translation>
 <translation id="4872237917498892622">Alt + Keresés vagy Shift</translation>
+<translation id="4872724534194216608">Keresés a számításhoz</translation>
 <translation id="4872852897273142380">A könyvjelzősáv kiemelése, illetve fókuszálás rá (ha megjelenik)</translation>
+<translation id="4876935764454575645">Hang kiválasztása</translation>
 <translation id="4881323000405981760">A Linux-alkalmazások nem támogatják az effektusokat</translation>
 <translation id="4881695831933465202">Megnyitás</translation>
+<translation id="4884542439842987401"><ph name="PLAYLIST_TYPE" /> ᐧ <ph name="PLAYLIST_TITLE" /></translation>
 <translation id="4889868803215848840">Lehetősége van visszajelzést küldeni a javaslatok javításához:</translation>
 <translation id="4890187583552566966">A rendszergazda letiltotta a Google Segédet.</translation>
 <translation id="4890408602550914571">Gondoskodjon arról, hogy telefonja a közelben legyen, bekapcsolt Bluetooth funkcióval.</translation>
 <translation id="4892981359753171125">Arcvezérlés</translation>
 <translation id="4895488851634969361">Az akkumulátor feltöltve.</translation>
+<translation id="4902797682482387055">Javasolt feladat a következőre fókuszálva:</translation>
 <translation id="490375751687810070">Függőleges</translation>
 <translation id="490788395437447240"><ph name="BATTERY_PERCENTAGE" />%-os töltöttség</translation>
 <translation id="491504982845934899">A(z) <ph name="NETWORK_NAME" /> hálózat aktiválása csak az eszköz beállítása után lehetséges</translation>
@@ -1031,6 +1115,7 @@ Az akkumulátor-élettartam növelése érdekében egyes funkciók korlátozotta
 <translation id="492453977506755176">Rögzítés mód billentyűje</translation>
 <translation id="4925542575807923399">A fiók rendszergazdája megköveteli, hogy ez a fiók legyen az első bejelentkezett fiók a többfiókos bejelentkezés munkamenete során.</translation>
 <translation id="493076006037866439">A képernyő kicsinyítése</translation>
+<translation id="4932733599132424254">Dátum</translation>
 <translation id="4936329710968938986">Mindenki, kikapcsolva</translation>
 <translation id="4937170330762390348">A diktálás funkció segítségével a hangjával is gépelhet. Szövegmezőben nyomja meg a diktálás gombot, vagy válassza a képernyő alján lévő mikrofon ikont. A diktálás nyelve a következő: <ph name="LANGUAGE" />. A beszédfájlok le lesznek töltve, így a diktálás offline módban is használható. A diktálás nyelvét bármikor módosíthatja a következő pontban: Beállítások &gt; Kisegítő lehetőségek.</translation>
 <translation id="4938176435186993759">Összes javaslat elrejtése</translation>
@@ -1039,6 +1124,7 @@ Az akkumulátor-élettartam növelése érdekében egyes funkciók korlátozotta
 <translation id="495046168593986294">Görgetés felfelé</translation>
 <translation id="4950800194215951939">Személyre szabhatja a játékélményt</translation>
 <translation id="4952936045814352993">A Telefon helymeghatározása funkció nem áll rendelkezésre, amíg az értesítési hangok ki vannak kapcsolva</translation>
+<translation id="4953585991029886728">Szöveg szerkesztése</translation>
 <translation id="4960324571663582548">A(z) <ph name="MANAGER" /> előírja, hogy visszaállítsa a korábbi állapotot a következőnél: <ph name="DEVICE_TYPE" />. Eszköze újra fog indulni, és minden adat törlődik róla.</translation>
 <translation id="4961318399572185831">Képernyő átküldése</translation>
 <translation id="4964188651935955085">A Bluetooth kikapcsolásakor megszakad a(z) Ön <ph name="DEVICE_TYPE" /> eszköze és a következő külső eszköz közötti kapcsolat:</translation>
@@ -1080,6 +1166,9 @@ Az akkumulátor-élettartam növelése érdekében egyes funkciók korlátozotta
 <translation id="5092436659250499817">A billentyűzet háttérvilágításának be- vagy kikapcsolása</translation>
 <translation id="5094577350232361255">névjegy</translation>
 <translation id="5095136268899496849">A Beállításokban személyre szabhatja <ph name="PRODUCT_NAME" /> eszközét. Próbálja ki a háttér módosítását vagy a képernyőkímélő beállítását.</translation>
+<translation id="5096125376090473584">A szöveg felolvasásának meghallgatásához először válassza ki a Felolvasás ikont a képernyő alján, majd jelölje ki a kívánt szövegrészt.
+
+Használhatja a billentyűparancsot is. Először jelölje ki a szöveget, majd nyomja meg a(z) <ph name="MODIFIER" /> + s billentyűparancsot.</translation>
 <translation id="509790653408515442">Telefonja alkalmazásai itt jelennek majd meg streameléskor</translation>
 <translation id="5098537242461068432">Asztal és ablakok újra megnyitva</translation>
 <translation id="5103975065730779239">Eddig: <ph name="END_TIME_EXPRESSION" /></translation>
@@ -1090,6 +1179,8 @@ Az akkumulátor-élettartam növelése érdekében egyes funkciók korlátozotta
 <translation id="5121628974188116412">Ugrás az oldal aljára</translation>
 <translation id="5122517996953421795"><ph name="DESK_NAME" /> előnézete. Inaktív asztal.</translation>
 <translation id="5136175204352732067">Új billentyűzet lett csatlakoztatva</translation>
+<translation id="5140105873789567560">Legalább 18 évesnek kell lennie a Segítség az íráshoz és a Segítség az olvasáshoz használatához.</translation>
+<translation id="5144005092084035179">Hangbemenetet szeretne váltani?</translation>
 <translation id="5147567197700016471">Feloldva</translation>
 <translation id="5150070631291639005">Adatvédelmi beállítások</translation>
 <translation id="5155897006997040331">Olvasás sebessége</translation>
@@ -1109,16 +1200,21 @@ Az akkumulátor-élettartam növelése érdekében egyes funkciók korlátozotta
 <translation id="5208059991603368177">Be</translation>
 <translation id="5216991270656129561">Kikapcsolva eddig: <ph name="TIME" /></translation>
 <translation id="5222676887888702881">Kijelentkezés</translation>
+<translation id="5228195526683428788">Elválasztó az osztott képernyős nézetben</translation>
 <translation id="5229343007215035173">Az adatvédelmi képernyő be- vagy kikapcsolása</translation>
 <translation id="5230516054153933099">Ablak</translation>
 <translation id="5234764350956374838">Elvetés</translation>
 <translation id="523505283826916779">Kisegítő beállítások</translation>
 <translation id="5238719049014159442">Indító megnyitása/bezárása</translation>
 <translation id="5240725217819182328">Gyors hozzáférés bizonyos oldalakhoz vagy műveletekhez a telepített alkalmazásokon belül</translation>
+<translation id="5243355658487390559">Dátum keresése</translation>
 <translation id="5245201184978705914">Nem sikerült az átirat létrehozása</translation>
+<translation id="5251174953851719648">Tartalom frissítése</translation>
 <translation id="5253783950165989294">Csatlakoztatva van a(z) <ph name="DEVICE_NAME" /> nevű eszközhöz, akkumulátor töltöttségi szintje: <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="5258528442992323769">Nincsenek mentett asztalok</translation>
 <translation id="5260676007519551770">4. asztal</translation>
+<translation id="5265391159779542051">Eredmények betöltve</translation>
+<translation id="5270547718570958938">Google Naptár</translation>
 <translation id="5277869901083657836">Érintőceruza-eszközök ki- és bekapcsolása</translation>
 <translation id="5278086053818066789">A ChromeVox (hangos visszajelzés) be- vagy kikapcsolása</translation>
 <translation id="5283099933536931082">A(z) <ph name="APP_ITEM_TITLE" /> alkalmazás a figyelmét igényli.</translation>
@@ -1153,10 +1249,13 @@ Nincsenek csatlakoztatott eszközök.</translation>
 <translation id="5361524080961918551"><ph name="LANGUAGE" /> nyelvű beszédfájlok részlegesen letöltve</translation>
 <translation id="5363163447017455357"><ph name="DELIMITER" /> Ugrás erre a lapra</translation>
 <translation id="5364693579536176785">tárhely</translation>
+<translation id="5369573834963677938">Az arcvezérlés az eszköz más felhasználói számára is rendelkezésre áll</translation>
 <translation id="5369717264580061086">Egy fájl előnézete a Fájlok alkalmazásban</translation>
 <translation id="5377367976106153749">Bekapcsolja a kamerához való hozzáférést?</translation>
 <translation id="5379115545237091094">Túl sok próbálkozás</translation>
+<translation id="5383434787520761436">Nincsenek Google Drive-fájlok</translation>
 <translation id="5391307769715781764">Lecseréli a mentett asztalt?</translation>
+<translation id="5392327145184648521">Akkumulátor töltöttségi szintjének kiszámítása…</translation>
 <translation id="5393156353051693207">Az alkalmazások átrendezéséhez tartsa lenyomva ujját bárhol</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> az alatta lévő <ph name="IN_PLACE_APP" /> alkalmazáson; mappa létrehozásához engedje el.</translation>
 <translation id="5397578532367286026">A felhasználó használati adatait és előzményeit a kezelő (<ph name="MANAGER_EMAIL" />) a chrome.com webhelyen tekintheti meg.</translation>
@@ -1183,6 +1282,7 @@ Nincsenek csatlakoztatott eszközök.</translation>
 <translation id="550391772491508736">Átküldés újraindítása</translation>
 <translation id="5506975627792768506">Nagyító be- vagy kikapcsolása</translation>
 <translation id="5512042095225963688">Előző szó törlése</translation>
+<translation id="5519005148254860683">A Google Tasks kibontása</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="5520229639206813572">A rendszergazda az összes eSIM-profilt eltávolította. További információért forduljon a rendszergazdához.</translation>
 <translation id="5520909879404821039">Szia franciául</translation>
@@ -1193,7 +1293,6 @@ Nincsenek csatlakoztatott eszközök.</translation>
 <translation id="553675580533261935">Kilépés a munkamenetből</translation>
 <translation id="5537725057119320332">Küldés</translation>
 <translation id="554017492391497564">Nem sikerült készként megjelölni.</translation>
-<translation id="5543778275214926792">Bekapcsolja a Felolvasás funkciót?</translation>
 <translation id="5546397813406633847">Felhasználó helyreállítása</translation>
 <translation id="554893713779400387">Diktálás váltása</translation>
 <translation id="5550417424894892620">Húzza a fájlokat az asztalra a következő helyre való hozzáadáshoz: <ph name="HOLDING_SPACE_TITLE" />. Nem adhat hozzá fájlokat az asztalhoz.</translation>
@@ -1211,10 +1310,12 @@ Nincsenek csatlakoztatott eszközök.</translation>
 <translation id="5577281275355252094">A Telefonközpont használatához ellenőrizze, hogy a Bluetooth be van-e kapcsolva a telefonon</translation>
 <translation id="5578188167649348993">memória</translation>
 <translation id="5580000943347215299">Könyvtár</translation>
+<translation id="5586388332127302891">Dokkolt nagyító engedélyezve. A kikapcsoláshoz nyomja meg újra a(z) <ph name="ACCELERATOR" /> billentyűparancsot.</translation>
 <translation id="5587506661873751671">Letöltés… <ph name="DOWNLOAD_PERCENT" />%</translation>
 <translation id="558849140439112033">Húzással jelölje ki a felvenni kívánt területet</translation>
 <translation id="5590609058453685222">A némításra emlékeztetés funkció be van kapcsolva. Értesítést kap, ha némított állapotban beszél.</translation>
 <translation id="5592745162308462420">fn</translation>
+<translation id="5593564924968945303">Chrome böngésző</translation>
 <translation id="5596627076506792578">További lehetőségek</translation>
 <translation id="5599242528220103262">A billentyűparancs ki van kapcsolva</translation>
 <translation id="5600415762228455511">Összpontosítási üzemmód bekapcsolva, <ph name="REMAINING_TIME" /> van hátra, összpontosítás a következő feladatra: <ph name="TASK_NAME" /></translation>
@@ -1283,8 +1384,10 @@ Nincsenek csatlakoztatott eszközök.</translation>
 <translation id="5802516411616338943">Gyorsbeállítások megnyitása</translation>
 <translation id="5804651031882187592">Kapcsolja ki a „SIM zárolása” beállítást</translation>
 <translation id="5805809050170488595">Kattintson a(z) <ph name="NETWORK_NAME" /> aktiválásához</translation>
+<translation id="5819918159912280082">A Chromebook váratlanul újraindult. Megnyithatja az előző ablakokat és alkalmazásokat.</translation>
 <translation id="5823239091726045201">Google Tasks-feladatok az interneten</translation>
 <translation id="5825969630400862129">Csatlakoztatott eszközök beállításai</translation>
+<translation id="5830180081891717894">További <ph name="WINDOWS" /></translation>
 <translation id="5837036133683224804">A(z) <ph name="ROUTE_TITLE" /> leállítása itt: <ph name="RECEIVER_NAME" /></translation>
 <translation id="5841296711770970362">Ugrás a következő számra</translation>
 <translation id="5842553299352339114">Be van kapcsolva a következő hotspot: <ph name="DEVICE_NAME" />; nincs csatlakoztatott eszköz</translation>
@@ -1300,6 +1403,7 @@ Nincsenek csatlakoztatott eszközök.</translation>
 <translation id="588258955323874662">Teljes képernyő</translation>
 <translation id="5887954372087850114">A(z) <ph name="WINDOW_TITLE" /> ablak hozzárendelve a(z) <ph name="DESK_TITLE" /> asztalhoz; minden más asztalhoz való hozzárendelése megszüntetve</translation>
 <translation id="588817334757907802">Fájl megnyitása a Chrome böngészőben</translation>
+<translation id="5892014525522223653">Ön offline állapotban van.</translation>
 <translation id="5895138241574237353">Újraindítás</translation>
 <translation id="589817443623831496">Pontkeresés</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -1309,6 +1413,8 @@ Nincsenek csatlakoztatott eszközök.</translation>
 <translation id="5916646100036936191">Új értesítés, <ph name="NOTIFICATION_COUNT" /> összesen</translation>
 <translation id="5916664084637901428">Be</translation>
 <translation id="5920710855273935292">A mikrofon le van némítva.</translation>
+<translation id="5928083197428724029">A(z) <ph name="MANAGER" /> használatához frissítés szükséges</translation>
+<translation id="5939518447894949180">Visszaállítás</translation>
 <translation id="5946788582095584774"><ph name="FEATURE_NAME" /> bekapcsolva.</translation>
 <translation id="5947494881799873997">Visszavonás</translation>
 <translation id="595202126637698455">Teljesítménykövetés engedélyezve</translation>
@@ -1319,8 +1425,10 @@ Nincsenek csatlakoztatott eszközök.</translation>
 <translation id="5975235751479998104">Váltás előre az ablakokon keresztül</translation>
 <translation id="5978382165065462689">A képernyő irányításának megosztása a Távsegítség szolgáltatás keretein belül.</translation>
 <translation id="5980301590375426705">Kilépés vendégként</translation>
+<translation id="5982119059638483922">A kikapcsoláshoz nyomja meg az Fn + Keresőgomb billentyűkombinációt vagy a Shift billentyűt.</translation>
 <translation id="5983567367406220847">Tétlenség miatt a hotspot ki lett kapcsolva.</translation>
 <translation id="598407983968395253">Sablon használata</translation>
+<translation id="5986723678596105470">Bekapcsolódás Google Meettel</translation>
 <translation id="598882571027504733">A frissítés lekéréséhez indítsa újra a Chromebookot a csatlakoztatott billentyűzet segítségével.</translation>
 <translation id="5998374579424866922">Játékvezérlők kikapcsolása</translation>
 <translation id="6000279412553873020">Billentyűk, gombok és egyebek</translation>
@@ -1333,12 +1441,15 @@ Nincsenek csatlakoztatott eszközök.</translation>
 <translation id="6020147141355393792">A telefonértesítések és az alkalmazások megtekintésének beállítása</translation>
 <translation id="6022924867608035986">A keresőmezőben lévő szöveg törlése</translation>
 <translation id="602472752137106327">Az összes asztal ablakainak megjelenítésére vonatkozó kapcsológomb van kiválasztva</translation>
+<translation id="6024768346262692989">Nem sikerült letölteni az arcvezérlési fájlokat</translation>
 <translation id="6025324406281560198"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, jelerősség: <ph name="SIGNAL_STRENGTH" />, a rendszergazdája kezeli</translation>
 <translation id="6027518778343897451">Nincs esemény ezen a napon: <ph name="CURRENT_MONTH_DAY" /> Az Enter billentyűt lenyomva megnyithatja a Google Naptárt a böngészőben.</translation>
 <translation id="6030495522958826102">A menü a képernyő bal alsó sarkába került.</translation>
+<translation id="6030608926359652298">Érintőpad személyre szabása</translation>
 <translation id="6032620807120418574">Kattintson bárhova a teljes képernyőről való felvétel készítéséhez</translation>
 <translation id="6040071906258664830">Mikrofon általi hangrögzítés <ph name="STATE" /> állásban</translation>
 <translation id="6040143037577758943">Bezárás</translation>
+<translation id="6042308850641462728">Továbbiak</translation>
 <translation id="6043212731627905357">Ez a monitor nem illik össze <ph name="DEVICE_TYPE" />-eszközével (a monitor nem támogatott).</translation>
 <translation id="6043994281159824495">Kijelentkezés most</translation>
 <translation id="6045629311476491587"><ph name="APP_COUNT" /> alkalmazás használja</translation>
@@ -1353,11 +1464,14 @@ Nincsenek csatlakoztatott eszközök.</translation>
 <translation id="6068258534237496331">Videohívási vezérlők</translation>
 <translation id="6073451960410192870">Felvétel leállítása</translation>
 <translation id="6074087755403037157">Bétacsatorna</translation>
+<translation id="6075098173600599596">Kis- és nagybetűk módosítása</translation>
+<translation id="6091929401758362855">Lista: <ph name="PLAYLIST_TITLE" /></translation>
 <translation id="6093867385179428431">Rendszergazda által kikapcsolva</translation>
 <translation id="6095008505822982596">Beszéd sebessége</translation>
 <translation id="6095425951508823973">Kapcsolat hozzáadása a következővel: <ph name="PROVIDER" /></translation>
 <translation id="6099678161144790572">Az elmúlt egy hónapban szerkesztette</translation>
 <translation id="6103838137565245112">rendszer</translation>
+<translation id="610395411842312282">Két egymás melletti ablak csoportosítása</translation>
 <translation id="6108952804512516814">Létrehozás AI használatával</translation>
 <translation id="6114505516289286752"><ph name="LANGUAGE" /> nyelvű beszédfájlok letöltve</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
@@ -1365,13 +1479,16 @@ Nincsenek csatlakoztatott eszközök.</translation>
 <translation id="6121838516699723042">A(z) <ph name="FILENAME" /> fájl letöltésének megerősítése</translation>
 <translation id="612734058257491180">A Google Segéd nem áll rendelkezésre Vendég-munkafolyamatban.</translation>
 <translation id="6127370444807669747">Ha személyre szabott lejátszási listákat és több összpontosítást segítő zenét szeretne, próbálja ki a YouTube Music Premiumot</translation>
+<translation id="6127395413317891856">Ön offline állapotban van. Ellenőrizze a kapcsolatot, majd próbálja meg újra.</translation>
 <translation id="6129953537138746214">Szóköz</translation>
 <translation id="6137566720514957455">Eltávolítási párbeszédpanel megnyitása, <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6141205840878048728">Mire szeretne összpontosítani?</translation>
 <translation id="6141988275892716286">Letöltés megerősítése</translation>
 <translation id="6143578372829139382">Megosztás a YouTube-on</translation>
+<translation id="6147182561428020853">Mostantól letilthatja a következő eszközre telepített alkalmazásokat: <ph name="DEVICE_TYPE" /></translation>
 <translation id="6154006699632741460">A periféria nem támogatott</translation>
 <translation id="6156960295318603523">Nyelvi beállítások</translation>
+<translation id="6158923546703693047">Tartalom forrására vonatkozó adatok</translation>
 <translation id="615957422585914272">A képernyő-billentyűzet megjelenítése</translation>
 <translation id="616543563528926612">A jobb egérgombos kattintás billentyűparancsa az alt + kattintás billentyűparancsra módosult a következőről: <ph name="LAUNCHER_KEY_NAME" /> billentyű + kattintás.</translation>
 <translation id="6165508094623778733">További információ</translation>
@@ -1386,23 +1503,28 @@ Nincsenek csatlakoztatott eszközök.</translation>
 <translation id="6185696379715117369">Lapozás felfelé</translation>
 <translation id="619335566042889110">Töltés a teljes akkumulátorszint eléréséig most</translation>
 <translation id="6193431488227440296">Fejlesztői</translation>
+<translation id="6196214354688969799">Stúdiószintű látvány</translation>
 <translation id="6199775032047436064">A jelenlegi oldal újratöltése</translation>
 <translation id="6200515304866777730">Nem támogatja az alkalmazás</translation>
 <translation id="6210042900243040400">A(z) <ph name="EMAIL" /> fiókhoz korábban mentett <ph name="NAME" /> csatlakoztatása</translation>
 <translation id="6213808132343683860">Részleges képernyőkép vagy képernyőfelvétel készítése</translation>
+<translation id="621606890568890214">A Google Tanterem kibontása</translation>
+<translation id="6216759484154215561">További információk linkje megnyitva a böngészőben</translation>
 <translation id="6220928844947387476">Mostantól egyszerre veheti fel magát és képernyőjét</translation>
 <translation id="622484624075952240">Le</translation>
 <translation id="6228457605945141550">A fényerő csökkentése</translation>
 <translation id="623116199192908855">Képernyő átküldése Chromebookról</translation>
 <translation id="6231419273573514727">Korlátozott lehet a perifériás teljesítmény</translation>
+<translation id="6232416233079464213">Innen: <ph name="SESSION_NAME" /></translation>
 <translation id="6232891689835436217">A(z) <ph name="APP_NAME" /> jelenleg használja a kamerát és a mikrofont</translation>
 <translation id="6237231532760393653">1X</translation>
-<translation id="62380141479352646">Alacsony töltöttség. Akkumulátorkímélő mód bekapcsolva.</translation>
 <translation id="6240603910551255087">Felső gomb</translation>
+<translation id="6240821072888636753">Mindig kérdezzen rá</translation>
 <translation id="6247728804802644171">Értesítések megnyitása</translation>
 <translation id="6249795363855770621">Nem sikerült készként megjelölni. Próbálja újra, amikor online lesz.</translation>
 <translation id="6254629735336163724">Vízszintes helyzetben zárolva</translation>
 <translation id="6259254695169772643">A kiválasztáshoz használja az érintőceruzát</translation>
+<translation id="6260038345397266744"><ph name="TITLE" />. <ph name="DESCRIPTION" /></translation>
 <translation id="6267036997247669271"><ph name="NAME" />: aktiválás...</translation>
 <translation id="6274202259872570803">Képernyőátküldés</translation>
 <translation id="6276708887952587684">Az oldal forrásának megtekintése</translation>
@@ -1416,6 +1538,7 @@ Nincsenek csatlakoztatott eszközök.</translation>
 <translation id="6319503618073410818">Részletek megtekintése böngészőben</translation>
 <translation id="6324916366299863871">Billentyűparancs szerkesztése</translation>
 <translation id="6330012934079202188">Most az összes asztal ablakait mutatja; az aktuális asztal ablakainak megjelenítéséhez nyomja meg a felfelé nyilat</translation>
+<translation id="6337159624125741244">A teljes képernyős nagyító be van kapcsolva</translation>
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" /> – <ph name="MANAGER" /> által kezelt munkamenet</translation>
 <translation id="6344138931392227467"><ph name="DEVICE_NAME" /> csatlakoztatva</translation>
 <translation id="6348449481487610270"><ph name="MODIFIER_ONE" /><ph name="MODIFIER_TWO" /><ph name="KEY_ONE" />, majd <ph name="MODIFIER_THREE" /><ph name="KEY_TWO" /> vagy <ph name="KEY_THREE" /></translation>
@@ -1426,6 +1549,7 @@ Nincsenek csatlakoztatott eszközök.</translation>
 <translation id="6376931439017688372">A Bluetooth be van kapcsolva</translation>
 <translation id="6378515133128829137">Ablak kitűzése jobbra</translation>
 <translation id="6381109794406942707">Az eszköz feloldásához adja meg a PIN-kódot.</translation>
+<translation id="6381305031890976705">{0,plural, =1{Eszköz frissítése az előző verzióra 1 órán belül}other{Eszköz frissítése az előző verzióra # órán belül}}</translation>
 <translation id="638716340450135524">Kamera-hozzáférés bekapcsolása</translation>
 <translation id="639644700271529076">A CAPS LOCK ki van kapcsolva</translation>
 <translation id="6406458002328242616">Időzítés módosítása. <ph name="FOCUS_DURATION" />.</translation>
@@ -1445,19 +1569,20 @@ Nincsenek csatlakoztatott eszközök.</translation>
 <translation id="6450245544201845082">A jobb egérgombos kattintás billentyűparancsa jelenleg ki van kapcsolva</translation>
 <translation id="6452181791372256707">Elutasítás</translation>
 <translation id="6453179446719226835">A nyelv módosult</translation>
+<translation id="6456096448804832585">Csak az álló tájolás áll rendelkezésre</translation>
 <translation id="6459472438155181876">Képernyő kiterjesztése erre: <ph name="DISPLAY_NAME" /></translation>
 <translation id="6464094930452079790">képek</translation>
 <translation id="6467290994038932560">Bekapcsolva a következőnél: <ph name="GAME_APP_NAME" /></translation>
+<translation id="6468406072297048412">{0,plural, =1{Eszköz frissítése az előző verzióra 1 percen belül}other{Eszköz frissítése az előző verzióra # percen belül}}</translation>
 <translation id="6469104339369989396">Hotspot be- vagy kikapcsolása</translation>
 <translation id="6477681113376365978">Nem sikerült a fájl letöltése</translation>
 <translation id="6482559668224714696">Teljes képernyős nagyító</translation>
+<translation id="6485086611007560630">Időjárás (nem áll rendelkezésre)</translation>
 <translation id="6490471652906364588">C típusú USB-vel kompatibilis eszköz (jobb oldali port)</translation>
-<translation id="6491071886865974820">A(z) <ph name="MANAGER" /> megköveteli, hogy frissítse <ph name="DEVICE_TYPE" /> eszközét a határidőig</translation>
 <translation id="649452524636452238">Az intelligens kártya PIN-kódja</translation>
 <translation id="6495322433318104734">Képernyővédő megjelenítése, a kilépéshez nyomja meg bármelyik gombot</translation>
 <translation id="6495400115277918834">Kép a képben mód elindítva, a fókuszáláshoz nyomja le az Alt+Shift+V billentyűparancsot</translation>
 <translation id="6497418457565568043">A Ne zavarjanak funkció be van kapcsolva</translation>
-<translation id="6500896621837555595">Frissítés</translation>
 <translation id="6501401484702599040">Képernyő átküldése ide: <ph name="RECEIVER_NAME" /></translation>
 <translation id="6507042703812908515">A Billentyűparancsok alkalmazást a következő billentyűparanccsal nyithatja meg: „<ph name="NEW_SHORTCUT" />”.</translation>
 <translation id="6507618042428827377">Váltás a következő rendelkezésre álló beviteli módszerre</translation>
@@ -1470,6 +1595,7 @@ Nincsenek csatlakoztatott eszközök.</translation>
 <translation id="6537924328260219877">Jelerősség: <ph name="SIGNAL_STRENGTH" />, telefon akkumulátora: <ph name="BATTERY_STATUS" /></translation>
 <translation id="6539852571005954999">Folyamatban van a következő letöltés ellenőrzése: <ph name="FILENAME" /></translation>
 <translation id="6542521951477560771">Küldés ide: <ph name="RECEIVER_NAME" /></translation>
+<translation id="6542891623636520977">Emojik, GIF-ek és egyebek</translation>
 <translation id="6555373427270923730">Gépelje be a címsávba az internetcímet, majd nyomja le a(z) <ph name="MODIFIER" /><ph name="KEY" /> billentyűkombinációt</translation>
 <translation id="655633303491376835"><ph name="APP_NAME" />
 Frissen telepítve</translation>
@@ -1479,9 +1605,11 @@ Frissen telepítve</translation>
 <translation id="6565007273808762236">eSIM-kapcsolat nem áll rendelkezésre</translation>
 <translation id="6570831796530454248">{0,plural, =1{1 órán belül frissítse az eszközt}other{# órán belül frissítse az eszközt}}</translation>
 <translation id="6570902864550063460">Töltés USB-n keresztül…</translation>
+<translation id="6571006437522772306">Keresés a Fájlokban</translation>
 <translation id="6574587113394758819">A(z) <ph name="APP_TITLE" /> alkalmazás értesítései rejtve vannak, mert be van kapcsolva a megtekintési védelem</translation>
 <translation id="6574622320167699133">A zárolást a telefon oldotta fel. Koppintson vagy kattintson a belépéshez.</translation>
 <translation id="6578407462441924264">Név nélküli</translation>
+<translation id="6582034443359256692">Akkumulátor töltöttségi szintjének kiszámítása.</translation>
 <translation id="6585808820553845416">A munkamenet <ph name="SESSION_TIME_REMAINING" /> múlva véget ér.</translation>
 <translation id="6593850935013518327"><ph name="PRIMARY_TEXT" />, <ph name="SECONDARY_TEXT" /></translation>
 <translation id="6597278316891651699">Kamera a bal alsó sarokhoz igazítva. Ütközés a rendszerfelülettel.</translation>
@@ -1492,6 +1620,7 @@ Frissen telepítve</translation>
 <translation id="6613765291890844037">Foglalt tárhely: <ph name="STORAGE_IN_USE_SIZE" /> | Összesen: <ph name="STORAGE_TOTAL_SIZE" /></translation>
 <translation id="6614169507485700968">Az adatvédelmi képernyő be van kapcsolva</translation>
 <translation id="6622679827379792051">A telefonján lévő alkalmazások megtekintésének beállítása</translation>
+<translation id="662279009180869175">A balra és jobbra nyilakkal átméretezheti az osztott képernyőt</translation>
 <translation id="6624493541160101248">Jelenlegi asztal: <ph name="DESK_NAME" />. <ph name="DESK_COUNT" />/<ph name="DESK_INDEX" />. asztal.</translation>
 <translation id="6625718907317144388">A(z) <ph name="APP_1_TITLE" />, a(z) <ph name="APP_2_TITLE" /> és további alkalmazások értesítései rejtve vannak, mert be van kapcsolva a megtekintési védelem</translation>
 <translation id="6627638273713273709">Keresés+Shift+K</translation>
@@ -1510,13 +1639,16 @@ Frissen telepítve</translation>
 <translation id="6670153871843998651">3. asztal</translation>
 <translation id="6671495933530132209">Kép másolása</translation>
 <translation id="6671661918848783005">Nem sikerült feloldani a Chromebookot.</translation>
+<translation id="6676552993057022464">A fel és le nyilakkal átméretezheti az osztott képernyőt</translation>
 <translation id="6682029141988159141">Tartalom beillesztése a vágólapról</translation>
 <translation id="6683022854667115063">Fejhallgató</translation>
 <translation id="6686023075541098243">A telefonértesítések megtekintésének beállítása</translation>
+<translation id="6694973220096431421">Keresés a Google Drive-on</translation>
 <translation id="6696025732084565524">Szükség van a leválasztható billentyűzet kritikus frissítésének telepítésére</translation>
 <translation id="6697913454192220372">Új asztal hozzáadása</translation>
 <translation id="6700713906295497288">IME-menü gomb</translation>
-<translation id="6707693040195709527">Az eszköz előző verzióra való módosítása késésben van</translation>
+<translation id="6704375469818246414">Generatív AI használatakor változó lehet a minőség.</translation>
+<translation id="6706742084323792866">Billentyűzet kitűzése</translation>
 <translation id="6710213216561001401">Előző</translation>
 <translation id="6723839937902243910">Energiaellátás</translation>
 <translation id="672609503628871915">Újdonságok</translation>
@@ -1541,6 +1673,7 @@ Frissen telepítve</translation>
 <translation id="6790428901817661496">Lejátszás</translation>
 <translation id="679368458793552943">Nagyítás, ha a nagyító be van kapcsolva</translation>
 <translation id="6794287755901682422">Ehhez az elemhez a következők tartoznak: <ph name="GLANCEABLES_TASK_ITEM_METADATA" />.</translation>
+<translation id="6797745268063125932">Maradjon bekapcsolva</translation>
 <translation id="6801878137098616817">Nemrégiben szerkesztette</translation>
 <translation id="6802687695197837794">Ezzel engedélyezi a hozzáférést a(z) <ph name="APP1_NAME" />, a(z) <ph name="APP2_NAME" />, valamint a kamera- és mikrofonhasználati engedéllyel rendelkező összes alkalmazás és webhely számára</translation>
 <translation id="6803622936009808957">A kijelzők tükrözése sikertelen, mivel nem található támogatott felbontás. Ehelyett kiterjesztett asztal módba váltott a rendszer.</translation>
@@ -1556,12 +1689,14 @@ Frissen telepítve</translation>
 <translation id="6852628153543175788">10 perc hozzáadása</translation>
 <translation id="6855029042976311970">Éppen most szerkesztette</translation>
 <translation id="6856708615407876657">Keresési találatok kategóriáinak be- és kikapcsolása</translation>
+<translation id="6856756288284651804">Chromebook frissítve</translation>
 <translation id="6857725247182211756"><ph name="SECONDS" /> mp</translation>
 <translation id="685782768769951078">{NUM_DIGITS,plural, =1{1 számjegy maradt}other{# számjegy maradt}}</translation>
 <translation id="6867938213751067702">A következő letöltése szünetel: <ph name="FILENAME" /></translation>
 <translation id="6874854809828346832">Hotspotadatok megjelenítése. A hotspot be van kapcsolva.</translation>
 <translation id="6878400149835617132">A billentyűparancs ki van kapcsolva</translation>
 <translation id="6878701771800702153">{NUM_APPS,plural, =1{1 alkalmazás}other{# alkalmazás}}</translation>
+<translation id="6879454869409141992">A Caps Lock bekapcsolása</translation>
 <translation id="6883768636838842873">Billentyűparancsok, eszközhasználati tippek és egyebek</translation>
 <translation id="6884665277231944629">Vissza a mai napra</translation>
 <translation id="6886172995547742638">A(z) <ph name="DEVICE_TYPE" /> eszközön a teljesítmény csökkenése észlelhető. Használjon tanúsítvánnyal rendelkező, <ph name="PREFERRED_MINIMUM_POWER" /> W-os vagy nagyobb teljesítményű USB-C tápcsatlakozót.</translation>
@@ -1572,6 +1707,7 @@ Frissen telepítve</translation>
 <translation id="6917259695595127329">Feladatok legutóbb frissítve: <ph name="TIME" />.</translation>
 <translation id="6919251195245069855">A rendszer nem ismerte fel az intelligens kártyáját. Próbálja újra.</translation>
 <translation id="692135145298539227">törlés</translation>
+<translation id="6921427376813842559">Az eszköz frissítése</translation>
 <translation id="6929081673585394903">Vezérlők megjelenítése</translation>
 <translation id="6931576957638141829">Mentés ide</translation>
 <translation id="6942518653766415536">Rögzítési formátum menüje</translation>
@@ -1631,6 +1767,7 @@ Frissen telepítve</translation>
 <translation id="7143207342074048698">Csatlakozás</translation>
 <translation id="7144942256906679589">Akkumulátorállapot</translation>
 <translation id="7145639536026937076">Az akkumulátor töltöttsége <ph name="PERCENTAGE" />%, és a töltés jelenleg is folyamatban van. Az Akkumulátorkímélő mód be van kapcsolva.</translation>
+<translation id="7147587499155271409">Nincsenek böngészési előzmények</translation>
 <translation id="7149149900052329230">Helyi és Google Drive-fájljait is kezelheti a Fájlok alkalmazásban.</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7167913274352523149"><ph name="HOTSPOT" />,
@@ -1642,7 +1779,6 @@ Frissen telepítve</translation>
 <translation id="7188494361780961876">A menü a képernyő bal felső sarkába került.</translation>
 <translation id="7189412385142492784">Milyen messze van a Vénusz?</translation>
 <translation id="7198435252016571249">Kamera a jobb alsó sarokhoz igazítva. Ütközés a rendszerfelülettel.</translation>
-<translation id="720981139652840573">Felolvastathatja a kívánt szöveget. Először válassza ki a Felolvasás ikont a képernyő alján, majd jelölje ki a kívánt szövegrészt. Használhat billentyűparancsot is: jelölje ki a kívánt szöveget, majd nyomja le a Keresőgomb/Indító + S billentyűkombinációt.</translation>
 <translation id="7219573373513695352">Nincsenek csatlakoztatott eszközök</translation>
 <translation id="7229029500464092426">Memória <ph name="AVAILABLE_MEMORY" /> | <ph name="TOTAL_MEMORY" /> összesen</translation>
 <translation id="7244725679040769470">Az akkumulátor töltöttségi szintje: <ph name="PERCENTAGE" />%. Csatlakoztassa az eszközt áramforráshoz.</translation>
@@ -1659,14 +1795,19 @@ Frissen telepítve</translation>
 <translation id="7302889331339392448">Az Élő feliratozás ki van kapcsolva.</translation>
 <translation id="7303365578352795231">Válasz másik eszközön.</translation>
 <translation id="7305884605064981971">EDGE</translation>
+<translation id="7311244614769792472">Nincs találat</translation>
 <translation id="7312210124139670355">A rendszergazda visszaállítja az Ön eSIM-jét. Ez eltarthat néhány percig.</translation>
+<translation id="7312761820869643657">Eszköz frissítése az előző verzióra</translation>
 <translation id="7313193732017069507">Kamera kibontása</translation>
+<translation id="73289266812733869">Nincs kijelölve</translation>
 <translation id="7330397557116570022">A diktálás funkció használatához lépjen valamelyik szövegmezőbe</translation>
 <translation id="7331646370422660166">alt + lefelé mutató nyíl</translation>
+<translation id="7336943714413713812">Keresés a böngészési előzmények között</translation>
 <translation id="7337660433630200387">+10 perc</translation>
 <translation id="7340731148882810149">Automatikus kattintások menü</translation>
 <translation id="7346909386216857016">Rendben, értem</translation>
 <translation id="7348093485538360975">Képernyő-billentyűzet</translation>
+<translation id="7352651011704765696">Valami nem működik</translation>
 <translation id="735745346212279324">A VPN nincs csatlakoztatva</translation>
 <translation id="7360036564632145207">A perifériás adathozzáférési védelemre vonatkozó beállítás módosítása optimalizálhatja a teljesítményt.</translation>
 <translation id="736045644501761622">Háttérkép és stílus beállítása</translation>
@@ -1693,6 +1834,7 @@ Frissen telepítve</translation>
 <translation id="742594950370306541">A kamera épp használatban van.</translation>
 <translation id="742608627846767349">Jó reggelt!</translation>
 <translation id="743058460480092004">A kamera és a mikrofon épp használatban van.</translation>
+<translation id="7441711280402516925">Lejátszás folyamatban · Váltás a lapra</translation>
 <translation id="7453330308669753048">Keresésielőzmény-találat eltávolítva</translation>
 <translation id="7459485586006128091">Belső hiba miatt a hotspot ki lett kapcsolva. Néhány perc múlva próbáljon meg újra csatlakozni.</translation>
 <translation id="7461924472993315131">Rögzítés</translation>
@@ -1714,12 +1856,14 @@ Frissen telepítve</translation>
 <translation id="7514365320538308">Letöltés</translation>
 <translation id="7515998400212163428">Android</translation>
 <translation id="7516641972665276706">page down</translation>
+<translation id="7518182783647693467">Hőmérséklet mértékegységének átváltása (°F/°C)</translation>
 <translation id="7519206258459640379">A keretezés be van kapcsolva.</translation>
 <translation id="7519649142417630956">A kikapcsolást követően az eszköz kijelentkezteti a rendszergazdát, aki a továbbiakban nem fogja tudni vezérelni az eszközét.
 
 Az eszköz leállításához tartsa ismét nyomva az eszköz bekapcsológombját.</translation>
 <translation id="7523420897035067483">A Ne zavarjanak mód bekapcsolása Összpontosítási üzemmódban</translation>
 <translation id="7524043547948122239">Google Tasks</translation>
+<translation id="7525067979554623046">Létrehozás</translation>
 <translation id="7526573455193969409">Elképzelhető, hogy figyelik a hálózatot</translation>
 <translation id="7536035074519304529">IP-cím: <ph name="ADDRESS" /></translation>
 <translation id="7536832381700852123">A bal oldali ablak frissítése</translation>
@@ -1730,6 +1874,7 @@ Az eszköz leállításához tartsa ismét nyomva az eszköz bekapcsológombját
 <translation id="7557816257942363084">A(z) <ph name="APP_NAME" /> jelenleg használja a mikrofont</translation>
 <translation id="7561982940498449837">Menü bezárása</translation>
 <translation id="7564874036684306347">Az ablakok másik asztalra történő áthelyezése váratlan viselkedést eredményezhet. Az ezt követő értesítéseket, ablakokat és párbeszédpaneleket a rendszer megoszthatja az asztalok között.</translation>
+<translation id="7568790562536448087"> frissítése</translation>
 <translation id="7569509451529460200">Braille és ChromeVox bekapcsolva</translation>
 <translation id="7569886975397378678">A telefon értesítéseinek és alkalmazásainak megtekintésére vonatkozó beállítás elvetése</translation>
 <translation id="7571361473021531288">Akkumulátor <ph name="BATTERY_PERCENTAGE" />%-on | <ph name="TIME" /> van hátra</translation>
@@ -1761,6 +1906,7 @@ Az eszköz leállításához tartsa ismét nyomva az eszköz bekapcsológombját
 <translation id="7670953955701272011">Ennek a napnak a megnyitása a Google Naptárban</translation>
 <translation id="7671610481353807627">Az alkalmazások szín szerint rendezettek</translation>
 <translation id="7672095158465655885">Csatlakozva <ph name="NAME" /> hálózathoz, <ph name="SUBTEXT" /></translation>
+<translation id="7680417644536099065">Caps Lock bekapcsolva</translation>
 <translation id="7682351277038250258">Tartalom beillesztése a vágólapról egyszerű szövegként</translation>
 <translation id="7684531502177797067">Kamerás bevitel a következőre állítva: <ph name="CAMERA_NAME" />.</translation>
 <translation id="7687172143976244806">Megnyitotta a fájlt</translation>
@@ -1779,23 +1925,29 @@ Az eszköz leállításához tartsa ismét nyomva az eszköz bekapcsológombját
 <translation id="7725108879223146004">Hotspotadatok megjelenítése. A hotspot kikapcsolása folyamatban van.</translation>
 <translation id="7726391492136714301">Telefonja értesítéseinek és alkalmazásainak megtekintése</translation>
 <translation id="7727952505535211425">A webhely megnyitása a címsávban új lapon</translation>
+<translation id="7728657226117099693">A Caps Lock kikapcsolása</translation>
 <translation id="7742327441377685481">Nincs értesítés</translation>
+<translation id="774736258792760908">Ha bekapcsolja a Segítség az íráshoz és a Segítség az olvasáshoz funkciót, a rendszer elküldi a bevitt szöveget és a dokumentumok tartalmát a Google AI szervereinek írási javaslatok és összefoglalók generálásához, kérdések megválaszolásához, valamint a termék fejlesztéséhez a(z) <ph name="LINK_TO_SERVICE_TERMS" /> értelmében. Ne adjon meg személyes, kényes vagy bizalmas adatokat.</translation>
 <translation id="7748275671948949022">Az indítógomb kiemelése a polcon</translation>
 <translation id="7749443890790263709">Elérte az asztalok maximális számát.</translation>
 <translation id="7749958366403230681">4. ExpressKey</translation>
-<translation id="776344839111254542">Kattintson a frissítés részleteinek megtekintéséhez</translation>
+<translation id="7751260505918304024">Összes megjelenítése</translation>
+<translation id="7759183637555564029">A Beállításokban bármikor kikapcsolhatja a Segítség az íráshoz és a Segítség az olvasáshoz funkciót. <ph name="LINK_TO_LEARN_MORE" /></translation>
 <translation id="7768784765476638775">Felolvasás</translation>
 <translation id="7769299611924763557">A GIF hamarosan elkészül.</translation>
 <translation id="7773536009433685931">Helyette Wi-Fi bekapcsolása</translation>
 <translation id="7780094051999721182">billentyűparancsok</translation>
 <translation id="7780159184141939021">Képernyő elforgatása</translation>
 <translation id="7781829728241885113">Tegnap</translation>
+<translation id="7787212146956232129">A bemeneti és kimeneti eszközök be vannak állítva. A beállításoknál módosíthatja őket.</translation>
 <translation id="7792590255364786396">Látható</translation>
+<translation id="7793389284006812057">A generatív AI egy kísérleti szolgáltatás, korai fejlesztési fázisban van, és jelenleg korlátozottan áll rendelkezésre.</translation>
 <translation id="7796735576426975947">Új értesítés elrejtve</translation>
 <translation id="7798302898096527229">A kikapcsoláshoz nyomja meg a Keresés vagy a Shift billentyűt.</translation>
 <translation id="780301667611848630">Köszönöm, nem</translation>
 <translation id="7807067443225230855">Keresés és a Segéd</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> és <ph name="MINUTE" /></translation>
+<translation id="7825412704590278437">Közelgő naptáreseményből</translation>
 <translation id="7829386189513694949">Erős jel</translation>
 <translation id="7830453190047749513">Személyre szabhatja <ph name="PERIPHERAL_NAME" /> eszközén a gombműveleteket, a kurzor sebességét és egyebeket</translation>
 <translation id="7837740436429729974">Az idő lejárt</translation>
@@ -1809,7 +1961,6 @@ Az eszköz leállításához tartsa ismét nyomva az eszköz bekapcsológombját
 <translation id="7866482334467279021">be</translation>
 <translation id="7872786842639831132">Ki</translation>
 <translation id="7875575368831396199">Úgy tűnik, ki van kapcsolva a Bluetooth a(z) <ph name="DEVICE_TYPE" /> eszközön. Kapcsolja be a Bluetootht a Telefonközpont használatához.</translation>
-<translation id="7877557217297072640">{0,plural, =0{Eszköz módosítása az előző verzióra}=1{Eszköz módosítása az előző verzióra 1 másodpercen belül}other{Eszköz módosítása az előző verzióra # másodpercen belül}}</translation>
 <translation id="7884446017008693258">A hotspot beállításai</translation>
 <translation id="7884902759927478774">Lap áthúzásának visszavonása</translation>
 <translation id="7886169021410746335">Adatvédelmi beállítások módosítása</translation>
@@ -1827,6 +1978,7 @@ Az eszköz leállításához tartsa ismét nyomva az eszköz bekapcsológombját
         <ph name="MANAGED" />,
         <ph name="IME" />
         <ph name="LOCALE" /></translation>
+<translation id="7899977217122813285">Összpontosítás közben az értesítések el vannak némítva eddig: <ph name="TIME" /></translation>
 <translation id="7901190436359881020">Az ablakok felcserélése</translation>
 <translation id="7901405293566323524">Phone Hub</translation>
 <translation id="7902625623987030061">Érintse meg az ujjlenyomat-érzékelőt</translation>
@@ -1848,18 +2000,21 @@ Az eszköz leállításához tartsa ismét nyomva az eszköz bekapcsológombját
 <translation id="7946681191253332687">Kiterjesztett biztonsági frissítések állnak rendelkezésre</translation>
 <translation id="7947798320695032612">A(z) <ph name="APP_NAME" /> használni szeretné a következőt: <ph name="DEVICE_NAME" /></translation>
 <translation id="7951630946012935453">A billentyűzet fényerejének csökkentése</translation>
+<translation id="7953176344218790168">NAGYBETŰS</translation>
 <translation id="7953994493035617347">Megerősíti az új felbontást?</translation>
+<translation id="795958884516058160">Teljes képernyős nagyító bekapcsolva. A kikapcsoláshoz nyomja meg újra a(z) <ph name="ACCELERATOR" /> billentyűparancsot.</translation>
+<translation id="7962583092928373823">Az összes Google Naptár-javaslat elrejtése</translation>
 <translation id="7963689218131240420">A Ne zavarjanak mód ki van kapcsolva.</translation>
 <translation id="7963992254934562106">Innen: <ph name="PHONE_NAME" /></translation>
 <translation id="7968693143708939792">Mappa választása…</translation>
 <translation id="7973756967040444713">Eszköztár bezárása</translation>
-<translation id="797485111629834774">Feladat megjelölése teljesítettként: <ph name="TASK_NAME" /></translation>
 <translation id="797512352675305461">Teljes képernyős nagyító be- vagy kikapcsolása</translation>
 <translation id="7977927628060636163">Mobilhálózatok keresése…</translation>
 <translation id="7982789257301363584">Hálózat</translation>
 <translation id="7982878511129296052">Kikapcsolás…</translation>
 <translation id="7984197416080286869">Túl sok próbálkozás ujjlenyomattal</translation>
 <translation id="798779949890829624">Ezt a beállítást a rendszergazdája kezeli</translation>
+<translation id="7989206653429884947">Gyakran nyitotta meg</translation>
 <translation id="799296642788192631">Kitűzheti a fontos fájlokat. A kitűzéshez mutasson az egérrel egy elemre, vagy nyissa meg a Fájlok alkalmazást, és kattintson jobb egérgombbal a kívánt elemre.</translation>
 <translation id="7994370417837006925">Többfiókos bejelentkezés</translation>
 <translation id="7995804128062002838">Nem sikerült képernyőfelvételt készíteni</translation>
@@ -1886,13 +2041,13 @@ Az eszköz leállításához tartsa ismét nyomva az eszköz bekapcsológombját
 <translation id="8085765914647468715">YouTube Music</translation>
 <translation id="8088141034189573826">A Tab billentyűvel további lehetőségeket jeleníthet meg. A balra és jobbra mutató nyilakkal hozzáférhet az összes asztalhoz.</translation>
 <translation id="8091153018031979607">Kezdés: <ph name="START_TIME" />, <ph name="DAYS_ELAPSED" /></translation>
-<translation id="8091387634532529612">Automatikus frissítések</translation>
 <translation id="8092380135549145188">Görgetési vezérlők</translation>
 <translation id="8098591350844501178">A képernyő „<ph name="RECEIVER_NAME" />” eszközre történő átküldésének leállítása</translation>
 <translation id="810637681351706236">Alkalmazás kitűzésének feloldása a polcon</translation>
 <translation id="8113423164597455979">Be, összes app</translation>
 <translation id="8113515504791187892">Felolvasás gomb</translation>
 <translation id="8120151603115102514">Telefonján nincs beállítva lezárási képernyő. A Chromebook feloldásához írja be jelszavát.</translation>
+<translation id="8120249852906205273">Újraindítás</translation>
 <translation id="8127095419621171197">A Számológép alkalmazás megnyitása</translation>
 <translation id="8129620843620772246"><ph name="TEMPERATURE_C" /> °C</translation>
 <translation id="8130528849632411619">Ugrás a dokumentum elejére</translation>
@@ -1911,16 +2066,17 @@ Az eszköz leállításához tartsa ismét nyomva az eszköz bekapcsológombját
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Ezt a beállítást a rendszergazdája kezeli.</translation>
 <translation id="8155628902202578800">Információs párbeszédpanel, <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> nyelv használata</translation>
+<translation id="8168435359814927499">Tartalom</translation>
 <translation id="8185090165691050712">A zárolt üzemmód átméretezésére szolgáló menü be- vagy kikapcsolása</translation>
 <translation id="8192727139462702395">A Bluetooth kikapcsolásakor megszakad a(z) Ön <ph name="DEVICE_TYPE" /> eszköze és a következő külső eszközök közötti kapcsolat:</translation>
 <translation id="8198456017687137612">Lap átküldése…</translation>
 <translation id="8200772114523450471">Folytatás</translation>
 <translation id="820256110035940528"><ph name="TITLE" /> Az összpontosítás időtartama <ph name="FOCUSED_TIME" /> volt. Ha megint szeretné használni az Összpontosítási üzemmódot, nyissa meg a Gyorsbeállításokat.</translation>
 <translation id="8203795194971602413">Kattintás jobb egérgombbal</translation>
-<translation id="8209010265547628927">Újraindítás</translation>
 <translation id="8214996719228530800">Canary csatorna</translation>
 <translation id="8219451629189078428">Ez idő alatt Chromebookjának bekapcsolva kell maradnia, és csatlakoztatva kell lennie áramforráshoz. Gondoskodjon arról, hogy a töltő-, illetve adapterkábelek teljes mértékben csatlakoztatva legyenek mind a Chromebookhoz, mind a konnektorhoz. Ne kapcsolja ki a Chromebookot.</translation>
 <translation id="8220076512072059941"><ph name="FOCUS_DURATION_DELTA" /> hozzáadása</translation>
+<translation id="8228175756124063692">Javaslat elrejtése</translation>
 <translation id="8230305195727960608">Színinvertálás mód</translation>
 <translation id="8236042855478648955">Ideje pihenni</translation>
 <translation id="8237964652943995219">Következő asztal: <ph name="DESK_NAME" />. <ph name="DESK_COUNT" />/<ph name="DESK_INDEX" />. asztal.</translation>
@@ -1928,11 +2084,10 @@ Az eszköz leállításához tartsa ismét nyomva az eszköz bekapcsológombját
 <translation id="8239034820133090126">Asztal aktiválása a jobb oldalon</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, jelerősség: <ph name="SIGNAL_STRENGTH" />, a telefon akkumulátora: <ph name="BATTERY_STATUS" /></translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />, alkalmazás</translation>
-<translation id="8255234195843591763">Indítsa újra a frissítéshez!</translation>
 <translation id="8257510091797044096">Az eszköz beállítása</translation>
 <translation id="8261506727792406068">Törlés</translation>
 <translation id="8262312463845990408">Lejátszás vagy szüneteltetés</translation>
-<translation id="8270450402312105425">{0,plural, =1{Eszköz módosítása az előző verzióra egy órán belül}other{Eszköz módosítása az előző verzióra # órán belül}}</translation>
+<translation id="8268302343625273732">Az összes feladat megtekintése a Google Tanteremben</translation>
 <translation id="8277261673056602147">A képernyőn lévő szöveg kiemelése</translation>
 <translation id="8287009018010202411">Hatékonyság</translation>
 <translation id="828708037801473432">Ki</translation>
@@ -1943,7 +2098,9 @@ Az eszköz leállításához tartsa ismét nyomva az eszköz bekapcsológombját
 <translation id="8315514906653279104">Bekapcsolás…</translation>
 <translation id="8331351032546853669">Letöltés függőben</translation>
 <translation id="8339706171276328417"><ph name="ACTION_DESCRIPTION" /> · <ph name="TIME" /></translation>
+<translation id="8340621004014372743">Tegyen fel kérdést.</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
+<translation id="834414266279889566">Rossz kimenet</translation>
 <translation id="8345019317483336363">A következő ablak van kiválasztva: <ph name="WINDOW_TITLE" /></translation>
 <translation id="8349826889576450703">indító</translation>
 <translation id="8349964124165471584">A link megnyitása új ablakban</translation>
@@ -1957,6 +2114,7 @@ Az eszköz leállításához tartsa ismét nyomva az eszköz bekapcsológombját
 <translation id="8375916635258623388">A(z) <ph name="DEVICE_NAME" /> eszköz és a telefon automatikusan csatlakozik majd egymáshoz</translation>
 <translation id="8380784334203145311">Jó éjszakát!</translation>
 <translation id="8382715499079447151">Megtekintési védelem</translation>
+<translation id="8383614331548401927">Üdvözlő összefoglaló</translation>
 <translation id="8388750414311082622">Nem lehetséges a legutóbbi asztal eltávolítása.</translation>
 <translation id="8394567579869570560">A szülőd zárolta az eszközt</translation>
 <translation id="8401850874595457088">Nyelv menü megnyitása</translation>
@@ -1974,6 +2132,7 @@ Az eszköz leállításához tartsa ismét nyomva az eszköz bekapcsológombját
 <translation id="8443879455002739353">„Másolás”</translation>
 <translation id="8444246603146515890">A(z) „<ph name="DESK_TITILE" />” asztal aktiválva</translation>
 <translation id="8446884382197647889">További információ</translation>
+<translation id="8452090802952003258">A mikrofonon érkező hang hallgatása</translation>
 <translation id="8456543082656546101"><ph name="SHORTCUT_KEY_NAME" /> + V</translation>
 <translation id="8462305545768648477">Felolvasás bezárása</translation>
 <translation id="8468806060683421065">határidő: <ph name="DUE_DATE_AND_TIME" /></translation>
@@ -1989,6 +2148,7 @@ Az eszköz leállításához tartsa ismét nyomva az eszköz bekapcsológombját
 <translation id="85123341071060231">A Chromebookon ki van kapcsolva a Bluetooth. A zárolás feloldásához írja be jelszavát.</translation>
 <translation id="8513108775083588393">Autom.forgatás</translation>
 <translation id="851458219935658693">A jelenlegi asztal ablakainak megjelenítésére vonatkozó kapcsológomb van kiválasztva</translation>
+<translation id="851660987304951246">A Segítség az olvasáshoz funkció használatával gyorsan foglalhat össze tartalmakat és tehet fel kérdéseket</translation>
 <translation id="8517041960877371778">Előfordulhat, hogy a(z) <ph name="DEVICE_TYPE" /> nem töltődik, amíg be van kapcsolva.</translation>
 <translation id="852060496139946719">{NUM_APPS,plural, =1{A mikrofonbemenetet a(z) <ph name="APP_NAME" /> alkalmazás vezérli}other{A mikrofonbemenetet # alkalmazás vezérli}}</translation>
 <translation id="8535393432370007982">Szín szerinti rendezés visszavonása</translation>
@@ -1999,7 +2159,7 @@ Az eszköz leállításához tartsa ismét nyomva az eszköz bekapcsológombját
 <translation id="8553395910833293175">Már minden asztalhoz hozzá van rendelve.</translation>
 <translation id="8555757996376137129">Jelenlegi asztal eltávolítása</translation>
 <translation id="8559845965695780508"><ph name="USER" /> szerkesztve</translation>
-<translation id="856298576161209842">A(z) <ph name="MANAGER" /> azt javasolja, hogy frissítse a(z) <ph name="DEVICE_TYPE" /> eszközét.</translation>
+<translation id="8569146227972631631">°F</translation>
 <translation id="8569751806372591456">Íme néhány javaslat, amelyet érdemes kipróbálni</translation>
 <translation id="857201607579416096">A menü a képernyő jobb alsó sarkába került.</translation>
 <translation id="8581946341807941670">Nyomja le a(z) <ph name="MODIFIER_1" /><ph name="MODIFIER_2" /> billentyűkombinációt, majd kattintson a kívánt linkre</translation>
@@ -2024,6 +2184,7 @@ Az eszköz leállításához tartsa ismét nyomva az eszköz bekapcsológombját
 <translation id="8649597172973390955">A polc mindig látható</translation>
 <translation id="8652175077544655965">Beállítások bezárása</translation>
 <translation id="8653151467777939995">Az értesítési beállítások megjelenítése. Az értesítések be vannak kapcsolva</translation>
+<translation id="8657066291275741003">kisbetűs</translation>
 <translation id="8660331759611631213">71 négyzetgyöke</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, jelerősség: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664282223139913403">Nyomja le az Entert részleges képernyőkép rögzítéséhez</translation>
@@ -2032,8 +2193,10 @@ Az eszköz leállításához tartsa ismét nyomva az eszköz bekapcsológombját
 <translation id="8683506306463609433">A teljesítménykövetés aktív</translation>
 <translation id="8703634754197148428">Indítsa el a rögzítést. A rögzítés elindítása után nyissa meg az Alt+Shift+L billentyűkombináció segítségével a polcot, és keresse meg a felvétel leállítása gombot.</translation>
 <translation id="8704155109538237473">Fókuszálás a kép a képben ablakra</translation>
+<translation id="8708657523363087260">Mellékhang be-/kikapcsolása</translation>
 <translation id="870917907284186124">Diktálás be- vagy kikapcsolása (írás beszédhanggal)</translation>
 <translation id="8711169534266271368">Játékok irányítópultjának beállításai</translation>
+<translation id="8712637175834984815">Értem</translation>
 <translation id="8714138378966541668">Szolgáltató által zárolva</translation>
 <translation id="8717459106217102612">Az előző szó vagy betű kijelölése</translation>
 <translation id="8721053961083920564">Hang ki-, illetve bekapcsolása. <ph name="STATE_TEXT" /></translation>
@@ -2047,7 +2210,7 @@ Az eszköz leállításához tartsa ismét nyomva az eszköz bekapcsológombját
 <translation id="8742057891287715849"><ph name="NAME" /> · <ph name="SERVICE_PROVIDER" />: Aktiválás…</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />,
         <ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8749787185286745219">Az idő lejárt! Kiváló! 🎉</translation>
+<translation id="8753368202781196133">Ez a nyelv jelenleg nem támogatott.</translation>
 <translation id="8755498163081687682">Igazolja személyazonosságát, a következő szeretne meggyőződni a személyazonosságáról: <ph name="ORIGIN_NAME" /></translation>
 <translation id="875593634123171288">VPN-beállítások megjelenítése</translation>
 <translation id="8756799553341497810">Az alkalmazás elrendezésének személyre szabását a nézetből való kilépés után kezdheti el.</translation>
@@ -2059,9 +2222,11 @@ Az eszköz leállításához tartsa ismét nyomva az eszköz bekapcsológombját
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
 <translation id="8790632710469941716">Mozgás előre a jobb alsó sarok, az Indító, a címsáv, a könyvjelzősáv, a megnyitott webhely és a letöltések között</translation>
 <translation id="8792626944327216835">mikrofon</translation>
+<translation id="8797381270745758905">Újrapróbálkozási link aktiválva</translation>
 <translation id="8801802992492329306">5G</translation>
 <translation id="8806053966018712535"><ph name="FOLDER_NAME" /> mappa</translation>
 <translation id="880709030178078220">„Help” (Segítség)</translation>
+<translation id="8813531681893371930">Vezetékes fejhallgató csatlakoztatása</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8815390544836110344">A képernyőkép gyorsparancsának, a Ctrl plusz Shift plusz Áttekintés mód billentyűknek a lenyomása</translation>
 <translation id="881757059229893486">Beviteli módszerek beállításai</translation>
@@ -2099,23 +2264,25 @@ Az eszköz leállításához tartsa ismét nyomva az eszköz bekapcsológombját
 <translation id="8934926665751933910">{NUM_FILES,plural, =1{1 fájl}other{# fájl}}</translation>
 <translation id="8936501819958976551">deaktiválva</translation>
 <translation id="8938800817013097409">C típusú USB-vel kompatibilis eszköz (jobb hátsó port)</translation>
+<translation id="8939855324412367560">A hangbemenet a következőre van állítva: „<ph name="INPUT_DEVICE_NAME" />”, a hangkimenet pedig a következőre: „<ph name="OUTPUT_DEVICE_NAME" />”. Ezeket a beállításoknál módosíthatja.</translation>
 <translation id="8940956008527784070">Alacsony akkumulátortöltöttség (<ph name="PERCENTAGE" />%)</translation>
 <translation id="894774083269346314"><ph name="PROFILE_NAME" /> <ph name="EMAIL" />, jelölőnégyzet nincs bejelölve</translation>
 <translation id="8949925099261528566">Csatlakozva, nincs internet-hozzáférés</translation>
 <translation id="8951539504029375108">Csak a jóváhagyott Thunderbolt-eszközök kompatibilisek a Chromebookkal</translation>
+<translation id="8956420987536947088">Megnyithatja az előző ablakokat és alkalmazásokat</translation>
+<translation id="8959380109429710384">Lenyomta a teljes képernyős nagyító billentyűparancsát. Nagyított nézetben a Ctrl + Alt + nyílbillentyűk billentyűparanccsal mozoghat.</translation>
+<translation id="896335827708646237">Kisegítő lehetőségek gyorsbeállításainak megnyitása</translation>
 <translation id="8964525410783593407">1 óra</translation>
 <translation id="8973885907461690937">Váltás a menü ikonra</translation>
 <translation id="8980862970816311842">Az alkalmazás áthelyezése az alkalmazásrácson lévő egyik mappába vagy mappából</translation>
 <translation id="8982906748181120328">Közeli láthatóság</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> használata</translation>
-<translation id="8991617137207906966">Színinvertálás mód engedélyezve. A funkció kikapcsolásához nyomja meg újra a Ctrl + Keresés + H billentyűparancsot.</translation>
 <translation id="899350903320462459">Az eszköz zárolásának feloldása az értesítési művelet végrehajtásához a következő felhasználó által: <ph name="LOGIN_ID" />.</translation>
 <translation id="8993733019280019776">Most beszél? A mikrofon ki van kapcsolva. Válassza ki a mikrofont a bekapcsolásához.</translation>
 <translation id="9000771174482730261">TÁRHELY KEZELÉSE</translation>
 <translation id="9005984960510803406">Crosh-ablak megnyitása</translation>
 <translation id="9017320285115481645">Adja meg a Family Link szülői hozzáférési kódját.</translation>
-<translation id="9022774213089566801">Gyakran látogatott webhelyek</translation>
 <translation id="9024331582947483881">teljes képernyő</translation>
 <translation id="9029736946581028033">Az eszköz hamarosan lemerül</translation>
 <translation id="9030319654231318877">Kikapcsolva napnyugtáig</translation>
@@ -2135,27 +2302,32 @@ Az eszköz leállításához tartsa ismét nyomva az eszköz bekapcsológombját
 <translation id="9080132581049224423">Felfelé csúsztatva megjelenik a kezdőképernyő</translation>
 <translation id="9080206825613744995">A mikrofon használatban van.</translation>
 <translation id="9083324773537346962">Operációs rendszer verziója</translation>
-<translation id="908451241440060346">Az értesítések némítva vannak, amikor a Ne zavarjanak mód be van kapcsolva</translation>
 <translation id="9084606467167974638">Menü helyzetének módosítása</translation>
 <translation id="9085962983642906571">Az akkumulátor-élettartam növelése érdekében az akkumulátorszint 80%-on marad, amíg csatlakoztatva van az áramforráshoz.</translation>
 <translation id="9089416786594320554">Beviteli módszerek</translation>
 <translation id="9091406374499386796">Az Indítóban fájlokat, alkalmazásokat és egyebeket kereshet. Ugyanitt <ph name="PRODUCT_NAME" /> eszközével kapcsolatos kérdéseire is választ kaphat.</translation>
 <translation id="9091626656156419976">A(z) <ph name="DISPLAY_NAME" /> kijelző eltávolítva</translation>
+<translation id="9098750710832798892">Nem lettek átmásolva elemek a vágólapra</translation>
 <translation id="9098969848082897657">Telefon némítása</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> vagy <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>
 <translation id="9126339866969410112">Utolsó művelet visszavonása</translation>
+<translation id="9127938699607518293">{MINUTES,plural, =1{1 perc múlva}other{# perc múlva}}</translation>
 <translation id="9129245940793250979">Hátsó gomb</translation>
 <translation id="9133335900048457298">Nem lehet rögzíteni védett tartalmakat</translation>
 <translation id="9139720510312328767">Következő betű törlése</translation>
 <translation id="9148058034647219655">Kilépés</translation>
 <translation id="9151906066336345901">end</translation>
+<translation id="9159421884295554245">Keresés a vágólapon</translation>
 <translation id="9161053988251441839">JAVASOLT ALKALMAZÁSOK</translation>
 <translation id="9168436347345867845">Később</translation>
 <translation id="9178475906033259337">1 találat megjelenítése a következő lekérdezésre: <ph name="QUERY" /></translation>
 <translation id="9179259655489829027">Ez a funkció lehetővé teszi a bejelentkezett felhasználók gyors, jelszó nélküli elérését. Kizárólag olyan fiókok esetében használja a funkciót, amelyekben megbízik.</translation>
 <translation id="9183456764293710005">Teljes képernyős nagyító</translation>
+<translation id="9192133205265227850">A(z) „<ph name="DEVICE_NAME" />” használata</translation>
 <translation id="9193626018745640770">Átküldés ismeretlen fogadó eszközre</translation>
 <translation id="9194617393863864469">Bejelentkezés másik felhasználóként…</translation>
+<translation id="9195857219954068558">Sikerült a Chromebook frissítése. Megnyithatja az előző ablakokat és alkalmazásokat.</translation>
+<translation id="9195990613383871904">Holnap</translation>
 <translation id="9198992156681343238">A(z) <ph name="DISPLAY_NAME" /> felbontása a következőre módosult: <ph name="RESOLUTION" />. A módosítás megtartásához kattintson a Megerősítés gombra. A beállítás <ph name="TIMEOUT_SECONDS" /> múlva visszaáll a korábbi értékre.</translation>
 <translation id="9201044636667689546"><ph name="NAME" /> csatlakoztatása ehhez a Chromebookhoz</translation>
 <translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />, a rendszergazdája kezeli</translation>
@@ -2171,9 +2343,9 @@ Az eszköz leállításához tartsa ismét nyomva az eszköz bekapcsológombját
 <translation id="923686485342484400">Nyomja meg a Ctrl Shift Q billentyűkombinációt kétszer a kijelentkezéshez.</translation>
 <translation id="92580429198593979">Megnyomta a színinvertálásra szolgáló billentyűparancsot. Bekapcsolja ezt a funkciót?</translation>
 <translation id="925832987464884575">Előnézetek elrejtése</translation>
-<translation id="937214777182567951">A(z) <ph name="MANAGER" /> megköveteli, hogy azonnal frissítse <ph name="DEVICE_TYPE" /> eszközét</translation>
 <translation id="938407504481277932">Jelenlegi asztal: <ph name="DESK_NAME" />. <ph name="PROFILE_NAME" /> <ph name="EMAIL" />. <ph name="DESK_COUNT" />/<ph name="DESK_INDEX" />. asztal.</translation>
 <translation id="938963181863597773">Mi van a naptáramban?</translation>
+<translation id="94468042118567862">Az eszköz nem naprakész</translation>
 <translation id="945383118875625837">Link húzása a könyvjelzősávra</translation>
 <translation id="945522503751344254">Visszajelzés küldése</translation>
 <translation id="951991426597076286">Elutasítás</translation>
@@ -2185,6 +2357,7 @@ Az eszköz leállításához tartsa ismét nyomva az eszköz bekapcsológombját
 <translation id="974545358917229949"><ph name="RESULT_COUNT" /> találat megjelenítése a következő lekérdezésre: <ph name="QUERY" /></translation>
 <translation id="981011780479609956">Nincs határidő</translation>
 <translation id="98120814841227350">Ugrás a dokumentum végére</translation>
+<translation id="98515147261107953">Fekvő</translation>
 <translation id="987589956647469042">A mobiladat-kapcsolat be van kapcsolva</translation>
 <translation id="989374776391122812">Kamera- és hangvezérlők</translation>
 <translation id="990277280839877440">Bezárta a következő ablakot: <ph name="WINDOW_TITILE" />.</translation>

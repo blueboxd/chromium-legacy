@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "cc/slim/frame_sink_impl.h"
 
 #include <string>
@@ -11,6 +16,7 @@
 #include "base/check.h"
 #include "base/containers/flat_set.h"
 #include "base/functional/bind.h"
+#include "base/not_fatal_until.h"
 #include "base/threading/platform_thread.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/typed_macros.h"
@@ -27,7 +33,6 @@
 #include "components/viz/common/resources/transferable_resource.h"
 #include "gpu/command_buffer/client/client_shared_image.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
-#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "third_party/skia/include/core/SkAlphaType.h"
 #include "third_party/skia/include/gpu/GrTypes.h"
@@ -172,7 +177,8 @@ void FrameSinkImpl::UploadUIResource(cc::UIResourceId resource_id,
   UploadedUIResource uploaded_resource;
   auto* sii = context_provider_->SharedImageInterface();
   constexpr gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
-  uint32_t shared_image_usage = gpu::SHARED_IMAGE_USAGE_DISPLAY_READ;
+  gpu::SharedImageUsageSet shared_image_usage =
+      gpu::SHARED_IMAGE_USAGE_DISPLAY_READ;
   uploaded_resource.shared_image = sii->CreateSharedImage(
       {format, resource_bitmap.GetSize(), color_space, shared_image_usage,
        "SlimCompositorUIResource"},
@@ -203,7 +209,7 @@ void FrameSinkImpl::UIResourceReleased(cc::UIResourceId ui_resource_id,
                                        const gpu::SyncToken& sync_token,
                                        bool is_lost) {
   auto itr = uploaded_resources_.find(ui_resource_id);
-  DCHECK(itr != uploaded_resources_.end());
+  CHECK(itr != uploaded_resources_.end(), base::NotFatalUntil::M130);
   auto* sii = context_provider_->SharedImageInterface();
   sii->DestroySharedImage(sync_token, std::move(itr->second.shared_image));
   uploaded_resources_.erase(itr);

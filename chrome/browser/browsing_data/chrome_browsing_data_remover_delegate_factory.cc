@@ -33,7 +33,6 @@
 
 #if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/feed/feed_service_factory.h"
-#include "components/feed/buildflags.h"
 #include "components/feed/feed_feature_list.h"
 #endif  // BUILDFLAG(IS_ANDROID
 
@@ -60,12 +59,13 @@ ChromeBrowsingDataRemoverDelegateFactory::
               // TODO(crbug.com/40257657): Check if this service is needed in
               // Guest mode.
               .WithGuest(ProfileSelection::kOwnInstance)
+              // TODO(crbug.com/41488885): Check if this service is needed for
+              // Ash Internals.
+              .WithAshInternals(ProfileSelection::kOwnInstance)
               .Build()) {
   DependsOn(autofill::PersonalDataManagerFactory::GetInstance());
 #if BUILDFLAG(IS_ANDROID)
-#if BUILDFLAG(ENABLE_FEED_V2)
   DependsOn(feed::FeedServiceFactory::GetInstance());
-#endif  // BUILDFLAG(ENABLE_FEED_V2)
 #endif  // BUILDFLAG(IS_ANDROID)
   DependsOn(HistoryServiceFactory::GetInstance());
   DependsOn(HostContentSettingsMapFactory::GetInstance());

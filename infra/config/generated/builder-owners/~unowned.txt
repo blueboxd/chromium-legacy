@@ -36,11 +36,9 @@ ci/android-12-x64-dbg-tests
 ci/android-12-x64-fyi-rel
 ci/android-12l-x64-fyi-dbg
 ci/android-13-x64-fyi-rel
-ci/android-13-x64-rel
 ci/android-annotator-rel
 ci/android-arm64-archive-rel
 ci/android-avd-packager
-ci/android-chrome-pie-x86-wpt-android-specific
 ci/android-chrome-pie-x86-wpt-fyi-rel
 ci/android-code-coverage
 ci/android-code-coverage-native
@@ -66,7 +64,6 @@ ci/ios-fieldtrial-rel
 ci/ios-simulator
 ci/ios-simulator-code-coverage
 ci/ios-simulator-full-configs
-ci/ios-simulator-multi-window
 ci/ios-simulator-noncq
 ci/ios-webkit-tot
 ci/ios-wpt-fyi-rel
@@ -86,7 +83,6 @@ ci/linux-chromeos-annotator-rel
 ci/linux-chromeos-archive-rel
 ci/linux-chromeos-code-coverage
 ci/linux-code-coverage
-ci/linux-exp-msan-fyi-rel
 ci/linux-fieldtrial-rel
 ci/linux-fuzz-coverage
 ci/linux-headless-shell-rel
@@ -125,8 +121,6 @@ ci/mac-updater-builder-asan-dbg
 ci/mac-updater-builder-dbg
 ci/mac-updater-builder-rel
 ci/mac-upload-perfetto
-ci/mac10.15-updater-tester-dbg
-ci/mac10.15-updater-tester-rel
 ci/mac11-arm64-updater-tester-dbg
 ci/mac11-arm64-updater-tester-rel
 ci/mac11-x64-updater-tester-dbg
@@ -187,8 +181,6 @@ reclient/Linux Builder reclient test (unified uploads) untrusted
 reclient/Linux Builder reclient test untrusted
 reclient/Mac Builder reclient staging
 reclient/Mac Builder reclient staging untrusted
-reclient/Mac Builder reclient test
-reclient/Mac Builder reclient test untrusted
 reclient/Simple Chrome Builder reclient staging
 reclient/Simple Chrome Builder reclient staging untrusted
 reclient/Simple Chrome Builder reclient test
@@ -201,12 +193,8 @@ reclient/Win x64 Cross Builder (reclient compare)
 reclient/Windows Cross deterministic
 reclient/ios-simulator reclient staging
 reclient/ios-simulator reclient staging untrusted
-reclient/ios-simulator reclient test
-reclient/ios-simulator reclient test untrusted
 reclient/mac-arm64-rel reclient staging
 reclient/mac-arm64-rel reclient staging untrusted
-reclient/mac-arm64-rel reclient test
-reclient/mac-arm64-rel reclient test untrusted
 reviver/android-coverage-launcher
 reviver/android-device-launcher
 reviver/android-launcher
@@ -224,7 +212,6 @@ try/android-10-arm64-rel
 try/android-11-x86-rel
 try/android-12-x64-dbg
 try/android-12l-x64-dbg
-try/android-13-x64-rel
 try/android-angle-chromium-try
 try/android-arm-compile-dbg
 try/android-arm64-all-targets-dbg
@@ -233,7 +220,6 @@ try/android-arm64-rel-compilator
 try/android-asan-compile-dbg
 try/android-bfcache-rel
 try/android-binary-size
-try/android-chrome-pie-x86-wpt-android-specific
 try/android-chrome-pie-x86-wpt-fyi-rel
 try/android-clang-tidy-rel
 try/android-code-coverage
@@ -296,7 +282,6 @@ try/ios-simulator
 try/ios-simulator-code-coverage
 try/ios-simulator-compilator
 try/ios-simulator-full-configs
-try/ios-simulator-multi-window
 try/ios-simulator-noncq
 try/ios-wpt-fyi-rel
 try/ios17-beta-simulator
@@ -333,14 +318,12 @@ try/linux-chromeos-rel-compilator
 try/linux-clang-tidy-rel
 try/linux-code-coverage
 try/linux-dcheck-off-rel
-try/linux-exp-msan-fyi-rel
 try/linux-extended-tracing-rel
 try/linux-fieldtrial-rel
 try/linux-gcc-rel
 try/linux-headless-shell-rel
 try/linux-js-code-coverage
 try/linux-js-coverage-rel
-try/linux-lacros-asan-lsan-rel
 try/linux-lacros-clang-tidy-rel
 try/linux-lacros-code-coverage
 try/linux-lacros-dbg
@@ -349,7 +332,6 @@ try/linux-lacros-rel
 try/linux-lacros-rel-compilator
 try/linux-layout-tests-edit-ng
 try/linux-libfuzzer-asan-rel
-try/linux-mbi-mode-per-render-process-host-rel
 try/linux-msan-chained-origins-rel
 try/linux-msan-no-origins-rel
 try/linux-official
@@ -416,7 +398,6 @@ try/mac-swangle-chromium-try-x64
 try/mac-ubsan-fyi-rel
 try/mac-updater-try-builder-dbg
 try/mac-updater-try-builder-rel
-try/mac10.15-blink-rel
 try/mac11-arm64-rel
 try/mac11.0-blink-rel
 try/mac11.0.arm64-blink-rel
@@ -425,12 +406,9 @@ try/mac12-tests
 try/mac12.0-blink-rel
 try/mac12.0.arm64-blink-rel
 try/mac13-arm64-rel
-try/mac13-arm64-rel-compilator
 try/mac13-blink-rel
 try/mac13-tests
 try/mac13.arm64-blink-rel
-try/mac13.arm64-skia-alt-blink-rel
-try/mac_chromium_10.15_rel_ng
 try/mac_chromium_11.0_rel_ng
 try/mac_chromium_asan_rel_ng
 try/mac_chromium_compile_dbg_ng

@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/test/video_frame_validator.h"
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
 
-#include <sys/mman.h>
+#include "media/gpu/test/video_frame_validator.h"
 
 #include <string_view>
 
@@ -29,6 +32,10 @@
 #include "media/media_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/gpu_memory_buffer.h"
+
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
+#include <sys/mman.h>
+#endif  // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
 
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 #include "media/gpu/chromeos/chromeos_compressed_gpu_memory_buffer_video_frame_utils.h"
@@ -159,7 +166,7 @@ void VideoFrameValidator::ProcessVideoFrameTask(
       IsIntelMediaCompressedModifier(modifier);
   EXPECT_TRUE(!is_intel_media_compressed_buffer ||
               (frame->format() == PIXEL_FORMAT_NV12 ||
-               frame->format() == PIXEL_FORMAT_P016LE));
+               frame->format() == PIXEL_FORMAT_P010LE));
 
   if (!is_intel_media_compressed_buffer) {
     if (frame->storage_type() == VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {

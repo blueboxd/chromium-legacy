@@ -9,6 +9,7 @@
 #include "base/functional/callback.h"
 #include "base/types/expected.h"
 #include "services/on_device_model/public/mojom/on_device_model.mojom.h"
+#include "services/on_device_model/public/mojom/on_device_model_service.mojom.h"
 
 namespace on_device_model {
 
@@ -31,9 +32,11 @@ class COMPONENT_EXPORT(ON_DEVICE_MODEL_CPP) OnDeviceModel {
         mojom::InputOptionsPtr input,
         mojo::PendingRemote<mojom::StreamingResponder> response,
         base::OnceClosure on_complete) = 0;
-    virtual void ClearContext() = 0;
     virtual void SizeInTokens(const std::string& text,
                               base::OnceCallback<void(uint32_t)> callback) = 0;
+    virtual void Score(const std::string& text,
+                       base::OnceCallback<void(float)> callback) = 0;
+    virtual std::unique_ptr<Session> Clone() = 0;
   };
 
   virtual std::unique_ptr<Session> CreateSession(
@@ -42,9 +45,19 @@ class COMPONENT_EXPORT(ON_DEVICE_MODEL_CPP) OnDeviceModel {
   virtual mojom::LanguageDetectionResultPtr DetectLanguage(
       const std::string& text) = 0;
   virtual base::expected<uint32_t, mojom::LoadModelResult> LoadAdaptation(
-      mojom::LoadAdaptationParamsPtr params) = 0;
+      mojom::LoadAdaptationParamsPtr params,
+      base::OnceClosure on_complete) = 0;
+};
+
+class COMPONENT_EXPORT(ON_DEVICE_MODEL_CPP) OnDeviceModelShim {
+ public:
+  virtual ~OnDeviceModelShim() = default;
+  virtual base::expected<std::unique_ptr<OnDeviceModel>, mojom::LoadModelResult>
+  CreateModel(mojom::LoadModelParamsPtr params,
+              base::OnceClosure on_complete) const = 0;
+  virtual mojom::PerformanceClass GetEstimatedPerformanceClass() const = 0;
 };
 
 }  // namespace on_device_model
 
-#endif  //  SERVICES_ON_DEVICE_MODEL_PUBLIC_CPP_ON_DEVICE_MODEL_H_
+#endif  // SERVICES_ON_DEVICE_MODEL_PUBLIC_CPP_ON_DEVICE_MODEL_H_

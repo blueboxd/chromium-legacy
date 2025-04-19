@@ -5,20 +5,25 @@
 #import "ios/chrome/browser/contextual_panel/entrypoint/coordinator/contextual_panel_entrypoint_coordinator.h"
 
 #import "base/check.h"
+#import "components/feature_engagement/public/tracker.h"
 #import "ios/chrome/browser/contextual_panel/entrypoint/coordinator/contextual_panel_entrypoint_coordinator_delegate.h"
 #import "ios/chrome/browser/contextual_panel/entrypoint/coordinator/contextual_panel_entrypoint_mediator.h"
 #import "ios/chrome/browser/contextual_panel/entrypoint/coordinator/contextual_panel_entrypoint_mediator_delegate.h"
 #import "ios/chrome/browser/contextual_panel/entrypoint/ui/contextual_panel_entrypoint_view_controller.h"
-#import "ios/chrome/browser/contextual_panel/model/contextual_panel_browser_agent.h"
+#import "ios/chrome/browser/feature_engagement/model/tracker_factory.h"
+#import "ios/chrome/browser/shared/coordinator/layout_guide/layout_guide_util.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/contextual_panel_entrypoint_commands.h"
+#import "ios/chrome/browser/shared/public/commands/contextual_panel_entrypoint_iph_commands.h"
 #import "ios/chrome/browser/shared/public/commands/contextual_sheet_commands.h"
+#import "ios/chrome/browser/shared/ui/util/omnibox_util.h"
 #import "ios/chrome/browser/ui/fullscreen/animated_scoped_fullscreen_disabler.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
 
 @interface ContextualPanelEntrypointCoordinator () <
+    ContextualPanelEntrypointCommands,
     ContextualPanelEntrypointMediatorDelegate> {
   // Observer that updates ContextualPanelEntrypointViewController for
   // fullscreen events.
@@ -40,28 +45,33 @@
 - (void)start {
   [super start];
   _viewController = [[ContextualPanelEntrypointViewController alloc] init];
+  _viewController.layoutGuideCenter = LayoutGuideCenterForBrowser(self.browser);
 
-  ContextualPanelBrowserAgent* browserAgent =
-      ContextualPanelBrowserAgent::FromBrowser(self.browser);
-
+  WebStateList* webStateList = self.browser->GetWebStateList();
   CommandDispatcher* dispatcher = self.browser->GetCommandDispatcher();
 
-  _mediator = [[ContextualPanelEntrypointMediator alloc]
-      initWithBrowserAgent:browserAgent];
-  _mediator.delegate = self;
-  _mediator.contextualSheetHandler =
+  [dispatcher
+      startDispatchingToTarget:self
+                   forProtocol:@protocol(ContextualPanelEntrypointCommands)];
+
+  id<ContextualSheetCommands> contextualSheetHandler =
       HandlerForProtocol(dispatcher, ContextualSheetCommands);
+  id<ContextualPanelEntrypointIPHCommands> entrypointHelpHandler =
+      HandlerForProtocol(dispatcher, ContextualPanelEntrypointIPHCommands);
+
+  feature_engagement::Tracker* engagementTracker =
+      feature_engagement::TrackerFactory::GetForBrowserState(
+          self.browser->GetBrowserState());
+
+  _mediator = [[ContextualPanelEntrypointMediator alloc]
+        initWithWebStateList:webStateList
+           engagementTracker:engagementTracker
+      contextualSheetHandler:contextualSheetHandler
+       entrypointHelpHandler:entrypointHelpHandler];
+  _mediator.delegate = self;
 
   _mediator.consumer = _viewController;
   _viewController.mutator = _mediator;
-
-  [dispatcher
-      startDispatchingToTarget:_mediator
-                   forProtocol:@protocol(ContextualPanelEntrypointCommands)];
-
-  id<ContextualPanelEntrypointCommands> entrypointHandler =
-      HandlerForProtocol(dispatcher, ContextualPanelEntrypointCommands);
-  browserAgent->SetEntrypointCommandsHandler(entrypointHandler);
 
   _contextualPanelEntrypointFullscreenUIUpdater =
       std::make_unique<FullscreenUIUpdater>(
@@ -75,7 +85,7 @@
   [super stop];
 
   CommandDispatcher* dispatcher = self.browser->GetCommandDispatcher();
-  [dispatcher stopDispatchingToTarget:_mediator];
+  [dispatcher stopDispatchingToTarget:self];
 
   _animatedFullscreenDisabler = nullptr;
 
@@ -112,6 +122,21 @@
       std::make_unique<AnimatedScopedFullscreenDisabler>(
           FullscreenController::FromBrowser(self.browser));
   _animatedFullscreenDisabler->StartAnimation();
+}
+
+- (BOOL)isBottomOmniboxActive {
+  return IsCurrentLayoutBottomOmnibox(self.browser);
+}
+
+- (CGPoint)helpAnchorUsingBottomOmnibox:(BOOL)isBottomOmnibox {
+  return [self.viewController helpAnchorUsingBottomOmnibox:isBottomOmnibox];
+}
+
+#pragma mark - ContextualPanelEntrypointCommands
+
+- (void)contextualPanelEntrypointIPHWasDismissed {
+  [self enableFullscreen];
+  [_mediator.consumer setEntrypointColored:NO];
 }
 
 @end

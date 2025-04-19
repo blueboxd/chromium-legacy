@@ -10,7 +10,7 @@
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace client_certificates {
+namespace enterprise_attestation {
 
 class MockDMServerClient : public DMServerClient {
  public:
@@ -18,14 +18,15 @@ class MockDMServerClient : public DMServerClient {
   ~MockDMServerClient() override;
 
   MOCK_METHOD(void,
-              SendRequest,
-              (const GURL&,
-               std::string_view,
+              UploadBrowserPublicKey,
+              (const std::string&,
+               const std::string&,
+               const std::optional<std::string>&,
                const enterprise_management::DeviceManagementRequest&,
-               SendRequestCallback),
+               policy::DMServerJobConfiguration::Callback),
               (override));
 };
 
-}  // namespace client_certificates
+}  // namespace enterprise_attestation
 
 #endif  // COMPONENTS_ENTERPRISE_CLIENT_CERTIFICATES_CORE_MOCK_DM_SERVER_CLIENT_H_

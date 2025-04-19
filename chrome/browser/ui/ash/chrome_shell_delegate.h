@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/public/cpp/tab_strip_delegate.h"
 #include "ash/shell_delegate.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
@@ -47,6 +48,8 @@ class ChromeShellDelegate : public ash::ShellDelegate {
   std::unique_ptr<ash::SavedDeskDelegate> CreateSavedDeskDelegate()
       const override;
   std::unique_ptr<ash::SystemSoundsDelegate> CreateSystemSoundsDelegate()
+      const override;
+  std::unique_ptr<ash::TabStripDelegate> CreateTabStripDelegate()
       const override;
   std::unique_ptr<ash::api::TasksDelegate> CreateTasksDelegate() const override;
   std::unique_ptr<ash::FocusModeDelegate> CreateFocusModeDelegate()
@@ -96,6 +99,7 @@ class ChromeShellDelegate : public ash::ShellDelegate {
       ShouldExitFullscreenCallback callback) override;
   ash::DeskProfilesDelegate* GetDeskProfilesDelegate() override;
   void OpenMultitaskingSettings() override;
+  bool IsNoFirstRunSwitchOn() const override;
 };
 
 #endif  // CHROME_BROWSER_UI_ASH_CHROME_SHELL_DELEGATE_H_

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/ui/webui/ash/app_install/app_install_ui.h"
 
 #include "ash/webui/common/trusted_types_util.h"
@@ -117,11 +122,6 @@ void AppInstallDialogUI::CloseDialog() {
 }
 
 WEB_UI_CONTROLLER_TYPE_IMPL(AppInstallDialogUI)
-
-bool AppInstallDialogUIConfig::IsWebUIEnabled(
-    content::BrowserContext* browser_context) {
-  return AppInstallDialog::IsEnabled();
-}
 
 AppInstallDialogUIConfig::AppInstallDialogUIConfig()
     : DefaultWebUIConfig(content::kChromeUIScheme,

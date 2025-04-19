@@ -13,12 +13,14 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_span.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/base/class_property.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_utils.h"
+#include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/metadata/view_factory.h"
@@ -343,7 +345,7 @@ class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate {
     void set_bubble_view(views::View* view) { bubble_view_ = view; }
 
     void set_allowed_class_names_for_testing(
-        const base::span<const char*>& value) {
+        const base::span<const char* const>& value) {
       allowed_class_names_for_testing_ = value;
     }
 
@@ -363,7 +365,8 @@ class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate {
    private:
     std::optional<raw_ptr<views::View>> bubble_view_;
     std::optional<raw_ptr<views::BubbleDialogDelegate>> delegate_;
-    std::optional<base::span<const char*>> allowed_class_names_for_testing_;
+    std::optional<base::raw_span<const char* const>>
+        allowed_class_names_for_testing_;
     base::WeakPtrFactory<BubbleUmaLogger> weak_factory_{this};
   };
 
@@ -518,7 +521,7 @@ class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate {
 #endif
 
   // Used to ensure the button remains anchored while this dialog is open.
-  std::optional<Button::ScopedAnchorHighlight> button_anchor_higlight_;
+  std::optional<Button::ScopedAnchorHighlight> button_anchor_highlight_;
 
   // The helper class that logs common bubble metrics.
   BubbleUmaLogger bubble_uma_logger_;
@@ -602,7 +605,7 @@ VIEW_BUILDER_PROPERTY(bool, EnableArrowKeyTraversal)
 VIEW_BUILDER_PROPERTY(ui::ImageModel, Icon)
 VIEW_BUILDER_PROPERTY(ui::ImageModel, AppIcon)
 VIEW_BUILDER_PROPERTY(ui::ImageModel, MainImage)
-VIEW_BUILDER_PROPERTY(ui::ModalType, ModalType)
+VIEW_BUILDER_PROPERTY(ui::mojom::ModalType, ModalType)
 VIEW_BUILDER_PROPERTY(bool, OwnedByWidget)
 VIEW_BUILDER_PROPERTY(bool, ShowCloseButton)
 VIEW_BUILDER_PROPERTY(bool, ShowIcon)

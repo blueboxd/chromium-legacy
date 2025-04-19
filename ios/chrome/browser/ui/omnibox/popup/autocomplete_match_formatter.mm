@@ -48,6 +48,7 @@ UIColor* DimColorIncognito() {
   AutocompleteMatch _match;
 }
 @synthesize suggestionSectionId;
+@synthesize actionsInSuggest;
 
 - (instancetype)initWithMatch:(const AutocompleteMatch&)match {
   self = [super init];
@@ -59,6 +60,10 @@ UIColor* DimColorIncognito() {
 
 + (instancetype)formatterWithMatch:(const AutocompleteMatch&)match {
   return [[self alloc] initWithMatch:match];
+}
+
++ (NSAttributedString*)spacerAttributedString {
+  return [[NSAttributedString alloc] initWithString:@"  "];
 }
 
 #pragma mark - NSObject
@@ -133,20 +138,64 @@ UIColor* DimColorIncognito() {
 - (NSAttributedString*)answerDetailText {
   DCHECK(self.hasAnswer);
   if (omnibox_feature_configs::SuggestionAnswerMigration::Get().enabled) {
-    std::string string = _match.answer_template->answers(0).headline().text();
-    if (_match.answer_template->answer_type() ==
-        omnibox::RichAnswerTemplate::DICTIONARY) {
-      string = _match.answer_template->answers(0).subhead().text();
+    NSMutableAttributedString* result =
+        [[NSMutableAttributedString alloc] initWithString:@""];
+    NSAttributedString* spacer = [[self class] spacerAttributedString];
+
+    if (_match.answer_type == omnibox::ANSWER_TYPE_DICTIONARY) {
+      auto subheadFragments =
+          _match.answer_template->answers(0).subhead().fragments();
+
+      for (auto fragment : subheadFragments) {
+        NSAttributedString* fragmentText =
+            [self attributedStringForFragment:fragment
+                                        color:SuggestionDetailTextColor()
+                       useDeemphasizedStyling:YES];
+        [result appendAttributedString:fragmentText];
+        [result appendAttributedString:spacer];
+      }
+    } else {
+      auto headLineFragments =
+          _match.answer_template->answers(0).headline().fragments();
+
+      for (NSInteger i = 0; i < headLineFragments.size(); i++) {
+        NSAttributedString* fragmentText;
+        // The first fragment has a html bold tag so we skip it and use the
+        // match contents instead. The match contents has the first fragment
+        // text without the bold tag (eg. match contents : abc , first fragment
+        // : ab<b>c</b>).
+        // TODO(crbug.com/343706167): Follow up on removing the bold tag from
+        // the first fragment.
+        if (i == 0) {
+          fragmentText =
+              [self attributedStringWithString:base::SysUTF16ToNSString(
+                                                   _match.contents)
+                               classifications:&_match.contents_class
+                                     smallFont:NO
+                                         color:SuggestionDetailTextColor()
+                                      dimColor:DimColor()];
+        } else {
+          fragmentText =
+              [self attributedStringForFragment:headLineFragments[i]
+                                          color:SuggestionDetailTextColor()
+                         useDeemphasizedStyling:YES];
+        }
+
+        [result appendAttributedString:fragmentText];
+        [result appendAttributedString:spacer];
+      }
     }
 
-    return [self attributedStringWithString:base::SysUTF8ToNSString(string)
-                            classifications:&_match.contents_class
-                                  smallFont:NO
-                                      color:SuggestionDetailTextColor()
-                                   dimColor:DimColor()];
+    // Remove the extra spacer.
+    if (result.length > 0) {
+      NSRange lastCharacterRange =
+          NSMakeRange(result.length - spacer.length, spacer.length);
+      [result deleteCharactersInRange:lastCharacterRange];
+    }
 
+    return result;
   } else {
-    if (!_match.answer->IsExceptedFromLineReversal()) {
+    if (!_match.answer->IsExceptedFromLineReversal(_match.answer_type)) {
       NSAttributedString* detailBaseText = [self
           attributedStringWithString:base::SysUTF16ToNSString(_match.contents)
                      classifications:&_match.contents_class
@@ -170,10 +219,8 @@ UIColor* DimColorIncognito() {
 }
 
 - (NSInteger)numberOfLines {
-  // TODO (crbug/342608217) : double-check if we need to implement number of
-  // lines for the new answer proto.
   if (omnibox_feature_configs::SuggestionAnswerMigration::Get().enabled) {
-    return 3;
+    return _match.answer_type == omnibox::ANSWER_TYPE_DICTIONARY ? 3 : 1;
   }
   // Answers specify their own limit on the number of lines to show but are
   // additionally capped here at 3 to guard against unreasonable values.
@@ -254,20 +301,64 @@ UIColor* DimColorIncognito() {
   UIColor* dimColor = self.incognito ? DimColorIncognito() : DimColor();
 
   if (omnibox_feature_configs::SuggestionAnswerMigration::Get().enabled) {
-    std::string string = _match.answer_template->answers(0).subhead().text();
-    if (_match.answer_template->answer_type() ==
-        omnibox::RichAnswerTemplate::DICTIONARY) {
-      string = _match.answer_template->answers(0).headline().text();
+    NSMutableAttributedString* result =
+        [[NSMutableAttributedString alloc] initWithString:@""];
+    NSAttributedString* spacer = [[self class] spacerAttributedString];
+
+    if (_match.answer_type == omnibox::ANSWER_TYPE_DICTIONARY) {
+      auto headlineFragments =
+          _match.answer_template->answers(0).headline().fragments();
+
+      for (NSInteger i = 0; i < headlineFragments.size(); i++) {
+        NSAttributedString* fragmentText;
+        // The first fragment has a html bold tag so we skip it and use the
+        // match contents instead. The match contents has the first fragment
+        // text without the bold tag (eg. match contents : abc , first fragment
+        // : ab<b>c</b>).
+        // TODO(crbug.com/343706167): Follow up on removing the bold tag from
+        // the first fragment.
+        if (i == 0) {
+          fragmentText =
+              [self attributedStringWithString:base::SysUTF16ToNSString(
+                                                   _match.contents)
+                               classifications:&_match.contents_class
+                                     smallFont:NO
+                                         color:suggestionTextColor
+                                      dimColor:dimColor];
+        } else {
+          fragmentText =
+              [self attributedStringForFragment:headlineFragments[i]
+                                          color:SuggestionDetailTextColor()
+                         useDeemphasizedStyling:NO];
+        }
+
+        [result appendAttributedString:fragmentText];
+        [result appendAttributedString:spacer];
+      }
+    } else {
+      auto subheadFragments =
+          _match.answer_template->answers(0).subhead().fragments();
+
+      for (auto fragment : subheadFragments) {
+        NSAttributedString* fragmentText =
+            [self attributedStringForFragment:fragment
+                                        color:SuggestionDetailTextColor()
+                       useDeemphasizedStyling:NO];
+        [result appendAttributedString:fragmentText];
+        [result appendAttributedString:spacer];
+      }
     }
 
-    return [self attributedStringWithString:base::SysUTF8ToNSString(string)
-                            classifications:&_match.contents_class
-                                  smallFont:NO
-                                      color:suggestionTextColor
-                                   dimColor:dimColor];
+    // Remove the extra spacer.
+    if (result.length > 0) {
+      NSRange lastCharacterRange =
+          NSMakeRange(result.length - spacer.length, spacer.length);
+      [result deleteCharactersInRange:lastCharacterRange];
+    }
 
+    return result;
   } else {
-    if (!_match.answer->IsExceptedFromLineReversal()) {
+    if (!_match.answer->IsExceptedFromLineReversal(_match.answer_type)) {
       return [self attributedStringWithAnswerLine:_match.answer->second_line()
                            useDeemphasizedStyling:NO];
     } else {
@@ -318,21 +409,6 @@ UIColor* DimColorIncognito() {
 
 - (id<OmniboxPedal>)pedal {
   return self.pedalData;
-}
-
-- (NSMutableArray<SuggestAction*>*)actionsInSuggest {
-  NSMutableArray<SuggestAction*>* suggestActions =
-      [[NSMutableArray alloc] init];
-
-  for (auto& action : _match.actions) {
-    SuggestAction* suggestAction =
-        [SuggestAction actionWithOmniboxAction:action.get()];
-    if (suggestAction) {
-      [suggestActions addObject:suggestAction];
-    }
-  }
-
-  return suggestActions;
 }
 
 - (UIImage*)matchTypeIcon {
@@ -403,10 +479,8 @@ UIColor* DimColorIncognito() {
         useDeemphasizedStyling:(BOOL)useDeemphasizedStyling {
   NSMutableAttributedString* result = [attributedString mutableCopy];
 
-  NSAttributedString* spacer =
-      [[NSAttributedString alloc] initWithString:@"  "];
   if (line.additional_text() != nil) {
-    [result appendAttributedString:spacer];
+    [result appendAttributedString:[[self class] spacerAttributedString]];
     NSAttributedString* extra =
         [self attributedStringForTextfield:line.additional_text()
                     useDeemphasizedStyling:useDeemphasizedStyling];
@@ -414,7 +488,7 @@ UIColor* DimColorIncognito() {
   }
 
   if (line.status_text() != nil) {
-    [result appendAttributedString:spacer];
+    [result appendAttributedString:[[self class] spacerAttributedString]];
     [result appendAttributedString:
                 [self attributedStringForTextfield:line.status_text()
                             useDeemphasizedStyling:useDeemphasizedStyling]];
@@ -439,6 +513,89 @@ UIColor* DimColorIncognito() {
 
   return [[NSAttributedString alloc] initWithString:unescapedString
                                          attributes:attributes];
+}
+
+#pragma mark FormattedStringFragment styling
+
+// Converts an attributed string fragment proto into an attributedString
+- (NSAttributedString*)
+    attributedStringForFragment:
+        (omnibox::FormattedString::FormattedStringFragment)fragment
+                          color:(UIColor*)defaultColor
+         useDeemphasizedStyling:(BOOL)useDeemphasizedStyling {
+  NSDictionary* attributes =
+      [self formattingAttributesForFragment:fragment
+                     useDeemphasizedStyling:useDeemphasizedStyling];
+
+  NSAttributedString* result = [[NSAttributedString alloc]
+      initWithString:base::SysUTF8ToNSString(fragment.text())
+          attributes:attributes];
+
+  return result;
+}
+
+/// Return correct formatting attributes for the fragment proto.
+/// `useDeemphasizedStyling` is necessary because some styles (e.g. PRIMARY)
+/// should take their color from the surrounding line; they don't have a fixed
+/// color.
+- (NSDictionary<NSAttributedStringKey, id>*)
+    formattingAttributesForFragment:
+        (omnibox::FormattedString::FormattedStringFragment)fragment
+             useDeemphasizedStyling:(BOOL)useDeemphasizedStyling {
+  UIFontDescriptor* defaultFontDescriptor =
+      useDeemphasizedStyling
+          ? [[UIFontDescriptor
+                preferredFontDescriptorWithTextStyle:UIFontTextStyleSubheadline]
+                fontDescriptorWithSymbolicTraits:
+                    UIFontDescriptorTraitTightLeading]
+          : [UIFontDescriptor
+                preferredFontDescriptorWithTextStyle:UIFontTextStyleBody];
+  UIColor* defaultColor = useDeemphasizedStyling ? SuggestionDetailTextColor()
+                                                 : SuggestionTextColor();
+
+  omnibox::FormattedString::ColorType color = fragment.color();
+  switch (color) {
+    case omnibox::FormattedString::COLOR_ON_SURFACE_POSITIVE:
+      return @{
+        NSFontAttributeName : [UIFont fontWithDescriptor:defaultFontDescriptor
+                                                    size:0],
+        NSForegroundColorAttributeName : [UIColor colorNamed:kGreenColor],
+      };
+    case omnibox::FormattedString::COLOR_ON_SURFACE_NEGATIVE:
+      return @{
+        NSFontAttributeName : [UIFont fontWithDescriptor:defaultFontDescriptor
+                                                    size:0],
+        NSForegroundColorAttributeName : [UIColor colorNamed:kRedColor],
+      };
+    case omnibox::FormattedString::COLOR_PRIMARY: {
+      // Calculate a slightly smaller font. The ratio here is somewhat
+      // arbitrary. Proportions from 5/9 to 5/7 all look pretty good.
+      CGFloat ratio = 5.0 / 9.0;
+      UIFont* defaultFont = [UIFont fontWithDescriptor:defaultFontDescriptor
+                                                  size:0];
+      UIFontDescriptor* superiorFontDescriptor = [defaultFontDescriptor
+          fontDescriptorWithSize:defaultFontDescriptor.pointSize * ratio];
+      CGFloat baselineOffset =
+          defaultFont.capHeight - defaultFont.capHeight * ratio;
+      return @{
+        NSFontAttributeName : [UIFont fontWithDescriptor:superiorFontDescriptor
+                                                    size:0],
+        NSBaselineOffsetAttributeName :
+            [NSNumber numberWithFloat:baselineOffset],
+        NSForegroundColorAttributeName : defaultColor,
+      };
+    }
+    default:
+      BOOL isFinanceDetailText =
+          _match.answer_type == omnibox::ANSWER_TYPE_FINANCE &&
+          useDeemphasizedStyling;
+      return @{
+        NSFontAttributeName : [UIFont fontWithDescriptor:defaultFontDescriptor
+                                                    size:0],
+        NSForegroundColorAttributeName : isFinanceDetailText ? UIColor.grayColor
+                                                             : defaultColor,
+      };
+  }
 }
 
 /// Return correct formatting attributes for the given style.

@@ -21,6 +21,7 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/common/autofill_test_utils.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/form_data_test_api.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "components/password_manager/core/browser/features/password_features.h"
@@ -42,8 +43,6 @@ namespace {
 
 using testing::IsNull;
 using testing::NotNull;
-
-using UsernameDetectionMethod = FormDataParser::UsernameDetectionMethod;
 
 // Use this value in FieldDataDescription.value to get an arbitrary unique value
 // generated in GetFormDataAndExpectation().
@@ -82,7 +81,8 @@ struct FieldDataDescription {
   const std::u16string_view id_attribute = kNonimportantValue;
   const std::u16string_view name = kNonimportantValue;
   FormControlType form_control_type = FormControlType::kInputText;
-  PasswordFieldPrediction prediction = {.type = autofill::MAX_VALID_FIELD_TYPE};
+  autofill::FieldType predicted_type = autofill::MAX_VALID_FIELD_TYPE;
+  bool may_use_prefilled_placeholder = false;
   // If not -1, indicates on which rank among predicted usernames this should
   // be. Unused ranks will be padded with unique IDs (not found in any fields).
   int predicted_username = -1;
@@ -203,8 +203,8 @@ void CheckField(const std::vector<FormFieldData>& fields,
 // SCOPED_TRACE if other logging messages might refer to the form.
 testing::Message DescribeFormData(const FormData& form_data) {
   testing::Message result;
-  result << "Form contains " << form_data.fields.size() << " fields:\n";
-  for (const FormFieldData& field : form_data.fields) {
+  result << "Form contains " << form_data.fields().size() << " fields:\n";
+  for (const FormFieldData& field : form_data.fields()) {
     result << "type="
            << autofill::FormControlTypeToString(field.form_control_type())
            << ", name=" << field.name() << ", value=" << field.value()
@@ -219,23 +219,23 @@ void CheckPasswordFormFields(const PasswordForm& password_form,
                              const FormData& form_data,
                              const ParseResultIds& expectations) {
   SCOPED_TRACE(DescribeFormData(form_data));
-  CheckField(form_data.fields, expectations.username_id,
+  CheckField(form_data.fields(), expectations.username_id,
              password_form.username_element, &password_form.username_value,
              "username");
   EXPECT_EQ(expectations.username_id,
             password_form.username_element_renderer_id);
 
-  CheckField(form_data.fields, expectations.password_id,
+  CheckField(form_data.fields(), expectations.password_id,
              password_form.password_element, &password_form.password_value,
              "password");
   EXPECT_EQ(expectations.password_id,
             password_form.password_element_renderer_id);
 
-  CheckField(form_data.fields, expectations.new_password_id,
+  CheckField(form_data.fields(), expectations.new_password_id,
              password_form.new_password_element,
              &password_form.new_password_value, "new_password");
 
-  CheckField(form_data.fields, expectations.confirmation_password_id,
+  CheckField(form_data.fields(), expectations.confirmation_password_id,
              password_form.confirmation_password_element, nullptr,
              "confirmation_password");
 }
@@ -326,7 +326,7 @@ class FormParserTest : public testing::Test {
       if (!field_description.user_input.empty()) {
         field.set_user_input(field_description.user_input);
       }
-      form_data.fields.push_back(field);
+      test_api(form_data).Append(field);
       if (field_description.role == ElementRole::NONE) {
         UpdateResultWithIdByRole(fill_result, renderer_id,
                                  field_description.role_filling);
@@ -338,9 +338,13 @@ class FormParserTest : public testing::Test {
         UpdateResultWithIdByRole(save_result, renderer_id,
                                  field_description.role);
       }
-      if (field_description.prediction.type != autofill::MAX_VALID_FIELD_TYPE) {
-        predictions->fields.push_back(field_description.prediction);
-        predictions->fields.back().renderer_id = renderer_id;
+      if (field_description.predicted_type != autofill::MAX_VALID_FIELD_TYPE) {
+        predictions->fields.emplace_back(
+            renderer_id, autofill::FieldSignature(123),
+            field_description.predicted_type,
+            /*may_use_prefilled_placeholder=*/
+            field_description.may_use_prefilled_placeholder,
+            /*is_override=*/false);
       }
       if (field_description.predicted_username >= 0) {
         size_t index =
@@ -381,58 +385,70 @@ class FormParserTest : public testing::Test {
             << test_case.description_for_logging << ", parsing mode = "
             << (mode == FormDataParser::Mode::kFilling ? "Filling" : "Saving"));
 
-        std::unique_ptr<PasswordForm> parsed_form =
-            parser.Parse(form_data, mode, /*stored_usernames=*/{});
-
+        FormParsingResult parsing_result = parser.ParseAndReturnParsingResult(
+            form_data, mode, /*stored_usernames=*/{});
         const ParseResultIds& expected_ids =
             mode == FormDataParser::Mode::kFilling ? fill_result : save_result;
 
         if (expected_ids.IsEmpty()) {
-          EXPECT_THAT(parsed_form, IsNull()) << "Expected no parsed results";
+          EXPECT_THAT(parsing_result.password_form, IsNull())
+              << "Expected no parsed results";
         } else {
-          ASSERT_THAT(parsed_form, NotNull()) << "Expected successful parsing";
-          EXPECT_EQ(PasswordForm::Scheme::kHtml, parsed_form->scheme);
-          EXPECT_FALSE(parsed_form->blocked_by_user);
-          EXPECT_EQ(PasswordForm::Type::kFormSubmission, parsed_form->type);
+          ASSERT_THAT(parsing_result.password_form, NotNull())
+              << "Expected successful parsing";
+          EXPECT_EQ(PasswordForm::Scheme::kHtml,
+                    parsing_result.password_form->scheme);
+          EXPECT_FALSE(parsing_result.password_form->blocked_by_user);
+          EXPECT_EQ(PasswordForm::Type::kFormSubmission,
+                    parsing_result.password_form->type);
           EXPECT_EQ(test_case.server_side_classification_successful,
-                    parsed_form->server_side_classification_successful);
+                    parsing_result.password_form
+                        ->server_side_classification_successful);
           EXPECT_EQ(test_case.username_may_use_prefilled_placeholder,
-                    parsed_form->username_may_use_prefilled_placeholder);
-          EXPECT_EQ(test_case.submission_event, parsed_form->submission_event);
+                    parsing_result.password_form
+                        ->username_may_use_prefilled_placeholder);
+          EXPECT_EQ(test_case.submission_event,
+                    parsing_result.password_form->submission_event);
           if (test_case.is_new_password_reliable &&
               mode == FormDataParser::Mode::kFilling) {
             EXPECT_EQ(*test_case.is_new_password_reliable,
-                      parsed_form->is_new_password_reliable);
+                      parsing_result.is_new_password_reliable);
           }
           EXPECT_EQ(test_case.accepts_webauthn_credentials &&
                         mode == FormDataParser::Mode::kFilling,
-                    parsed_form->accepts_webauthn_credentials);
+                    parsing_result.password_form->accepts_webauthn_credentials);
           EXPECT_EQ(test_case.form_has_autofilled_value,
-                    parsed_form->form_has_autofilled_value);
+                    parsing_result.password_form->form_has_autofilled_value);
 
-          CheckPasswordFormFields(*parsed_form, form_data, expected_ids);
-          CheckAllValuesUnique(parsed_form->all_alternative_passwords);
-          CheckAllValuesUnique(parsed_form->all_alternative_usernames);
+          CheckPasswordFormFields(*parsing_result.password_form, form_data,
+                                  expected_ids);
+          CheckAllValuesUnique(
+              parsing_result.password_form->all_alternative_passwords);
+          CheckAllValuesUnique(
+              parsing_result.password_form->all_alternative_usernames);
           if (test_case.number_of_all_alternative_passwords >= 0) {
-            EXPECT_EQ(static_cast<size_t>(
-                          test_case.number_of_all_alternative_passwords),
-                      parsed_form->all_alternative_passwords.size());
+            EXPECT_EQ(
+                static_cast<size_t>(
+                    test_case.number_of_all_alternative_passwords),
+                parsing_result.password_form->all_alternative_passwords.size());
           }
           if (test_case.all_alternative_passwords) {
             EXPECT_EQ(*test_case.all_alternative_passwords,
-                      parsed_form->all_alternative_passwords);
+                      parsing_result.password_form->all_alternative_passwords);
           }
           if (test_case.number_of_all_alternative_usernames >= 0) {
-            EXPECT_EQ(static_cast<size_t>(
-                          test_case.number_of_all_alternative_usernames),
-                      parsed_form->all_alternative_usernames.size());
+            EXPECT_EQ(
+                static_cast<size_t>(
+                    test_case.number_of_all_alternative_usernames),
+                parsing_result.password_form->all_alternative_usernames.size());
           }
           if (test_case.all_alternative_usernames) {
             EXPECT_EQ(*test_case.all_alternative_usernames,
-                      parsed_form->all_alternative_usernames);
+                      parsing_result.password_form->all_alternative_usernames);
           }
           if (mode == FormDataParser::Mode::kSaving) {
-            EXPECT_EQ(test_case.fallback_only, parsed_form->only_for_fallback);
+            EXPECT_EQ(test_case.fallback_only,
+                      parsing_result.password_form->only_for_fallback);
           }
         }
         if (test_case.readonly_status) {
@@ -1237,11 +1253,10 @@ TEST_F(FormParserTest, ServerPredictionsForClearTextPasswordFields) {
               {
                   {.role = ElementRole::USERNAME,
                    .form_control_type = FormControlType::kInputText,
-                   .prediction = {.type =
-                                      autofill::USERNAME_AND_EMAIL_ADDRESS}},
+                   .predicted_type = autofill::USERNAME_AND_EMAIL_ADDRESS},
                   {.role = ElementRole::NEW_PASSWORD,
                    .form_control_type = FormControlType::kInputText,
-                   .prediction = {.type = autofill::NEW_PASSWORD}},
+                   .predicted_type = autofill::NEW_PASSWORD},
               },
       },
       {
@@ -1253,7 +1268,7 @@ TEST_F(FormParserTest, ServerPredictionsForClearTextPasswordFields) {
                    .form_control_type = FormControlType::kInputText},
                   {.role = ElementRole::NEW_PASSWORD,
                    .form_control_type = FormControlType::kInputText,
-                   .prediction = {.type = autofill::NEW_PASSWORD}},
+                   .predicted_type = autofill::NEW_PASSWORD},
               },
       },
       {
@@ -1262,10 +1277,9 @@ TEST_F(FormParserTest, ServerPredictionsForClearTextPasswordFields) {
           .fields =
               {
                   {.form_control_type = FormControlType::kInputText,
-                   .prediction = {.type =
-                                      autofill::USERNAME_AND_EMAIL_ADDRESS}},
+                   .predicted_type = autofill::USERNAME_AND_EMAIL_ADDRESS},
                   {.form_control_type = FormControlType::kInputText,
-                   .prediction = {.type = autofill::PASSWORD}},
+                   .predicted_type = autofill::PASSWORD},
               },
       },
       {
@@ -1275,7 +1289,7 @@ TEST_F(FormParserTest, ServerPredictionsForClearTextPasswordFields) {
               {
                   {.form_control_type = FormControlType::kInputText},
                   {.form_control_type = FormControlType::kInputText,
-                   .prediction = {.type = autofill::PASSWORD}},
+                   .predicted_type = autofill::PASSWORD},
               },
       },
       {
@@ -1285,11 +1299,10 @@ TEST_F(FormParserTest, ServerPredictionsForClearTextPasswordFields) {
               {
                   {.role = ElementRole::USERNAME,
                    .form_control_type = FormControlType::kInputText,
-                   .prediction = {.type =
-                                      autofill::USERNAME_AND_EMAIL_ADDRESS}},
+                   .predicted_type = autofill::USERNAME_AND_EMAIL_ADDRESS},
                   {.role = ElementRole::NEW_PASSWORD,
                    .form_control_type = FormControlType::kInputText,
-                   .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD}},
+                   .predicted_type = autofill::ACCOUNT_CREATION_PASSWORD},
               },
       },
       {
@@ -1301,7 +1314,7 @@ TEST_F(FormParserTest, ServerPredictionsForClearTextPasswordFields) {
                    .form_control_type = FormControlType::kInputText},
                   {.role = ElementRole::NEW_PASSWORD,
                    .form_control_type = FormControlType::kInputText,
-                   .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD}},
+                   .predicted_type = autofill::ACCOUNT_CREATION_PASSWORD},
               },
       },
   });
@@ -1317,15 +1330,15 @@ TEST_F(FormParserTest, PasswordsWithLengthOneAreSavedOnlyOnManualFallback) {
               {.role = ElementRole::CURRENT_PASSWORD,
                .value = u"1",
                .form_control_type = FormControlType::kInputPassword,
-               .prediction = {.type = autofill::PASSWORD}},
+               .predicted_type = autofill::PASSWORD},
               {.role = ElementRole::NEW_PASSWORD,
                .value = u"2",
                .form_control_type = FormControlType::kInputPassword,
-               .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD}},
+               .predicted_type = autofill::ACCOUNT_CREATION_PASSWORD},
               {.role = ElementRole::CONFIRMATION_PASSWORD,
                .value = u"3",
                .form_control_type = FormControlType::kInputPassword,
-               .prediction = {.type = autofill::CONFIRMATION_PASSWORD}},
+               .predicted_type = autofill::CONFIRMATION_PASSWORD},
               {.value = u"4",
                .form_control_type = FormControlType::kInputPassword},
           },
@@ -1344,8 +1357,7 @@ TEST_F(FormParserTest, InferConfirmationPasswordField) {
                       .role = ElementRole::NEW_PASSWORD,
                       .value = u"pw",
                       .form_control_type = FormControlType::kInputPassword,
-                      .prediction = {.type =
-                                         autofill::ACCOUNT_CREATION_PASSWORD},
+                      .predicted_type = autofill::ACCOUNT_CREATION_PASSWORD,
                   },
                   {
                       .role_saving = ElementRole::CONFIRMATION_PASSWORD,
@@ -1384,8 +1396,7 @@ TEST_F(FormParserTest, InferConfirmationPasswordField) {
                       .role = ElementRole::NEW_PASSWORD,
                       .value = u"pw1",
                       .form_control_type = FormControlType::kInputPassword,
-                      .prediction = {.type =
-                                         autofill::ACCOUNT_CREATION_PASSWORD},
+                      .predicted_type = autofill::ACCOUNT_CREATION_PASSWORD,
                   },
                   {
                       .role_saving = ElementRole::NONE,
@@ -1436,7 +1447,7 @@ TEST_F(FormParserTest, ServerHints) {
               {
                   {.role = ElementRole::USERNAME,
                    .form_control_type = FormControlType::kInputText,
-                   .prediction = {.type = autofill::USERNAME}},
+                   .predicted_type = autofill::USERNAME},
                   {.form_control_type = FormControlType::kInputText},
                   {.role = ElementRole::CURRENT_PASSWORD,
                    .form_control_type = FormControlType::kInputPassword},
@@ -1448,14 +1459,14 @@ TEST_F(FormParserTest, ServerHints) {
               {
                   {.role = ElementRole::USERNAME,
                    .form_control_type = FormControlType::kInputText,
-                   .prediction = {.type = autofill::USERNAME_AND_EMAIL_ADDRESS,
-                                  .may_use_prefilled_placeholder = true}},
+                   .predicted_type = autofill::USERNAME_AND_EMAIL_ADDRESS,
+                   .may_use_prefilled_placeholder = true},
                   {.form_control_type = FormControlType::kInputText},
                   {.form_control_type = FormControlType::kInputPassword},
                   {.role = ElementRole::CURRENT_PASSWORD,
                    .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::PASSWORD,
-                                  .may_use_prefilled_placeholder = true}},
+                   .predicted_type = autofill::PASSWORD,
+                   .may_use_prefilled_placeholder = true},
               },
           .server_side_classification_successful = true,
           .username_may_use_prefilled_placeholder = true,
@@ -1466,18 +1477,18 @@ TEST_F(FormParserTest, ServerHints) {
               {
                   {.role = ElementRole::USERNAME,
                    .form_control_type = FormControlType::kInputText,
-                   .prediction = {.type = autofill::USERNAME}},
+                   .predicted_type = autofill::USERNAME},
                   {.form_control_type = FormControlType::kInputText},
                   {.form_control_type = FormControlType::kInputPassword},
                   {.role = ElementRole::NEW_PASSWORD,
                    .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD}},
+                   .predicted_type = autofill::ACCOUNT_CREATION_PASSWORD},
                   {.role = ElementRole::CONFIRMATION_PASSWORD,
                    .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::CONFIRMATION_PASSWORD}},
+                   .predicted_type = autofill::CONFIRMATION_PASSWORD},
                   {.role = ElementRole::CURRENT_PASSWORD,
                    .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::PASSWORD}},
+                   .predicted_type = autofill::PASSWORD},
               },
           .number_of_all_alternative_passwords = 4,
           .is_new_password_reliable = true,
@@ -1489,7 +1500,7 @@ TEST_F(FormParserTest, ServerHints) {
               {
                   {.role = ElementRole::USERNAME,
                    .form_control_type = FormControlType::kInputText,
-                   .prediction = {.type = autofill::PASSWORD}},
+                   .predicted_type = autofill::PASSWORD},
                   {.role = ElementRole::CURRENT_PASSWORD,
                    .form_control_type = FormControlType::kInputPassword},
               },
@@ -1500,12 +1511,12 @@ TEST_F(FormParserTest, ServerHints) {
               {
                   {.role = ElementRole::USERNAME,
                    .form_control_type = FormControlType::kInputText,
-                   .prediction = {.type = autofill::USERNAME_AND_EMAIL_ADDRESS,
-                                  .may_use_prefilled_placeholder = false}},
+                   .predicted_type = autofill::USERNAME_AND_EMAIL_ADDRESS,
+                   .may_use_prefilled_placeholder = false},
                   {.role = ElementRole::CURRENT_PASSWORD,
                    .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::PASSWORD,
-                                  .may_use_prefilled_placeholder = false}},
+                   .predicted_type = autofill::PASSWORD,
+                   .may_use_prefilled_placeholder = false},
               },
           .server_side_classification_successful = true,
           .username_may_use_prefilled_placeholder = false,
@@ -1803,13 +1814,12 @@ TEST_F(FormParserTest, UsernamePredictions) {
               {
                   {.role = ElementRole::USERNAME,
                    .form_control_type = FormControlType::kInputText,
-                   .prediction = {.type =
-                                      autofill::USERNAME_AND_EMAIL_ADDRESS}},
+                   .predicted_type = autofill::USERNAME_AND_EMAIL_ADDRESS},
                   {.form_control_type = FormControlType::kInputText,
                    .predicted_username = 0},
                   {.role = ElementRole::CURRENT_PASSWORD,
                    .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::PASSWORD}},
+                   .predicted_type = autofill::PASSWORD},
               },
       },
       {
@@ -1861,10 +1871,10 @@ TEST_F(FormParserTest, ComplementingResults) {
                    .form_control_type = FormControlType::kInputText},
                   {.role = ElementRole::CONFIRMATION_PASSWORD,
                    .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::CONFIRMATION_PASSWORD}},
+                   .predicted_type = autofill::CONFIRMATION_PASSWORD},
                   {.role = ElementRole::NEW_PASSWORD,
                    .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::NEW_PASSWORD}},
+                   .predicted_type = autofill::NEW_PASSWORD},
               },
           .is_new_password_reliable = true,
       },
@@ -1876,8 +1886,7 @@ TEST_F(FormParserTest, ComplementingResults) {
               {
                   {.role = ElementRole::USERNAME,
                    .form_control_type = FormControlType::kInputText,
-                   .prediction = {.type =
-                                      autofill::USERNAME_AND_EMAIL_ADDRESS}},
+                   .predicted_type = autofill::USERNAME_AND_EMAIL_ADDRESS},
                   {.form_control_type = FormControlType::kInputText},
                   {.role = ElementRole::CURRENT_PASSWORD,
                    .form_control_type = FormControlType::kInputPassword},
@@ -1898,8 +1907,7 @@ TEST_F(FormParserTest, IgnoreCvcFields) {
                   {.role = ElementRole::USERNAME,
                    .form_control_type = FormControlType::kInputText},
                   {.form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type =
-                                      autofill::CREDIT_CARD_VERIFICATION_CODE}},
+                   .predicted_type = autofill::CREDIT_CARD_VERIFICATION_CODE},
                   {.role = ElementRole::CURRENT_PASSWORD,
                    .form_control_type = FormControlType::kInputPassword},
               },
@@ -1914,8 +1922,7 @@ TEST_F(FormParserTest, IgnoreCvcFields) {
               {
                   {.form_control_type = FormControlType::kInputText},
                   {.form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type =
-                                      autofill::CREDIT_CARD_VERIFICATION_CODE}},
+                   .predicted_type = autofill::CREDIT_CARD_VERIFICATION_CODE},
               },
       },
       {
@@ -1961,11 +1968,10 @@ TEST_F(FormParserTest, ServerHintsForCvcFieldsOverrideAutocomplete) {
                    .form_control_type = FormControlType::kInputText},
                   {.autocomplete_attribute = "current-password",
                    .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::CREDIT_CARD_NUMBER}},
+                   .predicted_type = autofill::CREDIT_CARD_NUMBER},
                   {.autocomplete_attribute = "new-password",
                    .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type =
-                                      autofill::CREDIT_CARD_VERIFICATION_CODE}},
+                   .predicted_type = autofill::CREDIT_CARD_VERIFICATION_CODE},
                   {.role = ElementRole::CURRENT_PASSWORD,
                    .form_control_type = FormControlType::kInputPassword},
               },
@@ -1981,7 +1987,7 @@ TEST_F(FormParserTest, ServerHintsForCvcFieldsOverrideAutocomplete) {
                   {.role = ElementRole::CURRENT_PASSWORD,
                    .autocomplete_attribute = "cc-csc",
                    .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::PASSWORD}},
+                   .predicted_type = autofill::PASSWORD},
               },
           .fallback_only = false,
       },
@@ -2001,7 +2007,7 @@ TEST_F(FormParserTest, CCNumber) {
               {
                   {.form_control_type = FormControlType::kInputText},
                   {.form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::CREDIT_CARD_NUMBER}},
+                   .predicted_type = autofill::CREDIT_CARD_NUMBER},
               },
       },
       {
@@ -2027,18 +2033,17 @@ TEST_F(FormParserTest, CCNumber) {
               {
                   {.name = u"cardholder",
                    .form_control_type = FormControlType::kInputText,
-                   .prediction = {.type = autofill::CREDIT_CARD_NAME_FULL}},
+                   .predicted_type = autofill::CREDIT_CARD_NAME_FULL},
                   {.name = u"ccnumber",
                    .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::CREDIT_CARD_NUMBER}},
+                   .predicted_type = autofill::CREDIT_CARD_NUMBER},
                   {.name = u"expiration",
                    .form_control_type = FormControlType::kInputText,
-                   .prediction =
-                       {.type = autofill::CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR}},
+                   .predicted_type =
+                       autofill::CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR},
                   {.name = u"cvc",
                    .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type =
-                                      autofill::CREDIT_CARD_VERIFICATION_CODE}},
+                   .predicted_type = autofill::CREDIT_CARD_VERIFICATION_CODE},
               },
       },
   });
@@ -2113,7 +2118,7 @@ TEST_F(FormParserTest, NotPasswordField) {
                   {.role = ElementRole::USERNAME,
                    .form_control_type = FormControlType::kInputText},
                   {.form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::NOT_PASSWORD}},
+                   .predicted_type = autofill::NOT_PASSWORD},
                   {.role = ElementRole::CURRENT_PASSWORD,
                    .form_control_type = FormControlType::kInputPassword},
               },
@@ -2126,7 +2131,7 @@ TEST_F(FormParserTest, NotPasswordField) {
               {
                   {.form_control_type = FormControlType::kInputText},
                   {.form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::NOT_PASSWORD}},
+                   .predicted_type = autofill::NOT_PASSWORD},
               },
       },
   });
@@ -2142,7 +2147,7 @@ TEST_F(FormParserTest, OneTimeCodeField) {
                   {.role = ElementRole::USERNAME,
                    .form_control_type = FormControlType::kInputText},
                   {.form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::ONE_TIME_CODE}},
+                   .predicted_type = autofill::ONE_TIME_CODE},
                   {.role = ElementRole::CURRENT_PASSWORD,
                    .form_control_type = FormControlType::kInputPassword},
               },
@@ -2155,7 +2160,7 @@ TEST_F(FormParserTest, OneTimeCodeField) {
               {
                   {.form_control_type = FormControlType::kInputText},
                   {.form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::ONE_TIME_CODE}},
+                   .predicted_type = autofill::ONE_TIME_CODE},
               },
       },
   });
@@ -2171,7 +2176,7 @@ TEST_F(FormParserTest, OneTimeCodeFieldNotUsername) {
                   {.role = ElementRole::USERNAME,
                    .form_control_type = FormControlType::kInputText},
                   {.form_control_type = FormControlType::kInputText,
-                   .prediction = {.type = autofill::ONE_TIME_CODE}},
+                   .predicted_type = autofill::ONE_TIME_CODE},
                   {.role = ElementRole::CURRENT_PASSWORD,
                    .form_control_type = FormControlType::kInputPassword},
               },
@@ -2191,10 +2196,10 @@ TEST_F(FormParserTest, NotUsernameField) {
                    .form_control_type = FormControlType::kInputText},
                   {.role = ElementRole::NONE,
                    .form_control_type = FormControlType::kInputText,
-                   .prediction = {.type = autofill::NOT_USERNAME}},
+                   .predicted_type = autofill::NOT_USERNAME},
                   {.role = ElementRole::CURRENT_PASSWORD,
                    .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::PASSWORD}},
+                   .predicted_type = autofill::PASSWORD},
               },
           .fallback_only = false,
       },
@@ -2205,7 +2210,7 @@ TEST_F(FormParserTest, NotUsernameField) {
               {
                   {.role = ElementRole::NONE,
                    .form_control_type = FormControlType::kInputText,
-                   .prediction = {.type = autofill::NOT_USERNAME}},
+                   .predicted_type = autofill::NOT_USERNAME},
                   {.role = ElementRole::CURRENT_PASSWORD,
                    .form_control_type = FormControlType::kInputPassword},
               },
@@ -2218,11 +2223,11 @@ TEST_F(FormParserTest, NotUsernameField) {
               {
                   {.role = ElementRole::NONE,
                    .form_control_type = FormControlType::kInputText,
-                   .prediction = {.type = autofill::NOT_USERNAME},
+                   .predicted_type = autofill::NOT_USERNAME,
                    .predicted_username = 0},
                   {.role = ElementRole::CURRENT_PASSWORD,
                    .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::PASSWORD}},
+                   .predicted_type = autofill::PASSWORD},
               },
           .fallback_only = false,
       },
@@ -2241,10 +2246,10 @@ TEST_F(FormParserTest, NotUsernameFieldDespiteAutocompelteAtrribute) {
                    .form_control_type = FormControlType::kInputText},
                   {.autocomplete_attribute = "username",
                    .form_control_type = FormControlType::kInputText,
-                   .prediction = {.type = autofill::NOT_USERNAME}},
+                   .predicted_type = autofill::NOT_USERNAME},
                   {.role = ElementRole::CURRENT_PASSWORD,
                    .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::PASSWORD}},
+                   .predicted_type = autofill::PASSWORD},
               },
           .fallback_only = false,
       },
@@ -2256,7 +2261,7 @@ TEST_F(FormParserTest, NotUsernameFieldDespiteAutocompelteAtrribute) {
                   {.role = ElementRole::NONE,
                    .autocomplete_attribute = "username",
                    .form_control_type = FormControlType::kInputText,
-                   .prediction = {.type = autofill::NOT_USERNAME}},
+                   .predicted_type = autofill::NOT_USERNAME},
                   {.role = ElementRole::CURRENT_PASSWORD,
                    .form_control_type = FormControlType::kInputPassword},
               },
@@ -2276,13 +2281,13 @@ TEST_F(FormParserTest, NotPasswordFieldDespiteAutocompleteAttribute) {
                    .form_control_type = FormControlType::kInputText},
                   {.autocomplete_attribute = "current-password",
                    .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::NOT_PASSWORD}},
+                   .predicted_type = autofill::NOT_PASSWORD},
                   {.autocomplete_attribute = "new-password",
                    .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::NOT_PASSWORD}},
+                   .predicted_type = autofill::NOT_PASSWORD},
                   {.autocomplete_attribute = "password",
                    .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::NOT_PASSWORD}},
+                   .predicted_type = autofill::NOT_PASSWORD},
                   {.role = ElementRole::CURRENT_PASSWORD,
                    .form_control_type = FormControlType::kInputPassword},
               },
@@ -2296,7 +2301,7 @@ TEST_F(FormParserTest, NotPasswordFieldDespiteAutocompleteAttribute) {
                   {.form_control_type = FormControlType::kInputText},
                   {.autocomplete_attribute = "current-password",
                    .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::NOT_PASSWORD}},
+                   .predicted_type = autofill::NOT_PASSWORD},
               },
       },
   });
@@ -2313,7 +2318,7 @@ TEST_F(FormParserTest, OneTimeCodeFieldDespiteAutocompleteAttribute) {
                    .form_control_type = FormControlType::kInputText},
                   {.autocomplete_attribute = "current-password",
                    .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::ONE_TIME_CODE}},
+                   .predicted_type = autofill::ONE_TIME_CODE},
                   {.role = ElementRole::CURRENT_PASSWORD,
                    .form_control_type = FormControlType::kInputPassword},
               },
@@ -2327,7 +2332,7 @@ TEST_F(FormParserTest, OneTimeCodeFieldDespiteAutocompleteAttribute) {
                   {.form_control_type = FormControlType::kInputText},
                   {.autocomplete_attribute = "current-password",
                    .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::ONE_TIME_CODE}},
+                   .predicted_type = autofill::ONE_TIME_CODE},
               },
       },
   });
@@ -2346,7 +2351,7 @@ TEST_F(FormParserTest, ReadonlyStatus) {
                   {.role = ElementRole::CURRENT_PASSWORD,
                    .is_readonly = true,
                    .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::PASSWORD}},
+                   .predicted_type = autofill::PASSWORD},
               },
           .readonly_status =
               FormDataParser::ReadonlyPasswordFields::kNoHeuristics,
@@ -2445,7 +2450,7 @@ TEST_F(FormParserTest, NoEmptyValues) {
                   {.role_filling = ElementRole::USERNAME,
                    .value = u"",
                    .form_control_type = FormControlType::kInputText,
-                   .prediction = {.type = autofill::USERNAME}},
+                   .predicted_type = autofill::USERNAME},
                   {.role_saving = ElementRole::USERNAME,
                    .form_control_type = FormControlType::kInputText},
                   {.role_saving = ElementRole::CURRENT_PASSWORD,
@@ -2453,7 +2458,7 @@ TEST_F(FormParserTest, NoEmptyValues) {
                   {.role_filling = ElementRole::NEW_PASSWORD,
                    .value = u"",
                    .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD}},
+                   .predicted_type = autofill::ACCOUNT_CREATION_PASSWORD},
               },
           .is_new_password_reliable = true,
       },
@@ -2507,17 +2512,17 @@ TEST_F(FormParserTest, MultipleUsernames) {
               {
                   {.role = ElementRole::USERNAME,
                    .form_control_type = FormControlType::kInputText,
-                   .prediction = {.type = autofill::USERNAME}},
+                   .predicted_type = autofill::USERNAME},
                   {.form_control_type = FormControlType::kInputText,
-                   .prediction = {.type = autofill::USERNAME}},
+                   .predicted_type = autofill::USERNAME},
                   {.form_control_type = FormControlType::kInputText,
-                   .prediction = {.type = autofill::USERNAME}},
+                   .predicted_type = autofill::USERNAME},
                   {.role = ElementRole::CURRENT_PASSWORD,
                    .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::PASSWORD}},
+                   .predicted_type = autofill::PASSWORD},
                   {.role = ElementRole::NEW_PASSWORD,
                    .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD}},
+                   .predicted_type = autofill::ACCOUNT_CREATION_PASSWORD},
               },
           .is_new_password_reliable = true,
       },
@@ -2528,12 +2533,12 @@ TEST_F(FormParserTest, MultipleUsernames) {
               {
                   {.role = ElementRole::USERNAME,
                    .form_control_type = FormControlType::kInputText,
-                   .prediction = {.type = autofill::USERNAME}},
+                   .predicted_type = autofill::USERNAME},
                   {.form_control_type = FormControlType::kInputText,
-                   .prediction = {.type = autofill::USERNAME}},
+                   .predicted_type = autofill::USERNAME},
                   {.role = ElementRole::NEW_PASSWORD,
                    .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD}},
+                   .predicted_type = autofill::ACCOUNT_CREATION_PASSWORD},
               },
       },
       {
@@ -2543,15 +2548,15 @@ TEST_F(FormParserTest, MultipleUsernames) {
               {
                   {.role = ElementRole::USERNAME,
                    .form_control_type = FormControlType::kInputText,
-                   .prediction = {.type = autofill::USERNAME}},
+                   .predicted_type = autofill::USERNAME},
                   {.form_control_type = FormControlType::kInputText,
-                   .prediction = {.type = autofill::USERNAME}},
+                   .predicted_type = autofill::USERNAME},
                   {.role = ElementRole::CURRENT_PASSWORD,
                    .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::PASSWORD}},
+                   .predicted_type = autofill::PASSWORD},
                   {.role = ElementRole::NONE,
                    .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::PASSWORD}},
+                   .predicted_type = autofill::PASSWORD},
               },
       },
       {
@@ -2561,12 +2566,12 @@ TEST_F(FormParserTest, MultipleUsernames) {
               {
                   {.role = ElementRole::USERNAME,
                    .form_control_type = FormControlType::kInputText,
-                   .prediction = {.type = autofill::USERNAME}},
+                   .predicted_type = autofill::USERNAME},
                   {.form_control_type = FormControlType::kInputText,
-                   .prediction = {.type = autofill::USERNAME}},
+                   .predicted_type = autofill::USERNAME},
                   {.role = ElementRole::CURRENT_PASSWORD,
                    .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::PASSWORD}},
+                   .predicted_type = autofill::PASSWORD},
               },
       },
       {
@@ -2575,16 +2580,16 @@ TEST_F(FormParserTest, MultipleUsernames) {
               {
                   {.role_filling = ElementRole::USERNAME,
                    .form_control_type = FormControlType::kInputText,
-                   .prediction = {.type = autofill::USERNAME}},
+                   .predicted_type = autofill::USERNAME},
                   {.role_saving = ElementRole::USERNAME,
                    .form_control_type = FormControlType::kInputText,
-                   .prediction = {.type = autofill::USERNAME}},
+                   .predicted_type = autofill::USERNAME},
                   {.role = ElementRole::CURRENT_PASSWORD,
                    .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::PASSWORD}},
+                   .predicted_type = autofill::PASSWORD},
                   {.role = ElementRole::NEW_PASSWORD,
                    .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD}},
+                   .predicted_type = autofill::ACCOUNT_CREATION_PASSWORD},
               },
           .is_new_password_reliable = true,
       },
@@ -2594,18 +2599,18 @@ TEST_F(FormParserTest, MultipleUsernames) {
               {
                   {.role_saving = ElementRole::USERNAME,
                    .form_control_type = FormControlType::kInputText,
-                   .prediction = {.type = autofill::USERNAME}},
+                   .predicted_type = autofill::USERNAME},
                   {.role_filling = ElementRole::USERNAME,
                    .form_control_type = FormControlType::kInputText,
-                   .prediction = {.type = autofill::USERNAME}},
+                   .predicted_type = autofill::USERNAME},
                   {.role = ElementRole::NEW_PASSWORD,
                    .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD}},
+                   .predicted_type = autofill::ACCOUNT_CREATION_PASSWORD},
                   {.form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD}},
+                   .predicted_type = autofill::ACCOUNT_CREATION_PASSWORD},
                   {.role = ElementRole::CURRENT_PASSWORD,
                    .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::PASSWORD}},
+                   .predicted_type = autofill::PASSWORD},
               },
       },
       {
@@ -2617,16 +2622,16 @@ TEST_F(FormParserTest, MultipleUsernames) {
                    .properties_mask =
                        FieldPropertiesFlags::kAutofilledOnPageLoad,
                    .form_control_type = FormControlType::kInputText,
-                   .prediction = {.type = autofill::USERNAME}},
+                   .predicted_type = autofill::USERNAME},
                   {.role_saving = ElementRole::USERNAME,
                    .form_control_type = FormControlType::kInputText,
-                   .prediction = {.type = autofill::USERNAME}},
+                   .predicted_type = autofill::USERNAME},
                   {.role = ElementRole::CURRENT_PASSWORD,
                    .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::PASSWORD}},
+                   .predicted_type = autofill::PASSWORD},
                   {.role = ElementRole::NEW_PASSWORD,
                    .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD}},
+                   .predicted_type = autofill::ACCOUNT_CREATION_PASSWORD},
               },
       },
   });
@@ -2645,13 +2650,13 @@ TEST_F(FormParserTest, MultipleNewPasswords) {
               {
                   {.role = ElementRole::USERNAME,
                    .form_control_type = FormControlType::kInputText,
-                   .prediction = {.type = autofill::USERNAME}},
+                   .predicted_type = autofill::USERNAME},
                   {.role = ElementRole::NEW_PASSWORD,
                    .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD}},
+                   .predicted_type = autofill::ACCOUNT_CREATION_PASSWORD},
                   {.role = ElementRole::NONE,
                    .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD}},
+                   .predicted_type = autofill::ACCOUNT_CREATION_PASSWORD},
               },
       },
       {
@@ -2661,15 +2666,15 @@ TEST_F(FormParserTest, MultipleNewPasswords) {
               {
                   {.role = ElementRole::USERNAME,
                    .form_control_type = FormControlType::kInputText,
-                   .prediction = {.type = autofill::USERNAME}},
+                   .predicted_type = autofill::USERNAME},
                   {.role = ElementRole::NEW_PASSWORD,
                    .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD}},
+                   .predicted_type = autofill::ACCOUNT_CREATION_PASSWORD},
                   {.form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD}},
+                   .predicted_type = autofill::ACCOUNT_CREATION_PASSWORD},
                   {.role = ElementRole::CONFIRMATION_PASSWORD,
                    .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::CONFIRMATION_PASSWORD}},
+                   .predicted_type = autofill::CONFIRMATION_PASSWORD},
               },
       },
   });
@@ -2687,7 +2692,7 @@ TEST_F(FormParserTest, HistogramsForUsernameDetectionMethod) {
                   {
                       {.role = ElementRole::CURRENT_PASSWORD,
                        .form_control_type = FormControlType::kInputPassword,
-                       .prediction = {.type = autofill::PASSWORD}},
+                       .predicted_type = autofill::PASSWORD},
                   },
           },
           UsernameDetectionMethod::kNoUsernameDetected,
@@ -2699,10 +2704,10 @@ TEST_F(FormParserTest, HistogramsForUsernameDetectionMethod) {
                   {
                       {.role = ElementRole::USERNAME,
                        .form_control_type = FormControlType::kInputText,
-                       .prediction = {.type = autofill::USERNAME}},
+                       .predicted_type = autofill::USERNAME},
                       {.role = ElementRole::CURRENT_PASSWORD,
                        .form_control_type = FormControlType::kInputPassword,
-                       .prediction = {.type = autofill::PASSWORD}},
+                       .predicted_type = autofill::PASSWORD},
                   },
           },
           UsernameDetectionMethod::kServerSidePrediction,
@@ -2762,7 +2767,7 @@ TEST_F(FormParserTest, HistogramsForUsernameDetectionMethod) {
                        .predicted_username = 0},
                       {.role = ElementRole::CURRENT_PASSWORD,
                        .form_control_type = FormControlType::kInputPassword,
-                       .prediction = {.type = autofill::PASSWORD}},
+                       .predicted_type = autofill::PASSWORD},
                   },
           },
           UsernameDetectionMethod::kHtmlBasedClassifier,
@@ -2914,7 +2919,7 @@ TEST_F(FormParserTest, ContradictingPasswordPredictionAndAutocomplete) {
               {.role = ElementRole::CURRENT_PASSWORD,
                .autocomplete_attribute = "new-password",
                .form_control_type = FormControlType::kInputPassword,
-               .prediction = {.type = autofill::PASSWORD}},
+               .predicted_type = autofill::PASSWORD},
           },
   }});
 }
@@ -2927,7 +2932,7 @@ TEST_F(FormParserTest, SingleUsernamePrediction) {
               {
                   {.role = ElementRole::USERNAME,
                    .form_control_type = FormControlType::kInputText,
-                   .prediction = {.type = autofill::SINGLE_USERNAME}},
+                   .predicted_type = autofill::SINGLE_USERNAME},
               },
       },
       {
@@ -2937,7 +2942,7 @@ TEST_F(FormParserTest, SingleUsernamePrediction) {
                   {.role = ElementRole::NONE,
                    .name = u"search_bar",
                    .form_control_type = FormControlType::kInputText,
-                   .prediction = {.type = autofill::SINGLE_USERNAME}},
+                   .predicted_type = autofill::SINGLE_USERNAME},
               },
       },
       {
@@ -2948,27 +2953,30 @@ TEST_F(FormParserTest, SingleUsernamePrediction) {
                    .id_attribute = u"",
                    .name = u"",
                    .form_control_type = FormControlType::kInputText,
-                   .prediction = {.type = autofill::SINGLE_USERNAME}},
+                   .predicted_type = autofill::SINGLE_USERNAME},
               },
       },
   });
 }
 
-// Password predictions should have priority over single username predictions
-// when the form is parsed for saving to avoid losing the password.
-TEST_F(FormParserTest, BothSingleUsernameAndPasswordPredictions) {
+// When the form has both user input in password fields and single
+// username prediction, the later should be ignored  when the form is parsed
+// for saving to avoid losing the password.
+TEST_F(FormParserTest, BothSingleUsernameAndPassword) {
   CheckTestData({
       {
           .description_for_logging =
-              "Form with both SINGLE_USERNAME and PASSWORD predictions.",
+              "Form with a SINGLE_USERNAME prediction and "
+              "user-typed password value.",
           .fields =
               {
                   {.role = ElementRole::USERNAME,
+                   .user_input = u"typed_username",
                    .form_control_type = FormControlType::kInputText,
-                   .prediction = {.type = autofill::SINGLE_USERNAME}},
+                   .predicted_type = autofill::SINGLE_USERNAME},
                   {.role_saving = ElementRole::CURRENT_PASSWORD,
-                   .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::PASSWORD}},
+                   .user_input = u"typed_password",
+                   .form_control_type = FormControlType::kInputPassword},
               },
           .fallback_only = false,
       },
@@ -3025,7 +3033,7 @@ TEST_F(FormParserTest, FindUsernameInPredictions_SkipPrediction) {
   // should be ignored despite it is more reliable than prediction for
   // "id" field.
   std::vector<ProcessedField> processed_fields;
-  for (const auto& form_field_data : form_data.fields) {
+  for (const auto& form_field_data : form_data.fields()) {
     processed_fields.push_back(ProcessedField{.field = &form_field_data});
   }
 
@@ -3035,8 +3043,8 @@ TEST_F(FormParserTest, FindUsernameInPredictions_SkipPrediction) {
   // Add predictions for "email" and "id" fields. The "email" is in
   // front of "id", indicating "email" is more reliable.
   const std::vector<autofill::FieldRendererId> predictions = {
-      form_data.fields[1].renderer_id(),  // email
-      form_data.fields[2].renderer_id(),  // id
+      form_data.fields()[1].renderer_id(),  // email
+      form_data.fields()[2].renderer_id(),  // id
   };
 
   // Now search the username field. The username field is supposed to
@@ -3210,7 +3218,7 @@ TEST_F(FormParserTest, UsernameWithTypePasswordAndServerPredictions) {
                    .value = u"testusername",
                    .name = u"field1",
                    .form_control_type = FormControlType::kInputPassword,
-                   .prediction = {.type = autofill::USERNAME}},
+                   .predicted_type = autofill::USERNAME},
                   {.role = ElementRole::CURRENT_PASSWORD,
                    .value = u"testpass",
                    .name = u"field2",
@@ -3298,19 +3306,20 @@ TEST_F(FormParserTest, UsernameFoundByServerPredictions) {
       .description_for_logging = "Username with server predictions",
       .fields = {{.role = ElementRole::USERNAME,
                   .form_control_type = FormControlType::kInputText,
-                  .prediction = {.type = autofill::USERNAME}},
+                  .predicted_type = autofill::USERNAME},
 
                  {.role = ElementRole::CURRENT_PASSWORD,
                   .form_control_type = FormControlType::kInputPassword,
-                  .prediction = {.type = autofill::PASSWORD}}},
+                  .predicted_type = autofill::PASSWORD}},
   };
   const FormData form_data = GetFormDataAndExpectation(
       {test_case}, &predictions, &fill_result, &save_result);
   FormDataParser parser;
   parser.set_predictions(std::move(predictions));
 
-  auto [result, username_detection_method] =
-      parser.ParseAndReturnUsernameDetection(
+  auto [result, username_detection_method, is_new_password_reliable,
+        suggestion_banned_fields] =
+      parser.ParseAndReturnParsingResult(
           form_data, FormDataParser::Mode::kSaving, /*stored_usernames=*/{});
   EXPECT_EQ(username_detection_method,
             UsernameDetectionMethod::kServerSidePrediction);
@@ -3320,15 +3329,14 @@ TEST_F(FormParserTest, BaseHeuristicsFindUsernameFieldWithStoredUsername) {
   const std::u16string kUsername = u"the_username";
   FormData form_data;
   form_data.set_url(GURL("https://www.example.com"));
-  form_data.fields.emplace_back(
-      CreateField(FormControlType::kInputText, kUsername));
-  form_data.fields.emplace_back(CreateField(FormControlType::kInputText, u""));
-  form_data.fields.emplace_back(
-      CreateField(FormControlType::kInputPassword, u""));
+  form_data.set_fields({CreateField(FormControlType::kInputText, kUsername),
+                        CreateField(FormControlType::kInputText, u""),
+                        CreateField(FormControlType::kInputPassword, u"")});
 
   FormDataParser parser;
-  auto [password_form, username_detection_method] =
-      parser.ParseAndReturnUsernameDetection(
+  auto [password_form, username_detection_method, is_new_password_reliable,
+        suggestion_banned_fields] =
+      parser.ParseAndReturnParsingResult(
           form_data, FormDataParser::Mode::kFilling, {kUsername});
   ASSERT_TRUE(password_form);
 
@@ -3336,7 +3344,7 @@ TEST_F(FormParserTest, BaseHeuristicsFindUsernameFieldWithStoredUsername) {
   EXPECT_EQ(password_form->username_value, kUsername);
   EXPECT_TRUE(password_form->HasUsernameElement());
   EXPECT_EQ(password_form->username_element_renderer_id,
-            form_data.fields[0].renderer_id());
+            form_data.fields()[0].renderer_id());
 }
 
 }  // namespace

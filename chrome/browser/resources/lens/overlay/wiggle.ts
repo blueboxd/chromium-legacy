@@ -62,12 +62,24 @@ export class Wiggle {
   private angularPosition: number;
   /** Time in seconds of previous calculation */
   private previousTimeSeconds?: number;
+  /** Value of the previous calculated wiggle simulation value. */
+  private previousWiggleValue: number;
 
   constructor(
       frequency: number,
   ) {
     this.angularFrequency = frequencyToAngularFrequency(frequency);
     this.angularPosition = Math.random() * INITIAL_ANGULAR_POSITION_MULTIPLIER;
+    // If there was no previous wiggle value (as in the case of entering through
+    // the image context menu item), then it is possible for all of the circles
+    // to overlap causing their simulated gaussian blur to become more apparent
+    // at the gradient color stops. Calculate an initial wiggle value to prevent
+    // this.
+    this.previousWiggleValue = this.calculateNext(0);
+  }
+
+  getPreviousWiggleValue(): number {
+    return this.previousWiggleValue;
   }
 
   setFrequency(frequency: number) {
@@ -91,6 +103,7 @@ export class Wiggle {
     for (const {amplitude, frequency} of this.waveParams) {
       wiggle += amplitude * Math.sin(frequency * this.angularPosition);
     }
+    this.previousWiggleValue = wiggle;
     return wiggle;
   }
 }

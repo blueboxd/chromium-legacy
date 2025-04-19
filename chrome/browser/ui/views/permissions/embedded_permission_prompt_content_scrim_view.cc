@@ -37,6 +37,9 @@ EmbeddedPermissionPromptContentScrimView::CreateScrimWidget(
   auto* web_content = permission_prompt_delegate->GetAssociatedWebContents();
   auto* top_level_widget = views::Widget::GetTopLevelWidgetForNativeView(
       web_content->GetContentNativeView());
+  if (!top_level_widget) {
+    return nullptr;
+  }
   params.parent = top_level_widget->GetNativeView();
   params.bounds = web_content->GetContainerBounds();
   params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
@@ -57,8 +60,18 @@ EmbeddedPermissionPromptContentScrimView::CreateScrimWidget(
 
 bool EmbeddedPermissionPromptContentScrimView::OnMousePressed(
     const ui::MouseEvent& event) {
-  delegate_->DismissScrim();
+  if (delegate_) {
+    delegate_->DismissScrim();
+  }
   return true;
+}
+
+void EmbeddedPermissionPromptContentScrimView::OnGestureEvent(
+    ui::GestureEvent* event) {
+  if (delegate_ && (event->type() == ui::EventType::kGestureTap ||
+                    event->type() == ui::EventType::kGestureDoubleTap)) {
+    delegate_->DismissScrim();
+  }
 }
 
 void EmbeddedPermissionPromptContentScrimView::OnWidgetDestroyed(
@@ -70,6 +83,9 @@ void EmbeddedPermissionPromptContentScrimView::OnWidgetDestroyed(
 void EmbeddedPermissionPromptContentScrimView::OnWidgetBoundsChanged(
     views::Widget* widget,
     const gfx::Rect& new_bounds) {
+  if (!delegate_) {
+    return;
+  }
   if (auto permission_prompt_delegate =
           delegate_->GetPermissionPromptDelegate()) {
     GetWidget()->SetBounds(

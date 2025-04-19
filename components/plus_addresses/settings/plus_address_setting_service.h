@@ -8,32 +8,36 @@
 #include <memory>
 
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/sync/model/model_type_store.h"
 
 namespace syncer {
-class ModelTypeControllerDelegate;
-}
+class DataTypeControllerDelegate;
+}  // namespace syncer
 
 namespace plus_addresses {
 
-class PlusAddressSettingSyncBridge;
-
-// Manages settings for `PlusAddressService`. These settings differ from regular
-// prefs, since they originate from the user's account and are available beyond
-// Chrome.
-// TODO(b/342089839): Add a public API.
 class PlusAddressSettingService : public KeyedService {
  public:
-  explicit PlusAddressSettingService(
-      syncer::OnceModelTypeStoreFactory store_factory);
-  ~PlusAddressSettingService() override;
+  PlusAddressSettingService() = default;
+  ~PlusAddressSettingService() override = default;
+  PlusAddressSettingService(const PlusAddressSettingService&) = delete;
+  PlusAddressSettingService& operator=(const PlusAddressSettingService&) =
+      delete;
+
+  // Getters for the settings. If the client isn't aware of the value of a
+  // setting yet (because it's still being downloaded by sync), the default
+  // value (false, "" or 0) is returned.
+
+  virtual bool GetIsPlusAddressesEnabled() const = 0;
+  // Whether the user went through the onboarding flow.
+  virtual bool GetHasAcceptedNotice() const = 0;
+
+  // Setters for the settings writable from Chrome.
+  // Sets the state that the user has accepted the notice to true.
+  virtual void SetHasAcceptedNotice() = 0;
 
   // Returns a controller delegate for the `sync_bridge_` owned by this service.
-  std::unique_ptr<syncer::ModelTypeControllerDelegate>
-  GetSyncControllerDelegate();
-
- private:
-  std::unique_ptr<PlusAddressSettingSyncBridge> sync_bridge_;
+  virtual std::unique_ptr<syncer::DataTypeControllerDelegate>
+  GetSyncControllerDelegate() = 0;
 };
 
 }  // namespace plus_addresses

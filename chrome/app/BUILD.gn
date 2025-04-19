@@ -142,6 +142,7 @@ static_library("test_support") {
   sources = [
     "chrome_main_delegate.cc",
     "chrome_main_delegate.h",
+    "startup_timestamps.h",
   ]
 
   deps = [
@@ -203,6 +204,9 @@ static_library("test_support") {
     deps += [
       "//ash/constants",
       "//chrome/browser/ash",
+      "//chrome/browser/ash/boot_times_recorder",
+      "//chrome/browser/ash/locale",
+      "//chrome/browser/ash/schedqos",
       "//chromeos",
       "//chromeos/ash/components/memory:memory",
     ]

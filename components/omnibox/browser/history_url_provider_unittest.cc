@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "components/omnibox/browser/history_url_provider.h"
 
 #include <stddef.h>
@@ -305,8 +310,6 @@ bool HistoryURLProviderTest::SetUpImpl(bool create_history_db) {
   client_->set_history_service(
       history::CreateHistoryService(history_dir_.GetPath(), create_history_db));
   client_->set_bookmark_model(bookmarks::TestBookmarkClient::CreateModel());
-  client_->set_template_url_service(
-      std::make_unique<TemplateURLService>(nullptr, 0));
   if (!client_->GetHistoryService())
     return false;
   provider_ =

@@ -5,9 +5,12 @@
 #ifndef COMPONENTS_OPTIMIZATION_GUIDE_CORE_OPTIMIZATION_GUIDE_FEATURES_H_
 #define COMPONENTS_OPTIMIZATION_GUIDE_CORE_OPTIMIZATION_GUIDE_FEATURES_H_
 
+#include <map>
 #include <optional>
+#include <set>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/component_export.h"
 #include "base/containers/enum_set.h"
@@ -72,6 +75,8 @@ COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 BASE_DECLARE_FEATURE(kTextSafetyClassifier);
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 BASE_DECLARE_FEATURE(kTextSafetyRemoteFallback);
+COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
+BASE_DECLARE_FEATURE(kOnDeviceModelValidation);
 
 typedef base::EnumSet<proto::RequestContext,
                       proto::RequestContext_MIN,
@@ -281,11 +286,11 @@ base::TimeDelta PredictionModelFetchStartupDelay();
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 base::TimeDelta PredictionModelFetchInterval();
 
-// Returns the time to wait for starting a model fetch when a new optimization
-// target observer registration happens, after the initial model fetch is
-// completed.
+// Returns the random delay time to wait for starting a model fetch when a new
+// optimization target observer registration happens, after the initial model
+// fetch is completed.
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-base::TimeDelta PredictionModelNewRegistrationFetchDelay();
+base::TimeDelta PredictionModelNewRegistrationFetchRandomDelay();
 
 // Whether to use the model execution watchdog.
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
@@ -357,6 +362,10 @@ bool ShouldLoadOnDeviceModelExecutionConfigWithHigherPriority();
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 base::TimeDelta GetOnDeviceModelIdleTimeout();
 
+// Returns whether to enable multiple sessions support with the on device model.
+COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
+bool GetOnDeviceModelSupportMultipleSessions();
+
 // Returns the delay before starting the on device model inference when
 // running validation.
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
@@ -420,6 +429,12 @@ bool CanLaunchOnDeviceModelService();
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 bool IsOnDeviceExecutionEnabled();
 
+// The amount of grace period to use from the last time the feature was used to
+// consider it as recently used. Recent usage is one of the criteria for the
+// base and adaptation on-device models to be downloaded.
+COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
+base::TimeDelta GetOnDeviceEligibleModelFeatureRecentUsePeriod();
+
 // The on-device model is fetched when the device is considered eligible for
 // on-device execution. When the device stops being eligible, the model is
 // retained for this amount of time. This protects the user from repeatedly
@@ -481,10 +496,35 @@ bool GetOnDeviceModelRetractRepeats();
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 int GetOnDeviceModelDefaultTopK();
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
+int GetOnDeviceModelMaxTopK();
+COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 double GetOnDeviceModelDefaultTemperature();
 
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 std::vector<uint32_t> GetOnDeviceModelAllowedAdaptationRanks();
+
+// Whether the on-device model will be validated when updated using a set of
+// prompts with expected output.
+COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
+bool IsOnDeviceModelValidationEnabled();
+
+// Whether on-device sessions should be blocked on validation failures.
+COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
+bool ShouldOnDeviceModelBlockOnValidationFailure();
+
+// Whether the validation result for a model should be cleared if Chrome's
+// version changes.
+COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
+bool ShouldOnDeviceModelClearValidationOnVersionChange();
+
+// The delay from when a new model is received (or startup if validation has not
+// completed) until the validation is run.
+COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
+base::TimeDelta GetOnDeviceModelValidationDelay();
+
+// The maximum number of attempts model validation will be retried.
+COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
+int GetOnDeviceModelValidationAttemptCount();
 
 }  // namespace features
 }  // namespace optimization_guide

@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/autofill/autofill_keyboard_accessory_controller.h"
 #include "chrome/browser/ui/autofill/autofill_popup_hide_helper.h"
-#include "chrome/browser/ui/autofill/next_idle_time_ticks.h"
+#include "chrome/browser/ui/autofill/next_idle_barrier.h"
 #include "chrome/browser/ui/autofill/popup_controller_common.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/filling_product.h"
@@ -60,8 +60,8 @@ class AutofillKeyboardAccessoryControllerImpl
   gfx::NativeView container_view() const override;
   content::WebContents* GetWebContents() const override;
   const gfx::RectF& element_bounds() const override;
-  // TODO(b/b/342383222) Re-evaluate whether this method makes sense here.
-  // Today it is only needed on desktop.
+  // TODO(crbug.com/b/342383222) Re-evaluate whether this method makes sense
+  // here. Today it is only needed on desktop.
   PopupAnchorType anchor_type() const override;
 
   base::i18n::TextDirection GetElementTextDirection() const override;
@@ -81,7 +81,6 @@ class AutofillKeyboardAccessoryControllerImpl
   void Show(std::vector<Suggestion> suggestions,
             AutofillSuggestionTriggerSource trigger_source,
             AutoselectFirstSuggestion autoselect_first_suggestion) override;
-  void DisableThresholdForTesting(bool disable_threshold) override;
   void SetKeepPopupOpenForTesting(bool keep_popup_open_for_testing) override;
   void UpdateDataListValues(base::span<const SelectOption> options) override;
   void PinView() override;
@@ -92,15 +91,13 @@ class AutofillKeyboardAccessoryControllerImpl
   bool GetRemovalConfirmationText(int index,
                                   std::u16string* title,
                                   std::u16string* body) override;
-  void SetViewForTesting(
-      std::unique_ptr<AutofillKeyboardAccessoryView> view) override;
 
   base::WeakPtr<AutofillKeyboardAccessoryControllerImpl> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }
-  AutofillKeyboardAccessoryView* view() { return view_.get(); }
 
  private:
+  friend class AutofillKeyboardAccessoryControllerImplTestApi;
   friend class AutofillSuggestionController;
 
   // Returns true if the popup has entries that are not "Manage ...".
@@ -141,10 +138,11 @@ class AutofillKeyboardAccessoryControllerImpl
   AutofillSuggestionTriggerSource trigger_source_ =
       AutofillSuggestionTriggerSource::kUnspecified;
 
-  // The time the view was shown the last time. It is used to safeguard against
-  // accepting suggestions too quickly after a the popup view was shown (see the
-  // `show_threshold` parameter of `AcceptSuggestion`).
-  NextIdleTimeTicks time_view_shown_;
+  // Whether a sufficient amount of time has passed since showing or updating
+  // suggestions. It is used to safeguard against accepting suggestions too
+  // quickly after a the popup view was shown (see the `show_threshold`
+  // parameter of `AcceptSuggestion`).
+  NextIdleBarrier barrier_for_accepting_;
 
   // An override to suppress minimum show thresholds. It should only be set
   // during tests that cannot mock time (e.g. the autofill interactive

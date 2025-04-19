@@ -45,7 +45,7 @@
                   }
                 ],
                 "aggregatable_values": {
-                  "a": 123
+                  "a": 123.0 // ensure validity of trailing zero
                 }
               }
             }
@@ -59,13 +59,21 @@
       {
         "payload": {
           "aggregation_coordinator_origin": "https://coordinator.test",
-          "attribution_destination": "https://destination.test",
           "histograms": [
             {
+              "id": "0",
               "key": "0x559",
               "value": 123
             }
-          ]
+          ],
+          "shared_info": {
+            "api": "attribution-reporting",
+            "attribution_destination": "https://destination.test",
+            "reporting_origin": "https://reporter.test",
+            "scheduled_report_time": "3601",
+            "source_registration_time": "0",
+            "version": "1.0"
+          }
         },
         "report_url": "https://reporter.test/.well-known/attribution-reporting/report-aggregate-attribution",
         "report_time": "3601000"

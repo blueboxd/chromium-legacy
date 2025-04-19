@@ -11,26 +11,19 @@
 #include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/cpp/picker/picker_category.h"
 #include "ash/public/cpp/picker/picker_client.h"
-#include "base/memory/scoped_refptr.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+class PrefService;
+
 namespace ash {
+
+struct PickerWebPasteTarget;
 
 class ASH_PUBLIC_EXPORT MockPickerClient : public PickerClient {
  public:
   MockPickerClient();
   ~MockPickerClient() override;
 
-  MOCK_METHOD(scoped_refptr<network::SharedURLLoaderFactory>,
-              GetSharedURLLoaderFactory,
-              (),
-              (override));
-  MOCK_METHOD(void,
-              FetchGifSearch,
-              (const std::string& query, FetchGifsCallback callback),
-              (override));
-  MOCK_METHOD(void, StopGifSearch, (), (override));
   MOCK_METHOD(void,
               StartCrosSearch,
               (const std::u16string& query,
@@ -38,6 +31,7 @@ class ASH_PUBLIC_EXPORT MockPickerClient : public PickerClient {
                CrosSearchResultsCallback callback),
               (override));
   MOCK_METHOD(void, StopCrosQuery, (), (override));
+  MOCK_METHOD(bool, IsEligibleForEditor, (), (override));
   MOCK_METHOD(ShowEditorCallback, CacheEditorContext, (), (override));
   MOCK_METHOD(void,
               GetSuggestedEditorResults,
@@ -62,6 +56,12 @@ class ASH_PUBLIC_EXPORT MockPickerClient : public PickerClient {
                const gfx::Size& size,
                FetchFileThumbnailCallback callback),
               (override));
+  MOCK_METHOD(PrefService*, GetPrefs, (), (override));
+  MOCK_METHOD(std::optional<PickerWebPasteTarget>,
+              GetWebPasteTarget,
+              (),
+              (override));
+  MOCK_METHOD(void, Announce, (std::u16string_view message), (override));
 };
 
 }  // namespace ash

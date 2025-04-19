@@ -258,6 +258,14 @@ std::optional<int> SessionControllerImpl::GetExistingUsersCount() const {
                  : std::nullopt;
 }
 
+void SessionControllerImpl::NotifyFirstSessionReady() {
+  CHECK(IsActiveUserSessionStarted());
+
+  for (auto& observer : observers_) {
+    observer.OnFirstSessionReady();
+  }
+}
+
 bool SessionControllerImpl::ShouldDisplayManagedUI() const {
   if (!IsActiveUserSessionStarted())
     return false;
@@ -321,9 +329,10 @@ base::FilePath SessionControllerImpl::GetProfilePath(
   return client_ ? client_->GetProfilePath(account_id) : base::FilePath();
 }
 
-bool SessionControllerImpl::IsEligibleForSeaPen(
+std::tuple<bool, bool> SessionControllerImpl::IsEligibleForSeaPen(
     const AccountId& account_id) const {
-  return client_ ? client_->IsEligibleForSeaPen(account_id) : false;
+  return client_ ? client_->IsEligibleForSeaPen(account_id)
+                 : std::make_tuple(false, false);
 }
 
 PrefService* SessionControllerImpl::GetPrimaryUserPrefService() const {

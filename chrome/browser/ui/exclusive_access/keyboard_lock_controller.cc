@@ -33,6 +33,18 @@ constexpr base::TimeDelta kDefaultEscRepeatWindow = base::Seconds(1);
 // trigger the exit instructions to be shown again.
 constexpr int kEscRepeatCountToTriggerUiReshow = 3;
 
+// Check whether `event` is a kRawKeyDown type and doesn't have non-stateful
+// modifiers (i.e. shift, ctrl etc.).
+bool IsUnmodifiedEscKeyDownEvent(const input::NativeWebKeyboardEvent& event) {
+  if (event.GetType() != input::NativeWebKeyboardEvent::Type::kRawKeyDown) {
+    return false;
+  }
+  if (event.GetModifiers() & blink::WebInputEvent::kKeyModifiers) {
+    return false;
+  }
+  return true;
+}
+
 }  // namespace
 
 KeyboardLockController::KeyboardLockController(ExclusiveAccessManager* manager)
@@ -103,13 +115,14 @@ void KeyboardLockController::RequestKeyboardLock(WebContents* web_contents,
       base::BindOnce(&KeyboardLockController::LockKeyboard,
                      weak_ptr_factory_.GetWeakPtr(), web_contents->GetWeakPtr(),
                      esc_key_locked),
-      base::BindOnce(&KeyboardLockController::UnlockKeyboard,
-                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&KeyboardLockController::UnlockKeyboardForWebContents,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     web_contents->GetWeakPtr()),
       web_contents);
 }
 
 bool KeyboardLockController::HandleKeyEvent(
-    const content::NativeWebKeyboardEvent& event) {
+    const input::NativeWebKeyboardEvent& event) {
   if (base::FeatureList::IsEnabled(
           features::kPressAndHoldEscToExitBrowserFullscreen)) {
     return false;
@@ -126,16 +139,14 @@ bool KeyboardLockController::HandleKeyEvent(
 
   // Note: This logic handles exiting fullscreen but the UI feedback element is
   // created and managed by the FullscreenControlHost class.
-  if (event.GetType() == content::NativeWebKeyboardEvent::Type::kKeyUp &&
+  if (event.GetType() == input::NativeWebKeyboardEvent::Type::kKeyUp &&
       hold_timer_.IsRunning()) {
     // Seeing a key up event on Esc with the hold timer running cancels the
     // timer and doesn't exit. This means the user pressed Esc, but not long
     // enough to trigger an exit
     hold_timer_.Stop();
     ReShowExitBubbleIfNeeded();
-  } else if (event.GetType() ==
-                 content::NativeWebKeyboardEvent::Type::kRawKeyDown &&
-             !hold_timer_.IsRunning()) {
+  } else if (IsUnmodifiedEscKeyDownEvent(event) && !hold_timer_.IsRunning()) {
     // Seeing a key down event on Esc when the hold timer is stopped starts
     // the timer. When the timer fires, the callback will trigger an exit from
     // fullscreen/pointerlock/keyboardlock.
@@ -184,12 +195,19 @@ void KeyboardLockController::LockKeyboard(
 }
 
 void KeyboardLockController::UnlockKeyboard() {
-  if (!exclusive_access_tab())
+  UnlockKeyboardForWebContents(
+      exclusive_access_tab() ? exclusive_access_tab()->GetWeakPtr() : nullptr);
+}
+
+void KeyboardLockController::UnlockKeyboardForWebContents(
+    base::WeakPtr<content::WebContents> web_contents) {
+  if (!web_contents) {
     return;
+  }
 
   keyboard_lock_state_ = KeyboardLockState::kUnlocked;
 
-  exclusive_access_tab()->GotResponseToKeyboardLockRequest(false);
+  web_contents->GotResponseToKeyboardLockRequest(false);
   SetTabWithExclusiveAccess(nullptr);
   exclusive_access_manager()->UpdateBubble(base::NullCallback());
 }

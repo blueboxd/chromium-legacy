@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/privacy_sandbox/tracking_protection_onboarding_factory.h"
+
 #include <memory>
+
 #include "base/no_destructor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_selections.h"

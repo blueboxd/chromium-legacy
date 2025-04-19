@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/check_op.h"
+#include "base/functional/bind.h"
 #include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -39,14 +40,17 @@ ProfileOAuth2TokenService::ProfileOAuth2TokenService(
       std::make_unique<OAuth2AccessTokenManager>(/*delegate=*/this);
   // The `ProfileOAuth2TokenService` must be the first observer of `delegate_`.
   DCHECK(!delegate_->HasObserver());
-  AddObserver(this);
+  // `base::Unretained(this)` is safe as `this` owns `delegate_`.
+  delegate_->SetOnRefreshTokenRevokedNotified(base::BindRepeating(
+      &ProfileOAuth2TokenService::OnRefreshTokenRevokedNotified,
+      base::Unretained(this)));
+  token_service_observation_.Observe(delegate_.get());
   DCHECK(delegate_->HasObserver());
 }
 
 ProfileOAuth2TokenService::~ProfileOAuth2TokenService() {
-  token_manager_->CancelAllRequests();
+  token_manager_.reset();
   GetDelegate()->Shutdown();
-  RemoveObserver(this);
 }
 
 std::unique_ptr<OAuth2AccessTokenFetcher>
@@ -59,8 +63,8 @@ ProfileOAuth2TokenService::CreateAccessTokenFetcher(
                                              consumer, token_binding_challenge);
 }
 
-bool ProfileOAuth2TokenService::FixRequestErrorIfPossible() {
-  return delegate_->FixRequestErrorIfPossible();
+void ProfileOAuth2TokenService::FixAccountErrorIfPossible() {
+  delegate_->FixAccountErrorIfPossible();
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>
@@ -83,6 +87,12 @@ void ProfileOAuth2TokenService::OnAccessTokenFetched(
   // Update the auth error state so auth errors are appropriately communicated
   // to the user.
   delegate_->UpdateAuthError(account_id, error);
+  if (error.IsPersistentError()) {
+    // Needed for Enterprise on Windows to allow
+    // `signin_util::ReauthWithCredentialProviderIfPossible()` to fix the
+    // account.
+    FixAccountErrorIfPossible();
+  }
 }
 
 bool ProfileOAuth2TokenService::HasRefreshToken(
@@ -246,8 +256,6 @@ void ProfileOAuth2TokenService::RevokeCredentials(
 
 void ProfileOAuth2TokenService::RevokeAllCredentials(
     signin_metrics::SourceForRefreshTokenOperation source) {
-  token_manager_->CancelAllRequests();
-  token_manager_->ClearCache();
   GetDelegate()->RevokeAllCredentials(source);
 }
 
@@ -298,6 +306,13 @@ void ProfileOAuth2TokenService::UpdateAuthErrorForTesting(
   GetDelegate()->UpdateAuthError(account_id, error);
 }
 
+#if BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
+std::vector<uint8_t> ProfileOAuth2TokenService::GetWrappedBindingKey(
+    const CoreAccountId& account_id) const {
+  return delegate_->GetWrappedBindingKey(account_id);
+}
+#endif
+
 void ProfileOAuth2TokenService::
     set_max_authorization_token_fetch_retries_for_testing(int max_retries) {
   token_manager_->set_max_authorization_token_fetch_retries_for_testing(
@@ -320,7 +335,9 @@ OAuth2AccessTokenManager* ProfileOAuth2TokenService::GetAccessTokenManager() {
 
 void ProfileOAuth2TokenService::OnRefreshTokenAvailable(
     const CoreAccountId& account_id) {
-  token_manager_->CancelRequestsForAccount(account_id);
+  token_manager_->CancelRequestsForAccount(
+      account_id,
+      GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
   token_manager_->ClearCacheForAccount(account_id);
 }
 
@@ -329,8 +346,14 @@ void ProfileOAuth2TokenService::OnRefreshTokenRevoked(
   // If this was the last token, recreate the device ID.
   RecreateDeviceIdIfNeeded();
 
-  token_manager_->CancelRequestsForAccount(account_id);
   token_manager_->ClearCacheForAccount(account_id);
+}
+
+void ProfileOAuth2TokenService::OnRefreshTokenRevokedNotified(
+    const CoreAccountId& account_id) {
+  token_manager_->CancelRequestsForAccount(
+      account_id,
+      GoogleServiceAuthError(GoogleServiceAuthError::USER_NOT_SIGNED_UP));
 }
 
 void ProfileOAuth2TokenService::OnRefreshTokensLoaded() {

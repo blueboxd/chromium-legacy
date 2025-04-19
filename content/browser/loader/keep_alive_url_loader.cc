@@ -494,7 +494,6 @@ void KeepAliveURLLoader::EndReceiveRedirect(
 
   if (attribution_request_helper_) {
     attribution_request_helper_->OnReceiveRedirect(head->headers.get(),
-                                                   head->trigger_verifications,
                                                    redirect_info.new_url);
   }
 
@@ -560,8 +559,7 @@ void KeepAliveURLLoader::OnReceiveResponse(
   }
 
   if (attribution_request_helper_) {
-    attribution_request_helper_->OnReceiveResponse(
-        response->headers.get(), response->trigger_verifications);
+    attribution_request_helper_->OnReceiveResponse(response->headers.get());
     attribution_request_helper_.reset();
   }
 
@@ -869,6 +867,8 @@ void KeepAliveURLLoader::OnDisconnectedLoaderTimerFired() {
 }
 
 void KeepAliveURLLoader::Shutdown() {
+  base::UmaHistogramBoolean(
+      "FetchKeepAlive.Requests2.Shutdown.IsStarted.Browser", IsStarted());
   if (!IsStarted()) {
     CHECK(IsFetchLater());
     LogFetchLaterMetric(FetchLaterBrowserMetricType::kStartedWhenShutdown);
@@ -964,6 +964,13 @@ void KeepAliveURLLoader::LogFetchKeepAliveRequestMetric(
   base::UmaHistogramEnumeration(base::StrCat({"FetchKeepAlive.Requests2.",
                                               request_state_name, ".Browser"}),
                                 sample_type);
+  if (bool is_context_detached = !GetInitiator();
+      request_state_name == "Started" || request_state_name == "Succeeded") {
+    base::UmaHistogramBoolean(
+        base::StrCat({"FetchKeepAlive.Requests2.", request_state_name,
+                      ".IsContextDetached.Browser"}),
+        is_context_detached);
+  }
 }
 
 }  // namespace content

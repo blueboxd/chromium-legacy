@@ -47,14 +47,16 @@ class ChildAccountService : public KeyedService,
 
   void Init();
 
+  // KeyedService:
+  void Shutdown() override;
+
+#if BUILDFLAG(IS_CHROMEOS)
   // Responds whether at least one request for child status was successful.
   // And we got answer whether the account is a child account or not.
   bool IsChildAccountStatusKnown();
 
-  // KeyedService:
-  void Shutdown() override;
-
   void AddChildStatusReceivedCallback(base::OnceClosure callback);
+#endif
 
   // Returns whether or not the user is authenticated on Google web properties
   // based on the state of the cookie jar. Returns AuthState::PENDING if
@@ -87,11 +89,13 @@ class ChildAccountService : public KeyedService,
   void SetSupervisionStatusAndNotifyObservers(
       bool is_subject_to_parental_controls);
 
+  // Updates whether Google SafeSearch should be forced.
+  void UpdateForceGoogleSafeSearch();
+
   // signin::IdentityManager::Observer implementation.
   void OnPrimaryAccountChanged(
       const signin::PrimaryAccountChangeEvent& event_details) override;
   void OnExtendedAccountInfoUpdated(const AccountInfo& info) override;
-  void OnExtendedAccountInfoRemoved(const AccountInfo& info) override;
 
   // IdentityManager::Observer implementation.
   void OnAccountsInCookieUpdated(
@@ -100,12 +104,9 @@ class ChildAccountService : public KeyedService,
 
   bool active_{false};
 
-  // Enables or disables scheduled fetch of family members list.
-  const raw_ref<ListFamilyMembersService> list_family_members_service_;
-
-  // Subscription to binding between list_family_members_service_ and
-  // family_preferences_service_.
-  base::CallbackListSubscription set_family_members_subscription_;
+  // Subscription to set custodian preferences from successful fetch of
+  // ListFamilyMembersService.
+  base::CallbackListSubscription set_custodian_prefs_subscription_;
 
   const raw_ptr<signin::IdentityManager> identity_manager_;
 

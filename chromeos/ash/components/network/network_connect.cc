@@ -157,8 +157,7 @@ void NetworkConnectImpl::HandleUnconfiguredNetwork(
     if (network->GetError() == shill::kErrorSimLocked) {
       return;
     }
-    if (features::IsCellularCarrierLockEnabled() &&
-        network->GetError() == shill::kErrorSimCarrierLocked) {
+    if (network->GetError() == shill::kErrorSimCarrierLocked) {
       return;
     }
 
@@ -180,7 +179,7 @@ void NetworkConnectImpl::HandleUnconfiguredNetwork(
     return;
   }
 
-  DUMP_WILL_BE_NOTREACHED_NORETURN();
+  DUMP_WILL_BE_NOTREACHED();
 }
 
 // If |shared| is true, sets |profile_path| to the shared profile path.
@@ -441,7 +440,6 @@ void NetworkConnectImpl::ShowCarrierAccountDetail(
 }
 
 void NetworkConnectImpl::ShowCarrierUnlockNotification() {
-  CHECK(features::IsCellularCarrierLockEnabled());
   delegate_->ShowCarrierUnlockNotification();
 }
 

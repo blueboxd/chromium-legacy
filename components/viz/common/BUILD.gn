@@ -125,6 +125,8 @@ viz_component("common") {
   defines = [ "VIZ_COMMON_IMPLEMENTATION" ]
 
   sources = [
+    "color_space_utils.cc",
+    "color_space_utils.h",
     "constants.cc",
     "constants.h",
     "delegated_ink_prediction_configuration.h",
@@ -191,6 +193,8 @@ viz_component("common") {
     "quads/draw_quad.h",
     "quads/frame_deadline.cc",
     "quads/frame_deadline.h",
+    "quads/frame_interval_inputs.cc",
+    "quads/frame_interval_inputs.h",
     "quads/largest_draw_quad.cc",
     "quads/largest_draw_quad.h",
     "quads/offset_tag.cc",
@@ -357,6 +361,7 @@ viz_source_set("unit_tests") {
     "quads/compositor_frame_transition_directive_unittest.cc",
     "quads/compositor_render_pass_unittest.cc",
     "quads/draw_quad_unittest.cc",
+    "quads/offset_tag_unittest.cc",
     "quads/render_pass_io_unittest.cc",
     "resources/resource_sizes_unittest.cc",
     "resources/shared_image_format_unittest.cc",

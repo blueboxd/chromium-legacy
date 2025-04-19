@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "components/exo/wayland/clients/simple.h"
 
 #include <presentation-time-client-protocol.h>
@@ -13,6 +18,7 @@
 
 #include "base/command_line.h"
 #include "base/containers/circular_deque.h"
+#include "base/not_fatal_until.h"
 #include "base/ranges/algorithm.h"
 #include "base/time/time.h"
 #include "components/exo/wayland/clients/client_helper.h"
@@ -77,7 +83,7 @@ void FeedbackDiscarded(void* data, struct wp_presentation_feedback* feedback) {
   auto it =
       base::ranges::find(presentation->submitted_frames, feedback,
                          [](Frame& frame) { return frame.feedback.get(); });
-  DCHECK(it != presentation->submitted_frames.end());
+  CHECK(it != presentation->submitted_frames.end(), base::NotFatalUntil::M130);
   presentation->submitted_frames.erase(it);
 }
 

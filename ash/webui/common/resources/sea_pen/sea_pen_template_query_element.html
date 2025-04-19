@@ -1,4 +1,4 @@
-<style include="common cros-button-style">
+<style include="common cros-button-style sea-pen">
   #container {
     display: flex;
     flex-direction: column;
@@ -7,24 +7,6 @@
     margin-block-start: 32px;
     padding-inline: 40px;
     transition: height 300ms cubic-bezier(0, 0, 0, 1);
-  }
-
-  @keyframes fade-in {
-    from {
-      opacity: 0;
-    }
-
-    to {
-      opacity: 1;
-    }
-  }
-
-  sea-pen-options {
-    animation-direction: normal;
-    animation-duration: 200ms;
-    animation-iteration-count: 1;
-    animation-name: fade-in;
-    animation-timing-function: linear;
   }
 
   #placeholder {
@@ -81,19 +63,6 @@
     outline: 2px solid var(--cros-sys-focus_ring);
   }
 
-  #searchButtons {
-    align-items: center;
-    box-sizing: border-box;
-    display: flex;
-    justify-content: center;
-    margin-block: 24px;
-  }
-
-  #searchButtons cr-button {
-    margin: 0 4px;
-    padding-inline-end: 16px;
-  }
-
   #thumbnailsLoadingText {
     color: var(--cros-sys-on_primary_container);
     font: var(--cros-annotation-1-font);
@@ -102,11 +71,6 @@
   cr-button {
     font: var(--cros-button-2-font);
     padding: 0px 12px;
-  }
-
-  #inspireMeAnimation {
-    height: 20px;
-    width: 20px;
   }
 
   .dropdown-check {
@@ -122,15 +86,14 @@
     padding: 8px 32px 8px 16px;
   }
 
-  #inspire:not(:hover) #inspireMeAnimation,
-  #inspire:hover #inspireIcon {
-    display: none;
+  #freeformInfo {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    padding-bottom: 24px;
+    white-space: pre;
   }
 
-  #inspire:hover #inspireMeAnimation,
-  #inspire:not(:hover) #inspireIcon {
-    display: block;
-  }
 </style>
 <div id="container" class="main">
   <template is="dom-if" if="[[seaPenUseExptTemplateEnabled_]]">
@@ -139,6 +102,7 @@
   <template is="dom-if" if="[[shouldShowOptions_(options_)]]"
       on-dom-change="onSeaPenOptionsDomChanged_">
     <sea-pen-options
+        class="fade-in-200ms"
         options="[[options_]]"
         selected-chip="[[selectedChip_]]"
         selected-options="{{selectedOptions_}}"
@@ -211,4 +175,9 @@
       </cr-button>
     </template>
   </div>
+  <template is="dom-if" if="[[shouldShowFreeformNavigationInfo_()]]">
+    <div id="freeformInfo"
+        inner-h-t-m-l="[[i18nAdvanced('seaPenFreeformNavigationDescription')]]">
+    </div>
+  </template>
 </div>

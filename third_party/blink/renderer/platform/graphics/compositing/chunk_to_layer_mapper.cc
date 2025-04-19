@@ -19,8 +19,7 @@ ChunkToLayerMapper::ChunkToLayerMapper(const PropertyTreeState& layer_state,
       transform_(gfx::Transform::MakeTranslation(-layer_offset)) {}
 
 void ChunkToLayerMapper::SwitchToChunk(const PaintChunk& chunk) {
-  SwitchToChunkWithState(chunk,
-                         chunk.properties.GetPropertyTreeState().Unalias());
+  SwitchToChunkWithState(chunk, chunk.properties.Unalias());
 }
 
 void ChunkToLayerMapper::SwitchToChunkWithState(
@@ -28,7 +27,7 @@ void ChunkToLayerMapper::SwitchToChunkWithState(
     const PropertyTreeState& new_chunk_state) {
   raster_effect_outset_ = chunk.raster_effect_outset;
 
-  DCHECK_EQ(new_chunk_state, chunk.properties.GetPropertyTreeState().Unalias());
+  DCHECK_EQ(new_chunk_state, chunk.properties.Unalias());
   if (new_chunk_state == chunk_state_) {
     return;
   }
@@ -67,8 +66,9 @@ gfx::Rect ChunkToLayerMapper::MapVisualRect(const gfx::Rect& rect) const {
   if (rect.IsEmpty())
     return gfx::Rect();
 
-  if (UNLIKELY(has_filter_that_moves_pixels_))
+  if (has_filter_that_moves_pixels_) [[unlikely]] {
     return MapUsingGeometryMapper(rect);
+  }
 
   gfx::RectF mapped_rect = transform_.MapRect(gfx::RectF(rect));
   if (!mapped_rect.IsEmpty() && !clip_rect_.IsInfinite())
@@ -96,11 +96,17 @@ gfx::Rect ChunkToLayerMapper::MapVisualRect(const gfx::Rect& rect) const {
 // visual effects of the filters, though slowly.
 gfx::Rect ChunkToLayerMapper::MapUsingGeometryMapper(
     const gfx::Rect& rect) const {
+  return MapVisualRectFromState(rect, chunk_state_);
+}
+
+gfx::Rect ChunkToLayerMapper::MapVisualRectFromState(
+    const gfx::Rect& rect,
+    const PropertyTreeState& state) const {
   FloatClipRect visual_rect((gfx::RectF(rect)));
-  GeometryMapper::LocalToAncestorVisualRect(chunk_state_, layer_state_,
-                                            visual_rect);
-  if (visual_rect.Rect().IsEmpty())
+  GeometryMapper::LocalToAncestorVisualRect(state, layer_state_, visual_rect);
+  if (visual_rect.Rect().IsEmpty()) {
     return gfx::Rect();
+  }
 
   gfx::RectF result = visual_rect.Rect();
   result.Offset(-layer_offset_);

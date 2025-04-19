@@ -17,12 +17,13 @@ component("geolocation") {
     "geoposition.h",
     "location_provider.h",
     "location_system_permission_status.h",
+    "network_location_request_source.h",
   ]
   defines = [ "IS_GEOLOCATION_IMPL=1" ]
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
   output_name = "geolocation_service"
 
-  if (is_chromeos || is_apple) {
+  if (os_level_geolocation_permission_supported) {
     sources += [ "system_geolocation_source.h" ]
   }
   if (is_apple) {
@@ -35,10 +36,17 @@ component("geolocation") {
       "Foundation.framework",
     ]
   }
+  if (is_win) {
+    sources += [
+      "system_geolocation_source_win.cc",
+      "system_geolocation_source_win.h",
+    ]
+  }
 
   public_deps = [
     ":buildflags",
     "//base",
+    "//services/device/public/cpp:device_features",
     "//services/device/public/mojom",
     "//services/device/public/mojom:geolocation_internals",
     "//third_party/abseil-cpp:absl",

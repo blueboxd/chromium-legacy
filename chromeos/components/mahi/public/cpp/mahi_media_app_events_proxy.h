@@ -25,6 +25,7 @@ class COMPONENT_EXPORT(MAHI_PUBLIC_CPP) MahiMediaAppEventsProxy {
     // implemented by the media app.
     virtual void OnPdfContextMenuShown(const gfx::Rect& anchor) {}
     virtual void OnPdfContextMenuHide() {}
+    virtual void OnPdfClosed(const base::UnguessableToken client_id) {}
   };
 
   MahiMediaAppEventsProxy(const MahiMediaAppEventsProxy&) = delete;
@@ -38,6 +39,7 @@ class COMPONENT_EXPORT(MAHI_PUBLIC_CPP) MahiMediaAppEventsProxy {
   virtual void OnPdfContextMenuShown(const base::UnguessableToken client_id,
                                      const gfx::Rect& anchor) = 0;
   virtual void OnPdfContextMenuHide() = 0;
+  virtual void OnPdfClosed(const base::UnguessableToken client_id) = 0;
   virtual void AddObserver(Observer*) = 0;
   virtual void RemoveObserver(Observer*) = 0;
 

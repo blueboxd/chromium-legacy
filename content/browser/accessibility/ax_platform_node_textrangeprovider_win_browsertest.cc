@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/342213636): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ui/accessibility/platform/ax_platform_node_textrangeprovider_win.h"
 
 #include "base/command_line.h"
@@ -116,8 +121,7 @@ class AXPlatformNodeTextRangeProviderWinBrowserTest
       base::as_wcstr(&ui::AXPlatformNodeBase::kEmbeddedCharacter), 1};
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
-    cl->AppendSwitchASCII(switches::kForceDeviceScaleFactor, "1.0");
+    command_line->AppendSwitchASCII(switches::kForceDeviceScaleFactor, "1.0");
   }
 
   void SetUpOnMainThread() override {

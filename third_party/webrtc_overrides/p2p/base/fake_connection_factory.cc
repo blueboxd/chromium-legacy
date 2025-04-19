@@ -4,6 +4,8 @@
 
 #include "third_party/webrtc_overrides/p2p/base/fake_connection_factory.h"
 
+#include <string_view>
+
 #include "third_party/webrtc/p2p/base/basic_packet_socket_factory.h"
 #include "third_party/webrtc/p2p/base/fake_port_allocator.h"
 #include "third_party/webrtc/p2p/base/port.h"
@@ -37,7 +39,7 @@ void FakeConnectionFactory::Prepare(uint32_t allocator_flags) {
 
 cricket::Connection* FakeConnectionFactory::CreateConnection(
     webrtc::IceCandidateType type,
-    base::StringPiece remote_ip,
+    std::string_view remote_ip,
     int remote_port,
     int priority) {
   if (ports_.size() == 0) {
@@ -68,10 +70,10 @@ void FakeConnectionFactory::OnPortReady(cricket::PortAllocatorSession* session,
 
 cricket::Candidate FakeConnectionFactory::CreateUdpCandidate(
     webrtc::IceCandidateType type,
-    base::StringPiece ip,
+    std::string_view ip,
     int port,
     int priority,
-    base::StringPiece ufrag) {
+    std::string_view ufrag) {
   cricket::Candidate c;
   c.set_address(rtc::SocketAddress(ip.data(), port));
   c.set_component(::cricket::ICE_CANDIDATE_COMPONENT_DEFAULT);

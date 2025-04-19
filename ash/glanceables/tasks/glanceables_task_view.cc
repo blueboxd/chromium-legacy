@@ -129,7 +129,7 @@ class TaskViewTextField : public SystemTextfield,
       : SystemTextfield(Type::kMedium),
         SystemTextfieldController(/*textfield=*/this),
         on_finished_editing_(std::move(on_finished_editing)) {
-    SetAccessibleName(
+    GetViewAccessibility().SetName(
         l10n_util::GetStringUTF16(IDS_GLANCEABLES_TASKS_TEXTFIELD_PLACEHOLDER));
     SetBackgroundColor(SK_ColorTRANSPARENT);
     SetController(this);
@@ -157,7 +157,7 @@ class TaskViewTextField : public SystemTextfield,
   bool HandleKeyEvent(views::Textfield* sender,
                       const ui::KeyEvent& key_event) override {
     CHECK_EQ(this, sender);
-    if (key_event.type() != ui::ET_KEY_PRESSED) {
+    if (key_event.type() != ui::EventType::kKeyPressed) {
       return false;
     }
 
@@ -217,31 +217,22 @@ class GlanceablesTaskView::CheckButton : public views::ImageButton {
   explicit CheckButton(PressedCallback pressed_callback)
       : views::ImageButton(std::move(pressed_callback)) {
     SetBorder(views::CreateEmptyBorder(gfx::Insets(2)));
-    SetAccessibleRole(ax::mojom::Role::kCheckBox);
+    GetViewAccessibility().SetRole(ax::mojom::Role::kCheckBox);
     UpdateImage();
     SetFlipCanvasOnPaintForRTLUI(/*enable=*/false);
     views::FocusRing::Get(this)->SetColorId(cros_tokens::kCrosSysFocusRing);
-  }
 
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    views::ImageButton::GetAccessibleNodeData(node_data);
-
-    node_data->SetName(l10n_util::GetStringUTF16(
+    GetViewAccessibility().SetName(l10n_util::GetStringUTF16(
         IDS_GLANCEABLES_TASKS_TASK_ITEM_MARK_COMPLETED_ACCESSIBLE_NAME));
-
-    const ax::mojom::CheckedState checked_state =
-        checked_ ? ax::mojom::CheckedState::kTrue
-                 : ax::mojom::CheckedState::kFalse;
-    node_data->SetCheckedState(checked_state);
-    node_data->SetDefaultActionVerb(checked_
-                                        ? ax::mojom::DefaultActionVerb::kUncheck
-                                        : ax::mojom::DefaultActionVerb::kCheck);
+    SetAndUpdateAccessibleDefaultActionVerb();
+    UpdateAccessibleCheckedState();
   }
 
   void SetChecked(bool checked) {
     checked_ = checked;
     UpdateImage();
-    NotifyAccessibilityEvent(ax::mojom::Event::kCheckedStateChanged, true);
+    UpdateAccessibleCheckedState();
+    SetAndUpdateAccessibleDefaultActionVerb();
   }
 
   bool checked() const { return checked_; }
@@ -253,6 +244,18 @@ class GlanceablesTaskView::CheckButton : public views::ImageButton {
                       checked_ ? kGlanceablesHollowCheckCircleIcon
                                : kGlanceablesHollowCircleIcon,
                       cros_tokens::kFocusRingColor));
+  }
+
+  void SetAndUpdateAccessibleDefaultActionVerb() {
+    SetDefaultActionVerb(checked_ ? ax::mojom::DefaultActionVerb::kUncheck
+                                  : ax::mojom::DefaultActionVerb::kCheck);
+    UpdateAccessibleDefaultActionVerb();
+  }
+
+  void UpdateAccessibleCheckedState() {
+    GetViewAccessibility().SetCheckedState(
+        checked_ ? ax::mojom::CheckedState::kTrue
+                 : ax::mojom::CheckedState::kFalse);
   }
 
   bool checked_ = false;
@@ -288,6 +291,13 @@ class GlanceablesTaskView::TaskTitleButton : public views::LabelButton {
             .DeriveWithStyle(completed ? gfx::Font::FontStyle::STRIKE_THROUGH
                                        : gfx::Font::FontStyle::NORMAL));
   }
+
+  void SetText(const std::u16string& text) override {
+    views::LabelButton::SetText(text);
+    GetViewAccessibility().SetName(
+        text, text.empty() ? ax::mojom::NameFrom::kAttributeExplicitlyEmpty
+                           : ax::mojom::NameFrom::kAttribute);
+  }
 };
 
 BEGIN_METADATA(GlanceablesTaskView, TaskTitleButton)
@@ -307,12 +317,14 @@ GlanceablesTaskView::GlanceablesTaskView(
       save_callback_(std::move(save_callback)),
       edit_in_browser_callback_(std::move(edit_in_browser_callback)),
       show_error_message_callback_(std::move(show_error_message_callback)) {
-  SetAccessibleRole(ax::mojom::Role::kListItem);
+  GetViewAccessibility().SetRole(ax::mojom::Role::kListItem);
   SetCrossAxisAlignment(views::LayoutAlignment::kStart);
   SetOrientation(views::LayoutOrientation::kHorizontal);
 
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
+  // TODO(crbug.com/40232718): See View::SetLayoutManagerUseConstrainedSpace
+  SetLayoutManagerUseConstrainedSpace(false);
 
   check_button_ =
       AddChildView(std::make_unique<CheckButton>(base::BindRepeating(
@@ -325,8 +337,11 @@ GlanceablesTaskView::GlanceablesTaskView(
   contents_view_->SetOrientation(views::LayoutOrientation::kVertical);
   contents_view_->SetProperty(
       views::kFlexBehaviorKey,
-      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
+      views::FlexSpecification(views::LayoutOrientation::kHorizontal,
+                               views::MinimumFlexSizeRule::kScaleToZero,
                                views::MaximumFlexSizeRule::kUnbounded));
+  // TODO(crbug.com/40232718): See View::SetLayoutManagerUseConstrainedSpace
+  contents_view_->SetLayoutManagerUseConstrainedSpace(false);
 
   tasks_title_view_ =
       contents_view_->AddChildView(std::make_unique<views::FlexLayoutView>());
@@ -455,6 +470,10 @@ const views::ImageButton* GlanceablesTaskView::GetCheckButtonForTest() const {
   return check_button_;
 }
 
+void GlanceablesTaskView::SetCheckedForTest(bool checked) {
+  check_button_->SetChecked(checked);
+}
+
 bool GlanceablesTaskView::GetCompletedForTest() const {
   return check_button_->checked();
 }
@@ -542,12 +561,23 @@ void GlanceablesTaskView::AddExtraContentForEditState() {
         base::to_underlying(GlanceablesViewId::kAssignedTaskNotice));
 
     if (origin_surface_type_icon_) {
-      assigned_task_notice->AddChildView(std::make_unique<views::ImageView>(
-          origin_surface_type_icon_->GetImageModel()));
+      auto* const icon =
+          assigned_task_notice->AddChildView(std::make_unique<views::ImageView>(
+              origin_surface_type_icon_->GetImageModel()));
+      icon->SetProperty(views::kMarginsKey, kDetailItemsMargin);
     }
 
-    assigned_task_notice->AddChildView(std::make_unique<views::Label>(
-        l10n_util::GetStringUTF16(IDS_GLANCEABLES_TASKS_ASSIGNED_TASK_NOTICE)));
+    auto* const assigned_task_notice_label = assigned_task_notice->AddChildView(
+        std::make_unique<views::Label>(l10n_util::GetStringUTF16(
+            IDS_GLANCEABLES_TASKS_ASSIGNED_TASK_NOTICE)));
+    assigned_task_notice_label->SetFontList(
+        TypographyProvider::Get()->ResolveTypographyToken(
+            TypographyToken::kCrosAnnotation1));
+    assigned_task_notice_label->SetLineHeight(
+        TypographyProvider::Get()->ResolveLineHeight(
+            TypographyToken::kCrosAnnotation1));
+    assigned_task_notice_label->SetEnabledColorId(
+        cros_tokens::kCrosSysOnSurfaceVariant);
 
     extra_content->AddChildView(std::move(assigned_task_notice));
   }
@@ -627,6 +657,10 @@ void GlanceablesTaskView::
 }
 
 void GlanceablesTaskView::CheckButtonPressed() {
+  if (saving_task_changes_) {
+    return;
+  }
+
   if (!glanceables_util::IsNetworkConnected()) {
     show_error_message_callback_.Run(
         GlanceablesTasksErrorType::kCantMarkCompleteNoNetwork,
@@ -634,7 +668,10 @@ void GlanceablesTaskView::CheckButtonPressed() {
     return;
   }
 
-  if (saving_task_changes_) {
+  if (task_id_.empty()) {
+    show_error_message_callback_.Run(
+        GlanceablesTasksErrorType::kCantMarkComplete,
+        GlanceablesErrorMessageView::ButtonActionType::kReload);
     return;
   }
 

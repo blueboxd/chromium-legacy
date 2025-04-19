@@ -21,6 +21,7 @@
 
 #include "absl/base/attributes.h"
 #include "absl/base/config.h"
+#include "absl/debugging/internal/decode_rust_punycode.h"
 
 namespace absl {
 ABSL_NAMESPACE_BEGIN
@@ -503,7 +504,7 @@ class RustSymbolParser {
 
  private:
   // Enumerates resumption points for ABSL_DEMANGLER_RECURSE calls.
-  enum ReturnAddress : std::uint8_t {
+  enum ReturnAddress : uint8_t {
     kInstantiatingCrate,
     kVendorSpecificSuffix,
     kIdentifierInUppercaseNamespace,
@@ -585,9 +586,9 @@ class RustSymbolParser {
   // false if not everything fit into the output buffer.
   ABSL_MUST_USE_RESULT bool Emit(const char* token) {
     if (silence_depth_ > 0) return true;
-    const std::size_t token_length = std::strlen(token);
-    const std::size_t bytes_to_copy = token_length + 1;  // token and final NUL
-    if (static_cast<std::size_t>(out_end_ - out_) < bytes_to_copy) return false;
+    const size_t token_length = std::strlen(token);
+    const size_t bytes_to_copy = token_length + 1;  // token and final NUL
+    if (static_cast<size_t>(out_end_ - out_) < bytes_to_copy) return false;
     std::memcpy(out_, token, bytes_to_copy);
     out_ += token_length;
     return true;
@@ -604,7 +605,7 @@ class RustSymbolParser {
     // because 999 > 256.  The bound will remain correct even if future
     // maintenance changes the type of the disambiguator variable.
     char digits[3 * sizeof(disambiguator)] = {};
-    std::size_t leading_digit_index = sizeof(digits) - 1;
+    size_t leading_digit_index = sizeof(digits) - 1;
     for (; disambiguator > 0; disambiguator /= 10) {
       digits[--leading_digit_index] =
           static_cast<char>('0' + disambiguator % 10);
@@ -710,13 +711,19 @@ class RustSymbolParser {
     int num_bytes = 0;
     if (!ParseDecimalNumber(num_bytes)) return false;
     (void)Eat('_');  // optional separator, needed if a digit follows
+    if (is_punycoded) {
+      DecodeRustPunycodeOptions options;
+      options.punycode_begin = &encoding_[pos_];
+      options.punycode_end = &encoding_[pos_] + num_bytes;
+      options.out_begin = out_;
+      options.out_end = out_end_;
+      out_ = DecodeRustPunycode(options);
+      if (out_ == nullptr) return false;
+      pos_ += static_cast<size_t>(num_bytes);
+    }
 
     // Emit the beginnings of braced forms like {shim:vtable#0}.
-    if (uppercase_namespace == '\0') {
-      // Decoding of Punycode is not yet implemented.  For now we emit
-      // "{Punycode ...}" with the raw encoding inside.
-      if (is_punycoded && !Emit("{Punycode ")) return false;
-    } else {
+    if (uppercase_namespace != '\0') {
       switch (uppercase_namespace) {
         case 'C':
           if (!Emit("{closure")) return false;
@@ -732,24 +739,24 @@ class RustSymbolParser {
     }
 
     // Emit the name itself.
-    for (int i = 0; i < num_bytes; ++i) {
-      const char c = Take();
-      if (!IsIdentifierChar(c) &&
-          // The spec gives toolchains the choice of Punycode or raw UTF-8 for
-          // identifiers containing code points above 0x7f, so accept bytes with
-          // the high bit set if this is not a u... encoding.
-          (is_punycoded || (c & 0x80) == 0)) {
-        return false;
+    if (!is_punycoded) {
+      for (int i = 0; i < num_bytes; ++i) {
+        const char c = Take();
+        if (!IsIdentifierChar(c) &&
+            // The spec gives toolchains the choice of Punycode or raw UTF-8 for
+            // identifiers containing code points above 0x7f, so accept bytes
+            // with the high bit set.
+            (c & 0x80) == 0) {
+          return false;
+        }
+        if (!EmitChar(c)) return false;
       }
-      if (!EmitChar(c)) return false;
     }
 
-    // Emit the endings of braced forms: "#42}" or "}".
+    // Emit the endings of braced forms, e.g., "#42}".
     if (uppercase_namespace != '\0') {
       if (!EmitChar('#')) return false;
       if (!EmitDisambiguator(disambiguator)) return false;
-    }
-    if (uppercase_namespace != '\0' || is_punycoded) {
       if (!EmitChar('}')) return false;
     }
 
@@ -909,7 +916,7 @@ class RustSymbolParser {
 }  // namespace
 
 bool DemangleRustSymbolEncoding(const char* mangled, char* out,
-                                std::size_t out_size) {
+                                size_t out_size) {
   return RustSymbolParser(mangled, out, out + out_size).Parse();
 }
 

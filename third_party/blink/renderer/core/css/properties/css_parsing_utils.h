@@ -62,7 +62,12 @@ enum class TrackListType {
   kGridTemplateSubgrid
 };
 enum class UnitlessQuirk { kAllow, kForbid };
-enum class AllowCalcSize { kAllowWithAuto, kAllowWithoutAuto, kForbid };
+enum class AllowCalcSize {
+  kAllowWithAuto,
+  kAllowWithoutAuto,
+  kAllowWithAutoAndContent,
+  kForbid
+};
 enum class AllowedColors { kAll, kAbsolute };
 enum class EmptyPathStringHandling { kFailure, kTreatAsNone };
 
@@ -82,7 +87,7 @@ bool ConsumeCommaIncludingWhitespace(CSSParserTokenRange&);
 bool ConsumeCommaIncludingWhitespace(CSSParserTokenStream&);
 bool ConsumeSlashIncludingWhitespace(CSSParserTokenRange&);
 bool ConsumeSlashIncludingWhitespace(CSSParserTokenStream&);
-// consumeFunction expects the range starts with a FunctionToken.
+// ConsumeFunction expects the range starts with a FunctionToken.
 CSSParserTokenRange ConsumeFunction(CSSParserTokenRange&);
 CSSParserTokenRange ConsumeFunction(CSSParserTokenStream&);
 
@@ -111,12 +116,7 @@ CSSPrimitiveValue* ConsumeIntegerOrNumberCalc(
     CSSPrimitiveValue::ValueRange = CSSPrimitiveValue::ValueRange::kInteger);
 CSSPrimitiveValue* ConsumePositiveInteger(CSSParserTokenStream&,
                                           const CSSParserContext&);
-CSSPrimitiveValue* ConsumePositiveInteger(CSSParserTokenRange&,
-                                          const CSSParserContext&);
 bool ConsumeNumberRaw(CSSParserTokenStream&,
-                      const CSSParserContext& context,
-                      double& result);
-bool ConsumeNumberRaw(CSSParserTokenRange&,
                       const CSSParserContext& context,
                       double& result);
 CSSPrimitiveValue* ConsumeNumber(CSSParserTokenRange&,
@@ -141,9 +141,6 @@ CSSPrimitiveValue* ConsumePercent(CSSParserTokenStream&,
                                   CSSPrimitiveValue::ValueRange);
 
 // Any percentages are converted to numbers.
-CSSPrimitiveValue* ConsumeNumberOrPercent(CSSParserTokenRange&,
-                                          const CSSParserContext&,
-                                          CSSPrimitiveValue::ValueRange);
 CSSPrimitiveValue* ConsumeNumberOrPercent(
     CSSParserTokenStream& stream,
     const CSSParserContext& context,
@@ -190,14 +187,13 @@ CORE_EXPORT CSSPrimitiveValue* ConsumeAngle(
     std::optional<WebFeature> unitless_zero_feature,
     double minimum_value,
     double maximum_value);
+CSSPrimitiveValue* ConsumeTime(CSSParserTokenStream&,
+                               const CSSParserContext&,
+                               CSSPrimitiveValue::ValueRange);
 template <typename T>
   requires std::is_same_v<T, CSSParserTokenStream> ||
            std::is_same_v<T, CSSParserTokenRange>
-CSSPrimitiveValue* ConsumeTime(T&,
-                               const CSSParserContext&,
-                               CSSPrimitiveValue::ValueRange);
-CSSPrimitiveValue* ConsumeResolution(CSSParserTokenRange&,
-                                     const CSSParserContext&);
+CSSPrimitiveValue* ConsumeResolution(T&, const CSSParserContext&);
 CSSValue* ConsumeRatio(CSSParserTokenStream&, const CSSParserContext&);
 CSSIdentifierValue* ConsumeIdent(CSSParserTokenRange&);
 CSSIdentifierValue* ConsumeIdent(CSSParserTokenStream&);
@@ -236,18 +232,13 @@ CORE_EXPORT CSSValue* ConsumeColorMaybeQuirky(CSSParserTokenStream&,
                                               const CSSParserContext&);
 
 // https://drafts.csswg.org/css-color-5/#typedef-color
-template <typename T>
-  requires std::is_same_v<T, CSSParserTokenStream> ||
-           std::is_same_v<T, CSSParserTokenRange>
-CORE_EXPORT CSSValue* ConsumeColor(T&, const CSSParserContext&);
+CORE_EXPORT CSSValue* ConsumeColor(CSSParserTokenStream&,
+                                   const CSSParserContext&);
 
 // https://drafts.csswg.org/css-color-5/#absolute-color
-CORE_EXPORT CSSValue* ConsumeAbsoluteColor(CSSParserTokenRange&,
+CORE_EXPORT CSSValue* ConsumeAbsoluteColor(CSSParserTokenStream&,
                                            const CSSParserContext&);
 
-CSSValue* ConsumeLineWidth(CSSParserTokenRange&,
-                           const CSSParserContext&,
-                           UnitlessQuirk);
 CSSValue* ConsumeLineWidth(CSSParserTokenStream&,
                            const CSSParserContext&,
                            UnitlessQuirk);
@@ -290,11 +281,8 @@ enum class ConsumeGeneratedImagePolicy { kAllow, kForbid };
 enum class ConsumeStringUrlImagePolicy { kAllow, kForbid };
 enum class ConsumeImageSetImagePolicy { kAllow, kForbid };
 
-template <typename T>
-  requires std::is_same_v<T, CSSParserTokenStream> ||
-           std::is_same_v<T, CSSParserTokenRange>
 CSSValue* ConsumeImage(
-    T&,
+    CSSParserTokenStream&,
     const CSSParserContext&,
     const ConsumeGeneratedImagePolicy = ConsumeGeneratedImagePolicy::kAllow,
     const ConsumeStringUrlImagePolicy = ConsumeStringUrlImagePolicy::kForbid,
@@ -310,14 +298,10 @@ CSSValue* ConsumeIntrinsicSizeLonghand(CSSParserTokenStream&,
                                        const CSSParserContext&);
 
 CSSIdentifierValue* ConsumeShapeBox(CSSParserTokenStream&);
-template <typename T>
-  requires std::is_same_v<T, CSSParserTokenStream> ||
-           std::is_same_v<T, CSSParserTokenRange>
-CSSIdentifierValue* ConsumeVisualBox(T&);
+CSSIdentifierValue* ConsumeVisualBox(CSSParserTokenStream&);
 
 CSSIdentifierValue* ConsumeCoordBox(CSSParserTokenStream&);
 
-CSSIdentifierValue* ConsumeGeometryBox(CSSParserTokenRange&);
 CSSIdentifierValue* ConsumeGeometryBox(CSSParserTokenStream&);
 
 enum class IsImplicitProperty { kNotImplicit, kImplicit };
@@ -369,14 +353,8 @@ void AddExpandedPropertyForValue(CSSPropertyID prop_id,
                                  bool,
                                  HeapVector<CSSPropertyValue, 64>& properties);
 
-template <typename T>
-  requires std::is_same_v<T, CSSParserTokenStream> ||
-           std::is_same_v<T, CSSParserTokenRange>
-CSSValue* ConsumeTransformValue(T&, const CSSParserContext&);
-template <typename T>
-  requires std::is_same_v<T, CSSParserTokenStream> ||
-           std::is_same_v<T, CSSParserTokenRange>
-CSSValue* ConsumeTransformList(T&, const CSSParserContext&);
+CSSValue* ConsumeTransformValue(CSSParserTokenStream&, const CSSParserContext&);
+CSSValue* ConsumeTransformList(CSSParserTokenStream&, const CSSParserContext&);
 CSSValue* ConsumeFilterFunctionList(CSSParserTokenStream&,
                                     const CSSParserContext&);
 
@@ -407,22 +385,14 @@ bool IsTimelineName(const CSSParserToken&);
 
 CSSValue* ConsumeSelfPositionOverflowPosition(CSSParserTokenStream&,
                                               IsPositionKeyword);
-CSSValue* ConsumeSimplifiedDefaultPosition(CSSParserTokenRange&,
-                                           IsPositionKeyword);
-CSSValue* ConsumeSimplifiedSelfPosition(CSSParserTokenRange&,
-                                        IsPositionKeyword);
 CSSValue* ConsumeContentDistributionOverflowPosition(CSSParserTokenStream&,
                                                      IsPositionKeyword);
-CSSValue* ConsumeSimplifiedContentPosition(CSSParserTokenRange&,
-                                           IsPositionKeyword);
 
 CSSValue* ConsumeAnimationIterationCount(CSSParserTokenStream&,
                                          const CSSParserContext&);
 CSSValue* ConsumeAnimationName(CSSParserTokenStream&,
                                const CSSParserContext&,
                                bool allow_quoted_name);
-CSSValue* ConsumeScrollFunction(CSSParserTokenRange&, const CSSParserContext&);
-CSSValue* ConsumeViewFunction(CSSParserTokenRange&, const CSSParserContext&);
 CSSValue* ConsumeAnimationTimeline(CSSParserTokenStream&,
                                    const CSSParserContext&);
 CSSValue* ConsumeAnimationTimingFunction(CSSParserTokenStream&,
@@ -453,10 +423,8 @@ bool ConsumeAnimationShorthand(
 CSSValue* ConsumeSingleTimelineAxis(CSSParserTokenStream&);
 CSSValue* ConsumeSingleTimelineName(CSSParserTokenStream&,
                                     const CSSParserContext&);
-template <typename T>
-  requires std::is_same_v<T, CSSParserTokenStream> ||
-           std::is_same_v<T, CSSParserTokenRange>
-CSSValue* ConsumeSingleTimelineInset(T&, const CSSParserContext&);
+CSSValue* ConsumeSingleTimelineInset(CSSParserTokenStream&,
+                                     const CSSParserContext&);
 
 void AddBackgroundValue(CSSValue*& list, const CSSValue*);
 CSSValue* ConsumeBackgroundAttachment(CSSParserTokenStream&);
@@ -466,10 +434,7 @@ CSSValue* ConsumeBackgroundBoxOrText(CSSParserTokenStream&);
 CSSValue* ConsumeMaskComposite(CSSParserTokenStream&);
 CSSValue* ConsumePrefixedMaskComposite(CSSParserTokenStream&);
 CSSValue* ConsumeMaskMode(CSSParserTokenStream&);
-template <typename T>
-  requires std::is_same_v<T, CSSParserTokenStream> ||
-           std::is_same_v<T, CSSParserTokenRange>
-bool ConsumeBackgroundPosition(T&,
+bool ConsumeBackgroundPosition(CSSParserTokenStream&,
                                const CSSParserContext&,
                                UnitlessQuirk,
                                std::optional<WebFeature> three_value_position,
@@ -495,10 +460,7 @@ bool ParseBackgroundOrMask(bool,
 
 CSSValue* ConsumeCoordBoxOrNoClip(CSSParserTokenStream&);
 
-template <typename T>
-  requires std::is_same_v<T, CSSParserTokenStream> ||
-           std::is_same_v<T, CSSParserTokenRange>
-CSSRepeatStyleValue* ConsumeRepeatStyleValue(T& range);
+CSSRepeatStyleValue* ConsumeRepeatStyleValue(CSSParserTokenStream& range);
 CSSValueList* ParseRepeatStyle(CSSParserTokenStream& stream);
 
 CSSValue* ConsumeWebkitBorderImage(CSSParserTokenStream&,
@@ -531,10 +493,7 @@ const CSSValue* ParseBorderStyleSide(CSSParserTokenStream&,
 CSSValue* ConsumeShadow(CSSParserTokenStream&,
                         const CSSParserContext&,
                         AllowInsetAndSpread);
-template <typename T>
-  requires std::is_same_v<T, CSSParserTokenStream> ||
-           std::is_same_v<T, CSSParserTokenRange>
-CSSShadowValue* ParseSingleShadow(T&,
+CSSShadowValue* ParseSingleShadow(CSSParserTokenStream&,
                                   const CSSParserContext&,
                                   AllowInsetAndSpread);
 
@@ -557,17 +516,12 @@ CSSValue* ConsumeLineHeight(CSSParserTokenStream&, const CSSParserContext&);
 CSSValue* ConsumeMathDepth(CSSParserTokenStream& stream,
                            const CSSParserContext& context);
 
-template <typename T>
-  requires std::is_same_v<T, CSSParserTokenStream> ||
-           std::is_same_v<T, CSSParserTokenRange>
-CSSValue* ConsumeFontPalette(T&, const CSSParserContext&);
-template <typename T>
-  requires std::is_same_v<T, CSSParserTokenStream> ||
-           std::is_same_v<T, CSSParserTokenRange>
-CSSValue* ConsumePaletteMixFunction(T&, const CSSParserContext&);
+CSSValue* ConsumeFontPalette(CSSParserTokenStream&, const CSSParserContext&);
+CSSValue* ConsumePaletteMixFunction(CSSParserTokenStream&,
+                                    const CSSParserContext&);
 CSSValueList* ConsumeFontFamily(CSSParserTokenRange&);
 CSSValueList* ConsumeFontFamily(CSSParserTokenStream&);
-CSSValueList* ConsumeNonGenericFamilyNameList(CSSParserTokenRange& range);
+CSSValueList* ConsumeNonGenericFamilyNameList(CSSParserTokenStream& stream);
 CSSValue* ConsumeGenericFamily(CSSParserTokenRange&);
 CSSValue* ConsumeGenericFamily(CSSParserTokenStream&);
 template <typename T>
@@ -620,18 +574,15 @@ bool IsSupportedKeywordTech(CSSValueID keyword);
 bool IsSupportedKeywordFormat(CSSValueID keyword);
 
 CSSValue* ConsumeGridLine(CSSParserTokenStream&, const CSSParserContext&);
-template <typename T>
-  requires std::is_same_v<T, CSSParserTokenStream> ||
-           std::is_same_v<T, CSSParserTokenRange>
-CSSValue* ConsumeGridTrackList(T&, const CSSParserContext&, TrackListType);
+CSSValue* ConsumeGridTrackList(CSSParserTokenStream&,
+                               const CSSParserContext&,
+                               TrackListType);
 bool ParseGridTemplateAreasRow(const WTF::String& grid_row_names,
                                NamedGridAreaMap&,
                                const wtf_size_t row_count,
                                wtf_size_t& column_count);
-template <typename T>
-  requires std::is_same_v<T, CSSParserTokenStream> ||
-           std::is_same_v<T, CSSParserTokenRange>
-CSSValue* ConsumeGridTemplatesRowsOrColumns(T&, const CSSParserContext&);
+CSSValue* ConsumeGridTemplatesRowsOrColumns(CSSParserTokenStream&,
+                                            const CSSParserContext&);
 bool ConsumeGridItemPositionShorthand(bool important,
                                       CSSParserTokenStream&,
                                       const CSSParserContext&,
@@ -660,10 +611,7 @@ bool ValidWidthOrHeightKeyword(CSSValueID id, const CSSParserContext& context);
 CSSValue* ConsumeMaxWidthOrHeight(CSSParserTokenStream&,
                                   const CSSParserContext&,
                                   UnitlessQuirk = UnitlessQuirk::kForbid);
-template <typename T>
-  requires std::is_same_v<T, CSSParserTokenStream> ||
-           std::is_same_v<T, CSSParserTokenRange>
-CSSValue* ConsumeWidthOrHeight(T&,
+CSSValue* ConsumeWidthOrHeight(CSSParserTokenStream&,
                                const CSSParserContext&,
                                UnitlessQuirk = UnitlessQuirk::kForbid);
 
@@ -680,23 +628,14 @@ CSSValue* ConsumeOffsetRotate(CSSParserTokenStream&, const CSSParserContext&);
 CSSValue* ConsumeInitialLetter(CSSParserTokenStream&, const CSSParserContext&);
 
 CSSValue* ConsumeBasicShape(
-    CSSParserTokenRange&,
-    const CSSParserContext&,
-    AllowPathValue = AllowPathValue::kAllow,
-    AllowBasicShapeRectValue = AllowBasicShapeRectValue::kAllow,
-    AllowBasicShapeXYWHValue = AllowBasicShapeXYWHValue::kAllow);
-CSSValue* ConsumeBasicShape(
     CSSParserTokenStream&,
     const CSSParserContext&,
     AllowPathValue = AllowPathValue::kAllow,
     AllowBasicShapeRectValue = AllowBasicShapeRectValue::kAllow,
     AllowBasicShapeXYWHValue = AllowBasicShapeXYWHValue::kAllow);
-template <typename T>
-  requires std::is_same_v<T, CSSParserTokenStream> ||
-           std::is_same_v<T, CSSParserTokenRange>
 bool ConsumeRadii(CSSValue* horizontal_radii[4],
                   CSSValue* vertical_radii[4],
-                  T&,
+                  CSSParserTokenStream&,
                   const CSSParserContext&,
                   bool use_legacy_parsing);
 
@@ -710,16 +649,10 @@ CSSValue* ConsumeAutospace(CSSParserTokenStream&);
 // https://drafts.csswg.org/css-text-4/#typedef-spacing-trim
 CSSValue* ConsumeSpacingTrim(CSSParserTokenStream&);
 
-template <typename T>
-  requires std::is_same_v<T, CSSParserTokenStream> ||
-           std::is_same_v<T, CSSParserTokenRange>
-CSSValue* ConsumeTransformValue(T&,
+CSSValue* ConsumeTransformValue(CSSParserTokenStream&,
                                 const CSSParserContext&,
                                 bool use_legacy_parsing);
-template <typename T>
-  requires std::is_same_v<T, CSSParserTokenStream> ||
-           std::is_same_v<T, CSSParserTokenRange>
-CSSValue* ConsumeTransformList(T&,
+CSSValue* ConsumeTransformList(CSSParserTokenStream&,
                                const CSSParserContext&,
                                const CSSParserLocalContext&);
 CSSValue* ConsumeTransitionProperty(CSSParserTokenStream&,
@@ -747,10 +680,8 @@ CSSValue* ConsumeContainerType(CSSParserTokenStream&);
 UnitlessQuirk UnitlessUnlessShorthand(const CSSParserLocalContext&);
 
 // https://drafts.csswg.org/css-counter-styles-3/#typedef-counter-style-name
-template <typename T>
-  requires std::is_same_v<T, CSSParserTokenStream> ||
-           std::is_same_v<T, CSSParserTokenRange>
-CSSCustomIdentValue* ConsumeCounterStyleName(T&, const CSSParserContext&);
+CSSCustomIdentValue* ConsumeCounterStyleName(CSSParserTokenStream&,
+                                             const CSSParserContext&);
 AtomicString ConsumeCounterStyleNameInPrelude(CSSParserTokenRange&,
                                               const CSSParserContext&);
 
@@ -761,16 +692,13 @@ CSSValue* ConsumeFontSizeAdjust(CSSParserTokenStream&, const CSSParserContext&);
 bool ShouldLowerCaseCounterStyleNameOnParse(const AtomicString&,
                                             const CSSParserContext&);
 
-// https://drafts.csswg.org/css-anchor-position-1/#typedef-inset-area
-template <class T>
-  requires std::is_same_v<T, CSSParserTokenStream> ||
-           std::is_same_v<T, CSSParserTokenRange>
-const CSSValue* ConsumeInsetArea(T&);
+// https://drafts.csswg.org/css-anchor-position-1/#typedef-position-area
+CSSValue* ConsumePositionArea(CSSParserTokenStream&);
 
-// inset-area can take one or two keywords. If the second is omitted, either the
-// first is repeated, or the second is span-all. This method returns true if the
-// omitted value should be the first one repeated.
-bool IsRepeatedInsetAreaValue(CSSValueID value_id);
+// position-area can take one or two keywords. If the second is omitted, either
+// the first is repeated, or the second is span-all. This method returns true if
+// the omitted value should be the first one repeated.
+bool IsRepeatedPositionAreaValue(CSSValueID value_id);
 
 // Template implementations are at the bottom of the file for readability.
 
@@ -814,23 +742,7 @@ CSSIdentifierValue* ConsumeIdent(CSSParserTokenStream& stream) {
 // ConsumeCommaSeparatedList and ConsumeSpaceSeparatedList take a callback
 // function to call on each item in the list, followed by the arguments to pass
 // to this callback.  The first argument to the callback must be the
-// CSSParserTokenRange
-template <typename Func, typename... Args>
-CSSValueList* ConsumeCommaSeparatedList(Func callback,
-                                        CSSParserTokenRange& range,
-                                        Args&&... args) {
-  CSSValueList* list = CSSValueList::CreateCommaSeparated();
-  do {
-    CSSValue* value = callback(range, std::forward<Args>(args)...);
-    if (!value) {
-      return nullptr;
-    }
-    list->Append(*value);
-  } while (ConsumeCommaIncludingWhitespace(range));
-  DCHECK(list->length());
-  return list;
-}
-
+// CSSParserTokenStream
 template <typename Func, typename... Args>
 CSSValueList* ConsumeCommaSeparatedList(Func callback,
                                         CSSParserTokenStream& stream,
@@ -855,7 +767,7 @@ CSSValueList* ConsumeSpaceSeparatedList(Func callback,
   do {
     CSSValue* value = callback(stream, std::forward<Args>(args)...);
     if (!value) {
-      return nullptr;
+      return list->length() > 0 ? list : nullptr;
     }
     list->Append(*value);
   } while (!stream.AtEnd());
@@ -863,28 +775,9 @@ CSSValueList* ConsumeSpaceSeparatedList(Func callback,
   return list;
 }
 
-template <typename T, typename Func, typename... Args>
-  requires std::is_same_v<T, CSSParserTokenStream> ||
-           std::is_same_v<T, CSSParserTokenRange>
-CSSValueList* ConsumeCommaSeparatedList(Func callback,
-                                        T& stream,
-                                        Args&&... args) {
-  CSSValueList* list = CSSValueList::CreateCommaSeparated();
-  do {
-    CSSValue* value = callback(stream, std::forward<Args>(args)...);
-    if (!value) {
-      return nullptr;
-    }
-    list->Append(*value);
-  } while (ConsumeCommaIncludingWhitespace(stream));
-  DCHECK(list->length());
-  return list;
-}
-
-template <CSSValueID start, CSSValueID end, typename T>
-  requires std::is_same_v<T, CSSParserTokenStream> ||
-           std::is_same_v<T, CSSParserTokenRange>
-CSSValue* ConsumePositionLonghand(T& range, const CSSParserContext& context) {
+template <CSSValueID start, CSSValueID end>
+CSSValue* ConsumePositionLonghand(CSSParserTokenStream& range,
+                                  const CSSParserContext& context) {
   if (range.Peek().GetType() == kIdentToken) {
     CSSValueID id = range.Peek().Id();
     int percent;
@@ -932,10 +825,10 @@ bool ConsumeIfDelimiter(T& range_or_stream, UChar c) {
   return true;
 }
 
-CORE_EXPORT CSSValue* ConsumeSinglePositionTryOption(CSSParserTokenStream&,
-                                                     const CSSParserContext&);
-CSSValue* ConsumePositionTryOptions(CSSParserTokenStream&,
-                                    const CSSParserContext&);
+CORE_EXPORT CSSValue* ConsumeSinglePositionTryFallback(CSSParserTokenStream&,
+                                                       const CSSParserContext&);
+CSSValue* ConsumePositionTryFallbacks(CSSParserTokenStream&,
+                                      const CSSParserContext&);
 
 // If the stream starts with “!important”, consumes it and returns true.
 // If the stream is at EOF, returns false.
@@ -951,10 +844,8 @@ CSSValue* ConsumePositionTryOptions(CSSParserTokenStream&,
 //
 // If allow_important_annotation is false, just consumes whitespace
 // and returns false. The same pattern as above holds.
-template <typename T>
-  requires std::is_same_v<T, CSSParserTokenStream> ||
-           std::is_same_v<T, CSSParserTokenRange>
-bool MaybeConsumeImportant(T& stream, bool allow_important_annotation);
+bool MaybeConsumeImportant(CSSParserTokenStream& stream,
+                           bool allow_important_annotation);
 
 }  // namespace css_parsing_utils
 }  // namespace blink

@@ -11,6 +11,7 @@
 #include "base/functional/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/not_fatal_until.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/single_thread_task_runner.h"
@@ -29,6 +30,8 @@
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/content_settings/core/test/content_settings_mock_provider.h"
 #include "components/content_settings/core/test/content_settings_test_utils.h"
+#include "components/prefs/testing_pref_service.h"
+#include "components/search_engines/search_engines_test_environment.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -61,7 +64,7 @@ class FakeNotificationChannelsBridge
     auto it = base::ranges::find(
         channels_, origin,
         [](const Channels::value_type& pair) { return pair.second.origin; });
-    DCHECK(it != channels_.end())
+    CHECK(it != channels_.end(), base::NotFatalUntil::M130)
         << "Must call bridge.CreateChannel before SetChannelStatus.";
     it->second.status = status;
   }
@@ -761,8 +764,9 @@ TEST_F(NotificationChannelsProviderAndroidTest,
   InitChannelsProvider();
 
   // Set up TemplateURLService with a default search engine.
-  TemplateURLService* template_url_service = new TemplateURLService(
-      /*prefs=*/nullptr, /*search_engine_choice_service=*/nullptr);
+  search_engines::SearchEnginesTestEnvironment search_engines_test_environment;
+  TemplateURLService* template_url_service =
+      search_engines_test_environment.template_url_service();
   TemplateURLData data;
   data.SetURL("https://default-search-engine.com/url?bar={searchTerms}");
   TemplateURL* template_url =

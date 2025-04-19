@@ -13,8 +13,8 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/cronet/android/cronet_context_adapter.h"
-#include "components/cronet/android/cronet_jni_headers/CronetBidirectionalStream_jni.h"
 #include "components/cronet/android/io_buffer_with_byte_buffer.h"
+#include "components/cronet/android/url_request_close_source.h"
 #include "components/cronet/android/url_request_error.h"
 #include "components/cronet/metrics_util.h"
 #include "net/base/http_user_agent_settings.h"
@@ -28,9 +28,11 @@
 #include "net/http/http_util.h"
 #include "net/ssl/ssl_info.h"
 #include "net/third_party/quiche/src/quiche/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quiche/spdy/core/http2_header_block.h"
 #include "net/url_request/url_request_context.h"
 #include "url/gurl.h"
+
+// Must come after all headers that specialize FromJniType() / ToJniType().
+#include "components/cronet/android/cronet_jni_headers/CronetBidirectionalStream_jni.h"
 
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertJavaStringToUTF8;
@@ -183,12 +185,8 @@ jboolean CronetBidirectionalStreamAdapter::ReadData(
     jint jlimit) {
   DCHECK_LT(jposition, jlimit);
 
-  void* data = env->GetDirectBufferAddress(jbyte_buffer);
-  if (!data)
-    return JNI_FALSE;
-
   scoped_refptr<IOBufferWithByteBuffer> read_buffer(
-      new IOBufferWithByteBuffer(env, jbyte_buffer, data, jposition, jlimit));
+      new IOBufferWithByteBuffer(env, jbyte_buffer, jposition, jlimit));
 
   int remaining_capacity = jlimit - jposition;
 
@@ -271,7 +269,7 @@ void CronetBidirectionalStreamAdapter::OnStreamReady(
 }
 
 void CronetBidirectionalStreamAdapter::OnHeadersReceived(
-    const spdy::Http2HeaderBlock& response_headers) {
+    const quiche::HttpHeaderBlock& response_headers) {
   DCHECK(context_->IsOnNetworkThread());
   JNIEnv* env = base::android::AttachCurrentThread();
   // Get http status code from response headers.
@@ -328,7 +326,7 @@ void CronetBidirectionalStreamAdapter::OnDataSent() {
 }
 
 void CronetBidirectionalStreamAdapter::OnTrailersReceived(
-    const spdy::Http2HeaderBlock& response_trailers) {
+    const quiche::HttpHeaderBlock& response_trailers) {
   DCHECK(context_->IsOnNetworkThread());
   JNIEnv* env = base::android::AttachCurrentThread();
   cronet::Java_CronetBidirectionalStream_onResponseTrailersReceived(
@@ -344,6 +342,7 @@ void CronetBidirectionalStreamAdapter::OnFailed(int error) {
   cronet::Java_CronetBidirectionalStream_onError(
       env, owner_, NetErrorToUrlRequestError(error), error,
       net_error_details.quic_connection_error,
+      (int)NetSourceToJavaSource(net_error_details.source),
       ConvertUTF8ToJavaString(env, net::ErrorToString(error)),
       bidi_stream_->GetTotalReceivedBytes());
 }
@@ -443,7 +442,7 @@ void CronetBidirectionalStreamAdapter::DestroyOnNetworkThread(
 base::android::ScopedJavaLocalRef<jobjectArray>
 CronetBidirectionalStreamAdapter::GetHeadersArray(
     JNIEnv* env,
-    const spdy::Http2HeaderBlock& header_block) {
+    const quiche::HttpHeaderBlock& header_block) {
   DCHECK(context_->IsOnNetworkThread());
 
   std::vector<std::string> headers;

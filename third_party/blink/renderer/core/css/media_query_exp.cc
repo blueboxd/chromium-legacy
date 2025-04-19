@@ -27,6 +27,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/core/css/media_query_exp.h"
 
 #include "third_party/blink/renderer/core/css/css_math_expression_node.h"
@@ -202,6 +207,8 @@ static inline bool FeatureWithValidIdent(const String& media_feature,
         case CSSValueID::kNone:
         case CSSValueID::kBlock:
         case CSSValueID::kInline:
+        case CSSValueID::kX:
+        case CSSValueID::kY:
           return true;
         default:
           return false;
@@ -215,7 +222,8 @@ static inline bool FeatureWithValidIdent(const String& media_feature,
 static inline bool FeatureWithValidLength(const String& media_feature,
                                           const CSSPrimitiveValue* value) {
   if (!(value->IsLength() ||
-        (value->IsNumber() && value->GetDoubleValue() == 0))) {
+        (value->IsNumber() &&
+         value->IsZero() == CSSPrimitiveValue::BoolStatus::kTrue))) {
     return false;
   }
 
@@ -244,7 +252,8 @@ static inline bool FeatureWithValidDensity(const String& media_feature,
   // NOTE: The allowed range of <resolution> values always excludes negative
   // values, in addition to any explicit ranges that might be specified.
   // https://drafts.csswg.org/css-values/#resolution
-  if (!value->IsResolution() || value->GetDoubleValue() < 0) {
+  if (!value->IsResolution() ||
+      value->IsNegative() == CSSPrimitiveValue::BoolStatus::kTrue) {
     return false;
   }
 
@@ -304,7 +313,8 @@ static inline bool FeatureWithNumber(const String& media_feature,
 static inline bool FeatureWithZeroOrOne(const String& media_feature,
                                         const CSSPrimitiveValue* value) {
   if (!value->IsInteger() ||
-      !(value->GetDoubleValue() == 1 || !value->GetDoubleValue())) {
+      (value->IsOne() == CSSPrimitiveValue::BoolStatus::kFalse &&
+       value->IsZero() == CSSPrimitiveValue::BoolStatus::kFalse)) {
     return false;
   }
 
@@ -409,45 +419,6 @@ MediaQueryExp MediaQueryExp::Create(const String& media_feature,
   return Invalid();
 }
 
-bool MediaQueryExpValue::IsResolution() const {
-  switch (type_) {
-    case Type::kNumeric:
-      return CSSPrimitiveValue::IsResolution(Unit());
-    case Type::kCSSValue:
-      if (const auto* math_function =
-              DynamicTo<CSSMathFunctionValue>(css_value_.Get())) {
-        return math_function->IsResolution();
-      }
-      return false;
-    default:
-      return false;
-  }
-}
-
-double MediaQueryExpValue::Value() const {
-  if (const auto* math_function =
-          DynamicTo<CSSMathFunctionValue>(css_value_.Get())) {
-    if (math_function->IsResolution()) {
-      return math_function->ComputeDotsPerPixel();
-    }
-  }
-
-  DCHECK(IsNumeric());
-  return numeric_.value;
-}
-
-CSSPrimitiveValue::UnitType MediaQueryExpValue::Unit() const {
-  if (const auto* math_function =
-          DynamicTo<CSSMathFunctionValue>(css_value_.Get())) {
-    if (math_function->IsResolution()) {
-      return CSSPrimitiveValue::UnitType::kDotsPerPixel;
-    }
-  }
-
-  DCHECK(IsNumeric());
-  return numeric_.unit;
-}
-
 std::optional<MediaQueryExpValue> MediaQueryExpValue::Consume(
     const String& media_feature,
     CSSParserTokenRange& range,
@@ -504,56 +475,34 @@ std::optional<MediaQueryExpValue> MediaQueryExpValue::Consume(
   // Now we have |value| as a number, length or resolution
   // Create value for media query expression that must have 1 or more values.
   if (FeatureWithAspectRatio(media_feature)) {
-    if (value->GetDoubleValue() < 0) {
+    if (value->IsNegative() == CSSPrimitiveValue::BoolStatus::kTrue) {
       return std::nullopt;
     }
     if (!css_parsing_utils::ConsumeSlashIncludingWhitespace(range)) {
-      return MediaQueryExpValue(value->GetDoubleValue(), 1);
+      return MediaQueryExpValue(*value,
+                                *CSSNumericLiteralValue::Create(
+                                    1, CSSPrimitiveValue::UnitType::kNumber));
     }
     CSSPrimitiveValue* denominator = css_parsing_utils::ConsumeNumber(
         range, context, CSSPrimitiveValue::ValueRange::kNonNegative);
     if (!denominator) {
       return std::nullopt;
     }
-    if (value->GetDoubleValue() == 0 && denominator->GetDoubleValue() == 0) {
-      return MediaQueryExpValue(1, 0);
+    if (value->IsZero() == CSSPrimitiveValue::BoolStatus::kTrue &&
+        denominator->IsZero() == CSSPrimitiveValue::BoolStatus::kTrue) {
+      return MediaQueryExpValue(*CSSNumericLiteralValue::Create(
+                                    1, CSSPrimitiveValue::UnitType::kNumber),
+                                *CSSNumericLiteralValue::Create(
+                                    0, CSSPrimitiveValue::UnitType::kNumber));
     }
-    return MediaQueryExpValue(value->GetDoubleValue(),
-                              denominator->GetDoubleValue());
-  }
-
-  if (FeatureWithValidDensity(media_feature, value)) {
-    DCHECK(value->IsResolution());
-
-    if (const auto* math_function = DynamicTo<CSSMathFunctionValue>(value)) {
-      return MediaQueryExpValue(*math_function);
-    }
-
-    const auto* numeric_literal = To<CSSNumericLiteralValue>(value);
-    return MediaQueryExpValue(numeric_literal->DoubleValue(),
-                              numeric_literal->GetType());
+    return MediaQueryExpValue(*value, *denominator);
   }
 
   if (FeatureWithInteger(media_feature, value, context) ||
       FeatureWithNumber(media_feature, value) ||
-      FeatureWithZeroOrOne(media_feature, value)) {
-    return MediaQueryExpValue(value->GetDoubleValue(),
-                              CSSPrimitiveValue::UnitType::kNumber);
-  }
-
-  if (FeatureWithValidLength(media_feature, value)) {
-    if (value->IsNumber()) {
-      return MediaQueryExpValue(value->GetDoubleValue(),
-                                CSSPrimitiveValue::UnitType::kNumber);
-    }
-
-    DCHECK(value->IsLength());
-    if (const auto* numeric_literal =
-            DynamicTo<CSSNumericLiteralValue>(value)) {
-      return MediaQueryExpValue(numeric_literal->GetDoubleValue(),
-                                numeric_literal->GetType());
-    }
-
+      FeatureWithZeroOrOne(media_feature, value) ||
+      FeatureWithValidLength(media_feature, value) ||
+      FeatureWithValidDensity(media_feature, value)) {
     return MediaQueryExpValue(*value);
   }
 
@@ -639,29 +588,21 @@ unsigned MediaQueryExp::GetUnitFlags() const {
   return unit_flags;
 }
 
-static inline String PrintNumber(double number) {
-  return Decimal::FromDouble(number).ToString();
-}
-
 String MediaQueryExpValue::CssText() const {
   StringBuilder output;
   switch (type_) {
     case Type::kInvalid:
       break;
-    case Type::kNumeric:
-      output.Append(PrintNumber(Value()));
-      output.Append(CSSPrimitiveValue::UnitTypeToString(Unit()));
+    case Type::kValue:
+      output.Append(GetCSSValue().CssText());
       break;
     case Type::kRatio:
-      output.Append(PrintNumber(Numerator()));
+      output.Append(Numerator().CssText());
       output.Append(" / ");
-      output.Append(PrintNumber(Denominator()));
+      output.Append(Denominator().CssText());
       break;
     case Type::kId:
       output.Append(getValueName(Id()));
-      break;
-    case Type::kCSSValue:
-      output.Append(GetCSSValue().CssText());
       break;
   }
 
@@ -671,17 +612,10 @@ String MediaQueryExpValue::CssText() const {
 unsigned MediaQueryExpValue::GetUnitFlags() const {
   CSSPrimitiveValue::LengthTypeFlags length_type_flags;
 
-  if (IsCSSValue()) {
+  if (IsValue()) {
     if (auto* primitive = DynamicTo<CSSPrimitiveValue>(GetCSSValue())) {
       primitive->AccumulateLengthUnitTypes(length_type_flags);
     }
-  }
-  if (IsNumeric() && CSSPrimitiveValue::IsLength(Unit())) {
-    CSSPrimitiveValue::LengthUnitType length_unit_type;
-    bool ok =
-        CSSPrimitiveValue::UnitTypeToLengthUnitType(Unit(), length_unit_type);
-    DCHECK(ok);
-    length_type_flags.set(length_unit_type);
   }
 
   unsigned unit_flags = 0;

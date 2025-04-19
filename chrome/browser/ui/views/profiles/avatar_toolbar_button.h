@@ -21,6 +21,7 @@
 class AvatarToolbarButtonDelegate;
 class Browser;
 class BrowserView;
+struct AccountInfo;
 
 // This class takes care the Profile Avatar Button.
 // Primarily applies UI configuration.
@@ -61,7 +62,8 @@ class AvatarToolbarButton : public ToolbarButton {
   // Expands the pill to show the intercept text.
   // Returns a callback to be used when the shown text should be hidden.
   [[nodiscard]] base::ScopedClosureRunner ShowExplicitText(
-      const std::u16string& text);
+      const std::u16string& text,
+      std::optional<std::u16string> accessibility_label);
 
   // Changes the button pressed action.
   // Returns a callback to be used when the new action should stop being used.
@@ -80,6 +82,11 @@ class AvatarToolbarButton : public ToolbarButton {
 
   // Attempts showing the In-Produce-Help for profile Switching.
   void MaybeShowProfileSwitchIPH();
+
+  // Attempts showing the In-Product-Help in a subsequent web sign-in when the
+  // explicit browser sign-in preference was remembered.
+  void MaybeShowExplicitBrowserSigninPreferenceRememberedIPH(
+      const AccountInfo& account_info);
 
   // Attempts showing the In-Produce-Help for web sign out.
   void MaybeShowWebSignoutIPH(const std::string& gaia_id);
@@ -100,6 +107,7 @@ class AvatarToolbarButton : public ToolbarButton {
   bool ShouldPaintBorder() const override;
   bool ShouldBlendHighlightColor() const override;
   void AddedToWidget() override;
+  void PaintButtonContents(gfx::Canvas* canvas) override;
 
   void ButtonPressed(bool is_source_accelerator = false);
 
@@ -125,8 +133,6 @@ class AvatarToolbarButton : public ToolbarButton {
   // ui::PropertyHandler:
   void AfterPropertyChange(const void* key, int64_t old_value) override;
 
-  void SetInsets();
-
   // Updates the layout insets depending on whether it is a chip or a button.
   void UpdateLayoutInsets();
 
@@ -136,6 +142,8 @@ class AvatarToolbarButton : public ToolbarButton {
 
   // Used as a callback to reset the explicit button action.
   void ResetButtonAction();
+
+  void UpdateAccessibilityLabel();
 
   // Lists of observers.
   base::ObserverList<Observer, true> observer_list_;

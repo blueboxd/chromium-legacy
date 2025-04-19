@@ -200,7 +200,7 @@ bool RoleAllowsMultiselectable(ax::mojom::Role role) {
 }
 
 bool RoleAllowsReadonly(ax::mojom::Role role) {
-  return role == ax::mojom::Role::kGrid || role == ax::mojom::Role::kCell ||
+  return role == ax::mojom::Role::kGrid || role == ax::mojom::Role::kGridCell ||
          role == ax::mojom::Role::kTextField ||
          role == ax::mojom::Role::kColumnHeader ||
          role == ax::mojom::Role::kRowHeader ||
@@ -210,7 +210,8 @@ bool RoleAllowsReadonly(ax::mojom::Role role) {
 bool RoleAllowsRequired(ax::mojom::Role role) {
   return role == ax::mojom::Role::kComboBoxGrouping ||
          role == ax::mojom::Role::kComboBoxMenuButton ||
-         role == ax::mojom::Role::kCell || role == ax::mojom::Role::kListBox ||
+         role == ax::mojom::Role::kGridCell ||
+         role == ax::mojom::Role::kListBox ||
          role == ax::mojom::Role::kRadioGroup ||
          role == ax::mojom::Role::kSpinButton ||
          role == ax::mojom::Role::kTextField ||
@@ -412,6 +413,14 @@ void FillSparseAttributes(AXObject& ax_object,
     properties.emplace_back(
         CreateProperty(AXPropertyNameEnum::Busy,
                        CreateValue(is_busy, AXValueTypeEnum::Boolean)));
+  }
+
+  if (node_data.HasStringAttribute(ax::mojom::blink::StringAttribute::kUrl)) {
+    const auto url =
+        node_data.GetStringAttribute(ax::mojom::blink::StringAttribute::kUrl);
+    properties.emplace_back(CreateProperty(
+        AXPropertyNameEnum::Url,
+        CreateValue(WTF::String(url.c_str()), AXValueTypeEnum::String)));
   }
 
   if (node_data.HasStringAttribute(

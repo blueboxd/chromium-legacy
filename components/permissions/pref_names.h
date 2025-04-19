@@ -24,12 +24,6 @@ extern const char kLocationSettingsNextShowDefault[];
 
 extern const char kOneTimePermissionPromptsDecidedCount[];
 
-// The pref is used only when kSafetyHub flag is on.
-// Currently Safety Hub is available only on desktop and Android.
-#if !BUILDFLAG(IS_IOS)
-extern const char kUnusedSitePermissionsRevocationEnabled[];
-#endif  // !BUILDFLAG(IS_IOS)
-
 }  // namespace prefs
 
 // Registers user preferences related to permissions.

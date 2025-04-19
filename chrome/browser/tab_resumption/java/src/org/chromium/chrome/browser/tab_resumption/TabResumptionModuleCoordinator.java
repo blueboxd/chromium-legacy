@@ -8,10 +8,12 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.magic_stack.ModuleDelegate;
 import org.chromium.chrome.browser.magic_stack.ModuleProvider;
 import org.chromium.chrome.browser.tab_resumption.TabResumptionDataProvider.TabResumptionDataProviderFactory;
 import org.chromium.chrome.browser.tab_resumption.TabResumptionModuleUtils.SuggestionClickCallback;
+import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.url.GURL;
@@ -23,6 +25,7 @@ import org.chromium.url.GURL;
 public class TabResumptionModuleCoordinator implements ModuleProvider {
     protected final Context mContext;
     protected final ModuleDelegate mModuleDelegate;
+    protected final TabModel mTabModel;
     protected final TabResumptionDataProviderFactory mDataProviderFactory;
     protected final UrlImageProvider mUrlImageProvider;
     protected final PropertyModel mModel;
@@ -33,20 +36,23 @@ public class TabResumptionModuleCoordinator implements ModuleProvider {
     public TabResumptionModuleCoordinator(
             @NonNull Context context,
             @NonNull ModuleDelegate moduleDelegate,
+            @NonNull TabModel tabModel,
             @NonNull TabResumptionDataProviderFactory dataProviderFactory,
             @NonNull UrlImageProvider urlImageProvider) {
         mContext = context;
         mModuleDelegate = moduleDelegate;
+        mTabModel = tabModel;
         mDataProviderFactory = dataProviderFactory;
         mUrlImageProvider = urlImageProvider;
         mModel = new PropertyModel(TabResumptionModuleProperties.ALL_KEYS);
-        SuggestionClickCallback wrappedClickCallback =
+        SuggestionClickCallback suggstionClickCallback =
                 (SuggestionEntry entry) -> {
                     if (entry.isLocalTab()) {
-                        // TODO(crbug.com/343095625): Add error handling, and use onUrlClicked() as
-                        // fallback.
                         mModuleDelegate.onTabClicked(entry.localTabId, getModuleType());
                     } else {
+                        if (entry.type == SuggestionEntryType.FOREIGN_TAB) {
+                            RecordUserAction.record("MobileCrossDeviceTabJourney");
+                        }
                         mModuleDelegate.onUrlClicked(entry.url, getModuleType());
                     }
                 };
@@ -54,11 +60,13 @@ public class TabResumptionModuleCoordinator implements ModuleProvider {
                 new TabResumptionModuleMediator(
                         /* context= */ mContext,
                         /* moduleDelegate= */ mModuleDelegate,
+                        /* tabModel= */ mTabModel,
                         /* model= */ mModel,
                         /* urlImageProvider= */ mUrlImageProvider,
+                        /* reloadSessionCallback= */ this::updateModule,
                         /* statusChangedCallback= */ this::showModule,
                         /* seeMoreLinkClickCallback= */ this::onSeeMoreClicked,
-                        /* suggestionClickCallback= */ wrappedClickCallback);
+                        suggstionClickCallback);
         mMediator.startSession(mDataProviderFactory.make());
     }
 
@@ -100,7 +108,11 @@ public class TabResumptionModuleCoordinator implements ModuleProvider {
     @Override
     public void onContextMenuCreated() {}
 
-    private void onSeeMoreClicked() {
+    PropertyModel getModelForTesting() {
+        return mModel;
+    }
+
+    void onSeeMoreClicked() {
         mModuleDelegate.onUrlClicked(new GURL(UrlConstants.RECENT_TABS_URL), getModuleType());
     }
 }

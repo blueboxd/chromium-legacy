@@ -100,7 +100,6 @@ std::unique_ptr<web_app::WebApp> CreateWebApp() {
   auto web_app = std::make_unique<web_app::WebApp>(app_id);
   web_app->SetStartUrl(url);
   web_app->SetScope(url.DeprecatedGetOriginAsURL());
-  web_app->SetIsLocallyInstalled(true);
   web_app->SetUserDisplayMode(web_app::mojom::UserDisplayMode::kStandalone);
   return web_app;
 }
@@ -117,7 +116,7 @@ class PromoCardBaseTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::SetUp();
     profile_store_ = CreateAndUseTestPasswordStore(profile());
     AffiliationServiceFactory::GetInstance()->SetTestingSubclassFactoryAndUse(
-        profile(), base::BindRepeating([](content::BrowserContext*) {
+        profile(), base::BindOnce([](content::BrowserContext*) {
           return std::make_unique<affiliations::FakeAffiliationService>();
         }));
   }
@@ -342,7 +341,7 @@ class PromoCardInWebTest : public PromoCardBaseTest {
 };
 
 TEST_F(PromoCardInWebTest, NoPromoIfNotSyncing) {
-  sync_service()->SetHasSyncConsent(false);
+  sync_service()->SetSignedOut();
   ASSERT_FALSE(sync_service()->IsSyncFeatureEnabled());
 
   ASSERT_THAT(pref_service()->GetList(prefs::kPasswordManagerPromoCardsList),
@@ -357,7 +356,6 @@ TEST_F(PromoCardInWebTest, NoPromoIfNotSyncing) {
 }
 
 TEST_F(PromoCardInWebTest, PromoIsShownWhenSyncing) {
-  sync_service()->SetLocalSyncEnabled(false);
   ASSERT_TRUE(sync_service()->IsSyncFeatureEnabled());
 
   ASSERT_THAT(pref_service()->GetList(prefs::kPasswordManagerPromoCardsList),
@@ -369,7 +367,6 @@ TEST_F(PromoCardInWebTest, PromoIsShownWhenSyncing) {
 }
 
 TEST_F(PromoCardInWebTest, ShouldShowPromoFirstThreeTimes) {
-  sync_service()->SetLocalSyncEnabled(false);
   ASSERT_TRUE(sync_service()->IsSyncFeatureEnabled());
 
   ASSERT_THAT(pref_service()->GetList(prefs::kPasswordManagerPromoCardsList),
@@ -389,7 +386,6 @@ TEST_F(PromoCardInWebTest, ShouldShowPromoFirstThreeTimes) {
 TEST_F(PromoCardInWebTest, PromoNotShownAfterDismiss) {
   base::HistogramTester histogram_tester;
 
-  sync_service()->SetLocalSyncEnabled(false);
   ASSERT_TRUE(sync_service()->IsSyncFeatureEnabled());
 
   ASSERT_THAT(pref_service()->GetList(prefs::kPasswordManagerPromoCardsList),

@@ -27,13 +27,15 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_future.h"
+#include "base/types/expected.h"
 #include "chrome/browser/ash/app_list/app_list_client_impl.h"
 #include "chrome/browser/ash/app_restore/full_restore_app_launch_handler.h"
 #include "chrome/browser/ash/file_manager/app_id.h"
 #include "chrome/browser/ash/login/test/guest_session_mixin.h"
 #include "chrome/browser/ash/login/test/logged_in_user_mixin.h"
 #include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
-#include "chrome/browser/resources/preinstalled_web_apps/internal/container.h"
+#include "chrome/browser/chromeos/echo/echo_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -41,6 +43,7 @@
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
+#include "chrome/browser/web_applications/preinstalled_web_apps/container.h"
 #include "chrome/browser/web_applications/preinstalled_web_apps/preinstalled_web_apps.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
@@ -49,6 +52,7 @@
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chrome/test/interaction/interactive_browser_test.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/app_constants/constants.h"
 #include "components/session_manager/session_manager_types.h"
 #include "components/sync/base/command_line_switches.h"
@@ -207,8 +211,17 @@ class ContainerAppInteractiveUiTestBase
     : public InteractiveBrowserTestT<MixinBasedInProcessBrowserTest> {
  public:
   ContainerAppInteractiveUiTestBase(
-      std::optional<ash::LoggedInUserMixin::LogInType> login_type)
+      std::optional<ash::LoggedInUserMixin::LogInType> login_type,
+      bool should_ignore_feature_debug_key)
       : user_session_mixin_(CreateUserSessionMixin(login_type)) {
+    // Conditionally ignore the container app preinstallation debug key.
+    if (should_ignore_feature_debug_key) {
+      ignore_container_app_preinstall_debug_key_ =
+          std::make_unique<base::AutoReset<bool>>(
+              chromeos::switches::
+                  SetIgnoreContainerAppPreinstallDebugKeyForTesting());
+    }
+
     // Enable container app preinstallation.
     scoped_feature_list_.InitWithFeatures(
         {chromeos::features::kContainerAppPreinstall,
@@ -247,7 +260,8 @@ class ContainerAppInteractiveUiTestBase
   GURL GetContainerAppLaunchUrl() const {
     GURL::Replacements components;
     components.SetQueryStr(*container_app_install_info_->launch_query_params);
-    return container_app_install_info_->start_url.ReplaceComponents(components);
+    return container_app_install_info_->start_url().ReplaceComponents(
+        components);
   }
 
   // Returns the expected title for the container app.
@@ -318,10 +332,17 @@ class ContainerAppInteractiveUiTestBase
         web_app::WebAppProvider::GetForTest(profile));
     AppListClientImpl::GetInstance()->UpdateProfile();
 
+    // Fetch `device_info` from echo.
+    base::test::TestFuture<std::optional<base::Time>> oobe_timestamp;
+    chromeos::echo_util::GetOobeTimestamp(oobe_timestamp.GetCallback());
+    ASSERT_TRUE(oobe_timestamp.Wait());
+    ASSERT_TRUE(oobe_timestamp.Get().has_value());
+    web_app::DeviceInfo device_info;
+    device_info.oobe_timestamp = oobe_timestamp.Get().value();
+
     // Cache install info for the container app.
     container_app_install_info_ =
-        web_app::GetConfigForContainer(/*device_info=*/std::nullopt)
-            .app_info_factory.Run();
+        web_app::GetConfigForContainer(device_info).app_info_factory.Run();
   }
 
  private:
@@ -353,6 +374,10 @@ class ContainerAppInteractiveUiTestBase
 
   // Used to retrieve expected title/URL for the container app.
   std::unique_ptr<web_app::WebAppInstallInfo> container_app_install_info_;
+
+  // Used to conditionally ignore the container app preinstallation debug key.
+  std::unique_ptr<base::AutoReset<bool>>
+      ignore_container_app_preinstall_debug_key_;
 };
 
 // ContainerAppInteractiveUiTest -----------------------------------------------
@@ -367,7 +392,8 @@ class ContainerAppInteractiveUiTest
  public:
   ContainerAppInteractiveUiTest()
       : ContainerAppInteractiveUiTestBase(
-            ash::LoggedInUserMixin::LogInType::kConsumer) {
+            ash::LoggedInUserMixin::LogInType::kConsumer,
+            /*should_ignore_feature_debug_key=*/false) {
     // Disable the container app during the PRE_ session so that the subsequent
     // session containing test logic is when the app preinstallation occurs.
     if (IsPreSession()) {
@@ -441,6 +467,7 @@ IN_PROC_BROWSER_TEST_P(ContainerAppInteractiveUiTest, LaunchFromAppList) {
   RunTestSequence(
       // Launch app list.
       DoDefaultAction(ash::kHomeButtonElementId),
+      WaitForShow(ash::kAppListBubbleViewElementId),
 
       // Find apps page.
       NameDescendantViewByType<ash::AppListBubbleAppsPage>(
@@ -663,6 +690,7 @@ IN_PROC_BROWSER_TEST_P(ContainerAppInteractiveUiTest, UninstallFromAppList) {
   RunTestSequence(
       // Launch app list.
       DoDefaultAction(ash::kHomeButtonElementId),
+      WaitForShow(ash::kAppListBubbleViewElementId),
 
       // Find apps page.
       NameDescendantViewByType<ash::AppListBubbleAppsPage>(
@@ -818,8 +846,11 @@ IN_PROC_BROWSER_TEST_P(ContainerAppInteractiveUiTest, UninstallFromShelf) {
 // Reasons why the user may be ineligible for container app preinstallation.
 enum class IneligibilityReason {
   kMinValue = 0,
-  kFeatureFlagDisabled = kMinValue,
-  kFeatureManagementFlagDisabled,
+  kFeatureDebugAndManagementFlagsDisabled = kMinValue,
+  kFeatureDebugKeyAbsent,
+  kFeatureDebugKeyEmpty,
+  kFeatureDebugKeyIncorrect,
+  kFeatureFlagDisabled,
   kUserManaged,
   kUserTypeChild,
   kUserTypeGuest,
@@ -832,8 +863,11 @@ enum class IneligibilityReason {
 
 inline std::ostream& operator<<(std::ostream& os, IneligibilityReason reason) {
   switch (reason) {
+    INELIGIBILITY_REASON_CASE(kFeatureDebugAndManagementFlagsDisabled);
+    INELIGIBILITY_REASON_CASE(kFeatureDebugKeyAbsent);
+    INELIGIBILITY_REASON_CASE(kFeatureDebugKeyEmpty);
+    INELIGIBILITY_REASON_CASE(kFeatureDebugKeyIncorrect);
     INELIGIBILITY_REASON_CASE(kFeatureFlagDisabled);
-    INELIGIBILITY_REASON_CASE(kFeatureManagementFlagDisabled);
     INELIGIBILITY_REASON_CASE(kUserManaged);
     INELIGIBILITY_REASON_CASE(kUserTypeChild);
     INELIGIBILITY_REASON_CASE(kUserTypeGuest);
@@ -846,14 +880,33 @@ class ContainerAppInteractiveUiIneligibilityTest
       public WithParamInterface<IneligibilityReason> {
  public:
   ContainerAppInteractiveUiIneligibilityTest()
-      : ContainerAppInteractiveUiTestBase(GetLoginType()) {
+      : ContainerAppInteractiveUiTestBase(GetLoginType(),
+                                          ShouldIgnoreFeatureDebugKey()) {
     scoped_feature_list_.InitWithFeatureStates(
-        {{chromeos::features::kContainerAppPreinstall, IsFeatureFlagDisabled()},
+        {{chromeos::features::kContainerAppPreinstall, IsFeatureFlagEnabled()},
+         {chromeos::features::kContainerAppPreinstallDebug,
+          IsFeatureDebugFlagEnabled()},
          {chromeos::features::kFeatureManagementContainerAppPreinstall,
-          IsFeatureManagementFlagDisabled()}});
+          IsFeatureManagementFlagEnabled()}});
   }
 
  private:
+  // ContainerAppInteractiveUiTestBase:
+  void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
+    ContainerAppInteractiveUiTestBase::SetUpDefaultCommandLine(command_line);
+
+    // Feature debug key.
+    if (IsFeatureDebugKeyEmpty()) {
+      command_line->AppendSwitchASCII(
+          chromeos::switches::kContainerAppPreinstallDebugKey,
+          base::EmptyString());
+    } else if (IsFeatureDebugKeyIncorrect()) {
+      command_line->AppendSwitchASCII(
+          chromeos::switches::kContainerAppPreinstallDebugKey,
+          "<INCORRECT_KEY>");
+    }
+  }
+
   void SetUpOnMainThread() override {
     // Web app preinstallation times out for child user types due to failure to
     // install some default web apps. Since this test suite only cares about the
@@ -883,15 +936,50 @@ class ContainerAppInteractiveUiIneligibilityTest
     }
   }
 
-  // Returns whether the feature flag is disabled given test parameterization.
-  bool IsFeatureFlagDisabled() const {
-    return GetParam() == IneligibilityReason::kFeatureFlagDisabled;
+  // Returns whether the feature debug flag is enabled given test
+  // parameterization.
+  bool IsFeatureDebugFlagEnabled() const {
+    return GetParam() !=
+           IneligibilityReason::kFeatureDebugAndManagementFlagsDisabled;
   }
 
-  // Returns whether the feature management flag is disabled given test
+  // Returns whether the feature debug key is empty given test
   // parameterization.
-  bool IsFeatureManagementFlagDisabled() const {
-    return GetParam() == IneligibilityReason::kFeatureManagementFlagDisabled;
+  bool IsFeatureDebugKeyEmpty() const {
+    return GetParam() == IneligibilityReason::kFeatureDebugKeyEmpty;
+  }
+
+  // Returns whether the feature debug key is incorrect given test
+  // parameterization.
+  bool IsFeatureDebugKeyIncorrect() const {
+    return GetParam() == IneligibilityReason::kFeatureDebugKeyIncorrect;
+  }
+
+  // Returns whether the feature flag is enabled given test parameterization.
+  bool IsFeatureFlagEnabled() const {
+    return GetParam() != IneligibilityReason::kFeatureFlagDisabled;
+  }
+
+  // Returns whether the feature management flag is enabled given test
+  // parameterization.
+  bool IsFeatureManagementFlagEnabled() const {
+    // Disable the feature management flag when attempting to enable the feature
+    // via the debug flag. Otherwise the debug flag/key will not be considered.
+    if (!ShouldIgnoreFeatureDebugKey()) {
+      return false;
+    }
+    return GetParam() !=
+           IneligibilityReason::kFeatureDebugAndManagementFlagsDisabled;
+  }
+
+  // Returns whether the feature debug key should be ignored given test
+  // parameterization.
+  bool ShouldIgnoreFeatureDebugKey() const {
+    return !std::set<IneligibilityReason>(
+                {IneligibilityReason::kFeatureDebugKeyAbsent,
+                 IneligibilityReason::kFeatureDebugKeyEmpty,
+                 IneligibilityReason::kFeatureDebugKeyIncorrect})
+                .contains(GetParam());
   }
 
   // Used to enable/disable the container app preinstallation based on test
@@ -923,6 +1011,7 @@ IN_PROC_BROWSER_TEST_P(ContainerAppInteractiveUiIneligibilityTest,
   RunTestSequence(
       // Launch app list.
       DoDefaultAction(ash::kHomeButtonElementId),
+      WaitForShow(ash::kAppListBubbleViewElementId),
 
       // Find apps page.
       NameDescendantViewByType<ash::AppListBubbleAppsPage>(
@@ -961,5 +1050,3 @@ IN_PROC_BROWSER_TEST_P(ContainerAppInteractiveUiIneligibilityTest,
                    });
       }));
 }
-
-// TODO(http://b/331668699): Test container app position for existing users.

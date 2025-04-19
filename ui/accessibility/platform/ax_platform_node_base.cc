@@ -905,56 +905,6 @@ bool AXPlatformNodeBase::IsStructuredAnnotation() const {
   return !reverse_relations.empty();
 }
 
-// TODO(accessibility): This is only used in AXPlatformNodeWin and therefore
-// should be moved there.
-bool AXPlatformNodeBase::IsSelectionItemSupported() const {
-  switch (GetRole()) {
-    // An ARIA 1.1+ role of "cell", or a role of "row" inside
-    // an ARIA 1.1 role of "table", should not be selectable.
-    // ARIA "table" is not interactable, ARIA "grid" is.
-    case ax::mojom::Role::kCell:
-    case ax::mojom::Role::kColumnHeader:
-    case ax::mojom::Role::kRow:
-    case ax::mojom::Role::kRowHeader: {
-      // An ARIA grid subwidget is only selectable if explicitly marked as
-      // selected (or not) with the aria-selected property.
-      if (!HasBoolAttribute(ax::mojom::BoolAttribute::kSelected))
-        return false;
-
-      AXPlatformNodeBase* table = GetTable();
-      if (!table)
-        return false;
-
-      return table->GetRole() == ax::mojom::Role::kGrid ||
-             table->GetRole() == ax::mojom::Role::kTreeGrid;
-    }
-    // https://www.w3.org/TR/core-aam-1.1/#mapping_state-property_table
-    // SelectionItem.IsSelected is exposed when aria-checked is True or False,
-    // for 'radio' and 'menuitemradio' roles.
-    case ax::mojom::Role::kRadioButton:
-    case ax::mojom::Role::kMenuItemRadio: {
-      if (GetData().GetCheckedState() == ax::mojom::CheckedState::kTrue ||
-          GetData().GetCheckedState() == ax::mojom::CheckedState::kFalse)
-        return true;
-      return false;
-    }
-    // https://www.w3.org/TR/wai-aria-1.1/#aria-selected
-    // SelectionItem.IsSelected is exposed when aria-select is True or False.
-    case ax::mojom::Role::kListBoxOption:
-    case ax::mojom::Role::kListItem:
-    case ax::mojom::Role::kMenuListOption:
-    case ax::mojom::Role::kTreeItem:
-      return HasBoolAttribute(ax::mojom::BoolAttribute::kSelected);
-    case ax::mojom::Role::kTab:
-      // According to the UIA documentation, this role should always support the
-      // SelectionItem control pattern:
-      // https://learn.microsoft.com/en-us/windows/win32/winauto/uiauto-supporttabitemcontroltype#required-control-patterns.
-      return true;
-    default:
-      return false;
-  }
-}
-
 bool AXPlatformNodeBase::IsTextField() const {
   return GetData().IsTextField();
 }
@@ -1267,6 +1217,9 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
         break;
       case ax::mojom::DescriptionFrom::kButtonLabel:
         from = "button-label";
+        break;
+      case ax::mojom::DescriptionFrom::kProhibitedNameRepair:
+        from = "prohibited-name-repair";
         break;
       case ax::mojom::DescriptionFrom::kRelatedElement:
         // aria-describedby=tooltip is mapped to "tooltip".
@@ -1965,9 +1918,9 @@ int AXPlatformNodeBase::GetHypertextOffsetFromEndpoint(
     return hypertext_offset;
   }
 
-  // Case 3. Is the selection endpoint in a completely different part of the
-  // tree?
-  //
+  // Case 3. Selection endpoint is in a completely different part of the tree:
+  // - Return 0 if it's in an earlier part of the tree.
+  // - Return GetHypertext.size() if it's in a later part of the tree.
   // We can safely assume that the endpoint is in another part of the tree or
   // at common parent, and that this object is a descendant of common parent.
   std::optional<size_t> endpoint_index_in_common_parent;
@@ -1979,15 +1932,27 @@ int AXPlatformNodeBase::GetHypertextOffsetFromEndpoint(
     }
   }
 
-  if (endpoint_index_in_common_parent < index_in_common_parent)
+  if (endpoint_index_in_common_parent < index_in_common_parent) {
+    // In earlier point in tree than endpoint_object.
     return 0;
-  if (endpoint_index_in_common_parent > index_in_common_parent)
+  }
+  if (endpoint_index_in_common_parent > index_in_common_parent) {
+    // In later point in the tree than endpoint_object.
     return static_cast<int>(GetHypertext().size());
+  }
 
   // TODO(crbug.com/40897578): Make sure this doesn't fire then turn the last
   // conditional into a CHECK_GT(endpoint_index_in_common_parent,
   // index_in_common_parent); and remove this code path.
-  DUMP_WILL_BE_NOTREACHED_NORETURN();
+  DUMP_WILL_BE_NOTREACHED()
+      << "Was not in descendant, so the endpoint_index_in_common_parent should "
+         "be < or > than the index_in_common_parent:\n"
+      << "\n* This: " << this << "\n* Endpoint object: " << endpoint_object
+      << "\n* Endpoint offset: " << endpoint_offset
+      << "\n* Common parent: " << common_parent
+      << "\n* Index in common parent: " << index_in_common_parent.value_or(-99)
+      << "\n* Endpoint in common parent: "
+      << endpoint_index_in_common_parent.value_or(-99);
   return -1;
 }
 
@@ -2369,13 +2334,14 @@ ui::TextAttributeList AXPlatformNodeBase::ComputeTextAttributes() const {
   ui::TextAttributeList attributes;
 
   // From the IA2 Spec:
-  //
   // Occasionally, word processors will automatically generate characters which
   // appear on a line along with editable text. The characters are not
   // themselves editable, but are part of the document. The most common examples
   // of automatically inserted characters are in bulleted and numbered lists.
-  if (IsTextField() &&
-      HasBoolAttribute(ax::mojom::BoolAttribute::kNotUserSelectableStyle)) {
+  if (HasBoolAttribute(ax::mojom::BoolAttribute::kNotUserSelectableStyle)) {
+    // From IA2 text attribute guide:
+    // this attribute's value is “true” for list bullet/numbering prefix text or
+    // layout-inserted text such as via the CSS pseudo styles :before or :after.
     attributes.emplace_back("auto-generated", "true");
   }
 

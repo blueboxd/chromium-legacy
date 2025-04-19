@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/modules/mediastream/media_stream_audio_processor.h"
 
 #include <stddef.h>
@@ -215,9 +220,9 @@ TEST_P(MediaStreamAudioProcessorTestMultichannel, MAYBE_WithAudioProcessing) {
   const int expected_output_channels =
       use_multichannel_processing ? params_.channels() : 1;
   ProcessDataAndVerifyFormat(*audio_processor, mock_capture_callback_,
-                             media::kAudioProcessingSampleRateHz,
+                             media::WebRtcAudioProcessingSampleRateHz(),
                              expected_output_channels,
-                             media::kAudioProcessingSampleRateHz / 100);
+                             media::WebRtcAudioProcessingSampleRateHz() / 100);
 
   // Stop |audio_processor| so that it removes itself from
   // |webrtc_audio_device| and clears its pointer to it.
@@ -291,9 +296,9 @@ TEST_P(MediaStreamAudioProcessorTestMultichannel, MAYBE_TestAllSampleRates) {
     // logic here.
     int expected_sample_rate =
 #if BUILDFLAG(IS_CASTOS) || BUILDFLAG(IS_CAST_ANDROID)
-        std::min(sample_rate, media::kAudioProcessingSampleRateHz);
+        std::min(sample_rate, media::WebRtcAudioProcessingSampleRateHz());
 #else
-        media::kAudioProcessingSampleRateHz;
+        media::WebRtcAudioProcessingSampleRateHz();
 #endif  // BUILDFLAG(IS_CASTOS) || BUILDFLAG(IS_CAST_ANDROID)
     const int expected_output_channels =
         use_multichannel_processing ? params_.channels() : 1;

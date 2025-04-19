@@ -72,6 +72,7 @@ constexpr char kAppListSortDiscoveryDurationAfterNudgeClamshell[] =
 constexpr char kAppListSortDiscoveryDurationAfterNudgeTablet[] =
     "Apps.AppList.SortDiscoveryDurationAfterEducationNudgeV2.TabletMode";
 
+// LINT.IfChange(SearchSessionConclusion)
 std::string SearchSessionConclusionToString(
     SearchSessionConclusion conclusion) {
   switch (conclusion) {
@@ -83,6 +84,7 @@ std::string SearchSessionConclusionToString(
       return "AnswerCardSeen";
   }
 }
+// LINT.ThenChange(//tools/metrics/histograms/metadata/apps/enums.xml:LauncherSearchSessionConclusion)
 
 bool IsAppListShowSourceUserTriggered(AppListShowSource show_source) {
   switch (show_source) {
@@ -106,7 +108,7 @@ void RecordSearchResultOpenTypeHistogram(AppListLaunchedFrom launch_location,
                                          SearchResultType type,
                                          bool is_tablet_mode) {
   if (type == SEARCH_RESULT_TYPE_BOUNDARY) {
-    DUMP_WILL_BE_NOTREACHED_NORETURN();
+    DUMP_WILL_BE_NOTREACHED();
     return;
   }
 
@@ -149,7 +151,7 @@ void RecordSearchResultOpenTypeHistogram(AppListLaunchedFrom launch_location,
 
 void RecordDefaultSearchResultOpenTypeHistogram(SearchResultType type) {
   if (type == SEARCH_RESULT_TYPE_BOUNDARY) {
-    DUMP_WILL_BE_NOTREACHED_NORETURN();
+    DUMP_WILL_BE_NOTREACHED();
     return;
   }
   UMA_HISTOGRAM_ENUMERATION(kAppListDefaultSearchResultOpenTypeHistogram, type,

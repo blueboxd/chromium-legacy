@@ -27,12 +27,6 @@ BASE_DECLARE_FEATURE(kRunOnMainThreadSync);
 #define URGENT_DISCARDING_FROM_PERFORMANCE_MANAGER() true
 #endif
 
-// Enables urgent discarding of pages directly from PerformanceManager rather
-// than via TabManager on Ash Chrome.
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-BASE_DECLARE_FEATURE(kAshUrgentDiscardingFromPerformanceManager);
-#endif
-
 // When enabled removes the rate limit on reporting tab processes to resourced.
 #if BUILDFLAG(IS_CHROMEOS)
 BASE_DECLARE_FEATURE(kUnthrottledTabProcessReporting);
@@ -47,9 +41,6 @@ BASE_DECLARE_FEATURE(kBackgroundTabLoadingFromPerformanceManager);
 // toggling it.
 BASE_DECLARE_FEATURE(kBatterySaverModeAvailable);
 
-// If enabled, makes battery saver request render process tuning.
-BASE_DECLARE_FEATURE(kBatterySaverModeRenderTuning);
-
 // Flag to control a baseline HaTS survey for Chrome performance.
 BASE_DECLARE_FEATURE(kPerformanceControlsPerformanceSurvey);
 BASE_DECLARE_FEATURE(kPerformanceControlsBatteryPerformanceSurvey);
@@ -61,32 +52,29 @@ BASE_DECLARE_FEATURE(kPerformanceControlsBatterySaverOptOutSurvey);
 extern const base::FeatureParam<base::TimeDelta>
     kPerformanceControlsBatterySurveyLookback;
 
-// Round 2 Performance Controls features
-
-// This enables the UI for the multi-state version of memory saver mode.
-BASE_DECLARE_FEATURE(kMemorySaverMultistateMode);
-// When true, a recommended badge will be shown next to the heuristic memory
-// saver option.
-extern const base::FeatureParam<bool> kMemorySaverShowRecommendedBadge;
-
-// Round 2.5 Performance Controls features
-
-// This enables the UI for adjusting the aggresiveness of memory saver mode.
-BASE_DECLARE_FEATURE(kMemorySaverModeAggressiveness);
-
-// Whether to enable showing improvements to the discarded tab indicator, namely
-// increasing the size of the favicon, as well as removing the transparency and
-// updating the color of the discard ring.
-BASE_DECLARE_FEATURE(kDiscardRingImprovements);
-
 // Round 3 Performance Controls features
 
-// This enables the performance controls side panel for learning about and
-// configuring performance settings.
-BASE_DECLARE_FEATURE(kPerformanceControlsSidePanel);
-
-// This enables the performance detection backend and interventions UI.
+// This enables the performance detection backend.
 BASE_DECLARE_FEATURE(kPerformanceIntervention);
+
+// This enables the performance intervention UI
+BASE_DECLARE_FEATURE(kPerformanceInterventionUI);
+
+// This enables performance intervention to run in demo mode. While in demo
+// mode, performance intervention will ignore rate throttling and CPU thresholds
+// to make it easier to trigger performance intervention for testing purposes.
+BASE_DECLARE_FEATURE(kPerformanceInterventionDemoMode);
+
+bool ShouldUsePerformanceInterventionBackend();
+
+// This represents the version number for the string displayed on the
+// Performance Intervention Dialog.
+extern const base::FeatureParam<int> kInterventionDialogStringVersion;
+
+// This represents whether we should show the performance intervention
+// UI when the suggested tabs to take action on include tabs from a
+// profile that is different from the last active browser.
+extern const base::FeatureParam<bool> kInterventionShowMixedProfileSuggestions;
 
 #if BUILDFLAG(IS_WIN)
 // Prefetch the main browser DLL when a new node is added to the PM graph
@@ -165,6 +153,12 @@ extern const base::FeatureParam<double>
 // When enabled, browsing instances with high CPU usage in background are frozen
 // when Battery Saver is active. Depends on kCPUMeasurementInFreezingPolicy.
 BASE_DECLARE_FEATURE(kFreezingOnBatterySaver);
+
+// This is the similar to `kFreezingOnBatterySaver`, with some changes to
+// facilitate testing:
+// - Pretend that Battery Saver is active even if it's not.
+// - Pretend that all tabs have high CPU usage in background.
+BASE_DECLARE_FEATURE(kFreezingOnBatterySaverForTesting);
 
 // When enabled, Resource Attribution measurements will include contexts for
 // individual origins.

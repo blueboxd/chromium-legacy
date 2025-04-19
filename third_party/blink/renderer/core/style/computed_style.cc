@@ -63,7 +63,6 @@
 #include "third_party/blink/renderer/core/paint/compositing/compositing_reason_finder.h"
 #include "third_party/blink/renderer/core/style/applied_text_decoration.h"
 #include "third_party/blink/renderer/core/style/basic_shapes.h"
-#include "third_party/blink/renderer/core/style/border_edge.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/style/computed_style_initial_values.h"
 #include "third_party/blink/renderer/core/style/content_data.h"
@@ -169,7 +168,7 @@ const ComputedStyle* ComputedStyle::GetInitialStyleSingleton() {
       ThreadSpecific<Persistent<const ComputedStyle>>,
       thread_specific_initial_style, ());
   Persistent<const ComputedStyle>& persistent = *thread_specific_initial_style;
-  if (UNLIKELY(!persistent)) {
+  if (!persistent) [[unlikely]] {
     persistent = MakeGarbageCollected<ComputedStyle>(PassKey());
     LEAK_SANITIZER_IGNORE_OBJECT(&persistent);
   }
@@ -197,7 +196,7 @@ const ComputedStyle* ComputedStyle::GetInitialStyleForImgSingleton() {
       ThreadSpecific<Persistent<const ComputedStyle>>,
       thread_specific_initial_style, ());
   Persistent<const ComputedStyle>& persistent = *thread_specific_initial_style;
-  if (UNLIKELY(!persistent)) {
+  if (!persistent) [[unlikely]] {
     persistent = BuildInitialStyleForImg(*GetInitialStyleSingleton());
     LEAK_SANITIZER_IGNORE_OBJECT(&persistent);
   }
@@ -217,34 +216,6 @@ Vector<AtomicString>& ComputedStyle::EnsureVariableNamesCache() const {
         std::make_unique<Vector<AtomicString>>();
   }
   return *cached_data_->variable_names_;
-}
-
-const ComputedStyle* ComputedStyle::AddCachedPositionFallbackStyle(
-    const ComputedStyle* style,
-    unsigned index) const {
-  EnsurePositionFallbackStyleCache(index + 1)[index] = style;
-  return (*cached_data_->position_fallback_styles_)[index].Get();
-}
-
-const ComputedStyle* ComputedStyle::GetCachedPositionFallbackStyle(
-    unsigned index) const {
-  if (!cached_data_ || !cached_data_->position_fallback_styles_ ||
-      index >= cached_data_->position_fallback_styles_->size()) {
-    return nullptr;
-  }
-  return (*cached_data_->position_fallback_styles_)[index].Get();
-}
-
-PositionFallbackStyleCache& ComputedStyle::EnsurePositionFallbackStyleCache(
-    unsigned ensure_size) const {
-  if (!cached_data_ || !cached_data_->position_fallback_styles_) {
-    EnsureCachedData().position_fallback_styles_ =
-        MakeGarbageCollected<PositionFallbackStyleCache>();
-  }
-  if (cached_data_->position_fallback_styles_->size() < ensure_size) {
-    cached_data_->position_fallback_styles_->resize(ensure_size);
-  }
-  return *cached_data_->position_fallback_styles_;
 }
 
 ALWAYS_INLINE ComputedStyle::ComputedStyle() = default;
@@ -300,7 +271,9 @@ static bool PseudoElementStylesEqual(const ComputedStyle& old_style,
 static bool DiffAffectsContainerQueries(const ComputedStyle& old_style,
                                         const ComputedStyle& new_style) {
   if (!old_style.IsContainerForSizeContainerQueries() &&
-      !new_style.IsContainerForSizeContainerQueries()) {
+      !new_style.IsContainerForSizeContainerQueries() &&
+      !old_style.IsContainerForScrollStateContainerQueries() &&
+      !new_style.IsContainerForScrollStateContainerQueries()) {
     return false;
   }
   if (!base::ValuesEquivalent(old_style.ContainerName(),
@@ -359,7 +332,7 @@ bool ComputedStyle::NeedsReattachLayoutTree(const Element& element,
   if (old_style->HasTextCombine() != new_style->HasTextCombine()) {
     return true;
   }
-  if (!old_style->ScrollMarkersEqual(*new_style)) {
+  if (!old_style->ScrollMarkerGroupEqual(*new_style)) {
     return true;
   }
   // line-clamping is currently only handled by LayoutDeprecatedFlexibleBox,
@@ -386,10 +359,10 @@ bool ComputedStyle::NeedsReattachLayoutTree(const Element& element,
 
   // LayoutObject tree structure for <legend> depends on whether it's a
   // rendered legend or not.
-  if (UNLIKELY(IsA<HTMLLegendElement>(element) &&
-               (old_style->IsFloating() != new_style->IsFloating() ||
-                old_style->HasOutOfFlowPosition() !=
-                    new_style->HasOutOfFlowPosition()))) {
+  if (IsA<HTMLLegendElement>(element) &&
+      (old_style->IsFloating() != new_style->IsFloating() ||
+       old_style->HasOutOfFlowPosition() != new_style->HasOutOfFlowPosition()))
+      [[unlikely]] {
     return true;
   }
 
@@ -756,22 +729,6 @@ const ComputedStyle* ComputedStyle::GetCachedPseudoElementStyle(
   return nullptr;
 }
 
-bool ComputedStyle::CachedPseudoElementStylesDependOnFontMetrics() const {
-  if (!HasCachedPseudoElementStyles()) {
-    return false;
-  }
-
-  DCHECK_EQ(StyleType(), kPseudoIdNone);
-
-  for (const auto& pseudo_style : *GetPseudoElementStyleCache()) {
-    if (pseudo_style->DependsOnFontMetrics()) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
 const ComputedStyle* ComputedStyle::AddCachedPseudoElementStyle(
     const ComputedStyle* pseudo,
     PseudoId pseudo_id,
@@ -989,6 +946,14 @@ StyleDifference ComputedStyle::VisualInvalidationDiff(
     diff.SetZIndexChanged();
   }
 
+  // If the (current)color changes and a filter uses it, the filter needs to be
+  // updated. This reads `diff.TextDecorationOrColorChanged()` and so needs to
+  // be after the setters, above.
+  if (diff.TextDecorationOrColorChanged() && HasFilter() &&
+      Filter().UsesCurrentColor()) {
+    diff.SetFilterChanged();
+  }
+
   // The following condition needs to be at last, because it may depend on
   // conditions in diff computed above.
   if ((field_diff & kScrollAnchor) || diff.TransformChanged()) {
@@ -1163,11 +1128,14 @@ bool ComputedStyle::DiffNeedsNormalPaintInvalidation(
   }
 
   if (field_diff & kBackgroundCurrentColor) {
-    // If the background image depends on currentColor
-    // (e.g., background-image: linear-gradient(currentColor, #fff)), and the
-    // color has changed, we need to recompute it even though VisuallyEqual()
+    // If the background-image or background-color depends on currentColor
+    // (e.g., background-image: linear-gradient(currentColor, #fff) or
+    // background-color: color-mix(in srgb, currentcolor ...)), and the color
+    // has changed, we need to recompute it even though VisuallyEqual()
     // thinks the old and new background styles are identical.
-    if (BackgroundInternal().AnyLayerUsesCurrentColor() &&
+    if ((BackgroundInternal().AnyLayerUsesCurrentColor() ||
+         BackgroundColor().IsUnresolvedColorMixFunction() ||
+         InternalVisitedBackgroundColor().IsUnresolvedColorMixFunction()) &&
         (GetCurrentColor() != other.GetCurrentColor() ||
          GetInternalVisitedCurrentColor() !=
              other.GetInternalVisitedCurrentColor())) {
@@ -2627,7 +2595,7 @@ bool ComputedStyle::BorderObscuresBackground() const {
     return false;
   }
 
-  BorderEdge edges[4];
+  BorderEdgeArray edges;
   GetBorderEdgeInfo(edges);
 
   for (unsigned int i = static_cast<unsigned>(BoxSide::kTop);
@@ -2661,7 +2629,7 @@ PhysicalBoxStrut ComputedStyle::BoxDecorationOutsets() const {
   return outsets;
 }
 
-void ComputedStyle::GetBorderEdgeInfo(BorderEdge edges[],
+void ComputedStyle::GetBorderEdgeInfo(BorderEdgeArray& edges,
                                       PhysicalBoxSides sides_to_include) const {
   edges[static_cast<unsigned>(BoxSide::kTop)] = BorderEdge(
       BorderTopWidth(), VisitedDependentColor(GetCSSPropertyBorderTopColor()),
@@ -2741,14 +2709,28 @@ const AtomicString& ComputedStyle::ListStyleStringValue() const {
   return ListStyleType()->GetStringValue();
 }
 
-bool ComputedStyle::MarkerShouldBeInside(const Element& parent) const {
+bool ComputedStyle::MarkerShouldBeInside(
+    const Element& parent,
+    const DisplayStyle& marker_style) const {
   // https://w3c.github.io/csswg-drafts/css-lists/#list-style-position-outside
   // > If the list item is an inline box: this value is equivalent to inside.
-  if (Display() == EDisplay::kInlineListItem) {
+  if (Display() == EDisplay::kInlineListItem ||
+      ListStylePosition() == EListStylePosition::kInside) {
     return true;
   }
-  return ListStylePosition() == EListStylePosition::kInside ||
-         (IsA<HTMLLIElement>(parent) && !IsInsideListElement());
+  // Force the marker of <li> elements with no <ol> or <ul> ancestor to have
+  // an inside position.
+  // TODO(crbug.com/41241289): This quirk predates WebKit, it was added to match
+  // the behavior of the Internet Explorer from that time. However, Microsoft
+  // ended up removing it (before switching to Blink), and Firefox never had it,
+  // so it may be possible to get rid of it.
+  if (IsA<HTMLLIElement>(parent) && !IsInsideListElement() &&
+      PseudoElementLayoutObjectIsNeeded(kPseudoIdMarker, marker_style,
+                                        &parent)) {
+    parent.GetDocument().CountUse(WebFeature::kInsideListMarkerPositionQuirk);
+    return true;
+  }
+  return false;
 }
 
 std::optional<blink::Color> ComputedStyle::AccentColorResolved() const {
@@ -2812,7 +2794,7 @@ bool ComputedStyle::CanMatchSizeContainerQueries(const Element& element) const {
 bool ComputedStyle::IsInterleavingRoot(const ComputedStyle* style) {
   const ComputedStyle* unensured = ComputedStyle::NullifyEnsured(style);
   return unensured && (unensured->IsContainerForSizeContainerQueries() ||
-                       unensured->GetPositionTryOptions() ||
+                       unensured->GetPositionTryFallbacks() ||
                        unensured->HasAnchorFunctions());
 }
 
@@ -2976,7 +2958,9 @@ bool ComputedStyleBuilder::SetEffectiveZoom(float f) {
 // Compute the FontOrientation from this style. It's derived from WritingMode
 // and TextOrientation.
 FontOrientation ComputedStyleBuilder::ComputeFontOrientation() const {
-  if (blink::IsHorizontalWritingMode(GetWritingMode())) {
+  // https://drafts.csswg.org/css-writing-modes/#propdef-text-orientation
+  // > the property has no effect in horizontal typographic modes.
+  if (IsHorizontalTypographicMode(GetWritingMode())) {
     return FontOrientation::kHorizontal;
   }
   switch (GetTextOrientation()) {
@@ -3074,11 +3058,9 @@ void ComputedStyleBuilder::SetUsedColorScheme(
 
   SetColorSchemeForced(forced_scheme);
 
-  if (RuntimeEnabledFeatures::UsedColorSchemeRootScrollbarsEnabled()) {
-    const bool is_normal =
-        flags == static_cast<ColorSchemeFlags>(ColorSchemeFlag::kNormal);
-    SetColorSchemeFlagsIsNormal(is_normal);
-  }
+  const bool is_normal =
+      flags == static_cast<ColorSchemeFlags>(ColorSchemeFlag::kNormal);
+  SetColorSchemeFlagsIsNormal(is_normal);
 }
 
 CSSVariableData* ComputedStyleBuilder::GetVariableData(

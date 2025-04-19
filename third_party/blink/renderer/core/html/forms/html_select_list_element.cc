@@ -431,7 +431,7 @@ void HTMLSelectListElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {
       MakeGarbageCollected<PreviewPopoverInnerElement>(document);
   suggested_option_popover_->setAttribute(html_names::kPopoverAttr,
                                           keywords::kManual);
-  suggested_option_popover_->SetPopoverOwnerSelectListElement(this);
+  suggested_option_popover_->SetInternalImplicitAnchor(this);
   suggested_option_popover_->SetShadowPseudoId(
       AtomicString("-internal-selectlist-preview"));
   root.AppendChild(suggested_option_popover_);
@@ -606,11 +606,11 @@ bool HTMLSelectListElement::SetListboxPart(HTMLElement* new_listbox_part) {
     return false;
 
   if (listbox_part_) {
-    listbox_part_->SetPopoverOwnerSelectListElement(nullptr);
+    listbox_part_->SetInternalImplicitAnchor(nullptr);
   }
 
   if (new_listbox_part) {
-    new_listbox_part->SetPopoverOwnerSelectListElement(this);
+    new_listbox_part->SetInternalImplicitAnchor(this);
   } else {
     QueueCheckForMissingParts();
   }
@@ -909,7 +909,7 @@ void HTMLSelectListElement::OptionPartInserted(
     return;
   }
 
-  new_option_part->OptionInsertedIntoSelectListElementOrSelectDatalist();
+  new_option_part->OptionInsertedIntoSelectListElement();
   option_part_listener_->AddEventListeners(new_option_part);
 
   // TODO(crbug.com/1191131) The option part list should match the flat tree
@@ -936,7 +936,7 @@ void HTMLSelectListElement::OptionPartRemoved(HTMLOptionElement* option_part) {
     return;
   }
 
-  option_part->OptionRemovedFromSelectListElementOrSelectDatalist();
+  option_part->OptionRemovedFromSelectListElement();
   option_part_listener_->RemoveEventListeners(option_part);
   option_parts_.erase(option_part);
 

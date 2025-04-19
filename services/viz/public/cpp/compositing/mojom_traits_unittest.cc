@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include <utility>
 
 #include "base/functional/bind.h"
@@ -368,8 +373,7 @@ TEST_F(StructTraitsTest, CopyOutputRequest_TextureRequest) {
 
   output->SendResult(std::make_unique<CopyOutputTextureResult>(
       result_format, result_rect,
-      CopyOutputResult::TextureResult(mailbox, sync_token,
-                                      gfx::ColorSpace::CreateSRGB()),
+      CopyOutputResult::TextureResult(mailbox, gfx::ColorSpace::CreateSRGB()),
       std::move(release_callbacks)));
 
   // Wait for the result to be delivered to the other side: The
@@ -609,7 +613,7 @@ TEST_F(StructTraitsTest, CompositorFrameTransitionDirective) {
   frame.metadata.transition_directives.push_back(
       CompositorFrameTransitionDirective::CreateSave(
           transition_token, /*maybe_cross_frame_sink=*/true, sequence_id,
-          {element}));
+          {element}, {}));
 
   // This ensures de-serialization succeeds if all passes are present.
   CompositorFrame output;
@@ -629,7 +633,7 @@ TEST_F(StructTraitsTest, CompositorFrameTransitionDirective) {
   frame.metadata.transition_directives.push_back(
       CompositorFrameTransitionDirective::CreateSave(
           transition_token, /*maybe_cross_frame_sink=*/true, sequence_id,
-          {element}));
+          {element}, {}));
 
   // This ensures de-serialization fails if a pass is missing.
   ASSERT_FALSE(mojo::test::SerializeAndDeserialize<mojom::CompositorFrame>(
@@ -705,7 +709,6 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   const float page_scale_factor = 1337.5f;
   const gfx::SizeF scrollable_viewport_size(1337.7f, 1234.5f);
   const bool may_contain_video = true;
-  const bool is_resourceless_software_draw_with_scroll_or_animation = true;
   const SkColor4f root_background_color = {0.0f, 0.02f, 0.224f, 0.0f};
   ui::LatencyInfo latency_info;
   latency_info.set_trace_id(5);
@@ -731,8 +734,6 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   input.page_scale_factor = page_scale_factor;
   input.scrollable_viewport_size = scrollable_viewport_size;
   input.may_contain_video = may_contain_video;
-  input.is_resourceless_software_draw_with_scroll_or_animation =
-      is_resourceless_software_draw_with_scroll_or_animation;
   input.root_background_color = root_background_color;
   input.latency_info = latency_infos;
   input.referenced_surfaces = referenced_surfaces;
@@ -752,8 +753,6 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   EXPECT_EQ(page_scale_factor, output.page_scale_factor);
   EXPECT_EQ(scrollable_viewport_size, output.scrollable_viewport_size);
   EXPECT_EQ(may_contain_video, output.may_contain_video);
-  EXPECT_EQ(is_resourceless_software_draw_with_scroll_or_animation,
-            output.is_resourceless_software_draw_with_scroll_or_animation);
   EXPECT_EQ(root_background_color, output.root_background_color);
   EXPECT_EQ(latency_infos.size(), output.latency_info.size());
   EXPECT_TRUE(output.latency_info[0].FindLatency(
@@ -1512,8 +1511,7 @@ TEST_F(StructTraitsTest, CopyOutputResult_Texture) {
   std::unique_ptr<CopyOutputResult> input =
       std::make_unique<CopyOutputTextureResult>(
           CopyOutputResult::Format::RGBA, result_rect,
-          CopyOutputResult::TextureResult(mailbox, sync_token,
-                                          result_color_space),
+          CopyOutputResult::TextureResult(mailbox, result_color_space),
           std::move(release_callbacks));
 
   std::unique_ptr<CopyOutputResult> output;
@@ -1525,9 +1523,7 @@ TEST_F(StructTraitsTest, CopyOutputResult_Texture) {
             CopyOutputResult::Destination::kNativeTextures);
   EXPECT_EQ(output->rect(), result_rect);
   ASSERT_NE(output->GetTextureResult(), nullptr);
-  EXPECT_EQ(output->GetTextureResult()->mailbox_holders[0].mailbox, mailbox);
-  EXPECT_EQ(output->GetTextureResult()->mailbox_holders[0].sync_token,
-            sync_token);
+  EXPECT_EQ(output->GetTextureResult()->mailbox, mailbox);
   EXPECT_EQ(output->GetTextureResult()->color_space, result_color_space);
 
   CopyOutputResult::ReleaseCallbacks out_callbacks =

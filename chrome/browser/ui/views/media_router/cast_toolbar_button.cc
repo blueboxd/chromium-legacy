@@ -38,6 +38,8 @@ namespace {
 constexpr char kLoggerComponent[] = "CastToolbarButton";
 }
 
+using Severity = media_router::IssueInfo::Severity;
+
 // static
 std::unique_ptr<CastToolbarButton> CastToolbarButton::Create(Browser* browser) {
   // These objects may be null in tests.
@@ -46,10 +48,9 @@ std::unique_ptr<CastToolbarButton> CastToolbarButton::Create(Browser* browser) {
     return nullptr;
   }
 
-  std::unique_ptr<MediaRouterContextualMenu> context_menu =
-      MediaRouterContextualMenu::Create(
-          browser,
-          MediaRouterUIService::Get(browser->profile())->action_controller());
+  std::unique_ptr<CastContextualMenu> context_menu = CastContextualMenu::Create(
+      browser,
+      MediaRouterUIService::Get(browser->profile())->action_controller());
   return std::make_unique<CastToolbarButton>(
       browser, MediaRouterFactory::GetApiForBrowserContext(browser->profile()),
       std::move(context_menu));
@@ -58,7 +59,7 @@ std::unique_ptr<CastToolbarButton> CastToolbarButton::Create(Browser* browser) {
 CastToolbarButton::CastToolbarButton(
     Browser* browser,
     MediaRouter* media_router,
-    std::unique_ptr<MediaRouterContextualMenu> context_menu)
+    std::unique_ptr<CastContextualMenu> context_menu)
     : ToolbarButton(base::BindRepeating(&CastToolbarButton::ButtonPressed,
                                         base::Unretained(this)),
                     context_menu->CreateMenuModel(),
@@ -110,13 +111,12 @@ void CastToolbarButton::DeactivateIcon() {
 }
 
 void CastToolbarButton::OnIssue(const media_router::Issue& issue) {
-  current_issue_ = std::make_unique<media_router::IssueInfo>(issue.info());
+  issue_severity_ = issue.info().severity;
   UpdateIcon();
 }
 
 void CastToolbarButton::OnIssuesCleared() {
-  if (current_issue_)
-    current_issue_.reset();
+  issue_severity_.reset();
   UpdateIcon();
 }
 
@@ -156,11 +156,11 @@ void CastToolbarButton::OnMouseReleased(const ui::MouseEvent& event) {
 
 void CastToolbarButton::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
-    case ui::ET_GESTURE_TAP_DOWN:
+    case ui::EventType::kGestureTapDown:
       GetActionController()->KeepIconShownOnPressed();
       break;
-    case ui::ET_GESTURE_END:
-    case ui::ET_GESTURE_TAP_CANCEL:
+    case ui::EventType::kGestureEnd:
+    case ui::EventType::kGestureTapCancel:
       GetActionController()->MaybeHideIconOnReleased();
       break;
     default:
@@ -177,9 +177,6 @@ void CastToolbarButton::OnThemeChanged() {
 void CastToolbarButton::UpdateIcon() {
   if (!GetWidget())
     return;
-  using Severity = media_router::IssueInfo::Severity;
-  const auto severity =
-      current_issue_ ? current_issue_->severity : Severity::NOTIFICATION;
   bool is_frozen = false;
   for (const auto& route_id : tracked_mirroring_routes_) {
     MirroringMediaControllerHost* mirroring_controller_host =
@@ -193,10 +190,11 @@ void CastToolbarButton::UpdateIcon() {
   SkColor icon_color;
 
   const auto* const color_provider = GetColorProvider();
-  if (severity == Severity::NOTIFICATION && !has_local_route_) {
+  if ((!issue_severity_ || issue_severity_ == Severity::NOTIFICATION) &&
+      !has_local_route_) {
     new_icon = &vector_icons::kMediaRouterIdleChromeRefreshIcon;
     icon_color = gfx::kPlaceholderColor;
-  } else if (severity == Severity::WARNING) {
+  } else if (issue_severity_ == Severity::WARNING) {
     new_icon = &vector_icons::kMediaRouterWarningChromeRefreshIcon;
     icon_color = gfx::kPlaceholderColor;
   } else if (is_frozen) {
@@ -227,7 +225,7 @@ void CastToolbarButton::UpdateIcon() {
   UpdateLayoutInsetDelta();
 }
 
-MediaRouterActionController* CastToolbarButton::GetActionController() const {
+CastToolbarButtonController* CastToolbarButton::GetActionController() const {
   return MediaRouterUIService::Get(profile_)->action_controller();
 }
 

@@ -150,6 +150,9 @@ def NameIsTestOnly(name):
 
 
 def _MangleMethodName(type_resolver, name, param_types):
+  # E.g. java.util.List.reversed() has overloads that return different types.
+  if not param_types:
+    return name
   mangled_types = []
   for java_type in param_types:
     if java_type.primitive_name:
@@ -168,6 +171,7 @@ def _AssignMethodIdFunctionNames(type_resolver, called_by_natives):
             called_by_native.name, len(called_by_native.params))
 
   method_counts = collections.Counter(key(x) for x in called_by_natives)
+  cbn_by_name = collections.defaultdict(list)
 
   for called_by_native in called_by_natives:
     if called_by_native.is_constructor:
@@ -179,8 +183,14 @@ def _AssignMethodIdFunctionNames(type_resolver, called_by_natives):
       method_id_function_name = _MangleMethodName(
           type_resolver, method_id_function_name,
           called_by_native.signature.param_types)
+      cbn_by_name[method_id_function_name].append(called_by_native)
 
     called_by_native.method_id_function_name = method_id_function_name
+
+  # E.g. java.util.List.reversed() has overloads that return different types.
+  for duplicates in cbn_by_name.values():
+    for i, cbn in enumerate(duplicates[1:], 1):
+      cbn.method_id_function_name += str(i)
 
 
 class JniObject:
@@ -199,7 +209,8 @@ class JniObject:
 
     # These are different only for legacy reasons.
     if from_javap:
-      self.jni_namespace = options.namespace or 'JNI_' + self.java_class.name
+      self.jni_namespace = options.namespace or 'JNI_' + self.java_class.name.replace(
+          '$', '__')
     else:
       self.jni_namespace = parsed_file.jni_namespace or options.namespace
 
@@ -277,6 +288,8 @@ class JniObject:
         return 'Java_' + common.escape_class_name(
             f'{self.java_class.full_name_with_slashes}Jni/native{common.capitalize(native.name)}'
         )
+      elif self.options.enable_jni_multiplexing:
+        return f'Java_{method_name}'
       else:
         return 'Java_%s_%s' % (common.escape_class_name(
             self.final_gen_jni_class.full_name_with_slashes), method_name)
@@ -293,14 +306,14 @@ def _CollectReferencedClasses(jni_obj):
     ret.add(called_by_native.java_class)
     for param in called_by_native.params:
       java_type = param.java_type
-      if java_type.is_object_array() and java_type.converted_type():
+      if java_type.is_object_array() and java_type.converted_type:
         ret.add(java_type.java_class)
 
 
   # Find any classes needed for @JniType conversions.
   for native in jni_obj.proxy_natives:
     return_type = native.return_type
-    if return_type.is_object_array() and return_type.converted_type():
+    if return_type.is_object_array() and return_type.converted_type:
       ret.add(return_type.java_class)
   return sorted(ret)
 

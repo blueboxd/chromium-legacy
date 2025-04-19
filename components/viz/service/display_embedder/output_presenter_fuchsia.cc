@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/feature_list.h"
-#include "base/notreached.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "components/viz/service/display_embedder/skia_output_surface_dependency.h"
@@ -58,26 +57,14 @@ void OutputPresenterFuchsia::InitializeCapabilities(
   capabilities->supports_post_sub_buffer = false;
   capabilities->supports_surfaceless = true;
 
-  capabilities->sk_color_types[static_cast<int>(gfx::BufferFormat::RGBA_8888)] =
+  capabilities->sk_color_type_map[SinglePlaneFormat::kRGBA_8888] =
       kRGBA_8888_SkColorType;
-  capabilities->sk_color_types[static_cast<int>(gfx::BufferFormat::BGRA_8888)] =
+  capabilities->sk_color_type_map[SinglePlaneFormat::kBGRA_8888] =
       kRGBA_8888_SkColorType;
 }
 
-bool OutputPresenterFuchsia::Reshape(const SkImageInfo& image_info,
-                                     const gfx::ColorSpace& color_space,
-                                     int sample_count,
-                                     float device_scale_factor,
-                                     gfx::OverlayTransform transform) {
+bool OutputPresenterFuchsia::Reshape(const ReshapeParams& params) {
   return true;
-}
-
-std::vector<std::unique_ptr<OutputPresenter::Image>>
-OutputPresenterFuchsia::AllocateImages(gfx::ColorSpace color_space,
-                                       gfx::Size image_size,
-                                       size_t num_images) {
-  NOTREACHED_IN_MIGRATION();
-  return {};
 }
 
 void OutputPresenterFuchsia::Present(
@@ -94,13 +81,6 @@ void OutputPresenterFuchsia::Present(
       std::move(completion_callback), std::move(presentation_callback));
 
   next_frame_.reset();
-}
-
-void OutputPresenterFuchsia::SchedulePrimaryPlane(
-    const OverlayProcessorInterface::OutputSurfaceOverlayPlane& plane,
-    Image* image,
-    bool is_submitted) {
-  NOTREACHED_IN_MIGRATION();
 }
 
 void OutputPresenterFuchsia::ScheduleOverlayPlane(

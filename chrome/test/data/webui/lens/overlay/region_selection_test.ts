@@ -8,10 +8,13 @@ import type {Point, RectF} from '//resources/mojo/ui/gfx/geometry/mojom/geometry
 import {BrowserProxyImpl} from 'chrome-untrusted://lens/browser_proxy.js';
 import {CenterRotatedBox_CoordinateType} from 'chrome-untrusted://lens/geometry.mojom-webui.js';
 import type {CenterRotatedBox} from 'chrome-untrusted://lens/geometry.mojom-webui.js';
+import {UserAction} from 'chrome-untrusted://lens/lens.mojom-webui.js';
 import type {SelectionOverlayElement} from 'chrome-untrusted://lens/selection_overlay.js';
 import {loadTimeData} from 'chrome-untrusted://resources/js/load_time_data.js';
-import {assertDeepEquals, assertEquals} from 'chrome-untrusted://webui-test/chai_assert.js';
-import {waitAfterNextRender} from 'chrome-untrusted://webui-test/polymer_test_util.js';
+import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from 'chrome-untrusted://webui-test/chai_assert.js';
+import type {MetricsTracker} from 'chrome-untrusted://webui-test/metrics_test_support.js';
+import {fakeMetricsPrivate} from 'chrome-untrusted://webui-test/metrics_test_support.js';
+import {flushTasks, waitAfterNextRender} from 'chrome-untrusted://webui-test/polymer_test_util.js';
 
 import {getImageBoundingRect, simulateClick, simulateDrag} from '../utils/selection_utils.js';
 
@@ -23,6 +26,18 @@ const TAP_REGION_HEIGHT = 300;
 suite('ManualRegionSelection', function() {
   let testBrowserProxy: TestLensOverlayBrowserProxy;
   let selectionOverlayElement: SelectionOverlayElement;
+  let metrics: MetricsTracker;
+
+  async function waitForEvent(eventName: string, options = {}) {
+    return new Promise((resolve) => {
+      const listener = (event: Event) => {
+        document.removeEventListener(eventName, listener, options);
+        resolve(event);
+      };
+
+      document.addEventListener(eventName, listener, options);
+    });
+  }
 
   setup(() => {
     // Resetting the HTML needs to be the first thing we do in setup to
@@ -46,12 +61,10 @@ suite('ManualRegionSelection', function() {
     selectionOverlayElement = document.createElement('lens-selection-overlay');
     document.body.appendChild(selectionOverlayElement);
 
-    // Set image to be less than fullscreen so we can handle logic of drag
-    // ending off this element.
-    selectionOverlayElement.$.backgroundImage.style.height =
-        'calc(100vh - 100px)';
-    selectionOverlayElement.$.backgroundImage.style.width =
-        'calc(100vw - 100px)';
+    // Set image size manually in order to force the selection overlay visible.
+    selectionOverlayElement.$.backgroundImage.style.height = '100vh';
+    selectionOverlayElement.$.backgroundImage.style.width = '100vw';
+    metrics = fakeMetricsPrivate();
 
     return waitAfterNextRender(selectionOverlayElement);
   });
@@ -67,16 +80,48 @@ suite('ManualRegionSelection', function() {
     };
   }
 
+  // Asserts a CenterRotatedBox is equal to the other to a degree of precision.
+  function assertEquivalentRectangles(
+      expectedRect: CenterRotatedBox, actualRect: CenterRotatedBox,
+      precision: number) {
+    assertTrue(Math.abs(actualRect.box.x - expectedRect.box.x) <= precision);
+    assertTrue(Math.abs(actualRect.box.y - expectedRect.box.y) <= precision);
+    assertTrue(
+        Math.abs(actualRect.box.width - expectedRect.box.width) <= precision);
+    assertTrue(
+        Math.abs(actualRect.box.height - expectedRect.box.height) <= precision);
+    assertEquals(actualRect.rotation, expectedRect.rotation);
+    assertEquals(actualRect.coordinateType, expectedRect.coordinateType);
+  }
+
   // Does a drag and verifies that expectedRect is sent via mojo.
   async function assertDragGestureSendsRequest(
       fromPoint: Point, toPoint: Point, expectedRect: CenterRotatedBox) {
     // Ensures the whenCalled method returns because of our drag, not a leftover
     // call that already happened.
-    testBrowserProxy.handler.resetResolver('issueLensRequest');
+    testBrowserProxy.handler.resetResolver('issueLensRegionRequest');
 
     await simulateDrag(selectionOverlayElement, fromPoint, toPoint);
-    const rect = await testBrowserProxy.handler.whenCalled('issueLensRequest');
-    assertDeepEquals(expectedRect, rect);
+    await testBrowserProxy.handler.whenCalled('issueLensRegionRequest');
+    const requestRegion =
+        testBrowserProxy.handler.getArgs('issueLensRegionRequest')[0][0];
+    const isClick =
+        testBrowserProxy.handler.getArgs('issueLensRegionRequest')[0][1];
+    assertDeepEquals(expectedRect, requestRegion);
+    assertFalse(isClick);
+    assertEquals(1, metrics.count('Lens.Overlay.Overlay.UserAction'));
+    assertEquals(
+        1,
+        metrics.count(
+            'Lens.Overlay.Overlay.UserAction', UserAction.kRegionSelection));
+    assertEquals(
+        1,
+        metrics.count(
+            'Lens.Overlay.Overlay.ByInvocationSource.AppMenu.UserAction',
+            UserAction.kRegionSelection));
+    const action = await testBrowserProxy.handler.whenCalled(
+        'recordUkmAndTaskCompletionForLensOverlayInteraction');
+    assertEquals(UserAction.kRegionSelection, action);
   }
 
   // Does a click and verifies that expectedRect is sent via mojo.
@@ -84,11 +129,34 @@ suite('ManualRegionSelection', function() {
       point: Point, expectedRect: CenterRotatedBox) {
     // Ensures the whenCalled method returns because of our drag, not a leftover
     // call that already happened.
-    testBrowserProxy.handler.resetResolver('issueLensRequest');
+    testBrowserProxy.handler.resetResolver('issueLensRegionRequest');
 
     await simulateClick(selectionOverlayElement, point);
-    const rect = await testBrowserProxy.handler.whenCalled('issueLensRequest');
-    assertDeepEquals(expectedRect, rect);
+    await testBrowserProxy.handler.whenCalled('issueLensRegionRequest');
+    const requestRegion =
+        testBrowserProxy.handler.getArgs('issueLensRegionRequest')[0][0];
+    const isClick =
+        testBrowserProxy.handler.getArgs('issueLensRegionRequest')[0][1];
+
+    // Since tap to select can scale depending on the size of the canvas causing
+    // slight inaccuracies in our expected rectangle, compare the rectangles to
+    // a degree of precision rather than a deep equals.
+    assertEquivalentRectangles(
+        expectedRect, requestRegion, /*precision=*/ 0.0001);
+    assertTrue(isClick);
+    assertEquals(1, metrics.count('Lens.Overlay.Overlay.UserAction'));
+    assertEquals(
+        1,
+        metrics.count(
+            'Lens.Overlay.Overlay.UserAction', UserAction.kTapRegionSelection));
+    assertEquals(
+        1,
+        metrics.count(
+            'Lens.Overlay.Overlay.ByInvocationSource.AppMenu.UserAction',
+            UserAction.kTapRegionSelection));
+    const action = await testBrowserProxy.handler.whenCalled(
+        'recordUkmAndTaskCompletionForLensOverlayInteraction');
+    assertEquals(UserAction.kTapRegionSelection, action);
   }
 
   test('ClickShowsRegion', async () => {
@@ -111,13 +179,68 @@ suite('ManualRegionSelection', function() {
     await assertClickSendsRequest(pointInOverlay, expectedRect);
   });
 
-  test('ClickShowsRegionOverlayBiggerThanTapRegion', async () => {
+  test('ClickShowsScaledTapRegionOnResize', async () => {
+    const imageBounds = getImageBoundingRect(selectionOverlayElement);
+    const pointInOverlay = {
+      x: imageBounds.left,
+      y: imageBounds.top,
+    };
+
+    const expectedRect: CenterRotatedBox = {
+      box: normalizedBox({
+        x: TAP_REGION_WIDTH / 2,
+        y: TAP_REGION_HEIGHT / 2,
+        width: TAP_REGION_WIDTH,
+        height: TAP_REGION_HEIGHT,
+      }),
+      rotation: 0,
+      coordinateType: CenterRotatedBox_CoordinateType.kNormalized,
+    };
+    await assertClickSendsRequest(pointInOverlay, expectedRect);
+
+    // Resize the selection overlay but keep its proportions.
     selectionOverlayElement.$.backgroundImage.style.display = 'block';
-    selectionOverlayElement.$.backgroundImage.style.width = '100px';
-    selectionOverlayElement.$.backgroundImage.style.height = '100px';
+    selectionOverlayElement.$.backgroundImage.style.width =
+        'calc(100vw - 100px)';
+    selectionOverlayElement.$.backgroundImage.style.height =
+        'calc(100vh - 100px)';
     await waitAfterNextRender(selectionOverlayElement);
 
+    const newImageBounds = getImageBoundingRect(selectionOverlayElement);
+    const newPointInOverlay = {
+      x: newImageBounds.left,
+      y: newImageBounds.top,
+    };
+    const scaleFactor = Math.min(
+        newImageBounds.height / imageBounds.height,
+        newImageBounds.width / imageBounds.width);
+    // The new rectangle should just be a scaled version of the first expected
+    // rectangle.
+    const newRect: CenterRotatedBox = {
+      box: normalizedBox({
+        x: (TAP_REGION_WIDTH / 2) * scaleFactor,
+        y: (TAP_REGION_HEIGHT / 2) * scaleFactor,
+        width: TAP_REGION_WIDTH * scaleFactor,
+        height: TAP_REGION_HEIGHT * scaleFactor,
+      }),
+      rotation: 0,
+      coordinateType: CenterRotatedBox_CoordinateType.kNormalized,
+    };
+    // Reset metrics so we do not get events from previous click.
+    metrics = fakeMetricsPrivate();
+    await assertClickSendsRequest(newPointInOverlay, newRect);
+  });
+
+  test('ClickShowsRegionWhenTapRegionLargerThanOverlay', async () => {
     const imageBounds = getImageBoundingRect(selectionOverlayElement);
+    // Reset load time values to represent a region larger than our current
+    // bounds.
+    loadTimeData.overrideValues({
+      ['tapRegionWidth']: imageBounds.width + 1,
+      ['tapRegionHeight']: imageBounds.height + 1,
+    });
+    await flushTasks();
+
     const pointInOverlay = {
       x: imageBounds.left,
       y: imageBounds.top,
@@ -335,6 +458,10 @@ suite('ManualRegionSelection', function() {
       });
 
   test('verify canvas resizes', async () => {
+    // Wait for the flash animation to finish to avoid racing against the
+    // selection overlay setting the canvas size.
+    await waitForEvent('initial-flash-animation-end');
+
     selectionOverlayElement.$.regionSelectionLayer.setCanvasSizeTo(50, 50);
     await waitAfterNextRender(selectionOverlayElement.$.regionSelectionLayer);
     assertEquals(

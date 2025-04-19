@@ -10,6 +10,7 @@
 #include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/cpp/scoped_singleton_resetter_for_test.h"
 #include "ash/public/mojom/input_device_settings.mojom-forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/observer_list_types.h"
 
 class AccountId;
@@ -77,6 +78,13 @@ class ASH_PUBLIC_EXPORT InputDeviceSettingsController {
     virtual void OnMouseBatteryInfoChanged(const mojom::Mouse& mouse) {}
     virtual void OnTouchpadBatteryInfoChanged(const mojom::Touchpad& touchpad) {
     }
+    virtual void OnMouseCompanionAppInfoChanged(const mojom::Mouse& mouse) {}
+    virtual void OnKeyboardCompanionAppInfoChanged(
+        const mojom::Keyboard& keyboard) {}
+    virtual void OnTouchpadCompanionAppInfoChanged(
+        const mojom::Touchpad& touchpad) {}
+    virtual void OnGraphicsTabletCompanionAppInfoChanged(
+        const mojom::GraphicsTablet& graphics_tablet) {}
   };
 
   static InputDeviceSettingsController* Get();
@@ -174,6 +182,15 @@ class ASH_PUBLIC_EXPORT InputDeviceSettingsController {
   // `StartObservingButtons` has pressed a customizable button.
   virtual void OnGraphicsTabletButtonPressed(DeviceId device_id,
                                              const mojom::Button& button) = 0;
+
+  // Returns the device image as a Data URL. Returns an empty string if
+  // no device image exists.
+  virtual void GetDeviceImageDataUrl(
+      const std::string& device_key,
+      base::OnceCallback<void(const std::optional<std::string>&)> callback) = 0;
+
+  // Resets the tracking of device IDs associated with notification clicks.
+  virtual void ResetNotificationDeviceTracking() = 0;
 
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;

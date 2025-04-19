@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
 #include "courgette/adjustment_method.h"
@@ -1215,7 +1220,7 @@ class AssignmentProblem {
   Shingle::OwningSet shingle_instances_;
 
   // |instances_| maps from position in |trace_| to Shingle at that position.
-  std::vector<raw_ptr<Shingle, VectorExperimental>> instances_;
+  std::vector<raw_ptr<Shingle>> instances_;
 
   SingleUsePatternQueue single_use_pattern_queue_;
   ShinglePatternSet active_non_single_use_patterns_;

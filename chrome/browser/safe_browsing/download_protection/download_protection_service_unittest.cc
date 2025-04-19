@@ -15,6 +15,7 @@
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/containers/flat_map.h"
+#include "base/containers/span.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -3018,7 +3019,8 @@ TEST_F(DownloadProtectionServiceTest,
           safe_browsing::EventResult::BYPASSED),  // expected_result
       "",                                         // expected_username
       profile()->GetPath().AsUTF8Unsafe(),        // expected_profile_identifier
-      {} /* expected_scan_id */, std::nullopt /* content_transfer_reason */);
+      {} /* expected_scan_id */, std::nullopt /* content_transfer_reason */,
+      /*user_justification*/ std::nullopt);
 
   download_service_->MaybeSendDangerousDownloadOpenedReport(&item, false);
   EXPECT_EQ(1, sb_service_->download_report_count());
@@ -3136,7 +3138,8 @@ TEST_F(DownloadProtectionServiceTest,
           safe_browsing::EventResult::BYPASSED),  // expected_result
       "",                                         // expected_username
       profile()->GetPath().AsUTF8Unsafe(),        // expected_profile_identifier
-      {} /* expected_scan_id */, std::nullopt /* content_transfer_method */);
+      {} /* expected_scan_id */, std::nullopt /* content_transfer_method */,
+      /*user_justification*/ std::nullopt);
 
   download_service_->ReportDelayedBypassEvent(
       &item, download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_WARNING);
@@ -3200,7 +3203,8 @@ TEST_F(DownloadProtectionServiceTest,
           safe_browsing::EventResult::BYPASSED),  // expected_result
       "",                                         // expected_username
       profile()->GetPath().AsUTF8Unsafe(),        // expected_profile_identifier
-      {} /* expected_scan_id */, std::nullopt /* content_transfer_method */);
+      {} /* expected_scan_id */, std::nullopt /* content_transfer_method */,
+      /*user_justification*/ std::nullopt);
 
   download_service_->ReportDelayedBypassEvent(
       &item, download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK);
@@ -3389,7 +3393,10 @@ TEST_F(DownloadProtectionServiceTest,
   content::DownloadItemUtils::AttachInfoForTesting(&item, nullptr,
                                                    web_contents());
   std::unique_ptr<ReferrerChainData> referrer_chain_data =
-      IdentifyReferrerChain(item);
+      IdentifyReferrerChain(
+          item,
+          DownloadProtectionService::GetDownloadAttributionUserGestureLimit(
+              &item));
   ReferrerChain* referrer_chain = referrer_chain_data->GetReferrerChain();
 
   ASSERT_EQ(1u, referrer_chain_data->referrer_chain_length());
@@ -3429,12 +3436,17 @@ TEST_F(DownloadProtectionServiceTest,
 
   SetExtendedReportingPrefForTests(profile()->GetPrefs(), true);
   std::unique_ptr<ReferrerChainData> referrer_chain_data =
-      IdentifyReferrerChain(item);
+      IdentifyReferrerChain(
+          item,
+          DownloadProtectionService::GetDownloadAttributionUserGestureLimit(
+              &item));
   // 6 entries means 5 interactions between entries.
   EXPECT_EQ(referrer_chain_data->referrer_chain_length(), 6u);
 
   SetExtendedReportingPrefForTests(profile()->GetPrefs(), false);
-  referrer_chain_data = IdentifyReferrerChain(item);
+  referrer_chain_data = IdentifyReferrerChain(
+      item,
+      DownloadProtectionService::GetDownloadAttributionUserGestureLimit(&item));
   // 3 entries means 2 interactions between entries.
   EXPECT_EQ(referrer_chain_data->referrer_chain_length(), 3u);
 }
@@ -3562,7 +3574,7 @@ TEST_F(DeepScanningDownloadTest, LargeFileBlockedByPreference) {
 
   // Create the file.
   base::File file(file_path, base::File::FLAG_CREATE | base::File::FLAG_WRITE);
-  file.WriteAtCurrentPos(file_contents.data(), file_contents.size());
+  file.WriteAtCurrentPos(base::as_byte_span(file_contents));
 
   NiceMockDownloadItem item;
   PrepareBasicDownloadItemWithFullPaths(
@@ -4442,7 +4454,7 @@ TEST_F(DeepScanningDownloadTest, PolicyEnabled) {
 
   // Create the file.
   base::File file(file_path, base::File::FLAG_CREATE | base::File::FLAG_WRITE);
-  file.WriteAtCurrentPos(file_contents.data(), file_contents.size());
+  file.WriteAtCurrentPos(base::as_byte_span(file_contents));
 
   NiceMockDownloadItem item;
   PrepareBasicDownloadItemWithFullPaths(
@@ -4506,7 +4518,7 @@ TEST_F(DeepScanningDownloadTest, PolicyDisabled) {
 
   // Create the file.
   base::File file(file_path, base::File::FLAG_CREATE | base::File::FLAG_WRITE);
-  file.WriteAtCurrentPos(file_contents.data(), file_contents.size());
+  file.WriteAtCurrentPos(base::as_byte_span(file_contents));
 
   NiceMockDownloadItem item;
   PrepareBasicDownloadItemWithFullPaths(
@@ -4572,7 +4584,7 @@ TEST_F(DeepScanningDownloadTest, SafeVerdictPrecedence) {
     // Create the file.
     base::File file(file_path,
                     base::File::FLAG_CREATE | base::File::FLAG_WRITE);
-    file.WriteAtCurrentPos(file_contents.data(), file_contents.size());
+    file.WriteAtCurrentPos(base::as_byte_span(file_contents));
 
     NiceMockDownloadItem item;
     PrepareBasicDownloadItemWithFullPaths(
@@ -4984,7 +4996,7 @@ TEST_F(EnterpriseCsdDownloadTest, SkipsConsumerCsdWhenEnabled) {
 
   // Create the file.
   base::File file(file_path, base::File::FLAG_CREATE | base::File::FLAG_WRITE);
-  file.WriteAtCurrentPos(file_contents.data(), file_contents.size());
+  file.WriteAtCurrentPos(base::as_byte_span(file_contents));
 
   NiceMockDownloadItem item;
   PrepareBasicDownloadItemWithFullPaths(
@@ -5032,7 +5044,7 @@ TEST_F(EnterpriseCsdDownloadTest, PopulatesCsdFieldWhenEnabled) {
 
   // Create the file.
   base::File file(file_path, base::File::FLAG_CREATE | base::File::FLAG_WRITE);
-  file.WriteAtCurrentPos(file_contents.data(), file_contents.size());
+  file.WriteAtCurrentPos(base::as_byte_span(file_contents));
 
   NiceMockDownloadItem item;
   PrepareBasicDownloadItemWithFullPaths(
@@ -5080,7 +5092,7 @@ TEST_F(EnterpriseCsdDownloadTest, StillDoesMetadataCheckForLargeFile) {
 
   // Create the file.
   base::File file(file_path, base::File::FLAG_CREATE | base::File::FLAG_WRITE);
-  file.WriteAtCurrentPos(file_contents.data(), file_contents.size());
+  file.WriteAtCurrentPos(base::as_byte_span(file_contents));
 
   NiceMockDownloadItem item;
   PrepareBasicDownloadItemWithFullPaths(

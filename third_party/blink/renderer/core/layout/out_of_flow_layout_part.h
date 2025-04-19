@@ -42,9 +42,7 @@ class CORE_EXPORT OutOfFlowLayoutPart {
   STACK_ALLOCATED();
 
  public:
-  OutOfFlowLayoutPart(const BlockNode& container_node,
-                      const ConstraintSpace& container_space,
-                      BoxFragmentBuilder* container_builder);
+  explicit OutOfFlowLayoutPart(BoxFragmentBuilder* container_builder);
   void Run();
 
   struct ColumnBalancingInfo {
@@ -64,8 +62,6 @@ class CORE_EXPORT OutOfFlowLayoutPart {
 
     void PropagateSpaceShortage(LayoutUnit space_shortage);
 
-    // The list of columns to balance.
-    FragmentBuilder::ChildrenVector columns;
     // The list of OOF fragmentainer descendants of |columns|.
     HeapVector<LogicalOofNodeForFragmentation>
         out_of_flow_fragmentainer_descendants;
@@ -84,17 +80,39 @@ class CORE_EXPORT OutOfFlowLayoutPart {
     bool has_violating_break = false;
 
     void Trace(Visitor* visitor) const {
-      visitor->Trace(columns);
       visitor->Trace(out_of_flow_fragmentainer_descendants);
     }
   };
 
-  // Handle the layout of any OOF elements in a fragmentation context. If
-  // |column_balancing_info| is set, perform layout on the column and OOF
-  // members of |column_balancing_info| rather than of the builder, and keep
-  // track of any info needed for the OOF children to affect column balancing.
-  void HandleFragmentation(
-      ColumnBalancingInfo* column_balancing_info = nullptr);
+  // Specify a vector where child fragments are stored, rather than using the
+  // fragment builder (the default). In some cases, what OutOfFlowLayoutPart
+  // produces, isn't the final results, which means that they cannot be written
+  // directly to the fragment builder.
+  void SetChildFragmentStorage(
+      FragmentBuilder::ChildrenVector* child_fragment_storage) {
+    child_fragment_storage_ = child_fragment_storage;
+  }
+
+  // When handling fragmentation, perform layout on the column and OOF members
+  // of |column_balancing_info| and |child_fragment_storage| rather than
+  // directly on the builder, and keep track of any info needed for the OOF
+  // children to affect column balancing.
+  void SetColumnBalancingInfo(
+      ColumnBalancingInfo* column_balancing_info,
+      FragmentBuilder::ChildrenVector* child_fragment_storage) {
+    DCHECK(column_balancing_info);
+    DCHECK(child_fragment_storage);
+    column_balancing_info_ = column_balancing_info;
+    SetChildFragmentStorage(child_fragment_storage);
+  }
+
+  // Handle the layout of any OOF elements in a fragmentation context.
+  void HandleFragmentation();
+
+  // Return true if we were invoked at a pagination root, and any additional
+  // pages that were laid out need to know the total page count (to support
+  // counter(pages) in page margin boxes).
+  bool NeedsTotalPageCount() { return needs_total_page_count_; }
 
   // Information needed to position descendant within a containing block.
   // Geometry expressed here is complicated:
@@ -205,13 +223,13 @@ class CORE_EXPORT OutOfFlowLayoutPart {
     LogicalOffset original_offset;
 
     // This field is set only if this |OffsetInfo| is calculated from a
-    // position-try-options style, either from a @position-try rule or a tactic,
-    // or the anchored element has position-visibility: no-overflow.
+    // position-try-fallbacks style, either from a @position-try rule or a
+    // tactic, or the anchored element has position-visibility: no-overflow.
     HeapVector<NonOverflowingScrollRange> non_overflowing_scroll_ranges;
 
     // This field is set when we're calculating |OffsetInfo| with
     // try_fit_available_space=true, e.g. when we have a non-empty
-    // position-try-options. We have to retain the IMCB to implement
+    // position-try-fallbacks. We have to retain the IMCB to implement
     // position-try-order, which decides which of the various candidates styles
     // we should select based on the biggest IMCB size (in some axis).
     std::optional<InsetModifiedContainingBlock> imcb_for_position_order;
@@ -226,6 +244,8 @@ class CORE_EXPORT OutOfFlowLayoutPart {
 
     // True if the element overflows the inset-modified containing block.
     bool overflows_containing_block = false;
+
+    Member<HeapHashSet<Member<Element>>> display_locks_affected_by_anchors;
 
     void Trace(Visitor* visitor) const;
   };
@@ -279,7 +299,7 @@ class CORE_EXPORT OutOfFlowLayoutPart {
       LogicalOffset containing_block_offset = LogicalOffset(),
       bool adjust_for_fragmentation = false);
 
-  void LayoutCandidates(HeapVector<LogicalOofPositionedNode>* candidates);
+  void LayoutCandidates();
 
   void HandleMulticolsWithPendingOOFs(BoxFragmentBuilder* container_builder);
   void LayoutOOFsInMulticol(
@@ -300,8 +320,8 @@ class CORE_EXPORT OutOfFlowLayoutPart {
       const BlockNode& candidate,
       const LogicalAnchorQueryMap* anchor_queries) const;
 
-  ContainingBlockInfo ApplyInsetAreaOffsets(
-      const InsetAreaOffsets& offsets,
+  ContainingBlockInfo ApplyPositionAreaOffsets(
+      const PositionAreaOffsets& offsets,
       const ContainingBlockInfo& container_info) const;
 
   NodeInfo SetupNodeInfo(const LogicalOofPositionedNode& oof_node);
@@ -383,8 +403,8 @@ class CORE_EXPORT OutOfFlowLayoutPart {
 
   const FragmentBuilder::ChildrenVector& FragmentationContextChildren() const {
     DCHECK(container_builder_->IsBlockFragmentationContextRoot());
-    return column_balancing_info_ ? column_balancing_info_->columns
-                                  : container_builder_->Children();
+    return child_fragment_storage_ ? *child_fragment_storage_
+                                   : container_builder_->Children();
   }
 
   // Get the child / descendant fragment at the specified index. These are
@@ -401,8 +421,8 @@ class CORE_EXPORT OutOfFlowLayoutPart {
 
   void AddFragmentainer(const PhysicalBoxFragment& fragmentainer,
                         LogicalOffset fragmentainer_offset) {
-    if (column_balancing_info_) {
-      column_balancing_info_->columns.push_back(
+    if (child_fragment_storage_) {
+      child_fragment_storage_->push_back(
           LogicalFragmentLink{fragmentainer, fragmentainer_offset});
     } else {
       container_builder_->AddChild(fragmentainer, fragmentainer_offset);
@@ -434,6 +454,11 @@ class CORE_EXPORT OutOfFlowLayoutPart {
   // will affect column balancing, if any, without actually adding the OOFs to
   // the associated columns.
   ColumnBalancingInfo* column_balancing_info_ = nullptr;
+
+  // When set, child fragments will be stored in this vector, rather than in the
+  // fragment builder.
+  FragmentBuilder::ChildrenVector* child_fragment_storage_ = nullptr;
+
   // The consumed block size of previous fragmentainers. This is accumulated and
   // used as we add OOF elements to fragmentainers.
   LayoutUnit fragmentainer_consumed_block_size_;
@@ -442,6 +467,10 @@ class CORE_EXPORT OutOfFlowLayoutPart {
   bool has_block_fragmentation_ = false;
   // A fixedpos containing block was found in an outer fragmentation context.
   bool outer_context_has_fixedpos_container_ = false;
+
+  // Set if any additional pages that were laid out need to know the total page
+  // count.
+  bool needs_total_page_count_ = false;
 };
 
 }  // namespace blink

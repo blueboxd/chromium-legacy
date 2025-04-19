@@ -15,6 +15,7 @@
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "components/sync_sessions/session_sync_service.h"
 #include "components/visited_url_ranking/public/fetch_options.h"
+#include "components/visited_url_ranking/public/fetcher_config.h"
 #include "components/visited_url_ranking/public/url_visit.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -136,7 +137,7 @@ class MockSessionSyncService : public SessionSyncService {
   }
 
   MOCK_METHOD0(GetControllerDelegate,
-               base::WeakPtr<syncer::ModelTypeControllerDelegate>());
+               base::WeakPtr<syncer::DataTypeControllerDelegate>());
 
  private:
   base::RepeatingClosureList subscriber_list_;
@@ -147,6 +148,8 @@ class MockSessionSyncService : public SessionSyncService {
 namespace visited_url_ranking {
 
 using Source = URLVisit::Source;
+using URLType = visited_url_ranking::FetchOptions::URLType;
+using ResultOption = visited_url_ranking::FetchOptions::ResultOption;
 
 class SessionURLVisitDataFetcherTest
     : public testing::Test,
@@ -166,14 +169,15 @@ class SessionURLVisitDataFetcherTest
     auto session_url_visit_data_fetcher =
         SessionURLVisitDataFetcher(&mock_session_sync_service_);
     session_url_visit_data_fetcher.FetchURLVisitData(
-        options, base::BindOnce(
-                     [](base::OnceClosure stop_waiting, FetchResult* result,
-                        FetchResult result_arg) {
-                       result->status = result_arg.status;
-                       result->data = std::move(result_arg.data);
-                       std::move(stop_waiting).Run();
-                     },
-                     wait_loop.QuitClosure(), &result));
+        options, FetcherConfig(),
+        base::BindOnce(
+            [](base::OnceClosure stop_waiting, FetchResult* result,
+               FetchResult result_arg) {
+              result->status = result_arg.status;
+              result->data = std::move(result_arg.data);
+              std::move(stop_waiting).Run();
+            },
+            wait_loop.QuitClosure(), &result));
     wait_loop.Run();
     return result;
   }
@@ -195,7 +199,12 @@ TEST_F(SessionURLVisitDataFetcherTest, FetchURLVisitDataNoOpenTabsUIDelegate) {
 
   base::Time yesterday = base::Time::Now() - base::Days(1);
   auto result = FetchAndGetResult(FetchOptions(
-      {{Fetcher::kSession, FetchOptions::kOriginSources}}, yesterday));
+      {{URLType::kActiveRemoteTab, {.age_limit = base::Days(1)}}},
+      {
+          {Fetcher::kSession,
+           FetchOptions::FetchSources({URLVisit::Source::kForeign})},
+      },
+      yesterday));
   EXPECT_EQ(result.status, FetchResult::Status::kError);
 }
 
@@ -223,7 +232,13 @@ TEST_F(SessionURLVisitDataFetcherTest, FetchURLVisitDataDefaultSources) {
 
   base::Time yesterday = base::Time::Now() - base::Days(1);
   auto result = FetchAndGetResult(FetchOptions(
-      {{Fetcher::kSession, FetchOptions::kOriginSources}}, yesterday));
+      {
+          {URLType::kActiveRemoteTab, {.age_limit = base::Days(1)}},
+      },
+      {
+          {Fetcher::kSession, FetchOptions::kOriginSources},
+      },
+      yesterday));
   EXPECT_EQ(result.status, FetchResult::Status::kSuccess);
   EXPECT_EQ(result.data.size(), 2u);
   for (const auto& url_key : {kSampleSearchUrl, kSampleSearchUrl2}) {
@@ -263,8 +278,14 @@ TEST_P(SessionURLVisitDataFetcherTest, FetchURLVisitData) {
             }));
   }
 
-  auto options = FetchOptions({{Fetcher::kSession, {source}}},
-                              base::Time::Now() - base::Days(1));
+  auto options = FetchOptions(
+      {
+          {URLType::kActiveRemoteTab, {.age_limit = base::Days(1)}},
+      },
+      {
+          {Fetcher::kSession, FetchOptions::FetchSources({source})},
+      },
+      base::Time::Now() - base::Days(1));
   auto result = FetchAndGetResult(options);
   EXPECT_EQ(result.status, FetchResult::Status::kSuccess);
   EXPECT_EQ(result.data.size(), 2u);

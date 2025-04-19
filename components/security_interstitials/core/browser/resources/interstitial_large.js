@@ -77,6 +77,7 @@ function setupEvents() {
   const httpsOnly = interstitialType == 'HTTPS_ONLY';
   const enterpriseBlock = interstitialType === 'ENTERPRISE_BLOCK';
   const enterpriseWarn = interstitialType === 'ENTERPRISE_WARN';
+  const supervisedUserVerify = interstitialType === 'SUPERVISED_USER_VERIFY';
   const hidePrimaryButton = loadTimeData.getBoolean('hide_primary_button');
   const showRecurrentErrorParagraph =
       loadTimeData.getBoolean('show_recurrent_error_paragraph');
@@ -99,10 +100,16 @@ function setupEvents() {
     body.classList.add('insecure-form');
   } else if (httpsOnly) {
     body.classList.add('https-only');
+    if (loadTimeData.valueExists('august2024Refresh') &&
+        loadTimeData.getBoolean('august2024Refresh')) {
+      body.classList.add('https-only-august2024-refresh');
+    }
   } else if (enterpriseBlock) {
     body.classList.add('enterprise-block');
   } else if (enterpriseWarn) {
     body.classList.add('enterprise-warn');
+  } else if (supervisedUserVerify) {
+    body.classList.add('supervised-user-verify');
   } else {
     body.classList.add('safe-browsing');
     // Override the default theme color.
@@ -119,6 +126,7 @@ function setupEvents() {
     primaryButton.addEventListener('click', function() {
       switch (interstitialType) {
         case 'CAPTIVE_PORTAL':
+        case 'SUPERVISED_USER_VERIFY':
           sendCommand(SecurityInterstitialCommandId.CMD_OPEN_LOGIN);
           break;
 
@@ -216,7 +224,7 @@ function setupEvents() {
 
   const detailsButton = document.querySelector('#details-button');
   if (captivePortal || billing || lookalike || insecureForm || httpsOnly ||
-      enterpriseWarn || enterpriseBlock) {
+      enterpriseWarn || enterpriseBlock || supervisedUserVerify) {
     // Captive portal, billing, lookalike pages, insecure form, enterprise warn,
     // enterprise block, and HTTPS only mode interstitials don't
     // have details buttons.

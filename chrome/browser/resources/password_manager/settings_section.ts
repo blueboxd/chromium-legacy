@@ -114,13 +114,6 @@ export class SettingsSectionElement extends SettingsSectionElementBase {
         },
       },
 
-      enableButterOnDesktopFollowup_: {
-        type: Boolean,
-        value() {
-          return loadTimeData.getBoolean('enableButterOnDesktopFollowup');
-        },
-      },
-
       showMovePasswordsDialog_: Boolean,
 
       passwordsOnDevice_: {
@@ -146,14 +139,20 @@ export class SettingsSectionElement extends SettingsSectionElementBase {
         type: Boolean,
         value: false,
       },
+
+      isDeleteAllPasswordManagerDataRowAvailable_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean('enableWebAuthnGpmPin');
+        },
+      },
     };
   }
 
   static get observers() {
     return [
       'updateIsPasswordManagerPinAvailable_(isSyncingPasswords)',
-      // TODO(b/338959659):
-      //'updateIsCloudAuthenticatorConnected_(isSyncingPasswords)',
+      'updateIsCloudAuthenticatorConnected_(isSyncingPasswords)',
     ];
   }
 
@@ -163,7 +162,6 @@ export class SettingsSectionElement extends SettingsSectionElementBase {
   private showPasswordsImporter_: boolean;
   private showMovePasswordsDialog_: boolean;
   private trustedVaultBannerState_: TrustedVaultBannerState;
-  private enableButterOnDesktopFollowup_: boolean;
   private movePasswordsLabel_: string;
   private passwordsOnDevice_: chrome.passwordsPrivate.PasswordUiEntry[] = [];
   private isPasswordManagerPinAvailable_: boolean = false;
@@ -171,6 +169,7 @@ export class SettingsSectionElement extends SettingsSectionElementBase {
   private isDisconnectCloudAuthenticatorInProgress_: boolean = false;
   private toastMessage_: string = '';
   private showDisconnectCloudAuthenticatorDialog_: boolean = false;
+  private isDeleteAllPasswordManagerDataRowAvailable_: boolean;
 
   private setBlockedSitesListListener_: BlockedSitesListChangedListener|null =
       null;
@@ -358,10 +357,7 @@ export class SettingsSectionElement extends SettingsSectionElementBase {
 
   private getToggleSubLabelForAccountStorageOptIn_(accountEmail: string):
       string {
-    if (this.enableButterOnDesktopFollowup_) {
-      return this.i18n('accountStorageToggleSubLabel', accountEmail);
-    }
-    return accountEmail;
+    return this.i18n('accountStorageToggleSubLabel', accountEmail);
   }
 
   // <if expr="is_win or is_macosx">
@@ -372,8 +368,18 @@ export class SettingsSectionElement extends SettingsSectionElementBase {
 
   private computePasswordManagerDisabled_(): boolean {
     const pref = this.getPref('credentials_enable_service');
-    return pref.enforcement === chrome.settingsPrivate.Enforcement.ENFORCED &&
-        !pref.value;
+
+    const isPolicyEnforced =
+        pref.enforcement === chrome.settingsPrivate.Enforcement.ENFORCED;
+
+    const isPolicyControlledByExtension =
+        pref.controlledBy === chrome.settingsPrivate.ControlledBy.EXTENSION;
+
+    if (isPolicyControlledByExtension) {
+      return false;
+    }
+
+    return !pref.value && isPolicyEnforced;
   }
 
   private onMovePasswordsClicked_(e: Event) {
@@ -391,8 +397,7 @@ export class SettingsSectionElement extends SettingsSectionElementBase {
   }
 
   private shouldShowMovePasswordsEntry_(): boolean {
-    return this.enableButterOnDesktopFollowup_ && this.isAccountStoreUser &&
-        this.passwordsOnDevice_.length > 0;
+    return this.isAccountStoreUser && this.passwordsOnDevice_.length > 0;
   }
 
   private async updatePasswordsOnDevice_() {
@@ -415,7 +420,8 @@ export class SettingsSectionElement extends SettingsSectionElementBase {
 
   private updateIsPasswordManagerPinAvailable_() {
     PasswordManagerImpl.getInstance().isPasswordManagerPinAvailable().then(
-        available => this.isPasswordManagerPinAvailable_ = available);
+        available => this.isPasswordManagerPinAvailable_ =
+            available && this.isSyncingPasswords);
   }
 
   private onChangePasswordManagerPinRowClick_() {
@@ -425,7 +431,8 @@ export class SettingsSectionElement extends SettingsSectionElementBase {
 
   private updateIsCloudAuthenticatorConnected_() {
     PasswordManagerImpl.getInstance().isConnectedToCloudAuthenticator().then(
-        connected => this.isConnectedToCloudAuthenticator_ = connected);
+        connected => this.isConnectedToCloudAuthenticator_ =
+            connected && this.isSyncingPasswords);
   }
 
   private onDisconnectCloudAuthenticatorClick_() {
@@ -439,6 +446,7 @@ export class SettingsSectionElement extends SettingsSectionElementBase {
   private onDisconnectCloudAuthenticator_(e: CustomEvent): void {
     this.isDisconnectCloudAuthenticatorInProgress_ = false;
     this.updateIsCloudAuthenticatorConnected_();
+    this.updateIsPasswordManagerPinAvailable_();
     if (e.detail.success) {
       this.showToastForCloudAuthenticatorDisconnected_();
     }
@@ -447,6 +455,13 @@ export class SettingsSectionElement extends SettingsSectionElementBase {
   private showToastForCloudAuthenticatorDisconnected_(): void {
     this.toastMessage_ = this.i18n('disconnectCloudAuthenticatorToastMessage');
     this.$.toast.show();
+  }
+
+  private getAriaLabelForCloudAuthenticatorButton_(): string {
+    return [
+      this.i18n('disconnectCloudAuthenticatorTitle'),
+      this.i18n('disconnectCloudAuthenticatorDescription'),
+    ].join('. ');
   }
 
   private showToastForPasswordChange_(success: boolean): void {

@@ -23,6 +23,7 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/text_constants.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/highlight_path_generator.h"
@@ -90,7 +91,7 @@ class MediaLabelButton : public views::Button {
                    ui::ColorId text_color_id,
                    ui::ColorId focus_ring_color_id)
       : views::Button(PressedCallback()) {
-    SetAccessibilityProperties(
+    GetViewAccessibility().SetProperties(
         ax::mojom::Role::kLabelText,
         l10n_util::GetStringUTF16(
             IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_LABEL));
@@ -283,8 +284,10 @@ MediaItemUIDetailedView::MediaItemUIDetailedView(
           theme_.paused_progress_foreground_color_id,
           theme_.paused_progress_background_color_id,
           theme_.focus_ring_color_id,
-          base::BindRepeating(&MediaItemUIDetailedView::OnProgressDragging,
-                              base::Unretained(this)),
+          /*drag_state_change_callback=*/base::DoNothing(),
+          base::BindRepeating(
+              &MediaItemUIDetailedView::OnPlaybackStateChangeForProgressDrag,
+              base::Unretained(this)),
           base::BindRepeating(&MediaItemUIDetailedView::SeekTo,
                               base::Unretained(this)),
           base::BindRepeating(
@@ -383,6 +386,10 @@ MediaItemUIDetailedView::MediaItemUIDetailedView(
   if (item_) {
     item_->SetView(this);
   }
+
+  GetViewAccessibility().SetRole(ax::mojom::Role::kListItem);
+  GetViewAccessibility().SetName(l10n_util::GetStringUTF8(
+      IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACCESSIBLE_NAME));
 }
 
 MediaItemUIDetailedView::~MediaItemUIDetailedView() {
@@ -530,13 +537,6 @@ void MediaItemUIDetailedView::AddedToWidget() {
   }
 }
 
-void MediaItemUIDetailedView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  View::GetAccessibleNodeData(node_data);
-  node_data->role = ax::mojom::Role::kListItem;
-  node_data->SetNameChecked(l10n_util::GetStringUTF8(
-      IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACCESSIBLE_NAME));
-}
-
 bool MediaItemUIDetailedView::OnKeyPressed(const ui::KeyEvent& event) {
   // As soon as the media view gets the focus, it should be able to handle key
   // events that can change the progress.
@@ -651,9 +651,12 @@ void MediaItemUIDetailedView::MediaActionButtonPressed(views::Button* button) {
   }
 }
 
-void MediaItemUIDetailedView::OnProgressDragging(bool pause) {
+void MediaItemUIDetailedView::OnPlaybackStateChangeForProgressDrag(
+    PlaybackStateChangeForDragging change) {
   const auto action =
-      (pause ? MediaSessionAction::kPause : MediaSessionAction::kPlay);
+      (change == PlaybackStateChangeForDragging::kPauseForDraggingStarted
+           ? MediaSessionAction::kPause
+           : MediaSessionAction::kPlay);
   if (item_) {
     item_->OnMediaSessionActionButtonPressed(action);
   } else {

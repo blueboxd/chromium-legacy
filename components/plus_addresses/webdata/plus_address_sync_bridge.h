@@ -9,7 +9,7 @@
 #include "base/memory/raw_ref.h"
 #include "base/memory/scoped_refptr.h"
 #include "components/plus_addresses/plus_address_types.h"
-#include "components/sync/model/model_type_sync_bridge.h"
+#include "components/sync/model/data_type_sync_bridge.h"
 
 class WebDatabaseBackend;
 
@@ -18,12 +18,12 @@ namespace plus_addresses {
 class PlusAddressDataChange;
 class PlusAddressTable;
 
-class PlusAddressSyncBridge : public syncer::ModelTypeSyncBridge {
+class PlusAddressSyncBridge : public syncer::DataTypeSyncBridge {
  public:
   using DataChangedBySyncCallback = base::RepeatingCallback<void(
       std::vector<PlusAddressDataChange> /*changes*/)>;
   PlusAddressSyncBridge(
-      std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor,
+      std::unique_ptr<syncer::DataTypeLocalChangeProcessor> change_processor,
       scoped_refptr<WebDatabaseBackend> db_backend,
       DataChangedBySyncCallback notify_data_changed_by_sync);
   ~PlusAddressSyncBridge() override;
@@ -31,7 +31,7 @@ class PlusAddressSyncBridge : public syncer::ModelTypeSyncBridge {
   PlusAddressSyncBridge(const PlusAddressSyncBridge&) = delete;
   PlusAddressSyncBridge& operator=(const PlusAddressSyncBridge&) = delete;
 
-  // syncer::ModelTypeSyncBridge:
+  // syncer::DataTypeSyncBridge:
   std::unique_ptr<syncer::MetadataChangeList> CreateMetadataChangeList()
       override;
   std::optional<syncer::ModelError> MergeFullSyncData(
@@ -42,9 +42,9 @@ class PlusAddressSyncBridge : public syncer::ModelTypeSyncBridge {
       syncer::EntityChangeList entity_changes) override;
   void ApplyDisableSyncChanges(std::unique_ptr<syncer::MetadataChangeList>
                                    delete_metadata_change_list) override;
-  void GetDataForCommit(StorageKeyList storage_keys,
-                        DataCallback callback) override;
-  void GetAllDataForDebugging(DataCallback callback) override;
+  std::unique_ptr<syncer::DataBatch> GetDataForCommit(
+      StorageKeyList storage_keys) override;
+  std::unique_ptr<syncer::DataBatch> GetAllDataForDebugging() override;
   bool IsEntityDataValid(const syncer::EntityData& entity_data) const override;
   std::string GetClientTag(const syncer::EntityData& entity_data) override;
   std::string GetStorageKey(const syncer::EntityData& entity_data) override;

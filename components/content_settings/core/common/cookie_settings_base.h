@@ -12,6 +12,8 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_setting_override.h"
+#include "net/cookies/cookie_util.h"
+#include "net/cookies/site_for_cookies.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
 namespace net {
@@ -157,7 +159,8 @@ class CookieSettingsBase {
         ContentSetting cookie_setting,
         bool allow_partitioned_cookies,
         bool is_explicit_setting,
-        ThirdPartyCookieAllowMechanism third_party_cookie_allow_mechanism);
+        ThirdPartyCookieAllowMechanism third_party_cookie_allow_mechanism,
+        bool is_third_party_request);
 
     // Returns true iff the setting is "block" due to the user's
     // third-party-cookie-blocking setting.
@@ -175,6 +178,8 @@ class CookieSettingsBase {
       return third_party_cookie_allow_mechanism_;
     }
 
+    bool is_third_party_request() const { return is_third_party_request_; }
+
    private:
     // The setting itself.
     ContentSetting cookie_setting_ = ContentSetting::CONTENT_SETTING_ALLOW;
@@ -188,6 +193,9 @@ class CookieSettingsBase {
 
     // The mechanism to enable third-party cookie access.
     ThirdPartyCookieAllowMechanism third_party_cookie_allow_mechanism_;
+
+    // Whether the request is considered third-party.
+    bool is_third_party_request_;
   };
 
   // Set of types relevant for CookieSettings.
@@ -236,8 +244,10 @@ class CookieSettingsBase {
   // This may be called on any thread.
   bool IsCookieSessionOnly(const GURL& url) const;
 
-  // A helper for applying third party cookie blocking rules.
+  // A helper for applying third party cookie blocking rules. Uses
+  // `site_for_cookies` to determine whether the context is cross-site or not.
   ContentSetting GetCookieSetting(const GURL& url,
+                                  const net::SiteForCookies& site_for_cookies,
                                   const GURL& first_party_url,
                                   net::CookieSettingOverrides overrides,
                                   SettingInfo* info = nullptr) const;
@@ -245,6 +255,7 @@ class CookieSettingsBase {
   // A helper to get third party cookie allow mechanism.
   ThirdPartyCookieAllowMechanism GetThirdPartyCookieAllowMechanism(
       const GURL& url,
+      const net::SiteForCookies& site_for_cookies,
       const GURL& first_party_url,
       net::CookieSettingOverrides overrides,
       content_settings::SettingInfo* info = nullptr) const;
@@ -316,11 +327,17 @@ class CookieSettingsBase {
   static void SetStorageAccessAPIGrantsUnpartitionedStorageForTesting(
       bool grants);
 
- protected:
-  // Returns true iff the request is considered third-party.
-  static bool IsThirdPartyRequest(const GURL& url,
-                                  const net::SiteForCookies& site_for_cookies);
+  // Returns an indication of whether the context given by `url`,
+  // `top_frame_origin`, and `site_for_cookies` has storage access,
+  // given a particular set of `overrides`. Returns nullopt for same-site
+  // requests.
+  std::optional<net::cookie_util::StorageAccessStatus> GetStorageAccessStatus(
+      const GURL& url,
+      const net::SiteForCookies& site_for_cookies,
+      const std::optional<url::Origin>& top_frame_origin,
+      net::CookieSettingOverrides overrides) const;
 
+ protected:
   // Returns the URL to be considered "first-party" for the given request. If
   // the `top_frame_origin` is non-empty, it is chosen; otherwise, the
   // `site_for_cookies` is used.
@@ -329,8 +346,8 @@ class CookieSettingsBase {
 
   CookieSettingWithMetadata GetCookieSettingInternal(
       const GURL& url,
+      const net::SiteForCookies& site_for_cookies,
       const GURL& first_party_url,
-      bool is_third_party_request,
       net::CookieSettingOverrides overrides,
       SettingInfo* info) const;
 

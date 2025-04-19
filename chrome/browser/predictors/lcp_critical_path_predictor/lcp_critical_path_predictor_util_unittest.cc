@@ -8,8 +8,13 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
+#include "chrome/browser/predictors/lcp_critical_path_predictor/lcp_critical_path_predictor_test_util.h"
 #include "chrome/browser/predictors/loading_test_util.h"
+#include "chrome/browser/predictors/predictor_database.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
+#include "chrome/test/base/testing_profile.h"
+#include "content/public/test/browser_task_environment.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
@@ -40,6 +45,92 @@ class Updater {
   const size_t max_histogram_buckets_;
 };
 
+template <typename T>
+bool IsCanonicalizedFrequencyData(
+    size_t max_histogram_buckets,
+    const LcppStringFrequencyStatData& frequency_stat,
+    const google::protobuf::Map<std::string, T>& map) {
+  const auto& frequency_main_buckets = frequency_stat.main_buckets();
+  std::vector<std::string> remove_from_map;
+  for (const auto& it : map) {
+    if (auto pos = frequency_main_buckets.find(it.first);
+        pos == frequency_main_buckets.end()) {
+      return false;
+    }
+  }
+
+  for (const auto& it : frequency_main_buckets) {
+    if (auto pos = map.find(it.first); pos == map.end()) {
+      return false;
+    }
+  }
+  CHECK_EQ(frequency_main_buckets.size(), map.size());
+
+  if (frequency_stat.other_bucket_frequency() < 0 ||
+      frequency_stat.main_buckets().size() > max_histogram_buckets) {
+    return false;
+  }
+  return true;
+}
+
+template <typename T>
+class MapUpdater {
+ public:
+  MapUpdater(size_t sliding_window_size, size_t max_histogram_buckets)
+      : sliding_window_size_(sliding_window_size),
+        max_histogram_buckets_(max_histogram_buckets) {}
+  ~MapUpdater() = default;
+
+  T* UpdateAndTryGetEntry(const std::string& new_entry) {
+    return UpdateFrequencyStatAndTryGetEntry(sliding_window_size_,
+                                             max_histogram_buckets_, new_entry,
+                                             stat_data_, map_);
+  }
+
+  void InitializeWith(const LcppStringFrequencyStatData& data) {
+    for (auto& [key, freq] : data.main_buckets()) {
+      for (size_t i = 0; i < freq; i++) {
+        UpdateAndTryGetEntry(key);
+      }
+    }
+    stat_data_ = data;
+  }
+
+  bool CanonicalizeFrequencyData() {
+    return ::predictors::CanonicalizeFrequencyData(max_histogram_buckets_,
+                                                   stat_data_, map_);
+  }
+
+  bool IsCanonicalFrequencyData() {
+    return IsCanonicalizedFrequencyData(max_histogram_buckets_, stat_data_,
+                                        map_);
+  }
+
+  const LcppStringFrequencyStatData& Data() { return stat_data_; }
+
+  google::protobuf::Map<std::string, T> map_;
+  LcppStringFrequencyStatData stat_data_;
+
+ private:
+  const size_t sliding_window_size_;
+  const size_t max_histogram_buckets_;
+};
+
+template <typename T>
+std::string ToStr(const google::protobuf::Map<std::string, T>& map) {
+  std::ostringstream os;
+  os << "[";
+  size_t i = 0;
+  for (const auto& it : map) {
+    os << "{" << it.first << "," << it.second << "}";
+    if (i++ != map.size() - 1) {
+      os << ", ";
+    }
+  }
+  os << "]";
+  return os.str();
+}
+
 LcppStringFrequencyStatData MakeData(std::map<std::string, double> main_buckets,
                                      double others) {
   LcppStringFrequencyStatData data;
@@ -49,58 +140,6 @@ LcppStringFrequencyStatData MakeData(std::map<std::string, double> main_buckets,
   data.set_other_bucket_frequency(others);
   return data;
 }
-
-template <typename T>
-class FakeLoadingPredictorKeyValueTable
-    : public sqlite_proto::KeyValueTable<T> {
- public:
-  FakeLoadingPredictorKeyValueTable() : sqlite_proto::KeyValueTable<T>("") {}
-  void GetAllData(std::map<std::string, T>* data_map,
-                  sql::Database* db) const override {
-    *data_map = data_;
-  }
-  void UpdateData(const std::string& key,
-                  const T& data,
-                  sql::Database* db) override {
-    data_[key] = data;
-  }
-  void DeleteData(const std::vector<std::string>& keys,
-                  sql::Database* db) override {
-    for (const auto& key : keys) {
-      data_.erase(key);
-    }
-  }
-  void DeleteAllData(sql::Database* db) override { data_.clear(); }
-
-  std::map<std::string, T> data_;
-};
-
-class MockResourcePrefetchPredictorTables
-    : public ResourcePrefetchPredictorTables {
- public:
-  using DBTask = base::OnceCallback<void(sql::Database*)>;
-
-  explicit MockResourcePrefetchPredictorTables(
-      scoped_refptr<base::SequencedTaskRunner> db_task_runner)
-      : ResourcePrefetchPredictorTables(std::move(db_task_runner)) {}
-
-  void ScheduleDBTask(const base::Location& from_here, DBTask task) override {
-    ExecuteDBTaskOnDBSequence(std::move(task));
-  }
-
-  void ExecuteDBTaskOnDBSequence(DBTask task) override {
-    std::move(task).Run(nullptr);
-  }
-
-  sqlite_proto::KeyValueTable<LcppData>* lcpp_table() override {
-    return &lcpp_table_;
-  }
-
-  FakeLoadingPredictorKeyValueTable<LcppData> lcpp_table_;
-
- protected:
-  ~MockResourcePrefetchPredictorTables() override = default;
-};
 
 }  // namespace
 
@@ -181,6 +220,160 @@ TEST(UpdateLcppStringFrequencyStatDataTest, AddNewEntryToFullBuckets) {
   EXPECT_EQ(*dropped_entry, "bar");
   EXPECT_EQ(updater.Data(), MakeData({{"foo", 0.84375}, {"qux", 1}}, 2.15625))
       << updater.Data();
+}
+
+using ::testing::IsEmpty;
+using ::testing::Pair;
+using ::testing::UnorderedElementsAre;
+
+TEST(UpdateFrequencyStatAndTryGetEntryTest, Base) {
+  MapUpdater<int> updater(/*sliding_window_size=*/5u,
+                          /*max_histogram_buckets=*/2u);
+  EXPECT_EQ(updater.Data(), MakeData({}, 0)) << updater.Data();
+  EXPECT_THAT(updater.map_, IsEmpty());
+
+  EXPECT_EQ(*updater.UpdateAndTryGetEntry("foo"), 0);
+  EXPECT_EQ(updater.Data(), MakeData({{"foo", 1}}, 0)) << updater.Data();
+  EXPECT_THAT(updater.map_, UnorderedElementsAre(Pair("foo", 0)));
+
+  updater.map_["foo"] = 42;
+  EXPECT_EQ(*updater.UpdateAndTryGetEntry("bar"), 0);
+  EXPECT_EQ(updater.Data(), MakeData({{"foo", 1}, {"bar", 1}}, 0))
+      << updater.Data();
+  EXPECT_THAT(updater.map_,
+              UnorderedElementsAre(Pair("foo", 42), Pair("bar", 0)));
+
+  EXPECT_EQ(*updater.UpdateAndTryGetEntry("foo"), 42);
+  EXPECT_EQ(*updater.UpdateAndTryGetEntry("foo"), 42);
+  EXPECT_EQ(updater.Data(), MakeData({{"foo", 3}, {"bar", 1}}, 0))
+      << updater.Data();
+  EXPECT_THAT(updater.map_,
+              UnorderedElementsAre(Pair("foo", 42), Pair("bar", 0)));
+
+  EXPECT_EQ(*updater.UpdateAndTryGetEntry("qux"), 0);
+  // If kinds of entry are over 'max_histogram_buckets', the oldest bucket is
+  // converted to 'other_bucket_frequency'.
+  EXPECT_EQ(updater.Data(), MakeData({{"foo", 3}, {"qux", 1}}, 1))
+      << updater.Data();
+  EXPECT_THAT(updater.map_,
+              UnorderedElementsAre(Pair("foo", 42), Pair("qux", 0)));
+
+  EXPECT_EQ(*updater.UpdateAndTryGetEntry("foobar"), 0);
+  // When an entry is dropped out of 'sliding_window_size', existing frequencies
+  // are recalculated as:
+  // next_freq = current_freq/sliding_window_size * (sliding_window_size - 1)
+  // next_others_frequency = (current_others_freq + dropped_entry_freq)
+  //                         /sliding_window_size * (sliding_window_size - 1)
+  // new_freq = 1
+  // then
+  // "foo" = 3/5 * 4
+  // "others" = (1 + 1)/5 * 4
+  // See lcp_critical_path_predictor_util.cc for detail.
+  EXPECT_EQ(updater.Data(), MakeData({{"foo", 2.4}, {"foobar", 1}}, 1.6))
+      << updater.Data();
+  EXPECT_THAT(updater.map_,
+              UnorderedElementsAre(Pair("foo", 42), Pair("foobar", 0)));
+}
+
+TEST(UpdateFrequencyStatAndTryGetEntryTest, AddNewEntryToFullBuckets) {
+  MapUpdater<int> updater(/*sliding_window_size=*/4u,
+                          /*max_histogram_buckets=*/2u);
+
+  EXPECT_EQ(*updater.UpdateAndTryGetEntry("foo"), 0);
+  updater.map_["foo"] = 42;
+  EXPECT_EQ(*updater.UpdateAndTryGetEntry("foo"), 42);
+  EXPECT_EQ(*updater.UpdateAndTryGetEntry("bar"), 0);
+  updater.map_["bar"] = 3;
+  EXPECT_EQ(*updater.UpdateAndTryGetEntry("bar"), 3);
+  EXPECT_EQ(updater.Data(), MakeData({{"foo", 2}, {"bar", 2}}, 0))
+      << updater.Data();
+  EXPECT_THAT(updater.map_,
+              UnorderedElementsAre(Pair("foo", 42), Pair("bar", 3)));
+
+  // "qux" is not inserted while others frequency are enough high.
+  EXPECT_FALSE(updater.UpdateAndTryGetEntry("qux"));
+  EXPECT_EQ(updater.Data(), MakeData({{"foo", 1.5}, {"bar", 1.5}}, 1))
+      << updater.Data();
+  EXPECT_THAT(updater.map_,
+              UnorderedElementsAre(Pair("foo", 42), Pair("bar", 3)));
+
+  EXPECT_FALSE(updater.UpdateAndTryGetEntry("qux"));
+  EXPECT_EQ(updater.Data(), MakeData({{"foo", 1.125}, {"bar", 1.125}}, 1.75))
+      << updater.Data();
+  EXPECT_THAT(updater.map_,
+              UnorderedElementsAre(Pair("foo", 42), Pair("bar", 3)));
+
+  // "qux" is finally inserted by dropping "bar".
+  EXPECT_EQ(*updater.UpdateAndTryGetEntry("qux"), 0);
+  EXPECT_EQ(updater.Data(), MakeData({{"foo", 0.84375}, {"qux", 1}}, 2.15625))
+      << updater.Data();
+  EXPECT_THAT(updater.map_,
+              UnorderedElementsAre(Pair("foo", 42), Pair("qux", 0)));
+}
+
+TEST(LcppCanonicalizeFrequencyDataTest, BadFrequency) {
+  MapUpdater<int> updater(/*sliding_window_size=*/5u,
+                          /*max_histogram_buckets=*/2u);
+  const LcppStringFrequencyStatData data =
+      MakeData({{"foo", 2}, {"bar", 1}}, 1.3);
+  updater.InitializeWith(data);
+  EXPECT_EQ(updater.Data(), data) << updater.Data();
+  EXPECT_THAT(updater.map_,
+              UnorderedElementsAre(Pair("foo", 0), Pair("bar", 0)))
+      << ToStr(updater.map_);
+  EXPECT_TRUE(updater.IsCanonicalFrequencyData());
+
+  updater.stat_data_.set_other_bucket_frequency(-1.0);
+  EXPECT_FALSE(updater.IsCanonicalFrequencyData());
+
+  EXPECT_TRUE(updater.CanonicalizeFrequencyData());
+  EXPECT_TRUE(updater.IsCanonicalFrequencyData());
+  EXPECT_EQ(updater.Data(), MakeData({}, 0)) << updater.Data();
+  EXPECT_THAT(updater.map_, IsEmpty());
+}
+
+TEST(LcppCanonicalizeFrequencyDataTest, LessFrequencyData) {
+  MapUpdater<int> updater(/*sliding_window_size=*/5u,
+                          /*max_histogram_buckets=*/2u);
+  const LcppStringFrequencyStatData data =
+      MakeData({{"foo", 2}, {"bar", 1}}, 1.3);
+  updater.InitializeWith(data);
+  EXPECT_EQ(updater.Data(), data) << updater.Data();
+  EXPECT_THAT(updater.map_,
+              UnorderedElementsAre(Pair("foo", 0), Pair("bar", 0)))
+      << ToStr(updater.map_);
+  EXPECT_TRUE(updater.IsCanonicalFrequencyData());
+
+  updater.stat_data_.mutable_main_buckets()->erase("bar");
+  EXPECT_FALSE(updater.IsCanonicalFrequencyData());
+
+  EXPECT_TRUE(updater.CanonicalizeFrequencyData());
+  EXPECT_TRUE(updater.IsCanonicalFrequencyData());
+  EXPECT_EQ(updater.Data(), MakeData({{"foo", 2}}, 1.3)) << updater.Data();
+  EXPECT_THAT(updater.map_, UnorderedElementsAre(Pair("foo", 0)))
+      << ToStr(updater.map_);
+}
+
+TEST(LcppCanonicalizeFrequencyDataTest, LessMap) {
+  MapUpdater<int> updater(/*sliding_window_size=*/5u,
+                          /*max_histogram_buckets=*/2u);
+  const LcppStringFrequencyStatData data =
+      MakeData({{"foo", 2}, {"bar", 1}}, 1.3);
+  updater.InitializeWith(data);
+  EXPECT_EQ(updater.Data(), data) << updater.Data();
+  EXPECT_THAT(updater.map_,
+              UnorderedElementsAre(Pair("foo", 0), Pair("bar", 0)))
+      << ToStr(updater.map_);
+  EXPECT_TRUE(updater.IsCanonicalFrequencyData());
+
+  updater.map_.erase("bar");
+  EXPECT_FALSE(updater.IsCanonicalFrequencyData());
+
+  EXPECT_TRUE(updater.CanonicalizeFrequencyData());
+  EXPECT_TRUE(updater.IsCanonicalFrequencyData());
+  EXPECT_EQ(updater.Data(), MakeData({{"foo", 2}}, 1.3)) << updater.Data();
+  EXPECT_THAT(updater.map_, UnorderedElementsAre(Pair("foo", 0)))
+      << ToStr(updater.map_);
 }
 
 TEST(IsValidLcppStatTest, Empty) {
@@ -942,18 +1135,50 @@ class LcppDataMapTest : public testing::Test {
  public:
   void InitializeDB(const LoadingPredictorConfig& config) {
     config_ = config;
-    db_task_runner_ = base::MakeRefCounted<base::TestSimpleTaskRunner>();
-    mock_tables_ =
-        base::MakeRefCounted<StrictMock<MockResourcePrefetchPredictorTables>>(
-            db_task_runner_);
-    lcpp_data_map_ = std::make_unique<LcppDataMap>(*mock_tables_, config);
-    db_task_runner_->PostTask(FROM_HERE, base::BindLambdaForTesting([&]() {
-                                lcpp_data_map_->InitializeOnDBSequence();
-                              }));
-    db_task_runner_->RunUntilIdle();
+    scoped_refptr<base::SequencedTaskRunner> db_task_runner =
+        base::ThreadPool::CreateSequencedTaskRunner(
+            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+             base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+    predictor_database_ =
+        std::make_unique<PredictorDatabase>(&profile_, db_task_runner);
+    lcpp_data_map_ = std::make_unique<LcppDataMap>(
+        predictor_database_->resource_prefetch_tables(), config);
+    db_task_runner->PostTaskAndReply(
+        FROM_HERE,
+        base::BindOnce(&LcppDataMap::InitializeOnDBSequence,
+                       base::Unretained(lcpp_data_map_.get())),
+        base::BindOnce(&LcppDataMap::InitializeAfterDBInitialization,
+                       base::Unretained(lcpp_data_map_.get())));
+    content::RunAllTasksUntilIdle();
+  }
+
+  void TearDownDB() {
+    content::RunAllTasksUntilIdle();
+    lcpp_data_map_.reset();
+    predictor_database_.reset();
+    content::RunAllTasksUntilIdle();
   }
 
  protected:
+  void TearDown() override {
+    if (lcpp_data_map_) {
+      lcpp_data_map_->DeleteAllData();
+    }
+  }
+
+  const std::map<std::string, LcppData>& GetDataMap() {
+    return lcpp_data_map_->GetAllCachedForTesting();
+  }
+
+  const std::map<std::string, LcppOrigin>& GetOriginMap() {
+    return lcpp_data_map_->GetAllCachedOriginForTesting();
+  }
+
+  void UpdateKeyValueDataDirectly(const std::string& key,
+                                  const LcppData& data) {
+    lcpp_data_map_->data_map_->UpdateData(key, data);
+  }
+
   double SumOfLcppStringFrequencyStatData(
       const LcppStringFrequencyStatData& data) {
     double sum = data.other_bucket_frequency();
@@ -963,18 +1188,33 @@ class LcppDataMapTest : public testing::Test {
     return sum;
   }
 
-  void LearnLcpp(const GURL& url, const LcppDataInputs& inputs) {
-    lcpp_data_map_->LearnLcpp(url, inputs);
+  bool LearnLcpp(const std::optional<url::Origin>& initiator_origin,
+                 const GURL& url,
+                 const LcppDataInputs& inputs) {
+    return lcpp_data_map_->LearnLcpp(initiator_origin, url, inputs);
+  }
+  bool LearnLcpp(const GURL& url, const LcppDataInputs& inputs) {
+    return lcpp_data_map_->LearnLcpp(/*initiator_origin=*/std::nullopt, url,
+                                     inputs);
   }
 
-  void LearnElementLocator(
+  bool LearnElementLocator(
+      const std::optional<url::Origin>& initiator_origin,
       const GURL& url,
       const std::string& lcp_element_locator,
       const std::vector<GURL>& lcp_influencer_scripts = {}) {
     predictors::LcppDataInputs inputs;
     inputs.lcp_element_locator = lcp_element_locator;
     inputs.lcp_influencer_scripts = lcp_influencer_scripts;
-    LearnLcpp(url, inputs);
+    return LearnLcpp(initiator_origin, url, inputs);
+  }
+
+  void LearnElementLocator(
+      const GURL& url,
+      const std::string& lcp_element_locator,
+      const std::vector<GURL>& lcp_influencer_scripts = {}) {
+    LearnElementLocator(/*initiator_origin=*/std::nullopt, url,
+                        lcp_element_locator, lcp_influencer_scripts);
   }
 
   void LearnFontUrls(const GURL& url, const std::vector<GURL>& font_urls) {
@@ -991,8 +1231,13 @@ class LcppDataMapTest : public testing::Test {
     LearnLcpp(url, inputs);
   }
 
+  std::optional<LcppStat> GetLcppStat(
+      const std::optional<url::Origin>& initiator_origin,
+      const GURL& url) {
+    return lcpp_data_map_->GetLcppStat(initiator_origin, url);
+  }
   std::optional<LcppStat> GetLcppStat(const GURL& url) {
-    return lcpp_data_map_->GetLcppStat(url);
+    return GetLcppStat(/*initiator_origin=*/std::nullopt, url);
   }
 
   void TestLearnLcppURL(
@@ -1004,7 +1249,8 @@ class LcppDataMapTest : public testing::Test {
       const std::string& key = url_key.second;
       LearnElementLocator(GURL(url), "/#a", {});
       // Confirm 'url' was learned as 'key'.
-      auto stat = lcpp_data_map_->GetLcppStat(GURL("http://" + key));
+      auto stat = lcpp_data_map_->GetLcppStat(/*initiator_origin=*/std::nullopt,
+                                              GURL("http://" + key));
       EXPECT_TRUE(stat) << location.ToString() << url;
       LcppData expected;
       InitializeLcpElementLocatorBucket(expected, "/#a", ++frequency[key]);
@@ -1024,19 +1270,91 @@ class LcppDataMapTest : public testing::Test {
     return stat;
   }
 
+  static url::Origin CreateOrigin(const std::string& host_name) {
+    const url::Origin origin = url::Origin::Create(GURL("http://" + host_name));
+    CHECK_EQ(origin.host(), host_name);
+    return origin;
+  }
+
+  content::BrowserTaskEnvironment task_environment_;
+
+  TestingProfile profile_;
+  std::unique_ptr<PredictorDatabase> predictor_database_;
+
   LoadingPredictorConfig config_;
-  scoped_refptr<base::TestSimpleTaskRunner> db_task_runner_;
-  scoped_refptr<StrictMock<MockResourcePrefetchPredictorTables>> mock_tables_;
   std::unique_ptr<LcppDataMap> lcpp_data_map_;
 };
 
-TEST_F(LcppDataMapTest, LearnLcpp) {
+class LcppDataMapFeatures
+    : public LcppDataMapTest,
+      public testing::WithParamInterface<std::vector<base::test::FeatureRef>> {
+ public:
+  LcppDataMapFeatures() {
+    scoped_feature_list_.InitWithFeatures(GetParam(),
+                                          /*disabled_features=*/{});
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+auto& kLCPPInitiatorOrigin = blink::features::kLCPPInitiatorOrigin;
+auto& kLCPPMultipleKey = blink::features::kLCPPMultipleKey;
+const std::vector<base::test::FeatureRef> featureset1[] = {
+    {},
+    {kLCPPInitiatorOrigin},
+    {kLCPPMultipleKey},
+    {kLCPPInitiatorOrigin, kLCPPMultipleKey}};
+inline std::string CustomParamNameFunction(
+    const testing::TestParamInfo<LcppDataMapFeatures::ParamType>& info) {
+  const auto& features = info.param;
+  if (features.empty()) {
+    return std::string("Default");
+  }
+  std::string name;
+  for (size_t i = 0; i < features.size(); i++) {
+    if (features[i] == kLCPPInitiatorOrigin) {
+      name += "InitiatorOrigin";
+    } else {
+      name += "MultipleKey";
+    }
+    if (i < features.size() - 1) {
+      name += "_";
+    }
+  }
+  return name;
+}
+INSTANTIATE_TEST_SUITE_P(LcppFeatureSet1,
+                         LcppDataMapFeatures,
+                         testing::ValuesIn(featureset1),
+                         &CustomParamNameFunction);
+
+TEST_P(LcppDataMapFeatures, Base) {
+  LoadingPredictorConfig config;
+  PopulateTestConfig(&config);
+  InitializeDB(config);
+  EXPECT_TRUE(GetDataMap().empty());
+
+  predictors::LcppDataInputs inputs;
+  inputs.lcp_element_locator = "/#foo";
+  GURL url = GURL("https://a.test");
+  lcpp_data_map_->LearnLcpp(/*initiator_origin=*/std::nullopt, url, inputs);
+
+  auto stat =
+      lcpp_data_map_->GetLcppStat(/*initiator_origin=*/std::nullopt, url);
+  EXPECT_TRUE(stat);
+  LcppData expected;
+  InitializeLcpElementLocatorBucket(expected, "/#foo", 1);
+  EXPECT_EQ(expected.lcpp_stat(), *stat) << *stat;
+}
+
+TEST_P(LcppDataMapFeatures, LearnLcpp) {
   LoadingPredictorConfig config;
   PopulateTestConfig(&config);
   EXPECT_EQ(5U, config.lcpp_histogram_sliding_window_size);
   EXPECT_EQ(2U, config.max_lcpp_histogram_buckets);
   InitializeDB(config);
-  EXPECT_TRUE(mock_tables_->lcpp_table_.data_.empty());
+  EXPECT_TRUE(GetDataMap().empty());
 
   auto SumOfElementLocatorFrequency = [](const LcppData& data) {
     const LcpElementLocatorStat& stat =
@@ -1064,7 +1382,7 @@ TEST_F(LcppDataMapTest, LearnLcpp) {
   {
     LcppData data = CreateLcppData("a.test", 10);
     InitializeLcpElementLocatorBucket(data, "/#a", 3);
-    EXPECT_EQ(data, mock_tables_->lcpp_table_.data_["a.test"]);
+    EXPECT_EQ(data, GetDataMap().at("a.test"));
     EXPECT_DOUBLE_EQ(3, SumOfElementLocatorFrequency(data));
   }
 
@@ -1075,7 +1393,7 @@ TEST_F(LcppDataMapTest, LearnLcpp) {
     LcppData data = CreateLcppData("a.test", 10);
     InitializeLcpElementLocatorBucket(data, "/#a", 3);
     InitializeLcpElementLocatorBucket(data, "/#b", 2);
-    EXPECT_EQ(data, mock_tables_->lcpp_table_.data_["a.test"]);
+    EXPECT_EQ(data, GetDataMap().at("a.test"));
     EXPECT_DOUBLE_EQ(5, SumOfElementLocatorFrequency(data));
   }
 
@@ -1085,7 +1403,7 @@ TEST_F(LcppDataMapTest, LearnLcpp) {
     InitializeLcpElementLocatorBucket(data, "/#a", 2.4);
     InitializeLcpElementLocatorBucket(data, "/#b", 1.6);
     InitializeLcpElementLocatorOtherBucket(data, 1);
-    EXPECT_EQ(data, mock_tables_->lcpp_table_.data_["a.test"]);
+    EXPECT_EQ(data, GetDataMap().at("a.test"));
     EXPECT_DOUBLE_EQ(5, SumOfElementLocatorFrequency(data));
   }
 
@@ -1095,7 +1413,7 @@ TEST_F(LcppDataMapTest, LearnLcpp) {
     InitializeLcpElementLocatorBucket(data, "/#a", 1.92);
     InitializeLcpElementLocatorBucket(data, "/#b", 1.28);
     InitializeLcpElementLocatorOtherBucket(data, 1.8);
-    EXPECT_EQ(data, mock_tables_->lcpp_table_.data_["a.test"]);
+    EXPECT_EQ(data, GetDataMap().at("a.test"));
     EXPECT_DOUBLE_EQ(5, SumOfElementLocatorFrequency(data));
   }
 
@@ -1108,7 +1426,7 @@ TEST_F(LcppDataMapTest, LearnLcpp) {
     InitializeLcpElementLocatorBucket(data, "/#d", 1);
     InitializeLcpElementLocatorBucket(data, "/#c", 0.8);
     InitializeLcpElementLocatorOtherBucket(data, 3.2);
-    EXPECT_EQ(data, mock_tables_->lcpp_table_.data_["a.test"]);
+    EXPECT_EQ(data, GetDataMap().at("a.test"));
     EXPECT_DOUBLE_EQ(5, SumOfElementLocatorFrequency(data));
   }
 
@@ -1128,7 +1446,7 @@ TEST_F(LcppDataMapTest, LearnLcpp) {
         {GURL("https://a.test/script1.js"), GURL("https://a.test/script2.js")},
         2);
     InitializeLcpInfluencerScriptUrlsOtherBucket(data, 0);
-    EXPECT_EQ(data, mock_tables_->lcpp_table_.data_["a.test"]);
+    EXPECT_EQ(data, GetDataMap().at("a.test"));
     EXPECT_DOUBLE_EQ(5, SumOfElementLocatorFrequency(data));
     EXPECT_DOUBLE_EQ(4, SumOfInfluencerUrlFrequency(data));
   }
@@ -1148,18 +1466,18 @@ TEST_F(LcppDataMapTest, LearnLcpp) {
     InitializeLcpInfluencerScriptUrlsBucket(
         data, {GURL("https://a.test/script4.js")}, 1);
     InitializeLcpInfluencerScriptUrlsOtherBucket(data, 3.2);
-    EXPECT_EQ(data, mock_tables_->lcpp_table_.data_["a.test"]);
+    EXPECT_EQ(data, GetDataMap().at("a.test"));
     EXPECT_DOUBLE_EQ(5, SumOfInfluencerUrlFrequency(data));
   }
 }
 
-TEST_F(LcppDataMapTest, LearnFontUrls) {
+TEST_P(LcppDataMapFeatures, LearnFontUrls) {
   LoadingPredictorConfig config;
   PopulateTestConfig(&config);
   EXPECT_EQ(5U, config.lcpp_histogram_sliding_window_size);
   EXPECT_EQ(2U, config.max_lcpp_histogram_buckets);
   InitializeDB(config);
-  EXPECT_TRUE(mock_tables_->lcpp_table_.data_.empty());
+  EXPECT_TRUE(GetDataMap().empty());
 
   auto SumOfFontUrlFrequency = [this](const LcppData& data) {
     return SumOfLcppStringFrequencyStatData(
@@ -1179,7 +1497,7 @@ TEST_F(LcppDataMapTest, LearnFontUrls) {
                               GURL("https://example.test/test.ttf")},
                              2);
     InitializeFontUrlsOtherBucket(data, 0);
-    EXPECT_EQ(data, mock_tables_->lcpp_table_.data_["example.test"]);
+    EXPECT_EQ(data, GetDataMap().at("example.test"));
     EXPECT_DOUBLE_EQ(4, SumOfFontUrlFrequency(data));
   }
   for (int i = 0; i < 3; ++i) {
@@ -1194,18 +1512,18 @@ TEST_F(LcppDataMapTest, LearnFontUrls) {
     InitializeFontUrlsBucket(data, {GURL("https://example.org/test.otf")}, 0.8);
     InitializeFontUrlsBucket(data, {GURL("https://example.net/test.svg")}, 1);
     InitializeFontUrlsOtherBucket(data, 3.2);
-    EXPECT_EQ(data, mock_tables_->lcpp_table_.data_["example.test"]);
+    EXPECT_EQ(data, GetDataMap().at("example.test"));
     EXPECT_DOUBLE_EQ(5, SumOfFontUrlFrequency(data));
   }
 }
 
-TEST_F(LcppDataMapTest, LearnSubresourceUrls) {
+TEST_P(LcppDataMapFeatures, LearnSubresourceUrls) {
   LoadingPredictorConfig config;
   PopulateTestConfig(&config);
   EXPECT_EQ(5U, config.lcpp_histogram_sliding_window_size);
   EXPECT_EQ(2U, config.max_lcpp_histogram_buckets);
   InitializeDB(config);
-  EXPECT_TRUE(mock_tables_->lcpp_table_.data_.empty());
+  EXPECT_TRUE(GetDataMap().empty());
 
   auto SumOfFontUrlFrequency = [this](const LcppData& data) {
     return SumOfLcppStringFrequencyStatData(
@@ -1224,7 +1542,7 @@ TEST_F(LcppDataMapTest, LearnSubresourceUrls) {
         data, {GURL("https://a.test/a.jpeg"), GURL("https://b.test/b.jpeg")},
         2);
     InitializeSubresourceUrlsOtherBucket(data, 0);
-    EXPECT_EQ(data, mock_tables_->lcpp_table_.data_["example.test"]);
+    EXPECT_EQ(data, GetDataMap().at("example.test"));
     EXPECT_DOUBLE_EQ(4, SumOfFontUrlFrequency(data));
   }
   for (int i = 0; i < 3; ++i) {
@@ -1239,16 +1557,16 @@ TEST_F(LcppDataMapTest, LearnSubresourceUrls) {
     InitializeSubresourceUrlsBucket(data, {GURL("https://c.test/a.jpeg")}, 1);
     InitializeSubresourceUrlsBucket(data, {GURL("https://d.test/b.jpeg")}, 0.8);
     InitializeSubresourceUrlsOtherBucket(data, 3.2);
-    EXPECT_EQ(data, mock_tables_->lcpp_table_.data_["example.test"]);
+    EXPECT_EQ(data, GetDataMap().at("example.test"));
     EXPECT_DOUBLE_EQ(5, SumOfFontUrlFrequency(data));
   }
 }
 
-TEST_F(LcppDataMapTest, WhenLcppDataIsCorrupted_ResetData) {
+TEST_P(LcppDataMapFeatures, WhenLcppDataIsCorrupted_ResetData) {
   LoadingPredictorConfig config;
   PopulateTestConfig(&config);
   InitializeDB(config);
-  EXPECT_TRUE(mock_tables_->lcpp_table_.data_.empty());
+  EXPECT_TRUE(GetDataMap().empty());
 
   // Prepare a corrupted data.
   {
@@ -1257,7 +1575,7 @@ TEST_F(LcppDataMapTest, WhenLcppDataIsCorrupted_ResetData) {
     InitializeLcpElementLocatorBucket(data, "/#b", 1.28);
     InitializeLcpElementLocatorBucket(data, "/#c", -1);
     InitializeLcpElementLocatorOtherBucket(data, -1);
-    mock_tables_->lcpp_table_.data_["a.test"] = data;
+    UpdateKeyValueDataDirectly("a.test", data);
   }
 
   // Confirm that new learning process reset the corrupted data.
@@ -1265,16 +1583,16 @@ TEST_F(LcppDataMapTest, WhenLcppDataIsCorrupted_ResetData) {
   {
     LcppData data = CreateLcppData("a.test", 10);
     InitializeLcpElementLocatorBucket(data, "/#a", 1);
-    EXPECT_EQ(data, mock_tables_->lcpp_table_.data_["a.test"]);
+    EXPECT_EQ(data, GetDataMap().at("a.test"));
   }
 }
 
-TEST_F(LcppDataMapTest, LcppMaxHosts) {
+TEST_P(LcppDataMapFeatures, LcppMaxHosts) {
   LoadingPredictorConfig config;
   PopulateTestConfig(&config);
   config.max_hosts_to_track_for_lcpp = 3u;
   InitializeDB(config);
-  EXPECT_TRUE(mock_tables_->lcpp_table_.data_.empty());
+  EXPECT_TRUE(GetDataMap().empty());
 
   const GURL url_a("http://a.test");
   EXPECT_FALSE(GetLcppStat(url_a));
@@ -1297,7 +1615,17 @@ TEST_F(LcppDataMapTest, LcppMaxHosts) {
   EXPECT_FALSE(GetLcppStat(url_a));
 }
 
-TEST_F(LcppDataMapTest, LcppLearnURL) {
+class LcppDataMapFeatures2 : public LcppDataMapFeatures {};
+
+const std::vector<base::test::FeatureRef> featureset2[] = {
+    {},
+    {kLCPPInitiatorOrigin}};
+INSTANTIATE_TEST_SUITE_P(LcppFeatureSet2,
+                         LcppDataMapFeatures2,
+                         testing::ValuesIn(featureset2),
+                         &CustomParamNameFunction);
+
+TEST_P(LcppDataMapFeatures2, LcppLearnURL) {
   LoadingPredictorConfig config;
   PopulateTestConfig(&config);
   InitializeDB(config);
@@ -1313,7 +1641,7 @@ TEST_F(LcppDataMapTest, LcppLearnURL) {
   TestLearnLcppURL(url_keys);
 }
 
-TEST_F(LcppDataMapTest, DeleteUrls) {
+TEST_P(LcppDataMapFeatures, DeleteUrls) {
   LoadingPredictorConfig config;
   PopulateTestConfig(&config);
   config.max_hosts_to_track_for_lcpp = 10u;
@@ -1336,16 +1664,24 @@ TEST_F(LcppDataMapTest, DeleteUrls) {
   EXPECT_TRUE(GetLcppStat(url_c));
 }
 
-class LcppMultipleKeyTest : public LcppDataMapTest,
-                            public testing::WithParamInterface<
-                                blink::features::LcppMultipleKeyTypes> {
+class LcppMultipleKeyTest
+    : public LcppDataMapTest,
+      public testing::WithParamInterface<
+          std::tuple<bool, blink::features::LcppMultipleKeyTypes>> {
  public:
   void SetUp() override {
     auto& kLcppMultipleKeyType = blink::features::kLcppMultipleKeyType;
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        blink::features::kLCPPMultipleKey,
-        {{kLcppMultipleKeyType.name,
-          kLcppMultipleKeyType.GetName(GetParam())}});
+    std::vector<base::test::FeatureRefAndParams> enabled_features = {
+        {blink::features::kLCPPMultipleKey,
+         {{kLcppMultipleKeyType.name,
+           kLcppMultipleKeyType.GetName(std::get<1>(GetParam()))}}}};
+    if (std::get<0>(GetParam())) {
+      base::test::FeatureRefAndParams params = {kLCPPInitiatorOrigin, {}};
+      enabled_features.push_back(params);
+    }
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        enabled_features,
+        /*disabled_features=*/{});
 
     LoadingPredictorConfig config;
     PopulateTestConfig(&config);
@@ -1363,8 +1699,19 @@ class LcppMultipleKeyTest : public LcppDataMapTest,
 INSTANTIATE_TEST_SUITE_P(
     LcppMultipleKeyTypes,
     LcppMultipleKeyTest,
-    testing::Values(blink::features::LcppMultipleKeyTypes::kDefault,
-                    blink::features::LcppMultipleKeyTypes::kLcppKeyStat));
+    testing::Combine(
+        testing::Bool(),
+        testing::Values(blink::features::LcppMultipleKeyTypes::kDefault,
+                        blink::features::LcppMultipleKeyTypes::kLcppKeyStat)),
+    [](const testing::TestParamInfo<LcppMultipleKeyTest::ParamType>& info) {
+      std::string name;
+      name += std::get<0>(info.param) ? "InitiatorOrigin_" : "Default_";
+      name += (std::get<1>(info.param) ==
+               blink::features::LcppMultipleKeyTypes::kDefault)
+                  ? "Default"
+                  : "KeyStat";
+      return name;
+    });
 
 TEST_P(LcppMultipleKeyTest, LearnURL) {
   const std::string long_host =
@@ -1414,8 +1761,8 @@ TEST_P(LcppMultipleKeyTest, ShouldNotLearnTooLongLocators) {
 }
 
 TEST_P(LcppMultipleKeyTest, DeleteUrls) {
-  const bool kIsDefault =
-      GetParam() == blink::features::LcppMultipleKeyTypes::kDefault;
+  const bool kIsDefault = std::get<1>(GetParam()) ==
+                          blink::features::LcppMultipleKeyTypes::kDefault;
   const GURL url_a_1("http://a.test");
   const GURL url_a_2("http://a.test/foo");
   const GURL url_a_3("http://a.test/bar");
@@ -1440,15 +1787,23 @@ TEST_P(LcppMultipleKeyTest, DeleteUrls) {
   EXPECT_TRUE(GetLcppStat(url_c));
 }
 
-class LcppMultipleKeyTestDefault : public LcppDataMapTest {
+class LcppMultipleKeyTestDefault : public LcppDataMapTest,
+                                   public testing::WithParamInterface<bool> {
  public:
   void SetUp() override {
     auto& kLcppMultipleKeyType = blink::features::kLcppMultipleKeyType;
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        blink::features::kLCPPMultipleKey,
-        {{kLcppMultipleKeyType.name,
-          kLcppMultipleKeyType.GetName(
-              blink::features::LcppMultipleKeyTypes::kDefault)}});
+    std::vector<base::test::FeatureRefAndParams> enabled_features = {
+        {blink::features::kLCPPMultipleKey,
+         {{kLcppMultipleKeyType.name,
+           kLcppMultipleKeyType.GetName(
+               blink::features::LcppMultipleKeyTypes::kDefault)}}}};
+    if (GetParam()) {
+      base::test::FeatureRefAndParams params = {kLCPPInitiatorOrigin, {}};
+      enabled_features.push_back(params);
+    }
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        enabled_features,
+        /*disabled_features=*/{});
     LcppDataMapTest::SetUp();
   }
 
@@ -1456,7 +1811,14 @@ class LcppMultipleKeyTestDefault : public LcppDataMapTest {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-TEST_F(LcppMultipleKeyTestDefault, MaxHosts) {
+INSTANTIATE_TEST_SUITE_P(
+    LcppMultipleKeyTestDefaultP,
+    LcppMultipleKeyTestDefault,
+    testing::Bool(),
+    [](const testing::TestParamInfo<LcppMultipleKeyTestDefault::ParamType>&
+           info) { return (info.param) ? "InitiatorOrigin" : "Default"; });
+
+TEST_P(LcppMultipleKeyTestDefault, MaxHosts) {
   LoadingPredictorConfig config;
   PopulateTestConfig(&config);
   config.max_hosts_to_track_for_lcpp = 2u;
@@ -1484,31 +1846,51 @@ TEST_F(LcppMultipleKeyTestDefault, MaxHosts) {
 class ScopedLcppKeyStatFeature {
  public:
   ScopedLcppKeyStatFeature() {
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        /*enabled_features=*/{GetParam()},
+        /*disabled_features=*/{});
+  }
+
+  static base::test::FeatureRefAndParams GetParam() {
     auto& kLcppMultipleKeyType = blink::features::kLcppMultipleKeyType;
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        blink::features::kLCPPMultipleKey,
-        {{kLcppMultipleKeyType.name,
-          kLcppMultipleKeyType.GetName(
-              blink::features::LcppMultipleKeyTypes::kLcppKeyStat)}});
+    return {blink::features::kLCPPMultipleKey,
+            {{kLcppMultipleKeyType.name,
+              kLcppMultipleKeyType.GetName(
+                  blink::features::LcppMultipleKeyTypes::kLcppKeyStat)}}};
   }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-class LcppMultipleKeyTestKeyStat : public LcppDataMapTest {
+class LcppMultipleKeyTestKeyStat : public LcppDataMapTest,
+                                   public testing::WithParamInterface<bool> {
  public:
   void SetUp() override {
-    scoped_lcpp_key_stat_feature_ =
-        std::make_unique<ScopedLcppKeyStatFeature>();
+    std::vector<base::test::FeatureRefAndParams> enabled_features = {
+        ScopedLcppKeyStatFeature::GetParam()};
+    if (GetParam()) {
+      base::test::FeatureRefAndParams params = {kLCPPInitiatorOrigin, {}};
+      enabled_features.push_back(params);
+    }
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        enabled_features,
+        /*disabled_features=*/{});
     LcppDataMapTest::SetUp();
   }
 
  private:
-  std::unique_ptr<ScopedLcppKeyStatFeature> scoped_lcpp_key_stat_feature_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-TEST_F(LcppMultipleKeyTestKeyStat, MaxHostsAndKeys) {
+INSTANTIATE_TEST_SUITE_P(
+    LcppMultipleKeyTestKeyStatP,
+    LcppMultipleKeyTestKeyStat,
+    testing::Bool(),
+    [](const testing::TestParamInfo<LcppMultipleKeyTestKeyStat::ParamType>&
+           info) { return (info.param) ? "InitiatorOrigin" : "Default"; });
+
+TEST_P(LcppMultipleKeyTestKeyStat, MaxHostsAndKeys) {
   LoadingPredictorConfig config;
   PopulateTestConfig(&config);
   config.max_hosts_to_track_for_lcpp = 2u;
@@ -1586,10 +1968,10 @@ TEST_F(LcppDataMapTest, LcppStatShouldBeClearedOverFlagReset) {
   LearnElementLocator(url_base, "/#base");
   LcppData data = CreateLcppData("a.test", 10);
   InitializeLcpElementLocatorBucket(data, "/#base", 2);
-  EXPECT_EQ(data, mock_tables_->lcpp_table_.data_["a.test"]);
+  EXPECT_EQ(data, GetDataMap().at("a.test"));
 }
 
-TEST_F(LcppMultipleKeyTestKeyStat, AddNewEntryToFullBucketKeyStat) {
+TEST_P(LcppMultipleKeyTestKeyStat, AddNewEntryToFullBucketKeyStat) {
   LoadingPredictorConfig config;
   PopulateTestConfig(&config);
   config.max_hosts_to_track_for_lcpp = 2u;
@@ -1622,6 +2004,295 @@ TEST_F(LcppMultipleKeyTestKeyStat, AddNewEntryToFullBucketKeyStat) {
   EXPECT_FALSE(GetLcppStat(url_1));
   EXPECT_EQ(*GetLcppStat(url_2),
             MakeLcppStatWithLCPElementLocator("/#lcp2", 2));
+}
+
+class ScopedInitiatorOriginFeature {
+ public:
+  ScopedInitiatorOriginFeature() {
+    scoped_feature_list_.InitAndEnableFeature(
+        blink::features::kLCPPInitiatorOrigin);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+class LcppInitiatorOriginTest : public LcppDataMapTest {
+ public:
+  void SetUp() override {
+    scoped_feature_ = std::make_unique<ScopedInitiatorOriginFeature>();
+    LcppDataMapTest::SetUp();
+  }
+
+ protected:
+  void TearDown() override {
+    if (lcpp_data_map_) {
+      for (const auto& it : GetOriginMap()) {
+        const LcppOrigin& lcpp_origin = it.second;
+        EXPECT_TRUE(IsCanonicalFrequencyData(lcpp_origin)) << it.first;
+      }
+      lcpp_data_map_->origin_map_->DeleteAllData();
+    }
+    LcppDataMapTest::TearDown();
+  }
+
+  LcppDataMap::OriginMap* OriginMap() {
+    return lcpp_data_map_ ? lcpp_data_map_->origin_map_.get() : nullptr;
+  }
+
+  bool IsCanonicalFrequencyData(const LcppOrigin& lcpp_origin) {
+    return IsCanonicalizedFrequencyData(
+        config_.lcpp_initiator_origin_max_histogram_buckets,
+        lcpp_origin.key_frequency_stat(), lcpp_origin.origin_data_map());
+  }
+
+ private:
+  std::unique_ptr<ScopedInitiatorOriginFeature> scoped_feature_;
+};
+
+TEST_F(LcppInitiatorOriginTest, Base) {
+  LoadingPredictorConfig config;
+  PopulateTestConfig(&config);
+  config.max_hosts_to_track_for_lcpp = 1u;
+  config.lcpp_initiator_origin_histogram_sliding_window_size = 4u;
+  config.lcpp_initiator_origin_max_histogram_buckets = 3u;
+  InitializeDB(config);
+  EXPECT_TRUE(GetDataMap().empty());
+  EXPECT_TRUE(GetOriginMap().empty());
+
+  const GURL url("http://a.test");
+  LearnElementLocator(url, "/#lcp0");
+  EXPECT_EQ(*GetLcppStat(std::nullopt, url),
+            MakeLcppStatWithLCPElementLocator("/#lcp0"));
+
+  const url::Origin origin1 = CreateOrigin("origin1.test");
+  LearnElementLocator(origin1, url, "/#lcp1");
+  EXPECT_EQ(*GetLcppStat(origin1, url),
+            MakeLcppStatWithLCPElementLocator("/#lcp1"));
+
+  const url::Origin origin2 = CreateOrigin("origin2.test");
+  LearnElementLocator(origin2, url, "/#lcp2");
+  EXPECT_EQ(*GetLcppStat(origin2, url),
+            MakeLcppStatWithLCPElementLocator("/#lcp2"));
+
+  const url::Origin origin3 = CreateOrigin("origin3.test");
+  LearnElementLocator(origin3, url, "/#lcp3");
+  EXPECT_EQ(*GetLcppStat(origin3, url),
+            MakeLcppStatWithLCPElementLocator("/#lcp3"));
+
+  const url::Origin origin4 = CreateOrigin("origin4.test");
+  LearnElementLocator(origin4, url, "/#lcp4");
+  EXPECT_EQ(*GetLcppStat(origin4, url),
+            MakeLcppStatWithLCPElementLocator("/#lcp4"));
+  // Confirm the first origin over `lcpp_multiple_key_max_histogram_buckets` is
+  // dropped.
+  EXPECT_FALSE(GetLcppStat(origin1, url));
+  // Non origin entry is still alive.
+  EXPECT_EQ(*GetLcppStat(std::nullopt, url),
+            MakeLcppStatWithLCPElementLocator("/#lcp0"));
+
+  // Confirm adding other host urls over `max_hosts_to_track_for_lcpp` lets all
+  // the origin-associated entries be dropped.
+  const GURL url_b("http://b.test");
+  LearnElementLocator(origin1, url_b, "/#b");
+  EXPECT_EQ(*GetLcppStat(origin1, url_b),
+            MakeLcppStatWithLCPElementLocator("/#b"));
+  EXPECT_FALSE(GetLcppStat(origin2, url));
+  EXPECT_FALSE(GetLcppStat(origin3, url));
+  EXPECT_FALSE(GetLcppStat(origin4, url));
+  // Non origin entry is still alive.
+  EXPECT_EQ(*GetLcppStat(std::nullopt, url),
+            MakeLcppStatWithLCPElementLocator("/#lcp0"));
+}
+
+TEST_F(LcppInitiatorOriginTest, AddNewEntryToFullBuckets) {
+  LoadingPredictorConfig config;
+  PopulateTestConfig(&config);
+  config.max_hosts_to_track_for_lcpp = 1u;
+  config.lcpp_initiator_origin_histogram_sliding_window_size = 4u;
+  config.lcpp_initiator_origin_max_histogram_buckets = 2u;
+  InitializeDB(config);
+
+  const GURL url("http://a.test");
+  const url::Origin origin1 = CreateOrigin("origin1.test");
+  LearnElementLocator(origin1, url, "/#lcp1");
+  LearnElementLocator(origin1, url, "/#lcp1");
+  const url::Origin origin2 = CreateOrigin("origin2.test");
+  LearnElementLocator(origin2, url, "/#lcp2");
+  LearnElementLocator(origin2, url, "/#lcp2");
+  EXPECT_EQ(*GetLcppStat(origin1, url),
+            MakeLcppStatWithLCPElementLocator("/#lcp1", /*frequency=*/2));
+  EXPECT_EQ(*GetLcppStat(origin2, url),
+            MakeLcppStatWithLCPElementLocator("/#lcp2", /*frequency=*/2));
+
+  // New entry is not recorded until its frequency is over existing ones.
+  const url::Origin origin3 = CreateOrigin("origin3.test");
+  EXPECT_FALSE(LearnElementLocator(origin3, url, "/#lcp3"));
+  EXPECT_FALSE(GetLcppStat(origin3, url));
+
+  EXPECT_FALSE(LearnElementLocator(origin3, url, "/#lcp3"));
+  EXPECT_FALSE(GetLcppStat(origin3, url));
+
+  EXPECT_TRUE(LearnElementLocator(origin3, url, "/#lcp3"));
+  EXPECT_EQ(*GetLcppStat(origin3, url),
+            MakeLcppStatWithLCPElementLocator("/#lcp3"));
+}
+
+TEST_F(LcppInitiatorOriginTest, TooLongHostName) {
+  LoadingPredictorConfig config;
+  PopulateTestConfig(&config);
+  InitializeDB(config);
+
+  const GURL url("http://a.test");
+  const url::Origin origin1 = CreateOrigin("origin1.test");
+  LearnElementLocator(origin1, url, "/#lcp1");
+  CHECK_EQ(*GetLcppStat(origin1, url),
+           MakeLcppStatWithLCPElementLocator("/#lcp1"));
+
+  const url::Origin too_long_origin = CreateOrigin(
+      std::string(ResourcePrefetchPredictorTables::kMaxStringLength + 1, 'c'));
+  EXPECT_FALSE(LearnElementLocator(too_long_origin, url, "/#lcp1"));
+  EXPECT_FALSE(GetLcppStat(too_long_origin, url));
+}
+
+TEST_F(LcppInitiatorOriginTest, DeleteURL) {
+  LoadingPredictorConfig config;
+  PopulateTestConfig(&config);
+  config.max_hosts_to_track_for_lcpp = 3u;
+  config.lcpp_initiator_origin_histogram_sliding_window_size = 4u;
+  config.lcpp_initiator_origin_max_histogram_buckets = 3u;
+  InitializeDB(config);
+
+  const GURL url1("http://a.test");
+  LearnElementLocator(url1, "/#lcp0");
+  EXPECT_EQ(*GetLcppStat(std::nullopt, url1),
+            MakeLcppStatWithLCPElementLocator("/#lcp0"));
+  const GURL url2("http://b.test");
+  const url::Origin origin2 = url::Origin::Create(url2);
+  LearnElementLocator(origin2, url1, "/#lcp2");
+  EXPECT_EQ(*GetLcppStat(origin2, url1),
+            MakeLcppStatWithLCPElementLocator("/#lcp2"));
+  const GURL url3("http://c.test");
+  const url::Origin origin3 = url::Origin::Create(url3);
+  LearnElementLocator(origin3, url1, "/#lcp3");
+  EXPECT_EQ(*GetLcppStat(origin3, url1),
+            MakeLcppStatWithLCPElementLocator("/#lcp3"));
+
+  LearnElementLocator(url2, "/#lcp4");
+  EXPECT_EQ(*GetLcppStat(std::nullopt, url2),
+            MakeLcppStatWithLCPElementLocator("/#lcp4"));
+
+  lcpp_data_map_->DeleteUrls({url2, GURL("http://d.test")});
+  // Confirm all `url2` associated entries was removed.
+  EXPECT_EQ(*GetLcppStat(std::nullopt, url1),
+            MakeLcppStatWithLCPElementLocator("/#lcp0"));
+  EXPECT_FALSE(GetLcppStat(origin2, url1));
+  EXPECT_EQ(*GetLcppStat(origin3, url1),
+            MakeLcppStatWithLCPElementLocator("/#lcp3"));
+  EXPECT_FALSE(GetLcppStat(std::nullopt, url2));
+
+  lcpp_data_map_->DeleteAllData();
+  // Confirm all data was removed.
+  EXPECT_FALSE(GetLcppStat(std::nullopt, url1));
+  EXPECT_FALSE(GetLcppStat(origin2, url1));
+  EXPECT_FALSE(GetLcppStat(origin3, url1));
+  EXPECT_FALSE(GetLcppStat(std::nullopt, url2));
+}
+
+TEST_F(LcppInitiatorOriginTest, CanonicalizeBrokenDataOnStartUp) {
+  LoadingPredictorConfig config;
+  PopulateTestConfig(&config);
+
+  const GURL url("http://a.test");
+  const url::Origin origin1 = CreateOrigin("origin1.test");
+  const url::Origin origin2 = CreateOrigin("origin2.test");
+  {
+    InitializeDB(config);
+
+    LearnElementLocator(origin1, url, "/#lcp1");
+    EXPECT_EQ(*GetLcppStat(origin1, url),
+              MakeLcppStatWithLCPElementLocator("/#lcp1"));
+    LearnElementLocator(origin2, url, "/#lcp2");
+    EXPECT_EQ(*GetLcppStat(origin2, url),
+              MakeLcppStatWithLCPElementLocator("/#lcp2"));
+
+    LcppOrigin lcpp_origin;
+    OriginMap()->TryGetData(url.host(), &lcpp_origin);
+    EXPECT_TRUE(!lcpp_origin.origin_data_map().empty());
+    EXPECT_TRUE(IsCanonicalFrequencyData(lcpp_origin));
+    lcpp_origin.mutable_origin_data_map()->erase(origin2.host());
+    EXPECT_FALSE(IsCanonicalFrequencyData(lcpp_origin));
+    OriginMap()->UpdateData(url.host(), lcpp_origin);
+    TearDownDB();
+  }
+
+  {
+    InitializeDB(config);
+    for (const auto& it : GetOriginMap()) {
+      const LcppOrigin& lcpp_origin = it.second;
+      EXPECT_TRUE(IsCanonicalFrequencyData(lcpp_origin)) << it.first;
+    }
+
+    EXPECT_EQ(*GetLcppStat(origin1, url),
+              MakeLcppStatWithLCPElementLocator("/#lcp1"));
+    EXPECT_FALSE(GetLcppStat(origin2, url));
+    TearDownDB();
+  }
+}
+
+TEST_F(LcppDataMapTest, ResetInitiatorOriginDBOverFlag) {
+  LoadingPredictorConfig config;
+  PopulateTestConfig(&config);
+
+  const GURL url("http://a.test");
+  const GURL url2("http://b.test");
+  const url::Origin origin = CreateOrigin("origin1.test");
+  {
+    [[maybe_unused]] ScopedInitiatorOriginFeature scoped_feature;
+    InitializeDB(config);
+
+    LearnElementLocator(url, "/#lcp0");
+    EXPECT_EQ(*GetLcppStat(std::nullopt, url),
+              MakeLcppStatWithLCPElementLocator("/#lcp0"));
+
+    LearnElementLocator(origin, url2, "/#lcp1");
+    EXPECT_EQ(*GetLcppStat(origin, url2),
+              MakeLcppStatWithLCPElementLocator("/#lcp1"));
+
+    TearDownDB();
+  }
+
+  {
+    [[maybe_unused]] ScopedInitiatorOriginFeature scoped_feature;
+    InitializeDB(config);
+
+    EXPECT_EQ(*GetLcppStat(std::nullopt, url),
+              MakeLcppStatWithLCPElementLocator("/#lcp0"));
+    EXPECT_EQ(*GetLcppStat(origin, url2),
+              MakeLcppStatWithLCPElementLocator("/#lcp1"));
+    TearDownDB();
+  }
+
+  {
+    InitializeDB(config);
+
+    EXPECT_EQ(*GetLcppStat(std::nullopt, url),
+              MakeLcppStatWithLCPElementLocator("/#lcp0"));
+    // LcppStat associated to an initiator origin is removed.
+    EXPECT_FALSE(GetLcppStat(origin, url2));
+    TearDownDB();
+  }
+
+  {
+    [[maybe_unused]] ScopedInitiatorOriginFeature scoped_feature;
+    InitializeDB(config);
+
+    EXPECT_EQ(*GetLcppStat(std::nullopt, url),
+              MakeLcppStatWithLCPElementLocator("/#lcp0"));
+    // LcppStat associated to an initiator origin is removed.
+    EXPECT_FALSE(GetLcppStat(origin, url2));
+    TearDownDB();
+  }
 }
 
 }  // namespace predictors

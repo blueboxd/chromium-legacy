@@ -130,6 +130,7 @@ include_rules = [
   "+components/version_info",
   "+components/version_ui",
   "+components/web_resource",
+  "+components/webauthn",
   "+components/webdata_services",
   "+components/webp_transcode",
   "+crypto",
@@ -179,6 +180,7 @@ include_rules = [
   "-ios/chrome/browser/ui",
   "-ios/common/ui",
   "+ios/chrome/browser/ui/commands",
+  "+ios/chrome/browser/keyboard/ui_bundled/UIKeyCommand+Chrome.h",
 
   # For tests.
   "+ios/chrome/test",
@@ -194,14 +196,15 @@ include_rules = [
 
 specific_include_rules = {
   ".*test\.mm": [
+    "+components/signin/internal/identity_manager/account_capabilities_constants.h",
     "+components/previous_session_info/previous_session_info_private.h",
     # TODO(crbug.com/40820398): browser should not depend on UI, this is a
     # blanket exception for tests.
     "+ios/chrome/browser/ui",
     # Use ios/chrome/browser/ui/authentication/signin_earl_grey.h instead
     "-ios/chrome/browser/ui/authentication/signin_earl_grey_app_interface.h",
-    # use ios/chrome/browser/ui/bookmarks/bookmark_earl_grey.h instead
-    "-ios/chrome/browser/ui/bookmarks/bookmark_earl_grey_app_interface.h",
+    # use ios/chrome/browser/bookmarks/ui_bundled/bookmark_earl_grey.h instead
+    "-ios/chrome/browser/bookmarks/ui_bundled/bookmark_earl_grey_app_interface.h",
     # Blanket exception for tests to be allowed to depend on everything.
     "+ios/chrome/browser",
   ],

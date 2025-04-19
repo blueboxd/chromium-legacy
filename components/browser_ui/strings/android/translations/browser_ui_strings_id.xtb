@@ -5,7 +5,6 @@
 <translation id="1036348656032585052">Nonaktifkan</translation>
 <translation id="1044891598689252897">Situs akan berfungsi secara normal</translation>
 <translation id="1073417869336441572">Bantu kami meningkatkan Chrome dengan memberi tahu kami alasan Anda mengizinkan cookie pihak ketiga. <ph name="BEGIN_LINK" />Kirim masukan<ph name="END_LINK" /></translation>
-<translation id="1113435009358629918">Sembunyikan kartu penurunan harga</translation>
 <translation id="1178581264944972037">Jeda</translation>
 <translation id="1181037720776840403">Hapus</translation>
 <translation id="1192844206376121885">Tindakan ini akan menghapus semua data dan cookie yang disimpan oleh <ph name="ORIGIN" />.</translation>
@@ -24,6 +23,7 @@
 <translation id="1415402041810619267">URL dipotong</translation>
 <translation id="1448064542941920355">Kurangi zoom</translation>
 <translation id="146867109637325312">{COUNT,plural, =1{<ph name="SITE_COUNT" /> situs}other{<ph name="SITE_COUNT" /> situs}}</translation>
+<translation id="1500473259453106018">Sembunyikan kartu penurunan harga di tab</translation>
 <translation id="1510341833810331442">Situs tidak diizinkan menyimpan data di perangkat Anda</translation>
 <translation id="1547123415014299762">Cookie pihak ketiga diizinkan</translation>
 <translation id="1568470248891039841">Situs yang Anda buka dapat menyematkan konten dari situs lain, misalnya gambar, iklan, dan teks. Situs lain tersebut dapat meminta izin untuk menggunakan info tentang Anda yang disimpannya ketika Anda menjelajahi situs. <ph name="BEGIN_LINK" />Pelajari konten sematan lebih lanjut<ph name="END_LINK" /></translation>
@@ -91,13 +91,11 @@
 <translation id="2498359688066513246">Bantuan &amp; masukan</translation>
 <translation id="2501278716633472235">Kembali</translation>
 <translation id="2546283357679194313">Cookie dan data situs</translation>
-<translation id="2550801787432930915">Kartu penurunan harga</translation>
 <translation id="2570922361219980984">Akses lokasi juga dinonaktifkan untuk perangkat ini. Aktifkan di <ph name="BEGIN_LINK" />Setelan Android<ph name="END_LINK" />.</translation>
 <translation id="257931822824936280">Diperluas - klik untuk menciutkan</translation>
 <translation id="2586657967955657006">Papan klip</translation>
 <translation id="2597457036804169544">Jangan terapkan tema gelap ke situs</translation>
 <translation id="2606760465469169465">Verifikasi otomatis</translation>
-<translation id="2613007545732217283"><ph name="HOST_NAME" /> <ph name="SEPARATOR" /> <ph name="RECENCY" /></translation>
 <translation id="2621115761605608342">Izinkan JavaScript untuk situs tertentu.</translation>
 <translation id="2653659639078652383">Kirim</translation>
 <translation id="2677748264148917807">Keluar</translation>
@@ -114,6 +112,7 @@
 <translation id="2891975107962658722">Memblokir situs agar tidak menyimpan data di perangkat Anda</translation>
 <translation id="2903493209154104877">Alamat</translation>
 <translation id="2910701580606108292">Tanyakan sebelum mengizinkan situs untuk memutar konten yang dilindungi</translation>
+<translation id="2918484639460781603">Buka setelan</translation>
 <translation id="2932883381142163287">Laporkan penyalahgunaan</translation>
 <translation id="2939338015096024043">Jika diaktifkan, situs dapat meminta untuk melacak posisi kamera dan mempelajari lingkungan sekitar Anda. Jika dinonaktifkan, situs tidak dapat melacak posisi kamera Anda atau mempelajari lingkungan sekitar Anda.</translation>
 <translation id="2968755619301702150">Penampil sertifikat</translation>
@@ -134,6 +133,7 @@
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3232293466644486101">Hapus data penjelajahan…</translation>
 <translation id="3242646949159196181">Jika diaktifkan, situs dapat memutar suara. Jika dinonaktifkan, situs tidak dapat memutar suara.</translation>
+<translation id="3273479183583863618">Penurunan harga di tab</translation>
 <translation id="3277252321222022663">Mengizinkan situs untuk mengakses sensor (disarankan)</translation>
 <translation id="3285500645985761267">Izinkan situs terkait melihat aktivitas Anda di grup</translation>
 <translation id="3295019059349372795">Bab 11: Oz, Kota Zamrud yang Menakjubkan</translation>
@@ -162,6 +162,7 @@
 <translation id="3721953990244350188">Tutup dan tampilkan tindakan berikutnya yang tersedia</translation>
 <translation id="3744111561329211289">Sinkronisasi latar belakang</translation>
 <translation id="3763247130972274048">Ketuk video dua kali di kiri atau kanan untuk melewati 10 detik</translation>
+<translation id="3779154269823594982">Ubah sandi</translation>
 <translation id="3797520601150691162">Jangan terapkan tema gelap untuk situs tertentu</translation>
 <translation id="3803367742635802571">Situs yang Anda buka mungkin tidak berfungsi sebagaimana mestinya</translation>
 <translation id="3804247818991980532"><ph name="TYPE_1" />. <ph name="TYPE_2" />.</translation>
@@ -172,7 +173,9 @@
 <translation id="385051799172605136">Kembali</translation>
 <translation id="3859306556332390985">Cari maju</translation>
 <translation id="3895926599014793903">Aktifkan zoom secara paksa</translation>
+<translation id="3905475044299942653">Menghentikan banyak notifikasi</translation>
 <translation id="3908288065506437185">Blokir cookie pihak ketiga dalam mode Samaran</translation>
+<translation id="3913461097001554748"><ph name="DOMAIN_URL" /> <ph name="SEPARATOR1" /> <ph name="DEVICE_NAME" /></translation>
 <translation id="3918378745482005425">Beberapa fitur mungkin tidak berfungsi. Situs terkait masih dapat menggunakan cookie pihak ketiga.</translation>
 <translation id="3933121352599513978">Ciutkan permintaan yang tidak diinginkan (direkomendasikan)</translation>
 <translation id="3955193568934677022">Izinkan situs memutar konten yang dilindungi (direkomendasikan)</translation>
@@ -190,7 +193,6 @@
 <translation id="4169549551965910670">Terhubung ke perangkat USB</translation>
 <translation id="4194328954146351878">Tanyakan sebelum mengizinkan situs melihat dan mengubah informasi di perangkat NFC (direkomendasikan)</translation>
 <translation id="4200726100658658164">Buka Setelan Lokasi</translation>
-<translation id="4206661981211220935"><ph name="RECENCY" /> <ph name="SEPARATOR" /> Dari <ph name="FROM_DEVICE" /></translation>
 <translation id="4226663524361240545">Notifikasi dapat membuat perangkat bergetar</translation>
 <translation id="4259722352634471385">Navigasi diblokir: <ph name="URL" /></translation>
 <translation id="4278390842282768270">Diizinkan</translation>
@@ -198,7 +200,6 @@
 <translation id="42981349822642051">Luaskan</translation>
 <translation id="4336219115486912529">{COUNT,plural, =1{Berakhir besok}other{Berakhir dalam # hari}}</translation>
 <translation id="4336566011000459927">Chrome akan membatasi cookie lagi hari ini</translation>
-<translation id="4336836404251800362"><ph name="RECENCY" /> <ph name="SEPARATOR" /> Tab terakhir Anda</translation>
 <translation id="4338831206024587507">Semua situs di bawah <ph name="DOMAIN" /></translation>
 <translation id="4402755511846832236">Blokir situs agar tidak mengetahui saat Anda aktif menggunakan perangkat ini</translation>
 <translation id="4412992751769744546">Izinkan cookie pihak ketiga</translation>
@@ -220,6 +221,7 @@
 <translation id="4751476147751820511">Sensor gerakan atau cahaya</translation>
 <translation id="4755971844837804407">Jika diaktifkan, situs dapat menampilkan iklan apa pun kepada Anda. Jika dinonaktifkan, situs tidak dapat menampilkan iklan yang mengganggu atau menyesatkan.</translation>
 <translation id="4779083564647765204">Zoom</translation>
+<translation id="4807122856660838973">Aktifkan Safe Browsing</translation>
 <translation id="4811450222531576619">Pelajari sumber dan topik halaman ini</translation>
 <translation id="4836046166855586901">Tanyakan saat situs ingin mengetahui saat Anda aktif menggunakan perangkat ini</translation>
 <translation id="483914009762354899">Sertakan semua situs di domain ini</translation>
@@ -233,6 +235,7 @@
 <translation id="4994033804516042629">Kontak tidak ditemukan</translation>
 <translation id="4996978546172906250">Bagikan dengan</translation>
 <translation id="5001526427543320409">Cookie pihak ketiga</translation>
+<translation id="5007392906805964215">Tinjau</translation>
 <translation id="5039804452771397117">Izinkan</translation>
 <translation id="5048398596102334565">Mengizinkan situs mengakses sensor gerakan (disarankan)</translation>
 <translation id="5050380848339752099">Situs ini akan membagikan informasi ke aplikasi di luar mode Samaran.</translation>
@@ -304,7 +307,6 @@
 <translation id="6015775454662021376">Mengontrol akses situs ini ke perangkat Anda</translation>
 <translation id="6040143037577758943">Tutup</translation>
 <translation id="6042308850641462728">Lainnya</translation>
-<translation id="6060464773477604108"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> Tab terakhir Anda</translation>
 <translation id="6064125863973209585">Download yang selesai</translation>
 <translation id="6071501408666570960">Anda mungkin akan logout dari situs ini</translation>
 <translation id="6120483543004435978">Jika diaktifkan, situs dapat meminta untuk mengetahui saat Anda aktif menggunakan perangkat. Jika dinonaktifkan, situs tidak dapat mengetahui saat Anda aktif menggunakan perangkat.</translation>
@@ -349,7 +351,6 @@
 <translation id="6612358246767739896">Konten dilindungi</translation>
 <translation id="662080504995468778">Tinggal</translation>
 <translation id="6653342741369270081">Tekan tombol kembali untuk keluar dari mode layar penuh.</translation>
-<translation id="6670377348676659110">{TILE_COUNT,plural, =1{Sembunyikan lanjutkan dengan tab ini}other{Sembunyikan lanjutkan dengan tab ini}}</translation>
 <translation id="6689172468748959065">Foto profil</translation>
 <translation id="6697925417670533197">Download aktif</translation>
 <translation id="6722828510648505498">Blokir perintah login dari layanan identitas.</translation>
@@ -359,12 +360,14 @@
 <translation id="6787751205395685251">Pilih opsi untuk <ph name="SITE_NAME" /></translation>
 <translation id="6790428901817661496">Putar</translation>
 <translation id="6818926723028410516">Pilih item</translation>
+<translation id="6840760312327750441">Untuk mengelompokkan tab, sentuh lama sebuah tab. Lalu, tarik ke tab lainnya.</translation>
 <translation id="6864395892908308021">Perangkat ini tidak dapat membaca NFC</translation>
-<translation id="6867014948848323204">Dari <ph name="FROM_DEVICE" /></translation>
+<translation id="6870169401250095575">Sembunyikan kartu Pemeriksaan Keselamatan</translation>
 <translation id="6912998170423641340">Blokir situs agar tidak membaca teks dan gambar dari papan klip</translation>
 <translation id="6945221475159498467">Pilih</translation>
 <translation id="6950072572526089586">Situs yang Anda buka dapat menyimpan info tentang hal-hal yang Anda lakukan agar situs tersebut berfungsi seperti yang diharapkan — misalnya, untuk membuat Anda tetap login ke situs atau menyimpan item di keranjang belanja. Situs sering kali menyimpan info ini untuk sementara di perangkat Anda.</translation>
 <translation id="6965382102122355670">Oke</translation>
+<translation id="6980861169612950611">Hapus data situs? <ph name="SITE_NAME" /></translation>
 <translation id="6981982820502123353">Aksesibilitas</translation>
 <translation id="6992289844737586249">Tanya terlebih dahulu sebelum mengizinkan situs menggunakan mikrofon Anda (disarankan)</translation>
 <translation id="7000754031042624318">Dinonaktifkan di setelan Android</translation>
@@ -392,6 +395,7 @@
 <translation id="7366415735885268578">Tambahkan situs</translation>
 <translation id="7368695150573390554">Semua data offline akan dihapus</translation>
 <translation id="7383715096023715447">Setelan untuk <ph name="DOMAIN" /></translation>
+<translation id="7399802613464275309">Pemeriksaan Keamanan</translation>
 <translation id="7406113532070524618">Setelan ini berfungsi tanpa mengidentifikasi Anda atau mengizinkan situs melihat histori penjelajahan Anda, meskipun situs dapat membagikan info dalam jumlah kecil sebagai bagian dari verifikasi</translation>
 <translation id="7423098979219808738">Tanyakan dulu</translation>
 <translation id="7423538860840206698">Diblokir agar tidak membaca papan klip</translation>
@@ -426,7 +430,7 @@
 <translation id="7986741934819883144">Pilih kontak</translation>
 <translation id="7990211076305263060">Jika diaktifkan, situs dapat meminta untuk menggunakan mikrofon Anda. Jika dinonaktifkan, situs tidak dapat menggunakan mikrofon Anda.</translation>
 <translation id="8007176423574883786">Dinonaktifkan untuk perangkat ini</translation>
-<translation id="8009579582995973057"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> Dari <ph name="FROM_DEVICE" /></translation>
+<translation id="8010630645305864042">{TILE_COUNT,plural, =1{Sembunyikan kartu lanjutkan dengan tab ini}other{Sembunyikan kartu lanjutkan dengan tab ini}}</translation>
 <translation id="802154636333426148">Download gagal</translation>
 <translation id="8042586301629853791">Urutkan menurut:</translation>
 <translation id="8067883171444229417">Putar video</translation>
@@ -461,6 +465,7 @@
 <translation id="8441146129660941386">Cari mundur</translation>
 <translation id="8444433999583714703">Untuk mengizinkan <ph name="APP_NAME" /> mengakses lokasi Anda, aktifkan juga lokasi di <ph name="BEGIN_LINK" />Setelan Android<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Cabut izin perangkat</translation>
+<translation id="8473055640493819707">'<ph name="APP_NAME" />' sudah usang. Instal ulang aplikasi.</translation>
 <translation id="8487700953926739672">Tersedia secara offline</translation>
 <translation id="848952951823693243">Selalu minta situs seluler</translation>
 <translation id="8499083585497694743">Aktifkan mikrofon</translation>
@@ -477,6 +482,7 @@
 <translation id="8681886425883659911">Iklan diblokir di situs yang dikenal menampilkan iklan yang mengganggu atau menyesatkan</translation>
 <translation id="868929229000858085">Telusuri kontak Anda</translation>
 <translation id="8712637175834984815">Mengerti</translation>
+<translation id="8715862698998036666">Tarik dari atas dan geser dari tepi kiri atau kanan untuk keluar dari layar penuh.</translation>
 <translation id="8719283222052720129">Aktifkan izin untuk <ph name="APP_NAME" /> di <ph name="BEGIN_LINK" />Setelan Android<ph name="END_LINK" />.</translation>
 <translation id="8721719390026067591">Jika diaktifkan, situs dapat meminta untuk mencari perangkat Bluetooth. Jika dinonaktifkan, situs tidak dapat mencari perangkat Bluetooth.</translation>
 <translation id="8725066075913043281">Coba lagi</translation>
@@ -513,5 +519,6 @@
 <translation id="9162462602695099906">Halaman ini berbahaya</translation>
 <translation id="930525582205581608">Lupakan situs ini?</translation>
 <translation id="947156494302904893">Situs yang Anda buka dapat memverifikasi bahwa Anda adalah orang sungguhan dan bukan bot</translation>
+<translation id="959682366969460160">Atur dengan mudah</translation>
 <translation id="967624055006145463">Data disimpan</translation>
 </translationbundle>

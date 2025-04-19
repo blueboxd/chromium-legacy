@@ -2,15 +2,23 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
+
 static_library("history_embeddings") {
   sources = [
+    "answerer.cc",
+    "answerer.h",
     "embedder.h",
     "history_embeddings_features.cc",
     "history_embeddings_features.h",
     "history_embeddings_service.cc",
     "history_embeddings_service.h",
+    "ml_answerer.cc",
+    "ml_answerer.h",
     "ml_embedder.cc",
     "ml_embedder.h",
+    "mock_answerer.cc",
+    "mock_answerer.h",
     "mock_embedder.cc",
     "mock_embedder.h",
     "passage_embeddings_service_controller.cc",
@@ -31,7 +39,8 @@ static_library("history_embeddings") {
     "//components/history_embeddings/proto:history_embeddings_proto",
     "//components/keyed_service/core",
     "//components/optimization_guide/core",
-    "//components/os_crypt/sync",
+    "//components/optimization_guide/proto:optimization_guide_proto",
+    "//components/os_crypt/async/browser",
     "//components/page_content_annotations/core",
     "//content/public/browser",
     "//content/public/common",
@@ -42,13 +51,20 @@ static_library("history_embeddings") {
     "//third_party/zlib/google:compression_utils",
     "//url",
   ]
+
+  if (is_chromeos) {
+    deps += [ "//chromeos/constants:constants" ]
+  }
 }
 
 source_set("unit_tests") {
   testonly = true
   sources = [
     "history_embeddings_service_unittest.cc",
+    "ml_answerer_unittest.cc",
     "ml_embedder_unittest.cc",
+    "mock_history_embeddings_service.cc",
+    "mock_history_embeddings_service.h",
     "passages_util_unittest.cc",
     "sql_database_unittest.cc",
     "vector_database_unittest.cc",
@@ -60,10 +76,20 @@ source_set("unit_tests") {
     "//components/history/core/test",
     "//components/history_embeddings/proto:history_embeddings_proto",
     "//components/optimization_guide/core:test_support",
-    "//components/os_crypt/sync",
-    "//components/os_crypt/sync:test_support",
+    "//components/optimization_guide/proto:optimization_guide_proto",
+    "//components/os_crypt/async/browser:test_support",
     "//components/page_content_annotations/core:test_support",
-    "//services/passage_embeddings:passage_embeddings",
+    "//services/passage_embeddings/public/mojom",
     "//testing/gtest",
   ]
+
+  if (is_ios) {
+    deps += [ "//components/test:history_embeddings_test_bundle_data" ]
+  }
+
+  if (is_chromeos) {
+    deps += [ "//chromeos/constants:constants" ]
+  }
+
+  data = [ "//components/test/data/history_embeddings/" ]
 }

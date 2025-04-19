@@ -71,24 +71,14 @@ EXCLUDED_TESTS = [
     os.path.join('tests', 'codegen', 'issue-45222.rs'),
     # https://github.com/rust-lang/rust/issues/96497
     os.path.join('tests', 'codegen', 'issue-96497-slice-size-nowrap.rs'),
-    # TODO(crbug.com/41487664): remove after rolling rust with fix
-    os.path.join('tests', 'codegen', 'abi-main-signature-32bit-c-int.rs'),
-    # TODO(crbug.com/41486049): remove after rolling rust with fix
-    os.path.join('tests', 'ui', 'asm', 'inline-syntax.rs'),
-    # TODO(https://crbug.com/324853415): benign failure; remove when fixed.
-    os.path.join('tests', 'codegen', 'iter-repeat-n-trivial-drop.rs'),
     # TODO(crbug.com/342026487): benign failure; remove when fixed.
     os.path.join('tests', 'codegen', 'vec-in-place.rs'),
-
 ]
 EXCLUDED_TESTS_WINDOWS = [
     # https://github.com/rust-lang/rust/issues/96464
     os.path.join('tests', 'codegen', 'vec-shrink-panik.rs'),
 ]
 EXCLUDED_TESTS_MAC = [
-    # https://crbug.com/1479875 This fails on Mac. It relates to the large code
-    # model which we don't use, so suppress it for now.
-    os.path.join('tests', 'ui', 'thread-local', 'thread-local-issue-37508.rs'),
     # https://crbug.com/1521497 These fail on Mac.
     os.path.join('tests', 'ui', 'abi', 'stack-probes-lto.rs#x64'),
     os.path.join('tests', 'ui', 'abi', 'stack-probes.rs#x64'),
@@ -108,9 +98,10 @@ RUST_GIT_URL = ('https://chromium.googlesource.com/external/' +
                 'github.com/rust-lang/rust')
 
 RUST_SRC_DIR = os.path.join(THIRD_PARTY_DIR, 'rust-src')
+RUST_BUILD_DIR = os.path.join(RUST_SRC_DIR, 'build')
 RUST_BOOTSTRAP_DIST_RS = os.path.join(RUST_SRC_DIR, 'src', 'bootstrap',
                                       'dist.rs')
-STAGE0_JSON_PATH = os.path.join(RUST_SRC_DIR, 'src', 'stage0.json')
+STAGE0_JSON_PATH = os.path.join(RUST_SRC_DIR, 'src', 'stage0')
 # Download crates.io dependencies to rust-src subdir (rather than $HOME/.cargo)
 CARGO_HOME_DIR = os.path.join(RUST_SRC_DIR, 'cargo-home')
 RUST_SRC_VERSION_FILE_PATH = os.path.join(RUST_SRC_DIR, 'src', 'version')
@@ -162,12 +153,6 @@ BUILD_TARGETS = [
     'src/tools/rustfmt'
 ]
 
-# Desired tools and libraries in our Rust toolchain.
-DISTRIBUTION_ARTIFACTS = [
-    'cargo', 'clippy', 'compiler/rustc', 'library/std', 'rust-analyzer',
-    'rustfmt', 'src'
-]
-
 # Which test suites to run. Any failure will fail the build.
 TEST_SUITES = [
     'library/std',
@@ -210,7 +195,7 @@ def VerifyStage0JsonHash():
     if actual_hash == STAGE0_JSON_SHA256:
         return
 
-    print('src/stage0.json hash is different than expected!')
+    print('src/stage0 hash is different than expected!')
     print('Expected hash: ' + STAGE0_JSON_SHA256)
     print('Actual hash:   ' + actual_hash)
     sys.exit(1)
@@ -227,21 +212,23 @@ def FetchBetaPackage(name, rust_git_hash, triple=None):
     triple = triple if triple else RustTargetTriple()
     filename = f'{name}-beta-{triple}'
 
-    # Pull the stage0 JSON to find the package intended to be used to
-    # build this version of the Rust compiler.
+    # Pull the stage0 to find the package intended to be used to build this
+    # version of the Rust compiler.
     STAGE0_JSON_URL = (
         'https://chromium.googlesource.com/external/github.com/'
-        'rust-lang/rust/+/{GIT_HASH}/src/stage0.json?format=TEXT')
+        'rust-lang/rust/+/{GIT_HASH}/src/stage0?format=TEXT')
     base64_text = urllib.request.urlopen(
         STAGE0_JSON_URL.format(GIT_HASH=rust_git_hash)).read().decode("utf-8")
-    stage0 = json.loads(base64.b64decode(base64_text))
+    stage0 = base64.b64decode(base64_text).decode("utf-8")
+    lines = stage0.splitlines()
 
-    # The stage0 JSON contains the path to all tarballs it uses binaries from.
-    for k in stage0['checksums_sha256'].keys():
-        if k.endswith(filename + '.tar.gz'):
-            package_tgz = k
+    # The stage0 file contains the path to all tarballs it uses binaries from.
+    for l in lines:
+        if l.startswith('dist_server='):
+            server = l.split('=')[1]
+        if (filename + '.tar.gz') in l:
+            package_tgz = l.split('=')[0]
 
-    server = stage0['config']['dist_server']
     DownloadAndUnpack(f'{server}/{package_tgz}', LLVM_BUILD_TOOLS_DIR)
     return os.path.join(LLVM_BUILD_TOOLS_DIR, filename)
 
@@ -632,6 +619,12 @@ def GitApplyCherryPicks():
     GitCherryPick(RUST_SRC_DIR, 'https://github.com/rust-lang/rust.git',
                   '14947b410ad23a09251180af50486e247f70b465')
 
+    # TODO(crbug.com/350341587): Remove once
+    # https://github.com/rust-lang/rust/pull/127025 or a similar fix has been
+    # merged.
+    GitCherryPick(RUST_SRC_DIR, 'https://github.com/rust-lang/rust.git',
+                  '56d589b5bea75d08d21d7d6efb34e8527aec7635')
+
     print('Finished applying cherry-picks.')
 
 
@@ -769,6 +762,16 @@ def main():
         # changes that move submodules.
         GitApplyCherryPicks()
 
+        # TODO(crbug.com/356618943): Workaround for https://github.com/rust-lang/cargo/issues/14253
+        bootstrap_cargo = os.path.join(RUST_SRC_DIR, 'src', 'bootstrap',
+                                       'Cargo.toml')
+        with open(bootstrap_cargo, 'r') as f:
+            lines = f.readlines()
+        with open(bootstrap_cargo, 'w') as f:
+            for l in lines:
+                if l.strip('\n') != 'debug = 0':
+                    f.write(l)
+
         CargoVendor(cargo_bin)
 
     # Gnrt needs the checkout to be up-to-date, workspace submodules to be
@@ -799,9 +802,11 @@ def main():
     building_on_host_triple = RustTargetTriple()
     xpy_args = ['--build', building_on_host_triple]
 
+    # Delete the build directory.
     if not args.skip_clean:
-        print('Cleaning build artifacts...')
-        xpy.run('clean', xpy_args)
+        print('Clearing build directory...')
+        if os.path.exists(RUST_BUILD_DIR):
+            RmTree(RUST_BUILD_DIR)
 
     if not args.skip_test:
         print(f'Building stage 2 artifacts and running tests...')
@@ -822,8 +827,7 @@ def main():
     if os.path.exists(RUST_TOOLCHAIN_OUT_DIR):
         RmTree(RUST_TOOLCHAIN_OUT_DIR)
 
-    artifacts = DISTRIBUTION_ARTIFACTS
-    xpy.run('install', xpy_args + artifacts)
+    xpy.run('install', [])
 
     # Copy additional vendored crates required for building stdlib.
     print(f'Copying vendored dependencies to {RUST_TOOLCHAIN_OUT_DIR} ...')

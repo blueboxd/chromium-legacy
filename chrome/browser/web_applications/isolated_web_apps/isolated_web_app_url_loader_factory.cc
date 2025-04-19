@@ -8,12 +8,14 @@
 #include <optional>
 #include <vector>
 
+#include "base/containers/span.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/functional/overloaded.h"
 #include "base/location.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/no_destructor.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -28,6 +30,7 @@
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_update_manager.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
 #include "chrome/browser/web_applications/isolated_web_apps/pending_install_info.h"
+#include "chrome/browser/web_applications/proto/web_app_install_state.pb.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
@@ -69,8 +72,8 @@ namespace web_app {
 
 namespace {
 
-const char kInstallPagePath[] = "/.well-known/_generated_install_page.html";
-const char kInstallPageContent[] = R"(
+constexpr char kInstallPagePath[] = "/.well-known/_generated_install_page.html";
+constexpr char kInstallPageContent[] = R"(
     <!DOCTYPE html>
     <html>
       <head>
@@ -81,12 +84,12 @@ const char kInstallPageContent[] = R"(
     </html>
 )";
 
-const char kIsolatedAppCSP[] =
+constexpr char kIsolatedAppCspTemplate[] =
     "base-uri 'none';"
     "default-src 'self';"
     "object-src 'none';"
     "frame-src 'self' https: blob: data:;"
-    "connect-src 'self' https: wss: blob: data:;"
+    "connect-src 'self' https: wss: blob: data:%s;"
     "script-src 'self' 'wasm-unsafe-eval';"
     "img-src 'self' https: blob: data:;"
     "media-src 'self' https: blob: data:;"
@@ -98,6 +101,23 @@ const char kIsolatedAppCSP[] =
 bool IsSupportedHttpMethod(const std::string& method) {
   return method == net::HttpRequestHeaders::kGetMethod ||
          method == net::HttpRequestHeaders::kHeadMethod;
+}
+
+const std::string& GetDefaultCsp() {
+  static const base::NoDestructor<std::string> default_csp(
+      [] { return base::StringPrintf(kIsolatedAppCspTemplate, ""); }());
+  return *default_csp;
+}
+
+std::optional<std::string> ComputeCspOverride(const IwaSourceWithMode& source) {
+  auto* proxy_source = absl::get_if<IwaSourceProxy>(&source.variant());
+  if (proxy_source && proxy_source->proxy_url().scheme() == "http") {
+    url::Origin origin = proxy_source->proxy_url();
+    std::string proxy_ws_url =
+        base::StringPrintf(" ws://%s:%i", origin.host().c_str(), origin.port());
+    return base::StringPrintf(kIsolatedAppCspTemplate, proxy_ws_url.c_str());
+  }
+  return std::nullopt;
 }
 
 void CompleteWithGeneratedResponse(
@@ -135,10 +155,12 @@ void CompleteWithGeneratedResponse(
                                    /*cached_metadata=*/std::nullopt);
 
   if (body.has_value()) {
-    size_t write_size = body->size();
+    size_t actually_written_bytes = 0;
     MojoResult write_result = producer_handle->WriteData(
-        body->c_str(), &write_size, MOJO_WRITE_DATA_FLAG_NONE);
-    if (write_result != MOJO_RESULT_OK || write_size != body->size()) {
+        base::as_byte_span(*body), MOJO_WRITE_DATA_FLAG_NONE,
+        actually_written_bytes);
+    if (write_result != MOJO_RESULT_OK ||
+        actually_written_bytes != body->size()) {
       loader_client->OnComplete(
           network::URLLoaderCompletionStatus(net::ERR_FAILED));
       return;
@@ -192,12 +214,15 @@ base::expected<std::reference_wrapper<const WebApp>, std::string>
 FindIsolatedWebApp(WebAppProvider& provider,
                    const IsolatedWebAppUrlInfo& url_info) {
   const WebAppRegistrar& registrar = provider.registrar_unsafe();
-  const WebApp* iwa = registrar.GetAppById(url_info.app_id());
 
-  if (iwa == nullptr || !iwa->is_locally_installed()) {
+  if (!registrar.IsInstallState(
+          url_info.app_id(),
+          {proto::InstallState::INSTALLED_WITH_OS_INTEGRATION,
+           proto::InstallState::INSTALLED_WITHOUT_OS_INTEGRATION})) {
     return base::unexpected("Isolated Web App not installed: " +
                             url_info.origin().Serialize());
   }
+  const WebApp* iwa = registrar.GetAppById(url_info.app_id());
 
   if (!iwa->isolation_data().has_value()) {
     return base::unexpected("App is not an Isolated Web App: " +
@@ -212,6 +237,10 @@ class HeaderInjectionURLLoaderClient : public network::mojom::URLLoaderClient {
   explicit HeaderInjectionURLLoaderClient(
       mojo::PendingRemote<network::mojom::URLLoaderClient> url_loader_client)
       : url_loader_client_(std::move(url_loader_client)) {}
+
+  void set_csp_override(std::string_view csp_override) {
+    csp_override_ = csp_override;
+  }
 
  private:
   // `network::mojom::URLLoaderClient`:
@@ -229,10 +258,13 @@ class HeaderInjectionURLLoaderClient : public network::mojom::URLLoaderClient {
     scoped_refptr<net::HttpResponseHeaders> headers = response_head->headers;
     size_t original_size = headers->raw_headers().size();
 
+    std::string csp_header =
+        csp_override_.has_value() ? csp_override_.value() : GetDefaultCsp();
+
     // Apps could specify a more restrictive CSP than what we enforce, which we
     // don't want to overwrite. We add our CSP here so that existing CSPs will
     // still be enforced. Existing CO*P headers are replaced.
-    headers->AddHeader("Content-Security-Policy", kIsolatedAppCSP);
+    headers->AddHeader("Content-Security-Policy", csp_header);
     headers->SetHeader("Cross-Origin-Opener-Policy", "same-origin");
     headers->SetHeader("Cross-Origin-Embedder-Policy", "require-corp");
     headers->SetHeader("Cross-Origin-Resource-Policy", "same-origin");
@@ -279,6 +311,7 @@ class HeaderInjectionURLLoaderClient : public network::mojom::URLLoaderClient {
   }
 
   mojo::Remote<network::mojom::URLLoaderClient> url_loader_client_;
+  std::optional<std::string> csp_override_ = std::nullopt;
   int header_size_delta_ = 0;
 };
 
@@ -441,11 +474,20 @@ void IsolatedWebAppURLLoaderFactory::CreateLoaderAndStart(
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& resource_request,
-    mojo::PendingRemote<network::mojom::URLLoaderClient> loader_client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> original_loader_client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(resource_request.url.SchemeIs(chrome::kIsolatedAppScheme));
   DCHECK(resource_request.url.IsStandard());
+
+  auto header_injection_client =
+      std::make_unique<HeaderInjectionURLLoaderClient>(
+          std::move(original_loader_client));
+  HeaderInjectionURLLoaderClient* header_injection_client_ptr =
+      header_injection_client.get();
+  mojo::PendingRemote<network::mojom::URLLoaderClient> loader_client;
+  mojo::MakeSelfOwnedReceiver(std::move(header_injection_client),
+                              loader_client.InitWithNewPipeAndPassReceiver());
 
   if (!CanRequestUrl(resource_request.url)) {
     network::URLLoaderCompletionStatus status(net::ERR_BLOCKED_BY_CLIENT);
@@ -454,27 +496,19 @@ void IsolatedWebAppURLLoaderFactory::CreateLoaderAndStart(
     return;
   }
 
-  mojo::PendingRemote<network::mojom::URLLoaderClient> wrapped_loader_client;
-  mojo::MakeSelfOwnedReceiver(
-      std::make_unique<HeaderInjectionURLLoaderClient>(
-          std::move(loader_client)),
-      wrapped_loader_client.InitWithNewPipeAndPassReceiver());
-
   auto* provider = WebAppProvider::GetForWebApps(profile_);
   if (!provider) {
     LogErrorAndFail("Web Apps are not available for this profile.",
-                    std::move(wrapped_loader_client));
+                    std::move(loader_client));
     return;
   }
   if (!provider->on_registry_ready().is_signaled()) {
     provider->on_registry_ready().Post(
         FROM_HERE,
         base::BindOnce(&IsolatedWebAppURLLoaderFactory::CreateLoaderAndStart,
-                       weak_factory_.GetWeakPtr(),
-
-                       std::move(loader_receiver), request_id, options,
-                       resource_request, std::move(wrapped_loader_client),
-                       traffic_annotation));
+                       weak_factory_.GetWeakPtr(), std::move(loader_receiver),
+                       request_id, options, resource_request,
+                       std::move(loader_client), traffic_annotation));
     return;
   }
 
@@ -482,7 +516,7 @@ void IsolatedWebAppURLLoaderFactory::CreateLoaderAndStart(
                    IsolatedWebAppUrlInfo::Create(resource_request.url),
                    [&](std::string error) {
                      LogErrorAndFail(std::move(error),
-                                     std::move(wrapped_loader_client));
+                                     std::move(loader_client));
                    });
 
   if (frame_tree_node_id_.has_value()) {
@@ -498,7 +532,7 @@ void IsolatedWebAppURLLoaderFactory::CreateLoaderAndStart(
       // to skip checking `IsolatedWebAppPendingInstallInfo` instead of
       // returning an error.
       LogErrorAndFail("Unable to find WebContents based on frame tree node id.",
-                      std::move(wrapped_loader_client));
+                      std::move(loader_client));
       return;
     }
     std::optional<IwaSourceWithMode> pending_install_app_source =
@@ -508,7 +542,7 @@ void IsolatedWebAppURLLoaderFactory::CreateLoaderAndStart(
     if (pending_install_app_source.has_value()) {
       HandleRequest(url_info, *pending_install_app_source,
                     /*is_pending_install=*/true, std::move(loader_receiver),
-                    resource_request, std::move(wrapped_loader_client),
+                    resource_request, std::move(loader_client),
                     traffic_annotation);
       return;
     }
@@ -517,7 +551,7 @@ void IsolatedWebAppURLLoaderFactory::CreateLoaderAndStart(
   ASSIGN_OR_RETURN(const WebApp& iwa, FindIsolatedWebApp(*provider, url_info),
                    [&](std::string error) {
                      LogErrorAndFail(std::move(error),
-                                     std::move(wrapped_loader_client));
+                                     std::move(loader_client));
                    });
   auto location = IwaSourceWithMode::FromStorageLocation(
       profile_->GetPath(), iwa.isolation_data()->location);
@@ -527,8 +561,13 @@ void IsolatedWebAppURLLoaderFactory::CreateLoaderAndStart(
     LogErrorAndFail(base::StrCat({"Unable to load Isolated Web App that was "
                                   "installed in Developer Mode: ",
                                   kIwaDevModeNotEnabledMessage}),
-                    std::move(wrapped_loader_client));
+                    std::move(loader_client));
     return;
+  }
+
+  std::optional<std::string> csp_override = ComputeCspOverride(location);
+  if (csp_override.has_value()) {
+    header_injection_client_ptr->set_csp_override(csp_override.value());
   }
 
   IsolatedWebAppUpdateManager& update_manager = provider->iwa_update_manager();
@@ -545,15 +584,13 @@ void IsolatedWebAppURLLoaderFactory::CreateLoaderAndStart(
                            weak_factory_.GetWeakPtr(), url_info, location,
                            /*is_pending_install=*/false,
                            std::move(loader_receiver), resource_request,
-                           std::move(wrapped_loader_client),
-                           traffic_annotation)));
+                           std::move(loader_client), traffic_annotation)));
     return;
   }
 
   HandleRequest(url_info, location,
                 /*is_pending_install=*/false, std::move(loader_receiver),
-                resource_request, std::move(wrapped_loader_client),
-                traffic_annotation);
+                resource_request, std::move(loader_client), traffic_annotation);
 }
 
 void IsolatedWebAppURLLoaderFactory::HandleRequest(
@@ -624,10 +661,42 @@ void IsolatedWebAppURLLoaderFactory::HandleSignedBundle(
   auto loader = std::make_unique<IsolatedWebAppURLLoader>(
       isolated_web_app_reader_registry, path, dev_mode, web_bundle_id,
       std::move(loader_client), resource_request, frame_tree_node_id_);
-  mojo::MakeSelfOwnedReceiver(std::move(std::move(loader)),
-                              mojo::PendingReceiver<network::mojom::URLLoader>(
-                                  std::move(loader_receiver)));
+  mojo::MakeSelfOwnedReceiver(std::move(loader), std::move(loader_receiver));
 }
+
+namespace {
+
+GURL ConstructProxyUrl(const IwaSourceProxy& proxy,
+                       const GURL& resource_request_url) {
+  GURL::Replacements replacements;
+  replacements.SetPathStr(resource_request_url.path_piece());
+  if (resource_request_url.has_query()) {
+    replacements.SetQueryStr(resource_request_url.query_piece());
+  }
+  return proxy.proxy_url().GetURL().ReplaceComponents(replacements);
+}
+
+network::ResourceRequest ConstructProxyRequest(
+    const IwaSourceProxy& proxy,
+    const network::ResourceRequest& resource_request) {
+  // Create a new ResourceRequest with the proxy URL.
+  network::ResourceRequest proxy_request;
+  proxy_request.url = ConstructProxyUrl(proxy, resource_request.url);
+  proxy_request.method = net::HttpRequestHeaders::kGetMethod;
+  // Don't send cookies or HTTP authentication to the proxy server.
+  proxy_request.credentials_mode = network::mojom::CredentialsMode::kOmit;
+
+  std::string accept_header_value =
+      resource_request.headers.GetHeader(net::HttpRequestHeaders::kAccept)
+          .value_or(network::kDefaultAcceptHeaderValue);
+  proxy_request.headers.SetHeader(net::HttpRequestHeaders::kAccept,
+                                  accept_header_value);
+  proxy_request.headers.SetHeader(net::HttpRequestHeaders::kCacheControl,
+                                  "no-cache");
+  return proxy_request;
+}
+
+}  // namespace
 
 void IsolatedWebAppURLLoaderFactory::HandleProxy(
     const IsolatedWebAppUrlInfo& url_info,
@@ -637,33 +706,9 @@ void IsolatedWebAppURLLoaderFactory::HandleProxy(
     mojo::PendingRemote<network::mojom::URLLoaderClient> loader_client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(!proxy.proxy_url().opaque());
-
-  GURL::Replacements replacements;
-  std::string path = resource_request.url.path();
-  replacements.SetPathStr(path);
-  std::string query = resource_request.url.query();
-  if (resource_request.url.has_query()) {
-    replacements.SetQueryStr(query);
-  }
-  GURL proxy_url = proxy.proxy_url().GetURL().ReplaceComponents(replacements);
-
-  // Create a new ResourceRequest with the proxy URL.
-  network::ResourceRequest proxy_request;
-  proxy_request.url = proxy_url;
-  proxy_request.method = net::HttpRequestHeaders::kGetMethod;
-  // Don't send cookies or HTTP authentication to the proxy server.
-  proxy_request.credentials_mode = network::mojom::CredentialsMode::kOmit;
-
-  std::string accept_header_value = network::kDefaultAcceptHeaderValue;
-  resource_request.headers.GetHeader(net::HttpRequestHeaders::kAccept,
-                                     &accept_header_value);
-  proxy_request.headers.SetHeader(net::HttpRequestHeaders::kAccept,
-                                  accept_header_value);
-  proxy_request.headers.SetHeader(net::HttpRequestHeaders::kCacheControl,
-                                  "no-cache");
-
-  content::StoragePartition* storage_partition = profile_->GetStoragePartition(
-      url_info.storage_partition_config(profile_), /*can_create=*/false);
+  content::StoragePartition* storage_partition =
+      profile_->GetStoragePartition(url_info.storage_partition_config(profile_),
+                                    /*can_create=*/false);
   if (storage_partition == nullptr) {
     LogErrorAndFail("Storage not found for Isolated Web App: " +
                         resource_request.url.spec(),
@@ -674,7 +719,8 @@ void IsolatedWebAppURLLoaderFactory::HandleProxy(
   storage_partition->GetURLLoaderFactoryForBrowserProcess()
       ->CreateLoaderAndStart(std::move(loader_receiver),
                              /*request_id=*/0,
-                             network::mojom::kURLLoadOptionNone, proxy_request,
+                             network::mojom::kURLLoadOptionNone,
+                             ConstructProxyRequest(proxy, resource_request),
                              std::move(loader_client), traffic_annotation);
 }
 

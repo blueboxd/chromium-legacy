@@ -107,13 +107,13 @@ TEST(OverlayProcessorOzoneTest, PrimaryPlaneSizeAndFormatMatches) {
   gfx::Size size(128, 128);
   OverlayProcessorInterface::OutputSurfaceOverlayPlane primary_plane;
   primary_plane.resource_size = size;
-  primary_plane.format = gfx::BufferFormat::BGRA_8888;
+  primary_plane.format = SinglePlaneFormat::kBGRA_8888;
   primary_plane.mailbox = gpu::Mailbox::Generate();
 
   // Set up a dummy OverlayCandidate.
   OverlayCandidate candidate;
   candidate.resource_size_in_pixels = size;
-  candidate.format = gfx::BufferFormat::BGRA_8888;
+  candidate.format = SinglePlaneFormat::kBGRA_8888;
   candidate.mailbox = gpu::Mailbox::Generate();
   candidate.overlay_handled = false;
   OverlayCandidateList candidates;
@@ -147,13 +147,13 @@ TEST(OverlayProcessorOzoneTest, PrimaryPlaneFormatMismatch) {
   gfx::Size size(128, 128);
   OverlayProcessorInterface::OutputSurfaceOverlayPlane primary_plane;
   primary_plane.resource_size = size;
-  primary_plane.format = gfx::BufferFormat::BGRA_8888;
+  primary_plane.format = SinglePlaneFormat::kBGRA_8888;
   primary_plane.mailbox = gpu::Mailbox::Generate();
 
   // Set up a dummy OverlayCandidate.
   OverlayCandidate candidate;
   candidate.resource_size_in_pixels = size;
-  candidate.format = gfx::BufferFormat::BGRA_8888;
+  candidate.format = SinglePlaneFormat::kBGRA_8888;
   candidate.mailbox = gpu::Mailbox::Generate();
   candidate.overlay_handled = false;
   OverlayCandidateList candidates;
@@ -181,13 +181,13 @@ TEST(OverlayProcessorOzoneTest, ColorSpaceMismatch) {
   gfx::Size size(128, 128);
   OverlayProcessorInterface::OutputSurfaceOverlayPlane primary_plane;
   primary_plane.resource_size = size;
-  primary_plane.format = gfx::BufferFormat::BGRA_8888;
+  primary_plane.format = SinglePlaneFormat::kBGRA_8888;
   primary_plane.mailbox = gpu::Mailbox::Generate();
 
   // Set up a dummy OverlayCandidate.
   OverlayCandidate candidate;
   candidate.resource_size_in_pixels = size;
-  candidate.format = gfx::BufferFormat::BGRA_8888;
+  candidate.format = SinglePlaneFormat::kBGRA_8888;
   candidate.mailbox = gpu::Mailbox::Generate();
   candidate.overlay_handled = false;
   OverlayCandidateList candidates;

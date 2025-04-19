@@ -12,6 +12,8 @@
 namespace tab_groups::prefs {
 
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
+  // Disables cross-device syncing for older clients. For newer clients,
+  // this value is never read.
   registry->RegisterBooleanPref(prefs::kSyncableTabGroups, false);
 #if BUILDFLAG(IS_ANDROID)
   if (base::FeatureList::IsEnabled(tab_groups::kTabGroupSyncAndroid)) {
@@ -31,6 +33,15 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(
       prefs::kStopShowingTabGroupConfirmationOnTabClose, false);
 #endif  // BUILDFLAG(IS_ANDROID)
+
+  registry->RegisterBooleanPref(
+      kAutoPinNewTabGroups, true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+
+  registry->RegisterBooleanPref(prefs::kSavedTabGroupSpecificsToDataMigration,
+                                false);
+  registry->RegisterDictionaryPref(prefs::kDeletedTabGroupIds,
+                                   base::Value::Dict());
 }
 
 }  // namespace tab_groups::prefs

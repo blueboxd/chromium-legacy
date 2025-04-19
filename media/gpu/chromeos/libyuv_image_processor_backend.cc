@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "media/gpu/chromeos/libyuv_image_processor_backend.h"
 
 #include <sys/mman.h>
@@ -552,7 +557,7 @@ int LibYUVImageProcessorBackend::DoConversion(const FrameResource* const input,
     }
   }
 
-  if (output->format() == PIXEL_FORMAT_P016LE) {
+  if (output->format() == PIXEL_FORMAT_P010LE) {
     if (input_config_.fourcc == Fourcc(Fourcc::MT2T)) {
       // stride is 5/4 because MT2T is a packed 10bit format
       const uint32_t src_stride_mt2t =

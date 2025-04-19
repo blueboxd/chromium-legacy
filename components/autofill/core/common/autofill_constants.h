@@ -35,7 +35,7 @@ inline constexpr size_t kAutofillManagerMaxFormCacheSize = 100;
 // not relevant to Autofill: (1) the Netflix queue; (2) the Amazon wishlist;
 // (3) router configuration pages; and (4) other configuration pages, e.g. for
 // Google code project settings.
-// Copied to components/autofill/ios/form_util/resources/fill.js.
+// Copied to components/autofill/ios/form_util/resources/fill.ts.
 inline constexpr size_t kMaxExtractableFields = 200;
 
 // The maximum number of form fields we are willing to extract, due to
@@ -90,7 +90,7 @@ inline constexpr base::TimeDelta kMultiStepImportTTL = base::Minutes(5);
 
 // Returns if the entry with the given |use_date| is deletable? (i.e. has not
 // been used for a long time).
-bool IsAutofillEntryWithUseDateDeletable(const base::Time& use_date);
+bool IsAutofillEntryWithUseDateDeletable(base::Time use_date);
 
 // The period after which autocomplete entries should be cleaned-up in days.
 // Equivalent to roughly 14 months.

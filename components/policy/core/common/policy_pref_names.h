@@ -54,7 +54,6 @@ extern const char kUserAgentClientHintsGREASEUpdateEnabled[];
 extern const char kBackForwardCacheEnabled[];
 extern const char kReadAloudEnabled[];
 #endif  // BUILDFLAG(IS_ANDROID)
-extern const char kIsolatedAppsDeveloperModeAllowed[];
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 extern const char kLastPolicyCheckTime[];
 #endif
@@ -67,6 +66,7 @@ extern const char kHideWebStoreIcon[];
 extern const char kIncognitoModeAvailability[];
 extern const char kBeforeunloadEventCancelByPreventDefaultEnabled[];
 extern const char kKeyboardFocusableScrollersEnabled[];
+extern const char kStandardizedBrowserZoomEnabled[];
 extern const char kPolicyTestPageEnabled[];
 extern const char kAllowBackForwardCacheForCacheControlNoStorePageEnabled[];
 extern const char kLocalTestPoliciesForNextStartup[];

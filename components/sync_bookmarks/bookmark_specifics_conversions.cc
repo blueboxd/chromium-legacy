@@ -172,7 +172,7 @@ std::string ComputeGuidFromBytes(base::span<const uint8_t> bytes) {
 
 // This is an exact copy of the same code in bookmark_update_preprocessing.cc,
 // which could be removed if eventually client tags are adapted/inferred in
-// ModelTypeWorker. The reason why this is non-trivial today is that some users
+// DataTypeWorker. The reason why this is non-trivial today is that some users
 // are known to contain corrupt data in the sense that several different
 // entities (identified by their server-provided ID) use the same client tag
 // (and UUID). Currently BookmarkModelMerger has logic to prefer folders over
@@ -185,8 +185,7 @@ std::string InferGuidForLegacyBookmark(
 
   const std::string unique_tag =
       base::StrCat({originator_cache_guid, originator_client_item_id});
-  const base::SHA1Digest hash =
-      base::SHA1HashSpan(base::as_bytes(base::make_span(unique_tag)));
+  const base::SHA1Digest hash = base::SHA1Hash(base::as_byte_span(unique_tag));
 
   static_assert(base::kSHA1Length >= 16, "16 bytes needed to infer UUID");
 
@@ -509,7 +508,7 @@ bool IsValidBookmarkSpecifics(const sync_pb::BookmarkSpecifics& specifics) {
 
   switch (specifics.type()) {
     case sync_pb::BookmarkSpecifics::UNSPECIFIED:
-      // Note that old data doesn't run into this because ModelTypeWorker takes
+      // Note that old data doesn't run into this because DataTypeWorker takes
       // care of backfilling the field.
       DLOG(ERROR) << "Invalid bookmark: invalid type in specifics.";
       is_valid = false;

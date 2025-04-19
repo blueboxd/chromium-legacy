@@ -53,6 +53,7 @@ function textChunkConsumer(chunk: TextChunk): void {
       wkNoEmail: disabledTypes.has('email'),
       wkNoAddress: disabledTypes.has('address'),
       wkNoDate: disabledTypes.has('date'),
+      wkNoUnit: disabledTypes.has('unit'),
     },
   });
 }
@@ -123,7 +124,7 @@ function start(): void {
   }
   const root = document.documentElement;
   idleTaskTracker = new IdleTaskTracker();
-  click = new TextClick(root, tapConsumer);
+  click = new TextClick(root, tapConsumer, () => decorator?.decorations);
   extractor = new TextExtractor(textChunkConsumer);
   styler = new TextStyler();
   decorator = new TextDecorator(styler);

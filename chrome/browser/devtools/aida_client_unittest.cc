@@ -44,11 +44,6 @@ class AidaClientTest : public testing::Test {
 
   void SetUp() override {
     profile_->GetPrefs()->SetInteger(prefs::kDevToolsGenAiSettings, 0);
-    feature_list_.InitWithFeatures(
-        /*enabled_features=*/{::features::kDevToolsConsoleInsights,
-                              ::features::
-                                  kDevToolsConsoleInsightsSettingVisible},
-        /*disabled_features=*/{});
 
     auto account_info = identity_test_env_->MakePrimaryAccountAvailable(
         kEmail, signin::ConsentLevel::kSync);
@@ -68,7 +63,7 @@ class AidaClientTest : public testing::Test {
       identity_test_env_adaptor_;
   raw_ptr<signin::IdentityTestEnvironment> identity_test_env_;
   base::HistogramTester histogram_tester_;
-  base::test::ScopedFeatureList feature_list_;
+  AidaClient::ScopedOverride scoped_country_override_;
 };
 
 class Delegate {
@@ -82,9 +77,10 @@ class Delegate {
     succeed_ = absl::holds_alternative<network::ResourceRequest>(response);
     if (succeed_) {
       url_ = absl::get<network::ResourceRequest>(response).url;
-      ASSERT_TRUE(
-          absl::get<network::ResourceRequest>(response).headers.GetHeader(
-              net::HttpRequestHeaders::kAuthorization, &authorization_header_));
+      authorization_header_ =
+          absl::get<network::ResourceRequest>(response)
+              .headers.GetHeader(net::HttpRequestHeaders::kAuthorization)
+              .value();
     } else {
       error_ = absl::get<std::string>(response);
     }
@@ -103,17 +99,6 @@ class Delegate {
 
 constexpr char kOAuthToken[] = "5678";
 
-TEST_F(AidaClientTest, DoesNothingIfNoScope) {
-  Delegate delegate;
-
-  AidaClient aida_client(profile_.get());
-  aida_client.OverrideAidaEndpointAndScopeForTesting("", "");
-  aida_client.PrepareRequestOrFail(base::BindOnce(
-      &Delegate::FinishCallback, base::Unretained(&delegate), nullptr));
-  EXPECT_EQ(R"({"error": "AIDA scope is not configured"})",
-            absl::get<std::string>(delegate.response_));
-}
-
 TEST_F(AidaClientTest, FailsIfNotAuthorized) {
   base::RunLoop run_loop;
   Delegate delegate;
@@ -131,56 +116,136 @@ TEST_F(AidaClientTest, FailsIfNotAuthorized) {
       absl::get<std::string>(delegate.response_));
 }
 
-TEST_F(AidaClientTest, NotAvailableIfFeatureDisabled) {
-  auto blocked_reason = AidaClient::CanUseAida(profile_.get());
+TEST_F(AidaClientTest, NotAvailableWithEnterprise) {
+  profile_->GetPrefs()->SetInteger(prefs::kDevToolsGenAiSettings, 2);
+
+  auto availability = AidaClient::CanUseAida(profile_.get());
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  EXPECT_FALSE(blocked_reason.blocked);
-  EXPECT_FALSE(blocked_reason.blocked_by_feature_flag);
+  EXPECT_TRUE(availability.available);
+  EXPECT_TRUE(availability.blocked);
+  EXPECT_FALSE(availability.blocked_by_age);
+  EXPECT_TRUE(availability.blocked_by_enterprise_policy);
+  EXPECT_FALSE(availability.blocked_by_geo);
+  EXPECT_FALSE(availability.blocked_by_rollout);
+  EXPECT_FALSE(availability.disallow_logging);
 #else
-  EXPECT_TRUE(blocked_reason.blocked);
-  EXPECT_TRUE(blocked_reason.blocked_by_feature_flag);
+  EXPECT_FALSE(availability.available);
+  EXPECT_TRUE(availability.blocked);
+  EXPECT_TRUE(availability.blocked_by_age);
+  EXPECT_TRUE(availability.blocked_by_enterprise_policy);
+  EXPECT_TRUE(availability.blocked_by_geo);
+  EXPECT_FALSE(availability.blocked_by_rollout);
+  EXPECT_TRUE(availability.disallow_logging);
 #endif
-  EXPECT_FALSE(blocked_reason.blocked_by_age);
-  EXPECT_FALSE(blocked_reason.blocked_by_enterprise_policy);
-  EXPECT_FALSE(blocked_reason.blocked_by_geo);
-  feature_list_.Reset();
-  feature_list_.InitAndDisableFeature(::features::kDevToolsConsoleInsights);
-  blocked_reason = AidaClient::CanUseAida(profile_.get());
-  EXPECT_TRUE(blocked_reason.blocked);
-  EXPECT_TRUE(blocked_reason.blocked_by_feature_flag);
-  EXPECT_FALSE(blocked_reason.blocked_by_age);
-  EXPECT_FALSE(blocked_reason.blocked_by_enterprise_policy);
-  EXPECT_FALSE(blocked_reason.blocked_by_geo);
+}
+
+TEST_F(AidaClientTest, NoLoggingWithEnterprise) {
+  profile_->GetPrefs()->SetInteger(prefs::kDevToolsGenAiSettings, 1);
+
+  auto availability = AidaClient::CanUseAida(profile_.get());
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  EXPECT_TRUE(availability.available);
+  EXPECT_FALSE(availability.blocked);
+  EXPECT_FALSE(availability.blocked_by_age);
+  EXPECT_FALSE(availability.blocked_by_enterprise_policy);
+  EXPECT_FALSE(availability.blocked_by_geo);
+  EXPECT_FALSE(availability.blocked_by_rollout);
+  EXPECT_TRUE(availability.disallow_logging);
+#else
+  EXPECT_FALSE(availability.available);
+  EXPECT_TRUE(availability.blocked);
+  EXPECT_TRUE(availability.blocked_by_age);
+  EXPECT_TRUE(availability.blocked_by_enterprise_policy);
+  EXPECT_TRUE(availability.blocked_by_geo);
+  EXPECT_FALSE(availability.blocked_by_rollout);
+  EXPECT_TRUE(availability.disallow_logging);
+#endif
 }
 
 TEST_F(AidaClientTest, NotAvailableIfCapabilityFalse) {
-  auto blocked_reason = AidaClient::CanUseAida(profile_.get());
+  scoped_country_override_ = AidaClient::OverrideCountryForTesting("us");
+  auto availability = AidaClient::CanUseAida(profile_.get());
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  EXPECT_FALSE(blocked_reason.blocked);
-  EXPECT_FALSE(blocked_reason.blocked_by_feature_flag);
+  EXPECT_TRUE(availability.available);
+  EXPECT_FALSE(availability.blocked);
+  EXPECT_FALSE(availability.blocked_by_enterprise_policy);
+  EXPECT_FALSE(availability.blocked_by_age);
+  EXPECT_FALSE(availability.blocked_by_geo);
 #else
-  EXPECT_TRUE(blocked_reason.blocked);
-  EXPECT_TRUE(blocked_reason.blocked_by_feature_flag);
+  EXPECT_FALSE(availability.available);
+  EXPECT_TRUE(availability.blocked);
+  EXPECT_TRUE(availability.blocked_by_enterprise_policy);
+  EXPECT_TRUE(availability.blocked_by_age);
+  EXPECT_TRUE(availability.blocked_by_geo);
 #endif
-  EXPECT_FALSE(blocked_reason.blocked_by_age);
-  EXPECT_FALSE(blocked_reason.blocked_by_enterprise_policy);
-  EXPECT_FALSE(blocked_reason.blocked_by_geo);
+
   auto account_info = identity_test_env_->identity_manager()
                           ->FindExtendedAccountInfoByEmailAddress(kEmail);
   AccountCapabilitiesTestMutator mutator(&account_info.capabilities);
   mutator.set_can_use_devtools_generative_ai_features(false);
   signin::UpdateAccountInfoForAccount(identity_test_env_->identity_manager(),
                                       account_info);
-  blocked_reason = AidaClient::CanUseAida(profile_.get());
-  EXPECT_TRUE(blocked_reason.blocked);
-  EXPECT_FALSE(blocked_reason.blocked_by_enterprise_policy);
-  EXPECT_FALSE(blocked_reason.blocked_by_geo);
+  availability = AidaClient::CanUseAida(profile_.get());
+
+  EXPECT_TRUE(availability.blocked);
+  EXPECT_TRUE(availability.blocked_by_age);
+}
+
+TEST_F(AidaClientTest, NotAvailableInCountry) {
+  scoped_country_override_ = AidaClient::OverrideCountryForTesting("cn");
+  auto availability = AidaClient::CanUseAida(profile_.get());
+
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  EXPECT_FALSE(blocked_reason.blocked_by_feature_flag);
-  EXPECT_TRUE(blocked_reason.blocked_by_age);
+  EXPECT_TRUE(availability.available);
+  EXPECT_TRUE(availability.blocked);
+  EXPECT_FALSE(availability.blocked_by_age);
+  EXPECT_TRUE(availability.blocked_by_geo);
+  EXPECT_FALSE(availability.blocked_by_enterprise_policy);
+  EXPECT_FALSE(availability.disallow_logging);
 #else
-  EXPECT_TRUE(blocked_reason.blocked_by_feature_flag);
-  EXPECT_FALSE(blocked_reason.blocked_by_age);
+  EXPECT_FALSE(availability.available);
+  EXPECT_TRUE(availability.blocked);
+  EXPECT_TRUE(availability.blocked_by_age);
+  EXPECT_TRUE(availability.blocked_by_geo);
+  EXPECT_TRUE(availability.blocked_by_enterprise_policy);
+  EXPECT_TRUE(availability.disallow_logging);
+#endif
+}
+
+TEST_F(AidaClientTest, NoLoggingInEurope) {
+  scoped_country_override_ = AidaClient::OverrideCountryForTesting("de");
+  auto availability = AidaClient::CanUseAida(profile_.get());
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  EXPECT_TRUE(availability.available);
+  EXPECT_FALSE(availability.blocked);
+  EXPECT_FALSE(availability.blocked_by_geo);
+  EXPECT_FALSE(availability.blocked_by_age);
+  EXPECT_FALSE(availability.blocked_by_enterprise_policy);
+  EXPECT_TRUE(availability.disallow_logging);
+#else
+  EXPECT_FALSE(availability.available);
+  EXPECT_TRUE(availability.blocked);
+  EXPECT_TRUE(availability.blocked_by_geo);
+  EXPECT_TRUE(availability.blocked_by_age);
+  EXPECT_TRUE(availability.blocked_by_enterprise_policy);
+  EXPECT_TRUE(availability.disallow_logging);
+#endif
+}
+
+TEST_F(AidaClientTest, LoggingInNonEurope) {
+  scoped_country_override_ = AidaClient::OverrideCountryForTesting("us");
+  auto availability = AidaClient::CanUseAida(profile_.get());
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  EXPECT_TRUE(availability.available);
+  EXPECT_FALSE(availability.blocked);
+  EXPECT_FALSE(availability.blocked_by_geo);
+  EXPECT_FALSE(availability.blocked_by_age);
+  EXPECT_FALSE(availability.blocked_by_enterprise_policy);
+  EXPECT_FALSE(availability.disallow_logging);
+#else
+  EXPECT_FALSE(availability.available);
+  EXPECT_TRUE(availability.blocked);
+  EXPECT_TRUE(availability.disallow_logging);
 #endif
 }
 

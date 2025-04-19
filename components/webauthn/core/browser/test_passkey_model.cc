@@ -32,14 +32,18 @@ void TestPasskeyModel::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-base::WeakPtr<syncer::ModelTypeControllerDelegate>
-TestPasskeyModel::GetModelTypeControllerDelegate() {
+base::WeakPtr<syncer::DataTypeControllerDelegate>
+TestPasskeyModel::GetDataTypeControllerDelegate() {
   NOTIMPLEMENTED();
   return nullptr;
 }
 
 bool TestPasskeyModel::IsReady() const {
   return true;
+}
+
+bool TestPasskeyModel::IsEmpty() const {
+  return credentials_.empty();
 }
 
 base::flat_set<std::string> TestPasskeyModel::GetAllSyncIds() const {
@@ -138,6 +142,10 @@ bool TestPasskeyModel::DeletePasskey(const std::string& credential_id,
   credentials_.erase(credential_it);
   NotifyPasskeysChanged({std::move(change)});
   return true;
+}
+
+void TestPasskeyModel::DeleteAllPasskeys() {
+  credentials_.clear();
 }
 
 bool TestPasskeyModel::UpdatePasskey(const std::string& credential_id,

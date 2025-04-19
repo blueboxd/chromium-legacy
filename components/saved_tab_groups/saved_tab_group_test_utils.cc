@@ -7,6 +7,8 @@
 #include "base/rand_util.h"
 #include "base/token.h"
 #include "build/build_config.h"
+#include "components/sync/protocol/sync_enums.pb.h"
+#include "components/sync_device_info/device_info.h"
 #include "components/tab_groups/tab_group_color.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -23,7 +25,7 @@ LocalTabGroupID GenerateRandomTabGroupID() {
 }
 
 LocalTabID GenerateRandomTabID() {
-#if BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
   return base::RandInt(0, 1000);
 #else
   return base::Token::CreateRandom();
@@ -72,7 +74,7 @@ SavedTabGroupTab CreateSavedTabGroupTab(const std::string& url,
   return tab;
 }
 
-SavedTabGroup CreateTestSavedTabGroup() {
+SavedTabGroup CreateTestSavedTabGroup(std::optional<base::Time> creation_date) {
   base::Uuid id = base::Uuid::GenerateRandomV4();
   const std::u16string title = u"Test Test";
   const tab_groups::TabGroupColorId& color = tab_groups::TabGroupColorId::kBlue;
@@ -87,7 +89,12 @@ SavedTabGroup CreateTestSavedTabGroup() {
 
   std::vector<SavedTabGroupTab> tabs = {tab1, tab2};
 
-  SavedTabGroup group(title, color, tabs, std::nullopt, id);
+  SavedTabGroup group(title, color, tabs, /*position=*/std::nullopt, id,
+                      /*local_group_id=*/std::nullopt,
+                      /*creator_cache_guid=*/std::nullopt,
+                      /*last_updater_cache_guid=*/std::nullopt,
+                      /*created_before_syncing_tab_groups=*/false,
+                      /*creation_time_windows_epoch_micros=*/creation_date);
   return group;
 }
 
@@ -104,6 +111,28 @@ TabGroupVisualData CreateTabGroupVisualData() {
   const tab_groups::TabGroupColorId& color =
       tab_groups::TabGroupColorId::kOrange;
   return TabGroupVisualData(title, color);
+}
+
+std::unique_ptr<syncer::DeviceInfo> CreateDeviceInfo(
+    const std::string& guid,
+    syncer::DeviceInfo::OsType os_type,
+    syncer::DeviceInfo::FormFactor form_factor) {
+  return std::make_unique<syncer::DeviceInfo>(
+      guid, "name", "chrome_version", "user_agent",
+      sync_pb::SyncEnums_DeviceType_TYPE_LINUX, os_type, form_factor,
+      "scoped_id", "manufacturer", "model", "full_hardware_class",
+      /*last_updated_timestamp=*/base::Time::Now(),
+      /*pulse_interval=*/base::Days(1),
+      /*send_tab_to_self_receiving_enabled=*/
+      false,
+      /*send_tab_to_self_receiving_type=*/
+      sync_pb::
+          SyncEnums_SendTabReceivingType_SEND_TAB_RECEIVING_TYPE_CHROME_OR_UNSPECIFIED,
+      /*sharing_info=*/std::nullopt,
+      /*paask_info=*/std::nullopt,
+      /*fcm_registration_token=*/std::string(),
+      /*interested_data_types=*/syncer::DataTypeSet::All(),
+      /*floating_workspace_last_signin_timestamp=*/std::nullopt);
 }
 
 }  // namespace tab_groups::test

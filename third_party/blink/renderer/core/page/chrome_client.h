@@ -270,15 +270,6 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
                     NavigationPolicy navigation_policy,
                     bool consumed_user_gesture) = 0;
 
-  // All the parameters should be in viewport space. That is, if an event
-  // scrolls by 10 px, but due to a 2X page scale we apply a 5px scroll to the
-  // root frame, all of which is handled as overscroll, we should return 10px
-  // as the |overscroll_delta|.
-  virtual void DidOverscroll(const gfx::Vector2dF& overscroll_delta,
-                             const gfx::Vector2dF& accumulated_overscroll,
-                             const gfx::PointF& position_in_viewport,
-                             const gfx::Vector2dF& velocity_in_viewport) = 0;
-
   // For a scrollbar scroll action, injects a gesture event of |injected_type|
   // to be dispatched at a later point in time. |injected_type| is required to
   // be one of GestureScroll{Begin,Update,End}. If the main thread is currently
@@ -513,6 +504,7 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
       HTMLElement*,
       WebFormRelatedChangeType) {}
   virtual void DidChangeValueInTextField(HTMLFormControlElement&) {}
+  virtual void DidClearValueInTextField(HTMLFormControlElement&) {}
   virtual void DidUserChangeContentEditableContent(Element&) {}
   virtual void DidEndEditingOnTextField(HTMLInputElement&) {}
   virtual void HandleKeyboardEventOnTextField(HTMLInputElement&,
@@ -591,10 +583,10 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   virtual void DocumentDetached(Document&) {}
 
   // Return the user's zoom factor which is different from the typical usage
-  // of "zoom factor" in blink (e.g., |LocalFrame::PageZoomFactor()|) which
+  // of "zoom factor" in blink (e.g., |LocalFrame::LayoutZoomFactor()|) which
   // includes CSS zoom and the device scale factor (if use-zoom-for-dsf is
   // enabled). This only includes the zoom initiated by the user (ctrl +/-).
-  virtual double UserZoomFactor() const { return 1; }
+  virtual double UserZoomFactor(LocalFrame* frame) const { return 1; }
 
   virtual void SetDelegatedInkMetadata(
       LocalFrame* frame,

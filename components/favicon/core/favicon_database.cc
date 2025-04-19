@@ -216,9 +216,10 @@ void DatabaseErrorCallback(sql::Database* db,
     return;
   }
 
-  // The default handling is to assert on debug and to ignore on release.
-  if (!sql::Database::IsExpectedSqliteError(extended_error))
-    DLOG(FATAL) << db->GetErrorMessage();
+  // The default handling is to log an error on debug and to ignore on release.
+  if (!sql::Database::IsExpectedSqliteError(extended_error)) {
+    DLOG(ERROR) << db->GetErrorMessage();
+  }
 }
 
 }  // namespace
@@ -1016,9 +1017,9 @@ sql::InitStatus FaviconDatabase::InitImpl(const base::FilePath& db_name) {
 
   // Clear databases which are too old to process.
   DCHECK_LT(kDeprecatedVersionNumber, kCurrentVersionNumber);
-  if (!sql::MetaTable::RazeIfIncompatible(
+  if (sql::MetaTable::RazeIfIncompatible(
           &db_, /*lowest_supported_version=*/kDeprecatedVersionNumber + 1,
-          kCurrentVersionNumber)) {
+          kCurrentVersionNumber) == sql::RazeIfIncompatibleResult::kFailed) {
     return sql::INIT_FAILURE;
   }
 

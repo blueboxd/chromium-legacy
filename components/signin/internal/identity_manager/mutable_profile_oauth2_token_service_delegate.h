@@ -20,6 +20,7 @@
 #include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/base/signin_metrics.h"
+#include "components/signin/public/webdata/token_service_table.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 #include "net/base/backoff_entry.h"
@@ -73,6 +74,10 @@ class MutableProfileOAuth2TokenServiceDelegate
   std::string GetTokenForMultilogin(
       const CoreAccountId& account_id) const override;
   bool RefreshTokenIsAvailable(const CoreAccountId& account_id) const override;
+#if BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
+  std::vector<uint8_t> GetWrappedBindingKey(
+      const CoreAccountId& account_id) const override;
+#endif  // BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
   std::vector<CoreAccountId> GetAccounts() const override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
       const override;
@@ -81,7 +86,7 @@ class MutableProfileOAuth2TokenServiceDelegate
   // Overridden from NetworkConnectionTracker::NetworkConnectionObserver.
   void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
-  bool FixRequestErrorIfPossible() override;
+  bool FixAccountErrorIfPossible() override;
 
   // Returns the account's refresh token used for testing purposes.
   std::string GetRefreshTokenForTest(const CoreAccountId& account_id) const;
@@ -136,10 +141,18 @@ class MutableProfileOAuth2TokenServiceDelegate
   FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceDelegateTest,
                            ExtractCredentials);
 #if BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
-  FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceDelegateTest,
-                           UpdateBoundToken);
-  FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceDelegateTest,
-                           RevokeBoundToken);
+  FRIEND_TEST_ALL_PREFIXES(
+      MutableProfileOAuth2TokenServiceDelegateBoundTokensTest,
+      UpdateBoundToken);
+  FRIEND_TEST_ALL_PREFIXES(
+      MutableProfileOAuth2TokenServiceDelegateBoundTokensTest,
+      RevokeBoundToken);
+  FRIEND_TEST_ALL_PREFIXES(
+      MutableProfileOAuth2TokenServiceDelegateBoundTokensTest,
+      PersistenceLoadBoundTokens);
+  FRIEND_TEST_ALL_PREFIXES(
+      MutableProfileOAuth2TokenServiceDelegateBoundTokensTest,
+      ClearBoundTokenOnStartup);
 #endif  // BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
   FRIEND_TEST_ALL_PREFIXES(
       MutableProfileOAuth2TokenServiceDelegateWithUnoDesktopTest,
@@ -168,7 +181,8 @@ class MutableProfileOAuth2TokenServiceDelegate
 
   // Loads credentials into in memory structure.
   void LoadAllCredentialsIntoMemory(
-      const std::map<std::string, std::string>& db_tokens);
+      const std::map<std::string, TokenServiceTable::TokenWithBindingKey>&
+          db_tokens);
 
   // Updates the in-memory representation of the credentials.
   void UpdateCredentialsInMemory(const CoreAccountId& account_id,
@@ -204,11 +218,6 @@ class MutableProfileOAuth2TokenServiceDelegate
   void CancelWebTokenFetch();
 
   std::string GetRefreshToken(const CoreAccountId& account_id) const;
-
-#if BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
-  std::vector<uint8_t> GetWrappedBindingKey(
-      const CoreAccountId& account_id) const;
-#endif  // BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
 
   // Creates a new AccountStatus and adds it to the AccountStatusMap.
   // The account must not be already in the map.

@@ -17,6 +17,7 @@ import {PerfLogger} from '../perf.js';
 import * as state from '../state.js';
 import {
   AspectRatioSet,
+  CameraSuspendError,
   Facing,
   Mode,
   PerfEvent,
@@ -105,7 +106,6 @@ export class CameraManager implements EventListener {
   private readonly preview: Preview;
 
   constructor(
-      private readonly perfLogger: PerfLogger,
       defaultFacing: Facing|null,
       modeConstraints: ModeConstraints,
   ) {
@@ -122,8 +122,8 @@ export class CameraManager implements EventListener {
 
     document.addEventListener('visibilitychange', async () => {
       const recording = state.get(state.State.TAKING) && state.get(Mode.VIDEO);
-      if (this.isTabletBackground() && !recording) {
-        await this.reconfigure();
+      if (!recording) {
+        await this.maybeSuspendResumeCamera();
       }
     });
 
@@ -248,24 +248,26 @@ export class CameraManager implements EventListener {
     function setLidClosed(lidState: LidState) {
       state.set(state.State.LID_CLOSED, lidState === LidState.kClosed);
     }
-
     const lidState = await helper.initLidStateMonitor(setLidClosed);
     setLidClosed(lidState);
 
+    function setSWPirvacySwitchOn(isSWPrivacySwitchOn: boolean) {
+      state.set(state.State.SW_PRIVACY_SWITCH_ON, isSWPrivacySwitchOn);
+    }
+    const isSWPrivacySwitchOn =
+        await helper.initSWPrivacySwitchMonitor(setSWPirvacySwitchOn);
+    setSWPirvacySwitchOn(isSWPrivacySwitchOn);
+
     const handleScreenLockedChange = async (isScreenLocked: boolean) => {
       this.locked = isScreenLocked;
-      if (this.locked) {
-        await this.reconfigure();
-      }
+      await this.maybeSuspendResumeCamera();
     };
 
     this.locked =
         await helper.initScreenLockedMonitor(handleScreenLockedChange);
 
     const handleScreenStateChange = async () => {
-      if (this.screenOff) {
-        await this.reconfigure();
-      }
+      await this.maybeSuspendResumeCamera();
     };
 
     const updateScreenOffAuto = async (screenState: ScreenState) => {
@@ -293,27 +295,32 @@ export class CameraManager implements EventListener {
     await this.scheduler.initialize(cameraViewUI);
   }
 
-  requestSuspend(): Promise<boolean> {
-    state.set(state.State.SUSPEND, true);
+  requestSuspend(): Promise<void> {
     this.suspendRequested = true;
-    return this.reconfigure();
+    return this.maybeSuspendResumeCamera();
   }
 
-  requestResume(): Promise<boolean> {
-    state.set(state.State.SUSPEND, false);
+  requestResume(): Promise<void> {
     this.suspendRequested = false;
-    if (this.watchdog !== null) {
-      return this.watchdog.waitNextReconfigure();
+    return this.maybeSuspendResumeCamera();
+  }
+
+  // Checks the state of CCA and suspends or resumes the camera accordingly.
+  async maybeSuspendResumeCamera(): Promise<void> {
+    const shouldSuspend = this.shouldSuspend();
+    if (state.get(state.State.SUSPEND) === shouldSuspend) {
+      return;
     }
-    return this.reconfigure();
+    await this.reconfigure();
   }
 
   /**
    * Switches to the next available camera device.
    */
   switchCamera(): Promise<void>|null {
+    const perfLogger = PerfLogger.getInstance();
     const promise = this.tryReconfigure(() => {
-      state.set(PerfEvent.CAMERA_SWITCHING, true);
+      perfLogger.start(PerfEvent.CAMERA_SWITCHING);
       const deviceIds =
           this.scheduler.reconfigurer.getDeviceIdsSortedbyPreferredFacing(
               this.getCameraInfo());
@@ -332,7 +339,7 @@ export class CameraManager implements EventListener {
       return null;
     }
     return promise.then((succeed) => {
-      state.set(PerfEvent.CAMERA_SWITCHING, false, {hasError: !succeed});
+      perfLogger.stop(PerfEvent.CAMERA_SWITCHING, {hasError: !succeed});
       metrics.sendOpenCameraEvent(this.getVidPid());
     });
   }
@@ -572,42 +579,41 @@ export class CameraManager implements EventListener {
       // reconfigure result which may not reflect the setting before calling it.
       // Thus still fallthrough here to start another reconfigure.
     }
-    this.scheduler.reconfigurer.resetFailedDevices();
+    this.scheduler.reconfigurer.resetConfigurationFailure();
     return this.doReconfigure();
   }
 
   private async doReconfigure(): Promise<boolean> {
     state.set(state.State.CAMERA_CONFIGURING, true);
     this.setCameraAvailable(false);
-    this.scheduler.reconfigurer.setShouldSuspend(this.shouldSuspend());
+    const shouldSuspend = this.shouldSuspend();
+    this.scheduler.reconfigurer.setShouldSuspend(shouldSuspend);
+    state.set(state.State.SUSPEND, shouldSuspend);
+    const perfLogger = PerfLogger.getInstance();
     if (loadTimeData.isVideoCaptureDisallowed()) {
-      if (this.watchdog === null) {
-        nav.open(ViewName.WARNING, WarningType.DISABLED_CAMERA);
-        this.watchdog = new ResumeStateWatchdog(() => this.doReconfigure());
-        this.perfLogger.interrupt();
-      }
+      nav.open(ViewName.WARNING, WarningType.DISABLED_CAMERA);
+      perfLogger.interrupt();
       return false;
     }
     try {
-      if (!(await this.scheduler.reconfigure())) {
-        throw new Error('camera suspended');
-      }
+      await this.scheduler.reconfigure();
     } catch (e) {
-      if (this.watchdog === null) {
-        if (!this.shouldSuspend()) {
-          // Suspension is caused by unexpected error, show the camera failure
-          // view.
+      if (e instanceof CameraSuspendError) {
+        // Bypass this error as it's intended.
+      } else {
+        // Keep trying reconfiguring until there's an available camera.
+        if (this.watchdog === null) {
           // TODO(b/209726472): Move nav out of this module.
           nav.open(ViewName.WARNING, WarningType.NO_CAMERA);
+          this.watchdog = new ResumeStateWatchdog(() => this.doReconfigure());
         }
-        this.watchdog = new ResumeStateWatchdog(() => this.doReconfigure());
       }
-      this.perfLogger.interrupt();
+      perfLogger.interrupt();
       return false;
     }
 
     // TODO(b/209726472): Move nav out of this module.
-    nav.close(ViewName.WARNING);
+    nav.close(ViewName.WARNING, WarningType.NO_CAMERA);
     this.watchdog = null;
     state.set(state.State.CAMERA_CONFIGURING, false);
     this.setCameraAvailable(true);

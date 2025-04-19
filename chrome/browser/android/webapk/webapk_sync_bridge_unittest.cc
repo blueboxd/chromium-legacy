@@ -20,7 +20,7 @@
 #include "components/sync/model/data_batch.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/protocol/entity_data.h"
-#include "components/sync/test/mock_model_type_change_processor.h"
+#include "components/sync/test/mock_data_type_local_change_processor.h"
 #include "components/webapps/browser/android/shortcut_info.h"
 #include "components/webapps/common/web_app_id.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -128,7 +128,9 @@ class WebApkSyncBridgeTest : public ::testing::Test {
   }
 
  protected:
-  syncer::MockModelTypeChangeProcessor& processor() { return mock_processor_; }
+  syncer::MockDataTypeLocalChangeProcessor& processor() {
+    return mock_processor_;
+  }
   FakeWebApkDatabaseFactory& database_factory() { return *database_factory_; }
 
   WebApkSyncBridge& sync_bridge() { return *sync_bridge_; }
@@ -144,7 +146,7 @@ class WebApkSyncBridgeTest : public ::testing::Test {
                            // before InitSyncBridge() or after sync_bridge_ is
                            // destroyed
 
-  testing::NiceMock<syncer::MockModelTypeChangeProcessor> mock_processor_;
+  testing::NiceMock<syncer::MockDataTypeLocalChangeProcessor> mock_processor_;
   base::test::SingleThreadTaskEnvironment task_environment_;
 };
 
@@ -457,7 +459,7 @@ TEST_F(WebApkSyncBridgeTest, MergeFullSyncData) {
   sync_changes.push_back(std::move(sync_change_5));
 
   std::unique_ptr<syncer::MetadataChangeList> metadata_change_list =
-      syncer::ModelTypeStore::WriteBatch::CreateMetadataChangeList();
+      syncer::DataTypeStore::WriteBatch::CreateMetadataChangeList();
 
   EXPECT_CALL(processor(), Put).Times(0);
   EXPECT_CALL(processor(), Delete).Times(0);
@@ -559,7 +561,7 @@ TEST_F(WebApkSyncBridgeTest, MergeFullSyncData_NoChanges) {
   InitSyncBridge();
 
   std::unique_ptr<syncer::MetadataChangeList> metadata_change_list =
-      syncer::ModelTypeStore::WriteBatch::CreateMetadataChangeList();
+      syncer::DataTypeStore::WriteBatch::CreateMetadataChangeList();
   syncer::EntityChangeList sync_changes;
   std::optional<syncer::ModelError> result = sync_bridge().MergeFullSyncData(
       std::move(metadata_change_list), std::move(sync_changes));
@@ -627,7 +629,7 @@ TEST_F(WebApkSyncBridgeTest, ApplyIncrementalSyncChanges) {
   sync_changes.push_back(std::move(sync_change_4));
 
   std::unique_ptr<syncer::MetadataChangeList> metadata_change_list =
-      syncer::ModelTypeStore::WriteBatch::CreateMetadataChangeList();
+      syncer::DataTypeStore::WriteBatch::CreateMetadataChangeList();
   std::optional<syncer::ModelError> result =
       sync_bridge().ApplyIncrementalSyncChanges(std::move(metadata_change_list),
                                                 std::move(sync_changes));
@@ -695,7 +697,7 @@ TEST_F(WebApkSyncBridgeTest, ApplyIncrementalSyncChanges_NoChanges) {
   InitSyncBridge();
 
   std::unique_ptr<syncer::MetadataChangeList> metadata_change_list =
-      syncer::ModelTypeStore::WriteBatch::CreateMetadataChangeList();
+      syncer::DataTypeStore::WriteBatch::CreateMetadataChangeList();
   syncer::EntityChangeList sync_changes;
   std::optional<syncer::ModelError> result =
       sync_bridge().ApplyIncrementalSyncChanges(std::move(metadata_change_list),
@@ -1022,28 +1024,12 @@ TEST_F(WebApkSyncBridgeTest, GetData) {
       storage_keys.push_back(id_and_web_app.first);
     }
 
-    base::RunLoop run_loop;
-    sync_bridge().GetDataForCommit(
-        std::move(storage_keys),
-        base::BindLambdaForTesting(
-            [&](std::unique_ptr<syncer::DataBatch> data_batch) {
-              EXPECT_TRUE(RegistryContainsSyncDataBatchChanges(
-                  registry, std::move(data_batch)));
-              run_loop.Quit();
-            }));
-    run_loop.Run();
+    EXPECT_TRUE(RegistryContainsSyncDataBatchChanges(
+        registry, sync_bridge().GetDataForCommit(std::move(storage_keys))));
   }
 
-  {
-    base::RunLoop run_loop;
-    sync_bridge().GetAllDataForDebugging(base::BindLambdaForTesting(
-        [&](std::unique_ptr<syncer::DataBatch> data_batch) {
-          EXPECT_TRUE(RegistryContainsSyncDataBatchChanges(
-              registry, std::move(data_batch)));
-          run_loop.Quit();
-        }));
-    run_loop.Run();
-  }
+  EXPECT_TRUE(RegistryContainsSyncDataBatchChanges(
+      registry, sync_bridge().GetAllDataForDebugging()));
 }
 
 // Tests that the client & storage tags are correct for entity data.

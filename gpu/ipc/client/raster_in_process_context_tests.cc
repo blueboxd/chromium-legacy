@@ -14,7 +14,6 @@
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
-#include "gpu/ipc/host/gpu_memory_buffer_support.h"
 #include "gpu/ipc/in_process_gpu_thread_holder.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -59,8 +58,6 @@ class RasterInProcessCommandBufferTest : public ::testing::Test {
   void SetUp() override {
     if (!RasterInProcessContext::SupportedInTest())
       return;
-    gpu_thread_holder_.GetGpuPreferences()->texture_target_exception_list =
-        CreateBufferUsageAndFormatExceptionList();
     gpu_thread_holder_.GetGpuPreferences()->gr_context_type =
         GrContextType::kGL;
     context_ = CreateRasterInProcessContext();
@@ -90,9 +87,9 @@ TEST_F(RasterInProcessCommandBufferTest, AllowedBetweenBeginEndRasterCHROMIUM) {
   // Create shared image and allocate storage.
   auto* sii = context_->GetSharedImageInterface();
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
-  uint32_t flags = gpu::SHARED_IMAGE_USAGE_RASTER_READ |
-                   gpu::SHARED_IMAGE_USAGE_RASTER_WRITE |
-                   gpu::SHARED_IMAGE_USAGE_OOP_RASTERIZATION;
+  SharedImageUsageSet flags = gpu::SHARED_IMAGE_USAGE_RASTER_READ |
+                              gpu::SHARED_IMAGE_USAGE_RASTER_WRITE |
+                              gpu::SHARED_IMAGE_USAGE_OOP_RASTERIZATION;
   scoped_refptr<gpu::ClientSharedImage> shared_image = sii->CreateSharedImage(
       {kSharedImageFormat, kBufferSize, color_space, flags, "TestLabel"},
       kNullSurfaceHandle);

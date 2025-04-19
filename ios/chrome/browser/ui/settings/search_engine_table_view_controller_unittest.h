@@ -4,10 +4,8 @@
 
 #ifndef IOS_CHROME_BROWSER_UI_SETTINGS_SEARCH_ENGINE_TABLE_VIEW_CONTROLLER_UNITTEST_H_
 #define IOS_CHROME_BROWSER_UI_SETTINGS_SEARCH_ENGINE_TABLE_VIEW_CONTROLLER_UNITTEST_H_
-
-#import "ios/chrome/browser/shared/ui/table_view/legacy_chrome_table_view_controller_test.h"
-
 #import <UIKit/UIKit.h>
+
 #import <string>
 
 #import "base/test/metrics/histogram_tester.h"
@@ -17,6 +15,7 @@
 #import "components/search_engines/template_url_service.h"
 #import "components/sync_preferences/testing_pref_service_syncable.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/shared/ui/table_view/legacy_chrome_table_view_controller_test.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "url/gurl.h"
 

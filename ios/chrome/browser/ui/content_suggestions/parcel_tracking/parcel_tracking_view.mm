@@ -50,6 +50,11 @@ const CGFloat kStatusBarHeight = 6.0f;
 const CGFloat kStatusBarCornerRadius = 3.0f;
 const CGFloat kStatusBarBottomMarginViewHeight = .01f;
 
+BOOL isInProgressState(ParcelState state) {
+  return state == ParcelState::kPickedUp || state == ParcelState::kHandedOff ||
+         state == ParcelState::kWithCarrier;
+}
+
 }  // namespace
 
 // Represents a status bar in the ParcelStatusBarView.
@@ -293,12 +298,22 @@ const CGFloat kStatusBarBottomMarginViewHeight = .01f;
 // Updates the title and status bars based on the parcel `status` and
 // `estimatedDeliveryTime`.
 - (void)updateViewForParcelStatus:(ParcelState)status
-                     deliveryTime:(base::Time)estimatedDeliveryTime {
+                     deliveryTime:
+                         (std::optional<base::Time>)estimatedDeliveryTime {
   NSString* dateString =
-      base::SysUTF16ToNSString(base::LocalizedTimeFormatWithPattern(
-          estimatedDeliveryTime, "EEEE MMMM d"));
+      estimatedDeliveryTime.has_value()
+          ? base::SysUTF16ToNSString(base::LocalizedTimeFormatWithPattern(
+                *estimatedDeliveryTime, "EEEE MMMM d"))
+          : nil;
   NSString* imageColorName;
   NSString* imageContainerColorName;
+
+  // If the parcel is in progress but the estimated delivered date was not set
+  // on the server side, we cannot show the user much useful information. As
+  // such, we treat those cases visually like they are in the new parcel state.
+  if (!estimatedDeliveryTime.has_value() && isInProgressState(status)) {
+    status = ParcelState::kNew;
+  }
 
   // Configure the status bars (and title text color if needed) depending on
   // status.
@@ -310,7 +325,7 @@ const CGFloat kStatusBarBottomMarginViewHeight = .01f;
       [_secondStatusBar configureAsError:NO lighterTone:YES];
       [_thirdStatusBar configureAsError:NO lighterTone:YES];
       imageColorName = kGreen300Color;
-      imageContainerColorName = kGreen50Color;
+      imageContainerColorName = kStaticGreen50Color;
       break;
     case ParcelState::kLabelCreated:
       _titleLabel.text = l10n_util::GetNSString(
@@ -319,26 +334,32 @@ const CGFloat kStatusBarBottomMarginViewHeight = .01f;
       [_secondStatusBar configureAsError:NO lighterTone:YES];
       [_thirdStatusBar configureAsError:NO lighterTone:YES];
       imageColorName = kGreen300Color;
-      imageContainerColorName = kGreen50Color;
+      imageContainerColorName = kStaticGreen50Color;
       break;
     case ParcelState::kFinished: {
-      // Use Today date descriptor if the delivery day matches the current day
-      if ([[NSCalendar currentCalendar] isDate:estimatedDeliveryTime.ToNSDate()
-                               inSameDayAsDate:[NSDate date]]) {
-        dateString = l10n_util::GetNSString(
-            IDS_IOS_CONTENT_SUGGESTIONS_PARCEL_TRACKING_MODULE_PACKAGE_DELIVERED_TODAY);
+      if (!estimatedDeliveryTime.has_value()) {
+        _titleLabel.text = l10n_util::GetNSString(
+            IDS_IOS_CONTENT_SUGGESTIONS_PARCEL_TRACKING_MODULE_PACKAGE_DELIVERED_STATUS);
+      } else {
+        // Use Today date descriptor if the delivery day matches the current day
+        if ([[NSCalendar currentCalendar]
+                         isDate:estimatedDeliveryTime->ToNSDate()
+                inSameDayAsDate:[NSDate date]]) {
+          dateString = l10n_util::GetNSString(
+              IDS_IOS_CONTENT_SUGGESTIONS_PARCEL_TRACKING_MODULE_PACKAGE_DELIVERED_TODAY);
+        }
+        _titleLabel.text = [NSString
+            stringWithFormat:
+                @"%@ %@",
+                l10n_util::GetNSString(
+                    IDS_IOS_CONTENT_SUGGESTIONS_PARCEL_TRACKING_MODULE_PACKAGE_DELIVERED_STATUS),
+                dateString];
       }
-      _titleLabel.text = [NSString
-          stringWithFormat:
-              @"%@ %@",
-              l10n_util::GetNSString(
-                  IDS_IOS_CONTENT_SUGGESTIONS_PARCEL_TRACKING_MODULE_PACKAGE_DELIVERED_STATUS),
-              dateString];
       [_firstStatusBar configureAsError:NO lighterTone:NO];
       [_secondStatusBar configureAsError:NO lighterTone:NO];
       [_thirdStatusBar configureAsError:NO lighterTone:NO];
       imageColorName = kGreen300Color;
-      imageContainerColorName = kGreen50Color;
+      imageContainerColorName = kStaticGreen50Color;
       break;
     }
     case ParcelState::kAtPickupLocation:
@@ -348,7 +369,7 @@ const CGFloat kStatusBarBottomMarginViewHeight = .01f;
       [_secondStatusBar configureAsError:NO lighterTone:NO];
       [_thirdStatusBar configureAsError:NO lighterTone:NO];
       imageColorName = kGreen300Color;
-      imageContainerColorName = kGreen50Color;
+      imageContainerColorName = kStaticGreen50Color;
       break;
     case ParcelState::kPickedUp:
     case ParcelState::kHandedOff:
@@ -360,7 +381,7 @@ const CGFloat kStatusBarBottomMarginViewHeight = .01f;
       [_secondStatusBar configureAsError:NO lighterTone:NO];
       [_thirdStatusBar configureAsError:NO lighterTone:YES];
       imageColorName = kGreen300Color;
-      imageContainerColorName = kGreen50Color;
+      imageContainerColorName = kStaticGreen50Color;
       break;
     case ParcelState::kOutForDelivery:
       _titleLabel.text = l10n_util::GetNSStringF(
@@ -371,7 +392,7 @@ const CGFloat kStatusBarBottomMarginViewHeight = .01f;
       [_secondStatusBar configureAsError:NO lighterTone:NO];
       [_thirdStatusBar configureAsError:NO lighterTone:YES];
       imageColorName = kGreen300Color;
-      imageContainerColorName = kGreen50Color;
+      imageContainerColorName = kStaticGreen50Color;
       break;
     case ParcelState::kDeliveryFailed:
       _titleLabel.text = l10n_util::GetNSString(
@@ -451,6 +472,12 @@ const CGFloat kStatusBarBottomMarginViewHeight = .01f;
     return 0;
   }
   return 1;
+}
+
+#pragma mark - Testing category methods
+
+- (NSString*)titleLabelTextForTesting {
+  return self->_titleLabel.text;
 }
 
 @end

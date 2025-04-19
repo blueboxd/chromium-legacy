@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/functional/bind.h"
+#include "base/memory/raw_span.h"
 #include "base/no_destructor.h"
 #include "base/numerics/checked_math.h"
 #include "build/build_config.h"
@@ -37,7 +38,10 @@
 #include "ui/gfx/geometry/vector2d.h"
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+#include <memory>
+
 #include "base/functional/callback.h"
+#include "pdf/pdf_progressive_searchifier.h"
 #include "pdf/pdfium/pdfium_searchify.h"
 #include "services/screen_ai/public/mojom/screen_ai_service.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -82,7 +86,7 @@ class DataDocumentLoader : public DocumentLoader {
   void ClearPendingRequests() override {}
 
  private:
-  const base::span<const uint8_t> pdf_data_;
+  const base::raw_span<const uint8_t> pdf_data_;
 };
 
 int CalculatePosition(FPDF_PAGE page,
@@ -245,15 +249,16 @@ base::Value RecursiveGetStructTree(FPDF_STRUCTELEMENT struct_elem) {
 
 }  // namespace
 
-PDFEngineExports::RenderingSettings::RenderingSettings(const gfx::Size& dpi,
-                                                       const gfx::Rect& bounds,
-                                                       bool fit_to_bounds,
-                                                       bool stretch_to_bounds,
-                                                       bool keep_aspect_ratio,
-                                                       bool center_in_bounds,
-                                                       bool autorotate,
-                                                       bool use_color,
-                                                       bool render_for_printing)
+PDFiumEngineExports::RenderingSettings::RenderingSettings(
+    const gfx::Size& dpi,
+    const gfx::Rect& bounds,
+    bool fit_to_bounds,
+    bool stretch_to_bounds,
+    bool keep_aspect_ratio,
+    bool center_in_bounds,
+    bool autorotate,
+    bool use_color,
+    bool render_for_printing)
     : dpi(dpi),
       bounds(bounds),
       fit_to_bounds(fit_to_bounds),
@@ -264,10 +269,10 @@ PDFEngineExports::RenderingSettings::RenderingSettings(const gfx::Size& dpi,
       use_color(use_color),
       render_for_printing(render_for_printing) {}
 
-PDFEngineExports::RenderingSettings::RenderingSettings(
+PDFiumEngineExports::RenderingSettings::RenderingSettings(
     const RenderingSettings& that) = default;
 
-PDFEngineExports* PDFEngineExports::Get() {
+PDFiumEngineExports* PDFiumEngineExports::Get() {
   static base::NoDestructor<PDFiumEngineExports> exports;
   return exports.get();
 }
@@ -568,6 +573,11 @@ std::vector<uint8_t> PDFiumEngineExports::Searchify(
     base::RepeatingCallback<screen_ai::mojom::VisualAnnotationPtr(
         const SkBitmap& bitmap)> perform_ocr_callback) {
   return PDFiumSearchify(pdf_buffer, std::move(perform_ocr_callback));
+}
+
+std::unique_ptr<PdfProgressiveSearchifier>
+PDFiumEngineExports::CreateProgressiveSearchifier() {
+  return std::make_unique<PdfiumProgressiveSearchifier>();
 }
 #endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 

@@ -35,6 +35,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_output.h"
 #include "ui/ozone/platform/wayland/host/wayland_surface.h"
 #include "ui/ozone/platform/wayland/host/wayland_zaura_surface.h"
+#include "ui/platform_window/extensions/wayland_extension.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_delegate.h"
 #include "ui/platform_window/platform_window_init_properties.h"
@@ -59,6 +60,7 @@ class OSExchangeData;
 class WaylandBubble;
 class WaylandConnection;
 class WaylandSubsurface;
+class WaylandDataDragController;
 class WaylandWindowDragController;
 class WaylandFrameManager;
 class WaylandPopup;
@@ -69,6 +71,7 @@ using WidgetSubsurfaceSet = base::flat_set<std::unique_ptr<WaylandSubsurface>>;
 class WaylandWindow : public PlatformWindow,
                       public PlatformEventDispatcher,
                       public WmDragHandler,
+                      public WaylandExtension,
                       public EventTarget,
                       public WaylandZAuraSurface::Delegate {
  public:
@@ -86,15 +89,22 @@ class WaylandWindow : public PlatformWindow,
 
   void OnWindowLostCapture();
 
-  // Updates the surface scale of the window.  Top level windows take
-  // scale from the output attached to either their current display or the
-  // primary one if their widget is not yet created, children inherit scale from
-  // their parent.  The method recalculates window bounds appropriately if asked
-  // to do so (this is not needed upon window initialization).
+  // Updates the scale of this window, which may be taken from entered outputs
+  // or from wp-fractional-scale-v1, depending on current setup and feature
+  // flags, eg: WaylandPerSurfaceScale. Children inherit scale from their
+  // parent. Recalculates window bounds appropriately if asked to do so via
+  // |update_bounds|.
   virtual void UpdateWindowScale(bool update_bounds);
+
+  // If per-surface scaling is disabled, this updates the window scale as per
+  // the currently entered output(s).
+  void OnEnteredOutputScaleChanged();
 
   // Propagates the buffer scale of the next commit to exo.
   virtual void PropagateBufferScale(float new_scale) = 0;
+
+  // Returns a WeakPtr to the implementation instance.
+  virtual base::WeakPtr<WaylandWindow> AsWeakPtr() = 0;
 
   WaylandSurface* root_surface() const { return root_surface_.get(); }
   WaylandSubsurface* primary_subsurface() const {
@@ -161,12 +171,19 @@ class WaylandWindow : public PlatformWindow,
   // display changes. This is not sent via a configure.
   void SetWindowScale(float new_scale);
 
+  // Tentatively determines and returns the scale factor for this window based
+  // on its currently entered wl_outputs, see GetPreferredEnteredOutputId()
+  // description for more details. Returns null when the outputs are not ready.
+  std::optional<float> GetScaleFactorFromEnteredOutputs();
+
   // Returns the preferred entered output id, if any. The preferred output is
   // the one with the largest scale. This is needed to properly render contents
   // as it seems like an expectation of Wayland. However, if all the entered
   // outputs have the same scale factor, the very first entered output is chosen
   // as there is no way to figure out what output the window occupies the most.
   std::optional<WaylandOutput::Id> GetPreferredEnteredOutputId();
+
+  std::optional<float> GetPreferredScaleFactor() const;
 
   // Returns current type of the window.
   PlatformWindowType type() const { return type_; }
@@ -226,6 +243,13 @@ class WaylandWindow : public PlatformWindow,
   // PlatformEventDispatcher
   bool CanDispatchEvent(const PlatformEvent& event) override;
   uint32_t DispatchEvent(const PlatformEvent& event) override;
+
+  // WaylandExtension:
+  void RoundTripQueue() override;
+  bool HasInFlightRequestsForState() const override;
+  int64_t GetVizSequenceIdForAppliedState() const override;
+  int64_t GetVizSequenceIdForLatchedState() const override;
+  void SetLatchImmediately(bool latch_immediately) override;
 
   // EventTarget:
   bool CanAcceptEvent(const Event& event) override;
@@ -388,10 +412,6 @@ class WaylandWindow : public PlatformWindow,
     return ui_task_runner_;
   }
 
-  base::WeakPtr<WaylandWindow> AsWeakPtr() {
-    return weak_ptr_factory_.GetWeakPtr();
-  }
-
   // Clears the state of the |frame_manager_| when the GPU channel is
   // destroyed.
   void OnChannelDestroyed();
@@ -509,17 +529,6 @@ class WaylandWindow : public PlatformWindow,
   // create a StateRequest for this pending State.
   PendingConfigureState pending_configure_state_;
 
-  // Until all tests work properly with full asynchronicity, we latch
-  // immediately based on the value of `UseTestConfigForPlatformWindows()`.
-  // However, some tests require synchronisation with the wayland server, so
-  // we also provide this flag for turning on asynchronous latching.
-  // Eventually when all tests work asynchronously, we should remove this
-  // and the code to latch immediately based on
-  // `UseTestConfigForPlatformWindows()`.
-  bool latch_immediately_for_testing_ = true;
-  int64_t latest_applied_viz_seq_for_testing_ = -1;
-  int64_t latest_latched_viz_seq_for_testing_ = -1;
-
  private:
   friend class WaylandBufferManagerViewportTest;
   friend class BlockableWaylandToplevelWindow;
@@ -542,13 +551,15 @@ class WaylandWindow : public PlatformWindow,
   virtual bool OnInitialize(PlatformWindowInitProperties properties,
                             PlatformWindowDelegate::State* state) = 0;
 
-  // WaylandWindowDragController might need to take ownership of the wayland
-  // surface whether the window that originated the DND session gets destroyed
-  // in the middle of that session (e.g: when it is snapped into a tab strip).
-  // Surface ownership is allowed to be taken only when the window is under
-  // destruction, i.e: |shutting_down_| is set. This can be done, for example,
-  // by implementing |WaylandWindowObserver::OnWindowRemoved|.
+  // Drag controllers might need to take ownership of the dnd origin surface
+  // when its associated window gets closed in the middle of the session (e.g:
+  // in the process of being snapped into a tab strip) to prevent the drag
+  // session from getting cancelled abruptly by the Wayland compositor. Surface
+  // ownership is allowed to be transferred only when the window is already
+  // under destruction (i.e: |shutting_down_| is set) which can be done, for
+  // example, by implementing |WaylandWindowObserver::OnWindowRemoved|.
   friend WaylandWindowDragController;
+  friend WaylandDataDragController;
   std::unique_ptr<WaylandSurface> TakeWaylandSurface();
 
   void UpdateCursorShape(scoped_refptr<BitmapCursor> cursor);
@@ -710,6 +721,17 @@ class WaylandWindow : public PlatformWindow,
   // with |serial| will be sent to the Wayland compositor if needed.
   base::circular_deque<StateRequest> in_flight_requests_;
 
+  // Until all tests work properly with full asynchronicity, we latch
+  // immediately based on the value of `UseTestConfigForPlatformWindows()`.
+  // However, some tests require synchronisation with the wayland server, so
+  // we also provide this flag for turning on asynchronous latching.
+  // Eventually when all tests work asynchronously, we should remove this
+  // and the code to latch immediately based on
+  // `UseTestConfigForPlatformWindows()`.
+  bool latch_immediately_for_testing_ = true;
+  int64_t latest_applied_viz_seq_for_testing_ = -1;
+  int64_t latest_latched_viz_seq_for_testing_ = -1;
+
   // AcceleratedWidget for this window. This will be unique even over time.
   gfx::AcceleratedWidget accelerated_widget_;
 
@@ -743,8 +765,6 @@ class WaylandWindow : public PlatformWindow,
       reentrant_requests_;
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
-
-  base::WeakPtrFactory<WaylandWindow> weak_ptr_factory_{this};
 };
 
 }  // namespace ui

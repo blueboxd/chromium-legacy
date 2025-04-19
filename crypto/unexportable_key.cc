@@ -15,9 +15,12 @@ std::unique_ptr<UnexportableKeyProvider> (*g_mock_provider)() = nullptr;
 
 UnexportableSigningKey::~UnexportableSigningKey() = default;
 UnexportableKeyProvider::~UnexportableKeyProvider() = default;
-
 VirtualUnexportableSigningKey::~VirtualUnexportableSigningKey() = default;
 VirtualUnexportableKeyProvider::~VirtualUnexportableKeyProvider() = default;
+
+bool UnexportableSigningKey::IsHardwareBacked() const {
+  return false;
+}
 
 #if BUILDFLAG(IS_WIN)
 std::unique_ptr<UnexportableKeyProvider> GetUnexportableKeyProviderWin();
@@ -57,6 +60,10 @@ GetVirtualUnexportableKeyProvider_DO_NOT_USE_METRICS_ONLY() {
 }
 
 namespace internal {
+
+bool HasScopedUnexportableKeyProvider() {
+  return g_mock_provider != nullptr;
+}
 
 void SetUnexportableKeyProviderForTesting(
     std::unique_ptr<UnexportableKeyProvider> (*func)()) {

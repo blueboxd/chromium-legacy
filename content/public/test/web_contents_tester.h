@@ -139,6 +139,9 @@ class WebContentsTester {
   // Sets the return value of GetContentsMimeType().
   virtual void SetMainFrameMimeType(const std::string& mime_type) = 0;
 
+  // Sets the main frame size.
+  virtual void SetMainFrameSize(const gfx::Size& frame_size) = 0;
+
   // Change currently audible state for testing. This will cause all relevant
   // notifications to fire as well.
   virtual void SetIsCurrentlyAudible(bool audible) = 0;
@@ -158,8 +161,12 @@ class WebContentsTester {
   // Resets the state around PauseSubresourceLoadingCalled.
   virtual void ResetPauseSubresourceLoadingCalled() = 0;
 
+  // Sets the last active time ticks.
+  virtual void SetLastActiveTimeTicks(
+      base::TimeTicks last_active_time_ticks) = 0;
+
   // Sets the last active time.
-  virtual void SetLastActiveTime(base::TimeTicks last_active_time) = 0;
+  virtual void SetLastActiveTime(base::Time last_active_time) = 0;
 
   // Increments/decrements the number of frames with connected USB devices.
   virtual void TestIncrementUsbActiveFrameCount() = 0;
@@ -202,13 +209,6 @@ class WebContentsTester {
   virtual void SetMediaCaptureRawDeviceIdsOpened(
       blink::mojom::MediaStreamType type,
       std::vector<std::string> ids) = 0;
-
-  // Set whether this WebContents believes that it is the opener for a document
-  // pip window.
-  virtual void SetHasPictureInPictureDocument(bool has_pip) = 0;
-
-  // Set or remove focus on the primary main frame's RWHV.
-  virtual void SetRenderWidgetHostViewHasFocus(bool has_focus) = 0;
 };
 
 }  // namespace content

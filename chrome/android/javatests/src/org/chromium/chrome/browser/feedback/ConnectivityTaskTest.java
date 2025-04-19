@@ -15,13 +15,13 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.feedback.ConnectivityTask.FeedbackData;
 import org.chromium.chrome.browser.feedback.ConnectivityTask.Type;
 import org.chromium.chrome.browser.profiles.ProfileManager;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.ConnectionType;
 
 import java.util.HashMap;
@@ -47,7 +47,7 @@ public class ConnectivityTaskTest {
     @Feature({"Feedback"})
     public void testNormalCaseShouldWork() {
         final ConnectivityTask task =
-                TestThreadUtils.runOnUiThreadBlockingNoException(
+                ThreadUtils.runOnUiThreadBlocking(
                         new Callable<ConnectivityTask>() {
                             @Override
                             public ConnectivityTask call() {
@@ -118,7 +118,7 @@ public class ConnectivityTaskTest {
                         semaphore.release();
                     }
                 };
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     // Intentionally make HTTPS-connection fail which should result in
                     // NOT_CONNECTED.
@@ -152,7 +152,7 @@ public class ConnectivityTaskTest {
                         semaphore.release();
                     }
                 };
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     // Intentionally make HTTPS connections slow which should result in TIMEOUT.
                     ConnectivityChecker.overrideUrlsForTest(
@@ -175,10 +175,9 @@ public class ConnectivityTaskTest {
     @Test
     @MediumTest
     @Feature({"Feedback"})
-    @SuppressWarnings("TryFailThrowable") // TODO(tedchoc): Remove after fixing timeout.
     public void testTwoTimeoutsShouldFillInTheRest() {
         final ConnectivityTask task =
-                TestThreadUtils.runOnUiThreadBlockingNoException(
+                ThreadUtils.runOnUiThreadBlocking(
                         new Callable<ConnectivityTask>() {
                             @Override
                             public ConnectivityTask call() {
@@ -194,16 +193,13 @@ public class ConnectivityTaskTest {
                                         null);
                             }
                         });
-        thrown.expect(AssertionError.class);
+        thrown.expect(CriteriaHelper.TimeoutException.class);
         CriteriaHelper.pollUiThread(
                 () -> {
                     return task.isDone();
                 },
                 TIMEOUT_MS / 5,
                 RESULT_CHECK_INTERVAL_MS);
-        FeedbackData feedback = getResult(task);
-        verifyConnections(feedback, ConnectivityCheckResult.UNKNOWN);
-        Assert.assertEquals("The timeout value is wrong.", TIMEOUT_MS, feedback.getTimeoutMs());
     }
 
     @Test
@@ -237,7 +233,7 @@ public class ConnectivityTaskTest {
 
     private static FeedbackData getResult(final ConnectivityTask task) {
         final FeedbackData result =
-                TestThreadUtils.runOnUiThreadBlockingNoException(
+                ThreadUtils.runOnUiThreadBlocking(
                         new Callable<FeedbackData>() {
                             @Override
                             public FeedbackData call() {

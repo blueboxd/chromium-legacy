@@ -38,12 +38,6 @@ IN_PROC_BROWSER_TEST_F(CrExtensionsTest, ActivityLogStreamItem) {
   RunTest("extensions/activity_log_stream_item_test.js", "mocha.run()");
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-IN_PROC_BROWSER_TEST_F(CrExtensionsTest, KioskModeManagerUnit) {
-  RunTest("extensions/kiosk_mode_manager_unit_test.js", "mocha.run()");
-}
-#endif
-
 IN_PROC_BROWSER_TEST_F(CrExtensionsTest, ToggleRow) {
   RunTest("extensions/toggle_row_test.js", "mocha.run()");
 }
@@ -60,8 +54,14 @@ IN_PROC_BROWSER_TEST_F(CrExtensionsTest, HostPermissionsToggleList) {
   RunTest("extensions/host_permissions_toggle_list_test.js", "mocha.run()");
 }
 
-IN_PROC_BROWSER_TEST_F(CrExtensionsTest, ExtensionsMV2DeprecationPanel) {
-  RunTest("extensions/mv2_deprecation_panel_test.js", "mocha.run()");
+IN_PROC_BROWSER_TEST_F(CrExtensionsTest,
+                       ExtensionsMV2DeprecationPanelWarningStage) {
+  RunTest("extensions/mv2_deprecation_panel_warning_test.js", "mocha.run()");
+}
+
+IN_PROC_BROWSER_TEST_F(CrExtensionsTest,
+                       ExtensionsMV2DeprecationPanelDisabledStage) {
+  RunTest("extensions/mv2_deprecation_panel_disabled_test.js", "mocha.run()");
 }
 
 IN_PROC_BROWSER_TEST_F(CrExtensionsTest, SafetyCheckReviewPanel) {
@@ -161,12 +161,6 @@ IN_PROC_BROWSER_TEST_F(CrExtensionsToolbarTest, NarrowModeShowsMenu) {
 IN_PROC_BROWSER_TEST_F(CrExtensionsToolbarTest, MAYBE_ClickHandlers) {
   RunTestCase("ClickHandlers");
 }
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-IN_PROC_BROWSER_TEST_F(CrExtensionsToolbarTest, KioskMode) {
-  RunTestCase("KioskMode");
-}
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Item Tests
@@ -291,14 +285,23 @@ IN_PROC_BROWSER_TEST_F(CrExtensionsDetailViewTest, SafetyCheckWarning) {
   RunTestCase("SafetyCheckWarning");
 }
 
-IN_PROC_BROWSER_TEST_F(CrExtensionsDetailViewTest,
-                       Mv2DeprecationMessageWarning_Disabled) {
-  RunTestCase("Mv2DeprecationMessageWarning_Disabled");
+IN_PROC_BROWSER_TEST_F(CrExtensionsDetailViewTest, Mv2DeprecationMessage_None) {
+  RunTestCase("Mv2DeprecationMessage_None");
 }
 
 IN_PROC_BROWSER_TEST_F(CrExtensionsDetailViewTest,
-                       MvDeprecationMessageWarning_Enabled) {
-  RunTestCase("Mv2DeprecationMessageWarning_Enabled");
+                       Mv2DeprecationMessage_Warning) {
+  RunTestCase("Mv2DeprecationMessage_Warning");
+}
+
+IN_PROC_BROWSER_TEST_F(CrExtensionsDetailViewTest,
+                       Mv2DeprecationMessage_DisableWithReEnable_Visbility) {
+  RunTestCase("Mv2DeprecationMessage_DisableWithReEnable_Visbility");
+}
+
+IN_PROC_BROWSER_TEST_F(CrExtensionsDetailViewTest,
+                       Mv2DeprecationMessage_DisableWithReEnable) {
+  RunTestCase("Mv2DeprecationMessage_DisableWithReEnable_Content");
 }
 
 IN_PROC_BROWSER_TEST_F(CrExtensionsDetailViewTest, PinnedToToolbar) {
@@ -353,13 +356,18 @@ IN_PROC_BROWSER_TEST_F(CrExtensionsItemListTest,
 }
 
 IN_PROC_BROWSER_TEST_F(CrExtensionsItemListTest,
-                       ManifestV2DeprecationPanel_Disabled) {
-  RunTestCase("ManifestV2DeprecationPanel_Disabled");
+                       ManifestV2DeprecationPanel_None) {
+  RunTestCase("ManifestV2DeprecationPanel_None");
 }
 
 IN_PROC_BROWSER_TEST_F(CrExtensionsItemListTest,
-                       ManifestV2DeprecationPanel_Enabled) {
-  RunTestCase("ManifestV2DeprecationPanel_Enabled");
+                       ManifestV2DeprecationPanel_Warning) {
+  RunTestCase("ManifestV2DeprecationPanel_Warning");
+}
+
+IN_PROC_BROWSER_TEST_F(CrExtensionsItemListTest,
+                       ManifestV2DeprecationPanel_DisableWithReEnable) {
+  RunTestCase("ManifestV2DeprecationPanel_DisableWithReEnable");
 }
 
 IN_PROC_BROWSER_TEST_F(CrExtensionsItemListTest,
@@ -724,6 +732,10 @@ IN_PROC_BROWSER_TEST_F(CrExtensionsErrorPageTest, InvalidUrl) {
   RunTestCase("InvalidUrl");
 }
 
+IN_PROC_BROWSER_TEST_F(CrExtensionsErrorPageTest, ReloadItem) {
+  RunTestCase("ReloadItem");
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Code Section Tests
 
@@ -744,45 +756,6 @@ IN_PROC_BROWSER_TEST_F(CrExtensionsCodeSectionTest, Layout) {
 IN_PROC_BROWSER_TEST_F(CrExtensionsCodeSectionTest, LongSource) {
   RunTestCase("LongSource");
 }
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-////////////////////////////////////////////////////////////////////////////////
-// kiosk mode tests.
-
-class CrExtensionsKioskModeTest : public ExtensionsBrowserTest {
- protected:
-  void RunTestCase(const std::string& testCase) {
-    ExtensionsBrowserTest::RunTest(
-        "extensions/kiosk_mode_test.js",
-        base::StringPrintf("runMochaTest('KioskModeTests', '%s');",
-                           testCase.c_str()));
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(CrExtensionsKioskModeTest, AddButton) {
-  RunTestCase("AddButton");
-}
-
-IN_PROC_BROWSER_TEST_F(CrExtensionsKioskModeTest, Layout) {
-  RunTestCase("Layout");
-}
-
-IN_PROC_BROWSER_TEST_F(CrExtensionsKioskModeTest, AutoLaunch) {
-  RunTestCase("AutoLaunch");
-}
-
-IN_PROC_BROWSER_TEST_F(CrExtensionsKioskModeTest, Bailout) {
-  RunTestCase("Bailout");
-}
-
-IN_PROC_BROWSER_TEST_F(CrExtensionsKioskModeTest, Updated) {
-  RunTestCase("Updated");
-}
-
-IN_PROC_BROWSER_TEST_F(CrExtensionsKioskModeTest, AddError) {
-  RunTestCase("AddError");
-}
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Navigation Helper Tests

@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/view_ids.h"
-#include "chrome/browser/ui/views/autofill/payments/save_card_and_virtual_card_enroll_confirmation_bubble_views.h"
+#include "chrome/browser/ui/views/autofill/payments/save_payment_method_and_virtual_card_enroll_confirmation_bubble_views.h"
 #include "chrome/browser/ui/views/autofill/payments/virtual_card_enroll_bubble_views.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/browser/ui/payments/virtual_card_enroll_bubble_controller.h"
@@ -19,6 +19,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/accessibility/view_accessibility.h"
 
 namespace autofill {
 
@@ -31,7 +32,7 @@ VirtualCardEnrollIconView::VirtualCardEnrollIconView(
                          icon_label_bubble_delegate,
                          delegate,
                          "VirtualCardEnroll") {
-  SetAccessibilityProperties(
+  GetViewAccessibility().SetProperties(
       /*role*/ std::nullopt,
       l10n_util::GetStringUTF16(
           IDS_AUTOFILL_VIRTUAL_CARD_ENROLLMENT_FALLBACK_ICON_TOOLTIP));
@@ -47,12 +48,13 @@ views::BubbleDialogDelegate* VirtualCardEnrollIconView::GetBubble() const {
 
   // Checking controller's `enrollment_status_` is `kCompleted` ensures that
   // the bubble view returned is of the type
-  // `SaveCardAndVirtualCardEnrollConfirmationBubbleViews` since controller
-  // hides the `VirtualCardEnrollBubbleViews` once the enrollment completes to
-  // show the confirmation bubble.
+  // `SavePaymentMethodAndVirtualCardEnrollConfirmationBubbleViews` since
+  // controller hides the `VirtualCardEnrollBubbleViews` once the enrollment
+  // completes to show the confirmation bubble.
   if (controller->IsEnrollmentComplete()) {
     return static_cast<
-        autofill::SaveCardAndVirtualCardEnrollConfirmationBubbleViews*>(
+        autofill::
+            SavePaymentMethodAndVirtualCardEnrollConfirmationBubbleViews*>(
         controller->GetVirtualCardBubbleView());
   }
 

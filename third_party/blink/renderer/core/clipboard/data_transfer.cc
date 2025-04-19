@@ -110,15 +110,6 @@ class DraggedNodeImageBuilder {
 
     gfx::Rect absolute_bounding_box =
         dragged_layout_object->AbsoluteBoundingBoxRectIncludingDescendants();
-    // TODO(crbug.com/331320415): consider using the root frame's visible rect
-    // instead of the local frame, to avoid over-clipping.
-    gfx::Rect visible_rect(gfx::Point(),
-                           layer->GetLayoutObject().GetFrameView()->Size());
-    // If the absolute bounding box is large enough to be possibly a memory
-    // or IPC payload issue, clip it to the visible content rect.
-    if (absolute_bounding_box.size().Area64() > visible_rect.size().Area64()) {
-      absolute_bounding_box.Intersect(visible_rect);
-    }
 
     gfx::RectF bounding_box =
         layer->GetLayoutObject()
@@ -359,11 +350,11 @@ void DataTransfer::setDragImage(Element* image, int x, int y) {
     return;
 
   // Convert `drag_loc_` from CSS px to physical pixels.
-  // `LocalFrame::PageZoomFactor` converts from CSS px to physical px by taking
-  // into account both device scale factor and page zoom.
+  // `LocalFrame::LayoutZoomFactor` converts from CSS px to physical px by
+  // taking into account both device scale factor and page zoom.
   LocalFrame* frame = image->GetDocument().GetFrame();
   gfx::Point location =
-      gfx::ScaleToRoundedPoint(gfx::Point(x, y), frame->PageZoomFactor());
+      gfx::ScaleToRoundedPoint(gfx::Point(x, y), frame->LayoutZoomFactor());
 
   auto* html_image_element = DynamicTo<HTMLImageElement>(image);
   if (html_image_element && !image->isConnected())

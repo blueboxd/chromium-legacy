@@ -21,6 +21,7 @@
 #import "components/search_engines/template_url_prepopulate_data.h"
 #import "components/search_engines/template_url_service.h"
 #import "components/segmentation_platform/public/features.h"
+#import "components/segmentation_platform/public/segmentation_platform_service.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/app/tests_hook.h"
 #import "ios/chrome/browser/commerce/model/shopping_service_factory.h"
@@ -66,6 +67,7 @@
 #import "ios/chrome/browser/shared/public/commands/settings_commands.h"
 #import "ios/chrome/browser/shared/public/commands/show_signin_command.h"
 #import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
+#import "ios/chrome/browser/shared/public/commands/whats_new_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/signin/model/authentication_service.h"
@@ -79,6 +81,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/most_visited_tiles_mediator.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/shortcuts_mediator.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_delegate.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_image_data_source.h"
@@ -128,6 +131,7 @@
 #import "url/gurl.h"
 
 @interface ContentSuggestionsCoordinator () <
+    ContentSuggestionsCommands,
     ContentSuggestionsViewControllerAudience,
     MagicStackCollectionViewControllerAudience,
     MagicStackHalfSheetTableViewControllerDelegate,
@@ -198,56 +202,62 @@
   TabResumptionMediator* _tabResumptionMediator;
 
   MagicStackCollectionViewController* _magicStackCollectionView;
+
+  segmentation_platform::SegmentationPlatformService* _segmentationService;
+  segmentation_platform::DeviceSwitcherResultDispatcher*
+      _deviceSwitcherResultDispatcher;
 }
 
 - (void)start {
   DCHECK(self.browser);
   DCHECK(self.NTPMetricsDelegate);
-
   if (self.started) {
     // Prevent this coordinator from being started twice in a row
     return;
   }
-
   _started = YES;
 
-  self.authService = AuthenticationServiceFactory::GetForBrowserState(
-      self.browser->GetBrowserState());
+  ChromeBrowserState* browserState = self.browser->GetBrowserState();
+
+  _segmentationService = segmentation_platform::
+      SegmentationPlatformServiceFactory::GetForBrowserState(browserState);
+  _deviceSwitcherResultDispatcher =
+      segmentation_platform::SegmentationPlatformServiceFactory::
+          GetDispatcherForBrowserState(browserState);
+
+  self.authService =
+      AuthenticationServiceFactory::GetForBrowserState(browserState);
 
   PrefService* prefs =
-      ChromeBrowserState::FromBrowserState(self.browser->GetBrowserState())
-          ->GetPrefs();
+      ChromeBrowserState::FromBrowserState(browserState)->GetPrefs();
 
   favicon::LargeIconService* largeIconService =
-      IOSChromeLargeIconServiceFactory::GetForBrowserState(
-          self.browser->GetBrowserState());
-  LargeIconCache* cache = IOSChromeLargeIconCacheFactory::GetForBrowserState(
-      self.browser->GetBrowserState());
+      IOSChromeLargeIconServiceFactory::GetForBrowserState(browserState);
+
+  LargeIconCache* cache =
+      IOSChromeLargeIconCacheFactory::GetForBrowserState(browserState);
+
   std::unique_ptr<ntp_tiles::MostVisitedSites> mostVisitedFactory =
-      IOSMostVisitedSitesFactory::NewForBrowserState(
-          self.browser->GetBrowserState());
+      IOSMostVisitedSitesFactory::NewForBrowserState(browserState);
+
   ReadingListModel* readingListModel =
-      ReadingListModelFactory::GetForBrowserState(
-          self.browser->GetBrowserState());
+      ReadingListModelFactory::GetForBrowserState(browserState);
 
   self.contentSuggestionsMetricsRecorder =
       [[ContentSuggestionsMetricsRecorder alloc]
           initWithLocalState:GetApplicationContext()->GetLocalState()];
 
   syncer::SyncService* syncService =
-      SyncServiceFactory::GetForBrowserState(self.browser->GetBrowserState());
+      SyncServiceFactory::GetForBrowserState(browserState);
 
   AuthenticationService* authenticationService =
-      AuthenticationServiceFactory::GetForBrowserState(
-          self.browser->GetBrowserState());
+      AuthenticationServiceFactory::GetForBrowserState(browserState);
 
   signin::IdentityManager* identityManager =
-      IdentityManagerFactory::GetForBrowserState(
-          self.browser->GetBrowserState());
+      IdentityManagerFactory::GetForBrowserState(browserState);
 
   commerce::ShoppingService* shoppingService =
-      commerce::ShoppingServiceFactory::GetForBrowserState(
-          self.browser->GetBrowserState());
+      commerce::ShoppingServiceFactory::GetForBrowserState(browserState);
 
   self.contentSuggestionsMediator = [[ContentSuggestionsMediator alloc] init];
 
@@ -261,6 +271,8 @@
        URLLoadingBrowserAgent:UrlLoadingBrowserAgent::FromBrowser(
                                   self.browser)];
   _mostVisitedTilesMediator.contentSuggestionsDelegate = self.delegate;
+  _mostVisitedTilesMediator.contentSuggestionsMetricsRecorder =
+      self.contentSuggestionsMetricsRecorder;
   _mostVisitedTilesMediator.actionFactory = [[BrowserActionFactory alloc]
       initWithBrowser:self.browser
              scenario:kMenuScenarioHistogramMostVisitedEntry];
@@ -274,42 +286,16 @@
   _shortcutsMediator = [[ShortcutsMediator alloc]
       initWithReadingListModel:readingListModel
       featureEngagementTracker:feature_engagement::TrackerFactory::
-                                   GetForBrowserState(
-                                       self.browser->GetBrowserState())
+                                   GetForBrowserState(browserState)
                    authService:authenticationService];
   _shortcutsMediator.contentSuggestionsMetricsRecorder =
       self.contentSuggestionsMetricsRecorder;
   _shortcutsMediator.NTPMetricsDelegate = self.NTPMetricsDelegate;
-  _shortcutsMediator.dispatcher =
-      static_cast<id<ApplicationCommands, BrowserCoordinatorCommands>>(
-          self.browser->GetCommandDispatcher());
+  _shortcutsMediator.dispatcher = static_cast<
+      id<ApplicationCommands, BrowserCoordinatorCommands, WhatsNewCommands>>(
+      self.browser->GetCommandDispatcher());
   [moduleMediators addObject:_shortcutsMediator];
   self.contentSuggestionsMediator.shortcutsMediator = _shortcutsMediator;
-
-  BOOL isSetupListEnabled = set_up_list_utils::IsSetUpListActive(
-      GetApplicationContext()->GetLocalState());
-  if (isSetupListEnabled) {
-    _setUpListMediator = [[SetUpListMediator alloc]
-          initWithPrefService:prefs
-                  syncService:syncService
-              identityManager:identityManager
-        authenticationService:authenticationService
-                   sceneState:self.browser->GetSceneState()];
-    _setUpListMediator.commandHandler = self;
-    _setUpListMediator.contentSuggestionsMetricsRecorder =
-        self.contentSuggestionsMetricsRecorder;
-    _setUpListMediator.delegate = self.delegate;
-    const TemplateURL* defaultSearchURLTemplate =
-        ios::TemplateURLServiceFactory::GetForBrowserState(
-            self.browser->GetBrowserState())
-            ->GetDefaultSearchProvider();
-    BOOL isDefaultSearchEngine = defaultSearchURLTemplate &&
-                                 defaultSearchURLTemplate->prepopulate_id() ==
-                                     TemplateURLPrepopulateData::google.id;
-    _setUpListMediator.isDefaultSearchEngine = isDefaultSearchEngine;
-    self.contentSuggestionsMediator.setUpListMediator = _setUpListMediator;
-    [moduleMediators addObject:_setUpListMediator];
-  }
 
   if (IsTabResumptionEnabled()) {
     _tabResumptionMediator = [[TabResumptionMediator alloc]
@@ -323,30 +309,71 @@
     [moduleMediators addObject:_tabResumptionMediator];
   }
   if (IsIOSParcelTrackingEnabled() &&
-      !IsParcelTrackingDisabled(GetApplicationContext()->GetLocalState())) {
+      !IsParcelTrackingDisabled(
+          IsHomeCustomizationEnabled()
+              ? prefs
+              : GetApplicationContext()->GetLocalState())) {
     _parcelTrackingMediator = [[ParcelTrackingMediator alloc]
         initWithShoppingService:shoppingService
          URLLoadingBrowserAgent:UrlLoadingBrowserAgent::FromBrowser(
-                                    self.browser)];
+                                    self.browser)
+                    prefService:IsHomeCustomizationEnabled()
+                                    ? prefs
+                                    : GetApplicationContext()->GetLocalState()];
     _parcelTrackingMediator.NTPMetricsDelegate = self.NTPMetricsDelegate;
     [moduleMediators addObject:_parcelTrackingMediator];
   }
   if (IsSafetyCheckMagicStackEnabled()) {
     IOSChromeSafetyCheckManager* safetyCheckManager =
-        IOSChromeSafetyCheckManagerFactory::GetForBrowserState(
-            self.browser->GetBrowserState());
+        IOSChromeSafetyCheckManagerFactory::GetForBrowserState(browserState);
     _safetyCheckMediator = [[SafetyCheckMagicStackMediator alloc]
         initWithSafetyCheckManager:safetyCheckManager
                         localState:GetApplicationContext()->GetLocalState()
+                         userState:prefs
                           appState:self.browser->GetSceneState().appState];
     _safetyCheckMediator.presentationAudience = self;
     [moduleMediators addObject:_safetyCheckMediator];
   }
-
+  if (!ShouldPutMostVisitedSitesInMagicStack()) {
+    ContentSuggestionsViewController* viewController =
+        [[ContentSuggestionsViewController alloc] init];
+    viewController.audience = self;
+    viewController.urlLoadingBrowserAgent =
+        UrlLoadingBrowserAgent::FromBrowser(self.browser);
+    viewController.contentSuggestionsMetricsRecorder =
+        self.contentSuggestionsMetricsRecorder;
+    self.contentSuggestionsViewController = viewController;
+  }
+  BOOL isSetupListEnabled = set_up_list_utils::IsSetUpListActive(
+      GetApplicationContext()->GetLocalState(), prefs);
+  if (isSetupListEnabled) {
+    const TemplateURL* defaultSearchURLTemplate =
+        ios::TemplateURLServiceFactory::GetForBrowserState(browserState)
+            ->GetDefaultSearchProvider();
+    BOOL isDefaultSearchEngine = defaultSearchURLTemplate &&
+                                 defaultSearchURLTemplate->prepopulate_id() ==
+                                     TemplateURLPrepopulateData::google.id;
+    _setUpListMediator = [[SetUpListMediator alloc]
+                   initWithPrefService:prefs
+                           syncService:syncService
+                       identityManager:identityManager
+                 authenticationService:authenticationService
+                            sceneState:self.browser->GetSceneState()
+                 isDefaultSearchEngine:isDefaultSearchEngine
+                   segmentationService:_segmentationService
+        deviceSwitcherResultDispatcher:_deviceSwitcherResultDispatcher];
+    if (IsSegmentedDefaultBrowserPromoEnabled()) {
+      [_setUpListMediator retrieveUserSegment];
+    }
+    _setUpListMediator.commandHandler = self;
+    _setUpListMediator.contentSuggestionsMetricsRecorder =
+        self.contentSuggestionsMetricsRecorder;
+    _setUpListMediator.delegate = self.delegate;
+    self.contentSuggestionsMediator.setUpListMediator = _setUpListMediator;
+    [moduleMediators addObject:_setUpListMediator];
+  }
   _magicStackRankingModel = [[MagicStackRankingModel alloc]
-      initWithSegmentationService:
-          segmentation_platform::SegmentationPlatformServiceFactory::
-              GetForBrowserState(self.browser->GetBrowserState())
+      initWithSegmentationService:_segmentationService
                       prefService:prefs
                        localState:GetApplicationContext()->GetLocalState()
                   moduleMediators:moduleMediators];
@@ -354,47 +381,25 @@
       self.contentSuggestionsMetricsRecorder;
   self.contentSuggestionsMediator.magicStackRankingModel =
       _magicStackRankingModel;
-  if (IsIOSMagicStackCollectionViewEnabled()) {
-    _magicStackRankingModel.delegate = self.contentSuggestionsMediator;
-  }
+  _magicStackRankingModel.delegate = self.contentSuggestionsMediator;
   _magicStackRankingModel.homeStartDataSource = self.homeStartDataSource;
 
-  self.contentSuggestionsViewController =
-      [[ContentSuggestionsViewController alloc] init];
-  self.contentSuggestionsViewController.audience = self;
-  self.contentSuggestionsViewController.urlLoadingBrowserAgent =
-      UrlLoadingBrowserAgent::FromBrowser(self.browser);
-  self.contentSuggestionsViewController.contentSuggestionsMetricsRecorder =
-      self.contentSuggestionsMetricsRecorder;
-  self.contentSuggestionsViewController.layoutGuideCenter =
-      LayoutGuideCenterForBrowser(self.browser);
-  self.contentSuggestionsViewController.parcelTrackingCommandHandler =
-      HandlerForProtocol(self.browser->GetCommandDispatcher(),
-                         ParcelTrackingOptInCommands);
-
-  if (IsIOSMagicStackCollectionViewEnabled()) {
-    _magicStackCollectionView =
-        [[MagicStackCollectionViewController alloc] init];
-    _magicStackCollectionView.audience = self;
-  }
-
-  if (_magicStackRankingModel) {
-    _magicStackRankingModel.consumer = self.contentSuggestionsViewController;
-  }
-  _shortcutsMediator.consumer = self.contentSuggestionsViewController;
-  _safetyCheckMediator.consumer = self.contentSuggestionsViewController;
+  _magicStackCollectionView = [[MagicStackCollectionViewController alloc] init];
+  _magicStackCollectionView.audience = self;
   _mostVisitedTilesMediator.consumer = self.contentSuggestionsViewController;
-  _setUpListMediator.consumer = self.contentSuggestionsViewController;
 
-  if (IsIOSMagicStackCollectionViewEnabled()) {
-    self.contentSuggestionsMediator.magicStackConsumer =
-        _magicStackCollectionView;
-  }
+  self.contentSuggestionsMediator.magicStackConsumer =
+      _magicStackCollectionView;
   self.contentSuggestionsMediator.consumer =
       self.contentSuggestionsViewController;
+  [self.browser->GetCommandDispatcher()
+      startDispatchingToTarget:self
+                   forProtocol:@protocol(ContentSuggestionsCommands)];
 }
 
 - (void)stop {
+  _segmentationService = nullptr;
+  _deviceSwitcherResultDispatcher = nullptr;
   [self.parcelTrackingMediator disconnect];
   self.parcelTrackingMediator = nil;
   [_shortcutsMediator disconnect];
@@ -427,6 +432,8 @@
   [self dismissParcelTrackingAlertCoordinator];
   [_notificationsOptInAlertCoordinator stop];
   _notificationsOptInAlertCoordinator = nil;
+  [self.browser->GetCommandDispatcher()
+      stopDispatchingForProtocol:@protocol(ContentSuggestionsCommands)];
   _started = NO;
 }
 
@@ -439,6 +446,36 @@
 - (void)refresh {
   // Refresh in case there are new MVT to show.
   [_mostVisitedTilesMediator refreshMostVisitedTiles];
+  [_safetyCheckMediator reset];
+  [_parcelTrackingMediator reset];
+  [_magicStackRankingModel fetchLatestMagicStackRanking];
+}
+
+#pragma mark - ContentSuggestionsCommands
+
+- (void)showSetUpListSeeMoreMenu {
+  [_setUpListShowMoreViewController.presentingViewController
+      dismissViewControllerAnimated:NO
+                         completion:nil];
+  NSArray<SetUpListItemViewData*>* items = [self.setUpListMediator allItems];
+  _setUpListShowMoreViewController =
+      [[SetUpListShowMoreViewController alloc] initWithItems:items
+                                                 tapDelegate:self];
+  _setUpListShowMoreViewController.modalPresentationStyle =
+      UIModalPresentationPageSheet;
+  UISheetPresentationController* presentationController =
+      _setUpListShowMoreViewController.sheetPresentationController;
+  presentationController.prefersEdgeAttachedInCompactHeight = YES;
+  presentationController.widthFollowsPreferredContentSizeWhenEdgeAttached = YES;
+  presentationController.detents = @[
+    UISheetPresentationControllerDetent.mediumDetent,
+    UISheetPresentationControllerDetent.largeDetent
+  ];
+  presentationController.preferredCornerRadius = 16;
+  [_magicStackCollectionView
+      presentViewController:_setUpListShowMoreViewController
+                   animated:YES
+                 completion:nil];
 }
 
 #pragma mark - ContentSuggestionsViewControllerAudience
@@ -451,32 +488,37 @@
 
 - (void)didTapMagicStackEditButton {
   base::RecordAction(base::UserMetricsAction("IOSMagicStackSettingsOpened"));
-  _magicStackHalfSheetTableViewController =
-      [[MagicStackHalfSheetTableViewController alloc] init];
+  if (IsHomeCustomizationEnabled()) {
+    [self.delegate openMagicStackCustomizationMenu];
+  } else {
+    _magicStackHalfSheetTableViewController =
+        [[MagicStackHalfSheetTableViewController alloc] init];
 
-  _magicStackHalfSheetMediator = [[MagicStackHalfSheetMediator alloc]
-      initWithPrefService:GetApplicationContext()->GetLocalState()];
-  _magicStackHalfSheetMediator.consumer =
-      _magicStackHalfSheetTableViewController;
-  _magicStackHalfSheetTableViewController.delegate = self;
-  _magicStackHalfSheetTableViewController.modelDelegate =
-      _magicStackHalfSheetMediator;
+    _magicStackHalfSheetMediator = [[MagicStackHalfSheetMediator alloc]
+        initWithPrefService:GetApplicationContext()->GetLocalState()];
+    _magicStackHalfSheetMediator.consumer =
+        _magicStackHalfSheetTableViewController;
+    _magicStackHalfSheetTableViewController.delegate = self;
+    _magicStackHalfSheetTableViewController.modelDelegate =
+        _magicStackHalfSheetMediator;
 
-  UINavigationController* navViewController = [[UINavigationController alloc]
-      initWithRootViewController:_magicStackHalfSheetTableViewController];
+    UINavigationController* navViewController = [[UINavigationController alloc]
+        initWithRootViewController:_magicStackHalfSheetTableViewController];
 
-  navViewController.modalPresentationStyle = UIModalPresentationPageSheet;
-  UISheetPresentationController* presentationController =
-      navViewController.sheetPresentationController;
-  presentationController.prefersEdgeAttachedInCompactHeight = YES;
-  presentationController.widthFollowsPreferredContentSizeWhenEdgeAttached = YES;
-  presentationController.detents = @[
-    UISheetPresentationControllerDetent.mediumDetent,
-    UISheetPresentationControllerDetent.largeDetent
-  ];
-  [self.viewController presentViewController:navViewController
-                                    animated:YES
-                                  completion:nil];
+    navViewController.modalPresentationStyle = UIModalPresentationPageSheet;
+    UISheetPresentationController* presentationController =
+        navViewController.sheetPresentationController;
+    presentationController.prefersEdgeAttachedInCompactHeight = YES;
+    presentationController.widthFollowsPreferredContentSizeWhenEdgeAttached =
+        YES;
+    presentationController.detents = @[
+      UISheetPresentationControllerDetent.mediumDetent,
+      UISheetPresentationControllerDetent.largeDetent
+    ];
+    [_magicStackCollectionView presentViewController:navViewController
+                                            animated:YES
+                                          completion:nil];
+  }
 }
 
 - (void)showMagicStackParcelList {
@@ -497,9 +539,9 @@
     UISheetPresentationControllerDetent.mediumDetent,
     UISheetPresentationControllerDetent.largeDetent
   ];
-  [self.viewController presentViewController:navViewController
-                                    animated:YES
-                                  completion:nil];
+  [_magicStackCollectionView presentViewController:navViewController
+                                          animated:YES
+                                        completion:nil];
 }
 
 - (void)didTapSetUpListItemView:(SetUpListItemView*)view {
@@ -521,7 +563,7 @@
       [self didSelectSafetyCheckItem:SafetyCheckItemType::kDefault];
       break;
     case ContentSuggestionsModuleType::kCompactedSetUpList:
-      [self showSetUpListShowMoreMenu];
+      [self showSetUpListSeeMoreMenu];
       break;
     case ContentSuggestionsModuleType::kParcelTracking:
       [self showMagicStackParcelList];
@@ -605,6 +647,10 @@
                                [weakSettingsHandler showNotificationsSettings];
                              }
                           completionAction:nil];
+}
+
+- (void)customizeCardsWasTapped {
+  [self didTapMagicStackEditButton];
 }
 
 #pragma mark - MagicStackHalfSheetTableViewControllerDelegate
@@ -693,8 +739,7 @@
     case SafetyCheckItemType::kDefault:
       password_manager::PasswordCheckReferrer referrer =
           password_manager::PasswordCheckReferrer::kSafetyCheckMagicStack;
-      [settingsHandler showAndStartSafetyCheckInHalfSheet:YES
-                                                 referrer:referrer];
+      [settingsHandler showAndStartSafetyCheckForReferrer:referrer];
       break;
   }
 }
@@ -768,11 +813,23 @@
   // dismiss a previous instance and then clicks the item again the
   // previous instance may not have been stopped yet due to the animation.
   [_defaultBrowserPromoCoordinator stop];
-  _defaultBrowserPromoCoordinator =
-      [[SetUpListDefaultBrowserPromoCoordinator alloc]
-          initWithBaseViewController:[self viewController]
-                             browser:self.browser
-                         application:[UIApplication sharedApplication]];
+  if (IsSegmentedDefaultBrowserPromoEnabled()) {
+    _defaultBrowserPromoCoordinator =
+        [[SetUpListDefaultBrowserPromoCoordinator alloc]
+                initWithBaseViewController:[self viewController]
+                                   browser:self.browser
+                               application:[UIApplication sharedApplication]
+                       segmentationService:_segmentationService
+            deviceSwitcherResultDispatcher:_deviceSwitcherResultDispatcher];
+  } else {
+    _defaultBrowserPromoCoordinator =
+        [[SetUpListDefaultBrowserPromoCoordinator alloc]
+                initWithBaseViewController:[self viewController]
+                                   browser:self.browser
+                               application:[UIApplication sharedApplication]
+                       segmentationService:nullptr
+            deviceSwitcherResultDispatcher:nullptr];
+  }
   _defaultBrowserPromoCoordinator.delegate = self;
   [_defaultBrowserPromoCoordinator start];
 }
@@ -789,9 +846,9 @@
         }
       };
   // If there are 0 identities, kInstantSignin requires less taps.
-  ChromeBrowserState* browserState = self.browser->GetBrowserState();
   AuthenticationOperation operation =
-      ChromeAccountManagerServiceFactory::GetForBrowserState(browserState)
+      ChromeAccountManagerServiceFactory::GetForBrowserState(
+          self.browser->GetBrowserState())
               ->HasIdentities()
           ? AuthenticationOperation::kSigninOnly
           : AuthenticationOperation::kInstantSignin;
@@ -813,27 +870,6 @@
                       CredentialProviderPromoCommands)
       showCredentialProviderPromoWithTrigger:CredentialProviderPromoTrigger::
                                                  SetUpList];
-}
-
-- (void)showSetUpListShowMoreMenu {
-  NSArray<SetUpListItemViewData*>* items = [self.setUpListMediator allItems];
-  _setUpListShowMoreViewController =
-      [[SetUpListShowMoreViewController alloc] initWithItems:items
-                                                 tapDelegate:self];
-  _setUpListShowMoreViewController.modalPresentationStyle =
-      UIModalPresentationPageSheet;
-  UISheetPresentationController* presentationController =
-      _setUpListShowMoreViewController.sheetPresentationController;
-  presentationController.prefersEdgeAttachedInCompactHeight = YES;
-  presentationController.widthFollowsPreferredContentSizeWhenEdgeAttached = YES;
-  presentationController.detents = @[
-    UISheetPresentationControllerDetent.mediumDetent,
-    UISheetPresentationControllerDetent.largeDetent
-  ];
-  presentationController.preferredCornerRadius = 16;
-  [self.viewController presentViewController:_setUpListShowMoreViewController
-                                    animated:YES
-                                  completion:nil];
 }
 
 - (void)showContentNotificationBottomSheet {

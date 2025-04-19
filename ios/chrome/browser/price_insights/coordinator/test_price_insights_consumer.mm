@@ -4,9 +4,15 @@
 
 #import "ios/chrome/browser/price_insights/coordinator/test_price_insights_consumer.h"
 
+#import "ios/chrome/browser/price_insights/ui/price_insights_item.h"
+
+namespace commerce {
+enum class PriceBucket;
+}
+
 @implementation TestPriceInsightsConsumer
 
-- (void)didStartPriceTracking {
+- (void)didStartPriceTrackingWithNotification:(BOOL)granted {
   self.didPriceTrack = YES;
 }
 
@@ -14,7 +20,8 @@
   self.didPriceUntrack = YES;
 }
 
-- (void)didStartNavigationToWebpage {
+- (void)didStartNavigationToWebpageWithPriceBucket:
+    (commerce::PriceBucket)bucket {
   self.didNavigateToWebpage = YES;
 }
 

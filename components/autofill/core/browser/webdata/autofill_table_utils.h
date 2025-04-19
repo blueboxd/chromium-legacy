@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_WEBDATA_AUTOFILL_TABLE_UTILS_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_WEBDATA_AUTOFILL_TABLE_UTILS_H_
 
+#include <cstdint>
 #include <initializer_list>
 #include <string>
 #include <string_view>
@@ -97,6 +98,12 @@ bool AddColumnIfNotExists(sql::Database* db,
 bool DropColumn(sql::Database* db,
                 std::string_view table_name,
                 std::string_view column_name);
+
+// Drops the column named `column_name` from `table_name` if it exists and
+// returns true if the column does not exist or if it was dropped successfully.
+bool DropColumnIfExists(sql::Database* db,
+                        std::string_view table_name,
+                        std::string_view column_name);
 
 // Drops `table_name`, if the table exists. Returns true if the statement
 // finishes successfully, independently of whether a table was actually dropped.

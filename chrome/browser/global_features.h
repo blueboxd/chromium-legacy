@@ -5,7 +5,19 @@
 #ifndef CHROME_BROWSER_GLOBAL_FEATURES_H_
 #define CHROME_BROWSER_GLOBAL_FEATURES_H_
 
+#include <memory.h>
+
 #include "base/functional/callback.h"
+#include "build/build_config.h"
+
+namespace system_permission_settings {
+class PlatformHandle;
+}  // namespace system_permission_settings
+namespace whats_new {
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+class WhatsNewRegistry;
+#endif
+}  // namespace whats_new
 
 // This class owns the core controllers for features that are globally
 // scoped on desktop. It can be subclassed by tests to perform
@@ -29,6 +41,16 @@ class GlobalFeatures {
   // Public accessors for features, e.g.
   // FooFeature* foo_feature() { return foo_feature_.get(); }
 
+  system_permission_settings::PlatformHandle*
+  system_permissions_platform_handle() {
+    return system_permissions_platform_handle_.get();
+  }
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+  whats_new::WhatsNewRegistry* whats_new_registry() {
+    return whats_new_registry_.get();
+  }
+#endif
+
  protected:
   GlobalFeatures();
 
@@ -36,9 +58,21 @@ class GlobalFeatures {
   // testing. e.g.
   // virtual std::unique_ptr<FooFeature> CreateFooFeature();
 
+  virtual std::unique_ptr<system_permission_settings::PlatformHandle>
+  CreateSystemPermissionsPlatformHandle();
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+  virtual std::unique_ptr<whats_new::WhatsNewRegistry> CreateWhatsNewRegistry();
+#endif
+
  private:
   // Features will each have a controller. e.g.
   // std::unique_ptr<FooFeature> foo_feature_;
+
+  std::unique_ptr<system_permission_settings::PlatformHandle>
+      system_permissions_platform_handle_;
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+  std::unique_ptr<whats_new::WhatsNewRegistry> whats_new_registry_;
+#endif
 };
 
 #endif  // CHROME_BROWSER_GLOBAL_FEATURES_H_

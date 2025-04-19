@@ -332,12 +332,12 @@ component("net") {
     "cert/ev_root_ca_metadata.h",
     "cert/internal/cert_issuer_source_aia.cc",
     "cert/internal/cert_issuer_source_aia.h",
+    "cert/internal/platform_trust_store.cc",
+    "cert/internal/platform_trust_store.h",
     "cert/internal/revocation_checker.cc",
     "cert/internal/revocation_checker.h",
     "cert/internal/system_trust_store.cc",
     "cert/internal/system_trust_store.h",
-    "cert/internal/trust_store_features.cc",
-    "cert/internal/trust_store_features.h",
     "cert/known_roots.cc",
     "cert/known_roots.h",
     "cert/merkle_audit_proof.cc",
@@ -408,6 +408,8 @@ component("net") {
     "cookies/cookie_setting_override.h",
     "cookies/cookie_store.cc",
     "cookies/cookie_store.h",
+    "cookies/cookie_switches.cc",
+    "cookies/cookie_switches.h",
     "cookies/cookie_util.cc",
     "cookies/cookie_util.h",
     "cookies/parsed_cookie.cc",
@@ -515,6 +517,8 @@ component("net") {
     "first_party_sets/first_party_sets_cache_filter.h",
     "first_party_sets/first_party_sets_context_config.cc",
     "first_party_sets/first_party_sets_context_config.h",
+    "first_party_sets/first_party_sets_validator.cc",
+    "first_party_sets/first_party_sets_validator.h",
     "first_party_sets/global_first_party_sets.cc",
     "first_party_sets/global_first_party_sets.h",
     "first_party_sets/local_set_declaration.cc",
@@ -623,8 +627,20 @@ component("net") {
     "http/http_stream_factory_job.h",
     "http/http_stream_factory_job_controller.cc",
     "http/http_stream_factory_job_controller.h",
+    "http/http_stream_key.cc",
+    "http/http_stream_key.h",
     "http/http_stream_parser.cc",
     "http/http_stream_parser.h",
+    "http/http_stream_pool.cc",
+    "http/http_stream_pool.h",
+    "http/http_stream_pool_group.cc",
+    "http/http_stream_pool_group.h",
+    "http/http_stream_pool_handle.cc",
+    "http/http_stream_pool_handle.h",
+    "http/http_stream_pool_job.cc",
+    "http/http_stream_pool_job.h",
+    "http/http_stream_pool_quic_task.cc",
+    "http/http_stream_pool_quic_task.h",
     "http/http_stream_request.cc",
     "http/http_stream_request.h",
     "http/http_transaction.h",
@@ -805,6 +821,10 @@ component("net") {
     "quic/quic_proxy_datagram_client_socket.h",
     "quic/quic_server_info.cc",
     "quic/quic_server_info.h",
+    "quic/quic_session_alias_key.cc",
+    "quic/quic_session_alias_key.h",
+    "quic/quic_session_attempt.cc",
+    "quic/quic_session_attempt.h",
     "quic/quic_session_key.cc",
     "quic/quic_session_key.h",
     "quic/quic_session_pool.cc",
@@ -815,14 +835,23 @@ component("net") {
     "quic/quic_session_pool_job.h",
     "quic/quic_session_pool_proxy_job.cc",
     "quic/quic_session_pool_proxy_job.h",
-    "quic/quic_session_pool_session_attempt.cc",
-    "quic/quic_session_pool_session_attempt.h",
     "quic/set_quic_flag.cc",
     "quic/set_quic_flag.h",
     "quic/web_transport_client.cc",
     "quic/web_transport_client.h",
     "quic/web_transport_error.cc",
     "quic/web_transport_error.h",
+    "shared_dictionary/shared_dictionary.h",
+    "shared_dictionary/shared_dictionary_constants.h",
+    "shared_dictionary/shared_dictionary_getter.h",
+    "shared_dictionary/shared_dictionary_header_checker_source_stream.cc",
+    "shared_dictionary/shared_dictionary_header_checker_source_stream.h",
+    "shared_dictionary/shared_dictionary_isolation_key.cc",
+    "shared_dictionary/shared_dictionary_isolation_key.h",
+    "shared_dictionary/shared_dictionary_network_transaction.cc",
+    "shared_dictionary/shared_dictionary_network_transaction.h",
+    "shared_dictionary/shared_dictionary_network_transaction_factory.cc",
+    "shared_dictionary/shared_dictionary_network_transaction_factory.h",
     "socket/client_socket_factory.cc",
     "socket/client_socket_factory.h",
     "socket/client_socket_handle.cc",
@@ -882,13 +911,21 @@ component("net") {
     "socket/ssl_server_socket_impl.cc",
     "socket/ssl_server_socket_impl.h",
     "socket/ssl_socket.h",
+    "socket/stream_attempt.cc",
+    "socket/stream_attempt.h",
     "socket/stream_socket.cc",
     "socket/stream_socket.h",
+    "socket/stream_socket_handle.cc",
+    "socket/stream_socket_handle.h",
     "socket/tcp_client_socket.cc",
     "socket/tcp_client_socket.h",
     "socket/tcp_server_socket.cc",
     "socket/tcp_server_socket.h",
     "socket/tcp_socket.h",
+    "socket/tcp_stream_attempt.cc",
+    "socket/tcp_stream_attempt.h",
+    "socket/tls_stream_attempt.cc",
+    "socket/tls_stream_attempt.h",
     "socket/transport_client_socket.cc",
     "socket/transport_client_socket.h",
     "socket/transport_client_socket_pool.cc",
@@ -987,6 +1024,7 @@ component("net") {
     "ssl/ssl_server_config.h",
     "ssl/threaded_ssl_private_key.cc",
     "ssl/threaded_ssl_private_key.h",
+    "storage_access_api/status.h",
     "url_request/clear_site_data.cc",
     "url_request/clear_site_data.h",
     "url_request/redirect_info.cc",
@@ -1007,8 +1045,6 @@ component("net") {
     "url_request/url_request_context_getter_observer.h",
     "url_request/url_request_error_job.cc",
     "url_request/url_request_error_job.h",
-    "url_request/url_request_filter.cc",
-    "url_request/url_request_filter.h",
     "url_request/url_request_http_job.cc",
     "url_request/url_request_http_job.h",
     "url_request/url_request_interceptor.cc",
@@ -1105,6 +1141,7 @@ component("net") {
       "reporting/reporting_report.h",
       "reporting/reporting_service.cc",
       "reporting/reporting_service.h",
+      "reporting/reporting_target_type.h",
       "reporting/reporting_uploader.cc",
       "reporting/reporting_uploader.h",
     ]
@@ -1114,11 +1151,28 @@ component("net") {
     sources += [
       "device_bound_sessions/cookie_craving.cc",
       "device_bound_sessions/cookie_craving.h",
-      "device_bound_sessions/device_bound_session_registration_fetcher_param.cc",
-      "device_bound_sessions/device_bound_session_registration_fetcher_param.h",
-      "device_bound_sessions/device_bound_session_service.cc",
-      "device_bound_sessions/device_bound_session_service.h",
+      "device_bound_sessions/registration_fetcher.cc",
+      "device_bound_sessions/registration_fetcher.h",
+      "device_bound_sessions/registration_fetcher_param.cc",
+      "device_bound_sessions/registration_fetcher_param.h",
+      "device_bound_sessions/session.cc",
+      "device_bound_sessions/session.h",
+      "device_bound_sessions/session_binding_utils.cc",
+      "device_bound_sessions/session_binding_utils.h",
+      "device_bound_sessions/session_inclusion_rules.cc",
+      "device_bound_sessions/session_inclusion_rules.h",
+      "device_bound_sessions/session_json_utils.cc",
+      "device_bound_sessions/session_json_utils.h",
+      "device_bound_sessions/session_params.cc",
+      "device_bound_sessions/session_params.h",
+      "device_bound_sessions/session_service.cc",
+      "device_bound_sessions/session_service.h",
+      "device_bound_sessions/session_service_impl.cc",
+      "device_bound_sessions/session_service_impl.h",
+      "device_bound_sessions/unexportable_key_service_factory.cc",
+      "device_bound_sessions/unexportable_key_service_factory.h",
     ]
+    deps += [ "//components/unexportable_keys:unexportable_keys" ]
   }
 
   if (is_android) {
@@ -1248,6 +1302,8 @@ component("net") {
       "base/net_errors_win.cc",
       "base/network_change_notifier_win.cc",
       "base/network_change_notifier_win.h",
+      "base/network_cost_change_notifier_win.cc",
+      "base/network_cost_change_notifier_win.h",
       "base/network_interfaces_win.cc",
       "base/network_interfaces_win.h",
       "base/platform_mime_util_win.cc",
@@ -1733,12 +1789,6 @@ source_set("net_public_deps") {
   }
 }
 
-if (is_android) {
-  java_cpp_enum("effective_connection_type_java") {
-    sources = [ "//net/nqe/effective_connection_type.h" ]
-  }
-}
-
 component("uri_template") {
   sources = [
     "third_party/uri_template/uri_template.cc",
@@ -1796,7 +1846,7 @@ component("extras") {
     "//base",
     "//sql:sql",
   ]
-  public_deps = [ ":shared_dictionary" ]
+  public_deps = [ ":shared_dictionary_info" ]
 
   if (enable_reporting) {
     sources += [
@@ -1806,12 +1856,10 @@ component("extras") {
   }
 }
 
-component("shared_dictionary") {
+component("shared_dictionary_info") {
   sources = [
     "extras/shared_dictionary/shared_dictionary_info.cc",
     "extras/shared_dictionary/shared_dictionary_info.h",
-    "extras/shared_dictionary/shared_dictionary_isolation_key.cc",
-    "extras/shared_dictionary/shared_dictionary_isolation_key.h",
     "extras/shared_dictionary/shared_dictionary_usage_info.h",
   ]
   defines = [ "IS_NET_SHARED_DICTIONARY_IMPL" ]
@@ -1925,6 +1973,8 @@ static_library("test_support") {
     "http/http_response_headers_test_util.h",
     "http/http_stream_factory_test_util.cc",
     "http/http_stream_factory_test_util.h",
+    "http/http_stream_pool_test_util.cc",
+    "http/http_stream_pool_test_util.h",
     "http/http_transaction_test_util.cc",
     "http/http_transaction_test_util.h",
     "http/mock_http_cache.cc",
@@ -2001,6 +2051,8 @@ static_library("test_support") {
     "test/ssl_test_util.cc",
     "test/ssl_test_util.h",
     "test/test_certificate_data.h",
+    "test/test_connection_cost_observer.cc",
+    "test/test_connection_cost_observer.h",
     "test/test_data_directory.cc",
     "test/test_data_directory.h",
     "test/test_doh_server.cc",
@@ -2015,11 +2067,20 @@ static_library("test_support") {
     "test/url_request/url_request_hanging_read_job.h",
     "test/url_request/url_request_mock_data_job.cc",
     "test/url_request/url_request_mock_data_job.h",
+    "url_request/url_request_filter.cc",
+    "url_request/url_request_filter.h",
     "url_request/url_request_test_job.cc",
     "url_request/url_request_test_job.h",
     "url_request/url_request_test_util.cc",
     "url_request/url_request_test_util.h",
   ]
+
+  if (is_win) {
+    sources += [
+      "test/win/fake_network_cost_manager.cc",
+      "test/win/fake_network_cost_manager.h",
+    ]
+  }
 
   if (is_linux || is_chromeos || is_android) {
     sources += [
@@ -2154,35 +2215,6 @@ if (!is_ios && !is_android) {
     ]
 
     deps = [
-      ":net",
-      ":test_support",
-      "//base",
-      "//build/win:default_exe_manifest",
-    ]
-
-    if (is_mac) {
-      frameworks = [ "Security.framework" ]
-    }
-  }
-
-  proto_library("cert_verify_comparison_tool_proto") {
-    sources = [ "tools/cert_verify_tool/dumper.proto" ]
-
-    visibility = [ ":cert_verify_comparison_tool" ]
-  }
-
-  executable("cert_verify_comparison_tool") {
-    testonly = true
-    sources = [
-      "tools/cert_verify_tool/cert_verify_comparision_tool.cc",
-      "tools/cert_verify_tool/cert_verify_tool_util.cc",
-      "tools/cert_verify_tool/cert_verify_tool_util.h",
-      "tools/cert_verify_tool/verify_using_cert_verify_proc.cc",
-      "tools/cert_verify_tool/verify_using_cert_verify_proc.h",
-    ]
-
-    deps = [
-      ":cert_verify_comparison_tool_proto",
       ":net",
       ":test_support",
       "//base",
@@ -2518,6 +2550,7 @@ test("net_unittests") {
     "base/host_mapping_rules_unittest.cc",
     "base/host_port_pair_unittest.cc",
     "base/interval_test.cc",
+    "base/io_buffer_unittest.cc",
     "base/ip_address_unittest.cc",
     "base/ip_endpoint_unittest.cc",
     "base/isolation_info_unittest.cc",
@@ -2617,6 +2650,7 @@ test("net_unittests") {
     "first_party_sets/first_party_set_entry_override_unittest.cc",
     "first_party_sets/first_party_sets_cache_filter_unittest.cc",
     "first_party_sets/first_party_sets_context_config_unittest.cc",
+    "first_party_sets/first_party_sets_validator_unittest.cc",
     "first_party_sets/global_first_party_sets_unittest.cc",
     "first_party_sets/local_set_declaration_unittest.cc",
     "first_party_sets/sets_mutation_unittest.cc",
@@ -2660,7 +2694,10 @@ test("net_unittests") {
     "http/http_status_code_unittest.cc",
     "http/http_stream_factory_job_controller_unittest.cc",
     "http/http_stream_factory_unittest.cc",
+    "http/http_stream_key_unittest.cc",
     "http/http_stream_parser_unittest.cc",
+    "http/http_stream_pool_group_unittest.cc",
+    "http/http_stream_pool_job_unittest.cc",
     "http/http_stream_request_unittest.cc",
     "http/http_transaction_test_util_unittest.cc",
     "http/http_util_unittest.cc",
@@ -2739,6 +2776,10 @@ test("net_unittests") {
     "quic/set_quic_flag_test.cc",
     "quic/test_quic_crypto_client_config_handle.cc",
     "quic/test_quic_crypto_client_config_handle.h",
+    "shared_dictionary/shared_dictionary_header_checker_source_stream_unittest.cc",
+    "shared_dictionary/shared_dictionary_isolation_key_unittest.cc",
+    "shared_dictionary/shared_dictionary_network_transaction_factory_unittest.cc",
+    "shared_dictionary/shared_dictionary_network_transaction_unittest.cc",
     "socket/client_socket_pool_base_unittest.cc",
     "socket/client_socket_pool_unittest.cc",
     "socket/connect_job_factory_unittest.cc",
@@ -2760,6 +2801,8 @@ test("net_unittests") {
     "socket/tcp_client_socket_unittest.cc",
     "socket/tcp_server_socket_unittest.cc",
     "socket/tcp_socket_unittest.cc",
+    "socket/tcp_stream_attempt_unittest.cc",
+    "socket/tls_stream_attempt_unittest.cc",
     "socket/transport_client_socket_pool_test_util.cc",
     "socket/transport_client_socket_pool_test_util.h",
     "socket/transport_client_socket_pool_unittest.cc",
@@ -2875,6 +2918,7 @@ test("net_unittests") {
   if (is_win) {
     sources += [
       "base/network_change_notifier_win_unittest.cc",
+      "base/network_cost_change_notifier_win_unittest.cc",
       "base/network_interfaces_win_unittest.cc",
       "http/http_auth_sspi_win_unittest.cc",
       "http/mock_sspi_library_win.cc",
@@ -2890,6 +2934,9 @@ test("net_unittests") {
 
   configs += [ "//build/config:precompiled_headers" ]
   defines = []
+  if (disable_zstd_filter) {
+    defines += [ "NET_DISABLE_ZSTD" ]
+  }
 
   deps = [
     ":cronet_buildflags",
@@ -2924,7 +2971,6 @@ test("net_unittests") {
 
   if (!is_cronet_build) {
     sources += [
-      "extras/shared_dictionary/shared_dictionary_isolation_key_unittest.cc",
       "extras/sqlite/sqlite_persistent_cookie_store_unittest.cc",
       "extras/sqlite/sqlite_persistent_shared_dictionary_store_unittest.cc",
       "log/trace_net_log_observer_unittest.cc",
@@ -2957,6 +3003,7 @@ test("net_unittests") {
       "reporting/mock_persistent_reporting_store_unittest.cc",
       "reporting/reporting_browsing_data_remover_unittest.cc",
       "reporting/reporting_cache_unittest.cc",
+      "reporting/reporting_context_unittest.cc",
       "reporting/reporting_delivery_agent_unittest.cc",
       "reporting/reporting_endpoint_manager_unittest.cc",
       "reporting/reporting_garbage_collector_unittest.cc",
@@ -3242,10 +3289,18 @@ test("net_unittests") {
   if (enable_device_bound_sessions) {
     sources += [
       "device_bound_sessions/cookie_craving_unittest.cc",
-      "device_bound_sessions/device_bound_session_registration_fetcher_param_unittest.cc",
+      "device_bound_sessions/registration_fetcher_param_unittest.cc",
+      "device_bound_sessions/registration_fetcher_unittest.cc",
+      "device_bound_sessions/session_binding_utils_unittest.cc",
+      "device_bound_sessions/session_inclusion_rules_unittest.cc",
+      "device_bound_sessions/session_service_impl_unittest.cc",
+      "device_bound_sessions/session_service_unittest.cc",
+      "device_bound_sessions/session_unittest.cc",
       "device_bound_sessions/test_util.cc",
       "device_bound_sessions/test_util.h",
+      "device_bound_sessions/unexportable_key_service_factory_unittest.cc",
     ]
+    deps += [ "//components/unexportable_keys:unexportable_keys" ]
   }
 }
 
@@ -3924,5 +3979,18 @@ if (is_linux || is_chromeos) {
       "//base",
       "//net",
     ]
+  }
+}
+
+if (is_android) {
+  java_cpp_strings("java_cookie_switches_srcjar") {
+    # External code should depend on ":cookie_switches_java" instead.
+    visibility = [ ":*" ]
+    sources = [ "cookies/cookie_switches.cc" ]
+    template = "cookies/android/java_templates/CookieSwitches.java.tmpl"
+  }
+
+  android_library("cookie_switches_java") {
+    srcjar_deps = [ ":java_cookie_switches_srcjar" ]
   }
 }

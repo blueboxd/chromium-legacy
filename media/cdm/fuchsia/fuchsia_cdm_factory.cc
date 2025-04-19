@@ -5,6 +5,7 @@
 #include "media/cdm/fuchsia/fuchsia_cdm_factory.h"
 
 #include "base/functional/bind.h"
+#include "base/not_fatal_until.h"
 #include "base/task/bind_post_task.h"
 #include "media/base/cdm_config.h"
 #include "media/base/key_systems.h"
@@ -38,7 +39,8 @@ void FuchsiaCdmFactory::Create(
     auto cdm = base::MakeRefCounted<AesDecryptor>(
         session_message_cb, session_closed_cb, session_keys_change_cb,
         session_expiration_update_cb);
-    std::move(bound_cdm_created_cb).Run(std::move(cdm), "");
+    std::move(bound_cdm_created_cb)
+        .Run(std::move(cdm), CreateCdmStatus::kSuccess);
     return;
   }
 
@@ -67,13 +69,12 @@ void FuchsiaCdmFactory::Create(
 void FuchsiaCdmFactory::OnCdmReady(uint32_t creation_id,
                                    CdmCreatedCB cdm_created_cb,
                                    bool success,
-                                   const std::string& error_message) {
+                                   CreateCdmStatus status) {
   auto it = pending_cdms_.find(creation_id);
-  DCHECK(it != pending_cdms_.end());
+  CHECK(it != pending_cdms_.end(), base::NotFatalUntil::M130);
   scoped_refptr<ContentDecryptionModule> cdm = std::move(it->second);
   pending_cdms_.erase(it);
-  std::move(cdm_created_cb)
-      .Run(success ? std::move(cdm) : nullptr, error_message);
+  std::move(cdm_created_cb).Run(success ? std::move(cdm) : nullptr, status);
 }
 
 }  // namespace media

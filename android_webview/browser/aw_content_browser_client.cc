@@ -6,6 +6,7 @@
 
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -82,6 +83,7 @@
 #include "components/url_matcher/url_matcher.h"
 #include "components/url_matcher/url_util.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -462,6 +464,7 @@ void AwContentBrowserClient::AllowCertificateError(
 
 base::OnceClosure AwContentBrowserClient::SelectClientCertificate(
     content::BrowserContext* browser_context,
+    int process_id,
     content::WebContents* web_contents,
     net::SSLCertRequestInfo* cert_request_info,
     net::ClientCertIdentityList client_certs,
@@ -891,11 +894,17 @@ bool AwContentBrowserClient::HandleExternalProtocol(
 
   // We don't need to care for |security_options| as the factories constructed
   // below are used only for navigation.
+  // We also don't care about retrieving cookies in this case because these will
+  // be schemes unrelated to the regular network stack so it doesn't make sense
+  // to look for cookies. Providing a nullopt for the cookie manager lets
+  // the AwProxyingURLLoaderFactory know to skip that work.
   if (content::BrowserThread::CurrentlyOn(content::BrowserThread::IO)) {
     // Manages its own lifetime.
     new android_webview::AwProxyingURLLoaderFactory(
-        frame_tree_node_id, std::move(receiver), mojo::NullRemote(),
-        true /* intercept_only */, std::nullopt /* security_options */,
+        std::nullopt /* cookie_manager */, nullptr /* cookie_access_policy */,
+        std::nullopt /* isolation_info*/, frame_tree_node_id,
+        std::move(receiver), mojo::NullRemote(), true /* intercept_only */,
+        std::nullopt /* security_options */,
         nullptr /* xrw_allowlist_matcher */, std::move(browser_context_handle),
         std::nullopt /* navigation_id */);
   } else {
@@ -908,7 +917,10 @@ bool AwContentBrowserClient::HandleExternalProtocol(
                    browser_context_handle) {
               // Manages its own lifetime.
               new android_webview::AwProxyingURLLoaderFactory(
-                  frame_tree_node_id, std::move(receiver), mojo::NullRemote(),
+                  std::nullopt /* cookie_manager */,
+                  nullptr /* cookie_access_policy */,
+                  std::nullopt /* isolation_info*/, frame_tree_node_id,
+                  std::move(receiver), mojo::NullRemote(),
                   true /* intercept_only */,
                   std::nullopt /* security_options */,
                   nullptr /* xrw_allowlist_matcher */,
@@ -1046,6 +1058,17 @@ void AwContentBrowserClient::WillCreateURLLoaderFactory(
   scoped_refptr<AwBrowserContextIoThreadHandle> browser_context_handle =
       base::MakeRefCounted<AwBrowserContextIoThreadHandle>(
           static_cast<AwBrowserContext*>(browser_context));
+
+  mojo::PendingRemote<network::mojom::CookieManager> cookie_manager;
+  browser_context->GetDefaultStoragePartition()
+      ->GetNetworkContext()
+      ->GetCookieManager(cookie_manager.InitWithNewPipeAndPassReceiver());
+
+  AwBrowserContext* aw_browser_context =
+      static_cast<AwBrowserContext*>(browser_context);
+  AwCookieAccessPolicy* cookie_access_policy =
+      aw_browser_context->GetCookieManager()->cookie_access_policy();
+
   if (frame) {
     auto security_options =
         std::make_optional<AwProxyingURLLoaderFactory::SecurityOptions>();
@@ -1075,21 +1098,21 @@ void AwContentBrowserClient::WillCreateURLLoaderFactory(
 
     content::GetIOThreadTaskRunner({})->PostTask(
         FROM_HERE,
-        base::BindOnce(&AwProxyingURLLoaderFactory::CreateProxy,
-                       frame->GetFrameTreeNodeId(), std::move(proxied_receiver),
-                       std::move(target_factory_remote), security_options,
-                       std::move(xrw_allowlist_matcher),
-                       std::move(browser_context_handle), navigation_id));
+        base::BindOnce(
+            &AwProxyingURLLoaderFactory::CreateProxy, std::move(cookie_manager),
+            cookie_access_policy, isolation_info, frame->GetFrameTreeNodeId(),
+            std::move(proxied_receiver), std::move(target_factory_remote),
+            security_options, std::move(xrw_allowlist_matcher),
+            std::move(browser_context_handle), navigation_id));
   } else {
     // A service worker and worker subresources set nullptr to |frame|, and
     // work without seeing the AllowUniversalAccessFromFileURLs setting. So,
     // we don't pass a valid |security_options| here.
-    AwBrowserContext* aw_browser_context =
-        static_cast<AwBrowserContext*>(browser_context);
     content::GetIOThreadTaskRunner({})->PostTask(
         FROM_HERE,
         base::BindOnce(
-            &AwProxyingURLLoaderFactory::CreateProxy,
+            &AwProxyingURLLoaderFactory::CreateProxy, std::move(cookie_manager),
+            cookie_access_policy, isolation_info,
             content::RenderFrameHost::kNoFrameTreeNodeId,
             std::move(proxied_receiver), std::move(target_factory_remote),
             std::nullopt /* security_options */,
@@ -1107,9 +1130,12 @@ uint32_t AwContentBrowserClient::GetWebSocketOptions(
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(frame);
   AwContents* aw_contents = AwContents::FromWebContents(web_contents);
+  AwBrowserContext* aw_context =
+      AwBrowserContext::FromWebContents(web_contents);
 
-  bool global_cookie_policy =
-      AwCookieAccessPolicy::GetInstance()->GetShouldAcceptCookies();
+  bool global_cookie_policy = aw_context->GetCookieManager()
+                                  ->cookie_access_policy()
+                                  ->GetShouldAcceptCookies();
   bool third_party_cookie_policy = aw_contents->AllowThirdPartyCookies();
   if (!global_cookie_policy) {
     options |= network::mojom::kWebSocketOptionBlockAllCookies;
@@ -1135,9 +1161,14 @@ bool AwContentBrowserClient::WillCreateRestrictedCookieManager(
       target_rcm_remote;
   *receiver = target_rcm_remote.InitWithNewPipeAndPassReceiver();
 
+  AwBrowserContext* aw_context =
+      static_cast<AwBrowserContext*>(browser_context);
+  AwCookieAccessPolicy* aw_cookie_access_policy =
+      aw_context->GetCookieManager()->cookie_access_policy();
+
   AwProxyingRestrictedCookieManager::CreateAndBind(
       std::move(target_rcm_remote), is_service_worker, process_id, routing_id,
-      std::move(orig_receiver));
+      std::move(orig_receiver), aw_cookie_access_policy);
 
   return false;  // only made a proxy, still need the actual impl to be made.
 }
@@ -1178,6 +1209,14 @@ AwContentBrowserClient::GetWideColorGamutHeuristic() {
 void AwContentBrowserClient::LogWebFeatureForCurrentPage(
     content::RenderFrameHost* render_frame_host,
     blink::mojom::WebFeature feature) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  page_load_metrics::MetricsWebContentsObserver::RecordFeatureUsage(
+      render_frame_host, feature);
+}
+
+void AwContentBrowserClient::LogWebDXFeatureForCurrentPage(
+    content::RenderFrameHost* render_frame_host,
+    blink::mojom::WebDXFeature feature) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   page_load_metrics::MetricsWebContentsObserver::RecordFeatureUsage(
       render_frame_host, feature);
@@ -1256,6 +1295,8 @@ bool AwContentBrowserClient::IsAttributionReportingOperationAllowed(
     const url::Origin* destination_origin,
     const url::Origin* reporting_origin,
     bool* can_bypass) {
+  AwBrowserContext* aw_context =
+      static_cast<AwBrowserContext*>(browser_context);
   // WebView only supports OS-level attribution and not web-attribution.
   // Note: We do not check here if attribution reporting has been disabled
   // for the associated WebView as this is checked at the start of processing
@@ -1274,10 +1315,14 @@ bool AwContentBrowserClient::IsAttributionReportingOperationAllowed(
     case AttributionReportingOperation::kReport:
     case AttributionReportingOperation::kSourceTransitionalDebugReporting:
     case AttributionReportingOperation::kTriggerTransitionalDebugReporting:
+    case AttributionReportingOperation::kSourceAggregatableDebugReport:
+    case AttributionReportingOperation::kTriggerAggregatableDebugReport:
       return false;
     case AttributionReportingOperation::kOsSourceTransitionalDebugReporting:
     case AttributionReportingOperation::kOsTriggerTransitionalDebugReporting: {
-      if (!AwCookieAccessPolicy::GetInstance()->GetShouldAcceptCookies()) {
+      if (!aw_context->GetCookieManager()
+               ->cookie_access_policy()
+               ->GetShouldAcceptCookies()) {
         return false;
       }
 
@@ -1357,14 +1402,13 @@ bool AwContentBrowserClient::WillProvidePublicFirstPartySets() {
 
 bool AwContentBrowserClient::IsFullCookieAccessAllowed(
     content::BrowserContext* browser_context,
-    content::RenderFrameHost* rfh,
+    content::WebContents* web_contents,
     const GURL& url,
     const blink::StorageKey& storage_key) {
-  if (!rfh) {
+  if (!web_contents) {
     // We do not allow third-party cookie access from service workers.
     return false;
   }
-  WebContents* web_contents = content::WebContents::FromRenderFrameHost(rfh);
   AwSettings* aw_settings = AwSettings::FromWebContents(web_contents);
   if (!aw_settings) {
     return false;

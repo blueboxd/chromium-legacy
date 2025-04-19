@@ -13,6 +13,7 @@
 #include "build/chromeos_buildflags.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/favicon/core/favicon_service.h"
+#include "components/permissions/features.h"
 #include "components/permissions/origin_keyed_permission_action_service.h"
 #include "components/permissions/permission_prompt.h"
 #include "components/permissions/permission_ui_selector.h"
@@ -171,6 +172,10 @@ class PermissionsClient {
       std::optional<base::TimeDelta> prompt_display_duration,
       bool is_post_prompt,
       const GURL& gurl,
+      std::optional<
+          permissions::feature_params::PermissionElementPromptPosition>
+          pepc_prompt_position,
+      ContentSetting initial_permission_status,
       base::OnceCallback<void()> hats_shown_callback_);
 
   // Called for each request type when a permission prompt is resolved.
@@ -183,6 +188,10 @@ class PermissionsClient {
       PermissionRequestGestureType gesture_type,
       std::optional<QuietUiReason> quiet_ui_reason,
       base::TimeDelta prompt_display_duration,
+      std::optional<
+          permissions::feature_params::PermissionElementPromptPosition>
+          pepc_prompt_position,
+      ContentSetting initial_permission_status,
       content::WebContents* web_contents);
 
   // Returns true if user has 3 consecutive notifications permission denies,
@@ -205,6 +214,12 @@ class PermissionsClient {
   // immediately be finished without granting/denying the permission.
   virtual std::optional<url::Origin> GetAutoApprovalOrigin(
       content::BrowserContext* browser_context);
+
+  // If the embedder returns whether the requesting origin should be able to
+  // access browser permissions. The browser permissions would be auto approved.
+  virtual std::optional<PermissionAction> GetAutoApprovalStatus(
+      content::BrowserContext* browser_context,
+      const GURL& origin);
 
   // Allows the embedder to bypass checking the embedding origin when performing
   // permission availability checks. This is used for example when a permission

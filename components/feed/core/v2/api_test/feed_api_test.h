@@ -40,7 +40,7 @@
 #include "components/feed/core/v2/wire_response_translator.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/search_engines/template_url_service.h"
+#include "components/search_engines/search_engines_test_environment.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "net/http/http_status_code.h"
@@ -122,6 +122,7 @@ class TestReliabilityLoggingBridge : public ReliabilityLoggingBridge {
                                    int64_t server_send_timestamp_ns) override;
   void LogLoadMoreRequestFinished(int canonical_status) override;
   void LogLoadMoreEnded(bool success) override;
+  void ReportExperiments(const std::vector<int32_t>& experiment_ids) override;
 
  private:
   std::vector<std::string> events_;
@@ -543,7 +544,6 @@ class FeedApiTest : public testing::Test, public FeedStream::Delegate {
 
   // Replace stream_.
   void CreateStream(bool wait_for_initialization = true,
-                    bool start_surface = false,
                     bool is_new_tab_search_engine_url_android_enabled = false);
   std::unique_ptr<StreamModel> CreateStreamModel();
   bool IsTaskQueueIdle() const;
@@ -586,8 +586,7 @@ class FeedApiTest : public testing::Test, public FeedStream::Delegate {
               /*db_dir=*/{},
               task_environment_.GetMainThreadTaskRunner()));
 
-  std::unique_ptr<TemplateURLService> template_url_service_;
-
+  search_engines::SearchEnginesTestEnvironment search_engines_test_environment_;
   FakeRefreshTaskScheduler refresh_scheduler_;
   StreamModel::Context stream_model_context_;
   std::unique_ptr<FeedStream> stream_;

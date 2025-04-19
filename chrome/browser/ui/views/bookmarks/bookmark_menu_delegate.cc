@@ -232,8 +232,8 @@ std::u16string BookmarkMenuDelegate::GetTooltipText(
 
 bool BookmarkMenuDelegate::IsTriggerableEvent(views::MenuItemView* menu,
                                               const ui::Event& e) {
-  return e.type() == ui::ET_GESTURE_TAP ||
-         e.type() == ui::ET_GESTURE_TAP_DOWN ||
+  return e.type() == ui::EventType::kGestureTap ||
+         e.type() == ui::EventType::kGestureTapDown ||
          event_utils::IsPossibleDispositionEvent(e);
 }
 
@@ -639,12 +639,9 @@ void BookmarkMenuDelegate::BuildMenu(const BookmarkNode* parent,
                                      MenuItemView* menu) {
   DCHECK_LE(start_child_index, parent->children().size());
   if (parent == GetBookmarkModel()->other_node()) {
-    ui::ImageModel bookmarks_side_panel_icon =
-        features::IsSidePanelPinningEnabled()
-            ? ui::ImageModel::FromVectorIcon(
-                  kBookmarksSidePanelIcon, ui::kColorMenuIcon,
-                  ui::SimpleMenuModel::kDefaultIconSize)
-            : ui::ImageModel();
+    ui::ImageModel bookmarks_side_panel_icon = ui::ImageModel::FromVectorIcon(
+        kBookmarksSidePanelIcon, ui::kColorMenuIcon,
+        ui::SimpleMenuModel::kDefaultIconSize);
     menu->AppendMenuItem(
         IDC_SHOW_BOOKMARK_SIDE_PANEL,
         l10n_util::GetStringUTF16(IDS_BOOKMARKS_ALL_BOOKMARKS_OPEN_SIDE_PANEL),

@@ -4,15 +4,14 @@
 
 #include "chrome/browser/ui/views/global_media_controls/cast_device_selector_view.h"
 
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "components/global_media_controls/public/test/mock_device_service.h"
-#include "components/media_message_center/mock_media_notification_view.h"
+#include "components/global_media_controls/public/views/media_item_ui_updated_view.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/views/test/button_test_api.h"
 
 using ::global_media_controls::test::MockDeviceListHost;
-using ::media_message_center::test::MockMediaNotificationView;
-using ::testing::NiceMock;
 
 namespace {
 
@@ -32,7 +31,8 @@ class CastDeviceSelectorViewTest : public ChromeViewsTestBase {
 
   void SetUp() override {
     ChromeViewsTestBase::SetUp();
-    widget_ = CreateTestWidget();
+    widget_ =
+        CreateTestWidget(views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET);
     device_list_host_ = std::make_unique<MockDeviceListHost>();
   }
 
@@ -91,26 +91,64 @@ TEST_F(CastDeviceSelectorViewTest, ShowOrHideDevices) {
 }
 
 TEST_F(CastDeviceSelectorViewTest, CloseButtonCheck) {
+  base::HistogramTester histogram_tester;
   CreateCastDeviceSelectorView(/*show_devices=*/true);
   view()->OnDevicesUpdated(CreateDevices());
   EXPECT_NE(view()->GetCloseButtonForTesting(), nullptr);
   EXPECT_TRUE(view()->GetCloseButtonForTesting()->GetVisible());
 
   views::test::ButtonTestApi(view()->GetCloseButtonForTesting())
-      .NotifyClick(ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(),
+      .NotifyClick(ui::MouseEvent(ui::EventType::kMousePressed, gfx::Point(),
                                   gfx::Point(), ui::EventTimeForNow(), 0, 0));
   EXPECT_FALSE(view()->GetVisible());
+
+  histogram_tester.ExpectBucketCount(
+      global_media_controls::kMediaItemUIUpdatedViewActionHistogram,
+      global_media_controls::MediaItemUIUpdatedViewAction::
+          kCloseDeviceListForCasting,
+      1);
 }
 
 TEST_F(CastDeviceSelectorViewTest, DeviceEntryCheck) {
   CreateCastDeviceSelectorView(/*show_devices=*/true);
   view()->OnDevicesUpdated(CreateDevices());
+  EXPECT_FALSE(view()->GetHasDeviceIssueForTesting());
   EXPECT_NE(view()->GetDeviceContainerViewForTesting(), nullptr);
   for (views::View* child :
        view()->GetDeviceContainerViewForTesting()->children()) {
     EXPECT_CALL(*device_list_host(), SelectDevice(kTestDeviceId));
     views::test::ButtonTestApi(static_cast<views::Button*>(child))
-        .NotifyClick(ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(),
+        .NotifyClick(ui::MouseEvent(ui::EventType::kMousePressed, gfx::Point(),
                                     gfx::Point(), ui::EventTimeForNow(), 0, 0));
   }
+}
+
+TEST_F(CastDeviceSelectorViewTest, DeviceEntryWithIssueCheck) {
+  global_media_controls::mojom::DevicePtr device =
+      global_media_controls::mojom::Device::New(
+          kTestDeviceId, kTestDeviceName, kTestDeviceStatusText,
+          global_media_controls::mojom::IconType::kInfo);
+  std::vector<global_media_controls::mojom::DevicePtr> devices;
+  devices.push_back(std::move(device));
+
+  CreateCastDeviceSelectorView(/*show_devices=*/true);
+  view()->OnDevicesUpdated(std::move(devices));
+  EXPECT_TRUE(view()->GetHasDeviceIssueForTesting());
+  EXPECT_NE(view()->GetDeviceContainerViewForTesting(), nullptr);
+  for (views::View* child :
+       view()->GetDeviceContainerViewForTesting()->children()) {
+    auto* device_button = static_cast<IssueHoverButton*>(child);
+    EXPECT_EQ(base::UTF16ToUTF8(device_button->device_name_label()->GetText()),
+              kTestDeviceName);
+    EXPECT_EQ(base::UTF16ToUTF8(device_button->status_text_label()->GetText()),
+              kTestDeviceStatusText);
+  }
+}
+
+TEST_F(CastDeviceSelectorViewTest, ShowPermissionRejectedError) {
+  CreateCastDeviceSelectorView(/*show_devices=*/false);
+  view()->OnPermissionRejected();
+  EXPECT_TRUE(view()->GetCloseButtonForTesting()->GetVisible());
+  EXPECT_TRUE(view()->GetPermissionRejectedViewForTesting()->GetVisible());
+  EXPECT_FALSE(view()->GetDeviceContainerViewForTesting()->GetVisible());
 }

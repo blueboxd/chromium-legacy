@@ -173,11 +173,12 @@ const char* ProtoEnumToString(sync_pb::NigoriSpecifics::PassphraseType type) {
 const char* ProtoEnumToString(
     sync_pb::PaymentInstrument::SupportedRail supported_rail) {
   ASSERT_ENUM_BOUNDS(sync_pb::PaymentInstrument, SupportedRail,
-                     SUPPORTED_RAIL_UNKNOWN, IBAN);
+                     SUPPORTED_RAIL_UNKNOWN, PAYMENT_HYPERLINK);
   switch (supported_rail) {
     ENUM_CASE(sync_pb::PaymentInstrument, SUPPORTED_RAIL_UNKNOWN);
     ENUM_CASE(sync_pb::PaymentInstrument, PIX);
     ENUM_CASE(sync_pb::PaymentInstrument, IBAN);
+    ENUM_CASE(sync_pb::PaymentInstrument, PAYMENT_HYPERLINK);
   }
   NOTREACHED_IN_MIGRATION();
   return "";
@@ -282,12 +283,13 @@ const char* ProtoEnumToString(sync_pb::SharedTabGroup::Color color) {
 
 const char* ProtoEnumToString(sync_pb::SyncEnums::BrowserType browser_type) {
   ASSERT_ENUM_BOUNDS(sync_pb::SyncEnums, BrowserType, BROWSER_TYPE_UNKNOWN,
-                     TYPE_CUSTOM_TAB);
+                     TYPE_AUTH_TAB);
   switch (browser_type) {
     ENUM_CASE(sync_pb::SyncEnums, BROWSER_TYPE_UNKNOWN);
     ENUM_CASE(sync_pb::SyncEnums, TYPE_TABBED);
     ENUM_CASE(sync_pb::SyncEnums, TYPE_POPUP);
     ENUM_CASE(sync_pb::SyncEnums, TYPE_CUSTOM_TAB);
+    ENUM_CASE(sync_pb::SyncEnums, TYPE_AUTH_TAB);
   }
   NOTREACHED_IN_MIGRATION();
   return "";
@@ -422,6 +424,21 @@ const char* ProtoEnumToString(
 }
 
 const char* ProtoEnumToString(
+    sync_pb::SyncEnums::SendTabReceivingType send_tab_receiving_type) {
+  ASSERT_ENUM_BOUNDS(sync_pb::SyncEnums, SendTabReceivingType,
+                     SEND_TAB_RECEIVING_TYPE_CHROME_OR_UNSPECIFIED,
+                     SEND_TAB_RECEIVING_TYPE_CHROME_AND_PUSH_NOTIFICATION);
+  switch (send_tab_receiving_type) {
+    ENUM_CASE(sync_pb::SyncEnums,
+              SEND_TAB_RECEIVING_TYPE_CHROME_OR_UNSPECIFIED);
+    ENUM_CASE(sync_pb::SyncEnums,
+              SEND_TAB_RECEIVING_TYPE_CHROME_AND_PUSH_NOTIFICATION);
+  }
+  NOTREACHED_IN_MIGRATION();
+  return "";
+}
+
+const char* ProtoEnumToString(
     sync_pb::SyncEnums::SingletonDebugEventType type) {
   ASSERT_ENUM_BOUNDS(sync_pb::SyncEnums, SingletonDebugEventType,
                      CONNECTION_STATUS_CHANGE, TRUSTED_VAULT_KEY_ACCEPTED);
@@ -485,7 +502,8 @@ const char* ProtoEnumToString(
         ReportingPopulation safe_browsing_reporting_population) {
   ASSERT_ENUM_BOUNDS(
       sync_pb::GaiaPasswordReuse::PasswordReuseDetected::SafeBrowsingStatus,
-      ReportingPopulation, REPORTING_POPULATION_UNSPECIFIED, SCOUT);
+      ReportingPopulation, REPORTING_POPULATION_UNSPECIFIED,
+      ENHANCED_PROTECTION);
   switch (safe_browsing_reporting_population) {
     ENUM_CASE(
         sync_pb::GaiaPasswordReuse::PasswordReuseDetected::SafeBrowsingStatus,
@@ -499,6 +517,9 @@ const char* ProtoEnumToString(
     ENUM_CASE(
         sync_pb::GaiaPasswordReuse::PasswordReuseDetected::SafeBrowsingStatus,
         SCOUT);
+    ENUM_CASE(
+        sync_pb::GaiaPasswordReuse::PasswordReuseDetected::SafeBrowsingStatus,
+        ENHANCED_PROTECTION);
   }
   NOTREACHED_IN_MIGRATION();
   return "";
@@ -926,14 +947,14 @@ const char* ProtoEnumToString(
   return "";
 }
 
-const char* ProtoEnumToString(sync_pb::ModelTypeState::InitialSyncState state) {
-  ASSERT_ENUM_BOUNDS(sync_pb::ModelTypeState, InitialSyncState,
+const char* ProtoEnumToString(sync_pb::DataTypeState::InitialSyncState state) {
+  ASSERT_ENUM_BOUNDS(sync_pb::DataTypeState, InitialSyncState,
                      INITIAL_SYNC_STATE_UNSPECIFIED, INITIAL_SYNC_UNNECESSARY);
   switch (state) {
-    ENUM_CASE(sync_pb::ModelTypeState, INITIAL_SYNC_STATE_UNSPECIFIED);
-    ENUM_CASE(sync_pb::ModelTypeState, INITIAL_SYNC_PARTIALLY_DONE);
-    ENUM_CASE(sync_pb::ModelTypeState, INITIAL_SYNC_DONE);
-    ENUM_CASE(sync_pb::ModelTypeState, INITIAL_SYNC_UNNECESSARY);
+    ENUM_CASE(sync_pb::DataTypeState, INITIAL_SYNC_STATE_UNSPECIFIED);
+    ENUM_CASE(sync_pb::DataTypeState, INITIAL_SYNC_PARTIALLY_DONE);
+    ENUM_CASE(sync_pb::DataTypeState, INITIAL_SYNC_DONE);
+    ENUM_CASE(sync_pb::DataTypeState, INITIAL_SYNC_UNNECESSARY);
   }
   NOTREACHED_IN_MIGRATION();
   return "";
@@ -989,6 +1010,24 @@ const char* ProtoEnumToString(
     ENUM_CASE(sync_pb::CookieSpecifics, HTTP);
     ENUM_CASE(sync_pb::CookieSpecifics, SCRIPT);
     ENUM_CASE(sync_pb::CookieSpecifics, OTHER);
+  }
+  NOTREACHED_IN_MIGRATION();
+  return "";
+}
+
+const char* ProtoEnumToString(
+    sync_pb::SharingMessageSpecifics::ChannelConfiguration::
+        ChimeChannelConfiguration::ChimeChannelType channel_type) {
+  ASSERT_ENUM_BOUNDS(sync_pb::SharingMessageSpecifics::ChannelConfiguration::
+                         ChimeChannelConfiguration,
+                     ChimeChannelType, CHANNEL_TYPE_UNSPECIFIED, APPLE_PUSH);
+  switch (channel_type) {
+    ENUM_CASE(sync_pb::SharingMessageSpecifics::ChannelConfiguration::
+                  ChimeChannelConfiguration,
+              CHANNEL_TYPE_UNSPECIFIED);
+    ENUM_CASE(sync_pb::SharingMessageSpecifics::ChannelConfiguration::
+                  ChimeChannelConfiguration,
+              APPLE_PUSH);
   }
   NOTREACHED_IN_MIGRATION();
   return "";

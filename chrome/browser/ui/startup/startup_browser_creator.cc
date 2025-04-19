@@ -50,6 +50,7 @@
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
+#include "chrome/browser/profiles/nuke_profile_directory_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -100,6 +101,7 @@
 #include "ash/constants/ash_switches.h"
 #include "chrome/browser/ash/app_mode/app_launch_utils.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_types.h"
+#include "chrome/browser/ash/app_mode/kiosk_controller.h"
 #include "chrome/browser/ash/app_restore/full_restore_service.h"
 #include "chrome/browser/ash/floating_workspace/floating_workspace_service.h"
 #include "chrome/browser/ash/floating_workspace/floating_workspace_util.h"
@@ -122,7 +124,7 @@
 #endif
 
 #if BUILDFLAG(IS_MAC)
-#include "chrome/browser/web_applications/app_shim_registry_mac.h"
+#include "chrome/browser/web_applications/os_integration/mac/app_shim_registry.h"
 #endif
 
 #if BUILDFLAG(IS_WIN)
@@ -586,8 +588,8 @@ void OpenNewWindowForFirstRun(
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Returns the app id of the kiosk app associated with the current user session.
-// Returns nullopt for non-kiosk user sessions and for ARC kiosk sessions, since
-// crash recovery is not supported there.
+// Returns nullopt for non-kiosk user sessions, since crash recovery is not
+// supported there.
 std::optional<ash::KioskAppId> GetAppId(const base::CommandLine& command_line,
                                         Profile* profile) {
   const user_manager::User* user =
@@ -910,7 +912,7 @@ void StartupBrowserCreator::ClearLaunchedProfilesForTesting() {
 // static
 void StartupBrowserCreator::RegisterLocalStatePrefs(
     PrefRegistrySimple* registry) {
-  registry->RegisterBooleanPref(prefs::kPromotionalTabsEnabled, true);
+  registry->RegisterBooleanPref(prefs::kPromotionsEnabled, true);
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
   registry->RegisterBooleanPref(prefs::kCommandLineFlagSecurityWarningsEnabled,
                                 true);
@@ -1030,6 +1032,9 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     silent_launch = true;
 
   if (chrome::IsRunningInForcedAppMode()) {
+    // If we are here, it means the Chrome browser crashed/restarted while in
+    // Kiosk mode, since the 'force app mode' switch is only added to the
+    // commandline while in a kiosk session.
     Profile* profile = profile_info.profile;
 
     // Skip browser launch since app mode launches its app window.
@@ -1051,11 +1056,12 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
         chrome::AttemptUserExit();
         return false;
       } else {
-        ash::LaunchAppOrDie(profile, app_id.value());
+        ash::KioskController::Get().StartSessionAfterCrash(app_id.value(),
+                                                           profile);
       }
     } else {
-      // If we are here, we are either in ARC kiosk session or the user is
-      // invalid. We should terminate the session in such cases.
+      // If we are here, the user is invalid.
+      // We should terminate the session in such cases.
       chrome::AttemptUserExit();
       return false;
     }
@@ -1157,8 +1163,17 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
 
   // If we don't want to launch a new browser window or tab we are done here.
   if (silent_launch) {
-    if (process_startup == chrome::startup::IsProcessStartup::kYes)
+    bool should_block_browser_startup_metrics =
+        process_startup == chrome::startup::IsProcessStartup::kYes;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    // Login screen is an expected common case. Startup metrics should still be
+    // recorded after the user logs in even though this is a `silent_launch`.
+    should_block_browser_startup_metrics &=
+        !command_line.HasSwitch(ash::switches::kLoginManager);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+    if (should_block_browser_startup_metrics) {
       startup_metric_utils::GetBrowser().SetNonBrowserUIDisplayed();
+    }
     return true;
   }
 
@@ -1234,7 +1249,7 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     } else {
       // TODO(http://crbug.com/1293024): Refactor command line processing logic
       // to validate the flag sets and reliably determine the startup mode.
-      DUMP_WILL_BE_NOTREACHED_NORETURN()
+      DUMP_WILL_BE_NOTREACHED()
           << "Failed start for jumplist action: couldn't pick a profile";
     }
   }
@@ -1592,13 +1607,15 @@ StartupProfilePathInfo GetStartupProfilePath(
 
   if (!command_line_profile_directory.empty() &&
       command_line.HasSwitch(switches::kIgnoreProfileDirectoryIfNotExists)) {
+    base::FilePath profile_dir_path =
+        user_data_dir.Append(command_line_profile_directory);
     // This is a blocking call to the filesystem, but unfortunately it is
     // required for startup to continue, as the
     // `kIgnoreProfileDirectoryIfNotExists` switch needs to check the file
     // system state to know if the profile directory exists.
     base::ScopedAllowBlocking allow_blocking;
-    if (!base::DirectoryExists(
-            user_data_dir.Append(command_line_profile_directory))) {
+    if (IsProfileDirectoryMarkedForDeletion(profile_dir_path) ||
+        !base::DirectoryExists(profile_dir_path)) {
       command_line_profile_directory = base::FilePath();
     }
   }

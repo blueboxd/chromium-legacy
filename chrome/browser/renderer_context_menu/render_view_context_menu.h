@@ -33,7 +33,6 @@
 #include "extensions/buildflags/buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
-#include "services/screen_ai/buildflags/buildflags.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-forward.h"
 #include "ui/base/interaction/element_identifier.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -62,9 +61,6 @@ class Profile;
 class ReadWriteCardObserver;
 class SpellingMenuObserver;
 class SpellingOptionsSubMenuObserver;
-#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-class PdfOcrMenuObserver;
-#endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
 namespace content {
 class RenderFrameHost;
@@ -114,6 +110,7 @@ class RenderViewContextMenu
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kComposeMenuItem);
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kRegionSearchItem);
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kSearchForImageItem);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kSearchForVideoFrameItem);
 
   using ExecutePluginActionCallback =
       base::OnceCallback<void(content::RenderFrameHost*,
@@ -138,7 +135,6 @@ class RenderViewContextMenu
   void ExecuteCommand(int command_id, int event_flags) override;
   void AddSpellCheckServiceItem(bool is_checked) override;
   void AddAccessibilityLabelsServiceItem(bool is_checked) override;
-  void AddPdfOcrMenuItem() override;
 
   // Registers a one-time callback that will be called the next time a context
   // menu is shown.
@@ -305,10 +301,6 @@ class RenderViewContextMenu
   // Returns true if the items were appended. This might not happen in all
   // cases, e.g. these are only appended if a screen reader is enabled.
   bool AppendAccessibilityLabelsItems();
-#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-  void AppendPdfOcrItems();
-  void AppendLayoutExtractionItem();
-#endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
   void AppendSearchProvider();
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   void AppendAllExtensionItems();
@@ -335,7 +327,11 @@ class RenderViewContextMenu
       bool notify_if_restricted) const;
 
   // Helper function for checking policies.
-  bool IsSaveAsItemAllowedByPolicy() const;
+  bool IsSaveAsItemAllowedByPolicy(const GURL& item_url) const;
+
+  // Helper function for checking fenced frame tree untrusted network access
+  // status.
+  bool IsSaveAsItemAllowedByUntrustedNetworkStatus() const;
 
   // Command enabled query functions.
   bool IsReloadEnabled() const;
@@ -355,6 +351,7 @@ class RenderViewContextMenu
   bool IsOpenLinkAllowedByDlp(const GURL& link_url) const;
   bool IsRegionSearchEnabled() const;
   bool IsAddANoteEnabled() const;
+  bool IsVideoFrameItemEnabled(int id) const;
 
   // Command execution functions.
   void ExecSearchWebInCompanionSidePanel(const GURL& url);
@@ -370,7 +367,7 @@ class RenderViewContextMenu
   void ExecExitFullscreen();
   void ExecCopyLinkText();
   void ExecCopyImageAt();
-  void ExecSearchLensForImage(bool is_image_translate);
+  void ExecSearchLensForImage(int event_flags, bool is_image_translate);
   void ExecAddANote();
   void ExecRegionSearch(int event_flags,
                         bool is_google_default_search_provider);
@@ -380,7 +377,7 @@ class RenderViewContextMenu
   void ExecControls();
   void ExecSaveVideoFrameAs();
   void ExecCopyVideoFrame();
-  void ExecSearchForVideoFrame();
+  void ExecSearchForVideoFrame(int event_flags);
   void ExecLiveCaption();
   void ExecRotateCW();
   void ExecRotateCCW();
@@ -397,12 +394,11 @@ class RenderViewContextMenu
   void ExecOpenCompose();
 #endif
   void ExecOpenInReadAnything();
-#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-  void ExecRunLayoutExtraction();
-#endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
   void MediaPlayerAction(const blink::mojom::MediaPlayerAction& action);
-  void SearchForVideoFrame(const gfx::ImageSkia& image);
+  void SearchForVideoFrame(int event_flags,
+                           const SkBitmap& bitmap,
+                           const gfx::Rect& region_bounds);
   void PluginActionAt(const gfx::Point& location,
                       blink::mojom::PluginActionType plugin_action);
 
@@ -439,13 +435,14 @@ class RenderViewContextMenu
   // relative to the screen and in DP, while image bounds are relative to the
   // view and in physical pixels. The device scale factor is supplied to scale
   // the image bounds properly.
-  void OpenLensOverlayWithBounds(
+  void OpenLensOverlayWithPreselectedRegion(
       mojo::AssociatedRemote<chrome::mojom::ChromeRenderFrame>
           chrome_render_frame,
       const gfx::Rect& tab_bounds,
       const gfx::Rect& view_bounds,
       float device_scale_factor,
-      const gfx::Rect& image_bounds);
+      const SkBitmap& region_bytes,
+      const gfx::Rect& region_bitmap);
 
 #if BUILDFLAG(IS_CHROMEOS)
   // Shows the standalone clipboard history menu. `event_flags` describes the
@@ -487,12 +484,6 @@ class RenderViewContextMenu
   std::unique_ptr<AccessibilityLabelsMenuObserver>
       accessibility_labels_menu_observer_;
   ui::SimpleMenuModel accessibility_labels_submenu_model_;
-
-#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-  // An observer that handles PDF OCR items.
-  std::unique_ptr<PdfOcrMenuObserver> pdf_ocr_submenu_model_observer_;
-  std::unique_ptr<ui::SimpleMenuModel> pdf_ocr_submenu_model_;
-#endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
 #if !BUILDFLAG(IS_MAC)
   // An observer that handles the submenu for showing spelling options. This

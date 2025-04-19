@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ui/events/ozone/evdev/touch_event_converter_evdev.h"
 
 #include <errno.h>
@@ -548,7 +553,7 @@ TEST_F(TouchEventConverterEvdevTest, TouchMove) {
   dev->ReadNow();
   EXPECT_EQ(1u, size());
   ui::TouchEventParams event = dispatched_touch_event(0);
-  EXPECT_EQ(ui::ET_TOUCH_PRESSED, event.type);
+  EXPECT_EQ(ui::EventType::kTouchPressed, event.type);
   EXPECT_EQ(ToTestTimeTicks(1427323282019203), event.timestamp);
   EXPECT_EQ(295, event.location.x());
   EXPECT_EQ(421, event.location.y());
@@ -563,7 +568,7 @@ TEST_F(TouchEventConverterEvdevTest, TouchMove) {
   dev->ReadNow();
   EXPECT_EQ(2u, size());
   event = dispatched_touch_event(1);
-  EXPECT_EQ(ui::ET_TOUCH_MOVED, event.type);
+  EXPECT_EQ(ui::EventType::kTouchMoved, event.type);
   EXPECT_EQ(ToTestTimeTicks(1427323282034693), event.timestamp);
   EXPECT_EQ(312, event.location.x());
   EXPECT_EQ(432, event.location.y());
@@ -578,7 +583,7 @@ TEST_F(TouchEventConverterEvdevTest, TouchMove) {
   dev->ReadNow();
   EXPECT_EQ(3u, size());
   event = dispatched_touch_event(2);
-  EXPECT_EQ(ui::ET_TOUCH_RELEASED, event.type);
+  EXPECT_EQ(ui::EventType::kTouchReleased, event.type);
   EXPECT_EQ(ToTestTimeTicks(1427323282144540), event.timestamp);
   EXPECT_EQ(312, event.location.x());
   EXPECT_EQ(432, event.location.y());
@@ -629,7 +634,7 @@ TEST_F(TouchEventConverterEvdevTest, TwoFingerGesture) {
   ui::TouchEventParams ev1 = dispatched_touch_event(3);
 
   // Move
-  EXPECT_EQ(ui::ET_TOUCH_MOVED, ev0.type);
+  EXPECT_EQ(ui::EventType::kTouchMoved, ev0.type);
   EXPECT_EQ(ToTestTimeTicks(0), ev0.timestamp);
   EXPECT_EQ(40, ev0.location.x());
   EXPECT_EQ(51, ev0.location.y());
@@ -637,7 +642,7 @@ TEST_F(TouchEventConverterEvdevTest, TwoFingerGesture) {
   EXPECT_FLOAT_EQ(0.17647059f, ev0.pointer_details.force);
 
   // Press
-  EXPECT_EQ(ui::ET_TOUCH_PRESSED, ev1.type);
+  EXPECT_EQ(ui::EventType::kTouchPressed, ev1.type);
   EXPECT_EQ(ToTestTimeTicks(0), ev1.timestamp);
   EXPECT_EQ(101, ev1.location.x());
   EXPECT_EQ(102, ev1.location.y());
@@ -653,7 +658,7 @@ TEST_F(TouchEventConverterEvdevTest, TwoFingerGesture) {
   EXPECT_EQ(5u, size());
   ev1 = dispatched_touch_event(4);
 
-  EXPECT_EQ(ui::ET_TOUCH_MOVED, ev1.type);
+  EXPECT_EQ(ui::EventType::kTouchMoved, ev1.type);
   EXPECT_EQ(ToTestTimeTicks(0), ev1.timestamp);
   EXPECT_EQ(40, ev1.location.x());
   EXPECT_EQ(102, ev1.location.y());
@@ -670,7 +675,7 @@ TEST_F(TouchEventConverterEvdevTest, TwoFingerGesture) {
   EXPECT_EQ(6u, size());
   ev0 = dispatched_touch_event(5);
 
-  EXPECT_EQ(ui::ET_TOUCH_MOVED, ev0.type);
+  EXPECT_EQ(ui::EventType::kTouchMoved, ev0.type);
   EXPECT_EQ(ToTestTimeTicks(0), ev0.timestamp);
   EXPECT_EQ(39, ev0.location.x());
   EXPECT_EQ(51, ev0.location.y());
@@ -688,14 +693,14 @@ TEST_F(TouchEventConverterEvdevTest, TwoFingerGesture) {
   ev0 = dispatched_touch_event(6);
   ev1 = dispatched_touch_event(7);
 
-  EXPECT_EQ(ui::ET_TOUCH_RELEASED, ev0.type);
+  EXPECT_EQ(ui::EventType::kTouchReleased, ev0.type);
   EXPECT_EQ(ToTestTimeTicks(0), ev0.timestamp);
   EXPECT_EQ(39, ev0.location.x());
   EXPECT_EQ(51, ev0.location.y());
   EXPECT_EQ(0, ev0.slot);
   EXPECT_FLOAT_EQ(0.17647059f, ev0.pointer_details.force);
 
-  EXPECT_EQ(ui::ET_TOUCH_MOVED, ev1.type);
+  EXPECT_EQ(ui::EventType::kTouchMoved, ev1.type);
   EXPECT_EQ(ToTestTimeTicks(0), ev1.timestamp);
   EXPECT_EQ(38, ev1.location.x());
   EXPECT_EQ(102, ev1.location.y());
@@ -711,7 +716,7 @@ TEST_F(TouchEventConverterEvdevTest, TwoFingerGesture) {
   EXPECT_EQ(9u, size());
   ev1 = dispatched_touch_event(8);
 
-  EXPECT_EQ(ui::ET_TOUCH_RELEASED, ev1.type);
+  EXPECT_EQ(ui::EventType::kTouchReleased, ev1.type);
   EXPECT_EQ(ToTestTimeTicks(0), ev1.timestamp);
   EXPECT_EQ(38, ev1.location.x());
   EXPECT_EQ(102, ev1.location.y());
@@ -784,7 +789,7 @@ TEST_F(TouchEventConverterEvdevTest, ShouldResumeExistingContactsOnStart) {
   EXPECT_EQ(1u, size());
 
   ui::TouchEventParams ev = dispatched_touch_event(0);
-  EXPECT_EQ(ET_TOUCH_PRESSED, ev.type);
+  EXPECT_EQ(EventType::kTouchPressed, ev.type);
   EXPECT_EQ(0, ev.slot);
   EXPECT_FLOAT_EQ(50.f, ev.pointer_details.radius_x);
   EXPECT_FLOAT_EQ(50.f, ev.pointer_details.radius_y);
@@ -821,14 +826,14 @@ TEST_F(TouchEventConverterEvdevTest, ShouldReleaseContactsOnStop) {
   EXPECT_EQ(1u, size());
 
   ui::TouchEventParams ev1 = dispatched_touch_event(0);
-  EXPECT_EQ(ET_TOUCH_PRESSED, ev1.type);
+  EXPECT_EQ(EventType::kTouchPressed, ev1.type);
   EXPECT_EQ(0, ev1.slot);
 
   DestroyDevice();
   EXPECT_EQ(2u, size());
 
   ui::TouchEventParams ev2 = dispatched_touch_event(1);
-  EXPECT_EQ(ET_TOUCH_CANCELLED, ev2.type);
+  EXPECT_EQ(EventType::kTouchCancelled, ev2.type);
   EXPECT_EQ(0, ev2.slot);
 }
 
@@ -866,7 +871,7 @@ TEST_F(TouchEventConverterEvdevTest, ShouldRemoveContactsWhenDisabled) {
   EXPECT_EQ(1u, size());
 
   ui::TouchEventParams ev1 = dispatched_touch_event(0);
-  EXPECT_EQ(ET_TOUCH_PRESSED, ev1.type);
+  EXPECT_EQ(EventType::kTouchPressed, ev1.type);
   EXPECT_EQ(0, ev1.slot);
   EXPECT_EQ(1003, ev1.location.x());
   EXPECT_EQ(749, ev1.location.y());
@@ -876,7 +881,7 @@ TEST_F(TouchEventConverterEvdevTest, ShouldRemoveContactsWhenDisabled) {
   EXPECT_EQ(2u, size());
 
   ui::TouchEventParams ev2 = dispatched_touch_event(1);
-  EXPECT_EQ(ET_TOUCH_CANCELLED, ev2.type);
+  EXPECT_EQ(EventType::kTouchCancelled, ev2.type);
   EXPECT_EQ(0, ev2.slot);
 
   // Set up the previous contact in slot 0.
@@ -962,35 +967,35 @@ TEST_F(TouchEventConverterEvdevTest, ToolTypePalmNotCancelTouch) {
   EXPECT_EQ(6u, size());
 
   ui::TouchEventParams ev1_1 = dispatched_touch_event(0);
-  EXPECT_EQ(ET_TOUCH_PRESSED, ev1_1.type);
+  EXPECT_EQ(EventType::kTouchPressed, ev1_1.type);
   EXPECT_EQ(0, ev1_1.slot);
   EXPECT_EQ(1003, ev1_1.location.x());
   EXPECT_EQ(749, ev1_1.location.y());
 
   ui::TouchEventParams ev1_2 = dispatched_touch_event(1);
-  EXPECT_EQ(ET_TOUCH_PRESSED, ev1_2.type);
+  EXPECT_EQ(EventType::kTouchPressed, ev1_2.type);
   EXPECT_EQ(1, ev1_2.slot);
   EXPECT_EQ(1103, ev1_2.location.x());
   EXPECT_EQ(649, ev1_2.location.y());
 
   ui::TouchEventParams ev1_3 = dispatched_touch_event(2);
-  EXPECT_EQ(ET_TOUCH_MOVED, ev1_3.type);
+  EXPECT_EQ(EventType::kTouchMoved, ev1_3.type);
   EXPECT_EQ(0, ev1_3.slot);
   EXPECT_EQ(1009, ev1_3.location.x());
   EXPECT_EQ(755, ev1_3.location.y());
 
   ui::TouchEventParams ev1_4 = dispatched_touch_event(3);
-  EXPECT_EQ(ET_TOUCH_MOVED, ev1_4.type);
+  EXPECT_EQ(EventType::kTouchMoved, ev1_4.type);
   EXPECT_EQ(1, ev1_4.slot);
   EXPECT_EQ(1090, ev1_4.location.x());
   EXPECT_EQ(655, ev1_4.location.y());
 
   ui::TouchEventParams ev1_5 = dispatched_touch_event(4);
-  EXPECT_EQ(ET_TOUCH_RELEASED, ev1_5.type);
+  EXPECT_EQ(EventType::kTouchReleased, ev1_5.type);
   EXPECT_EQ(0, ev1_5.slot);
 
   ui::TouchEventParams ev1_6 = dispatched_touch_event(5);
-  EXPECT_EQ(ET_TOUCH_RELEASED, ev1_6.type);
+  EXPECT_EQ(EventType::kTouchReleased, ev1_6.type);
   EXPECT_EQ(1, ev1_6.slot);
 }
 
@@ -1053,27 +1058,27 @@ TEST_F(TouchEventConverterEvdevTest, MaxMajorNotCancelTouch) {
   EXPECT_EQ(5u, size());
 
   ui::TouchEventParams ev1_1 = dispatched_touch_event(0);
-  EXPECT_EQ(ET_TOUCH_PRESSED, ev1_1.type);
+  EXPECT_EQ(EventType::kTouchPressed, ev1_1.type);
   EXPECT_EQ(0, ev1_1.slot);
   EXPECT_EQ(1003, ev1_1.location.x());
   EXPECT_EQ(749, ev1_1.location.y());
 
   ui::TouchEventParams ev1_2 = dispatched_touch_event(1);
-  EXPECT_EQ(ET_TOUCH_PRESSED, ev1_2.type);
+  EXPECT_EQ(EventType::kTouchPressed, ev1_2.type);
   EXPECT_EQ(1, ev1_2.slot);
   EXPECT_EQ(1103, ev1_2.location.x());
   EXPECT_EQ(649, ev1_2.location.y());
 
   ui::TouchEventParams ev1_3 = dispatched_touch_event(2);
-  EXPECT_EQ(ET_TOUCH_MOVED, ev1_3.type);
+  EXPECT_EQ(EventType::kTouchMoved, ev1_3.type);
   EXPECT_EQ(0, ev1_3.slot);
 
   ui::TouchEventParams ev1_4 = dispatched_touch_event(3);
-  EXPECT_EQ(ET_TOUCH_RELEASED, ev1_4.type);
+  EXPECT_EQ(EventType::kTouchReleased, ev1_4.type);
   EXPECT_EQ(0, ev1_4.slot);
 
   ui::TouchEventParams ev1_5 = dispatched_touch_event(4);
-  EXPECT_EQ(ET_TOUCH_RELEASED, ev1_5.type);
+  EXPECT_EQ(EventType::kTouchReleased, ev1_5.type);
   EXPECT_EQ(1, ev1_5.slot);
 }
 
@@ -1153,25 +1158,25 @@ TEST_F(TouchEventConverterEvdevTest, PalmShouldCancelTouch) {
   EXPECT_EQ(4u, size());
 
   ui::TouchEventParams ev1_1 = dispatched_touch_event(0);
-  EXPECT_EQ(ET_TOUCH_PRESSED, ev1_1.type);
+  EXPECT_EQ(EventType::kTouchPressed, ev1_1.type);
   EXPECT_EQ(0, ev1_1.slot);
   EXPECT_EQ(1003, ev1_1.location.x());
   EXPECT_EQ(749, ev1_1.location.y());
 
   ui::TouchEventParams ev1_2 = dispatched_touch_event(1);
-  EXPECT_EQ(ET_TOUCH_PRESSED, ev1_2.type);
+  EXPECT_EQ(EventType::kTouchPressed, ev1_2.type);
   EXPECT_EQ(1, ev1_2.slot);
   EXPECT_EQ(1103, ev1_2.location.x());
   EXPECT_EQ(649, ev1_2.location.y());
 
   ui::TouchEventParams ev1_3 = dispatched_touch_event(2);
-  EXPECT_EQ(ET_TOUCH_CANCELLED, ev1_3.type);
+  EXPECT_EQ(EventType::kTouchCancelled, ev1_3.type);
   EXPECT_EQ(0, ev1_3.slot);
 
   // We expect both touches to be cancelled even though
   // just one reported major at max value.
   ui::TouchEventParams ev1_4 = dispatched_touch_event(3);
-  EXPECT_EQ(ET_TOUCH_CANCELLED, ev1_4.type);
+  EXPECT_EQ(EventType::kTouchCancelled, ev1_4.type);
   EXPECT_EQ(1, ev1_4.slot);
 
   dev->ConfigureReadMock(mock_kernel_queue_tool_palm,
@@ -1180,25 +1185,25 @@ TEST_F(TouchEventConverterEvdevTest, PalmShouldCancelTouch) {
   EXPECT_EQ(8u, size());
 
   ui::TouchEventParams ev2_1 = dispatched_touch_event(4);
-  EXPECT_EQ(ET_TOUCH_PRESSED, ev2_1.type);
+  EXPECT_EQ(EventType::kTouchPressed, ev2_1.type);
   EXPECT_EQ(0, ev2_1.slot);
   EXPECT_EQ(1003, ev2_1.location.x());
   EXPECT_EQ(749, ev2_1.location.y());
 
   ui::TouchEventParams ev2_2 = dispatched_touch_event(5);
-  EXPECT_EQ(ET_TOUCH_PRESSED, ev2_2.type);
+  EXPECT_EQ(EventType::kTouchPressed, ev2_2.type);
   EXPECT_EQ(1, ev2_2.slot);
   EXPECT_EQ(1103, ev2_2.location.x());
   EXPECT_EQ(649, ev2_2.location.y());
 
   ui::TouchEventParams ev2_3 = dispatched_touch_event(6);
-  EXPECT_EQ(ET_TOUCH_CANCELLED, ev2_3.type);
+  EXPECT_EQ(EventType::kTouchCancelled, ev2_3.type);
   EXPECT_EQ(0, ev2_3.slot);
 
   // We expect both touches to be cancelled even though
   // just one reported MT_TOOL_PALM.
   ui::TouchEventParams ev2_4 = dispatched_touch_event(7);
-  EXPECT_EQ(ET_TOUCH_CANCELLED, ev2_4.type);
+  EXPECT_EQ(EventType::kTouchCancelled, ev2_4.type);
   EXPECT_EQ(1, ev2_4.slot);
 }
 
@@ -1264,25 +1269,25 @@ TEST_F(TouchEventConverterEvdevTest, PalmWithDataAndFingerAfterStillCancelled) {
   EXPECT_EQ(4u, size());
 
   ui::TouchEventParams ev_1 = dispatched_touch_event(0);
-  EXPECT_EQ(ET_TOUCH_PRESSED, ev_1.type);
+  EXPECT_EQ(EventType::kTouchPressed, ev_1.type);
   EXPECT_EQ(0, ev_1.slot);
   EXPECT_EQ(1003, ev_1.location.x());
   EXPECT_EQ(749, ev_1.location.y());
 
   ui::TouchEventParams ev_2 = dispatched_touch_event(1);
-  EXPECT_EQ(ET_TOUCH_PRESSED, ev_2.type);
+  EXPECT_EQ(EventType::kTouchPressed, ev_2.type);
   EXPECT_EQ(1, ev_2.slot);
   EXPECT_EQ(1103, ev_2.location.x());
   EXPECT_EQ(649, ev_2.location.y());
 
   ui::TouchEventParams ev_3 = dispatched_touch_event(2);
-  EXPECT_EQ(ET_TOUCH_CANCELLED, ev_3.type);
+  EXPECT_EQ(EventType::kTouchCancelled, ev_3.type);
   EXPECT_EQ(0, ev_3.slot);
 
   // We expect both touches to be cancelled even though
   // just one reported MT_TOOL_PALM.
   ui::TouchEventParams ev_4 = dispatched_touch_event(3);
-  EXPECT_EQ(ET_TOUCH_CANCELLED, ev_4.type);
+  EXPECT_EQ(EventType::kTouchCancelled, ev_4.type);
   EXPECT_EQ(1, ev_4.slot);
 }
 
@@ -1398,25 +1403,25 @@ TEST_F(TouchEventConverterEvdevTest, TrackingIdShouldNotResetCancelByPalm) {
   EXPECT_EQ(4u, size());
 
   ui::TouchEventParams ev1_1 = dispatched_touch_event(0);
-  EXPECT_EQ(ET_TOUCH_PRESSED, ev1_1.type);
+  EXPECT_EQ(EventType::kTouchPressed, ev1_1.type);
   EXPECT_EQ(0, ev1_1.slot);
   EXPECT_EQ(1003, ev1_1.location.x());
   EXPECT_EQ(749, ev1_1.location.y());
 
   ui::TouchEventParams ev1_2 = dispatched_touch_event(1);
-  EXPECT_EQ(ET_TOUCH_PRESSED, ev1_2.type);
+  EXPECT_EQ(EventType::kTouchPressed, ev1_2.type);
   EXPECT_EQ(1, ev1_2.slot);
   EXPECT_EQ(1103, ev1_2.location.x());
   EXPECT_EQ(649, ev1_2.location.y());
 
   ui::TouchEventParams ev1_3 = dispatched_touch_event(2);
-  EXPECT_EQ(ET_TOUCH_CANCELLED, ev1_3.type);
+  EXPECT_EQ(EventType::kTouchCancelled, ev1_3.type);
   EXPECT_EQ(0, ev1_3.slot);
 
   // We expect both touches to be cancelled even though
   // just one reported major at max value.
   ui::TouchEventParams ev1_4 = dispatched_touch_event(3);
-  EXPECT_EQ(ET_TOUCH_CANCELLED, ev1_4.type);
+  EXPECT_EQ(EventType::kTouchCancelled, ev1_4.type);
   EXPECT_EQ(1, ev1_4.slot);
 
   dev->ConfigureReadMock(mock_kernel_new_touch_without_new_major,
@@ -1430,25 +1435,25 @@ TEST_F(TouchEventConverterEvdevTest, TrackingIdShouldNotResetCancelByPalm) {
   EXPECT_EQ(8u, size());
 
   ui::TouchEventParams ev2_1 = dispatched_touch_event(4);
-  EXPECT_EQ(ET_TOUCH_PRESSED, ev2_1.type);
+  EXPECT_EQ(EventType::kTouchPressed, ev2_1.type);
   EXPECT_EQ(0, ev2_1.slot);
   EXPECT_EQ(1003, ev2_1.location.x());
   EXPECT_EQ(749, ev2_1.location.y());
 
   ui::TouchEventParams ev2_2 = dispatched_touch_event(5);
-  EXPECT_EQ(ET_TOUCH_PRESSED, ev2_2.type);
+  EXPECT_EQ(EventType::kTouchPressed, ev2_2.type);
   EXPECT_EQ(1, ev2_2.slot);
   EXPECT_EQ(1103, ev2_2.location.x());
   EXPECT_EQ(649, ev2_2.location.y());
 
   ui::TouchEventParams ev2_3 = dispatched_touch_event(6);
-  EXPECT_EQ(ET_TOUCH_CANCELLED, ev2_3.type);
+  EXPECT_EQ(EventType::kTouchCancelled, ev2_3.type);
   EXPECT_EQ(0, ev2_3.slot);
 
   // We expect both touches to be cancelled even though
   // just one reported MT_TOOL_PALM.
   ui::TouchEventParams ev2_4 = dispatched_touch_event(7);
-  EXPECT_EQ(ET_TOUCH_CANCELLED, ev2_4.type);
+  EXPECT_EQ(EventType::kTouchCancelled, ev2_4.type);
   EXPECT_EQ(1, ev2_4.slot);
 }
 
@@ -1568,24 +1573,24 @@ TEST_F(TouchEventConverterEvdevTest,
   EXPECT_EQ(4u, size());
   {
     ui::TouchEventParams ev1_1 = dispatched_touch_event(0);
-    EXPECT_EQ(ET_TOUCH_PRESSED, ev1_1.type);
+    EXPECT_EQ(EventType::kTouchPressed, ev1_1.type);
     EXPECT_EQ(0, ev1_1.slot);
     EXPECT_EQ(1003, ev1_1.location.x());
     EXPECT_EQ(749, ev1_1.location.y());
 
     ui::TouchEventParams ev1_2 = dispatched_touch_event(1);
-    EXPECT_EQ(ET_TOUCH_PRESSED, ev1_2.type);
+    EXPECT_EQ(EventType::kTouchPressed, ev1_2.type);
     EXPECT_EQ(1, ev1_2.slot);
     EXPECT_EQ(1103, ev1_2.location.x());
     EXPECT_EQ(649, ev1_2.location.y());
 
     ui::TouchEventParams ev1_3 = dispatched_touch_event(2);
-    EXPECT_EQ(ET_TOUCH_CANCELLED, ev1_3.type);
+    EXPECT_EQ(EventType::kTouchCancelled, ev1_3.type);
     EXPECT_EQ(0, ev1_3.slot);
 
     // We do not expect this to be cancelled.
     ui::TouchEventParams ev1_4 = dispatched_touch_event(3);
-    EXPECT_EQ(ET_TOUCH_RELEASED, ev1_4.type);
+    EXPECT_EQ(EventType::kTouchReleased, ev1_4.type);
     EXPECT_EQ(1, ev1_4.slot);
   }
   // We expect 3 touches to be read: fine: touch at slot 1 is pressed and then
@@ -1596,19 +1601,19 @@ TEST_F(TouchEventConverterEvdevTest,
   EXPECT_EQ(7u, size());
   {
     ui::TouchEventParams ev2_1 = dispatched_touch_event(4);
-    EXPECT_EQ(ET_TOUCH_PRESSED, ev2_1.type);
+    EXPECT_EQ(EventType::kTouchPressed, ev2_1.type);
     EXPECT_EQ(1, ev2_1.slot);
     EXPECT_EQ(1103, ev2_1.location.x());
     EXPECT_EQ(649, ev2_1.location.y());
 
     ui::TouchEventParams ev2_2 = dispatched_touch_event(5);
-    EXPECT_EQ(ET_TOUCH_MOVED, ev2_2.type);
+    EXPECT_EQ(EventType::kTouchMoved, ev2_2.type);
     EXPECT_EQ(1, ev2_2.slot);
     EXPECT_EQ(1103, ev2_2.location.x());
     EXPECT_EQ(649, ev2_2.location.y());
 
     ui::TouchEventParams ev2_3 = dispatched_touch_event(6);
-    EXPECT_EQ(ET_TOUCH_RELEASED, ev2_3.type);
+    EXPECT_EQ(EventType::kTouchReleased, ev2_3.type);
     EXPECT_EQ(1, ev2_3.slot);
   }
   dev->ConfigureReadMock(mock_kernel_queue_tool_palm,
@@ -1617,19 +1622,19 @@ TEST_F(TouchEventConverterEvdevTest,
   EXPECT_EQ(10u, size());
   {
     ui::TouchEventParams ev3_1 = dispatched_touch_event(7);
-    EXPECT_EQ(ET_TOUCH_PRESSED, ev3_1.type);
+    EXPECT_EQ(EventType::kTouchPressed, ev3_1.type);
     EXPECT_EQ(0, ev3_1.slot);
     EXPECT_EQ(1003, ev3_1.location.x());
     EXPECT_EQ(749, ev3_1.location.y());
 
     ui::TouchEventParams ev3_2 = dispatched_touch_event(8);
-    EXPECT_EQ(ET_TOUCH_PRESSED, ev3_2.type);
+    EXPECT_EQ(EventType::kTouchPressed, ev3_2.type);
     EXPECT_EQ(1, ev3_2.slot);
     EXPECT_EQ(1103, ev3_2.location.x());
     EXPECT_EQ(649, ev3_2.location.y());
 
     ui::TouchEventParams ev3_3 = dispatched_touch_event(9);
-    EXPECT_EQ(ET_TOUCH_CANCELLED, ev3_3.type);
+    EXPECT_EQ(EventType::kTouchCancelled, ev3_3.type);
     EXPECT_EQ(0, ev3_3.slot);
     // Touch at slot 1: it's still going!
   }
@@ -1680,7 +1685,7 @@ TEST_F(TouchEventConverterEvdevTest, ShouldUseLeftButtonIfNoTouchButton) {
   dev->ReadNow();
   EXPECT_EQ(1u, size());
   ui::TouchEventParams event = dispatched_touch_event(0);
-  EXPECT_EQ(ui::ET_TOUCH_PRESSED, event.type);
+  EXPECT_EQ(ui::EventType::kTouchPressed, event.type);
   EXPECT_EQ(ToTestTimeTicks(1433965490837958), event.timestamp);
   EXPECT_EQ(3654, event.location.x());
   EXPECT_EQ(1055, event.location.y());
@@ -1694,7 +1699,7 @@ TEST_F(TouchEventConverterEvdevTest, ShouldUseLeftButtonIfNoTouchButton) {
   dev->ReadNow();
   EXPECT_EQ(2u, size());
   event = dispatched_touch_event(1);
-  EXPECT_EQ(ui::ET_TOUCH_MOVED, event.type);
+  EXPECT_EQ(ui::EventType::kTouchMoved, event.type);
   EXPECT_EQ(ToTestTimeTicks(1433965491001953), event.timestamp);
   EXPECT_EQ(3644, event.location.x());
   EXPECT_EQ(1059, event.location.y());
@@ -1708,7 +1713,7 @@ TEST_F(TouchEventConverterEvdevTest, ShouldUseLeftButtonIfNoTouchButton) {
   dev->ReadNow();
   EXPECT_EQ(3u, size());
   event = dispatched_touch_event(2);
-  EXPECT_EQ(ui::ET_TOUCH_RELEASED, event.type);
+  EXPECT_EQ(ui::EventType::kTouchReleased, event.type);
   EXPECT_EQ(ToTestTimeTicks(1433965491225959), event.timestamp);
   EXPECT_EQ(3644, event.location.x());
   EXPECT_EQ(1059, event.location.y());
@@ -1829,8 +1834,9 @@ class EventTypeTouchNoiseFilter : public TouchFilter {
  private:
   EventType EventTypeFromTouch(const InProgressTouchEvdev& touch) const {
     if (touch.touching)
-      return touch.was_touching ? ET_TOUCH_MOVED : ET_TOUCH_PRESSED;
-    return touch.was_touching ? ET_TOUCH_RELEASED : ET_UNKNOWN;
+      return touch.was_touching ? EventType::kTouchMoved
+                                : EventType::kTouchPressed;
+    return touch.was_touching ? EventType::kTouchReleased : EventType::kUnknown;
   }
 
   EventType noise_event_type_;
@@ -1908,7 +1914,7 @@ TEST_F(TouchEventConverterEvdevTest, ActiveStylusTouchAndRelease) {
   EXPECT_EQ(2u, size());
 
   auto down_event = dispatched_touch_event(0);
-  EXPECT_EQ(ET_TOUCH_PRESSED, down_event.type);
+  EXPECT_EQ(EventType::kTouchPressed, down_event.type);
   EXPECT_EQ(9170, down_event.location.x());
   EXPECT_EQ(3658, down_event.location.y());
   EXPECT_EQ(EventPointerType::kPen, down_event.pointer_details.pointer_type);
@@ -1917,7 +1923,7 @@ TEST_F(TouchEventConverterEvdevTest, ActiveStylusTouchAndRelease) {
   EXPECT_EQ(0, down_event.pointer_details.tilt_y);
 
   auto up_event = dispatched_touch_event(1);
-  EXPECT_EQ(ET_TOUCH_RELEASED, up_event.type);
+  EXPECT_EQ(EventType::kTouchReleased, up_event.type);
   EXPECT_EQ(9173, up_event.location.x());
   EXPECT_EQ(3906, up_event.location.y());
   EXPECT_EQ(EventPointerType::kPen, up_event.pointer_details.pointer_type);
@@ -1963,28 +1969,28 @@ TEST_F(TouchEventConverterEvdevTest, ActiveStylusMotion) {
   EXPECT_EQ(4u, size());
 
   ui::TouchEventParams event = dispatched_touch_event(0);
-  EXPECT_EQ(ET_TOUCH_PRESSED, event.type);
+  EXPECT_EQ(EventType::kTouchPressed, event.type);
   EXPECT_EQ(8921, event.location.x());
   EXPECT_EQ(1072, event.location.y());
   EXPECT_EQ(EventPointerType::kPen, event.pointer_details.pointer_type);
   EXPECT_EQ(35.f / 1024, event.pointer_details.force);
 
   event = dispatched_touch_event(1);
-  EXPECT_EQ(ET_TOUCH_MOVED, event.type);
+  EXPECT_EQ(EventType::kTouchMoved, event.type);
   EXPECT_EQ(8934, event.location.x());
   EXPECT_EQ(981, event.location.y());
   EXPECT_EQ(EventPointerType::kPen, event.pointer_details.pointer_type);
   EXPECT_EQ(184.f / 1024, event.pointer_details.force);
 
   event = dispatched_touch_event(2);
-  EXPECT_EQ(ET_TOUCH_MOVED, event.type);
+  EXPECT_EQ(EventType::kTouchMoved, event.type);
   EXPECT_EQ(8930, event.location.x());
   EXPECT_EQ(980, event.location.y());
   EXPECT_EQ(EventPointerType::kPen, event.pointer_details.pointer_type);
   EXPECT_EQ(348.f / 1024, event.pointer_details.force);
 
   event = dispatched_touch_event(3);
-  EXPECT_EQ(ET_TOUCH_RELEASED, event.type);
+  EXPECT_EQ(EventType::kTouchReleased, event.type);
   EXPECT_EQ(8930, event.location.x());
   EXPECT_EQ(980, event.location.y());
   EXPECT_EQ(EventPointerType::kPen, event.pointer_details.pointer_type);
@@ -2020,19 +2026,19 @@ TEST_F(TouchEventConverterEvdevTest, ActiveStylusDrallionRubberSequence) {
   EXPECT_EQ(4u, size());
 
   ui::TouchEventParams event = dispatched_touch_event(0);
-  EXPECT_EQ(ET_TOUCH_PRESSED, event.type);
+  EXPECT_EQ(EventType::kTouchPressed, event.type);
   EXPECT_EQ(EventPointerType::kEraser, event.pointer_details.pointer_type);
 
   event = dispatched_touch_event(1);
-  EXPECT_EQ(ET_TOUCH_MOVED, event.type);
+  EXPECT_EQ(EventType::kTouchMoved, event.type);
   EXPECT_EQ(EventPointerType::kEraser, event.pointer_details.pointer_type);
 
   event = dispatched_touch_event(2);
-  EXPECT_EQ(ET_TOUCH_MOVED, event.type);
+  EXPECT_EQ(EventType::kTouchMoved, event.type);
   EXPECT_EQ(EventPointerType::kEraser, event.pointer_details.pointer_type);
 
   event = dispatched_touch_event(3);
-  EXPECT_EQ(ET_TOUCH_RELEASED, event.type);
+  EXPECT_EQ(EventType::kTouchReleased, event.type);
   EXPECT_EQ(EventPointerType::kEraser, event.pointer_details.pointer_type);
 }
 
@@ -2098,12 +2104,12 @@ TEST_F(TouchEventConverterEvdevTest, ActiveStylusBarrelButtonWhileHovering) {
   EXPECT_EQ(2u, size());
 
   auto down_event = dispatched_touch_event(0);
-  EXPECT_EQ(ET_TOUCH_PRESSED, down_event.type);
+  EXPECT_EQ(EventType::kTouchPressed, down_event.type);
   EXPECT_TRUE(down_event.flags & ui::EF_LEFT_MOUSE_BUTTON);
   EXPECT_EQ(EventPointerType::kPen, down_event.pointer_details.pointer_type);
 
   auto up_event = dispatched_touch_event(1);
-  EXPECT_EQ(ET_TOUCH_RELEASED, up_event.type);
+  EXPECT_EQ(EventType::kTouchReleased, up_event.type);
   EXPECT_TRUE(down_event.flags & ui::EF_LEFT_MOUSE_BUTTON);
   EXPECT_EQ(EventPointerType::kPen, up_event.pointer_details.pointer_type);
 }
@@ -2145,24 +2151,24 @@ TEST_F(TouchEventConverterEvdevTest, ActiveStylusBarrelButton) {
   EXPECT_EQ(4u, size());
 
   auto down_event = dispatched_touch_event(0);
-  EXPECT_EQ(ET_TOUCH_PRESSED, down_event.type);
+  EXPECT_EQ(EventType::kTouchPressed, down_event.type);
   EXPECT_FALSE(down_event.flags & ui::EF_LEFT_MOUSE_BUTTON);
   EXPECT_EQ(EventPointerType::kPen, down_event.pointer_details.pointer_type);
 
   auto button_down_event = dispatched_touch_event(1);
-  EXPECT_EQ(ET_TOUCH_MOVED, button_down_event.type);
+  EXPECT_EQ(EventType::kTouchMoved, button_down_event.type);
   EXPECT_TRUE(button_down_event.flags & ui::EF_LEFT_MOUSE_BUTTON);
   EXPECT_EQ(EventPointerType::kPen,
             button_down_event.pointer_details.pointer_type);
 
   auto button_up_event = dispatched_touch_event(2);
-  EXPECT_EQ(ET_TOUCH_MOVED, button_up_event.type);
+  EXPECT_EQ(EventType::kTouchMoved, button_up_event.type);
   EXPECT_FALSE(button_up_event.flags & ui::EF_LEFT_MOUSE_BUTTON);
   EXPECT_EQ(EventPointerType::kPen,
             button_up_event.pointer_details.pointer_type);
 
   auto up_event = dispatched_touch_event(3);
-  EXPECT_EQ(ET_TOUCH_RELEASED, up_event.type);
+  EXPECT_EQ(EventType::kTouchReleased, up_event.type);
   EXPECT_FALSE(down_event.flags & ui::EF_LEFT_MOUSE_BUTTON);
   EXPECT_EQ(EventPointerType::kPen, up_event.pointer_details.pointer_type);
 }
@@ -2286,7 +2292,7 @@ TEST_F(TouchEventConverterEvdevTest, HeldThenEnd) {
                               std::size(mock_kernel_queue_release), 0);
   device()->ReadNow();
   EXPECT_EQ(4u, size());
-  EXPECT_EQ(ui::ET_TOUCH_RELEASED, dispatched_touch_event(3).type);
+  EXPECT_EQ(ui::EventType::kTouchReleased, dispatched_touch_event(3).type);
   EXPECT_THAT(histogram_tester_.GetAllSamples(
                   TouchEventConverterEvdev::kHoldCountAtReleaseEventName),
               testing::ElementsAre(base::Bucket(3, 1)));
@@ -2351,11 +2357,11 @@ TEST_F(TouchEventConverterEvdevTest, SentHeldThenPalm) {
     ui::TouchEventParams event = dispatched_touch_event(i);
     EventType expected_touch_type;
     if (i == 0) {
-      expected_touch_type = EventType::ET_TOUCH_PRESSED;
+      expected_touch_type = EventType::kTouchPressed;
     } else if (i < size() - 1) {
-      expected_touch_type = EventType::ET_TOUCH_MOVED;
+      expected_touch_type = EventType::kTouchMoved;
     } else {
-      expected_touch_type = EventType::ET_TOUCH_CANCELLED;
+      expected_touch_type = EventType::kTouchCancelled;
     }
 
     EXPECT_EQ(expected_touch_type, event.type);
@@ -2542,7 +2548,7 @@ TEST_F(TouchEventConverterEvdevTest, FingerSizeWithResolution) {
   dev->ReadNow();
   EXPECT_EQ(1u, size());
   ui::TouchEventParams event = dispatched_touch_event(0);
-  EXPECT_EQ(ui::ET_TOUCH_PRESSED, event.type);
+  EXPECT_EQ(ui::EventType::kTouchPressed, event.type);
   EXPECT_EQ(ToTestTimeTicks(1507226211483601), event.timestamp);
   EXPECT_EQ(1795, event.location.x());
   EXPECT_EQ(5559, event.location.y());
@@ -2977,7 +2983,7 @@ TEST_F(TouchEventConverterEvdevTest, HeatmapPalmRejection) {
   dev->ReadNow();
   EXPECT_EQ(1u, size());
   ui::TouchEventParams event = dispatched_touch_event(0);
-  EXPECT_EQ(ui::ET_TOUCH_PRESSED, event.type);
+  EXPECT_EQ(ui::EventType::kTouchPressed, event.type);
 
   heatmap_palm_detector_ptr->SetPalm(3);
   timeval time1 = {2, 0};
@@ -2995,7 +3001,7 @@ TEST_F(TouchEventConverterEvdevTest, HeatmapPalmRejection) {
   dev->ReadNow();
   EXPECT_EQ(2u, size());
   event = dispatched_touch_event(1);
-  EXPECT_EQ(ui::ET_TOUCH_CANCELLED, event.type);
+  EXPECT_EQ(ui::EventType::kTouchCancelled, event.type);
 }
 
 TEST_F(TouchEventConverterEvdevTest, RecordFingerSessionMetrics) {

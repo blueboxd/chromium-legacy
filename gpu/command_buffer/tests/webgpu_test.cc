@@ -6,7 +6,6 @@
 
 #include <dawn/dawn_proc.h>
 #include <dawn/dawn_thread_dispatch_proc.h>
-#include <dawn/webgpu.h>
 
 #include "base/command_line.h"
 #include "base/test/bind.h"
@@ -20,7 +19,6 @@
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/webgpu_decoder.h"
 #include "gpu/config/gpu_test_config.h"
-#include "gpu/ipc/host/gpu_memory_buffer_support.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "gpu/ipc/webgpu_in_process_context.h"
 #include "gpu/webgpu/callback.h"
@@ -43,7 +41,7 @@ void CountCallback(int* count) {
 
 WebGPUTest::Options::Options() = default;
 
-std::map<std::pair<WGPUDevice, WGPUErrorType>, /* matched */ bool>
+std::map<std::pair<WGPUDevice, wgpu::ErrorType>, /* matched */ bool>
     WebGPUTest::s_expected_errors = {};
 
 WebGPUTest::WebGPUTest() = default;
@@ -199,16 +197,11 @@ void WebGPUTest::WaitForCompletion(wgpu::Device device) {
   // Wait for any work submitted to the queue to be finished. The guarantees of
   // Dawn are that all previous operations will have been completed and more
   // importantly the callbacks will have been called.
-  wgpu::Queue queue = device.GetQueue();
-  bool done = false;
-  queue.OnSubmittedWorkDone(
-      [](WGPUQueueWorkDoneStatus, void* userdata) {
-        *static_cast<bool*>(userdata) = true;
-      },
-      &done);
+  wgpu::FutureWaitInfo wait_info = {device.GetQueue().OnSubmittedWorkDone(
+      wgpu::CallbackMode::WaitAnyOnly, [](wgpu::QueueWorkDoneStatus) {})};
 
-  while (!done) {
-    device.Tick();
+  while (!wait_info.completed) {
+    instance_.WaitAny(1, &wait_info, 0);
     webgpu()->FlushCommands();
     RunPendingTasks();
   }
@@ -239,6 +232,26 @@ wgpu::Device WebGPUTest::GetNewDevice() {
 
   DCHECK(adapter_);
   wgpu::DeviceDescriptor device_desc = {};
+  device_desc.SetDeviceLostCallback(
+      wgpu::CallbackMode::AllowSpontaneous,
+      [](const wgpu::Device&, wgpu::DeviceLostReason reason,
+         const char* message) {
+        if (reason == wgpu::DeviceLostReason::Destroyed) {
+          return;
+        }
+        GTEST_FAIL() << "Unexpected device lost (" << reason
+                     << "): " << message;
+      });
+  device_desc.SetUncapturedErrorCallback([](const wgpu::Device& device,
+                                            wgpu::ErrorType type,
+                                            const char* message) {
+    auto it = s_expected_errors.find(std::make_pair(device.Get(), type));
+    if (it != s_expected_errors.end() && !it->second) {
+      it->second = true;
+      return;
+    }
+    GTEST_FAIL() << "Unexpected error (" << type << "): " << message;
+  });
 
   adapter_.RequestDevice(
       &device_desc, wgpu::CallbackMode::AllowSpontaneous,
@@ -264,26 +277,6 @@ wgpu::Device WebGPUTest::GetNewDevice() {
   }
 
   EXPECT_NE(device, nullptr);
-  device.SetDeviceLostCallback(
-      [](WGPUDeviceLostReason reason, const char* message, void*) {
-        if (reason == WGPUDeviceLostReason_Destroyed) {
-          return;
-        }
-        GTEST_FAIL() << "Unexpected device lost (" << reason
-                     << "): " << message;
-      },
-      nullptr);
-  device.SetUncapturedErrorCallback(
-      [](WGPUErrorType type, const char* message, void* userdata) {
-        auto it = s_expected_errors.find(
-            std::make_pair(static_cast<WGPUDevice>(userdata), type));
-        if (it != s_expected_errors.end() && !it->second) {
-          it->second = true;
-          return;
-        }
-        GTEST_FAIL() << "Unexpected error (" << type << "): " << message;
-      },
-      device.Get());
   return device;
 }
 
@@ -451,10 +444,10 @@ TEST_F(WebGPUTest, ImplicitFallbackAdapterIsDisallowed) {
   Initialize(options);
 
   if (adapter_) {
-    wgpu::AdapterProperties properties;
-    adapter_.GetProperties(&properties);
+    wgpu::AdapterInfo info;
+    adapter_.GetInfo(&info);
     // If we got an Adapter, it must not be a CPU adapter.
-    EXPECT_NE(properties.adapterType, wgpu::AdapterType::CPU);
+    EXPECT_NE(info.adapterType, wgpu::AdapterType::CPU);
   }
 }
 
@@ -468,10 +461,10 @@ TEST_F(WebGPUTest, CompatibilityMode) {
   // Compatibility adapter should be available.
   EXPECT_NE(adapter_, nullptr);
 
-  wgpu::AdapterProperties properties;
-  adapter_.GetProperties(&properties);
+  wgpu::AdapterInfo info;
+  adapter_.GetInfo(&info);
 
-  EXPECT_TRUE(properties.compatibilityMode);
+  EXPECT_TRUE(info.compatibilityMode);
 }
 
 TEST_F(WebGPUTest, NonCompatibilityMode) {
@@ -484,10 +477,10 @@ TEST_F(WebGPUTest, NonCompatibilityMode) {
   // Non-compatibility adapter should be available.
   EXPECT_NE(adapter_, nullptr);
 
-  wgpu::AdapterProperties properties;
-  adapter_.GetProperties(&properties);
+  wgpu::AdapterInfo info;
+  adapter_.GetInfo(&info);
 
-  EXPECT_FALSE(properties.compatibilityMode);
+  EXPECT_FALSE(info.compatibilityMode);
 }
 
 }  // namespace gpu

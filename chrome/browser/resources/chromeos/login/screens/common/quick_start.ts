@@ -8,12 +8,12 @@ import '../../components/quick_start_pin.js';
 
 import {assert} from '//resources/js/assert.js';
 import {PolymerElementProperties} from '//resources/polymer/v3_0/polymer/interfaces.js';
-import {flush, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {flush, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {LoginScreenBehavior, LoginScreenBehaviorInterface} from '../../components/behaviors/login_screen_behavior.js';
-import {MultiStepBehavior, MultiStepBehaviorInterface} from '../../components/behaviors/multi_step_behavior.js';
 import {OobeModalDialog} from '../../components/dialogs/oobe_modal_dialog.js';
-import {OobeI18nMixin, OobeI18nMixinInterface} from '../../components/mixins/oobe_i18n_mixin.js';
+import {LoginScreenMixin} from '../../components/mixins/login_screen_mixin.js';
+import {MultiStepMixin} from '../../components/mixins/multi_step_mixin.js';
+import {OobeI18nMixin} from '../../components/mixins/oobe_i18n_mixin.js';
 import {OobeCrLottie} from '../../components/oobe_cr_lottie.js';
 import {QrCodeCanvas} from '../../components/qr_code_canvas.js';
 import {loadTimeData} from '../../i18n_setup.js';
@@ -40,12 +40,8 @@ enum UserActions {
   TURN_ON_BLUETOOTH = 'turn_on_bluetooth',
 }
 
-const QuickStartScreenBase = mixinBehaviors(
-                                 [LoginScreenBehavior, MultiStepBehavior],
-                                 OobeI18nMixin(PolymerElement)) as {
-  new (): PolymerElement & LoginScreenBehaviorInterface &
-      MultiStepBehaviorInterface & OobeI18nMixinInterface,
-};
+const QuickStartScreenBase =
+    LoginScreenMixin(MultiStepMixin(OobeI18nMixin(PolymerElement)));
 
 export class QuickStartScreen extends QuickStartScreenBase {
   static get is() {
@@ -58,10 +54,6 @@ export class QuickStartScreen extends QuickStartScreenBase {
 
   static get properties(): PolymerElementProperties {
     return {
-      discoverableName: {
-        type: String,
-        value: '',
-      },
       pin: {
         type: String,
         value: '0000',
@@ -104,7 +96,6 @@ export class QuickStartScreen extends QuickStartScreenBase {
     };
   }
 
-  private discoverableName: string;
   private pin: string;
   private usePinInsteadOfQrForVerification: boolean;
   private userEmail: string;
@@ -129,7 +120,6 @@ export class QuickStartScreen extends QuickStartScreenBase {
       'showBluetoothDialog',
       'showConnectingToPhoneStep',
       'showConnectingToWifi',
-      'setDiscoverableName',
       'showConfirmGoogleAccount',
       'showSigningInStep',
       'showCreatingAccountStep',
@@ -200,7 +190,8 @@ export class QuickStartScreen extends QuickStartScreenBase {
     this.qrCodeCanvas = new QrCodeCanvas(this.getCanvas());
   }
 
-  onBeforeHide(): void {
+  override onBeforeHide(): void {
+    super.onBeforeHide();
     this.getSpinnerAnimation().playing = false;
   }
 
@@ -244,10 +235,6 @@ export class QuickStartScreen extends QuickStartScreenBase {
     this.setUIStep(QuickStartUiState.VERIFICATION);
     assert(pin.length === 4);
     this.pin = pin;
-  }
-
-  setDiscoverableName(discoverableName: string): void {
-    this.discoverableName = discoverableName;
   }
 
   showConfirmGoogleAccount(): void {

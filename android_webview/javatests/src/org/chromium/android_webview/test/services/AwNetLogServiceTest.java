@@ -4,6 +4,8 @@
 
 package org.chromium.android_webview.test.services;
 
+import static org.chromium.android_webview.test.OnlyRunIn.ProcessMode.EITHER_PROCESS;
+
 import android.content.Context;
 import android.content.Intent;
 import android.os.ParcelFileDescriptor;
@@ -19,6 +21,7 @@ import org.chromium.android_webview.common.AwSwitches;
 import org.chromium.android_webview.common.services.INetLogService;
 import org.chromium.android_webview.services.AwNetLogService;
 import org.chromium.android_webview.test.AwJUnit4ClassRunner;
+import org.chromium.android_webview.test.OnlyRunIn;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.test.util.Batch;
@@ -32,6 +35,7 @@ import java.io.IOException;
  * services are properly killed between tests.
  */
 @RunWith(AwJUnit4ClassRunner.class)
+@OnlyRunIn(EITHER_PROCESS) // These tests don't use the renderer process
 @Batch(Batch.PER_CLASS)
 public class AwNetLogServiceTest {
     private static final String TAG = "AwNetLogServiceTest";
@@ -42,9 +46,12 @@ public class AwNetLogServiceTest {
 
     @After
     public void tearDown() {
-        File[] files = AwNetLogService.getAllNetLogFiles();
-        for (File file : files) {
-            file.delete();
+        File directory = AwNetLogService.getNetLogFileDirectory();
+        File[] files = directory.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                file.delete();
+            }
         }
     }
 
@@ -67,14 +74,16 @@ public class AwNetLogServiceTest {
             }
         }
 
-        Assert.assertEquals(1, AwNetLogService.getAllNetLogFiles().length);
+        File directory = AwNetLogService.getNetLogFileDirectory();
+        Assert.assertEquals(1, directory.listFiles().length);
     }
 
     @Test
     @MediumTest
     @CommandLineFlags.Add(AwSwitches.NET_LOG)
     public void testExpiredFilesDeleted() throws Throwable {
-        Assert.assertEquals(0, AwNetLogService.getAllNetLogFiles().length);
+        File directory = AwNetLogService.getNetLogFileDirectory();
+        Assert.assertEquals(0, directory.listFiles().length);
         final long expiredTime = 100000L;
         Intent intent = new Intent(ContextUtils.getApplicationContext(), AwNetLogService.class);
         try (ServiceConnectionHelper helper =
@@ -89,7 +98,7 @@ public class AwNetLogServiceTest {
                 Log.e(TAG, e.getMessage(), e);
             }
         }
-        Assert.assertEquals(1, AwNetLogService.getAllNetLogFiles().length);
+        Assert.assertEquals(1, directory.listFiles().length);
 
         final long currentTime = System.currentTimeMillis();
         try (ServiceConnectionHelper helper =
@@ -104,7 +113,7 @@ public class AwNetLogServiceTest {
                 Log.e(TAG, e.getMessage(), e);
             }
         }
-        Assert.assertEquals(1, AwNetLogService.getAllNetLogFiles().length);
+        Assert.assertEquals(1, directory.listFiles().length);
     }
 
     @Test
@@ -126,7 +135,9 @@ public class AwNetLogServiceTest {
             }
         }
 
-        File[] files = AwNetLogService.getAllNetLogFiles();
+        File directory = AwNetLogService.getNetLogFileDirectory();
+        File[] files = directory.listFiles();
+
         Assert.assertEquals(1, files.length);
 
         String fileName = files[0].getName();

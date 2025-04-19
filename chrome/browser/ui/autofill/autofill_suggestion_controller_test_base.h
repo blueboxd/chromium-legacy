@@ -147,7 +147,7 @@ class AutofillSuggestionControllerTestBase
 
   TestPersonalDataManager& personal_data() {
     return static_cast<TestPersonalDataManager&>(
-        *PersonalDataManagerFactory::GetForProfile(profile()));
+        *PersonalDataManagerFactory::GetForBrowserContext(profile()));
   }
 
   // Shows empty suggestions with the type ids passed as
@@ -178,8 +178,8 @@ class AutofillSuggestionControllerTestBase
                                             AutoselectFirstSuggestion(false));
   }
 
-  content::NativeWebKeyboardEvent CreateKeyPressEvent(int windows_key_code) {
-    content::NativeWebKeyboardEvent event(
+  input::NativeWebKeyboardEvent CreateKeyPressEvent(int windows_key_code) {
+    input::NativeWebKeyboardEvent event(
         blink::WebInputEvent::Type::kRawKeyDown,
         blink::WebInputEvent::kNoModifiers,
         blink::WebInputEvent::GetStaticTimeStampForTests());
@@ -212,11 +212,10 @@ class AutofillExternalDelegateForPopupTest : public AutofillExternalDelegate {
       BrowserAutofillManager* autofill_manager);
   ~AutofillExternalDelegateForPopupTest() override;
 
-  void DidSelectSuggestion(const Suggestion& suggestion) override {}
-
   MOCK_METHOD(void, ClearPreviewedForm, (), (override));
   MOCK_METHOD(void, OnSuggestionsShown, (), (override));
   MOCK_METHOD(void, OnSuggestionsHidden, (), (override));
+  MOCK_METHOD(void, DidSelectSuggestion, (const Suggestion&), (override));
   MOCK_METHOD(void,
               DidAcceptSuggestion,
               (const Suggestion&,

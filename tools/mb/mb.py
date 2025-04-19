@@ -36,6 +36,9 @@ sys.path.insert(0, os.path.join(
 import gn_helpers
 from mb.lib import validation
 
+_DEFAULT_ERROR_RETCODE = 1
+_CONFIG_NOT_FOUND_RETCODE = 2
+
 
 def DefaultVals():
   """Default mixin values"""
@@ -115,12 +118,12 @@ class MetaBuildWrapper:
     except KeyboardInterrupt:
       self.Print('interrupted, exiting')
       return 130
-    except Exception:
+    except Exception as e:
       self.DumpInputFiles()
       s = traceback.format_exc()
       for l in s.splitlines():
         self.Print(l)
-      return 1
+      return getattr(e, 'retcode', _DEFAULT_ERROR_RETCODE)
 
   def ParseArgs(self, argv):
     def AddCommonOptions(subp):
@@ -912,15 +915,20 @@ class MetaBuildWrapper:
 
   def _convert_args_dict_to_args_string(self, args_dict):
     """Format a dict of GN args into a single string."""
-    for k, v in args_dict.items():
+
+    def convert_value(v):
+      if isinstance(v, list):
+        return f'[{",".join(convert_value(e) for e in v)}]'
       if isinstance(v, str):
         # Re-add the quotes around strings so they show up as they would in the
         # args.gn file.
-        args_dict[k] = '"%s"' % v
-      elif isinstance(v, bool):
+        return f'"{v}"'
+      if isinstance(v, bool):
         # Convert boolean values to lower case strings.
-        args_dict[k] = str(v).lower()
-    return ' '.join(['%s=%s' % (k, v) for (k, v) in args_dict.items()])
+        return str(v).lower()
+      return v
+
+    return ' '.join(f'{k}={convert_value(v)}' for k, v in args_dict.items())
 
   def Lookup(self):
     self.ReadConfigFile(self.args.config_file)
@@ -1034,13 +1042,15 @@ class MetaBuildWrapper:
         }
 
     if not self.args.builder_group in self.builder_groups:
-      raise MBErr('Builder group name "%s" not found in "%s"' %
-                  (self.args.builder_group, self.args.config_file))
+      raise MBErr(('Builder group name "%s" not found in "%s"' %
+                   (self.args.builder_group, self.args.config_file)),
+                  retcode=_CONFIG_NOT_FOUND_RETCODE)
 
     if not self.args.builder in self.builder_groups[self.args.builder_group]:
-      raise MBErr('Builder name "%s"  not found under groups[%s] in "%s"' %
-                  (self.args.builder, self.args.builder_group,
-                   self.args.config_file))
+      raise MBErr(
+          ('Builder name "%s" not found under groups[%s] in "%s"' %
+           (self.args.builder, self.args.builder_group, self.args.config_file)),
+          retcode=_CONFIG_NOT_FOUND_RETCODE)
 
     config = self.builder_groups[self.args.builder_group][self.args.builder]
     if isinstance(config, dict):
@@ -1633,6 +1643,11 @@ class MetaBuildWrapper:
       if java_coverage:
         cmdline += ['--coverage-dir', '${ISOLATED_OUTDIR}/coverage']
 
+      if is_cros_device:
+        # CrOS tests can capture DUT logs to a dir. But the dir can't be known
+        # at GN-gen time. So pass in a swarming-specific location here.
+        cmdline += ['--logs-dir=${ISOLATED_OUTDIR}']
+
       return cmdline, []
 
 
@@ -2110,10 +2125,11 @@ def FlattenMixins(mixin_pool, mixins_to_flatten, vals, visited):
       FlattenMixins(mixin_pool, mixin_vals['mixins'], vals, visited)
   return vals
 
-
-
 class MBErr(Exception):
-  pass
+
+  def __init__(self, *args: object, retcode=_DEFAULT_ERROR_RETCODE) -> None:
+    super().__init__(*args)
+    self.retcode = retcode
 
 
 # See http://goo.gl/l5NPDW and http://goo.gl/4Diozm for the painful

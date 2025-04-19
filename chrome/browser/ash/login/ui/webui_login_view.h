@@ -110,7 +110,6 @@ class WebUILoginView : public views::View,
   void Layout(PassKey) override;
   void ChildPreferredSizeChanged(View* child) override;
   void AboutToRequestFocusFromTabTraversal(bool reverse) override;
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // session_manager::SessionManagerObserver:
   void OnLoginOrLockScreenVisible() override;
@@ -124,9 +123,8 @@ class WebUILoginView : public views::View,
   // Overridden from content::WebContentsDelegate.
   bool HandleContextMenu(content::RenderFrameHost& render_frame_host,
                          const content::ContextMenuParams& params) override;
-  bool HandleKeyboardEvent(
-      content::WebContents* source,
-      const content::NativeWebKeyboardEvent& event) override;
+  bool HandleKeyboardEvent(content::WebContents* source,
+                           const input::NativeWebKeyboardEvent& event) override;
   bool TakeFocus(content::WebContents* source, bool reverse) override;
   void RequestMediaAccessPermission(
       content::WebContents* web_contents,

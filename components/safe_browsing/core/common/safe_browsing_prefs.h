@@ -13,6 +13,7 @@
 #include "base/feature_list.h"
 #include "base/values.h"
 #include "components/prefs/pref_member.h"
+#include "components/safe_browsing/core/common/features.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -36,17 +37,6 @@ inline constexpr char kSafeBrowsingEnabled[] = "safebrowsing.enabled";
 
 // Boolean that is true when Safe Browsing Enhanced Protection is enabled.
 inline constexpr char kSafeBrowsingEnhanced[] = "safebrowsing.enhanced";
-
-// Integer indicating the state of real time URL check. This is managed
-// by enterprise policy and has no effect on users who are not managed by
-// enterprise policy.
-inline constexpr char kSafeBrowsingEnterpriseRealTimeUrlCheckMode[] =
-    "safebrowsing.enterprise_real_time_url_check_mode";
-
-// Integer indicating the scope at which the
-// kSafeBrowsingEnterpriseRealTimeUrlCheckMode pref is set.
-inline constexpr char kSafeBrowsingEnterpriseRealTimeUrlCheckScope[] =
-    "safebrowsing.enterprise_real_time_url_check_scope";
 
 // Timestamp indicating the last time a protego ping with a token was sent.
 // This is only set if the user has enhanced protection enabled and is signed
@@ -235,15 +225,6 @@ inline constexpr char kExtensionTelemetryFileData[] =
 inline constexpr char kHashPrefixRealTimeChecksAllowedByPolicy[] =
     "safebrowsing.hash_prefix_real_time_checks_allowed_by_policy";
 
-// A preference indicating if the user has opted in to Enhanced Safe Browsing
-// before or after the friendlier settings launch. This pref was added after the
-// launch, so a value of `true` indicates that the user is opted in to ESB, and
-// definitely opted in with friendlier settings, but a value of `false` is not
-// definitive. If the user is not opted in to ESB at all, this preference will
-// be `false`.
-inline constexpr char kSafeBrowsingEsbOptInWithFriendlierSettings[] =
-    "safebrowsing.esb_opt_in_with_friendlier_settings";
-
 // A preference indicating that the user has seen the IPH telling them automatic
 // deep scans are coming. Since IPH may be delayed for a variety of reasons
 // (startup grace periods, other IPH in the session), we want to wait to enable
@@ -263,7 +244,7 @@ namespace safe_browsing {
 
 // Enumerates the level of Safe Browsing Extended Reporting that is currently
 // available.
-enum ExtendedReportingLevel {
+enum class ExtendedReportingLevel {
   // Extended reporting is off.
   SBER_LEVEL_OFF = 0,
   // The Legacy level of extended reporting is available, reporting happens in
@@ -272,6 +253,9 @@ enum ExtendedReportingLevel {
   // The Scout level of extended reporting is available, some data can be
   // collected to actively detect dangerous apps and sites.
   SBER_LEVEL_SCOUT = 2,
+  // The Scout level of extended reporting is deprecated, however, the user has
+  // the ESB setting on.
+  SBER_LEVEL_ENHANCED_PROTECTION = 3,
 };
 
 // Enumerates the states used for determining whether the Tailored Security flow
@@ -339,11 +323,6 @@ enum class SafeBrowsingState {
   kMaxValue = ENHANCED_PROTECTION,
 };
 
-enum EnterpriseRealTimeUrlCheckMode {
-  REAL_TIME_CHECK_DISABLED = 0,
-  REAL_TIME_CHECK_FOR_MAINFRAME_ENABLED = 1,
-};
-
 SafeBrowsingState GetSafeBrowsingState(const PrefService& prefs);
 
 // Set the SafeBrowsing prefs. Also records if ESB was enabled in sync with
@@ -358,10 +337,6 @@ bool IsSafeBrowsingEnabled(const PrefService& prefs);
 // Returns whether Safe Browsing enhanced protection is enabled for the user.
 bool IsEnhancedProtectionEnabled(const PrefService& prefs);
 
-// Returns whether the currently active Safe Browsing Extended Reporting
-// preference exists (eg: has been set before).
-bool ExtendedReportingPrefExists(const PrefService& prefs);
-
 // Returns the level of reporting available for the current user.
 ExtendedReportingLevel GetExtendedReportingLevel(const PrefService& prefs);
 
@@ -373,6 +348,14 @@ bool IsExtendedReportingOptInAllowed(const PrefService& prefs);
 // This should be used to decide if any of the reporting preferences are set,
 // regardless of which specific one is set.
 bool IsExtendedReportingEnabled(const PrefService& prefs);
+
+// Returns whether Safe Browsing Extended Reporting is currently enabled.
+// This function does not check the Safe Browsing Extended Reporting deprecation
+// flag, kExtendedReportingRemovePrefDependency, so that the ping manager will
+// keep sending CSBRR pings.
+// TODO(crbug.com/336547987): Remove this temporary function when the mitigation
+// is implemented and the deprecation flag is removed.
+bool IsExtendedReportingEnabledBypassDeprecationFlag(const PrefService& prefs);
 
 // Returns whether the active Extended Reporting pref is currently managed by
 // enterprise policy, meaning the user can't change it.

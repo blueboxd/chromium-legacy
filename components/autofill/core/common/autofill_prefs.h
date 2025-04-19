@@ -8,6 +8,7 @@
 #include "build/build_config.h"
 #include "google_apis/gaia/core_account_id.h"
 
+class PrefRegistrySimple;
 class PrefService;
 
 namespace user_prefs {
@@ -20,6 +21,9 @@ namespace autofill::prefs {
 // component. Keep alphabetized, and document each in the .cc file.
 // Do not get/set the value of this pref directly. Use provided getter/setter.
 
+// String serving as a seed for ablation studies.
+inline constexpr std::string_view kAutofillAblationSeedPref =
+    "autofill.ablation_seed";
 // Boolean that is true if Autofill is enabled and allowed to save credit card
 // data.
 inline constexpr char kAutofillCreditCardEnabled[] =
@@ -48,7 +52,7 @@ inline constexpr char kAutofillLastVersionDeduped[] =
 // To simplify the rollout of AutofillSilentlyRemoveQuasiDuplicates,
 // deduplication can be run a second time per milestone for users enrolled in
 // the experiment. This pref tracks whether deduplication was run a second time.
-// TODO(b/325450676): Remove after the rollout finished.
+// TODO(crbug.com/325450676): Remove after the rollout finished.
 inline constexpr char kAutofillRanQuasiDuplicateExtraDeduplication[] =
     "autofill.ran_quasi_duplicate_extra_deduplication";
 // Integer that is set to the last version where disused addresses were
@@ -80,13 +84,20 @@ inline constexpr char kAutofillStatesDataDir[] = "autofill.states_data_dir";
 // metadata for randomized uploads. The value of this pref is a string.
 inline constexpr char kAutofillUploadEncodingSeed[] =
     "autofill.upload_encoding_seed";
-// Dictionary pref used to track which form signature uploads have been
+// Dictionary pref used to track which form signature vote uploads have been
 // performed. Each entry in the dictionary maps a form signature (reduced
-// via a 10-bit modulus) to a integer bit-field where each bit denotes whether
-// or not a given upload event has occurred.
-inline constexpr char kAutofillUploadEvents[] = "autofill.upload_events";
+// via a 10-bit modulus) to an integer bit-field where each bit denotes whether
+// or not a given vote upload event has occurred.
+inline constexpr char kAutofillVoteUploadEvents[] = "autofill.upload_events";
+// Dictionary pref used to track which form signature metadata uploads have been
+// performed. Each entry in the dictionary maps a form signature (reduced
+// via a 10-bit modulus) to an integer flag that denotes whether or not a given
+// metadata upload event has occurred.
+// Throttling is done for both Autofill and Password Manager metadata uploads.
+inline constexpr char kAutofillMetadataUploadEvents[] =
+    "autofill.metadata_upload_events";
 // The timestamp (seconds since the Epoch UTC) for when the the upload event
-// pref was last reset.
+// prefs was last reset.
 inline constexpr char kAutofillUploadEventsLastResetTimestamp[] =
     "autofill.upload_events_last_reset_timestamp";
 // Integer that is set to the last major version where the Autocomplete
@@ -140,6 +151,7 @@ enum Flags {
 
 // Registers Autofill prefs.
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
 // Migrates deprecated Autofill prefs values.
 void MigrateDeprecatedAutofillPrefs(PrefService* prefs);

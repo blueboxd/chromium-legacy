@@ -129,23 +129,24 @@ class SharedWorkerHostTest : public testing::Test {
         std::make_unique<ServiceWorkerMainResourceHandle>(
             helper_->context_wrapper(), base::DoNothing());
     service_worker_handle->set_service_worker_client(
-        helper_->context()->CreateServiceWorkerClientForWorker(
-            mock_render_process_host_->GetID(),
-            ServiceWorkerClientInfo(host->token())));
+        helper_->context()
+            ->service_worker_client_owner()
+            .CreateServiceWorkerClientForWorker(
+                mock_render_process_host_->GetID(),
+                ServiceWorkerClientInfo(host->token())));
     host->SetServiceWorkerHandle(std::move(service_worker_handle));
 
     TestContentBrowserClient client;
-    host->Start(
-        std::move(factory),
-        blink::mojom::FetchClientSettingsObject::New(
-            network::mojom::ReferrerPolicy::kDefault,
-            /*outgoing_referrer=*/GURL(),
-            blink::mojom::InsecureRequestsPolicy::kDoNotUpgrade),
-        &client,
-        WorkerScriptFetcherResult(
-            std::move(subresource_loader_factories),
-            std::move(main_script_load_params), PolicyContainerPolicies(),
-            /*service_worker_client=*/nullptr, final_response_url));
+    host->Start(std::move(factory),
+                blink::mojom::FetchClientSettingsObject::New(
+                    network::mojom::ReferrerPolicy::kDefault,
+                    /*outgoing_referrer=*/GURL(),
+                    blink::mojom::InsecureRequestsPolicy::kDoNotUpgrade),
+                &client,
+                WorkerScriptFetcherResult(
+                    std::move(subresource_loader_factories),
+                    std::move(main_script_load_params),
+                    PolicyContainerPolicies(), final_response_url));
   }
 
   MessagePortChannel AddClient(

@@ -22,8 +22,7 @@ import org.chromium.chrome.browser.autofill.AutofillEditorBase;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.autofill.PersonalDataManagerFactory;
-import org.chromium.chrome.browser.feedback.FragmentHelpAndFeedbackLauncher;
-import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncher;
+import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncherFactory;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.ProfileDependentSetting;
 import org.chromium.components.autofill.AutofillProfile;
@@ -34,8 +33,7 @@ import java.util.List;
 
 /** The base class for credit card settings. */
 public abstract class AutofillCreditCardEditor extends AutofillEditorBase
-        implements FragmentHelpAndFeedbackLauncher, ProfileDependentSetting {
-    private HelpAndFeedbackLauncher mHelpAndFeedbackLauncher;
+        implements ProfileDependentSetting {
     private Profile mProfile;
     private Supplier<ModalDialogManager> mModalDialogManagerSupplier;
 
@@ -76,8 +74,7 @@ public abstract class AutofillCreditCardEditor extends AutofillEditorBase
             }
         }
 
-        mBillingAddress =
-                (Spinner) v.findViewById(R.id.autofill_credit_card_editor_billing_address_spinner);
+        mBillingAddress = v.findViewById(R.id.autofill_credit_card_editor_billing_address_spinner);
         mBillingAddress.setAdapter(profilesAdapter);
 
         // TODO(rouslan): Use an [+ ADD ADDRESS] button instead of disabling the dropdown.
@@ -120,17 +117,15 @@ public abstract class AutofillCreditCardEditor extends AutofillEditorBase
             return true;
         }
         if (item.getItemId() == R.id.help_menu_id) {
-            mHelpAndFeedbackLauncher.show(
-                    getActivity(), getActivity().getString(R.string.help_context_autofill), null);
+            HelpAndFeedbackLauncherFactory.getForProfile(mProfile)
+                    .show(
+                            getActivity(),
+                            getActivity().getString(R.string.help_context_autofill),
+                            null);
             return true;
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void setHelpAndFeedbackLauncher(HelpAndFeedbackLauncher helpAndFeedbackLauncher) {
-        mHelpAndFeedbackLauncher = helpAndFeedbackLauncher;
     }
 
     @Override

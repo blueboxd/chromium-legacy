@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "ash/annotator/annotator_test_util.h"
 #include "ash/capture_mode/capture_mode_camera_controller.h"
 #include "ash/capture_mode/capture_mode_controller.h"
 #include "ash/capture_mode/capture_mode_types.h"
@@ -15,6 +16,7 @@
 #include "ash/public/cpp/test/mock_projector_client.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
+#include "base/time/time.h"
 #include "ui/events/event_constants.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
@@ -163,6 +165,11 @@ void RemoveFakeCamera(const std::string& device_id);
 void AddDefaultCamera();
 void RemoveDefaultCamera();
 
+// Waits until at least one camera becomes available, up to the specified
+// `time_out`. Returns the number of available cameras, or 0 if none are
+// found within the time limit.
+size_t WaitForCameraAvailabilityWithTimeout(base::TimeDelta time_out);
+
 // Defines a helper class to allow setting up and testing the Projector feature
 // in multiple test fixtures. Note that this helper initializes the Projector-
 // related features in its constructor, so test fixtures that use this should
@@ -191,6 +198,7 @@ class ProjectorCaptureModeIntegrationHelper {
 
  private:
   MockProjectorClient projector_client_;
+  AnnotatorIntegrationHelper annotator_helper_;
 };
 
 // Defines a waiter to observe the visibility change of the view.

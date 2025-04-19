@@ -23,6 +23,7 @@ include_rules = [
   "+chrome/browser/ui/views/crostini",
   "+chrome/browser/ui/webui/ash",
   "+chrome/services/media_gallery_util",
+  "+chrome/test/base/ash",
   "+chrome/test/base/chrome_ash_test_base.h",
   "+chrome/test/base/chromeos",
 
@@ -66,6 +67,7 @@ include_rules = [
   "+chrome/browser/extensions/test_extension_system.h",
   "+chrome/browser/favicon/favicon_service_factory.h",
   "+chrome/browser/feature_engagement/tracker_factory.h",
+  "+chrome/browser/feedback/show_feedback_page.h",
   "+chrome/browser/file_system_access/chrome_file_system_access_permission_context.h",
   "+chrome/browser/file_system_access/file_system_access_permission_context_factory.h",
   "+chrome/browser/history/history_service_factory.h",
@@ -74,6 +76,7 @@ include_rules = [
   "+chrome/browser/lifetime/application_lifetime.h",
   "+chrome/browser/lifetime/browser_shutdown.h",
   "+chrome/browser/lifetime/termination_notification.h",
+  "+chrome/browser/manta/manta_service_factory.h",
   "+chrome/browser/media/router/chrome_media_router_factory.h",
   "+chrome/browser/media/router/discovery/access_code/access_code_cast_feature.h",
   "+chrome/browser/media/router/discovery/mdns/dns_sd_registry.h",
@@ -109,7 +112,6 @@ include_rules = [
   "+chrome/browser/profiles/profile_test_util.h",
   "+chrome/browser/profiles/profiles_state.h",
   "+chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h",
-  "+chrome/browser/resources/preinstalled_web_apps/internal/container.h",
   "+chrome/browser/search_engines/template_url_service_factory.h",
   "+chrome/browser/scalable_iph/scalable_iph_factory.h",
   "+chrome/browser/sessions/session_restore.h",
@@ -172,7 +174,6 @@ include_rules = [
   "+chrome/browser/ui/ui_features.h",
   "+chrome/browser/ui/views/accelerator_table.h",
   "+chrome/browser/ui/views/apps/app_dialog/app_dialog_view.h",
-  "+chrome/browser/ui/views/apps/app_dialog/shortcut_removal_dialog_view.h",
   "+chrome/browser/ui/views/chrome_browser_main_extra_parts_views.h",
   "+chrome/browser/ui/views/chrome_constrained_window_views_client.h",
   "+chrome/browser/ui/views/chrome_layout_provider.h",
@@ -180,6 +181,7 @@ include_rules = [
   "+chrome/browser/ui/views/frame/browser_frame.h",
   "+chrome/browser/ui/views/frame/browser_non_client_frame_view_chromeos.h",
   "+chrome/browser/ui/views/frame/browser_view.h",
+  "+chrome/browser/ui/views/frame/contents_web_view.h",
   "+chrome/browser/ui/views/frame/webui_tab_strip_container_view.h",
   "+chrome/browser/ui/views/global_media_controls/media_item_ui_device_selector_view.h",
   "+chrome/browser/ui/views/global_media_controls/media_item_ui_helper.h",
@@ -209,12 +211,14 @@ include_rules = [
   "+chrome/browser/web_applications/commands/web_app_icon_diagnostic_command.h",
   "+chrome/browser/web_applications/external_install_options.h",
   "+chrome/browser/web_applications/externally_managed_app_manager.h",
+  "+chrome/browser/web_applications/proto/web_app_install_state.pb.h",
   "+chrome/browser/web_applications/locks/app_lock.h",
   "+chrome/browser/web_applications/mojom/user_display_mode.mojom.h",
   "+chrome/browser/web_applications/os_integration/os_integration_manager.h",
   "+chrome/browser/web_applications/policy/web_app_policy_constants.h",
   "+chrome/browser/web_applications/policy/web_app_policy_manager.h",
   "+chrome/browser/web_applications/preinstalled_web_app_manager.h",
+  "+chrome/browser/web_applications/preinstalled_web_apps/container.h",
   "+chrome/browser/web_applications/test/fake_web_app_provider.h",
   "+chrome/browser/web_applications/test/profile_test_helper.h",
   "+chrome/browser/web_applications/test/web_app_install_test_utils.h",
@@ -297,12 +301,22 @@ specific_include_rules = {
   "shelf_context_menu_unittest\.cc": [
     "+components/viz/test/test_gpu_service_holder.h",
   ],
+  "birch_lost_media_provider\.cc": [
+    "+chrome/grit/preinstalled_web_apps_resources.h",
+  ],
   "birch_self_share_provider\.cc": [
     "+chrome/browser/favicon/favicon_utils.h",
     "+chrome/browser/sync/send_tab_to_self_sync_service_factory.h",
   ],
   "birch_keyed_service_unittest\.cc": [
     "+chrome/browser/sync/send_tab_to_self_sync_service_factory.h",
+  ],
+  "chrome_tab_strip_delegate\.cc":[
+    "+chrome/browser/favicon/favicon_utils.h",
+    "+chrome/browser/ui/tabs/tab_renderer_data.h",
+  ],
+    "snap_group_browsertest\.cc":[
+    "+chrome/browser/ui/views/tabs/tab_strip.h",
+    "+chrome/browser/ui/views/tabs/tab_strip_observer.h",
   ]
 }
-

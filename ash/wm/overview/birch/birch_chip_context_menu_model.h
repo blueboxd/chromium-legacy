@@ -25,11 +25,13 @@ class BirchChipContextMenuModel : public ui::SimpleMenuModel {
     // after the ending value of `BirchBarContextMenuModel`.
     kHideSuggestion =
         base::to_underlying(BirchBarContextMenuModel::CommandId::kBarMenuEnd) +
-        1,                        // Hide current chip.
-    kHideWeatherSuggestions,      // Hide all weather related chips.
-    kHideCalendarSuggestions,     // Hide all calendar related chips.
-    kHideDriveSuggestions,        // Hide all Drive related chips.
-    kHideOtherDeviceSuggestions,  // Hide all other device related chips.
+        1,                      // Hide current chip.
+    kHideWeatherSuggestions,    // Hide all weather related chips.
+    kToggleTemperatureUnits,    // Toggles between F and C.
+    kHideCalendarSuggestions,   // Hide all calendar related chips.
+    kHideDriveSuggestions,      // Hide all Drive related chips.
+    kHideChromeTabSuggestions,  // Hide all Chrome tab related chips.
+    kHideMediaSuggestions,      // Hide all media related chips.
     kCustomizeSuggestions,  // Pop out the expanded bar menu with customizing
                             // suggestions options.
     kFeedback,              // Send user feedback for birch bar.

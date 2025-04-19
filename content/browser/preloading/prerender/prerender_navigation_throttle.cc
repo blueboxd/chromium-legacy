@@ -29,13 +29,10 @@ namespace content {
 namespace {
 
 // For the given two origins, analyze what kind of redirection happened.
-void AnalyzeCrossOriginRedirection(
-    const url::Origin& current_origin,
-    const url::Origin& initial_origin,
-    PreloadingTriggerType trigger_type,
-    const std::string& embedder_histogram_suffix) {
+void AnalyzeCrossOriginRedirection(const url::Origin& current_origin,
+                                   const url::Origin& initial_origin,
+                                   const std::string& histogram_suffix) {
   CHECK_NE(initial_origin, current_origin);
-  CHECK_EQ(trigger_type, PreloadingTriggerType::kEmbedder);
   CHECK(current_origin.GetURL().SchemeIsHTTPOrHTTPS());
   CHECK(initial_origin.GetURL().SchemeIsHTTPOrHTTPS());
 
@@ -47,8 +44,7 @@ void AnalyzeCrossOriginRedirection(
   auto mismatch_type =
       static_cast<PrerenderCrossOriginRedirectionMismatch>(bits.to_ulong());
 
-  RecordPrerenderRedirectionMismatchType(mismatch_type, trigger_type,
-                                         embedder_histogram_suffix);
+  RecordPrerenderRedirectionMismatchType(mismatch_type, histogram_suffix);
 
   if (mismatch_type ==
       PrerenderCrossOriginRedirectionMismatch::kSchemePortMismatch) {
@@ -58,7 +54,7 @@ void AnalyzeCrossOriginRedirection(
                   kHttpProtocolUpgrade
             : PrerenderCrossOriginRedirectionProtocolChange::
                   kHttpProtocolDowngrade,
-        trigger_type, embedder_histogram_suffix);
+        histogram_suffix);
     return;
   }
 }
@@ -189,24 +185,9 @@ PrerenderNavigationThrottle::WillStartOrRedirectRequest(bool is_redirection) {
       // cross-site to the initial prerendering URL.
       if (prerender_navigation_utils::IsCrossSite(
               navigation_url, initial_prerendering_origin)) {
-        // TODO(crbug.com/40918153): Remove this crash key when investigation is
-        // completed.
-        if (!is_redirection) {
-          SCOPED_CRASH_KEY_BOOL("Bug1456866", "scheme",
-                                navigation_origin.scheme() !=
-                                    initial_prerendering_origin.scheme());
-          SCOPED_CRASH_KEY_BOOL(
-              "Bug1456866", "host",
-              navigation_origin.host() != initial_prerendering_origin.host());
-          SCOPED_CRASH_KEY_BOOL(
-              "Bug1456866", "port",
-              navigation_origin.port() != initial_prerendering_origin.port());
-          NOTREACHED_NORETURN();
-        }
-        AnalyzeCrossOriginRedirection(
-            navigation_origin, initial_prerendering_origin,
-            prerender_host_->trigger_type(),
-            prerender_host_->embedder_histogram_suffix());
+        AnalyzeCrossOriginRedirection(navigation_origin,
+                                      initial_prerendering_origin,
+                                      prerender_host_->GetHistogramSuffix());
         CancelPrerendering(
             PrerenderFinalStatus::kCrossSiteRedirectInInitialNavigation);
         return CANCEL;

@@ -74,10 +74,8 @@ class MenuControllerUITest;
 // MenuController is used internally by the various menu classes to manage
 // showing, selecting and drag/drop for menus. All relevant events are
 // forwarded to the MenuController from SubmenuView and MenuHost.
-class VIEWS_EXPORT MenuController
-    : public base::SupportsWeakPtr<MenuController>,
-      public gfx::AnimationDelegate,
-      public WidgetObserver {
+class VIEWS_EXPORT MenuController final : public gfx::AnimationDelegate,
+                                          public WidgetObserver {
  public:
   // Enumeration of how the menu should exit.
   enum class ExitType {
@@ -272,6 +270,9 @@ class VIEWS_EXPORT MenuController
     return rounded_corners_;
   }
 
+  // Returns the separator color ID according to the menu layout type.
+  ui::ColorId GetSeparatorColorId() const;
+
   // Notifies |this| that |menu_item| is being destroyed.
   void OnMenuItemDestroying(MenuItemView* menu_item);
 
@@ -304,6 +305,10 @@ class VIEWS_EXPORT MenuController
         std::move(show_menu_host_duration_histogram_);
     show_menu_host_duration_histogram_.reset();
     return value;
+  }
+
+  base::WeakPtr<MenuController> AsWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
   }
 
  private:
@@ -797,8 +802,8 @@ class VIEWS_EXPORT MenuController
 
   // Whether the menu |owner_| needs gesture events. When set to true, the menu
   // will preserve the gesture events of the |owner_| and MenuController will
-  // forward the gesture events to |owner_| until no |ET_GESTURE_END| event is
-  // captured.
+  // forward the gesture events to |owner_| until no |EventType::kGestureEnd|
+  // event is captured.
   bool send_gesture_events_to_owner_ = false;
 
   // Set to true if the menu item was selected by touch.
@@ -841,6 +846,8 @@ class VIEWS_EXPORT MenuController
   // A histogram name for recording the time from menu host initialization to
   // its successful presentation
   std::optional<std::string> show_menu_host_duration_histogram_;
+
+  base::WeakPtrFactory<MenuController> weak_ptr_factory_{this};
 };
 
 }  // namespace views

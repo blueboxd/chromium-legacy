@@ -14,21 +14,22 @@ import androidx.test.filters.LargeTest;
 
 import com.google.common.util.concurrent.SettableFuture;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient;
+import org.chromium.android_webview.AwFeatureMap;
 import org.chromium.android_webview.ScriptHandler;
+import org.chromium.android_webview.common.AwFeatures;
 import org.chromium.android_webview.settings.SpeculativeLoadingAllowedFlags;
 import org.chromium.base.FakeTimeTestRule;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Features;
@@ -37,7 +38,6 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.blink_public.common.BlinkFeatures;
 import org.chromium.components.embedder_support.util.WebResourceResponseInfo;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnPageStartedHelper;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.io.FileInputStream;
 import java.io.UnsupportedEncodingException;
@@ -58,7 +58,6 @@ public class AwPrerenderTest extends AwParameterizedTest {
     private static final String TAG = "AwPrerenderTest";
 
     @Rule public FakeTimeTestRule mFakeTimeTestRule = new FakeTimeTestRule();
-    @Rule public TestRule mProcessor = new Features.InstrumentationProcessor();
 
     @Rule public AwActivityTestRule mActivityTestRule;
 
@@ -147,7 +146,7 @@ public class AwPrerenderTest extends AwParameterizedTest {
     }
 
     public void setSpeculativeLoadingAllowed(@SpeculativeLoadingAllowedFlags int allowed) {
-        mActivityTestRule.runOnUiThread(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> mAwContents.getSettings().setSpeculativeLoadingAllowed(allowed));
     }
 
@@ -176,15 +175,10 @@ public class AwPrerenderTest extends AwParameterizedTest {
                       });
                     }
                 """;
-        mActivityTestRule.runOnUiThread(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     mAwContents.evaluateJavaScript(channelScript, null);
                 });
-    }
-
-    @After
-    public void tearDown() {
-        mTestServer.stopAndDestroyServer();
     }
 
     // Injects speculation rules for `url`.
@@ -201,7 +195,7 @@ public class AwPrerenderTest extends AwParameterizedTest {
         final String speculationRules = String.format(speculationRulesTemplate, url);
 
         // Start prerendering from the initial page.
-        mActivityTestRule.runOnUiThread(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     mAwContents.evaluateJavaScript(speculationRules, null);
                 });
@@ -223,7 +217,7 @@ public class AwPrerenderTest extends AwParameterizedTest {
     private void navigatePage(String url) throws Exception {
         OnPageStartedHelper onPageStartedHelper = mContentsClient.getOnPageStartedHelper();
         int currentOnPageStartedCallCount = onPageStartedHelper.getCallCount();
-        mActivityTestRule.runOnUiThread(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     final String navigationScript = String.format("location.href = `%s`;", url);
                     mAwContents.evaluateJavaScript(navigationScript, null);
@@ -248,7 +242,7 @@ public class AwPrerenderTest extends AwParameterizedTest {
                 mActivityTestRule.loadUrlAsync(mAwContents, activateUrl);
                 break;
             case JAVASCRIPT:
-                mActivityTestRule.runOnUiThread(
+                ThreadUtils.runOnUiThreadBlocking(
                         () -> {
                             final String activationScript =
                                     String.format("location.href = `%s`;", activateUrl);
@@ -303,6 +297,19 @@ public class AwPrerenderTest extends AwParameterizedTest {
     @Feature({"AndroidWebView"})
     @Features.DisableFeatures({BlinkFeatures.PRERENDER2_MEMORY_CONTROLS})
     public void testSpeculationRulesPrerenderingRendererInitiatedActivation() throws Throwable {
+        var histogramWatcher =
+                HistogramWatcher.newBuilder()
+                        .expectIntRecord(
+                                "Prerender.Experimental.PrerenderHostFinalStatus.SpeculationRule",
+                                /*kActivated*/ 0)
+                        .expectIntRecord(
+                                "Preloading.Prerender.Attempt.SpeculationRules.Precision",
+                                /*kTruePositive*/ 0)
+                        .expectIntRecord(
+                                "Preloading.Prerender.Attempt.SpeculationRules.Recall",
+                                /*kTruePositive*/ 0)
+                        .build();
+
         setSpeculativeLoadingAllowed(SpeculativeLoadingAllowedFlags.PRERENDER_ENABLED);
         loadInitialPage();
 
@@ -314,6 +321,8 @@ public class AwPrerenderTest extends AwParameterizedTest {
         Assert.assertEquals(onPageStartedHelper.getUrl(), mPageUrl);
 
         activatePage(mPrerenderingUrl, ActivationBy.JAVASCRIPT);
+
+        histogramWatcher.pollInstrumentationThreadUntilSatisfied();
     }
 
     // Tests basic end-to-end behavior of speculation rules prerendering on WebView with
@@ -323,6 +332,19 @@ public class AwPrerenderTest extends AwParameterizedTest {
     @Feature({"AndroidWebView"})
     @Features.DisableFeatures({BlinkFeatures.PRERENDER2_MEMORY_CONTROLS})
     public void testSpeculationRulesPrerenderingEmbedderInitiatedActivation() throws Throwable {
+        var histogramWatcher =
+                HistogramWatcher.newBuilder()
+                        .expectIntRecord(
+                                "Prerender.Experimental.PrerenderHostFinalStatus.SpeculationRule",
+                                /*kActivated*/ 0)
+                        .expectIntRecord(
+                                "Preloading.Prerender.Attempt.SpeculationRules.Precision",
+                                /*kTruePositive*/ 0)
+                        .expectIntRecord(
+                                "Preloading.Prerender.Attempt.SpeculationRules.Recall",
+                                /*kTruePositive*/ 0)
+                        .build();
+
         setSpeculativeLoadingAllowed(SpeculativeLoadingAllowedFlags.PRERENDER_ENABLED);
         loadInitialPage();
 
@@ -334,15 +356,18 @@ public class AwPrerenderTest extends AwParameterizedTest {
         Assert.assertEquals(onPageStartedHelper.getUrl(), mPageUrl);
 
         activatePage(mPrerenderingUrl, ActivationBy.LOAD_URL);
+
+        histogramWatcher.pollInstrumentationThreadUntilSatisfied();
     }
 
-    // Tests speculation rules prerendering with No-Vary-Search header.
+    // Tests speculation rules prerendering with No-Vary-Search header and renderer-initiated
+    // activation.
     @Test
     @LargeTest
     @Feature({"AndroidWebView"})
     @Features.EnableFeatures({BlinkFeatures.PRERENDER2_NO_VARY_SEARCH})
     @Features.DisableFeatures({BlinkFeatures.PRERENDER2_MEMORY_CONTROLS})
-    public void testNoVarySearchHeader() throws Throwable {
+    public void testNoVarySearchHeader_RendererInitiatedActivation() throws Throwable {
         setSpeculativeLoadingAllowed(SpeculativeLoadingAllowedFlags.PRERENDER_ENABLED);
         loadInitialPage();
 
@@ -351,6 +376,12 @@ public class AwPrerenderTest extends AwParameterizedTest {
                         .expectIntRecord(
                                 "Prerender.Experimental.PrerenderHostFinalStatus.SpeculationRule",
                                 /*kActivated*/ 0)
+                        .expectIntRecord(
+                                "Preloading.Prerender.Attempt.SpeculationRules.Precision",
+                                /*kTruePositive*/ 0)
+                        .expectIntRecord(
+                                "Preloading.Prerender.Attempt.SpeculationRules.Recall",
+                                /*kTruePositive*/ 0)
                         .build();
 
         // Start prerendering `prerender.html`. This response will have
@@ -361,6 +392,43 @@ public class AwPrerenderTest extends AwParameterizedTest {
         // should activate the prerendered page for the No-Vary-Search header.
         String url = mTestServer.getURL(PRERENDER_URL.concat("?a=42"));
         activatePage(url, ActivationBy.JAVASCRIPT);
+
+        // Wait until the navigation activates the prerendered page.
+        histogramWatcher.pollInstrumentationThreadUntilSatisfied();
+    }
+
+    // Tests speculation rules prerendering with No-Vary-Search header and embedder-initiated
+    // activation.
+    @Test
+    @LargeTest
+    @Feature({"AndroidWebView"})
+    @Features.EnableFeatures({BlinkFeatures.PRERENDER2_NO_VARY_SEARCH})
+    @Features.DisableFeatures({BlinkFeatures.PRERENDER2_MEMORY_CONTROLS})
+    public void testNoVarySearchHeader_EmbedderInitiatedActivation() throws Throwable {
+        setSpeculativeLoadingAllowed(SpeculativeLoadingAllowedFlags.PRERENDER_ENABLED);
+        loadInitialPage();
+
+        var histogramWatcher =
+                HistogramWatcher.newBuilder()
+                        .expectIntRecord(
+                                "Prerender.Experimental.PrerenderHostFinalStatus.SpeculationRule",
+                                /*kActivated*/ 0)
+                        .expectIntRecord(
+                                "Preloading.Prerender.Attempt.SpeculationRules.Precision",
+                                /*kTruePositive*/ 0)
+                        .expectIntRecord(
+                                "Preloading.Prerender.Attempt.SpeculationRules.Recall",
+                                /*kTruePositive*/ 0)
+                        .build();
+
+        // Start prerendering `prerender.html`. This response will have
+        // `No-Vary-Search: params=("a")` header.
+        injectSpeculationRulesAndWait(mPrerenderingUrl);
+
+        // Navigate to `prerender.html?a=42`. This doesn't exactly match the prerendering URL but
+        // should activate the prerendered page for the No-Vary-Search header.
+        String url = mTestServer.getURL(PRERENDER_URL.concat("?a=42"));
+        activatePage(url, ActivationBy.LOAD_URL);
 
         // Wait until the navigation activates the prerendered page.
         histogramWatcher.pollInstrumentationThreadUntilSatisfied();
@@ -381,6 +449,12 @@ public class AwPrerenderTest extends AwParameterizedTest {
                         .expectIntRecord(
                                 "Prerender.Experimental.PrerenderHostFinalStatus.SpeculationRule",
                                 /*kActivated*/ 0)
+                        .expectIntRecord(
+                                "Preloading.Prerender.Attempt.SpeculationRules.Precision",
+                                /*kTruePositive*/ 0)
+                        .expectIntRecord(
+                                "Preloading.Prerender.Attempt.SpeculationRules.Recall",
+                                /*kTruePositive*/ 0)
                         .build();
 
         final String path =
@@ -417,6 +491,12 @@ public class AwPrerenderTest extends AwParameterizedTest {
                         .expectIntRecord(
                                 "Prerender.Experimental.PrerenderHostFinalStatus.SpeculationRule",
                                 /*kTriggerDestroyed*/ 16)
+                        .expectIntRecord(
+                                "Preloading.Prerender.Attempt.SpeculationRules.Precision",
+                                /*kFalsePositive*/ 1)
+                        .expectIntRecord(
+                                "Preloading.Prerender.Attempt.SpeculationRules.Recall",
+                                /*kFalseNegative*/ 3)
                         .build();
 
         // Start prerendering `prerender.html`. This response will have
@@ -536,12 +616,21 @@ public class AwPrerenderTest extends AwParameterizedTest {
         helper.clearUrls();
         callCount = helper.getCallCount();
         // RenderFrameHostChanged without FrameTree swap occurs here.
-        mActivityTestRule.runOnUiThread(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     mAwContents.evaluateJavaScript("history.back();", null);
                 });
-        helper.waitForCallback(callCount);
-        Assert.assertEquals(helper.getUrls(), Arrays.asList(url1));
+        // If BfCache is enabled, the original page restore will not trigger
+        // ShouldInterceptRequest. However, the prerender page will get loaded
+        // since the injected speculation rule also gets restored.
+        if (AwFeatureMap.isEnabled(AwFeatures.WEBVIEW_BACK_FORWARD_CACHE)) {
+            // Wait for loading of the prerendered page and the resource.
+            helper.waitForCallback(callCount, 2);
+            Assert.assertEquals(helper.getUrls(), Arrays.asList(url2, scriptUrl));
+        } else {
+            helper.waitForCallback(callCount);
+            Assert.assertEquals(helper.getUrls(), Arrays.asList(url1));
+        }
 
         // An IO thread associated with the third page (the same IO thread used by the first page)
         // should
@@ -908,7 +997,7 @@ public class AwPrerenderTest extends AwParameterizedTest {
         injectSpeculationRulesAndWait(mPrerenderingUrl);
 
         // Remove the JavaScript object. This should cancel prerendering.
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> mAwContents.removeJavascriptInterface("testInjectedObject"));
 
         // Wait until prerendering is canceled for the interface removal.
@@ -963,7 +1052,7 @@ public class AwPrerenderTest extends AwParameterizedTest {
         injectSpeculationRulesAndWait(mPrerenderingUrl);
 
         // Add a document start javascript. This should cancel prerendering.
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () ->
                         mAwContents.addDocumentStartJavaScript(
                                 "console.log(\"hello world\");", new String[] {"*"}));
@@ -983,7 +1072,7 @@ public class AwPrerenderTest extends AwParameterizedTest {
 
         // Add a document start javascript. This should cancel prerendering.
         ScriptHandler handler =
-                TestThreadUtils.runOnUiThreadBlocking(
+                ThreadUtils.runOnUiThreadBlocking(
                         () ->
                                 mAwContents.addDocumentStartJavaScript(
                                         "console.log(\"hello world\");", new String[] {"*"}));
@@ -999,9 +1088,34 @@ public class AwPrerenderTest extends AwParameterizedTest {
         injectSpeculationRulesAndWait(mPrerenderingUrl);
 
         // Remove the document start javascript. This should cancel prerendering.
-        TestThreadUtils.runOnUiThreadBlocking(() -> handler.remove());
+        ThreadUtils.runOnUiThreadBlocking(() -> handler.remove());
 
         // Wait until prerendering is canceled for the start script addition.
+        histogramWatcher.pollInstrumentationThreadUntilSatisfied();
+    }
+
+    // Tests manually cancelling the prerendered pages.
+    @Test
+    @LargeTest
+    @Feature({"AndroidWebView"})
+    @Features.DisableFeatures({BlinkFeatures.PRERENDER2_MEMORY_CONTROLS})
+    public void testPrerenderingManuallyCancelled() throws Throwable {
+        setSpeculativeLoadingAllowed(SpeculativeLoadingAllowedFlags.PRERENDER_ENABLED);
+        loadInitialPage();
+
+        var histogramWatcher =
+                HistogramWatcher.newBuilder()
+                        .expectIntRecord(
+                                "Prerender.Experimental.PrerenderHostFinalStatus.SpeculationRule",
+                                /*kAllPrerenderingCanceled*/ 81)
+                        .build();
+
+        // Start prerendering.
+        injectSpeculationRulesAndWait(mPrerenderingUrl);
+        // Manually cancel the prerendered pages.
+        ThreadUtils.runOnUiThreadBlocking(() -> mAwContents.cancelAllPrerendering());
+
+        // Wait until prerendering is canceled.
         histogramWatcher.pollInstrumentationThreadUntilSatisfied();
     }
 

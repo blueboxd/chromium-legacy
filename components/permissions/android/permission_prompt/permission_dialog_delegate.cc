@@ -9,8 +9,6 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "components/permissions/android/jni_headers/PermissionDialogController_jni.h"
-#include "components/permissions/android/jni_headers/PermissionDialogDelegate_jni.h"
 #include "components/permissions/android/permission_prompt/permission_prompt_android.h"
 #include "components/permissions/features.h"
 #include "components/permissions/permission_uma_util.h"
@@ -22,6 +20,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/image_model.h"
 #include "ui/gfx/android/java_bitmap.h"
+
+// Must come after all headers that specialize FromJniType() / ToJniType().
+#include "components/permissions/android/jni_headers/PermissionDialogController_jni.h"
+#include "components/permissions/android/jni_headers/PermissionDialogDelegate_jni.h"
 
 using base::android::ConvertUTF16ToJavaString;
 
@@ -41,7 +43,7 @@ void PermissionDialogJavaDelegate::CreateJavaDelegate(
 
   bool isOneTime =
       base::FeatureList::IsEnabled(permissions::features::kOneTimePermission) &&
-      PermissionUtil::CanPermissionBeAllowedOnce(
+      PermissionUtil::DoesSupportTemporaryGrants(
           permission_prompt_->GetContentSettingType(0));
 
   base::android::ScopedJavaLocalRef<jstring> positiveButtonText;
@@ -143,8 +145,7 @@ void PermissionDialogJavaDelegate::OnRequestingOriginFaviconLoaded(
     const favicon_base::FaviconRawBitmapResult& favicon_result) {
   if (favicon_result.is_valid()) {
     gfx::Image image =
-        gfx::Image::CreateFrom1xPNGBytes(favicon_result.bitmap_data->front(),
-                                         favicon_result.bitmap_data->size());
+        gfx::Image::CreateFrom1xPNGBytes(favicon_result.bitmap_data);
     const SkBitmap* bitmap = image.ToSkBitmap();
     JNIEnv* env = base::android::AttachCurrentThread();
     Java_PermissionDialogDelegate_updateIcon(env, j_delegate_,
@@ -207,13 +208,19 @@ void PermissionDialogDelegate::Dismissed(JNIEnv* env,
   CHECK(permission_prompt_);
   std::vector<ContentSettingsType> content_settings_types;
   for (size_t i = 0; i < permission_prompt_->PermissionCount(); ++i) {
-    content_settings_types.push_back(
-        permission_prompt_->GetContentSettingType(i));
+    ContentSettingsType type = permission_prompt_->GetContentSettingType(i);
+    // Not all request types have an associated ContentSettingsType.
+    if (type == ContentSettingsType::DEFAULT) {
+      break;
+    }
+    content_settings_types.push_back(type);
   }
 
-  PermissionUmaUtil::RecordDismissalType(
-      content_settings_types, permission_prompt_->GetPromptDisposition(),
-      static_cast<DismissalType>(dismissalType));
+  if (content_settings_types.size() == permission_prompt_->PermissionCount()) {
+    PermissionUmaUtil::RecordDismissalType(
+        content_settings_types, permission_prompt_->GetPromptDisposition(),
+        static_cast<DismissalType>(dismissalType));
+  }
 
   permission_prompt_->Closing();
 }

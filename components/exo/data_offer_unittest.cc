@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "components/exo/data_offer.h"
 
 #include <fcntl.h>
@@ -473,7 +478,7 @@ TEST_F(DataOfferTest, SetClipboardDataOfferDteToLacros) {
   {
     ui::ScopedClipboardWriter writer(ui::ClipboardBuffer::kCopyPaste);
     writer.SetDataSource(std::make_unique<ui::DataTransferEndpoint>(
-        GURL("https://www.google.com"), /*off_the_record=*/false));
+        GURL("https://www.google.com")));
     writer.WriteText(u"Test data");
   }
 
@@ -521,7 +526,7 @@ TEST_F(DataOfferTest, SetClipboardDataDoNotOfferDteToNonLacros) {
   {
     ui::ScopedClipboardWriter writer(ui::ClipboardBuffer::kCopyPaste);
     writer.SetDataSource(std::make_unique<ui::DataTransferEndpoint>(
-        GURL("https://www.google.com"), /*off_the_record=*/false));
+        GURL("https://www.google.com")));
     writer.WriteText(u"Test data");
   }
 
@@ -567,7 +572,7 @@ TEST_F(DataOfferTest, SetClipboardDataOfferDteToLacrosSourceChanged) {
   {
     ui::ScopedClipboardWriter writer(ui::ClipboardBuffer::kCopyPaste);
     writer.SetDataSource(std::make_unique<ui::DataTransferEndpoint>(
-        GURL("https://www.google.com"), /*off_the_record=*/false));
+        GURL("https://www.google.com")));
     writer.WriteText(u"Test data");
   }
 
@@ -626,7 +631,7 @@ TEST_F(DataOfferTest, SetDropDataOfferDteToLacros) {
   ui::OSExchangeData data;
   data.SetString(std::u16string(u"Test data"));
   data.SetSource(std::make_unique<ui::DataTransferEndpoint>(
-      GURL("https://www.google.com"), /*off_the_record=*/false));
+      GURL("https://www.google.com")));
 
   TestDataOfferDelegate delegate;
   DataOffer data_offer(&delegate);
@@ -682,7 +687,7 @@ TEST_F(DataOfferTest, SetDropDataDoNotOfferDteToNonLacros) {
   ui::OSExchangeData data;
   data.SetString(std::u16string(u"Test data"));
   data.SetSource(std::make_unique<ui::DataTransferEndpoint>(
-      GURL("https://www.google.com"), /*off_the_record=*/false));
+      GURL("https://www.google.com")));
 
   TestDataOfferDelegate delegate;
   DataOffer data_offer(&delegate);

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ash/accessibility/mouse_keys/mouse_keys_controller.h"
 
 #include "ash/display/window_tree_host_manager.h"
@@ -89,6 +94,15 @@ MouseKeysController::~MouseKeysController() {
   shell->RemoveAccessibilityEventHandler(this);
 }
 
+void MouseKeysController::Toggle() {
+  paused_ = !paused_;
+  if (paused_) {
+    // Reset everything when pausing.
+    ResetMovement();
+    dragging_ = false;
+  }
+}
+
 bool MouseKeysController::RewriteEvent(const ui::Event& event) {
   if (!enabled_ || !event.IsKeyEvent()) {
     return false;
@@ -99,22 +113,6 @@ bool MouseKeysController::RewriteEvent(const ui::Event& event) {
                       ui::EF_IS_EXTENDED_KEY;
   event_flags_ = event.flags() & modifier_mask;
 
-  // TODO(259372916): Use an accelerator instead of hard coding this.
-  const ui::KeyEvent* key_event = event.AsKeyEvent();
-  if (key_event->type() == ui::ET_KEY_PRESSED &&
-      key_event->code() == ui::DomCode::US_M &&
-      key_event->flags() & ui::EF_CONTROL_DOWN &&
-      key_event->flags() & ui::EF_SHIFT_DOWN &&
-      !(key_event->flags() & ui::EF_IS_REPEAT)) {
-    paused_ = !paused_;
-    if (paused_) {
-      // Reset everything when pausing.
-      ResetMovement();
-      dragging_ = false;
-    }
-    return true;
-  }
-
   if (paused_) {
     return false;
   }
@@ -122,6 +120,7 @@ bool MouseKeysController::RewriteEvent(const ui::Event& event) {
   CenterMouseIfUninitialized();
 
   // Check primary keyboard keys.
+  const ui::KeyEvent* key_event = event.AsKeyEvent();
   if (use_primary_keys_) {
     auto mappings = left_handed_ ? kLeftHandedKeys : kRightHandedKeys;
     for (auto mapping : mappings) {
@@ -146,7 +145,7 @@ bool MouseKeysController::RewriteEvent(const ui::Event& event) {
 void MouseKeysController::OnMouseEvent(ui::MouseEvent* event) {
   bool is_synthesized = event->IsSynthesized() ||
                         event->source_device_id() == ui::ED_UNKNOWN_DEVICE;
-  if (is_synthesized || event->type() != ui::ET_MOUSE_MOVED) {
+  if (is_synthesized || event->type() != ui::EventType::kMouseMoved) {
     return;
   }
   if (event->target()) {
@@ -203,7 +202,7 @@ void MouseKeysController::MoveMouse(const gfx::Vector2d& move_delta_dip) {
 
   host->MoveCursorToLocationInDIP(location);
   if (dragging_) {
-    SendMouseEventToLocation(ui::ET_MOUSE_DRAGGED, location);
+    SendMouseEventToLocation(ui::EventType::kMouseDragged, location);
   }
   last_mouse_position_dips_ = location;
 }
@@ -230,11 +229,11 @@ bool MouseKeysController::CheckFlagsAndMaybeSendEvent(
     return true;
   }
 
-  // All KeyEvents are either ET_KEY_PRESSED or ET_KEY_RELEASED.
-  if (key_event.type() == ui::ET_KEY_PRESSED) {
+  // All KeyEvents are either EventType::kKeyPressed or EventType::kKeyReleased.
+  if (key_event.type() == ui::EventType::kKeyPressed) {
     PressKey(output);
   } else {
-    DCHECK_EQ(key_event.type(), ui::ET_KEY_RELEASED);
+    DCHECK_EQ(key_event.type(), ui::EventType::kKeyReleased);
     ReleaseKey(output);
   }
   return true;
@@ -256,28 +255,28 @@ void MouseKeysController::PressKey(MouseKey key) {
     case kKeyClick:
     case kKeyDragStart:
       if (!dragging_) {
-        SendMouseEventToLocation(ui::ET_MOUSE_PRESSED,
+        SendMouseEventToLocation(ui::EventType::kMousePressed,
                                  last_mouse_position_dips_);
         dragging_ = true;
       }
       break;
     case kKeyDragStop:
       if (dragging_) {
-        SendMouseEventToLocation(ui::ET_MOUSE_RELEASED,
+        SendMouseEventToLocation(ui::EventType::kMouseReleased,
                                  last_mouse_position_dips_);
         dragging_ = false;
       }
       break;
     case kKeyDoubleClick:
       if (current_mouse_button_ == kLeft) {
-        SendMouseEventToLocation(ui::ET_MOUSE_PRESSED,
+        SendMouseEventToLocation(ui::EventType::kMousePressed,
                                  last_mouse_position_dips_);
-        SendMouseEventToLocation(ui::ET_MOUSE_RELEASED,
+        SendMouseEventToLocation(ui::EventType::kMouseReleased,
                                  last_mouse_position_dips_);
-        SendMouseEventToLocation(ui::ET_MOUSE_PRESSED,
+        SendMouseEventToLocation(ui::EventType::kMousePressed,
                                  last_mouse_position_dips_,
                                  ui::EF_IS_DOUBLE_CLICK);
-        SendMouseEventToLocation(ui::ET_MOUSE_RELEASED,
+        SendMouseEventToLocation(ui::EventType::kMouseReleased,
                                  last_mouse_position_dips_,
                                  ui::EF_IS_DOUBLE_CLICK);
       }
@@ -315,7 +314,7 @@ void MouseKeysController::ReleaseKey(MouseKey key) {
       break;
     case kKeyClick:
       if (dragging_) {
-        SendMouseEventToLocation(ui::ET_MOUSE_RELEASED,
+        SendMouseEventToLocation(ui::EventType::kMouseReleased,
                                  last_mouse_position_dips_);
         dragging_ = false;
       }

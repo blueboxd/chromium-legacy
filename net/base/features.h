@@ -97,10 +97,9 @@ NET_EXPORT BASE_DECLARE_FEATURE(kUseDnsHttpsSvcbAlpn);
 // transactions complete.
 NET_EXPORT BASE_DECLARE_FEATURE(kUseHostResolverCache);
 
-// Enables the DNS ServiceEndpointRequest API, which provides intermediate
-// service endpoints in the middle of a DNS transaction so that clients of this
-// API can attempt connections as soon as candidate endpoints are available.
-NET_EXPORT BASE_DECLARE_FEATURE(kUseServiceEndpointRequest);
+// Enables the Happy Eyeballs v3, where we use intermediate DNS resolution
+// results to make connection attempts as soon as possible.
+NET_EXPORT BASE_DECLARE_FEATURE(kHappyEyeballsV3);
 
 // If the `kUseAlternativePortForGloballyReachableCheck` flag is enabled, the
 // globally reachable check will use the port number specified by
@@ -121,6 +120,37 @@ NET_EXPORT BASE_DECLARE_FEATURE(kEnableTLS13EarlyData);
 // quality estimator (NQE).
 NET_EXPORT BASE_DECLARE_FEATURE(kNetworkQualityEstimator);
 
+// The maximum age in seconds of observations to be used for calculating the
+// HTTP RTT from the historical data.
+// Negative value means infinite. i.e. all data are used.
+NET_EXPORT extern const base::FeatureParam<int> kRecentHTTPThresholdInSeconds;
+
+// The maximum age in seconds of observations to be used for calculating the
+// transport RTT from the historical data.
+// Negative value means infinite. i.e. all data are used.
+NET_EXPORT extern const base::FeatureParam<int>
+    kRecentTransportThresholdInSeconds;
+
+// The maximum age in seconds of observations to be used for calculating the
+// end to end RTT from the historical data.
+// Negative value means infinite. i.e. all data are used.
+NET_EXPORT extern const base::FeatureParam<int>
+    kRecentEndToEndThresholdInSeconds;
+
+// Number of observations received after which the effective connection type
+// should be recomputed.
+NET_EXPORT extern const base::FeatureParam<int>
+    kCountNewObservationsReceivedComputeEct;
+
+// Maximum number of observations that can be held in a single
+// ObservationBuffer.
+NET_EXPORT extern const base::FeatureParam<int> kObservationBufferSize;
+
+// Minimum duration between two consecutive computations of effective
+// connection type. Set to non-zero value as a performance optimization.
+NET_EXPORT extern const base::FeatureParam<base::TimeDelta>
+    kEffectiveConnectionTypeRecomputationInterval;
+
 // Splits cache entries by the request's includeCredentials.
 NET_EXPORT BASE_DECLARE_FEATURE(kSplitCacheByIncludeCredentials);
 
@@ -137,17 +167,6 @@ NET_EXPORT BASE_DECLARE_FEATURE(kSplitCodeCacheByNetworkIsolationKey);
 // NetworkAnonymizationKey associated with a request.
 // See https://github.com/MattMenke2/Explainer---Partition-Network-State.
 NET_EXPORT BASE_DECLARE_FEATURE(kPartitionConnectionsByNetworkIsolationKey);
-
-// Creates a <double key + is_cross_site> NetworkIsolationKey which is used
-// to partition the HTTP cache. This key will have the following properties:
-// `top_frame_site_` -> the schemeful site of the top level page.
-// `frame_site_` -> std::nullopt.
-// `is_cross_site_` -> a boolean indicating whether the frame site is
-// schemefully cross-site from the top-level site.
-NET_EXPORT BASE_DECLARE_FEATURE(kEnableCrossSiteFlagNetworkIsolationKey);
-NET_EXPORT BASE_DECLARE_FEATURE(
-    kEnableFrameSiteSharedOpaqueNetworkIsolationKey);
-NET_EXPORT BASE_DECLARE_FEATURE(kHttpCacheKeyingExperimentControlGroup);
 
 // Enables sending TLS 1.3 Key Update messages on TLS 1.3 connections in order
 // to ensure that this corner of the spec is exercised. This is currently
@@ -255,7 +274,6 @@ NET_EXPORT BASE_DECLARE_FEATURE(kStaticKeyPinningEnforcement);
 NET_EXPORT BASE_DECLARE_FEATURE(kCookieDomainRejectNonASCII);
 
 NET_EXPORT BASE_DECLARE_FEATURE(kThirdPartyStoragePartitioning);
-NET_EXPORT BASE_DECLARE_FEATURE(kSupportPartitionedBlobUrl);
 
 // Controls consideration of top-level 3PCD origin trial settings.
 NET_EXPORT BASE_DECLARE_FEATURE(kTopLevelTpcdOriginTrial);
@@ -414,6 +432,16 @@ NET_EXPORT extern const base::FeatureParam<std::string> kIpPrivacyAlwaysProxy;
 // defaults to true and is intended for development of the QUIC functionality.
 NET_EXPORT extern const base::FeatureParam<bool> kIpPrivacyFallbackToDirect;
 
+// Identifier for an experiment arm, to be sent to IP Protection proxies and the
+// token server in the `Ip-Protection-Debug-Experiment-Arm` header. The default
+// value, 0, is not sent.
+NET_EXPORT extern const base::FeatureParam<int> kIpPrivacyDebugExperimentArm;
+
+// Caches tokens by geo allowing for tokens to be preserved on network/geo
+// changes. The default value of this feature is false which maintains existing
+// behavior by default.
+NET_EXPORT extern const base::FeatureParam<bool> kIpPrivacyCacheTokensByGeo;
+
 // Whether QuicParams::migrate_sessions_on_network_change_v2 defaults to true or
 // false. This is needed as a workaround to set this value to true on Android
 // but not on WebView (until crbug.com/1430082 has been fixed).
@@ -501,6 +529,42 @@ NET_EXPORT BASE_DECLARE_FEATURE(kDeviceBoundSessions);
 // Enables storing connection subtype in NetworkChangeNotifierDelegateAndroid to
 // save the cost of the JNI call for future access.
 NET_EXPORT BASE_DECLARE_FEATURE(kStoreConnectionSubtype);
+
+// When enabled, all proxies in a proxy chain are partitioned by the NAK for the
+// endpoint of the connection. When disabled, proxies carrying tunnels to other
+// proxies (i.e., all proxies but the last one in the ProxyChain) are not
+// partitioned, allowing greater connection re-use.
+NET_EXPORT BASE_DECLARE_FEATURE(kPartitionProxyChains);
+
+// Enables the Storage Access Headers semantics.
+NET_EXPORT BASE_DECLARE_FEATURE(kStorageAccessHeaders);
+
+// Enables more checks when creating a SpdySession for proxy. These checks are
+// already applied to non-proxy SpdySession creations.
+// TODO(crbug.com/343519247): Remove this once we are sure that these checks are
+// not causing any problems.
+NET_EXPORT BASE_DECLARE_FEATURE(kSpdySessionForProxyAdditionalChecks);
+
+// When this feature is enabled, Chromium can use stored shared dictionaries
+// even when the connection is using HTTP/1 for non-localhost requests.
+NET_EXPORT BASE_DECLARE_FEATURE(kCompressionDictionaryTransportOverHttp1);
+
+// When this feature is enabled, Chromium can use stored shared dictionaries
+// even when the connection is using HTTP/2 for non-localhost requests.
+NET_EXPORT BASE_DECLARE_FEATURE(kCompressionDictionaryTransportOverHttp2);
+
+// When this feature is enabled, Chromium will use stored shared dictionaries
+// only if the request URL is a localhost URL or the transport layer is using a
+// certificate rooted at a standard CA root.
+NET_EXPORT BASE_DECLARE_FEATURE(
+    kCompressionDictionaryTransportRequireKnownRootCert);
+
+// Enables enterprises to use the Reporting API to collect 3PCD-related
+// issues from sites used in their organization.
+NET_EXPORT BASE_DECLARE_FEATURE(kReportingApiEnableEnterpriseCookieIssues);
+
+// Optimize parsing data: URLs.
+NET_EXPORT BASE_DECLARE_FEATURE(kOptimizeParsingDataUrls);
 
 }  // namespace net::features
 

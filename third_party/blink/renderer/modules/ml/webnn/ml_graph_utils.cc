@@ -207,6 +207,30 @@ MLNamedArrayBufferViews* CreateNamedArrayBufferViews(
   return target_views;
 }
 
+DOMArrayBufferView::ViewType GetArrayBufferViewType(
+    webnn::OperandDataType data_type) {
+  switch (data_type) {
+    case webnn::OperandDataType::kFloat32:
+      return DOMArrayBufferView::ViewType::kTypeFloat32;
+    case webnn::OperandDataType::kFloat16:
+      // Using Uint16Array for float16 is a workaround of WebNN spec issue:
+      // https://github.com/webmachinelearning/webnn/issues/127
+      return DOMArrayBufferView::ViewType::kTypeUint16;
+    case webnn::OperandDataType::kInt32:
+      return DOMArrayBufferView::ViewType::kTypeInt32;
+    case webnn::OperandDataType::kUint32:
+      return DOMArrayBufferView::ViewType::kTypeUint32;
+    case webnn::OperandDataType::kInt64:
+      return DOMArrayBufferView::ViewType::kTypeBigInt64;
+    case webnn::OperandDataType::kUint64:
+      return DOMArrayBufferView::ViewType::kTypeBigUint64;
+    case webnn::OperandDataType::kInt8:
+      return DOMArrayBufferView::ViewType::kTypeInt8;
+    case webnn::OperandDataType::kUint8:
+      return DOMArrayBufferView::ViewType::kTypeUint8;
+  }
+}
+
 Vector<uint32_t> CreateDefaultPermutation(const wtf_size_t rank) {
   Vector<uint32_t> default_permutation(rank);
   for (wtf_size_t i = 0; i < rank; ++i) {
@@ -263,40 +287,6 @@ base::expected<void, String> ValidateFilterLayout(
   return base::ok();
 }
 
-base::expected<void, String> ValidateGemmOptions(const MLGemmOptions* options,
-                                                 uint32_t output_channels) {
-  CHECK(options);
-  if (options->hasC()) {
-    // Both XNNPACK and TFLite fully connected operator only supports 1-D bias
-    // tensor (operand c of WebNN gemm operator) with [output_channels]
-    // dimensions.
-    const auto* bias = options->c();
-    if (bias->Dimensions().size() != 1u ||
-        bias->Dimensions()[0] != output_channels) {
-      // TODO(crbug.com/1273291): Support the bias with other dimensions by
-      // element-wise addition operator.
-      return base::unexpected(String::Format(
-          "The dimensions of bias must be [%u].", output_channels));
-    }
-  }
-  if (options->alpha() != 1.0f) {
-    // TODO(crbug.com/1273291): Support alpha by using element-wise
-    // multiplication operator.
-    return base::unexpected("gemm doesn't support alpha option.");
-  }
-  if (options->beta() != 1.0f) {
-    // TODO(crbug.com/1273291): Support beta by using element-wise
-    // multiplication operator.
-    return base::unexpected("gemm doesn't support beta option.");
-  }
-  if (options->aTranspose()) {
-    // TODO(crbug.com/1273291): Support aTranspose by using transpose operator.
-    return base::unexpected("gemm doesn't support aTranspose option.");
-  }
-
-  return base::ok();
-}
-
 webnn::Size2d<uint32_t> CalculateConvTransposeOutputSize2D(
     const blink::MLConvTranspose2dOptions* options,
     uint32_t input_height,
@@ -332,6 +322,68 @@ webnn::Size2d<uint32_t> CalculateConvTransposeOutputSize2D(
 
   return webnn::Size2d<uint32_t>{.height = output_height.value(),
                                  .width = output_width.value()};
+}
+
+V8MLOperandDataType ToBlinkDataType(webnn::OperandDataType data_type) {
+  switch (data_type) {
+    case webnn::OperandDataType::kFloat32:
+      return V8MLOperandDataType(V8MLOperandDataType::Enum::kFloat32);
+    case webnn::OperandDataType::kFloat16:
+      return V8MLOperandDataType(V8MLOperandDataType::Enum::kFloat16);
+    case webnn::OperandDataType::kInt32:
+      return V8MLOperandDataType(V8MLOperandDataType::Enum::kInt32);
+    case webnn::OperandDataType::kUint32:
+      return V8MLOperandDataType(V8MLOperandDataType::Enum::kUint32);
+    case webnn::OperandDataType::kInt64:
+      return V8MLOperandDataType(V8MLOperandDataType::Enum::kInt64);
+    case webnn::OperandDataType::kUint64:
+      return V8MLOperandDataType(V8MLOperandDataType::Enum::kUint64);
+    case webnn::OperandDataType::kInt8:
+      return V8MLOperandDataType(V8MLOperandDataType::Enum::kInt8);
+    case webnn::OperandDataType::kUint8:
+      return V8MLOperandDataType(V8MLOperandDataType::Enum::kUint8);
+  }
+}
+
+webnn::OperandDataType FromBlinkDataType(V8MLOperandDataType::Enum data_type) {
+  switch (data_type) {
+    case V8MLOperandDataType::Enum::kFloat32:
+      return webnn::OperandDataType::kFloat32;
+    case V8MLOperandDataType::Enum::kFloat16:
+      return webnn::OperandDataType::kFloat16;
+    case V8MLOperandDataType::Enum::kInt32:
+      return webnn::OperandDataType::kInt32;
+    case V8MLOperandDataType::Enum::kUint32:
+      return webnn::OperandDataType::kUint32;
+    case V8MLOperandDataType::Enum::kInt64:
+      return webnn::OperandDataType::kInt64;
+    case V8MLOperandDataType::Enum::kUint64:
+      return webnn::OperandDataType::kUint64;
+    case V8MLOperandDataType::Enum::kInt8:
+      return webnn::OperandDataType::kInt8;
+    case V8MLOperandDataType::Enum::kUint8:
+      return webnn::OperandDataType::kUint8;
+  }
+}
+
+bool IsLogicalBinaryOperator(
+    webnn::mojom::blink::ElementWiseBinary::Kind kind) {
+  switch (kind) {
+    case webnn::mojom::blink::ElementWiseBinary::Kind::kAdd:
+    case webnn::mojom::blink::ElementWiseBinary::Kind::kSub:
+    case webnn::mojom::blink::ElementWiseBinary::Kind::kMul:
+    case webnn::mojom::blink::ElementWiseBinary::Kind::kDiv:
+    case webnn::mojom::blink::ElementWiseBinary::Kind::kMax:
+    case webnn::mojom::blink::ElementWiseBinary::Kind::kMin:
+    case webnn::mojom::blink::ElementWiseBinary::Kind::kPow:
+      return false;
+    case webnn::mojom::blink::ElementWiseBinary::Kind::kEqual:
+    case webnn::mojom::blink::ElementWiseBinary::Kind::kGreater:
+    case webnn::mojom::blink::ElementWiseBinary::Kind::kGreaterOrEqual:
+    case webnn::mojom::blink::ElementWiseBinary::Kind::kLesser:
+    case webnn::mojom::blink::ElementWiseBinary::Kind::kLesserOrEqual:
+      return true;
+  }
 }
 
 }  // namespace blink

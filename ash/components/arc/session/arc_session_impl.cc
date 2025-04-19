@@ -64,10 +64,10 @@ std::string GenerateRandomToken() {
   return base::HexEncode(random_bytes);
 }
 
-// Waits until |raw_socket_fd| is readable.
+// Waits until `raw_socket_fd` is readable.
 // The operation may be cancelled originally triggered by user interaction to
 // disable ARC, or ARC instance is unexpectedly stopped (e.g. crash).
-// To notify such a situation, |raw_cancel_fd| is also passed to here, and the
+// To notify such a situation, `raw_cancel_fd` is also passed to here, and the
 // write side will be closed in such a case.
 bool WaitForSocketReadable(int raw_socket_fd, int raw_cancel_fd) {
   struct pollfd fds[2] = {
@@ -93,7 +93,7 @@ bool WaitForSocketReadable(int raw_socket_fd, int raw_cancel_fd) {
 // Applies dalvik memory profile to the ARC mini instance start params.
 // Profile is determined based on enable feature and available memory on the
 // device. Possible profiles 16G,8G and 4G. For low memory devices dalvik
-// profile is not overridden. If |memory_stat_file_for_testing| is set,
+// profile is not overridden. If `memory_stat_file_for_testing` is set,
 // it specifies the file to read in tests instead of /proc/meminfo in
 // production.
 void ApplyDalvikMemoryProfile(
@@ -184,7 +184,7 @@ class ArcSessionDelegateImpl : public ArcSessionImpl::Delegate {
   // blocking thread. Unlinks any existing files at socket address.
   static base::ScopedFD CreateSocketInternal();
 
-  // Synchronously accepts a connection on |server_endpoint| and then processes
+  // Synchronously accepts a connection on `server_endpoint` and then processes
   // the connected socket's file descriptor. This is designed to run on a
   // blocking thread.
   static mojo::ScopedMessagePipeHandle ConnectMojoInternal(
@@ -192,7 +192,7 @@ class ArcSessionDelegateImpl : public ArcSessionImpl::Delegate {
       base::ScopedFD cancel_fd);
 
   // Called when Mojo connection is established or canceled.
-  // In case of cancel or error, |server_pipe| is invalid.
+  // In case of cancel or error, `server_pipe` is invalid.
   void OnMojoConnected(ConnectMojoCallback callback,
                        std::unique_ptr<ArcBridgeHostImpl> host,
                        mojo::ScopedMessagePipeHandle server_pipe);
@@ -230,8 +230,8 @@ base::ScopedFD ArcSessionDelegateImpl::ConnectMojo(
     return base::ScopedFD();
   }
 
-  // For production, |socket_fd| passed from session_manager is either a valid
-  // socket or a valid file descriptor (/dev/null). For testing, |socket_fd|
+  // For production, `socket_fd` passed from session_manager is either a valid
+  // socket or a valid file descriptor (/dev/null). For testing, `socket_fd`
   // might be invalid.
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock()},
@@ -291,7 +291,7 @@ base::ScopedFD ArcSessionDelegateImpl::CreateSocketInternal() {
 
   // Change permissions on the socket. Note that since arcvm doesn't directly
   // share the socket with ARC, it can use 0600 and the default group. arcvm
-  // build doesn't have |kArcBridgeSocketGroup| in the first place.
+  // build doesn't have `kArcBridgeSocketGroup` in the first place.
   if (!IsArcVmEnabled()) {
     struct group arc_bridge_group;
     struct group* arc_bridge_group_res = nullptr;
@@ -455,21 +455,15 @@ void ArcSessionImpl::DoStartMiniInstance(size_t num_cores_disabled) {
           arc::kKeyboardShortcutHelperIntegrationFeature);
   params.lcd_density = lcd_density_;
   params.num_cores_disabled = num_cores_disabled;
-  // TODO(b/278121256): Remove pre-NotificationsRefresh code from ARC.
-  params.enable_notifications_refresh = true;
   params.enable_tts_caching = true;
   params.enable_consumer_auto_update_toggle = base::FeatureList::IsEnabled(
       ash::features::kConsumerAutoUpdateToggleAllowed);
   params.enable_privacy_hub_for_chrome =
       base::FeatureList::IsEnabled(ash::features::kCrosPrivacyHub);
   params.arc_switch_to_keymint = ShouldUseArcKeyMint();
+  params.enable_arc_attestation = ShouldUseArcAttestation();
   params.use_virtio_blk_data = use_virtio_blk_data_;
   params.arc_signed_in = arc_signed_in_;
-
-  // TODO (b/196460968): Remove after CTS run is complete.
-  if (params.enable_notifications_refresh) {
-    VLOG(1) << "Notifications Refresh is enabled";
-  }
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           ash::switches::kArcPlayStoreAutoUpdate)) {
@@ -680,7 +674,7 @@ void ArcSessionImpl::OnMojoConnected(
   if (!arc_bridge_host.get()) {
     LOG(ERROR) << "Invalid pipe.";
     // If we can't establish the connection with ARC bridge, it could
-    // be a problem inside ARC thus setting |should_backup_log| to back up log
+    // be a problem inside ARC thus setting `should_backup_log` to back up log
     // before container is shutdown.
     StopArcInstance(/*on_shutdown=*/false, /*should_backup_log*/ true);
     return;
@@ -708,7 +702,7 @@ void ArcSessionImpl::Stop() {
         scheduler_configuration_manager_->RemoveObserver(this);
       [[fallthrough]];
     case State::NOT_STARTED:
-      // If |Stop()| is called while waiting for LCD density or CPU cores
+      // If `Stop()` is called while waiting for LCD density or CPU cores
       // information, it can directly move to stopped state.
       VLOG(1) << "ARC session is not started. state: " << state_;
       OnStopped(ArcStopReason::SHUTDOWN);
@@ -758,7 +752,7 @@ void ArcSessionImpl::StopArcInstance(bool on_shutdown, bool should_backup_log) {
           << " on_shutdown: " << on_shutdown
           << " should_backup_log: " << should_backup_log;
 
-  // When the instance is full instance, change the |state_| in
+  // When the instance is full instance, change the `state_` in
   // ArcInstanceStopped().
   client_->StopArcInstance(on_shutdown, should_backup_log);
 }
@@ -882,7 +876,7 @@ void ArcSessionImpl::OnConfigurationSet(bool success,
 
   // Note: On non-x86_64 devices, the configuration request to debugd always
   // fails. It is WAI, and to support that case, don't log anything even when
-  // |success| is false. |num_cores_disabled| is always set regardless of
+  // `success` is false. `num_cores_disabled` is always set regardless of
   // where the call is successful.
   DoStartMiniInstance(num_cores_disabled);
 }

@@ -6,10 +6,13 @@
 #define ASH_COMPONENTS_ARC_DISK_SPACE_ARC_DISK_SPACE_BRIDGE_H_
 
 #include <optional>
+#include <vector>
 
 #include "ash/components/arc/mojom/disk_space.mojom.h"
+#include "ash/components/arc/session/connection_observer.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chromeos/ash/components/dbus/spaced/spaced_client.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace content {
@@ -65,10 +68,20 @@ constexpr int kProjectIdForAndroidAppsStart = 20000;
 constexpr int kProjectIdForAndroidAppsEndBeforeT = 49999;
 constexpr int kProjectIdForAndroidAppsEndAfterT = 69999;
 
+// The amount of space to be subtracted from the actual host-side free space
+// when calling ResizeStorageBalloon() with the target free space. This is
+// currently set to 1 GiB, which is also used in other VMs with maitred (see
+// platform2/vm_tools/maitred/service_impl.cc:UpdateStorageBalloon).
+inline constexpr int64_t kStorageBalloonFreeSpaceBufferSizeInBytes =
+    1024 * 1024 * 1024;
+
 class ArcBridgeService;
 
 // This class proxies disk space related requests between CrOS and Android.
-class ArcDiskSpaceBridge : public KeyedService, public mojom::DiskSpaceHost {
+class ArcDiskSpaceBridge : public KeyedService,
+                           public ash::SpacedClient::Observer,
+                           public ConnectionObserver<mojom::DiskSpaceInstance>,
+                           public mojom::DiskSpaceHost {
  public:
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
@@ -96,17 +109,29 @@ class ArcDiskSpaceBridge : public KeyedService, public mojom::DiskSpaceHost {
   void GetQuotaCurrentSpaceForProjectId(
       uint32_t project_id,
       GetQuotaCurrentSpaceForProjectIdCallback callback) override;
+  void GetQuotaCurrentSpacesForIds(
+      const std::vector<uint32_t>& android_uids,
+      const std::vector<uint32_t>& android_gids,
+      const std::vector<uint32_t>& android_project_ids,
+      GetQuotaCurrentSpacesForIdsCallback callback) override;
   void GetFreeDiskSpace(GetFreeDiskSpaceCallback) override;
 
   using GetApplicationsSizeCallback =
       base::OnceCallback<void(bool succeeded, mojom::ApplicationsSizePtr)>;
   bool GetApplicationsSize(GetApplicationsSizeCallback callback);
 
+  // ConnectionObserver<mojom::DiskSpaceInstance> overrides:
+  void OnConnectionReady() override;
+  void OnConnectionClosed() override;
+
+  // ash::SpacedClient::Observer overrides:
+  void OnSpaceUpdate(const SpaceEvent& event) override;
+
   static void EnsureFactoryBuilt();
 
  private:
-  void OnGetFreeDiskSpace(GetFreeDiskSpaceCallback callback,
-                          std::optional<int64_t> reply);
+  void OnGetFreeDiskSpace(std::optional<int64_t> reply);
+  void SendResizeStorageBalloon(int64_t free_space_bytes);
 
   const raw_ptr<ArcBridgeService>
       arc_bridge_service_;  // Owned by ArcServiceManager.

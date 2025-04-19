@@ -10,7 +10,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/containers/contains.h"
+#include "base/containers/fixed_flat_set.h"
 #include "base/functional/callback_helpers.h"
 #include "base/i18n/message_formatter.h"
 #include "base/notreached.h"
@@ -55,36 +55,37 @@
 
 namespace {
 
-const char* kAppIdsWithHiddenMoreSettings[] = {
-    extensions::kWebStoreAppId,
-    extension_misc::kFilesManagerAppId,
-};
-
-const char* kAppIdsWithHiddenPinToShelf[] = {
-    app_constants::kChromeAppId,
-    app_constants::kLacrosAppId,
-};
-
 const char kFileHandlingLearnMore[] =
     "https://support.google.com/chrome/?p=pwa_default_associations";
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-constexpr char const* kAppIdsWithHiddenStoragePermission[] = {
-    arc::kPlayStoreAppId,
-};
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
 bool ShouldHideMoreSettings(const std::string app_id) {
-  return base::Contains(kAppIdsWithHiddenMoreSettings, app_id);
+  constexpr auto kAppIdsWithHiddenMoreSettings =
+      base::MakeFixedFlatSet<std::string_view>({
+          extensions::kWebStoreAppId,
+          extension_misc::kFilesManagerAppId,
+      });
+
+  return kAppIdsWithHiddenMoreSettings.contains(app_id);
 }
 
 bool ShouldHidePinToShelf(const std::string app_id) {
-  return base::Contains(kAppIdsWithHiddenPinToShelf, app_id);
+  constexpr auto kAppIdsWithHiddenPinToShelf =
+      base::MakeFixedFlatSet<std::string_view>({
+          app_constants::kChromeAppId,
+          app_constants::kLacrosAppId,
+      });
+
+  return kAppIdsWithHiddenPinToShelf.contains(app_id);
 }
 
 bool ShouldHideStoragePermission(const std::string app_id) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  return base::Contains(kAppIdsWithHiddenStoragePermission, app_id);
+  constexpr auto kAppIdsWithHiddenStoragePermission =
+      base::MakeFixedFlatSet<std::string_view>({
+          arc::kPlayStoreAppId,
+      });
+
+  return kAppIdsWithHiddenStoragePermission.contains(app_id);
 #else
   return false;
 #endif
@@ -310,7 +311,14 @@ void AppManagementPageHandlerBase::OnAppUpdate(const apps::AppUpdate& update) {
   if (update.ShowInManagementChanged() || update.ReadinessChanged()) {
     if (update.ShowInManagement().value_or(false) &&
         update.Readiness() == apps::Readiness::kReady) {
-      page_->OnAppAdded(std::move(app));
+      if (update.PriorReadiness() ==
+          apps::Readiness::kDisabledByLocalSettings) {
+        // If the app is installed and was previously blocked by local settings,
+        // this should be treated as an app changed event.
+        page_->OnAppChanged(std::move(app));
+      } else {
+        page_->OnAppAdded(std::move(app));
+      }
     }
 
     if (!update.ShowInManagement().value_or(true) ||

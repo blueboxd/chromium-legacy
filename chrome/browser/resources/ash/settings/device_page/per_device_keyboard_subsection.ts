@@ -11,6 +11,7 @@
 import '../icons.html.js';
 import '../settings_shared.css.js';
 import 'chrome://resources/ash/common/cr_elements/localized_link/localized_link.js';
+import 'chrome://resources/ash/common/cr_elements/cr_link_row/cr_link_row.js';
 import 'chrome://resources/ash/common/cr_elements/cr_radio_button/cr_radio_button.js';
 import 'chrome://resources/ash/common/cr_elements/cr_shared_vars.css.js';
 import '../controls/settings_radio_group.js';
@@ -19,7 +20,10 @@ import '../controls/settings_toggle_button.js';
 import '../os_settings_page/os_settings_animated_pages.js';
 import '../os_settings_page/os_settings_subpage.js';
 import './input_device_settings_shared.css.js';
+import './per_device_app_installed_row.js';
+import './per_device_install_row.js';
 import './per_device_keyboard_remap_keys.js';
+import './per_device_subsection_header.js';
 import 'chrome://resources/ash/common/cr_elements/cr_slider/cr_slider.js';
 
 import {I18nMixin} from 'chrome://resources/ash/common/cr_elements/i18n_mixin.js';
@@ -32,18 +36,20 @@ import {DeepLinkingMixin} from '../common/deep_linking_mixin.js';
 import {RouteObserverMixin} from '../common/route_observer_mixin.js';
 import {SettingsSliderElement} from '../controls/settings_slider.js';
 import {SettingsToggleButtonElement} from '../controls/settings_toggle_button.js';
-import {KeyboardAmbientLightSensorObserverReceiver, KeyboardBrightnessObserverReceiver} from '../mojom-webui/input_device_settings_provider.mojom-webui.js';
+import {KeyboardAmbientLightSensorObserverReceiver, KeyboardBrightnessObserverReceiver, LidStateObserverReceiver} from '../mojom-webui/input_device_settings_provider.mojom-webui.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
 import {PersonalizationHubBrowserProxy, PersonalizationHubBrowserProxyImpl} from '../personalization_page/personalization_hub_browser_proxy.js';
 import {Route, Router, routes} from '../router.js';
 
 import {getInputDeviceSettingsProvider} from './input_device_mojo_interface_provider.js';
-import {InputDeviceSettingsProviderInterface, Keyboard, KeyboardPolicies, KeyboardSettings, MetaKey, ModifierKey, SixPackKeyInfo, SixPackShortcutModifier} from './input_device_settings_types.js';
+import {CompanionAppState, InputDeviceSettingsProviderInterface, Keyboard, KeyboardPolicies, KeyboardSettings, MetaKey, ModifierKey, SixPackKeyInfo, SixPackShortcutModifier} from './input_device_settings_types.js';
 import {getPrefPolicyFields, settingsAreEqual} from './input_device_settings_utils.js';
 import {getTemplate} from './per_device_keyboard_subsection.html.js';
 
 const SettingsPerDeviceKeyboardSubsectionElementBase =
     DeepLinkingMixin(I18nMixin(RouteObserverMixin(PolymerElement)));
+
+const MIN_VISIBLE_PERCENT = 5;
 
 export class SettingsPerDeviceKeyboardSubsectionElement extends
     SettingsPerDeviceKeyboardSubsectionElementBase {
@@ -157,6 +163,11 @@ export class SettingsPerDeviceKeyboardSubsectionElement extends
         type: Boolean,
         value: false,
       },
+
+      isLidOpen: {
+        type: Boolean,
+        value: true,
+      },
     };
   }
 
@@ -205,12 +216,14 @@ export class SettingsPerDeviceKeyboardSubsectionElement extends
       KeyboardBrightnessObserverReceiver;
   private keyboardAmbientLightSensorObserverReceiver:
       KeyboardAmbientLightSensorObserverReceiver;
+  private lidStateObserverReceiver: LidStateObserverReceiver;
   private keyboardIndex: number;
   private isLastDevice: boolean;
   private isRgbKeyboardSupported: boolean;
   private hasKeyboardBacklight: boolean;
   private hasAmbientLightSensor: boolean;
   private isKeyboardBacklightControlInSettingsEnabled: boolean;
+  private isLidOpen: boolean;
 
   override async connectedCallback(): Promise<void> {
     super.connectedCallback();
@@ -229,6 +242,15 @@ export class SettingsPerDeviceKeyboardSubsectionElement extends
           this.keyboardAmbientLightSensorObserverReceiver.$
               .bindNewPipeAndPassRemote());
 
+      // Add LidState Observer.
+      this.lidStateObserverReceiver = new LidStateObserverReceiver(this);
+      this.inputDeviceSettingsProvider
+          .observeLidState(
+              this.lidStateObserverReceiver.$.bindNewPipeAndPassRemote())
+          .then(({isLidOpen}: {isLidOpen: boolean}) => {
+            this.onLidStateChanged(isLidOpen);
+          });
+
       this.isRgbKeyboardSupported =
         (await this.inputDeviceSettingsProvider.isRgbKeyboardSupported())
           ?.isRgbKeyboardSupported;
@@ -238,7 +260,22 @@ export class SettingsPerDeviceKeyboardSubsectionElement extends
       this.hasAmbientLightSensor =
           (await this.inputDeviceSettingsProvider.hasAmbientLightSensor())
               ?.hasAmbientLightSensor;
+
+      if (this.hasKeyboardBacklight) {
+        const crSlider = this.shadowRoot!
+                             .querySelector<SettingsSliderElement>(
+                                 '#keyboardBrightnessSlider')!.shadowRoot!
+                             .querySelector('cr-slider');
+        if (crSlider) {
+          // Set key press increment value to be 10.
+          crSlider.setAttribute('key-press-slider-increment', '10');
+        }
+      }
     }
+  }
+
+  private showInstallAppRow(): boolean {
+    return this.keyboard.appInfo?.state === CompanionAppState.kAvailable;
   }
 
   private updateSettingsToCurrentPrefs(): void {
@@ -326,6 +363,16 @@ export class SettingsPerDeviceKeyboardSubsectionElement extends
   }
 
   onKeyboardBrightnessChanged(keyboardBrightnessPercent: number): void {
+    if (keyboardBrightnessPercent > 0 &&
+        keyboardBrightnessPercent < MIN_VISIBLE_PERCENT) {
+      // When auto-brightness is enabled, it's likely that the automated
+      // brightness percentage will fall between 0% and 5%. To avoid confusion
+      // where the user cannot distinguish between the keyboard being off (0%)
+      // and low brightness levels, set the slider to a minimum visible
+      // percentage (5%).
+      this.set('keyboardBrightnessPercentPref.value', MIN_VISIBLE_PERCENT);
+      return;
+    }
     this.set('keyboardBrightnessPercentPref.value', keyboardBrightnessPercent);
   }
 
@@ -333,6 +380,10 @@ export class SettingsPerDeviceKeyboardSubsectionElement extends
                                                  boolean): void {
     this.set(
         'keyboardAutoBrightnessPref.value', keyboardAmbientLightSensorEnabled);
+  }
+
+  onLidStateChanged(isLidOpen: boolean): void {
+    this.isLidOpen = isLidOpen;
   }
 
   private getNumRemappedSixPackKeys(): number {
@@ -369,9 +420,18 @@ export class SettingsPerDeviceKeyboardSubsectionElement extends
                                       this.i18n('builtInKeyboardName');
   }
 
+  private showKeyboardSettings(): boolean {
+    if (!this.isKeyboardBacklightControlInSettingsEnabled) {
+      return true;
+    }
+    return this.keyboard.isExternal ||
+        (!this.keyboard.isExternal && this.isLidOpen);
+  }
+
   private isChromeOsKeyboard(): boolean {
     return this.keyboard.metaKey === MetaKey.kLauncher ||
-        this.keyboard.metaKey === MetaKey.kSearch;
+        this.keyboard.metaKey === MetaKey.kSearch ||
+        this.keyboard.metaKey === MetaKey.kLauncherRefresh;
   }
 
   private openPersonalizationHub(): void {
@@ -398,6 +458,10 @@ export class SettingsPerDeviceKeyboardSubsectionElement extends
     } else {
       return this.i18n('keyboardSendFunctionKeysDescription');
     }
+  }
+
+  private isCompanionAppInstalled(): boolean {
+    return this.keyboard.appInfo?.state === CompanionAppState.kInstalled;
   }
 }
 

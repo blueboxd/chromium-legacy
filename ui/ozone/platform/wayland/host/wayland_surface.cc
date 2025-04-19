@@ -19,6 +19,7 @@
 #include "base/check_op.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
+#include "base/not_fatal_until.h"
 #include "base/ranges/algorithm.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gfx/color_space.h"
@@ -101,7 +102,14 @@ WaylandSurface::WaylandSurface(WaylandConnection* connection,
       surface_submission_in_pixel_coordinates_(
           connection->surface_submission_in_pixel_coordinates()),
       use_viewporter_surface_scaling_(
-          connection->UseViewporterSurfaceScaling()) {}
+          connection->UseViewporterSurfaceScaling()) {
+  // Inherit per-surface preferred scale when owned by non-toplevel windows.
+  // See https://wayland.app/protocols/fractional-scale-v1.
+  if (root_window_ && root_window_->parent_window()) {
+    preferred_scale_factor_ =
+        root_window_->parent_window()->GetPreferredScaleFactor();
+  }
+}
 
 WaylandSurface::~WaylandSurface() {
   for (auto& release : linux_buffer_releases_) {
@@ -910,7 +918,7 @@ void WaylandSurface::ExplicitRelease(
     zwp_linux_buffer_release_v1* linux_buffer_release,
     base::ScopedFD fence) {
   auto iter = linux_buffer_releases_.find(linux_buffer_release);
-  DCHECK(iter != linux_buffer_releases_.end());
+  CHECK(iter != linux_buffer_releases_.end(), base::NotFatalUntil::M130);
   DCHECK(iter->second.buffer);
   std::move(iter->second.explicit_release_callback)
       .Run(iter->second.buffer.get(), std::move(fence));
@@ -996,7 +1004,25 @@ void WaylandSurface::OnLeave(void* data,
 // static
 void WaylandSurface::OnPreferredScale(void* data,
                                       wp_fractional_scale_v1* fractional_scale,
-                                      uint32_t scale) {}
+                                      uint32_t scale) {
+  auto* self = static_cast<WaylandSurface*>(data);
+  DCHECK(self);
+
+  if (!self->connection_->UsePerSurfaceScaling()) {
+    VLOG(1) << "Per-surface scaling is disabled.";
+    return;
+  }
+
+  // Specified in fractional-scale-v1
+  constexpr float kFractionalScaleDenominator = 120.0f;
+  const float scale_factor =
+      scale == 0 ? 1.0f : (scale / kFractionalScaleDenominator);
+
+  self->preferred_scale_factor_ = scale_factor;
+  if (self->root_window_) {
+    self->root_window_->UpdateWindowScale(/*update_bounds=*/true);
+  }
+}
 
 void WaylandSurface::RemoveEnteredOutput(uint32_t output_id) {
   auto it = base::ranges::find(entered_outputs_, output_id);

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 // This file contains definitions for mock objects, used for testing.
 
 // TODO(apatrick): This file "manually" defines some mock objects. Using gMock
@@ -113,6 +118,7 @@ class MockDecoderClient : public DecoderClient {
   MOCK_METHOD(void, ScheduleGrContextCleanup, ());
   MOCK_METHOD(void, SetActiveURL, (GURL url));
   MOCK_METHOD(void, HandleReturnData, (base::span<const uint8_t> data));
+  MOCK_METHOD(bool, ShouldYield, ());
 };
 
 class MockIsolationKeyProvider : public IsolationKeyProvider {

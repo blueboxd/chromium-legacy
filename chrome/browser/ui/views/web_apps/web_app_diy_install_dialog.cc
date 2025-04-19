@@ -32,6 +32,7 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/dialog_model.h"
+#include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/text_constants.h"
@@ -41,6 +42,7 @@
 #include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/view_utils.h"
+#include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -89,7 +91,7 @@ void ShowDiyAppInstallDialog(
 
 #if BUILDFLAG(IS_CHROMEOS)
   webapps::AppId app_id =
-      web_app::GenerateAppIdFromManifestId(web_app_info->manifest_id);
+      web_app::GenerateAppIdFromManifestId(web_app_info->manifest_id());
   metrics::structured::StructuredMetricsClient::Record(
       cros_events::AppDiscovery_Browser_AppInstallDialogShown().SetAppId(
           app_id));
@@ -101,7 +103,7 @@ void ShowDiyAppInstallDialog(
   gfx::ImageSkia icon_image(std::make_unique<WebAppInfoImageSource>(
                                 kIconSize, web_app_info->icon_bitmaps.any),
                             gfx::Size(kIconSize, kIconSize));
-  GURL start_url = web_app_info->start_url;
+  GURL start_url = web_app_info->start_url();
 
   // Fallback to using the document title if the web_app_info->title is not
   // populated, as the document title is always guaranteed to exist.
@@ -136,7 +138,7 @@ void ShowDiyAppInstallDialog(
               &WebAppInstallDialogDelegate::OnClose, delegate_weak_ptr))
           .SetDialogDestroyingCallback(base::BindOnce(
               &WebAppInstallDialogDelegate::OnDestroyed, delegate_weak_ptr))
-          .OverrideDefaultButton(ui::DialogButton::DIALOG_BUTTON_NONE)
+          .OverrideDefaultButton(ui::DialogButton::DIALOG_BUTTON_CANCEL)
           .Build();
 
   dialog_model->AddCustomField(std::make_unique<
@@ -151,11 +153,15 @@ void ShowDiyAppInstallDialog(
       views::BubbleDialogModelHost::FieldType::kControl));
 
   auto dialog = views::BubbleDialogModelHost::CreateModal(
-      std::move(dialog_model), ui::MODAL_TYPE_CHILD);
+      std::move(dialog_model), ui::mojom::ModalType::kChild);
 
   views::BubbleDialogDelegate* dialog_delegate =
       dialog->AsBubbleDialogDelegate();
-  constrained_window::ShowWebModalDialogViews(dialog.release(), web_contents);
+  views::Widget* diy_dialog_widget =
+      constrained_window::ShowWebModalDialogViews(dialog.release(),
+                                                  web_contents);
+  delegate_weak_ptr->StartObservingForPictureInPictureOcclusion(
+      diy_dialog_widget);
 
   base::RecordAction(base::UserMetricsAction("WebAppDiyInstallShown"));
 

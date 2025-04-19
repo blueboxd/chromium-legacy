@@ -46,6 +46,16 @@ class WizardContext {
     kQuickStartFallback,
   };
 
+  // Reflects if Gaia screen first shows a Gaia page or a SAML IdP
+  // page. This has some UI implications for the screen.
+  enum GaiaScreenMode {
+    // Gaia page is the first one to be shown.
+    kDefault = 0,
+
+    // SAML IdP page is the first one to be shown.
+    kSamlRedirect = 1,
+  };
+
   struct GaiaConfig {
     GaiaConfig();
     ~GaiaConfig();
@@ -66,6 +76,9 @@ class WizardContext {
     // The URL path and parameters to be used when showing the 'fallback' URL
     // flow of QuickStart. Only exists when Gaia demands an extra verification.
     std::optional<std::string> quick_start_fallback_path_contents;
+
+    // The type of Gaia screen to show.
+    GaiaScreenMode screen_mode = GaiaScreenMode::kDefault;
   };
 
   struct RecoverySetup {
@@ -192,8 +205,10 @@ class WizardContext {
 
   std::optional<OSAuthErrorKind> osauth_error;
 
-  // Same as above, but the actual context is stored in AuthSessionStorage,
-  // and the token can be used to retrieve it.
+  // Token used for retrieving the `UserContext` from `AuthSessionStorage`.
+  // Once authenticated, the `UserContext` is stored in `AuthSessionStorage` and
+  // this token is used for borrowing it in order to perform operations such as
+  // adding extra factors. See https://crrev.com/c/4729372 for history.
   std::optional<AuthProofToken> extra_factors_token;
 
   // If the onboarding flow wasn't completed by the user we will try to show

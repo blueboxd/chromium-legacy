@@ -29,8 +29,10 @@ class DetectionProcessor {
  public:
   virtual ~DetectionProcessor() = default;
 
-  virtual void OnDetection(
+  virtual void OnFrameProcessed(
       const cros::mojom::KioskVisionDetection& detection) = 0;
+
+  virtual void OnTrackCompleted(const cros::mojom::KioskVisionTrack& track) = 0;
 
   virtual void OnError(cros::mojom::KioskVisionError error) = 0;
 };
@@ -42,10 +44,7 @@ class DetectionProcessor {
 // enabled.
 //
 // `DetectionProcessor` entries are not owned and must outlive the vector.
-//
-// Note the pointer is `const`, not the underlying `DetectionProcessor`. This
-// is analogous to `DetectionProcessor* const`.
-using DetectionProcessors = std::vector<const raw_ptr<DetectionProcessor>>;
+using DetectionProcessors = std::vector<raw_ptr<DetectionProcessor>>;
 
 }  // namespace ash::kiosk_vision
 

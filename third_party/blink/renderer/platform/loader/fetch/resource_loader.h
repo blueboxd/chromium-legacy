@@ -30,6 +30,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_LOADER_H_
 
 #include <memory>
+
 #include "base/containers/span.h"
 #include "base/feature_list.h"
 #include "base/gtest_prod_util.h"
@@ -37,6 +38,7 @@
 #include "base/time/time.h"
 #include "mojo/public/cpp/base/big_buffer.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/prefinalizer.h"
@@ -54,6 +56,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/frame_or_worker_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/gc_plugin.h"
+#include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 
 namespace base {
 class UnguessableToken;
@@ -143,9 +146,9 @@ class PLATFORM_EXPORT ResourceLoader final
                    uint64_t total_bytes_to_be_sent) override;
   void DidReceiveResponse(
       const WebURLResponse&,
-      mojo::ScopedDataPipeConsumerHandle body,
+      absl::variant<mojo::ScopedDataPipeConsumerHandle, SegmentedBuffer>,
       std::optional<mojo_base::BigBuffer> cached_metadata) override;
-  void DidReceiveData(base::span<const char> data) override;
+  void DidReceiveDataForTesting(base::span<const char> data) override;
   void DidReceiveTransferSizeUpdate(int transfer_size_diff) override;
   void DidFinishLoading(base::TimeTicks response_end_time,
                         int64_t encoded_data_length,
@@ -176,12 +179,16 @@ class PLATFORM_EXPORT ResourceLoader final
   void Run() override;
 
   // ResponseBodyLoaderClient implementation.
+  void DidReceiveData(base::span<const char> data) override;
   void DidReceiveDecodedData(
       const String& data,
       std::unique_ptr<ParkableStringImpl::SecureDigest> digest) override;
   void DidFinishLoadingBody() override;
   void DidFailLoadingBody() override;
   void DidCancelLoadingBody() override;
+
+  void DidReceiveDataImpl(
+      absl::variant<SegmentedBuffer, base::span<const char>> data);
 
   bool ShouldFetchCodeCache();
   void StartFetch();

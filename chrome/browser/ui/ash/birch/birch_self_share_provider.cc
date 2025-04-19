@@ -6,16 +6,31 @@
 
 #include "ash/birch/birch_item.h"
 #include "ash/birch/birch_model.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/shell.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/favicon/favicon_service_factory.h"
-#include "chrome/browser/favicon/favicon_utils.h"
+#include "base/time/time.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
-#include "components/favicon_base/favicon_types.h"
+#include "components/prefs/pref_service.h"
 #include "components/send_tab_to_self/send_tab_to_self_entry.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
+#include "components/send_tab_to_self/target_device_info.h"
 
 namespace ash {
+
+namespace {
+
+// The time before a `SendTabToSelfEntry` should be excluded from the
+// `BirchModel`. This is the same expiration time for a device in
+// `GetTargetDeviceInfoSortedList` for `SendTabToSelfBridge`.
+constexpr base::TimeDelta kEntryExpiration = base::Days(10);
+
+bool IsEntryExpired(base::Time shared_time) {
+  return base::Time::Now() - shared_time > kEntryExpiration;
+}
+
+}  // namespace
 
 BirchSelfShareProvider::BirchSelfShareProvider(Profile* profile)
     : profile_(profile),
@@ -24,6 +39,16 @@ BirchSelfShareProvider::BirchSelfShareProvider(Profile* profile)
 BirchSelfShareProvider::~BirchSelfShareProvider() = default;
 
 void BirchSelfShareProvider::RequestBirchDataFetch() {
+  const auto* const pref_service = profile_->GetPrefs();
+  if (!pref_service ||
+      !base::Contains(pref_service->GetList(
+                          prefs::kContextualGoogleIntegrationsConfiguration),
+                      prefs::kChromeSyncIntegrationName)) {
+    // ChromeSync integration is disabled by policy.
+    Shell::Get()->birch_model()->SetSelfShareItems({});
+    return;
+  }
+
   bool refresh = false;
 
   send_tab_to_self::SendTabToSelfModel* model =
@@ -55,7 +80,6 @@ void BirchSelfShareProvider::RequestBirchDataFetch() {
     }
   }
 
-  // Avoid the favicon service network call if we don't need to refresh.
   if (!refresh) {
     Shell::Get()->birch_model()->SetSelfShareItems(std::move(items_));
     return;
@@ -63,60 +87,53 @@ void BirchSelfShareProvider::RequestBirchDataFetch() {
 
   items_.clear();
 
-  favicon::FaviconService* favicon_service =
-      FaviconServiceFactory::GetForProfile(profile_,
-                                           ServiceAccessType::EXPLICIT_ACCESS);
-  if (!favicon_service) {
-    return;
-  }
-
-  active_tasks_ = 0;
   for (std::string guid : new_guids) {
     const send_tab_to_self::SendTabToSelfEntry* entry =
         model->GetEntryByGUID(guid);
-    if (entry && !entry->IsOpened()) {
-      ++active_tasks_;
-      GURL empty_favicon_url;
+    if (entry && !entry->IsOpened() &&
+        !IsEntryExpired(entry->GetSharedTime())) {
       const std::string entry_guid = entry->GetGUID();
+      const std::string device_cache_guid =
+          entry->GetTargetDeviceSyncCacheGuid();
+      std::vector<send_tab_to_self::TargetDeviceInfo> device_info_list =
+          model->GetTargetDeviceInfoSortedList();
+      // Find the origin device that the entry was shared from using its
+      // `target_device_sync_cache_guid_`.
+      auto it = std::find_if(
+          device_info_list.begin(), device_info_list.end(),
+          [&device_cache_guid](
+              const send_tab_to_self::TargetDeviceInfo& device_info) {
+            return device_info.cache_guid == device_cache_guid;
+          });
+
+      // We set the `secondary_icon_type` of the birch item based on the origin
+      // device's form factor.
+      SecondaryIconType secondary_icon_type = SecondaryIconType::kNoIcon;
+      if (it != device_info_list.end()) {
+        send_tab_to_self::TargetDeviceInfo* matched_device_info = &(*it);
+        switch (matched_device_info->form_factor) {
+          case syncer::DeviceInfo::FormFactor::kDesktop:
+            secondary_icon_type = SecondaryIconType::kTabFromDesktop;
+            break;
+          case syncer::DeviceInfo::FormFactor::kPhone:
+            secondary_icon_type = SecondaryIconType::kTabFromPhone;
+            break;
+          case syncer::DeviceInfo::FormFactor::kTablet:
+            secondary_icon_type = SecondaryIconType::kTabFromTablet;
+            break;
+          default:
+            secondary_icon_type = SecondaryIconType::kNoIcon;
+        }
+      }
       items_.emplace_back(
           base::UTF8ToUTF16(entry_guid), base::UTF8ToUTF16(entry->GetTitle()),
           entry->GetURL(), entry->GetSharedTime(),
-          base::UTF8ToUTF16(entry->GetDeviceName()), empty_favicon_url,
+          base::UTF8ToUTF16(entry->GetDeviceName()), secondary_icon_type,
           base::BindRepeating(&BirchSelfShareProvider::OnItemPressed,
                               weak_factory_.GetWeakPtr(), entry_guid));
-      favicon_service->GetFaviconImageForPageURL(
-          entry->GetURL(),
-          base::BindOnce(&BirchSelfShareProvider::OnFavIconDataAvailable,
-                         base::Unretained(this), entry_guid),
-          &cancelable_task_tracker_);
     }
   }
-
-  if (active_tasks_ == 0) {
-    Shell::Get()->birch_model()->SetSelfShareItems(std::move(items_));
-  }
-}
-
-void BirchSelfShareProvider::OnFavIconDataAvailable(
-    const std::string& guid,
-    const favicon_base::FaviconImageResult& image_result) {
-  const std::u16string u16_guid = base::UTF8ToUTF16(guid);
-  auto it = std::find_if(items_.begin(), items_.end(),
-                         [&u16_guid](const BirchSelfShareItem& item) {
-                           return item.guid() == u16_guid;
-                         });
-
-  if (it != items_.end()) {
-    // TODO(b/333412417): Investigate why empty image result for tabs shared
-    // from a macbook.
-    const GURL empty_icon_url = GURL();
-    it->set_favicon_url(image_result.image.IsEmpty() ? empty_icon_url
-                                                     : image_result.icon_url);
-  }
-
-  if (--(active_tasks_) == 0) {
-    Shell::Get()->birch_model()->SetSelfShareItems(std::move(items_));
-  }
+  Shell::Get()->birch_model()->SetSelfShareItems(std::move(items_));
 }
 
 void BirchSelfShareProvider::OnItemPressed(const std::string& guid) {

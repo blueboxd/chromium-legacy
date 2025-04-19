@@ -54,7 +54,12 @@ class FeaturePromoResult {
     kExceededMaxShowCount = 12,  // The promo has been shown so many times that
                                  // it should be considered permanently
                                  // dismissed.
-    kMaxValue = kExceededMaxShowCount
+    kBlockedByNewProfile = 13,  // The promo could not be shown because the user
+                                // is still inside the new profile grace period.
+    kBlockedByReshowDelay = 14,  // The promo is allowed to reshow after
+                                 // dismissal, but the required time has not
+                                 // elapsed yet.
+    kMaxValue = kBlockedByReshowDelay
   };
 
   constexpr FeaturePromoResult() = default;

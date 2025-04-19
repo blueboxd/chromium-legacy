@@ -30,6 +30,8 @@
 #include "chrome/browser/autofill/automated_tests/cache_replayer.h"
 #include "chrome/browser/autofill/captured_sites_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
+#include "chrome/browser/ui/autofill/autofill_popup_controller_impl_test_api.h"
 #include "chrome/browser/ui/autofill/autofill_suggestion_controller.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -39,7 +41,6 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
-#include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/browser_autofill_manager.h"
 #include "components/autofill/core/browser/browser_autofill_manager_test_delegate.h"
@@ -71,6 +72,10 @@ namespace autofill {
 
 namespace {
 
+// This flag allows a caller to specify a different parsing pattern for the
+// test run. When not given, will use "experimental".
+constexpr char kParsingPatternFlag[] = "parsing_pattern";
+
 // The timeout for actions like bringing up the Autofill popup or showing the
 // preview of suggestions.
 constexpr base::TimeDelta kAutofillWaitForActionInterval = base::Seconds(5);
@@ -97,6 +102,15 @@ base::FilePath GetReplayFilesRootDirectory() {
 autofill::ElementExpr GetElementByXpath(const std::string& xpath) {
   return autofill::ElementExpr(base::StringPrintf(
       "automation_helper.getElementByXpath(`%s`)", xpath.c_str()));
+}
+
+std::string GetParsingPatternProvider() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  // The command-line flag to specify the parsing pattern.
+  if (command_line && command_line->HasSwitch(kParsingPatternFlag)) {
+    return command_line->GetSwitchValueASCII(kParsingPatternFlag);
+  }
+  return "experimental";
 }
 
 // Implements the `kAutofillCapturedSiteTestsMetricsScraper` testing feature.
@@ -176,8 +190,7 @@ class AutofillCapturedSitesInteractiveTest
     content::WebContents* web_contents =
         content::WebContents::FromRenderFrameHost(frame);
     auto& autofill_manager = static_cast<BrowserAutofillManager&>(
-        ContentAutofillDriverFactory::FromWebContents(web_contents)
-            ->DriverForFrame(frame->GetMainFrame())
+        ContentAutofillDriver::GetForRenderFrameHost(frame->GetMainFrame())
             ->GetAutofillManager());
     test_delegate()->Observe(autofill_manager);
 
@@ -333,6 +346,9 @@ class AutofillCapturedSitesInteractiveTest
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    std::string prediction_source = GetParsingPatternProvider();
+    VLOG(1) << "Using '" << prediction_source << "' Parsing Pattern Provider.";
+
     // Enable the autofill show typed prediction feature. When active this
     // feature forces input elements on a form to display their autofill type
     // prediction. Test will check this attribute on all the relevant input
@@ -343,7 +359,7 @@ class AutofillCapturedSitesInteractiveTest
                               {features::test::kAutofillShowTypePredictions,
                                {}},
                               {features::kAutofillParsingPatternProvider,
-                               {{"prediction_source", "nextgen"}}},
+                               {{"prediction_source", prediction_source}}},
                               {features::test::
                                    kAutofillCapturedSiteTestsUseAutofillFlow,
                                {}}},
@@ -351,6 +367,11 @@ class AutofillCapturedSitesInteractiveTest
                                features::kAutofillSkipPreFilledFields});
     command_line->AppendSwitchASCII(
         variations::switches::kVariationsOverrideCountry, "us");
+    // SelectParserRelaxation affects the results from the test data because the
+    // test data may have unclosed <select> tags. Since SelectParserRelaxation
+    // is not enabled by default, we are disabling it for these tests.
+    command_line->AppendSwitchASCII("disable-blink-features",
+                                    "SelectParserRelaxation");
     AutofillUiTest::SetUpCommandLine(command_line);
     SetUpHostResolverRules(command_line);
     captured_sites_test_utils::TestRecipeReplayer::SetUpCommandLine(
@@ -379,7 +400,8 @@ class AutofillCapturedSitesInteractiveTest
       CHECK_NE(client, nullptr);
       if (base::WeakPtr<AutofillSuggestionController> controller =
               client->suggestion_controller_for_testing()) {
-        controller->DisableThresholdForTesting(true);
+        test_api(static_cast<AutofillPopupControllerImpl&>(*controller))
+            .DisableThreshold(true);
       }
     };
     // First, automation should focus on the frame containing the autofill

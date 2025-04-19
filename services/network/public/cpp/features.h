@@ -5,13 +5,24 @@
 #ifndef SERVICES_NETWORK_PUBLIC_CPP_FEATURES_H_
 #define SERVICES_NETWORK_PUBLIC_CPP_FEATURES_H_
 
+#include <string>
+
 #include "base/component_export.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/time/time.h"
 
-namespace network {
-namespace features {
+namespace url {
+class Origin;
+}  // namespace url
+
+namespace network::features {
+
+COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kBlockAcceptClientHints);
+COMPONENT_EXPORT(NETWORK_CPP)
+extern const base::FeatureParam<std::string> kBlockAcceptClientHintsBlockedSite;
+COMPONENT_EXPORT(NETWORK_CPP)
+bool ShouldBlockAcceptClientHintsFor(const url::Origin& origin);
 
 COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kNetworkErrorLogging);
 COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kReporting);
@@ -25,6 +36,7 @@ BASE_DECLARE_FEATURE(kProactivelyThrottleLowPriorityRequests);
 COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kCrossOriginOpenerPolicy);
 COMPONENT_EXPORT(NETWORK_CPP)
 BASE_DECLARE_FEATURE(kCrossOriginOpenerPolicyByDefault);
+COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kCoopNoopenerAllowPopups);
 COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kCoopRestrictProperties);
 COMPONENT_EXPORT(NETWORK_CPP)
 BASE_DECLARE_FEATURE(kCoopRestrictPropertiesOriginTrial);
@@ -39,12 +51,9 @@ extern const base::FeatureParam<std::string>
     kMaskedDomainListExperimentalVersion;
 COMPONENT_EXPORT(NETWORK_CPP)
 BASE_DECLARE_FEATURE(kMdnsResponderGeneratedNameListing);
-COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kOpaqueResponseBlockingV02);
-COMPONENT_EXPORT(NETWORK_CPP)
-BASE_DECLARE_FEATURE(kOpaqueResponseBlockingErrorsForAllFetches);
 
 COMPONENT_EXPORT(NETWORK_CPP)
-BASE_DECLARE_FEATURE(kAttributionReportingReportVerification);
+BASE_DECLARE_FEATURE(kOpaqueResponseBlockingErrorsForAllFetches);
 
 COMPONENT_EXPORT(NETWORK_CPP)
 BASE_DECLARE_FEATURE(kAttributionReportingCrossAppWeb);
@@ -89,8 +98,6 @@ extern size_t GetLoaderChunkSize();
 COMPONENT_EXPORT(NETWORK_CPP)
 BASE_DECLARE_FEATURE(kCorsNonWildcardRequestHeadersSupport);
 
-COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kNetworkServiceMemoryCache);
-
 COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kOmitCorsClientCert);
 
 COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kPervasivePayloadsList);
@@ -103,9 +110,6 @@ COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kReduceAcceptLanguage);
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::FeatureParam<base::TimeDelta>
     kReduceAcceptLanguageCacheDuration;
-
-COMPONENT_EXPORT(NETWORK_CPP)
-BASE_DECLARE_FEATURE(kReduceAcceptLanguageOriginTrial);
 
 COMPONENT_EXPORT(NETWORK_CPP)
 BASE_DECLARE_FEATURE(kPrivateNetworkAccessPreflightShortTimeout);
@@ -121,21 +125,6 @@ extern const base::FeatureParam<bool> kPrefetchDNSWithURLAllAnchorElements;
 
 COMPONENT_EXPORT(NETWORK_CPP)
 BASE_DECLARE_FEATURE(kAccessControlAllowMethodsInCORSPreflightSpecConformant);
-
-// If enabled, then navigation requests should check the match responses in the
-// prefetch cache by using the No-Vary-Search rules if No-Vary-Search header
-// is specified in prefetched responses.
-// Feature Meta bug: crbug.com/1378072.
-// No-Vary-Search explainer:
-//   https://github.com/WICG/nav-speculation/blob/main/no-vary-search.md
-COMPONENT_EXPORT(NETWORK_CPP)
-BASE_DECLARE_FEATURE(kPrefetchNoVarySearch);
-
-// If this feature param is true, No-Vary-Search will not only be parsed but
-// also respected by default, without needing to be turned on for a document
-// using an origin trial token.
-COMPONENT_EXPORT(NETWORK_CPP)
-extern const base::FeatureParam<bool> kPrefetchNoVarySearchShippedByDefault;
 
 // If enabled, then the network service will parse the Cookie-Indices header.
 // This does not currently control changing cache behavior according to the
@@ -154,12 +143,9 @@ BASE_DECLARE_FEATURE(kCompressionDictionaryTransportBackend);
 
 COMPONENT_EXPORT(NETWORK_CPP)
 BASE_DECLARE_FEATURE(kCompressionDictionaryTransport);
+
 COMPONENT_EXPORT(NETWORK_CPP)
-BASE_DECLARE_FEATURE(kCompressionDictionaryTransportOverHttp1);
-COMPONENT_EXPORT(NETWORK_CPP)
-BASE_DECLARE_FEATURE(kCompressionDictionaryTransportOverHttp2);
-COMPONENT_EXPORT(NETWORK_CPP)
-BASE_DECLARE_FEATURE(kCompressionDictionaryTransportRequireKnownRootCert);
+BASE_DECLARE_FEATURE(kPreloadedDictionaryConditionalUse);
 
 // Enables visibility aware network service resource scheduler. When enabled,
 // request may be prioritized or de-prioritized based on the visibility of
@@ -171,10 +157,6 @@ BASE_DECLARE_FEATURE(kVisibilityAwareResourceScheduler);
 // Enables Compression Dictionary Transport with Zstandard (aka Shared Zstd).
 COMPONENT_EXPORT(NETWORK_CPP)
 BASE_DECLARE_FEATURE(kSharedZstd);
-
-// Enables de-duping of cookie access details sent to observers.
-COMPONENT_EXPORT(NETWORK_CPP)
-BASE_DECLARE_FEATURE(kCookieAccessDetailsNotificationDeDuping);
 
 COMPONENT_EXPORT(NETWORK_CPP)
 BASE_DECLARE_FEATURE(kReduceTransferSizeUpdatedIPC);
@@ -195,7 +177,15 @@ BASE_DECLARE_FEATURE(kAvoidResourceRequestCopies);
 
 COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kDocumentIsolationPolicy);
 
-}  // namespace features
-}  // namespace network
+COMPONENT_EXPORT(NETWORK_CPP)
+BASE_DECLARE_FEATURE(kNetworkContextPrefetch);
+
+COMPONENT_EXPORT(NETWORK_CPP)
+extern const base::FeatureParam<int> kNetworkContextPrefetchMaxLoaders;
+
+COMPONENT_EXPORT(NETWORK_CPP)
+BASE_DECLARE_FEATURE(kTreatNullIPAsPublicAddressSpace);
+
+}  // namespace network::features
 
 #endif  // SERVICES_NETWORK_PUBLIC_CPP_FEATURES_H_

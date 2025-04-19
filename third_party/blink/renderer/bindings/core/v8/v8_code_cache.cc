@@ -159,6 +159,9 @@ constexpr const char* kCacheSetHistogram =
 // Check previously stored timestamp (either from the code cache or compile
 // hints cache).
 bool V8CodeCache::HasHotTimestamp(const CachedMetadataHandler* cache_handler) {
+  if (!cache_handler) {
+    return false;
+  }
   scoped_refptr<CachedMetadata> cached_metadata =
       cache_handler->GetCachedMetadata(
           V8CodeCache::TagForTimeStamp(cache_handler),
@@ -173,6 +176,15 @@ bool V8CodeCache::HasHotTimestamp(const CachedMetadataHandler* cache_handler) {
     return TimestampIsRecent(cached_metadata.get());
   }
   return false;
+}
+
+bool V8CodeCache::HasHotTimestamp(const CachedMetadata& data,
+                                  const String& encoding) {
+  if (data.DataTypeID() != CacheTag(kCacheTagCompileHints, encoding) &&
+      data.DataTypeID() != CacheTag(kCacheTagTimeStamp, encoding)) {
+    return false;
+  }
+  return TimestampIsRecent(&data);
 }
 
 bool V8CodeCache::HasCodeCache(
@@ -253,33 +265,51 @@ scoped_refptr<CachedMetadata> V8CodeCache::GetCachedMetadataForCompileHints(
 std::tuple<v8::ScriptCompiler::CompileOptions,
            V8CodeCache::ProduceCacheOptions,
            v8::ScriptCompiler::NoCacheReason>
-V8CodeCache::GetCompileOptions(mojom::blink::V8CacheOptions cache_options,
-                               const ClassicScript& classic_script,
-                               bool might_generate_compile_hints,
-                               bool can_use_compile_hints) {
-  return GetCompileOptions(cache_options, classic_script.CacheHandler(),
-                           classic_script.SourceText().length(),
-                           classic_script.SourceLocationType(),
-                           classic_script.SourceUrl(),
-                           might_generate_compile_hints, can_use_compile_hints);
+V8CodeCache::GetCompileOptions(
+    mojom::blink::V8CacheOptions cache_options,
+    const ClassicScript& classic_script,
+    bool might_generate_crowdsourced_compile_hints,
+    bool can_use_crowdsourced_compile_hints,
+    bool v8_compile_hints_magic_comment_runtime_enabled) {
+  return GetCompileOptions(
+      cache_options, classic_script.CacheHandler(),
+      classic_script.SourceText().length(), classic_script.SourceLocationType(),
+      classic_script.SourceUrl(), might_generate_crowdsourced_compile_hints,
+      can_use_crowdsourced_compile_hints,
+      v8_compile_hints_magic_comment_runtime_enabled);
 }
+
+namespace {
+v8::ScriptCompiler::CompileOptions MaybeAddCompileHintsMagic(
+    v8::ScriptCompiler::CompileOptions compile_options,
+    bool v8_compile_hints_magic_comment_runtime_enabled) {
+  if (v8_compile_hints_magic_comment_runtime_enabled) {
+    return v8::ScriptCompiler::CompileOptions(
+        compile_options | v8::ScriptCompiler::kFollowCompileHintsMagicComment);
+  }
+  return compile_options;
+}
+
+}  // namespace
 
 std::tuple<v8::ScriptCompiler::CompileOptions,
            V8CodeCache::ProduceCacheOptions,
            v8::ScriptCompiler::NoCacheReason>
-V8CodeCache::GetCompileOptions(mojom::blink::V8CacheOptions cache_options,
-                               const CachedMetadataHandler* cache_handler,
-                               size_t source_text_length,
-                               ScriptSourceLocationType source_location_type,
-                               const KURL& url,
-                               bool might_generate_compile_hints,
-                               bool can_use_compile_hints) {
+V8CodeCache::GetCompileOptions(
+    mojom::blink::V8CacheOptions cache_options,
+    const CachedMetadataHandler* cache_handler,
+    size_t source_text_length,
+    ScriptSourceLocationType source_location_type,
+    const KURL& url,
+    bool might_generate_crowdsourced_compile_hints,
+    bool can_use_crowdsourced_compile_hints,
+    bool v8_compile_hints_magic_comment_runtime_enabled) {
   static const int kMinimalCodeLength = 1024;
   v8::ScriptCompiler::NoCacheReason no_cache_reason;
 
   auto no_code_cache_compile_options = v8::ScriptCompiler::kNoCompileOptions;
 
-  if (might_generate_compile_hints && url.ProtocolIsInHTTPFamily()) {
+  if (might_generate_crowdsourced_compile_hints) {
     DCHECK(base::FeatureList::IsEnabled(features::kProduceCompileHints2));
 
     // If we end up compiling the script without forced eager compilation, we'll
@@ -297,7 +327,7 @@ V8CodeCache::GetCompileOptions(mojom::blink::V8CacheOptions cache_options,
     // cached scripts (especially if they've been eagerly compiled by a
     // ServiceWorker) and omitting cached scripts would deteriorate the data.
     no_code_cache_compile_options = v8::ScriptCompiler::kProduceCompileHints;
-  } else if (url.ProtocolIsInHTTPFamily() && can_use_compile_hints) {
+  } else if (can_use_crowdsourced_compile_hints) {
     // This doesn't need to be gated behind a runtime flag, because there won't
     // be any data unless the v8_compile_hints::kConsumeCompileHints
     // flag is on.
@@ -347,8 +377,8 @@ V8CodeCache::GetCompileOptions(mojom::blink::V8CacheOptions cache_options,
   RecordCacheGetStatistics(cache_handler);
 
   if (HasCodeCache(cache_handler) &&
-      no_code_cache_compile_options !=
-          v8::ScriptCompiler::kProduceCompileHints) {
+      (no_code_cache_compile_options &
+       v8::ScriptCompiler::kProduceCompileHints) == 0) {
     return std::make_tuple(v8::ScriptCompiler::kConsumeCodeCache,
                            ProduceCacheOptions::kNoProduceCache,
                            no_cache_reason);
@@ -359,9 +389,10 @@ V8CodeCache::GetCompileOptions(mojom::blink::V8CacheOptions cache_options,
   if (cache_handler->IsServedFromCacheStorage())
     cache_options = mojom::blink::V8CacheOptions::kCodeWithoutHeatCheck;
 
-  // Call FeatureList::IsEnabled only once.
-  static bool local_compile_hints_enabled =
-      base::FeatureList::IsEnabled(features::kLocalCompileHints);
+  bool local_compile_hints_enabled =
+      base::FeatureList::IsEnabled(features::kLocalCompileHints) &&
+      !might_generate_crowdsourced_compile_hints &&
+      !can_use_crowdsourced_compile_hints;
 
   switch (cache_options) {
     case mojom::blink::V8CacheOptions::kDefault:
@@ -386,24 +417,35 @@ V8CodeCache::GetCompileOptions(mojom::blink::V8CacheOptions cache_options,
               ProduceCacheOptions::kSetTimeStamp,
               v8::ScriptCompiler::kNoCacheBecauseCacheTooCold);
         }
-        return std::make_tuple(no_code_cache_compile_options,
-                               ProduceCacheOptions::kSetTimeStamp,
-                               v8::ScriptCompiler::kNoCacheBecauseCacheTooCold);
+        return std::make_tuple(
+            MaybeAddCompileHintsMagic(
+                no_code_cache_compile_options,
+                v8_compile_hints_magic_comment_runtime_enabled),
+            ProduceCacheOptions::kSetTimeStamp,
+            v8::ScriptCompiler::kNoCacheBecauseCacheTooCold);
       }
       if (local_compile_hints_enabled && HasCompileHints(cache_handler)) {
         // In this branch, the timestamp in the compile hints is hot.
         return std::make_tuple(
-            v8::ScriptCompiler::kConsumeCompileHints,
+            MaybeAddCompileHintsMagic(
+                v8::ScriptCompiler::kConsumeCompileHints,
+                v8_compile_hints_magic_comment_runtime_enabled),
             ProduceCacheOptions::kProduceCodeCache,
             v8::ScriptCompiler::kNoCacheBecauseDeferredProduceCodeCache);
       }
       return std::make_tuple(
-          no_code_cache_compile_options, ProduceCacheOptions::kProduceCodeCache,
+          MaybeAddCompileHintsMagic(
+              no_code_cache_compile_options,
+              v8_compile_hints_magic_comment_runtime_enabled),
+          ProduceCacheOptions::kProduceCodeCache,
           v8::ScriptCompiler::kNoCacheBecauseDeferredProduceCodeCache);
     }
     case mojom::blink::V8CacheOptions::kCodeWithoutHeatCheck:
       return std::make_tuple(
-          no_code_cache_compile_options, ProduceCacheOptions::kProduceCodeCache,
+          MaybeAddCompileHintsMagic(
+              no_code_cache_compile_options,
+              v8_compile_hints_magic_comment_runtime_enabled),
+          ProduceCacheOptions::kProduceCodeCache,
           v8::ScriptCompiler::kNoCacheBecauseDeferredProduceCodeCache);
     case mojom::blink::V8CacheOptions::kFullCodeWithoutHeatCheck:
       return std::make_tuple(

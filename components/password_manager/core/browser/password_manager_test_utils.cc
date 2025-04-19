@@ -56,6 +56,7 @@ std::unique_ptr<PasswordForm> PasswordFormFromData(
 
 std::unique_ptr<PasswordForm> FillPasswordFormWithData(
     const PasswordFormData& form_data,
+    bool is_account_store,
     bool use_federated_login) {
   auto form = PasswordFormFromData(form_data);
   if (form_data.username_value) {
@@ -67,14 +68,18 @@ std::unique_ptr<PasswordForm> FillPasswordFormWithData(
   if (use_federated_login) {
     form->password_value.clear();
     form->federation_origin =
-        url::Origin::Create(GURL("https://accounts.google.com/login"));
+        url::SchemeHostPort(GURL("https://accounts.google.com/login"));
     if (!affiliations::IsValidAndroidFacetURI(form->signon_realm)) {
       form->signon_realm =
           "federation://" + form->url.host() + "/accounts.google.com";
       form->type = PasswordForm::Type::kApi;
     }
   }
-  form->in_store = PasswordForm::Store::kProfileStore;
+  if (is_account_store) {
+    form->in_store = PasswordForm::Store::kAccountStore;
+  } else {
+    form->in_store = PasswordForm::Store::kProfileStore;
+  }
   form->password_issues = base::flat_map<InsecureType, InsecurityMetadata>();
   return form;
 }
@@ -105,38 +110,28 @@ bool ContainsEqualPasswordFormsUnordered(
     const std::vector<std::unique_ptr<PasswordForm>>& expectations,
     const std::vector<std::unique_ptr<PasswordForm>>& actual_values,
     std::ostream* mismatch_output) {
-  std::vector<PasswordForm*> remaining_expectations(expectations.size());
-  base::ranges::transform(expectations, remaining_expectations.begin(),
-                          &std::unique_ptr<PasswordForm>::get);
-
-  bool had_mismatched_actual_form = false;
-  for (const auto& actual : actual_values) {
-    auto it_matching_expectation = base::ranges::find(
-        remaining_expectations, *actual,
-        [](const PasswordForm* expected) { return *expected; });
-    if (it_matching_expectation != remaining_expectations.end()) {
-      // Erase the matched expectation by moving the last element to its place.
-      *it_matching_expectation = remaining_expectations.back();
-      remaining_expectations.pop_back();
-    } else {
-      if (mismatch_output) {
-        *mismatch_output << std::endl
-                         << "Unmatched actual form:" << std::endl
-                         << *actual;
-      }
-      had_mismatched_actual_form = true;
-    }
+  std::vector<::testing::Matcher<std::unique_ptr<PasswordForm>>>
+      expected_matchers;
+  for (const auto& form : expectations) {
+    expected_matchers.push_back(
+        testing::Pointee(EqualsIgnorePrimaryKey(*form)));
   }
-
+  auto m = testing::UnorderedElementsAreArray(expected_matchers);
+  testing::StringMatchResultListener listener;
+  bool matches = testing::ExplainMatchResult(m, actual_values, &listener);
   if (mismatch_output) {
-    for (const PasswordForm* remaining_expected_form : remaining_expectations) {
-      *mismatch_output << std::endl
-                       << "Unmatched expected form:" << std::endl
-                       << *remaining_expected_form;
-    }
+    *mismatch_output << listener.str();
   }
+  return matches;
+}
 
-  return !had_mismatched_actual_form && remaining_expectations.empty();
+std::vector<::testing::Matcher<PasswordForm>> FormsIgnoringPrimaryKey(
+    const std::vector<PasswordForm>& forms) {
+  std::vector<::testing::Matcher<PasswordForm>> result;
+  for (const auto& form : forms) {
+    result.push_back(EqualsIgnorePrimaryKey(form));
+  }
+  return result;
 }
 
 MockPasswordStoreObserver::MockPasswordStoreObserver() = default;

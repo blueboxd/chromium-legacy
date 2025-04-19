@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <string_view>
 
 #include "base/functional/callback_forward.h"
 #include "base/memory/ref_counted.h"
@@ -19,8 +20,6 @@ class BrowserStatePolicyConnector;
 class ChromeBrowserStateIOData;
 class PrefProxyConfigTracker;
 class PrefService;
-class TestChromeBrowserState;
-class TestChromeBrowserStateManager;
 
 namespace base {
 class SequencedTaskRunner;
@@ -49,6 +48,7 @@ class ChromeBrowserState : public web::BrowserState {
  public:
   enum class CreationMode {
     kSynchronous,
+    kAsynchronous,
   };
 
   // Delegate notified of ChromeBrowserState creation events.
@@ -83,6 +83,7 @@ class ChromeBrowserState : public web::BrowserState {
   // null, `delegate` will be notified when the creation starts and completes.
   static std::unique_ptr<ChromeBrowserState> CreateBrowserState(
       const base::FilePath& path,
+      std::string_view browser_state_name,
       CreationMode creation_mode,
       Delegate* delegate);
 
@@ -145,8 +146,9 @@ class ChromeBrowserState : public web::BrowserState {
   virtual void ClearNetworkingHistorySince(base::Time time,
                                            base::OnceClosure completion) = 0;
 
-  // Returns an identifier of the browser state for debugging.
-  std::string GetDebugName();
+  // Returns the ChromeBrowserState name. This is empty for off-the-record
+  // ChromeBrowserStates.
+  const std::string& GetBrowserStateName() const;
 
   // Returns the helper object that provides the proxy configuration service
   // access to the the proxy configuration possibly defined by preferences.
@@ -173,13 +175,12 @@ class ChromeBrowserState : public web::BrowserState {
  protected:
   explicit ChromeBrowserState(
       const base::FilePath& state_path,
+      std::string_view browser_state_name,
       scoped_refptr<base::SequencedTaskRunner> io_task_runner);
 
  private:
-  friend class ::TestChromeBrowserState;
-  friend class ::TestChromeBrowserStateManager;
-
   base::FilePath const state_path_;
+  std::string const browser_state_name_;
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 };

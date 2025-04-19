@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 
+#include "base/metrics/histogram_functions.h"
+#include "base/timer/elapsed_timer.h"
 #include "net/base/data_url.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
@@ -11,6 +13,8 @@
 #include "net/base/url_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
+#include "services/metrics/public/cpp/metrics_utils.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
@@ -62,7 +66,11 @@ String GetDomainAndRegistry(const String& host, PrivateRegistryFilter filter) {
 
 std::tuple<int, ResourceResponse, scoped_refptr<SharedBuffer>> ParseDataURL(
     const KURL& url,
-    const String& method) {
+    const String& method,
+    ukm::SourceId source_id,
+    ukm::UkmRecorder* recorder) {
+  base::ElapsedTimer timer;
+
   std::string utf8_mime_type;
   std::string utf8_charset;
   std::string data_string;
@@ -75,6 +83,8 @@ std::tuple<int, ResourceResponse, scoped_refptr<SharedBuffer>> ParseDataURL(
     return std::make_tuple(result, ResourceResponse(), nullptr);
 
   auto buffer = SharedBuffer::Create(data_string.data(), data_string.size());
+  // The below code is the same as in
+  // `CreateResourceForTransparentPlaceholderImage()`.
   ResourceResponse response;
   response.SetHttpStatusCode(200);
   response.SetHttpStatusText(AtomicString("OK"));
@@ -90,6 +100,48 @@ std::tuple<int, ResourceResponse, scoped_refptr<SharedBuffer>> ParseDataURL(
     response.AddHttpHeaderField(WebString::FromLatin1(name),
                                 WebString::FromLatin1(value));
   }
+
+  base::TimeDelta elapsed = timer.Elapsed();
+  base::UmaHistogramMicrosecondsTimes("Blink.Network.ParseDataURLTime",
+                                      elapsed);
+  size_t length = url.GetString().length();
+  base::UmaHistogramCounts10M("Blink.Network.DataUrlLength",
+                              static_cast<int>(length));
+  if (length >= 0 && length < 1000) {
+    base::UmaHistogramMicrosecondsTimes(
+        "Blink.Network.ParseDataURLTime.Under1000Char", elapsed);
+  } else if (length >= 1000 && length < 100000) {
+    base::UmaHistogramMicrosecondsTimes(
+        "Blink.Network.ParseDataURLTime.Under100000Char", elapsed);
+  } else {
+    base::UmaHistogramMicrosecondsTimes(
+        "Blink.Network.ParseDataURLTime.Over100000Char", elapsed);
+  }
+  bool is_image = utf8_mime_type.starts_with("image/");
+  if (is_image) {
+    base::UmaHistogramCounts10M("Blink.Network.DataUrlLength.Image",
+                                static_cast<int>(length));
+    base::UmaHistogramMicrosecondsTimes("Blink.Network.ParseDataURLTime.Image",
+                                        elapsed);
+    if (length >= 0 && length < 1000) {
+      base::UmaHistogramMicrosecondsTimes(
+          "Blink.Network.ParseDataURLTime.Image.Under1000Char", elapsed);
+    } else if (length >= 1000 && length < 100000) {
+      base::UmaHistogramMicrosecondsTimes(
+          "Blink.Network.ParseDataURLTime.Image.Under100000Char", elapsed);
+    } else {
+      base::UmaHistogramMicrosecondsTimes(
+          "Blink.Network.ParseDataURLTime.Image.Over100000Char", elapsed);
+    }
+  }
+  if (source_id != ukm::kInvalidSourceId && recorder) {
+    ukm::builders::Network_DataUrls builder(source_id);
+    builder.SetUrlLength(ukm::GetExponentialBucketMinForCounts1000(length));
+    builder.SetParseTime(elapsed.InMicroseconds());
+    builder.SetIsImage(is_image);
+    builder.Record(recorder);
+  }
+
   return std::make_tuple(net::OK, std::move(response), std::move(buffer));
 }
 
@@ -118,6 +170,10 @@ bool IsCertificateTransparencyRequiredError(int error_code) {
 String GenerateAcceptLanguageHeader(const String& lang) {
   return WebString::FromUTF8(
       net::HttpUtil::GenerateAcceptLanguageHeader(lang.Utf8()));
+}
+
+String ExpandLanguageList(const String& lang) {
+  return WebString::FromUTF8(net::HttpUtil::ExpandLanguageList(lang.Utf8()));
 }
 
 Vector<char> ParseMultipartBoundary(const AtomicString& content_type_header) {

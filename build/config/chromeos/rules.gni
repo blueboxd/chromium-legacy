@@ -157,6 +157,7 @@ template("generate_chromeos_sdk_deps") {
       # Needed for various SDK components used below.
       "//build/cros_cache/chrome-sdk/misc/",
       "//build/cros_cache/chrome-sdk/symlinks/",
+      "//build/cros_cache/common/",
       "//chrome/VERSION",
 
       # The LKGM file controls what version of the VM image to download. Add it
@@ -504,6 +505,32 @@ template("generate_runner_script") {
     if (defined(invoker.data_deps)) {
       data_deps += invoker.data_deps
     }
+  }
+}
+
+# Handy template to define a generated_script test prepended with the
+# cros_test_wrapper, which will automatically handle spinning up a CrOS VM
+# and/or deploying the browser to the DUT prior to test execution.
+template("cros_test_wrapper_script_test") {
+  forward_variables_from(invoker,
+                         [
+                           "data_deps",
+                           "args",
+                         ])
+  generate_wrapper("${target_name}") {
+    executable = "$root_out_dir/bin/cros_test_wrapper"
+    wrapper_script = "$root_out_dir/bin/run_${target_name}"
+    testonly = true
+
+    if (!defined(args)) {
+      args = []
+    }
+    executable_args = args
+
+    if (!defined(data_deps)) {
+      data_deps = []
+    }
+    data_deps += [ "//chromeos:cros_test_wrapper" ]
   }
 }
 

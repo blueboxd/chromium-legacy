@@ -650,8 +650,8 @@ SkiaGraphiteImageRepresentation::ScopedGraphiteReadAccess::CreateSkImage(
     auto origin = representation()->surface_origin() == kTopLeft_GrSurfaceOrigin
                       ? skgpu::Origin::kTopLeft
                       : skgpu::Origin::kBottomLeft;
-    return SkImages::AdoptTextureFrom(recorder, graphite_texture(), color_type,
-                                      alpha_type, sk_color_space, origin);
+    return SkImages::WrapTexture(recorder, graphite_texture(), color_type,
+                                 alpha_type, sk_color_space, origin);
   } else {
     CHECK_EQ(static_cast<int>(graphite_textures_.size()),
              format.NumberOfPlanes());
@@ -682,10 +682,10 @@ sk_sp<SkImage> SkiaGraphiteImageRepresentation::ScopedGraphiteReadAccess::
   auto alpha_type = SkAlphaType::kOpaque_SkAlphaType;
   auto color_type =
       viz::ToClosestSkColorType(/*gpu_compositing=*/true, format, plane_index);
-  return SkImages::AdoptTextureFrom(context_state->gpu_main_graphite_recorder(),
-                                    graphite_texture(plane_index), color_type,
-                                    alpha_type, /*colorSpace=*/nullptr,
-                                    texture_release_proc, release_context);
+  return SkImages::WrapTexture(context_state->gpu_main_graphite_recorder(),
+                               graphite_texture(plane_index), color_type,
+                               alpha_type, /*colorSpace=*/nullptr,
+                               texture_release_proc, release_context);
 }
 
 bool SkiaGraphiteImageRepresentation::ScopedGraphiteReadAccess::
@@ -807,11 +807,30 @@ std::unique_ptr<DawnImageRepresentation::ScopedAccess>
 DawnImageRepresentation::BeginScopedAccess(
     wgpu::TextureUsage usage,
     AllowUnclearedAccess allow_uncleared) {
-  return BeginScopedAccess(usage, allow_uncleared, gfx::Rect(size()));
+  return BeginScopedAccess(usage, wgpu::TextureUsage::None, allow_uncleared,
+                           gfx::Rect(size()));
+}
+
+std::unique_ptr<DawnImageRepresentation::ScopedAccess>
+DawnImageRepresentation::BeginScopedAccess(
+    wgpu::TextureUsage usage,
+    wgpu::TextureUsage internal_usage,
+    AllowUnclearedAccess allow_uncleared) {
+  return BeginScopedAccess(usage, internal_usage, allow_uncleared,
+                           gfx::Rect(size()));
 }
 
 std::unique_ptr<DawnImageRepresentation::ScopedAccess>
 DawnImageRepresentation::BeginScopedAccess(wgpu::TextureUsage usage,
+                                           AllowUnclearedAccess allow_uncleared,
+                                           const gfx::Rect& update_rect) {
+  return BeginScopedAccess(usage, wgpu::TextureUsage::None, allow_uncleared,
+                           update_rect);
+}
+
+std::unique_ptr<DawnImageRepresentation::ScopedAccess>
+DawnImageRepresentation::BeginScopedAccess(wgpu::TextureUsage usage,
+                                           wgpu::TextureUsage internal_usage,
                                            AllowUnclearedAccess allow_uncleared,
                                            const gfx::Rect& update_rect) {
   if (allow_uncleared != AllowUnclearedAccess::kYes && !IsCleared()) {
@@ -819,7 +838,7 @@ DawnImageRepresentation::BeginScopedAccess(wgpu::TextureUsage usage,
     return nullptr;
   }
 
-  wgpu::Texture texture = BeginAccess(usage, update_rect);
+  wgpu::Texture texture = BeginAccess(usage, internal_usage, update_rect);
   if (!texture) {
     LOG(ERROR) << "Error creating wgpu::Texture";
     return nullptr;
@@ -841,6 +860,7 @@ DawnImageRepresentation::BeginScopedAccess(wgpu::TextureUsage usage,
 
 wgpu::Texture DawnImageRepresentation::BeginAccess(
     wgpu::TextureUsage usage,
+    wgpu::TextureUsage internal_usage,
     const gfx::Rect& update_rect) {
 #if BUILDFLAG(IS_WIN)
   // The `update_rect` is a hint to update only certain portion
@@ -850,7 +870,7 @@ wgpu::Texture DawnImageRepresentation::BeginAccess(
   // with DComp/DXGI cases.
   DCHECK_EQ(update_rect, gfx::Rect(size()));
 #endif
-  return this->BeginAccess(usage);
+  return this->BeginAccess(usage, internal_usage);
 }
 
 bool DawnImageRepresentation::SupportsMultipleConcurrentReadAccess() {
@@ -881,39 +901,6 @@ SharedImageRepresentationFactoryRef::~SharedImageRepresentationFactoryRef() {
     backing()->UnregisterImageFactory();
     backing()->MarkForDestruction();
   }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// VaapiImageRepresentation
-
-VaapiImageRepresentation::VaapiImageRepresentation(
-    SharedImageManager* manager,
-    SharedImageBacking* backing,
-    MemoryTypeTracker* tracker,
-    VaapiDependencies* vaapi_deps)
-    : SharedImageRepresentation(manager, backing, tracker),
-      vaapi_deps_(vaapi_deps) {}
-
-VaapiImageRepresentation::~VaapiImageRepresentation() = default;
-
-VaapiImageRepresentation::ScopedWriteAccess::ScopedWriteAccess(
-    base::PassKey<VaapiImageRepresentation> /* pass_key */,
-    VaapiImageRepresentation* representation)
-    : ScopedAccessBase(representation, AccessMode::kWrite) {}
-
-VaapiImageRepresentation::ScopedWriteAccess::~ScopedWriteAccess() {
-  representation()->EndAccess();
-}
-
-const media::VASurface*
-VaapiImageRepresentation::ScopedWriteAccess::va_surface() {
-  return representation()->vaapi_deps_->GetVaSurface();
-}
-
-std::unique_ptr<VaapiImageRepresentation::ScopedWriteAccess>
-VaapiImageRepresentation::BeginScopedWriteAccess() {
-  return std::make_unique<ScopedWriteAccess>(
-      base::PassKey<VaapiImageRepresentation>(), this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

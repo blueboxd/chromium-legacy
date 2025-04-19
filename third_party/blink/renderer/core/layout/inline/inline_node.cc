@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/core/layout/inline/inline_node.h"
 
 #include <memory>
@@ -10,6 +15,7 @@
 #include "base/containers/adapters.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/not_fatal_until.h"
 #include "base/ranges/algorithm.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/blink/renderer/core/dom/text_diff_range.h"
@@ -240,7 +246,7 @@ class ReusingTextShaper final {
     HeapVector<Member<const ShapeResult>> shape_results;
     if (!reusable_items_)
       return shape_results;
-    for (const InlineItem *item = std::lower_bound(
+    for (auto item = std::lower_bound(
              reusable_items_->begin(), reusable_items_->end(), start_offset,
              [](const InlineItem& item, unsigned offset) {
                return item.EndOffset() <= offset;
@@ -269,10 +275,9 @@ class ReusingTextShaper final {
     DCHECK_LT(start_offset, end_offset);
     const TextDirection direction = start_item.Direction();
     if (data_.segments) {
-      return data_.segments->ShapeText(
-          &shaper_, &font, direction, start_offset, end_offset,
-          base::checked_cast<unsigned>(&start_item - data_.items.begin()),
-          options_);
+      return data_.segments->ShapeText(&shaper_, &font, direction, start_offset,
+                                       end_offset,
+                                       data_.ToItemIndex(start_item), options_);
     }
     RunSegmenter::RunSegmenterRange range =
         start_item.CreateRunSegmenterRange();
@@ -374,12 +379,12 @@ void CollectInlinesInternal(ItemsBuilder* builder,
 
       builder->ClearInlineFragment(node);
     } else if (node->IsAtomicInlineLevel()) {
-      if (node->IsBoxListMarkerIncludingNG()) {
+      if (node->IsLayoutOutsideListMarker()) {
         // LayoutListItem produces the 'outside' list marker as an inline
         // block. This is an out-of-flow item whose position is computed
         // automatically.
         builder->AppendOpaque(InlineItem::kListMarker, node);
-      } else if (UNLIKELY(node->IsInitialLetterBox())) {
+      } else if (node->IsInitialLetterBox()) [[unlikely]] {
         builder->AppendOpaque(InlineItem::kInitialLetterBox,
                               kObjectReplacementCharacter, node);
         builder->SetHasInititialLetterBox();
@@ -543,7 +548,7 @@ void TruncateOrPadText(String* text, unsigned length) {
 bool SetParagraphTo(const String& text,
                     const ComputedStyle& block_style,
                     BidiParagraph& bidi) {
-  if (UNLIKELY(block_style.GetUnicodeBidi() == UnicodeBidi::kPlaintext)) {
+  if (block_style.GetUnicodeBidi() == UnicodeBidi::kPlaintext) [[unlikely]] {
     return bidi.SetParagraph(text, std::nullopt);
   }
   return bidi.SetParagraph(text, block_style.Direction());
@@ -575,8 +580,9 @@ void InlineNode::PrepareLayoutIfNeeded() const {
 
     // Note: For "text-combine-upright:all", we use a font calculated from
     // text width, so we can't reuse previous data.
-    if (LIKELY(!IsTextCombine()))
+    if (!IsTextCombine()) [[likely]] {
       previous_data = block_flow->TakeInlineNodeData();
+    }
     block_flow->ResetInlineNodeData();
   }
 
@@ -605,7 +611,7 @@ void InlineNode::PrepareLayout(InlineNodeData* previous_data) const {
   LayoutBlockFlow* block_flow = GetLayoutBlockFlow();
   block_flow->ClearNeedsCollectInlines();
 
-  if (UNLIKELY(IsTextCombine())) {
+  if (IsTextCombine()) [[unlikely]] {
     // To use |LayoutTextCombine::UsersScaleX()| in |FragmentItemsBuilder|,
     // we adjust font here instead in |Layout()|,
     AdjustFontForTextCombineUprightAll();
@@ -651,7 +657,7 @@ class InlineNodeDataEditor final {
 
     // For "text-combine-upright:all", we choose font to fit layout result in
     // 1em, so font can be different than original font.
-    if (UNLIKELY(IsA<LayoutTextCombine>(block_flow_))) {
+    if (IsA<LayoutTextCombine>(block_flow_)) [[unlikely]] {
       return nullptr;
     }
 
@@ -699,10 +705,10 @@ class InlineNodeDataEditor final {
     items.ReserveInitialCapacity(data_->items.size() + 3);
 
     // Copy items before replaced range
-    auto const* end = data_->items.end();
-    auto* it = data_->items.begin();
+    auto end = data_->items.end();
+    auto it = data_->items.begin();
     for (; it != end && it->end_offset_ < start_offset; ++it) {
-      DCHECK(it != data_->items.end());
+      CHECK(it != data_->items.end(), base::NotFatalUntil::M130);
       items.push_back(*it);
     }
 
@@ -967,7 +973,7 @@ const InlineNodeData& InlineNode::EnsureData() const {
 const OffsetMapping* InlineNode::ComputeOffsetMappingIfNeeded() const {
 #if DCHECK_IS_ON()
   DCHECK(!GetLayoutBlockFlow()->GetDocument().NeedsLayoutTreeUpdate() ||
-         GetLayoutBlockFlow()->IsDetachedNonDomRoot());
+         GetLayoutBlockFlow()->IsInDetachedNonDomTree());
 #endif
 
   InlineNodeData* data = MutableData();
@@ -984,7 +990,7 @@ void InlineNode::ComputeOffsetMapping(LayoutBlockFlow* layout_block_flow,
 #if DCHECK_IS_ON()
   DCHECK(!data->offset_mapping);
   DCHECK(!layout_block_flow->GetDocument().NeedsLayoutTreeUpdate() ||
-         layout_block_flow->IsDetachedNonDomRoot());
+         layout_block_flow->IsInDetachedNonDomTree());
 #endif
 
   const SvgTextChunkOffsets* chunk_offsets = nullptr;
@@ -1028,7 +1034,7 @@ const OffsetMapping* InlineNode::GetOffsetMapping(
     LayoutBlockFlow* layout_block_flow) {
   DCHECK(!layout_block_flow->GetDocument().NeedsLayoutTreeUpdate());
 
-  if (UNLIKELY(layout_block_flow->NeedsLayout())) {
+  if (layout_block_flow->NeedsLayout()) [[unlikely]] {
     // TODO(kojii): This shouldn't happen, but is not easy to fix all cases.
     // Return nullptr so that callers can chose to fail gracefully, or
     // null-deref. crbug.com/946004
@@ -1079,8 +1085,9 @@ void InlineNode::CollectInlines(InlineNodeData* data,
   }
   builder.DidFinishCollectInlines(data);
 
-  if (UNLIKELY(builder.HasUnicodeBidiPlainText()))
+  if (builder.HasUnicodeBidiPlainText()) [[unlikely]] {
     UseCounter::Count(GetDocument(), WebFeature::kUnicodeBidiPlainText);
+  }
 }
 
 const SvgTextChunkOffsets* InlineNode::FindSvgTextChunks(
@@ -1395,7 +1402,7 @@ void InlineNode::ShapeText(InlineItemsData* data,
 
     // Symbol marker is painted as graphics. Create a ShapeResult of space
     // glyphs with the desired size to make it less special for line breaker.
-    if (UNLIKELY(start_item.IsSymbolMarker())) {
+    if (start_item.IsSymbolMarker()) [[unlikely]] {
       LayoutUnit symbol_width = ListMarker::WidthOfSymbol(
           start_style,
           LayoutCounter::ListStyle(start_item.GetLayoutObject(), start_style));
@@ -1452,13 +1459,15 @@ void InlineNode::ShapeText(InlineItemsData* data,
 
     // Shaping a single item. Skip if the existing results remain valid.
     if (previous_text && end_offset == start_item.EndOffset() &&
-        !NeedsShaping(start_item) && LIKELY(!IsTextCombine())) {
-      DCHECK_EQ(start_item.StartOffset(),
-                start_item.TextShapeResult()->StartIndex());
-      DCHECK_EQ(start_item.EndOffset(),
-                start_item.TextShapeResult()->EndIndex());
-      index++;
-      continue;
+        !NeedsShaping(start_item)) {
+      if (!IsTextCombine()) [[likely]] {
+        DCHECK_EQ(start_item.StartOffset(),
+                  start_item.TextShapeResult()->StartIndex());
+        DCHECK_EQ(start_item.EndOffset(),
+                  start_item.TextShapeResult()->EndIndex());
+        index++;
+        continue;
+      }
     }
 
     // Results may only be reused if all items in the range remain valid.
@@ -1492,7 +1501,7 @@ void InlineNode::ShapeText(InlineItemsData* data,
     const ShapeResult* shape_result =
         shaper.Shape(start_item, font, end_offset);
 
-    if (UNLIKELY(spacing.SetSpacing(font.GetFontDescription()))) {
+    if (spacing.SetSpacing(font.GetFontDescription())) [[unlikely]] {
       DCHECK(!IsTextCombine()) << GetLayoutBlockFlow();
       DCHECK(!allow_shape_cache);
       // The ShapeResult is actually not a reusable entry of NGShapeCache,
@@ -1702,16 +1711,16 @@ String CreateTextContentForStickyImagesQuirk(
 String InlineNode::TextContentForStickyImagesQuirk(
     const InlineItemsData& items_data) {
   const String& text_content = items_data.text_content;
-  for (const InlineItem& item : items_data.items) {
+  for (unsigned i = 0; i < items_data.items.size(); ++i) {
+    const InlineItem& item = items_data.items[i];
     if (item.Type() == InlineItem::kAtomicInline && item.IsImage()) {
+      auto item_span = base::span(items_data.items).subspan(i);
       if (text_content.Is8Bit()) {
         return CreateTextContentForStickyImagesQuirk(
-            text_content.Characters8(), text_content.length(),
-            base::span<const InlineItem>(&item, items_data.items.end()));
+            text_content.Characters8(), text_content.length(), item_span);
       }
       return CreateTextContentForStickyImagesQuirk(
-          text_content.Characters16(), text_content.length(),
-          base::span<const InlineItem>(&item, items_data.items.end()));
+          text_content.Characters16(), text_content.length(), item_span);
     }
   }
   return text_content;
@@ -1806,10 +1815,12 @@ static LayoutUnit ComputeContentSize(InlineNode node,
     STACK_ALLOCATED();
 
    public:
+    using ItemIterator = HeapVector<InlineItem>::const_iterator;
+
     LayoutUnit position;
     LayoutUnit max_size;
     const InlineItemsData& items_data;
-    const InlineItem* next_item;
+    ItemIterator next_item;
     const LineBreaker::MaxSizeCache& max_size_cache;
     FloatsMaxSize* floats;
     bool is_after_break = true;
@@ -1826,8 +1837,7 @@ static LayoutUnit ComputeContentSize(InlineNode node,
     // Add all text items up to |end|. The line break results for min size
     // may break text into multiple lines, and may remove trailing spaces. For
     // max size, use the original text widths from InlineItem instead.
-    void AddTextUntil(const InlineItem* end) {
-      DCHECK(end);
+    void AddTextUntil(ItemIterator end) {
       for (; next_item != end; ++next_item) {
         if (next_item->Type() == InlineItem::kOpenTag &&
             next_item->GetLayoutObject()->IsInlineRubyText()) {
@@ -1857,7 +1867,7 @@ static LayoutUnit ComputeContentSize(InlineNode node,
 
     void AddTabulationCharacters(const InlineItem& item, unsigned length) {
       DCHECK_GE(length, 1u);
-      AddTextUntil(&item);
+      AddTextUntil(items_data.ToItemIterator(item));
       DCHECK(item.Style());
       const ComputedStyle& style = *item.Style();
       const Font& font = style.GetFont();
@@ -1870,7 +1880,7 @@ static LayoutUnit ComputeContentSize(InlineNode node,
       position += LayoutUnit::FromFloatCeil(advance).ClampNegativeToZero();
     }
 
-    LayoutUnit Finish(const InlineItem* end) {
+    LayoutUnit Finish(ItemIterator end) {
       AddTextUntil(end);
       return floats->ComputeMaxSizeForLine(position.ClampNegativeToZero(),
                                            max_size);
@@ -1909,8 +1919,7 @@ static LayoutUnit ComputeContentSize(InlineNode node,
         if (item.Type() == InlineItem::kAtomicInline ||
             item.Type() == InlineItem::kBlockInInline) {
           // The max-size for atomic inlines are cached in |max_size_cache|.
-          unsigned item_index =
-              base::checked_cast<unsigned>(&item - items_data.items.begin());
+          unsigned item_index = items_data.ToItemIndex(item);
           position += max_size_cache[item_index];
           continue;
         }
@@ -1937,7 +1946,7 @@ static LayoutUnit ComputeContentSize(InlineNode node,
     }
   };
 
-  if (UNLIKELY(node.IsInitialLetterBox())) {
+  if (node.IsInitialLetterBox()) [[unlikely]] {
     LayoutUnit inline_size = LayoutUnit();
     LineInfo line_info;
     do {
@@ -2114,12 +2123,13 @@ void InlineNode::AdjustFontForTextCombineUprightAll() const {
   DCHECK(IsPrepareLayoutFinished()) << GetLayoutBlockFlow();
 
   const float content_width = CalculateWidthForTextCombine(ItemsData(false));
-  if (UNLIKELY(content_width == 0.0f))
+  if (content_width == 0.0f) [[unlikely]] {
     return;  // See "fast/css/zero-font-size-crash.html".
+  }
   auto& text_combine = *To<LayoutTextCombine>(GetLayoutBlockFlow());
   const float desired_width = text_combine.DesiredWidth();
   text_combine.ResetLayout();
-  if (UNLIKELY(desired_width == 0.0f)) {
+  if (desired_width == 0.0f) [[unlikely]] {
     // See http://crbug.com/1342520
     return;
   }

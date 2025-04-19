@@ -135,8 +135,9 @@ gfx::Size DialogClientView::CalculatePreferredSize(
   const int fixed_width = GetDialogDelegate()->fixed_width();
   if (fixed_width) {
     const int content_width = fixed_width - content_margins.width();
-    contents_size = gfx::Size(content_width,
-                              ClientView::GetHeightForWidth(content_width));
+    contents_size = ClientView::CalculatePreferredSize(
+        views::SizeBounds(content_width, {}));
+    contents_size.set_width(content_width);
   } else {
     SizeBounds content_available_size(available_size);
     content_available_size.Enlarge(-content_margins.width(),
@@ -335,15 +336,13 @@ void DialogClientView::UpdateDialogButtons() {
   InvalidateLayout();
 }
 
-void DialogClientView::UpdateDialogButton(
-    raw_ptr<MdTextButton, DanglingUntriaged>* member,
-    ui::DialogButton type) {
+void DialogClientView::UpdateDialogButton(raw_ptr<MdTextButton>* member,
+                                          ui::DialogButton type) {
   DialogDelegate* const delegate = GetDialogDelegate();
-  if (!(delegate->GetDialogButtons() & type)) {
+  if (!(delegate->buttons() & type)) {
     if (*member) {
-      button_row_container_->RemoveChildViewT(*member);
+      button_row_container_->RemoveChildViewT(std::exchange(*member, nullptr));
     }
-    *member = nullptr;
     return;
   }
 

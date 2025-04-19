@@ -105,7 +105,7 @@ _GENERICS_REGEX = re.compile(r'<[^<>\n]*>(?!>*")')
 def _remove_generics(value):
   """Strips Java generics from a string."""
   while True:
-    ret = _GENERICS_REGEX.sub('', value)
+    ret = _GENERICS_REGEX.sub(' ', value)
     if len(ret) == len(value):
       return ret
     value = ret
@@ -171,23 +171,40 @@ def _parse_annotations(value):
 
 def _parse_type(type_resolver, value):
   """Parses a string into a JavaType."""
-  annotations, value = _parse_annotations(value)
+  annotations, parsed_value = _parse_annotations(value)
   array_dimensions = 0
-  while value[-2:] == '[]':
+  while parsed_value[-2:] == '[]':
     array_dimensions += 1
-    value = value[:-2]
+    # strip to remove possible spaces between type and [].
+    parsed_value = parsed_value[:-2].strip()
 
-  if value in java_types.PRIMITIVES:
-    primitive_name = value
+  if parsed_value in java_types.PRIMITIVES:
+    primitive_name = parsed_value
     java_class = None
   else:
     primitive_name = None
-    java_class = type_resolver.resolve(value)
+    java_class = type_resolver.resolve(parsed_value)
+
+  converted_type = annotations.get('JniType', None)
+  if converted_type == 'std::vector':
+    # Allow "std::vector" as shorthand for types that can be inferred:
+    if array_dimensions == 1 and primitive_name:
+      # e.g.: std::vector<jint>
+      converted_type += f'<j{primitive_name}>'
+    elif array_dimensions > 0 or java_class in java_types.COLLECTION_CLASSES:
+      # std::vector<jni_zero::ScopedJavaLocalRef<jobject>>
+      converted_type += '<jni_zero::ScopedJavaLocalRef<jobject>>'
+    else:
+      raise ParseError('Found non-templatized @JniType("std::vector") on '
+                       'non-array, non-List type: ' + value)
+
+  nullable = annotations.get('NonNull', True)
 
   return java_types.JavaType(array_dimensions=array_dimensions,
                              primitive_name=primitive_name,
                              java_class=java_class,
-                             annotations=annotations)
+                             converted_type=converted_type,
+                             nullable=nullable)
 
 
 _FINAL_REGEX = re.compile(r'\bfinal\s')
@@ -198,7 +215,19 @@ def _parse_param_list(type_resolver, value) -> java_types.JavaParamList:
     return java_types.EMPTY_PARAM_LIST
   params = []
   value = _FINAL_REGEX.sub('', value)
+  pending = ''
   for param_str in value.split(','):
+    # Combine multiple entries when , is in an annotation.
+    # E.g.: @JniType("std::map<std::string, std::string>") Map arg0
+    if pending:
+      pending += ',' + param_str
+      if '"' not in param_str:
+        continue
+      param_str = pending
+      pending = ''
+    elif param_str.count('"') == 1:
+      pending = param_str
+      continue
     param_str = param_str.strip()
     param_str, _, param_name = param_str.rpartition(' ')
     param_str = param_str.rstrip()
@@ -417,8 +446,12 @@ def _do_parse(filename, *, package_prefix):
 def parse_java_file(filename, *, package_prefix=None):
   try:
     return _do_parse(filename, package_prefix=package_prefix)
-  except ParseError as e:
-    e.suffix = f' (when parsing {filename})'
+  except Exception as e:
+    note = f' (when parsing {filename})'
+    if e.args and isinstance(e.args[0], str):
+      e.args = (e.args[0] + note, *e.args[1:])
+    else:
+      e.args = e.args + (note, )
     raise
 
 
@@ -457,16 +490,6 @@ def parse_javap(filename, contents):
                              signature=signature,
                              static='static' in modifiers))
   called_by_natives.sort()
-
-  # Although javac will not allow multiple methods with no args and different
-  # return types, Class.class has just that, and it breaks with our
-  # name-mangling logic which assumes this cannot happen.
-  if java_class.full_name_with_slashes == 'java/lang/Class':
-    called_by_natives = [
-        x for x in called_by_natives if 'TypeDescriptor' not in (
-            x.signature.return_type.non_array_full_name_with_slashes)
-    ]
-
   return ParsedFile(filename=filename,
                     type_resolver=type_resolver,
                     proxy_methods=[],

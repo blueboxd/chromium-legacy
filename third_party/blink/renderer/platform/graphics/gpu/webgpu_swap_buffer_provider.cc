@@ -11,7 +11,6 @@
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/client/webgpu_interface.h"
-#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 
 namespace blink {
@@ -38,14 +37,17 @@ WebGPUSwapBufferProvider::WebGPUSwapBufferProvider(
     scoped_refptr<DawnControlClientHolder> dawn_control_client,
     const wgpu::Device& device,
     wgpu::TextureUsage usage,
+    wgpu::TextureUsage internal_usage,
     wgpu::TextureFormat format,
     PredefinedColorSpace color_space,
     const gfx::HDRMetadata& hdr_metadata)
     : dawn_control_client_(dawn_control_client),
       client_(client),
       device_(device),
-      format_(WGPUFormatToViz(format)),
+      shared_image_format_(WGPUFormatToViz(format)),
+      format_(format),
       usage_(usage),
+      internal_usage_(internal_usage),
       color_space_(color_space),
       hdr_metadata_(hdr_metadata) {
   wgpu::SupportedLimits limits = {};
@@ -60,7 +62,7 @@ WebGPUSwapBufferProvider::~WebGPUSwapBufferProvider() {
 }
 
 viz::SharedImageFormat WebGPUSwapBufferProvider::Format() const {
-  return format_;
+  return shared_image_format_;
 }
 
 const gfx::Size& WebGPUSwapBufferProvider::Size() const {
@@ -140,13 +142,15 @@ WebGPUSwapBufferProvider::NewOrRecycledSwapBuffer(
   if (unused_swap_buffers_.empty()) {
     // These SharedImages are read and written by WebGPU clients and can then be
     // sent off to the display compositor.
-    uint32_t usage = gpu::SHARED_IMAGE_USAGE_WEBGPU_READ |
-                     gpu::SHARED_IMAGE_USAGE_WEBGPU_WRITE |
-                     gpu::SHARED_IMAGE_USAGE_WEBGPU_SWAP_CHAIN_TEXTURE |
-                     gpu::SHARED_IMAGE_USAGE_DISPLAY_READ;
+    gpu::SharedImageUsageSet usage =
+        gpu::SHARED_IMAGE_USAGE_WEBGPU_READ |
+        gpu::SHARED_IMAGE_USAGE_WEBGPU_WRITE |
+        gpu::SHARED_IMAGE_USAGE_WEBGPU_SWAP_CHAIN_TEXTURE |
+        GetSharedImageUsagesForDisplay();
     if (usage_ & wgpu::TextureUsage::StorageBinding) {
       usage |= gpu::SHARED_IMAGE_USAGE_WEBGPU_STORAGE_TEXTURE;
     }
+
     auto client_shared_image = sii->CreateSharedImage(
         {Format(), size, PredefinedColorSpaceToGfxColorSpace(color_space_),
          kTopLeft_GrSurfaceOrigin, alpha_mode, usage,
@@ -182,13 +186,25 @@ void WebGPUSwapBufferProvider::RecycleSwapBuffer(
 scoped_refptr<WebGPUMailboxTexture> WebGPUSwapBufferProvider::GetNewTexture(
     const wgpu::TextureDescriptor& desc,
     SkAlphaType alpha_mode) {
-  DCHECK_EQ(desc.nextInChain, nullptr);
   DCHECK_EQ(desc.usage, usage_);
-  DCHECK_EQ(WGPUFormatToViz(desc.format), format_);
+  DCHECK_EQ(desc.format, format_);
   DCHECK_EQ(desc.dimension, wgpu::TextureDimension::e2D);
   DCHECK_EQ(desc.size.depthOrArrayLayers, 1u);
   DCHECK_EQ(desc.mipLevelCount, 1u);
   DCHECK_EQ(desc.sampleCount, 1u);
+
+  if (desc.nextInChain) {
+    // The internal usage descriptor is the only valid struct to chain.
+    CHECK_EQ(desc.nextInChain->sType,
+             wgpu::SType::DawnTextureInternalUsageDescriptor);
+    CHECK_EQ(desc.nextInChain->nextInChain, nullptr);
+    const auto* internal_usage_desc =
+        static_cast<const wgpu::DawnTextureInternalUsageDescriptor*>(
+            desc.nextInChain);
+    DCHECK_EQ(internal_usage_desc->internalUsage, internal_usage_);
+  } else {
+    DCHECK_EQ(internal_usage_, wgpu::TextureUsage::None);
+  }
 
   auto context_provider = GetContextProviderWeakPtr();
   if (!context_provider) {
@@ -212,6 +228,9 @@ scoped_refptr<WebGPUMailboxTexture> WebGPUSwapBufferProvider::GetNewTexture(
       context_provider, size, alpha_mode);
 
   // Make a mailbox texture from the swap buffer.
+  // NOTE: Passing WEBGPU_MAILBOX_DISCARD to request clearing requires passing a
+  // usage that supports clearing. Swapbuffer textures will always be
+  // renderable, so we can pass RenderAttachment.
   current_swap_buffer_->mailbox_texture =
       WebGPUMailboxTexture::FromExistingMailbox(
           dawn_control_client_, device_, desc,
@@ -219,6 +238,7 @@ scoped_refptr<WebGPUMailboxTexture> WebGPUSwapBufferProvider::GetNewTexture(
           // Wait on the last usage of this swap buffer.
           current_swap_buffer_->access_finished_token,
           gpu::webgpu::WEBGPU_MAILBOX_DISCARD,
+          wgpu::TextureUsage::RenderAttachment,
           // When the mailbox texture is dissociated, set the access finished
           // token back on the swap buffer for the next time it is used.
           base::BindOnce(
@@ -254,9 +274,8 @@ scoped_refptr<WebGPUMailboxTexture> WebGPUSwapBufferProvider::GetNewTexture(
 
   return current_swap_buffer_->mailbox_texture;
 }
-
-WebGPUSwapBufferProvider::WebGPUMailboxTextureAndSize
-WebGPUSwapBufferProvider::GetLastWebGPUMailboxTextureAndSize() const {
+scoped_refptr<WebGPUMailboxTexture>
+WebGPUSwapBufferProvider::GetLastWebGPUMailboxTexture() const {
   // It's possible this is called after the canvas context current texture has
   // been destroyed, but `current_swap_buffer_` is still available e.g. when the
   // context is used offscreen only.
@@ -264,20 +283,24 @@ WebGPUSwapBufferProvider::GetLastWebGPUMailboxTextureAndSize() const {
       current_swap_buffer_ ? current_swap_buffer_ : last_swap_buffer_;
   auto context_provider = GetContextProviderWeakPtr();
   if (!latest_swap_buffer || !context_provider) {
-    return WebGPUMailboxTextureAndSize(nullptr, gfx::Size());
+    return nullptr;
   }
 
+  wgpu::DawnTextureInternalUsageDescriptor internal_usage;
+  internal_usage.internalUsage = internal_usage_;
   wgpu::TextureDescriptor desc = {
+      .nextInChain = &internal_usage,
       .usage = usage_,
+      .size = {static_cast<uint32_t>(latest_swap_buffer->size.width()),
+               static_cast<uint32_t>(latest_swap_buffer->size.height())},
+      .format = format_,
   };
 
-  return WebGPUMailboxTextureAndSize(
-      WebGPUMailboxTexture::FromExistingMailbox(
-          dawn_control_client_, device_, desc,
-          latest_swap_buffer->shared_image->mailbox(),
-          latest_swap_buffer->access_finished_token,
-          gpu::webgpu::WEBGPU_MAILBOX_NONE),
-      latest_swap_buffer->size);
+  return WebGPUMailboxTexture::FromExistingMailbox(
+      dawn_control_client_, device_, desc,
+      latest_swap_buffer->shared_image->mailbox(),
+      latest_swap_buffer->access_finished_token,
+      gpu::webgpu::WEBGPU_MAILBOX_NONE);
 }
 
 base::WeakPtr<WebGraphicsContext3DProviderWrapper>
@@ -296,27 +319,16 @@ bool WebGPUSwapBufferProvider::PrepareTransferableResource(
 
   ReleaseWGPUTextureAccessIfNeeded();
 
-  // Populate the output resource
-  // NOTE: This call is used to match the previous behavior of hardcoding
-  // GL_TEXTURE_2D for non-MacOS and using the platform-specific texture target
-  // for MacOS.
-  // TODO(crbug.com/41494843): Replace this with calling
-  // the universal ClientSharedImage::GetTextureTarget() once that rolls out
-  // safely.
+  // Populate the output resource.
   uint32_t texture_target =
-      current_swap_buffer_->shared_image->GetTextureTargetForOverlays();
+      current_swap_buffer_->shared_image->GetTextureTarget();
 
-  // On macOS, shared images are backed by IOSurfaces, meaning that they are
-  // overlay candidates.
-#if BUILDFLAG(IS_MAC)
-  const bool is_overlay_candidate = true;
-#else
-  const bool is_overlay_candidate = false;
-#endif
   *out_resource = viz::TransferableResource::MakeGpu(
       current_swap_buffer_->shared_image, texture_target,
       current_swap_buffer_->access_finished_token, current_swap_buffer_->size,
-      Format(), is_overlay_candidate,
+      Format(),
+      current_swap_buffer_->shared_image->usage() &
+          gpu::SHARED_IMAGE_USAGE_SCANOUT,
       viz::TransferableResource::ResourceSource::kWebGPUSwapBuffer);
   out_resource->color_space = PredefinedColorSpaceToGfxColorSpace(color_space_);
   out_resource->hdr_metadata = hdr_metadata_;
@@ -354,14 +366,8 @@ bool WebGPUSwapBufferProvider::CopyToVideoFrame(
   // need to release WebGPU/Dawn's context's access to the texture.
   ReleaseWGPUTextureAccessIfNeeded();
 
-  // NOTE: This call is used to match the previous behavior of hardcoding
-  // GL_TEXTURE_2D for non-MacOS and using the platform-specific texture target
-  // for MacOS.
-  // TODO(crbug.com/41494843): Replace this with calling
-  // the universal ClientSharedImage::GetTextureTarget() once that rolls out
-  // safely.
   uint32_t texture_target =
-      current_swap_buffer_->shared_image->GetTextureTargetForOverlays();
+      current_swap_buffer_->shared_image->GetTextureTarget();
 
   gpu::MailboxHolder mailbox_holder(
       current_swap_buffer_->shared_image->mailbox(),
@@ -410,11 +416,27 @@ WebGPUSwapBufferProvider::SwapBuffer::SwapBuffer(
       access_finished_token(creation_token) {}
 
 WebGPUSwapBufferProvider::SwapBuffer::~SwapBuffer() {
-  if (context_provider) {
-    gpu::SharedImageInterface* sii =
-        context_provider->ContextProvider()->SharedImageInterface();
-    sii->DestroySharedImage(access_finished_token, std::move(shared_image));
-  }
+  shared_image->UpdateDestructionSyncToken(access_finished_token);
+}
+
+gpu::SharedImageUsageSet
+WebGPUSwapBufferProvider::GetSharedImageUsagesForDisplay() {
+#if BUILDFLAG(IS_MAC)
+  // On Mac it is safe to allow SharedImages created with WebGPU usage that will
+  // be sent to the display to be used as overlays, as specifying WebGPU usage
+  // when creating a SharedImage forces that SharedImage to be backed by an
+  // IOSurface.
+  return gpu::SHARED_IMAGE_USAGE_DISPLAY_READ | gpu::SHARED_IMAGE_USAGE_SCANOUT;
+#else
+  // On other platforms we cannot assume and do not require that a SharedImage
+  // created with WebGPU usage be backed by a native buffer.
+  return gpu::SHARED_IMAGE_USAGE_DISPLAY_READ;
+#endif
+}
+
+scoped_refptr<gpu::ClientSharedImage>
+WebGPUSwapBufferProvider::GetCurrentSharedImage() {
+  return current_swap_buffer_ ? current_swap_buffer_->shared_image : nullptr;
 }
 
 gpu::Mailbox WebGPUSwapBufferProvider::GetCurrentMailboxForTesting() const {

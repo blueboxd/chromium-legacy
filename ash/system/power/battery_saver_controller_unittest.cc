@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ash/system/power/battery_saver_controller.h"
 
 #include <memory>
@@ -452,7 +457,8 @@ TEST_F(BatterySaverControllerTest, Allowed) {
   local_state()->RemoveManagedPref(prefs::kPowerBatterySaver);
 
   // If the experiment is off, Battery Saver is not allowed.
-  scoped_feature_list_.reset();
+  scoped_feature_list_->Reset();
+  scoped_feature_list_->InitAndDisableFeature(features::kBatterySaver);
   EXPECT_FALSE(IsBatterySaverAllowed());
 }
 

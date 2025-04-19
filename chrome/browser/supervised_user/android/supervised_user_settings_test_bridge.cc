@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/strings/stringprintf.h"
-#include "chrome/browser/profiles/profile.h"
-
 #include "base/android/jni_string.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "base/version_info/channel.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -25,7 +24,7 @@
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 
-// Must come after other includes, because FromJniType() uses Profile.
+// Must come after all headers that specialize FromJniType() / ToJniType().
 #include "chrome/browser/supervised_user/test_support_jni_headers/SupervisedUserSettingsTestBridge_jni.h"
 
 using base::android::JavaParamRef;
@@ -108,8 +107,9 @@ void JNI_SupervisedUserSettingsTestBridge_SetKidsManagementResponseForTesting(  
 
   std::unique_ptr<safe_search_api::URLCheckerClient> url_checker_client =
       std::make_unique<supervised_user::KidsChromeManagementURLCheckerClient>(
-          identity_manager, shared_url_loader_factory, "");
-  supervised_user_service->GetURLFilter()->SetURLCheckerClientForTesting(
+          identity_manager, shared_url_loader_factory, /*country=*/"",
+          version_info::Channel::UNKNOWN);
+  supervised_user_service->GetURLFilter()->SetURLCheckerClient(
       std::move(url_checker_client));
 }
 

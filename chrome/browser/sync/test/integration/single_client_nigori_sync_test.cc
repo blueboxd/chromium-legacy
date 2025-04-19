@@ -37,13 +37,12 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/metrics/metrics_service.h"
-#include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/features/password_manager_features_util.h"
 #include "components/password_manager/core/browser/password_store/password_store_interface.h"
 #include "components/signin/public/base/signin_switches.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
+#include "components/sync/base/data_type.h"
 #include "components/sync/base/features.h"
-#include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/loopback_server/loopback_server_entity.h"
 #include "components/sync/engine/nigori/cross_user_sharing_public_private_key_pair.h"
@@ -76,6 +75,8 @@
 #include "url/url_constants.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_switches.h"
+#include "base/test/scoped_command_line.h"
 #include "chrome/browser/ash/sync/sync_error_notifier.h"
 #include "chrome/browser/ash/sync/sync_error_notifier_factory.h"
 #include "chrome/browser/ui/webui/trusted_vault/trusted_vault_dialog_delegate.h"
@@ -323,16 +324,7 @@ class SingleClientNigoriSyncTestWithNotAwaitQuiescence
 class SingleClientNigoriCrossUserSharingPublicPrivateKeyPairSyncTest
     : public SingleClientNigoriSyncTest {
  public:
-  SingleClientNigoriCrossUserSharingPublicPrivateKeyPairSyncTest() {
-    // Enable the password receiving flow to verify cross-user sharing keys by
-    // decrypting incoming password sharing invitations.
-    override_features_.InitWithFeatures(
-        /*enabled_features=*/{syncer::kSharingOfferKeyPairBootstrap,
-                              password_manager::features::
-                                  kPasswordManagerEnableReceiverService},
-        /*disabled_features=*/{});
-  }
-
+  SingleClientNigoriCrossUserSharingPublicPrivateKeyPairSyncTest() = default;
   SingleClientNigoriCrossUserSharingPublicPrivateKeyPairSyncTest(
       const SingleClientNigoriCrossUserSharingPublicPrivateKeyPairSyncTest&) =
       delete;
@@ -418,9 +410,6 @@ class SingleClientNigoriCrossUserSharingPublicPrivateKeyPairSyncTest
         "title", GURL("http://abc.com")));
     return bookmarks_helper::BookmarksTitleChecker(0, "title", 1).Wait();
   }
-
- private:
-  base::test::ScopedFeatureList override_features_;
 };
 
 // Some tests are flaky on Chromeos when run with IP Protection enabled.
@@ -534,7 +523,7 @@ IN_PROC_BROWSER_TEST_F(
   // so it's an incremental update.
   ASSERT_FALSE(
       GetSyncService(0)->GetUserSettings()->GetAllEncryptedDataTypes().Has(
-          syncer::ModelType::BOOKMARKS));
+          syncer::DataType::BOOKMARKS));
   const std::string kTitle = "Bookmark title";
   const GURL kUrl = GURL("https://g.com");
   std::unique_ptr<syncer::LoopbackServerEntity> bookmark =
@@ -702,7 +691,7 @@ IN_PROC_BROWSER_TEST_F(
   // 3. Rewrite server-side nigori with keystore one (this also triggers an
   // invalidation, so client should see CLIENT_DATA_OBSOLETE).
   GetFakeServer()->TriggerError(sync_pb::SyncEnums::CLIENT_DATA_OBSOLETE);
-  GetFakeServer()->DeleteAllEntitiesForModelType(syncer::PASSWORDS);
+  GetFakeServer()->DeleteAllEntitiesForDataType(syncer::PASSWORDS);
 
   const std::vector<std::vector<uint8_t>>& keystore_keys =
       GetFakeServer()->GetKeystoreKeys();
@@ -774,7 +763,7 @@ IN_PROC_BROWSER_TEST_F(
   // 3. Rewrite server-side nigori with keystore one (this also triggers an
   // invalidation, so client should see CLIENT_DATA_OBSOLETE).
   GetFakeServer()->TriggerError(sync_pb::SyncEnums::CLIENT_DATA_OBSOLETE);
-  GetFakeServer()->DeleteAllEntitiesForModelType(syncer::PASSWORDS);
+  GetFakeServer()->DeleteAllEntitiesForDataType(syncer::PASSWORDS);
 
   const std::vector<std::vector<uint8_t>>& keystore_keys =
       GetFakeServer()->GetKeystoreKeys();
@@ -816,6 +805,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriSyncTest,
       /*keystore_decryptor_params=*/kKeystoreKeyParams,
       /*keystore_key_params=*/kKeystoreKeyParams);
 
+  const std::string kGroupName = "Cohort7_Control";
   sync_pb::TrustedVaultAutoUpgradeExperimentGroup* experiment_group =
       nigori_specifics.mutable_trusted_vault_debug_info()
           ->mutable_auto_upgrade_experiment_group();
@@ -829,19 +819,22 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriSyncTest,
 
   EXPECT_TRUE(ContainsTrialAndGroupName(
       GetSyntheticFieldTrials(),
-      syncer::kTrustedVaultAutoUpgradeSyntheticFieldTrialName,
-      "Cohort7_Control"));
+      syncer::kTrustedVaultAutoUpgradeSyntheticFieldTrialName, kGroupName));
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientNigoriSyncTest,
                        ShouldRegisterTrustedVaultSyntheticFieldTrial) {
+  // Same as in previous test (PRE_ test).
+  const std::string kGroupName = "Cohort7_Control";
+
   ASSERT_TRUE(SetupClients());
 
-  // Upon browser restart, the group should be re-registered automatically.
+  // Shortly after profile startup, the group should be re-registered
+  // automatically.
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(ContainsTrialAndGroupName(
       GetSyntheticFieldTrials(),
-      syncer::kTrustedVaultAutoUpgradeSyntheticFieldTrialName,
-      "Cohort7_Control"));
+      syncer::kTrustedVaultAutoUpgradeSyntheticFieldTrialName, kGroupName));
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -1334,6 +1327,8 @@ class SingleClientNigoriWithWebApiAndDialogUIParamTest
           trusted_vault::kChromeOSTrustedVaultUseWebUIDialog);
       feature_list_.InitWithFeatures(enabled_features,
                                      /*disabled_features=*/{});
+      scoped_command_line_.GetProcessCommandLine()->AppendSwitch(
+          ash::switches::kEnableLacrosForTesting);
     } else {
       feature_list_.InitAndDisableFeature(
           trusted_vault::kChromeOSTrustedVaultUseWebUIDialog);
@@ -1368,6 +1363,7 @@ class SingleClientNigoriWithWebApiAndDialogUIParamTest
 
  private:
   base::test::ScopedFeatureList feature_list_;
+  base::test::ScopedCommandLine scoped_command_line_;
   std::unique_ptr<views::NamedWidgetShownWaiter>
       trusted_vault_widget_shown_waiter_;
 };

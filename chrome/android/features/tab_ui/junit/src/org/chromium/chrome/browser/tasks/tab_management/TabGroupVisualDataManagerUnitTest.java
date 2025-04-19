@@ -15,15 +15,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 
 import androidx.annotation.Nullable;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -35,7 +32,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Token;
 import org.chromium.base.supplier.LazyOneshotSupplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -43,8 +39,10 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tasks.tab_groups.TabGroupColorUtils;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilterObserver;
+import org.chromium.components.tab_groups.TabGroupColorId;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,15 +53,10 @@ import java.util.Set;
 @SuppressWarnings({"ArraysAsListWithZeroOrOneArgument", "ResultOfMethodCallIgnored"})
 @RunWith(BaseRobolectricTestRunner.class)
 @EnableFeatures({
-    ChromeFeatureList.ANDROID_TAB_GROUP_STABLE_IDS,
     ChromeFeatureList.TAB_GROUP_PARITY_ANDROID,
     ChromeFeatureList.TAB_STRIP_GROUP_COLLAPSE
 })
 public class TabGroupVisualDataManagerUnitTest {
-    @Rule public TestRule mProcessor = new Features.JUnitProcessor();
-
-    private static final String TAB_GROUP_TITLES_FILE_NAME = "tab_group_titles";
-    private static final String TAB_GROUP_COLORS_FILE_NAME = "tab_group_colors";
 
     private static final String TAB1_TITLE = "Tab1";
     private static final String TAB2_TITLE = "Tab2";
@@ -71,9 +64,8 @@ public class TabGroupVisualDataManagerUnitTest {
     private static final String TAB4_TITLE = "Tab4";
     private static final String CUSTOMIZED_TITLE1 = "Some cool tabs";
     private static final String CUSTOMIZED_TITLE2 = "Other cool tabs";
-    private static final int COLOR1_ID = 0;
-    private static final int COLOR2_ID = 1;
-    private static final int INVALID_COLOR_ID = -1;
+    private static final int COLOR1_ID = TabGroupColorId.BLUE;
+    private static final int COLOR2_ID = TabGroupColorId.RED;
     private static final int TAB1_ID = 456;
     private static final int TAB2_ID = 789;
     private static final int TAB3_ID = 123;
@@ -86,8 +78,6 @@ public class TabGroupVisualDataManagerUnitTest {
     @Mock private TabGroupModelFilter mIncognitoTabGroupModelFilter;
     @Mock private TabModelSelector mTabModelSelector;
     @Mock private TabModelFilterProvider mTabModelFilterProvider;
-    @Mock private SharedPreferences mSharedPreferencesTitle;
-    @Mock private SharedPreferences mSharedPreferencesColor;
     @Captor private ArgumentCaptor<TabModelObserver> mTabModelObserverCaptor;
     @Captor private ArgumentCaptor<TabGroupModelFilterObserver> mTabGroupModelFilterObserverCaptor;
 
@@ -135,14 +125,6 @@ public class TabGroupVisualDataManagerUnitTest {
                 .addTabGroupObserver(mIncognitoTabGroupModelFilterObserverCaptor.capture());
 
         mTabGroupVisualDataManager = new TabGroupVisualDataManager(mTabModelSelector);
-
-        doReturn(mSharedPreferencesTitle)
-                .when(mContext)
-                .getSharedPreferences(TAB_GROUP_TITLES_FILE_NAME, Context.MODE_PRIVATE);
-
-        doReturn(mSharedPreferencesColor)
-                .when(mContext)
-                .getSharedPreferences(TAB_GROUP_COLORS_FILE_NAME, Context.MODE_PRIVATE);
 
         ContextUtils.initApplicationContextForTests(mContext);
     }
@@ -194,28 +176,6 @@ public class TabGroupVisualDataManagerUnitTest {
         // Verify that the title and color were not deleted.
         verify(mTabGroupModelFilter, never()).deleteTabGroupTitle(TAB1_ID);
         verify(mTabGroupModelFilter, never()).deleteTabGroupColor(TAB1_ID);
-    }
-
-    @Test
-    @DisableFeatures(ChromeFeatureList.ANDROID_TAB_GROUP_STABLE_IDS)
-    public void onFinishingMultipleTabClosure_DeleteStoredTitle_GroupSize1NotSupported() {
-        // Assume that CUSTOMIZED_TITLE1 and COLOR1_ID are associated with the tab group.
-        // Mock that tab1 and tab2 are in the same group and group root id is TAB1_ID.
-        List<Tab> tabs = new ArrayList<>(Arrays.asList(mTab1, mTab2));
-        createTabGroup(tabs, TAB1_ID, GROUP_1_ID);
-
-        // Mock that tab2 is closed and the group becomes a single tab.
-        when(mTabGroupModelFilter.getRelatedTabCountForRootId(TAB1_ID)).thenReturn(1);
-        doReturn(LazyOneshotSupplier.fromValue(Set.of(TAB1_ID, TAB3_ID, TAB4_ID)))
-                .when(mTabGroupModelFilter)
-                .getLazyAllRootIdsInComprehensiveModel(any());
-        mTabModelObserverCaptor
-                .getValue()
-                .onFinishingMultipleTabClosure(List.of(mTab2), /* canRestore= */ true);
-
-        // Verify that the title and color were deleted.
-        verify(mTabGroupModelFilter).deleteTabGroupTitle(TAB1_ID);
-        verify(mTabGroupModelFilter).deleteTabGroupColor(TAB1_ID);
     }
 
     @Test
@@ -300,15 +260,10 @@ public class TabGroupVisualDataManagerUnitTest {
 
     @Test
     public void tabMergeIntoGroup_NotDeleteStoredTitle() {
-        // Mock that TITLE1, TITLE2 and COLOR1_ID, COLOR2_ID are associated with the groups.
-        when(mSharedPreferencesTitle.getString(String.valueOf(TAB1_ID), null))
-                .thenReturn(CUSTOMIZED_TITLE1);
-        when(mSharedPreferencesTitle.getString(String.valueOf(TAB3_ID), null))
-                .thenReturn(CUSTOMIZED_TITLE2);
-        when(mSharedPreferencesColor.getInt(String.valueOf(TAB1_ID), INVALID_COLOR_ID))
-                .thenReturn(COLOR1_ID);
-        when(mSharedPreferencesColor.getInt(String.valueOf(TAB3_ID), INVALID_COLOR_ID))
-                .thenReturn(COLOR2_ID);
+        when(mTabGroupModelFilter.getTabGroupTitle(TAB1_ID)).thenReturn(CUSTOMIZED_TITLE1);
+        when(mTabGroupModelFilter.getTabGroupTitle(TAB3_ID)).thenReturn(CUSTOMIZED_TITLE2);
+        when(mTabGroupModelFilter.getTabGroupColor(TAB1_ID)).thenReturn(COLOR1_ID);
+        when(mTabGroupModelFilter.getTabGroupColor(TAB3_ID)).thenReturn(COLOR2_ID);
 
         // Mock that tab1 and tab2 are in the same group and group root id is TAB1_ID; tab3 and tab4
         // are in the same group and group root id is TAB3_ID.
@@ -327,14 +282,11 @@ public class TabGroupVisualDataManagerUnitTest {
 
     @Test
     public void tabMergeIntoGroup_HandOverStoredTitle() {
-        // Mock that TITLE1 and COLOR1_ID are associated with the group of TAB1_ID.
-        when(mSharedPreferencesTitle.getString(String.valueOf(TAB1_ID), null))
-                .thenReturn(CUSTOMIZED_TITLE1);
-        when(mSharedPreferencesTitle.getString(String.valueOf(TAB3_ID), null)).thenReturn(null);
-        when(mSharedPreferencesColor.getInt(String.valueOf(TAB1_ID), INVALID_COLOR_ID))
-                .thenReturn(COLOR1_ID);
-        when(mSharedPreferencesColor.getInt(String.valueOf(TAB3_ID), INVALID_COLOR_ID))
-                .thenReturn(INVALID_COLOR_ID);
+        when(mTabGroupModelFilter.getTabGroupTitle(TAB1_ID)).thenReturn(CUSTOMIZED_TITLE1);
+        when(mTabGroupModelFilter.getTabGroupTitle(TAB3_ID)).thenReturn(null);
+        when(mTabGroupModelFilter.getTabGroupColor(TAB1_ID)).thenReturn(COLOR1_ID);
+        when(mTabGroupModelFilter.getTabGroupColor(TAB3_ID))
+                .thenReturn(TabGroupColorUtils.INVALID_COLOR_ID);
 
         // Mock that tab1 and tab2 are in the same group and group root id is TAB1_ID; tab3 and tab4
         // are in the same group and group root id is TAB3_ID.
@@ -353,16 +305,6 @@ public class TabGroupVisualDataManagerUnitTest {
     }
 
     @Test
-    public void tabMergeIntoGroup_CollapsedDeleted() {
-        List<Tab> group1 = new ArrayList<>(Arrays.asList(mTab1, mTab2));
-        createTabGroup(group1, TAB1_ID, GROUP_1_ID);
-        List<Tab> group2 = new ArrayList<>(Arrays.asList(mTab3, mTab4));
-        createTabGroup(group2, TAB3_ID, GROUP_2_ID);
-        mTabGroupModelFilterObserverCaptor.getValue().willMergeTabToGroup(mTab1, TAB3_ID);
-        verify(mTabGroupModelFilter).deleteTabGroupCollapsed(TAB3_ID);
-    }
-
-    @Test
     @DisableFeatures(ChromeFeatureList.TAB_STRIP_GROUP_COLLAPSE)
     public void tabMergeIntoGroup_CollapsedWithoutFeature() {
         List<Tab> group1 = new ArrayList<>(Arrays.asList(mTab1, mTab2));
@@ -374,34 +316,9 @@ public class TabGroupVisualDataManagerUnitTest {
     }
 
     @Test
-    @DisableFeatures(ChromeFeatureList.ANDROID_TAB_GROUP_STABLE_IDS)
-    public void tabMoveOutOfGroup_DeleteStoredTitle_GroupSize1NotSupported() {
-        // Mock that TITLE1 and COLOR1_ID are associated with the group of TAB1_ID.
-        when(mSharedPreferencesTitle.getString(String.valueOf(TAB1_ID), null))
-                .thenReturn(CUSTOMIZED_TITLE1);
-        when(mSharedPreferencesColor.getInt(String.valueOf(TAB1_ID), INVALID_COLOR_ID))
-                .thenReturn(COLOR1_ID);
-
-        // Mock that tab1 and tab2 are in the same group and group root id is TAB1_ID.
-        List<Tab> tabs = new ArrayList<>(Arrays.asList(mTab1, mTab2));
-        createTabGroup(tabs, TAB1_ID, GROUP_1_ID);
-
-        // Mock that we are going to ungroup tab1, and the group becomes a single tab after ungroup.
-        mTabGroupModelFilterObserverCaptor.getValue().willMoveTabOutOfGroup(mTab1, TAB2_ID);
-
-        // Verify that the title and color were deleted.
-        verify(mTabGroupModelFilter).deleteTabGroupTitle(TAB1_ID);
-        verify(mTabGroupModelFilter).deleteTabGroupColor(TAB1_ID);
-        verify(mTabGroupModelFilter).deleteTabGroupCollapsed(TAB1_ID);
-    }
-
-    @Test
     public void tabMoveOutOfGroup_DeleteStoredTitle_GroupSize1Supported() {
-        // Mock that TITLE1 and COLOR1_ID are associated with the group of TAB1_ID.
-        when(mSharedPreferencesTitle.getString(String.valueOf(TAB1_ID), null))
-                .thenReturn(CUSTOMIZED_TITLE1);
-        when(mSharedPreferencesColor.getInt(String.valueOf(TAB1_ID), INVALID_COLOR_ID))
-                .thenReturn(COLOR1_ID);
+        when(mTabGroupModelFilter.getTabGroupTitle(TAB1_ID)).thenReturn(CUSTOMIZED_TITLE1);
+        when(mTabGroupModelFilter.getTabGroupColor(TAB1_ID)).thenReturn(COLOR1_ID);
         when(mTabGroupModelFilter.getTabGroupCollapsed(TAB1_ID)).thenReturn(true);
 
         // Mock that tab1 and tab2 are in the same group and group root id is TAB1_ID.
@@ -426,11 +343,8 @@ public class TabGroupVisualDataManagerUnitTest {
         verify(mTabGroupModelFilter, never()).deleteTabGroupColor(TAB1_ID);
         verify(mTabGroupModelFilter, never()).deleteTabGroupCollapsed(TAB1_ID);
 
-        // Mock that TITLE1 and COLOR1_ID are associated with the group of TAB1_ID.
-        when(mSharedPreferencesTitle.getString(String.valueOf(TAB2_ID), null))
-                .thenReturn(CUSTOMIZED_TITLE1);
-        when(mSharedPreferencesColor.getInt(String.valueOf(TAB2_ID), INVALID_COLOR_ID))
-                .thenReturn(COLOR1_ID);
+        when(mTabGroupModelFilter.getTabGroupTitle(TAB2_ID)).thenReturn(CUSTOMIZED_TITLE1);
+        when(mTabGroupModelFilter.getTabGroupColor(TAB2_ID)).thenReturn(COLOR1_ID);
 
         // Mock that we are going to ungroup the last tab in a size 1 tab group, and it is the root
         // tab.
@@ -447,11 +361,8 @@ public class TabGroupVisualDataManagerUnitTest {
 
     @Test
     public void testDidChangeGroupRootId() {
-        // Mock that TITLE1 and COLOR1_ID are associated with the group of TAB1_ID.
-        when(mSharedPreferencesTitle.getString(String.valueOf(TAB1_ID), null))
-                .thenReturn(CUSTOMIZED_TITLE1);
-        when(mSharedPreferencesColor.getInt(String.valueOf(TAB1_ID), INVALID_COLOR_ID))
-                .thenReturn(COLOR1_ID);
+        when(mTabGroupModelFilter.getTabGroupTitle(TAB1_ID)).thenReturn(CUSTOMIZED_TITLE1);
+        when(mTabGroupModelFilter.getTabGroupColor(TAB1_ID)).thenReturn(COLOR1_ID);
         when(mTabGroupModelFilter.getTabGroupCollapsed(TAB1_ID)).thenReturn(true);
 
         // Mock that tab1, tab2 and newTab are in the same group and group root id is TAB1_ID.

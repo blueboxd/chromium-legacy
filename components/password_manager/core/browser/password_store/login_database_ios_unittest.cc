@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO: crbug.com/352295124 - Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "components/password_manager/core/browser/password_store/login_database.h"
 
 #include <CoreFoundation/CoreFoundation.h>
@@ -25,6 +30,7 @@
 #include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/common/passwords_directory_util_ios.h"
 #include "sql/database.h"
 #include "sql/statement.h"
@@ -47,7 +53,8 @@ class LoginDatabaseIOSTest : public PlatformTest {
         temp_dir_.GetPath().AppendASCII("temp_login.db");
     login_db_.reset(new password_manager::LoginDatabase(
         login_db_path, password_manager::IsAccountStore(false)));
-    login_db_->Init();
+    login_db_->Init(/*on_undecryptable_passwords_removed=*/base::NullCallback(),
+                    /*encryptor=*/nullptr);
   }
 
  protected:
@@ -65,12 +72,13 @@ TEST_F(LoginDatabaseIOSTest, KeychainStorage) {
   };
 
   for (unsigned int i = 0; i < std::size(test_passwords); i++) {
+    EncryptDecryptInterface* encryptor_decryptor = login_db_.get();
     std::string encrypted;
-    EXPECT_EQ(LoginDatabase::ENCRYPTION_RESULT_SUCCESS,
-              login_db_->EncryptedString(test_passwords[i], &encrypted));
+    EXPECT_EQ(EncryptionResult::kSuccess, encryptor_decryptor->EncryptedString(
+                                              test_passwords[i], &encrypted));
     std::u16string decrypted;
-    EXPECT_EQ(LoginDatabase::ENCRYPTION_RESULT_SUCCESS,
-              login_db_->DecryptedString(encrypted, &decrypted));
+    EXPECT_EQ(EncryptionResult::kSuccess,
+              encryptor_decryptor->DecryptedString(encrypted, &decrypted));
     EXPECT_STREQ(UTF16ToUTF8(test_passwords[i]).c_str(),
                  UTF16ToUTF8(decrypted).c_str());
   }
@@ -200,8 +208,8 @@ TEST_F(LoginDatabaseIOSTest, RemoveLoginsCreatedBetween) {
   std::vector<PasswordForm> remaining_logins;
   EXPECT_TRUE(login_db_->GetLogins(form, true, &remaining_logins));
   EXPECT_THAT(remaining_logins,
-              testing::UnorderedElementsAre(testing::Eq(forms[0]),
-                                            testing::Eq(forms[2])));
+              testing::UnorderedElementsAreArray(
+                  FormsIgnoringPrimaryKey({forms[0], forms[2]})));
 
   // Verify that keychain entry is removed.
   std::u16string password_value;
@@ -406,7 +414,9 @@ TEST_F(LoginDatabaseMigrationToOSCryptTest,
     // version.
     base::HistogramTester histogram_tester;
     LoginDatabase db(get_database_path(), IsAccountStore(false));
-    ASSERT_TRUE(db.Init());
+    ASSERT_TRUE(
+        db.Init(/*on_undecryptable_passwords_removed=*/base::NullCallback(),
+                /*encryptor=*/nullptr));
 
     // Delete password from the keychain to check that GetAllLogins no longer
     // needs to access it.
@@ -469,7 +479,9 @@ TEST_F(LoginDatabaseMigrationToOSCryptTest,
   // version.
   base::HistogramTester histogram_tester;
   LoginDatabase login_db(get_database_path(), IsAccountStore(true));
-  ASSERT_TRUE(login_db.Init());
+  ASSERT_TRUE(
+      login_db.Init(/*on_undecryptable_passwords_removed=*/base::NullCallback(),
+                    /*encryptor=*/nullptr));
 
   // Delete password from the keychain to check that GetAllLogins no longer
   // needs to access it.
@@ -494,7 +506,9 @@ TEST_F(LoginDatabaseMigrationToOSCryptTest,
   // to current version.
   base::HistogramTester histogram_tester;
   LoginDatabase login_db(get_database_path(), IsAccountStore(false));
-  ASSERT_TRUE(login_db.Init());
+  ASSERT_TRUE(
+      login_db.Init(/*on_undecryptable_passwords_removed=*/base::NullCallback(),
+                    /*encryptor=*/nullptr));
 
   std::vector<PasswordForm> forms;
   EXPECT_EQ(login_db.GetAllLogins(&forms), FormRetrievalResult::kSuccess);
@@ -520,7 +534,9 @@ TEST_F(LoginDatabaseMigrationToOSCryptTest,
     // version.
     base::HistogramTester histogram_tester;
     LoginDatabase login_db(get_database_path(), IsAccountStore(false));
-    ASSERT_TRUE(login_db.Init());
+    ASSERT_TRUE(login_db.Init(
+        /*on_undecryptable_passwords_removed=*/base::NullCallback(),
+        /*encryptor=*/nullptr));
 
     // Delete note from the keychain to check that GetAllLogins no longer needs
     // to access it;
@@ -561,7 +577,9 @@ TEST_F(LoginDatabaseMigrationToOSCryptTest,
     // version.
     base::HistogramTester histogram_tester;
     LoginDatabase login_db(get_database_path(), IsAccountStore(true));
-    ASSERT_TRUE(login_db.Init());
+    ASSERT_TRUE(login_db.Init(
+        /*on_undecryptable_passwords_removed=*/base::NullCallback(),
+        /*encryptor=*/nullptr));
 
     // Delete note from the keychain to check that GetAllLogins no longer needs
     // to access it;
@@ -596,7 +614,9 @@ TEST_F(LoginDatabaseMigrationToOSCryptTest,
   CreateDatabase("login_db_v39_with_note_keychain_ids.sql");
   base::HistogramTester histogram_tester;
   LoginDatabase login_db(get_database_path(), IsAccountStore(false));
-  ASSERT_TRUE(login_db.Init());
+  ASSERT_TRUE(
+      login_db.Init(/*on_undecryptable_passwords_removed=*/base::NullCallback(),
+                    /*encryptor=*/nullptr));
 
   // Check that the first note is still readable and the second one was deleted
   // during migration.

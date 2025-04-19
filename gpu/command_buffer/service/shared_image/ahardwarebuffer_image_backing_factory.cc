@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "gpu/command_buffer/service/shared_image/ahardwarebuffer_image_backing_factory.h"
 
 #include <dawn/webgpu_cpp.h>
@@ -22,7 +27,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/posix/eintr_wrapper.h"
 #include "build/build_config.h"
-#include "components/viz/common/resources/shared_image_format_utils.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/ahardwarebuffer_utils.h"
@@ -174,7 +178,7 @@ unsigned int AHardwareBufferFormat(viz::SharedImageFormat format) {
   return AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM;
 }
 
-constexpr uint32_t kSupportedUsage =
+constexpr SharedImageUsageSet kSupportedUsage =
     SHARED_IMAGE_USAGE_GLES2_READ | SHARED_IMAGE_USAGE_GLES2_WRITE |
     SHARED_IMAGE_USAGE_GLES2_FOR_RASTER_ONLY |
     SHARED_IMAGE_USAGE_DISPLAY_WRITE | SHARED_IMAGE_USAGE_DISPLAY_READ |
@@ -201,7 +205,7 @@ class AHardwareBufferImageBacking : public AndroidImageBacking {
                               const gfx::ColorSpace& color_space,
                               GrSurfaceOrigin surface_origin,
                               SkAlphaType alpha_type,
-                              uint32_t usage,
+                              gpu::SharedImageUsageSet usage,
                               std::string debug_label,
                               base::android::ScopedHardwareBufferHandle handle,
                               size_t estimated_size,
@@ -335,7 +339,7 @@ AHardwareBufferImageBacking::AHardwareBufferImageBacking(
     const gfx::ColorSpace& color_space,
     GrSurfaceOrigin surface_origin,
     SkAlphaType alpha_type,
-    uint32_t usage,
+    gpu::SharedImageUsageSet usage,
     std::string debug_label,
     base::android::ScopedHardwareBufferHandle handle,
     size_t estimated_size,
@@ -499,7 +503,7 @@ AHardwareBufferImageBacking::ProduceSkiaGanesh(
   // Skia representation.
   if (context_state->GrContextIsVulkan()) {
     uint32_t queue_family = VK_QUEUE_FAMILY_EXTERNAL;
-    if (usage() & SHARED_IMAGE_USAGE_SCANOUT) {
+    if (usage().Has(SHARED_IMAGE_USAGE_SCANOUT)) {
       // Any Android API that consume or produce buffers (e.g SurfaceControl)
       // requires a foreign queue.
       queue_family = VK_QUEUE_FAMILY_FOREIGN_EXT;
@@ -719,7 +723,7 @@ AHardwareBufferImageBackingFactory::~AHardwareBufferImageBackingFactory() =
     default;
 
 bool AHardwareBufferImageBackingFactory::ValidateUsage(
-    uint32_t usage,
+    SharedImageUsageSet usage,
     const gfx::Size& size,
     viz::SharedImageFormat format) const {
   if (!AHardwareBufferSupportedFormat(format)) {
@@ -751,7 +755,7 @@ AHardwareBufferImageBackingFactory::MakeBacking(
     const gfx::ColorSpace& color_space,
     GrSurfaceOrigin surface_origin,
     SkAlphaType alpha_type,
-    uint32_t usage,
+    SharedImageUsageSet usage,
     std::string debug_label,
     bool is_thread_safe,
     base::span<const uint8_t> pixel_data) {
@@ -783,8 +787,9 @@ AHardwareBufferImageBackingFactory::MakeBacking(
   // flags based on the usage params in the current function call.
   hwb_desc.usage = AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE |
                    AHARDWAREBUFFER_USAGE_GPU_COLOR_OUTPUT;
-  if (usage & SHARED_IMAGE_USAGE_SCANOUT)
+  if (usage.Has(SHARED_IMAGE_USAGE_SCANOUT)) {
     hwb_desc.usage |= gfx::SurfaceControl::RequiredUsage();
+  }
 
   // Add WRITE usage as we'll it need to upload data
   if (!pixel_data.empty())
@@ -867,7 +872,7 @@ AHardwareBufferImageBackingFactory::CreateSharedImage(
     const gfx::ColorSpace& color_space,
     GrSurfaceOrigin surface_origin,
     SkAlphaType alpha_type,
-    uint32_t usage,
+    SharedImageUsageSet usage,
     std::string debug_label,
     bool is_thread_safe) {
   return MakeBacking(mailbox, format, size, color_space, surface_origin,
@@ -883,7 +888,7 @@ AHardwareBufferImageBackingFactory::CreateSharedImage(
     const gfx::ColorSpace& color_space,
     GrSurfaceOrigin surface_origin,
     SkAlphaType alpha_type,
-    uint32_t usage,
+    SharedImageUsageSet usage,
     std::string debug_label,
     bool is_thread_safe,
     base::span<const uint8_t> pixel_data) {
@@ -898,7 +903,7 @@ bool AHardwareBufferImageBackingFactory::CanImportGpuMemoryBuffer(
 }
 
 bool AHardwareBufferImageBackingFactory::IsSupported(
-    uint32_t usage,
+    SharedImageUsageSet usage,
     viz::SharedImageFormat format,
     const gfx::Size& size,
     bool thread_safe,
@@ -919,10 +924,9 @@ bool AHardwareBufferImageBackingFactory::IsSupported(
 
   const FormatInfo& format_info = GetFormatInfo(format);
 
-  bool used_by_skia = (usage & SHARED_IMAGE_USAGE_RASTER_READ) ||
-                      (usage & SHARED_IMAGE_USAGE_RASTER_WRITE) ||
-                      (usage & SHARED_IMAGE_USAGE_DISPLAY_READ) ||
-                      (usage & SHARED_IMAGE_USAGE_DISPLAY_WRITE);
+  bool used_by_skia = usage.HasAny(
+      SHARED_IMAGE_USAGE_RASTER_READ | SHARED_IMAGE_USAGE_RASTER_WRITE |
+      SHARED_IMAGE_USAGE_DISPLAY_READ | SHARED_IMAGE_USAGE_DISPLAY_WRITE);
   bool used_by_gl = (HasGLES2ReadOrWriteUsage(usage)) ||
                     (used_by_skia && gr_context_type == GrContextType::kGL);
 
@@ -953,7 +957,7 @@ AHardwareBufferImageBackingFactory::CreateSharedImage(
     const gfx::ColorSpace& color_space,
     GrSurfaceOrigin surface_origin,
     SkAlphaType alpha_type,
-    uint32_t usage,
+    SharedImageUsageSet usage,
     std::string debug_label,
     gfx::GpuMemoryBufferHandle handle) {
   CHECK_EQ(handle.type, gfx::ANDROID_HARDWARE_BUFFER);
@@ -975,29 +979,6 @@ AHardwareBufferImageBackingFactory::CreateSharedImage(
 
   backing->SetCleared();
   return backing;
-}
-
-std::unique_ptr<SharedImageBacking>
-AHardwareBufferImageBackingFactory::CreateSharedImage(
-    const Mailbox& mailbox,
-    gfx::GpuMemoryBufferHandle handle,
-    gfx::BufferFormat buffer_format,
-    gfx::BufferPlane plane,
-    const gfx::Size& size,
-    const gfx::ColorSpace& color_space,
-    GrSurfaceOrigin surface_origin,
-    SkAlphaType alpha_type,
-    uint32_t usage,
-    std::string debug_label) {
-  if (plane != gfx::BufferPlane::DEFAULT) {
-    LOG(ERROR) << "Invalid plane " << gfx::BufferPlaneToString(plane);
-    return nullptr;
-  }
-
-  return CreateSharedImage(mailbox,
-                           viz::GetSinglePlaneSharedImageFormat(buffer_format),
-                           size, color_space, surface_origin, alpha_type, usage,
-                           std::move(debug_label), std::move(handle));
 }
 
 SharedImageBackingType AHardwareBufferImageBackingFactory::GetBackingType() {

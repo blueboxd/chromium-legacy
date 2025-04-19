@@ -18,8 +18,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/subresource_filter/subresource_filter_browser_test_harness.h"
 #include "chrome/browser/tpcd/experiment/tpcd_experiment_features.h"
-#include "chrome/browser/tpcd/experiment/tpcd_pref_names.h"
-#include "chrome/browser/tpcd/experiment/tpcd_utils.h"
 #include "chrome/browser/tpcd/support/top_level_trial_service.h"
 #include "chrome/browser/tpcd/support/top_level_trial_service_factory.h"
 #include "chrome/browser/tpcd/support/tpcd_support_service.h"
@@ -36,6 +34,8 @@
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/prefs/pref_service.h"
+#include "components/privacy_sandbox/tpcd_pref_names.h"
+#include "components/privacy_sandbox/tpcd_utils.h"
 #include "components/privacy_sandbox/tracking_protection_onboarding.h"
 #include "components/subresource_filter/core/common/common_features.h"
 #include "components/subresource_filter/core/common/test_ruleset_utils.h"
@@ -289,10 +289,11 @@ class ThirdPartyCookieDeprecationObserverBaseBrowserTest
         static_cast<int>(content_settings::CookieControlsMode::kOff));
   }
   void SetUpTrackingProtectionOnboard() {
-    browser()->profile()->GetPrefs()->SetInteger(
-        prefs::kTrackingProtectionOnboardingStatus,
-        static_cast<int>(privacy_sandbox::TrackingProtectionOnboarding::
-                             OnboardingStatus::kOnboarded));
+    onboarding_service()->MaybeMarkModeBEligible();
+    onboarding_service()->NoticeShown(
+        privacy_sandbox::TrackingProtectionOnboarding::SurfaceType::kBrApp,
+        privacy_sandbox::TrackingProtectionOnboarding::NoticeType::
+            kModeBOnboarding);
     EXPECT_EQ(onboarding_service()->GetOnboardingStatus(),
               privacy_sandbox::TrackingProtectionOnboarding::OnboardingStatus::
                   kOnboarded);
@@ -960,9 +961,10 @@ class ThirdPartyCookieDeprecationObserverMechanismBrowserTest
           browser()->profile());
       auto request_origin = url::Origin::Create(third_party_url);
       auto partition_origin = url::Origin::Create(first_party_url);
-      service->Update3pcdTrialSettingsForTesting(
+      service->Update3pcdTrialSettingsForTesting(OriginTrialStatusChangeDetails(
           request_origin, net::SchemefulSite(partition_origin).Serialize(),
-          /*match_subdomains=*/true, /*enabled=*/true);
+          /*match_subdomains=*/true, /*enabled=*/true,
+          /*source_id=*/std::nullopt));
     }
 
     auto tpcd_metadata_helper = [&](const std::string& source) {
@@ -1361,10 +1363,11 @@ class ThirdPartyCookieDeprecationObserverCookieReadBrowserTest
     CookieSettingsFactory::GetForProfile(browser()->profile())
         ->SetTemporaryCookieGrantForHeuristic(third_party_url, first_party_url,
                                               base::Seconds(60));
-    EXPECT_EQ(CookieSettingsFactory::GetForProfile(browser()->profile())
-                  ->GetCookieSetting(third_party_url, first_party_url,
-                                     net::CookieSettingOverrides()),
-              ContentSetting::CONTENT_SETTING_ALLOW);
+    EXPECT_EQ(
+        CookieSettingsFactory::GetForProfile(browser()->profile())
+            ->GetCookieSetting(third_party_url, net::SiteForCookies(),
+                               first_party_url, net::CookieSettingOverrides()),
+        ContentSetting::CONTENT_SETTING_ALLOW);
   }
 };
 

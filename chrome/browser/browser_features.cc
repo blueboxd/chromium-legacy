@@ -15,18 +15,24 @@
 
 namespace features {
 
-#if BUILDFLAG(IS_WIN)
-// When this feature is enabled, metrics are gathered regarding the performance
-// and reliability of app-bound encryption primitives on a background thread.
-BASE_FEATURE(kAppBoundEncryptionMetrics,
-             "AppBoundEncryptionMetrics",
+#if BUILDFLAG(IS_ANDROID)
+// Kill switch for allowing TWAs to autoplay with sound without requiring a user
+// gesture to unlock, for parity with PWAs.
+BASE_FEATURE(kAllowUnmutedAutoplayForTWA,
+             "AllowUnmutedAutoplayForTWA",
              base::FEATURE_ENABLED_BY_DEFAULT);
-#endif  // BUILDFLAG(IS_WIN)
+#endif  // BUILDFLAG(IS_ANDROID)
 
 // This is used to enable an experiment for modifying confidence cutoff of
 // prerender and preconnect for autocomplete action predictor.
 BASE_FEATURE(kAutocompleteActionPredictorConfidenceCutoff,
              "AutocompleteActionPredictorConfidenceCutoff",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// This is used to enable an experiment for the bookmarks tree view in the
+// side panel, providing users with a hierarchical view of their bookmarks.
+BASE_FEATURE(kBookmarksTreeView,
+             "BookmarksTreeView",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // This flag is used for enabling Bookmark triggered prerendering. See
@@ -56,25 +62,6 @@ BASE_FEATURE(kClosedTabCache,
              "ClosedTabCache",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// When enabled, a new spare renderer is created at a later time if the previous
-// spare renderer was taken by top chrome WebUI.
-// TODO(crbug.com/41490050): clean up the feature.
-BASE_FEATURE(kDeferredSpareRendererForTopChromeWebUI,
-             "DeferredSpareRendererForTopChromeWebUI",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-// The delay time to create a new spare renderer since the previous spare
-// renderer is taken. This is not effective when
-// `delay_until_page_stopped_loading` is true.
-// Experiments have shown that delaying 2s brings the most significant
-// improvements to Top Chrome WebUIs.
-const base::FeatureParam<base::TimeDelta> kSpareRendererWarmupDelay{
-    &kDeferredSpareRendererForTopChromeWebUI, "delay", base::Seconds(2)};
-// If true, a new spare renderer is not created until the last page stops
-// loading.
-const base::FeatureParam<bool> kSpareRendererWarmupDelayUntilPageStopsLoading{
-    &kDeferredSpareRendererForTopChromeWebUI, "delay_until_page_stops_loading",
-    false};
-
 // Destroy profiles when their last browser window is closed, instead of when
 // the browser exits.
 // On Lacros the feature is enabled only for secondary profiles, check the
@@ -98,49 +85,34 @@ BASE_FEATURE(kDestroySystemProfiles,
 // insights regarding console (error) messages.
 BASE_FEATURE(kDevToolsConsoleInsights,
              "DevToolsConsoleInsights",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-const base::FeatureParam<std::string> kDevToolsConsoleInsightsAidaScope{
-    &kDevToolsConsoleInsights, "aida_scope", /*default*/ ""};
-const base::FeatureParam<std::string> kDevToolsConsoleInsightsAidaEndpoint{
-    &kDevToolsConsoleInsights, "aida_endpoint", /*default*/ ""};
+             base::FEATURE_ENABLED_BY_DEFAULT);
 const base::FeatureParam<std::string> kDevToolsConsoleInsightsModelId{
-    &kDevToolsConsoleInsights, "aida_model_id", /*default*/ ""};
+    &kDevToolsConsoleInsights, "aida_model_id", /*default_value=*/""};
 const base::FeatureParam<double> kDevToolsConsoleInsightsTemperature{
-    &kDevToolsConsoleInsights, "aida_temperature", /*default*/ 0.2};
+    &kDevToolsConsoleInsights, "aida_temperature", /*default_value=*/0.2};
 const base::FeatureParam<bool> kDevToolsConsoleInsightsOptIn{
-    &kDevToolsConsoleInsights, "opt_in", /*default*/ true};
-
-// Separate dogfood feature for DevTools console insights,
-// not restricted by enterprise policy or location.
-BASE_FEATURE(kDevToolsConsoleInsightsDogfood,
-             "DevToolsConsoleInsightsDogfood",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-const base::FeatureParam<std::string> kDevToolsConsoleInsightsDogfoodAidaScope{
-    &kDevToolsConsoleInsightsDogfood, "aida_scope", /*default*/ ""};
-const base::FeatureParam<std::string>
-    kDevToolsConsoleInsightsDogfoodAidaEndpoint{
-        &kDevToolsConsoleInsightsDogfood, "aida_endpoint", /*default*/ ""};
-const base::FeatureParam<std::string> kDevToolsConsoleInsightsDogfoodModelId{
-    &kDevToolsConsoleInsightsDogfood, "aida_model_id", /*default*/ ""};
-const base::FeatureParam<double> kDevToolsConsoleInsightsDogfoodTemperature{
-    &kDevToolsConsoleInsightsDogfood, "aida_temperature", /*default*/ 0.2};
-const base::FeatureParam<bool> kDevToolsConsoleInsightsDogfoodOptIn{
-    &kDevToolsConsoleInsightsDogfood, "opt_in", /*default*/ true};
-
-// Whether DevTools shows the setting for console insights. The setting can be
-// shown in a disabled state, even if the feature itself is not available.
-BASE_FEATURE(kDevToolsConsoleInsightsSettingVisible,
-             "DevToolsConsoleInsightsSettingVisible",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-const base::FeatureParam<std::string>
-    kDevToolsConsoleInsightsSettingVisibleBlockedReason{
-        &kDevToolsConsoleInsightsSettingVisible, "blocked_reason",
-        /*default*/ ""};
+    &kDevToolsConsoleInsights, "opt_in", /*default_value=*/false};
 
 // Whether the DevTools styling assistant dogfood is enabled.
 BASE_FEATURE(kDevToolsFreestylerDogfood,
              "DevToolsFreestylerDogfood",
              base::FEATURE_DISABLED_BY_DEFAULT);
+const base::FeatureParam<std::string> kDevToolsFreestylerDogfoodModelId{
+    &kDevToolsFreestylerDogfood, "aida_model_id", /*default_value=*/""};
+const base::FeatureParam<double> kDevToolsFreestylerDogfoodTemperature{
+    &kDevToolsFreestylerDogfood, "aida_temperature", /*default_value=*/0};
+
+// Whether the DevTools resource explainer assistant is enabled.
+BASE_FEATURE(kDevToolsExplainThisResourceDogfood,
+             "DevToolsExplainThisResourceDogfood",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+const base::FeatureParam<std::string>
+    kDevToolsExplainThisResourceDogfoodModelId{
+        &kDevToolsExplainThisResourceDogfood, "aida_model_id",
+        /*default_value=*/""};
+const base::FeatureParam<double> kDevToolsExplainThisResourceDogfoodTemperature{
+    &kDevToolsExplainThisResourceDogfood, "aida_temperature",
+    /*default_value=*/0};
 
 // Whether an infobar is shown when the process is shared.
 BASE_FEATURE(kDevToolsSharedProcessInfobar,
@@ -158,6 +130,9 @@ BASE_FEATURE(kDevToolsTabTarget,
 BASE_FEATURE(kDevToolsVeLogging,
              "DevToolsVeLogging",
              base::FEATURE_ENABLED_BY_DEFAULT);
+// Run VE logging in a test mode
+const base::FeatureParam<bool> kDevToolsVeLoggingTesting{
+    &kDevToolsVeLogging, "testing", /*default_value=*/false};
 
 #if BUILDFLAG(IS_CHROMEOS)
 // Enables being able to zoom a web page by double tapping in Chrome OS tablet
@@ -169,16 +144,19 @@ BASE_FEATURE(kDoubleTapToZoomInTabletMode,
 
 #if BUILDFLAG(IS_WIN)
 // When this feature is enabled, the App-Bound encryption provider is registered
-// with Chrome.
+// with Chrome. Do not disable this feature if
+// UseAppBoundEncryptionProviderForEncryption has been enabled for a client,
+// since data loss might occur.
 BASE_FEATURE(kRegisterAppBoundEncryptionProvider,
              "RegisterAppBoundEncryptionProvider",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// When this feature is enabled, the App-Bound encryption provider is used as
+// the default encryption provider.
+BASE_FEATURE(kUseAppBoundEncryptionProviderForEncryption,
+             "UseAppBoundEncryptionProviderForEncryption",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_WIN)
-
-// Enables usage of the FedCM API without third party cookies at the same time.
-BASE_FEATURE(kFedCmWithoutThirdPartyCookies,
-             "FedCmWithoutThirdPartyCookies",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables showing the email of the flex org admin that setup CBCM in the
 // management disclosures.
@@ -232,7 +210,7 @@ BASE_FEATURE(kNetworkAnnotationMonitoring,
 // crbug.com/1462832 for more details of New Tab Page triggered prerendering.
 BASE_FEATURE(kNewTabPageTriggerForPrerender2,
              "NewTabPageTriggerForPrerender2",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_WIN)
 // Don't call the Win32 API PrefetchVirtualMemory when loading chrome.dll inside
@@ -252,13 +230,9 @@ BASE_FEATURE(kNoPreReadMainDll,
 BASE_FEATURE(kNotificationOneTapUnsubscribe,
              "NotificationOneTapUnsubscribe",
              base::FEATURE_DISABLED_BY_DEFAULT);
+base::FeatureParam<bool> kNotificationOneTapUnsubscribeUseServiceIntentParam{
+    &kNotificationOneTapUnsubscribe, "use_service_intent", false};
 #endif
-
-// This flag is used for enabling Omnibox triggered prerendering. See
-// crbug.com/1166085 for more details of Omnibox triggered prerendering.
-BASE_FEATURE(kOmniboxTriggerForPrerender2,
-             "OmniboxTriggerForPrerender2",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_CHROMEOS)
 // Enables AES keys support in the chrome.enterprise.platformKeys and
@@ -308,6 +282,14 @@ BASE_FEATURE(kReadAnythingPermanentAccessibility,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
+// When this feature is enabled, Chrome will register os_update_handler with
+// Omaha, to be run on OS upgrade.
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+BASE_FEATURE(kRegisterOsUpdateHandlerWin,
+             "RegisterOsUpdateHandlerWin",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+
 // When this feature is enabled, the network service will restart unsandboxed if
 // a previous attempt to launch it sandboxed failed.
 BASE_FEATURE(kRestartNetworkServiceUnsandboxedForFailedLaunch,
@@ -351,15 +333,6 @@ BASE_FEATURE(kSupportSearchSuggestionForPrerender2,
 #else
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
-const base::FeatureParam<SearchPreloadShareableCacheType>::Option
-    search_preload_shareable_cache_types[] = {
-        {SearchPreloadShareableCacheType::kEnabled, "enabled"},
-        {SearchPreloadShareableCacheType::kDisabled, "disabled"}};
-const base::FeatureParam<SearchPreloadShareableCacheType>
-    kSearchPreloadShareableCacheTypeParam{
-        &kSupportSearchSuggestionForPrerender2, "shareable_cache",
-        SearchPreloadShareableCacheType::kEnabled,
-        &search_preload_shareable_cache_types};
 
 // Enables migration of the network context data from `unsandboxed_data_path` to
 // `data_path`. See the explanation in network_context.mojom.
@@ -417,4 +390,24 @@ BASE_FEATURE(kBrowserDynamicCodeDisabled,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_WIN)
 
+#if !BUILDFLAG(IS_ANDROID)
+// This flag controls whether to perform Pak integrity check on startup to
+// report statistics for on-disk corruption.
+// Disabled on ChromeOS, as dm-verity enforces integrity and the check would
+// be redundant.
+BASE_FEATURE(kReportPakFileIntegrity,
+             "ReportPakFileIntegrity",
+#if !BUILDFLAG(IS_CHROMEOS)
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif  // BUILDFLAG(IS_CHROMEOS)
+#endif  // BUILDFLAG(IS_ANDROID)
+
+// This flag enables the removal of IWAs surface captures from Chrome Tabs
+// category in getDisplayMedia() API. When disabled, IWAs surface captures
+// show both in Chrome Tabs and Windows.
+BASE_FEATURE(kRemovalOfIWAsFromTabCapture,
+             "RemovalOfIWAsFromTabCapture",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 }  // namespace features

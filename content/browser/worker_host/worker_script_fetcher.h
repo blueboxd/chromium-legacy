@@ -8,19 +8,18 @@
 #include <optional>
 
 #include "base/functional/callback.h"
-#include "content/browser/navigation_subresource_loader_params.h"
 #include "content/browser/renderer_host/policy_container_host.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/service_worker_client_info.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "net/storage_access_api/status.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/client_security_state.mojom-forward.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/worker/worker_main_script_load_params.mojom.h"
 
 namespace net {
@@ -47,7 +46,6 @@ class ServiceWorkerContextWrapper;
 class ServiceWorkerMainResourceHandle;
 class StoragePartitionImpl;
 class WorkerScriptLoaderFactory;
-struct SubresourceLoaderParams;
 
 // Contains the result of successful worker script fetch. On fetch failure,
 // `std::nullopt` is used instead.
@@ -57,7 +55,6 @@ struct CONTENT_EXPORT WorkerScriptFetcherResult final {
           subresource_loader_factories,
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
       PolicyContainerPolicies policy_container_policies,
-      base::WeakPtr<ServiceWorkerClient> service_worker_client,
       const GURL& final_response_url);
   ~WorkerScriptFetcherResult();
 
@@ -78,9 +75,6 @@ struct CONTENT_EXPORT WorkerScriptFetcherResult final {
   blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params;
 
   PolicyContainerPolicies policy_container_policies;
-
-  // Plumbed from `SubresourceLoaderParams`.
-  base::WeakPtr<ServiceWorkerClient> service_worker_client;
 
   // The script response URL.
   // https://fetch.spec.whatwg.org/#concept-response-url
@@ -112,15 +106,13 @@ class WorkerScriptFetcher : public network::mojom::URLLoaderClient {
   //
   // Must be called on the UI thread.
   //
-  // - `ancestor_render_frame_host` points to the ancestor frame, if any. If
+  // - `ancestor_render_frame_host` points to the ancestor frame. If
   //   the worker being created is nested, then this is the ancestor of the
-  //   creator worker. Otherwise, this is the creator frame. May be nullptr.
-  //   For dedicated workers, `ancestor_render_frame_host` *should* always exist
-  //   though due to the fact that `DedicatedWorkerHost` lifetimes do not align
-  //   exactly with their parents (they are destroyed asynchronously via mojo),
-  //   the ancestor frame might have been destroyed when the fetch starts.
-  //   TODO(crbug.com/40054797): Amend the above comment once
-  //   `DedicatedWorkerHost` lifetimes align with their creators'.
+  //   creator worker. Otherwise, this is the creator frame. Cannot be nullptr.
+  //   For dedicated workers, when the lifetime of the `DedicatedWorkerHost`
+  //   does not exactly align with the parents, and they are destroyed
+  //   asynchronously via mojo by the time the fetch is about to start,
+  //   this method must not be called.
   // - `creator_render_frame_host` points to the creator frame, if any. May
   //   be nullptr if the worker being created is a nested dedicated worker.
   //   Since nested shared workers are not supported, for shared workers
@@ -134,7 +126,7 @@ class WorkerScriptFetcher : public network::mojom::URLLoaderClient {
       int worker_process_id,
       const DedicatedOrSharedWorkerToken& worker_token,
       const GURL& initial_request_url,
-      RenderFrameHostImpl* ancestor_render_frame_host,
+      RenderFrameHostImpl& ancestor_render_frame_host,
       RenderFrameHostImpl* creator_render_frame_host,
       const net::SiteForCookies& site_for_cookies,
       const url::Origin& request_initiator,
@@ -155,7 +147,7 @@ class WorkerScriptFetcher : public network::mojom::URLLoaderClient {
       DevToolsAgentHostImpl* devtools_agent_host,
       const base::UnguessableToken& devtools_worker_token,
       bool require_cross_site_request_for_cookies,
-      bool has_storage_access,
+      net::StorageAccessApiStatus storage_access_api_status,
       CompletionCallback callback);
 
   // Creates a loader factory bundle. Must be called on the UI thread. For
@@ -185,17 +177,14 @@ class WorkerScriptFetcher : public network::mojom::URLLoaderClient {
   // In case of success:
   //
   // - `main_script_load_params` is not nullptr.
-  // - `subresource_loader_params` may be nullopt.
   // - `completion_status` is nullptr.
   //
   // In case of error:
   //
   // - `main_script_load_params` is nullptr.
-  // - `subresource_loader_params` is nullopt.
   // - `completion_status` is not nullptr.
   using CreateAndStartCallback = base::OnceCallback<void(
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
-      SubresourceLoaderParams subresource_loader_params,
       const network::URLLoaderCompletionStatus* completion_status)>;
 
   WorkerScriptFetcher(
@@ -210,7 +199,7 @@ class WorkerScriptFetcher : public network::mojom::URLLoaderClient {
       int worker_process_id,
       const DedicatedOrSharedWorkerToken& worker_token,
       const GURL& initial_request_url,
-      RenderFrameHostImpl* ancestor_render_frame_host,
+      RenderFrameHostImpl& ancestor_render_frame_host,
       RenderFrameHostImpl* creator_render_frame_host,
       const net::IsolationInfo& trusted_isolation_info,
       network::mojom::ClientSecurityStatePtr client_security_state,
@@ -259,7 +248,6 @@ class WorkerScriptFetcher : public network::mojom::URLLoaderClient {
   std::unique_ptr<blink::ThrottlingURLLoader> url_loader_;
 
   blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params_;
-  SubresourceLoaderParams subresource_loader_params_;
 
   std::vector<net::RedirectInfo> redirect_infos_;
   std::vector<network::mojom::URLResponseHeadPtr> redirect_response_heads_;

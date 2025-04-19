@@ -31,17 +31,16 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseActivityTestRule;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.components.tab_groups.TabGroupColorId;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import org.chromium.ui.test.util.BlankUiTestActivity;
-import org.chromium.ui.test.util.DisableAnimationsTestRule;
 import org.chromium.ui.test.util.RenderTestRule.Component;
 
 import java.time.Clock;
@@ -49,8 +48,6 @@ import java.time.Clock;
 /** Render tests for {@link TabGroupRowView}. */
 @RunWith(BaseJUnit4ClassRunner.class)
 public class TabGroupRowViewRenderTest {
-    @Rule
-    public final DisableAnimationsTestRule mDisableAnimationsRule = new DisableAnimationsTestRule();
 
     @Rule
     public BaseActivityTestRule<BlankUiTestActivity> mActivityTestRule =
@@ -72,7 +69,7 @@ public class TabGroupRowViewRenderTest {
         mActivityTestRule.launchActivity(null);
         mActivity = mActivityTestRule.getActivity();
         mActivity.setTheme(R.style.Theme_BrowserUI_DayNight);
-        TestThreadUtils.runOnUiThreadBlocking(this::setUpOnUi);
+        ThreadUtils.runOnUiThreadBlocking(this::setUpOnUi);
     }
 
     private void setUpOnUi() {
@@ -94,8 +91,31 @@ public class TabGroupRowViewRenderTest {
     @Test
     @MediumTest
     @Feature({"RenderTest"})
+    public void testRenderWithVeryLongTitle() throws Exception {
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    PropertyModel.Builder builder = new PropertyModel.Builder(ALL_KEYS);
+                    builder.with(
+                            ASYNC_FAVICON_TOP_LEFT,
+                            callback -> callback.onResult(new ColorDrawable(Color.RED)));
+                    builder.with(TabGroupRowProperties.COLOR_INDEX, TabGroupColorId.GREY);
+                    builder.with(
+                            TITLE_DATA,
+                            new Pair<>(
+                                    "VeryLongTitleThatGetsTruncatedOrSplitOverMultipleLines", 1));
+                    builder.with(CREATION_MILLIS, Clock.systemUTC().millis());
+                    mPropertyModel = builder.build();
+                    PropertyModelChangeProcessor.create(
+                            mPropertyModel, mTabGroupRowView, new TabGroupRowViewBinder());
+                });
+        mRenderTestRule.render(mTabGroupRowView, "long_title");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
     public void testRenderWithVariousFaviconCounts() throws Exception {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     PropertyModel.Builder builder = new PropertyModel.Builder(ALL_KEYS);
                     builder.with(
@@ -117,7 +137,7 @@ public class TabGroupRowViewRenderTest {
                 });
         mRenderTestRule.render(mTabGroupRowView, "five");
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     mPropertyModel.set(
                             ASYNC_FAVICON_BOTTOM_RIGHT,
@@ -126,16 +146,15 @@ public class TabGroupRowViewRenderTest {
                 });
         mRenderTestRule.render(mTabGroupRowView, "four");
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> mPropertyModel.set(ASYNC_FAVICON_BOTTOM_RIGHT, null));
         mRenderTestRule.render(mTabGroupRowView, "three");
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> mPropertyModel.set(ASYNC_FAVICON_BOTTOM_LEFT, null));
         mRenderTestRule.render(mTabGroupRowView, "two");
 
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> mPropertyModel.set(ASYNC_FAVICON_TOP_RIGHT, null));
+        ThreadUtils.runOnUiThreadBlocking(() -> mPropertyModel.set(ASYNC_FAVICON_TOP_RIGHT, null));
         mRenderTestRule.render(mTabGroupRowView, "one");
     }
 }

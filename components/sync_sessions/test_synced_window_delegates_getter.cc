@@ -165,7 +165,8 @@ int64_t TestSyncedTabDelegate::GetRootTaskIdForNavigationId(int nav_id) const {
 }
 
 std::unique_ptr<SyncedTabDelegate>
-TestSyncedTabDelegate::CreatePlaceholderTabSyncedTabDelegate() {
+TestSyncedTabDelegate::ReadPlaceholderTabSnapshotIfItShouldSync(
+    SyncSessionsClient* sessions_client) {
   NOTREACHED_IN_MIGRATION();
   return nullptr;
 }
@@ -189,7 +190,8 @@ void PlaceholderTabDelegate::SetPlaceholderTabSyncedTabDelegate(
 }
 
 std::unique_ptr<SyncedTabDelegate>
-PlaceholderTabDelegate::CreatePlaceholderTabSyncedTabDelegate() {
+PlaceholderTabDelegate::ReadPlaceholderTabSnapshotIfItShouldSync(
+    SyncSessionsClient* sessions_client) {
   CHECK(placeholder_tab_synced_tab_delegate_);
   return std::move(placeholder_tab_synced_tab_delegate_);
 }
@@ -378,8 +380,7 @@ TestSyncedTabDelegate* TestSyncedWindowDelegatesGetter::AddTab(
     SessionID tab_id) {
   tabs_.push_back(std::make_unique<TestSyncedTabDelegate>(
       window_id, tab_id,
-      base::BindRepeating(&DummyRouter::NotifyNav,
-                          base::Unretained(&router_))));
+      base::BindRepeating(&TestRouter::NotifyNav, base::Unretained(&router_))));
   for (auto& window : windows_) {
     if (window->GetSessionId() == window_id) {
       int tab_index = window->GetTabCount();
@@ -428,27 +429,27 @@ const SyncedWindowDelegate* TestSyncedWindowDelegatesGetter::FindById(
   return nullptr;
 }
 
-TestSyncedWindowDelegatesGetter::DummyRouter::DummyRouter() = default;
+TestSyncedWindowDelegatesGetter::TestRouter::TestRouter() = default;
 
-TestSyncedWindowDelegatesGetter::DummyRouter::~DummyRouter() = default;
+TestSyncedWindowDelegatesGetter::TestRouter::~TestRouter() = default;
 
-void TestSyncedWindowDelegatesGetter::DummyRouter::StartRoutingTo(
+void TestSyncedWindowDelegatesGetter::TestRouter::StartRoutingTo(
     LocalSessionEventHandler* handler) {
   handler_ = handler;
 }
 
-void TestSyncedWindowDelegatesGetter::DummyRouter::Stop() {
+void TestSyncedWindowDelegatesGetter::TestRouter::Stop() {
   handler_ = nullptr;
 }
 
-void TestSyncedWindowDelegatesGetter::DummyRouter::NotifyNav(
+void TestSyncedWindowDelegatesGetter::TestRouter::NotifyNav(
     SyncedTabDelegate* tab) {
   if (handler_) {
     handler_->OnLocalTabModified(tab);
   }
 }
 
-void TestSyncedWindowDelegatesGetter::DummyRouter::
+void TestSyncedWindowDelegatesGetter::TestRouter::
     NotifySessionRestoreComplete() {
   if (handler_) {
     handler_->OnSessionRestoreComplete();

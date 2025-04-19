@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/containers/span.h"
+#include "chrome/browser/web_applications/scope_extension_info.h"
 #include "components/webapps/common/web_app_id.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
@@ -33,14 +34,13 @@ class ChromeOsWebAppExperiments {
   // https://github.com/WICG/manifest-incubations/blob/gh-pages/scope_extensions-explainer.md.
   // At the moment, we are enabling testing of the proposed feature for
   // certain hard-coded web apps.
-  static base::span<const char* const> GetScopeExtensions(
-      const webapps::AppId& app_id);
+  static ScopeExtensions GetScopeExtensions(const webapps::AppId& app_id);
 
   // Returns the max scope score (similar to
   // WebAppRegistrar::GetUrlInAppScopeScore()) for the experimental extended
   // scopes.
-  static size_t GetExtendedScopeScore(const webapps::AppId& app_id,
-                                      std::string_view url_spec);
+  static int GetExtendedScopeScore(const webapps::AppId& app_id,
+                                   std::string_view url_spec);
 
   // Whether the manifest theme_color and background_color should be ignored for
   // `app_id`.

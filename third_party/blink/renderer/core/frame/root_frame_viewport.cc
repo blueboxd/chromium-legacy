@@ -18,9 +18,9 @@
 #include "third_party/blink/renderer/core/scroll/scroll_alignment.h"
 #include "third_party/blink/renderer/core/scroll/scroll_animator.h"
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
+#include "third_party/blink/renderer/core/scroll/scroll_into_view_util.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/smooth_scroll_sequencer.h"
-#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace blink {
@@ -363,16 +363,14 @@ PhysicalRect RootFrameViewport::ScrollIntoView(
     const PhysicalRect& rect_in_absolute,
     const PhysicalBoxStrut& scroll_margin,
     const mojom::blink::ScrollIntoViewParamsPtr& params) {
-  PhysicalRect scroll_snapport_rect = VisibleScrollSnapportRect();
-
   PhysicalRect rect_in_document = rect_in_absolute;
   rect_in_document.Move(
       PhysicalOffset::FromVector2dFFloor(LayoutViewport().GetScrollOffset()));
 
   ScrollOffset new_scroll_offset =
-      ClampScrollOffset(ScrollAlignment::GetScrollOffsetToExpose(
-          scroll_snapport_rect, rect_in_document, scroll_margin,
-          *params->align_x.get(), *params->align_y.get(), GetScrollOffset()));
+      ClampScrollOffset(scroll_into_view_util::GetScrollOffsetToExpose(
+          *this, rect_in_document, scroll_margin, *params->align_x.get(),
+          *params->align_y.get()));
   if (params->type == mojom::blink::ScrollType::kUser)
     new_scroll_offset = ClampToUserScrollableOffset(new_scroll_offset);
 
@@ -386,13 +384,18 @@ PhysicalRect RootFrameViewport::ScrollIntoView(
 
   if (new_scroll_offset != GetScrollOffset()) {
     if (params->is_for_scroll_sequence) {
-      CHECK(GetSmoothScrollSequencer());
-      DCHECK(params->type == mojom::blink::ScrollType::kProgrammatic ||
-             params->type == mojom::blink::ScrollType::kUser);
       mojom::blink::ScrollBehavior behavior = DetermineScrollBehavior(
           params->behavior, GetLayoutBox()->StyleRef().GetScrollBehavior());
-      GetSmoothScrollSequencer()->QueueAnimation(this, new_scroll_offset,
-                                                 behavior);
+      if (RuntimeEnabledFeatures::MultiSmoothScrollIntoViewEnabled()) {
+        ScrollableArea::SetScrollOffset(new_scroll_offset, params->type,
+                                        behavior);
+      } else {
+        CHECK(GetSmoothScrollSequencer());
+        DCHECK(params->type == mojom::blink::ScrollType::kProgrammatic ||
+               params->type == mojom::blink::ScrollType::kUser);
+        GetSmoothScrollSequencer()->QueueAnimation(this, new_scroll_offset,
+                                                   behavior);
+      }
     } else {
       ScrollableArea::SetScrollOffset(new_scroll_offset, params->type);
     }
@@ -478,7 +481,7 @@ bool RootFrameViewport::DistributeScrollBetweenViewports(
 }
 
 gfx::Vector2d RootFrameViewport::ScrollOffsetInt() const {
-  return gfx::ToFlooredVector2d(GetScrollOffset());
+  return SnapScrollOffsetToPhysicalPixels(GetScrollOffset());
 }
 
 ScrollOffset RootFrameViewport::GetScrollOffset() const {

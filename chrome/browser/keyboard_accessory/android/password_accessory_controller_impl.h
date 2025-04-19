@@ -6,13 +6,16 @@
 #define CHROME_BROWSER_KEYBOARD_ACCESSORY_ANDROID_PASSWORD_ACCESSORY_CONTROLLER_IMPL_H_
 
 #include <memory>
+#include <string>
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/types/optional_ref.h"
 #include "chrome/browser/keyboard_accessory/android/accessory_sheet_data.h"
-#include "chrome/browser/password_manager/android/all_passwords_bottom_sheet_helper.h"
+#include "chrome/browser/keyboard_accessory/android/affiliated_plus_profiles_provider.h"
 #include "chrome/browser/keyboard_accessory/android/password_accessory_controller.h"
+#include "chrome/browser/password_manager/android/all_passwords_bottom_sheet_helper.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom-forward.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/password_manager/core/browser/credential_cache.h"
@@ -29,12 +32,17 @@ class ManualFillingController;
 class AllPasswordsBottomSheetController;
 class Profile;
 
+namespace plus_addresses {
+class AllPlusAddressesBottomSheetController;
+}  // namespace plus_addresses
+
 // Use either PasswordAccessoryController::GetOrCreate or
 // PasswordAccessoryController::GetIfExisting to obtain instances of this class.
 // This class exists for every tab and should never store state based on the
 // contents of one of its frames. This can cause cross-origin hazards.
 class PasswordAccessoryControllerImpl
     : public PasswordAccessoryController,
+      public AffiliatedPlusProfilesProvider::Observer,
       public content::WebContentsObserver,
       public content::WebContentsUserData<PasswordAccessoryControllerImpl> {
  public:
@@ -65,9 +73,10 @@ class PasswordAccessoryControllerImpl
                        bool enabled) override;
 
   // PasswordAccessoryController:
+  void RegisterPlusProfilesProvider(
+      base::WeakPtr<AffiliatedPlusProfilesProvider> provider) override;
   void RefreshSuggestionsForField(
-      autofill::mojom::FocusedFieldType focused_field_type,
-      bool is_manual_generation_available) override;
+      autofill::mojom::FocusedFieldType focused_field_type) override;
   void OnGenerationRequested(
       autofill::password_generation::PasswordGenerationType type) override;
   void UpdateCredManReentryUi(
@@ -141,6 +150,10 @@ class PasswordAccessoryControllerImpl
   // WebContentsObserver:
   void WebContentsDestroyed() override;
 
+  // Constructs a vector of available manual fallback actions subject to
+  // enabled features and available user data.
+  std::vector<autofill::FooterCommand> CreateManagePasswordsFooter() const;
+
   // Enables or disables saving for the focused origin. This involves removing
   // or adding blocklisted entry in the |PasswordStore|.
   void ChangeCurrentOriginSavePasswordsStatus(bool enabled);
@@ -181,6 +194,21 @@ class PasswordAccessoryControllerImpl
   // the Bottom Sheet view is destroyed.
   void AllPasswordsSheetDismissed();
 
+  // Fills `plus_address` into the currently focused field. Called when the
+  // manually triggered plus address creation bottom sheet is accepted by the
+  // user.
+  void OnPlusAddressCreated(const std::string& plus_address);
+
+  // Triggers the filling `plus_address` into the currently focused field.
+  void OnPlusAddressSelected(
+      base::optional_ref<const std::string> plus_address);
+
+  // Fetches suggestions and propagates them to the frontend.
+  void RefreshSuggestions();
+
+  // AffiliatedPlusProfilesProvider::Observer:
+  void OnAffiliatedPlusProfilesFetched() override;
+
   content::WebContents& GetWebContents() const;
 
   // Keeps track of credentials which are stored for all origins in this tab.
@@ -188,6 +216,10 @@ class PasswordAccessoryControllerImpl
 
   // The password accessory controller object to forward client requests to.
   base::WeakPtr<ManualFillingController> manual_filling_controller_;
+
+  // The plus profiles provider that is used to generate the plus profiles
+  // section for the frontend.
+  base::WeakPtr<AffiliatedPlusProfilesProvider> plus_profiles_provider_;
 
   // The password manager client is used to update the save passwords status
   // for the currently focused origin.
@@ -227,6 +259,9 @@ class PasswordAccessoryControllerImpl
   // Callback attempting to display the migration warning when invoked.
   // Used to facilitate injecting a mock bridge in tests.
   ShowMigrationWarningCallback show_migration_warning_callback_;
+
+  std::unique_ptr<plus_addresses::AllPlusAddressesBottomSheetController>
+      all_plus_addresses_bottom_sheet_controller_;
 
   base::WeakPtrFactory<PasswordAccessoryControllerImpl> weak_ptr_factory_{this};
 

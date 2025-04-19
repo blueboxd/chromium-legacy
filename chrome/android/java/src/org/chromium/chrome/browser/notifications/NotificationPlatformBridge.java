@@ -45,7 +45,7 @@ import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManager;
-import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
+import org.chromium.chrome.browser.settings.SettingsLauncherFactory;
 import org.chromium.chrome.browser.usage_stats.UsageStatsService;
 import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
 import org.chromium.chrome.browser.webapps.WebApkServiceClient;
@@ -390,7 +390,7 @@ public class NotificationPlatformBridge {
                 launchSingleWebsitePreferences
                         ? SingleWebsiteSettings.class
                         : SingleCategorySettings.class;
-        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+        SettingsLauncher settingsLauncher = SettingsLauncherFactory.createSettingsLauncher();
         settingsLauncher.launchSettingsActivity(applicationContext, fragment, fragmentArguments);
     }
 
@@ -428,7 +428,9 @@ public class NotificationPlatformBridge {
         Context context = ContextUtils.getApplicationContext();
         Uri intentData = makeIntentData(attributes.notificationId, attributes.origin, actionIndex);
         boolean useServiceIntent =
-                NotificationServiceImpl.shouldUseServiceIntentWithSyncStartupForAction(action);
+                NotificationConstants.ACTION_PRE_UNSUBSCRIBE.equals(action)
+                        && NotificationIntentInterceptor
+                                .shouldUseServiceIntentForPreUnsubscribeAction();
         Intent intent = new Intent(action, intentData);
         intent.setClass(
                 context,
@@ -1001,7 +1003,7 @@ public class NotificationPlatformBridge {
         // TODO(peter): Generalize the NotificationPlatformBridge sufficiently to not need
         // to care about the individual notification types.
         // Set up a pending intent for going to the settings screen for |origin|.
-        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+        SettingsLauncher settingsLauncher = SettingsLauncherFactory.createSettingsLauncher();
         Intent settingsIntent =
                 settingsLauncher.createSettingsActivityIntent(
                         context,
@@ -1276,9 +1278,11 @@ public class NotificationPlatformBridge {
 
         // TODO(crbug.com/41494401): Verify if we can/need to use the correct profile here.
         NotificationSuspender suspender =
-                new NotificationSuspender(ProfileManager.getLastUsedRegularProfile());
+                new NotificationSuspender(
+                        ProfileManager.getLastUsedRegularProfile(),
+                        ContextUtils.getApplicationContext(),
+                        mNotificationManager);
         mOriginsWithProvisionallyRevokedPermissions.add(identifyingAttributes.origin);
-        displayProvisionallyUnsubscribedNotification(identifyingAttributes);
         suspender.storeNotificationResourcesFromOrigins(
                 Collections.singletonList(Uri.parse(identifyingAttributes.origin)),
                 (notificationIdsToCancel) -> {
@@ -1286,6 +1290,7 @@ public class NotificationPlatformBridge {
                             .recordSuspendedNotificationCountOnUnsubscribe(
                                     notificationIdsToCancel.size());
 
+                    displayProvisionallyUnsubscribedNotification(identifyingAttributes);
                     notificationIdsToCancel.remove(identifyingAttributes.notificationId);
                     suspender.cancelNotificationsWithIds(notificationIdsToCancel);
                 });

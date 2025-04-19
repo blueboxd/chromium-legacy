@@ -243,8 +243,7 @@ void ArcSelectFilesHandler::SelectFiles(
 }
 
 void ArcSelectFilesHandler::FileSelected(const ui::SelectedFileInfo& file,
-                                         int index,
-                                         void* params) {
+                                         int index) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(callback_);
 
@@ -257,17 +256,16 @@ void ArcSelectFilesHandler::FileSelected(const ui::SelectedFileInfo& file,
     return;
   }
 
-  FilesSelectedInternal({file}, params);
+  FilesSelectedInternal({file});
 }
 
 void ArcSelectFilesHandler::MultiFilesSelected(
-    const std::vector<ui::SelectedFileInfo>& files,
-    void* params) {
+    const std::vector<ui::SelectedFileInfo>& files) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  FilesSelectedInternal(files, params);
+  FilesSelectedInternal(files);
 }
 
-void ArcSelectFilesHandler::FileSelectionCanceled(void* params) {
+void ArcSelectFilesHandler::FileSelectionCanceled() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(callback_);
   // Returns an empty result if the user cancels file selection.
@@ -275,8 +273,7 @@ void ArcSelectFilesHandler::FileSelectionCanceled(void* params) {
 }
 
 void ArcSelectFilesHandler::FilesSelectedInternal(
-    const std::vector<ui::SelectedFileInfo>& files,
-    void* params) {
+    const std::vector<ui::SelectedFileInfo>& files) {
   DCHECK(callback_);
 
   storage::FileSystemContext* file_system_context =
@@ -387,8 +384,7 @@ bool SelectFileDialogHolder::SelectFile(
   select_file_dialog_->SelectFileWithFileManagerParams(
       type,
       /*title=*/std::u16string(), default_path, file_types,
-      /*file_type_index=*/0,
-      /*params=*/nullptr, owner, search_query, show_android_picker_apps,
+      /*file_type_index=*/0, owner, search_query, show_android_picker_apps,
       use_media_store_filter);
   return true;
 }

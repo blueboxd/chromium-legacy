@@ -4,7 +4,8 @@
 
 import 'chrome://personalization/strings.m.js';
 
-import {SeaPenImagesElement, SeaPenInputQueryElement, SeaPenIntroductionDialogElement, SeaPenOptionsElement, SeaPenPaths, SeaPenRecentWallpapersElement, SeaPenRouterElement, SeaPenTemplateQueryElement, SeaPenTemplatesElement, SeaPenZeroStateSvgElement, setTransitionsEnabled, WallpaperGridItemElement} from 'chrome://personalization/js/personalization_app.js';
+import {SeaPenFreeformElement, SeaPenImagesElement, SeaPenInputQueryElement, SeaPenIntroductionDialogElement, SeaPenOptionsElement, SeaPenPaths, SeaPenRecentWallpapersElement, SeaPenRouterElement, SeaPenTemplateQueryElement, SeaPenTemplatesElement, SeaPenZeroStateSvgElement, setTransitionsEnabled, WallpaperGridItemElement} from 'chrome://personalization/js/personalization_app.js';
+import {CrInputElement} from 'chrome://resources/ash/common/cr_elements/cr_input/cr_input.js';
 import {SeaPenQuery} from 'chrome://resources/ash/common/sea_pen/sea_pen.mojom-webui.js';
 import {SeaPenTemplateId} from 'chrome://resources/ash/common/sea_pen/sea_pen_generated.mojom-webui.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
@@ -49,7 +50,7 @@ suite('SeaPenRouterElementTest', function() {
 
   test('shows templates and recent elements', async () => {
     routerElement = initElement(SeaPenRouterElement, {basePath: '/base'});
-    routerElement.goToRoute(SeaPenPaths.ROOT);
+    routerElement.goToRoute(SeaPenPaths.TEMPLATES);
     await waitAfterNextRender(routerElement);
 
     assertTrue(
@@ -78,31 +79,73 @@ suite('SeaPenRouterElementTest', function() {
   });
 
   test(
-      'shows input query element if text input enabled and free form template is selected',
+      'shows freeform page with input query, sample prompts, recent images and images elements',
       async () => {
         loadTimeData.overrideValues({isSeaPenTextInputEnabled: true});
         routerElement = initElement(SeaPenRouterElement, {
           basePath: '/base',
         });
-        routerElement.goToRoute(
-            SeaPenPaths.RESULTS, {seaPenTemplateId: 'Query'});
+        routerElement.goToRoute(SeaPenPaths.FREEFORM);
         await waitAfterNextRender(routerElement);
 
         assertTrue(
             !!routerElement.shadowRoot!.querySelector(
                 SeaPenInputQueryElement.is),
-            'input query element shown on root');
-
-        const seaPenImagesElement =
-            routerElement.shadowRoot!.querySelector(SeaPenImagesElement.is);
-        assertTrue(
-            !!seaPenImagesElement, 'sea-pen-images shown on result page');
+            'input query element shown on freeform page');
 
         assertTrue(
-            !!seaPenImagesElement.shadowRoot!.querySelector(
-                SeaPenZeroStateSvgElement.is),
-            'zero state svg is shown after selecting free form template from root');
+            !!routerElement.shadowRoot!.querySelector(SeaPenFreeformElement.is),
+            'freeform element shown on freeform page');
       });
+
+  test('creates freeform images switching to Results tab', async () => {
+    personalizationStore.setReducersEnabled(true);
+    loadTimeData.overrideValues({isSeaPenTextInputEnabled: true});
+    routerElement = initElement(SeaPenRouterElement, {
+      basePath: '/base',
+    });
+    routerElement.goToRoute(SeaPenPaths.FREEFORM);
+    await waitAfterNextRender(routerElement);
+
+    const seaPenInputQuery =
+        routerElement.shadowRoot!.querySelector(SeaPenInputQueryElement.is);
+    assertTrue(!!seaPenInputQuery, 'input query element exists');
+
+    const inputElement =
+        seaPenInputQuery.shadowRoot!.querySelector<CrInputElement>(
+            '#queryInput');
+    assertTrue(!!inputElement, 'input text box exists');
+
+    // Set a freeform query.
+    inputElement!.value = 'a cool castle';
+
+    // Start freeform query search.
+    seaPenInputQuery.shadowRoot!.getElementById('searchButton')!.click();
+    await waitAfterNextRender(routerElement);
+
+    assertTrue(
+        window.location.href.endsWith(SeaPenPaths.FREEFORM),
+        'remains in the same Freeform page');
+
+    const seaPenFreeformElement =
+        routerElement.shadowRoot!.querySelector<HTMLElement>(
+            SeaPenFreeformElement.is);
+    assertTrue(!!seaPenFreeformElement, 'freeform element exists');
+
+    // Sea Pen images should be present and visible as the search activates
+    // Results tab.
+    const seaPenImagesElement =
+        seaPenFreeformElement!.shadowRoot!.querySelector<HTMLElement>(
+            SeaPenImagesElement.is);
+    assertTrue(!!seaPenImagesElement, 'sea-pen-images is available');
+    assertFalse(seaPenImagesElement.hidden, 'sea-pen-images is visible');
+
+    // Recent images element is no longer available.
+    assertFalse(
+        !!seaPenFreeformElement!.shadowRoot!.querySelector(
+            SeaPenRecentWallpapersElement.is),
+        'sea-pen-recent-wallpapers is not shown in Results tab');
+  });
 
   test(
       'shows zero state svg when a template is selected from root',
@@ -110,7 +153,7 @@ suite('SeaPenRouterElementTest', function() {
         routerElement = initElement(SeaPenRouterElement, {
           basePath: '/base',
         });
-        routerElement.goToRoute(SeaPenPaths.ROOT);
+        routerElement.goToRoute(SeaPenPaths.TEMPLATES);
         await waitAfterNextRender(routerElement);
 
         const seaPenTemplatesElement =

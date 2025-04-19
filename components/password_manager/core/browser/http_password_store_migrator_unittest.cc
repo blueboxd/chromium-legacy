@@ -77,7 +77,7 @@ PasswordForm CreateLocalFederatedCredential() {
   form.url = GURL("http://localhost/");
   form.action = GURL("http://localhost/");
   form.federation_origin =
-      url::Origin::Create(GURL("https://federation.example.com"));
+      url::SchemeHostPort(GURL("https://federation.example.com"));
   form.match_type = PasswordForm::MatchType::kExact;
   return form;
 }
@@ -260,8 +260,8 @@ TEST_F(HttpPasswordStoreMigratorTest, MigratorDeletionByConsumerWithoutHSTS) {
 }
 
 TEST(HttpPasswordStoreMigrator, MigrateHttpFormToHttpsTestSignonRealm) {
-  const GURL kOrigins[] = {GURL("http://example.org/"),
-                           GURL("http://example.org/path/")};
+  const auto kOrigins = std::to_array<GURL>(
+      {GURL("http://example.org/"), GURL("http://example.org/path/")});
 
   for (bool origin_has_paths : {true, false}) {
     PasswordForm http_html_form;

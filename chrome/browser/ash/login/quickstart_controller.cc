@@ -279,9 +279,6 @@ void QuickStartController::ForceEnableQuickStart() {
 
   InitTargetDeviceBootstrapController();
   StartObservingBluetoothState();
-
-  QS_LOG(INFO) << "Force enabling LocalPasswordsForConsumers!";
-  ash::features::ForceEnableLocalPasswordsForConsumers();
 }
 
 void QuickStartController::DetermineEntryPointVisibility(
@@ -333,6 +330,7 @@ void QuickStartController::AbortFlow(AbortFlowReason reason) {
       AbortFlowReason::ENTERPRISE_ENROLLMENT, AbortFlowReason::SIGNIN_SCHOOL,
       AbortFlowReason::ADD_CHILD};
   if (base::Contains(kUnsupportedUserTypes, reason)) {
+    QS_LOG(INFO) << "Aborting flow due to unsupported user type: " << reason;
     bootstrap_controller_->OnSetupComplete();
     return;
   }
@@ -397,7 +395,6 @@ void QuickStartController::InitTargetDeviceBootstrapController() {
 
   // Start observing and determine the discoverable name.
   bootstrap_controller_->AddObserver(this);
-  discoverable_name_ = bootstrap_controller_->GetDiscoverableName();
 }
 
 void QuickStartController::OnGetQuickStartFeatureSupportStatus(

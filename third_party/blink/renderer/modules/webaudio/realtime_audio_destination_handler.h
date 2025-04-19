@@ -25,16 +25,16 @@ class ExceptionState;
 class WebAudioLatencyHint;
 class WebAudioSinkDescriptor;
 
-class RealtimeAudioDestinationHandler final
+class MODULES_EXPORT RealtimeAudioDestinationHandler final
     : public AudioDestinationHandler,
-      public AudioIOCallback,
-      public base::SupportsWeakPtr<RealtimeAudioDestinationHandler> {
+      public AudioIOCallback {
  public:
   static scoped_refptr<RealtimeAudioDestinationHandler> Create(
       AudioNode&,
       const WebAudioSinkDescriptor&,
       const WebAudioLatencyHint&,
-      std::optional<float> sample_rate);
+      std::optional<float> sample_rate,
+      bool update_echo_cancellation_on_first_start);
   ~RealtimeAudioDestinationHandler() override;
 
   // For AudioHandler.
@@ -67,9 +67,8 @@ class RealtimeAudioDestinationHandler final
               base::TimeDelta playout_delay,
               const media::AudioGlitchInfo& glitch_info) override;
 
-  // For AudioIOCallback. This is invoked by the `AudioDestination` to notify
-  // when an error has occurred in the lower layer in the stack. It may be
-  // called from either the main thread or non-main threads.
+  // For AudioIOCallback. This is invoked by AudioDestination to notify when
+  // an error has occurred in the audio infra.
   void OnRenderError() override;
 
   // Returns a hardware callback buffer size from audio infra.
@@ -90,11 +89,17 @@ class RealtimeAudioDestinationHandler final
   void SetSinkDescriptor(const WebAudioSinkDescriptor& sink_descriptor,
                          media::OutputDeviceStatusCB callback);
 
+  // Methods for unit tests.
+  void invoke_onrendererror_from_platform_for_testing();
+  bool get_platform_destination_is_playing_for_testing();
+
  private:
-  explicit RealtimeAudioDestinationHandler(AudioNode&,
-                                           const WebAudioSinkDescriptor&,
-                                           const WebAudioLatencyHint&,
-                                           std::optional<float> sample_rate);
+  explicit RealtimeAudioDestinationHandler(
+      AudioNode&,
+      const WebAudioSinkDescriptor&,
+      const WebAudioLatencyHint&,
+      std::optional<float> sample_rate,
+      bool update_echo_cancellation_on_first_start);
 
   // Sets the detect silence flag for the platform destination.
   void SetDetectSilence(bool detect_silence);
@@ -117,8 +122,6 @@ class RealtimeAudioDestinationHandler final
   void DisablePullingAudioGraph() {
     allow_pulling_audio_graph_.store(false, std::memory_order_release);
   }
-
-  void NotifyAudioContext();
 
   // Stores a sink descriptor for sink transition.
   WebAudioSinkDescriptor sink_descriptor_;
@@ -147,6 +150,12 @@ class RealtimeAudioDestinationHandler final
   // Represents the current condition of silence detection. By default, the
   // silence detection is active.
   bool is_detecting_silence_ = true;
+
+  // If true, attempt to update the echo cancellation reference the next time
+  // the platform destination is started.
+  bool update_echo_cancellation_on_next_start_ = false;
+
+  base::WeakPtrFactory<RealtimeAudioDestinationHandler> weak_ptr_factory_{this};
 };
 
 }  // namespace blink

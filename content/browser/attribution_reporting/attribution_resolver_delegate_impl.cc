@@ -23,7 +23,6 @@
 #include "components/attribution_reporting/event_level_epsilon.h"
 #include "components/attribution_reporting/event_report_windows.h"
 #include "components/attribution_reporting/features.h"
-#include "components/attribution_reporting/max_event_level_reports.h"
 #include "components/attribution_reporting/privacy_math.h"
 #include "components/attribution_reporting/source_registration_time_config.mojom.h"
 #include "components/attribution_reporting/source_type.mojom.h"
@@ -31,7 +30,6 @@
 #include "content/browser/attribution_reporting/attribution_config.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/stored_source.h"
-#include "services/network/public/cpp/trigger_verification.h"
 
 namespace content {
 
@@ -155,40 +153,28 @@ void AttributionResolverDelegateImpl::ShuffleReports(
   }
 }
 
-void AttributionResolverDelegateImpl::ShuffleTriggerVerifications(
-    std::vector<network::TriggerVerification>& verifications) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  switch (noise_mode_) {
-    case AttributionNoiseMode::kDefault:
-      base::RandomShuffle(verifications.begin(), verifications.end());
-      break;
-    case AttributionNoiseMode::kNone:
-      break;
-  }
-}
-
-double AttributionResolverDelegateImpl::GetRandomizedResponseRate(
+std::optional<double>
+AttributionResolverDelegateImpl::GetRandomizedResponseRate(
     const attribution_reporting::TriggerSpecs& trigger_specs,
-    attribution_reporting::MaxEventLevelReports max_event_level_reports,
     attribution_reporting::EventLevelEpsilon epsilon) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return attribution_reporting::GetRandomizedResponseRate(
-      GetNumStates(trigger_specs, max_event_level_reports), epsilon);
+  const auto num_states = GetNumStates(trigger_specs);
+  if (!num_states.has_value()) {
+    return std::nullopt;
+  }
+  return attribution_reporting::GetRandomizedResponseRate(*num_states, epsilon);
 }
 
 AttributionResolverDelegate::GetRandomizedResponseResult
 AttributionResolverDelegateImpl::GetRandomizedResponse(
     SourceType source_type,
     const attribution_reporting::TriggerSpecs& trigger_specs,
-    attribution_reporting::MaxEventLevelReports max_event_level_reports,
     attribution_reporting::EventLevelEpsilon epsilon) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   ASSIGN_OR_RETURN(auto response,
                    attribution_reporting::DoRandomizedResponse(
-                       trigger_specs, max_event_level_reports, epsilon,
-                       config_.event_level_limit.max_trigger_state_cardinality,
+                       trigger_specs, epsilon,
                        GetMaxChannelCapacity(source_type)));
 
   switch (noise_mode_) {

@@ -315,22 +315,27 @@ EncoderStatus OpenH264VideoEncoder::DrainOutputs(const SFrameBSInfo& frame_info,
   DCHECK_EQ(written_size, total_chunk_size);
 
   if (!h264_converter_) {
-    result.size = total_chunk_size;
-
     output_cb_.Run(std::move(result), std::optional<CodecDescription>());
     return EncoderStatus::Codes::kOk;
   }
 
   size_t converted_output_size = 0;
   bool config_changed = false;
-  auto status = h264_converter_->ConvertChunk(
-      conversion_buffer_, result.data, &config_changed, &converted_output_size);
+  MP4Status status = OkStatus();
+  do {
+    status =
+        h264_converter_->ConvertChunk(conversion_buffer_, result.data,
+                                      &config_changed, &converted_output_size);
+    if (status.code() == MP4Status::Codes::kBufferTooSmall) {
+      result.data = base::HeapArray<uint8_t>::Uninit(converted_output_size);
+      continue;
+    } else if (!status.is_ok()) {
+      return EncoderStatus(EncoderStatus::Codes::kBitstreamConversionError)
+          .AddCause(std::move(status));
+    }
+  } while (!status.is_ok());
 
-  if (!status.is_ok())
-    return EncoderStatus(EncoderStatus::Codes::kBitstreamConversionError)
-        .AddCause(std::move(status));
-
-  result.size = converted_output_size;
+  result.data = std::move(result.data).take_first(converted_output_size);
 
   std::optional<CodecDescription> desc;
   if (config_changed) {
@@ -368,7 +373,7 @@ void OpenH264VideoEncoder::Encode(scoped_refptr<VideoFrame> frame,
                                 frame->format() == PIXEL_FORMAT_XRGB ||
                                 frame->format() == PIXEL_FORMAT_ABGR ||
                                 frame->format() == PIXEL_FORMAT_ARGB;
-  if ((!frame->IsMappable() && !frame->HasGpuMemoryBuffer()) ||
+  if ((!frame->IsMappable() && !frame->HasMappableGpuBuffer()) ||
       !supported_format) {
     std::move(done_cb).Run(
         EncoderStatus(EncoderStatus::Codes::kUnsupportedFrameFormat,
@@ -379,7 +384,7 @@ void OpenH264VideoEncoder::Encode(scoped_refptr<VideoFrame> frame,
     return;
   }
 
-  if (frame->format() == PIXEL_FORMAT_NV12 && frame->HasGpuMemoryBuffer()) {
+  if (frame->format() == PIXEL_FORMAT_NV12 && frame->HasMappableGpuBuffer()) {
     frame = ConvertToMemoryMappedFrame(frame);
     if (!frame) {
       std::move(done_cb).Run(

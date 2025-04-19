@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/safe_browsing/content/browser/threat_details.h"
+
 #include <stdint.h>
 
 #include <algorithm>
@@ -22,12 +24,12 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_service.h"
-#include "components/safe_browsing/content/browser/threat_details.h"
 #include "components/safe_browsing/content/browser/threat_details_history.h"
 #include "components/safe_browsing/content/browser/ui_manager.h"
 #include "components/safe_browsing/content/browser/unsafe_resource_util.h"
 #include "components/safe_browsing/content/browser/web_contents_key.h"
 #include "components/safe_browsing/content/common/safe_browsing.mojom.h"
+#include "components/safe_browsing/core/browser/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/core/browser/referrer_chain_provider.h"
 #include "components/safe_browsing/core/common/proto/csd.pb.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
@@ -281,13 +283,13 @@ class ThreatDetailsTest : public ChromeRenderViewHostTestHarness {
   using enum SBThreatType;
 
   TestingProfile::TestingFactories GetTestingFactories() const override {
-    return {{HistoryServiceFactory::GetInstance(),
-             HistoryServiceFactory::GetDefaultFactory()}};
+    return {TestingProfile::TestingFactory{
+        HistoryServiceFactory::GetInstance(),
+        HistoryServiceFactory::GetDefaultFactory()}};
   }
 
   void InitResource(SBThreatType threat_type,
                     ThreatSource threat_source,
-                    bool is_subresource,
                     bool is_async_check,
                     const GURL& url,
                     UnsafeResource* resource) {
@@ -295,10 +297,6 @@ class ThreatDetailsTest : public ChromeRenderViewHostTestHarness {
     const content::GlobalRenderFrameHostId primary_main_frame_id =
         primary_main_frame->GetGlobalId();
     resource->url = url;
-    resource->is_subresource = is_subresource;
-    resource->request_destination =
-        is_subresource ? network::mojom::RequestDestination::kScript
-                       : network::mojom::RequestDestination::kDocument;
     resource->threat_type = threat_type;
     resource->threat_source = threat_source;
     resource->render_process_id = primary_main_frame_id.child_id;
@@ -466,8 +464,7 @@ class ThreatDetailsTest : public ChromeRenderViewHostTestHarness {
 
     UnsafeResource resource;
     InitResource(sb_threat_type, ThreatSource::LOCAL_PVER4,
-                 true /* is_subresource */, false /* is_async_check */,
-                 GURL(kThreatURL), &resource);
+                 false /* is_async_check */, GURL(kThreatURL), &resource);
 
     ReferrerChain returned_referrer_chain;
     if (pull_referrer_chain) {
@@ -505,8 +502,8 @@ class ThreatDetailsTest : public ChromeRenderViewHostTestHarness {
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
 };
 
-// Tests creating a simple threat report of a malware URL.
-TEST_F(ThreatDetailsTest, ThreatSubResource) {
+// Tests creating a simple threat report of a client side phishing URL.
+TEST_F(ThreatDetailsTest, ThreatResource) {
   auto navigation = content::NavigationSimulator::CreateBrowserInitiated(
       GURL(kLandingURL), web_contents());
   navigation->SetReferrer(blink::mojom::Referrer::New(
@@ -514,8 +511,8 @@ TEST_F(ThreatDetailsTest, ThreatSubResource) {
   navigation->Commit();
 
   UnsafeResource resource;
-  InitResource(SB_THREAT_TYPE_URL_MALWARE, ThreatSource::CLIENT_SIDE_DETECTION,
-               true /* is_subresource */, false /* is_async_check */,
+  InitResource(SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING,
+               ThreatSource::CLIENT_SIDE_DETECTION, false /* is_async_check */,
                GURL(kThreatURL), &resource);
 
   auto report = std::make_unique<ThreatDetailsWrap>(
@@ -530,9 +527,10 @@ TEST_F(ThreatDetailsTest, ThreatSubResource) {
   actual.ParseFromString(serialized);
 
   ClientSafeBrowsingReportRequest expected;
-  expected.set_type(ClientSafeBrowsingReportRequest::URL_MALWARE);
+  expected.set_type(ClientSafeBrowsingReportRequest::URL_CLIENT_SIDE_PHISHING);
   expected.set_url(kThreatURL);
-  expected.set_url_request_destination(ClientSafeBrowsingReportRequest::SCRIPT);
+  expected.set_url_request_destination(
+      ClientSafeBrowsingReportRequest::DOCUMENT);
   expected.set_page_url(kLandingURL);
   // The referrer is stripped to its origin because it's a cross-origin URL.
   expected.set_referrer_url(
@@ -565,8 +563,7 @@ TEST_F(ThreatDetailsTest, SuspiciousSiteWithReferrerChain) {
 
   UnsafeResource resource;
   InitResource(SB_THREAT_TYPE_SUSPICIOUS_SITE, ThreatSource::LOCAL_PVER4,
-               true /* is_subresource */, false /* is_async_check */,
-               GURL(kThreatURL), &resource);
+               false /* is_async_check */, GURL(kThreatURL), &resource);
 
   ReferrerChain returned_referrer_chain;
   returned_referrer_chain.Add()->set_url(kReferrerURL);
@@ -594,7 +591,8 @@ TEST_F(ThreatDetailsTest, SuspiciousSiteWithReferrerChain) {
       ClientSafeBrowsingReportRequest::PVER4_NATIVE);
   expected.mutable_client_properties()->set_is_async_check(false);
   expected.set_url(kThreatURL);
-  expected.set_url_request_destination(ClientSafeBrowsingReportRequest::SCRIPT);
+  expected.set_url_request_destination(
+      ClientSafeBrowsingReportRequest::DOCUMENT);
   expected.set_page_url(kLandingURL);
   // The referrer is stripped to its origin because it's a cross-origin URL.
   expected.set_referrer_url(
@@ -633,15 +631,15 @@ TEST_F(ThreatDetailsTest, SupportedThreatTypesHaveReferrerChain) {
                               /*pull_referrer_chain=*/true);
 }
 
-// Tests creating a simple threat report of a phishing page where the
-// subresource has a different original_url.
-TEST_F(ThreatDetailsTest, ThreatSubResourceWithOriginalUrl) {
+// Tests creating a simple threat report of a phishing page which is redirected
+// from a different URL.
+TEST_F(ThreatDetailsTest, ThreatWithOriginalUrl) {
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL(kLandingURL));
 
   UnsafeResource resource;
-  InitResource(SB_THREAT_TYPE_URL_PHISHING, ThreatSource::LOCAL_PVER4,
-               true /* is_subresource */, false /* is_async_check */,
+  InitResource(SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING,
+               ThreatSource::LOCAL_PVER4, false /* is_async_check */,
                GURL(kThreatURL), &resource);
   resource.original_url = GURL(kOriginalLandingURL);
 
@@ -657,12 +655,13 @@ TEST_F(ThreatDetailsTest, ThreatSubResourceWithOriginalUrl) {
   actual.ParseFromString(serialized);
 
   ClientSafeBrowsingReportRequest expected;
-  expected.set_type(ClientSafeBrowsingReportRequest::URL_PHISHING);
+  expected.set_type(ClientSafeBrowsingReportRequest::URL_CLIENT_SIDE_PHISHING);
   expected.mutable_client_properties()->set_url_api_type(
       ClientSafeBrowsingReportRequest::PVER4_NATIVE);
   expected.mutable_client_properties()->set_is_async_check(false);
   expected.set_url(kThreatURL);
-  expected.set_url_request_destination(ClientSafeBrowsingReportRequest::SCRIPT);
+  expected.set_url_request_destination(
+      ClientSafeBrowsingReportRequest::DOCUMENT);
   expected.set_page_url(kLandingURL);
   expected.set_referrer_url("");
   expected.set_did_proceed(false);
@@ -687,14 +686,15 @@ TEST_F(ThreatDetailsTest, ThreatSubResourceWithOriginalUrl) {
   VerifyResults(actual, expected);
 }
 
-// Tests creating a threat report of a UwS page with data from the renderer.
+// Tests creating a threat report of a client side phishing page with data from
+// the renderer.
 TEST_F(ThreatDetailsTest, ThreatDOMDetails) {
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL(kLandingURL));
 
   UnsafeResource resource;
-  InitResource(SB_THREAT_TYPE_URL_UNWANTED, ThreatSource::LOCAL_PVER4,
-               true /* is_subresource */, false /* is_async_check */,
+  InitResource(SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING,
+               ThreatSource::LOCAL_PVER4, false /* is_async_check */,
                GURL(kThreatURL), &resource);
 
   auto report = std::make_unique<ThreatDetailsWrap>(
@@ -727,12 +727,13 @@ TEST_F(ThreatDetailsTest, ThreatDOMDetails) {
   actual.ParseFromString(serialized);
 
   ClientSafeBrowsingReportRequest expected;
-  expected.set_type(ClientSafeBrowsingReportRequest::URL_UNWANTED);
+  expected.set_type(ClientSafeBrowsingReportRequest::URL_CLIENT_SIDE_PHISHING);
   expected.mutable_client_properties()->set_url_api_type(
       ClientSafeBrowsingReportRequest::PVER4_NATIVE);
   expected.mutable_client_properties()->set_is_async_check(false);
   expected.set_url(kThreatURL);
-  expected.set_url_request_destination(ClientSafeBrowsingReportRequest::SCRIPT);
+  expected.set_url_request_destination(
+      ClientSafeBrowsingReportRequest::DOCUMENT);
   expected.set_page_url(kLandingURL);
   expected.set_referrer_url("");
   expected.set_did_proceed(false);
@@ -846,12 +847,13 @@ TEST_F(ThreatDetailsTest, ThreatDOMDetails_MultipleFrames) {
   inner_params.push_back(std::move(inner_summary_node));
 
   ClientSafeBrowsingReportRequest expected;
-  expected.set_type(ClientSafeBrowsingReportRequest::URL_UNWANTED);
+  expected.set_type(ClientSafeBrowsingReportRequest::URL_CLIENT_SIDE_PHISHING);
   expected.mutable_client_properties()->set_url_api_type(
       ClientSafeBrowsingReportRequest::PVER4_NATIVE);
   expected.mutable_client_properties()->set_is_async_check(false);
   expected.set_url(kThreatURL);
-  expected.set_url_request_destination(ClientSafeBrowsingReportRequest::SCRIPT);
+  expected.set_url_request_destination(
+      ClientSafeBrowsingReportRequest::DOCUMENT);
   expected.set_page_url(kLandingURL);
   expected.set_referrer_url("");
   expected.set_did_proceed(false);
@@ -921,8 +923,8 @@ TEST_F(ThreatDetailsTest, ThreatDOMDetails_MultipleFrames) {
   elem_dom_inner_script->mutable_attribute(0)->set_value(kDOMChildUrl2);
 
   UnsafeResource resource;
-  InitResource(SB_THREAT_TYPE_URL_UNWANTED, ThreatSource::LOCAL_PVER4,
-               true /* is_subresource */, false /* is_async_check */,
+  InitResource(SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING,
+               ThreatSource::LOCAL_PVER4, false /* is_async_check */,
                GURL(kThreatURL), &resource);
 
   // Send both sets of nodes, from different render frames.
@@ -1059,9 +1061,10 @@ TEST_F(ThreatDetailsTest, ThreatDOMDetails_AmbiguousDOM) {
   inner_params.push_back(std::move(inner_summary_node));
 
   ClientSafeBrowsingReportRequest expected;
-  expected.set_type(ClientSafeBrowsingReportRequest::URL_UNWANTED);
+  expected.set_type(ClientSafeBrowsingReportRequest::URL_CLIENT_SIDE_PHISHING);
   expected.set_url(kThreatURL);
-  expected.set_url_request_destination(ClientSafeBrowsingReportRequest::SCRIPT);
+  expected.set_url_request_destination(
+      ClientSafeBrowsingReportRequest::DOCUMENT);
   expected.set_page_url(kLandingURL);
   expected.set_referrer_url("");
   expected.set_did_proceed(false);
@@ -1111,8 +1114,8 @@ TEST_F(ThreatDetailsTest, ThreatDOMDetails_AmbiguousDOM) {
   pb_element->mutable_attribute(0)->set_value(kDOMChildUrl2);
 
   UnsafeResource resource;
-  InitResource(SB_THREAT_TYPE_URL_UNWANTED, ThreatSource::CLIENT_SIDE_DETECTION,
-               true /* is_subresource */, false /* is_async_check */,
+  InitResource(SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING,
+               ThreatSource::CLIENT_SIDE_DETECTION, false /* is_async_check */,
                GURL(kThreatURL), &resource);
   auto report = std::make_unique<ThreatDetailsWrap>(
       ui_manager_.get(), web_contents(), resource, nullptr, history_service(),
@@ -1270,12 +1273,13 @@ TEST_F(ThreatDetailsTest, ThreatDOMDetails_TrimToAdTags) {
   inner_params.push_back(std::move(inner_summary_node));
 
   ClientSafeBrowsingReportRequest expected;
-  expected.set_type(ClientSafeBrowsingReportRequest::URL_UNWANTED);
+  expected.set_type(ClientSafeBrowsingReportRequest::URL_CLIENT_SIDE_PHISHING);
   expected.mutable_client_properties()->set_url_api_type(
       ClientSafeBrowsingReportRequest::PVER4_NATIVE);
   expected.mutable_client_properties()->set_is_async_check(false);
   expected.set_url(kThreatURL);
-  expected.set_url_request_destination(ClientSafeBrowsingReportRequest::SCRIPT);
+  expected.set_url_request_destination(
+      ClientSafeBrowsingReportRequest::DOCUMENT);
   expected.set_page_url(kLandingURL);
   expected.set_referrer_url("");
   expected.set_did_proceed(false);
@@ -1382,8 +1386,8 @@ TEST_F(ThreatDetailsTest, ThreatDOMDetails_TrimToAdTags) {
   elem_dom_inner_script->mutable_attribute(0)->set_value(kDOMChildUrl2);
 
   UnsafeResource resource;
-  InitResource(SB_THREAT_TYPE_URL_UNWANTED, ThreatSource::LOCAL_PVER4,
-               true /* is_subresource */, false /* is_async_check */,
+  InitResource(SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING,
+               ThreatSource::LOCAL_PVER4, false /* is_async_check */,
                GURL(kThreatURL), &resource);
 
   // Send both sets of nodes, from different render frames.
@@ -1460,8 +1464,7 @@ TEST_F(ThreatDetailsTest, ThreatDOMDetails_EmptyReportNotSent) {
 
   UnsafeResource resource;
   InitResource(SB_THREAT_TYPE_URL_UNWANTED, ThreatSource::LOCAL_PVER4,
-               true /* is_subresource */, false /* is_async_check */,
-               GURL(kThreatURL), &resource);
+               false /* is_async_check */, GURL(kThreatURL), &resource);
 
   // Send both sets of nodes, from different render frames.
   auto trimmed_report = std::make_unique<ThreatDetailsWrap>(
@@ -1483,16 +1486,15 @@ TEST_F(ThreatDetailsTest, ThreatDOMDetails_EmptyReportNotSent) {
   EXPECT_FALSE(ReportWasSent());
 }
 
-// Tests creating a threat report of a malware page where there are redirect
-// urls to an unsafe resource url.
+// Tests creating a threat report of a client side phishing page where there are
+// redirect urls to an unsafe resource url.
 TEST_F(ThreatDetailsTest, ThreatWithRedirectUrl) {
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL(kLandingURL));
 
   UnsafeResource resource;
-  InitResource(SB_THREAT_TYPE_URL_MALWARE, ThreatSource::REMOTE,
-               true /* is_subresource */, false /* is_async_check */,
-               GURL(kThreatURL), &resource);
+  InitResource(SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING, ThreatSource::REMOTE,
+               false /* is_async_check */, GURL(kThreatURL), &resource);
   resource.original_url = GURL(kOriginalLandingURL);
 
   // add some redirect urls
@@ -1511,12 +1513,13 @@ TEST_F(ThreatDetailsTest, ThreatWithRedirectUrl) {
   actual.ParseFromString(serialized);
 
   ClientSafeBrowsingReportRequest expected;
-  expected.set_type(ClientSafeBrowsingReportRequest::URL_MALWARE);
+  expected.set_type(ClientSafeBrowsingReportRequest::URL_CLIENT_SIDE_PHISHING);
   expected.mutable_client_properties()->set_url_api_type(
       ClientSafeBrowsingReportRequest::ANDROID_SAFETYNET);
   expected.mutable_client_properties()->set_is_async_check(false);
   expected.set_url(kThreatURL);
-  expected.set_url_request_destination(ClientSafeBrowsingReportRequest::SCRIPT);
+  expected.set_url_request_destination(
+      ClientSafeBrowsingReportRequest::DOCUMENT);
   expected.set_page_url(kLandingURL);
   expected.set_referrer_url("");
   expected.set_did_proceed(true);
@@ -1573,8 +1576,7 @@ TEST_F(ThreatDetailsTest, ThreatOnMainPageLoadBlocked) {
   // Create UnsafeResource for the pending main page load.
   UnsafeResource resource;
   InitResource(SB_THREAT_TYPE_URL_MALWARE, ThreatSource::UNKNOWN,
-               false /* is_subresource */, false /* is_async_check */,
-               GURL(kLandingURL), &resource);
+               false /* is_async_check */, GURL(kLandingURL), &resource);
 
   // Start ThreatDetails collection.
   auto report = std::make_unique<ThreatDetailsWrap>(
@@ -1630,8 +1632,8 @@ TEST_F(ThreatDetailsTest, ThreatWithPendingLoad) {
 
   // Create UnsafeResource for fake sub-resource of landing page.
   UnsafeResource resource;
-  InitResource(SB_THREAT_TYPE_URL_MALWARE, ThreatSource::LOCAL_PVER4,
-               true /* is_subresource */, false /* is_async_check */,
+  InitResource(SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING,
+               ThreatSource::LOCAL_PVER4, false /* is_async_check */,
                GURL(kThreatURL), &resource);
 
   // Start a pending load before creating ThreatDetails.
@@ -1654,12 +1656,13 @@ TEST_F(ThreatDetailsTest, ThreatWithPendingLoad) {
   actual.ParseFromString(serialized);
 
   ClientSafeBrowsingReportRequest expected;
-  expected.set_type(ClientSafeBrowsingReportRequest::URL_MALWARE);
+  expected.set_type(ClientSafeBrowsingReportRequest::URL_CLIENT_SIDE_PHISHING);
   expected.mutable_client_properties()->set_url_api_type(
       ClientSafeBrowsingReportRequest::PVER4_NATIVE);
   expected.mutable_client_properties()->set_is_async_check(false);
   expected.set_url(kThreatURL);
-  expected.set_url_request_destination(ClientSafeBrowsingReportRequest::SCRIPT);
+  expected.set_url_request_destination(
+      ClientSafeBrowsingReportRequest::DOCUMENT);
   expected.set_page_url(kLandingURL);
   // The referrer is stripped to its origin because it's a cross-origin URL.
   expected.set_referrer_url(
@@ -1689,12 +1692,10 @@ TEST_F(ThreatDetailsTest, ThreatOnFreshTab) {
   // Initiate the connection to a (pretend) renderer process.
   NavigateAndCommit(GURL("about:blank"));
 
-  // Simulate a subresource malware hit (this could happen if the WebContents
-  // was created with window.open, and had content injected into it).
+  // Simulate a malware hit.
   UnsafeResource resource;
   InitResource(SB_THREAT_TYPE_URL_MALWARE, ThreatSource::CLIENT_SIDE_DETECTION,
-               true /* is_subresource */, false /* is_async_check */,
-               GURL(kThreatURL), &resource);
+               false /* is_async_check */, GURL(kThreatURL), &resource);
 
   // Do ThreatDetails collection.
   auto report = std::make_unique<ThreatDetailsWrap>(
@@ -1711,7 +1712,8 @@ TEST_F(ThreatDetailsTest, ThreatOnFreshTab) {
   ClientSafeBrowsingReportRequest expected;
   expected.set_type(ClientSafeBrowsingReportRequest::URL_MALWARE);
   expected.set_url(kThreatURL);
-  expected.set_url_request_destination(ClientSafeBrowsingReportRequest::SCRIPT);
+  expected.set_url_request_destination(
+      ClientSafeBrowsingReportRequest::DOCUMENT);
   expected.set_did_proceed(true);
   expected.set_repeat_visit(true);
 
@@ -1730,8 +1732,8 @@ TEST_F(ThreatDetailsTest, HTTPCache) {
 
   UnsafeResource resource;
   InitResource(SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING,
-               ThreatSource::CLIENT_SIDE_DETECTION, true /* is_subresource */,
-               false /* is_async_check */, GURL(kThreatURL), &resource);
+               ThreatSource::CLIENT_SIDE_DETECTION, false /* is_async_check */,
+               GURL(kThreatURL), &resource);
 
   auto report = std::make_unique<ThreatDetailsWrap>(
       ui_manager_.get(), web_contents(), resource, test_shared_loader_factory_,
@@ -1758,7 +1760,8 @@ TEST_F(ThreatDetailsTest, HTTPCache) {
   ClientSafeBrowsingReportRequest expected;
   expected.set_type(ClientSafeBrowsingReportRequest::URL_CLIENT_SIDE_PHISHING);
   expected.set_url(kThreatURL);
-  expected.set_url_request_destination(ClientSafeBrowsingReportRequest::SCRIPT);
+  expected.set_url_request_destination(
+      ClientSafeBrowsingReportRequest::DOCUMENT);
   expected.set_page_url(kLandingURL);
   expected.set_referrer_url("");
   expected.set_did_proceed(true);
@@ -1812,8 +1815,8 @@ TEST_F(ThreatDetailsTest, HttpsResourceSanitization) {
 
   UnsafeResource resource;
   InitResource(SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING,
-               ThreatSource::CLIENT_SIDE_DETECTION, true /* is_subresource */,
-               false /* is_async_check */, GURL(kThreatURLHttps), &resource);
+               ThreatSource::CLIENT_SIDE_DETECTION, false /* is_async_check */,
+               GURL(kThreatURLHttps), &resource);
 
   auto report = std::make_unique<ThreatDetailsWrap>(
       ui_manager_.get(), web_contents(), resource, test_shared_loader_factory_,
@@ -1840,7 +1843,8 @@ TEST_F(ThreatDetailsTest, HttpsResourceSanitization) {
   ClientSafeBrowsingReportRequest expected;
   expected.set_type(ClientSafeBrowsingReportRequest::URL_CLIENT_SIDE_PHISHING);
   expected.set_url(kThreatURLHttps);
-  expected.set_url_request_destination(ClientSafeBrowsingReportRequest::SCRIPT);
+  expected.set_url_request_destination(
+      ClientSafeBrowsingReportRequest::DOCUMENT);
   expected.set_page_url(kLandingURL);
   expected.set_referrer_url("");
   expected.set_did_proceed(true);
@@ -1891,8 +1895,8 @@ TEST_F(ThreatDetailsTest, HTTPCacheNoEntries) {
 
   UnsafeResource resource;
   InitResource(SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING,
-               ThreatSource::LOCAL_PVER4, true /* is_subresource */,
-               false /* is_async_check */, GURL(kThreatURL), &resource);
+               ThreatSource::LOCAL_PVER4, false /* is_async_check */,
+               GURL(kThreatURL), &resource);
 
   auto report = std::make_unique<ThreatDetailsWrap>(
       ui_manager_.get(), web_contents(), resource, test_shared_loader_factory_,
@@ -1928,7 +1932,8 @@ TEST_F(ThreatDetailsTest, HTTPCacheNoEntries) {
       ClientSafeBrowsingReportRequest::PVER4_NATIVE);
   expected.mutable_client_properties()->set_is_async_check(false);
   expected.set_url(kThreatURL);
-  expected.set_url_request_destination(ClientSafeBrowsingReportRequest::SCRIPT);
+  expected.set_url_request_destination(
+      ClientSafeBrowsingReportRequest::DOCUMENT);
   expected.set_page_url(kLandingURL);
   expected.set_referrer_url("");
   expected.set_did_proceed(false);
@@ -1948,7 +1953,7 @@ TEST_F(ThreatDetailsTest, HTTPCacheNoEntries) {
 // Test getting redirects from history service.
 TEST_F(ThreatDetailsTest, HistoryServiceUrls) {
   // Add content to history service.
-  // There are two redirect urls before reacing malware url:
+  // There are two redirect urls before reaching threat url:
   // kFirstRedirectURL -> kSecondRedirectURL -> kThreatURL
   GURL baseurl(kThreatURL);
   history::RedirectList redirects;
@@ -1962,8 +1967,8 @@ TEST_F(ThreatDetailsTest, HistoryServiceUrls) {
       ->NavigateAndCommit(GURL(kLandingURL));
 
   UnsafeResource resource;
-  InitResource(SB_THREAT_TYPE_URL_MALWARE, ThreatSource::LOCAL_PVER4,
-               true /* is_subresource */, false /* is_async_check */,
+  InitResource(SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING,
+               ThreatSource::LOCAL_PVER4, false /* is_async_check */,
                GURL(kThreatURL), &resource);
   auto report = std::make_unique<ThreatDetailsWrap>(
       ui_manager_.get(), web_contents(), resource, nullptr, history_service(),
@@ -1985,12 +1990,13 @@ TEST_F(ThreatDetailsTest, HistoryServiceUrls) {
   actual.ParseFromString(serialized);
 
   ClientSafeBrowsingReportRequest expected;
-  expected.set_type(ClientSafeBrowsingReportRequest::URL_MALWARE);
+  expected.set_type(ClientSafeBrowsingReportRequest::URL_CLIENT_SIDE_PHISHING);
   expected.mutable_client_properties()->set_url_api_type(
       ClientSafeBrowsingReportRequest::PVER4_NATIVE);
   expected.mutable_client_properties()->set_is_async_check(false);
   expected.set_url(kThreatURL);
-  expected.set_url_request_destination(ClientSafeBrowsingReportRequest::SCRIPT);
+  expected.set_url_request_destination(
+      ClientSafeBrowsingReportRequest::DOCUMENT);
   expected.set_page_url(kLandingURL);
   expected.set_referrer_url("");
   expected.set_did_proceed(true);
@@ -2021,8 +2027,8 @@ TEST_F(ThreatDetailsTest, CanCancelDuringCollection) {
 
   UnsafeResource resource;
   InitResource(SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING,
-               ThreatSource::CLIENT_SIDE_DETECTION, true /* is_subresource */,
-               false /* is_async_check */, GURL(kThreatURL), &resource);
+               ThreatSource::CLIENT_SIDE_DETECTION, false /* is_async_check */,
+               GURL(kThreatURL), &resource);
 
   auto report = std::make_unique<ThreatDetailsWrap>(
       ui_manager_.get(), web_contents(), resource, test_shared_loader_factory_,
@@ -2081,8 +2087,7 @@ TEST_F(ThreatDetailsTest, ThreatSourceToUrlApiType) {
 
     UnsafeResource resource;
     InitResource(SB_THREAT_TYPE_URL_MALWARE, test_case.threat_source,
-                 /*is_subresource=*/false, /*is_async_check=*/true,
-                 GURL(kThreatURL), &resource);
+                 /*is_async_check=*/true, GURL(kThreatURL), &resource);
 
     auto report = std::make_unique<ThreatDetailsWrap>(
         ui_manager_.get(), web_contents(), resource, nullptr, history_service(),

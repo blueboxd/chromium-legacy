@@ -10,15 +10,14 @@
 #include <string_view>
 
 #import "base/memory/raw_ptr.h"
-#include "base/observer_list.h"
-#include "base/scoped_observation.h"
-#include "components/keyed_service/core/keyed_service.h"
-#include "components/prefs/pref_change_registrar.h"
-#include "ios/chrome/browser/signin/model/constants.h"
+#import "base/observer_list.h"
+#import "base/scoped_observation.h"
+#import "components/keyed_service/core/keyed_service.h"
+#import "components/prefs/pref_change_registrar.h"
+#import "ios/chrome/browser/signin/model/account_profile_mapper.h"
+#import "ios/chrome/browser/signin/model/constants.h"
 #import "ios/chrome/browser/signin/model/pattern_account_restriction.h"
 #import "ios/chrome/browser/signin/model/system_identity.h"
-#import "ios/chrome/browser/signin/model/system_identity_manager.h"
-#import "ios/chrome/browser/signin/model/system_identity_manager_observer.h"
 
 class PrefService;
 @protocol RefreshAccessTokenError;
@@ -26,7 +25,7 @@ class PrefService;
 
 // Service that provides Chrome identities.
 class ChromeAccountManagerService : public KeyedService,
-                                    public SystemIdentityManagerObserver
+                                    public AccountProfileMapper::Observer
 
 {
  public:
@@ -62,7 +61,9 @@ class ChromeAccountManagerService : public KeyedService,
   };
 
   // Initializes the service.
-  explicit ChromeAccountManagerService(PrefService* pref_service);
+  // Filter identities according to the profile.
+  explicit ChromeAccountManagerService(PrefService* pref_service,
+                                       size_t profile_index);
   ChromeAccountManagerService(const ChromeAccountManagerService&) = delete;
   ChromeAccountManagerService& operator=(const ChromeAccountManagerService&) =
       delete;
@@ -135,8 +136,6 @@ class ChromeAccountManagerService : public KeyedService,
   PrefChangeRegistrar registrar_;
 
   base::ObserverList<Observer, true> observer_list_;
-  base::ScopedObservation<SystemIdentityManager, SystemIdentityManagerObserver>
-      system_identity_manager_observation_{this};
 
   // ResizedAvatarCache for IdentityAvatarSize::TableViewIcon.
   ResizedAvatarCache* default_table_view_avatar_cache_;
@@ -146,6 +145,8 @@ class ChromeAccountManagerService : public KeyedService,
   ResizedAvatarCache* regular_avatar_cache_;
   // ResizedAvatarCache for IdentityAvatarSize::Large.
   ResizedAvatarCache* large_avatar_cache_;
+
+  const size_t profile_index_ = 0;
 };
 
 #endif  // IOS_CHROME_BROWSER_SIGNIN_MODEL_CHROME_ACCOUNT_MANAGER_SERVICE_H_

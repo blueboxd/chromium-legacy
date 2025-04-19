@@ -30,7 +30,7 @@
 #include "media/base/video_frame_converter.h"
 #include "media/base/win/dxgi_device_manager.h"
 #include "media/gpu/media_gpu_export.h"
-#include "media/gpu/windows/d3d11_com_defs.h"
+#include "media/gpu/windows/d3d_com_defs.h"
 #include "media/video/video_encode_accelerator.h"
 
 namespace media {
@@ -89,7 +89,7 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   IFACEMETHODIMP_(ULONG) Release() override;
   IFACEMETHODIMP QueryInterface(REFIID riid, void** ppv) override;
 
-  enum class DriverVendor { kOther, kNvidia, kIntel, kAMD };
+  enum class DriverVendor { kOther, kNvidia, kIntel, kAMD, kQualcomm };
 
  protected:
   ~MediaFoundationVideoEncodeAccelerator() override;
@@ -145,8 +145,7 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
 
   // Activates the asynchronous encoder instance |encoder_| according to codec
   // merit.
-  bool ActivateAsyncEncoder(IMFActivate** pp_activates,
-                            uint32_t activate_count,
+  bool ActivateAsyncEncoder(std::vector<IMFActivate*>& activates,
                             bool is_constrained_h264);
 
   // Initializes and allocates memory for input and output parameters.
@@ -196,15 +195,18 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
 
   // Initialize video processing (for scaling).
   HRESULT InitializeD3DVideoProcessing(ID3D11Texture2D* input_texture);
-  // Scales `input_texture` to size `input_visible_size_`. On success, the
-  // result is stored in `scaled_d3d11_texture_`.
-  HRESULT PerformD3DScaling(ID3D11Texture2D* input_texture);
+  // Scales visible subrect of `input_texture` to size of
+  // `scaled_d3d11_texture_`. On success, the result is stored in
+  // `scaled_d3d11_texture_`.
+  HRESULT PerformD3DScaling(ID3D11Texture2D* input_texture,
+                            const gfx::Rect& visible_rect);
 
   // Initializes the video copying operation by making sure
   // `copied_d3d11_texture_` exists and that its size matches `input_texture`.
   HRESULT InitializeD3DCopying(ID3D11Texture2D* input_texture);
   // Copies `input_texture` to `copied_d3d11_texture_`.
-  HRESULT PerformD3DCopy(ID3D11Texture2D* input_texture);
+  HRESULT PerformD3DCopy(ID3D11Texture2D* input_texture,
+                         const gfx::Rect& visible_rect);
 
   // Used to post tasks from the IMFMediaEvent::Invoke() method.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

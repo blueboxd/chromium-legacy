@@ -7,10 +7,12 @@ package org.chromium.chrome.browser.tab_group_sync;
 import android.util.Pair;
 
 import org.chromium.base.Token;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.LazyOneshotSupplier;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupColorUtils;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
+import org.chromium.components.tab_group_sync.ClosingSource;
 import org.chromium.components.tab_group_sync.LocalTabGroupId;
 import org.chromium.components.tab_group_sync.SavedTabGroup;
 import org.chromium.components.tab_group_sync.SavedTabGroupTab;
@@ -73,7 +75,7 @@ public class RemoteTabGroupMutationHelper {
         String title = mTabGroupModelFilter.getTabGroupTitle(rootId);
         if (title == null) title = new String();
 
-        int color = TabGroupColorUtils.getTabGroupColor(rootId);
+        int color = mTabGroupModelFilter.getTabGroupColor(rootId);
         if (color == TabGroupColorUtils.INVALID_COLOR_ID) color = TabGroupColorId.GREY;
 
         mTabGroupSyncService.updateVisualData(groupId, title, color);
@@ -127,11 +129,6 @@ public class RemoteTabGroupMutationHelper {
         }
     }
 
-    /** Removes mapping for a tab group ID from service and persistence. */
-    public void unmapTabGroupId(LocalTabGroupId groupId) {
-        mTabGroupSyncService.removeLocalTabGroupMapping(groupId);
-    }
-
     /**
      * Handle a tab group being closed.
      *
@@ -139,10 +136,17 @@ public class RemoteTabGroupMutationHelper {
      * @param wasHiding Whether the group is hiding instead of being deleted.
      */
     public void handleCommittedTabGroupClosure(LocalTabGroupId groupId, boolean wasHiding) {
-        unmapTabGroupId(groupId);
+        int closingSource =
+                wasHiding ? ClosingSource.CLOSED_BY_USER : ClosingSource.DELETED_BY_USER;
+        TabGroupSyncUtils.recordTabGroupOpenCloseMetrics(
+                mTabGroupSyncService, /* open= */ false, closingSource, groupId);
+        mTabGroupSyncService.removeLocalTabGroupMapping(groupId);
         if (!wasHiding) {
             // When deleting drop the group from sync entirely.
             removeGroup(groupId);
+            RecordUserAction.record("TabGroups.Sync.LocalDeleted");
+        } else {
+            RecordUserAction.record("TabGroups.Sync.LocalHidden");
         }
     }
 

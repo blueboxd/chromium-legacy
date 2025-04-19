@@ -5,9 +5,9 @@
 #import "base/ios/ios_util.h"
 #import "base/test/ios/wait_util.h"
 #import "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/start_surface/ui_bundled/start_surface_features.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
-#import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -46,6 +46,21 @@ void WaitForOmniboxSuggestion(NSString* suggestion, int section, int row) {
   GREYAssertTrue(base::test::ios::WaitUntilConditionOrTimeout(
                      base::test::ios::kWaitForUIElementTimeout, condition),
                  @"Suggestion not found.");
+}
+
+// Wait for an empty omnibox.
+void WaitForEmpyOmnibox() {
+  ConditionBlock condition = ^{
+    NSError* error = nil;
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+        assertWithMatcher:chrome_test_util::OmniboxText("")
+                    error:&error];
+    return error == nil;
+  };
+
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
+                 base::test::ios::kWaitForUIElementTimeout, condition),
+             @"Waiting for the omnibox to empty.");
 }
 }  // namespace
 
@@ -174,7 +189,7 @@ void WaitForOmniboxSuggestion(NSString* suggestion, int section, int row) {
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       assertWithMatcher:chrome_test_util::OmniboxText(URL.GetContent())];
-  [ChromeEarlGreyUI focusOmniboxAndType:@"foo"];
+  [ChromeEarlGreyUI focusOmniboxAndReplaceText:@"foo"];
 
   id<GREYMatcher> typingShield = grey_accessibilityID(@"Typing Shield");
   [[EarlGrey selectElementWithMatcher:typingShield] performAction:grey_tap()];
@@ -305,16 +320,15 @@ void WaitForOmniboxSuggestion(NSString* suggestion, int section, int row) {
   id<GREYMatcher> cancelButton = grey_accessibilityLabel(@"Clear Text");
 
   [[EarlGrey selectElementWithMatcher:cancelButton] performAction:grey_tap()];
-
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
-      assertWithMatcher:chrome_test_util::OmniboxText("")];
+  WaitForEmpyOmnibox();
 }
 
 // Types JavaScript into Omnibox and verify that an alert is displayed.
 - (void)testTypeJavaScriptIntoOmnibox {
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/echo")];
 
-  [ChromeEarlGreyUI focusOmniboxAndType:@"javascript:alert('JS Alert Text');"];
+  [ChromeEarlGreyUI
+      focusOmniboxAndReplaceText:@"javascript:alert('JS Alert Text');"];
   // TODO(crbug.com/40916974): Use simulatePhysicalKeyboardEvent until
   // replaceText can properly handle \n.
   [ChromeEarlGrey simulatePhysicalKeyboardEvent:@"\n" flags:0];
@@ -338,7 +352,7 @@ void WaitForOmniboxSuggestion(NSString* suggestion, int section, int row) {
 // script execution.
 - (void)testTypeJavaScriptIntoOmniboxWithWebUIPage {
   [ChromeEarlGrey loadURL:GURL("chrome://version")];
-  [ChromeEarlGreyUI focusOmniboxAndType:@"javascript:alert('Hello');\n"];
+  [ChromeEarlGreyUI focusOmniboxAndReplaceText:@"javascript:alert('Hello');\n"];
 
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(grey_accessibilityLabel(@"Hello"),
@@ -387,9 +401,7 @@ void WaitForOmniboxSuggestion(NSString* suggestion, int section, int row) {
                                             grey_sufficientlyVisible(), nil)]
         performAction:grey_tap()];
   }
-
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
-      assertWithMatcher:chrome_test_util::OmniboxText("")];
+  WaitForEmpyOmnibox();
 }
 
 // Tests typing in the omnibox using the keyboard accessory view.

@@ -19,7 +19,8 @@ NSString* const kUTTypeChromiumPrivilegedInitiatedDrag =
 NSString* const kUTTypeChromiumRendererInitiatedDrag =
     @"org.chromium.chromium-renderer-initiated-drag";
 
-NSString* const kUTTypeChromiumWebCustomData = @"org.chromium.web-custom-data";
+NSString* const kUTTypeChromiumDataTransferCustomData =
+    @"org.chromium.web-custom-data";
 
 NSString* const kImageSvg = @"public.svg-image";
 // TODO(dcheng): This name is temporary. See crbug.com/106449.

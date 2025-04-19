@@ -15,18 +15,20 @@ namespace net {
 class X509Certificate;
 }  // namespace net
 
+namespace enterprise_attestation {
+class CloudManagementDelegate;
+}  // namespace enterprise_attestation
+
 namespace client_certificates {
 
 class PrivateKey;
-class CloudManagementDelegate;
-class DMServerClient;
 
 // Interface to be used for uploading a public key to an attestation server.
 class KeyUploadClient {
  public:
   static std::unique_ptr<KeyUploadClient> Create(
-      std::unique_ptr<CloudManagementDelegate> management_delegate,
-      std::unique_ptr<DMServerClient> dm_server_client);
+      std::unique_ptr<enterprise_attestation::CloudManagementDelegate>
+          management_delegate);
 
   using CreateCertificateCallback =
       base::OnceCallback<void(HttpCodeOrClientError,

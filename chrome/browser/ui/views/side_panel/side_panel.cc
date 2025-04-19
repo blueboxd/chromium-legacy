@@ -7,22 +7,27 @@
 #include <memory>
 
 #include "base/functional/bind.h"
+#include "base/i18n/number_formatting.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
+#include "chrome/browser/ui/browser_window/public/browser_window_features.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
-#include "chrome/browser/ui/side_panel/side_panel_enums.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/top_container_background.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_coordinator.h"
+#include "chrome/browser/ui/views/side_panel/side_panel_enums.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_resize_area.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_util.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/lens/lens_features.h"
+#include "components/prefs/pref_service.h"
 #include "third_party/skia/include/core/SkPath.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/color/color_provider.h"
@@ -36,6 +41,7 @@
 #include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/scoped_canvas.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/fill_layout.h"
@@ -142,8 +148,9 @@ class SidePanelBorder : public views::Border {
       TopContainerBackground::PaintBackground(canvas, &view, browser_view_);
     }
 
-    // Paint the inner border around SidePanel content.
-    const float stroke_thickness = views::Separator::kThickness * dsf;
+    // Paint the inner border around SidePanel content. Since half the stroke
+    // gets painted in the clipped area, make this twice as thick.
+    const float stroke_thickness = views::Separator::kThickness * 2;
 
     cc::PaintFlags flags;
     flags.setStrokeWidth(stroke_thickness);
@@ -222,11 +229,60 @@ END_METADATA
 
 }  // namespace
 
+// Ensures immediate children of the SidePanel have their layers clipped to
+// their visible bounds to prevent incorrect clipping during animation.
+// TODO: 344626785 - Remove this once WebView layer behavior has been fixed.
+class SidePanel::VisibleBoundsViewClipper : public views::ViewObserver {
+ public:
+  explicit VisibleBoundsViewClipper(SidePanel* side_panel)
+      : side_panel_(side_panel) {
+    view_observations_.AddObservation(side_panel);
+  }
+  VisibleBoundsViewClipper(const VisibleBoundsViewClipper&) = delete;
+  VisibleBoundsViewClipper& operator=(const VisibleBoundsViewClipper&) = delete;
+  ~VisibleBoundsViewClipper() override = default;
+
+  // views::ViewObserver:
+  void OnChildViewAdded(View* observed_view, View* child) override {
+    if (observed_view == side_panel_) {
+      view_observations_.AddObservation(child);
+    }
+  }
+  void OnViewBoundsChanged(views::View* observed_view) override {
+    ui::Layer* layer = observed_view->layer();
+    if (observed_view != side_panel_ && layer) {
+      gfx::Rect clip_bounds = observed_view->GetVisibleBounds();
+      // Let side panel grow slightly taller so that it overlaps the divider
+      // into the toolbar or bookmarks bar above it.
+      // TODO: Explore extending the side panel bounds directly in
+      // BrowserViewLayout.
+      clip_bounds.Inset(
+          gfx::Insets::TLBR(-views::Separator::kThickness, 0, 0, 0));
+      layer->SetClipRect(clip_bounds);
+      layer->SetVisible(clip_bounds.width() != 0);
+    }
+  }
+  void OnViewIsDeleting(views::View* observed_view) override {
+    view_observations_.RemoveObservation(observed_view);
+  }
+
+ private:
+  // Owns this.
+  const raw_ptr<SidePanel> side_panel_;
+
+  base::ScopedMultiSourceObservation<views::View, views::ViewObserver>
+      view_observations_{this};
+};
+
 SidePanel::SidePanel(BrowserView* browser_view,
                      HorizontalAlignment horizontal_alignment)
     : views::AnimationDelegateViews(this),
       browser_view_(browser_view),
       horizontal_alignment_(horizontal_alignment) {
+  if (lens::features::IsLensOverlayEnabled()) {
+    visible_bounds_view_clipper_ =
+        std::make_unique<VisibleBoundsViewClipper>(this);
+  }
   std::unique_ptr<BorderView> border_view =
       std::make_unique<BorderView>(browser_view);
   border_view_ = border_view.get();
@@ -253,8 +309,8 @@ SidePanel::SidePanel(BrowserView* browser_view,
   SetVisible(false);
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
-  // TODO(pbos): Reconsider if SetPanelWidth() should add borders, if so move
-  // accounting for the border into SetPanelWidth(), otherwise remove this TODO.
+  // Set the panel width from the preference or use the minimum size as the
+  // default.
   SetPanelWidth(GetMinimumSize().width());
 
   SetBorder(views::CreateEmptyBorder(GetBorderInsets()));
@@ -330,6 +386,13 @@ gfx::Size SidePanel::GetContentSizeUpperBound() const {
 
 void SidePanel::ChildVisibilityChanged(View* child) {
   UpdateVisibility();
+}
+
+void SidePanel::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  if (previous_bounds.width() != width() && keyboard_resized_) {
+    keyboard_resized_ = false;
+    AnnounceResize();
+  }
 }
 
 double SidePanel::GetAnimationValue() const {
@@ -415,10 +478,21 @@ void SidePanel::AnimationEnded(const gfx::Animation* animation) {
   InvalidateLayout();
 }
 
+void SidePanel::UpdateSidePanelWidthPref(const std::string& panel_id,
+                                         int width) {
+  PrefService* pref_service = browser_view_->browser()->profile()->GetPrefs();
+  ScopedDictPrefUpdate update(pref_service, prefs::kSidePanelIdToWidth);
+  base::Value::Dict& dict = update.Get();
+
+  // Update the dictionary with the new width for the specified panel_id.
+  dict.Set(panel_id, base::Value(width));
+}
+
 void SidePanel::OnResize(int resize_amount, bool done_resizing) {
   if (starting_width_on_resize_ < 0) {
     starting_width_on_resize_ = width();
   }
+
   int proposed_width = starting_width_on_resize_ +
                        ((IsRightAligned() && !base::i18n::IsRTL()) ||
                                 (!IsRightAligned() && base::i18n::IsRTL())
@@ -427,11 +501,28 @@ void SidePanel::OnResize(int resize_amount, bool done_resizing) {
   if (done_resizing) {
     starting_width_on_resize_ = -1;
   }
+
   const int minimum_width = GetMinimumSize().width();
   if (proposed_width < minimum_width) {
     proposed_width = minimum_width;
   }
+
   if (width() != proposed_width) {
+    if (base::FeatureList::IsEnabled(features::kSidePanelResizing)) {
+      auto* coordinator =
+          browser_view_->browser()->GetFeatures().side_panel_ui();
+      if (coordinator) {
+        std::optional<SidePanelEntry::Id> entry_id =
+            coordinator->GetCurrentEntryId();
+        if (entry_id.has_value()) {
+          std::string panel_id = SidePanelEntryIdToString(entry_id.value());
+
+          // Update the pref with the new width
+          UpdateSidePanelWidthPref(panel_id, proposed_width);
+        }
+      }
+    }
+
     SetPanelWidth(proposed_width);
     did_resize_ = true;
   }
@@ -439,9 +530,10 @@ void SidePanel::OnResize(int resize_amount, bool done_resizing) {
 
 void SidePanel::RecordMetricsIfResized() {
   if (did_resize_) {
-    std::optional<SidePanelEntry::Id> id =
-        SidePanelUI::GetSidePanelUIForBrowser(browser_view_->browser())
-            ->GetCurrentEntryId();
+    std::optional<SidePanelEntry::Id> id = browser_view_->browser()
+                                               ->GetFeatures()
+                                               .side_panel_ui()
+                                               ->GetCurrentEntryId();
     if (!id.has_value()) {
       return;
     }
@@ -521,6 +613,9 @@ void SidePanel::UpdateVisibility() {
       animation_.Hide();
     }
   } else {
+    // Set the animation value so that it accurately reflects what state the
+    // side panel should be in for layout.
+    animation_.Reset(should_be_open ? 1 : 0);
     SetVisible(should_be_open);
   }
 }
@@ -528,6 +623,32 @@ void SidePanel::UpdateVisibility() {
 bool SidePanel::ShouldShowAnimation() const {
   return lens::features::IsLensOverlayEnabled() &&
          gfx::Animation::ShouldRenderRichAnimation() && !animations_disabled_;
+}
+
+void SidePanel::AnnounceResize() {
+  float side_panel_width = width();
+  float web_contents_width =
+      browser_view_->contents_container()->bounds().width();
+  float total_width = browser_view_->bounds().width();
+  int side_panel_percentage = (side_panel_width / total_width) * 100;
+  int web_contents_percentage = (web_contents_width / total_width) * 100;
+  if (side_panel_percentage + web_contents_percentage > 100) {
+    side_panel_percentage--;
+  }
+  bool side_panel_right_aligned = IsRightAligned();
+  std::u16string web_contents_side_text = l10n_util::GetStringUTF16(
+      side_panel_right_aligned
+          ? IDS_SIDE_PANEL_RESIZE_LEFT_SIDE_ACCESSIBLE_ALERT
+          : IDS_SIDE_PANEL_RESIZE_RIGHT_SIDE_ACCESSIBLE_ALERT);
+  std::u16string side_panel_side_text = l10n_util::GetStringUTF16(
+      side_panel_right_aligned
+          ? IDS_SIDE_PANEL_RESIZE_RIGHT_SIDE_ACCESSIBLE_ALERT
+          : IDS_SIDE_PANEL_RESIZE_LEFT_SIDE_ACCESSIBLE_ALERT);
+
+  GetViewAccessibility().AnnounceText(l10n_util::GetStringFUTF16(
+      IDS_SIDE_PANEL_RESIZE_ACCESSIBLE_ALERT, web_contents_side_text,
+      base::FormatPercent(web_contents_percentage), side_panel_side_text,
+      base::FormatPercent(side_panel_percentage)));
 }
 
 BEGIN_METADATA(SidePanel)

@@ -29,12 +29,10 @@ namespace fingerprinting_protection_filter {
 class ProfileInteractionManager {
  public:
   explicit ProfileInteractionManager(
-      PrefService* pref_service_,
-      privacy_sandbox::TrackingProtectionSettings*
-          tracking_protection_settings);
-  ~ProfileInteractionManager();
+      privacy_sandbox::TrackingProtectionSettings* tracking_protection_settings,
+      PrefService* prefs);
+  virtual ~ProfileInteractionManager();
 
-  ProfileInteractionManager(const ProfileInteractionManager&) = delete;
   ProfileInteractionManager& operator=(const ProfileInteractionManager&) =
       delete;
 
@@ -42,11 +40,14 @@ class ProfileInteractionManager {
       content::NavigationHandle* navigation_handle,
       subresource_filter::mojom::ActivationLevel initial_activation_level,
       subresource_filter::ActivationDecision* decision);
+  virtual content_settings::SettingSource GetTrackingProtectionSettingSource(
+      const GURL& url);
 
  private:
-  raw_ptr<privacy_sandbox::TrackingProtectionSettings>
+  // TODO(https://crbug.com/40280666): Triage dangling pointers.
+  raw_ptr<privacy_sandbox::TrackingProtectionSettings, DanglingUntriaged>
       tracking_protection_settings_;
-  raw_ptr<PrefService> prefs_;
+  raw_ptr<PrefService, DanglingUntriaged> prefs_;
 };
 
 }  // namespace fingerprinting_protection_filter

@@ -36,6 +36,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
@@ -137,8 +138,9 @@ void AssistantDialogPlate::OnButtonPressed(AssistantButtonId button_id) {
 
 bool AssistantDialogPlate::HandleKeyEvent(views::Textfield* textfield,
                                           const ui::KeyEvent& key_event) {
-  if (key_event.type() != ui::EventType::ET_KEY_PRESSED)
+  if (key_event.type() != ui::EventType::kKeyPressed) {
     return false;
+  }
 
   switch (key_event.key_code()) {
     case ui::KeyboardCode::VKEY_RETURN: {
@@ -387,7 +389,7 @@ void AssistantDialogPlate::InitKeyboardLayoutContainer() {
   auto textfield_hint =
       l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_DIALOG_PLATE_HINT);
   textfield->SetPlaceholderText(textfield_hint);
-  textfield->SetAccessibleName(textfield_hint);
+  textfield->GetViewAccessibility().SetName(textfield_hint);
   textfield_ = keyboard_layout_container->AddChildView(std::move(textfield));
 
   layout_manager->SetFlexForView(textfield_, 1);
@@ -444,7 +446,7 @@ void AssistantDialogPlate::InitVoiceLayoutContainer() {
   auto animated_voice_input_toggle =
       std::make_unique<MicView>(this, AssistantButtonId::kVoiceInputToggle);
   animated_voice_input_toggle->SetID(AssistantViewID::kMicView);
-  animated_voice_input_toggle->SetAccessibleName(
+  animated_voice_input_toggle->GetViewAccessibility().SetName(
       l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_DIALOG_PLATE_MIC_ACCNAME));
   animated_voice_input_toggle_ = voice_layout_container->AddChildView(
       std::move(animated_voice_input_toggle));

@@ -20,6 +20,7 @@
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/shared_worker_service.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "net/storage_access_api/status.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom.h"
@@ -66,7 +67,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
   void Shutdown() override;
 
   // Uses |url_loader_factory| to load workers' scripts instead of
-  // StoragePartition's URLLoaderFactoryGetter.
+  // StoragePartition's ReconnectableURLLoaderFactoryForIOThread.
   void SetURLLoaderFactoryForTesting(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
@@ -122,7 +123,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
       const std::string& storage_domain,
       const blink::MessagePortChannel& message_port,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
-      bool has_storage_access);
+      const std::optional<blink::StorageKey>& storage_key_override);
 
   void StartWorker(base::WeakPtr<SharedWorkerHost> host,
                    const blink::MessagePortChannel& message_port,

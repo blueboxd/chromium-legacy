@@ -9,7 +9,9 @@ import("//third_party/jni_zero/jni_zero.gni")
 generate_jni("jni_headers") {
   sources = [
     "java/src/org/chromium/components/sync/ExplicitPassphrasePlatformClient.java",
+    "java/src/org/chromium/components/sync/LocalDataDescription.java",
     "java/src/org/chromium/components/sync/SyncFeatureMap.java",
+    "java/src/org/chromium/components/sync/SyncService.java",
     "java/src/org/chromium/components/sync/SyncServiceImpl.java",
   ]
 }
@@ -28,6 +30,7 @@ android_library("sync_java") {
     ":jni_headers",
   ]
   sources = [
+    "java/src/org/chromium/components/sync/LocalDataDescription.java",
     "java/src/org/chromium/components/sync/Passphrase.java",
     "java/src/org/chromium/components/sync/SyncFeatureMap.java",
     "java/src/org/chromium/components/sync/SyncService.java",
@@ -64,7 +67,7 @@ android_library("explicit_passphrase_platform_client_stub_java") {
 
 java_cpp_enum("java_enums") {
   sources = [
-    "//components/sync/base/model_type.h",
+    "//components/sync/base/data_type.h",
     "//components/sync/base/passphrase_enums.h",
     "//components/sync/base/user_selectable_type.h",
     "//components/sync/service/sync_service_utils.h",

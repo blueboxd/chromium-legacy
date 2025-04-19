@@ -6,11 +6,13 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_LOCAL_FRAME_MOJO_HANDLER_H_
 
 #include "build/build_config.h"
+#include "cc/input/browser_controls_offset_tags_info.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/device_posture/device_posture_provider.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/back_forward_cache_controller.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/media/fullscreen_video_element.mojom-blink.h"
 #include "third_party/blink/public/mojom/reporting/reporting.mojom-blink.h"
 #include "third_party/blink/public/mojom/timing/resource_timing.mojom-blink-forward.h"
@@ -123,22 +125,24 @@ class LocalFrameMojoHandler
   void BeforeUnload(bool is_reload, BeforeUnloadCallback callback) final;
   void MediaPlayerActionAt(const gfx::Point& window_point,
                            mojom::blink::MediaPlayerActionPtr action) final;
-  void RequestVideoFrameAt(const gfx::Point& window_point,
-                           const gfx::Size& max_size,
-                           int max_area,
-                           RequestVideoFrameAtCallback callback) final;
+  void RequestVideoFrameAtWithBoundsHint(
+      const gfx::Point& window_point,
+      const gfx::Size& max_size,
+      int max_area,
+      RequestVideoFrameAtWithBoundsHintCallback callback) final;
   void AdvanceFocusInFrame(
       mojom::blink::FocusType focus_type,
       const std::optional<RemoteFrameToken>& source_frame_token) final;
   void AdvanceFocusForIME(mojom::blink::FocusType focus_type) final;
   void ReportContentSecurityPolicyViolation(
       network::mojom::blink::CSPViolationPtr csp_violation) final;
-  // Updates the snapshotted policy attributes (sandbox flags and permissions
+  // Updates the snapshot policy attributes (sandbox flags and permissions
   // policy container policy) in the frame's FrameOwner. This is used when this
   // frame's parent is in another process and it dynamically updates this
   // frame's sandbox flags or container policy. The new policy won't take effect
   // until the next navigation.
   void DidUpdateFramePolicy(const FramePolicy& frame_policy) final;
+  void OnFrameVisibilityChanged(mojom::blink::FrameVisibility visibility) final;
   void PostMessageEvent(
       const std::optional<RemoteFrameToken>& source_frame_token,
       const String& source_origin,
@@ -233,7 +237,6 @@ class LocalFrameMojoHandler
       bool is_validated,
       const WTF::String& normalized_server_timing,
       const ::network::URLLoaderCompletionStatus& completion_status) final;
-  void RequestFullscreenDocumentElement() final;
 
   // blink::mojom::LocalMainFrame overrides:
   void AnimateDoubleTapZoom(const gfx::Point& point,
@@ -253,9 +256,12 @@ class LocalFrameMojoHandler
       network::mojom::blink::CrossOriginOpenerPolicyReporterParamsPtr
           coop_reporter_params,
       bool is_in_same_virtual_coop_related_group) final;
-  void UpdateBrowserControlsState(cc::BrowserControlsState constraints,
-                                  cc::BrowserControlsState current,
-                                  bool animate) override;
+  void UpdateBrowserControlsState(
+      cc::BrowserControlsState constraints,
+      cc::BrowserControlsState current,
+      bool animate,
+      const std::optional<cc::BrowserControlsOffsetTagsInfo>& offset_tags_info)
+      override;
 
   void SetV8CompileHints(base::ReadOnlySharedMemoryRegion data) override;
 

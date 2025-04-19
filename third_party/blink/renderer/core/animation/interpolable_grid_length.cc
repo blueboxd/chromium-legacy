@@ -50,14 +50,18 @@ InterpolableGridLength::InterpolableGridLength(InterpolableValue* value,
 }
 
 // static
-InterpolableGridLength* InterpolableGridLength::Create(const Length& length,
-                                                       float zoom) {
+InterpolableGridLength* InterpolableGridLength::Create(
+    const Length& length,
+    const CSSProperty& property,
+    float zoom) {
   InterpolableGridLengthType type = GetInterpolableGridLengthType(length);
   InterpolableValue* value = nullptr;
   if (length.IsFlex()) {
     value = MakeGarbageCollected<InterpolableNumber>(length.GetFloatValue());
   } else {
-    value = InterpolableLength::MaybeConvertLength(length, zoom);
+    value = InterpolableLength::MaybeConvertLength(
+        length, property, zoom,
+        /*interpolate_size=*/std::nullopt);
   }
   return MakeGarbageCollected<InterpolableGridLength>(std::move(value), type);
 }

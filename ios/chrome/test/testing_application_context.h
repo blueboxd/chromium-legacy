@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/memory/raw_ptr.h"
-#include "base/threading/thread_checker.h"
+#include "base/sequence_checker.h"
 #include "ios/chrome/browser/shared/model/application_context/application_context.h"
 
 namespace network {
@@ -40,7 +40,7 @@ class TestingApplicationContext : public ApplicationContext {
   void SetLastShutdownClean(bool clean);
 
   // Sets the ChromeBrowserStateManager.
-  void SetChromeBrowserStateManager(ios::ChromeBrowserStateManager* manager);
+  void SetChromeBrowserStateManager(ChromeBrowserStateManager* manager);
 
   // Sets the VariationsService.
   void SetVariationsService(variations::VariationsService* variations_service);
@@ -70,10 +70,15 @@ class TestingApplicationContext : public ApplicationContext {
   network::mojom::NetworkContext* GetSystemNetworkContext() override;
   const std::string& GetApplicationLocale() override;
   const std::string& GetApplicationCountry() override;
-  ios::ChromeBrowserStateManager* GetChromeBrowserStateManager() override;
+  // TODO(crbug.com/358299872): After all usage has changed to
+  // GetProfileManager(), remove this method.
+  ChromeBrowserStateManager* GetChromeBrowserStateManager() override;
+  ChromeBrowserStateManager* GetProfileManager() override;
   metrics_services_manager::MetricsServicesManager* GetMetricsServicesManager()
       override;
   metrics::MetricsService* GetMetricsService() override;
+  signin::ActivePrimaryAccountsMetricsRecorder*
+  GetActivePrimaryAccountsMetricsRecorder() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   variations::VariationsService* GetVariationsService() override;
   net::NetLog* GetNetLog() override;
@@ -88,14 +93,14 @@ class TestingApplicationContext : public ApplicationContext {
   BrowserPolicyConnectorIOS* GetBrowserPolicyConnector() override;
   id<SingleSignOnService> GetSingleSignOnService() override;
   SystemIdentityManager* GetSystemIdentityManager() override;
-  segmentation_platform::OTRWebStateObserver*
-  GetSegmentationOTRWebStateObserver() override;
+  AccountProfileMapper* GetAccountProfileMapper() override;
+  IncognitoSessionTracker* GetIncognitoSessionTracker() override;
   PushNotificationService* GetPushNotificationService() override;
   UpgradeCenter* GetUpgradeCenter() override;
   os_crypt_async::OSCryptAsync* GetOSCryptAsync() override;
 
  private:
-  base::ThreadChecker thread_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
   std::string application_locale_;
   std::string application_country_;
   raw_ptr<PrefService> local_state_;
@@ -107,7 +112,7 @@ class TestingApplicationContext : public ApplicationContext {
   std::unique_ptr<BrowserPolicyConnectorIOS> browser_policy_connector_;
   std::unique_ptr<MockPromosManager> promos_manager_;
 
-  raw_ptr<ios::ChromeBrowserStateManager> chrome_browser_state_manager_;
+  raw_ptr<ChromeBrowserStateManager> chrome_browser_state_manager_;
   std::unique_ptr<network_time::NetworkTimeTracker> network_time_tracker_;
   bool was_last_shutdown_clean_;
   std::unique_ptr<network::TestURLLoaderFactory> test_url_loader_factory_;
@@ -116,6 +121,7 @@ class TestingApplicationContext : public ApplicationContext {
       test_network_connection_tracker_;
   __strong id<SingleSignOnService> single_sign_on_service_ = nil;
   std::unique_ptr<SystemIdentityManager> system_identity_manager_;
+  std::unique_ptr<AccountProfileMapper> account_profile_mapper_;
   std::unique_ptr<PushNotificationService> push_notification_service_;
   raw_ptr<variations::VariationsService> variations_service_;
   __strong UpgradeCenter* upgrade_center_ = nil;

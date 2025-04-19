@@ -86,6 +86,11 @@ enum DistanceMetric {
   // The distance between the bottom of a dialog's title and the top of the
   // dialog's content, when the first content element is text.
   DISTANCE_DIALOG_CONTENT_MARGIN_TOP_TEXT,
+  // Width of the space in a dropdown button between its label and down arrow.
+  DISTANCE_DROPDOWN_BUTTON_LABEL_ARROW_SPACING,
+  // Width of the horizontal padding in a dropdown button between the down arrow
+  // and the button's border.
+  DISTANCE_DROPDOWN_BUTTON_RIGHT_MARGIN,
   // Width of modal dialogs unless the content is too wide to make that
   // feasible.
   DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH,
@@ -103,6 +108,9 @@ enum DistanceMetric {
   // Height to stop at when expanding a scrollable area in a dialog to
   // accommodate its content.
   DISTANCE_DIALOG_SCROLLABLE_AREA_MAX_HEIGHT,
+  // Height to stop at when expanding a scrollable area in a modal dialog to
+  // accomodate its content.
+  DISTANCE_MODAL_DIALOG_SCROLLABLE_AREA_MAX_HEIGHT,
   // Horizontal margin between a table cell and its contents.
   DISTANCE_TABLE_CELL_HORIZONTAL_MARGIN,
   // Horizontal padding applied to text in a textfield.

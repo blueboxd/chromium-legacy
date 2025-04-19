@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/service/sync_service_impl.h"
-
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
@@ -11,10 +9,10 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/sync/base/pref_names.h"
-#include "components/sync/service/data_type_manager_impl.h"
-#include "components/sync/test/fake_model_type_controller.h"
-#include "components/sync/test/fake_sync_api_component_factory.h"
+#include "components/sync/service/sync_service_impl.h"
+#include "components/sync/test/fake_data_type_controller.h"
 #include "components/sync/test/fake_sync_engine.h"
+#include "components/sync/test/fake_sync_engine_factory.h"
 #include "components/sync/test/sync_client_mock.h"
 #include "components/sync/test/sync_service_impl_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -60,23 +58,31 @@ class SyncServiceImplStartupTest : public testing::Test {
             .gaia);
   }
 
-  void CreateSyncService(ModelTypeSet registered_types = {BOOKMARKS}) {
-    ModelTypeController::TypeVector controllers;
-    for (ModelType type : registered_types) {
-      auto controller = std::make_unique<FakeModelTypeController>(type);
-      // Hold a raw pointer to directly interact with the controller.
-      controller_map_[type] = controller.get();
-      controllers.push_back(std::move(controller));
+  void CreateSyncServiceWithControllers(
+      DataTypeController::TypeVector controllers) {
+    // Hold raw pointers to directly interact with the controllers.
+    for (const auto& controller : controllers) {
+      controller_map_[controller->type()] =
+          static_cast<FakeDataTypeController*>(controller.get());
     }
 
     std::unique_ptr<SyncClientMock> sync_client =
         sync_service_impl_bundle_.CreateSyncClientMock();
-    ON_CALL(*sync_client, CreateModelTypeControllers)
-        .WillByDefault(Return(ByMove(std::move(controllers))));
+    ON_CALL(*sync_client, GetIdentityManager)
+        .WillByDefault(Return(sync_service_impl_bundle_.identity_manager()));
 
     sync_service_ = std::make_unique<SyncServiceImpl>(
         sync_service_impl_bundle_.CreateBasicInitParams(
             std::move(sync_client)));
+    sync_service_->Initialize(std::move(controllers));
+  }
+
+  void CreateSyncService(DataTypeSet registered_types = {BOOKMARKS}) {
+    DataTypeController::TypeVector controllers;
+    for (DataType type : registered_types) {
+      controllers.push_back(std::make_unique<FakeDataTypeController>(type));
+    }
+    CreateSyncServiceWithControllers(std::move(controllers));
   }
 
   void SignInWithoutSyncConsent() {
@@ -156,19 +162,13 @@ class SyncServiceImplStartupTest : public testing::Test {
     return sync_service_impl_bundle_.pref_service();
   }
 
-  FakeSyncApiComponentFactory* component_factory() {
-    return sync_service_impl_bundle_.component_factory();
+  FakeSyncEngineFactory* engine_factory() {
+    return sync_service_impl_bundle_.engine_factory();
   }
 
-  DataTypeManagerImpl* data_type_manager() {
-    return component_factory()->last_created_data_type_manager();
-  }
+  FakeSyncEngine* engine() { return engine_factory()->last_created_engine(); }
 
-  FakeSyncEngine* engine() {
-    return component_factory()->last_created_engine();
-  }
-
-  FakeModelTypeController* get_controller(ModelType type) {
+  FakeDataTypeController* get_controller(DataType type) {
     return controller_map_[type];
   }
 
@@ -182,7 +182,7 @@ class SyncServiceImplStartupTest : public testing::Test {
   SyncPrefs sync_prefs_;
   std::unique_ptr<SyncServiceImpl> sync_service_;
   // The controllers are owned by |sync_service_|.
-  std::map<ModelType, FakeModelTypeController*> controller_map_;
+  std::map<DataType, FakeDataTypeController*> controller_map_;
 };
 
 // ChromeOS does not support sign-in after startup
@@ -195,7 +195,6 @@ TEST_F(SyncServiceImplStartupTest, StartFirstTime) {
 
   // Should not actually start, rather just clean things up and wait
   // to be enabled.
-  sync_service()->Initialize();
   EXPECT_EQ(SyncService::DisableReasonSet(
                 {SyncService::DISABLE_REASON_NOT_SIGNED_IN}),
             sync_service()->GetDisableReasons());
@@ -231,7 +230,6 @@ TEST_F(SyncServiceImplStartupTest, StartFirstTime) {
   // released.
   sync_blocker.reset();
   ASSERT_FALSE(sync_service()->IsSetupInProgress());
-  EXPECT_EQ(DataTypeManager::CONFIGURED, data_type_manager()->state());
   EXPECT_EQ(SyncService::TransportState::ACTIVE,
             sync_service()->GetTransportState());
   // Sync-the-feature is still not active, but rather pending confirmation.
@@ -242,7 +240,6 @@ TEST_F(SyncServiceImplStartupTest, StartFirstTime) {
   // DataTypeManager in full Sync-the-feature mode.
   sync_service()->GetUserSettings()->SetInitialSyncFeatureSetupComplete(
       syncer::SyncFirstSetupCompleteSource::BASIC_FLOW);
-  EXPECT_EQ(DataTypeManager::CONFIGURED, data_type_manager()->state());
 
   // This should have fully enabled sync.
   EXPECT_TRUE(sync_service()->IsSyncFeatureEnabled());
@@ -259,7 +256,6 @@ TEST_F(SyncServiceImplStartupTest, StartNoCredentials) {
   SetSyncFeatureEnabledPrefs();
 
   CreateSyncService();
-  sync_service()->Initialize();
   FastForwardUntilNoTasksRemain();
 
   // SyncServiceImpl should now be active, but of course not have an access
@@ -280,8 +276,6 @@ TEST_F(SyncServiceImplStartupTest, WebSignoutBeforeInitialization) {
 
   CreateSyncService();
 
-  sync_service()->Initialize();
-
   // SyncServiceImpl should now be in the paused state.
   EXPECT_EQ(SyncService::TransportState::PAUSED,
             sync_service()->GetTransportState());
@@ -296,10 +290,9 @@ TEST_F(SyncServiceImplStartupTest, WebSignoutDuringDeferredStartup) {
   SetSyncFeatureEnabledPrefs();
 
   // Deferred startup is only possible if first sync completed earlier.
-  component_factory()->set_first_time_sync_configure_done(true);
+  engine_factory()->set_first_time_sync_configure_done(true);
 
   CreateSyncService();
-  sync_service()->Initialize();
 
   // There should be a deferred start task scheduled.
   ASSERT_EQ(SyncService::TransportState::START_DEFERRED,
@@ -340,7 +333,6 @@ TEST_F(SyncServiceImplStartupTest, WebSignoutAfterInitialization) {
   SetSyncFeatureEnabledPrefs();
 
   CreateSyncService();
-  sync_service()->Initialize();
 
   // Respond to the token request to finish the initialization flow.
   RespondToTokenRequest();
@@ -376,11 +368,11 @@ TEST_F(SyncServiceImplStartupTest, StartInvalidCredentials) {
   SignInWithSyncConsent();
   SetSyncFeatureEnabledPrefs();
 
+  // Prevent automatic (and successful) completion of engine initialization.
+  engine_factory()->AllowFakeEngineInitCompletion(false);
+
   CreateSyncService();
 
-  // Prevent automatic (and successful) completion of engine initialization.
-  component_factory()->AllowFakeEngineInitCompletion(false);
-  sync_service()->Initialize();
   FastForwardUntilNoTasksRemain();
   // Simulate an auth error while downloading control types.
   engine()->TriggerInitializationCompletion(/*success=*/false);
@@ -400,7 +392,7 @@ TEST_F(SyncServiceImplStartupTest, StartInvalidCredentials) {
 TEST_F(SyncServiceImplStartupTest, StartAshNoCredentials) {
   // We've never completed startup.
   ASSERT_FALSE(
-      component_factory()->HasTransportDataIncludingFirstSync(gaia_id_hash()));
+      engine_factory()->HasTransportDataIncludingFirstSync(gaia_id_hash()));
 
   // On ChromeOS, the user is always immediately signed in, but a refresh token
   // isn't necessarily available yet.
@@ -411,9 +403,7 @@ TEST_F(SyncServiceImplStartupTest, StartAshNoCredentials) {
 
   // Calling Initialize should cause the service to immediately create and
   // initialize the engine, and configure the DataTypeManager.
-  sync_service()->Initialize();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(DataTypeManager::CONFIGURED, data_type_manager()->state());
 
   // Sync should be considered active, even though there is no refresh token.
   EXPECT_EQ(SyncService::TransportState::ACTIVE,
@@ -426,7 +416,7 @@ TEST_F(SyncServiceImplStartupTest, StartAshNoCredentials) {
 TEST_F(SyncServiceImplStartupTest, StartAshFirstTime) {
   // We've never completed Sync startup.
   ASSERT_FALSE(
-      component_factory()->HasTransportDataIncludingFirstSync(gaia_id_hash()));
+      engine_factory()->HasTransportDataIncludingFirstSync(gaia_id_hash()));
 
   // There is already a signed-in user.
   SignInWithSyncConsent();
@@ -434,7 +424,6 @@ TEST_F(SyncServiceImplStartupTest, StartAshFirstTime) {
   // Sync should become active, even though IsInitialSyncFeatureSetupComplete
   // wasn't set yet.
   CreateSyncService();
-  sync_service()->Initialize();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SyncService::TransportState::ACTIVE,
             sync_service()->GetTransportState());
@@ -446,10 +435,8 @@ TEST_F(SyncServiceImplStartupTest, DisableSync) {
   SignInWithSyncConsent();
   CreateSyncService();
 
-  sync_service()->Initialize();
   FastForwardUntilNoTasksRemain();
   ASSERT_TRUE(sync_service()->IsSyncFeatureActive());
-  ASSERT_EQ(DataTypeManager::CONFIGURED, data_type_manager()->state());
   ASSERT_EQ(SyncService::TransportState::ACTIVE,
             sync_service()->GetTransportState());
 
@@ -457,7 +444,6 @@ TEST_F(SyncServiceImplStartupTest, DisableSync) {
   // transport mode.
   sync_service()->StopAndClear();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(DataTypeManager::CONFIGURED, data_type_manager()->state());
   EXPECT_EQ(SyncService::TransportState::ACTIVE,
             sync_service()->GetTransportState());
 
@@ -481,7 +467,6 @@ TEST_F(SyncServiceImplStartupTest, DisableSync) {
   // mode. It should immediately start up again in transport mode.
   sync_service()->StopAndClear();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(DataTypeManager::CONFIGURED, data_type_manager()->state());
   EXPECT_EQ(SyncService::TransportState::ACTIVE,
             sync_service()->GetTransportState());
 }
@@ -498,7 +483,6 @@ TEST_F(SyncServiceImplStartupTest, HonorsExistingDatatypePrefs) {
       /*selected_types=*/{UserSelectableType::kBookmarks});
 
   CreateSyncService();
-  sync_service()->Initialize();
   SignInWithSyncConsent();
   sync_service()->SetSyncFeatureRequested();
   sync_service()->GetUserSettings()->SetInitialSyncFeatureSetupComplete(
@@ -518,7 +502,6 @@ TEST_F(SyncServiceImplStartupTest, ManagedStartup) {
   SignInWithSyncConsent();
   CreateSyncService();
 
-  sync_service()->Initialize();
   // Sync was disabled due to the policy.
   EXPECT_EQ(SyncService::DisableReasonSet(
                 {SyncService::DISABLE_REASON_ENTERPRISE_POLICY}),
@@ -534,8 +517,7 @@ TEST_F(SyncServiceImplStartupTest, SwitchManaged) {
 
   CreateSyncService();
 
-  // Initialize() and wait for deferred startup.
-  sync_service()->Initialize();
+  // Wait for deferred startup.
   FastForwardUntilNoTasksRemain();
   EXPECT_TRUE(sync_service()->IsEngineInitialized());
   EXPECT_EQ(SyncService::DisableReasonSet(),
@@ -592,18 +574,18 @@ TEST_F(SyncServiceImplStartupTest, SwitchManaged) {
 }
 
 TEST_F(SyncServiceImplStartupTest, StartDownloadFailed) {
+  // Prevent automatic (and successful) completion of engine initialization.
+  engine_factory()->AllowFakeEngineInitCompletion(false);
+
   CreateSyncService();
   SignInWithSyncConsent();
   ASSERT_FALSE(
-      component_factory()->HasTransportDataIncludingFirstSync(gaia_id_hash()));
+      engine_factory()->HasTransportDataIncludingFirstSync(gaia_id_hash()));
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
   ASSERT_FALSE(sync_prefs()->IsInitialSyncFeatureSetupComplete());
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
-  // Prevent automatic (and successful) completion of engine initialization.
-  component_factory()->AllowFakeEngineInitCompletion(false);
-  sync_service()->Initialize();
   FastForwardUntilNoTasksRemain();
 
   // Simulate a failure while downloading control types.
@@ -625,10 +607,9 @@ TEST_F(SyncServiceImplStartupTest, FullStartupSequenceFirstTime) {
   // We've never completed startup.
   ASSERT_FALSE(sync_prefs()->IsInitialSyncFeatureSetupComplete());
   ASSERT_FALSE(
-      component_factory()->HasTransportDataIncludingFirstSync(gaia_id_hash()));
+      engine_factory()->HasTransportDataIncludingFirstSync(gaia_id_hash()));
 
   CreateSyncService({SESSIONS});
-  sync_service()->Initialize();
   ASSERT_FALSE(sync_service()->CanSyncFeatureStart());
 
   // There is no signed-in user, so also nobody has decided that Sync should be
@@ -642,7 +623,7 @@ TEST_F(SyncServiceImplStartupTest, FullStartupSequenceFirstTime) {
   // Sign in. Now Sync-the-transport can start. Since this was triggered by an
   // explicit user event, deferred startup is bypassed.
   // Sync-the-feature still doesn't start until the user says they want it.
-  component_factory()->AllowFakeEngineInitCompletion(false);
+  engine_factory()->AllowFakeEngineInitCompletion(false);
   SignInWithoutSyncConsent();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(sync_service()->GetDisableReasons().empty());
@@ -679,8 +660,7 @@ TEST_F(SyncServiceImplStartupTest, FullStartupSequenceFirstTime) {
 
   // Prevent immediate configuration of one datatype, to verify the state
   // during CONFIGURING.
-  ASSERT_EQ(ModelTypeController::NOT_RUNNING,
-            get_controller(SESSIONS)->state());
+  ASSERT_EQ(DataTypeController::NOT_RUNNING, get_controller(SESSIONS)->state());
   get_controller(SESSIONS)->model()->EnableManualModelStart();
 
   // Releasing the setup in progress handle lets the service actually configure
@@ -709,14 +689,15 @@ TEST_F(SyncServiceImplStartupTest, FullStartupSequenceNthTime) {
   // Prevent one model initialization, to test TransportState::CONFIGURING.
   SignInWithSyncConsent();
   SetSyncFeatureEnabledPrefs();
-  // Deferred startup is only possible if first sync completed earlier.
-  component_factory()->set_first_time_sync_configure_done(true);
-  component_factory()->AllowFakeEngineInitCompletion(false);
-  CreateSyncService({SESSIONS});
-  get_controller(SESSIONS)->model()->EnableManualModelStart();
 
-  // Kick off.
-  sync_service()->Initialize();
+  // Deferred startup is only possible if first sync completed earlier.
+  engine_factory()->set_first_time_sync_configure_done(true);
+  engine_factory()->AllowFakeEngineInitCompletion(false);
+  auto controller = std::make_unique<FakeDataTypeController>(SESSIONS);
+  controller->model()->EnableManualModelStart();
+  DataTypeController::TypeVector controllers;
+  controllers.push_back(std::move(controller));
+  CreateSyncServiceWithControllers(std::move(controllers));
 
   // Nothing is preventing Sync from starting, but it should be deferred so as
   // to not slow down browser startup.
@@ -740,7 +721,6 @@ TEST_F(SyncServiceImplStartupTest, FullStartupSequenceNthTime) {
   // already done.
   EXPECT_EQ(SyncService::TransportState::CONFIGURING,
             sync_service()->GetTransportState());
-  EXPECT_EQ(DataTypeManager::CONFIGURING, data_type_manager()->state());
   EXPECT_TRUE(engine());
 
   // Finish model initialization.
@@ -749,7 +729,6 @@ TEST_F(SyncServiceImplStartupTest, FullStartupSequenceNthTime) {
   // Sync is fully up and running.
   EXPECT_EQ(SyncService::TransportState::ACTIVE,
             sync_service()->GetTransportState());
-  EXPECT_EQ(DataTypeManager::CONFIGURED, data_type_manager()->state());
   EXPECT_TRUE(engine());
 }
 
@@ -758,13 +737,10 @@ TEST_F(SyncServiceImplStartupTest, DeferredStartInterruptedByDataType) {
   SetSyncFeatureEnabledPrefs();
 
   // Deferred startup is only possible if first sync completed earlier.
-  component_factory()->set_first_time_sync_configure_done(true);
+  engine_factory()->set_first_time_sync_configure_done(true);
 
   SignInWithSyncConsent();
   CreateSyncService();
-
-  // Kick off.
-  sync_service()->Initialize();
 
   // A deferred start task should be scheduled.
   EXPECT_EQ(sync_service()->GetTransportState(),
@@ -796,7 +772,6 @@ TEST_F(SyncServiceImplStartupTest, UserTriggeredStartIsNotDeferredStart) {
   // Signed-out at first.
   base::HistogramTester histogram_tester;
   CreateSyncService();
-  sync_service()->Initialize();
 
   // Sign-in quickly, before the usual delay of a deferred startup. This can
   // happen during FRE.
@@ -827,8 +802,6 @@ TEST_F(SyncServiceImplStartupTest,
 
   CreateSyncService(/*registered_types=*/{BOOKMARKS, READING_LIST});
 
-  sync_service()->Initialize();
-
   // Metadata was cleared for disabled types ...
   EXPECT_EQ(1, get_controller(READING_LIST)->model()->clear_metadata_count());
   // ... but not for the ones not disabled.
@@ -840,10 +813,9 @@ TEST_F(SyncServiceImplStartupTest,
   SignInWithSyncConsent();
   SetSyncFeatureEnabledPrefs();
 
-  CreateSyncService(/*registered_types=*/{BOOKMARKS, READING_LIST});
+  engine_factory()->AllowFakeEngineInitCompletion(false);
 
-  component_factory()->AllowFakeEngineInitCompletion(false);
-  sync_service()->Initialize();
+  CreateSyncService(/*registered_types=*/{BOOKMARKS, READING_LIST});
   FastForwardUntilNoTasksRemain();
 
   // Simulate opening sync settings before engine init is over.
@@ -869,10 +841,9 @@ TEST_F(SyncServiceImplStartupTest,
   SignInWithSyncConsent();
   SetSyncFeatureEnabledPrefs();
 
-  CreateSyncService(/*registered_types=*/{BOOKMARKS, READING_LIST});
+  engine_factory()->AllowFakeEngineInitCompletion(false);
 
-  component_factory()->AllowFakeEngineInitCompletion(false);
-  sync_service()->Initialize();
+  CreateSyncService(/*registered_types=*/{BOOKMARKS, READING_LIST});
   FastForwardUntilNoTasksRemain();
 
   // Simulate opening sync settings before engine init is over.

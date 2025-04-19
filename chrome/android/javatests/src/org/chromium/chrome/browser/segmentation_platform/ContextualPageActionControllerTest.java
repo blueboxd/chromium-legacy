@@ -14,7 +14,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.base.test.util.Restriction;
@@ -28,6 +27,7 @@ import org.chromium.ui.test.util.UiRestriction;
 
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@EnableFeatures({ChromeFeatureList.CONTEXTUAL_PAGE_ACTIONS})
 @Batch(Batch.PER_CLASS)
 public class ContextualPageActionControllerTest {
     private static final String CONTEXTUAL_PAGE_ACTION_DEFAULT_MODEL_HISTOGRAM =
@@ -36,8 +36,6 @@ public class ContextualPageActionControllerTest {
     private static final String CONTEXTUAL_PAGE_ACTION_SHOWN_BUTTON_HISTOGRAM =
             "Android.AdaptiveToolbarButton.Variant.OnPageLoad";
     private static final String TEST_PAGE = "/chrome/test/data/dom_distiller/simple_article.html";
-
-    @Rule public Features.JUnitProcessor mFeaturesProcessor = new Features.JUnitProcessor();
 
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
@@ -53,10 +51,6 @@ public class ContextualPageActionControllerTest {
 
     @Test
     @MediumTest
-    @EnableFeatures({
-        ChromeFeatureList.CONTEXTUAL_PAGE_ACTIONS,
-        ChromeFeatureList.CONTEXTUAL_PAGE_ACTION_READER_MODE
-    })
     public void testContextualPageModelExecution() {
         LibraryLoader.getInstance().ensureInitialized();
 
@@ -74,10 +68,6 @@ public class ContextualPageActionControllerTest {
     @Test
     @MediumTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE) // Reader mode is only available on phones.
-    @EnableFeatures({
-        ChromeFeatureList.CONTEXTUAL_PAGE_ACTIONS,
-        ChromeFeatureList.CONTEXTUAL_PAGE_ACTION_READER_MODE
-    })
     public void testContextualPageModelExecution_OnReaderModePage() {
         LibraryLoader.getInstance().ensureInitialized();
         mActivityTestRule.startMainActivityFromLauncher();

@@ -22,7 +22,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
+import static org.chromium.base.ThreadUtils.runOnUiThreadBlocking;
 import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
 
 import android.app.Instrumentation;
@@ -65,6 +65,7 @@ import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabTestUtils;
+import org.chromium.chrome.browser.tabmodel.TabClosureParams;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuTestSupport;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -131,7 +132,11 @@ public class QuickDeleteControllerTest {
     @After
     public void tearDown() {
         // Close all tabs
-        runOnUiThreadBlocking(() -> mActivity.getCurrentTabModel().closeAllTabs(false));
+        runOnUiThreadBlocking(
+                () ->
+                        mActivity
+                                .getCurrentTabModel()
+                                .closeTabs(TabClosureParams.closeAllTabs().build()));
     }
 
     private void openQuickDeleteDialog() {
@@ -168,7 +173,7 @@ public class QuickDeleteControllerTest {
         onViewWaiting(withId(R.id.positive_button)).perform(click());
 
         // Wait for browsing data deletion to complete.
-        mCallbackHelper.waitForFirst();
+        mCallbackHelper.waitForOnly();
 
         LayoutTestUtils.waitForLayout(mActivity.getLayoutManager(), LayoutType.TAB_SWITCHER);
     }
@@ -180,7 +185,7 @@ public class QuickDeleteControllerTest {
         onViewWaiting(withId(R.id.positive_button)).perform(click());
 
         // Wait for browsing data deletion to complete.
-        mCallbackHelper.waitForFirst();
+        mCallbackHelper.waitForOnly();
 
         onViewWaiting(
                         withText(
@@ -215,7 +220,7 @@ public class QuickDeleteControllerTest {
         onViewWaiting(withId(R.id.positive_button)).perform(click());
 
         // Wait for browsing data deletion to complete.
-        mCallbackHelper.waitForFirst();
+        mCallbackHelper.waitForOnly();
 
         onViewWaiting(withText(R.string.quick_delete_snackbar_all_time_message))
                 .check(matches(isDisplayed()));
@@ -237,7 +242,7 @@ public class QuickDeleteControllerTest {
         onViewWaiting(withId(R.id.positive_button)).perform(click());
 
         // Wait for browsing data deletion to complete.
-        mCallbackHelper.waitForFirst();
+        mCallbackHelper.waitForOnly();
 
         histogramWatcher.assertExpected();
     }
@@ -254,7 +259,7 @@ public class QuickDeleteControllerTest {
         onViewWaiting(withId(R.id.positive_button)).perform(click());
 
         // Wait for browsing data deletion to complete.
-        mCallbackHelper.waitForFirst();
+        mCallbackHelper.waitForOnly();
 
         histogramWatcher.assertExpected();
     }
@@ -281,7 +286,7 @@ public class QuickDeleteControllerTest {
         onViewWaiting(withId(R.id.positive_button)).perform(click());
 
         // Wait for browsing data deletion to complete.
-        mCallbackHelper.waitForFirst();
+        mCallbackHelper.waitForOnly();
 
         assertDataTypesCleared(
                 TimePeriod.LAST_15_MINUTES,
@@ -314,7 +319,7 @@ public class QuickDeleteControllerTest {
         onViewWaiting(withId(R.id.positive_button)).perform(click());
 
         // Wait for browsing data deletion to complete.
-        mCallbackHelper.waitForFirst();
+        mCallbackHelper.waitForOnly();
 
         assertDataTypesCleared(
                 TimePeriod.LAST_HOUR,

@@ -38,7 +38,7 @@ namespace {
 // changing this value.
 // LINT.IfChange
 constexpr int kTailoredWarningVersion = 3;
-constexpr int kTailoredWarningVersionDownloadReportWithoutUserDecision = 4;
+constexpr int kTailoredWarningVersionDownloadReportWithoutUserDecision = 5;
 // LINT.ThenChange(/components/safe_browsing/core/common/proto/csd.proto)
 
 DownloadRequestMaker::TabUrls TabUrlsFromWebContents(
@@ -134,7 +134,9 @@ DownloadRequestMaker::CreateFromFileSystemAccess(
     resource.set_referrer(ShortURLForReporting(item.frame_url));
 
   std::unique_ptr<ReferrerChainData> referrer_chain_data =
-      IdentifyReferrerChain(item);
+      IdentifyReferrerChain(
+          item,
+          DownloadProtectionService::GetDownloadAttributionUserGestureLimit());
 
   return std::make_unique<DownloadRequestMaker>(
       binary_feature_extractor, item.browser_context,

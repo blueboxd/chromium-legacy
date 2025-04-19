@@ -12,6 +12,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -21,7 +23,6 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Batch;
-import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.JniMocker;
@@ -29,6 +30,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.commerce.PriceTrackingUtils;
 import org.chromium.chrome.browser.commerce.PriceTrackingUtilsJni;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.price_tracking.PriceDropNotificationManager;
+import org.chromium.chrome.browser.price_tracking.PriceDropNotificationManagerFactory;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkItem;
@@ -37,7 +40,10 @@ import org.chromium.components.commerce.core.IdentifierType;
 import org.chromium.components.commerce.core.ManagementType;
 import org.chromium.components.commerce.core.ShoppingService;
 import org.chromium.components.commerce.core.SubscriptionType;
+import org.chromium.components.commerce.core.SubscriptionsObserver;
 import org.chromium.components.power_bookmarks.PowerBookmarkMeta;
+import org.chromium.components.power_bookmarks.ProductPrice;
+import org.chromium.components.power_bookmarks.ShoppingSpecifics;
 import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.shadows.ShadowAppCompatResources;
@@ -52,7 +58,6 @@ import org.chromium.url.GURL;
 @DisableFeatures(ChromeFeatureList.ANDROID_IMPROVED_BOOKMARKS)
 public class BookmarkSaveFlowMediatorTest {
     @Rule public final MockitoRule mMockitoRule = MockitoJUnit.rule();
-    @Rule public final Features.JUnitProcessor mProcessor = new Features.JUnitProcessor();
     @Rule public JniMocker mJniMocker = new JniMocker();
 
     private BookmarkSaveFlowMediator mMediator;
@@ -69,12 +74,15 @@ public class BookmarkSaveFlowMediatorTest {
     @Mock private Profile mProfile;
     @Mock private IdentityManager mIdentityManager;
     @Mock PriceTrackingUtils.Natives mMockPriceTrackingUtilsJni;
+    @Mock private PriceDropNotificationManager mMockNotificationManager;
+    @Captor private ArgumentCaptor<SubscriptionsObserver> mSubscriptionsObserverCaptor;
 
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
         mJniMocker.mock(PriceTrackingUtilsJni.TEST_HOOKS, mMockPriceTrackingUtilsJni);
         Mockito.doReturn(mResources).when(mContext).getResources();
+        PriceDropNotificationManagerFactory.setInstanceForTesting(mMockNotificationManager);
         mMediator =
                 new BookmarkSaveFlowMediator(
                         mModel,
@@ -86,6 +94,8 @@ public class BookmarkSaveFlowMediatorTest {
                         mProfile,
                         mIdentityManager);
         mMediator.setSubscriptionForTesting(mSubscription);
+        Mockito.verify(mShoppingService)
+                .addSubscriptionsObserver(mSubscriptionsObserverCaptor.capture());
     }
 
     @Test
@@ -314,5 +324,58 @@ public class BookmarkSaveFlowMediatorTest {
                         Mockito.anyBoolean(),
                         Mockito.any(),
                         Mockito.anyBoolean());
+    }
+
+    @Test
+    public void subscriptionCreatesNotificationChannel() {
+        BookmarkId bookmarkId = new BookmarkId(0, 0);
+        ShoppingSpecifics specifics =
+                ShoppingSpecifics.newBuilder()
+                        .setProductClusterId(123)
+                        .setOfferId(456)
+                        .setCountryCode("us")
+                        .setCurrentPrice(ProductPrice.newBuilder().setAmountMicros(100).build())
+                        .build();
+        PowerBookmarkMeta meta =
+                PowerBookmarkMeta.newBuilder().setShoppingSpecifics(specifics).build();
+        CommerceSubscription sub =
+                new CommerceSubscription(
+                        SubscriptionType.PRICE_TRACK,
+                        IdentifierType.PRODUCT_CLUSTER_ID,
+                        /* id= */ "123",
+                        ManagementType.USER_MANAGED,
+                        /* userSeenOffer= */ null);
+        mMediator.setSubscriptionForTesting(sub);
+        BookmarkItem item =
+                new BookmarkItem(
+                        bookmarkId,
+                        /* title= */ "",
+                        new GURL("http://example.com"),
+                        /* isFolder= */ false,
+                        /* parentId= */ new BookmarkId(1, 0),
+                        /* isEditable= */ true,
+                        /* isManaged= */ false,
+                        /* dateAdded= */ 0,
+                        /* read= */ false,
+                        /* dateLastOpened= */ 0,
+                        /* isAccountBookmark= */ false);
+        Mockito.doReturn(item).when(mModel).getBookmarkById(Mockito.any());
+        Mockito.doReturn("title").when(mModel).getBookmarkTitle(Mockito.any());
+
+        mMediator.show(bookmarkId, meta, /* fromExplicitTrackUi= */ true, false, false);
+
+        // We should see a call to subscribe to the product.
+        Mockito.verify(mMockPriceTrackingUtilsJni)
+                .setPriceTrackingStateForBookmark(
+                        Mockito.any(),
+                        Mockito.anyLong(),
+                        Mockito.eq(true),
+                        Mockito.any(),
+                        Mockito.anyBoolean());
+
+        // Simulate a successful subscription.
+        mSubscriptionsObserverCaptor.getValue().onSubscribe(sub, true);
+
+        Mockito.verify(mMockNotificationManager).createNotificationChannel();
     }
 }

@@ -5,9 +5,7 @@
 #ifndef CHROME_BROWSER_PROFILES_PROFILE_SELECTIONS_H_
 #define CHROME_BROWSER_PROFILES_PROFILE_SELECTIONS_H_
 
-#include <optional>
-
-#include "base/feature_list.h"
+#include <memory>
 
 class Profile;
 
@@ -93,7 +91,7 @@ class ProfileSelections {
   // | Regular | self       | no profile |
   // | Guest   | no profile | no profile |
   // | System  | no profile | no profile |
-  // | Ash Int.| self       | no profile |
+  // | Ash Int.| no profile | no profile |
   // +---------+------------+------------+
   static ProfileSelections BuildForRegularProfile();
 
@@ -120,7 +118,7 @@ class ProfileSelections {
   // | Regular | self       | self       |
   // | Guest   | no profile | no profile |
   // | System  | no profile | no profile |
-  // | Ash Int.| self       | self       |
+  // | Ash Int.| no profile | no profile |
   // +---------+------------+------------+
   static ProfileSelections BuildForRegularAndIncognito();
 
@@ -136,7 +134,7 @@ class ProfileSelections {
   // | Regular | self       | original   |
   // | Guest   | no profile | no profile |
   // | System  | no profile | no profile |
-  // | Ash Int.| self       | original   |
+  // | Ash Int.| no profile | no profile |
   // +---------+------------+------------+
   static ProfileSelections BuildRedirectedInIncognito();
 
@@ -163,12 +161,11 @@ class ProfileSelections {
 
   // Default value for the mapping of
   // Regular Profile -> `ProfileSelection::kOriginalOnly`
-  // Not assigning values for Guest and System Profiles defaults to
-  // `ProfileSelection::kNone`.
+  // Other Profile -> `ProfileSelection::kNone`.
   ProfileSelection regular_profile_selection_ = ProfileSelection::kOriginalOnly;
-  std::optional<ProfileSelection> guest_profile_selection_;
-  std::optional<ProfileSelection> system_profile_selection_;
-  std::optional<ProfileSelection> ash_internals_profile_selection_;
+  ProfileSelection guest_profile_selection_ = ProfileSelection::kNone;
+  ProfileSelection system_profile_selection_ = ProfileSelection::kNone;
+  ProfileSelection ash_internals_profile_selection_ = ProfileSelection::kNone;
 };
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_SELECTIONS_H_

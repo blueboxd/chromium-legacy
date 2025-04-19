@@ -5,10 +5,11 @@
 import 'chrome://history/history.js';
 
 import type {HistoryAppElement, HistoryEntry} from 'chrome://history/history.js';
-import {BrowserServiceImpl, ensureLazyLoaded} from 'chrome://history/history.js';
+import {BrowserServiceImpl, ensureLazyLoaded, HistoryEmbeddingsBrowserProxyImpl, HistoryEmbeddingsPageHandlerRemote} from 'chrome://history/history.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
+import {TestMock} from 'chrome://webui-test/test_mock.js';
 
 import {TestBrowserService} from './test_browser_service.js';
 import {createHistoryEntry, createHistoryInfo} from './test_util.js';
@@ -16,6 +17,8 @@ import {createHistoryEntry, createHistoryInfo} from './test_util.js';
 suite('history-toolbar', function() {
   let app: HistoryAppElement;
   let testService: TestBrowserService;
+  let embeddingsHandler: TestMock<HistoryEmbeddingsPageHandlerRemote>&
+      HistoryEmbeddingsPageHandlerRemote;
   const TEST_HISTORY_RESULTS: [HistoryEntry] =
       [createHistoryEntry('2016-03-15', 'https://google.com')];
 
@@ -23,6 +26,11 @@ suite('history-toolbar', function() {
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
     testService = new TestBrowserService();
     BrowserServiceImpl.setInstance(testService);
+    embeddingsHandler = TestMock.fromClass(HistoryEmbeddingsPageHandlerRemote);
+    HistoryEmbeddingsBrowserProxyImpl.setInstance(
+        new HistoryEmbeddingsBrowserProxyImpl(embeddingsHandler));
+    embeddingsHandler.setResultFor(
+        'search', Promise.resolve({result: {items: []}}));
 
     app = document.createElement('history-app');
     document.body.appendChild(app);
@@ -118,5 +126,38 @@ suite('history-toolbar', function() {
     // Synced tabs page should have the default icon.
     toolbar.selectedPage = 'syncedTabs';
     assertEquals(undefined, toolbar.$.mainToolbar.searchIconOverride);
+  });
+
+  test('updates search input aria-description', async () => {
+    function createToolbar() {
+      const toolbar = document.createElement('history-toolbar');
+      document.body.appendChild(toolbar);
+      return toolbar;
+    }
+
+    // Without history embeddings enabled, description should be empty.
+    loadTimeData.overrideValues({enableHistoryEmbeddings: false});
+    let toolbar = createToolbar();
+    await flushTasks();
+    toolbar.selectedPage = 'history';
+    assertEquals('', toolbar.$.mainToolbar.searchInputAriaDescription);
+
+    // With history embeddings enabled, description should change.
+    loadTimeData.overrideValues({
+      enableHistoryEmbeddings: true,
+      historyEmbeddingsDisclaimer: 'some disclaimer',
+    });
+    toolbar = createToolbar();
+    await flushTasks();
+    toolbar.selectedPage = 'history';
+    assertEquals(
+        'some disclaimer', toolbar.$.mainToolbar.searchInputAriaDescription);
+    toolbar.selectedPage = 'grouped';
+    assertEquals(
+        'some disclaimer', toolbar.$.mainToolbar.searchInputAriaDescription);
+
+    // Synced tabs page should have no description.
+    toolbar.selectedPage = 'syncedTabs';
+    assertEquals(undefined, toolbar.$.mainToolbar.searchInputAriaDescription);
   });
 });

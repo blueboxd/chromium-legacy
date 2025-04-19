@@ -10,11 +10,24 @@
 
 namespace user_education::features {
 
+// Command-line switch that disables rate limiting in User Education, like the
+// new profile grace period and the heavyweight IPH cooldown.
+//
+// For testing purposes, strongly prefer to inherit from
+// `InteractiveFeaturePromoTest`, but this is not possible for unit tests, so
+// this is provided as a public constant for convenience.
+inline constexpr char kDisableRateLimitingCommandLine[] =
+    "disable-user-education-rate-limiting";
+
 BASE_DECLARE_FEATURE(kUserEducationExperienceVersion2);
 BASE_DECLARE_FEATURE(kNewBadgeTestFeature);
+BASE_DECLARE_FEATURE(kWhatsNewVersion2);
 
 // Returns whether User Education Version 2 policies are enabled.
 extern bool IsUserEducationV2();
+
+// Returns whether What's New Version 2 is enabled.
+extern bool IsWhatsNewV2();
 
 // Returns the minimum amount of time a session must last. If this is less than
 // `GetIdleTimeBetweenSessions()` then it will have no effect.
@@ -31,6 +44,10 @@ extern base::TimeDelta GetSessionStartGracePeriod();
 // Gets the amount of time that must pass after a heavyweight promo before a
 // low-priority heavyweight promo can be shown.
 extern base::TimeDelta GetLowPriorityCooldown();
+
+// Gets the amount of time after a new profile is created on a device before
+// most low-priority user education primitives can be displayed.
+extern base::TimeDelta GetNewProfileGracePeriod();
 
 // Gets the minimum amount of time from when an IPH is snoozed until it can be
 // shown again. For low-priority IPH, if this is shorter than

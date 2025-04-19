@@ -70,7 +70,6 @@
 #include "extensions/renderer/extensions_renderer_client.h"
 #include "extensions/renderer/ipc_message_sender.h"
 #include "extensions/renderer/isolated_world_manager.h"
-#include "extensions/renderer/logging_native_handler.h"
 #include "extensions/renderer/module_system.h"
 #include "extensions/renderer/native_extension_bindings_system.h"
 #include "extensions/renderer/renderer_extension_registry.h"
@@ -83,7 +82,6 @@
 #include "extensions/renderer/static_v8_external_one_byte_string_resource.h"
 #include "extensions/renderer/trace_util.h"
 #include "extensions/renderer/v8_helpers.h"
-#include "extensions/renderer/wake_event_page.h"
 #include "extensions/renderer/worker_script_context_set.h"
 #include "extensions/renderer/worker_thread_dispatcher.h"
 #include "extensions/renderer/worker_thread_util.h"
@@ -122,16 +120,31 @@ namespace {
 static const char kOnSuspendEvent[] = "runtime.onSuspend";
 static const char kOnSuspendCanceledEvent[] = "runtime.onSuspendCanceled";
 
-void LogOnException(const std::string& from, const v8::TryCatch& try_catch) {
-  // Try to grab the v8 error message. In some cases, this may be empty.
-  // This is called synchronously from a script evaluation failing, so the
-  // current isolate is correct.
-  std::string v8_error_message =
-      try_catch.Message().IsEmpty()
-          ? "<unknown error>"
-          : gin::V8ToString(v8::Isolate::GetCurrent(),
-                            try_catch.Message()->Get());
-  LOG(ERROR) << "Unexpected error in \"" << from << "\": " << v8_error_message;
+// Returns whether or not extension APIs are allowed for the specified
+// `script_url` and `scope`. The script must be specified in the extension's
+// manifest background section and the scope must be the root scope of the
+// extension.
+bool ExtensionAPIEnabledForServiceWorkerScript(const GURL& scope,
+                                               const GURL& script_url) {
+  if (!script_url.SchemeIs(kExtensionScheme)) {
+    return false;
+  }
+
+  const Extension* extension =
+      RendererExtensionRegistry::Get()->GetExtensionOrAppByURL(script_url);
+
+  if (!extension || !BackgroundInfo::IsServiceWorkerBased(extension)) {
+    return false;
+  }
+
+  if (scope != extension->url()) {
+    return false;
+  }
+
+  const std::string& sw_script =
+      BackgroundInfo::GetBackgroundServiceWorkerScript(extension);
+
+  return extension->GetResourceURL(sw_script) == script_url;
 }
 
 // Calls a method |method_name| in a module |module_name| belonging to the
@@ -310,6 +323,18 @@ WorkerScriptContextSet* Dispatcher::GetWorkerScriptContextSet() {
   return &(g_worker_script_context_set.Get());
 }
 
+// static
+bool Dispatcher::ShouldNotifyServiceWorkerOnWebSocketActivity(
+    v8::Local<v8::Context> v8_context) {
+  ScriptContext* script_context =
+      GetWorkerScriptContextSet()->GetContextByV8Context(v8_context);
+  // Only notify on web socket activity if the service worker is the background
+  // service worker for an extension.
+  return script_context &&
+         ExtensionAPIEnabledForServiceWorkerScript(
+             script_context->service_worker_scope(), script_context->url());
+}
+
 void Dispatcher::OnRenderThreadStarted(content::RenderThread* thread) {
   blink::WebScriptController::RegisterExtension(
       SafeBuiltins::CreateV8Extension());
@@ -479,8 +504,7 @@ void Dispatcher::WillEvaluateServiceWorkerOnWorkerThread(
     // - Hold onto the v8::Context and create the ScriptContext and install
     //   our bindings when this extension is loaded.
     // - Deal with there being an extension ID (script_url.host()) but no
-    //   extension associated with it, then document that getBackgroundClient
-    //   may fail if the extension hasn't loaded yet.
+    //   extension associated with it.
     //
     // The former is safer, but is unfriendly to caching (e.g. session restore).
     // It seems to contradict the service worker idiom.
@@ -496,8 +520,15 @@ void Dispatcher::WillEvaluateServiceWorkerOnWorkerThread(
     // won't work before that event has fired?
     return;
   }
+
+  if (!ExtensionAPIEnabledForServiceWorkerScript(service_worker_scope,
+                                                 script_url)) {
+    return;
+  }
+
   const int thread_id = content::WorkerThread::GetCurrentId();
   CHECK_NE(thread_id, kMainThreadId);
+
   // Only the script specific in the manifest's background data gets bindings.
   //
   // TODO(crbug.com/40626913): We may want to give other service workers
@@ -517,99 +548,39 @@ void Dispatcher::WillEvaluateServiceWorkerOnWorkerThread(
       RendererExtensionRegistry::Get()->GetWorkerActivationToken(
           extension->id());
 
-  if (ExtensionsRendererClient::Get()
-          ->ExtensionAPIEnabledForServiceWorkerScript(service_worker_scope,
-                                                      script_url)) {
-    std::unique_ptr<IPCMessageSender> ipc_sender =
-        IPCMessageSender::CreateWorkerThreadIPCMessageSender(
-            worker_dispatcher, context_proxy, service_worker_version_id);
-    CHECK(worker_activation_token.has_value());
-    worker_dispatcher->AddWorkerData(
-        context_proxy, service_worker_version_id, worker_activation_token,
-        context,
-        CreateBindingsSystem(worker_dispatcher, std::move(ipc_sender)));
+  std::unique_ptr<IPCMessageSender> ipc_sender =
+      IPCMessageSender::CreateWorkerThreadIPCMessageSender(
+          worker_dispatcher, context_proxy, service_worker_version_id);
+  CHECK(worker_activation_token.has_value());
+  worker_dispatcher->AddWorkerData(
+      context_proxy, service_worker_version_id, worker_activation_token,
+      context, CreateBindingsSystem(worker_dispatcher, std::move(ipc_sender)));
 
-    // TODO(lazyboy): Make sure accessing |source_map_| in worker thread is
-    // safe.
-    context->SetModuleSystem(
-        std::make_unique<ModuleSystem>(context, &source_map_));
+  // TODO(lazyboy): Make sure accessing |source_map_| in worker thread is
+  // safe.
+  context->SetModuleSystem(
+      std::make_unique<ModuleSystem>(context, &source_map_));
 
-    ModuleSystem* module_system = context->module_system();
-    // Enable natives in startup.
-    ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system);
-    NativeExtensionBindingsSystem* worker_bindings_system =
-        WorkerThreadDispatcher::GetBindingsSystem();
-    RegisterNativeHandlers(module_system, context, worker_bindings_system,
-                           WorkerThreadDispatcher::GetV8SchemaRegistry());
+  ModuleSystem* module_system = context->module_system();
+  // Enable natives in startup.
+  ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system);
+  NativeExtensionBindingsSystem* worker_bindings_system =
+      WorkerThreadDispatcher::GetBindingsSystem();
+  RegisterNativeHandlers(module_system, context, worker_bindings_system,
+                         WorkerThreadDispatcher::GetV8SchemaRegistry());
 
-    worker_bindings_system->DidCreateScriptContext(context);
+  worker_bindings_system->DidCreateScriptContext(context);
 
-    // TODO(lazyboy): Get rid of RequireGuestViewModules() as this doesn't seem
-    // necessary for Extension SW.
-    RequireGuestViewModules(context);
-  } else {
-    // For ServiceWorkers that do not have native bindings API attached we
-    // still create the WorkerData as native logging and wake event page
-    // will still be bound below.
-    worker_dispatcher->AddWorkerData(context_proxy, service_worker_version_id,
-                                     worker_activation_token, context, nullptr);
-  }
+  // TODO(lazyboy): Get rid of RequireGuestViewModules() as this doesn't seem
+  // necessary for Extension SW.
+  RequireGuestViewModules(context);
+
   WorkerThreadDispatcher::GetServiceWorkerData()->Init();
   g_worker_script_context_set.Get().Insert(base::WrapUnique(context));
 
-  v8::Isolate* isolate = context->isolate();
-
-  // Fetch the source code for service_worker_bindings.js.
-  std::string_view script_resource =
-      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_SERVICE_WORKER_BINDINGS_JS);
-  v8::Local<v8::String> script =
-      v8::String::NewExternalOneByte(
-          isolate, new StaticV8ExternalOneByteStringResource(script_resource))
-          .ToLocalChecked();
-
-  // Run service_worker.js to get the main function.
-  v8::Local<v8::Function> main_function;
-  {
-    // This *should* always succeed and always be a function (because the
-    // script is included as part of Chrome). However, it may not be in the
-    // case of e.g. binary corruption, or if certain JS hooks ran before the
-    // script (though that should be rare, since this is running right after
-    // the context is created).
-    // https://crbug.com/1260773 and https://crbug.com/41487802.
-    v8::Local<v8::Value> result = context->RunScript(
-        v8_helpers::ToV8StringUnsafe(isolate, "service_worker"), script,
-        base::BindOnce(&LogOnException, "service worker internal script"));
-    if (!result->IsFunction()) {
-      LOG(ERROR) << "Unexpected result from service worker internal script.";
-      return;
-    }
-    main_function = result.As<v8::Function>();
-  }
-
-  // Expose CHECK/DCHECK/NOTREACHED to the main function with a
-  // LoggingNativeHandler. Admire the neat base::Bind trick to both Invalidate
-  // and delete the native handler.
-  LoggingNativeHandler* logging = new LoggingNativeHandler(context);
-  logging->Initialize();
-  context->AddInvalidationObserver(
-      base::BindOnce(&NativeHandler::Invalidate, base::Owned(logging)));
-
-  // Execute the main function with its dependencies passed in as arguments.
-  v8::Local<v8::Value> args[] = {
-      // The extension's background URL.
-      v8_helpers::ToV8StringUnsafe(
-          isolate, BackgroundInfo::GetBackgroundURL(extension).spec()),
-      // The wake-event-page native function.
-      WakeEventPage::GetForContext(context),
-      // The logging module.
-      logging->NewInstance(),
-  };
-  context->SafeCallFunction(main_function, std::size(args), args);
-
   const base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
   UMA_HISTOGRAM_TIMES(
-      "Extensions.DidInitializeServiceWorkerContextOnWorkerThread", elapsed);
+      "Extensions.DidInitializeServiceWorkerContextOnWorkerThread2", elapsed);
 }
 
 void Dispatcher::WillReleaseScriptContext(
@@ -629,10 +600,10 @@ void Dispatcher::DidStartServiceWorkerContextOnWorkerThread(
     int64_t service_worker_version_id,
     const GURL& service_worker_scope,
     const GURL& script_url) {
-  if (!ExtensionsRendererClient::Get()
-           ->ExtensionAPIEnabledForServiceWorkerScript(service_worker_scope,
-                                                       script_url))
+  if (!ExtensionAPIEnabledForServiceWorkerScript(service_worker_scope,
+                                                 script_url)) {
     return;
+  }
 
   const int thread_id = content::WorkerThread::GetCurrentId();
   CHECK_NE(thread_id, kMainThreadId);

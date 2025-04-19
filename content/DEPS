@@ -29,9 +29,9 @@ include_rules = [
   "+components/browsing_topics/common",
   "+components/input",
   "+components/memory_pressure",
-  "+components/ml/mojom",
   "+components/services/filesystem",
   "+components/services/font/public",
+  "+components/services/font_data/public",
   "+components/startup_metric_utils",
   "+components/variations",
   "+components/value_store",
@@ -123,6 +123,7 @@ include_rules = [
   "+storage/common",
 
   # For generated JNI includes.
+  "+content/public/android/common_jni",
   "+content/public/android/content_jni_headers",
   "+content/public/android/content_main_dex_jni",
   "+content/public/android/jar_jni",

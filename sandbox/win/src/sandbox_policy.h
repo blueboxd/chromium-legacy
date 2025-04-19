@@ -9,7 +9,6 @@
 #include <stdint.h>
 
 #include "base/containers/span.h"
-#include "base/memory/scoped_refptr.h"
 #include "sandbox/win/src/sandbox_types.h"
 #include "sandbox/win/src/security_level.h"
 
@@ -46,6 +45,15 @@ enum class HandleToClose {
   kKsecDD,
   // Closes all handles of type `ALPC Port` and closes the Csrss heap.
   kDisconnectCsrss,
+};
+
+// Specifies how to register an AppContainer profile if it doesn't already
+// exist.
+enum class ACProfileRegistration {
+  // Use the default registration.
+  kDefault,
+  // Create the profile without registering with the firewall.
+  kNoFirewall
 };
 
 // Policy configuration that can be shared over multiple targets of the same tag
@@ -219,15 +227,17 @@ class [[clang::lto_visibility_public]] TargetConfig {
   virtual void SetLockdownDefaultDacl() = 0;
 
   // Configure policy to use an AppContainer profile. |package_name| is the
-  // name of the profile to use. Specifying True for |create_profile| ensures
-  // the profile exists, if set to False process creation will fail if the
-  // profile has not already been created.
+  // name of the profile to use. Specifying kDefault for |registration| will
+  // use the default mechanism to register the profile if it doesn't already
+  // exist. Specifying kNoFirewall will create the profile without registering
+  // it with the firewall service which reduces system impact.
   [[nodiscard]] virtual ResultCode AddAppContainerProfile(
       const wchar_t* package_name,
-      bool create_profile) = 0;
+      ACProfileRegistration registration) = 0;
 
-  // Get the configured AppContainer.
-  virtual scoped_refptr<AppContainer> GetAppContainer() = 0;
+  // Get the configured AppContainer. The returned object lasts only as long as
+  // the containing TargetConfig.
+  virtual AppContainer* GetAppContainer() = 0;
 
   // Adds a handle type to close in the child. See HandleToClose for supported
   // types.

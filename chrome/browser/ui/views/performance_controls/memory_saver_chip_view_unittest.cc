@@ -11,9 +11,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom-shared.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
+#include "chrome/browser/ui/browser_window/public/browser_window_features.h"
 #include "chrome/browser/ui/performance_controls/memory_saver_chip_tab_helper.h"
 #include "chrome/browser/ui/performance_controls/performance_controls_metrics.h"
-#include "chrome/browser/ui/side_panel/side_panel_ui.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/views/side_panel/side_panel.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_coordinator.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_entry.h"
+#include "chrome/browser/ui/views/side_panel/side_panel_ui.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/performance_manager/public/features.h"
@@ -280,45 +281,4 @@ TEST_F(MemorySaverChipViewTest, MoreThan2GbMemorySavings) {
   EXPECT_EQ(tab_helper->chip_state(),
             memory_saver::ChipState::EXPANDED_WITH_SAVINGS);
   EXPECT_TRUE(GetPageActionIconView()->GetVisible());
-}
-
-class MemorySaverChipViewWithPerformanceSidePanelTest
-    : public MemorySaverChipViewTest {
- public:
-  MemorySaverChipViewWithPerformanceSidePanelTest() = default;
-
-  void SetUp() override {
-    feature_list_.InitWithFeatures(
-        /*enabled_features=*/{performance_manager::features::
-                                  kPerformanceControlsSidePanel},
-        /*disabled_features=*/{});
-    TestWithBrowserView::SetUp();
-
-    AddNewTab(kMemorySavingsKilobytes,
-              ::mojom::LifecycleUnitDiscardReason::PROACTIVE);
-
-    SetMemorySaverModeEnabled(true);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-TEST_F(MemorySaverChipViewWithPerformanceSidePanelTest, OpensSidePanel) {
-  SidePanelUtil::GetSidePanelCoordinatorForBrowser(browser())
-      ->SetNoDelaysForTesting(true);
-  SetTabDiscardState(0, true);
-  EXPECT_TRUE(GetPageActionIconView()->GetVisible());
-
-  ASSERT_FALSE(SidePanelUtil::GetSidePanelCoordinatorForBrowser(browser())
-                   ->IsSidePanelShowing());
-
-  PageActionIconView* memory_saver_chip = GetPageActionIconView();
-  ui::MouseEvent e(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-                   ui::EventTimeForNow(), 0, 0);
-  views::test::ButtonTestApi test_api(memory_saver_chip);
-  test_api.NotifyClick(e);
-
-  ASSERT_TRUE(SidePanelUtil::GetSidePanelCoordinatorForBrowser(browser())
-                  ->IsSidePanelShowing());
 }

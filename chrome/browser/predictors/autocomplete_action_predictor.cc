@@ -52,8 +52,7 @@ void SetIsNavigationInDomainCallback(content::PreloadingData* preloading_data) {
                    ui::PageTransitionCoreTypeIs(
                        transition_type,
                        ui::PageTransition::PAGE_TRANSITION_TYPED) &&
-                   ui::PageTransitionIsNewNavigation(
-                       navigation_handle->GetPageTransition());
+                   ui::PageTransitionIsNewNavigation(transition_type);
           }));
 }
 }  // namespace
@@ -210,16 +209,13 @@ void AutocompleteActionPredictor::StartPrerendering(
 
   SetIsNavigationInDomainCallback(preloading_data);
 
-  if (!prerender_utils::IsDirectUrlInputPrerenderEnabled()) {
-    return;
-  }
-
   // Create new PreloadingAttempt and pass all the values corresponding to this
   // prerendering attempt for Prerender.
   content::PreloadingAttempt* preloading_attempt =
       preloading_data->AddPreloadingAttempt(
           chrome_preloading_predictor::kOmniboxDirectURLInput,
           content::PreloadingType::kPrerender, std::move(same_url_matcher),
+          /*planned_max_preloading_type=*/std::nullopt,
           web_contents.GetPrimaryMainFrame()->GetPageUkmSourceId());
 
   PrerenderManager::CreateForWebContents(&web_contents);

@@ -6,24 +6,6 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-static_library("list_family_members_service") {
-  sources = [
-    "list_family_members_service.cc",
-    "list_family_members_service.h",
-  ]
-
-  deps = [
-    ":fetcher",
-    ":fetcher_config",
-    "//base",
-    "//components/keyed_service/core",
-    "//components/prefs",
-    "//components/signin/public/identity_manager",
-    "//components/supervised_user/core/browser/proto",
-    "//components/supervised_user/core/common:features",
-  ]
-}
-
 static_library("fetcher_config") {
   sources = [
     "fetcher_config.cc",
@@ -67,6 +49,7 @@ static_library("fetcher") {
     "//components/supervised_user/core/browser/proto:test_support",
     "//components/supervised_user/core/common",
     "//google_apis",
+    "//google_apis/common:request_util",
     "//net/traffic_annotation",
     "//url",
   ]
@@ -80,6 +63,8 @@ static_library("browser") {
     "family_link_user_log_record.h",
     "kids_chrome_management_url_checker_client.cc",
     "kids_chrome_management_url_checker_client.h",
+    "list_family_members_service.cc",
+    "list_family_members_service.h",
     "permission_request_creator.h",
     "permission_request_creator_impl.cc",
     "permission_request_creator_impl.h",
@@ -102,8 +87,8 @@ static_library("browser") {
     "supervised_user_service.cc",
     "supervised_user_service.h",
     "supervised_user_service_observer.h",
-    "supervised_user_settings_model_type_controller.cc",
-    "supervised_user_settings_model_type_controller.h",
+    "supervised_user_settings_data_type_controller.cc",
+    "supervised_user_settings_data_type_controller.h",
     "supervised_user_settings_service.cc",
     "supervised_user_settings_service.h",
     "supervised_user_url_filter.cc",
@@ -130,13 +115,13 @@ static_library("browser") {
   deps = [
     ":fetcher",
     ":fetcher_config",
-    ":list_family_members_service",
     "//base",
     "//components/content_settings/core/browser",
     "//components/feed/core/shared_prefs:feed_shared_prefs",
     "//components/google/core/common",
     "//components/prefs",
     "//components/resources:components_resources",
+    "//components/signin/internal/identity_manager",
     "//components/signin/public/base",
     "//components/signin/public/identity_manager",
     "//components/strings:components_strings_grit",
@@ -151,10 +136,6 @@ static_library("browser") {
     "//ui/base",
     "//url",
   ]
-
-  if (is_android) {
-    deps += [ "//components/supervised_user/android:supervised_user_preferences_jni_headers" ]
-  }
 }
 
 if (is_android) {
@@ -174,13 +155,14 @@ source_set("unit_tests") {
     "list_family_members_service_unittest.cc",
     "proto_fetcher_unittest.cc",
     "remote_web_approvals_manager_unittest.cc",
+    "supervised_user_capabilities_unittest.cc",
     "supervised_user_content_settings_provider_unittest.cc",
     "supervised_user_error_page_unittest.cc",
     "supervised_user_metrics_service_unittest.cc",
     "supervised_user_pref_store_unittest.cc",
     "supervised_user_preferences_unittest.cc",
     "supervised_user_service_unittest.cc",
-    "supervised_user_settings_model_type_controller_unittest.cc",
+    "supervised_user_settings_data_type_controller_unittest.cc",
     "supervised_user_settings_service_unittest.cc",
     "supervised_user_url_filter_unittest.cc",
     "supervised_user_utils_unittest.cc",
@@ -190,7 +172,6 @@ source_set("unit_tests") {
     ":browser",
     ":fetcher",
     ":fetcher_config",
-    ":list_family_members_service",
     "//base",
     "//base/test:test_support",
     "//components/content_settings/core/browser:test_support",
@@ -209,6 +190,7 @@ source_set("unit_tests") {
     "//components/supervised_user/test_support",
     "//components/sync:test_support",
     "//components/sync_preferences:test_support",
+    "//google_apis/common:test_support",
     "//services/network:test_support",
     "//testing/gmock",
     "//testing/gtest",

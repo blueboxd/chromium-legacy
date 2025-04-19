@@ -10,6 +10,7 @@
 #include "base/containers/flat_map.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/types/pass_key.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/common/aliases.h"
@@ -23,7 +24,12 @@ namespace autofill {
 
 class FormStructure;
 class AutofillClient;
+class AutofillDriverFactory;
 class AutofillManager;
+
+namespace internal {
+class FormForest;
+}
 
 // AutofillDriver is Autofill's lowest-level abstraction of a frame that is
 // shared among all platforms.
@@ -52,7 +58,72 @@ class AutofillManager;
 // respectively, which own the AutofillDrivers.
 class AutofillDriver {
  public:
-  virtual ~AutofillDriver() = default;
+  // An AutofillDriver's LifecycleState indicates whether its content is
+  // currently presented to the user. It closely follows
+  // content::RenderFrameHost's LifecycleState but collapses inactive states.
+  //
+  // State changes must not happen during construction or destruction.
+  //
+  // State changes fire events in AutofillManager::Observer.
+  //
+  // The possible transitions are:
+  //
+  //   ╭───────────────────────────╮
+  //   │                           ▼
+  // kInactive ◄──► kActive ──► kPendingDeletion
+  //   ▲                ▲
+  //   │                ╰─────► kPendingReset
+  //   ╰──────────────────────► kPendingReset
+  //
+  // The initial state is kInactive.
+  //
+  // Transitions from kPendingReset can only return to the previous state.
+  // Transitions between kInactive and kPendingReset only happen if the frame is
+  // prerendering.
+  // TODO: crbug.com/342132628 - Such transitions won't be possible anymore when
+  // prerendered CADs are deferred.
+  //
+  // Common behavior very shortly after the AutofillDriver's creation is the
+  // following:
+  // 1. It transitions to kActive.
+  //    That happens unless the document is prerendering.
+  // 2. It transitions to kPendingReset and then back to its previous state,
+  //    kActive or kInactive. That happens on non-iOS when the frame does its
+  //    first navigation, which is just a special case of a navigation that the
+  //    AutofillDriver survives.
+  enum class LifecycleState {
+    // The AutofillDriver corresponds to a frame that is currently not
+    // displayed to the user, either because it is being prerendered or because
+    // it is BFCached.
+    kInactive,
+    // The AutofillDriver corresponds to a frame that is being displayed.
+    kActive,
+    // The AutofillDriver is about to be reset because the document in its
+    // associated driver is about to change.
+    kPendingReset,
+    // The destructor of AutofillDriver and its associated AutofillDriver are
+    // about to begin. The AutofillDriver is still fully intact at this point.
+    kPendingDeletion,
+  };
+
+  virtual ~AutofillDriver();
+
+  // The current state of the driver. See LifecycleState for details.
+  LifecycleState GetLifecycleState() const { return lifecycle_state_; }
+
+  // Sets the new lifecycle state.
+  //
+  // AutofillDriverFactory (not AutofillDriver) manages the lifecycle because it
+  // is easiest for the factory to coordinate the different phases:
+  // - construct the driver,
+  // - set lifecycle state change,
+  // - notify observers,
+  // - destruct the driver.
+  void SetLifecycleState(LifecycleState new_state,
+                         base::PassKey<AutofillDriverFactory> pass_key) {
+    DCHECK_NE(lifecycle_state_, new_state);
+    lifecycle_state_ = new_state;
+  }
 
   // Returns the uniquely identifying frame token.
   virtual LocalFrameToken GetFrameToken() const = 0;
@@ -79,7 +150,7 @@ class AutofillDriver {
 
   // Returns whether the AutofillDriver instance is associated with an active
   // frame in the MPArch sense.
-  virtual bool IsInActiveFrame() const = 0;
+  virtual bool IsActive() const = 0;
 
   // Returns whether the AutofillDriver instance is associated with a main
   // frame, in the MPArch sense. This can be a primary or non-primary main
@@ -91,12 +162,20 @@ class AutofillDriver {
   // The main frame may pass it on to its children.
   virtual bool HasSharedAutofillPermission() const = 0;
 
-  // Returns the IsolationInfo of the associated frame.
-  virtual net::IsolationInfo IsolationInfo() = 0;
+  // Returns the IsolationInfo of the associated frame. May be nullopt if the
+  // IsolationInfo is not used (for example, on iOS).
+  virtual std::optional<net::IsolationInfo> GetIsolationInfo() = 0;
 
   // Returns true iff a popup can be shown on the behalf of the associated
   // frame.
   virtual bool CanShowAutofillUi() const = 0;
+
+  class AutofillDriverRouterAndFormForestPassKey {
+    friend class AutofillDriverRouter;
+    friend class internal::FormForest;
+    friend class AutofillDriverTestApi;
+    AutofillDriverRouterAndFormForestPassKey() = default;
+  };
 
   // Triggers a form extraction of the new forms in the AutofillAgent. This is
   // necessary when a form is seen in a child frame and it is not known which
@@ -116,7 +195,8 @@ class AutofillDriver {
   // form's FormData::child_frames may be outdated. When a form is now seen in
   // the child frame, it is not known *which form* in the parent frame is its
   // parent form. In this scenario, a form extraction should be triggered.
-  virtual void TriggerFormExtractionInDriverFrame() = 0;
+  virtual void TriggerFormExtractionInDriverFrame(
+      AutofillDriverRouterAndFormForestPassKey pass_key) = 0;
 
   // Triggers a form_extraction on all frames of the same frame tree. Calls
   // `form_extraction_finished_callback` when all frames reported back
@@ -185,7 +265,7 @@ class AutofillDriver {
   virtual base::flat_set<FieldGlobalId> ApplyFormAction(
       mojom::FormActionType action_type,
       mojom::ActionPersistence action_persistence,
-      const FormData& form,
+      base::span<const FormFieldData> data,
       const url::Origin& triggered_origin,
       const base::flat_map<FieldGlobalId, FieldType>& field_type_map) = 0;
 
@@ -199,7 +279,7 @@ class AutofillDriver {
   // Sends the field type predictions specified in |forms| to the renderer. This
   // method is a no-op if the renderer is not available or the appropriate
   // command-line flag is not set.
-  virtual void SendAutofillTypePredictionsToRenderer(
+  virtual void SendTypePredictionsToRenderer(
       const std::vector<raw_ptr<FormStructure, VectorExperimental>>& forms) = 0;
 
   // Tells the renderer to accept data list suggestions for |value|.
@@ -227,6 +307,11 @@ class AutofillDriver {
   virtual void GetFourDigitCombinationsFromDOM(
       base::OnceCallback<void(const std::vector<std::string>&)>
           potential_matches) = 0;
+
+ private:
+  friend class AutofillDriverTestApi;
+
+  LifecycleState lifecycle_state_ = LifecycleState::kInactive;
 };
 
 }  // namespace autofill

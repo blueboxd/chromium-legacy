@@ -39,9 +39,6 @@ import org.chromium.base.ResettersForTesting;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.compat.ApiHelperForO;
-import org.chromium.base.compat.ApiHelperForP;
-import org.chromium.base.compat.ApiHelperForS;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.components.url_formatter.UrlFormatter;
@@ -52,6 +49,7 @@ import org.chromium.url.GURL;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -74,6 +72,9 @@ public class ClipboardImpl extends Clipboard
 
     // This mime type annotates that clipboard contains a PNG image.
     private static final String PNG_MIME_TYPE = "image/png";
+
+    // Separator for multiple filenames in text/uri-list.
+    private static final String FILENAMES_LIST_SEP = "\r\n";
 
     private static @Nullable Boolean sSkipImageMimeTypeCheckForTesting;
 
@@ -190,11 +191,12 @@ public class ClipboardImpl extends Clipboard
             // If getClassificationStatus() is not CLASSIFICATION_COMPLETE,
             // ClipDescription#getConfidenceScore will trows exception.
             if (!description.hasMimeType(TEXT_MIME_TYPE)
-                    || !ApiHelperForS.isGetClassificationStatusIsComplete(description)) {
+                    || !(description.getClassificationStatus()
+                            == ClipDescription.CLASSIFICATION_COMPLETE)) {
                 return false;
             }
 
-            float score = ApiHelperForS.getConfidenceScore(description, TextClassifier.TYPE_URL);
+            float score = description.getConfidenceScore(TextClassifier.TYPE_URL);
             return score > CONFIDENCE_THRESHOLD_FOR_URL_DETECTION;
         } else {
             GURL url = new GURL(getCoercedText());
@@ -216,7 +218,7 @@ public class ClipboardImpl extends Clipboard
                 firstLinkText = getCoercedText();
             } else {
                 ClipData.Item item = clipData.getItemAt(0);
-                TextLinks textLinks = ApiHelperForS.getTextLinks(item);
+                TextLinks textLinks = item.getTextLinks();
                 if (textLinks == null || textLinks.getLinks().isEmpty()) return null;
 
                 CharSequence fullText = item.getText();
@@ -368,7 +370,44 @@ public class ClipboardImpl extends Clipboard
             return ImageFileProvider.ClipboardFileMetadata.INVALID_TIMESTAMP;
         }
 
-        return ApiHelperForO.getTimestamp(description);
+        return description.getTimestamp();
+    }
+
+    @Override
+    protected String getFilenames() {
+        // getPrimaryClip() has been observed to throw unexpected exceptions for some devices (see
+        // crbug/654802 and b/31501780)
+        try {
+            ClipData clipData = mClipboardManager.getPrimaryClip();
+            List<String> uris = new ArrayList<String>();
+            for (int i = 0; i < clipData.getItemCount(); i++) {
+                Uri uri = clipData.getItemAt(i).getUri();
+                if (uri != null) {
+                    uris.add(uri.toString());
+                }
+            }
+            return !uris.isEmpty() ? String.join(FILENAMES_LIST_SEP, uris) : null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    @Override
+    public boolean hasFilenames() {
+        // getPrimaryClip() has been observed to throw unexpected exceptions for some devices (see
+        // crbug/654802 and b/31501780)
+        try {
+            ClipData clipData = mClipboardManager.getPrimaryClip();
+            for (int i = 0; i < clipData.getItemCount(); i++) {
+                Uri uri = clipData.getItemAt(i).getUri();
+                if (uri != null) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     @Override
@@ -470,6 +509,38 @@ public class ClipboardImpl extends Clipboard
     }
 
     @Override
+    public void setFilenames(final String uriList) {
+        // Split uriList on `\r\n`, then add any valid URIs to ClipData.
+        String[] uris = uriList != null ? uriList.split(FILENAMES_LIST_SEP) : new String[0];
+        ClipData clipData = null;
+        ContentResolver cr = ContextUtils.getApplicationContext().getContentResolver();
+        for (int i = 0; i < uris.length; i++) {
+            String str = uris[i].trim();
+            Uri uri = null;
+            if (!str.isEmpty()) {
+                try {
+                    uri = Uri.parse(str);
+                } catch (Exception e) {
+                    // Handle null uri below.
+                }
+            }
+            if (uri == null) {
+                continue;
+            }
+            if (clipData == null) {
+                clipData = ClipData.newUri(cr, null, uri);
+            } else {
+                clipData.addItem(cr, new ClipData.Item(uri));
+            }
+        }
+        if (clipData != null) {
+            setPrimaryClipNoException(clipData);
+        } else {
+            clear();
+        }
+    }
+
+    @Override
     protected void clear() {
         // clearPrimaryClip() has been observed to throw unexpected exceptions for Android P (see
         // crbug/1203377)
@@ -479,7 +550,7 @@ public class ClipboardImpl extends Clipboard
         }
 
         try {
-            ApiHelperForP.clearPrimaryClip(mClipboardManager);
+            mClipboardManager.clearPrimaryClip();
         } catch (Exception e) {
             // Fall back to set an empty string to the clipboard.
             setPrimaryClipNoException(ClipData.newPlainText(null, null));
@@ -555,7 +626,7 @@ public class ClipboardImpl extends Clipboard
         ClipDescription clipDescription = mClipboardManager.getPrimaryClipDescription();
         if (clipDescription == null) return;
 
-        long timestamp = ApiHelperForO.getTimestamp(clipDescription);
+        long timestamp = clipDescription.getTimestamp();
         notifyPrimaryClipTimestampInvalidated(timestamp);
     }
 
@@ -648,12 +719,13 @@ public class ClipboardImpl extends Clipboard
 
     /**
      * Check Whether the ClipDescription has stypled text.
+     *
      * @param description The {@link ClipDescription} to check if it has stytled text.
      * @return True if the system clipboard contain a styled text, otherwise, false.
      */
     private boolean hasStyledText(ClipDescription description) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            return ApiHelperForS.isStyleText(description);
+            return description.isStyledText();
         } else {
             return hasStyledTextOnPreS();
         }

@@ -15,6 +15,8 @@
 #include "base/containers/flat_set.h"
 #include "base/time/time.h"
 #include "base/uuid.h"
+#include "components/attribution_reporting/aggregatable_debug_reporting_config.h"
+#include "components/attribution_reporting/aggregatable_filtering_id_max_bytes.h"
 #include "components/attribution_reporting/constants.h"
 #include "components/attribution_reporting/filters.h"
 #include "components/attribution_reporting/source_registration.h"
@@ -42,10 +44,6 @@ class TriggerSpecs;
 namespace net {
 class SchemefulSite;
 }  // namespace net
-
-namespace network {
-class TriggerVerification;
-}  // namespace network
 
 namespace content {
 
@@ -105,6 +103,9 @@ class SourceBuilder {
   SourceBuilder& SetRemainingAggregatableAttributionBudget(
       int remaining_aggregatable_attribution_budget);
 
+  SourceBuilder& SetRemainingAggregatableDebugBudget(
+      int remaining_aggregatable_debug_budget);
+
   SourceBuilder& SetRandomizedResponseRate(double randomized_response_rate);
 
   SourceBuilder& SetAggregatableDedupKeys(
@@ -122,6 +123,11 @@ class SourceBuilder {
       attribution_reporting::mojom::TriggerDataMatching);
 
   SourceBuilder& SetDebugCookieSet(bool debug_cookie_set);
+
+  SourceBuilder& SetAggregatableDebugReportingConfig(
+      attribution_reporting::SourceAggregatableDebugReportingConfig);
+
+  SourceBuilder& SetDestinationLimitPriority(int64_t priority);
 
   StorableSource Build() const;
 
@@ -147,6 +153,7 @@ class SourceBuilder {
   std::vector<uint64_t> aggregatable_dedup_keys_;
   bool is_within_fenced_frame_ = false;
   bool debug_cookie_set_ = false;
+  int remaining_aggregatable_debug_budget_ = 0;
 };
 
 // Returns a AttributionTrigger with default data which matches the default
@@ -201,12 +208,15 @@ class TriggerBuilder {
   TriggerBuilder& SetSourceRegistrationTimeConfig(
       attribution_reporting::mojom::SourceRegistrationTimeConfig);
 
-  TriggerBuilder& SetVerifications(
-      std::vector<network::TriggerVerification> verifications);
-
   TriggerBuilder& SetFilterPair(attribution_reporting::FilterPair filter_pair);
 
   TriggerBuilder& SetTriggerContextId(std::string trigger_context_id);
+
+  TriggerBuilder& SetAggregatableDebugReportingConfig(
+      attribution_reporting::AggregatableDebugReportingConfig);
+
+  TriggerBuilder& SetAggregatableFilteringIdMaxBytes(
+      attribution_reporting::AggregatableFilteringIdsMaxBytes);
 
   AttributionTrigger Build(bool generate_event_trigger_data = true) const;
 
@@ -227,11 +237,14 @@ class TriggerBuilder {
   bool debug_reporting_ = false;
   std::optional<attribution_reporting::SuitableOrigin>
       aggregation_coordinator_origin_;
-  std::vector<network::TriggerVerification> verifications_;
   attribution_reporting::mojom::SourceRegistrationTimeConfig
       source_registration_time_config_ =
           attribution_reporting::mojom::SourceRegistrationTimeConfig::kInclude;
   std::optional<std::string> trigger_context_id_;
+  attribution_reporting::AggregatableFilteringIdsMaxBytes
+      aggregatable_filtering_id_max_bytes_;
+  attribution_reporting::AggregatableDebugReportingConfig
+      aggregatable_debug_reporting_config_;
 };
 
 // Helper class to construct an `AttributionInfo` for tests using default data.
@@ -283,8 +296,8 @@ class ReportBuilder {
   ReportBuilder& SetSourceRegistrationTimeConfig(
       attribution_reporting::mojom::SourceRegistrationTimeConfig);
 
-  ReportBuilder& SetVerificationToken(
-      std::optional<std::string> verification_token);
+  ReportBuilder& SetAggregatableFilteringIdsMaxBytes(
+      attribution_reporting::AggregatableFilteringIdsMaxBytes);
 
   ReportBuilder& SetTriggerContextId(std::string trigger_context_id);
 
@@ -302,12 +315,13 @@ class ReportBuilder {
   int64_t priority_ = 0;
   base::Uuid external_report_id_;
   AttributionReport::Id report_id_{0};
+  attribution_reporting::AggregatableFilteringIdsMaxBytes
+      aggregatable_filtering_ids_max_bytes_;
   std::vector<blink::mojom::AggregatableReportHistogramContribution>
       contributions_;
   std::optional<attribution_reporting::SuitableOrigin>
       aggregation_coordinator_origin_;
 
-  std::optional<std::string> verification_token_;
   attribution_reporting::mojom::SourceRegistrationTimeConfig
       source_registration_time_config_ =
           attribution_reporting::mojom::SourceRegistrationTimeConfig::kInclude;
@@ -315,9 +329,6 @@ class ReportBuilder {
 };
 
 bool operator==(const StoredSource&, const StoredSource&);
-
-bool operator==(const AttributionReport::EventLevelData&,
-                const AttributionReport::EventLevelData&);
 
 bool operator==(const AttributionReport::CommonAggregatableData&,
                 const AttributionReport::CommonAggregatableData&);
@@ -452,10 +463,6 @@ MATCHER_P(TriggerDestinationOriginIs, matcher, "") {
 
 // Report matchers
 
-MATCHER_P(ReportSourceIs, matcher, "") {
-  return ExplainMatchResult(matcher, *arg.GetStoredSource(), result_listener);
-}
-
 MATCHER_P(ReportTimeIs, matcher, "") {
   return ExplainMatchResult(matcher, arg.report_time(), result_listener);
 }
@@ -473,6 +480,10 @@ MATCHER_P(FailedSendAttemptsIs, matcher, "") {
 MATCHER_P(TriggerDebugKeyIs, matcher, "") {
   return ExplainMatchResult(matcher, arg.attribution_info().debug_key,
                             result_listener);
+}
+
+MATCHER_P(ReportSourceDebugKeyIs, matcher, "") {
+  return ExplainMatchResult(matcher, arg.GetSourceDebugKey(), result_listener);
 }
 
 MATCHER_P(EventLevelDataIs, matcher, "") {
@@ -494,7 +505,7 @@ MATCHER_P(ReportURLIs, matcher, "") {
 }
 
 MATCHER_P(ReportOriginIs, matcher, "") {
-  return ExplainMatchResult(matcher, arg.GetReportingOrigin(), result_listener);
+  return ExplainMatchResult(matcher, arg.reporting_origin(), result_listener);
 }
 
 MATCHER_P(ReportTypeIs, matcher, "") {
@@ -602,6 +613,7 @@ void ExpectValidAttributionReportingEligibleHeaderForImg(
     const std::string& header);
 void ExpectValidAttributionReportingEligibleHeaderForNavigation(
     const std::string& header);
+void ExpectEmptyAttributionReportingEligibleHeader(const std::string& header);
 
 void ExpectValidAttributionReportingSupportHeader(const std::string& header,
                                                   bool web_expected,

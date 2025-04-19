@@ -36,6 +36,10 @@ COMPONENT_EXPORT(GOOGLE_APIS) extern const char kIpProtectionAuthScope[];
 COMPONENT_EXPORT(GOOGLE_APIS) extern const char kParentApprovalOAuth2Scope[];
 COMPONENT_EXPORT(GOOGLE_APIS) extern const char kPeopleApiReadOnlyOAuth2Scope[];
 COMPONENT_EXPORT(GOOGLE_APIS)
+extern const char kPeopleApiReadWriteOAuth2Scope[];
+COMPONENT_EXPORT(GOOGLE_APIS)
+extern const char kProfileLanguageReadOnlyOAuth2Scope[];
+COMPONENT_EXPORT(GOOGLE_APIS)
 extern const char kProgrammaticChallengeOAuth2Scope[];
 COMPONENT_EXPORT(GOOGLE_APIS) extern const char kAccountsReauthOAuth2Scope[];
 COMPONENT_EXPORT(GOOGLE_APIS) extern const char kAuditRecordingOAuth2Scope[];
@@ -95,6 +99,8 @@ COMPONENT_EXPORT(GOOGLE_APIS)
 extern const char kClassroomReadOnlyCourseWorkSelfOAuth2Scope[];
 COMPONENT_EXPORT(GOOGLE_APIS)
 extern const char kClassroomReadOnlyStudentSubmissionsSelfOAuth2Scope[];
+COMPONENT_EXPORT(GOOGLE_APIS)
+extern const char kClassroomReadOnlyRostersOAuth2Scope[];
 
 // OAuth2 scopes for Optimization Guide.
 COMPONENT_EXPORT(GOOGLE_APIS)

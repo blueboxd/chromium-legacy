@@ -8,14 +8,15 @@
 #import "base/time/time.h"
 #import "components/browser_sync/browser_sync_switches.h"
 #import "components/sync/base/command_line_switches.h"
+#import "components/sync/base/data_type.h"
 #import "components/sync/base/features.h"
-#import "components/sync/base/model_type.h"
-#import "ios/chrome/browser/bookmarks/model/bookmark_model_type.h"
+#import "ios/chrome/browser/bookmarks/model/bookmark_storage_type.h"
+#import "ios/chrome/browser/bookmarks/ui_bundled/bookmark_earl_grey.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_navigation_controller_constants.h"
 #import "ios/chrome/browser/signin/model/fake_system_identity.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_app_interface.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_egtest_utils.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_constants.h"
@@ -53,7 +54,7 @@ constexpr NSString* kPassphrase = @"passphrase";
 // and fails with a GREYAssert if the condition is not met, within a short
 // period of time.
 void WaitForEntitiesOnFakeServer(int entity_count,
-                                 syncer::ModelType entity_type) {
+                                 syncer::DataType entity_type) {
   ConditionBlock condition = ^{
     return [ChromeEarlGrey numberOfSyncEntitiesWithType:entity_type] ==
            entity_count;
@@ -61,7 +62,7 @@ void WaitForEntitiesOnFakeServer(int entity_count,
   GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(kSyncOperationTimeout,
                                                           condition),
              @"Expected %d %s entities but found %d", entity_count,
-             syncer::ModelTypeToDebugString(entity_type),
+             syncer::DataTypeToDebugString(entity_type),
              [ChromeEarlGrey numberOfSyncEntitiesWithType:entity_type]);
 }
 
@@ -97,7 +98,7 @@ void ClearRelevantData() {
 + (void)setUpForTestCase {
   [super setUpForTestCase];
 
-  [BookmarkEarlGrey waitForBookmarkModelsLoaded];
+  [BookmarkEarlGrey waitForBookmarkModelLoaded];
 
   // Normally there shouldn't be any data (locally or on the fake server) at
   // this point, but just in case some other test case didn't clean up after
@@ -141,7 +142,16 @@ void ClearRelevantData() {
     // restart Chrome.
     config.features_disabled.push_back(switches::kMigrateSyncingUserToSignedIn);
   }
-
+  if ([self isRunningTest:@selector
+            (testManagedAccountClearsDataForSignedInPeriod)]) {
+    config.features_enabled.push_back(kClearDeviceDataOnSignOutForManagedUsers);
+  }
+  if ([self isRunningTest:@selector(testMigrateSyncToSignin_ManagedAccount)]) {
+    // Disable `kClearDeviceDataOnSignOutForManagedUsers` because the feature
+    // shows a different dialog.
+    config.features_disabled.push_back(
+        kClearDeviceDataOnSignOutForManagedUsers);
+  }
   if ([self isRunningTest:@selector
             (testSyncCheckDifferentCacheGuid_SignOutAndSignIn)]) {
     config.features_disabled.push_back(syncer::kSyncAccountKeyedTransportPrefs);
@@ -225,7 +235,7 @@ void ClearRelevantData() {
                                    syncTimeout:kSyncOperationTimeout];
   [BookmarkEarlGrey addBookmarkWithTitle:@"goo"
                                      URL:@"https://www.goo.com"
-                               inStorage:BookmarkModelType::kAccount];
+                               inStorage:BookmarkStorageType::kAccount];
   WaitForEntitiesOnFakeServer(1, syncer::BOOKMARKS);
 }
 
@@ -234,7 +244,7 @@ void ClearRelevantData() {
 - (void)testSyncDownloadBookmark {
   [BookmarkEarlGrey verifyBookmarksWithTitle:@"hoo"
                                expectedCount:0
-                                   inStorage:BookmarkModelType::kAccount];
+                                   inStorage:BookmarkStorageType::kAccount];
   const GURL URL = web::test::HttpServer::MakeUrl("http://www.hoo.com");
   [ChromeEarlGrey addFakeSyncServerBookmarkWithURL:URL title:"hoo"];
 
@@ -247,7 +257,7 @@ void ClearRelevantData() {
       waitForSyncTransportStateActiveWithTimeout:kSyncOperationTimeout];
   [BookmarkEarlGrey verifyBookmarksWithTitle:@"hoo"
                                expectedCount:1
-                                   inStorage:BookmarkModelType::kAccount];
+                                   inStorage:BookmarkStorageType::kAccount];
 }
 
 // Tests that the local cache guid changes when the user signs out and then
@@ -432,10 +442,10 @@ void ClearRelevantData() {
 
   [BookmarkEarlGrey verifyBookmarksWithTitle:title1
                                expectedCount:0
-                                   inStorage:BookmarkModelType::kAccount];
+                                   inStorage:BookmarkStorageType::kAccount];
   [BookmarkEarlGrey verifyBookmarksWithTitle:title2
                                expectedCount:0
-                                   inStorage:BookmarkModelType::kAccount];
+                                   inStorage:BookmarkStorageType::kAccount];
 
   // Mimic the creation of two bookmarks from two different devices, with the
   // same client item ID.
@@ -458,10 +468,10 @@ void ClearRelevantData() {
 
   [BookmarkEarlGrey verifyBookmarksWithTitle:title1
                                expectedCount:1
-                                   inStorage:BookmarkModelType::kAccount];
+                                   inStorage:BookmarkStorageType::kAccount];
   [BookmarkEarlGrey verifyBookmarksWithTitle:title2
                                expectedCount:1
-                                   inStorage:BookmarkModelType::kAccount];
+                                   inStorage:BookmarkStorageType::kAccount];
 }
 
 - (void)testSyncInvalidationsEnabled {
@@ -490,7 +500,7 @@ void ClearRelevantData() {
   // Create some data and wait for it to arrive on the server.
   [BookmarkEarlGrey addBookmarkWithTitle:kBookmarkTitle
                                      URL:kBookmarkUrl
-                               inStorage:BookmarkModelType::kLocalOrSyncable];
+                               inStorage:BookmarkStorageType::kLocalOrSyncable];
   GREYAssertNil([ReadingListAppInterface
                     addEntryWithURL:[NSURL URLWithString:kReadingListUrl]
                               title:kReadingListTitle
@@ -513,11 +523,11 @@ void ClearRelevantData() {
   // The bookmark should still exist, but now be in the account store.
   [BookmarkEarlGrey
       verifyAbsenceOfBookmarkWithURL:kBookmarkUrl
-                           inStorage:BookmarkModelType::kLocalOrSyncable];
+                           inStorage:BookmarkStorageType::kLocalOrSyncable];
   [BookmarkEarlGrey
       verifyExistenceOfBookmarkWithURL:kBookmarkUrl
                                   name:kBookmarkTitle
-                             inStorage:BookmarkModelType::kAccount];
+                             inStorage:BookmarkStorageType::kAccount];
   // Similarly the password.
   GREYAssertEqual(
       0, [PasswordSettingsAppInterface passwordProfileStoreResultsCount],
@@ -546,7 +556,7 @@ void ClearRelevantData() {
   // and ensure it arrives on the server.
   [BookmarkEarlGrey addBookmarkWithTitle:@"Second bookmark"
                                      URL:@"https://second.com/"
-                               inStorage:BookmarkModelType::kAccount];
+                               inStorage:BookmarkStorageType::kAccount];
   WaitForEntitiesOnFakeServer(2, syncer::BOOKMARKS);
 }
 
@@ -568,7 +578,7 @@ void ClearRelevantData() {
   // Also create a bookmark.
   [BookmarkEarlGrey addBookmarkWithTitle:kBookmarkTitle
                                      URL:kBookmarkUrl
-                               inStorage:BookmarkModelType::kLocalOrSyncable];
+                               inStorage:BookmarkStorageType::kLocalOrSyncable];
   WaitForEntitiesOnFakeServer(1, syncer::BOOKMARKS);
 
   // Disable the Passwords data type.
@@ -594,11 +604,11 @@ void ClearRelevantData() {
   // The bookmark should have been moved to the account store.
   [BookmarkEarlGrey
       verifyAbsenceOfBookmarkWithURL:kBookmarkUrl
-                           inStorage:BookmarkModelType::kLocalOrSyncable];
+                           inStorage:BookmarkStorageType::kLocalOrSyncable];
   [BookmarkEarlGrey
       verifyExistenceOfBookmarkWithURL:kBookmarkUrl
                                   name:kBookmarkTitle
-                             inStorage:BookmarkModelType::kAccount];
+                             inStorage:BookmarkStorageType::kAccount];
 }
 
 - (void)testMigrateSyncToSignin_BookmarksDisabled {
@@ -615,7 +625,7 @@ void ClearRelevantData() {
   // Create a bookmark and wait for it to be uploaded to the server.
   [BookmarkEarlGrey addBookmarkWithTitle:kBookmarkTitle
                                      URL:kBookmarkUrl
-                               inStorage:BookmarkModelType::kLocalOrSyncable];
+                               inStorage:BookmarkStorageType::kLocalOrSyncable];
   WaitForEntitiesOnFakeServer(1, syncer::BOOKMARKS);
 
   // Also save a password.
@@ -638,9 +648,10 @@ void ClearRelevantData() {
   [BookmarkEarlGrey
       verifyExistenceOfBookmarkWithURL:kBookmarkUrl
                                   name:kBookmarkTitle
-                             inStorage:BookmarkModelType::kLocalOrSyncable];
-  [BookmarkEarlGrey verifyAbsenceOfBookmarkWithURL:kBookmarkUrl
-                                         inStorage:BookmarkModelType::kAccount];
+                             inStorage:BookmarkStorageType::kLocalOrSyncable];
+  [BookmarkEarlGrey
+      verifyAbsenceOfBookmarkWithURL:kBookmarkUrl
+                           inStorage:BookmarkStorageType::kAccount];
 
   // The password should have been moved to the account store.
   GREYAssertEqual(
@@ -776,17 +787,15 @@ void ClearRelevantData() {
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
 
+  // Set up a custom passphrase.
+  [ChromeEarlGrey addBookmarkWithSyncPassphrase:kPassphrase];
+
   // Sign in and turn on Sync-the-feature.
   [SigninEarlGrey signinAndEnableLegacySyncFeature:fakeIdentity];
   [ChromeEarlGrey waitForSyncFeatureEnabled:YES
                                 syncTimeout:kSyncOperationTimeout];
   [ChromeEarlGrey
       waitForSyncTransportStateActiveWithTimeout:kSyncOperationTimeout];
-
-  // Set up a custom passphrase.
-  [ChromeEarlGrey addBookmarkWithSyncPassphrase:kPassphrase];
-  // Trigger a sync cycle to ensure Chrome knows about the passphrase.
-  [ChromeEarlGrey triggerSyncCycleForType:syncer::BOOKMARKS];
 
   // Now Sync is in the "passphrase required" state. Resolve the passphrase
   // error from Sync settings.
@@ -807,7 +816,7 @@ void ClearRelevantData() {
   // Save a bookmark and a password and wait for them to be uploaded.
   [BookmarkEarlGrey addBookmarkWithTitle:kBookmarkTitle
                                      URL:kBookmarkUrl
-                               inStorage:BookmarkModelType::kLocalOrSyncable];
+                               inStorage:BookmarkStorageType::kLocalOrSyncable];
   password_manager_test_utils::SavePasswordFormToProfileStore();
   WaitForEntitiesOnFakeServer(2, syncer::BOOKMARKS);
   WaitForEntitiesOnFakeServer(1, syncer::PASSWORDS);
@@ -831,16 +840,19 @@ void ClearRelevantData() {
   // The bookmark should have been migrated to the account store.
   [BookmarkEarlGrey
       verifyAbsenceOfBookmarkWithURL:kBookmarkUrl
-                           inStorage:BookmarkModelType::kLocalOrSyncable];
+                           inStorage:BookmarkStorageType::kLocalOrSyncable];
   [BookmarkEarlGrey
       verifyExistenceOfBookmarkWithURL:kBookmarkUrl
                                   name:kBookmarkTitle
-                             inStorage:BookmarkModelType::kAccount];
+                             inStorage:BookmarkStorageType::kAccount];
 }
 
 - (void)testMigrateSyncToSignin_CustomPassphraseMissing {
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
+
+  // Set up a custom passphrase.
+  [ChromeEarlGrey addSyncPassphrase:kPassphrase];
 
   // Sign in and turn on Sync-the-feature.
   [SigninEarlGrey signinAndEnableLegacySyncFeature:fakeIdentity];
@@ -848,11 +860,6 @@ void ClearRelevantData() {
                                 syncTimeout:kSyncOperationTimeout];
   [ChromeEarlGrey
       waitForSyncTransportStateActiveWithTimeout:kSyncOperationTimeout];
-
-  // Set up a custom passphrase.
-  [ChromeEarlGrey addBookmarkWithSyncPassphrase:kPassphrase];
-  // Trigger a sync cycle to ensure Chrome knows about the passphrase.
-  [ChromeEarlGrey triggerSyncCycleForType:syncer::BOOKMARKS];
 
   // Now Sync is in the "passphrase required" state. Verify this in settings.
   [ChromeEarlGreyUI openSettingsMenu];
@@ -871,7 +878,7 @@ void ClearRelevantData() {
   // server, due to the missing passphrase.
   [BookmarkEarlGrey addBookmarkWithTitle:kBookmarkTitle
                                      URL:kBookmarkUrl
-                               inStorage:BookmarkModelType::kLocalOrSyncable];
+                               inStorage:BookmarkStorageType::kLocalOrSyncable];
   password_manager_test_utils::SavePasswordFormToProfileStore();
 
   // Restart Chrome with UNO phase 3 (i.e. the migration) enabled.
@@ -894,9 +901,10 @@ void ClearRelevantData() {
   [BookmarkEarlGrey
       verifyExistenceOfBookmarkWithURL:kBookmarkUrl
                                   name:kBookmarkTitle
-                             inStorage:BookmarkModelType::kLocalOrSyncable];
-  [BookmarkEarlGrey verifyAbsenceOfBookmarkWithURL:kBookmarkUrl
-                                         inStorage:BookmarkModelType::kAccount];
+                             inStorage:BookmarkStorageType::kLocalOrSyncable];
+  [BookmarkEarlGrey
+      verifyAbsenceOfBookmarkWithURL:kBookmarkUrl
+                           inStorage:BookmarkStorageType::kAccount];
 }
 
 - (void)testMigrateSyncToSignin_ManagedAccount {
@@ -921,13 +929,13 @@ void ClearRelevantData() {
   // Also create a bookmark and wait for it to arrive on the server.
   [BookmarkEarlGrey addBookmarkWithTitle:kBookmarkTitle
                                      URL:kBookmarkUrl
-                               inStorage:BookmarkModelType::kLocalOrSyncable];
+                               inStorage:BookmarkStorageType::kLocalOrSyncable];
   WaitForEntitiesOnFakeServer(1, syncer::BOOKMARKS);
 
   // Restart Chrome with UNO phase 3 (i.e. the migration) enabled.
   [self relaunchWithIdentity:fakeIdentity
              enabledFeatures:{switches::kMigrateSyncingUserToSignedIn}
-            disabledFeatures:{}];
+            disabledFeatures:{kClearDeviceDataOnSignOutForManagedUsers}];
   // Sync-the-feature should *not* be enabled anymore.
   [ChromeEarlGrey waitForSyncFeatureEnabled:NO
                                 syncTimeout:kSyncOperationTimeout];
@@ -943,11 +951,11 @@ void ClearRelevantData() {
   // The bookmark should have been migrated to the account store.
   [BookmarkEarlGrey
       verifyAbsenceOfBookmarkWithURL:kBookmarkUrl
-                           inStorage:BookmarkModelType::kLocalOrSyncable];
+                           inStorage:BookmarkStorageType::kLocalOrSyncable];
   [BookmarkEarlGrey
       verifyExistenceOfBookmarkWithURL:kBookmarkUrl
                                   name:kBookmarkTitle
-                             inStorage:BookmarkModelType::kAccount];
+                             inStorage:BookmarkStorageType::kAccount];
 
   // Open settings and tap "Sign Out".
   [ChromeEarlGreyUI openSettingsMenu];
@@ -997,9 +1005,96 @@ void ClearRelevantData() {
 
   [BookmarkEarlGrey
       verifyAbsenceOfBookmarkWithURL:kBookmarkUrl
-                           inStorage:BookmarkModelType::kLocalOrSyncable];
-  [BookmarkEarlGrey verifyAbsenceOfBookmarkWithURL:kBookmarkUrl
-                                         inStorage:BookmarkModelType::kAccount];
+                           inStorage:BookmarkStorageType::kLocalOrSyncable];
+  [BookmarkEarlGrey
+      verifyAbsenceOfBookmarkWithURL:kBookmarkUrl
+                           inStorage:BookmarkStorageType::kAccount];
+}
+
+- (void)testManagedAccountClearsDataForSignedInPeriod {
+  const GURL preSigninURL = self.testServer->GetURL("/console.html");
+  const GURL firstSigninURL = self.testServer->GetURL("/pony.html");
+  const GURL secondSigninURL = self.testServer->GetURL("/destination.html");
+  const GURL thirdSigninURL = self.testServer->GetURL("/echo.html");
+
+  // Clear browsing history before and after the test to avoid conflicting with
+  // other tests.
+  [ChromeEarlGrey clearBrowsingHistory];
+  [self setTearDownHandler:^{
+    [ChromeEarlGrey clearBrowsingHistory];
+  }];
+
+  // Save a password to the local store and visit a URL before sign-in. Also
+  // make sure any pending prefs and history changes are written to disk.
+  password_manager_test_utils::SavePasswordFormToProfileStore(
+      @"password1", @"user1", @"https://example.com");
+  [ChromeEarlGrey loadURL:preSigninURL];
+  [ChromeEarlGrey commitPendingUserPrefsWrite];
+  [BookmarkEarlGrey commitPendingWrite];
+  GREYAssertEqual([ChromeEarlGrey browsingHistoryEntryCount], 1,
+                  @"History was unexpectedly empty");
+
+  // Sign in a managed (aka enterprise) account.
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeManagedIdentity];
+  [SigninEarlGrey addFakeIdentity:fakeIdentity];
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
+
+  // Save another password to the local store after sign-in.
+  password_manager_test_utils::SavePasswordFormToProfileStore(
+      @"password2", @"user2", @"https://example.com");
+
+  // Navigate to a few URLs.
+  [ChromeEarlGrey loadURL:firstSigninURL];
+  [ChromeEarlGrey loadURL:secondSigninURL];
+  [ChromeEarlGrey loadURL:thirdSigninURL];
+  GREYAssertEqual([ChromeEarlGrey browsingHistoryEntryCount], 3,
+                  @"History was unexpectedly empty");
+
+  // Also make sure any pending prefs and history changes are written to disk.
+  [ChromeEarlGrey commitPendingUserPrefsWrite];
+  [BookmarkEarlGrey commitPendingWrite];
+
+  // Open settings and tap "Sign Out".
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI
+      tapSettingsMenuButton:chrome_test_util::SettingsAccountButton()];
+  [[[EarlGrey selectElementWithMatcher:
+                  grey_accessibilityLabel(l10n_util::GetNSString(
+                      IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_SIGN_OUT_ITEM))]
+         usingSearchAction:grey_swipeSlowInDirection(kGREYDirectionUp)
+      onElementWithMatcher:grey_accessibilityID(
+                               kManageSyncTableViewAccessibilityIdentifier)]
+      performAction:grey_tap()];
+
+  // Confirm "Sign Out" when alert dialog that data will be cleared is shown.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_SIGNOUT_DIALOG_SIGN_OUT_BUTTON)]
+      performAction:grey_tap()];
+
+  // Wait until the user is signed out. Use a longer timeout to give time for
+  // data to be cleared.
+  [ChromeEarlGrey
+      waitForUIElementToAppearWithMatcher:chrome_test_util::SettingsDoneButton()
+                                  timeout:base::test::ios::
+                                              kWaitForClearBrowsingDataTimeout];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsDoneButton()]
+      performAction:grey_tap()];
+  [SigninEarlGrey verifySignedOut];
+
+  // Only the password saved before sign-in should be remaining.
+  GREYAssertEqual(
+      1, [PasswordSettingsAppInterface passwordProfileStoreResultsCount],
+      @"Only the password saved BEFORE sign-in should be in the profile store");
+  GREYAssertEqual(
+      0, [PasswordSettingsAppInterface passwordAccountStoreResultsCount],
+      @"Password should NOT be in the account store");
+
+  // Only two history entries remain after browsing history is cleared: the one
+  // from before sign-in and the active URL.
+  [ChromeEarlGrey loadURL:secondSigninURL];
+  GREYAssertEqual([ChromeEarlGrey browsingHistoryEntryCount], 2,
+                  @"History was unexpectedly empty");
 }
 
 - (void)testMigrateSyncToSignin_Undo {
@@ -1016,7 +1111,7 @@ void ClearRelevantData() {
   // Create some data and wait for it to arrive on the server.
   [BookmarkEarlGrey addBookmarkWithTitle:kBookmarkTitle
                                      URL:kBookmarkUrl
-                               inStorage:BookmarkModelType::kLocalOrSyncable];
+                               inStorage:BookmarkStorageType::kLocalOrSyncable];
   password_manager_test_utils::SavePasswordFormToProfileStore();
 
   WaitForEntitiesOnFakeServer(1, syncer::BOOKMARKS);
@@ -1033,11 +1128,11 @@ void ClearRelevantData() {
   // The bookmark should still exist, but now be in the account store.
   [BookmarkEarlGrey
       verifyAbsenceOfBookmarkWithURL:kBookmarkUrl
-                           inStorage:BookmarkModelType::kLocalOrSyncable];
+                           inStorage:BookmarkStorageType::kLocalOrSyncable];
   [BookmarkEarlGrey
       verifyExistenceOfBookmarkWithURL:kBookmarkUrl
                                   name:kBookmarkTitle
-                             inStorage:BookmarkModelType::kAccount];
+                             inStorage:BookmarkStorageType::kAccount];
   // Similarly the password.
   GREYAssertEqual(
       0, [PasswordSettingsAppInterface passwordProfileStoreResultsCount],
@@ -1058,9 +1153,10 @@ void ClearRelevantData() {
   [BookmarkEarlGrey
       verifyExistenceOfBookmarkWithURL:kBookmarkUrl
                                   name:kBookmarkTitle
-                             inStorage:BookmarkModelType::kLocalOrSyncable];
-  [BookmarkEarlGrey verifyAbsenceOfBookmarkWithURL:kBookmarkUrl
-                                         inStorage:BookmarkModelType::kAccount];
+                             inStorage:BookmarkStorageType::kLocalOrSyncable];
+  [BookmarkEarlGrey
+      verifyAbsenceOfBookmarkWithURL:kBookmarkUrl
+                           inStorage:BookmarkStorageType::kAccount];
   // Similarly the password.
   GREYAssertEqual(
       1, [PasswordSettingsAppInterface passwordProfileStoreResultsCount],
@@ -1073,7 +1169,7 @@ void ClearRelevantData() {
   // another bookmark (to the local store) and ensure it arrives on the server.
   [BookmarkEarlGrey addBookmarkWithTitle:@"Other title"
                                      URL:@"https://other.url.com"
-                               inStorage:BookmarkModelType::kLocalOrSyncable];
+                               inStorage:BookmarkStorageType::kLocalOrSyncable];
   WaitForEntitiesOnFakeServer(2, syncer::BOOKMARKS);
 }
 

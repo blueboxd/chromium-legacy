@@ -33,6 +33,10 @@ bool AttributionConfig::Validate() const {
     return false;
   }
 
+  if (!aggregatable_debug_rate_limit.Validate()) {
+    return false;
+  }
+
   return true;
 }
 
@@ -140,6 +144,26 @@ bool AttributionConfig::DestinationRateLimit::Validate() const {
   }
 
   if (!rate_limit_window.is_positive()) {
+    return false;
+  }
+
+  if (max_per_reporting_site_per_day <= 0) {
+    return false;
+  }
+
+  return true;
+}
+
+bool AttributionConfig::AggregatableDebugRateLimit::Validate() const {
+  if (max_budget_per_context_reporting_site <= 0) {
+    return false;
+  }
+
+  if (max_budget_per_context_site < max_budget_per_context_reporting_site) {
+    return false;
+  }
+
+  if (max_reports_per_source <= 0) {
     return false;
   }
 

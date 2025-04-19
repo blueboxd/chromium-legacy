@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/core/frame/performance_monitor.h"
 
 #include "base/format_macros.h"
@@ -81,6 +86,18 @@ PerformanceMonitor::~PerformanceMonitor() {
   DCHECK(!local_root_);
 }
 
+void PerformanceMonitor::Dispose() {
+  if (!was_shutdown_) {
+    // `PerformanceMonitor` should never be deleted without having been
+    // `Shutdown()`. As a temporary workaround for crbug.com/337200890,
+    // unregister as a `TaskTimeObserver` if `Shutdown()` wasn't called.
+    //
+    // TODO(crbug.com/337200890): Remove when the root cause of the bug has been
+    // addressed.
+    Thread::Current()->RemoveTaskTimeObserver(this);
+  }
+}
+
 void PerformanceMonitor::Subscribe(Violation violation,
                                    base::TimeDelta threshold,
                                    Client* client) {
@@ -113,6 +130,7 @@ void PerformanceMonitor::Shutdown() {
   Thread::Current()->RemoveTaskTimeObserver(this);
   local_root_->GetProbeSink()->RemovePerformanceMonitor(this);
   local_root_ = nullptr;
+  was_shutdown_ = true;
 }
 
 void PerformanceMonitor::UpdateInstrumentation() {

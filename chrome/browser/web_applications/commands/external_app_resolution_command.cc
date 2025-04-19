@@ -28,6 +28,7 @@
 #include "chrome/browser/web_applications/locks/all_apps_lock.h"
 #include "chrome/browser/web_applications/locks/shared_web_contents_with_app_lock.h"
 #include "chrome/browser/web_applications/locks/web_app_lock_manager.h"
+#include "chrome/browser/web_applications/proto/web_app_proto_package.pb.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
@@ -97,7 +98,7 @@ void ExternalAppResolutionCommand::SetOnLockUpgradedCallbackForTesting(
 
 void ExternalAppResolutionCommand::OnShutdown(
     base::PassKey<WebAppCommandManager>) const {
-  webapps::InstallableMetrics::TrackInstallResult(false);
+  webapps::InstallableMetrics::TrackInstallResult(false, install_surface_);
 }
 
 void ExternalAppResolutionCommand::StartWithLock(
@@ -132,7 +133,7 @@ WebAppProvider& ExternalAppResolutionCommand::provider() const {
 
 void ExternalAppResolutionCommand::Abort(webapps::InstallResultCode code) {
   GetMutableDebugValue().Set("abort_result_code", base::ToString(code));
-  webapps::InstallableMetrics::TrackInstallResult(false);
+  webapps::InstallableMetrics::TrackInstallResult(false, install_surface_);
   CompleteAndSelfDestruct(CommandResult::kFailure,
                           ExternallyManagedAppManager::InstallResult(
                               code, std::nullopt,
@@ -227,10 +228,10 @@ void ExternalAppResolutionCommand::OnGetWebAppInstallInfoInCommand(
   // Write values from install_params_ to web_app_info.
   // Set start_url to fallback_start_url as web_contents may have been
   // redirected. Will be overridden by manifest values if present.
-  CHECK(install_params_->fallback_start_url.is_valid());
-  web_app_info_->start_url = install_params_->fallback_start_url;
-  web_app_info_->manifest_id =
-      GenerateManifestIdFromStartUrlOnly(web_app_info_->start_url);
+  const GURL& start_url = install_params_->fallback_start_url;
+  CHECK(start_url.is_valid());
+  web_app_info_->SetManifestIdAndStartUrl(
+      GenerateManifestIdFromStartUrlOnly(start_url), start_url);
 
   if (install_params_->fallback_app_name.has_value()) {
     web_app_info_->title = install_params_->fallback_app_name.value();
@@ -247,14 +248,13 @@ void ExternalAppResolutionCommand::OnGetWebAppInstallInfoInCommand(
 
 void ExternalAppResolutionCommand::OnDidPerformInstallableCheck(
     blink::mojom::ManifestPtr opt_manifest,
-    const GURL& manifest_url,
     bool valid_manifest_for_web_app,
     webapps::InstallableStatusCode error_code) {
   CHECK(install_params_.has_value());
   CHECK(web_contents_ && !web_contents_->IsBeingDestroyed());
 
   if (install_params_->require_manifest && !valid_manifest_for_web_app) {
-    LOG(WARNING) << "Did not install " << manifest_url.spec()
+    LOG(WARNING) << "Did not install " << web_app_info_->manifest_id().spec()
                  << " because it didn't have a manifest for web app";
     Abort(webapps::InstallResultCode::kNotValidManifestForWebApp);
     return;
@@ -269,8 +269,7 @@ void ExternalAppResolutionCommand::OnDidPerformInstallableCheck(
   GetMutableDebugValue().Set("had_manifest", false);
   if (opt_manifest) {
     GetMutableDebugValue().Set("had_manifest", true);
-    UpdateWebAppInfoFromManifest(*opt_manifest, manifest_url,
-                                 web_app_info_.get());
+    UpdateWebAppInfoFromManifest(*opt_manifest, web_app_info_.get());
   }
 
   if (install_params_->install_as_shortcut) {
@@ -281,7 +280,7 @@ void ExternalAppResolutionCommand::OnDidPerformInstallableCheck(
 
   // TODO(b/300878868): Reject installation if the manifest id provided in the
   // WebAppInstallForceList does not match the final manifest id.
-  app_id_ = GenerateAppIdFromManifestId(web_app_info_->manifest_id);
+  app_id_ = GenerateAppIdFromManifestId(web_app_info_->manifest_id());
   GetMutableDebugValue().Set("app_id", app_id_);
 
   // If the manifest specified icons, don't use the page icons.
@@ -355,7 +354,6 @@ void ExternalAppResolutionCommand::OnLockUpgradedFinalizeInstall(
   }
 
   WebAppInstallFinalizer::FinalizeOptions finalize_options(install_surface_);
-
   finalize_options.overwrite_existing_manifest_fields =
       install_params_->force_reinstall;
 
@@ -411,7 +409,8 @@ void ExternalAppResolutionCommand::OnInstallFinalized(
     }
   }
 
-  webapps::InstallableMetrics::TrackInstallResult(webapps::IsSuccess(code));
+  webapps::InstallableMetrics::TrackInstallResult(webapps::IsSuccess(code),
+                                                  install_surface_);
 
   CHECK(apps_lock_);
 
@@ -592,8 +591,6 @@ void ExternalAppResolutionCommand::InstallFromInfo() {
     install_params_->skip_origin_association_validation = true;
   }
 
-  install_params_->bypass_os_hooks = true;
-
   if (!install_options_.app_info_factory) {
     Abort(webapps::InstallResultCode::kGetWebAppInstallInfoFailed);
     return;
@@ -610,16 +607,10 @@ void ExternalAppResolutionCommand::InstallFromInfo() {
                std::move(install_params_->additional_search_terms));
   web_app_info_->install_url = install_params_->install_url;
 
-  if (web_app_info_->manifest_id.is_empty() ||
-      !web_app_info_->manifest_id.is_valid()) {
-    web_app_info_->manifest_id =
-        GenerateManifestIdFromStartUrlOnly(web_app_info_->start_url);
-  }
-
   if (!apps_lock_) {
     command_manager()->lock_manager().UpgradeAndAcquireLock(
         std::move(web_contents_lock_),
-        {GenerateAppIdFromManifestId(web_app_info_->manifest_id)},
+        {GenerateAppIdFromManifestId(web_app_info_->manifest_id())},
         base::BindOnce(
             &ExternalAppResolutionCommand::OnInstallFromInfoAppLockAcquired,
             weak_ptr_factory_.GetWeakPtr()));
@@ -661,7 +652,8 @@ void ExternalAppResolutionCommand::OnInstallFromInfoCompleted(
     return;
   }
 
-  webapps::InstallableMetrics::TrackInstallResult(successful_install_from_info);
+  webapps::InstallableMetrics::TrackInstallResult(successful_install_from_info,
+                                                  install_surface_);
 
   uninstall_and_replace_job_.emplace(
       &profile_.get(),

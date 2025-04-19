@@ -71,9 +71,14 @@
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 namespace {
 
 using signin::ConsentLevel;
+using signin_util::SignedInState;
 using ::testing::_;
 using ::testing::ByMove;
 using ::testing::Const;
@@ -167,6 +172,8 @@ void CheckConfigDataTypeArguments(const base::Value::Dict& dictionary,
                    types.Has(syncer::UserSelectableType::kAutofill));
   ExpectHasBoolKey(dictionary, "bookmarksSynced",
                    types.Has(syncer::UserSelectableType::kBookmarks));
+  ExpectHasBoolKey(dictionary, "cookiesSynced",
+                   types.Has(syncer::UserSelectableType::kCookies));
   ExpectHasBoolKey(dictionary, "extensionsSynced",
                    types.Has(syncer::UserSelectableType::kExtensions));
   ExpectHasBoolKey(dictionary, "passwordsSynced",
@@ -259,13 +266,13 @@ class PeopleHandlerTest : public ChromeRenderViewHostTestHarness {
   void SigninUserWithoutSyncFeature() {
     const CoreAccountInfo account_info = identity_test_env()->SetPrimaryAccount(
         kTestUser, signin::ConsentLevel::kSignin);
-    sync_service_->SetSignedInWithoutSyncFeature(account_info);
+    sync_service_->SetSignedIn(signin::ConsentLevel::kSignin, account_info);
   }
 
   void SigninUserAndTurnSyncFeatureOn() {
     const CoreAccountInfo account_info = identity_test_env()->SetPrimaryAccount(
         kTestUser, signin::ConsentLevel::kSync);
-    sync_service_->SetSignedInWithSyncFeatureOn(account_info);
+    sync_service_->SetSignedIn(signin::ConsentLevel::kSync, account_info);
   }
 
   void CreatePeopleHandler() {
@@ -368,6 +375,7 @@ class PeopleHandlerTest : public ChromeRenderViewHostTestHarness {
   TestWebUIProvider test_provider_;
   std::unique_ptr<TestChromeWebUIControllerFactory> test_factory_;
   std::unique_ptr<TestingPeopleHandler> handler_;
+  base::test::ScopedFeatureList feature_list_;
 };
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -403,7 +411,7 @@ TEST_F(PeopleHandlerTest, DisplayConfigureWithEngineDisabledAndCancel) {
 
   ASSERT_THAT(sync_service_->GetDisableReasons(), IsEmpty());
 
-  sync_service_->SetTransportState(
+  sync_service_->SetMaxTransportState(
       syncer::SyncService::TransportState::INITIALIZING);
 
   // We're simulating a user setting up sync, which would cause the engine to
@@ -437,21 +445,23 @@ TEST_F(PeopleHandlerTest,
   ASSERT_THAT(sync_service_->GetDisableReasons(), IsEmpty());
 
   // Sync engine is stopped initially, and will start up.
-  sync_service_->SetTransportState(
+  sync_service_->SetMaxTransportState(
       syncer::SyncService::TransportState::START_DEFERRED);
 
   handler_->HandleShowSyncSetupUI(base::Value::List());
 
-  // `SetSyncFeatureRequested()` should have triggered initialization.
-  EXPECT_EQ(sync_service_->GetTransportState(),
-            syncer::SyncService::TransportState::INITIALIZING);
+  // Mimic engine initialization.
+  sync_service_->SetMaxTransportState(
+      syncer::SyncService::TransportState::INITIALIZING);
+  sync_service_->FireStateChanged();
 
   // No pref updates sent yet, because the engine is not initialized.
   EXPECT_EQ(0U, GetFiredSyncPrefsChanged().size());
   web_ui_.ClearTrackedCalls();
 
   // Now, act as if the SyncService has started up.
-  sync_service_->SetTransportState(syncer::SyncService::TransportState::ACTIVE);
+  sync_service_->SetMaxTransportState(
+      syncer::SyncService::TransportState::ACTIVE);
   sync_service_->FireStateChanged();
 
   // Updates for the sync status, sync prefs and trusted vault opt-in are sent.
@@ -497,6 +507,11 @@ TEST_F(PeopleHandlerTest, RestartSyncAfterDashboardClear) {
   SigninUserAndTurnSyncFeatureOn();
   CreatePeopleHandler();
 
+  // Mimic a dashboard clear, which should reset the sync engine and restart it
+  // in transport mode. Defer the second initialization of the engine, to test
+  // that prefs are not sent yet.
+  sync_service_->SetMaxTransportState(
+      syncer::SyncService::TransportState::INITIALIZING);
   sync_service_->MimicDashboardClear();
 
   ASSERT_EQ(sync_service_->GetTransportState(),
@@ -516,8 +531,9 @@ TEST_F(PeopleHandlerTest, RestartSyncAfterDashboardClear) {
   // Since the engine is not initialized yet, no prefs should be sent.
   EXPECT_EQ(0U, GetFiredSyncPrefsChanged().size());
 
-  // Now, act as if the SyncService has started up.
-  sync_service_->SetTransportState(syncer::SyncService::TransportState::ACTIVE);
+  // Now, allow the sync engine to fully start.
+  sync_service_->SetMaxTransportState(
+      syncer::SyncService::TransportState::ACTIVE);
   sync_service_->FireStateChanged();
 
   // Upon initialization of the engine, the new prefs should be sent.
@@ -529,7 +545,7 @@ TEST_F(PeopleHandlerTest, RestartSyncAfterDashboardClear) {
 TEST_F(PeopleHandlerTest, OnlyStartEngineWhenConfiguringSync) {
   SigninUserAndTurnSyncFeatureOn();
   CreatePeopleHandler();
-  sync_service_->SetTransportState(
+  sync_service_->SetMaxTransportState(
       syncer::SyncService::TransportState::START_DEFERRED);
   sync_service_->FireStateChanged();
   EXPECT_EQ(sync_service_->GetTransportState(),
@@ -561,11 +577,8 @@ TEST_F(PeopleHandlerTest, AcquireSyncBlockerWhenLoadingSyncSettingsSubpage) {
 TEST_F(PeopleHandlerTest, UnrecoverableErrorInitializingSync) {
   SigninUserAndTurnSyncFeatureOn();
   CreatePeopleHandler();
-  sync_service_->SetDisableReasons(syncer::SyncService::DisableReasonSet(
-      {syncer::SyncService::DISABLE_REASON_UNRECOVERABLE_ERROR}));
+  sync_service_->SetHasUnrecoverableError(true);
   sync_user_settings()->ClearInitialSyncFeatureSetupComplete();
-  sync_service_->SetTransportState(
-      syncer::SyncService::TransportState::DISABLED);
 
   // Open the web UI.
   handler_->HandleShowSyncSetupUI(base::Value::List());
@@ -576,11 +589,7 @@ TEST_F(PeopleHandlerTest, UnrecoverableErrorInitializingSync) {
 TEST_F(PeopleHandlerTest, GaiaErrorInitializingSync) {
   SigninUserAndTurnSyncFeatureOn();
   CreatePeopleHandler();
-  sync_service_->SetDisableReasons(syncer::SyncService::DisableReasonSet(
-      {syncer::SyncService::DISABLE_REASON_NOT_SIGNED_IN}));
-  sync_user_settings()->ClearInitialSyncFeatureSetupComplete();
-  sync_service_->SetTransportState(
-      syncer::SyncService::TransportState::DISABLED);
+  sync_service_->SetSignedOut();
 
   // Open the web UI.
   handler_->HandleShowSyncSetupUI(base::Value::List());
@@ -757,6 +766,7 @@ TEST_F(PeopleHandlerTest, ShowSetupSyncEverything) {
   ExpectHasBoolKey(dictionary, "appsRegistered", true);
   ExpectHasBoolKey(dictionary, "autofillRegistered", true);
   ExpectHasBoolKey(dictionary, "bookmarksRegistered", true);
+  ExpectHasBoolKey(dictionary, "cookiesRegistered", true);
   ExpectHasBoolKey(dictionary, "extensionsRegistered", true);
   ExpectHasBoolKey(dictionary, "passwordsRegistered", true);
   ExpectHasBoolKey(dictionary, "paymentsRegistered", true);
@@ -965,8 +975,6 @@ TEST_F(PeopleHandlerTest, DashboardClearWhileSettingsOpen_ConfirmSoon) {
   sync_service_->MimicDashboardClear();
   sync_service_->FireStateChanged();
 
-  ASSERT_EQ(sync_service_->GetTransportState(),
-            syncer::SyncService::TransportState::INITIALIZING);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   ASSERT_TRUE(sync_user_settings()->IsSyncFeatureDisabledViaDashboard());
 #else   // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -993,18 +1001,15 @@ TEST_F(PeopleHandlerTest, DashboardClearWhileSettingsOpen_ConfirmLater) {
   sync_service_->MimicDashboardClear();
   sync_service_->FireStateChanged();
 
-  ASSERT_EQ(sync_service_->GetTransportState(),
-            syncer::SyncService::TransportState::INITIALIZING);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   ASSERT_TRUE(sync_user_settings()->IsSyncFeatureDisabledViaDashboard());
 #else   // BUILDFLAG(IS_CHROMEOS_ASH)
   ASSERT_FALSE(sync_user_settings()->IsInitialSyncFeatureSetupComplete());
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-  // The user waits a while before doing anything, so sync starts up in
-  // transport mode.
-  sync_service_->SetTransportState(syncer::SyncService::TransportState::ACTIVE);
-  sync_service_->FireStateChanged();
+  // Sync starts up in transport mode.
+  ASSERT_EQ(sync_service_->GetTransportState(),
+            syncer::SyncService::TransportState::ACTIVE);
 
   // Now the user confirms sync again. This should set the sync-requested bit
   // and also the first-setup-complete bit (except on ChromeOS Ash where it is
@@ -1025,16 +1030,15 @@ TEST(PeopleHandlerDiceTest, StoredAccountsList) {
 
   network::TestURLLoaderFactory url_loader_factory =
       network::TestURLLoaderFactory();
-  TestingProfile::TestingFactories factories =
-      IdentityTestEnvironmentProfileAdaptor::
-          GetIdentityTestEnvironmentFactories();
-  factories.push_back(
-      {ChromeSigninClientFactory::GetInstance(),
-       base::BindRepeating(&BuildChromeSigninClientWithURLLoader,
-                           &url_loader_factory)});
 
   TestingProfile::Builder builder;
-  builder.AddTestingFactories(factories);
+  builder.AddTestingFactories(
+      IdentityTestEnvironmentProfileAdaptor::
+          GetIdentityTestEnvironmentFactoriesWithAppendedFactories(
+              {TestingProfile::TestingFactory{
+                  ChromeSigninClientFactory::GetInstance(),
+                  base::BindRepeating(&BuildChromeSigninClientWithURLLoader,
+                                      &url_loader_factory)}}));
 
   std::unique_ptr<TestingProfile> profile = builder.Build();
   ASSERT_EQ(true, AccountConsistencyModeManager::IsDiceEnabledForProfile(
@@ -1150,17 +1154,16 @@ TEST(PeopleHandlerMainProfile, GetStoredAccountsList) {
 
   network::TestURLLoaderFactory url_loader_factory =
       network::TestURLLoaderFactory();
-  TestingProfile::TestingFactories factories =
-      IdentityTestEnvironmentProfileAdaptor::
-          GetIdentityTestEnvironmentFactories();
-  factories.push_back(
-      {ChromeSigninClientFactory::GetInstance(),
-       base::BindRepeating(&BuildChromeSigninClientWithURLLoader,
-                           &url_loader_factory)});
 
   TestingProfile::Builder builder;
   builder.SetIsMainProfile(true);
-  builder.AddTestingFactories(factories);
+  builder.AddTestingFactories(
+      IdentityTestEnvironmentProfileAdaptor::
+          GetIdentityTestEnvironmentFactoriesWithAppendedFactories(
+              {TestingProfile::TestingFactory{
+                  ChromeSigninClientFactory::GetInstance(),
+                  base::BindRepeating(&BuildChromeSigninClientWithURLLoader,
+                                      &url_loader_factory)}}));
 
   std::unique_ptr<TestingProfile> profile =
       IdentityTestEnvironmentProfileAdaptor::
@@ -1193,17 +1196,16 @@ TEST(PeopleHandlerSecondaryProfile, GetStoredAccountsList) {
 
   network::TestURLLoaderFactory url_loader_factory =
       network::TestURLLoaderFactory();
-  TestingProfile::TestingFactories factories =
-      IdentityTestEnvironmentProfileAdaptor::
-          GetIdentityTestEnvironmentFactories();
-  factories.push_back(
-      {ChromeSigninClientFactory::GetInstance(),
-       base::BindRepeating(&BuildChromeSigninClientWithURLLoader,
-                           &url_loader_factory)});
 
   TestingProfile::Builder builder;
   builder.SetIsMainProfile(false);
-  builder.AddTestingFactories(factories);
+  builder.AddTestingFactories(
+      IdentityTestEnvironmentProfileAdaptor::
+          GetIdentityTestEnvironmentFactoriesWithAppendedFactories(
+              {TestingProfile::TestingFactory{
+                  ChromeSigninClientFactory::GetInstance(),
+                  base::BindRepeating(&BuildChromeSigninClientWithURLLoader,
+                                      &url_loader_factory)}}));
 
   std::unique_ptr<TestingProfile> profile =
       IdentityTestEnvironmentProfileAdaptor::
@@ -1272,6 +1274,23 @@ TEST_F(PeopleHandlerTest, GetStoredAccountsList) {
   base::Value::List accounts = handler_->GetStoredAccountsList();
   ASSERT_EQ(1u, accounts.size());
   EXPECT_EQ("user@gmail.com", *accounts[0].GetDict().FindString("email"));
+}
+
+TEST_F(PeopleHandlerTest, SyncCookiesDisabled) {
+  base::test::ScopedFeatureList features;
+  // Disable Floating SSO feature flag.
+  features.InitWithFeatures(
+      /*enabled_features=*/{},
+      /*disabled_features=*/{ash::features::kFloatingSso});
+
+  SigninUserAndTurnSyncFeatureOn();
+  CreatePeopleHandler();
+
+  const base::Value::Dict& sync_status_values =
+      handler_->GetSyncStatusDictionary();
+  std::optional<bool> sync_cookies_supported =
+      sync_status_values.FindBool("syncCookiesSupported");
+  EXPECT_FALSE(sync_cookies_supported.has_value());
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -1354,11 +1373,7 @@ class PeopleHandlerWithExplicitBrowserSigninTest : public PeopleHandlerTest {
     ASSERT_TRUE(identity_manager()->HasPrimaryAccount(ConsentLevel::kSignin));
 
     // Inject the error.
-    identity_test_env()->UpdatePersistentErrorOfRefreshTokenForAccount(
-        identity_manager()->GetPrimaryAccountId(ConsentLevel::kSignin),
-        GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
-            GoogleServiceAuthError::InvalidGaiaCredentialsReason::
-                CREDENTIALS_REJECTED_BY_CLIENT));
+    identity_test_env()->SetInvalidRefreshTokenForPrimaryAccount();
   }
 
   bool HasSyncStatusUpdateChangedEvent() {
@@ -1370,9 +1385,7 @@ class PeopleHandlerWithExplicitBrowserSigninTest : public PeopleHandlerTest {
         identity_manager()->HasPrimaryAccount(signin::ConsentLevel::kSignin));
 
     // Clear the error.
-    identity_test_env()->UpdatePersistentErrorOfRefreshTokenForAccount(
-        identity_manager()->GetPrimaryAccountId(ConsentLevel::kSignin),
-        GoogleServiceAuthError::AuthErrorNone());
+    identity_test_env()->SetRefreshTokenForPrimaryAccount();
   }
 
   void SimulateSignout() {
@@ -1542,16 +1555,16 @@ TEST(PeopleHandlerWebOnlySigninTest, ChromeSigninUserAvailableOnWebSignin) {
 
   network::TestURLLoaderFactory url_loader_factory =
       network::TestURLLoaderFactory();
-  TestingProfile::TestingFactories factories =
-      IdentityTestEnvironmentProfileAdaptor::
-          GetIdentityTestEnvironmentFactories();
-  factories.push_back(
-      {ChromeSigninClientFactory::GetInstance(),
-       base::BindRepeating(&BuildChromeSigninClientWithURLLoader,
-                           &url_loader_factory)});
 
   TestingProfile::Builder builder;
-  builder.AddTestingFactories(factories);
+  builder.AddTestingFactories(
+      IdentityTestEnvironmentProfileAdaptor::
+          GetIdentityTestEnvironmentFactoriesWithAppendedFactories(
+              {TestingProfile::TestingFactory{
+                  ChromeSigninClientFactory::GetInstance(),
+                  base::BindRepeating(&BuildChromeSigninClientWithURLLoader,
+                                      &url_loader_factory)}}));
+
   std::unique_ptr<TestingProfile> profile = builder.Build();
   auto identity_test_env_adaptor =
       std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile.get());
@@ -1598,11 +1611,11 @@ TEST(PeopleHandlerWebOnlySigninTest, ChromeSigninUserAvailableOnWebSignin) {
         sync_status_values.FindInt("signedInState");
     ASSERT_TRUE(signedInState.has_value());
     EXPECT_EQ(static_cast<SignedInState>(signedInState.value()),
-              SignedInState::WebOnlySignedIn);
+              SignedInState::kWebOnlySignedIn);
   }
 }
 
-TEST_F(PeopleHandlerWithExplicitBrowserSigninTest, SigninPausedThenSignout) {
+TEST_F(PeopleHandlerWithExplicitBrowserSigninTest, SigninPendingThenSignout) {
   identity_test_env()->MakePrimaryAccountAvailable(kTestUser,
                                                    ConsentLevel::kSignin);
   SetExplicitSignin(true);
@@ -1624,7 +1637,7 @@ TEST_F(PeopleHandlerWithExplicitBrowserSigninTest, SigninPausedThenSignout) {
         sync_status_values.FindInt("signedInState");
     ASSERT_TRUE(signedInState.has_value());
     EXPECT_EQ(static_cast<SignedInState>(signedInState.value()),
-              SignedInState::SignedInPaused);
+              SignedInState::kSignInPending);
   }
 
   // Simulates pressing on the "Sign out" Button in the Sign in Paused state,
@@ -1644,11 +1657,11 @@ TEST_F(PeopleHandlerWithExplicitBrowserSigninTest, SigninPausedThenSignout) {
         sync_status_values.FindInt("signedInState");
     ASSERT_TRUE(signedInState.has_value());
     EXPECT_EQ(static_cast<SignedInState>(signedInState.value()),
-              SignedInState::SignedOut);
+              SignedInState::kSignedOut);
   }
 }
 
-TEST_F(PeopleHandlerWithExplicitBrowserSigninTest, SigninPausedThenReauth) {
+TEST_F(PeopleHandlerWithExplicitBrowserSigninTest, SigninPendingThenReauth) {
   identity_test_env()->MakePrimaryAccountAvailable(kTestUser,
                                                    ConsentLevel::kSignin);
   SetExplicitSignin(true);
@@ -1670,7 +1683,7 @@ TEST_F(PeopleHandlerWithExplicitBrowserSigninTest, SigninPausedThenReauth) {
         sync_status_values.FindInt("signedInState");
     ASSERT_TRUE(signedInState.has_value());
     EXPECT_EQ(static_cast<SignedInState>(signedInState.value()),
-              SignedInState::SignedInPaused);
+              SignedInState::kSignInPending);
     ;
   }
 
@@ -1690,11 +1703,11 @@ TEST_F(PeopleHandlerWithExplicitBrowserSigninTest, SigninPausedThenReauth) {
         sync_status_values.FindInt("signedInState");
     ASSERT_TRUE(signedInState.has_value());
     EXPECT_EQ(static_cast<SignedInState>(signedInState.value()),
-              SignedInState::SignedIn);
+              SignedInState::kSignedIn);
   }
 }
 
-TEST_F(PeopleHandlerWithExplicitBrowserSigninTest, SigninPausedValueWithSync) {
+TEST_F(PeopleHandlerWithExplicitBrowserSigninTest, SigninPendingValueWithSync) {
   CreatePeopleHandler();
 
   ASSERT_FALSE(HasSyncStatusUpdateChangedEvent());
@@ -1715,13 +1728,13 @@ TEST_F(PeopleHandlerWithExplicitBrowserSigninTest, SigninPausedValueWithSync) {
         sync_status_values.FindInt("signedInState");
     ASSERT_TRUE(signedInState.has_value());
     EXPECT_EQ(static_cast<SignedInState>(signedInState.value()),
-              SignedInState::Syncing);
+              SignedInState::kSyncing);
   }
 
   // Invalidate the account while it is syncing.
   TriggerPrimaryAccountInPersistentError();
 
-  // `signinPaused` is still false even when the account is in error.
+  // `SigninPending` is still false even when the account is in error.
   {
     auto values_list =
         GetAllFiredValuesForEventName(kSyncStatusChangeEventName);
@@ -1734,7 +1747,7 @@ TEST_F(PeopleHandlerWithExplicitBrowserSigninTest, SigninPausedValueWithSync) {
         sync_status_values.FindInt("signedInState");
     ASSERT_TRUE(signedInState.has_value());
     EXPECT_EQ(static_cast<SignedInState>(signedInState.value()),
-              SignedInState::Syncing);
+              SignedInState::kSyncing);
   }
 }
 
@@ -1789,19 +1802,31 @@ TEST_F(PeopleHandlerWithExplicitBrowserSigninTest,
   // Simluates settings page loading.
   SimulateHandleGetChromeSigninUserChoiceInfo();
 
+  SigninPrefs signin_prefs(*profile()->GetPrefs());
   ChromeSigninUserChoice current_choice =
-      SigninPrefs(*profile()->GetPrefs())
-          .GetChromeSigninInterceptionUserChoice(account.gaia);
+      signin_prefs.GetChromeSigninInterceptionUserChoice(account.gaia);
 
   // Simulates setting a new value through the UI.
   ChromeSigninUserChoice user_choice = ChromeSigninUserChoice::kSignin;
   ASSERT_NE(current_choice, user_choice);
   SimulateHandleSetChromeSigninUserChoiceInfo(account.email, user_choice);
 
+  // Simulate a last bubble decline time as well.
+  signin_prefs.SetChromeSigninInterceptionLastBubbleDeclineTime(
+      account.gaia, base::Time::Now());
+  signin_prefs.IncrementChromeSigninBubbleRepromptCount(account.gaia);
+
   // Simulates a second selection within the same settings session.
   ChromeSigninUserChoice user_choice2 = ChromeSigninUserChoice::kDoNotSignin;
   ASSERT_NE(current_choice, user_choice2);
   SimulateHandleSetChromeSigninUserChoiceInfo(account.email, user_choice2);
+  // Explicitly setting the do not sign in option should clear bubble declined
+  // time.
+  EXPECT_FALSE(
+      signin_prefs
+          .GetChromeSigninInterceptionLastBubbleDeclineTime(account.gaia)
+          .has_value());
+  EXPECT_EQ(signin_prefs.GetChromeSigninBubbleRepromptCount(account.gaia), 0);
 
   // Enforcing changing the value to the same previous one should not record a
   // new modification.
@@ -2061,4 +2086,51 @@ TEST_F(ExplicitBrowserSigninPeopleHandlerSignoutTest, Signout) {
   EXPECT_FALSE(identity_manager()->HasPrimaryAccount(ConsentLevel::kSignin));
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+class PeopleHandlerWithCookiesSyncTest : public PeopleHandlerTest {
+ private:
+  // Enable Floating SSO feature flag.
+  base::test::ScopedFeatureList features_{ash::features::kFloatingSso};
+};
+
+TEST_F(PeopleHandlerWithCookiesSyncTest, SyncCookiesSupported) {
+  SigninUserAndTurnSyncFeatureOn();
+  CreatePeopleHandler();
+
+  // Feature flag enabled, policy unset.
+  {
+    const base::Value::Dict& sync_status_values =
+        handler_->GetSyncStatusDictionary();
+    std::optional<bool> sync_cookies_supported =
+        sync_status_values.FindBool("syncCookiesSupported");
+    ASSERT_TRUE(sync_cookies_supported.has_value());
+    EXPECT_FALSE(sync_cookies_supported.value());
+  }
+
+  // Feature flag enabled, policy set to false.
+  {
+    profile()->GetPrefs()->SetBoolean(prefs::kFloatingSsoEnabled, false);
+
+    const base::Value::Dict& sync_status_values =
+        handler_->GetSyncStatusDictionary();
+    std::optional<bool> sync_cookies_supported =
+        sync_status_values.FindBool("syncCookiesSupported");
+    ASSERT_TRUE(sync_cookies_supported.has_value());
+    EXPECT_FALSE(sync_cookies_supported.value());
+  }
+
+  // Feature flag enabled, policy set to true.
+  {
+    profile()->GetPrefs()->SetBoolean(prefs::kFloatingSsoEnabled, true);
+
+    const base::Value::Dict& sync_status_values =
+        handler_->GetSyncStatusDictionary();
+    std::optional<bool> sync_cookies_supported =
+        sync_status_values.FindBool("syncCookiesSupported");
+    ASSERT_TRUE(sync_cookies_supported.has_value());
+    EXPECT_TRUE(sync_cookies_supported.value());
+  }
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }  // namespace settings

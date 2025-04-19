@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 // Helper tool that is built and run during a build to pull strings from
 // the GRD files and generate the InfoPlist.strings files needed for
 // macOS app bundles.
@@ -163,6 +168,11 @@ int main(int argc, char* const argv[]) {
                                IDS_RUNTIME_PERMISSION_OS_REASON_TEXT,
                                "IDS_RUNTIME_PERMISSION_OS_REASON_TEXT");
 
+    std::string local_network_access_permission_description =
+        LoadStringFromDataPack(branded_data_pack.get(), cur_lang,
+                               IDS_LOCAL_NETWORK_ACCESS_PERMISSION_DESC,
+                               "IDS_LOCAL_NETWORK_ACCESS_PERMISSION_DESC");
+
     std::string chromium_shortcut_description = LoadStringFromDataPack(
         branded_data_pack.get(), cur_lang, IDS_CHROMIUM_SHORCUT_DESCRIPTION,
         "IDS_CHROMIUM_SHORCUT_DESCRIPTION");
@@ -180,9 +190,12 @@ int main(int argc, char* const argv[]) {
         {"NSBluetoothAlwaysUsageDescription", permission_reason},
         {"NSBluetoothPeripheralUsageDescription", permission_reason},
         {"NSCameraUsageDescription", permission_reason},
+        {"NSLocalNetworkUsageDescription",
+         local_network_access_permission_description},
         {"NSLocationUsageDescription", permission_reason},
         {"NSMicrophoneUsageDescription", permission_reason},
         {"NSWebBrowserPublicKeyCredentialUsageDescription", permission_reason},
+
         {"\"Chromium Shortcut\"", chromium_shortcut_description},
     };
     std::string strings_file_contents_string;

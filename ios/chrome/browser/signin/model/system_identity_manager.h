@@ -132,7 +132,7 @@ class SystemIdentityManager {
   void RemoveObserver(SystemIdentityManagerObserver* observer);
 
   // Presents a new Account Details view and returns a callback that can be
-  // used to dismiss the view (can be ignore if not needed).
+  // used to dismiss the view (can be ignored if not needed).
   // * `identity` is the identity used to present the view.
   // * `view_controller` is the view used to present the details.
   // * `animated` controls whether the view is presented with an animation.
@@ -197,6 +197,10 @@ class SystemIdentityManager {
   // is invoked on the calling sequence when the operation completes.
   virtual void ForgetIdentity(id<SystemIdentity> identity,
                               ForgetIdentityCallback callback) = 0;
+  // Returns true if the identity was removed by calling `ForgetIdentity()`.
+  // Returns false If the identity was not removed or disappeared without
+  // calling `ForgetIdentity()`.
+  virtual bool IdentityRemovedByUser(NSString* gaia_id) = 0;
 
   // Asynchronously retrieves access tokens for `identity` with `scopes`. The
   // callback is invoked on the calling sequence when the operation completes.

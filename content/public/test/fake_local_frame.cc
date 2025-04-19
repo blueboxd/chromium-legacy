@@ -86,11 +86,11 @@ void FakeLocalFrame::MediaPlayerActionAt(
     const gfx::Point& location,
     blink::mojom::MediaPlayerActionPtr action) {}
 
-void FakeLocalFrame::RequestVideoFrameAt(const gfx::Point& window_point,
-                                         const gfx::Size& max_size,
-                                         int max_area,
-                                         RequestVideoFrameAtCallback callback) {
-}
+void FakeLocalFrame::RequestVideoFrameAtWithBoundsHint(
+    const gfx::Point& window_point,
+    const gfx::Size& max_size,
+    int max_area,
+    RequestVideoFrameAtWithBoundsHintCallback callback) {}
 
 void FakeLocalFrame::PluginActionAt(const gfx::Point& location,
                                     blink::mojom::PluginActionType action) {}
@@ -106,6 +106,9 @@ void FakeLocalFrame::ReportContentSecurityPolicyViolation(
 
 void FakeLocalFrame::DidUpdateFramePolicy(
     const blink::FramePolicy& frame_policy) {}
+
+void FakeLocalFrame::OnFrameVisibilityChanged(
+    blink::mojom::FrameVisibility visibility) {}
 
 void FakeLocalFrame::PostMessageEvent(
     const std::optional<blink::RemoteFrameToken>& source_frame_token,
@@ -226,8 +229,6 @@ void FakeLocalFrame::AddResourceTimingEntryForFailedSubframeNavigation(
     bool is_validated,
     const std::string& normalized_server_timing,
     const ::network::URLLoaderCompletionStatus& completion_status) {}
-
-void FakeLocalFrame::RequestFullscreenDocumentElement() {}
 
 void FakeLocalFrame::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {

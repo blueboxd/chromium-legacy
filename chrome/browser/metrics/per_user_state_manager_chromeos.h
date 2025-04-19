@@ -16,7 +16,6 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
-#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/profile_pref_names.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/ash/components/login/session/session_termination_manager.h"
@@ -185,6 +184,15 @@ class PerUserStateManagerChromeOS
   // Ensures that ownership status is known before proceeding with using
   // profile prefs.
   virtual void WaitForOwnershipStatus();
+
+  // Returns true if a user log store in the user cryptohome should be used for
+  // the current logged in user.
+  // Certain users (ie demo mode sessions with metrics consent on) should not
+  // use a user log store since the user log store will be stored on the
+  // temporary cryptohome and will be deleted at the end of the session.
+  // Demo mode sessions with metric consent on should be stored in local state
+  // to be persistent.
+  bool ShouldUseUserLogStore() const;
 
   // Loads appropriate prefs from |current_user_| and creates new log storage
   // using profile prefs.

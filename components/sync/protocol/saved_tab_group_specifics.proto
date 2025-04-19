@@ -14,6 +14,8 @@ option optimize_for = LITE_RUNTIME;
 
 package sync_pb;
 
+import "components/sync/protocol/tab_group_attribution_metadata.proto";
+
 // Sync protocol datatype extension for saved tab groups. Saved Tab Groups are
 // tab groups which can be recalled between browser sessions, and if sync is
 // turned on, cross device. A saved tab group contains tabs which are stored as
@@ -51,6 +53,8 @@ message SavedTabGroup {
   // Position of the pinned tab group in bookmark bar on Desktop. This will
   // replace the position field in Tab Group V2.
   optional int64 pinned_position = 4;
+
+  reserved 5;
 }
 
 // Sync protocol datatype extension for saved tab group tabs. SavedTabGroupTab
@@ -86,4 +90,7 @@ message SavedTabGroupSpecifics {
     SavedTabGroup group = 4;
     SavedTabGroupTab tab = 5;
   }
+
+  // Attribution metadata about the associated tab group or tab.
+  optional AttributionMetadata attribution_metadata = 6;
 }

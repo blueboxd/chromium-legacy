@@ -8,9 +8,9 @@
 
 #include "partition_alloc/aarch64_support.h"
 #include "partition_alloc/build_config.h"
+#include "partition_alloc/buildflags.h"
 #include "partition_alloc/partition_alloc_base/compiler_specific.h"
 #include "partition_alloc/partition_alloc_base/cpu.h"
-#include "partition_alloc/partition_alloc_buildflags.h"
 #include "partition_alloc/partition_alloc_check.h"
 #include "partition_alloc/partition_alloc_config.h"
 
@@ -24,7 +24,7 @@
 #define PR_GET_TAGGED_ADDR_CTRL 56
 #define PR_TAGGED_ADDR_ENABLE (1UL << 0)
 
-#if BUILDFLAG(IS_LINUX)
+#if PA_BUILDFLAG(IS_LINUX)
 #include <linux/version.h>
 
 // Linux headers already provide these since v5.10.
@@ -45,13 +45,13 @@
 #endif
 #endif
 
-#if BUILDFLAG(IS_ANDROID)
+#if PA_BUILDFLAG(IS_ANDROID)
 #include "partition_alloc/partition_alloc_base/files/file_path.h"
 #include "partition_alloc/partition_alloc_base/native_library.h"
 #if PA_BUILDFLAG(HAS_MEMORY_TAGGING)
 #include <malloc.h>
 #endif  // BUILDFLAGS(HAS_MEMORY_TAGGING)
-#endif  // BUILDFLAG(IS_ANDROID)
+#endif  // PA_BUILDFLAG(IS_ANDROID)
 
 namespace partition_alloc {
 void ChangeMemoryTaggingModeForCurrentThreadNoOp(TagViolationReportingMode m) {}
@@ -98,7 +98,7 @@ void ChangeMemoryTaggingModeForCurrentThread(TagViolationReportingMode m)
 
 namespace internal {
 
-#if BUILDFLAG(IS_ANDROID)
+#if PA_BUILDFLAG(IS_ANDROID)
 bool ChangeMemoryTaggingModeForAllThreadsPerProcess(
     TagViolationReportingMode m) {
 #if PA_BUILDFLAG(HAS_MEMORY_TAGGING)
@@ -136,7 +136,7 @@ bool ChangeMemoryTaggingModeForAllThreadsPerProcess(
   return false;
 #endif  // PA_BUILDFLAG(HAS_MEMORY_TAGGING)
 }
-#endif  // BUILDFLAG(IS_ANDROID)
+#endif  // PA_BUILDFLAG(IS_ANDROID)
 
 namespace {
 [[maybe_unused]] static bool CheckTagRegionParameters(void* ptr, size_t sz) {
@@ -182,7 +182,7 @@ void* TagRegionIncrementForMTE(void* ptr, size_t sz) {
 }
 
 void* RemaskVoidPtrForMTE(void* ptr) {
-  if (PA_LIKELY(ptr)) {
+  if (ptr) [[likely]] {
     // Can't look up the tag for a null ptr (segfaults).
     return __arm_mte_get_tag(ptr);
   }
@@ -290,7 +290,7 @@ TagViolationReportingMode GetMemoryTaggingModeForCurrentThread()
 
 }  // namespace internal
 
-#if PA_BUILDFLAG(HAS_MEMORY_TAGGING) && BUILDFLAG(IS_ANDROID)
+#if PA_BUILDFLAG(HAS_MEMORY_TAGGING) && PA_BUILDFLAG(IS_ANDROID)
 bool PermissiveMte::enabled_ = false;
 
 // static
@@ -314,6 +314,35 @@ bool PermissiveMte::HandleCrash(int signo,
   }
   return false;
 }
-#endif  // PA_BUILDFLAG(HAS_MEMORY_TAGGING) && BUILDFLAG(IS_ANDROID)
+#endif  // PA_BUILDFLAG(HAS_MEMORY_TAGGING) && PA_BUILDFLAG(IS_ANDROID)
+
+SuspendTagCheckingScope::SuspendTagCheckingScope() noexcept {
+#if PA_BUILDFLAG(HAS_MEMORY_TAGGING)
+  if (internal::base::CPU::GetInstanceNoAllocation().has_mte()) [[unlikely]] {
+    asm volatile(
+        R"(
+        .arch_extension memtag
+        mrs %0, tco
+        msr tco, #1
+        )"
+        : "=r"(previous_tco_));
+  }
+#endif  // PA_BUILDFLAG(HAS_MEMORY_TAGGING)
+}
+
+SuspendTagCheckingScope::~SuspendTagCheckingScope() {
+#if PA_BUILDFLAG(HAS_MEMORY_TAGGING)
+  if (internal::base::CPU::GetInstanceNoAllocation().has_mte()) [[unlikely]] {
+    // Restore previous tco value.
+    __asm__ __volatile__(
+        R"(
+        .arch_extension memtag
+        msr tco, %0
+        )"
+        :
+        : "r"(previous_tco_));
+  }
+#endif  // PA_BUILDFLAG(HAS_MEMORY_TAGGING)
+}
 
 }  // namespace partition_alloc

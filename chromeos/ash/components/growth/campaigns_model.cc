@@ -2,11 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chromeos/ash/components/growth/campaigns_model.h"
 
 #include <memory>
 #include <optional>
 
+#include "ash/constants/ash_features.h"
 #include "base/logging.h"
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
@@ -15,6 +21,7 @@
 #include "base/version.h"
 #include "build/branding_buildflags.h"
 #include "build/buildflag.h"
+#include "chromeos/ash/components/growth/action_performer.h"
 #include "chromeos/ash/components/growth/growth_metrics.h"
 #include "chromeos/ash/grit/ash_resources.h"
 #include "chromeos/ui/vector_icons/vector_icons.h"
@@ -32,6 +39,7 @@ namespace {
 inline constexpr char kTargetings[] = "targetings";
 
 inline constexpr char kId[] = "id";
+inline constexpr char kGroupId[] = "groupId";
 inline constexpr char kStudyId[] = "studyId";
 inline constexpr char kShouldRegisterTrialWithTriggerEventName[] =
     "registerTrialWithTriggerEventName";
@@ -52,6 +60,8 @@ inline constexpr char kMaxDemoModeAppVersion[] = "appVersion.max";
 inline constexpr char kDeviceTargeting[] = "device";
 inline constexpr char kApplicationLocales[] = "locales";
 inline constexpr char kUserLocales[] = "userLocales";
+inline constexpr char kIncludedCountries[] = "includedCountries";
+inline constexpr char kExcludedCountries[] = "excludedCountries";
 inline constexpr char kMinMilestone[] = "milestone.min";
 inline constexpr char kMaxMilestone[] = "milestone.max";
 inline constexpr char kMinVersion[] = "version.min";
@@ -64,6 +74,8 @@ inline constexpr char kDeviceAgeInHours[] = "deviceAgeInHours";
 inline constexpr char kSessionTargeting[] = "session";
 
 // Experiment Tag Targeting paths.
+inline constexpr char kPredefinedFeatureIndex[] = "predefinedFeatureIndex";
+inline constexpr char kOneOffExpFeatureIndex[] = "oneOffExpFeatureIndex";
 inline constexpr char kExperimentTargetings[] = "experimentTags";
 
 // User Targeting paths.
@@ -74,6 +86,8 @@ inline constexpr char kOwner[] = "isOwner";
 inline constexpr char kEventsTargetings[] = "events";
 inline constexpr char kImpressionCap[] = "impressionCap";
 inline constexpr char kDismissalCap[] = "dismissalCap";
+inline constexpr char kGroupImpressionCap[] = "groupImpressionCap";
+inline constexpr char kGroupDismissalCap[] = "groupDismissalCap";
 inline constexpr char kEventsConditions[] = "conditions";
 inline constexpr int kImpressionCapDefaultValue = 3;
 inline constexpr int kDismissalCapDefaultValue = 1;
@@ -87,6 +101,9 @@ inline constexpr char kRuntimeTargeting[] = "runtime";
 inline constexpr char kTriggerTargetings[] = "triggerList";
 inline constexpr char kTriggerType[] = "triggerType";
 inline constexpr char kTriggerEvents[] = "triggerEvents";
+
+// User Preference Targeting paths.
+inline constexpr char kUserPrefTargetings[] = "userPrefs";
 
 // Scheduling Targeting paths.
 inline constexpr char kSchedulingTargetings[] = "schedulings";
@@ -109,6 +126,7 @@ inline constexpr char kPayloadPathTemplate[] = "payload.%s";
 inline constexpr char kDemoModePayloadPath[] = "demoModeApp";
 inline constexpr char kNudgePayloadPath[] = "nudge";
 inline constexpr char kNotificationPayloadPath[] = "notification";
+inline constexpr char kOobePerkDiscoveryPayloadPath[] = "oobePerkDiscovery";
 
 // Actions
 inline constexpr char kActionTypePath[] = "type";
@@ -128,6 +146,45 @@ inline constexpr char kVectorIcon[] = "vectorIcon";
 
 // Vector Icon
 inline constexpr char kBuiltInVectorIcon[] = "builtInVectorIcon";
+
+// Each feature will be used in one finch study.
+// These features are reusable if a feature is not currently used.
+// Entries should not be ordered as feature is selected by index defined in the
+// campaign.
+inline const base::Feature* kPredefinedFeaturesForExperimentTagTargeting[] = {
+    &ash::features::kGrowthCampaignsExperiment1,
+    &ash::features::kGrowthCampaignsExperiment2,
+    &ash::features::kGrowthCampaignsExperiment3,
+    &ash::features::kGrowthCampaignsExperiment4,
+    &ash::features::kGrowthCampaignsExperiment5,
+    &ash::features::kGrowthCampaignsExperiment6,
+    &ash::features::kGrowthCampaignsExperiment7,
+    &ash::features::kGrowthCampaignsExperiment8,
+    &ash::features::kGrowthCampaignsExperiment9,
+    &ash::features::kGrowthCampaignsExperiment10,
+    &ash::features::kGrowthCampaignsExperiment11,
+    &ash::features::kGrowthCampaignsExperiment12,
+    &ash::features::kGrowthCampaignsExperiment13,
+    &ash::features::kGrowthCampaignsExperiment14,
+    &ash::features::kGrowthCampaignsExperiment15,
+    &ash::features::kGrowthCampaignsExperiment16,
+    &ash::features::kGrowthCampaignsExperiment17,
+    &ash::features::kGrowthCampaignsExperiment18,
+    &ash::features::kGrowthCampaignsExperiment19,
+    &ash::features::kGrowthCampaignsExperiment20,
+};
+
+// List of one-off feature flags used for delivering finch params for
+// study/groups that refer to more than one feature flags.
+// Each feature will be used in one finch study.
+// These features are not reusable. It is tied to the finch config of a
+// particular experiment.
+// Entries should not be ordered as feature is selected by index defined in the
+// campaign.
+const base::Feature* kOneOffFeaturesForExperimentTagTargeting[] = {
+    &ash::features::kGrowthCampaignsExperimentG1Nudge,
+    &ash::features::kGrowthCampaignsExperimentFileAppGamgee,
+};
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 // Image
@@ -150,6 +207,10 @@ std::optional<int> GetBuiltInImageResourceId(
       return IDR_GROWTH_FRAMEWORK_SPARK_REBUY_PNG;
     case BuiltInImage::kSpark1PApp:
       return IDR_GROWTH_FRAMEWORK_SPARK_1P_APP_PNG;
+    case BuiltInImage::kSparkV2:
+      return IDR_GROWTH_FRAMEWORK_SPARK_V2_PNG;
+    case BuiltInImage::kG1Notification:
+      return IDR_GROWTH_FRAMEWORK_G1_NOTIFICATION_PNG;
   }
 }
 
@@ -160,7 +221,13 @@ std::optional<BuiltInImage> GetBuiltInImageType(
     return std::nullopt;
   }
 
-  return static_cast<BuiltInImage>(built_in_image_value.value());
+  auto built_in_image = built_in_image_value.value();
+  if (built_in_image < 0 ||
+      built_in_image > static_cast<int>(BuiltInImage::kMaxValue)) {
+    return std::nullopt;
+  }
+
+  return static_cast<BuiltInImage>(built_in_image);
 }
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
@@ -172,7 +239,11 @@ std::optional<BuiltInVectorIcon> GetBuiltInVectorIconType(
     return std::nullopt;
   }
 
-  return static_cast<BuiltInVectorIcon>(built_in_vector_icon_value.value());
+  auto icon = built_in_vector_icon_value.value();
+  if (icon < 0 || icon > static_cast<int>(BuiltInVectorIcon::kMaxValue)) {
+    return std::nullopt;
+  }
+  return static_cast<BuiltInVectorIcon>(icon);
 }
 
 std::optional<base::Version> StringToVersion(const std::string* version_value) {
@@ -187,6 +258,17 @@ std::optional<base::Version> StringToVersion(const std::string* version_value) {
   return std::move(version);
 }
 
+const base::Feature* SelectFeatureByIndex(const base::Feature* features[],
+                                          int size,
+                                          int index) {
+  if (index < 0 || index >= size) {
+    // TODO: b/344673533 - Record error metrics.
+    return nullptr;
+  }
+
+  return features[index];
+}
+
 }  // namespace
 
 Trigger::Trigger(TriggerType type) : type(type) {}
@@ -196,6 +278,7 @@ Campaigns* GetMutableCampaignsBySlot(CampaignsPerSlot* campaigns_per_slot,
   if (!campaigns_per_slot) {
     return nullptr;
   }
+
   return campaigns_per_slot->FindList(
       base::NumberToString(static_cast<int>(slot)));
 }
@@ -226,6 +309,9 @@ const Payload* GetPayloadBySlot(const Campaign* campaign, Slot slot) {
     case Slot::kNotification:
       return campaign->FindDictByDottedPath(
           base::StringPrintf(kPayloadPathTemplate, kNotificationPayloadPath));
+    case Slot::kOobePerkDiscovery:
+      return campaign->FindDictByDottedPath(base::StringPrintf(
+          kPayloadPathTemplate, kOobePerkDiscoveryPayloadPath));
     case Slot::kDemoModeFreePlayApps:
       NOTREACHED_IN_MIGRATION();
       break;
@@ -236,6 +322,10 @@ const Payload* GetPayloadBySlot(const Campaign* campaign, Slot slot) {
 
 std::optional<int> GetCampaignId(const Campaign* campaign) {
   return campaign->FindInt(kId);
+}
+
+std::optional<int> GetCampaignGroupId(const Campaign* campaign) {
+  return campaign->FindInt(kGroupId);
 }
 
 std::optional<int> GetStudyId(const Campaign* campaign) {
@@ -336,6 +426,14 @@ const base::Value::List* DeviceTargeting::GetUserLocales() const {
   return GetListCriteria(kUserLocales);
 }
 
+const base::Value::List* DeviceTargeting::GetIncludedCountries() const {
+  return GetListCriteria(kIncludedCountries);
+}
+
+const base::Value::List* DeviceTargeting::GetExcludedCountries() const {
+  return GetListCriteria(kExcludedCountries);
+}
+
 const std::optional<int> DeviceTargeting::GetMinMilestone() const {
   return GetIntCriteria(kMinMilestone);
 }
@@ -402,6 +500,14 @@ int EventsTargeting::GetDismissalCap() const {
   return cap.value_or(kDismissalCapDefaultValue);
 }
 
+std::optional<int> EventsTargeting::GetGroupImpressionCap() const {
+  return config_dict_->FindInt(kGroupImpressionCap);
+}
+
+std::optional<int> EventsTargeting::GetGroupDismissalCap() const {
+  return config_dict_->FindInt(kGroupDismissalCap);
+}
+
 const base::Value::List* EventsTargeting::GetEventsConditions() const {
   return config_dict_->FindList(kEventsConditions);
 }
@@ -465,6 +571,27 @@ SessionTargeting::SessionTargeting(const Targeting* targeting_dict)
     : TargetingBase(targeting_dict, kSessionTargeting) {}
 
 SessionTargeting::~SessionTargeting() = default;
+
+std::optional<const base::Feature*> SessionTargeting::GetFeature() const {
+  const auto one_off_feature_index = GetIntCriteria(kOneOffExpFeatureIndex);
+  if (one_off_feature_index) {
+    return SelectFeatureByIndex(
+        kOneOffFeaturesForExperimentTagTargeting,
+        static_cast<int>(std::size(kOneOffFeaturesForExperimentTagTargeting)),
+        one_off_feature_index.value());
+  }
+
+  const auto predefined_feature_index = GetIntCriteria(kPredefinedFeatureIndex);
+  if (predefined_feature_index) {
+    return SelectFeatureByIndex(
+        kPredefinedFeaturesForExperimentTagTargeting,
+        static_cast<int>(
+            std::size(kPredefinedFeaturesForExperimentTagTargeting)),
+        predefined_feature_index.value());
+  }
+
+  return std::nullopt;
+}
 
 const base::Value::List* SessionTargeting::GetExperimentTags() const {
   return GetListCriteria(kExperimentTargetings);
@@ -574,6 +701,10 @@ RuntimeTargeting::GetTriggers() const {
   return triggers;
 }
 
+const base::Value::List* RuntimeTargeting::GetUserPrefTargetings() const {
+  return GetListCriteria(kUserPrefTargetings);
+}
+
 // Action.
 Action::Action(const base::Value::Dict* action_dict)
     : action_dict_(action_dict) {}
@@ -588,7 +719,15 @@ std::optional<growth::ActionType> Action::GetActionType() const {
     return std::nullopt;
   }
 
-  return static_cast<growth::ActionType>(action_type_value.value());
+  auto action_type = action_type_value.value();
+  if (action_type < 0 ||
+      action_type > static_cast<int>(growth::ActionType::kMaxValue)) {
+    LOG(ERROR) << "Unrecognized action type.";
+    // TODO: b/330931877 - Record an error.
+    return std::nullopt;
+  }
+
+  return static_cast<growth::ActionType>(action_type);
 }
 
 const base::Value::Dict* Action::GetParams() const {
@@ -606,15 +745,22 @@ const std::optional<WindowAnchorType> Anchor::GetActiveAppWindowAnchorType()
     return std::nullopt;
   }
 
-  const auto anchor_type = anchor_dict_->FindInt(kActiveAppWindowAnchorType);
-  if (!anchor_type) {
+  const auto anchor_type_value =
+      anchor_dict_->FindInt(kActiveAppWindowAnchorType);
+  if (!anchor_type_value) {
     // Invalid anchor type.
     LOG(ERROR) << "Invalid anchor type";
     RecordCampaignsManagerError(CampaignsManagerError::kInvalidAnchorType);
     return std::nullopt;
   }
 
-  return static_cast<WindowAnchorType>(anchor_type.value());
+  auto anchor_type = anchor_type_value.value();
+  if (anchor_type < 0 ||
+      anchor_type > static_cast<int>(WindowAnchorType::kMaxValue)) {
+    return std::nullopt;
+  }
+
+  return static_cast<WindowAnchorType>(anchor_type);
 }
 
 const std::string* Anchor::GetShelfAppButtonId() const {

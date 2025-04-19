@@ -390,8 +390,8 @@ gpu::SyncToken OneCopyRasterBufferProvider::CopyOnWorkerThread(
     // This SharedImage will have the contents of raster operations copied into
     // it via the raster interface before being sent off to the display
     // compositor.
-    uint32_t usage = gpu::SHARED_IMAGE_USAGE_DISPLAY_READ |
-                     gpu::SHARED_IMAGE_USAGE_RASTER_WRITE;
+    gpu::SharedImageUsageSet usage = gpu::SHARED_IMAGE_USAGE_DISPLAY_READ |
+                                     gpu::SHARED_IMAGE_USAGE_RASTER_WRITE;
     if (mailbox_texture_is_overlay_candidate)
       usage |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
     shared_image = sii->CreateSharedImage(
@@ -442,8 +442,7 @@ gpu::SyncToken OneCopyRasterBufferProvider::CopyOnWorkerThread(
     ri->BeginQueryEXT(query_target, staging_buffer->query_id);
   }
 
-  uint32_t texture_target =
-      shared_image->GetTextureTarget(gfx::BufferUsage::SCANOUT);
+  uint32_t texture_target = shared_image->GetTextureTarget();
 
   // Clear to ensure the resource is fully initialized and BeginAccess succeeds.
   if (needs_clear) {

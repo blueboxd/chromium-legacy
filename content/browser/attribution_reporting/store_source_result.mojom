@@ -8,6 +8,8 @@ module attribution_reporting.mojom;
 //
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
+//
+// LINT.IfChange(StoreSourceResult)
 enum StoreSourceResult {
   kSuccess = 0,
   kInternalError = 1,
@@ -23,4 +25,6 @@ enum StoreSourceResult {
   kExceedsMaxChannelCapacity = 11,
   // Reserved: 12
   kExceedsMaxTriggerStateCardinality = 13,
+  kDestinationPerDayReportingLimitReached = 14,
 };
+// LINT.ThenChange(//tools/metrics/histograms/metadata/attribution_reporting/enums.xml:ConversionStorageSourceStatus)

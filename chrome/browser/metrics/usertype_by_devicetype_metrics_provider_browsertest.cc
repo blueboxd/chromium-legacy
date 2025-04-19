@@ -13,6 +13,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/browser/ash/app_mode/kiosk_test_helper.h"
+#include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_data.h"
 #include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_manager.h"
 #include "chrome/browser/ash/login/app_mode/test/kiosk_test_helpers.h"
 #include "chrome/browser/ash/login/demo_mode/demo_mode_test_utils.h"
@@ -354,8 +355,8 @@ class UserTypeByDeviceTypeMetricsProviderTest
 
     settings_ = std::make_unique<ScopedDeviceSettings>();
     int ui_update_count = LoginScreenTestApi::GetUiUpdateCount();
-    policy::SetDeviceLocalAccounts(settings_->owner_settings_service(),
-                                   device_local_accounts);
+    policy::SetDeviceLocalAccountsForTesting(
+        settings_->owner_settings_service(), device_local_accounts);
     // Wait for the Kiosk App configuration to reload.
     LoginScreenTestApi::WaitForUiUpdate(ui_update_count);
   }

@@ -12,10 +12,11 @@ import {NetworkList} from 'chrome://resources/ash/common/network/network_list_ty
 import {OncMojo} from 'chrome://resources/ash/common/network/onc_mojo.js';
 import {ActivationStateType, CrosNetworkConfigRemote, InhibitReason, SecurityType} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-webui.js';
 import {ConnectionStateType, NetworkType, OncSource, PortalState} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/network_types.mojom-webui.js';
-import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {assertEquals, assertFalse, assertNotEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {FakeNetworkConfig} from 'chrome://webui-test/chromeos/fake_network_config_mojom.js';
 import {FakeESimManagerRemote} from 'chrome://webui-test/cr_components/chromeos/cellular_setup/fake_esim_manager_remote.js';
+import {keyDownOn} from 'chrome://webui-test/keyboard_mock_interactions.js';
 import {eventToPromise} from 'chrome://webui-test/test_util.js';
 
 suite('NetworkListItemTest', function() {
@@ -712,7 +713,6 @@ suite('NetworkListItemTest', function() {
       async () => {
         loadTimeData.overrideValues({
           'isUserLoggedIn': true,
-          'isCellularCarrierLockEnabled': true,
         });
         init();
         const iccid = '11111111111111111111';
@@ -728,24 +728,6 @@ suite('NetworkListItemTest', function() {
         assertTrue(!!sublabel);
         assertEquals(networkStateLockedText, sublabel.textContent.trim());
       });
-
-  test('Show sim locked sublabel when carrier lock is disabled', async () => {
-    loadTimeData.overrideValues(
-        {'isUserLoggedIn': true, 'isCellularCarrierLockEnabled': false});
-    init();
-    const iccid = '11111111111111111111';
-    const eid = '1';
-    eSimManagerRemote.addEuiccForTest(/*numProfiles=*/ 1);
-    const networkStateLockedText =
-        listItem.i18n('networkListItemUpdatedCellularSimCardLocked');
-    listItem.item = initCellularNetwork(
-        iccid, eid, /*simlocked=*/ true, /*simlocktype*/ 'network-pin');
-
-    await flushAsync();
-    const sublabel = listItem.$$('#sublabel');
-    assertTrue(!!sublabel);
-    assertEquals(networkStateLockedText, sublabel.textContent.trim());
-  });
 
   test(
       'Show locked sublabel when cellular network is locked and scanning',

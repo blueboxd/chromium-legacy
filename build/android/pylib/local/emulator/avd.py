@@ -16,6 +16,7 @@ import time
 
 from google.protobuf import text_format  # pylint: disable=import-error
 
+from devil import base_error
 from devil.android import apk_helper
 from devil.android import device_utils
 from devil.android.sdk import adb_wrapper
@@ -27,6 +28,8 @@ from py_utils import tempfile_ext
 from pylib import constants
 from pylib.local.emulator import ini
 from pylib.local.emulator.proto import avd_pb2
+
+from lib.proto import exception_recorder
 
 # A common root directory to store the CIPD packages for creating or starting
 # the emulator instance, e.g. emulator binary, system images, AVDs.
@@ -87,6 +90,10 @@ class AvdException(Exception):
     # avd.py is executed with python2.
     # pylint: disable=R1725
     super(AvdException, self).__init__('\n'.join(message_parts))
+
+
+class AvdStartException(AvdException):
+  """Exception for AVD start failures."""
 
 
 def _Load(avd_proto_path):
@@ -544,11 +551,15 @@ class AvdConfig:
       # image.
       writable_system = bool(privileged_apk_tuples)
       gpu_mode = self.avd_launch_settings.gpu_mode or _DEFAULT_GPU_MODE
-      instance.Start(ensure_system_settings=False,
-                     read_only=False,
-                     writable_system=writable_system,
-                     gpu_mode=gpu_mode,
-                     debug_tags=debug_tags)
+      instance.Start(
+          ensure_system_settings=False,
+          read_only=False,
+          writable_system=writable_system,
+          gpu_mode=gpu_mode,
+          debug_tags=debug_tags,
+          # Set this flag to True to align with swarming AVD run.
+          require_fast_start=True,
+      )
 
       assert instance.device is not None, '`instance.device` not initialized.'
       # Android devices with full-disk encryption are encrypted on first boot,
@@ -842,7 +853,7 @@ class AvdConfig:
         for line in cmd_helper.IterCmdOutputLines(ensure_cmd):
           logging.info('    %s', line)
       except subprocess.CalledProcessError as e:
-        # avd.py is executed with python2.
+        exception_recorder.register(e)
         # pylint: disable=W0707
         raise AvdException('Failed to install CIPD packages: %s' % str(e),
                            command=ensure_cmd)
@@ -970,7 +981,8 @@ class _AvdInstance:
             debug_tags=None,
             disk_size=None,
             enable_network=False,
-            require_fast_start=False):
+            require_fast_start=False,
+            retries=0):
     """Starts the emulator running an instance of the given AVD.
 
     Note when ensure_system_settings is True, the program will wait until the
@@ -1014,8 +1026,8 @@ class _AvdInstance:
       avd_type = self._avd_name.split('_')[1]
       logging.info('Emulator Type: %s', avd_type)
 
-      if avd_type == 'car':
-        logging.info('Auto emulator will start slow')
+      if avd_type in ('car', '32'):
+        logging.info('Auto, Tablet emulator will start slow')
         is_slow_start = True
 
       if wipe_data:
@@ -1051,8 +1063,8 @@ class _AvdInstance:
           emulator_cmd.append('-show-kernel')
 
       emulator_env = {
-          # kill immediately when emulator hang.
-          'ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL': '0',
+          # kill as early as possible when emulator hang.
+          'ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL': '1',
           # Sets the emulator configuration directory
           'ANDROID_EMULATOR_HOME': self._emulator_home,
       }
@@ -1104,26 +1116,29 @@ class _AvdInstance:
         self._emulator_serial = timeout_retry.Run(
             listen_for_serial,
             timeout=120 if is_slow_start else 30,
-            retries=0,
+            retries=retries,
             args=[sock])
         logging.info('%s started', self._emulator_serial)
-      except Exception:
+      except base_error.BaseError as e:
         self.Stop(force=True)
-        raise
+        raise AvdStartException(str(e)) from e
 
-    # Set the system settings in "Start" here instead of setting in "Create"
-    # because "Create" is used during AVD creation, and we want to avoid extra
-    # turn-around on rolling AVD.
-    if ensure_system_settings:
-      assert self.device is not None, '`instance.device` not initialized.'
-      logging.info('Waiting for device to be fully booted.')
-      self.device.WaitUntilFullyBooted(timeout=360 if is_slow_start else 90,
-                                       retries=0)
-      logging.info('Device fully booted, verifying system settings.')
-      _EnsureSystemSettings(self.device)
+    try:
+      # Set the system settings in "Start" here instead of setting in "Create"
+      # because "Create" is used during AVD creation, and we want to avoid extra
+      # turn-around on rolling AVD.
+      if ensure_system_settings:
+        assert self.device is not None, '`instance.device` not initialized.'
+        logging.info('Waiting for device to be fully booted.')
+        self.device.WaitUntilFullyBooted(timeout=360 if is_slow_start else 90,
+                                         retries=retries)
+        logging.info('Device fully booted, verifying system settings.')
+        _EnsureSystemSettings(self.device)
 
-    if enable_network:
-      _EnableNetwork(self.device)
+      if enable_network:
+        _EnableNetwork(self.device)
+    except base_error.BaseError as e:
+      raise AvdStartException(str(e)) from e
 
   def Stop(self, force=False):
     """Stops the emulator process.

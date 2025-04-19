@@ -77,9 +77,12 @@
     ]
   },
   "builder_group": "chromium.memory",
+  "gardener_rotations": [
+    "ios"
+  ],
   "recipe": "chromium",
   "sheriff_rotations": [
     "ios"
   ],
-  "xcode_build_version": "15e204a"
+  "xcode_build_version": "16a5211f"
 }

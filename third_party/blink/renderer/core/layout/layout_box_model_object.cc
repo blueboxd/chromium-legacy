@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/layout/layout_result.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/legacy_layout_tree_walking.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/layout/table/layout_table_section.h"
 #include "third_party/blink/renderer/core/page/scrolling/sticky_position_scrolling_constraints.h"
 #include "third_party/blink/renderer/core/paint/inline_paint_context.h"
@@ -385,11 +386,11 @@ void LayoutBoxModelObject::AddOutlineRectsForDescendant(
   }
 
   if (descendant.HasLayer()) {
-    OutlineRectCollector* descendant_collector =
+    std::unique_ptr<OutlineRectCollector> descendant_collector =
         collector.ForDescendantCollector();
     descendant.AddOutlineRects(*descendant_collector, nullptr, PhysicalOffset(),
                                include_block_overflows);
-    collector.Combine(descendant_collector, descendant, this,
+    collector.Combine(descendant_collector.get(), descendant, this,
                       additional_offset);
     return;
   }
@@ -484,15 +485,25 @@ PhysicalRect LayoutBoxModelObject::VisualOverflowRectIncludingFilters() const {
 PhysicalRect LayoutBoxModelObject::ApplyFiltersToRect(
     const PhysicalRect& rect) const {
   NOT_DESTROYED();
-  if (!StyleRef().HasFilter()) {
+  if (!HasReflection() && !StyleRef().HasFilter()) {
     return rect;
   }
   gfx::RectF float_rect(rect);
-  gfx::RectF filter_reference_box = Layer()->FilterReferenceBox();
-  if (!filter_reference_box.size().IsZero()) {
-    float_rect.UnionEvenIfEmpty(filter_reference_box);
+  if (auto* layer = Layer()) {
+    const gfx::RectF filter_reference_box = layer->FilterReferenceBox();
+    if (!filter_reference_box.size().IsZero()) {
+      float_rect.UnionEvenIfEmpty(filter_reference_box);
+    }
+    float_rect = layer->MapRectForFilter(float_rect);
+  } else {
+    CHECK(IsSVGChild());
+    const gfx::RectF filter_reference_box =
+        SVGResources::ReferenceBoxForEffects(*this);
+    if (!filter_reference_box.size().IsZero()) {
+      float_rect.UnionEvenIfEmpty(filter_reference_box);
+    }
+    float_rect = StyleRef().Filter().MapRect(float_rect);
   }
-  float_rect = Layer()->MapRectForFilter(float_rect);
   return PhysicalRect::EnclosingRect(float_rect);
 }
 
@@ -714,9 +725,9 @@ PhysicalOffset LayoutBoxModelObject::AdjustedPositionRelativeTo(
         reference_point +=
             To<LayoutBox>(offset_parent_object)->PhysicalLocation();
       }
-    } else if (UNLIKELY(IsBox() &&
-                        To<LayoutBox>(this)
-                            ->NeedsAnchorPositionScrollAdjustment())) {
+    } else if (IsBox() &&
+               To<LayoutBox>(this)->NeedsAnchorPositionScrollAdjustment())
+        [[unlikely]] {
       reference_point +=
           To<LayoutBox>(this)->AnchorPositionScrollTranslationOffset();
     }

@@ -43,6 +43,7 @@
 #include "base/task/sequenced_task_runner.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
@@ -127,13 +128,7 @@ bool IsPreviewable(const std::unique_ptr<HoldingSpaceItem>& item) {
 // on changes to `tray` activation.
 ui::ImageModel CreateForegroundImageModel(const HoldingSpaceTray* tray,
                                           const gfx::VectorIcon& vector_icon) {
-  // When Jelly is disabled, `tray` activation does not affect color.
-  if (!chromeos::features::IsJellyEnabled()) {
-    return ui::ImageModel::FromVectorIcon(
-        vector_icon, kColorAshIconColorPrimary, kHoldingSpaceTrayIconSize);
-  }
-
-  // When Jelly is enabled, `tray` activation affects color.
+  // `tray` activation affects color.
   ui::ImageModel active = ui::ImageModel::FromVectorIcon(
       vector_icon, cros_tokens::kCrosSysSystemOnPrimaryContainer,
       kHoldingSpaceTrayIconSize);
@@ -162,9 +157,7 @@ std::unique_ptr<views::ImageView> CreateDefaultTrayIcon(
   icon->SetPreferredSize(gfx::Size(kTrayItemSize, kTrayItemSize));
   icon->SetPaintToLayer();
   icon->layer()->SetFillsBoundsOpaquely(false);
-  icon->SetImage(CreateForegroundImageModel(
-      tray, features::IsHoldingSpaceRefreshEnabled() ? kHoldingSpaceRefreshIcon
-                                                     : kHoldingSpaceIcon));
+  icon->SetImage(CreateForegroundImageModel(tray, kHoldingSpaceIcon));
   return icon;
 }
 
@@ -307,9 +300,7 @@ void HoldingSpaceTray::ClickedOutsideBubble(const ui::LocatedEvent& event) {
 std::u16string HoldingSpaceTray::GetAccessibleNameForTray() {
   return l10n_util::GetStringFUTF16(
       IDS_ASH_HOLDING_SPACE_A11Y_NAME,
-      features::IsHoldingSpaceRefreshEnabled()
-          ? l10n_util::GetStringUTF16(IDS_ASH_HOLDING_SPACE_TITLE_REFRESH)
-          : l10n_util::GetStringUTF16(IDS_ASH_HOLDING_SPACE_TITLE));
+      l10n_util::GetStringUTF16(IDS_ASH_HOLDING_SPACE_TITLE));
 }
 
 views::View* HoldingSpaceTray::GetTooltipHandlerForPoint(
@@ -319,9 +310,7 @@ views::View* HoldingSpaceTray::GetTooltipHandlerForPoint(
 }
 
 std::u16string HoldingSpaceTray::GetTooltipText(const gfx::Point& point) const {
-  return features::IsHoldingSpaceRefreshEnabled()
-             ? l10n_util::GetStringUTF16(IDS_ASH_HOLDING_SPACE_TITLE_REFRESH)
-             : l10n_util::GetStringUTF16(IDS_ASH_HOLDING_SPACE_TITLE);
+  return l10n_util::GetStringUTF16(IDS_ASH_HOLDING_SPACE_TITLE);
 }
 
 void HoldingSpaceTray::HandleLocaleChange() {
@@ -342,15 +331,12 @@ void HoldingSpaceTray::UpdateAfterLoginStatusChange() {
   UpdateVisibility();
 }
 
-void HoldingSpaceTray::CloseBubble() {
+void HoldingSpaceTray::CloseBubbleInternal() {
   if (!bubble_)
     return;
 
   holding_space_metrics::RecordPodAction(
       holding_space_metrics::PodAction::kCloseBubble);
-
-  HoldingSpaceController::Get()->OnHoldingSpaceTrayBubbleVisibilityChanged(
-      this, /*visible=*/false);
 
   widget_observer_.Reset();
 
@@ -376,9 +362,6 @@ void HoldingSpaceTray::ShowBubble() {
 
   bubble_ = std::make_unique<HoldingSpaceTrayBubble>(this);
   bubble_->Init();
-
-  HoldingSpaceController::Get()->OnHoldingSpaceTrayBubbleVisibilityChanged(
-      this, /*visible=*/true);
 
   // Observe the bubble widget so that we can close the bubble when a holding
   // space item is being dragged.
@@ -417,7 +400,7 @@ bool HoldingSpaceTray::GetDropFormats(
   // Support custom web data so that file system sources can be retrieved from
   // pickled data. That is the storage location at which the Files app stores
   // both file paths *and* directory paths.
-  format_types->insert(ui::ClipboardFormatType::WebCustomDataType());
+  format_types->insert(ui::ClipboardFormatType::DataTransferCustomType());
   return true;
 }
 
@@ -527,25 +510,10 @@ void HoldingSpaceTray::UpdateVisibility() {
     return;
   }
 
-  // Always show the holding space tray if there are clients forcing it to show
-  // in shelf. Note that this is intentionally respected only while the holding
-  // space model is attached and the user session is unblocked.
-  if (controller->force_show_in_shelf()) {
-    SetVisiblePreferred(true);
-    return;
-  }
-
-  // If the predictability flag is enabled, always show the holding space tray.
-  if (features::IsHoldingSpacePredictabilityEnabled()) {
-    SetVisiblePreferred(true);
-    return;
-  }
-
   // The holding space tray should always be shown if the `model` contains items
-  // that are previewable, or if the predictability feature flag is enabled.
-  // Otherwise, it should only be visible if the time of first add has been
-  // marked, but a file has never been pinned, and the Files app chip has never
-  // been pressed.
+  // that are previewable. Otherwise, it should only be visible if the time of
+  // first add has been marked, but a file has never been pinned, and the Files
+  // app chip has never been pressed.
   auto* prefs = Shell::Get()->session_controller()->GetActivePrefService();
   SetVisiblePreferred(
       base::ranges::any_of(model->items(), IsPreviewable) ||
@@ -589,7 +557,7 @@ HoldingSpaceTray::CreateContextMenuModel() {
         static_cast<int>(HoldingSpaceCommandId::kHidePreviews),
         l10n_util::GetStringUTF16(
             IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_HIDE_PREVIEWS),
-        ui::ImageModel::FromVectorIcon(kVisibilityOffIcon,
+        ui::ImageModel::FromVectorIcon(vector_icons::kVisibilityOffIcon,
                                        ui::kColorAshSystemUIMenuIcon,
                                        kHoldingSpaceIconSize));
   } else {
@@ -597,7 +565,7 @@ HoldingSpaceTray::CreateContextMenuModel() {
         static_cast<int>(HoldingSpaceCommandId::kShowPreviews),
         l10n_util::GetStringUTF16(
             IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_SHOW_PREVIEWS),
-        ui::ImageModel::FromVectorIcon(kVisibilityIcon,
+        ui::ImageModel::FromVectorIcon(vector_icons::kVisibilityIcon,
                                        ui::kColorAshSystemUIMenuIcon,
                                        kHoldingSpaceIconSize));
   }
@@ -628,16 +596,6 @@ void HoldingSpaceTray::OnHoldingSpaceModelAttached(HoldingSpaceModel* model) {
 
 void HoldingSpaceTray::OnHoldingSpaceModelDetached(HoldingSpaceModel* model) {
   model_observer_.Reset();
-  UpdateVisibility();
-  UpdatePreviewsState();
-}
-
-void HoldingSpaceTray::OnHoldingSpaceForceShowInShelfChanged() {
-  // Animations are distracting when forcibly toggling holding space visibility
-  // in the shelf. Disable them temporarily. Note that animations will be
-  // re-enabled when items are added/removed from the holding space model.
-  SetShouldAnimate(false);
-
   UpdateVisibility();
   UpdatePreviewsState();
 }

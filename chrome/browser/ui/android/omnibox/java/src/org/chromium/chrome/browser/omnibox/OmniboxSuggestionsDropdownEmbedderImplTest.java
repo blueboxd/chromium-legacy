@@ -20,7 +20,6 @@ import android.view.ViewTreeObserver;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
@@ -29,14 +28,11 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.Features;
 import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionsDropdownEmbedder.OmniboxAlignment;
-import org.chromium.components.browser_ui.widget.InsetObserver;
-import org.chromium.components.browser_ui.widget.InsetObserverSupplier;
+import org.chromium.ui.InsetObserver;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowAndroid;
-import org.chromium.ui.base.WindowDelegate;
 import org.chromium.ui.display.DisplayAndroid;
 
 import java.lang.ref.WeakReference;
@@ -62,11 +58,9 @@ public class OmniboxSuggestionsDropdownEmbedderImplTest {
     // being inadvertently converted to px.
     private static final float DIP_SCALE = 10.0f;
 
-    public @Rule TestRule mProcessor = new Features.JUnitProcessor();
     public @Rule MockitoRule mMockitoRule = MockitoJUnit.rule();
 
     private @Mock WindowAndroid mWindowAndroid;
-    private @Mock WindowDelegate mWindowDelegate;
     private @Mock ViewTreeObserver mViewTreeObserver;
     private @Mock ViewGroup mContentView;
     private @Mock ViewGroup mAnchorView;
@@ -81,7 +75,7 @@ public class OmniboxSuggestionsDropdownEmbedderImplTest {
     @Before
     public void setUp() {
         mContextWeakRef = new WeakReference<>(ContextUtils.getApplicationContext());
-        InsetObserverSupplier.setInstanceForTesting(mInsetObserver);
+        doReturn(mInsetObserver).when(mWindowAndroid).getInsetObserver();
         doReturn(mContextWeakRef).when(mWindowAndroid).getContext();
         doReturn(mContextWeakRef.get()).when(mAnchorView).getContext();
         doReturn(mViewTreeObserver).when(mAnchorView).getViewTreeObserver();
@@ -100,11 +94,11 @@ public class OmniboxSuggestionsDropdownEmbedderImplTest {
         mImpl =
                 new OmniboxSuggestionsDropdownEmbedderImpl(
                         mWindowAndroid,
-                        mWindowDelegate,
                         mAnchorView,
                         mHorizontalAlignmentView,
                         false,
-                        null);
+                        null,
+                        () -> 0);
     }
 
     @Test
@@ -155,11 +149,11 @@ public class OmniboxSuggestionsDropdownEmbedderImplTest {
         OmniboxSuggestionsDropdownEmbedderImpl impl =
                 new OmniboxSuggestionsDropdownEmbedderImpl(
                         mWindowAndroid,
-                        mWindowDelegate,
                         mAnchorView,
                         mHorizontalAlignmentView,
                         false,
-                        mIntermediateView);
+                        mIntermediateView,
+                        () -> 0);
         impl.recalculateOmniboxAlignment();
         OmniboxAlignment alignment = impl.getCurrentAlignment();
         assertEquals(

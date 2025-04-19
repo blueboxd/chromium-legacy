@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/base64.h"
 #include "base/files/file_path.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
@@ -19,10 +20,12 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
 #include "base/time/time.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_integrity_block_data.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_storage_location.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom-shared.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/proto/web_app.pb.h"
+#include "chrome/browser/web_applications/proto/web_app_install_state.pb.h"
 #include "chrome/browser/web_applications/scope_extension_info.h"
 #include "chrome/browser/web_applications/test/fake_web_app_database_factory.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
@@ -44,9 +47,12 @@
 #include "components/services/app_service/public/cpp/protocol_handler_info.h"
 #include "components/services/app_service/public/cpp/share_target.h"
 #include "components/services/app_service/public/cpp/url_handler_info.h"
-#include "components/sync/model/model_type_store.h"
+#include "components/sync/model/data_type_store.h"
 #include "components/sync/protocol/web_app_specifics.pb.h"
-#include "components/sync/test/mock_model_type_change_processor.h"
+#include "components/sync/test/mock_data_type_local_change_processor.h"
+#include "components/web_package/signed_web_bundles/ed25519_public_key.h"
+#include "components/web_package/signed_web_bundles/ed25519_signature.h"
+#include "components/web_package/signed_web_bundles/signed_web_bundle_signature_stack_entry.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
@@ -62,6 +68,7 @@ using ::testing::Eq;
 using ::testing::Field;
 using ::testing::IsNull;
 using ::testing::NotNull;
+using ::testing::Optional;
 using ::testing::Property;
 using ::testing::VariantWith;
 
@@ -97,7 +104,7 @@ class WebAppDatabaseTest : public WebAppTest {
   }
 
   void WriteBatch(
-      std::unique_ptr<syncer::ModelTypeStore::WriteBatch> write_batch) {
+      std::unique_ptr<syncer::DataTypeStore::WriteBatch> write_batch) {
     base::RunLoop run_loop;
 
     database_factory().GetStore()->CommitWriteBatch(
@@ -194,7 +201,7 @@ class WebAppDatabaseTest : public WebAppTest {
   raw_ptr<FakeWebAppProvider, DanglingUntriaged> provider_ = nullptr;
   base::test::ScopedFeatureList feature_list_;
 
-  testing::NiceMock<syncer::MockModelTypeChangeProcessor> mock_processor_;
+  testing::NiceMock<syncer::MockDataTypeLocalChangeProcessor> mock_processor_;
 };
 
 TEST_F(WebAppDatabaseTest, WriteAndReadRegistry) {
@@ -317,7 +324,6 @@ TEST_F(WebAppDatabaseTest, BackwardCompatibility_WebAppWithOnlyRequiredFields) {
   const webapps::AppId app_id =
       GenerateAppId(/*manifest_id=*/std::nullopt, start_url);
   const std::string name = "App Name";
-  const bool is_locally_installed = true;
 
   std::vector<std::unique_ptr<WebAppProto>> protos;
 
@@ -333,7 +339,7 @@ TEST_F(WebAppDatabaseTest, BackwardCompatibility_WebAppWithOnlyRequiredFields) {
   }
 
   proto->set_name(name);
-  proto->set_is_locally_installed(is_locally_installed);
+  proto->set_install_state(proto::INSTALLED_WITH_OS_INTEGRATION);
 
   proto->mutable_sources()->set_system(false);
   proto->mutable_sources()->set_policy(false);
@@ -360,7 +366,7 @@ TEST_F(WebAppDatabaseTest, BackwardCompatibility_WebAppWithOnlyRequiredFields) {
   EXPECT_EQ(start_url, app->start_url());
   EXPECT_EQ(name, app->untranslated_name());
   EXPECT_EQ(mojom::UserDisplayMode::kBrowser, app->user_display_mode());
-  EXPECT_EQ(is_locally_installed, app->is_locally_installed());
+  EXPECT_EQ(proto::INSTALLED_WITHOUT_OS_INTEGRATION, app->install_state());
   EXPECT_TRUE(app->IsSynced());
   EXPECT_FALSE(app->IsPreinstalledApp());
 
@@ -465,7 +471,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   app->SetManifestId(GenerateManifestIdFromStartUrlOnly(start_url));
   app->SetName(name);
   app->SetUserDisplayMode(mojom::UserDisplayMode::kBrowser);
-  app->SetIsLocallyInstalled(false);
+  app->SetInstallState(proto::InstallState::SUGGESTED_FROM_ANOTHER_DEVICE);
   // chromeos_data should always be set on ChromeOS.
   if (IsChromeOsDataMandatory())
     app->SetWebAppChromeOsData(std::make_optional<WebAppChromeOsData>());
@@ -509,7 +515,6 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app->first_install_time().is_null());
   EXPECT_TRUE(app->shortcuts_menu_item_infos().empty());
   EXPECT_EQ(app->run_on_os_login_mode(), RunOnOsLoginMode::kNotRun);
-  EXPECT_FALSE(app->run_on_os_login_os_integration_state().has_value());
   EXPECT_TRUE(app->manifest_url().is_empty());
   EXPECT_TRUE(app->permissions_policy().empty());
   EXPECT_FALSE(app->isolation_data().has_value());
@@ -529,7 +534,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_EQ(start_url, app_copy->start_url());
   EXPECT_EQ(name, app_copy->untranslated_name());
   EXPECT_EQ(mojom::UserDisplayMode::kBrowser, app_copy->user_display_mode());
-  EXPECT_FALSE(app_copy->is_locally_installed());
+  EXPECT_EQ(proto::SUGGESTED_FROM_ANOTHER_DEVICE, app_copy->install_state());
 
   auto& chromeos_data = app_copy->chromeos_data();
   if (IsChromeOsDataMandatory()) {
@@ -580,7 +585,6 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app_copy->validated_scope_extensions().empty());
   EXPECT_TRUE(app_copy->shortcuts_menu_item_infos().empty());
   EXPECT_EQ(app_copy->run_on_os_login_mode(), RunOnOsLoginMode::kNotRun);
-  EXPECT_FALSE(app_copy->run_on_os_login_os_integration_state().has_value());
   EXPECT_TRUE(app_copy->manifest_url().is_empty());
   EXPECT_TRUE(app_copy->permissions_policy().empty());
   EXPECT_FALSE(app_copy->tab_strip());
@@ -937,7 +941,8 @@ TEST_F(WebAppDatabaseProtoDataTest,
       base::Version("1.2.3"), {},
       WebApp::IsolationData::PendingUpdateInfo(
           IwaStorageOwnedBundle{"folder_name", /*dev_mode=*/false},
-          base::Version("1.2.3"))));
+          base::Version("1.2.3"), /*integrity_block_data=*/std::nullopt),
+      /*integrity_block_data=*/std::nullopt));
 
   std::unique_ptr<WebAppProto> web_app_proto =
       WebAppDatabase::CreateWebAppProto(*web_app);
@@ -959,7 +964,8 @@ TEST_F(WebAppDatabaseProtoDataTest,
       base::Version("1.0.0"), {},
       WebApp::IsolationData::PendingUpdateInfo(
           IwaStorageProxy{url::Origin::Create(GURL("https://example.com"))},
-          base::Version("2.0.0"))));
+          base::Version("2.0.0"), /*integrity_block_data=*/std::nullopt),
+      /*integrity_block_data=*/std::nullopt));
 
   std::unique_ptr<WebAppProto> web_app_proto =
       WebAppDatabase::CreateWebAppProto(*web_app);
@@ -975,7 +981,8 @@ TEST_F(WebAppDatabaseProtoDataTest,
       base::Version("1.0.0"), {},
       WebApp::IsolationData::PendingUpdateInfo(
           IwaStorageOwnedBundle{"folder_name", /*dev_mode*/ false},
-          base::Version("2.0.0"))));
+          base::Version("2.0.0"), /*integrity_block_data=*/std::nullopt),
+      /*integrity_block_data=*/std::nullopt));
 
   // Test what happens if both are owned bundles, but one is dev mode and
   // the other one is not.
@@ -1019,10 +1026,15 @@ TEST_F(WebAppDatabaseProtoDataTest,
 TEST_F(WebAppDatabaseProtoDataTest, SavesIsolationDataUpdateInfo) {
   base::FilePath path(FILE_PATH_LITERAL("bundle_path"));
   base::FilePath update_path(FILE_PATH_LITERAL("update_path"));
+
+  auto integrity_block_data =
+      IsolatedWebAppIntegrityBlockData(test::CreateSignatures());
   std::unique_ptr<WebApp> web_app = CreateIsolatedWebApp(WebApp::IsolationData(
       IwaStorageUnownedBundle{path}, base::Version("1.0.0"), {},
       WebApp::IsolationData::PendingUpdateInfo(
-          IwaStorageUnownedBundle{update_path}, base::Version("2.0.0"))));
+          IwaStorageUnownedBundle{update_path}, base::Version("2.0.0"),
+          integrity_block_data),
+      integrity_block_data));
 
   std::unique_ptr<WebApp> protoed_web_app = ToAndFromProto(*web_app);
   EXPECT_THAT(*web_app, Eq(*protoed_web_app));
@@ -1033,6 +1045,11 @@ TEST_F(WebAppDatabaseProtoDataTest, SavesIsolationDataUpdateInfo) {
               IwaStorageUnownedBundle{update_path});
   EXPECT_THAT(web_app->isolation_data()->pending_update_info()->version,
               Eq(base::Version("2.0.0")));
+  EXPECT_THAT(
+      web_app->isolation_data()->pending_update_info()->integrity_block_data,
+      Optional(Eq(integrity_block_data)));
+  EXPECT_THAT(web_app->isolation_data()->integrity_block_data,
+              Optional(Eq(integrity_block_data)));
 }
 
 TEST_F(WebAppDatabaseProtoDataTest, PermissionsPolicyRoundTrip) {

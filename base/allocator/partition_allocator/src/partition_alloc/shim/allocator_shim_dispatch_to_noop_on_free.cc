@@ -13,25 +13,15 @@
 namespace allocator_shim {
 namespace {
 
-void FreeFn(const AllocatorDispatch* self, void* address, void* context) {}
+void FreeFn(void* address, void* context) {}
 
-void BatchFreeFn(const AllocatorDispatch* self,
-                 void** to_be_freed,
-                 unsigned num_to_be_freed,
-                 void* context) {}
+void BatchFreeFn(void** to_be_freed, unsigned num_to_be_freed, void* context) {}
 
-void FreeDefiniteSizeFn(const AllocatorDispatch* self,
-                        void* address,
-                        size_t size,
-                        void* context) {}
+void FreeDefiniteSizeFn(void* address, size_t size, void* context) {}
 
-void TryFreeDefaultFn(const AllocatorDispatch* self,
-                      void* address,
-                      void* context) {}
+void TryFreeDefaultFn(void* address, void* context) {}
 
-static void AlignedFreeFn(const AllocatorDispatch* self,
-                          void* address,
-                          void* context) {}
+static void AlignedFreeFn(void* address, void* context) {}
 
 AllocatorDispatch allocator_dispatch = {
     nullptr,             // alloc_function
@@ -39,6 +29,7 @@ AllocatorDispatch allocator_dispatch = {
     nullptr,             // alloc_zero_initialized_function
     nullptr,             // alloc_aligned_function
     nullptr,             // realloc_function
+    nullptr,             // realloc_unchecked_function
     FreeFn,              // free_function
     nullptr,             // get_size_estimate_function
     nullptr,             // good_size_function
@@ -48,7 +39,9 @@ AllocatorDispatch allocator_dispatch = {
     FreeDefiniteSizeFn,  // free_definite_size_function
     TryFreeDefaultFn,    // try_free_default_function
     nullptr,             // aligned_malloc_function
+    nullptr,             // aligned_malloc_unchecked_function
     nullptr,             // aligned_realloc_function
+    nullptr,             // aligned_realloc_unchecked_function
     AlignedFreeFn,       // aligned_free_function
     nullptr              // next
 };

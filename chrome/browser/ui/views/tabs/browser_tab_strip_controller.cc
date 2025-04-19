@@ -65,7 +65,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/peak_gpu_memory_tracker.h"
+#include "content/public/browser/peak_gpu_memory_tracker_factory.h"
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
@@ -285,25 +285,26 @@ bool BrowserTabStripController::IsTabPinned(int model_index) const {
 
 void BrowserTabStripController::SelectTab(int model_index,
                                           const ui::Event& event) {
-  std::unique_ptr<content::PeakGpuMemoryTracker> tracker =
-      content::PeakGpuMemoryTracker::Create(
-          content::PeakGpuMemoryTracker::Usage::CHANGE_TAB);
+  std::unique_ptr<input::PeakGpuMemoryTracker> tracker =
+      content::PeakGpuMemoryTrackerFactory::Create(
+          input::PeakGpuMemoryTracker::Usage::CHANGE_TAB);
 
   TabStripUserGestureDetails gesture_detail(
       TabStripUserGestureDetails::GestureType::kOther, event.time_stamp());
   TabStripUserGestureDetails::GestureType type =
       TabStripUserGestureDetails::GestureType::kOther;
-  if (event.type() == ui::ET_MOUSE_PRESSED)
+  if (event.type() == ui::EventType::kMousePressed) {
     type = TabStripUserGestureDetails::GestureType::kMouse;
-  else if (event.type() == ui::ET_GESTURE_TAP_DOWN)
+  } else if (event.type() == ui::EventType::kGestureTapDown) {
     type = TabStripUserGestureDetails::GestureType::kTouch;
+  }
   gesture_detail.type = type;
   model_->ActivateTabAt(model_index, gesture_detail);
 
   tabstrip_->GetWidget()
       ->GetCompositor()
       ->RequestSuccessfulPresentationTimeForNextFrame(base::BindOnce(
-          [](std::unique_ptr<content::PeakGpuMemoryTracker> tracker,
+          [](std::unique_ptr<input::PeakGpuMemoryTracker> tracker,
              const viz::FrameTimingDetails& frame_timing_details) {
             // This callback will be ran once the ui::Compositor presents the
             // next frame for the |tabstrip_|. The destruction of |tracker| will
@@ -324,10 +325,12 @@ void BrowserTabStripController::AddSelectionFromAnchorTo(int model_index) {
   model_->AddSelectionFromAnchorTo(model_index);
 }
 
-bool BrowserTabStripController::BeforeCloseTab(int model_index,
-                                               CloseTabSource source) {
+void BrowserTabStripController::OnCloseTab(
+    int model_index,
+    CloseTabSource source,
+    base::OnceCallback<void()> callback) {
   if (!web_app::IsTabClosable(model_, model_index)) {
-    return false;
+    return;
   }
 
   // Only consider pausing the close operation if this is the last remaining
@@ -346,7 +349,7 @@ bool BrowserTabStripController::BeforeCloseTab(int model_index,
             base::Unretained(tabstrip_), model_index, source));
 
     if (result != Browser::WarnBeforeClosingResult::kOkToClose) {
-      return false;
+      return;
     }
   }
 
@@ -358,21 +361,13 @@ bool BrowserTabStripController::BeforeCloseTab(int model_index,
     // If the user is destroying the last tab in the group via the tabstrip, a
     // dialog is shown that will decide whether to destroy the tab or not. It
     // will first ungroup the tab, then close the tab.
-    base::OnceCallback<void()> callback = base::BindOnce(
-        [](TabStrip* tab_strip, TabStripModel* model, int index,
-           CloseTabSource source) {
-          model->RemoveFromGroup({index});
-          tab_strip->CloseTab(tab_strip->tab_at(index), source);
-        },
-        base::Unretained(tabstrip_), base::Unretained(model_), model_index,
-        source);
-
-    return tab_groups::SavedTabGroupUtils::MaybeShowSavedTabGroupDeletionDialog(
+    tab_groups::SavedTabGroupUtils::MaybeShowSavedTabGroupDeletionDialog(
         browser_view_->browser(),
         tab_groups::DeletionDialogController::DialogType::CloseTabAndDelete,
         groups_to_delete, std::move(callback));
+  } else {
+    std::move(callback).Run();
   }
-  return true;
 }
 
 void BrowserTabStripController::CloseTab(int model_index) {
@@ -644,6 +639,12 @@ Profile* BrowserTabStripController::GetProfile() const {
 const Browser* BrowserTabStripController::GetBrowser() const {
   return browser();
 }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+bool BrowserTabStripController::IsLockedForOnTask() {
+  return browser_view_->browser()->IsLockedForOnTask();
+}
+#endif
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserTabStripController, TabStripModelObserver implementation:
 
@@ -800,6 +801,14 @@ void BrowserTabStripController::TabGroupedStateChanged(
 void BrowserTabStripController::SetTabNeedsAttentionAt(int index,
                                                        bool attention) {
   tabstrip_->SetTabNeedsAttention(index, attention);
+}
+
+bool BrowserTabStripController::IsFrameButtonsRightAligned() const {
+#if BUILDFLAG(IS_MAC)
+  return false;
+#else
+  return true;
+#endif  // BUILDFLAG(IS_MAC)
 }
 
 BrowserNonClientFrameView* BrowserTabStripController::GetFrameView() {

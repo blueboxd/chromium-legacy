@@ -326,6 +326,8 @@ const char* ToString(ax::mojom::Role role) {
       return "graphicsSymbol";
     case ax::mojom::Role::kGrid:
       return "grid";
+    case ax::mojom::Role::kGridCell:
+      return "gridCell";
     case ax::mojom::Role::kGroup:
       return "group";
     case ax::mojom::Role::kHeader:
@@ -460,7 +462,7 @@ const char* ToString(ax::mojom::Role role) {
       return "pluginObject";
     case ax::mojom::Role::kPopUpButton:
       return "popUpButton";
-    case ax::mojom::Role::kPortal:
+    case ax::mojom::Role::kPortalDeprecated:
       return "portal";
     case ax::mojom::Role::kPreDeprecated:
       return "preDeprecated";
@@ -756,6 +758,8 @@ ax::mojom::Role StringToRole(const std::string& role) {
     return ax::mojom::Role::kGraphicsSymbol;
   } else if (role == "kGrid") {
     return ax::mojom::Role::kGrid;
+  } else if (role == "kGridCell") {
+    return ax::mojom::Role::kGridCell;
   } else if (role == "kGroup") {
     return ax::mojom::Role::kGroup;
   } else if (role == "kHeader") {
@@ -891,7 +895,7 @@ ax::mojom::Role StringToRole(const std::string& role) {
   } else if (role == "kPopUpButton") {
     return ax::mojom::Role::kPopUpButton;
   } else if (role == "kPortal") {
-    return ax::mojom::Role::kPortal;
+    return ax::mojom::Role::kPortalDeprecated;
   } else if (role == "kPreDeprecated") {
     return ax::mojom::Role::kPreDeprecated;
   } else if (role == "kProgressIndicator") {
@@ -1265,6 +1269,10 @@ const char* ToString(ax::mojom::StringAttribute string_attribute) {
       return "none";
     case ax::mojom::StringAttribute::kAccessKey:
       return "accessKey";
+    case ax::mojom::StringAttribute::kAriaCellColumnIndexText:
+      return "ariaCellColumnIndexText";
+    case ax::mojom::StringAttribute::kAriaCellRowIndexText:
+      return "ariaCellRowIndexText";
     case ax::mojom::StringAttribute::kAriaInvalidValueDeprecated:
       return "ariaInvalidValue";
     case ax::mojom::StringAttribute::kAutoComplete:
@@ -2370,6 +2378,8 @@ const char* ToString(ax::mojom::NameFrom name_from) {
       return "contents";
     case ax::mojom::NameFrom::kPlaceholder:
       return "placeholder";
+    case ax::mojom::NameFrom::kProhibited:
+      return "prohibited";
     case ax::mojom::NameFrom::kRelatedElement:
       return "relatedElement";
     case ax::mojom::NameFrom::kTitle:
@@ -2395,6 +2405,8 @@ const char* ToString(ax::mojom::DescriptionFrom description_from) {
       return "buttonLabel";
     case ax::mojom::DescriptionFrom::kPopoverAttribute:
       return "popoverAttribute";
+    case ax::mojom::DescriptionFrom::kProhibitedNameRepair:
+      return "prohibitedNameRepair";
     case ax::mojom::DescriptionFrom::kRelatedElement:
       return "relatedElement";
     case ax::mojom::DescriptionFrom::kRubyAnnotation:

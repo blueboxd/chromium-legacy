@@ -2,8 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "base/strings/stringprintf.h"
 #import "base/test/ios/wait_util.h"
 #import "components/policy/policy_constants.h"
+#import "ios/chrome/browser/account_picker/ui_bundled/account_picker_confirmation/account_picker_confirmation_screen_constants.h"
+#import "ios/chrome/browser/account_picker/ui_bundled/account_picker_screen/account_picker_screen_constants.h"
+#import "ios/chrome/browser/download/ui_bundled/download_manager_constants.h"
 #import "ios/chrome/browser/drive/model/drive_policy.h"
 #import "ios/chrome/browser/drive/model/test_constants.h"
 #import "ios/chrome/browser/policy/model/policy_earl_grey_utils.h"
@@ -11,13 +15,10 @@
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/signin/model/fake_system_identity.h"
-#import "ios/chrome/browser/ui/account_picker/account_picker_confirmation/account_picker_confirmation_screen_constants.h"
-#import "ios/chrome/browser/ui/account_picker/account_picker_screen/account_picker_screen_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/authentication/signin_matchers.h"
 #import "ios/chrome/browser/ui/authentication/views/views_constants.h"
-#import "ios/chrome/browser/ui/download/download_manager_constants.h"
 #import "ios/chrome/browser/ui/save_to_drive/file_destination_picker_constants.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -132,8 +133,8 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
         std::string(kTestDriveFileUploaderCommandLineSwitch);
     const std::string commandLineValue =
         std::string(kTestDriveFileUploaderCommandLineSwitchFailAndThenSucceed);
-    configuration.additional_args.push_back(
-        std::format("--{}={}", commandLineSwitch, commandLineValue));
+    configuration.additional_args.push_back(base::StringPrintf(
+        "--%s=%s", commandLineSwitch.c_str(), commandLineValue.c_str()));
   }
   return configuration;
 }

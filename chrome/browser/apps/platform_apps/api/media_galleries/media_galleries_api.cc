@@ -229,18 +229,16 @@ class SelectDirectoryDialog : public ui::SelectFileDialog::Listener,
         ui::SelectFileDialog::SELECT_FOLDER,
         l10n_util::GetStringUTF16(IDS_MEDIA_GALLERIES_DIALOG_ADD_GALLERY_TITLE),
         default_path, nullptr, 0, base::FilePath::StringType(),
-        platform_util::GetTopLevel(web_contents_->GetNativeView()), nullptr);
+        platform_util::GetTopLevel(web_contents_->GetNativeView()));
   }
 
   // ui::SelectFileDialog::Listener implementation.
-  void FileSelected(const ui::SelectedFileInfo& file,
-                    int index,
-                    void* params) override {
+  void FileSelected(const ui::SelectedFileInfo& file, int index) override {
     callback_.Run(file.path());
     Release();  // Balanced in Show().
   }
 
-  void FileSelectionCanceled(void* params) override {
+  void FileSelectionCanceled() override {
     callback_.Run(base::FilePath());
     Release();  // Balanced in Show().
   }

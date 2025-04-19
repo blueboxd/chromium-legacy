@@ -15,9 +15,9 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_backend.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/browser/webdata/payments/payments_sync_bridge_util.h"
+#include "components/sync/base/data_type.h"
 #include "components/sync/base/deletion_origin.h"
-#include "components/sync/base/model_type.h"
-#include "components/sync/model/client_tag_based_model_type_processor.h"
+#include "components/sync/model/client_tag_based_data_type_processor.h"
 #include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/sync_metadata_store_change_list.h"
 #include "components/sync/protocol/autofill_wallet_credential_specifics.pb.h"
@@ -40,7 +40,7 @@ void AutofillWalletCredentialSyncBridge::CreateForWebDataServiceAndBackend(
   web_data_service->GetDBUserData()->SetUserData(
       &kAutofillWalletCredentialSyncBridgeUserDataKey,
       std::make_unique<AutofillWalletCredentialSyncBridge>(
-          std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
+          std::make_unique<syncer::ClientTagBasedDataTypeProcessor>(
               syncer::AUTOFILL_WALLET_CREDENTIAL,
               /*dump_stack=*/base::RepeatingClosure()),
           web_data_backend));
@@ -56,15 +56,15 @@ AutofillWalletCredentialSyncBridge::FromWebDataService(
 }
 
 AutofillWalletCredentialSyncBridge::AutofillWalletCredentialSyncBridge(
-    std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor,
+    std::unique_ptr<syncer::DataTypeLocalChangeProcessor> change_processor,
     AutofillWebDataBackend* web_data_backend)
-    : ModelTypeSyncBridge(std::move(change_processor)),
+    : DataTypeSyncBridge(std::move(change_processor)),
       web_data_backend_(web_data_backend) {
   // Report an error for the wallet credential sync data type if the web
   // database isn't loaded.
   if (!web_data_backend_ || !web_data_backend_->GetDatabase() ||
       !GetAutofillTable()) {
-    ModelTypeSyncBridge::change_processor()->ReportError(
+    DataTypeSyncBridge::change_processor()->ReportError(
         {FROM_HERE, "Failed to load AutofillWebDatabase."});
     return;
   }
@@ -81,7 +81,7 @@ AutofillWalletCredentialSyncBridge::CreateMetadataChangeList() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return std::make_unique<syncer::SyncMetadataStoreChangeList>(
       GetSyncMetadataStore(), syncer::AUTOFILL_WALLET_CREDENTIAL,
-      base::BindRepeating(&syncer::ModelTypeChangeProcessor::ReportError,
+      base::BindRepeating(&syncer::DataTypeLocalChangeProcessor::ReportError,
                           change_processor()->GetWeakPtr()));
 }
 
@@ -154,29 +154,29 @@ AutofillWalletCredentialSyncBridge::ApplyIncrementalSyncChanges(
   return change_processor()->GetError();
 }
 
-void AutofillWalletCredentialSyncBridge::GetDataForCommit(
-    StorageKeyList storage_keys,
-    DataCallback callback) {
+std::unique_ptr<syncer::DataBatch>
+AutofillWalletCredentialSyncBridge::GetDataForCommit(
+    StorageKeyList storage_keys) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::ranges::sort(storage_keys);
-  std::vector<std::unique_ptr<ServerCvc>> filterd_server_cvc_list;
+  std::vector<std::unique_ptr<ServerCvc>> filtered_server_cvc_list;
   for (std::unique_ptr<ServerCvc>& server_cvc_from_list :
        GetAutofillTable()->GetAllServerCvcs()) {
     if (base::ranges::binary_search(
             storage_keys,
             base::NumberToString(server_cvc_from_list->instrument_id))) {
-      filterd_server_cvc_list.push_back(std::move(server_cvc_from_list));
+      filtered_server_cvc_list.push_back(std::move(server_cvc_from_list));
     }
   }
-  std::move(callback).Run(ConvertToDataBatch(filterd_server_cvc_list));
+  return ConvertToDataBatch(filtered_server_cvc_list);
 }
 
-void AutofillWalletCredentialSyncBridge::GetAllDataForDebugging(
-    DataCallback callback) {
+std::unique_ptr<syncer::DataBatch>
+AutofillWalletCredentialSyncBridge::GetAllDataForDebugging() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const std::vector<std::unique_ptr<ServerCvc>>& server_cvc_list =
       GetAutofillTable()->GetAllServerCvcs();
-  std::move(callback).Run(ConvertToDataBatch(server_cvc_list));
+  return ConvertToDataBatch(server_cvc_list);
 }
 
 std::string AutofillWalletCredentialSyncBridge::GetClientTag(
@@ -191,7 +191,7 @@ std::string AutofillWalletCredentialSyncBridge::GetClientTag(
 
 std::string AutofillWalletCredentialSyncBridge::GetStorageKey(
     const syncer::EntityData& entity_data) {
-  // Storage key and client tag are equivalent for this ModelType.
+  // Storage key and client tag are equivalent for this DataType.
   return GetClientTag(entity_data);
 }
 

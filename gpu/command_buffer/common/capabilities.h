@@ -60,19 +60,12 @@ struct GPU_EXPORT Capabilities {
 
   bool disable_2d_canvas_copy_on_write = false;
 
-  bool supports_yuv_to_rgb_conversion = false;
   bool supports_rgb_to_yuv_conversion = false;
   bool supports_yuv_readback = false;
 
   bool chromium_gpu_fence = false;
 
   bool mesa_framebuffer_flip_y = false;
-
-  // Clients should use SharedImageInterface instead.
-  bool disable_legacy_mailbox = false;
-
-  int major_version = 2;
-  int minor_version = 0;
 
   // Used by OOP raster.
   bool context_supports_distance_field_text = true;
@@ -133,6 +126,9 @@ struct GPU_EXPORT GLCapabilities {
   PerStagePrecisions vertex_shader_precisions;
   PerStagePrecisions fragment_shader_precisions;
 
+  int major_version = 2;
+  int minor_version = 0;
+
   int max_combined_texture_image_units = 0;
   int max_cube_map_texture_size = 0;
   int max_fragment_uniform_vectors = 0;
@@ -182,7 +178,6 @@ struct GPU_EXPORT GLCapabilities {
   int num_program_binary_formats = 0;
   int uniform_buffer_offset_alignment = 1;
 
-  bool occlusion_query = false;
   bool occlusion_query_boolean = false;
   bool timer_queries = false;
 };

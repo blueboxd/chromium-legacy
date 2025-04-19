@@ -8,11 +8,16 @@
 #import <Foundation/Foundation.h>
 
 #import "ios/chrome/browser/contextual_panel/entrypoint/ui/contextual_panel_entrypoint_mutator.h"
-#import "ios/chrome/browser/contextual_panel/model/contextual_panel_browser_agent.h"
+
+namespace feature_engagement {
+class Tracker;
+}
 
 @protocol ContextualPanelEntrypointConsumer;
 @protocol ContextualPanelEntrypointMediatorDelegate;
 @protocol ContextualSheetCommands;
+@protocol ContextualPanelEntrypointIPHCommands;
+class WebStateList;
 
 // Mediator for Contextual Panel Entrypoint.
 @interface ContextualPanelEntrypointMediator
@@ -20,7 +25,12 @@
 
 - (instancetype)init NS_UNAVAILABLE;
 
-- (instancetype)initWithBrowserAgent:(ContextualPanelBrowserAgent*)browserAgent
+- (instancetype)
+      initWithWebStateList:(WebStateList*)webStateList
+         engagementTracker:(feature_engagement::Tracker*)engagementTracker
+    contextualSheetHandler:(id<ContextualSheetCommands>)contextualSheetHandler
+     entrypointHelpHandler:
+         (id<ContextualPanelEntrypointIPHCommands>)entrypointHelpHandler
     NS_DESIGNATED_INITIALIZER;
 
 // The consumer for this mediator.
@@ -29,9 +39,6 @@
 // The delegate for this mediator.
 @property(nonatomic, weak) id<ContextualPanelEntrypointMediatorDelegate>
     delegate;
-
-// The command handler for sheet UI commands.
-@property(nonatomic, weak) id<ContextualSheetCommands> contextualSheetHandler;
 
 // Cleanup and disconnect the mediator.
 - (void)disconnect;

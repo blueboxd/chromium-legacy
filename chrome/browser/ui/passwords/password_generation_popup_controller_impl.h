@@ -32,17 +32,21 @@
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 namespace content {
-struct NativeWebKeyboardEvent;
 class WebContents;
 }  // namespace content
+
+namespace input {
+struct NativeWebKeyboardEvent;
+}  // namespace input
 
 namespace password_manager {
 class PasswordManagerDriver;
 }  // namespace password_manager
 
 namespace autofill {
-struct FormData;
+class FormData;
 namespace password_generation {
+enum class PasswordGenerationType;
 struct PasswordGenerationUIData;
 }  // namespace password_generation
 }  // namespace autofill
@@ -90,6 +94,10 @@ class PasswordGenerationPopupControllerImpl
       const PasswordGenerationPopupControllerImpl&) = delete;
 
   ~PasswordGenerationPopupControllerImpl() override;
+
+  // Generate the password string and store it in `current_generated_password_`.
+  void GeneratePasswordValue(
+      autofill::password_generation::PasswordGenerationType generation_type);
 
   // Create a PasswordGenerationPopupView if one doesn't already exist.
   void Show(GenerationUIState state);
@@ -151,9 +159,8 @@ class PasswordGenerationPopupControllerImpl
   enum class PasswordGenerationPopupElement {
     kNone = 0,
     kUseStrongPassword = 1,
-    kEditPassword = 2,
-    kNudgePasswordAcceptButton = 3,
-    kNudgePasswordCancelButton = 4,
+    kNudgePasswordAcceptButton = 2,
+    kNudgePasswordCancelButton = 3,
   };
 
   // AutofillPopupViewDelegate implementation:
@@ -169,15 +176,12 @@ class PasswordGenerationPopupControllerImpl
   void PasswordAccepted() override;
   void SetSelected() override;
   void SelectionCleared() override;
-  void EditPasswordClicked() override;
-  void EditPasswordHovered(bool hovered) override;
 #if !BUILDFLAG(IS_ANDROID)
   std::u16string GetPrimaryAccountEmail() override;
   bool ShouldShowNudgePassword() const override;
 #endif  // !BUILDFLAG(IS_ANDROID)
   GenerationUIState state() const override;
   bool password_selected() const override;
-  bool edit_password_selected() const override;
   bool accept_button_selected() const override;
   bool cancel_button_selected() const override;
   const std::u16string& password() const override;
@@ -186,7 +190,7 @@ class PasswordGenerationPopupControllerImpl
 
   void HideImpl();
 
-  bool HandleKeyPressEvent(const content::NativeWebKeyboardEvent& event);
+  bool HandleKeyPressEvent(const input::NativeWebKeyboardEvent& event);
 
   // Whether the elements of popup are selectable (true in generation state).
   bool IsSelectable() const;

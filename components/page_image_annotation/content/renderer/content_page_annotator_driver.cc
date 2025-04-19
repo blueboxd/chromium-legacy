@@ -12,7 +12,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "crypto/sha2.h"
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
-#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/platform/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -45,7 +45,7 @@ std::optional<PageAnnotator::ImageMetadata> ProduceMetadata(
 mojo::PendingRemote<ia_mojom::Annotator> RequestAnnotator(
     content::RenderFrame* const render_frame) {
   mojo::PendingRemote<ia_mojom::Annotator> annotator;
-  render_frame->GetBrowserInterfaceBroker()->GetInterface(
+  render_frame->GetBrowserInterfaceBroker().GetInterface(
       annotator.InitWithNewPipeAndPassReceiver());
   return annotator;
 }

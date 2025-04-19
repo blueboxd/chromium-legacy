@@ -59,11 +59,16 @@
 #import "ios/chrome/browser/infobars/model/overlays/translate_overlay_tab_helper.h"
 #import "ios/chrome/browser/itunes_urls/model/itunes_urls_handler_tab_helper.h"
 #import "ios/chrome/browser/lens/model/lens_tab_helper.h"
+#import "ios/chrome/browser/lens_overlay/coordinator/lens_overlay_availability.h"
+#import "ios/chrome/browser/lens_overlay/model/lens_overlay_tab_helper.h"
 #import "ios/chrome/browser/link_to_text/model/link_to_text_tab_helper.h"
 #import "ios/chrome/browser/metrics/model/pageload_foreground_duration_tab_helper.h"
 #import "ios/chrome/browser/ntp/model/new_tab_page_tab_helper.h"
+#import "ios/chrome/browser/optimization_guide/model/optimization_guide_service.h"
+#import "ios/chrome/browser/optimization_guide/model/optimization_guide_service_factory.h"
 #import "ios/chrome/browser/optimization_guide/model/optimization_guide_tab_helper.h"
 #import "ios/chrome/browser/optimization_guide/model/optimization_guide_validation_tab_helper.h"
+#import "ios/chrome/browser/overlays/model/public/overlay_request_queue.h"
 #import "ios/chrome/browser/overscroll_actions/model/overscroll_actions_tab_helper.h"
 #import "ios/chrome/browser/page_info/about_this_site_tab_helper.h"
 #import "ios/chrome/browser/passwords/model/password_controller.h"
@@ -79,7 +84,7 @@
 #import "ios/chrome/browser/safe_browsing/model/tailored_security/tailored_security_service_factory.h"
 #import "ios/chrome/browser/safe_browsing/model/tailored_security/tailored_security_tab_helper.h"
 #import "ios/chrome/browser/search_engines/model/search_engine_tab_helper.h"
-#import "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
+#import "ios/chrome/browser/sessions/model/ios_chrome_session_tab_helper.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
@@ -120,45 +125,73 @@
 #import "ios/web/public/find_in_page/java_script_find_in_page_manager.h"
 #import "ios/web/public/web_state.h"
 
-void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
+namespace {
+
+// Returns whether the `flag` is set in `mask`.
+constexpr bool IsTabHelperFilterMaskSet(TabHelperFilter mask,
+                                        TabHelperFilter flag) {
+  return (mask & flag) == flag;
+}
+
+}  // namespace
+
+void AttachTabHelpers(web::WebState* web_state, TabHelperFilter filter_flags) {
   ChromeBrowserState* const browser_state =
       ChromeBrowserState::FromBrowserState(web_state->GetBrowserState());
   const bool is_off_the_record = browser_state->IsOffTheRecord();
+  const bool for_prerender =
+      IsTabHelperFilterMaskSet(filter_flags, TabHelperFilter::kPrerender);
+  const bool for_bottom_sheet =
+      IsTabHelperFilterMaskSet(filter_flags, TabHelperFilter::kBottomSheet);
+
+  // When adding a new tab helper, please consider whether it should be filtered
+  // out when the web_state is presented in the following context:
+  // - kPrerender: Tab helpers that are not required or not used for navigation
+  // should be filtered out.
+  // - kBottomSheet: The bottom sheet is overlayed on the BVC, tab helpers that
+  // rely on BVC's toolbar entry points should be filtered out.
+  //
+  // When a web state is presented by the BVC, AttachTabHelpers is called to
+  // attach all tab helpers. (the method is idempotent, so it is okay to call it
+  // multiple times for the same WebState).
 
   // IOSChromeSessionTabHelper sets up the session ID used by other helpers,
   // so it needs to be created before them.
   IOSChromeSessionTabHelper::CreateForWebState(web_state);
 
+  OverlayRequestQueue::CreateForWebState(web_state);
+
   VoiceSearchNavigationTabHelper::CreateForWebState(web_state);
   IOSChromeSyncedTabDelegate::CreateForWebState(web_state);
   InfoBarManagerImpl::CreateForWebState(web_state);
-  if (!base::FeatureList::IsEnabled(kEnableStartupImprovements)) {
-    BlockedPopupTabHelper::GetOrCreateForWebState(web_state);
-  }
+
   if (IsNativeFindInPageAvailable()) {
     FindTabHelper::CreateForWebState(web_state);
   } else {
     web::JavaScriptFindInPageManager::CreateForWebState(web_state);
     JavaScriptFindTabHelper::CreateForWebState(web_state);
   }
-  if (!base::FeatureList::IsEnabled(kEnableStartupImprovements)) {
-    ITunesUrlsHandlerTabHelper::GetOrCreateForWebState(web_state);
-  }
+
   HistoryTabHelper::CreateForWebState(web_state);
   LoadTimingTabHelper::CreateForWebState(web_state);
   OverscrollActionsTabHelper::CreateForWebState(web_state);
   IOSTaskTabHelper::CreateForWebState(web_state);
-  if (IsPriceAlertsEligible(web_state->GetBrowserState()))
+  if (!for_bottom_sheet &&
+      IsPriceAlertsEligible(web_state->GetBrowserState())) {
     ShoppingPersistedDataTabHelper::CreateForWebState(web_state);
+  }
   commerce::CommerceTabHelper::CreateForWebState(
       web_state, is_off_the_record,
       commerce::ShoppingServiceFactory::GetForBrowserState(browser_state));
 
-  if (!for_prerender) {
+  if (!for_bottom_sheet && !for_prerender) {
     // Since LensTabHelper listens for a custom scheme, it needs to be
     // created before AppLauncherTabHelper, which will filter out
     // unhandled schemes.
     LensTabHelper::CreateForWebState(web_state);
+    if (IsLensOverlayAvailable()) {
+      LensOverlayTabHelper::CreateForWebState(web_state);
+    }
     AppLauncherTabHelper::CreateForWebState(
         web_state, [[AppLauncherAbuseDetector alloc] init], is_off_the_record);
   }
@@ -169,10 +202,12 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
 
   InvalidUrlTabHelper::CreateForWebState(web_state);
 
-  InfobarOverlayRequestInserter::CreateForWebState(
-      web_state, &DefaultInfobarOverlayRequestFactory);
-  InfobarOverlayTabHelper::CreateForWebState(web_state);
-  TranslateOverlayTabHelper::CreateForWebState(web_state);
+  if (!for_bottom_sheet) {
+    InfobarOverlayRequestInserter::CreateForWebState(
+        web_state, &DefaultInfobarOverlayRequestFactory);
+    InfobarOverlayTabHelper::CreateForWebState(web_state);
+    TranslateOverlayTabHelper::CreateForWebState(web_state);
+  }
 
   if (ios::provider::IsTextZoomEnabled()) {
     FontSizeTabHelper::CreateForWebState(web_state);
@@ -226,21 +261,12 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   ukm::InitializeSourceUrlRecorderForWebState(web_state);
 
   // Download tab helpers.
-  if (!base::FeatureList::IsEnabled(kEnableStartupImprovements)) {
-    ARQuickLookTabHelper::GetOrCreateForWebState(web_state);
-  }
   DownloadManagerTabHelper::CreateForWebState(web_state);
   SafariDownloadTabHelper::CreateForWebState(web_state);
-  if (!base::FeatureList::IsEnabled(kEnableStartupImprovements)) {
-    PassKitTabHelper::GetOrCreateForWebState(web_state);
-  }
   VcardTabHelper::CreateForWebState(web_state);
 
   // Drive tab helper.
   if (base::FeatureList::IsEnabled(kIOSSaveToDrive)) {
-    if (!base::FeatureList::IsEnabled(kEnableStartupImprovements)) {
-      DriveTabHelper::GetOrCreateForWebState(web_state);
-    }
     DocumentDownloadTabHelper::CreateForWebState(web_state);
   }
 
@@ -255,14 +281,11 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   // allows to inhibit the creation of some of them. Once PreloadController
   // has been refactored to only create the necessary tab helpers, this
   // condition can be removed.
-  if (!for_prerender) {
+  if (!for_bottom_sheet && !for_prerender) {
     SadTabTabHelper::CreateForWebState(
         web_state, SadTabTabHelper::kDefaultRepeatFailureInterval);
     SnapshotTabHelper::CreateForWebState(web_state);
     PagePlaceholderTabHelper::CreateForWebState(web_state);
-    if (!base::FeatureList::IsEnabled(kEnableStartupImprovements)) {
-      PrintTabHelper::GetOrCreateForWebState(web_state);
-    }
     ChromeIOSTranslateClient::CreateForWebState(web_state);
 
     PasswordTabHelper::CreateForWebState(web_state);
@@ -275,7 +298,9 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
     ]);
   }
 
-  InfobarBadgeTabHelper::GetOrCreateForWebState(web_state);
+  if (!for_bottom_sheet) {
+    InfobarBadgeTabHelper::GetOrCreateForWebState(web_state);
+  }
 
   if (base::FeatureList::IsEnabled(kSharedHighlightingIOS)) {
     LinkToTextTabHelper::CreateForWebState(web_state);
@@ -292,9 +317,6 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   PermissionsTabHelper::CreateForWebState(web_state);
 
   RepostFormTabHelper::CreateForWebState(web_state);
-  if (!base::FeatureList::IsEnabled(kEnableStartupImprovements)) {
-    NetExportTabHelper::GetOrCreateForWebState(web_state);
-  }
 
   if (base::FeatureList::IsEnabled(
           security_interstitials::features::kHttpsOnlyMode) ||
@@ -317,15 +339,11 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
     FollowTabHelper::CreateForWebState(web_state);
   }
 
-  if (!base::FeatureList::IsEnabled(kEnableStartupImprovements)) {
-    CaptivePortalTabHelper::GetOrCreateForWebState(web_state);
-  }
-
-  if (!is_off_the_record) {
+  if (!for_bottom_sheet && !is_off_the_record) {
     PriceNotificationsTabHelper::CreateForWebState(web_state);
   }
 
-  if (!is_off_the_record && IsContextualPanelEnabled()) {
+  if (!for_bottom_sheet && !is_off_the_record && IsContextualPanelEnabled()) {
     ContextualPanelModelService* model_service =
         ContextualPanelModelServiceFactory::GetForBrowserState(
             ChromeBrowserState::FromBrowserState(browser_state));
@@ -333,7 +351,13 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
                                                 model_service->models());
   }
 
-  if (!is_off_the_record && IsAboutThisSiteFeatureEnabled()) {
-    AboutThisSiteTabHelper::CreateForWebState(web_state);
+  if (!for_bottom_sheet && !is_off_the_record &&
+      IsAboutThisSiteFeatureEnabled()) {
+    if (auto* optimization_guide_decider =
+            OptimizationGuideServiceFactory::GetForBrowserState(
+                browser_state)) {
+      AboutThisSiteTabHelper::CreateForWebState(web_state,
+                                                optimization_guide_decider);
+    }
   }
 }

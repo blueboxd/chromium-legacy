@@ -5,12 +5,13 @@
 #ifndef CHROME_BROWSER_LACROS_CHROME_BROWSER_MAIN_EXTRA_PARTS_LACROS_H_
 #define CHROME_BROWSER_LACROS_CHROME_BROWSER_MAIN_EXTRA_PARTS_LACROS_H_
 
-#include "chrome/browser/chrome_browser_main_extra_parts.h"
-
 #include <memory>
 
+#include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/chromeos/smart_reader/smart_reader_client_impl.h"
+#include "chrome/browser/lacros/magic_boost_state_lacros.h"
 #include "chrome/browser/lacros/sync/sync_crosapi_manager_lacros.h"
+#include "chrome/browser/permissions/system/system_permission_settings.h"
 
 class ArcIconCache;
 class AutomationManagerLacros;
@@ -33,7 +34,6 @@ class FieldTrialObserver;
 class NetworkChangeManagerBridge;
 class NetworkSettingsObserver;
 class TabletModePageBehavior;
-class UiMetricRecorderLacros;
 class VpnExtensionTrackerLacros;
 class WebAuthnRequestRegistrarLacros;
 class WebKioskInstallerLacros;
@@ -51,6 +51,7 @@ namespace crosapi {
 class ClipboardHistoryLacros;
 class DebugInterfaceLacros;
 class DeskProfilesLacros;
+class MediaAppLacros;
 class SearchControllerLacros;
 class SearchControllerFactoryLacros;
 class TaskManagerLacros;
@@ -190,6 +191,9 @@ class ChromeBrowserMainExtraPartsLacros : public ChromeBrowserMainExtraParts {
   std::unique_ptr<WebAuthnRequestRegistrarLacros>
       webauthn_request_registrar_lacros_;
 
+  // Handles prefs related to magic boost.
+  std::unique_ptr<chromeos::MagicBoostStateLacros> magic_boost_state_lacros_;
+
   // Handles read write cards requests from the Lacros browser.
   std::unique_ptr<chromeos::ReadWriteCardsManager> read_write_cards_manager_;
 
@@ -198,9 +202,6 @@ class ChromeBrowserMainExtraPartsLacros : public ChromeBrowserMainExtraParts {
 
   // Forwards file system provider events to extensions.
   std::unique_ptr<LacrosFileSystemProvider> file_system_provider_;
-
-  // Records UI metrics such as dropped frame percentage.
-  std::unique_ptr<UiMetricRecorderLacros> ui_metric_recorder_;
 
   // Tracks videoconference apps and notifies VideoConferenceManagerAsh of
   // changes to the permissions or capturing statuses of these apps.
@@ -237,6 +238,9 @@ class ChromeBrowserMainExtraPartsLacros : public ChromeBrowserMainExtraParts {
 
   // Handles sending requested suggestions to ash.
   std::unique_ptr<SuggestionServiceLacros> suggestion_service_;
+
+  // Handles receiving requests from the Media App (which is in ash).
+  std::unique_ptr<crosapi::MediaAppLacros> media_app_;
 };
 
 #endif  // CHROME_BROWSER_LACROS_CHROME_BROWSER_MAIN_EXTRA_PARTS_LACROS_H_

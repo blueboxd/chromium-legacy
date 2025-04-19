@@ -57,7 +57,7 @@
 #include "chrome/browser/ash/guest_os/guest_os_stability_monitor.h"
 #include "chrome/browser/ash/guest_os/public/guest_os_service.h"
 #include "chrome/browser/ash/guest_os/public/types.h"
-#include "chrome/browser/ash/scheduler_configuration_manager.h"
+#include "chrome/browser/ash/scheduler_config/scheduler_configuration_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/profiles/profile.h"
@@ -296,6 +296,8 @@ class CrostiniManager::CrostiniRestarter
   void MaybeCancelCurrentOperation();
 
   void LogRestarterResult(const RestartRequest& request, CrostiniResult result);
+
+  void OnConciergeAvailable(bool service_available);
 
   base::OneShotTimer stage_timeout_timer_;
   base::TimeTicks stage_start_;
@@ -687,6 +689,20 @@ void CrostiniManager::CrostiniRestarter::LoadComponentFinished(
   }
   // Set the pref here, after we first successfully install something
   profile_->GetPrefs()->SetBoolean(crostini::prefs::kCrostiniEnabled, true);
+
+  // Ensure concierge is ready to serve requests
+  GetConciergeClient()->WaitForServiceToBeAvailable(
+      base::BindOnce(&CrostiniManager::CrostiniRestarter::OnConciergeAvailable,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void CrostiniManager::CrostiniRestarter::OnConciergeAvailable(
+    bool service_is_available) {
+  if (!service_is_available) {
+    LOG(ERROR) << "vm_concierge service is not available";
+    FinishRestart(CrostiniResult::CONCIERGE_START_FAILED);
+    return;
+  }
 
   // Allow concierge to choose an appropriate disk image size.
   int64_t disk_size_bytes = requests_[0].options.disk_size_bytes.value_or(0);

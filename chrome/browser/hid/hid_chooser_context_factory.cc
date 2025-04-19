@@ -36,6 +36,9 @@ HidChooserContextFactory::HidChooserContextFactory()
               // TODO(crbug.com/40257657): Check if this service is needed in
               // Guest mode.
               .WithGuest(ProfileSelection::kOwnInstance)
+              // TODO(crbug.com/41488885): Check if this service is needed for
+              // Ash Internals.
+              .WithAshInternals(ProfileSelection::kOwnInstance)
               .Build()) {
   DependsOn(HostContentSettingsMapFactory::GetInstance());
 }
@@ -47,12 +50,4 @@ HidChooserContextFactory::BuildServiceInstanceForBrowserContext(
     content::BrowserContext* context) const {
   return std::make_unique<HidChooserContext>(
       Profile::FromBrowserContext(context));
-}
-
-void HidChooserContextFactory::BrowserContextShutdown(
-    content::BrowserContext* context) {
-  auto* hid_chooser_context =
-      GetForProfileIfExists(Profile::FromBrowserContext(context));
-  if (hid_chooser_context)
-    hid_chooser_context->FlushScheduledSaveSettingsCalls();
 }

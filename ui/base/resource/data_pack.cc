@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ui/base/resource/data_pack.h"
 
 #include <errno.h>
@@ -20,6 +25,7 @@
 #include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_span.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/synchronization/lock.h"
 #include "net/filter/gzip_header.h"
@@ -165,7 +171,7 @@ class DataPack::BufferDataSource : public DataPack::DataSource {
   const uint8_t* GetData() const override { return buffer_.data(); }
 
  private:
-  base::span<const uint8_t> buffer_;
+  base::raw_span<const uint8_t> buffer_;
 };
 
 DataPack::DataPack(ResourceScaleFactor resource_scale_factor)

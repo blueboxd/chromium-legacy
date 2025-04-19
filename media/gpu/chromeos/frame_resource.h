@@ -92,11 +92,10 @@ class FrameResource : public base::RefCountedThreadSafe<FrameResource> {
   // Create a shared GPU memory handle to |this|'s data.
   virtual gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferHandle() const = 0;
 
-  // Returns true if |this| is backed by a GpuMemoryBuffer.
-  bool HasGpuMemoryBuffer() const { return !!GetGpuMemoryBuffer(); }
-
-  // Gets the GpuMemoryBuffer backing |this|.
-  virtual gfx::GpuMemoryBuffer* GetGpuMemoryBuffer() const = 0;
+  // Gets the ScopedMapping object which clients can use to access the CPU
+  // visible memory and other metadata for the gpu buffer backing |this|.
+  virtual std::unique_ptr<VideoFrame::ScopedMapping> MapGMBOrSharedImage()
+      const = 0;
 
   // Returns an identifier based on the frame data's underlying storage. This
   // returns consistent results even if the frame gets wrapped. Returns an
@@ -171,6 +170,10 @@ class FrameResource : public base::RefCountedThreadSafe<FrameResource> {
 
   // Returns a human-readable string describing |this|.
   virtual std::string AsHumanReadableString() const = 0;
+
+  // Gets the GpuMemoryBufferHandle backing |this|.
+  virtual gfx::GpuMemoryBufferHandle GetGpuMemoryBufferHandleForTesting()
+      const = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<FrameResource>;

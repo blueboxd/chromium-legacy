@@ -5,6 +5,7 @@
 #include "chrome/browser/ash/extensions/input_method_api.h"
 
 #include <stddef.h>
+
 #include <memory>
 #include <set>
 #include <string>
@@ -26,12 +27,13 @@
 #include "chrome/browser/ash/extensions/language_packs/language_packs_extensions_util.h"
 #include "chrome/browser/ash/input_method/autocorrect_manager.h"
 #include "chrome/browser/ash/input_method/native_input_method_engine.h"
-#include "chrome/browser/ash/os_url_handler.h"
+#include "chrome/browser/ash/url_handler/os_url_handler.h"
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/api/input_method_private.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/ash/components/language_packs/handwriting.h"
@@ -47,6 +49,7 @@
 #include "ui/base/ime/ash/input_method_descriptor.h"
 #include "ui/base/ime/ash/input_method_manager.h"
 #include "ui/base/ime/ash/input_method_util.h"
+#include "ui/base/window_open_disposition.h"
 
 namespace {
 

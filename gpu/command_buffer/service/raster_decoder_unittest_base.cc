@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "gpu/command_buffer/service/raster_decoder_unittest_base.h"
 
 #include <stddef.h>
@@ -77,6 +82,9 @@ void RasterDecoderTestBase::OnFenceSyncRelease(uint64_t release) {}
 void RasterDecoderTestBase::OnDescheduleUntilFinished() {}
 void RasterDecoderTestBase::OnRescheduleAfterFinished() {}
 void RasterDecoderTestBase::OnSwapBuffers(uint64_t swap_id, uint32_t flags) {}
+bool RasterDecoderTestBase::ShouldYield() {
+  return false;
+}
 
 void RasterDecoderTestBase::SetUp() {
   InitDecoder(InitState());

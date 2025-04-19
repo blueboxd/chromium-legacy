@@ -32,6 +32,13 @@ void MahiMediaAppEventsProxyImpl::OnPdfContextMenuHide() {
   }
 }
 
+void MahiMediaAppEventsProxyImpl::OnPdfClosed(
+    const base::UnguessableToken client_id) {
+  for (auto& observer : observers_) {
+    observer.OnPdfClosed(client_id);
+  }
+}
+
 void MahiMediaAppEventsProxyImpl::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }

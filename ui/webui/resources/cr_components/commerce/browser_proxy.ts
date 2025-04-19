@@ -6,7 +6,7 @@ import type {String16} from '//resources/mojo/mojo/public/mojom/base/string16.mo
 import type {Uuid} from '//resources/mojo/mojo/public/mojom/base/uuid.mojom-webui.js';
 import type {Url} from '//resources/mojo/url/mojom/url.mojom-webui.js';
 
-import type {BookmarkProductInfo, PriceInsightsInfo, ProductInfo, ProductSpecifications, ProductSpecificationsSet, UrlInfo} from './shopping_service.mojom-webui.js';
+import type {BookmarkProductInfo, PriceInsightsInfo, ProductInfo, ProductSpecifications, ProductSpecificationsDisclosureVersion, ProductSpecificationsSet, UrlInfo, UserFeedback} from './shopping_service.mojom-webui.js';
 import {PageCallbackRouter, ShoppingServiceHandlerFactory, ShoppingServiceHandlerRemote} from './shopping_service.mojom-webui.js';
 
 let instance: BrowserProxy|null = null;
@@ -22,7 +22,7 @@ export interface BrowserProxy {
   getPriceInsightsInfoForCurrentUrl():
       Promise<{priceInsightsInfo: PriceInsightsInfo}>;
   showInsightsSidePanelUi(): void;
-  getUrlInfosForOpenTabs(): Promise<{urlInfos: UrlInfo[]}>;
+  getUrlInfosForProductTabs(): Promise<{urlInfos: UrlInfo[]}>;
   getUrlInfosForRecentlyViewedTabs(): Promise<{urlInfos: UrlInfo[]}>;
   isShoppingListEligible(): Promise<{eligible: boolean}>;
   getShoppingCollectionBookmarkFolderId(): Promise<{collectionId: bigint}>;
@@ -32,7 +32,8 @@ export interface BrowserProxy {
   switchToOrOpenTab(url: Url): void;
   getParentBookmarkFolderNameForCurrentUrl(): Promise<{name: String16}>;
   showBookmarkEditorForCurrentUrl(): void;
-  showFeedback(): void;
+  showProductSpecificationsSetForUuid(uuid: Uuid, inNewTab: boolean): void;
+  showFeedbackForPriceInsights(): void;
   getCallbackRouter(): PageCallbackRouter;
   getProductInfoForUrl(url: Url): Promise<{productInfo: ProductInfo}>;
   getProductSpecificationsForUrls(urls: Url[]):
@@ -48,6 +49,12 @@ export interface BrowserProxy {
       Promise<{updatedSet: ProductSpecificationsSet | null}>;
   setUrlsForProductSpecificationsSet(uuid: Uuid, urls: Url[]):
       Promise<{updatedSet: ProductSpecificationsSet | null}>;
+  setProductSpecificationsUserFeedback(feedback: UserFeedback): void;
+  setProductSpecificationDisclosureAcceptVersion(
+      version: ProductSpecificationsDisclosureVersion): void;
+  maybeShowProductSpecificationDisclosure(urls: Url[], name: string):
+      Promise<{disclosureShown: boolean}>;
+  showSyncSetupFlow(): void;
 }
 
 export class BrowserProxyImpl implements BrowserProxy {
@@ -63,6 +70,10 @@ export class BrowserProxyImpl implements BrowserProxy {
     factory.createShoppingServiceHandler(
         this.callbackRouter.$.bindNewPipeAndPassRemote(),
         this.handler.$.bindNewPipeAndPassReceiver());
+  }
+
+  showSyncSetupFlow() {
+    this.handler.showSyncSetupFlow();
   }
 
   getAllPriceTrackedBookmarkProductInfo() {
@@ -97,8 +108,8 @@ export class BrowserProxyImpl implements BrowserProxy {
     return this.handler.getProductSpecificationsForUrls(urls);
   }
 
-  getUrlInfosForOpenTabs() {
-    return this.handler.getUrlInfosForOpenTabs();
+  getUrlInfosForProductTabs() {
+    return this.handler.getUrlInfosForProductTabs();
   }
 
   getUrlInfosForRecentlyViewedTabs() {
@@ -133,6 +144,11 @@ export class BrowserProxyImpl implements BrowserProxy {
     this.handler.switchToOrOpenTab(url);
   }
 
+  setProductSpecificationDisclosureAcceptVersion(
+      version: ProductSpecificationsDisclosureVersion) {
+    this.handler.setProductSpecificationAcceptedDisclosureVersion(version);
+  }
+
   getParentBookmarkFolderNameForCurrentUrl() {
     return this.handler.getParentBookmarkFolderNameForCurrentUrl();
   }
@@ -141,8 +157,12 @@ export class BrowserProxyImpl implements BrowserProxy {
     this.handler.showBookmarkEditorForCurrentUrl();
   }
 
-  showFeedback() {
-    this.handler.showFeedback();
+  showProductSpecificationsSetForUuid(uuid: Uuid, inNewTab: boolean) {
+    this.handler.showProductSpecificationsSetForUuid(uuid, inNewTab);
+  }
+
+  showFeedbackForPriceInsights() {
+    this.handler.showFeedbackForPriceInsights();
   }
 
   getAllProductSpecificationsSets() {
@@ -167,6 +187,14 @@ export class BrowserProxyImpl implements BrowserProxy {
 
   setUrlsForProductSpecificationsSet(uuid: Uuid, urls: Url[]) {
     return this.handler.setUrlsForProductSpecificationsSet(uuid, urls);
+  }
+
+  setProductSpecificationsUserFeedback(feedback: UserFeedback) {
+    this.handler.setProductSpecificationsUserFeedback(feedback);
+  }
+
+  maybeShowProductSpecificationDisclosure(urls: Url[], name: string) {
+    return this.handler.maybeShowProductSpecificationDisclosure(urls, name);
   }
 
   getCallbackRouter() {

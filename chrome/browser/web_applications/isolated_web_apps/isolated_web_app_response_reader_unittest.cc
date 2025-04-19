@@ -8,6 +8,7 @@
 
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
+#include "base/test/bind.h"
 #include "base/test/gmock_expected_support.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_future.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/web_applications/isolated_web_apps/error/unusable_swbn_file_error.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_trust_checker.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
+#include "chrome/browser/web_applications/isolated_web_apps/iwa_identity_validator.h"
 #include "chrome/browser/web_applications/isolated_web_apps/signed_web_bundle_reader.h"
 #include "chrome/browser/web_applications/isolated_web_apps/test/test_signed_web_bundle_builder.h"
 #include "chrome/browser/web_applications/test/signed_web_bundle_utils.h"
@@ -41,6 +43,7 @@ using ::testing::IsTrue;
 class IsolatedWebAppResponseReaderTest : public ::testing::Test {
  protected:
   void SetUp() override {
+    IwaIdentityValidator::CreateSingleton();
     SetTrustedWebBundleIdsForTesting({web_bundle_id_});
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
@@ -52,10 +55,8 @@ class IsolatedWebAppResponseReaderTest : public ::testing::Test {
                         "Hello World");
     auto unsigned_bundle = builder.CreateBundle();
 
-    web_package::WebBundleSigner::Ed25519KeyPair key_pair(kTestPublicKey,
-                                                          kTestPrivateKey);
-    auto signed_bundle =
-        web_package::WebBundleSigner::SignBundle(unsigned_bundle, {key_pair});
+    auto signed_bundle = web_package::WebBundleSigner::SignBundle(
+        unsigned_bundle, test::GetDefaultEd25519KeyPair());
 
     base::FilePath web_bundle_path;
     EXPECT_TRUE(
@@ -68,17 +69,17 @@ class IsolatedWebAppResponseReaderTest : public ::testing::Test {
   base::expected<void, UnusableSwbnFileError> ReadIntegrityBlockAndMetadata(
       SignedWebBundleReader& reader) {
     base::test::TestFuture<base::expected<void, UnusableSwbnFileError>> future;
-    reader.StartReading(
-        base::BindOnce(
-            [](web_package::SignedWebBundleIntegrityBlock integrity_block,
-               base::OnceCallback<void(
-                   SignedWebBundleReader::SignatureVerificationAction)>
-                   callback) {
-              std::move(callback).Run(
-                  SignedWebBundleReader::SignatureVerificationAction::
-                      ContinueAndVerifySignatures());
-            }),
-        future.GetCallback());
+    reader.ReadIntegrityBlock(base::BindLambdaForTesting(
+        [&](base::expected<web_package::SignedWebBundleIntegrityBlock,
+                           UnusableSwbnFileError> integrity_block) {
+          reader.ProceedWithAction(
+              integrity_block.has_value()
+                  ? SignedWebBundleReader::SignatureVerificationAction::
+                        ContinueAndVerifySignatures()
+                  : SignedWebBundleReader::SignatureVerificationAction::Abort(
+                        integrity_block.error()),
+              future.GetCallback());
+        }));
     return future.Take();
   }
 
@@ -95,7 +96,7 @@ class IsolatedWebAppResponseReaderTest : public ::testing::Test {
 
   TestingProfile profile_;
   web_package::SignedWebBundleId web_bundle_id_ =
-      *web_package::SignedWebBundleId::Create(kTestEd25519WebBundleId);
+      test::GetDefaultEd25519WebBundleId();
 
   GURL base_url_ =
       IsolatedWebAppUrlInfo::CreateFromSignedWebBundleId(web_bundle_id_)

@@ -817,17 +817,12 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Sets whether or not the layout manager need to respect the available space.
   //
-  // TODO(crbug.com/40232718): If the cross axis of the constraint space is
-  // constrained in FlexLayout, the cross axis of the host view will be
-  // stretched to the incoming constraint size by default. This results in
-  // incorrect calculations.
-  //
-  // When vertical BoxLayouts and other views are nested inside the horizontal
-  // BoxLayout, the width of the horizontal BoxLayout will be passed in as the
-  // cross axis of the vertical BoxLayout. At this time, if the vertical
-  // BoxLayout is set to stretch the cross axis (default), the first vertical
-  // BoxLayout will occupy all the space, which will cause the subsequent
-  // BoxLayout to be unable to be displayed.
+  // TODO(crbug.com/40232718): Remove this. When the vertical flexlayout with
+  // cross axis is stretched, it will be (width, GetHeightForWidth(width)) when
+  // calculating preferredsize, thus setting the width to an incorrect value.
+  // This will cause unexpected results in some client code. This problem also
+  // exists in BoxLayout. When we switch GetHeightForWidth in them to
+  // GetPreferredSize, this problem should be solved.
   void SetLayoutManagerUseConstrainedSpace(
       bool layout_manager_use_constrained_space);
 
@@ -1358,15 +1353,15 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // (Shift-Tab).
   virtual void AboutToRequestFocusFromTabTraversal(bool reverse) {}
 
-  // Invoked when a key is pressed before the key event is processed (and
-  // potentially eaten) by the focus manager for tab traversal, accelerators and
-  // other focus related actions.
+  // Invoked when a key is pressed or released before the key event is processed
+  // (and potentially eaten) by the focus manager for tab traversal,
+  // accelerators and other focus related actions.
   // The default implementation returns false, ensuring that tab traversal and
   // accelerators processing is performed.
   // Subclasses should return true if they want to process the key event and not
   // have it processed as an accelerator (if any) or as a tab traversal (if the
-  // key event is for the TAB key).  In that case, OnKeyPressed will
-  // subsequently be invoked for that event.
+  // key event is for the TAB key).  In that case, OnKeyPressed/OnKeyReleased
+  // will subsequently be invoked for that event.
   virtual bool SkipDefaultKeyEventProcessing(const ui::KeyEvent& event);
 
   // Subclasses that contain traversable children that are not directly
@@ -2261,11 +2256,18 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   //////////////////////////////////////////////////////////////////////////////
 
+  // Observers -----------------------------------------------------------------
+
+  base::ObserverList<ViewObserver>::Unchecked observers_;
+
   // Creation and lifetime -----------------------------------------------------
 
   // False if this View is owned by its parent - i.e. it will be deleted by its
   // parent during its parents destruction. False is the default.
   bool owned_by_client_ = false;
+
+  // http://crbug.com/1162949 : Instrumentation that indicates if this is alive.
+  LifeCycleState life_cycle_state_ = LifeCycleState::kAlive;
 
   // Attributes ----------------------------------------------------------------
 
@@ -2492,13 +2494,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 #if DCHECK_IS_ON()
   bool on_theme_changed_called_ = false;
 #endif
-
-  // Observers -----------------------------------------------------------------
-
-  base::ObserverList<ViewObserver>::Unchecked observers_;
-
-  // http://crbug.com/1162949 : Instrumentation that indicates if this is alive.
-  LifeCycleState life_cycle_state_ = LifeCycleState::kAlive;
 
   // Accessibility -------------------------------------------------------------
 

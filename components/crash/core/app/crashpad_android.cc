@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "components/crash/core/app/crashpad.h"
 
 #include <dlfcn.h>
@@ -13,8 +18,6 @@
 #include <algorithm>
 #include <string_view>
 
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_buildflags.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/tagging.h"
 #include "base/android/build_info.h"
 #include "base/android/java_exception_reporter.h"
 #include "base/android/jni_android.h"
@@ -34,9 +37,10 @@
 #include "base/synchronization/lock.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
-#include "components/crash/android/package_paths_jni/PackagePaths_jni.h"
 #include "components/crash/core/app/crash_reporter_client.h"
 #include "content/public/common/content_descriptors.h"
+#include "partition_alloc/buildflags.h"
+#include "partition_alloc/tagging.h"
 #include "sandbox/linux/services/syscall_wrappers.h"
 #include "third_party/crashpad/crashpad/client/annotation.h"
 #include "third_party/crashpad/crashpad/client/client_argv_handling.h"
@@ -49,6 +53,9 @@
 #include "third_party/crashpad/crashpad/util/linux/scoped_pr_set_dumpable.h"
 #include "third_party/crashpad/crashpad/util/misc/from_pointer_cast.h"
 #include "third_party/crashpad/crashpad/util/posix/signals.h"
+
+// Must come after all headers that specialize FromJniType() / ToJniType().
+#include "components/crash/android/package_paths_jni/PackagePaths_jni.h"
 
 namespace crashpad {
 namespace {

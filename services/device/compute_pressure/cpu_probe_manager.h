@@ -7,9 +7,11 @@
 
 #include <memory>
 
-#include "base/functional/callback.h"
+#include "base/functional/callback_forward.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/thread_annotations.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/system_cpu/cpu_sample.h"
 #include "services/device/public/mojom/pressure_update.mojom-shared.h"
@@ -68,23 +70,29 @@ class CpuProbeManager {
 
   void SetCpuProbeForTesting(std::unique_ptr<system_cpu::CpuProbe>);
 
-  system_cpu::CpuProbe* GetCpuProbeForTesting();
-
- private:
-  friend class PressureManagerImpl;
-  FRIEND_TEST_ALL_PREFIXES(CpuProbeManagerTest, CalculateStateValueTooLarge);
-
+ protected:
   CpuProbeManager(std::unique_ptr<system_cpu::CpuProbe> system_cpu_probe,
                   base::TimeDelta,
                   base::RepeatingCallback<void(mojom::PressureState)>);
+
+  system_cpu::CpuProbe* cpu_probe();
+
+  // Returns the current thresholds being used for each mojom::PressureState,
+  // taking state randomization into account.
+  const std::array<double,
+                   static_cast<size_t>(mojom::PressureState::kMaxValue) + 1>&
+  state_thresholds() const;
+
+ private:
+  friend class CpuProbeManagerTest;
+  FRIEND_TEST_ALL_PREFIXES(CpuProbeManagerDeathTest,
+                           CalculateStateValueTooLarge);
+  FRIEND_TEST_ALL_PREFIXES(CpuProbeManagerTest, CreateCpuProbeExists);
 
   // Implements the "break calibration" mitigation by toggling the
   // |state_randomization_requested_| flag every |randomization_time_|
   // interval.
   void ToggleStateRandomization();
-
-  // Called after CpuProbe::StartSampling() completes.
-  void OnSamplingStarted();
 
   // Called periodically while the CpuProbe is running.
   void OnCpuSampleAvailable(std::optional<system_cpu::CpuSample>);
@@ -119,13 +127,7 @@ class CpuProbeManager {
   base::RepeatingCallback<void(mojom::PressureState)> sampling_callback_
       GUARDED_BY_CONTEXT(sequence_checker_);
 
-  // True if the CpuProbe state will be reported after the next update.
-  //
-  // The CpuSample reported by many CpuProbe implementations relies
-  // on the differences observed between two Update() calls. For this reason,
-  // the CpuSample reported after a first Update() call is not
-  // reported via `sampling_callback_`.
-  bool got_probe_baseline_ GUARDED_BY_CONTEXT(sequence_checker_) = false;
+  base::WeakPtrFactory<CpuProbeManager> weak_factory_{this};
 };
 
 }  // namespace device

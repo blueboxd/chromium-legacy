@@ -1,7 +1,12 @@
 include_rules = [
+  "+components/data_sharing",
   "+components/keyed_service",
+  "+components/prefs",
   "+components/pref_registry",
   "+components/tab_groups",
+  "+components/strings",
   "+components/sync",
-  "+ui/gfx"
+  "+components/sync_device_info",
+  "+ui/base/l10n",
+  "+ui/gfx",
 ]

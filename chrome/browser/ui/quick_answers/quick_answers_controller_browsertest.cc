@@ -14,8 +14,8 @@ using QuickAnswersControllerTest = quick_answers::QuickAnswersBrowserTestBase;
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(QuickAnswersControllerTest, FeatureIneligible) {
-  QuickAnswersState::Get()->set_eligibility_for_testing(false);
+IN_PROC_BROWSER_TEST_P(QuickAnswersControllerTest, FeatureIneligible) {
+  QuickAnswersState::Get()->SetEligibilityForTesting(false);
 
   ShowMenuParams params;
   params.selected_text = "test";
@@ -27,8 +27,8 @@ IN_PROC_BROWSER_TEST_F(QuickAnswersControllerTest, FeatureIneligible) {
             controller()->GetQuickAnswersVisibility());
 }
 
-IN_PROC_BROWSER_TEST_F(QuickAnswersControllerTest, PasswordField) {
-  QuickAnswersState::Get()->set_eligibility_for_testing(true);
+IN_PROC_BROWSER_TEST_P(QuickAnswersControllerTest, PasswordField) {
+  QuickAnswersState::Get()->SetEligibilityForTesting(true);
 
   ShowMenuParams params;
   params.selected_text = "test";
@@ -42,8 +42,8 @@ IN_PROC_BROWSER_TEST_F(QuickAnswersControllerTest, PasswordField) {
             controller()->GetQuickAnswersVisibility());
 }
 
-IN_PROC_BROWSER_TEST_F(QuickAnswersControllerTest, NoSelectedText) {
-  QuickAnswersState::Get()->set_eligibility_for_testing(true);
+IN_PROC_BROWSER_TEST_P(QuickAnswersControllerTest, NoSelectedText) {
+  QuickAnswersState::Get()->SetEligibilityForTesting(true);
 
   ShowMenu(ShowMenuParams());
 
@@ -52,8 +52,12 @@ IN_PROC_BROWSER_TEST_F(QuickAnswersControllerTest, NoSelectedText) {
             controller()->GetQuickAnswersVisibility());
 }
 
-IN_PROC_BROWSER_TEST_F(QuickAnswersControllerTest, QuickAnswersPending) {
-  QuickAnswersState::Get()->set_eligibility_for_testing(true);
+IN_PROC_BROWSER_TEST_P(QuickAnswersControllerTest, QuickAnswersPending) {
+  if (IsMagicBoostEnabled()) {
+    GTEST_SKIP() << "This test only applies when Magic Boost is disabled.";
+  }
+
+  QuickAnswersState::Get()->SetEligibilityForTesting(true);
 
   ShowMenuParams params;
   params.selected_text = "test";
@@ -63,3 +67,8 @@ IN_PROC_BROWSER_TEST_F(QuickAnswersControllerTest, QuickAnswersPending) {
   ASSERT_EQ(QuickAnswersVisibility::kPending,
             controller()->GetQuickAnswersVisibility());
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    QuickAnswersControllerTest,
+    ::testing::Bool());

@@ -127,6 +127,7 @@ class CONTENT_EXPORT RenderWidgetHostViewIOS
       base::OnceCallback<void(const SkBitmap&)> callback) override;
   ui::Compositor* GetCompositor() override;
   void GestureEventAck(const blink::WebGestureEvent& event,
+                       blink::mojom::InputEventResultSource ack_source,
                        blink::mojom::InputEventResultState ack_result) override;
   void ChildDidAckGestureEvent(
       const blink::WebGestureEvent& event,
@@ -151,10 +152,10 @@ class CONTENT_EXPORT RenderWidgetHostViewIOS
   void TransformPointToRootSurface(gfx::PointF* point) override;
   bool TransformPointToCoordSpaceForView(
       const gfx::PointF& point,
-      RenderWidgetHostViewInput* target_view,
+      input::RenderWidgetHostViewInput* target_view,
       gfx::PointF* transformed_point) override;
   void ProcessAckedTouchEvent(
-      const TouchEventWithLatencyInfo& touch,
+      const input::TouchEventWithLatencyInfo& touch,
       blink::mojom::InputEventResultState ack_result) override;
 
   // ui::CALayerFrameSink overrides:

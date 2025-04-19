@@ -24,14 +24,17 @@
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/snap_group/snap_group_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/window_restore/informed_restore_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/ranges/algorithm.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/trace_event/named_trigger.h"
 #include "base/trace_event/trace_event.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/compositor/layer.h"
@@ -59,18 +62,43 @@ constexpr base::TimeDelta kOcclusionPauseDurationForEnd =
 
 constexpr base::TimeDelta kEnterExitPresentationMaxLatency = base::Seconds(2);
 
-// Returns the enter/exit type that should be used if kNormal enter/exit type
-// was originally requested - if the overview is expected to transition to/from
-// the home screen, the normal enter/exit mode is expected to be overridden by
-// either slide, or fade to home modes.
-// |enter| - Whether |original_type| is used for entering overview.
-// |windows| - The list of windows that are displayed in the overview UI.
-OverviewEnterExitType MaybeOverrideEnterExitTypeForHomeScreen(
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+//
+// LINT.IfChange(DeskBarVisibility)
+enum class DeskBarVisibility {
+  // Desk bar is shown in the first overview frame.
+  kShownImmediately = 0,
+  // Desk bar is shown after the first overview frame (usually after the
+  // enter-overview animation is complete).
+  kShownAfterFirstFrame = 1,
+  // Desk bar was never shown during the overview session.
+  kNotShown = 2,
+  kMaxValue = kNotShown,
+};
+// LINT.ThenChange(//tools/metrics/histograms/metadata/ash/enums.xml:DeskBarVisibility)
+
+// Returns the enter/exit type that should be used if `kNormal` enter/exit type
+// was originally requested. Used in two cases:
+// 1) If the overview is expected to transition to/from the home screen, the
+// normal enter/exit mode is expected to be overridden by either slide, or fade
+// to home modes.
+// 2) If overview is an informed restore session, the normal enter/exit mode is
+// to overridden by `kInformedRestore`. `enter` - Whether `original_type` is
+// used for entering overview. `windows` - The list of windows that are
+// displayed in the overview UI.
+OverviewEnterExitType MaybeOverrideEnterExitType(
     OverviewEnterExitType original_type,
     bool enter,
     const std::vector<raw_ptr<aura::Window, VectorExperimental>>& windows) {
-  if (original_type != OverviewEnterExitType::kNormal)
+  if (original_type != OverviewEnterExitType::kNormal) {
     return original_type;
+  }
+
+  if (features::IsForestFeatureEnabled() &&
+      !!Shell::Get()->informed_restore_controller()->contents_data()) {
+    return OverviewEnterExitType::kInformedRestore;
+  }
 
   // Use normal type if home launcher is not available.
   if (!display::Screen::GetScreen()->InTabletMode()) {
@@ -91,6 +119,30 @@ OverviewEnterExitType MaybeOverrideEnterExitTypeForHomeScreen(
   return enter ? OverviewEnterExitType::kFadeInEnter
                : OverviewEnterExitType::kFadeOutExit;
 }
+
+// Defines an observer that can be used to monitor overview mode ending and dump
+// without crashing when that happens. This is needed to investigate a crash
+// where resetting the occlusion tracker seemingly closes overview.
+// TODO(http://b/334908991): Remove this once the root cause of the crash is
+// found and fixed.
+class OverviewEndingDumper : public OverviewObserver {
+ public:
+  OverviewEndingDumper() {
+    observation_.Observe(Shell::Get()->overview_controller());
+  }
+  OverviewEndingDumper(const OverviewEndingDumper&) = delete;
+  OverviewEndingDumper& operator=(const OverviewEndingDumper&) = delete;
+  ~OverviewEndingDumper() override = default;
+
+  void OnOverviewModeEnding(OverviewSession* overview_session) override {
+    observation_.Reset();
+    base::debug::DumpWithoutCrashing();
+  }
+
+ private:
+  base::ScopedObservation<OverviewController, OverviewObserver> observation_{
+      this};
+};
 
 }  // namespace
 
@@ -121,7 +173,8 @@ OverviewController::OverviewController()
       // behavior may be a bit worse than ash windows. Keep this snapshot code
       // until we confirm it is fine to show lacros snapshotted windows all the
       // time.
-      windows_have_snapshot_(true) {
+      windows_have_snapshot_(true),
+      overview_window_occlusion_calculator_(this) {
   Shell::Get()->activation_client()->AddObserver(this);
   CHECK_EQ(g_instance, nullptr);
   g_instance = this;
@@ -315,6 +368,10 @@ void OverviewController::OnWindowActivating(ActivationReason reason,
     overview_session_->OnWindowActivating(reason, gained_active, lost_active);
 }
 
+base::AutoReset<bool> OverviewController::SetDisableAppIdCheckForTests() {
+  return {&disable_app_id_check_for_saved_desks_, true};
+}
+
 void OverviewController::ToggleOverview(OverviewEnterExitType type) {
   // Pause raster scale updates while the overview is being toggled. This is to
   // handle the case where a mirror view is deleted then recreated when
@@ -371,16 +428,24 @@ void OverviewController::ToggleOverview(OverviewEnterExitType type) {
     auto presentation_time_recorder = CreatePresentationTimeHistogramRecorder(
         Shell::GetPrimaryRootWindow()->layer()->GetCompositor(),
         kExitOverviewPresentationHistogram, "",
-        kEnterExitPresentationMaxLatency);
+        kEnterExitPresentationMaxLatency, /*emit_trace_event=*/true);
     presentation_time_recorder->RequestNext();
+
+    base::UmaHistogramEnumeration(
+        "Ash.Overview.DeskBarVisibility",
+        desk_bar_shown_immediately_
+            ? DeskBarVisibility::kShownImmediately
+            : (IsDeskBarOpen() ? DeskBarVisibility::kShownAfterFirstFrame
+                               : DeskBarVisibility::kNotShown));
 
     // Suspend occlusion tracker until the exit animation is complete.
     exit_pauser_ = PauseOcclusionTracker(occlusion_pause_duration_for_end_);
 
     // We may want to slide out the overview grid in some cases, even if not
-    // explicitly stated.
+    // explicitly stated. We may also want to enter a informed restore session
+    // in some cases, even if not explicitly stated.
     OverviewEnterExitType new_type =
-        MaybeOverrideEnterExitTypeForHomeScreen(type, /*enter=*/false, windows);
+        MaybeOverrideEnterExitType(type, /*enter=*/false, windows);
     overview_session_->set_enter_exit_overview_type(new_type);
 
     overview_session_->set_is_shutting_down(true);
@@ -432,14 +497,18 @@ void OverviewController::ToggleOverview(OverviewEnterExitType type) {
       OnEndingAnimationComplete(/*canceled=*/false);
   } else {
     DCHECK(CanEnterOverview());
+    base::trace_event::EmitNamedTrigger("ash-overview-start");
     TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ui", "OverviewController::EnterOverview",
                                       this);
 
     auto presentation_time_recorder = CreatePresentationTimeHistogramRecorder(
         Shell::GetPrimaryRootWindow()->layer()->GetCompositor(),
         kEnterOverviewPresentationHistogram, "",
-        kEnterExitPresentationMaxLatency);
+        kEnterExitPresentationMaxLatency, /*emit_trace_event=*/true);
     presentation_time_recorder->RequestNext();
+
+    base::UmaHistogramCounts100("Ash.Overview.DeskCount",
+                                DesksController::Get()->desks().size());
 
     if (auto* active_window = window_util::GetActiveWindow(); active_window) {
       auto* active_widget =
@@ -505,12 +574,14 @@ void OverviewController::ToggleOverview(OverviewEnterExitType type) {
     // We may want to slide in the overview grid in some cases, even if not
     // explicitly stated.
     OverviewEnterExitType new_type =
-        MaybeOverrideEnterExitTypeForHomeScreen(type, /*enter=*/true, windows);
+        MaybeOverrideEnterExitType(type, /*enter=*/true, windows);
     overview_session_->set_enter_exit_overview_type(new_type);
     for (auto& observer : observers_)
       observer.OnOverviewModeStarting();
 
-    overview_session_->Init(windows, hide_windows);
+    overview_session_->Init(
+        windows, hide_windows,
+        overview_window_occlusion_calculator_.GetCalculator());
 
     overview_session_->UpdateFrameThrottling();
 
@@ -529,6 +600,8 @@ void OverviewController::ToggleOverview(OverviewEnterExitType type) {
     // visible the instant they are visible.
     if (start_animations_.empty())
       OnStartingAnimationComplete(/*canceled=*/false);
+
+    desk_bar_shown_immediately_ = IsDeskBarOpen();
 
     if (!last_overview_session_time_.is_null()) {
       UMA_HISTOGRAM_LONG_TIMES("Ash.Overview.TimeBetweenUse",
@@ -628,12 +701,24 @@ void OverviewController::ResetPauser() {
     return;
   }
 
-  // Unpausing the occlusion tracker may trigger window activations.
+  // Unpausing the occlusion tracker may trigger window activations. Even though
+  // window activations are paused, it seems overview might still exit. See
+  // http://b/334908991 for more details.
+  OverviewEndingDumper dumper;
+
   const bool ignore_activations = overview_session_->ignore_activations();
   overview_session_->set_ignore_activations(true);
   occlusion_tracker_pauser_.reset();
   raster_scale_pauser_.reset();
-  overview_session_->set_ignore_activations(ignore_activations);
+  if (overview_session_) {
+    overview_session_->set_ignore_activations(ignore_activations);
+  }
+}
+
+bool OverviewController::IsDeskBarOpen() const {
+  CHECK(overview_session_);
+  return overview_session_->GetGridWithRootWindow(Shell::GetPrimaryRootWindow())
+      ->desks_bar_view();
 }
 
 void OverviewController::UpdateRoundedCornersAndShadow() {

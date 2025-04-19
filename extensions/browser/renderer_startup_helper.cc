@@ -27,12 +27,8 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/extensions_browser_client.h"
-#include "extensions/browser/guest_view/web_view/web_view_guest.h"
-#include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/browser/l10n_file_util.h"
 #include "extensions/browser/network_permissions_updater.h"
-#include "extensions/browser/process_manager.h"
-#include "extensions/browser/process_manager_factory.h"
 #include "extensions/browser/service_worker/service_worker_task_queue.h"
 #include "extensions/browser/user_script_world_configuration_manager.h"
 #include "extensions/common/extension_id.h"
@@ -50,6 +46,11 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "url/origin.h"
+
+#if BUILDFLAG(ENABLE_GUEST_VIEW)
+#include "extensions/browser/guest_view/web_view/web_view_guest.h"
+#include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
+#endif
 
 namespace extensions {
 
@@ -173,12 +174,14 @@ void RendererStartupHelper::InitializeProcess(
   renderer->SetScriptingAllowlist(
       ExtensionsClient::Get()->GetScriptingAllowlist());
 
+#if BUILDFLAG(ENABLE_GUEST_VIEW)
   // If the new render process is a WebView guest process, propagate the WebView
   // partition ID to it.
   if (WebViewRendererState::GetInstance()->IsGuest(process->GetID())) {
     std::string webview_partition_id = WebViewGuest::GetPartitionID(process);
     renderer->SetWebViewPartitionID(webview_partition_id);
   }
+#endif
 
   BrowserContext* renderer_context = process->GetBrowserContext();
 
@@ -494,49 +497,6 @@ void RendererStartupHelper::BindForRenderer(
                                           std::move(receiver), process_id);
 }
 
-void RendererStartupHelper::WakeEventPage(const ExtensionId& extension_id,
-                                          WakeEventPageCallback callback) {
-  auto* browser_context = GetRendererBrowserContext();
-  if (!browser_context) {
-    std::move(callback).Run(false);
-    return;
-  }
-
-  const Extension* extension = ExtensionRegistry::Get(browser_context)
-                                   ->enabled_extensions()
-                                   .GetByID(extension_id);
-  if (!extension) {
-    // Don't kill the renderer, it might just be some context which hasn't
-    // caught up to extension having been uninstalled.
-    std::move(callback).Run(false);
-    return;
-  }
-
-  ProcessManager* process_manager = ProcessManager::Get(browser_context);
-
-  if (BackgroundInfo::HasLazyBackgroundPage(extension)) {
-    // Wake the event page if it's asleep, or immediately repond with success
-    // if it's already awake.
-    if (process_manager->IsEventPageSuspended(extension_id)) {
-      process_manager->WakeEventPage(extension_id, std::move(callback));
-    } else {
-      std::move(callback).Run(true);
-    }
-    return;
-  }
-
-  if (BackgroundInfo::HasPersistentBackgroundPage(extension)) {
-    // No point in trying to wake a persistent background page. If it's open,
-    // immediately return and call it a success. If it's closed, fail.
-    std::move(callback).Run(process_manager->GetBackgroundHostForExtension(
-                                extension_id) != nullptr);
-    return;
-  }
-
-  // The extension has no background page, so there is nothing to wake.
-  std::move(callback).Run(false);
-}
-
 void RendererStartupHelper::GetMessageBundle(
     const ExtensionId& extension_id,
     GetMessageBundleCallback callback) {
@@ -558,9 +518,9 @@ void RendererStartupHelper::GetMessageBundle(
   const std::string& default_locale = LocaleInfo::GetDefaultLocale(extension);
   if (default_locale.empty()) {
     // A little optimization: send the answer here to avoid an extra thread hop.
-    std::unique_ptr<MessageBundle::SubstitutionMap> dictionary_map(
+    std::unique_ptr<MessageBundle::SubstitutionMap> dictionary_map =
         l10n_file_util::LoadNonLocalizedMessageBundleSubstitutionMap(
-            extension_id));
+            extension_id);
     std::move(callback).Run(ToFlatMap(*dictionary_map));
     return;
   }
@@ -591,10 +551,9 @@ void RendererStartupHelper::GetMessageBundle(
              const ExtensionId& main_extension_id,
              const std::string& default_locale,
              extension_l10n_util::GzippedMessagesPermission gzip_permission) {
-            return base::WrapUnique<MessageBundle::SubstitutionMap>(
-                l10n_file_util::LoadMessageBundleSubstitutionMapFromPaths(
-                    extension_paths, main_extension_id, default_locale,
-                    gzip_permission));
+            return l10n_file_util::LoadMessageBundleSubstitutionMapFromPaths(
+                extension_paths, main_extension_id, default_locale,
+                gzip_permission);
           },
           paths_to_load, extension_id, default_locale,
           extension_l10n_util::GetGzippedMessagesPermissionForExtension(
@@ -624,9 +583,7 @@ RendererStartupHelperFactory* RendererStartupHelperFactory::GetInstance() {
 RendererStartupHelperFactory::RendererStartupHelperFactory()
     : BrowserContextKeyedServiceFactory(
           "RendererStartupHelper",
-          BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(ProcessManagerFactory::GetInstance());
-}
+          BrowserContextDependencyManager::GetInstance()) {}
 
 RendererStartupHelperFactory::~RendererStartupHelperFactory() = default;
 

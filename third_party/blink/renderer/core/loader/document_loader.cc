@@ -40,15 +40,16 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/time/default_tick_clock.h"
 #include "base/types/optional_util.h"
 #include "base/uuid.h"
 #include "build/chromeos_buildflags.h"
+#include "net/storage_access_api/status.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/network/public/cpp/client_hints.h"
 #include "services/network/public/cpp/header_util.h"
-#include "services/network/public/cpp/shared_dictionary_encoding_names.h"
 #include "services/network/public/cpp/web_sandbox_flags.h"
 #include "services/network/public/mojom/url_response_head.mojom-shared.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
@@ -63,6 +64,7 @@
 #include "third_party/blink/public/mojom/commit_result/commit_result.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
+#include "third_party/blink/public/mojom/loader/same_document_navigation_type.mojom-shared.h"
 #include "third_party/blink/public/mojom/origin_trial_feature/origin_trial_feature.mojom-shared.h"
 #include "third_party/blink/public/mojom/page/page.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_fetch_handler_bypass_option.mojom-blink.h"
@@ -72,6 +74,7 @@
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_content_security_policy_struct.h"
+#include "third_party/blink/public/platform/web_navigation_body_loader.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_navigation_type.h"
@@ -81,6 +84,7 @@
 #include "third_party/blink/renderer/core/dom/document_parser.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/scriptable_document_parser.h"
+#include "third_party/blink/renderer/core/dom/visited_link_state.h"
 #include "third_party/blink/renderer/core/dom/weak_identifier_map.h"
 #include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/execution_context/security_context_init.h"
@@ -178,6 +182,7 @@
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -257,6 +262,7 @@ struct SameSizeAsDocumentLoader
   bool grant_load_local_resources;
   std::optional<blink::mojom::FetchCacheMode> force_fetch_cache_mode;
   FramePolicy frame_policy;
+  std::optional<uint64_t> visited_link_salt;
   Member<LocalFrame> frame;
   Member<HistoryItem> history_item;
   Member<DocumentParser> parser;
@@ -337,7 +343,7 @@ struct SameSizeAsDocumentLoader
   std::optional<ViewTransitionState> view_transition_state;
   std::optional<FencedFrame::RedactedFencedFrameProperties>
       fenced_frame_properties;
-  bool has_storage_access;
+  net::StorageAccessApiStatus storage_access_api_status;
   mojom::blink::ParentResourceTimingAccess parent_resource_timing_access;
   const std::optional<BrowsingContextGroupInfo> browsing_context_group_info;
   const base::flat_map<mojom::blink::RuntimeFeature, bool>
@@ -420,7 +426,7 @@ class DocumentLoader::BodyData {
   virtual ~BodyData() = default;
   virtual void AppendToParser(DocumentLoader* loader) = 0;
   virtual void Buffer(DocumentLoader* loader) = 0;
-  virtual base::span<const char> EncodedData() const = 0;
+  virtual base::SpanOrSize<const char> EncodedData() const = 0;
 };
 
 // Wraps encoded data received by the loader.
@@ -432,14 +438,16 @@ class DocumentLoader::EncodedBodyData : public BodyData {
   }
 
   void AppendToParser(DocumentLoader* loader) override {
-    loader->parser_->AppendBytes(data_.data(), data_.size());
+    loader->parser_->AppendBytes(base::as_bytes(data_));
   }
 
   void Buffer(DocumentLoader* loader) override {
     loader->data_buffer_->Append(data_.data(), data_.size());
   }
 
-  base::span<const char> EncodedData() const override { return data_; }
+  base::SpanOrSize<const char> EncodedData() const override {
+    return base::SpanOrSize(data_);
+  }
 
  private:
   base::span<const char> data_;
@@ -450,7 +458,7 @@ class DocumentLoader::DecodedBodyData : public BodyData {
  public:
   DecodedBodyData(const String& data,
                   const DocumentEncodingData& encoding_data,
-                  base::span<const char> encoded_data)
+                  base::SpanOrSize<const char> encoded_data)
       : data_(data),
         encoding_data_(encoding_data),
         encoded_data_(encoded_data) {}
@@ -463,12 +471,14 @@ class DocumentLoader::DecodedBodyData : public BodyData {
     loader->decoded_data_buffer_.push_back(*this);
   }
 
-  base::span<const char> EncodedData() const override { return encoded_data_; }
+  base::SpanOrSize<const char> EncodedData() const override {
+    return encoded_data_;
+  }
 
  private:
   String data_;
   DocumentEncodingData encoding_data_;
-  base::span<const char> encoded_data_;
+  base::SpanOrSize<const char> encoded_data_;
 };
 
 DocumentLoader::DocumentLoader(
@@ -494,6 +504,7 @@ DocumentLoader::DocumentLoader(
       grant_load_local_resources_(params_->grant_load_local_resources),
       force_fetch_cache_mode_(params_->force_fetch_cache_mode),
       frame_policy_(params_->frame_policy.value_or(FramePolicy())),
+      visited_link_salt_(params_->visited_link_salt),
       frame_(frame),
       // For back/forward navigations, the browser passed a history item to use
       // at commit time in |params_|. Set it as the current history item of this
@@ -537,7 +548,7 @@ DocumentLoader::DocumentLoader(
                                      WillLoadUrlAsEmpty(url_)),
       is_static_data_(params_->is_static_data),
       ukm_source_id_(params_->document_ukm_source_id),
-      clock_(params_->tick_clock ? params_->tick_clock
+      clock_(params_->tick_clock ? params_->tick_clock.get()
                                  : base::DefaultTickClock::GetInstance()),
       initiator_origin_trial_features_(
           CopyInitiatorOriginTrials(params_->initiator_origin_trial_features)),
@@ -557,7 +568,7 @@ DocumentLoader::DocumentLoader(
       reduced_accept_language_(params_->reduced_accept_language),
       navigation_delivery_type_(params_->navigation_delivery_type),
       view_transition_state_(std::move(params_->view_transition_state)),
-      load_with_storage_access_(params_->load_with_storage_access),
+      storage_access_api_status_(params_->load_with_storage_access),
       browsing_context_group_info_(params_->browsing_context_group_info),
       modified_runtime_features_(std::move(params_->modified_runtime_features)),
       cookie_deprecation_label_(params_->cookie_deprecation_label),
@@ -714,9 +725,10 @@ DocumentLoader::CreateWebNavigationParamsToCloneDocument() {
   }
   params->reduced_accept_language = reduced_accept_language_;
   params->navigation_delivery_type = navigation_delivery_type_;
-  params->load_with_storage_access = load_with_storage_access_;
+  params->load_with_storage_access = storage_access_api_status_;
   params->modified_runtime_features = modified_runtime_features_;
   params->cookie_deprecation_label = cookie_deprecation_label_;
+  params->visited_link_salt = visited_link_salt_;
   params->content_settings = content_settings_->Clone();
   return params;
 }
@@ -740,8 +752,16 @@ LocalFrameClient& DocumentLoader::GetLocalFrameClient() const {
 DocumentLoader::~DocumentLoader() {
   TRACE_EVENT_WITH_FLOW0("loading", "DocumentLoader::~DocumentLoader",
                          TRACE_ID_LOCAL(this), TRACE_EVENT_FLAG_FLOW_IN);
-  DCHECK(!frame_);
   DCHECK_EQ(state_, kSentDidFinishLoad);
+
+  // Before being collected by the GC, it is expected the DocumentLoader to be
+  // detached from the frame, and it should have stopped loading.
+  //
+  // Note that the WebNavigationBodyLoader implementation is not a GCed class
+  // and it could call `this` back. It is important it gets removed before
+  // collecting `this`.
+  DCHECK(!frame_);
+  DCHECK(!body_loader_);
 }
 
 void DocumentLoader::Trace(Visitor* visitor) const {
@@ -854,21 +874,27 @@ void DocumentLoader::InjectAutoSpeculationRules(
 
   const auto& config = AutoSpeculationRulesConfig::GetInstance();
 
-  const Vector<String> from_url_speculation_rules = config.ForUrl(Url());
+  const Vector<std::pair<String, BrowserInjectedSpeculationRuleOptOut>>
+      from_url_speculation_rules = config.ForUrl(Url());
   for (const auto& speculation_rules : from_url_speculation_rules) {
-    InjectSpeculationRulesFromString(speculation_rules);
+    InjectSpeculationRulesFromString(speculation_rules.first,
+                                     speculation_rules.second);
   }
 
   for (const auto& detected_version : result.detected_versions) {
     if (String speculation_rules =
             config.ForFramework(detected_version.first)) {
-      InjectSpeculationRulesFromString(speculation_rules);
+      InjectSpeculationRulesFromString(
+          speculation_rules, BrowserInjectedSpeculationRuleOptOut::kRespect);
     }
   }
 }
 
-void DocumentLoader::InjectSpeculationRulesFromString(const String& string) {
-  auto* source = SpeculationRuleSet::Source::FromBrowserInjected(string, Url());
+void DocumentLoader::InjectSpeculationRulesFromString(
+    const String& string,
+    BrowserInjectedSpeculationRuleOptOut opt_out) {
+  auto* source =
+      SpeculationRuleSet::Source::FromBrowserInjected(string, Url(), opt_out);
   auto* rule_set = SpeculationRuleSet::Parse(source, frame_->DomWindow());
   CHECK(rule_set);
 
@@ -905,6 +931,7 @@ void DocumentLoader::RunURLAndHistoryUpdateSteps(
     mojom::blink::SameDocumentNavigationType same_document_navigation_type,
     scoped_refptr<SerializedScriptValue> data,
     WebFrameLoadType type,
+    FirePopstate fire_popstate,
     bool is_browser_initiated,
     bool is_synchronously_committed,
     std::optional<scheduler::TaskAttributionId>
@@ -916,8 +943,9 @@ void DocumentLoader::RunURLAndHistoryUpdateSteps(
   // in this process.
   UpdateForSameDocumentNavigation(
       new_url, history_item, same_document_navigation_type, std::move(data),
-      type, frame_->DomWindow()->GetSecurityOrigin(), is_browser_initiated,
-      is_synchronously_committed, soft_navigation_heuristics_task_id);
+      type, fire_popstate, frame_->DomWindow()->GetSecurityOrigin(),
+      is_browser_initiated, is_synchronously_committed,
+      soft_navigation_heuristics_task_id);
 }
 
 void DocumentLoader::UpdateForSameDocumentNavigation(
@@ -926,6 +954,7 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
     mojom::blink::SameDocumentNavigationType same_document_navigation_type,
     scoped_refptr<SerializedScriptValue> data,
     WebFrameLoadType type,
+    FirePopstate fire_popstate,
     const SecurityOrigin* initiator_origin,
     bool is_browser_initiated,
     bool is_synchronously_committed,
@@ -1012,7 +1041,7 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
   GetLocalFrameClient().DidFinishSameDocumentNavigation(
       commit_type, is_synchronously_committed, same_document_navigation_type,
       is_client_redirect_, is_browser_initiated);
-  probe::DidNavigateWithinDocument(frame_);
+  probe::DidNavigateWithinDocument(frame_, same_document_navigation_type);
 
   // If intercept() was called during this same-document navigation's
   // NavigateEvent, the navigation will finish asynchronously, so
@@ -1038,20 +1067,15 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
 
   std::optional<SoftNavigationHeuristics::EventScope>
       soft_navigation_event_scope;
-  SoftNavigationHeuristics* heuristics = nullptr;
-  if (frame_->IsMainFrame() &&
-      base::FeatureList::IsEnabled(features::kSoftNavigationDetection)) {
+  SoftNavigationHeuristics* heuristics =
+      SoftNavigationHeuristics::From(*frame_->DomWindow());
+  if (heuristics && is_browser_initiated) {
     if (auto* script_state = ToScriptStateForMainWorld(frame_->DomWindow())) {
-      CHECK(frame_->DomWindow());
-      heuristics = SoftNavigationHeuristics::From(*frame_->DomWindow());
-      if (is_browser_initiated && heuristics) {
-        // For browser-initiated navigations, we never started the soft
-        // navigation (as this is the first we hear of it in the renderer). We
-        // need to do that now.
-        soft_navigation_event_scope = heuristics->CreateEventScope(
-            SoftNavigationHeuristics::EventScope::Type::kNavigate,
-            /*is_new_interaction=*/true, script_state);
-      }
+      // For browser-initiated navigations, we never started the soft
+      // navigation (as this is the first we hear of it in the renderer). We
+      // need to do that now.
+      soft_navigation_event_scope =
+          heuristics->CreateNavigationEventScope(script_state);
     }
   }
 
@@ -1085,8 +1109,9 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
 
   // Anything except a history.pushState/replaceState is considered a new
   // navigation that resets whether the user has scrolled and fires popstate.
-  if (same_document_navigation_type !=
-      mojom::blink::SameDocumentNavigationType::kHistoryApi) {
+  // A history.pushState/replaceState intercepted via the navigation API should
+  // also not fire popstate.
+  if (fire_popstate == FirePopstate::kYes) {
     initial_scroll_state_.was_scrolled_by_user = false;
 
     // If the item sequence number didn't change, there's no need to trigger
@@ -1211,7 +1236,7 @@ void DocumentLoader::BodyDataReceived(base::span<const char> data) {
 void DocumentLoader::DecodedBodyDataReceived(
     const WebString& data,
     const WebEncodingData& encoding_data,
-    base::span<const char> encoded_data) {
+    base::SpanOrSize<const char> encoded_data) {
   // Decoding has already happened, we don't need the decoder anymore.
   parser_->SetDecoder(nullptr);
   DecodedBodyData body_data(data, DocumentEncodingData(encoding_data),
@@ -1234,16 +1259,16 @@ void DocumentLoader::BodyDataReceivedImpl(BodyData& data) {
   TRACE_EVENT_WITH_FLOW0("loading", "DocumentLoader::BodyDataReceivedImpl",
                          TRACE_ID_LOCAL(this),
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
-  base::span<const char> encoded_data = data.EncodedData();
+  base::SpanOrSize<const char> encoded_data = data.EncodedData();
   if (encoded_data.size()) {
     if (response_.WasFetchedViaServiceWorker()) {
       total_body_size_from_service_worker_ += encoded_data.size();
     }
     GetFrameLoader().Progress().IncrementProgress(main_resource_identifier_,
                                                   encoded_data.size());
-    probe::DidReceiveData(probe::ToCoreProbeSink(GetFrame()),
-                          main_resource_identifier_, this, encoded_data.data(),
-                          encoded_data.size());
+    probe::DidReceiveData(
+        probe::ToCoreProbeSink(GetFrame()), main_resource_identifier_, this,
+        encoded_data.ptr_or_null_if_no_data(), encoded_data.size());
   }
 
   TRACE_EVENT_WITH_FLOW1("loading", "DocumentLoader::HandleData",
@@ -1453,7 +1478,7 @@ void DocumentLoader::ReplaceWithEmptyDocument() {
   url_ = blocked_url;
   params_->url = blocked_url;
   WebNavigationParams::FillStaticResponse(params_.get(), "text/html", "UTF-8",
-                                          "");
+                                          base::span_from_cstring(""));
 }
 
 DocumentPolicy::ParsedDocumentPolicy DocumentLoader::CreateDocumentPolicy() {
@@ -1554,6 +1579,7 @@ mojom::CommitResult DocumentLoader::CommitSameDocumentNavigation(
     Element* source_element,
     mojom::blink::TriggeringEventInfo triggering_event_info,
     bool is_browser_initiated,
+    bool has_ua_visual_transition,
     std::optional<scheduler::TaskAttributionId>
         soft_navigation_heuristics_task_id) {
   DCHECK(!IsReloadLoadType(frame_load_type));
@@ -1621,6 +1647,7 @@ mojom::CommitResult DocumentLoader::CommitSameDocumentNavigation(
     params->source_element = source_element;
     params->destination_item = history_item;
     params->is_browser_initiated = is_browser_initiated;
+    params->has_ua_visual_transition = has_ua_visual_transition;
     params->is_synchronously_committed_same_document =
         is_synchronously_committed;
     params->soft_navigation_heuristics_task_id =
@@ -1729,8 +1756,9 @@ void DocumentLoader::CommitSameDocumentNavigationInternal(
 
   UpdateForSameDocumentNavigation(
       url, history_item, same_document_navigation_type, nullptr,
-      frame_load_type, initiator_origin, is_browser_initiated,
-      is_synchronously_committed, soft_navigation_heuristics_task_id);
+      frame_load_type, FirePopstate::kYes, initiator_origin,
+      is_browser_initiated, is_synchronously_committed,
+      soft_navigation_heuristics_task_id);
   if (!frame_)
     return;
 
@@ -1805,6 +1833,8 @@ void DocumentLoader::SetDefersLoading(LoaderFreezeMode mode) {
 void DocumentLoader::DetachFromFrame(bool flush_microtask_queue) {
   DCHECK(frame_);
   StopLoading();
+  DCHECK(!body_loader_);
+
   // `frame_` may become null because this method can get re-entered. If it
   // is null we've already run the code below so just return early.
   if (!frame_)
@@ -2571,10 +2601,16 @@ void DocumentLoader::InitializeWindow(Document* owner_document) {
       agent->ForceOriginKeyedBecauseOfInheritance();
     }
 
-    if (load_with_storage_access_) {
-      frame_->DomWindow()->SetHasStorageAccess();
-      inherited_has_storage_access = true;
-    }
+    frame_->DomWindow()->SetStorageAccessApiStatus(storage_access_api_status_);
+    inherited_has_storage_access = [this]() -> bool {
+      switch (storage_access_api_status_) {
+        case net::StorageAccessApiStatus::kNone:
+          return false;
+        case net::StorageAccessApiStatus::kAccessViaAPI:
+          return true;
+      }
+      NOTREACHED_NORETURN();
+    }();
   } else {
     if (frame_->GetSettings()->GetShouldReuseGlobalForUnownedMainFrame() &&
         frame_->IsMainFrame()) {
@@ -2608,7 +2644,15 @@ void DocumentLoader::InitializeWindow(Document* owner_document) {
           frame_->DomWindow());
 
   base::UmaHistogramBoolean("API.StorageAccess.DocumentLoadedWithStorageAccess",
-                            frame_->DomWindow()->HasStorageAccess());
+                            [this]() -> bool {
+                              switch (storage_access_api_status_) {
+                                case net::StorageAccessApiStatus::kNone:
+                                  return false;
+                                case net::StorageAccessApiStatus::kAccessViaAPI:
+                                  return true;
+                              }
+                              NOTREACHED_NORETURN();
+                            }());
   base::UmaHistogramBoolean("API.StorageAccess.DocumentInheritedStorageAccess",
                             inherited_has_storage_access);
 
@@ -2845,6 +2889,19 @@ void DocumentLoader::CommitNavigation() {
     KURL main_resource_url = main_resource ? main_resource->Url() : KURL();
     if (!main_resource_url.IsEmpty())
       document->SetBaseURLOverride(main_resource_url);
+  }
+
+  // For any navigations which have a per-origin salt, we need to notify the
+  // resulting `document`. The `visited_link_salt_` allows the `document` to
+  // hash and identify which links should be styled as :visited. Without the
+  // salt, the hashtable is unreadable to the Document.
+  if (visited_link_salt_.has_value()) {
+    if (base::FeatureList::IsEnabled(
+            blink::features::kPartitionVisitedLinkDatabase) ||
+        base::FeatureList::IsEnabled(
+            blink::features::kPartitionVisitedLinkDatabaseWithSelfLinks)) {
+      document->GetVisitedLinkState().UpdateSalt(visited_link_salt_.value());
+    }
   }
 
   // The navigation API is not initialized on the initial about:blank document
@@ -3254,13 +3311,17 @@ void DocumentLoader::RecordUseCountersForCommit() {
   }
   AtomicString content_encoding =
       response_.HttpHeaderField(http_names::kContentEncoding);
-  if (content_encoding.LowerASCII() == "zstd") {
+  if (EqualIgnoringASCIICase(content_encoding, "zstd")) {
     CountUse(WebFeature::kZstdContentEncoding);
+    CountUse(WebFeature::kZstdContentEncodingForNavigation);
     if (frame_->IsOutermostMainFrame()) {
+      CountUse(WebFeature::kZstdContentEncodingForMainFrameNavigation);
       ukm::builders::MainFrameNavigation_ZstdContentEncoding builder(
           ukm_source_id_);
       builder.SetUsedZstd(true);
       builder.Record(frame_->GetDocument()->UkmRecorder());
+    } else {
+      CountUse(WebFeature::kZstdContentEncodingForSubFrameNavigation);
     }
   }
   if (response_.DidUseSharedDictionary()) {
@@ -3269,11 +3330,9 @@ void DocumentLoader::RecordUseCountersForCommit() {
     CountUse(frame_->IsOutermostMainFrame()
                  ? WebFeature::kSharedDictionaryUsedForMainFrameNavigation
                  : WebFeature::kSharedDictionaryUsedForSubFrameNavigation);
-    if (content_encoding.LowerASCII() ==
-        network::GetSharedBrotliContentEncodingName()) {
+    if (EqualIgnoringASCIICase(content_encoding, "dcb")) {
       CountUse(WebFeature::kSharedDictionaryUsedWithSharedBrotli);
-    } else if (content_encoding.LowerASCII() ==
-               network::GetSharedZstdContentEncodingName()) {
+    } else if (EqualIgnoringASCIICase(content_encoding, "dcz")) {
       CountUse(WebFeature::kSharedDictionaryUsedWithSharedZstd);
     }
   }
@@ -3412,7 +3471,7 @@ DocumentLoader::GetContentSecurityNotifier() {
   CHECK(frame_);
 
   if (!content_security_notifier_.is_bound()) {
-    GetFrame()->Client()->GetBrowserInterfaceBroker().GetInterface(
+    GetFrame()->GetBrowserInterfaceBroker().GetInterface(
         content_security_notifier_.BindNewPipeAndPassReceiver(
             frame_->GetTaskRunner(TaskType::kInternalLoading)));
   }
@@ -3560,7 +3619,7 @@ CodeCacheHost* DocumentLoader::GetCodeCacheHost() {
     // CommitNavigation message and the following code would not be required and
     // we should just return nullptr here.
     mojo::Remote<mojom::blink::CodeCacheHost> remote;
-    GetLocalFrameClient().GetBrowserInterfaceBroker().GetInterface(
+    frame_->GetBrowserInterfaceBroker().GetInterface(
         remote.BindNewPipeAndPassReceiver());
     code_cache_host_ = std::make_unique<CodeCacheHost>(std::move(remote));
   }
@@ -3581,7 +3640,7 @@ DocumentLoader::CreateWorkerCodeCacheHost() {
   if (GetDisableCodeCacheForTesting())
     return mojo::NullRemote();
   mojo::PendingRemote<mojom::blink::CodeCacheHost> pending_code_cache_host;
-  GetLocalFrameClient().GetBrowserInterfaceBroker().GetInterface(
+  frame_->GetBrowserInterfaceBroker().GetInterface(
       pending_code_cache_host.InitWithNewPipeAndPassReceiver());
   return pending_code_cache_host;
 }

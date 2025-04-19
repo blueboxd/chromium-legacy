@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ObserverList;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
@@ -94,12 +95,13 @@ public abstract class TabModelFilter implements TabModelObserver, TabList {
      * a list of related {@link Tab}s. By default, this returns an unmodifiable list that only
      * contains the {@link Tab} with the given id. Note that the meaning of related can vary
      * depending on the filter being applied.
+     *
      * @param tabId Id of the {@link Tab} try to relate with.
      * @return An unmodifiable list of {@link Tab} that relate with the given tab id.
      */
     @NonNull
     public List<Tab> getRelatedTabList(int tabId) {
-        Tab tab = TabModelUtils.getTabById(getTabModel(), tabId);
+        Tab tab = getTabModel().getTabById(tabId);
         if (tab == null) return sEmptyRelatedTabList;
         List<Tab> relatedTab = new ArrayList<>();
         relatedTab.add(tab);
@@ -109,14 +111,15 @@ public abstract class TabModelFilter implements TabModelObserver, TabList {
     /**
      * Any of the concrete class can override and define a relationship that links a {@link Tab} to
      * a list of related {@link Tab}s. By default, this returns an unmodifiable list that only
-     * contains the given id. Note that the meaning of related can vary
-     * depending on the filter being applied.
+     * contains the given id. Note that the meaning of related can vary depending on the filter
+     * being applied.
+     *
      * @param tabId Id of the {@link Tab} try to relate with.
      * @return An unmodifiable list of id that relate with the given tab id.
      */
     @NonNull
     public List<Integer> getRelatedTabIds(int tabId) {
-        Tab tab = TabModelUtils.getTabById(getTabModel(), tabId);
+        Tab tab = getTabModel().getTabById(tabId);
         if (tab == null) return sEmptyRelatedTabIds;
         List<Integer> relatedTabIds = new ArrayList<>();
         relatedTabIds.add(tabId);
@@ -147,15 +150,18 @@ public abstract class TabModelFilter implements TabModelObserver, TabList {
     public abstract int getValidPosition(Tab tab, int proposedPosition);
 
     /**
-     * Concrete class requires to define what's the behavior when {@link TabModel} added a
-     * {@link Tab}.
+     * Concrete class requires to define what's the behavior when {@link TabModel} added a {@link
+     * Tab}.
+     *
      * @param tab {@link Tab} had added to {@link TabModel}.
+     * @param fromUndo Whether the tab was added by undo.
      */
-    protected abstract void addTab(Tab tab);
+    protected abstract void addTab(Tab tab, boolean fromUndo);
 
     /**
-     * Concrete class requires to define what's the behavior when {@link TabModel} closed a
-     * {@link Tab}.
+     * Concrete class requires to define what's the behavior when {@link TabModel} closed a {@link
+     * Tab}.
+     *
      * @param tab {@link Tab} had closed from {@link TabModel}.
      */
     protected abstract void closeTab(Tab tab);
@@ -202,7 +208,7 @@ public abstract class TabModelFilter implements TabModelObserver, TabList {
         TabModel tabModel = getTabModel();
         for (int i = 0; i < tabModel.getCount(); i++) {
             Tab tab = tabModel.getTabAt(i);
-            addTab(tab);
+            addTab(tab, /* fromUndo= */ false);
         }
     }
 
@@ -218,6 +224,8 @@ public abstract class TabModelFilter implements TabModelObserver, TabList {
     // TabModelObserver implementation.
     @Override
     public void didSelectTab(Tab tab, int type, int lastId) {
+        RecordHistogram.recordBooleanHistogram(
+                "TabGroups.SelectedTabInTabGroup", isTabInTabGroup(tab));
         selectTab(tab);
         if (!shouldNotifyObserversOnSetIndex()) return;
         for (TabModelObserver observer : mFilteredObservers) {
@@ -260,7 +268,7 @@ public abstract class TabModelFilter implements TabModelObserver, TabList {
             @TabLaunchType int type,
             @TabCreationState int creationState,
             boolean markedForSelection) {
-        addTab(tab);
+        addTab(tab, /* fromUndo= */ false);
         for (TabModelObserver observer : mFilteredObservers) {
             observer.didAddTab(tab, type, creationState, markedForSelection);
         }
@@ -289,7 +297,7 @@ public abstract class TabModelFilter implements TabModelObserver, TabList {
 
     @Override
     public void tabClosureUndone(Tab tab) {
-        addTab(tab);
+        addTab(tab, /* fromUndo= */ true);
         reorder();
         for (TabModelObserver observer : mFilteredObservers) {
             observer.tabClosureUndone(tab);

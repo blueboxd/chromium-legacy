@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -24,7 +25,6 @@ import dalvik.system.PathClassLoader;
 
 import org.jni_zero.CalledByNative;
 
-import org.chromium.base.compat.ApiHelperForO;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.build.BuildConfig;
 
@@ -156,11 +156,13 @@ public class BundleUtils {
             // preloading on a background thread.
             // TODO(crbug.com/40745927): Consider moving preloading logic into //base so we can lock
             // here.
-            if (isApplicationContext(base)) {
-                context = ApiHelperForO.createContextForSplit(base, splitName);
-            } else {
-                synchronized (getSplitContextLock()) {
-                    context = ApiHelperForO.createContextForSplit(base, splitName);
+            try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+                if (isApplicationContext(base)) {
+                    context = base.createContextForSplit(splitName);
+                } else {
+                    synchronized (getSplitContextLock()) {
+                        context = base.createContextForSplit(splitName);
+                    }
                 }
             }
             ClassLoader parent = context.getClassLoader().getParent();
@@ -202,7 +204,7 @@ public class BundleUtils {
                     shouldReplaceClassLoader);
             return context;
         } catch (PackageManager.NameNotFoundException e) {
-            throw new RuntimeException(e);
+            throw JavaUtils.throwUnchecked(e);
         }
     }
 
@@ -218,7 +220,7 @@ public class BundleUtils {
             classLoaderField.setAccessible(true);
             classLoaderField.set(baseContext, classLoader);
         } catch (ReflectiveOperationException e) {
-            throw new RuntimeException("Error setting ClassLoader.", e);
+            throw JavaUtils.throwUnchecked(e);
         }
     }
 
@@ -263,6 +265,15 @@ public class BundleUtils {
                     "Mismatched ClassLoaders between Activity and context (fixing): %s",
                     activity.getClass());
             replaceClassLoader(baseContext, activityClassLoader);
+            // Also fix up the Intent's bundle extras in case of Parcelables.
+            // https://crbug.com/346709145
+            Intent intent = activity.getIntent();
+            if (intent != null) {
+                Bundle bundle = intent.getExtras();
+                if (bundle != null) {
+                    bundle.setClassLoader(activityClassLoader);
+                }
+            }
         }
     }
 
@@ -279,7 +290,7 @@ public class BundleUtils {
         try {
             return context.getClassLoader().loadClass(className).newInstance();
         } catch (ReflectiveOperationException e) {
-            throw new RuntimeException(e);
+            throw JavaUtils.throwUnchecked(e);
         }
     }
 
@@ -448,7 +459,7 @@ public class BundleUtils {
             // This matches the logic LoadedApk.java uses to construct library paths.
             return apkPath + "!/lib/" + primaryCpuAbi + "/" + System.mapLibraryName(libraryName);
         } catch (ReflectiveOperationException e) {
-            throw new RuntimeException(e);
+            throw JavaUtils.throwUnchecked(e);
         }
     }
 

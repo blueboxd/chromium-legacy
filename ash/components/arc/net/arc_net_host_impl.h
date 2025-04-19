@@ -121,10 +121,15 @@ class ArcNetHostImpl : public KeyedService,
       mojom::SocketConnectionEventPtr msg) override;
 
   // Overridden from ash::NetworkStateHandlerObserver.
+
+  // TODO(b/329552433): Delete this method after pi-arc is removed.
+  // Deprecated. ArcWifiHostImpl::ScanCompleted() should be used.
   void ScanCompleted(const ash::DeviceState* /*unused*/) override;
   void OnShuttingDown() override;
   void NetworkConnectionStateChanged(const ash::NetworkState* network) override;
   void NetworkListChanged() override;
+  // TODO(b/329552433): Delete this method after pi-arc is removed.
+  // Deprecated. ArcWifiHostImpl::DeviceListChanged() should be used.
   void DeviceListChanged() override;
   void NetworkPropertiesUpdated(const ash::NetworkState* network) override;
 
@@ -297,6 +302,11 @@ class ArcNetHostImpl : public KeyedService,
       nullptr;
 
   std::unique_ptr<CertManager> cert_manager_;
+
+  // Cached NetworkConfigurations that were last sent to ARC. This is an
+  // already-filtered list of networks, e.g. non-ARC networks aren't included
+  // since we don't send them to ARC.
+  std::vector<arc::mojom::NetworkConfigurationPtr> cached_arc_networks_;
 
   THREAD_CHECKER(thread_checker_);
   base::WeakPtrFactory<ArcNetHostImpl> weak_factory_{this};

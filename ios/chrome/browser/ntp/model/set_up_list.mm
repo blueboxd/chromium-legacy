@@ -50,9 +50,13 @@ bool GetIsItemComplete(SetUpListItemType type,
                 base::SysNSStringToUTF8(identity.gaiaID), prefs);
       } else {
         return push_notification_settings::
-            GetMobileNotificationPermissionStatusForClient(
-                PushNotificationClientId::kContent,
-                base::SysNSStringToUTF8(identity.gaiaID));
+                   GetMobileNotificationPermissionStatusForClient(
+                       PushNotificationClientId::kContent,
+                       base::SysNSStringToUTF8(identity.gaiaID)) ||
+               push_notification_settings::
+                   GetMobileNotificationPermissionStatusForClient(
+                       PushNotificationClientId::kSports,
+                       base::SysNSStringToUTF8(identity.gaiaID));
       }
     }
     case SetUpListItemType::kFollow:
@@ -139,9 +143,16 @@ BOOL AllItemsComplete(NSArray<SetUpListItem*>* items) {
                    syncService:(syncer::SyncService*)syncService
          authenticationService:(AuthenticationService*)authService
     contentNotificationEnabled:(BOOL)isContentNotificationEnabled {
-  if (set_up_list_prefs::IsSetUpListDisabled(localState)) {
+  if (IsHomeCustomizationEnabled() &&
+      !prefs->GetBoolean(prefs::kHomeCustomizationMagicStackSetUpListEnabled)) {
     return nil;
   }
+
+  if (!IsHomeCustomizationEnabled() &&
+      set_up_list_prefs::IsSetUpListDisabled(localState)) {
+    return nil;
+  }
+
   NSMutableArray<SetUpListItem*>* items =
       [[NSMutableArray<SetUpListItem*> alloc] init];
 
@@ -160,7 +171,7 @@ BOOL AllItemsComplete(NSArray<SetUpListItem*>* items) {
   AddItemIfNotNil(items, BuildItem(SetUpListItemType::kAutofill, prefs,
                                    localState, authService));
 
-  // Add content notification item if the feature is enabled.
+  // Add notification item if any of the feature is enabled.
   if (IsIOSTipsNotificationsEnabled() || isContentNotificationEnabled) {
     AddItemIfNotNil(items, BuildItem(SetUpListItemType::kNotifications, prefs,
                                      localState, authService));

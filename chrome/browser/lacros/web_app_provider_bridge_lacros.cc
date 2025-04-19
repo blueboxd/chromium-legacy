@@ -4,6 +4,8 @@
 
 #include "chrome/browser/lacros/web_app_provider_bridge_lacros.h"
 
+#include <optional>
+
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
@@ -24,6 +26,7 @@
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_ui_manager.h"
 #include "chromeos/crosapi/mojom/web_app_service.mojom.h"
 #include "chromeos/crosapi/mojom/web_app_types.mojom.h"
@@ -268,7 +271,9 @@ void WebAppProviderBridgeLacros::InstallWebAppFromVerifiedManifestImpl(
           ConvertInstallSourceFromMojom(install_info->install_source),
           install_info->document_url, install_info->verified_manifest_url,
           install_info->verified_manifest_contents,
-          install_info->expected_app_id, std::move(callback)));
+          install_info->expected_app_id,
+          /*is_diy_app=*/false,
+          /*install_params=*/std::nullopt, std::move(callback)));
 }
 
 // static

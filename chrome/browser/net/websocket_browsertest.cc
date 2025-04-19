@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/check_op.h"
+#include "base/containers/span.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/notreached.h"
@@ -49,6 +50,7 @@
 #include "net/base/network_isolation_key.h"
 #include "net/cookies/site_for_cookies.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/storage_access_api/status.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"
@@ -149,7 +151,7 @@ class WebSocketBrowserTest : public InProcessBrowserTest {
 
     process->GetStoragePartition()->GetNetworkContext()->CreateWebSocket(
         url, requested_protocols, site_for_cookies,
-        /*has_storage_access=*/false, isolation_info,
+        net::StorageAccessApiStatus::kNone, isolation_info,
         std::move(additional_headers), process->GetID(), origin,
         network::mojom::kWebSocketOptionNone,
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
@@ -579,14 +581,16 @@ class InvalidUtf8HandshakeClient
     websocket_.Bind(std::move(websocket));
 
     // Invalid UTF-8.
-    static const uint32_t message[] = {0xff};
-    size_t size = sizeof(message);
+    static const uint32_t message = 0xff;
+    size_t actually_written_bytes = 0;
+    websocket_->SendMessage(network::mojom::WebSocketMessageType::TEXT,
+                            sizeof(message));
 
-    websocket_->SendMessage(network::mojom::WebSocketMessageType::TEXT, size);
-
-    EXPECT_EQ(writable->WriteData(message, &size, MOJO_WRITE_DATA_FLAG_NONE),
-              MOJO_RESULT_OK);
-    EXPECT_EQ(size, sizeof(message));
+    EXPECT_EQ(
+        writable->WriteData(base::byte_span_from_ref(message),
+                            MOJO_WRITE_DATA_FLAG_NONE, actually_written_bytes),
+        MOJO_RESULT_OK);
+    EXPECT_EQ(actually_written_bytes, sizeof(message));
 
     connected_ = true;
   }

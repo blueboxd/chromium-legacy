@@ -29,6 +29,28 @@ _DO_NOT_EDIT_WARNING = """// This file is auto-generated from
 
 """
 
+# TODO(crbug.com/40285824): Remove this and generate code using safer
+# constructs.
+_ALLOW_UNSAFE_BUFFERS = """
+
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
+"""
+_allow_unsafe_buffers_filenames = [
+    "gpu/command_buffer/client/gles2_implementation_impl_autogen.h",
+    "gpu/command_buffer/client/gles2_implementation_unittest_autogen.h",
+    "gpu/command_buffer/client/raster_implementation_impl_autogen.h",
+    "gpu/command_buffer/client/raster_implementation_unittest_autogen.h",
+    "gpu/command_buffer/common/gles2_cmd_format_autogen.h",
+    "gpu/command_buffer/service/context_state_impl_autogen.h",
+    "gpu/command_buffer/service/gles2_cmd_decoder_autogen.h",
+    "gpu/command_buffer/service/gles2_cmd_decoder_unittest_2_autogen.h",
+    "gpu/command_buffer/service/raster_decoder_autogen.h",
+]
+
 # This string is copied directly out of the gl2.h file from GLES2.0
 #
 # Edits:
@@ -424,7 +446,6 @@ _STATE_INFO = {
         'type': 'GLenum',
         'enum': 'GL_GENERATE_MIPMAP_HINT',
         'default': 'GL_DONT_CARE',
-        'gl_version_flag': '!is_desktop_core_profile'
       },
       {
         'name': 'hint_fragment_shader_derivative',
@@ -795,8 +816,8 @@ class CWriter():
 
   To be used with the `with` statement. Returns a normal `file` type, open only
   for writing - any existing files with that name will be overwritten. It will
-  automatically write the contents of `_LICENSE` and `_DO_NOT_EDIT_WARNING`
-  at the beginning.
+  automatically write the contents of `_LICENSE`, `_DO_NOT_EDIT_WARNING` and
+  `_ALLOW_UNSAFE_BUFFERS` at the beginning.
 
   Example:
     with CWriter("file.cpp") as myfile:
@@ -806,6 +827,8 @@ class CWriter():
   def __init__(self, filename, year):
     self.filename = filename
     self._ENTER_MSG = _LICENSE % year + _DO_NOT_EDIT_WARNING % _lower_prefix
+    if (filename in _allow_unsafe_buffers_filenames):
+        self._ENTER_MSG += _ALLOW_UNSAFE_BUFFERS
     self._EXIT_MSG = ""
     try:
       os.makedirs(os.path.dirname(filename))
@@ -1057,7 +1080,6 @@ static_assert(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
     if func.IsES31():
       return
     self.WriteHandlerExtensionCheck(func, f)
-    self.WriteHandlerDeferReadWrite(func, f);
     self.WriteServiceHandlerArgGetCode(func, f)
     func.WriteHandlerValidation(f)
     func.WriteQueueTraceEvent(f)
@@ -1072,7 +1094,6 @@ static_assert(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
     if func.IsES31():
       return
     self.WriteHandlerExtensionCheck(func, f)
-    self.WriteHandlerDeferReadWrite(func, f);
     self.WriteImmediateServiceHandlerArgGetCode(func, f)
     func.WriteHandlerValidation(f)
     func.WriteQueueTraceEvent(f)
@@ -1087,7 +1108,6 @@ static_assert(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
     if func.IsES31():
       return
     self.WriteHandlerExtensionCheck(func, f)
-    self.WriteHandlerDeferReadWrite(func, f);
     self.WriteBucketServiceHandlerArgGetCode(func, f)
     func.WriteHandlerValidation(f)
     func.WriteQueueTraceEvent(f)
@@ -1160,21 +1180,6 @@ static_assert(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
       f.write("  if (!features().%s) {\n" % func.GetInfo('extension_flag'))
       f.write("    return error::kUnknownCommand;")
       f.write("  }\n\n")
-
-  def WriteHandlerDeferReadWrite(self, func, f):
-    """Writes the code to handle deferring reads or writes."""
-    defer_draws = func.GetInfo('defer_draws')
-    defer_reads = func.GetInfo('defer_reads')
-    if defer_draws or defer_reads:
-      f.write("  error::Error error;\n")
-    if defer_draws:
-      f.write("  error = WillAccessBoundFramebufferForDraw();\n")
-      f.write("  if (error != error::kNoError)\n")
-      f.write("    return error;\n")
-    if defer_reads:
-      f.write("  error = WillAccessBoundFramebufferForRead();\n")
-      f.write("  if (error != error::kNoError)\n")
-      f.write("    return error;\n")
 
   def WriteValidUnitTest(self, func, f, test, *extras):
     """Writes a valid unit test for the service implementation."""

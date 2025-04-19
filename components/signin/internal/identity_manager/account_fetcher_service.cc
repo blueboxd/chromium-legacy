@@ -60,7 +60,6 @@ AccountFetcherService::AccountFetcherService() = default;
 
 AccountFetcherService::~AccountFetcherService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  token_service_->RemoveObserver(this);
 #if BUILDFLAG(IS_ANDROID)
   // child_info_request_ is an invalidation handler and needs to be
   // unregistered during the lifetime of the invalidation service.
@@ -90,7 +89,8 @@ void AccountFetcherService::Initialize(
   DCHECK(token_service);
   DCHECK(!token_service_);
   token_service_ = token_service;
-  token_service_->AddObserver(this);
+  token_service_observation_.Observe(token_service_);
+
   DCHECK(image_decoder);
   DCHECK(!image_decoder_);
   image_decoder_ = std::move(image_decoder);
@@ -146,11 +146,6 @@ void AccountFetcherService::EnableAccountRemovalForTest() {
 AccountCapabilitiesFetcherFactory*
 AccountFetcherService::GetAccountCapabilitiesFetcherFactoryForTest() {
   return account_capabilities_fetcher_factory_.get();
-}
-
-void AccountFetcherService::EnableAccountCapabilitiesFetcherForTest(
-    bool enabled) {
-  enable_account_capabilities_fetcher_for_test_ = enabled;
 }
 
 void AccountFetcherService::RefreshAllAccountInfo(bool only_fetch_if_invalid) {
@@ -259,14 +254,6 @@ void AccountFetcherService::DestroyFetchers(const CoreAccountId& account_id) {
   account_capabilities_requests_.erase(account_id);
 }
 
-bool AccountFetcherService::IsAccountCapabilitiesFetchingEnabled() {
-  if (enable_account_capabilities_fetcher_for_test_)
-    return true;
-
-  return base::FeatureList::IsEnabled(
-      switches::kEnableFetchingAccountCapabilities);
-}
-
 void AccountFetcherService::PrepareForFetchingAccountCapabilities() {
   account_capabilities_fetcher_factory_
       ->PrepareForFetchingAccountCapabilities();
@@ -312,9 +299,7 @@ void AccountFetcherService::RefreshAccountInfo(const CoreAccountId& account_id,
   const AccountInfo& info =
       account_tracker_service_->GetAccountInfo(account_id);
 
-  if ((!only_fetch_if_invalid ||
-       !info.capabilities.AreAllCapabilitiesKnown()) &&
-      IsAccountCapabilitiesFetchingEnabled()) {
+  if (!only_fetch_if_invalid || !info.capabilities.AreAllCapabilitiesKnown()) {
     StartFetchingAccountCapabilities(info);
   }
 

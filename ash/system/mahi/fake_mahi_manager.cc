@@ -21,6 +21,12 @@ namespace ash {
 
 namespace {
 
+// If true, callbacks passed to `FakeMahiManager` are handled asyncly with zero
+// time duration.
+bool g_use_zero_duration = false;
+
+// Constants -------------------------------------------------------------------
+
 constexpr char16_t kDefaultAnswer[] = u"Fake answer";
 
 constexpr char16_t kDefaultContentTitle[] = u"fake content title";
@@ -67,7 +73,10 @@ void FakeMahiManager::GetSummary(MahiSummaryCallback callback) {
       base::BindOnce(std::move(callback),
                      summary_text_.value_or(kDefaultSummaryText),
                      chromeos::MahiResponseStatus::kSuccess),
-      base::Seconds(mahi_constants::kFakeMahiManagerLoadSummaryDelaySeconds));
+      g_use_zero_duration
+          ? base::TimeDelta()
+          : base::Seconds(
+                mahi_constants::kFakeMahiManagerLoadSummaryDelaySeconds));
 }
 
 void FakeMahiManager::GetOutlines(MahiOutlinesCallback callback) {
@@ -75,7 +84,10 @@ void FakeMahiManager::GetOutlines(MahiOutlinesCallback callback) {
       FROM_HERE,
       base::BindOnce(std::move(callback), kDefaultOutlines,
                      chromeos::MahiResponseStatus::kSuccess),
-      base::Seconds(mahi_constants::kFakeMahiManagerLoadOutlinesDelaySeconds));
+      g_use_zero_duration
+          ? base::TimeDelta()
+          : base::Seconds(
+                mahi_constants::kFakeMahiManagerLoadOutlinesDelaySeconds));
 }
 
 void FakeMahiManager::AnswerQuestion(const std::u16string& question,
@@ -86,7 +98,10 @@ void FakeMahiManager::AnswerQuestion(const std::u16string& question,
       FROM_HERE,
       base::BindOnce(std::move(callback), answer_text_.value_or(kDefaultAnswer),
                      chromeos::MahiResponseStatus::kSuccess),
-      base::Seconds(mahi_constants::kFakeMahiManagerLoadAnswerDelaySeconds));
+      g_use_zero_duration
+          ? base::TimeDelta()
+          : base::Seconds(
+                mahi_constants::kFakeMahiManagerLoadAnswerDelaySeconds));
 }
 
 void FakeMahiManager::OnContextMenuClicked(
@@ -95,20 +110,33 @@ void FakeMahiManager::OnContextMenuClicked(
     case MahiContextMenuActionType::kSummary:
     case MahiContextMenuActionType::kOutline:
       // TODO(b/318565610): Update the behaviour of kOutline.
-      ui_controller_.OpenMahiPanel(context_menu_request->display_id);
+      OpenMahiPanel(
+          context_menu_request->display_id,
+          context_menu_request->mahi_menu_bounds.value_or(gfx::Rect()));
 
       return;
     case MahiContextMenuActionType::kQA:
-      ui_controller_.OpenMahiPanel(context_menu_request->display_id);
+      OpenMahiPanel(context_menu_request->display_id,
+                    context_menu_request->mahi_menu_bounds.has_value()
+                        ? context_menu_request->mahi_menu_bounds.value()
+                        : gfx::Rect());
 
       // Ask question.
       if (!context_menu_request->question) {
         return;
       }
 
-      ui_controller_.SendQuestion(context_menu_request->question.value(),
-                                  /*current_panel_content=*/true,
-                                  MahiUiController::QuestionSource::kMenuView);
+      // Because we call `MahiUiController::SendQuestion` right after
+      // opening the panel here, `SendQuestion` will cancel the call to get
+      // summary due to `MahiUiController::InvalidatePendingRequests()`. Thus,
+      // we need to update the summary after answering the question to make sure
+      // that user gets summary when navigating back to the summary UI
+      // (b/345621992).
+      ui_controller_.SendQuestion(
+          context_menu_request->question.value(),
+          /*current_panel_content=*/true,
+          MahiUiController::QuestionSource::kMenuView,
+          /*update_summary_after_answer_question=*/true);
       return;
     case MahiContextMenuActionType::kSettings:
       NewWindowDelegate::GetInstance()->OpenUrl(
@@ -121,10 +149,36 @@ void FakeMahiManager::OnContextMenuClicked(
   }
 }
 
+void FakeMahiManager::OpenMahiPanel(int64_t display_id,
+                                    const gfx::Rect& mahi_menu_bounds) {
+  ui_controller_.OpenMahiPanel(display_id, mahi_menu_bounds);
+}
+
 bool FakeMahiManager::IsEnabled() {
   return true;
 }
 
+bool FakeMahiManager::AllowRepeatingAnswers() {
+  return false;
+}
+
+void FakeMahiManager::AnswerQuestionRepeating(
+    const std::u16string& question,
+    bool current_panel_content,
+    MahiAnswerQuestionCallbackRepeating callback) {}
+
 void FakeMahiManager::SetMediaAppPDFFocused() {}
+
+// ScopedFakeMahiManagerZeroDuration -------------------------------------------
+
+ScopedFakeMahiManagerZeroDuration::ScopedFakeMahiManagerZeroDuration() {
+  CHECK(!g_use_zero_duration);
+  g_use_zero_duration = true;
+}
+
+ScopedFakeMahiManagerZeroDuration::~ScopedFakeMahiManagerZeroDuration() {
+  CHECK(g_use_zero_duration);
+  g_use_zero_duration = false;
+}
 
 }  // namespace ash

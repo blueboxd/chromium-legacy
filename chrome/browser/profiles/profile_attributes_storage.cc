@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 
 #include <algorithm>
@@ -199,34 +204,18 @@ MultiProfileUserType GetMultiProfileUserType(
   return MultiProfileUserType::kActiveMultiProfile;
 }
 
-profile_metrics::AvatarState GetAvatarState(ProfileAttributesEntry* entry) {
-  size_t index = entry->GetAvatarIconIndex();
-  bool is_modern = profiles::IsModernAvatarIconIndex(index);
-  if (entry->GetSigninState() == SigninState::kNotSignedIn) {
-    if (index == profiles::GetPlaceholderAvatarIndex())
-      return profile_metrics::AvatarState::kSignedOutDefault;
-    return is_modern ? profile_metrics::AvatarState::kSignedOutModern
-                     : profile_metrics::AvatarState::kSignedOutOld;
-  }
-  if (entry->IsUsingGAIAPicture())
-    return profile_metrics::AvatarState::kSignedInGaia;
-  return is_modern ? profile_metrics::AvatarState::kSignedInModern
-                   : profile_metrics::AvatarState::kSignedInOld;
-}
-
 profile_metrics::UnconsentedPrimaryAccountType GetUnconsentedPrimaryAccountType(
     ProfileAttributesEntry* entry) {
   if (entry->GetSigninState() == SigninState::kNotSignedIn)
     return profile_metrics::UnconsentedPrimaryAccountType::kSignedOut;
-  if (entry->IsChild())
+  if (entry->IsSupervised()) {
     return profile_metrics::UnconsentedPrimaryAccountType::kChild;
+  }
   // TODO(crbug.com/40121889): Replace this check by
   // !entry->GetHostedDomain().has_value() in M84 (once the attributes storage
   // gets reasonably well populated).
-  if (signin::AccountManagedStatusFinder::IsEnterpriseUserBasedOnEmail(
-          base::UTF16ToUTF8(entry->GetUserName())) ==
-      signin::AccountManagedStatusFinder::EmailEnterpriseStatus::
-          kKnownNonEnterprise) {
+  if (!signin::AccountManagedStatusFinder::MayBeEnterpriseUserBasedOnEmail(
+          base::UTF16ToUTF8(entry->GetUserName()))) {
     return profile_metrics::UnconsentedPrimaryAccountType::kConsumer;
   }
   // TODO(crbug.com/40121889): Figure out how to distinguish EDU accounts from
@@ -236,7 +225,6 @@ profile_metrics::UnconsentedPrimaryAccountType GetUnconsentedPrimaryAccountType(
 
 void RecordProfileState(ProfileAttributesEntry* entry,
                         profile_metrics::StateSuffix suffix) {
-  profile_metrics::LogProfileAvatar(GetAvatarState(entry), suffix);
   profile_metrics::LogProfileAccountType(
       GetUnconsentedPrimaryAccountType(entry), suffix);
   profile_metrics::LogProfileSyncEnabled(

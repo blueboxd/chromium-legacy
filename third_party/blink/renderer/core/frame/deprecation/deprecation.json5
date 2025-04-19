@@ -161,6 +161,16 @@
       chrome_status_feature: 5140610730426368,
     },
     {
+      name: "CSSInsetAreaProperty",
+      message: "The `inset-area` property is deprecated. Please use the `position-area` property instead.",
+      translation_note: "Warning displayed to developers when their website uses `inset-area` in CSS. They can simply switch their CSS to `position-area` and it will function in the same way.",
+      web_features: [
+        "kCSSInsetAreaProperty",
+      ],
+      milestone: 129,
+      chrome_status_feature: 5142143019253760,
+    },
+    {
       name: "CSSSelectorInternalMediaControlsOverlayCastButton",
       message: "The `disableRemotePlayback` attribute should be used in order to disable the default Cast integration instead of using `-internal-media-controls-overlay-cast-button` selector.",
       translation_note: "Warning displayed to developers when they hide the Cast button on a video element using the deprecated CSS selector instead of using the disableRemotePlayback attribute on the element.",
@@ -177,6 +187,8 @@
         "kCSSValueAppearanceNonStandard",
       ],
       chrome_status_feature: 5066630972833792,
+      milestone: 118,
+      obsolete_to_be_removed_after_milestone: 142,
     },
     {
       name: "CSSValueAppearanceSliderVertical",
@@ -196,6 +208,14 @@
       ],
       chrome_status_feature: 5128825141198848,
       milestone: 119,
+    },
+    {
+      name: "DelegatedInkExpectedImprovement",
+      message: "`DelegatedInkTrailPresenter.expectedImprovement` is deprecated due to potential fingerprinting concerns.",
+      translation_note: "Warning displayed to developers that they should not be using `DelegatedInkTrailPresenter.expectedImprovement`.",
+      web_features: [
+        "kDelegatedInkExpectedImprovement",
+      ],
     },
     {
       name: "DocumentDomainSettingWithoutOriginAgentClusterHeader",
@@ -249,6 +269,15 @@
         "kGeolocationInsecureOriginDeprecatedNotRemoved",
         "kGeolocationInsecureOriginIframeDeprecatedNotRemoved",
       ],
+    },
+    {
+      name: "GetInnerHTML",
+      message: "The getInnerHTML() function is deprecated, and will be removed from this browser very soon. Please use getHTML() instead.",
+      translation_note: "Warning displayed to developers when non-standard getInnerHTML function is called. This function is deprecated and will be removed.",
+      web_features: [
+        "kElementGetInnerHTML",
+      ],
+      chrome_status_feature: 5081733588582400,
     },
     {
       name: "GetUserMediaInsecureOrigin",

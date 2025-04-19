@@ -7,11 +7,11 @@ load("//lib/args.star", "args")
 load("//lib/branches.star", "branches")
 load("//lib/builder_config.star", "builder_config")
 load("//lib/builder_health_indicators.star", "health_spec")
-load("//lib/builders.star", "os", "sheriff_rotations", "siso")
+load("//lib/builders.star", "gardener_rotations", "os", "siso")
 load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
 load("//lib/gn_args.star", "gn_args")
-load("//lib/targets.star", "targets")
+load("//lib/html.star", "linkify_builder")
 
 ci.defaults.set(
     executable = ci.DEFAULT_EXECUTABLE,
@@ -22,7 +22,7 @@ ci.defaults.set(
     pool = ci.DEFAULT_POOL,
     cores = 8,
     os = os.WINDOWS_DEFAULT,
-    sheriff_rotations = sheriff_rotations.CHROMIUM,
+    gardener_rotations = gardener_rotations.CHROMIUM,
     tree_closing = True,
     main_console_view = "main",
     contact_team_email = "chrome-desktop-engprod@google.com",
@@ -99,6 +99,7 @@ ci.builder(
             "remoteexec",
             "x86",
             "no_symbols",
+            "win",
         ],
     ),
     builderless = False,
@@ -132,6 +133,8 @@ ci.builder(
             "gpu_tests",
             "debug_builder",
             "remoteexec",
+            "win",
+            "x64",
         ],
     ),
     builderless = True,
@@ -163,7 +166,7 @@ ci.builder(
         build_gs_bucket = "chromium-win-archive",
     ),
     # Too flaky. See crbug.com/876224 for more details.
-    sheriff_rotations = args.ignore_default(None),
+    gardener_rotations = args.ignore_default(None),
     tree_closing = False,
     console_view_entry = consoles.console_view_entry(
         category = "debug|tester",
@@ -196,6 +199,7 @@ ci.builder(
             "remoteexec",
             "x86",
             "no_symbols",
+            "win",
         ],
     ),
     builderless = False,
@@ -242,6 +246,8 @@ ci.builder(
             "release_builder",
             "remoteexec",
             "minimal_symbols",
+            "win",
+            "x64",
         ],
     ),
     builderless = False,
@@ -347,6 +353,7 @@ ci.builder(
             "release_builder",
             "remoteexec",
             "minimal_symbols",
+            "win",
         ],
     ),
     builderless = False,
@@ -359,11 +366,16 @@ ci.builder(
     ),
     cq_mirrors_console_view = "mirrors",
     contact_team_email = "chrome-desktop-engprod@google.com",
+    # Can flakily hit the default 3 hour timeout due to inconsistent compile
+    # times.
+    execution_timeout = 4 * time.hour,
 )
 
 ci.thin_tester(
     name = "win11-arm64-rel-tests",
-    branch_selector = branches.selector.WINDOWS_BRANCHES,
+    # TODO(https://crbug.com/341773363): Until the testing pool is stabilized,
+    # this builder shouldn't be getting branched
+    # branch_selector = branches.selector.WINDOWS_BRANCHES,
     description_html = "Windows11 ARM64 Release Tester.",
     triggered_by = ["ci/win-arm64-rel"],
     builder_spec = builder_config.builder_spec(
@@ -386,8 +398,6 @@ ci.thin_tester(
         ),
         build_gs_bucket = "chromium-win-archive",
     ),
-    # TODO(https://crbug.com/341773363): Bots were quarantined.
-    sheriff_rotations = args.ignore_default(None),
     tree_closing = False,
     console_view_entry = consoles.console_view_entry(
         category = "release|tester",
@@ -422,6 +432,7 @@ ci.builder(
             "gpu_tests",
             "debug_builder",
             "remoteexec",
+            "win",
         ],
     ),
     builderless = True,
@@ -457,8 +468,8 @@ ci.thin_tester(
         ),
         build_gs_bucket = "chromium-win-archive",
     ),
-    # TODO(crbug.com/40877793): Enable sheriff when stable and green.
-    sheriff_rotations = args.ignore_default(None),
+    # TODO(crbug.com/40877793): Enable gardening when stable and green.
+    gardener_rotations = args.ignore_default(None),
     tree_closing = False,
     console_view_entry = consoles.console_view_entry(
         category = "debug|tester",
@@ -476,6 +487,7 @@ ci.builder(
             "remoteexec",
             "x86",
             "minimal_symbols",
+            "win",
         ],
     ),
     builderless = False,
@@ -492,7 +504,9 @@ ci.builder(
 
 ci.builder(
     name = "linux-win-cross-rel",
-    description_html = "Linux to Windows cross compile.",
+    description_html = "Linux to Windows cross compile.<br/>" +
+                       "It builds with the same GN args with " + linkify_builder("ci", "Win x64 Builder", "chromium") +
+                       ", and runs the same test suites with " + linkify_builder("ci", "Win10 Tests x64", "chromium"),
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
@@ -515,69 +529,8 @@ ci.builder(
             "win_cross",
         ],
     ),
-    targets = targets.bundle(
-        # TODO: crbug.com/332248571 - Add same targets as Win Tests builders.
-        targets = [
-            "absl_hardening_tests",
-            # TODO: crbug.com/333652645 - angle_unittests fail without test results.
-            # https://ci.chromium.org/ui/p/chromium/builders/try/linux-win-cross-rel/13/overview
-            # "angle_unittests",
-            "base_unittests",
-            "blink_common_unittests",
-            "blink_heap_unittests",
-            # TODO: crbug.com/333652645 - Include this target after fixing "Error: local variable mixin referenced before assignment".
-            # "blink_platform_unittests",
-            "boringssl_crypto_tests",
-            "boringssl_ssl_tests",
-            "capture_unittests",
-            "cast_unittests",
-            "components_browsertests",
-            "components_unittests",
-            # TODO: crbug.com/332248571 - Increase swarming shards to avoid timeout.
-            # "content_browsertests",
-            "content_unittests",
-            "crashpad_tests",
-            "crypto_unittests",
-            "env_chromium_unittests",
-            "events_unittests",
-            "gcm_unit_tests",
-            "gin_unittests",
-            "google_apis_unittests",
-            "gpu_unittests",
-            "gwp_asan_unittests",
-            "ipc_tests",
-            "latency_unittests",
-            "leveldb_unittests",
-            "libjingle_xmpp_unittests",
-            "liburlpattern_unittests",
-            "media_unittests",
-            "midi_unittests",
-            "mojo_unittests",
-            "net_unittests",
-            "perfetto_unittests",
-            "services_unittests",
-            "shell_dialogs_unittests",
-            "skia_unittests",
-            "sql_unittests",
-            "storage_unittests",
-            "ui_base_unittests",
-            "ui_touch_selection_unittests",
-            "url_unittests",
-            "webkit_unit_tests",
-            "wtf_unittests",
-            "zlib_unittests",
-        ],
-        additional_compile_targets = ["all"],
-        mixins = [
-            "chromium-tester-service-account",
-            "win10",
-            "x86-64",
-        ],
-    ),
+    cores = 32,
     os = os.LINUX_DEFAULT,
-
-    # TODO(crbug.com/332248571): Promote to main gardening rotation once green.
-    sheriff_rotations = args.ignore_default(None),
     tree_closing = False,
     console_view_entry = consoles.console_view_entry(
         category = "misc",

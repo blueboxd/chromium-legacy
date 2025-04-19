@@ -23,6 +23,7 @@
 #include "base/time/time.h"
 #include "base/uuid.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/autofill_profile_test_api.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/webdata/addresses/address_autofill_table.h"
 #include "components/autofill/core/browser/webdata/addresses/autofill_profile_sync_util.h"
@@ -33,16 +34,16 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/sync/base/client_tag_hash.h"
 #include "components/sync/engine/data_type_activation_response.h"
-#include "components/sync/model/client_tag_based_model_type_processor.h"
+#include "components/sync/model/client_tag_based_data_type_processor.h"
 #include "components/sync/model/data_batch.h"
 #include "components/sync/model/data_type_activation_request.h"
 #include "components/sync/model/sync_data.h"
 #include "components/sync/protocol/autofill_specifics.pb.h"
+#include "components/sync/protocol/data_type_state.pb.h"
 #include "components/sync/protocol/entity_data.h"
 #include "components/sync/protocol/entity_specifics.pb.h"
-#include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/test/mock_commit_queue.h"
-#include "components/sync/test/mock_model_type_change_processor.h"
+#include "components/sync/test/mock_data_type_local_change_processor.h"
 #include "components/webdata/common/web_database.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -54,12 +55,12 @@ using base::UTF16ToUTF8;
 using base::UTF8ToUTF16;
 using sync_pb::AutofillProfileSpecifics;
 using syncer::DataBatch;
+using syncer::DataType;
 using syncer::EntityChange;
 using syncer::EntityChangeList;
 using syncer::EntityData;
 using syncer::KeyAndData;
-using syncer::MockModelTypeChangeProcessor;
-using syncer::ModelType;
+using syncer::MockDataTypeLocalChangeProcessor;
 using testing::_;
 using testing::DoAll;
 using testing::ElementsAre;
@@ -111,7 +112,7 @@ MATCHER_P(HasSpecifics, expected, "") {
   AutofillProfile arg_profile =
       CreateAutofillProfile(arg->specifics.autofill_profile());
   AutofillProfile expected_profile = CreateAutofillProfile(expected);
-  if (!arg_profile.EqualsIncludingUsageStatsForTesting(expected_profile)) {
+  if (!test_api(arg_profile).EqualsIncludingUsageStats(expected_profile)) {
     *result_listener << "entry\n[" << arg_profile << "]\n"
                      << "did not match expected\n[" << expected_profile << "]";
     return false;
@@ -120,7 +121,8 @@ MATCHER_P(HasSpecifics, expected, "") {
 }
 
 MATCHER_P(WithUsageStats, expected, "") {
-  if (!arg.EqualsIncludingUsageStatsForTesting(expected)) {
+  AutofillProfile arg_profile = arg;
+  if (!test_api(arg_profile).EqualsIncludingUsageStats(expected)) {
     *result_listener << "entry\n[" << arg << "]\n"
                      << "did not match expected\n[" << expected << "]";
     return false;
@@ -267,9 +269,8 @@ class AutofillProfileSyncBridgeTest : public testing::Test {
   }
 
   void ResetProcessor() {
-    real_processor_ =
-        std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
-            syncer::AUTOFILL_PROFILE, /*dump_stack=*/base::DoNothing());
+    real_processor_ = std::make_unique<syncer::ClientTagBasedDataTypeProcessor>(
+        syncer::AUTOFILL_PROFILE, /*dump_stack=*/base::DoNothing());
     mock_processor_.DelegateCallsByDefaultTo(real_processor_.get());
   }
 
@@ -291,15 +292,15 @@ class AutofillProfileSyncBridgeTest : public testing::Test {
             }));
     loop.Run();
 
-    // ClientTagBasedModelTypeProcessor requires connecting before other
+    // ClientTagBasedDataTypeProcessor requires connecting before other
     // interactions with the worker happen.
     real_processor_->ConnectSync(
         std::make_unique<testing::NiceMock<syncer::MockCommitQueue>>());
 
     // Initialize the processor with the initial sync already done.
-    sync_pb::ModelTypeState state;
+    sync_pb::DataTypeState state;
     state.set_initial_sync_state(
-        sync_pb::ModelTypeState_InitialSyncState_INITIAL_SYNC_DONE);
+        sync_pb::DataTypeState_InitialSyncState_INITIAL_SYNC_DONE);
     syncer::UpdateResponseDataList initial_updates;
     for (const AutofillProfileSpecifics& specifics : remote_data) {
       initial_updates.push_back(SpecificsToUpdateResponse(specifics));
@@ -326,14 +327,8 @@ class AutofillProfileSyncBridgeTest : public testing::Test {
 
   std::vector<AutofillProfile> GetAllLocalData() {
     std::vector<AutofillProfile> data;
-    // Perform an async call synchronously for testing.
-    base::RunLoop loop;
-    bridge()->GetAllDataForDebugging(base::BindLambdaForTesting(
-        [&loop, &data](std::unique_ptr<DataBatch> batch) {
-          ExtractAutofillProfilesFromDataBatch(std::move(batch), &data);
-          loop.Quit();
-        }));
-    loop.Run();
+    ExtractAutofillProfilesFromDataBatch(bridge()->GetAllDataForDebugging(),
+                                         &data);
     return data;
   }
 
@@ -354,7 +349,7 @@ class AutofillProfileSyncBridgeTest : public testing::Test {
 
   AutofillProfileSyncBridge* bridge() { return bridge_.get(); }
 
-  syncer::MockModelTypeChangeProcessor& mock_processor() {
+  syncer::MockDataTypeLocalChangeProcessor& mock_processor() {
     return mock_processor_;
   }
 
@@ -370,8 +365,8 @@ class AutofillProfileSyncBridgeTest : public testing::Test {
   AddressAutofillTable table_;
   AutofillSyncMetadataTable sync_metadata_table_;
   WebDatabase db_;
-  testing::NiceMock<MockModelTypeChangeProcessor> mock_processor_;
-  std::unique_ptr<syncer::ClientTagBasedModelTypeProcessor> real_processor_;
+  testing::NiceMock<MockDataTypeLocalChangeProcessor> mock_processor_;
+  std::unique_ptr<syncer::ClientTagBasedDataTypeProcessor> real_processor_;
   std::unique_ptr<AutofillProfileSyncBridge> bridge_;
 };
 
@@ -528,15 +523,8 @@ TEST_F(AutofillProfileSyncBridgeTest, GetDataForCommit) {
   AddAutofillProfilesToTable({local1, local2});
 
   std::vector<AutofillProfile> data;
-  base::RunLoop loop;
-  bridge()->GetDataForCommit(
-      {kGuidA}, base::BindLambdaForTesting(
-                    [&loop, &data](std::unique_ptr<DataBatch> batch) {
-                      ExtractAutofillProfilesFromDataBatch(std::move(batch),
-                                                           &data);
-                      loop.Quit();
-                    }));
-  loop.Run();
+  ExtractAutofillProfilesFromDataBatch(bridge()->GetDataForCommit({kGuidA}),
+                                       &data);
 
   EXPECT_THAT(data, ElementsAre(local1));
 }

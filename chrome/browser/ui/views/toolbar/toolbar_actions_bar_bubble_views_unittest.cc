@@ -55,7 +55,8 @@ class ToolbarActionsBarBubbleViewsTest : public ChromeViewsTestBase {
 
   std::unique_ptr<views::Widget> CreateAnchorWidget() {
     std::unique_ptr<views::Widget> anchor_widget =
-        CreateTestWidget(views::Widget::InitParams::TYPE_WINDOW);
+        CreateTestWidget(views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
+                         views::Widget::InitParams::TYPE_WINDOW);
     anchor_widget->Show();
     return anchor_widget;
   }
@@ -86,7 +87,7 @@ class ToolbarActionsBarBubbleViewsTest : public ChromeViewsTestBase {
 
     ASSERT_TRUE(button);
     const gfx::Point point(10, 10);
-    const ui::MouseEvent event(ui::ET_MOUSE_PRESSED, point, point,
+    const ui::MouseEvent event(ui::EventType::kMousePressed, point, point,
                                ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
                                ui::EF_LEFT_MOUSE_BUTTON);
     button->OnMousePressed(event);

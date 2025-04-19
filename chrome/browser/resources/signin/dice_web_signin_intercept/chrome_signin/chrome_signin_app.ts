@@ -6,6 +6,8 @@ import '../strings.m.js';
 import '../signin_shared.css.js';
 import '../signin_vars.css.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
+import 'chrome://resources/cr_elements/icons.html.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
@@ -74,6 +76,14 @@ export class ChromeSigninAppElement extends ChromeSigninAppElementBase {
 
   private onAccept_() {
     this.diceWebSigninInterceptBrowserProxy_.accept();
+  }
+
+  private getAcceptButtonAriaLabel_() {
+    if (!this.interceptionParameters_) {
+      return null;
+    }
+    return this.i18n(
+        'acceptButtonAriaLabel', this.interceptionParameters_.email);
   }
 }
 

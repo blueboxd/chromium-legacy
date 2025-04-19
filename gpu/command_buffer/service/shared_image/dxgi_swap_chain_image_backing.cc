@@ -54,7 +54,7 @@ std::unique_ptr<DXGISwapChainImageBacking> DXGISwapChainImageBacking::Create(
     const gfx::ColorSpace& color_space,
     GrSurfaceOrigin surface_origin,
     SkAlphaType alpha_type,
-    uint32_t usage,
+    gpu::SharedImageUsageSet usage,
     std::string debug_label) {
   if (!d3d11_device) {
     return nullptr;
@@ -95,9 +95,6 @@ std::unique_ptr<DXGISwapChainImageBacking> DXGISwapChainImageBacking::Create(
   Microsoft::WRL::ComPtr<IDXGISwapChain1> dxgi_swap_chain;
   HRESULT hr = dxgi_factory->CreateSwapChainForComposition(
       d3d11_device.Get(), &desc, nullptr, &dxgi_swap_chain);
-
-  base::UmaHistogramSparse(
-      "GPU.DirectComposition.CreateSwapChainForComposition", hr);
 
   // If CreateSwapChainForComposition fails, we cannot draw to the
   // browser window. Return false after disabling Direct Composition support
@@ -150,7 +147,7 @@ DXGISwapChainImageBacking::DXGISwapChainImageBacking(
     const gfx::ColorSpace& color_space,
     GrSurfaceOrigin surface_origin,
     SkAlphaType alpha_type,
-    uint32_t usage,
+    gpu::SharedImageUsageSet usage,
     std::string debug_label,
     Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
     Microsoft::WRL::ComPtr<IDXGISwapChain1> dxgi_swap_chain,
@@ -170,8 +167,8 @@ DXGISwapChainImageBacking::DXGISwapChainImageBacking(
       dxgi_swap_chain_(std::move(dxgi_swap_chain)),
       buffers_need_alpha_initialization_count_(
           buffers_need_alpha_initialization_count) {
-  const bool has_scanout = !!(usage & SHARED_IMAGE_USAGE_SCANOUT);
-  const bool has_write = !!(usage & SHARED_IMAGE_USAGE_DISPLAY_WRITE);
+  const bool has_scanout = usage.Has(SHARED_IMAGE_USAGE_SCANOUT);
+  const bool has_write = usage.Has(SHARED_IMAGE_USAGE_DISPLAY_WRITE);
   DCHECK(has_scanout);
   DCHECK(has_write);
 }
@@ -400,6 +397,7 @@ DXGISwapChainImageBacking::ProduceSkiaGraphite(
 wgpu::Texture DXGISwapChainImageBacking::BeginAccessDawn(
     const wgpu::Device& device,
     wgpu::TextureUsage usage,
+    wgpu::TextureUsage internal_usage,
     const gfx::Rect& update_rect) {
   DidBeginWriteAccess(update_rect);
 
@@ -411,8 +409,9 @@ wgpu::Texture DXGISwapChainImageBacking::BeginAccessDawn(
   desc.initialized = true;
   desc.nextInChain = &swapchain_begin_state;
 
-  wgpu::Texture texture = CreateDawnSharedTexture(shared_texture_memory_, usage,
-                                                  /*view_formats=*/{});
+  wgpu::Texture texture =
+      CreateDawnSharedTexture(shared_texture_memory_, usage, internal_usage,
+                              /*view_formats=*/{});
   if (!texture || !shared_texture_memory_.BeginAccess(texture, &desc)) {
     LOG(ERROR) << "Failed to begin access and produce WGPUTexture";
     return nullptr;

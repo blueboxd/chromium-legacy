@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
 
-import {Category, PageHandlerFactory, PageHandlerRemote, Status, TenorGifResponse} from './emoji_picker.mojom-webui.js';
+import {Category, HistoryItem, PageHandlerFactory, PageHandlerRemote, Status, TenorGifResponse} from './emoji_picker.mojom-webui.js';
 import {EmojiSearch} from './emoji_search.mojom-webui.js';
 import {NewWindowProxy} from './new_window_proxy.mojom-webui.js';
 import {EmojiVariants, GifSubcategoryData, VisualContent} from './types.js';
@@ -89,7 +89,9 @@ export class EmojiPickerApiProxy {
   }
 
   searchEmoji(query: string) {
-    return this.searchProxy().searchEmoji(query);
+    // TODO(b/346457889): Add multilingual search for emoji picker.
+    // For now assume English.
+    return this.searchProxy().searchEmoji(query, ['en']);
   }
 
   /** @override */
@@ -112,7 +114,7 @@ export class EmojiPickerApiProxy {
     return this.handler.getInitialQuery();
   }
 
-  updateHistoryInPrefs(category: Category, history: string[]): void {
+  updateHistoryInPrefs(category: Category, history: HistoryItem[]): void {
     this.handler.updateHistoryInPrefs(category, history);
   }
 
@@ -125,7 +127,7 @@ export class EmojiPickerApiProxy {
                                            })));
   }
 
-  getHistoryFromPrefs(category: Category): Promise<{history: string[]}> {
+  getHistoryFromPrefs(category: Category): Promise<{history: HistoryItem[]}> {
     return this.handler.getHistoryFromPrefs(category);
   }
 

@@ -31,7 +31,7 @@ namespace content {
 
 // This test suite tests playing media in a content window and verifies control
 // via system media controls controls the expected window. As instanced system
-// media controls is developed under kWebAppSystemMediaControlsWin.
+// media controls is developed under kWebAppSystemMediaControls.
 
 // Currently, this test suite only runs on windows.
 class WebAppSystemMediaControlsBrowserTest
@@ -229,7 +229,6 @@ class WebAppSystemMediaControlsBrowserTest
         switches::autoplay::kNoUserGestureRequiredPolicy);
 
     feature_list_.InitAndEnableFeature(features::kWebAppSystemMediaControls);
-    ContentBrowserTest::SetUpCommandLine(command_line);
   }
 
  private:

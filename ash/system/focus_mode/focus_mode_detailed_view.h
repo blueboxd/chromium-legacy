@@ -37,6 +37,16 @@ class ASH_EXPORT FocusModeDetailedView : public TrayDetailedView,
   METADATA_HEADER(FocusModeDetailedView, TrayDetailedView)
 
  public:
+  // Ids to easily find child views in `FocusModeDetailedView`. Unique only
+  // within the `FocusModeDetailedView`.
+  enum ViewId {
+    kTimerView = 1000,
+    kTaskView,
+    kSoundView,
+    kTimerTextfield,
+    kToggleFocusButton
+  };
+
   explicit FocusModeDetailedView(DetailedViewDelegate* delegate);
   FocusModeDetailedView(const FocusModeDetailedView&) = delete;
   FocusModeDetailedView& operator=(const FocusModeDetailedView&) = delete;
@@ -107,15 +117,6 @@ class ASH_EXPORT FocusModeDetailedView : public TrayDetailedView,
 
   // Handles clicks on the do not disturb toggle button.
   void OnDoNotDisturbToggleClicked();
-
-  // Creates a feedback button that is added to the bottom of the scrollable
-  // content.
-  // TODO(b/311035012): This is used for dogfooding and will be removed in
-  // M124/launch.
-  void CreateFeedbackButton();
-
-  // Opens the feedback form with preset information for focus mode.
-  void OnFeedbackButtonPressed();
 
   // Called whenever `clock_timer_` finishes running to update the subheading
   // and reset the clock timer for the next minute.

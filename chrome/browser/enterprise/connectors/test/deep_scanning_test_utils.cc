@@ -19,9 +19,11 @@
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
 #include "chrome/browser/policy/dm_token_utils.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/enterprise/connectors/connectors_prefs.h"
+#include "components/enterprise/connectors/core/connectors_prefs.h"
+#include "components/enterprise/connectors/core/reporting_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_client_registration_helper.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
+#include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
 #include "components/policy/core/common/cloud/realtime_reporting_job_configuration.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #include "components/policy/core/common/policy_types.h"
@@ -60,7 +62,7 @@ void EventReportValidator::ExpectUnscannedFileEvent(
     const std::string& expected_profile_username,
     const std::string& expected_profile_identifier,
     const std::optional<std::string>& expected_content_transfer_method) {
-  event_key_ = SafeBrowsingPrivateEventRouter::kKeyUnscannedFileEvent;
+  event_key_ = enterprise_connectors::kKeyUnscannedFileEvent;
   url_ = expected_url;
   tab_url_ = expected_tab_url;
   source_ = expected_source;
@@ -108,7 +110,7 @@ void EventReportValidator::ExpectUnscannedFileEvents(
     results_[expected_filenames[i]] = expected_result;
   }
 
-  event_key_ = SafeBrowsingPrivateEventRouter::kKeyUnscannedFileEvent;
+  event_key_ = enterprise_connectors::kKeyUnscannedFileEvent;
   url_ = expected_url;
   tab_url_ = expected_tab_url;
   source_ = expected_source;
@@ -144,7 +146,7 @@ void EventReportValidator::ExpectDangerousDeepScanningResult(
     const std::string& expected_profile_username,
     const std::string& expected_profile_identifier,
     const std::optional<std::string>& expected_scan_id) {
-  event_key_ = SafeBrowsingPrivateEventRouter::kKeyDangerousDownloadEvent;
+  event_key_ = enterprise_connectors::kKeyDangerousDownloadEvent;
   url_ = expected_url;
   tab_url_ = expected_tab_url;
   source_ = expected_source;
@@ -188,8 +190,9 @@ void EventReportValidator::ExpectSensitiveDataEvent(
     const std::string& expected_profile_username,
     const std::string& expected_profile_identifier,
     const std::string& expected_scan_id,
-    const std::optional<std::string>& expected_content_transfer_method) {
-  event_key_ = SafeBrowsingPrivateEventRouter::kKeySensitiveDataEvent;
+    const std::optional<std::string>& expected_content_transfer_method,
+    const std::optional<std::u16string>& expected_user_justification) {
+  event_key_ = enterprise_connectors::kKeySensitiveDataEvent;
   url_ = expected_url;
   tab_url_ = expected_tab_url;
   source_ = expected_source;
@@ -204,6 +207,7 @@ void EventReportValidator::ExpectSensitiveDataEvent(
   profile_identifier_ = expected_profile_identifier;
   scan_ids_[expected_filename] = expected_scan_id;
   content_transfer_method_ = expected_content_transfer_method;
+  user_justification_ = expected_user_justification;
   EXPECT_CALL(*client_, UploadSecurityEventReport)
       .WillOnce(
           [this](content::BrowserContext* context, bool include_device_info,
@@ -229,7 +233,7 @@ void EventReportValidator::ExpectDataControlsSensitiveDataEvent(
     const std::string& expected_profile_username,
     const std::string& expected_profile_identifier,
     int64_t expected_content_size) {
-  event_key_ = SafeBrowsingPrivateEventRouter::kKeySensitiveDataEvent;
+  event_key_ = enterprise_connectors::kKeySensitiveDataEvent;
   url_ = expected_url;
   tab_url_ = expected_tab_url;
   source_ = expected_source;
@@ -269,7 +273,8 @@ void EventReportValidator::ExpectSensitiveDataEvents(
     const std::string& expected_profile_username,
     const std::string& expected_profile_identifier,
     const std::vector<std::string>& expected_scan_ids,
-    const std::optional<std::string>& expected_content_transfer_method) {
+    const std::optional<std::string>& expected_content_transfer_method,
+    const std::optional<std::u16string>& expected_user_justification) {
   for (size_t i = 0; i < expected_filenames.size(); ++i) {
     filenames_and_hashes_[expected_filenames[i]] = expected_sha256s[i];
     dlp_verdicts_[expected_filenames[i]] = expected_dlp_verdicts[i];
@@ -277,7 +282,7 @@ void EventReportValidator::ExpectSensitiveDataEvents(
     scan_ids_[expected_filenames[i]] = expected_scan_ids[i];
   }
 
-  event_key_ = SafeBrowsingPrivateEventRouter::kKeySensitiveDataEvent;
+  event_key_ = enterprise_connectors::kKeySensitiveDataEvent;
   url_ = expected_url;
   tab_url_ = expected_tab_url;
   source_ = expected_source;
@@ -288,6 +293,7 @@ void EventReportValidator::ExpectSensitiveDataEvents(
   username_ = expected_profile_username;
   profile_identifier_ = expected_profile_identifier;
   content_transfer_method_ = expected_content_transfer_method;
+  user_justification_ = expected_user_justification;
 
   EXPECT_CALL(*client_, UploadSecurityEventReport)
       .Times(expected_filenames.size())
@@ -316,7 +322,7 @@ void EventReportValidator::
         const std::string& expected_profile_identifier,
         const std::string& expected_scan_id,
         const std::optional<std::string>& expected_content_transfer_method) {
-  event_key_ = SafeBrowsingPrivateEventRouter::kKeyDangerousDownloadEvent;
+  event_key_ = enterprise_connectors::kKeyDangerousDownloadEvent;
   url_ = expected_url;
   tab_url_ = expected_tab_url;
   source_ = expected_source;
@@ -342,7 +348,7 @@ void EventReportValidator::
                     base::Value::Dict report,
                     base::OnceCallback<void(policy::CloudPolicyClient::Result)>
                         callback) {
-        event_key_ = SafeBrowsingPrivateEventRouter::kKeySensitiveDataEvent;
+        event_key_ = enterprise_connectors::kKeySensitiveDataEvent;
         threat_type_ = std::nullopt;
         dlp_verdicts_[expected_filename] = expected_dlp_verdict;
         ValidateReport(&report);
@@ -369,7 +375,7 @@ void EventReportValidator::
         const std::string& expected_profile_username,
         const std::string& expected_profile_identifier,
         const std::string& expected_scan_id) {
-  event_key_ = SafeBrowsingPrivateEventRouter::kKeySensitiveDataEvent;
+  event_key_ = enterprise_connectors::kKeySensitiveDataEvent;
   url_ = expected_url;
   tab_url_ = expected_tab_url;
   source_ = expected_source;
@@ -394,7 +400,7 @@ void EventReportValidator::
                     base::Value::Dict report,
                     base::OnceCallback<void(policy::CloudPolicyClient::Result)>
                         callback) {
-        event_key_ = SafeBrowsingPrivateEventRouter::kKeyDangerousDownloadEvent;
+        event_key_ = enterprise_connectors::kKeyDangerousDownloadEvent;
         threat_type_ = expected_threat_type;
         dlp_verdicts_.erase(expected_filename);
         ValidateReport(&report);
@@ -416,7 +422,7 @@ void EventReportValidator::ExpectDangerousDownloadEvent(
     const std::string& expected_result,
     const std::string& expected_profile_username,
     const std::string& expected_profile_identifier) {
-  event_key_ = SafeBrowsingPrivateEventRouter::kKeyDangerousDownloadEvent;
+  event_key_ = enterprise_connectors::kKeyDangerousDownloadEvent;
   url_ = expected_url;
   tab_url_ = expected_tab_url;
   filenames_and_hashes_[expected_filename] = expected_sha256;
@@ -447,7 +453,7 @@ void EventReportValidator::ExpectLoginEvent(
     const std::string& expected_profile_username,
     const std::string& expected_profile_identifier,
     const std::u16string& expected_login_username) {
-  event_key_ = SafeBrowsingPrivateEventRouter::kKeyLoginEvent;
+  event_key_ = enterprise_connectors::kKeyLoginEvent;
   url_ = expected_url;
   is_federated_ = expected_is_federated;
   federated_origin_ = expected_federated_origin;
@@ -473,7 +479,7 @@ void EventReportValidator::ExpectPasswordBreachEvent(
         expected_identities,
     const std::string& expected_profile_username,
     const std::string& expected_profile_identifier) {
-  event_key_ = SafeBrowsingPrivateEventRouter::kKeyPasswordBreachEvent;
+  event_key_ = enterprise_connectors::kKeyPasswordBreachEvent;
   trigger_ = expected_trigger;
   password_breach_identities_ = expected_identities;
   username_ = expected_profile_username;
@@ -497,8 +503,7 @@ void EventReportValidator::ExpectURLFilteringInterstitialEvent(
     const std::string& expected_profile_username,
     const std::string& expected_profile_identifier,
     safe_browsing::RTLookupResponse expected_rt_lookup_response) {
-  event_key_ =
-      SafeBrowsingPrivateEventRouter::kKeyUrlFilteringInterstitialEvent;
+  event_key_ = enterprise_connectors::kKeyUrlFilteringInterstitialEvent;
   url_ = expected_url;
   url_filtering_event_result_ = expected_event_result;
   username_ = expected_profile_username;
@@ -552,6 +557,8 @@ void EventReportValidator::ValidateReport(const base::Value::Dict* report) {
   ValidateField(event,
                 SafeBrowsingPrivateEventRouter::kKeyContentTransferMethod,
                 content_transfer_method_);
+  ValidateField(event, SafeBrowsingPrivateEventRouter::kKeyUserJustification,
+                user_justification_);
   ValidateField(event, SafeBrowsingPrivateEventRouter::kKeyProfileUserName,
                 username_);
   ValidateField(event, RealtimeReportingClient::kKeyProfileIdentifier,
@@ -685,13 +692,11 @@ void EventReportValidator::ValidateThreatInfo(
                 expected_threat_info.matched_url_navigation_rule()
                     .matched_url_category());
 
-  std::optional<bool> expect_watermarking;
   if (expected_threat_info.matched_url_navigation_rule()
           .has_watermark_message()) {
-    expect_watermarking = true;
+    ValidateField(value, SafeBrowsingPrivateEventRouter::kKeyHasWatermarking,
+                  std::optional<bool>(true));
   }
-  ValidateField(value, SafeBrowsingPrivateEventRouter::kKeyHasWatermarking,
-                expect_watermarking);
 }
 
 void EventReportValidator::ValidateFilenameMappedAttributes(
@@ -810,6 +815,7 @@ void EventReportValidator::ValidateDataControlsAttributes(
         event->FindList(SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleInfo);
     ASSERT_TRUE(triggered_rules);
     ASSERT_EQ(data_controls_triggered_rules_.size(), triggered_rules->size());
+    size_t i = 0;
     for (const base::Value& rule : *triggered_rules) {
       const std::string* name = rule.GetDict().FindString(
           SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleName);
@@ -819,8 +825,11 @@ void EventReportValidator::ValidateDataControlsAttributes(
           SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleId);
       ASSERT_TRUE(id);
 
-      ASSERT_TRUE(data_controls_triggered_rules_.count(*id));
-      ASSERT_EQ(data_controls_triggered_rules_[*id], *name);
+      ASSERT_TRUE(data_controls_triggered_rules_.count(i));
+      ASSERT_EQ(data_controls_triggered_rules_[i].rule_name, *name);
+      ASSERT_EQ(data_controls_triggered_rules_[i].rule_id, *id);
+
+      ++i;
     }
   }
 }
@@ -956,6 +965,13 @@ void ClearAnalysisConnector(PrefService* prefs, AnalysisConnector connector) {
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 void SetProfileDMToken(Profile* profile, const std::string& dm_token) {
+  auto policy_data = std::make_unique<enterprise_management::PolicyData>();
+  policy_data->set_request_token(dm_token);
+  profile->GetCloudPolicyManager()
+      ->core()
+      ->store()
+      ->set_policy_data_for_testing(std::move(policy_data));
+
   auto client = std::make_unique<policy::MockCloudPolicyClient>();
   client->SetDMToken(dm_token);
 

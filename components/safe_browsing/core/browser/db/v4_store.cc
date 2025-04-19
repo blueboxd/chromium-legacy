@@ -5,12 +5,12 @@
 #include "components/safe_browsing/core/browser/db/v4_store.h"
 
 #include <algorithm>
+#include <array>
 #include <optional>
 #include <string_view>
 #include <utility>
 
 #include "base/base64.h"
-#include "base/debug/crash_logging.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
@@ -338,21 +338,6 @@ class BaseFileInputStream : public google::protobuf::io::ZeroCopyInputStream {
   CopyingBaseFileInputStream stream_;
   google::protobuf::io::CopyingInputStreamAdaptor impl_;
 };
-
-size_t GetIterationCount(const HashPrefixMap& hash_prefix_map,
-                         const IteratorMap& iterator_map) {
-  size_t max_iterations = 0;
-  for (const auto& iterator_pair : iterator_map) {
-    PrefixSize prefix_size = iterator_pair.first;
-    HashPrefixesView::const_iterator start = iterator_pair.second;
-
-    size_t distance =
-        std::distance(start, hash_prefix_map.at(prefix_size).end());
-    max_iterations += distance / prefix_size;
-  }
-
-  return max_iterations;
-}
 
 }  // namespace
 
@@ -846,8 +831,8 @@ ApplyUpdateResult V4Store::MergeUpdate(const HashPrefixMap& old_prefixes_map,
   }
 
   if (calculate_checksum) {
-    char checksum[crypto::kSHA256Length];
-    checksum_ctx->Finish(checksum, sizeof(checksum));
+    std::array<char, crypto::kSHA256Length> checksum;
+    checksum_ctx->Finish(checksum.data(), checksum.size());
     for (size_t i = 0; i < crypto::kSHA256Length; i++) {
       if (checksum[i] != expected_checksum[i]) {
 #if DCHECK_IS_ON()
@@ -1028,13 +1013,6 @@ bool V4Store::VerifyChecksum() {
   HashPrefixStr next_smallest_prefix;
   InitializeIteratorMap(*hash_prefix_map_, &iterator_map);
   CHECK_EQ(hash_prefix_map_->view().size(), iterator_map.size());
-
-  // Crash keys added to investigate http://crbug.com/331054795
-  SCOPED_CRASH_KEY_NUMBER("SafeBrowsing", "VerifyChecksumSizeCount",
-                          iterator_map.size());
-  SCOPED_CRASH_KEY_NUMBER("SafeBrowsing", "VerifyChecksumIterations",
-                          GetIterationCount(*hash_prefix_map_, iterator_map));
-
   bool has_unmerged = GetNextSmallestUnmergedPrefix(
       *hash_prefix_map_, iterator_map, &next_smallest_prefix);
 
@@ -1055,8 +1033,8 @@ bool V4Store::VerifyChecksum() {
         *hash_prefix_map_, iterator_map, &next_smallest_prefix);
   }
 
-  char checksum[crypto::kSHA256Length];
-  checksum_ctx->Finish(checksum, sizeof(checksum));
+  std::array<char, crypto::kSHA256Length> checksum;
+  checksum_ctx->Finish(checksum.data(), checksum.size());
   for (size_t i = 0; i < crypto::kSHA256Length; i++) {
     if (checksum[i] != expected_checksum_[i]) {
       RecordApplyUpdateResult(kReadFromDisk, CHECKSUM_MISMATCH_FAILURE,

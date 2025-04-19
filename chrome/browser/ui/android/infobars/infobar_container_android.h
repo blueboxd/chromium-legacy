@@ -13,8 +13,7 @@
 
 class InfoBarContainerAndroid : public infobars::InfoBarContainer {
  public:
-  InfoBarContainerAndroid(JNIEnv* env,
-                          jobject infobar_container);
+  InfoBarContainerAndroid(JNIEnv* env, jobject infobar_container);
 
   InfoBarContainerAndroid(const InfoBarContainerAndroid&) = delete;
   InfoBarContainerAndroid& operator=(const InfoBarContainerAndroid&) = delete;

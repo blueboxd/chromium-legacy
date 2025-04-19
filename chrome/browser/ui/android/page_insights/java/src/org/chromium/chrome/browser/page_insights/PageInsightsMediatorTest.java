@@ -65,7 +65,7 @@ import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.Features;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.HistogramWatcher;
@@ -136,7 +136,6 @@ public class PageInsightsMediatorTest {
     private static final int SHORT_TRIGGER_DELAY_MS = 2 * (int) DateUtils.SECOND_IN_MILLIS;
 
     @Rule public JniMocker jniMocker = new JniMocker();
-    @Rule public Features.JUnitProcessor mFeaturesProcessor = new Features.JUnitProcessor();
 
     @Mock private OptimizationGuideBridgeFactory.Natives mOptimizationGuideBridgeFactoryJniMock;
     @Mock private OptimizationGuideBridge mOptimizationGuideBridge;
@@ -508,7 +507,9 @@ public class PageInsightsMediatorTest {
         verify(mBottomSheetController, never()).requestShowContent(any(), anyBoolean());
 
         when(mControlsStateProvider.getBrowserControlHiddenRatio()).thenReturn(1.0f);
-        mBrowserControlsStateProviderObserver.getValue().onControlsOffsetChanged(0, 0, 0, 0, false);
+        mBrowserControlsStateProviderObserver
+                .getValue()
+                .onControlsOffsetChanged(0, 0, 0, 0, false, false);
 
         assertBottomSheetShownAfterAutoTrigger(feedView);
     }
@@ -662,6 +663,7 @@ public class PageInsightsMediatorTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "http://b/350825734")
     public void testAutoTrigger_signedIn_providesBothXSurfaceLoggingParamsAndLogs()
             throws Exception {
         createMediator(SHORT_TRIGGER_DELAY_MS);

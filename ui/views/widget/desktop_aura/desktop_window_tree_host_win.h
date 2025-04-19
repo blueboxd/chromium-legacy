@@ -11,6 +11,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host.h"
 #include "ui/views/win/hwnd_message_handler_delegate.h"
@@ -151,7 +152,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
                       const gfx::Size& excluded_margin) override;
   void SetWindowIcons(const gfx::ImageSkia& window_icon,
                       const gfx::ImageSkia& app_icon) override;
-  void InitModalType(ui::ModalType modal_type) override;
+  void InitModalType(ui::mojom::ModalType modal_type) override;
   void FlashFrame(bool flash_frame) override;
   bool IsAnimatingClosed() const override;
   void SizeConstraintsChanged() override;
@@ -160,6 +161,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   bool ShouldCreateVisibilityController() const override;
   DesktopNativeCursorManager* GetSingletonDesktopNativeCursorManager() override;
   void SetBoundsInDIP(const gfx::Rect& bounds) override;
+  void SetAllowScreenshots(bool allow) override;
+  bool AreScreenshotsAllowed() override;
 
   // Overridden from aura::WindowTreeHost:
   ui::EventSource* GetEventSource() override;
@@ -275,6 +278,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   // Called whenever the HWND resizes or moves, to see if the nearest HMONITOR
   // has changed, and, if so, inform the aura::WindowTreeHost.
   void CheckForMonitorChange();
+
+  // Returns `bounds`, clamped to the minimum/maximum widget size constraints.
+  gfx::Rect AdjustedContentBounds(const gfx::Rect& bounds);
 
   // Accessor for DesktopNativeWidgetAura::content_window().
   aura::Window* content_window();

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/apps/app_service/metrics/app_service_metrics.h"
 
+#include "ash/webui/mall/app_id.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/time/time.h"
@@ -15,13 +16,10 @@
 #include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "extensions/common/constants.h"
 
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && BUILDFLAG(IS_CHROMEOS)
-#include "chrome/browser/resources/preinstalled_web_apps/internal/container.h"
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING) && BUILDFLAG(IS_CHROMEOS)
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
+#include "ash/user_education/user_education_util.h"
 #include "ash/user_education/welcome_tour/welcome_tour_metrics.h"
 #include "ash/webui/projector_app/public/cpp/projector_app_constants.h"
 #include "chrome/browser/ash/app_list/arc/arc_app_utils.h"
@@ -173,6 +171,10 @@ void RecordDefaultAppLaunch(apps::DefaultAppName default_app_name,
       base::UmaHistogramEnumeration("Apps.DefaultAppLaunch.FromFocusMode",
                                     default_app_name);
       break;
+    case apps::LaunchSource::kFromSparky:
+      base::UmaHistogramEnumeration("Apps.DefaultAppLaunch.FromSparky",
+                                    default_app_name);
+      break;
     case apps::LaunchSource::kFromCommandLine:
     case apps::LaunchSource::kFromBackgroundMode:
     case apps::LaunchSource::kFromAppHomePage:
@@ -194,18 +196,20 @@ void RecordWelcomeTourInteraction(apps::DefaultAppName default_app_name,
     return;
   }
 
+  PrefService* prefs = ash::user_education_util::GetLastActiveUserPrefService();
+
   switch (default_app_name) {
     case apps::DefaultAppName::kFiles:
       ash::welcome_tour_metrics::RecordInteraction(
-          ash::welcome_tour_metrics::Interaction::kFilesApp);
+          prefs, ash::welcome_tour_metrics::Interaction::kFilesApp);
       break;
     case apps::DefaultAppName::kHelpApp:
       ash::welcome_tour_metrics::RecordInteraction(
-          ash::welcome_tour_metrics::Interaction::kExploreApp);
+          prefs, ash::welcome_tour_metrics::Interaction::kExploreApp);
       break;
     case apps::DefaultAppName::kSettings:
       ash::welcome_tour_metrics::RecordInteraction(
-          ash::welcome_tour_metrics::Interaction::kSettingsApp);
+          prefs, ash::welcome_tour_metrics::Interaction::kSettingsApp);
       break;
     default:
       break;
@@ -362,6 +366,8 @@ const std::optional<apps::DefaultAppName> SystemWebAppIdToName(
     return apps::DefaultAppName::kFirmwareUpdateApp;
   } else if (app_id == web_app::kHelpAppId) {
     return apps::DefaultAppName::kHelpApp;
+  } else if (app_id == ash::kMallSystemAppId) {
+    return apps::DefaultAppName::kMall;
   } else if (app_id == web_app::kMediaAppId) {
     return apps::DefaultAppName::kMediaApp;
     // `MockSystemApp` is for tests only.

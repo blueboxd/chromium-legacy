@@ -48,7 +48,7 @@ namespace {
 
 inline const DisplayItemClient& AsDisplayItemClient(const InlineCursor& cursor,
                                                     bool for_selection) {
-  if (UNLIKELY(for_selection)) {
+  if (for_selection) [[unlikely]] {
     if (const auto* selection_client =
             cursor.Current().GetSelectionDisplayItemClient())
       return *selection_client;
@@ -140,31 +140,13 @@ bool ShouldPaintEmphasisMark(const ComputedStyle& style,
   return ruby_logical_side != style.GetTextEmphasisLineLogicalSide();
 }
 
-enum class DisclosureOrientation { kLeft, kRight, kUp, kDown };
-
-DisclosureOrientation GetDisclosureOrientation(const ComputedStyle& style,
-                                               bool is_open) {
-  // TODO(layout-dev): Sideways-lr and sideways-rl are not yet supported.
-  const auto mode = style.GetWritingMode();
-  DCHECK_NE(mode, WritingMode::kSidewaysRl);
-  DCHECK_NE(mode, WritingMode::kSidewaysLr);
-
-  if (is_open) {
-    if (blink::IsHorizontalWritingMode(mode)) {
-      return DisclosureOrientation::kDown;
-    }
-    return IsFlippedBlocksWritingMode(mode) ? DisclosureOrientation::kLeft
-                                            : DisclosureOrientation::kRight;
-  }
-  if (blink::IsHorizontalWritingMode(mode)) {
-    return style.IsLeftToRightDirection() ? DisclosureOrientation::kRight
-                                          : DisclosureOrientation::kLeft;
-  }
-  return style.IsLeftToRightDirection() ? DisclosureOrientation::kDown
-                                        : DisclosureOrientation::kUp;
+PhysicalDirection GetDisclosureOrientation(const ComputedStyle& style,
+                                           bool is_open) {
+  const auto direction_mode = style.GetWritingDirection();
+  return is_open ? direction_mode.BlockEnd() : direction_mode.InlineEnd();
 }
 
-Path CreatePath(const gfx::PointF* path) {
+Path CreatePath(base::span<const gfx::PointF, 4> path) {
   Path result;
   result.MoveTo(gfx::PointF(path[0].x(), path[0].y()));
   for (int i = 1; i < 4; ++i) {
@@ -184,13 +166,13 @@ Path GetCanonicalDisclosurePath(const ComputedStyle& style, bool is_open) {
       {0.0f, 0.07f}, {0.5f, 0.93f}, {1.0f, 0.07f}, {0.0f, 0.07f}};
 
   switch (GetDisclosureOrientation(style, is_open)) {
-    case DisclosureOrientation::kLeft:
+    case PhysicalDirection::kLeft:
       return CreatePath(kLeftPoints);
-    case DisclosureOrientation::kRight:
+    case PhysicalDirection::kRight:
       return CreatePath(kRightPoints);
-    case DisclosureOrientation::kUp:
+    case PhysicalDirection::kUp:
       return CreatePath(kUpPoints);
-    case DisclosureOrientation::kDown:
+    case PhysicalDirection::kDown:
       return CreatePath(kDownPoints);
   }
 
@@ -279,8 +261,9 @@ void TextFragmentPainter::Paint(const PaintInfo& paint_info,
   const PhysicalRect physical_box =
       PhysicalBoxRect(cursor_, paint_offset, parent_offset_, text_combine);
 #if DCHECK_IS_ON()
-  if (UNLIKELY(text_combine))
+  if (text_combine) [[unlikely]] {
     LayoutTextCombine::AssertStyleIsValid(style);
+  }
 #endif
 
   ObjectPainter object_painter(*layout_object);
@@ -306,9 +289,9 @@ void TextFragmentPainter::Paint(const PaintInfo& paint_info,
   HighlightPainter::SelectionPaintState* selection = nullptr;
   std::optional<HighlightPainter::SelectionPaintState>
       selection_for_bounds_recording;
-  if (UNLIKELY(!is_printing && !is_rendering_resource &&
-               paint_info.phase != PaintPhase::kTextClip &&
-               layout_object->IsSelected())) {
+  if (!is_printing && !is_rendering_resource &&
+      paint_info.phase != PaintPhase::kTextClip && layout_object->IsSelected())
+      [[unlikely]] {
     const InlineCursor& root_inline_cursor =
         InlineCursorForBlockFlow(cursor_, &inline_cursor_for_block_flow_);
 
@@ -335,7 +318,7 @@ void TextFragmentPainter::Paint(const PaintInfo& paint_info,
   const auto* const svg_inline_text =
       DynamicTo<LayoutSVGInlineText>(layout_object);
   float scaling_factor = 1.0f;
-  if (UNLIKELY(svg_inline_text)) {
+  if (svg_inline_text) [[unlikely]] {
     DCHECK(text_item.IsSvgText());
     scaling_factor = svg_inline_text->ScalingFactor();
     DCHECK_NE(scaling_factor, 0.0f);
@@ -352,8 +335,9 @@ void TextFragmentPainter::Paint(const PaintInfo& paint_info,
   // whether the display item that contains the actual selection painting is
   // reused.
   std::optional<SelectionBoundsRecorder> selection_recorder;
-  if (UNLIKELY(selection_for_bounds_recording &&
-               paint_info.phase == PaintPhase::kForeground && !is_printing)) {
+  if (selection_for_bounds_recording &&
+      paint_info.phase == PaintPhase::kForeground && !is_printing)
+      [[unlikely]] {
     if (SelectionBoundsRecorder::ShouldRecordSelection(
             cursor_.Current().GetLayoutObject()->GetFrame()->Selection(),
             selection_for_bounds_recording->State())) {
@@ -375,7 +359,7 @@ void TextFragmentPainter::Paint(const PaintInfo& paint_info,
   // Text clips are initiated only in BoxPainterBase::PaintFillLayer, which is
   // already within a DrawingRecorder.
   if (paint_info.phase != PaintPhase::kTextClip) {
-    if (LIKELY(!paint_info.context.InDrawingRecorder())) {
+    if (!paint_info.context.InDrawingRecorder()) [[likely]] {
       if (DrawingRecorder::UseCachedDrawingIfPossible(
               paint_info.context, display_item_client, paint_info.phase)) {
         return;
@@ -385,7 +369,7 @@ void TextFragmentPainter::Paint(const PaintInfo& paint_info,
     }
   }
 
-  if (UNLIKELY(text_item.IsSymbolMarker())) {
+  if (text_item.IsSymbolMarker()) [[unlikely]] {
     PaintSymbol(layout_object, style, physical_box.size, paint_info,
                 physical_box.offset);
     return;
@@ -398,27 +382,31 @@ void TextFragmentPainter::Paint(const PaintInfo& paint_info,
   Node* node = layout_object->GetNode();
   TextPaintStyle text_style =
       TextPainter::TextPaintingStyle(document, style, paint_info);
-  if (UNLIKELY(selection)) {
+  if (selection) [[unlikely]] {
     selection->ComputeSelectionStyle(document, style, node, paint_info,
                                      text_style);
   }
 
   // Set our font.
-  const Font& font = UNLIKELY(text_combine && text_combine->CompressedFont())
-                         ? *text_combine->CompressedFont()
-                         : text_item.ScaledFont();
-  const SimpleFontData* font_data = font.PrimaryFont();
+  const Font* font;
+  if (text_combine && text_combine->CompressedFont()) [[unlikely]] {
+    font = text_combine->CompressedFont();
+  } else {
+    font = &text_item.ScaledFont();
+  }
+  const SimpleFontData* font_data = font->PrimaryFont();
   DCHECK(font_data);
 
   GraphicsContextStateSaver state_saver(context, /*save_and_restore=*/false);
   const int ascent = font_data ? font_data->GetFontMetrics().Ascent() : 0;
-  LineRelativeOffset text_origin{
-      physical_box.offset.left,
-      UNLIKELY(text_combine)
-          ? text_combine->AdjustTextTopForPaint(physical_box.offset.top)
-          : physical_box.offset.top + ascent};
+  LineRelativeOffset text_origin{physical_box.offset.left,
+                                 physical_box.offset.top + ascent};
+  if (text_combine) [[unlikely]] {
+    text_origin.line_over =
+        text_combine->AdjustTextTopForPaint(physical_box.offset.top);
+  }
 
-  TextPainter text_painter(context, paint_info.GetSvgContextPaints(), font,
+  TextPainter text_painter(context, paint_info.GetSvgContextPaints(), *font,
                            visual_rect, text_origin, is_horizontal);
   TextDecorationPainter decoration_painter(text_painter, inline_context_,
                                            paint_info, style, text_style,
@@ -480,7 +468,7 @@ void TextFragmentPainter::Paint(const PaintInfo& paint_info,
     }
   }
 
-  if (UNLIKELY(highlight_painter.Selection())) {
+  if (highlight_painter.Selection()) [[unlikely]] {
     PhysicalRect physical_selection =
         highlight_painter.Selection()->PhysicalSelectionRect();
     if (scaling_factor != 1.0f) {
@@ -549,7 +537,7 @@ void TextFragmentPainter::Paint(const PaintInfo& paint_info,
   }
 
   // Paint ::selection background.
-  if (UNLIKELY(highlight_painter.Selection() && paint_marker_backgrounds)) {
+  if (highlight_painter.Selection() && paint_marker_backgrounds) [[unlikely]] {
     if (highlight_case == HighlightPainter::kFastSelection) {
       highlight_painter.Selection()->PaintSelectionBackground(
           context, node, document, style, rotation);
@@ -563,7 +551,7 @@ void TextFragmentPainter::Paint(const PaintInfo& paint_info,
   }
 
   // Paint ::selection foreground only.
-  if (UNLIKELY(highlight_painter.Selection())) {
+  if (highlight_painter.Selection()) [[unlikely]] {
     switch (highlight_case) {
       case HighlightPainter::kFastSelection:
         highlight_painter.Selection()->PaintSelectedText(

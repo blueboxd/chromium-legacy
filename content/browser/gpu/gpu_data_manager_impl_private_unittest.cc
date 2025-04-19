@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/342213636): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include <stddef.h>
 
 #include "base/command_line.h"
@@ -542,13 +547,6 @@ TEST_F(GpuDataManagerImplPrivateTest, ChromecastStartsWithGpuDisabled) {
 #if BUILDFLAG(ENABLE_VULKAN)
 // TODO(crbug.com/40735511): enable tests when Vulkan is supported on LaCrOS.
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
-TEST_F(GpuDataManagerImplPrivateTest, GpuStartsWithUseVulkanFlag) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kUseVulkan, switches::kVulkanImplementationNameNative);
-  ScopedGpuDataManagerImplPrivate manager;
-  EXPECT_EQ(gpu::GpuMode::HARDWARE_VULKAN, manager->GetGpuMode());
-}
-
 TEST_F(GpuDataManagerImplPrivateTest, GpuStartsWithVulkanFeatureFlag) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kVulkan);

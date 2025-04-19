@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.Iban;
 import org.chromium.chrome.browser.touch_to_fill.common.BottomSheetFocusHelper;
+import org.chromium.components.autofill.AutofillSuggestion;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -68,9 +69,12 @@ public class TouchToFillPaymentMethodCoordinator implements TouchToFillPaymentMe
     }
 
     @Override
-    public void showSheet(List<CreditCard> cards, boolean shouldShowScanCreditCard) {
+    public void showSheet(
+            List<CreditCard> cards,
+            List<AutofillSuggestion> suggestions,
+            boolean shouldShowScanCreditCard) {
         assert mCardImageFunction != null : "Attempting to call showSheet before initialize.";
-        mMediator.showSheet(cards, shouldShowScanCreditCard, mCardImageFunction);
+        mMediator.showSheet(cards, suggestions, shouldShowScanCreditCard, mCardImageFunction);
     }
 
     @Override

@@ -8,7 +8,6 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "chrome/android/chrome_jni_headers/AutofillVcnEnrollBottomSheetBridge_jni.h"
 #include "components/autofill/android/payments/legal_message_line_android.h"
 #include "components/autofill/core/browser/metrics/payments/virtual_card_enrollment_metrics.h"
 #include "components/autofill/core/browser/payments/autofill_virtual_card_enrollment_infobar_delegate_mobile.h"
@@ -17,6 +16,9 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/android/java_bitmap.h"
+
+// Must come after all headers that specialize FromJniType() / ToJniType().
+#include "chrome/android/chrome_jni_headers/AutofillVcnEnrollBottomSheetBridge_jni.h"
 
 namespace autofill {
 
@@ -62,7 +64,9 @@ bool AutofillVCNEnrollBottomSheetBridge::RequestShowContent(
       LegalMessageLineAndroid::ConvertToJavaLinkedList(
           delegate_->GetIssuerLegalMessage()),
       delegate_->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK),
-      delegate_->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_CANCEL));
+      delegate_->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_CANCEL),
+      l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_VIRTUAL_CARD_ENROLL_LOADING_THROBBER_ACCESSIBLE_NAME));
 }
 
 void AutofillVCNEnrollBottomSheetBridge::Hide() {

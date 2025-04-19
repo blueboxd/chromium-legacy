@@ -15,6 +15,7 @@ include_rules = [
   "+components/grit",
   "+components/power_monitor",
   "+components/services/font",
+  "+components/services/font_data",
   "+components/services/filesystem",
   "+components/services/quarantine/test_support.h",
   "+components/services/quarantine/quarantine.h",
@@ -64,6 +65,7 @@ include_rules = [
   "+components/vector_icons",
   "+ui/linux",
   "+ui/strings/grit/ax_strings.h",
+  "+ui/strings/grit/auto_image_annotation_strings.h",
   "+ui/webui",
 
   # TODO(crbug.com/40129825): Consider removing "+services". Each service should
@@ -73,6 +75,7 @@ include_rules = [
   "-services/content",
   "+services/content/service.h",
   "+services/content/service_delegate.h",
+  "+services/device/public/cpp/compute_pressure",
   "-services/network",
   "+services/network/public/cpp",
   "+services/network/public/mojom",
@@ -96,6 +99,7 @@ include_rules = [
   "+third_party/khronos",   # For enum definitions only
   "+third_party/libaom/av1_buildflags.h",
   "+third_party/re2",
+  "+third_party/rust/cxx",
   "+third_party/zlib",
 
   # Allow non-browser Chrome OS code to be used.
@@ -116,7 +120,6 @@ include_rules = [
   "+third_party/blink/public/platform/modules/service_worker/web_service_worker_error.h",
   "+third_party/blink/public/platform/modules/sms/webotp_service.mojom.h",
   "+third_party/blink/public/public_buildflags.h",
-  "+third_party/blink/public/strings/grit/blink_accessibility_strings.h",
   "+third_party/blink/public/strings/grit/blink_strings.h",
   "+third_party/blink/public/web/web_ax_enums.h",
   "+third_party/blink/public/web/web_console_message.h",
@@ -140,7 +143,7 @@ specific_include_rules = {
     "+services/network/test",
   ],
   "browser_interface_binders\.cc": [
-    "+components/ml/webnn/features.mojom-features.h",
+    "+services/webnn/public/mojom/features.mojom-features.h",
   ],
   "browser_main_loop\.cc": [
     # TODO(crbug.com/40672800): Remove.
@@ -192,6 +195,9 @@ specific_include_rules = {
   ],
   "utility_sandbox_delegate_win\.cc": [
     "+content/utility/sandbox_delegate_data.mojom.h"
+  ],
+  "web_app_system_media_controls_manager.cc": [
+    "+components/remote_cocoa/browser"
   ]
 
 }

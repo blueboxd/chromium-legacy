@@ -30,6 +30,7 @@
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom-shared.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
+#include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
@@ -37,7 +38,6 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_isolated_world_ids.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "components/grit/components_resources.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/cpp/run_on_os_login_types.h"
@@ -57,10 +57,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "url/gurl.h"
-
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && BUILDFLAG(IS_CHROMEOS)
-#include "chrome/browser/resources/preinstalled_web_apps/internal/container.h"
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING) && BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
@@ -262,33 +258,12 @@ std::optional<DisplayMode> TryResolveOverridesDisplayMode(
   return std::nullopt;
 }
 
-bool ShouldResolveShortstandDisplayMode(bool ignore_shortstand) {
-#if BUILDFLAG(IS_CHROMEOS)
-  return !ignore_shortstand && chromeos::features::IsCrosShortstandEnabled();
-#else
-  return false;
-#endif
-}
-
-std::optional<DisplayMode> TryResolveShortstandUserDisplayMode(
-    bool is_shortcut_app) {
-  if (is_shortcut_app) {
-    return DisplayMode::kBrowser;
-  } else {
-    return std::nullopt;
-  }
-}
-
 DisplayMode ResolveNonIsolatedEffectiveDisplayMode(
     DisplayMode app_display_mode,
     const std::vector<DisplayMode>& display_mode_overrides,
-    mojom::UserDisplayMode user_display_mode,
-    bool is_shortcut_app,
-    bool ignore_shortstand) {
+    mojom::UserDisplayMode user_display_mode) {
   const std::optional<DisplayMode> resolved_display_mode =
-      ShouldResolveShortstandDisplayMode(ignore_shortstand)
-          ? TryResolveShortstandUserDisplayMode(is_shortcut_app)
-          : TryResolveUserDisplayMode(user_display_mode);
+      TryResolveUserDisplayMode(user_display_mode);
 
   if (resolved_display_mode.has_value()) {
     return *resolved_display_mode;
@@ -327,10 +302,6 @@ bool AreWebAppsEnabled(Profile* profile) {
     return false;
   }
   auto* user_manager = user_manager::UserManager::Get();
-  // Never enable for ARC Kiosk sessions.
-  if (user_manager && user_manager->IsLoggedInAsArcKioskApp()) {
-    return false;
-  }
   // Don't enable if SWAs in Kiosk session are disabled for the next session
   // types.
   if (!base::FeatureList::IsEnabled(ash::features::kKioskEnableSystemWebApps)) {
@@ -602,13 +573,10 @@ DisplayMode ResolveEffectiveDisplayMode(
     DisplayMode app_display_mode,
     const std::vector<DisplayMode>& app_display_mode_overrides,
     mojom::UserDisplayMode user_display_mode,
-    bool is_isolated,
-    bool is_shortcut_app,
-    bool ignore_shortstand) {
+    bool is_isolated) {
   const DisplayMode resolved_display_mode =
       ResolveNonIsolatedEffectiveDisplayMode(
-          app_display_mode, app_display_mode_overrides, user_display_mode,
-          is_shortcut_app, ignore_shortstand);
+          app_display_mode, app_display_mode_overrides, user_display_mode);
   if (is_isolated && resolved_display_mode == DisplayMode::kBrowser) {
     return DisplayMode::kStandalone;
   }

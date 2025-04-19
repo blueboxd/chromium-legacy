@@ -8,11 +8,12 @@ import("//testing/test.gni")
 
 mojom("mojom") {
   sources = [
+    "debug_types.mojom",
     "os_registration_error.mojom",
     "registration_eligibility.mojom",
     "source_registration_error.mojom",
     "source_registration_time_config.mojom",
-    "summary_window_operator.mojom",
+    "summary_operator.mojom",
     "trigger_data_matching.mojom",
     "trigger_registration_error.mojom",
   ]
@@ -40,8 +41,12 @@ component("features") {
 
 component("attribution_reporting") {
   sources = [
+    "aggregatable_debug_reporting_config.cc",
+    "aggregatable_debug_reporting_config.h",
     "aggregatable_dedup_key.cc",
     "aggregatable_dedup_key.h",
+    "aggregatable_filtering_id_max_bytes.cc",
+    "aggregatable_filtering_id_max_bytes.h",
     "aggregatable_trigger_config.cc",
     "aggregatable_trigger_config.h",
     "aggregatable_trigger_data.cc",
@@ -52,7 +57,13 @@ component("attribution_reporting") {
     "aggregatable_values.h",
     "aggregation_keys.cc",
     "aggregation_keys.h",
+    "attribution_scopes_data.cc",
+    "attribution_scopes_data.h",
+    "attribution_scopes_set.cc",
+    "attribution_scopes_set.h",
     "constants.h",
+    "debug_types.cc",
+    "debug_types.h",
     "destination_set.cc",
     "destination_set.h",
     "eligibility.cc",
@@ -135,12 +146,16 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "aggregatable_debug_reporting_config_unittest.cc",
     "aggregatable_dedup_key_unittest.cc",
+    "aggregatable_filtering_id_max_bytes_unittest.cc",
     "aggregatable_trigger_config_unittest.cc",
     "aggregatable_trigger_data_unittest.cc",
     "aggregatable_utils_unittest.cc",
     "aggregatable_values_unittest.cc",
     "aggregation_keys_unittest.cc",
+    "attribution_scopes_data_unittest.cc",
+    "attribution_scopes_set_unittest.cc",
     "destination_set_unittest.cc",
     "eligibility_unittest.cc",
     "event_level_epsilon_unittest.cc",
@@ -265,6 +280,11 @@ mojom("registration_mojom") {
     {
       types = [
         {
+          mojom = "attribution_reporting.mojom.AggregatableValuesValue"
+          cpp = "::attribution_reporting::AggregatableValuesValue"
+          forward_declaration = "namespace attribution_reporting { class AggregatableValuesValue; }"
+        },
+        {
           mojom = "attribution_reporting.mojom.SuitableOrigin"
           cpp = "::attribution_reporting::SuitableOrigin"
           forward_declaration =
@@ -375,6 +395,35 @@ mojom("registration_mojom") {
           forward_declaration =
               "namespace attribution_reporting { class TriggerSpecs; }"
         },
+        {
+          mojom = "attribution_reporting.mojom.SourceAggregatableDebugReportingConfig"
+          cpp =
+              "::attribution_reporting::SourceAggregatableDebugReportingConfig"
+          forward_declaration = "namespace attribution_reporting { class SourceAggregatableDebugReportingConfig; }"
+        },
+        {
+          mojom = "attribution_reporting.mojom.AggregatableDebugReportingConfig"
+          cpp = "::attribution_reporting::AggregatableDebugReportingConfig"
+          forward_declaration = "namespace attribution_reporting { struct AggregatableDebugReportingConfig; }"
+        },
+        {
+          mojom = "attribution_reporting.mojom.AggregatableDebugReportingContribution"
+          cpp =
+              "::attribution_reporting::AggregatableDebugReportingContribution"
+          forward_declaration = "namespace attribution_reporting { class AggregatableDebugReportingContribution; }"
+        },
+        {
+          mojom = "attribution_reporting.mojom.AttributionScopesSet"
+          cpp = "::attribution_reporting::AttributionScopesSet"
+          forward_declaration =
+              "namespace attribution_reporting { class AttributionScopesSet; }"
+        },
+        {
+          mojom = "attribution_reporting.mojom.AttributionScopesData"
+          cpp = "::attribution_reporting::AttributionScopesData"
+          forward_declaration =
+              "namespace attribution_reporting { class AttributionScopesData; }"
+        },
       ]
       traits_headers = [ "registration_mojom_traits.h" ]
       traits_public_deps = [ ":registration_mojom_traits" ]
@@ -476,6 +525,21 @@ source_set("fuzzer_support") {
     ":attribution_reporting",
     "//third_party/fuzztest",
   ]
+}
+
+mojom("data_host_mojom") {
+  sources = [ "data_host.mojom" ]
+
+  generate_java = true
+
+  deps = [
+    ":registration_header_error_mojom",
+    ":registration_mojom",
+  ]
+
+  export_class_attribute_blink = "PLATFORM_EXPORT"
+  export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
+  export_header_blink = "third_party/blink/renderer/platform/platform_export.h"
 }
 
 test("privacy_math_fuzztest") {

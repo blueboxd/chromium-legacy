@@ -18,6 +18,7 @@
 #include "components/autofill/core/common/autocomplete_parsing_util.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/form_data_test_api.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "url/gurl.h"
@@ -115,21 +116,21 @@ RemoteFrameToken MakeRemoteFrameToken(RandomizeFrame randomize) {
 
 FormData CreateFormDataForFrame(FormData form, LocalFrameToken frame_token) {
   form.set_host_frame(frame_token);
-  for (FormFieldData& field : form.fields) {
+  for (FormFieldData& field : test_api(form).fields()) {
     field.set_host_frame(frame_token);
   }
   return form;
 }
 
 FormData WithoutValues(FormData form) {
-  for (FormFieldData& field : form.fields) {
+  for (FormFieldData& field : test_api(form).fields()) {
     field.set_value({});
   }
   return form;
 }
 
 FormData AsAutofilled(FormData form, bool is_autofilled) {
-  for (FormFieldData& field : form.fields) {
+  for (FormFieldData& field : test_api(form).fields()) {
     field.set_is_autofilled(is_autofilled);
   }
   return form;
@@ -139,7 +140,7 @@ FormData WithoutUnserializedData(FormData form) {
   form.set_url({});
   form.set_main_frame_origin({});
   form.set_host_frame({});
-  for (FormFieldData& field : form.fields) {
+  for (FormFieldData& field : test_api(form).fields()) {
     field = WithoutUnserializedData(std::move(field));
   }
   return form;
@@ -237,7 +238,7 @@ FormFieldData CreateTestSelectOrSelectListField(
   for (size_t i = 0; i < values.size(); ++i) {
     options.push_back({
         .value = base::UTF8ToUTF16(values[i]),
-        .content = base::UTF8ToUTF16(contents[i]),
+        .text = base::UTF8ToUTF16(contents[i]),
     });
   }
   field.set_options(std::move(options));
@@ -256,7 +257,7 @@ FormFieldData CreateTestDatalistField(std::string_view label,
   datalist_options.reserve(std::min(values.size(), labels.size()));
   for (size_t i = 0; i < std::min(values.size(), labels.size()); ++i) {
     datalist_options.push_back({.value = base::UTF8ToUTF16(values[i]),
-                                .content = base::UTF8ToUTF16(labels[i])});
+                                .text = base::UTF8ToUTF16(labels[i])});
   }
   field.set_datalist_options(std::move(datalist_options));
   return field;
@@ -264,14 +265,14 @@ FormFieldData CreateTestDatalistField(std::string_view label,
 
 FormData CreateTestPersonalInformationFormData() {
   FormData form = ConstructFormWithNameRenderIdAndProtocol(/*is_https=*/true);
-  form.fields = {
-      CreateTestFormField("First Name", "firstname", "",
-                          FormControlType::kInputText),
-      CreateTestFormField("Middle Name", "middlename", "",
-                          FormControlType::kInputText),
-      CreateTestFormField("Last Name", "lastname", "",
-                          FormControlType::kInputText),
-      CreateTestFormField("Email", "email", "", FormControlType::kInputEmail)};
+  form.set_fields({CreateTestFormField("First Name", "firstname", "",
+                                       FormControlType::kInputText),
+                   CreateTestFormField("Middle Name", "middlename", "",
+                                       FormControlType::kInputText),
+                   CreateTestFormField("Last Name", "lastname", "",
+                                       FormControlType::kInputText),
+                   CreateTestFormField("Email", "email", "",
+                                       FormControlType::kInputEmail)});
   return form;
 }
 
@@ -281,57 +282,59 @@ FormData CreateTestCreditCardFormData(bool is_https,
   FormData form = ConstructFormWithNameRenderIdAndProtocol(is_https);
 
   if (split_names) {
-    form.fields.push_back(
+    test_api(form).Append(
         CreateTestFormField("First Name on Card", "firstnameoncard", "",
                             FormControlType::kInputText, "cc-given-name"));
-    form.fields.push_back(
+    test_api(form).Append(
         CreateTestFormField("Last Name on Card", "lastnameoncard", "",
                             FormControlType::kInputText, "cc-family=name"));
   } else {
-    form.fields.push_back(CreateTestFormField("Name on Card", "nameoncard", "",
+    test_api(form).Append(CreateTestFormField("Name on Card", "nameoncard", "",
                                               FormControlType::kInputText));
   }
-  form.fields.push_back(CreateTestFormField("Card Number", "cardnumber", "",
+  test_api(form).Append(CreateTestFormField("Card Number", "cardnumber", "",
                                             FormControlType::kInputText));
   if (use_month_type) {
-    form.fields.push_back(CreateTestFormField("Expiration Date", "ccmonth", "",
+    test_api(form).Append(CreateTestFormField("Expiration Date", "ccmonth", "",
                                               FormControlType::kInputMonth));
   } else {
-    form.fields.push_back(CreateTestFormField("Expiration Date", "ccmonth", "",
+    test_api(form).Append(CreateTestFormField("Expiration Date", "ccmonth", "",
                                               FormControlType::kInputText));
-    form.fields.push_back(
+    test_api(form).Append(
         CreateTestFormField("", "ccyear", "", FormControlType::kInputText));
   }
-  form.fields.push_back(
+  test_api(form).Append(
       CreateTestFormField("CVC", "cvc", "", FormControlType::kInputText));
   return form;
 }
 
 FormData CreateTestIbanFormData(std::string_view value, bool is_https) {
   FormData form = ConstructFormWithNameRenderIdAndProtocol(is_https);
-  form.fields = {CreateTestFormField("IBAN Value:", "iban_value", value,
-                                     FormControlType::kInputText)};
+  form.set_fields({CreateTestFormField("IBAN Value:", "iban_value", value,
+                                       FormControlType::kInputText)});
   return form;
 }
 
 FormData CreateTestPasswordFormData() {
-  FormData form;
-  form.set_url(GURL("https://www.foo.com"));
-  form.fields.push_back(
+  std::vector<FormFieldData> fields;
+  fields.push_back(
       CreateTestFormField(/*label=*/"Username:", /*name=*/"username",
                           /*value=*/"", FormControlType::kInputText));
-  form.fields.push_back(
+  fields.push_back(
       CreateTestFormField(/*label=*/"Password:", /*name=*/"password",
                           /*value=*/"", FormControlType::kInputPassword));
+  FormData form;
+  form.set_url(GURL("https://www.foo.com"));
+  form.set_fields(std::move(fields));
   return form;
 }
 
 FormData CreateTestUnclassifiedFormData() {
   FormData form;
   form.set_url(GURL("https://www.foo.com"));
-  form.fields = {
-      CreateTestFormField("unclassifiable label", "unclassifiable name",
-                          "unclassifiable value", FormControlType::kInputText)};
+  form.set_fields({CreateTestFormField(
+      "unclassifiable label", "unclassifiable name", "unclassifiable value",
+      FormControlType::kInputText)});
   return form;
 }
 

@@ -95,10 +95,6 @@ BASE_FEATURE(kOptimizedRealtimeThreadingMac,
 #endif
 );
 
-BASE_FEATURE(kUserInteractiveCompositingMac,
-             "UserInteractiveCompositingMac",
-             FEATURE_ENABLED_BY_DEFAULT);
-
 namespace {
 
 bool IsOptimizedRealtimeThreadingMacEnabled() {
@@ -124,8 +120,6 @@ const FeatureParam<double> kOptimizedRealtimeThreadingMacBusy{
 // (kOptimizedRealtimeThreadingMacBusy, 1].
 const FeatureParam<double> kOptimizedRealtimeThreadingMacBusyLimit{
     &kOptimizedRealtimeThreadingMac, "busy_limit", 1.0};
-std::atomic<bool> g_user_interactive_compositing(
-    kUserInteractiveCompositingMac.default_state == FEATURE_ENABLED_BY_DEFAULT);
 
 namespace {
 
@@ -157,8 +151,6 @@ void PlatformThreadApple::InitializeFeatures() {
   g_time_constraints.store(TimeConstraints::ReadFromFeatureParams());
   g_use_optimized_realtime_threading.store(
       IsOptimizedRealtimeThreadingMacEnabled());
-  g_user_interactive_compositing.store(
-      FeatureList::IsEnabled(kUserInteractiveCompositingMac));
 }
 
 // static

@@ -1,32 +1,33 @@
-caption: Control the enablement of ChromeOS VC Background "Create with AI" feature
+caption: Settings for Generative AI VC Background feature 
 desc: |-
-  This policy enables or disables VC Background "Create with AI" for ChromeOS.
-  0 = Disable the feature for users.
+  This policy enables or disables Generative AI VC Background feature for <ph name="PRODUCT_OS_NAME">$1<ex>Google ChromeOS</ex></ph>.
+  1 is the default value.
 
-  1 = Enable the feature for users. Note that no data is sent to Google to train or improve AI models.
+  1 = Allow Generative AI VC Background without improving AI models. 1 is the default value for Enterprise users managed by <ph name="GOOGLE_ADMIN_CONSOLE_PRODUCT_NAME">Google Admin console</ph> and Education accounts managed by <ph name="GOOGLE_WORKSPACE_PRODUCT_NAME">Google Workspace</ph>.
 
-  If this policy is set to Unset, VC Background "Create with AI" feature is disabled for enterprise users.
+  2 = Do not allow Generative AI VC Background.
+
+  For more information on data handling for generative AI features, please see https://support.google.com/chrome/a?p=generative_ai_settings.
 default: 1
-default_for_enterprise_users: 0
-example_value: 0
+example_value: 2
 features:
   dynamic_refresh: true
   per_profile: true
 owners:
 - file://ash/webui/personalization_app/OWNERS
 items:
-- caption: Disable the feature
-  name: Disabled
-  value: 0
-- caption: Enable the feature
-  name: Enabled
+- caption: Allow Generative AI VC Background without improving AI models
+  name: AllowedWithoutLogging
   value: 1
+- caption: Do not allow Generative AI VC Background
+  name: Disabled
+  value: 2
 schema:
   enum:
-  - 0
   - 1
+  - 2
   type: integer
-supported_on:
-- chrome_os:127-
+future_on:
+- chrome_os
 tags: []
 type: int-enum

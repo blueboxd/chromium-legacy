@@ -22,6 +22,8 @@ const char* kTestURL = "chrome://test";
 
 }  // namespace
 
+class Profile;
+
 class TestWebUIController : public TopChromeWebUIController {
   WEB_UI_CONTROLLER_TYPE_DECL();
 };
@@ -31,13 +33,13 @@ template <>
 class WebUIContentsWrapperT<TestWebUIController> : public WebUIContentsWrapper {
  public:
   WebUIContentsWrapperT(const GURL& webui_url,
-                        content::BrowserContext* browser_context,
+                        Profile* profile,
                         int task_manager_string_id,
                         bool webui_resizes_host = true,
                         bool esc_closes_ui = true,
                         bool supports_draggable_regions = false)
       : WebUIContentsWrapper(webui_url,
-                             browser_context,
+                             profile,
                              task_manager_string_id,
                              webui_resizes_host,
                              esc_closes_ui,
@@ -97,7 +99,8 @@ TEST_F(WebUIBubbleManagerPersistentRendererTest,
   ASSERT_NE(nullptr, service);
 
   std::unique_ptr<views::Widget> anchor_widget =
-      CreateTestWidget(views::Widget::InitParams::TYPE_WINDOW);
+      CreateTestWidget(views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
+                       views::Widget::InitParams::TYPE_WINDOW);
   auto bubble_manager = WebUIBubbleManager::Create<TestWebUIController>(
       anchor_widget->GetContentsView(), test_profile, GURL(kTestURL), 1);
   bubble_manager->DisableCloseBubbleHelperForTesting();
@@ -137,7 +140,8 @@ TEST_F(WebUIBubbleManagerPersistentRendererTest,
       /*create_if_needed=*/true);
 
   std::unique_ptr<views::Widget> anchor_widget =
-      CreateTestWidget(views::Widget::InitParams::TYPE_WINDOW);
+      CreateTestWidget(views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
+                       views::Widget::InitParams::TYPE_WINDOW);
   auto bubble_manager = WebUIBubbleManager::Create<TestWebUIController>(
       anchor_widget->GetContentsView(), otr_profile, GURL(kTestURL), 1);
   bubble_manager->DisableCloseBubbleHelperForTesting();
@@ -169,7 +173,8 @@ TEST_F(WebUIBubbleManagerTest, CreateWebUIBubbleDialogWithAnchorProvided) {
   auto* test_profile = profile_manager()->CreateTestingProfile(kProfileName);
 
   std::unique_ptr<views::Widget> anchor_widget =
-      CreateTestWidget(views::Widget::InitParams::TYPE_WINDOW);
+      CreateTestWidget(views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
+                       views::Widget::InitParams::TYPE_WINDOW);
   auto bubble_manager = WebUIBubbleManager::Create<TestWebUIController>(
       anchor_widget->GetContentsView(), test_profile, GURL(kTestURL), 1);
   bubble_manager->DisableCloseBubbleHelperForTesting();
@@ -196,7 +201,8 @@ TEST_F(WebUIBubbleManagerPersistentRendererTest,
       WebUIContentsWrapperServiceFactory::GetForProfile(profile2, true);
 
   std::unique_ptr<views::Widget> anchor_widget =
-      CreateTestWidget(views::Widget::InitParams::TYPE_WINDOW);
+      CreateTestWidget(views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
+                       views::Widget::InitParams::TYPE_WINDOW);
   auto create_manager = [&](Profile* profile) {
     std::unique_ptr<WebUIBubbleManager> manager =
         WebUIBubbleManager::Create<TestWebUIController>(

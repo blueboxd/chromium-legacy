@@ -72,8 +72,14 @@ TabbedPaneTab::TabbedPaneTab(TabbedPane* tabbed_pane,
   // Use leaf so that name is spoken by screen reader without exposing the
   // children.
   GetViewAccessibility().SetIsLeaf(true);
+  GetViewAccessibility().SetRole(ax::mojom::Role::kTab);
+  UpdateAccessibleName();
 
   OnStateChanged();
+
+  title_text_changed_callback_ =
+      title_->AddTextChangedCallback(base::BindRepeating(
+          &TabbedPaneTab::UpdateAccessibleName, base::Unretained(this)));
 }
 
 TabbedPaneTab::~TabbedPaneTab() = default;
@@ -116,12 +122,12 @@ void TabbedPaneTab::OnMouseExited(const ui::MouseEvent& event) {
 
 void TabbedPaneTab::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
-    case ui::ET_GESTURE_TAP_DOWN:
-    case ui::ET_GESTURE_TAP:
+    case ui::EventType::kGestureTapDown:
+    case ui::EventType::kGestureTap:
       // SelectTab also sets the right tab color.
       tabbed_pane_->SelectTab(this);
       break;
-    case ui::ET_GESTURE_TAP_CANCEL:
+    case ui::EventType::kGestureTapCancel:
       SetState(selected() ? State::kActive : State::kInactive);
       break;
     default:
@@ -138,21 +144,6 @@ gfx::Size TabbedPaneTab::CalculatePreferredSize(
     width = std::max(width, 192);
   }
   return gfx::Size(width, 32);
-}
-
-int TabbedPaneTab::GetHeightForWidth(int w) const {
-  // Because we set the LayoutManager, it will use
-  // LayoutManager::GetPreferredHeightForWidth by default, but this is not
-  // consistent with the fixed height desired by CalculatePreferredSize, so we
-  // override it and call it manually.
-  return CalculatePreferredSize(SizeBounds(w, {})).height();
-}
-
-void TabbedPaneTab::GetAccessibleNodeData(ui::AXNodeData* data) {
-  data->role = ax::mojom::Role::kTab;
-  data->SetName(title_->GetText());
-  data->SetNameFrom(ax::mojom::NameFrom::kContents);
-  data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, selected());
 }
 
 bool TabbedPaneTab::HandleAccessibleAction(
@@ -235,8 +226,13 @@ void TabbedPaneTab::OnStateChanged() {
     // Notify assistive tools to update this tab's selected status. The way
     // ChromeOS accessibility is implemented right now, firing almost any event
     // will work, we just need to trigger its state to be refreshed.
-    if (state_ == State::kInactive)
+    if (state_ == State::kInactive) {
+      // TODO(crbug.com/325137417): This view doesn't set the AXCheckedState, it
+      // only sets the kSelected attribute. Investigate why this is and whether
+      // we should fire another type of event automatically from the
+      // accessibility cache.
       NotifyAccessibilityEvent(ax::mojom::Event::kCheckedStateChanged, true);
+    }
 
     // Style the tab text according to the spec for highlight style tabs. We no
     // longer have windows specific bolding of text in this case.
@@ -250,6 +246,8 @@ void TabbedPaneTab::OnStateChanged() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   title_->SetFontList(rb.GetFontListForDetails(ui::ResourceBundle::FontDetails(
       std::string(), font_size_delta, font_weight)));
+
+  UpdateAccessibleSelection();
 }
 
 void TabbedPaneTab::OnPaint(gfx::Canvas* canvas) {
@@ -296,6 +294,20 @@ void TabbedPaneTab::UpdateTitleColor() {
       state_ == State::kActive ? ui::kColorTabForegroundSelected
                                : ui::kColorTabForeground);
   title_->SetEnabledColor(font_color);
+}
+
+void TabbedPaneTab::UpdateAccessibleName() {
+  if (title_->GetText().empty()) {
+    GetViewAccessibility().SetName(
+        std::string(), ax::mojom::NameFrom::kAttributeExplicitlyEmpty);
+  } else {
+    GetViewAccessibility().SetName(title_->GetText(),
+                                   ax::mojom::NameFrom::kContents);
+  }
+}
+
+void TabbedPaneTab::UpdateAccessibleSelection() {
+  GetViewAccessibility().SetIsSelected(selected());
 }
 
 BEGIN_METADATA(TabbedPaneTab)
@@ -531,6 +543,7 @@ TabbedPane::TabbedPane(TabbedPane::Orientation orientation,
   AddAccelerator(
       ui::Accelerator(ui::VKEY_TAB, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN));
   AddAccelerator(ui::Accelerator(ui::VKEY_TAB, ui::EF_CONTROL_DOWN));
+  GetViewAccessibility().SetRole(ax::mojom::Role::kTabList);
 }
 
 TabbedPane::~TabbedPane() = default;
@@ -662,7 +675,6 @@ bool TabbedPane::AcceleratorPressed(const ui::Accelerator& accelerator) {
 }
 
 void TabbedPane::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ax::mojom::Role::kTabList;
   const TabbedPaneTab* const selected_tab = GetSelectedTab();
   if (selected_tab) {
     node_data->SetName(selected_tab->GetTitleText());

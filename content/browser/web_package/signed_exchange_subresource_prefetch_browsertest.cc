@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/342213636): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include <string>
 #include <vector>
 
@@ -35,7 +40,6 @@
 #include "content/public/browser/network_service_util.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
@@ -213,7 +217,6 @@ class SignedExchangePrefetchBrowserTest : public PrefetchBrowserTestBase {
   ~SignedExchangePrefetchBrowserTest() override = default;
 
   void SetUp() override {
-    feature_list_.InitAndEnableFeature(features::kSignedHTTPExchange);
     // Need to run the network service in process for testing cache expirity
     // (PrefetchMainResourceSXG_ExceedPrefetchReuseMins) using MockClock.
     ForceInProcessNetworkService();
@@ -730,6 +733,9 @@ class SignedExchangeSubresourcePrefetchBrowserTest
     // Call MockClock::Get() here to initialize ScopedMockClockOverride which
     // should be created while single-threaded.
     MockClock::Get();
+
+    feature_list_.InitAndEnableFeature(
+        net::features::kPartitionConnectionsByNetworkIsolationKey);
   }
 
   SignedExchangeSubresourcePrefetchBrowserTest(
@@ -747,15 +753,6 @@ class SignedExchangeSubresourcePrefetchBrowserTest
   }
 
   void SetUp() override {
-    std::vector<base::test::FeatureRef> enable_features;
-    std::vector<base::test::FeatureRef> disabled_features;
-    enable_features.push_back(features::kSignedHTTPExchange);
-    // Needed for reporting test. Doesn't significantly impact other tests.
-    enable_features.push_back(
-        net::features::kPartitionConnectionsByNetworkIsolationKey);
-
-    feature_list_.InitWithFeatures(enable_features, disabled_features);
-
     // Need to run the network service in process for testing cache expirity
     // (PrefetchMainResourceSXG_ExceedPrefetchReuseMins) using MockClock.
     ForceInProcessNetworkService();

@@ -644,6 +644,11 @@ struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::WebPreferencesDataView,
       const blink::web_pref::WebPreferences& r) {
     return r.disable_accelerated_small_canvases;
   }
+
+  static bool long_press_link_select_text(
+      const blink::web_pref::WebPreferences& r) {
+    return r.long_press_link_select_text;
+  }
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA)
@@ -699,13 +704,13 @@ struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::WebPreferencesDataView,
     return r.require_transient_activation_for_show_file_or_directory_picker;
   }
 
-  static bool require_transient_activation_for_html_fullscreen(
-      const blink::web_pref::WebPreferences& r) {
-    return r.require_transient_activation_for_html_fullscreen;
-  }
-
   static bool in_forced_colors(const blink::web_pref::WebPreferences& r) {
     return r.in_forced_colors;
+  }
+
+  static bool is_forced_colors_disabled(
+      const blink::web_pref::WebPreferences& r) {
+    return r.is_forced_colors_disabled;
   }
 
   static blink::mojom::PreferredColorScheme

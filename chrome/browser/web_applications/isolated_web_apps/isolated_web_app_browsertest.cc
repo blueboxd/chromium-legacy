@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include <optional>
 #include <string_view>
 
@@ -67,6 +72,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/features_generated.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_database.mojom-forward.h"
 
 namespace web_app {
@@ -232,6 +238,36 @@ class IsolatedWebAppBrowserTest : public IsolatedWebAppBrowserTestHarness {
  private:
   std::unique_ptr<net::EmbeddedTestServer> isolated_web_app_dev_server_;
 };
+
+IN_PROC_BROWSER_TEST_F(IsolatedWebAppBrowserTest, DevProxyError) {
+  std::unique_ptr<ScopedProxyIsolatedWebApp> app =
+      IsolatedWebAppBuilder(ManifestBuilder())
+          .AddResource("/nonexistent", "", {{"Content-Type", "text/html"}},
+                       net::HttpStatusCode::HTTP_NOT_FOUND)
+          .BuildAndStartProxyServer();
+  ASSERT_OK_AND_ASSIGN(auto url_info, app->Install(profile()));
+
+  auto* app_frame = OpenApp(url_info.app_id());
+  ASSERT_NE(nullptr, app_frame);
+
+  content::TestNavigationObserver observer(
+      content::WebContents::FromRenderFrameHost(app_frame));
+  observer.StartWatchingNewWebContents();
+
+  ASSERT_NE(ui_test_utils::NavigateToURL(
+                GetBrowserFromFrame(app_frame),
+                url_info.origin().GetURL().Resolve("/nonexistent")),
+            nullptr);
+
+  observer.WaitForNavigationFinished();
+  EXPECT_FALSE(observer.last_navigation_succeeded());
+  EXPECT_EQ(observer.last_net_error_code(),
+            net::ERR_HTTP_RESPONSE_CODE_FAILURE);
+
+  auto response_code = observer.last_http_response_code();
+  ASSERT_TRUE(response_code);
+  EXPECT_EQ(*response_code, net::HttpStatusCode::HTTP_NOT_FOUND);
+}
 
 IN_PROC_BROWSER_TEST_F(IsolatedWebAppBrowserTest, AppsPartitioned) {
   web_app::IsolatedWebAppUrlInfo url_info1 = InstallDevModeProxyIsolatedWebApp(
@@ -488,6 +524,11 @@ IN_PROC_BROWSER_TEST_F(IsolatedWebAppBrowserTest,
 
 class IsolatedWebAppApiAccessBrowserTest : public IsolatedWebAppBrowserTest {
  protected:
+  IsolatedWebAppApiAccessBrowserTest() {
+    feature_list_.InitWithFeatures({blink::features::kIsolateSandboxedIframes,
+                                    blink::features::kDirectSockets},
+                                   {});
+  }
   std::unique_ptr<ScopedBundledIsolatedWebApp> CreateAppWithSocketPermission() {
     return IsolatedWebAppBuilder(
                ManifestBuilder().AddPermissionsPolicy(
@@ -504,8 +545,7 @@ class IsolatedWebAppApiAccessBrowserTest : public IsolatedWebAppBrowserTest {
   }
 
  private:
-  base::test::ScopedFeatureList feature_list_{
-      blink::features::kIsolateSandboxedIframes};
+  base::test::ScopedFeatureList feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(IsolatedWebAppApiAccessBrowserTest,
@@ -689,9 +729,9 @@ IN_PROC_BROWSER_TEST_F(IsolatedWebAppApiAccessBrowserTest,
   app->TrustSigningKey();
   ASSERT_OK_AND_ASSIGN(auto url_info, app->Install(profile()));
   content::RenderFrameHost* app_frame = OpenApp(url_info.app_id());
-
-  content::TestNavigationObserver navigation_observer(
-      content::WebContents::FromRenderFrameHost(app_frame));
+  content::WebContents* app_contents =
+      content::WebContents::FromRenderFrameHost(app_frame);
+  content::TestNavigationObserver navigation_observer(app_contents);
   ASSERT_TRUE(
       ExecJs(app_frame, content::JsReplace(R"(
           const blobSource = `
@@ -713,7 +753,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedWebAppApiAccessBrowserTest,
   EXPECT_THAT(navigation_observer.last_net_error_code(), Eq(net::OK));
   EXPECT_THAT(navigation_observer.last_navigation_url().spec(),
               StartsWith("blob:" + url_info.origin().GetURL().spec()));
-
+  app_frame = app_contents->GetPrimaryMainFrame();
   EXPECT_THAT(EvalJs(app_frame, "location.href").ExtractString(),
               StartsWith("blob:"));
   EXPECT_THAT(EvalJs(app_frame, "window.origin"),
@@ -990,7 +1030,8 @@ var kApplicationServerKey = new Uint8Array([
                                             .ExtractString();
 
   size_t last_slash = push_messaging_endpoint.rfind('/');
-  ASSERT_EQ(kPushMessagingGcmEndpoint,
+  ASSERT_NE(last_slash, std::string::npos);
+  ASSERT_EQ(features::kPushMessagingGcmEndpointUrl.Get(),
             push_messaging_endpoint.substr(0, last_slash + 1));
   PushMessagingAppIdentifier app_identifier =
       GetAppIdentifierForServiceWorkerRegistration(0LL);

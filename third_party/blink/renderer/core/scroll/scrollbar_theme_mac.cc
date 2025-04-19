@@ -185,9 +185,9 @@ WebThemeEngine::ExtraParams GetPaintParams(const Scrollbar& scrollbar,
   return WebThemeEngine::ExtraParams(scrollbar_extra);
 }
 
-void ScrollbarThemeMac::PaintTrack(GraphicsContext& context,
-                                   const Scrollbar& scrollbar,
-                                   const gfx::Rect& rect) {
+void ScrollbarThemeMac::PaintTrackBackground(GraphicsContext& context,
+                                             const Scrollbar& scrollbar,
+                                             const gfx::Rect& rect) {
   GraphicsContextStateSaver state_saver(context);
   context.Translate(rect.x(), rect.y());
 
@@ -255,10 +255,9 @@ void ScrollbarThemeMac::PaintScrollCorner(
       vertical_scrollbar->UsedColorScheme(), in_forced_colors, color_provider);
 }
 
-void ScrollbarThemeMac::PaintThumbInternal(GraphicsContext& context,
-                                           const Scrollbar& scrollbar,
-                                           const gfx::Rect& rect,
-                                           float opacity) {
+void ScrollbarThemeMac::PaintThumb(GraphicsContext& context,
+                                   const Scrollbar& scrollbar,
+                                   const gfx::Rect& rect) {
   if (DrawingRecorder::UseCachedDrawingIfPossible(
           context, scrollbar, DisplayItem::kScrollbarThumb)) {
     return;
@@ -301,10 +300,6 @@ void ScrollbarThemeMac::PaintThumbInternal(GraphicsContext& context,
       break;
   }
 
-  if (opacity != 1.0f) {
-    context.BeginLayer(opacity);
-  }
-
   WebThemeEngine::Part thumb_part =
       scrollbar_extra.orientation ==
               WebThemeEngine::ScrollbarOrientation::kHorizontal
@@ -317,8 +312,6 @@ void ScrollbarThemeMac::PaintThumbInternal(GraphicsContext& context,
       context.Canvas(), thumb_part, WebThemeEngine::State::kStateNormal, bounds,
       &params, color_scheme,
       scrollbar.GetScrollableArea()->InForcedColorsMode(), color_provider);
-  if (opacity != 1.0f)
-    context.EndLayer();
 }
 
 int ScrollbarThemeMac::ScrollbarThickness(

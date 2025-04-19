@@ -100,7 +100,7 @@
     line-height: 24px;
     margin: 0;
     margin-inline-end: auto;
-    padding-inline-end: 32px; /* From --cr-icon-button-size */
+    padding-inline-end: 32px; /* From --cr-icon-button-size. */
   }
 
   cr-icon-button {
@@ -174,13 +174,8 @@
     border-top-color: var(--scrollable-border-color);
   }
 
-  :host([enable-ui-refinements])
-       #resultTextContainer.can-scroll:not(.scrolled-to-bottom) {
-    border-bottom-color: var(--scrollable-border-color);
-  }
-
   /* Different elements are made scrollable depending on whether UI refinements
-   * are enabled */
+   * are enabled. */
   #body::-webkit-scrollbar, #resultTextContainer::-webkit-scrollbar {
     background: transparent;
     width: var(--scrollbar-width_);
@@ -191,6 +186,7 @@
   }
 
   #resultTextContainer::-webkit-scrollbar-thumb {
+    border-radius: 10px;
     background: var(--color-compose-dialog-result-container-scrollbar-thumb);
   }
 
@@ -248,11 +244,11 @@
     padding: 16px;
   }
 
-  /* #resultTextContainer is only styled if UI refinements are applied */
+  /* #resultTextContainer is only styled if UI refinements are applied. */
   :host([enable-ui-refinements]) #resultTextContainer {
     max-height: 112px;
     overflow: auto;
-    /* Incorporates width of righthand scrollbar */
+    /* Incorporates width of righthand scrollbar. */
     padding-inline-start: 16px;
     margin-inline-end: 4px;
 
@@ -261,6 +257,7 @@
     scrollbar-gutter: stable;
   }
 
+  /* Border separating result container text and actions bar. */
   :host([enable-ui-refinements]) #resultOptionsContainer {
     border-top: 1px solid var(--color-compose-dialog-divider);
   }
@@ -271,7 +268,7 @@
     gap: 8px;
   }
 
-  /* Adjust padding and margins based on whether UI refinements is enabled */
+  /* Adjust padding and margins based on whether UI refinements is enabled. */
   :host(:not([enable-ui-refinements])) #resultOptions {
     margin-block-start: 16px;
   }
@@ -301,7 +298,6 @@
   }
 
   :host([enable-ui-refinements]) #resultOptions .md-select {
-    --md-select-side-padding: 8px;
     min-height: 24px;
     min-width: 60px;
     line-height: 16px;
@@ -310,6 +306,26 @@
     font-family: Roboto, "Noto Sans", Arial, sans-serif;
     font-weight: 500;
     color: var(--cr-secondary-text-color);
+
+    /* Custom drop-down arrow. */
+    background: url(//resources/images/chevron_down.svg)
+      calc(100% - var(--md-select-side-padding) + var(--md-arrow-width))
+      center no-repeat;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :host([enable-ui-refinements]) #resultOptions .md-select {
+      /* Separate svg required for dark mode as color is hard-coded into
+      * file. */
+      background-image: url(//resources/images/dark/chevron_down.svg)
+    }
+  }
+
+  /* Re-define hover style for md-select, as replacing the background overwrites
+  the default style. */
+  :host([enable-ui-refinements]) #resultOptions .md-select:hover {
+    background-color: var(--color-comboxbox-ink-drop-hovered,
+      var(--cr-hover-on-subtle-background-color));
   }
 
   .icon-buttons-row {
@@ -325,6 +341,7 @@
 
   :host([enable-ui-refinements]) .icon-buttons-row {
     grid-auto-columns: auto;
+    grid-auto-rows: auto;
     gap: 10px;
   }
 
@@ -334,22 +351,47 @@
     margin: 0;
   }
 
-  /* cr-button is only used when UI refinements is enabled */
+  /* cr-button is only used when UI refinements is enabled. */
   .icon-buttons-row cr-button {
     --cr-button-text-color: var(--color-compose-dialog-result-icon);
+    --cr-icon-size: 16px;
     margin: 0;
-    padding: 0;
+    padding-inline-start: 8px;
+    padding-inline-end: 4px;
+    padding-top: 4px;
+    padding-bottom: 4px;
     min-height: 24px;
     height: auto;
     border: 0;
     gap: 4px;
   }
 
-  /* Vertical divider between buttons */
+  .icon-buttons-row cr-button div {
+    margin-top: 2px;
+    line-height: 14px;
+    font-size: 11px;
+  }
+
+  .icon-buttons-row cr-button iron-icon {
+    width: var(--cr-icon-size);
+    height: var(--cr-icon-size);
+  }
+
   :host([enable-ui-refinements]) .icon-buttons-row
       .button-container:last-child {
     padding-left: 10px;
-    border-left: 1px solid var(--color-compose-dialog-result-buttons-divider);
+    position: relative
+  }
+
+  /* Vertical divider between undo and redo buttons. */
+  :host([enable-ui-refinements]) .icon-buttons-row > div:last-child:before {
+    content: "";
+    background: var(--color-compose-dialog-divider);
+    position: absolute;
+    top: 25%;
+    left: 0px;
+    height: 50%;
+    width: 1px;
   }
 
   .footer {
@@ -469,7 +511,6 @@
   .result-container[hidden],
   .md-select[hidden],
   .icon-buttons-row cr-icon-button[hidden],
-  /* #redoButton[hidden], */
   #loading[hidden],
   #editContainer[hidden] {
     display: none;
@@ -591,8 +632,9 @@
               </select>
               <select class="md-select" id="modifierMenu"
                   value="[[selectedModifier_]]"
-                  aria-label="$i18n{modifierMenuTitle}"
+                  aria-label="$i18n{modifierMenuLabel}"
                   on-change="onModifierChanged_"
+                  on-keydown="openModifierMenuOnKeyDown_"
                   hidden="[[!enableUiRefinements]]">
                 <template is="dom-repeat" items="[[modifierOptions_]]">
                   <option value="[[item.value]]" disabled$="[[item.isDefault]]"
@@ -602,7 +644,7 @@
                 </template>
               </select>
               <div class="icon-buttons-row">
-                <cr-icon-button id="undoButton" iron-icon="compose:mvpUndo"
+                <cr-icon-button id="undoButton" iron-icon="compose:undo"
                   title="$i18n{undo}" disabled="[[!undoEnabled_]]"
                   on-click="onUndoClick_" hidden="[[enableUiRefinements]]">
                 </cr-icon-button>

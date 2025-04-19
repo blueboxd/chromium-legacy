@@ -2,8 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/modules/webgpu/gpu_render_bundle_encoder.h"
 
+#include "base/containers/heap_array.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_render_bundle_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_render_bundle_encoder_descriptor.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_conversions.h"
@@ -31,7 +37,7 @@ GPURenderBundleEncoder* GPURenderBundleEncoder::Create(
     }
   }
 
-  std::unique_ptr<wgpu::TextureFormat[]> color_formats =
+  base::HeapArray<wgpu::TextureFormat> color_formats =
       AsDawnEnum<wgpu::TextureFormat>(webgpu_desc->colorFormats());
 
   wgpu::TextureFormat depth_stencil_format = wgpu::TextureFormat::Undefined;
@@ -46,7 +52,7 @@ GPURenderBundleEncoder* GPURenderBundleEncoder::Create(
 
   wgpu::RenderBundleEncoderDescriptor dawn_desc = {
       .colorFormatCount = color_formats_count,
-      .colorFormats = color_formats.get(),
+      .colorFormats = color_formats.data(),
       .depthStencilFormat = depth_stencil_format,
       .sampleCount = webgpu_desc->sampleCount(),
       .depthReadOnly = webgpu_desc->depthReadOnly(),
@@ -84,7 +90,7 @@ void GPURenderBundleEncoder::setBindGroup(
 void GPURenderBundleEncoder::setBindGroup(
     uint32_t index,
     GPUBindGroup* bind_group,
-    NADCTypedArrayView<uint32_t> dynamic_offsets_data,
+    base::span<const uint32_t> dynamic_offsets_data,
     uint64_t dynamic_offsets_data_start,
     uint32_t dynamic_offsets_data_length,
     ExceptionState& exception_state) {
@@ -95,7 +101,7 @@ void GPURenderBundleEncoder::setBindGroup(
   }
 
   const uint32_t* data =
-      dynamic_offsets_data.Data() + dynamic_offsets_data_start;
+      dynamic_offsets_data.data() + dynamic_offsets_data_start;
 
   GetHandle().SetBindGroup(
       index, bind_group ? bind_group->GetHandle() : wgpu::BindGroup(nullptr),

@@ -431,8 +431,8 @@ DesktopNativeWidgetAura::tooltip_controller() {
 }
 
 void DesktopNativeWidgetAura::HandleActivationChanged(bool active) {
-  DCHECK(native_widget_delegate_);
-  if (!native_widget_delegate_->ShouldHandleNativeWidgetActivationChanged(
+  if (!native_widget_delegate_ ||
+      !native_widget_delegate_->ShouldHandleNativeWidgetActivationChanged(
           active)) {
     return;
   }
@@ -839,7 +839,7 @@ const gfx::ImageSkia* DesktopNativeWidgetAura::GetWindowAppIcon() {
   return nullptr;
 }
 
-void DesktopNativeWidgetAura::InitModalType(ui::ModalType modal_type) {
+void DesktopNativeWidgetAura::InitModalType(ui::mojom::ModalType modal_type) {
   // 99% of the time, we should not be asked to create a
   // DesktopNativeWidgetAura that is modal. We only support window modal
   // dialogs on the same lines as non AURA.
@@ -1053,7 +1053,6 @@ void DesktopNativeWidgetAura::FlashFrame(bool flash_frame) {
 }
 
 void DesktopNativeWidgetAura::RunShellDrag(
-    View* view,
     std::unique_ptr<ui::OSExchangeData> data,
     const gfx::Point& location,
     int operation,
@@ -1195,6 +1194,20 @@ void DesktopNativeWidgetAura::OnNativeViewHierarchyWillChange() {}
 
 void DesktopNativeWidgetAura::OnNativeViewHierarchyChanged() {}
 
+bool DesktopNativeWidgetAura::SetAllowScreenshots(bool allow) {
+  if (desktop_window_tree_host_) {
+    desktop_window_tree_host_->SetAllowScreenshots(allow);
+    return true;
+  }
+  return false;
+}
+
+bool DesktopNativeWidgetAura::AreScreenshotsAllowed() {
+  return desktop_window_tree_host_
+             ? desktop_window_tree_host_->AreScreenshotsAllowed()
+             : true;
+}
+
 std::string DesktopNativeWidgetAura::GetName() const {
   return name_;
 }
@@ -1305,7 +1318,7 @@ void DesktopNativeWidgetAura::OnMouseEvent(ui::MouseEvent* event) {
   DCHECK(content_window_->IsVisible());
 
 #if BUILDFLAG(IS_WIN)
-  if (event->type() == ui::ET_MOUSE_MOVED) {
+  if (event->type() == ui::EventType::kMouseMoved) {
     // Showing a tooltip causes Windows to generate a MOUSE_MOVED
     // event to the same location it was already at; when that happens,
     // we need to throw the event away rather than acting as if someone
@@ -1329,7 +1342,7 @@ void DesktopNativeWidgetAura::OnScrollEvent(ui::ScrollEvent* event) {
   if (!native_widget_delegate_)
     return;
 
-  if (event->type() == ui::ET_SCROLL) {
+  if (event->type() == ui::EventType::kScroll) {
     native_widget_delegate_->OnScrollEvent(event);
     if (event->handled())
       return;

@@ -10,6 +10,8 @@
 #include "content/browser/preloading/prerender/prerender_final_status.h"
 #include "content/browser/preloading/prerender/prerender_host_registry.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+
+// Must come after all headers that specialize FromJniType() / ToJniType().
 #include "content/public/android/content_jni_headers/JavascriptInjectorImpl_jni.h"
 
 using base::android::AttachCurrentThread;
@@ -60,7 +62,9 @@ void JavascriptInjector::AddInterface(
   // evict all BFCached and prerendered pages so that we won't activate any
   // pages that don't have this object modified.
   // Same for RemoveInterface below.
-  GetWebContents().GetController().GetBackForwardCache().Flush();
+  GetWebContents().GetController().GetBackForwardCache().Flush(
+      content::BackForwardCache::NotRestoredReason::
+          kWebViewJavaScriptObjectChanged);
   GetWebContentsImpl().GetPrerenderHostRegistry()->CancelAllHosts(
       PrerenderFinalStatus::kJavaScriptInterfaceAdded);
 
@@ -73,7 +77,9 @@ void JavascriptInjector::RemoveInterface(JNIEnv* env,
                                          const JavaParamRef<jstring>& name) {
   DCHECK(java_bridge_dispatcher_host_);
 
-  GetWebContents().GetController().GetBackForwardCache().Flush();
+  GetWebContents().GetController().GetBackForwardCache().Flush(
+      content::BackForwardCache::NotRestoredReason::
+          kWebViewJavaScriptObjectChanged);
   GetWebContentsImpl().GetPrerenderHostRegistry()->CancelAllHosts(
       PrerenderFinalStatus::kJavaScriptInterfaceRemoved);
 

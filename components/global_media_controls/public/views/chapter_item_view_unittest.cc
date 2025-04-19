@@ -34,7 +34,7 @@ class ChapterItemViewTest : public views::ViewsTestBase {
   void SetUp() override {
     ViewsTestBase::SetUp();
 
-    widget_ = CreateTestWidget();
+    widget_ = CreateTestWidget(views::Widget::InitParams::CLIENT_OWNS_WIDGET);
 
     media_session::MediaImage test_image;
     test_image.src = GURL("https://www.google.com");
@@ -54,7 +54,7 @@ class ChapterItemViewTest : public views::ViewsTestBase {
 
   void TearDown() override {
     view_ = nullptr;
-    widget_.reset();
+    widget_->Close();
 
     ViewsTestBase::TearDown();
   }
@@ -80,7 +80,7 @@ TEST_F(ChapterItemViewTest, Labels) {
 TEST_F(ChapterItemViewTest, ClickOnView) {
   EXPECT_CALL(*this, OnChapterPressed(kChapterStartTime)).Times(1);
   views::test::ButtonTestApi(view()).NotifyClick(
-      ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+      ui::MouseEvent(ui::EventType::kMousePressed, gfx::Point(), gfx::Point(),
                      ui::EventTimeForNow(), 0, 0));
   testing::Mock::VerifyAndClearExpectations(this);
 }

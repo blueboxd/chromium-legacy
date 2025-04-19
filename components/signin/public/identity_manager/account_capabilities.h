@@ -22,6 +22,10 @@ namespace ios {
 class AccountCapabilitiesFetcherIOS;
 }  // namespace ios
 
+namespace supervised_user {
+class SupervisedUserCapabilitiesObserver;
+}  // namespace supervised_user
+
 // Stores the information about account capabilities. Capabilities provide
 // information about state and features of Gaia accounts.
 class AccountCapabilities {
@@ -47,6 +51,10 @@ class AccountCapabilities {
   const base::flat_map<std::string, bool>& ConvertToAccountCapabilitiesIOS();
 #endif
   // Keep sorted alphabetically.
+
+  // Chrome can fetch information related to the family group for accounts
+  // with this capability.
+  signin::Tribool can_fetch_family_member_info() const;
 
   // Chrome can display the email address for accounts with this capability.
   signin::Tribool can_have_email_address_displayed() const;
@@ -115,10 +123,12 @@ class AccountCapabilities {
       const base::Value::Dict& account_capabilities);
   friend class AccountCapabilitiesFetcherGaia;
 #if BUILDFLAG(IS_IOS)
+  friend const std::vector<std::string>& GetAccountCapabilityNamesForPrefetch();
   friend class ios::AccountCapabilitiesFetcherIOS;
 #endif
   friend class AccountCapabilitiesTestMutator;
   friend class AccountTrackerService;
+  friend class supervised_user::SupervisedUserCapabilitiesObserver;
 
   // Returns the capability state using the service name.
   signin::Tribool GetCapabilityByName(const std::string& name) const;

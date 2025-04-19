@@ -27,12 +27,11 @@
 #include "content/browser/aggregation_service/report_scheduler_timer.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
-#include "content/browser/attribution_reporting/attribution_report_sender.h"
 #include "content/browser/attribution_reporting/attribution_reporting.mojom-forward.h"
+#include "content/browser/attribution_reporting/process_aggregatable_debug_report_result.mojom-forward.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/privacy_sandbox_attestations_observer.h"
 #include "content/public/browser/storage_partition.h"
-#include "third_party/abseil-cpp/absl/types/variant.h"
 
 namespace attribution_reporting {
 struct OsRegistrationItem;
@@ -43,6 +42,7 @@ class FilePath;
 class Time;
 class TimeDelta;
 class UpdateableSequencedTaskRunner;
+class ValueView;
 }  // namespace base
 
 namespace storage {
@@ -55,12 +55,14 @@ class Origin;
 
 namespace content {
 
+class AggregatableDebugReport;
 class AggregatableReport;
 class AggregatableReportRequest;
 class AttributionCookieChecker;
 class AttributionDataHostManager;
 class AttributionDebugReport;
 class AttributionOsLevelManager;
+class AttributionReportSender;
 class AttributionResolver;
 class AttributionResolverDelegate;
 class CreateReportResult;
@@ -69,6 +71,8 @@ class StoreSourceResult;
 
 struct GlobalRenderFrameHostId;
 struct OsRegistration;
+struct ProcessAggregatableDebugReportResult;
+struct SendAggregatableDebugReportResult;
 struct SendResult;
 
 // UI thread class that manages the lifetime of the underlying attribution
@@ -163,8 +167,10 @@ class CONTENT_EXPORT AttributionManagerImpl
  private:
   friend class AttributionManagerImplTest;
 
-  using ReportSentCallback = AttributionReportSender::ReportSentCallback;
-  using SourceOrTrigger = absl::variant<StorableSource, AttributionTrigger>;
+  class ReportScheduler;
+
+  using ReportSentCallback =
+      base::OnceCallback<void(const AttributionReport&, SendResult)>;
 
   struct SourceOrTriggerRFH;
 
@@ -179,7 +185,8 @@ class CONTENT_EXPORT AttributionManagerImpl
       std::unique_ptr<AttributionCookieChecker> cookie_checker,
       std::unique_ptr<AttributionReportSender> report_sender,
       std::unique_ptr<AttributionOsLevelManager> os_level_manager,
-      scoped_refptr<base::UpdateableSequencedTaskRunner> resolver_task_runner);
+      scoped_refptr<base::UpdateableSequencedTaskRunner> resolver_task_runner,
+      bool debug_mode);
 
   void MaybeEnqueueEvent(SourceOrTriggerRFH);
   void PrepareNextEvent();
@@ -199,6 +206,9 @@ class CONTENT_EXPORT AttributionManagerImpl
   void PrepareToSendReport(AttributionReport report,
                            bool is_debug_report,
                            ReportSentCallback callback);
+  void SendReport(AttributionReport report,
+                  bool is_debug_report,
+                  ReportSentCallback callback);
   void OnReportSent(base::OnceClosure done,
                     const AttributionReport&,
                     SendResult info);
@@ -246,6 +256,19 @@ class CONTENT_EXPORT AttributionManagerImpl
                                    const CreateReportResult& result);
 
   void MaybeSendVerboseDebugReports(const OsRegistration&);
+
+  void MaybeSendAggregatableDebugReport(const StoreSourceResult& result);
+  void MaybeSendAggregatableDebugReport(const CreateReportResult& result);
+  void OnAggregatableDebugReportProcessed(ProcessAggregatableDebugReportResult);
+  void OnAggregatableDebugReportAssembled(ProcessAggregatableDebugReportResult,
+                                          AggregatableReportRequest,
+                                          std::optional<AggregatableReport>,
+                                          AggregationService::AssemblyStatus);
+  void NotifyAggregatableDebugReportSent(
+      const AggregatableDebugReport&,
+      base::ValueView report_body,
+      attribution_reporting::mojom::ProcessAggregatableDebugReportResult,
+      SendAggregatableDebugReportResult);
 
   void AddPendingAggregatableReportTiming(const AttributionReport&);
   void RecordPendingAggregatableReportsTimings();
@@ -329,6 +352,10 @@ class CONTENT_EXPORT AttributionManagerImpl
   // Timer to record the time elapsed since the construction. Used to measure
   // the delay due to privacy sandbox attestations loading.
   base::ElapsedTimer time_since_construction_;
+
+  // Technically redundant with fields in the `AttributionResolverDelegate` but
+  // duplicated here to avoid an async call to retrieve them.
+  bool debug_mode_ = false;
 
   base::WeakPtrFactory<AttributionManagerImpl> weak_factory_{this};
 };

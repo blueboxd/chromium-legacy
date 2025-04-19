@@ -108,15 +108,16 @@ DawnControlClientHolder::GetOrCreateCanvasResource(const SkImageInfo& info) {
 
 void DawnControlClientHolder::Flush() {
   auto context_provider = GetContextProviderWeakPtr();
-  if (LIKELY(context_provider)) {
+  if (context_provider) [[likely]] {
     context_provider->ContextProvider()->WebGPUInterface()->FlushCommands();
   }
 }
 
 void DawnControlClientHolder::EnsureFlush(scheduler::EventLoop& event_loop) {
   auto context_provider = GetContextProviderWeakPtr();
-  if (UNLIKELY(!context_provider))
+  if (!context_provider) [[unlikely]] {
     return;
+  }
   if (!context_provider->ContextProvider()
            ->WebGPUInterface()
            ->EnsureAwaitingFlush()) {
@@ -195,8 +196,7 @@ std::vector<wgpu::WGSLFeatureName> GatherWGSLFeatures() {
           .instance);
 
   size_t feature_count = instance.EnumerateWGSLLanguageFeatures(nullptr);
-  std::vector<wgpu::WGSLFeatureName> features(feature_count,
-                                              wgpu::WGSLFeatureName::Undefined);
+  std::vector<wgpu::WGSLFeatureName> features(feature_count);
   instance.EnumerateWGSLLanguageFeatures(features.data());
 
   return features;

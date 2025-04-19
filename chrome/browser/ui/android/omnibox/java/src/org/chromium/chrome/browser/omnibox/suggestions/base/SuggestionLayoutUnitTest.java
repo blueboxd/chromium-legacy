@@ -14,10 +14,10 @@ import static org.mockito.Mockito.verify;
 
 import android.content.Context;
 import android.view.View;
+import android.view.View.MeasureSpec;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
@@ -25,7 +25,7 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.Features;
+import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.base.SuggestionLayout.LayoutParams.SuggestionViewType;
 import org.chromium.chrome.browser.omnibox.test.R;
 
@@ -39,7 +39,6 @@ import org.chromium.chrome.browser.omnibox.test.R;
 public class SuggestionLayoutUnitTest {
 
     public @Rule MockitoRule mMockitoRule = MockitoJUnit.rule();
-    public @Rule TestRule mProcessor = new Features.JUnitProcessor();
 
     private Context mContext = ContextUtils.getApplicationContext();
     private View mDecorationView = new View(mContext);
@@ -170,5 +169,33 @@ public class SuggestionLayoutUnitTest {
 
         mDecorationView.setLayoutParams(SuggestionLayout.LayoutParams.forLargeDecorationIcon());
         assertTrue(mLayout.getUseLargeDecoration());
+    }
+
+    @Test
+    public void testHiddenDecoration() {
+        mLayout.addView(
+                mDecorationView,
+                SuggestionLayout.LayoutParams.forViewType(SuggestionViewType.DECORATION));
+        mLayout.addView(
+                mContentView,
+                SuggestionLayout.LayoutParams.forViewType(SuggestionViewType.CONTENT));
+        mLayout.measure(
+                MeasureSpec.makeMeasureSpec(200, MeasureSpec.AT_MOST),
+                MeasureSpec.makeMeasureSpec(48, MeasureSpec.AT_MOST));
+        mLayout.layout(0, 0, 200, 48);
+
+        assertEquals(
+                OmniboxResourceProvider.getSuggestionDecorationIconSizeWidth(mContext),
+                mContentView.getLeft());
+
+        mDecorationView.setVisibility(View.GONE);
+
+        mLayout.measure(
+                MeasureSpec.makeMeasureSpec(200, MeasureSpec.AT_MOST),
+                MeasureSpec.makeMeasureSpec(48, MeasureSpec.AT_MOST));
+        mLayout.layout(0, 0, 200, 48);
+        assertEquals(
+                mContext.getResources().getDimensionPixelSize(R.dimen.omnibox_simple_card_leadin),
+                mContentView.getLeft());
     }
 }

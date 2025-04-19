@@ -15,6 +15,7 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/functional/callback.h"
+#include "base/functional/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/sequence_checker.h"
@@ -147,6 +148,7 @@ class CONTENT_EXPORT IndexedDBBucketContext
     base::RepeatingCallback<void(
         mojo::PendingRemote<storage::mojom::IndexedDBClientStateChecker>
         /*client_state_checker_remote*/,
+        const base::UnguessableToken& /*client_token*/,
         mojo::PendingReceiver<blink::mojom::IDBFactory> /*pending_receiver*/)>
         on_receiver_bounced;
 
@@ -198,6 +200,16 @@ class CONTENT_EXPORT IndexedDBBucketContext
   // Normally, in-memory bucket contexts never self-close. If this is called
   // with `doom` set to true, they will self-close.
   void ForceClose(bool doom);
+
+  // Starts capturing state data for indexeddb-internals. The data will be
+  // returned the next time `StopMetadataRecording()` is invoked.
+  void StartMetadataRecording();
+  std::vector<storage::mojom::IdbBucketMetadataPtr> StopMetadataRecording();
+
+  using OptionalTokenCallback =
+      base::OnceCallback<void(const std::optional<base::UnguessableToken>&)>;
+  void GetDevToolsTokenForClient(base::UnguessableToken client_token,
+                                 OptionalTokenCallback callback);
 
   int64_t GetInMemorySize();
 
@@ -283,6 +295,7 @@ class CONTENT_EXPORT IndexedDBBucketContext
   void AddReceiver(
       mojo::PendingRemote<storage::mojom::IndexedDBClientStateChecker>
           client_state_checker_remote,
+      base::UnguessableToken client_token,
       mojo::PendingReceiver<blink::mojom::IDBFactory> pending_receiver);
 
   // blink::mojom::IDBFactory implementation:
@@ -305,6 +318,9 @@ class CONTENT_EXPORT IndexedDBBucketContext
   // the result back via the return value.
   storage::mojom::IdbBucketMetadataPtr FillInMetadata(
       storage::mojom::IdbBucketMetadataPtr info);
+  // Called when the data used to populate the struct in `FillInMetadata` is
+  // changed in a significant way.
+  void NotifyOfIdbInternalsRelevantChange();
 
   // This exists to facilitate unit tests. Since `this` is owned via a
   // `SequenceBound`, it's not possible to directly grab pointer to `this`.
@@ -352,7 +368,8 @@ class CONTENT_EXPORT IndexedDBBucketContext
   struct ReceiverContext {
     ReceiverContext(
         mojo::PendingRemote<storage::mojom::IndexedDBClientStateChecker>
-            client_state_checker_remote);
+            client_state_checker_remote,
+        base::UnguessableToken token);
 
     ~ReceiverContext();
 
@@ -363,6 +380,8 @@ class CONTENT_EXPORT IndexedDBBucketContext
 
     mojo::Remote<storage::mojom::IndexedDBClientStateChecker>
         client_state_checker_remote;
+
+    base::UnguessableToken client_token;
   };
 
   // Used to synchronize the global throttling of LevelDB cleanup operations.
@@ -437,6 +456,9 @@ class CONTENT_EXPORT IndexedDBBucketContext
   // initiate destruction of `this`.
   void OnReceiverDisconnected();
 
+  // Records one tick of Metadata during a metadata recording session.
+  void RecordInternalsSnapshot();
+
   SEQUENCE_CHECKER(sequence_checker_);
 
   const storage::BucketInfo bucket_info_;
@@ -508,6 +530,10 @@ class CONTENT_EXPORT IndexedDBBucketContext
 
   // True if there's already a task queued to call `RunTasks()`.
   bool task_run_queued_ = false;
+
+  std::vector<storage::mojom::IdbBucketMetadataPtr> metadata_recording_buffer_;
+  bool metadata_recording_enabled_ = false;
+  base::Time metadata_recording_start_time_;
 
   mojo::ReceiverSet<blink::mojom::IDBFactory, ReceiverContext> receivers_;
 

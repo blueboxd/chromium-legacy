@@ -318,6 +318,8 @@ void DownloadPrefs::RegisterProfilePrefs(
 
   registry->RegisterBooleanPref(prefs::kShowMissingSdCardErrorAndroid, true);
   registry->RegisterBooleanPref(prefs::kAutoOpenPdfEnabled, false);
+  registry->RegisterListPref(prefs::kDownloadAppVerificationPromptTimestamps,
+                             {});
 #endif
 }
 
@@ -663,11 +665,11 @@ base::FilePath DownloadPrefs::SanitizeDownloadTargetPath(
     return path;
   }
 
-  // Allow paths under one drive mount point if the feature flag is enabled.
-  auto odfs_path = ash::cloud_upload::GetODFSFuseboxMount(profile_);
+  // Allow paths under /tmp if the feature flag is enabled.
+  base::FilePath temp_path;
   if (base::FeatureList::IsEnabled(features::kSkyVault) &&
-      ash::cloud_upload::IsODFSMounted(profile_) &&
-      ((odfs_path == path) || odfs_path.IsParent(path))) {
+      base::GetTempDir(&temp_path) &&
+      ((temp_path == path) || temp_path.IsParent(path))) {
     return path;
   }
 

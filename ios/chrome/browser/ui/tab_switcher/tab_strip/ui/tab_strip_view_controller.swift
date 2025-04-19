@@ -9,7 +9,7 @@ import ios_chrome_browser_ui_tab_switcher_tab_strip_ui_swift_constants
 /// View Controller displaying the TabStrip.
 @objcMembers
 class TabStripViewController: UIViewController,
-  TabStripConsumer, TabStripNewTabButtonDelegate, TabStripTabCellDelegate
+  TabStripConsumer, TabStripNewTabButtonDelegate, TabStripGroupCellDelegate, TabStripTabCellDelegate
 {
 
   // The enum used by the data source to manage the sections.
@@ -81,6 +81,9 @@ class TabStripViewController: UIViewController,
   /// Provides context menu for tab strip items.
   public weak var contextMenuProvider: TabStripContextMenuProvider?
 
+  /// Handler for tab group confirmation commands.
+  public weak var tabGroupConfirmationHandler: TabGroupConfirmationCommands?
+
   /// The LayoutGuideCenter.
   @objc public var layoutGuideCenter: LayoutGuideCenter? {
     didSet {
@@ -111,7 +114,7 @@ class TabStripViewController: UIViewController,
 
   override func viewDidLoad() {
     super.viewDidLoad()
-    view.backgroundColor = UIColor(named: kGroupedPrimaryBackgroundColor)
+    view.backgroundColor = TabStripHelper.backgroundColor
 
     // Don't clip to bound the collection view to allow the shadow of the long press to be displayed fully.
     // The trailing placeholder will ensure that the cells aren't displayed out of the bounds.
@@ -135,7 +138,7 @@ class TabStripViewController: UIViewController,
     newTabButton.isIncognito = isIncognito
     view.addSubview(newTabButton)
 
-    if TabStripFeaturesUtils.isModernTabStripNewTabButtonDynamic() {
+    if TabStripFeaturesUtils.isModernTabStripNewTabButtonDynamic {
       NSLayoutConstraint.activate([
         collectionView.trailingAnchor.constraint(
           equalTo: view.trailingAnchor, constant: -TabStripConstants.NewTabButton.width),
@@ -190,6 +193,9 @@ class TabStripViewController: UIViewController,
   override func viewWillTransition(
     to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator
   ) {
+    // Dismisses the confirmation dialog for tab group if it's displayed.
+    tabGroupConfirmationHandler?.dismissTabGroupConfirmation()
+
     super.viewWillTransition(to: size, with: coordinator)
     weak var weakSelf = self
     coordinator.animate(alongsideTransition: nil) { _ in
@@ -248,6 +254,7 @@ class TabStripViewController: UIViewController,
     // To make the animation smoother, try to select the item if it's already
     // present in the collection view.
     selectItem(selectedItem)
+    reconfigureItems(itemIdentifiers)
     applySnapshot(
       dataSource: dataSource, snapshot: snapshot,
       animatingDifferences: !UIAccessibility.isReduceMotionEnabled,
@@ -431,6 +438,15 @@ class TabStripViewController: UIViewController,
     newTabButton.IPHHighlighted = iphHighlighted
   }
 
+  // MARK: - TabStripGroupCellDelegate
+
+  func collapseOrExpandTapped(for cell: TabStripGroupCell?) {
+    guard let cell = cell,
+      let indexPath = collectionView.indexPath(for: cell)
+    else { return }
+    collapseOrExpandGroup(at: indexPath)
+  }
+
   // MARK: - TabStripTabCellDelegate
 
   func closeButtonTapped(for cell: TabStripTabCell?) {
@@ -454,6 +470,18 @@ class TabStripViewController: UIViewController,
   }
 
   // MARK: - Private
+
+  /// Collapses or expands the group at `indexPath`.
+  func collapseOrExpandGroup(at indexPath: IndexPath) {
+    guard let tabGroupItem = dataSource.itemIdentifier(for: indexPath)?.tabGroupItem else {
+      return
+    }
+    if tabGroupItem.collapsed {
+      mutator?.expandGroup(tabGroupItem)
+    } else {
+      mutator?.collapseGroup(tabGroupItem)
+    }
+  }
 
   /// Applies `snapshot` to `dataSource` and updates the collection view layout.
   private func applySnapshot(
@@ -570,7 +598,9 @@ class TabStripViewController: UIViewController,
       let itemData = self.itemData[itemIdentifier] as? TabStripItemData
       cell.title = item.title
       cell.titleContainerBackgroundColor = item.groupColor
+      cell.titleTextColor = item.foregroundColor
       cell.collapsed = item.collapsed
+      cell.delegate = self
       cell.groupStrokeColor = itemData?.groupStrokeColor
       cell.accessibilityIdentifier = self.tabTripGroupCellAccessibilityIdentifier(
         index: indexPath.item)
@@ -675,7 +705,7 @@ class TabStripViewController: UIViewController,
 
   /// Scrolls the collection view to the given horizontal `offset`.
   func scrollToContentOffset(_ offset: CGFloat) {
-    // TODO(crbug.com/325415449): Update this when #unavailable is rocognized by
+    // TODO(crbug.com/325415449): Update this when #unavailable is recognized by
     // the formatter.
     if #available(iOS 17.0, *) {
     } else {
@@ -761,13 +791,6 @@ class TabStripViewController: UIViewController,
 
 extension TabStripViewController: UICollectionViewDelegateFlowLayout {
 
-  func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-    if #available(iOS 16, *) {
-    } else {
-      self.collectionView(collectionView, performPrimaryActionForItemAt: indexPath)
-    }
-  }
-
   func collectionView(_ collectionView: UICollectionView, shouldSelectItemAt indexPath: IndexPath)
     -> Bool
   {
@@ -788,12 +811,8 @@ extension TabStripViewController: UICollectionViewDelegateFlowLayout {
     switch itemIdentifier.item {
     case .tab(let tabSwitcherItem):
       mutator?.activate(tabSwitcherItem)
-    case .group(let tabGroupItem):
-      if tabGroupItem.collapsed {
-        mutator?.expandGroup(tabGroupItem)
-      } else {
-        mutator?.collapseGroup(tabGroupItem)
-      }
+    case .group(_):
+      collapseOrExpandGroup(at: indexPath)
     }
   }
 
@@ -801,6 +820,17 @@ extension TabStripViewController: UICollectionViewDelegateFlowLayout {
     _ collectionView: UICollectionView,
     contextMenuConfiguration configuration: UIContextMenuConfiguration,
     highlightPreviewForItemAt indexPath: IndexPath
+  ) -> UITargetedPreview? {
+    guard let tabStripCell = collectionView.cellForItem(at: indexPath) as? TabStripCell else {
+      return nil
+    }
+    return UITargetedPreview(view: tabStripCell, parameters: tabStripCell.dragPreviewParameters)
+  }
+
+  func collectionView(
+    _ collectionView: UICollectionView,
+    contextMenuConfiguration configuration: UIContextMenuConfiguration,
+    dismissalPreviewForItemAt indexPath: IndexPath
   ) -> UITargetedPreview? {
     guard let tabStripCell = collectionView.cellForItem(at: indexPath) as? TabStripCell else {
       return nil
@@ -975,6 +1005,16 @@ extension TabStripViewController: UICollectionViewDragDelegate, UICollectionView
 
   func collectionView(
     _ collectionView: UICollectionView,
+    dropPreviewParametersForItemAt indexPath: IndexPath
+  ) -> UIDragPreviewParameters? {
+    guard let tabStripCell = collectionView.cellForItem(at: indexPath) as? TabStripCell else {
+      return nil
+    }
+    return tabStripCell.dragPreviewParameters
+  }
+
+  func collectionView(
+    _ collectionView: UICollectionView,
     dropSessionDidUpdate session: UIDropSession,
     withDestinationIndexPath destinationIndexPath: IndexPath?
   ) -> UICollectionViewDropProposal {
@@ -1015,13 +1055,13 @@ extension TabStripViewController: UICollectionViewDragDelegate, UICollectionView
       if let destinationIndexPath = coordinator.destinationIndexPath {
         destinationIndex = destinationIndexPath.item
       }
-      let dropIndexPah: IndexPath = IndexPath(item: destinationIndex, section: 0)
+      let dropIndexPath = dropIndexPath(item: item, destinationIndex: destinationIndex)
       dragEndAtNewIndex = true
 
       // Drop synchronously if local object is available.
       if item.dragItem.localObject != nil {
         weak var weakSelf = self
-        coordinator.drop(item.dragItem, toItemAt: dropIndexPah).addCompletion {
+        coordinator.drop(item.dragItem, toItemAt: dropIndexPath).addCompletion {
           _ in
           weakSelf?.dropAnimationInProgress = false
         }
@@ -1033,7 +1073,7 @@ extension TabStripViewController: UICollectionViewDragDelegate, UICollectionView
       } else {
         // Drop asynchronously if local object is not available.
         let placeholder: UICollectionViewDropPlaceholder = UICollectionViewDropPlaceholder(
-          insertionIndexPath: dropIndexPah,
+          insertionIndexPath: dropIndexPath,
           reuseIdentifier: TabStripConstants.CollectionView.tabStripTabCellReuseIdentifier)
         placeholder.previewParametersProvider = {
           (placeholderCell: UICollectionViewCell) -> UIDragPreviewParameters? in
@@ -1049,6 +1089,36 @@ extension TabStripViewController: UICollectionViewDragDelegate, UICollectionView
           from: item.dragItem.itemProvider, to: UInt(destinationIndex), placeholderContext: context)
       }
     }
+  }
+
+  // MARK: - Private
+
+  /// Determines the IndexPath where a dropped UICollectionViewDropItem should be inserted.
+  private func dropIndexPath(item: UICollectionViewDropItem, destinationIndex: Int) -> IndexPath {
+    let defaultIndexPath = IndexPath(item: destinationIndex, section: 0)
+
+    // Item originates from a different collection view.
+    guard let sourceIndexPath = item.sourceIndexPath else {
+      return defaultIndexPath
+    }
+
+    // Item is dropped before its original position.
+    if sourceIndexPath.item > destinationIndex {
+      return defaultIndexPath
+    }
+
+    guard let draggedItemIdentifier = draggedItemIdentifier,
+      let itemData = self.itemData[draggedItemIdentifier] as? TabStripItemData
+    else {
+      return defaultIndexPath
+    }
+
+    // If the tab item is the only item in its group, adjust drop position.
+    if itemData.groupStrokeColor != nil && itemData.isFirstTabInGroup && itemData.isLastTabInGroup {
+      return IndexPath(item: destinationIndex - 1, section: 0)
+    }
+
+    return defaultIndexPath
   }
 
 }

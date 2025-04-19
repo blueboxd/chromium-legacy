@@ -224,9 +224,10 @@ GlanceablesClassroomItemView::GlanceablesClassroomItemView(
                          : base::JoinString({due_date, due_time}, u", ")));
   }
 
-  SetAccessibleRole(ax::mojom::Role::kListItem);
+  GetViewAccessibility().SetRole(ax::mojom::Role::kListItem);
   GetViewAccessibility().SetIsLeaf(true);
-  SetAccessibleName(base::UTF8ToUTF16(assignment->course_work_title));
+  GetViewAccessibility().SetName(
+      base::UTF8ToUTF16(assignment->course_work_title));
   GetViewAccessibility().SetDescription(
       base::JoinString(a11y_description_parts, u", "));
 

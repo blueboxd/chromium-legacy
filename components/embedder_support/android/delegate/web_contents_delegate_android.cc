@@ -10,7 +10,6 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "components/embedder_support/android/delegate/color_picker_bridge.h"
-#include "components/embedder_support/android/web_contents_delegate_jni_headers/WebContentsDelegateAndroid_jni.h"
 #include "components/input/native_web_keyboard_event.h"
 #include "content/public/browser/color_chooser.h"
 #include "content/public/browser/global_request_id.h"
@@ -24,12 +23,16 @@
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
+#include "ui/android/color_utils_android.h"
 #include "ui/android/view_android.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/android/gurl_android.h"
 #include "url/gurl.h"
+
+// Must come after all headers that specialize FromJniType() / ToJniType().
+#include "components/embedder_support/android/web_contents_delegate_jni_headers/WebContentsDelegateAndroid_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
@@ -285,7 +288,7 @@ void WebContentsDelegateAndroid::UpdateTargetURL(WebContents* source,
 
 bool WebContentsDelegateAndroid::HandleKeyboardEvent(
     WebContents* source,
-    const content::NativeWebKeyboardEvent& event) {
+    const input::NativeWebKeyboardEvent& event) {
   const JavaRef<jobject>& key_event = event.os_event;
   if (!key_event.is_null()) {
     JNIEnv* env = AttachCurrentThread();
@@ -481,6 +484,24 @@ void WebContentsDelegateAndroid::DidBackForwardTransitionAnimationChange() {
   }
   Java_WebContentsDelegateAndroid_didBackForwardTransitionAnimationChange(env,
                                                                           obj);
+}
+
+content::BackForwardTransitionAnimationManager::FallbackUXConfig
+WebContentsDelegateAndroid::GetBackForwardTransitionFallbackUXConfig() {
+  JNIEnv* env = AttachCurrentThread();
+  // Java colors are already in 32bit ARBG, same as `SkColor`.
+  jint favicon_background =
+      Java_WebContentsDelegateAndroid_getBackForwardTransitionFallbackUXFaviconBackgroundColor(
+          env, GetJavaDelegate(env));
+  jint page_background =
+      Java_WebContentsDelegateAndroid_getBackForwardTransitionFallbackUXPageBackgroundColor(
+          env, GetJavaDelegate(env));
+  return {
+      .rounded_rectangle_color =
+          SkColor4f::FromColor(static_cast<SkColor>(favicon_background)),
+      .background_color =
+          SkColor4f::FromColor(static_cast<SkColor>(page_background)),
+  };
 }
 
 void JNI_WebContentsDelegateAndroid_MaybeCopyContentAreaAsBitmapOutcome(

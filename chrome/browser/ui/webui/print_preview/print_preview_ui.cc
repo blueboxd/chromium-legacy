@@ -2,13 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "ash/constants/ash_features.h"
 #include "base/check.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/id_map.h"
@@ -22,6 +26,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -38,7 +43,6 @@
 #include "chrome/browser/printing/printer_query.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/plural_string_handler.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_handler.h"
@@ -47,10 +51,7 @@
 #include "chrome/common/buildflags.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/grit/branded_strings.h"
-#include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/pdf_resources.h"
 #include "chrome/grit/pdf_resources_map.h"
 #include "chrome/grit/print_preview_resources.h"
 #include "chrome/grit/print_preview_resources_map.h"
@@ -61,13 +62,11 @@
 #include "components/printing/browser/print_manager_utils.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/user_manager/user_manager.h"
-#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/url_constants.h"
-#include "extensions/common/constants.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "printing/buildflags/buildflags.h"
 #include "printing/mojom/print.mojom.h"
@@ -75,7 +74,6 @@
 #include "printing/print_job_constants.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -395,7 +393,8 @@ PrintPreviewHandler* CreatePrintPreviewHandlers(content::WebUI* web_ui) {
 }  // namespace
 
 PrintPreviewUIConfig::PrintPreviewUIConfig()
-    : WebUIConfig(content::kChromeUIScheme, chrome::kChromeUIPrintHost) {}
+    : DefaultWebUIConfig(content::kChromeUIScheme, chrome::kChromeUIPrintHost) {
+}
 
 bool PrintPreviewUIConfig::IsWebUIEnabled(
     content::BrowserContext* browser_context) {
@@ -409,12 +408,6 @@ bool PrintPreviewUIConfig::ShouldHandleURL(const GURL& url) {
 }
 
 PrintPreviewUIConfig::~PrintPreviewUIConfig() = default;
-
-std::unique_ptr<content::WebUIController>
-PrintPreviewUIConfig::CreateWebUIController(content::WebUI* web_ui,
-                                            const GURL& url) {
-  return std::make_unique<PrintPreviewUI>(web_ui);
-}
 
 WEB_UI_CONTROLLER_TYPE_IMPL(PrintPreviewUI)
 
@@ -548,9 +541,17 @@ void PrintPreviewUI::NotifyUIPreviewDocumentReady(
     base::TimeDelta display_time =
         base::TimeTicks::Now() - initial_preview_start_time_;
     base::UmaHistogramTimes("PrintPreview.InitialDisplayTime", display_time);
+    base::UmaHistogramCustomTimes("PrintPreview.InitialDisplayTime.LongTimes",
+                                  display_time,
+                                  /*min=*/base::Seconds(10),
+                                  /*max=*/base::Seconds(60), /*buckets=*/50);
     if (first_print_usage_since_startup_) {
       base::UmaHistogramTimes("PrintPreview.InitialDisplayTimeFirstPrint",
                               display_time);
+      base::UmaHistogramCustomTimes(
+          "PrintPreview.InitialDisplayTimeFirstPrint.LongTimes", display_time,
+          /*min=*/base::Seconds(10), /*max=*/base::Seconds(60),
+          /*buckets=*/50);
     }
     initial_preview_start_time_ = base::TimeTicks();
   }
@@ -1116,7 +1117,7 @@ void PrintPreviewUI::SetDelegateForTesting(TestDelegate* delegate) {
 }
 
 void PrintPreviewUI::SetSelectedFileForTesting(const base::FilePath& path) {
-  handler_->FileSelectedForTesting(path, 0, nullptr);
+  handler_->FileSelectedForTesting(path, 0);  // IN-TEST
 }
 
 void PrintPreviewUI::SetPdfSavedClosureForTesting(base::OnceClosure closure) {

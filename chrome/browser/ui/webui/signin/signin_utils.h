@@ -6,8 +6,10 @@
 #define CHROME_BROWSER_UI_WEBUI_SIGNIN_SIGNIN_UTILS_H_
 
 #include <string>
+#include <variant>
 
 #include "base/functional/callback.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "build/chromeos_buildflags.h"
 
@@ -38,7 +40,24 @@ enum SigninChoice {
   SIGNIN_CHOICE_SIZE,
 };
 
+// Result of the operation done after the user choice.
+enum SigninChoiceOperationResult {
+  SIGNIN_TIMEOUT = 0,
+  SIGNIN_SILENT_SUCCESS = 1,
+  SIGNIN_ERROR = 2,
+  SIGNIN_CONFIRM_SUCCESS = 3
+};
+
+// Callback with the signin choice and a handler for when the choice has been
+// handled.
+using SigninChoiceOperationDoneCallback =
+    base::OnceCallback<void(SigninChoiceOperationResult)>;
+using SigninChoiceWithConfirmationCallback =
+    base::OnceCallback<void(SigninChoice, SigninChoiceOperationDoneCallback)>;
 using SigninChoiceCallback = base::OnceCallback<void(SigninChoice)>;
+using SigninChoiceCallbackVariant =
+    std::variant<SigninChoiceCallback,
+                 signin::SigninChoiceWithConfirmationCallback>;
 
 // Gets a webview within an auth page that has the specified parent frame name
 // (i.e. <webview name="foobar"></webview>).
@@ -52,6 +71,11 @@ extensions::WebViewGuest* GetAuthWebViewGuest(
 // Gets the browser containing the web UI; if none is found, returns the last
 // active browser for web UI's profile.
 Browser* GetDesktopBrowser(content::WebUI* web_ui);
+
+// After this time delta, user must see a screen. If it was impossible to get
+// the CanShowHistorySyncOptInsWithoutMinorModeRestrictions capability before
+// the deadline, the screen should be configured in minor-safe way.
+base::TimeDelta GetMinorModeRestrictionsDeadline();
 
 // Sets the height of the WebUI modal dialog after its initialization. This is
 // needed to better accomodate different locales' text heights.

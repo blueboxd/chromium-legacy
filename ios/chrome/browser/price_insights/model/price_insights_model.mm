@@ -8,6 +8,8 @@
 #import "components/commerce/core/price_tracking_utils.h"
 #import "components/commerce/core/shopping_service.h"
 #import "components/commerce/core/subscriptions/subscriptions_storage.h"
+#import "components/feature_engagement/public/event_constants.h"
+#import "components/feature_engagement/public/feature_constants.h"
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/commerce/model/shopping_service_factory.h"
 #import "ios/chrome/browser/contextual_panel/model/contextual_panel_item_configuration.h"
@@ -88,7 +90,8 @@ void PriceInsightsModel::OnProductInfoUrlReceived(
       url, base::BindOnce(&PriceInsightsModel::OnPriceInsightsInfoUrlReceived,
                           weak_ptr_factory_.GetWeakPtr()));
 
-  bool can_track_price = CanTrackPrice(info);
+  bool can_track_price =
+      shopping_service_->IsShoppingListEligible() && CanTrackPrice(info);
   price_insights_executions_[url]->config->can_price_track = can_track_price;
   if (can_track_price && info.value().product_cluster_id.has_value()) {
     uint64_t cluster_id = info.value().product_cluster_id.value();
@@ -168,6 +171,14 @@ void PriceInsightsModel::UpdatePriceInsightsItemConfig(const GURL& url) {
       ContextualPanelItemConfiguration::EntrypointImageType::SFSymbol;
   execution_it->second->config->accessibility_label =
       l10n_util::GetStringUTF8(IDS_PRICE_INSIGHTS_ACCESSIBILITY);
+  execution_it->second->config->iph_feature =
+      &feature_engagement::kIPHiOSContextualPanelPriceInsightsFeature;
+  execution_it->second->config->iph_entrypoint_used_event_name =
+      feature_engagement::events::
+          kIOSContextualPanelPriceInsightsEntrypointUsed;
+  execution_it->second->config->iph_entrypoint_explicitly_dismissed =
+      feature_engagement::events::
+          kIOSContextualPanelPriceInsightsEntrypointExplicitlyDismissed;
 
   if (!execution_it->second->config->price_insights_info.has_value()) {
     execution_it->second->config->relevance =
@@ -219,6 +230,10 @@ void PriceInsightsModel::UpdatePriceInsightsItemConfig(const GURL& url) {
       ContextualPanelItemConfiguration::high_relevance;
   execution_it->second->config->accessibility_label = message;
   execution_it->second->config->entrypoint_message = message;
+  execution_it->second->config->iph_title = message;
+  execution_it->second->config->iph_text =
+      l10n_util::GetStringUTF8(IDS_INSIGHTS_RICH_IPH_TEXT);
+  execution_it->second->config->iph_image_name = "rich_iph_price_insights";
 }
 
 PriceInsightsItemConfiguration::PriceInsightsItemConfiguration()
@@ -238,8 +253,15 @@ PriceInsightsItemConfiguration::PriceInsightsItemConfiguration(
   entrypoint_message = config->entrypoint_message;
   accessibility_label = config->accessibility_label;
   entrypoint_image_name = config->entrypoint_image_name;
+  iph_feature = config->iph_feature;
+  iph_entrypoint_used_event_name = config->iph_entrypoint_used_event_name;
+  iph_entrypoint_explicitly_dismissed =
+      config->iph_entrypoint_explicitly_dismissed;
   image_type = config->image_type;
   relevance = config->relevance;
+  iph_title = config->iph_title;
+  iph_text = config->iph_text;
+  iph_image_name = config->iph_image_name;
 }
 
 PriceInsightsExecution::PriceInsightsExecution() = default;

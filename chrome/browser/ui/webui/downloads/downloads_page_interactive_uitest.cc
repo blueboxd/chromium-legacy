@@ -39,7 +39,7 @@ class DownloadsPageInteractiveUitest
  public:
   DownloadsPageInteractiveUitest() {
     feature_list_.InitAndEnableFeature(
-        safe_browsing::kImprovedDownloadPageWarnings);
+        safe_browsing::kDangerousDownloadInterstitial);
   }
   ~DownloadsPageInteractiveUitest() override = default;
 
@@ -344,6 +344,26 @@ class DownloadsPageInteractiveUitestWithDangerType
   }
 };
 
+template <download::DownloadDangerType DangerType>
+class DownloadsPageInteractiveUitestWithDangerTypeForBypassDialog
+    : public DownloadsPageInteractiveUitestWithDangerType<DangerType> {
+ public:
+  DownloadsPageInteractiveUitestWithDangerTypeForBypassDialog() {
+    feature_list_.InitAndDisableFeature(
+        safe_browsing::kDangerousDownloadInterstitial);
+  }
+  ~DownloadsPageInteractiveUitestWithDangerTypeForBypassDialog() override =
+      default;
+
+  void SetUpOnMainThread() override {
+    DownloadsPageInteractiveUitestWithDangerType<
+        DangerType>::SetUpOnMainThread();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // Uncommon downloads follow the "suspicious" pattern and show up with grey
 // icons and text. They can be validated from the page directly without a
 // confirmation dialog.
@@ -407,7 +427,13 @@ IN_PROC_BROWSER_TEST_F(DownloadsPageInteractiveUitestDangerous,
                   WaitForNoDownloads());
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadsPageInteractiveUitestDangerous,
+// Dangerous downloads follow the "dangerous" pattern and show up with red
+// icons and text. They can be validated only from the confirmation dialog.
+using DownloadsPageInteractiveUitestDangerousFromBypassDialog =
+    DownloadsPageInteractiveUitestWithDangerTypeForBypassDialog<
+        download::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT>;
+
+IN_PROC_BROWSER_TEST_F(DownloadsPageInteractiveUitestDangerousFromBypassDialog,
                        ValidateDangerousFileFromPrompt) {
   RunTestSequence(
       OpenDownloadsPage(),                                           //
@@ -420,7 +446,7 @@ IN_PROC_BROWSER_TEST_F(DownloadsPageInteractiveUitestDangerous,
       WaitForTopmostItemDanger(false));
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadsPageInteractiveUitestDangerous,
+IN_PROC_BROWSER_TEST_F(DownloadsPageInteractiveUitestDangerousFromBypassDialog,
                        CancelValidateDangerousFile) {
   RunTestSequence(OpenDownloadsPage(),                               //
                   DownloadDangerousTestFile(),                       //

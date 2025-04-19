@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "media/gpu/test/video_encoder/video_encoder_test_environment.h"
 
 #include <iterator>
@@ -405,10 +410,10 @@ base::FilePath VideoEncoderTestEnvironment::OutputFilePath(
           .Append(GetTestOutputFilePath())
           .Append(output_bitstream_file_base_name_.ReplaceExtension(extension));
   if (svc_enable) {
+    auto file_name_suffix =
+        base::StringPrintf(".SL%d.TL%d", spatial_idx, temporal_idx);
     output_bitstream_filepath =
-        output_bitstream_filepath.InsertBeforeExtensionASCII(
-            FILE_PATH_LITERAL(".SL") + base::NumberToString(spatial_idx) +
-            FILE_PATH_LITERAL(".TL") + base::NumberToString(temporal_idx));
+        output_bitstream_filepath.InsertBeforeExtensionASCII(file_name_suffix);
   }
 
   return output_bitstream_filepath;

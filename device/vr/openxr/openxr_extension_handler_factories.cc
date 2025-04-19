@@ -18,7 +18,7 @@
 
 #if BUILDFLAG(IS_ANDROID)
 #include "device/vr/openxr/android/openxr_anchor_manager_android.h"
-#include "device/vr/openxr/android/openxr_hand_tracker_android.h"
+#include "device/vr/openxr/android/openxr_depth_sensor_android.h"
 #include "device/vr/openxr/android/openxr_light_estimator_android.h"
 #include "device/vr/openxr/android/openxr_scene_understanding_manager_android.h"
 #include "device/vr/openxr/android/openxr_stage_bounds_provider_android.h"
@@ -33,8 +33,6 @@ GetExtensionHandlerFactories() {
   // List platform-specific extensions first as they should generally be
   // preferred on the platforms that they are supported for.
 #if BUILDFLAG(IS_ANDROID)
-          new OpenXrHandTrackerAndroidFactory(),
-
           new OpenXrStageBoundsProviderAndroidFactory(),
 
           new OpenXrUnboundedSpaceProviderAndroidFactory(),
@@ -44,6 +42,8 @@ GetExtensionHandlerFactories() {
           new OpenXrAnchorManagerAndroidFactory(),
 
           new OpenXrLightEstimatorAndroidFactory(),
+
+          new OpenXrDepthSensorAndroidFactory(),
 #endif
 
           // List the hand trackers that can supply hand interaction data (e.g.

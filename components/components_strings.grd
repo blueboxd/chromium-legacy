@@ -322,6 +322,7 @@
       <part file="privacy_sandbox_chrome_strings.grdp" />
       <part file="protocol_handler_strings.grdp" />
       <part file="reset_password_strings.grdp" />
+      <part file="saved_tab_groups_strings.grdp" />
       <part file="search_engine_choice_strings.grdp" />
       <part file="security_interstitials_strings.grdp" />
       <part file="send_tab_to_self_strings.grdp" />
@@ -333,13 +334,12 @@
       <part file="sync_ui_strings.grdp" />
       <part file="translate_strings.grdp" />
       <part file="tab_groups_strings.grdp" />
+      <part file="tab_resume_strings.grdp" />
       <part file="undo_strings.grdp" />
       <part file="user_education_strings.grdp" />
       <part file="version_ui_strings.grdp" />
       <part file="webapps_strings.grdp" />
-      <if expr="use_blink">
-        <part file="history_clusters_strings.grdp" />
-      </if>
+      <part file="history_clusters_strings.grdp" />
       <if expr="is_android">
         <part file="android_system_error_page_strings.grdp" />
         <part file="external_intents_strings.grdp" />

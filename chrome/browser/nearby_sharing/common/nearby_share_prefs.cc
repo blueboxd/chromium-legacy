@@ -8,7 +8,9 @@
 
 #include "base/files/file_path.h"
 #include "base/time/time.h"
+#include "chrome/browser/nearby_sharing/common/nearby_share_features.h"
 #include "chromeos/ash/services/nearby/public/mojom/nearby_share_settings.mojom.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/prefs/pref_registry.h"
 #include "components/prefs/pref_registry_simple.h"
 
@@ -62,17 +64,24 @@ const char kNearbySharingNextVisibilityReminderTimePrefName[] =
 void RegisterNearbySharingPrefs(PrefRegistrySimple* registry) {
   // These prefs are not synced across devices on purpose.
 
-  registry->RegisterBooleanPref(prefs::kNearbySharingEnabledPrefName,
-                                /*default_value=*/false);
+  if (chromeos::features::IsQuickShareV2Enabled()) {
+    registry->RegisterBooleanPref(prefs::kNearbySharingEnabledPrefName,
+                                  /*default_value=*/true);
+  } else {
+    registry->RegisterBooleanPref(prefs::kNearbySharingEnabledPrefName,
+                                  /*default_value=*/false);
+  }
+
   registry->RegisterIntegerPref(
       prefs::kNearbySharingFastInitiationNotificationStatePrefName,
       /*default_value=*/static_cast<int>(
           nearby_share::mojom::FastInitiationNotificationState::kEnabled));
   registry->RegisterBooleanPref(prefs::kNearbySharingOnboardingCompletePrefName,
                                 /*default_value=*/false);
-  registry->RegisterIntegerPref(prefs::kNearbySharingBackgroundVisibilityName,
-                                /*default_value=*/static_cast<int>(
-                                    nearby_share::mojom::Visibility::kUnknown));
+  registry->RegisterIntegerPref(
+      prefs::kNearbySharingBackgroundVisibilityName,
+      /*default_value=*/static_cast<int>(
+          nearby_share::mojom::Visibility::kYourDevices));
   registry->RegisterIntegerPref(prefs::kNearbySharingDataUsageName,
                                 /*default_value=*/static_cast<int>(
                                     nearby_share::mojom::DataUsage::kWifiOnly));

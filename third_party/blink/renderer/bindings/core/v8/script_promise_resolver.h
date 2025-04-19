@@ -122,10 +122,6 @@ class CORE_EXPORT ScriptPromiseResolverBase
 
   ScriptState* GetScriptState() const { return script_state_.Get(); }
 
-  const ExceptionContext& GetExceptionContext() const {
-    return exception_context_;
-  }
-
   template <typename IDLResolvedType>
   ScriptPromiseResolver<IDLResolvedType>* DowncastTo() {
 #if DCHECK_IS_ON()
@@ -238,7 +234,7 @@ class ScriptPromiseResolver final : public ScriptPromiseResolverBase {
  public:
   explicit ScriptPromiseResolver(ScriptState* script_state)
       : ScriptPromiseResolver(script_state,
-                              ExceptionContext(ExceptionContextType::kUnknown,
+                              ExceptionContext(v8::ExceptionContext::kUnknown,
                                                nullptr,
                                                nullptr)) {}
 
@@ -265,10 +261,10 @@ class ScriptPromiseResolver final : public ScriptPromiseResolverBase {
   // behavior and should only be used if a WPT needs it.
   template <typename BlinkType>
   void ResolveOverridingToCurrentContext(BlinkType value) {
+    OverrideScriptStateToCurrentContext();
     if (!PrepareToResolveOrReject<kResolving>()) {
       return;
     }
-    OverrideScriptStateToCurrentContext();
     ResolveOrReject<IDLResolvedType, BlinkType>(value);
   }
 

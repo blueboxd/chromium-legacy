@@ -131,9 +131,9 @@ void SuggestionWindowView::SetButtonHighlighted(
     } else {
       const views::View::Views& candidate_buttons =
           multiple_candidate_area_->children();
-      if (button.index < candidate_buttons.size()) {
+      if (button.suggestion_index < candidate_buttons.size()) {
         SetCandidateHighlighted(static_cast<IndexedSuggestionCandidateButton*>(
-                                    candidate_buttons[button.index]),
+                                    candidate_buttons[button.suggestion_index]),
                                 highlighted);
       }
     }
@@ -188,11 +188,7 @@ void SuggestionWindowView::OnThemeChanged() {
 SuggestionWindowView::SuggestionWindowView(gfx::NativeView parent,
                                            AssistiveDelegate* delegate,
                                            Orientation orientation)
-    : BubbleDialogDelegateView(nullptr,
-                               views::BubbleBorder::Arrow::TOP_LEFT,
-                               views::BubbleBorder::DIALOG_SHADOW,
-                               true),
-      delegate_(delegate) {
+    : delegate_(delegate) {
   DCHECK(parent);
   // AccessibleRole determines whether the content is announced on pop-up.
   // Inner content should not be announced when the window appears since this
@@ -209,7 +205,7 @@ SuggestionWindowView::SuggestionWindowView(gfx::NativeView parent,
           &AssistiveDelegate::AssistiveWindowButtonClicked,
           base::Unretained(delegate_),
           AssistiveWindowButton{.id = ui::ime::ButtonId::kSuggestion,
-                                .index = 0})));
+                                .suggestion_index = 0})));
   completion_view_->SetVisible(false);
   multiple_candidate_area_ = AddChildView(std::make_unique<views::View>());
   multiple_candidate_area_->SetVisible(false);
@@ -278,11 +274,13 @@ void SuggestionWindowView::ResizeCandidateArea(
                 &AssistiveDelegate::AssistiveWindowButtonClicked,
                 base::Unretained(delegate_),
                 AssistiveWindowButton{.id = ui::ime::ButtonId::kSuggestion,
-                                      .index = index}),
+                                      .suggestion_index = index}),
             /* candidate_text=*/new_candidates[index],
             // Label indexes start from "1", hence we increment index by one.
             /* index_text=*/base::FormatNumber(index + 1),
             use_legacy_candidate));
+    // TODO(crbug.com/40232718): See View::SetLayoutManagerUseConstrainedSpace.
+    candidate->SetLayoutManagerUseConstrainedSpace(false);
 
     auto subscription = candidate->AddStateChangedCallback(base::BindRepeating(
         [](SuggestionWindowView* window,
@@ -325,6 +323,7 @@ void SuggestionWindowView::Reorient(Orientation orientation,
 
 void SuggestionWindowView::MakeVisible() {
   multiple_candidate_area_->SetVisible(true);
+  SizeToContents();
   // Docs can put the cursor offscreen - force it onscreen.
   GetWidget()->SetBoundsConstrained(GetBubbleBounds());
 }

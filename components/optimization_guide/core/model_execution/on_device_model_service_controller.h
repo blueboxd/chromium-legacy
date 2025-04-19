@@ -22,6 +22,7 @@
 #include "components/optimization_guide/core/model_execution/feature_keys.h"
 #include "components/optimization_guide/core/model_execution/on_device_model_component.h"
 #include "components/optimization_guide/core/model_execution/on_device_model_metadata.h"
+#include "components/optimization_guide/core/model_execution/on_device_model_validator.h"
 #include "components/optimization_guide/core/model_execution/safety_model_info.h"
 #include "components/optimization_guide/core/model_execution/session_impl.h"
 #include "components/optimization_guide/core/model_info.h"
@@ -97,9 +98,6 @@ class OnDeviceModelServiceController
   void GetEstimatedPerformanceClass(
       GetEstimatedPerformanceClassCallback callback);
 
-  // Shuts down the service if there is no active model.
-  void ShutdownServiceIfNoModelLoaded();
-
   bool IsConnectedForTesting() {
     return base_model_remote_.is_bound() || service_remote_.is_bound();
   }
@@ -125,6 +123,14 @@ class OnDeviceModelServiceController
   // Called when the model adaptation remote is disconnected.
   void OnModelAdaptationRemoteDisconnected(ModelBasedCapabilityKey feature,
                                            ModelRemoteDisconnectReason reason);
+
+  // Add/remove observers for notifying on-device model availability changes.
+  void AddOnDeviceModelAvailabilityChangeObserver(
+      ModelBasedCapabilityKey feature,
+      OnDeviceModelAvailabilityObserver* observer);
+  void RemoveOnDeviceModelAvailabilityChangeObserver(
+      ModelBasedCapabilityKey feature,
+      OnDeviceModelAvailabilityObserver* observer);
 
   base::WeakPtr<OnDeviceModelServiceController> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
@@ -194,14 +200,24 @@ class OnDeviceModelServiceController
       on_device_model::ModelAssets assets);
 
   // Called when disconnected from the model.
-  void OnDisconnected();
+  void OnBaseModelDisconnected();
 
-  // Called when the remote (either `service_remote_` or `base_model_remote_` is
-  // idle.
-  void OnRemoteIdle();
+  // Called when `base_model_remote_` is idle.
+  void OnBaseModelRemoteIdle();
 
   scoped_refptr<const OnDeviceModelFeatureAdapter> GetFeatureAdapter(
       ModelBasedCapabilityKey feature);
+
+  // Begins the on-device model validation flow.
+  void StartValidation();
+
+  // Called when validation has finished or failed.
+  void FinishValidation(OnDeviceModelValidationResult result);
+
+  on_device_model::ModelAssetPaths PopulateModelPaths();
+
+  // Called to update the model availability changes for `feature`.
+  void NotifyModelAvailabilityChange(ModelBasedCapabilityKey feature);
 
   // This may be null in the destructor, otherwise non-null.
   std::unique_ptr<OnDeviceModelAccessController> access_controller_;
@@ -231,7 +247,20 @@ class OnDeviceModelServiceController
   base::flat_map<ModelBasedCapabilityKey, OnDeviceModelAdaptationMetadata>
       model_adaptation_metadata_;
 
+  // Whether a session has been started for the most recently updated model.
+  bool has_started_session_ = false;
+
+  std::unique_ptr<OnDeviceModelValidator> model_validator_;
+
+  std::map<ModelBasedCapabilityKey,
+           base::ObserverList<OnDeviceModelAvailabilityObserver>>
+      model_availability_change_observers_;
+
   SEQUENCE_CHECKER(sequence_checker_);
+
+  // Used to get weak pointers that are reset if the base model is updated.
+  base::WeakPtrFactory<OnDeviceModelServiceController>
+      base_model_scoped_weak_ptr_factory_{this};
 
   // Used to get `weak_ptr_` to self.
   base::WeakPtrFactory<OnDeviceModelServiceController> weak_ptr_factory_{this};

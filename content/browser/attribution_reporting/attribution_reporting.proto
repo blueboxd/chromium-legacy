@@ -54,6 +54,8 @@ message AttributionReadOnlySourceData {
 
   // If absent, will be deserialized using the defaults for the source type.
   optional TriggerData trigger_data = 8;
+
+  optional AttributionAggregationKey aggregatable_debug_key_piece = 9;
 }
 
 message AttributionEventLevelMetadata {
@@ -67,12 +69,12 @@ message AttributionCommonAggregatableMetadata {
     EXCLUDE = 1;
   }
 
-  optional string verification_token = 2;
   optional SourceRegistrationTimeConfig source_registration_time_config = 3;
   optional string coordinator_origin = 4;
   optional string trigger_context_id = 5;
+  optional uint32 filtering_id_max_bytes = 6;
 
-  reserved 1;
+  reserved 1, 2;
   reserved "coordinator";
 }
 
@@ -82,6 +84,7 @@ message AttributionAggregatableMetadata {
   message Contribution {
     optional AttributionAggregationKey key = 1;
     optional uint32 value = 2;
+    optional uint64 filtering_id = 3;
   }
   repeated Contribution contributions = 2;
 }

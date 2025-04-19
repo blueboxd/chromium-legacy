@@ -293,7 +293,7 @@ void ObservableEventListener::Trace(Visitor* visitor) const {
 }
 
 // This is the synthetic subscribe callback that we construct `Observable`s with
-// that are created by `EventTarget#on()`. `OnSubscribe()` adds a brand new
+// that are created by `EventTarget#when()`. `OnSubscribe()` adds a brand new
 // `ObservableEventListener` as a new event listener for events named
 // `event_type_`. When events are received, they are propagated directly to
 // `Subscriber`.
@@ -311,7 +311,7 @@ class ObservableSubscribeDelegate final : public Observable::SubscribeDelegate {
  private:
   // This is the event target for which we will vend per-subscriber event
   // listeners. The typical flow here looks like this:
-  //   1.) `EventTarget::on()` is called, returning an observable whose
+  //   1.) `EventTarget::when()` is called, returning an observable whose
   //       subscribe callback is `this` (instead of a JS-provided v8
   //       callback).
   //   2.) `Observable::subscribe()` is called by JS, and thus `OnSubscribe()`
@@ -411,9 +411,7 @@ ServiceWorker* EventTarget::ToServiceWorker() {
   return nullptr;
 }
 
-PortalHost* EventTarget::ToPortalHost() {
-  return nullptr;
-}
+void EventTarget::ResetEventQueueStatus(const AtomicString& event_type) {}
 
 // An instance of EventTargetImpl is returned because EventTarget
 // is an abstract class, and making it non-abstract is unfavorable
@@ -516,8 +514,8 @@ void EventTarget::SetDefaultAddEventListenerOptions(
   }
 }
 
-Observable* EventTarget::on(const AtomicString& event_type,
-                            const ObservableEventListenerOptions* options) {
+Observable* EventTarget::when(const AtomicString& event_type,
+                              const ObservableEventListenerOptions* options) {
   DCHECK(RuntimeEnabledFeatures::ObservableAPIEnabled());
   return MakeGarbageCollected<Observable>(
       GetExecutionContext(), MakeGarbageCollected<ObservableSubscribeDelegate>(
@@ -1080,7 +1078,7 @@ bool EventTarget::FireEventListeners(Event& event,
   bool fired_listener = false;
 
   for (auto& registered_listener : entry) {
-    if (UNLIKELY(registered_listener->Removed())) {
+    if (registered_listener->Removed()) [[unlikely]] {
       continue;
     }
 
@@ -1179,6 +1177,7 @@ void EventTarget::DispatchEnqueuedEvent(Event* event,
     event->async_task_context()->Cancel();
     return;
   }
+  this->ResetEventQueueStatus(event->type());
   probe::AsyncTask async_task(context, event->async_task_context());
   DispatchEvent(*event);
 }

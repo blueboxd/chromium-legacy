@@ -59,8 +59,8 @@ source_set("base") {
     "cpu_utils.h",
     "directory_service_client.cc",
     "directory_service_client.h",
-    "hostname.cc",
-    "hostname.h",
+    "fqdn.cc",
+    "fqdn.h",
     "internal_headers.h",
     "is_google_email.cc",
     "is_google_email.h",
@@ -137,6 +137,7 @@ source_set("base") {
     ":remoting_base_version",
     "//build:chromeos_buildflags",
     "//google_apis",
+    "//google_apis/common:request_util",
     "//remoting/proto:internal_structs",
     "//remoting/proto/remoting/v1:cloud_proto",
     "//remoting/proto/remoting/v1:directory_proto",
@@ -223,31 +224,33 @@ source_set("authorization") {
 }
 
 source_set("breakpad") {
-  sources = [ "breakpad.h" ]
+  sources = [
+    "breakpad.h",
+    "breakpad_utils.cc",
+    "breakpad_utils.h",
+  ]
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
-  deps = [ "//base" ]
+  deps = [
+    ":remoting_base_version",
+    "//base",
+  ]
 
   if (is_linux || is_chromeos) {
+    sources += [ "breakpad_linux.cc" ]
+    deps += [ "//third_party/breakpad:client" ]
+  } else if (is_mac) {
+    sources += [ "breakpad_mac.mm" ]
+  } else if (is_win) {
     sources += [
-      "breakpad_linux.cc",
-      "breakpad_utils_linux.cc",
-      "breakpad_utils_linux.h",
+      "breakpad_server.cc",
+      "breakpad_win.cc",
     ]
     deps += [
-      ":remoting_base_version",
-      "//third_party/breakpad:client",
+      ":logging",
+      "//third_party/breakpad:breakpad_handler",
     ]
-  }
-
-  if (is_mac) {
-    sources += [ "breakpad_mac.mm" ]
-  }
-
-  if (is_win) {
-    sources += [ "breakpad_win.cc" ]
-    deps += [ "//third_party/breakpad:breakpad_handler" ]
   }
 }
 
@@ -429,12 +432,6 @@ source_set("unit_tests") {
 
   if (is_win || is_chromeos_ash) {
     deps += [ "//third_party/breakpad:client" ]
-  }
-
-  if (is_win) {
-    sources += [ "breakpad_win_unittest.cc" ]
-    deps += [ "//third_party/breakpad:breakpad_handler" ]
-    libs = [ "rpcrt4.lib" ]  # For UuidCreate in breakpad_win_unittest.cc.
   }
 }
 

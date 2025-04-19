@@ -23,6 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_SELECTOR_LIST_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_SELECTOR_LIST_H_
 
@@ -127,12 +132,10 @@ class CORE_EXPORT CSSSelectorList : public GarbageCollected<CSSSelectorList> {
   unsigned MaximumSpecificity() const;
 
   // See CSSSelector::Reparent.
-  static void Reparent(CSSSelector* selector_list,
-                       StyleRule* old_parent,
-                       StyleRule* new_parent);
+  static void Reparent(CSSSelector* selector_list, StyleRule* new_parent);
 
-  void Reparent(StyleRule* old_parent, StyleRule* new_parent) {
-    CSSSelectorList::Reparent(first_selector_, old_parent, new_parent);
+  void Reparent(StyleRule* new_parent) {
+    CSSSelectorList::Reparent(first_selector_, new_parent);
   }
 
   CSSSelectorList(const CSSSelectorList&) = delete;

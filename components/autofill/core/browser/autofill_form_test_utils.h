@@ -48,6 +48,8 @@ struct FieldDescription {
   bool is_visible = true;
   std::optional<std::u16string> label;
   std::optional<std::u16string> name;
+  std::optional<std::u16string> name_attribute;
+  std::optional<std::u16string> id_attribute;
   std::optional<std::u16string> value;
   std::optional<std::u16string> placeholder;
   std::optional<uint64_t> max_length;
@@ -131,6 +133,9 @@ FormFieldData GetFormFieldData(const FieldDescription& fd);
 
 // Creates a FormData to be fed to the parser.
 FormData GetFormData(const FormDescription& test_form_attributes);
+
+// Creates a FormData with `field_types`.
+FormData GetFormData(const std::vector<FieldType>& field_types);
 
 // Extracts the heuristic types from the form description. If the heuristic type
 // is not explicitly set for a given field it is extracted from the field's

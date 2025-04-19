@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/ui/views/performance_controls/memory_saver_resource_view.h"
 
 #include <string>
@@ -19,6 +24,7 @@
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d_f.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/flex_layout_view.h"
 #include "ui/views/layout/layout_types.h"
@@ -192,7 +198,7 @@ MemorySaverResourceView::MemorySaverResourceView(
                               kMemorySaverResourceViewMemorySavingsElementId);
   memory_savings->SetFontList(
       memory_savings->font_list().DeriveWithSizeDelta(kMemoryLabelSizeDelta));
-  memory_savings->SetAccessibleName(l10n_util::GetStringFUTF16(
+  memory_savings->GetViewAccessibility().SetName(l10n_util::GetStringFUTF16(
       IDS_MEMORY_SAVER_DIALOG_SAVINGS_ACCNAME, {formatted_savings}));
 
   auto* memory_label = AddChildView(std::make_unique<views::Label>(

@@ -68,7 +68,7 @@ class MockSessionSyncService : public sync_sessions::SessionSyncService {
               SubscribeToForeignSessionsChanged,
               (const base::RepeatingClosure& cb),
               (override));
-  MOCK_METHOD(base::WeakPtr<syncer::ModelTypeControllerDelegate>,
+  MOCK_METHOD(base::WeakPtr<syncer::DataTypeControllerDelegate>,
               GetControllerDelegate,
               ());
 };
@@ -184,8 +184,9 @@ class SuggestionServiceLacrosTest : public BrowserWithTestWindowTest {
 
   TestingProfile::TestingFactories GetTestingFactories() override {
     return {
-        {SessionSyncServiceFactory::GetInstance(),
-         base::BindRepeating(&BuildMockSessionSyncService)},
+        TestingProfile::TestingFactory{
+            SessionSyncServiceFactory::GetInstance(),
+            base::BindRepeating(&BuildMockSessionSyncService)},
     };
   }
 

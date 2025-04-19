@@ -19,6 +19,7 @@
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/pill_button.h"
 #include "ash/system/toast/system_toast_view.h"
+#include "ash/wm/window_properties.h"
 #include "ash/wm/work_area_insets.h"
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
@@ -109,7 +110,7 @@ class ToastOverlay::ToastHoverObserver : public ui::EventObserver {
       : event_monitor_(views::EventMonitor::CreateWindowMonitor(
             /*event_observer=*/this,
             widget_window,
-            {ui::ET_MOUSE_ENTERED, ui::ET_MOUSE_EXITED})),
+            {ui::EventType::kMouseEntered, ui::EventType::kMouseExited})),
         on_hover_state_changed_(std::move(on_hover_state_changed)) {}
 
   ToastHoverObserver(const ToastHoverObserver&) = delete;
@@ -120,10 +121,10 @@ class ToastOverlay::ToastHoverObserver : public ui::EventObserver {
   // ui::EventObserver:
   void OnEvent(const ui::Event& event) override {
     switch (event.type()) {
-      case ui::ET_MOUSE_ENTERED:
+      case ui::EventType::kMouseEntered:
         on_hover_state_changed_.Run(/*is_hovering=*/true);
         break;
-      case ui::ET_MOUSE_EXITED:
+      case ui::EventType::kMouseExited:
         on_hover_state_changed_.Run(/*is_hovering=*/false);
         break;
       default:
@@ -134,8 +135,8 @@ class ToastOverlay::ToastHoverObserver : public ui::EventObserver {
 
  private:
   // While this `EventMonitor` object exists, this object will only look for
-  // `ui::ET_MOUSE_ENTERED` and `ui::ET_MOUSE_EXITED` events that occur in the
-  // `widget_window` indicated in the constructor.
+  // `ui::EventType::kMouseEntered` and `ui::EventType::kMouseExited` events
+  // that occur in the `widget_window` indicated in the constructor.
   std::unique_ptr<views::EventMonitor> event_monitor_;
 
   // This is run whenever the mouse enters or exits the observed window with a
@@ -174,6 +175,11 @@ ToastOverlay::ToastOverlay(Delegate* delegate,
   params.bounds = CalculateOverlayBounds();
   params.parent =
       root_window_->GetChildById(kShellWindowId_SettingBubbleContainer);
+  params.activatable = toast_data.activatable
+                           ? views::Widget::InitParams::Activatable::kYes
+                           : views::Widget::InitParams::Activatable::kNo;
+  params.init_properties_container.SetProperty(kStayInOverviewOnActivationKey,
+                                               true);
   overlay_widget_->Init(std::move(params));
   overlay_widget_->SetVisibilityChangedAnimationsEnabled(true);
   overlay_widget_->SetContentsView(overlay_view_.get());
@@ -232,7 +238,7 @@ void ToastOverlay::Show(bool visible) {
   animation_settings.AddObserver(this);
 
   if (visible) {
-    overlay_widget_->Show();
+    overlay_widget_->ShowInactive();
 
     // Notify accessibility about the overlay.
     overlay_view_->NotifyAccessibilityEvent(ax::mojom::Event::kAlert, false);
@@ -245,22 +251,20 @@ void ToastOverlay::UpdateOverlayBounds() {
   overlay_widget_->SetBounds(CalculateOverlayBounds());
 }
 
-const std::u16string ToastOverlay::GetText() {
+const std::u16string ToastOverlay::GetText() const {
   return text_;
 }
 
-bool ToastOverlay::MaybeToggleA11yHighlightOnDismissButton() {
-  overlay_view_->ToggleButtonA11yFocus();
-  return overlay_view_->is_dismiss_button_highlighted();
+bool ToastOverlay::RequestFocusOnActiveToastDismissButton() {
+  overlay_view_->dismiss_button()->RequestFocus();
+  return overlay_view_->dismiss_button()->HasFocus();
 }
 
-bool ToastOverlay::MaybeActivateHighlightedDismissButton() {
-  if (!overlay_view_->is_dismiss_button_highlighted()) {
-    return false;
+bool ToastOverlay::IsDismissButtonFocused() const {
+  if (auto* dismiss_button = overlay_view_->dismiss_button()) {
+    return dismiss_button->HasFocus();
   }
-
-  OnButtonClicked();
-  return true;
+  return false;
 }
 
 void ToastOverlay::OnSliderBubbleHeightChanged() {
@@ -268,10 +272,6 @@ void ToastOverlay::OnSliderBubbleHeightChanged() {
   if (features::AreSideAlignedToastsEnabled()) {
     UpdateOverlayBounds();
   }
-}
-
-bool ToastOverlay::IsDismissButtonHighlighted() const {
-  return overlay_view_->is_dismiss_button_highlighted();
 }
 
 gfx::Rect ToastOverlay::CalculateOverlayBounds() {

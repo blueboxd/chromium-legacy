@@ -11,19 +11,21 @@ import 'chrome://resources/ash/common/personalization/common.css.js';
 import 'chrome://resources/ash/common/personalization/personalization_shared_icons.html.js';
 import 'chrome://resources/ash/common/personalization/wallpaper.css.js';
 import 'chrome://resources/ash/common/sea_pen/sea_pen.css.js';
+import 'chrome://resources/ash/common/sea_pen/sea_pen_icons.html.js';
 import 'chrome://resources/ash/common/sea_pen/surface_effects/sparkle_placeholder.js';
 import 'chrome://resources/ash/common/cr_elements/cr_auto_img/cr_auto_img.js';
 import 'chrome://resources/ash/common/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/ash/common/cr_elements/icons.html.js';
+import './sea_pen_error_element.js';
 import './sea_pen_feedback_element.js';
 import './sea_pen_image_loading_element.js';
 import './sea_pen_zero_state_svg_element.js';
 
 import {afterNextRender} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {Query, SeaPenImageId} from './constants.js';
-import {isLacrosEnabled} from './load_time_booleans.js';
-import {MantaStatusCode, SeaPenThumbnail} from './sea_pen.mojom-webui.js';
+import {QUERY, Query, SeaPenImageId} from './constants.js';
+import {isLacrosEnabled, isSeaPenTextInputEnabled, isVcResizeThumbnailEnabled} from './load_time_booleans.js';
+import {MantaStatusCode, SeaPenQuery, SeaPenThumbnail, TextQueryHistoryEntry} from './sea_pen.mojom-webui.js';
 import {clearSeaPenThumbnails, openFeedbackDialog, selectSeaPenThumbnail} from './sea_pen_controller.js';
 import {SeaPenTemplateId} from './sea_pen_generated.mojom-webui.js';
 import {getTemplate} from './sea_pen_images_element.html.js';
@@ -32,9 +34,59 @@ import {logSeaPenTemplateFeedback, logSeaPenThumbnailClicked} from './sea_pen_me
 import {WithSeaPenStore} from './sea_pen_store.js';
 import {isNonEmptyArray, isPersonalizationApp, isSeaPenImageId} from './sea_pen_utils.js';
 
-const kLoadingPlaceholderCount = 8;
+const kFreeformLoadingPlaceholderCount = 4;
+const kTemplateLoadingPlaceholderCount = 8;
 
 type Tile = 'loading'|SeaPenThumbnail;
+
+let cameraAspectRatio: number|null = null;
+(function() {
+// Try to set aspect ratio if it is not set yet.
+// We only need this when it is not Wallpaper, not Lacros, and aspectRatio
+// is not set.
+if (!isPersonalizationApp() && !isLacrosEnabled() &&
+    isVcResizeThumbnailEnabled()) {
+  if (navigator.mediaDevices.getUserMedia) {
+    navigator.mediaDevices.getUserMedia({video: true})
+        .then((stream: MediaStream) => {
+          const videoTracks = stream.getVideoTracks();
+          if (videoTracks.length > 0) {
+            cameraAspectRatio =
+                stream.getVideoTracks()[0]?.getSettings()?.aspectRatio ?? null;
+          }
+          // Stop all tracks.
+          stream.getTracks().forEach(track => track.stop());
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+  }
+}
+})();
+
+// This function resets the img.style.width and img.style.height so that the img
+// can be perfectly aligned with the camera.
+function calculateAndSetAspectRatio(img: HTMLImageElement) {
+  const imgAspectRatio: number = img.naturalWidth / img.naturalHeight;
+
+  if (imgAspectRatio > cameraAspectRatio!) {
+    // Larger imgAspectRatio means the image is too wide for the camera, thus,
+    // we keep the height as 100% and set the width as more than 100%. This
+    // will crop the left and right side of the image and thus align with the
+    // camera.
+    img.style.width =
+        ((imgAspectRatio / cameraAspectRatio!) * 100).toFixed(4) + '%';
+    img.style.height = '100%';
+  } else {
+    // Smaller imgAspectRatio means the image is too tall for the camera,
+    // thus, we keep the width as 100% and set the height as more than 100%.
+    // This will crop the top and bottom side of the image and thus align with
+    // the camera.
+    img.style.height =
+        ((cameraAspectRatio! / imgAspectRatio) * 100).toFixed(4) + '%';
+    img.style.width = '100%';
+  }
+}
 
 export class SeaPenImagesElement extends WithSeaPenStore {
   static get is() {
@@ -70,7 +122,7 @@ export class SeaPenImagesElement extends WithSeaPenStore {
         type: Array,
         value() {
           // Pre-populate the tiles with placeholders.
-          return new Array(kLoadingPlaceholderCount).fill('loading');
+          return new Array(kTemplateLoadingPlaceholderCount).fill('loading');
         },
       },
 
@@ -91,6 +143,29 @@ export class SeaPenImagesElement extends WithSeaPenStore {
         computed:
             'computeShowError_(thumbnailResponseStatusCode_, thumbnailsLoading_)',
       },
+
+      isSeaPenTextInputEnabled_: {
+        type: Boolean,
+        value() {
+          return isSeaPenTextInputEnabled();
+        },
+      },
+
+      showHistory_: {
+        type: Boolean,
+        computed:
+            'computeShowHistory_(thumbnailsLoading_, seaPenQuery_, textQueryHistory_)',
+      },
+
+      seaPenQuery_: {
+        type: Object,
+        value: null,
+      },
+
+      textQueryHistory_: {
+        type: Array,
+        value: null,
+      },
     };
   }
 
@@ -103,6 +178,9 @@ export class SeaPenImagesElement extends WithSeaPenStore {
   private thumbnailResponseStatusCode_: MantaStatusCode|null;
   private showError_: boolean;
   private cameraFeed_: HTMLVideoElement|null;
+  private isSeaPenTextInputEnabled_: boolean;
+  private seaPenQuery_: SeaPenQuery|null;
+  private textQueryHistory_: TextQueryHistoryEntry[]|null;
 
   override connectedCallback() {
     super.connectedCallback();
@@ -117,36 +195,16 @@ export class SeaPenImagesElement extends WithSeaPenStore {
         'currentSelected_', state => state.currentSelected);
     this.watch<SeaPenImagesElement['pendingSelected_']>(
         'pendingSelected_', state => state.pendingSelected);
+    this.watch<SeaPenImagesElement['seaPenQuery_']>(
+        'seaPenQuery_', state => state.currentSeaPenQuery);
+    this.watch<SeaPenImagesElement['textQueryHistory_']>(
+        'textQueryHistory_', state => state.textQueryHistory);
     this.updateFromStore();
   }
 
   private computeShowError_(
       statusCode: MantaStatusCode|null, thumbnailsLoading: boolean): boolean {
     return !!statusCode && !thumbnailsLoading;
-  }
-
-  private getErrorMessage_(statusCode: MantaStatusCode|null): string {
-    switch (statusCode) {
-      case MantaStatusCode.kNoInternetConnection:
-        return this.i18n('seaPenErrorNoInternet');
-      case MantaStatusCode.kPerUserQuotaExceeded:
-      case MantaStatusCode.kResourceExhausted:
-        return this.i18n('seaPenErrorResourceExhausted');
-      default:
-        return this.i18n('seaPenErrorGeneric');
-    }
-  }
-
-  private getErrorIllo_(statusCode: MantaStatusCode|null): string {
-    switch (statusCode) {
-      case MantaStatusCode.kNoInternetConnection:
-        return 'personalization-shared-illo:network_error';
-      case MantaStatusCode.kPerUserQuotaExceeded:
-      case MantaStatusCode.kResourceExhausted:
-        return 'personalization-shared-illo:resource_error';
-      default:
-        return 'personalization-shared-illo:generic_error';
-    }
   }
 
   private getPoweredByGoogleMessage_(): string {
@@ -158,6 +216,12 @@ export class SeaPenImagesElement extends WithSeaPenStore {
   private onTemplateIdChanged_() {
     this.cameraFeed_?.remove();
     this.cameraFeed_ = null;
+    if (this.templateId === QUERY) {
+      return;
+    }
+    // Clear thumbnails if changing templates.
+    // For Freeform, we need to preserve the thumbnails state when switching
+    // between freeform tabs.
     clearSeaPenThumbnails(this.getStore());
   }
 
@@ -175,6 +239,11 @@ export class SeaPenImagesElement extends WithSeaPenStore {
   private shouldShowImageThumbnails_(
       thumbnailsLoading: boolean, thumbnails: SeaPenThumbnail[]|null): boolean {
     return thumbnailsLoading || isNonEmptyArray(thumbnails);
+  }
+
+  private shouldShowImagesHeading_(
+      isSeaPenTextInputEnabled: boolean, templateId: SeaPenTemplateId|Query) {
+    return !isSeaPenTextInputEnabled || templateId !== QUERY;
   }
 
   private getPlaceholders_(x: number) {
@@ -216,6 +285,23 @@ export class SeaPenImagesElement extends WithSeaPenStore {
     afterNextRender(this, () => {
       window.scrollTo(0, 0);
       this.shadowRoot!.querySelector<HTMLElement>('.sea-pen-image')?.focus();
+
+      // Resize images if cameraAspectRatio is set.
+      // This only happens when it is not wallpaper, not lacros.
+      if (cameraAspectRatio) {
+        // Handle each sea-pen-image element.
+        this.shadowRoot!.querySelectorAll<HTMLElement>('.sea-pen-image')
+            .forEach((gridItem: HTMLElement) => {
+              const img: HTMLImageElement =
+                  gridItem.shadowRoot!.querySelector<HTMLImageElement>('img')!;
+
+              if (img.complete) {
+                calculateAndSetAspectRatio(img);
+              } else {
+                img.onload = () => calculateAndSetAspectRatio(img);
+              }
+            });
+      }
     });
   }
 
@@ -224,11 +310,15 @@ export class SeaPenImagesElement extends WithSeaPenStore {
       return;
     }
 
+    const placeholderCount = this.templateId === QUERY ?
+        kFreeformLoadingPlaceholderCount :
+        kTemplateLoadingPlaceholderCount;
+
     this.updateList(
         /*propertyPath=*/ 'tiles_',
         /*identityGetter=*/
         () => 'loading',
-        /*newList=*/ new Array(kLoadingPlaceholderCount).fill('loading'),
+        /*newList=*/ new Array(placeholderCount).fill('loading'),
         /*identityBasedUpdate=*/ false,
     );
   }
@@ -239,7 +329,7 @@ export class SeaPenImagesElement extends WithSeaPenStore {
     }
     let cameraFeed: HTMLVideoElement|null = document.createElement('video');
     // Stretch camera stream to fit into the image.
-    cameraFeed.style.objectFit = 'contain';
+    cameraFeed.style.objectFit = 'cover';
     // Align camera feed with the clicked image.
     cameraFeed.style.position = 'relative';
     // Flip left and right so that camera matches with the image.
@@ -279,10 +369,7 @@ export class SeaPenImagesElement extends WithSeaPenStore {
       this.cameraFeed_.style.display = 'block';
     }
 
-    if (this.templateId in SeaPenTemplateId) {
-      logSeaPenThumbnailClicked(this.templateId as SeaPenTemplateId);
-    }
-
+    logSeaPenThumbnailClicked(this.templateId);
     selectSeaPenThumbnail(
         event.model.item, getSeaPenProvider(), this.getStore());
   }
@@ -388,8 +475,8 @@ export class SeaPenImagesElement extends WithSeaPenStore {
         return 'VcBackgroundCharacters';
       case SeaPenTemplateId.kVcBackgroundGlowscapes:
         return 'VcBackgroundGlowscapes';
-      case 'Query':
-        return 'Query';
+      case QUERY:
+        return isPersonalizationApp() ? 'Freeform' : 'VcBackgroundFreeform';
     }
   }
   // END AUTOGENERATED - DO NOT EDIT!
@@ -405,6 +492,13 @@ export class SeaPenImagesElement extends WithSeaPenStore {
       generationSeed: event.detail.thumbnailId,
     };
     openFeedbackDialog(metadata, getSeaPenProvider());
+  }
+
+  private computeShowHistory_(
+      thumbnailsLoading: boolean, seaPenQuery: SeaPenQuery|null,
+      textQueryHistory: TextQueryHistoryEntry[]): boolean {
+    return !thumbnailsLoading && !!seaPenQuery?.textQuery &&
+        isNonEmptyArray(textQueryHistory);
   }
 }
 

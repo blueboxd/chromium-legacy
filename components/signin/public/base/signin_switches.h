@@ -32,9 +32,6 @@ COMPONENT_EXPORT(SIGNIN_SWITCHES)
 BASE_DECLARE_FEATURE(kSeedAccountsRevamp);
 
 COMPONENT_EXPORT(SIGNIN_SWITCHES)
-BASE_DECLARE_FEATURE(kEnterprisePolicyOnSignin);
-
-COMPONENT_EXPORT(SIGNIN_SWITCHES)
 BASE_DECLARE_FEATURE(kSkipCheckForAccountManagementOnSignin);
 
 // Feature flag to hide signin promo in settings page.
@@ -43,6 +40,10 @@ BASE_DECLARE_FEATURE(kHideSettingsSignInPromo);
 
 COMPONENT_EXPORT(SIGNIN_SWITCHES)
 BASE_DECLARE_FEATURE(kUseConsentLevelSigninForLegacyAccountEmailPref);
+
+COMPONENT_EXPORT(SIGNIN_SWITCHES)
+BASE_DECLARE_FEATURE(
+    kDontFallbackToDefaultImplementationInAccountManagerFacade);
 #endif
 
 COMPONENT_EXPORT(SIGNIN_SWITCHES)
@@ -81,9 +82,6 @@ bool IsChromeRefreshTokenBindingEnabled(const PrefService* profile_prefs);
 #endif
 
 COMPONENT_EXPORT(SIGNIN_SWITCHES)
-BASE_DECLARE_FEATURE(kEnableFetchingAccountCapabilities);
-
-COMPONENT_EXPORT(SIGNIN_SWITCHES)
 BASE_DECLARE_FEATURE(kForceDisableExtendedSyncPromos);
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -114,8 +112,7 @@ COMPONENT_EXPORT(SIGNIN_SWITCHES)
 bool IsExplicitBrowserSigninUIOnDesktopEnabled();
 
 // Controls the view mode for (history) sync screen.
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || \
-    BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
+#if BUILDFLAG(IS_IOS)
 COMPONENT_EXPORT(SIGNIN_SWITCHES)
 BASE_DECLARE_FEATURE(kMinorModeRestrictionsForHistorySyncOptIn);
 
@@ -124,14 +121,9 @@ extern const base::FeatureParam<int> kMinorModeRestrictionsFetchDeadlineMs;
 #endif
 
 #if BUILDFLAG(IS_IOS)
+// The feature that authorizes clear-cut to send log when UMA is enabled.
 COMPONENT_EXPORT(SIGNIN_SWITCHES)
-BASE_DECLARE_FEATURE(kUseSystemCapabilitiesForMinorModeRestrictions);
-
-// Short timeout to wait for asynchronously fetching already available system
-// capabilities.
-COMPONENT_EXPORT(SIGNIN_SWITCHES)
-extern const base::FeatureParam<int>
-    kFetchImmediatelyAvailableCapabilityDeadlineMs;
+BASE_DECLARE_FEATURE(kEnableClearCut);
 
 COMPONENT_EXPORT(SIGNIN_SWITCHES)
 BASE_DECLARE_FEATURE(kRemoveSignedInAccountsDialog);
@@ -147,6 +139,15 @@ BASE_DECLARE_FEATURE(kPreconnectAccountCapabilitiesPostSignin);
 #if BUILDFLAG(IS_ANDROID)
 COMPONENT_EXPORT(SIGNIN_SWITCHES)
 BASE_DECLARE_FEATURE(kUpdateMetricsServicesStateInRestore);
+#endif
+
+#if BUILDFLAG(IS_IOS)
+// This flag enables IdentityManager to load all accounts when having no primary
+// accounts. And it makes IdentityManager reloads AccountInfo when an update
+// notification is sent by ChromeAccountManagerService. The data are reloaded
+// from ChromeAccountManagerService instead of contacting Gaia server.
+COMPONENT_EXPORT(SIGNIN_SWITCHES)
+BASE_DECLARE_FEATURE(kAlwaysLoadDeviceAccounts);
 #endif
 
 }  // namespace switches
@@ -171,6 +172,9 @@ BASE_DECLARE_FEATURE(kVerifyRequestInitiatorForMirrorHeaders);
 
 COMPONENT_EXPORT(SIGNIN_SWITCHES)
 BASE_DECLARE_FEATURE(kProfilesReordering);
+
+COMPONENT_EXPORT(SIGNIN_SWITCHES)
+BASE_DECLARE_FEATURE(kOutlineSilhouetteIcon);
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 COMPONENT_EXPORT(SIGNIN_SWITCHES)

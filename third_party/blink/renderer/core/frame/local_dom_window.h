@@ -33,9 +33,9 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/content_security_policy.mojom-blink.h"
+#include "services/network/public/mojom/storage_access_api.mojom-blink.h"
 #include "third_party/blink/public/common/frame/delegated_capability_request_token.h"
 #include "third_party/blink/public/common/frame/history_user_activation_state.h"
-#include "third_party/blink/public/common/metrics/post_message_counter.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -149,7 +149,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   ScriptController& GetScriptController() const { return *script_controller_; }
 
   void Initialize();
-  void ClearForReuse() { document_ = nullptr; }
+  void ClearForReuse();
 
   void ResetWindowAgent(WindowAgent*);
 
@@ -203,7 +203,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
       // current JS file would be used as source_file instead.
       const String& source_file = g_empty_string) const final;
   void SetIsInBackForwardCache(bool) final;
-  bool HasStorageAccess() const final;
+  net::StorageAccessApiStatus GetStorageAccessApiStatus() const final;
 
   void AddConsoleMessageImpl(ConsoleMessage*, bool discard_duplicates) final;
 
@@ -529,9 +529,9 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
     is_picture_in_picture_window_ = is_picture_in_picture;
   }
 
-  // Sets the HasStorageAccess member. Note that it can only be granted for a
-  // given window, it cannot be taken away.
-  void SetHasStorageAccess();
+  // Sets the StorageAccessApiStatus. Calls to this method must not downgrade
+  // the status.
+  void SetStorageAccessApiStatus(net::StorageAccessApiStatus status);
 
   // https://html.spec.whatwg.org/multipage/browsing-the-web.html#has-been-revealed
   bool HasBeenRevealed() const { return has_been_revealed_; }
@@ -567,6 +567,8 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   // Return the viewport size including scrollbars.
   gfx::Size GetViewportSize() const;
+
+  void UpdateEventListenerCountsToDocumentForReuseIfNeeded();
 
   Member<ScriptController> script_controller_;
 
@@ -643,10 +645,6 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   // from |DocumentPolicyViolationReport::MatchId()|.
   mutable HashSet<unsigned> document_policy_violation_reports_sent_;
 
-  // Tracks metrics related to postMessage usage.
-  // TODO(crbug.com/1159586): Remove when no longer needed.
-  PostMessageCounter post_message_counter_;
-
   // The storage key for this LocalDomWindow.
   BlinkStorageKey storage_key_;
 
@@ -673,9 +671,9 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   // of these types occur.
   String navigation_id_;
 
-  // Records whether this window has obtained storage access. It cannot be
-  // revoked once set to true.
-  bool has_storage_access_ = false;
+  // Records this window's Storage Access API status. It cannot be downgraded.
+  net::StorageAccessApiStatus storage_access_api_status_ =
+      net::StorageAccessApiStatus::kNone;
 
   // Tracks whether this window has shown a payment request without a user
   // activation. It cannot be revoked once set to true.
@@ -685,6 +683,9 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   // https://html.spec.whatwg.org/multipage/browsing-the-web.html#has-been-revealed
   bool has_been_revealed_ = false;
+
+  // Used to indicate if the DOM window is reused or not.
+  bool is_dom_window_reused_ = false;
 };
 
 template <>

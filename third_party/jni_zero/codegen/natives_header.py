@@ -9,7 +9,7 @@ import common
 
 
 def _return_type_cpp(java_type):
-  if converted_type := java_type.converted_type():
+  if converted_type := java_type.converted_type:
     return converted_type
   if java_type.is_primitive():
     return java_type.to_cpp()
@@ -17,7 +17,7 @@ def _return_type_cpp(java_type):
 
 
 def _param_type_cpp(java_type):
-  if converted_type := java_type.converted_type():
+  if converted_type := java_type.converted_type:
     # Drop & when the type is obviously a pointer to avoid "const char *&".
     if not java_type.is_primitive() and not converted_type.endswith('*'):
       converted_type += '&'
@@ -44,7 +44,7 @@ def _impl_forward_declaration(sb, native, params):
 def proxy_declaration(sb, jni_obj, native):
   stub_name = jni_obj.GetStubName(native)
   return_type_cpp = native.proxy_return_type.to_cpp()
-  sb(f'JNI_BOUNDARY_EXPORT {return_type_cpp} {stub_name}')
+  sb(f'JNI_POSSIBLE_BOUNDARY_EXPORT {return_type_cpp} {stub_name}')
   with sb.param_list() as plist:
     plist.append('JNIEnv* env')
     jtype = 'jclass' if native.static else 'jobject'
@@ -58,10 +58,10 @@ def _prep_param(sb, param, proxy_type):
   orig_name = param.cpp_name()
   java_type = param.java_type
 
-  if java_type.converted_type():
+  if java_type.converted_type:
     ret = f'{param.name}_converted'
     with sb.statement():
-      sb(f'{java_type.converted_type()} {ret} = ')
+      sb(f'{java_type.converted_type} {ret} = ')
       convert_type.from_jni_expression(sb, orig_name, java_type)
     return ret
 
@@ -114,11 +114,13 @@ def _single_method(sb, jni_obj, native):
     if return_type.is_void():
       return
 
-    if not return_type.converted_type():
-      with sb.statement():
-        sb('return _ret')
-        if not return_type.is_primitive():
-          sb('.Release()')
+    if not return_type.converted_type:
+      if return_type.is_primitive():
+        sb('return _ret;\n')
+      else:
+        # Use ReleaseLocal() to ensure we are not calling .Release() on a
+        # global ref. https://crbug.com/40944912
+        sb('return _ret.ReleaseLocal();\n')
       return
 
     with sb.statement():

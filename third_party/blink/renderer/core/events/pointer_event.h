@@ -8,7 +8,6 @@
 #include "third_party/blink/public/common/input/pointer_id.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
-#include "third_party/blink/renderer/core/input/device_properties.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
@@ -25,17 +24,19 @@ class CORE_EXPORT PointerEvent : public MouseEvent {
       base::TimeTicks platform_time_stamp = base::TimeTicks::Now(),
       MouseEvent::SyntheticEventType synthetic_event_type =
           kRealOrIndistinguishable,
-      WebMenuSourceType menu_source_type = kMenuSourceNone) {
+      WebMenuSourceType menu_source_type = kMenuSourceNone,
+      bool prevent_counting_as_interaction = false) {
     return MakeGarbageCollected<PointerEvent>(
         type, initializer, platform_time_stamp, synthetic_event_type,
-        menu_source_type);
+        menu_source_type, prevent_counting_as_interaction);
   }
 
   PointerEvent(const AtomicString&,
                const PointerEventInit*,
                base::TimeTicks platform_time_stamp,
                MouseEvent::SyntheticEventType synthetic_event_type,
-               WebMenuSourceType menu_source_type = kMenuSourceNone);
+               WebMenuSourceType menu_source_type = kMenuSourceNone,
+               bool prevent_counting_as_interaction = false);
 
   PointerId pointerId() const { return pointer_id_; }
   PointerId pointerIdForBindings() const;
@@ -104,8 +105,10 @@ class CORE_EXPORT PointerEvent : public MouseEvent {
 
   Document* GetDocument() const;
 
-  Member<DeviceProperties> deviceProperties() const {
-    return device_properties_.Get();
+  int32_t persistentDeviceId() const { return persistent_device_id_; }
+
+  bool GetPreventCountingAsInteraction() const {
+    return prevent_counting_as_interaction_;
   }
 
   void Trace(Visitor*) const override;
@@ -133,8 +136,10 @@ class CORE_EXPORT PointerEvent : public MouseEvent {
 
   HeapVector<Member<PointerEvent>> predicted_events_;
 
-  int32_t device_id_;
-  Member<DeviceProperties> device_properties_;
+  int32_t persistent_device_id_;
+
+  // See equivalent member in web_input_event.h.
+  bool prevent_counting_as_interaction_ = false;
 };
 
 template <>

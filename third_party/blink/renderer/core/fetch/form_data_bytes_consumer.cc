@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/core/fetch/form_data_bytes_consumer.h"
 
 #include "third_party/blink/public/platform/platform.h"
@@ -95,7 +100,7 @@ class SimpleFormDataBytesConsumer : public BytesConsumer {
     form_data_->Flatten(data);
     form_data_ = nullptr;
     auto blob_data = std::make_unique<BlobData>();
-    blob_data->AppendBytes(data.data(), data.size());
+    blob_data->AppendBytes(base::as_byte_span(data));
     auto length = blob_data->length();
     state_ = PublicState::kClosed;
     return BlobDataHandle::Create(std::move(blob_data), length);
@@ -404,7 +409,7 @@ class ComplexFormDataBytesConsumer final : public BytesConsumer {
     for (const auto& element : form_data_->Elements()) {
       switch (element.type_) {
         case FormDataElement::kData:
-          blob_data->AppendBytes(element.data_.data(), element.data_.size());
+          blob_data->AppendBytes(base::as_byte_span(element.data_));
           break;
         case FormDataElement::kEncodedFile: {
           auto file_length = element.file_length_;
@@ -434,7 +439,7 @@ class ComplexFormDataBytesConsumer final : public BytesConsumer {
           }
           break;
         case FormDataElement::kDataPipe:
-          NOTREACHED_IN_MIGRATION() << "This consumer can't handle data pipes.";
+          DUMP_WILL_BE_NOTREACHED() << "This consumer can't handle data pipes.";
           break;
       }
     }
@@ -512,6 +517,10 @@ FormDataBytesConsumer::FormDataBytesConsumer(DOMArrayBufferView* view)
     : FormDataBytesConsumer(
           view->BaseAddress(),
           base::checked_cast<wtf_size_t>(view->byteLength())) {}
+
+FormDataBytesConsumer::FormDataBytesConsumer(SegmentedBuffer&& buffer)
+    : impl_(MakeGarbageCollected<SimpleFormDataBytesConsumer>(
+          EncodedFormData::Create(std::move(buffer)))) {}
 
 FormDataBytesConsumer::FormDataBytesConsumer(const void* data, wtf_size_t size)
     : impl_(MakeGarbageCollected<SimpleFormDataBytesConsumer>(

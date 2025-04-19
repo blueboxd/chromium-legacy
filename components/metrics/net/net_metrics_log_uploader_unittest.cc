@@ -77,7 +77,8 @@ class NetMetricsLogUploaderTest : public testing::Test {
     std::string compressed_message;
     // Compress the data since the encryption code expects a compressed log,
     // and tries to decompress it before encrypting it.
-    compression::GzipCompress("dummy_data", &compressed_message);
+    compression::GzipCompress(base::span_from_cstring("dummy_data"),
+                              &compressed_message);
     uploader_->UploadLog(compressed_message, LogMetadata(), "dummy_hash",
                          "dummy_signature", dummy_reporting_info);
   }
@@ -139,12 +140,10 @@ class NetMetricsLogUploaderTest : public testing::Test {
 
 void CheckReportingInfoHeader(net::HttpRequestHeaders headers,
                               int expected_attempt_count) {
-  std::string reporting_info_base64;
-  EXPECT_TRUE(
-      headers.GetHeader("X-Chrome-UMA-ReportingInfo", &reporting_info_base64));
   std::string reporting_info_string;
-  EXPECT_TRUE(
-      base::Base64Decode(reporting_info_base64, &reporting_info_string));
+  EXPECT_TRUE(base::Base64Decode(
+      headers.GetHeader("X-Chrome-UMA-ReportingInfo").value(),
+      &reporting_info_string));
   ReportingInfo reporting_info;
   EXPECT_TRUE(reporting_info.ParseFromString(reporting_info_string));
   EXPECT_EQ(reporting_info.attempt_count(), expected_attempt_count);

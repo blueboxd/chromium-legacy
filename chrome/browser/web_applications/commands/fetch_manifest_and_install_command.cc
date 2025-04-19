@@ -20,6 +20,7 @@
 #include "chrome/browser/web_applications/locks/app_lock.h"
 #include "chrome/browser/web_applications/locks/noop_lock.h"
 #include "chrome/browser/web_applications/locks/web_app_lock_manager.h"
+#include "chrome/browser/web_applications/proto/web_app_install_state.pb.h"
 #include "chrome/browser/web_applications/proto/web_app_os_integration_state.pb.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
@@ -28,6 +29,7 @@
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_install_params.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/browser/web_applications/web_contents/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/web_contents/web_contents_manager.h"
@@ -56,7 +58,6 @@
 
 #if BUILDFLAG(IS_CHROMEOS)
 #include "base/strings/utf_string_conversions.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "net/base/url_util.h"
 #endif
 
@@ -145,8 +146,8 @@ mojo::Remote<crosapi::mojom::Arc>* GetArcRemoteWithMinVersion(
 
 void LogInstallInfo(base::Value::Dict& dict,
                     const WebAppInstallInfo& install_info) {
-  dict.Set("manifest_id", install_info.manifest_id.spec());
-  dict.Set("start_url", install_info.start_url.spec());
+  dict.Set("manifest_id", install_info.manifest_id().spec());
+  dict.Set("start_url", install_info.start_url().spec());
   dict.Set("name", install_info.title);
 }
 
@@ -203,7 +204,7 @@ FetchManifestAndInstallCommand::~FetchManifestAndInstallCommand() = default;
 
 void FetchManifestAndInstallCommand::OnShutdown(
     base::PassKey<WebAppCommandManager>) const {
-  webapps::InstallableMetrics::TrackInstallResult(false);
+  webapps::InstallableMetrics::TrackInstallResult(false, install_surface_);
 }
 
 content::WebContents* FetchManifestAndInstallCommand::GetInstallingWebContents(
@@ -308,7 +309,7 @@ void FetchManifestAndInstallCommand::WebContentsDestroyed() {
 void FetchManifestAndInstallCommand::Abort(webapps::InstallResultCode code,
                                            const base::Location& location) {
   GetMutableDebugValue().Set("result_code", base::ToString(code));
-  webapps::InstallableMetrics::TrackInstallResult(false);
+  webapps::InstallableMetrics::TrackInstallResult(false, install_surface_);
   Observe(nullptr);
   MeasureUserInstalledAppHistogram(code);
   CompleteAndSelfDestruct(CommandResult::kFailure, webapps::AppId(), code,
@@ -332,7 +333,6 @@ void FetchManifestAndInstallCommand::OnGetWebAppInstallInfo(
     return;
   }
   web_app_info_ = std::move(fallback_web_app_info);
-  CHECK(web_app_info_->manifest_id.is_valid());
   LogInstallInfo(*GetMutableDebugValue().EnsureDict("fallback_web_app_info"),
                  *web_app_info_);
 
@@ -367,12 +367,12 @@ void FetchManifestAndInstallCommand::FetchManifest() {
 
 void FetchManifestAndInstallCommand::OnDidPerformInstallableCheck(
     blink::mojom::ManifestPtr opt_manifest,
-    const GURL& manifest_url,
     bool valid_manifest_for_web_app,
     webapps::InstallableStatusCode error_code) {
   valid_manifest_for_crafted_web_app_ = valid_manifest_for_web_app;
-  GetMutableDebugValue().Set("manifest_url",
-                             manifest_url.possibly_invalid_spec());
+  GetMutableDebugValue().Set(
+      "manifest_url",
+      opt_manifest ? opt_manifest->manifest_url.possibly_invalid_spec() : "");
   GetMutableDebugValue().Set("valid_manifest_for_web_app",
                              valid_manifest_for_web_app);
   GetMutableDebugValue().Set("installable_error_code",
@@ -391,14 +391,15 @@ void FetchManifestAndInstallCommand::OnDidPerformInstallableCheck(
     case FallbackBehavior::kCraftedManifestOnly:
       if (!valid_manifest_for_web_app) {
         LOG(WARNING) << "Did not install "
-                     << (manifest_url.is_valid()
-                             ? manifest_url.spec()
+                     << (opt_manifest->manifest_url.is_valid()
+                             ? opt_manifest->manifest_url.spec()
                              : web_contents()->GetLastCommittedURL().spec())
                      << " because it didn't have a manifest for web app";
         Abort(webapps::InstallResultCode::kNotValidManifestForWebApp);
         return;
       }
-      web_app_info_ = std::make_unique<WebAppInstallInfo>(opt_manifest->id);
+      web_app_info_ = std::make_unique<WebAppInstallInfo>(
+          opt_manifest->id, opt_manifest->start_url);
       break;
     case FallbackBehavior::kUseFallbackInfoWhenNotInstallable: {
       webapps::InstallableStatusCode display_installable =
@@ -415,7 +416,8 @@ void FetchManifestAndInstallCommand::OnDidPerformInstallableCheck(
                             webapps::InstallableStatusCode::NO_ERROR_DETECTED;
       // If the manifest is crafted, override the fallback install info.
       if (promotable) {
-        web_app_info_ = std::make_unique<WebAppInstallInfo>(opt_manifest->id);
+        web_app_info_ = std::make_unique<WebAppInstallInfo>(
+            opt_manifest->id, opt_manifest->start_url);
       } else {
         web_app_info_->is_diy_app = true;
       }
@@ -428,21 +430,8 @@ void FetchManifestAndInstallCommand::OnDidPerformInstallableCheck(
   GetMutableDebugValue().Set("is_diy_app", web_app_info_->is_diy_app);
   CHECK(opt_manifest->start_url.is_valid());
   CHECK(opt_manifest->id.is_valid());
-  UpdateWebAppInfoFromManifest(*opt_manifest, manifest_url,
-                               web_app_info_.get());
+  UpdateWebAppInfoFromManifest(*opt_manifest, web_app_info_.get());
   LogInstallInfo(GetMutableDebugValue(), *web_app_info_);
-
-#if BUILDFLAG(IS_CHROMEOS)
-  if (install_surface_ == webapps::WebappInstallSource::MENU_CREATE_SHORTCUT &&
-      chromeos::features::IsCrosShortstandEnabled()) {
-    // When creating a shortcut, the |manifest_id| is not part of the App's
-    // primary key. The only thing that identifies a shortcut is the start URL,
-    // which is always set to the current page.
-    *web_app_info_ = WebAppInstallInfo::CreateInstallInfoForCreateShortcut(
-        web_contents_->GetLastCommittedURL(), web_contents_->GetTitle(),
-        *web_app_info_);
-  }
-#endif
 
   icons_from_manifest_ = GetValidIconUrlsToDownload(*web_app_info_);
   for (const IconUrlWithSize& icon_with_size : icons_from_manifest_) {
@@ -471,7 +460,7 @@ void FetchManifestAndInstallCommand::OnDidPerformInstallableCheck(
 
   command_manager()->lock_manager().UpgradeAndAcquireLock(
       std::move(noop_lock_),
-      {GenerateAppIdFromManifestId(web_app_info_->manifest_id)},
+      {GenerateAppIdFromManifestId(web_app_info_->manifest_id())},
       base::BindOnce(
           &FetchManifestAndInstallCommand::CheckForPlayStoreIntentOrGetIcons,
           weak_ptr_factory_.GetWeakPtr()));
@@ -659,7 +648,8 @@ void FetchManifestAndInstallCommand::OnDialogCompleted(
 
   WebAppInstallFinalizer::FinalizeOptions finalize_options(install_surface_);
 
-  finalize_options.locally_installed = true;
+  finalize_options.install_state =
+      proto::InstallState::INSTALLED_WITH_OS_INTEGRATION;
   finalize_options.overwrite_existing_manifest_fields = true;
   finalize_options.add_to_applications_menu = true;
   finalize_options.add_to_desktop = true;
@@ -720,7 +710,8 @@ void FetchManifestAndInstallCommand::OnInstallCompleted(
   }
   GetMutableDebugValue().Set("result_code", base::ToString(code));
 
-  webapps::InstallableMetrics::TrackInstallResult(webapps::IsSuccess(code));
+  webapps::InstallableMetrics::TrackInstallResult(webapps::IsSuccess(code),
+                                                  install_surface_);
   MeasureUserInstalledAppHistogram(code);
   CompleteAndSelfDestruct(webapps::IsSuccess(code) ? CommandResult::kSuccess
                                                    : CommandResult::kFailure,

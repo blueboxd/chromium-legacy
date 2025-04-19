@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ui/gtk/gtk_ui.h"
 
 #include <cairo.h>
@@ -36,6 +41,7 @@
 #include "ui/base/ime/linux/linux_input_method_context.h"
 #include "ui/base/ime/text_input_flags.h"
 #include "ui/base/ozone_buildflags.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
 #include "ui/color/color_provider_key.h"
@@ -53,6 +59,7 @@
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/image/image_skia_source.h"
 #include "ui/gfx/skbitmap_operations.h"
+#include "ui/gtk/gtk_color_mixers.h"
 #include "ui/gtk/gtk_compat.h"
 #include "ui/gtk/gtk_key_bindings_handler.h"
 #include "ui/gtk/gtk_ui_platform.h"
@@ -221,6 +228,10 @@ bool GtkUi::Initialize() {
   if (!GtkInitFromCommandLine(&cmd_line.argc, cmd_line.argv.data())) {
     return false;
   }
+
+  ui::ColorProviderManager::Get().AppendColorProviderInitializer(
+      base::BindRepeating(&GtkUi::AddGtkNativeColorMixer,
+                          base::Unretained(this)));
   native_theme_ = NativeThemeGtk::instance();
 
   using Action = ui::LinuxUi::WindowFrameAction;
@@ -504,6 +515,10 @@ void GtkUi::SetWindowFrameAction(WindowFrameActionSource source,
 
 std::unique_ptr<ui::LinuxInputMethodContext> GtkUi::CreateInputMethodContext(
     ui::LinuxInputMethodContextDelegate* delegate) const {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableGtkIme)) {
+    return nullptr;
+  }
   return GetPlatform()->CreateInputMethodContext(delegate);
 }
 
@@ -538,6 +553,11 @@ void GtkUi::SetDarkTheme(bool dark) {
   // OnThemeChanged() will be called via the
   // notify::gtk-application-prefer-dark-theme handler to update the native
   // theme.
+}
+
+void GtkUi::SetAccentColor(std::optional<SkColor> accent_color) {
+  accent_color_ = accent_color;
+  native_theme_->NotifyOnNativeThemeUpdated();
 }
 
 bool GtkUi::AnimationsEnabled() const {
@@ -1008,6 +1028,11 @@ display::DisplayConfig GtkUi::GetDisplayConfig() const {
         monitor_scale * font_scale);
   }
   return config;
+}
+
+void GtkUi::AddGtkNativeColorMixer(ui::ColorProvider* provider,
+                                   const ui::ColorProviderKey& key) {
+  gtk::AddGtkNativeColorMixer(provider, key, accent_color_);
 }
 
 void GtkUi::UpdateDeviceScaleFactor() {

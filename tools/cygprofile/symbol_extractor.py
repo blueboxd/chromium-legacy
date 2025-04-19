@@ -11,7 +11,6 @@ import os
 import re
 import subprocess
 
-import cygprofile_utils
 
 START_OF_TEXT_SYMBOL = 'linker_script_start_of_text'
 
@@ -24,6 +23,23 @@ _MAX_WARNINGS_TO_PRINT = 200
 
 SymbolInfo = collections.namedtuple('SymbolInfo', ('name', 'offset', 'size',
                                                    'section'))
+
+
+def _IsExpectedSectionForInstrumentedCode(section):
+  # Using __attribute__((section("any_name"))) one can put a function in a
+  # section "any_name". The LLD linker puts this section in the same executable
+  # segment as the section '.text'. The linker cannot reorder functions across
+  # sections, so these functions outside `.text` will produce warnings during
+  # orderfile verification. It is possible to exclude from the orderfile the
+  # symbols from non-.text sections, but it is not done yet (as of 2024-07).
+  #
+  # The instrumentation hook (in orderfile_instrumentation.cc) warns against
+  # offsets outside of the range between `linker_script_start_of_text` and
+  # `linker_script_end_of_text`.
+  #
+  # The sections in the list below should be in sync with the
+  # `anchor_functions.lds`.
+  return section in ['.text', 'malloc_hook']
 
 
 def _SymbolInfosFromStream(input_file):
@@ -68,10 +84,20 @@ def _SymbolInfosFromStream(input_file):
       # 'Builtins_.*') are indistinguishable from labels of size 0 other than
       # by name.
       continue
-    if section != '.text':
-      # Ignore anything that's outside the primary .text section
+    # Skip symbols defined in other native libraries assuming they are not
+    # instrumented.
+    if section == 'Undefined':
+      assert scope != 'Local', name
       continue
-    assert symbol_type in ['Object', 'Function', 'File', 'GNU_IFunc']
+    # Skip non-function symbols (global variables, file references).
+    if not symbol_type in ['Function', 'GNU_IFunc']:
+      continue
+    # Executable code can be in a section with any name, not only in '.text'.
+    # Unfortunately, code reordering needs adjustments for each custom section
+    # name. Break early on encountering symbols in unexpected sections to get
+    # notified about adjustments due.
+    assert _IsExpectedSectionForInstrumentedCode(section), (
+        f'Symbol {name} in unexpected section "{section}"')
     assert scope in ['Local', 'Global', 'Weak']
     # Forbid ARM mapping symbols and other unexpected symbol names, but allow $
     # characters in a non-initial position, which can appear as a component of a
@@ -221,53 +247,3 @@ def GroupSymbolInfosByOffset(symbol_infos):
   for symbol_info in symbol_infos:
     offset_to_symbol_infos[symbol_info.offset].append(symbol_info)
   return dict(offset_to_symbol_infos)
-
-
-def GroupSymbolInfosByName(symbol_infos):
-  """Create a dict {name: [symbol_info1, ...], ...}.
-
-  A symbol can have several offsets, this is a 1-to-many relationship.
-
-  Args:
-    symbol_infos: iterable of SymbolInfo instances
-
-  Returns:
-    a dict {name: [symbol_info1, ...], ...}
-  """
-  name_to_symbol_infos = collections.defaultdict(list)
-  for symbol_info in symbol_infos:
-    name_to_symbol_infos[symbol_info.name].append(symbol_info)
-  return dict(name_to_symbol_infos)
-
-
-def CreateNameToSymbolInfo(symbol_infos):
-  """Create a dict {name: symbol_info, ...}.
-
-  Args:
-    symbol_infos: iterable of SymbolInfo instances
-
-  Returns:
-    a dict {name: symbol_info, ...}
-    If a symbol name corresponds to more than one symbol_info, the symbol_info
-    with the lowest offset is chosen.
-  """
-  # TODO(lizeb,pasko): move the functionality in this method into
-  # check_orderfile.
-  symbol_infos_by_name = {}
-  warnings = cygprofile_utils.WarningCollector(_MAX_WARNINGS_TO_PRINT)
-  for infos in GroupSymbolInfosByName(symbol_infos).values():
-    first_symbol_info = min(infos, key=lambda x: x.offset)
-    symbol_infos_by_name[first_symbol_info.name] = first_symbol_info
-    if len(infos) > 1:
-      warnings.Write('Symbol %s appears at %d offsets: %s' %
-                     (first_symbol_info.name,
-                      len(infos),
-                      ','.join([hex(x.offset) for x in infos])))
-  warnings.WriteEnd('symbols at multiple offsets.')
-  return symbol_infos_by_name
-
-
-def DemangleSymbol(mangled_symbol):
-  """Return the demangled form of mangled_symbol."""
-  cmd = [_TOOL_PREFIX + 'cxxfilt', mangled_symbol]
-  return subprocess.check_output(cmd, universal_newlines=True).rstrip()

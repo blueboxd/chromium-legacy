@@ -170,12 +170,16 @@ void BucketHost::GetIdbFactory(
     return;
   }
 
-  GlobalRenderFrameHostId rfh_id =
-      bucket_context->GetAssociatedRenderFrameHostId();
+  auto [state_checker, token] =
+      IndexedDBClientStateCheckerFactory::InitializePendingRemote(
+          *bucket_context);
+  if (!state_checker) {
+    // The client is not in a valid state to use IndexedDB.
+    return;
+  }
 
   bucket_manager_host_->GetStoragePartition()->BindIndexedDB(
-      bucket_info_.ToBucketLocator(),
-      IndexedDBClientStateCheckerFactory::InitializePendingRemote(rfh_id),
+      bucket_info_.ToBucketLocator(), std::move(state_checker), token,
       std::move(receiver));
 }
 
@@ -195,8 +199,20 @@ void BucketHost::GetDirectory(GetDirectoryCallback callback) {
     return;
   }
 
-  bucket_context->GetSandboxedFileSystemForBucket(bucket_info_,
-                                                  std::move(callback));
+  bucket_context->GetSandboxedFileSystemForBucket(
+      bucket_info_, /*directory_path_components=*/{}, std::move(callback));
+}
+
+void BucketHost::GetDirectoryForDevtools(
+    const std::vector<std::string>& directory_path_components,
+    GetDirectoryCallback callback) {
+  auto bucket_context = receivers_.current_context();
+  if (!bucket_context) {
+    return;
+  }
+
+  bucket_context->GetSandboxedFileSystemForBucket(
+      bucket_info_, directory_path_components, std::move(callback));
 }
 
 void BucketHost::GetLockManager(

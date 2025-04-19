@@ -18,6 +18,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/span.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -268,7 +269,7 @@ TEST(HttpStreamParser, InitAsynchronousUploadDataStream) {
                                    callback1.callback());
   EXPECT_EQ(ERR_IO_PENDING, result1);
   base::RunLoop().RunUntilIdle();
-  upload_data_stream.AppendData(kChunk, std::size(kChunk) - 1, true);
+  upload_data_stream.AppendData(base::byte_span_from_cstring(kChunk), true);
 
   // Check progress after read completes.
   progress = upload_data_stream.GetUploadProgress();
@@ -360,7 +361,7 @@ TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_EmptyBody) {
 TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_ChunkedBody) {
   const std::string payload = "123";
   auto body = std::make_unique<ChunkedUploadDataStream>(0);
-  body->AppendData(payload.data(), payload.size(), true);
+  body->AppendData(base::as_byte_span(payload), true);
   ASSERT_THAT(
       body->Init(TestCompletionCallback().callback(), NetLogWithSource()),
       IsOk());
@@ -626,11 +627,11 @@ TEST(HttpStreamParser, SentBytesChunkedPostError) {
                                                &response, callback.callback()));
 
   base::RunLoop().RunUntilIdle();
-  upload_data_stream.AppendData(kChunk, std::size(kChunk) - 1, false);
+  upload_data_stream.AppendData(base::byte_span_from_cstring(kChunk), false);
 
   base::RunLoop().RunUntilIdle();
   // This write should fail.
-  upload_data_stream.AppendData(kChunk, std::size(kChunk) - 1, false);
+  upload_data_stream.AppendData(base::byte_span_from_cstring(kChunk), false);
   EXPECT_THAT(callback.WaitForResult(), IsError(ERR_FAILED));
 
   EXPECT_EQ(CountWriteBytes(writes), parser.sent_bytes());
@@ -698,7 +699,7 @@ TEST(HttpStreamParser, AsyncSingleChunkAndAsyncSocket) {
   ASSERT_FALSE(callback.have_result());
 
   // Now append the only chunk and wait for the callback.
-  upload_stream.AppendData(kChunk, std::size(kChunk) - 1, true);
+  upload_stream.AppendData(base::byte_span_from_cstring(kChunk), true);
   ASSERT_THAT(callback.WaitForResult(), IsOk());
 
   // Attempt to read the response status and the response headers.
@@ -749,7 +750,7 @@ TEST(HttpStreamParser, SyncSingleChunkAndAsyncSocket) {
                                  NetLogWithSource()),
               IsOk());
   // Append the only chunk.
-  upload_stream.AppendData(kChunk, std::size(kChunk) - 1, true);
+  upload_stream.AppendData(base::byte_span_from_cstring(kChunk), true);
 
   SequencedSocketData data(reads, writes);
   std::unique_ptr<StreamSocket> stream_socket = CreateConnectedSocket(&data);
@@ -825,7 +826,7 @@ TEST(HttpStreamParser, AsyncChunkAndAsyncSocketWithMultipleChunks) {
   };
 
   ChunkedUploadDataStream upload_stream(0);
-  upload_stream.AppendData(kChunk1, std::size(kChunk1) - 1, false);
+  upload_stream.AppendData(base::byte_span_from_cstring(kChunk1), false);
   ASSERT_THAT(upload_stream.Init(TestCompletionCallback().callback(),
                                  NetLogWithSource()),
               IsOk());
@@ -862,12 +863,12 @@ TEST(HttpStreamParser, AsyncChunkAndAsyncSocketWithMultipleChunks) {
   ASSERT_FALSE(callback.have_result());
 
   // Now append another chunk.
-  upload_stream.AppendData(kChunk2, std::size(kChunk2) - 1, false);
+  upload_stream.AppendData(base::byte_span_from_cstring(kChunk2), false);
   ASSERT_FALSE(callback.have_result());
 
   // Add the final chunk, while the write for the second is still pending,
   // which should not confuse the state machine.
-  upload_stream.AppendData(kChunk3, std::size(kChunk3) - 1, true);
+  upload_stream.AppendData(base::byte_span_from_cstring(kChunk3), true);
   ASSERT_FALSE(callback.have_result());
 
   // Wait for writes to complete.
@@ -945,7 +946,7 @@ TEST(HttpStreamParser, AsyncEmptyChunkedUpload) {
                                callback.callback()));
 
   // Now append the terminal 0-byte "chunk".
-  upload_stream.AppendData(nullptr, 0, true);
+  upload_stream.AppendData(base::byte_span_from_cstring(""), true);
   ASSERT_FALSE(callback.have_result());
 
   ASSERT_THAT(callback.WaitForResult(), IsOk());
@@ -995,7 +996,7 @@ TEST(HttpStreamParser, SyncEmptyChunkedUpload) {
                                  NetLogWithSource()),
               IsOk());
   // Append final empty chunk.
-  upload_stream.AppendData(nullptr, 0, true);
+  upload_stream.AppendData(base::byte_span_from_cstring(""), true);
 
   SequencedSocketData data(reads, writes);
   std::unique_ptr<StreamSocket> stream_socket = CreateConnectedSocket(&data);
@@ -1175,9 +1176,8 @@ TEST(HttpStreamParser, WebSocket101Response) {
   EXPECT_TRUE(response_info.headers->HasHeaderValue("Connection", "Upgrade"));
   EXPECT_TRUE(response_info.headers->HasHeaderValue("Upgrade", "websocket"));
   EXPECT_EQ(read_buffer->capacity(), read_buffer->offset());
-  EXPECT_EQ(
-      "a fake websocket frame",
-      std::string_view(read_buffer->StartOfBuffer(), read_buffer->capacity()));
+  EXPECT_EQ("a fake websocket frame",
+            base::as_string_view(read_buffer->everything()));
 
   EXPECT_EQ(CountWriteBytes(writes), parser.sent_bytes());
   EXPECT_EQ(CountReadBytes(reads) -
@@ -1203,10 +1203,10 @@ class SimpleGetRunner {
 
   void AddInitialData(const std::string& data) {
     int offset = read_buffer_->offset();
-    int size = data.size();
-    read_buffer_->SetCapacity(offset + size);
-    memcpy(read_buffer_->StartOfBuffer() + offset, data.data(), size);
-    read_buffer_->set_offset(offset + size);
+    read_buffer_->SetCapacity(offset + data.size());
+    auto span = base::as_byte_span(data);
+    read_buffer_->everything().subspan(offset, span.size()).copy_from(span);
+    read_buffer_->set_offset(offset + span.size());
   }
 
   // The data used to back |string_piece| must stay alive until all mock data
@@ -2357,17 +2357,17 @@ TEST(HttpStreamParser, ReadAfterUnownedObjectsDestroyed) {
 
 // Case where one byte is received at a time.
 TEST(HttpStreamParser, ReceiveOneByteAtATime) {
-  const std::string kResponseHeaders =
+  constexpr std::string_view kResponseHeaders =
       "HTTP/1.0 200 OK\r\n"
       "Foo: Bar\r\n\r\n";
-  const std::string kResponseBody = "hi";
+  constexpr std::string_view kResponseBody = "hi";
 
   SimpleGetRunner get_runner;
   for (size_t i = 0; i < kResponseHeaders.length(); ++i) {
-    get_runner.AddRead(std::string_view(kResponseHeaders.data() + i, 1));
+    get_runner.AddRead(kResponseHeaders.substr(i, 1));
   }
   for (size_t i = 0; i < kResponseBody.length(); ++i) {
-    get_runner.AddRead(std::string_view(kResponseBody.data() + i, 1));
+    get_runner.AddRead(kResponseBody.substr(i, 1));
   }
   // EOF
   get_runner.AddRead("");

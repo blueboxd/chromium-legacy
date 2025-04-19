@@ -54,7 +54,8 @@ class ContentWebState : public WebState,
 
   // Constructor for ContentWebState created for deserialized sessions.
   ContentWebState(const CreateParams& params,
-                  CRWSessionStorage* session_storage);
+                  CRWSessionStorage* session_storage,
+                  NativeSessionFetcher session_fetcher);
 
   // Constructor for ContentWebState created for deserialized sessions.
   ContentWebState(BrowserState* browser_state,
@@ -171,6 +172,11 @@ class ContentWebState : public WebState,
       content::NavigationHandle* navigation_handle) override;
   void DidStartLoading() override;
   void DidStopLoading() override;
+  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                     const GURL& validated_url) override;
+  void DidFailLoad(content::RenderFrameHost* render_frame_host,
+                   const GURL& validated_url,
+                   int error_code) override;
   void LoadProgressChanged(double progress) override;
 
   void OnVisibilityChanged(content::Visibility visibility) override;
@@ -240,9 +246,17 @@ class ContentWebState : public WebState,
   FaviconStatus favicon_status_;
   bool top_control_scroll_in_progress_ = false;
   bool cached_shrink_controls_ = false;
+  bool created_with_opener_ = false;
   id keyboard_showing_observer_;
   id keyboard_hiding_observer_;
   int keyboard_height_ = 0;
+
+  // The time that this ContentWebState was last made active. The initial value
+  // is the ContentWebState's creation time.
+  base::Time last_active_time_;
+
+  // The ContentWebState's creation time.
+  base::Time creation_time_;
 
   base::WeakPtrFactory<ContentWebState> weak_factory_{this};
 };

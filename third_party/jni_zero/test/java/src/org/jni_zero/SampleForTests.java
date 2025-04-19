@@ -7,10 +7,13 @@ package org.jni_zero;
 import android.graphics.Rect;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * This class serves as a reference test for the bindings generator, and as example documentation
@@ -150,6 +153,19 @@ class SampleForTests {
         return bar;
     }
 
+    @CalledByNative
+    @JniType("std::vector")
+    static Collection<SampleForTests> listTest1(
+            @JniType("std::vector<std::string>") List<String> items) {
+        return Collections.emptyList();
+    }
+
+    @CalledByNative
+    static @JniType("std::map<std::string, std::string>") Map<String, String> mapTest1(
+            @JniType("std::map<std::string, std::string>") Map<String, String> arg0) {
+        return arg0;
+    }
+
     // ---------------------------------------------------------------------------------------------
     // Java fields which are accessed from C++ code only must be annotated with @AccessedByNative to
     // prevent them being eliminated when unreferenced code is stripped.
@@ -257,6 +273,18 @@ class SampleForTests {
         return null;
     }
 
+    @CalledByNative
+    static @JniType("std::vector<bool>") boolean[] primitiveArrays(
+            @JniType("std::vector<uint8_t>") byte[] b,
+            @JniType("std::vector<uint16_t>") char[] c,
+            @JniType("std::vector<int16_t>") short[] s,
+            @JniType("std::vector<int32_t>") int[] i,
+            @JniType("std::vector<int64_t>") long[] l,
+            @JniType("std::vector<float>") float[] f,
+            @JniType("std::vector<double>") double[] d) {
+        return null;
+    }
+
     // ---------------------------------------------------------------------------------------------
     // The following methods demonstrate declaring methods to call into C++ from Java.
     // The generator detects the type and name of the first parameter.
@@ -297,6 +325,9 @@ class SampleForTests {
         // than jobject param, as the function is declared static.
         float getFloatFunction();
 
+        @JniType("std::vector")
+        List<SampleForTests> listTest2(@JniType("std::vector<std::string>") Set<String> items);
+
         // This function takes a non-POD datatype. We have a list mapping them to their full
         // classpath in jni_generator.py JavaParamToJni. If you require a new datatype, make sure
         // you add to that function.
@@ -315,7 +346,12 @@ class SampleForTests {
         Throwable getThrowable(Throwable arg0);
 
         // Test Map.
-        Map<String, String> getMap(Map<String, String> arg0);
+        @JniType("std::map<std::string, std::string>")
+        Map<String, String> mapTest2(
+                @JniType("std::map<std::string, std::string>") Map<String, String> arg0);
+
+        // Test class under the same package
+        void classUnderSamePackageTest(SampleUnderSamePackage arg);
 
         // Similar to nativeDestroy above, this will cast nativeCPPClass into pointer of CPPClass
         // type and call its Method member function. Replace "CPPClass" with your particular class
@@ -324,6 +360,16 @@ class SampleForTests {
                 long nativeCPPClass,
                 SampleForTests caller,
                 @JniType("std::vector<std::string>") String[] strings);
+
+        @JniType("std::vector<bool>")
+        boolean[] primitiveArrays(
+                @JniType("std::vector<uint8_t>") byte[] b,
+                @JniType("std::vector<uint16_t>") char[] c,
+                @JniType("std::vector<int16_t>") short[] s,
+                @JniType("std::vector<int32_t>") int[] i,
+                @JniType("std::vector<int64_t>") long[] l,
+                @JniType("std::vector<float>") float[] f,
+                @JniType("std::vector<double>") double[] d);
 
         // Similar to nativeMethod above, but here the C++ fully qualified class name is taken from
         // the annotation rather than parameter name, which can thus be chosen freely.

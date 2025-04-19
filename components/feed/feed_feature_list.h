@@ -17,6 +17,10 @@
 
 namespace feed {
 
+namespace switches {
+extern const char kEnableRssLinkReader[];
+}
+
 BASE_DECLARE_FEATURE(kInterestFeedV2);
 BASE_DECLARE_FEATURE(kInterestFeedV2Hearts);
 BASE_DECLARE_FEATURE(kInterestFeedV2Scrolling);
@@ -60,10 +64,6 @@ BASE_DECLARE_FEATURE(kWebFeedOnboarding);
 // Feature that enables sorting by different heuristics in the web feed.
 BASE_DECLARE_FEATURE(kWebFeedSort);
 
-// Feature that causes the "open in new tab" menu item to appear on feed items
-// on Start Surface.
-BASE_DECLARE_FEATURE(kEnableOpenInNewTabFromStartSurfaceFeed);
-
 bool IsCormorantEnabledForLocale(std::string country);
 
 // Personalize feed for unsigned users.
@@ -88,9 +88,6 @@ extern const base::FeatureParam<bool> kFeedCloseRefreshRequireInteraction;
 // When enabled, no view cache is used.
 BASE_DECLARE_FEATURE(kFeedNoViewCache);
 
-// When enabled, allow tagging experiments with only an experiment ID.
-BASE_DECLARE_FEATURE(kFeedExperimentIDTagging);
-
 // When enabled, allow show sign in command to request a user signs in / syncs.
 BASE_DECLARE_FEATURE(kFeedShowSignInCommand);
 
@@ -102,9 +99,6 @@ BASE_DECLARE_FEATURE(kFeedPerformanceStudy);
 // by the client, primarily to retroactively work around bugs.
 BASE_DECLARE_FEATURE(kSyntheticCapabilities);
 
-// Feature that enables reporting feed user interaction reliability.
-BASE_DECLARE_FEATURE(kFeedUserInteractionReliabilityReport);
-
 // Feature that enables signed-out view demotion.
 BASE_DECLARE_FEATURE(kFeedSignedOutViewDemotion);
 
@@ -114,14 +108,14 @@ BASE_DECLARE_FEATURE(kFeedDynamicColors);
 // Feature that enables UI update for Follow.
 BASE_DECLARE_FEATURE(kFeedFollowUiUpdate);
 
-// Feature that enables sports card in the feed.
-BASE_DECLARE_FEATURE(kFeedSportsCard);
-
 // Feature that enables refreshing feed when Chrome restarts.
 BASE_DECLARE_FEATURE(kRefreshFeedOnRestart);
 
 // Feature that enables feed containment.
 BASE_DECLARE_FEATURE(kFeedContainment);
+
+// Kill-switch for the web feed feature.
+BASE_DECLARE_FEATURE(kWebFeedKillSwitch);
 
 bool IsWebFeedEnabledForLocale(const std::string& country);
 

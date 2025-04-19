@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/metrics/model/metrics_app_interface.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/tabs/model/inactive_tabs/features.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_constants.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/inactive_tabs/inactive_tabs_constants.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_constants.h"
 #import "ios/chrome/browser/ui/tab_switcher/test/query_title_server_util.h"
@@ -474,7 +475,7 @@ void ExpectIdleHistogramBucketCount(const char* histogram,
       performAction:grey_tap()];
 
   ExpectIdleHistogramCount(kUMATabSwitcherIdleRegularTabGridPageHistogram, 0);
-  if (IsTabGroupSyncEnabled()) {
+  if ([ChromeEarlGrey isTabGroupSyncEnabled]) {
     ExpectIdleHistogramCount(kUMATabSwitcherIdleTabGroupsHistogram, 1);
     ExpectIdleHistogramBucketCount(kUMATabSwitcherIdleTabGroupsHistogram, 1,
                                    YES);
@@ -492,7 +493,7 @@ void ExpectIdleHistogramBucketCount(const char* histogram,
   ExpectIdleHistogramCount(kUMATabSwitcherIdleRegularTabGridPageHistogram, 1);
   ExpectIdleHistogramBucketCount(kUMATabSwitcherIdleRegularTabGridPageHistogram,
                                  1, YES);
-  if (IsTabGroupSyncEnabled()) {
+  if ([ChromeEarlGrey isTabGroupSyncEnabled]) {
     ExpectIdleHistogramCount(kUMATabSwitcherIdleTabGroupsHistogram, 1);
     ExpectIdleHistogramBucketCount(kUMATabSwitcherIdleTabGroupsHistogram, 1,
                                    YES);

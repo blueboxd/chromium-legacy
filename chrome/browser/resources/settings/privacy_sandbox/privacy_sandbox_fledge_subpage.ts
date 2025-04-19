@@ -4,10 +4,10 @@
 
 import '/shared/settings/prefs/prefs.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
+import 'chrome://resources/cr_elements/cr_collapse/cr_collapse.js';
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.js';
 import 'chrome://resources/cr_elements/cr_shared_style.css.js';
-import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
 import '../controls/settings_toggle_button.js';
 import './privacy_sandbox_interest_item.js';
 
@@ -128,22 +128,10 @@ export class SettingsPrivacySandboxFledgeSubpageElement extends
         observer: 'onBlockedSitesExpanded_',
       },
 
-      // Version 2 of Ad Topics Page should be displayed. True when Proactive
-      // Topics Blocking is enabled. If include-mode-b param is false and user
-      // is part of Mode B, this should be false.
-      // TODO (b/340217427): Consolidate into separate file to be shared
-      // across the different pages.
       shouldShowV2_: {
         type: Boolean,
-        value() {
-          if (!loadTimeData.getBoolean('isProactiveTopicsBlockingEnabled')) {
-            return false;
-          }
-          return loadTimeData.getBoolean(
-                     'proactiveTopicsBlockingIncludesModeB') ||
-              !loadTimeData.getBoolean(
-                  'isInCookieDeprecationFacilitatedTesting');
-        },
+        value: () =>
+            loadTimeData.getBoolean('isProactiveTopicsBlockingEnabled'),
       },
     };
   }

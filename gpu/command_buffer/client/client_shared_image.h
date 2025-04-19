@@ -7,6 +7,7 @@
 
 #include "base/feature_list.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ptr_exclusion.h"
 #include "base/memory/scoped_refptr.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
@@ -18,19 +19,20 @@
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
+namespace media {
+class VideoFrame;
+}  // namespace media
+
 namespace gpu {
 
+namespace gles2 {
+class GLES2Interface;
+}  // namespace gles2
+
 class ClientSharedImageInterface;
+class GpuChannelSharedImageInterface;
+class SharedImageTexture;
 class TestSharedImageInterface;
-
-// Controls whether all ClientSharedImage::GetTextureTarget*(...) variants call
-// through to ClientSharedImage::GetTextureTarget() under the hood.
-GPU_EXPORT BASE_DECLARE_FEATURE(kUseUniversalGetTextureTargetFunction);
-
-// Controls whether SharedImageInterface::DestroySharedImage() should be called
-// in ClientSharedImage's destructor if the shared image has not been marked
-// for destruction.
-GPU_EXPORT BASE_DECLARE_FEATURE(kEnableAutomaticSharedImageManagement);
 
 struct ExportedSharedImage;
 
@@ -113,7 +115,8 @@ class GPU_EXPORT ClientSharedImage
   const Mailbox& mailbox() { return mailbox_; }
   viz::SharedImageFormat format() const { return metadata_.format; }
   gfx::Size size() const { return metadata_.size; }
-  uint32_t usage() { return metadata_.usage; }
+  gfx::ColorSpace color_space() const { return metadata_.color_space; }
+  SharedImageUsageSet usage() { return metadata_.usage; }
 
   bool HasHolder() { return sii_holder_ != nullptr; }
 
@@ -134,38 +137,7 @@ class GPU_EXPORT ClientSharedImage
 #endif
 
   // Returns the GL texture target to use for this SharedImage.
-  // TODO(crbug.com/41494843): Eliminate all the below variants in favor of all
-  // clients using this function.
   uint32_t GetTextureTarget();
-
-  // Returns the texture target to use for overlays:
-  // * GL_TEXTURE_2D on platforms other than MacOS
-  // * The platform-specific texture target for MacOS
-  uint32_t GetTextureTargetForOverlays();
-
-  // Returns the texture target to be used for the given |format|. For usage
-  // when this SharedImage was created from a native buffer and the client knows
-  // that the usages of this SI would result in needing the platform-specific
-  // texture target for `format` if one exists on this platform. Returns
-  // GL_TEXTURE_2D if |format| does not require a platform-specific target and
-  // the relevant platform-specific target otherwise.
-  uint32_t GetTextureTarget(gfx::BufferFormat format);
-
-  // Returns the texture target to be used for the given |usage| and |format|
-  // based on the underlying SharedImageCapabilities. Requires that
-  // `HasHolder()` is true. For usage when this SharedImage was created from a
-  // native buffer. Returns GL_TEXTURE_2D if the `usage`/`format` pair does not
-  // require a platform-specific target and the relevant platform-specific
-  // target otherwise.
-  uint32_t GetTextureTarget(gfx::BufferUsage usage, gfx::BufferFormat format);
-
-  // Similar to the above, but for usage if the client did not explicitly create
-  // this SharedImage from a native buffer. Returns GL_TEXTURE_2D if the set of
-  // usages that the client specified do not result in this SharedImage being
-  // backed by a native buffer. Otherwise, uses this instance's
-  // SharedImageFormat (which must be a single-planar format) to compute the
-  // BufferFormat and returns the result of the above GetTextureTarget() call.
-  uint32_t GetTextureTarget(gfx::BufferUsage usage);
 
   base::trace_event::MemoryAllocatorDumpGuid GetGUIDForTracing() {
     return gpu::GetSharedImageGUIDForTracing(mailbox_);
@@ -196,11 +168,11 @@ class GPU_EXPORT ClientSharedImage
     destruction_sync_token_ = sync_token;
   }
 
-  void MarkForDestruction() { marked_for_destruction_ = true; }
-
   // Creates a ClientSharedImage that is not associated with any
   // SharedImageInterface for testing.
   static scoped_refptr<ClientSharedImage> CreateForTesting();
+  static scoped_refptr<ClientSharedImage> CreateForTesting(
+      uint32_t texture_target);
 
   static scoped_refptr<ClientSharedImage> CreateForTesting(
       const Mailbox& mailbox,
@@ -227,8 +199,14 @@ class GPU_EXPORT ClientSharedImage
       const base::trace_event::MemoryAllocatorDumpGuid& buffer_dump_guid,
       int importance);
 
+  // Creates a GL Texture from the current SharedImage for the provided
+  // GLES2Interface.
+  std::unique_ptr<SharedImageTexture> CreateGLTexture(
+      gles2::GLES2Interface* gl);
+
  private:
   friend class base::RefCountedThreadSafe<ClientSharedImage>;
+  friend class SharedImageTexture;
   ~ClientSharedImage();
 
   // This constructor is used only when importing an owned ClientSharedImage,
@@ -236,7 +214,9 @@ class GPU_EXPORT ClientSharedImage
   // SharedImageInterface::ImportSharedImage().
   // `sii_holder` must not be null.
   friend class ClientSharedImageInterface;
+  friend class GpuChannelSharedImageInterface;
   friend class TestSharedImageInterface;
+  friend class media::VideoFrame;
   ClientSharedImage(const Mailbox& mailbox,
                     const SharedImageMetadata& metadata,
                     const SyncToken& sync_token,
@@ -251,6 +231,30 @@ class GPU_EXPORT ClientSharedImage
                     const SyncToken& sync_token,
                     uint32_t texture_target);
 
+  // VideoFrame needs this info currently for MappableSI.
+  // TODO(crbug.com/40263579): Once MappableSI is fully launched for VideoFrame,
+  // VF can be refactored to behave like OPAQUE storage which does not need
+  // layout info and hence stride. This method will then no longer needed and
+  // can be removed.
+  size_t GetStrideForVideoFrame(uint32_t plane_index) const {
+    CHECK(gpu_memory_buffer_);
+    return gpu_memory_buffer_->stride(plane_index);
+  }
+
+  // Returns whether the underlying resource is shared memory without needing to
+  // Map() the shared image. This method is supposed to be used by VideoFrame
+  // temporarily as mentioned above in ::GetStrideForVideoFrame().
+  bool IsSharedMemoryForVideoFrame() const {
+    CHECK(gpu_memory_buffer_);
+    return gpu_memory_buffer_->GetType() ==
+           gfx::GpuMemoryBufferType::SHARED_MEMORY_BUFFER;
+  }
+
+  // This pair of functions are used by SharedImageTexture to notify
+  // ClientSharedImage of the beginning and the end of a scoped access.
+  void BeginAccess(bool readonly);
+  void EndAccess(bool readonly);
+
   const Mailbox mailbox_;
   const SharedImageMetadata metadata_;
   SyncToken creation_sync_token_;
@@ -261,7 +265,11 @@ class GPU_EXPORT ClientSharedImage
   // The texture target returned by `GetTextureTarget()`.
   uint32_t texture_target_ = 0;
 
-  bool marked_for_destruction_ = false;
+  // The number of active scoped read accesses.
+  unsigned int num_readers_ = 0;
+
+  // Whether there exists an active scoped write access.
+  bool has_writer_ = false;
 };
 
 struct GPU_EXPORT ExportedSharedImage {
@@ -286,6 +294,58 @@ struct GPU_EXPORT ExportedSharedImage {
   SharedImageMetadata metadata_;
   SyncToken creation_sync_token_;
   uint32_t texture_target_ = 0;
+};
+
+class GPU_EXPORT SharedImageTexture {
+ public:
+  class GPU_EXPORT ScopedAccess {
+   public:
+    ScopedAccess(const ScopedAccess&) = delete;
+    ScopedAccess& operator=(const ScopedAccess&) = delete;
+    ScopedAccess(ScopedAccess&&) = delete;
+    ScopedAccess& operator=(ScopedAccess&&) = delete;
+
+    ~ScopedAccess();
+
+    unsigned int texture_id() { return texture_->id(); }
+
+    static SyncToken EndAccess(
+        std::unique_ptr<ScopedAccess> scoped_shared_image);
+
+   private:
+    friend class SharedImageTexture;
+    ScopedAccess(SharedImageTexture* texture,
+                 const SyncToken& sync_token,
+                 bool readonly);
+    void DidEndAccess();
+
+    const raw_ptr<SharedImageTexture> texture_;
+    const bool readonly_;
+    bool is_access_ended_ = false;
+  };
+
+  SharedImageTexture(const SharedImageTexture&) = delete;
+  SharedImageTexture& operator=(const SharedImageTexture&) = delete;
+  SharedImageTexture(SharedImageTexture&&) = delete;
+  SharedImageTexture& operator=(SharedImageTexture&&) = delete;
+
+  ~SharedImageTexture();
+
+  std::unique_ptr<ScopedAccess> BeginAccess(const SyncToken& sync_token,
+                                            bool readonly);
+
+  void DidEndAccess(bool readonly);
+  unsigned int id() { return id_; }
+
+ private:
+  friend class ClientSharedImage;
+  SharedImageTexture(gles2::GLES2Interface* gl,
+                     ClientSharedImage* shared_image);
+
+  const raw_ptr<gles2::GLES2Interface> gl_;
+  const raw_ptr<gpu::ClientSharedImage> shared_image_;
+  unsigned int id_ = 0;
+  bool has_active_access_ = false;
 };
 
 }  // namespace gpu

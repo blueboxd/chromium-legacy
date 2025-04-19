@@ -32,6 +32,7 @@
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments_data_manager.h"
+#include "components/autofill/core/browser/payments_data_manager_test_api.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_test_utils.h"
 #include "components/autofill/core/browser/ui/address_combobox_model.h"
@@ -470,7 +471,7 @@ PaymentRequestBrowserTestBase::GetPaymentRequests() {
 }
 
 autofill::PersonalDataManager* PaymentRequestBrowserTestBase::GetDataManager() {
-  return autofill::PersonalDataManagerFactory::GetForProfile(
+  return autofill::PersonalDataManagerFactory::GetForBrowserContext(
       Profile::FromBrowserContext(GetActiveWebContents()->GetBrowserContext()));
 }
 
@@ -489,15 +490,15 @@ void PaymentRequestBrowserTestBase::AddAutofillProfile(
 void PaymentRequestBrowserTestBase::AddCreditCard(
     const autofill::CreditCard& card) {
   autofill::PersonalDataManager* personal_data_manager = GetDataManager();
-  if (card.record_type() != autofill::CreditCard::RecordType::kLocalCard) {
-    personal_data_manager->payments_data_manager().AddServerCreditCardForTest(
-        std::make_unique<autofill::CreditCard>(card));
-    return;
-  }
   size_t card_count =
       personal_data_manager->payments_data_manager().GetCreditCards().size();
   autofill::PersonalDataChangedWaiter waiter(*personal_data_manager);
-  personal_data_manager->payments_data_manager().AddCreditCard(card);
+  if (card.record_type() == autofill::CreditCard::RecordType::kLocalCard) {
+    personal_data_manager->payments_data_manager().AddCreditCard(card);
+  } else {
+    test_api(personal_data_manager->payments_data_manager())
+        .AddServerCreditCard(card);
+  }
   std::move(waiter).Wait();
   EXPECT_EQ(
       card_count + 1,
@@ -564,13 +565,14 @@ void PaymentRequestBrowserTestBase::ClickOnDialogViewAndWait(
 
 void PaymentRequestBrowserTestBase::ClickOnDialogView(views::View* view) {
   DCHECK(view);
-  ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-                         ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
-                         ui::EF_LEFT_MOUSE_BUTTON);
+  ui::MouseEvent pressed(ui::EventType::kMousePressed, gfx::Point(),
+                         gfx::Point(), ui::EventTimeForNow(),
+                         ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   view->OnMousePressed(pressed);
-  ui::MouseEvent released_event = ui::MouseEvent(
-      ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(), ui::EventTimeForNow(),
-      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+  ui::MouseEvent released_event =
+      ui::MouseEvent(ui::EventType::kMouseReleased, gfx::Point(), gfx::Point(),
+                     ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+                     ui::EF_LEFT_MOUSE_BUTTON);
   view->OnMouseReleased(released_event);
 }
 

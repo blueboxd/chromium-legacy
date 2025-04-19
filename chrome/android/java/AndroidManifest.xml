@@ -415,6 +415,7 @@ by a child template that "extends" this file.
             android:taskAffinity=""
             android:excludeFromRecents="true"
             android:launchMode="singleInstancePerTask"
+            android:windowNoDisplay="true"
             android:exported="false">
             <intent-filter>
                 <action android:name="org.chromium.chrome.browser.dragdrop.action.VIEW" />
@@ -505,7 +506,7 @@ by a child template that "extends" this file.
             {% endblock %}
             {% block chrome_activity_common %}
             android:windowSoftInputMode="adjustResize"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize|uiMode|navigation"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize|uiMode|navigation|density"
             android:hardwareAccelerated="false"
             {% endblock %}
         >
@@ -578,20 +579,15 @@ by a child template that "extends" this file.
             {{ self.first_run_activity_common() }}>
         </activity>
         <activity android:name="org.chromium.chrome.browser.firstrun.FirstRunActivity"
-            android:theme="@style/Theme.Chromium.DialogWhenLarge"
+            android:theme="@style/Theme.Chromium.Activity.Fullscreen"
             android:launchMode="singleTop"
             {% block first_run_activity_common %}
             android:label="@string/fre_activity_label"
             android:excludeFromRecents="true"
             android:autoRemoveFromRecents="true"
             android:windowSoftInputMode="stateHidden|adjustPan"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize|uiMode"
             {% endblock %}>
-        </activity>
-        <activity android:name="org.chromium.chrome.browser.firstrun.TabbedModeFirstRunActivity"
-            android:theme="@style/Theme.Chromium.TabbedMode"
-            android:launchMode="singleTop"
-            {{ self.first_run_activity_common() }}>
         </activity>
         {% set enable_cardboard = enable_cardboard|default(0) %}
         {% if enable_cardboard == "true" %}
@@ -603,24 +599,24 @@ by a child template that "extends" this file.
             android:theme="@style/Theme.AppCompat.NoActionBar">
         </activity>
         {% endif %}
-        <activity android:name="org.chromium.chrome.browser.signin.SigninAndHistoryOptInActivity"
-            android:theme="@style/Theme.Chromium.SigninAndHistoryOptInActivity"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
+        <activity android:name="org.chromium.chrome.browser.signin.SigninAndHistorySyncActivity"
+            android:theme="@style/Theme.Chromium.SigninAndHistorySyncActivity"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize|uiMode"
             android:exported="false">
         </activity>
         <activity android:name="org.chromium.chrome.browser.signin.SyncConsentActivity"
             android:theme="@style/Theme.Chromium.DialogWhenLarge"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize|uiMode"
             android:exported="false">
         </activity>
         <activity android:name="org.chromium.chrome.browser.device_lock.DeviceLockActivity"
             android:theme="@style/Theme.Chromium.DialogWhenLarge"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize|uiMode"
             android:exported="false">
         </activity>
         <activity android:name="org.chromium.chrome.browser.settings.SettingsActivity"
             android:theme="@style/Theme.Chromium.Settings"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize|uiMode"
             android:label="@string/settings"
             android:exported="false">
         </activity>
@@ -636,21 +632,21 @@ by a child template that "extends" this file.
             android:theme="@style/Theme.Chromium.Activity.Fullscreen"
             android:exported="false"
             android:windowSoftInputMode="stateAlwaysHidden|adjustResize"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize">
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize|uiMode">
         </activity>
         <activity android:name="org.chromium.chrome.browser.app.bookmarks.BookmarkEditActivity"
             android:theme="@style/Theme.Chromium.DialogWhenLarge"
             android:windowSoftInputMode="stateHidden"
             android:exported="false"
             android:label="@string/edit_bookmark"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize">
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize|uiMode">
         </activity>
         <activity android:name="org.chromium.chrome.browser.app.bookmarks.BookmarkFolderPickerActivity"
             android:theme="@style/Theme.Chromium.DialogWhenLarge"
             android:windowSoftInputMode="stateAlwaysHidden"
             android:label="@string/bookmark_choose_folder"
             android:exported="false"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize">
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize|uiMode">
         </activity>
 
         <!-- Activities for downloads. -->
@@ -665,7 +661,7 @@ by a child template that "extends" this file.
             android:theme="@style/Theme.Chromium.Activity.Fullscreen"
             android:windowSoftInputMode="stateAlwaysHidden|adjustResize"
             android:exported="false"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize">
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize|uiMode">
         </activity>
 
         <!-- Activities for feed. -->
@@ -673,13 +669,13 @@ by a child template that "extends" this file.
             android:theme="@style/Theme.Chromium.Settings"
             android:windowSoftInputMode="stateAlwaysHidden|adjustResize"
             android:exported="false"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize">
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize|uiMode">
         </activity>
         <activity android:name="org.chromium.chrome.browser.app.feed.followmanagement.FollowManagementActivity"
             android:theme="@style/Theme.Chromium.Settings"
             android:windowSoftInputMode="stateAlwaysHidden|adjustResize"
             android:exported="false"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize">
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize|uiMode">
             <intent-filter>
                 <action android:name="org.chromium.chrome.browser.app.feed.followmanagement.FollowManagementActivity.ACTIVATE" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -691,7 +687,7 @@ by a child template that "extends" this file.
             android:theme="@style/Theme.Chromium.Activity.Fullscreen"
             android:windowSoftInputMode="stateAlwaysHidden|adjustResize"
             android:exported="false"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize">
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize|uiMode">
         </activity>
 
         <!-- Activities for history. -->
@@ -699,7 +695,7 @@ by a child template that "extends" this file.
             android:theme="@style/Theme.Chromium.Activity.Fullscreen"
             android:windowSoftInputMode="stateAlwaysHidden|adjustResize"
             android:exported="false"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize">
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize|uiMode">
         </activity>
 
         <!--
@@ -972,7 +968,7 @@ by a child template that "extends" this file.
             android:clearTaskOnLaunch="true"
             android:excludeFromRecents="true"
             android:windowSoftInputMode="adjustResize"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize|uiMode"
             android:hardwareAccelerated="false" />
 
         <!-- GcmTaskService for registration for Invalidations. Not actually implemented anymore. -->
@@ -1023,15 +1019,6 @@ by a child template that "extends" this file.
         <service android:name="org.chromium.chrome.browser.notifications.NotificationJobService"
             android:exported="false"
             android:permission="android.permission.BIND_JOB_SERVICE"/>
-
-        <!-- Background Task Scheduler job service -->
-        <service android:name="org.chromium.components.background_task_scheduler.internal.BackgroundTaskJobService"
-            android:exported="false"
-            android:permission="android.permission.BIND_JOB_SERVICE"/>
-
-        <!-- Background Task Scheduler alarm receiver -->
-        <receiver android:name="org.chromium.components.background_task_scheduler.internal.BackgroundTaskBroadcastReceiver"
-            android:exported="false" />
 
         <!-- GcmTaskService implementation to wake Chrome on scheduled events -->
         <service android:name="org.chromium.chrome.browser.ChromeBackgroundService"
@@ -1086,7 +1073,7 @@ by a child template that "extends" this file.
         <receiver android:name="org.chromium.chrome.browser.announcement.AnnouncementNotificationManager$Receiver"
             android:exported="false"/>
 
-        <service android:name="org.chromium.chrome.browser.notifications.NotificationIntentInterceptor$Service"
+        <service android:name="org.chromium.chrome.browser.notifications.NotificationIntentInterceptorService"
             android:exported="false"/>
 
         <receiver android:name="org.chromium.chrome.browser.notifications.NotificationIntentInterceptor$Receiver"
@@ -1320,11 +1307,16 @@ by a child template that "extends" this file.
           android:grantUriPermissions="true">
       </provider>
 
+       <!-- Provider for incognito pdf page. -->
+      <provider android:name="org.chromium.chrome.browser.pdf.PdfContentProvider"
+          android:authorities="{{ manifest_package }}.PdfContentProvider"
+          android:exported="false"
+          android:grantUriPermissions="true">
+      </provider>
+
       <!-- Disables at startup init of Emoji2. See http://crbug.com/1205141 -->
       <provider
-          android:authorities="{{ manifest_package }}.androidx-startup"
           android:name="androidx.startup.InitializationProvider"
-          android:exported="false"
           tools:node="remove">
       </provider>
 

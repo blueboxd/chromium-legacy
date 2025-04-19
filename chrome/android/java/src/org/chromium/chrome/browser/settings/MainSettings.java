@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.settings;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -14,11 +15,14 @@ import android.provider.Settings;
 import android.view.View;
 
 import androidx.annotation.Nullable;
+import androidx.lifecycle.Lifecycle;
 import androidx.preference.Preference;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.options.AutofillOptionsFragment;
 import org.chromium.chrome.browser.autofill.options.AutofillOptionsFragment.AutofillOptionsReferrer;
@@ -36,8 +40,9 @@ import org.chromium.chrome.browser.password_manager.ManagePasswordsReferrer;
 import org.chromium.chrome.browser.password_manager.PasswordManagerLauncher;
 import org.chromium.chrome.browser.password_manager.settings.PasswordsPreference;
 import org.chromium.chrome.browser.preferences.Pref;
+import org.chromium.chrome.browser.safety_hub.SafetyHubMetricUtils;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
-import org.chromium.chrome.browser.signin.SigninAndHistoryOptInActivityLauncherImpl;
+import org.chromium.chrome.browser.signin.SigninAndHistorySyncActivityLauncherImpl;
 import org.chromium.chrome.browser.signin.SyncConsentActivityLauncherImpl;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.ProfileDataCache;
@@ -47,8 +52,12 @@ import org.chromium.chrome.browser.sync.settings.ManageSyncSettings;
 import org.chromium.chrome.browser.sync.settings.SignInPreference;
 import org.chromium.chrome.browser.sync.settings.SyncPromoPreference;
 import org.chromium.chrome.browser.sync.settings.SyncSettingsUtils;
+import org.chromium.chrome.browser.tab_group_sync.TabGroupSyncFeatures;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarStatePredictor;
 import org.chromium.chrome.browser.tracing.settings.DeveloperSettings;
+import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
+import org.chromium.chrome.browser.ui.signin.SignOutCoordinator;
 import org.chromium.chrome.browser.ui.signin.SyncPromoController;
 import org.chromium.chrome.browser.ui.signin.account_picker.AccountPickerBottomSheetStrings;
 import org.chromium.components.autofill.AutofillFeatures;
@@ -66,6 +75,7 @@ import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.sync.SyncService;
 import org.chromium.components.user_prefs.UserPrefs;
+import org.chromium.ui.UiUtils;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 
 import java.util.HashMap;
@@ -106,6 +116,10 @@ public class MainSettings extends ChromeBaseSettingsFragment
     private ChromeBasePreference mManageSync;
     private @Nullable PasswordCheck mPasswordCheck;
     private ObservableSupplier<ModalDialogManager> mModalDialogManagerSupplier;
+    // TODO(crbug.com/343933167): This should be removed when the snackbar issue is addressed.
+    // Will be true if `onSignedOut()` was called when the current activity state is not
+    // `Lifecycle.State.STARTED`.
+    private boolean mShouldShowSnackbar;
 
     public MainSettings() {
         setHasOptionsMenu(true);
@@ -120,7 +134,11 @@ public class MainSettings extends ChromeBaseSettingsFragment
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getActivity().setTitle(R.string.settings);
-        mPasswordCheck = PasswordCheckFactory.getOrCreate(new SettingsLauncherImpl());
+        mPasswordCheck = PasswordCheckFactory.getOrCreate();
+        SigninManager signinManager = IdentityServicesProvider.get().getSigninManager(getProfile());
+        if (signinManager.isSigninSupported(/* requireUpdatedPlayServices= */ false)) {
+            signinManager.addSignInStateObserver(this);
+        }
     }
 
     @Override
@@ -134,6 +152,10 @@ public class MainSettings extends ChromeBaseSettingsFragment
     @Override
     public void onDestroy() {
         super.onDestroy();
+        SigninManager signinManager = IdentityServicesProvider.get().getSigninManager(getProfile());
+        if (signinManager.isSigninSupported(/* requireUpdatedPlayServices= */ false)) {
+            signinManager.removeSignInStateObserver(this);
+        }
         // The component should only be destroyed when the activity has been closed by the user
         // (e.g. by pressing on the back button) and not when the activity is temporarily destroyed
         // by the system.
@@ -143,23 +165,19 @@ public class MainSettings extends ChromeBaseSettingsFragment
     @Override
     public void onStart() {
         super.onStart();
-        SigninManager signinManager = IdentityServicesProvider.get().getSigninManager(getProfile());
-        if (signinManager.isSigninSupported(/* requireUpdatedPlayServices= */ false)) {
-            signinManager.addSignInStateObserver(this);
-        }
         SyncService syncService = SyncServiceFactory.getForProfile(getProfile());
         if (syncService != null) {
             syncService.addSyncStateChangedListener(this);
+        }
+        if (mShouldShowSnackbar) {
+            mShouldShowSnackbar = false;
+            PostTask.postTask(TaskTraits.UI_DEFAULT, this::showSignoutSnackbar);
         }
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        SigninManager signinManager = IdentityServicesProvider.get().getSigninManager(getProfile());
-        if (signinManager.isSigninSupported(/* requireUpdatedPlayServices= */ false)) {
-            signinManager.removeSignInStateObserver(this);
-        }
         SyncService syncService = SyncServiceFactory.getForProfile(getProfile());
         if (syncService != null) {
             syncService.removeSyncStateChangedListener(this);
@@ -199,13 +217,13 @@ public class MainSettings extends ChromeBaseSettingsFragment
                         bottomSheetStrings,
                         SigninAccessPoint.SETTINGS,
                         SyncConsentActivityLauncherImpl.get(),
-                        SigninAndHistoryOptInActivityLauncherImpl.get()));
+                        SigninAndHistorySyncActivityLauncherImpl.get()));
 
         SignInPreference signInPreference = findPreference(PREF_SIGN_IN);
         signInPreference.initialize(getProfile(), profileDataCache, accountManagerFacade);
 
+        updateGoogleServicePreference();
         cachePreferences();
-
         updateAutofillPreferences();
         updatePlusAddressesPreference();
 
@@ -247,7 +265,7 @@ public class MainSettings extends ChromeBaseSettingsFragment
             templateUrlService.load();
         }
 
-        new AdaptiveToolbarStatePredictor(getProfile(), null)
+        new AdaptiveToolbarStatePredictor(getContext(), getProfile(), null)
                 .recomputeUiState(
                         uiState -> {
                             // We don't show the toolbar shortcut settings page if disabled from
@@ -264,6 +282,14 @@ public class MainSettings extends ChromeBaseSettingsFragment
             getPreferenceScreen().removePreference(findPreference(PREF_SAFETY_HUB));
         } else {
             getPreferenceScreen().removePreference(findPreference(PREF_SAFETY_CHECK));
+            findPreference(PREF_SAFETY_HUB)
+                    .setOnPreferenceClickListener(
+                            preference -> {
+                                SafetyHubMetricUtils.recordExternalInteractions(
+                                        SafetyHubMetricUtils.ExternalInteractions
+                                                .OPEN_FROM_SETTINGS_PAGE);
+                                return false;
+                            });
         }
     }
 
@@ -299,7 +325,13 @@ public class MainSettings extends ChromeBaseSettingsFragment
         updateAutofillPreferences();
         updatePlusAddressesPreference();
 
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GROUP_SYNC_ANDROID)) {
+        boolean isTabGroupSyncAutoOpenConfigurable =
+                TabGroupSyncFeatures.isTabGroupSyncEnabled(getProfile())
+                        && ChromeFeatureList.isEnabled(
+                                ChromeFeatureList.TAB_GROUP_SYNC_AUTO_OPEN_KILL_SWITCH);
+        if (isTabGroupSyncAutoOpenConfigurable
+                || TabUiFeatureUtilities.isTabGroupCreationDialogShowConfigurable()
+                || ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_TAB_DECLUTTER)) {
             addPreferenceIfAbsent(PREF_TABS);
         } else {
             removePreferenceIfPresent(PREF_TABS);
@@ -342,6 +374,22 @@ public class MainSettings extends ChromeBaseSettingsFragment
         if (preference != null) getPreferenceScreen().removePreference(preference);
     }
 
+    private void updateGoogleServicePreference() {
+        ChromeBasePreference googleServicePreference = findPreference(PREF_GOOGLE_SERVICES);
+        if (ChromeFeatureList.isEnabled(
+                ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)) {
+            googleServicePreference.setIcon(R.drawable.ic_google_services_48dp_with_bg);
+            googleServicePreference.setViewId(R.id.account_management_google_services_row);
+        } else {
+            Drawable googleServicesIcon =
+                    UiUtils.getTintedDrawable(
+                            getContext(),
+                            R.drawable.ic_google_services_48dp,
+                            R.color.default_icon_color_tint_list);
+            googleServicePreference.setIcon(googleServicesIcon);
+        }
+    }
+
     private void updateManageSyncPreference() {
         String primaryAccountName =
                 CoreAccountInfo.getEmailFrom(
@@ -374,7 +422,8 @@ public class MainSettings extends ChromeBaseSettingsFragment
                             .isSyncDisabledByEnterprisePolicy()) {
                         SyncSettingsUtils.showSyncDisabledByAdministratorToast(context);
                     } else if (isSyncConsentAvailable) {
-                        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+                        SettingsLauncher settingsLauncher =
+                                SettingsLauncherFactory.createSettingsLauncher();
                         settingsLauncher.launchSettingsActivity(context, ManageSyncSettings.class);
                     } else {
                         // TODO(crbug.com/40067770): Remove after rolling out
@@ -419,7 +468,7 @@ public class MainSettings extends ChromeBaseSettingsFragment
             preference.setFragment(null);
             preference.setOnPreferenceClickListener(
                     unused -> {
-                        new SettingsLauncherImpl()
+                        SettingsLauncherFactory.createSettingsLauncher()
                                 .launchSettingsActivity(
                                         getContext(),
                                         AutofillOptionsFragment.class,
@@ -480,6 +529,14 @@ public class MainSettings extends ChromeBaseSettingsFragment
         pref.setSummary(isOn ? R.string.text_on : R.string.text_off);
     }
 
+    private void showSignoutSnackbar() {
+        assert getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.STARTED);
+        SignOutCoordinator.showSnackbar(
+                getContext(),
+                ((SnackbarManager.SnackbarManageable) getActivity()).getSnackbarManager(),
+                SyncServiceFactory.getForProfile(getProfile()));
+    }
+
     // SigninManager.SignInStateObserver implementation.
     @Override
     public void onSignedIn() {
@@ -490,6 +547,21 @@ public class MainSettings extends ChromeBaseSettingsFragment
 
     @Override
     public void onSignedOut() {
+        // TODO(crbug.com/343933167): The snackbar should be shown from
+        // SignOutCoordinator.startSignOutFlow(), in other words SignOutCoordinator.showSnackbar()
+        // should be private method.
+
+        if (ChromeFeatureList.isEnabled(
+                ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)) {
+            // Show the signout snackbar, or wait until `onStart()` if the fragment is not in the
+            // `STARTED` state.
+            if (getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.STARTED)) {
+                showSignoutSnackbar();
+            } else {
+                mShouldShowSnackbar = true;
+            }
+        }
+
         updatePreferences();
     }
 

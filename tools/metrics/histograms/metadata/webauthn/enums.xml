@@ -26,6 +26,21 @@ chromium-metrics-reviews@google.com.
 
 <enums>
 
+<enum name="ChangePinEvent">
+  <int value="0" label="A PIN change request is triggered in settings."/>
+  <int value="1" label="A PIN change request is triggered in PIN dialog."/>
+  <int value="2" label="GAIA reauth succeeded and a RAPT is retrieved."/>
+  <int value="3" label="GAIA reauth is cancelled by closing the window."/>
+  <int value="4" label="A new PIN is entered in the GPM PIN dialog."/>
+  <int value="5"
+      label="Change PIN request is cancelled by dismissing the new PIN
+             dialog."/>
+  <int value="6" label="Change PIN request succeeded in enclave."/>
+  <int value="7"
+      label="Change PIN request failed in enclave. This does not include
+             cancellations."/>
+</enum>
+
 <enum name="CredManCreateRequestEnum">
   <int value="0" label="A createCredential request was sent to the platform."/>
   <int value="1"
@@ -180,6 +195,25 @@ chromium-metrics-reviews@google.com.
   <int value="8" label="Canceled"/>
 </enum>
 
+<enum name="WebAuthenticationCredentialRequestResult">
+  <int value="0" label="Timeout"/>
+  <int value="1" label="User cancelled"/>
+  <int value="2" label="Native Windows API success"/>
+  <int value="3" label="Native Windows API error"/>
+  <int value="4" label="Chrome TouchID authenticator success"/>
+  <int value="5" label="Chrome TouchID authenticator failure"/>
+  <int value="6" label="ChromeOS platform authenticator success"/>
+  <int value="7" label="ChromeOS platform authenticator failure"/>
+  <int value="8" label="Phone success"/>
+  <int value="9" label="Phone failure"/>
+  <int value="10" label="iCloud keychain success"/>
+  <int value="11" label="iCloud keychain failure"/>
+  <int value="12" label="Enclave success"/>
+  <int value="13" label="Enclave failure"/>
+  <int value="14" label="Other device success"/>
+  <int value="15" label="Other device error"/>
+</enum>
+
 <enum name="WebAuthenticationEnclaveEvent">
   <int value="0" label="Onboarding sheet was shown to the user"/>
   <int value="1"
@@ -206,23 +240,22 @@ chromium-metrics-reviews@google.com.
   <int value="5" label="Android Accessory"/>
 </enum>
 
-<enum name="WebAuthenticationGetAssertionResult">
-  <int value="0" label="Timeout"/>
-  <int value="1" label="User cancelled"/>
-  <int value="2" label="Native Windows API success"/>
-  <int value="3" label="Native Windows API error"/>
-  <int value="4" label="Chrome TouchID authenticator success"/>
-  <int value="5" label="Chrome TouchID authenticator failure"/>
-  <int value="6" label="ChromeOS platform authenticator success"/>
-  <int value="7" label="ChromeOS platform authenticator failure"/>
-  <int value="8" label="Phone success"/>
-  <int value="9" label="Phone failure"/>
-  <int value="10" label="iCloud keychain success"/>
-  <int value="11" label="iCloud keychain failure"/>
-  <int value="12" label="Enclave success"/>
-  <int value="13" label="Enclave failure"/>
-  <int value="14" label="Other device success"/>
-  <int value="15" label="Other device error"/>
+<enum name="WebAuthenticationGetAssertionOutcome">
+  <int value="0" label="Success"/>
+  <int value="1" label="Security Error"/>
+  <int value="2" label="User Cancellation"/>
+  <int value="3" label="Credential Not Recognized"/>
+  <int value="4" label="Invalid Response From Authenticator"/>
+  <int value="5" label="RK Not Supported"/>
+  <int value="6" label="UV Not Supported"/>
+  <int value="7" label="Soft PIN Block"/>
+  <int value="8" label="Hard PIN Block"/>
+  <int value="9" label="Platform Not Allowed Error"/>
+  <int value="10" label="Hybrid Transport Error"/>
+  <int value="11" label="Blocked By Filter"/>
+  <int value="12" label="Enclave Authenticator Error"/>
+  <int value="13" label="Timeout Occurred"/>
+  <int value="14" label="Other Failure"/>
 </enum>
 
 <enum name="WebAuthenticationMacOSPasskeysPermission">
@@ -267,6 +300,33 @@ chromium-metrics-reviews@google.com.
              Keychain recognised a credential"/>
   <int value="11" label="Successful get() from the profile authenticator"/>
   <int value="12" label="Successful get() from iCloud Keychain"/>
+</enum>
+
+<enum name="WebAuthenticationMakeCredentialOutcome">
+  <int value="0" label="Success"/>
+  <int value="1" label="Security Error"/>
+  <int value="2" label="User Cancellation"/>
+  <int value="3" label="Credential Excluded"/>
+  <int value="4" label="Invalid Response From Authenticator"/>
+  <int value="5" label="RK Not Supported"/>
+  <int value="6" label="UV Not Supported"/>
+  <int value="7" label="Large Blob Not Supported"/>
+  <int value="8" label="Algorithm Not Supported"/>
+  <int value="9" label="Soft PIN Block"/>
+  <int value="10" label="Hard PIN Block"/>
+  <int value="11" label="Storage Full"/>
+  <int value="12" label="Platform Not Allowed Error"/>
+  <int value="13" label="Hybrid Transport Error"/>
+  <int value="14" label="Blocked By Filter"/>
+  <int value="15" label="Enclave Authenticator Error"/>
+  <int value="16" label="Timeout Occurred"/>
+  <int value="17" label="Other Failure"/>
+</enum>
+
+<enum name="WebAuthenticationRequestMode">
+  <int value="0" label="WebAuthn Modal Request"/>
+  <int value="1" label="WebAuthn Conditional UI Request"/>
+  <int value="2" label="Payment Request"/>
 </enum>
 
 <enum name="WindowsForegroundedHelloDialog">

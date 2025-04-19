@@ -73,6 +73,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTabRestoreTest, RecentTabsMenuTabDisposition) {
   EXPECT_EQ(2u, active_browser_list->size());
 
   // Close the first browser.
+  const int active_tab_index = browser()->tab_strip_model()->active_index();
   CloseBrowserSynchronously(browser());
   EXPECT_EQ(1u, active_browser_list->size());
 
@@ -108,8 +109,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTabRestoreTest, RecentTabsMenuTabDisposition) {
     }
   }
 
-  // Only the first tab should have visible disposition.
-  CheckVisbility(restored_browser->tab_strip_model(), 0);
+  // Previously active tab should have visible disposition.
+  CheckVisbility(restored_browser->tab_strip_model(), active_tab_index);
 }
 
 // Expect a selected restored tab to start loading synchronously.
@@ -130,11 +131,13 @@ IN_PROC_BROWSER_TEST_F(BrowserTabRestoreTest,
       browser(), navigations, /* tab_index=*/1, /* selected_navigation=*/0,
       /* extension_app_id=*/std::string(), /* group=*/std::nullopt,
       /* select=*/true, /* pin=*/false,
-      /* last_active_time=*/base::TimeTicks::Now(),
+      /* last_active_time_ticks=*/base::TimeTicks::Now(),
+      /* last_active_time=*/base::Time::Now(),
       /* storage_namespace=*/nullptr,
       /* user_agent_override=*/sessions::SerializedUserAgentOverride(),
       /* extra_data*/ std::map<std::string, std::string>(),
-      /* from_session_restore=*/true);
+      /* from_session_restore=*/true,
+      /* is_active_browser=*/true);
 
   EXPECT_TRUE(web_contents->GetController().GetPendingEntry());
 }
@@ -153,11 +156,13 @@ IN_PROC_BROWSER_TEST_F(BrowserTabRestoreTest,
       browser(), navigations, /* tab_index=*/1, /* selected_navigation=*/0,
       /* extension_app_id=*/std::string(), /* group=*/std::nullopt,
       /* select=*/false, /* pin=*/false,
-      /* last_active_time=*/base::TimeTicks::Now(),
+      /* last_active_time_ticks=*/base::TimeTicks::Now(),
+      /* last_active_time=*/base::Time::Now(),
       /* storage_namespace=*/nullptr,
       /* user_agent_override=*/sessions::SerializedUserAgentOverride(),
       /* extra_data*/ std::map<std::string, std::string>(),
-      /* from_session_restore=*/true);
+      /* from_session_restore=*/true,
+      /* is_active_browser=*/true);
 
   EXPECT_FALSE(web_contents->GetController().GetPendingEntry());
 }
@@ -175,6 +180,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTabRestoreTest, DelegateRestoreTabDisposition) {
   EXPECT_EQ(2u, active_browser_list->size());
 
   // Close the first browser.
+  const int active_tab_index = browser()->tab_strip_model()->active_index();
   CloseBrowserSynchronously(browser());
   EXPECT_EQ(1u, active_browser_list->size());
 
@@ -212,6 +218,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTabRestoreTest, DelegateRestoreTabDisposition) {
     }
   }
 
-  // Only the first tab should have visible disposition.
-  CheckVisbility(browser->tab_strip_model(), 0);
+  // Previously active tab should have visible disposition.
+  CheckVisbility(browser->tab_strip_model(), active_tab_index);
 }

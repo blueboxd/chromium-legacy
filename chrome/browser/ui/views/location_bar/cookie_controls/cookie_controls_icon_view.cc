@@ -60,7 +60,7 @@ CookieControlsIconView::CookieControlsIconView(
       browser_(browser) {
   CHECK(browser_);
   SetUpForInOutAnimation(/*duration=*/base::Seconds(12));
-  SetPaintLabelOverSolidBackground(true);
+  SetBackgroundVisibility(BackgroundVisibility::kWithLabel);
   SetProperty(views::kElementIdentifierKey, kCookieControlsIconElementId);
   bubble_coordinator_ = std::make_unique<CookieControlsBubbleCoordinator>();
 }
@@ -77,7 +77,15 @@ void CookieControlsIconView::SetCoordinatorForTesting(
   bubble_coordinator_ = std::move(coordinator);
 }
 
+void CookieControlsIconView::DisableUpdatesForTesting() {
+  disable_updates_for_testing_ = true;
+}
+
 void CookieControlsIconView::UpdateImpl() {
+  if (disable_updates_for_testing_) {
+    return;
+  }
+
   auto* web_contents = delegate()->GetWebContentsForPageActionIconView();
   if (web_contents) {
     if (!controller_) {

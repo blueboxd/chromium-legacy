@@ -754,7 +754,7 @@ class ProfileCreator:
         certutil_dir = os.path.dirname(self.binary or self.certutil_binary)
         if mozinfo.isMac:
             env_var = "DYLD_LIBRARY_PATH"
-        elif mozinfo.isUnix:
+        elif mozinfo.isLinux:
             env_var = "LD_LIBRARY_PATH"
         else:
             env_var = "PATH"
@@ -910,7 +910,6 @@ class FirefoxWdSpecBrowser(WebDriverBrowser):
         self.binary = binary
         self.package_name = package_name
         self.webdriver_binary = webdriver_binary
-        self.init_deadline = None
 
         self.stackfix_dir = stackfix_dir
         self.symbols_path = symbols_path
@@ -959,7 +958,6 @@ class FirefoxWdSpecBrowser(WebDriverBrowser):
 
     def start(self, group_metadata, **kwargs):
         self.leak_report_file = setup_leak_report(self.leak_check, self.profile, self.env)
-        self.init_deadline = time.time() + self.init_timeout
         super().start(group_metadata, **kwargs)
 
     def stop(self, force=False):

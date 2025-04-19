@@ -16,6 +16,7 @@
 #include "chromeos/ui/base/window_state_type.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/rounded_corners_f.h"
+#include "ui/views/window/dialog_delegate.h"
 #include "ui/wm/core/window_util.h"
 
 class PrefRegistrySimple;
@@ -31,6 +32,7 @@ class LocatedEvent;
 }  // namespace ui
 
 namespace views {
+class BubbleDialogDelegate;
 class View;
 }  // namespace views
 
@@ -202,6 +204,15 @@ ASH_EXPORT void SetTransform(aura::Window* window,
 ASH_EXPORT gfx::RectF GetTransformedBounds(aura::Window* transformed_window,
                                 int top_inset);
 
+// Returns the `BubbleDialogDelegate` associated with the given
+// `transient_window`, if it's a bubble dialog.
+ASH_EXPORT views::BubbleDialogDelegate* AsBubbleDialogDelegate(
+    aura::Window* transient_window);
+
+// Returns the `DialogDelegate` associated with the given `transient_window`, if
+// it's a dialog.
+views::DialogDelegate* AsDialogDelegate(aura::Window* transient_window);
+
 // If multi profile is on, check if |window| should be shown for the current
 // user.
 bool ShouldShowForCurrentUser(aura::Window* window);
@@ -233,11 +244,6 @@ float GetSnapRatioForWindow(aura::Window* window);
 // Registers the per-profile preferences for whether faster splitscreen setup is
 // enabled.
 void RegisterProfilePrefs(PrefRegistrySimple* registry);
-
-// Returns true if either `kFasterSplitScreenSetup` or `kSnapGroup` is enabled.
-// When this is true, snapping one window will automatically start
-// SplitViewOverviewSession.
-bool IsFasterSplitScreenOrSnapGroupEnabledInClamshell();
 
 // Returns true if `SplitViewOverviewSession` is created through faster split
 // screen setup, i.e. partial overview is started on the other side of the

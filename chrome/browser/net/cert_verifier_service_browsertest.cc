@@ -4,6 +4,7 @@
 
 #include <optional>
 
+#include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -18,7 +19,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/features.h"
 #include "net/cert/internal/trust_store_chrome.h"
-#include "net/cert/internal/trust_store_features.h"
+#include "net/cert/test_root_certs.h"
 #include "net/cert/x509_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/net_buildflags.h"
@@ -118,111 +119,72 @@ INSTANTIATE_TEST_SUITE_P(All,
                          ::testing::Bool());
 #endif  // BUILDFLAG(CHROME_ROOT_STORE_OPTIONAL)
 
-class CertVerifierServiceEnforceLocalAnchorConstraintsFeaturePolicyTest
-    : public policy::PolicyTest,
-      public testing::WithParamInterface<
-          std::tuple<bool, std::optional<bool>>> {
+#if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
+class CertVerifierTestCrsConstraintsSwitchTest : public PlatformBrowserTest {
  public:
-  void SetUpInProcessBrowserTestFixture() override {
-    scoped_feature_list_.InitWithFeatureState(
-        net::features::kEnforceLocalAnchorConstraints,
-        feature_enforce_local_anchor_constraints());
+  void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
+    net::EmbeddedTestServer::ServerCertificateConfig test_cert_config;
+    test_cert_config.dns_names = {"example.com"};
+    test_cert_config.root = net::EmbeddedTestServer::RootType::kUniqueRoot;
+    test_server1_.SetSSLConfig(test_cert_config);
+    test_server2_.SetSSLConfig(test_cert_config);
+    ASSERT_TRUE(test_server1_.InitializeAndListen());
+    ASSERT_TRUE(test_server2_.InitializeAndListen());
 
-    policy::PolicyTest::SetUpInProcessBrowserTestFixture();
+    scoped_test_root_ =
+        net::ScopedTestRoot({test_server1_.GetRoot(), test_server2_.GetRoot()});
 
-    auto policy_val = policy_enforce_local_anchor_constraints();
-    if (policy_val.has_value()) {
-      SetPolicyValue(*policy_val);
-    }
+    const std::array<uint8_t, crypto::kSHA256Length> root2_hash =
+        crypto::SHA256Hash(test_server2_.GetRoot()->cert_span());
+    const std::string switch_value =
+        base::HexEncode(root2_hash) + ":maxversionexclusive=0";
+
+    PlatformBrowserTest::SetUpDefaultCommandLine(command_line);
+    command_line->AppendSwitchASCII(
+        net::TrustStoreChrome::kTestCrsConstraintsSwitch, switch_value);
   }
 
-  void SetPolicyValue(std::optional<bool> value) {
-    policy::PolicyMap policies;
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
-    SetPolicy(&policies, policy::key::kEnforceLocalAnchorConstraintsEnabled,
-              std::optional<base::Value>(value));
-#endif
-    UpdateProviderPolicy(policies);
+  void SetUpOnMainThread() override {
+    PlatformBrowserTest::SetUpOnMainThread();
+
+    test_server1_.ServeFilesFromSourceDirectory("chrome/test/data");
+    test_server2_.ServeFilesFromSourceDirectory("chrome/test/data");
+    test_server1_.StartAcceptingConnections();
+    test_server2_.StartAcceptingConnections();
+
+    host_resolver()->AddRule("*", "127.0.0.1");
   }
 
-  void ExpectEnforceLocalAnchorConstraintsCorrect(
-      bool enforce_local_anchor_constraints) {
-    EXPECT_EQ(enforce_local_anchor_constraints,
-              net::IsLocalAnchorConstraintsEnforcementEnabled());
-
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
-    // Set policy to the opposite value, and then test the value returned by
-    // IsLocalAnchorConstraintsEnforcementEnabled has changed.
-    SetPolicyValue(!enforce_local_anchor_constraints);
-    EXPECT_EQ(!enforce_local_anchor_constraints,
-              net::IsLocalAnchorConstraintsEnforcementEnabled());
-
-    // Unset the policy, the value used should go back to the one set by the
-    // feature flag.
-    SetPolicyValue(std::nullopt);
-    EXPECT_EQ(feature_enforce_local_anchor_constraints(),
-              net::IsLocalAnchorConstraintsEnforcementEnabled());
-#endif
+ protected:
+  content::WebContents* GetActiveWebContents() {
+    return chrome_test_utils::GetActiveWebContents(this);
   }
 
-  bool feature_enforce_local_anchor_constraints() const {
-    return std::get<0>(GetParam());
-  }
-
-  std::optional<bool> policy_enforce_local_anchor_constraints() const {
-    return std::get<1>(GetParam());
-  }
-
-  bool expected_enforce_local_anchor_constraints() const {
-    auto policy_val = policy_enforce_local_anchor_constraints();
-    if (policy_val.has_value()) {
-      return *policy_val;
-    }
-    return feature_enforce_local_anchor_constraints();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
+  net::EmbeddedTestServer test_server1_{net::EmbeddedTestServer::TYPE_HTTPS};
+  net::EmbeddedTestServer test_server2_{net::EmbeddedTestServer::TYPE_HTTPS};
+  net::ScopedTestRoot scoped_test_root_;
 };
 
-IN_PROC_BROWSER_TEST_P(
-    CertVerifierServiceEnforceLocalAnchorConstraintsFeaturePolicyTest,
-    Test) {
-#if BUILDFLAG(IS_ANDROID)
-  // TODO(crbug.com/40254617): Avoid flake on android browser tests by
-  // requiring the test to always take at least 1 second to finish. Remove this
-  // delay once issue 1410924 is resolved.
-  base::RunLoop run_loop;
-  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
-      FROM_HERE, run_loop.QuitClosure(), base::Seconds(1));
-#endif
-  ExpectEnforceLocalAnchorConstraintsCorrect(
-      expected_enforce_local_anchor_constraints());
-#if BUILDFLAG(IS_ANDROID)
-  run_loop.Run();
-#endif
-}
+// End-to-end test to verify that the --test-crs-constraints switch is honored
+// when loading webpages in the browser. (More extensive testing of the various
+// features of the switch is handled by unittests.)
+IN_PROC_BROWSER_TEST_F(CertVerifierTestCrsConstraintsSwitchTest,
+                       TestSwitchIsHonored) {
+  // First server does not have any test constraints set, and should load
+  // successfully.
+  EXPECT_TRUE(content::NavigateToURL(
+      GetActiveWebContents(),
+      test_server1_.GetURL("example.com", "/simple.html")));
+  EXPECT_FALSE(chrome_browser_interstitials::IsShowingInterstitial(
+      GetActiveWebContents()));
 
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    CertVerifierServiceEnforceLocalAnchorConstraintsFeaturePolicyTest,
-    ::testing::Combine(::testing::Bool(),
-                       ::testing::Values(std::nullopt
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
-                                         ,
-                                         false,
-                                         true
-#endif
-                                         )),
-    [](const testing::TestParamInfo<
-        CertVerifierServiceEnforceLocalAnchorConstraintsFeaturePolicyTest::
-            ParamType>& info) {
-      return base::StrCat(
-          {std::get<0>(info.param) ? "FeatureTrue" : "FeatureFalse",
-           std::get<1>(info.param).has_value()
-               ? (*std::get<1>(info.param) ? "PolicyTrue" : "PolicyFalse")
-               : "PolicyNotSet"});
-    });
+  // Second server has test constraints set for its root with a
+  // max_version_exclusive of 0. The browser version should be greater than 0
+  // so this root will not be trusted.
+  EXPECT_FALSE(content::NavigateToURL(
+      GetActiveWebContents(),
+      test_server2_.GetURL("example.com", "/simple.html")));
+  EXPECT_TRUE(chrome_browser_interstitials::IsShowingInterstitial(
+      GetActiveWebContents()));
+}
+#endif  // BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)

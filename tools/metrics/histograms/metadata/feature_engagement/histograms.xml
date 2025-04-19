@@ -46,6 +46,8 @@ chromium-metrics-reviews@google.com.
   <variant name="IPH_AddToHomescreenTextBubble"
       summary="(obsolete) educating users about adding website shortcuts to
                their home screen (using a text bubble)"/>
+  <variant name="IPH_AndroidTabDeclutter"
+      summary="Shows how to access tabs which have been archived."/>
   <variant name="IPH_AppSpecificHistory" summary="App Specific History action"/>
   <variant name="IPH_AutoDarkOptOut"
       summary="educating users about disabling auto dark feature globally"/>
@@ -215,6 +217,8 @@ chromium-metrics-reviews@google.com.
   <variant name="IPH_HighEfficiencyInfoMode" summary="High efficiency info"/>
   <variant name="IPH_HighEfficiencyMode"
       summary="encourages users to turn on high efficiency mode"/>
+  <variant name="IPH_HistorySearch"
+      summary="Prompting users to try history search powered by AI."/>
   <variant name="IPH_IdentityDisc" summary="Identity Disc"/>
   <variant name="IPH_IncognitoWindow" summary="incognito window"/>
   <variant name="IPH_InstanceSwitcher" summary="instance switcher"/>
@@ -223,6 +227,10 @@ chromium-metrics-reviews@google.com.
       summary="showing the iOS address promo on desktop"/>
   <variant name="IPH_iOSChoiceScreenFeature"
       summary="(obsolete) showing the Choice screen on iOS"/>
+  <variant name="IPH_iOSContextualPanelPriceInsights"
+      summary="contextual panel price insights IPH impression tracking"/>
+  <variant name="IPH_iOSContextualPanelSampleModel"
+      summary="contextual panel sample model IPH impression tracking"/>
   <variant name="IPH_iOSDefaultBrowserBadgeEligibility"
       summary="default browser badge promo eligibility tracking"/>
   <variant name="IPH_iOSDefaultBrowserOverflowMenuBadge"
@@ -242,8 +250,6 @@ chromium-metrics-reviews@google.com.
       summary="Showing the Enhanced Safe Browsing Promo on iOS"/>
   <variant name="IPH_iOSNewTabToolbarItemFeature"
       summary="the new tab tool bar item (bottom on iPhone, top on iPad)"/>
-  <variant name="IPH_iOSOmniboxPositionFeature"
-      summary="showing the omnibox position choice screen on iOS"/>
   <variant name="IPH_iOSOverflowMenuCustomization"
       summary="overflow menu customization"/>
   <variant name="IPH_iOSPageInfoRevamp"
@@ -253,6 +259,8 @@ chromium-metrics-reviews@google.com.
       summary="showing the Parcel Tracking IPH on the Magic Stack"/>
   <variant name="IPH_iOSPasswordPromoDesktop"
       summary="showing the iOS password promo on desktop"/>
+  <variant name="IPH_iOSPaymentPromoDesktop"
+      summary="showing the iOS payment promo on desktop"/>
   <variant name="IPH_iOSPostDefaultAbandonmentPromo"
       summary="showing the iOS post-default browser abandonment promo on iOS"/>
   <variant name="IPH_iOSPromoAllTabs"
@@ -283,6 +291,9 @@ chromium-metrics-reviews@google.com.
       summary="the full screen IPH for pull to refresh"/>
   <variant name="IPH_iOSReplaceSyncPromosWithSignInPromos"
       summary="account row in settings page"/>
+  <variant name="IPH_iOSSavedTabGroupClosed"
+      summary="showing the IPH when closing a saved tab group for the first
+               time"/>
   <variant name="IPH_iOSShareToolbarItemFeature"
       summary="the share tool bar item (bottom on iPhone, top on iPad)"/>
   <variant name="IPH_iOSSwipeBackForward"
@@ -309,7 +320,6 @@ chromium-metrics-reviews@google.com.
   <variant name="IPH_LiveCaption" summary="Live Caption"/>
   <variant name="IPH_LongPressToolbarTip" summary="LongPress toolbar"/>
   <variant name="IPH_MicToolbar" summary="the mic button in the toolbar"/>
-  <variant name="IPH_NewIncognitoTabTip" summary="new incognito tab tip"/>
   <variant name="IPH_NewTab" summary="new tab"/>
   <variant name="IPH_NewTabPageHomeButton"
       summary="(obsolete) new tab page button"/>
@@ -320,8 +330,6 @@ chromium-metrics-reviews@google.com.
       summary="educating users about the zoom option in the main menu"/>
   <variant name="IPH_PasswordManagerShortcut"
       summary="Password Manager shortcut."/>
-  <variant name="IPH_PasswordsAccountStorage"
-      summary="passwords account storage"/>
   <variant name="IPH_PasswordSharingFeature"
       summary="educating the users about password sharing when they open
                password details page"/>
@@ -340,6 +348,9 @@ chromium-metrics-reviews@google.com.
                button"/>
   <variant name="IPH_PerformanceNewBadge"
       summary="New badge shows next to performance item on the app menu"/>
+  <variant name="IPH_PlusAddressCreateSuggestion"
+      summary="message shown in Autofill dropdown to educate users on the
+               existence of the plus address benefits"/>
   <variant name="IPH_PowerBookmarksSidePanel"
       summary="prompting users to view bookmarks in the side panel"/>
   <variant name="IPH_PreviewsOmniboxUI"
@@ -368,6 +379,8 @@ chromium-metrics-reviews@google.com.
       summary="the quiet notification prompts feature"/>
   <variant name="IPH_ReadAloudAppMenuFeature"
       summary="the Read Aloud button in the overflow menu"/>
+  <variant name="IPH_ReadAloudExpandedPlayerFeature"
+      summary="promotes expanded player for Read Aloud"/>
   <variant name="IPH_ReadingListDiscovery"
       summary="first time a tab is added to reading list"/>
   <variant name="IPH_ReadingListEntryPoint"
@@ -391,8 +404,8 @@ chromium-metrics-reviews@google.com.
       summary="read later context menu entry point"/>
   <variant name="IPH_ReopenTab" summary="reopening closed tabs"/>
   <variant name="IPH_RequestDesktopSiteAppMenu"
-      summary="educating users about using the desktop site app menu item to
-               add a site-level exception"/>
+      summary="(obsolete) educating users about using the desktop site app
+               menu item to add a site-level exception"/>
   <variant name="IPH_RequestDesktopSiteDefaultOn"
       summary="the in product help message to let users opt out of desktop
                site global settings default-on"/>
@@ -407,6 +420,9 @@ chromium-metrics-reviews@google.com.
   <variant name="IPH_RestoreTabsOnFRE"
       summary="the in product help sheet to let users know they can restore
                tabs from other synced devices on a fresh Chrome install"/>
+  <variant name="IPH_RtlGestureNavigation"
+      summary="the in product help dialog to educate users on how to do
+               gesture navigation in RTL mode."/>
   <variant name="IPH_ScalableIphGaming"
       summary="A variant for gaming scalable iph"/>
   <variant name="IPH_ScalableIphHelpAppBasedEight"
@@ -506,19 +522,33 @@ chromium-metrics-reviews@google.com.
       summary="educating user to drop one tab on another tab to create group"/>
   <variant name="IPH_TabGroupsQuicklyComparePages"
       summary="long pressing a link to open in a tab group"/>
+  <variant name="IPH_TabGroupsRemoteGroup"
+      summary="IPH highlighting a synced tab group"/>
+  <variant name="IPH_TabGroupsSaveV2CloseGroup"
+      summary="IPH for tab group closing adding them to a new location"/>
+  <variant name="IPH_TabGroupsSaveV2Intro"
+      summary="IPH for tab groups defaulting to saved"/>
+  <variant name="IPH_TabGroupsSurface" summary="IPH for tab groups surface"/>
+  <variant name="IPH_TabGroupsSurfaceOnHide"
+      summary="IPH for tab groups surface after hiding a tab group while on
+               the GTS"/>
   <variant name="IPH_TabGroupsTapToSeeAnotherTab" summary="tab strip"/>
+  <variant name="IPH_TabGroupSyncOnStrip"
+      summary="For tab group sync on tab strip."/>
   <variant name="IPH_TabGroupsYourTabsTogether"
       summary="tab switcher cards with multiple tab thumbnails"/>
   <variant name="IPH_TabOrganizationSuccess"
       summary="tab organization success"/>
   <variant name="IPH_TabSearch" summary="tab search discovery"/>
   <variant name="IPH_TabSwitcherButton" summary="tab switcher button"/>
+  <variant name="IPH_TabSwitcherFloatingActionButton"
+      summary="tab switcher floating action button"/>
+  <variant name="IPH_ToolbarManagementButton"
+      summary="toolbar management button"/>
   <variant name="IPH_TrackingProtectionOffboarding"
-      summary="tracking protection offboarding notice"/>
+      summary="(obsolete) tracking protection offboarding notice"/>
   <variant name="IPH_TrackingProtectionOnboarding"
-      summary="tracking protection onboarding notice"/>
-  <variant name="IPH_TrackingProtectionReminder"
-      summary="tracking protection reminder"/>
+      summary="(obsolete) tracking protection onboarding notice"/>
   <variant name="IPH_TranslateMenuButton" summary="translate menu button"/>
   <variant name="IPH_UpdatedConnectionSecurityIndicators"
       summary="updated omnibox connection security indicators"/>
@@ -550,7 +580,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="InProductHelp.Config.ParsingEvent" enum="ConfigParsingEvent"
-    expires_after="2024-11-17">
+    expires_after="2025-01-19">
   <owner>nyquist@chromium.org</owner>
   <summary>
     Records if in-product help configuration is parsed correctly, and the
@@ -559,7 +589,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InProductHelp.Db.Init.{IPHDatabase}" enum="BooleanSuccess"
-    expires_after="2024-11-03">
+    expires_after="2025-01-05">
   <owner>nyquist@chromium.org</owner>
   <summary>
     Records if {IPHDatabase} database initialization succeeds for in-product
@@ -569,7 +599,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InProductHelp.Db.Load.{IPHDatabase}" enum="BooleanSuccess"
-    expires_after="2024-10-20">
+    expires_after="2024-12-22">
   <owner>nyquist@chromium.org</owner>
   <summary>
     Records if {IPHDatabase} database successfully loads the data for in-product
@@ -579,7 +609,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InProductHelp.Db.TotalEvents" units="events"
-    expires_after="2024-11-03">
+    expires_after="2025-01-05">
   <owner>nyquist@chromium.org</owner>
   <summary>
     Records the total number of event records in the database for in-product
@@ -588,7 +618,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InProductHelp.Db.Update.{IPHDatabase}" enum="BooleanSuccess"
-    expires_after="2024-11-03">
+    expires_after="2025-01-05">
   <owner>nyquist@chromium.org</owner>
   <summary>
     Records if {IPHDatabase} database update succeeds for in-product help.
@@ -597,7 +627,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InProductHelp.DismissalReason.iOS"
-    enum="InProductHelpDismissalReason" expires_after="2024-10-06">
+    enum="InProductHelpDismissalReason" expires_after="2025-02-09">
   <owner>lpromero@google.com</owner>
   <owner>gambard@chromium.org</owner>
   <summary>
@@ -606,7 +636,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InProductHelp.Gestural.DismissalReason.iOS"
-    enum="InProductHelpDismissalReason" expires_after="2024-10-06">
+    enum="InProductHelpDismissalReason" expires_after="2025-02-09">
   <owner>ginnyhuang@chromium.org</owner>
   <owner>adamta@google.com</owner>
   <summary>
@@ -616,7 +646,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InProductHelp.NotifyEventReadyState.{IPHFeature}"
-    enum="BooleanSuccess" expires_after="2024-11-03">
+    enum="BooleanSuccess" expires_after="2025-01-05">
   <owner>nyquist@chromium.org</owner>
   <summary>
     Records if the model is ready when in-product help event happens for
@@ -626,7 +656,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InProductHelp.ShouldTriggerHelpUI.{IPHFeature}"
-    enum="TriggerHelpUIResult" expires_after="2024-11-03">
+    enum="TriggerHelpUIResult" expires_after="2025-01-05">
   <owner>nyquist@chromium.org</owner>
   <summary>
     Records if in-product help for {IPHFeature} is shown to the user, and the
@@ -638,7 +668,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InProductHelp.ShownTime.{IPHFeature}" units="ms"
-    expires_after="2024-09-21">
+    expires_after="2025-02-09">
   <owner>lpromero@google.com</owner>
   <owner>gambard@chromium.org</owner>
   <summary>
@@ -651,7 +681,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InProductHelp.SnoozeAction" enum="InProductHelpSnoozeAction"
-    expires_after="2024-10-06">
+    expires_after="2024-12-08">
   <owner>haileywang@chromium.org</owner>
   <owner>shaktisahu@chromium.org</owner>
   <summary>
@@ -660,7 +690,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InProductHelp.TextBubble.ShownTime" units="ms"
-    expires_after="2024-09-01">
+    expires_after="2025-01-05">
   <owner>haileywang@chromium.org</owner>
   <owner>shaktisahu@chromium.org</owner>
   <summary>
@@ -690,7 +720,7 @@ In the future, Desktop IPH may be completely moved to the user_education folder.
 -->
 
 <histogram name="UserEducation.MessageAction.{IPHFeature}" enum="MessageAction"
-    expires_after="2024-11-03">
+    expires_after="2025-01-05">
   <owner>mickeyburks@chromium.org</owner>
   <owner>frizzle-team@google.com</owner>
   <summary>Records what action was taken to close the In-Product Help.</summary>
@@ -698,7 +728,7 @@ In the future, Desktop IPH may be completely moved to the user_education folder.
 </histogram>
 
 <histogram name="UserEducation.MessageNotShown.{IPHFeature}"
-    enum="PromoFailure" expires_after="2024-12-01">
+    enum="PromoFailure" expires_after="2025-02-02">
   <owner>mickeyburks@chromium.org</owner>
   <owner>frizzle-team@google.com</owner>
   <summary>
@@ -706,6 +736,22 @@ In the future, Desktop IPH may be completely moved to the user_education folder.
     to the user. The failure defines the state of the User Education system,
     which can be many varieties (e.g. snoozed, disabled blocked by another
     promo, etc.).
+  </summary>
+  <token key="IPHFeature" variants="IPHFeature"/>
+</histogram>
+
+<histogram name="UserEducation.RotatingPromoIndex.{IPHFeature}" units="Index"
+    expires_after="2025-01-01">
+  <owner>dfried@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
+  <summary>
+    Record the index of a rotating promo when it is shown to the user. This can
+    be used to determine how deep in the rotation of rotating promos users are
+    going, and also what proportion of users have seen a particular promo from a
+    rotating promo set.
+
+    This replaces the deprecated histogram
+    &quot;UserEducation.MessageShown.RotatingPromoIndex&quot;.
   </summary>
   <token key="IPHFeature" variants="IPHFeature"/>
 </histogram>

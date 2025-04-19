@@ -5,23 +5,27 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_AUTOFILL_MANAGER_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_AUTOFILL_MANAGER_H_
 
-#include <map>
 #include <memory>
+#include <string>
+#include <vector>
 
-#include "base/functional/callback.h"
+#include "base/check_deref.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "base/types/strong_alias.h"
 #include "components/autofill/core/browser/autofill_client.h"
+#include "components/autofill/core/browser/filling_product.h"
 #include "components/autofill/core/browser/ui/autofill_suggestion_delegate.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/browser/ui/suggestion_type.h"
+#include "components/autofill/core/common/aliases.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
+#include "components/autofill/core/common/unique_ids.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
-#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_suggestion_flow.h"
 #include "components/password_manager/core/browser/password_suggestion_generator.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 #include "ui/gfx/image/image.h"
 
 namespace favicon_base {
@@ -36,6 +40,7 @@ namespace password_manager {
 
 class PasswordManagerClient;
 class PasswordManagerDriver;
+class PasswordManualFallbackMetricsRecorder;
 class PasswordSuggestionGenerator;
 
 // This class is responsible for filling password forms.
@@ -102,6 +107,11 @@ class PasswordAutofillManager : public autofill::AutofillSuggestionDelegate {
   // Called if no suggestions were found. Assumed to be mutually exclusive with
   // |OnAddPasswordFillData|.
   void OnNoCredentialsFound();
+
+  PasswordManualFallbackMetricsRecorder&
+  GetPasswordManualFallbackMetricsRecorder() {
+    return CHECK_DEREF(manual_fallback_metrics_recorder_.get());
+  }
 
   // A public version of FillSuggestion(), only for use in tests.
   bool FillSuggestionForTest(const std::u16string& username);
@@ -217,9 +227,20 @@ class PasswordAutofillManager : public autofill::AutofillSuggestionDelegate {
   std::unique_ptr<device_reauth::DeviceAuthenticator> authenticator_;
 
   // Initialized when the user triggers the password manual fallback. This flow
-  // reads all user passworns upon initialization. Hence it's reset upon main
+  // reads all user passwords upon initialization. Hence it's reset upon main
   // frame navigation or if this `PasswordAutofillManager` is destroyed.
   std::unique_ptr<PasswordSuggestionFlow> manual_fallback_flow_;
+
+  // Used to collect metrics around the manual fallback for password. Some of
+  // the metrics are meant to be emitted only on navigation.
+  // `PasswordManualFallbackMetricsRecorder` emits these metrics in its
+  // destructor. Therefore, this object is destroyed and re-created on
+  // navigation.
+  // `AutofillContextMenuManager` accesses this member before suggestions are
+  // shown. Therefore, this object is instantiated before
+  // `manual_fallback_flow_` and dies when `manual_fallback_flow_` dies.
+  std::unique_ptr<PasswordManualFallbackMetricsRecorder>
+      manual_fallback_metrics_recorder_;
 
   base::WeakPtrFactory<PasswordAutofillManager> weak_ptr_factory_{this};
 };

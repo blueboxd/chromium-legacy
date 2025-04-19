@@ -90,6 +90,12 @@ public final class PlusAddressCreationMediatorTest {
     }
 
     @Test
+    public void testHideRefreshButton_callsBottomSheetHideRefreshButton() {
+        mMediator.hideRefreshButton();
+        verify(mBottomSheetContent).hideRefreshButton();
+    }
+
+    @Test
     public void testDestroy_hidesBottomSheetContentAndRemovesObservers() {
         mMediator.destroy();
 
@@ -97,6 +103,12 @@ public final class PlusAddressCreationMediatorTest {
         verify(mBottomSheetController).removeObserver(mMediator);
         verify(mLayoutStateProvider).removeObserver(mMediator);
         verify(mTabModel).removeObserver(mMediator);
+    }
+
+    @Test
+    public void testDidClickRefresh_callsOnRefreshRequested() {
+        mMediator.onRefreshClicked();
+        verify(mBridge).onRefreshClicked();
     }
 
     @Test
@@ -113,18 +125,6 @@ public final class PlusAddressCreationMediatorTest {
                         mBottomSheetContent,
                         /* animate= */ true,
                         StateChangeReason.INTERACTION_COMPLETE);
-    }
-
-    @Test
-    public void testDidClickCancel_hidesBottomSheetAndCallsOnCanceled() {
-        mMediator.onCanceled();
-
-        verify(mBottomSheetController)
-                .hideContent(
-                        mBottomSheetContent,
-                        /* animate= */ true,
-                        StateChangeReason.INTERACTION_COMPLETE);
-        verify(mBridge).onCanceled();
     }
 
     @Test

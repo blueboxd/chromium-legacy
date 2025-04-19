@@ -149,6 +149,8 @@ RendererWebAudioDeviceImpl::RendererWebAudioDeviceImpl(
       latency_hint_(latency_hint),
       webaudio_callback_(callback),
       frame_token_(sink_descriptor.Token()),
+      main_thread_task_runner_(
+          base::SingleThreadTaskRunner::GetCurrentDefault()),
       create_silent_sink_cb_(std::move(create_silent_sink_cb)) {
   TRACE_EVENT0("webaudio",
                "RendererWebAudioDeviceImpl::RendererWebAudioDeviceImpl");
@@ -175,13 +177,16 @@ RendererWebAudioDeviceImpl::RendererWebAudioDeviceImpl(
     original_sink_params_.Reset(media::AudioParameters::AUDIO_FAKE,
                                 media::ChannelLayoutConfig::Stereo(), 48000,
                                 480);
-    if (base::FeatureList::IsEnabled(
-            blink::features::kWebAudioHandleOnRenderError)) {
-      RenderFrame::FromWebFrame(WebLocalFrame::FromFrameToken(frame_token_))
-          ->GetTaskRunner(blink::TaskType::kInternalMediaRealTime)
-          ->PostTask(FROM_HERE,
-                     base::BindOnce(&RendererWebAudioDeviceImpl::OnRenderError,
-                                    weak_ptr_factory_.GetWeakPtr()));
+
+    // Inform the Blink client (e.g. AudioContext) that we have invalid device
+    // parameters.
+    if (base::FeatureList::IsEnabled(blink::features::kAudioContextOnError)) {
+      // Post a task on the same thread, and the posted task will be executed
+      // once the construction sequence is finished.
+      main_thread_task_runner_->PostTask(
+          FROM_HERE,
+          base::BindOnce(&RendererWebAudioDeviceImpl::NotifyRenderError,
+                         weak_ptr_factory_.GetWeakPtr()));
     }
   }
   SendLogMessage(base::StringPrintf(
@@ -313,8 +318,24 @@ int RendererWebAudioDeviceImpl::Render(
 }
 
 void RendererWebAudioDeviceImpl::OnRenderError() {
-  DCHECK(webaudio_callback_);
+  if (!base::FeatureList::IsEnabled(blink::features::kAudioContextOnError)) {
+    return;
+  }
 
+  // This function gets called from the audio infra, non-main thread, so this
+  // posts a cross-thread task to the main thread task runner.
+  main_thread_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&RendererWebAudioDeviceImpl::NotifyRenderError,
+                       weak_ptr_factory_.GetWeakPtr()));
+}
+
+void RendererWebAudioDeviceImpl::NotifyRenderError() {
+  if (!base::FeatureList::IsEnabled(blink::features::kAudioContextOnError)) {
+    return;
+  }
+
+  DCHECK(thread_checker_.CalledOnValidThread());
   webaudio_callback_->OnRenderError();
 }
 

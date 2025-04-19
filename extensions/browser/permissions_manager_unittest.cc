@@ -103,7 +103,7 @@ PermissionsManagerUnittest::AddExtensionWithAPIPermission(
   scoped_refptr<const extensions::Extension> extension =
       extensions::ExtensionBuilder(name)
           .SetManifestVersion(3)
-          .AddPermission(permission)
+          .AddAPIPermission(permission)
           .SetLocation(location)
           .Build();
   DCHECK(extension->permissions_data()->HasAPIPermission(permission));
@@ -121,8 +121,7 @@ PermissionsManagerUnittest::AddExtensionWithHostPermission(
   scoped_refptr<const extensions::Extension> extension =
       extensions::ExtensionBuilder(name)
           .SetManifestVersion(3)
-          .SetManifestKey("host_permissions",
-                          base::Value::List().Append(host_permission))
+          .AddHostPermission(host_permission)
           .Build();
 
   ExtensionRegistryFactory::GetForBrowserContext(browser_context())
@@ -403,7 +402,7 @@ TEST_F(PermissionsManagerUnittest, CanAffectExtension_ByLocation) {
     scoped_refptr<const Extension> extension =
         ExtensionBuilder("test")
             .SetLocation(test_case.location)
-            .AddPermission("<all_urls>")
+            .AddHostPermission("<all_urls>")
             .Build();
     EXPECT_EQ(manager_->CanAffectExtension(*extension),
               test_case.can_be_affected)

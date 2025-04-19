@@ -123,13 +123,16 @@ NSInteger kFeedSymbolPointSize = 17;
   self.view.backgroundColor = [UIColor clearColor];
   self.view.maximumContentSizeCategory =
       UIContentSizeCategoryAccessibilityMedium;
+  self.view.accessibilityLabel = kNTPFeedHeaderIdentifier;
 
   self.container = [[UIView alloc] init];
 
   self.view.translatesAutoresizingMaskIntoConstraints = NO;
   self.container.translatesAutoresizingMaskIntoConstraints = NO;
 
-  [self configureManagementButton:self.managementButton];
+  if (!IsHomeCustomizationEnabled()) {
+    [self configureManagementButton:self.managementButton];
+  }
   [self configureHeaderViews];
 
   [self.view addSubview:self.container];
@@ -244,11 +247,11 @@ NSInteger kFeedSymbolPointSize = 17;
     return;
   }
 
+  [self resetView];
+
   if ([self.feedControlDelegate shouldFeedBeVisible]) {
-    [self removeViewsForHiddenFeed];
     [self addViewsForVisibleFeed];
   } else {
-    [self removeViewsForVisibleFeed];
     [self addViewsForHiddenFeed];
   }
 
@@ -256,8 +259,7 @@ NSInteger kFeedSymbolPointSize = 17;
 }
 
 - (void)updateForFollowingFeedVisibilityChanged {
-  [self removeViewsForHiddenFeed];
-  [self removeViewsForVisibleFeed];
+  [self resetView];
   [self.titleLabel removeFromSuperview];
 
   // The management button is different for the Following feed header, so it's
@@ -266,9 +268,11 @@ NSInteger kFeedSymbolPointSize = 17;
     [self.managementButton removeFromSuperview];
     self.managementButton = nil;
   }
-  self.managementButton = [[UIButton alloc] init];
-  [self configureManagementButton:self.managementButton];
-  [self.feedMenuHandler configureManagementMenu:self.managementButton];
+  if (!IsHomeCustomizationEnabled()) {
+    self.managementButton = [[UIButton alloc] init];
+    [self configureManagementButton:self.managementButton];
+    [self.feedMenuHandler configureManagementMenu:self.managementButton];
+  }
 
   [self configureHeaderViews];
   [self applyHeaderConstraints];
@@ -312,7 +316,9 @@ NSInteger kFeedSymbolPointSize = 17;
     self.titleLabel = [self createTitleLabel];
     [self.container addSubview:self.titleLabel];
   }
-  [self.feedMenuHandler configureManagementMenu:self.managementButton];
+  if (!IsHomeCustomizationEnabled()) {
+    [self.feedMenuHandler configureManagementMenu:self.managementButton];
+  }
 }
 
 // Creates sort menu with its content and active sort type.
@@ -371,11 +377,6 @@ NSInteger kFeedSymbolPointSize = 17;
   if ([self.feedControlDelegate isFollowingFeedAvailable]) {
     buttonConfiguration.image =
         DefaultSymbolTemplateWithPointSize(kMenuSymbol, kFeedSymbolPointSize);
-    if (!IsFeedContainmentEnabled()) {
-      buttonConfiguration.background.backgroundColor =
-          [[UIColor colorNamed:kGrey200Color] colorWithAlphaComponent:0.8];
-      managementButton.layer.cornerRadius = kButtonSize / 2;
-    }
     managementButton.clipsToBounds = YES;
   } else {
     UIImage* menuIcon = DefaultSymbolTemplateWithPointSize(
@@ -553,13 +554,10 @@ NSInteger kFeedSymbolPointSize = 17;
 
   CGFloat totalHeaderHeight =
       [self feedHeaderHeight] + [self customSearchEngineViewHeight];
-  if (IsFeedContainmentEnabled()) {
-    totalHeaderHeight += [self.feedControlDelegate isFollowingFeedAvailable]
-                             ? kTopVerticalPaddingFollowing
-                             : kTopVerticalPadding;
-  }
-  CGFloat buttonMargin =
-      IsFeedContainmentEnabled() ? kButtonHorizontalMargin : 0;
+  totalHeaderHeight += [self.feedControlDelegate isFollowingFeedAvailable]
+                           ? kTopVerticalPaddingFollowing
+                           : kTopVerticalPadding;
+  // Anchor container.
   [self.feedHeaderConstraints addObjectsFromArray:@[
     // Anchor container and menu button.
     [self.view.heightAnchor constraintEqualToConstant:totalHeaderHeight],
@@ -570,15 +568,22 @@ NSInteger kFeedSymbolPointSize = 17;
     [self.container.centerXAnchor
         constraintEqualToAnchor:self.view.centerXAnchor],
     [self.container.widthAnchor constraintEqualToAnchor:self.view.widthAnchor],
-    [self.managementButton.trailingAnchor
-        constraintEqualToAnchor:self.container.trailingAnchor
-                       constant:-buttonMargin],
-    [self.managementButton.centerYAnchor
-        constraintEqualToAnchor:self.container.centerYAnchor],
-    // Set menu button size.
-    [self.managementButton.heightAnchor constraintEqualToConstant:kButtonSize],
-    [self.managementButton.widthAnchor constraintEqualToConstant:kButtonSize],
   ]];
+
+  if (!IsHomeCustomizationEnabled()) {
+    // Anchor management button.
+    [self.feedHeaderConstraints addObjectsFromArray:@[
+      [self.managementButton.trailingAnchor
+          constraintEqualToAnchor:self.container.trailingAnchor
+                         constant:-kButtonHorizontalMargin],
+      [self.managementButton.centerYAnchor
+          constraintEqualToAnchor:self.container.centerYAnchor],
+      // Set menu button size.
+      [self.managementButton.heightAnchor
+          constraintEqualToConstant:kButtonSize],
+      [self.managementButton.widthAnchor constraintEqualToConstant:kButtonSize],
+    ]];
+  }
 
   if ([self.feedControlDelegate isFollowingFeedAvailable]) {
     // Anchor views based on the feed being visible or hidden.
@@ -636,16 +641,16 @@ NSInteger kFeedSymbolPointSize = 17;
     }
 
   } else {
-    CGFloat titleMargin =
-        IsFeedContainmentEnabled() ? kTitleHorizontalMargin : 0;
     [self.feedHeaderConstraints addObjectsFromArray:@[
       // Anchors title label.
       [self.titleLabel.leadingAnchor
           constraintEqualToAnchor:self.container.leadingAnchor
-                         constant:titleMargin],
+                         constant:kTitleHorizontalMargin],
       [self.titleLabel.trailingAnchor
-          constraintLessThanOrEqualToAnchor:self.managementButton
-                                                .leadingAnchor],
+          constraintLessThanOrEqualToAnchor:IsHomeCustomizationEnabled()
+                                                ? self.container.trailingAnchor
+                                                : self.managementButton
+                                                      .leadingAnchor],
       [self.titleLabel.centerYAnchor
           constraintEqualToAnchor:self.container.centerYAnchor],
     ]];
@@ -661,13 +666,23 @@ NSInteger kFeedSymbolPointSize = 17;
         constraintEqualToAnchor:self.container.centerXAnchor],
     [self.segmentedControl.centerYAnchor
         constraintEqualToAnchor:self.container.centerYAnchor],
-    [self.segmentedControl.trailingAnchor
-        constraintLessThanOrEqualToAnchor:self.managementButton.leadingAnchor
-                                 constant:-kButtonHorizontalMargin],
     [self.segmentedControl.leadingAnchor
         constraintEqualToAnchor:self.sortButton.trailingAnchor
                        constant:kButtonHorizontalMargin],
   ]];
+
+  if (IsHomeCustomizationEnabled()) {
+    [self.feedHeaderConstraints addObjectsFromArray:@[
+      [self.segmentedControl.trailingAnchor
+          constraintLessThanOrEqualToAnchor:self.container.leadingAnchor],
+    ]];
+  } else {
+    [self.feedHeaderConstraints addObjectsFromArray:@[
+      [self.segmentedControl.trailingAnchor
+          constraintLessThanOrEqualToAnchor:self.managementButton.leadingAnchor
+                                   constant:-kButtonHorizontalMargin],
+    ]];
+  }
 
   // Set Following segment dot size.
   [self.feedHeaderConstraints addObjectsFromArray:@[
@@ -762,8 +777,13 @@ NSInteger kFeedSymbolPointSize = 17;
   [self.container addSubview:self.hiddenFeedLabel];
 }
 
-// Removes views that only appear when the feed visibility is enabled.
-- (void)removeViewsForVisibleFeed {
+// Removes the subviews from the header.
+- (void)resetView {
+  if (self.hiddenFeedLabel) {
+    [self.hiddenFeedLabel removeFromSuperview];
+    self.hiddenFeedLabel = nil;
+  }
+
   if (self.followingDot) {
     [self.followingDot removeFromSuperview];
     self.followingDot = nil;
@@ -781,14 +801,6 @@ NSInteger kFeedSymbolPointSize = 17;
 
   if (self.customSearchEngineView) {
     [self removeCustomSearchEngineView];
-  }
-}
-
-// Removes views that only appear when the feed visibility is disabled.
-- (void)removeViewsForHiddenFeed {
-  if (self.hiddenFeedLabel) {
-    [self.hiddenFeedLabel removeFromSuperview];
-    self.hiddenFeedLabel = nil;
   }
 }
 

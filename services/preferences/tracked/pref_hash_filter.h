@@ -7,10 +7,12 @@
 
 #include <stddef.h>
 
+#include <functional>
 #include <map>
 #include <memory>
 #include <optional>
 #include <set>
+#include <string_view>
 #include <unordered_map>
 #include <vector>
 
@@ -19,6 +21,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
+#include "components/prefs/transparent_unordered_string_map.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
@@ -33,10 +36,8 @@ namespace base {
 class Time;
 }  // namespace base
 
-namespace prefs {
-namespace mojom {
+namespace prefs::mojom {
 class TrackedPreferenceValidationDelegate;
-}
 }
 
 namespace user_prefs {
@@ -94,7 +95,7 @@ class PrefHashFilter final : public InterceptablePrefFilter {
   void Initialize(base::Value::Dict& pref_store_contents);
 
   // PrefFilter remaining implementation.
-  void FilterUpdate(const std::string& path) override;
+  void FilterUpdate(std::string_view path) override;
   OnWriteCallbackPair FilterSerializeData(
       base::Value::Dict& pref_store_contents) override;
 
@@ -139,7 +140,7 @@ class PrefHashFilter final : public InterceptablePrefFilter {
   // A map of paths to TrackedPreferences; this map owns this individual
   // TrackedPreference objects.
   using TrackedPreferencesMap =
-      std::unordered_map<std::string, std::unique_ptr<TrackedPreference>>;
+      TransparentUnorderedStringMap<std::unique_ptr<TrackedPreference>>;
 
   // A map from changed paths to their corresponding TrackedPreferences (which
   // aren't owned by this map).

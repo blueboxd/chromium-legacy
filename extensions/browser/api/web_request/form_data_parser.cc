@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "extensions/browser/api/web_request/form_data_parser.h"
 
 #include <stddef.h>
@@ -15,6 +20,7 @@
 #include "base/notreached.h"
 #include "base/strings/escape.h"
 #include "base/strings/string_util.h"
+#include "base/types/optional_util.h"
 #include "base/values.h"
 #include "net/http/http_request_headers.h"
 #include "third_party/re2/src/re2/re2.h"
@@ -298,10 +304,8 @@ FormDataParser::~FormDataParser() = default;
 // static
 std::unique_ptr<FormDataParser> FormDataParser::Create(
     const net::HttpRequestHeaders& request_headers) {
-  std::string value;
-  const bool found =
-      request_headers.GetHeader(net::HttpRequestHeaders::kContentType, &value);
-  return CreateFromContentTypeHeader(found ? &value : nullptr);
+  return CreateFromContentTypeHeader(base::OptionalToPtr(
+      request_headers.GetHeader(net::HttpRequestHeaders::kContentType)));
 }
 
 // static

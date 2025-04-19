@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/inspector/node_content_visibility_state.h"
 #include "third_party/blink/renderer/core/inspector/protocol/overlay.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
+#include "third_party/blink/renderer/core/layout/flex/devtools_flex_info.h"
 #include "third_party/blink/renderer/core/layout/flex/layout_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
 #include "third_party/blink/renderer/core/layout/grid/layout_grid.h"
@@ -73,50 +74,49 @@ class PathBuilder {
 
  private:
   static void AppendPathElement(void* path_builder,
-                                const PathElement* path_element) {
+                                const PathElement& path_element) {
     static_cast<PathBuilder*>(path_builder)->AppendPathElement(path_element);
   }
 
-  void AppendPathElement(const PathElement*);
+  void AppendPathElement(const PathElement&);
   void AppendPathCommandAndPoints(const char* command,
-                                  const gfx::PointF points[],
-                                  size_t length);
+                                  base::span<const gfx::PointF> points);
 
   std::unique_ptr<protocol::ListValue> path_;
 };
 
-void PathBuilder::AppendPathCommandAndPoints(const char* command,
-                                             const gfx::PointF points[],
-                                             size_t length) {
+void PathBuilder::AppendPathCommandAndPoints(
+    const char* command,
+    base::span<const gfx::PointF> points) {
   path_->pushValue(protocol::StringValue::create(command));
-  for (size_t i = 0; i < length; i++) {
-    gfx::PointF point = TranslatePoint(points[i]);
+  for (const auto& orig_point : points) {
+    gfx::PointF point = TranslatePoint(orig_point);
     path_->pushValue(protocol::FundamentalValue::create(point.x()));
     path_->pushValue(protocol::FundamentalValue::create(point.y()));
   }
 }
 
-void PathBuilder::AppendPathElement(const PathElement* path_element) {
-  switch (path_element->type) {
+void PathBuilder::AppendPathElement(const PathElement& path_element) {
+  switch (path_element.type) {
     // The points member will contain 1 value.
     case kPathElementMoveToPoint:
-      AppendPathCommandAndPoints("M", path_element->points, 1);
+      AppendPathCommandAndPoints("M", path_element.points);
       break;
     // The points member will contain 1 value.
     case kPathElementAddLineToPoint:
-      AppendPathCommandAndPoints("L", path_element->points, 1);
+      AppendPathCommandAndPoints("L", path_element.points);
       break;
     // The points member will contain 3 values.
     case kPathElementAddCurveToPoint:
-      AppendPathCommandAndPoints("C", path_element->points, 3);
+      AppendPathCommandAndPoints("C", path_element.points);
       break;
     // The points member will contain 2 values.
     case kPathElementAddQuadCurveToPoint:
-      AppendPathCommandAndPoints("Q", path_element->points, 2);
+      AppendPathCommandAndPoints("Q", path_element.points);
       break;
     // The points member will contain no values.
     case kPathElementCloseSubpath:
-      AppendPathCommandAndPoints("Z", nullptr, 0);
+      AppendPathCommandAndPoints("Z", path_element.points);
       break;
   }
 }
@@ -374,6 +374,12 @@ std::unique_ptr<protocol::DictionaryValue> BuildElementInfo(Element* element) {
     } else if (pseudo_element->GetPseudoIdForStyling() ==
                kPseudoIdScrollMarkerGroup) {
       class_names.Append("::scroll-marker-group");
+    } else if (pseudo_element->GetPseudoId() == kPseudoIdScrollMarker) {
+      class_names.Append("::scroll-marker");
+    } else if (pseudo_element->GetPseudoId() == kPseudoIdScrollNextButton) {
+      class_names.Append("::scroll-next-button");
+    } else if (pseudo_element->GetPseudoId() == kPseudoIdScrollPrevButton) {
+      class_names.Append("::scroll-prev-button");
     }
   }
   if (!class_names.empty())
@@ -856,7 +862,7 @@ bool IsLayoutNGFlexibleBox(const LayoutObject& layout_object) {
 bool IsLayoutNGFlexItem(const LayoutObject& layout_object) {
   return !layout_object.GetNode()->IsDocumentNode() &&
          IsLayoutNGFlexibleBox(*layout_object.Parent()) &&
-         To<LayoutBox>(layout_object).IsFlexItemIncludingNG();
+         To<LayoutBox>(layout_object).IsFlexItem();
 }
 
 std::unique_ptr<protocol::DictionaryValue> BuildAreaNamePaths(
@@ -1230,12 +1236,11 @@ std::unique_ptr<protocol::DictionaryValue> BuildFlexItemInfo(
   if (flex_basis.IsFixed()) {
     base_size = flex_basis;
   } else if (flex_basis.IsAuto() && size.IsFixed()) {
-    // TODO(https://crbug.com/313072): 'flex-basis' should support calc-size()
     base_size = size;
   }
 
   // For now, we only care about the cases where we can know the base size.
-  if (base_size.IsSpecified()) {
+  if (base_size.IsFixed()) {
     flex_info->setDouble("baseSize", base_size.Pixels() * scale);
     flex_info->setBoolean("isHorizontalFlow", is_horizontal);
     auto box_sizing = layout_object->StyleRef().BoxSizing();
@@ -1813,7 +1818,9 @@ void InspectorHighlight::VisitAndCollectDistanceInfo(Node* node) {
     } else {
       for (PseudoId pseudo_id :
            {kPseudoIdFirstLetter, kPseudoIdScrollMarkerGroupBefore,
-            kPseudoIdBefore, kPseudoIdAfter, kPseudoIdScrollMarkerGroupAfter}) {
+            kPseudoIdBefore, kPseudoIdAfter, kPseudoIdScrollMarkerGroupAfter,
+            kPseudoIdScrollMarker, kPseudoIdScrollNextButton,
+            kPseudoIdScrollPrevButton}) {
         if (Node* pseudo_node = element->GetPseudoElement(pseudo_id))
           VisitAndCollectDistanceInfo(pseudo_node);
       }

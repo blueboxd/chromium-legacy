@@ -10,7 +10,6 @@
 #include "base/memory/raw_ptr.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/accessibility/platform/ax_unique_id.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
 #include "ui/views/accessibility/ax_virtual_view.h"
 #include "ui/views/accessibility/view_accessibility.h"
@@ -67,6 +66,9 @@ void AXViewObjWrapper::GetChildren(
 void AXViewObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
   ViewAccessibility& view_accessibility = view_->GetViewAccessibility();
   view_accessibility.GetAccessibleNodeData(out_node_data);
+
+  out_node_data->relative_bounds.bounds =
+      gfx::RectF(view_->GetBoundsInScreen());
 
   if (view_accessibility.GetNextWindowFocus()) {
     out_node_data->AddIntAttribute(

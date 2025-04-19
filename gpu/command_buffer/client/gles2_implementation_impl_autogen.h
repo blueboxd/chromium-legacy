@@ -8,6 +8,11 @@
 //    clang-format -i -style=chromium filename
 // DO NOT EDIT!
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 // This file is included by gles2_implementation.cc to define the
 // GL api functions.
 #ifndef GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_IMPL_AUTOGEN_H_
@@ -3438,14 +3443,6 @@ void GLES2Implementation::DrawBuffersEXT(GLsizei count, const GLenum* bufs) {
     return;
   }
   helper_->DrawBuffersEXTImmediate(count, bufs);
-  CheckGLError();
-}
-
-void GLES2Implementation::DiscardBackbufferCHROMIUM() {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glDiscardBackbufferCHROMIUM("
-                     << ")");
-  helper_->DiscardBackbufferCHROMIUM();
   CheckGLError();
 }
 

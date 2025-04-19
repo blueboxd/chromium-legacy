@@ -132,8 +132,8 @@ corresponds to a [`Profile`](https://www.chromium.org/developers/design-document
     - [`autofill_agent.h`](https://source.chromium.org/chromium/chromium/src/+/main:components/autofill/ios/browser/autofill_agent.h)
     - [`autofill_driver_ios.h`](https://source.chromium.org/chromium/chromium/src/+/main:components/autofill/ios/browser/autofill_driver_ios.h)
   - [`form_util/`](https://source.chromium.org/chromium/chromium/src/+/main:components/autofill/ios/form_util)
-    - [`form.js`](https://source.chromium.org/chromium/chromium/src/+/main:components/autofill/ios/form_util/resources/form.js)
-    - [`fill.js`](https://source.chromium.org/chromium/chromium/src/+/main:components/autofill/ios/form_util/resources/fill.js)
+    - [`form.ts`](https://source.chromium.org/chromium/chromium/src/+/main:components/autofill/ios/form_util/resources/form.ts)
+    - [`fill.ts`](https://source.chromium.org/chromium/chromium/src/+/main:components/autofill/ios/form_util/resources/fill.ts)
 
 # Related directories
 
@@ -265,9 +265,8 @@ may sacrifice a little bit of correctness in favor of simplicity.
   * We perform local heuristics even for smaller forms but only for promo codes
     and IBANs (see `ParseSingleFieldForms`).
   * Regular expressions for parsing are provided via
-    `components/autofill/core/common/autofill_regex_constants.h` or
-    `components/autofill/core/browser/form_parsing/regex_patterns.h` if
-    `features::kAutofillParsingPatternProvider` is enabled.
+    `components/autofill/core/browser/form_parsing/regex_patterns.h` and
+    `components/autofill/core/browser/form_parsing/*/*regex_patterns.json`.
 * Crowd sourcing
   * `AutofillCrowdsourcingManager` is responsible for downloading field
     classifications and uploading type votes.
@@ -420,7 +419,7 @@ Autofill votes are theoretically uploaded
 
   `observed_submission=false` is passed.
 
-In practice we allow only one upload per (form x submission source) every
+In practice we allow only one vote upload per (form x submission source) every
 `kAutofillUploadThrottlingPeriodInDays` days.
 
 In case `observed_submission == true`, the votes are generated on a background

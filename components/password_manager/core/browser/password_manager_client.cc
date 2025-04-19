@@ -44,7 +44,7 @@ void PasswordManagerClient::ShowKeyboardReplacingSurface(
 }
 #endif
 
-bool PasswordManagerClient::CanUseBiometricAuthForFilling(
+bool PasswordManagerClient::IsReauthBeforeFillingRequired(
     device_reauth::DeviceAuthenticator*) {
   return false;
 }
@@ -107,12 +107,13 @@ profile_metrics::BrowserProfileType PasswordManagerClient::GetProfileType()
   return profile_metrics::BrowserProfileType::kRegular;
 }
 
-const PasswordManager* PasswordManagerClient::GetPasswordManager() const {
+const PasswordManagerInterface* PasswordManagerClient::GetPasswordManager()
+    const {
   return nullptr;
 }
 
-PasswordManager* PasswordManagerClient::GetPasswordManager() {
-  return const_cast<PasswordManager*>(
+PasswordManagerInterface* PasswordManagerClient::GetPasswordManager() {
+  return const_cast<PasswordManagerInterface*>(
       static_cast<const PasswordManagerClient*>(this)->GetPasswordManager());
 }
 
@@ -176,6 +177,9 @@ PasswordManagerClient::GetWebAuthnCredentialsDelegateForDriver(
     PasswordManagerDriver* driver) {
   return nullptr;
 }
+
+void PasswordManagerClient::TriggerUserPerceptionOfPasswordManagerSurvey(
+    const std::string& filling_assistance) {}
 
 #if BUILDFLAG(IS_ANDROID)
 webauthn::WebAuthnCredManDelegate*

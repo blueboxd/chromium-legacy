@@ -11,11 +11,14 @@
 #include "ui/base/metadata/metadata_header_macros.h"
 
 namespace views {
+class Label;
 class MdTextButton;
 class UniqueWidgetPtr;
 }  // namespace views
 
 namespace chromeos {
+
+class MagicBoostCardController;
 
 // The Magic Boost opt-in card view.
 class MagicBoostOptInCard : public chromeos::editor_menu::PreTargetHandlerView {
@@ -23,7 +26,7 @@ class MagicBoostOptInCard : public chromeos::editor_menu::PreTargetHandlerView {
                   chromeos::editor_menu::PreTargetHandlerView)
 
  public:
-  explicit MagicBoostOptInCard(const bool include_orca);
+  explicit MagicBoostOptInCard(MagicBoostCardController* controller);
   MagicBoostOptInCard(const MagicBoostOptInCard&) = delete;
   MagicBoostOptInCard& operator=(const MagicBoostOptInCard&) = delete;
   ~MagicBoostOptInCard() override;
@@ -31,8 +34,8 @@ class MagicBoostOptInCard : public chromeos::editor_menu::PreTargetHandlerView {
   // Creates a widget that contains a `MagicBoostOptInCard`, configured with the
   // given `anchor_view_bounds`.
   static views::UniqueWidgetPtr CreateWidget(
-      const gfx::Rect& anchor_view_bounds,
-      const bool include_orca);
+      MagicBoostCardController* controller,
+      const gfx::Rect& anchor_view_bounds);
 
   // Returns the host widget's name.
   static const char* GetWidgetName();
@@ -43,11 +46,19 @@ class MagicBoostOptInCard : public chromeos::editor_menu::PreTargetHandlerView {
   // views::View:
   void RequestFocus() override;
 
+  // Returns the host widget's name.
+  static const char* GetWidgetNameForTest();
+
  private:
   // Button callbacks.
   void OnPrimaryButtonPressed();
   void OnSecondaryButtonPressed();
 
+  raw_ptr<MagicBoostCardController> controller_ = nullptr;
+
+  // Owned by the views hierarchy.
+  raw_ptr<views::Label> title_label_ = nullptr;
+  raw_ptr<views::Label> body_label_ = nullptr;
   raw_ptr<views::MdTextButton> secondary_button_ = nullptr;
 
   base::WeakPtrFactory<MagicBoostOptInCard> weak_ptr_factory_{this};

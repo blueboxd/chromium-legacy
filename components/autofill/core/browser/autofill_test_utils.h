@@ -28,6 +28,7 @@
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/browser/ui/suggestion_type.h"
 #include "components/autofill/core/common/autofill_test_utils.h"
+#include "components/sync/protocol/autofill_specifics.pb.h"
 
 class PrefService;
 
@@ -40,7 +41,7 @@ namespace autofill {
 class AutofillExternalDelegate;
 class AutofillProfile;
 class BankAccount;
-struct FormData;
+class FormData;
 class FormFieldData;
 struct FormDataPredictions;
 struct FormFieldDataPredictions;
@@ -388,8 +389,20 @@ Suggestion CreateAutofillSuggestion(
     const std::u16string& main_text_value = std::u16string(),
     const Suggestion::Payload& payload = Suggestion::Payload());
 
+Suggestion CreateAutofillSuggestion(const std::u16string& main_text_value,
+                                    const std::u16string& minor_text_value,
+                                    bool apply_deactivated_style);
+
 // Returns a bank account enabled for Pix with fake data.
 BankAccount CreatePixBankAccount(int64_t instrument_id);
+
+// Returns a payment instrument with a bank account filled with fake data.
+sync_pb::PaymentInstrument CreatePaymentInstrumentWithBankAccount(
+    int64_t instrument_id);
+
+// Returns a payment instrument with an IBAN filled with fake data.
+sync_pb::PaymentInstrument CreatePaymentInstrumentWithIban(
+    int64_t instrument_id);
 
 }  // namespace test
 }  // namespace autofill

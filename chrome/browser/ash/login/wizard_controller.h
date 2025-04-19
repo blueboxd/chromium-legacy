@@ -16,8 +16,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
-#include "chrome/browser/ash/accessibility/accessibility_manager.h"
-#include "chrome/browser/ash/app_mode/kiosk_controller.h"
 #include "chrome/browser/ash/login/choobe_flow_controller.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ash/login/enrollment/auto_enrollment_check_screen.h"
@@ -44,11 +42,11 @@
 #include "chrome/browser/ash/login/screens/fingerprint_setup_screen.h"
 #include "chrome/browser/ash/login/screens/gaia_info_screen.h"
 #include "chrome/browser/ash/login/screens/gaia_screen.h"
+#include "chrome/browser/ash/login/screens/gemini_intro_screen.h"
 #include "chrome/browser/ash/login/screens/gesture_navigation_screen.h"
 #include "chrome/browser/ash/login/screens/guest_tos_screen.h"
 #include "chrome/browser/ash/login/screens/hardware_data_collection_screen.h"
 #include "chrome/browser/ash/login/screens/hid_detection_screen.h"
-#include "chrome/browser/ash/login/screens/kiosk_autolaunch_screen.h"
 #include "chrome/browser/ash/login/screens/locale_switch_screen.h"
 #include "chrome/browser/ash/login/screens/marketing_opt_in_screen.h"
 #include "chrome/browser/ash/login/screens/multidevice_setup_screen.h"
@@ -69,6 +67,7 @@
 #include "chrome/browser/ash/login/screens/osauth/recovery_eligibility_screen.h"
 #include "chrome/browser/ash/login/screens/packaged_license_screen.h"
 #include "chrome/browser/ash/login/screens/parental_handoff_screen.h"
+#include "chrome/browser/ash/login/screens/perks_discovery_screen.h"
 #include "chrome/browser/ash/login/screens/personalized_recommend_apps_screen.h"
 #include "chrome/browser/ash/login/screens/pin_setup_screen.h"
 #include "chrome/browser/ash/login/screens/quick_start_screen.h"
@@ -81,12 +80,10 @@
 #include "chrome/browser/ash/login/screens/terms_of_service_screen.h"
 #include "chrome/browser/ash/login/screens/theme_selection_screen.h"
 #include "chrome/browser/ash/login/screens/touchpad_scroll_screen.h"
-#include "chrome/browser/ash/login/screens/tuna_screen.h"
 #include "chrome/browser/ash/login/screens/update_screen.h"
 #include "chrome/browser/ash/login/screens/user_allowlist_check_screen.h"
 #include "chrome/browser/ash/login/screens/user_creation_screen.h"
 #include "chrome/browser/ash/login/screens/welcome_screen.h"
-#include "chrome/browser/ash/policy/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/ash/policy/enrollment/enrollment_config.h"
 #include "chrome/browser/ui/webui/ash/login/online_authentication_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/oobe_ui.h"
@@ -94,6 +91,11 @@
 #include "components/account_id/account_id.h"
 
 class PrefService;
+struct AccessibilityStatusEventDetails;
+
+namespace policy {
+class AutoEnrollmentController;
+}  // namespace policy
 
 namespace ash {
 
@@ -101,6 +103,7 @@ class BaseScreen;
 class DemoSetupController;
 class ErrorScreen;
 struct Geoposition;
+class KioskApp;
 class SimpleGeolocationProvider;
 class TimeZoneProvider;
 struct TimeZoneResponseData;
@@ -299,10 +302,8 @@ class WizardController : public OobeUI::Observer {
   void ShowDemoModeSetupScreen();
   void ShowDemoModePreferencesScreen();
   void ShowResetScreen();
-  void ShowKioskAutolaunchScreen();
   void ShowEnableAdbSideloadingScreen();
   void ShowEnableDebuggingScreen();
-  void ShowKioskEnableScreen();
   void ShowTermsOfServiceScreen();
   void ShowSyncConsentScreen();
   void ShowFingerprintSetupScreen();
@@ -310,7 +311,7 @@ class WizardController : public OobeUI::Observer {
   void ShowRemoteActivityNotificationScreen();
   void ShowAppDownloadingScreen();
   void ShowAiIntroScreen();
-  void ShowTunaScreen();
+  void ShowGeminiIntroScreen();
   void ShowWrongHWIDScreen();
   void ShowAutoEnrollmentCheckScreen();
   void ShowHIDDetectionScreen();
@@ -352,6 +353,7 @@ class WizardController : public OobeUI::Observer {
   void ShowFactorSetupSuccessScreen();
   void ShowCategoriesSelectionScreen();
   void ShowPersonalizedRecomendAppsScreen();
+  void ShowPerksDiscoveryScreen();
 
   // Shows images login screen.
   void ShowLoginScreen();
@@ -386,8 +388,6 @@ class WizardController : public OobeUI::Observer {
   void OnEnrollmentDone();
   void OnEnableAdbSideloadingScreenExit();
   void OnEnableDebuggingScreenExit();
-  void OnKioskEnableScreenExit();
-  void OnKioskAutolaunchScreenExit(KioskAutolaunchScreen::Result result);
   void OnDemoPreferencesScreenExit(DemoPreferencesScreen::Result result);
   void OnDemoSetupScreenExit(DemoSetupScreen::Result result);
   void OnUserCreationScreenExit(UserCreationScreen::Result result);
@@ -425,7 +425,7 @@ class WizardController : public OobeUI::Observer {
   void OnRemoteActivityNotificationScreenExit();
   void OnAppDownloadingScreenExit();
   void OnAiIntroScreenExit(AiIntroScreen::Result result);
-  void OnTunaScreenExit(TunaScreen::Result result);
+  void OnGeminiIntroScreenExit(GeminiIntroScreen::Result result);
   void OnAssistantOptInFlowScreenExit(AssistantOptInFlowScreen::Result result);
   void OnMultiDeviceSetupScreenExit(MultiDeviceSetupScreen::Result result);
   void OnGestureNavigationScreenExit(GestureNavigationScreen::Result result);
@@ -469,6 +469,7 @@ class WizardController : public OobeUI::Observer {
       CategoriesSelectionScreen::Result result);
   void OnPersonalizedRecomendAppsScreenExit(
       PersonalizedRecommendAppsScreen::Result result);
+  void OnPerksDiscoveryScreenExit(PerksDiscoveryScreen::Result result);
   // Callback invoked once it has been determined whether the device is disabled
   // or not.
   void OnDeviceDisabledChecked(bool device_disabled);

@@ -26,10 +26,12 @@ namespace {
 using ::testing::_;
 using ::testing::ElementsAre;
 using ::testing::Eq;
+using ::testing::InSequence;
 using ::testing::Mock;
+using ::testing::MockFunction;
 using ::testing::Return;
 
-std::vector<Suggestion> CreateSuggestionsWithClearFormEntry(
+std::vector<Suggestion> CreateSuggestionsWithUndoOrClearEntry(
     size_t clear_form_offset) {
   auto create_pw_suggestion = [](std::string_view password,
                                  std::string_view username,
@@ -44,7 +46,7 @@ std::vector<Suggestion> CreateSuggestionsWithClearFormEntry(
       create_pw_suggestion("****************", "Berta", "psl.origin.eg"),
       create_pw_suggestion("***", "Carl", "")};
   suggestions.emplace(suggestions.begin() + clear_form_offset, "Clear", "",
-                      Suggestion::Icon::kNoIcon, SuggestionType::kClearForm);
+                      Suggestion::Icon::kNoIcon, SuggestionType::kUndoOrClear);
   return suggestions;
 }
 
@@ -74,6 +76,56 @@ class AutofillKeyboardAccessoryControllerImplTest
 };
 
 }  // namespace
+
+TEST_F(AutofillKeyboardAccessoryControllerImplTest,
+       AcceptSuggestionRespectsTimeout) {
+  // Calls before the threshold are ignored.
+  MockFunction<void()> check;
+  {
+    InSequence s;
+    EXPECT_CALL(check, Call);
+    EXPECT_CALL(manager().external_delegate(), DidAcceptSuggestion);
+  }
+
+  ShowSuggestions(manager(), {SuggestionType::kAddressEntry});
+  client().popup_controller(manager()).AcceptSuggestion(0);
+  task_environment()->FastForwardBy(base::Milliseconds(100));
+  client().popup_controller(manager()).AcceptSuggestion(/*index=*/0);
+  task_environment()->FastForwardBy(base::Milliseconds(400));
+
+  // Only now suggestions should be accepted.
+  check.Call();
+  client().popup_controller(manager()).AcceptSuggestion(/*index=*/0);
+}
+
+// Tests that reshowing the suggestions resets the accept threshold.
+TEST_F(AutofillKeyboardAccessoryControllerImplTest,
+       AcceptSuggestionTimeoutIsUpdatedOnUiUpdate) {
+  // Calls before the threshold are ignored.
+  MockFunction<void()> check;
+  {
+    InSequence s;
+    EXPECT_CALL(check, Call);
+    EXPECT_CALL(manager().external_delegate(), DidAcceptSuggestion);
+  }
+
+  ShowSuggestions(manager(), {SuggestionType::kAddressEntry});
+  // Calls before the threshold are ignored.
+  client().popup_controller(manager()).AcceptSuggestion(/*index=*/0);
+  task_environment()->FastForwardBy(base::Milliseconds(100));
+  client().popup_controller(manager()).AcceptSuggestion(/*index=*/0);
+  task_environment()->FastForwardBy(base::Milliseconds(400));
+
+  // Show the suggestions again (simulating, e.g., a click somewhere slightly
+  // different).
+  ShowSuggestions(manager(), {SuggestionType::kAddressEntry});
+  client().popup_controller(manager()).AcceptSuggestion(/*index=*/0);
+
+  // After waiting again, suggestions become acceptable.
+  task_environment()->FastForwardBy(base::Milliseconds(500));
+  check.Call();
+  client().popup_controller(manager()).AcceptSuggestion(/*index=*/0);
+}
 
 // Tests that calling `Show()` on the controller shows the view.
 TEST_F(AutofillKeyboardAccessoryControllerImplTest, ShowCallsView) {
@@ -338,11 +390,22 @@ TEST_F(AutofillKeyboardAccessoryControllerImplTest,
   client().popup_controller(manager()).AcceptSuggestion(/*index=*/0);
 }
 
+TEST_F(AutofillKeyboardAccessoryControllerImplTest,
+       DoesNotAcceptUnacceptableSuggestions) {
+  Suggestion suggestion(u"Open the pod bay doors, HAL");
+  suggestion.is_acceptable = false;
+  ShowSuggestions(manager(), {std::move(suggestion)});
+  task_environment()->FastForwardBy(base::Milliseconds(500));
+
+  EXPECT_CALL(manager().external_delegate(), DidAcceptSuggestion).Times(0);
+  client().popup_controller(manager()).AcceptSuggestion(/*index=*/0);
+}
+
 // Tests that the `KeyboardAccessoryController` moves "clear form" suggestions
 // to the front.
 TEST_F(AutofillKeyboardAccessoryControllerImplTest, ReorderUpdatedSuggestions) {
   const std::vector<Suggestion> suggestions =
-      CreateSuggestionsWithClearFormEntry(/*clear_form_offset=*/2);
+      CreateSuggestionsWithUndoOrClearEntry(/*clear_form_offset=*/2);
   // Force creation of controller and view.
   client().popup_controller(manager());
   EXPECT_CALL(*client().popup_view(), Show);
@@ -359,8 +422,8 @@ TEST_F(AutofillKeyboardAccessoryControllerImplTest,
     return ElementsAre(ElementsAre(Suggestion::Text(std::move(label))));
   };
 
-  ShowSuggestions(manager(),
-                  CreateSuggestionsWithClearFormEntry(/*clear_form_offset=*/1));
+  ShowSuggestions(manager(), CreateSuggestionsWithUndoOrClearEntry(
+                                 /*clear_form_offset=*/1));
 
   // The 1st item is usually not visible (something like clear form) and has an
   // empty label. But it needs to be handled since UI might ask for it anyway.

@@ -186,7 +186,7 @@ void FormFieldParser::ParseFormFields(
                       field_candidates);
 
   // Single fields pass.
-  ParseSingleFieldForms(context, fields, is_form_tag, field_candidates);
+  ParseSingleFieldForms(context, fields, field_candidates);
 
   ClearCandidatesIfHeuristicsDidNotFindEnoughFields(
       context, fields, field_candidates, is_form_tag);
@@ -297,7 +297,6 @@ void FormFieldParser::ClearCandidatesIfHeuristicsDidNotFindEnoughFields(
 void FormFieldParser::ParseSingleFieldForms(
     ParsingContext& context,
     const std::vector<std::unique_ptr<AutofillField>>& fields,
-    bool is_form_tag,
     FieldCandidatesMap& field_candidates) {
   std::vector<raw_ptr<AutofillField, VectorExperimental>> processed_fields =
       RemoveCheckableFields(fields);
@@ -417,44 +416,7 @@ bool FormFieldParser::FieldMatchesMatchPatternRef(
 }
 
 // static
-bool FormFieldParser::ParseField(ParsingContext& context,
-                                 AutofillScanner* scanner,
-                                 std::u16string_view pattern,
-                                 base::span<const MatchPatternRef> patterns,
-                                 raw_ptr<AutofillField>* match,
-                                 const char* regex_name) {
-  return ParseFieldSpecifics(context, scanner, pattern, kDefaultMatchParams,
-                             patterns, match, regex_name);
-}
-
-// static
-bool FormFieldParser::ParseFieldSpecificsWithLegacyPattern(
-    ParsingContext& context,
-    AutofillScanner* scanner,
-    std::u16string_view pattern,
-    MatchParams match_type,
-    raw_ptr<AutofillField>* match,
-    const char* regex_name) {
-  if (scanner->IsEnd()) {
-    return false;
-  }
-  AutofillField* field = scanner->Cursor();
-  if (!MatchesFormControlType(field->form_control_type(),
-                              match_type.field_types)) {
-    return false;
-  }
-  if (Match(context, field, pattern, match_type.attributes, regex_name)) {
-    if (match) {
-      *match = field;
-    }
-    scanner->Advance();
-    return true;
-  }
-  return false;
-}
-
-// static
-bool FormFieldParser::ParseFieldSpecificsWithNewPatterns(
+bool FormFieldParser::ParseField(
     ParsingContext& context,
     AutofillScanner* scanner,
     base::span<const MatchPatternRef> patterns,
@@ -474,28 +436,6 @@ bool FormFieldParser::ParseFieldSpecificsWithNewPatterns(
     return true;
   }
   return false;
-}
-
-// static
-bool FormFieldParser::ParseFieldSpecifics(
-    ParsingContext& context,
-    AutofillScanner* scanner,
-    std::u16string_view pattern,
-    const MatchParams& match_type,
-    base::span<const MatchPatternRef> patterns,
-    raw_ptr<AutofillField>* match,
-    const char* regex_name,
-    MatchParams (*match_pattern_projection)(const MatchParams&)) {
-  return (base::FeatureList::IsEnabled(
-              features::kAutofillParsingPatternProvider) ||
-          // Some patterns may not exist as an old-school regex because they
-          // require negative matching.
-          pattern == kNoLegacyPattern)
-             ? ParseFieldSpecificsWithNewPatterns(context, scanner, patterns,
-                                                  match, regex_name,
-                                                  match_pattern_projection)
-             : ParseFieldSpecificsWithLegacyPattern(
-                   context, scanner, pattern, match_type, match, regex_name);
 }
 
 // static
@@ -542,19 +482,31 @@ bool FormFieldParser::ParseInAnyOrder(
 bool FormFieldParser::ParseEmptyLabel(ParsingContext& context,
                                       AutofillScanner* scanner,
                                       raw_ptr<AutofillField>* match) {
+  if (scanner->IsEnd()) {
+    return false;
+  }
   // Temporarily disable logging of matches for empty labels. They don't contain
   // a lot of insights but occur somewhat often.
   base::AutoReset disable_logging(&context.log_manager, nullptr);
-  return ParseFieldSpecificsWithLegacyPattern(
-      context, scanner, kEmptyLabelRegex,
-      MatchParams(
-          {MatchAttribute::kLabel},
+  AutofillField* field = scanner->Cursor();
+  if (!MatchesFormControlType(
+          field->form_control_type(),
           {FormControlType::kInputEmail, FormControlType::kInputNumber,
            FormControlType::kInputPassword, FormControlType::kInputSearch,
            FormControlType::kInputTelephone, FormControlType::kInputText,
            FormControlType::kSelectOne, FormControlType::kSelectList,
-           FormControlType::kTextArea}),
-      match, "kEmptyLabelRegex");
+           FormControlType::kTextArea})) {
+    return false;
+  }
+  if (Match(context, field, kEmptyLabelRegex, {MatchAttribute::kLabel},
+            "kEmptyLabelRegex")) {
+    if (match) {
+      *match = field;
+    }
+    scanner->Advance();
+    return true;
+  }
+  return false;
 }
 
 // static

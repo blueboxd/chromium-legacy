@@ -16,7 +16,7 @@
 #include "base/functional/callback.h"
 #include "chromeos/ash/components/dbus/audio/audio_node.h"
 #include "chromeos/ash/components/dbus/audio/volume_state.h"
-#include "chromeos/dbus/common/dbus_method_call_status.h"
+#include "chromeos/dbus/common/dbus_callback.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace dbus {
@@ -78,6 +78,9 @@ class COMPONENT_EXPORT(DBUS_AUDIO) CrasAudioClient {
     // Called when a new speak-on-mute signal is detected.
     virtual void SpeakOnMuteDetected();
 
+    // Called when ewma power reported by cras.
+    virtual void EwmaPowerReported(double power);
+
     // Called when NumberOfNonChromeOutputStreamsChanged is detected.
     virtual void NumberOfNonChromeOutputStreamsChanged();
 
@@ -86,6 +89,10 @@ class COMPONENT_EXPORT(DBUS_AUDIO) CrasAudioClient {
 
     // Called when NumberOfArcStreamsChanged is detected.
     virtual void NumberOfArcStreamsChanged();
+
+    // Called when there is a new active node to indicate whether sidetone is
+    // supported.
+    virtual void SidetoneSupportedChanged(bool supported);
 
    protected:
     virtual ~Observer();
@@ -215,6 +222,14 @@ class COMPONENT_EXPORT(DBUS_AUDIO) CrasAudioClient {
 
   // Enables or disables CRAS to use speak-on-mute detection.
   virtual void SetSpeakOnMuteDetection(bool enabled) = 0;
+
+  virtual void SetEwmaPowerReportEnabled(bool enabled) = 0;
+
+  virtual void SetSidetoneEnabled(bool enabled) = 0;
+
+  // Gets the number of active output streams.
+  virtual void GetSidetoneSupported(
+      chromeos::DBusMethodCallback<bool> callback) = 0;
 
   // Adds input node |node_id| to the active input list. This is used to add
   // an additional active input node besides the one set by SetActiveInputNode.

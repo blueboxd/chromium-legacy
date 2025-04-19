@@ -11,6 +11,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/mojom/ui_base_types.mojom-shared.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/label_button.h"
@@ -30,7 +32,8 @@
 namespace views::examples {
 namespace {
 
-constexpr size_t kFakeModeless = ui::MODAL_TYPE_SYSTEM + 1;
+constexpr size_t kFakeModeless =
+    static_cast<size_t>(ui::mojom::ModalType::kSystem) + 1;
 
 }  // namespace
 
@@ -116,11 +119,21 @@ DialogExample::DialogExample()
       }) {}
 
 DialogExample::~DialogExample() {
-  title_->set_controller(nullptr);
-  body_->set_controller(nullptr);
-  ok_button_label_->set_controller(nullptr);
-  cancel_button_label_->set_controller(nullptr);
-  extra_button_label_->set_controller(nullptr);
+  if (title_) {
+    title_->set_controller(nullptr);
+  }
+  if (body_) {
+    body_->set_controller(nullptr);
+  }
+  if (ok_button_label_) {
+    ok_button_label_->set_controller(nullptr);
+  }
+  if (cancel_button_label_) {
+    cancel_button_label_->set_controller(nullptr);
+  }
+  if (extra_button_label_) {
+    extra_button_label_->set_controller(nullptr);
+  }
 }
 
 void DialogExample::CreateExampleView(View* container) {
@@ -183,8 +196,8 @@ void DialogExample::CreateExampleView(View* container) {
   mode_ = table->AddChildView(std::make_unique<Combobox>(&mode_model_));
   mode_->SetCallback(base::BindRepeating(&DialogExample::OnPerformAction,
                                          base::Unretained(this)));
-  mode_->SetSelectedIndex(ui::MODAL_TYPE_CHILD);
-  mode_->SetAccessibleName(modal_label);
+  mode_->SetSelectedIndex(static_cast<size_t>(ui::mojom::ModalType::kChild));
+  mode_->GetViewAccessibility().SetName(modal_label);
   table->AddChildView(std::make_unique<View>());
 
   Label* bubble_label = table->AddChildView(std::make_unique<Label>(
@@ -207,7 +220,7 @@ void DialogExample::CreateExampleView(View* container) {
 }
 
 void DialogExample::StartTextfieldRow(View* parent,
-                                      Textfield** member,
+                                      raw_ptr<Textfield>* member,
                                       std::u16string label,
                                       std::u16string value,
                                       Label** created_label,
@@ -218,24 +231,26 @@ void DialogExample::StartTextfieldRow(View* parent,
   auto textfield = std::make_unique<Textfield>();
   textfield->set_controller(this);
   textfield->SetText(value);
-  textfield->SetAccessibleName(row_label);
+  textfield->GetViewAccessibility().SetName(*row_label);
   *member = parent->AddChildView(std::move(textfield));
   if (pad_last_col)
     parent->AddChildView(std::make_unique<View>());
 }
 
-void DialogExample::AddCheckbox(View* parent, Checkbox** member, Label* label) {
+void DialogExample::AddCheckbox(View* parent,
+                                raw_ptr<Checkbox>* member,
+                                Label* label) {
   auto callback = member == &bubble_ ? &DialogExample::BubbleCheckboxPressed
                                      : &DialogExample::OtherCheckboxPressed;
   auto checkbox = std::make_unique<Checkbox>(
       std::u16string(), base::BindRepeating(callback, base::Unretained(this)));
   checkbox->SetChecked(true);
   if (label)
-    checkbox->SetAccessibleName(label);
+    checkbox->GetViewAccessibility().SetName(*label);
   *member = parent->AddChildView(std::move(checkbox));
 }
 
-ui::ModalType DialogExample::GetModalType() const {
+ui::mojom::ModalType DialogExample::GetModalType() const {
   // "Fake" modeless happens when a DialogDelegate specifies window-modal, but
   // doesn't provide a parent window.
   // TODO(ellyjones): This doesn't work on Mac at all - something should happen
@@ -243,9 +258,9 @@ ui::ModalType DialogExample::GetModalType() const {
   // impossible to change modality in a live dialog at all, and this example
   // should stop doing it.
   if (mode_->GetSelectedIndex() == kFakeModeless)
-    return ui::MODAL_TYPE_WINDOW;
+    return ui::mojom::ModalType::kWindow;
 
-  return static_cast<ui::ModalType>(mode_->GetSelectedIndex().value());
+  return static_cast<ui::mojom::ModalType>(mode_->GetSelectedIndex().value());
 }
 
 int DialogExample::GetDialogButtons() const {
@@ -308,16 +323,17 @@ void DialogExample::ShowButtonPressed() {
 }
 
 void DialogExample::BubbleCheckboxPressed() {
-  if (bubble_->GetChecked() && GetModalType() != ui::MODAL_TYPE_CHILD) {
-    mode_->SetSelectedIndex(ui::MODAL_TYPE_CHILD);
+  if (bubble_->GetChecked() && GetModalType() != ui::mojom::ModalType::kChild) {
+    mode_->SetSelectedIndex(static_cast<size_t>(ui::mojom::ModalType::kChild));
     LogStatus("You nearly always want Child Modal for bubbles.");
   }
   persistent_bubble_->SetEnabled(bubble_->GetChecked());
   OnPerformAction();  // Validate the modal type.
 
-  if (!bubble_->GetChecked() && GetModalType() == ui::MODAL_TYPE_CHILD) {
+  if (!bubble_->GetChecked() &&
+      GetModalType() == ui::mojom::ModalType::kChild) {
     // Do something reasonable when simply unchecking bubble and re-enable.
-    mode_->SetSelectedIndex(ui::MODAL_TYPE_WINDOW);
+    mode_->SetSelectedIndex(static_cast<size_t>(ui::mojom::ModalType::kWindow));
     OnPerformAction();
   }
 }
@@ -352,15 +368,18 @@ void DialogExample::ContentsChanged(Textfield* sender,
 }
 
 void DialogExample::OnPerformAction() {
-  bool enable = bubble_->GetChecked() || GetModalType() != ui::MODAL_TYPE_CHILD;
+  bool enable =
+      bubble_->GetChecked() || GetModalType() != ui::mojom::ModalType::kChild;
 #if BUILDFLAG(IS_MAC)
-  enable = enable && GetModalType() != ui::MODAL_TYPE_SYSTEM;
+  enable = enable && GetModalType() != ui::mojom::ModalType::kSystem;
 #endif
   show_->SetEnabled(enable);
-  if (!enable && GetModalType() == ui::MODAL_TYPE_CHILD)
+  if (!enable && GetModalType() == ui::mojom::ModalType::kChild) {
     LogStatus("MODAL_TYPE_CHILD can't be used with non-bubbles.");
-  if (!enable && GetModalType() == ui::MODAL_TYPE_SYSTEM)
+  }
+  if (!enable && GetModalType() == ui::mojom::ModalType::kSystem) {
     LogStatus("MODAL_TYPE_SYSTEM isn't supported on Mac.");
+  }
 }
 
 }  // namespace views::examples

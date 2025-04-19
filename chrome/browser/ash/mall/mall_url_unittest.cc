@@ -7,11 +7,9 @@
 #include "base/base64.h"
 #include "base/logging.h"
 #include "base/strings/string_split.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
 #include "chrome/browser/apps/almanac_api_client/device_info_manager.h"
-#include "chrome/browser/ash/mall/mall_context.pb.h"
-#include "chrome/browser/ash/mall/mall_features.h"
+#include "chrome/browser/apps/almanac_api_client/proto/client_context.pb.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/ash/components/system/fake_statistics_provider.h"
 #include "chromeos/constants/url_constants.h"
@@ -25,7 +23,6 @@ namespace ash {
 class MallUrlTest : public testing::Test {
  private:
   content::BrowserTaskEnvironment task_environment_;
-  base::test::ScopedFeatureList feature_list_{kCrosMallEnableContext};
 };
 
 TEST_F(MallUrlTest, GetMallLaunchUrl) {
@@ -54,7 +51,7 @@ TEST_F(MallUrlTest, GetMallLaunchUrl) {
                                  &proto_string,
                                  base::Base64DecodePolicy::kStrict));
 
-  proto::MallContext decoded_context;
+  apps::proto::ClientContext decoded_context;
   ASSERT_TRUE(decoded_context.ParseFromString(proto_string));
   ASSERT_EQ(decoded_context.device_context().hardware_id(),
             "SHIBA D0G-F4N-C1UB");

@@ -17,6 +17,7 @@ class Browser;
 
 namespace commerce {
 
+class ShoppingService;
 class ProductSpecificationsService;
 
 class ProductSpecificationsEntryPointController
@@ -28,7 +29,7 @@ class ProductSpecificationsEntryPointController
   class Observer : public base::CheckedObserver {
    public:
     // Called when entry points should show with `title`.
-    virtual void ShowEntryPointWithTitle(const std::string title) {}
+    virtual void ShowEntryPointWithTitle(const std::u16string& title) {}
 
     // Called when entry points should hide.
     virtual void HideEntryPoint() {}
@@ -64,6 +65,12 @@ class ProductSpecificationsEntryPointController
   // been clicked (4) is no longer valid.
   virtual void OnEntryPointHidden();
 
+  // The moment when (1) the entry point being triggered to show and (2) the
+  // entry point becoming eligible to show on the UI-side could be different.
+  // This method allows the entry point to check if it should still show when it
+  // becomes eligible to show on the UI side.
+  virtual bool ShouldExecuteEntryPointShow();
+
   // ClusterManager::Observer
   void OnClusterFinishedForNavigation(const GURL& url) override;
 
@@ -74,8 +81,26 @@ class ProductSpecificationsEntryPointController
  private:
   void MaybeHideEntryPoint();
 
+  // Check entry point info for tab selection. This will first check if the
+  // `entry_point_info` is valid based on info of current browser window. Then
+  // it might call server-side clustering, and ultimately trigger an observer
+  // event to show the UI.
+  void CheckEntryPointInfoForSelection(
+      const GURL old_url,
+      const GURL new_url,
+      std::optional<EntryPointInfo> entry_point_info);
+
+  // Check entry point info for navigation. This will first check if the
+  // `entry_point_info` is valid based on info of current browser window. Then
+  // it might call server-side clustering, and ultimately trigger an observer
+  // event to show the UI.
+  void CheckEntryPointInfoForNavigation(
+      std::optional<EntryPointInfo> entry_point_info);
+
   // Show the tab strip entry point for tab selection.
   void ShowEntryPointWithTitleForSelection(
+      const GURL old_url,
+      const GURL new_url,
       std::optional<EntryPointInfo> entry_point_info);
 
   // Show the tab strip entry point for navigation.
@@ -88,10 +113,10 @@ class ProductSpecificationsEntryPointController
   // Info of the entry point that is currently showing, when available.
   std::optional<EntryPointInfo> current_entry_point_info_;
   raw_ptr<Browser, DanglingUntriaged> browser_;
+  raw_ptr<ShoppingService, DanglingUntriaged> shopping_service_;
   raw_ptr<ClusterManager, DanglingUntriaged> cluster_manager_;
   raw_ptr<ProductSpecificationsService> product_specifications_service_;
   base::ObserverList<Observer> observers_;
-  GURL last_committed_url_;
   base::ScopedObservation<ClusterManager, ClusterManager::Observer>
       cluster_manager_observations_{this};
   base::WeakPtrFactory<ProductSpecificationsEntryPointController>

@@ -40,7 +40,17 @@ inline constexpr char kCredentialProviderEnabledOnStartup[] =
     "credential_provider_enabled_on_startup";
 #endif
 
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_IOS)
+// Boolean pref controlled by the DeletingUndecryptablePasswordsEnabled policy.
+// If set to false it blocks deleting undecryptable passwords, otherwise the
+// deletion can happen.
+inline constexpr char kDeletingUndecryptablePasswordsEnabled[] =
+    "password_manager.deleteting_undecryptable_passwords_enabled";
+#endif
+
 #if BUILDFLAG(IS_ANDROID)
+
 // Boolean pref indicating if the one-time notice for account storage was shown.
 // The notice informs passwords will start being saved to the signed-in account.
 inline constexpr char kAccountStorageNoticeShown[] =
@@ -84,7 +94,29 @@ inline constexpr char kCurrentMigrationVersionToGoogleMobileServices[] =
 // last time migrated, in milliseconds since UNIX epoch.
 inline constexpr char kTimeOfLastMigrationAttempt[] =
     "time_of_last_migration_attempt";
+#endif
 
+// The total amount of passwords available in Password Manager account store.
+inline constexpr char kTotalPasswordsAvailableForAccount[] =
+    "total_passwords_available_for_account";
+
+// The total amount of passwords available in Password Manager profile store.
+inline constexpr char kTotalPasswordsAvailableForProfile[] =
+    "total_passwords_available_for_profile";
+
+// The pref representing a bit vector that stores the reasons for password
+// deletion from the Password Manager account store. It gets reset on Chrome
+// startup, at most once per day.
+inline constexpr char kPasswordRemovalReasonForAccount[] =
+    "password_removal_reason_for_account";
+
+// The pref representing a bit vector that stores the reasons for password
+// deletion from the Password Manager profile store. It gets reset on Chrome
+// startup, at most once per day.
+inline constexpr char kPasswordRemovalReasonForProfile[] =
+    "password_removal_reason_for_profile";
+
+#if BUILDFLAG(IS_ANDROID)
 // Integer pref indicating whether the client is ready to use UPM for local
 // passwords and settings and split password stores for syncing users.
 // The preconditions for the pref to be set to true:
@@ -96,18 +128,15 @@ inline constexpr char kTimeOfLastMigrationAttempt[] =
 // their migration doesn't impact this pref.
 //
 // Do not renumber UseUpmLocalAndSeparateStoresState, values are persisted.
+// Values are also used for metrics recording.
 enum class UseUpmLocalAndSeparateStoresState {
   kOff = 0,
   kOffAndMigrationPending = 1,
   kOn = 2,
+  kMaxValue = kOn
 };
 inline constexpr char kPasswordsUseUPMLocalAndSeparateStores[] =
     "passwords_use_upm_local_and_separate_stores";
-
-// Boolean value that indicated the need of data migration between the two
-// backends due to sync settings change.
-inline constexpr char kRequiresMigrationAfterSyncStatusChange[] =
-    "requires_migration_after_sync_status_change";
 
 // Boolean value indicating if the user should not get UPM experience because
 // of user-unresolvable errors received on communication with Google Mobile
@@ -115,38 +144,12 @@ inline constexpr char kRequiresMigrationAfterSyncStatusChange[] =
 inline constexpr char kUnenrolledFromGoogleMobileServicesDueToErrors[] =
     "unenrolled_from_google_mobile_services_due_to_errors";
 
-// Integer value indicating the Google Mobile Services API error code that
-// caused the last unenrollment from the UPM experience. Only set if
-// |kUnenrolledFromGoogleMobileServicesDueToErrors| is true.
-inline constexpr char kUnenrolledFromGoogleMobileServicesAfterApiErrorCode[] =
-    "unenrolled_from_google_mobile_services_after_api_error_code";
-
-// Integer value indicating the version of the ignored/retriable error list
-// during the last unenrollment from the UPM experience. User will not be
-// re-enrolled if this value is set and is not less than the in the current
-// error list version.
-inline constexpr char
-    kUnenrolledFromGoogleMobileServicesWithErrorListVersion[] =
-        "unenrolled_from_google_mobile_services_with_error_list_version";
-
 // Timestamp at which the last UPM error message was shown to the user in
 // milliseconds since UNIX epoch (used in Java).
 // This is needed to ensure that the UI is prompted only once per given
 // time interval (currently 24h).
 inline constexpr char kUPMErrorUIShownTimestamp[] =
     "profile.upm_error_ui_shown_timestamp";
-
-// Integer value indicating the number of times the client was reenrolled into
-// the UPM experiment after experiencing user-unresolvable errors in
-// communication with Google Mobile Services.
-inline constexpr char kTimesReenrolledToGoogleMobileServices[] =
-    "times_reenrolled_to_google_mobile_services";
-
-// Integer value indicating the number of times the client has attempted a
-// migration in an attempt to reenroll into the UPM experiment. Reset to zero
-// after a successful reenrollment.
-inline constexpr char kTimesAttemptedToReenrollToGoogleMobileServices[] =
-    "times_attempted_to_reenroll_to_google_mobile_services";
 
 // Boolean value meant to record in the prefs if the user clicked "Got it" in
 // the UPM local passwords migration warning. When set to true, the warning
@@ -186,12 +189,6 @@ inline constexpr char kPasswordGenerationBottomSheetDismissCount[] =
 // Whether the post password migration sheet ahould be shown at startup.
 inline constexpr char kShouldShowPostPasswordMigrationSheetAtStartup[] =
     "should_show_post_password_migration_sheet_at_startup";
-
-// Becomes true when a user received an error from GMSCore. It's later used to
-// guard activation algorithm of "Remove unenrollment" experiment.
-inline constexpr char kUserReceivedGMSCoreError[] =
-    "user_received_gmscore_error";
-
 #endif
 
 #if BUILDFLAG(IS_WIN)
@@ -297,15 +294,18 @@ inline constexpr char kBiometricAuthBeforeFillingPromoShownCounter[] =
 // before filling promo.
 inline constexpr char kHasUserInteractedWithBiometricAuthPromo[] =
     "password_manager.has_user_interacted_with_biometric_authentication_promo";
-// Boolean indicating whether user enabled biometric authentication before
-// filling.
-inline constexpr char kBiometricAuthenticationBeforeFilling[] =
-    "password_manager.biometric_authentication_filling";
 // Boolean indicating whether user had ever biometrics available on their
 // device.
 inline constexpr char kHadBiometricsAvailable[] =
     "password_manager.had_biometrics_available";
 #endif
+
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
+// Boolean indicating whether user enabled biometric authentication before
+// filling.
+inline constexpr char kBiometricAuthenticationBeforeFilling[] =
+    "password_manager.biometric_authentication_filling";
+#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)  // Desktop
 // How many times in a row the password generation popup in `kNudgePassword`
@@ -337,6 +337,13 @@ inline constexpr char kPasswordSharingEnabled[] =
 // Integer pref indicating how many times relaunch Chrome bubble was dismissed.
 inline constexpr char kRelaunchChromeBubbleDismissedCounter[] =
     "password_manager.relaunch_chrome_bubble_dismissed_counter";
+#endif
+
+#if !BUILDFLAG(IS_ANDROID)
+// Boolean pref indicating if the user is in one of the groups of the
+// kClearUndecryptablePasswords experiment.
+inline constexpr char kClearingUndecryptablePasswords[] =
+    "password_manager.clearing_undecryptable_passwords";
 #endif
 
 }  // namespace password_manager::prefs

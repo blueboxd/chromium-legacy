@@ -49,9 +49,11 @@
 #include "third_party/blink/renderer/core/html/forms/html_button_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_data_list_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_opt_group_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/html/forms/menu_list_inner_element.h"
 #include "third_party/blink/renderer/core/html/forms/popup_menu.h"
+#include "third_party/blink/renderer/core/html/html_hr_element.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
 #include "third_party/blink/renderer/core/html/html_span_element.h"
 #include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
@@ -66,6 +68,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scroll_alignment.h"
+#include "third_party/blink/renderer/core/scroll/scroll_into_view_util.h"
 #include "third_party/blink/renderer/core/svg/svg_path_element.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
@@ -88,6 +91,14 @@ bool CanAssignToSelectSlot(const Node& node) {
   return node.HasTagName(html_names::kOptionTag) ||
          node.HasTagName(html_names::kOptgroupTag) ||
          node.HasTagName(html_names::kHrTag);
+}
+
+bool CanAssignToCustomizableSelectSlot(const Node& node) {
+  // Elements which are valid in <select>'s new content model as proposed for
+  // customizable select.
+  return IsA<HTMLOptionElement>(node) || IsA<HTMLOptGroupElement>(node) ||
+         IsA<HTMLHRElement>(node) || IsA<HTMLDataListElement>(node) ||
+         IsA<HTMLSpanElement>(node) || IsA<HTMLDivElement>(node);
 }
 
 }  // anonymous namespace
@@ -119,8 +130,11 @@ class MenuListSelectType final : public SelectType {
   void CreateShadowSubtree(ShadowRoot& root) override;
   void ManuallyAssignSlots() override;
   HTMLButtonElement* SlottedButton() const override;
+  HTMLButtonElement* DisplayedButton() const override;
   HTMLDataListElement* DisplayedDatalist() const override;
   bool IsAppearanceBaseSelect() const override;
+  HTMLSelectElement::SelectAutofillPreviewElement* GetAutofillPreviewElement()
+      const override;
   Element& InnerElementForAppearanceAuto() const override;
   void ShowPopup(PopupMenu::ShowEventType type) override;
   void HidePopup() override;
@@ -151,6 +165,8 @@ class MenuListSelectType final : public SelectType {
   Member<HTMLButtonElement> default_button_;
   Member<HTMLSpanElement> default_button_selected_option_;
   Member<HTMLDataListElement> default_datalist_;
+  Member<HTMLSelectElement::SelectAutofillPreviewElement> autofill_popover_;
+  Member<HTMLDivElement> autofill_popover_text_;
   Member<HTMLSlotElement> default_datalist_options_slot_;
   Member<HTMLSlotElement> datalist_slot_;
   Member<HTMLSlotElement> option_slot_;
@@ -170,6 +186,8 @@ void MenuListSelectType::Trace(Visitor* visitor) const {
   visitor->Trace(default_button_);
   visitor->Trace(default_button_selected_option_);
   visitor->Trace(default_datalist_);
+  visitor->Trace(autofill_popover_);
+  visitor->Trace(autofill_popover_text_);
   visitor->Trace(default_datalist_options_slot_);
   visitor->Trace(datalist_slot_);
   visitor->Trace(option_slot_);
@@ -218,8 +236,9 @@ bool MenuListSelectType::DefaultEventHandler(const Event& event) {
       return false;
     }
 
+    const AtomicString key(key_event->key());
     if (event.type() == event_type_names::kKeypress &&
-        key_event->key() == "Enter") {
+        key == keywords::kCapitalEnter) {
       // Pressing enter on the button should submit the form, not open the
       // popover. HTMLElement::HandleKeypressEvent will fire DOMActivate which
       // opens the popover unless we prevent the default by returning true here.
@@ -227,13 +246,13 @@ bool MenuListSelectType::DefaultEventHandler(const Event& event) {
     }
 
     if (event.type() == event_type_names::kKeydown) {
-      if (key_event->key() == "ArrowUp" || key_event->key() == "ArrowDown" ||
-          key_event->key() == "ArrowRight" || key_event->key() == "ArrowLeft") {
+      if (key == keywords::kArrowUp || key == keywords::kArrowDown ||
+          key == keywords::kArrowRight || key == keywords::kArrowLeft) {
         // Spacebar already opens the datalist because of the popovertarget
         // association.
         DisplayedDatalist()->ShowPopoverForSelectElement();
         return true;
-      } else if (key_event->key() == "Enter") {
+      } else if (key == keywords::kCapitalEnter) {
         if (auto* form = select_->Form()) {
           form->PrepareForSubmission(&event, select_);
           return true;
@@ -269,22 +288,22 @@ bool MenuListSelectType::DefaultEventHandler(const Event& event) {
     if (key_event->GetModifiers() & ignore_modifiers)
       return false;
 
-    const String& key = key_event->key();
+    const AtomicString key(key_event->key());
     bool handled = true;
     HTMLOptionElement* option = select_->SelectedOption();
     int list_index = option ? option->ListIndex() : -1;
 
-    if (key == "ArrowDown" || key == "ArrowRight") {
+    if (key == keywords::kArrowDown || key == keywords::kArrowRight) {
       option = NextValidOption(list_index, kSkipForwards, 1);
-    } else if (key == "ArrowUp" || key == "ArrowLeft") {
+    } else if (key == keywords::kArrowUp || key == keywords::kArrowLeft) {
       option = NextValidOption(list_index, kSkipBackwards, 1);
-    } else if (key == "PageDown") {
+    } else if (key == keywords::kPageDown) {
       option = NextValidOption(list_index, kSkipForwards, 3);
-    } else if (key == "PageUp") {
+    } else if (key == keywords::kPageUp) {
       option = NextValidOption(list_index, kSkipBackwards, 3);
-    } else if (key == "Home") {
+    } else if (key == keywords::kHome) {
       option = FirstSelectableOption();
-    } else if (key == "End") {
+    } else if (key == keywords::kEnd) {
       option = LastSelectableOption();
     } else {
       handled = false;
@@ -361,15 +380,16 @@ bool MenuListSelectType::DefaultEventHandler(const Event& event) {
 
 bool MenuListSelectType::ShouldOpenPopupForKeyDownEvent(
     const KeyboardEvent& event) {
-  const String& key = event.key();
+  const AtomicString key(event.key());
   LayoutTheme& layout_theme = LayoutTheme::GetTheme();
 
   if (IsSpatialNavigationEnabled(select_->GetDocument().GetFrame()))
     return false;
 
   return ((layout_theme.PopsMenuByArrowKeys() &&
-           (key == "ArrowDown" || key == "ArrowUp")) ||
-          ((key == "ArrowDown" || key == "ArrowUp") && event.altKey()) ||
+           (key == keywords::kArrowDown || key == keywords::kArrowUp)) ||
+          ((key == keywords::kArrowDown || key == keywords::kArrowUp) &&
+           event.altKey()) ||
           ((!event.altKey() && !event.ctrlKey() && key == "F4")));
 }
 
@@ -423,8 +443,6 @@ void MenuListSelectType::CreateShadowSubtree(ShadowRoot& root) {
     root.appendChild(button_slot_);
 
     default_button_ = MakeGarbageCollected<HTMLButtonElement>(doc);
-    default_button_->setAttribute(html_names::kTypeAttr,
-                                  AtomicString("popover"));
     default_button_->SetShadowPseudoId(
         shadow_element_names::kSelectFallbackButton);
     button_slot_->AppendChild(default_button_);
@@ -465,23 +483,44 @@ void MenuListSelectType::CreateShadowSubtree(ShadowRoot& root) {
     default_datalist_options_slot_->SetIdAttribute(
         shadow_element_names::kSelectDatalistOptions);
     default_datalist_->AppendChild(default_datalist_options_slot_);
+
+    autofill_popover_ =
+        MakeGarbageCollected<HTMLSelectElement::SelectAutofillPreviewElement>(
+            doc, select_);
+    autofill_popover_->setAttribute(html_names::kPopoverAttr,
+                                    keywords::kManual);
+    autofill_popover_->SetInternalImplicitAnchor(select_);
+    autofill_popover_->SetShadowPseudoId(
+        shadow_element_names::kSelectAutofillPreview);
+    root.appendChild(autofill_popover_);
+
+    autofill_popover_text_ = MakeGarbageCollected<HTMLDivElement>(doc);
+    autofill_popover_text_->SetShadowPseudoId(
+        shadow_element_names::kSelectAutofillPreviewText);
+    autofill_popover_->appendChild(autofill_popover_text_);
   }
 }
 
 void MenuListSelectType::ManuallyAssignSlots() {
   VectorOf<Node> option_nodes;
-  VectorOf<Node> buttons;
+  HTMLButtonElement* first_button = nullptr;
+  VectorOf<Node> all_children_except_button_and_datalist;
   Node* first_datalist = nullptr;
   for (Node& child : NodeTraversal::ChildrenOf(*select_)) {
     if (!child.IsSlotable()) {
       continue;
     }
-    if (CanAssignToSelectSlot(child)) {
-      option_nodes.push_back(child);
-    } else if (IsA<HTMLButtonElement>(child)) {
-      buttons.push_back(child);
-    } else if (!first_datalist && IsA<HTMLDataListElement>(child)) {
-      first_datalist = &child;
+    if (IsA<HTMLButtonElement>(child) && !first_button) {
+      first_button = &To<HTMLButtonElement>(child);
+    } else if (IsA<HTMLDataListElement>(child)) {
+      if (!first_datalist) {
+        first_datalist = &child;
+      }
+    } else {
+      all_children_except_button_and_datalist.push_back(child);
+      if (CanAssignToSelectSlot(child)) {
+        option_nodes.push_back(child);
+      }
     }
   }
 
@@ -489,11 +528,18 @@ void MenuListSelectType::ManuallyAssignSlots() {
   if (RuntimeEnabledFeatures::StylableSelectEnabled()) {
     CHECK(button_slot_);
     CHECK(datalist_slot_);
-    button_slot_->Assign(buttons);
+    button_slot_->Assign(first_button);
     datalist_slot_->Assign(first_datalist);
     if (default_datalist_->popoverOpen()) {
-      default_datalist_options_slot_->Assign(option_nodes);
+      default_datalist_options_slot_->Assign(
+          all_children_except_button_and_datalist);
+      option_slot_->Assign(nullptr);
     } else {
+      // When the popover is closed, we need to assign the <option>s into
+      // option_slot_ in order to prevent the closed popover's display:none from
+      // preventing computed style reaching the <option>s which is needed for
+      // appearance:auto.
+      default_datalist_options_slot_->Assign(nullptr);
       option_slot_->Assign(option_nodes);
     }
   } else {
@@ -508,6 +554,14 @@ HTMLButtonElement* MenuListSelectType::SlottedButton() const {
   }
   CHECK(button_slot_);
   return To<HTMLButtonElement>(button_slot_->FirstAssignedNode());
+}
+
+HTMLButtonElement* MenuListSelectType::DisplayedButton() const {
+  if (!RuntimeEnabledFeatures::StylableSelectEnabled()) {
+    CHECK(!button_slot_);
+    return nullptr;
+  }
+  return To<HTMLButtonElement>(FlatTreeTraversal::FirstChild(*button_slot_));
 }
 
 HTMLDataListElement* MenuListSelectType::DisplayedDatalist() const {
@@ -527,6 +581,11 @@ bool MenuListSelectType::IsAppearanceBaseSelect() const {
     return style->EffectiveAppearance() == ControlPart::kBaseSelectPart;
   }
   return false;
+}
+
+HTMLSelectElement::SelectAutofillPreviewElement*
+MenuListSelectType::GetAutofillPreviewElement() const {
+  return autofill_popover_;
 }
 
 Element& MenuListSelectType::InnerElementForAppearanceAuto() const {
@@ -701,10 +760,22 @@ void MenuListSelectType::DidBlur() {
     HidePopup();
 }
 
-void MenuListSelectType::DidSetSuggestedOption(HTMLOptionElement*) {
+void MenuListSelectType::DidSetSuggestedOption(HTMLOptionElement* option) {
   UpdateTextStyleAndContent();
   if (native_popup_is_visible_) {
     popup_->UpdateFromElement(PopupMenu::kBySelectionChange);
+  }
+  if (IsAppearanceBaseSelect()) {
+    if (option) {
+      autofill_popover_->showPopover(ASSERT_NO_EXCEPTION);
+      autofill_popover_text_->setInnerText(option->label());
+    } else {
+      autofill_popover_text_->setInnerText(g_empty_string);
+      autofill_popover_->HidePopoverInternal(
+          HidePopoverFocusBehavior::kNone,
+          HidePopoverTransitionBehavior::kNoEventsNoWaiting,
+          /*exception_state=*/nullptr);
+    }
   }
 }
 
@@ -851,8 +922,11 @@ HTMLOptionElement* MenuListSelectType::OptionToBeShown() const {
   if (auto* option =
           select_->OptionAtListIndex(select_->index_to_select_on_cancel_))
     return option;
-  if (select_->suggested_option_)
+  // In appearance:base-select mode, we don't want to reveal the suggested
+  // option anywhere except in autofill_popover_.
+  if (select_->suggested_option_ && !IsAppearanceBaseSelect()) {
     return select_->suggested_option_.Get();
+  }
   // TODO(tkent): We should not call OptionToBeShown() in IsMultiple() case.
   if (select_->IsMultiple())
     return select_->SelectedOption();
@@ -973,8 +1047,11 @@ class ListBoxSelectType final : public SelectType {
   void CreateShadowSubtree(ShadowRoot&) override;
   void ManuallyAssignSlots() override;
   HTMLButtonElement* SlottedButton() const override;
+  HTMLButtonElement* DisplayedButton() const override;
   HTMLDataListElement* DisplayedDatalist() const override;
   bool IsAppearanceBaseSelect() const override;
+  HTMLSelectElement::SelectAutofillPreviewElement* GetAutofillPreviewElement()
+      const override;
 
  private:
   HTMLOptionElement* NextSelectableOptionPageAway(HTMLOptionElement*,
@@ -1126,35 +1203,30 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
     const auto* keyboard_event = DynamicTo<KeyboardEvent>(event);
     if (!keyboard_event)
       return false;
-    const String& key = keyboard_event->key();
+    const AtomicString key(keyboard_event->key());
 
     bool handled = false;
     HTMLOptionElement* end_option = nullptr;
-    char const* key_next = "ArrowDown";
-    char const* key_previous = "ArrowUp";
-    const ComputedStyle* style = select_->GetComputedStyle();
-    if (style->GetWritingMode() == WritingMode::kVerticalLr) {
-      key_next = "ArrowRight";
-      key_previous = "ArrowLeft";
-    } else if (style->GetWritingMode() == WritingMode::kVerticalRl) {
-      key_next = "ArrowLeft";
-      key_previous = "ArrowRight";
-    }
+    const PhysicalToLogical<const AtomicString*> key_mapper(
+        select_->GetComputedStyle()->GetWritingDirection(), &keywords::kArrowUp,
+        &keywords::kArrowRight, &keywords::kArrowDown, &keywords::kArrowLeft);
+    const AtomicString* key_next = key_mapper.BlockEnd();
+    const AtomicString* key_previous = key_mapper.BlockStart();
     if (!active_selection_end_) {
       // Initialize the end index
-      if (key == key_next || key == "PageDown") {
+      if (key == *key_next || key == keywords::kPageDown) {
         HTMLOptionElement* start_option = select_->LastSelectedOption();
         handled = true;
-        if (key == key_next) {
+        if (key == *key_next) {
           end_option = NextSelectableOption(start_option);
         } else {
           end_option =
               NextSelectableOptionPageAway(start_option, kSkipForwards);
         }
-      } else if (key == key_previous || key == "PageUp") {
+      } else if (key == *key_previous || key == keywords::kPageUp) {
         HTMLOptionElement* start_option = select_->SelectedOption();
         handled = true;
-        if (key == key_previous) {
+        if (key == *key_previous) {
           end_option = PreviousSelectableOption(start_option);
         } else {
           end_option =
@@ -1163,36 +1235,37 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
       }
     } else {
       // Set the end index based on the current end index.
-      if (key == key_next) {
+      if (key == *key_next) {
         end_option = NextSelectableOption(active_selection_end_);
         handled = true;
-      } else if (key == key_previous) {
+      } else if (key == *key_previous) {
         end_option = PreviousSelectableOption(active_selection_end_);
         handled = true;
-      } else if (key == "PageDown") {
+      } else if (key == keywords::kPageDown) {
         end_option =
             NextSelectableOptionPageAway(active_selection_end_, kSkipForwards);
         handled = true;
-      } else if (key == "PageUp") {
+      } else if (key == keywords::kPageUp) {
         end_option =
             NextSelectableOptionPageAway(active_selection_end_, kSkipBackwards);
         handled = true;
       }
     }
-    if (key == "Home") {
+    if (key == keywords::kHome) {
       end_option = FirstSelectableOption();
       handled = true;
-    } else if (key == "End") {
+    } else if (key == keywords::kEnd) {
       end_option = LastSelectableOption();
       handled = true;
     }
 
     if (IsSpatialNavigationEnabled(select_->GetDocument().GetFrame())) {
       // Check if the selection moves to the boundary.
-      if (key == "ArrowLeft" || key == "ArrowRight" ||
-          ((key == "ArrowDown" || key == "ArrowUp") &&
-           end_option == active_selection_end_))
+      if (key == keywords::kArrowLeft || key == keywords::kArrowRight ||
+          ((key == keywords::kArrowDown || key == keywords::kArrowUp) &&
+           end_option == active_selection_end_)) {
         return false;
+      }
     }
 
     bool is_control_key = false;
@@ -1418,7 +1491,7 @@ void ListBoxSelectType::ScrollToOptionTask() {
   DCHECK(box->Layer()->GetScrollableArea());
   box->Layer()->GetScrollableArea()->ScrollIntoView(
       bounds, PhysicalBoxStrut(),
-      ScrollAlignment::CreateScrollIntoViewParams(
+      scroll_into_view_util::CreateScrollIntoViewParams(
           ScrollAlignment::ToEdgeIfNeeded(), ScrollAlignment::ToEdgeIfNeeded(),
           mojom::blink::ScrollType::kProgrammatic, false,
           mojom::blink::ScrollBehavior::kInstant));
@@ -1625,7 +1698,10 @@ void ListBoxSelectType::CreateShadowSubtree(ShadowRoot& root) {
 void ListBoxSelectType::ManuallyAssignSlots() {
   VectorOf<Node> option_nodes;
   for (Node& child : NodeTraversal::ChildrenOf(*select_)) {
-    if (child.IsSlotable() && CanAssignToSelectSlot(child)) {
+    if (child.IsSlotable() &&
+        (CanAssignToSelectSlot(child) ||
+         (RuntimeEnabledFeatures::StylableSelectEnabled() &&
+          CanAssignToCustomizableSelectSlot(child)))) {
       option_nodes.push_back(child);
     }
   }
@@ -1640,12 +1716,23 @@ HTMLButtonElement* ListBoxSelectType::SlottedButton() const {
   return nullptr;
 }
 
+HTMLButtonElement* ListBoxSelectType::DisplayedButton() const {
+  // TODO(crbug.com/357649033): Implement this
+  return nullptr;
+}
+
 HTMLDataListElement* ListBoxSelectType::DisplayedDatalist() const {
   return nullptr;
 }
 
 bool ListBoxSelectType::IsAppearanceBaseSelect() const {
   return false;
+}
+
+HTMLSelectElement::SelectAutofillPreviewElement*
+ListBoxSelectType::GetAutofillPreviewElement() const {
+  // TODO(crbug.com/357649033): Implement this
+  return nullptr;
 }
 
 // ============================================================================

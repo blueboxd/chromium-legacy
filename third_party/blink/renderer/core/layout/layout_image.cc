@@ -54,9 +54,9 @@ namespace blink {
 LayoutImage::LayoutImage(Element* element)
     : LayoutReplaced(element, PhysicalSize()) {}
 
-LayoutImage* LayoutImage::CreateAnonymous(PseudoElement& pseudo) {
+LayoutImage* LayoutImage::CreateAnonymous(Document& document) {
   LayoutImage* image = MakeGarbageCollected<LayoutImage>(nullptr);
-  image->SetDocumentForAnonymous(&pseudo.GetDocument());
+  image->SetDocumentForAnonymous(&document);
   return image;
 }
 
@@ -165,8 +165,9 @@ bool LayoutImage::NeedsLayoutOnIntrinsicSizeChange() const {
   NOT_DESTROYED();
   // Flex layout algorithm uses the intrinsic image width/height even if
   // width/height are specified.
-  if (IsFlexItemIncludingNG())
+  if (IsFlexItem()) {
     return true;
+  }
 
   const auto& style = StyleRef();
   // TODO(https://crbug.com/313072): Should this test min/max-height as well?
@@ -323,10 +324,10 @@ void LayoutImage::ComputeIntrinsicSizingInfo(
     intrinsic_sizing_info =
         image_resource_->GetNaturalDimensions(StyleRef().EffectiveZoom());
 
-    if (auto view_box_size = ComputeObjectViewBoxSizeForIntrinsicSizing()) {
+    if (auto view_box = ComputeObjectViewBoxRect()) {
       DCHECK(intrinsic_sizing_info.has_width);
       DCHECK(intrinsic_sizing_info.has_height);
-      intrinsic_sizing_info.size = *view_box_size;
+      intrinsic_sizing_info.size = gfx::SizeF(view_box->size);
     }
 
     // The value returned by LayoutImageResource will be in zoomed CSS

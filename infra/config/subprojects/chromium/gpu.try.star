@@ -151,6 +151,15 @@ gpu_android_builder(
     pool = "luci.chromium.gpu.android.nexus5x.try",
 )
 
+gpu_android_builder(
+    name = "gpu-try-android-pixel-2-64",
+    mirrors = [
+        "ci/Android Release (Pixel 2)",
+    ],
+    gn_args = "ci/Android Release (Pixel 2)",
+    pool = "luci.chromium.gpu.android.pixel2.chromium.try",
+)
+
 def gpu_chromeos_builder(*, name, **kwargs):
     return try_.builder(
         name = name,
@@ -191,22 +200,24 @@ def gpu_linux_builder(*, name, **kwargs):
     )
 
 gpu_linux_builder(
-    name = "gpu-fyi-try-lacros-amd-rel",
+    name = "gpu-fyi-try-linux-wayland-amd-rel",
+    description_html = "Runs GPU tests on weston with AMD RX 5500 XT",
     mirrors = [
-        "ci/GPU FYI Lacros x64 Builder",
-        "ci/Lacros FYI x64 Release (AMD)",
+        "ci/GPU FYI Linux Wayland Builder",
+        "ci/Linux Wayland FYI Release (AMD)",
     ],
-    gn_args = "ci/GPU FYI Lacros x64 Builder",
+    gn_args = "ci/GPU FYI Linux Wayland Builder",
     pool = "luci.chromium.gpu.linux.amd.try",
 )
 
 gpu_linux_builder(
-    name = "gpu-fyi-try-lacros-intel-rel",
+    name = "gpu-fyi-try-linux-wayland-intel-rel",
+    description_html = "Runs GPU tests on weston with Intel UHD 630",
     mirrors = [
-        "ci/GPU FYI Lacros x64 Builder",
-        "ci/Lacros FYI x64 Release (Intel)",
+        "ci/GPU FYI Linux Wayland Builder",
+        "ci/Linux Wayland FYI Release (Intel)",
     ],
-    gn_args = "ci/GPU FYI Lacros x64 Builder",
+    gn_args = "ci/GPU FYI Linux Wayland Builder",
     pool = "luci.chromium.gpu.linux.intel.try",
 )
 
@@ -316,13 +327,12 @@ gpu_linux_builder(
 )
 
 def gpu_mac_builder(*, name, **kwargs):
+    kwargs.setdefault("cpu", None)
     return try_.builder(
         name = name,
         builder_group = "tryserver.chromium.mac",
         builderless = True,
         cores = None,
-        # Builders can run on either Intel or Apple Silicon hadware.
-        cpu = None,
         os = os.MAC_ANY,
         ssd = None,
         **kwargs
@@ -386,6 +396,7 @@ gpu_mac_builder(
     ],
     gn_args = "ci/GPU FYI Mac arm64 Builder",
     pool = "luci.chromium.gpu.mac.arm64.apple.m1.try",
+    cpu = cpu.ARM64,
     siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -397,6 +408,7 @@ gpu_mac_builder(
     ],
     gn_args = "ci/GPU FYI Mac arm64 Builder",
     pool = "luci.chromium.gpu.mac.arm64.apple.m1.try",
+    cpu = cpu.ARM64,
 )
 
 gpu_mac_builder(
@@ -611,6 +623,17 @@ gpu_win_builder(
     mirrors = [
         "ci/GPU FYI Win x64 Builder",
         "ci/Win10 FYI x64 Release (NVIDIA)",
+    ],
+    gn_args = "ci/GPU FYI Win x64 Builder",
+    pool = "luci.chromium.gpu.win10.nvidia.try",
+)
+
+gpu_win_builder(
+    name = "gpu-fyi-try-win10-nvidia-4070-rel-64",
+    description_html = "Runs GPU tests on NVIDIA RTX 4070 Super GPUs",
+    mirrors = [
+        "ci/GPU FYI Win x64 Builder",
+        "ci/Win10 FYI x64 Release (NVIDIA RTX 4070 Super)",
     ],
     gn_args = "ci/GPU FYI Win x64 Builder",
     pool = "luci.chromium.gpu.win10.nvidia.try",

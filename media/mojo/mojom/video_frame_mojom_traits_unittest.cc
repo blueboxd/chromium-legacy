@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "media/mojo/mojom/video_frame_mojom_traits.h"
 
 #include "base/functional/callback_helpers.h"
@@ -277,7 +282,7 @@ TEST_F(VideoFrameStructTraitsTest, GpuMemoryBufferVideoFrame) {
   ASSERT_TRUE(RoundTrip(&frame));
   ASSERT_TRUE(frame);
   ASSERT_EQ(frame->storage_type(), VideoFrame::STORAGE_GPU_MEMORY_BUFFER);
-  EXPECT_TRUE(frame->HasGpuMemoryBuffer());
+  EXPECT_TRUE(frame->HasMappableGpuBuffer());
   EXPECT_FALSE(frame->metadata().end_of_stream);
   EXPECT_EQ(frame->format(), PIXEL_FORMAT_NV12);
   EXPECT_EQ(frame->coded_size(), coded_size);
@@ -310,7 +315,7 @@ TEST_F(VideoFrameStructTraitsTest, GpuMemoryBufferSharedImageVideoFrame) {
   ASSERT_TRUE(RoundTrip(&frame));
   ASSERT_TRUE(frame);
   ASSERT_EQ(frame->storage_type(), VideoFrame::STORAGE_GPU_MEMORY_BUFFER);
-  EXPECT_TRUE(frame->HasGpuMemoryBuffer());
+  EXPECT_TRUE(frame->HasMappableGpuBuffer());
   EXPECT_FALSE(frame->metadata().end_of_stream);
   EXPECT_EQ(frame->format(), PIXEL_FORMAT_NV12);
   EXPECT_EQ(frame->coded_size(), coded_size);

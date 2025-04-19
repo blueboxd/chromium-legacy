@@ -170,7 +170,7 @@ class SynchronousLayerTreeFrameSink
   viz::ServerSharedBitmapManager shared_bitmap_manager_;
 
   // Only valid (non-null) during a DemandDrawSw() call.
-  SkCanvas* current_sw_canvas_ = nullptr;
+  raw_ptr<SkCanvas> current_sw_canvas_ = nullptr;
 
   cc::ManagedMemoryPolicy memory_policy_;
   bool in_software_draw_ = false;

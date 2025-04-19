@@ -220,6 +220,7 @@
 <translation id="2490721194269245365">Marron rosé</translation>
 <translation id="249330843868392562">Ouvrir les paramètres de synthèse vocale</translation>
 <translation id="2497706219848005458">Vert-jaune</translation>
+<translation id="2512979179176933762">afficher les fenêtres</translation>
 <translation id="2523609930580546572">Tutoriel ChromeVox</translation>
 <translation id="2525706221823668172">Raccourcis clavier dans Chromebook</translation>
 <translation id="2553108862507765288">erreur grammaticale</translation>
@@ -264,7 +265,6 @@
 <translation id="2783001728278437613">{COUNT,plural, =1{+ #}one{+ #}other{+ #}}</translation>
 <translation id="2792200646155001340">Essayez maintenant de passer à l'élément précédent en balayant l'écran de droite à gauche avec un doigt.</translation>
 <translation id="280499067616661124">Fonctionnalité "Rechercher sur la page" de ChromeVox</translation>
-<translation id="2811019999044652585">Pour accéder directement à d'autres parties de l'écran, comme les barres d'outils ou la barre d'état système, appuyez sur Ctrl+touche d'avance rapide. Sur un Chromebook, la touche d'avance rapide se trouve immédiatement au-dessus de la touche numérotée 2.</translation>
 <translation id="2811204574343810641">Ligne</translation>
 <translation id="2816868829355607410">Section d'entraînement : commandes d'accès direct</translation>
 <translation id="2841013758207633010">Heure</translation>
@@ -520,6 +520,7 @@
 <translation id="4432457053224379116">Rouge indien</translation>
 <translation id="4432896207833262240">Contenu marqué</translation>
 <translation id="4437615272777527928">Saisissez le texte à rechercher dans les menus. Utilisez les flèches vers le haut et vers le bas pour parcourir les résultats. Utilisez les flèches vers la gauche et vers la droite pour déplacer le curseur de texte et passer d'un menu à l'autre.</translation>
+<translation id="4453530046591759283">Pour accéder à d'autres parties de l'écran, comme les barres d'outils ou la barre d'état système, appuyez sur Ctrl+F1. F1 est la première touche à droite de la touche Échap.</translation>
 <translation id="4457472090507035117">Sélectionner la voix actuelle :</translation>
 <translation id="4476183483923481720">Nouvelle ligne</translation>
 <translation id="4479068155583208887">Brique</translation>
@@ -880,6 +881,7 @@
 <translation id="7091296112653361280">Chair moyen</translation>
 <translation id="7095834689119144465">Texte de modification (chiffres uniquement)</translation>
 <translation id="7096001299300236431">Contenu multimédia précédent</translation>
+<translation id="7096668131290451939">Appuyez de nouveau sur Échap pour quitter le mode d'apprentissage</translation>
 <translation id="7116595520562830928">multln</translation>
 <translation id="712735679809149106">écho des mots</translation>
 <translation id="7137397390322864165">Saumon</translation>
@@ -1072,7 +1074,6 @@
 <translation id="847040613207937740">Aucune case à cocher suivante</translation>
 <translation id="8473540203671727883">Lire à haute voix le texte sous la souris</translation>
 <translation id="8476408756881832830">Interrompre la lecture lorsque ChromeVox parle</translation>
-<translation id="8476508772960940536">vue d'ensemble des fenêtres</translation>
 <translation id="8480873377842220259">Vous allez maintenant découvrir des commandes pour la navigation de base. Vous pouvez maintenir la touche Recherche enfoncée et appuyer sur les touches fléchées pour naviguer au sein de l'écran. Pour continuer, appuyez sur Recherche+Flèche vers la droite.</translation>
 <translation id="8503360654911991865">Diminuer le niveau de précision de la navigation</translation>
 <translation id="8520472399088452386">Bouton Toupie</translation>

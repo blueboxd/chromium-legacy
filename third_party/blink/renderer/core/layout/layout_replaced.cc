@@ -49,8 +49,6 @@
 #include "third_party/blink/renderer/core/style/basic_shapes.h"
 #include "third_party/blink/renderer/core/style/computed_style_base_constants.h"
 #include "third_party/blink/renderer/platform/geometry/layout_point.h"
-#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
-#include "third_party/blink/renderer/platform/geometry/layout_size.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/geometry/length_functions.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -178,27 +176,12 @@ void LayoutReplaced::RecalcVisualOverflow() {
     AddContentsVisualOverflow(ReplacedContentRect());
 }
 
-std::optional<gfx::SizeF>
-LayoutReplaced::ComputeObjectViewBoxSizeForIntrinsicSizing() const {
-  // TODO(crbug.com/335003884): Investigate if this first branch is
-  // actually doing anything and maybe clean that up too
-  if (!RuntimeEnabledFeatures::NoIntrinsicSizeOverrideEnabled()) {
-    if (IntrinsicWidthOverride() || IntrinsicHeightOverride()) {
-      return std::nullopt;
-    }
-  }
-
-  if (auto view_box = ComputeObjectViewBoxRect())
-    return static_cast<gfx::SizeF>(view_box->size);
-
-  return std::nullopt;
-}
-
 std::optional<PhysicalRect> LayoutReplaced::ComputeObjectViewBoxRect(
     const PhysicalSize* overridden_intrinsic_size) const {
   const BasicShape* object_view_box = StyleRef().ObjectViewBox();
-  if (LIKELY(!object_view_box))
+  if (!object_view_box) [[likely]] {
     return std::nullopt;
+  }
 
   const auto& intrinsic_size =
       overridden_intrinsic_size ? *overridden_intrinsic_size : intrinsic_size_;
@@ -382,8 +365,8 @@ void LayoutReplaced::ComputeIntrinsicSizingInfo(
   NOT_DESTROYED();
   DCHECK(!ShouldApplySizeContainment());
 
-  if (auto view_box_size = ComputeObjectViewBoxSizeForIntrinsicSizing()) {
-    intrinsic_sizing_info.size = *view_box_size;
+  if (auto view_box = ComputeObjectViewBoxRect()) {
+    intrinsic_sizing_info.size = gfx::SizeF(view_box->size);
   } else {
     intrinsic_sizing_info.size = gfx::SizeF(IntrinsicSize());
   }

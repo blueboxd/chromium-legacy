@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.ui.signin;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
@@ -24,6 +25,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 
+import androidx.annotation.StringRes;
 import androidx.test.filters.MediumTest;
 import androidx.test.runner.lifecycle.Stage;
 
@@ -36,6 +38,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseActivityTestRule;
 import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterAnnotations.UseMethodParameter;
@@ -54,9 +57,9 @@ import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.ProfileDataCache;
 import org.chromium.chrome.browser.signin.services.SigninManager;
-import org.chromium.chrome.browser.ui.signin.SigninAndHistoryOptInCoordinator.HistoryOptInMode;
-import org.chromium.chrome.browser.ui.signin.SigninAndHistoryOptInCoordinator.NoAccountSigninMode;
-import org.chromium.chrome.browser.ui.signin.SigninAndHistoryOptInCoordinator.WithAccountSigninMode;
+import org.chromium.chrome.browser.ui.signin.SigninAndHistorySyncCoordinator.HistoryOptInMode;
+import org.chromium.chrome.browser.ui.signin.SigninAndHistorySyncCoordinator.NoAccountSigninMode;
+import org.chromium.chrome.browser.ui.signin.SigninAndHistorySyncCoordinator.WithAccountSigninMode;
 import org.chromium.chrome.browser.ui.signin.SyncConsentActivityLauncher.AccessPoint;
 import org.chromium.chrome.browser.ui.signin.account_picker.AccountPickerBottomSheetStrings;
 import org.chromium.chrome.test.AutomotiveContextWrapperTestRule;
@@ -69,7 +72,6 @@ import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.sync.SyncFeatureMap;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.test.NativeLibraryTestUtils;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.BlankUiTestActivity;
 import org.chromium.ui.test.util.DeviceRestriction;
 import org.chromium.ui.test.util.NightModeTestUtils;
@@ -109,7 +111,7 @@ public class SyncPromoControllerUITest {
             new BaseActivityTestRule<>(BlankUiTestActivity.class);
 
     @Mock private SyncConsentActivityLauncher mSyncConsentActivityLauncher;
-    @Mock private SigninAndHistoryOptInActivityLauncher mSigninAndHistoryOptInActivityLauncher;
+    @Mock private SigninAndHistorySyncActivityLauncher mSigninAndHistorySyncActivityLauncher;
 
     @Before
     public void setUp() {
@@ -120,9 +122,10 @@ public class SyncPromoControllerUITest {
 
     @Test
     @MediumTest
+    @DisableFeatures(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
     public void testBookmarkSyncPromoViewSignedOutAndNoAccountAvailable() throws Throwable {
         ProfileDataCache profileDataCache =
-                TestThreadUtils.runOnUiThreadBlockingNoException(
+                ThreadUtils.runOnUiThreadBlocking(
                         () -> {
                             return ProfileDataCache.createWithDefaultImageSizeAndNoBadge(
                                     mActivityTestRule.getActivity());
@@ -133,12 +136,38 @@ public class SyncPromoControllerUITest {
                 R.layout.sync_promo_view_bookmarks);
         onView(withText(R.string.sync_promo_title_bookmarks)).check(matches(isDisplayed()));
         onView(withText(R.string.sync_promo_description_bookmarks)).check(matches(isDisplayed()));
+        onView(withText(R.string.sync_promo_turn_on_sync)).check(matches(isDisplayed()));
         onView(withId(R.id.sync_promo_close_button)).check(matches(isDisplayed()));
     }
 
     @Test
     @MediumTest
-    @DisableFeatures(SyncFeatureMap.ENABLE_BOOKMARK_FOLDERS_FOR_ACCOUNT_STORAGE)
+    @EnableFeatures(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
+    public void testBookmarkSyncPromoViewSignedOutAndNoAccountAvailable_replaceSyncBySigninEnabled()
+            throws Throwable {
+        ProfileDataCache profileDataCache =
+                ThreadUtils.runOnUiThreadBlocking(
+                        () -> {
+                            return ProfileDataCache.createWithDefaultImageSizeAndNoBadge(
+                                    mActivityTestRule.getActivity());
+                        });
+        setUpSyncPromoView(
+                SigninAccessPoint.BOOKMARK_MANAGER,
+                profileDataCache,
+                R.layout.sync_promo_view_bookmarks);
+        onView(withText(R.string.signin_promo_title_bookmarks)).check(matches(isDisplayed()));
+        onView(withText(R.string.signin_promo_description_bookmarks)).check(matches(isDisplayed()));
+        onView(withText(R.string.signin_promo_signin)).check(matches(isDisplayed()));
+        onView(withText(R.string.sync_promo_turn_on_sync)).check(doesNotExist());
+        onView(withId(R.id.sync_promo_close_button)).check(matches(isDisplayed()));
+    }
+
+    @Test
+    @MediumTest
+    @DisableFeatures({
+        SyncFeatureMap.SYNC_ENABLE_BOOKMARKS_IN_TRANSPORT_MODE,
+        ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS
+    })
     public void testBookmarkSyncPromoViewSignedOutAndAccountAvailable() throws Throwable {
         mSigninTestRule.addAccount(AccountManagerTestRule.TEST_ACCOUNT_1);
         ProfileDataCache profileDataCache = createProfileDataCache();
@@ -153,6 +182,26 @@ public class SyncPromoControllerUITest {
 
     @Test
     @MediumTest
+    @EnableFeatures({ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS})
+    public void testBookmarkSyncPromoViewSignedOutAndAccountAvailable_replaceSyncBySigninEnabled()
+            throws Throwable {
+        mSigninTestRule.addAccount(AccountManagerTestRule.TEST_ACCOUNT_1);
+        ProfileDataCache profileDataCache = createProfileDataCache();
+        setUpSyncPromoView(
+                SigninAccessPoint.BOOKMARK_MANAGER,
+                profileDataCache,
+                R.layout.sync_promo_view_bookmarks);
+        onView(withText(R.string.signin_promo_title_bookmarks)).check(matches(isDisplayed()));
+        onView(withText(R.string.signin_promo_description_bookmarks)).check(matches(isDisplayed()));
+        onView(withId(R.id.sync_promo_close_button)).check(matches(isDisplayed()));
+    }
+
+    @Test
+    @MediumTest
+    @DisableFeatures({
+        SyncFeatureMap.SYNC_ENABLE_BOOKMARKS_IN_TRANSPORT_MODE,
+        ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS
+    })
     public void testBookmarkSyncPromoViewSignedInAndNotSyncing() throws Throwable {
         mSigninTestRule.addTestAccountThenSignin();
         ProfileDataCache profileDataCache = createProfileDataCache();
@@ -171,7 +220,7 @@ public class SyncPromoControllerUITest {
     @MediumTest
     public void testExistsNonGmailAccountReturnsTrue() {
         SigninManager signinManager =
-                TestThreadUtils.runOnUiThreadBlockingNoException(
+                ThreadUtils.runOnUiThreadBlocking(
                         () ->
                                 IdentityServicesProvider.get()
                                         .getSigninManager(
@@ -191,7 +240,7 @@ public class SyncPromoControllerUITest {
     @MediumTest
     public void testExistsNonGmailAccountReturnsFalse() {
         SigninManager signinManager =
-                TestThreadUtils.runOnUiThreadBlockingNoException(
+                ThreadUtils.runOnUiThreadBlocking(
                         () ->
                                 IdentityServicesProvider.get()
                                         .getSigninManager(
@@ -208,7 +257,7 @@ public class SyncPromoControllerUITest {
 
     @Test
     @MediumTest
-    @EnableFeatures(SyncFeatureMap.ENABLE_BOOKMARK_FOLDERS_FOR_ACCOUNT_STORAGE)
+    @EnableFeatures(SyncFeatureMap.SYNC_ENABLE_BOOKMARKS_IN_TRANSPORT_MODE)
     public void testBookmarkSyncPromoContinueButtonLaunchesSigninFlow() throws Throwable {
         mSigninTestRule.addAccount("test@" + SyncPromoController.GMAIL_DOMAIN);
         ProfileDataCache profileDataCache = createProfileDataCache();
@@ -222,7 +271,7 @@ public class SyncPromoControllerUITest {
 
         onView(withId(R.id.sync_promo_signin_button)).perform(click());
 
-        verify(mSigninAndHistoryOptInActivityLauncher)
+        verify(mSigninAndHistorySyncActivityLauncher)
                 .launchActivityIfAllowed(
                         any(Context.class),
                         any(Profile.class),
@@ -235,7 +284,10 @@ public class SyncPromoControllerUITest {
 
     @Test
     @MediumTest
-    @DisableFeatures(SyncFeatureMap.ENABLE_BOOKMARK_FOLDERS_FOR_ACCOUNT_STORAGE)
+    @DisableFeatures({
+        SyncFeatureMap.SYNC_ENABLE_BOOKMARKS_IN_TRANSPORT_MODE,
+        ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS
+    })
     public void testBookmarkSyncPromoContinueButtonLaunchesSyncFlow() throws Throwable {
         mSigninTestRule.addAccount(AccountManagerTestRule.TEST_ACCOUNT_1);
         ProfileDataCache profileDataCache = createProfileDataCache();
@@ -258,11 +310,11 @@ public class SyncPromoControllerUITest {
 
     @Test
     @MediumTest
-    @Restriction({DeviceRestriction.RESTRICTION_TYPE_NON_AUTO})
-    @EnableFeatures(SyncFeatureMap.ENABLE_BOOKMARK_FOLDERS_FOR_ACCOUNT_STORAGE)
+    @EnableFeatures(SyncFeatureMap.SYNC_ENABLE_BOOKMARKS_IN_TRANSPORT_MODE)
+    @DisableFeatures(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
     public void testBookmarkSyncPromoContinueButtonLaunchesSyncFlowIfSyncDataLeft()
             throws Throwable {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     UserPrefs.get(ProfileManager.getLastUsedRegularProfile())
                             .setString(Pref.GOOGLE_SERVICES_LAST_SYNCING_GAIA_ID, "gaia_id");
@@ -286,7 +338,7 @@ public class SyncPromoControllerUITest {
                         eq(SigninAccessPoint.BOOKMARK_MANAGER),
                         any(String.class));
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     UserPrefs.get(ProfileManager.getLastUsedRegularProfile())
                             .clearPref(Pref.GOOGLE_SERVICES_LAST_SYNCING_GAIA_ID);
@@ -295,8 +347,9 @@ public class SyncPromoControllerUITest {
 
     @Test
     @MediumTest
+    // Disabled on Automotive since the choose account button doesn't exist on Automotive.
     @Restriction({DeviceRestriction.RESTRICTION_TYPE_NON_AUTO})
-    @EnableFeatures(SyncFeatureMap.ENABLE_BOOKMARK_FOLDERS_FOR_ACCOUNT_STORAGE)
+    @EnableFeatures(SyncFeatureMap.SYNC_ENABLE_BOOKMARKS_IN_TRANSPORT_MODE)
     public void testBookmarkSyncPromoChooseAccountButtonLaunchesSigninFlow() throws Throwable {
         mSigninTestRule.addAccount("test@" + SyncPromoController.GMAIL_DOMAIN);
         ProfileDataCache profileDataCache = createProfileDataCache();
@@ -310,7 +363,7 @@ public class SyncPromoControllerUITest {
 
         onView(withId(R.id.sync_promo_choose_account_button)).perform(click());
 
-        verify(mSigninAndHistoryOptInActivityLauncher)
+        verify(mSigninAndHistorySyncActivityLauncher)
                 .launchActivityIfAllowed(
                         any(Context.class),
                         any(Profile.class),
@@ -323,8 +376,12 @@ public class SyncPromoControllerUITest {
 
     @Test
     @MediumTest
+    // Disabled on Automotive since the choose account button doesn't exist on Automotive.
     @Restriction({DeviceRestriction.RESTRICTION_TYPE_NON_AUTO})
-    @DisableFeatures(SyncFeatureMap.ENABLE_BOOKMARK_FOLDERS_FOR_ACCOUNT_STORAGE)
+    @DisableFeatures({
+        SyncFeatureMap.SYNC_ENABLE_BOOKMARKS_IN_TRANSPORT_MODE,
+        ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS
+    })
     public void testBookmarkSyncPromoChooseAccountButtonLaunchesSyncFlow() throws Throwable {
         mSigninTestRule.addAccount(AccountManagerTestRule.TEST_ACCOUNT_1);
         ProfileDataCache profileDataCache = createProfileDataCache();
@@ -347,9 +404,10 @@ public class SyncPromoControllerUITest {
 
     @Test
     @MediumTest
+    @DisableFeatures(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
     public void testSettingsSyncPromoViewSignedOutAndNoAccountAvailable() throws Throwable {
         ProfileDataCache profileDataCache =
-                TestThreadUtils.runOnUiThreadBlockingNoException(
+                ThreadUtils.runOnUiThreadBlocking(
                         () -> {
                             return ProfileDataCache.createWithDefaultImageSizeAndNoBadge(
                                     mActivityTestRule.getActivity());
@@ -357,31 +415,53 @@ public class SyncPromoControllerUITest {
         setUpSyncPromoView(
                 SigninAccessPoint.SETTINGS, profileDataCache, R.layout.sync_promo_view_settings);
         onView(withText(R.string.sync_promo_title_settings)).check(matches(isDisplayed()));
-        onView(withText(R.string.sync_promo_description_settings)).check(matches(isDisplayed()));
+        @StringRes
+        int description =
+                ChromeFeatureList.isEnabled(
+                                ChromeFeatureList
+                                        .ENABLE_PASSWORDS_ACCOUNT_STORAGE_FOR_NON_SYNCING_USERS)
+                        ? R.string.sync_promo_description_settings_without_passwords
+                        : R.string.sync_promo_description_settings;
+        onView(withText(description)).check(matches(isDisplayed()));
         onView(withId(R.id.sync_promo_close_button)).check(matches(isDisplayed()));
     }
 
     @Test
     @MediumTest
+    @DisableFeatures(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
     public void testSettingsSyncPromoViewSignedOutAndAccountAvailable() throws Throwable {
         mSigninTestRule.addAccount(AccountManagerTestRule.TEST_ACCOUNT_1);
         ProfileDataCache profileDataCache = createProfileDataCache();
         setUpSyncPromoView(
                 SigninAccessPoint.SETTINGS, profileDataCache, R.layout.sync_promo_view_settings);
         onView(withText(R.string.sync_promo_title_settings)).check(matches(isDisplayed()));
-        onView(withText(R.string.sync_promo_description_settings)).check(matches(isDisplayed()));
+        @StringRes
+        int description =
+                ChromeFeatureList.isEnabled(
+                                ChromeFeatureList
+                                        .ENABLE_PASSWORDS_ACCOUNT_STORAGE_FOR_NON_SYNCING_USERS)
+                        ? R.string.sync_promo_description_settings_without_passwords
+                        : R.string.sync_promo_description_settings;
+        onView(withText(description)).check(matches(isDisplayed()));
         onView(withId(R.id.sync_promo_close_button)).check(matches(isDisplayed()));
     }
 
     @Test
     @MediumTest
+    @DisableFeatures(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
     public void testSettingsSyncPromoViewSignedInAndNotSyncing() throws Throwable {
         mSigninTestRule.addTestAccountThenSignin();
         ProfileDataCache profileDataCache = createProfileDataCache();
         setUpSyncPromoView(
                 SigninAccessPoint.SETTINGS, profileDataCache, R.layout.sync_promo_view_settings);
         onView(withText(R.string.sync_promo_title_settings)).check(matches(isDisplayed()));
-        onView(withText(R.string.sync_promo_description_settings)).check(matches(isDisplayed()));
+        int description =
+                ChromeFeatureList.isEnabled(
+                                ChromeFeatureList
+                                        .ENABLE_PASSWORDS_ACCOUNT_STORAGE_FOR_NON_SYNCING_USERS)
+                        ? R.string.sync_promo_description_settings_without_passwords
+                        : R.string.sync_promo_description_settings;
+        onView(withText(description)).check(matches(isDisplayed()));
         onView(withId(R.id.sync_promo_close_button)).check(matches(isDisplayed()));
     }
 
@@ -390,7 +470,7 @@ public class SyncPromoControllerUITest {
     @DisableFeatures(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
     public void testRecentTabsSyncPromoViewSignedOutAndNoAccountAvailable() throws Throwable {
         ProfileDataCache profileDataCache =
-                TestThreadUtils.runOnUiThreadBlockingNoException(
+                ThreadUtils.runOnUiThreadBlocking(
                         () -> {
                             return ProfileDataCache.createWithDefaultImageSizeAndNoBadge(
                                     mActivityTestRule.getActivity());
@@ -410,7 +490,7 @@ public class SyncPromoControllerUITest {
     public void testRecentTabsSyncPromoViewSignedOutAndNoAccountAvailableLaunchesSigninFlow()
             throws Throwable {
         ProfileDataCache profileDataCache =
-                TestThreadUtils.runOnUiThreadBlockingNoException(
+                ThreadUtils.runOnUiThreadBlocking(
                         () -> {
                             return ProfileDataCache.createWithDefaultImageSizeAndNoBadge(
                                     mActivityTestRule.getActivity());
@@ -427,7 +507,7 @@ public class SyncPromoControllerUITest {
 
         onView(withText(R.string.signin_promo_turn_on)).perform(click());
 
-        verify(mSigninAndHistoryOptInActivityLauncher)
+        verify(mSigninAndHistorySyncActivityLauncher)
                 .launchActivityForHistorySyncDedicatedFlow(
                         any(Context.class),
                         any(Profile.class),
@@ -471,7 +551,7 @@ public class SyncPromoControllerUITest {
 
         onView(withText(R.string.signin_promo_turn_on)).perform(click());
 
-        verify(mSigninAndHistoryOptInActivityLauncher)
+        verify(mSigninAndHistorySyncActivityLauncher)
                 .launchActivityForHistorySyncDedicatedFlow(
                         any(Context.class),
                         any(Profile.class),
@@ -515,7 +595,7 @@ public class SyncPromoControllerUITest {
 
         onView(withText(R.string.signin_promo_turn_on)).perform(click());
 
-        verify(mSigninAndHistoryOptInActivityLauncher)
+        verify(mSigninAndHistorySyncActivityLauncher)
                 .launchActivityForHistorySyncDedicatedFlow(
                         any(Context.class),
                         any(Profile.class),
@@ -532,9 +612,9 @@ public class SyncPromoControllerUITest {
         mSigninTestRule.addAccount(AccountManagerTestRule.TEST_ACCOUNT_1);
         ProfileDataCache profileDataCache = createProfileDataCache();
         setUpSyncPromoView(
-                SigninAccessPoint.RECENT_TABS,
+                SigninAccessPoint.BOOKMARK_MANAGER,
                 profileDataCache,
-                R.layout.sync_promo_view_recent_tabs);
+                R.layout.sync_promo_view_bookmarks);
 
         onView(withId(R.id.sync_promo_choose_account_button)).check(matches(isDisplayed()));
     }
@@ -546,9 +626,9 @@ public class SyncPromoControllerUITest {
         mSigninTestRule.addAccount(AccountManagerTestRule.TEST_ACCOUNT_1);
         ProfileDataCache profileDataCache = createProfileDataCache();
         setUpSyncPromoView(
-                SigninAccessPoint.RECENT_TABS,
+                SigninAccessPoint.BOOKMARK_MANAGER,
                 profileDataCache,
-                R.layout.sync_promo_view_recent_tabs);
+                R.layout.sync_promo_view_bookmarks);
 
         onView(withId(R.id.sync_promo_choose_account_button)).check(matches(not(isDisplayed())));
     }
@@ -557,11 +637,12 @@ public class SyncPromoControllerUITest {
     @MediumTest
     @Feature("RenderTest")
     @UseMethodParameter(NightModeParams.class)
+    @DisableFeatures(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
     public void testNTPSyncPromoViewSignedOutAndNoAccountAvailable(boolean nightModeEnabled)
             throws Throwable {
         setUpNightMode(nightModeEnabled);
         ProfileDataCache profileDataCache =
-                TestThreadUtils.runOnUiThreadBlockingNoException(
+                ThreadUtils.runOnUiThreadBlocking(
                         () -> {
                             return ProfileDataCache.createWithDefaultImageSizeAndNoBadge(
                                     mActivityTestRule.getActivity());
@@ -580,6 +661,31 @@ public class SyncPromoControllerUITest {
     @MediumTest
     @Feature("RenderTest")
     @UseMethodParameter(NightModeParams.class)
+    @EnableFeatures(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
+    public void testNTPSyncPromoViewSignedOutAndNoAccountAvailable_replaceSyncBySigninEnabled(
+            boolean nightModeEnabled) throws Throwable {
+        setUpNightMode(nightModeEnabled);
+        ProfileDataCache profileDataCache =
+                ThreadUtils.runOnUiThreadBlocking(
+                        () -> {
+                            return ProfileDataCache.createWithDefaultImageSizeAndNoBadge(
+                                    mActivityTestRule.getActivity());
+                        });
+        View view =
+                setUpSyncPromoView(
+                        SigninAccessPoint.NTP_FEED_TOP_PROMO,
+                        profileDataCache,
+                        R.layout.sync_promo_view_content_suggestions);
+        mRenderTestRule.render(
+                view,
+                "ntp_content_suggestions_sync_promo_view_signed_out_and_no_account_available_replace_sync_by_signin_enabled");
+    }
+
+    @Test
+    @MediumTest
+    @Feature("RenderTest")
+    @UseMethodParameter(NightModeParams.class)
+    @DisableFeatures(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
     public void testNTPSyncPromoViewSignedOutAndAccountAvailable(boolean nightModeEnabled)
             throws Throwable {
         setUpNightMode(nightModeEnabled);
@@ -598,6 +704,7 @@ public class SyncPromoControllerUITest {
     @MediumTest
     @Feature("RenderTest")
     @UseMethodParameter(NightModeParams.class)
+    @DisableFeatures(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
     public void testNTPSyncPromoViewSignedInAndNotSyncing(boolean nightModeEnabled)
             throws Throwable {
         setUpNightMode(nightModeEnabled);
@@ -618,7 +725,7 @@ public class SyncPromoControllerUITest {
     // for each entry point. In the long term, we should have a single observer internal to the UI
     // component. Then these tests can just wait for the right data to appear with espresso.
     private ProfileDataCache createProfileDataCache() throws Throwable {
-        return TestThreadUtils.runOnUiThreadBlockingNoException(
+        return ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     return ProfileDataCache.createWithDefaultImageSizeAndNoBadge(
                             mActivityTestRule.getActivity());
@@ -628,7 +735,7 @@ public class SyncPromoControllerUITest {
     private View setUpSyncPromoView(
             @AccessPoint int accessPoint, ProfileDataCache profileDataCache, int layoutResId) {
         View view =
-                TestThreadUtils.runOnUiThreadBlockingNoException(
+                ThreadUtils.runOnUiThreadBlocking(
                         () -> {
                             View promoView =
                                     LayoutInflater.from(mActivityTestRule.getActivity())
@@ -647,7 +754,7 @@ public class SyncPromoControllerUITest {
                                             BOTTOM_SHEET_STRINGS,
                                             accessPoint,
                                             mSyncConsentActivityLauncher,
-                                            mSigninAndHistoryOptInActivityLauncher);
+                                            mSigninAndHistorySyncActivityLauncher);
                             syncPromoController.setUpSyncPromoView(
                                     profileDataCache,
                                     promoView.findViewById(R.id.signin_promo_view_container),

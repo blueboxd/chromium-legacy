@@ -609,6 +609,17 @@ bool IsBrowserActive(Browser* browser) {
   return widget->native_widget_active();
 }
 
+Browser* OpenNewEmptyWindowAndWaitUntilActivated(
+    Profile* profile,
+    bool should_trigger_session_restore) {
+  BrowserChangeObserver new_browser_observer(
+      nullptr, ui_test_utils::BrowserChangeObserver::ChangeType::kAdded);
+  chrome::NewEmptyWindow(profile, should_trigger_session_restore);
+  Browser* new_browser = new_browser_observer.Wait();
+  WaitUntilBrowserBecomeActive(new_browser);
+  return new_browser;
+}
+
 BrowserSetLastActiveWaiter::BrowserSetLastActiveWaiter(
     Browser* browser,
     bool wait_for_set_last_active_observed)
@@ -648,17 +659,6 @@ void WaitForBrowserSetLastActive(Browser* browser,
                                  bool wait_for_set_last_active_observed) {
   BrowserSetLastActiveWaiter waiter(browser, wait_for_set_last_active_observed);
   waiter.Wait();
-}
-
-Browser* OpenNewEmptyWindowAndWaitUntilSetAsLastActive(
-    Profile* profile,
-    bool should_trigger_session_restore) {
-  BrowserChangeObserver new_browser_observer(
-      nullptr, ui_test_utils::BrowserChangeObserver::ChangeType::kAdded);
-  chrome::NewEmptyWindow(profile, should_trigger_session_restore);
-  Browser* new_browser = new_browser_observer.Wait();
-  WaitForBrowserSetLastActive(new_browser);
-  return new_browser;
 }
 
 void SendToOmniboxAndSubmit(Browser* browser,
@@ -743,7 +743,8 @@ void AllTabsObserver::Wait() {
       << "Subclasses must call `AddAllBrowsers()` during construction";
 
   if (!condition_met_) {
-    run_loop_ = std::make_unique<base::RunLoop>();
+    run_loop_ = std::make_unique<base::RunLoop>(
+        base::RunLoop::Type::kNestableTasksAllowed);
     run_loop_->Run();
     run_loop_.reset();
   }

@@ -3,35 +3,36 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_table_view_controller.h"
-#import "ios/chrome/browser/ui/settings/password/password_details/password_details_table_view_controller+Testing.h"
 
 #import <memory>
 
 #import "base/apple/foundation_util.h"
 #import "base/containers/contains.h"
+#import "base/i18n/time_formatting.h"
 #import "base/ios/ios_util.h"
+#import "base/strings/sys_string_conversions.h"
 #import "base/strings/utf_string_conversions.h"
 #import "base/test/metrics/histogram_tester.h"
 #import "base/test/scoped_feature_list.h"
 #import "components/password_manager/core/browser/password_form.h"
 #import "components/password_manager/core/browser/password_manager_metrics_util.h"
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
+#import "components/sync/base/features.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
-#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_multi_line_text_edit_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_text_edit_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/legacy_chrome_table_view_controller_test.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/cells/table_view_stacked_details_item.h"
-#import "ios/chrome/browser/ui/settings/password/password_details/password_details.h"
+#import "ios/chrome/browser/ui/settings/password/password_details/credential_details.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_consumer.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_handler.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_table_view_constants.h"
+#import "ios/chrome/browser/ui/settings/password/password_details/password_details_table_view_controller+Testing.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_table_view_controller_delegate.h"
-#import "ios/chrome/browser/ui/settings/password/password_manager_ui_features.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
 #import "ios/chrome/grit/ios_branded_strings.h"
@@ -48,8 +49,21 @@ namespace {
 constexpr char kExampleCom[] = "http://www.example.com/";
 constexpr char kAndroid[] = "android://hash@com.example.my.app";
 constexpr char kUsername[] = "test@egmail.com";
+constexpr char kDisplayName[] = "FirstName LastName";
 constexpr char kPassword[] = "test";
 constexpr char kNote[] = "note";
+
+NSString* HTTPWebsite() {
+  return base::SysUTF8ToNSString(kExampleCom);
+}
+
+NSString* Username() {
+  return base::SysUTF8ToNSString(kUsername);
+}
+
+NSString* DisplayName() {
+  return base::SysUTF8ToNSString(kDisplayName);
+}
 }
 
 // Test class that conforms to PasswordDetailsHanler in order to test the
@@ -74,13 +88,14 @@ constexpr char kNote[] = "note";
 - (void)dismissPasswordDetailsTableViewController {
 }
 
-- (void)showPasswordDeleteDialogWithPasswordDetails:(PasswordDetails*)password
-                                         anchorView:(UIView*)anchorView {
+- (void)showCredentialDeleteDialogWithCredentialDetails:
+            (CredentialDetails*)password
+                                             anchorView:(UIView*)anchorView {
   self.deletionCalled = YES;
   self.deletionCalledOnCompromisedPassword = password.isCompromised;
 }
 
-- (void)moveCredentialToAccountStore:(PasswordDetails*)password
+- (void)moveCredentialToAccountStore:(CredentialDetails*)password
                           anchorView:(UIView*)anchorView
                      movedCompletion:(void (^)())movedCompletion {
 }
@@ -102,7 +117,7 @@ constexpr char kNote[] = "note";
 @interface FakePasswordDetailsDelegate
     : NSObject <PasswordDetailsTableViewControllerDelegate>
 
-@property(nonatomic, strong) PasswordDetails* password;
+@property(nonatomic, strong) CredentialDetails* credential;
 
 @property(nonatomic, assign) BOOL dismissWarningCalled;
 
@@ -114,11 +129,12 @@ constexpr char kNote[] = "note";
 
 - (void)passwordDetailsViewController:
             (PasswordDetailsTableViewController*)viewController
-               didEditPasswordDetails:(PasswordDetails*)password
+             didEditCredentialDetails:(CredentialDetails*)credential
                       withOldUsername:(NSString*)oldUsername
+                   oldUserDisplayName:(NSString*)oldUserDisplayName
                           oldPassword:(NSString*)oldPassword
                               oldNote:(NSString*)oldNote {
-  self.password = password;
+  self.credential = credential;
 }
 
 - (void)didFinishEditingPasswordDetails {
@@ -154,7 +170,7 @@ constexpr char kNote[] = "note";
   return NO;
 }
 
-- (void)dismissWarningForPassword:(PasswordDetails*)password {
+- (void)dismissWarningForPassword:(CredentialDetails*)password {
   self.dismissWarningCalled = YES;
 }
 
@@ -200,10 +216,7 @@ class PasswordDetailsTableViewControllerTest
     : public LegacyChromeTableViewControllerTest {
  protected:
   PasswordDetailsTableViewControllerTest() {
-    feature_list_.InitWithFeatures(
-        /*enabled_features=*/{password_manager::features::
-                                  kIOSPasswordAuthOnEntryV2},
-        /*disabled_features=*/{});
+    feature_list_.InitAndEnableFeature(syncer::kSyncWebauthnCredentials);
     handler_ = [[FakePasswordDetailsHandler alloc] init];
     delegate_ = [[FakePasswordDetailsDelegate alloc] init];
     reauthentication_module_ = [[MockReauthenticationModule alloc] init];
@@ -255,8 +268,8 @@ class PasswordDetailsTableViewControllerTest
       forms.push_back(std::move(form));
     }
 
-    NSMutableArray<PasswordDetails*>* passwords = [NSMutableArray array];
-    PasswordDetails* passwordDetails = [[PasswordDetails alloc]
+    NSMutableArray<CredentialDetails*>* passwords = [NSMutableArray array];
+    CredentialDetails* passwordDetails = [[CredentialDetails alloc]
         initWithCredential:password_manager::CredentialUIEntry(forms)];
     passwordDetails.context = context;
     passwordDetails.compromised = is_compromised;
@@ -265,7 +278,7 @@ class PasswordDetailsTableViewControllerTest
 
     PasswordDetailsTableViewController* passwords_controller =
         static_cast<PasswordDetailsTableViewController*>(controller());
-    [passwords_controller setPasswords:passwords andTitle:nil];
+    [passwords_controller setCredentials:passwords andTitle:nil];
   }
 
   void SetFederatedPassword() {
@@ -274,30 +287,60 @@ class PasswordDetailsTableViewControllerTest
     form.username_value = u"test@egmail.com";
     form.url = GURL(u"http://www.example.com/");
     form.signon_realm = form.url.spec();
-    form.federation_origin =
-        url::Origin::Create(GURL("http://www.example.com/"));
-    NSMutableArray<PasswordDetails*>* passwords = [NSMutableArray array];
-    PasswordDetails* password = [[PasswordDetails alloc]
+    form.federation_origin = url::SchemeHostPort(GURL(kExampleCom));
+    NSMutableArray<CredentialDetails*>* passwords = [NSMutableArray array];
+    CredentialDetails* password = [[CredentialDetails alloc]
         initWithCredential:password_manager::CredentialUIEntry(form)];
     [passwords addObject:password];
     PasswordDetailsTableViewController* passwords_controller =
         static_cast<PasswordDetailsTableViewController*>(controller());
-    [passwords_controller setPasswords:passwords andTitle:nil];
+    [passwords_controller setCredentials:passwords andTitle:nil];
+  }
+
+  // Creates a passkey, adds it to the view controller and returns the passkey's
+  // creation time.
+  base::Time SetPasskey(std::string website = "www.example.com/",
+                        std::string username = kUsername,
+                        std::string display_name = kDisplayName,
+                        base::Time creation_time = base::Time::Now()) {
+    password_manager::PasskeyCredential::Source source =
+        password_manager::PasskeyCredential::Source::kGooglePasswordManager;
+    password_manager::PasskeyCredential::RpId rp_id(website);
+    password_manager::PasskeyCredential::CredentialId credential_id(
+        {'c', 'r', 'e', 'd', 'e', 'n', 't', 'i', 'a', 'l', '_', 'i', 'd', '_',
+         '0', '1'});
+    password_manager::PasskeyCredential::UserId user_id(
+        {'u', 's', 'e', 'r', '_', 'i', 'd', '1'});
+    password_manager::PasskeyCredential::Username passkey_username(username);
+    password_manager::PasskeyCredential::DisplayName passkey_display_name(
+        display_name);
+    password_manager::PasskeyCredential passkeyCredential(
+        source, rp_id, credential_id, user_id, passkey_username,
+        passkey_display_name, creation_time);
+    NSMutableArray<CredentialDetails*>* passkeys = [NSMutableArray array];
+    CredentialDetails* passkey = [[CredentialDetails alloc]
+        initWithCredential:password_manager::CredentialUIEntry(
+                               passkeyCredential)];
+    [passkeys addObject:passkey];
+    PasswordDetailsTableViewController* passwords_controller =
+        static_cast<PasswordDetailsTableViewController*>(controller());
+    [passwords_controller setCredentials:passkeys andTitle:nil];
+    return creation_time;
   }
 
   void SetBlockedOrigin() {
     SetCredentialType(CredentialTypeBlocked);
     auto form = password_manager::PasswordForm();
-    form.url = GURL("http://www.example.com/");
+    form.url = GURL(kExampleCom);
     form.blocked_by_user = true;
     form.signon_realm = form.url.spec();
-    NSMutableArray<PasswordDetails*>* passwords = [NSMutableArray array];
-    PasswordDetails* password = [[PasswordDetails alloc]
+    NSMutableArray<CredentialDetails*>* passwords = [NSMutableArray array];
+    CredentialDetails* password = [[CredentialDetails alloc]
         initWithCredential:password_manager::CredentialUIEntry(form)];
     [passwords addObject:password];
     PasswordDetailsTableViewController* passwords_controller =
         static_cast<PasswordDetailsTableViewController*>(controller());
-    [passwords_controller setPasswords:passwords andTitle:nil];
+    [passwords_controller setCredentials:passwords andTitle:nil];
   }
 
   void CheckEditCellText(NSString* expected_text, int section, int item) {
@@ -395,7 +438,7 @@ class PasswordDetailsTableViewControllerTest
   FakePasswordDetailsHandler* handler_ = nil;
   FakePasswordDetailsDelegate* delegate_ = nil;
   MockReauthenticationModule* reauthentication_module_ = nil;
-  CredentialType credential_type_ = CredentialTypeRegular;
+  CredentialType credential_type_ = CredentialTypeRegularPassword;
 };
 
 // Tests that password is displayed properly.
@@ -403,10 +446,24 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestPassword) {
   SetPassword();
   EXPECT_EQ(1, NumberOfSections());
   EXPECT_EQ(4, NumberOfItemsInSection(0));
-  CheckStackedDetailsCellDetails(@[ @"http://www.example.com/" ], 0, 0);
-  CheckEditCellText(@"test@egmail.com", 0, 1);
+  CheckStackedDetailsCellDetails(@[ HTTPWebsite() ], 0, 0);
+  CheckEditCellText(Username(), 0, 1);
   CheckEditCellText(kMaskedPassword, 0, 2);
   CheckEditCellMultiLineText(@"note", 0, 3);
+}
+
+// Tests that passkey is displayed properly.
+TEST_F(PasswordDetailsTableViewControllerTest, TestPasskey) {
+  base::Time creation_time = SetPasskey();
+  EXPECT_EQ(1, NumberOfSections());
+  EXPECT_EQ(4, NumberOfItemsInSection(0));
+  CheckStackedDetailsCellDetails(@[ @"https://www.example.com/" ], 0, 0);
+  CheckEditCellText(DisplayName(), 0, 1);
+  CheckEditCellText(Username(), 0, 2);
+  CheckEditCellText(
+      l10n_util::GetNSStringF(IDS_IOS_PASSKEY_CREATION_DATE,
+                              base::TimeFormatShortDateNumeric(creation_time)),
+      0, 3);
 }
 
 // Tests that correct metrics is reported after adding a note.
@@ -424,7 +481,7 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestAddingPasswordWithNote) {
   [passwordDetails editButtonPressed];
 
   EXPECT_FALSE(passwordDetails.tableView.editing);
-  EXPECT_NSEQ(@"note", delegate().password.note);
+  EXPECT_NSEQ(@"note", delegate().credential.note);
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.PasswordNoteActionInSettings2",
       password_manager::metrics_util::PasswordNoteAction::
@@ -447,7 +504,7 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestEditingPasswordWithNote) {
   [passwordDetails editButtonPressed];
 
   EXPECT_FALSE(passwordDetails.tableView.editing);
-  EXPECT_NSEQ(@"new_note", delegate().password.note);
+  EXPECT_NSEQ(@"new_note", delegate().credential.note);
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.PasswordNoteActionInSettings2",
       password_manager::metrics_util::PasswordNoteAction::
@@ -471,7 +528,7 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestRemovingPasswordWithNote) {
   [passwordDetails editButtonPressed];
 
   EXPECT_FALSE(passwordDetails.tableView.editing);
-  EXPECT_NSEQ(@"", delegate().password.note);
+  EXPECT_NSEQ(@"", delegate().credential.note);
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.PasswordNoteActionInSettings2",
       password_manager::metrics_util::PasswordNoteAction::
@@ -507,8 +564,8 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestCompromisedPassword) {
               /*is_compromised=*/true);
   EXPECT_EQ(1, NumberOfSections());
   EXPECT_EQ(7, NumberOfItemsInSection(0));
-  CheckStackedDetailsCellDetails(@[ @"http://www.example.com/" ], 0, 0);
-  CheckEditCellText(@"test@egmail.com", 0, 1);
+  CheckStackedDetailsCellDetails(@[ HTTPWebsite() ], 0, 0);
+  CheckEditCellText(Username(), 0, 1);
   CheckEditCellText(kMaskedPassword, 0, 2);
   CheckEditCellMultiLineText(@"note", 0, 3);
 
@@ -526,8 +583,8 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestMutedCompromisedPassword) {
               DetailsContext::kDismissedWarnings);
   EXPECT_EQ(1, NumberOfSections());
   EXPECT_EQ(7, NumberOfItemsInSection(0));
-  CheckStackedDetailsCellDetails(@[ @"http://www.example.com/" ], 0, 0);
-  CheckEditCellText(@"test@egmail.com", 0, 1);
+  CheckStackedDetailsCellDetails(@[ HTTPWebsite() ], 0, 0);
+  CheckEditCellText(Username(), 0, 1);
   CheckEditCellText(kMaskedPassword, 0, 2);
   CheckEditCellMultiLineText(@"note", 0, 3);
 
@@ -690,7 +747,7 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestEditPasswordConfirmed) {
           controller());
   [password_details editButtonPressed];
   EXPECT_FALSE(handler().editingCalled);
-  EXPECT_FALSE(delegate().password);
+  EXPECT_FALSE(delegate().credential);
   EXPECT_TRUE(password_details.tableView.editing);
 
   SetEditCellText(@"new_password", 0, 2);
@@ -699,9 +756,9 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestEditPasswordConfirmed) {
   EXPECT_TRUE(handler().editingCalled);
 
   [password_details passwordEditingConfirmed];
-  EXPECT_TRUE(delegate().password);
+  EXPECT_TRUE(delegate().credential);
 
-  EXPECT_NSEQ(@"new_password", delegate().password.password);
+  EXPECT_NSEQ(@"new_password", delegate().credential.password);
   EXPECT_FALSE(password_details.tableView.editing);
 }
 
@@ -713,13 +770,13 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestEditPasswordCancel) {
       base::apple::ObjCCastStrict<PasswordDetailsTableViewController>(
           controller());
   [password_details editButtonPressed];
-  EXPECT_FALSE(delegate().password);
+  EXPECT_FALSE(delegate().credential);
   EXPECT_TRUE(password_details.tableView.editing);
 
   SetEditCellText(@"new_password", 0, 2);
 
   [password_details editButtonPressed];
-  EXPECT_FALSE(delegate().password);
+  EXPECT_FALSE(delegate().credential);
   EXPECT_TRUE(password_details.tableView.editing);
 }
 
@@ -733,7 +790,7 @@ TEST_F(PasswordDetailsTableViewControllerTest,
   EXPECT_EQ(6, NumberOfItemsInSection(0));
 
   CheckStackedDetailsCellDetails(@[ @"app.my.example.com" ], 0, 0);
-  CheckEditCellText(@"test@egmail.com", 0, 1);
+  CheckEditCellText(Username(), 0, 1);
   CheckEditCellText(kMaskedPassword, 0, 2);
   CheckEditCellMultiLineText(@"note", 0, 3);
 
@@ -751,8 +808,8 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestFederatedCredential) {
   EXPECT_EQ(1, NumberOfSections());
   EXPECT_EQ(3, NumberOfItemsInSection(0));
 
-  CheckStackedDetailsCellDetails(@[ @"http://www.example.com/" ], 0, 0);
-  CheckEditCellText(@"test@egmail.com", 0, 1);
+  CheckStackedDetailsCellDetails(@[ HTTPWebsite() ], 0, 0);
+  CheckEditCellText(Username(), 0, 1);
   CheckEditCellText(@"www.example.com", 0, 2);
 
   reauth().expectedResult = ReauthenticationResult::kFailure;
@@ -771,7 +828,7 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestBlockedOrigin) {
   EXPECT_EQ(1, NumberOfSections());
   EXPECT_EQ(1, NumberOfItemsInSection(0));
 
-  CheckStackedDetailsCellDetails(@[ @"http://www.example.com/" ], 0, 0);
+  CheckStackedDetailsCellDetails(@[ HTTPWebsite() ], 0, 0);
 
   reauth().expectedResult = ReauthenticationResult::kFailure;
   PasswordDetailsTableViewController* password_details =
@@ -783,8 +840,8 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestBlockedOrigin) {
 
 // Tests copy website works as intended.
 TEST_F(PasswordDetailsTableViewControllerTest, CopySite) {
-  std::vector<std::string> websites = {"http://www.example.com/"};
-  NSString* expected_pasteboard = @"http://www.example.com/";
+  std::vector<std::string> websites = {kExampleCom};
+  NSString* expected_pasteboard = HTTPWebsite();
   CheckCopyWebsites(
       websites, expected_pasteboard,
       l10n_util::GetNSString(IDS_IOS_SETTINGS_SITES_WERE_COPIED_MESSAGE));
@@ -792,8 +849,7 @@ TEST_F(PasswordDetailsTableViewControllerTest, CopySite) {
 
 // Tests copy multiple websites works as intended.
 TEST_F(PasswordDetailsTableViewControllerTest, CopySites) {
-  std::vector<std::string> websites = {"http://www.example.com/",
-                                       "http://example.com/"};
+  std::vector<std::string> websites = {kExampleCom, "http://example.com/"};
   CheckCopyWebsites(
       websites, @"http://www.example.com/ http://example.com/",
       l10n_util::GetNSString(IDS_IOS_SETTINGS_SITES_WERE_COPIED_MESSAGE));
@@ -821,7 +877,7 @@ TEST_F(PasswordDetailsTableViewControllerTest, CopyUsername) {
   }
 #endif
   UIPasteboard* generalPasteboard = [UIPasteboard generalPasteboard];
-  EXPECT_NSEQ(@"test@egmail.com", generalPasteboard.string);
+  EXPECT_NSEQ(Username(), generalPasteboard.string);
   EXPECT_NSEQ(
       l10n_util::GetNSString(IDS_IOS_SETTINGS_USERNAME_WAS_COPIED_MESSAGE),
       snack_bar().snackbarMessage);

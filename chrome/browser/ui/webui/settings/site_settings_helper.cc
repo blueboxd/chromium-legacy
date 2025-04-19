@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/ui/webui/settings/site_settings_helper.h"
 
 #include <algorithm>
@@ -60,6 +65,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/privacy_sandbox/privacy_sandbox_features.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/strings/grit/privacy_sandbox_strings.h"
 #include "components/subresource_filter/content/browser/subresource_filter_content_settings_manager.h"
 #include "components/subresource_filter/content/browser/subresource_filter_profile_context.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
@@ -104,6 +110,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::IMAGES, "images"},
     {ContentSettingsType::JAVASCRIPT, "javascript"},
     {ContentSettingsType::JAVASCRIPT_JIT, "javascript-jit"},
+    {ContentSettingsType::JAVASCRIPT_OPTIMIZER, "javascript-optimizer"},
     {ContentSettingsType::POPUPS, "popups"},
     {ContentSettingsType::GEOLOCATION, "location"},
     {ContentSettingsType::NOTIFICATIONS, "notifications"},
@@ -228,6 +235,8 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::DIRECT_SOCKETS, nullptr},
     {ContentSettingsType::REVOKED_ABUSIVE_NOTIFICATION_PERMISSIONS, nullptr},
     {ContentSettingsType::TOP_LEVEL_TPCD_ORIGIN_TRIAL, nullptr},
+    {ContentSettingsType::DISPLAY_MEDIA_SYSTEM_AUDIO, nullptr},
+    {ContentSettingsType::STORAGE_ACCESS_HEADER_ORIGIN_TRIAL, nullptr},
 };
 
 static_assert(
@@ -1198,7 +1207,7 @@ ContentSetting GetContentSettingForOrigin(Profile* profile,
   if (info.metadata.session_model() ==
       content_settings::mojom::SessionModel::ONE_TIME) {
     DCHECK(
-        permissions::PermissionUtil::CanPermissionBeAllowedOnce(content_type));
+        permissions::PermissionUtil::DoesSupportTemporaryGrants(content_type));
     DCHECK_EQ(result.status, PermissionStatus::GRANTED);
     return CONTENT_SETTING_DEFAULT;
   }

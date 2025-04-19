@@ -20,6 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/url_pattern_index/url_pattern_index.h"
+#include "components/version_info/channel.h"
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/declarative_net_request/composite_matcher.h"
@@ -33,6 +34,7 @@
 #include "extensions/common/api/declarative_net_request/dnr_manifest_data.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension_features.h"
+#include "extensions/common/features/feature_channel.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "third_party/flatbuffers/src/include/flatbuffers/flatbuffers.h"
@@ -48,7 +50,7 @@ namespace flat_rule = url_pattern_index::flat;
 // url_pattern_index.fbs. Whenever an extension with an indexed ruleset format
 // version different from the one currently used by Chrome is loaded, the
 // extension ruleset will be reindexed.
-constexpr int kIndexedRulesetFormatVersion = 32;
+constexpr int kIndexedRulesetFormatVersion = 33;
 
 // This static assert is meant to catch cases where
 // url_pattern_index::kUrlPatternIndexFormatVersion is incremented without
@@ -165,19 +167,13 @@ bool PersistIndexedRuleset(const base::FilePath& path,
     return false;
 
   // Write the version header.
-  std::string version_header = GetVersionHeader();
-  int version_header_size = static_cast<int>(version_header.size());
-  if (ruleset_file.WriteAtCurrentPos(
-          version_header.data(), version_header_size) != version_header_size) {
+  if (!ruleset_file.WriteAtCurrentPosAndCheck(
+          base::as_byte_span(GetVersionHeader()))) {
     return false;
   }
 
   // Write the flatbuffer ruleset.
-  if (!base::IsValueInRangeForNumericType<int>(data.size()))
-    return false;
-  int data_size = static_cast<int>(data.size());
-  if (ruleset_file.WriteAtCurrentPos(reinterpret_cast<const char*>(data.data()),
-                                     data_size) != data_size) {
+  if (!ruleset_file.WriteAtCurrentPosAndCheck(data)) {
     return false;
   }
 
@@ -888,6 +884,14 @@ bool IsRuleSafe(const flat::UrlRuleMetadata& url_rule_metadata) {
          action_type == flat::ActionType_allow ||
          action_type == flat::ActionType_allow_all_requests ||
          action_type == flat::ActionType_upgrade_scheme;
+}
+
+bool IsResponseHeaderMatchingEnabled() {
+  // Response header matching is enabled if the feature flag is enabled.
+  // Note: This function still remains in case additional checks may need to be
+  // added back such as channel restrictions.
+  return base::FeatureList::IsEnabled(
+      extensions_features::kDeclarativeNetRequestResponseHeaderMatching);
 }
 
 }  // namespace extensions::declarative_net_request

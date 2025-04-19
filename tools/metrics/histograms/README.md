@@ -130,7 +130,7 @@ data would be much easier to make sense of if it included a baseline: how often
 is the button shown?
 
 There is another problem with using another histogram as a comparison point.
-Google systems for processing UMA data attempt to exclude data that this is
+Google systems for processing UMA data attempt to exclude data that is
 deemed unreliable or somehow anomalous. It's possible that it may exclude data
 from a client for one histogram and not exclude data from that client for the
 other.
@@ -1037,7 +1037,7 @@ interpretable and what data will have hidden surprises/gotchas.
     escalated by being assigned to chromium-metrics-reviews@google.com.
 
 * Are expiry dates being set
-  [appropriately](#How-to-choose-expiry-for-histograms)?
+  [appropriately](#How-to-choose-expiry-for-new-histograms)?
 
 ## Everything Else!
 

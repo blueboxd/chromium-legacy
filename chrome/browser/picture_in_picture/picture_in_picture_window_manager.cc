@@ -37,6 +37,9 @@
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 namespace {
+// The initial aspect ratio for Document Picture-in-Picture windows. This does
+// not apply to video Picture-in-Picture windows.
+constexpr double kInitialAspectRatio = 1.0;
 
 // The minimum window size for Document Picture-in-Picture windows. This does
 // not apply to video Picture-in-Picture windows.
@@ -122,6 +125,13 @@ void PictureInPictureWindowManager::EnterPictureInPictureWithController(
   pip_window_controller_ = pip_window_controller;
 
   pip_window_controller_->Show();
+
+#if !BUILDFLAG(IS_ANDROID)
+  RecordFileDialogOpenMetric(
+      number_of_open_file_dialogs_ > 0
+          ? FileDialogOpenState::kPictureInPictureOpenWithFileDialog
+          : FileDialogOpenState::kPictureInPictureOpenWithoutFileDialog);
+#endif  // !BUILDFLAG(IS_ANDROID)
 }
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -271,7 +281,7 @@ gfx::Rect PictureInPictureWindowManager::CalculateOuterWindowBounds(
   gfx::Rect window_bounds;
 
   // If the outer bounds for this request are cached, then ignore everything
-  // else and use those.
+  // else and use those, unless the site requested that we don't.
   //
   // Typically, we have a window controller at this point, but often during
   // tests we don't.  Don't worry about the cache if it's missing.
@@ -284,7 +294,10 @@ gfx::Rect PictureInPictureWindowManager::CalculateOuterWindowBounds(
     auto cached_window_bounds =
         PictureInPictureBoundsCache::GetBoundsForNewWindow(
             web_contents, display, requested_content_bounds);
-    if (cached_window_bounds) {
+    // Ignore the result if we're asked to do so.  Note that we still have to
+    // ask the cache, so that it's set up to accept position updates later for
+    // this request.
+    if (cached_window_bounds && !pip_options.prefer_initial_window_placement) {
       // Cache hit!  Just return it as the window bounds.
       return *cached_window_bounds;
     }
@@ -304,15 +317,12 @@ gfx::Rect PictureInPictureWindowManager::CalculateOuterWindowBounds(
     window_bounds = gfx::Rect(window_size);
   } else {
     // Otherwise, fall back to the aspect ratio.
-    double initial_aspect_ratio = pip_options.initial_aspect_ratio > 0.0
-                                      ? pip_options.initial_aspect_ratio
-                                      : 1.0;
     gfx::Size window_size(work_area.width() / 5, work_area.height() / 5);
     window_size.SetToMin(GetMaximumWindowSize(display));
     window_size.SetToMax(minimum_outer_window_size);
     window_bounds = gfx::Rect(window_size);
     gfx::SizeRectToAspectRatioWithExcludedMargin(
-        gfx::ResizeEdge::kTopLeft, initial_aspect_ratio,
+        gfx::ResizeEdge::kTopLeft, kInitialAspectRatio,
         GetMinimumInnerWindowSize(), GetMaximumWindowSize(display),
         excluded_margin, window_bounds);
   }
@@ -415,6 +425,13 @@ void PictureInPictureWindowManager::CreateWindowInternal(
                          NotifyObserversOnEnterPictureInPicture,
                      base::Unretained(this)));
   pip_window_controller_ = video_pip_window_controller;
+
+#if !BUILDFLAG(IS_ANDROID)
+  RecordFileDialogOpenMetric(
+      number_of_open_file_dialogs_ > 0
+          ? FileDialogOpenState::kPictureInPictureOpenWithFileDialog
+          : FileDialogOpenState::kPictureInPictureOpenWithoutFileDialog);
+#endif  // !BUILDFLAG(IS_ANDROID)
 }
 
 void PictureInPictureWindowManager::CloseWindowInternal() {
@@ -508,6 +525,19 @@ void PictureInPictureWindowManager::CreateOcclusionTrackerIfNecessary() {
   }
 }
 
+void PictureInPictureWindowManager::OnFileDialogOpened() {
+  number_of_open_file_dialogs_++;
+  RecordFileDialogOpenMetric(
+      pip_window_controller_
+          ? FileDialogOpenState::kFileDialogOpenWithPictureInPicture
+          : FileDialogOpenState::kFileDialogOpenWithoutPictureInPicture);
+}
+
+void PictureInPictureWindowManager::OnFileDialogClosed() {
+  CHECK_NE(number_of_open_file_dialogs_, 0u);
+  number_of_open_file_dialogs_--;
+}
+
 void PictureInPictureWindowManager::
     RecordDocumentPictureInPictureRequestedSizeMetrics(
         const blink::mojom::PictureInPictureWindowOptions& pip_options,
@@ -551,6 +581,13 @@ void PictureInPictureWindowManager::
         recorded_percent);
   }
 }
+
+void PictureInPictureWindowManager::RecordFileDialogOpenMetric(
+    FileDialogOpenState state) {
+  base::UmaHistogramEnumeration("Media.PictureInPicture.FileDialogOpenState",
+                                state);
+}
+
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 void PictureInPictureWindowManager::NotifyObserversOnEnterPictureInPicture() {

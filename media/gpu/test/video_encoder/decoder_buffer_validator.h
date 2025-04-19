@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #ifndef MEDIA_GPU_TEST_VIDEO_ENCODER_DECODER_BUFFER_VALIDATOR_H_
 #define MEDIA_GPU_TEST_VIDEO_ENCODER_DECODER_BUFFER_VALIDATOR_H_
 
@@ -10,11 +15,11 @@
 #include <optional>
 
 #include "base/memory/scoped_refptr.h"
-#include "media/filters/vp9_parser.h"
 #include "media/gpu/h264_dpb.h"
 #include "media/gpu/test/bitstream_helpers.h"
+#include "media/parsers/h264_parser.h"
 #include "media/parsers/vp8_parser.h"
-#include "media/video/h264_parser.h"
+#include "media/parsers/vp9_parser.h"
 #include "third_party/libgav1/src/src/obu_parser.h"
 #include "ui/gfx/geometry/rect.h"
 

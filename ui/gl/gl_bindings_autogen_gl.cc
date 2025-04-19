@@ -8,6 +8,11 @@
 //    clang-format -i -style=chromium filename
 // DO NOT EDIT!
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include <string>
 
 #include "base/trace_event/trace_event.h"
@@ -34,6 +39,10 @@ void DriverGL::InitializeStaticBindings() {
       GetGLProcAddress("glBindAttribLocation"));
   fn.glBindBufferFn =
       reinterpret_cast<glBindBufferProc>(GetGLProcAddress("glBindBuffer"));
+  fn.glBindFramebufferEXTFn = reinterpret_cast<glBindFramebufferEXTProc>(
+      GetGLProcAddress("glBindFramebuffer"));
+  fn.glBindRenderbufferEXTFn = reinterpret_cast<glBindRenderbufferEXTProc>(
+      GetGLProcAddress("glBindRenderbuffer"));
   fn.glBindTextureFn =
       reinterpret_cast<glBindTextureProc>(GetGLProcAddress("glBindTexture"));
   fn.glBlendColorFn =
@@ -50,11 +59,16 @@ void DriverGL::InitializeStaticBindings() {
       reinterpret_cast<glBufferDataProc>(GetGLProcAddress("glBufferData"));
   fn.glBufferSubDataFn = reinterpret_cast<glBufferSubDataProc>(
       GetGLProcAddress("glBufferSubData"));
+  fn.glCheckFramebufferStatusEXTFn =
+      reinterpret_cast<glCheckFramebufferStatusEXTProc>(
+          GetGLProcAddress("glCheckFramebufferStatus"));
   fn.glClearFn = reinterpret_cast<glClearProc>(GetGLProcAddress("glClear"));
   fn.glClearColorFn =
       reinterpret_cast<glClearColorProc>(GetGLProcAddress("glClearColor"));
   fn.glClearDepthFn =
       reinterpret_cast<glClearDepthProc>(GetGLProcAddress("glClearDepth"));
+  fn.glClearDepthfFn =
+      reinterpret_cast<glClearDepthfProc>(GetGLProcAddress("glClearDepthf"));
   fn.glClearStencilFn =
       reinterpret_cast<glClearStencilProc>(GetGLProcAddress("glClearStencil"));
   fn.glColorMaskFn =
@@ -78,8 +92,13 @@ void DriverGL::InitializeStaticBindings() {
       reinterpret_cast<glCullFaceProc>(GetGLProcAddress("glCullFace"));
   fn.glDeleteBuffersARBFn = reinterpret_cast<glDeleteBuffersARBProc>(
       GetGLProcAddress("glDeleteBuffers"));
+  fn.glDeleteFramebuffersEXTFn = reinterpret_cast<glDeleteFramebuffersEXTProc>(
+      GetGLProcAddress("glDeleteFramebuffers"));
   fn.glDeleteProgramFn = reinterpret_cast<glDeleteProgramProc>(
       GetGLProcAddress("glDeleteProgram"));
+  fn.glDeleteRenderbuffersEXTFn =
+      reinterpret_cast<glDeleteRenderbuffersEXTProc>(
+          GetGLProcAddress("glDeleteRenderbuffers"));
   fn.glDeleteShaderFn =
       reinterpret_cast<glDeleteShaderProc>(GetGLProcAddress("glDeleteShader"));
   fn.glDeleteTexturesFn = reinterpret_cast<glDeleteTexturesProc>(
@@ -90,6 +109,8 @@ void DriverGL::InitializeStaticBindings() {
       reinterpret_cast<glDepthMaskProc>(GetGLProcAddress("glDepthMask"));
   fn.glDepthRangeFn =
       reinterpret_cast<glDepthRangeProc>(GetGLProcAddress("glDepthRange"));
+  fn.glDepthRangefFn =
+      reinterpret_cast<glDepthRangefProc>(GetGLProcAddress("glDepthRangef"));
   fn.glDetachShaderFn =
       reinterpret_cast<glDetachShaderProc>(GetGLProcAddress("glDetachShader"));
   fn.glDisableFn =
@@ -99,6 +120,8 @@ void DriverGL::InitializeStaticBindings() {
           GetGLProcAddress("glDisableVertexAttribArray"));
   fn.glDrawArraysFn =
       reinterpret_cast<glDrawArraysProc>(GetGLProcAddress("glDrawArrays"));
+  fn.glDrawBufferFn =
+      reinterpret_cast<glDrawBufferProc>(GetGLProcAddress("glDrawBuffer"));
   fn.glDrawElementsFn =
       reinterpret_cast<glDrawElementsProc>(GetGLProcAddress("glDrawElements"));
   fn.glEnableFn = reinterpret_cast<glEnableProc>(GetGLProcAddress("glEnable"));
@@ -107,10 +130,22 @@ void DriverGL::InitializeStaticBindings() {
           GetGLProcAddress("glEnableVertexAttribArray"));
   fn.glFinishFn = reinterpret_cast<glFinishProc>(GetGLProcAddress("glFinish"));
   fn.glFlushFn = reinterpret_cast<glFlushProc>(GetGLProcAddress("glFlush"));
+  fn.glFramebufferRenderbufferEXTFn =
+      reinterpret_cast<glFramebufferRenderbufferEXTProc>(
+          GetGLProcAddress("glFramebufferRenderbuffer"));
+  fn.glFramebufferTexture2DEXTFn =
+      reinterpret_cast<glFramebufferTexture2DEXTProc>(
+          GetGLProcAddress("glFramebufferTexture2D"));
   fn.glFrontFaceFn =
       reinterpret_cast<glFrontFaceProc>(GetGLProcAddress("glFrontFace"));
   fn.glGenBuffersARBFn =
       reinterpret_cast<glGenBuffersARBProc>(GetGLProcAddress("glGenBuffers"));
+  fn.glGenerateMipmapEXTFn = reinterpret_cast<glGenerateMipmapEXTProc>(
+      GetGLProcAddress("glGenerateMipmap"));
+  fn.glGenFramebuffersEXTFn = reinterpret_cast<glGenFramebuffersEXTProc>(
+      GetGLProcAddress("glGenFramebuffers"));
+  fn.glGenRenderbuffersEXTFn = reinterpret_cast<glGenRenderbuffersEXTProc>(
+      GetGLProcAddress("glGenRenderbuffers"));
   fn.glGenTexturesFn =
       reinterpret_cast<glGenTexturesProc>(GetGLProcAddress("glGenTextures"));
   fn.glGetActiveAttribFn = reinterpret_cast<glGetActiveAttribProc>(
@@ -129,16 +164,25 @@ void DriverGL::InitializeStaticBindings() {
       reinterpret_cast<glGetErrorProc>(GetGLProcAddress("glGetError"));
   fn.glGetFloatvFn =
       reinterpret_cast<glGetFloatvProc>(GetGLProcAddress("glGetFloatv"));
+  fn.glGetFramebufferAttachmentParameterivEXTFn =
+      reinterpret_cast<glGetFramebufferAttachmentParameterivEXTProc>(
+          GetGLProcAddress("glGetFramebufferAttachmentParameteriv"));
   fn.glGetIntegervFn =
       reinterpret_cast<glGetIntegervProc>(GetGLProcAddress("glGetIntegerv"));
   fn.glGetProgramInfoLogFn = reinterpret_cast<glGetProgramInfoLogProc>(
       GetGLProcAddress("glGetProgramInfoLog"));
   fn.glGetProgramivFn =
       reinterpret_cast<glGetProgramivProc>(GetGLProcAddress("glGetProgramiv"));
+  fn.glGetRenderbufferParameterivEXTFn =
+      reinterpret_cast<glGetRenderbufferParameterivEXTProc>(
+          GetGLProcAddress("glGetRenderbufferParameteriv"));
   fn.glGetShaderInfoLogFn = reinterpret_cast<glGetShaderInfoLogProc>(
       GetGLProcAddress("glGetShaderInfoLog"));
   fn.glGetShaderivFn =
       reinterpret_cast<glGetShaderivProc>(GetGLProcAddress("glGetShaderiv"));
+  fn.glGetShaderPrecisionFormatFn =
+      reinterpret_cast<glGetShaderPrecisionFormatProc>(
+          GetGLProcAddress("glGetShaderPrecisionFormat"));
   fn.glGetShaderSourceFn = reinterpret_cast<glGetShaderSourceProc>(
       GetGLProcAddress("glGetShaderSource"));
   fn.glGetStringFn =
@@ -167,8 +211,12 @@ void DriverGL::InitializeStaticBindings() {
       reinterpret_cast<glIsBufferProc>(GetGLProcAddress("glIsBuffer"));
   fn.glIsEnabledFn =
       reinterpret_cast<glIsEnabledProc>(GetGLProcAddress("glIsEnabled"));
+  fn.glIsFramebufferEXTFn = reinterpret_cast<glIsFramebufferEXTProc>(
+      GetGLProcAddress("glIsFramebuffer"));
   fn.glIsProgramFn =
       reinterpret_cast<glIsProgramProc>(GetGLProcAddress("glIsProgram"));
+  fn.glIsRenderbufferEXTFn = reinterpret_cast<glIsRenderbufferEXTProc>(
+      GetGLProcAddress("glIsRenderbuffer"));
   fn.glIsShaderFn =
       reinterpret_cast<glIsShaderProc>(GetGLProcAddress("glIsShader"));
   fn.glIsTextureFn =
@@ -179,14 +227,27 @@ void DriverGL::InitializeStaticBindings() {
       reinterpret_cast<glLinkProgramProc>(GetGLProcAddress("glLinkProgram"));
   fn.glPixelStoreiFn =
       reinterpret_cast<glPixelStoreiProc>(GetGLProcAddress("glPixelStorei"));
+  fn.glPointParameteriFn = reinterpret_cast<glPointParameteriProc>(
+      GetGLProcAddress("glPointParameteri"));
+  fn.glPolygonModeFn =
+      reinterpret_cast<glPolygonModeProc>(GetGLProcAddress("glPolygonMode"));
   fn.glPolygonOffsetFn = reinterpret_cast<glPolygonOffsetProc>(
       GetGLProcAddress("glPolygonOffset"));
+  fn.glPrimitiveRestartIndexFn = reinterpret_cast<glPrimitiveRestartIndexProc>(
+      GetGLProcAddress("glPrimitiveRestartIndex"));
   fn.glReadPixelsFn =
       reinterpret_cast<glReadPixelsProc>(GetGLProcAddress("glReadPixels"));
+  fn.glReleaseShaderCompilerFn = reinterpret_cast<glReleaseShaderCompilerProc>(
+      GetGLProcAddress("glReleaseShaderCompiler"));
+  fn.glRenderbufferStorageEXTFn =
+      reinterpret_cast<glRenderbufferStorageEXTProc>(
+          GetGLProcAddress("glRenderbufferStorage"));
   fn.glSampleCoverageFn = reinterpret_cast<glSampleCoverageProc>(
       GetGLProcAddress("glSampleCoverage"));
   fn.glScissorFn =
       reinterpret_cast<glScissorProc>(GetGLProcAddress("glScissor"));
+  fn.glShaderBinaryFn =
+      reinterpret_cast<glShaderBinaryProc>(GetGLProcAddress("glShaderBinary"));
   fn.glShaderSourceFn =
       reinterpret_cast<glShaderSourceProc>(GetGLProcAddress("glShaderSource"));
   fn.glStencilFuncFn =
@@ -321,56 +382,6 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
       gfx::HasExtension(extensions, "GL_ANGLE_vulkan_image");
   ext.b_GL_ANGLE_webgl_compatibility =
       gfx::HasExtension(extensions, "GL_ANGLE_webgl_compatibility");
-  ext.b_GL_APPLE_fence = gfx::HasExtension(extensions, "GL_APPLE_fence");
-  ext.b_GL_APPLE_sync = gfx::HasExtension(extensions, "GL_APPLE_sync");
-  ext.b_GL_APPLE_vertex_array_object =
-      gfx::HasExtension(extensions, "GL_APPLE_vertex_array_object");
-  ext.b_GL_ARB_ES2_compatibility =
-      gfx::HasExtension(extensions, "GL_ARB_ES2_compatibility");
-  ext.b_GL_ARB_base_instance =
-      gfx::HasExtension(extensions, "GL_ARB_base_instance");
-  ext.b_GL_ARB_blend_func_extended =
-      gfx::HasExtension(extensions, "GL_ARB_blend_func_extended");
-  ext.b_GL_ARB_clear_texture =
-      gfx::HasExtension(extensions, "GL_ARB_clear_texture");
-  ext.b_GL_ARB_draw_buffers =
-      gfx::HasExtension(extensions, "GL_ARB_draw_buffers");
-  ext.b_GL_ARB_draw_instanced =
-      gfx::HasExtension(extensions, "GL_ARB_draw_instanced");
-  ext.b_GL_ARB_framebuffer_object =
-      gfx::HasExtension(extensions, "GL_ARB_framebuffer_object");
-  ext.b_GL_ARB_get_program_binary =
-      gfx::HasExtension(extensions, "GL_ARB_get_program_binary");
-  ext.b_GL_ARB_instanced_arrays =
-      gfx::HasExtension(extensions, "GL_ARB_instanced_arrays");
-  ext.b_GL_ARB_internalformat_query =
-      gfx::HasExtension(extensions, "GL_ARB_internalformat_query");
-  ext.b_GL_ARB_map_buffer_range =
-      gfx::HasExtension(extensions, "GL_ARB_map_buffer_range");
-  ext.b_GL_ARB_occlusion_query =
-      gfx::HasExtension(extensions, "GL_ARB_occlusion_query");
-  ext.b_GL_ARB_program_interface_query =
-      gfx::HasExtension(extensions, "GL_ARB_program_interface_query");
-  ext.b_GL_ARB_robustness = gfx::HasExtension(extensions, "GL_ARB_robustness");
-  ext.b_GL_ARB_sampler_objects =
-      gfx::HasExtension(extensions, "GL_ARB_sampler_objects");
-  ext.b_GL_ARB_shader_image_load_store =
-      gfx::HasExtension(extensions, "GL_ARB_shader_image_load_store");
-  ext.b_GL_ARB_sync = gfx::HasExtension(extensions, "GL_ARB_sync");
-  ext.b_GL_ARB_tessellation_shader =
-      gfx::HasExtension(extensions, "GL_ARB_tessellation_shader");
-  ext.b_GL_ARB_texture_multisample =
-      gfx::HasExtension(extensions, "GL_ARB_texture_multisample");
-  ext.b_GL_ARB_texture_storage =
-      gfx::HasExtension(extensions, "GL_ARB_texture_storage");
-  ext.b_GL_ARB_texture_swizzle =
-      gfx::HasExtension(extensions, "GL_ARB_texture_swizzle");
-  ext.b_GL_ARB_timer_query =
-      gfx::HasExtension(extensions, "GL_ARB_timer_query");
-  ext.b_GL_ARB_transform_feedback2 =
-      gfx::HasExtension(extensions, "GL_ARB_transform_feedback2");
-  ext.b_GL_ARB_vertex_array_object =
-      gfx::HasExtension(extensions, "GL_ARB_vertex_array_object");
   ext.b_GL_CHROMIUM_bind_uniform_location =
       gfx::HasExtension(extensions, "GL_CHROMIUM_bind_uniform_location");
   ext.b_GL_CHROMIUM_copy_texture =
@@ -379,8 +390,6 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
       gfx::HasExtension(extensions, "GL_CHROMIUM_gles_depth_binding_hack");
   ext.b_GL_CHROMIUM_glgetstringi_hack =
       gfx::HasExtension(extensions, "GL_CHROMIUM_glgetstringi_hack");
-  ext.b_GL_CHROMIUM_path_rendering =
-      gfx::HasExtension(extensions, "GL_CHROMIUM_path_rendering");
   ext.b_GL_EXT_base_instance =
       gfx::HasExtension(extensions, "GL_EXT_base_instance");
   ext.b_GL_EXT_blend_func_extended =
@@ -391,22 +400,14 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
       gfx::HasExtension(extensions, "GL_EXT_clip_control");
   ext.b_GL_EXT_debug_marker =
       gfx::HasExtension(extensions, "GL_EXT_debug_marker");
-  ext.b_GL_EXT_direct_state_access =
-      gfx::HasExtension(extensions, "GL_EXT_direct_state_access");
   ext.b_GL_EXT_discard_framebuffer =
       gfx::HasExtension(extensions, "GL_EXT_discard_framebuffer");
   ext.b_GL_EXT_disjoint_timer_query =
       gfx::HasExtension(extensions, "GL_EXT_disjoint_timer_query");
   ext.b_GL_EXT_draw_buffers =
       gfx::HasExtension(extensions, "GL_EXT_draw_buffers");
-  ext.b_GL_EXT_framebuffer_blit =
-      gfx::HasExtension(extensions, "GL_EXT_framebuffer_blit");
   ext.b_GL_EXT_framebuffer_multisample =
       gfx::HasExtension(extensions, "GL_EXT_framebuffer_multisample");
-  ext.b_GL_EXT_framebuffer_object =
-      gfx::HasExtension(extensions, "GL_EXT_framebuffer_object");
-  ext.b_GL_EXT_gpu_shader4 =
-      gfx::HasExtension(extensions, "GL_EXT_gpu_shader4");
   ext.b_GL_EXT_instanced_arrays =
       gfx::HasExtension(extensions, "GL_EXT_instanced_arrays");
   ext.b_GL_EXT_map_buffer_range =
@@ -433,18 +434,12 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
       gfx::HasExtension(extensions, "GL_EXT_shader_image_load_store");
   ext.b_GL_EXT_texture_buffer =
       gfx::HasExtension(extensions, "GL_EXT_texture_buffer");
-  ext.b_GL_EXT_texture_buffer_object =
-      gfx::HasExtension(extensions, "GL_EXT_texture_buffer_object");
   ext.b_GL_EXT_texture_format_BGRA8888 =
       gfx::HasExtension(extensions, "GL_EXT_texture_format_BGRA8888");
   ext.b_GL_EXT_texture_storage =
       gfx::HasExtension(extensions, "GL_EXT_texture_storage");
   ext.b_GL_EXT_texture_swizzle =
       gfx::HasExtension(extensions, "GL_EXT_texture_swizzle");
-  ext.b_GL_EXT_timer_query =
-      gfx::HasExtension(extensions, "GL_EXT_timer_query");
-  ext.b_GL_EXT_transform_feedback =
-      gfx::HasExtension(extensions, "GL_EXT_transform_feedback");
   ext.b_GL_EXT_unpack_subimage =
       gfx::HasExtension(extensions, "GL_EXT_unpack_subimage");
   ext.b_GL_EXT_window_rectangles =
@@ -466,8 +461,6 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
       gfx::HasExtension(extensions, "GL_NV_framebuffer_blit");
   ext.b_GL_NV_internalformat_sample_query =
       gfx::HasExtension(extensions, "GL_NV_internalformat_sample_query");
-  ext.b_GL_NV_path_rendering =
-      gfx::HasExtension(extensions, "GL_NV_path_rendering");
   ext.b_GL_OES_EGL_image = gfx::HasExtension(extensions, "GL_OES_EGL_image");
   ext.b_GL_OES_draw_buffers_indexed =
       gfx::HasExtension(extensions, "GL_OES_draw_buffers_indexed");
@@ -490,7 +483,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glAcquireTexturesANGLE"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glActiveShaderProgramFn = reinterpret_cast<glActiveShaderProgramProc>(
         GetGLProcAddress("glActiveShaderProgram"));
   }
@@ -501,78 +494,43 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glBeginPixelLocalStorageANGLE"));
   }
 
-  if (!ver->is_es || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glBeginQueryFn =
         reinterpret_cast<glBeginQueryProc>(GetGLProcAddress("glBeginQuery"));
-  } else if (ext.b_GL_ARB_occlusion_query) {
-    fn.glBeginQueryFn =
-        reinterpret_cast<glBeginQueryProc>(GetGLProcAddress("glBeginQueryARB"));
   } else if (ext.b_GL_EXT_disjoint_timer_query ||
              ext.b_GL_EXT_occlusion_query_boolean) {
     fn.glBeginQueryFn =
         reinterpret_cast<glBeginQueryProc>(GetGLProcAddress("glBeginQueryEXT"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glBeginTransformFeedbackFn =
         reinterpret_cast<glBeginTransformFeedbackProc>(
             GetGLProcAddress("glBeginTransformFeedback"));
-  } else if (ext.b_GL_EXT_transform_feedback) {
-    fn.glBeginTransformFeedbackFn =
-        reinterpret_cast<glBeginTransformFeedbackProc>(
-            GetGLProcAddress("glBeginTransformFeedbackEXT"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glBindBufferBaseFn = reinterpret_cast<glBindBufferBaseProc>(
         GetGLProcAddress("glBindBufferBase"));
-  } else if (ext.b_GL_EXT_transform_feedback) {
-    fn.glBindBufferBaseFn = reinterpret_cast<glBindBufferBaseProc>(
-        GetGLProcAddress("glBindBufferBaseEXT"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glBindBufferRangeFn = reinterpret_cast<glBindBufferRangeProc>(
         GetGLProcAddress("glBindBufferRange"));
-  } else if (ext.b_GL_EXT_transform_feedback) {
-    fn.glBindBufferRangeFn = reinterpret_cast<glBindBufferRangeProc>(
-        GetGLProcAddress("glBindBufferRangeEXT"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ext.b_GL_ARB_blend_func_extended) {
-    fn.glBindFragDataLocationFn = reinterpret_cast<glBindFragDataLocationProc>(
-        GetGLProcAddress("glBindFragDataLocation"));
-  } else if (ext.b_GL_EXT_blend_func_extended || ext.b_GL_EXT_gpu_shader4) {
+  if (ext.b_GL_EXT_blend_func_extended) {
     fn.glBindFragDataLocationFn = reinterpret_cast<glBindFragDataLocationProc>(
         GetGLProcAddress("glBindFragDataLocationEXT"));
   }
 
-  if (ver->IsAtLeastGL(3u, 3u) || ext.b_GL_ARB_blend_func_extended) {
-    fn.glBindFragDataLocationIndexedFn =
-        reinterpret_cast<glBindFragDataLocationIndexedProc>(
-            GetGLProcAddress("glBindFragDataLocationIndexed"));
-  } else if (ext.b_GL_EXT_blend_func_extended) {
+  if (ext.b_GL_EXT_blend_func_extended) {
     fn.glBindFragDataLocationIndexedFn =
         reinterpret_cast<glBindFragDataLocationIndexedProc>(
             GetGLProcAddress("glBindFragDataLocationIndexedEXT"));
   }
 
-  if (ext.b_GL_CHROMIUM_path_rendering) {
-    fn.glBindFragmentInputLocationCHROMIUMFn =
-        reinterpret_cast<glBindFragmentInputLocationCHROMIUMProc>(
-            GetGLProcAddress("glBindFragmentInputLocationCHROMIUM"));
-  }
-
-  if (ver->IsAtLeastGL(3u, 0u) || ver->is_es) {
-    fn.glBindFramebufferEXTFn = reinterpret_cast<glBindFramebufferEXTProc>(
-        GetGLProcAddress("glBindFramebuffer"));
-  } else if (ext.b_GL_EXT_framebuffer_object) {
-    fn.glBindFramebufferEXTFn = reinterpret_cast<glBindFramebufferEXTProc>(
-        GetGLProcAddress("glBindFramebufferEXT"));
-  }
-
-  if (ver->IsAtLeastGL(4u, 2u) || ver->IsAtLeastGLES(3u, 1u) ||
-      ext.b_GL_ARB_shader_image_load_store) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glBindImageTextureEXTFn = reinterpret_cast<glBindImageTextureEXTProc>(
         GetGLProcAddress("glBindImageTexture"));
   } else if (ext.b_GL_EXT_shader_image_load_store) {
@@ -580,27 +538,17 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glBindImageTextureEXT"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glBindProgramPipelineFn = reinterpret_cast<glBindProgramPipelineProc>(
         GetGLProcAddress("glBindProgramPipeline"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->is_es) {
-    fn.glBindRenderbufferEXTFn = reinterpret_cast<glBindRenderbufferEXTProc>(
-        GetGLProcAddress("glBindRenderbuffer"));
-  } else if (ext.b_GL_EXT_framebuffer_object) {
-    fn.glBindRenderbufferEXTFn = reinterpret_cast<glBindRenderbufferEXTProc>(
-        GetGLProcAddress("glBindRenderbufferEXT"));
-  }
-
-  if (ver->IsAtLeastGL(3u, 3u) || ver->IsAtLeastGLES(3u, 0u) ||
-      ext.b_GL_ARB_sampler_objects) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glBindSamplerFn =
         reinterpret_cast<glBindSamplerProc>(GetGLProcAddress("glBindSampler"));
   }
 
-  if (ver->IsAtLeastGL(4u, 0u) || ver->IsAtLeastGLES(3u, 0u) ||
-      ext.b_GL_ARB_transform_feedback2) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glBindTransformFeedbackFn =
         reinterpret_cast<glBindTransformFeedbackProc>(
             GetGLProcAddress("glBindTransformFeedback"));
@@ -612,19 +560,15 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glBindUniformLocationCHROMIUM"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u) ||
-      ext.b_GL_ARB_vertex_array_object) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glBindVertexArrayOESFn = reinterpret_cast<glBindVertexArrayOESProc>(
         GetGLProcAddress("glBindVertexArray"));
   } else if (ext.b_GL_OES_vertex_array_object) {
     fn.glBindVertexArrayOESFn = reinterpret_cast<glBindVertexArrayOESProc>(
         GetGLProcAddress("glBindVertexArrayOES"));
-  } else if (ext.b_GL_APPLE_vertex_array_object) {
-    fn.glBindVertexArrayOESFn = reinterpret_cast<glBindVertexArrayOESProc>(
-        GetGLProcAddress("glBindVertexArrayAPPLE"));
   }
 
-  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glBindVertexBufferFn = reinterpret_cast<glBindVertexBufferProc>(
         GetGLProcAddress("glBindVertexBuffer"));
   }
@@ -637,7 +581,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glBlendBarrierKHR"));
   }
 
-  if (ver->IsAtLeastGL(4u, 0u) || ver->IsAtLeastGLES(3u, 2u)) {
+  if (ver->IsAtLeastGLES(3u, 2u)) {
     fn.glBlendEquationiOESFn = reinterpret_cast<glBlendEquationiOESProc>(
         GetGLProcAddress("glBlendEquationi"));
   } else if (ext.b_GL_OES_draw_buffers_indexed) {
@@ -645,7 +589,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glBlendEquationiOES"));
   }
 
-  if (ver->IsAtLeastGL(4u, 0u) || ver->IsAtLeastGLES(3u, 2u)) {
+  if (ver->IsAtLeastGLES(3u, 2u)) {
     fn.glBlendEquationSeparateiOESFn =
         reinterpret_cast<glBlendEquationSeparateiOESProc>(
             GetGLProcAddress("glBlendEquationSeparatei"));
@@ -655,7 +599,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glBlendEquationSeparateiOES"));
   }
 
-  if (ver->IsAtLeastGL(4u, 0u) || ver->IsAtLeastGLES(3u, 2u)) {
+  if (ver->IsAtLeastGLES(3u, 2u)) {
     fn.glBlendFunciOESFn =
         reinterpret_cast<glBlendFunciOESProc>(GetGLProcAddress("glBlendFunci"));
   } else if (ext.b_GL_OES_draw_buffers_indexed) {
@@ -663,7 +607,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glBlendFunciOES"));
   }
 
-  if (ver->IsAtLeastGL(4u, 0u) || ver->IsAtLeastGLES(3u, 2u)) {
+  if (ver->IsAtLeastGLES(3u, 2u)) {
     fn.glBlendFuncSeparateiOESFn =
         reinterpret_cast<glBlendFuncSeparateiOESProc>(
             GetGLProcAddress("glBlendFuncSeparatei"));
@@ -673,8 +617,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glBlendFuncSeparateiOES"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u) ||
-      ext.b_GL_ARB_framebuffer_object) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glBlitFramebufferFn = reinterpret_cast<glBlitFramebufferProc>(
         GetGLProcAddress("glBlitFramebuffer"));
   } else if (ext.b_GL_NV_framebuffer_blit) {
@@ -683,55 +626,34 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
   } else if (ext.b_GL_ANGLE_framebuffer_blit) {
     fn.glBlitFramebufferFn = reinterpret_cast<glBlitFramebufferProc>(
         GetGLProcAddress("glBlitFramebufferANGLE"));
-  } else if (ext.b_GL_EXT_framebuffer_blit) {
-    fn.glBlitFramebufferFn = reinterpret_cast<glBlitFramebufferProc>(
-        GetGLProcAddress("glBlitFramebufferEXT"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->is_es) {
-    fn.glCheckFramebufferStatusEXTFn =
-        reinterpret_cast<glCheckFramebufferStatusEXTProc>(
-            GetGLProcAddress("glCheckFramebufferStatus"));
-  } else if (ext.b_GL_EXT_framebuffer_object) {
-    fn.glCheckFramebufferStatusEXTFn =
-        reinterpret_cast<glCheckFramebufferStatusEXTProc>(
-            GetGLProcAddress("glCheckFramebufferStatusEXT"));
-  }
-
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glClearBufferfiFn = reinterpret_cast<glClearBufferfiProc>(
         GetGLProcAddress("glClearBufferfi"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glClearBufferfvFn = reinterpret_cast<glClearBufferfvProc>(
         GetGLProcAddress("glClearBufferfv"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glClearBufferivFn = reinterpret_cast<glClearBufferivProc>(
         GetGLProcAddress("glClearBufferiv"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glClearBufferuivFn = reinterpret_cast<glClearBufferuivProc>(
         GetGLProcAddress("glClearBufferuiv"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->is_es) {
-    fn.glClearDepthfFn =
-        reinterpret_cast<glClearDepthfProc>(GetGLProcAddress("glClearDepthf"));
-  }
-
-  if (ver->IsAtLeastGL(4u, 4u) || ext.b_GL_ARB_clear_texture) {
-    fn.glClearTexImageFn = reinterpret_cast<glClearTexImageProc>(
-        GetGLProcAddress("glClearTexImage"));
-  } else if (ext.b_GL_EXT_clear_texture) {
+  if (ext.b_GL_EXT_clear_texture) {
     fn.glClearTexImageFn = reinterpret_cast<glClearTexImageProc>(
         GetGLProcAddress("glClearTexImageEXT"));
   }
 
-  if (ver->IsAtLeastGL(4u, 4u) || ext.b_GL_EXT_clear_texture) {
+  if (ext.b_GL_EXT_clear_texture) {
     fn.glClearTexSubImageFn = reinterpret_cast<glClearTexSubImageProc>(
         GetGLProcAddress("glClearTexSubImage"));
   } else if (ext.b_GL_EXT_clear_texture) {
@@ -739,15 +661,9 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glClearTexSubImageEXT"));
   }
 
-  if (ver->IsAtLeastGL(3u, 2u) || ver->IsAtLeastGLES(3u, 0u) ||
-      ext.b_GL_ARB_sync) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glClientWaitSyncFn = reinterpret_cast<glClientWaitSyncProc>(
         GetGLProcAddress("glClientWaitSync"));
-  }
-
-  if (ext.b_GL_APPLE_sync) {
-    fn.glClientWaitSyncAPPLEFn = reinterpret_cast<glClientWaitSyncAPPLEProc>(
-        GetGLProcAddress("glClientWaitSyncAPPLE"));
   }
 
   if (ext.b_GL_EXT_clip_control) {
@@ -755,7 +671,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glClipControlEXT"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 2u)) {
+  if (ver->IsAtLeastGLES(3u, 2u)) {
     fn.glColorMaskiOESFn =
         reinterpret_cast<glColorMaskiOESProc>(GetGLProcAddress("glColorMaski"));
   } else if (ext.b_GL_OES_draw_buffers_indexed) {
@@ -769,7 +685,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glCompressedTexImage2DRobustANGLE"));
   }
 
-  if (!ver->is_es || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glCompressedTexImage3DFn = reinterpret_cast<glCompressedTexImage3DProc>(
         GetGLProcAddress("glCompressedTexImage3D"));
   }
@@ -786,7 +702,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glCompressedTexSubImage2DRobustANGLE"));
   }
 
-  if (!ver->is_es || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glCompressedTexSubImage3DFn =
         reinterpret_cast<glCompressedTexSubImage3DProc>(
             GetGLProcAddress("glCompressedTexSubImage3D"));
@@ -798,7 +714,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glCompressedTexSubImage3DRobustANGLE"));
   }
 
-  if (ver->IsAtLeastGL(3u, 1u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glCopyBufferSubDataFn = reinterpret_cast<glCopyBufferSubDataProc>(
         GetGLProcAddress("glCopyBufferSubData"));
   }
@@ -809,7 +725,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glCopySubTextureCHROMIUM"));
   }
 
-  if (!ver->is_es || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glCopyTexSubImage3DFn = reinterpret_cast<glCopyTexSubImage3DProc>(
         GetGLProcAddress("glCopyTexSubImage3D"));
   }
@@ -819,54 +735,18 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glCopyTextureCHROMIUM"));
   }
 
-  if (ext.b_GL_NV_path_rendering) {
-    fn.glCoverFillPathInstancedNVFn =
-        reinterpret_cast<glCoverFillPathInstancedNVProc>(
-            GetGLProcAddress("glCoverFillPathInstancedNV"));
-  } else if (ext.b_GL_CHROMIUM_path_rendering) {
-    fn.glCoverFillPathInstancedNVFn =
-        reinterpret_cast<glCoverFillPathInstancedNVProc>(
-            GetGLProcAddress("glCoverFillPathInstancedCHROMIUM"));
-  }
-
-  if (ext.b_GL_NV_path_rendering) {
-    fn.glCoverFillPathNVFn = reinterpret_cast<glCoverFillPathNVProc>(
-        GetGLProcAddress("glCoverFillPathNV"));
-  } else if (ext.b_GL_CHROMIUM_path_rendering) {
-    fn.glCoverFillPathNVFn = reinterpret_cast<glCoverFillPathNVProc>(
-        GetGLProcAddress("glCoverFillPathCHROMIUM"));
-  }
-
-  if (ext.b_GL_NV_path_rendering) {
-    fn.glCoverStrokePathInstancedNVFn =
-        reinterpret_cast<glCoverStrokePathInstancedNVProc>(
-            GetGLProcAddress("glCoverStrokePathInstancedNV"));
-  } else if (ext.b_GL_CHROMIUM_path_rendering) {
-    fn.glCoverStrokePathInstancedNVFn =
-        reinterpret_cast<glCoverStrokePathInstancedNVProc>(
-            GetGLProcAddress("glCoverStrokePathInstancedCHROMIUM"));
-  }
-
-  if (ext.b_GL_NV_path_rendering) {
-    fn.glCoverStrokePathNVFn = reinterpret_cast<glCoverStrokePathNVProc>(
-        GetGLProcAddress("glCoverStrokePathNV"));
-  } else if (ext.b_GL_CHROMIUM_path_rendering) {
-    fn.glCoverStrokePathNVFn = reinterpret_cast<glCoverStrokePathNVProc>(
-        GetGLProcAddress("glCoverStrokePathCHROMIUM"));
-  }
-
   if (ext.b_GL_EXT_memory_object) {
     fn.glCreateMemoryObjectsEXTFn =
         reinterpret_cast<glCreateMemoryObjectsEXTProc>(
             GetGLProcAddress("glCreateMemoryObjectsEXT"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glCreateShaderProgramvFn = reinterpret_cast<glCreateShaderProgramvProc>(
         GetGLProcAddress("glCreateShaderProgramv"));
   }
 
-  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 2u)) {
+  if (ver->IsAtLeastGLES(3u, 2u)) {
     fn.glDebugMessageCallbackFn = reinterpret_cast<glDebugMessageCallbackProc>(
         GetGLProcAddress("glDebugMessageCallback"));
   } else if (ext.b_GL_KHR_debug) {
@@ -874,7 +754,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glDebugMessageCallbackKHR"));
   }
 
-  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 2u)) {
+  if (ver->IsAtLeastGLES(3u, 2u)) {
     fn.glDebugMessageControlFn = reinterpret_cast<glDebugMessageControlProc>(
         GetGLProcAddress("glDebugMessageControl"));
   } else if (ext.b_GL_KHR_debug) {
@@ -882,7 +762,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glDebugMessageControlKHR"));
   }
 
-  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 2u)) {
+  if (ver->IsAtLeastGLES(3u, 2u)) {
     fn.glDebugMessageInsertFn = reinterpret_cast<glDebugMessageInsertProc>(
         GetGLProcAddress("glDebugMessageInsert"));
   } else if (ext.b_GL_KHR_debug) {
@@ -890,24 +770,9 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glDebugMessageInsertKHR"));
   }
 
-  if (ext.b_GL_APPLE_fence) {
-    fn.glDeleteFencesAPPLEFn = reinterpret_cast<glDeleteFencesAPPLEProc>(
-        GetGLProcAddress("glDeleteFencesAPPLE"));
-  }
-
   if (ext.b_GL_NV_fence) {
     fn.glDeleteFencesNVFn = reinterpret_cast<glDeleteFencesNVProc>(
         GetGLProcAddress("glDeleteFencesNV"));
-  }
-
-  if (ver->IsAtLeastGL(3u, 0u) || ver->is_es) {
-    fn.glDeleteFramebuffersEXTFn =
-        reinterpret_cast<glDeleteFramebuffersEXTProc>(
-            GetGLProcAddress("glDeleteFramebuffers"));
-  } else if (ext.b_GL_EXT_framebuffer_object) {
-    fn.glDeleteFramebuffersEXTFn =
-        reinterpret_cast<glDeleteFramebuffersEXTProc>(
-            GetGLProcAddress("glDeleteFramebuffersEXT"));
   }
 
   if (ext.b_GL_EXT_memory_object) {
@@ -916,44 +781,22 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glDeleteMemoryObjectsEXT"));
   }
 
-  if (ext.b_GL_NV_path_rendering) {
-    fn.glDeletePathsNVFn = reinterpret_cast<glDeletePathsNVProc>(
-        GetGLProcAddress("glDeletePathsNV"));
-  } else if (ext.b_GL_CHROMIUM_path_rendering) {
-    fn.glDeletePathsNVFn = reinterpret_cast<glDeletePathsNVProc>(
-        GetGLProcAddress("glDeletePathsCHROMIUM"));
-  }
-
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glDeleteProgramPipelinesFn =
         reinterpret_cast<glDeleteProgramPipelinesProc>(
             GetGLProcAddress("glDeleteProgramPipelines"));
   }
 
-  if (!ver->is_es || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glDeleteQueriesFn = reinterpret_cast<glDeleteQueriesProc>(
         GetGLProcAddress("glDeleteQueries"));
-  } else if (ext.b_GL_ARB_occlusion_query) {
-    fn.glDeleteQueriesFn = reinterpret_cast<glDeleteQueriesProc>(
-        GetGLProcAddress("glDeleteQueriesARB"));
   } else if (ext.b_GL_EXT_disjoint_timer_query ||
              ext.b_GL_EXT_occlusion_query_boolean) {
     fn.glDeleteQueriesFn = reinterpret_cast<glDeleteQueriesProc>(
         GetGLProcAddress("glDeleteQueriesEXT"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->is_es) {
-    fn.glDeleteRenderbuffersEXTFn =
-        reinterpret_cast<glDeleteRenderbuffersEXTProc>(
-            GetGLProcAddress("glDeleteRenderbuffers"));
-  } else if (ext.b_GL_EXT_framebuffer_object) {
-    fn.glDeleteRenderbuffersEXTFn =
-        reinterpret_cast<glDeleteRenderbuffersEXTProc>(
-            GetGLProcAddress("glDeleteRenderbuffersEXT"));
-  }
-
-  if (ver->IsAtLeastGL(3u, 3u) || ver->IsAtLeastGLES(3u, 0u) ||
-      ext.b_GL_ARB_sampler_objects) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glDeleteSamplersFn = reinterpret_cast<glDeleteSamplersProc>(
         GetGLProcAddress("glDeleteSamplers"));
   }
@@ -963,26 +806,18 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glDeleteSemaphoresEXT"));
   }
 
-  if (ver->IsAtLeastGL(3u, 2u) || ver->IsAtLeastGLES(3u, 0u) ||
-      ext.b_GL_ARB_sync) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glDeleteSyncFn =
         reinterpret_cast<glDeleteSyncProc>(GetGLProcAddress("glDeleteSync"));
   }
 
-  if (ext.b_GL_APPLE_sync) {
-    fn.glDeleteSyncAPPLEFn = reinterpret_cast<glDeleteSyncAPPLEProc>(
-        GetGLProcAddress("glDeleteSyncAPPLE"));
-  }
-
-  if (ver->IsAtLeastGL(4u, 0u) || ver->IsAtLeastGLES(3u, 0u) ||
-      ext.b_GL_ARB_transform_feedback2) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glDeleteTransformFeedbacksFn =
         reinterpret_cast<glDeleteTransformFeedbacksProc>(
             GetGLProcAddress("glDeleteTransformFeedbacks"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u) ||
-      ext.b_GL_ARB_vertex_array_object) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glDeleteVertexArraysOESFn =
         reinterpret_cast<glDeleteVertexArraysOESProc>(
             GetGLProcAddress("glDeleteVertexArrays"));
@@ -990,15 +825,6 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
     fn.glDeleteVertexArraysOESFn =
         reinterpret_cast<glDeleteVertexArraysOESProc>(
             GetGLProcAddress("glDeleteVertexArraysOES"));
-  } else if (ext.b_GL_APPLE_vertex_array_object) {
-    fn.glDeleteVertexArraysOESFn =
-        reinterpret_cast<glDeleteVertexArraysOESProc>(
-            GetGLProcAddress("glDeleteVertexArraysAPPLE"));
-  }
-
-  if (ver->IsAtLeastGL(4u, 1u) || ver->is_es) {
-    fn.glDepthRangefFn =
-        reinterpret_cast<glDepthRangefProc>(GetGLProcAddress("glDepthRangef"));
   }
 
   if (ext.b_GL_ANGLE_request_extension) {
@@ -1007,7 +833,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glDisableExtensionANGLE"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 2u)) {
+  if (ver->IsAtLeastGLES(3u, 2u)) {
     fn.glDisableiOESFn =
         reinterpret_cast<glDisableiOESProc>(GetGLProcAddress("glDisablei"));
   } else if (ext.b_GL_OES_draw_buffers_indexed) {
@@ -1021,41 +847,33 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glDiscardFramebufferEXT"));
   }
 
-  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glDispatchComputeFn = reinterpret_cast<glDispatchComputeProc>(
         GetGLProcAddress("glDispatchCompute"));
   }
 
-  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glDispatchComputeIndirectFn =
         reinterpret_cast<glDispatchComputeIndirectProc>(
             GetGLProcAddress("glDispatchComputeIndirect"));
   }
 
-  if (ver->IsAtLeastGL(4u, 0u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glDrawArraysIndirectFn = reinterpret_cast<glDrawArraysIndirectProc>(
         GetGLProcAddress("glDrawArraysIndirect"));
   }
 
-  if (ver->IsAtLeastGL(3u, 1u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glDrawArraysInstancedANGLEFn =
         reinterpret_cast<glDrawArraysInstancedANGLEProc>(
             GetGLProcAddress("glDrawArraysInstanced"));
-  } else if (ext.b_GL_ARB_draw_instanced) {
-    fn.glDrawArraysInstancedANGLEFn =
-        reinterpret_cast<glDrawArraysInstancedANGLEProc>(
-            GetGLProcAddress("glDrawArraysInstancedARB"));
   } else if (ext.b_GL_ANGLE_instanced_arrays) {
     fn.glDrawArraysInstancedANGLEFn =
         reinterpret_cast<glDrawArraysInstancedANGLEProc>(
             GetGLProcAddress("glDrawArraysInstancedANGLE"));
   }
 
-  if (ver->IsAtLeastGL(4u, 2u) || ext.b_GL_ARB_base_instance) {
-    fn.glDrawArraysInstancedBaseInstanceANGLEFn =
-        reinterpret_cast<glDrawArraysInstancedBaseInstanceANGLEProc>(
-            GetGLProcAddress("glDrawArraysInstancedBaseInstance"));
-  } else if (ext.b_GL_EXT_base_instance) {
+  if (ext.b_GL_EXT_base_instance) {
     fn.glDrawArraysInstancedBaseInstanceANGLEFn =
         reinterpret_cast<glDrawArraysInstancedBaseInstanceANGLEProc>(
             GetGLProcAddress("glDrawArraysInstancedBaseInstanceEXT"));
@@ -1065,46 +883,30 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glDrawArraysInstancedBaseInstanceANGLE"));
   }
 
-  if (!ver->is_es) {
-    fn.glDrawBufferFn =
-        reinterpret_cast<glDrawBufferProc>(GetGLProcAddress("glDrawBuffer"));
-  }
-
-  if (!ver->is_es || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glDrawBuffersARBFn = reinterpret_cast<glDrawBuffersARBProc>(
         GetGLProcAddress("glDrawBuffers"));
-  } else if (ext.b_GL_ARB_draw_buffers) {
-    fn.glDrawBuffersARBFn = reinterpret_cast<glDrawBuffersARBProc>(
-        GetGLProcAddress("glDrawBuffersARB"));
   } else if (ext.b_GL_EXT_draw_buffers) {
     fn.glDrawBuffersARBFn = reinterpret_cast<glDrawBuffersARBProc>(
         GetGLProcAddress("glDrawBuffersEXT"));
   }
 
-  if (ver->IsAtLeastGL(4u, 0u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glDrawElementsIndirectFn = reinterpret_cast<glDrawElementsIndirectProc>(
         GetGLProcAddress("glDrawElementsIndirect"));
   }
 
-  if (ver->IsAtLeastGL(3u, 1u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glDrawElementsInstancedANGLEFn =
         reinterpret_cast<glDrawElementsInstancedANGLEProc>(
             GetGLProcAddress("glDrawElementsInstanced"));
-  } else if (ext.b_GL_ARB_draw_instanced) {
-    fn.glDrawElementsInstancedANGLEFn =
-        reinterpret_cast<glDrawElementsInstancedANGLEProc>(
-            GetGLProcAddress("glDrawElementsInstancedARB"));
   } else if (ext.b_GL_ANGLE_instanced_arrays) {
     fn.glDrawElementsInstancedANGLEFn =
         reinterpret_cast<glDrawElementsInstancedANGLEProc>(
             GetGLProcAddress("glDrawElementsInstancedANGLE"));
   }
 
-  if (ver->IsAtLeastGL(4u, 2u) || ext.b_GL_ARB_base_instance) {
-    fn.glDrawElementsInstancedBaseVertexBaseInstanceANGLEFn = reinterpret_cast<
-        glDrawElementsInstancedBaseVertexBaseInstanceANGLEProc>(
-        GetGLProcAddress("glDrawElementsInstancedBaseVertexBaseInstance"));
-  } else if (ext.b_GL_EXT_base_instance) {
+  if (ext.b_GL_EXT_base_instance) {
     fn.glDrawElementsInstancedBaseVertexBaseInstanceANGLEFn = reinterpret_cast<
         glDrawElementsInstancedBaseVertexBaseInstanceANGLEProc>(
         GetGLProcAddress("glDrawElementsInstancedBaseVertexBaseInstanceEXT"));
@@ -1114,7 +916,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glDrawElementsInstancedBaseVertexBaseInstanceANGLE"));
   }
 
-  if (!ver->is_es || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glDrawRangeElementsFn = reinterpret_cast<glDrawRangeElementsProc>(
         GetGLProcAddress("glDrawRangeElements"));
   }
@@ -1131,7 +933,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glEGLImageTargetTexture2DOES"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 2u)) {
+  if (ver->IsAtLeastGLES(3u, 2u)) {
     fn.glEnableiOESFn =
         reinterpret_cast<glEnableiOESProc>(GetGLProcAddress("glEnablei"));
   } else if (ext.b_GL_OES_draw_buffers_indexed) {
@@ -1145,12 +947,9 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glEndPixelLocalStorageANGLE"));
   }
 
-  if (!ver->is_es || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glEndQueryFn =
         reinterpret_cast<glEndQueryProc>(GetGLProcAddress("glEndQuery"));
-  } else if (ext.b_GL_ARB_occlusion_query) {
-    fn.glEndQueryFn =
-        reinterpret_cast<glEndQueryProc>(GetGLProcAddress("glEndQueryARB"));
   } else if (ext.b_GL_EXT_disjoint_timer_query ||
              ext.b_GL_EXT_occlusion_query_boolean) {
     fn.glEndQueryFn =
@@ -1162,28 +961,14 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glEndTilingQCOM"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glEndTransformFeedbackFn = reinterpret_cast<glEndTransformFeedbackProc>(
         GetGLProcAddress("glEndTransformFeedback"));
-  } else if (ext.b_GL_EXT_transform_feedback) {
-    fn.glEndTransformFeedbackFn = reinterpret_cast<glEndTransformFeedbackProc>(
-        GetGLProcAddress("glEndTransformFeedbackEXT"));
   }
 
-  if (ver->IsAtLeastGL(3u, 2u) || ver->IsAtLeastGLES(3u, 0u) ||
-      ext.b_GL_ARB_sync) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glFenceSyncFn =
         reinterpret_cast<glFenceSyncProc>(GetGLProcAddress("glFenceSync"));
-  }
-
-  if (ext.b_GL_APPLE_sync) {
-    fn.glFenceSyncAPPLEFn = reinterpret_cast<glFenceSyncAPPLEProc>(
-        GetGLProcAddress("glFenceSyncAPPLE"));
-  }
-
-  if (ext.b_GL_APPLE_fence) {
-    fn.glFinishFenceAPPLEFn = reinterpret_cast<glFinishFenceAPPLEProc>(
-        GetGLProcAddress("glFinishFenceAPPLE"));
   }
 
   if (ext.b_GL_NV_fence) {
@@ -1191,8 +976,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glFinishFenceNV"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u) ||
-      ext.b_GL_ARB_map_buffer_range) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glFlushMappedBufferRangeFn =
         reinterpret_cast<glFlushMappedBufferRangeProc>(
             GetGLProcAddress("glFlushMappedBufferRange"));
@@ -1208,7 +992,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glFramebufferMemorylessPixelLocalStorageANGLE"));
   }
 
-  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glFramebufferParameteriFn =
         reinterpret_cast<glFramebufferParameteriProc>(
             GetGLProcAddress("glFramebufferParameteri"));
@@ -1248,26 +1032,6 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glFramebufferPixelLocalStorageRestoreANGLE"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->is_es) {
-    fn.glFramebufferRenderbufferEXTFn =
-        reinterpret_cast<glFramebufferRenderbufferEXTProc>(
-            GetGLProcAddress("glFramebufferRenderbuffer"));
-  } else if (ext.b_GL_EXT_framebuffer_object) {
-    fn.glFramebufferRenderbufferEXTFn =
-        reinterpret_cast<glFramebufferRenderbufferEXTProc>(
-            GetGLProcAddress("glFramebufferRenderbufferEXT"));
-  }
-
-  if (ver->IsAtLeastGL(3u, 0u) || ver->is_es) {
-    fn.glFramebufferTexture2DEXTFn =
-        reinterpret_cast<glFramebufferTexture2DEXTProc>(
-            GetGLProcAddress("glFramebufferTexture2D"));
-  } else if (ext.b_GL_EXT_framebuffer_object) {
-    fn.glFramebufferTexture2DEXTFn =
-        reinterpret_cast<glFramebufferTexture2DEXTProc>(
-            GetGLProcAddress("glFramebufferTexture2DEXT"));
-  }
-
   if (ext.b_GL_EXT_multisampled_render_to_texture) {
     fn.glFramebufferTexture2DMultisampleEXTFn =
         reinterpret_cast<glFramebufferTexture2DMultisampleEXTProc>(
@@ -1278,7 +1042,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glFramebufferTexture2DMultisampleIMG"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glFramebufferTextureLayerFn =
         reinterpret_cast<glFramebufferTextureLayerProc>(
             GetGLProcAddress("glFramebufferTextureLayer"));
@@ -1296,67 +1060,26 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glFramebufferTexturePixelLocalStorageANGLE"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->is_es) {
-    fn.glGenerateMipmapEXTFn = reinterpret_cast<glGenerateMipmapEXTProc>(
-        GetGLProcAddress("glGenerateMipmap"));
-  } else if (ext.b_GL_EXT_framebuffer_object) {
-    fn.glGenerateMipmapEXTFn = reinterpret_cast<glGenerateMipmapEXTProc>(
-        GetGLProcAddress("glGenerateMipmapEXT"));
-  }
-
-  if (ext.b_GL_APPLE_fence) {
-    fn.glGenFencesAPPLEFn = reinterpret_cast<glGenFencesAPPLEProc>(
-        GetGLProcAddress("glGenFencesAPPLE"));
-  }
-
   if (ext.b_GL_NV_fence) {
     fn.glGenFencesNVFn =
         reinterpret_cast<glGenFencesNVProc>(GetGLProcAddress("glGenFencesNV"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->is_es) {
-    fn.glGenFramebuffersEXTFn = reinterpret_cast<glGenFramebuffersEXTProc>(
-        GetGLProcAddress("glGenFramebuffers"));
-  } else if (ext.b_GL_EXT_framebuffer_object) {
-    fn.glGenFramebuffersEXTFn = reinterpret_cast<glGenFramebuffersEXTProc>(
-        GetGLProcAddress("glGenFramebuffersEXT"));
-  }
-
-  if (ext.b_GL_NV_path_rendering) {
-    fn.glGenPathsNVFn =
-        reinterpret_cast<glGenPathsNVProc>(GetGLProcAddress("glGenPathsNV"));
-  } else if (ext.b_GL_CHROMIUM_path_rendering) {
-    fn.glGenPathsNVFn = reinterpret_cast<glGenPathsNVProc>(
-        GetGLProcAddress("glGenPathsCHROMIUM"));
-  }
-
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glGenProgramPipelinesFn = reinterpret_cast<glGenProgramPipelinesProc>(
         GetGLProcAddress("glGenProgramPipelines"));
   }
 
-  if (!ver->is_es || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glGenQueriesFn =
         reinterpret_cast<glGenQueriesProc>(GetGLProcAddress("glGenQueries"));
-  } else if (ext.b_GL_ARB_occlusion_query) {
-    fn.glGenQueriesFn =
-        reinterpret_cast<glGenQueriesProc>(GetGLProcAddress("glGenQueriesARB"));
   } else if (ext.b_GL_EXT_disjoint_timer_query ||
              ext.b_GL_EXT_occlusion_query_boolean) {
     fn.glGenQueriesFn =
         reinterpret_cast<glGenQueriesProc>(GetGLProcAddress("glGenQueriesEXT"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->is_es) {
-    fn.glGenRenderbuffersEXTFn = reinterpret_cast<glGenRenderbuffersEXTProc>(
-        GetGLProcAddress("glGenRenderbuffers"));
-  } else if (ext.b_GL_EXT_framebuffer_object) {
-    fn.glGenRenderbuffersEXTFn = reinterpret_cast<glGenRenderbuffersEXTProc>(
-        GetGLProcAddress("glGenRenderbuffersEXT"));
-  }
-
-  if (ver->IsAtLeastGL(3u, 3u) || ver->IsAtLeastGLES(3u, 0u) ||
-      ext.b_GL_ARB_sampler_objects) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glGenSamplersFn =
         reinterpret_cast<glGenSamplersProc>(GetGLProcAddress("glGenSamplers"));
   }
@@ -1366,26 +1089,21 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glGenSemaphoresEXT"));
   }
 
-  if (ver->IsAtLeastGL(4u, 0u) || ver->IsAtLeastGLES(3u, 0u) ||
-      ext.b_GL_ARB_transform_feedback2) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glGenTransformFeedbacksFn =
         reinterpret_cast<glGenTransformFeedbacksProc>(
             GetGLProcAddress("glGenTransformFeedbacks"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u) ||
-      ext.b_GL_ARB_vertex_array_object) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glGenVertexArraysOESFn = reinterpret_cast<glGenVertexArraysOESProc>(
         GetGLProcAddress("glGenVertexArrays"));
   } else if (ext.b_GL_OES_vertex_array_object) {
     fn.glGenVertexArraysOESFn = reinterpret_cast<glGenVertexArraysOESProc>(
         GetGLProcAddress("glGenVertexArraysOES"));
-  } else if (ext.b_GL_APPLE_vertex_array_object) {
-    fn.glGenVertexArraysOESFn = reinterpret_cast<glGenVertexArraysOESProc>(
-        GetGLProcAddress("glGenVertexArraysAPPLE"));
   }
 
-  if (ver->IsAtLeastGL(3u, 1u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glGetActiveUniformBlockivFn =
         reinterpret_cast<glGetActiveUniformBlockivProc>(
             GetGLProcAddress("glGetActiveUniformBlockiv"));
@@ -1397,18 +1115,18 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glGetActiveUniformBlockivRobustANGLE"));
   }
 
-  if (ver->IsAtLeastGL(3u, 1u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glGetActiveUniformBlockNameFn =
         reinterpret_cast<glGetActiveUniformBlockNameProc>(
             GetGLProcAddress("glGetActiveUniformBlockName"));
   }
 
-  if (ver->IsAtLeastGL(3u, 1u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glGetActiveUniformsivFn = reinterpret_cast<glGetActiveUniformsivProc>(
         GetGLProcAddress("glGetActiveUniformsiv"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glGetBooleani_vFn = reinterpret_cast<glGetBooleani_vProc>(
         GetGLProcAddress("glGetBooleani_v"));
   }
@@ -1443,7 +1161,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glGetBufferPointervRobustANGLE"));
   }
 
-  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 2u)) {
+  if (ver->IsAtLeastGLES(3u, 2u)) {
     fn.glGetDebugMessageLogFn = reinterpret_cast<glGetDebugMessageLogProc>(
         GetGLProcAddress("glGetDebugMessageLog"));
   } else if (ext.b_GL_KHR_debug) {
@@ -1461,27 +1179,14 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glGetFloatvRobustANGLE"));
   }
 
-  if (ver->IsAtLeastGL(3u, 3u) || ext.b_GL_ARB_blend_func_extended) {
-    fn.glGetFragDataIndexFn = reinterpret_cast<glGetFragDataIndexProc>(
-        GetGLProcAddress("glGetFragDataIndex"));
-  } else if (ext.b_GL_EXT_blend_func_extended) {
+  if (ext.b_GL_EXT_blend_func_extended) {
     fn.glGetFragDataIndexFn = reinterpret_cast<glGetFragDataIndexProc>(
         GetGLProcAddress("glGetFragDataIndexEXT"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glGetFragDataLocationFn = reinterpret_cast<glGetFragDataLocationProc>(
         GetGLProcAddress("glGetFragDataLocation"));
-  }
-
-  if (ver->IsAtLeastGL(3u, 0u) || ver->is_es) {
-    fn.glGetFramebufferAttachmentParameterivEXTFn =
-        reinterpret_cast<glGetFramebufferAttachmentParameterivEXTProc>(
-            GetGLProcAddress("glGetFramebufferAttachmentParameteriv"));
-  } else if (ext.b_GL_EXT_framebuffer_object) {
-    fn.glGetFramebufferAttachmentParameterivEXTFn =
-        reinterpret_cast<glGetFramebufferAttachmentParameterivEXTProc>(
-            GetGLProcAddress("glGetFramebufferAttachmentParameterivEXT"));
   }
 
   if (ext.b_GL_ANGLE_robust_client_memory) {
@@ -1491,7 +1196,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
                 "glGetFramebufferAttachmentParameterivRobustANGLE"));
   }
 
-  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glGetFramebufferParameterivFn =
         reinterpret_cast<glGetFramebufferParameterivProc>(
             GetGLProcAddress("glGetFramebufferParameteriv"));
@@ -1535,14 +1240,10 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
                 "glGetFramebufferPixelLocalStorageParameterivRobustANGLE"));
   }
 
-  if (ver->IsAtLeastGL(4u, 5u) || ver->IsAtLeastGLES(3u, 2u)) {
+  if (ver->IsAtLeastGLES(3u, 2u)) {
     fn.glGetGraphicsResetStatusARBFn =
         reinterpret_cast<glGetGraphicsResetStatusARBProc>(
             GetGLProcAddress("glGetGraphicsResetStatus"));
-  } else if (ext.b_GL_ARB_robustness) {
-    fn.glGetGraphicsResetStatusARBFn =
-        reinterpret_cast<glGetGraphicsResetStatusARBProc>(
-            GetGLProcAddress("glGetGraphicsResetStatusARB"));
   } else if (ext.b_GL_KHR_robustness) {
     fn.glGetGraphicsResetStatusARBFn =
         reinterpret_cast<glGetGraphicsResetStatusARBProc>(
@@ -1553,7 +1254,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glGetGraphicsResetStatusEXT"));
   }
 
-  if (ver->IsAtLeastGL(3u, 2u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glGetInteger64i_vFn = reinterpret_cast<glGetInteger64i_vProc>(
         GetGLProcAddress("glGetInteger64i_v"));
   }
@@ -1564,7 +1265,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glGetInteger64i_vRobustANGLE"));
   }
 
-  if (ver->IsAtLeastGL(3u, 2u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glGetInteger64vFn = reinterpret_cast<glGetInteger64vProc>(
         GetGLProcAddress("glGetInteger64v"));
   }
@@ -1575,7 +1276,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glGetInteger64vRobustANGLE"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glGetIntegeri_vFn = reinterpret_cast<glGetIntegeri_vProc>(
         GetGLProcAddress("glGetIntegeri_v"));
   }
@@ -1592,8 +1293,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glGetIntegervRobustANGLE"));
   }
 
-  if (ver->IsAtLeastGL(4u, 2u) || ver->IsAtLeastGLES(3u, 0u) ||
-      ext.b_GL_ARB_internalformat_query) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glGetInternalformativFn = reinterpret_cast<glGetInternalformativProc>(
         GetGLProcAddress("glGetInternalformativ"));
   }
@@ -1610,8 +1310,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glGetInternalformatSampleivNV"));
   }
 
-  if (ver->IsAtLeastGL(3u, 2u) || ver->IsAtLeastGLES(3u, 1u) ||
-      ext.b_GL_ARB_texture_multisample) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glGetMultisamplefvFn = reinterpret_cast<glGetMultisamplefvProc>(
         GetGLProcAddress("glGetMultisamplefv"));
   }
@@ -1640,7 +1339,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glGetnUniformuivRobustANGLE"));
   }
 
-  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 2u)) {
+  if (ver->IsAtLeastGLES(3u, 2u)) {
     fn.glGetObjectLabelFn = reinterpret_cast<glGetObjectLabelProc>(
         GetGLProcAddress("glGetObjectLabel"));
   } else if (ext.b_GL_KHR_debug) {
@@ -1648,7 +1347,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glGetObjectLabelKHR"));
   }
 
-  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 2u)) {
+  if (ver->IsAtLeastGLES(3u, 2u)) {
     fn.glGetObjectPtrLabelFn = reinterpret_cast<glGetObjectPtrLabelProc>(
         GetGLProcAddress("glGetObjectPtrLabel"));
   } else if (ext.b_GL_KHR_debug) {
@@ -1656,7 +1355,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glGetObjectPtrLabelKHR"));
   }
 
-  if (!ver->is_es || ver->IsAtLeastGLES(3u, 2u)) {
+  if (ver->IsAtLeastGLES(3u, 2u)) {
     fn.glGetPointervFn =
         reinterpret_cast<glGetPointervProc>(GetGLProcAddress("glGetPointerv"));
   } else if (ext.b_GL_KHR_debug) {
@@ -1670,8 +1369,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glGetPointervRobustANGLERobustANGLE"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 0u) ||
-      ext.b_GL_ARB_get_program_binary) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glGetProgramBinaryFn = reinterpret_cast<glGetProgramBinaryProc>(
         GetGLProcAddress("glGetProgramBinary"));
   } else if (ext.b_GL_OES_get_program_binary) {
@@ -1679,8 +1377,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glGetProgramBinaryOES"));
   }
 
-  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 1u) ||
-      ext.b_GL_ARB_program_interface_query) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glGetProgramInterfaceivFn =
         reinterpret_cast<glGetProgramInterfaceivProc>(
             GetGLProcAddress("glGetProgramInterfaceiv"));
@@ -1698,50 +1395,43 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glGetProgramivRobustANGLE"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glGetProgramPipelineInfoLogFn =
         reinterpret_cast<glGetProgramPipelineInfoLogProc>(
             GetGLProcAddress("glGetProgramPipelineInfoLog"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glGetProgramPipelineivFn = reinterpret_cast<glGetProgramPipelineivProc>(
         GetGLProcAddress("glGetProgramPipelineiv"));
   }
 
-  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 1u) ||
-      ext.b_GL_ARB_program_interface_query) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glGetProgramResourceIndexFn =
         reinterpret_cast<glGetProgramResourceIndexProc>(
             GetGLProcAddress("glGetProgramResourceIndex"));
   }
 
-  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 1u) ||
-      ext.b_GL_ARB_program_interface_query) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glGetProgramResourceivFn = reinterpret_cast<glGetProgramResourceivProc>(
         GetGLProcAddress("glGetProgramResourceiv"));
   }
 
-  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 1u) ||
-      ext.b_GL_ARB_program_interface_query) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glGetProgramResourceLocationFn =
         reinterpret_cast<glGetProgramResourceLocationProc>(
             GetGLProcAddress("glGetProgramResourceLocation"));
   }
 
-  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 1u) ||
-      ext.b_GL_ARB_program_interface_query) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glGetProgramResourceNameFn =
         reinterpret_cast<glGetProgramResourceNameProc>(
             GetGLProcAddress("glGetProgramResourceName"));
   }
 
-  if (!ver->is_es || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glGetQueryivFn =
         reinterpret_cast<glGetQueryivProc>(GetGLProcAddress("glGetQueryiv"));
-  } else if (ext.b_GL_ARB_occlusion_query) {
-    fn.glGetQueryivFn =
-        reinterpret_cast<glGetQueryivProc>(GetGLProcAddress("glGetQueryivARB"));
   } else if (ext.b_GL_EXT_disjoint_timer_query ||
              ext.b_GL_EXT_occlusion_query_boolean) {
     fn.glGetQueryivFn =
@@ -1754,10 +1444,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glGetQueryivRobustANGLE"));
   }
 
-  if (ver->IsAtLeastGL(3u, 3u) || ext.b_GL_ARB_timer_query) {
-    fn.glGetQueryObjecti64vFn = reinterpret_cast<glGetQueryObjecti64vProc>(
-        GetGLProcAddress("glGetQueryObjecti64v"));
-  } else if (ext.b_GL_EXT_disjoint_timer_query || ext.b_GL_EXT_timer_query) {
+  if (ext.b_GL_EXT_disjoint_timer_query) {
     fn.glGetQueryObjecti64vFn = reinterpret_cast<glGetQueryObjecti64vProc>(
         GetGLProcAddress("glGetQueryObjecti64vEXT"));
   }
@@ -1768,13 +1455,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glGetQueryObjecti64vRobustANGLE"));
   }
 
-  if (!ver->is_es) {
-    fn.glGetQueryObjectivFn = reinterpret_cast<glGetQueryObjectivProc>(
-        GetGLProcAddress("glGetQueryObjectiv"));
-  } else if (ext.b_GL_ARB_occlusion_query) {
-    fn.glGetQueryObjectivFn = reinterpret_cast<glGetQueryObjectivProc>(
-        GetGLProcAddress("glGetQueryObjectivARB"));
-  } else if (ext.b_GL_EXT_disjoint_timer_query) {
+  if (ext.b_GL_EXT_disjoint_timer_query) {
     fn.glGetQueryObjectivFn = reinterpret_cast<glGetQueryObjectivProc>(
         GetGLProcAddress("glGetQueryObjectivEXT"));
   }
@@ -1785,10 +1466,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glGetQueryObjectivRobustANGLE"));
   }
 
-  if (ver->IsAtLeastGL(3u, 3u) || ext.b_GL_ARB_timer_query) {
-    fn.glGetQueryObjectui64vFn = reinterpret_cast<glGetQueryObjectui64vProc>(
-        GetGLProcAddress("glGetQueryObjectui64v"));
-  } else if (ext.b_GL_EXT_disjoint_timer_query || ext.b_GL_EXT_timer_query) {
+  if (ext.b_GL_EXT_disjoint_timer_query) {
     fn.glGetQueryObjectui64vFn = reinterpret_cast<glGetQueryObjectui64vProc>(
         GetGLProcAddress("glGetQueryObjectui64vEXT"));
   }
@@ -1799,12 +1477,9 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glGetQueryObjectui64vRobustANGLE"));
   }
 
-  if (!ver->is_es || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glGetQueryObjectuivFn = reinterpret_cast<glGetQueryObjectuivProc>(
         GetGLProcAddress("glGetQueryObjectuiv"));
-  } else if (ext.b_GL_ARB_occlusion_query) {
-    fn.glGetQueryObjectuivFn = reinterpret_cast<glGetQueryObjectuivProc>(
-        GetGLProcAddress("glGetQueryObjectuivARB"));
   } else if (ext.b_GL_EXT_disjoint_timer_query ||
              ext.b_GL_EXT_occlusion_query_boolean) {
     fn.glGetQueryObjectuivFn = reinterpret_cast<glGetQueryObjectuivProc>(
@@ -1817,24 +1492,13 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glGetQueryObjectuivRobustANGLE"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->is_es) {
-    fn.glGetRenderbufferParameterivEXTFn =
-        reinterpret_cast<glGetRenderbufferParameterivEXTProc>(
-            GetGLProcAddress("glGetRenderbufferParameteriv"));
-  } else if (ext.b_GL_EXT_framebuffer_object) {
-    fn.glGetRenderbufferParameterivEXTFn =
-        reinterpret_cast<glGetRenderbufferParameterivEXTProc>(
-            GetGLProcAddress("glGetRenderbufferParameterivEXT"));
-  }
-
   if (ext.b_GL_ANGLE_robust_client_memory) {
     fn.glGetRenderbufferParameterivRobustANGLEFn =
         reinterpret_cast<glGetRenderbufferParameterivRobustANGLEProc>(
             GetGLProcAddress("glGetRenderbufferParameterivRobustANGLE"));
   }
 
-  if (ver->IsAtLeastGL(3u, 3u) || ver->IsAtLeastGLES(3u, 0u) ||
-      ext.b_GL_ARB_sampler_objects) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glGetSamplerParameterfvFn =
         reinterpret_cast<glGetSamplerParameterfvProc>(
             GetGLProcAddress("glGetSamplerParameterfv"));
@@ -1858,8 +1522,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glGetSamplerParameterIuivRobustANGLE"));
   }
 
-  if (ver->IsAtLeastGL(3u, 3u) || ver->IsAtLeastGLES(3u, 0u) ||
-      ext.b_GL_ARB_sampler_objects) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glGetSamplerParameterivFn =
         reinterpret_cast<glGetSamplerParameterivProc>(
             GetGLProcAddress("glGetSamplerParameteriv"));
@@ -1877,20 +1540,12 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glGetShaderivRobustANGLE"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->is_es ||
-      ext.b_GL_ARB_ES2_compatibility) {
-    fn.glGetShaderPrecisionFormatFn =
-        reinterpret_cast<glGetShaderPrecisionFormatProc>(
-            GetGLProcAddress("glGetShaderPrecisionFormat"));
-  }
-
-  if (ver->IsAtLeastGL(3u, 2u) || ver->IsAtLeastGLES(3u, 0u) ||
-      ext.b_GL_ARB_sync) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glGetSyncivFn =
         reinterpret_cast<glGetSyncivProc>(GetGLProcAddress("glGetSynciv"));
   }
 
-  if (!ver->is_es || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glGetTexLevelParameterfvFn =
         reinterpret_cast<glGetTexLevelParameterfvProc>(
             GetGLProcAddress("glGetTexLevelParameterfv"));
@@ -1906,7 +1561,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glGetTexLevelParameterfvRobustANGLE"));
   }
 
-  if (!ver->is_es || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glGetTexLevelParameterivFn =
         reinterpret_cast<glGetTexLevelParameterivProc>(
             GetGLProcAddress("glGetTexLevelParameteriv"));
@@ -1946,14 +1601,10 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glGetTexParameterivRobustANGLE"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glGetTransformFeedbackVaryingFn =
         reinterpret_cast<glGetTransformFeedbackVaryingProc>(
             GetGLProcAddress("glGetTransformFeedbackVarying"));
-  } else if (ext.b_GL_EXT_transform_feedback) {
-    fn.glGetTransformFeedbackVaryingFn =
-        reinterpret_cast<glGetTransformFeedbackVaryingProc>(
-            GetGLProcAddress("glGetTransformFeedbackVaryingEXT"));
   }
 
   if (ext.b_GL_ANGLE_translated_shader_source) {
@@ -1962,7 +1613,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glGetTranslatedShaderSourceANGLE"));
   }
 
-  if (ver->IsAtLeastGL(3u, 1u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glGetUniformBlockIndexFn = reinterpret_cast<glGetUniformBlockIndexProc>(
         GetGLProcAddress("glGetUniformBlockIndex"));
   }
@@ -1973,7 +1624,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glGetUniformfvRobustANGLE"));
   }
 
-  if (ver->IsAtLeastGL(3u, 1u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glGetUniformIndicesFn = reinterpret_cast<glGetUniformIndicesProc>(
         GetGLProcAddress("glGetUniformIndices"));
   }
@@ -1984,7 +1635,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glGetUniformivRobustANGLE"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glGetUniformuivFn = reinterpret_cast<glGetUniformuivProc>(
         GetGLProcAddress("glGetUniformuiv"));
   }
@@ -2064,13 +1715,13 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glInsertEventMarkerEXT"));
   }
 
-  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glInvalidateFramebufferFn =
         reinterpret_cast<glInvalidateFramebufferProc>(
             GetGLProcAddress("glInvalidateFramebuffer"));
   }
 
-  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glInvalidateSubFramebufferFn =
         reinterpret_cast<glInvalidateSubFramebufferProc>(
             GetGLProcAddress("glInvalidateSubFramebuffer"));
@@ -2082,7 +1733,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glInvalidateTextureANGLE"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 2u)) {
+  if (ver->IsAtLeastGLES(3u, 2u)) {
     fn.glIsEnablediOESFn =
         reinterpret_cast<glIsEnablediOESProc>(GetGLProcAddress("glIsEnabledi"));
   } else if (ext.b_GL_OES_draw_buffers_indexed) {
@@ -2090,125 +1741,59 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glIsEnablediOES"));
   }
 
-  if (ext.b_GL_APPLE_fence) {
-    fn.glIsFenceAPPLEFn = reinterpret_cast<glIsFenceAPPLEProc>(
-        GetGLProcAddress("glIsFenceAPPLE"));
-  }
-
   if (ext.b_GL_NV_fence) {
     fn.glIsFenceNVFn =
         reinterpret_cast<glIsFenceNVProc>(GetGLProcAddress("glIsFenceNV"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->is_es) {
-    fn.glIsFramebufferEXTFn = reinterpret_cast<glIsFramebufferEXTProc>(
-        GetGLProcAddress("glIsFramebuffer"));
-  } else if (ext.b_GL_EXT_framebuffer_object) {
-    fn.glIsFramebufferEXTFn = reinterpret_cast<glIsFramebufferEXTProc>(
-        GetGLProcAddress("glIsFramebufferEXT"));
-  }
-
-  if (ext.b_GL_NV_path_rendering) {
-    fn.glIsPathNVFn =
-        reinterpret_cast<glIsPathNVProc>(GetGLProcAddress("glIsPathNV"));
-  } else if (ext.b_GL_CHROMIUM_path_rendering) {
-    fn.glIsPathNVFn =
-        reinterpret_cast<glIsPathNVProc>(GetGLProcAddress("glIsPathCHROMIUM"));
-  }
-
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glIsProgramPipelineFn = reinterpret_cast<glIsProgramPipelineProc>(
         GetGLProcAddress("glIsProgramPipeline"));
   }
 
-  if (!ver->is_es || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glIsQueryFn =
         reinterpret_cast<glIsQueryProc>(GetGLProcAddress("glIsQuery"));
-  } else if (ext.b_GL_ARB_occlusion_query) {
-    fn.glIsQueryFn =
-        reinterpret_cast<glIsQueryProc>(GetGLProcAddress("glIsQueryARB"));
   } else if (ext.b_GL_EXT_disjoint_timer_query ||
              ext.b_GL_EXT_occlusion_query_boolean) {
     fn.glIsQueryFn =
         reinterpret_cast<glIsQueryProc>(GetGLProcAddress("glIsQueryEXT"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->is_es) {
-    fn.glIsRenderbufferEXTFn = reinterpret_cast<glIsRenderbufferEXTProc>(
-        GetGLProcAddress("glIsRenderbuffer"));
-  } else if (ext.b_GL_EXT_framebuffer_object) {
-    fn.glIsRenderbufferEXTFn = reinterpret_cast<glIsRenderbufferEXTProc>(
-        GetGLProcAddress("glIsRenderbufferEXT"));
-  }
-
-  if (ver->IsAtLeastGL(3u, 3u) || ver->IsAtLeastGLES(3u, 0u) ||
-      ext.b_GL_ARB_sampler_objects) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glIsSamplerFn =
         reinterpret_cast<glIsSamplerProc>(GetGLProcAddress("glIsSampler"));
   }
 
-  if (ver->IsAtLeastGL(3u, 2u) || ver->IsAtLeastGLES(3u, 0u) ||
-      ext.b_GL_ARB_sync) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glIsSyncFn =
         reinterpret_cast<glIsSyncProc>(GetGLProcAddress("glIsSync"));
   }
 
-  if (ext.b_GL_APPLE_sync) {
-    fn.glIsSyncAPPLEFn =
-        reinterpret_cast<glIsSyncAPPLEProc>(GetGLProcAddress("glIsSyncAPPLE"));
-  }
-
-  if (ver->IsAtLeastGL(4u, 0u) || ver->IsAtLeastGLES(3u, 0u) ||
-      ext.b_GL_ARB_transform_feedback2) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glIsTransformFeedbackFn = reinterpret_cast<glIsTransformFeedbackProc>(
         GetGLProcAddress("glIsTransformFeedback"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u) ||
-      ext.b_GL_ARB_vertex_array_object) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glIsVertexArrayOESFn = reinterpret_cast<glIsVertexArrayOESProc>(
         GetGLProcAddress("glIsVertexArray"));
   } else if (ext.b_GL_OES_vertex_array_object) {
     fn.glIsVertexArrayOESFn = reinterpret_cast<glIsVertexArrayOESProc>(
         GetGLProcAddress("glIsVertexArrayOES"));
-  } else if (ext.b_GL_APPLE_vertex_array_object) {
-    fn.glIsVertexArrayOESFn = reinterpret_cast<glIsVertexArrayOESProc>(
-        GetGLProcAddress("glIsVertexArrayAPPLE"));
   }
 
-  if (!ver->is_es) {
-    fn.glMapBufferFn =
-        reinterpret_cast<glMapBufferProc>(GetGLProcAddress("glMapBuffer"));
-  } else if (ext.b_GL_OES_mapbuffer) {
+  if (ext.b_GL_OES_mapbuffer) {
     fn.glMapBufferFn =
         reinterpret_cast<glMapBufferProc>(GetGLProcAddress("glMapBufferOES"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u) ||
-      ext.b_GL_ARB_map_buffer_range) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glMapBufferRangeFn = reinterpret_cast<glMapBufferRangeProc>(
         GetGLProcAddress("glMapBufferRange"));
   } else if (ext.b_GL_EXT_map_buffer_range) {
     fn.glMapBufferRangeFn = reinterpret_cast<glMapBufferRangeProc>(
         GetGLProcAddress("glMapBufferRangeEXT"));
-  }
-
-  if (ext.b_GL_EXT_direct_state_access || ext.b_GL_NV_path_rendering) {
-    fn.glMatrixLoadfEXTFn = reinterpret_cast<glMatrixLoadfEXTProc>(
-        GetGLProcAddress("glMatrixLoadfEXT"));
-  } else if (ext.b_GL_CHROMIUM_path_rendering) {
-    fn.glMatrixLoadfEXTFn = reinterpret_cast<glMatrixLoadfEXTProc>(
-        GetGLProcAddress("glMatrixLoadfCHROMIUM"));
-  }
-
-  if (ext.b_GL_EXT_direct_state_access || ext.b_GL_NV_path_rendering) {
-    fn.glMatrixLoadIdentityEXTFn =
-        reinterpret_cast<glMatrixLoadIdentityEXTProc>(
-            GetGLProcAddress("glMatrixLoadIdentityEXT"));
-  } else if (ext.b_GL_CHROMIUM_path_rendering) {
-    fn.glMatrixLoadIdentityEXTFn =
-        reinterpret_cast<glMatrixLoadIdentityEXTProc>(
-            GetGLProcAddress("glMatrixLoadIdentityCHROMIUM"));
   }
 
   if (ext.b_GL_KHR_parallel_shader_compile) {
@@ -2217,14 +1802,13 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glMaxShaderCompilerThreadsKHR"));
   }
 
-  if (ver->IsAtLeastGL(4u, 5u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glMemoryBarrierByRegionFn =
         reinterpret_cast<glMemoryBarrierByRegionProc>(
             GetGLProcAddress("glMemoryBarrierByRegion"));
   }
 
-  if (ver->IsAtLeastGL(4u, 2u) || ver->IsAtLeastGLES(3u, 1u) ||
-      ext.b_GL_ARB_shader_image_load_store) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glMemoryBarrierEXTFn = reinterpret_cast<glMemoryBarrierEXTProc>(
         GetGLProcAddress("glMemoryBarrier"));
   } else if (ext.b_GL_EXT_shader_image_load_store) {
@@ -2238,7 +1822,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glMemoryObjectParameterivEXT"));
   }
 
-  if (ver->IsAtLeastGL(4u, 0u) || ver->IsAtLeastGLES(3u, 2u)) {
+  if (ver->IsAtLeastGLES(3u, 2u)) {
     fn.glMinSampleShadingFn = reinterpret_cast<glMinSampleShadingProc>(
         GetGLProcAddress("glMinSampleShading"));
   }
@@ -2280,7 +1864,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
                 "glMultiDrawElementsInstancedBaseVertexBaseInstanceANGLE"));
   }
 
-  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 2u)) {
+  if (ver->IsAtLeastGLES(3u, 2u)) {
     fn.glObjectLabelFn =
         reinterpret_cast<glObjectLabelProc>(GetGLProcAddress("glObjectLabel"));
   } else if (ext.b_GL_KHR_debug) {
@@ -2288,7 +1872,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glObjectLabelKHR"));
   }
 
-  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 2u)) {
+  if (ver->IsAtLeastGLES(3u, 2u)) {
     fn.glObjectPtrLabelFn = reinterpret_cast<glObjectPtrLabelProc>(
         GetGLProcAddress("glObjectPtrLabel"));
   } else if (ext.b_GL_KHR_debug) {
@@ -2296,8 +1880,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glObjectPtrLabelKHR"));
   }
 
-  if (ver->IsAtLeastGL(4u, 0u) || ver->IsAtLeastGLES(3u, 2u) ||
-      ext.b_GL_ARB_tessellation_shader) {
+  if (ver->IsAtLeastGLES(3u, 2u)) {
     fn.glPatchParameteriFn = reinterpret_cast<glPatchParameteriProc>(
         GetGLProcAddress("glPatchParameteri"));
   } else if (ext.b_GL_OES_tessellation_shader) {
@@ -2305,40 +1888,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glPatchParameteriOES"));
   }
 
-  if (ext.b_GL_NV_path_rendering) {
-    fn.glPathCommandsNVFn = reinterpret_cast<glPathCommandsNVProc>(
-        GetGLProcAddress("glPathCommandsNV"));
-  } else if (ext.b_GL_CHROMIUM_path_rendering) {
-    fn.glPathCommandsNVFn = reinterpret_cast<glPathCommandsNVProc>(
-        GetGLProcAddress("glPathCommandsCHROMIUM"));
-  }
-
-  if (ext.b_GL_NV_path_rendering) {
-    fn.glPathParameterfNVFn = reinterpret_cast<glPathParameterfNVProc>(
-        GetGLProcAddress("glPathParameterfNV"));
-  } else if (ext.b_GL_CHROMIUM_path_rendering) {
-    fn.glPathParameterfNVFn = reinterpret_cast<glPathParameterfNVProc>(
-        GetGLProcAddress("glPathParameterfCHROMIUM"));
-  }
-
-  if (ext.b_GL_NV_path_rendering) {
-    fn.glPathParameteriNVFn = reinterpret_cast<glPathParameteriNVProc>(
-        GetGLProcAddress("glPathParameteriNV"));
-  } else if (ext.b_GL_CHROMIUM_path_rendering) {
-    fn.glPathParameteriNVFn = reinterpret_cast<glPathParameteriNVProc>(
-        GetGLProcAddress("glPathParameteriCHROMIUM"));
-  }
-
-  if (ext.b_GL_NV_path_rendering) {
-    fn.glPathStencilFuncNVFn = reinterpret_cast<glPathStencilFuncNVProc>(
-        GetGLProcAddress("glPathStencilFuncNV"));
-  } else if (ext.b_GL_CHROMIUM_path_rendering) {
-    fn.glPathStencilFuncNVFn = reinterpret_cast<glPathStencilFuncNVProc>(
-        GetGLProcAddress("glPathStencilFuncCHROMIUM"));
-  }
-
-  if (ver->IsAtLeastGL(4u, 0u) || ver->IsAtLeastGLES(3u, 0u) ||
-      ext.b_GL_ARB_transform_feedback2) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glPauseTransformFeedbackFn =
         reinterpret_cast<glPauseTransformFeedbackProc>(
             GetGLProcAddress("glPauseTransformFeedback"));
@@ -2348,16 +1898,6 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
     fn.glPixelLocalStorageBarrierANGLEFn =
         reinterpret_cast<glPixelLocalStorageBarrierANGLEProc>(
             GetGLProcAddress("glPixelLocalStorageBarrierANGLE"));
-  }
-
-  if (!ver->is_es) {
-    fn.glPointParameteriFn = reinterpret_cast<glPointParameteriProc>(
-        GetGLProcAddress("glPointParameteri"));
-  }
-
-  if (!ver->is_es) {
-    fn.glPolygonModeFn =
-        reinterpret_cast<glPolygonModeProc>(GetGLProcAddress("glPolygonMode"));
   }
 
   if (ext.b_GL_ANGLE_polygon_mode) {
@@ -2371,7 +1911,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glPolygonOffsetClampEXT"));
   }
 
-  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 2u)) {
+  if (ver->IsAtLeastGLES(3u, 2u)) {
     fn.glPopDebugGroupFn = reinterpret_cast<glPopDebugGroupProc>(
         GetGLProcAddress("glPopDebugGroup"));
   } else if (ext.b_GL_KHR_debug) {
@@ -2384,14 +1924,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glPopGroupMarkerEXT"));
   }
 
-  if (ver->IsAtLeastGL(3u, 1u)) {
-    fn.glPrimitiveRestartIndexFn =
-        reinterpret_cast<glPrimitiveRestartIndexProc>(
-            GetGLProcAddress("glPrimitiveRestartIndex"));
-  }
-
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 0u) ||
-      ext.b_GL_ARB_get_program_binary) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glProgramBinaryFn = reinterpret_cast<glProgramBinaryProc>(
         GetGLProcAddress("glProgramBinary"));
   } else if (ext.b_GL_OES_get_program_binary) {
@@ -2399,191 +1932,180 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glProgramBinaryOES"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 0u) ||
-      ext.b_GL_ARB_get_program_binary) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glProgramParameteriFn = reinterpret_cast<glProgramParameteriProc>(
         GetGLProcAddress("glProgramParameteri"));
   }
 
-  if (ext.b_GL_NV_path_rendering) {
-    fn.glProgramPathFragmentInputGenNVFn =
-        reinterpret_cast<glProgramPathFragmentInputGenNVProc>(
-            GetGLProcAddress("glProgramPathFragmentInputGenNV"));
-  } else if (ext.b_GL_CHROMIUM_path_rendering) {
-    fn.glProgramPathFragmentInputGenNVFn =
-        reinterpret_cast<glProgramPathFragmentInputGenNVProc>(
-            GetGLProcAddress("glProgramPathFragmentInputGenCHROMIUM"));
-  }
-
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glProgramUniform1fFn = reinterpret_cast<glProgramUniform1fProc>(
         GetGLProcAddress("glProgramUniform1f"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glProgramUniform1fvFn = reinterpret_cast<glProgramUniform1fvProc>(
         GetGLProcAddress("glProgramUniform1fv"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glProgramUniform1iFn = reinterpret_cast<glProgramUniform1iProc>(
         GetGLProcAddress("glProgramUniform1i"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glProgramUniform1ivFn = reinterpret_cast<glProgramUniform1ivProc>(
         GetGLProcAddress("glProgramUniform1iv"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glProgramUniform1uiFn = reinterpret_cast<glProgramUniform1uiProc>(
         GetGLProcAddress("glProgramUniform1ui"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glProgramUniform1uivFn = reinterpret_cast<glProgramUniform1uivProc>(
         GetGLProcAddress("glProgramUniform1uiv"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glProgramUniform2fFn = reinterpret_cast<glProgramUniform2fProc>(
         GetGLProcAddress("glProgramUniform2f"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glProgramUniform2fvFn = reinterpret_cast<glProgramUniform2fvProc>(
         GetGLProcAddress("glProgramUniform2fv"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glProgramUniform2iFn = reinterpret_cast<glProgramUniform2iProc>(
         GetGLProcAddress("glProgramUniform2i"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glProgramUniform2ivFn = reinterpret_cast<glProgramUniform2ivProc>(
         GetGLProcAddress("glProgramUniform2iv"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glProgramUniform2uiFn = reinterpret_cast<glProgramUniform2uiProc>(
         GetGLProcAddress("glProgramUniform2ui"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glProgramUniform2uivFn = reinterpret_cast<glProgramUniform2uivProc>(
         GetGLProcAddress("glProgramUniform2uiv"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glProgramUniform3fFn = reinterpret_cast<glProgramUniform3fProc>(
         GetGLProcAddress("glProgramUniform3f"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glProgramUniform3fvFn = reinterpret_cast<glProgramUniform3fvProc>(
         GetGLProcAddress("glProgramUniform3fv"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glProgramUniform3iFn = reinterpret_cast<glProgramUniform3iProc>(
         GetGLProcAddress("glProgramUniform3i"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glProgramUniform3ivFn = reinterpret_cast<glProgramUniform3ivProc>(
         GetGLProcAddress("glProgramUniform3iv"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glProgramUniform3uiFn = reinterpret_cast<glProgramUniform3uiProc>(
         GetGLProcAddress("glProgramUniform3ui"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glProgramUniform3uivFn = reinterpret_cast<glProgramUniform3uivProc>(
         GetGLProcAddress("glProgramUniform3uiv"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glProgramUniform4fFn = reinterpret_cast<glProgramUniform4fProc>(
         GetGLProcAddress("glProgramUniform4f"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glProgramUniform4fvFn = reinterpret_cast<glProgramUniform4fvProc>(
         GetGLProcAddress("glProgramUniform4fv"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glProgramUniform4iFn = reinterpret_cast<glProgramUniform4iProc>(
         GetGLProcAddress("glProgramUniform4i"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glProgramUniform4ivFn = reinterpret_cast<glProgramUniform4ivProc>(
         GetGLProcAddress("glProgramUniform4iv"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glProgramUniform4uiFn = reinterpret_cast<glProgramUniform4uiProc>(
         GetGLProcAddress("glProgramUniform4ui"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glProgramUniform4uivFn = reinterpret_cast<glProgramUniform4uivProc>(
         GetGLProcAddress("glProgramUniform4uiv"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glProgramUniformMatrix2fvFn =
         reinterpret_cast<glProgramUniformMatrix2fvProc>(
             GetGLProcAddress("glProgramUniformMatrix2fv"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glProgramUniformMatrix2x3fvFn =
         reinterpret_cast<glProgramUniformMatrix2x3fvProc>(
             GetGLProcAddress("glProgramUniformMatrix2x3fv"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glProgramUniformMatrix2x4fvFn =
         reinterpret_cast<glProgramUniformMatrix2x4fvProc>(
             GetGLProcAddress("glProgramUniformMatrix2x4fv"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glProgramUniformMatrix3fvFn =
         reinterpret_cast<glProgramUniformMatrix3fvProc>(
             GetGLProcAddress("glProgramUniformMatrix3fv"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glProgramUniformMatrix3x2fvFn =
         reinterpret_cast<glProgramUniformMatrix3x2fvProc>(
             GetGLProcAddress("glProgramUniformMatrix3x2fv"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glProgramUniformMatrix3x4fvFn =
         reinterpret_cast<glProgramUniformMatrix3x4fvProc>(
             GetGLProcAddress("glProgramUniformMatrix3x4fv"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glProgramUniformMatrix4fvFn =
         reinterpret_cast<glProgramUniformMatrix4fvProc>(
             GetGLProcAddress("glProgramUniformMatrix4fv"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glProgramUniformMatrix4x2fvFn =
         reinterpret_cast<glProgramUniformMatrix4x2fvProc>(
             GetGLProcAddress("glProgramUniformMatrix4x2fv"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glProgramUniformMatrix4x3fvFn =
         reinterpret_cast<glProgramUniformMatrix4x3fvProc>(
             GetGLProcAddress("glProgramUniformMatrix4x3fv"));
@@ -2594,7 +2116,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glProvokingVertexANGLE"));
   }
 
-  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 2u)) {
+  if (ver->IsAtLeastGLES(3u, 2u)) {
     fn.glPushDebugGroupFn = reinterpret_cast<glPushDebugGroupProc>(
         GetGLProcAddress("glPushDebugGroup"));
   } else if (ext.b_GL_KHR_debug) {
@@ -2607,15 +2129,12 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glPushGroupMarkerEXT"));
   }
 
-  if (ver->IsAtLeastGL(3u, 3u) || ext.b_GL_ARB_timer_query) {
-    fn.glQueryCounterFn = reinterpret_cast<glQueryCounterProc>(
-        GetGLProcAddress("glQueryCounter"));
-  } else if (ext.b_GL_EXT_disjoint_timer_query) {
+  if (ext.b_GL_EXT_disjoint_timer_query) {
     fn.glQueryCounterFn = reinterpret_cast<glQueryCounterProc>(
         GetGLProcAddress("glQueryCounterEXT"));
   }
 
-  if (!ver->is_es || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glReadBufferFn =
         reinterpret_cast<glReadBufferProc>(GetGLProcAddress("glReadBuffer"));
   }
@@ -2632,29 +2151,12 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glReadPixelsRobustANGLE"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->is_es) {
-    fn.glReleaseShaderCompilerFn =
-        reinterpret_cast<glReleaseShaderCompilerProc>(
-            GetGLProcAddress("glReleaseShaderCompiler"));
-  }
-
   if (ext.b_GL_ANGLE_vulkan_image) {
     fn.glReleaseTexturesANGLEFn = reinterpret_cast<glReleaseTexturesANGLEProc>(
         GetGLProcAddress("glReleaseTexturesANGLE"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->is_es) {
-    fn.glRenderbufferStorageEXTFn =
-        reinterpret_cast<glRenderbufferStorageEXTProc>(
-            GetGLProcAddress("glRenderbufferStorage"));
-  } else if (ext.b_GL_EXT_framebuffer_object) {
-    fn.glRenderbufferStorageEXTFn =
-        reinterpret_cast<glRenderbufferStorageEXTProc>(
-            GetGLProcAddress("glRenderbufferStorageEXT"));
-  }
-
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u) ||
-      ext.b_GL_ARB_framebuffer_object) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glRenderbufferStorageMultisampleFn =
         reinterpret_cast<glRenderbufferStorageMultisampleProc>(
             GetGLProcAddress("glRenderbufferStorageMultisample"));
@@ -2690,26 +2192,23 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glRequestExtensionANGLE"));
   }
 
-  if (ver->IsAtLeastGL(4u, 0u) || ver->IsAtLeastGLES(3u, 0u) ||
-      ext.b_GL_ARB_transform_feedback2) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glResumeTransformFeedbackFn =
         reinterpret_cast<glResumeTransformFeedbackProc>(
             GetGLProcAddress("glResumeTransformFeedback"));
   }
 
-  if (ver->IsAtLeastGL(3u, 2u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glSampleMaskiFn =
         reinterpret_cast<glSampleMaskiProc>(GetGLProcAddress("glSampleMaski"));
   }
 
-  if (ver->IsAtLeastGL(3u, 3u) || ver->IsAtLeastGLES(3u, 0u) ||
-      ext.b_GL_ARB_sampler_objects) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glSamplerParameterfFn = reinterpret_cast<glSamplerParameterfProc>(
         GetGLProcAddress("glSamplerParameterf"));
   }
 
-  if (ver->IsAtLeastGL(3u, 3u) || ver->IsAtLeastGLES(3u, 0u) ||
-      ext.b_GL_ARB_sampler_objects) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glSamplerParameterfvFn = reinterpret_cast<glSamplerParameterfvProc>(
         GetGLProcAddress("glSamplerParameterfv"));
   }
@@ -2720,8 +2219,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glSamplerParameterfvRobustANGLE"));
   }
 
-  if (ver->IsAtLeastGL(3u, 3u) || ver->IsAtLeastGLES(3u, 0u) ||
-      ext.b_GL_ARB_sampler_objects) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glSamplerParameteriFn = reinterpret_cast<glSamplerParameteriProc>(
         GetGLProcAddress("glSamplerParameteri"));
   }
@@ -2738,8 +2236,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glSamplerParameterIuivRobustANGLE"));
   }
 
-  if (ver->IsAtLeastGL(3u, 3u) || ver->IsAtLeastGLES(3u, 0u) ||
-      ext.b_GL_ARB_sampler_objects) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glSamplerParameterivFn = reinterpret_cast<glSamplerParameterivProc>(
         GetGLProcAddress("glSamplerParameteriv"));
   }
@@ -2750,19 +2247,9 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glSamplerParameterivRobustANGLE"));
   }
 
-  if (ext.b_GL_APPLE_fence) {
-    fn.glSetFenceAPPLEFn = reinterpret_cast<glSetFenceAPPLEProc>(
-        GetGLProcAddress("glSetFenceAPPLE"));
-  }
-
   if (ext.b_GL_NV_fence) {
     fn.glSetFenceNVFn =
         reinterpret_cast<glSetFenceNVProc>(GetGLProcAddress("glSetFenceNV"));
-  }
-
-  if (ver->IsAtLeastGL(4u, 1u) || ver->is_es) {
-    fn.glShaderBinaryFn = reinterpret_cast<glShaderBinaryProc>(
-        GetGLProcAddress("glShaderBinary"));
   }
 
   if (ext.b_GL_EXT_semaphore) {
@@ -2775,105 +2262,23 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glStartTilingQCOM"));
   }
 
-  if (ext.b_GL_NV_path_rendering) {
-    fn.glStencilFillPathInstancedNVFn =
-        reinterpret_cast<glStencilFillPathInstancedNVProc>(
-            GetGLProcAddress("glStencilFillPathInstancedNV"));
-  } else if (ext.b_GL_CHROMIUM_path_rendering) {
-    fn.glStencilFillPathInstancedNVFn =
-        reinterpret_cast<glStencilFillPathInstancedNVProc>(
-            GetGLProcAddress("glStencilFillPathInstancedCHROMIUM"));
-  }
-
-  if (ext.b_GL_NV_path_rendering) {
-    fn.glStencilFillPathNVFn = reinterpret_cast<glStencilFillPathNVProc>(
-        GetGLProcAddress("glStencilFillPathNV"));
-  } else if (ext.b_GL_CHROMIUM_path_rendering) {
-    fn.glStencilFillPathNVFn = reinterpret_cast<glStencilFillPathNVProc>(
-        GetGLProcAddress("glStencilFillPathCHROMIUM"));
-  }
-
-  if (ext.b_GL_NV_path_rendering) {
-    fn.glStencilStrokePathInstancedNVFn =
-        reinterpret_cast<glStencilStrokePathInstancedNVProc>(
-            GetGLProcAddress("glStencilStrokePathInstancedNV"));
-  } else if (ext.b_GL_CHROMIUM_path_rendering) {
-    fn.glStencilStrokePathInstancedNVFn =
-        reinterpret_cast<glStencilStrokePathInstancedNVProc>(
-            GetGLProcAddress("glStencilStrokePathInstancedCHROMIUM"));
-  }
-
-  if (ext.b_GL_NV_path_rendering) {
-    fn.glStencilStrokePathNVFn = reinterpret_cast<glStencilStrokePathNVProc>(
-        GetGLProcAddress("glStencilStrokePathNV"));
-  } else if (ext.b_GL_CHROMIUM_path_rendering) {
-    fn.glStencilStrokePathNVFn = reinterpret_cast<glStencilStrokePathNVProc>(
-        GetGLProcAddress("glStencilStrokePathCHROMIUM"));
-  }
-
-  if (ext.b_GL_NV_path_rendering) {
-    fn.glStencilThenCoverFillPathInstancedNVFn =
-        reinterpret_cast<glStencilThenCoverFillPathInstancedNVProc>(
-            GetGLProcAddress("glStencilThenCoverFillPathInstancedNV"));
-  } else if (ext.b_GL_CHROMIUM_path_rendering) {
-    fn.glStencilThenCoverFillPathInstancedNVFn =
-        reinterpret_cast<glStencilThenCoverFillPathInstancedNVProc>(
-            GetGLProcAddress("glStencilThenCoverFillPathInstancedCHROMIUM"));
-  }
-
-  if (ext.b_GL_NV_path_rendering) {
-    fn.glStencilThenCoverFillPathNVFn =
-        reinterpret_cast<glStencilThenCoverFillPathNVProc>(
-            GetGLProcAddress("glStencilThenCoverFillPathNV"));
-  } else if (ext.b_GL_CHROMIUM_path_rendering) {
-    fn.glStencilThenCoverFillPathNVFn =
-        reinterpret_cast<glStencilThenCoverFillPathNVProc>(
-            GetGLProcAddress("glStencilThenCoverFillPathCHROMIUM"));
-  }
-
-  if (ext.b_GL_NV_path_rendering) {
-    fn.glStencilThenCoverStrokePathInstancedNVFn =
-        reinterpret_cast<glStencilThenCoverStrokePathInstancedNVProc>(
-            GetGLProcAddress("glStencilThenCoverStrokePathInstancedNV"));
-  } else if (ext.b_GL_CHROMIUM_path_rendering) {
-    fn.glStencilThenCoverStrokePathInstancedNVFn =
-        reinterpret_cast<glStencilThenCoverStrokePathInstancedNVProc>(
-            GetGLProcAddress("glStencilThenCoverStrokePathInstancedCHROMIUM"));
-  }
-
-  if (ext.b_GL_NV_path_rendering) {
-    fn.glStencilThenCoverStrokePathNVFn =
-        reinterpret_cast<glStencilThenCoverStrokePathNVProc>(
-            GetGLProcAddress("glStencilThenCoverStrokePathNV"));
-  } else if (ext.b_GL_CHROMIUM_path_rendering) {
-    fn.glStencilThenCoverStrokePathNVFn =
-        reinterpret_cast<glStencilThenCoverStrokePathNVProc>(
-            GetGLProcAddress("glStencilThenCoverStrokePathCHROMIUM"));
-  }
-
-  if (ext.b_GL_APPLE_fence) {
-    fn.glTestFenceAPPLEFn = reinterpret_cast<glTestFenceAPPLEProc>(
-        GetGLProcAddress("glTestFenceAPPLE"));
-  }
-
   if (ext.b_GL_NV_fence) {
     fn.glTestFenceNVFn =
         reinterpret_cast<glTestFenceNVProc>(GetGLProcAddress("glTestFenceNV"));
   }
 
-  if (ver->IsAtLeastGL(3u, 1u) || ver->IsAtLeastGLES(3u, 2u)) {
+  if (ver->IsAtLeastGLES(3u, 2u)) {
     fn.glTexBufferFn =
         reinterpret_cast<glTexBufferProc>(GetGLProcAddress("glTexBuffer"));
   } else if (ext.b_GL_OES_texture_buffer) {
     fn.glTexBufferFn =
         reinterpret_cast<glTexBufferProc>(GetGLProcAddress("glTexBufferOES"));
-  } else if (ext.b_GL_EXT_texture_buffer ||
-             ext.b_GL_EXT_texture_buffer_object) {
+  } else if (ext.b_GL_EXT_texture_buffer) {
     fn.glTexBufferFn =
         reinterpret_cast<glTexBufferProc>(GetGLProcAddress("glTexBufferEXT"));
   }
 
-  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 2u)) {
+  if (ver->IsAtLeastGLES(3u, 2u)) {
     fn.glTexBufferRangeFn = reinterpret_cast<glTexBufferRangeProc>(
         GetGLProcAddress("glTexBufferRange"));
   } else if (ext.b_GL_OES_texture_buffer) {
@@ -2896,7 +2301,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glTexImage2DRobustANGLE"));
   }
 
-  if (!ver->is_es || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glTexImage3DFn =
         reinterpret_cast<glTexImage3DProc>(GetGLProcAddress("glTexImage3D"));
   }
@@ -2931,8 +2336,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glTexParameterivRobustANGLE"));
   }
 
-  if (ver->IsAtLeastGL(4u, 2u) || ver->IsAtLeastGLES(3u, 0u) ||
-      ext.b_GL_ARB_texture_storage) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glTexStorage2DEXTFn = reinterpret_cast<glTexStorage2DEXTProc>(
         GetGLProcAddress("glTexStorage2D"));
   } else if (ext.b_GL_EXT_texture_storage) {
@@ -2940,14 +2344,13 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glTexStorage2DEXT"));
   }
 
-  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glTexStorage2DMultisampleFn =
         reinterpret_cast<glTexStorage2DMultisampleProc>(
             GetGLProcAddress("glTexStorage2DMultisample"));
   }
 
-  if (ver->IsAtLeastGL(4u, 2u) || ver->IsAtLeastGLES(3u, 0u) ||
-      ext.b_GL_ARB_texture_storage) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glTexStorage3DFn = reinterpret_cast<glTexStorage3DProc>(
         GetGLProcAddress("glTexStorage3D"));
   }
@@ -2969,7 +2372,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glTexSubImage2DRobustANGLE"));
   }
 
-  if (!ver->is_es || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glTexSubImage3DFn = reinterpret_cast<glTexSubImage3DProc>(
         GetGLProcAddress("glTexSubImage3D"));
   }
@@ -2980,92 +2383,88 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glTexSubImage3DRobustANGLE"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glTransformFeedbackVaryingsFn =
         reinterpret_cast<glTransformFeedbackVaryingsProc>(
             GetGLProcAddress("glTransformFeedbackVaryings"));
-  } else if (ext.b_GL_EXT_transform_feedback) {
-    fn.glTransformFeedbackVaryingsFn =
-        reinterpret_cast<glTransformFeedbackVaryingsProc>(
-            GetGLProcAddress("glTransformFeedbackVaryingsEXT"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glUniform1uiFn =
         reinterpret_cast<glUniform1uiProc>(GetGLProcAddress("glUniform1ui"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glUniform1uivFn =
         reinterpret_cast<glUniform1uivProc>(GetGLProcAddress("glUniform1uiv"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glUniform2uiFn =
         reinterpret_cast<glUniform2uiProc>(GetGLProcAddress("glUniform2ui"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glUniform2uivFn =
         reinterpret_cast<glUniform2uivProc>(GetGLProcAddress("glUniform2uiv"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glUniform3uiFn =
         reinterpret_cast<glUniform3uiProc>(GetGLProcAddress("glUniform3ui"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glUniform3uivFn =
         reinterpret_cast<glUniform3uivProc>(GetGLProcAddress("glUniform3uiv"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glUniform4uiFn =
         reinterpret_cast<glUniform4uiProc>(GetGLProcAddress("glUniform4ui"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glUniform4uivFn =
         reinterpret_cast<glUniform4uivProc>(GetGLProcAddress("glUniform4uiv"));
   }
 
-  if (ver->IsAtLeastGL(3u, 1u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glUniformBlockBindingFn = reinterpret_cast<glUniformBlockBindingProc>(
         GetGLProcAddress("glUniformBlockBinding"));
   }
 
-  if (!ver->is_es || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glUniformMatrix2x3fvFn = reinterpret_cast<glUniformMatrix2x3fvProc>(
         GetGLProcAddress("glUniformMatrix2x3fv"));
   }
 
-  if (!ver->is_es || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glUniformMatrix2x4fvFn = reinterpret_cast<glUniformMatrix2x4fvProc>(
         GetGLProcAddress("glUniformMatrix2x4fv"));
   }
 
-  if (!ver->is_es || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glUniformMatrix3x2fvFn = reinterpret_cast<glUniformMatrix3x2fvProc>(
         GetGLProcAddress("glUniformMatrix3x2fv"));
   }
 
-  if (!ver->is_es || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glUniformMatrix3x4fvFn = reinterpret_cast<glUniformMatrix3x4fvProc>(
         GetGLProcAddress("glUniformMatrix3x4fv"));
   }
 
-  if (!ver->is_es || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glUniformMatrix4x2fvFn = reinterpret_cast<glUniformMatrix4x2fvProc>(
         GetGLProcAddress("glUniformMatrix4x2fv"));
   }
 
-  if (!ver->is_es || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glUniformMatrix4x3fvFn = reinterpret_cast<glUniformMatrix4x3fvProc>(
         GetGLProcAddress("glUniformMatrix4x3fv"));
   }
 
-  if (!ver->is_es || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glUnmapBufferFn =
         reinterpret_cast<glUnmapBufferProc>(GetGLProcAddress("glUnmapBuffer"));
   } else if (ext.b_GL_OES_mapbuffer) {
@@ -3073,30 +2472,26 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glUnmapBufferOES"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glUseProgramStagesFn = reinterpret_cast<glUseProgramStagesProc>(
         GetGLProcAddress("glUseProgramStages"));
   }
 
-  if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glValidateProgramPipelineFn =
         reinterpret_cast<glValidateProgramPipelineProc>(
             GetGLProcAddress("glValidateProgramPipeline"));
   }
 
-  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glVertexAttribBindingFn = reinterpret_cast<glVertexAttribBindingProc>(
         GetGLProcAddress("glVertexAttribBinding"));
   }
 
-  if (ver->IsAtLeastGL(3u, 3u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glVertexAttribDivisorANGLEFn =
         reinterpret_cast<glVertexAttribDivisorANGLEProc>(
             GetGLProcAddress("glVertexAttribDivisor"));
-  } else if (ext.b_GL_ARB_instanced_arrays) {
-    fn.glVertexAttribDivisorANGLEFn =
-        reinterpret_cast<glVertexAttribDivisorANGLEProc>(
-            GetGLProcAddress("glVertexAttribDivisorARB"));
   } else if (ext.b_GL_ANGLE_instanced_arrays) {
     fn.glVertexAttribDivisorANGLEFn =
         reinterpret_cast<glVertexAttribDivisorANGLEProc>(
@@ -3107,42 +2502,42 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glVertexAttribDivisorEXT"));
   }
 
-  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glVertexAttribFormatFn = reinterpret_cast<glVertexAttribFormatProc>(
         GetGLProcAddress("glVertexAttribFormat"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glVertexAttribI4iFn = reinterpret_cast<glVertexAttribI4iProc>(
         GetGLProcAddress("glVertexAttribI4i"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glVertexAttribI4ivFn = reinterpret_cast<glVertexAttribI4ivProc>(
         GetGLProcAddress("glVertexAttribI4iv"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glVertexAttribI4uiFn = reinterpret_cast<glVertexAttribI4uiProc>(
         GetGLProcAddress("glVertexAttribI4ui"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glVertexAttribI4uivFn = reinterpret_cast<glVertexAttribI4uivProc>(
         GetGLProcAddress("glVertexAttribI4uiv"));
   }
 
-  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glVertexAttribIFormatFn = reinterpret_cast<glVertexAttribIFormatProc>(
         GetGLProcAddress("glVertexAttribIFormat"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glVertexAttribIPointerFn = reinterpret_cast<glVertexAttribIPointerProc>(
         GetGLProcAddress("glVertexAttribIPointer"));
   }
 
-  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 1u)) {
+  if (ver->IsAtLeastGLES(3u, 1u)) {
     fn.glVertexBindingDivisorFn = reinterpret_cast<glVertexBindingDivisorProc>(
         GetGLProcAddress("glVertexBindingDivisor"));
   }
@@ -3152,15 +2547,9 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glWaitSemaphoreEXT"));
   }
 
-  if (ver->IsAtLeastGL(3u, 2u) || ver->IsAtLeastGLES(3u, 0u) ||
-      ext.b_GL_ARB_sync) {
+  if (ver->IsAtLeastGLES(3u, 0u)) {
     fn.glWaitSyncFn =
         reinterpret_cast<glWaitSyncProc>(GetGLProcAddress("glWaitSync"));
-  }
-
-  if (ext.b_GL_APPLE_sync) {
-    fn.glWaitSyncAPPLEFn = reinterpret_cast<glWaitSyncAPPLEProc>(
-        GetGLProcAddress("glWaitSyncAPPLE"));
   }
 
   if (ext.b_GL_EXT_window_rectangles) {
@@ -3238,12 +2627,6 @@ void GLApiBase::glBindFragDataLocationIndexedFn(GLuint program,
                                                 const char* name) {
   driver_->fn.glBindFragDataLocationIndexedFn(program, colorNumber, index,
                                               name);
-}
-
-void GLApiBase::glBindFragmentInputLocationCHROMIUMFn(GLuint program,
-                                                      GLint location,
-                                                      const char* name) {
-  driver_->fn.glBindFragmentInputLocationCHROMIUMFn(program, location, name);
 }
 
 void GLApiBase::glBindFramebufferEXTFn(GLenum target, GLuint framebuffer) {
@@ -3458,12 +2841,6 @@ GLenum GLApiBase::glClientWaitSyncFn(GLsync sync,
                                      GLbitfield flags,
                                      GLuint64 timeout) {
   return driver_->fn.glClientWaitSyncFn(sync, flags, timeout);
-}
-
-GLenum GLApiBase::glClientWaitSyncAPPLEFn(GLsync sync,
-                                          GLbitfield flags,
-                                          GLuint64 timeout) {
-  return driver_->fn.glClientWaitSyncAPPLEFn(sync, flags, timeout);
 }
 
 void GLApiBase::glClipControlEXTFn(GLenum origin, GLenum depth) {
@@ -3685,38 +3062,6 @@ void GLApiBase::glCopyTextureCHROMIUMFn(GLuint sourceId,
       destType, unpackFlipY, unpackPremultiplyAlpha, unpackUnmultiplyAlpha);
 }
 
-void GLApiBase::glCoverFillPathInstancedNVFn(GLsizei numPaths,
-                                             GLenum pathNameType,
-                                             const void* paths,
-                                             GLuint pathBase,
-                                             GLenum coverMode,
-                                             GLenum transformType,
-                                             const GLfloat* transformValues) {
-  driver_->fn.glCoverFillPathInstancedNVFn(numPaths, pathNameType, paths,
-                                           pathBase, coverMode, transformType,
-                                           transformValues);
-}
-
-void GLApiBase::glCoverFillPathNVFn(GLuint path, GLenum coverMode) {
-  driver_->fn.glCoverFillPathNVFn(path, coverMode);
-}
-
-void GLApiBase::glCoverStrokePathInstancedNVFn(GLsizei numPaths,
-                                               GLenum pathNameType,
-                                               const void* paths,
-                                               GLuint pathBase,
-                                               GLenum coverMode,
-                                               GLenum transformType,
-                                               const GLfloat* transformValues) {
-  driver_->fn.glCoverStrokePathInstancedNVFn(numPaths, pathNameType, paths,
-                                             pathBase, coverMode, transformType,
-                                             transformValues);
-}
-
-void GLApiBase::glCoverStrokePathNVFn(GLuint name, GLenum coverMode) {
-  driver_->fn.glCoverStrokePathNVFn(name, coverMode);
-}
-
 void GLApiBase::glCreateMemoryObjectsEXTFn(GLsizei n, GLuint* memoryObjects) {
   driver_->fn.glCreateMemoryObjectsEXTFn(n, memoryObjects);
 }
@@ -3767,10 +3112,6 @@ void GLApiBase::glDeleteBuffersARBFn(GLsizei n, const GLuint* buffers) {
   driver_->fn.glDeleteBuffersARBFn(n, buffers);
 }
 
-void GLApiBase::glDeleteFencesAPPLEFn(GLsizei n, const GLuint* fences) {
-  driver_->fn.glDeleteFencesAPPLEFn(n, fences);
-}
-
 void GLApiBase::glDeleteFencesNVFn(GLsizei n, const GLuint* fences) {
   driver_->fn.glDeleteFencesNVFn(n, fences);
 }
@@ -3783,10 +3124,6 @@ void GLApiBase::glDeleteFramebuffersEXTFn(GLsizei n,
 void GLApiBase::glDeleteMemoryObjectsEXTFn(GLsizei n,
                                            const GLuint* memoryObjects) {
   driver_->fn.glDeleteMemoryObjectsEXTFn(n, memoryObjects);
-}
-
-void GLApiBase::glDeletePathsNVFn(GLuint path, GLsizei range) {
-  driver_->fn.glDeletePathsNVFn(path, range);
 }
 
 void GLApiBase::glDeleteProgramFn(GLuint program) {
@@ -3820,10 +3157,6 @@ void GLApiBase::glDeleteShaderFn(GLuint shader) {
 
 void GLApiBase::glDeleteSyncFn(GLsync sync) {
   driver_->fn.glDeleteSyncFn(sync);
-}
-
-void GLApiBase::glDeleteSyncAPPLEFn(GLsync sync) {
-  driver_->fn.glDeleteSyncAPPLEFn(sync);
 }
 
 void GLApiBase::glDeleteTexturesFn(GLsizei n, const GLuint* textures) {
@@ -4008,16 +3341,8 @@ GLsync GLApiBase::glFenceSyncFn(GLenum condition, GLbitfield flags) {
   return driver_->fn.glFenceSyncFn(condition, flags);
 }
 
-GLsync GLApiBase::glFenceSyncAPPLEFn(GLenum condition, GLbitfield flags) {
-  return driver_->fn.glFenceSyncAPPLEFn(condition, flags);
-}
-
 void GLApiBase::glFinishFn(void) {
   driver_->fn.glFinishFn();
-}
-
-void GLApiBase::glFinishFenceAPPLEFn(GLuint fence) {
-  driver_->fn.glFinishFenceAPPLEFn(fence);
 }
 
 void GLApiBase::glFinishFenceNVFn(GLuint fence) {
@@ -4139,20 +3464,12 @@ void GLApiBase::glGenerateMipmapEXTFn(GLenum target) {
   driver_->fn.glGenerateMipmapEXTFn(target);
 }
 
-void GLApiBase::glGenFencesAPPLEFn(GLsizei n, GLuint* fences) {
-  driver_->fn.glGenFencesAPPLEFn(n, fences);
-}
-
 void GLApiBase::glGenFencesNVFn(GLsizei n, GLuint* fences) {
   driver_->fn.glGenFencesNVFn(n, fences);
 }
 
 void GLApiBase::glGenFramebuffersEXTFn(GLsizei n, GLuint* framebuffers) {
   driver_->fn.glGenFramebuffersEXTFn(n, framebuffers);
-}
-
-GLuint GLApiBase::glGenPathsNVFn(GLsizei range) {
-  return driver_->fn.glGenPathsNVFn(range);
 }
 
 GLuint GLApiBase::glGenProgramPipelinesFn(GLsizei n, GLuint* pipelines) {
@@ -5161,20 +4478,12 @@ GLboolean GLApiBase::glIsEnablediOESFn(GLenum target, GLuint index) {
   return driver_->fn.glIsEnablediOESFn(target, index);
 }
 
-GLboolean GLApiBase::glIsFenceAPPLEFn(GLuint fence) {
-  return driver_->fn.glIsFenceAPPLEFn(fence);
-}
-
 GLboolean GLApiBase::glIsFenceNVFn(GLuint fence) {
   return driver_->fn.glIsFenceNVFn(fence);
 }
 
 GLboolean GLApiBase::glIsFramebufferEXTFn(GLuint framebuffer) {
   return driver_->fn.glIsFramebufferEXTFn(framebuffer);
-}
-
-GLboolean GLApiBase::glIsPathNVFn(GLuint path) {
-  return driver_->fn.glIsPathNVFn(path);
 }
 
 GLboolean GLApiBase::glIsProgramFn(GLuint program) {
@@ -5203,10 +4512,6 @@ GLboolean GLApiBase::glIsShaderFn(GLuint shader) {
 
 GLboolean GLApiBase::glIsSyncFn(GLsync sync) {
   return driver_->fn.glIsSyncFn(sync);
-}
-
-GLboolean GLApiBase::glIsSyncAPPLEFn(GLsync sync) {
-  return driver_->fn.glIsSyncAPPLEFn(sync);
 }
 
 GLboolean GLApiBase::glIsTextureFn(GLuint texture) {
@@ -5238,14 +4543,6 @@ void* GLApiBase::glMapBufferRangeFn(GLenum target,
                                     GLsizeiptr length,
                                     GLbitfield access) {
   return driver_->fn.glMapBufferRangeFn(target, offset, length, access);
-}
-
-void GLApiBase::glMatrixLoadfEXTFn(GLenum matrixMode, const GLfloat* m) {
-  driver_->fn.glMatrixLoadfEXTFn(matrixMode, m);
-}
-
-void GLApiBase::glMatrixLoadIdentityEXTFn(GLenum matrixMode) {
-  driver_->fn.glMatrixLoadIdentityEXTFn(matrixMode);
 }
 
 void GLApiBase::glMaxShaderCompilerThreadsKHRFn(GLuint count) {
@@ -5348,28 +4645,6 @@ void GLApiBase::glPatchParameteriFn(GLenum pname, GLint value) {
   driver_->fn.glPatchParameteriFn(pname, value);
 }
 
-void GLApiBase::glPathCommandsNVFn(GLuint path,
-                                   GLsizei numCommands,
-                                   const GLubyte* commands,
-                                   GLsizei numCoords,
-                                   GLenum coordType,
-                                   const GLvoid* coords) {
-  driver_->fn.glPathCommandsNVFn(path, numCommands, commands, numCoords,
-                                 coordType, coords);
-}
-
-void GLApiBase::glPathParameterfNVFn(GLuint path, GLenum pname, GLfloat value) {
-  driver_->fn.glPathParameterfNVFn(path, pname, value);
-}
-
-void GLApiBase::glPathParameteriNVFn(GLuint path, GLenum pname, GLint value) {
-  driver_->fn.glPathParameteriNVFn(path, pname, value);
-}
-
-void GLApiBase::glPathStencilFuncNVFn(GLenum func, GLint ref, GLuint mask) {
-  driver_->fn.glPathStencilFuncNVFn(func, ref, mask);
-}
-
 void GLApiBase::glPauseTransformFeedbackFn(void) {
   driver_->fn.glPauseTransformFeedbackFn();
 }
@@ -5427,15 +4702,6 @@ void GLApiBase::glProgramParameteriFn(GLuint program,
                                       GLenum pname,
                                       GLint value) {
   driver_->fn.glProgramParameteriFn(program, pname, value);
-}
-
-void GLApiBase::glProgramPathFragmentInputGenNVFn(GLuint program,
-                                                  GLint location,
-                                                  GLenum genMode,
-                                                  GLint components,
-                                                  const GLfloat* coeffs) {
-  driver_->fn.glProgramPathFragmentInputGenNVFn(program, location, genMode,
-                                                components, coeffs);
 }
 
 void GLApiBase::glProgramUniform1fFn(GLuint program,
@@ -5874,10 +5140,6 @@ void GLApiBase::glScissorFn(GLint x, GLint y, GLsizei width, GLsizei height) {
   driver_->fn.glScissorFn(x, y, width, height);
 }
 
-void GLApiBase::glSetFenceAPPLEFn(GLuint fence) {
-  driver_->fn.glSetFenceAPPLEFn(fence);
-}
-
 void GLApiBase::glSetFenceNVFn(GLuint fence, GLenum condition) {
   driver_->fn.glSetFenceNVFn(fence, condition);
 }
@@ -5915,25 +5177,6 @@ void GLApiBase::glStartTilingQCOMFn(GLuint x,
   driver_->fn.glStartTilingQCOMFn(x, y, width, height, preserveMask);
 }
 
-void GLApiBase::glStencilFillPathInstancedNVFn(GLsizei numPaths,
-                                               GLenum pathNameType,
-                                               const void* paths,
-                                               GLuint pathBase,
-                                               GLenum fillMode,
-                                               GLuint mask,
-                                               GLenum transformType,
-                                               const GLfloat* transformValues) {
-  driver_->fn.glStencilFillPathInstancedNVFn(numPaths, pathNameType, paths,
-                                             pathBase, fillMode, mask,
-                                             transformType, transformValues);
-}
-
-void GLApiBase::glStencilFillPathNVFn(GLuint path,
-                                      GLenum fillMode,
-                                      GLuint mask) {
-  driver_->fn.glStencilFillPathNVFn(path, fillMode, mask);
-}
-
 void GLApiBase::glStencilFuncFn(GLenum func, GLint ref, GLuint mask) {
   driver_->fn.glStencilFuncFn(func, ref, mask);
 }
@@ -5962,75 +5205,6 @@ void GLApiBase::glStencilOpSeparateFn(GLenum face,
                                       GLenum zfail,
                                       GLenum zpass) {
   driver_->fn.glStencilOpSeparateFn(face, fail, zfail, zpass);
-}
-
-void GLApiBase::glStencilStrokePathInstancedNVFn(
-    GLsizei numPaths,
-    GLenum pathNameType,
-    const void* paths,
-    GLuint pathBase,
-    GLint ref,
-    GLuint mask,
-    GLenum transformType,
-    const GLfloat* transformValues) {
-  driver_->fn.glStencilStrokePathInstancedNVFn(numPaths, pathNameType, paths,
-                                               pathBase, ref, mask,
-                                               transformType, transformValues);
-}
-
-void GLApiBase::glStencilStrokePathNVFn(GLuint path,
-                                        GLint reference,
-                                        GLuint mask) {
-  driver_->fn.glStencilStrokePathNVFn(path, reference, mask);
-}
-
-void GLApiBase::glStencilThenCoverFillPathInstancedNVFn(
-    GLsizei numPaths,
-    GLenum pathNameType,
-    const void* paths,
-    GLuint pathBase,
-    GLenum fillMode,
-    GLuint mask,
-    GLenum coverMode,
-    GLenum transformType,
-    const GLfloat* transformValues) {
-  driver_->fn.glStencilThenCoverFillPathInstancedNVFn(
-      numPaths, pathNameType, paths, pathBase, fillMode, mask, coverMode,
-      transformType, transformValues);
-}
-
-void GLApiBase::glStencilThenCoverFillPathNVFn(GLuint path,
-                                               GLenum fillMode,
-                                               GLuint mask,
-                                               GLenum coverMode) {
-  driver_->fn.glStencilThenCoverFillPathNVFn(path, fillMode, mask, coverMode);
-}
-
-void GLApiBase::glStencilThenCoverStrokePathInstancedNVFn(
-    GLsizei numPaths,
-    GLenum pathNameType,
-    const void* paths,
-    GLuint pathBase,
-    GLint ref,
-    GLuint mask,
-    GLenum coverMode,
-    GLenum transformType,
-    const GLfloat* transformValues) {
-  driver_->fn.glStencilThenCoverStrokePathInstancedNVFn(
-      numPaths, pathNameType, paths, pathBase, ref, mask, coverMode,
-      transformType, transformValues);
-}
-
-void GLApiBase::glStencilThenCoverStrokePathNVFn(GLuint path,
-                                                 GLint reference,
-                                                 GLuint mask,
-                                                 GLenum coverMode) {
-  driver_->fn.glStencilThenCoverStrokePathNVFn(path, reference, mask,
-                                               coverMode);
-}
-
-GLboolean GLApiBase::glTestFenceAPPLEFn(GLuint fence) {
-  return driver_->fn.glTestFenceAPPLEFn(fence);
 }
 
 GLboolean GLApiBase::glTestFenceNVFn(GLuint fence) {
@@ -6640,12 +5814,6 @@ void GLApiBase::glWaitSyncFn(GLsync sync, GLbitfield flags, GLuint64 timeout) {
   driver_->fn.glWaitSyncFn(sync, flags, timeout);
 }
 
-void GLApiBase::glWaitSyncAPPLEFn(GLsync sync,
-                                  GLbitfield flags,
-                                  GLuint64 timeout) {
-  driver_->fn.glWaitSyncAPPLEFn(sync, flags, timeout);
-}
-
 void GLApiBase::glWindowRectanglesEXTFn(GLenum mode,
                                         GLsizei n,
                                         const GLint* box) {
@@ -6733,14 +5901,6 @@ void TraceGLApi::glBindFragDataLocationIndexedFn(GLuint program,
   TRACE_EVENT_BINARY_EFFICIENT0("gpu",
                                 "TraceGLAPI::glBindFragDataLocationIndexed");
   gl_api_->glBindFragDataLocationIndexedFn(program, colorNumber, index, name);
-}
-
-void TraceGLApi::glBindFragmentInputLocationCHROMIUMFn(GLuint program,
-                                                       GLint location,
-                                                       const char* name) {
-  TRACE_EVENT_BINARY_EFFICIENT0(
-      "gpu", "TraceGLAPI::glBindFragmentInputLocationCHROMIUM");
-  gl_api_->glBindFragmentInputLocationCHROMIUMFn(program, location, name);
 }
 
 void TraceGLApi::glBindFramebufferEXTFn(GLenum target, GLuint framebuffer) {
@@ -6995,13 +6155,6 @@ GLenum TraceGLApi::glClientWaitSyncFn(GLsync sync,
   return gl_api_->glClientWaitSyncFn(sync, flags, timeout);
 }
 
-GLenum TraceGLApi::glClientWaitSyncAPPLEFn(GLsync sync,
-                                           GLbitfield flags,
-                                           GLuint64 timeout) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glClientWaitSyncAPPLE");
-  return gl_api_->glClientWaitSyncAPPLEFn(sync, flags, timeout);
-}
-
 void TraceGLApi::glClipControlEXTFn(GLenum origin, GLenum depth) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glClipControlEXT");
   gl_api_->glClipControlEXTFn(origin, depth);
@@ -7243,45 +6396,6 @@ void TraceGLApi::glCopyTextureCHROMIUMFn(GLuint sourceId,
       destType, unpackFlipY, unpackPremultiplyAlpha, unpackUnmultiplyAlpha);
 }
 
-void TraceGLApi::glCoverFillPathInstancedNVFn(GLsizei numPaths,
-                                              GLenum pathNameType,
-                                              const void* paths,
-                                              GLuint pathBase,
-                                              GLenum coverMode,
-                                              GLenum transformType,
-                                              const GLfloat* transformValues) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
-                                "TraceGLAPI::glCoverFillPathInstancedNV");
-  gl_api_->glCoverFillPathInstancedNVFn(numPaths, pathNameType, paths, pathBase,
-                                        coverMode, transformType,
-                                        transformValues);
-}
-
-void TraceGLApi::glCoverFillPathNVFn(GLuint path, GLenum coverMode) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glCoverFillPathNV");
-  gl_api_->glCoverFillPathNVFn(path, coverMode);
-}
-
-void TraceGLApi::glCoverStrokePathInstancedNVFn(
-    GLsizei numPaths,
-    GLenum pathNameType,
-    const void* paths,
-    GLuint pathBase,
-    GLenum coverMode,
-    GLenum transformType,
-    const GLfloat* transformValues) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
-                                "TraceGLAPI::glCoverStrokePathInstancedNV");
-  gl_api_->glCoverStrokePathInstancedNVFn(numPaths, pathNameType, paths,
-                                          pathBase, coverMode, transformType,
-                                          transformValues);
-}
-
-void TraceGLApi::glCoverStrokePathNVFn(GLuint name, GLenum coverMode) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glCoverStrokePathNV");
-  gl_api_->glCoverStrokePathNVFn(name, coverMode);
-}
-
 void TraceGLApi::glCreateMemoryObjectsEXTFn(GLsizei n, GLuint* memoryObjects) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glCreateMemoryObjectsEXT");
   gl_api_->glCreateMemoryObjectsEXTFn(n, memoryObjects);
@@ -7340,11 +6454,6 @@ void TraceGLApi::glDeleteBuffersARBFn(GLsizei n, const GLuint* buffers) {
   gl_api_->glDeleteBuffersARBFn(n, buffers);
 }
 
-void TraceGLApi::glDeleteFencesAPPLEFn(GLsizei n, const GLuint* fences) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDeleteFencesAPPLE");
-  gl_api_->glDeleteFencesAPPLEFn(n, fences);
-}
-
 void TraceGLApi::glDeleteFencesNVFn(GLsizei n, const GLuint* fences) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDeleteFencesNV");
   gl_api_->glDeleteFencesNVFn(n, fences);
@@ -7360,11 +6469,6 @@ void TraceGLApi::glDeleteMemoryObjectsEXTFn(GLsizei n,
                                             const GLuint* memoryObjects) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDeleteMemoryObjectsEXT");
   gl_api_->glDeleteMemoryObjectsEXTFn(n, memoryObjects);
-}
-
-void TraceGLApi::glDeletePathsNVFn(GLuint path, GLsizei range) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDeletePathsNV");
-  gl_api_->glDeletePathsNVFn(path, range);
 }
 
 void TraceGLApi::glDeleteProgramFn(GLuint program) {
@@ -7407,11 +6511,6 @@ void TraceGLApi::glDeleteShaderFn(GLuint shader) {
 void TraceGLApi::glDeleteSyncFn(GLsync sync) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDeleteSync");
   gl_api_->glDeleteSyncFn(sync);
-}
-
-void TraceGLApi::glDeleteSyncAPPLEFn(GLsync sync) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDeleteSyncAPPLE");
-  gl_api_->glDeleteSyncAPPLEFn(sync);
 }
 
 void TraceGLApi::glDeleteTexturesFn(GLsizei n, const GLuint* textures) {
@@ -7641,19 +6740,9 @@ GLsync TraceGLApi::glFenceSyncFn(GLenum condition, GLbitfield flags) {
   return gl_api_->glFenceSyncFn(condition, flags);
 }
 
-GLsync TraceGLApi::glFenceSyncAPPLEFn(GLenum condition, GLbitfield flags) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glFenceSyncAPPLE");
-  return gl_api_->glFenceSyncAPPLEFn(condition, flags);
-}
-
 void TraceGLApi::glFinishFn(void) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glFinish");
   gl_api_->glFinishFn();
-}
-
-void TraceGLApi::glFinishFenceAPPLEFn(GLuint fence) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glFinishFenceAPPLE");
-  gl_api_->glFinishFenceAPPLEFn(fence);
 }
 
 void TraceGLApi::glFinishFenceNVFn(GLuint fence) {
@@ -7805,11 +6894,6 @@ void TraceGLApi::glGenerateMipmapEXTFn(GLenum target) {
   gl_api_->glGenerateMipmapEXTFn(target);
 }
 
-void TraceGLApi::glGenFencesAPPLEFn(GLsizei n, GLuint* fences) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGenFencesAPPLE");
-  gl_api_->glGenFencesAPPLEFn(n, fences);
-}
-
 void TraceGLApi::glGenFencesNVFn(GLsizei n, GLuint* fences) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGenFencesNV");
   gl_api_->glGenFencesNVFn(n, fences);
@@ -7818,11 +6902,6 @@ void TraceGLApi::glGenFencesNVFn(GLsizei n, GLuint* fences) {
 void TraceGLApi::glGenFramebuffersEXTFn(GLsizei n, GLuint* framebuffers) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGenFramebuffersEXT");
   gl_api_->glGenFramebuffersEXTFn(n, framebuffers);
-}
-
-GLuint TraceGLApi::glGenPathsNVFn(GLsizei range) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGenPathsNV");
-  return gl_api_->glGenPathsNVFn(range);
 }
 
 GLuint TraceGLApi::glGenProgramPipelinesFn(GLsizei n, GLuint* pipelines) {
@@ -9022,11 +8101,6 @@ GLboolean TraceGLApi::glIsEnablediOESFn(GLenum target, GLuint index) {
   return gl_api_->glIsEnablediOESFn(target, index);
 }
 
-GLboolean TraceGLApi::glIsFenceAPPLEFn(GLuint fence) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glIsFenceAPPLE");
-  return gl_api_->glIsFenceAPPLEFn(fence);
-}
-
 GLboolean TraceGLApi::glIsFenceNVFn(GLuint fence) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glIsFenceNV");
   return gl_api_->glIsFenceNVFn(fence);
@@ -9035,11 +8109,6 @@ GLboolean TraceGLApi::glIsFenceNVFn(GLuint fence) {
 GLboolean TraceGLApi::glIsFramebufferEXTFn(GLuint framebuffer) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glIsFramebufferEXT");
   return gl_api_->glIsFramebufferEXTFn(framebuffer);
-}
-
-GLboolean TraceGLApi::glIsPathNVFn(GLuint path) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glIsPathNV");
-  return gl_api_->glIsPathNVFn(path);
 }
 
 GLboolean TraceGLApi::glIsProgramFn(GLuint program) {
@@ -9075,11 +8144,6 @@ GLboolean TraceGLApi::glIsShaderFn(GLuint shader) {
 GLboolean TraceGLApi::glIsSyncFn(GLsync sync) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glIsSync");
   return gl_api_->glIsSyncFn(sync);
-}
-
-GLboolean TraceGLApi::glIsSyncAPPLEFn(GLsync sync) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glIsSyncAPPLE");
-  return gl_api_->glIsSyncAPPLEFn(sync);
 }
 
 GLboolean TraceGLApi::glIsTextureFn(GLuint texture) {
@@ -9118,16 +8182,6 @@ void* TraceGLApi::glMapBufferRangeFn(GLenum target,
                                      GLbitfield access) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glMapBufferRange");
   return gl_api_->glMapBufferRangeFn(target, offset, length, access);
-}
-
-void TraceGLApi::glMatrixLoadfEXTFn(GLenum matrixMode, const GLfloat* m) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glMatrixLoadfEXT");
-  gl_api_->glMatrixLoadfEXTFn(matrixMode, m);
-}
-
-void TraceGLApi::glMatrixLoadIdentityEXTFn(GLenum matrixMode) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glMatrixLoadIdentityEXT");
-  gl_api_->glMatrixLoadIdentityEXTFn(matrixMode);
 }
 
 void TraceGLApi::glMaxShaderCompilerThreadsKHRFn(GLuint count) {
@@ -9251,34 +8305,6 @@ void TraceGLApi::glPatchParameteriFn(GLenum pname, GLint value) {
   gl_api_->glPatchParameteriFn(pname, value);
 }
 
-void TraceGLApi::glPathCommandsNVFn(GLuint path,
-                                    GLsizei numCommands,
-                                    const GLubyte* commands,
-                                    GLsizei numCoords,
-                                    GLenum coordType,
-                                    const GLvoid* coords) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glPathCommandsNV");
-  gl_api_->glPathCommandsNVFn(path, numCommands, commands, numCoords, coordType,
-                              coords);
-}
-
-void TraceGLApi::glPathParameterfNVFn(GLuint path,
-                                      GLenum pname,
-                                      GLfloat value) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glPathParameterfNV");
-  gl_api_->glPathParameterfNVFn(path, pname, value);
-}
-
-void TraceGLApi::glPathParameteriNVFn(GLuint path, GLenum pname, GLint value) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glPathParameteriNV");
-  gl_api_->glPathParameteriNVFn(path, pname, value);
-}
-
-void TraceGLApi::glPathStencilFuncNVFn(GLenum func, GLint ref, GLuint mask) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glPathStencilFuncNV");
-  gl_api_->glPathStencilFuncNVFn(func, ref, mask);
-}
-
 void TraceGLApi::glPauseTransformFeedbackFn(void) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glPauseTransformFeedback");
   gl_api_->glPauseTransformFeedbackFn();
@@ -9350,17 +8376,6 @@ void TraceGLApi::glProgramParameteriFn(GLuint program,
                                        GLint value) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glProgramParameteri");
   gl_api_->glProgramParameteriFn(program, pname, value);
-}
-
-void TraceGLApi::glProgramPathFragmentInputGenNVFn(GLuint program,
-                                                   GLint location,
-                                                   GLenum genMode,
-                                                   GLint components,
-                                                   const GLfloat* coeffs) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
-                                "TraceGLAPI::glProgramPathFragmentInputGenNV");
-  gl_api_->glProgramPathFragmentInputGenNVFn(program, location, genMode,
-                                             components, coeffs);
 }
 
 void TraceGLApi::glProgramUniform1fFn(GLuint program,
@@ -9872,11 +8887,6 @@ void TraceGLApi::glScissorFn(GLint x, GLint y, GLsizei width, GLsizei height) {
   gl_api_->glScissorFn(x, y, width, height);
 }
 
-void TraceGLApi::glSetFenceAPPLEFn(GLuint fence) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glSetFenceAPPLE");
-  gl_api_->glSetFenceAPPLEFn(fence);
-}
-
 void TraceGLApi::glSetFenceNVFn(GLuint fence, GLenum condition) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glSetFenceNV");
   gl_api_->glSetFenceNVFn(fence, condition);
@@ -9919,29 +8929,6 @@ void TraceGLApi::glStartTilingQCOMFn(GLuint x,
   gl_api_->glStartTilingQCOMFn(x, y, width, height, preserveMask);
 }
 
-void TraceGLApi::glStencilFillPathInstancedNVFn(
-    GLsizei numPaths,
-    GLenum pathNameType,
-    const void* paths,
-    GLuint pathBase,
-    GLenum fillMode,
-    GLuint mask,
-    GLenum transformType,
-    const GLfloat* transformValues) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
-                                "TraceGLAPI::glStencilFillPathInstancedNV");
-  gl_api_->glStencilFillPathInstancedNVFn(numPaths, pathNameType, paths,
-                                          pathBase, fillMode, mask,
-                                          transformType, transformValues);
-}
-
-void TraceGLApi::glStencilFillPathNVFn(GLuint path,
-                                       GLenum fillMode,
-                                       GLuint mask) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glStencilFillPathNV");
-  gl_api_->glStencilFillPathNVFn(path, fillMode, mask);
-}
-
 void TraceGLApi::glStencilFuncFn(GLenum func, GLint ref, GLuint mask) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glStencilFunc");
   gl_api_->glStencilFuncFn(func, ref, mask);
@@ -9976,86 +8963,6 @@ void TraceGLApi::glStencilOpSeparateFn(GLenum face,
                                        GLenum zpass) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glStencilOpSeparate");
   gl_api_->glStencilOpSeparateFn(face, fail, zfail, zpass);
-}
-
-void TraceGLApi::glStencilStrokePathInstancedNVFn(
-    GLsizei numPaths,
-    GLenum pathNameType,
-    const void* paths,
-    GLuint pathBase,
-    GLint ref,
-    GLuint mask,
-    GLenum transformType,
-    const GLfloat* transformValues) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
-                                "TraceGLAPI::glStencilStrokePathInstancedNV");
-  gl_api_->glStencilStrokePathInstancedNVFn(numPaths, pathNameType, paths,
-                                            pathBase, ref, mask, transformType,
-                                            transformValues);
-}
-
-void TraceGLApi::glStencilStrokePathNVFn(GLuint path,
-                                         GLint reference,
-                                         GLuint mask) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glStencilStrokePathNV");
-  gl_api_->glStencilStrokePathNVFn(path, reference, mask);
-}
-
-void TraceGLApi::glStencilThenCoverFillPathInstancedNVFn(
-    GLsizei numPaths,
-    GLenum pathNameType,
-    const void* paths,
-    GLuint pathBase,
-    GLenum fillMode,
-    GLuint mask,
-    GLenum coverMode,
-    GLenum transformType,
-    const GLfloat* transformValues) {
-  TRACE_EVENT_BINARY_EFFICIENT0(
-      "gpu", "TraceGLAPI::glStencilThenCoverFillPathInstancedNV");
-  gl_api_->glStencilThenCoverFillPathInstancedNVFn(
-      numPaths, pathNameType, paths, pathBase, fillMode, mask, coverMode,
-      transformType, transformValues);
-}
-
-void TraceGLApi::glStencilThenCoverFillPathNVFn(GLuint path,
-                                                GLenum fillMode,
-                                                GLuint mask,
-                                                GLenum coverMode) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
-                                "TraceGLAPI::glStencilThenCoverFillPathNV");
-  gl_api_->glStencilThenCoverFillPathNVFn(path, fillMode, mask, coverMode);
-}
-
-void TraceGLApi::glStencilThenCoverStrokePathInstancedNVFn(
-    GLsizei numPaths,
-    GLenum pathNameType,
-    const void* paths,
-    GLuint pathBase,
-    GLint ref,
-    GLuint mask,
-    GLenum coverMode,
-    GLenum transformType,
-    const GLfloat* transformValues) {
-  TRACE_EVENT_BINARY_EFFICIENT0(
-      "gpu", "TraceGLAPI::glStencilThenCoverStrokePathInstancedNV");
-  gl_api_->glStencilThenCoverStrokePathInstancedNVFn(
-      numPaths, pathNameType, paths, pathBase, ref, mask, coverMode,
-      transformType, transformValues);
-}
-
-void TraceGLApi::glStencilThenCoverStrokePathNVFn(GLuint path,
-                                                  GLint reference,
-                                                  GLuint mask,
-                                                  GLenum coverMode) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
-                                "TraceGLAPI::glStencilThenCoverStrokePathNV");
-  gl_api_->glStencilThenCoverStrokePathNVFn(path, reference, mask, coverMode);
-}
-
-GLboolean TraceGLApi::glTestFenceAPPLEFn(GLuint fence) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glTestFenceAPPLE");
-  return gl_api_->glTestFenceAPPLEFn(fence);
 }
 
 GLboolean TraceGLApi::glTestFenceNVFn(GLuint fence) {
@@ -10760,13 +9667,6 @@ void TraceGLApi::glWaitSyncFn(GLsync sync, GLbitfield flags, GLuint64 timeout) {
   gl_api_->glWaitSyncFn(sync, flags, timeout);
 }
 
-void TraceGLApi::glWaitSyncAPPLEFn(GLsync sync,
-                                   GLbitfield flags,
-                                   GLuint64 timeout) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glWaitSyncAPPLE");
-  gl_api_->glWaitSyncAPPLEFn(sync, flags, timeout);
-}
-
 void TraceGLApi::glWindowRectanglesEXTFn(GLenum mode,
                                          GLsizei n,
                                          const GLint* box) {
@@ -10869,14 +9769,6 @@ void LogGLApi::glBindFragDataLocationIndexedFn(GLuint program,
                                                  << colorNumber << ", " << index
                                                  << ", " << name << ")");
   gl_api_->glBindFragDataLocationIndexedFn(program, colorNumber, index, name);
-}
-
-void LogGLApi::glBindFragmentInputLocationCHROMIUMFn(GLuint program,
-                                                     GLint location,
-                                                     const char* name) {
-  GL_SERVICE_LOG("glBindFragmentInputLocationCHROMIUM"
-                 << "(" << program << ", " << location << ", " << name << ")");
-  gl_api_->glBindFragmentInputLocationCHROMIUMFn(program, location, name);
 }
 
 void LogGLApi::glBindFramebufferEXTFn(GLenum target, GLuint framebuffer) {
@@ -11188,16 +10080,6 @@ GLenum LogGLApi::glClientWaitSyncFn(GLsync sync,
   GL_SERVICE_LOG("glClientWaitSync" << "(" << sync << ", " << flags << ", "
                                     << timeout << ")");
   GLenum result = gl_api_->glClientWaitSyncFn(sync, flags, timeout);
-  GL_SERVICE_LOG("GL_RESULT: " << result);
-  return result;
-}
-
-GLenum LogGLApi::glClientWaitSyncAPPLEFn(GLsync sync,
-                                         GLbitfield flags,
-                                         GLuint64 timeout) {
-  GL_SERVICE_LOG("glClientWaitSyncAPPLE" << "(" << sync << ", " << flags << ", "
-                                         << timeout << ")");
-  GLenum result = gl_api_->glClientWaitSyncAPPLEFn(sync, flags, timeout);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
 }
@@ -11514,58 +10396,6 @@ void LogGLApi::glCopyTextureCHROMIUMFn(GLuint sourceId,
       destType, unpackFlipY, unpackPremultiplyAlpha, unpackUnmultiplyAlpha);
 }
 
-void LogGLApi::glCoverFillPathInstancedNVFn(GLsizei numPaths,
-                                            GLenum pathNameType,
-                                            const void* paths,
-                                            GLuint pathBase,
-                                            GLenum coverMode,
-                                            GLenum transformType,
-                                            const GLfloat* transformValues) {
-  GL_SERVICE_LOG("glCoverFillPathInstancedNV"
-                 << "(" << numPaths << ", "
-                 << GLEnums::GetStringEnum(pathNameType) << ", "
-                 << static_cast<const void*>(paths) << ", " << pathBase << ", "
-                 << GLEnums::GetStringEnum(coverMode) << ", "
-                 << GLEnums::GetStringEnum(transformType) << ", "
-                 << static_cast<const void*>(transformValues) << ")");
-  gl_api_->glCoverFillPathInstancedNVFn(numPaths, pathNameType, paths, pathBase,
-                                        coverMode, transformType,
-                                        transformValues);
-}
-
-void LogGLApi::glCoverFillPathNVFn(GLuint path, GLenum coverMode) {
-  GL_SERVICE_LOG("glCoverFillPathNV" << "(" << path << ", "
-                                     << GLEnums::GetStringEnum(coverMode)
-                                     << ")");
-  gl_api_->glCoverFillPathNVFn(path, coverMode);
-}
-
-void LogGLApi::glCoverStrokePathInstancedNVFn(GLsizei numPaths,
-                                              GLenum pathNameType,
-                                              const void* paths,
-                                              GLuint pathBase,
-                                              GLenum coverMode,
-                                              GLenum transformType,
-                                              const GLfloat* transformValues) {
-  GL_SERVICE_LOG("glCoverStrokePathInstancedNV"
-                 << "(" << numPaths << ", "
-                 << GLEnums::GetStringEnum(pathNameType) << ", "
-                 << static_cast<const void*>(paths) << ", " << pathBase << ", "
-                 << GLEnums::GetStringEnum(coverMode) << ", "
-                 << GLEnums::GetStringEnum(transformType) << ", "
-                 << static_cast<const void*>(transformValues) << ")");
-  gl_api_->glCoverStrokePathInstancedNVFn(numPaths, pathNameType, paths,
-                                          pathBase, coverMode, transformType,
-                                          transformValues);
-}
-
-void LogGLApi::glCoverStrokePathNVFn(GLuint name, GLenum coverMode) {
-  GL_SERVICE_LOG("glCoverStrokePathNV" << "(" << name << ", "
-                                       << GLEnums::GetStringEnum(coverMode)
-                                       << ")");
-  gl_api_->glCoverStrokePathNVFn(name, coverMode);
-}
-
 void LogGLApi::glCreateMemoryObjectsEXTFn(GLsizei n, GLuint* memoryObjects) {
   GL_SERVICE_LOG("glCreateMemoryObjectsEXT"
                  << "(" << n << ", " << static_cast<const void*>(memoryObjects)
@@ -11648,13 +10478,6 @@ void LogGLApi::glDeleteBuffersARBFn(GLsizei n, const GLuint* buffers) {
   gl_api_->glDeleteBuffersARBFn(n, buffers);
 }
 
-void LogGLApi::glDeleteFencesAPPLEFn(GLsizei n, const GLuint* fences) {
-  GL_SERVICE_LOG("glDeleteFencesAPPLE" << "(" << n << ", "
-                                       << static_cast<const void*>(fences)
-                                       << ")");
-  gl_api_->glDeleteFencesAPPLEFn(n, fences);
-}
-
 void LogGLApi::glDeleteFencesNVFn(GLsizei n, const GLuint* fences) {
   GL_SERVICE_LOG("glDeleteFencesNV" << "(" << n << ", "
                                     << static_cast<const void*>(fences) << ")");
@@ -11675,11 +10498,6 @@ void LogGLApi::glDeleteMemoryObjectsEXTFn(GLsizei n,
                  << "(" << n << ", " << static_cast<const void*>(memoryObjects)
                  << ")");
   gl_api_->glDeleteMemoryObjectsEXTFn(n, memoryObjects);
-}
-
-void LogGLApi::glDeletePathsNVFn(GLuint path, GLsizei range) {
-  GL_SERVICE_LOG("glDeletePathsNV" << "(" << path << ", " << range << ")");
-  gl_api_->glDeletePathsNVFn(path, range);
 }
 
 void LogGLApi::glDeleteProgramFn(GLuint program) {
@@ -11730,11 +10548,6 @@ void LogGLApi::glDeleteShaderFn(GLuint shader) {
 void LogGLApi::glDeleteSyncFn(GLsync sync) {
   GL_SERVICE_LOG("glDeleteSync" << "(" << sync << ")");
   gl_api_->glDeleteSyncFn(sync);
-}
-
-void LogGLApi::glDeleteSyncAPPLEFn(GLsync sync) {
-  GL_SERVICE_LOG("glDeleteSyncAPPLE" << "(" << sync << ")");
-  gl_api_->glDeleteSyncAPPLEFn(sync);
 }
 
 void LogGLApi::glDeleteTexturesFn(GLsizei n, const GLuint* textures) {
@@ -12000,22 +10813,9 @@ GLsync LogGLApi::glFenceSyncFn(GLenum condition, GLbitfield flags) {
   return result;
 }
 
-GLsync LogGLApi::glFenceSyncAPPLEFn(GLenum condition, GLbitfield flags) {
-  GL_SERVICE_LOG("glFenceSyncAPPLE" << "(" << GLEnums::GetStringEnum(condition)
-                                    << ", " << flags << ")");
-  GLsync result = gl_api_->glFenceSyncAPPLEFn(condition, flags);
-  GL_SERVICE_LOG("GL_RESULT: " << result);
-  return result;
-}
-
 void LogGLApi::glFinishFn(void) {
   GL_SERVICE_LOG("glFinish" << "(" << ")");
   gl_api_->glFinishFn();
-}
-
-void LogGLApi::glFinishFenceAPPLEFn(GLuint fence) {
-  GL_SERVICE_LOG("glFinishFenceAPPLE" << "(" << fence << ")");
-  gl_api_->glFinishFenceAPPLEFn(fence);
 }
 
 void LogGLApi::glFinishFenceNVFn(GLuint fence) {
@@ -12191,12 +10991,6 @@ void LogGLApi::glGenerateMipmapEXTFn(GLenum target) {
   gl_api_->glGenerateMipmapEXTFn(target);
 }
 
-void LogGLApi::glGenFencesAPPLEFn(GLsizei n, GLuint* fences) {
-  GL_SERVICE_LOG("glGenFencesAPPLE" << "(" << n << ", "
-                                    << static_cast<const void*>(fences) << ")");
-  gl_api_->glGenFencesAPPLEFn(n, fences);
-}
-
 void LogGLApi::glGenFencesNVFn(GLsizei n, GLuint* fences) {
   GL_SERVICE_LOG("glGenFencesNV" << "(" << n << ", "
                                  << static_cast<const void*>(fences) << ")");
@@ -12208,13 +11002,6 @@ void LogGLApi::glGenFramebuffersEXTFn(GLsizei n, GLuint* framebuffers) {
                  << "(" << n << ", " << static_cast<const void*>(framebuffers)
                  << ")");
   gl_api_->glGenFramebuffersEXTFn(n, framebuffers);
-}
-
-GLuint LogGLApi::glGenPathsNVFn(GLsizei range) {
-  GL_SERVICE_LOG("glGenPathsNV" << "(" << range << ")");
-  GLuint result = gl_api_->glGenPathsNVFn(range);
-  GL_SERVICE_LOG("GL_RESULT: " << result);
-  return result;
 }
 
 GLuint LogGLApi::glGenProgramPipelinesFn(GLsizei n, GLuint* pipelines) {
@@ -13755,13 +12542,6 @@ GLboolean LogGLApi::glIsEnablediOESFn(GLenum target, GLuint index) {
   return result;
 }
 
-GLboolean LogGLApi::glIsFenceAPPLEFn(GLuint fence) {
-  GL_SERVICE_LOG("glIsFenceAPPLE" << "(" << fence << ")");
-  GLboolean result = gl_api_->glIsFenceAPPLEFn(fence);
-  GL_SERVICE_LOG("GL_RESULT: " << result);
-  return result;
-}
-
 GLboolean LogGLApi::glIsFenceNVFn(GLuint fence) {
   GL_SERVICE_LOG("glIsFenceNV" << "(" << fence << ")");
   GLboolean result = gl_api_->glIsFenceNVFn(fence);
@@ -13772,13 +12552,6 @@ GLboolean LogGLApi::glIsFenceNVFn(GLuint fence) {
 GLboolean LogGLApi::glIsFramebufferEXTFn(GLuint framebuffer) {
   GL_SERVICE_LOG("glIsFramebufferEXT" << "(" << framebuffer << ")");
   GLboolean result = gl_api_->glIsFramebufferEXTFn(framebuffer);
-  GL_SERVICE_LOG("GL_RESULT: " << result);
-  return result;
-}
-
-GLboolean LogGLApi::glIsPathNVFn(GLuint path) {
-  GL_SERVICE_LOG("glIsPathNV" << "(" << path << ")");
-  GLboolean result = gl_api_->glIsPathNVFn(path);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
 }
@@ -13832,13 +12605,6 @@ GLboolean LogGLApi::glIsSyncFn(GLsync sync) {
   return result;
 }
 
-GLboolean LogGLApi::glIsSyncAPPLEFn(GLsync sync) {
-  GL_SERVICE_LOG("glIsSyncAPPLE" << "(" << sync << ")");
-  GLboolean result = gl_api_->glIsSyncAPPLEFn(sync);
-  GL_SERVICE_LOG("GL_RESULT: " << result);
-  return result;
-}
-
 GLboolean LogGLApi::glIsTextureFn(GLuint texture) {
   GL_SERVICE_LOG("glIsTexture" << "(" << texture << ")");
   GLboolean result = gl_api_->glIsTextureFn(texture);
@@ -13888,19 +12654,6 @@ void* LogGLApi::glMapBufferRangeFn(GLenum target,
   void* result = gl_api_->glMapBufferRangeFn(target, offset, length, access);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
-}
-
-void LogGLApi::glMatrixLoadfEXTFn(GLenum matrixMode, const GLfloat* m) {
-  GL_SERVICE_LOG("glMatrixLoadfEXT" << "(" << GLEnums::GetStringEnum(matrixMode)
-                                    << ", " << static_cast<const void*>(m)
-                                    << ")");
-  gl_api_->glMatrixLoadfEXTFn(matrixMode, m);
-}
-
-void LogGLApi::glMatrixLoadIdentityEXTFn(GLenum matrixMode) {
-  GL_SERVICE_LOG("glMatrixLoadIdentityEXT"
-                 << "(" << GLEnums::GetStringEnum(matrixMode) << ")");
-  gl_api_->glMatrixLoadIdentityEXTFn(matrixMode);
 }
 
 void LogGLApi::glMaxShaderCompilerThreadsKHRFn(GLuint count) {
@@ -14053,41 +12806,6 @@ void LogGLApi::glPatchParameteriFn(GLenum pname, GLint value) {
   gl_api_->glPatchParameteriFn(pname, value);
 }
 
-void LogGLApi::glPathCommandsNVFn(GLuint path,
-                                  GLsizei numCommands,
-                                  const GLubyte* commands,
-                                  GLsizei numCoords,
-                                  GLenum coordType,
-                                  const GLvoid* coords) {
-  GL_SERVICE_LOG("glPathCommandsNV"
-                 << "(" << path << ", " << numCommands << ", "
-                 << static_cast<const void*>(commands) << ", " << numCoords
-                 << ", " << GLEnums::GetStringEnum(coordType) << ", "
-                 << static_cast<const void*>(coords) << ")");
-  gl_api_->glPathCommandsNVFn(path, numCommands, commands, numCoords, coordType,
-                              coords);
-}
-
-void LogGLApi::glPathParameterfNVFn(GLuint path, GLenum pname, GLfloat value) {
-  GL_SERVICE_LOG("glPathParameterfNV" << "(" << path << ", "
-                                      << GLEnums::GetStringEnum(pname) << ", "
-                                      << value << ")");
-  gl_api_->glPathParameterfNVFn(path, pname, value);
-}
-
-void LogGLApi::glPathParameteriNVFn(GLuint path, GLenum pname, GLint value) {
-  GL_SERVICE_LOG("glPathParameteriNV" << "(" << path << ", "
-                                      << GLEnums::GetStringEnum(pname) << ", "
-                                      << value << ")");
-  gl_api_->glPathParameteriNVFn(path, pname, value);
-}
-
-void LogGLApi::glPathStencilFuncNVFn(GLenum func, GLint ref, GLuint mask) {
-  GL_SERVICE_LOG("glPathStencilFuncNV" << "(" << GLEnums::GetStringEnum(func)
-                                       << ", " << ref << ", " << mask << ")");
-  gl_api_->glPathStencilFuncNVFn(func, ref, mask);
-}
-
 void LogGLApi::glPauseTransformFeedbackFn(void) {
   GL_SERVICE_LOG("glPauseTransformFeedback" << "(" << ")");
   gl_api_->glPauseTransformFeedbackFn();
@@ -14169,19 +12887,6 @@ void LogGLApi::glProgramParameteriFn(GLuint program,
                                        << GLEnums::GetStringEnum(pname) << ", "
                                        << value << ")");
   gl_api_->glProgramParameteriFn(program, pname, value);
-}
-
-void LogGLApi::glProgramPathFragmentInputGenNVFn(GLuint program,
-                                                 GLint location,
-                                                 GLenum genMode,
-                                                 GLint components,
-                                                 const GLfloat* coeffs) {
-  GL_SERVICE_LOG("glProgramPathFragmentInputGenNV"
-                 << "(" << program << ", " << location << ", "
-                 << GLEnums::GetStringEnum(genMode) << ", " << components
-                 << ", " << static_cast<const void*>(coeffs) << ")");
-  gl_api_->glProgramPathFragmentInputGenNVFn(program, location, genMode,
-                                             components, coeffs);
 }
 
 void LogGLApi::glProgramUniform1fFn(GLuint program,
@@ -14808,11 +13513,6 @@ void LogGLApi::glScissorFn(GLint x, GLint y, GLsizei width, GLsizei height) {
   gl_api_->glScissorFn(x, y, width, height);
 }
 
-void LogGLApi::glSetFenceAPPLEFn(GLuint fence) {
-  GL_SERVICE_LOG("glSetFenceAPPLE" << "(" << fence << ")");
-  gl_api_->glSetFenceAPPLEFn(fence);
-}
-
 void LogGLApi::glSetFenceNVFn(GLuint fence, GLenum condition) {
   GL_SERVICE_LOG("glSetFenceNV" << "(" << fence << ", "
                                 << GLEnums::GetStringEnum(condition) << ")");
@@ -14883,35 +13583,6 @@ void LogGLApi::glStartTilingQCOMFn(GLuint x,
   gl_api_->glStartTilingQCOMFn(x, y, width, height, preserveMask);
 }
 
-void LogGLApi::glStencilFillPathInstancedNVFn(GLsizei numPaths,
-                                              GLenum pathNameType,
-                                              const void* paths,
-                                              GLuint pathBase,
-                                              GLenum fillMode,
-                                              GLuint mask,
-                                              GLenum transformType,
-                                              const GLfloat* transformValues) {
-  GL_SERVICE_LOG("glStencilFillPathInstancedNV"
-                 << "(" << numPaths << ", "
-                 << GLEnums::GetStringEnum(pathNameType) << ", "
-                 << static_cast<const void*>(paths) << ", " << pathBase << ", "
-                 << GLEnums::GetStringEnum(fillMode) << ", " << mask << ", "
-                 << GLEnums::GetStringEnum(transformType) << ", "
-                 << static_cast<const void*>(transformValues) << ")");
-  gl_api_->glStencilFillPathInstancedNVFn(numPaths, pathNameType, paths,
-                                          pathBase, fillMode, mask,
-                                          transformType, transformValues);
-}
-
-void LogGLApi::glStencilFillPathNVFn(GLuint path,
-                                     GLenum fillMode,
-                                     GLuint mask) {
-  GL_SERVICE_LOG("glStencilFillPathNV" << "(" << path << ", "
-                                       << GLEnums::GetStringEnum(fillMode)
-                                       << ", " << mask << ")");
-  gl_api_->glStencilFillPathNVFn(path, fillMode, mask);
-}
-
 void LogGLApi::glStencilFuncFn(GLenum func, GLint ref, GLuint mask) {
   GL_SERVICE_LOG("glStencilFunc" << "(" << GLEnums::GetStringEnum(func) << ", "
                                  << ref << ", " << mask << ")");
@@ -14956,107 +13627,6 @@ void LogGLApi::glStencilOpSeparateFn(GLenum face,
                                        << ", " << GLEnums::GetStringEnum(zpass)
                                        << ")");
   gl_api_->glStencilOpSeparateFn(face, fail, zfail, zpass);
-}
-
-void LogGLApi::glStencilStrokePathInstancedNVFn(
-    GLsizei numPaths,
-    GLenum pathNameType,
-    const void* paths,
-    GLuint pathBase,
-    GLint ref,
-    GLuint mask,
-    GLenum transformType,
-    const GLfloat* transformValues) {
-  GL_SERVICE_LOG(
-      "glStencilStrokePathInstancedNV"
-      << "(" << numPaths << ", " << GLEnums::GetStringEnum(pathNameType) << ", "
-      << static_cast<const void*>(paths) << ", " << pathBase << ", " << ref
-      << ", " << mask << ", " << GLEnums::GetStringEnum(transformType) << ", "
-      << static_cast<const void*>(transformValues) << ")");
-  gl_api_->glStencilStrokePathInstancedNVFn(numPaths, pathNameType, paths,
-                                            pathBase, ref, mask, transformType,
-                                            transformValues);
-}
-
-void LogGLApi::glStencilStrokePathNVFn(GLuint path,
-                                       GLint reference,
-                                       GLuint mask) {
-  GL_SERVICE_LOG("glStencilStrokePathNV" << "(" << path << ", " << reference
-                                         << ", " << mask << ")");
-  gl_api_->glStencilStrokePathNVFn(path, reference, mask);
-}
-
-void LogGLApi::glStencilThenCoverFillPathInstancedNVFn(
-    GLsizei numPaths,
-    GLenum pathNameType,
-    const void* paths,
-    GLuint pathBase,
-    GLenum fillMode,
-    GLuint mask,
-    GLenum coverMode,
-    GLenum transformType,
-    const GLfloat* transformValues) {
-  GL_SERVICE_LOG("glStencilThenCoverFillPathInstancedNV"
-                 << "(" << numPaths << ", "
-                 << GLEnums::GetStringEnum(pathNameType) << ", "
-                 << static_cast<const void*>(paths) << ", " << pathBase << ", "
-                 << GLEnums::GetStringEnum(fillMode) << ", " << mask << ", "
-                 << GLEnums::GetStringEnum(coverMode) << ", "
-                 << GLEnums::GetStringEnum(transformType) << ", "
-                 << static_cast<const void*>(transformValues) << ")");
-  gl_api_->glStencilThenCoverFillPathInstancedNVFn(
-      numPaths, pathNameType, paths, pathBase, fillMode, mask, coverMode,
-      transformType, transformValues);
-}
-
-void LogGLApi::glStencilThenCoverFillPathNVFn(GLuint path,
-                                              GLenum fillMode,
-                                              GLuint mask,
-                                              GLenum coverMode) {
-  GL_SERVICE_LOG("glStencilThenCoverFillPathNV"
-                 << "(" << path << ", " << GLEnums::GetStringEnum(fillMode)
-                 << ", " << mask << ", " << GLEnums::GetStringEnum(coverMode)
-                 << ")");
-  gl_api_->glStencilThenCoverFillPathNVFn(path, fillMode, mask, coverMode);
-}
-
-void LogGLApi::glStencilThenCoverStrokePathInstancedNVFn(
-    GLsizei numPaths,
-    GLenum pathNameType,
-    const void* paths,
-    GLuint pathBase,
-    GLint ref,
-    GLuint mask,
-    GLenum coverMode,
-    GLenum transformType,
-    const GLfloat* transformValues) {
-  GL_SERVICE_LOG(
-      "glStencilThenCoverStrokePathInstancedNV"
-      << "(" << numPaths << ", " << GLEnums::GetStringEnum(pathNameType) << ", "
-      << static_cast<const void*>(paths) << ", " << pathBase << ", " << ref
-      << ", " << mask << ", " << GLEnums::GetStringEnum(coverMode) << ", "
-      << GLEnums::GetStringEnum(transformType) << ", "
-      << static_cast<const void*>(transformValues) << ")");
-  gl_api_->glStencilThenCoverStrokePathInstancedNVFn(
-      numPaths, pathNameType, paths, pathBase, ref, mask, coverMode,
-      transformType, transformValues);
-}
-
-void LogGLApi::glStencilThenCoverStrokePathNVFn(GLuint path,
-                                                GLint reference,
-                                                GLuint mask,
-                                                GLenum coverMode) {
-  GL_SERVICE_LOG("glStencilThenCoverStrokePathNV"
-                 << "(" << path << ", " << reference << ", " << mask << ", "
-                 << GLEnums::GetStringEnum(coverMode) << ")");
-  gl_api_->glStencilThenCoverStrokePathNVFn(path, reference, mask, coverMode);
-}
-
-GLboolean LogGLApi::glTestFenceAPPLEFn(GLuint fence) {
-  GL_SERVICE_LOG("glTestFenceAPPLE" << "(" << fence << ")");
-  GLboolean result = gl_api_->glTestFenceAPPLEFn(fence);
-  GL_SERVICE_LOG("GL_RESULT: " << result);
-  return result;
 }
 
 GLboolean LogGLApi::glTestFenceNVFn(GLuint fence) {
@@ -15922,14 +14492,6 @@ void LogGLApi::glWaitSyncFn(GLsync sync, GLbitfield flags, GLuint64 timeout) {
   gl_api_->glWaitSyncFn(sync, flags, timeout);
 }
 
-void LogGLApi::glWaitSyncAPPLEFn(GLsync sync,
-                                 GLbitfield flags,
-                                 GLuint64 timeout) {
-  GL_SERVICE_LOG("glWaitSyncAPPLE" << "(" << sync << ", " << flags << ", "
-                                   << timeout << ")");
-  gl_api_->glWaitSyncAPPLEFn(sync, flags, timeout);
-}
-
 void LogGLApi::glWindowRectanglesEXTFn(GLenum mode,
                                        GLsizei n,
                                        const GLint* box) {
@@ -16014,12 +14576,6 @@ void NoContextGLApi::glBindFragDataLocationIndexedFn(GLuint program,
                                                      GLuint index,
                                                      const char* name) {
   NoContextHelper("glBindFragDataLocationIndexed");
-}
-
-void NoContextGLApi::glBindFragmentInputLocationCHROMIUMFn(GLuint program,
-                                                           GLint location,
-                                                           const char* name) {
-  NoContextHelper("glBindFragmentInputLocationCHROMIUM");
 }
 
 void NoContextGLApi::glBindFramebufferEXTFn(GLenum target, GLuint framebuffer) {
@@ -16238,13 +14794,6 @@ GLenum NoContextGLApi::glClientWaitSyncFn(GLsync sync,
   return static_cast<GLenum>(0);
 }
 
-GLenum NoContextGLApi::glClientWaitSyncAPPLEFn(GLsync sync,
-                                               GLbitfield flags,
-                                               GLuint64 timeout) {
-  NoContextHelper("glClientWaitSyncAPPLE");
-  return static_cast<GLenum>(0);
-}
-
 void NoContextGLApi::glClipControlEXTFn(GLenum origin, GLenum depth) {
   NoContextHelper("glClipControlEXT");
 }
@@ -16443,36 +14992,6 @@ void NoContextGLApi::glCopyTextureCHROMIUMFn(GLuint sourceId,
   NoContextHelper("glCopyTextureCHROMIUM");
 }
 
-void NoContextGLApi::glCoverFillPathInstancedNVFn(
-    GLsizei numPaths,
-    GLenum pathNameType,
-    const void* paths,
-    GLuint pathBase,
-    GLenum coverMode,
-    GLenum transformType,
-    const GLfloat* transformValues) {
-  NoContextHelper("glCoverFillPathInstancedNV");
-}
-
-void NoContextGLApi::glCoverFillPathNVFn(GLuint path, GLenum coverMode) {
-  NoContextHelper("glCoverFillPathNV");
-}
-
-void NoContextGLApi::glCoverStrokePathInstancedNVFn(
-    GLsizei numPaths,
-    GLenum pathNameType,
-    const void* paths,
-    GLuint pathBase,
-    GLenum coverMode,
-    GLenum transformType,
-    const GLfloat* transformValues) {
-  NoContextHelper("glCoverStrokePathInstancedNV");
-}
-
-void NoContextGLApi::glCoverStrokePathNVFn(GLuint name, GLenum coverMode) {
-  NoContextHelper("glCoverStrokePathNV");
-}
-
 void NoContextGLApi::glCreateMemoryObjectsEXTFn(GLsizei n,
                                                 GLuint* memoryObjects) {
   NoContextHelper("glCreateMemoryObjectsEXT");
@@ -16526,10 +15045,6 @@ void NoContextGLApi::glDeleteBuffersARBFn(GLsizei n, const GLuint* buffers) {
   NoContextHelper("glDeleteBuffersARB");
 }
 
-void NoContextGLApi::glDeleteFencesAPPLEFn(GLsizei n, const GLuint* fences) {
-  NoContextHelper("glDeleteFencesAPPLE");
-}
-
 void NoContextGLApi::glDeleteFencesNVFn(GLsizei n, const GLuint* fences) {
   NoContextHelper("glDeleteFencesNV");
 }
@@ -16542,10 +15057,6 @@ void NoContextGLApi::glDeleteFramebuffersEXTFn(GLsizei n,
 void NoContextGLApi::glDeleteMemoryObjectsEXTFn(GLsizei n,
                                                 const GLuint* memoryObjects) {
   NoContextHelper("glDeleteMemoryObjectsEXT");
-}
-
-void NoContextGLApi::glDeletePathsNVFn(GLuint path, GLsizei range) {
-  NoContextHelper("glDeletePathsNV");
 }
 
 void NoContextGLApi::glDeleteProgramFn(GLuint program) {
@@ -16581,10 +15092,6 @@ void NoContextGLApi::glDeleteShaderFn(GLuint shader) {
 
 void NoContextGLApi::glDeleteSyncFn(GLsync sync) {
   NoContextHelper("glDeleteSync");
-}
-
-void NoContextGLApi::glDeleteSyncAPPLEFn(GLsync sync) {
-  NoContextHelper("glDeleteSyncAPPLE");
 }
 
 void NoContextGLApi::glDeleteTexturesFn(GLsizei n, const GLuint* textures) {
@@ -16771,17 +15278,8 @@ GLsync NoContextGLApi::glFenceSyncFn(GLenum condition, GLbitfield flags) {
   return nullptr;
 }
 
-GLsync NoContextGLApi::glFenceSyncAPPLEFn(GLenum condition, GLbitfield flags) {
-  NoContextHelper("glFenceSyncAPPLE");
-  return nullptr;
-}
-
 void NoContextGLApi::glFinishFn(void) {
   NoContextHelper("glFinish");
-}
-
-void NoContextGLApi::glFinishFenceAPPLEFn(GLuint fence) {
-  NoContextHelper("glFinishFenceAPPLE");
 }
 
 void NoContextGLApi::glFinishFenceNVFn(GLuint fence) {
@@ -16897,21 +15395,12 @@ void NoContextGLApi::glGenerateMipmapEXTFn(GLenum target) {
   NoContextHelper("glGenerateMipmapEXT");
 }
 
-void NoContextGLApi::glGenFencesAPPLEFn(GLsizei n, GLuint* fences) {
-  NoContextHelper("glGenFencesAPPLE");
-}
-
 void NoContextGLApi::glGenFencesNVFn(GLsizei n, GLuint* fences) {
   NoContextHelper("glGenFencesNV");
 }
 
 void NoContextGLApi::glGenFramebuffersEXTFn(GLsizei n, GLuint* framebuffers) {
   NoContextHelper("glGenFramebuffersEXT");
-}
-
-GLuint NoContextGLApi::glGenPathsNVFn(GLsizei range) {
-  NoContextHelper("glGenPathsNV");
-  return 0U;
 }
 
 GLuint NoContextGLApi::glGenProgramPipelinesFn(GLsizei n, GLuint* pipelines) {
@@ -17889,11 +16378,6 @@ GLboolean NoContextGLApi::glIsEnablediOESFn(GLenum target, GLuint index) {
   return GL_FALSE;
 }
 
-GLboolean NoContextGLApi::glIsFenceAPPLEFn(GLuint fence) {
-  NoContextHelper("glIsFenceAPPLE");
-  return GL_FALSE;
-}
-
 GLboolean NoContextGLApi::glIsFenceNVFn(GLuint fence) {
   NoContextHelper("glIsFenceNV");
   return GL_FALSE;
@@ -17901,11 +16385,6 @@ GLboolean NoContextGLApi::glIsFenceNVFn(GLuint fence) {
 
 GLboolean NoContextGLApi::glIsFramebufferEXTFn(GLuint framebuffer) {
   NoContextHelper("glIsFramebufferEXT");
-  return GL_FALSE;
-}
-
-GLboolean NoContextGLApi::glIsPathNVFn(GLuint path) {
-  NoContextHelper("glIsPathNV");
   return GL_FALSE;
 }
 
@@ -17944,11 +16423,6 @@ GLboolean NoContextGLApi::glIsSyncFn(GLsync sync) {
   return GL_FALSE;
 }
 
-GLboolean NoContextGLApi::glIsSyncAPPLEFn(GLsync sync) {
-  NoContextHelper("glIsSyncAPPLE");
-  return GL_FALSE;
-}
-
 GLboolean NoContextGLApi::glIsTextureFn(GLuint texture) {
   NoContextHelper("glIsTexture");
   return GL_FALSE;
@@ -17983,14 +16457,6 @@ void* NoContextGLApi::glMapBufferRangeFn(GLenum target,
                                          GLbitfield access) {
   NoContextHelper("glMapBufferRange");
   return NULL;
-}
-
-void NoContextGLApi::glMatrixLoadfEXTFn(GLenum matrixMode, const GLfloat* m) {
-  NoContextHelper("glMatrixLoadfEXT");
-}
-
-void NoContextGLApi::glMatrixLoadIdentityEXTFn(GLenum matrixMode) {
-  NoContextHelper("glMatrixLoadIdentityEXT");
 }
 
 void NoContextGLApi::glMaxShaderCompilerThreadsKHRFn(GLuint count) {
@@ -18088,33 +16554,6 @@ void NoContextGLApi::glPatchParameteriFn(GLenum pname, GLint value) {
   NoContextHelper("glPatchParameteri");
 }
 
-void NoContextGLApi::glPathCommandsNVFn(GLuint path,
-                                        GLsizei numCommands,
-                                        const GLubyte* commands,
-                                        GLsizei numCoords,
-                                        GLenum coordType,
-                                        const GLvoid* coords) {
-  NoContextHelper("glPathCommandsNV");
-}
-
-void NoContextGLApi::glPathParameterfNVFn(GLuint path,
-                                          GLenum pname,
-                                          GLfloat value) {
-  NoContextHelper("glPathParameterfNV");
-}
-
-void NoContextGLApi::glPathParameteriNVFn(GLuint path,
-                                          GLenum pname,
-                                          GLint value) {
-  NoContextHelper("glPathParameteriNV");
-}
-
-void NoContextGLApi::glPathStencilFuncNVFn(GLenum func,
-                                           GLint ref,
-                                           GLuint mask) {
-  NoContextHelper("glPathStencilFuncNV");
-}
-
 void NoContextGLApi::glPauseTransformFeedbackFn(void) {
   NoContextHelper("glPauseTransformFeedback");
 }
@@ -18172,14 +16611,6 @@ void NoContextGLApi::glProgramParameteriFn(GLuint program,
                                            GLenum pname,
                                            GLint value) {
   NoContextHelper("glProgramParameteri");
-}
-
-void NoContextGLApi::glProgramPathFragmentInputGenNVFn(GLuint program,
-                                                       GLint location,
-                                                       GLenum genMode,
-                                                       GLint components,
-                                                       const GLfloat* coeffs) {
-  NoContextHelper("glProgramPathFragmentInputGenNV");
 }
 
 void NoContextGLApi::glProgramUniform1fFn(GLuint program,
@@ -18609,10 +17040,6 @@ void NoContextGLApi::glScissorFn(GLint x,
   NoContextHelper("glScissor");
 }
 
-void NoContextGLApi::glSetFenceAPPLEFn(GLuint fence) {
-  NoContextHelper("glSetFenceAPPLE");
-}
-
 void NoContextGLApi::glSetFenceNVFn(GLuint fence, GLenum condition) {
   NoContextHelper("glSetFenceNV");
 }
@@ -18649,24 +17076,6 @@ void NoContextGLApi::glStartTilingQCOMFn(GLuint x,
   NoContextHelper("glStartTilingQCOM");
 }
 
-void NoContextGLApi::glStencilFillPathInstancedNVFn(
-    GLsizei numPaths,
-    GLenum pathNameType,
-    const void* paths,
-    GLuint pathBase,
-    GLenum fillMode,
-    GLuint mask,
-    GLenum transformType,
-    const GLfloat* transformValues) {
-  NoContextHelper("glStencilFillPathInstancedNV");
-}
-
-void NoContextGLApi::glStencilFillPathNVFn(GLuint path,
-                                           GLenum fillMode,
-                                           GLuint mask) {
-  NoContextHelper("glStencilFillPathNV");
-}
-
 void NoContextGLApi::glStencilFuncFn(GLenum func, GLint ref, GLuint mask) {
   NoContextHelper("glStencilFunc");
 }
@@ -18695,69 +17104,6 @@ void NoContextGLApi::glStencilOpSeparateFn(GLenum face,
                                            GLenum zfail,
                                            GLenum zpass) {
   NoContextHelper("glStencilOpSeparate");
-}
-
-void NoContextGLApi::glStencilStrokePathInstancedNVFn(
-    GLsizei numPaths,
-    GLenum pathNameType,
-    const void* paths,
-    GLuint pathBase,
-    GLint ref,
-    GLuint mask,
-    GLenum transformType,
-    const GLfloat* transformValues) {
-  NoContextHelper("glStencilStrokePathInstancedNV");
-}
-
-void NoContextGLApi::glStencilStrokePathNVFn(GLuint path,
-                                             GLint reference,
-                                             GLuint mask) {
-  NoContextHelper("glStencilStrokePathNV");
-}
-
-void NoContextGLApi::glStencilThenCoverFillPathInstancedNVFn(
-    GLsizei numPaths,
-    GLenum pathNameType,
-    const void* paths,
-    GLuint pathBase,
-    GLenum fillMode,
-    GLuint mask,
-    GLenum coverMode,
-    GLenum transformType,
-    const GLfloat* transformValues) {
-  NoContextHelper("glStencilThenCoverFillPathInstancedNV");
-}
-
-void NoContextGLApi::glStencilThenCoverFillPathNVFn(GLuint path,
-                                                    GLenum fillMode,
-                                                    GLuint mask,
-                                                    GLenum coverMode) {
-  NoContextHelper("glStencilThenCoverFillPathNV");
-}
-
-void NoContextGLApi::glStencilThenCoverStrokePathInstancedNVFn(
-    GLsizei numPaths,
-    GLenum pathNameType,
-    const void* paths,
-    GLuint pathBase,
-    GLint ref,
-    GLuint mask,
-    GLenum coverMode,
-    GLenum transformType,
-    const GLfloat* transformValues) {
-  NoContextHelper("glStencilThenCoverStrokePathInstancedNV");
-}
-
-void NoContextGLApi::glStencilThenCoverStrokePathNVFn(GLuint path,
-                                                      GLint reference,
-                                                      GLuint mask,
-                                                      GLenum coverMode) {
-  NoContextHelper("glStencilThenCoverStrokePathNV");
-}
-
-GLboolean NoContextGLApi::glTestFenceAPPLEFn(GLuint fence) {
-  NoContextHelper("glTestFenceAPPLE");
-  return GL_FALSE;
 }
 
 GLboolean NoContextGLApi::glTestFenceNVFn(GLuint fence) {
@@ -19366,12 +17712,6 @@ void NoContextGLApi::glWaitSyncFn(GLsync sync,
                                   GLbitfield flags,
                                   GLuint64 timeout) {
   NoContextHelper("glWaitSync");
-}
-
-void NoContextGLApi::glWaitSyncAPPLEFn(GLsync sync,
-                                       GLbitfield flags,
-                                       GLuint64 timeout) {
-  NoContextHelper("glWaitSyncAPPLE");
 }
 
 void NoContextGLApi::glWindowRectanglesEXTFn(GLenum mode,

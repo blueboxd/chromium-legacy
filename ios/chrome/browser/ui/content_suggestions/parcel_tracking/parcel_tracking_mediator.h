@@ -18,6 +18,7 @@ enum class ContentSuggestionsModuleType;
 @class ParcelTrackingItem;
 enum class ParcelType;
 class UrlLoadingBrowserAgent;
+class PrefService;
 
 // Delegate used to communicate events back to the owner of
 // ParcelTrackingMediator.
@@ -49,11 +50,14 @@ class UrlLoadingBrowserAgent;
 - (instancetype)
     initWithShoppingService:(commerce::ShoppingService*)shoppingService
      URLLoadingBrowserAgent:(UrlLoadingBrowserAgent*)URLLoadingBrowserAgent
-    NS_DESIGNATED_INITIALIZER;
+                prefService:(PrefService*)prefService NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
 
 - (void)disconnect;
+
+// Resets the latest fetched tracked packages and re-fecthes if applicable.
+- (void)reset;
 
 // Returns the parcel tracking items to show.
 - (ParcelTrackingItem*)parcelTrackingItemToShow;

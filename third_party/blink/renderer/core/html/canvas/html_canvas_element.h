@@ -221,7 +221,6 @@ class CORE_EXPORT HTMLCanvasElement final
   bool IsPrinting() const override;
   void SetFilterQuality(cc::PaintFlags::FilterQuality filter_quality) override;
   bool IsHibernating() const override;
-  void FlushRecording(FlushReason reason) override;
 
   // CanvasRenderingContextHost implementation.
   UkmParameters GetUkmParameters() override;
@@ -392,18 +391,12 @@ class CORE_EXPORT HTMLCanvasElement final
   bool disposing_ = false;
   bool canvas_is_clear_ = true;
 
-  bool ignore_reset_;
-  gfx::RectF dirty_rect_;
+  bool ignore_reset_ = false;
+  gfx::Rect dirty_rect_;
 
   bool origin_clean_;
   bool needs_unbuffered_input_ = false;
   bool style_is_visible_ = false;
-
-  // It prevents repeated attempts in allocating resources after the first
-  // attempt failed.
-  bool HasResourceProvider() {
-    return canvas2d_bridge_ || !!CanvasResourceHost::ResourceProvider();
-  }
 
   // Canvas2DLayerBridge is used when canvas has 2d rendering context
   std::unique_ptr<Canvas2DLayerBridge> canvas2d_bridge_;

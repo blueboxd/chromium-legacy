@@ -23,13 +23,22 @@ build_webui("build") {
   non_web_component_files = [
     "read_anything.ts",
     "common.ts",
+    "metrics_browser_proxy.ts",
+    "read_anything_logger.ts",
     "voice_language_util.ts",
+    "app_style_updater.ts",
+  ]
+  css_files = [
+    "language_menu.css",
+    "voice_selection_menu.css",
   ]
   icons_html_files = [ "icons.html" ]
+  html_to_wrapper_template = "detect"
 
   ts_composite = true
   ts_deps = [
     "//chrome/browser/resources/side_panel/shared:build_ts",
+    "//third_party/lit/v3_0:build_ts",
     "//third_party/polymer/v3_0:library",
     "//ui/webui/resources/cr_components/color_change_listener:build_ts",
     "//ui/webui/resources/cr_elements:build_ts",

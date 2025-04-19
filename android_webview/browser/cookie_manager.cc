@@ -15,7 +15,6 @@
 #include "android_webview/browser/aw_browser_context_store.h"
 #include "android_webview/browser/aw_client_hints_controller_delegate.h"
 #include "android_webview/browser/aw_cookie_access_policy.h"
-#include "android_webview/browser_jni_headers/AwCookieManager_jni.h"
 #include "android_webview/common/aw_switches.h"
 #include "base/android/build_info.h"
 #include "base/android/callback_android.h"
@@ -56,6 +55,9 @@
 #include "services/network/network_service.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "url/url_constants.h"
+
+// Must come after all headers that specialize FromJniType() / ToJniType().
+#include "android_webview/browser_jni_headers/AwCookieManager_jni.h"
 
 using base::WaitableEvent;
 using base::android::ConvertJavaStringToUTF16;
@@ -443,13 +445,13 @@ void CookieManager::SetWorkaroundHttpSecureCookiesAsyncHelper(
 void CookieManager::SetShouldAcceptCookies(JNIEnv* env,
                                            const JavaParamRef<jobject>& obj,
                                            jboolean accept) {
-  AwCookieAccessPolicy::GetInstance()->SetShouldAcceptCookies(accept);
+  cookie_access_policy_.SetShouldAcceptCookies(accept);
 }
 
 jboolean CookieManager::GetShouldAcceptCookies(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  return AwCookieAccessPolicy::GetInstance()->GetShouldAcceptCookies();
+  return cookie_access_policy_.GetShouldAcceptCookies();
 }
 
 void CookieManager::SetCookie(JNIEnv* env,

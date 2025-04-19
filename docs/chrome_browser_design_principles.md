@@ -1,4 +1,6 @@
-These design principles make it easier to write, debug, and maintain code in //chrome/browser.
+These design principles make it easier to write, debug, and maintain desktop
+code in //chrome/browser. Most, but not all code in //chrome/browser is desktop
+code. Some code is used on Android.
 
 ## Caveats:
 * These are recommendations, not requirements.
@@ -8,22 +10,45 @@ These design principles make it easier to write, debug, and maintain code in //c
   existing features to be refactored, except as need arises.
 
 ## Structure, modularity:
-* Features should be modular with no dependency cycles.
-    * This is a provisional design principle. We are currently investigating
-      feasibility. TODO: canonical example
+* Features should be modular.
     * For most features, all business logic should live in some combination of
       //chrome/browser/<feature>, //chrome/browser/ui/<feature> or
       //component/<feature>.
     * WebUI resources are the only exception. They will continue to live in
       //chrome/browser/resources/<feature> alongside standalone BUILD.gn files.
     * This directory should have a standalone BUILD.gn and OWNERs file.
+    * All files in the directory should belong to targets in the BUILD.gn.
+        * Do NOT add to `//chrome/browser/BUILD.gn:browser`,
+          `//chrome/test/BUILD.gn` or `//chrome/browser/ui/BUILD.gn:ui`.
+    * gn circular dependencies are disallowed. Logical
+      circular dependencies are allowed (for legacy reasons) but discouraged.
+        * [Lens
+          overlay](https://source.chromium.org/chromium/chromium/src/+/main:chrome/browser/ui/lens/BUILD.gn;drc=8e2c1c747f15a93c55ab2f10ebc8b32801ba129e)
+          is an example of a feature with no circular dependencies.
+            * The BUILD.gn should use public/sources separation.
+                * The main reason for this is to guard against future, unexpected usage
+                  of parts of the code that were intended to be private. This makes it
+                  difficult to change implementation details in the future.
+                * This directory may have a public/ subdirectory to enforce further
+                  encapsulation, though this example does not use it.
+        * [cookie
+          controls](https://chromium-review.googlesource.com/c/chromium/src/+/5771416/5/chrome/browser/ui/cookie_controls/BUILD.gn)
+          is an example of a feature with logical circular dependencies.
+            * The header files are moved into a "cookie_controls" target with no
+              circular dependencies.
+            * The cc files are moved into a "impl" target, with circular
+              dependencies allowed with `//chrome/browser:browser` and
+              `//chrome/browser/ui:ui`. These circular dependencies will
+              disappear when all sources are removed from `//chrome/browser:browser` and `//chrome/browser/ui:ui`.
+            * The separation between header and cc files is functionally
+              equivalent to creating abstract base classes in one target, with
+              h/cc files in a separate target. This just skips the boilerplate
+              of creating the abstract base classes.
+            * Even though there are no build circular dependencies, there are
+              still logical circular dependencies from the cc files. This
+              discrepancy is because C++ allows headers to forward declare
+              dependencies, which do not need to be reflected in gn.
     * This directory may have its own namespace.
-    * This directory should have a public/ subdirectory to enforce further
-      encapsulation.
-        * The main reason for this is to guard against future, unexpected usage
-          of parts of the code that were intended to be private. This makes it
-          difficult to change implementation details in the future.
-        * The BUILD.gn should use public/sources separation.
     * Corollary: There are several global functions that facilitate dependency
       inversion. It will not be possible to call them from modularized features
       (no dependency cycles), and their usage in non-modularized features is
@@ -31,6 +56,19 @@ These design principles make it easier to write, debug, and maintain code in //c
         * `chrome::FindBrowserWithTab` (and everything in browser_finder.h)
         * `GetBrowserViewForNativeWindow`  (via browser_view.h)
         * `FindBrowserWindowWithWebContents` (via browser_window.h)
+    * Rationale: Modularity enforces the creation of API surfaces and explicit
+      dependencies. This has several positive externalities:
+        * Separation of interface from implementation prevents unnecessarly
+          tight coupling between features. This in turn reduces spooky action at
+          a distance, where seemingly innocuous changes break a distant,
+          supposedly unrelated feature.
+        * Explicit listing of circular dependencies exposes the likely fragile
+          areas of code.
+        * Alongside the later guidance of global functions must be pure,
+          modularity adds the requirement that test-code perform dependency
+          injection. This eliminates a common bug where test behavior diverges
+          from production behavior, and logic is added to production code to
+          work around test-only behaviors.
 
 * Features should have a core controller with precise lifetime semantics. The
   core controller for most desktop features should be owned and instantiated by
@@ -69,7 +107,32 @@ These design principles make it easier to write, debug, and maintain code in //c
               identical behavior between test and production code.
         * Use `TestingProfile::Builder::AddTestingFactory` to stub or fake
           services.
-    * `GlobalFeatures` (member of `BrowserProcess`)
+        * Separating the .h and .cc file into different build targets is
+          allowed.
+            * BrowserContextKeyedServiceFactory combines 3 pieces of
+              functionality:
+                * A getter to receive a service based on an instance of
+                  `Profile`.
+                * A mechanism to establishing dependencies.
+                * A way to glue together //chrome layer logic with //components
+                  layer logic.
+                * The latter two pieces of functionality are implemented in the
+                  .cc file and typically result in dependencies on other parts
+                  of //chrome. The first piece of functionality is implemented
+                  in the .h file and does not necessarily introduce a dependency
+                  on //chrome, since the returned service can be defined in
+                  //components.
+    * GlobalFeatures.
+        * Features which are scoped to the entire process and span multiple
+          Profiles should be members of GlobalFeatures.
+        * GlobalFeatures is a member of BrowserProcess and they have similar
+          lifetime semantics. The main difference is that historically
+          BrowserProcess used the antipattern of lazy instantiation, and the
+          setup of TestingBrowserProcess encourages divergence between test
+          logic and production logic. On the other hand, GlobalFeatures is
+          always instantiated.
+            * This is not making any statements about initialization (e.g.
+              performing non-trivial setup).
     * The core controller should not be a `NoDestructor` singleton.
 * Global functions should not access non-global state.
     * Pure functions do not access global state and are allowed. e.g. `base::UTF8ToWide()`
@@ -125,7 +188,7 @@ These design principles make it easier to write, debug, and maintain code in //c
   configuration, not C preprocessor conditionals e.g. `#if
   BUILDFLAG(FEATURE_FOO)`.
     * We ship a single product (Chrome) to multiple platforms. The purpose of
-      proprocessor conditionals is:
+      preprocessor conditionals is:
         * (1) to allow platform-agnostic code to reference platform-specific
           code.
             * e.g. `#if BUILDFLAG(OS_WIN)`
@@ -263,4 +326,98 @@ class CarSalesPerson {
 };
 ```
 
+* Circular dependencies are a symptom of problematic design.
 
+Bad. FeatureShowcase depends on FeatureA. FeatureA depends on FeatureB.
+FeatureB depends on FeatureShowcase. The root problem is that the design for
+FeatureShowcase uses both a pull and a push model for control flow.
+```cpp
+// Shows an icon per feature. Needs to know whether each icon is visible.
+class FeatureShowcase {
+  FeatureShowcase() {
+    // Checks whether A should be visible, and if so, shows A.
+    if (FeatureA::IsVisible())
+      ShowFeatureA();
+  }
+
+  // Called to make B visible.
+  void ShowFeatureB();
+
+};
+
+class FeatureA {
+  // Feature A depends on feature B.
+  FeatureA(FeatureB* b);
+
+  static bool IsVisible();
+};
+
+class FeatureB {
+  FeatureB(FeatureShowcase* showcase) {
+    if (IsVisible())
+      showcase->ShowFeatureB();
+  }
+  static bool IsVisible();
+};
+```
+
+Good, version 1. FeatureShowcase uses a pull model for control flow.
+FeatureShowcase depends on FeatureA and FeatureB. FeatureA depends on FeatureB.
+There is no circular dependency.
+```cpp
+// Shows an icon per feature. Needs to know whether each icon is visible.
+class FeatureShowcase {
+  FeatureShowcase() {
+    if (FeatureA::IsVisible())
+      ShowFeatureA();
+    if (FeatureB::IsVisible())
+      ShowFeatureB();
+  }
+};
+
+class FeatureA {
+  // Feature A depends on feature B.
+  FeatureA(FeatureB* b);
+
+  static bool IsVisible();
+};
+
+class FeatureB {
+  FeatureB();
+  static bool IsVisible();
+};
+```
+
+Good, version 2. FeatureShowcase uses a push model for control flow. FeatureA
+and FeatureB both depend on FeatureShowcase. There is no circular dependency.
+```cpp
+// Shows an icon per feature. Needs to know whether each icon is visible.
+class FeatureShowcase {
+  FeatureShowcase();
+
+  // Called to make A visible.
+  void ShowFeatureA();
+
+  // Called to make B visible.
+  void ShowFeatureB();
+};
+
+class FeatureA {
+  // Feature A depends on feature B.
+  FeatureA(FeatureB* b, FeatureShowcase* showcase) {
+    if (IsVisible())
+        showcase->ShowFeatureA();
+  }
+
+  static bool IsVisible();
+};
+
+class FeatureB {
+  FeatureB(FeatureShowcase* showcase) {
+    if (IsVisible())
+        showcase->ShowFeatureB();
+  }
+
+  static bool IsVisible();
+};
+```

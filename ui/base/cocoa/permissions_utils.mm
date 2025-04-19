@@ -23,6 +23,10 @@ BASE_FEATURE(kWarmScreenCaptureSonoma,
              "WarmScreenCaptureSonoma",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kWarmScreenCaptureSequoia,
+             "WarmScreenCaptureSequoia",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 bool ShouldWarmScreenCapture() {
   const int macos_version = base::mac::MacOSVersion();
   // On macOS < 14, we're using CGWindowListCreateImage to capture a screenshot.
@@ -33,8 +37,15 @@ bool ShouldWarmScreenCapture() {
     return true;
   }
 
-  // Kill switch.
-  if (!base::FeatureList::IsEnabled(kWarmScreenCaptureSonoma)) {
+  // Kill switch, Sonoma.
+  if (macos_version < 15'00'00 &&
+      !base::FeatureList::IsEnabled(kWarmScreenCaptureSonoma)) {
+    return false;
+  }
+
+  // Feature disabled by default for Sequoia unless explicitly enabled.
+  if (macos_version >= 15'00'00 &&
+      !base::FeatureList::IsEnabled(kWarmScreenCaptureSequoia)) {
     return false;
   }
 
@@ -95,13 +106,8 @@ void CaptureScreenshot() {
 
 }  // namespace
 
-// Note that the SDK has `CGPreflightScreenCaptureAccess()` and
-// `CGRequestScreenCaptureAccess()` listed as available on 10.15, but using
-// them yields link errors in testing. Therefore, use them on 11.0 and
-// heuristic methods on 10.15.
-
 bool IsScreenCaptureAllowed() {
-  if (@available(macOS 11.0, *)) {
+  if (@available(macOS 11, *)) {
     return CGPreflightScreenCaptureAccess();
   } else if (@available(macOS 10.15, *)) {
     // Screen Capture is considered allowed if the name of at least one normal
@@ -141,7 +147,7 @@ bool IsScreenCaptureAllowed() {
 }
 
 bool TryPromptUserForScreenCapture() {
-  if (@available(macOS 11.0, *)) {
+  if (@available(macOS 11, *)) {
     return CGRequestScreenCaptureAccess();
   } else if (@available(macOS 10.15, *)) {
     // On 10.15+, macOS will show the permissions prompt for Screen Recording

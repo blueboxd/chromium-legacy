@@ -24,6 +24,7 @@
 #import "ios/chrome/browser/favicon/model/ios_chrome_favicon_loader_factory.h"
 #import "ios/chrome/browser/favicon/model/ios_chrome_large_icon_service_factory.h"
 #import "ios/chrome/browser/feature_engagement/model/tracker_factory.h"
+#import "ios/chrome/browser/incognito_reauth/ui_bundled/incognito_reauth_scene_agent.h"
 #import "ios/chrome/browser/metrics/model/new_tab_page_uma.h"
 #import "ios/chrome/browser/net/model/crurl.h"
 #import "ios/chrome/browser/policy/model/policy_util.h"
@@ -51,7 +52,6 @@
 #import "ios/chrome/browser/ui/authentication/enterprise/enterprise_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin_presenter.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
-#import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
 #import "ios/chrome/browser/ui/menu/browser_action_factory.h"
 #import "ios/chrome/browser/ui/menu/menu_histograms.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_list_item.h"
@@ -214,7 +214,7 @@
       SigninPromoAction::kInstantSignin;
   _signinPromoViewMediator.consumer = self;
   _signinPromoViewMediator.dataTypeToWaitForInitialSync =
-      syncer::ModelType::READING_LIST;
+      syncer::DataType::READING_LIST;
   [self updateSignInPromoVisibility];
 
   [super start];
@@ -610,7 +610,6 @@
       _syncService->GetUserSettings()->GetSelectedTypes().Has(
           syncer::UserSelectableType::kReadingList);
   if (hasPrimaryAccount &&
-      base::FeatureList::IsEnabled(kEnableReviewAccountSettingsPromo) &&
       !isReadingListSynced) {
     signinPromoAction = SigninPromoAction::kReviewAccountSettings;
   }
@@ -644,14 +643,7 @@
     self.shouldShowSignInPromo = NO;
     _signinPromoViewMediator.signinPromoAction = signinPromoAction;
   }
-  const std::string lastSignedInGaiaId =
-      _prefService->GetString(prefs::kGoogleServicesLastSyncingGaiaId);
-  // Show the promo if the last syncing user signed out and chose to clear
-  // data, or if the feature kEnableBatchUploadFromBookmarksManager is
-  // enabled.
-  self.shouldShowSignInPromo =
-      lastSignedInGaiaId.empty() ||
-      base::FeatureList::IsEnabled(kEnableBatchUploadFromBookmarksManager);
+  self.shouldShowSignInPromo = YES;
 }
 
 // Updates the visibility of the sign-in promo.

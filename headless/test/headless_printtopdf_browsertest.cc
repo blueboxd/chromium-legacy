@@ -13,7 +13,6 @@
 #include "base/json/json_writer.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "components/headless/command_handler/headless_command_switches.h"
@@ -81,9 +80,7 @@ class HeadlessPDFPagesBrowserTest : public HeadlessDevTooledBrowserTest {
     ASSERT_TRUE(base::Base64Decode(pdf_data_base64, &pdf_data));
     EXPECT_GT(pdf_data.size(), 0U);
 
-    auto pdf_span = base::make_span(
-        reinterpret_cast<const uint8_t*>(pdf_data.data()), pdf_data.size());
-
+    auto pdf_span = base::as_byte_span(pdf_data);
     int num_pages;
     EXPECT_TRUE(chrome_pdf::GetPDFDocInfo(pdf_span, &num_pages, nullptr));
     EXPECT_EQ(std::ceil(kDocHeight / kPaperHeight), num_pages);
@@ -191,8 +188,7 @@ class HeadlessPDFStreamBrowserTest : public HeadlessDevTooledBrowserTest {
     ASSERT_TRUE(base::Base64Decode(base64_pdf_data_, &pdf_data));
     EXPECT_GT(pdf_data.size(), 0U);
 
-    auto pdf_span = base::make_span(
-        reinterpret_cast<const uint8_t*>(pdf_data.data()), pdf_data.size());
+    auto pdf_span = base::as_byte_span(pdf_data);
 
     int num_pages;
     EXPECT_TRUE(chrome_pdf::GetPDFDocInfo(pdf_span, &num_pages, nullptr));
@@ -250,8 +246,7 @@ class HeadlessPDFBrowserTestBase : public HeadlessDevTooledBrowserTest {
       ASSERT_TRUE(base::Base64Decode(pdf_data_base64, &pdf_data));
       ASSERT_GT(pdf_data.size(), 0U);
 
-      auto pdf_span = base::make_span(
-          reinterpret_cast<const uint8_t*>(pdf_data.data()), pdf_data.size());
+      auto pdf_span = base::as_byte_span(pdf_data);
       int num_pages;
       ASSERT_TRUE(chrome_pdf::GetPDFDocInfo(pdf_span, &num_pages, nullptr));
       OnPDFReady(pdf_span, num_pages);

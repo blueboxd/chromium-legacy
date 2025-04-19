@@ -3,29 +3,36 @@
 // found in the LICENSE file.
 
 #include <optional>
-#include <string>
 #include <utility>
 
-#include "base/check_op.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/path_service.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/test/mock_callback.h"
 #include "pdf/pdf.h"
-#include "pdf/pdf_engine.h"
+#include "pdf/pdfium/pdfium_engine.h"
 #include "services/screen_ai/buildflags/buildflags.h"
-#include "services/screen_ai/public/mojom/screen_ai_service.mojom.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/pdfium/public/cpp/fpdf_scopers.h"
 #include "third_party/pdfium/public/fpdf_text.h"
 #include "third_party/pdfium/public/fpdfview.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_f.h"
+#include "ui/gfx/geometry/test/geometry_util.h"
+
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+#include <memory>
+#include <string>
+
+#include "base/check_op.h"
+#include "base/strings/utf_string_conversions.h"
+#include "pdf/pdf_progressive_searchifier.h"
+#include "services/screen_ai/public/mojom/screen_ai_service.mojom.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
 namespace chrome_pdf {
 
@@ -79,6 +86,31 @@ std::string GetText(base::span<const uint8_t> pdf, int page_index) {
     text += static_cast<char16_t>(char_code);
   }
   return base::UTF16ToUTF8(text);
+}
+
+std::vector<gfx::RectF> GetTextPositions(base::span<const uint8_t> pdf,
+                                         int page_index) {
+  ScopedFPDFDocument document(
+      FPDF_LoadMemDocument64(pdf.data(), pdf.size(), nullptr));
+  CHECK(document);
+  ScopedFPDFPage page(FPDF_LoadPage(document.get(), page_index));
+  CHECK(page);
+  ScopedFPDFTextPage text_page(FPDFText_LoadPage(page.get()));
+  CHECK(text_page);
+  int char_count = FPDFText_CountChars(text_page.get());
+  CHECK_GE(char_count, 0);
+  std::vector<gfx::RectF> positions;
+  positions.reserve(char_count);
+  for (int i = 0; i < char_count; ++i) {
+    double left;
+    double right;
+    double bottom;
+    double top;
+    CHECK(
+        FPDFText_GetCharBox(text_page.get(), i, &left, &right, &bottom, &top));
+    positions.push_back(gfx::RectF(left, bottom, right - left, top - bottom));
+  }
+  return positions;
 }
 
 }  // namespace
@@ -202,8 +234,10 @@ TEST_F(PDFiumEngineExportsTest, Searchify) {
   base::MockCallback<base::RepeatingCallback<
       screen_ai::mojom::VisualAnnotationPtr(const SkBitmap&)>>
       perform_ocr_callback;
+  // The PDF has 3 images, but one of them has a matrix that results in an image
+  // with size 0, and its image cannot be extracted.
   EXPECT_CALL(perform_ocr_callback, Run)
-      .Times(3)
+      .Times(2)
       .WillRepeatedly([](const SkBitmap& bitmap) {
         CHECK(!bitmap.empty());
         auto annotation = screen_ai::mojom::VisualAnnotation::New();
@@ -253,6 +287,165 @@ TEST_F(PDFiumEngineExportsTest, SearchifyBroken) {
       Searchify(*pdf_buffer, std::move(broken_perform_ocr_callback));
   EXPECT_TRUE(output_pdf_buffer.empty());
 }
+
+TEST_F(PDFiumEngineExportsTest, SearchifyBigImage) {
+  base::FilePath pdf_path =
+      pdf_data_dir().Append(FILE_PATH_LITERAL("big_image.pdf"));
+  std::optional<std::vector<uint8_t>> pdf_buffer =
+      base::ReadFileToBytes(pdf_path);
+  ASSERT_TRUE(pdf_buffer.has_value());
+
+  base::MockCallback<base::RepeatingCallback<
+      screen_ai::mojom::VisualAnnotationPtr(const SkBitmap&)>>
+      perform_ocr_callback;
+  EXPECT_CALL(perform_ocr_callback, Run).WillOnce([](const SkBitmap& bitmap) {
+    // The returned image is 267x267 as OCR needs at most 300 DPI.
+    EXPECT_EQ(267, bitmap.width());
+    EXPECT_EQ(267, bitmap.height());
+    auto annotation = screen_ai::mojom::VisualAnnotation::New();
+
+    constexpr gfx::Rect kRect1(0, 30, 10, 5);
+    auto line_box1 = screen_ai::mojom::LineBox::New();
+    line_box1->baseline_box = kRect1;
+    line_box1->baseline_box_angle = 0;
+    line_box1->bounding_box = kRect1;
+    line_box1->bounding_box_angle = 0;
+    auto word_box1 = screen_ai::mojom::WordBox::New();
+    word_box1->word = "a";
+    word_box1->bounding_box = kRect1;
+    word_box1->bounding_box_angle = 0;
+    line_box1->words.push_back(std::move(word_box1));
+    annotation->lines.push_back(std::move(line_box1));
+
+    constexpr gfx::Rect kRect2(200, 210, 67, 57);
+    auto line_box2 = screen_ai::mojom::LineBox::New();
+    line_box2->baseline_box = kRect2;
+    line_box2->baseline_box_angle = 0;
+    line_box2->bounding_box = kRect2;
+    line_box2->bounding_box_angle = 0;
+    auto word_box2 = screen_ai::mojom::WordBox::New();
+    word_box2->word = "b";
+    word_box2->bounding_box = kRect2;
+    word_box2->bounding_box_angle = 0;
+    line_box2->words.push_back(std::move(word_box2));
+    annotation->lines.push_back(std::move(line_box2));
+    return annotation;
+  });
+  {
+    ScopedLibraryInitializer initializer;
+    EXPECT_TRUE(GetTextPositions(*pdf_buffer, 0).empty());
+  }
+  std::vector<uint8_t> output_pdf_buffer =
+      Searchify(*pdf_buffer, perform_ocr_callback.Get());
+  ASSERT_FALSE(output_pdf_buffer.empty());
+  {
+    constexpr float kFloatTolerance = 0.0001f;
+    ScopedLibraryInitializer initializer;
+    // The middle 2 positions are for auto-generated "\r\n".
+    const std::vector<gfx::RectF> positions =
+        GetTextPositions(output_pdf_buffer, 0);
+    ASSERT_EQ(4u, positions.size());
+    EXPECT_RECTF_NEAR(gfx::RectF(0, 55.6105f, 2.397f, 1.1985f), positions[0],
+                      kFloatTolerance);
+    EXPECT_TRUE(positions[1].IsEmpty());
+    EXPECT_TRUE(positions[2].IsEmpty());
+    EXPECT_RECTF_NEAR(gfx::RectF(47.9401f, 0, 16.0599f, 13.6629f), positions[3],
+                      kFloatTolerance);
+  }
+}
+
+TEST_F(PDFiumEngineExportsTest, PdfProgressiveSearchifier) {
+  std::unique_ptr<PdfProgressiveSearchifier> progressive_searchifier =
+      CreateProgressiveSearchifier();
+
+  std::vector<uint8_t> zero_page_pdf = progressive_searchifier->Save();
+  ASSERT_GT(zero_page_pdf.size(), 0U);
+
+  auto annotation = screen_ai::mojom::VisualAnnotation::New();
+  SkBitmap bitmap_1x1;
+  bitmap_1x1.allocN32Pixels(1, 1);
+  SkBitmap bitmap_100x100;
+  bitmap_100x100.allocN32Pixels(100, 100);
+
+  progressive_searchifier->AddPage(bitmap_1x1, 0, annotation->Clone());
+  // Pages: [1x1]
+  std::vector<uint8_t> one_page_pdf = progressive_searchifier->Save();
+  ASSERT_GT(one_page_pdf.size(), 0U);
+
+  progressive_searchifier->AddPage(bitmap_100x100, 1, annotation->Clone());
+  // Pages: [1x1, 100x100]
+  std::vector<uint8_t> two_page_pdf = progressive_searchifier->Save();
+  ASSERT_GT(two_page_pdf.size(), 0U);
+
+  progressive_searchifier->AddPage(bitmap_1x1, 0, annotation->Clone());
+  progressive_searchifier->AddPage(bitmap_1x1, 2, annotation->Clone());
+  // Pages: [1x1, 100x100, 1x1]
+  std::vector<uint8_t> three_page_pdf_replaced =
+      progressive_searchifier->Save();
+  ASSERT_GT(three_page_pdf_replaced.size(), 0U);
+
+  progressive_searchifier->DeletePage(1);
+  progressive_searchifier->DeletePage(1);
+  // Pages: [1x1]
+  std::vector<uint8_t> one_page_pdf_deleted = progressive_searchifier->Save();
+  ASSERT_GT(one_page_pdf_deleted.size(), 0U);
+
+  progressive_searchifier.reset();
+
+  int page_count;
+  float max_page_width;
+  ASSERT_TRUE(GetPDFDocInfo(zero_page_pdf, &page_count, &max_page_width));
+  EXPECT_EQ(page_count, 0);
+  EXPECT_EQ(max_page_width, 0);
+
+  ASSERT_TRUE(GetPDFDocInfo(one_page_pdf, &page_count, &max_page_width));
+  EXPECT_EQ(page_count, 1);
+  EXPECT_EQ(max_page_width, bitmap_1x1.width());
+
+  ASSERT_TRUE(GetPDFDocInfo(two_page_pdf, &page_count, &max_page_width));
+  EXPECT_EQ(page_count, 2);
+  EXPECT_EQ(max_page_width, bitmap_100x100.width());
+
+  ASSERT_TRUE(
+      GetPDFDocInfo(three_page_pdf_replaced, &page_count, &max_page_width));
+  EXPECT_EQ(page_count, 3);
+  EXPECT_EQ(max_page_width, bitmap_100x100.width());
+
+  ASSERT_TRUE(
+      GetPDFDocInfo(one_page_pdf_deleted, &page_count, &max_page_width));
+  EXPECT_EQ(page_count, 1);
+  EXPECT_EQ(max_page_width, bitmap_1x1.width());
+}
+
+TEST_F(PDFiumEngineExportsTest, PdfProgressiveSearchifierText) {
+  std::unique_ptr<PdfProgressiveSearchifier> progressive_searchifier =
+      CreateProgressiveSearchifier();
+
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(100, 100);
+  auto annotation = screen_ai::mojom::VisualAnnotation::New();
+  auto line_box = screen_ai::mojom::LineBox::New();
+  line_box->baseline_box = gfx::Rect(0, 0, 100, 100);
+  line_box->baseline_box_angle = 0;
+  line_box->bounding_box = gfx::Rect(0, 0, 100, 100);
+  line_box->bounding_box_angle = 0;
+  auto word_box = screen_ai::mojom::WordBox::New();
+  word_box->word = kExpectedText;
+  word_box->bounding_box = gfx::Rect(0, 0, 100, 100);
+  word_box->bounding_box_angle = 0;
+  line_box->words.push_back(std::move(word_box));
+  annotation->lines.push_back(std::move(line_box));
+
+  progressive_searchifier->AddPage(bitmap, 0, std::move(annotation));
+  std::vector<uint8_t> pdf = progressive_searchifier->Save();
+  progressive_searchifier.reset();
+
+  {
+    ScopedLibraryInitializer initializer;
+    EXPECT_THAT(GetText(pdf, 0), testing::HasSubstr(kExpectedText));
+  }
+}
+
 #endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
 }  // namespace chrome_pdf

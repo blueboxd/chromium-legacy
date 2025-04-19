@@ -69,10 +69,6 @@ BASE_FEATURE(kContextualPageActions,
              "ContextualPageActions",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kContextualPageActionReaderMode,
-             "ContextualPageActionReaderMode",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kContextualPageActionShareModel,
              "ContextualPageActionShareModel",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -119,6 +115,10 @@ BASE_FEATURE(kSegmentationPlatformIosModuleRanker,
 
 BASE_FEATURE(kSegmentationPlatformAndroidHomeModuleRanker,
              "SegmentationPlatformAndroidHomeModuleRanker",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSegmentationPlatformAndroidHomeModuleRankerV2,
+             "SegmentationPlatformAndroidHomeModuleRankerV2",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSegmentationPlatformTimeDelaySampling,
@@ -160,6 +160,6 @@ BASE_FEATURE(kSegmentationPlatformIosModuleRankerSplitBySurface,
 
 BASE_FEATURE(kSegmentationPlatformURLVisitResumptionRanker,
              "SegmentationPlatformURLVisitResumptionRanker",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace segmentation_platform::features

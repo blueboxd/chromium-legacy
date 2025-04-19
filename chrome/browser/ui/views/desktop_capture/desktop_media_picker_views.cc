@@ -49,6 +49,7 @@
 #include "media/base/media_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
@@ -129,6 +130,15 @@ void RecordUma(GDMResult result, base::TimeTicks dialog_open_time) {
   histogram->AddTime(elapsed);
 }
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class PermissionInteraction {
+  kNotShown = 0,
+  kShown = 1,
+  kClicked = 2,
+  kMaxValue = kClicked
+};
+
 void RecordUmaCancellation(DialogType dialog_type,
                            base::TimeTicks dialog_open_time) {
   RecordAction(base::UserMetricsAction("GetDisplayMedia.Cancel"));
@@ -206,6 +216,34 @@ void RecordUmaSelection(DialogType dialog_type,
       break;
   }
 }
+
+#if BUILDFLAG(IS_MAC)
+void RecordUma(PermissionInteraction permission_interaction) {
+  base::UmaHistogramEnumeration(
+      "Media.Ui.GetDisplayMedia.PermissionInteractionMac",
+      permission_interaction);
+}
+
+void RecordPermissionButtonOpenedAction(DesktopMediaList::Type type) {
+  switch (type) {
+    case DesktopMediaList::Type::kScreen:
+      RecordAction(base::UserMetricsAction(
+          "GetDisplayMedia.PermissionPane.Screen.Opened"));
+      return;
+
+    case DesktopMediaList::Type::kWindow:
+      RecordAction(base::UserMetricsAction(
+          "GetDisplayMedia.PermissionPane.Window.Opened"));
+      return;
+
+    case DesktopMediaList::Type::kWebContents:
+    case DesktopMediaList::Type::kCurrentTab:
+    case DesktopMediaList::Type::kNone:
+      break;
+  }
+  NOTREACHED_NORETURN();
+}
+#endif  // BUILDFLAG(IS_MAC)
 
 std::u16string GetLabelForReselectButton(DesktopMediaList::Type type) {
   switch (type) {
@@ -358,10 +396,13 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
          !params.exclude_system_audio);
   RecordAction(base::UserMetricsAction("GetDisplayMedia.ShowDialog"));
 
+#if BUILDFLAG(IS_MAC)
   screen_capture_permission_checker_ =
       ScreenCapturePermissionChecker::MaybeCreate(
           base::BindRepeating(&DesktopMediaPickerDialogView::OnPermissionUpdate,
                               weak_factory_.GetWeakPtr()));
+#endif
+
   SetModalType(params.modality);
   SetButtonLabel(ui::DIALOG_BUTTON_OK,
                  l10n_util::GetStringUTF16(IDS_DESKTOP_MEDIA_PICKER_SHARE));
@@ -427,7 +468,8 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
         const bool supports_reselect_button =
             list_controller->SupportsReselectButton();
         screen_scroll_view->SetContents(list_controller->CreateView(
-            kGenericScreenStyle, kSingleScreenStyle, screen_title_text));
+            kGenericScreenStyle, kSingleScreenStyle, screen_title_text,
+            DesktopMediaList::Type::kScreen));
         // If the DisplayMediaPickerRedesign flag is active, clip max height to
         // 1.5 item heights to allow space for the audio-toggle controller.
         screen_scroll_view->ClipHeightTo(
@@ -465,7 +507,8 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
         const bool supports_reselect_button =
             list_controller->SupportsReselectButton();
         window_scroll_view->SetContents(list_controller->CreateView(
-            kWindowStyle, kWindowStyle, window_title_text));
+            kWindowStyle, kWindowStyle, window_title_text,
+            DesktopMediaList::Type::kWindow));
         window_scroll_view->ClipHeightTo(kWindowStyle.item_size.height(),
                                          kWindowStyle.item_size.height() * 2);
         window_scroll_view->SetHorizontalScrollBarMode(
@@ -520,7 +563,8 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
         const bool supports_reselect_button =
             list_controller->SupportsReselectButton();
         window_scroll_view->SetContents(list_controller->CreateView(
-            kCurrentTabStyle, kCurrentTabStyle, title));
+            kCurrentTabStyle, kCurrentTabStyle, title,
+            DesktopMediaList::Type::kCurrentTab));
         window_scroll_view->ClipHeightTo(
             kCurrentTabStyle.item_size.height(),
             kCurrentTabStyle.item_size.height() * 2);
@@ -599,9 +643,9 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
         constrained_window::ShowWebModalDialogViews(this, params.web_contents);
   } else {
 #if BUILDFLAG(IS_MAC)
-    // On Mac, MODAL_TYPE_CHILD with a null parent isn't allowed - fall back to
-    // MODAL_TYPE_WINDOW.
-    SetModalType(ui::MODAL_TYPE_WINDOW);
+    // On Mac, ModalType::kChild with a null parent isn't allowed - fall back to
+    // ModalType::kWindow.
+    SetModalType(ui::mojom::ModalType::kWindow);
 #endif
     widget = CreateDialogWidget(this, params.context, nullptr);
     widget->Show();
@@ -643,7 +687,11 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
   GetSelectedController()->FocusView();
 }
 
-DesktopMediaPickerDialogView::~DesktopMediaPickerDialogView() = default;
+DesktopMediaPickerDialogView::~DesktopMediaPickerDialogView() {
+#if BUILDFLAG(IS_MAC)
+  RecordPermissionInteractionUma();
+#endif
+}
 
 void DesktopMediaPickerDialogView::RecordUmaDismissal() const {
   if (dialog_type_ == DialogType::kPreferCurrentTab) {
@@ -671,9 +719,20 @@ void DesktopMediaPickerDialogView::ConfigureUIForNewPane(int index) {
 
   const DisplaySurfaceCategory& category = categories_[index];
   MaybeCreateReselectButtonForPane(category);
-  if (category.pane && audio_requested_ && category.audio_offered) {
+
+  if (!category.pane) {
+    return;
+  }
+
+  if (audio_requested_ && category.audio_offered) {
     category.pane->SetAudioSharingApprovedByUser(category.audio_checked);
   }
+#if BUILDFLAG(IS_MAC)
+  if (category.pane->IsPermissionPaneVisible()) {
+    permission_pane_was_shown_ = true;
+    RecordPermissionButtonOpenedAction(category.type);
+  }
+#endif
 }
 
 void DesktopMediaPickerDialogView::StoreAudioCheckboxState() {
@@ -1004,7 +1063,7 @@ void DesktopMediaPickerDialogView::OnSourceListLayoutChanged() {
   // BubbleDialogDelegateView::SizeToContents() instead of implementing sizing
   // logic in-place.
   const gfx::Size new_size = GetWidget()->GetRootView()->GetPreferredSize();
-  if (GetModalType() == ui::ModalType::MODAL_TYPE_CHILD) {
+  if (GetModalType() == ui::mojom::ModalType::kChild) {
     // For the web-modal dialog resize the dialog in place.
     // TODO(pbos): This should ideally use UpdateWebContentsModalDialogPosition
     // to keep the widget centered horizontally. As this dialog is fixed-width
@@ -1055,8 +1114,13 @@ void DesktopMediaPickerDialogView::OnCanReselectChanged(
   reselect_button_->SetEnabled(controller->can_reselect());
 }
 
+#if BUILDFLAG(IS_MAC)
 void DesktopMediaPickerDialogView::OnPermissionUpdate(bool has_permission) {
   CHECK(screen_capture_permission_checker_);
+
+  if (!initial_permission_state_.has_value()) {
+    initial_permission_state_ = has_permission;
+  }
 
   if (has_permission) {
     // Avoid needless polling.
@@ -1069,6 +1133,28 @@ void DesktopMediaPickerDialogView::OnPermissionUpdate(bool has_permission) {
     category.pane->OnScreenCapturePermissionUpdate(has_permission);
   }
 }
+
+void DesktopMediaPickerDialogView::RecordPermissionInteractionUma() const {
+  if (initial_permission_state_.value_or(true)) {
+    return;
+  }
+
+  bool permission_button_was_clicked = false;
+  for (auto& category : categories_) {
+    if (category.pane->WasPermissionButtonClicked()) {
+      permission_button_was_clicked = true;
+      break;
+    }
+  }
+
+  const PermissionInteraction permission_interaction =
+      permission_button_was_clicked ? PermissionInteraction::kClicked
+      : permission_pane_was_shown_  ? PermissionInteraction::kShown
+                                    : PermissionInteraction::kNotShown;
+
+  RecordUma(permission_interaction);
+}
+#endif
 
 BEGIN_METADATA(DesktopMediaPickerDialogView)
 END_METADATA
@@ -1089,7 +1175,7 @@ void DesktopMediaPickerViews::Show(
     const DesktopMediaPicker::Params& params,
     std::vector<std::unique_ptr<DesktopMediaList>> source_lists,
     DoneCallback done_callback) {
-  DesktopMediaPickerManager::Get()->OnShowDialog();
+  DesktopMediaPickerManager::Get()->OnShowDialog(params);
 
   request_source_ = params.request_source;
   callback_ = std::move(done_callback);

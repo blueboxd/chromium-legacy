@@ -38,7 +38,7 @@
 #include "build/buildflag.h"
 #include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/shortcuts/shortcut_icon_generator.h"
-#include "chrome/browser/ssl/security_state_tab_helper.h"
+#include "chrome/browser/ssl/chrome_security_state_tab_helper.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/os_integration/web_app_file_handler_manager.h"
 #include "chrome/browser/web_applications/policy/pre_redirection_url_observer.h"
@@ -729,22 +729,20 @@ void PopulateHomeTabIconsFromHomeTabManifestParams(
 }
 
 void UpdateWebAppInfoFromManifest(const blink::mojom::Manifest& manifest,
-                                  const GURL& manifest_url,
                                   WebAppInstallInfo* web_app_info) {
-  // Give the full length name priority if it's not empty.
-  std::u16string name = manifest.name.value_or(std::u16string());
-  if (!name.empty())
-    web_app_info->title = name;
-  else if (manifest.short_name)
-    web_app_info->title = *manifest.short_name;
-
-  if (manifest.id.is_valid()) {
-    web_app_info->manifest_id = manifest.id;
+  // The manifest parser guarantees these are valid/invalid together and
+  // same-origin.
+  if (manifest.id.is_valid() && manifest.start_url.is_valid()) {
+    web_app_info->SetManifestIdAndStartUrl(manifest.id, manifest.start_url);
   }
 
-  // Set the url based on the manifest value, if any.
-  if (manifest.start_url.is_valid())
-    web_app_info->start_url = manifest.start_url;
+  // Give the full length name priority if it's not empty.
+  std::u16string name = manifest.name.value_or(std::u16string());
+  if (!name.empty()) {
+    web_app_info->title = name;
+  } else if (manifest.short_name) {
+    web_app_info->title = *manifest.short_name;
+  }
 
   if (manifest.scope.is_valid())
     web_app_info->scope = manifest.scope;
@@ -782,10 +780,9 @@ void UpdateWebAppInfoFromManifest(const blink::mojom::Manifest& manifest,
   web_app_info->scope_extensions =
       ToWebAppScopeExtensions(manifest.scope_extensions);
 
-  GURL inferred_scope = web_app_info->scope.is_valid() ? web_app_info->scope
-                        : web_app_info->start_url.is_valid()
-                            ? web_app_info->start_url.GetWithoutFilename()
-                            : GURL();
+  GURL inferred_scope = web_app_info->scope.is_valid()
+                            ? web_app_info->scope
+                            : web_app_info->start_url().GetWithoutFilename();
   if (base::FeatureList::IsEnabled(
           blink::features::kWebAppManifestLockScreen) &&
       manifest.lock_screen && manifest.lock_screen->start_url.is_valid() &&
@@ -803,8 +800,9 @@ void UpdateWebAppInfoFromManifest(const blink::mojom::Manifest& manifest,
 
   web_app_info->capture_links = manifest.capture_links;
 
-  if (manifest_url.is_valid())
-    web_app_info->manifest_url = manifest_url;
+  if (manifest.manifest_url.is_valid()) {
+    web_app_info->manifest_url = manifest.manifest_url;
+  }
 
   web_app_info->launch_handler = manifest.launch_handler;
   if (manifest.description.has_value()) {
@@ -833,10 +831,9 @@ void UpdateWebAppInfoFromManifest(const blink::mojom::Manifest& manifest,
 }
 
 WebAppInstallInfo CreateWebAppInfoFromManifest(
-    const blink::mojom::Manifest& manifest,
-    const GURL& manifest_url) {
-  WebAppInstallInfo info(manifest.id);
-  UpdateWebAppInfoFromManifest(manifest, manifest_url, &info);
+    const blink::mojom::Manifest& manifest) {
+  WebAppInstallInfo info(manifest.id, manifest.start_url);
+  UpdateWebAppInfoFromManifest(manifest, &info);
   return info;
 }
 
@@ -898,7 +895,7 @@ void PopulateProductIcons(WebAppInstallInfo* web_app_info,
 
   char32_t icon_letter =
       web_app_info->title.empty()
-          ? shortcuts::GenerateIconLetterFromUrl(web_app_info->start_url)
+          ? shortcuts::GenerateIconLetterFromUrl(web_app_info->start_url())
           : shortcuts::GenerateIconLetterFromName(web_app_info->title);
 
   // Ensure that all top-level icons that are in web_app_info with  Purpose::ANY
@@ -1095,7 +1092,7 @@ WebAppManagement::Type ConvertInstallSurfaceToWebAppSource(
 
 void CreateWebAppInstallTabHelpers(content::WebContents* web_contents) {
   webapps::InstallableManager::CreateForWebContents(web_contents);
-  SecurityStateTabHelper::CreateForWebContents(web_contents);
+  ChromeSecurityStateTabHelper::CreateForWebContents(web_contents);
   favicon::CreateContentFaviconDriverForWebContents(web_contents);
   webapps::PreRedirectionURLObserver::CreateForWebContents(web_contents);
 }
@@ -1103,17 +1100,15 @@ void CreateWebAppInstallTabHelpers(content::WebContents* web_contents) {
 void SetWebAppManifestFields(const WebAppInstallInfo& web_app_info,
                              WebApp& web_app,
                              bool skip_icons_on_download_failure) {
+  // TODO(crbug.com/344718166): ManifestId should already be set the same,
+  // otherwise setting it here would be changing the app's ID. This should be a
+  // CHECK_EQ instead of a set.
+  web_app.SetManifestId(web_app_info.manifest_id());
+
   DCHECK(!web_app_info.title.empty());
   web_app.SetName(base::UTF16ToUTF8(web_app_info.title));
 
-  web_app.SetStartUrl(web_app_info.start_url);
-
-  // TODO(b/280862254): CHECK that the manifest_id isn't empty after the empty
-  // constructor is removed. Currently, `SetStartUrl` sets a default manifest_id
-  // based on the start_url.
-  if (web_app_info.manifest_id.is_valid()) {
-    web_app.SetManifestId(web_app_info.manifest_id);
-  }
+  web_app.SetStartUrl(web_app_info.start_url());
 
   web_app.SetDisplayMode(web_app_info.display_mode);
   web_app.SetDisplayModeOverride(web_app_info.display_override);
@@ -1264,8 +1259,7 @@ void ApplyParamsToFinalizeOptions(
     options.chromeos_data->handles_file_open_intents =
         install_params.handles_file_open_intents;
   }
-  options.locally_installed = install_params.locally_installed;
-  options.bypass_os_hooks = install_params.bypass_os_hooks;
+  options.install_state = install_params.install_state;
   options.add_to_applications_menu = install_params.add_to_applications_menu;
   options.add_to_desktop = install_params.add_to_desktop;
   options.add_to_quick_launch_bar = install_params.add_to_quick_launch_bar;

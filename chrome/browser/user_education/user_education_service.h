@@ -23,16 +23,9 @@
 #include "components/user_education/common/tutorial.h"
 #include "components/user_education/common/tutorial_registry.h"
 #include "content/public/browser/browser_context.h"
-#include "ui/base/models/simple_menu_model.h"
 
 // Kill switch for recent session tracking. Enabled by default.
 BASE_DECLARE_FEATURE(kAllowRecentSessionTracking);
-
-extern const char kTabGroupTutorialId[];
-extern const char kSavedTabGroupTutorialId[];
-extern const char kSidePanelCustomizeChromeTutorialId[];
-extern const char kSideSearchTutorialId[];
-extern const char kPasswordManagerTutorialId[];
 
 class UserEducationService : public KeyedService {
  public:
@@ -83,7 +76,7 @@ class UserEducationService : public KeyedService {
 
   // Checks if a "New" Badge should be shown for the given `context` (or
   // profile), for `feature`.
-  static ui::IsNewFeatureAtValue MaybeShowNewBadge(
+  static user_education::DisplayNewBadge MaybeShowNewBadge(
       content::BrowserContext* context,
       const base::Feature& feature);
 

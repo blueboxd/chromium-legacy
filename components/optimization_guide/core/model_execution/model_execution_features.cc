@@ -25,11 +25,22 @@ BASE_FEATURE(kTabOrganizationSettingsVisibility,
 BASE_FEATURE(kWallpaperSearchSettingsVisibility,
              "WallpaperSearchSettingsVisibility",
              base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kHistorySearchSettingsVisibility,
+             "HistorySearchSettingsVisibility",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+const base::FeatureParam<std::string> kPerformanceClassListForHistorySearch(
+    &kHistorySearchSettingsVisibility,
+    "PerformanceClassListForHistorySearch",
+    "*");
 
 // Graduation features.
+
+// Note: ComposeGraduated is enabled by default because the feature is
+// country-restricted at runtime.
 BASE_FEATURE(kComposeGraduated,
              "ComposeGraduated",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kTabOrganizationGraduated,
              "TabOrganizationGraduated",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -53,9 +64,9 @@ BASE_FEATURE(kOnDeviceModelTestFeature,
              "OnDeviceModelTestFeature",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kOnDeviceModelPromptApiFeature,
-             "OnDeviceModelPromptApiFeature",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kModelAdaptationHistorySearch,
+             "ModelAdaptationHistorySearch",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool IsGraduatedFeature(UserVisibleFeatureKey feature) {
   bool is_graduated = false;
@@ -69,6 +80,10 @@ bool IsGraduatedFeature(UserVisibleFeatureKey feature) {
       break;
     case UserVisibleFeatureKey::kWallpaperSearch:
       is_graduated = base::FeatureList::IsEnabled(kWallpaperSearchGraduated);
+      break;
+    case UserVisibleFeatureKey::kHistorySearch:
+      // History search is currently planned to always be opt-in.
+      is_graduated = false;
       break;
   }
   DCHECK(!is_graduated ||
@@ -88,6 +103,8 @@ const base::Feature* GetFeatureToUseToCheckSettingsVisibility(
       return &kTabOrganizationSettingsVisibility;
     case UserVisibleFeatureKey::kWallpaperSearch:
       return &kWallpaperSearchSettingsVisibility;
+    case UserVisibleFeatureKey::kHistorySearch:
+      return &kHistorySearchSettingsVisibility;
   }
 }
 
@@ -103,6 +120,18 @@ base::flat_set<UserVisibleFeatureKey> GetAllowedFeaturesForUnsignedUser() {
   return allowed_features;
 }
 
+bool ShouldEnableFeatureWhenMainToggleOn(UserVisibleFeatureKey feature) {
+  const auto* visibility_feature =
+      GetFeatureToUseToCheckSettingsVisibility(feature);
+  return (GetFieldTrialParamByFeatureAsBool(
+      *visibility_feature, "enable_feature_when_main_toggle_on", true));
+}
+
+// LINT.IfChange(IsOnDeviceModelEnabled)
+//
+// On-device supported features should return true.
+// `GetOnDeviceFeatureRecentlyUsedPref` should return a valid pref for each
+// on-device feature.
 bool IsOnDeviceModelEnabled(ModelBasedCapabilityKey feature) {
   switch (feature) {
     case ModelBasedCapabilityKey::kCompose:
@@ -110,15 +139,26 @@ bool IsOnDeviceModelEnabled(ModelBasedCapabilityKey feature) {
           optimization_guide::features::kOptimizationGuideComposeOnDeviceEval);
     case ModelBasedCapabilityKey::kTest:
       return base::FeatureList::IsEnabled(kOnDeviceModelTestFeature);
+    case ModelBasedCapabilityKey::kFormsPredictions:
     case ModelBasedCapabilityKey::kTabOrganization:
     case ModelBasedCapabilityKey::kWallpaperSearch:
     case ModelBasedCapabilityKey::kTextSafety:
       return false;
+    case ModelBasedCapabilityKey::kHistorySearch:
     case ModelBasedCapabilityKey::kPromptApi:
       return true;
   }
 }
+// LINT.ThenChange(model_execution_prefs.cc:GetOnDeviceFeatureRecentlyUsedPref,
+//                 IsOnDeviceModelAdaptationEnabled,
+//                 GetOptimizationTargetForModelAdaptation)
 
+// LINT.IfChange(IsOnDeviceModelAdaptationEnabled)
+//
+// On-device model adaptation features should return true.
+// `GetOptimizationTargetForModelAdaptation` should return a valid optimization
+// target for each on-device model adaptation feature, that will be used to
+// download the adaptation model.
 bool IsOnDeviceModelAdaptationEnabled(ModelBasedCapabilityKey feature) {
   switch (feature) {
     case ModelBasedCapabilityKey::kCompose:
@@ -127,28 +167,32 @@ bool IsOnDeviceModelAdaptationEnabled(ModelBasedCapabilityKey feature) {
       return base::GetFieldTrialParamByFeatureAsBool(
           kOnDeviceModelTestFeature, "enable_adaptation", false);
     case ModelBasedCapabilityKey::kPromptApi:
-      return base::GetFieldTrialParamByFeatureAsBool(
-          kOnDeviceModelPromptApiFeature, "enable_adaptation", false);
+      return true;
+    case ModelBasedCapabilityKey::kHistorySearch:
+      return true;
+    case ModelBasedCapabilityKey::kFormsPredictions:
     case ModelBasedCapabilityKey::kTabOrganization:
     case ModelBasedCapabilityKey::kWallpaperSearch:
     case ModelBasedCapabilityKey::kTextSafety:
       return false;
   }
 }
+// LINT.ThenChange(IsOnDeviceModelEnabled)
 
 proto::OptimizationTarget GetOptimizationTargetForModelAdaptation(
-    ModelBasedCapabilityKey feature) {
-  switch (feature) {
-    case ModelBasedCapabilityKey::kCompose:
-      return proto::OPTIMIZATION_TARGET_COMPOSE;
-    case ModelBasedCapabilityKey::kTest:
-      return proto::OPTIMIZATION_TARGET_MODEL_VALIDATION;
-    case ModelBasedCapabilityKey::kPromptApi:
-    case ModelBasedCapabilityKey::kTabOrganization:
-    case ModelBasedCapabilityKey::kWallpaperSearch:
-    case ModelBasedCapabilityKey::kTextSafety:
-      NOTREACHED_IN_MIGRATION();
+    ModelBasedCapabilityKey feature_key) {
+  proto::OptimizationTarget optimization_target;
+  if (proto::OptimizationTarget_Parse(
+          "OPTIMIZATION_TARGET_" +
+              proto::ModelExecutionFeature_Name(static_cast<int>(feature_key)),
+          &optimization_target)) {
+    return optimization_target;
+  } else if (feature_key == ModelBasedCapabilityKey::kTest) {
+    return proto::OPTIMIZATION_TARGET_MODEL_VALIDATION;
+  } else if (feature_key == ModelBasedCapabilityKey::kCompose) {
+    return proto::OPTIMIZATION_TARGET_COMPOSE;
   }
+  NOTREACHED_IN_MIGRATION();
   return proto::OPTIMIZATION_TARGET_UNKNOWN;
 }
 

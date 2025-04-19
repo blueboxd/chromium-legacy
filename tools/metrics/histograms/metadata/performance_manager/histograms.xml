@@ -20,14 +20,6 @@ each histogram.
   <variant name="Performance"/>
 </variants>
 
-<variants name="PerformanceInterventionsCPUTiming">
-  <variant name="Baseline"
-      summary="every 2 minutes regardless of CPU threshold"/>
-  <variant name="Delayed"
-      summary="1 minute after the CPU threshold is reached"/>
-  <variant name="Immediate" summary="when the CPU threshold is reached"/>
-</variants>
-
 <variants name="SiteDBWriteTrigger">
   <variant name="ClearAllSiteData"/>
   <variant name="ClearSiteDataForOrigins"/>
@@ -151,7 +143,7 @@ each histogram.
 
 <histogram
     name="PerformanceManager.CPUMonitorMemoryUse.{ResourceContextType}.{ResourceContextState}"
-    units="KB" expires_after="2024-10-17">
+    units="KB" expires_after="2024-12-24">
   <owner>joenotcharles@google.com</owner>
   <owner>chrome-catan@google.com</owner>
   <summary>
@@ -175,7 +167,7 @@ each histogram.
   </token>
 </histogram>
 
-<histogram name="PerformanceManager.DiskStats.UserDataDirAvailableSpaceMb"
+<histogram name="PerformanceManager.DiskStats.UserDataDirFreeSpaceMb"
     units="MB" expires_after="2024-09-22">
   <owner>anthonyvd@chromium.org</owner>
   <owner>chrome-catan@google.com</owner>
@@ -186,8 +178,8 @@ each histogram.
   </summary>
 </histogram>
 
-<histogram name="PerformanceManager.DiskStats.UserDataDirAvailableSpacePercent"
-    units="%" expires_after="2024-09-22">
+<histogram name="PerformanceManager.DiskStats.UserDataDirFreeSpacePercent"
+    units="%" expires_after="2024-12-15">
   <owner>anthonyvd@chromium.org</owner>
   <owner>chrome-catan@google.com</owner>
   <summary>
@@ -198,7 +190,7 @@ each histogram.
 </histogram>
 
 <histogram name="PerformanceManager.Experimental.AccessibilityModeFlag"
-    enum="AccessibilityModeFlagEnum" expires_after="2024-11-03">
+    enum="AccessibilityModeFlagEnum" expires_after="2025-01-05">
   <owner>anthonyvd@chromium.org</owner>
   <owner>chrome-catan@google.com</owner>
   <summary>
@@ -208,7 +200,7 @@ each histogram.
 </histogram>
 
 <histogram name="PerformanceManager.Experimental.HasAccessibilityModeFlag"
-    enum="Boolean" expires_after="2024-11-03">
+    enum="Boolean" expires_after="2025-01-05">
   <owner>anthonyvd@chromium.org</owner>
   <owner>chrome-catan@google.com</owner>
   <summary>
@@ -217,168 +209,36 @@ each histogram.
   </summary>
 </histogram>
 
-<histogram
-    name="PerformanceManager.PerformanceInterventions.CPU.AverageBackgroundCPU.{Timing}"
-    units="%" expires_after="2024-11-03">
-  <owner>agale@chromium.org</owner>
-  <owner>joenotcharles@chromium.org</owner>
+<histogram name="PerformanceManager.LoadingNotQuiescentPageCount.{Visibility}"
+    units="pages" expires_after="2024-12-10">
+  <owner>joenotcharles@google.com</owner>
   <owner>chrome-catan@google.com</owner>
   <summary>
-    Recorded {Timing}, this histogram represents the average CPU usage of each
-    background tab.
+    Recorded every 30 seconds with the number of PageNodes that have started
+    loading and not reached quiescence at the end of the interval (ie. in
+    LoadingState kLoading or kLoadedBusy). This variant records pages that are
+    {Visibility} for the entire load. PerformanceManager.QuiescentPageCount is
+    recorded at the same time for comparison.
   </summary>
-  <token key="Timing" variants="PerformanceInterventionsCPUTiming"/>
-</histogram>
-
-<histogram
-    name="PerformanceManager.PerformanceInterventions.CPU.AverageForegroundCPU.{Timing}"
-    units="%" expires_after="2024-11-17">
-  <owner>agale@chromium.org</owner>
-  <owner>joenotcharles@chromium.org</owner>
-  <owner>chrome-catan@google.com</owner>
-  <summary>
-    Recorded {Timing}, this histogram represents the average CPU usage of each
-    foreground (active, playing audio, etc) tab.
-  </summary>
-  <token key="Timing" variants="PerformanceInterventionsCPUTiming"/>
-</histogram>
-
-<histogram
-    name="PerformanceManager.PerformanceInterventions.CPU.BackgroundTabsToGetUnderCPUThreshold.{Timing}"
-    units="count" expires_after="2024-11-03">
-  <owner>agale@chromium.org</owner>
-  <owner>joenotcharles@chromium.org</owner>
-  <owner>chrome-catan@google.com</owner>
-  <summary>
-    Recorded {Timing}, this histogram represents the lowest number of background
-    tabs that would need to be closed to get CPU usage under the threshold.
-  </summary>
-  <token key="Timing" variants="PerformanceInterventionsCPUTiming"/>
-</histogram>
-
-<histogram
-    name="PerformanceManager.PerformanceInterventions.CPU.DurationOverThreshold"
-    units="ms" expires_after="2024-11-03">
-  <owner>agale@chromium.org</owner>
-  <owner>joenotcharles@chromium.org</owner>
-  <owner>chrome-catan@google.com</owner>
-  <summary>
-    Recorded when a device drops back below the CPU threshold, this histogram
-    represents the total time that the device was above the threshold.
-  </summary>
-</histogram>
-
-<histogram
-    name="PerformanceManager.PerformanceInterventions.CPU.NonChrome.{Timing}"
-    units="%" expires_after="2024-11-03">
-  <owner>agale@chromium.org</owner>
-  <owner>joenotcharles@chromium.org</owner>
-  <owner>chrome-catan@google.com</owner>
-  <summary>
-    Recorded {Timing}, with the percentage of CPU used by non-Chrome processes
-    on the system over the past 2 minutes. This is calculated from other
-    PerformanceManager.PerformanceInterventions.CPU.* histograms: NonChrome =
-    System - (TotalBackgroundCPU + TotalForegroundCPU).
-  </summary>
-  <token key="Timing" variants="PerformanceInterventionsCPUTiming"/>
-</histogram>
-
-<histogram
-    name="PerformanceManager.PerformanceInterventions.CPU.System.{Timing}"
-    units="%" expires_after="2024-11-03">
-  <owner>agale@chromium.org</owner>
-  <owner>joenotcharles@chromium.org</owner>
-  <owner>chrome-catan@google.com</owner>
-  <summary>
-    Recorded {Timing}, with the percentage of CPU used by all processes on the
-    system over the past 2 minutes.
-  </summary>
-  <token key="Timing" variants="PerformanceInterventionsCPUTiming"/>
-</histogram>
-
-<histogram
-    name="PerformanceManager.PerformanceInterventions.CPU.SystemCPUError.{Timing}"
-    enum="BooleanError" expires_after="2024-09-01">
-  <owner>agale@chromium.org</owner>
-  <owner>joenotcharles@chromium.org</owner>
-  <owner>chrome-catan@google.com</owner>
-  <summary>
-    Recorded {Timing} when an error occurs measuring the system CPU usage.
-    Successful measurements are recorded in
-    PerformanceManager.PerformanceInterventions.CPU.System.*.
-  </summary>
-  <token key="Timing" variants="PerformanceInterventionsCPUTiming"/>
-</histogram>
-
-<histogram
-    name="PerformanceManager.PerformanceInterventions.CPU.TopNBackgroundCPU.{N}.{Timing}"
-    units="%" expires_after="2024-11-03">
-  <owner>agale@chromium.org</owner>
-  <owner>joenotcharles@chromium.org</owner>
-  <owner>chrome-catan@google.com</owner>
-  <summary>
-    Recorded {Timing}, this histogram represents the sum of CPU capacity being
-    used by the top {N} background tabs.
-  </summary>
-  <token key="N">
-    <variant name="1"/>
-    <variant name="2"/>
-    <variant name="4"/>
-    <variant name="8"/>
-    <variant name="16"/>
+  <token key="Visibility">
+    <variant name="All" summary="in any visibility state"/>
+    <variant name="Hidden" summary="hidden"/>
+    <variant name="MixedVisibility" summary="in a mix of visibility states"/>
+    <variant name="Visible" summary="visible"/>
   </token>
-  <token key="Timing" variants="PerformanceInterventionsCPUTiming"/>
 </histogram>
 
-<histogram
-    name="PerformanceManager.PerformanceInterventions.CPU.TotalBackgroundCPU.{Timing}"
-    units="%" expires_after="2024-11-03">
-  <owner>agale@chromium.org</owner>
-  <owner>joenotcharles@chromium.org</owner>
+<histogram name="PerformanceManager.QuiescentPageCount" units="pages"
+    expires_after="2024-12-10">
+  <owner>joenotcharles@google.com</owner>
   <owner>chrome-catan@google.com</owner>
   <summary>
-    Recorded {Timing}, this histogram represents the percent of CPU capacity
-    being used by background tabs.
+    Recorded every 30 seconds with the number of PageNodes that have not started
+    loading (ie. in LoadingState kLoadingNotStarted or kLoadingTimedOut) or have
+    reached quiescence (ie. in LoadingState kLoadedIdle) at the end of the
+    interval. PerformanceManager.LoadingNotQuiescentPageCount is recorded at the
+    same time for comparison.
   </summary>
-  <token key="Timing" variants="PerformanceInterventionsCPUTiming"/>
-</histogram>
-
-<histogram
-    name="PerformanceManager.PerformanceInterventions.CPU.TotalBackgroundTabCount.{Timing}"
-    units="count" expires_after="2024-11-03">
-  <owner>agale@chromium.org</owner>
-  <owner>joenotcharles@chromium.org</owner>
-  <owner>chrome-catan@google.com</owner>
-  <summary>
-    Recorded {Timing}, this histogram represents the number of background tabs.
-  </summary>
-  <token key="Timing" variants="PerformanceInterventionsCPUTiming"/>
-</histogram>
-
-<histogram
-    name="PerformanceManager.PerformanceInterventions.CPU.TotalForegroundCPU.{Timing}"
-    units="%" expires_after="2024-11-03">
-  <owner>agale@chromium.org</owner>
-  <owner>joenotcharles@chromium.org</owner>
-  <owner>chrome-catan@google.com</owner>
-  <summary>
-    Recorded {Timing}, this histogram represents the percent of CPU capacity
-    being used by foreground (active, playing audio, etc) tabs.
-  </summary>
-  <token key="Timing" variants="PerformanceInterventionsCPUTiming"/>
-</histogram>
-
-<histogram
-    name="PerformanceManager.PerformanceInterventions.CPU.TotalForegroundTabCount.{Timing}"
-    units="count" expires_after="2024-11-03">
-  <owner>agale@chromium.org</owner>
-  <owner>joenotcharles@chromium.org</owner>
-  <owner>chrome-catan@google.com</owner>
-  <summary>
-    Recorded {Timing}, this histogram represents the number of foreground
-    (active, playing audio, etc) tabs.
-  </summary>
-  <token key="Timing" variants="PerformanceInterventionsCPUTiming"/>
 </histogram>
 
 <histogram name="PerformanceManager.SiteDB.DatabaseInit"
@@ -466,7 +326,7 @@ each histogram.
 </histogram>
 
 <histogram name="PerformanceManager.SiteDB.WriteCompleted.{SiteDBWriteTrigger}"
-    enum="BooleanCompleted" expires_after="2024-06-30">
+    enum="BooleanCompleted" expires_after="2024-12-24">
   <owner>joenotcharles@google.com</owner>
   <owner>chrome-catan@google.com</owner>
   <summary>
@@ -479,7 +339,7 @@ each histogram.
 </histogram>
 
 <histogram name="PerformanceManager.SiteDB.WriteScheduled.{SiteDBWriteTrigger}"
-    enum="BooleanAttempted" expires_after="2024-06-30">
+    enum="BooleanAttempted" expires_after="2024-12-24">
   <owner>joenotcharles@google.com</owner>
   <owner>chrome-catan@google.com</owner>
   <summary>
@@ -492,7 +352,7 @@ each histogram.
 </histogram>
 
 <histogram name="PerformanceManager.TabRevisitTracker.TimeToClose2"
-    units="seconds" expires_after="2024-10-13">
+    units="seconds" expires_after="2024-12-15">
   <owner>anthonyvd@chromium.org</owner>
   <owner>chrome-catan@google.com</owner>
   <summary>
@@ -502,7 +362,7 @@ each histogram.
 </histogram>
 
 <histogram name="PerformanceManager.TabRevisitTracker.TimeToRevisit2"
-    units="seconds" expires_after="2024-10-13">
+    units="seconds" expires_after="2024-12-15">
   <owner>anthonyvd@chromium.org</owner>
   <owner>chrome-catan@google.com</owner>
   <summary>
@@ -512,7 +372,7 @@ each histogram.
 </histogram>
 
 <histogram name="PerformanceManager.UserTuning.BatterySaverModeEnabledPercent"
-    units="%" expires_after="2024-11-17">
+    units="%" expires_after="2025-01-26">
   <owner>anthonyvd@chromium.org</owner>
   <owner>chrome-catan@google.com</owner>
   <summary>
@@ -522,7 +382,7 @@ each histogram.
 </histogram>
 
 <histogram name="PerformanceManager.UserTuning.EfficiencyMode"
-    enum="EfficiencyMode" expires_after="2024-09-22">
+    enum="EfficiencyMode" expires_after="2024-12-08">
   <owner>anthonyvd@chromium.org</owner>
   <owner>chrome-catan@google.com</owner>
   <summary>
@@ -536,7 +396,7 @@ each histogram.
 </histogram>
 
 <histogram name="PerformanceManager.UserTuning.MemorySaverModeEnabledPercent"
-    units="%" expires_after="2024-11-17">
+    units="%" expires_after="2025-01-26">
   <owner>anthonyvd@chromium.org</owner>
   <owner>chrome-catan@google.com</owner>
   <summary>

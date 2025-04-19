@@ -29,7 +29,6 @@
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/accessibility/one_shot_accessibility_tree_search.h"
-#include "content/public/common/content_client.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_common.h"
@@ -51,7 +50,6 @@ using content::AccessibilityMatchPredicate;
 using content::BrowserAccessibility;
 using content::BrowserAccessibilityManager;
 using content::BrowserAccessibilityManagerMac;
-using content::ContentClient;
 using content::OneShotAccessibilityTreeSearch;
 using ui::AXActionHandlerRegistry;
 using ui::AXNodeData;
@@ -1134,7 +1132,11 @@ bool content::IsNSRange(id value) {
   } else if (_owner->IsTextField() &&
              _owner->HasState(ax::mojom::State::kMultiline) &&
              !_owner->GetData().IsSpinnerTextField()) {
-    cocoa_role = NSAccessibilityTextAreaRole;
+    if (_owner->IsNonAtomicTextField()) {
+      cocoa_role = NSAccessibilityGroupRole;
+    } else {
+      cocoa_role = NSAccessibilityTextAreaRole;
+    }
   } else if (ui::IsImage(_owner->GetRole()) && _owner->GetChildCount()) {
     // An image map is an image with children, and exposed on Mac as a group.
     cocoa_role = NSAccessibilityGroupRole;
@@ -1153,42 +1155,60 @@ bool content::IsNSRange(id value) {
 }
 
 - (NSArray*)rowHeaders {
-  if (![self instanceActive])
+  if (![self instanceActive]) {
     return nil;
+  }
 
-  bool is_cell_or_table_header = ui::IsCellOrTableHeader(_owner->GetRole());
-  bool is_table_like = ui::IsTableLike(_owner->GetRole());
-  if (!is_table_like && !is_cell_or_table_header)
+  bool isCellOrTableHeader = ui::IsCellOrTableHeader(_owner->GetRole());
+  bool isTableLike = ui::IsTableLike(_owner->GetRole());
+  if (!isTableLike && !isCellOrTableHeader) {
     return nil;
+  }
+
   BrowserAccessibility* table = [self containingTable];
-  if (!table)
+  if (!table) {
     return nil;
+  }
 
-  NSMutableArray* ret = [[NSMutableArray alloc] init];
+  // A table with no row headers.
+  if (isTableLike && !table->GetTableRowCount().has_value()) {
+    return nil;
+  }
 
-  if (is_table_like) {
-    // If this is a table, return all row headers.
+  NSMutableArray* rowHeaders = [[NSMutableArray alloc] init];
+
+  if (isTableLike) {
+    // Return the table's row headers.
     std::set<int32_t> headerIds;
-    for (int i = 0; i < *table->GetTableRowCount(); i++) {
+
+    int numberOfRows = table->GetTableRowCount().value();
+
+    // Rows can have more than one row header cell. Also, we apparently need
+    // to guard against duplicate row header ids. Storing in a set dedups.
+    for (int i = 0; i < numberOfRows; i++) {
       std::vector<int32_t> rowHeaderIds = table->GetRowHeaderNodeIds(i);
-      for (int32_t id : rowHeaderIds)
-        headerIds.insert(id);
+      for (int32_t rowHeaderId : rowHeaderIds) {
+        headerIds.insert(rowHeaderId);
+      }
     }
-    for (int32_t id : headerIds) {
-      BrowserAccessibility* cell = _owner->manager()->GetFromID(id);
-      if (cell)
-        [ret addObject:cell->GetNativeViewAccessible()];
+
+    for (int32_t headerId : headerIds) {
+      BrowserAccessibility* cell = _owner->manager()->GetFromID(headerId);
+      if (cell) {
+        [rowHeaders addObject:cell->GetNativeViewAccessible()];
+      }
     }
   } else {
     // Otherwise this is a cell, return the row headers for this cell.
-    for (int32_t id : _owner->node()->GetTableCellRowHeaderNodeIds()) {
-      BrowserAccessibility* cell = _owner->manager()->GetFromID(id);
-      if (cell)
-        [ret addObject:cell->GetNativeViewAccessible()];
+    for (int32_t nodeId : _owner->node()->GetTableCellRowHeaderNodeIds()) {
+      BrowserAccessibility* cell = _owner->manager()->GetFromID(nodeId);
+      if (cell) {
+        [rowHeaders addObject:cell->GetNativeViewAccessible()];
+      }
     }
   }
 
-  return [ret count] ? ret : nil;
+  return [rowHeaders count] ? rowHeaders : nil;
 }
 
 - (NSValue*)rowIndexRange {
@@ -1447,9 +1467,8 @@ bool content::IsNSRange(id value) {
         _owner->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected);
     int msg_id =
         is_selected ? IDS_AX_OBJECT_SELECTED : IDS_AX_OBJECT_NOT_SELECTED;
-    ContentClient* content_client = content::GetContentClient();
     std::u16string name_with_selection = base::ReplaceStringPlaceholders(
-        content_client->GetLocalizedString(msg_id), {name}, nullptr);
+        _owner->GetLocalizedString(msg_id), {name}, nullptr);
 
     return base::SysUTF16ToNSString(name_with_selection);
   }

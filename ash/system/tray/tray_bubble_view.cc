@@ -272,9 +272,9 @@ void TrayBubbleView::RerouteEventHandler::OnEvent(ui::Event* event) {
     return;
   }
 
-  if (event->type() == ui::ET_MOUSE_PRESSED ||
-      event->type() == ui::ET_TOUCH_PRESSED ||
-      event->type() == ui::ET_GESTURE_TAP) {
+  if (event->type() == ui::EventType::kMousePressed ||
+      event->type() == ui::EventType::kTouchPressed ||
+      event->type() == ui::EventType::kGestureTap) {
     tray_bubble_view_->SetCanActivate(true);
   }
 
@@ -369,11 +369,11 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
   }
 
   message_center::MessageCenter::Get()->AddObserver(this);
-  Shell::Get()->display_manager()->AddObserver(this);
+  Shell::Get()->display_manager()->AddDisplayObserver(this);
 }
 
 TrayBubbleView::~TrayBubbleView() {
-  Shell::Get()->display_manager()->RemoveObserver(this);
+  Shell::Get()->display_manager()->RemoveDisplayObserver(this);
   message_center::MessageCenter::Get()->RemoveObserver(this);
 
   mouse_watcher_.reset();
@@ -622,10 +622,8 @@ void TrayBubbleView::OnThemeChanged() {
       chromeos::features::IsJellyrollEnabled()
           ? views::HighlightBorder::Type::kHighlightBorderOnShadow
           : views::HighlightBorder::Type::kHighlightBorder1));
-  set_color(GetColorProvider()->GetColor(
-      chromeos::features::IsJellyEnabled()
-          ? static_cast<ui::ColorId>(cros_tokens::kCrosSysSystemBaseElevated)
-          : kColorAshShieldAndBase80));
+  set_color(
+      GetColorProvider()->GetColor(cros_tokens::kCrosSysSystemBaseElevated));
 }
 
 void TrayBubbleView::MouseMovedOutOfHost() {

@@ -10,6 +10,7 @@
 
 #include "base/containers/contains.h"
 #include "base/functional/callback_helpers.h"
+#include "base/not_fatal_until.h"
 #include "base/observer_list.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
@@ -151,7 +152,7 @@ TestDedicatedWorkerService::CreateDedicatedWorker(
 void TestDedicatedWorkerService::DestroyDedicatedWorker(
     const blink::DedicatedWorkerToken& token) {
   auto it = dedicated_worker_creators_.find(token);
-  DCHECK(it != dedicated_worker_creators_.end());
+  CHECK(it != dedicated_worker_creators_.end(), base::NotFatalUntil::M130);
 
   // Notify observers that the worker is being destroyed.
   for (auto& observer : observer_list_)
@@ -265,7 +266,7 @@ blink::SharedWorkerToken TestSharedWorkerService::CreateSharedWorker(
 void TestSharedWorkerService::DestroySharedWorker(
     const blink::SharedWorkerToken& shared_worker_token) {
   auto it = shared_worker_client_frames_.find(shared_worker_token);
-  DCHECK(it != shared_worker_client_frames_.end());
+  CHECK(it != shared_worker_client_frames_.end(), base::NotFatalUntil::M130);
 
   // The worker should no longer have any clients.
   DCHECK(it->second.empty());
@@ -283,7 +284,7 @@ void TestSharedWorkerService::AddClient(
     content::GlobalRenderFrameHostId client_render_frame_host_id) {
   // Add the frame to the set of clients for this worker.
   auto it = shared_worker_client_frames_.find(shared_worker_token);
-  DCHECK(it != shared_worker_client_frames_.end());
+  CHECK(it != shared_worker_client_frames_.end(), base::NotFatalUntil::M130);
 
   base::flat_set<content::GlobalRenderFrameHostId>& client_frames = it->second;
   bool inserted = client_frames.insert(client_render_frame_host_id).second;
@@ -303,29 +304,31 @@ void TestSharedWorkerService::RemoveClient(
 
   // Then remove the frame from the set of clients of this worker.
   auto it = shared_worker_client_frames_.find(shared_worker_token);
-  DCHECK(it != shared_worker_client_frames_.end());
+  CHECK(it != shared_worker_client_frames_.end(), base::NotFatalUntil::M130);
 
   base::flat_set<content::GlobalRenderFrameHostId>& client_frames = it->second;
   size_t removed = client_frames.erase(client_render_frame_host_id);
   DCHECK_EQ(removed, 1u);
 }
 
-// TestServiceWorkerContext ----------------------------------------------------
+// TestServiceWorkerContextAdapter ---------------------------------------------
 
 // A test ServiceWorkerContext that allows to simulate a worker starting and
 // stopping and adding clients to running workers.
 //
 // Extends content::FakeServiceWorkerContext to avoid reimplementing all the
 // unused virtual functions.
-class TestServiceWorkerContext : public content::FakeServiceWorkerContext {
+class TestServiceWorkerContextAdapter : public ServiceWorkerContextAdapter {
  public:
-  TestServiceWorkerContext();
-  ~TestServiceWorkerContext() override;
+  TestServiceWorkerContextAdapter();
+  ~TestServiceWorkerContextAdapter() override;
 
-  TestServiceWorkerContext(const TestServiceWorkerContext&) = delete;
-  TestServiceWorkerContext& operator=(const TestServiceWorkerContext&) = delete;
+  TestServiceWorkerContextAdapter(const TestServiceWorkerContextAdapter&) =
+      delete;
+  TestServiceWorkerContextAdapter& operator=(
+      const TestServiceWorkerContextAdapter&) = delete;
 
-  // content::FakeServiceWorkerContext:
+  // ServiceWorkerContextAdapter:
   void AddObserver(content::ServiceWorkerContextObserver* observer) override;
   void RemoveObserver(content::ServiceWorkerContextObserver* observer) override;
 
@@ -384,21 +387,21 @@ class TestServiceWorkerContext : public content::FakeServiceWorkerContext {
       service_worker_infos_;
 };
 
-TestServiceWorkerContext::TestServiceWorkerContext() = default;
+TestServiceWorkerContextAdapter::TestServiceWorkerContextAdapter() = default;
 
-TestServiceWorkerContext::~TestServiceWorkerContext() = default;
+TestServiceWorkerContextAdapter::~TestServiceWorkerContextAdapter() = default;
 
-void TestServiceWorkerContext::AddObserver(
+void TestServiceWorkerContextAdapter::AddObserver(
     content::ServiceWorkerContextObserver* observer) {
   observer_list_.AddObserver(observer);
 }
 
-void TestServiceWorkerContext::RemoveObserver(
+void TestServiceWorkerContextAdapter::RemoveObserver(
     content::ServiceWorkerContextObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-int64_t TestServiceWorkerContext::CreateServiceWorker() {
+int64_t TestServiceWorkerContextAdapter::CreateServiceWorker() {
   // Create a new version ID and add it to the map.
   int64_t version_id = next_service_worker_instance_id_++;
 
@@ -408,9 +411,9 @@ int64_t TestServiceWorkerContext::CreateServiceWorker() {
   return version_id;
 }
 
-void TestServiceWorkerContext::DestroyServiceWorker(int64_t version_id) {
+void TestServiceWorkerContextAdapter::DestroyServiceWorker(int64_t version_id) {
   auto it = service_worker_infos_.find(version_id);
-  DCHECK(it != service_worker_infos_.end());
+  CHECK(it != service_worker_infos_.end(), base::NotFatalUntil::M130);
   const ServiceWorkerInfo& info = it->second;
 
   // Can only delete a service worker that isn't running and has no clients.
@@ -421,12 +424,13 @@ void TestServiceWorkerContext::DestroyServiceWorker(int64_t version_id) {
   service_worker_infos_.erase(it);
 }
 
-void TestServiceWorkerContext::StartServiceWorker(int64_t version_id,
-                                                  int worker_process_id,
-                                                  const GURL& worker_url,
-                                                  const GURL& scope_url) {
+void TestServiceWorkerContextAdapter::StartServiceWorker(
+    int64_t version_id,
+    int worker_process_id,
+    const GURL& worker_url,
+    const GURL& scope_url) {
   auto it = service_worker_infos_.find(version_id);
-  DCHECK(it != service_worker_infos_.end());
+  CHECK(it != service_worker_infos_.end(), base::NotFatalUntil::M130);
   ServiceWorkerInfo& info = it->second;
 
   DCHECK(!info.is_running);
@@ -445,9 +449,9 @@ void TestServiceWorkerContext::StartServiceWorker(int64_t version_id,
   }
 }
 
-void TestServiceWorkerContext::StopServiceWorker(int64_t version_id) {
+void TestServiceWorkerContextAdapter::StopServiceWorker(int64_t version_id) {
   auto it = service_worker_infos_.find(version_id);
-  DCHECK(it != service_worker_infos_.end());
+  CHECK(it != service_worker_infos_.end(), base::NotFatalUntil::M130);
   ServiceWorkerInfo& info = it->second;
 
   DCHECK(info.is_running);
@@ -458,7 +462,7 @@ void TestServiceWorkerContext::StopServiceWorker(int64_t version_id) {
     observer.OnVersionStoppedRunning(version_id);
 }
 
-std::string TestServiceWorkerContext::AddClient(
+std::string TestServiceWorkerContextAdapter::AddClient(
     int64_t version_id,
     const content::ServiceWorkerClientInfo& client_info) {
   return AddClientWithClientID(
@@ -466,12 +470,12 @@ std::string TestServiceWorkerContext::AddClient(
       client_info);
 }
 
-std::string TestServiceWorkerContext::AddClientWithClientID(
+std::string TestServiceWorkerContextAdapter::AddClientWithClientID(
     int64_t version_id,
     std::string client_uuid,
     const content::ServiceWorkerClientInfo& client_info) {
   auto it = service_worker_infos_.find(version_id);
-  DCHECK(it != service_worker_infos_.end());
+  CHECK(it != service_worker_infos_.end(), base::NotFatalUntil::M130);
   ServiceWorkerInfo& info = it->second;
 
   bool inserted = info.clients.insert(client_uuid).second;
@@ -483,10 +487,11 @@ std::string TestServiceWorkerContext::AddClientWithClientID(
   return client_uuid;
 }
 
-void TestServiceWorkerContext::RemoveClient(int64_t version_id,
-                                            const std::string& client_uuid) {
+void TestServiceWorkerContextAdapter::RemoveClient(
+    int64_t version_id,
+    const std::string& client_uuid) {
   auto it = service_worker_infos_.find(version_id);
-  DCHECK(it != service_worker_infos_.end());
+  CHECK(it != service_worker_infos_.end(), base::NotFatalUntil::M130);
   ServiceWorkerInfo& info = it->second;
 
   size_t removed = info.clients.erase(client_uuid);
@@ -496,12 +501,12 @@ void TestServiceWorkerContext::RemoveClient(int64_t version_id,
     observer.OnControlleeRemoved(version_id, client_uuid);
 }
 
-void TestServiceWorkerContext::OnControlleeNavigationCommitted(
+void TestServiceWorkerContextAdapter::OnControlleeNavigationCommitted(
     int64_t version_id,
     const std::string& client_uuid,
     content::GlobalRenderFrameHostId render_frame_host_id) {
   auto it = service_worker_infos_.find(version_id);
-  DCHECK(it != service_worker_infos_.end());
+  CHECK(it != service_worker_infos_.end(), base::NotFatalUntil::M130);
   ServiceWorkerInfo& info = it->second;
 
   DCHECK(base::Contains(info.clients, client_uuid));
@@ -551,7 +556,7 @@ TestProcessNodeSource::~TestProcessNodeSource() {
 
 ProcessNodeImpl* TestProcessNodeSource::GetProcessNode(int render_process_id) {
   auto it = process_node_map_.find(render_process_id);
-  DCHECK(it != process_node_map_.end());
+  CHECK(it != process_node_map_.end(), base::NotFatalUntil::M130);
   return it->second.get();
 }
 
@@ -621,13 +626,12 @@ class TestFrameNodeSource : public FrameNodeSource {
 };
 
 TestFrameNodeSource::TestFrameNodeSource()
-    : page_node_(PerformanceManagerImpl::CreatePageNode(
-          WebContentsProxy(),
-          "page_node_context_id",
-          GURL(),
-          PagePropertyFlags{},
-          base::TimeTicks::Now(),
-          PageNode::PageState::kActive)) {}
+    : page_node_(
+          PerformanceManagerImpl::CreatePageNode(nullptr,
+                                                 "page_node_context_id",
+                                                 GURL(),
+                                                 PagePropertyFlags{},
+                                                 base::TimeTicks::Now())) {}
 
 TestFrameNodeSource::~TestFrameNodeSource() {
   std::vector<std::unique_ptr<NodeBase>> nodes;
@@ -677,7 +681,7 @@ content::GlobalRenderFrameHostId TestFrameNodeSource::CreateFrameNode(
       process_node, page_node_.get(), /*parent_frame_node=*/nullptr,
       /*outer_document_for_fenced_frame*/ nullptr, frame_id,
       blink::LocalFrameToken(), content::BrowsingInstanceId(0),
-      content::SiteInstanceId(0), /*is_current=*/true);
+      content::SiteInstanceGroupId(0), /*is_current=*/true);
 
   bool inserted =
       frame_node_map_.insert({render_frame_host_id, std::move(frame_node)})
@@ -690,7 +694,7 @@ content::GlobalRenderFrameHostId TestFrameNodeSource::CreateFrameNode(
 void TestFrameNodeSource::DeleteFrameNode(
     content::GlobalRenderFrameHostId render_frame_host_id) {
   auto it = frame_node_map_.find(render_frame_host_id);
-  DCHECK(it != frame_node_map_.end());
+  CHECK(it != frame_node_map_.end(), base::NotFatalUntil::M130);
 
   FrameNodeImpl* frame_node = it->second.get();
 
@@ -703,7 +707,7 @@ void TestFrameNodeSource::DeleteFrameNode(
 
 void TestFrameNodeSource::InvokeAndRemoveCallback(FrameNodeImpl* frame_node) {
   auto it = frame_node_callbacks_.find(frame_node);
-  DCHECK(it != frame_node_callbacks_.end());
+  CHECK(it != frame_node_callbacks_.end(), base::NotFatalUntil::M130);
 
   std::move(it->second).Run(frame_node);
 
@@ -742,8 +746,8 @@ class WorkerWatcherTest : public testing::Test {
     return &shared_worker_service_;
   }
 
-  TestServiceWorkerContext* service_worker_context() {
-    return &service_worker_context_;
+  TestServiceWorkerContextAdapter* service_worker_context_adapter() {
+    return &service_worker_context_adapter_;
   }
 
   TestProcessNodeSource* process_node_source() {
@@ -761,7 +765,7 @@ class WorkerWatcherTest : public testing::Test {
 
   TestDedicatedWorkerService dedicated_worker_service_;
   TestSharedWorkerService shared_worker_service_;
-  TestServiceWorkerContext service_worker_context_;
+  TestServiceWorkerContextAdapter service_worker_context_adapter_;
 
   std::unique_ptr<PerformanceManagerImpl> performance_manager_;
   std::unique_ptr<TestProcessNodeSource> process_node_source_;
@@ -783,7 +787,7 @@ void WorkerWatcherTest::SetUp() {
 
   worker_watcher_ = std::make_unique<WorkerWatcher>(
       "browser_context_id", &dedicated_worker_service_, &shared_worker_service_,
-      &service_worker_context_, process_node_source_.get(),
+      &service_worker_context_adapter_, process_node_source_.get(),
       frame_node_source_.get());
 }
 
@@ -952,19 +956,20 @@ TEST_F(WorkerWatcherTest, ServiceWorkerFrameClient) {
 
   // Create and start the service worker.
   int64_t service_worker_version_id =
-      service_worker_context()->CreateServiceWorker();
+      service_worker_context_adapter()->CreateServiceWorker();
   const GURL worker_url = GenerateWorkerUrl();
   const GURL scope_url = GenerateUniqueDomainUrl();
   // Make sure origins created from `worker_url` and `scope_url` can't be
   // confused.
   EXPECT_NE(url::Origin::Create(worker_url), url::Origin::Create(scope_url));
 
-  service_worker_context()->StartServiceWorker(
+  service_worker_context_adapter()->StartServiceWorker(
       service_worker_version_id, render_process_id, worker_url, scope_url);
 
   // Add a window client of the service worker.
-  std::string service_worker_client_uuid = service_worker_context()->AddClient(
-      service_worker_version_id, content::ServiceWorkerClientInfo());
+  std::string service_worker_client_uuid =
+      service_worker_context_adapter()->AddClient(
+          service_worker_version_id, content::ServiceWorkerClientInfo());
 
   // Check expectations on the graph.
   const WorkerNodeImpl* worker_node =
@@ -992,7 +997,7 @@ TEST_F(WorkerWatcherTest, ServiceWorkerFrameClient) {
       frame_node_source()->CreateFrameNode(
           render_process_id,
           process_node_source()->GetProcessNode(render_process_id));
-  service_worker_context()->OnControlleeNavigationCommitted(
+  service_worker_context_adapter()->OnControlleeNavigationCommitted(
       service_worker_version_id, service_worker_client_uuid,
       render_frame_host_id);
 
@@ -1012,10 +1017,12 @@ TEST_F(WorkerWatcherTest, ServiceWorkerFrameClient) {
   EXPECT_EQ(worker_watcher()->FindWorkerNodeForToken(token), worker_node);
 
   // Disconnect and clean up the service worker.
-  service_worker_context()->RemoveClient(service_worker_version_id,
-                                         service_worker_client_uuid);
-  service_worker_context()->StopServiceWorker(service_worker_version_id);
-  service_worker_context()->DestroyServiceWorker(service_worker_version_id);
+  service_worker_context_adapter()->RemoveClient(service_worker_version_id,
+                                                 service_worker_client_uuid);
+  service_worker_context_adapter()->StopServiceWorker(
+      service_worker_version_id);
+  service_worker_context_adapter()->DestroyServiceWorker(
+      service_worker_version_id);
 
   EXPECT_EQ(worker_watcher()->FindWorkerNodeForToken(token), nullptr);
 }
@@ -1030,17 +1037,17 @@ TEST_F(WorkerWatcherTest, ServiceWorkerFrameClientOfTwoWorkers) {
 
   // Create and start both service workers.
   int64_t first_service_worker_version_id =
-      service_worker_context()->CreateServiceWorker();
+      service_worker_context_adapter()->CreateServiceWorker();
   const GURL first_worker_url = GenerateWorkerUrl();
   const GURL first_scope_url = GenerateUniqueDomainUrl();
-  service_worker_context()->StartServiceWorker(
+  service_worker_context_adapter()->StartServiceWorker(
       first_service_worker_version_id, render_process_id, first_worker_url,
       first_scope_url);
   int64_t second_service_worker_version_id =
-      service_worker_context()->CreateServiceWorker();
+      service_worker_context_adapter()->CreateServiceWorker();
   const GURL second_worker_url = GenerateWorkerUrl();
   const GURL second_scope_url = GenerateUniqueDomainUrl();
-  service_worker_context()->StartServiceWorker(
+  service_worker_context_adapter()->StartServiceWorker(
       second_service_worker_version_id, render_process_id, second_worker_url,
       second_scope_url);
 
@@ -1052,9 +1059,10 @@ TEST_F(WorkerWatcherTest, ServiceWorkerFrameClientOfTwoWorkers) {
             url::Origin::Create(second_scope_url));
 
   // Add a window client of the service worker.
-  std::string service_worker_client_uuid = service_worker_context()->AddClient(
-      first_service_worker_version_id, content::ServiceWorkerClientInfo());
-  service_worker_context()->AddClientWithClientID(
+  std::string service_worker_client_uuid =
+      service_worker_context_adapter()->AddClient(
+          first_service_worker_version_id, content::ServiceWorkerClientInfo());
+  service_worker_context_adapter()->AddClientWithClientID(
       second_service_worker_version_id, service_worker_client_uuid,
       content::ServiceWorkerClientInfo());
 
@@ -1088,16 +1096,18 @@ TEST_F(WorkerWatcherTest, ServiceWorkerFrameClientOfTwoWorkers) {
       });
 
   // Disconnect and clean up the service worker.
-  service_worker_context()->RemoveClient(first_service_worker_version_id,
-                                         service_worker_client_uuid);
-  service_worker_context()->StopServiceWorker(first_service_worker_version_id);
-  service_worker_context()->DestroyServiceWorker(
+  service_worker_context_adapter()->RemoveClient(
+      first_service_worker_version_id, service_worker_client_uuid);
+  service_worker_context_adapter()->StopServiceWorker(
+      first_service_worker_version_id);
+  service_worker_context_adapter()->DestroyServiceWorker(
       first_service_worker_version_id);
 
-  service_worker_context()->RemoveClient(second_service_worker_version_id,
-                                         service_worker_client_uuid);
-  service_worker_context()->StopServiceWorker(second_service_worker_version_id);
-  service_worker_context()->DestroyServiceWorker(
+  service_worker_context_adapter()->RemoveClient(
+      second_service_worker_version_id, service_worker_client_uuid);
+  service_worker_context_adapter()->StopServiceWorker(
+      second_service_worker_version_id);
+  service_worker_context_adapter()->DestroyServiceWorker(
       second_service_worker_version_id);
 }
 
@@ -1110,12 +1120,12 @@ TEST_F(WorkerWatcherTest, ServiceWorkerTwoFrameClientRelationships) {
 
   // Create and start a service worker.
   int64_t service_worker_version_id =
-      service_worker_context()->CreateServiceWorker();
-  service_worker_context()->StartServiceWorker(service_worker_version_id,
-                                               render_process_id);
+      service_worker_context_adapter()->CreateServiceWorker();
+  service_worker_context_adapter()->StartServiceWorker(
+      service_worker_version_id, render_process_id);
 
   // Add a window client of the service worker.
-  std::string first_client_uuid = service_worker_context()->AddClient(
+  std::string first_client_uuid = service_worker_context_adapter()->AddClient(
       service_worker_version_id, content::ServiceWorkerClientInfo());
 
   // Check expectations on the graph.
@@ -1131,7 +1141,7 @@ TEST_F(WorkerWatcherTest, ServiceWorkerTwoFrameClientRelationships) {
       });
 
   // Add a second client relationship between the same two entities.
-  std::string second_client_uuid = service_worker_context()->AddClient(
+  std::string second_client_uuid = service_worker_context_adapter()->AddClient(
       service_worker_version_id, content::ServiceWorkerClientInfo());
 
   // Now simulate the navigation commit.
@@ -1139,7 +1149,7 @@ TEST_F(WorkerWatcherTest, ServiceWorkerTwoFrameClientRelationships) {
       frame_node_source()->CreateFrameNode(
           render_process_id,
           process_node_source()->GetProcessNode(render_process_id));
-  service_worker_context()->OnControlleeNavigationCommitted(
+  service_worker_context_adapter()->OnControlleeNavigationCommitted(
       service_worker_version_id, first_client_uuid, render_frame_host_id);
 
   RunInGraph(
@@ -1155,7 +1165,7 @@ TEST_F(WorkerWatcherTest, ServiceWorkerTwoFrameClientRelationships) {
       });
 
   // Commit the second controllee navigation.
-  service_worker_context()->OnControlleeNavigationCommitted(
+  service_worker_context_adapter()->OnControlleeNavigationCommitted(
       service_worker_version_id, second_client_uuid, render_frame_host_id);
   // Verify that the graph is still the same.
   RunInGraph(
@@ -1171,8 +1181,8 @@ TEST_F(WorkerWatcherTest, ServiceWorkerTwoFrameClientRelationships) {
       });
 
   // Remove the first client relationship.
-  service_worker_context()->RemoveClient(service_worker_version_id,
-                                         first_client_uuid);
+  service_worker_context_adapter()->RemoveClient(service_worker_version_id,
+                                                 first_client_uuid);
   // Verify that the graph is still the same.
   RunInGraph(
       [process_node = process_node_source()->GetProcessNode(render_process_id),
@@ -1187,10 +1197,12 @@ TEST_F(WorkerWatcherTest, ServiceWorkerTwoFrameClientRelationships) {
       });
 
   // Teardown.
-  service_worker_context()->RemoveClient(service_worker_version_id,
-                                         second_client_uuid);
-  service_worker_context()->StopServiceWorker(service_worker_version_id);
-  service_worker_context()->DestroyServiceWorker(service_worker_version_id);
+  service_worker_context_adapter()->RemoveClient(service_worker_version_id,
+                                                 second_client_uuid);
+  service_worker_context_adapter()->StopServiceWorker(
+      service_worker_version_id);
+  service_worker_context_adapter()->DestroyServiceWorker(
+      service_worker_version_id);
 }
 
 // Ensures that the WorkerWatcher handles the case where a frame with a service
@@ -1201,13 +1213,14 @@ TEST_F(WorkerWatcherTest, ServiceWorkerFrameClientDestroyedBeforeCommit) {
 
   // Create and start the service worker.
   int64_t service_worker_version_id =
-      service_worker_context()->CreateServiceWorker();
-  service_worker_context()->StartServiceWorker(service_worker_version_id,
-                                               render_process_id);
+      service_worker_context_adapter()->CreateServiceWorker();
+  service_worker_context_adapter()->StartServiceWorker(
+      service_worker_version_id, render_process_id);
 
   // Add a window client of the service worker.
-  std::string service_worker_client_uuid = service_worker_context()->AddClient(
-      service_worker_version_id, content::ServiceWorkerClientInfo());
+  std::string service_worker_client_uuid =
+      service_worker_context_adapter()->AddClient(
+          service_worker_version_id, content::ServiceWorkerClientInfo());
 
   // Check expectations on the graph.
   RunInGraph(
@@ -1224,10 +1237,12 @@ TEST_F(WorkerWatcherTest, ServiceWorkerFrameClientDestroyedBeforeCommit) {
       });
 
   // Disconnect and clean up the service worker.
-  service_worker_context()->RemoveClient(service_worker_version_id,
-                                         service_worker_client_uuid);
-  service_worker_context()->StopServiceWorker(service_worker_version_id);
-  service_worker_context()->DestroyServiceWorker(service_worker_version_id);
+  service_worker_context_adapter()->RemoveClient(service_worker_version_id,
+                                                 service_worker_client_uuid);
+  service_worker_context_adapter()->StopServiceWorker(
+      service_worker_version_id);
+  service_worker_context_adapter()->DestroyServiceWorker(
+      service_worker_version_id);
 }
 
 TEST_F(WorkerWatcherTest, AllTypesOfServiceWorkerClients) {
@@ -1235,20 +1250,20 @@ TEST_F(WorkerWatcherTest, AllTypesOfServiceWorkerClients) {
 
   // Create and start the service worker.
   int64_t service_worker_version_id =
-      service_worker_context()->CreateServiceWorker();
-  service_worker_context()->StartServiceWorker(service_worker_version_id,
-                                               render_process_id);
+      service_worker_context_adapter()->CreateServiceWorker();
+  service_worker_context_adapter()->StartServiceWorker(
+      service_worker_version_id, render_process_id);
 
   // Create a client of each type and connect them to the service worker.
 
   // Frame client.
-  std::string frame_client_uuid = service_worker_context()->AddClient(
+  std::string frame_client_uuid = service_worker_context_adapter()->AddClient(
       service_worker_version_id, content::ServiceWorkerClientInfo());
   content::GlobalRenderFrameHostId render_frame_host_id =
       frame_node_source()->CreateFrameNode(
           render_process_id,
           process_node_source()->GetProcessNode(render_process_id));
-  service_worker_context()->OnControlleeNavigationCommitted(
+  service_worker_context_adapter()->OnControlleeNavigationCommitted(
       service_worker_version_id, frame_client_uuid, render_frame_host_id);
 
   // Dedicated worker client.
@@ -1256,16 +1271,17 @@ TEST_F(WorkerWatcherTest, AllTypesOfServiceWorkerClients) {
       dedicated_worker_service()->CreateDedicatedWorker(render_process_id,
                                                         render_frame_host_id);
   std::string dedicated_worker_client_uuid =
-      service_worker_context()->AddClient(
+      service_worker_context_adapter()->AddClient(
           service_worker_version_id,
           content::ServiceWorkerClientInfo(dedicated_worker_token));
 
   // Shared worker client.
   blink::SharedWorkerToken shared_worker_token =
       shared_worker_service()->CreateSharedWorker(render_process_id);
-  std::string shared_worker_client_uuid = service_worker_context()->AddClient(
-      service_worker_version_id,
-      content::ServiceWorkerClientInfo(shared_worker_token));
+  std::string shared_worker_client_uuid =
+      service_worker_context_adapter()->AddClient(
+          service_worker_version_id,
+          content::ServiceWorkerClientInfo(shared_worker_token));
 
   // Check expectations on the graph.
   RunInGraph(
@@ -1283,17 +1299,19 @@ TEST_F(WorkerWatcherTest, AllTypesOfServiceWorkerClients) {
       });
 
   // Disconnect and clean up the service worker and its clients.
-  service_worker_context()->RemoveClient(service_worker_version_id,
-                                         shared_worker_client_uuid);
+  service_worker_context_adapter()->RemoveClient(service_worker_version_id,
+                                                 shared_worker_client_uuid);
   shared_worker_service()->DestroySharedWorker(shared_worker_token);
-  service_worker_context()->RemoveClient(service_worker_version_id,
-                                         dedicated_worker_client_uuid);
+  service_worker_context_adapter()->RemoveClient(service_worker_version_id,
+                                                 dedicated_worker_client_uuid);
   dedicated_worker_service()->DestroyDedicatedWorker(dedicated_worker_token);
-  service_worker_context()->RemoveClient(service_worker_version_id,
-                                         frame_client_uuid);
+  service_worker_context_adapter()->RemoveClient(service_worker_version_id,
+                                                 frame_client_uuid);
 
-  service_worker_context()->StopServiceWorker(service_worker_version_id);
-  service_worker_context()->DestroyServiceWorker(service_worker_version_id);
+  service_worker_context_adapter()->StopServiceWorker(
+      service_worker_version_id);
+  service_worker_context_adapter()->DestroyServiceWorker(
+      service_worker_version_id);
 }
 
 // Tests that the WorkerWatcher can handle the case where the service worker
@@ -1305,18 +1323,18 @@ TEST_F(WorkerWatcherTest, ServiceWorkerStartsAndStopsWithExistingClients) {
 
   // Create the worker.
   int64_t service_worker_version_id =
-      service_worker_context()->CreateServiceWorker();
+      service_worker_context_adapter()->CreateServiceWorker();
 
   // Create a client of each type and connect them to the service worker.
 
   // Frame client.
-  std::string frame_client_uuid = service_worker_context()->AddClient(
+  std::string frame_client_uuid = service_worker_context_adapter()->AddClient(
       service_worker_version_id, content::ServiceWorkerClientInfo());
   content::GlobalRenderFrameHostId render_frame_host_id =
       frame_node_source()->CreateFrameNode(
           render_process_id,
           process_node_source()->GetProcessNode(render_process_id));
-  service_worker_context()->OnControlleeNavigationCommitted(
+  service_worker_context_adapter()->OnControlleeNavigationCommitted(
       service_worker_version_id, frame_client_uuid, render_frame_host_id);
 
   // Dedicated worker client.
@@ -1324,16 +1342,17 @@ TEST_F(WorkerWatcherTest, ServiceWorkerStartsAndStopsWithExistingClients) {
       dedicated_worker_service()->CreateDedicatedWorker(render_process_id,
                                                         render_frame_host_id);
   std::string dedicated_worker_client_uuid =
-      service_worker_context()->AddClient(
+      service_worker_context_adapter()->AddClient(
           service_worker_version_id,
           content::ServiceWorkerClientInfo(dedicated_worker_token));
 
   // Shared worker client.
   blink::SharedWorkerToken shared_worker_token =
       shared_worker_service()->CreateSharedWorker(render_process_id);
-  std::string shared_worker_client_uuid = service_worker_context()->AddClient(
-      service_worker_version_id,
-      content::ServiceWorkerClientInfo(shared_worker_token));
+  std::string shared_worker_client_uuid =
+      service_worker_context_adapter()->AddClient(
+          service_worker_version_id,
+          content::ServiceWorkerClientInfo(shared_worker_token));
 
   // The service worker node doesn't even exist yet.
   EXPECT_FALSE(GetServiceWorkerNode(service_worker_version_id));
@@ -1361,8 +1380,8 @@ TEST_F(WorkerWatcherTest, ServiceWorkerStartsAndStopsWithExistingClients) {
       });
 
   // Now start the service worker.
-  service_worker_context()->StartServiceWorker(service_worker_version_id,
-                                               render_process_id);
+  service_worker_context_adapter()->StartServiceWorker(
+      service_worker_version_id, render_process_id);
 
   // Check expectations on the graph.
   RunInGraph(
@@ -1388,7 +1407,8 @@ TEST_F(WorkerWatcherTest, ServiceWorkerStartsAndStopsWithExistingClients) {
       });
 
   // Stop the service worker. All the clients will be disconnected.
-  service_worker_context()->StopServiceWorker(service_worker_version_id);
+  service_worker_context_adapter()->StopServiceWorker(
+      service_worker_version_id);
 
   // Check expectations on the graph.
   RunInGraph(
@@ -1413,16 +1433,17 @@ TEST_F(WorkerWatcherTest, ServiceWorkerStartsAndStopsWithExistingClients) {
       });
 
   // Disconnect and clean up the service worker and its clients
-  service_worker_context()->RemoveClient(service_worker_version_id,
-                                         shared_worker_client_uuid);
+  service_worker_context_adapter()->RemoveClient(service_worker_version_id,
+                                                 shared_worker_client_uuid);
   shared_worker_service()->DestroySharedWorker(shared_worker_token);
-  service_worker_context()->RemoveClient(service_worker_version_id,
-                                         dedicated_worker_client_uuid);
+  service_worker_context_adapter()->RemoveClient(service_worker_version_id,
+                                                 dedicated_worker_client_uuid);
   dedicated_worker_service()->DestroyDedicatedWorker(dedicated_worker_token);
-  service_worker_context()->RemoveClient(service_worker_version_id,
-                                         frame_client_uuid);
+  service_worker_context_adapter()->RemoveClient(service_worker_version_id,
+                                                 frame_client_uuid);
 
-  service_worker_context()->DestroyServiceWorker(service_worker_version_id);
+  service_worker_context_adapter()->DestroyServiceWorker(
+      service_worker_version_id);
 }
 
 TEST_F(WorkerWatcherTest, SharedWorkerCrossProcessClient) {
@@ -1473,7 +1494,7 @@ TEST_F(WorkerWatcherTest, SharedWorkerStartsWithDeadWorkerClients) {
 
   // Create the worker.
   int64_t service_worker_version_id =
-      service_worker_context()->CreateServiceWorker();
+      service_worker_context_adapter()->CreateServiceWorker();
 
   // Create a worker client of each type and connect them to the service worker.
   // Dedicated worker client.
@@ -1481,24 +1502,25 @@ TEST_F(WorkerWatcherTest, SharedWorkerStartsWithDeadWorkerClients) {
       dedicated_worker_service()->CreateDedicatedWorker(render_process_id,
                                                         render_frame_host_id);
   std::string dedicated_worker_client_uuid =
-      service_worker_context()->AddClient(
+      service_worker_context_adapter()->AddClient(
           service_worker_version_id,
           content::ServiceWorkerClientInfo(dedicated_worker_token));
 
   // Shared worker client.
   blink::SharedWorkerToken shared_worker_token =
       shared_worker_service()->CreateSharedWorker(render_process_id);
-  std::string shared_worker_client_uuid = service_worker_context()->AddClient(
-      service_worker_version_id,
-      content::ServiceWorkerClientInfo(shared_worker_token));
+  std::string shared_worker_client_uuid =
+      service_worker_context_adapter()->AddClient(
+          service_worker_version_id,
+          content::ServiceWorkerClientInfo(shared_worker_token));
 
   // Destroy the workers before the service worker starts.
   shared_worker_service()->DestroySharedWorker(shared_worker_token);
   dedicated_worker_service()->DestroyDedicatedWorker(dedicated_worker_token);
 
   // Now start the service worker.
-  service_worker_context()->StartServiceWorker(service_worker_version_id,
-                                               render_process_id);
+  service_worker_context_adapter()->StartServiceWorker(
+      service_worker_version_id, render_process_id);
 
   // Check expectations on the graph.
   RunInGraph(
@@ -1513,10 +1535,10 @@ TEST_F(WorkerWatcherTest, SharedWorkerStartsWithDeadWorkerClients) {
       });
 
   // Disconnect the non-existent clients.
-  service_worker_context()->RemoveClient(service_worker_version_id,
-                                         shared_worker_client_uuid);
-  service_worker_context()->RemoveClient(service_worker_version_id,
-                                         dedicated_worker_client_uuid);
+  service_worker_context_adapter()->RemoveClient(service_worker_version_id,
+                                                 shared_worker_client_uuid);
+  service_worker_context_adapter()->RemoveClient(service_worker_version_id,
+                                                 dedicated_worker_client_uuid);
 
   // No changes in the graph.
   RunInGraph(
@@ -1531,8 +1553,10 @@ TEST_F(WorkerWatcherTest, SharedWorkerStartsWithDeadWorkerClients) {
       });
 
   // Stop and destroy the service worker.
-  service_worker_context()->StopServiceWorker(service_worker_version_id);
-  service_worker_context()->DestroyServiceWorker(service_worker_version_id);
+  service_worker_context_adapter()->StopServiceWorker(
+      service_worker_version_id);
+  service_worker_context_adapter()->DestroyServiceWorker(
+      service_worker_version_id);
 }
 
 TEST_F(WorkerWatcherTest, SharedWorkerDiesAsServiceWorkerClient) {
@@ -1541,13 +1565,14 @@ TEST_F(WorkerWatcherTest, SharedWorkerDiesAsServiceWorkerClient) {
   const blink::SharedWorkerToken& shared_worker_token =
       shared_worker_service()->CreateSharedWorker(render_process_id);
   int64_t service_worker_version_id =
-      service_worker_context()->CreateServiceWorker();
+      service_worker_context_adapter()->CreateServiceWorker();
 
-  std::string service_worker_client_uuid = service_worker_context()->AddClient(
-      service_worker_version_id,
-      content::ServiceWorkerClientInfo(shared_worker_token));
-  service_worker_context()->StartServiceWorker(service_worker_version_id,
-                                               render_process_id);
+  std::string service_worker_client_uuid =
+      service_worker_context_adapter()->AddClient(
+          service_worker_version_id,
+          content::ServiceWorkerClientInfo(shared_worker_token));
+  service_worker_context_adapter()->StartServiceWorker(
+      service_worker_version_id, render_process_id);
 
   // Check expectations on the graph.
   RunInGraph(
@@ -1578,8 +1603,8 @@ TEST_F(WorkerWatcherTest, SharedWorkerDiesAsServiceWorkerClient) {
       });
 
   // Issue the trailing service worker client removal.
-  service_worker_context()->RemoveClient(service_worker_version_id,
-                                         service_worker_client_uuid);
+  service_worker_context_adapter()->RemoveClient(service_worker_version_id,
+                                                 service_worker_client_uuid);
 }
 
 TEST_F(WorkerWatcherTest, OneSharedWorkerTwoClients) {
@@ -1690,16 +1715,17 @@ TEST_F(WorkerWatcherTest, FrameDestroyed) {
   const blink::SharedWorkerToken& shared_worker_token =
       shared_worker_service()->CreateSharedWorker(render_process_id);
   int64_t service_worker_version_id =
-      service_worker_context()->CreateServiceWorker();
-  service_worker_context()->StartServiceWorker(service_worker_version_id,
-                                               render_process_id);
+      service_worker_context_adapter()->CreateServiceWorker();
+  service_worker_context_adapter()->StartServiceWorker(
+      service_worker_version_id, render_process_id);
 
   // Connect the frame to the shared worker and the service worker. Note that it
   // is already connected to the dedicated worker.
   shared_worker_service()->AddClient(shared_worker_token, render_frame_host_id);
-  std::string service_worker_client_uuid = service_worker_context()->AddClient(
-      service_worker_version_id, content::ServiceWorkerClientInfo());
-  service_worker_context()->OnControlleeNavigationCommitted(
+  std::string service_worker_client_uuid =
+      service_worker_context_adapter()->AddClient(
+          service_worker_version_id, content::ServiceWorkerClientInfo());
+  service_worker_context_adapter()->OnControlleeNavigationCommitted(
       service_worker_version_id, service_worker_client_uuid,
       render_frame_host_id);
 
@@ -1735,10 +1761,12 @@ TEST_F(WorkerWatcherTest, FrameDestroyed) {
       });
 
   // Clean up. The watcher is still expecting a worker removed notification.
-  service_worker_context()->RemoveClient(service_worker_version_id,
-                                         service_worker_client_uuid);
-  service_worker_context()->StopServiceWorker(service_worker_version_id);
-  service_worker_context()->DestroyServiceWorker(service_worker_version_id);
+  service_worker_context_adapter()->RemoveClient(service_worker_version_id,
+                                                 service_worker_client_uuid);
+  service_worker_context_adapter()->StopServiceWorker(
+      service_worker_version_id);
+  service_worker_context_adapter()->DestroyServiceWorker(
+      service_worker_version_id);
   shared_worker_service()->RemoveClient(shared_worker_token,
                                         render_frame_host_id);
   shared_worker_service()->DestroySharedWorker(shared_worker_token);

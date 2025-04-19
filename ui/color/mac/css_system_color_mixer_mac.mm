@@ -12,14 +12,30 @@
 
 namespace ui {
 
+void SetSystemColorForCurrentAppearance(ColorMixer& mixer) {
+  const SkColor system_highlight_color =
+      skia::NSSystemColorToSkColor(NSColor.selectedTextBackgroundColor);
+  mixer[kColorCssSystemHighlight] = {system_highlight_color};
+}
+
 // Maps the native Mac system colors to their corresponding CSS system
 // colors.
 void MapNativeColorsToCssSystemColors(ColorMixer& mixer, ColorProviderKey key) {
   // TODO(samomekarajr): Consider pulling other system colors for forced colors
   // mode.
-  const SkColor system_highlight_color =
-      skia::NSSystemColorToSkColor(NSColor.selectedTextBackgroundColor);
-  mixer[kColorCssSystemHighlight] = {system_highlight_color};
+  if (key.color_mode == ColorProviderKey::ColorMode::kLight) {
+    [[NSAppearance appearanceNamed:NSAppearanceNameAqua]
+        performAsCurrentDrawingAppearance:^{
+          SetSystemColorForCurrentAppearance(mixer);
+        }];
+  } else {
+    [[NSAppearance appearanceNamed:NSAppearanceNameDarkAqua]
+        performAsCurrentDrawingAppearance:^{
+          SetSystemColorForCurrentAppearance(mixer);
+        }];
+  }
+
+  mixer[kColorCssSystemHighlightText] = {SK_ColorBLACK};
 }
 
 }  // namespace ui

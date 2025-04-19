@@ -63,6 +63,12 @@ class ASH_EXPORT VideoConferenceTrayController
 
     // Called when the state of screen sharing is changed.
     virtual void OnScreenSharingStateChange(bool is_capturing_screen) = 0;
+
+    // Called when the Dlc download state is changed for `feature_tile_title` if
+    // any DLC was registered for that effect.
+    virtual void OnDlcDownloadStateChanged(
+        bool error,
+        const std::u16string& feature_tile_title) = 0;
   };
 
   VideoConferenceTrayController();
@@ -122,6 +128,9 @@ class ASH_EXPORT VideoConferenceTrayController
   // speak-on-mute feature. An `opt_in` value of false means the user opted out.
   void OnSpeakOnMuteNudgeOptInAction(bool opt_in);
 
+  void OnDlcDownloadStateFetched(bool add_warning,
+                                 const std::u16string& feature_tile_title);
+
   // Closes all nudges that are shown anchored to the VC tray, if any.
   void CloseAllVcNudges();
 
@@ -165,6 +174,25 @@ class ASH_EXPORT VideoConferenceTrayController
   // camera/microphone.
   bool HasCameraPermission() const;
   bool HasMicrophonePermission() const;
+
+  // Enable or disable input stream ewma power report.
+  void SetEwmaPowerReportEnabled(bool enabled);
+
+  // Return the last reported ewma power.
+  double GetEwmaPower();
+
+  // Enable or disable sidetone.
+  void SetSidetoneEnabled(bool enabled);
+
+  // Gets the state for sidetone.
+  bool GetSidetoneEnabled() const;
+
+  // Gets whether sidetone is supported.
+  bool IsSidetoneSupported() const;
+
+  // Update the sidetone supported value.
+  // Should be called before calling IsSidetoneSupported.
+  void UpdateSidetoneSupportedState();
 
   // Handles device usage from a VC app while the device is system disabled.
   virtual void HandleDeviceUsedWhileDisabled(
@@ -284,11 +312,11 @@ class ASH_EXPORT VideoConferenceTrayController
   // current session.
   int speak_on_mute_nudge_shown_count_ = 0;
 
-  // video_conference_manager_ should be valid after initialized_.
-  // Currently, VideoConferenceTrayController is destroyed inside
-  // ChromeBrowserMainParts::PostMainMessageLoopRun() as a chrome_extra_part;
-  // VideoConferenceManagerAsh is destroyed inside crosapi_manager_.reset()
-  // which is after VideoConferenceTrayController.
+  // `video_conference_manager_` should be valid after `initialized_`.
+  // Currently, `VideoConferenceTrayController` is destroyed inside
+  // `ChromeBrowserMainParts::PostMainMessageLoopRun()` as a chrome_extra_part;
+  // `VideoConferenceManagerAsh` is destroyed inside crosapi_manager_.reset()
+  // which is after `VideoConferenceTrayController`.
   raw_ptr<VideoConferenceManagerBase> video_conference_manager_ = nullptr;
   bool initialized_ = false;
 

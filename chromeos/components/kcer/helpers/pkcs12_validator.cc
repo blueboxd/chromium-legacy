@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chromeos/components/kcer/helpers/pkcs12_validator.h"
 
 #include <cert.h>
@@ -207,6 +212,8 @@ Pkcs12ReaderStatusCode ValidateAndPrepareCertData(
         std::string_view(existing_cert->GetNickname()));
   }
 
+  int already_imported_cert_counter = 0;
+
   // Normal case if there is one private key and one certificate in pkcs12, but
   // it might be the whole chain included. All certs that are not directly
   // related to the key will be filtered out.
@@ -232,6 +239,7 @@ Pkcs12ReaderStatusCode ValidateAndPrepareCertData(
 
     if (cert_cache.FindCert(cert_der_typed.value())) {
       LOG(WARNING) << "Cert is already installed, skipping";
+      ++already_imported_cert_counter;
       continue;
     }
 
@@ -268,6 +276,9 @@ Pkcs12ReaderStatusCode ValidateAndPrepareCertData(
 
   if (valid_certs_data.size() > 0) {
     return Pkcs12ReaderStatusCode::kSuccess;
+  }
+  if (already_imported_cert_counter > 0) {
+    return Pkcs12ReaderStatusCode::kAlreadyExists;
   }
 
   return Pkcs12ReaderStatusCode::kPkcs12NoValidCertificatesFound;

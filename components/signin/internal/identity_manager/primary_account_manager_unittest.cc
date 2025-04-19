@@ -16,6 +16,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/image_fetcher/core/fake_image_decoder.h"
@@ -30,6 +31,7 @@
 #include "components/signin/public/base/signin_client.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/base/signin_prefs.h"
 #include "components/signin/public/base/signin_switches.h"
 #include "components/signin/public/base/test_signin_client.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -72,6 +74,7 @@ class PrimaryAccountManagerTest : public testing::Test,
     AccountTrackerService::RegisterPrefs(user_prefs_.registry());
     ProfileOAuth2TokenService::RegisterProfilePrefs(user_prefs_.registry());
     PrimaryAccountManager::RegisterProfilePrefs(user_prefs_.registry());
+    SigninPrefs::RegisterProfilePrefs(user_prefs_.registry());
     account_tracker_ = std::make_unique<AccountTrackerService>();
     account_tracker_->Initialize(&user_prefs_, base::FilePath());
     token_service_ = std::make_unique<ProfileOAuth2TokenService>(
@@ -206,9 +209,17 @@ TEST_F(PrimaryAccountManagerTest, SignOut) {
   CreatePrimaryAccountManager();
   CoreAccountId main_account_id =
       AddToAccountTracker("account_id", "user@gmail.com");
-  manager_->SetPrimaryAccountInfo(
-      account_tracker()->GetAccountInfo(main_account_id), ConsentLevel::kSync,
-      AccessPoint::ACCESS_POINT_UNKNOWN);
+  AccountInfo account_info = account_tracker()->GetAccountInfo(main_account_id);
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+  {
+    SigninPrefs signin_prefs(*prefs());
+    std::optional<base::Time> last_signout_time =
+        signin_prefs.GetChromeLastSignoutTime(account_info.gaia);
+    EXPECT_FALSE(last_signout_time.has_value());
+  }
+#endif
+  manager_->SetPrimaryAccountInfo(account_info, ConsentLevel::kSync,
+                                  AccessPoint::ACCESS_POINT_UNKNOWN);
   CheckSigninMetrics({.sign_in = AccessPoint::ACCESS_POINT_UNKNOWN,
                       .sync_opt_in = AccessPoint::ACCESS_POINT_UNKNOWN});
 
@@ -223,6 +234,15 @@ TEST_F(PrimaryAccountManagerTest, SignOut) {
                       .sync_opt_in = AccessPoint::ACCESS_POINT_UNKNOWN,
                       .sign_out = signin_metrics::ProfileSignout::kTest,
                       .turn_off_sync = signin_metrics::ProfileSignout::kTest});
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+  {
+    SigninPrefs signin_prefs(*prefs());
+    std::optional<base::Time> last_signout_time =
+        signin_prefs.GetChromeLastSignoutTime(account_info.gaia);
+    ASSERT_TRUE(last_signout_time.has_value());
+    EXPECT_LE(base::Time::Now() - last_signout_time.value(), base::Seconds(10));
+  }
+#endif
 
   // Should not be persisted anymore
   ShutDownManager();
@@ -1173,3 +1193,81 @@ TEST_F(PrimaryAccountManagerTest,
         kExplicitBrowserSigninWithoutFeatureEnabledForTesting));
   }
 }
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+TEST_F(PrimaryAccountManagerTest, SigninAllowedPrefChangesWithinSession) {
+  base::test::ScopedFeatureList feature{
+      switches::kExplicitBrowserSigninUIOnDesktop};
+
+  CreatePrimaryAccountManager();
+  CoreAccountId account_id =
+      AddToAccountTracker("account_id", "user@gmail.com");
+
+  // Simulate an explicit signin through the Chrome Signin Intercept bubble.
+  manager_->SetPrimaryAccountInfo(
+      account_tracker()->GetAccountInfo(account_id),
+      signin::ConsentLevel::kSignin,
+      signin_metrics::AccessPoint::ACCESS_POINT_CHROME_SIGNIN_INTERCEPT_BUBBLE);
+
+  ASSERT_TRUE(manager_->HasPrimaryAccount(signin::ConsentLevel::kSignin));
+
+  // Disable SigninAllowed pref.
+  prefs()->SetBoolean(prefs::kSigninAllowed, false);
+
+  EXPECT_FALSE(manager_->HasPrimaryAccount(signin::ConsentLevel::kSignin));
+}
+
+TEST_F(PrimaryAccountManagerTest, SigninAllowedPrefChangesAfterRestart) {
+  base::test::ScopedFeatureList feature{
+      switches::kExplicitBrowserSigninUIOnDesktop};
+
+  CreatePrimaryAccountManager();
+  CoreAccountId account_id =
+      AddToAccountTracker("account_id", "user@gmail.com");
+
+  // Simulate an explicit signin through the Chrome Signin Intercept bubble.
+  manager_->SetPrimaryAccountInfo(
+      account_tracker()->GetAccountInfo(account_id),
+      signin::ConsentLevel::kSignin,
+      signin_metrics::AccessPoint::ACCESS_POINT_CHROME_SIGNIN_INTERCEPT_BUBBLE);
+
+  ASSERT_TRUE(manager_->HasPrimaryAccount(signin::ConsentLevel::kSignin));
+
+  // Making sure that a simple restart keeps the primary account.
+  ShutDownManager();
+  CreatePrimaryAccountManager();
+  ASSERT_TRUE(manager_->HasPrimaryAccount(signin::ConsentLevel::kSignin));
+
+  // This simulates changing the pref only after a restart, from settings for
+  // example.
+  ShutDownManager();
+  prefs()->SetBoolean(prefs::kSigninAllowed, false);
+
+  CreatePrimaryAccountManager();
+  EXPECT_FALSE(manager_->HasPrimaryAccount(signin::ConsentLevel::kSignin));
+}
+
+TEST_F(PrimaryAccountManagerTest, SigninAllowedPrefChangesWithSync) {
+  base::test::ScopedFeatureList feature{
+      switches::kExplicitBrowserSigninUIOnDesktop};
+
+  CreatePrimaryAccountManager();
+  CoreAccountId account_id =
+      AddToAccountTracker("account_id", "user@gmail.com");
+
+  // Simulate a user with sync consent.
+  manager_->SetPrimaryAccountInfo(
+      account_tracker()->GetAccountInfo(account_id),
+      signin::ConsentLevel::kSync,
+      signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN);
+
+  ASSERT_TRUE(manager_->HasPrimaryAccount(signin::ConsentLevel::kSync));
+
+  // Disable SigninAllowed pref.
+  prefs()->SetBoolean(prefs::kSigninAllowed, false);
+
+  // Sync status should be not be changed from the `PrimaryAccountManager`, it
+  // should be handled by the `PrimaryAccountPolicyManager`.
+  EXPECT_TRUE(manager_->HasPrimaryAccount(signin::ConsentLevel::kSync));
+}
+#endif

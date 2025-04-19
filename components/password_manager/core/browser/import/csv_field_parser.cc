@@ -34,8 +34,7 @@ bool CSVFieldParser::NextField(std::string_view* field_contents) {
 
   if (state_ != State::kError) {
     DCHECK_GT(position_, start);  // There must have been at least the ','.
-    *field_contents =
-        std::string_view(row_.data() + start, position_ - start - 1);
+    *field_contents = row_.substr(start, position_ - start - 1);
 
     if (base::StartsWith(*field_contents, "\"")) {
       DCHECK(base::EndsWith(*field_contents, "\"")) << *field_contents;

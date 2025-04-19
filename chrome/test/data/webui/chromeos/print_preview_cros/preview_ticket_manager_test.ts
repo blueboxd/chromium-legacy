@@ -5,7 +5,8 @@
 import 'chrome://os-print/js/data/preview_ticket_manager.js';
 
 import {PREVIEW_REQUEST_FINISHED_EVENT, PREVIEW_REQUEST_STARTED_EVENT, PREVIEW_TICKET_MANAGER_SESSION_INITIALIZED, PreviewTicketManager} from 'chrome://os-print/js/data/preview_ticket_manager.js';
-import {FAKE_PRINT_SESSION_CONTEXT_SUCCESSFUL, FakePrintPreviewPageHandler} from 'chrome://os-print/js/fakes/fake_print_preview_page_handler.js';
+import type {PrintPreviewPageHandlerComposite} from 'chrome://os-print/js/data/print_preview_page_handler_composite.js';
+import {FAKE_PRINT_SESSION_CONTEXT_SUCCESSFUL, type FakePrintPreviewPageHandler, OBSERVE_PREVIEW_READY_METHOD} from 'chrome://os-print/js/fakes/fake_print_preview_page_handler.js';
 import {getPrintPreviewPageHandler} from 'chrome://os-print/js/utils/mojo_data_providers.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chromeos/chai_assert.js';
 import {MockController} from 'chrome://webui-test/chromeos/mock_controller.m.js';
@@ -26,7 +27,8 @@ suite('PreviewTicketManager', () => {
     mockTimer.install();
     resetDataManagersAndProviders();
     printPreviewPageHandler =
-        getPrintPreviewPageHandler() as FakePrintPreviewPageHandler;
+        (getPrintPreviewPageHandler() as PrintPreviewPageHandlerComposite)
+            .fakePageHandler;
   });
 
   teardown(() => {
@@ -48,9 +50,11 @@ suite('PreviewTicketManager', () => {
     assertTrue(instance1 !== instance2);
   });
 
-  // Verify PrintPreviewPageHandler called when sendPreviewRequest triggered.
+  // Verify PrintPreviewPageHandlerComposite called when
+  // sendPreviewRequest triggered.
   test(
-      'sendPreviewRequest calls PrintPreviewPageHandler.generatePreview',
+      'sendPreviewRequest calls PrintPreviewPageHandlerComposite ' +
+          'generatePreview',
       () => {
         const instance = PreviewTicketManager.getInstance();
         assertEquals(
@@ -65,7 +69,7 @@ suite('PreviewTicketManager', () => {
   // completes.
   test(
       'PREVIEW_REQUEST_STARTED_EVENT and PREVIEW_REQUEST_STARTED_EVENT are ' +
-          ' invoked when sendPreviewRequest called',
+          'invoked when sendPreviewRequest called',
       async () => {
         const delay = 1;
         printPreviewPageHandler.setTestDelay(delay);
@@ -95,6 +99,7 @@ suite('PreviewTicketManager', () => {
         assertEquals(0, finishCount, 'Finish should have zero calls');
 
         // Advance time by test delay to trigger method resolver.
+        printPreviewPageHandler.triggerOnDocumentReadyActiveRequestId();
         mockTimer.tick(delay);
         await finishEvent;
 
@@ -118,6 +123,7 @@ suite('PreviewTicketManager', () => {
 
     assertFalse(instance.isPreviewLoaded(), 'Preview not loaded after call');
 
+    printPreviewPageHandler.triggerOnDocumentReadyActiveRequestId();
     mockTimer.tick(delay);
     await finishEvent;
 
@@ -146,4 +152,56 @@ suite('PreviewTicketManager', () => {
             instance.isSessionInitialized(),
             'After initializeSession, instance should be initialized');
       });
+
+  // Verify observePreviewReady is called on construction of manager.
+  test('on create observePreviewReady is called', () => {
+    PreviewTicketManager.getInstance();
+    const expectedCallCount = 1;
+    assertEquals(
+        expectedCallCount,
+        printPreviewPageHandler.getCallCount(OBSERVE_PREVIEW_READY_METHOD),
+        `${OBSERVE_PREVIEW_READY_METHOD} called in constructor`);
+  });
+
+  // Verify PREVIEW_REQUEST_FINISHED_EVENT isn't dispatched for "stale" preview
+  // requests.
+  test('preview request only completes for the active request', async () => {
+    const delay = 1;
+    printPreviewPageHandler.setTestDelay(delay);
+    const instance = PreviewTicketManager.getInstance();
+
+    let startCount = 0;
+    instance.addEventListener(
+        PREVIEW_REQUEST_STARTED_EVENT, () => ++startCount);
+    let finishCount = 0;
+    instance.addEventListener(
+        PREVIEW_REQUEST_FINISHED_EVENT, () => ++finishCount);
+
+    let startEvent = eventToPromise(PREVIEW_REQUEST_STARTED_EVENT, instance);
+    instance.initializeSession(FAKE_PRINT_SESSION_CONTEXT_SUCCESSFUL);
+
+    // The preview request from initialization increments the active request id.
+    await startEvent;
+    assertEquals(1, startCount, 'Start should have one calls');
+    assertEquals(0, finishCount, 'Finish should have zero calls');
+
+    // Triggering another preview request should again increment the active
+    // request id.
+    startEvent = eventToPromise(PREVIEW_REQUEST_STARTED_EVENT, instance);
+    instance.sendPreviewRequest();
+    await startEvent;
+    assertEquals(2, startCount, 'Start should have two calls');
+    assertEquals(0, finishCount, 'Finish should have zero calls');
+
+    // Simulate the first "stale" preview request completing but it should not
+    // trigger the preview complete event.
+    printPreviewPageHandler.triggerOnDocumentReady(/*previewRequestId=*/ 1);
+    mockTimer.tick(delay);
+    assertEquals(0, finishCount, 'Finish should have zero calls');
+
+    // Simulate the active preview request completing.
+    printPreviewPageHandler.triggerOnDocumentReadyActiveRequestId();
+    mockTimer.tick(delay);
+    assertEquals(1, finishCount, 'Finish should have one call');
+  });
 });

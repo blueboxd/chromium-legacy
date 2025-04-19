@@ -2,14 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "cc/metrics/compositor_frame_reporting_controller.h"
 
 #include <utility>
 
 #include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/trace_event/trace_event.h"
-#include "base/trace_event/trace_id_helper.h"
 #include "cc/metrics/compositor_frame_reporter.h"
 #include "cc/metrics/dropped_frame_counter.h"
 #include "cc/metrics/event_latency_tracing_recorder.h"
@@ -18,6 +21,7 @@
 #include "cc/metrics/scroll_jank_dropped_frame_tracker.h"
 #include "components/viz/common/frame_timing_details.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/tracing/public/cpp/perfetto/macros.h"
 
 namespace cc {
@@ -26,7 +30,6 @@ using SmoothThread = CompositorFrameReporter::SmoothThread;
 using StageType = CompositorFrameReporter::StageType;
 using FrameTerminationStatus = CompositorFrameReporter::FrameTerminationStatus;
 
-constexpr char kTraceCategory[] = "cc,benchmark";
 constexpr int kNumOfCompositorStages =
     static_cast<int>(StageType::kStageTypeCount) - 1;
 constexpr int kNumDispatchStages =
@@ -136,8 +139,6 @@ void CompositorFrameReportingController::ProcessSkippedFramesIfNecessary(
 void CompositorFrameReportingController::WillBeginImplFrame(
     const viz::BeginFrameArgs& args) {
   ProcessSkippedFramesIfNecessary(args);
-  ReportMultipleSwaps(args.frame_time, last_interval_);
-  last_interval_ = args.interval;
 
   base::TimeTicks begin_time = Now();
   if (reporters_[PipelineStage::kBeginImplFrame]) {
@@ -361,7 +362,10 @@ void CompositorFrameReportingController::DidSubmitCompositorFrame(
         submit_info.time);
     main_reporter->AddEventsMetrics(
         std::move(submit_info.events_metrics.main_event_metrics));
-    main_reporter->set_has_missing_content(submit_info.has_missing_content);
+    main_reporter->set_checkerboarded_needs_raster(
+        submit_info.checkerboarded_needs_raster);
+    main_reporter->set_checkerboarded_needs_record(
+        submit_info.checkerboarded_needs_record);
     main_reporter->set_reporter_type_to_main();
     main_reporter->set_top_controls_moved(submit_info.top_controls_moved);
     submitted_compositor_frames_.emplace_back(submit_info.frame_token,
@@ -375,7 +379,10 @@ void CompositorFrameReportingController::DidSubmitCompositorFrame(
         submit_info.time);
     impl_reporter->AddEventsMetrics(
         std::move(submit_info.events_metrics.impl_event_metrics));
-    impl_reporter->set_has_missing_content(submit_info.has_missing_content);
+    impl_reporter->set_checkerboarded_needs_raster(
+        submit_info.checkerboarded_needs_raster);
+    impl_reporter->set_checkerboarded_needs_record(
+        submit_info.checkerboarded_needs_record);
     impl_reporter->set_is_accompanied_by_main_thread_update(
         is_activated_frame_new);
     impl_reporter->set_reporter_type_to_impl();
@@ -432,46 +439,6 @@ void CompositorFrameReportingController::
       stage_reporter->TerminateFrame(
           FrameTerminationStatus::kDidNotProduceFrame, Now());
       partial_update_decider->AdoptReporter(std::move(stage_reporter));
-    }
-  }
-}
-
-void CompositorFrameReportingController::TrackSwapTiming(
-    const viz::FrameTimingDetails& details) {
-  if (last_started_compositor_frame_.args.IsValid() &&
-      details.swap_timings.swap_start != base::TimeTicks() &&
-      details.swap_timings.swap_start >
-          last_started_compositor_frame_.args.frame_time) {
-    if (latest_swap_times_.empty() ||
-        latest_swap_times_.back() < details.swap_timings.swap_start)
-      latest_swap_times_.push(details.swap_timings.swap_start);
-  }
-}
-
-void CompositorFrameReportingController::ReportMultipleSwaps(
-    base::TimeTicks begin_frame_time,
-    base::TimeDelta interval) {
-  while (!latest_swap_times_.empty() &&
-         latest_swap_times_.front() <= begin_frame_time - interval) {
-    latest_swap_times_.pop();
-  }
-
-  if (latest_swap_times_.empty())
-    return;
-
-  if (latest_swap_times_.size() > 1) {
-    base::TimeDelta swap_delta =
-        latest_swap_times_.back() - latest_swap_times_.front();
-
-    if (swap_delta < interval) {
-      UMA_HISTOGRAM_PERCENTAGE("GPU.MultipleSwapsDelta",
-                               swap_delta * 100.0 / interval);
-
-      const auto trace_track =
-          perfetto::Track(base::trace_event::GetNextGlobalTraceId());
-      TRACE_EVENT_BEGIN(kTraceCategory, "MultipleSwaps", trace_track,
-                        latest_swap_times_.front());
-      TRACE_EVENT_END(kTraceCategory, trace_track, latest_swap_times_.back());
     }
   }
 }
@@ -572,9 +539,6 @@ void CompositorFrameReportingController::DidPresentCompositorFrame(
     uint32_t frame_token,
     const viz::FrameTimingDetails& details) {
   bool feedback_failed = details.presentation_feedback.failed();
-
-  if (!feedback_failed)
-    TrackSwapTiming(details);
 
   for (auto submitted_frame = submitted_compositor_frames_.begin();
        submitted_frame != submitted_compositor_frames_.end() &&
@@ -715,7 +679,6 @@ void CompositorFrameReportingController::OnStoppedRequestingBeginFrames() {
     }
   }
   last_started_compositor_frame_ = {};
-  latest_swap_times_ = {};
 }
 
 void CompositorFrameReportingController::NotifyReadyToCommit(
@@ -759,7 +722,7 @@ void CompositorFrameReportingController::SetThreadAffectsSmoothness(
   // keep the history for the last 3 seconds.
   if (!smooth_thread_history_.empty()) {
     auto expired_smooth_thread =
-        smooth_thread_history_.lower_bound(Now() - base::Seconds(3))--;
+        smooth_thread_history_.lower_bound(Now() - base::Seconds(3));
     smooth_thread_history_.erase(smooth_thread_history_.begin(),
                                  expired_smooth_thread);
   }
@@ -833,9 +796,20 @@ CompositorFrameReportingController::RestoreReporterAtBeginImpl(
   return nullptr;
 }
 
-void CompositorFrameReportingController::SetUkmManager(UkmManager* manager) {
-  latency_ukm_reporter_->set_ukm_manager(manager);
-  scroll_jank_ukm_reporter_->set_ukm_manager(manager);
+void CompositorFrameReportingController::InitializeUkmManager(
+    std::unique_ptr<ukm::UkmRecorder> recorder) {
+  latency_ukm_reporter_->InitializeUkmManager(std::move(recorder));
+  // TODO(crbug/334977830): the mix of `GlobalMetricsTrackers` and `raw_ptr` is
+  // making ownership harder to follow. We should clean this all up.
+  //
+  // The order of reporters is strictly managed to guarantee their lifetimes.
+  // `latency_ukm_reporter_` outlives `scroll_jank_ukm_reporter_`.
+  scroll_jank_ukm_reporter_->set_ukm_manager(
+      latency_ukm_reporter_->ukm_manager());
+}
+
+void CompositorFrameReportingController::SetSourceId(ukm::SourceId source_id) {
+  latency_ukm_reporter_->SetSourceId(source_id);
 }
 
 CompositorFrameReporter::SmoothThread

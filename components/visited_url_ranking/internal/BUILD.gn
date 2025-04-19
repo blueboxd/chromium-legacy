@@ -8,6 +8,7 @@ static_library("internal") {
     "//chrome/browser",
     "//chrome/browser/visited_url_ranking:*",
     "//chrome/test:*",
+    "//ios/chrome/browser/visited_url_ranking/model:*",
   ]
 
   sources = [
@@ -19,21 +20,32 @@ static_library("internal") {
     "transformer/bookmarks_url_visit_aggregates_transformer.h",
     "transformer/default_app_url_visit_aggregates_transformer.cc",
     "transformer/default_app_url_visit_aggregates_transformer.h",
+    "transformer/history_url_visit_aggregates_browser_type_transformer.cc",
+    "transformer/history_url_visit_aggregates_browser_type_transformer.h",
     "transformer/history_url_visit_aggregates_categories_transformer.cc",
     "transformer/history_url_visit_aggregates_categories_transformer.h",
     "transformer/history_url_visit_aggregates_visibility_score_transformer.cc",
     "transformer/history_url_visit_aggregates_visibility_score_transformer.h",
+    "transformer/recency_filter_transformer.cc",
+    "transformer/recency_filter_transformer.h",
+    "transformer/url_visit_aggregates_segmentation_metrics_transformer.cc",
+    "transformer/url_visit_aggregates_segmentation_metrics_transformer.h",
     "visited_url_ranking_service_impl.cc",
     "visited_url_ranking_service_impl.h",
   ]
 
+  #TODO(crbug.com/347191610): Refactor code to eliminate visibility
+  #requirement below for `embedder/default_model`.
   deps = [
     "//base",
     "//components/bookmarks/browser",
     "//components/history/core/browser",
+    "//components/segmentation_platform/embedder/default_model:default_model",
+    "//components/segmentation_platform/internal:internal",
     "//components/segmentation_platform/public",
     "//components/sessions",
     "//components/sync_sessions",
+    "//components/url_deduplication",
     "//components/visited_url_ranking/public",
     "//url",
   ]
@@ -65,8 +77,11 @@ source_set("unit_tests") {
     "session_url_visit_data_fetcher_unittest.cc",
     "transformer/bookmarks_url_visit_aggregates_transformer_unittest.cc",
     "transformer/default_app_url_visit_aggregates_transformer_unittest.cc",
+    "transformer/history_url_visit_aggregates_browser_type_transformer_unittest.cc",
     "transformer/history_url_visit_aggregates_categories_transformer_unittest.cc",
     "transformer/history_url_visit_aggregates_visibility_score_transformer_unittest.cc",
+    "transformer/recency_filter_transformer_unittest.cc",
+    "transformer/url_visit_aggregates_segmentation_metrics_transformer_unittest.cc",
     "visited_url_ranking_service_impl_unittest.cc",
   ]
 
@@ -75,12 +90,16 @@ source_set("unit_tests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
-    "//components/bookmarks/browser:browser",
+    "//components/bookmarks/browser",
+    "//components/bookmarks/test",
     "//components/history/core/browser",
+    "//components/segmentation_platform/embedder/default_model",
+    "//components/segmentation_platform/internal",
     "//components/segmentation_platform/public",
     "//components/segmentation_platform/public:test_support",
     "//components/sessions",
     "//components/sync_sessions",
+    "//components/url_deduplication",
     "//components/visited_url_ranking/public",
     "//components/visited_url_ranking/public:test_support",
     "//testing/gmock",

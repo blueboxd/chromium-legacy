@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/signin/profile_customization_ui.h"
+#include "chrome/browser/ui/webui/signin/signin_url_utils.h"
 #include "chrome/browser/ui/webui/signin/turn_sync_on_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
@@ -121,7 +122,7 @@ void SigninInterceptFirstRunExperienceDialog::
         signin::SigninChoiceCallback callback) {
   // This is a brand new profile. Skip the enterprise confirmation.
   // TODO(crbug.com/40209493): Do not show the sync promo if
-  // PromotionalTabsEnabled policy is set to False
+  // PromotionsEnabled policy is set to False
   std::move(callback).Run(signin::SIGNIN_CHOICE_CONTINUE);
 }
 
@@ -136,11 +137,10 @@ void SigninInterceptFirstRunExperienceDialog::
 
   PrefService* local_state = g_browser_process->local_state();
   if (dialog_->is_forced_intercept_ ||
-      (local_state &&
-       !local_state->GetBoolean(prefs::kPromotionalTabsEnabled))) {
+      (local_state && !local_state->GetBoolean(prefs::kPromotionsEnabled))) {
     // Don't show the sync promo if
     // - the user went through the forced interception, or
-    // - promotional tabs are disabled by policy.
+    // - promotional tabs, or promotions in general, are disabled by policy.
     dialog_->DoNextStep(Step::kTurnOnSync, Step::kProfileCustomization);
     std::move(callback).Run(LoginUIService::ABORT_SYNC);
     return;
@@ -325,7 +325,8 @@ void SigninInterceptFirstRunExperienceDialog::DoSyncConfirmation() {
   RecordDialogEvent(DialogEvent::kShowSyncConfirmation);
   SetDialogDelegate(
       SigninViewControllerDelegate::CreateSyncConfirmationDelegate(
-          browser_, /*is_signin_intercept=*/true));
+          browser_, SyncConfirmationStyle::kSigninInterceptModal,
+          /*is_sync_promo=*/true));
   PreloadProfileCustomizationUI();
 }
 

@@ -8,7 +8,9 @@ import android.accounts.Account;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.view.LayoutInflater;
-import android.widget.ViewSwitcher;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
 import androidx.annotation.IntDef;
 
@@ -19,12 +21,16 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileProvider;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.SigninManager;
+import org.chromium.chrome.browser.signin.services.SigninMetricsUtils;
 import org.chromium.chrome.browser.ui.signin.fullscreen_signin.FullscreenSigninCoordinator;
 import org.chromium.chrome.browser.ui.signin.fullscreen_signin.FullscreenSigninView;
 import org.chromium.chrome.browser.ui.signin.history_sync.HistorySyncCoordinator;
 import org.chromium.chrome.browser.ui.signin.history_sync.HistorySyncHelper;
+import org.chromium.chrome.browser.ui.signin.history_sync.HistorySyncView;
+import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.identitymanager.IdentityManager;
+import org.chromium.components.signin.metrics.AccountConsistencyPromoAction;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.signin.metrics.SignoutReason;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -64,11 +70,11 @@ public final class UpgradePromoCoordinator
      * views in upgrade_promo_portrait/landscape_view.xml
      */
     @IntDef({
-        ViewSwitcherChild.SIGNIN,
-        ViewSwitcherChild.HISTORY_SYNC,
+        ChildView.SIGNIN,
+        ChildView.HISTORY_SYNC,
     })
     @Retention(RetentionPolicy.SOURCE)
-    private @interface ViewSwitcherChild {
+    private @interface ChildView {
         /** The fullscreen sign-in UI. */
         int SIGNIN = 0;
 
@@ -82,7 +88,10 @@ public final class UpgradePromoCoordinator
     private final PrivacyPreferencesManager mPrivacyPreferencesManager;
     private final Delegate mDelegate;
     private final boolean mDidShowSignin;
-    private ViewSwitcher mViewSwitcher;
+    private @ChildView int mCurrentView;
+    private FullscreenSigninView mFullscreenSigninView;
+    private View mHistorySyncView;
+    private FrameLayout mViewHolder;
     private FullscreenSigninCoordinator mSigninCoordinator;
     private HistorySyncCoordinator mHistorySyncCoordinator;
 
@@ -93,26 +102,36 @@ public final class UpgradePromoCoordinator
             PrivacyPreferencesManager privacyPreferencesManager,
             Delegate delegate) {
         mContext = context;
-        mViewSwitcher = new ViewSwitcher(context);
+        mCurrentView = ChildView.SIGNIN;
+        mViewHolder = new FrameLayout(context);
+        mViewHolder.setBackgroundColor(SemanticColorUtils.getDefaultBgColor(mContext));
         mModalDialogManager = modalDialogManager;
         mProfileSupplier = profileSupplier;
         mPrivacyPreferencesManager = privacyPreferencesManager;
         mDelegate = delegate;
-        inflateViewSwitcher();
+        inflateViewBundle();
         if (isSignedIn()) {
             advanceToNextPage();
             mDidShowSignin = false;
         } else {
             mSigninCoordinator =
                     new FullscreenSigninCoordinator(
-                            mContext, mModalDialogManager, this, mPrivacyPreferencesManager);
-            mSigninCoordinator.setView((FullscreenSigninView) mViewSwitcher.getCurrentView());
+                            mContext,
+                            mModalDialogManager,
+                            this,
+                            mPrivacyPreferencesManager,
+                            SigninAccessPoint.SIGNIN_PROMO);
+            mViewHolder.addView(getCurrentChildView());
+            mSigninCoordinator.setView((FullscreenSigninView) getCurrentChildView());
+            // TODO(crbug.com/347657449): Record other AccountConsistencyPromoActions.
+            SigninMetricsUtils.logAccountConsistencyPromoAction(
+                    AccountConsistencyPromoAction.SHOWN, SigninAccessPoint.SIGNIN_PROMO);
             mDidShowSignin = true;
         }
     }
 
     public void destroy() {
-        mViewSwitcher.removeAllViews();
+        mViewHolder.removeAllViews();
         if (mSigninCoordinator != null) {
             mSigninCoordinator.destroy();
             mSigninCoordinator = null;
@@ -124,8 +143,8 @@ public final class UpgradePromoCoordinator
         }
     }
 
-    public ViewSwitcher getViewSwitcher() {
-        return mViewSwitcher;
+    public View getView() {
+        return mViewHolder;
     }
 
     /** Implements {@link FullscreenSigninCoordinator.Delegate} */
@@ -136,62 +155,25 @@ public final class UpgradePromoCoordinator
 
     /** Implements {@link FullscreenSigninCoordinator.Delegate} */
     @Override
-    public void acceptTermsOfService(boolean allowMetricsAndCrashUploading) {}
-
-    /** Implements {@link FullscreenSigninCoordinator.Delegate} */
-    @Override
     public void advanceToNextPage() {
-        if (!isSignedIn() || mViewSwitcher.getDisplayedChild() == ViewSwitcherChild.HISTORY_SYNC) {
+        if (!isSignedIn() || mCurrentView == ChildView.HISTORY_SYNC) {
             mDelegate.onFlowComplete();
             return;
         }
         Profile profile = mProfileSupplier.get().getOriginalProfile();
         HistorySyncHelper historySyncHelper = HistorySyncHelper.getForProfile(profile);
-        if (historySyncHelper.shouldSuppressHistorySync()) {
+        if (historySyncHelper.shouldSuppressHistorySync() || historySyncHelper.isDeclinedOften()) {
             historySyncHelper.recordHistorySyncNotShown(SigninAccessPoint.SIGNIN_PROMO);
             mDelegate.onFlowComplete();
             return;
         }
-        mViewSwitcher.setDisplayedChild(ViewSwitcherChild.HISTORY_SYNC);
-        mHistorySyncCoordinator =
-                new HistorySyncCoordinator(
-                        mContext,
-                        this,
-                        profile,
-                        SigninAccessPoint.SIGNIN_PROMO,
-                        /* showEmailInFooter= */ !mDidShowSignin,
-                        /* shouldSignOutOnDecline= */ false,
-                        mViewSwitcher.getCurrentView());
-        if (mSigninCoordinator != null) {
-            mSigninCoordinator.destroy();
-            mSigninCoordinator = null;
-        }
+        showChildView(ChildView.HISTORY_SYNC);
     }
 
     @Override
     public void displayDeviceLockPage(Account selectedAccount) {
         // TODO(b/41496906): Maybe implement this method.
     }
-
-    /** Implements {@link FullscreenSigninCoordinator.Delegate} */
-    @Override
-    public void recordFreProgressHistogram(int state) {}
-
-    /** Implements {@link FullscreenSigninCoordinator.Delegate} */
-    @Override
-    public void recordNativePolicyAndChildStatusLoadedHistogram() {
-        // TODO(b/41493788): Maybe implement this method.
-    }
-
-    /** Implements {@link FullscreenSigninCoordinator.Delegate} */
-    @Override
-    public void recordNativeInitializedHistogram() {
-        // TODO(b/41493788): Maybe implement this method.
-    }
-
-    /** Implements {@link FullscreenSigninCoordinator.Delegate} */
-    @Override
-    public void showInfoPage(int url) {}
 
     /** Implements {@link FullscreenSigninCoordinator.Delegate} */
     @Override
@@ -233,9 +215,11 @@ public final class UpgradePromoCoordinator
     /** Implements {@link HistorySyncDelegate} */
     @Override
     public void dismissHistorySync() {
-        mViewSwitcher.removeAllViews();
-        mHistorySyncCoordinator.destroy();
-        mHistorySyncCoordinator = null;
+        mViewHolder.removeAllViews();
+        if (mHistorySyncCoordinator != null) {
+            mHistorySyncCoordinator.destroy();
+            mHistorySyncCoordinator = null;
+        }
         mDelegate.onFlowComplete();
     }
 
@@ -251,15 +235,9 @@ public final class UpgradePromoCoordinator
      * after a configuration change.
      */
     public void recreateLayoutAfterConfigurationChange() {
-        mViewSwitcher.removeAllViews();
-        mViewSwitcher = null;
-        inflateViewSwitcher();
-        if (mSigninCoordinator != null) {
-            mViewSwitcher.setDisplayedChild(ViewSwitcherChild.SIGNIN);
-            mSigninCoordinator.setView((FullscreenSigninView) mViewSwitcher.getCurrentView());
-            return;
-        }
-        advanceToNextPage();
+        mViewHolder.removeAllViews();
+        inflateViewBundle();
+        showChildView(mCurrentView);
     }
 
     public void onAccountSelected(String accountName) {
@@ -267,9 +245,8 @@ public final class UpgradePromoCoordinator
     }
 
     public void handleBackPress() {
-        @ViewSwitcherChild int currentlyDisplayedChild = mViewSwitcher.getDisplayedChild();
-        switch (currentlyDisplayedChild) {
-            case ViewSwitcherChild.SIGNIN:
+        switch (mCurrentView) {
+            case ChildView.SIGNIN:
                 if (isSignedIn()) {
                     SigninManager signinManager =
                             IdentityServicesProvider.get()
@@ -278,34 +255,34 @@ public final class UpgradePromoCoordinator
                 }
                 mDelegate.onFlowComplete();
                 break;
-            case ViewSwitcherChild.HISTORY_SYNC:
+            case ChildView.HISTORY_SYNC:
                 if (!mDidShowSignin) {
                     mDelegate.onFlowComplete();
                     return;
                 }
-                mViewSwitcher.setDisplayedChild(ViewSwitcherChild.SIGNIN);
-                mSigninCoordinator =
-                        new FullscreenSigninCoordinator(
-                                mContext, mModalDialogManager, this, mPrivacyPreferencesManager);
-                mSigninCoordinator.setView((FullscreenSigninView) mViewSwitcher.getCurrentView());
+                showChildView(ChildView.SIGNIN);
                 mSigninCoordinator.reset();
-                return;
         }
     }
 
-    private void inflateViewSwitcher() {
+    private void inflateViewBundle() {
         Configuration configuration = mContext.getResources().getConfiguration();
         boolean useLandscapeLayout =
                 configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
                         && !isLargeScreen();
-        mViewSwitcher =
-                (ViewSwitcher)
+        ViewGroup viewBundle =
+                (ViewGroup)
                         LayoutInflater.from(mContext)
                                 .inflate(
                                         useLandscapeLayout
                                                 ? R.layout.upgrade_promo_landscape_view
                                                 : R.layout.upgrade_promo_portrait_view,
                                         null);
+        mFullscreenSigninView = viewBundle.findViewById(R.id.fullscreen_signin);
+        mHistorySyncView = viewBundle.findViewById(R.id.history_sync);
+        mViewHolder.setId(viewBundle.getId());
+        // Remove all child views from the bundle so that they can be added to mViewHolder later.
+        viewBundle.removeAllViews();
     }
 
     private boolean isSignedIn() {
@@ -313,5 +290,64 @@ public final class UpgradePromoCoordinator
                 IdentityServicesProvider.get()
                         .getIdentityManager(mProfileSupplier.get().getOriginalProfile());
         return identityManager.hasPrimaryAccount(ConsentLevel.SIGNIN);
+    }
+
+    private void showChildView(@ChildView int child) {
+        mCurrentView = child;
+        mViewHolder.removeAllViews();
+        mViewHolder.addView(getCurrentChildView());
+        switch (child) {
+            case ChildView.SIGNIN:
+                mSigninCoordinator =
+                        new FullscreenSigninCoordinator(
+                                mContext,
+                                mModalDialogManager,
+                                this,
+                                mPrivacyPreferencesManager,
+                                SigninAccessPoint.SIGNIN_PROMO);
+                mSigninCoordinator.setView((FullscreenSigninView) getCurrentChildView());
+                if (mHistorySyncCoordinator != null) {
+                    mHistorySyncCoordinator.destroy();
+                    mHistorySyncCoordinator = null;
+                }
+                break;
+            case ChildView.HISTORY_SYNC:
+                maybeCreateHistorySyncCoordinator();
+                Configuration configuration = mContext.getResources().getConfiguration();
+                mHistorySyncCoordinator.setView(
+                        (HistorySyncView) mHistorySyncView,
+                        configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+                                && !isLargeScreen());
+
+                if (mSigninCoordinator != null) {
+                    mSigninCoordinator.destroy();
+                    mSigninCoordinator = null;
+                }
+                break;
+        }
+    }
+
+    private View getCurrentChildView() {
+        return switch (mCurrentView) {
+            case ChildView.SIGNIN -> mFullscreenSigninView;
+            case ChildView.HISTORY_SYNC -> mHistorySyncView;
+            default -> throw new IllegalStateException(mCurrentView + " view index doesn't exist");
+        };
+    }
+
+    private void maybeCreateHistorySyncCoordinator() {
+        if (mHistorySyncCoordinator != null) {
+            return;
+        }
+
+        mHistorySyncCoordinator =
+                new HistorySyncCoordinator(
+                        mContext,
+                        this,
+                        mProfileSupplier.get().getOriginalProfile(),
+                        SigninAccessPoint.SIGNIN_PROMO,
+                        /* showEmailInFooter= */ isSignedIn(),
+                        /* shouldSignOutOnDecline= */ false,
+                        null);
     }
 }

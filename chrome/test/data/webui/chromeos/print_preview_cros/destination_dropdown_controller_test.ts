@@ -4,23 +4,27 @@
 
 import 'chrome://os-print/js/destination_dropdown_controller.js';
 
+import {PDF_DESTINATION} from 'chrome://os-print/js/data/destination_constants.js';
 import {DESTINATION_MANAGER_ACTIVE_DESTINATION_CHANGED, DESTINATION_MANAGER_DESTINATIONS_CHANGED, DestinationManager} from 'chrome://os-print/js/data/destination_manager.js';
-import {DESTINATION_DROPDOWN_UPDATE_DESTINATIONS, DESTINATION_DROPDOWN_UPDATE_SELECTED_DESTINATION, DestinationDropdownController} from 'chrome://os-print/js/destination_dropdown_controller.js';
+import {DestinationProviderComposite} from 'chrome://os-print/js/data/destination_provider_composite.js';
+import {PRINT_REQUEST_FINISHED_EVENT, PrintTicketManager} from 'chrome://os-print/js/data/print_ticket_manager.js';
+import {DESTINATION_DROPDOWN_DROPDOWN_DISABLED_CHANGED, DESTINATION_DROPDOWN_UPDATE_DESTINATIONS, DESTINATION_DROPDOWN_UPDATE_SELECTED_DESTINATION, DestinationDropdownController} from 'chrome://os-print/js/destination_dropdown_controller.js';
 import {FakeDestinationProvider} from 'chrome://os-print/js/fakes/fake_destination_provider.js';
 import {createCustomEvent} from 'chrome://os-print/js/utils/event_utils.js';
 import {getDestinationProvider} from 'chrome://os-print/js/utils/mojo_data_providers.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.js';
-import {assertDeepEquals, assertEquals, assertTrue} from 'chrome://webui-test/chromeos/chai_assert.js';
+import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chromeos/chai_assert.js';
 import {MockController} from 'chrome://webui-test/chromeos/mock_controller.m.js';
 import {MockTimer} from 'chrome://webui-test/mock_timer.js';
 import {eventToPromise} from 'chrome://webui-test/test_util.js';
 
-import {createTestDestination, resetDataManagersAndProviders} from './test_utils.js';
+import {createTestDestination, resetDataManagersAndProviders, waitForInitialDestinationSet, waitForPrintTicketManagerInitialized, waitForSendPrintRequestFinished} from './test_utils.js';
 
 suite('DestinationDropdownController', () => {
   let controller: DestinationDropdownController;
   let destinationManager: DestinationManager;
   let fakeDestinationProvider: FakeDestinationProvider;
+  let printTicketManager: PrintTicketManager;
   let mockController: MockController;
   let eventTracker: EventTracker;
   let mockTimer: MockTimer;
@@ -35,9 +39,11 @@ suite('DestinationDropdownController', () => {
 
     resetDataManagersAndProviders();
     fakeDestinationProvider =
-        getDestinationProvider() as FakeDestinationProvider;
+        (getDestinationProvider() as DestinationProviderComposite)
+            .fakeDestinationProvider;
     fakeDestinationProvider.setTestDelay(testDelay);
     destinationManager = DestinationManager.getInstance();
+    printTicketManager = PrintTicketManager.getInstance();
 
     controller = new DestinationDropdownController(eventTracker);
   });
@@ -161,4 +167,107 @@ suite('DestinationDropdownController', () => {
             expectedCallCount, callCount,
             `${DESTINATION_DROPDOWN_UPDATE_DESTINATIONS} emitted`);
       });
+
+  // Verify updateActiveDestination calls PrintTicketManager
+  // setPrintTicketDestination with provided destination ID.
+  test(
+      'updateActiveDestination calls setPrintTicketDestination with ' +
+          'destination ID',
+      async () => {
+        await waitForInitialDestinationSet(mockTimer, testDelay);
+        const testDestination = createTestDestination();
+        destinationManager.setDestinationForTesting(testDestination);
+        const updatePrintTicketFn = mockController.createFunctionMock(
+            printTicketManager, 'setPrintTicketDestination');
+        updatePrintTicketFn.returnValue = true;
+        updatePrintTicketFn.addExpectation(testDestination.id);
+        controller.updateActiveDestination(testDestination.id);
+        updatePrintTicketFn.verifyMock();
+      });
+
+  // Verify updateActiveDestination returns false if ID provided is already
+  // active or an invalid ID. Also does not call setPrintTicketDestination.
+  test(`updateActiveDestination returns false`, async () => {
+    await waitForInitialDestinationSet(mockTimer, testDelay);
+
+    assertFalse(
+        controller.updateActiveDestination('unknownDestinationId'),
+        'Update fails for unknown ID');
+    assertFalse(
+        controller.updateActiveDestination(PDF_DESTINATION.id),
+        'Update fails for current ID');
+  });
+
+  // Verify controller emits DESTINATION_DROPDOWN_DROPDOWN_DISABLED_CHANGED
+  // if disabled state should be re-evaluated, including:
+  // - Destination manager has destinations loaded state.
+  // - Print Request started or finished.
+  test(
+      'controller calls dispatchDropdownDisabled and emits event', async () => {
+        const dispatchDropdownDisabledFn = mockController.createFunctionMock(
+            controller, 'dispatchDropdownDisabled');
+        // Dispatch called for destination manger twice for state changes.
+        dispatchDropdownDisabledFn.addExpectation();
+        dispatchDropdownDisabledFn.addExpectation();
+        await waitForInitialDestinationSet(mockTimer, testDelay);
+
+        // Dispatch called for print request started and print request finished.
+        dispatchDropdownDisabledFn.addExpectation();
+        dispatchDropdownDisabledFn.addExpectation();
+        await waitForPrintTicketManagerInitialized();
+        await waitForSendPrintRequestFinished(mockTimer, testDelay);
+
+        // Dispatch should be called a total of 4 times.
+        dispatchDropdownDisabledFn.verifyMock();
+
+        // Reset mock and simulate request finished to verify emitted event.
+        mockController.reset();
+        const disabledChanged = eventToPromise(
+            DESTINATION_DROPDOWN_DROPDOWN_DISABLED_CHANGED, controller);
+        printTicketManager.dispatchEvent(
+            createCustomEvent(PRINT_REQUEST_FINISHED_EVENT));
+        await disabledChanged;
+      });
+
+  // Verify shouldDisableDropdown returns true if print request is in progress.
+  test(
+      'shouldDisableSelect returns true if print request in progress',
+      async () => {
+        // Initialize manager and force print request to be in progress.
+        await waitForInitialDestinationSet(mockTimer, testDelay);
+        await waitForPrintTicketManagerInitialized();
+        const inProgressFn = mockController.createFunctionMock(
+            printTicketManager, 'isPrintRequestInProgress');
+        inProgressFn.returnValue = true;
+        assertTrue(
+            controller.shouldDisableDropdown(),
+            'Disabled if print request is in progress');
+      });
+
+  // Verify shouldDisableDropdown returns true if destination manager is not
+  // initialized.
+  test(
+      'shouldDisableSelect returns true if initial destinations are not ' +
+          'loaded',
+      async () => {
+        // Initialize manager and force hasAnyDestinations to false.
+        await waitForInitialDestinationSet(mockTimer, testDelay);
+        await waitForPrintTicketManagerInitialized();
+        const hasInitialDestFn = mockController.createFunctionMock(
+            destinationManager, 'hasAnyDestinations');
+        hasInitialDestFn.returnValue = false;
+        assertTrue(
+            controller.shouldDisableDropdown(),
+            'Disabled if initial destinations are not loaded');
+      });
+
+  // Verify shouldDisableDropdown returns false if PrintTicketManager and
+  // DestinationManager are in a state ready to receive destination changes.
+  test('shouldDisableSelect returns false', async () => {
+    await waitForInitialDestinationSet(mockTimer, testDelay);
+    await waitForPrintTicketManagerInitialized();
+    assertFalse(
+        controller.shouldDisableDropdown(),
+        'Enabled if active destination can be updated');
+  });
 });

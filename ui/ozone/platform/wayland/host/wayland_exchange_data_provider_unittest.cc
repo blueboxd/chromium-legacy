@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ui/ozone/platform/wayland/host/wayland_exchange_data_provider.h"
 
 #include <memory>
@@ -23,15 +28,9 @@ namespace {
 
 template <typename StringType>
 PlatformClipboard::Data ToClipboardData(const StringType& data_string) {
-  auto* begin = reinterpret_cast<typename std::vector<uint8_t>::const_pointer>(
-      data_string.data());
-  std::vector<uint8_t> result(
-      begin,
-      begin + (data_string.size() * sizeof(typename StringType::value_type)));
-  return static_cast<scoped_refptr<base::RefCountedBytes>>(
-      base::RefCountedBytes::TakeVector(&result));
+  return base::MakeRefCounted<base::RefCountedBytes>(
+      base::as_byte_span(data_string));
 }
-
 }  // namespace
 
 // Regression test for https://crbug.com/1284996.
@@ -40,7 +39,8 @@ TEST(WaylandExchangeDataProviderTest, ExtractPickledData) {
   std::string extracted;
 
   EXPECT_FALSE(provider.ExtractData(kMimeTypeText, &extracted));
-  EXPECT_FALSE(provider.ExtractData(kMimeTypeWebCustomData, &extracted));
+  EXPECT_FALSE(
+      provider.ExtractData(kMimeTypeDataTransferCustomData, &extracted));
 
   extracted.clear();
   provider.SetString(u"dnd-string");
@@ -50,8 +50,10 @@ TEST(WaylandExchangeDataProviderTest, ExtractPickledData) {
   extracted.clear();
   base::Pickle pickle;
   pickle.WriteString("pickled-str");
-  provider.SetPickledData(ClipboardFormatType::WebCustomDataType(), pickle);
-  EXPECT_TRUE(provider.ExtractData(kMimeTypeWebCustomData, &extracted));
+  provider.SetPickledData(ClipboardFormatType::DataTransferCustomType(),
+                          pickle);
+  EXPECT_TRUE(
+      provider.ExtractData(kMimeTypeDataTransferCustomData, &extracted));
 
   // Ensure Pickle "reconstruction" works as expected.
   std::string read_pickled_str;
@@ -92,8 +94,8 @@ TEST(WaylandExchangeDataProviderTest, AddAndExtractDataTransferEndpoint) {
       "{\"endpoint_type\":\"url\","
       "\"off_the_record\":false,"
       "\"url\":\"https://www.google.com/\"}";
-  const DataTransferEndpoint expected_dte = ui::DataTransferEndpoint(
-      GURL("https://www.google.com"), /*off_the_record=*/false);
+  const DataTransferEndpoint expected_dte =
+      ui::DataTransferEndpoint(GURL("https://www.google.com"));
 
   WaylandExchangeDataProvider provider;
   std::string extracted;
@@ -121,15 +123,16 @@ TEST(WaylandExchangeDataProviderTest, AddAndExtractMultipleData) {
       "{\"endpoint_type\":\"url\","
       "\"off_the_record\":false,"
       "\"url\":\"chrome://tab-strip.top-chrome\"}";
-  const DataTransferEndpoint expected_dte = ui::DataTransferEndpoint(
-      GURL("chrome://tab-strip.top-chrome"), /*off_the_record=*/false);
+  const DataTransferEndpoint expected_dte =
+      ui::DataTransferEndpoint(GURL("chrome://tab-strip.top-chrome"));
 
   WaylandExchangeDataProvider provider;
   std::string extracted;
 
   EXPECT_FALSE(provider.ExtractData(kMimeTypeDataTransferEndpoint, &extracted));
   extracted.clear();
-  EXPECT_FALSE(provider.ExtractData(kMimeTypeWebCustomData, &extracted));
+  EXPECT_FALSE(
+      provider.ExtractData(kMimeTypeDataTransferCustomData, &extracted));
   extracted.clear();
 
   // Add DataTransferEndpoint.
@@ -139,20 +142,22 @@ TEST(WaylandExchangeDataProviderTest, AddAndExtractMultipleData) {
   // Add pickled data.
   base::Pickle pickle;
   pickle.WriteString("pickled-str");
-  provider.SetPickledData(ClipboardFormatType::WebCustomDataType(), pickle);
+  provider.SetPickledData(ClipboardFormatType::DataTransferCustomType(),
+                          pickle);
 
   DataTransferEndpoint* actual_dte = provider.GetSource();
   EXPECT_TRUE(expected_dte.IsSameURLWith(*actual_dte));
 
   std::vector<std::string> mime_types = provider.BuildMimeTypesList();
   EXPECT_THAT(mime_types, ::testing::Contains(kMimeTypeDataTransferEndpoint));
-  EXPECT_THAT(mime_types, ::testing::Contains(kMimeTypeWebCustomData));
+  EXPECT_THAT(mime_types, ::testing::Contains(kMimeTypeDataTransferCustomData));
 
   EXPECT_TRUE(provider.ExtractData(kMimeTypeDataTransferEndpoint, &extracted));
   EXPECT_EQ(kExpectedEncodedDte, extracted);
 
   extracted.clear();
-  EXPECT_TRUE(provider.ExtractData(kMimeTypeWebCustomData, &extracted));
+  EXPECT_TRUE(
+      provider.ExtractData(kMimeTypeDataTransferCustomData, &extracted));
   base::Pickle read_pickle =
       base::Pickle::WithData(base::as_byte_span(extracted));
   base::PickleIterator pickle_iter(read_pickle);

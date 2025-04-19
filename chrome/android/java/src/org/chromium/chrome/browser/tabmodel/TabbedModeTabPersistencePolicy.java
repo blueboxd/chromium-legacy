@@ -450,11 +450,6 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
         mDestroyed = true;
     }
 
-    @Override
-    public boolean allowSkipLoadingTab() {
-        return true;
-    }
-
     private class CleanUpTabStateDataTask extends AsyncTask<Void> {
         private final Callback<TabPersistenceFileInfo> mTabDataToDelete;
 
@@ -537,7 +532,7 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
         }
 
         private boolean shouldDeleteTabFile(int tabId, TabWindowManager tabWindowManager) {
-            return tabWindowManager.getTabById(tabId) == null && !mOtherTabIds.get(tabId);
+            return tabWindowManager.canTabStateBeDeleted(tabId) && !mOtherTabIds.get(tabId);
         }
 
         @Override

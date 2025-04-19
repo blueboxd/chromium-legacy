@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "base/check.h"
+#include "base/compiler_specific.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "cc/paint/paint_flags.h"
@@ -23,6 +24,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
 #include "ui/events/event.h"
@@ -33,6 +35,7 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/color_chooser/color_chooser_listener.h"
@@ -98,8 +101,8 @@ class LocatedEventHandlerView : public views::View {
   }
 
   void OnGestureEvent(ui::GestureEvent* event) override {
-    if (event->type() == ui::ET_GESTURE_TAP ||
-        event->type() == ui::ET_GESTURE_TAP_DOWN ||
+    if (event->type() == ui::EventType::kGestureTap ||
+        event->type() == ui::EventType::kGestureTapDown ||
         event->IsScrollGestureEvent()) {
       ProcessEventAtLocation(event->location());
       event->SetHandled();
@@ -438,11 +441,12 @@ std::unique_ptr<View> ColorChooser::BuildView() {
   auto container = std::make_unique<View>();
   container->SetLayoutManager(std::make_unique<BoxLayout>(
       BoxLayout::Orientation::kHorizontal, gfx::Insets(), kMarginWidth));
-  saturation_value_ = container->AddChildView(
-      std::make_unique<SaturationValueView>(base::BindRepeating(
-          &ColorChooser::OnSaturationValueChosen, this->AsWeakPtr())));
-  hue_ = container->AddChildView(std::make_unique<HueView>(
-      base::BindRepeating(&ColorChooser::OnHueChosen, this->AsWeakPtr())));
+  saturation_value_ =
+      container->AddChildView(std::make_unique<SaturationValueView>(
+          base::BindRepeating(&ColorChooser::OnSaturationValueChosen,
+                              weak_ptr_factory_.GetWeakPtr())));
+  hue_ = container->AddChildView(std::make_unique<HueView>(base::BindRepeating(
+      &ColorChooser::OnHueChosen, weak_ptr_factory_.GetWeakPtr())));
   view->AddChildView(std::move(container));
 
   auto container2 = std::make_unique<View>();
@@ -452,7 +456,7 @@ std::unique_ptr<View> ColorChooser::BuildView() {
   auto textfield = std::make_unique<Textfield>();
   textfield->set_controller(this);
   textfield->SetDefaultWidthInChars(kTextfieldLengthInChars);
-  textfield->SetAccessibleName(
+  textfield->GetViewAccessibility().SetName(
       l10n_util::GetStringUTF16(IDS_APP_ACCNAME_COLOR_CHOOSER_HEX_INPUT));
   textfield_ = container2->AddChildView(std::move(textfield));
   selected_color_patch_ =
@@ -530,10 +534,11 @@ bool ColorChooser::HandleKeyEvent(Textfield* sender,
                                   const ui::KeyEvent& key_event) {
   DCHECK(IsViewAttached());
 
-  if (key_event.type() != ui::ET_KEY_PRESSED ||
+  if (key_event.type() != ui::EventType::kKeyPressed ||
       (key_event.key_code() != ui::VKEY_RETURN &&
-       key_event.key_code() != ui::VKEY_ESCAPE))
+       key_event.key_code() != ui::VKEY_ESCAPE)) {
     return false;
+  }
 
   tracker_.view()->GetWidget()->Close();
   return true;
@@ -546,9 +551,9 @@ std::unique_ptr<WidgetDelegate> ColorChooser::MakeWidgetDelegate() {
   delegate->SetCanMinimize(false);
   delegate->SetContentsView(BuildView());
   delegate->SetInitiallyFocusedView(textfield_);
-  delegate->SetModalType(ui::MODAL_TYPE_WINDOW);
-  delegate->RegisterWindowClosingCallback(
-      base::BindOnce(&ColorChooser::OnViewClosing, this->AsWeakPtr()));
+  delegate->SetModalType(ui::mojom::ModalType::kWindow);
+  delegate->RegisterWindowClosingCallback(base::BindOnce(
+      &ColorChooser::OnViewClosing, weak_ptr_factory_.GetWeakPtr()));
 
   return delegate;
 }
@@ -556,10 +561,12 @@ std::unique_ptr<WidgetDelegate> ColorChooser::MakeWidgetDelegate() {
 ColorChooser::ColorChooser(ColorChooserListener* listener, SkColor initial)
     : listener_(listener), initial_color_(initial) {}
 
-ColorChooser::~ColorChooser() = default;
+ColorChooser::~ColorChooser() {
+  textfield_->set_controller(nullptr);
+}
 
 void ColorChooser::SetColor(SkColor color) {
-  SkColorToHSV(color, hsv_);
+  UNSAFE_BUFFERS(SkColorToHSV(color, hsv_.data()));
   listener_->OnColorChosen(GetColor());
 }
 
@@ -575,7 +582,7 @@ void ColorChooser::SetSaturationValue(SkScalar saturation, SkScalar value) {
 }
 
 SkColor ColorChooser::GetColor() const {
-  return SkHSVToColor(255, hsv_);
+  UNSAFE_BUFFERS(return SkHSVToColor(255, hsv_.data()));
 }
 
 void ColorChooser::OnViewClosing() {

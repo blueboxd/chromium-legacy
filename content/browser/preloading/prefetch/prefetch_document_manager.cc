@@ -28,7 +28,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "net/http/http_no_vary_search_data.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/no_vary_search.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom.h"
@@ -70,8 +69,6 @@ PrefetchDocumentManager::PrefetchDocumentManager(RenderFrameHost* rfh)
     : DocumentUserData(rfh),
       document_token_(
           static_cast<RenderFrameHostImpl*>(rfh)->GetDocumentToken()),
-      no_vary_search_support_enabled_(
-          network::features::kPrefetchNoVarySearchShippedByDefault.Get()),
       prefetch_destruction_callback_(base::DoNothing()) {}
 
 PrefetchDocumentManager::~PrefetchDocumentManager() {
@@ -193,8 +190,9 @@ void PrefetchDocumentManager::ProcessCandidates(
     // Eager candidates are enacted by the same predictor that creates them.
     const PreloadingPredictor enacting_predictor =
         GetPredictorForPreloadingTriggerType(prefetch_type.trigger_type());
-    PrefetchUrl(prefetch_url, prefetch_type, enacting_predictor, referrer,
-                no_vary_search_expected, devtools_observer);
+    PrefetchUrl(prefetch_url, prefetch_type, enacting_predictor,
+                /*planned_max_preloading_type=*/PreloadingType::kPrefetch,
+                referrer, no_vary_search_expected, devtools_observer);
   }
 
   if (PrefetchService* prefetch_service = GetPrefetchService()) {
@@ -212,15 +210,30 @@ bool PrefetchDocumentManager::MaybePrefetch(
 
   auto [prefetch_url, prefetch_type, referrer, no_vary_search_expected] =
       SpeculationCandidateToPrefetchUrlParams(candidate);
-  PrefetchUrl(prefetch_url, prefetch_type, enacting_predictor, referrer,
-              no_vary_search_expected, devtools_observer);
+  PrefetchUrl(prefetch_url, prefetch_type, enacting_predictor,
+              /*planned_max_preloading_type=*/PreloadingType::kPrefetch,
+              referrer, no_vary_search_expected, devtools_observer);
   return true;
+}
+
+void PrefetchDocumentManager::PrefetchAheadOfPrerender(
+    blink::mojom::SpeculationCandidatePtr candidate,
+    const PreloadingPredictor& enacting_predictor) {
+  auto [prefetch_url, prefetch_type, referrer, no_vary_search_expected] =
+      SpeculationCandidateToPrefetchUrlParams(candidate);
+  PrefetchUrl(prefetch_url, prefetch_type, enacting_predictor,
+              /*planned_max_preloading_type=*/PreloadingType::kPrerender,
+              referrer, no_vary_search_expected,
+              // TODO(https://crbug.com/342537094): Emit CDP events for prefetch
+              // ahead of prerender.
+              /*devtools_observer=*/nullptr);
 }
 
 void PrefetchDocumentManager::PrefetchUrl(
     const GURL& url,
     const PrefetchType& prefetch_type,
     const PreloadingPredictor& enacting_predictor,
+    PreloadingType planned_max_preloading_type,
     const blink::mojom::Referrer& referrer,
     const network::mojom::NoVarySearchPtr& mojo_no_vary_search_expected,
     base::WeakPtr<SpeculationHostDevToolsObserver> devtools_observer) {
@@ -266,7 +279,7 @@ void PrefetchDocumentManager::PrefetchUrl(
   auto* attempt =
       static_cast<PreloadingAttemptImpl*>(preloading_data->AddPreloadingAttempt(
           creating_predictor, enacting_predictor, PreloadingType::kPrefetch,
-          std::move(matcher),
+          std::move(matcher), planned_max_preloading_type,
           web_contents->GetPrimaryMainFrame()->GetPageUkmSourceId()));
 
   attempt->SetSpeculationEagerness(prefetch_type.GetEagerness());
@@ -326,7 +339,6 @@ bool PrefetchDocumentManager::IsPrefetchAttemptFailedOrDiscarded(
     case PrefetchStatus::kPrefetchFailedMIMENotSupported:
     case PrefetchStatus::kPrefetchIsPrivacyDecoy:
     case PrefetchStatus::kPrefetchNotUsedCookiesChanged:
-    case PrefetchStatus::kPrefetchIneligibleBrowserContextOffTheRecord:
     case PrefetchStatus::kPrefetchHeldback:
     case PrefetchStatus::kPrefetchAllowed:
     case PrefetchStatus::kPrefetchFailedInvalidRedirect:
@@ -371,21 +383,6 @@ void PrefetchDocumentManager::OnPrefetchSuccessful(
   } else {
     completed_non_eager_prefetches_.push_back(prefetch->GetWeakPtr());
   }
-}
-
-void PrefetchDocumentManager::EnableNoVarySearchSupportFromOriginTrial() {
-  no_vary_search_support_enabled_ = true;
-}
-
-// In order to ship No-Vary-Search header and keep the Origin Trial and be
-// able to remotely go back to Origin Trial in case we unship, we use
-// the suggested approach at
-// go/graduating-from-finch#optional-leave-a-finch-hook of using a separate
-// base feature to control shipping - in our case we will continue to use the
-// existing base feature kPrefetchNoVarySearch.
-bool PrefetchDocumentManager::NoVarySearchSupportEnabled() const {
-  return no_vary_search_support_enabled_ &&
-         base::FeatureList::IsEnabled(network::features::kPrefetchNoVarySearch);
 }
 
 std::tuple<bool, base::WeakPtr<PrefetchContainer>>

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/optimization_guide/chrome_model_quality_logs_uploader_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
@@ -26,7 +27,10 @@ ChromeHistoryEmbeddingsService::ChromeHistoryEmbeddingsService(
     : HistoryEmbeddingsService(history_service,
                                page_content_annotations_service,
                                optimization_guide_service,
-                               service_controller),
+                               optimization_guide_service,
+                               service_controller,
+                               g_browser_process->os_crypt_async(),
+                               optimization_guide_service),
       optimization_guide_service_(optimization_guide_service) {}
 
 ChromeHistoryEmbeddingsService::~ChromeHistoryEmbeddingsService() = default;
@@ -36,8 +40,8 @@ QualityLogEntry ChromeHistoryEmbeddingsService::PrepareQualityLogEntry() {
     return nullptr;
   }
 
-  optimization_guide::ChromeModelQualityLogsUploaderService* quality_uploader =
-      optimization_guide_service_->GetChromeModelQualityLogsUploaderService();
+  auto* quality_uploader =
+      optimization_guide_service_->GetModelQualityLogsUploaderService();
   if (!quality_uploader) {
     return nullptr;
   }

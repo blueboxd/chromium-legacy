@@ -17,7 +17,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
@@ -29,7 +28,6 @@ import org.robolectric.shadows.ShadowLog;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.HistogramWatcher;
@@ -38,6 +36,7 @@ import org.chromium.chrome.browser.omnibox.OmniboxMetrics;
 import org.chromium.chrome.browser.omnibox.R;
 import org.chromium.chrome.browser.omnibox.styles.OmniboxDrawableState;
 import org.chromium.chrome.browser.omnibox.styles.OmniboxImageSupplier;
+import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionHost;
 import org.chromium.components.omnibox.AutocompleteMatch;
 import org.chromium.components.omnibox.AutocompleteMatchBuilder;
@@ -92,7 +91,6 @@ public class BaseSuggestionProcessorUnitTest {
     private static final GURL TEST_URL = JUnitTestGURLs.URL_1;
 
     public @Rule MockitoRule mMockitoRule = MockitoJUnit.rule();
-    public @Rule TestRule mFeaturesProcessor = new Features.JUnitProcessor();
 
     private @Mock SuggestionHost mSuggestionHost;
     private @Mock OmniboxImageSupplier mImageSupplier;
@@ -240,5 +238,23 @@ public class BaseSuggestionProcessorUnitTest {
         Assert.assertEquals(1, monitor.getActionCount("MobileOmniboxRefineSuggestion.Url"));
         Assert.assertEquals(1, monitor.getActions().size());
         monitor.tearDown();
+    }
+
+    @Test
+    public void decorationAndActionChipSpacingDefaults() {
+        createSuggestion(OmniboxSuggestionType.URL_WHAT_YOU_TYPED, false, TEST_URL);
+        Assert.assertEquals(mModel.get(BaseSuggestionViewProperties.USE_LARGE_DECORATION), false);
+        Assert.assertEquals(
+                mModel.get(BaseSuggestionViewProperties.ACTION_CHIP_LEAD_IN_SPACING),
+                OmniboxResourceProvider.getSuggestionDecorationIconSizeWidth(mContext));
+
+        mModel.set(BaseSuggestionViewProperties.USE_LARGE_DECORATION, true);
+        mModel.set(BaseSuggestionViewProperties.ACTION_CHIP_LEAD_IN_SPACING, 43);
+
+        mProcessor.populateModel(mSuggestion, mModel, 0);
+        Assert.assertEquals(mModel.get(BaseSuggestionViewProperties.USE_LARGE_DECORATION), false);
+        Assert.assertEquals(
+                mModel.get(BaseSuggestionViewProperties.ACTION_CHIP_LEAD_IN_SPACING),
+                OmniboxResourceProvider.getSuggestionDecorationIconSizeWidth(mContext));
     }
 }

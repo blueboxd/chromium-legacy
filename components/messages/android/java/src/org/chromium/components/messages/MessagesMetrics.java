@@ -392,8 +392,6 @@ public class MessagesMetrics {
                 return "DownloadIncognitoWarning";
             case MessageIdentifier.CVC_SAVE:
                 return "CvcSave";
-            case MessageIdentifier.TRACKING_PROTECTION_NOTICE:
-                return "TrackingProtectionNotice";
             case MessageIdentifier.DESKTOP_SITE_WINDOW_SETTING:
                 return "DesktopSiteWindowSetting";
             case MessageIdentifier.PROMPT_HATS_LOCATION_CUSTOM_INVITATION:
@@ -410,6 +408,12 @@ public class MessagesMetrics {
                 return "PromptHatsMicrophoneGenericInvitation";
             case MessageIdentifier.PERMISSION_BLOCKED:
                 return "PermissionBlocked";
+            case MessageIdentifier.SAVE_CARD_FAILURE:
+                return "SaveCardFailure";
+            case MessageIdentifier.VIRTUAL_CARD_ENROLL_FAILURE:
+                return "VirtualCardEnrollFailure";
+            case MessageIdentifier.PROMPT_HATS_QUICK_DELETE:
+                return "PromptHatsQuickDelete";
             default:
                 return "Unknown";
         }

@@ -5,6 +5,7 @@
 #include "base/values.h"
 #include "chrome/browser/ash/input_method/native_input_method_engine.h"
 #include "chrome/browser/ash/input_method/stub_input_method_engine_observer.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/browser_test.h"
@@ -111,9 +112,9 @@ class NativeInputMethodEngineWithImeServiceTest
                         int flags = ui::EF_NONE) {
     KeyProcessingWaiter waiterPressed;
     KeyProcessingWaiter waiterReleased;
-    engine_->ProcessKeyEvent({ui::ET_KEY_PRESSED, code, flags},
+    engine_->ProcessKeyEvent({ui::EventType::kKeyPressed, code, flags},
                              waiterPressed.CreateCallback());
-    engine_->ProcessKeyEvent({ui::ET_KEY_RELEASED, code, flags},
+    engine_->ProcessKeyEvent({ui::EventType::kKeyReleased, code, flags},
                              waiterReleased.CreateCallback());
     if (need_flush) {
       engine_->FlushForTesting();

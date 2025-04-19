@@ -60,7 +60,7 @@ IndexedDBConnection::IndexedDBConnection(
     std::unique_ptr<IndexedDBDatabaseCallbacks> callbacks,
     mojo::Remote<storage::mojom::IndexedDBClientStateChecker>
         client_state_checker,
-    uint64_t client_id)
+    base::UnguessableToken client_token)
     : id_(g_next_indexed_db_connection_id++),
       bucket_context_handle_(bucket_context),
       database_(std::move(database)),
@@ -68,14 +68,14 @@ IndexedDBConnection::IndexedDBConnection(
       on_close_(std::move(on_close)),
       callbacks_(std::move(callbacks)),
       client_state_checker_(std::move(client_state_checker)),
-      client_id_(client_id) {
+      client_token_(client_token) {
   bucket_context_handle_->quota_manager()->NotifyBucketAccessed(
       bucket_context_handle_->bucket_locator(), base::Time::Now());
 }
 
 IndexedDBConnection::~IndexedDBConnection() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  leveldb::Status status;
+  is_shutting_down_ = true;
   if (!IsConnected()) {
     return;
   }
@@ -298,29 +298,27 @@ void IndexedDBConnection::GetAll(
     blink::mojom::IDBDatabase::GetAllCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!IsConnected()) {
-    // TODO(enne): see note below.  It can be incorrect for result ordering to
-    // run the callback directly from this function.
-    mojo::Remote<blink::mojom::IDBDatabaseGetAllResultSink> result_sink;
-    auto receiver = result_sink.BindNewPipeAndPassReceiver();
+  auto bind_result_sink = [&callback]() {
+    mojo::AssociatedRemote<blink::mojom::IDBDatabaseGetAllResultSink>
+        result_sink;
+    auto receiver = result_sink.BindNewEndpointAndPassReceiver();
     std::move(callback).Run(std::move(receiver));
+    return result_sink;
+  };
 
+  if (!IsConnected()) {
     IndexedDBDatabaseError error(blink::mojom::IDBException::kUnknownError,
                                  "Not connected.");
-    result_sink->OnError(
+    bind_result_sink()->OnError(
         blink::mojom::IDBError::New(error.code(), error.message()));
     return;
   }
 
   IndexedDBTransaction* transaction = GetTransaction(transaction_id);
   if (!transaction) {
-    mojo::Remote<blink::mojom::IDBDatabaseGetAllResultSink> result_sink;
-    auto receiver = result_sink.BindNewPipeAndPassReceiver();
-    std::move(callback).Run(std::move(receiver));
-
     IndexedDBDatabaseError error(blink::mojom::IDBException::kUnknownError,
                                  "Unknown transaction.");
-    result_sink->OnError(
+    bind_result_sink()->OnError(
         blink::mojom::IDBError::New(error.code(), error.message()));
     return;
   }
@@ -331,26 +329,15 @@ void IndexedDBConnection::GetAll(
     // This branch however also includes cases where the browser process aborted
     // the transaction, as currently we don't distinguish that state from the
     // transaction having been committed. So for now simply ignore the request.
+    bind_result_sink();
     return;
   }
 
-  // Hypothetically, this could pass the receiver to the callback immediately.
-  // However, for result ordering issues, we need to PostTask to mimic
-  // all of the other operations.
-  // TODO(enne): Consider rewriting the renderer side to order results based
-  // on initial request ordering and not on when the results are returned.
-  blink::mojom::IDBDatabase::GetAllCallback aborting_callback =
-      CreateCallbackAbortOnDestruct<
-          blink::mojom::IDBDatabase::GetAllCallback,
-          mojo::PendingReceiver<blink::mojom::IDBDatabaseGetAllResultSink>>(
-          std::move(callback), transaction->AsWeakPtr());
-
-  transaction->ScheduleTask(BindWeakOperation(
-      &IndexedDBDatabase::GetAllOperation, database_, object_store_id, index_id,
-      std::make_unique<IndexedDBKeyRange>(key_range),
+  transaction->ScheduleTask(database_->CreateGetAllOperation(
+      object_store_id, index_id, std::make_unique<IndexedDBKeyRange>(key_range),
       key_only ? indexed_db::CursorType::kKeyOnly
                : indexed_db::CursorType::kKeyAndValue,
-      max_count, std::move(aborting_callback)));
+      max_count, std::move(callback), transaction));
 }
 
 void IndexedDBConnection::SetIndexKeys(

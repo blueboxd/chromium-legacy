@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/ui/webui/compose/compose_untrusted_ui.h"
 
 #include <string>
@@ -12,6 +17,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/compose/chrome_compose_client.h"
+#include "chrome/browser/compose/compose_enabling.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/grit/compose_resources.h"
@@ -26,10 +32,18 @@
 #include "ui/resources/grit/webui_resources.h"
 #include "ui/webui/color_change_listener/color_change_handler.h"
 
+ComposeUIUntrustedConfig::ComposeUIUntrustedConfig()
+    : DefaultTopChromeWebUIConfig(content::kChromeUIUntrustedScheme,
+                                  chrome::kChromeUIUntrustedComposeHost) {}
+
 bool ComposeUIUntrustedConfig::IsWebUIEnabled(
     content::BrowserContext* browser_context) {
   return ComposeEnabling::IsEnabledForProfile(
       Profile::FromBrowserContext(browser_context));
+}
+
+bool ComposeUIUntrustedConfig::ShouldAutoResizeHost() {
+  return true;
 }
 
 ComposeUntrustedUI::ComposeUntrustedUI(content::WebUI* web_ui)
@@ -69,6 +83,7 @@ webui::SetupWebUIDataSource(
       {"lengthMenuTitle", IDS_COMPOSE_MENU_LENGTH_TITLE},
       {"toneMenuTitle", IDS_COMPOSE_MENU_TONE_TITLE},
       {"modifierMenuTitle", IDS_COMPOSE_MODIFIERS_MENU_TITLE},
+      {"modifierMenuLabel", IDS_COMPOSE_MODIFIERS_MENU_LABEL},
       {"retryOption", IDS_COMPOSE_MENU_RETRY_OPTION},
       {"shorterOption", IDS_COMPOSE_MENU_SHORTER_OPTION},
       {"longerOption", IDS_COMPOSE_MENU_LONGER_OPTION},
@@ -94,6 +109,11 @@ webui::SetupWebUIDataSource(
       {"resubmit", IDS_COMPOSE_RESUBMIT},
       {"thumbsDown", IDS_COMPOSE_THUMBS_DOWN},
       {"thumbsUp", IDS_COMPOSE_THUMBS_UP},
+      {"resultText", IDS_COMPOSE_RESULT_TEXT_LABEL},
+      {"resultLoadingA11yMessage", IDS_COMPOSE_RESULT_LOADING_A11Y_MESSAGE},
+      {"resultUpdatedA11yMessage", IDS_COMPOSE_RESULT_UPDATED_A11Y_MESSAGE},
+      {"undoResultA11yMessage", IDS_COMPOSE_UNDO_RESULT_A11Y_MESSAGE},
+      {"redoResultA11yMessage", IDS_COMPOSE_REDO_RESULT_A11Y_MESSAGE},
   };
   source->AddLocalizedStrings(kStrings);
   source->AddBoolean("enableAnimations",

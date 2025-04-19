@@ -17,6 +17,7 @@
 #include "chrome/browser/web_applications/commands/web_app_command.h"
 #include "chrome/browser/web_applications/locks/app_lock.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
+#include "chrome/browser/web_applications/proto/web_app_install_state.pb.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
@@ -56,13 +57,13 @@ RunOnOsLoginCommand::RunOnOsLoginCommand(
       app_id_(app_id),
       login_mode_(login_mode),
       set_or_sync_mode_(set_or_sync_mode) {
-  GetMutableDebugValue().Set("app_id: ", app_id_);
+  GetMutableDebugValue().Set("app_id", app_id_);
   switch (set_or_sync_mode_) {
     case RunOnOsLoginAction::kSetModeInDBAndOS:
       GetMutableDebugValue().Set("type_of_action", "set_db_os_value");
       break;
     case RunOnOsLoginAction::kSyncModeFromDBToOS:
-      GetMutableDebugValue().Set("Type of Action: ", "sync_db_os_value");
+      GetMutableDebugValue().Set("type_of_action", "sync_db_os_value");
       break;
     default:
       NOTREACHED_IN_MIGRATION();
@@ -82,7 +83,9 @@ void RunOnOsLoginCommand::OnShutdown(
 void RunOnOsLoginCommand::StartWithLock(std::unique_ptr<AppLock> lock) {
   lock_ = std::move(lock);
 
-  if (!lock_->registrar().IsLocallyInstalled(app_id_)) {
+  if (!lock_->registrar().IsInstallState(
+          app_id_, {proto::INSTALLED_WITH_OS_INTEGRATION,
+                    proto::INSTALLED_WITHOUT_OS_INTEGRATION})) {
     Abort(RunOnOsLoginCommandCompletionState::kAppNotLocallyInstalled);
     return;
   }
@@ -151,20 +154,6 @@ void RunOnOsLoginCommand::SetRunOnOsLoginMode() {
 void RunOnOsLoginCommand::SyncRunOnOsLoginMode() {
   login_mode_ = lock_->registrar().GetAppRunOnOsLoginMode(app_id_).value;
 
-  // This is temporary solution for preinstalled apps getting fully installed.
-  // Do not run the below 'synchronize' code at all if the expected state ==
-  // the desired state.
-  // TODO(dmurph): Remove this after 'locally installed without os
-  // integration' is implemented for preinstalled apps.
-  // https://crbug.com/1480068
-  std::optional<RunOnOsLoginMode> os_integration_state =
-      lock_->registrar().GetExpectedRunOnOsLoginOsIntegrationState(app_id_);
-  if (os_integration_state && login_mode_.value() == *os_integration_state) {
-    RecordCompletionState(
-        RunOnOsLoginCommandCompletionState::kRunOnOsLoginModeAlreadyMatched);
-    OnOsIntegrationSynchronized();
-    return;
-  }
 
   lock_->os_integration_manager().Synchronize(
       app_id_, base::BindOnce(&RunOnOsLoginCommand::OnOsIntegrationSynchronized,
@@ -175,25 +164,6 @@ void RunOnOsLoginCommand::OnOsIntegrationSynchronized() {
   if (!completion_state_set_) {
     RecordCompletionState(
         RunOnOsLoginCommandCompletionState::kSuccessfulCompletion);
-
-    // This is needed for the temporary fix so that the sub-manager version will
-    // also save to the old expected state storage.
-    // TODO(dmurph): Remove this after 'locally installed without os
-    // integration' is implemented for preinstalled apps.
-    // https://crbug.com/1480068.
-    // Note: minimized isn't supported yet, and gets turned into kWindowed.
-    ScopedRegistryUpdate save_state_to_old_expected_value =
-        lock_->sync_bridge().BeginUpdate();
-    WebApp* app_to_update =
-        save_state_to_old_expected_value->UpdateApp(app_id_);
-    // TODO(crbug.com/343247630): Investigate why this app no longer exists and
-    // causes a crash. See crbug.com/342097315 for more information.
-    if (app_to_update) {
-      app_to_update->SetRunOnOsLoginOsIntegrationState(
-          login_mode_.value() != RunOnOsLoginMode::kNotRun
-              ? RunOnOsLoginMode::kWindowed
-              : RunOnOsLoginMode::kNotRun);
-    }
   }
 
   CompleteAndSelfDestruct(CommandResult::kSuccess);

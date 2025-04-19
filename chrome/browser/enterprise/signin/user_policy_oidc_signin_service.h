@@ -12,10 +12,13 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_manager_observer.h"
 #include "components/policy/core/browser/cloud/user_policy_signin_service_base.h"
+#include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 
 namespace policy {
+
+using PolicyFetchCallback = UserPolicySigninServiceBase::PolicyFetchCallback;
 
 class ProfileCloudPolicyManager;
 class UserCloudPolicyManager;
@@ -48,7 +51,8 @@ class OidcProfileManagerObserverBridge : public ProfileManagerObserver {
 // profiles and profile-level policy manager for dasherless profiles.
 // This policy sign in service shares CloudPolicyManager with other policy sign
 // in services.
-class UserPolicyOidcSigninService : public UserPolicySigninServiceBase {
+class UserPolicyOidcSigninService : public UserPolicySigninServiceBase,
+                                    public CloudPolicyStore::Observer {
  public:
   UserPolicyOidcSigninService(
       Profile* profile,
@@ -68,11 +72,37 @@ class UserPolicyOidcSigninService : public UserPolicySigninServiceBase {
 
   // CloudPolicyService::Observer implementation:
   void OnCloudPolicyServiceInitializationCompleted() override;
+  std::string_view name() const override;
 
   // CloudPolicyClient::Observer implementation:
   void OnPolicyFetched(CloudPolicyClient* client) override;
 
+  void FetchPolicyForOidcUser(
+      const AccountId& account_id,
+      const std::string& dm_token,
+      const std::string& client_id,
+      const std::string& user_email,
+      const std::vector<std::string>& user_affiliation_ids,
+      base::TimeTicks policy_fetch_start_time,
+      bool switch_to_entry,
+      scoped_refptr<network::SharedURLLoaderFactory> profile_url_loader_factory,
+      PolicyFetchCallback callback);
+
+  // Attempt to restore the policies for the current profile using backup DM
+  // token.
+  void AttemptToRestorePolicy();
  private:
+  // policy::CloudPolicyStore::Observer interface:
+  void OnStoreLoaded(CloudPolicyStore* store) override;
+  void OnStoreError(CloudPolicyStore* store) override;
+
+  void OnPolicyFetchCompleteInNewProfile(
+      std::string user_email,
+      base::TimeTicks policy_fetch_start_time,
+      bool switch_to_entry,
+      PolicyFetchCallback callback,
+      bool success);
+
   // UserPolicySigninServiceBase implementation:
   void InitializeCloudPolicyManager(
       const AccountId& account_id,
@@ -94,6 +124,8 @@ class UserPolicyOidcSigninService : public UserPolicySigninServiceBase {
 
   // Observer bridge for profile added events.
   OidcProfileManagerObserverBridge profile_manager_observer_bridge_{this};
+  base::ScopedObservation<CloudPolicyStore, CloudPolicyStore::Observer>
+      store_observation_{this};
 
   // Callbacks to invoke upon policy fetch.
   std::unique_ptr<base::OnceCallbackList<void(bool)>>

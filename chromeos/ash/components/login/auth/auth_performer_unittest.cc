@@ -8,25 +8,19 @@
 #include <optional>
 
 #include "ash/constants/ash_features.h"
-#include "base/functional/bind.h"
-#include "base/functional/callback_helpers.h"
-#include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_future.h"
+#include "chromeos/ash/components/cryptohome/auth_factor.h"
 #include "chromeos/ash/components/cryptohome/common_types.h"
-#include "chromeos/ash/components/cryptohome/cryptohome_parameters.h"
 #include "chromeos/ash/components/cryptohome/system_salt_getter.h"
 #include "chromeos/ash/components/dbus/cryptohome/UserDataAuth.pb.h"
+#include "chromeos/ash/components/dbus/cryptohome/auth_factor.pb.h"
 #include "chromeos/ash/components/dbus/userdataauth/cryptohome_misc_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/mock_userdataauth_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
-#include "chromeos/ash/components/login/auth/public/auth_session_intent.h"
-#include "chromeos/ash/components/login/auth/public/auth_session_status.h"
 #include "chromeos/ash/components/login/auth/public/session_auth_factors.h"
 #include "chromeos/ash/components/login/auth/public/user_context.h"
-#include "components/account_id/account_id.h"
-#include "components/user_manager/user_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ash {
@@ -102,10 +96,13 @@ TEST_F(AuthPerformerTest, StartWithUntypedPasswordKey) {
         reply.set_auth_session_id("123");
         reply.set_broadcast_id("broadcast");
         reply.set_user_exists(true);
-        auto* factor = reply.add_auth_factors();
-        factor->set_label("legacy-0");
-        factor->set_type(
+        auto* factor = reply.add_configured_auth_factors_with_status();
+        factor->mutable_auth_factor()->set_label("legacy-0");
+        factor->mutable_auth_factor()->set_type(
             user_data_auth::AuthFactorType::AUTH_FACTOR_TYPE_UNSPECIFIED);
+        factor->mutable_status_info()->set_time_available_in(0);
+        factor->mutable_status_info()->set_time_expiring_in(
+            std::numeric_limits<uint64_t>::max());
         std::move(callback).Run(reply);
       });
   AuthPerformer performer(&mock_client_);
@@ -140,10 +137,13 @@ TEST_F(AuthPerformerTest, StartWithUntypedKioskKey) {
         reply.set_auth_session_id("123");
         reply.set_broadcast_id("broadcast");
         reply.set_user_exists(true);
-        auto* factor = reply.add_auth_factors();
-        factor->set_label("legacy-0");
-        factor->set_type(
+        auto* factor = reply.add_configured_auth_factors_with_status();
+        factor->mutable_auth_factor()->set_label("legacy-0");
+        factor->mutable_auth_factor()->set_type(
             user_data_auth::AuthFactorType::AUTH_FACTOR_TYPE_UNSPECIFIED);
+        factor->mutable_status_info()->set_time_available_in(0);
+        factor->mutable_status_info()->set_time_expiring_in(
+            std::numeric_limits<uint64_t>::max());
         std::move(callback).Run(reply);
       });
   AuthPerformer performer(&mock_client_);
@@ -162,6 +162,56 @@ TEST_F(AuthPerformerTest, StartWithUntypedKioskKey) {
   EXPECT_EQ(user_context->GetAuthSessionId(), "123");
   EXPECT_EQ(user_context->GetBroadcastId(), "broadcast");
   EXPECT_TRUE(user_context->GetAuthFactorsData().FindKioskFactor());
+}
+
+// Checks that a legacy fp factor returned by StartAuthSession() is skipped.
+TEST_F(AuthPerformerTest, StartWithLegacyFp) {
+  EXPECT_CALL(mock_client_, StartAuthSession(_, _))
+      .WillOnce([](const ::user_data_auth::StartAuthSessionRequest& request,
+                   UserDataAuthClient::StartAuthSessionCallback callback) {
+        ::user_data_auth::StartAuthSessionReply reply;
+        reply.set_auth_session_id("123");
+        reply.set_broadcast_id("broadcast");
+        reply.set_user_exists(true);
+        auto* legacy_fp_factor =
+            reply.add_configured_auth_factors_with_status();
+        legacy_fp_factor->mutable_auth_factor()->set_label("");
+        legacy_fp_factor->mutable_auth_factor()->set_type(
+            user_data_auth::AuthFactorType::
+                AUTH_FACTOR_TYPE_LEGACY_FINGERPRINT);
+        legacy_fp_factor->mutable_status_info()->set_time_available_in(0);
+        legacy_fp_factor->mutable_status_info()->set_time_expiring_in(
+            std::numeric_limits<uint64_t>::max());
+        auto* password_factor = reply.add_configured_auth_factors_with_status();
+        password_factor->mutable_auth_factor()->set_label("password");
+        password_factor->mutable_auth_factor()->set_type(
+            user_data_auth::AuthFactorType::AUTH_FACTOR_TYPE_PASSWORD);
+        legacy_fp_factor->mutable_status_info()->set_time_available_in(0);
+        legacy_fp_factor->mutable_status_info()->set_time_expiring_in(
+            std::numeric_limits<uint64_t>::max());
+        std::move(callback).Run(reply);
+      });
+  AuthPerformer performer(&mock_client_);
+
+  // Act.
+  base::test::TestFuture<bool, std::unique_ptr<UserContext>,
+                         std::optional<AuthenticationError>>
+      result;
+  performer.StartAuthSession(std::move(context_), /*ephemeral=*/false,
+                             AuthSessionIntent::kVerifyOnly,
+                             result.GetCallback());
+  auto [user_exists, user_context, cryptohome_error] = result.Take();
+
+  // Assert: no error, user context has AuthSession ID and the password factor.
+  EXPECT_TRUE(user_exists);
+  ASSERT_TRUE(user_context);
+  EXPECT_EQ(user_context->GetAuthSessionId(), "123");
+  EXPECT_EQ(user_context->GetBroadcastId(), "broadcast");
+  EXPECT_TRUE(user_context->GetAuthFactorsData().FindPasswordFactor(
+      cryptohome::KeyLabel{"password"}));
+  EXPECT_EQ(user_context->GetAuthFactorsData().FindFactorByType(
+                cryptohome::AuthFactorType::kLegacyFingerprint),
+            nullptr);
 }
 
 // Checks that AuthenticateUsingKnowledgeKey (which will be called with "gaia"
@@ -294,8 +344,7 @@ TEST_F(AuthPerformerTest, AuthenticateWithPinSuccess) {
                                            cryptohome::KeyLabel("pin"));
   cryptohome::AuthFactor pin_factor(
       std::move(pin_factor_ref), cryptohome::AuthFactorCommonMetadata(),
-      cryptohome::PinMetadata::CreateWithoutSalt(),
-      cryptohome::PinStatus{.auth_locked = false});
+      cryptohome::PinMetadata::CreateWithoutSalt(), cryptohome::PinStatus());
   context_->SetSessionAuthFactors(SessionAuthFactors({std::move(pin_factor)}));
 
   AuthPerformer performer(&mock_client_);

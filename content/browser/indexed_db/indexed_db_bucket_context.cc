@@ -7,6 +7,7 @@
 #include <inttypes.h>
 #include <stddef.h>
 
+#include <algorithm>
 #include <atomic>
 #include <compare>
 #include <list>
@@ -43,6 +44,7 @@
 #include "base/task/task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "base/trace_event/memory_allocator_dump.h"
@@ -619,6 +621,36 @@ void IndexedDBBucketContext::ForceClose(bool doom) {
   RunTasks();
 }
 
+void IndexedDBBucketContext::StartMetadataRecording() {
+  CHECK(!metadata_recording_enabled_);
+  metadata_recording_start_time_ = base::Time::Now();
+  metadata_recording_enabled_ = true;
+  RecordInternalsSnapshot();  // Capture the initial snapshot.
+}
+
+std::vector<storage::mojom::IdbBucketMetadataPtr>
+IndexedDBBucketContext::StopMetadataRecording() {
+  metadata_recording_enabled_ = false;
+  return std::move(metadata_recording_buffer_);
+}
+
+void IndexedDBBucketContext::GetDevToolsTokenForClient(
+    base::UnguessableToken client_token,
+    OptionalTokenCallback callback) {
+  for (const auto& [receiver_id, context] : receivers_.GetAllContexts()) {
+    if (context->client_token == client_token) {
+      context->client_state_checker_remote->GetDevToolsToken(base::BindOnce(
+          [](OptionalTokenCallback callback,
+             const base::UnguessableToken& token) {
+            std::move(callback).Run(token);
+          },
+          std::move(callback)));
+      return;
+    }
+  }
+  std::move(callback).Run(std::nullopt);
+}
+
 int64_t IndexedDBBucketContext::GetInMemorySize() {
   return backing_store_ ? backing_store_->GetInMemorySize() : 0;
 }
@@ -814,16 +846,18 @@ void IndexedDBBucketContext::RunTasks() {
 void IndexedDBBucketContext::AddReceiver(
     mojo::PendingRemote<storage::mojom::IndexedDBClientStateChecker>
         client_state_checker_remote,
+    base::UnguessableToken client_token,
     mojo::PendingReceiver<blink::mojom::IDBFactory> pending_receiver) {
   // When `on_ready_for_destruction` is non-null, `this` hasn't requested its
   // own destruction. When it is null, this is to be torn down and has to bounce
   // the AddReceiver request back to the delegate.
   if (delegate().on_ready_for_destruction) {
-    receivers_.Add(this, std::move(pending_receiver),
-                   ReceiverContext(std::move(client_state_checker_remote)));
+    receivers_.Add(
+        this, std::move(pending_receiver),
+        ReceiverContext(std::move(client_state_checker_remote), client_token));
   } else {
-    CHECK(base::FeatureList::IsEnabled(features::kIndexedDBShardBackingStores));
     delegate().on_receiver_bounced.Run(std::move(client_state_checker_remote),
+                                       client_token,
                                        std::move(pending_receiver));
   }
 }
@@ -890,7 +924,7 @@ void IndexedDBBucketContext::Open(
   connection->was_cold_open = was_cold_open;
   connection->data_loss_info = data_loss_info;
   ReceiverContext& client = receivers_.current_context();
-  connection->client_id = receivers_.current_receiver();
+  connection->client_token = client.client_token;
   // Null in unit tests.
   if (client.client_state_checker_remote) {
     mojo::PendingRemote<storage::mojom::IndexedDBClientStateChecker>
@@ -1007,87 +1041,21 @@ storage::mojom::IdbBucketMetadataPtr IndexedDBBucketContext::FillInMetadata(
     storage::mojom::IdbBucketMetadataPtr info) {
   // TODO(jsbell): Sort by name?
   std::vector<storage::mojom::IdbDatabaseMetadataPtr> database_list;
-
   if (backing_store_ && backing_store_->in_memory()) {
     info->size = GetInMemorySize();
   }
-
   for (const auto& [name, db] : databases_) {
-    storage::mojom::IdbDatabaseMetadataPtr db_info =
-        storage::mojom::IdbDatabaseMetadata::New();
-
-    db_info->name = db->name();
-    db_info->connection_count = db->ConnectionCount();
     info->connection_count += db->ConnectionCount();
-    db_info->active_open_delete = db->ActiveOpenDeleteCount();
-    db_info->pending_open_delete = db->PendingOpenDeleteCount();
-
-    std::vector<storage::mojom::IdbTransactionMetadataPtr> transaction_list;
-
-    for (IndexedDBConnection* connection : db->connections()) {
-      for (const auto& transaction_id_pair : connection->transactions()) {
-        const content::IndexedDBTransaction* transaction =
-            transaction_id_pair.second.get();
-        storage::mojom::IdbTransactionMetadataPtr transaction_info =
-            storage::mojom::IdbTransactionMetadata::New();
-
-        transaction_info->mode =
-            static_cast<storage::mojom::IdbTransactionMode>(
-                transaction->mode());
-
-        switch (transaction->state()) {
-          case IndexedDBTransaction::CREATED:
-            transaction_info->status =
-                storage::mojom::IdbTransactionState::kBlocked;
-            break;
-          case IndexedDBTransaction::STARTED:
-            if (transaction->diagnostics().tasks_scheduled > 0) {
-              transaction_info->status =
-                  storage::mojom::IdbTransactionState::kRunning;
-            } else {
-              transaction_info->status =
-                  storage::mojom::IdbTransactionState::kStarted;
-            }
-            break;
-          case IndexedDBTransaction::COMMITTING:
-            transaction_info->status =
-                storage::mojom::IdbTransactionState::kCommitting;
-            break;
-          case IndexedDBTransaction::FINISHED:
-            transaction_info->status =
-                storage::mojom::IdbTransactionState::kFinished;
-            break;
-        }
-
-        transaction_info->tid = transaction->id();
-        transaction_info->client_id = connection->client_id();
-        transaction_info->age =
-            (base::Time::Now() - transaction->diagnostics().creation_time)
-                .InMillisecondsF();
-        transaction_info->runtime =
-            (base::Time::Now() - transaction->diagnostics().start_time)
-                .InMillisecondsF();
-        transaction_info->tasks_scheduled =
-            transaction->diagnostics().tasks_scheduled;
-        transaction_info->tasks_completed =
-            transaction->diagnostics().tasks_completed;
-
-        for (const int64_t& id : transaction->scope()) {
-          auto stores_it = db->metadata().object_stores.find(id);
-          if (stores_it != db->metadata().object_stores.end()) {
-            transaction_info->scope.emplace_back(stores_it->second.name);
-          }
-        }
-
-        transaction_list.push_back(std::move(transaction_info));
-      }
-    }
-    db_info->transactions = std::move(transaction_list);
-
-    database_list.push_back(std::move(db_info));
+    database_list.push_back(db->GetIdbInternalsMetadata());
   }
   info->databases = std::move(database_list);
   return info;
+}
+
+void IndexedDBBucketContext::NotifyOfIdbInternalsRelevantChange() {
+  if (metadata_recording_enabled_) {
+    RecordInternalsSnapshot();
+  }
 }
 
 IndexedDBBucketContext* IndexedDBBucketContext::GetReferenceForTesting() {
@@ -1400,9 +1368,6 @@ void IndexedDBBucketContext::HandleBackingStoreCorruption(
   // In order to successfully delete the corrupted DB, the open handle must
   // first be closed.
   ResetBackingStore();
-
-  // NB: `this` will be synchronously deleted here while
-  // kIndexedDBShardBackingStores is false.
 
   // Note: DestroyDB only deletes LevelDB files, leaving all others,
   //       so our corruption info file will remain.
@@ -1760,10 +1725,22 @@ void IndexedDBBucketContext::OnReceiverDisconnected() {
   }
 }
 
+void IndexedDBBucketContext::RecordInternalsSnapshot() {
+  storage::mojom::IdbBucketMetadataPtr metadata =
+      storage::mojom::IdbBucketMetadata::New();
+  metadata->bucket_locator = bucket_locator();
+  metadata = FillInMetadata(std::move(metadata));
+  metadata->delta_recording_start_ms =
+      (base::Time::Now() - metadata_recording_start_time_).InMilliseconds();
+  metadata_recording_buffer_.push_back(std::move(metadata));
+}
+
 IndexedDBBucketContext::ReceiverContext::ReceiverContext(
     mojo::PendingRemote<storage::mojom::IndexedDBClientStateChecker>
-        client_state_checker)
-    : client_state_checker_remote(std::move(client_state_checker)) {}
+        client_state_checker,
+    base::UnguessableToken client_token)
+    : client_state_checker_remote(std::move(client_state_checker)),
+      client_token(client_token) {}
 
 IndexedDBBucketContext::ReceiverContext::ReceiverContext(
     IndexedDBBucketContext::ReceiverContext&&) noexcept = default;

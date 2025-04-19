@@ -83,6 +83,10 @@ RichAnswersView::RichAnswersView(
   InitLayout();
 
   SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
+
+  GetViewAccessibility().SetRole(ax::mojom::Role::kDialog);
+  GetViewAccessibility().SetName(
+      l10n_util::GetStringUTF8(IDS_RICH_ANSWERS_VIEW_A11Y_NAME_TEXT));
 }
 
 RichAnswersView::~RichAnswersView() = default;
@@ -110,7 +114,6 @@ views::UniqueWidgetPtr RichAnswersView::CreateWidget(
           anchor_view_bounds, controller, *result.unit_conversion_result.get());
       break;
     }
-    case ResultType::kKnowledgePanelEntityResult:
     case ResultType::kNoResult: {
       return views::UniqueWidgetPtr();
     }
@@ -151,7 +154,7 @@ void RichAnswersView::OnWidgetDestroying(views::Widget* widget) {
 
 void RichAnswersView::OnKeyEvent(ui::KeyEvent* event) {
   // TODO(b/283135347): Track rich card interaction types for metrics.
-  if (event->type() != ui::ET_KEY_PRESSED) {
+  if (event->type() != ui::EventType::kKeyPressed) {
     return;
   }
 
@@ -166,13 +169,6 @@ void RichAnswersView::OnThemeChanged() {
 
   search_link_label_->SetEnabledColor(
       GetColorProvider()->GetColor(ui::kColorSysPrimary));
-}
-
-void RichAnswersView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ax::mojom::Role::kDialog;
-
-  node_data->SetName(
-      l10n_util::GetStringUTF8(IDS_RICH_ANSWERS_VIEW_A11Y_NAME_TEXT));
 }
 
 void RichAnswersView::OnWidgetActivationChanged(views::Widget* widget,

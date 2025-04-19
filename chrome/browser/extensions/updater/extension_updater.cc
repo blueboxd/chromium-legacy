@@ -7,7 +7,9 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <optional>
 #include <set>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -17,6 +19,7 @@
 #include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/not_fatal_until.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -345,7 +348,8 @@ void ExtensionUpdater::AddToDownloader(
     }
 
     if (CanUseUpdateService(extension_id)) {
-      update_check_params->update_info[extension_id] = ExtensionUpdateData();
+      update_check_params->update_info[extension_id] =
+          GetExtensionUpdateData(extension_id);
     } else if (AddExtensionToDownloader(extension, request_id,
                                         fetch_priority)) {
       request.in_progress_ids.insert(extension_id);
@@ -460,7 +464,8 @@ void ExtensionUpdater::CheckNow(CheckParams params) {
                                            << " is not from the webstore";
         DCHECK(is_corrupt_reinstall) << "Extension with id " << pending_id
                                      << " is not a corrupt reinstall";
-        update_check_params.update_info[pending_id] = ExtensionUpdateData();
+        update_check_params.update_info[pending_id] =
+            GetExtensionUpdateData(pending_id);
       } else if (!Manifest::IsAutoUpdateableLocation(info->install_source())) {
         VLOG(2) << "Extension " << pending_id << " is not auto updateable";
         continue;
@@ -473,6 +478,8 @@ void ExtensionUpdater::CheckNow(CheckParams params) {
       const bool is_high_priority_extension_pending =
           pending_extension_manager->HasHighPriorityPendingExtension();
       if (CanUseUpdateService(pending_id)) {
+        update_check_params.update_info[pending_id] =
+            GetExtensionUpdateData(pending_id);
         update_check_params.update_info[pending_id].is_corrupt_reinstall =
             is_corrupt_reinstall;
         if (is_corrupt_reinstall) {
@@ -520,7 +527,7 @@ void ExtensionUpdater::CheckNow(CheckParams params) {
           registry_->GetExtensionById(id, ExtensionRegistry::EVERYTHING);
       if (extension) {
         if (CanUseUpdateService(id)) {
-          update_check_params.update_info[id] = ExtensionUpdateData();
+          update_check_params.update_info[id] = GetExtensionUpdateData(id);
         } else if (AddExtensionToDownloader(*extension, request_id,
                                             params.fetch_priority)) {
           request.in_progress_ids.insert(extension->id());
@@ -703,6 +710,20 @@ bool ExtensionUpdater::GetExtensionExistingVersion(const ExtensionId& id,
   return true;
 }
 
+ExtensionUpdateData ExtensionUpdater::GetExtensionUpdateData(
+    const ExtensionId& id) {
+  ExtensionUpdateData result;
+
+  const Extension* update = service_->GetPendingExtensionUpdate(id);
+
+  if (update) {
+    result.pending_version = update->VersionString();
+    result.pending_fingerprint = update->DifferentialFingerprint();
+  }
+
+  return result;
+}
+
 void ExtensionUpdater::UpdatePingData(const ExtensionId& id,
                                       const PingResult& ping_result) {
   DCHECK(alive_);
@@ -818,7 +839,7 @@ void ExtensionUpdater::OnInstallerDone(
     const UnguessableToken& token,
     const std::optional<CrxInstallError>& error) {
   auto iter = running_crx_installs_.find(token);
-  DCHECK(iter != running_crx_installs_.end());
+  CHECK(iter != running_crx_installs_.end(), base::NotFatalUntil::M130);
   FetchedCRXFile& crx_file = iter->second;
 
   bool extension_removed_from_cache = false;

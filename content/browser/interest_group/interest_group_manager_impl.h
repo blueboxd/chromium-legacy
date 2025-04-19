@@ -156,10 +156,6 @@ class CONTENT_EXPORT InterestGroupManagerImpl : public InterestGroupManager {
   // navigator.joinAdInterestGroup() was invoked, and will be used for the
   // .well-known fetch if one is needed.
   //
-  // `url_loader_factory_for_keyfetch`  will  be used to pre-fetch
-  // B&A server keys if the B&A server is enabled and if this is the first
-  // joinAdInterestGroup call since browser start.
-  //
   // `report_result_only`, if true, results in calling `callback` with the
   // result of the permissions check, but not actually joining the interest
   // group, regardless of success or failure. This is used to avoid leaking
@@ -175,8 +171,6 @@ class CONTENT_EXPORT InterestGroupManagerImpl : public InterestGroupManager {
       const net::NetworkIsolationKey& network_isolation_key,
       bool report_result_only,
       network::mojom::URLLoaderFactory& url_loader_factory,
-      scoped_refptr<network::SharedURLLoaderFactory>
-          url_loader_factory_for_keyfetch,
       AreReportingOriginsAttestedCallback attestation_callback,
       blink::mojom::AdAuctionService::JoinInterestGroupCallback callback);
 
@@ -304,6 +298,24 @@ class CONTENT_EXPORT InterestGroupManagerImpl : public InterestGroupManager {
       const std::optional<std::string>& devtools_auction_id,
       const url::Origin& owner,
       base::OnceCallback<void(scoped_refptr<StorageInterestGroups>)> callback);
+
+  // For a given `owner`, return whether the owner origin and bidding signal
+  // origin were cached in-memory in previous calls to
+  // GetInterestGroupsForOwner and JoinInterestGroup. If the `owner` origin was
+  // cached, update `signals_origin` to the one that was cached -- or set to
+  // nullopt if no bidding signals origin was cached or if it would be the same
+  // as the owner origin. The cache includes at most one entry per origin, and
+  // may not reflect the results of interest group updates. It's intended to be
+  // used for best-effort preconnecting, and should not be considered
+  // authoritative. It is guaranteed not to contain interest groups that have
+  // are beyond the max expiration time limit, so preconnecting should not leak
+  // data the bidder would otherwise have access to, if it so desired. That is,
+  // manual voluntarily removing or expiring of an interest group may not be
+  // reflected in the result, but hitting the the global interest group lifetime
+  // cap will be respected.
+  bool GetCachedOwnerAndSignalsOrigins(
+      const url::Origin& owner,
+      std::optional<url::Origin>& signals_origin);
 
   // Clear out storage for the matching owning storage key. If the matcher is
   // empty then apply to all storage keys.
@@ -435,16 +447,20 @@ class CONTENT_EXPORT InterestGroupManagerImpl : public InterestGroupManager {
   // (including ads). Also reports membership in the interest group to the
   // k-anonymity of interest-group service.
   void QueueKAnonymityUpdateForInterestGroup(
-      const blink::InterestGroupKey& group_key);
-  // Records K-anonymity to the database.
-  void UpdateKAnonymity(const StorageInterestGroup::KAnonymityData& data);
-
-  // Gets all KAnonymityData for ads part of the interest group specified by
-  // `interest_group_key`.
-  void GetKAnonymityDataForUpdate(
       const blink::InterestGroupKey& group_key,
-      base::OnceCallback<void(
-          const std::vector<StorageInterestGroup::KAnonymityData>&)> callback);
+      const std::optional<InterestGroupKanonUpdateParameter> update_parameter);
+  // Records a K-anonymity update for an interest group. If
+  // `replace_existing_values` is true, this update will store the new
+  // `update_time` and `positive_hashed_values`, replacing the interest
+  // group's existing update time and keys. If `replace_existing_values` is
+  // false, `positive_hashed_keys` will be added to the existing positive keys
+  // without updating the stored update time.  No value is stored if
+  // `update_time` is older than the `update_time` already stored in the
+  // database.
+  void UpdateKAnonymity(const blink::InterestGroupKey& interest_group_key,
+                        const std::vector<std::string>& positive_hashed_keys,
+                        const base::Time update_time,
+                        bool initial_update);
 
   // Gets lockout and cooldown for sending forDebuggingOnly reports.
   void GetDebugReportLockoutAndCooldowns(
@@ -470,7 +486,6 @@ class CONTENT_EXPORT InterestGroupManagerImpl : public InterestGroupManager {
   // may be called synchronously if the key is already available or the
   // coordinator is not recognized.
   void GetBiddingAndAuctionServerKey(
-      scoped_refptr<network::SharedURLLoaderFactory> loader,
       std::optional<url::Origin> coordinator,
       base::OnceCallback<void(
           base::expected<BiddingAndAuctionServerKey, std::string>)> callback);
@@ -544,8 +559,6 @@ class CONTENT_EXPORT InterestGroupManagerImpl : public InterestGroupManager {
       blink::InterestGroup group,
       const GURL& joining_url,
       bool report_result_only,
-      scoped_refptr<network::SharedURLLoaderFactory>
-          url_loader_factory_for_keyfetch,
       AreReportingOriginsAttestedCallback attestation_callback,
       blink::mojom::AdAuctionService::JoinInterestGroupCallback callback,
       bool can_join);
@@ -592,11 +605,12 @@ class CONTENT_EXPORT InterestGroupManagerImpl : public InterestGroupManager {
                            base::OnceCallback<void(bool)> callback);
 
   // Called when a call to UpdateInterestGroup() completes. Sends a notification
-  // about the update and invokes `callback` with `success`.
-  void OnUpdateComplete(const url::Origin& owner_origin,
-                        const std::string& name,
-                        base::OnceCallback<void(bool)> callback,
-                        bool success);
+  // about the update and invokes `callback` with `success`. Queues a
+  // k-anonymity update with `kanon_update_parameter`.
+  void OnUpdateComplete(
+      const blink::InterestGroupKey& group_key,
+      base::OnceCallback<void(bool)> callback,
+      std::optional<InterestGroupKanonUpdateParameter> kanon_update_parameter);
 
   // Modifies the update rate limits stored in the database, with a longer delay
   // for parse failure.

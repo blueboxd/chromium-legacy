@@ -4,12 +4,14 @@
 
 #include "chrome/browser/ui/webui/settings/site_settings_handler.h"
 
+#include <memory>
 #include <set>
 #include <string_view>
 #include <utility>
 #include <vector>
 
 #include "base/barrier_closure.h"
+#include "base/check_deref.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
@@ -42,6 +44,7 @@
 #include "chrome/browser/hid/hid_chooser_context_factory.h"
 #include "chrome/browser/media/unified_autoplay_config.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
+#include "chrome/browser/permissions/system/system_permission_settings.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_service.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_service_factory.h"
 #include "chrome/browser/serial/serial_chooser_context.h"
@@ -81,10 +84,12 @@
 #include "components/permissions/permission_util.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
+#include "components/privacy_sandbox/privacy_sandbox_features.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/app_update.h"
 #include "components/site_engagement/content/site_engagement_service.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/browsing_data_remover.h"
@@ -551,7 +556,7 @@ base::Value::Dict CreateZoomLevelException(
   // Calculate the zoom percent from the factor. Round up to the nearest
   // whole number.
   int zoom_percent =
-      static_cast<int>(blink::PageZoomLevelToZoomFactor(zoom) * 100 + 0.5);
+      static_cast<int>(blink::ZoomLevelToZoomFactor(zoom) * 100 + 0.5);
   exception.Set(kZoom, base::FormatPercent(zoom_percent));
   return exception;
 }
@@ -769,6 +774,16 @@ void SiteSettingsHandler::RegisterMessages() {
       "getNumCookiesString",
       base::BindRepeating(&SiteSettingsHandler::HandleGetNumCookiesString,
                           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getOsGlobalPermissionStatus",
+      base::BindRepeating(
+          &SiteSettingsHandler::HandleGetOSGlobalPermissionStatus,
+          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "openSystemPermissionSettings",
+      base::BindRepeating(
+          &SiteSettingsHandler::HandleOpenSystemPermissionSettings,
+          base::Unretained(this)));
 }
 
 void SiteSettingsHandler::OnJavascriptAllowed() {
@@ -806,9 +821,15 @@ void SiteSettingsHandler::OnJavascriptAllowed() {
       prefs::kBlockAutoplayEnabled,
       base::BindRepeating(&SiteSettingsHandler::SendBlockAutoplayStatus,
                           base::Unretained(this)));
+
+  // Setup observation of system permissions.
+  system_permission_settings_observation_ = system_permission_settings::Observe(
+      base::BindRepeating(&SiteSettingsHandler::OnSystemPermissionChanged,
+                          base::Unretained(this)));
 }
 
 void SiteSettingsHandler::OnJavascriptDisallowed() {
+  system_permission_settings_observation_.reset();
   observations_.RemoveAllObservations();
   chooser_observations_.RemoveAllObservations();
   host_zoom_map_subscriptions_.clear();
@@ -938,6 +959,12 @@ void SiteSettingsHandler::OnObjectPermissionChanged(
 void SiteSettingsHandler::OnZoomLevelChanged(
     const content::HostZoomMap::ZoomLevelChange& change) {
   SendZoomLevels();
+}
+
+void SiteSettingsHandler::OnSystemPermissionChanged(
+    ContentSettingsType content_type,
+    bool is_blocked) {
+  FireWebUIListener("osGlobalPermissionChanged", GetOSGlobalPermissionStatus());
 }
 
 void SiteSettingsHandler::HandleFetchUsageTotal(const base::Value::List& args) {
@@ -1668,6 +1695,17 @@ void SiteSettingsHandler::HandleResetCategoryPermissionForPattern(
   if (content_type == ContentSettingsType::COOKIES &&
       primary_pattern.MatchesAllHosts() &&
       !secondary_pattern.MatchesAllHosts()) {
+    // Remove TP exceptions along with 3PC exceptions if we are not showing
+    // them explicitly in settings but are supporting adding/removing via UB.
+    // TODO(https://b/333527273): Remove post-3PCD launch.
+    if (base::FeatureList::IsEnabled(
+            privacy_sandbox::kTrackingProtectionContentSettingUbControl) &&
+        !base::FeatureList::IsEnabled(
+            privacy_sandbox::kTrackingProtectionContentSettingInSettings)) {
+      map->SetContentSettingCustomScope(
+          ContentSettingsPattern::Wildcard(), secondary_pattern,
+          ContentSettingsType::TRACKING_PROTECTION, CONTENT_SETTING_DEFAULT);
+    }
     base::RecordAction(base::UserMetricsAction(
         "ThirdPartyCookies.SettingsSiteException.Removed"));
   }
@@ -2239,8 +2277,7 @@ void SiteSettingsHandler::HandleRecordAction(const base::Value::List& args) {
 void SiteSettingsHandler::HandleGetNumCookiesString(
     const base::Value::List& args) {
   CHECK_EQ(2U, args.size());
-  std::string callback_id;
-  callback_id = args[0].GetString();
+  const std::string callback_id = args[0].GetString();
   int num_cookies = args[1].GetInt();
 
   AllowJavascript();
@@ -2250,6 +2287,26 @@ void SiteSettingsHandler::HandleGetNumCookiesString(
                       : std::u16string();
 
   ResolveJavascriptCallback(base::Value(callback_id), base::Value(string));
+}
+
+void SiteSettingsHandler::HandleGetOSGlobalPermissionStatus(
+    const base::Value::List& args) {
+  CHECK_EQ(1U, args.size());
+  const std::string callback_id = args[0].GetString();
+
+  AllowJavascript();
+  ResolveJavascriptCallback(base::Value(callback_id),
+                            GetOSGlobalPermissionStatus());
+}
+
+void SiteSettingsHandler::HandleOpenSystemPermissionSettings(
+    const base::Value::List& args) {
+  CHECK_EQ(1U, args.size());
+  const ContentSettingsType permission_type =
+      site_settings::ContentSettingsTypeFromGroupName(args[0].GetString());
+
+  content::WebContents* web_contents = CHECK_DEREF(web_ui()).GetWebContents();
+  system_permission_settings::OpenSystemSettings(web_contents, permission_type);
 }
 
 void SiteSettingsHandler::RemoveNonModelData(
@@ -2453,6 +2510,46 @@ void SiteSettingsHandler::SendNotificationPermissionReviewList() {
   FireWebUIListener(
       site_settings::kNotificationPermissionsReviewListMaybeChangedEvent,
       service->PopulateNotificationPermissionReviewData());
+}
+
+base::Value SiteSettingsHandler::GetOSGlobalPermissionStatus() {
+  // TODO(b/331784136): Make the settings link clickable.
+  base::Value::Dict block_messages_dict;
+
+#if BUILDFLAG(IS_CHROMEOS)
+  // This functionality is targeting cros.
+  if (system_permission_settings::IsDenied(
+          ContentSettingsType::MEDIASTREAM_CAMERA)) {
+    block_messages_dict.Set(
+        site_settings::ContentSettingsTypeToGroupName(
+            ContentSettingsType::MEDIASTREAM_CAMERA),
+        base::Value(l10n_util::GetStringFUTF16(
+            IDS_PAGE_INFO_CAMERA_SYSTEM_SETTINGS_DESCRIPTION,
+            l10n_util::GetStringUTF16(
+                IDS_PAGE_INFO_SETTINGS_OF_A_SYSTEM_LINK))));
+  }
+  if (system_permission_settings::IsDenied(
+          ContentSettingsType::MEDIASTREAM_MIC)) {
+    block_messages_dict.Set(
+        site_settings::ContentSettingsTypeToGroupName(
+            ContentSettingsType::MEDIASTREAM_MIC),
+        base::Value(l10n_util::GetStringFUTF16(
+            IDS_PAGE_INFO_MICROPHONE_SYSTEM_SETTINGS_DESCRIPTION,
+            l10n_util::GetStringUTF16(
+                IDS_PAGE_INFO_SETTINGS_OF_A_SYSTEM_LINK))));
+  }
+  if (system_permission_settings::IsDenied(ContentSettingsType::GEOLOCATION)) {
+    block_messages_dict.Set(
+        site_settings::ContentSettingsTypeToGroupName(
+            ContentSettingsType::GEOLOCATION),
+        base::Value(l10n_util::GetStringFUTF16(
+            IDS_PAGE_INFO_LOCATION_SYSTEM_SETTINGS_DESCRIPTION,
+            l10n_util::GetStringUTF16(
+                IDS_PAGE_INFO_SETTINGS_OF_A_SYSTEM_LINK))));
+  }
+#endif
+
+  return base::Value(std::move(block_messages_dict));
 }
 
 }  // namespace settings

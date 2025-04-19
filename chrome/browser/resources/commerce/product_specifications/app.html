@@ -3,20 +3,19 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 22px;
     width: fit-content;
   }
 
   product-specifications-header {
-    width: 100%;
     height: 38px;
+    margin-bottom: 24px;
+    width: 100%;
   }
 
   #summaryContainer {
     background-color: var(--color-product-specifications-summary-background);
     border-radius: 12px;
     display: flex;
-    margin-inline-start: 48px;
     min-height: 50px;
     min-width: 758px;
     padding: 16px;
@@ -61,44 +60,89 @@
     margin-top: 32px;
   }
 
-  new-column-selector {
-    margin-top: 3px;
+  horizontal-carousel[can-scroll] #summaryTable {
+    --last-column-overflow-x: hidden;
   }
 
-  #specs {
+  #newColumnSelector {
+    margin-inline-start: 8px;
+  }
+
+  #footer {
+    align-items: center;
+    color: var(--color-side-panel-card-secondary-foreground);
     display: flex;
-    padding: 16px;
+    font-size: 11px;
+    font-weight: 400;
+    gap: 16px;
+    justify-content: flex-start;
+    line-height: 16px;
+    margin-top: 20px;
+  }
+
+  #footer a {
+    color: var(--cr-link-color);
   }
 </style>
 <product-specifications-header id="header" subtitle="[[setName_]]"
-    menu-button-disabled$="[[loading_]]"
-    on-add-to-new-group-click="addToNewGroup_"
+    menu-button-disabled$="[[loadingState_.loading]]"
     on-delete-click="deleteSet_"
     on-name-change="updateSetName_"
     on-see-all-click="seeAllSets_">
 </product-specifications-header>
 <div id="summaryContainer">
-  <div id="empty" class="summary" hidden$="[[!showEmptyState_]]">
+  <div id="empty" hidden$="[[!showEmptyState_]]">
+    <picture>
+      <source srcset="images/empty_state_dark.svg"
+          media="(prefers-color-scheme: dark)">
       <img id="emptyImg" src="images/empty_state.svg">
+    </picture>
       <div id="emptyTitle">$i18n{emptyStateTitle}</div>
       <div id="emptyDescription">$i18n{emptyStateDescription}</div>
       <product-selector id="productSelector"
           on-selected-url-change="onUrlAdd_">
       </product-selector>
   </div>
-  <div id="loading" hidden$="[[!loading_]]">
-    Loading...
-  </div>
-  <div id="specs" class="summary"
-      hidden$="[[!showTable_(showEmptyState_, loading_)]]">
-    <product-specifications-table
-        id="summaryTable"
-        columns="[[specsTable_.columns]]"
-        rows="[[specsTable_.rows]]"
-        on-url-change="onUrlChange_"
-        on-url-remove="onUrlRemove_">
+  <!-- TODO(b/357616541): Give loading state the same max-width as
+       the horizontal-carousel and restyle accordingly. -->
+  <loading-state id="loading" hidden$="[[!loadingState_.loading]]"
+      column-count="[[loadingState_.urlCount]]">
+  </loading-state>
+  <horizontal-carousel id="specs"
+      hidden$="[[!showTable_(showEmptyState_, loadingState_.loading)]]">
+      <product-specifications-table slot="table"
+          id="summaryTable"
+          columns="[[tableColumns_]]"
+          on-url-change="onUrlChange_"
+          on-url-remove="onUrlRemove_"
+          on-url-order-update="onUrlOrderUpdate_"
+          on-unavailable-action-attempted="showOfflineToast_">
     </product-specifications-table>
-    <new-column-selector on-selected-url-change="onUrlAdd_">
+    <new-column-selector slot="selector" id="newColumnSelector"
+        excluded-urls="[[getTableUrls_(tableColumns_)]]"
+        on-selected-url-change="onUrlAdd_">
     </new-column-selector>
-  </div>
+  </horizontal-carousel>
 </div>
+<div id="footer" hidden$="[[showEmptyState_]]">
+  <div id="disclaimer">$i18n{experimentalFeatureDisclaimer}
+    <a href="#" aria-label="$i18n{learnMoreA11yLabel}">$i18n{learnMore}</a>
+  </div>
+  <div id="feedbackLoading" hidden$="[[!loadingState_.loading]]">
+    <cr-loading-gradient>
+      <svg height="16" width="44" xmlns="http://www.w3.org/2000/svg">
+        <clipPath>
+          <circle cx="8" cy="8" r="8"></circle>
+          <circle cx="36" cy="8" r="8"></circle>
+        </clipPath>
+      </svg>
+    </cr-loading-gradient>
+  </div>
+  <cr-feedback-buttons id="feedbackButtons"
+      hidden$="[[loadingState_.loading]]"
+      on-selected-option-changed="onFeedbackSelectedOptionChanged_">
+  </cr-feedback-buttons>
+</div>
+<cr-toast id="offlineToast">
+  <div>$i18n{offlineMessage}</div>
+</cr-toast>

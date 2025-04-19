@@ -15,22 +15,14 @@ ASH_EXPORT PickerCategoryType GetPickerCategoryType(PickerCategory category) {
     case PickerCategory::kEditorRewrite:
       return PickerCategoryType::kEditorRewrite;
     case PickerCategory::kLinks:
-    case PickerCategory::kExpressions:
+    case PickerCategory::kEmojisGifs:
     case PickerCategory::kClipboard:
     case PickerCategory::kDriveFiles:
     case PickerCategory::kLocalFiles:
       return PickerCategoryType::kGeneral;
     case PickerCategory::kDatesTimes:
     case PickerCategory::kUnitsMaths:
-      return PickerCategoryType::kCalculations;
-    case PickerCategory::kUpperCase:
-    case PickerCategory::kLowerCase:
-    case PickerCategory::kSentenceCase:
-    case PickerCategory::kTitleCase:
-      return PickerCategoryType::kCaseTransformations;
-    case PickerCategory::kCapsOn:
-    case PickerCategory::kCapsOff:
-      return PickerCategoryType::kNone;
+      return PickerCategoryType::kMore;
   }
 }
 

@@ -87,7 +87,7 @@ class PLATFORM_EXPORT RawData : public ThreadSafeRefCounted<RawData> {
   }
 
   const char* data() const { return data_.data(); }
-  size_t length() const { return data_.size(); }
+  size_t size() const { return data_.size(); }
   Vector<char>* MutableData() { return &data_; }
 
  private:
@@ -120,7 +120,7 @@ class PLATFORM_EXPORT BlobData {
   }
   Vector<mojom::blink::DataElementPtr> ReleaseElements();
 
-  void AppendBytes(const void*, size_t length);
+  void AppendBytes(base::span<const uint8_t> bytes);
   void AppendData(scoped_refptr<RawData>);
 
   // The given blob must not be a file with unknown size. Please use the

@@ -23,6 +23,7 @@ export enum ReportingType {
   USER_ACTIVITY = 'user-activity',
   EXTENSIONS = 'extensions',
   LEGACY_TECH = 'legacy-tech',
+  URL = 'url',
 }
 
 export interface BrowserReportingResponse {
@@ -106,6 +107,12 @@ export interface ManagementBrowserProxy {
   getLocalTrustRootsInfo(): Promise<boolean>;
 
   /**
+   * @return Whether uploading of downloads or screenshots to cloud storages is
+   *     configured.
+   */
+  getFilesUploadToCloudInfo(): Promise<string>;
+
+  /**
    * @return List of items to display in device reporting section.
    */
   getDeviceReportingInfo(): Promise<DeviceReportingResponse[]>;
@@ -147,6 +154,10 @@ export class ManagementBrowserProxyImpl implements ManagementBrowserProxy {
   // <if expr="is_chromeos">
   getLocalTrustRootsInfo() {
     return sendWithPromise('getLocalTrustRootsInfo');
+  }
+
+  getFilesUploadToCloudInfo() {
+    return sendWithPromise('getFilesUploadToCloudInfo');
   }
 
   getDeviceReportingInfo() {

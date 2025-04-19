@@ -12,20 +12,10 @@
 
 class BrowserActionsTest : public BrowserWithTestWindowTest {
  public:
-  BrowserActionsTest() {
-    feature_list_.InitWithFeatures(
-        /*enabled_features=*/std::vector<
-            base::test::FeatureRef>{features::kSidePanelPinning,
-                                    features::kToolbarPinning},
-        /*disabled_features=*/{});
-  }
-
-  BrowserActionsTest(const BrowserActionsTest&) = delete;
-  BrowserActionsTest& operator=(const BrowserActionsTest&) = delete;
-  ~BrowserActionsTest() override {}
+  BrowserActionsTest() = default;
 
  private:
-  base::test::ScopedFeatureList feature_list_;
+  base::test::ScopedFeatureList feature_list_{features::kToolbarPinning};
 };
 
 TEST_F(BrowserActionsTest, DidCreateBrowserActions) {
@@ -33,9 +23,10 @@ TEST_F(BrowserActionsTest, DidCreateBrowserActions) {
   auto& action_manager = actions::ActionManager::GetForTesting();
 
   std::vector<actions::ActionId> browser_action_ids = {
-      kActionNewIncognitoWindow, kActionPrint,    kActionClearBrowsingData,
-      kActionTaskManager,        kActionDevTools, kActionSendTabToSelf,
-      kActionQrCodeGenerator};
+      kActionNewIncognitoWindow, kActionPrint,
+      kActionClearBrowsingData,  kActionTaskManager,
+      kActionDevTools,           kActionSendTabToSelf,
+      kActionQrCodeGenerator,    kActionShowAddressesBubbleOrPage};
 
   ASSERT_NE(browser_actions->root_action_item(), nullptr);
 
@@ -62,4 +53,25 @@ TEST_F(BrowserActionsTest, CheckBrowserActionsEnabledState) {
             chrome::CanSendTabToSelf(browser()));
   EXPECT_EQ(action_manager.FindAction(kActionQrCodeGenerator)->GetEnabled(),
             false);
+  EXPECT_EQ(
+      action_manager.FindAction(kActionShowAddressesBubbleOrPage)->GetEnabled(),
+      true);
+}
+
+TEST_F(BrowserActionsTest, GetCleanTitleAndTooltipText) {
+  // \u2026 is the unicode hex value for a horizontal ellipsis.
+  const std::u16string expected = u"Print";
+  std::u16string input = u"&Print\u2026";
+  std::u16string output = BrowserActions::GetCleanTitleAndTooltipText(input);
+  EXPECT_EQ(output, expected);
+
+  std::u16string input_middle_amp = u"Pri&nt\u2026";
+  std::u16string output_middle_amp =
+      BrowserActions::GetCleanTitleAndTooltipText(input_middle_amp);
+  EXPECT_EQ(output_middle_amp, expected);
+
+  std::u16string input_ellipsis_text = u"&Print...";
+  std::u16string output_ellipsis_text =
+      BrowserActions::GetCleanTitleAndTooltipText(input_ellipsis_text);
+  EXPECT_EQ(output_ellipsis_text, expected);
 }

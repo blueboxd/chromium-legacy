@@ -36,7 +36,10 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/ash/settings/pref_names.h"
+#include "chromeos/ash/components/network/managed_network_configuration_handler.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_WIN)
@@ -72,8 +75,7 @@ ResetRequestOriginFromString(const std::string& request_origin) {
 const char ResetSettingsHandler::kCctResetSettingsHash[] = "cct";
 
 // static
-void ResetSettingsHandler::RegisterLocalStatePrefs(
-    PrefRegistrySimple* registry) {
+void ResetSettingsHandler::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(ash::settings::prefs::kSanitizeCompleted,
                                 false);
 }
@@ -404,11 +406,45 @@ void ResetSettingsHandler::SanitizeSettings() {
 }
 
 void ResetSettingsHandler::OnSanitizeDone() {
+  ResetDnsConfigurations();
   setting_snapshot_.reset();
-  PrefService* prefs = g_browser_process->local_state();
+  PrefService* prefs = ProfileManager::GetPrimaryUserProfile()->GetPrefs();
   prefs->SetBoolean(ash::settings::prefs::kSanitizeCompleted, true);
   prefs->CommitPendingWrite();
   chrome::AttemptRestart();
+}
+
+void ResetSettingsHandler::ResetDnsConfigurations() {
+  ash::ManagedNetworkConfigurationHandler* network_configuration_handler =
+      ash::NetworkHandler::Get()->managed_network_configuration_handler();
+  if (!network_configuration_handler) {
+    return;
+  }
+
+  ash::NetworkStateHandler* network_state_handler =
+      ash::NetworkHandler::Get()->network_state_handler();
+  if (!network_state_handler) {
+    return;
+  }
+
+  // Fetch a list of all configured devices (Wifi, ethernet, etc.) for
+  // a given profile.
+  ash::NetworkStateHandler::NetworkStateList network_list;
+  network_state_handler->GetNetworkListByType(
+      ash::NetworkTypePattern::Default(), true /*configured_only*/,
+      false /*visible_only*/, 0 /*no_limit*/, &network_list);
+
+  // Use the list to reset DNS Configurations back to their default.
+  for (const ash::NetworkState* network : network_list) {
+    // Skip the network if the policy is managed. Unlikely to happen in
+    // the backend, but still good to have as an extra check.
+    if (network->IsManagedByPolicy()) {
+      LOG(WARNING) << "Network is managed by policy: " << network->path();
+      continue;
+    }
+
+    network_configuration_handler->ResetDNSProperties(network->path());
+  }
 }
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)

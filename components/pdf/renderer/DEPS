@@ -1,7 +1,6 @@
 include_rules = [
   "+content/public/renderer",
   "+content/public/test",
-  "+components/language/core/common/language_util.h",
   "+components/printing/renderer/print_render_frame_helper.h",
   "+components/strings/grit/components_strings.h",
   "+mojo/public/cpp/bindings",
@@ -21,5 +20,6 @@ include_rules = [
   "+ui/accessibility",
   "+ui/base",
   "+ui/display",
+  "+ui/strings/grit/auto_image_annotation_strings.h",
   "+v8/include",
 ]

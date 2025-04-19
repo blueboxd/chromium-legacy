@@ -92,6 +92,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       content::BrowserContext* context) override;
   base::OnceClosure SelectClientCertificate(
       BrowserContext* browser_context,
+      int process_id,
       WebContents* web_contents,
       net::SSLCertRequestInfo* cert_request_info,
       net::ClientCertIdentityList client_certs,
@@ -116,9 +117,6 @@ class ShellContentBrowserClient : public ContentBrowserClient {
                base::OnceCallback<void(WebContents*)> callback) override;
   std::vector<std::unique_ptr<NavigationThrottle>> CreateThrottlesForNavigation(
       NavigationHandle* navigation_handle) override;
-#if BUILDFLAG(IS_WIN)
-  std::string GetAppContainerId() override;
-#endif  // BUILDFLAG(IS_WIN)
   std::unique_ptr<LoginDelegate> CreateLoginDelegate(
       const net::AuthChallengeInfo& auth_info,
       content::WebContents* web_contents,

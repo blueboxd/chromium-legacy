@@ -101,7 +101,7 @@ void ContentCacheImpl::SetMaxCacheItems(size_t max_cache_items) {
 void ContentCacheImpl::Notify(ProvidedFileSystemObserver::Changes& changes) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  std::vector<const base::FilePath> to_evict;
+  std::vector<base::FilePath> to_evict;
   for (const auto& change : changes) {
     ContentLRUCache::iterator it = lru_cache_.Peek(change.entry_path);
     if (it == lru_cache_.end()) {
@@ -133,13 +133,30 @@ void ContentCacheImpl::Notify(ProvidedFileSystemObserver::Changes& changes) {
   EvictItems(to_evict);
 }
 
+void ContentCacheImpl::ObservedVersionTag(const base::FilePath& entry_path,
+                                          const std::string& version_tag) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  ContentLRUCache::iterator it = lru_cache_.Peek(entry_path);
+  if (it == lru_cache_.end()) {
+    VLOG(1) << "File is not in cache";
+    return;
+  }
+
+  CacheFileContext& ctx = it->second;
+  if (version_tag != ctx.version_tag()) {
+    VLOG(2) << "File version is out of date, evict from the cache";
+    Evict(entry_path);
+  }
+}
+
 void ContentCacheImpl::Evict(const base::FilePath& file_path) {
-  std::vector<const base::FilePath> file_paths = {file_path};
+  std::vector<base::FilePath> file_paths = {file_path};
   EvictItems(file_paths);
 }
 
 void ContentCacheImpl::RemoveItems(
-    std::vector<const base::FilePath>& fsp_paths) {
+    const std::vector<base::FilePath>& fsp_paths) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   std::vector<int64_t> item_ids;
@@ -250,7 +267,7 @@ void ContentCacheImpl::OnItemRemovedFromDisk(const base::FilePath& fsp_path,
 }
 
 void ContentCacheImpl::EvictItems(
-    std::vector<const base::FilePath>& file_paths) {
+    const std::vector<base::FilePath>& file_paths) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   for (const base::FilePath& file_path : file_paths) {
@@ -299,7 +316,7 @@ void ContentCacheImpl::EvictExcessItems() {
   // evicted items brings the size of the cache (without these items) to below
   // the `max_cache_items_`.
   ContentLRUCache::reverse_iterator it = lru_cache_.rbegin();
-  std::vector<const base::FilePath> to_evict;
+  std::vector<base::FilePath> to_evict;
   while (to_evict.size() < items_to_evict) {
     CacheFileContext& ctx = it->second;
     if (!ctx.evicted()) {
@@ -354,10 +371,6 @@ void ContentCacheImpl::ReadBytes(
     VLOG(1) << "Cache miss: not possible to read the file on disk";
     callback.Run(/*bytes_read=*/-1, /*has_more=*/false,
                  base::File::FILE_ERROR_NOT_FOUND);
-    if (file.version_tag != ctx.version_tag()) {
-      // The cached file is out of date.
-      Evict(file.file_path);
-    }
     return;
   }
 
@@ -499,7 +512,7 @@ void ContentCacheImpl::CloseFile(const OpenedCloudFile& file) {
     ctx.CloseLocalFD(file.request_id);
     if (ctx.evicted()) {
       // File was evicted when reading. Remove it.
-      std::vector<const base::FilePath> file_paths = {file.file_path};
+      std::vector<base::FilePath> file_paths = {file.file_path};
       RemoveItems(file_paths);
     }
   }
@@ -545,7 +558,6 @@ void ContentCacheImpl::OnBytesWritten(const base::FilePath& file_path,
 
   CacheFileContext& ctx = it->second;
   if (result == base::File::FILE_OK) {
-    size_.total_bytes_on_disk += length;
     ctx.set_bytes_on_disk(offset + length);
     ctx.set_accessed_time(base::Time::Now());
 
@@ -672,18 +684,6 @@ std::vector<base::FilePath> ContentCacheImpl::GetCachedFilePaths() {
     }
   }
   return cached_file_paths;
-}
-
-const ContentCache::SizeInfo ContentCacheImpl::GetSize() const {
-  return size_;
-}
-
-void ContentCacheImpl::SetMaxBytesOnDisk(int64_t max_bytes_on_disk) {
-  size_.max_bytes_on_disk = max_bytes_on_disk;
-}
-
-base::WeakPtr<ContentCache> ContentCacheImpl::GetWeakPtr() {
-  return weak_ptr_factory_.GetWeakPtr();
 }
 
 void ContentCacheImpl::AddObserver(ContentCache::Observer* observer) {

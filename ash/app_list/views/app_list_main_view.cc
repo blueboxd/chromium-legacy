@@ -17,7 +17,6 @@
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/views/app_list_folder_view.h"
 #include "ash/app_list/views/app_list_item_view.h"
-#include "ash/app_list/views/app_list_search_view.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/apps_container_view.h"
 #include "ash/app_list/views/apps_grid_view.h"
@@ -165,13 +164,6 @@ bool AppListMainView::CanSelectSearchResults() {
   return !!contents_view_->search_result_page_view()->CanSelectSearchResults();
 }
 
-bool AppListMainView::HandleFocusMoveAboveSearchResults(
-    const ui::KeyEvent& key_event) {
-  return contents_view_->search_result_page_view()
-      ->search_view()
-      ->OverrideKeyNavigationAboveSearchResults(key_event);
-}
-
 void AppListMainView::AssistantButtonPressed() {
   delegate_->StartAssistant(
       assistant::AssistantEntryPoint::kLauncherSearchBoxIcon);
@@ -179,7 +171,7 @@ void AppListMainView::AssistantButtonPressed() {
 
 void AppListMainView::CloseButtonPressed() {
   // Deactivate the search box.
-  search_box_view_->SetSearchBoxActive(false, ui::ET_UNKNOWN);
+  search_box_view_->SetSearchBoxActive(false, ui::EventType::kUnknown);
   search_box_view_->ClearSearch();
 }
 

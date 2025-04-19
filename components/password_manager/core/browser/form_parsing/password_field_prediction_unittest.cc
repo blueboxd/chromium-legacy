@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/form_parsing/password_field_prediction.h"
 
+#include <array>
 #include <vector>
 
 #include "base/containers/flat_map.h"
@@ -13,6 +14,7 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/form_data_test_api.h"
 #include "components/autofill/core/common/signatures.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -57,47 +59,47 @@ TEST(FormPredictionsTest, ConvertToFormPredictions) {
     FieldType expected_type;
     bool may_use_prefilled_placeholder;
     std::vector<FieldType> additional_types;
-  } test_fields[] = {
-      {"full_name", FormControlType::kInputText, UNKNOWN_TYPE, UNKNOWN_TYPE,
-       false},
-      // Password Manager is interested only in credential related types.
-      {"Email", FormControlType::kInputEmail, EMAIL_ADDRESS, EMAIL_ADDRESS,
-       false},
-      {"username", FormControlType::kInputText, USERNAME, USERNAME, true},
-      {"Password", FormControlType::kInputPassword, PASSWORD, PASSWORD, false},
-      {"confirm_password", FormControlType::kInputPassword,
-       CONFIRMATION_PASSWORD, CONFIRMATION_PASSWORD, true},
-      // username in |additional_types| takes precedence if the feature is
-      // enabled.
-      {"email",
-       FormControlType::kInputText,
-       EMAIL_ADDRESS,
-       USERNAME,
-       false,
-       {USERNAME}},
-      // cvc in |additional_types| takes precedence if the feature is enabled.
-      {"cvc",
-       FormControlType::kInputPassword,
-       PASSWORD,
-       CREDIT_CARD_VERIFICATION_CODE,
-       false,
-       {CREDIT_CARD_VERIFICATION_CODE}},
-      // `CREDIT_CARD_NUMBER` takes precedence over any credential related
-      // types.
-      {"cc-number",
-       FormControlType::kInputPassword,
-       PASSWORD,
-       CREDIT_CARD_NUMBER,
-       false,
-       {CREDIT_CARD_NUMBER}},
-      // non-password, non-cvc types in |additional_types| are ignored.
-      {"email",
-       FormControlType::kInputText,
-       UNKNOWN_TYPE,
-       UNKNOWN_TYPE,
-       false,
-       {EMAIL_ADDRESS}},
   };
+  const auto test_fields = std::to_array<TestField>(
+      {{"full_name", FormControlType::kInputText, UNKNOWN_TYPE, UNKNOWN_TYPE,
+        false},
+       // Password Manager is interested only in credential related types.
+       {"Email", FormControlType::kInputEmail, EMAIL_ADDRESS, EMAIL_ADDRESS,
+        false},
+       {"username", FormControlType::kInputText, USERNAME, USERNAME, true},
+       {"Password", FormControlType::kInputPassword, PASSWORD, PASSWORD, false},
+       {"confirm_password", FormControlType::kInputPassword,
+        CONFIRMATION_PASSWORD, CONFIRMATION_PASSWORD, true},
+       // username in |additional_types| takes precedence if the feature is
+       // enabled.
+       {"email",
+        FormControlType::kInputText,
+        EMAIL_ADDRESS,
+        USERNAME,
+        false,
+        {USERNAME}},
+       // cvc in |additional_types| takes precedence if the feature is enabled.
+       {"cvc",
+        FormControlType::kInputPassword,
+        PASSWORD,
+        CREDIT_CARD_VERIFICATION_CODE,
+        false,
+        {CREDIT_CARD_VERIFICATION_CODE}},
+       // `CREDIT_CARD_NUMBER` takes precedence over any credential related
+       // types.
+       {"cc-number",
+        FormControlType::kInputPassword,
+        PASSWORD,
+        CREDIT_CARD_NUMBER,
+        false,
+        {CREDIT_CARD_NUMBER}},
+       // non-password, non-cvc types in |additional_types| are ignored.
+       {"email",
+        FormControlType::kInputText,
+        UNKNOWN_TYPE,
+        UNKNOWN_TYPE,
+        false,
+        {EMAIL_ADDRESS}}});
 
   FormData form_data;
   base::flat_map<FieldGlobalId, AutofillType::ServerPrediction>
@@ -117,7 +119,7 @@ TEST(FormPredictionsTest, ConvertToFormPredictions) {
     prediction.may_use_prefilled_placeholder =
         test_fields[i].may_use_prefilled_placeholder;
     autofill_predictions.insert({field.global_id(), std::move(prediction)});
-    form_data.fields.push_back(std::move(field));
+    test_api(form_data).Append(std::move(field));
   }
 
   constexpr int driver_id = 1000;
@@ -136,7 +138,7 @@ TEST(FormPredictionsTest, ConvertToFormPredictions) {
     EXPECT_EQ(test_fields[i].expected_type, actual_prediction.type);
     EXPECT_EQ(test_fields[i].may_use_prefilled_placeholder,
               actual_prediction.may_use_prefilled_placeholder);
-    EXPECT_EQ(CalculateFieldSignatureForField(form_data.fields[i]),
+    EXPECT_EQ(CalculateFieldSignatureForField(form_data.fields()[i]),
               actual_prediction.signature);
   }
 }
@@ -188,13 +190,13 @@ TEST(FormPredictionsTest, ConvertToFormPredictions_SynthesiseConfirmation) {
       autofill_predictions.insert(
           {field.global_id(), std::move(new_prediction)});
 
-      form_data.fields.push_back(std::move(field));
+      test_api(form_data).Append(std::move(field));
     }
 
     FormPredictions actual_predictions = ConvertToFormPredictions(
         /*driver_id=*/0, form_data, autofill_predictions);
 
-    for (size_t i = 0; i < form_data.fields.size(); ++i) {
+    for (size_t i = 0; i < form_data.fields().size(); ++i) {
       SCOPED_TRACE(
           testing::Message()
           << "field description: name=" << test_form[i].name
@@ -202,7 +204,7 @@ TEST(FormPredictionsTest, ConvertToFormPredictions_SynthesiseConfirmation) {
           << autofill::FormControlTypeToString(test_form[i].form_control_type)
           << ", input type=" << test_form[i].input_type
           << ", expected type=" << test_form[i].expected_type
-          << ", synthesised FormFieldData=" << form_data.fields[i]);
+          << ", synthesised FormFieldData=" << form_data.fields()[i]);
       EXPECT_EQ(test_form[i].expected_type, actual_predictions.fields[i].type);
     }
   }
@@ -245,7 +247,7 @@ TEST(FormPredictionsTest, ConvertToFormPredictions_OverrideFlagPropagated) {
   FormData form;
   FormFieldData single_username_field;
   single_username_field.set_renderer_id(autofill::FieldRendererId(1000));
-  form.fields.push_back(single_username_field);
+  form.set_fields({single_username_field});
 
   base::flat_map<FieldGlobalId, AutofillType::ServerPrediction>
       autofill_predictions;

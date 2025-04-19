@@ -12,6 +12,9 @@
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/overflow_menu_action_provider.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/overflow_menu_swift.h"
 
+namespace bookmarks {
+class BookmarkModel;
+}
 namespace feature_engagement {
 class Tracker;
 }
@@ -31,7 +34,7 @@ class BrowserPolicyConnectorIOS;
 @protocol FindInPageCommands;
 class FollowBrowserAgent;
 @protocol HelpCommands;
-class LegacyBookmarkModel;
+@protocol LensOverlayCommands;
 @protocol OverflowMenuCustomizationCommands;
 @class OverflowMenuOrderer;
 class OverlayPresenter;
@@ -40,6 +43,7 @@ class OverlayPresenter;
 class PrefService;
 @protocol PriceNotificationsCommands;
 class PromosManager;
+@protocol QuickDeleteCommands;
 class ReadingListBrowserAgent;
 class ReadingListModel;
 @protocol SettingsCommands;
@@ -47,6 +51,7 @@ class TabBasedIPHBrowserAgent;
 @protocol TextZoomCommands;
 class WebNavigationBrowserAgent;
 class WebStateList;
+@protocol WhatsNewCommands;
 
 // Mediator for the overflow menu. This object is in charge of creating and
 // updating the items of the overflow menu.
@@ -65,9 +70,11 @@ class WebStateList;
 @property(nonatomic, weak) id<ApplicationCommands> applicationHandler;
 @property(nonatomic, weak) id<SettingsCommands> settingsHandler;
 @property(nonatomic, weak) id<BookmarksCommands> bookmarksHandler;
+@property(nonatomic, weak) id<LensOverlayCommands> lensOverlayHandler;
 @property(nonatomic, weak) id<BrowserCoordinatorCommands>
     browserCoordinatorHandler;
 @property(nonatomic, weak) id<FindInPageCommands> findInPageHandler;
+@property(nonatomic, weak) id<HelpCommands> helpHandler;
 @property(nonatomic, weak) id<OverflowMenuCustomizationCommands>
     overflowMenuCustomizationHandler;
 @property(nonatomic, weak) id<PageInfoCommands> pageInfoHandler;
@@ -75,6 +82,8 @@ class WebStateList;
 @property(nonatomic, weak) id<PriceNotificationsCommands>
     priceNotificationHandler;
 @property(nonatomic, weak) id<TextZoomCommands> textZoomHandler;
+@property(nonatomic, weak) id<QuickDeleteCommands> quickDeleteHandler;
+@property(nonatomic, weak) id<WhatsNewCommands> whatsNewHandler;
 
 // Navigation agent for reloading pages.
 @property(nonatomic, assign) WebNavigationBrowserAgent* navigationAgent;
@@ -88,9 +97,8 @@ class WebStateList;
 // BaseViewController for presenting some UI.
 @property(nonatomic, weak) UIViewController* baseViewController;
 
-// Bookmarks models to know if the page is bookmarked.
-@property(nonatomic, assign) LegacyBookmarkModel* localOrSyncableBookmarkModel;
-@property(nonatomic, assign) LegacyBookmarkModel* accountBookmarkModel;
+// Bookmark model to know if the page is bookmarked.
+@property(nonatomic, assign) bookmarks::BookmarkModel* bookmarkModel;
 
 // Readinglist model to know if model has finished loading.
 @property(nonatomic, assign) ReadingListModel* readingListModel;

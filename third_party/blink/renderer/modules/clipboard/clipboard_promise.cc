@@ -83,7 +83,7 @@ class ClipboardPromise::BlobPromiseResolverFunction final
 
   ScriptValue Call(ScriptState* script_state, ScriptValue value) final {
     ExceptionState exception_state(script_state->GetIsolate(),
-                                   ExceptionContextType::kOperationInvoke,
+                                   v8::ExceptionContext::kOperation,
                                    "Clipboard", "write");
     if (type_ == ResolveType::kReject) {
       clipboard_promise_->RejectBlobPromise("Promises to Blobs were rejected.");
@@ -359,12 +359,6 @@ void ClipboardPromise::ResolveRead() {
     return;
   }
   ScriptState::Scope scope(script_state);
-  if (!RuntimeEnabledFeatures::EmptyClipboardReadEnabled() &&
-      !clipboard_item_data_.size()) {
-    script_promise_resolver_->RejectWithDOMException(
-        DOMExceptionCode::kDataError, "No valid data on clipboard.");
-    return;
-  }
   HeapVector<std::pair<String, ScriptPromiseUntyped>> items;
   items.ReserveInitialCapacity(clipboard_item_data_.size());
 

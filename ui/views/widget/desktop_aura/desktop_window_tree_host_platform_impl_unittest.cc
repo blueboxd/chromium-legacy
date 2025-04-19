@@ -136,7 +136,7 @@ class DesktopWindowTreeHostPlatformImplTest : public ViewsTestBase {
   // Creates a widget of size 100x100.
   std::unique_ptr<Widget> CreateWidget(WidgetDelegate* delegate) {
     auto widget = std::make_unique<Widget>();
-    Widget::InitParams params(Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
+    Widget::InitParams params(Widget::InitParams::CLIENT_OWNS_WIDGET,
                               Widget::InitParams::TYPE_WINDOW);
     params.delegate = delegate;
     params.remove_standard_frame = true;
@@ -149,16 +149,14 @@ class DesktopWindowTreeHostPlatformImplTest : public ViewsTestBase {
 TEST_F(DesktopWindowTreeHostPlatformImplTest,
        ChildWindowDestructionDuringTearDown) {
   Widget parent_widget;
-  Widget::InitParams parent_params =
-      CreateParams(Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
-                   Widget::InitParams::TYPE_WINDOW);
+  Widget::InitParams parent_params = CreateParams(
+      Widget::InitParams::CLIENT_OWNS_WIDGET, Widget::InitParams::TYPE_WINDOW);
   parent_widget.Init(std::move(parent_params));
   parent_widget.Show();
 
   Widget child_widget;
-  Widget::InitParams child_params =
-      CreateParams(Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
-                   Widget::InitParams::TYPE_WINDOW);
+  Widget::InitParams child_params = CreateParams(
+      Widget::InitParams::CLIENT_OWNS_WIDGET, Widget::InitParams::TYPE_WINDOW);
   child_params.parent = parent_widget.GetNativeWindow();
   child_widget.Init(std::move(child_params));
   child_widget.Show();
@@ -187,12 +185,12 @@ TEST_F(DesktopWindowTreeHostPlatformImplTest, MouseNCEvents) {
       widget->GetNativeWindow()->GetHost());
   ASSERT_TRUE(host_platform);
 
-  ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::PointF(500, 500),
+  ui::MouseEvent event(ui::EventType::kMousePressed, gfx::PointF(500, 500),
                        gfx::PointF(500, 500), base::TimeTicks::Now(), 0, 0, {});
   host_platform->DispatchEvent(&event);
 
   ASSERT_EQ(1u, recorder.mouse_events().size());
-  EXPECT_EQ(ui::ET_MOUSE_PRESSED, recorder.mouse_events()[0].type());
+  EXPECT_EQ(ui::EventType::kMousePressed, recorder.mouse_events()[0].type());
   EXPECT_TRUE(recorder.mouse_events()[0].flags() & ui::EF_IS_NON_CLIENT);
 
   widget->GetNativeWindow()->RemovePreTargetHandler(&recorder);
@@ -247,9 +245,8 @@ TEST_F(DesktopWindowTreeHostPlatformImplTest,
   // We want the widget to be initialized with a non-default z order to check
   // that it gets initialized with the correct z order.
   Widget widget;
-  Widget::InitParams params =
-      CreateParams(Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
-                   Widget::InitParams::TYPE_WINDOW);
+  Widget::InitParams params = CreateParams(
+      Widget::InitParams::CLIENT_OWNS_WIDGET, Widget::InitParams::TYPE_WINDOW);
   params.z_order = ui::ZOrderLevel::kFloatingWindow;
   widget.Init(std::move(params));
   widget.Show();
@@ -297,14 +294,14 @@ TEST_F(DesktopWindowTreeHostPlatformImplHighDPITest, MouseNCEvents) {
       widget->GetNativeWindow()->GetHost());
   ASSERT_TRUE(host_platform);
 
-  ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::PointF(1001, 1001),
+  ui::MouseEvent event(ui::EventType::kMousePressed, gfx::PointF(1001, 1001),
                        gfx::PointF(1001, 1001), base::TimeTicks::Now(), 0, 0,
                        {});
   host_platform->DispatchEvent(&event);
 
   EXPECT_EQ(1u, recorder.mouse_events().size());
   EXPECT_EQ(gfx::Point(500, 500), recorder.mouse_events()[0].location());
-  EXPECT_EQ(ui::ET_MOUSE_PRESSED, recorder.mouse_events()[0].type());
+  EXPECT_EQ(ui::EventType::kMousePressed, recorder.mouse_events()[0].type());
   EXPECT_TRUE(recorder.mouse_events()[0].flags() & ui::EF_IS_NON_CLIENT);
 
   widget->GetNativeWindow()->RemovePreTargetHandler(&recorder);

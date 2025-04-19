@@ -6,12 +6,17 @@
 
 #include <sys/prctl.h>
 
+#include "third_party/jni_zero/generate_jni/JniInit_jni.h"
+#include "third_party/jni_zero/jni_methods.h"
 #include "third_party/jni_zero/jni_zero_internal.h"
 #include "third_party/jni_zero/logging.h"
 
+#if defined(JNI_ZERO_MULTIPLEXING_ENABLED)
+extern const int64_t kJniZeroHashWhole;
+extern const int64_t kJniZeroHashPriority;
+#endif
 namespace jni_zero {
 namespace {
-const int kDefaultLocalFrameCapacity = 16;
 // Until we fully migrate base's jni_android, we will maintain a copy of this
 // global here and will have base set this variable when it sets its own.
 JavaVM* g_jvm = nullptr;
@@ -59,77 +64,6 @@ jclass GetSystemClassGlobalRef(JNIEnv* env, const char* class_name) {
 
 jclass g_object_class = nullptr;
 jclass g_string_class = nullptr;
-
-ScopedJavaLocalFrame::ScopedJavaLocalFrame(JNIEnv* env) : env_(env) {
-  int failed = env_->PushLocalFrame(kDefaultLocalFrameCapacity);
-  JNI_ZERO_DCHECK(!failed);
-}
-
-ScopedJavaLocalFrame::ScopedJavaLocalFrame(JNIEnv* env, int capacity)
-    : env_(env) {
-  int failed = env_->PushLocalFrame(capacity);
-  JNI_ZERO_DCHECK(!failed);
-}
-
-ScopedJavaLocalFrame::~ScopedJavaLocalFrame() {
-  env_->PopLocalFrame(nullptr);
-}
-
-#if JNI_ZERO_DCHECK_IS_ON()
-// This constructor is inlined when DCHECKs are disabled; don't add anything
-// else here.
-JavaRef<jobject>::JavaRef(JNIEnv* env, jobject obj) : obj_(obj) {
-  if (obj) {
-    JNI_ZERO_DCHECK(env && env->GetObjectRefType(obj) == JNILocalRefType);
-  }
-}
-#endif
-
-JNIEnv* JavaRef<jobject>::SetNewLocalRef(JNIEnv* env, jobject obj) {
-  if (!env) {
-    env = AttachCurrentThread();
-  } else {
-    JNI_ZERO_DCHECK(env == AttachCurrentThread());  // Is |env| on correct thread.
-  }
-  if (obj) {
-    obj = env->NewLocalRef(obj);
-  }
-  if (obj_) {
-    env->DeleteLocalRef(obj_);
-  }
-  obj_ = obj;
-  return env;
-}
-
-void JavaRef<jobject>::SetNewGlobalRef(JNIEnv* env, jobject obj) {
-  if (!env) {
-    env = AttachCurrentThread();
-  } else {
-    JNI_ZERO_DCHECK(env == AttachCurrentThread());  // Is |env| on correct thread.
-  }
-  if (obj) {
-    obj = env->NewGlobalRef(obj);
-  }
-  if (obj_) {
-    env->DeleteGlobalRef(obj_);
-  }
-  obj_ = obj;
-}
-
-void JavaRef<jobject>::ResetLocalRef(JNIEnv* env) {
-  if (obj_) {
-    JNI_ZERO_DCHECK(env == AttachCurrentThread());  // Is |env| on correct thread.
-    env->DeleteLocalRef(obj_);
-    obj_ = nullptr;
-  }
-}
-
-void JavaRef<jobject>::ResetGlobalRef() {
-  if (obj_) {
-    AttachCurrentThread()->DeleteGlobalRef(obj_);
-    obj_ = nullptr;
-  }
-}
 
 JNIEnv* AttachCurrentThread() {
   JNI_ZERO_DCHECK(g_jvm);
@@ -189,6 +123,13 @@ void InitVM(JavaVM* vm) {
   JNIEnv* env = AttachCurrentThread();
   g_object_class = GetSystemClassGlobalRef(env, "java/lang/Object");
   g_string_class = GetSystemClassGlobalRef(env, "java/lang/String");
+#if defined(JNI_ZERO_MULTIPLEXING_ENABLED)
+  Java_JniInit_crashIfMultiplexingMisaligned(env, kJniZeroHashWhole,
+                                             kJniZeroHashPriority);
+#else
+  // Mark as used when multiplexing not enabled.
+  (void)&Java_JniInit_crashIfMultiplexingMisaligned;
+#endif
   CheckException(env);
 }
 
@@ -330,5 +271,6 @@ jclass LazyGetClass(JNIEnv* env,
   }
   return ret;
 }
+
 }  // namespace internal
 }  // namespace jni_zero

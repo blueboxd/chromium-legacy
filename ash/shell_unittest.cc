@@ -48,6 +48,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/display/scoped_display_for_new_windows.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/events/test/events_test_utils.h"
@@ -140,7 +141,7 @@ void ExpectAllContainers() {
 std::unique_ptr<views::WidgetDelegateView> CreateModalWidgetDelegate() {
   auto delegate = std::make_unique<views::WidgetDelegateView>();
   delegate->SetCanResize(true);
-  delegate->SetModalType(ui::MODAL_TYPE_SYSTEM);
+  delegate->SetModalType(ui::mojom::ModalType::kSystem);
   delegate->SetOwnedByWidget(true);
   delegate->SetTitle(u"Modal Window");
   return delegate;
@@ -563,7 +564,8 @@ TEST_F(ShellTest, NoWindowTabFocus) {
   ShelfNavigationWidget* home_button = GetPrimaryShelf()->navigation_widget();
 
   // Create a normal window.  It is not maximized.
-  auto widget = CreateTestWidget();
+  auto widget =
+      CreateTestWidget(views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET);
 
   // Hit tab with window open, and expect that focus is not on the navigation
   // widget or status widget.

@@ -34,21 +34,18 @@ import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.OneShotCallback;
 import org.chromium.base.supplier.OneshotSupplier;
-import org.chromium.base.supplier.UnownedUserDataSupplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.app.tabmodel.TabWindowManagerSingleton;
 import org.chromium.chrome.browser.back_press.BackPressManager;
 import org.chromium.chrome.browser.browserservices.intents.WebappConstants;
 import org.chromium.chrome.browser.content.WebContentsFactory;
-import org.chromium.chrome.browser.crash.ChromePureJavaExceptionReporter;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.init.ActivityProfileProvider;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
-import org.chromium.chrome.browser.init.SingleWindowKeyboardVisibilityDelegate;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.metrics.UmaActivityObserver;
 import org.chromium.chrome.browser.omnibox.BackKeyBehaviorDelegate;
@@ -65,7 +62,6 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileProvider;
 import org.chromium.chrome.browser.rlz.RevenueStats;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
-import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.tab.TabLaunchType;
@@ -77,12 +73,11 @@ import org.chromium.chrome.browser.ui.searchactivityutils.SearchActivityExtras.I
 import org.chromium.chrome.browser.ui.searchactivityutils.SearchActivityExtras.SearchType;
 import org.chromium.chrome.browser.ui.system.StatusBarColorController;
 import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
-import org.chromium.components.browser_ui.widget.InsetObserver;
-import org.chromium.components.browser_ui.widget.InsetObserverSupplier;
 import org.chromium.components.metrics.OmniboxEventProtos.OmniboxEventProto.PageClassification;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.ContentUrlConstants;
+import org.chromium.ui.base.ActivityKeyboardVisibilityDelegate;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.WindowDelegate;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -237,8 +232,6 @@ public class SearchActivity extends AsyncInitializationActivity
     private SnackbarManager mSnackbarManager;
     private Tab mTab;
     private final ObservableSupplierImpl<Profile> mProfileSupplier = new ObservableSupplierImpl<>();
-    protected final UnownedUserDataSupplier<InsetObserver> mInsetObserverViewSupplier =
-            new InsetObserverSupplier();
 
     // SearchBoxDataProvider and LocationBarEmbedderUiOverrides are passed to several child
     // components upon construction. Ensure we don't accidentally introduce disconnection by
@@ -263,7 +256,7 @@ public class SearchActivity extends AsyncInitializationActivity
         return new ActivityWindowAndroid(
                 this,
                 /* listenToActivityState= */ true,
-                new SingleWindowKeyboardVisibilityDelegate(new WeakReference(this)),
+                new ActivityKeyboardVisibilityDelegate(new WeakReference(this)),
                 getIntentRequestTracker()) {
             @Override
             public ModalDialogManager getModalDialogManager() {
@@ -288,19 +281,12 @@ public class SearchActivity extends AsyncInitializationActivity
         // Setting fitsSystemWindows to false ensures that the root view doesn't consume the
         // insets.
         rootView.setFitsSystemWindows(false);
-        // Add an inset observer that stores the insets to access later.
-        // WebContents needs the insets to determine the portion of the screen obscured by
-        // non-content displaying things such as the OSK.
-        mInsetObserverViewSupplier.attach(getWindowAndroid().getUnownedUserDataHost());
-        mInsetObserverViewSupplier.set(new InsetObserver(rootView));
 
         var contentView = createContentView();
         setContentView(contentView);
 
         // Build the search box.
-        mSearchBox =
-                (SearchActivityLocationBarLayout)
-                        contentView.findViewById(R.id.search_location_bar);
+        mSearchBox = contentView.findViewById(R.id.search_location_bar);
         View anchorView = contentView.findViewById(R.id.toolbar);
 
         // Update the status bar's color based on the toolbar color.
@@ -344,7 +330,6 @@ public class SearchActivity extends AsyncInitializationActivity
                         new OmniboxActionDelegateImpl(
                                 this,
                                 () -> mSearchBoxDataProvider.getTab(),
-                                new SettingsLauncherImpl(),
                                 // TODO(ender): phase out callbacks when the modules below are
                                 // components.
                                 // Open URL in an existing, else new regular tab.
@@ -377,7 +362,6 @@ public class SearchActivity extends AsyncInitializationActivity
                                 // Open Quick Delete Dialog callback:
                                 null),
                         null,
-                        ChromePureJavaExceptionReporter::reportJavaException,
                         backPressManager,
                         /* OmniboxSuggestionsDropdownScrollListener= */ null,
                         /* tabModelSelectorSupplier= */ null,
@@ -782,7 +766,8 @@ public class SearchActivity extends AsyncInitializationActivity
                 templateSvc != null
                         && templateSvc.isSearchResultsPageFromDefaultSearchProvider(url);
         boolean isNative =
-                NativePage.isNativePageUrl(url, /* incognito= */ false, /* isPdf= */ false);
+                NativePage.isNativePageUrl(
+                        url, /* incognito= */ false, /* hasPdfDownload= */ false);
 
         int targetType =
                 isNative

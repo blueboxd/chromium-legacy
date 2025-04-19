@@ -47,11 +47,11 @@
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/inline/inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/inline/offset_mapping.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_flow_thread.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_flow_thread.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
-#include "third_party/blink/renderer/core/layout/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
 #include "third_party/blink/renderer/core/layout/layout_result.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -62,6 +62,7 @@
 #include "third_party/blink/renderer/core/layout/table/layout_table.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
 #include "third_party/blink/renderer/core/layout/unpositioned_float.h"
+#include "third_party/blink/renderer/core/paint/box_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/inline_paint_context.h"
 #include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -75,6 +76,7 @@ namespace blink {
 
 struct SameSizeAsLayoutBlockFlow : public LayoutBlock {
   Member<void*> member;
+  Member<void*> inline_node_data;
 };
 
 ASSERT_SIZE(LayoutBlockFlow, SameSizeAsLayoutBlockFlow);
@@ -87,7 +89,7 @@ LayoutBlockFlow::~LayoutBlockFlow() = default;
 
 LayoutBlockFlow* LayoutBlockFlow::CreateAnonymous(Document* document,
                                                   const ComputedStyle* style) {
-  auto* layout_block_flow = MakeGarbageCollected<LayoutNGBlockFlow>(nullptr);
+  auto* layout_block_flow = MakeGarbageCollected<LayoutBlockFlow>(nullptr);
   layout_block_flow->SetDocumentForAnonymous(document);
   layout_block_flow->SetStyle(style);
   return layout_block_flow;
@@ -104,8 +106,8 @@ bool LayoutBlockFlow::CanContainFirstFormattedLine() const {
   // line of an element. For example, the first line of an anonymous block
   // box is only affected if it is the first child of its parent element.
   // https://drafts.csswg.org/css-text-3/#text-indent-property
-  return !IsAnonymousBlock() || !PreviousSibling() || IsFlexItemIncludingNG() ||
-         IsGridItemIncludingNG();
+  return !IsAnonymousBlock() || !PreviousSibling() || IsFlexItem() ||
+         IsGridItem();
 }
 
 void LayoutBlockFlow::WillBeDestroyed() {
@@ -600,7 +602,7 @@ Node* LayoutBlockFlow::NodeForHitTest() const {
   // If we are in the margins of block elements that are part of a
   // block-in-inline we're actually still inside the enclosing element
   // that was split. Use the appropriate inner node.
-  if (UNLIKELY(IsBlockInInline())) {
+  if (IsBlockInInline()) [[unlikely]] {
     DCHECK(Parent());
     DCHECK(Parent()->IsLayoutInline());
     return Parent()->NodeForHitTest();
@@ -630,6 +632,39 @@ bool LayoutBlockFlow::HitTestChildren(HitTestResult& result,
   }
 
   return false;
+}
+
+void LayoutBlockFlow::AddOutlineRects(
+    OutlineRectCollector& collector,
+    LayoutObject::OutlineInfo* info,
+    const PhysicalOffset& additional_offset,
+    OutlineType include_block_overflows) const {
+  NOT_DESTROYED();
+
+  // TODO(crbug.com/40155711): Currently |PhysicalBoxFragment| does not support
+  // NG block fragmentation. Fallback to the legacy code path.
+  if (PhysicalFragmentCount() == 1) {
+    const PhysicalBoxFragment* fragment = GetPhysicalFragment(0);
+    if (fragment->HasItems()) {
+      fragment->AddSelfOutlineRects(additional_offset, include_block_overflows,
+                                    collector, info);
+      return;
+    }
+  }
+
+  LayoutBlock::AddOutlineRects(collector, info, additional_offset,
+                               include_block_overflows);
+}
+
+void LayoutBlockFlow::DirtyLinesFromChangedChild(LayoutObject* child) {
+  NOT_DESTROYED();
+
+  // We need to dirty line box fragments only if the child is once laid out in
+  // LayoutNG inline formatting context. New objects are handled in
+  // InlineNode::MarkLineBoxesDirty().
+  if (child->IsInLayoutNGInlineFormattingContext()) {
+    FragmentItems::DirtyLinesFromChangedChild(*child, *this);
+  }
 }
 
 bool LayoutBlockFlow::AllowsColumns() const {
@@ -673,8 +708,9 @@ void LayoutBlockFlow::CreateOrDestroyMultiColumnFlowThreadIfNeeded(
   if (!specifies_columns)
     return;
 
-  if (IsListItemIncludingNG())
+  if (IsListItem()) {
     UseCounter::Count(GetDocument(), WebFeature::kMultiColAndListItem);
+  }
 
   if (!AllowsColumns())
     return;
@@ -739,7 +775,7 @@ void LayoutBlockFlow::SetShouldDoFullPaintInvalidationForFirstLine() {
       for (InlineCursor descendants = first_line.CursorForDescendants();
            descendants; descendants.MoveToNext()) {
         const FragmentItem* item = descendants.Current().Item();
-        if (UNLIKELY(item->IsLayoutObjectDestroyedOrMoved())) {
+        if (item->IsLayoutObjectDestroyedOrMoved()) [[unlikely]] {
           descendants.MoveToNextSkippingChildren();
           continue;
         }
@@ -758,10 +794,8 @@ void LayoutBlockFlow::SetShouldDoFullPaintInvalidationForFirstLine() {
 PositionWithAffinity LayoutBlockFlow::PositionForPoint(
     const PhysicalOffset& point) const {
   NOT_DESTROYED();
-  // NG codepath requires |kPrePaintClean|.
-  // |SelectionModifier| calls this only in legacy codepath.
-  DCHECK(!IsLayoutNGObject() || GetDocument().Lifecycle().GetState() >=
-                                    DocumentLifecycle::kPrePaintClean);
+  DCHECK_GE(GetDocument().Lifecycle().GetState(),
+            DocumentLifecycle::kPrePaintClean);
 
   if (IsAtomicInlineLevel()) {
     PositionWithAffinity position =
@@ -771,6 +805,10 @@ PositionWithAffinity LayoutBlockFlow::PositionForPoint(
   }
   if (!ChildrenInline())
     return LayoutBlock::PositionForPoint(point);
+
+  if (PhysicalFragmentCount()) {
+    return PositionForPointInFragments(point);
+  }
 
   return CreatePositionWithAffinity(0);
 }

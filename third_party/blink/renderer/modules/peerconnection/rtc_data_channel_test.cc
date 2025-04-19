@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/event_type_names.h"
+#include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/testing/null_execution_context.h"
 #include "third_party/blink/renderer/modules/peerconnection/mock_rtc_peer_connection_handler_platform.h"
@@ -25,6 +26,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/page_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/task_environment.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -250,6 +252,27 @@ class RTCDataChannelTest : public ::testing::Test {
     return signaling_thread_;
   }
 
+  void VerifyNoTransfersAfterSend(
+      base::OnceCallback<void(RTCDataChannel*)> send_data_callback) {
+    V8TestingScope scope;
+    ScopedTransferableRTCDataChannelForTest scoped_feature(/*enabled=*/true);
+
+    rtc::scoped_refptr<MockDataChannel> webrtc_channel(
+        new rtc::RefCountedObject<MockDataChannel>(signaling_thread()));
+    auto* channel = MakeGarbageCollected<RTCDataChannel>(
+        scope.GetExecutionContext(), webrtc_channel);
+
+    EXPECT_TRUE(channel->IsTransferable());
+
+    // Perform a `send()` operation. We do not care that `channel` is in the
+    // "opening" state and that the `send()` operation will throw.
+    std::move(send_data_callback).Run(channel);
+
+    // The channel should no longer be transferable after `send()` has been
+    // called.
+    EXPECT_FALSE(channel->IsTransferable());
+  }
+
  protected:
   test::TaskEnvironment task_environment_;
   Persistent<NullExecutionContext> execution_context_ =
@@ -268,10 +291,8 @@ TEST_F(RTCDataChannelTest, ChangeStateEarly) {
   // Change state on the webrtc channel before creating the blink channel.
   webrtc_channel->ChangeState(webrtc::DataChannelInterface::kOpen);
 
-  std::unique_ptr<MockPeerConnectionHandler> pc(
-      new MockPeerConnectionHandler(signaling_thread()));
-  auto* channel = MakeGarbageCollected<RTCDataChannel>(
-      execution_context_, webrtc_channel, pc.get());
+  auto* channel =
+      MakeGarbageCollected<RTCDataChannel>(execution_context_, webrtc_channel);
 
   // In RTCDataChannel::Create, the state change update is posted from the
   // signaling thread to the main thread. Wait for posted the task to be
@@ -285,10 +306,8 @@ TEST_F(RTCDataChannelTest, ChangeStateEarly) {
 TEST_F(RTCDataChannelTest, BufferedAmount) {
   rtc::scoped_refptr<MockDataChannel> webrtc_channel(
       new rtc::RefCountedObject<MockDataChannel>(signaling_thread()));
-  std::unique_ptr<MockPeerConnectionHandler> pc(
-      new MockPeerConnectionHandler(signaling_thread()));
-  auto* channel = MakeGarbageCollected<RTCDataChannel>(
-      execution_context_, webrtc_channel, pc.get());
+  auto* channel =
+      MakeGarbageCollected<RTCDataChannel>(execution_context_, webrtc_channel);
   webrtc_channel->ChangeState(webrtc::DataChannelInterface::kOpen);
 
   String message(std::string(100, 'A').c_str());
@@ -302,11 +321,9 @@ TEST_F(RTCDataChannelTest, BufferedAmount) {
 TEST_F(RTCDataChannelTest, BufferedAmountLow) {
   rtc::scoped_refptr<MockDataChannel> webrtc_channel(
       new rtc::RefCountedObject<MockDataChannel>(signaling_thread()));
-  std::unique_ptr<MockPeerConnectionHandler> pc(
-      new MockPeerConnectionHandler(signaling_thread()));
   auto* onbufferedamountlow_handler = MakeGarbageCollected<MockEventListener>();
-  auto* channel = MakeGarbageCollected<RTCDataChannel>(
-      execution_context_, webrtc_channel, pc.get());
+  auto* channel =
+      MakeGarbageCollected<RTCDataChannel>(execution_context_, webrtc_channel);
   channel->addEventListener(event_type_names::kBufferedamountlow,
                             onbufferedamountlow_handler);
   EXPECT_CALL(*onbufferedamountlow_handler, Invoke(_, _));
@@ -325,10 +342,8 @@ TEST_F(RTCDataChannelTest, BufferedAmountLow) {
 TEST_F(RTCDataChannelTest, Open) {
   rtc::scoped_refptr<MockDataChannel> webrtc_channel(
       new rtc::RefCountedObject<MockDataChannel>(signaling_thread()));
-  std::unique_ptr<MockPeerConnectionHandler> pc(
-      new MockPeerConnectionHandler(signaling_thread()));
-  auto* channel = MakeGarbageCollected<RTCDataChannel>(
-      execution_context_, webrtc_channel, pc.get());
+  auto* channel =
+      MakeGarbageCollected<RTCDataChannel>(execution_context_, webrtc_channel);
   channel->OnStateChange(webrtc::DataChannelInterface::kOpen);
   EXPECT_EQ("open", channel->readyState());
 }
@@ -336,10 +351,8 @@ TEST_F(RTCDataChannelTest, Open) {
 TEST_F(RTCDataChannelTest, Close) {
   rtc::scoped_refptr<MockDataChannel> webrtc_channel(
       new rtc::RefCountedObject<MockDataChannel>(signaling_thread()));
-  std::unique_ptr<MockPeerConnectionHandler> pc(
-      new MockPeerConnectionHandler(signaling_thread()));
-  auto* channel = MakeGarbageCollected<RTCDataChannel>(
-      execution_context_, webrtc_channel, pc.get());
+  auto* channel =
+      MakeGarbageCollected<RTCDataChannel>(execution_context_, webrtc_channel);
   channel->OnStateChange(webrtc::DataChannelInterface::kClosed);
   EXPECT_EQ("closed", channel->readyState());
 }
@@ -347,11 +360,9 @@ TEST_F(RTCDataChannelTest, Close) {
 TEST_F(RTCDataChannelTest, Message) {
   rtc::scoped_refptr<MockDataChannel> webrtc_channel(
       new rtc::RefCountedObject<MockDataChannel>(signaling_thread()));
-  std::unique_ptr<MockPeerConnectionHandler> pc(
-      new MockPeerConnectionHandler(signaling_thread()));
   auto* onmessage_handler = MakeGarbageCollected<MockEventListener>();
-  auto* channel = MakeGarbageCollected<RTCDataChannel>(
-      execution_context_, webrtc_channel, pc.get());
+  auto* channel =
+      MakeGarbageCollected<RTCDataChannel>(execution_context_, webrtc_channel);
   channel->addEventListener(event_type_names::kMessage, onmessage_handler);
   EXPECT_CALL(*onmessage_handler, Invoke(_, _));
 
@@ -361,10 +372,8 @@ TEST_F(RTCDataChannelTest, Message) {
 TEST_F(RTCDataChannelTest, SendAfterContextDestroyed) {
   rtc::scoped_refptr<MockDataChannel> webrtc_channel(
       new rtc::RefCountedObject<MockDataChannel>(signaling_thread()));
-  std::unique_ptr<MockPeerConnectionHandler> pc(
-      new MockPeerConnectionHandler(signaling_thread()));
-  auto* channel = MakeGarbageCollected<RTCDataChannel>(
-      execution_context_, webrtc_channel, pc.get());
+  auto* channel =
+      MakeGarbageCollected<RTCDataChannel>(execution_context_, webrtc_channel);
   webrtc_channel->ChangeState(webrtc::DataChannelInterface::kOpen);
 
   channel->ContextDestroyed();
@@ -379,10 +388,8 @@ TEST_F(RTCDataChannelTest, SendAfterContextDestroyed) {
 TEST_F(RTCDataChannelTest, CloseAfterContextDestroyed) {
   rtc::scoped_refptr<MockDataChannel> webrtc_channel(
       new rtc::RefCountedObject<MockDataChannel>(signaling_thread()));
-  std::unique_ptr<MockPeerConnectionHandler> pc(
-      new MockPeerConnectionHandler(signaling_thread()));
-  auto* channel = MakeGarbageCollected<RTCDataChannel>(
-      execution_context_, webrtc_channel, pc.get());
+  auto* channel =
+      MakeGarbageCollected<RTCDataChannel>(execution_context_, webrtc_channel);
   webrtc_channel->ChangeState(webrtc::DataChannelInterface::kOpen);
 
   channel->ContextDestroyed();
@@ -399,10 +406,8 @@ TEST_F(RTCDataChannelTest, StopsThrottling) {
   // Creating an RTCDataChannel doesn't enable the opt-out.
   rtc::scoped_refptr<MockDataChannel> webrtc_channel(
       new rtc::RefCountedObject<MockDataChannel>(signaling_thread()));
-  std::unique_ptr<MockPeerConnectionHandler> pc(
-      new MockPeerConnectionHandler(signaling_thread()));
   auto* channel = MakeGarbageCollected<RTCDataChannel>(
-      scope.GetExecutionContext(), webrtc_channel, pc.get());
+      scope.GetExecutionContext(), webrtc_channel);
   EXPECT_EQ("connecting", channel->readyState());
   EXPECT_FALSE(scheduler->OptedOutFromAggressiveThrottlingForTest());
 
@@ -423,6 +428,91 @@ TEST_F(RTCDataChannelTest, StopsThrottling) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ("closed", channel->readyState());
   EXPECT_FALSE(scheduler->OptedOutFromAggressiveThrottlingForTest());
+}
+
+TEST_F(RTCDataChannelTest, TransfersDisabled) {
+  V8TestingScope scope;
+  ScopedTransferableRTCDataChannelForTest scoped_feature(/*enabled=*/false);
+
+  rtc::scoped_refptr<MockDataChannel> webrtc_channel(
+      new rtc::RefCountedObject<MockDataChannel>(signaling_thread()));
+  auto* channel = MakeGarbageCollected<RTCDataChannel>(
+      scope.GetExecutionContext(), webrtc_channel);
+
+  EXPECT_FALSE(channel->IsTransferable());
+}
+
+TEST_F(RTCDataChannelTest, TransferableInCreationScopeOnly) {
+  V8TestingScope scope;
+  ScopedTransferableRTCDataChannelForTest scoped_feature(/*enabled=*/true);
+
+  rtc::scoped_refptr<MockDataChannel> webrtc_channel(
+      new rtc::RefCountedObject<MockDataChannel>(signaling_thread()));
+  auto* channel = MakeGarbageCollected<RTCDataChannel>(
+      scope.GetExecutionContext(), webrtc_channel);
+
+  EXPECT_TRUE(channel->IsTransferable());
+
+  // RTCDataChannel cannot be transferred once it has connected to
+  // `webrtc_channel`, as we could lose incoming messages during the transfer.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(channel->IsTransferable());
+}
+
+TEST_F(RTCDataChannelTest, TransferAllowedOnlyOnce) {
+  V8TestingScope scope;
+  ScopedTransferableRTCDataChannelForTest scoped_feature(/*enabled=*/true);
+
+  rtc::scoped_refptr<MockDataChannel> webrtc_channel(
+      new rtc::RefCountedObject<MockDataChannel>(signaling_thread()));
+  auto* channel = MakeGarbageCollected<RTCDataChannel>(
+      scope.GetExecutionContext(), webrtc_channel);
+
+  EXPECT_TRUE(channel->IsTransferable());
+  EXPECT_NE(channel->TransferUnderlyingChannel(), nullptr);
+
+  // The channel should no longer be transferable.
+  EXPECT_FALSE(channel->IsTransferable());
+}
+
+TEST_F(RTCDataChannelTest, SendPreventsTransfers) {
+  {
+    SCOPED_TRACE("RTCDataChannel::send(const string&)");
+    VerifyNoTransfersAfterSend(WTF::BindOnce([](RTCDataChannel* channel) {
+      String message(std::string(100, 'A').c_str());
+      channel->send(message, IGNORE_EXCEPTION_FOR_TESTING);
+    }));
+  }
+
+  {
+    SCOPED_TRACE("RTCDataChannel::send(DOMArrayBuffer*)");
+    VerifyNoTransfersAfterSend(WTF::BindOnce([](RTCDataChannel* channel) {
+      DOMArrayBuffer* buffer = DOMArrayBuffer::Create(10, 4);
+      channel->send(buffer, IGNORE_EXCEPTION_FOR_TESTING);
+    }));
+  }
+
+  {
+    SCOPED_TRACE("RTCDataChannel::send(NotShared<DOMArrayBufferView>)");
+    VerifyNoTransfersAfterSend(WTF::BindOnce([](RTCDataChannel* channel) {
+      DOMArrayBuffer* buffer = DOMArrayBuffer::Create(10, 4);
+      channel->send(
+          NotShared<DOMArrayBufferView>(DOMDataView::Create(buffer, 0, 10)),
+          IGNORE_EXCEPTION_FOR_TESTING);
+    }));
+  }
+
+  {
+    SCOPED_TRACE("RTCDataChannel::send(Blob*)");
+    VerifyNoTransfersAfterSend(WTF::BindOnce([](RTCDataChannel* channel) {
+      const char kHelloWorld[] = "Hello world!";
+      Blob* blob = Blob::Create(
+          base::as_bytes(base::span_with_nul_from_cstring(kHelloWorld)),
+          "text/plain");
+      channel->send(blob, IGNORE_EXCEPTION_FOR_TESTING);
+    }));
+  }
 }
 
 }  // namespace blink

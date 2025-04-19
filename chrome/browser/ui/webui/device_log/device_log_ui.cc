@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/ui/webui/device_log/device_log_ui.h"
 
 #include <memory>
@@ -111,6 +116,7 @@ DeviceLogUI::DeviceLogUI(content::WebUI* web_ui)
   static constexpr webui::LocalizedString kStrings[] = {
       {"titleText", IDS_DEVICE_LOG_TITLE},
       {"autoRefreshText", IDS_DEVICE_AUTO_REFRESH},
+      {"autoSelectTypes", IDS_DEVICE_SELECT_TYPES},
       {"logRefreshText", IDS_DEVICE_LOG_REFRESH},
       {"logClearText", IDS_DEVICE_LOG_CLEAR},
       {"logClearTypesText", IDS_DEVICE_LOG_CLEAR_TYPES},
@@ -142,9 +148,9 @@ DeviceLogUI::DeviceLogUI(content::WebUI* web_ui)
 
 #if BUILDFLAG(IS_CHROMEOS)
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  auto device_log_url = base::UTF8ToUTF16(chrome::kChromeUIDeviceLogUrl);
+  std::u16string device_log_url(chrome::kChromeUIDeviceLogUrl16);
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
-  auto device_log_url = base::UTF8ToUTF16(chrome::kOsUIDeviceLogURL);
+  std::u16string device_log_url(chrome::kOsUIDeviceLogURL);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   auto os_link_container = l10n_util::GetStringFUTF16(
       IDS_DEVICE_LOG_OS_LINK_CONTAINER, device_log_url);

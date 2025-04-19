@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/ash/cert_provisioning/cert_provisioning_common.h"
 
 #include <optional>
@@ -10,8 +15,10 @@
 #include "base/functional/callback_helpers.h"
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
+#include "base/unguessable_token.h"
 #include "chrome/browser/ash/platform_keys/key_permissions/key_permissions_manager.h"
 #include "chrome/browser/ash/platform_keys/key_permissions/key_permissions_manager_impl.h"
 #include "chrome/browser/ash/platform_keys/platform_keys_service.h"
@@ -29,6 +36,10 @@
 
 namespace ash {
 namespace cert_provisioning {
+
+BASE_FEATURE(kCertProvisioningUseOnlyInvalidationsForTesting,
+             "CertProvisioningUseOnlyInvalidationsForTesting",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 namespace {
 std::optional<AccountId> GetAccountId(CertScope scope, Profile* profile) {
@@ -160,6 +171,7 @@ std::optional<CertProfile> CertProfile::MakeFromValue(
   const std::string* name = value.FindString(kCertProfileNameKey);
   const std::string* policy_version =
       value.FindString(kCertProfilePolicyVersionKey);
+  const std::string* key_type = value.FindString(kCertProfileKeyType);
   std::optional<bool> is_va_enabled =
       value.FindBool(kCertProfileIsVaEnabledKey);
   std::optional<int> renewal_period_sec =
@@ -168,6 +180,11 @@ std::optional<CertProfile> CertProfile::MakeFromValue(
       value.FindInt(kCertProfileProtocolVersion);
 
   if (!id || !policy_version) {
+    return std::nullopt;
+  }
+
+  if (key_type && *key_type != "rsa") {
+    LOG(ERROR) << "Unsupported key type received: " << *key_type;
     return std::nullopt;
   }
 
@@ -339,6 +356,23 @@ platform_keys::KeyPermissionsManager* GetKeyPermissionsManager(
       return platform_keys::KeyPermissionsManagerImpl::
           GetSystemTokenKeyPermissionsManager();
   }
+}
+
+std::string GenerateCertProvisioningId() {
+  std::string result = base::UnguessableToken::Create().ToString();
+  // Server-side stores the id and expects it to be <=32 characters long.
+  CHECK_LE(result.size(), 32u);
+  return result;
+}
+
+std::string MakeInvalidationListenerType(const std::string& cert_prov_id) {
+  constexpr char kCertProvPrefix[] = "cert-";
+  return base::StrCat({kCertProvPrefix, cert_prov_id});
+}
+
+bool ShouldOnlyUseInvalidations() {
+  return base::FeatureList::IsEnabled(
+      kCertProvisioningUseOnlyInvalidationsForTesting);
 }
 
 }  // namespace cert_provisioning

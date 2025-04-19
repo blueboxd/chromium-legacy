@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "components/omnibox/browser/bookmark_provider.h"
 
 #include <stddef.h>
@@ -24,6 +29,7 @@
 #include "components/omnibox/browser/test_scheme_classifier.h"
 #include "components/omnibox/browser/titled_url_match_utils.h"
 #include "components/omnibox/common/omnibox_features.h"
+#include "components/search_engines/search_engines_test_environment.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_starter_pack_data.h"
@@ -181,6 +187,7 @@ class BookmarkProviderTest : public testing::Test {
   // provided.
   [[nodiscard]] size_t GetNumMatches(std::string input_text);
 
+  search_engines::SearchEnginesTestEnvironment search_engines_test_environment_;
   std::unique_ptr<MockAutocompleteProviderClient> provider_client_;
   std::unique_ptr<BookmarkModel> local_or_syncable_model_;
   scoped_refptr<BookmarkProvider> provider_;
@@ -199,7 +206,7 @@ void BookmarkProviderTest::SetUp() {
       .WillByDefault(testing::ReturnRef(classifier_));
 
   provider_client_->set_template_url_service(
-      std::make_unique<TemplateURLService>(nullptr, 0));
+      search_engines_test_environment_.template_url_service());
 
   ResetProvider();
 

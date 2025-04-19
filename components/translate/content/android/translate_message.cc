@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "components/translate/content/android/translate_message.h"
 
 #include <stddef.h>
@@ -22,7 +27,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/messages/android/message_enums.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/translate/content/android/jni_headers/TranslateMessage_jni.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_metrics_logger.h"
@@ -32,6 +36,9 @@
 #include "components/translate/core/common/translate_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
+
+// Must come after all headers that specialize FromJniType() / ToJniType().
+#include "components/translate/content/android/jni_headers/TranslateMessage_jni.h"
 
 namespace translate {
 

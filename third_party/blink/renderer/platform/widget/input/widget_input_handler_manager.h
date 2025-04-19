@@ -10,6 +10,8 @@
 #include <optional>
 
 #include "base/task/single_thread_task_runner.h"
+#include "base/types/optional_ref.h"
+#include "base/types/pass_key.h"
 #include "build/build_config.h"
 #include "cc/input/browser_controls_state.h"
 #include "cc/trees/paint_holding_reason.h"
@@ -21,6 +23,7 @@
 #include "third_party/blink/renderer/platform/widget/input/input_handler_proxy.h"
 #include "third_party/blink/renderer/platform/widget/input/input_handler_proxy_client.h"
 #include "third_party/blink/renderer/platform/widget/input/main_thread_event_queue.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 
 namespace cc {
 class EventMetrics;
@@ -45,10 +48,9 @@ class WidgetBase;
 // responsible for passing input events on the compositor and main threads.
 // The lifecycle of this object matches that of the WidgetBase.
 class PLATFORM_EXPORT WidgetInputHandlerManager final
-    : public base::RefCountedThreadSafe<WidgetInputHandlerManager>,
+    : public ThreadSafeRefCounted<WidgetInputHandlerManager>,
       public InputHandlerProxyClient,
-      public MainThreadEventQueueClient,
-      public base::SupportsWeakPtr<WidgetInputHandlerManager> {
+      public MainThreadEventQueueClient {
   // Used in UMA metrics reporting. Do not re-order, and rename the metric if
   // additional states are required.
   enum class InitialInputTiming {
@@ -92,6 +94,17 @@ class PLATFORM_EXPORT WidgetInputHandlerManager final
       base::PlatformThreadId io_thread_id,
       base::PlatformThreadId main_thread_id);
 
+  WidgetInputHandlerManager(
+      base::PassKey<WidgetInputHandlerManager>,
+      base::WeakPtr<WidgetBase> widget,
+      base::WeakPtr<mojom::blink::FrameWidgetInputHandler>
+          frame_widget_input_handler,
+      bool never_composited,
+      CompositorThreadScheduler* compositor_thread_scheduler,
+      scoped_refptr<scheduler::WidgetScheduler> widget_scheduler,
+      bool allow_scroll_resampling,
+      base::PlatformThreadId io_thread_id,
+      base::PlatformThreadId main_thread_id);
   WidgetInputHandlerManager(const WidgetInputHandlerManager&) = delete;
   WidgetInputHandlerManager& operator=(const WidgetInputHandlerManager&) =
       delete;
@@ -106,6 +119,7 @@ class PLATFORM_EXPORT WidgetInputHandlerManager final
                         HandledEventCallback handled_callback) override;
   void InputEventsDispatched(bool raf_aligned) override;
   void SetNeedsMainFrame() override;
+  bool RequestedMainFramePending() override;
 
   void DidFirstVisuallyNonEmptyPaint(const base::TimeTicks& first_paint_time);
 
@@ -173,9 +187,12 @@ class PLATFORM_EXPORT WidgetInputHandlerManager final
 
   void ClearClient();
 
-  void UpdateBrowserControlsState(cc::BrowserControlsState constraints,
-                                  cc::BrowserControlsState current,
-                                  bool animate);
+  void UpdateBrowserControlsState(
+      cc::BrowserControlsState constraints,
+      cc::BrowserControlsState current,
+      bool animate,
+      base::optional_ref<const cc::BrowserControlsOffsetTagsInfo>
+          offset_tags_info);
 
   MainThreadEventQueue* input_event_queue() { return input_event_queue_.get(); }
 
@@ -188,21 +205,14 @@ class PLATFORM_EXPORT WidgetInputHandlerManager final
   // both main and compositor thread queues have been processed.
   void FlushEventQueuesForTesting(base::OnceClosure done_callback);
 
- protected:
-  friend class base::RefCountedThreadSafe<WidgetInputHandlerManager>;
-  ~WidgetInputHandlerManager() override;
+  base::WeakPtr<WidgetInputHandlerManager> AsWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
 
  private:
-  WidgetInputHandlerManager(
-      base::WeakPtr<WidgetBase> widget,
-      base::WeakPtr<mojom::blink::FrameWidgetInputHandler>
-          frame_widget_input_handler,
-      bool never_composited,
-      CompositorThreadScheduler* compositor_thread_scheduler,
-      scoped_refptr<scheduler::WidgetScheduler> widget_scheduler,
-      bool allow_scroll_resampling,
-      base::PlatformThreadId io_thread_id,
-      base::PlatformThreadId main_thread_id);
+  friend class ThreadSafeRefCounted<WidgetInputHandlerManager>;
+  ~WidgetInputHandlerManager() override;
+
   void InitInputHandler();
   void InitOnInputHandlingThread(
       const base::WeakPtr<cc::CompositorDelegateForInput>& compositor_delegate,
@@ -294,6 +304,10 @@ class PLATFORM_EXPORT WidgetInputHandlerManager final
   // `TimeTicks` zero.
   void RecordEventMetricsForPaintTiming(
       std::optional<base::TimeTicks> first_paint_time);
+
+  // Start `first_paint_max_delay_timer_` if not started already.  This runs on
+  // the main thread.
+  void StartFirstPaintMaxDelayTimer();
 
   // Helpers for FlushEventQueuesForTesting.
   void FlushCompositorQueueForTesting();
@@ -403,6 +417,10 @@ class PLATFORM_EXPORT WidgetInputHandlerManager final
   // thread.
   std::unique_ptr<base::OneShotTimer> first_paint_max_delay_timer_;
 
+  // Tracks whether `RecordEventMetricsForPaintTiming` has already recorded the
+  // UMA related to first paint.
+  bool recorded_event_metric_for_paint_timing_ = false;
+
   unsigned dropped_pointer_down_ = 0;
 
 #if BUILDFLAG(IS_ANDROID)
@@ -413,6 +431,8 @@ class PLATFORM_EXPORT WidgetInputHandlerManager final
   // Whether to use ScrollPredictor to resample scroll events. This is false for
   // web_tests to ensure that scroll deltas are not timing-dependent.
   const bool allow_scroll_resampling_ = true;
+
+  base::WeakPtrFactory<WidgetInputHandlerManager> weak_ptr_factory_{this};
 };
 
 }  // namespace blink

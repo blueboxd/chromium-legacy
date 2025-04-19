@@ -31,6 +31,28 @@ void ContentFacilitatedPaymentsDriverFactory::RenderFrameDeleted(
   driver_map_.erase(render_frame_host);
 }
 
+void ContentFacilitatedPaymentsDriverFactory::RenderFrameHostStateChanged(
+    content::RenderFrameHost* render_frame_host,
+    content::RenderFrameHost::LifecycleState old_state,
+    content::RenderFrameHost::LifecycleState new_state) {
+  // All facilitated payments processes are run only on the outermost main
+  // frame.
+  if (render_frame_host != render_frame_host->GetOutermostMainFrame()) {
+    return;
+  }
+  // User visible pages are active i.e. `LifecycleState == kActive`. An
+  // RenderFrameHost state change where `old_state == kActive` represents a
+  // navigation away from an active page. When navigating away, all facilitated
+  // payments processes should be abandoned.
+  if (old_state != content::RenderFrameHost::LifecycleState::kActive) {
+    return;
+  }
+  if (auto iter = driver_map_.find(render_frame_host);
+      iter != driver_map_.end()) {
+    iter->second->DidNavigateToOrAwayFromPage();
+  }
+}
+
 void ContentFacilitatedPaymentsDriverFactory::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->HasCommitted() ||
@@ -40,7 +62,7 @@ void ContentFacilitatedPaymentsDriverFactory::DidFinishNavigation(
     return;
   }
   auto& driver = GetOrCreateForFrame(navigation_handle->GetRenderFrameHost());
-  driver.DidFinishNavigation();
+  driver.DidNavigateToOrAwayFromPage();
 }
 
 void ContentFacilitatedPaymentsDriverFactory::DOMContentLoaded(
@@ -79,6 +101,21 @@ void ContentFacilitatedPaymentsDriverFactory::DidFinishLoad(
   // Initialize PIX code detection.
   driver.OnContentLoadedInThePrimaryMainFrame(
       validated_url, render_frame_host->GetPageUkmSourceId());
+}
+
+void ContentFacilitatedPaymentsDriverFactory::OnTextCopiedToClipboard(
+    content::RenderFrameHost* render_frame_host,
+    const std::u16string& copied_text) {
+  if (render_frame_host != render_frame_host->GetOutermostMainFrame() ||
+      !render_frame_host->IsActive()) {
+    return;
+  }
+
+  auto& driver = GetOrCreateForFrame(render_frame_host);
+
+  driver.OnTextCopiedToClipboard(render_frame_host->GetLastCommittedURL(),
+                                 copied_text,
+                                 render_frame_host->GetPageUkmSourceId());
 }
 
 ContentFacilitatedPaymentsDriver&

@@ -15,6 +15,10 @@ import '../settings_shared.css.js';
 import {I18nMixin} from 'chrome://resources/ash/common/cr_elements/i18n_mixin.js';
 import {LWIN_KEY, META_KEY, ShortcutInputKeyElement} from 'chrome://resources/ash/common/shortcut_input_ui/shortcut_input_key.js';
 import {KeyToIconNameMap} from 'chrome://resources/ash/common/shortcut_input_ui/shortcut_utils.js';
+// <if expr="_google_chrome" >
+import {KeyToInternalIconNameMap, KeyToInternalIconNameRefreshOnlyMap} from 'chrome://resources/ash/common/shortcut_input_ui/shortcut_utils.js';
+// </if>
+
 import {assert} from 'chrome://resources/js/assert.js';
 import {PolymerElementProperties} from 'chrome://resources/polymer/v3_0/polymer/interfaces.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -23,7 +27,7 @@ import {DropdownMenuOptionList} from '../controls/settings_dropdown_menu.js';
 
 import {CustomizeButtonDropdownItemElement, DropdownItemSelectEvent, DropdownMenuOption} from './customize_button_dropdown_item.js';
 import {getTemplate} from './customize_button_select.html.js';
-import {ActionChoice, ButtonRemapping, KeyEvent, RemappingAction, StaticShortcutAction} from './input_device_settings_types.js';
+import {ActionChoice, ButtonRemapping, KeyEvent, MetaKey, RemappingAction, StaticShortcutAction} from './input_device_settings_types.js';
 
 export interface CustomizeButtonSelectElement {
   $: {
@@ -173,9 +177,7 @@ export class CustomizeButtonSelectElement extends
         value: undefined,
       },
 
-      hasLauncherButton: {
-        type: Boolean,
-      },
+      metaKey: Object,
     };
   }
 
@@ -192,7 +194,7 @@ export class CustomizeButtonSelectElement extends
   remappingIndex: number;
   actionList: ActionChoice[];
   selectedValue: string;
-  hasLauncherButton: boolean;
+  metaKey: MetaKey = MetaKey.kSearch;
   private isInitialized_: boolean;
   private shouldShowDropdownMenu_: boolean;
   private label_: string;
@@ -460,15 +462,39 @@ export class CustomizeButtonSelectElement extends
 
   private getIconIdForKey_(key: string): string|null {
     if (key === META_KEY || key === LWIN_KEY) {
-      return 'shortcut-input-keys:launcher';
+      switch (this.metaKey) {
+        case MetaKey.kSearch:
+          return 'shortcut-input-keys:search';
+        case MetaKey.kLauncherRefresh:
+          return 'ash-internal:launcher-refresh';
+        default:
+          return 'shortcut-input-keys:launcher';
+      }
     }
+
+    // <if expr="_google_chrome" >
+    const internalIconName = KeyToInternalIconNameMap[key];
+    if (internalIconName) {
+      return `ash-internal:${internalIconName}`;
+    }
+
+    const internalRefreshIconName = KeyToInternalIconNameRefreshOnlyMap[key];
+    if (internalRefreshIconName && this.metaKey === MetaKey.kLauncherRefresh) {
+      return `ash-internal:${internalRefreshIconName}`;
+    }
+    // </if>
+
     const iconName = KeyToIconNameMap[key];
-    return iconName ? `shortcut-input-keys:${iconName}` : null;
+    if (iconName) {
+      return `shortcut-input-keys:${iconName}`;
+    }
+
+    return null;
   }
 
   private getAriaLabelForIcon(key: string): string {
-    const ariaLabelStringId = ShortcutInputKeyElement.getAriaLabelStringId(
-        key, this.hasLauncherButton);
+    const ariaLabelStringId =
+        ShortcutInputKeyElement.getAriaLabelStringId(key, this.metaKey);
 
     return this.i18n(ariaLabelStringId);
   }

@@ -8,17 +8,17 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
-#include "components/autofill/core/browser/iban_manager.h"
 #include "components/autofill/core/browser/merchant_promo_code_manager.h"
+#include "components/autofill/core/browser/payments/iban_manager.h"
 #include "components/autofill/core/browser/single_field_form_filler.h"
 #include "components/autofill/core/common/form_data.h"
 
 namespace autofill {
 
 class AutofillClient;
+class AutofillField;
 class FormStructure;
 class MerchantPromoCodeManager;
-struct SuggestionsContext;
 
 // Owned by AutofillClient, and is one per tab. Routes single field form filling
 // requests, such as choosing whether to direct them to Autocomplete, merchant
@@ -47,18 +47,18 @@ class SingleFieldFormFillRouter : public SingleFieldFormFiller {
 
   // SingleFieldFormFiller overrides:
   [[nodiscard]] bool OnGetSingleFieldSuggestions(
+      const FormStructure* form_structure,
       const FormFieldData& field,
+      const AutofillField* autofill_field,
       const AutofillClient& client,
-      OnSuggestionsReturnedCallback on_suggestions_returned,
-      const SuggestionsContext& context) override;
+      OnSuggestionsReturnedCallback on_suggestions_returned) override;
   void OnWillSubmitFormWithFields(const std::vector<FormFieldData>& fields,
                                   bool is_autocomplete_enabled) override;
   void CancelPendingQueries() override;
   void OnRemoveCurrentSingleFieldSuggestion(const std::u16string& field_name,
                                             const std::u16string& value,
                                             SuggestionType type) override;
-  void OnSingleFieldSuggestionSelected(const std::u16string& value,
-                                       SuggestionType type) override;
+  void OnSingleFieldSuggestionSelected(const Suggestion& suggestion) override;
 
  private:
   // Handles autocompleting single fields. The `AutocompleteHistoryManager` is

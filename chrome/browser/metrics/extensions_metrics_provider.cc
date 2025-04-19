@@ -219,7 +219,7 @@ ExtensionInstallProto::BackgroundScriptType GetBackgroundScriptType(
   return ExtensionInstallProto::NO_BACKGROUND_SCRIPT;
 }
 
-static_assert(extensions::disable_reason::DISABLE_REASON_LAST == (1LL << 23),
+static_assert(extensions::disable_reason::DISABLE_REASON_LAST == (1LL << 24),
               "Adding a new disable reason? Be sure to include the new reason "
               "below, update the test to exercise it, and then adjust this "
               "value for DISABLE_REASON_LAST");
@@ -265,6 +265,8 @@ std::vector<ExtensionInstallProto::DisableReason> GetDisableReasons(
       {extensions::disable_reason::
            DISABLE_PUBLISHED_IN_STORE_REQUIRED_BY_POLICY,
        ExtensionInstallProto::PUBLISHED_IN_STORE_REQUIRED_BY_POLICY},
+      {extensions::disable_reason::DISABLE_UNSUPPORTED_MANIFEST_VERSION,
+       ExtensionInstallProto::UNSUPPORTED_MANIFEST_VERSION},
   };
 
   int disable_reasons = prefs->GetDisableReasons(id);
@@ -333,8 +335,6 @@ metrics::ExtensionInstallProto ConstructInstallProto(
   install.set_is_from_store(extension.from_webstore());
   install.set_updates_from_store(
       extension_management->UpdatesFromWebstore(extension));
-  // TODO(crbug.com/40124309): Remove this setter.
-  install.set_is_from_bookmark(false);
   install.set_is_converted_from_user_script(
       extension.converted_from_user_script());
   install.set_is_default_installed(extension.was_installed_by_default());

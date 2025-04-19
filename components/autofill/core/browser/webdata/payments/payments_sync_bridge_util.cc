@@ -27,6 +27,7 @@
 #include "components/autofill/core/browser/webdata/payments/payments_autofill_table.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_util.h"
+#include "components/autofill/core/common/credit_card_network_identifiers.h"
 #include "components/sync/protocol/entity_data.h"
 
 using autofill::data_util::TruncateUTF8;
@@ -49,8 +50,10 @@ sync_pb::WalletMaskedCreditCard::WalletCardType WalletCardTypeFromCardNetwork(
     return sync_pb::WalletMaskedCreditCard::MASTER_CARD;
   if (network == kUnionPay)
     return sync_pb::WalletMaskedCreditCard::UNIONPAY;
-  if (network == kVerveCard)
+  if (network == kVerveCard &&
+      base::FeatureList::IsEnabled(features::kAutofillEnableVerveCardSupport)) {
     return sync_pb::WalletMaskedCreditCard::VERVE;
+  }
   if (network == kVisaCard)
     return sync_pb::WalletMaskedCreditCard::VISA;
 
@@ -74,7 +77,11 @@ const char* CardNetworkFromWalletCardType(
     case sync_pb::WalletMaskedCreditCard::UNIONPAY:
       return kUnionPay;
     case sync_pb::WalletMaskedCreditCard::VERVE:
-      return kVerveCard;
+      if (base::FeatureList::IsEnabled(
+              features::kAutofillEnableVerveCardSupport)) {
+        return kVerveCard;
+      }
+      return kGenericCard;
     case sync_pb::WalletMaskedCreditCard::VISA:
       return kVisaCard;
 
@@ -333,7 +340,6 @@ Iban IbanFromSpecifics(const sync_pb::PaymentInstrument& payment_instrument) {
   Iban result{Iban::InstrumentId(payment_instrument.instrument_id())};
   result.set_prefix(base::UTF8ToUTF16(payment_instrument.iban().prefix()));
   result.set_suffix(base::UTF8ToUTF16(payment_instrument.iban().suffix()));
-  result.set_length(payment_instrument.iban().length());
   result.set_nickname(base::UTF8ToUTF16(payment_instrument.nickname()));
   return result;
 }
@@ -553,7 +559,6 @@ void SetAutofillWalletSpecificsFromMaskedIban(
       wallet_payment_instrument->mutable_iban();
   masked_iban->set_prefix(base::UTF16ToUTF8(iban.prefix()));
   masked_iban->set_suffix(base::UTF16ToUTF8(iban.suffix()));
-  masked_iban->set_length(iban.length());
 }
 
 void SetAutofillWalletSpecificsFromCardBenefit(
@@ -867,7 +872,8 @@ void PopulateWalletTypesFromSyncData(
     std::vector<PaymentsCustomerData>& customer_data,
     std::vector<CreditCardCloudTokenData>& cloud_token_data,
     std::vector<BankAccount>& bank_accounts,
-    std::vector<CreditCardBenefit>& benefits) {
+    std::vector<CreditCardBenefit>& benefits,
+    std::vector<sync_pb::PaymentInstrument>& payment_instruments) {
   for (const std::unique_ptr<syncer::EntityChange>& change : entity_data) {
     DCHECK(change->data().specifics.has_autofill_wallet());
 
@@ -912,6 +918,13 @@ void PopulateWalletTypesFromSyncData(
                    sync_pb::PaymentInstrument::InstrumentDetailsCase::kIban) {
           wallet_ibans.push_back(
               IbanFromSpecifics(autofill_specifics.payment_instrument()));
+        } else if (autofill_specifics.payment_instrument()
+                           .instrument_details_case() ==
+                       sync_pb::PaymentInstrument::InstrumentDetailsCase::
+                           kEwalletDetails &&
+                   IsEwalletAccountSupported()) {
+          payment_instruments.push_back(
+              autofill_specifics.payment_instrument());
         }
         break;
       // This entry is deprecated and not supported anymore.
@@ -1051,6 +1064,14 @@ bool AreMaskedBankAccountSupported() {
 #if BUILDFLAG(IS_ANDROID)
   return base::FeatureList::IsEnabled(
       features::kAutofillEnableSyncingOfPixBankAccounts);
+#else
+  return false;
+#endif  // BUILDFLAG(IS_ANDROID)
+}
+
+bool IsEwalletAccountSupported() {
+#if BUILDFLAG(IS_ANDROID)
+  return base::FeatureList::IsEnabled(features::kAutofillSyncEwalletAccounts);
 #else
   return false;
 #endif  // BUILDFLAG(IS_ANDROID)

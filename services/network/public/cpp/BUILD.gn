@@ -120,8 +120,6 @@ component("cpp") {
     "self_deleting_url_loader_factory.cc",
     "self_deleting_url_loader_factory.h",
     "session_cookie_delete_predicate.h",
-    "shared_dictionary_encoding_names.cc",
-    "shared_dictionary_encoding_names.h",
     "shared_url_loader_factory.cc",
     "shared_url_loader_factory.h",
     "simple_host_resolver.cc",
@@ -348,37 +346,6 @@ component("document_isolation_policy") {
   defines = [ "IS_NETWORK_CPP_DOCUMENT_ISOLATION_IMPL" ]
 }
 
-# This component is separate from `:cpp_base` to avoid a circular dependency as
-# its needed by :attribution_traits.
-component("attribution") {
-  sources = [
-    "attribution_reporting_runtime_features.h",
-    "trigger_verification.cc",
-    "trigger_verification.h",
-  ]
-  deps = [ "//base" ]
-  configs += [ "//build/config/compiler:wexit_time_destructors" ]
-  defines = [ "IS_NETWORK_CPP_ATTRIBUTION_IMPL" ]
-}
-
-# This component is separate from
-# //services/network/public/mojom:url_loader_base to use the same typemap for
-# both Blink and non-Blink bindings.
-component("attribution_traits") {
-  sources = [
-    "attribution_mojom_traits.cc",
-    "attribution_mojom_traits.h",
-    "trigger_verification.h",
-  ]
-  deps = [
-    ":attribution",
-    "//base",
-    "//services/network/public/mojom:mojom_attribution_shared",
-  ]
-  configs += [ "//build/config/compiler:wexit_time_destructors" ]
-  defines = [ "IS_NETWORK_CPP_ATTRIBUTION_MOJOM_TRAITS_IMPL" ]
-}
-
 # This component is separate from cpp_base as it is a dependency of
 # //services/network/public/mojom:cookies_mojom.
 component("schemeful_site_mojom_support") {
@@ -410,6 +377,21 @@ component("first_party_sets_mojom_support") {
   ]
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
   defines = [ "IS_FIRST_PARTY_SETS_MOJOM_TRAITS_IMPL" ]
+}
+
+# This component is separate from cpp_base as it is a dependency of
+# //services/network/public/mojom:cookies_mojom.
+component("storage_access_api_mojom_support") {
+  sources = [
+    "storage_access_api_mojom_traits.cc",
+    "storage_access_api_mojom_traits.h",
+  ]
+  deps = [
+    "//mojo/public/cpp/base:shared_typemap_traits",
+    "//net",
+    "//services/network/public/mojom:mojom_storage_access_api_shared",
+  ]
+  defines = [ "IS_STORAGE_ACCESS_API_MOJOM_TRAITS_IMPL" ]
 }
 
 component("cpp_base") {
@@ -470,8 +452,6 @@ component("cpp_base") {
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   public_deps = [
-    ":attribution",
-    ":attribution_traits",
     ":cookies_mojom_support",
     ":crash_keys",
     ":cross_origin_embedder_policy",
@@ -480,6 +460,7 @@ component("cpp_base") {
     ":network_param_mojom_support",
     ":proxy_config_mojom_support",
     ":schemeful_site_mojom_support",
+    ":storage_access_api_mojom_support",
     ":structured_headers_mojom_support",
     "//services/network/public/mojom:url_loader_base",
     "//url/ipc:url_ipc",
@@ -496,6 +477,7 @@ component("cpp_base") {
     "//services/network/public/mojom:cookies_mojom",
     "//services/network/public/mojom:mojom_first_party_sets",
     "//services/network/public/mojom:mojom_network_isolation_key",
+    "//services/network/public/mojom:mojom_storage_access_api",
     "//services/network/public/mojom:url_loader_base",
   ]
   defines = [ "IS_NETWORK_CPP_BASE_IMPL" ]
@@ -536,14 +518,9 @@ mojom("test_interfaces") {
 source_set("test_support") {
   testonly = true
 
-  sources = [
-    "is_potentially_trustworthy_unittest.h",
-    "trigger_verification_test_utils.cc",
-    "trigger_verification_test_utils.h",
-  ]
+  sources = [ "is_potentially_trustworthy_unittest.h" ]
 
   public_deps = [
-    ":attribution",
     ":cpp",
     "//base",
     "//base/test:test_support",
@@ -617,12 +594,12 @@ source_set("tests") {
     "simple_host_resolver_unittest.cc",
     "simple_url_loader_unittest.cc",
     "source_stream_to_data_pipe_unittest.cc",
+    "storage_access_api_mojom_traits_unittest.cc",
     "structured_headers_mojom_traits_unittest.cc",
     "supports_loading_mode/supports_loading_mode_parser_unittest.cc",
     "timing_allow_origin_parser_unittest.cc",
     "transferable_directory_unittest.cc",
     "transferable_socket_unittest.cc",
-    "trigger_verification_unittest.cc",
     "url_loader_completion_status_mojom_traits_unittest.cc",
     "url_loader_factory_builder_unittest.cc",
     "url_request_mojom_traits_unittest.cc",

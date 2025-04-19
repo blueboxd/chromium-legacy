@@ -9,6 +9,7 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.chromium.base.Callback;
 import org.chromium.base.Token;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -17,8 +18,8 @@ import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
+import org.chromium.chrome.browser.tasks.tab_groups.TabGroupColorUtils;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilterObserver;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
@@ -33,13 +34,11 @@ import java.util.Locale;
  * and shows a undo snackbar.
  */
 public class UndoGroupSnackbarController implements SnackbarManager.SnackbarController {
-    private static final int INVALID_COLOR_ID = -1;
-
     private final Context mContext;
     private final TabModelSelector mTabModelSelector;
     private final SnackbarManager mSnackbarManager;
     private final TabGroupModelFilterObserver mTabGroupModelFilterObserver;
-    private final TabModelSelectorObserver mTabModelSelectorObserver;
+    private final Callback<TabModel> mCurrentTabModelObserver;
     private final TabModelSelectorTabModelObserver mTabModelSelectorTabModelObserver;
 
     private class TabUndoInfo {
@@ -130,15 +129,12 @@ public class UndoGroupSnackbarController implements SnackbarManager.SnackbarCont
                         mTabModelSelector.getTabModelFilterProvider().getTabModelFilter(true))
                 .addTabGroupObserver(mTabGroupModelFilterObserver);
 
-        mTabModelSelectorObserver =
-                new TabModelSelectorObserver() {
-                    @Override
-                    public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
-                        mSnackbarManager.dismissSnackbars(UndoGroupSnackbarController.this);
-                    }
+        mCurrentTabModelObserver =
+                (tabModel) -> {
+                    mSnackbarManager.dismissSnackbars(UndoGroupSnackbarController.this);
                 };
 
-        mTabModelSelector.addObserver(mTabModelSelectorObserver);
+        mTabModelSelector.getCurrentTabModelSupplier().addObserver(mCurrentTabModelObserver);
 
         mTabModelSelectorTabModelObserver =
                 new TabModelSelectorTabModelObserver(mTabModelSelector) {
@@ -164,12 +160,13 @@ public class UndoGroupSnackbarController implements SnackbarManager.SnackbarCont
     }
 
     /**
-     * Cleans up this class, removes {@link TabModelSelectorObserver} from {@link TabModelSelector}
-     * and {@link TabGroupModelFilterObserver} from {@link TabGroupModelFilter}.
+     * Cleans up this class, removes {@link Callback<TabModel>} from {@link
+     * TabModelSelector#getCurrentTabModelSupplier()} and {@link TabGroupModelFilterObserver} from
+     * {@link TabGroupModelFilter}.
      */
     public void destroy() {
         if (mTabModelSelector != null) {
-            mTabModelSelector.removeObserver(mTabModelSelectorObserver);
+            mTabModelSelector.getCurrentTabModelSupplier().removeObserver(mCurrentTabModelObserver);
             ((TabGroupModelFilter)
                             mTabModelSelector.getTabModelFilterProvider().getTabModelFilter(false))
                     .removeTabGroupObserver(mTabGroupModelFilterObserver);
@@ -257,7 +254,7 @@ public class UndoGroupSnackbarController implements SnackbarManager.SnackbarCont
             // merge, delete that color id on undo. This check deletes the group color for that
             // destination rootID, as all tabs still currently share that ID before the undo
             // operation is performed.
-            if (firstInfo.destinationGroupColorId == INVALID_COLOR_ID) {
+            if (firstInfo.destinationGroupColorId == TabGroupColorUtils.INVALID_COLOR_ID) {
                 filter.deleteTabGroupColor(firstRootId);
             }
         }

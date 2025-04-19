@@ -295,8 +295,9 @@ bool DisplayConfigurator::DisplayLayoutManagerImpl::GetDisplayLayout(
 
       for (size_t i = 0; i < states.size(); ++i) {
         const DisplayState* state = &states[i];
-        (*requests)[i].mode =
-            display_power[i] ? state->selected_mode.get() : NULL;
+        (*requests)[i].mode = display_power[i] && state->selected_mode
+                                  ? state->selected_mode->Clone()
+                                  : nullptr;
 
         if (display_power[i] || states.size() == 1) {
           const DisplayMode* mode_info = state->selected_mode;
@@ -345,8 +346,9 @@ bool DisplayConfigurator::DisplayLayoutManagerImpl::GetDisplayLayout(
 
       for (size_t i = 0; i < states.size(); ++i) {
         const DisplayState* state = &states[i];
-        (*requests)[i].mode =
-            display_power[i] ? state->mirror_mode.get() : NULL;
+        (*requests)[i].mode = display_power[i] && state->mirror_mode
+                                  ? state->mirror_mode->Clone()
+                                  : nullptr;
       }
       break;
     }
@@ -362,8 +364,9 @@ bool DisplayConfigurator::DisplayLayoutManagerImpl::GetDisplayLayout(
         const DisplayState* state = &states[i];
         (*requests)[i].origin.set_y(size.height() ? size.height() + kVerticalGap
                                                   : 0);
-        (*requests)[i].mode =
-            display_power[i] ? state->selected_mode.get() : NULL;
+        (*requests)[i].mode = display_power[i] && state->selected_mode
+                                  ? state->selected_mode->Clone()
+                                  : nullptr;
 
         // Retain the full screen size even if all displays are off so the
         // same desktop configuration can be restored when the displays are
@@ -788,23 +791,6 @@ void DisplayConfigurator::SetColorCalibration(
     return;
   }
   native_display_delegate_->SetColorCalibration(display_id, calibration);
-}
-
-bool DisplayConfigurator::SetColorMatrix(
-    int64_t display_id,
-    const std::vector<float>& color_matrix) {
-  if (!IsDisplayIdInDisplayStateList(display_id, cached_displays_))
-    return false;
-  return native_display_delegate_->SetColorMatrix(display_id, color_matrix);
-}
-
-bool DisplayConfigurator::SetGammaCorrection(int64_t display_id,
-                                             const GammaCurve& degamma,
-                                             const GammaCurve& gamma) {
-  if (!IsDisplayIdInDisplayStateList(display_id, cached_displays_))
-    return false;
-  return native_display_delegate_->SetGammaCorrection(display_id, degamma,
-                                                      gamma);
 }
 
 void DisplayConfigurator::SetPrivacyScreen(int64_t display_id,

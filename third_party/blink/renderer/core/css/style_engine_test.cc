@@ -1966,7 +1966,8 @@ TEST_F(StyleEngineTest, MediaQueriesChangeForcedColors) {
                 GetCSSPropertyColor()));
 
   ColorSchemeHelper color_scheme_helper(GetDocument());
-  color_scheme_helper.SetInForcedColors(/*in_forced_colors=*/true);
+  color_scheme_helper.SetInForcedColors(GetDocument(),
+                                        /*in_forced_colors=*/true);
   UpdateAllLifecyclePhases();
   EXPECT_EQ(Color::FromRGB(0, 128, 0),
             GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
@@ -1998,7 +1999,8 @@ TEST_F(StyleEngineTest, MediaQueriesChangeForcedColorsAndPreferredColorScheme) {
 
   // InForcedColors = false, PreferredColorScheme = kLight
   ColorSchemeHelper color_scheme_helper(GetDocument());
-  color_scheme_helper.SetInForcedColors(/*in_forced_colors=*/false);
+  color_scheme_helper.SetInForcedColors(GetDocument(),
+                                        /*in_forced_colors=*/false);
   color_scheme_helper.SetPreferredColorScheme(
       mojom::blink::PreferredColorScheme::kLight);
   UpdateAllLifecyclePhases();
@@ -2015,7 +2017,8 @@ TEST_F(StyleEngineTest, MediaQueriesChangeForcedColorsAndPreferredColorScheme) {
                 GetCSSPropertyColor()));
 
   // InForcedColors = true, PreferredColorScheme = kDark
-  color_scheme_helper.SetInForcedColors(/*in_forced_colors=*/true);
+  color_scheme_helper.SetInForcedColors(GetDocument(),
+                                        /*in_forced_colors=*/true);
   UpdateAllLifecyclePhases();
   EXPECT_EQ(Color::FromRGB(255, 165, 0),
             GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
@@ -2905,7 +2908,8 @@ TEST_F(StyleEngineTest, ColorSchemeBaseBackgroundChange) {
   EXPECT_EQ(Color(0x12, 0x12, 0x12),
             GetDocument().View()->BaseBackgroundColor());
 
-  color_scheme_helper.SetInForcedColors(/*in_forced_colors=*/true);
+  color_scheme_helper.SetInForcedColors(GetDocument(),
+                                        /*in_forced_colors=*/true);
   UpdateAllLifecyclePhases();
   mojom::blink::ColorScheme color_scheme = mojom::blink::ColorScheme::kLight;
   Color system_background_color = LayoutTheme::GetTheme().SystemColor(
@@ -3518,7 +3522,8 @@ TEST_F(StyleEngineTest, NoRevertUseCountForForcedColors) {
   EXPECT_EQ("rgb(255, 0, 0)", ComputedValue(elem, "color")->CssText());
 
   ColorSchemeHelper color_scheme_helper(GetDocument());
-  color_scheme_helper.SetInForcedColors(/*in_forced_colors=*/true);
+  color_scheme_helper.SetInForcedColors(GetDocument(),
+                                        /*in_forced_colors=*/true);
   UpdateAllLifecyclePhases();
   EXPECT_EQ(ComputedValue(ref, "color")->CssText(),
             ComputedValue(elem, "color")->CssText());
@@ -5693,8 +5698,7 @@ TEST_F(StyleEngineSimTest, UserFontFaceOverrideWithCascadeLayers) {
   Compositor().BeginFrame();
 
   ahem_resource.Complete(
-      test::ReadFromFile(test::CoreTestDataPath("Ahem.woff2"))
-          ->CopyAs<Vector<char>>());
+      *test::ReadFromFile(test::CoreTestDataPath("Ahem.woff2")));
 
   test::RunPendingTasks();
   Compositor().BeginFrame();
@@ -5747,8 +5751,7 @@ TEST_F(StyleEngineSimTest, UserAndAuthorFontFaceOverrideWithCascadeLayers) {
   Compositor().BeginFrame();
 
   ahem_resource.Complete(
-      test::ReadFromFile(test::CoreTestDataPath("Ahem.woff2"))
-          ->CopyAs<Vector<char>>());
+      *test::ReadFromFile(test::CoreTestDataPath("Ahem.woff2")));
 
   test::RunPendingTasks();
   Compositor().BeginFrame();
@@ -6613,8 +6616,7 @@ TEST_F(StyleEngineTest, BorderWidthsAreRecalculatedWhenZoomChanges) {
   WebFrameWidget* mainFrameWidget = web_view_impl->MainFrameWidget();
 
   const auto setZoom{[&](const float zoomFactor) {
-    mainFrameWidget->SetZoomLevelForTesting(
-        PageZoomFactorToZoomLevel(zoomFactor));
+    mainFrameWidget->SetZoomLevelForTesting(ZoomFactorToZoomLevel(zoomFactor));
 
     mainFrameWidget->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
   }};
@@ -6849,8 +6851,6 @@ TEST_F(StyleEngineTest, InitialStyleCount_EnsureComputedStyle) {
 }
 
 TEST_F(StyleEngineTest, UseCountCSSAnchorPositioning) {
-  ScopedCSSAnchorPositioningForTest enabled(true);
-
   EXPECT_FALSE(IsUseCounted(WebFeature::kCSSAnchorPositioning));
 
   SetBodyInnerHTML("<style>#foo { top: anchor(top); }");
@@ -7312,7 +7312,7 @@ TEST_F(StyleEngineTest, EnsureDraggableRegionTriggersRelayout) {
   Element* drag_element = document->getElementById(AtomicString("drag-region"));
 
   auto regions = document->DraggableRegions();
-  auto* it =
+  auto it =
       std::find_if(regions.begin(), regions.end(),
                    [](blink::DraggableRegionValue s) { return s.draggable; });
   EXPECT_EQ(it, regions.end()) << "There should be no drag regions";
@@ -7340,7 +7340,8 @@ TEST_F(StyleEngineTest, EnsureDraggableRegionTriggersRelayout) {
 TEST_F(StyleEngineTest, ForcedColorsLightDark) {
   ScopedForcedColorsForTest scoped_feature(true);
   ColorSchemeHelper color_scheme_helper(GetDocument());
-  color_scheme_helper.SetInForcedColors(/*in_forced_colors=*/true);
+  color_scheme_helper.SetInForcedColors(GetDocument(),
+                                        /*in_forced_colors=*/true);
   GetDocument().body()->setInnerHTML(R"HTML(
     <style>
       :root { color-scheme: light only; }

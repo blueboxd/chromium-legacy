@@ -81,8 +81,11 @@ void OnEmailConfirmation(signin::SigninChoiceCallback callback,
 
 }  // namespace
 
-TurnSyncOnHelperDelegateImpl::TurnSyncOnHelperDelegateImpl(Browser* browser)
-    : browser_(browser), profile_(browser_->profile()) {
+TurnSyncOnHelperDelegateImpl::TurnSyncOnHelperDelegateImpl(Browser* browser,
+                                                           bool is_sync_promo)
+    : browser_(browser),
+      profile_(browser_->profile()),
+      is_sync_promo_(is_sync_promo) {
   DCHECK(browser);
   DCHECK(profile_);
   BrowserList::AddObserver(this);
@@ -136,7 +139,8 @@ void TurnSyncOnHelperDelegateImpl::ShowSyncConfirmation(
   scoped_login_ui_service_observation_.Observe(
       LoginUIServiceFactory::GetForProfile(profile_));
   browser_ = EnsureBrowser(browser_, profile_);
-  browser_->signin_view_controller()->ShowModalSyncConfirmationDialog();
+  browser_->signin_view_controller()->ShowModalSyncConfirmationDialog(
+      /*is_signin_intercept=*/false, is_sync_promo_);
 }
 
 void TurnSyncOnHelperDelegateImpl::ShowSyncDisabledConfirmation(
@@ -204,14 +208,9 @@ void TurnSyncOnHelperDelegateImpl::OnProfileSigninRestrictionsFetched(
   browser_->signin_view_controller()->ShowModalManagedUserNoticeDialog(
       account_info, /*is_oidc_account=*/false,
       profile_creation_required_by_policy, show_link_data_option,
-
-      base::BindOnce(
-          [](signin::SigninChoiceCallback callback, Browser* browser,
-             signin::SigninChoice choice) {
-            browser->signin_view_controller()->CloseModalSignin();
-            std::move(callback).Run(choice);
-          },
-          std::move(callback), browser_.get()));
+      std::move(callback),
+      base::BindOnce(&SigninViewController::CloseModalSignin,
+                     browser_->signin_view_controller()->AsWeakPtr()));
 }
 #endif
 
@@ -251,9 +250,8 @@ void TurnSyncOnHelperDelegateImpl::OnProfileCheckComplete(
       /*profile_creation_required_by_policy=*/false,
       /*show_link_data_option=*/false,
       base::BindOnce(
-          [](signin::SigninChoiceCallback callback, Browser* browser,
+          [](signin::SigninChoiceCallback callback,
              signin::SigninChoice choice) {
-            browser->signin_view_controller()->CloseModalSignin();
             // When `show_link_data_option` is false,
             // `ShowModalManagedUserNoticeDialog()` calls back
             // with either `SIGNIN_CHOICE_CANCEL` or
@@ -264,5 +262,7 @@ void TurnSyncOnHelperDelegateImpl::OnProfileCheckComplete(
                     ? signin::SigninChoice::SIGNIN_CHOICE_CANCEL
                     : signin::SigninChoice::SIGNIN_CHOICE_CONTINUE);
           },
-          std::move(callback), browser_.get()));
+          std::move(callback)),
+      base::BindOnce(&SigninViewController::CloseModalSignin,
+                     browser_->signin_view_controller()->AsWeakPtr()));
 }

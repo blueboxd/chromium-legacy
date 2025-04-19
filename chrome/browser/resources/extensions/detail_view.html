@@ -242,22 +242,45 @@ this text can be found by Ctrl + F because it isn't hidden. -->
 
     <div id="mv2DeprecationMessage" class="message-container"
         hidden$="[[!showMv2DeprecationMessage_]]">
-      <iron-icon aria-hidden="true" icon="extensions-icons:my_extensions"
+      <iron-icon aria-hidden="true" icon$="[[getMv2DeprecationMessageIcon_()]]"
           class="message-icon">
       </iron-icon>
       <div class="message-text">
         <span class="section-title" aria-level="2">
-          $i18n{mv2DeprecationMessageWarningHeader}
+          [[getMv2DeprecationMessageHeader_()]]
         </span>
-        <div class="section-content">
-          $i18nRaw{mv2DeprecationMessageWarningSubtitle}
+        <div class="section-content"
+            inner-h-t-m-l="[[getMv2DeprecationMessageSubtitle_()]]">
         </div>
       </div>
       <cr-button class="find-alternative-button"
           on-click="onFindAlternativeButtonClick_"
-          hidden="[[!data.recommendationsUrl]]">
+          hidden$="[[!showMv2DeprecationFindAlternativeButton_]]">
         $i18n{mv2DeprecationPanelFindAlternativeButton}
       </cr-button>
+      <cr-button class="remove-button"
+          on-click="onRemoveButtonClick_"
+          hidden$="[[!showMv2DeprecationRemoveButton_]]">
+        $i18n{mv2DeprecationMessageRemoveButton}
+      </cr-button>
+      <cr-icon-button class="icon-more-vert header-aligned-button"
+          id="actionMenuButton"
+          on-click="onActionMenuButtonClick_"
+          title="$i18n{moreOptions}"
+          aria-label="[[getActionMenuButtonLabel_()]]"
+          hidden$="[[!showMv2DeprecationActionMenu_]]">
+      </cr-icon-button>
+      <cr-action-menu id="actionMenu">
+        <button class="dropdown-item" id="findAlternativeAction"
+            hidden="[[!data.recommendationsUrl]]"
+            on-click="onFindAlternativeActionClick_">
+          $i18n{mv2DeprecationPanelFindAlternativeButton}
+        </button>
+        <button class="dropdown-item" id="keepAction"
+            on-click="onKeepActionClick_">
+          $i18n{mv2DeprecationPanelKeepForNowButton}
+        </button>
+      </cr-action-menu>
     </div>
 
     <div class="cr-row first control-line" id="enable-section">

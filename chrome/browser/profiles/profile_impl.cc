@@ -100,6 +100,7 @@
 #include "chrome/browser/ssl/stateful_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/startup_data.h"
 #include "chrome/browser/storage/storage_notification_service_factory.h"
+#include "chrome/browser/tpcd/support/origin_trial_service_factory.h"
 #include "chrome/browser/tpcd/support/top_level_trial_service_factory.h"
 #include "chrome/browser/tpcd/support/tpcd_support_service_factory.h"
 #include "chrome/browser/transition_manager/full_browser_transition_manager.h"
@@ -138,6 +139,7 @@
 #include "components/language/core/common/locale_util.h"
 #include "components/metrics/metrics_service.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
+#include "components/payments/core/payment_request_metrics.h"
 #include "components/permissions/permission_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_manager.h"
 #include "components/policy/core/common/cloud/profile_cloud_policy_manager.h"
@@ -155,6 +157,7 @@
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/supervised_user/core/common/pref_names.h"
 #include "components/supervised_user/core/common/supervised_user_constants.h"
+#include "components/sync/base/features.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/user_prefs/user_prefs.h"
@@ -174,12 +177,12 @@
 #include "extensions/buildflags/buildflags.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "pdf/buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom.h"
-#include "services/screen_ai/buildflags/buildflags.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -189,11 +192,11 @@
 #include "chrome/browser/ash/app_mode/app_launch_utils.h"
 #include "chrome/browser/ash/arc/session/arc_service_launcher.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
-#include "chrome/browser/ash/locale_change_guard.h"
+#include "chrome/browser/ash/locale/locale_change_guard.h"
 #include "chrome/browser/ash/login/session/user_session_manager.h"
 #include "chrome/browser/ash/policy/core/user_cloud_policy_manager_ash.h"
 #include "chrome/browser/ash/policy/core/user_cloud_policy_manager_factory_ash.h"
-#include "chrome/browser/ash/preferences.h"
+#include "chrome/browser/ash/preferences/preferences.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/secure_channel/secure_channel_client_provider.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
@@ -213,10 +216,16 @@
 #include "chrome/browser/password_manager/password_manager_settings_service_factory.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #else
+#include "chrome/browser/accessibility/ax_main_node_annotator_controller_factory.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/profiles/guest_profile_creation_logger.h"
 #include "content/public/common/page_zoom.h"
+#include "ui/accessibility/accessibility_features.h"
 #endif
+
+#if !BUILDFLAG(IS_ANDROID) && BUILDFLAG(ENABLE_PDF)
+#include "chrome/browser/accessibility/pdf_ocr_controller_factory.h"
+#endif  // !BUILDFLAG(IS_ANDROID) && BUILDFLAG(ENABLE_PDF)
 
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)
 #include "chrome/browser/background/background_mode_manager.h"
@@ -237,11 +246,6 @@
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
-#endif
-
-#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-#include "chrome/browser/accessibility/pdf_ocr_controller_factory.h"
-#include "ui/accessibility/accessibility_features.h"
 #endif
 
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
@@ -428,7 +432,6 @@ void ProfileImpl::RegisterProfilePrefs(
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   registry->RegisterBooleanPref(prefs::kPdfAnnotationsEnabled, true);
 #endif
-  registry->RegisterStringPref(prefs::kCustomProfileLabel, std::string());
   registry->RegisterIntegerPref(prefs::kProfileLabelPreset, 0);
   registry->RegisterIntegerPref(prefs::kEnterpriseBadgingTemporarySetting, 0);
 }
@@ -845,6 +848,8 @@ void ProfileImpl::DoFinalInit(CreateMode create_mode) {
 
   NotifyProfileInitializationComplete();
 
+  RecordPrefValuesAfterProfileInitialization();
+
   SharingServiceFactory::GetForBrowserContext(this);
 
   HttpsFirstModeServiceFactory::GetForProfile(this);
@@ -860,14 +865,19 @@ void ProfileImpl::DoFinalInit(CreateMode create_mode) {
   // The password settings service needs to start listening to settings
   // changes from Google Mobile Services, as early as possible.
   PasswordManagerSettingsServiceFactory::GetForProfile(this);
-#endif
+#else
 
-#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+#if BUILDFLAG(ENABLE_PDF)
   if (features::IsPdfOcrEnabled()) {
     // Create the PDF OCR controller so that it can self-activate as needed.
     screen_ai::PdfOcrControllerFactory::GetForProfile(this);
   }
-#endif
+#endif  // BUILDFLAG(ENABLE_PDF)
+
+  if (features::IsMainNodeAnnotationsEnabled()) {
+    screen_ai::AXMainNodeAnnotatorControllerFactory::GetForProfile(this);
+  }
+#endif  // BUILDFLAG(IS_ANDROID)
 
   // The announcement notification  service might not be available for some
   // irregular profiles, like the System Profile.
@@ -883,11 +893,13 @@ void ProfileImpl::DoFinalInit(CreateMode create_mode) {
   // as it depends on the default StoragePartition being initialized.
   GetOriginTrialsControllerDelegate();
 
-  // The TpcdTrialService and TopLevelTrialService must be created with the
-  // profile, but after the initialization of the
-  // OriginTrialsControllerDelegate, as it depends on it.
+  // The TpcdTrialService, TopLevelTrialService, and OriginTrialService for
+  // third-party cookie deprecation must be created with the profile, but after
+  // the initialization of the OriginTrialsControllerDelegate, as it depends on
+  // it.
   tpcd::trial::TpcdTrialServiceFactory::GetForProfile(this);
   tpcd::trial::TopLevelTrialServiceFactory::GetForProfile(this);
+  tpcd::trial::OriginTrialServiceFactory::GetForProfile(this);
 }
 
 base::FilePath ProfileImpl::last_selected_directory() {
@@ -1135,6 +1147,7 @@ void ProfileImpl::OnLocaleReady(CreateMode create_mode) {
 
   FullBrowserTransitionManager::Get()->OnProfileCreated(this);
 
+  SimpleDependencyManager::GetInstance()->CreateServices(GetProfileKey());
   BrowserContextDependencyManager::GetInstance()->CreateBrowserContextServices(
       this);
 
@@ -1580,8 +1593,12 @@ void ProfileImpl::SetCreationTimeForTesting(base::Time creation_time) {
 bool ProfileImpl::IsSignedIn() {
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(this);
-  return identity_manager &&
-         identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync);
+  // TODO(crbug.com/348368545): Switch to ConsentLevel::kSignin on ChromeOS.
+  signin::ConsentLevel consent_level =
+      base::FeatureList::IsEnabled(syncer::kReplaceSyncPromosWithSignInPromos)
+          ? signin::ConsentLevel::kSignin
+          : signin::ConsentLevel::kSync;
+  return identity_manager && identity_manager->HasPrimaryAccount(consent_level);
 }
 
 GURL ProfileImpl::GetHomePage() {
@@ -1655,5 +1672,17 @@ void ProfileImpl::UpdateIsEphemeralInStorage() {
   if (entry && !entry->IsOmitted()) {
     entry->SetIsEphemeral(
         GetPrefs()->GetBoolean(prefs::kForceEphemeralProfiles));
+  }
+}
+
+void ProfileImpl::RecordPrefValuesAfterProfileInitialization() {
+  // Measure whether users have the "Allow sites to check if you have payment
+  // methods saved" toggle enabled or disabled in chrome://settings/payments
+  //
+  // This is only relevant for regular profiles, as guest and incognito profiles
+  // do not have access to this settings page nor will any changes to the pref
+  // in those profiles affect future browsing sessions.
+  if (IsRegularProfile()) {
+    payments::RecordCanMakePaymentPrefMetrics(*GetPrefs(), "Startup");
   }
 }

@@ -76,6 +76,9 @@ class ASH_EXPORT OverviewItem : public OverviewItemBase,
     eligible_for_shadow_config_ = eligible_for_shadow_config;
   }
 
+  // Closes window hosted by `this`.
+  void CloseWindow();
+
   // Handles events forwarded from the contents view.
   void OnFocusedViewActivated();
   void OnFocusedViewClosed();
@@ -115,7 +118,7 @@ class ASH_EXPORT OverviewItem : public OverviewItemBase,
   gfx::RectF GetWindowsUnionScreenBounds() const override;
   gfx::RectF GetTargetBoundsWithInsets() const override;
   gfx::RectF GetTransformedBounds() const override;
-  std::vector<OverviewFocusableView*> GetFocusableViews() const override;
+  std::vector<views::Widget*> GetFocusableWidgets() override;
   views::View* GetBackDropView() const override;
   bool ShouldHaveShadow() const override;
   void UpdateRoundedCornersAndShadow() override;
@@ -123,7 +126,6 @@ class ASH_EXPORT OverviewItem : public OverviewItemBase,
   void PrepareForOverview() override;
   void SetShouldUseSpawnAnimation(bool value) override;
   void OnStartingAnimationComplete() override;
-  void CloseWindows() override;
   void Restack() override;
   void StartDrag() override;
   void OnOverviewItemDragStarted() override;
@@ -138,7 +140,6 @@ class ASH_EXPORT OverviewItem : public OverviewItemBase,
   void StopWidgetAnimation() override;
   OverviewItemFillMode GetOverviewItemFillMode() const override;
   void UpdateOverviewItemFillMode() override;
-  gfx::Point GetMagnifierFocusPointInScreen() const override;
   const gfx::RoundedCornersF GetRoundedCorners() const override;
 
   // aura::WindowObserver:
@@ -151,6 +152,7 @@ class ASH_EXPORT OverviewItem : public OverviewItemBase,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds,
                              ui::PropertyChangeReason reason) override;
+  void OnWindowStackingChanged(aura::Window* window) override;
   void OnWindowDestroying(aura::Window* window) override;
 
   // WindowStateObserver:

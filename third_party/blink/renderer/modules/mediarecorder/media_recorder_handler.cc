@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/modules/mediarecorder/media_recorder_handler.h"
 
 #include <algorithm>
@@ -280,6 +285,7 @@ bool MediaRecorderHandler::CanSupportMimeType(const String& type,
         "mp4a.40.2",
 #endif
         "vp9",
+        "av01",
         "opus",
     };
     static const char* const kAudioCodecsForMp4[] = {
@@ -317,12 +323,14 @@ bool MediaRecorderHandler::CanSupportMimeType(const String& type,
                     });
 
     if (!match && mp4_mime_type && video) {
-      // `avc1` is a special case for video, it allows `avc1.<profile>.<level>`.
+      // It supports full qualified string for `avc1` and `av01` codecs, e.g.
+      //  `avc1.<profile>.<level>`, `av01.<profile>.<level>.<color depth>.*`.
       auto parsed_result =
           media::ParseVideoCodecString(type.Ascii(), codec_string.Ascii(),
                                        /*allow_ambiguous_matches=*/false);
       match =
-          parsed_result && (parsed_result->codec == media::VideoCodec::kH264);
+          parsed_result && (parsed_result->codec == media::VideoCodec::kH264 ||
+                            parsed_result->codec == media::VideoCodec::kAV1);
     }
 
     if (!match) {
@@ -940,7 +948,7 @@ void MediaRecorderHandler::WriteData(std::string_view data) {
   const base::TimeTicks now = base::TimeTicks::Now();
   // Non-buffered mode does not need to check timestamps.
   if (timeslice_.is_zero()) {
-    recorder_->WriteData(data.data(), data.length(), /*last_in_slice=*/true,
+    recorder_->WriteData(base::as_byte_span(data), /*last_in_slice=*/true,
                          (now - base::TimeTicks::UnixEpoch()).InMillisecondsF(),
                          /*error_event=*/nullptr);
     return;
@@ -950,7 +958,7 @@ void MediaRecorderHandler::WriteData(std::string_view data) {
   DVLOG_IF(1, last_in_slice) << "Slice finished @ " << now;
   if (last_in_slice)
     slice_origin_timestamp_ = now;
-  recorder_->WriteData(data.data(), data.length(), last_in_slice,
+  recorder_->WriteData(base::as_byte_span(data), last_in_slice,
                        (now - base::TimeTicks::UnixEpoch()).InMillisecondsF(),
                        /*error_event=*/nullptr);
 }

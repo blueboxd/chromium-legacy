@@ -13,8 +13,8 @@
 #include "build/build_config.h"
 #include "build/chromecast_buildflags.h"
 #include "build/chromeos_buildflags.h"
+#include "partition_alloc/buildflags.h"
 #include "partition_alloc/partition_alloc_base/time/time.h"
-#include "partition_alloc/partition_alloc_buildflags.h"
 #include "partition_alloc/partition_alloc_constants.h"
 #include "partition_alloc/partition_root.h"
 #include "partition_alloc/shim/allocator_shim_dispatch_to_noop_on_free.h"
@@ -71,25 +71,7 @@ const base::FeatureParam<DanglingPtrType> kDanglingPtrTypeParam{
     &kDanglingPtrTypeOption,
 };
 
-#if PA_BUILDFLAG(USE_STARSCAN)
-// If enabled, PCScan is turned on by default for all partitions that don't
-// disable it explicitly.
-BASE_FEATURE(kPartitionAllocPCScan,
-             "PartitionAllocPCScan",
-             FEATURE_DISABLED_BY_DEFAULT);
-#endif  // PA_BUILDFLAG(USE_STARSCAN)
-
 #if PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
-// If enabled, PCScan is turned on only for the browser's malloc partition.
-BASE_FEATURE(kPartitionAllocPCScanBrowserOnly,
-             "PartitionAllocPCScanBrowserOnly",
-             FEATURE_DISABLED_BY_DEFAULT);
-
-// If enabled, PCScan is turned on only for the renderer's malloc partition.
-BASE_FEATURE(kPartitionAllocPCScanRendererOnly,
-             "PartitionAllocPCScanRendererOnly",
-             FEATURE_DISABLED_BY_DEFAULT);
-
 // Use a larger maximum thread cache cacheable bucket size.
 BASE_FEATURE(kPartitionAllocLargeThreadCacheSize,
              "PartitionAllocLargeThreadCacheSize",
@@ -108,7 +90,11 @@ MIRACLE_PARAMETER_FOR_INT(
 
 BASE_FEATURE(kPartitionAllocLargeEmptySlotSpanRing,
              "PartitionAllocLargeEmptySlotSpanRing",
+#if BUILDFLAG(IS_MAC)
+             FEATURE_ENABLED_BY_DEFAULT);
+#else
              FEATURE_DISABLED_BY_DEFAULT);
+#endif
 
 BASE_FEATURE(kPartitionAllocSchedulerLoopQuarantine,
              "PartitionAllocSchedulerLoopQuarantine",
@@ -180,6 +166,15 @@ const base::FeatureParam<MemtagMode> kMemtagModeParam{
     MemtagMode::kAsync,
 #endif
     &kMemtagModeOptions};
+
+constexpr FeatureParam<RetagMode>::Option kRetagModeOptions[] = {
+    {RetagMode::kIncrement, "increment"},
+    {RetagMode::kRandom, "random"},
+};
+
+const base::FeatureParam<RetagMode> kRetagModeParam{
+    &kPartitionAllocMemoryTagging, "retag-mode", RetagMode::kIncrement,
+    &kRetagModeOptions};
 
 constexpr FeatureParam<MemoryTaggingEnabledProcesses>::Option
     kMemoryTaggingEnabledProcessesOptions[] = {
@@ -260,37 +255,6 @@ const base::FeatureParam<TimeDelta> kPartitionAllocMemoryReclaimerInterval = {
 // frame, similar to the limit that is already done for backgrounded renderers.
 BASE_FEATURE(kLowerPAMemoryLimitForNonMainRenderers,
              "LowerPAMemoryLimitForNonMainRenderers",
-             FEATURE_DISABLED_BY_DEFAULT);
-
-// If enabled, switches PCScan scheduling to a mutator-aware scheduler. Does not
-// affect whether PCScan is enabled itself.
-BASE_FEATURE(kPartitionAllocPCScanMUAwareScheduler,
-             "PartitionAllocPCScanMUAwareScheduler",
-             FEATURE_ENABLED_BY_DEFAULT);
-
-// If enabled, PCScan frees unconditionally all quarantined objects.
-// This is a performance testing feature.
-BASE_FEATURE(kPartitionAllocPCScanImmediateFreeing,
-             "PartitionAllocPCScanImmediateFreeing",
-             FEATURE_DISABLED_BY_DEFAULT);
-
-// If enabled, PCScan clears eagerly (synchronously) on free().
-BASE_FEATURE(kPartitionAllocPCScanEagerClearing,
-             "PartitionAllocPCScanEagerClearing",
-             FEATURE_DISABLED_BY_DEFAULT);
-
-// In addition to heap, scan also the stack of the current mutator.
-BASE_FEATURE(kPartitionAllocPCScanStackScanning,
-             "PartitionAllocPCScanStackScanning",
-#if PA_BUILDFLAG(STACK_SCAN_SUPPORTED)
-             FEATURE_ENABLED_BY_DEFAULT
-#else
-             FEATURE_DISABLED_BY_DEFAULT
-#endif  // PA_BUILDFLAG(STACK_SCAN_SUPPORTED)
-);
-
-BASE_FEATURE(kPartitionAllocDCScan,
-             "PartitionAllocDCScan",
              FEATURE_DISABLED_BY_DEFAULT);
 
 // Whether to straighten free lists for larger slot spans in PurgeMemory() ->
@@ -486,7 +450,11 @@ void MakeFreeNoOp(WhenFreeBecomesNoOp callsite) {
 
 BASE_FEATURE(kPartitionAllocAdjustSizeWhenInForeground,
              "PartitionAllocAdjustSizeWhenInForeground",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+#if BUILDFLAG(IS_MAC)
+             FEATURE_ENABLED_BY_DEFAULT);
+#else
+             FEATURE_DISABLED_BY_DEFAULT);
+#endif
 
 BASE_FEATURE(kPartitionAllocUseSmallSingleSlotSpans,
              "PartitionAllocUseSmallSingleSlotSpans",

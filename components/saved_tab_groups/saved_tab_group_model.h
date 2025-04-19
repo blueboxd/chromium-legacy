@@ -7,12 +7,17 @@
 
 #include <memory>
 #include <optional>
+#include <set>
+#include <string>
+#include <utility>
 #include <vector>
 
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "components/saved_tab_groups/saved_tab_group.h"
 #include "components/saved_tab_groups/saved_tab_group_tab.h"
+#include "components/saved_tab_groups/types.h"
 #include "components/sync/protocol/saved_tab_group_specifics.pb.h"
 #include "components/tab_groups/tab_group_color.h"
 #include "components/tab_groups/tab_group_id.h"
@@ -32,11 +37,19 @@ class SavedTabGroupModel {
   SavedTabGroupModel& operator=(const SavedTabGroupModel& other) = delete;
   ~SavedTabGroupModel();
 
-  // Accessor for the underlying storage vector.
+  // Accessor for the underlying storage vector. Prefer the methods below to
+  // distinguish between the saved and shared tab groups.
   const std::vector<SavedTabGroup>& saved_tab_groups() const {
     return saved_tab_groups_;
   }
-  std::vector<SavedTabGroup> saved_tab_groups() { return saved_tab_groups_; }
+
+  // Returns saved tab groups (which are not shared). The returned pointers can
+  // be invalidated on any model's mutation.
+  std::vector<const SavedTabGroup*> GetSavedTabGroupsOnly() const;
+
+  // Returns shared tab groups. The returned pointers can be invalidated on any
+  // model's mutation.
+  std::vector<const SavedTabGroup*> GetSharedTabGroupsOnly() const;
 
   bool is_loaded() { return is_loaded_; }
 
@@ -74,8 +87,11 @@ class SavedTabGroupModel {
   void Remove(const base::Uuid& id);
   void UpdateVisualData(const LocalTabGroupID local_group_id,
                         const tab_groups::TabGroupVisualData* visual_data);
-  void UpdateVisualData(const base::Uuid& id,
-                        const tab_groups::TabGroupVisualData* visual_data);
+
+  // Make the tab group shared and associate it with the `collaboration_id`. The
+  // tab group must exist and must not be shared.
+  void MakeTabGroupShared(const LocalTabGroupID& local_group_id,
+                          std::string collaboration_id);
 
   // Pin SavedTabGroup if it's unpinned. Unpin SavedTabGroup if it's pinned.
   void TogglePinState(base::Uuid id);
@@ -93,8 +109,10 @@ class SavedTabGroupModel {
       const base::Uuid& id,
       const tab_groups::TabGroupVisualData* visual_data);
 
-  SavedTabGroup* GetGroupContainingTab(const base::Uuid& saved_tab_guid);
-  SavedTabGroup* GetGroupContainingTab(const LocalTabID& local_tab_id);
+  const SavedTabGroup* GetGroupContainingTab(
+      const base::Uuid& saved_tab_guid) const;
+  const SavedTabGroup* GetGroupContainingTab(
+      const LocalTabID& local_tab_id) const;
 
   // Adds a saved tab to `index` in the specified group denoted by `group_id` if
   // it exists. Notify local observers if the tab was added locally, and sync
@@ -129,11 +147,14 @@ class SavedTabGroupModel {
 
   // Attempts to merge the remote group metadata or tab with the local object
   // that holds the same `guid`.
-  const SavedTabGroup* MergeRemoteGroupMetadata(const base::Uuid& guid,
-                                                const std::u16string& title,
-                                                TabGroupColorId color,
-                                                std::optional<size_t> position,
-                                                base::Time update_time);
+  const SavedTabGroup* MergeRemoteGroupMetadata(
+      const base::Uuid& guid,
+      const std::u16string& title,
+      TabGroupColorId color,
+      std::optional<size_t> position,
+      std::optional<std::string> creator_cache_guid,
+      std::optional<std::string> last_updater_cache_guid,
+      base::Time update_time);
   const SavedTabGroupTab* MergeRemoteTab(const SavedTabGroupTab& remote_tab);
 
   // Changes the index of a given tab group by id. The new index provided is the
@@ -142,6 +163,22 @@ class SavedTabGroupModel {
   // from sync.
   void ReorderGroupLocally(const base::Uuid& id, int new_index);
   void ReorderGroupFromSync(const base::Uuid& id, int new_index);
+
+  // Update the creator cache guid for all saved groups that have
+  // `old_cache_guid`, to `new_cache_guid`.
+  std::pair<std::set<base::Uuid>, std::set<base::Uuid>> UpdateLocalCacheGuid(
+      std::optional<std::string> old_cache_guid,
+      std::optional<std::string> new_cache_guid);
+
+  // Update the last interaction time with the group.
+  void UpdateLastUserInteractionTimeLocally(
+      const LocalTabGroupID& local_group_id);
+
+  // Update the last updater cache guid for a give group and optionally a tab.
+  void UpdateLastUpdaterCacheGuidForGroup(
+      const std::optional<std::string>& cache_guid,
+      const LocalTabGroupID& group_id,
+      const std::optional<LocalTabID>& tab_id);
 
   // Loads the model from the storage. `tabs` must have a corresponding group in
   // `groups`.
@@ -162,6 +199,12 @@ class SavedTabGroupModel {
   void MigrateTabGroupSavesUIUpdate();
 
  private:
+  // Returns mutable group containing tab with ID `saved_tab_guid`, otherwise
+  // returns null.
+  SavedTabGroup* MutableGroupContainingTab(const base::Uuid& saved_tab_guid);
+  SavedTabGroup* GetMutableGroup(const LocalTabGroupID& local_group_id);
+  SavedTabGroup* GetMutableGroup(const base::Uuid& id);
+
   // Moves the group denoted by `id` to the position `new_index`.
   void ReorderGroupImpl(const base::Uuid& id, int new_index);
 
@@ -173,10 +216,10 @@ class SavedTabGroupModel {
   // stored groups in `saved_tab_groups_`. It should be noted that
   // `saved_tab_groups` must already be in sorted order for this function to
   // work as intended. To do this, UpdatePositionsImpl() can be called.
-  void InsertGroupImpl(const SavedTabGroup& group);
+  void InsertGroupImpl(SavedTabGroup group);
 
   // Implementations of CRUD operations.
-  std::unique_ptr<SavedTabGroup> RemoveImpl(int index);
+  SavedTabGroup RemoveImpl(size_t index);
   void UpdateVisualDataImpl(int index,
                             const tab_groups::TabGroupVisualData* visual_data);
 

@@ -31,13 +31,12 @@
 class TabGroupEditorBubbleViewDialogBrowserTest : public DialogBrowserTest {
  protected:
   void ShowUi(const std::string& name) override {
-    std::optional<tab_groups::TabGroupId> group =
-        browser()->tab_strip_model()->AddToNewGroup({0});
-    browser()->tab_strip_model()->OpenTabGroupEditor(group.value());
+    group_ = browser()->tab_strip_model()->AddToNewGroup({0});
+    browser()->tab_strip_model()->OpenTabGroupEditor(group_.value());
 
     BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
     TabGroupHeader* header =
-        browser_view->tabstrip()->group_header(group.value());
+        browser_view->tabstrip()->group_header(group_.value());
     ASSERT_NE(nullptr, header);
     ASSERT_TRUE(header->editor_bubble_tracker_.is_open());
   }
@@ -47,6 +46,12 @@ class TabGroupEditorBubbleViewDialogBrowserTest : public DialogBrowserTest {
                ? header->editor_bubble_tracker_.widget()
                : nullptr;
   }
+
+  TabGroupModel* group_model() {
+    return browser()->tab_strip_model()->group_model();
+  }
+
+  std::optional<tab_groups::TabGroupId> group_;
 };
 
 IN_PROC_BROWSER_TEST_F(TabGroupEditorBubbleViewDialogBrowserTest,
@@ -76,7 +81,7 @@ IN_PROC_BROWSER_TEST_F(TabGroupEditorBubbleViewDialogBrowserTest,
           TabGroupEditorBubbleView::TAB_GROUP_HEADER_CXMENU_NEW_TAB_IN_GROUP));
   EXPECT_NE(nullptr, new_tab_button);
 
-  ui::MouseEvent released_event(ui::ET_MOUSE_RELEASED, gfx::PointF(),
+  ui::MouseEvent released_event(ui::EventType::kMouseReleased, gfx::PointF(),
                                 gfx::PointF(), base::TimeTicks(), 0, 0);
   views::test::ButtonTestApi(new_tab_button).NotifyClick(released_event);
 
@@ -88,6 +93,14 @@ IN_PROC_BROWSER_TEST_F(TabGroupEditorBubbleViewDialogBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(TabGroupEditorBubbleViewDialogBrowserTest, Ungroup) {
   base::HistogramTester histogram_tester;
+
+  // Allow the Ungroup command to be immediately performed for saved groups.
+  if (browser()->tab_group_deletion_dialog_controller()) {
+    browser()
+        ->tab_group_deletion_dialog_controller()
+        ->SetPrefsPreventShowingDialogForTesting(
+            /*should_prevent_dialog=*/true);
+  }
 
   ShowUi("SetUp");
 
@@ -109,7 +122,7 @@ IN_PROC_BROWSER_TEST_F(TabGroupEditorBubbleViewDialogBrowserTest, Ungroup) {
           TabGroupEditorBubbleView::TAB_GROUP_HEADER_CXMENU_UNGROUP));
   EXPECT_NE(nullptr, ungroup_button);
 
-  ui::MouseEvent released_event(ui::ET_MOUSE_RELEASED, gfx::PointF(),
+  ui::MouseEvent released_event(ui::EventType::kMouseReleased, gfx::PointF(),
                                 gfx::PointF(), base::TimeTicks(), 0, 0);
   views::test::ButtonTestApi(ungroup_button).NotifyClick(released_event);
 
@@ -143,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(TabGroupEditorBubbleViewDialogBrowserTest,
           TabGroupEditorBubbleView::TAB_GROUP_HEADER_CXMENU_CLOSE_GROUP));
   EXPECT_NE(nullptr, close_group_button);
 
-  ui::MouseEvent released_event(ui::ET_MOUSE_RELEASED, gfx::PointF(),
+  ui::MouseEvent released_event(ui::EventType::kMouseReleased, gfx::PointF(),
                                 gfx::PointF(), base::TimeTicks(), 0, 0);
   views::test::ButtonTestApi(close_group_button).NotifyClick(released_event);
 
@@ -155,16 +168,14 @@ IN_PROC_BROWSER_TEST_F(TabGroupEditorBubbleViewDialogBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(TabGroupEditorBubbleViewDialogBrowserTest,
                        MoveGroupToNewWindow) {
-  ShowUi("SetUp");
+  // Add a tab so theres more than just the group in the tabstrip
+  InProcessBrowserTest::AddBlankTabAndShow(browser());
 
-  TabGroupModel* group_model = browser()->tab_strip_model()->group_model();
-  std::vector<tab_groups::TabGroupId> group_list = group_model->ListTabGroups();
-  ASSERT_EQ(1u, group_list.size());
-  ASSERT_EQ(1u, group_model->GetTabGroup(group_list[0])->ListTabs().length());
+  ShowUi("SetUp");
 
   BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
   TabGroupHeader* header =
-      browser_view->tabstrip()->group_header(group_list[0]);
+      browser_view->tabstrip()->group_header(group_.value());
   views::Widget* editor_bubble = GetEditorBubbleWidget(header);
   ASSERT_NE(nullptr, editor_bubble);
 
@@ -174,16 +185,16 @@ IN_PROC_BROWSER_TEST_F(TabGroupEditorBubbleViewDialogBrowserTest,
               TAB_GROUP_HEADER_CXMENU_MOVE_GROUP_TO_NEW_WINDOW));
   EXPECT_NE(nullptr, move_group_button);
 
-  ui::MouseEvent released_event(ui::ET_MOUSE_RELEASED, gfx::PointF(),
+  ui::MouseEvent released_event(ui::EventType::kMouseReleased, gfx::PointF(),
                                 gfx::PointF(), base::TimeTicks(), 0, 0);
   ui_test_utils::BrowserChangeObserver new_browser_observer(
       nullptr, ui_test_utils::BrowserChangeObserver::ChangeType::kAdded);
   views::test::ButtonTestApi(move_group_button).NotifyClick(released_event);
   ui_test_utils::WaitForBrowserSetLastActive(new_browser_observer.Wait());
 
-  EXPECT_EQ(0u, group_model->ListTabGroups().size());
-  EXPECT_FALSE(group_model->ContainsTabGroup(group_list[0]));
-  EXPECT_EQ(0, browser()->tab_strip_model()->count());
+  EXPECT_EQ(0u, group_model()->ListTabGroups().size());
+  EXPECT_FALSE(group_model()->ContainsTabGroup(group_.value()));
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
 
   Browser* active_browser = chrome::FindLastActive();
   ASSERT_NE(active_browser, browser());
@@ -191,6 +202,30 @@ IN_PROC_BROWSER_TEST_F(TabGroupEditorBubbleViewDialogBrowserTest,
   EXPECT_EQ(
       1u,
       active_browser->tab_strip_model()->group_model()->ListTabGroups().size());
+}
+
+IN_PROC_BROWSER_TEST_F(TabGroupEditorBubbleViewDialogBrowserTest,
+                       MoveGroupToNewWindowDisabledWhenOnlyGroup) {
+  TabStripModel* tsm = browser()->tab_strip_model();
+  for (int index = tsm->count() - 1; index >= 0; --index) {
+    if (tsm->GetTabAtIndex(index)->group() != group_) {
+      tsm->CloseWebContentsAt(index, TabCloseTypes::CLOSE_NONE);
+    }
+  }
+
+  ShowUi("SetUp");
+
+  BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
+  TabGroupHeader* header =
+      browser_view->tabstrip()->group_header(group_.value());
+  views::Widget* editor_bubble = GetEditorBubbleWidget(header);
+  ASSERT_NE(nullptr, editor_bubble);
+
+  views::Button* const move_group_button =
+      views::Button::AsButton(editor_bubble->GetContentsView()->GetViewByID(
+          TabGroupEditorBubbleView::
+              TAB_GROUP_HEADER_CXMENU_MOVE_GROUP_TO_NEW_WINDOW));
+  EXPECT_EQ(nullptr, move_group_button);
 }
 
 class TabGroupEditorBubbleViewDialogBrowserTestWithFreezingEnabled
@@ -262,7 +297,7 @@ IN_PROC_BROWSER_TEST_F(
         views::Button::AsButton(editor_bubble->GetContentsView()->GetViewByID(
             TabGroupEditorBubbleView::TAB_GROUP_HEADER_CXMENU_UNGROUP));
     ASSERT_NE(nullptr, ungroup_button);
-    ui::MouseEvent released_event(ui::ET_MOUSE_RELEASED, gfx::PointF(),
+    ui::MouseEvent released_event(ui::EventType::kMouseReleased, gfx::PointF(),
                                   gfx::PointF(), base::TimeTicks(), 0, 0);
     views::test::ButtonTestApi(ungroup_button).NotifyClick(released_event);
   }
@@ -284,4 +319,49 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(0u, group_model->ListTabGroups().size());
   EXPECT_FALSE(group_model->ContainsTabGroup(group_list[0]));
   EXPECT_EQ(1, tsm->count());
+}
+
+IN_PROC_BROWSER_TEST_F(
+    TabGroupEditorBubbleViewDialogBrowserTestWithSavedGroupV2,
+    CloseGroupedTab) {
+  BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
+  InProcessBrowserTest::AddBlankTabAndShow(browser());
+  InProcessBrowserTest::AddBlankTabAndShow(browser());
+
+  TabStripModel* tsm = browser()->tab_strip_model();
+  ASSERT_EQ(3, tsm->count());
+  tsm->AddToNewGroup({0});
+  browser_view->tabstrip()->CloseTab(browser_view->tabstrip()->tab_at(0),
+                                     CloseTabSource::CLOSE_TAB_FROM_MOUSE);
+
+  tab_groups::DeletionDialogController* deletion_dialog_controller =
+      browser_view->browser()->tab_group_deletion_dialog_controller();
+
+  EXPECT_TRUE(deletion_dialog_controller->IsShowingDialog());
+
+  deletion_dialog_controller->SimulateOkButtonForTesting();
+
+  EXPECT_FALSE(deletion_dialog_controller->IsShowingDialog());
+  EXPECT_EQ(2, tsm->count());
+}
+
+IN_PROC_BROWSER_TEST_F(
+    TabGroupEditorBubbleViewDialogBrowserTestWithSavedGroupV2,
+    CloseGroupedTabWithPreventShowDialog) {
+  BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
+  InProcessBrowserTest::AddBlankTabAndShow(browser());
+  InProcessBrowserTest::AddBlankTabAndShow(browser());
+
+  tab_groups::DeletionDialogController* deletion_dialog_controller =
+      browser_view->browser()->tab_group_deletion_dialog_controller();
+  deletion_dialog_controller->SetPrefsPreventShowingDialogForTesting(true);
+
+  TabStripModel* tsm = browser()->tab_strip_model();
+  ASSERT_EQ(3, tsm->count());
+  tsm->AddToNewGroup({0});
+  browser_view->tabstrip()->CloseTab(browser_view->tabstrip()->tab_at(0),
+                                     CloseTabSource::CLOSE_TAB_FROM_MOUSE);
+
+  EXPECT_FALSE(deletion_dialog_controller->IsShowingDialog());
+  EXPECT_EQ(2, tsm->count());
 }

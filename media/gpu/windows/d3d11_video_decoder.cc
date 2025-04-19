@@ -4,7 +4,6 @@
 
 #include "media/gpu/windows/d3d11_video_decoder.h"
 
-#include <d3d11_4.h>
 #include <memory>
 #include <utility>
 
@@ -42,6 +41,7 @@
 #include "media/gpu/windows/d3d12_video_decoder_wrapper.h"
 #include "media/gpu/windows/supported_profile_helpers.h"
 #include "media/media_buildflags.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/hdr_metadata.h"
 #include "ui/gl/gl_angle_util_win.h"
 #include "ui/gl/gl_switches.h"
@@ -159,9 +159,6 @@ bool D3D11VideoDecoder::InitializeAcceleratedDecoder(
     const VideoDecoderConfig& config) {
   TRACE_EVENT0("gpu", "D3D11VideoDecoder::InitializeAcceleratedDecoder");
 
-  // Clear callback in case this is a codec change.
-  set_accelerator_decoder_wrapper_cb_.Reset();
-
   profile_ = config.profile();
   if (config.codec() == VideoCodec::kVP9) {
     accelerated_video_decoder_ = std::make_unique<VP9Decoder>(
@@ -207,7 +204,8 @@ bool D3D11VideoDecoder::ResetD3DVideoDecoder() {
                  config_.profile() == HEVCPROFILE_MAIN10 ||
                  (config_.color_space_info().GuessGfxColorSpace().IsHDR() &&
                   config_.codec() != VideoCodec::kH264 &&
-                  config_.profile() != HEVCPROFILE_MAIN)
+                  config_.profile() != HEVCPROFILE_MAIN &&
+                  config_.profile() != HEVCPROFILE_MAIN_STILL_PICTURE)
              ? 10
              : 8);
   }
@@ -255,9 +253,7 @@ bool D3D11VideoDecoder::ResetD3DVideoDecoder() {
   bit_depth_ = bit_depth;
   decoder_configurator_ = std::move(decoder_configurator);
   texture_selector_ = std::move(texture_selector);
-
-  CHECK(set_accelerator_decoder_wrapper_cb_);
-  set_accelerator_decoder_wrapper_cb_.Run(std::move(video_decoder_wrapper));
+  d3d_video_decoder_wrapper_ = std::move(video_decoder_wrapper);
 
   return true;
 }
@@ -270,18 +266,17 @@ D3D11VideoDecoder::CreateD3DVideoDecoderWrapper(
   std::unique_ptr<D3DVideoDecoderWrapper> video_decoder_wrapper;
   if (base::FeatureList::IsEnabled(kD3D12VideoDecoder)) {
     MEDIA_LOG(INFO, media_log_) << "D3D11VideoDecoder is using D3D12 backend";
-    Microsoft::WRL::ComPtr<IUnknown> d3d_device =
-        get_d3d_device_cb_.Run(D3DVersion::kD3D12);
+    ComUnknown d3d_device = get_d3d_device_cb_.Run(D3DVersion::kD3D12);
     if (!d3d_device) {
       NotifyError({D3D11StatusCode::kUnsupportedFeatureLevel,
                    "Cannot create D3D12Device"});
       return nullptr;
     }
 
-    Microsoft::WRL::ComPtr<ID3D12Device> device;
+    ComD3D12Device device;
     CHECK_EQ(d3d_device.As(&device), S_OK);
 
-    Microsoft::WRL::ComPtr<ID3D12VideoDevice> video_device;
+    ComD3D12VideoDevice video_device;
     HRESULT hr = device.As(&video_device);
     if (FAILED(hr)) {
       NotifyError({D3D11StatusCode::kFailedToGetVideoDevice,
@@ -381,8 +376,7 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
   // TODO(liberato): This isn't allowed off the main thread, since the callback
   // does who-knows-what.  Either we should be given the angle device, or we
   // should thread-hop to get it.
-  Microsoft::WRL::ComPtr<IUnknown> d3d_device =
-      get_d3d_device_cb_.Run(D3DVersion::kD3D11);
+  ComUnknown d3d_device = get_d3d_device_cb_.Run(D3DVersion::kD3D11);
   if (!d3d_device) {
     // This happens if, for example, if chrome is configured to use
     // D3D9 for ANGLE.
@@ -812,7 +806,8 @@ void D3D11VideoDecoder::CreatePictureBuffers() {
 
     base::OnceCallback<void(scoped_refptr<media::D3D11PictureBuffer>)>
         picture_buffer_gpu_resource_init_done_cb = base::DoNothing();
-    if (base::FeatureList::IsEnabled(kD3D11VideoDecoderUseSharedHandle)) {
+    if (base::FeatureList::IsEnabled(kD3D11VideoDecoderUseSharedHandle) ||
+        base::FeatureList::IsEnabled(kUseClientSharedImageForD3D11Video)) {
       // WebGPU requires interop on the picture buffer to achieve zero copy.
       // This requires a picture buffer to produce a shared image representation
       // during initialization. Add picture buffer in_client_use count to idle
@@ -902,19 +897,34 @@ bool D3D11VideoDecoder::OutputResult(const CodecPicture* picture,
     picture_color_space = config_.color_space_info().ToGfxColorSpace();
   }
 
-  gpu::MailboxHolder mailbox_holders[VideoFrame::kMaxPlanes];
+  media::ClientSharedImageOrMailboxHolder shared_image;
   gfx::ColorSpace output_color_space;
   D3D11Status result = picture_buffer->ProcessTexture(
-      picture_color_space, &mailbox_holders[0], &output_color_space);
+      picture_color_space, shared_image, &output_color_space);
   if (!result.is_ok()) {
     NotifyError(std::move(result).AddHere());
     return false;
   }
 
-  scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTextures(
-      texture_selector_->PixelFormat(), mailbox_holders,
-      VideoFrame::ReleaseMailboxCB(), picture_buffer->size(), visible_rect,
-      natural_size, timestamp);
+  scoped_refptr<VideoFrame> frame;
+  if (absl::holds_alternative<scoped_refptr<gpu::ClientSharedImage>>(
+          shared_image)) {
+    scoped_refptr<gpu::ClientSharedImage> client_shared_image =
+        absl::get<scoped_refptr<gpu::ClientSharedImage>>(
+            std::move(shared_image));
+    frame = VideoFrame::WrapSharedImage(
+        texture_selector_->PixelFormat(), client_shared_image,
+        client_shared_image->creation_sync_token(), GL_TEXTURE_EXTERNAL_OES,
+        VideoFrame::ReleaseMailboxCB(), picture_buffer->size(), visible_rect,
+        natural_size, timestamp);
+  } else {
+    gpu::MailboxHolder mailbox_holders[VideoFrame::kMaxPlanes] = {
+        absl::get<gpu::MailboxHolder>(std::move(shared_image))};
+    frame = VideoFrame::WrapNativeTextures(
+        texture_selector_->PixelFormat(), mailbox_holders,
+        VideoFrame::ReleaseMailboxCB(), picture_buffer->size(), visible_rect,
+        natural_size, timestamp);
+  }
 
   if (!frame) {
     // This can happen if, somehow, we get an unsupported combination of
@@ -970,9 +980,8 @@ bool D3D11VideoDecoder::OutputResult(const CodecPicture* picture,
   return true;
 }
 
-void D3D11VideoDecoder::SetDecoderWrapperCB(
-    const SetAcceleratorDecoderWrapperCB& cb) {
-  set_accelerator_decoder_wrapper_cb_ = cb;
+D3DVideoDecoderWrapper* D3D11VideoDecoder::GetWrapper() {
+  return d3d_video_decoder_wrapper_.get();
 }
 
 void D3D11VideoDecoder::NotifyError(D3D11Status reason,
@@ -1104,7 +1113,7 @@ D3D11VideoDecoder::GetSupportedVideoDecoderConfigs(
     if (!d3d_device) {
       return {};
     }
-    Microsoft::WRL::ComPtr<ID3D12Device> d3d12_device;
+    ComD3D12Device d3d12_device;
     CHECK_EQ(d3d_device.As(&d3d12_device), S_OK);
 
     supported_resolutions =

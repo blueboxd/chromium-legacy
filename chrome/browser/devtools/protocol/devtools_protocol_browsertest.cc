@@ -14,6 +14,8 @@
 #include "base/path_service.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/test/bind.h"
 #include "base/test/test_switches.h"
 #include "base/test/values_test_util.h"
 #include "base/threading/thread_restrictions.h"
@@ -27,8 +29,7 @@
 #include "chrome/browser/data_saver/data_saver.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/devtools/protocol/devtools_protocol_test_support.h"
-#include "chrome/browser/dips/dips_service.h"
-#include "chrome/browser/dips/dips_storage.h"
+#include "chrome/browser/dips/dips_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
@@ -147,6 +148,44 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
   EXPECT_EQ(chrome::kChromeUINewTabURL, wc->GetLastCommittedURL().spec());
 
   // Should not crash by this point.
+}
+
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
+                       CreateBrowserContextAcceptsProxyServer) {
+  AttachToBrowserTarget();
+  embedded_test_server()->RegisterRequestHandler(base::BindLambdaForTesting(
+      [&](const net::test_server::HttpRequest& request)
+          -> std::unique_ptr<net::test_server::HttpResponse> {
+        std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
+            std::make_unique<net::test_server::BasicHttpResponse>());
+        http_response->set_code(net::HTTP_OK);
+        http_response->set_content_type("text/html");
+        http_response->set_content("<title>Hello from proxy server!</title>");
+        return std::move(http_response);
+      }));
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  base::Value::Dict params;
+  params.Set("proxyServer",
+             embedded_test_server()->host_port_pair().ToString());
+  const base::Value::Dict* result =
+      SendCommandSync("Target.createBrowserContext", std::move(params));
+  std::string context_id = *result->FindString("browserContextId");
+
+  content::WebContentsAddedObserver observer;
+
+  params = base::Value::Dict();
+  params.Set("url", "http://this-page-does-not-exist.com/site.html");
+  params.Set("browserContextId", context_id);
+  result = SendCommandSync("Target.createTarget", std::move(params));
+
+  content::WebContents* wc = observer.GetWebContents();
+  ASSERT_TRUE(content::WaitForLoadStop(wc));
+
+  EXPECT_EQ(GURL("http://this-page-does-not-exist.com/site.html"),
+            wc->GetURL());
+
+  EXPECT_EQ("Hello from proxy server!", base::UTF16ToUTF8(wc->GetTitle()));
 }
 
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, CreateInDefaultContextById) {
@@ -491,9 +530,14 @@ class DevToolsProtocolTest_BounceTrackingMitigations
         /*enabled_features=*/{{features::kDIPS,
                                {{"delete", "true"},
                                 {"triggering_action", "stateful_bounce"}}}},
-        /*disabled_features=*/{kDipsPrepopulation});
+        /*disabled_features=*/{});
 
     DevToolsProtocolTest::SetUp();
+  }
+
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    DevToolsProtocolTest::SetUpOnMainThread();
   }
 
   void SetBlockThirdPartyCookies(bool value) {
@@ -519,13 +563,11 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest_BounceTrackingMitigations,
   const GURL bouncer(
       embedded_test_server()->GetURL("example.test", "/title1.html"));
 
-  // Get DIPS Service
-  DIPSService* dips_service = DIPSService::Get(browser()->profile());
   // Record a stateful bounce for `bouncer`.
-  dips_service->storage()
-      ->AsyncCall(&DIPSStorage::RecordBounce)
-      .WithArgs(bouncer, base::Time::Now(), true);
-  dips_service->storage()->FlushPostedTasksForTesting();
+  ASSERT_TRUE(SimulateDipsBounce(
+      web_contents(), embedded_test_server()->GetURL("a.test", "/empty.html"),
+      bouncer, embedded_test_server()->GetURL("b.test", "/empty.html"),
+      embedded_test_server()->GetURL("c.test", "/empty.html")));
 
   SendCommandSync("Storage.runBounceTrackingMitigations");
 

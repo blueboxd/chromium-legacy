@@ -13,11 +13,13 @@
 #include "base/observer_list.h"
 #include "base/run_loop.h"
 #include "base/task/thread_pool.h"
+#include "base/time/time.h"
 #include "base/trace_event/typed_macros.h"
 #include "content/browser/client_hints/client_hints.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/preloading/prefetch/no_vary_search_helper.h"
 #include "content/browser/preloading/preloading_attempt_impl.h"
+#include "content/browser/preloading/preloading_trigger_type_impl.h"
 #include "content/browser/preloading/prerender/devtools_prerender_attempt.h"
 #include "content/browser/preloading/prerender/prerender_features.h"
 #include "content/browser/preloading/prerender/prerender_final_status.h"
@@ -74,7 +76,7 @@ bool PrerenderHost::AreHttpRequestHeadersCompatible(
     const std::string& potential_activation_headers_str,
     const std::string& prerender_headers_str,
     PreloadingTriggerType trigger_type,
-    const std::string& embedder_histogram_suffix,
+    const std::string& histogram_suffix,
     PrerenderCancellationReason& reason) {
   net::HttpRequestHeaders prerender_headers;
   prerender_headers.AddHeadersFromString(prerender_headers_str);
@@ -135,6 +137,9 @@ PrerenderHost::PrerenderHost(
     base::WeakPtr<PreloadingAttempt> attempt,
     std::unique_ptr<DevToolsPrerenderAttempt> devtools_attempt)
     : attributes_(attributes),
+      metric_suffix_(
+          GeneratePrerenderHistogramSuffix(trigger_type(),
+                                           embedder_histogram_suffix())),
       attempt_(std::move(attempt)),
       devtools_attempt_(std::move(devtools_attempt)),
       web_contents_(web_contents),
@@ -472,8 +477,17 @@ void PrerenderHost::ReadyToCommitNavigation(
   // No-Vary-Search header.
   auto* navigation_request = NavigationRequest::From(navigation_handle);
   CHECK(navigation_request->IsInPrerenderedMainFrame());
+  // Prerender frame tree node is alive, see:
+  // `PrerenderHostRegistry::ReadyToCommitNavigation`.
+  CHECK(frame_tree_);
+  CHECK_EQ(frame_tree_.get(),
+           &navigation_request->frame_tree_node()->frame_tree());
+
+  if (!IsInitialNavigation(*navigation_request)) {
+    return;
+  }
+
   if (base::FeatureList::IsEnabled(blink::features::kPrerender2NoVarySearch) &&
-      IsInitialNavigation(*navigation_request) &&
       navigation_request->response() &&
       navigation_request->response()->parsed_headers &&
       navigation_request->response()
@@ -485,6 +499,12 @@ void PrerenderHost::ReadyToCommitNavigation(
         navigation_request->response()
             ->parsed_headers->no_vary_search_with_parse_error
             ->get_no_vary_search()));
+  }
+
+  // ReadyToCommitNavigation is called when the headers are received.
+  were_headers_received_ = true;
+  for (auto& observer : observers_) {
+    observer.OnHeadersReceived();
   }
 }
 
@@ -740,8 +760,8 @@ bool PrerenderHost::AreInitialPrerenderNavigationParamsCompatibleWithNavigation(
           navigation_request.begin_params(),
           allow_initiator_and_transition_mismatch, reason);
   if (result != ActivationNavigationParamsMatch::kOk) {
-    RecordPrerenderActivationNavigationParamsMatch(result, trigger_type(),
-                                                   embedder_histogram_suffix());
+    RecordPrerenderActivationNavigationParamsMatch(result,
+                                                   GetHistogramSuffix());
     return false;
   }
 
@@ -750,14 +770,13 @@ bool PrerenderHost::AreInitialPrerenderNavigationParamsCompatibleWithNavigation(
       navigation_request.common_params(),
       allow_initiator_and_transition_mismatch);
   if (result != ActivationNavigationParamsMatch::kOk) {
-    RecordPrerenderActivationNavigationParamsMatch(result, trigger_type(),
-                                                   embedder_histogram_suffix());
+    RecordPrerenderActivationNavigationParamsMatch(result,
+                                                   GetHistogramSuffix());
     return false;
   }
 
   RecordPrerenderActivationNavigationParamsMatch(
-      ActivationNavigationParamsMatch::kOk, trigger_type(),
-      embedder_histogram_suffix());
+      ActivationNavigationParamsMatch::kOk, GetHistogramSuffix());
   return true;
 }
 
@@ -779,7 +798,7 @@ PrerenderHost::AreBeginNavigationParamsCompatibleWithNavigation(
 
   if (!AreHttpRequestHeadersCompatible(potential_activation.headers,
                                        begin_params_->headers, trigger_type(),
-                                       embedder_histogram_suffix(), reason)) {
+                                       GetHistogramSuffix(), reason)) {
     return ActivationNavigationParamsMatch::kHttpRequestHeader;
   }
 
@@ -868,10 +887,16 @@ PrerenderHost::AreCommonNavigationParamsCompatibleWithNavigation(
   // already checked for matching values. Adding a CHECK here to be safe.
   CHECK(common_params_);
   if (attributes_.url_match_predicate) {
-    CHECK(attributes_.url_match_predicate.Run(potential_activation.url));
+    // TODO(crbug.com/41494389): Figure out what we need to pass here as a
+    // web_url_match result instead of std::nullopt.
+    CHECK(attributes_.url_match_predicate.Run(potential_activation.url,
+                                              std::nullopt));
   } else if (no_vary_search_.has_value()) {
     CHECK(no_vary_search_->AreEquivalent(potential_activation.url,
                                          common_params_->url));
+  } else if (no_vary_search_expected().has_value()) {
+    CHECK(no_vary_search_expected()->AreEquivalent(potential_activation.url,
+                                                   common_params_->url));
   } else {
     CHECK_EQ(potential_activation.url, common_params_->url);
   }
@@ -894,8 +919,7 @@ PrerenderHost::AreCommonNavigationParamsCompatibleWithNavigation(
   if (!allow_initiator_and_transition_mismatch &&
       (potential_activation_transition != common_params_->transition)) {
     RecordPrerenderActivationTransition(potential_activation_transition,
-                                        trigger_type(),
-                                        embedder_histogram_suffix());
+                                        GetHistogramSuffix());
     return ActivationNavigationParamsMatch::kTransition;
   }
 
@@ -1096,6 +1120,7 @@ void PrerenderHost::SetFailureReason(
     case PrerenderFinalStatus::kTabClosedByUserGesture:
     case PrerenderFinalStatus::kTabClosedWithoutUserGesture:
     case PrerenderFinalStatus::kSpeculationRuleRemoved:
+    case PrerenderFinalStatus::kOtherPrerenderedPageActivated:
       return;
     case PrerenderFinalStatus::kDestroyed:
     case PrerenderFinalStatus::kLowEndDevice:
@@ -1162,6 +1187,8 @@ void PrerenderHost::SetFailureReason(
     case PrerenderFinalStatus::kJavaScriptInterfaceAdded:
     case PrerenderFinalStatus::kJavaScriptInterfaceRemoved:
     case PrerenderFinalStatus::kAllPrerenderingCanceled:
+    case PrerenderFinalStatus::kWindowClosed:
+    case PrerenderFinalStatus::kSlowNetwork:
       if (attempt_) {
         attempt_->SetFailureReason(
             ToPreloadingFailureReason(reason.final_status()));
@@ -1184,24 +1211,62 @@ void PrerenderHost::SetFailureReason(
   }
 }
 
-bool PrerenderHost::IsUrlMatch(const GURL& url) const {
+std::optional<UrlMatchType> PrerenderHost::IsUrlMatch(const GURL& url) const {
+  // Triggers are not allowed to treat a cross-origin url as a matched url. It
+  // would cause security risks.
+  if (!url::IsSameOriginWith(attributes_.prerendering_url, url)) {
+    return std::nullopt;
+  }
+
+  std::optional<UrlMatchType> result;
+
+  if (GetInitialUrl() == url) {
+    result = UrlMatchType::kExact;
+  }
+
+  // Check No-Vary-Search header and try and match.
+  if (!result && no_vary_search_.has_value() &&
+      no_vary_search_->AreEquivalent(GetInitialUrl(), url)) {
+    result = UrlMatchType::kNoVarySearch;
+  }
+
+  if (!attributes_.url_match_predicate) {
+    return result;
+  }
+
+  // Override the result of default url match logic with the result
+  // from the custom url matching predicate call.
+  if (attributes_.url_match_predicate.Run(url, result)) {
+    return UrlMatchType::kURLPredicateMatch;
+  }
+
+  return std::nullopt;
+}
+
+bool PrerenderHost::IsNoVarySearchHintUrlMatch(const GURL& url) const {
   // Triggers are not allowed to treat a cross-origin url as a matched url. It
   // would cause security risks.
   if (!url::IsSameOriginWith(attributes_.prerendering_url, url)) {
     return false;
   }
 
+  // We don't care about url_match_predicate here because it is applied only
+  // if we know for sure url is a match. This is a "potential"
+  // match depending on the No-Vary-Search header that will be received.
   if (attributes_.url_match_predicate) {
-    return attributes_.url_match_predicate.Run(url);
+    return false;
   }
 
-  if (GetInitialUrl() == url) {
-    return true;
+  // Let's check if this PrerenderHost would match by
+  // No-Vary-Search hint. We need to check if the headers were already received.
+  if (!were_headers_received()) {
+    if (no_vary_search_expected().has_value() &&
+        no_vary_search_expected()->AreEquivalent(GetInitialUrl(), url)) {
+      return true;
+    }
   }
 
-  // Check No-Vary-Search header and try and match.
-  return no_vary_search_.has_value() &&
-         no_vary_search_->AreEquivalent(GetInitialUrl(), url);
+  return false;
 }
 
 void PrerenderHost::OnAcceptClientHintChanged(
@@ -1218,6 +1283,10 @@ void PrerenderHost::GetAllowedClientHintsOnPage(
   for (const auto& hint : client_hints_type_.at(origin)) {
     client_hints->SetIsEnabled(hint, true);
   }
+}
+
+std::string PrerenderHost::GetHistogramSuffix() const {
+  return metric_suffix_;
 }
 
 void PrerenderHost::Cancel(PrerenderFinalStatus status) {
@@ -1249,6 +1318,57 @@ void PrerenderHost::SetNoVarySearch(net::HttpNoVarySearchData no_vary_search) {
 bool PrerenderHost::IsInitialNavigation(
     const NavigationRequest& navigation_request) const {
   return GetInitialNavigationId() == navigation_request.GetNavigationId();
+}
+
+base::TimeDelta PrerenderHost::WaitUntilHeadTimeout() {
+  int timeout_in_milliseconds = 0;
+  if (IsSpeculationRuleType(attributes_.trigger_type)) {
+    CHECK(attributes_.eagerness.has_value());
+    switch (attributes_.eagerness.value()) {
+      case blink::mojom::SpeculationEagerness::kEager:
+        timeout_in_milliseconds =
+            features::kPrerender2NoVarySearchWaitForHeadersTimeoutEagerPrerender
+                .Get();
+        break;
+      case blink::mojom::SpeculationEagerness::kModerate:
+        timeout_in_milliseconds =
+            features::
+                kPrerender2NoVarySearchWaitForHeadersTimeoutModeratePrerender
+                    .Get();
+        break;
+      case blink::mojom::SpeculationEagerness::kConservative:
+        timeout_in_milliseconds =
+            features::
+                kPrerender2NoVarySearchWaitForHeadersTimeoutConservativePrerender
+                    .Get();
+        break;
+    }
+  } else {
+    timeout_in_milliseconds =
+        features::kPrerender2NoVarySearchWaitForHeadersTimeoutForEmbedders
+            .Get();
+  }
+  return base::Milliseconds(timeout_in_milliseconds);
+}
+
+void PrerenderHost::OnWaitingForHeadersStarted(
+    NavigationHandle& navigation_handle,
+    WaitingForHeadersStartedReason reason) {
+  // Prerender frame tree is alive. This check is also done by the caller.
+  CHECK(frame_tree_);
+  for (auto& observer : observers_) {
+    observer.OnWaitingForHeadersStarted(navigation_handle, reason);
+  }
+}
+
+void PrerenderHost::OnWaitingForHeadersFinished(
+    NavigationHandle& navigation_handle,
+    WaitingForHeadersFinishedReason reason) {
+  // Prerender frame tree is alive. This check is also done by the caller.
+  CHECK(frame_tree_);
+  for (auto& observer : observers_) {
+    observer.OnWaitingForHeadersFinished(navigation_handle, reason);
+  }
 }
 
 }  // namespace content

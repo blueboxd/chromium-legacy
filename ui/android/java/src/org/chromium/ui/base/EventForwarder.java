@@ -6,6 +6,7 @@ package org.chromium.ui.base;
 
 import android.content.ClipData;
 import android.content.ClipDescription;
+import android.net.Uri;
 import android.os.Build;
 import android.view.DragEvent;
 import android.view.InputDevice;
@@ -22,12 +23,12 @@ import org.jni_zero.NativeMethods;
 
 import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
-import org.chromium.base.compat.ApiHelperForM;
-import org.chromium.base.compat.ApiHelperForQ;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.ui.MotionEventUtils;
 
 import java.lang.reflect.UndeclaredThrowableException;
+import java.util.ArrayList;
+import java.util.List;
 
 /** Class used to forward view, input events down to native. */
 @JNINamespace("ui")
@@ -36,10 +37,12 @@ public class EventForwarder {
     private final boolean mIsDragDropEnabled;
     private final boolean mConvertTrackpadEventsToMouse;
 
+    // The mime type for a URL.
+    private static final String URL_MIME_TYPE = "text/x-moz-url";
+
     private long mNativeEventForwarder;
 
-    // Offsets for the events that passes through.
-    private float mCurrentTouchOffsetX;
+    // Offset for the events that passes through.
     private float mCurrentTouchOffsetY;
 
     // Offset for the drag events that's dispatching through other views.
@@ -107,7 +110,7 @@ public class EventForwarder {
     }
 
     private boolean hasTouchEventOffset() {
-        return mCurrentTouchOffsetX != 0.0f || mCurrentTouchOffsetY != 0.0f;
+        return mCurrentTouchOffsetY != 0.0f;
     }
 
     // These values are persisted to logs. Entries should not be renumbered and
@@ -256,7 +259,7 @@ public class EventForwarder {
 
             int gestureClassification = 0;
             if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-                gestureClassification = ApiHelperForQ.getClassification(event);
+                gestureClassification = event.getClassification();
             }
 
             final boolean consumed =
@@ -310,24 +313,18 @@ public class EventForwarder {
      * DragEvent). This is used to handle content moving and not lining up properly with the android
      * input system.
      *
-     * @param dx The X offset in pixels to shift touch events.
      * @param dy The Y offset in pixels to shift touch events.
      */
-    public void setCurrentTouchEventOffsets(float dx, float dy) {
-        mCurrentTouchOffsetX = dx;
+    public void setCurrentTouchOffsetY(float dy) {
         mCurrentTouchOffsetY = dy;
     }
 
     /**
-     * Creates a new motion event differed from the given event by current touch offset if the
-     * offset is not zero.
-     *
      * Sets the current amount to offset incoming drag events by. Used for {@link DragEvent} only.
      * Usually used when dispatching drag events dispatched from views other than the ContentView.
      *
      * @param dx The X offset in pixels to shift drag events.
      * @param dy The Y offset in pixels to shift drag events.
-     *
      * @see #setCurrentTouchEventOffsets(float, float) to offset both touch and drag events.
      */
     public void setDragDispatchingOffset(float dx, float dy) {
@@ -344,7 +341,7 @@ public class EventForwarder {
     public MotionEvent createOffsetMotionEventIfNeeded(MotionEvent src) {
         if (!hasTouchEventOffset()) return src;
         MotionEvent dst = MotionEvent.obtain(src);
-        dst.offsetLocation(mCurrentTouchOffsetX, mCurrentTouchOffsetY);
+        dst.offsetLocation(/* deltaX= */ 0, mCurrentTouchOffsetY);
         return dst;
     }
 
@@ -493,7 +490,7 @@ public class EventForwarder {
     }
 
     public static int getMouseEventActionButton(MotionEvent event) {
-        return ApiHelperForM.getActionButton(event);
+        return event.getActionButton();
     }
 
     public boolean isTrackpadToMouseEventConversionEnabled() {
@@ -541,14 +538,26 @@ public class EventForwarder {
         if (mNativeEventForwarder == 0) {
             return false;
         }
-
-        // text/* will match text/uri-list, text/html, text/plain.
-        String[] mimeTypes =
-                clipDescription == null ? new String[0] : clipDescription.filterMimeTypes("text/*");
-        // mimeTypes is null iff there is no matching text MIME type.
-        // Try if there is any matching image MIME type.
-        if (mimeTypes == null) {
-            mimeTypes = clipDescription.filterMimeTypes("image/*");
+        boolean dragDropFilesEnabled =
+                UiAndroidFeatureMap.isEnabled(UiAndroidFeatureList.DRAG_DROP_FILES);
+        String[] mimeTypes = null;
+        if (dragDropFilesEnabled) {
+            mimeTypes =
+                    new String[clipDescription != null ? clipDescription.getMimeTypeCount() : 0];
+            for (int i = 0; i < mimeTypes.length; i++) {
+                mimeTypes[i] = clipDescription.getMimeType(i);
+            }
+        } else {
+            // text/* will match text/uri-list, text/html, text/plain.
+            mimeTypes =
+                    clipDescription == null
+                            ? new String[0]
+                            : clipDescription.filterMimeTypes("text/*");
+            // mimeTypes is null iff there is no matching text MIME type.
+            // Try if there is any matching image MIME type.
+            if (mimeTypes == null) {
+                mimeTypes = clipDescription.filterMimeTypes("image/*");
+            }
         }
 
         if (event.getAction() == DragEvent.ACTION_DRAG_STARTED) {
@@ -556,14 +565,43 @@ public class EventForwarder {
         }
 
         String content = "";
+        List<String> filenames = new ArrayList<String>();
+        String text = null;
+        String html = null;
+        String url = null;
         if (event.getAction() == DragEvent.ACTION_DROP) {
             try {
                 StringBuilder contentBuilder = new StringBuilder("");
                 ClipData clipData = event.getClipData();
                 final int itemCount = clipData.getItemCount();
                 for (int i = 0; i < itemCount; i++) {
-                    ClipData.Item item = clipData.getItemAt(i);
-                    contentBuilder.append(item.coerceToStyledText(containerView.getContext()));
+                    if (!dragDropFilesEnabled) {
+                        ClipData.Item item = clipData.getItemAt(i);
+                        contentBuilder.append(item.coerceToStyledText(containerView.getContext()));
+                        continue;
+                    }
+
+                    // If there are any Uris, set them as files.
+                    Uri uri = clipData.getItemAt(i).getUri();
+                    if (uri != null) {
+                        filenames.add(uri.toString());
+                    }
+                }
+
+                // Only read text, html, url if there are no Uris (files).
+                if (dragDropFilesEnabled && filenames.isEmpty() && itemCount > 0) {
+                    ClipData.Item item = clipData.getItemAt(0);
+                    CharSequence temp = item.getText();
+                    if (temp != null) {
+                        text = temp.toString();
+                        if (clipDescription.hasMimeType(URL_MIME_TYPE)) {
+                            url = text;
+                        }
+                    }
+                    temp = item.getHtmlText();
+                    if (temp != null) {
+                        html = temp.toString();
+                    }
                 }
                 content = contentBuilder.toString();
             } catch (UndeclaredThrowableException e) {
@@ -571,16 +609,18 @@ public class EventForwarder {
                 // While ClipData.Item does capture most common failures, there could be exceptions
                 // that's wrapped by Chrome classes (e.g. ServiceTracingProxyProvider) which changed
                 // the exception signiture. See crbug.com/1406777.
-                Log.e(TAG, "Parsing clip data content failed.", e.getMessage());
+                Log.e(TAG, "Parsing clip data content failed.", e);
                 content = "";
             }
+            RecordHistogram.recordCount100Histogram(
+                    "Android.DragDrop.Files.Count", filenames.size());
         }
 
         int[] locationOnScreen = new int[2];
         containerView.getLocationOnScreen(locationOnScreen);
 
         // All coordinates are in device pixel. Conversion to DIP happens in the native.
-        float x = event.getX() + mCurrentTouchOffsetX + mDragDispatchingOffsetX;
+        float x = event.getX() + mDragDispatchingOffsetX;
         float y = event.getY() + mCurrentTouchOffsetY + mDragDispatchingOffsetY;
         float screenX = x + locationOnScreen[0];
         float screenY = y + locationOnScreen[1];
@@ -595,7 +635,11 @@ public class EventForwarder {
                         screenX,
                         screenY,
                         mimeTypes,
-                        content);
+                        content,
+                        filenames.toArray(new String[0]),
+                        text,
+                        html,
+                        url);
         return true;
     }
 
@@ -726,8 +770,6 @@ public class EventForwarder {
     @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
     @NativeMethods
     interface Natives {
-        WindowAndroid getJavaWindowAndroid(long nativeEventForwarder, EventForwarder caller);
-
         // All touch events (including flings, scrolls etc) accept coordinates in physical pixels.
         boolean onTouchEvent(
                 long nativeEventForwarder,
@@ -787,7 +829,11 @@ public class EventForwarder {
                 float screenX,
                 float screenY,
                 String[] mimeTypes,
-                String content);
+                String content,
+                String[] filenames,
+                String text,
+                String html,
+                String url);
 
         boolean onGestureEvent(
                 long nativeEventForwarder,

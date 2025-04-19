@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chromeos/ash/components/dbus/audio/cras_audio_client.h"
 
 #include <memory>
@@ -143,9 +148,11 @@ class MockObserver : public CrasAudioClient::Observer {
                void(const base::flat_map<std::string, std::string>&
                         survey_specific_data));
   MOCK_METHOD0(SpeakOnMuteDetected, void());
+  MOCK_METHOD1(EwmaPowerReported, void(double power));
   MOCK_METHOD0(NumberOfNonChromeOutputStreamsChanged, void());
   MOCK_METHOD1(NumStreamIgnoreUiGains, void(int32_t num));
   MOCK_METHOD0(NumberOfArcStreamsChanged, void());
+  MOCK_METHOD1(SidetoneSupportedChanged, void(bool supported));
 };
 
 // Expect the reader to be empty.
@@ -527,6 +534,14 @@ class CrasAudioClientTest : public testing::Test {
             Invoke(this, &CrasAudioClientTest::OnSpeakOnMuteDetected));
 
     // Set an expectation so mock_cras_proxy's monitoring
+    // EwmaPowerReported ConnectToSignal will use
+    // OnEwmaPowerReported() to run the callback.
+    EXPECT_CALL(*mock_cras_proxy_.get(),
+                DoConnectToSignal(interface_name_, "EwmaPowerReported", _, _))
+        .WillRepeatedly(
+            Invoke(this, &CrasAudioClientTest::OnEwmaPowerReported));
+
+    // Set an expectation so mock_cras_proxy's monitoring
     // SurveyTrigger ConnectToSignal will use
     // OnNumStreamIgnoreUiGains() to run the callback.
     EXPECT_CALL(*mock_cras_proxy_.get(),
@@ -543,6 +558,15 @@ class CrasAudioClientTest : public testing::Test {
                                   cras::kNumberOfArcStreamsChanged, _, _))
         .WillRepeatedly(
             Invoke(this, &CrasAudioClientTest::OnNumberOfArcStreamsChanged));
+
+    // Set an expectation so mock_cras_proxy's monitoring
+    // SidetoneSupportedChanged ConnectToSignal will use
+    // OnSidetoneSupportedChanged() to run the callback.
+    EXPECT_CALL(
+        *mock_cras_proxy_.get(),
+        DoConnectToSignal(interface_name_, "SidetoneSupportedChanged", _, _))
+        .WillRepeatedly(
+            Invoke(this, &CrasAudioClientTest::OnSidetoneSupportedChanged));
 
     // Set an expectation so mock_bus's GetObjectProxy() for the given
     // service name and the object path will return mock_cras_proxy_.
@@ -660,6 +684,12 @@ class CrasAudioClientTest : public testing::Test {
     speak_on_mute_detected_handler_.Run(signal);
   }
 
+  // Send EwmaPowerReported signal to the tested client.
+  void SendEwmaPowerReportedSignal(dbus::Signal* signal) {
+    ASSERT_FALSE(ewma_power_reported_handler_.is_null());
+    ewma_power_reported_handler_.Run(signal);
+  }
+
   void SendNumberOfNonChromeOutputStreamsChangedSignal(dbus::Signal* signal) {
     ASSERT_FALSE(
         number_of_non_chrome_output_streams_changed_handler_.is_null());
@@ -676,6 +706,12 @@ class CrasAudioClientTest : public testing::Test {
   void SendNumberOfArcStreamsChangedSignal(dbus::Signal* signal) {
     ASSERT_FALSE(number_of_arc_streams_changed_handler_.is_null());
     number_of_arc_streams_changed_handler_.Run(signal);
+  }
+
+  // Send sidetone supported changed signal to the tested client.
+  void SendSidetoneSupportedChangedSignal(dbus::Signal* signal) {
+    ASSERT_FALSE(sidetone_supported_changed_handler_.is_null());
+    sidetone_supported_changed_handler_.Run(signal);
   }
 
   CrasAudioClient* client() { return CrasAudioClient::Get(); }
@@ -717,6 +753,8 @@ class CrasAudioClientTest : public testing::Test {
   dbus::ObjectProxy::SignalCallback survey_trigger_handler_;
   // The SpeakOnMuteDetected signal handler given by the tested client.
   dbus::ObjectProxy::SignalCallback speak_on_mute_detected_handler_;
+  // The EwmaPowerReported signal handler given by the tested client.
+  dbus::ObjectProxy::SignalCallback ewma_power_reported_handler_;
   // The NumberOfNonChromeOutputStreamsChanged signal handler given by the
   // tested client.
   dbus::ObjectProxy::SignalCallback
@@ -726,6 +764,8 @@ class CrasAudioClientTest : public testing::Test {
   // The NumberOfArcStreamsChanged signal handler given by the
   // tested client.
   dbus::ObjectProxy::SignalCallback number_of_arc_streams_changed_handler_;
+  // The SidetoneSupportedChanged signal handler given by the tested client.
+  dbus::ObjectProxy::SignalCallback sidetone_supported_changed_handler_;
   // The name of the method which is expected to be called.
   std::string expected_method_name_;
   // The response which the mock cras proxy returns.
@@ -927,6 +967,20 @@ class CrasAudioClientTest : public testing::Test {
 
   // Checks the requested interface name and signal name.
   // Used to implement the mock cras proxy.
+  void OnEwmaPowerReported(
+      const std::string& interface_name,
+      const std::string& signal_name,
+      const dbus::ObjectProxy::SignalCallback& signal_callback,
+      dbus::ObjectProxy::OnConnectedCallback* on_connected_callback) {
+    ewma_power_reported_handler_ = signal_callback;
+    constexpr bool success = true;
+    task_environment_.GetMainThreadTaskRunner()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(*on_connected_callback),
+                                  interface_name, signal_name, success));
+  }
+
+  // Checks the requested interface name and signal name.
+  // Used to implement the mock cras proxy.
   void OnNumStreamIgnoreUiGainsChanged(
       const std::string& interface_name,
       const std::string& signal_name,
@@ -947,6 +1001,20 @@ class CrasAudioClientTest : public testing::Test {
       const dbus::ObjectProxy::SignalCallback& signal_callback,
       dbus::ObjectProxy::OnConnectedCallback* on_connected_callback) {
     number_of_arc_streams_changed_handler_ = signal_callback;
+    constexpr bool success = true;
+    task_environment_.GetMainThreadTaskRunner()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(*on_connected_callback),
+                                  interface_name, signal_name, success));
+  }
+
+  // Checks the requested interface name and signal name.
+  // Used to implement the mock cras proxy.
+  void OnSidetoneSupportedChanged(
+      const std::string& interface_name,
+      const std::string& signal_name,
+      const dbus::ObjectProxy::SignalCallback& signal_callback,
+      dbus::ObjectProxy::OnConnectedCallback* on_connected_callback) {
+    sidetone_supported_changed_handler_ = signal_callback;
     constexpr bool success = true;
     task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(std::move(*on_connected_callback),
@@ -1221,6 +1289,26 @@ TEST_F(CrasAudioClientTest, SpeakOnMuteDetected) {
   base::RunLoop().RunUntilIdle();
 }
 
+TEST_F(CrasAudioClientTest, EwmaPowerReported) {
+  const double kPower = 0.5;
+
+  dbus::Signal signal(cras::kCrasControlInterface, "EwmaPowerReported");
+  dbus::MessageWriter writer(&signal);
+  writer.AppendDouble(kPower);
+
+  MockObserver observer;
+  EXPECT_CALL(observer, EwmaPowerReported(kPower)).Times(1);
+  client()->AddObserver(&observer);
+  SendEwmaPowerReportedSignal(&signal);
+  client()->RemoveObserver(&observer);
+
+  EXPECT_CALL(observer, EwmaPowerReported(kPower)).Times(0);
+  // Run the signal callback again and make sure the observer isn't called.
+  SendEwmaPowerReportedSignal(&signal);
+
+  base::RunLoop().RunUntilIdle();
+}
+
 TEST_F(CrasAudioClientTest, NumStreamIgnoreUiGainsChanged) {
   const int32_t kNumStream = 1;
 
@@ -1258,6 +1346,26 @@ TEST_F(CrasAudioClientTest, NumberOfArcStreamsChanged) {
   EXPECT_CALL(observer, NumberOfArcStreamsChanged()).Times(0);
   // Run the signal callback again and make sure the observer isn't called.
   SendNumberOfArcStreamsChangedSignal(&signal);
+
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(CrasAudioClientTest, SidetoneSupportedChanged) {
+  const bool kSupported = true;
+
+  dbus::Signal signal(cras::kCrasControlInterface, "SidetoneSupportedChanged");
+  dbus::MessageWriter writer(&signal);
+  writer.AppendBool(kSupported);
+
+  MockObserver observer;
+  EXPECT_CALL(observer, SidetoneSupportedChanged(kSupported)).Times(1);
+  client()->AddObserver(&observer);
+  SendSidetoneSupportedChangedSignal(&signal);
+  client()->RemoveObserver(&observer);
+
+  EXPECT_CALL(observer, SidetoneSupportedChanged(kSupported)).Times(0);
+  // Run the signal callback again and make sure the observer isn't called.
+  SendSidetoneSupportedChangedSignal(&signal);
 
   base::RunLoop().RunUntilIdle();
 }

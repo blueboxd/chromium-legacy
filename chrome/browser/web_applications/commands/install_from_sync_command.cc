@@ -17,6 +17,7 @@
 #include "chrome/browser/web_applications/generated_icon_fix_util.h"
 #include "chrome/browser/web_applications/install_bounce_metric.h"
 #include "chrome/browser/web_applications/locks/shared_web_contents_with_app_lock.h"
+#include "chrome/browser/web_applications/proto/web_app_install_state.pb.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_icon_operations.h"
@@ -42,7 +43,10 @@ WebAppInstallFinalizer::FinalizeOptions GetFinalizerOptionForSyncInstall() {
       webapps::WebappInstallSource::SYNC);
   finalize_options.overwrite_existing_manifest_fields = true;
   // If app is not locally installed then no OS integration like OS shortcuts.
-  finalize_options.locally_installed = AreAppsLocallyInstalledBySync();
+  finalize_options.install_state =
+      AreAppsLocallyInstalledBySync()
+          ? proto::InstallState::INSTALLED_WITH_OS_INTEGRATION
+          : proto::InstallState::SUGGESTED_FROM_ANOTHER_DEVICE;
   finalize_options.add_to_applications_menu = AreAppsLocallyInstalledBySync();
   finalize_options.add_to_desktop = AreAppsLocallyInstalledBySync();
   // Never add the app to the quick launch bar after sync.
@@ -104,9 +108,8 @@ InstallFromSyncCommand::InstallFromSyncCommand(
   DCHECK(AreAppsLocallyInstalledBySync());
 #endif
   DCHECK(params_.start_url.is_valid());
-  fallback_install_info_ =
-      std::make_unique<WebAppInstallInfo>(params_.manifest_id);
-  fallback_install_info_->start_url = params_.start_url;
+  fallback_install_info_ = std::make_unique<WebAppInstallInfo>(
+      params_.manifest_id, params_.start_url);
   fallback_install_info_->title = base::UTF8ToUTF16(params_.title);
   fallback_install_info_->user_display_mode = params_.user_display_mode;
   fallback_install_info_->scope = params_.scope;
@@ -203,20 +206,18 @@ void InstallFromSyncCommand::OnGetWebAppInstallInfo(
 
 void InstallFromSyncCommand::OnDidPerformInstallableCheck(
     blink::mojom::ManifestPtr opt_manifest,
-    const GURL& manifest_url,
     bool valid_manifest_for_web_app,
     webapps::InstallableStatusCode error_code) {
-  if (opt_manifest) {
-    UpdateWebAppInfoFromManifest(*opt_manifest, manifest_url,
-                                 install_info_.get());
-  } else {
-    // If there is no manifest, set the manifest id from the parameters.
-    install_info_->manifest_id = params_.manifest_id;
+  if (!opt_manifest) {
+    InstallFallback(webapps::InstallResultCode::kExpectedAppIdCheckFailed);
+    return;
   }
+
+  UpdateWebAppInfoFromManifest(*opt_manifest, install_info_.get());
 
   // Ensure that the manifest linked is the right one.
   webapps::AppId generated_app_id =
-      GenerateAppIdFromManifestId(install_info_->manifest_id);
+      GenerateAppIdFromManifestId(install_info_->manifest_id());
   if (params_.app_id != generated_app_id) {
     // Add the error to the log.
     base::Value::Dict expected_id_error;

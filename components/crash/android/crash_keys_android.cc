@@ -2,12 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "components/crash/android/crash_keys_android.h"
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "components/crash/android/jni_headers/CrashKeys_jni.h"
 #include "components/crash/core/common/crash_key.h"
+
+// Must come after all headers that specialize FromJniType() / ToJniType().
+#include "components/crash/android/jni_headers/CrashKeys_jni.h"
 
 namespace {
 

@@ -7,7 +7,9 @@
 #include "base/containers/contains.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
+#include "components/autofill/core/browser/address_data_cleaner.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics_utils.h"
+#include "components/autofill/core/browser/metrics/profile_deduplication_metrics.h"
 #include "components/autofill/core/browser/profile_requirement_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 
@@ -53,8 +55,12 @@ void LogAddressProfileImportUkm(
     AutofillProfileImportType import_type,
     AutofillClient::AddressPromptUserDecision user_decision,
     const ProfileImportMetadata& profile_import_metadata,
-    size_t num_edited_fields) {
-  ukm::builders::Autofill_AddressProfileImport(source_id)
+    size_t num_edited_fields,
+    std::optional<AutofillProfile> import_candidate,
+    const std::vector<const AutofillProfile*>& existing_profiles,
+    std::string_view app_locale) {
+  ukm::builders::Autofill2_AddressProfileImport builder(source_id);
+  builder
       .SetAutocompleteUnrecognizedImport(
           profile_import_metadata
               .did_import_from_unrecognized_autocomplete_field)
@@ -63,7 +69,15 @@ void LogAddressProfileImportUkm(
       .SetPhoneNumberStatus(
           static_cast<int64_t>(profile_import_metadata.phone_import_status))
       .SetUserDecision(static_cast<int64_t>(user_decision))
-      .Record(ukm_recorder);
+      .SetUserHasExistingProfile(!existing_profiles.empty());
+  if (import_type == AutofillProfileImportType::kNewProfile &&
+      !existing_profiles.empty() && import_candidate) {
+    builder.SetDuplicationRank(GetDuplicationRank(
+        AddressDataCleaner::CalculateMinimalIncompatibleTypeSets(
+            *import_candidate, existing_profiles,
+            AutofillProfileComparator(app_locale))));
+  }
+  builder.Record(ukm_recorder);
 }
 
 void LogAddressFormImportRequirementMetric(
@@ -114,15 +128,57 @@ void LogSilentUpdatesProfileImportType(AutofillProfileImportType import_type) {
 }
 
 void LogNewProfileImportDecision(
-    AutofillClient::AddressPromptUserDecision decision) {
-  base::UmaHistogramEnumeration("Autofill.ProfileImport.NewProfileDecision",
+    AutofillClient::AddressPromptUserDecision decision,
+    const std::vector<const AutofillProfile*>& existing_profiles,
+    const AutofillProfile& import_candidate,
+    std::string_view app_locale) {
+  constexpr std::string_view kNameBase =
+      "Autofill.ProfileImport.NewProfileDecision2.";
+  base::UmaHistogramEnumeration(base::StrCat({kNameBase, "Aggregate"}),
                                 decision);
+
+  if (existing_profiles.empty()) {
+    base::UmaHistogramEnumeration(
+        base::StrCat({kNameBase, "UserHasNoExistingProfiles"}), decision);
+  } else {
+    base::UmaHistogramEnumeration(
+        base::StrCat({kNameBase, "UserHasExistingProfile"}), decision);
+
+    int duplication_rank = GetDuplicationRank(
+        AddressDataCleaner::CalculateMinimalIncompatibleTypeSets(
+            import_candidate, existing_profiles,
+            AutofillProfileComparator(app_locale)));
+    if (duplication_rank == 1) {
+      base::UmaHistogramEnumeration(
+          base::StrCat({kNameBase, "UserHasQuasiDuplicateProfile"}), decision);
+    }
+  }
+}
+
+void LogNewProfileStorageLocation(const AutofillProfile& import_candidate) {
+  base::UmaHistogramEnumeration(
+      "Autofill.ProfileImport.StorageNewAddressIsSavedTo",
+      import_candidate.source());
 }
 
 void LogProfileUpdateImportDecision(
-    AutofillClient::AddressPromptUserDecision decision) {
-  base::UmaHistogramEnumeration("Autofill.ProfileImport.UpdateProfileDecision",
+    AutofillClient::AddressPromptUserDecision decision,
+    const std::vector<const AutofillProfile*>& existing_profiles,
+    const AutofillProfile& import_candidate,
+    std::string_view app_locale) {
+  constexpr std::string_view kNameBase =
+      "Autofill.ProfileImport.UpdateProfileDecision2.";
+  base::UmaHistogramEnumeration(base::StrCat({kNameBase, "Aggregate"}),
                                 decision);
+
+  int duplication_rank = GetDuplicationRank(
+      AddressDataCleaner::CalculateMinimalIncompatibleTypeSets(
+          import_candidate, existing_profiles,
+          AutofillProfileComparator(app_locale)));
+  if (duplication_rank == 1) {
+    base::UmaHistogramEnumeration(
+        base::StrCat({kNameBase, "UserHasQuasiDuplicateProfile"}), decision);
+  }
 }
 
 // static

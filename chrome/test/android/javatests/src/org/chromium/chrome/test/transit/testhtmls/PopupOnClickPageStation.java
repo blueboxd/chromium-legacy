@@ -5,20 +5,19 @@
 package org.chromium.chrome.test.transit.testhtmls;
 
 import org.chromium.base.test.transit.Elements;
-import org.chromium.base.test.transit.Transition;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.chrome.test.transit.PageStation;
-import org.chromium.chrome.test.transit.PopupBlockedMessageFacility;
-import org.chromium.chrome.test.transit.WebPageStation;
+import org.chromium.chrome.test.transit.page.PageStation;
+import org.chromium.chrome.test.transit.page.PopupBlockedMessageFacility;
+import org.chromium.chrome.test.transit.page.WebPageStation;
 import org.chromium.content_public.browser.test.transit.HtmlElement;
-import org.chromium.content_public.browser.test.transit.HtmlElementInState;
+import org.chromium.content_public.browser.test.transit.HtmlElementSpec;
 
 /** PageStation for popup_on_click.html, which contains a link to open itself in a pop-up. */
 public class PopupOnClickPageStation extends WebPageStation {
     public static final String PATH = "/chrome/test/data/android/popup_on_click.html";
 
-    public static final HtmlElement LINK_TO_POPUP = new HtmlElement("link");
-    private HtmlElementInState mLinkToPopup;
+    public static final HtmlElementSpec LINK_TO_POPUP = new HtmlElementSpec("link");
+    private HtmlElement mLinkToPopup;
 
     protected <T extends PopupOnClickPageStation> PopupOnClickPageStation(Builder<T> builder) {
         super(builder);
@@ -30,7 +29,7 @@ public class PopupOnClickPageStation extends WebPageStation {
         Builder<PopupOnClickPageStation> builder = new Builder<>(PopupOnClickPageStation::new);
 
         String url = activityTestRule.getTestServer().getURL(PATH);
-        return currentPageStation.loadPageProgramatically(builder, url);
+        return currentPageStation.loadPageProgrammatically(url, builder);
     }
 
     @Override
@@ -38,8 +37,7 @@ public class PopupOnClickPageStation extends WebPageStation {
         super.declareElements(elements);
 
         mLinkToPopup =
-                elements.declareElementInState(
-                        new HtmlElementInState(LINK_TO_POPUP, mWebContentsSupplier));
+                elements.declareElement(new HtmlElement(LINK_TO_POPUP, mWebContentsSupplier));
     }
 
     /** Opens the same page as a pop-up (in Android, this means in a new tab). */
@@ -50,7 +48,7 @@ public class PopupOnClickPageStation extends WebPageStation {
                         .withIsOpeningTabs(1)
                         .withIsSelectingTabs(1)
                         .build();
-        return travelToSync(newPage, Transition.retryOption(), mLinkToPopup::click);
+        return travelToSync(newPage, mLinkToPopup::click);
     }
 
     /**
@@ -58,7 +56,7 @@ public class PopupOnClickPageStation extends WebPageStation {
      * message to be shown.
      */
     public PopupBlockedMessageFacility clickLinkAndExpectPopupBlockedMessage() {
-        PopupBlockedMessageFacility infoBar = new PopupBlockedMessageFacility(this, 1);
-        return enterFacilitySync(infoBar, Transition.retryOption(), mLinkToPopup::click);
+        return enterFacilitySync(
+                new PopupBlockedMessageFacility<PopupOnClickPageStation>(1), mLinkToPopup::click);
     }
 }

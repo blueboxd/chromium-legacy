@@ -14,8 +14,9 @@ import 'chrome://resources/ash/common/cr_elements/cr_toggle/cr_toggle.js';
 import 'chrome://resources/ash/common/cr_elements/md_select.css.js';
 import 'chrome://resources/ash/common/traffic_counters/traffic_counters.js';
 
-import {Network, TrafficCountersAdapter} from 'chrome://resources/ash/common/traffic_counters/traffic_counters_adapter.js';
+import {getInstance as getAnnouncerInstance} from 'chrome://resources/ash/common/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
 import {I18nMixin} from 'chrome://resources/ash/common/cr_elements/i18n_mixin.js';
+import {Network, TrafficCountersAdapter} from 'chrome://resources/ash/common/traffic_counters/traffic_counters_adapter.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './settings_traffic_counters.html.js';
@@ -87,7 +88,19 @@ export class SettingsTrafficCountersElement extends
   static get properties() {
     return {
       /** The network GUID to display details for. */
-      guid: String,
+      guid: {
+        type: String,
+        value: '',
+        observer: 'load',
+      },
+      /**
+       * Tracks the managed properties of the network. Used to handle network
+       * network state changes.
+       * */
+      managedProperties: {
+        type: Object,
+        observer: 'managedPropertiesChanged_',
+      },
       /** Tracks the last reset time information. */
       date_: {
         type: String,
@@ -119,7 +132,6 @@ export class SettingsTrafficCountersElement extends
      * Adapter to collect network related information.
      */
     this.trafficCountersAdapter_ = new TrafficCountersAdapter();
-    this.load();
   }
 
   /**
@@ -131,16 +143,19 @@ export class SettingsTrafficCountersElement extends
     this.populateUserSpecifiedResetDay_();
   }
 
+  private managedPropertiesChanged_(): void {
+    this.load();
+  }
+
   /**
    * Handles reset requests.
    */
   private async onResetDataUsageClick_(): Promise<void> {
     await this.trafficCountersAdapter_.resetTrafficCountersForNetwork(
         this.guid);
-    this.dispatchEvent(new CustomEvent(
-        'reset-data-usage-button-clicked', {bubbles: true, composed: true}));
-    // this.load(); // Remove load and use appropriate listener functionality
-    // because the reset is changing the value to the old value
+    this.load();
+    getAnnouncerInstance().announce(
+        this.i18n('TrafficCountersDataUsageResetButtonPressedA11yMessage'));
   }
 
   /**
@@ -217,10 +232,9 @@ export class SettingsTrafficCountersElement extends
    * Handles day of reset changes.
    */
   private onResetDaySelected_(): void {
+    this.resetDay_ = Number(this.$.resetDayList.value);
     this.trafficCountersAdapter_.setTrafficCountersResetDayForNetwork(
         this.guid, {value: this.resetDay_});
-    this.dispatchEvent(
-        new CustomEvent('reset-day-changed', {bubbles: true, composed: true}));
   }
 
   /**
@@ -228,6 +242,18 @@ export class SettingsTrafficCountersElement extends
    */
   private getDaysList_(): number[] {
     return Array.from({length: 31}, (_, i) => i + 1);
+  }
+
+  /**
+   * Determines if the given day should be marked as selected in the dropdown.
+   *
+   * @param item - The day number from the dropdown options to check
+   *     against the selected day.
+   * @param selectedDay - The day currently set as selected in the
+   *     component's state.
+   */
+  private isSelected_(item: number, selectedDay: number): boolean {
+    return item === selectedDay;
   }
 }
 

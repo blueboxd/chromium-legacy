@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "components/domain_reliability/monitor.h"
 
 #include <memory>
@@ -266,7 +271,7 @@ void DomainReliabilityMonitor::OnRequestLegComplete(
   beacon_template.http_response_code = response_code;
   beacon_template.start_time = request.load_timing_info.request_start;
   beacon_template.elapsed = time_->NowTicks() - beacon_template.start_time;
-  beacon_template.was_proxied = request.response_info.was_fetched_via_proxy;
+  beacon_template.was_proxied = request.response_info.WasFetchedViaProxy();
   beacon_template.url = request.url;
   if (base::FeatureList::IsEnabled(
           features::kPartitionDomainReliabilityByNetworkIsolationKey)) {

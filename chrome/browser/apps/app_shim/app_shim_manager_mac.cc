@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/apps/app_shim/app_shim_manager_mac.h"
 
 #include <CoreFoundation/CoreFoundation.h>
@@ -28,9 +33,9 @@
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
+#include "base/not_fatal_until.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/task/single_thread_task_runner.h"
 #include "base/types/expected.h"
 #include "base/types/expected_macros.h"
 #include "chrome/browser/app_controller_mac.h"
@@ -41,6 +46,7 @@
 #include "chrome/browser/apps/app_shim/code_signature_mac.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/notifications/mac/notification_platform_bridge_mac.h"
 #include "chrome/browser/notifications/mac/notification_utils.h"
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile.h"
@@ -56,8 +62,8 @@
 #include "chrome/browser/ui/profiles/profile_picker.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
-#include "chrome/browser/web_applications/app_shim_registry_mac.h"
-#include "chrome/browser/web_applications/os_integration/web_app_shortcut_mac.h"
+#include "chrome/browser/web_applications/os_integration/mac/app_shim_registry.h"
+#include "chrome/browser/web_applications/os_integration/mac/web_app_shortcut_mac.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
@@ -720,9 +726,19 @@ void AppShimManager::OnShimLaunchRequested(
   Profile* profile = nullptr;
   {
     auto found_app = apps_.find(host->GetAppId());
-    DCHECK(found_app != apps_.end());
+    CHECK(found_app != apps_.end(), base::NotFatalUntil::M130);
     AppState* app_state = found_app->second.get();
     if (app_state->IsMultiProfile()) {
+      // It is possible for `profiles` to be empty if the profile was closed
+      // while an initial launch attempt took place (and then failed, triggering
+      // a second launch attempt). In that case, simply fail the second launch
+      // as well.
+      if (app_state->profiles.empty()) {
+        LOG(ERROR)
+            << "Attempting to launch shim for which no profiles are loaded.";
+        std::move(terminated_callback).Run();
+        return;
+      }
       DCHECK(!app_state->profiles.empty());
       profile = app_state->profiles.begin()->first;
     } else {
@@ -824,8 +840,12 @@ void AppShimManager::OnShimProcessConnectedForRegisterOnly(
   if (found_app != apps_.end()) {
     AppState* app_state = found_app->second.get();
     if (app_state->IsMultiProfile()) {
-      DCHECK(!app_state->profiles.empty());
-      profile_state = app_state->profiles.begin()->second.get();
+      // While generally `profiles` should never be empty, sometimes we keep
+      // alive app shims even when no profiles have windows open for the app
+      // (for example when we have a pending notification permission request).
+      if (!app_state->profiles.empty()) {
+        profile_state = app_state->profiles.begin()->second.get();
+      }
     } else {
       auto found_profile = app_state->profiles.find(profile);
       if (found_profile != app_state->profiles.end()) {
@@ -1290,7 +1310,7 @@ void RecordSignatureValidationResult(SignatureValidationResult result) {
 
 bool AppShimManager::IsAcceptablyCodeSigned(pid_t pid) const {
   static const bool requires_adhoc_signature =
-      app_mode::UseAdHocSigningForWebAppShims();
+      web_app::UseAdHocSigningForWebAppShims();
 
   if (requires_adhoc_signature && IsAcceptablyAdHocCodeSigned(pid)) {
     RecordSignatureValidationResult(SignatureValidationResult::kSuccessAdHoc);
@@ -1389,7 +1409,7 @@ void AppShimManager::OnShimProcessDisconnected(AppShimHost* host) {
   const std::string app_id = host->GetAppId();
 
   auto found_app = apps_.find(app_id);
-  DCHECK(found_app != apps_.end());
+  CHECK(found_app != apps_.end(), base::NotFatalUntil::M130);
   AppState* app_state = found_app->second.get();
   DCHECK(app_state);
 
@@ -1414,7 +1434,7 @@ void AppShimManager::OnShimProcessDisconnected(AppShimHost* host) {
   // Erase the ProfileState, which will delete |host|.
   Profile* profile = ProfileForPath(host->GetProfilePath());
   auto found_profile = app_state->profiles.find(profile);
-  DCHECK(found_profile != app_state->profiles.end());
+  CHECK(found_profile != app_state->profiles.end(), base::NotFatalUntil::M130);
   ProfileState* profile_state = found_profile->second.get();
   DCHECK_EQ(host, profile_state->single_profile_host.get());
   app_state->profiles.erase(found_profile);
@@ -1445,7 +1465,7 @@ void AppShimManager::OnShimReopen(AppShimHost* host) {
     app_shim_observer_->OnShimReopen(host->GetAppShimPid());
   }
   auto found_app = apps_.find(host->GetAppId());
-  DCHECK(found_app != apps_.end());
+  CHECK(found_app != apps_.end(), base::NotFatalUntil::M130);
   AppState* app_state = found_app->second.get();
   LoadAndLaunchAppParams params;
   params.app_id = host->GetAppId();
@@ -1458,7 +1478,7 @@ void AppShimManager::OnShimOpenedFiles(
     AppShimHost* host,
     const std::vector<base::FilePath>& files) {
   auto found_app = apps_.find(host->GetAppId());
-  DCHECK(found_app != apps_.end());
+  CHECK(found_app != apps_.end(), base::NotFatalUntil::M130);
   AppState* app_state = found_app->second.get();
   LoadAndLaunchAppParams params;
   params.app_id = host->GetAppId();
@@ -1513,7 +1533,7 @@ void AppShimManager::OnShimOpenedAppSettings(AppShimHost* host) {
 void AppShimManager::OnShimOpenedUrls(AppShimHost* host,
                                       const std::vector<GURL>& urls) {
   auto found_app = apps_.find(host->GetAppId());
-  DCHECK(found_app != apps_.end());
+  CHECK(found_app != apps_.end(), base::NotFatalUntil::M130);
   AppState* app_state = found_app->second.get();
   LoadAndLaunchAppParams params;
   params.app_id = host->GetAppId();
@@ -1529,7 +1549,7 @@ void AppShimManager::OnShimOpenedUrls(AppShimHost* host,
 void AppShimManager::OnShimOpenAppWithOverrideUrl(AppShimHost* host,
                                                   const GURL& override_url) {
   auto found_app = apps_.find(host->GetAppId());
-  DCHECK(found_app != apps_.end());
+  CHECK(found_app != apps_.end(), base::NotFatalUntil::M130);
   AppState* app_state = found_app->second.get();
   LoadAndLaunchAppParams params;
   params.app_id = host->GetAppId();
@@ -1541,9 +1561,13 @@ void AppShimManager::OnShimOpenAppWithOverrideUrl(AppShimHost* host,
 
 void AppShimManager::OnShimWillTerminate(AppShimHost* host) {
   auto found_app = apps_.find(host->GetAppId());
-  DCHECK(found_app != apps_.end());
+  CHECK(found_app != apps_.end(), base::NotFatalUntil::M130);
   AppState* app_state = found_app->second.get();
   DCHECK(app_state);
+
+  auto* notification_bridge = static_cast<NotificationPlatformBridgeMac*>(
+      g_browser_process->notification_platform_bridge());
+  notification_bridge->AppShimWillTerminate(host->GetAppId());
 
   DCHECK(!app_state->did_save_last_active_profiles_on_terminate);
   app_state->MaybeSaveLastActiveProfiles();
@@ -1580,25 +1604,15 @@ void AppShimManager::OnProfileMarkedForPermanentDeletion(Profile* profile) {
     app_lifetime_monitor->RemoveObserver(this);
   }
 
-  // Close app shims that were kept alive only for this profile. Note that this
-  // must be done as a posted task because closing shims may result in closing
-  // windows midway through BrowserList::TryToCloseBrowserList, which does not
-  // expect that behavior, and may result in crashes.
-  auto close_shims_lambda = [](base::WeakPtr<AppShimManager> manager) {
-    if (!manager)
-      return;
-    for (auto iter_app = manager->apps_.begin();
-         iter_app != manager->apps_.end();) {
-      AppState* app_state = iter_app->second.get();
-      if (app_state->ShouldDeleteAppState())
-        iter_app = manager->apps_.erase(iter_app);
-      else
-        ++iter_app;
+  // Close app shims that were kept alive only for this profile.
+  for (auto iter_app = apps_.begin(); iter_app != apps_.end();) {
+    AppState* app_state = iter_app->second.get();
+    if (app_state->ShouldDeleteAppState()) {
+      iter_app = apps_.erase(iter_app);
+    } else {
+      ++iter_app;
     }
-  };
-  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
-      FROM_HERE,
-      base::BindOnce(close_shims_lambda, weak_factory_.GetWeakPtr()));
+  }
 }
 
 void AppShimManager::OnAppStart(content::BrowserContext* context,

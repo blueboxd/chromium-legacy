@@ -73,15 +73,16 @@ void BoundSessionRegistrationFetcherImpl::Start(
   CHECK(!registration_token_helper_);
   registration_duration_.emplace();  // Starts the timer.
   callback_ = std::move(callback);
+  registration_token_helper_ =
+      std::make_unique<RegistrationTokenHelper>(key_service_.get());
   // base::Unretained() is safe since `this` owns
   // `registration_token_helper_`.
-  registration_token_helper_ = RegistrationTokenHelper::CreateForSessionBinding(
-      key_service_.get(), registration_params_.challenge(),
+  registration_token_helper_->GenerateForSessionBinding(
+      registration_params_.challenge(),
       registration_params_.registration_endpoint(),
       base::BindOnce(
           &BoundSessionRegistrationFetcherImpl::OnRegistrationTokenCreated,
           base::Unretained(this), base::ElapsedTimer()));
-  registration_token_helper_->Start();
 }
 
 void BoundSessionRegistrationFetcherImpl::OnURLLoaderComplete(
@@ -133,7 +134,8 @@ void BoundSessionRegistrationFetcherImpl::OnURLLoaderComplete(
       std::move(params_or_error).value();
   params.set_site(
       net::SchemefulSite(registration_params_.registration_endpoint())
-          .Serialize());
+          .GetURL()
+          .spec());
   params.set_wrapped_key(wrapped_key_str_);
   *params.mutable_creation_time() =
       bound_session_credentials::TimeToTimestamp(base::Time::Now());
@@ -194,21 +196,19 @@ void BoundSessionRegistrationFetcherImpl::StartFetchingRegistration(
                 email: "chrome-signin-team@google.com"
             }
           }
-          last_reviewed: "2023-06-15"
+          last_reviewed: "2024-05-30"
         }
         policy {
           cookies_allowed: YES
           cookies_store: "user"
           setting:
-             "This is a new feature being developed behind a flag that is"
-             " disabled by default (kEnableBoundSessionCredentials). This"
-             " request will only be sent if the feature is enabled and once"
-             " a server requests it with a special header."
-          policy_exception_justification:
-            "Not implemented. "
-            "If the feature is on, this request must be made to ensure the user"
-            " maintains their signed in status on the web for Google owned"
-            " domains."
+             "This feature cannot be disabled in settings, but this request "
+             "won't be made unless the user signs in to google.com."
+          chrome_policy: {
+            BoundSessionCredentialsEnabled {
+              BoundSessionCredentialsEnabled: false
+            }
+          }
         })");
 
   auto request = std::make_unique<network::ResourceRequest>();
@@ -286,7 +286,7 @@ BoundSessionRegistrationFetcherImpl::ParseJsonResponse(
   std::string* session_id = maybe_root->FindString(kSessionIdentifier);
   base::Value::List* credentials_list = maybe_root->FindList(kCredentials);
   std::string* refresh_url = maybe_root->FindString(kRefreshUrl);
-  if (!session_id || !credentials_list) {
+  if (!session_id || !credentials_list || !refresh_url) {
     // Incorrect registration params.
     return base::unexpected(RegistrationError::kRequiredFieldMissing);
   }
@@ -304,16 +304,13 @@ BoundSessionRegistrationFetcherImpl::ParseJsonResponse(
     *params.add_credentials() = std::move(credential);
   }
 
-  // The refresh URL is optional, with fallback to a hardcoded URL. If a value
-  // is provided, it must be a correct, same-site URL.
-  if (refresh_url) {
-    GURL refresh_endpoint = bound_session_credentials::ResolveEndpointPath(
-        request_url, *refresh_url);
-    if (!refresh_endpoint.is_valid()) {
-      return base::unexpected(RegistrationError::kInvalidSessionParams);
-    }
-    params.set_refresh_url(refresh_endpoint.spec());
+  // The refresh URL must be a correct, same-site URL.
+  GURL refresh_endpoint =
+      bound_session_credentials::ResolveEndpointPath(request_url, *refresh_url);
+  if (!refresh_endpoint.is_valid()) {
+    return base::unexpected(RegistrationError::kInvalidSessionParams);
   }
+  params.set_refresh_url(refresh_endpoint.spec());
 
   return params;
 }

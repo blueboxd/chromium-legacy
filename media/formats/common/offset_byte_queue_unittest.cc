@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "media/formats/common/offset_byte_queue.h"
 
 #include <stdint.h>
@@ -21,8 +26,8 @@ class OffsetByteQueueTest : public testing::Test {
       buf[i] = i;
     }
     queue_ = std::make_unique<OffsetByteQueue>();
-    ASSERT_TRUE(queue_->Push(buf, sizeof(buf))) << "Test should not hit OOM";
-    ASSERT_TRUE(queue_->Push(buf, sizeof(buf))) << "Test should not hit OOM";
+    ASSERT_TRUE(queue_->Push(buf)) << "Test should not hit OOM";
+    ASSERT_TRUE(queue_->Push(buf)) << "Test should not hit OOM";
     queue_->Pop(384);
 
     // Queue will start with 128 bytes of data and an offset of 384 bytes.

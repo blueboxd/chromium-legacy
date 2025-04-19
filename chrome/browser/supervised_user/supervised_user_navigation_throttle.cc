@@ -5,6 +5,7 @@
 #include "chrome/browser/supervised_user/supervised_user_navigation_throttle.h"
 
 #include "base/check_op.h"
+#include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
@@ -21,6 +22,8 @@
 #include "components/supervised_user/core/browser/supervised_user_service.h"
 #include "components/supervised_user/core/browser/supervised_user_url_filter.h"
 #include "components/supervised_user/core/browser/supervised_user_utils.h"
+#include "components/supervised_user/core/common/features.h"
+#include "components/supervised_user/core/common/supervised_user_constants.h"
 #include "content/public/browser/navigation_handle.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -32,7 +35,7 @@ SupervisedUserNavigationThrottle::MaybeCreateThrottleFor(
   Profile* profile = Profile::FromBrowserContext(
       navigation_handle->GetWebContents()->GetBrowserContext());
   CHECK(profile);
-  if (!supervised_user::IsSubjectToParentalControls(*profile->GetPrefs())) {
+  if (!profile->IsChild()) {
     return nullptr;
   }
 
@@ -54,16 +57,7 @@ SupervisedUserNavigationThrottle::SupervisedUserNavigationThrottle(
 
 SupervisedUserNavigationThrottle::~SupervisedUserNavigationThrottle() {}
 
-content::NavigationThrottle::ThrottleCheckResult
-SupervisedUserNavigationThrottle::CheckURL() {
-  deferred_ = false;
-  DCHECK_EQ(supervised_user::FilteringBehavior::kInvalid, behavior_);
-
-  // We do not yet support prerendering for supervised users.
-  if (navigation_handle()->IsInPrerenderedMainFrame()) {
-    return NavigationThrottle::CANCEL;
-  }
-
+void SupervisedUserNavigationThrottle::CheckURL() {
   GURL url = navigation_handle()->GetURL();
 
   bool skip_manual_parent_filter =
@@ -93,10 +87,6 @@ SupervisedUserNavigationThrottle::CheckURL() {
   if (got_result) {
     behavior_ = supervised_user::FilteringBehavior::kInvalid;
   }
-  if (deferred_) {
-    return NavigationThrottle::DEFER;
-  }
-  return NavigationThrottle::PROCEED;
 }
 
 void SupervisedUserNavigationThrottle::ShowInterstitial(
@@ -128,13 +118,47 @@ void SupervisedUserNavigationThrottle::ShowInterstitialAsync(
 }
 
 content::NavigationThrottle::ThrottleCheckResult
+SupervisedUserNavigationThrottle::ProcessRequest() {
+  deferred_ = false;
+  DCHECK_EQ(supervised_user::FilteringBehavior::kInvalid, behavior_);
+
+  // We do not yet support prerendering for supervised users.
+  if (navigation_handle()->IsInPrerenderedMainFrame()) {
+    return NavigationThrottle::CANCEL;
+  }
+
+  CheckURL();
+
+  if (deferred_) {
+    waiting_for_decision_.emplace();
+    return NavigationThrottle::DEFER;
+  }
+  return NavigationThrottle::PROCEED;
+}
+
+content::NavigationThrottle::ThrottleCheckResult
 SupervisedUserNavigationThrottle::WillStartRequest() {
-  return CheckURL();
+  return ProcessRequest();
 }
 
 content::NavigationThrottle::ThrottleCheckResult
 SupervisedUserNavigationThrottle::WillRedirectRequest() {
-  return CheckURL();
+  return ProcessRequest();
+}
+
+content::NavigationThrottle::ThrottleCheckResult
+SupervisedUserNavigationThrottle::WillProcessResponse() {
+  if (base::FeatureList::GetInstance()->IsFeatureOverridden(
+          supervised_user::kClassifyUrlOnProcessResponseEvent.name)) {
+    // Safety measure: do not execute the code below for the Default experiment
+    // groups. 0 means that either the checks were never asynchronous, or that
+    // they took less than 0ms rounded combined, which is safe approximation.
+    base::UmaHistogramTimes(
+        supervised_user::kClassifiedLaterThanContentResponseHistogramName,
+        total_delay_);
+    VLOG(1) << "Time spent waiting for classifications: " << total_delay_;
+  }
+  return NavigationThrottle::PROCEED;
 }
 
 const char* SupervisedUserNavigationThrottle::GetNameForLogging() {
@@ -160,19 +184,16 @@ void SupervisedUserNavigationThrottle::OnCheckDone(
   supervised_user::SupervisedUserURLFilter::RecordFilterResultEvent(
       behavior, reason, /*is_filtering_behavior_known=*/!uncertain, transition);
 
-  if (navigation_handle()->IsInPrimaryMainFrame()) {
-    // Update navigation observer about the navigation state of the main frame.
-    auto* navigation_observer =
-        SupervisedUserNavigationObserver::FromWebContents(
-            navigation_handle()->GetWebContents());
-    if (navigation_observer) {
-      navigation_observer->UpdateMainFrameFilteringStatus(behavior, reason);
-    }
-  }
-
   if (behavior == supervised_user::FilteringBehavior::kBlock) {
     ShowInterstitial(url, reason);
   } else if (deferred_) {
+    if (base::FeatureList::GetInstance()->IsFeatureOverridden(
+            supervised_user::kClassifyUrlOnProcessResponseEvent.name)) {
+      // Safety measure: do not execute the code below for the Default
+      // experiment groups.
+      total_delay_ += waiting_for_decision_->Elapsed();
+      waiting_for_decision_ = std::nullopt;
+    }
     Resume();
   }
 }

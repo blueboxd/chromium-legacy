@@ -8,16 +8,35 @@
 #include <memory>
 #include <optional>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/timer/wall_clock_timer.h"
 #include "chrome/browser/ash/policy/skyvault/local_user_files_policy_observer.h"
+#include "chrome/browser/ash/policy/skyvault/migration_coordinator.h"
 #include "chrome/browser/ash/policy/skyvault/migration_notification_manager.h"
+#include "chrome/browser/ash/policy/skyvault/policy_utils.h"
+#include "chrome/browser/chromeos/extensions/login_screen/login/cleanup/files_cleanup_handler.h"
+#include "chrome/browser/profiles/profile_keyed_service_factory.h"
+#include "chromeos/ash/components/dbus/cryptohome/UserDataAuth.pb.h"
+#include "components/keyed_service/core/keyed_service.h"
+#include "components/prefs/pref_change_registrar.h"
+
+namespace base {
+template <typename T>
+class NoDestructor;
+}  // namespace base
+
+namespace content {
+class BrowserContext;
+}  // namespace content
 
 namespace policy::local_user_files {
 
 // Manages the migration of local files to the cloud when SkyVault is enabled.
 // Handles starting, monitoring, and completing the migration process.
-class LocalFilesMigrationManager : public LocalUserFilesPolicyObserver {
+class LocalFilesMigrationManager : public LocalUserFilesPolicyObserver,
+                                   public KeyedService {
  public:
   class Observer {
    public:
@@ -26,8 +45,14 @@ class LocalFilesMigrationManager : public LocalUserFilesPolicyObserver {
     virtual void OnMigrationSucceeded() = 0;
   };
 
-  LocalFilesMigrationManager();
+  explicit LocalFilesMigrationManager(content::BrowserContext* context);
+  LocalFilesMigrationManager(const LocalFilesMigrationManager&) = delete;
+  LocalFilesMigrationManager& operator=(const LocalFilesMigrationManager&) =
+      delete;
   ~LocalFilesMigrationManager() override;
+
+  // KeyedService overrides:
+  void Shutdown() override;
 
   // Adds an observer to receive notifications about migration events.
   void AddObserver(Observer* observer);
@@ -35,27 +60,120 @@ class LocalFilesMigrationManager : public LocalUserFilesPolicyObserver {
   // Removes an observer.
   void RemoveObserver(Observer* observer);
 
+  // Injects a mock MigrationNotificationManager for tests.
+  void SetNotificationManagerForTesting(
+      MigrationNotificationManager* notification_manager);
+
+  // Injects a mock MigrationCoordinator for tests.
+  void SetCoordinatorForTesting(
+      std::unique_ptr<MigrationCoordinator> coordinator);
+
  private:
   // policy::local_user_files::Observer overrides:
   void OnLocalUserFilesPolicyChanged() override;
 
-  // Determines if the migration should start based on the following conditions:
-  //    * Migration is not already in progress.
-  //    * SkyVault policies are set.
-  bool ShouldStart();
+  // Informs the user about the upcoming migration. Schedules another dialog to
+  // appear closer to the start. From the dialog, the user can also choose to
+  // start the migration immediately.
+  void InformUser();
 
-  // Initiates the file migration to the cloud if conditions are met.
-  void MaybeMigrateFiles(base::OnceCallback<void()> callback);
+  // After initial delay, informs the user again and schedules the migration to
+  // start automatically. From the dialog, the user can also choose to start the
+  // migration immediately.
+  void ScheduleMigrationAndInformUser();
+
+  // Bypasses the migration delay and initiates the upload process immediately.
+  // Called when the user clicks the "Upload now" button in the info dialog.
+  void SkipMigrationDelay();
+
+  // Called after the full migration timeout elapses. Closes the dialog if
+  // opened, and starts migration.
+  void OnTimeoutExpired();
+
+  // Gathers all file paths that need to be uploaded.
+  void GetPathsToUpload();
+
+  // Starts the migration process by uploading `files` to `cloud_provider_`.
+  void StartMigration(std::vector<base::FilePath> files);
 
   // Handles the completion of the migration process (success or failure).
-  void OnMigrationDone();
+  void OnMigrationDone(std::map<base::FilePath, MigrationUploadError> errors);
 
-  std::unique_ptr<MigrationNotificationManager> notification_manager_;
+  // Handles the completion of the local files cleanup process.
+  void OnCleanupDone(
+      std::unique_ptr<chromeos::FilesCleanupHandler> cleanup_handler,
+      const std::optional<std::string>& error_message);
+
+  // Sends a D-Bus call to enable or disable write access to MyFiles.
+  void SetLocalUserFilesWriteEnabled(bool enabled);
+
+  // Handles the response of the SetUserDataStorageWriteEnabled D-Bus call.
+  void OnFilesWriteRestricted(
+      std::optional<user_data_auth::SetUserDataStorageWriteEnabledReply> reply);
+
+  // Stops the migration if currently ongoing.
+  void MaybeStopMigration();
+
+  // Observers for migration events.
   base::ObserverList<Observer>::Unchecked observers_;
-  bool in_progress_ = false;  // Indicates if migration is currently running.
-  std::optional<std::string> error_;  // Stores migration error, if any.
+
+  // Indicates if migration is currently running.
+  bool in_progress_ = false;
+
+  // Indicates if local files cleanup is currently running.
+  bool cleanup_in_progress_ = false;
+
+  // Whether local user files are allowed by policy.
+  bool local_user_files_allowed_ = true;
+
+  // Cloud provider to which files are uploaded. If not specified, no migration
+  // happens.
+  CloudProvider cloud_provider_ = CloudProvider::kNotSpecified;
+
+  // Context for which this instance is created.
+  raw_ptr<content::BrowserContext> context_;
+
+  // Shows and manages migration notifications and dialogs.
+  raw_ptr<MigrationNotificationManager> notification_manager_;
+
+  // Manages the upload of local files to the cloud.
+  std::unique_ptr<MigrationCoordinator> coordinator_;
+
+  // Timer for delaying the start of migration and showing dialogs.
+  std::unique_ptr<base::WallClockTimer> scheduling_timer_;
+
+  PrefChangeRegistrar pref_change_registrar_;
 
   base::WeakPtrFactory<LocalFilesMigrationManager> weak_factory_{this};
+};
+
+// Manages all LocalFilesMigrationManager instances and associates them with
+// Profiles.
+class LocalFilesMigrationManagerFactory : public ProfileKeyedServiceFactory {
+ public:
+  LocalFilesMigrationManagerFactory(const LocalFilesMigrationManagerFactory&) =
+      delete;
+  LocalFilesMigrationManagerFactory& operator=(
+      const LocalFilesMigrationManagerFactory&) = delete;
+
+  // Gets the singleton instance of the factory.
+  static LocalFilesMigrationManagerFactory* GetInstance();
+
+  // Gets the LocalFilesMigrationManager instance associated with the given
+  // BrowserContext.
+  static LocalFilesMigrationManager* GetForBrowserContext(
+      content::BrowserContext* context);
+
+ private:
+  friend base::NoDestructor<LocalFilesMigrationManagerFactory>;
+
+  LocalFilesMigrationManagerFactory();
+  ~LocalFilesMigrationManagerFactory() override;
+
+  // BrowserContextKeyedServiceFactory overrides:
+  bool ServiceIsNULLWhileTesting() const override;
+  std::unique_ptr<KeyedService> BuildServiceInstanceForBrowserContext(
+      content::BrowserContext* context) const override;
 };
 
 }  // namespace policy::local_user_files

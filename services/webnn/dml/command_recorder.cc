@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/349653202): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "services/webnn/dml/command_recorder.h"
 
 #include "base/logging.h"
@@ -9,6 +14,7 @@
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "services/webnn/dml/buffer_impl_dml.h"
 #include "services/webnn/dml/command_queue.h"
 #include "services/webnn/dml/error.h"
 #include "services/webnn/dml/utils.h"
@@ -25,12 +31,12 @@ D3D12_RESOURCE_BARRIER CreateUAVBarrier(ID3D12Resource* resource) {
 
 }  // namespace
 
-// Static
-std::unique_ptr<CommandRecorder> CommandRecorder::Create(
-    scoped_refptr<CommandQueue> queue,
-    Microsoft::WRL::ComPtr<IDMLDevice> dml_device) {
+// static
+base::expected<std::unique_ptr<CommandRecorder>, HRESULT>
+CommandRecorder::Create(scoped_refptr<CommandQueue> queue,
+                        Microsoft::WRL::ComPtr<IDMLDevice1> dml_device) {
   Microsoft::WRL::ComPtr<ID3D12CommandAllocator> command_allocator;
-  RETURN_NULL_IF_FAILED(
+  RETURN_UNEXPECTED_IF_FAILED(
       GetD3D12Device(dml_device.Get())
           ->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_COMPUTE,
                                    IID_PPV_ARGS(&command_allocator)));
@@ -40,7 +46,7 @@ std::unique_ptr<CommandRecorder> CommandRecorder::Create(
   // to close it right after its creation.
 
   Microsoft::WRL::ComPtr<IDMLCommandRecorder> command_recorder;
-  RETURN_NULL_IF_FAILED(
+  RETURN_UNEXPECTED_IF_FAILED(
       dml_device->CreateCommandRecorder(IID_PPV_ARGS(&command_recorder)));
 
   return base::WrapUnique(new CommandRecorder(
@@ -50,7 +56,7 @@ std::unique_ptr<CommandRecorder> CommandRecorder::Create(
 
 CommandRecorder::CommandRecorder(
     scoped_refptr<CommandQueue> command_queue,
-    Microsoft::WRL::ComPtr<IDMLDevice> dml_device,
+    Microsoft::WRL::ComPtr<IDMLDevice1> dml_device,
     Microsoft::WRL::ComPtr<ID3D12CommandAllocator> command_allocator,
     Microsoft::WRL::ComPtr<IDMLCommandRecorder> command_recorder)
     : command_queue_(std::move(command_queue)),
@@ -78,6 +84,7 @@ HRESULT CommandRecorder::Open() {
     RETURN_IF_FAILED(command_list_->Reset(command_allocator_.Get(), nullptr));
   }
   command_resources_.clear();
+  command_buffer_impls_.clear();
   is_open_ = true;
   return S_OK;
 }
@@ -114,6 +121,18 @@ HRESULT CommandRecorder::Execute() {
   for (auto& resource : command_resources_) {
     command_queue_->ReferenceUntilCompleted(resource);
   }
+
+  // After command submission succeeds, update the last submission fence on the
+  // recorded buffers so the CPU knows when the GPU has completed execution.
+  for (auto& [command_buffer, webnn_buffer_impl] : command_buffer_impls_) {
+    // WebNNBuffer was destroyed prior to Execute() and does not require further
+    // CPU/GPU synchronization but its resource will be kept alive anyway until
+    // Open() or the command queue completes execution by `command_resources_`.
+    if (webnn_buffer_impl) {
+      webnn_buffer_impl->SetLastSubmissionFenceValue(
+          last_submitted_fence_value_);
+    }
+  }
   return S_OK;
 }
 
@@ -144,6 +163,24 @@ void CommandRecorder::RecordDispatch(IDMLDispatchable* dispatchable,
   TRACE_EVENT0("gpu", "dml::CommandRecorder::RecordDispatch");
   command_recorder_->RecordDispatch(command_list_.Get(), dispatchable,
                                     binding_table);
+}
+
+void CommandRecorder::UploadBufferWithBarrier(
+    BufferImplDml* dst_buffer,
+    Microsoft::WRL::ComPtr<ID3D12Resource> src_buffer,
+    size_t buffer_size) {
+  dml::UploadBufferWithBarrier(this, dst_buffer->buffer(),
+                               std::move(src_buffer), buffer_size);
+  OnBufferAccessed(dst_buffer);
+}
+
+void CommandRecorder::ReadbackBufferWithBarrier(
+    Microsoft::WRL::ComPtr<ID3D12Resource> dst_buffer,
+    BufferImplDml* src_buffer,
+    size_t buffer_size) {
+  dml::ReadbackBufferWithBarrier(this, std::move(dst_buffer),
+                                 src_buffer->buffer(), buffer_size);
+  OnBufferAccessed(src_buffer);
 }
 
 HRESULT CommandRecorder::InitializeOperator(
@@ -391,6 +428,15 @@ HRESULT CommandRecorder::ExecuteOperator(
   command_resources_.push_back(std::move(descriptor_heap));
 
   return S_OK;
+}
+
+void CommandRecorder::OnBufferAccessed(BufferImplDml* buffer) {
+  command_buffer_impls_.emplace(buffer->buffer(), buffer->AsWeakPtr());
+}
+
+void CommandRecorder::ReferenceCommandResources(
+    Microsoft::WRL::ComPtr<IUnknown> object) {
+  command_resources_.push_back(std::move(object));
 }
 
 }  // namespace webnn::dml

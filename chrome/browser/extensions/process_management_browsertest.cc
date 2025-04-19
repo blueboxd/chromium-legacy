@@ -22,6 +22,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -473,15 +474,25 @@ IN_PROC_BROWSER_TEST_P(ChromeWebStoreProcessTest,
   WebContents* cws_contents = open_url(GetWebstorePage(), non_cws_contents_1);
 
   // The second non-Webstore page should have been given a different
-  // WebContents, but share the same process with the page that opened it.
+  // WebContents.
   EXPECT_NE(non_cws_contents_1, non_cws_contents_2);
-  EXPECT_EQ(non_cws_contents_1->GetPrimaryMainFrame()->GetProcess(),
-            non_cws_contents_2->GetPrimaryMainFrame()->GetProcess());
+  // The two non-Webstore urls are same-site, but cross-origin. If
+  // kOriginKeyedProcessesByDefault is enabled they will be placed in different
+  // processes, otherwise they'll share a process.
+  if (content::SiteIsolationPolicy::AreOriginKeyedProcessesEnabledByDefault()) {
+    EXPECT_NE(non_cws_contents_1->GetPrimaryMainFrame()->GetProcess(),
+              non_cws_contents_2->GetPrimaryMainFrame()->GetProcess());
+  } else {
+    EXPECT_EQ(non_cws_contents_1->GetPrimaryMainFrame()->GetProcess(),
+              non_cws_contents_2->GetPrimaryMainFrame()->GetProcess());
+  }
 
   // The Webstore page should have been given a separate WebContents and process
   // than the page that opened it.
   EXPECT_NE(non_cws_contents_1, cws_contents);
   EXPECT_NE(non_cws_contents_1->GetPrimaryMainFrame()->GetProcess(),
+            cws_contents->GetPrimaryMainFrame()->GetProcess());
+  EXPECT_NE(non_cws_contents_2->GetPrimaryMainFrame()->GetProcess(),
             cws_contents->GetPrimaryMainFrame()->GetProcess());
 }
 
@@ -527,12 +538,13 @@ IN_PROC_BROWSER_TEST_P(ChromeWebStoreProcessTest,
   nav_observer.Wait();
   EXPECT_EQ(cws_web_url, web_contents->GetLastCommittedURL());
 
-  // If not using the new Webstore URL, verify that we have the Webstore hosted
-  // app loaded into the Web Contents. Note: the new Webstore is granted it's
-  // powers without use of the hosted app.
+  // If this test is for the old Webstore URL, verify that we have the Webstore
+  // hosted app loaded into the Web Contents.
+  // TODO(crbug.com/328494022): Remove this when we get rid of using the hosted
+  // app for the old Webstore.
   content::RenderProcessHost* new_process_host =
       web_contents->GetPrimaryMainFrame()->GetProcess();
-  if (GetParam() != kNewWebstoreURL) {
+  if (GetParam() == kWebstoreURL) {
     EXPECT_TRUE(extensions::ProcessMap::Get(profile())->Contains(
         extensions::kWebStoreAppId, new_process_host->GetID()));
   }
@@ -572,10 +584,11 @@ IN_PROC_BROWSER_TEST_P(ChromeWebStoreInIsolatedOriginTest,
   EXPECT_EQ(true, content::EvalJs(web_contents,
                                   "!!chrome && !!chrome.webstorePrivate"));
 
-  // Verify that we have the Webstore hosted app loaded into the Web Contents.
-  // Note: the new Webstore is granted it's powers without use of the hosted
-  // app, so we don't do this check for it.
-  if (GetParam() != kNewWebstoreURL) {
+  // Verify that we have the Webstore hosted app loaded into the Web Contents if
+  // this is for the old Webstore URL. Note: The new Webstore and the Webstore
+  // URL override are granted their powers without use of the hosted app, so we
+  // don't do this check for them.
+  if (GetParam() == kWebstoreURL) {
     content::RenderProcessHost* render_process_host =
         web_contents->GetPrimaryMainFrame()->GetProcess();
     EXPECT_TRUE(extensions::ProcessMap::Get(profile())->Contains(

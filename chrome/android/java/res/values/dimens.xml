@@ -97,8 +97,6 @@ found in the LICENSE file.
 
     <!-- The size of the text for tab titles. -->
     <dimen name="compositor_tab_title_text_size">13sp</dimen>
-    <!-- The size of the text for group titles. -->
-    <dimen name="compositor_group_title_text_size">12sp</dimen>
     <!-- The size of the bounding box for favicons. -->
     <dimen name="compositor_tab_title_favicon_size">16dp</dimen>
     <!-- Slop value for allowing slight misses on the compositor button. -->
@@ -129,43 +127,15 @@ found in the LICENSE file.
     <dimen name="find_in_page_popup_margin_end">62dp</dimen>
 
     <!-- NTP dimensions -->
-    <dimen name="tile_grid_layout_top_margin">24dp</dimen>
-    <dimen name="tile_grid_layout_top_margin_push_down_small">36dp</dimen>
-    <dimen name="tile_grid_layout_top_margin_push_down_large">54dp</dimen>
-    <dimen name="tile_grid_layout_top_margin_pull_up">16dp</dimen>
-    <dimen name="tile_grid_layout_no_logo_top_margin">20dp</dimen>
-    <dimen name="tile_grid_layout_vertical_spacing">6dp</dimen>
-    <dimen name="tile_grid_layout_vertical_spacing_push_down_small">24dp</dimen>
-    <dimen name="tile_grid_layout_vertical_spacing_push_down_large">36dp</dimen>
-    <dimen name="tile_grid_layout_min_horizontal_spacing">4dp</dimen>
-    <dimen name="tile_grid_layout_bottom_margin">24dp</dimen>
-    <dimen name="tile_grid_layout_bottom_margin_push_down_small">48dp</dimen>
-    <dimen name="tile_grid_layout_bottom_margin_push_down_large">64dp</dimen>
-    <dimen name="tile_grid_layout_bottom_margin_pull_up">24dp</dimen>
-    <dimen name="tile_carousel_layout_bottom_margin">24dp</dimen>
-    <dimen name="mvt_container_lateral_margin_polish">@dimen/signin_promo_lateral_paddings</dimen>
-    <dimen name="mvt_container_top_padding_polish">17dp</dimen>
-    <dimen name="mvt_container_bottom_padding_polish">22dp</dimen>
-    <dimen name="tile_view_title_margin_top_modern_polish">63dp</dimen>
-    <dimen name="mvt_container_top_margin_polish">23dp</dimen>
-    <dimen name="mvt_container_to_ntp_right_extra_margin_two_feed_tablet">16dp</dimen>
-    <dimen name="mvt_container_bottom_margin_tablet">48dp</dimen>
-    <dimen name="tile_grid_layout_landscape_edge_margin_tablet">100dp</dimen>
-    <dimen name="tile_grid_layout_portrait_edge_margin_tablet">84dp</dimen>
-    <dimen name="tile_carousel_layout_max_interval_margin_tablet">48dp</dimen>
-    <dimen name="tile_carousel_layout_min_interval_margin_tablet">16dp</dimen>
-    <dimen name="ntp_logo_height">100dp</dimen>
-    <dimen name="ntp_logo_margin_top">26dp</dimen>
-    <dimen name="ntp_logo_margin_bottom">23dp</dimen>
-    <dimen name="ntp_logo_height_shrink">72dp</dimen>
-    <dimen name="ntp_logo_vertical_top_margin_tablet">36dp</dimen>
-    <dimen name="ntp_logo_vertical_bottom_margin_tablet">24dp</dimen>
-    <dimen name="ntp_search_box_height">48dp</dimen>
+    <dimen name="tile_layout_no_logo_top_margin">20dp</dimen>
+    <dimen name="mvt_container_lateral_margin">@dimen/signin_promo_lateral_paddings</dimen>
+    <dimen name="mvt_container_top_padding">17dp</dimen>
+    <dimen name="mvt_container_bottom_padding">22dp</dimen>
+    <dimen name="mvt_container_top_margin">23dp</dimen>
     <dimen name="ntp_search_box_bottom_margin">1dp</dimen>
-    <dimen name="ntp_search_box_start_margin">44dp</dimen>
-    <dimen name="ntp_search_box_transition_length">16dp</dimen>
-    <dimen name="ntp_search_box_transition_length_polish_offset">4dp</dimen>
-    <dimen name="ntp_search_box_lateral_margin_tablet_polish">100dp</dimen>
+    <dimen name="ntp_search_box_transition_start_offset">16dp</dimen>
+    <dimen name="ntp_search_box_transition_end_offset">4dp</dimen>
+    <dimen name="ntp_search_box_lateral_margin_tablet">100dp</dimen>
     <dimen name="snippets_article_header_height">40dp</dimen>
     <dimen name="content_suggestions_card_bottom_margin">12dp</dimen>
     <!-- This is in sp because we want the icon to scale with the TextView it sits alongside. -->
@@ -247,6 +217,10 @@ found in the LICENSE file.
     <dimen name="custom_tabs_toast_branding_height">50dp</dimen>
     <dimen name="custom_tabs_toast_branding_padding">16dp</dimen>
 
+    <!-- Search in CCT specific dimensions for presenting interactable Omnibox -->
+    <dimen name="custom_tabs_location_bar_active_height">40dp</dimen>
+    <dimen name="custom_tabs_url_bar_active_height">48dp</dimen>
+
     <!-- Account chooser dialog dimensions -->
     <dimen name="account_chooser_dialog_margin">24dp</dimen>
     <dimen name="account_chooser_dialog_item_margin">24dp</dimen>
@@ -283,34 +257,8 @@ found in the LICENSE file.
     <dimen name="context_menu_chip_vertical_inset">4dp</dimen>
     <dimen name="context_menu_chip_icon_size">24dp</dimen>
 
-    <dimen name="context_menu_max_width">500dp</dimen>
-    <dimen name="context_menu_lateral_margin">40dp</dimen>
-    <dimen name="context_menu_vertical_margin">20dp</dimen>
-    <dimen name="context_menu_list_lateral_padding">16dp</dimen>
-    <dimen name="context_menu_bottom_padding">8dp</dimen>
-    <dimen name="context_menu_header_vertical_padding">16dp</dimen>
-    <dimen name="context_menu_header_image_max_size">60dp</dimen>
-    <dimen name="context_menu_header_circle_bg_diameter">48dp</dimen>
-    <dimen name="context_menu_header_circle_bg_margin">6dp</dimen>
-    <dimen name="context_menu_header_monogram_text_size">16dp</dimen>
-    <dimen name="context_menu_header_monogram_size">26dp</dimen>
-    <dimen name="context_menu_small_width">268dp</dimen>
-    <dimen name="context_menu_small_lateral_margin">30dp</dimen>
-    <dimen name="context_menu_popup_max_width">319dp</dimen>
-    <dimen name="context_menu_fading_edge_size">52dp</dimen>
-
     <dimen name="context_menu_popup_header_image_max_size">36dp</dimen>
     <dimen name="context_menu_popup_header_monogram_size">16dp</dimen>
-
-    <!-- Defaults for TabbedModeFirstRunActivity values. -->
-    <item type="dimen" name="dialog_fixed_width_major">100%</item>
-    <item type="dimen" name="dialog_fixed_width_minor">100%</item>
-    <item type="dimen" name="dialog_fixed_height_major">100%</item>
-    <item type="dimen" name="dialog_fixed_height_minor">100%</item>
-    <item type="dimen" name="dialog_fixed_width_major_automotive">100%</item>
-    <item type="dimen" name="dialog_fixed_width_minor_automotive">100%</item>
-    <item type="dimen" name="dialog_fixed_height_major_automotive">100%</item>
-    <item type="dimen" name="dialog_fixed_height_minor_automotive">100%</item>
 
     <!-- History Navigation UI Item -->
     <dimen name="navigation_bubble_size">44dp</dimen>
@@ -411,6 +359,9 @@ found in the LICENSE file.
     <dimen name="autofill_bottom_sheet_spacing_large">22dp</dimen>
     <dimen name="autofill_bottom_sheet_spacing_small">12dp</dimen>
 
+    <!-- Autofill "save IBAN" bottom sheet dimensions. -->
+    <dimen name="autofill_bottom_sheet_iban_text_input_top_margin">20dp</dimen>
+
     <!-- Common autofill bottom sheet dimensions. -->
     <dimen name="autofill_bottom_sheet_chip_top_margin">22dp</dimen>
     <dimen name="autofill_bottom_sheet_confirm_button_top_margin">22dp</dimen>
@@ -423,4 +374,6 @@ found in the LICENSE file.
     <!-- Autofill dialog dimensions. -->
     <dimen name="autofill_dialog_progress_bar_size">36dp</dimen>
 
+    <!-- tab strip context menu-->
+    <dimen name="tab_strip_group_context_menu_max_width">392dp</dimen>
 </resources>

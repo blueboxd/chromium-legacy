@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ui/events/ozone/evdev/stylus_button_event_converter_evdev.h"
 
 #include <errno.h>
@@ -233,11 +238,11 @@ TEST_F(StylusButtonEventConverterEvdevTest, DellActivePenDoubleClick) {
   EXPECT_EQ(2u, size());
 
   ui::KeyEvent* event = dispatched_event(0);
-  EXPECT_EQ(ui::ET_KEY_PRESSED, event->type());
+  EXPECT_EQ(ui::EventType::kKeyPressed, event->type());
   EXPECT_TRUE(event->flags() & ui::EF_IS_STYLUS_BUTTON);
 
   event = dispatched_event(1);
-  EXPECT_EQ(ui::ET_KEY_RELEASED, event->type());
+  EXPECT_EQ(ui::EventType::kKeyReleased, event->type());
   EXPECT_TRUE(event->flags() & ui::EF_IS_STYLUS_BUTTON);
 }
 

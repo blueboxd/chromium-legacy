@@ -26,6 +26,7 @@
 #include "extensions/common/manifest_handlers/sandboxed_page_info.h"
 #include "extensions/common/mojom/context_type.mojom.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "extensions/common/switches.h"
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/isolated_world_manager.h"
 #include "extensions/renderer/renderer_context_data.h"
@@ -278,8 +279,11 @@ Feature::Availability ScriptContext::GetAvailability(
   // Special case #1: The `test` API depends on this being run in a test, in
   // which case the kTestType switch is appended.
   if (base::StartsWith(api_name, "test", base::CompareCase::SENSITIVE)) {
-    bool allowed = base::CommandLine::ForCurrentProcess()->
-                       HasSwitch(::switches::kTestType);
+    bool allowed = base::CommandLine::ForCurrentProcess()->HasSwitch(
+                       ::switches::kTestType) ||
+                   (base::CommandLine::ForCurrentProcess()->HasSwitch(
+                        switches::kExtensionTestApiOnWebPages) &&
+                    context_type_ == mojom::ContextType::kWebPage);
     Feature::AvailabilityResult result =
         allowed ? Feature::IS_AVAILABLE : Feature::MISSING_COMMAND_LINE_SWITCH;
     return Feature::Availability(result,
@@ -566,7 +570,7 @@ v8::Local<v8::Value> ScriptContext::RunScript(
       "extensions::%s", *v8::String::Utf8Value(isolate(), name));
 
   if (internal_name.size() >= v8::String::kMaxLength) {
-    DUMP_WILL_BE_NOTREACHED_NORETURN() << "internal_name is too long.";
+    DUMP_WILL_BE_NOTREACHED() << "internal_name is too long.";
     return v8::Undefined(isolate());
   }
 

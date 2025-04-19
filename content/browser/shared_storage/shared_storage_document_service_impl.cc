@@ -104,6 +104,7 @@ void SharedStorageDocumentServiceImpl::Bind(
 
 void SharedStorageDocumentServiceImpl::CreateWorklet(
     const GURL& script_source_url,
+    const url::Origin& data_origin,
     network::mojom::CredentialsMode credentials_mode,
     const std::vector<blink::mojom::OriginTrialFeature>& origin_trial_features,
     mojo::PendingAssociatedReceiver<blink::mojom::SharedStorageWorkletHost>
@@ -125,7 +126,7 @@ void SharedStorageDocumentServiceImpl::CreateWorklet(
   create_worklet_called_ = true;
   bool is_same_origin =
       render_frame_host().GetLastCommittedOrigin().IsSameOriginWith(
-          script_source_url);
+          data_origin);
 
   // A document can only create cross-origin worklets with
   // `kSharedStorageAPIM125` enabled.
@@ -140,29 +141,20 @@ void SharedStorageDocumentServiceImpl::CreateWorklet(
     return;
   }
 
-  if (render_frame_host().GetLastCommittedOrigin().opaque()) {
-    receiver_.ReportBadMessage(
-        "Attempted to create a worklet from an opaque origin context.");
-    LogSharedStorageWorkletError(
-        blink::SharedStorageWorkletErrorType::kAddModuleNonWebVisibleOther);
-    return;
-  }
+  // `CreateWorklet()` cannot differentiate between calls from addModule() and
+  // createWorklet(). Hence, we skip the mojom validation for opaque origin
+  // context for addModule().
 
-  if (!CheckSecureContext(render_frame_host())) {
-    std::move(callback).Run(
-        /*success=*/false,
-        /*error_message=*/kSharedStorageMethodFromInsecureContextMessage);
-
-    // TODO(crbug.com/40068897): Invoke receiver_.ReportBadMessage here when
-    // we can be sure honest renderers won't hit this path.
-    return;
-  }
+  // There's no consistent secure context check between the renderer process and
+  // the browser process (see crbug.com/1153336). This is particularly
+  // problematic when the origin is opaque. Hence, we skip the mojom validation
+  // for secure context. Until the issue is addressed, an insecure context (in
+  // a compromised renderer) can create worklets and execute operations.
 
   std::string debug_message;
   bool prefs_failure_is_site_specific = false;
   bool prefs_success = IsSharedStorageAddModuleAllowedForOrigin(
-      url::Origin::Create(script_source_url), &debug_message,
-      &prefs_failure_is_site_specific);
+      data_origin, &debug_message, &prefs_failure_is_site_specific);
 
   if (!prefs_success && (is_same_origin || !prefs_failure_is_site_specific)) {
     OnCreateWorkletResponseIntercepted(
@@ -177,8 +169,9 @@ void SharedStorageDocumentServiceImpl::CreateWorklet(
   }
 
   GetSharedStorageWorkletHostManager()->CreateWorkletHost(
-      this, render_frame_host().GetLastCommittedOrigin(), script_source_url,
-      credentials_mode, origin_trial_features, std::move(worklet_host),
+      this, render_frame_host().GetLastCommittedOrigin(), data_origin,
+      script_source_url, credentials_mode, origin_trial_features,
+      std::move(worklet_host),
       base::BindOnce(
           &SharedStorageDocumentServiceImpl::OnCreateWorkletResponseIntercepted,
           weak_ptr_factory_.GetWeakPtr(), is_same_origin, prefs_success,

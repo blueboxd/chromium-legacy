@@ -20,10 +20,12 @@
 #include "media/base/audio_capturer_source.h"
 #include "media/base/audio_glitch_info.h"
 #include "media/base/mock_audio_renderer_sink.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/page/browsing_context_group_info.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
+#include "third_party/blink/public/mojom/page/prerender_page_param.mojom.h"
 #include "third_party/blink/public/platform/audio/web_audio_device_source_type.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_renderer.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -148,8 +150,7 @@ class WebRtcAudioRendererTest : public testing::Test {
         web_view_(blink::WebView::Create(
             /*client=*/nullptr,
             /*is_hidden=*/false,
-            /*is_prerendering=*/false,
-            /*is_inside_portal=*/false,
+            /*prerender_param=*/nullptr,
             /*fenced_frame_mode=*/std::nullopt,
             /*compositing_enabled=*/false,
             /*widgets_never_composited=*/false,
@@ -164,6 +165,7 @@ class WebRtcAudioRendererTest : public testing::Test {
             web_view_,
             &web_local_frame_client_,
             nullptr,
+            mojo::NullRemote(),
             LocalFrameToken(),
             DocumentToken(),
             /*policy_container=*/nullptr)) {

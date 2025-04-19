@@ -182,7 +182,7 @@ TEST_F(WebAppDataRetrieverTest, GetWebAppInstallInfo_AppUrlAbsent) {
 
   // If the WebAppInstallInfo has no URL, we fallback to the last committed
   // URL.
-  EXPECT_EQ(kFooUrl, web_app_info()->start_url);
+  EXPECT_EQ(kFooUrl, web_app_info()->start_url());
 }
 
 TEST_F(WebAppDataRetrieverTest, GetWebAppInstallInfo_AppUrlPresent) {
@@ -203,7 +203,7 @@ TEST_F(WebAppDataRetrieverTest, GetWebAppInstallInfo_AppUrlPresent) {
                      base::Unretained(this), run_loop.QuitClosure()));
   run_loop.Run();
 
-  EXPECT_EQ(other_app_url, web_app_info()->start_url);
+  EXPECT_EQ(other_app_url, web_app_info()->start_url());
   EXPECT_EQ(other_app_title, web_app_info()->title);
 }
 
@@ -249,7 +249,7 @@ TEST_F(WebAppDataRetrieverTest,
 
   // If the WebAppInstallInfo has no title and the WebContents has no title, we
   // fallback to start_url.
-  EXPECT_EQ(base::UTF8ToUTF16(web_app_info()->start_url.spec()),
+  EXPECT_EQ(base::UTF8ToUTF16(web_app_info()->start_url().spec()),
             web_app_info()->title);
 }
 
@@ -303,11 +303,10 @@ TEST_F(WebAppDataRetrieverTest,
   retriever.CheckInstallabilityAndRetrieveManifest(
       web_contents(),
       base::BindLambdaForTesting(
-          [&](blink::mojom::ManifestPtr opt_manifest, const GURL& manifest_url,
+          [&](blink::mojom::ManifestPtr opt_manifest,
               bool valid_manifest_for_web_app,
               webapps::InstallableStatusCode error_code) {
             EXPECT_FALSE(opt_manifest);
-            EXPECT_EQ(manifest_url, GURL());
             EXPECT_FALSE(valid_manifest_for_web_app);
             EXPECT_EQ(error_code,
                       webapps::InstallableStatusCode::RENDERER_CANCELLED);
@@ -367,7 +366,7 @@ TEST_F(WebAppDataRetrieverTest, GetWebAppInstallInfo_FrameNavigated) {
   } else {
     // Otherwise, the mojo connection will persist and the callback will get
     // the info from the previous document.
-    EXPECT_EQ(kFooUrl.DeprecatedGetOriginAsURL(), web_app_info()->start_url);
+    EXPECT_EQ(kFooUrl.DeprecatedGetOriginAsURL(), web_app_info()->start_url());
     EXPECT_EQ(kFooTitle, web_app_info()->title);
   }
 }
@@ -383,6 +382,7 @@ TEST_F(WebAppDataRetrieverTest, CheckInstallabilityAndRetrieveManifest) {
 
   {
     auto manifest = blink::mojom::Manifest::New();
+    manifest->manifest_url = GURL("https://example.com/manifest");
     manifest->short_name = manifest_short_name;
     manifest->name = manifest_name;
     manifest->start_url = manifest_start_url;
@@ -404,7 +404,7 @@ TEST_F(WebAppDataRetrieverTest, CheckInstallabilityAndRetrieveManifest) {
   retriever.CheckInstallabilityAndRetrieveManifest(
       web_contents(),
       base::BindLambdaForTesting(
-          [&](blink::mojom::ManifestPtr opt_manifest, const GURL& manifest_url,
+          [&](blink::mojom::ManifestPtr opt_manifest,
               bool valid_manifest_for_web_app,
               webapps::InstallableStatusCode error_code) {
             EXPECT_EQ(error_code,
@@ -415,8 +415,8 @@ TEST_F(WebAppDataRetrieverTest, CheckInstallabilityAndRetrieveManifest) {
             EXPECT_EQ(manifest_start_url, opt_manifest->start_url);
             EXPECT_EQ(manifest_scope, opt_manifest->scope);
             EXPECT_EQ(manifest_theme_color, opt_manifest->theme_color);
-
-            EXPECT_EQ(manifest_url, GURL("https://example.com/manifest"));
+            EXPECT_EQ(GURL("https://example.com/manifest"),
+                      opt_manifest->manifest_url);
 
             callback_called = true;
             run_loop.Quit();
@@ -443,12 +443,11 @@ TEST_F(WebAppDataRetrieverTest, CheckInstallabilityFails) {
   retriever.CheckInstallabilityAndRetrieveManifest(
       web_contents(),
       base::BindLambdaForTesting(
-          [&](blink::mojom::ManifestPtr opt_manifest, const GURL& manifest_url,
+          [&](blink::mojom::ManifestPtr opt_manifest,
               bool valid_manifest_for_web_app,
               webapps::InstallableStatusCode error_code) {
             EXPECT_EQ(error_code, webapps::InstallableStatusCode::NO_MANIFEST);
             EXPECT_FALSE(valid_manifest_for_web_app);
-            EXPECT_EQ(manifest_url, GURL());
             callback_called = true;
             run_loop.Quit();
           }));

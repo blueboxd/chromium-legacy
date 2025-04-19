@@ -302,18 +302,31 @@ bug that is platform specific and you do not have access to a device with that
 OS, please [ask for help](#Ask-for-help), there is likely someone on the team
 that does and can help you.
 
-ChromeOS is in a separate issue tracker. VRP reports for ChromeOS should be
+ChromeOS is in the Google issue tracker. VRP reports for ChromeOS should be
 [directly reported to ChromeOS](https://bughunters.google.com/report). Please
-request the reporter submit direct to ChromeOS via that reporting route to
-ensure it is received by the appropriate team.
+request the reporter submit reports directly to ChromeOS in the future. For
+VRP and other human-submitted security bug reports specific to ChromeOS,
+please move the report corresponding component (componentid:1335705) in the
+Google issue tracker. Since this bug is being moved between trackers you will
+need to use your google.com account to move the bug into that tracker component.
+
+Some machine-discovered (Clusterfuzz, Crash AutoBugFiler, GWP-ASAN) may be
+specific to ChromeOS. If this is determined to be the case after investigation
+(please remember some GWP-ASAN or crash bug auto-filer bugs may have come from a
+ChromeOS crash, but the issue may not be specific to ChromeOS), move the bug
+to the appropriate ChromeOS component (componentid:1214738) in the Google
+issue tracker for these reports. Again, you will need to use your google.com
+account to move this bug into that component.
 
 ### Assign
 
 Security bugs are not automatically visible, so you must add people to get them
 fixed. For each bug, set:
 
-* The **Component Tags** – due to a limited set of auto-cc rules, this may add
-  some visibility.
+* The **Component** – due to a limited set of auto-cc rules, this may add
+  some visibility. This will "move" the bug into that component; this is the
+  expected outcome. It can also be helpful to set additional **Component Tags**
+  when a bug does not fall neatly into a single component.
 * An **assignee/owner**. Use `git blame` or look for similar past bugs in the
   tracker.
 * Lots of **cc**s. Copy everyone who could possibly be relevant. Use the owners
@@ -352,7 +365,7 @@ pass it along to / include someone who can direct it more precisely.
     * Set a provisional severity of Low (S3).
     * Assign to the current [V8
       Sheriff](https://goto.google.com/current-v8-sheriff).
-    * Apply the `Security_Impact-None` hotlist (hotlistID:5433277.
+    * Apply the `Security_Impact-None` hotlist (hotlistID:5433277).
     * If possible, please also apply the `V8 Sandbox` hotlist
       (hotlistID:4802478).
 * **Skia bugs** can be assigned to hcm@chromium.org. Be careful while triaging
@@ -370,6 +383,18 @@ pass it along to / include someone who can direct it more precisely.
   mfoltz@chromium.org. They are also working on holistic solutions to improving
   the security of fullscreen, so please remember to look for potential
   duplicates of ongoing work.
+* **BoringSSL** the BoringSSL project has moved into the Chromium tracker.
+  BoringSSL is a library, so security bugs that do not impact Chrome may still
+  be meaningful (e.g. server-side bugs). BoringSSL security issues should be
+  fully assessed by the BoringSSL team. If you come across a BoringSSL bug in
+  the triage queue:
+    * Set a provisional severity based on the issue the report proports; the
+      BoringSSL team may need to adjust based on their assessment.
+    * Set `Component` to: Chromium > BoringSSL.
+    * Assign to an appropriate owner based on `third_party/boringssl/OWNERS`;
+      Add owners to cc: on the bug to ensure visibility.
+    * Add `Security_Impact-None` hotlist; owner will update if this issue
+      does impact Chrome.
 * Report suspected malicious URLs to SafeBrowsing:
   * Public URLs:
     * [Report malware](https://safebrowsing.google.com/safebrowsing/report_badware/?hl=en)
@@ -530,9 +555,9 @@ description of the report, simply choose the `Edit description` option and
 remove any PII.
 
 For cases in which we are just delaying public disclosure (such as when a
-security issue impacts other products or vendors), please use this label and set
-a date in the `Next Action` field so that disclosure can be re-evaluated at
-that time.
+security issue impacts other products or vendors), please add the
+`SecurityEmbargo` hotlist (hotlistID: 1053360) and set a date in the `Next
+Action` field so that disclosure can be re-evaluated at that time.
 
 ### Protecting researcher identities
 

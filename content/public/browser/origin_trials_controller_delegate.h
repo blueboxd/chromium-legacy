@@ -11,6 +11,7 @@
 #include "base/observer_list_types.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/origin_trial_status_change_details.h"
 #include "third_party/blink/public/mojom/origin_trial_feature/origin_trial_feature.mojom-shared.h"
 #include "url/origin.h"
 
@@ -31,8 +32,8 @@ class CONTENT_EXPORT OriginTrialsControllerDelegate {
  public:
   class Observer : public base::CheckedObserver {
    public:
-    // Called when the observed trial is enabled or disabled for `origin`
-    // (under `partition_site`).
+    // Called when the observed trial is enabled or disabled for
+    // `details.origin` (under `details.partition_site`).
     //
     // NOTE: The status provided to this callback cannot be
     // guaranteed across startups, despite the observer being scoped to
@@ -44,10 +45,8 @@ class CONTENT_EXPORT OriginTrialsControllerDelegate {
     // associated token, trial, and/or feature. Disabling one of these after a
     // persistent trial has previously been enabled for an origin should
     // effectively disabled also disable the trial for that origin.
-    virtual void OnStatusChanged(const url::Origin& origin,
-                                 const std::string& partition_site,
-                                 bool match_subdomains,
-                                 bool enabled) = 0;
+    virtual void OnStatusChanged(
+        const OriginTrialStatusChangeDetails& details) = 0;
     // Called when all persisted tokens are removed.
     virtual void OnPersistedTokensCleared() = 0;
     // The name of the persistent origin trial whose status changes `this`
@@ -76,7 +75,8 @@ class CONTENT_EXPORT OriginTrialsControllerDelegate {
       const url::Origin& origin,
       const url::Origin& partition_origin,
       const base::span<const std::string> header_tokens,
-      const base::Time current_time) = 0;
+      const base::Time current_time,
+      std::optional<ukm::SourceId> source_id) = 0;
 
   // Appends all enabled and persistable `tokens` to the set of already enabled
   // trials for `origin`. By passing `script_origins`, this method can be used
@@ -89,7 +89,8 @@ class CONTENT_EXPORT OriginTrialsControllerDelegate {
       const url::Origin& partition_origin,
       base::span<const url::Origin> script_origins,
       const base::span<const std::string> tokens,
-      const base::Time current_time) = 0;
+      const base::Time current_time,
+      std::optional<ukm::SourceId> source_id) = 0;
 
   // Returns `true` if `feature` has been persistently enabled for `origin`,
   // partitioned by `partition_origin` and is still valid. This method should

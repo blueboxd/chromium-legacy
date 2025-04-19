@@ -3,10 +3,11 @@
 # found in the LICENSE file.
 """Definitions of builders in the chromium.dawn builder group."""
 
+load("//lib/args.star", "args")
 load("//lib/branches.star", "branches")
 load("//lib/builder_config.star", "builder_config")
 load("//lib/builder_health_indicators.star", "health_spec")
-load("//lib/builders.star", "sheriff_rotations", "siso")
+load("//lib/builders.star", "gardener_rotations", "siso")
 load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
 load("//lib/gn_args.star", "gn_args")
@@ -15,7 +16,7 @@ ci.defaults.set(
     executable = ci.DEFAULT_EXECUTABLE,
     builder_group = "chromium.dawn",
     pool = ci.gpu.POOL,
-    sheriff_rotations = sheriff_rotations.DAWN,
+    gardener_rotations = gardener_rotations.DAWN,
     contact_team_email = "chrome-gpu-infra@google.com",
     execution_timeout = ci.DEFAULT_EXECUTION_TIMEOUT,
     health_spec = health_spec.DEFAULT,
@@ -75,6 +76,9 @@ ci.gpu.linux_builder(
             "release_try_builder",
             "minimal_symbols",
             "remoteexec",
+            "gpu_tests",
+            "linux",
+            "x64",
         ],
     ),
     console_view_entry = consoles.console_view_entry(
@@ -110,6 +114,9 @@ ci.gpu.linux_builder(
             "release_try_builder",
             "minimal_symbols",
             "remoteexec",
+            "gpu_tests",
+            "linux",
+            "x64",
         ],
     ),
     console_view_entry = consoles.console_view_entry(
@@ -144,6 +151,8 @@ ci.gpu.linux_builder(
             "release_try_builder",
             "minimal_symbols",
             "remoteexec",
+            "gpu_tests",
+            "arm",
         ],
     ),
     console_view_entry = consoles.console_view_entry(
@@ -179,6 +188,7 @@ ci.gpu.linux_builder(
             "release_try_builder",
             "minimal_symbols",
             "remoteexec",
+            "gpu_tests",
         ],
     ),
     console_view_entry = consoles.console_view_entry(
@@ -353,6 +363,9 @@ ci.gpu.linux_builder(
             "release_try_builder",
             "minimal_symbols",
             "remoteexec",
+            "gpu_tests",
+            "linux",
+            "x64",
         ],
     ),
     console_view_entry = consoles.console_view_entry(
@@ -391,6 +404,8 @@ ci.gpu.linux_builder(
             "release_try_builder",
             "minimal_symbols",
             "remoteexec",
+            "gpu_tests",
+            "arm",
         ],
     ),
     console_view_entry = consoles.console_view_entry(
@@ -427,6 +442,7 @@ ci.gpu.linux_builder(
             "release_try_builder",
             "minimal_symbols",
             "remoteexec",
+            "gpu_tests",
         ],
     ),
     console_view_entry = consoles.console_view_entry(
@@ -543,6 +559,11 @@ ci.thin_tester(
         build_gs_bucket = "chromium-dawn-archive",
         run_tests_serially = True,
     ),
+    # TODO(crbug.com/41489949): This config is experimental. It is not part of
+    # the WebGPU CTS roller for capacity reasons, so it goes red with each roll.
+    # Gardeners don't need to fix this, so exclude it from Sheriff-o-Matic.
+    # It should be added back to SoM once the roller runs it.
+    gardener_rotations = args.ignore_default(None),
     # Uncomment this entry when this experimental tester is actually in use.
     console_view_entry = consoles.console_view_entry(
         category = "ToT|Android",
@@ -622,12 +643,15 @@ ci.gpu.linux_builder(
             "dcheck_off",
             "no_symbols",
             "is_skylab",
+            "chromeos",
+            "x64",
         ],
     ),
     console_view_entry = consoles.console_view_entry(
         category = "ChromeOS|Intel",
         short_name = "vlt",
     ),
+    execution_timeout = 6 * time.hour,
     siso_remote_jobs = siso.remote_jobs.HIGH_JOBS_FOR_CI,
 )
 
@@ -655,6 +679,35 @@ ci.thin_tester(
     # Uncomment this entry when this experimental tester is actually in use.
     console_view_entry = consoles.console_view_entry(
         category = "ToT|Linux|Intel",
+        short_name = "exp",
+    ),
+    list_view = "chromium.gpu.experimental",
+)
+
+ci.thin_tester(
+    name = "Dawn Linux x64 Experimental Release (NVIDIA GTX 1660)",
+    description_html = "Runs ToT Dawn tests on experimental Linux/GTX 1660 configs",
+    triggered_by = ["Dawn Linux x64 Builder"],
+    builder_spec = builder_config.builder_spec(
+        execution_mode = builder_config.execution_mode.TEST,
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.LINUX,
+        ),
+        build_gs_bucket = "chromium-dawn-archive",
+        run_tests_serially = True,
+    ),
+    # Uncomment this entry when this experimental tester is actually in use.
+    console_view_entry = consoles.console_view_entry(
+        category = "ToT|Linux|Nvidia",
         short_name = "exp",
     ),
     list_view = "chromium.gpu.experimental",
@@ -768,6 +821,8 @@ ci.gpu.mac_builder(
             "minimal_symbols",
             "remoteexec",
             "arm64",
+            "gpu_tests",
+            "mac",
         ],
     ),
     console_view_entry = consoles.console_view_entry(
@@ -803,6 +858,8 @@ ci.gpu.mac_builder(
             "minimal_symbols",
             "remoteexec",
             "arm64",
+            "gpu_tests",
+            "mac",
         ],
     ),
     console_view_entry = consoles.console_view_entry(
@@ -866,10 +923,10 @@ ci.thin_tester(
         run_tests_serially = True,
     ),
     # Uncomment this entry when this experimental tester is actually in use.
-    console_view_entry = consoles.console_view_entry(
-        category = "ToT|Mac",
-        short_name = "exp",
-    ),
+    # console_view_entry = consoles.console_view_entry(
+    #     category = "ToT|Mac",
+    #     short_name = "exp",
+    # ),
     list_view = "chromium.gpu.experimental",
 )
 
@@ -933,6 +990,8 @@ ci.gpu.mac_builder(
             "minimal_symbols",
             "remoteexec",
             "x64",
+            "gpu_tests",
+            "mac",
         ],
     ),
     console_view_entry = consoles.console_view_entry(
@@ -968,6 +1027,8 @@ ci.gpu.mac_builder(
             "minimal_symbols",
             "remoteexec",
             "x64",
+            "gpu_tests",
+            "mac",
         ],
     ),
     console_view_entry = consoles.console_view_entry(
@@ -1059,10 +1120,10 @@ ci.thin_tester(
         run_tests_serially = True,
     ),
     # Uncomment this entry when this experimental tester is actually in use.
-    # console_view_entry = consoles.console_view_entry(
-    #     category = "ToT|Mac|AMD",
-    #     short_name = "exp",
-    # ),
+    console_view_entry = consoles.console_view_entry(
+        category = "ToT|Mac|AMD",
+        short_name = "exp",
+    ),
     list_view = "chromium.gpu.experimental",
 )
 
@@ -1088,10 +1149,10 @@ ci.thin_tester(
         run_tests_serially = True,
     ),
     # Uncomment this entry when this experimental tester is actually in use.
-    # console_view_entry = consoles.console_view_entry(
-    #     category = "ToT|Mac|Intel",
-    #     short_name = "exp",
-    # ),
+    console_view_entry = consoles.console_view_entry(
+        category = "ToT|Mac|Intel",
+        short_name = "exp",
+    ),
     list_view = "chromium.gpu.experimental",
 )
 
@@ -1179,6 +1240,9 @@ ci.gpu.windows_builder(
             "release_try_builder",
             "minimal_symbols",
             "remoteexec",
+            "gpu_tests",
+            "win",
+            "x64",
         ],
     ),
     console_view_entry = consoles.console_view_entry(
@@ -1280,6 +1344,9 @@ ci.gpu.windows_builder(
             "release_try_builder",
             "minimal_symbols",
             "remoteexec",
+            "gpu_tests",
+            "win",
+            "x64",
         ],
     ),
     console_view_entry = consoles.console_view_entry(
@@ -1315,6 +1382,9 @@ ci.gpu.windows_builder(
             "release_try_builder",
             "minimal_symbols",
             "remoteexec",
+            "gpu_tests",
+            "win",
+            "x64",
         ],
     ),
     console_view_entry = consoles.console_view_entry(
@@ -1356,6 +1426,7 @@ ci.gpu.windows_builder(
             "minimal_symbols",
             "remoteexec",
             "gpu_tests",
+            "win",
         ],
     ),
     console_view_entry = consoles.console_view_entry(
@@ -1392,6 +1463,7 @@ ci.gpu.windows_builder(
             "minimal_symbols",
             "remoteexec",
             "gpu_tests",
+            "win",
         ],
     ),
     console_view_entry = consoles.console_view_entry(
@@ -1623,6 +1695,8 @@ ci.gpu.windows_builder(
             "minimal_symbols",
             "remoteexec",
             "x86",
+            "gpu_tests",
+            "win",
         ],
     ),
     console_view_entry = consoles.console_view_entry(
@@ -1658,6 +1732,8 @@ ci.gpu.windows_builder(
             "minimal_symbols",
             "remoteexec",
             "x86",
+            "gpu_tests",
+            "win",
         ],
     ),
     console_view_entry = consoles.console_view_entry(

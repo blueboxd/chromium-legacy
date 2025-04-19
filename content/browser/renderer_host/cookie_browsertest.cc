@@ -18,6 +18,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
@@ -36,6 +37,7 @@
 #include "net/cookies/cookie_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/alternative_service.h"
+#include "net/storage_access_api/status.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom-test-utils.h"
@@ -156,7 +158,12 @@ IN_PROC_BROWSER_TEST_F(CookieBrowserTest, Cookies) {
   } else {
     EXPECT_EQ("http://a.test/",
               web_contents_http->GetSiteInstance()->GetSiteURL().spec());
-    EXPECT_EQ("https://a.test/",
+    // Create expected site url, including port if origin isolation is enabled.
+    std::string expected_site_url =
+        SiteIsolationPolicy::AreOriginKeyedProcessesEnabledByDefault()
+            ? url::Origin::Create(https_url).GetURL().spec()
+            : std::string("https://a.test/");
+    EXPECT_EQ(expected_site_url,
               web_contents_https->GetSiteInstance()->GetSiteURL().spec());
   }
 
@@ -372,28 +379,29 @@ class RestrictedCookieManagerInterceptor
     override_url_ = std::move(maybe_url);
   }
 
-  void SetCookieFromString(const GURL& url,
-                           const net::SiteForCookies& site_for_cookies,
-                           const url::Origin& top_frame_origin,
-                           bool has_storage_access,
-                           const std::string& cookie,
-                           SetCookieFromStringCallback callback) override {
+  void SetCookieFromString(
+      const GURL& url,
+      const net::SiteForCookies& site_for_cookies,
+      const url::Origin& top_frame_origin,
+      net::StorageAccessApiStatus storage_access_api_status,
+      const std::string& cookie,
+      SetCookieFromStringCallback callback) override {
     GetForwardingInterface()->SetCookieFromString(
-        URLToUse(url), site_for_cookies, top_frame_origin, has_storage_access,
-        std::move(cookie), std::move(callback));
+        URLToUse(url), site_for_cookies, top_frame_origin,
+        storage_access_api_status, std::move(cookie), std::move(callback));
   }
 
   void GetCookiesString(const GURL& url,
                         const net::SiteForCookies& site_for_cookies,
                         const url::Origin& top_frame_origin,
-                        bool has_storage_access,
+                        net::StorageAccessApiStatus storage_access_api_status,
                         bool get_version_shared_memory,
                         bool is_ad_tagged,
                         bool force_disable_third_party_cookies,
                         GetCookiesStringCallback callback) override {
     GetForwardingInterface()->GetCookiesString(
-        URLToUse(url), site_for_cookies, top_frame_origin, has_storage_access,
-        get_version_shared_memory, is_ad_tagged,
+        URLToUse(url), site_for_cookies, top_frame_origin,
+        storage_access_api_status, get_version_shared_memory, is_ad_tagged,
         force_disable_third_party_cookies, std::move(callback));
   }
 

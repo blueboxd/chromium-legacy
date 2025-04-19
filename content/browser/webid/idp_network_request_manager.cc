@@ -25,6 +25,7 @@
 #include "net/cookies/site_for_cookies.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
+#include "services/data_decoder/public/cpp/decode_image.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -35,6 +36,7 @@
 #include "third_party/blink/public/mojom/webid/federated_auth_request.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/image/image.h"
 #include "url/origin.h"
 
 namespace content {
@@ -71,6 +73,7 @@ constexpr char kClientMetadataEndpointKey[] = "client_metadata_endpoint";
 constexpr char kMetricsEndpoint[] = "metrics_endpoint";
 constexpr char kDisconnectEndpoint[] = "disconnect_endpoint";
 constexpr char kModesKey[] = "modes";
+constexpr char kTypesKey[] = "types";
 
 // Keys in the 'accounts' dictionary
 constexpr char kIncludeKey[] = "include";
@@ -87,14 +90,12 @@ constexpr char kAccountsEndpointKey[] = "accounts_endpoint";
 constexpr char kLoginUrlKey[] = "login_url";
 
 // Keys in fedcm.json 'branding' dictionary.
-constexpr char kIdpBrandingBackgroundColor[] = "background_color";
-constexpr char kIdpBrandingForegroundColor[] = "color";
-constexpr char kIdpBrandingIcons[] = "icons";
+constexpr char kIdpBrandingBackgroundColorKey[] = "background_color";
+constexpr char kIdpBrandingForegroundColorKey[] = "color";
 
 // Client metadata keys.
 constexpr char kPrivacyPolicyKey[] = "privacy_policy_url";
 constexpr char kTermsOfServiceKey[] = "terms_of_service_url";
-constexpr char kBrandIconUrlKey[] = "brand_icon_url";
 
 // Accounts endpoint response keys.
 constexpr char kAccountsKey[] = "accounts";
@@ -111,9 +112,11 @@ constexpr char kHintsKey[] = "login_hints";
 constexpr char kDomainHintsKey[] = "domain_hints";
 constexpr char kLabelsKey[] = "labels";
 
-// Keys in 'branding' 'icons' dictionary in accounts endpoint.
-constexpr char kIdpBrandingIconUrl[] = "url";
-constexpr char kIdpBrandingIconSize[] = "size";
+// Keys in 'branding' 'icons' dictionary in config for the IDP icon and client
+// metadata endpoint for the RP icon.
+constexpr char kBrandingIconsKey[] = "icons";
+constexpr char kBrandingIconUrl[] = "url";
+constexpr char kBrandingIconSize[] = "size";
 
 // The id assertion endpoint contains a token result.
 constexpr char kTokenKey[] = "token";
@@ -330,23 +333,9 @@ std::optional<SkColor> ParseCssColor(const std::string* value) {
   return SkColorSetA(color, 0xff);
 }
 
-// Parse IdentityProviderMetadata from given value. Overwrites |idp_metadata|
-// with the parsed value.
-void ParseIdentityProviderMetadata(const base::Value::Dict& idp_metadata_value,
-                                   int brand_icon_ideal_size,
-                                   int brand_icon_minimum_size,
-                                   IdentityProviderMetadata& idp_metadata) {
-  idp_metadata.brand_background_color =
-      ParseCssColor(idp_metadata_value.FindString(kIdpBrandingBackgroundColor));
-  idp_metadata.brand_text_color =
-      ParseCssColor(idp_metadata_value.FindString(kIdpBrandingForegroundColor));
-
-  const base::Value::List* icons_value =
-      idp_metadata_value.FindList(kIdpBrandingIcons);
-  if (!icons_value) {
-    return;
-  }
-
+GURL FindBestMatchingIconUrl(const base::Value::List* icons_value,
+                             int brand_icon_ideal_size,
+                             int brand_icon_minimum_size) {
   std::vector<blink::Manifest::ImageResource> icons;
   for (const base::Value& icon_value : *icons_value) {
     const base::Value::Dict* icon_value_dict = icon_value.GetIfDict();
@@ -354,32 +343,50 @@ void ParseIdentityProviderMetadata(const base::Value::Dict& idp_metadata_value,
       continue;
     }
 
-    const std::string* icon_src =
-        icon_value_dict->FindString(kIdpBrandingIconUrl);
+    const std::string* icon_src = icon_value_dict->FindString(kBrandingIconUrl);
     if (!icon_src) {
       continue;
     }
 
     blink::Manifest::ImageResource icon;
     icon.src = GURL(*icon_src);
-    if (!icon.src.is_valid()) {
+    if (!icon.src.is_valid() || !icon.src.SchemeIsHTTPOrHTTPS()) {
       continue;
     }
 
     icon.purpose = {blink::mojom::ManifestImageResource_Purpose::MASKABLE};
 
-    std::optional<int> icon_size =
-        icon_value_dict->FindInt(kIdpBrandingIconSize);
+    std::optional<int> icon_size = icon_value_dict->FindInt(kBrandingIconSize);
     int icon_size_int = icon_size.value_or(0);
     icon.sizes.emplace_back(icon_size_int, icon_size_int);
 
     icons.push_back(icon);
   }
 
-  idp_metadata.brand_icon_url =
-      blink::ManifestIconSelector::FindBestMatchingSquareIcon(
-          icons, brand_icon_ideal_size, brand_icon_minimum_size,
-          blink::mojom::ManifestImageResource_Purpose::MASKABLE);
+  return blink::ManifestIconSelector::FindBestMatchingSquareIcon(
+      icons, brand_icon_ideal_size, brand_icon_minimum_size,
+      blink::mojom::ManifestImageResource_Purpose::MASKABLE);
+}
+
+// Parse IdentityProviderMetadata from given value. Overwrites |idp_metadata|
+// with the parsed value.
+void ParseIdentityProviderMetadata(const base::Value::Dict& idp_metadata_value,
+                                   int brand_icon_ideal_size,
+                                   int brand_icon_minimum_size,
+                                   IdentityProviderMetadata& idp_metadata) {
+  idp_metadata.brand_background_color = ParseCssColor(
+      idp_metadata_value.FindString(kIdpBrandingBackgroundColorKey));
+  idp_metadata.brand_text_color = ParseCssColor(
+      idp_metadata_value.FindString(kIdpBrandingForegroundColorKey));
+
+  const base::Value::List* icons_value =
+      idp_metadata_value.FindList(kBrandingIconsKey);
+  if (!icons_value) {
+    return;
+  }
+
+  idp_metadata.brand_icon_url = FindBestMatchingIconUrl(
+      icons_value, brand_icon_ideal_size, brand_icon_minimum_size);
 }
 
 // This method follows https://mimesniff.spec.whatwg.org/#json-mime-type.
@@ -558,6 +565,16 @@ void OnConfigParsed(const GURL& provider,
   }
   idp_metadata.idp_login_url =
       ExtractEndpoint(provider, response, kLoginUrlKey);
+  if (IsFedCmIdPRegistrationEnabled()) {
+    const base::Value::List* types = response.FindList(kTypesKey);
+    if (types) {
+      for (const auto& type : *types) {
+        if (type.is_string()) {
+          idp_metadata.types.push_back(type.GetString());
+        }
+      }
+    }
+  }
 
   const base::Value::Dict* accounts_dict = response.FindDict(kAccountsKey);
   if (accounts_dict) {
@@ -593,6 +610,8 @@ void OnConfigParsed(const GURL& provider,
 }
 
 void OnClientMetadataParsed(
+    int rp_brand_icon_ideal_size,
+    int rp_brand_icon_minimum_size,
     IdpNetworkRequestManager::FetchClientMetadataCallback callback,
     FetchStatus fetch_status,
     data_decoder::DataDecoder::ValueOrError result) {
@@ -605,7 +624,12 @@ void OnClientMetadataParsed(
   const base::Value::Dict& response = result->GetDict();
   data.privacy_policy_url = ExtractUrl(response, kPrivacyPolicyKey);
   data.terms_of_service_url = ExtractUrl(response, kTermsOfServiceKey);
-  data.brand_icon_url = ExtractUrl(response, kBrandIconUrlKey);
+
+  const base::Value::List* icons_value = response.FindList(kBrandingIconsKey);
+  if (icons_value) {
+    data.brand_icon_url = FindBestMatchingIconUrl(
+        icons_value, rp_brand_icon_ideal_size, rp_brand_icon_minimum_size);
+  }
 
   std::move(callback).Run({ParseStatus::kSuccess, fetch_status.response_code},
                           data);
@@ -1114,15 +1138,17 @@ void IdpNetworkRequestManager::SendDisconnectRequest(
       maxResponseSizeInKiB * 1024);
 }
 
-void IdpNetworkRequestManager::DownloadUncredentialedUrl(
-    const GURL& url,
-    DownloadCallback callback) {
+void IdpNetworkRequestManager::DownloadAndDecodeImage(const GURL& url,
+                                                      ImageCallback callback) {
   std::unique_ptr<network::ResourceRequest> resource_request =
       CreateUncredentialedResourceRequest(url, /*send_origin=*/false);
 
-  DownloadUrl(std::move(resource_request),
-              /*url_encoded_post_data=*/std::nullopt, std::move(callback),
-              maxResponseSizeInKiB * 1024);
+  DownloadUrl(
+      std::move(resource_request),
+      /*url_encoded_post_data=*/std::nullopt,
+      base::BindOnce(&IdpNetworkRequestManager::OnDownloadedImage,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
+      maxResponseSizeInKiB * 1024);
 }
 
 void IdpNetworkRequestManager::DownloadJsonAndParse(
@@ -1194,6 +1220,8 @@ void IdpNetworkRequestManager::OnDownloadedUrl(
 void IdpNetworkRequestManager::FetchClientMetadata(
     const GURL& endpoint,
     const std::string& client_id,
+    int rp_brand_icon_ideal_size,
+    int rp_brand_icon_minimum_size,
     FetchClientMetadataCallback callback) {
   GURL target_url = endpoint.Resolve(
       "?client_id=" + base::EscapeQueryParamValue(client_id, true));
@@ -1205,8 +1233,32 @@ void IdpNetworkRequestManager::FetchClientMetadata(
   DownloadJsonAndParse(
       std::move(resource_request),
       /*url_encoded_post_data=*/std::nullopt,
-      base::BindOnce(&OnClientMetadataParsed, std::move(callback)),
+      base::BindOnce(&OnClientMetadataParsed, rp_brand_icon_ideal_size,
+                     rp_brand_icon_minimum_size, std::move(callback)),
       maxResponseSizeInKiB * 1024);
+}
+
+void IdpNetworkRequestManager::OnDownloadedImage(
+    ImageCallback callback,
+    std::unique_ptr<std::string> response_body,
+    int response_code,
+    const std::string& mime_type) {
+  if (!response_body || response_code != net::HTTP_OK) {
+    std::move(callback).Run(gfx::Image());
+    return;
+  }
+
+  data_decoder::DecodeImageIsolated(
+      base::as_byte_span(*response_body),
+      data_decoder::mojom::ImageCodec::kDefault, /*shrink_to_fit=*/false,
+      data_decoder::kDefaultMaxSizeInBytes, gfx::Size(),
+      base::BindOnce(&IdpNetworkRequestManager::OnDecodedImage,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void IdpNetworkRequestManager::OnDecodedImage(ImageCallback callback,
+                                              const SkBitmap& decoded_bitmap) {
+  std::move(callback).Run(gfx::Image::CreateFrom1xBitmap(decoded_bitmap));
 }
 
 std::unique_ptr<network::ResourceRequest>
@@ -1299,9 +1351,14 @@ IdpNetworkRequestManager::CreateCredentialedResourceRequest(
   resource_request->credentials_mode =
       network::mojom::CredentialsMode::kInclude;
   resource_request->trusted_params = network::ResourceRequest::TrustedParams();
+  net::IsolationInfo::RequestType request_type =
+      net::IsolationInfo::RequestType::kOther;
+  if (IsFedCmSameSiteLaxEnabled()) {
+    // We use kMainFrame so that we can send SameSite=Lax cookies.
+    request_type = net::IsolationInfo::RequestType::kMainFrame;
+  }
   resource_request->trusted_params->isolation_info = net::IsolationInfo::Create(
-      net::IsolationInfo::RequestType::kOther, target_origin, target_origin,
-      site_for_cookies);
+      request_type, target_origin, target_origin, site_for_cookies);
   DCHECK(client_security_state_);
   resource_request->trusted_params->client_security_state =
       client_security_state_.Clone();

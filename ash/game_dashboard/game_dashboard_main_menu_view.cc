@@ -32,13 +32,18 @@
 #include "ash/style/style_util.h"
 #include "ash/style/switch.h"
 #include "ash/style/typography.h"
+#include "ash/system/model/system_tray_model.h"
+#include "ash/system/time/time_view.h"
 #include "ash/system/toast/anchored_nudge_manager_impl.h"
 #include "ash/system/unified/feature_pod_button.h"
 #include "base/functional/bind.h"
+#include "base/i18n/time_formatting.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
+#include "chromeos/ui/frame/caption_buttons/frame_caption_button_container_view.h"
+#include "chromeos/ui/frame/frame_header.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/accessibility/ax_enums.mojom-shared.h"
@@ -53,6 +58,7 @@
 #include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/text_constants.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/animation_builder.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/background.h"
@@ -105,17 +111,24 @@ constexpr gfx::Insets kFourTilePadding = gfx::Insets::TLBR(0, 10, 10, 10);
 constexpr gfx::Insets kTileIconPadding = gfx::Insets::TLBR(12, 8, 4, 8);
 // Primary Feature Tile Label Padding.
 constexpr gfx::Insets kPrimaryTileLabelPadding = gfx::Insets::TLBR(0, 0, 0, 15);
+// Clock View Padding.
+constexpr gfx::Insets kClockViewPadding = gfx::Insets::TLBR(10, 10, 10, 10);
 
-constexpr gfx::RoundedCornersF kGCDetailRowCorners =
+// Row corners used for the top row of a multi-feature row collection.
+constexpr gfx::RoundedCornersF kTopMultiRowCorners =
     gfx::RoundedCornersF(/*upper_left=*/kDetailRowCornerRadius,
                          /*upper_right=*/kDetailRowCornerRadius,
                          /*lower_right=*/2.0f,
                          /*lower_left=*/2.0f);
-constexpr gfx::RoundedCornersF kScreenSizeRowCorners =
+// Row corners used for the bottom row of a multi-featue row collection.
+constexpr gfx::RoundedCornersF kBottomMultiRowCorners =
     gfx::RoundedCornersF(/*upper_left=*/2.0f,
                          /*upper_right=*/2.0f,
                          /*lower_right=*/kDetailRowCornerRadius,
                          /*lower_left=*/kDetailRowCornerRadius);
+// Row corners used for a single feature row collection.
+constexpr gfx::RoundedCornersF kSingleRowCorners =
+    gfx::RoundedCornersF(kDetailRowCornerRadius);
 
 // For setup button pulse animation.
 constexpr int kSetupPulseExtraHalfSize = 32;
@@ -319,6 +332,8 @@ class FeatureHeader : public views::View {
   FeatureHeader& operator=(const FeatureHeader) = delete;
   ~FeatureHeader() override = default;
 
+  const views::Label* GetSubtitle() { return sub_title_.get(); }
+
   void UpdateColors(bool is_enabled) {
     const auto color_id = is_enabled ? cros_tokens::kCrosSysOnSurface
                                      : cros_tokens::kCrosSysDisabled;
@@ -354,6 +369,8 @@ class FeatureHeader : public views::View {
 BEGIN_METADATA(FeatureHeader)
 END_METADATA
 
+}  // namespace
+
 // -----------------------------------------------------------------------------
 // ScreenSizeRow:
 
@@ -361,11 +378,12 @@ END_METADATA
 // +------------------------------------------------+
 // | |feature header|                           |>| |
 // +------------------------------------------------+
-class ScreenSizeRow : public views::Button {
+class GameDashboardMainMenuView::ScreenSizeRow : public views::Button {
   METADATA_HEADER(ScreenSizeRow, views::Button)
 
  public:
-  ScreenSizeRow(PressedCallback callback,
+  ScreenSizeRow(GameDashboardMainMenuView* main_menu,
+                PressedCallback callback,
                 ResizeCompatMode resize_mode,
                 ArcResizeLockType resize_lock_type)
       : views::Button(std::move(callback)) {
@@ -373,35 +391,62 @@ class ScreenSizeRow : public views::Button {
 
     bool enabled = false;
     int tooltip = 0;
+    std::u16string subtitle;
     switch (resize_lock_type) {
       case ArcResizeLockType::RESIZE_DISABLED_TOGGLABLE:
       case ArcResizeLockType::RESIZE_ENABLED_TOGGLABLE:
         enabled = true;
+        subtitle = compat_mode_util::GetText(resize_mode);
         break;
       case ArcResizeLockType::RESIZE_DISABLED_NONTOGGLABLE:
         enabled = false;
         tooltip =
             IDS_ASH_ARC_APP_COMPAT_DISABLED_COMPAT_MODE_BUTTON_TOOLTIP_PHONE;
+        DCHECK_NE(resize_mode, ResizeCompatMode::kResizable)
+            << "The resize mode should never be resizable with an "
+               "ArcResizeLockType of RESIZE_DISABLED_NONTOGGLABLE.";
+        if (resize_mode == ResizeCompatMode::kPhone) {
+          subtitle = l10n_util::GetStringUTF16(
+              IDS_ASH_GAME_DASHBOARD_SCREEN_SIZE_ONLY_PORTRAIT);
+        } else {
+          subtitle = l10n_util::GetStringUTF16(
+              IDS_ASH_GAME_DASHBOARD_SCREEN_SIZE_ONLY_LANDSCAPE);
+        }
         break;
       case ArcResizeLockType::NONE:
         enabled = false;
         tooltip = IDS_ASH_GAME_DASHBOARD_FEATURE_NOT_AVAILABLE_TOOLTIP;
+
+        // Set the subtitle text based on whether the size button in the frame
+        // header is present.
+        auto* frame_header =
+            chromeos::FrameHeader::Get(views::Widget::GetWidgetForNativeWindow(
+                main_menu->context_->game_window()));
+        views::FrameCaptionButton* size_button =
+            frame_header->caption_button_container()->size_button();
+        if (size_button && size_button->GetVisible()) {
+          subtitle = l10n_util::GetStringUTF16(
+              IDS_ASH_GAME_DASHBOARD_SCREEN_SIZE_EXIT_FULLSCREEN);
+        } else {
+          subtitle = l10n_util::GetStringUTF16(
+              IDS_ASH_GAME_DASHBOARD_SCREEN_SIZE_ONLY_FULLSCREEN);
+        }
         break;
     }
 
     const std::u16string title = l10n_util::GetStringUTF16(
         IDS_ASH_GAME_DASHBOARD_SCREEN_SIZE_SETTINGS_TITLE);
     SetTooltipText(tooltip ? l10n_util::GetStringUTF16(tooltip) : title);
-    SetAccessibleName(l10n_util::GetStringUTF16(
+    GetViewAccessibility().SetName(l10n_util::GetStringUTF16(
         IDS_ASH_GAME_DASHBOARD_SCREEN_SIZE_SETTINGS_BUTTON_A11Y_LABEL));
 
     auto* layout =
-        ConfigureFeatureRowLayout(this, kScreenSizeRowCorners, enabled);
+        ConfigureFeatureRowLayout(this, kBottomMultiRowCorners, enabled);
     // Add header.
-    auto* header = AddChildView(std::make_unique<FeatureHeader>(
+    feature_header_ = AddChildView(std::make_unique<FeatureHeader>(
         enabled, compat_mode_util::GetIcon(resize_mode), title));
-    layout->SetFlexForView(header, /*flex=*/1);
-    header->UpdateSubtitle(compat_mode_util::GetText(resize_mode));
+    layout->SetFlexForView(feature_header_, /*flex=*/1);
+    feature_header_->UpdateSubtitle(subtitle);
     // Add arrow icon.
     AddChildView(
         std::make_unique<views::ImageView>(ui::ImageModel::FromVectorIcon(
@@ -413,12 +458,15 @@ class ScreenSizeRow : public views::Button {
   ScreenSizeRow(const ScreenSizeRow&) = delete;
   ScreenSizeRow& operator=(const ScreenSizeRow) = delete;
   ~ScreenSizeRow() override = default;
+
+  FeatureHeader* feature_header() { return feature_header_; }
+
+ private:
+  raw_ptr<FeatureHeader> feature_header_;
 };
 
-BEGIN_METADATA(ScreenSizeRow)
+BEGIN_METADATA(GameDashboardMainMenuView, ScreenSizeRow)
 END_METADATA
-
-}  // namespace
 
 // -----------------------------------------------------------------------------
 // GameDashboardMainMenuView::GameControlsDetailsRow:
@@ -437,7 +485,8 @@ class GameDashboardMainMenuView::GameControlsDetailsRow : public views::Button {
   METADATA_HEADER(GameControlsDetailsRow, views::Button)
 
  public:
-  explicit GameControlsDetailsRow(GameDashboardMainMenuView* main_menu)
+  explicit GameControlsDetailsRow(GameDashboardMainMenuView* main_menu,
+                                  const gfx::RoundedCornersF& row_corners)
       : views::Button(
             base::BindRepeating(&GameControlsDetailsRow::OnButtonPressed,
                                 base::Unretained(this))),
@@ -454,8 +503,7 @@ class GameDashboardMainMenuView::GameControlsDetailsRow : public views::Button {
 
     const bool is_available = game_dashboard_utils::IsFlagSet(
         *flags, ArcGameControlsFlag::kAvailable);
-    auto* layout =
-        ConfigureFeatureRowLayout(this, kGCDetailRowCorners, is_available);
+    auto* layout = ConfigureFeatureRowLayout(this, row_corners, is_available);
 
     // Add header.
     header_ = AddChildView(std::make_unique<FeatureHeader>(
@@ -575,7 +623,7 @@ class GameDashboardMainMenuView::GameControlsDetailsRow : public views::Button {
     SetBackground(views::CreateThemedRoundedRectBackground(
         enabled ? cros_tokens::kCrosSysSystemOnBase
                 : cros_tokens::kCrosSysSystemOnBaseOpaque,
-        kGCDetailRowCorners));
+        kTopMultiRowCorners));
     header_->UpdateColors(enabled);
     CHECK(arrow_icon_);
     arrow_icon_->SetImage(ui::ImageModel::FromVectorIcon(
@@ -1017,7 +1065,7 @@ void GameDashboardMainMenuView::AddShortcutTilesRow() {
           IDS_ASH_GAME_DASHBOARD_SCREENSHOT_TILE_BUTTON_TITLE),
       /*sub_label=*/std::nullopt));
   // `screenshot_tile` is treated as a button instead of toggle button here.
-  screenshot_tile->SetAccessibleRole(ax::mojom::Role::kButton);
+  screenshot_tile->GetViewAccessibility().SetRole(ax::mojom::Role::kButton);
 
   // Remove the sub-label view from Screenshot Feature Tile.
   if (tile_type == FeatureTile::TileType::kPrimary) {
@@ -1044,7 +1092,8 @@ void GameDashboardMainMenuView::AddShortcutTilesRow() {
 }
 
 void GameDashboardMainMenuView::MaybeAddArcFeatureRows() {
-  if (!IsArcWindow(context_->game_window())) {
+  const aura::Window* game_window = context_->game_window();
+  if (!IsArcWindow(game_window)) {
     return;
   }
   DCHECK(main_menu_container_);
@@ -1055,9 +1104,17 @@ void GameDashboardMainMenuView::MaybeAddArcFeatureRows() {
           views::BoxLayout::Orientation::kVertical,
           /*inside_border_insets=*/gfx::Insets(),
           /*between_child_spacing=*/2));
-
-  AddGameControlsDetailsRow(feature_details_container);
-  AddScreenSizeSettingsRow(feature_details_container);
+  const std::optional<ArcGameControlsFlag> flags =
+      game_dashboard_utils::GetGameControlsFlag(game_window);
+  const bool has_multi_rows =
+      !game_dashboard_utils::IsFlagSet(*flags, ArcGameControlsFlag::kO4C);
+  AddGameControlsDetailsRow(feature_details_container, has_multi_rows
+                                                           ? kTopMultiRowCorners
+                                                           : kSingleRowCorners);
+  if (has_multi_rows) {
+    // Only add the Screen Size row if an app is NOT O4C.
+    AddScreenSizeSettingsRow(feature_details_container);
+  }
 }
 
 void GameDashboardMainMenuView::AddGameControlsTile(
@@ -1114,22 +1171,33 @@ void GameDashboardMainMenuView::AddRecordGameTile(
 }
 
 void GameDashboardMainMenuView::AddGameControlsDetailsRow(
-    views::View* container) {
+    views::View* container,
+    const gfx::RoundedCornersF& row_corners) {
   DCHECK(IsArcWindow(context_->game_window()));
-  game_controls_details_ =
-      container->AddChildView(std::make_unique<GameControlsDetailsRow>(this));
+  game_controls_details_ = container->AddChildView(
+      std::make_unique<GameControlsDetailsRow>(this, row_corners));
 }
 
 void GameDashboardMainMenuView::AddScreenSizeSettingsRow(
     views::View* container) {
   aura::Window* game_window = context_->game_window();
   DCHECK(IsArcWindow(game_window));
-  container->AddChildView(std::make_unique<ScreenSizeRow>(
+  screen_size_row_ = container->AddChildView(std::make_unique<ScreenSizeRow>(
+      this,
       base::BindRepeating(
           &GameDashboardMainMenuView::OnScreenSizeSettingsButtonPressed,
           base::Unretained(this)),
       /*resize_mode=*/compat_mode_util::PredictCurrentMode(game_window),
       /*resize_lock_type=*/game_window->GetProperty(kArcResizeLockTypeKey)));
+}
+
+void GameDashboardMainMenuView::AddUtilityFeatureViews(views::View* container) {
+  // Add clock view.
+  clock_view_ = container->AddChildView(std::make_unique<TimeView>(
+      TimeView::ClockLayout::HORIZONTAL_CLOCK,
+      Shell::Get()->system_tray_model()->clock(), TimeView::kTime));
+  clock_view_->SetAmPmClockType(base::AmPmClockType::kKeepAmPm);
+  clock_view_->SetProperty(views::kMarginsKey, kClockViewPadding);
 }
 
 void GameDashboardMainMenuView::AddUtilityClusterRow() {
@@ -1155,12 +1223,17 @@ void GameDashboardMainMenuView::AddUtilityClusterRow() {
   auto* empty_view = container->AddChildView(std::make_unique<views::View>());
   layout->SetFlexForView(empty_view, /*flex=*/1);
 
+  if (features::AreGameDashboardUtilitiesEnabled()) {
+    AddUtilityFeatureViews(
+        container->AddChildView(std::make_unique<views::BoxLayoutView>()));
+  }
+
   auto* help_button = container->AddChildView(CreateIconButton(
       base::BindRepeating(&GameDashboardMainMenuView::OnHelpButtonPressed,
                           base::Unretained(this)),
       VIEW_ID_GD_HELP_BUTTON, kGdHelpIcon,
       l10n_util::GetStringUTF16(IDS_ASH_GAME_DASHBOARD_HELP_TOOLTIP)));
-  help_button->SetAccessibleName(
+  help_button->GetViewAccessibility().SetName(
       l10n_util::GetStringUTF16(IDS_ASH_GAME_DASHBOARD_HELP_BUTTON_A11Y_LABEL));
   container->AddChildView(CreateIconButton(
       base::BindRepeating(&GameDashboardMainMenuView::OnSettingsButtonPressed,
@@ -1305,11 +1378,12 @@ void GameDashboardMainMenuView::AddWelcomeDialogSettingsRow() {
 
 void GameDashboardMainMenuView::OnWelcomeDialogSwitchStateChanged(
     bool is_enabled) {
-  welcome_dialog_settings_switch_->SetAccessibleName(l10n_util::GetStringFUTF16(
-      IDS_ASH_GAME_DASHBOARD_SETTINGS_WELCOME_DIALOG_A11Y_LABEL,
-      l10n_util::GetStringUTF16(is_enabled
-                                    ? IDS_ASH_GAME_DASHBOARD_TILE_ON
-                                    : IDS_ASH_GAME_DASHBOARD_GC_TILE_OFF)));
+  welcome_dialog_settings_switch_->GetViewAccessibility().SetName(
+      l10n_util::GetStringFUTF16(
+          IDS_ASH_GAME_DASHBOARD_SETTINGS_WELCOME_DIALOG_A11Y_LABEL,
+          l10n_util::GetStringUTF16(is_enabled
+                                        ? IDS_ASH_GAME_DASHBOARD_TILE_ON
+                                        : IDS_ASH_GAME_DASHBOARD_GC_TILE_OFF)));
 }
 
 PillButton* GameDashboardMainMenuView::GetGameControlsSetupButton() {
@@ -1331,6 +1405,11 @@ GameDashboardMainMenuView::GetGameControlsSetupNudgeForTesting() {
             kSetupNudgeId);
   }
   return nullptr;
+}
+
+const views::Label* GameDashboardMainMenuView::GetScreenSizeRowSubtitle() {
+  return screen_size_row_ ? screen_size_row_->feature_header()->GetSubtitle()
+                          : nullptr;
 }
 
 void GameDashboardMainMenuView::OnThemeChanged() {

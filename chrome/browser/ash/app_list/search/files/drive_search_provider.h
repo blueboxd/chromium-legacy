@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_ASH_APP_LIST_SEARCH_FILES_DRIVE_SEARCH_PROVIDER_H_
 #define CHROME_BROWSER_ASH_APP_LIST_SEARCH_FILES_DRIVE_SEARCH_PROVIDER_H_
 
+#include <memory>
 #include <optional>
+#include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
@@ -25,25 +27,17 @@ namespace drive {
 class DriveIntegrationService;
 }  // namespace drive
 
+namespace drivefs {
+class DriveFsSearchQuery;
+}
+
 namespace app_list {
 
 class DriveSearchProvider : public SearchProvider {
  public:
-  struct FileInfo {
-    base::FilePath reparented_path;
-    drivefs::mojom::FileMetadataPtr metadata;
-    std::optional<base::Time> last_accessed;
-
-    FileInfo(const base::FilePath& reparented_path,
-             drivefs::mojom::FileMetadataPtr metadata,
-             const std::optional<base::Time>& last_accessed);
-    ~FileInfo();
-
-    FileInfo(const FileInfo&) = delete;
-    FileInfo& operator=(const FileInfo&) = delete;
-  };
-
-  explicit DriveSearchProvider(Profile* profile);
+  explicit DriveSearchProvider(Profile* profile,
+                               bool should_filter_shared_files = true,
+                               bool should_filter_directories = false);
   ~DriveSearchProvider() override;
 
   DriveSearchProvider(const DriveSearchProvider&) = delete;
@@ -58,13 +52,17 @@ class DriveSearchProvider : public SearchProvider {
   void StopQuery() override;
 
  private:
-  void OnSearchDriveByFileName(drive::FileError error,
-                               std::vector<drivefs::mojom::QueryItemPtr> items);
-  void SetSearchResults(std::vector<std::unique_ptr<FileInfo>> items);
+  void OnSearchDriveByFileName(
+      drive::FileError error,
+      std::optional<std::vector<drivefs::mojom::QueryItemPtr>> items);
   std::unique_ptr<FileResult> MakeResult(const base::FilePath& path,
                                          double relevance,
                                          FileResult::Type type,
-                                         const GURL& url);
+                                         const GURL& url,
+                                         const std::optional<std::string>& id);
+
+  bool should_filter_shared_files_;
+  bool should_filter_directories_;
 
   // When the query began.
   base::TimeTicks query_start_time_;
@@ -73,6 +71,9 @@ class DriveSearchProvider : public SearchProvider {
 
   std::u16string last_query_;
   std::optional<ash::string_matching::TokenizedString> last_tokenized_query_;
+  // Wraps the `drivefs::mojom::SearchQuery` for the current query.
+  // Resetting this will stop the search query.
+  std::unique_ptr<drivefs::DriveFsSearchQuery> drivefs_search_query_;
 
   const raw_ptr<Profile> profile_;
   const raw_ptr<drive::DriveIntegrationService> drive_service_;

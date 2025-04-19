@@ -42,8 +42,8 @@ TranslateIconView::TranslateIconView(
                          kActionShowTranslate),
       browser_(browser) {
   SetID(VIEW_ID_TRANSLATE_BUTTON);
-  SetAccessibilityProperties(/*role*/ std::nullopt,
-                             l10n_util::GetStringUTF16(IDS_TOOLTIP_TRANSLATE));
+  GetViewAccessibility().SetProperties(
+      /*role*/ std::nullopt, l10n_util::GetStringUTF16(IDS_TOOLTIP_TRANSLATE));
 }
 
 TranslateIconView::~TranslateIconView() = default;
@@ -94,26 +94,24 @@ void TranslateIconView::UpdateImpl() {
           ->GetLanguageState();
   bool enabled = language_state.translate_enabled();
 
-  if (!features::IsChromeRefresh2023()) {
-    // Enable Translate page command or disable icon.
-    enabled &= SetCommandEnabled(enabled);
-  }
+  bool show_page_action = true;
   if (features::IsToolbarPinningEnabled()) {
     CHECK(browser_);
     BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
     CHECK(browser_view);
-    if (browser_view->toolbar()
-            ->pinned_toolbar_actions_container()
-            ->IsActionPinnedOrPoppedOut(action_id())) {
-      SetVisible(false);
+    auto* pinned_toolbar_actions_container =
+        browser_view->toolbar()->pinned_toolbar_actions_container();
+    if (pinned_toolbar_actions_container &&
+        pinned_toolbar_actions_container->IsActionPinnedOrPoppedOut(
+            action_id().value())) {
+      show_page_action = false;
     }
-  } else {
-    ChromeTranslateClient::FromWebContents(GetWebContents())
-        ->GetTranslateManager()
-        ->GetActiveTranslateMetricsLogger()
-        ->LogOmniboxIconChange(enabled);
-    SetVisible(enabled);
   }
+  ChromeTranslateClient::FromWebContents(GetWebContents())
+      ->GetTranslateManager()
+      ->GetActiveTranslateMetricsLogger()
+      ->LogOmniboxIconChange(show_page_action && enabled);
+  SetVisible(show_page_action && enabled);
 
   if (!enabled &&
       TranslateBubbleController::FromWebContents(GetWebContents())) {
@@ -125,7 +123,7 @@ void TranslateIconView::OnExecuting(
     PageActionIconView::ExecuteSource execute_source) {}
 
 const gfx::VectorIcon& TranslateIconView::GetVectorIcon() const {
-  return vector_icons::kTranslateChromeRefreshIcon;
+  return vector_icons::kTranslateIcon;
 }
 
 BEGIN_METADATA(TranslateIconView)

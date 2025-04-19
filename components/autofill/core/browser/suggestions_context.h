@@ -37,12 +37,6 @@ struct SuggestionsContext {
   SuggestionsContext& operator=(const SuggestionsContext&);
   ~SuggestionsContext();
 
-  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
-  // #addr-of
-  RAW_PTR_EXCLUSION FormStructure* form_structure = nullptr;
-  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
-  // #addr-of
-  RAW_PTR_EXCLUSION AutofillField* focused_field = nullptr;
   bool is_autofill_available = false;
   bool is_context_secure = false;
   bool should_show_mixed_content_warning = false;
@@ -73,6 +67,7 @@ struct SuggestionsContext {
   // either kAblation or kControl were reported, consumers should stick to
   // that.
   AblationGroup conditional_ablation_group = AblationGroup::kDefault;
+  int day_in_ablation_window = -1;
 };
 
 }  // namespace autofill

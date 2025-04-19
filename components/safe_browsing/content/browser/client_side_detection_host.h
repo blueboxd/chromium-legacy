@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "components/permissions/permission_request_manager.h"
+#include "components/safe_browsing/content/browser/async_check_tracker.h"
 #include "components/safe_browsing/content/browser/base_ui_manager.h"
 #include "components/safe_browsing/content/common/safe_browsing.mojom-shared.h"
 #include "components/safe_browsing/content/common/safe_browsing.mojom.h"
@@ -47,8 +48,18 @@ class ClientSideDetectionService;
 // class which sends a ping to a server to validate the verdict.
 class ClientSideDetectionHost
     : public content::WebContentsObserver,
-      public permissions::PermissionRequestManager::Observer {
+      public permissions::PermissionRequestManager::Observer,
+      public AsyncCheckTracker::Observer {
  public:
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class AsyncCheckTriggerForceRequestResult {
+    kTriggered = 0,
+    kSkippedTriggerModelsPingNotSkipped = 1,
+    kSkippedNotForced = 2,
+    kMaxValue = kSkippedNotForced,
+  };
+
   // A callback via which the client of this component indicates whether the
   // primary account is signed in.
   using PrimaryAccountSignedIn = base::RepeatingCallback<bool()>;
@@ -110,6 +121,12 @@ class ClientSideDetectionHost
 
   void RegisterPermissionRequestManager();
 
+  // AsyncCheckTracker::Observer methods:
+  void OnAsyncSafeBrowsingCheckCompleted() override;
+  void OnAsyncSafeBrowsingCheckTrackerDestructed() override;
+
+  void RegisterAsyncCheckTracker();
+
  protected:
   explicit ClientSideDetectionHost(
       content::WebContents* tab,
@@ -162,28 +179,34 @@ class ClientSideDetectionHost
   // Called when pre-classification checks are done for the phishing
   // classifiers. |request_type| is passed in to specify the process that
   // requests the classification.
-  void OnPhishingPreClassificationDone(ClientSideDetectionType request_type,
-                                       bool should_classify,
-                                       bool is_sample_ping);
+  void OnPhishingPreClassificationDone(
+      ClientSideDetectionType request_type,
+      bool should_classify,
+      bool is_sample_ping,
+      std::optional<bool> did_match_high_confidence_allowlist);
 
   // `verdict` is a wrapped ClientPhishingRequest protocol message, `result`
   // is the outcome of the renderer classification. `request_type` is passed in
   // to specify the process that requests the classification, which is passed
   // along from OnPhishingPreClassificationDone().
-  void PhishingDetectionDone(ClientSideDetectionType request_type,
-                             bool is_sample_ping,
-                             mojom::PhishingDetectorResult result,
-                             std::optional<mojo_base::ProtoWrapper> verdict);
+  void PhishingDetectionDone(
+      ClientSideDetectionType request_type,
+      bool is_sample_ping,
+      std::optional<bool> did_match_high_confidence_allowlist,
+      mojom::PhishingDetectorResult result,
+      std::optional<mojo_base::ProtoWrapper> verdict);
 
   // `verdict` is the ClientPhishingRequest passed into PhishingDetectionDone().
   void MaybeSendClientPhishingRequest(
-      std::unique_ptr<ClientPhishingRequest> verdict);
+      std::unique_ptr<ClientPhishingRequest> verdict,
+      std::optional<bool> did_match_high_confidence_allowlist);
 
   // |verdict| is an encoded ClientPhishingRequest protocol message, |result| is
   // the outcome of the renderer image embedding. The verdict is passed into
   // this function after the renderer classification is finished.
   void PhishingImageEmbeddingDone(
       std::unique_ptr<ClientPhishingRequest> verdict,
+      std::optional<bool> did_match_high_confidence_allowlist,
       mojom::PhishingImageEmbeddingResult result,
       std::optional<mojo_base::ProtoWrapper> image_feature_embedding);
 
@@ -196,9 +219,14 @@ class ClientSideDetectionHost
   void MaybeShowPhishingWarning(
       bool is_from_cache,
       ClientSideDetectionType request_type,
+      std::optional<bool> did_match_high_confidence_allowlist,
       GURL phishing_url,
       bool is_phishing,
       std::optional<net::HttpStatusCode> response_code);
+
+  // Whether request is forced for |current_url_|. This function also checks
+  // whether enhanced protection is enabled.
+  bool HasForceRequestFromRtUrlLookup();
 
   // Used for testing.  This function does not take ownership of the service
   // class.
@@ -233,10 +261,12 @@ class ClientSideDetectionHost
 
   // Send the client report to CSD server.
   void SendRequest(std::unique_ptr<ClientPhishingRequest> verdict,
-                   const std::string& access_token);
+                   const std::string& access_token,
+                   std::optional<bool> did_match_high_confidence_allowlist);
 
   // Called when token_fetcher_ has fetched the token.
   void OnGotAccessToken(std::unique_ptr<ClientPhishingRequest> verdict,
+                        std::optional<bool> did_match_high_confidence_allowlist,
                         const std::string& access_token);
 
   // Check if sample ping can be sent to Safe Browsing.
@@ -252,8 +282,7 @@ class ClientSideDetectionHost
   scoped_refptr<BaseUIManager> ui_manager_;
   // Keep a handle to the latest classification request so that we can cancel
   // it if necessary.
-  // TODO(andysjlim): Make this a std::unique_ptr, for clearer lifetimes.
-  scoped_refptr<ShouldClassifyUrlRequest> classification_request_;
+  std::unique_ptr<ShouldClassifyUrlRequest> classification_request_;
   // The current URL
   GURL current_url_;
   // The current outermost main frame's id.
@@ -288,7 +317,14 @@ class ClientSideDetectionHost
 
   base::ScopedObservation<permissions::PermissionRequestManager,
                           permissions::PermissionRequestManager::Observer>
-      observation_{this};
+      permission_request_observation_{this};
+
+  // A boolean indicates whether TRIGGER_MODELS request is skipped. This is
+  // used to decide whether async check is allowed to trigger FORCE_REQUEST.
+  bool trigger_models_request_skipped_ = false;
+
+  base::ScopedObservation<AsyncCheckTracker, AsyncCheckTracker::Observer>
+      async_check_observation_{this};
 
   base::WeakPtrFactory<ClientSideDetectionHost> weak_factory_{this};
 };

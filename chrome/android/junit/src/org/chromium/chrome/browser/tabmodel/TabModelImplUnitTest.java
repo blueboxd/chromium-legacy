@@ -23,7 +23,6 @@ import androidx.test.filters.SmallTest;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
@@ -31,7 +30,6 @@ import org.mockito.junit.MockitoRule;
 
 import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.homepage.HomepageManager;
@@ -49,13 +47,13 @@ import org.chromium.ui.base.WindowAndroid;
 
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
+import java.util.List;
 
 /** Unit tests for {@link TabModelImpl}. */
 @RunWith(BaseRobolectricTestRunner.class)
 public class TabModelImplUnitTest {
     private static final long FAKE_NATIVE_ADDRESS = 123L;
 
-    @Rule public TestRule mProcessor = new Features.JUnitProcessor();
     @Rule public MockitoRule mMockitoRule = MockitoJUnit.rule();
 
     /** Disable native calls from {@link TabModelJniBridge}. */
@@ -91,7 +89,7 @@ public class TabModelImplUnitTest {
 
     @Before
     public void setUp() {
-        // Disable HomepageManager#shouldCloseAppWithZeroTabs() for TabModelImpl#closeAllTabs().
+        // Disable HomepageManager#shouldCloseAppWithZeroTabs() for TabModelImpl#closeTabs().
         HomepageManager.getInstance().setPrefHomepageEnabled(false);
 
         when(mIncognitoProfile.isOffTheRecord()).thenReturn(true);
@@ -137,7 +135,7 @@ public class TabModelImplUnitTest {
     }
 
     private void selectTab(final TabModel model, final Tab tab) {
-        model.setIndex(model.indexOf(tab), TabSelectionType.FROM_USER, false);
+        model.setIndex(model.indexOf(tab), TabSelectionType.FROM_USER);
     }
 
     /** Create a {@link TabModel} to use for the test. */
@@ -311,8 +309,10 @@ public class TabModelImplUnitTest {
 
         selectTab(activeIncognito, incognitoTab0);
 
-        activeIncognito.closeMultipleTabs(
-                Arrays.asList(new Tab[] {incognitoTab0, incognitoTab1}), false);
+        activeIncognito.closeTabs(
+                TabClosureParams.closeTabs(List.of(incognitoTab0, incognitoTab1))
+                        .allowUndo(false)
+                        .build());
         verify(mTabModelSelector, never()).selectModel(anyBoolean());
         assertEquals(incognitoTab2, activeIncognito.getTabAt(activeIncognito.index()));
     }
@@ -390,7 +390,7 @@ public class TabModelImplUnitTest {
         Tab tab1 = createTab(tabModel);
         assertEquals(tab1, tabModel.getTabById(tab1.getId()));
 
-        tabModel.closeTab(tab1, /* uponExit= */ false, /* canUndo= */ true);
+        tabModel.closeTabs(TabClosureParams.closeTab(tab1).build());
         assertEquals(null, tabModel.getTabById(tab1.getId()));
 
         tabModel.cancelTabClosure(tab1.getId());
@@ -447,10 +447,10 @@ public class TabModelImplUnitTest {
 
         tabModel.closeTabsNavigatedInTimeWindow(20, 50);
         verify(mTabGroupModelFilter)
-                .closeMultipleTabs(
-                        Arrays.asList(tab2, tab3),
-                        /* canUndo= */ false,
-                        /* hideTabGroups= */ true,
-                        /* canRestore= */ false);
+                .closeTabs(
+                        TabClosureParams.closeTabs(Arrays.asList(tab2, tab3))
+                                .allowUndo(false)
+                                .saveToTabRestoreService(false)
+                                .build());
     }
 }

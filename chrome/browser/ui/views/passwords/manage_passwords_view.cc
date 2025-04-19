@@ -11,6 +11,7 @@
 #include "base/functional/bind.h"
 #include "base/time/time.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/ui/passwords/bubble_controllers/manage_passwords_bubble_controller.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "chrome/browser/ui/passwords/ui_utils.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -58,7 +59,7 @@ ManagePasswordsView::ManagePasswordsView(content::WebContents* web_contents,
   set_margins(gfx::Insets());
 
   page_container_ = AddChildView(
-      std::make_unique<PageSwitcherView>(CreatePasswordListView()));
+      std::make_unique<PageSwitcherView>(std::make_unique<views::View>()));
 
   if (!controller_.GetCredentials().empty()) {
     // The request is cancelled when the |controller_| is destroyed.
@@ -76,7 +77,7 @@ ManagePasswordsView::~ManagePasswordsView() = default;
 
 void ManagePasswordsView::DisplayDetailsOfPasswordForTesting(
     password_manager::PasswordForm password_form) {
-  controller_.set_currently_selected_password(std::move(password_form));
+  controller_.set_details_bubble_credential(std::move(password_form));
   RecreateLayout();
 }
 
@@ -94,19 +95,27 @@ ui::ImageModel ManagePasswordsView::GetWindowIcon() {
 }
 
 void ManagePasswordsView::AddedToWidget() {
-  // Since PasswordBubbleViewBase creates the bubble using
-  // BubbleDialogDelegateView::CreateBubble() *after* the construction of the
-  // ManagePasswordsView, the title view cannot be set in the constructor.
-  GetBubbleFrameView()->SetTitleView(CreateTitleView(controller_.GetTitle()));
+  if (controller_.bubble_mode() ==
+      ManagePasswordsBubbleController::BubbleMode::kSingleCredentialDetails) {
+    // The user is expected to be authenticated before showing the bubble in
+    // the single credential mode. Analogous to authentication expiration
+    // after clicking on a credentail from the list, start the timer to close
+    // the bubble.
+    auth_timer_.Start(FROM_HERE,
+                      password_manager::constants::kPasswordManagerAuthValidity,
+                      base::BindRepeating(&ManagePasswordsView::CloseBubble,
+                                          base::Unretained(this)));
+  }
+
+  RecreateLayout();
 }
 
 bool ManagePasswordsView::Accept() {
-  // Accept button is only visible in the details page where a password is
-  // selected.
+  // Accept button is only visible in the details page.
   DCHECK(password_details_view_);
-  DCHECK(controller_.get_currently_selected_password().has_value());
+  DCHECK(controller_.get_details_bubble_credential().has_value());
   password_manager::PasswordForm updated_form =
-      controller_.get_currently_selected_password().value();
+      controller_.get_details_bubble_credential().value();
   std::optional<std::u16string> updated_username =
       password_details_view_->GetUserEnteredUsernameValue();
   if (updated_username.has_value()) {
@@ -117,7 +126,8 @@ bool ManagePasswordsView::Accept() {
   if (updated_note.has_value()) {
     updated_form.SetNoteWithEmptyUniqueDisplayName(updated_note.value());
   }
-  controller_.UpdateSelectedCredentialInPasswordStore(std::move(updated_form));
+  controller_.UpdateDetailsBubbleCredentialInPasswordStore(
+      std::move(updated_form));
   SwitchToReadingMode();
   // Return false such that the bubble doesn't get closed upon clicking the
   // button.
@@ -125,9 +135,8 @@ bool ManagePasswordsView::Accept() {
 }
 
 bool ManagePasswordsView::Cancel() {
-  // Cancel button is only visible in the details page where a password is
-  // selected.
-  DCHECK(controller_.get_currently_selected_password().has_value());
+  // Cancel button is only visible in the details page.
+  DCHECK(controller_.get_details_bubble_credential().has_value());
   SwitchToReadingMode();
   // Return false such that the bubble doesn't get closed upon clicking the
   // button.
@@ -159,9 +168,11 @@ ManagePasswordsView::CreatePasswordListView() {
 
 std::unique_ptr<ManagePasswordsDetailsView>
 ManagePasswordsView::CreatePasswordDetailsView() {
-  DCHECK(controller_.get_currently_selected_password().has_value());
+  DCHECK(controller_.get_details_bubble_credential().has_value());
   return std::make_unique<ManagePasswordsDetailsView>(
-      controller_.get_currently_selected_password().value(),
+      controller_.get_details_bubble_credential().value(),
+      /*allow_empty_username_edit=*/controller_.bubble_mode() ==
+          ManagePasswordsBubbleController::BubbleMode::kCredentialList,
       base::BindRepeating(&ManagePasswordsBubbleController::UsernameExists,
                           base::Unretained(&controller_)),
       base::BindRepeating(
@@ -284,21 +295,24 @@ void ManagePasswordsView::RecreateLayout() {
   views::BubbleFrameView* frame_view = GetBubbleFrameView();
   CHECK(frame_view);
   frame_view->SetFootnoteView(nullptr);
-  if (controller_.get_currently_selected_password().has_value()) {
+  if (controller_.get_details_bubble_credential().has_value()) {
+    bool has_back_button =
+        controller_.bubble_mode() ==
+        ManagePasswordsBubbleController::BubbleMode::kCredentialList;
     frame_view->SetTitleView(ManagePasswordsDetailsView::CreateTitleView(
-        controller_.get_currently_selected_password().value(),
-        base::BindRepeating(&ManagePasswordsView::SwitchToListView,
-                            base::Unretained(this))));
+        controller_.get_details_bubble_credential().value(),
+        has_back_button ? std::make_optional(base::BindRepeating(
+                              &ManagePasswordsView::SwitchToListView,
+                              base::Unretained(this)))
+                        : std::nullopt));
     std::unique_ptr<ManagePasswordsDetailsView> details_view =
         CreatePasswordDetailsView();
     password_details_view_ = details_view.get();
     page_container_->SwitchToPage(std::move(details_view));
     if (controller_.IsOptedInForAccountStorage() &&
-        !controller_.get_currently_selected_password()
+        !controller_.get_details_bubble_credential()
              .value()
-             .IsUsingAccountStore() &&
-        base::FeatureList::IsEnabled(
-            password_manager::features::kButterOnDesktopFollowup)) {
+             .IsUsingAccountStore()) {
       frame_view->SetFootnoteView(CreateMovePasswordFooterView());
       frame_view->SetProperty(views::kElementIdentifierKey, kFooterId);
     }
@@ -311,6 +325,7 @@ void ManagePasswordsView::RecreateLayout() {
         gfx::Insets().set_bottom(ChromeLayoutProvider::Get()->GetDistanceMetric(
             DISTANCE_CONTENT_LIST_VERTICAL_SINGLE)));
   }
+  SetTitle(controller_.GetTitle());
   PreferredSizeChanged();
 }
 
@@ -323,7 +338,7 @@ void ManagePasswordsView::SwitchToReadingMode() {
 void ManagePasswordsView::SwitchToListView() {
   auth_timer_.Stop();
   SetButtons(ui::DIALOG_BUTTON_NONE);
-  controller_.set_currently_selected_password(std::nullopt);
+  controller_.set_details_bubble_credential(std::nullopt);
   RecreateLayout();
 }
 
@@ -364,12 +379,13 @@ void ManagePasswordsView::AuthenticateUserAndDisplayDetailsOf(
             // by recreating the layout.
             if (authentication_result) {
               view->RecreateLayout();
+              view->auth_timer_.Start(
+                  FROM_HERE,
+                  password_manager::constants::kPasswordManagerAuthValidity,
+                  base::BindRepeating(&ManagePasswordsView::SwitchToListView,
+                                      base::Unretained(view)));
             }
-            view->auth_timer_.Start(
-                FROM_HERE,
-                password_manager::constants::kPasswordManagerAuthValidity,
-                base::BindRepeating(&ManagePasswordsView::SwitchToListView,
-                                    base::Unretained(view)));
+
             // This is necessary on Windows since the bubble isn't activated
             // again after the conlusion of the auth flow.
             view->GetWidget()->Activate();

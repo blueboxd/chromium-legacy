@@ -8,13 +8,16 @@
 #include <utility>
 
 #include "base/containers/contains.h"
+#include "base/feature_list.h"
 #include "base/files/file.h"
 #include "base/functional/bind.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/not_fatal_until.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/ranges/algorithm.h"
 #include "base/win/object_watcher.h"
 #include "components/device_event_log/device_event_log.h"
+#include "services/device/public/cpp/device_features.h"
 #include "services/device/public/cpp/hid/hid_report_type.h"
 
 #define INITGUID
@@ -287,6 +290,15 @@ void HidConnectionWin::OnReadFeatureComplete(
     return;
   }
 
+  if (base::FeatureList::IsEnabled(features::kHidGetFeatureReportFix) &&
+      buffer->size() > 0 && buffer->data()[0] == 0) {
+    // Devices that don't use numbered reports return a buffer containing a
+    // zero byte as the first byte. The zero byte is not counted in
+    // `bytes_transferred`. Remove the zero byte before returning the buffer.
+    buffer = base::MakeRefCounted<base::RefCountedBytes>(
+        base::span(*buffer).subspan(/*offset=*/1));
+  }
+
   DCHECK_LE(bytes_transferred, buffer->size());
   std::move(callback).Run(true, buffer, bytes_transferred);
 }
@@ -317,7 +329,7 @@ std::unique_ptr<PendingHidTransfer> HidConnectionWin::UnlinkTransfer(
     PendingHidTransfer* transfer) {
   auto it = base::ranges::find(transfers_, transfer,
                                &std::unique_ptr<PendingHidTransfer>::get);
-  DCHECK(it != transfers_.end());
+  CHECK(it != transfers_.end(), base::NotFatalUntil::M130);
   std::unique_ptr<PendingHidTransfer> saved_transfer = std::move(*it);
   transfers_.erase(it);
   return saved_transfer;

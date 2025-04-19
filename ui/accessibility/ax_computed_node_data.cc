@@ -7,6 +7,7 @@
 #include "base/check_op.h"
 #include "base/i18n/break_iterator.h"
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -101,6 +102,42 @@ bool AXComputedNodeData::GetOrComputeIsDescendantOfPlatformLeaf() const {
 }
 
 bool AXComputedNodeData::HasOrCanComputeAttribute(
+    const ax::mojom::IntAttribute attribute) const {
+  if (owner_->data().HasIntAttribute(attribute)) {
+    return true;
+  }
+
+  return CanComputeAttribute(attribute);
+}
+
+bool AXComputedNodeData::CanComputeAttribute(
+    const ax::mojom::IntAttribute attribute) const {
+  if (!::features::IsAccessibilityPruneRedundantInlineConnectivityEnabled()) {
+    return false;
+  }
+
+  // Inline text boxes share the same next- or previous-on-line ID with the
+  // parent when traversing across the parent's boundary. Determination of the
+  // next- or previous-on-line IDs for this type of connectivity is expensive
+  // during the serialization process. Unnecessary to duplicate the effort.
+  if (owner_->data().role != ax::mojom::Role::kInlineTextBox) {
+    return false;
+  }
+
+  if (owner_ == owner_->GetParent()->GetFirstChild() &&
+      attribute == ax::mojom::IntAttribute::kPreviousOnLineId) {
+    return true;
+  }
+
+  if (owner_ == owner_->GetParent()->GetLastChild() &&
+      attribute == ax::mojom::IntAttribute::kNextOnLineId) {
+    return true;
+  }
+
+  return false;
+}
+
+bool AXComputedNodeData::HasOrCanComputeAttribute(
     const ax::mojom::StringAttribute attribute) const {
   if (owner_->data().HasStringAttribute(attribute))
     return true;
@@ -134,6 +171,28 @@ bool AXComputedNodeData::HasOrCanComputeAttribute(
       return true;
     default:
       return false;
+  }
+}
+
+std::optional<int> AXComputedNodeData::GetOrComputeAttribute(
+    const ax::mojom::IntAttribute attribute) const {
+  int value;
+  if (owner_->data().GetIntAttribute(attribute, &value)) {
+    return value;
+  }
+
+  if (!CanComputeAttribute(attribute)) {
+    return std::nullopt;
+  }
+
+  DCHECK(owner_->data().role == ax::mojom::Role::kInlineTextBox);
+  switch (attribute) {
+    case ax::mojom::IntAttribute::kPreviousOnLineId:
+    case ax::mojom::IntAttribute::kNextOnLineId:
+      return owner_->GetParent()->data().GetIntAttribute(attribute);
+
+    default:
+      NOTREACHED_NORETURN();
   }
 }
 
@@ -536,6 +595,10 @@ std::string AXComputedNodeData::ComputeTextContentUTF8() const {
       // The accessible name does not represent the entirety of the node's text
       // content, e.g. a table's caption or a figure's figcaption.
       case ax::mojom::NameFrom::kCaption:
+      // The object should not have an accessible name according to ARIA 1.2.
+      // If kProhibited is set, that means we calculated a name in Blink and
+      // are deliberately not exposing it.
+      case ax::mojom::NameFrom::kProhibited:
       case ax::mojom::NameFrom::kRelatedElement:
       // The accessible name is not displayed directly inside the node but is
       // visible via e.g. a tooltip.

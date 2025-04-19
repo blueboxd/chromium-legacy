@@ -9,8 +9,10 @@
 #include <string>
 #include <vector>
 
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -50,7 +52,8 @@ struct CONTENT_EXPORT IdentityRequestAccount {
       std::vector<std::string> domain_hints,
       std::vector<std::string> labels,
       std::optional<LoginState> login_state = std::nullopt,
-      LoginState browser_trusted_login_state = LoginState::kSignUp);
+      LoginState browser_trusted_login_state = LoginState::kSignUp,
+      std::optional<base::Time> last_used_timestamp = std::nullopt);
   IdentityRequestAccount(const IdentityRequestAccount&);
   ~IdentityRequestAccount();
 
@@ -59,8 +62,8 @@ struct CONTENT_EXPORT IdentityRequestAccount {
   std::string name;
   std::string given_name;
   GURL picture;
-  // This will be an empty string if fetching failed.
-  std::string picture_data;
+  // This will be an empty image if fetching failed.
+  gfx::Image decoded_picture;
 
   std::vector<std::string> login_hints;
   std::vector<std::string> domain_hints;
@@ -72,6 +75,12 @@ struct CONTENT_EXPORT IdentityRequestAccount {
 
   // The account login state that the browser can trust.
   LoginState browser_trusted_login_state;
+  // The last used timestamp, or nullopt if the account has not been used
+  // before.
+  std::optional<base::Time> last_used_timestamp;
+  // Whether this account is filtered out or not. An account may be filtered out
+  // due to login hint, domain hint, or account label.
+  bool is_filtered_out = false;
 };
 
 }  // namespace content

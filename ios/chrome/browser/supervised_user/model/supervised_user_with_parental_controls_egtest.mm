@@ -4,6 +4,7 @@
 
 #import "base/test/ios/wait_util.h"
 #import "components/policy/policy_constants.h"
+#import "components/signin/internal/identity_manager/account_capabilities_constants.h"
 #import "components/supervised_user/core/browser/supervised_user_url_filter.h"
 #import "components/supervised_user/core/common/features.h"
 #import "ios/chrome/browser/metrics/model/metrics_app_interface.h"
@@ -58,8 +59,10 @@ static const char* kInterstitialFirstTimeBanner =
 
 - (void)signInSupervisedUser {
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
-  [SigninEarlGrey addFakeIdentity:fakeIdentity];
-  [SigninEarlGrey setIsSubjectToParentalControls:YES forIdentity:fakeIdentity];
+  [SigninEarlGrey addFakeIdentity:fakeIdentity
+                 withCapabilities:@{
+                   @(kIsSubjectToParentalControlsCapabilityName) : @YES,
+                 }];
 
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
 }
@@ -403,8 +406,9 @@ static const char* kInterstitialFirstTimeBanner =
 
 // Tests that when an interstitial is displayed for a blocked site,
 // allow-listing it triggers an intestitial refresh and unblocks the page.
+// TODO(crbug.com/346923501): This test is flaky.
 - (void)
-    testSupervisedUserWithAllowApprovedFilteringIsUnblockedOnURLAllowListing {
+    FLAKY_testSupervisedUserWithAllowApprovedFilteringIsUnblockedOnURLAllowListing {
   [self signInSupervisedUser];
   [SupervisedUserSettingsAppInterface setFilteringToAllowApprovedSites];
 
@@ -456,7 +460,9 @@ static const char* kInterstitialFirstTimeBanner =
 // Tests that for users who have the filtering behaviour changed from "Allow
 // approved" to "Allow all" websites, a blocked pages will be refreshed and
 // unblocks as soon as the filtering behaviour changes.
-- (void)testSupervisedUserWithAllowAllSitesFilteringIsUnblockedOnFilterChange {
+// TODO(crbug.com/346923501): This test is flaky.
+- (void)
+    FLAKY_testSupervisedUserWithAllowAllSitesFilteringIsUnblockedOnFilterChange {
   [self signInSupervisedUser];
   [SupervisedUserSettingsAppInterface setFilteringToAllowApprovedSites];
 
@@ -735,8 +741,10 @@ static const char* kInterstitialFirstTimeBanner =
 // TODO(crbug.com/40066949): Delete this test after the syncing state is gone.
 - (void)testSupervisedUserWithLegacySyncStaysSignedInAfterClearingBrowsingData {
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
-  [SigninEarlGrey addFakeIdentity:fakeIdentity];
-  [SigninEarlGrey setIsSubjectToParentalControls:YES forIdentity:fakeIdentity];
+  [SigninEarlGrey addFakeIdentity:fakeIdentity
+                 withCapabilities:@{
+                   @(kIsSubjectToParentalControlsCapabilityName) : @YES,
+                 }];
   [SigninEarlGrey signinAndEnableLegacySyncFeature:fakeIdentity];
   [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity];
 

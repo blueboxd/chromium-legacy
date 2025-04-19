@@ -2,10 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This interface is for managing the global services of the application. Each
-// service is lazily created when requested the first time. The service getters
-// will return NULL if the service is not available, so callers must check for
-// this condition.
+// This class is misnamed. Conceptually, this class owns features which are
+// scoped to the entire process. The features must span multiple profiles. If a
+// feature is scoped to a single profile it should instead be added as a
+// BrowserContextKeyedServiceFactory.
+//
+// Historically, members of this class were lazily instantiated. Furthermore,
+// some members would not be created in tests, resulting in production code
+// adding nullptr checks to make tests pass. This is an anti-pattern and should
+// be avoided. This is not making a statement about lazy initialization (e.g.
+// performing non-trivial setup). This is about having precise lifetime
+// semantics.
+//
+// New members should be added to GlobalFeatures, and be unconditionally
+// instantiated.
 
 #ifndef CHROME_BROWSER_BROWSER_PROCESS_H_
 #define CHROME_BROWSER_BROWSER_PROCESS_H_
@@ -27,6 +37,7 @@ class BrowserProcessPlatformPart;
 class BuildState;
 class DownloadRequestLimiter;
 class DownloadStatusUpdater;
+class GlobalFeatures;
 class GpuModeManager;
 class IconManager;
 class MediaFileSystemRegistry;
@@ -57,6 +68,10 @@ class SharedURLLoaderFactory;
 
 namespace safe_browsing {
 class SafeBrowsingService;
+}
+
+namespace signin {
+class ActivePrimaryAccountsMetricsRecorder;
 }
 
 namespace subresource_filter {
@@ -148,6 +163,8 @@ class BrowserProcess {
   virtual PrefService* local_state() = 0;
   virtual scoped_refptr<network::SharedURLLoaderFactory>
   shared_url_loader_factory() = 0;
+  virtual signin::ActivePrimaryAccountsMetricsRecorder*
+  active_primary_accounts_metrics_recorder() = 0;
   virtual variations::VariationsService* variations_service() = 0;
 
   virtual BrowserProcessPlatformPart* platform_part() = 0;
@@ -299,6 +316,11 @@ class BrowserProcess {
       std::unique_ptr<os_crypt_async::KeyProvider> provider) = 0;
 
   virtual BuildState* GetBuildState() = 0;
+  // Returns the feature controllers scoped to this browser process.
+  virtual GlobalFeatures* GetFeatures() = 0;
+
+  // Do not add new members to this class. Instead use GlobalFeatures. See file
+  // level comment for details.
 };
 
 extern BrowserProcess* g_browser_process;

@@ -49,7 +49,6 @@ namespace cc {
 
 PixelTest::PixelTest(GraphicsBackend backend)
     : device_viewport_size_(gfx::Size(200, 200)),
-      disable_picture_quad_image_filtering_(false),
       output_surface_client_(std::make_unique<FakeOutputSurfaceClient>()),
       graphics_backend_(backend) {
   // Keep texture sizes exactly matching the bounds of the RenderPass to avoid
@@ -126,11 +125,6 @@ void PixelTest::RenderReadbackTargetAndAreaToResultBitmap(
     request->set_area(*copy_rect);
   }
   target->copy_requests.push_back(std::move(request));
-
-  if (software_renderer_) {
-    software_renderer_->SetDisablePictureQuadImageFiltering(
-        disable_picture_quad_image_filtering_);
-  }
 
   float device_scale_factor = 1.f;
   renderer_->DrawFrame(pass_list, device_scale_factor, device_viewport_size_,
@@ -261,7 +255,10 @@ viz::ResourceId PixelTest::AllocateAndFillSoftwareResource(
       AllocateSharedBitmapMemory(shared_bitmap_id, size);
 
   SkImageInfo info = SkImageInfo::MakeN32Premul(size.width(), size.height());
-  source.readPixels(info, mapping.memory(), info.minRowBytes(), 0, 0);
+  const size_t row_bytes = info.minRowBytes();
+  base::span<uint8_t> mem(mapping);
+  CHECK_GE(mem.size(), info.computeByteSize(row_bytes));
+  source.readPixels(info, mem.data(), row_bytes, 0, 0);
 
   return child_resource_provider_->ImportResource(
       viz::TransferableResource::MakeSoftwareSharedBitmap(
@@ -322,7 +319,7 @@ void PixelTest::SetUpSoftwareRenderer() {
   auto resource_provider =
       std::make_unique<viz::DisplayResourceProviderSoftware>(
           shared_bitmap_manager_.get(), gpu_service->shared_image_manager(),
-          gpu_service->sync_point_manager());
+          gpu_service->sync_point_manager(), gpu_service->gpu_scheduler());
 
   auto renderer = std::make_unique<viz::SoftwareRenderer>(
       &renderer_settings_, &debug_settings_, output_surface_.get(),

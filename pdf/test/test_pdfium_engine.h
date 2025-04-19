@@ -12,7 +12,6 @@
 #include "base/values.h"
 #include "pdf/document_attachment_info.h"
 #include "pdf/document_metadata.h"
-#include "pdf/pdf_engine.h"
 #include "pdf/pdfium/pdfium_engine.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -29,7 +28,7 @@ class TestPDFiumEngine : public PDFiumEngine {
   // Dummy save data.
   static constexpr uint8_t kSaveData[] = {'s', 'a', 'v', 'e'};
 
-  explicit TestPDFiumEngine(PDFEngine::Client* client);
+  explicit TestPDFiumEngine(PDFiumEngineClient* client);
 
   TestPDFiumEngine(const TestPDFiumEngine&) = delete;
 

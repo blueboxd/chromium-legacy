@@ -52,6 +52,7 @@ class AshWebViewImpl : public ash::AshWebView,
   void AddedToWidget() override;
   views::View* GetInitiallyFocusedView() override;
   void SetCornerRadii(const gfx::RoundedCornersF& corner_radii) override;
+  const base::UnguessableToken& GetMediaSessionRequestId() override;
 
   // content::WebContentsDelegate:
   bool IsWebContentsCreationOverridden(
@@ -77,6 +78,8 @@ class AshWebViewImpl : public ash::AshWebView,
   bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host,
                                   const url::Origin& security_origin,
                                   blink::mojom::MediaStreamType type) override;
+  std::string GetTitleForMediaControls(
+      content::WebContents* web_contents) override;
 
   // content::WebContentsObserver:
   void DidStopLoading() override;

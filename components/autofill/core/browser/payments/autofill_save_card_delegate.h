@@ -7,6 +7,7 @@
 
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
+#include "components/autofill/core/browser/payments/payments_autofill_client.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
 namespace autofill {
@@ -17,16 +18,18 @@ class AutofillSaveCardInfoBarDelegateMobileTest;
 class AutofillSaveCardDelegate {
  public:
   AutofillSaveCardDelegate(
-      absl::variant<AutofillClient::LocalSaveCardPromptCallback,
-                    AutofillClient::UploadSaveCardPromptCallback>
+      absl::variant<
+          payments::PaymentsAutofillClient::LocalSaveCardPromptCallback,
+          payments::PaymentsAutofillClient::UploadSaveCardPromptCallback>
           save_card_callback,
-      AutofillClient::SaveCreditCardOptions options);
+      payments::PaymentsAutofillClient::SaveCreditCardOptions options);
 
   virtual ~AutofillSaveCardDelegate();
 
   bool is_for_upload() const {
     return absl::holds_alternative<
-        AutofillClient::UploadSaveCardPromptCallback>(save_card_callback_);
+        payments::PaymentsAutofillClient::UploadSaveCardPromptCallback>(
+        save_card_callback_);
   }
 
   void OnUiShown();
@@ -72,15 +75,15 @@ class AutofillSaveCardDelegate {
   // If the cardholder name is missing, request the name from the user before
   // saving the card. If the expiration date is missing, request the missing
   // data from the user before saving the card.
-  AutofillClient::SaveCreditCardOptions options_;
+  payments::PaymentsAutofillClient::SaveCreditCardOptions options_;
 
   // Did the user ever explicitly accept or dismiss this UI?
   bool had_user_interaction_;
 
   // The callback to run once the user makes a decision with respect to the
   // credit card offer-to-save prompt.
-  absl::variant<AutofillClient::LocalSaveCardPromptCallback,
-                AutofillClient::UploadSaveCardPromptCallback>
+  absl::variant<payments::PaymentsAutofillClient::LocalSaveCardPromptCallback,
+                payments::PaymentsAutofillClient::UploadSaveCardPromptCallback>
       save_card_callback_;
 
   // Callback to run immediately after `save_card_callback_`. An example of a

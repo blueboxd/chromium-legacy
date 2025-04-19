@@ -33,8 +33,10 @@
 #include "components/autofill/core/browser/form_structure_test_api.h"
 #include "components/autofill/core/browser/heuristic_source.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_test_utils.h"
 #include "components/autofill/core/common/autofill_util.h"
+#include "components/autofill/core/common/credit_card_network_identifiers.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -118,7 +120,7 @@ void TestFillingExpirationMonth(const std::vector<const char*>& values,
 
   ASSERT_FALSE(value_to_fill.empty());
   content_index = GetIndexOfValue(field.options(), value_to_fill);
-  EXPECT_EQ(u"Mar", field.options()[content_index].content);
+  EXPECT_EQ(u"Mar", field.options()[content_index].text);
 
   // Try a two-digit month.
   credit_card.SetExpirationMonth(11);
@@ -128,7 +130,7 @@ void TestFillingExpirationMonth(const std::vector<const char*>& values,
 
   ASSERT_FALSE(value_to_fill.empty());
   content_index = GetIndexOfValue(field.options(), value_to_fill);
-  EXPECT_EQ(u"Nov", field.options()[content_index].content);
+  EXPECT_EQ(u"Nov", field.options()[content_index].text);
 }
 
 struct CreditCardTestCase {
@@ -153,6 +155,8 @@ class FieldFillingPaymentsUtilTest : public testing::Test {
 
  private:
   test::AutofillUnitTestEnvironment autofill_test_environment_;
+  base::test::ScopedFeatureList scoped_feature_list_{
+      features::kAutofillEnableCvcStorageAndFilling};
 };
 
 // Verify that credit card related fields with the autocomplete attribute
@@ -318,7 +322,7 @@ TEST_P(CreditCardVerificationCodeTest,
   field.SetTypeTo(AutofillType(CREDIT_CARD_STANDALONE_VERIFICATION_CODE));
 
   CreditCard credit_card = test::GetVirtualCard();
-  test_api(credit_card).set_network_for_virtual_card(kAmericanExpressCard);
+  test_api(credit_card).set_network_for_card(kAmericanExpressCard);
   const std::u16string kCvc = u"1111";
   credit_card.set_cvc(kCvc);
   std::u16string value_to_fill = GetFillingValueForCreditCard(
@@ -1324,7 +1328,7 @@ TEST_F(FieldFillingPaymentsUtilTest, PreviewVirtualCVC) {
                            CREDIT_CARD_VERIFICATION_CODE);
 
   CreditCard credit_card = test::GetVirtualCard();
-  test_api(credit_card).set_network_for_virtual_card(kMasterCard);
+  test_api(credit_card).set_network_for_card(kMasterCard);
   EXPECT_EQ(
       kMidlineEllipsis3DotsWithoutPadding,
       GetFillingValueForCreditCard(credit_card, /*cvc=*/u"", kAppLocale,
@@ -1338,7 +1342,7 @@ TEST_F(FieldFillingPaymentsUtilTest, PreviewVirtualCVCAmericanExpress) {
                            CREDIT_CARD_VERIFICATION_CODE);
 
   CreditCard credit_card = test::GetVirtualCard();
-  test_api(credit_card).set_network_for_virtual_card(kAmericanExpressCard);
+  test_api(credit_card).set_network_for_card(kAmericanExpressCard);
   EXPECT_EQ(
       kMidlineEllipsis4DotsWithoutPadding,
       GetFillingValueForCreditCard(credit_card, /*cvc=*/u"", kAppLocale,
@@ -1352,7 +1356,7 @@ TEST_F(FieldFillingPaymentsUtilTest, PreviewVirtualCardNumber) {
 
   CreditCard credit_card = test::GetVirtualCard();
   credit_card.SetNumber(u"5454545454545454");
-  test_api(credit_card).set_network_for_virtual_card(kMasterCard);
+  test_api(credit_card).set_network_for_card(kMasterCard);
   // Virtual card Mastercard ••••5454‬
   std::u16string expected =
       u"Virtual card Mastercard  "
@@ -1376,7 +1380,7 @@ TEST_F(FieldFillingPaymentsUtilTest,
 
   CreditCard credit_card = test::GetVirtualCard();
   credit_card.SetNumber(u"5454545454545454");
-  test_api(credit_card).set_network_for_virtual_card(kMasterCard);
+  test_api(credit_card).set_network_for_card(kMasterCard);
   // ••••••••••••5454‬
   std::u16string expected =
       u"\x2022\x2022\x2022\x2022\x2022\x2022\x2022\x2022\x2022\x2022\x2022"
@@ -1403,9 +1407,10 @@ TEST_F(FieldFillingPaymentsUtilTest, PreviewVirtualCardholderName) {
                       mojom::ActionPersistence::kPreview, field));
 }
 
-// Verify that `WillFillCreditCardNumber` return false on the form with no
-// credit card number fields.
-TEST_F(FieldFillingPaymentsUtilTest, WillFillCreditCardNumber_NoCCNumberField) {
+// Verify that `WillFillCreditCardNumberOrCvc` returns false on a form with no
+// credit card number or CVC fields.
+TEST_F(FieldFillingPaymentsUtilTest,
+       WillFillCreditCardNumberOrCvc_NoCCNumberField) {
   FormData form_data =
       test::GetFormData({.fields = {{.role = CREDIT_CARD_NAME_FULL,
                                      .label = u"First Name on Card"}}});
@@ -1413,14 +1418,15 @@ TEST_F(FieldFillingPaymentsUtilTest, WillFillCreditCardNumber_NoCCNumberField) {
   FormStructure form_structure(form_data);
   test_api(form_structure).SetFieldTypes({NAME_FIRST});
 
-  EXPECT_FALSE(WillFillCreditCardNumber(
-      form_data.fields, form_structure.fields(), *form_structure.fields()[0]));
+  EXPECT_FALSE(WillFillCreditCardNumberOrCvc(
+      form_data.fields(), form_structure.fields(), *form_structure.fields()[0],
+      /*card_has_cvc=*/true));
 }
 
-// Verify that `WillFillCreditCardNumber` return false on the form where the
-// credit card number field is present but it is not empty.
+// Verify that `WillFillCreditCardNumberOrCvc` returns false on a form where
+// the credit card number field is present but it is not empty.
 TEST_F(FieldFillingPaymentsUtilTest,
-       WillFillCreditCardNumber_CCNumberFieldNotEmpty) {
+       WillFillCreditCardNumberOrCvc_CCNumberFieldNotEmpty) {
   FormData form_data =
       test::GetFormData({.fields = {{.role = CREDIT_CARD_NAME_FULL,
                                      .label = u"First Name on Card"},
@@ -1432,14 +1438,16 @@ TEST_F(FieldFillingPaymentsUtilTest,
   FormStructure form_structure(form_data);
   test_api(form_structure)
       .SetFieldTypes({CREDIT_CARD_NAME_FIRST, CREDIT_CARD_NUMBER});
-  EXPECT_FALSE(WillFillCreditCardNumber(
-      form_data.fields, form_structure.fields(), *form_structure.fields()[0]));
+
+  EXPECT_FALSE(WillFillCreditCardNumberOrCvc(
+      form_data.fields(), form_structure.fields(), *form_structure.fields()[0],
+      /*card_has_cvc=*/true));
 }
 
-// Verify that `WillFillCreditCardNumber` return false on the form where the
-// credit card number field is present but it's autofilled.
+// Verify that `WillFillCreditCardNumberOrCvc` returns false on a form where
+// the credit card number field is present but it's autofilled.
 TEST_F(FieldFillingPaymentsUtilTest,
-       WillFillCreditCardNumber_CCNumberFieldIsAutofilled) {
+       WillFillCreditCardNumberOrCvc_CCNumberFieldIsAutofilled) {
   FormData form_data =
       test::GetFormData({.fields = {{.role = CREDIT_CARD_NAME_FULL,
                                      .label = u"First Name on Card"},
@@ -1451,14 +1459,16 @@ TEST_F(FieldFillingPaymentsUtilTest,
   FormStructure form_structure(form_data);
   test_api(form_structure)
       .SetFieldTypes({CREDIT_CARD_NAME_FIRST, CREDIT_CARD_NUMBER});
-  EXPECT_FALSE(WillFillCreditCardNumber(
-      form_data.fields, form_structure.fields(), *form_structure.fields()[0]));
+
+  EXPECT_FALSE(WillFillCreditCardNumberOrCvc(
+      form_data.fields(), form_structure.fields(), *form_structure.fields()[0],
+      /*card_has_cvc=*/true));
 }
 
-// Verify that `WillFillCreditCardNumber` return true on the form where the
+// Verify that `WillFillCreditCardNumberOrCvc` return true on a form where the
 // credit card number field is present and is both empty and not autofilled.
 TEST_F(FieldFillingPaymentsUtilTest,
-       WillFillCreditCardNumber_CCNumberFieldPresent) {
+       WillFillCreditCardNumberOrCvc_CCNumberFieldPresent) {
   FormData form_data =
       test::GetFormData({.fields = {{.role = CREDIT_CARD_NAME_FULL,
                                      .label = u"First Name on Card"},
@@ -1469,15 +1479,17 @@ TEST_F(FieldFillingPaymentsUtilTest,
   FormStructure form_structure(form_data);
   test_api(form_structure)
       .SetFieldTypes({CREDIT_CARD_NAME_FIRST, CREDIT_CARD_NUMBER});
-  EXPECT_TRUE(WillFillCreditCardNumber(
-      form_data.fields, form_structure.fields(), *form_structure.fields()[0]));
+
+  EXPECT_TRUE(WillFillCreditCardNumberOrCvc(
+      form_data.fields(), form_structure.fields(), *form_structure.fields()[0],
+      /*card_has_cvc=*/true));
 }
 
-// Verify that `WillFillCreditCardNumber` return true on the form where the
+// Verify that `WillFillCreditCardNumberOrCvc` return true on a form where the
 // credit card number field is present and not empty but was not typed by the
 // user.
 TEST_F(FieldFillingPaymentsUtilTest,
-       WillFillCreditCardNumber_CCNumberFieldNotEmpty_NotUserTyped) {
+       WillFillCreditCardNumberOrCvc_CCNumberFieldNotEmpty_NotUserTyped) {
   FormData form_data = test::GetFormData(
       {.fields = {
            {.role = CREDIT_CARD_NAME_FULL, .label = u"First Name on Card"},
@@ -1489,8 +1501,107 @@ TEST_F(FieldFillingPaymentsUtilTest,
   FormStructure form_structure(form_data);
   test_api(form_structure)
       .SetFieldTypes({CREDIT_CARD_NAME_FIRST, CREDIT_CARD_NUMBER});
-  EXPECT_TRUE(WillFillCreditCardNumber(
-      form_data.fields, form_structure.fields(), *form_structure.fields()[0]));
+
+  EXPECT_TRUE(WillFillCreditCardNumberOrCvc(
+      form_data.fields(), form_structure.fields(), *form_structure.fields()[0],
+      /*card_has_cvc=*/true));
+}
+
+// Verify that `WillFillCreditCardNumberOrCvc` returns true on a form with only
+// a credit card credential standalone field if the card has CVC saved.
+TEST_F(FieldFillingPaymentsUtilTest,
+       WillFillCreditCardNumberOrCvc_StandaloneCvcField_CardHasCvc) {
+  FormData form_data = test::GetFormData(
+      {.fields = {{.role = CREDIT_CARD_STANDALONE_VERIFICATION_CODE,
+                   .label = u"Card verification standalone code"}}});
+
+  FormStructure form_structure(form_data);
+  test_api(form_structure)
+      .SetFieldTypes({CREDIT_CARD_STANDALONE_VERIFICATION_CODE});
+
+  EXPECT_TRUE(WillFillCreditCardNumberOrCvc(
+      form_data.fields(), form_structure.fields(), *form_structure.fields()[0],
+      /*card_has_cvc=*/true));
+}
+
+// Verify that `WillFillCreditCardNumberOrCvc` returns true on a form with only
+// a credit card credential field if the card has CVC saved.
+TEST_F(FieldFillingPaymentsUtilTest,
+       WillFillCreditCardNumberOrCvc_NormalCvcFormField_CardHasCvc) {
+  FormData form_data =
+      test::GetFormData({.fields = {{.role = CREDIT_CARD_VERIFICATION_CODE,
+                                     .label = u"Card verification code"}}});
+
+  FormStructure form_structure(form_data);
+  test_api(form_structure).SetFieldTypes({CREDIT_CARD_VERIFICATION_CODE});
+
+  EXPECT_TRUE(WillFillCreditCardNumberOrCvc(
+      form_data.fields(), form_structure.fields(), *form_structure.fields()[0],
+      /*card_has_cvc=*/true));
+}
+
+// Verify that `WillFillCreditCardNumberOrCvc` returns false on a form where
+// the credit card verification code field is present but it is not empty and
+// the card has CVC saved.
+// The CVC field isn't overridden in this case, and we don't need to fetch the
+// card as there is no card number field.
+TEST_F(FieldFillingPaymentsUtilTest,
+       WillFillCreditCardNumberOrCvc_CvcFieldNotEmpty_CardHasCvc) {
+  FormData form_data =
+      test::GetFormData({.fields = {{.role = CREDIT_CARD_NAME_FULL,
+                                     .label = u"First Name on Card"},
+                                    {.role = CREDIT_CARD_VERIFICATION_CODE,
+                                     .label = u"Card verification code",
+                                     .value = u"123",
+                                     .properties_mask = kUserTyped}}});
+
+  FormStructure form_structure(form_data);
+  test_api(form_structure)
+      .SetFieldTypes({CREDIT_CARD_NAME_FIRST, CREDIT_CARD_VERIFICATION_CODE});
+
+  EXPECT_FALSE(WillFillCreditCardNumberOrCvc(
+      form_data.fields(), form_structure.fields(), *form_structure.fields()[0],
+      /*card_has_cvc=*/true));
+}
+
+// Verify that `WillFillCreditCardNumberOrCvc` returns true on a form where
+// the credit card verification code field is present but it is empty and the
+// card has CVC saved. Also the trigger field is the non CVC field.
+TEST_F(FieldFillingPaymentsUtilTest,
+       WillFillCreditCardNumberOrCvc_FormHasCvcAndName_CardHasCvc) {
+  FormData form_data =
+      test::GetFormData({.fields = {{.role = CREDIT_CARD_NAME_FULL,
+                                     .label = u"First Name on Card"},
+                                    {.role = CREDIT_CARD_VERIFICATION_CODE,
+                                     .label = u"Card verification code"}}});
+
+  FormStructure form_structure(form_data);
+  test_api(form_structure)
+      .SetFieldTypes({CREDIT_CARD_NAME_FIRST, CREDIT_CARD_VERIFICATION_CODE});
+
+  EXPECT_TRUE(WillFillCreditCardNumberOrCvc(
+      form_data.fields(), form_structure.fields(), *form_structure.fields()[0],
+      /*card_has_cvc=*/true));
+}
+
+// Verify that `WillFillCreditCardNumberOrCvc` returns false on a form where
+// the credit card verification code field is present but it is empty and the
+// card has no CVC saved. Also the trigger field is the non CVC field.
+TEST_F(FieldFillingPaymentsUtilTest,
+       WillFillCreditCardNumberOrCvc_FormHasCvcAndName_CardHasNoCvc) {
+  FormData form_data =
+      test::GetFormData({.fields = {{.role = CREDIT_CARD_NAME_FULL,
+                                     .label = u"First Name on Card"},
+                                    {.role = CREDIT_CARD_VERIFICATION_CODE,
+                                     .label = u"Card verification code"}}});
+
+  FormStructure form_structure(form_data);
+  test_api(form_structure)
+      .SetFieldTypes({CREDIT_CARD_NAME_FIRST, CREDIT_CARD_VERIFICATION_CODE});
+
+  EXPECT_FALSE(WillFillCreditCardNumberOrCvc(
+      form_data.fields(), form_structure.fields(), *form_structure.fields()[0],
+      /*card_has_cvc=*/false));
 }
 
 }  // namespace

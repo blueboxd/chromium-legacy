@@ -75,9 +75,9 @@ class SegmentationPlatformServiceFactoryTest : public PlatformTest {
     ChromeBrowserState* otr_browser_state =
         profile_->browser_state
             ->CreateOffTheRecordBrowserStateWithTestingFactories(
-                {std::make_pair(
+                {TestChromeBrowserState::TestingFactory{
                     SegmentationPlatformServiceFactory::GetInstance(),
-                    SegmentationPlatformServiceFactory::GetDefaultFactory())});
+                    SegmentationPlatformServiceFactory::GetDefaultFactory()}});
     ASSERT_FALSE(SegmentationPlatformServiceFactory::GetForBrowserState(
         otr_browser_state));
   }
@@ -150,7 +150,7 @@ class SegmentationPlatformServiceFactoryTest : public PlatformTest {
       builder.AddTestingFactory(
           SegmentationPlatformServiceFactory::GetInstance(),
           SegmentationPlatformServiceFactory::GetDefaultFactory());
-      browser_state = builder.Build();
+      browser_state = std::move(builder).Build();
 
       browser_state->GetPrefs()->SetString(kSegmentationClientResultPrefs,
                                            result_pref);
@@ -251,6 +251,8 @@ TEST_F(SegmentationPlatformServiceFactoryTest, TestIosModuleRankerModel) {
   int safety_check_freshness_impression_count = -1;
   int tab_resumption_freshness_impression_count = -1;
   int parcel_tracking_freshness_impression_count = -1;
+  int price_tracking_promo_freshness_impression_count = -1;
+
   input_context->metadata_args.emplace(
       segmentation_platform::kMostVisitedTilesFreshness,
       segmentation_platform::processing::ProcessedValue::FromFloat(
@@ -271,12 +273,17 @@ TEST_F(SegmentationPlatformServiceFactoryTest, TestIosModuleRankerModel) {
       segmentation_platform::kParcelTrackingFreshness,
       segmentation_platform::processing::ProcessedValue::FromFloat(
           parcel_tracking_freshness_impression_count));
+  input_context->metadata_args.emplace(
+      segmentation_platform::kPriceTrackingPromoFreshness,
+      segmentation_platform::processing::ProcessedValue::FromFloat(
+          price_tracking_promo_freshness_impression_count));
 
   ExpectGetClassificationResult(
       segmentation_platform::kIosModuleRankerKey, prediction_options,
       input_context, PredictionStatus::kSucceeded,
       std::vector<std::string>{"MostVisitedTiles", "Shortcuts", "SafetyCheck",
-                               "TabResumption", "ParcelTracking"});
+                               "TabResumption", "ParcelTracking",
+                               "PriceTrackingPromo"});
 }
 
 }  // namespace segmentation_platform

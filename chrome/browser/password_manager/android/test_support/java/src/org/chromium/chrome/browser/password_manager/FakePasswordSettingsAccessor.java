@@ -45,4 +45,10 @@ public class FakePasswordSettingsAccessor implements PasswordSettingsAccessor {
             Callback<Exception> failureCallback) {
         // TODO(crbug.com/40847858): Implement the method of the fake accessor.
     }
+
+    @Override
+    public void getUseBiometricReauthBeforeFilling(
+            Callback<Optional<Boolean>> successCallback, Callback<Exception> failureCallback) {
+        // TODO(crbug.com/40847858): Implement the method of the fake accessor.
+    }
 }

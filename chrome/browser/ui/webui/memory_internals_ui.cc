@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/ui/webui/memory_internals_ui.h"
 
 #include <iterator>
@@ -10,7 +15,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_buildflags.h"
 #include "base/check.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
@@ -45,6 +49,7 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/common/process_type.h"
 #include "mojo/public/cpp/system/platform_handle.h"
+#include "partition_alloc/buildflags.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/shell_dialogs/select_file_policy.h"
 #include "ui/shell_dialogs/selected_file_info.h"
@@ -170,10 +175,8 @@ class MemoryInternalsDOMHandler : public content::WebUIMessageHandler,
                                    std::vector<base::ProcessId> profiled_pids);
 
   // SelectFileDialog::Listener implementation:
-  void FileSelected(const ui::SelectedFileInfo& file,
-                    int index,
-                    void* params) override;
-  void FileSelectionCanceled(void* params) override;
+  void FileSelected(const ui::SelectedFileInfo& file, int index) override;
+  void FileSelectionCanceled() override;
 
   void SaveTraceFinished(bool success);
 
@@ -254,7 +257,7 @@ void MemoryInternalsDOMHandler::HandleSaveDump(const base::Value::List&) {
   select_file_dialog_->SelectFile(
       ui::SelectFileDialog::SELECT_SAVEAS_FILE, std::u16string(), default_file,
       nullptr, 0, FILE_PATH_LITERAL(".json.gz"),
-      web_ui_->GetWebContents()->GetTopLevelNativeWindow(), nullptr);
+      web_ui_->GetWebContents()->GetTopLevelNativeWindow());
 #endif
 }
 
@@ -378,8 +381,7 @@ void MemoryInternalsDOMHandler::ReturnProcessListOnUIThread(
 }
 
 void MemoryInternalsDOMHandler::FileSelected(const ui::SelectedFileInfo& file,
-                                             int index,
-                                             void* params) {
+                                             int index) {
   base::Value result("Saving...");
   FireWebUIListener("save-dump-progress", result);
 
@@ -391,7 +393,7 @@ void MemoryInternalsDOMHandler::FileSelected(const ui::SelectedFileInfo& file,
   select_file_dialog_ = nullptr;
 }
 
-void MemoryInternalsDOMHandler::FileSelectionCanceled(void* params) {
+void MemoryInternalsDOMHandler::FileSelectionCanceled() {
   select_file_dialog_ = nullptr;
 }
 

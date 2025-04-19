@@ -193,6 +193,10 @@ class BASE_EXPORT HangWatcher : public DelegateSimpleThread::Delegate {
   //
   static void InvalidateActiveExpectations();
 
+  // Marks the current process as "shutting down". This changes the histograms
+  // emitted every interval for all threads.
+  static void SetShuttingDown();
+
   // Sets up the calling thread to be monitored for threads. Returns a
   // ScopedClosureRunner that unregisters the thread. This closure has to be
   // called from the registered thread before it's joined. Returns a null
@@ -309,7 +313,8 @@ class BASE_EXPORT HangWatcher : public DelegateSimpleThread::Delegate {
     // This function cannot be called more than once without an associated call
     // to Clear().
     void Init(const HangWatchStates& watch_states,
-              base::TimeTicks deadline_ignore_threshold);
+              base::TimeTicks deadline_ignore_threshold,
+              base::TimeDelta monitoring_period);
 
     // Reset the snapshot object to be reused. Can only be called after Init().
     void Clear();
@@ -359,7 +364,7 @@ class BASE_EXPORT HangWatcher : public DelegateSimpleThread::Delegate {
   // set time interval.
   void Run() override;
 
-  base::TimeDelta monitor_period_;
+  base::TimeDelta monitoring_period_;
 
   // Use to make the HangWatcher thread wake or sleep to schedule the
   // appropriate monitoring frequency.

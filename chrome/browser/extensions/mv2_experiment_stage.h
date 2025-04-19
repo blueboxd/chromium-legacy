@@ -16,9 +16,13 @@ enum class MV2ExperimentStage {
   // The user is warned that Manifest V2 extensions are deprecated and will
   // soon be unsupported.
   kWarning,
+  // Unsupported Manifest V2 extensions will be disabled. The user is allowed
+  // to re-enable them at any point.
+  kDisableWithReEnable,
 
   // TODO(https://crbug.com/337191307): Continue adding more experiment stages
-  // here.
+  // here. For each new entry, update Mv2ExperimentStage in
+  // chrome/browser/resources/extensions/mv2_deprecation_util.ts.
 };
 
 }  // namespace extensions

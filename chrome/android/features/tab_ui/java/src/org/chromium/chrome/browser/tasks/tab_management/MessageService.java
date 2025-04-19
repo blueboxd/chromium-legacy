@@ -24,6 +24,8 @@ public class MessageService {
         MessageType.PRICE_MESSAGE,
         MessageType.INCOGNITO_REAUTH_PROMO_MESSAGE,
         MessageType.ARCHIVED_TABS_MESSAGE,
+        MessageType.ARCHIVED_TABS_IPH_MESSAGE,
+        MessageType.COLLABORATION_ACTIVITY,
         MessageType.ALL
     })
     @Retention(RetentionPolicy.SOURCE)
@@ -33,7 +35,9 @@ public class MessageService {
         int PRICE_MESSAGE = 2;
         int INCOGNITO_REAUTH_PROMO_MESSAGE = 3;
         int ARCHIVED_TABS_MESSAGE = 4;
-        int ALL = 5;
+        int ARCHIVED_TABS_IPH_MESSAGE = 5;
+        int COLLABORATION_ACTIVITY = 6;
+        int ALL = 7;
     }
 
     /**

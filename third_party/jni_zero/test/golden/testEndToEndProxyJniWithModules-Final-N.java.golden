@@ -12,7 +12,7 @@ public class module_N {
 
 
       // Original name: org_jni_1zero_SampleModule_bar
-    public static native boolean MejItBT4(int a);
+    public static native boolean MejItBT4(boolean a);
       // Original name: org_jni_1zero_SampleModule_foo
     public static native void MqDgXQiH();
 }

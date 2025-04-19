@@ -64,7 +64,7 @@ class ManageSyncSettingsMediatorTest : public PlatformTest {
     FakeSystemIdentityManager* system_identity_manager =
         FakeSystemIdentityManager::FromSystemIdentityManager(
             GetApplicationContext()->GetSystemIdentityManager());
-    system_identity_manager->AddIdentity(fakeSystemIdentity_);
+    system_identity_manager->AddIdentity(fake_system_identity_);
 
     TestChromeBrowserState::Builder builder;
     builder.AddTestingFactory(SyncServiceFactory::GetInstance(),
@@ -72,7 +72,7 @@ class ManageSyncSettingsMediatorTest : public PlatformTest {
     builder.AddTestingFactory(
         AuthenticationServiceFactory::GetInstance(),
         AuthenticationServiceFactory::GetDefaultFactory());
-    browser_state_ = builder.Build();
+    browser_state_ = std::move(builder).Build();
 
     sync_service_mock_ = static_cast<syncer::MockSyncService*>(
         SyncServiceFactory::GetForBrowserState(browser_state_.get()));
@@ -83,7 +83,8 @@ class ManageSyncSettingsMediatorTest : public PlatformTest {
     AuthenticationService* authentication_service =
         AuthenticationServiceFactory::GetForBrowserState(browser_state_.get());
     authentication_service->SignIn(
-        fakeSystemIdentity_, signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN);
+        fake_system_identity_,
+        signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN);
   }
 
   // Creates the mediator for a given sync state.
@@ -125,7 +126,8 @@ class ManageSyncSettingsMediatorTest : public PlatformTest {
     ON_CALL(*sync_service_mock_, GetTransportState())
         .WillByDefault(Return(syncer::SyncService::TransportState::ACTIVE));
     CoreAccountInfo account_info;
-    account_info.email = base::SysNSStringToUTF8(fakeSystemIdentity_.userEmail);
+    account_info.email =
+        base::SysNSStringToUTF8(fake_system_identity_.userEmail);
     ON_CALL(*sync_service_mock_, GetAccountInfo())
         .WillByDefault(Return(account_info));
     ON_CALL(*sync_service_mock_->GetMockUserSettings(),
@@ -141,7 +143,8 @@ class ManageSyncSettingsMediatorTest : public PlatformTest {
     ON_CALL(*sync_service_mock_, GetTransportState())
         .WillByDefault(Return(syncer::SyncService::TransportState::DISABLED));
     CoreAccountInfo account_info;
-    account_info.email = base::SysNSStringToUTF8(fakeSystemIdentity_.userEmail);
+    account_info.email =
+        base::SysNSStringToUTF8(fake_system_identity_.userEmail);
     ON_CALL(*sync_service_mock_, GetAccountInfo())
         .WillByDefault(Return(account_info));
     ON_CALL(*sync_service_mock_->GetMockUserSettings(),
@@ -154,7 +157,8 @@ class ManageSyncSettingsMediatorTest : public PlatformTest {
     ON_CALL(*sync_service_mock_, GetTransportState())
         .WillByDefault(Return(syncer::SyncService::TransportState::ACTIVE));
     CoreAccountInfo account_info;
-    account_info.email = base::SysNSStringToUTF8(fakeSystemIdentity_.userEmail);
+    account_info.email =
+        base::SysNSStringToUTF8(fake_system_identity_.userEmail);
     ON_CALL(*sync_service_mock_, GetAccountInfo())
         .WillByDefault(Return(account_info));
   }
@@ -164,7 +168,7 @@ class ManageSyncSettingsMediatorTest : public PlatformTest {
   web::WebTaskEnvironment task_environment_;
 
   // Needed for the initialization of authentication service.
-  IOSChromeScopedTestingLocalState local_state_;
+  IOSChromeScopedTestingLocalState scoped_testing_local_state_;
 
   base::test::ScopedFeatureList feature_list_;
 
@@ -174,10 +178,8 @@ class ManageSyncSettingsMediatorTest : public PlatformTest {
   ManageSyncSettingsMediator* mediator_ = nullptr;
   ManageSyncSettingsTableViewController* consumer_ = nullptr;
 
-  FakeSystemIdentity* fakeSystemIdentity_ =
-      [FakeSystemIdentity identityWithEmail:@"foo1@gmail.com"
-                                     gaiaID:@"foo1ID"
-                                       name:@"Fake Foo 1"];
+  FakeSystemIdentity* fake_system_identity_ =
+      [FakeSystemIdentity fakeIdentity1];
 };
 
 // Tests for Advanced Settings items.
@@ -322,7 +324,8 @@ TEST_F(ManageSyncSettingsMediatorTest, SyncServiceMultipleErrors) {
   EXPECT_CALL(*sync_service_mock_, GetDisableReasons())
       .WillOnce(Return(syncer::SyncService::DisableReasonSet()))
       .WillOnce(Return(syncer::SyncService::DisableReasonSet(
-          {syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY})));
+          {syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY})))
+      .WillRepeatedly(Return(syncer::SyncService::DisableReasonSet()));
 
   // Loads the Sync page once in the disabled by enterprise policy error state.
   [mediator_ manageSyncSettingsTableViewControllerLoadModel:mediator_.consumer];

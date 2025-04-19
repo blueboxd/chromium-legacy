@@ -54,7 +54,6 @@ class MessagePort;
 class Node;
 class Observable;
 class ObservableEventListenerOptions;
-class PortalHost;
 class ScriptState;
 class ServiceWorker;
 class V8EventListener;
@@ -145,15 +144,18 @@ class CORE_EXPORT EventTarget : public ScriptWrappable {
   virtual LocalDOMWindow* ToLocalDOMWindow();
   virtual MessagePort* ToMessagePort();
   virtual ServiceWorker* ToServiceWorker();
-  virtual PortalHost* ToPortalHost();
+
+  // This method is called when the enqueued event is dispatched.
+  // The input is the event type of the current dispatched event.
+  virtual void ResetEventQueueStatus(const AtomicString& event_type);
 
   static EventTarget* Create(ScriptState*);
 
   // Returns an Observable whose native subscription algorithm adds an event
   // listener of type `event_type` to `this`. See
   // https://wicg.github.io/observable/.
-  Observable* on(const AtomicString& event_type,
-                 const ObservableEventListenerOptions*);
+  Observable* when(const AtomicString& event_type,
+                   const ObservableEventListenerOptions*);
 
   bool addEventListener(const AtomicString& event_type, V8EventListener*);
   bool addEventListener(

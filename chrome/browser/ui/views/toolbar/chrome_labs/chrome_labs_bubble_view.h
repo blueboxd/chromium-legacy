@@ -14,11 +14,11 @@
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 class Browser;
-class ChromeLabsButton;
 class ChromeLabsItemView;
 struct LabInfo;
 
 namespace views {
+class Button;
 class FlexLayoutView;
 }
 
@@ -27,7 +27,7 @@ class ChromeLabsBubbleView : public views::BubbleDialogDelegateView {
   METADATA_HEADER(ChromeLabsBubbleView, views::BubbleDialogDelegateView)
 
  public:
-  explicit ChromeLabsBubbleView(ChromeLabsButton* anchor_view);
+  explicit ChromeLabsBubbleView(views::Button* anchor_view, Browser* browser);
   ~ChromeLabsBubbleView() override;
 
   ChromeLabsItemView* AddLabItem(
@@ -53,6 +53,8 @@ class ChromeLabsBubbleView : public views::BubbleDialogDelegateView {
 
  private:
   void NotifyRestartCallback();
+
+  raw_ptr<actions::ActionItem> chrome_labs_action_item_ = nullptr;
 
   // This view will hold all the child lab items.
   raw_ptr<views::FlexLayoutView> menu_item_container_;

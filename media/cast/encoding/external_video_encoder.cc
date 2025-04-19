@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "media/cast/encoding/external_video_encoder.h"
 
 #include <array>
@@ -42,7 +47,7 @@
 #include "media/cast/encoding/encoding_util.h"
 #include "media/cast/encoding/vpx_quantizer_parser.h"
 #include "media/cast/logging/logging_defines.h"
-#include "media/video/h264_parser.h"
+#include "media/parsers/h264_parser.h"
 
 namespace media::cast {
 namespace {

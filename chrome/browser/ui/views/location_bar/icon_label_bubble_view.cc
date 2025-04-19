@@ -211,9 +211,59 @@ bool IconLabelBubbleView::ShouldShowLabel() const {
   return label()->GetVisible() && !label()->GetText().empty();
 }
 
-void IconLabelBubbleView::SetPaintLabelOverSolidBackground(
-    bool paint_label_over_solid_background) {
-  paint_label_over_solid_background_ = paint_label_over_solid_background;
+void IconLabelBubbleView::Layout(PassKey) {
+  ink_drop_container()->SetBoundsRect(GetLocalBounds());
+
+  // We may not have horizontal room for both the image and the trailing
+  // padding. When the view is expanding (or showing-label steady state), the
+  // image. When the view is contracting (or hidden-label steady state), whittle
+  // away at the trailing padding instead.
+  int bubble_trailing_padding = GetEndPaddingWithSeparator();
+  int image_width = image_container_view()->GetPreferredSize().width();
+  const int space_shortage = image_width + bubble_trailing_padding - width();
+  if (space_shortage > 0) {
+    if (ShouldShowLabel()) {
+      image_width -= space_shortage;
+    } else {
+      bubble_trailing_padding -= space_shortage;
+    }
+  }
+  image_container_view()->SetBounds(GetInsets().left(), 0, image_width,
+                                    height());
+
+  // Compute the label bounds. The label gets whatever size is left over after
+  // accounting for the preferred image width and padding amounts. Note that if
+  // the label has zero size it doesn't actually matter what we compute its X
+  // value to be, since it won't be visible.
+  const int label_x =
+      image_container_view()->bounds().right() + GetInternalSpacing();
+  int label_width = std::max(0, width() - label_x - bubble_trailing_padding -
+                                    GetWidthBetweenIconAndSeparator());
+  label()->SetBounds(label_x, 0, label_width, height());
+
+  // The separator should be the same height as the icons.
+  const int separator_height = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
+  gfx::Rect separator_bounds(label()->bounds());
+  separator_bounds.Inset(
+      gfx::Insets::VH((separator_bounds.height() - separator_height) / 2, 0));
+
+  float separator_width =
+      GetWidthBetweenIconAndSeparator() + GetEndPaddingWithSeparator();
+  int separator_x = label()->GetText().empty()
+                        ? image_container_view()->bounds().right()
+                        : label()->bounds().right();
+  separator_view_->SetBounds(separator_x, separator_bounds.y(), separator_width,
+                             separator_height);
+
+  if (views::FocusRing::Get(this)) {
+    views::FocusRing::Get(this)->DeprecatedLayoutImmediately();
+    views::FocusRing::Get(this)->SchedulePaint();
+  }
+}
+
+void IconLabelBubbleView::SetBackgroundVisibility(
+    BackgroundVisibility background_visibility) {
+  background_visibility_ = background_visibility;
   UpdateBackground();
 }
 
@@ -225,10 +275,10 @@ void IconLabelBubbleView::SetLabel(const std::u16string& label_text,
                                    const std::u16string& accessible_name) {
   // TODO(crbug.com/40890218): Under what conditions, if any, will the text be
   // empty? Read the description of the bug and update accordingly.
-  SetAccessibleName(accessible_name,
-                    accessible_name.empty()
-                        ? ax::mojom::NameFrom::kAttributeExplicitlyEmpty
-                        : ax::mojom::NameFrom::kAttribute);
+  GetViewAccessibility().SetName(
+      accessible_name, accessible_name.empty()
+                           ? ax::mojom::NameFrom::kAttributeExplicitlyEmpty
+                           : ax::mojom::NameFrom::kAttribute);
   label()->SetText(label_text);
   separator_view_->SetVisible(ShouldShowSeparator());
   separator_view_->UpdateOpacity();
@@ -239,17 +289,41 @@ void IconLabelBubbleView::SetFontList(const gfx::FontList& font_list) {
 }
 
 SkColor IconLabelBubbleView::GetBackgroundColor() const {
+  ui::ColorId background_color_id = ui::kUiColorsStart;
   if (background_color_id_.has_value()) {
-    return GetColorProvider()->GetColor(background_color_id_.value());
+    background_color_id = background_color_id_.value();
+  } else if (PaintedOnSolidBackground()) {
+    background_color_id = use_tonal_color_when_expanded_
+                              ? kColorPageInfoBackgroundTonal
+                              : kColorPageInfoBackground;
+  } else {
+    // If background is not explicitly specified or we are not painting over a
+    // solid background, seek the background color from the icon view's context.
+    return delegate_->GetIconLabelBubbleBackgroundColor();
   }
-  return delegate_->GetIconLabelBubbleBackgroundColor();
+  return GetColorProvider()->GetColor(background_color_id);
 }
 
 SkColor IconLabelBubbleView::GetForegroundColor() const {
+  ui::ColorId foreground_color_id = ui::kUiColorsStart;
   if (foreground_color_id_.has_value()) {
-    return GetColorProvider()->GetColor(foreground_color_id_.value());
+    foreground_color_id = foreground_color_id_.value();
+  } else if (PaintedOnSolidBackground()) {
+    foreground_color_id = use_tonal_color_when_expanded_
+                              ? kColorPageInfoForegroundTonal
+                              : kColorPageInfoForeground;
+  } else {
+    // If foreground is not explicitly specified or we are not painting over a
+    // solid background, seek the foreground color from the icon view's context.
+    return delegate_->GetIconLabelBubbleSurroundingForegroundColor();
   }
-  return delegate_->GetIconLabelBubbleSurroundingForegroundColor();
+  return GetColorProvider()->GetColor(foreground_color_id);
+}
+
+bool IconLabelBubbleView::IconColorShouldMatchForeground() const {
+  // Icons should match the label foreground color if the foreground color is
+  // explicitly overridden or solid backgrounds are used.
+  return foreground_color_id_.has_value() || PaintedOnSolidBackground();
 }
 
 void IconLabelBubbleView::SetCustomForegroundColorId(
@@ -268,46 +342,31 @@ void IconLabelBubbleView::SetCustomBackgroundColorId(
   background_color_id_ = color_id;
 }
 
-std::optional<ui::ColorId> IconLabelBubbleView::GetCustomForegroundColorId() {
-  return foreground_color_id_;
-}
-std::optional<ui::ColorId> IconLabelBubbleView::GetCustomBackgroundColorId() {
-  return background_color_id_;
-}
-
 void IconLabelBubbleView::UpdateLabelColors() {
   SetEnabledTextColors(GetForegroundColor());
   label()->SetBackgroundColor(GetBackgroundColor());
 }
 
 void IconLabelBubbleView::UpdateBackground() {
-  // If the label is showing we must ensure the icon label is painted over a
-  // solid background.
-  const bool painted_on_solid_background =
-      (paint_label_over_solid_background_ && ShouldShowLabel()) ||
-      background_color_id_.has_value();
-
-  ui::ColorId background_color;
-  if (background_color_id_.has_value()) {
-    background_color = background_color_id_.value();
-  } else {
-    background_color = use_tonal_color_when_expanded_
-                           ? kColorPageInfoBackgroundTonal
-                           : kColorPageInfoBackground;
+  if (!GetWidget()) {
+    return;
   }
 
+  // If the label is showing we must ensure the icon label is painted over a
+  // solid background.
+  const bool painted_on_solid_background = PaintedOnSolidBackground();
   SetBackground(painted_on_solid_background
-                    ? views::CreateThemedRoundedRectBackground(
-                          background_color, GetPreferredSize().height())
+                    ? views::CreateRoundedRectBackground(
+                          GetBackgroundColor(), GetPreferredSize().height())
                     : nullptr);
   // TODO(pbos): Consider renaming kPageInfo/kPageAction color IDs to share the
   // same prefix. Here PageInfo assumes to have a background and PageAction
   // assumes to not have one.
-    ConfigureInkDropForRefresh2023(this,
-                                   painted_on_solid_background
-                                       ? kColorPageInfoIconHover
-                                       : kColorPageActionIconHover,
-                                   kColorPageInfoIconPressed);
+  ConfigureInkDropForRefresh2023(this,
+                                 painted_on_solid_background
+                                     ? kColorPageInfoIconHover
+                                     : kColorPageActionIconHover,
+                                 kColorPageInfoIconPressed);
 }
 
 void IconLabelBubbleView::SetUseTonalColorsWhenExpanded(bool use_tonal_colors) {
@@ -390,56 +449,6 @@ gfx::Size IconLabelBubbleView::CalculatePreferredSize(
           .width());
 }
 
-void IconLabelBubbleView::Layout(PassKey) {
-  ink_drop_container()->SetBoundsRect(GetLocalBounds());
-
-  // We may not have horizontal room for both the image and the trailing
-  // padding. When the view is expanding (or showing-label steady state), the
-  // image. When the view is contracting (or hidden-label steady state), whittle
-  // away at the trailing padding instead.
-  int bubble_trailing_padding = GetEndPaddingWithSeparator();
-  int image_width = image_container_view()->GetPreferredSize().width();
-  const int space_shortage = image_width + bubble_trailing_padding - width();
-  if (space_shortage > 0) {
-    if (ShouldShowLabel()) {
-      image_width -= space_shortage;
-    } else {
-      bubble_trailing_padding -= space_shortage;
-    }
-  }
-  image_container_view()->SetBounds(GetInsets().left(), 0, image_width,
-                                    height());
-
-  // Compute the label bounds. The label gets whatever size is left over after
-  // accounting for the preferred image width and padding amounts. Note that if
-  // the label has zero size it doesn't actually matter what we compute its X
-  // value to be, since it won't be visible.
-  const int label_x =
-      image_container_view()->bounds().right() + GetInternalSpacing();
-  int label_width = std::max(0, width() - label_x - bubble_trailing_padding -
-                                    GetWidthBetweenIconAndSeparator());
-  label()->SetBounds(label_x, 0, label_width, height());
-
-  // The separator should be the same height as the icons.
-  const int separator_height = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
-  gfx::Rect separator_bounds(label()->bounds());
-  separator_bounds.Inset(
-      gfx::Insets::VH((separator_bounds.height() - separator_height) / 2, 0));
-
-  float separator_width =
-      GetWidthBetweenIconAndSeparator() + GetEndPaddingWithSeparator();
-  int separator_x = label()->GetText().empty()
-                        ? image_container_view()->bounds().right()
-                        : label()->bounds().right();
-  separator_view_->SetBounds(separator_x, separator_bounds.y(), separator_width,
-                             separator_height);
-
-  if (views::FocusRing::Get(this)) {
-    views::FocusRing::Get(this)->DeprecatedLayoutImmediately();
-    views::FocusRing::Get(this)->SchedulePaint();
-  }
-}
-
 bool IconLabelBubbleView::OnMousePressed(const ui::MouseEvent& event) {
   suppress_button_release_ = IsBubbleShowing();
   return LabelButton::OnMousePressed(event);
@@ -453,6 +462,7 @@ void IconLabelBubbleView::OnThemeChanged() {
   label()->SetBackground(nullptr);
 
   UpdateLabelColors();
+  UpdateBackground();
 }
 
 bool IconLabelBubbleView::IsTriggerableEvent(const ui::Event& event) {
@@ -722,6 +732,15 @@ SkPath IconLabelBubbleView::GetHighlightPath() const {
 
   return SkPath().addRoundRect(rect, corner_radius, corner_radius);
   // return SkPath().addCircle(12, radius, radius); // size / 2
+}
+
+bool IconLabelBubbleView::PaintedOnSolidBackground() const {
+  // If the label is showing we must ensure the icon label is painted over a
+  // solid background.
+  return (background_visibility_ == BackgroundVisibility::kAlways) ||
+         ((background_visibility_ == BackgroundVisibility::kWithLabel) &&
+          ShouldShowLabel()) ||
+         background_color_id_.has_value();
 }
 
 BEGIN_METADATA(IconLabelBubbleView)

@@ -30,6 +30,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -73,7 +74,6 @@ float GetNearestAllowedValue(const base::flat_set<float>& allowed_values,
 Slider::Slider(SliderListener* listener) : listener_(listener) {
   highlight_animation_.SetSlideDuration(base::Milliseconds(150));
   SetFlipCanvasOnPaintForRTLUI(true);
-  SetAccessibilityProperties(ax::mojom::Role::kSlider);
 
 #if BUILDFLAG(IS_MAC)
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
@@ -82,6 +82,7 @@ Slider::Slider(SliderListener* listener) : listener_(listener) {
 #endif
 
   SchedulePaint();
+  GetViewAccessibility().SetRole(ax::mojom::Role::kSlider);
 }
 
 Slider::~Slider() = default;
@@ -423,17 +424,17 @@ void Slider::NotifyPendingAccessibilityValueChanged() {
 void Slider::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
     // In a multi point gesture only the touch point will generate
-    // an ET_GESTURE_TAP_DOWN event.
-    case ui::ET_GESTURE_TAP_DOWN:
+    // an EventType::kGestureTapDown event.
+    case ui::EventType::kGestureTapDown:
       OnSliderDragStarted();
       PrepareForMove(event->location().x());
       [[fallthrough]];
-    case ui::ET_GESTURE_SCROLL_BEGIN:
-    case ui::ET_GESTURE_SCROLL_UPDATE:
+    case ui::EventType::kGestureScrollBegin:
+    case ui::EventType::kGestureScrollUpdate:
       MoveButtonTo(event->location());
       event->SetHandled();
       break;
-    case ui::ET_GESTURE_END:
+    case ui::EventType::kGestureEnd:
       MoveButtonTo(event->location());
       event->SetHandled();
       if (event->details().touch_points() <= 1)

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/layout/base_layout_algorithm_test.h"
-
 #include <sstream>
+
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/renderer/core/dom/tag_collection.h"
 #include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
+#include "third_party/blink/renderer/core/layout/base_layout_algorithm_test.h"
 #include "third_party/blink/renderer/core/layout/box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/inline/inline_box_state.h"
@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_result.h"
 #include "third_party/blink/renderer/core/layout/physical_box_fragment.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 namespace {
@@ -872,7 +873,7 @@ TEST_F(InlineLayoutAlgorithmTest, TextBoxTrimConstraintSpace) {
   ScopedCSSTextBoxTrimForTest enable_text_box_trim(true);
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
-    <div id="parent" style="text-box-trim: both; position: relative">
+    <div id="parent" style="text-box-trim: trim-both; position: relative">
       <div id="abs1" style="position: absolute">abs1</div>
       <div id="float1" style="float: left">float1</div>
       <div id="empty_before"> </div>
@@ -933,7 +934,7 @@ TEST_F(InlineLayoutAlgorithmTest, TextBoxTrimConstraintSpaceSingle) {
   ScopedCSSTextBoxTrimForTest enable_text_box_trim(true);
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
-    <div id="parent" style="text-box-trim: both">
+    <div id="parent" style="text-box-trim: trim-both">
       <div id="single">single<br>single L2</div>
       <div id="empty_after"> </div>
     </div>
@@ -960,7 +961,7 @@ TEST_F(InlineLayoutAlgorithmTest, TextBoxTrimConstraintSpaceEmptyOnly) {
   ScopedCSSTextBoxTrimForTest enable_text_box_trim(true);
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
-    <div id="parent" style="text-box-trim: both">
+    <div id="parent" style="text-box-trim: trim-both">
       <div id="empty"> </div>
     </div>
   )HTML");

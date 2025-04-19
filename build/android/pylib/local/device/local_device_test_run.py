@@ -25,6 +25,8 @@ from pylib.base import test_exception
 from pylib.base import test_run
 from pylib.local.device import local_device_environment
 
+from lib.proto import exception_recorder
+
 
 _SIGTERM_TEST_LOG = (
   '  Suite execution terminated, probably due to swarming timeout.\n'
@@ -86,7 +88,8 @@ class LocalDeviceTestRun(test_run.TestRun):
           else:
             raise Exception(
                 'Unexpected result type: %s' % type(result).__name__)
-        except device_errors.CommandTimeoutError:
+        except device_errors.CommandTimeoutError as e:
+          exception_recorder.register(e)
           # Test timeouts don't count as device errors for the purpose
           # of bad device detection.
           consecutive_device_errors = 0
@@ -113,11 +116,13 @@ class LocalDeviceTestRun(test_run.TestRun):
                 base_test_result.BaseTestResult(
                     self._GetUniqueTestName(test),
                     base_test_result.ResultType.TIMEOUT))
-        except device_errors.DeviceUnreachableError:
+        except device_errors.DeviceUnreachableError as e:
+          exception_recorder.register(e)
           # If the device is no longer reachable then terminate this
           # run_tests_on_device call.
           raise
-        except base_error.BaseError:
+        except base_error.BaseError as e:
+          exception_recorder.register(e)
           # If we get a device error but believe the device is still
           # reachable, attempt to continue using it.
           if isinstance(tests, test_collection.TestCollection):
@@ -155,7 +160,7 @@ class LocalDeviceTestRun(test_run.TestRun):
         while self._env.current_try < self._env.max_tries and tests:
           tries = self._env.current_try
           tests = self._SortTests(tests)
-          grouped_tests = self._GroupTests(tests)
+          grouped_tests = self._GroupTestsAfterSharding(tests)
           logging.info('STARTING TRY #%d/%d', tries + 1, self._env.max_tries)
           if tries > 0 and self._env.recover_devices:
             if any(d.build_version_sdk == version_codes.LOLLIPOP_MR1
@@ -170,9 +175,10 @@ class LocalDeviceTestRun(test_run.TestRun):
                   'Attempting to recover devices prior to last test attempt.')
               self._env.parallel_devices.pMap(
                   device_recovery.RecoverDevice, None)
-          logging.info('Will run %d tests on %d devices: %s',
-                       len(tests), len(self._env.devices),
-                       ', '.join(str(d) for d in self._env.devices))
+          logging.info(
+              'Will run %d tests, grouped into %d groups, on %d devices: %s',
+              len(tests), len(grouped_tests), len(self._env.devices),
+              ', '.join(str(d) for d in self._env.devices))
           for t in tests:
             logging.debug('  %s', t)
 
@@ -380,6 +386,10 @@ class LocalDeviceTestRun(test_run.TestRun):
     raise NotImplementedError
 
   def _GroupTests(self, tests):
+    # pylint: disable=no-self-use
+    return tests
+
+  def _GroupTestsAfterSharding(self, tests):
     # pylint: disable=no-self-use
     return tests
 

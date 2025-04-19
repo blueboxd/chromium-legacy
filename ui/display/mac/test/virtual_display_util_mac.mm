@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ui/display/mac/test/virtual_display_util_mac.h"
 
 #include <CoreGraphics/CoreGraphics.h>
@@ -139,9 +144,7 @@ CGVirtualDisplay* CreateVirtualDisplay(int width,
   int kVendorID = 505;
   descriptor.vendorID = kVendorID;
   descriptor.terminationHandler = nil;
-  if (@available(macos 11.0, *)) {
-    descriptor.serialNumber = serial_number;
-  }
+  descriptor.serialNumber = serial_number;
 
   CGVirtualDisplay* display =
       [[CGVirtualDisplay alloc] initWithDescriptor:descriptor];
@@ -152,9 +155,8 @@ CGVirtualDisplay* CreateVirtualDisplay(int width,
 
   CGVirtualDisplaySettings* settings = [[CGVirtualDisplaySettings alloc] init];
   settings.hiDPI = hiDPI;
-  if (@available(macos 11.0, *)) {
-    settings.rotation = 0;
-  }
+  settings.rotation = 0;
+
   CGVirtualDisplayMode* mode =
       [[CGVirtualDisplayMode alloc] initWithWidth:(hiDPI ? width / 2 : width)
                                            height:(hiDPI ? height / 2 : height)

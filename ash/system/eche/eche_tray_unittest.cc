@@ -519,7 +519,7 @@ TEST_F(EcheTrayTest, EcheTrayOnDisplayConfigurationChanged) {
   UpdateDisplay("1024x786");
   expected_eche_size = eche_tray()->CalculateSizeForEche();
 
-  eche_tray()->OnDisplayConfigurationChanged();
+  eche_tray()->OnDidApplyDisplayChanges();
 
   EXPECT_EQ(expected_eche_size.width(),
             eche_tray()->get_bubble_wrapper_for_test()->bubble_view()->width());
@@ -545,7 +545,7 @@ TEST_F(EcheTrayTest, EcheTrayKeyboardShowHideUpdateBubbleBounds) {
   // Place a keyboard window.
   auto* keyboard_controller = keyboard::KeyboardUIController::Get();
   keyboard_controller->ShowKeyboard(/*lock=*/true);
-  ASSERT_TRUE(keyboard::WaitUntilShown());
+  ASSERT_TRUE(keyboard::test::WaitUntilShown());
 
   EXPECT_EQ(expected_eche_size.width(),
             eche_tray()->get_bubble_wrapper_for_test()->bubble_view()->width());

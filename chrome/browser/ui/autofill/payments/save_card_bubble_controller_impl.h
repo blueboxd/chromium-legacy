@@ -61,12 +61,13 @@ class SaveCardBubbleControllerImpl
   // `CardSaveType::kCardSaveWithCvc`, the offer-to-save card bubble is shown,
   // and the users are informed that the CVC will also be stored. If the type is
   // `CardSaveType::kCvcSaveOnly`, the offer-to-save CVC bubble is shown.
-  // TODO(b/40937065) refactor: pass Iban by value since all they then
+  // TODO(crbug.com/40937065) refactor: pass Iban by value since all they then
   // immediately move it into a member.
-  void OfferLocalSave(
+  virtual void OfferLocalSave(
       const CreditCard& card,
-      AutofillClient::SaveCreditCardOptions options,
-      AutofillClient::LocalSaveCardPromptCallback save_card_prompt_callback);
+      payments::PaymentsAutofillClient::SaveCreditCardOptions options,
+      payments::PaymentsAutofillClient::LocalSaveCardPromptCallback
+          save_card_prompt_callback);
 
   // Sets up the controller and is responsible for offering both card save and
   // CVC save to Google Payments. The offer-to-save CVC bubble uploads CVC for
@@ -88,8 +89,9 @@ class SaveCardBubbleControllerImpl
   void OfferUploadSave(
       const CreditCard& card,
       const LegalMessageLines& legal_message_lines,
-      AutofillClient::SaveCreditCardOptions options,
-      AutofillClient::UploadSaveCardPromptCallback save_card_prompt_callback);
+      payments::PaymentsAutofillClient::SaveCreditCardOptions options,
+      payments::PaymentsAutofillClient::UploadSaveCardPromptCallback
+          save_card_prompt_callback);
 
   // Exists for testing purposes only. (Otherwise shown through ReshowBubble())
   // Sets up the controller for the Manage Cards view. This displays the card
@@ -119,7 +121,7 @@ class SaveCardBubbleControllerImpl
   const CreditCard& GetCard() const override;
   base::OnceCallback<void(PaymentsBubbleClosedReason)>
   GetOnBubbleClosedCallback() override;
-  const SaveCardAndVirtualCardEnrollConfirmationUiParams&
+  const SavePaymentMethodAndVirtualCardEnrollConfirmationUiParams&
   GetConfirmationUiParams() const override;
   bool ShouldRequestNameFromUser() const override;
   bool ShouldRequestExpirationDateFromUser() const override;
@@ -196,12 +198,13 @@ class SaveCardBubbleControllerImpl
   // name provided/confirmed by the user if it was requested. Will also return
   // the expiration month and year provided by the user if the expiration date
   // was requested.
-  AutofillClient::UploadSaveCardPromptCallback
+  payments::PaymentsAutofillClient::UploadSaveCardPromptCallback
       upload_save_card_prompt_callback_;
 
   // Callback to run once the user makes a decision with respect to the local
   // credit card offer-to-save prompt or the local CVC offer-to-save prompt.
-  AutofillClient::LocalSaveCardPromptCallback local_save_card_prompt_callback_;
+  payments::PaymentsAutofillClient::LocalSaveCardPromptCallback
+      local_save_card_prompt_callback_;
 
   // Callback to run after save card confirmation bubble is closed.
   std::optional<payments::PaymentsAutofillClient::OnConfirmationClosedCallback>
@@ -236,7 +239,7 @@ class SaveCardBubbleControllerImpl
   // `CardSaveType::kCardSaveWithCvc`, the offer-to-save card bubble is shown,
   // and the users are informed that the CVC will also be stored. If the type is
   // `CardSaveType::kCvcSaveOnly`, the offer-to-save CVC bubble is shown.
-  AutofillClient::SaveCreditCardOptions options_;
+  payments::PaymentsAutofillClient::SaveCreditCardOptions options_;
 
   // Contains the details of the card that will be saved if the user accepts.
   CreditCard card_;
@@ -245,7 +248,7 @@ class SaveCardBubbleControllerImpl
   LegalMessageLines legal_message_lines_;
 
   // UI parameters needed to display the save card confirmation view.
-  std::optional<SaveCardAndVirtualCardEnrollConfirmationUiParams>
+  std::optional<SavePaymentMethodAndVirtualCardEnrollConfirmationUiParams>
       confirmation_ui_params_;
 
   // Timer that controls auto closure of confirmation bubble. Should be

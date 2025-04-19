@@ -53,6 +53,10 @@ inline constexpr char kAdvancedProtectionDownloadLearnMoreURL[] =
 inline constexpr char kAppNotificationsBrowserSettingsURL[] =
     "chrome://settings/content/notifications";
 
+// "Chrome Settings" URL for the appearance page.
+inline constexpr char kBrowserSettingsSearchEngineURL[] =
+    "chrome://settings/search";
+
 // "Learn more" URL for App Parental Controls.
 // char16_t is used here because this constant may be used to set the src
 // attribute of iframe elements.
@@ -226,6 +230,10 @@ inline constexpr char kCrashReasonFeedbackDisplayedURL[] =
     "https://support.google.com/chrome?p=e_awsnap_rl";
 #endif
 
+// "Learn more" URL for the inactive tabs appearance setting.
+inline constexpr char16_t kDiscardRingTreatmentLearnMoreUrl[] =
+    u"https://support.google.com/chrome?p=performance_personalization";
+
 // "Learn more" URL for the "Do not track" setting in the privacy section.
 inline constexpr char16_t kDoNotTrackLearnMoreURL[] =
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -290,7 +298,7 @@ inline constexpr char kGoogleAccountActivityControlsURLInPrivacyGuide[] =
 
 // URL of the 'Linked services' section of the privacy settings page.
 inline constexpr char kGoogleAccountLinkedServicesURL[] =
-    "https://myaccount.google.com/linked-services";
+    "https://myaccount.google.com/linked-services?utm_source=chrome_s";
 
 // URL of the Google Account.
 inline constexpr char kGoogleAccountURL[] = "https://myaccount.google.com";
@@ -340,6 +348,10 @@ inline constexpr char kLearnMoreReportingURL[] =
 // The URL for the Help Center page about managing third-party cookies.
 inline constexpr char kManage3pcHelpCenterURL[] =
     "https://support.google.com/chrome?p=manage_tp_cookies";
+
+// The URL for the tab group sync help center page.
+inline constexpr char kTabGroupsLearnMoreURL[] =
+    "https://support.google.com/chrome?p=desktop_tab_groups";
 
 // The URL for the Learn More page about policies and enterprise enrollment.
 inline constexpr char16_t kManagedUiLearnMoreUrl[] =
@@ -413,6 +425,10 @@ inline constexpr char kAddressesAndPaymentMethodsLearnMoreURL[] =
 #else
     "https://support.google.com/chrome?p=settings_autofill";
 #endif
+
+// "Learn more" URL for the performance intervention notification setting.
+inline constexpr char16_t kPerformanceInterventionLearnMoreUrl[] =
+    u"https://support.google.com/chrome?p=performance_personalization";
 
 // "Learn more" URL for the preloading section in Performance settings.
 inline constexpr char kPreloadingLearnMoreUrl[] =
@@ -519,6 +535,14 @@ inline constexpr char16_t kSyncLearnMoreURL[] =
 // The URL for the "Learn more" page for Help me Write.
 inline constexpr char kComposeLearnMorePageURL[] =
     "https://support.google.com/chrome?p=help_me_write";
+
+// The URL for the "Learn more" links for pages related to History search.
+inline constexpr char kHistorySearchLearnMorePageURL[] =
+    "https://support.google.com/chrome?p=ai_history_search";
+
+// The URL for the Settings page to enable history search.
+inline constexpr char16_t kHistorySearchSettingURL[] =
+    u"chrome://settings/historySearch";
 
 // The URL for the "Learn more" link in the enterprise disclaimer for managed
 // profile in the Signin Intercept bubble.
@@ -814,6 +838,11 @@ inline constexpr char kSpeakOnMuteDetectionLearnMoreURL[] =
 // hub page.
 inline constexpr char kPrivacyHubGeolocationLearnMoreURL[] =
     "https://support.google.com/chromebook/?p=manage_your_location";
+
+// The URL for the "Learn more" page for the Location Accuracy setting under the
+// privacy hub location subpage.
+inline constexpr char16_t kPrivacyHubGeolocationAccuracyLearnMoreURL[] =
+    u"https://support.google.com/android/?p=location_accuracy";
 
 // The URL for the "Learn more" page for Suggested Content in the privacy page.
 inline constexpr char kSuggestedContentLearnMoreURL[] =

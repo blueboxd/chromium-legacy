@@ -25,14 +25,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.JniMocker;
@@ -54,6 +52,8 @@ import org.chromium.components.search_engines.TemplateUrl;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.components.user_prefs.UserPrefsJni;
 
+import java.util.List;
+
 /** Tests for {@link AdaptiveToolbarSettingsFragment}. */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
@@ -64,7 +64,6 @@ import org.chromium.components.user_prefs.UserPrefsJni;
     ChromeFeatureList.READALOUD
 })
 public class AdaptiveToolbarSettingsFragmentTest {
-    @Rule public TestRule mProcessor = new Features.JUnitProcessor();
     @Rule public JniMocker mJniMocker = new JniMocker();
 
     @Mock Profile mProfile;
@@ -86,7 +85,11 @@ public class AdaptiveToolbarSettingsFragmentTest {
         ChromeSharedPreferences.getInstance().removeKey(ADAPTIVE_TOOLBAR_CUSTOMIZATION_ENABLED);
         ChromeSharedPreferences.getInstance().removeKey(ADAPTIVE_TOOLBAR_CUSTOMIZATION_SETTINGS);
         AdaptiveToolbarStatePredictor.setSegmentationResultsForTesting(
-                new Pair<>(false, AdaptiveToolbarButtonVariant.NEW_TAB));
+                new Pair<>(
+                        false,
+                        List.of(
+                                AdaptiveToolbarButtonVariant.NEW_TAB,
+                                AdaptiveToolbarButtonVariant.SHARE)));
 
         VoiceRecognitionUtil.setIsVoiceSearchEnabledForTesting(true);
         UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(true);

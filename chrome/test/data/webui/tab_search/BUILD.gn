@@ -6,10 +6,9 @@ import("../build_webui_tests.gni")
 
 build_webui_tests("build") {
   files = [
-    "bimap_test.ts",
-    "fuzzy_search_test.ts",
     "infinite_list_test.ts",
-    "tab_organization_page_test.ts",
+    "search_test.ts",
+    "auto_tab_groups_page_test.ts",
     "tab_search_app_test.ts",
     "tab_search_item_test.ts",
     "tab_search_media_tabs_test.ts",
@@ -32,7 +31,7 @@ build_webui_tests("build") {
   ]
   ts_deps = [
     "//chrome/browser/resources/tab_search:build_ts",
-    "//third_party/polymer/v3_0:library",
+    "//third_party/lit/v3_0:build_ts",
     "//ui/webui/resources/js:build_ts",
     "//ui/webui/resources/mojo:build_ts",
   ]

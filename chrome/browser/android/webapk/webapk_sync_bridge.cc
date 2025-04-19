@@ -22,13 +22,13 @@
 #include "chrome/browser/android/webapk/webapk_restore_task.h"
 #include "chrome/browser/android/webapk/webapk_specifics_fetcher.h"
 #include "chrome/common/channel_info.h"
+#include "components/sync/base/data_type.h"
 #include "components/sync/base/deletion_origin.h"
-#include "components/sync/base/model_type.h"
 #include "components/sync/base/report_unrecoverable_error.h"
-#include "components/sync/model/client_tag_based_model_type_processor.h"
+#include "components/sync/model/client_tag_based_data_type_processor.h"
+#include "components/sync/model/data_type_store.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/metadata_change_list.h"
-#include "components/sync/model/model_type_store.h"
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/protocol/web_apk_specifics.pb.h"
 #include "components/webapps/browser/android/shortcut_info.h"
@@ -170,7 +170,7 @@ WebApkSyncBridge::WebApkSyncBridge(
     : WebApkSyncBridge(
           database_factory,
           std::move(on_initialized),
-          std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
+          std::make_unique<syncer::ClientTagBasedDataTypeProcessor>(
               syncer::WEB_APKS,
               base::BindRepeating(&syncer::ReportUnrecoverableError,
                                   chrome::GetChannel())),
@@ -180,10 +180,10 @@ WebApkSyncBridge::WebApkSyncBridge(
 WebApkSyncBridge::WebApkSyncBridge(
     AbstractWebApkDatabaseFactory* database_factory,
     base::OnceClosure on_initialized,
-    std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor,
+    std::unique_ptr<syncer::DataTypeLocalChangeProcessor> change_processor,
     std::unique_ptr<base::Clock> clock,
     std::unique_ptr<AbstractWebApkSpecificsFetcher> specifics_fetcher)
-    : syncer::ModelTypeSyncBridge(std::move(change_processor)),
+    : syncer::DataTypeSyncBridge(std::move(change_processor)),
       database_(
           database_factory,
           base::BindRepeating(&WebApkSyncBridge::ReportErrorToChangeProcessor,
@@ -213,14 +213,14 @@ void WebApkSyncBridge::OnDatabaseOpened(
 
   registry_ = std::move(registry);
   std::move(callback).Run();
-  if (init_done_callback_) {
-    std::move(init_done_callback_).Run(/* initialized= */ true);
+  for (auto& task : init_done_callback_) {
+    std::move(task).Run(/* initialized= */ true);
   }
 }
 
 std::unique_ptr<syncer::MetadataChangeList>
 WebApkSyncBridge::CreateMetadataChangeList() {
-  return syncer::ModelTypeStore::WriteBatch::CreateMetadataChangeList();
+  return syncer::DataTypeStore::WriteBatch::CreateMetadataChangeList();
 }
 
 bool WebApkSyncBridge::AppWasUsedRecently(
@@ -317,7 +317,7 @@ void WebApkSyncBridge::RegisterDoneInitializingCallback(
     return;
   }
 
-  init_done_callback_ = std::move(init_done_callback);
+  init_done_callback_.push_back(std::move(init_done_callback));
 }
 
 void WebApkSyncBridge::MergeSyncDataForTesting(
@@ -327,7 +327,7 @@ void WebApkSyncBridge::MergeSyncDataForTesting(
   CHECK(app_vector.size() == last_used_days_vector.size());
 
   std::unique_ptr<syncer::MetadataChangeList> metadata_change_list =
-      syncer::ModelTypeStore::WriteBatch::CreateMetadataChangeList();
+      syncer::DataTypeStore::WriteBatch::CreateMetadataChangeList();
   std::unique_ptr<webapk::RegistryUpdateData> registry_update =
       std::make_unique<webapk::RegistryUpdateData>();
 
@@ -431,7 +431,8 @@ void WebApkSyncBridge::OnWebApkUninstalled(const std::string& manifest_id) {
   }
 
   if (!AppWasUsedRecently(&app->sync_data())) {
-    DeleteAppsFromSync(std::vector<webapps::AppId>{app_id});
+    DeleteAppsFromSync(std::vector<webapps::AppId>{app_id},
+                       database_.is_opened());
     return;
   }
 
@@ -447,7 +448,7 @@ void WebApkSyncBridge::OnWebApkUninstalled(const std::string& manifest_id) {
 
   database_.Write(
       *registry_update,
-      syncer::ModelTypeStore::WriteBatch::CreateMetadataChangeList(),
+      syncer::DataTypeStore::WriteBatch::CreateMetadataChangeList(),
       base::BindOnce(&WebApkSyncBridge::OnDataWritten,
                      weak_ptr_factory_.GetWeakPtr(), base::DoNothing()));
 }
@@ -475,8 +476,8 @@ const WebApkProto* WebApkSyncBridge::GetWebApkByAppId(
   return GetAppById(registry_, app_id);
 }
 
-void WebApkSyncBridge::GetDataForCommit(StorageKeyList storage_keys,
-                                        DataCallback callback) {
+std::unique_ptr<syncer::DataBatch> WebApkSyncBridge::GetDataForCommit(
+    StorageKeyList storage_keys) {
   auto data_batch = std::make_unique<syncer::MutableDataBatch>();
 
   for (const webapps::AppId& app_id : storage_keys) {
@@ -486,10 +487,10 @@ void WebApkSyncBridge::GetDataForCommit(StorageKeyList storage_keys,
     }
   }
 
-  std::move(callback).Run(std::move(data_batch));
+  return data_batch;
 }
 
-void WebApkSyncBridge::GetAllDataForDebugging(DataCallback callback) {
+std::unique_ptr<syncer::DataBatch> WebApkSyncBridge::GetAllDataForDebugging() {
   auto data_batch = std::make_unique<syncer::MutableDataBatch>();
 
   for (const auto& appListing : registry_) {
@@ -498,7 +499,7 @@ void WebApkSyncBridge::GetAllDataForDebugging(DataCallback callback) {
     data_batch->Put(app_id, CreateSyncEntityData(app));
   }
 
-  std::move(callback).Run(std::move(data_batch));
+  return data_batch;
 }
 
 // GetClientTag and GetStorageKey must return the same thing for a given AppId
@@ -536,7 +537,10 @@ void WebApkSyncBridge::RemoveOldWebAPKsFromSync(
       app_ids.push_back(app_id);
     }
   }
-  DeleteAppsFromSync(app_ids);
+
+  RegisterDoneInitializingCallback(
+      base::BindOnce(&WebApkSyncBridge::DeleteAppsFromSync,
+                     weak_ptr_factory_.GetWeakPtr(), app_ids));
 }
 
 void WebApkSyncBridge::AddOrModifyAppInSync(std::unique_ptr<WebApkProto> app,
@@ -551,7 +555,7 @@ void WebApkSyncBridge::AddOrModifyAppInSync(std::unique_ptr<WebApkProto> app,
       CreateSyncEntityDataFromSpecifics(app->sync_data());
 
   std::unique_ptr<syncer::MetadataChangeList> metadata_change_list =
-      syncer::ModelTypeStore::WriteBatch::CreateMetadataChangeList();
+      syncer::DataTypeStore::WriteBatch::CreateMetadataChangeList();
   change_processor()->Put(app_id, std::move(entity_data),
                           metadata_change_list.get());
 
@@ -568,13 +572,16 @@ void WebApkSyncBridge::AddOrModifyAppInSync(std::unique_ptr<WebApkProto> app,
 }
 
 void WebApkSyncBridge::DeleteAppsFromSync(
-    const std::vector<webapps::AppId>& app_ids) {
-  if (app_ids.size() > 0) {
-    RecordSyncedWebApkRemovalCountHistogram(app_ids.size());
+    const std::vector<webapps::AppId>& app_ids,
+    bool database_opened) {
+  if (app_ids.size() == 0 || !database_opened) {
+    return;
   }
 
+  RecordSyncedWebApkRemovalCountHistogram(app_ids.size());
+
   std::unique_ptr<syncer::MetadataChangeList> metadata_change_list =
-      syncer::ModelTypeStore::WriteBatch::CreateMetadataChangeList();
+      syncer::DataTypeStore::WriteBatch::CreateMetadataChangeList();
   std::unique_ptr<RegistryUpdateData> registry_update =
       std::make_unique<RegistryUpdateData>();
 
@@ -600,8 +607,8 @@ const Registry& WebApkSyncBridge::GetRegistryForTesting() const {
   return registry_;
 }
 
-base::WeakPtr<syncer::ModelTypeControllerDelegate>
-WebApkSyncBridge::GetModelTypeControllerDelegate() {
+base::WeakPtr<syncer::DataTypeControllerDelegate>
+WebApkSyncBridge::GetDataTypeControllerDelegate() {
   return change_processor()->GetControllerDelegate();
 }
 

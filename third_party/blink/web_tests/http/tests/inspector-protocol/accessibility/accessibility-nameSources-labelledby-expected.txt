@@ -17,10 +17,6 @@ Tests name sources when used with aria-labelledby.
                 attribute : aria-label
                 type : attribute
             }
-            [2] : {
-                attribute : title
-                type : attribute
-            }
         ]
         type : computedString
         value : 
@@ -229,10 +225,6 @@ Tests name sources when used with aria-labelledby.
             [3] : {
                 superseded : true
                 type : contents
-                value : {
-                    type : computedString
-                    value : Contents
-                }
             }
             [4] : {
                 attribute : title
@@ -326,10 +318,6 @@ Tests name sources when used with aria-labelledby.
             [3] : {
                 superseded : true
                 type : contents
-                value : {
-                    type : computedString
-                    value : Contents
-                }
             }
             [4] : {
                 attribute : title

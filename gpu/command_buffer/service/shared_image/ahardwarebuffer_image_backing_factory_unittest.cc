@@ -2,12 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "gpu/command_buffer/service/shared_image/ahardwarebuffer_image_backing_factory.h"
 
 #include "base/android/android_hardware_buffer_compat.h"
 #include "base/android/scoped_hardware_buffer_fence_sync.h"
 #include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
+#include "components/viz/common/resources/shared_image_format_utils.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
@@ -16,7 +22,6 @@
 #include "gpu/command_buffer/service/shared_image/shared_image_manager.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_test_base.h"
-#include "gpu/command_buffer/service/shared_image/test_utils.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_preferences.h"
@@ -28,6 +33,7 @@
 #include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/include/private/chromium/GrPromiseImageTexture.h"
 #include "ui/gfx/color_space.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_surface_egl.h"
@@ -41,8 +47,16 @@
 namespace gpu {
 namespace {
 
-class AHardwareBufferImageBackingFactoryTest : public SharedImageTestBase {
+class AHardwareBufferImageBackingFactoryTest
+    : public SharedImageTestBase,
+      public testing::WithParamInterface<GrContextType> {
  public:
+  GrContextType GrContextType() const { return GetParam(); }
+
+  bool IsGraphiteDawn() {
+    return GrContextType() == GrContextType::kGraphiteDawn;
+  }
+
   void SetUp() override {
     // AHardwareBuffer is only supported on ANDROID O+. Hence these tests
     // should not be run on android versions less that O.
@@ -50,7 +64,11 @@ class AHardwareBufferImageBackingFactoryTest : public SharedImageTestBase {
       GTEST_SKIP() << "AHardwareBuffer not supported";
     }
 
-    ASSERT_NO_FATAL_FAILURE(InitializeContext(GrContextType::kGL));
+    if (IsGraphiteDawn() && !IsGraphiteDawnSupported()) {
+      GTEST_SKIP() << "Graphite/Dawn not supported";
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitializeContext(GrContextType()));
 
     backing_factory_ = std::make_unique<AHardwareBufferImageBackingFactory>(
         context_state_->feature_info(), gpu_preferences_);
@@ -79,7 +97,7 @@ class GlLegacySharedImage {
 };
 
 // Basic test to check creation and deletion of AHB backed shared image.
-TEST_F(AHardwareBufferImageBackingFactoryTest, Basic) {
+TEST_P(AHardwareBufferImageBackingFactoryTest, Basic) {
   GlLegacySharedImage gl_legacy_shared_image{
       backing_factory_.get(),          /*is_thread_safe=*/false,
       /*concurrent_read_write=*/false, &shared_image_manager_,
@@ -109,22 +127,30 @@ TEST_F(AHardwareBufferImageBackingFactoryTest, Basic) {
   scoped_read_access = skia_representation->BeginScopedReadAccess(
       &begin_semaphores, &end_semaphores);
   EXPECT_TRUE(scoped_read_access);
-  auto* promise_texture = scoped_read_access->promise_image_texture();
   EXPECT_EQ(0u, begin_semaphores.size());
   EXPECT_EQ(0u, end_semaphores.size());
-  EXPECT_TRUE(promise_texture);
-  GrBackendTexture backend_texture = promise_texture->backendTexture();
-  EXPECT_TRUE(backend_texture.isValid());
-  EXPECT_EQ(gl_legacy_shared_image.size().width(), backend_texture.width());
-  EXPECT_EQ(gl_legacy_shared_image.size().height(), backend_texture.height());
+  if (IsGraphiteDawn()) {
+    auto graphite_texture = scoped_read_access->graphite_texture();
+    EXPECT_TRUE(graphite_texture.isValid());
+    EXPECT_EQ(gl_legacy_shared_image.size(),
+              gfx::SkISizeToSize(graphite_texture.dimensions()));
+  } else {
+    auto* promise_texture = scoped_read_access->promise_image_texture();
+    ASSERT_TRUE(promise_texture);
+    GrBackendTexture backend_texture = promise_texture->backendTexture();
+    EXPECT_TRUE(backend_texture.isValid());
+    EXPECT_EQ(gl_legacy_shared_image.size().width(), backend_texture.width());
+    EXPECT_EQ(gl_legacy_shared_image.size().height(), backend_texture.height());
+  }
+
   scoped_read_access.reset();
   skia_representation.reset();
 }
 
-// Test to check interaction between Gl and skia GL representations.
+// Test to check interaction between GL and skia representations.
 // We write to a GL texture using gl representation and then read from skia
 // representation.
-TEST_F(AHardwareBufferImageBackingFactoryTest, GLSkiaGL) {
+TEST_F(AHardwareBufferImageBackingFactoryTest, GLWriteSkiaRead) {
   // Create a backing using mailbox.
   auto mailbox = Mailbox::Generate();
   auto format = viz::SinglePlaneFormat::kRGBA_8888;
@@ -132,7 +158,7 @@ TEST_F(AHardwareBufferImageBackingFactoryTest, GLSkiaGL) {
   auto color_space = gfx::ColorSpace::CreateSRGB();
   GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
   SkAlphaType alpha_type = kPremul_SkAlphaType;
-  uint32_t usage =
+  gpu::SharedImageUsageSet usage =
       SHARED_IMAGE_USAGE_GLES2_WRITE | SHARED_IMAGE_USAGE_DISPLAY_READ;
   gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
   auto backing = backing_factory_->CreateSharedImage(
@@ -162,29 +188,24 @@ TEST_F(AHardwareBufferImageBackingFactoryTest, GLSkiaGL) {
       gl_representation->GetTexture()->target(),
       gl_representation->GetTexture()->service_id(), 0);
 
-  // Set the clear color to green.
-  api->glClearColorFn(0.0f, 1.0f, 0.0f, 1.0f);
+  // Set the clear color to red.
+  api->glClearColorFn(1.0f, 0.0f, 0.0f, 1.0f);
   api->glClearFn(GL_COLOR_BUFFER_BIT);
+
+  api->glFinishFn();
 
   // Mark the representation as cleared.
   gl_representation->SetCleared();
   gl_representation.reset();
 
-  auto dst_pixels = ReadPixels(mailbox, size, context_state_.get(),
-                               &shared_image_representation_factory_);
-
-  // Compare the pixel values.
-  EXPECT_EQ(dst_pixels[0], 0);
-  EXPECT_EQ(dst_pixels[1], 255);
-  EXPECT_EQ(dst_pixels[2], 0);
-  EXPECT_EQ(dst_pixels[3], 255);
+  VerifyPixelsWithReadback(mailbox, AllocateRedBitmaps(format, size));
 
   factory_ref.reset();
 }
 
 // Test ProduceDawn via OpenGLES Compat backend
 #if BUILDFLAG(USE_DAWN) && BUILDFLAG(DAWN_ENABLE_BACKEND_OPENGLES)
-TEST_F(AHardwareBufferImageBackingFactoryTest, ProduceDawnOpenGLES) {
+TEST_P(AHardwareBufferImageBackingFactoryTest, ProduceDawnOpenGLES) {
   // Create a backing using mailbox.
   auto mailbox = Mailbox::Generate();
   auto format = viz::SinglePlaneFormat::kRGBA_8888;
@@ -192,8 +213,9 @@ TEST_F(AHardwareBufferImageBackingFactoryTest, ProduceDawnOpenGLES) {
   auto color_space = gfx::ColorSpace::CreateSRGB();
   GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
   SkAlphaType alpha_type = kPremul_SkAlphaType;
-  uint32_t usage = SHARED_IMAGE_USAGE_WEBGPU_WRITE |
-                   SHARED_IMAGE_USAGE_DISPLAY_READ | SHARED_IMAGE_USAGE_SCANOUT;
+  gpu::SharedImageUsageSet usage = SHARED_IMAGE_USAGE_WEBGPU_WRITE |
+                                   SHARED_IMAGE_USAGE_DISPLAY_READ |
+                                   SHARED_IMAGE_USAGE_SCANOUT;
   gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
   auto backing = backing_factory_->CreateSharedImage(
       mailbox, format, surface_handle, size, color_space, surface_origin,
@@ -211,8 +233,7 @@ TEST_F(AHardwareBufferImageBackingFactoryTest, ProduceDawnOpenGLES) {
 
   dawn::native::opengl::RequestAdapterOptionsGetGLProc
       adapter_options_get_gl_proc = {};
-  adapter_options_get_gl_proc.getProc =
-      reinterpret_cast<void* (*)(const char*)>(gl::GetGLProcAddress);
+  adapter_options_get_gl_proc.getProc = gl::GetGLProcAddress;
   gl::GLDisplayEGL* gl_display = gl::GLSurfaceEGL::GetGLDisplayEGL();
   if (gl_display) {
     adapter_options_get_gl_proc.display = gl_display->GetDisplay();
@@ -235,7 +256,7 @@ TEST_F(AHardwareBufferImageBackingFactoryTest, ProduceDawnOpenGLES) {
       mailbox, device, wgpu::BackendType::OpenGLES, {}, context_state_);
   EXPECT_TRUE(dawn_representation);
 
-  wgpu::Color color{0, 255, 0, 255};
+  wgpu::Color color{255, 0, 0, 255};
   {
     auto scoped_access = dawn_representation->BeginScopedAccess(
         wgpu::TextureUsage::RenderAttachment,
@@ -264,54 +285,50 @@ TEST_F(AHardwareBufferImageBackingFactoryTest, ProduceDawnOpenGLES) {
     wgpu::Queue queue = device.GetQueue();
     queue.Submit(1, &commands);
   }
-  auto dst_pixels = ReadPixels(mailbox, size, context_state_.get(),
-                               &shared_image_representation_factory_);
-  // Compare the pixel values.
-  EXPECT_EQ(dst_pixels[0], color.r);
-  EXPECT_EQ(dst_pixels[1], color.g);
-  EXPECT_EQ(dst_pixels[2], color.b);
-  EXPECT_EQ(dst_pixels[3], color.a);
+  VerifyPixelsWithReadback(mailbox, AllocateRedBitmaps(format, size));
 
   factory_ref.reset();
 }
 #endif  // BUILDFLAG(USE_DAWN) && BUILDFLAG(DAWN_ENABLE_BACKEND_OPENGLES)
 
-TEST_F(AHardwareBufferImageBackingFactoryTest, InitialData) {
+TEST_P(AHardwareBufferImageBackingFactoryTest, InitialData) {
   auto mailbox = Mailbox::Generate();
   auto format = viz::SinglePlaneFormat::kRGBA_8888;
   gfx::Size size(4, 4);
-
-  std::vector<uint8_t> initial_data(size.width() * size.height() * 4);
-
-  for (size_t i = 0; i < initial_data.size(); i++) {
-    initial_data[i] = static_cast<uint8_t>(i);
-  }
-
-  // Create a SharedImage whose contents will be read out by Skia.
   auto color_space = gfx::ColorSpace::CreateSRGB();
   GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
   SkAlphaType alpha_type = kPremul_SkAlphaType;
-  uint32_t usage = SHARED_IMAGE_USAGE_DISPLAY_READ;
+  gpu::SharedImageUsageSet usage = SHARED_IMAGE_USAGE_DISPLAY_READ;
+
+  auto image_info =
+      SkImageInfo::Make(gfx::SizeToSkISize(size),
+                        viz::ToClosestSkColorType(true, format), alpha_type);
+  SkBitmap expected_bitmap;
+  expected_bitmap.allocPixels(image_info);
+
+  base::span<uint8_t> pixel_span(
+      static_cast<uint8_t*>(expected_bitmap.pixmap().writable_addr()),
+      expected_bitmap.computeByteSize());
+  for (size_t i = 0; i < pixel_span.size(); i++) {
+    pixel_span[i] = static_cast<uint8_t>(i);
+  }
+
+  // Create a SharedImage whose contents will be read out by Skia.
   auto backing = backing_factory_->CreateSharedImage(
       mailbox, format, size, color_space, surface_origin, alpha_type, usage,
-      "TestLabel", /*is_thread_safe=*/false, initial_data);
+      "TestLabel", /*is_thread_safe=*/false, pixel_span);
   EXPECT_TRUE(backing);
 
   std::unique_ptr<SharedImageRepresentationFactoryRef> factory_ref =
       shared_image_manager_.Register(std::move(backing), &memory_type_tracker_);
 
-  auto dst_pixels = ReadPixels(mailbox, size, context_state_.get(),
-                               &shared_image_representation_factory_);
+  VerifyPixelsWithReadback(mailbox, {expected_bitmap});
 
-  // Compare the pixel values.
-  DCHECK(dst_pixels.size() == initial_data.size());
-
-  EXPECT_EQ(dst_pixels, initial_data);
   factory_ref.reset();
 }
 
 // Test to check invalid format support.
-TEST_F(AHardwareBufferImageBackingFactoryTest, InvalidFormat) {
+TEST_P(AHardwareBufferImageBackingFactoryTest, InvalidFormat) {
   auto mailbox = Mailbox::Generate();
   auto format = viz::MultiPlaneFormat::kNV12;
   gfx::Size size(256, 256);
@@ -322,7 +339,7 @@ TEST_F(AHardwareBufferImageBackingFactoryTest, InvalidFormat) {
   // NOTE: The specific usage here doesn't matter - the only important thing is
   // that it be a usage that the factory supports so that the test is exercising
   // the fact that the passed-in *format* is not supported.
-  uint32_t usage = SHARED_IMAGE_USAGE_GLES2_READ;
+  gpu::SharedImageUsageSet usage = SHARED_IMAGE_USAGE_GLES2_READ;
   auto backing = backing_factory_->CreateSharedImage(
       mailbox, format, surface_handle, size, color_space, surface_origin,
       alpha_type, usage, "TestLabel", /*is_thread_safe=*/false);
@@ -330,7 +347,7 @@ TEST_F(AHardwareBufferImageBackingFactoryTest, InvalidFormat) {
 }
 
 // Test to check invalid size support.
-TEST_F(AHardwareBufferImageBackingFactoryTest, InvalidSize) {
+TEST_P(AHardwareBufferImageBackingFactoryTest, InvalidSize) {
   auto mailbox = Mailbox::Generate();
   auto format = viz::SinglePlaneFormat::kRGBA_8888;
   gfx::Size size(0, 0);
@@ -341,7 +358,7 @@ TEST_F(AHardwareBufferImageBackingFactoryTest, InvalidSize) {
   // NOTE: The specific usage here doesn't matter - the only important thing is
   // that it be a usage that the factory supports so that the test is exercising
   // the fact that the passed-in *size* is not supported.
-  uint32_t usage = SHARED_IMAGE_USAGE_GLES2_READ;
+  gpu::SharedImageUsageSet usage = SHARED_IMAGE_USAGE_GLES2_READ;
   auto backing = backing_factory_->CreateSharedImage(
       mailbox, format, surface_handle, size, color_space, surface_origin,
       alpha_type, usage, "TestLabel", /*is_thread_safe=*/false);
@@ -354,7 +371,7 @@ TEST_F(AHardwareBufferImageBackingFactoryTest, InvalidSize) {
   EXPECT_FALSE(backing);
 }
 
-TEST_F(AHardwareBufferImageBackingFactoryTest, EstimatedSize) {
+TEST_P(AHardwareBufferImageBackingFactoryTest, EstimatedSize) {
   auto mailbox = Mailbox::Generate();
   auto format = viz::SinglePlaneFormat::kRGBA_8888;
   gfx::Size size(256, 256);
@@ -364,7 +381,7 @@ TEST_F(AHardwareBufferImageBackingFactoryTest, EstimatedSize) {
   gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
   // NOTE: The specific usage does not matter here as long as it is supported by
   // the factory.
-  uint32_t usage = SHARED_IMAGE_USAGE_GLES2_READ;
+  gpu::SharedImageUsageSet usage = SHARED_IMAGE_USAGE_GLES2_READ;
   auto backing = backing_factory_->CreateSharedImage(
       mailbox, format, surface_handle, size, color_space, surface_origin,
       alpha_type, usage, "TestLabel", /*is_thread_safe=*/false);
@@ -381,7 +398,7 @@ TEST_F(AHardwareBufferImageBackingFactoryTest, EstimatedSize) {
 }
 
 // Test to check that only one context can write at a time
-TEST_F(AHardwareBufferImageBackingFactoryTest, OnlyOneWriter) {
+TEST_P(AHardwareBufferImageBackingFactoryTest, OnlyOneWriter) {
   GlLegacySharedImage gl_legacy_shared_image{
       backing_factory_.get(),          /*is_thread_safe=*/true,
       /*concurrent_read_write=*/false, &shared_image_manager_,
@@ -420,7 +437,7 @@ TEST_F(AHardwareBufferImageBackingFactoryTest, OnlyOneWriter) {
 }
 
 // Test to check that multiple readers are allowed
-TEST_F(AHardwareBufferImageBackingFactoryTest, CanHaveMultipleReaders) {
+TEST_P(AHardwareBufferImageBackingFactoryTest, CanHaveMultipleReaders) {
   GlLegacySharedImage gl_legacy_shared_image{
       backing_factory_.get(),          /*is_thread_safe=*/true,
       /*concurrent_read_write=*/false, &shared_image_manager_,
@@ -455,7 +472,7 @@ TEST_F(AHardwareBufferImageBackingFactoryTest, CanHaveMultipleReaders) {
 }
 
 // Test to check that a context cannot write while another context is reading
-TEST_F(AHardwareBufferImageBackingFactoryTest, CannotWriteWhileReading) {
+TEST_P(AHardwareBufferImageBackingFactoryTest, CannotWriteWhileReading) {
   GlLegacySharedImage gl_legacy_shared_image{
       backing_factory_.get(),          /*is_thread_safe=*/true,
       /*concurrent_read_write=*/false, &shared_image_manager_,
@@ -495,7 +512,7 @@ TEST_F(AHardwareBufferImageBackingFactoryTest, CannotWriteWhileReading) {
 }
 
 // Test to check that a context cannot read while another context is writing
-TEST_F(AHardwareBufferImageBackingFactoryTest, CannotReadWhileWriting) {
+TEST_P(AHardwareBufferImageBackingFactoryTest, CannotReadWhileWriting) {
   GlLegacySharedImage gl_legacy_shared_image{
       backing_factory_.get(),          /*is_thread_safe=*/true,
       /*concurrent_read_write=*/false, &shared_image_manager_,
@@ -530,7 +547,7 @@ TEST_F(AHardwareBufferImageBackingFactoryTest, CannotReadWhileWriting) {
   skia_representation.reset();
 }
 
-TEST_F(AHardwareBufferImageBackingFactoryTest, ConcurrentReadWrite) {
+TEST_P(AHardwareBufferImageBackingFactoryTest, ConcurrentReadWrite) {
   GlLegacySharedImage gl_legacy_shared_image{
       backing_factory_.get(),         /*is_thread_safe=*/true,
       /*concurrent_read_write=*/true, &shared_image_manager_,
@@ -575,17 +592,18 @@ GlLegacySharedImage::GlLegacySharedImage(
   gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
   GLenum expected_target = GL_TEXTURE_2D;
 
-  // Provide usage settings to model an SI that is written via raster and read
-  // via GL (e.g., for canvas import into WebGL). Add
+  // Provide usage settings to model an SI that is written via raster, read
+  // via GL (e.g., for canvas import into WebGL), and used as an overlay. Add
   // SHARED_IMAGE_USAGE_DISPLAY_READ if modeling the display compositor being on
   // the same thread as raster.
-  uint32_t usage =
-      SHARED_IMAGE_USAGE_GLES2_READ | SHARED_IMAGE_USAGE_RASTER_WRITE;
+  SharedImageUsageSet usage = {SHARED_IMAGE_USAGE_GLES2_READ,
+                               SHARED_IMAGE_USAGE_RASTER_WRITE,
+                               SHARED_IMAGE_USAGE_SCANOUT};
   if (!is_thread_safe) {
-    usage |= SHARED_IMAGE_USAGE_DISPLAY_READ;
+    usage |= SharedImageUsageSet({SHARED_IMAGE_USAGE_DISPLAY_READ});
   }
   if (concurrent_read_write) {
-    usage |= SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE;
+    usage |= SharedImageUsageSet({SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE});
   }
   backing_ = backing_factory->CreateSharedImage(
       mailbox_, format, surface_handle, size_, color_space, surface_origin,
@@ -618,7 +636,7 @@ GlLegacySharedImage::~GlLegacySharedImage() {
   shared_image_.reset();
 }
 
-TEST_F(AHardwareBufferImageBackingFactoryTest, Overlay) {
+TEST_P(AHardwareBufferImageBackingFactoryTest, Overlay) {
   GlLegacySharedImage gl_legacy_shared_image{
       backing_factory_.get(),          /*is_thread_safe=*/false,
       /*concurrent_read_write=*/false, &shared_image_manager_,
@@ -649,6 +667,12 @@ TEST_F(AHardwareBufferImageBackingFactoryTest, Overlay) {
   scoped_read_access.reset();
   skia_representation.reset();
 }
+
+INSTANTIATE_TEST_SUITE_P(,
+                         AHardwareBufferImageBackingFactoryTest,
+                         testing::Values(GrContextType::kGL,
+                                         GrContextType::kGraphiteDawn),
+                         testing::PrintToStringParamName());
 
 }  // anonymous namespace
 }  // namespace gpu

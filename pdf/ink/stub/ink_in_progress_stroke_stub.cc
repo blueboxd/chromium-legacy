@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "pdf/ink/ink_brush.h"
 #include "pdf/ink/stub/ink_stroke_stub.h"
 
 namespace chrome_pdf {
@@ -15,14 +16,23 @@ std::unique_ptr<InkInProgressStroke> InkInProgressStroke::Create() {
   return std::make_unique<InkInProgressStrokeStub>();
 }
 
+InkInProgressStrokeStub::InkInProgressStrokeStub() = default;
+
 InkInProgressStrokeStub::~InkInProgressStrokeStub() = default;
 
-void InkInProgressStrokeStub::Start(const InkBrush& brush) {}
+void InkInProgressStrokeStub::Start(const InkBrush& brush) {
+  brush_color_ = brush.GetColor();
+}
 
 bool InkInProgressStrokeStub::EnqueueInputs(
     const InkStrokeInputBatch* real_inputs,
     const InkStrokeInputBatch* predicted_inputs) {
-  // Pretend enqueuing succeeded, even though nothing is done here.
+  if (!real_inputs) {
+    return false;
+  }
+
+  // Capture copy of input.
+  inputs_ = *static_cast<const InkStrokeInputBatchStub*>(real_inputs);
   return true;
 }
 
@@ -34,7 +44,7 @@ bool InkInProgressStrokeStub::UpdateShape(float current_elapsed_time_seconds) {
 }
 
 std::unique_ptr<InkStroke> InkInProgressStrokeStub::CopyToStroke() const {
-  return std::make_unique<InkStrokeStub>();
+  return std::make_unique<InkStrokeStub>(brush_color_, inputs_);
 }
 
 }  // namespace chrome_pdf

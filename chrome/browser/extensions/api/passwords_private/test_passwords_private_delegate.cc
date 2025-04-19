@@ -419,8 +419,10 @@ bool TestPasswordsPrivateDelegate::IsCredentialPresentInInsecureCredentialsList(
 }
 
 void TestPasswordsPrivateDelegate::SwitchBiometricAuthBeforeFillingState(
-    content::WebContents* web_contents) {
+    content::WebContents* web_contents,
+    AuthenticationCallback callback) {
   authenticator_interacted_ = true;
+  std::move(callback).Run(true);
 }
 
 void TestPasswordsPrivateDelegate::ShowAddShortcutDialog(
@@ -441,9 +443,17 @@ void TestPasswordsPrivateDelegate::ChangePasswordManagerPin(
   std::move(success_callback).Run(false);
 }
 
-bool TestPasswordsPrivateDelegate::IsPasswordManagerPinAvailable(
-    content::WebContents* web_contents) {
-  return false;
+void TestPasswordsPrivateDelegate::DeleteAllPasswordManagerData(
+    content::WebContents* web_contents,
+    base::OnceCallback<void(bool)> success_callback) {
+  delete_all_password_manager_data_called_ = true;
+  std::move(success_callback).Run(true);
+}
+
+void TestPasswordsPrivateDelegate::IsPasswordManagerPinAvailable(
+    content::WebContents* web_contents,
+    base::OnceCallback<void(bool)> pin_available_callback) {
+  std::move(pin_available_callback).Run(false);
 }
 
 void TestPasswordsPrivateDelegate::DisconnectCloudAuthenticator(

@@ -13,9 +13,9 @@
 #import "ios/chrome/browser/shared/coordinator/alert/alert_coordinator.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
-#import "ios/chrome/browser/shared/model/browser_state/browser_state_info_cache.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state_manager.h"
+#import "ios/chrome/browser/shared/model/profile/profile_attributes_storage_ios.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/settings_commands.h"
@@ -122,11 +122,11 @@
 
 // Enables notifications in prefs for the client with `clientID`.
 - (void)enableNotifications {
-  base::FilePath path = self.browser->GetBrowserState()->GetStatePath();
   BrowserStateInfoCache* infoCache = GetApplicationContext()
                                          ->GetChromeBrowserStateManager()
                                          ->GetBrowserStateInfoCache();
-  size_t browserStateIndex = infoCache->GetIndexOfBrowserStateWithPath(path);
+  const size_t browserStateIndex = infoCache->GetIndexOfBrowserStateWithName(
+      self.browser->GetBrowserState()->GetBrowserStateName());
   NSString* gaiaID = base::SysUTF8ToNSString(
       infoCache->GetGAIAIdOfBrowserStateAtIndex(browserStateIndex));
   std::vector<PushNotificationClientId> clientIDs = self.clientIds.value();

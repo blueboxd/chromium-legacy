@@ -28,7 +28,6 @@
 #include "base/values.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_request_id.h"
-#include "extensions/browser/api/declarative/rules_registry.h"
 #include "extensions/browser/api/declarative_webrequest/request_stage.h"
 #include "extensions/browser/api/web_request/extension_web_request_event_router.h"
 #include "extensions/browser/api/web_request/web_request_permissions.h"
@@ -37,7 +36,6 @@
 #include "extensions/browser/extension_api_frame_id_map.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_registry_observer.h"
-#include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/common/extension_id.h"
 #include "ipc/ipc_sender.h"
 #include "net/base/auth.h"
@@ -65,6 +63,7 @@ class URLLoaderFactoryBuilder;
 }  // namespace network
 
 namespace extensions {
+class WebViewGuest;
 
 // Support class for the WebRequest API. Lives on the UI thread. Most of the
 // work is done by ExtensionWebRequestEventRouter below. This class observes

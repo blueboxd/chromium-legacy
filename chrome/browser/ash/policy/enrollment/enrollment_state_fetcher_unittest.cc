@@ -244,7 +244,8 @@ class EnrollmentStateFetcherTest : public testing::Test {
   void ExpectOwnershipCheck(base::TimeDelta time = base::TimeDelta()) {
     EXPECT_CALL(device_settings_service_, GetOwnershipStatusAsync)
         .WillOnce(DoAll(
-            InvokeWithoutArgs([=]() { task_environment_.AdvanceClock(time); }),
+            InvokeWithoutArgs(
+                [=, this]() { task_environment_.AdvanceClock(time); }),
             RunOnceCallback<0>(
                 ash::DeviceSettingsService::OwnershipStatus::kOwnershipNone)));
   }
@@ -260,7 +261,7 @@ class EnrollmentStateFetcherTest : public testing::Test {
       EXPECT_CALL(state_key_broker_, RequestStateKeys)
           .WillOnce(DoAll(
               InvokeWithoutArgs(
-                  [=]() { task_environment_.AdvanceClock(time); }),
+                  [=, this]() { task_environment_.AdvanceClock(time); }),
               RunOnceCallback<0>(std::vector<std::string>{kTestStateKey})));
       EXPECT_CALL(state_key_broker_, error_type)
           .WillOnce(Return(ServerBackedStateKeysBroker::ErrorType::kNoError));
@@ -273,10 +274,11 @@ class EnrollmentStateFetcherTest : public testing::Test {
     EXPECT_CALL(job_creation_handler_,
                 OnJobCreation(
                     JobWithPsmRlweRequest(WithOprfRequestFor(&psm_test_case_))))
-        .WillOnce(DoAll(
-            InvokeWithoutArgs([=]() { task_environment_.AdvanceClock(time); }),
-            fake_dm_service_->SendJobOKAsync(
-                CreatePsmOprfResponse(psm_test_case_))));
+        .WillOnce(DoAll(InvokeWithoutArgs([=, this]() {
+                          task_environment_.AdvanceClock(time);
+                        }),
+                        fake_dm_service_->SendJobOKAsync(
+                            CreatePsmOprfResponse(psm_test_case_))));
   }
 
   void ExpectQueryRequest(base::TimeDelta time = base::TimeDelta()) {
@@ -287,9 +289,10 @@ class EnrollmentStateFetcherTest : public testing::Test {
     EXPECT_CALL(job_creation_handler_,
                 OnJobCreation(JobWithPsmRlweRequest(
                     WithQueryRequestFor(&psm_test_case_))))
-        .WillOnce(DoAll(
-            InvokeWithoutArgs([=]() { task_environment_.AdvanceClock(time); }),
-            fake_dm_service_->SendJobOKAsync(response)));
+        .WillOnce(DoAll(InvokeWithoutArgs([=, this]() {
+                          task_environment_.AdvanceClock(time);
+                        }),
+                        fake_dm_service_->SendJobOKAsync(response)));
   }
 
   void ExpectStateRequest(base::TimeDelta time = base::TimeDelta()) {
@@ -298,9 +301,10 @@ class EnrollmentStateFetcherTest : public testing::Test {
     EXPECT_CALL(job_creation_handler_,
                 OnJobCreation(JobWithStateRequest(
                     GetTestStateKey(), kTestSerialNumber, kTestBrandCode)))
-        .WillOnce(DoAll(
-            InvokeWithoutArgs([=]() { task_environment_.AdvanceClock(time); }),
-            fake_dm_service_->SendJobOKAsync(response)));
+        .WillOnce(DoAll(InvokeWithoutArgs([=, this]() {
+                          task_environment_.AdvanceClock(time);
+                        }),
+                        fake_dm_service_->SendJobOKAsync(response)));
   }
 
   em::DeviceManagementResponse CreateTokenEnrollmentStateResponse() {
@@ -1518,6 +1522,34 @@ TEST_P(EnrollmentStateFetcherTestP, UmaHistogramsCounts) {
   histograms.ExpectUniqueSample(
       kUMAStateDeterminationStateRequestNetworkErrorCode, net::OK, 1);
   histograms.ExpectUniqueSample(kUMAStateDeterminationStateReturned, true, 1);
+  histograms.ExpectUniqueSample(
+      base::StrCat(
+          {kUMAStateDeterminationIsInitialByState, kUMASuffixNoEnrollment}),
+      true, 1);
+}
+
+TEST_P(EnrollmentStateFetcherTestP, UmaHistogramsCountsOnReEnrollmentDisabled) {
+  base::HistogramTester histograms;
+  ExpectOwnershipCheck();
+  ExpectOprfRequest();
+  ExpectQueryRequest();
+  ExpectStateKeysRequestOrNotDependingOnFRESupport();
+  em::DeviceManagementResponse response;
+  auto* state_response = response.mutable_device_state_retrieval_response();
+  state_response->set_restore_mode(
+      em::DeviceStateRetrievalResponse::RESTORE_MODE_DISABLED);
+  state_response->mutable_disabled_state()->set_message(kTestDisabledMessage);
+  EXPECT_CALL(job_creation_handler_,
+              OnJobCreation(JobWithStateRequest(
+                  GetTestStateKey(), kTestSerialNumber, kTestBrandCode)))
+      .WillOnce(fake_dm_service_->SendJobOKAsync(response));
+
+  std::ignore = FetchEnrollmentState();
+
+  histograms.ExpectUniqueSample(
+      base::StrCat(
+          {kUMAStateDeterminationIsInitialByState, kUMASuffixDisabled}),
+      false, 1);
 }
 
 INSTANTIATE_TEST_SUITE_P(EnrollmentStateFetcherTestSuite,

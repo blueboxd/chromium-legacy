@@ -567,7 +567,9 @@ class GenXproto(FileWriter):
             for case_field in fields:
                 name = safe_name(case_field.field_name)
                 if case_field.visible and self.is_read:
-                    self.write('%s.%s.emplace();' % (switch_name, name))
+                    fn = '%s.%s' % (switch_name, name)
+                    self.write('%s.emplace(decltype(%s)::value_type());' %
+                               (fn, fn))
             with ScopedFields(self, obj, case.type.fields):
                 for case_field in case.type.fields:
                     self.copy_field(case_field)
@@ -620,6 +622,15 @@ class GenXproto(FileWriter):
 
         if not t.nmemb:
             if self.is_read:
+                if (size == 'children_len' and field.parent
+                        and field.parent[1] == ('xcb', 'QueryTree')):
+                    # Hack: `children_len` is 16 bits, but windows may have
+                    # 2^16 or more children.  In this case, the server
+                    # truncates the real child count to 16 bits, but still
+                    # sends all children in the response.  To workaround this
+                    # issue, use the reply length, which is 32 bits, as the
+                    # child count.
+                    size = 'length'
                 self.write('%s.resize(%s);' % (name, size))
             else:
                 left = 'static_cast<size_t>(%s)' % size

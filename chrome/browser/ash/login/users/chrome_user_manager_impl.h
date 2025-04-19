@@ -19,6 +19,7 @@
 #include "chrome/browser/ash/login/users/affiliation.h"
 #include "chrome/browser/ash/policy/core/device_local_account.h"
 #include "chrome/browser/ash/policy/core/device_local_account_policy_service.h"
+#include "chrome/browser/ash/policy/external_data/cloud_external_data_policy_observer.h"
 #include "chrome/browser/ash/policy/handlers/minimum_version_policy_handler.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -29,10 +30,6 @@
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager_base.h"
-
-namespace policy {
-class CloudExternalDataPolicyHandler;
-}  // namespace policy
 
 namespace ash {
 
@@ -55,18 +52,6 @@ class ChromeUserManagerImpl
 
   // UserManager implementation:
   void Shutdown() override;
-  void SaveUserOAuthStatus(
-      const AccountId& account_id,
-      user_manager::User::OAuthTokenStatus oauth_token_status) override;
-  void SaveUserDisplayName(const AccountId& account_id,
-                           const std::u16string& display_name) override;
-  bool IsGuestSessionAllowed() const override;
-  bool IsGaiaUserAllowed(const user_manager::User& user) const override;
-  bool IsUserAllowed(const user_manager::User& user) const override;
-  void AsyncRemoveCryptohome(const AccountId& account_id) const override;
-  bool IsDeprecatedSupervisedAccountId(
-      const AccountId& account_id) const override;
-  bool IsValidDefaultUserImageId(int image_index) const override;
 
   // DeviceSettingsService::Observer:
   void OwnershipStatusChanged() override;
@@ -76,7 +61,6 @@ class ChromeUserManagerImpl
   void OnDeviceLocalAccountsChanged() override;
 
   void StopPolicyObserverForTesting();
-  void SetUsingSamlForTesting(const AccountId& account_id, bool using_saml);
 
   // policy::MinimumVersionPolicyHandler::Observer:
   void OnMinimumVersionStateChanged() override;
@@ -90,14 +74,7 @@ class ChromeUserManagerImpl
   void OnProfileWillBeDestroyed(Profile* profile) override;
 
  protected:
-  void LoadDeviceLocalAccounts(std::set<AccountId>* users_set) override;
-  void NotifyOnLogin() override;
   void RemoveNonCryptohomeData(const AccountId& account_id) override;
-  void RemoveUserInternal(const AccountId& account_id,
-                          user_manager::UserRemovalReason reason) override;
-  bool IsDeviceLocalAccountMarkedForRemoval(
-      const AccountId& account_id) const override;
-  bool IsEphemeralAccountIdByPolicy(const AccountId& account_id) const override;
 
  private:
   friend class UserManagerTest;
@@ -138,21 +115,7 @@ class ChromeUserManagerImpl
   // Update the number of users.
   void UpdateNumberOfUsers();
 
-  // Creates a user for the given device local account.
-  std::unique_ptr<user_manager::User> CreateUserFromDeviceLocalAccount(
-      const AccountId& account_id,
-      const policy::DeviceLocalAccountType type) const;
-
   void UpdateOwnerId();
-
-  // Remove non cryptohome data associated with the given `account_id` after
-  // having removed all external data (such as wallpapers and avatars)
-  // associated with that `account_id`, this function is guarded by a latch
-  // `remove_non_cryptohome_data_latch_` that ensures that all external data is
-  // removed prior to clearing prefs for `account_id`, as the removal of certain
-  // external data depends on prefs.
-  void RemoveNonCryptohomeDataPostExternalDataRemoval(
-      const AccountId& account_id);
 
   // Interface to device-local account definitions and associated policy.
   raw_ptr<policy::DeviceLocalAccountPolicyService>
@@ -167,8 +130,8 @@ class ChromeUserManagerImpl
   base::CallbackListSubscription ephemeral_users_enabled_subscription_;
   base::CallbackListSubscription local_accounts_subscription_;
 
-  std::vector<std::unique_ptr<policy::CloudExternalDataPolicyHandler>>
-      cloud_external_data_policy_handlers_;
+  std::vector<std::unique_ptr<policy::CloudExternalDataPolicyObserver>>
+      cloud_external_data_policy_observers_;
 
   base::ScopedObservation<ProfileManager, ProfileManagerObserver>
       profile_manager_observation_{this};
@@ -178,8 +141,6 @@ class ChromeUserManagerImpl
       profile_observations_;
 
   base::RepeatingClosure remove_non_cryptohome_data_barrier_;
-
-  std::unique_ptr<MountPerformer> mount_performer_;
 
   base::WeakPtrFactory<ChromeUserManagerImpl> weak_factory_{this};
 };

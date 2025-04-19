@@ -157,8 +157,15 @@ PermissionPromptBubbleOneOriginView::PermissionPromptBubbleOneOriginView(
 
   SetAccessibleTitle(GetAccessibleWindowTitleInternal(
       GetUrlIdentityObject().name, visible_requests));
+
+  size_t title_offset;
   SetTitle(l10n_util::GetStringFUTF16(IDS_PERMISSIONS_BUBBLE_PROMPT,
-                                      GetUrlIdentityObject().name));
+                                      GetUrlIdentityObject().name,
+                                      &title_offset));
+  // Calculate the range of $ORIGIN which should be bold. It will be used while
+  // creating title label via `CreateTitleOriginLabel()`.
+  SetTitleBoldedRanges(
+      {{title_offset, title_offset + GetUrlIdentityObject().name.length()}});
 
   auto extra_text = GetExtraText(*delegate.get());
   if (extra_text.has_value()) {
@@ -256,7 +263,7 @@ void PermissionPromptBubbleOneOriginView::MaybeAddMediaPreview(
 #if !BUILDFLAG(IS_CHROMEOS)
   // Unit tests call this without initializing `browser_`, but this should not
   // happen in production code.
-  if (!browser_) {
+  if (!browser()) {
     return;
   }
 
@@ -272,7 +279,7 @@ void PermissionPromptBubbleOneOriginView::MaybeAddMediaPreview(
 
   // Check this last, as it queries the origin trials service.
   if (!media_preview_feature::ShouldShowMediaPreview(
-          *browser_->profile(), delegate()->GetRequestingOrigin(),
+          *browser()->profile(), delegate()->GetRequestingOrigin(),
           delegate()->GetEmbeddingOrigin(),
           media_preview_metrics::UiLocation::kPermissionPrompt)) {
     return;
@@ -289,7 +296,7 @@ void PermissionPromptBubbleOneOriginView::MaybeAddMediaPreview(
     OnAudioDevicesChanged(cached_device_info->GetAudioDeviceInfos());
   }
 
-  media_previews_.emplace(browser_, this, index,
+  media_previews_.emplace(browser(), this, index,
                           requested_audio_capture_device_ids,
                           requested_video_capture_device_ids);
 #endif

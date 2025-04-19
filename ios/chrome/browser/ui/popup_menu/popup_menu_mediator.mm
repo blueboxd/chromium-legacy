@@ -13,6 +13,7 @@
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
 #import "base/strings/sys_string_conversions.h"
+#import "components/bookmarks/browser/bookmark_model.h"
 #import "components/bookmarks/common/bookmark_pref_names.h"
 #import "components/feature_engagement/public/feature_constants.h"
 #import "components/feature_engagement/public/tracker.h"
@@ -27,7 +28,6 @@
 #import "components/translate/core/browser/translate_manager.h"
 #import "components/translate/core/browser/translate_prefs.h"
 #import "ios/chrome/browser/bookmarks/model/bookmark_model_bridge_observer.h"
-#import "ios/chrome/browser/bookmarks/model/legacy_bookmark_model.h"
 #import "ios/chrome/browser/commerce/model/push_notification/push_notification_feature.h"
 #import "ios/chrome/browser/find_in_page/model/abstract_find_tab_helper.h"
 #import "ios/chrome/browser/follow/model/follow_browser_agent.h"
@@ -174,10 +174,6 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
 
 // Items notifying this items of changes happening to the ReadingList model.
 @property(nonatomic, strong) ReadingListMenuNotifier* readingListMenuNotifier;
-
-// Whether the hint for the "New Incognito Tab" item should be triggered.
-@property(nonatomic, assign) BOOL triggerNewIncognitoTabTip;
-
 // The current browser policy connector.
 @property(nonatomic, assign) BrowserPolicyConnectorIOS* browserPolicyConnector;
 
@@ -224,7 +220,6 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
 
 - (instancetype)initWithIsIncognito:(BOOL)isIncognito
                    readingListModel:(ReadingListModel*)readingListModel
-          triggerNewIncognitoTabTip:(BOOL)triggerNewIncognitoTabTip
              browserPolicyConnector:
                  (BrowserPolicyConnectorIOS*)browserPolicyConnector {
   self = [super init];
@@ -237,7 +232,6 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
     _webStateListObserver = std::make_unique<WebStateListObserverBridge>(self);
     _overlayPresenterObserver =
         std::make_unique<OverlayPresenterObserverBridge>(self);
-    _triggerNewIncognitoTabTip = triggerNewIncognitoTabTip;
     _browserPolicyConnector = browserPolicyConnector;
   }
   return self;
@@ -358,35 +352,31 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
 
 // If an added or removed bookmark is the same as the current url, update the
 // toolbar so the star highlight is kept in sync.
-- (void)bookmarkModel:(LegacyBookmarkModel*)model
-    didChangeChildrenForNode:(const bookmarks::BookmarkNode*)bookmarkNode {
+- (void)didChangeChildrenForNode:(const bookmarks::BookmarkNode*)bookmarkNode {
   [self updateBookmarkItem];
 }
 
 // If all bookmarks are removed, update the toolbar so the star highlight is
 // kept in sync.
-- (void)bookmarkModelRemovedAllNodes:(LegacyBookmarkModel*)model {
+- (void)bookmarkModelRemovedAllNodes {
   [self updateBookmarkItem];
 }
 
 // In case we are on a bookmarked page before the model is loaded.
-- (void)bookmarkModelLoaded:(LegacyBookmarkModel*)model {
+- (void)bookmarkModelLoaded {
   [self updateBookmarkItem];
 }
 
-- (void)bookmarkModel:(LegacyBookmarkModel*)model
-        didChangeNode:(const bookmarks::BookmarkNode*)bookmarkNode {
+- (void)didChangeNode:(const bookmarks::BookmarkNode*)bookmarkNode {
   [self updateBookmarkItem];
 }
 
-- (void)bookmarkModel:(LegacyBookmarkModel*)model
-          didMoveNode:(const bookmarks::BookmarkNode*)bookmarkNode
-           fromParent:(const bookmarks::BookmarkNode*)oldParent
-             toParent:(const bookmarks::BookmarkNode*)newParent {
+- (void)didMoveNode:(const bookmarks::BookmarkNode*)bookmarkNode
+         fromParent:(const bookmarks::BookmarkNode*)oldParent
+           toParent:(const bookmarks::BookmarkNode*)newParent {
   // No-op -- required by BookmarkModelBridgeObserver but not used.
 }
-- (void)bookmarkModel:(LegacyBookmarkModel*)model
-        didDeleteNode:(const bookmarks::BookmarkNode*)node
+- (void)didDeleteNode:(const bookmarks::BookmarkNode*)node
            fromFolder:(const bookmarks::BookmarkNode*)folder {
   [self updateBookmarkItem];
 }
@@ -476,10 +466,6 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
   _popupMenu = popupMenu;
 
   [_popupMenu setPopupMenuItems:self.items];
-  if (self.triggerNewIncognitoTabTip) {
-    _popupMenu.itemToHighlight = self.openNewIncognitoTabItem;
-    self.triggerNewIncognitoTabTip = NO;
-  }
   if (self.webState) {
     [self updatePopupMenu];
   }
@@ -508,7 +494,7 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
   }
 }
 
-- (void)setBookmarkModel:(LegacyBookmarkModel*)bookmarkModel {
+- (void)setBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel {
   _bookmarkModel = bookmarkModel;
   _bookmarkModelBridge.reset();
   if (bookmarkModel) {

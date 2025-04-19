@@ -41,7 +41,7 @@ bool OmniboxClient::IsDefaultSearchProviderEnabled() const {
   return true;
 }
 
-bookmarks::CoreBookmarkModel* OmniboxClient::GetBookmarkModel() {
+bookmarks::BookmarkModel* OmniboxClient::GetBookmarkModel() {
   return nullptr;
 }
 
@@ -77,6 +77,11 @@ gfx::Image OmniboxClient::GetSizedIcon(const gfx::VectorIcon& vector_icon_type,
 
 gfx::Image OmniboxClient::GetSizedIcon(const gfx::Image& icon) const {
   return gfx::Image();
+}
+
+std::optional<lens::proto::LensOverlayInteractionResponse>
+OmniboxClient::GetLensOverlayInteractionResponse() const {
+  return std::nullopt;
 }
 
 bool OmniboxClient::ProcessExtensionKeyword(const std::u16string& text,

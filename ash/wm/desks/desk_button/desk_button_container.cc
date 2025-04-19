@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "ash/public/cpp/desk_profiles_delegate.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shelf/desk_button_widget.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -256,7 +257,7 @@ void DeskButtonContainer::UpdateUiAndLayoutIfNeeded(const Desk* active_desk) {
   UpdateUi(active_desk);
 
   if (GetPreferredSize() != old_preferred_size) {
-    desk_button_widget_->delegate_view()->DeprecatedLayoutImmediately();
+    desk_button_widget_->delegate_view()->InvalidateLayout();
   }
 }
 void DeskButtonContainer::HandleLocaleChange() {
@@ -269,9 +270,9 @@ void DeskButtonContainer::MaybeShowContextMenu(views::View* source,
                                                ui::LocatedEvent* event) {
   if (!desk_button_->is_activated()) {
     ui::MenuSourceType source_type = ui::MenuSourceType::MENU_SOURCE_MOUSE;
-    if (event->type() == ui::ET_GESTURE_LONG_PRESS) {
+    if (event->type() == ui::EventType::kGestureLongPress) {
       source_type = ui::MenuSourceType::MENU_SOURCE_LONG_PRESS;
-    } else if (event->type() == ui::ET_GESTURE_LONG_TAP) {
+    } else if (event->type() == ui::EventType::kGestureLongTap) {
       source_type = ui::MenuSourceType::MENU_SOURCE_LONG_TAP;
     }
     gfx::Point location_in_screen(event->location());

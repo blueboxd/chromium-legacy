@@ -22,10 +22,9 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/traced_value.h"
 #include "build/build_config.h"
-#include "partition_alloc/partition_alloc_buildflags.h"
+#include "partition_alloc/buildflags.h"
 #include "partition_alloc/partition_alloc_config.h"
 #include "partition_alloc/partition_bucket_lookup.h"
-#include "partition_alloc/shim/nonscannable_allocator.h"
 
 #if BUILDFLAG(IS_APPLE)
 #include <malloc/malloc.h>
@@ -138,14 +137,6 @@ void ReportPartitionAllocStats(ProcessMemoryDump* pmd,
     original_allocator->DumpStats("original", is_light_dump,
                                   &partition_stats_dumper);
   }
-  auto& nonscannable_allocator =
-      allocator_shim::NonScannableAllocator::Instance();
-  if (auto* root = nonscannable_allocator.root())
-    root->DumpStats("nonscannable", is_light_dump, &partition_stats_dumper);
-  auto& nonquarantinable_allocator =
-      allocator_shim::NonQuarantinableAllocator::Instance();
-  if (auto* root = nonquarantinable_allocator.root())
-    root->DumpStats("nonquarantinable", is_light_dump, &partition_stats_dumper);
 
   *total_virtual_size += partition_stats_dumper.total_resident_bytes();
   *resident_size += partition_stats_dumper.total_resident_bytes();
@@ -257,38 +248,24 @@ void ReportPartitionAllocThreadCacheStats(
   dump->AddScalar("metadata_overhead", MemoryAllocatorDump::kUnitsBytes,
                   stats.metadata_overhead);
 
-  if (stats.alloc_count) {
-    int hit_rate_percent =
-        static_cast<int>((100 * stats.alloc_hits) / stats.alloc_count);
-    base::UmaHistogramPercentage(
-        "Memory.PartitionAlloc.ThreadCache.HitRate" + metrics_suffix,
-        hit_rate_percent);
-    int batch_fill_rate_percent =
-        static_cast<int>((100 * stats.batch_fill_count) / stats.alloc_count);
-    base::UmaHistogramPercentage(
-        "Memory.PartitionAlloc.ThreadCache.BatchFillRate" + metrics_suffix,
-        batch_fill_rate_percent);
-
 #if PA_CONFIG(THREAD_CACHE_ALLOC_STATS)
-    if (detailed) {
-      partition_alloc::internal::BucketIndexLookup lookup{};
-      std::string name = dump->absolute_name();
-      for (size_t i = 0; i < partition_alloc::kNumBuckets; i++) {
-        size_t bucket_size = lookup.bucket_sizes()[i];
-        if (bucket_size == partition_alloc::kInvalidBucketSize)
-          continue;
-        // Covers all normal buckets, that is up to ~1MiB, so 7 digits.
-        std::string dump_name =
-            base::StringPrintf("%s/buckets_alloc/%07d", name.c_str(),
-                               static_cast<int>(bucket_size));
-        auto* buckets_alloc_dump = pmd->CreateAllocatorDump(dump_name);
-        buckets_alloc_dump->AddScalar("count",
-                                      MemoryAllocatorDump::kUnitsObjects,
-                                      stats.allocs_per_bucket_[i]);
+  if (stats.alloc_count && detailed) {
+    partition_alloc::internal::BucketIndexLookup lookup{};
+    std::string name = dump->absolute_name();
+    for (size_t i = 0; i < partition_alloc::kNumBuckets; i++) {
+      size_t bucket_size = lookup.bucket_sizes()[i];
+      if (bucket_size == partition_alloc::kInvalidBucketSize) {
+        continue;
       }
+      // Covers all normal buckets, that is up to ~1MiB, so 7 digits.
+      std::string dump_name = base::StringPrintf(
+          "%s/buckets_alloc/%07d", name.c_str(), static_cast<int>(bucket_size));
+      auto* buckets_alloc_dump = pmd->CreateAllocatorDump(dump_name);
+      buckets_alloc_dump->AddScalar("count", MemoryAllocatorDump::kUnitsObjects,
+                                    stats.allocs_per_bucket_[i]);
     }
-#endif  // PA_CONFIG(THREAD_CACHE_ALLOC_STATS)
   }
+#endif  // PA_CONFIG(THREAD_CACHE_ALLOC_STATS)
 }
 
 void ReportPartitionAllocLightweightQuarantineStats(

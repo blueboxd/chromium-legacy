@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/modules/webcodecs/video_frame.h"
 
 #include <limits>
@@ -438,7 +443,7 @@ const base::TimeDelta CanvasResourceProviderCache::kIdleTimeout =
 
 std::optional<media::VideoPixelFormat> CopyToFormat(
     const media::VideoFrame& frame) {
-  const bool mappable = frame.IsMappable() || frame.HasGpuMemoryBuffer();
+  const bool mappable = frame.IsMappable() || frame.HasMappableGpuBuffer();
   const bool texturable = frame.HasTextures();
   if (!(mappable || texturable))
     return std::nullopt;
@@ -827,9 +832,17 @@ VideoFrame* VideoFrame::Create(ScriptState* script_state,
             },
             std::move(image))));
 
-    frame = media::VideoFrame::WrapNativeTextures(
-        format, mailbox_holders, std::move(release_cb), coded_size,
-        parsed_init.visible_rect, parsed_init.display_size, timestamp);
+    auto client_shared_image = sbi->GetSharedImage();
+    if (client_shared_image) {
+      frame = media::VideoFrame::WrapSharedImage(
+          format, std::move(client_shared_image), mailbox_holders[0].sync_token,
+          mailbox_holders[0].texture_target, std::move(release_cb), coded_size,
+          parsed_init.visible_rect, parsed_init.display_size, timestamp);
+    } else {
+      frame = media::VideoFrame::WrapNativeTextures(
+          format, mailbox_holders, std::move(release_cb), coded_size,
+          parsed_init.visible_rect, parsed_init.display_size, timestamp);
+    }
 
     if (frame)
       frame->metadata().texture_origin_is_top_left = is_origin_top_left;
@@ -1320,7 +1333,7 @@ ScriptPromise<IDLSequence<PlaneLayout>> VideoFrame::copyTo(
                         target_color_space);
   } else if (local_frame->IsMappable()) {
     CopyMappablePlanes(*local_frame, src_rect, dest_layout, buffer);
-  } else if (local_frame->HasGpuMemoryBuffer()) {
+  } else if (local_frame->HasMappableGpuBuffer()) {
     auto mapped_frame = media::ConvertToMemoryMappedFrame(local_frame);
     if (!mapped_frame) {
       exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,

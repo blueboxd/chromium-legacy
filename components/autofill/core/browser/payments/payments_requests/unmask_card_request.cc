@@ -228,7 +228,7 @@ UnmaskCardRequest::UnmaskCardRequest(
     const PaymentsNetworkInterface::UnmaskRequestDetails& request_details,
     const bool full_sync_enabled,
     base::OnceCallback<
-        void(AutofillClient::PaymentsRpcResult,
+        void(PaymentsAutofillClient::PaymentsRpcResult,
              const PaymentsNetworkInterface::UnmaskResponseDetails&)> callback)
     : request_details_(request_details),
       full_sync_enabled_(full_sync_enabled),
@@ -289,7 +289,9 @@ std::string UnmaskCardRequest::GetRequestContent() {
                    request_details_.user_response.enable_fido_auth);
 
   if (request_details_.selected_challenge_option) {
+    base::Value::Dict selected_idv_method;
     base::Value::Dict challenge_option;
+    // TODO(crbug.com/356665737): fix selected challenge option for cvc and otp
     if (request_details_.selected_challenge_option->type ==
         CardUnmaskChallengeOptionType::kCvc) {
       challenge_option.Set(
@@ -325,9 +327,11 @@ std::string UnmaskCardRequest::GetRequestContent() {
                                ->vcn_3ds_metadata->url_to_open.spec());
       challenge_option.Set("redirect_completion_result",
                            request_details_.redirect_completion_result.value());
-      request_dict.Set("redirect_challenge_option",
-                       std::move(challenge_option));
+      selected_idv_method.Set("popup_challenge_option",
+                              std::move(challenge_option));
     }
+    request_dict.Set("selected_idv_challenge_option",
+                     std::move(selected_idv_method));
   }
 
   bool is_cvc_auth = !request_details_.user_response.cvc.empty();
@@ -446,11 +450,11 @@ void UnmaskCardRequest::ParseResponse(const base::Value::Dict& response) {
   if (request_details_.card.record_type() ==
       CreditCard::RecordType::kVirtualCard) {
     response_details_.card_type =
-        AutofillClient::PaymentsRpcCardType::kVirtualCard;
+        PaymentsAutofillClient::PaymentsRpcCardType::kVirtualCard;
   } else if (request_details_.card.record_type() ==
              CreditCard::RecordType::kMaskedServerCard) {
     response_details_.card_type =
-        AutofillClient::PaymentsRpcCardType::kServerCard;
+        PaymentsAutofillClient::PaymentsRpcCardType::kServerCard;
   } else {
     NOTREACHED_IN_MIGRATION();
   }
@@ -485,15 +489,15 @@ void UnmaskCardRequest::ParseResponse(const base::Value::Dict& response) {
 
 bool UnmaskCardRequest::IsResponseComplete() {
   switch (response_details_.card_type) {
-    case AutofillClient::PaymentsRpcCardType::kUnknown:
+    case PaymentsAutofillClient::PaymentsRpcCardType::kUnknown:
       return false;
-    case AutofillClient::PaymentsRpcCardType::kServerCard:
+    case PaymentsAutofillClient::PaymentsRpcCardType::kServerCard:
       // When PAN is returned, the response is complete and no further
       // authentication is needed. When PAN is not returned, the response has to
       // contain context token in order to be considered a success.
       return !response_details_.real_pan.empty() ||
              !response_details_.context_token.empty();
-    case AutofillClient::PaymentsRpcCardType::kVirtualCard:
+    case PaymentsAutofillClient::PaymentsRpcCardType::kVirtualCard:
       // When the response contains a PAN, it must also contain expiration and
       // CVV to be considered a success. When the response does not contain PAN,
       // it must contain a context token instead.
@@ -503,7 +507,7 @@ bool UnmaskCardRequest::IsResponseComplete() {
 }
 
 void UnmaskCardRequest::RespondToDelegate(
-    AutofillClient::PaymentsRpcResult result) {
+    PaymentsAutofillClient::PaymentsRpcResult result) {
   std::move(callback_).Run(result, response_details_);
 }
 
@@ -537,6 +541,19 @@ bool UnmaskCardRequest::IsRetryableFailure(const std::string& error_code) {
   // If we are in the VCN CVC auth case and there is a flow status present
   // return true, otherwise return false.
   return !response_details_.flow_status.empty();
+}
+
+std::string UnmaskCardRequest::GetHistogramName() const {
+  return "UnmaskCardRequest";
+}
+
+std::optional<base::TimeDelta> UnmaskCardRequest::GetTimeout() const {
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillUnmaskCardRequestTimeout)) {
+    return std::nullopt;
+  }
+  // Hardcode 30s to be consistent with the server side timeout.
+  return base::Seconds(30);
 }
 
 bool UnmaskCardRequest::IsAllCardInformationValidIncludingDcvv() {

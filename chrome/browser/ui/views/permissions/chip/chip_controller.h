@@ -91,6 +91,11 @@ class ChipController : public permissions::PermissionRequestManager::Observer,
       base::WeakPtr<permissions::PermissionPrompt::Delegate> delegate,
       base::OnceCallback<void()> = base::DoNothing());
 
+  // Displays a permission chip. Call ShowPermissionPrompt() instead to show
+  // both a chip and a prompt.
+  void ShowPermissionChip(
+      base::WeakPtr<permissions::PermissionPrompt::Delegate> delegate);
+
   // Displays a permission prompt using the chip UI.
   void ShowPermissionPrompt(
       base::WeakPtr<permissions::PermissionPrompt::Delegate> delegate);
@@ -157,6 +162,12 @@ class ChipController : public permissions::PermissionRequestManager::Observer,
     return is_waiting_for_confirmation_collapse_;
   }
 
+  void set_is_bubble_suppressed(bool is_bubble_suppressed) {
+    is_bubble_suppressed_ = is_bubble_suppressed;
+  }
+
+  void DoNotCollapseForTesting() { do_no_collapse_for_testing_ = true; }
+
  private:
   bool ShouldWaitForConfirmationToComplete() const;
   bool ShouldWaitForLHSIndicatorToCollapse() const;
@@ -172,6 +183,9 @@ class ChipController : public permissions::PermissionRequestManager::Observer,
 
   // Hides the chip and invalidates the layout.
   void HideChip();
+
+  void ShowPermissionUi(
+      base::WeakPtr<permissions::PermissionPrompt::Delegate> delegate);
 
   // Permission prompt bubble functiontionality.
   void OpenPermissionPromptBubble();
@@ -243,6 +257,9 @@ class ChipController : public permissions::PermissionRequestManager::Observer,
       active_chip_permission_request_manager_;
 
   views::ViewTracker bubble_tracker_;
+  bool is_bubble_suppressed_ = false;
+
+  bool do_no_collapse_for_testing_ = false;
 
   base::ScopedClosureRunner disallowed_custom_cursors_scope_;
 

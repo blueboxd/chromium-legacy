@@ -33,7 +33,6 @@ extern const char kHatsSurveyTriggerDownloadWarningPageIgnore[];
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 extern const char kHatsSurveyTriggerGetMostChrome[];
 #endif
-extern const char kHatsSurveyTriggerExtensions[];
 extern const char kHatsSurveyTriggerM1AdPrivacyPage[];
 extern const char kHatsSurveyTriggerM1TopicsSubpage[];
 extern const char kHatsSurveyTriggerM1FledgeSubpage[];
@@ -63,6 +62,8 @@ extern const char kHatsSurveyTriggerTrustSafetyV2DownloadWarningUI[];
 extern const char kHatsSurveyTriggerTrustSafetyV2PasswordCheck[];
 extern const char kHatsSurveyTriggerTrustSafetyV2PasswordProtectionUI[];
 extern const char kHatsSurveyTriggerTrustSafetyV2SafetyCheck[];
+extern const char kHatsSurveyTriggerTrustSafetyV2SafetyHubNotification[];
+extern const char kHatsSurveyTriggerTrustSafetyV2SafetyHubInteraction[];
 extern const char kHatsSurveyTriggerTrustSafetyV2TrustedSurface[];
 extern const char kHatsSurveyTriggerTrustSafetyV2PrivacyGuide[];
 extern const char kHatsSurveyTriggerTrustSafetyV2PrivacySandbox4ConsentAccept[];
@@ -74,9 +75,11 @@ extern const char
 extern const char kHatsSurveyTriggerTrustSafetyV2SafeBrowsingInterstitial[];
 extern const char kHatsSurveyTriggerWallpaperSearch[];
 extern const char kHatsSurveyTriggerWhatsNew[];
+extern const char kHatsSurveyTriggerWhatsNewV2[];
 #else
 extern const char kHatsSurveyTriggerAndroidStartupSurvey[];
-#endif
+extern const char kHatsSurveyTriggerQuickDelete[];
+#endif  // #if !BUILDFLAG(IS_ANDROID)
 
 extern const char kHatsSurveyTriggerPermissionsPrompt[];
 

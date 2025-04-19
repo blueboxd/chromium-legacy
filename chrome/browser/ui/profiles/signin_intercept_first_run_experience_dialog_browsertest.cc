@@ -243,7 +243,8 @@ class SigninInterceptFirstRunExperienceDialogBrowserTest : public TestBase {
  protected:
   const GURL kSyncConfirmationUrl = AppendSyncConfirmationQueryParams(
       GURL("chrome://sync-confirmation"),
-      SyncConfirmationStyle::kSigninInterceptModal);
+      SyncConfirmationStyle::kSigninInterceptModal,
+      /*is_sync_promo=*/true);
   const GURL kProfileCustomizationUrl = GURL("chrome://profile-customization");
   const GURL kSyncSettingsUrl = GURL("chrome://settings/syncSetup");
 
@@ -566,7 +567,7 @@ IN_PROC_BROWSER_TEST_F(SigninInterceptFirstRunExperienceDialogBrowserTest,
   // confirmation UI until the sync engine starts.
   SignIn(kEnterpriseEmail);
   // Delays the sync confirmation UI.
-  sync_service()->SetTransportState(
+  sync_service()->SetMaxTransportState(
       syncer::SyncService::TransportState::INITIALIZING);
 
   controller()->ShowModalInterceptFirstRunExperienceDialog(
@@ -582,7 +583,7 @@ IN_PROC_BROWSER_TEST_F(SigninInterceptFirstRunExperienceDialogBrowserTest,
 
   // `TurnSyncOnHelper` should be destroyed after the sync engine is up and
   // running.
-  sync_service()->SetTransportState(
+  sync_service()->SetMaxTransportState(
       syncer::SyncService::TransportState::ACTIVE);
   sync_service()->FireStateChanged();
   EXPECT_FALSE(
@@ -598,8 +599,7 @@ IN_PROC_BROWSER_TEST_F(SigninInterceptFirstRunExperienceDialogBrowserTest,
 IN_PROC_BROWSER_TEST_F(SigninInterceptFirstRunExperienceDialogBrowserTest,
                        SyncDisabled) {
   SignIn(kEnterpriseEmail);
-  sync_service()->SetDisableReasons(
-      {syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY});
+  sync_service()->SetAllowedByEnterprisePolicy(false);
   ExpectPrimaryAccountWithExactConsentLevel(signin::ConsentLevel::kSignin);
   content::TestNavigationObserver profile_customization_observer(
       kProfileCustomizationUrl);

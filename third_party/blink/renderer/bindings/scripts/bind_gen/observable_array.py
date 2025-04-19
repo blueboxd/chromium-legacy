@@ -82,6 +82,8 @@ const WrapperTypeInfo ${class_name}::wrapper_type_info_body_{
     nullptr,
     "${class_name}",
     nullptr,  // parent_class
+    kDOMWrappersTag,
+    kDOMWrappersTag,
     WrapperTypeInfo::kWrapperTypeNoPrototype,
     WrapperTypeInfo::kObjectClassId,
     WrapperTypeInfo::kNotInheritFromActiveScriptWrappable,
@@ -225,6 +227,7 @@ def make_handler_template_function(cg_context):
           "${per_isolate_data}->FindV8Template(${world}, template_key);"),
         CxxLikelyIfNode(
             cond="!v8_template.IsEmpty()",
+            attribute=None,
             body=T("return v8_template.As<v8::FunctionTemplate>();")),
         EmptyNode(),
         T("v8::Local<v8::FunctionTemplate> constructor_template = "
@@ -437,7 +440,7 @@ def generate_observable_array(observable_array_identifier):
     header_node.accumulator.add_include_headers([
         component_export_header(api_component, for_testing),
         "third_party/blink/renderer/bindings/core/v8/idl_types.h",
-        "third_party/blink/renderer/bindings/core/v8/observable_array.h",
+        "third_party/blink/renderer/platform/bindings/observable_array.h",
     ])
     source_node.accumulator.add_include_headers([
         "third_party/blink/renderer/bindings/core/v8/generated_code_helper.h",

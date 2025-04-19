@@ -80,7 +80,7 @@ class RealboxOmniboxClient final : public OmniboxClient {
   bool IsPasteAndGoEnabled() const override;
   SessionID GetSessionID() const override;
   PrefService* GetPrefs() override;
-  bookmarks::CoreBookmarkModel* GetBookmarkModel() override;
+  bookmarks::BookmarkModel* GetBookmarkModel() override;
   AutocompleteControllerEmitter* GetAutocompleteControllerEmitter() override;
   TemplateURLService* GetTemplateURLService() override;
   const AutocompleteSchemeClassifier& GetSchemeClassifier() const override;
@@ -99,6 +99,8 @@ class RealboxOmniboxClient final : public OmniboxClient {
   security_state::SecurityLevel GetSecurityLevel() const override;
   net::CertStatus GetCertStatus() const override;
   const gfx::VectorIcon& GetVectorIcon() const override;
+  std::optional<lens::proto::LensOverlayInteractionResponse>
+    GetLensOverlayInteractionResponse() const override;
   gfx::Image GetFaviconForPageUrl(
       const GURL& page_url,
       FaviconFetchedCallback on_favicon_fetched) override;
@@ -163,6 +165,9 @@ bool RealboxOmniboxClient::IsPasteAndGoEnabled() const {
 }
 
 SessionID RealboxOmniboxClient::GetSessionID() const {
+  if (lens_searchbox_client_) {
+    return lens_searchbox_client_->GetTabId();
+  }
   return sessions::SessionTabHelper::IdForTab(web_contents_);
 }
 
@@ -170,7 +175,7 @@ PrefService* RealboxOmniboxClient::GetPrefs() {
   return profile_->GetPrefs();
 }
 
-bookmarks::CoreBookmarkModel* RealboxOmniboxClient::GetBookmarkModel() {
+bookmarks::BookmarkModel* RealboxOmniboxClient::GetBookmarkModel() {
   return BookmarkModelFactory::GetForBrowserContext(profile_);
 }
 
@@ -247,6 +252,15 @@ gfx::Image RealboxOmniboxClient::GetFaviconForPageUrl(
     const GURL& page_url,
     FaviconFetchedCallback on_favicon_fetched) {
   return gfx::Image();
+}
+
+std::optional<lens::proto::LensOverlayInteractionResponse>
+    RealboxOmniboxClient::GetLensOverlayInteractionResponse() const {
+  if (lens_searchbox_client_ &&
+      lens_searchbox_client_->GetLensResponse().has_suggest_signals()) {
+    return lens_searchbox_client_->GetLensResponse();
+  }
+  return std::nullopt;
 }
 
 void RealboxOmniboxClient::OnBookmarkLaunched() {
@@ -400,10 +414,9 @@ void RealboxHandler::QueryAutocomplete(const std::u16string& input,
   autocomplete_input.set_prefer_keyword(false);
   autocomplete_input.set_allow_exact_keyword_match(false);
   // Set the lens overlay interaction response, if available.
-  if (lens_searchbox_client_ &&
-      lens_searchbox_client_->GetLensResponse().has_suggest_signals()) {
-    autocomplete_input.set_lens_overlay_interaction_response(
-        lens_searchbox_client_->GetLensResponse());
+  if (std::optional<lens::proto::LensOverlayInteractionResponse> response =
+          controller_->client()->GetLensOverlayInteractionResponse()) {
+    autocomplete_input.set_lens_overlay_interaction_response(*response);
   }
 
   omnibox_controller()->StartAutocomplete(autocomplete_input);
@@ -463,22 +476,6 @@ void RealboxHandler::PopupElementSizeChanged(const gfx::Size& size) {
   for (OmniboxWebUIPopupChangeObserver& observer : observers_) {
     observer.OnPopupElementSizeChanged(size);
   }
-}
-
-void RealboxHandler::OnResultChanged(AutocompleteController* controller,
-                                     bool default_match_changed) {
-  // Handles case where the searchbox input has a thumbnail. All lhs icons
-  // of a match should match this thumbnail.
-  if (lens_searchbox_client_) {
-    const GURL& thumbnail = GURL(lens_searchbox_client_->GetThumbnail());
-    if (!thumbnail.is_empty()) {
-      for (AutocompleteMatch& match : const_cast<AutocompleteResult&>(
-               autocomplete_controller()->result())) {
-        match.image_url = thumbnail;
-      }
-    }
-  }
-  SearchboxHandler::OnResultChanged(controller, default_match_changed);
 }
 
 void RealboxHandler::DeleteAutocompleteMatch(uint8_t line, const GURL& url) {

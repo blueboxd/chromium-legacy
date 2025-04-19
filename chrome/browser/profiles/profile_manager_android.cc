@@ -8,7 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_destroyer.h"
 
-// Must come after other includes, because FromJniType() uses Profile.
+// Must come after all headers that specialize FromJniType() / ToJniType().
 #include "chrome/browser/profiles/android/jni_headers/ProfileManager_jni.h"
 
 using jni_zero::ScopedJavaLocalRef;
@@ -41,6 +41,14 @@ ScopedJavaLocalRef<jobject> JNI_ProfileManager_GetLastUsedRegularProfile(
 // static
 std::vector<Profile*> JNI_ProfileManager_GetLoadedProfiles(JNIEnv* env) {
   return g_browser_process->profile_manager()->GetLoadedProfiles();
+}
+
+// static
+void JNI_ProfileManager_OnProfileActivated(JNIEnv* env, Profile* profile) {
+  if (!profile) {
+    return;
+  }
+  g_browser_process->profile_manager()->SetProfileAsLastUsed(profile);
 }
 
 // static

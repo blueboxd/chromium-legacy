@@ -16,7 +16,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
-// Must come after other includes, because FromJniType() uses Profile.
+// Must come after all headers that specialize FromJniType() / ToJniType().
 #include "chrome/browser/feedback/android/jni_headers/FamilyInfoFeedbackSource_jni.h"
 
 using base::android::AttachCurrentThread;
@@ -81,8 +81,8 @@ void FamilyInfoFeedbackSource::OnSuccess(
         supervised_user::WebFilterType web_filter_type =
             supervised_user_service_->GetURLFilter()->GetWebFilterType();
         child_web_filter_type = ConvertUTF8ToJavaString(
-            env, supervised_user::SupervisedUserURLFilter::
-                     WebFilterTypeToDisplayString(web_filter_type));
+            env,
+            supervised_user::WebFilterTypeToDisplayString(web_filter_type));
       }
       Java_FamilyInfoFeedbackSource_processPrimaryAccountFamilyInfo(
           env, java_ref_,

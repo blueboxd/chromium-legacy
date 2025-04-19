@@ -12,12 +12,12 @@
 #include "base/test/task_environment.h"
 #include "base/test/test.pb.h"
 #include "components/optimization_guide/core/model_execution/model_execution_features.h"
+#include "components/optimization_guide/core/model_execution/model_execution_prefs.h"
 #include "components/optimization_guide/core/model_execution/on_device_model_access_controller.h"
 #include "components/optimization_guide/core/model_execution/on_device_model_service_controller.h"
 #include "components/optimization_guide/core/optimization_guide_constants.h"
 #include "components/optimization_guide/core/optimization_guide_logger.h"
 #include "components/optimization_guide/core/optimization_guide_model_executor.h"
-#include "components/optimization_guide/core/optimization_guide_prefs.h"
 #include "components/optimization_guide/core/optimization_guide_util.h"
 #include "components/optimization_guide/core/test_model_info_builder.h"
 #include "components/optimization_guide/core/test_optimization_guide_model_provider.h"
@@ -121,7 +121,7 @@ class ModelExecutionManagerTest : public testing::Test {
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &test_url_loader_factory_);
     local_state_ = std::make_unique<TestingPrefServiceSimple>();
-    prefs::RegisterLocalStatePrefs(local_state_->registry());
+    model_execution::prefs::RegisterLocalStatePrefs(local_state_->registry());
     service_controller_ = base::MakeRefCounted<FakeServiceController>();
     CreateModelExecutionManager();
   }
@@ -209,7 +209,11 @@ TEST_F(ModelExecutionManagerTest, ExecuteModelEmptyAccessToken) {
              OptimizationGuideModelExecutionResult result,
              std::unique_ptr<ModelQualityLogEntry> log_entry) {
             EXPECT_FALSE(result.has_value());
-            EXPECT_EQ(log_entry.get(), nullptr);
+            EXPECT_NE(log_entry.get(), nullptr);
+            EXPECT_EQ(3u,  // ModelExecutionError::kPermissionDenied
+                      log_entry->log_ai_data_request()
+                          ->model_execution_info()
+                          .model_execution_error_enum());
             run_loop->Quit();
           },
           &run_loop));
@@ -239,10 +243,10 @@ TEST_F(ModelExecutionManagerTest, ExecuteModelWithUserSignIn) {
             EXPECT_NE(log_entry, nullptr);
             EXPECT_TRUE(log_entry->log_ai_data_request()
                             ->mutable_compose()
-                            ->has_request_data());
+                            ->has_request());
             EXPECT_TRUE(log_entry->log_ai_data_request()
                             ->mutable_compose()
-                            ->has_response_data());
+                            ->has_response());
             EXPECT_EQ(log_entry->log_ai_data_request()
                           ->model_execution_info()
                           .execution_id(),
@@ -318,13 +322,17 @@ TEST_F(ModelExecutionManagerTest,
                                    ModelExecutionError::kUnsupportedLanguage,
                                result.response.error().error());
                      EXPECT_NE(result.log_entry, nullptr);
-                     // Check that correct error state is recordered.
+                     // Check that the correct error state and error enum are
+                     // recorded:
+                     auto model_execution_info =
+                         result.log_entry->log_ai_data_request()
+                             ->model_execution_info();
                      EXPECT_EQ(
                          proto::ErrorState::ERROR_STATE_UNSUPPORTED_LANGUAGE,
-                         result.log_entry->log_ai_data_request()
-                             ->mutable_model_execution_info()
-                             ->mutable_error_response()
-                             ->error_state());
+                         model_execution_info.error_response().error_state());
+                     EXPECT_EQ(
+                         7u,  // ModelExecutionError::kUnsupportedLanguage
+                         model_execution_info.model_execution_error_enum());
                      run_loop->Quit();
                    },
                    &run_loop));
@@ -390,10 +398,10 @@ TEST_F(ModelExecutionManagerTest,
                      EXPECT_NE(result.log_entry, nullptr);
                      EXPECT_TRUE(result.log_entry->log_ai_data_request()
                                      ->mutable_compose()
-                                     ->has_request_data());
+                                     ->has_request());
                      EXPECT_TRUE(result.log_entry->log_ai_data_request()
                                      ->mutable_compose()
-                                     ->has_response_data());
+                                     ->has_response());
                      run_loop->Quit();
                    },
                    &run_loop));
@@ -435,10 +443,10 @@ TEST_F(ModelExecutionManagerTest, ExecuteModelWithPassthroughSession) {
                      EXPECT_NE(result.log_entry, nullptr);
                      EXPECT_TRUE(result.log_entry->log_ai_data_request()
                                      ->mutable_compose()
-                                     ->has_request_data());
+                                     ->has_request());
                      EXPECT_TRUE(result.log_entry->log_ai_data_request()
                                      ->mutable_compose()
-                                     ->has_response_data());
+                                     ->has_response());
                      run_loop->Quit();
                    },
                    &run_loop));
@@ -629,10 +637,10 @@ TEST_F(ModelExecutionManagerTest, TestMultipleParallelRequests) {
             EXPECT_NE(log_entry, nullptr);
             EXPECT_TRUE(log_entry->log_ai_data_request()
                             ->mutable_compose()
-                            ->has_request_data());
+                            ->has_request());
             EXPECT_TRUE(log_entry->log_ai_data_request()
                             ->mutable_compose()
-                            ->has_response_data());
+                            ->has_response());
             EXPECT_EQ(log_entry->log_ai_data_request()
                           ->model_execution_info()
                           .execution_id(),
@@ -711,10 +719,11 @@ TEST_F(ModelExecutionManagerSafetyEnabledTest,
        NotRegisteredWhenDisabledByEnterprisePolicy) {
   model_provider()->Reset();
   local_state()->SetInteger(
-      prefs::localstate::kGenAILocalFoundationalModelEnterprisePolicySettings,
-      static_cast<int>(
-          prefs::GenAILocalFoundationalModelEnterprisePolicySettings::
-              kDisallowed));
+      model_execution::prefs::localstate::
+          kGenAILocalFoundationalModelEnterprisePolicySettings,
+      static_cast<int>(model_execution::prefs::
+                           GenAILocalFoundationalModelEnterprisePolicySettings::
+                               kDisallowed));
   CreateModelExecutionManager();
   EXPECT_FALSE(model_provider()->was_registered());
 

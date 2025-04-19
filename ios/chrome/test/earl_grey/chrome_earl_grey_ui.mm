@@ -100,6 +100,9 @@ const int kMaxNumberOfAttemptsAtTypingTextInOmnibox = 3;
 - (void)openToolsMenu {
   // TODO(crbug.com/41271107): Add logic to ensure the app is in the correct
   // state, for example DCHECK if no tabs are displayed.
+  [ChromeEarlGrey waitForUIElementToAppearWithMatcher:
+                      grey_allOf(chrome_test_util::ToolsMenuButton(),
+                                 grey_sufficientlyVisible(), nil)];
   [[[EarlGrey
       selectElementWithMatcher:grey_allOf(chrome_test_util::ToolsMenuButton(),
                                           grey_sufficientlyVisible(), nil)]
@@ -194,6 +197,10 @@ const int kMaxNumberOfAttemptsAtTypingTextInOmnibox = 3;
   [[[EarlGrey selectElementWithMatcher:interactableSettingsButton]
          usingSearchAction:scrollAction
       onElementWithMatcher:ToolsMenuView()] performAction:grey_tap()];
+
+  // TODO(crbug.com/347267212): On iOS18 tools menu taps will fail due to an
+  // apparent EG2 SwiftUI bug. Use XCUIapplication APIs instead here.
+  [self tapButtonUsingXCUIApplication:buttonMatcher];
 }
 
 - (void)tapToolsMenuAction:(id<GREYMatcher>)buttonMatcher {
@@ -209,6 +216,10 @@ const int kMaxNumberOfAttemptsAtTypingTextInOmnibox = 3;
       onElementWithMatcher:grey_accessibilityID(
                                kPopupMenuToolsMenuActionListId)]
       performAction:grey_tap()];
+
+  // TODO(crbug.com/347647806): On iOS18 tools menu taps will fail due to an
+  // apparent EG2 SwiftUI bug. Use XCUIapplication APIs instead here.
+  [self tapButtonUsingXCUIApplication:buttonMatcher];
 }
 
 - (void)tapSettingsMenuButton:(id<GREYMatcher>)buttonMatcher {
@@ -340,8 +351,16 @@ const int kMaxNumberOfAttemptsAtTypingTextInOmnibox = 3;
 }
 
 - (void)focusOmniboxAndType:(NSString*)text {
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::DefocusedLocationView()]
-      performAction:grey_tap()];
+  [self focusOmnibox];
+
+  if (text.length) {
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+        performAction:grey_typeText(text)];
+  }
+}
+
+- (void)focusOmniboxAndReplaceText:(NSString*)text {
+  [self focusOmnibox];
 
   if (text.length) {
     [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
@@ -432,17 +451,7 @@ const int kMaxNumberOfAttemptsAtTypingTextInOmnibox = 3;
 
 - (void)openPageInfo {
   [self openToolsMenu];
-  id<GREYAction> searchAction =
-      [ChromeEarlGrey isNewOverflowMenuEnabled]
-          ? ScrollRight()
-          : grey_scrollInDirection(kGREYDirectionDown, 200);
-  [[[EarlGrey
-      selectElementWithMatcher:grey_allOf(grey_accessibilityID(
-                                              kToolsMenuSiteInformation),
-                                          grey_sufficientlyVisible(), nil)]
-         usingSearchAction:searchAction
-      onElementWithMatcher:grey_accessibilityID(kPopupMenuToolsMenuTableViewId)]
-      performAction:grey_tap()];
+  [self tapToolsMenuButton:chrome_test_util::SiteInfoDestinationButton()];
 }
 
 - (BOOL)dismissContextMenuIfPresent {
@@ -610,6 +619,67 @@ const int kMaxNumberOfAttemptsAtTypingTextInOmnibox = 3;
   GREYAssert(textHasBeenTypedProperly,
              @"Failed to type '%s' in the Omnibox after %d attempts.",
              text.c_str(), numberOfAttemptsPerformed);
+}
+
+// This is a temporary workarond to fix broken tests in iO18.
+- (void)tapButtonUsingXCUIApplication:(id<GREYMatcher>)buttonMatcher {
+  if (@available(iOS 18, *)) {
+    NSError* error;
+    [[EarlGrey selectElementWithMatcher:buttonMatcher]
+        assertWithMatcher:grey_notNil()
+                    error:&error];
+
+    if ([error.domain isEqual:kGREYInteractionErrorDomain] &&
+        error.code == kGREYInteractionElementNotFoundErrorCode) {
+      // If buttonMatcher is gone, that means it wasn't a SwiftUI element (or
+      // EG2 is fixed).
+      return;
+    }
+
+    // GREYMatcher's that match: accessibilityID('kToolsMenuBookmarksId'))
+    NSString* description = [buttonMatcher description];
+    NSRegularExpression* regex = [NSRegularExpression
+        regularExpressionWithPattern:@"accessibilityID\\('(.*?)'\\)"
+                             options:NSRegularExpressionCaseInsensitive
+                               error:nil];
+    NSTextCheckingResult* match =
+        [regex firstMatchInString:description
+                          options:0
+                            range:NSMakeRange(0, description.length)];
+    if (match) {
+      XCUIApplication* app = [[XCUIApplication alloc] init];
+      NSString* accessibilityID =
+          [description substringWithRange:[match rangeAtIndex:1]];
+      [app.buttons[accessibilityID] tap];
+      return;
+    }
+
+    // GREYMatcher's that match "starts with('kToolsMenuSettingsId')"
+    regex = [NSRegularExpression
+        regularExpressionWithPattern:@"starts with\\('(.*?)'\\)"
+                             options:NSRegularExpressionCaseInsensitive
+                               error:nil];
+    match = [regex firstMatchInString:description
+                              options:0
+                                range:NSMakeRange(0, description.length)];
+    if (match) {
+      NSString* prefix =
+          [description substringWithRange:[match rangeAtIndex:1]];
+      NSPredicate* predicate =
+          [NSPredicate predicateWithFormat:@"identifier BEGINSWITH %@", prefix];
+      XCUIApplication* app = [[XCUIApplication alloc] init];
+      XCUIElement* button = [app.buttons elementMatchingPredicate:predicate];
+      XCTAssertTrue(
+          button.exists,
+          @"Button with accessibility label starting with '%@' should exist",
+          prefix);
+      [button tap];
+      return;
+    }
+
+    XCTFail("SwiftUI/EG2 workaround missing GREYMatcher equivalent "
+            "NSRegularExpression.");
+  }
 }
 
 @end

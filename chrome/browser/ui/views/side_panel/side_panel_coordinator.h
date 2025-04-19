@@ -15,7 +15,7 @@
 #include "base/scoped_observation_traits.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/ui/side_panel/side_panel_ui.h"
+#include "chrome/browser/ui/views/side_panel/side_panel_ui.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/toolbar/pinned_toolbar/pinned_toolbar_actions_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
@@ -29,7 +29,6 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/view_observer.h"
 
-class Browser;
 class BrowserView;
 
 namespace actions {
@@ -65,7 +64,9 @@ class SidePanelCoordinator final : public SidePanelRegistryObserver,
   SidePanelCoordinator& operator=(const SidePanelCoordinator&) = delete;
   ~SidePanelCoordinator() override;
 
-  static SidePanelRegistry* GetGlobalSidePanelRegistry(Browser* browser);
+  void TearDownPreBrowserViewDestruction();
+
+  SidePanelRegistry* GetWindowRegistry();
 
   // SidePanelUI:
   void Show(SidePanelEntry::Id entry_id,
@@ -83,6 +84,7 @@ class SidePanelCoordinator final : public SidePanelRegistryObserver,
   bool IsSidePanelShowing() const override;
   bool IsSidePanelEntryShowing(
       const SidePanelEntry::Key& entry_key) const override;
+  void SetNoDelaysForTesting(bool no_delays_for_testing) override;
 
   // Returns the web contents in a side panel if one exists.
   content::WebContents* GetWebContentsForTest(SidePanelEntryId id) override;
@@ -97,10 +99,6 @@ class SidePanelCoordinator final : public SidePanelRegistryObserver,
   void UpdateNewTabButtonState();
 
   void UpdateHeaderPinButtonState();
-
-  // Prevent content swapping delays from happening for testing.
-  // This should be called before the side panel is first shown.
-  void SetNoDelaysForTesting(bool no_delays_for_testing);
 
   SidePanelEntry* GetCurrentSidePanelEntryForTesting() {
     return current_entry_.get();
@@ -135,8 +133,6 @@ class SidePanelCoordinator final : public SidePanelRegistryObserver,
                 std::nullopt,
             bool supress_animations = false);
   void OnClosed();
-
-  views::View* GetContentContainerView() const;
 
   // Returns the corresponding entry for `entry_key` or a nullptr if this key is
   // not registered in the currently observed registries. This looks through the
@@ -179,11 +175,11 @@ class SidePanelCoordinator final : public SidePanelRegistryObserver,
                                views::View* starting_from) override;
 
   // PinnedToolbarActionsModel::Observer:
-  void OnActionAdded(const actions::ActionId& id) override {}
-  void OnActionRemoved(const actions::ActionId& id) override {}
-  void OnActionMoved(const actions::ActionId& id,
-                     int from_index,
-                     int to_index) override {}
+  void OnActionAddedLocally(const actions::ActionId& id) override {}
+  void OnActionRemovedLocally(const actions::ActionId& id) override {}
+  void OnActionMovedLocally(const actions::ActionId& id,
+                            int from_index,
+                            int to_index) override {}
   void OnActionsChanged() override;
 
   SidePanelRegistry* GetActiveContextualRegistry() const;
@@ -243,7 +239,9 @@ class SidePanelCoordinator final : public SidePanelRegistryObserver,
   base::TimeTicks opened_timestamp_;
 
   const raw_ptr<BrowserView, AcrossTasksDanglingUntriaged> browser_view_;
-  raw_ptr<SidePanelRegistry> global_registry_;
+
+  // This registry is scoped to the browser window and is owned by this class.
+  std::unique_ptr<SidePanelRegistry> window_registry_;
 
   // current_entry_ tracks the entry that currently has its view hosted by the
   // side panel. It is necessary as current_entry_ may belong to a contextual

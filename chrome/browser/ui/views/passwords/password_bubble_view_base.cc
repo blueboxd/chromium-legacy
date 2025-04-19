@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/accessibility/theme_tracking_non_accessible_image_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
@@ -26,7 +27,10 @@
 #include "chrome/browser/ui/views/passwords/password_save_update_view.h"
 #include "chrome/browser/ui/views/passwords/post_save_compromised_bubble_view.h"
 #include "chrome/browser/ui/views/passwords/shared_passwords_notification_view.h"
+#include "chrome/browser/ui/views/toolbar/pinned_toolbar_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/browser/ui/views/webauthn/passkey_deleted_confirmation_view.h"
+#include "chrome/browser/ui/views/webauthn/passkey_saved_confirmation_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/password_form.h"
@@ -73,9 +77,14 @@ void PasswordBubbleViewBase::ShowBubble(content::WebContents* web_contents,
     return;
   }
 
-  g_manage_passwords_bubble_->SetHighlightedButton(
-      button_provider->GetPageActionIconView(
-          PageActionIconType::kManagePasswords));
+  // If the anchor_view is a button, it will automatically be used as the
+  // highlighted button by BubbleDialogDelegate. If not, we set the page action
+  // icon as the highlighted button here.
+  if (!views::Button::AsButton(anchor_view)) {
+    g_manage_passwords_bubble_->SetHighlightedButton(
+        button_provider->GetPageActionIconView(
+            PageActionIconType::kManagePasswords));
+  }
 
   views::BubbleDialogDelegateView::CreateBubble(g_manage_passwords_bubble_);
 
@@ -143,6 +152,13 @@ PasswordBubbleViewBase* PasswordBubbleViewBase::CreateBubble(
   } else if (model_state ==
              password_manager::ui::PASSWORD_STORE_CHANGED_BUBBLE_STATE) {
     view = new PasswordDefaultStoreChangedView(web_contents, anchor_view);
+  } else if (model_state ==
+             password_manager::ui::PASSKEY_SAVED_CONFIRMATION_STATE) {
+    view = new PasskeySavedConfirmationView(web_contents, anchor_view);
+  } else if (model_state ==
+             password_manager::ui::PASSKEY_DELETED_CONFIRMATION_STATE) {
+    view =
+        new PasskeyDeletedConfirmationView(web_contents, anchor_view, reason);
   } else {
     NOTREACHED_NORETURN();
   }

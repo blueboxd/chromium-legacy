@@ -47,7 +47,7 @@ void OnZoomLevelChangeOnUI(
   }
 
   int zoom_level =
-      std::round(100 * blink::PageZoomLevelToZoomFactor(
+      std::round(100 * blink::ZoomLevelToZoomFactor(
                            HostZoomMap::GetZoomLevel(captured_wc.get())));
   on_zoom_level_change_callback.Run(zoom_level);
 }
@@ -76,7 +76,7 @@ std::optional<CapturedSurfaceInfo> ResolveCapturedSurfaceOnUI(
   }
 
   int initial_zoom_level = std::round(
-      100 * blink::PageZoomLevelToZoomFactor(HostZoomMap::GetZoomLevel(wc)));
+      100 * blink::ZoomLevelToZoomFactor(HostZoomMap::GetZoomLevel(wc)));
 
   std::unique_ptr<base::CallbackListSubscription,
                   BrowserThread::DeleteOnUIThread>
@@ -129,7 +129,7 @@ CapturedSurfaceControlResult DoSendWheel(
 
   // Scale (x, y).
   const gfx::Size captured_viewport_size =
-      captured_rwhi->GetRootWidgetViewportSize();
+      captured_rwhi->GetRenderInputRouter()->GetRootWidgetViewportSize();
   if (captured_viewport_size.width() < 1 ||
       captured_viewport_size.height() < 1) {
     return CapturedSurfaceControlResult::kUnknownError;
@@ -208,9 +208,9 @@ CapturedSurfaceControlResult DoSetZoomLevel(
   // TODO(crbug.com/328589994): Hard-code kCapturedSurfaceControlTemporaryZoom.
   if (!base::FeatureList::IsEnabled(
           features::kCapturedSurfaceControlTemporaryZoom)) {
-    HostZoomMap::SetZoomLevel(captured_wc.get(),
-                              blink::PageZoomFactorToZoomLevel(
-                                  static_cast<double>(zoom_level) / 100));
+    HostZoomMap::SetZoomLevel(
+        captured_wc.get(),
+        blink::ZoomFactorToZoomLevel(static_cast<double>(zoom_level) / 100));
     return CapturedSurfaceControlResult::kSuccess;
   }
 
@@ -222,7 +222,7 @@ CapturedSurfaceControlResult DoSetZoomLevel(
 
   zoom_map->SetTemporaryZoomLevel(
       captured_wc->GetPrimaryMainFrame()->GetGlobalId(),
-      blink::PageZoomFactorToZoomLevel(static_cast<double>(zoom_level) / 100));
+      blink::ZoomFactorToZoomLevel(static_cast<double>(zoom_level) / 100));
 
   capturer_wci->DidCapturedSurfaceControl();
 

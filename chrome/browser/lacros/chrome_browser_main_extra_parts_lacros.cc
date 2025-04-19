@@ -47,6 +47,7 @@
 #include "chrome/browser/lacros/lacros_memory_pressure_evaluator.h"
 #include "chrome/browser/lacros/launcher_search/search_controller_factory_lacros.h"
 #include "chrome/browser/lacros/launcher_search/search_controller_lacros.h"
+#include "chrome/browser/lacros/media_app_lacros.h"
 #include "chrome/browser/lacros/multitask_menu_nudge_delegate_lacros.h"
 #include "chrome/browser/lacros/net/network_change_manager_bridge.h"
 #include "chrome/browser/lacros/net/network_settings_observer.h"
@@ -54,7 +55,6 @@
 #include "chrome/browser/lacros/suggestion_service_lacros.h"
 #include "chrome/browser/lacros/sync/sync_crosapi_manager_lacros.h"
 #include "chrome/browser/lacros/task_manager_lacros.h"
-#include "chrome/browser/lacros/ui_metric_recorder_lacros.h"
 #include "chrome/browser/lacros/views_text_services_context_menu_lacros.h"
 #include "chrome/browser/lacros/vpn_extension_tracker_lacros.h"
 #include "chrome/browser/lacros/web_app_provider_bridge_lacros.h"
@@ -63,7 +63,7 @@
 #include "chrome/browser/memory/oom_kills_monitor.h"
 #include "chrome/browser/metrics/structured/chrome_structured_metrics_delegate.h"
 #include "chrome/browser/profiles/profiles_state.h"
-#include "chrome/browser/ui/quick_answers/read_write_cards_manager_impl.h"
+#include "chrome/browser/ui/chromeos/read_write_cards/read_write_cards_manager_impl.h"
 #include "chrome/common/chrome_features.h"
 #include "chromeos/components/kiosk/kiosk_utils.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -222,6 +222,7 @@ void ChromeBrowserMainExtraPartsLacros::PostBrowserStart() {
   fullscreen_controller_client_ =
       std::make_unique<FullscreenControllerClientLacros>();
   kiosk_session_service_ = std::make_unique<KioskSessionServiceLacros>();
+  media_app_ = std::make_unique<crosapi::MediaAppLacros>();
   network_change_manager_bridge_ =
       std::make_unique<NetworkChangeManagerBridge>();
   screen_orientation_delegate_ =
@@ -303,8 +304,6 @@ void ChromeBrowserMainExtraPartsLacros::PostBrowserStart() {
         g_browser_process->local_state());
   }
 
-  ui_metric_recorder_ = std::make_unique<UiMetricRecorderLacros>();
-
   if (chromeos::BrowserParamsProxy::Get()->VcControlsUiEnabled() &&
       chromeos::LacrosService::Get()
           ->IsAvailable<crosapi::mojom::VideoConferenceManager>()) {
@@ -341,6 +340,12 @@ void ChromeBrowserMainExtraPartsLacros::PostProfileInit(
   if (!is_initial_profile) {
     return;
   }
+
+  // Needs to be initialized before `read_write_cards_manager_`. This is because
+  // `QuickAnswersState` needs `MagicBoostState` to be initialized before it is
+  // constructed.
+  magic_boost_state_lacros_ =
+      std::make_unique<chromeos::MagicBoostStateLacros>();
 
   read_write_cards_manager_ =
       std::make_unique<chromeos::ReadWriteCardsManagerImpl>();

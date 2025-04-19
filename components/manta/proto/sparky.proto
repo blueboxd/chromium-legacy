@@ -5,6 +5,8 @@
 syntax = "proto3";
 option optimize_for = LITE_RUNTIME;
 
+import "components/manta/proto/common.proto";
+
 package manta.proto;
 
 enum Task {
@@ -33,11 +35,17 @@ enum SettingType {
   SETTING_TYPE_INTEGER = 4;
 }
 
+enum Role {
+  ROLE_UNSPECIFIED = 0;
+  ROLE_USER = 1;
+  ROLE_ASSISTANT = 2;
+}
+
 message BatteryData {
-  optional string battery_health = 1;
-  optional string cycleCount = 2;
+  optional int32 battery_health = 1;
+  optional int32 cycle_count = 2;
   optional string battery_time = 3;
-  optional string battery_charge_percentage = 4;
+  optional int32 battery_charge_percentage = 4;
 }
 
 message StorageData {
@@ -46,14 +54,14 @@ message StorageData {
 }
 
 message CPUData {
-  optional string cpu_usage_snapshot = 1;
-  optional string temperature = 2;
-  optional string clock_speed = 3;
+  optional int32 cpu_usage_snapshot = 1;
+  optional int32 temperature = 2;
+  optional double clock_speed_ghz = 3;
 }
 
 message MemoryData {
-  optional string free_ram = 1;
-  optional string total_ram = 2;
+  optional double free_ram_gb = 1;
+  optional double total_ram_gb = 2;
 }
 
 message DiagnosticsData {
@@ -61,6 +69,10 @@ message DiagnosticsData {
   optional StorageData storage = 2;
   optional CPUData cpu = 3;
   optional MemoryData memory = 4;
+}
+
+message ServerConfig {
+  optional string server_url = 1;
 }
 
 message SettingsValue {
@@ -82,13 +94,51 @@ message SettingsData {
   repeated Setting setting = 1;
 }
 
-message Action {
-  optional SettingsData settings = 1;
+message App {
+  string id = 1;
+  string name = 2;
+  repeated string searchable_term = 3;
 }
 
-message FinalResponse {
-  string answer = 1;
-  optional Action action = 2;
+message AppsData {
+  repeated App app = 1;
+}
+
+message TextEntry {
+  optional string text = 1;
+}
+
+// Press one key on the keyboard, possibly with modifiers.
+message KeyPress {
+  // A KeyboardEvent string from https://www.w3.org/TR/uievents-key/
+  optional string key = 1;
+
+  // Which modifier keys should be held down while pressing `key`. Meta is
+  // skipped because it's missing on ChromeOS keyboards.
+  optional bool control = 2;
+  optional bool alt = 3;
+  optional bool shift = 4;
+}
+
+message Click {
+  optional int32 x_pos = 1;
+  optional int32 y_pos = 2;
+}
+
+message FileAction {
+  optional string launch_file_path = 1;
+}
+
+message Action {
+  oneof action {
+    Setting update_setting = 1;
+    string launch_app_id = 2;
+    Click click = 3;
+    TextEntry text_entry = 4;
+    bool all_done = 5;
+    FileAction file_action = 6;
+    KeyPress key_press = 7;
+  }
 }
 
 message DiagnosticsRequest {
@@ -97,31 +147,60 @@ message DiagnosticsRequest {
 
 message SettingsDataRequest {}
 
-message ContextRequest {
-  reserved 2;
+message FileRequest {
+  repeated string paths = 1;
+}
 
+message File {
+  optional string path = 1;
+  optional string name = 2;
+  optional int64 size_in_bytes = 3;
+  // Returns a relative date if the file date was yesterday or today
+  //`Today 11:44` or it returns the date in the format of `22 July 2024, 13:38`.
+  optional string date_modified = 4;
+  optional bytes serialized_bytes = 5;
+  optional string summary = 6;
+}
+
+message FilesData {
+  repeated File files = 1;
+}
+
+message Update {
+  optional FilesData files_with_summary = 1;
+}
+
+message ContextRequest {
   optional DiagnosticsRequest diagnostics = 1;
+  optional FileRequest files = 2;
   optional SettingsDataRequest settings = 3;
 }
 
-message SparkyResponse {
-  oneof sparky_response {
-    ContextRequest context_request = 1;
-    FinalResponse final_response = 2;
-  }
+message Turn {
+  optional string message = 1;
+  optional Role role = 2;
+  repeated Action action = 3;
 }
 
-message InputText {
-  optional string text = 1;
-  optional string tag = 2;
+message SparkyResponse {
+  optional ContextRequest context_request = 1;
+  optional Turn latest_reply = 2;
+  optional Update update = 3;
+}
+
+message WebContent {
+  optional string page_contents = 1;
+  optional string page_url = 2;
 }
 
 message SparkyContextData {
-  reserved 5, 6, 7;
-
   optional Task task = 1;
-  optional string page_contents = 2;
-  optional DiagnosticsData diagnostics_data = 3;
-  optional SettingsData settings_data = 4;
-  repeated InputText q_and_a = 8;
+  optional DiagnosticsData diagnostics_data = 2;
+  optional SettingsData settings_data = 3;
+  repeated Turn conversation = 4;
+  optional Image screenshot = 5;
+  optional AppsData apps_data = 6;
+  optional WebContent web_contents = 7;
+  optional FilesData files_data = 8;
+  optional ServerConfig server_config = 9;
 }

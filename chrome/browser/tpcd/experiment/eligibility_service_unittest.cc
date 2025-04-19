@@ -44,6 +44,8 @@ namespace {
 using ::testing::_;
 using ::testing::Return;
 using TpcdExperimentEligibility = privacy_sandbox::TpcdExperimentEligibility;
+using NoticeType = privacy_sandbox::TrackingProtectionOnboarding::NoticeType;
+using SurfaceType = privacy_sandbox::TrackingProtectionOnboarding::SurfaceType;
 
 constexpr char kReasonForEligibilityStoredInPrefsHistogram[] =
     "PrivacySandbox.CookieDeprecationFacilitatedTesting."
@@ -188,10 +190,11 @@ TEST_F(EligibilityServiceTest, VersionChange_OnboardingPrefsReset) {
   SetChannelVersion(version_info::Channel::BETA);
 
   // Simulate onboarding a profile.
-  onboarding_service_->MaybeMarkEligible();
-  onboarding_service_->OnboardingNoticeShown();
+  onboarding_service_->MaybeMarkModeBEligible();
+  onboarding_service_->NoticeShown(SurfaceType::kDesktop,
+                                   NoticeType::kModeBOnboarding);
   onboarding_service_->NoticeActionTaken(
-      privacy_sandbox::TrackingProtectionOnboarding::NoticeType::kOnboarding,
+      SurfaceType::kDesktop, NoticeType::kModeBOnboarding,
       privacy_sandbox::TrackingProtectionOnboarding::NoticeAction::kGotIt);
 
   EXPECT_EQ(onboarding_service_->GetOnboardingStatus(),
@@ -329,7 +332,8 @@ TEST_F(EligibilityServiceDisable3PCsTest, Onboarded_NotifyManager) {
   EXPECT_CALL(*experiment_manager_, NotifyProfileTrackingProtectionOnboarded);
 
   // Simulate onboarding a profile.
-  onboarding_service_->OnboardingNoticeShown();
+  onboarding_service_->NoticeShown(SurfaceType::kDesktop,
+                                   NoticeType::kModeBOnboarding);
 }
 
 class EligibilityServiceSilentOnboardingTest
@@ -355,7 +359,8 @@ TEST_F(EligibilityServiceSilentOnboardingTest, Onboarded_NotifyManager) {
   EXPECT_CALL(*experiment_manager_, NotifyProfileTrackingProtectionOnboarded);
 
   // Simulate onboarding a profile.
-  onboarding_service_->SilentOnboardingNoticeShown();
+  onboarding_service_->NoticeShown(SurfaceType::kDesktop,
+                                   NoticeType::kModeBSilentOnboarding);
 }
 
 }  // namespace tpcd::experiment

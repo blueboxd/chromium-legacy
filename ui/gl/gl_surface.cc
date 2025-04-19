@@ -45,10 +45,6 @@ bool GLSurface::Recreate() {
   return false;
 }
 
-bool GLSurface::DeferDraws() {
-  return false;
-}
-
 bool GLSurface::SupportsPostSubBuffer() {
   return false;
 }
@@ -88,13 +84,6 @@ void GLSurface::PostSubBufferAsync(int x,
 
 bool GLSurface::OnMakeCurrent(GLContext* context) {
   return true;
-}
-
-bool GLSurface::SetBackbufferAllocation(bool allocated) {
-  return true;
-}
-
-void GLSurface::SetFrontbufferAllocation(bool allocated) {
 }
 
 void* GLSurface::GetShareHandle() {
@@ -183,6 +172,8 @@ GpuPreference GLSurface::AdjustGpuPreference(GpuPreference gpu_preference) {
 }
 
 GLSurface::~GLSurface() {
+  // InvalidateWeakPtrs should be called from the most concrete class.
+  CHECK(!weak_ptr_factory_.HasWeakPtrs());
   if (GetCurrent() == this) {
     ClearCurrent();
   }
@@ -194,6 +185,18 @@ void GLSurface::ClearCurrent() {
 
 void GLSurface::SetCurrent() {
   current_surface = this;
+}
+
+base::WeakPtr<GLSurface> GLSurface::AsWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
+void GLSurface::InvalidateWeakPtrs() {
+  weak_ptr_factory_.InvalidateWeakPtrs();
+}
+
+bool GLSurface::HasWeakPtrs() {
+  return weak_ptr_factory_.HasWeakPtrs();
 }
 
 bool GLSurface::ExtensionsContain(const char* c_extensions, const char* name) {

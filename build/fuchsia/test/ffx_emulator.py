@@ -10,6 +10,8 @@ import random
 
 from contextlib import AbstractContextManager
 
+import monitors
+
 from common import run_ffx_command, IMAGES_ROOT, INTERNAL_IMAGES_ROOT, \
                    DIR_SRC_ROOT
 from compatible_utils import get_host_arch
@@ -28,7 +30,6 @@ class FfxEmulator(AbstractContextManager):
                 self._product = 'terminal.qemu-arm64'
 
         self._enable_graphics = args.enable_graphics
-        self._hardware_gpu = args.hardware_gpu
         self._logs_dir = args.logs_dir
         self._with_network = args.with_network
         if args.everlasting:
@@ -62,8 +63,6 @@ class FfxEmulator(AbstractContextManager):
         configs = ['emu.start.timeout=300']
         if not self._enable_graphics:
             emu_command.append('-H')
-        if self._hardware_gpu:
-            emu_command.append('--gpu')
         if self._logs_dir:
             emu_command.extend(
                 ('-l', os.path.join(self._logs_dir, 'emulator_log')))
@@ -89,7 +88,8 @@ class FfxEmulator(AbstractContextManager):
         if self._product.endswith('arm64'):
             emu_command.extend(['--engine', 'qemu'])
 
-        run_ffx_command(cmd=emu_command, timeout=310, configs=configs)
+        with monitors.time_consumption('emulator', 'startup_time'):
+            run_ffx_command(cmd=emu_command, timeout=310, configs=configs)
 
         return self._node_name
 

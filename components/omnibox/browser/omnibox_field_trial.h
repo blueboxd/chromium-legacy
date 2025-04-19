@@ -420,6 +420,14 @@ extern const char kOmniboxUIUnelideURLOnHoverThresholdMsParam[];
 
 // Local history zero-prefix (aka zero-suggest) and prefix suggestions.
 
+// Determines the debouncing delay (in milliseconds) to use when throttling ZPS
+// prefetch requests.
+extern const base::FeatureParam<int> kZeroSuggestPrefetchDebounceDelay;
+
+// Determines whether to calculate debouncing delay relative to the latest
+// successful run (instead of the latest run request).
+extern const base::FeatureParam<bool> kZeroSuggestPrefetchDebounceFromLastRun;
+
 // Determines the maximum number of entries stored by the in-memory ZPS cache.
 extern const base::FeatureParam<int> kZeroSuggestCacheMaxSize;
 
@@ -498,12 +506,6 @@ extern const base::FeatureParam<double> kDomainSuggestionsScoreFactor;
 // traditional and the alternate scoring algorithms.
 extern const base::FeatureParam<bool> kDomainSuggestionsAlternativeScoring;
 
-extern const base::FeatureParam<omnibox::CompanyEntityIconAdjustmentGroup>
-    kCompanyEntityIconAdjustmentGroup;
-
-extern const base::FeatureParam<bool>
-    kCompanyEntityIconAdjustmentCounterfactual;
-
 // ---------------------------------------------------------
 // ML Relevance Scoring ->
 
@@ -515,6 +517,7 @@ extern const base::FeatureParam<bool>
 // on the main thread. After that, it can be called from any thread.
 struct MLConfig {
   MLConfig();
+  ~MLConfig();
   MLConfig(const MLConfig&);
   MLConfig& operator=(const MLConfig& other);
 
@@ -568,12 +571,7 @@ struct MLConfig {
   //    number of URLs above searches by +/- 1; because it doesn't consider
   //    `allowed_to_be_default`. We've experimented with this for multiple
   //    milestone, so this has the advantage in potentially launching first.
-  // 2) The `stable_search_blending` implementation in
-  //    `RunBatchUrlScoringModelWithStableSearches()`. This is similar to (1)
-  //    but accounts for `allowed_to_be_default` and avoids changing the default
-  //    suggestion from a URL to a search; or vice versa; or the number of URLs
-  //    above searches. This is least likely to affect search metrics.
-  // 3) The `mapped_search_blending` implementation in
+  // 2) The `mapped_search_blending` implementation in
   //    `RunBatchUrlScoringModelMappedSearchBlending()`. It maps ML scores
   //    linearly to a relevance score. Unlike the above 2, instead of trying to
   //    maintain search v URL balance for each individual input, it tries to
@@ -581,23 +579,69 @@ struct MLConfig {
   //    Not keeping the search v URL balance fixed for each individual input is
   //    the long term goal, though we may end up with a more complicated or ML
   //    approach.
+  // 3) The `piecewise_mapped_search_blending` implementation in
+  //    `RunBatchUrlScoringModelPiecewiseMappedSearchBlending()`. It maps ML
+  //    scores to relevance scores using a piecewise function (which must be
+  //    continuous with respect to ML scores) composed of individual line
+  //    segments whose break points are specified by
+  //    `piecewise_mapped_search_blending_break_points`. The Search vs Url
+  //    behavior of this implementation is similar to that noted above in (2).
 
   // Enables approach (2) above.
-  bool stable_search_blending{false};
-
-  // Enables approach (3) above. No effect if `stable_search_blending` is true.
   // Map ML scores [0, 1] to [`min`, `max`]. Groups URLs above searches if their
-  // mapped relevance is greater than `grouping_threshold`
+  // mapped relevance is greater than
+  // `mapped_search_blending_grouping_threshold`.
   bool mapped_search_blending{false};
   int mapped_search_blending_min{600};
   int mapped_search_blending_max{2800};
   int mapped_search_blending_grouping_threshold{1400};
+
+  // Enables approach (3) above.
+  // Map ML scores [0, 1] to relevance scores by using a piecewise score mapping
+  // function. Groups URLs above searches if their mapped relevance is greater
+  // than `piecewise_mapped_search_blending_grouping_threshold`.
+  bool piecewise_mapped_search_blending{false};
+  int piecewise_mapped_search_blending_grouping_threshold{1400};
+  // Specifies a list of N break points (x, y) which collectively define the N-1
+  // line segments that comprise the piecewise score mapping function. The list
+  // of break points must be sorted in ascending order with respect to their
+  // x-coordinates. This list of break points will be applied to score any
+  // suggestion which doesn't satisfy the criteria for applying one of the more
+  // specific break points params listed below.
+  // As an example, if we use "0,550;0.018,1300;0.14,1398;1,1422" as the value
+  // for this param, then the resulting list of break points would be [(0, 550),
+  // (0.018, 1300), (0.14, 1398), (1, 1422)].
+  std::string piecewise_mapped_search_blending_break_points;
+  // Similar to `piecewise_mapped_search_blending_break_points`, this param
+  // specifies a list of break points that will only be used when scoring
+  // verbatim URL suggestions.
+  // A "verbatim URL" suggestion is any suggestion that is UWYT itself or has
+  // been deduped with a UWYT suggestion.
+  std::string piecewise_mapped_search_blending_break_points_verbatim_url;
+  // Similar to `piecewise_mapped_search_blending_break_points`, this param
+  // specifies a list of break points that will only be used when scoring
+  // Search suggestions.
+  std::string piecewise_mapped_search_blending_break_points_search;
+  // Specifies a bias term that will be added to the relevance score which was
+  // computed by the piecewise score mapping function. By varying this term,
+  // it's possible to make the piecewise mapping function more or less
+  // aggressive at a global scale.
+  // The same bias param value will be used regardless of which one of the above
+  // "break points" variants is currently in use.
+  int piecewise_mapped_search_blending_relevance_bias{0};
 
   // If true, ML scoring service will utilize in-memory ML score cache.
   // Equivalent to omnibox::kMlUrlScoreCaching.
   bool ml_url_score_caching{false};
   // Maximum number of cached entries to store in the ML score cache.
   int max_ml_score_cache_size{30};
+
+  // If true, Search suggestions will be eligible for re-ranking via ML scoring.
+  bool enable_ml_scoring_for_searches{false};
+
+  // If true, verbatim URL suggestions will be eligible for re-ranking via ML
+  // scoring.
+  bool enable_ml_scoring_for_verbatim_urls{false};
 };
 
 // A testing utility class for overriding the current configuration returned
@@ -649,6 +693,27 @@ bool IsUrlScoringModelEnabled();
 // Whether ML URL score caching is enabled.
 bool IsMlUrlScoreCachingEnabled();
 
+enum class PiecewiseMappingVariant {
+  // Regular piecewise score mapping for most suggestion types.
+  kRegular,
+  // Piecewise score mapping specific to verbatim URL suggestions.
+  kVerbatimUrl,
+  // Piecewise score mapping specific to Search suggestions.
+  kSearch,
+
+  kPiecewiseMappingVariantSize,
+};
+
+// Converts the `piecewise_break_points` feature param into a vector of (x, y)
+// coordinates specifying the "break points" of the piecewise ML score mapping
+// function.
+// The `mapping_variant` parameter allows callers to fetch an alternative list
+// of break points which might be more relevant for suggestions of a certain
+// type.
+std::vector<std::pair<double, int>> GetPiecewiseMappingBreakPoints(
+    PiecewiseMappingVariant mapping_variant =
+        PiecewiseMappingVariant::kRegular);
+
 // <- ML Relevance Scoring
 // ---------------------------------------------------------
 // Inspire Me ->
@@ -696,6 +761,10 @@ constexpr base::FeatureParam<omnibox::ActionInfo::ActionType>
         {},
         &kActionsInSuggestRemoveActionTypesVariants);
 
+constexpr base::FeatureParam<bool> kAnswerActionsCounterfactual(
+    &omnibox::kOmniboxAnswerActions,
+    "AnswerActionsCounterfactual",
+    false);
 constexpr base::FeatureParam<bool> kAnswerActionsShowAboveKeyboard(
     &omnibox::kOmniboxAnswerActions,
     "ShowAboveKeyboard",
@@ -741,6 +810,10 @@ extern const base::FeatureParam<int> kStarterPackIPHPerSessionLimit;
 // When true, enables an informational IPH message at the bottom of the Omnibox
 // directing users to certain starter pack engines.
 bool IsStarterPackIPHEnabled();
+
+// When true, enables an informational IPH message at the bottom of the Omnibox
+// directing users to featured Enterprise search created by policy.
+bool IsFeaturedEnterpriseSearchIPHEnabled();
 
 // <- Site Search Starter Pack
 // ---------------------------------------------------------

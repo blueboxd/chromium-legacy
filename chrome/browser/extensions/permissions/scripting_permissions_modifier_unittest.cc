@@ -108,7 +108,7 @@ TEST_F(ScriptingPermissionsModifierUnitTest, GrantAndWithholdHostPermissions) {
     SCOPED_TRACE(test_case_name);
     scoped_refptr<const Extension> extension =
         ExtensionBuilder(test_case_name)
-            .AddPermissions(test_case)
+            .AddHostPermissions(test_case)
             .AddContentScript("foo.js", test_case)
             .SetLocation(ManifestLocation::kInternal)
             .Build();
@@ -156,7 +156,7 @@ TEST_F(ScriptingPermissionsModifierUnitTest, WithholdHostPermissionsOnInstall) {
   constexpr char kHostChromium[] = "https://chromium.org/*";
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("a")
-          .AddPermissions({kHostGoogle, kHostChromium})
+          .AddHostPermissions({kHostGoogle, kHostChromium})
           .AddContentScript("foo.js", {kHostGoogle})
           .SetLocation(ManifestLocation::kInternal)
           .AddFlags(Extension::WITHHOLD_PERMISSIONS)
@@ -414,7 +414,7 @@ TEST_F(ScriptingPermissionsModifierUnitTest, SwitchBehavior) {
 
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("a")
-          .AddPermission(URLPattern::kAllUrlsPattern)
+          .AddHostPermission(URLPattern::kAllUrlsPattern)
           .AddContentScript("foo.js", {URLPattern::kAllUrlsPattern})
           .SetLocation(ManifestLocation::kInternal)
           .Build();
@@ -445,7 +445,7 @@ TEST_F(ScriptingPermissionsModifierUnitTest, GrantHostPermission) {
 
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("extension")
-          .AddPermission(URLPattern::kAllUrlsPattern)
+          .AddHostPermission(URLPattern::kAllUrlsPattern)
           .AddContentScript("foo.js", {URLPattern::kAllUrlsPattern})
           .SetLocation(ManifestLocation::kInternal)
           .Build();
@@ -580,7 +580,7 @@ TEST_F(ScriptingPermissionsModifierUnitTest,
   InitializeEmptyExtensionService();
 
   scoped_refptr<const Extension> extension =
-      ExtensionBuilder("test").AddPermission("<all_urls>").Build();
+      ExtensionBuilder("test").AddHostPermission("<all_urls>").Build();
   ScriptingPermissionsModifier modifier(profile(), extension.get());
 
   modifier.SetWithholdHostPermissions(true);
@@ -607,7 +607,8 @@ TEST_F(ScriptingPermissionsModifierUnitTest,
 
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("test")
-          .AddPermissions({"https://example.com/*", "https://chromium.org/*"})
+          .AddHostPermissions(
+              {"https://example.com/*", "https://chromium.org/*"})
           .Build();
   ScriptingPermissionsModifier modifier(profile(), extension.get());
 
@@ -632,11 +633,9 @@ TEST_F(ScriptingPermissionsModifierUnitTest,
        RemoveAllGrantedHostPermissions_GrantedOptionalPermissions) {
   InitializeEmptyExtensionService();
 
-  static constexpr char kOptionalPermissions[] = R"(["https://example.com/*"])";
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("test")
-          .SetManifestKey("optional_permissions",
-                          base::test::ParseJsonList(kOptionalPermissions))
+          .AddOptionalHostPermission("https://example.com/*")
           .Build();
 
   EXPECT_THAT(GetEffectivePatternsAsStrings(*extension), testing::IsEmpty());
@@ -683,7 +682,7 @@ TEST_F(ScriptingPermissionsModifierUnitTest, HasBroadGrantedHostPermissions) {
     SCOPED_TRACE(test_case_name);
     scoped_refptr<const Extension> extension =
         ExtensionBuilder("test: " + test_case_name)
-            .AddPermission("<all_urls>")
+            .AddHostPermission("<all_urls>")
             .Build();
 
     ScriptingPermissionsModifier modifier(profile(), extension.get());
@@ -726,7 +725,7 @@ TEST_F(ScriptingPermissionsModifierUnitTest,
     SCOPED_TRACE(broad_pattern);
     scoped_refptr<const Extension> extension =
         ExtensionBuilder("test: " + broad_pattern)
-            .AddPermission("<all_urls>")
+            .AddHostPermission("<all_urls>")
             .Build();
     ScriptingPermissionsModifier modifier(profile(), extension.get());
 
@@ -824,7 +823,7 @@ TEST_F(ScriptingPermissionsModifierUnitTest, ChangeHostPermissions_AllHosts) {
   InitializeEmptyExtensionService();
 
   scoped_refptr<const Extension> extension =
-      ExtensionBuilder("extension").AddPermission("<all_urls>").Build();
+      ExtensionBuilder("extension").AddHostPermission("<all_urls>").Build();
   InitializeExtensionPermissions(profile(), *extension);
   auto* manager = PermissionsManager::Get(profile());
 
@@ -888,7 +887,7 @@ TEST_F(ScriptingPermissionsModifierUnitTest,
   InitializeEmptyExtensionService();
 
   scoped_refptr<const Extension> extension =
-      ExtensionBuilder("extension").AddPermission("*://*.com/*").Build();
+      ExtensionBuilder("extension").AddHostPermission("*://*.com/*").Build();
   InitializeExtensionPermissions(profile(), *extension);
 
   ScriptingPermissionsModifier(profile(), extension.get())
@@ -917,7 +916,7 @@ TEST_F(ScriptingPermissionsModifierUnitTest,
 
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("extension")
-          .AddPermission("*://*.example.com/*")
+          .AddHostPermission("*://*.example.com/*")
           .Build();
   InitializeExtensionPermissions(profile(), *extension);
 
@@ -946,7 +945,7 @@ TEST_F(ScriptingPermissionsModifierUnitTest, AddRuntimeGrantedHostPermission) {
 
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("extension")
-          .AddPermission("*://*.example.com/*")
+          .AddHostPermission("*://*.example.com/*")
           .Build();
   InitializeExtensionPermissions(profile(), *extension);
   ScriptingPermissionsModifier modifier(profile(), extension.get());
@@ -1022,7 +1021,7 @@ TEST_F(ScriptingPermissionsModifierUnitTest,
   InitializeEmptyExtensionService();
 
   scoped_refptr<const Extension> extension =
-      ExtensionBuilder("extension").AddPermission("*://*/*").Build();
+      ExtensionBuilder("extension").AddHostPermission("*://*/*").Build();
   InitializeExtensionPermissions(profile(), *extension);
   ScriptingPermissionsModifier modifier(profile(), extension.get());
   modifier.SetWithholdHostPermissions(true);
@@ -1055,11 +1054,9 @@ TEST_F(ScriptingPermissionsModifierUnitTest,
        RemoveAllURLsGrantedOptionalPermission) {
   InitializeEmptyExtensionService();
 
-  static constexpr char kOptionalPermissions[] = R"(["<all_urls>"])";
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("extension")
-          .SetManifestKey("optional_permissions",
-                          base::test::ParseJsonList(kOptionalPermissions))
+          .AddOptionalHostPermission("<all_urls>")
           .Build();
   InitializeExtensionPermissions(profile(), *extension);
 

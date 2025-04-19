@@ -24,7 +24,7 @@
 #include "url/android/gurl_android.h"
 #include "url/gurl.h"
 
-// Must come after other includes, because FromJniType() uses Profile.
+// Must come after all headers that specialize FromJniType() / ToJniType().
 #include "chrome/android/chrome_jni_headers/AutofillPaymentMethodsDelegate_jni.h"
 
 using base::android::JavaRef;
@@ -43,7 +43,8 @@ void RunVirtualCardEnrollmentFieldsLoadedCallback(
 
 AutofillPaymentMethodsDelegate::AutofillPaymentMethodsDelegate(Profile* profile)
     : profile_(profile) {
-  personal_data_manager_ = PersonalDataManagerFactory::GetForProfile(profile);
+  personal_data_manager_ =
+      PersonalDataManagerFactory::GetForBrowserContext(profile);
   payments_network_interface_ =
       std::make_unique<payments::PaymentsNetworkInterface>(
           profile->GetURLLoaderFactory(),

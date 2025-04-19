@@ -279,9 +279,11 @@ void AsyncLayerTreeFrameSink::DidNotProduceFrame(const viz::BeginFrameAck& ack,
   compositor_frame_sink_ptr_->DidNotProduceFrame(ack);
 }
 
-std::unique_ptr<LayerContext> AsyncLayerTreeFrameSink::CreateLayerContext() {
+std::unique_ptr<LayerContext> AsyncLayerTreeFrameSink::CreateLayerContext(
+    LayerTreeHostImpl& host_impl) {
   CHECK(compositor_frame_sink_ptr_);
-  return std::make_unique<VizLayerContext>(*compositor_frame_sink_ptr_);
+  return std::make_unique<VizLayerContext>(*compositor_frame_sink_ptr_,
+                                           host_impl);
 }
 
 void AsyncLayerTreeFrameSink::DidAllocateSharedBitmap(
@@ -311,6 +313,23 @@ void AsyncLayerTreeFrameSink::OnBeginFrame(
     std::vector<viz::ReturnedResource> resources) {
   viz::BeginFrameArgs adjusted_args = args;
   adjusted_args.client_arrival_time = base::TimeTicks::Now();
+
+  TRACE_EVENT(
+      "viz,benchmark,graphics.pipeline", "Graphics.Pipeline",
+      perfetto::Flow::Global(adjusted_args.trace_id),
+      [&](perfetto::EventContext ctx) {
+        auto* event = ctx.event<perfetto::protos::pbzero::ChromeTrackEvent>();
+        auto* data = event->set_chrome_graphics_pipeline();
+        data->set_step(needs_begin_frames_
+                           ? perfetto::protos::pbzero::ChromeGraphicsPipeline::
+                                 StepName::STEP_RECEIVE_BEGIN_FRAME
+                           : perfetto::protos::pbzero::ChromeGraphicsPipeline::
+                                 StepName::STEP_RECEIVE_BEGIN_FRAME_DISCARD);
+        if (needs_begin_frames_) {
+          data->set_frame_sequence(adjusted_args.frame_id.sequence_number);
+        }
+      });
+
   if (features::IsOnBeginFrameAcksEnabled()) {
     if (frame_ack) {
       DidReceiveCompositorFrameAck(std::move(resources));
@@ -330,15 +349,6 @@ void AsyncLayerTreeFrameSink::OnBeginFrame(
   }
 
   if (!needs_begin_frames_) {
-    TRACE_EVENT(
-        "viz,benchmark,graphics.pipeline", "Graphics.Pipeline",
-        perfetto::Flow::Global(adjusted_args.trace_id),
-        [&](perfetto::EventContext ctx) {
-          auto* event = ctx.event<perfetto::protos::pbzero::ChromeTrackEvent>();
-          auto* data = event->set_chrome_graphics_pipeline();
-          data->set_step(perfetto::protos::pbzero::ChromeGraphicsPipeline::
-                             StepName::STEP_RECEIVE_BEGIN_FRAME_DISCARD);
-        });
     // We had a race with SetNeedsBeginFrame(false) and still need to let the
     // sink know that we didn't use this BeginFrame. OnBeginFrame() can also be
     // called to deliver presentation feedback.
@@ -346,16 +356,6 @@ void AsyncLayerTreeFrameSink::OnBeginFrame(
                        FrameSkippedReason::kNoDamage);
     return;
   }
-  TRACE_EVENT(
-      "viz,benchmark,graphics.pipeline", "Graphics.Pipeline",
-      perfetto::Flow::Global(adjusted_args.trace_id),
-      [&](perfetto::EventContext ctx) {
-        auto* event = ctx.event<perfetto::protos::pbzero::ChromeTrackEvent>();
-        auto* data = event->set_chrome_graphics_pipeline();
-        data->set_step(perfetto::protos::pbzero::ChromeGraphicsPipeline::
-                           StepName::STEP_RECEIVE_BEGIN_FRAME);
-        data->set_frame_sequence(adjusted_args.frame_id.sequence_number);
-      });
 
   if (begin_frame_source_)
     begin_frame_source_->OnBeginFrame(adjusted_args);

@@ -427,6 +427,32 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'List', async function() {
       o);
 });
 
+AX_TEST_F('ChromeVoxOutputE2ETest', 'ListWithoutSetSize', async function() {
+  const root = await this.runWithLoadedTree(
+      '<ul aria-label="first"><li aria-label="a">a<li>b<li>c</ul>');
+  const el = root.firstChild.firstChild;
+  Object.defineProperty(root.firstChild, 'setSize', {get: () => null});
+
+  const range = CursorRange.fromNode(el);
+  const o = new Output().withSpeechAndBraille(range, null, 'navigate');
+
+  checkSpeechOutput(
+      'a|List item|first|List',
+      [
+        {value: {earcon: EarconId.LIST_ITEM}, start: 0, end: 1},
+        {value: 'name', start: 12, end: 17},
+        {value: 'role', start: 18, end: 22},
+      ],
+      o);
+  checkBrailleOutput(
+      'a lstitm first lst',
+      [
+        {value: new OutputNodeSpan(el), start: 0, end: 8},
+        {value: new OutputNodeSpan(el.parent), start: 9, end: 18},
+      ],
+      o);
+});
+
 AX_TEST_F('ChromeVoxOutputE2ETest', 'Tree', async function() {
   const root = await this.runWithLoadedTree(`
     <ul role="tree" style="list-style-type:none">
@@ -990,6 +1016,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'ValidateCommonProperties', function() {
     RoleType.CLIENT,
     RoleType.EMBEDDED_OBJECT,
     RoleType.GENERIC_CONTAINER,
+    RoleType.GRID_CELL,
     RoleType.IMAGE,
     RoleType.IME_CANDIDATE,
     RoleType.INLINE_TEXT_BOX,
@@ -1194,18 +1221,24 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'NestedList', async function() {
 
 AX_TEST_F('ChromeVoxOutputE2ETest', 'NoTooltipWithNameTitle', async function() {
   const root = await this.runWithLoadedTree(`
-    <div title="title"></div>
-    <div aria-label="label" title="title"></div>
-    <div aria-describedby="desc" title="title"></div>
-    <div aria-label="label" aria-describedby="desc" title="title"></div>
-    <div aria-label=""></div>
+    <div role="group" title="title"></div>
+    <div role="group" aria-label="label" title="title"></div>
+    <div role="group" aria-describedby="desc" title="title"></div>
+    <div role="group" aria-label="label" aria-describedby="desc" title="title">
+    </div>
+    <div role="group" aria-label=""></div>
     <p id="desc">describedby</p>
   `);
   const title = root.children[0];
   let o =
       new Output().withSpeech(CursorRange.fromNode(title), null, 'navigate');
   assertEqualsJSON(
-      {string_: 'title', spans_: [{value: 'name', start: 0, end: 5}]},
+      {
+        string_: 'title',
+        spans_: [
+          {value: 'nameOrDescendants', start: 0, end: 5},
+        ],
+      },
       o.speechOutputForTest);
 
   const labelTitle = root.children[1];
@@ -1215,7 +1248,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'NoTooltipWithNameTitle', async function() {
       {
         string_: 'label|title',
         spans_: [
-          {value: 'name', start: 0, end: 5},
+          {value: 'nameOrDescendants', start: 0, end: 5},
           {value: 'description', start: 6, end: 11},
         ],
       },
@@ -1228,7 +1261,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'NoTooltipWithNameTitle', async function() {
       {
         string_: 'title|describedby',
         spans_: [
-          {value: 'name', start: 0, end: 5},
+          {value: 'nameOrDescendants', start: 0, end: 5},
           {value: 'description', start: 6, end: 17},
         ],
       },
@@ -1241,7 +1274,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'NoTooltipWithNameTitle', async function() {
       {
         string_: 'label|describedby',
         spans_: [
-          {value: 'name', start: 0, end: 5},
+          {value: 'nameOrDescendants', start: 0, end: 5},
           {value: 'description', start: 6, end: 17},
         ],
       },
@@ -1547,7 +1580,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'TreeGridLevel', async function() {
     <table id="treegrid" role="treegrid" aria-label="Inbox">
       <tbody>
         <tr role="row" aria-level="1" aria-posinset="1" aria-setsize="1"
-            aria-expanded="true">
+            aria-expanded="true" aria-label="Treegrid faq">
           <td role="gridcell">Treegrids are awesome</td>
           <td role="gridcell">Want to learn how to use them?</td>
         </tr>
@@ -1561,10 +1594,11 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'TreeGridLevel', async function() {
       new Output().withoutHints().withSpeechAndBraille(range, null, 'navigate');
 
   checkSpeechOutput(
-      ' level 1 |Expanded|Row',
+      ' level 1 |Treegrid faq|Expanded|Row',
       [
-        {value: 'state', start: 10, end: 18},
-        {value: 'role', start: 19, end: 22},
+        {value: 'name', 'start': 10, 'end': 22},
+        {value: 'state', start: 23, end: 31},
+        {value: 'role', start: 32, end: 35},
       ],
       o);
 
@@ -1581,4 +1615,48 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'TreeGridLevel', async function() {
   checkSpeechOutput(
       'Want to learn how to use them?|row 1 column 2',
       [{value: 'name', start: 0, end: 30}], o);
+});
+
+AX_TEST_F('ChromeVoxOutputE2ETest', 'FocusFollowText', async function() {
+  const site = `<p>Hello World</p>
+                <button>Button</button>
+                <div>New Div</div>`;
+  const root = await this.runWithLoadedTree(site);
+  let called = false;
+  let actualBounds = {};
+
+  // Mock call to Accessibility Common extension
+  chrome.accessibilityPrivate.setChromeVoxFocus = ((bounds) => {
+    called = true;
+    actualBounds = bounds;
+  });
+
+  // Triggers drawing of the focus ring on text node
+  const text = root.find({role: RoleType.STATIC_TEXT});
+  new Output().withSpeech(CursorRange.fromNode(text)).go();
+  assertTrue(called);
+  assertEquals(text.location.left, actualBounds.left);
+  assertEquals(text.location.top, actualBounds.top);
+  assertEquals(text.location.width, actualBounds.width);
+  assertEquals(text.location.height, actualBounds.height);
+
+  // Shift focus to interactive element
+  const button = root.find({role: RoleType.BUTTON});
+  new Output().withSpeech(CursorRange.fromNode(button)).go();
+  assertEquals(button.location.left, actualBounds.left);
+  assertEquals(button.location.top, actualBounds.top);
+  assertEquals(button.location.width, actualBounds.width);
+  assertEquals(button.location.height, actualBounds.height);
+
+  // Ensure focus is shifted to new type of node that contains text
+  const div = root.find({role: RoleType.GENERIC_CONTAINER});
+  new Output().withSpeech(CursorRange.fromNode(div)).go();
+  assertEquals(div.location.left, actualBounds.left);
+  assertEquals(div.location.top, actualBounds.top);
+  assertEquals(div.location.width, actualBounds.width);
+  assertEquals(div.location.height, actualBounds.height);
+});
+
+AX_TEST_F('ChromeVoxOutputE2ETest', 'ToStringEmptyOutput', async function() {
+  assertEquals('', new Output().toString());
 });

@@ -61,6 +61,7 @@ public class MiniPlayerLayout extends LinearLayout {
     private MiniPlayerMediator mMediator;
     private float mFinalOpacity;
     private @ColorInt int mBackgroundColorArgb;
+    private int mYOffset;
 
     /** Constructor for inflating from XML. */
     public MiniPlayerLayout(Context context, AttributeSet attrs) {
@@ -136,8 +137,11 @@ public class MiniPlayerLayout extends LinearLayout {
         mFinalOpacity = endValue;
         setAlpha(startValue);
 
+        View nonErrorLayoutContainer = mErrorLayout.getVisibility() == View.GONE ? mContents : null;
         Runnable onFinished =
-                endValue == 1f ? mMediator::onFullOpacityReached : mMediator::onZeroOpacityReached;
+                endValue == 1f
+                        ? (() -> mMediator.onFullOpacityReached(nonErrorLayoutContainer))
+                        : mMediator::onZeroOpacityReached;
 
         if (mEnableAnimations) {
             // TODO: handle case where existing animation is incomplete and needs to be reversed
@@ -178,6 +182,21 @@ public class MiniPlayerLayout extends LinearLayout {
      */
     void setProgress(float progress) {
         mProgressBar.setProgress((int) (progress * mProgressBar.getMax()), true);
+    }
+
+    /**
+     * Set the yOffset of the mini player layout. If yOffset < 0, the view need to shift up from the
+     * bottom. It is implemented by applying a bottom margin.
+     */
+    void setYOffset(int yOffset) {
+        if (mYOffset == yOffset) return;
+
+        assert yOffset <= 0;
+
+        mYOffset = -yOffset;
+        MarginLayoutParams mlp = (MarginLayoutParams) getLayoutParams();
+        mlp.bottomMargin = mYOffset;
+        setLayoutParams(mlp);
     }
 
     void setInteractionHandler(InteractionHandler handler) {

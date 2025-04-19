@@ -13,6 +13,7 @@
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
@@ -49,13 +50,13 @@ CredentialLeakDialogView::CredentialLeakDialogView(
   SetButtonLabel(ui::DIALOG_BUTTON_OK, controller_->GetAcceptButtonLabel());
   SetButtonLabel(ui::DIALOG_BUTTON_CANCEL, controller_->GetCancelButtonLabel());
 
-  SetModalType(ui::MODAL_TYPE_CHILD);
+  SetModalType(ui::mojom::ModalType::kChild);
   SetShowCloseButton(false);
   set_fixed_width(views::LayoutProvider::Get()->GetDistanceMetric(
       views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH));
 
   using ControllerClosureFn = void (CredentialLeakDialogController::*)();
-  auto close_callback = [](CredentialLeakDialogController** controller,
+  auto close_callback = [](raw_ptr<CredentialLeakDialogController>* controller,
                            ControllerClosureFn fn) {
     // Null out the controller pointer stored in the parent object, to avoid any
     // further calls to the controller and inhibit recursive closes that would
@@ -64,7 +65,7 @@ CredentialLeakDialogView::CredentialLeakDialogView(
     //
     // Note that when this lambda gets bound it closes over &controller_, not
     // controller_ itself!
-    (std::exchange(*controller, nullptr)->*(fn))();
+    (controller->ExtractAsDangling()->*(fn))();
   };
 
   SetAcceptCallback(

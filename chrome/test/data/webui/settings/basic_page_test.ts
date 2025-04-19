@@ -12,36 +12,17 @@ import {isChromeOS, isLacros} from 'chrome://resources/js/platform.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import type {PrivacyGuideBrowserProxy, SettingsBasicPageElement, SettingsIdleLoadElement, SettingsPrefsElement, SettingsSectionElement, SyncStatus} from 'chrome://settings/settings.js';
+import type {SettingsBasicPageElement, SettingsIdleLoadElement, SettingsPrefsElement, SettingsSectionElement, SyncStatus} from 'chrome://settings/settings.js';
 import {CrSettingsPrefs, MetricsBrowserProxyImpl, pageVisibility, PerformanceBrowserProxyImpl, PrivacyGuideBrowserProxyImpl, PrivacyGuideInteractions, resetRouterForTesting, Router, routes, StatusAction} from 'chrome://settings/settings.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
-import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 import {eventToPromise, isChildVisible, isVisible, microtasksFinished} from 'chrome://webui-test/test_util.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
+import {TestPrivacyGuideBrowserProxy} from './test_privacy_guide_browser_proxy.js';
 import {TestMetricsBrowserProxy} from './test_metrics_browser_proxy.js';
 import {TestPerformanceBrowserProxy} from './test_performance_browser_proxy.js';
 
 // clang-format on
-class TestPrivacyGuideBrowserProxy extends TestBrowserProxy implements
-    PrivacyGuideBrowserProxy {
-  constructor() {
-    super([
-      'getPromoImpressionCount',
-      'incrementPromoImpressionCount',
-    ]);
-  }
-
-  getPromoImpressionCount() {
-    this.methodCalled('getPromoImpressionCount');
-    return 0;
-  }
-
-  incrementPromoImpressionCount() {
-    this.methodCalled('incrementPromoImpressionCount');
-  }
-}
-
 suite('BasicPage', () => {
   let page: SettingsBasicPageElement;
   let settingsPrefs: SettingsPrefsElement;
@@ -175,12 +156,12 @@ suite('BasicPage', () => {
 
     function getDefault() {
       return getCardElement()!.shadowRoot!.querySelector(
-          'div[route-path="default"].iron-selected');
+          'div[route-path="default"].selected');
     }
 
     function getSubpage() {
       return getCardElement()!.shadowRoot!.querySelector(
-          'settings-subpage.iron-selected settings-appearance-fonts-page');
+          'settings-subpage.selected settings-appearance-fonts-page');
     }
 
     // RouteState.SECTION -> RoutState.SECTION
@@ -444,6 +425,10 @@ suite('Performance', () => {
     return page.shadowRoot!.querySelector('#performanceSettingsSection');
   }
 
+  function queryMemorySettingsSection(): SettingsSectionElement|null {
+    return page.shadowRoot!.querySelector('#memorySettingsSection');
+  }
+
   function queryBatterySettingsSection(): SettingsSectionElement|null {
     return page.shadowRoot!.querySelector('#batterySettingsSection');
   }
@@ -474,6 +459,10 @@ suite('Performance', () => {
     assertEquals(
         queryPerformanceSettingsSection()!.shadowRoot!.querySelector('h2')
             ?.innerText,
+        loadTimeData.getString('generalPageTitle'));
+    assertEquals(
+        queryMemorySettingsSection()!.shadowRoot!.querySelector('h2')
+            ?.innerText,
         loadTimeData.getString('memoryPageTitle'));
     assertEquals(
         queryBatterySettingsSection()!.shadowRoot!.querySelector('h2')
@@ -491,14 +480,17 @@ suite('Performance', () => {
     flush();
 
     assertTrue(
+        !!queryPerformanceSettingsSection(),
+        'Performance section should exist with default page visibility');
+    assertTrue(
+        !!queryMemorySettingsSection(),
+        'Memory section should exist with default page visibility');
+    assertTrue(
         !!queryBatterySettingsSection(),
         'Battery section should exist with default page visibility');
     assertTrue(
         !!querySpeedSettingsSection(),
         'Speed section should exist with default page visibility');
-    assertTrue(
-        !!queryPerformanceSettingsSection(),
-        'Performance section should exist with default page visibility');
 
     // Set the visibility of the pages under test to "false".
     page.pageVisibility = Object.assign(pageVisibility || {}, {
@@ -507,14 +499,17 @@ suite('Performance', () => {
     flush();
 
     assertFalse(
+        !!queryPerformanceSettingsSection(),
+        'Performance section should not exist when visibility is false');
+    assertFalse(
+        !!queryMemorySettingsSection(),
+        'Memory section should not exist when visibility is false');
+    assertFalse(
         !!queryBatterySettingsSection(),
         'Battery section should not exist when visibility is false');
     assertFalse(
         !!querySpeedSettingsSection(),
         'Speed section should not exist when visibility is false');
-    assertFalse(
-        !!queryPerformanceSettingsSection(),
-        'Performance section should not exist when visibility is false');
   });
 
   test('performanceVisibilityTestDeviceHasBattery', async function() {

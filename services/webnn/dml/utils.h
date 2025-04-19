@@ -27,11 +27,11 @@ uint64_t CalculateDMLBufferTensorSize(DML_TENSOR_DATA_TYPE data_type,
 
 std::vector<uint32_t> CalculateStrides(base::span<const uint32_t> dimensions);
 
-// Gets the ID3D12Device used to create the IDMLDevice.
-Microsoft::WRL::ComPtr<ID3D12Device> GetD3D12Device(IDMLDevice* dml_device);
+// Gets the ID3D12Device used to create the IDMLDevice1.
+Microsoft::WRL::ComPtr<ID3D12Device> GetD3D12Device(IDMLDevice1* dml_device);
 
 // Returns the maximum feature level supported by the DML device.
-DML_FEATURE_LEVEL GetMaxSupportedDMLFeatureLevel(IDMLDevice* dml_device);
+DML_FEATURE_LEVEL GetMaxSupportedDMLFeatureLevel(IDMLDevice1* dml_device);
 
 // Creates a transition barrier which is used to specify the resource is
 // transitioning from `before` to `after` states.
@@ -56,8 +56,22 @@ void COMPONENT_EXPORT(WEBNN_SERVICE) ReadbackBufferWithBarrier(
     Microsoft::WRL::ComPtr<ID3D12Resource> default_buffer,
     size_t buffer_size);
 
+// TODO(crbug.com/40278771): move buffer helpers into command recorder.
+void COMPONENT_EXPORT(WEBNN_SERVICE)
+    UploadBufferWithBarrier(CommandRecorder* command_recorder,
+                            BufferImplDml* dst_buffer,
+                            Microsoft::WRL::ComPtr<ID3D12Resource> src_buffer,
+                            size_t buffer_size);
+
+void COMPONENT_EXPORT(WEBNN_SERVICE)
+    ReadbackBufferWithBarrier(CommandRecorder* command_recorder,
+                              Microsoft::WRL::ComPtr<ID3D12Resource> dst_buffer,
+                              BufferImplDml* src_buffer,
+                              size_t buffer_size);
+
 mojom::ErrorPtr CreateError(mojom::Error::Code error_code,
-                            const std::string& error_message);
+                            const std::string& error_message,
+                            std::string_view label = "");
 
 // Create a resource with `size` bytes in
 // D3D12_RESOURCE_STATE_UNORDERED_ACCESS state from the default heap of the

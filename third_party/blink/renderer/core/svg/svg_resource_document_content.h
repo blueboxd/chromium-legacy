@@ -43,12 +43,22 @@ class IsolatedSVGDocumentHost;
 class KURL;
 class SVGResourceDocumentObserver;
 
+struct SVGResourceTarget;
+
 // Representation of an SVG resource document. Fed from an SVGDocumentResource
 // that update loading status and provide the document text content. Thus the
 // "complex" made up of these two classes manage the load cycle for the content
 // document. The load cycle of the complete content document can differ from
 // that of the underlying resource if the content document itself has (data
 // URL) subresources.
+//
+// Calling SVGResourceDocumentContent::Fetch() - the expected way of creating an
+// SVGResourceDocumentContent - will return an instance that has its lifetime
+// managed by the SVGResourceDocumentCache. The cache is responsible for
+// disposing the instance when it is unused. The criteria for "is unused" is
+// that no observers are registered with the SVGResourceDocumentContent
+// instance. _If_ an instance is created directly, Dispose() _must_ be called
+// before dropping the reference to the instance.
 class CORE_EXPORT SVGResourceDocumentContent final
     : public GarbageCollected<SVGResourceDocumentContent> {
  public:
@@ -89,6 +99,7 @@ class CORE_EXPORT SVGResourceDocumentContent final
   void RemoveObserver(SVGResourceDocumentObserver*);
   void NotifyObservers();
 
+  SVGResourceTarget* GetResourceTarget(const AtomicString& element_id);
   void Trace(Visitor*) const;
 
  private:
@@ -105,6 +116,7 @@ class CORE_EXPORT SVGResourceDocumentContent final
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   KURL url_;
   ResourceStatus status_ = ResourceStatus::kNotStarted;
+  bool was_disposed_ = false;
 };
 
 }  // namespace blink

@@ -14,17 +14,20 @@
 #include "base/auto_reset.h"
 #include "base/check.h"
 #include "base/debug/alias.h"
+#include "base/debug/dump_without_crashing.h"
+#include "base/debug/stack_trace.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/task/task_features.h"
 #include "base/trace_event/base_tracing.h"
 #include "base/tracing_buildflags.h"
 
 #if BUILDFLAG(ENABLE_BASE_TRACING)
-#include "third_party/perfetto/protos/perfetto/trace/track_event/chrome_message_pump.pbzero.h"
+#include "third_party/perfetto/protos/perfetto/trace/track_event/chrome_message_pump.pbzero.h"  // nogncheck
 #endif  // BUILDFLAG(ENABLE_BASE_TRACING)
 
 namespace base {
@@ -95,7 +98,9 @@ void MessagePumpWin::Quit() {
 MessagePumpForUI::MessagePumpForUI() {
   bool succeeded = message_window_.Create(
       BindRepeating(&MessagePumpForUI::MessageCallback, Unretained(this)));
-  CHECK(succeeded);
+  CHECK(succeeded) << "Failed to create message-only Window with error"
+                   << StringPrintf("0x%08x",
+                                   static_cast<unsigned int>(::GetLastError()));
 }
 
 MessagePumpForUI::~MessagePumpForUI() = default;
@@ -384,6 +389,26 @@ void MessagePumpForUI::WaitForWork(Delegate::NextWorkInfo next_work_info) {
 void MessagePumpForUI::HandleWorkMessage() {
   DCHECK_CALLED_ON_VALID_THREAD(bound_thread_);
 
+  if (!g_ui_pump_improvements_win && in_dispatch_message_ &&
+      !in_nested_native_loop_with_application_tasks_) {
+    // An undeclared nested native loop is spinning in DispatchMessage(), which
+    // will pump application tasks (task execution is not disabled since
+    // DoWork() is not on the stack). Since UIPumpImprovementsWin will break
+    // this use case (application tasks will no longer run because kMsgHaveWork
+    // is not pumped), investigation is being done into stacks where this occurs
+    // and whether they need to be remediated.
+    //
+    // A `StackTrace` is used to deduplicate stacks to ensure that all instances
+    // of undeclared nested runloops are detected during a session.
+    //
+    // TODO(crbug.com/335672561): Remove this once data has been analyzed.
+    uintptr_t id = 0;
+    for (const void* address : debug::StackTrace().addresses()) {
+      id ^= reinterpret_cast<uintptr_t>(address);
+    }
+    debug::DumpWithoutCrashingWithUniqueId(id);
+  }
+
   // If we are being called outside of the context of Run, then don't try to do
   // any work.  This could correspond to a MessageBox call or something of that
   // sort.
@@ -608,7 +633,10 @@ bool MessagePumpForUI::ProcessMessageHelper(const MSG& msg) {
   for (Observer& observer : observers_)
     observer.WillDispatchMSG(msg);
   ::TranslateMessage(&msg);
-  ::DispatchMessage(&msg);
+  {
+    AutoReset<bool> reset(&in_dispatch_message_, true);
+    ::DispatchMessage(&msg);
+  }
   for (Observer& observer : observers_)
     observer.DidDispatchMSG(msg);
 
@@ -858,15 +886,25 @@ bool MessagePumpForIO::WaitForIOCompletion(DWORD timeout) {
 bool MessagePumpForIO::GetIOItem(DWORD timeout, IOItem* item) {
   DCHECK_CALLED_ON_VALID_THREAD(bound_thread_);
 
-  memset(item, 0, sizeof(*item));
   ULONG_PTR key = reinterpret_cast<ULONG_PTR>(nullptr);
   OVERLAPPED* overlapped = nullptr;
+
+  // Clear the value for the number of bytes transferred in case extracting the
+  // packet doesn't populate it.
+  item->bytes_transfered = 0;
   if (!::GetQueuedCompletionStatus(port_.get(), &item->bytes_transfered, &key,
                                    &overlapped, timeout)) {
     if (!overlapped)
       return false;  // Nothing in the queue.
-    item->error = GetLastError();
-    item->bytes_transfered = 0;
+    // A completion packet for a failed operation was processed. The Windows
+    // last error code pertains to the operation that failed.
+    item->error = ::GetLastError();
+    // The packet may have contained a value for the number of bytes
+    // transferred, so pass along whatever value was populated from it.
+  } else {
+    // The packet corresponded to an operation that succeeded, so clear out
+    // the error value so that the handler sees the operation as a success.
+    item->error = ERROR_SUCCESS;
   }
 
   item->handler = reinterpret_cast<IOHandler*>(key);

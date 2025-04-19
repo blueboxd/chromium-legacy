@@ -21,15 +21,6 @@ namespace ash {
 class OverviewGrid;
 class OverviewItemBase;
 
-// Focuses `window` in the active overview session by cycling through all
-// windows in overview until it is found. Returns true if `window` was found,
-// false otherwise.
-bool FocusOverviewWindow(const aura::Window* window,
-                         ui::test::EventGenerator* event_generator);
-
-// Gets the current focused window. Returns nullptr if no window is focused.
-const aura::Window* GetOverviewFocusedWindow();
-
 void ToggleOverview(
     OverviewEnterExitType type = OverviewEnterExitType::kNormal);
 
@@ -51,10 +42,6 @@ std::vector<aura::Window*> GetWindowsListInOverviewGrids();
 
 // Returns the OverviewItem associated with |window| if it exists.
 OverviewItemBase* GetOverviewItemForWindow(aura::Window* window);
-
-// Returns a rect that accounts for the shelf hotseat. Used by tests which test
-// the grids' bounds in relation to work area or snapped window bounds.
-gfx::Rect ShrinkBoundsByHotseatInset(const gfx::Rect& rect);
 
 // If `drop` is false, the dragged `item` won't be dropped; giving the caller
 // a chance to do some validations before the item is dropped.
@@ -79,6 +66,10 @@ void WaitForOcclusionStateChange(aura::Window* window,
 bool IsWindowInItsCorrespondingOverviewGrid(aura::Window* window);
 
 views::View* GetFocusedView();
+
+// Calls `views::test::RunScheduledLayout()` for the desk bar within overview
+// mode for every root window. This is a no-op if a desk bar is not active.
+void RunScheduledLayoutForAllOverviewDeskBars();
 
 }  // namespace ash
 

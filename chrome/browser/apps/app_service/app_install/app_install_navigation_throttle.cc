@@ -48,6 +48,7 @@ constexpr char kAppInstallParentWindowFound[] =
     "Apps.AppInstallParentWindowFound";
 #endif
 
+constexpr std::string_view kAppInstallHost = "install-app";
 constexpr std::string_view kAppInstallPath = "//install-app";
 constexpr std::string_view kAppInstallPackageIdParam = "package_id";
 constexpr std::string_view kAppInstallSourceParam = "source";
@@ -118,6 +119,10 @@ std::optional<AppInstallService::WindowIdentifier> GetAnchorWindow(
 }
 
 bool IsNavigationUserInitiated(content::NavigationHandle* handle) {
+  if (!handle->IsRendererInitiated()) {
+    return true;
+  }
+
   switch (handle->GetNavigationInitiatorActivationAndAdStatus()) {
     case blink::mojom::NavigationInitiatorActivationAndAdStatus::
         kDidNotStartWithTransientActivation:
@@ -143,8 +148,7 @@ AppInstallNavigationThrottle::MaybeCreateCallbackForTesting() {
 std::unique_ptr<content::NavigationThrottle>
 AppInstallNavigationThrottle::MaybeCreate(content::NavigationHandle* handle) {
   std::unique_ptr<content::NavigationThrottle> throttle;
-  if (chromeos::features::IsAppInstallServiceUriEnabled() &&
-      IsNavigationUserInitiated(handle)) {
+  if (IsNavigationUserInitiated(handle)) {
     throttle = std::make_unique<apps::AppInstallNavigationThrottle>(handle);
   }
 
@@ -209,9 +213,7 @@ AppInstallNavigationThrottle::ExtractQueryParams(std::string_view query) {
 
 AppInstallNavigationThrottle::AppInstallNavigationThrottle(
     content::NavigationHandle* navigation_handle)
-    : content::NavigationThrottle(navigation_handle) {
-  CHECK(chromeos::features::IsAppInstallServiceUriEnabled());
-}
+    : content::NavigationThrottle(navigation_handle) {}
 
 AppInstallNavigationThrottle::~AppInstallNavigationThrottle() = default;
 
@@ -235,7 +237,10 @@ ThrottleCheckResult AppInstallNavigationThrottle::HandleRequest() {
     return content::NavigationThrottle::PROCEED;
   }
 
-  if (url.path_piece() != kAppInstallPath) {
+  // We accept `cros-apps:install-app` or `cros-apps://install-app`, when parsed
+  // with an opaque path (no host, path starts with //) or not.
+  if (url.host() != kAppInstallHost && url.path_piece() != kAppInstallHost &&
+      url.path_piece() != kAppInstallPath) {
     return content::NavigationThrottle::PROCEED;
   }
 
@@ -257,10 +262,8 @@ ThrottleCheckResult AppInstallNavigationThrottle::HandleRequest() {
       std::move(query_params.serialized_package_id).value(), anchor_window,
       base::DoNothing());
 
-  if (!chromeos::features::IsCrosWebAppInstallDialogEnabled() &&
-      LinkCapturingNavigationThrottle::
-          IsEmptyDanglingWebContentsAfterLinkCapture(navigation_handle())) {
-    navigation_handle()->GetWebContents()->Close();
+  if (!web_contents->GetLastCommittedURL().is_valid()) {
+    web_contents->ClosePage();
   }
 
   return content::NavigationThrottle::CANCEL_AND_IGNORE;

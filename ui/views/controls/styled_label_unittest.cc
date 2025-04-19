@@ -85,7 +85,7 @@ class StyledLabelInWidgetTest : public ViewsTestBase {
   void SetUp() override {
     ViewsTestBase::SetUp();
 
-    widget_ = CreateTestWidget();
+    widget_ = CreateTestWidget(Widget::InitParams::CLIENT_OWNS_WIDGET);
   }
 
   void TearDown() override {
@@ -798,8 +798,9 @@ TEST_F(StyledLabelTest, ViewsCenteredForEvenAndOddSizes) {
   for (int height : {60, 61}) {
     StyledLabel* styled = InitStyledLabel("abc");
 
-    const int view_heights[] = {height, height / 2, height / 2 + 1};
-    for (uint32_t i = 0; i < 3; ++i) {
+    const auto view_heights =
+        std::to_array<int>({height, height / 2, height / 2 + 1});
+    for (uint32_t i = 0; i < view_heights.size(); ++i) {
       auto view = std::make_unique<StaticSizedView>(
           gfx::Size(kViewWidth, view_heights[i]));
       StyledLabel::RangeStyleInfo style_info;
@@ -884,8 +885,10 @@ TEST_F(StyledLabelTest, AccessibleNameAndRole) {
   IgnoreMissingWidgetForTestingScopedSetter a11y_ignore_missing_widget_(
       styled->GetViewAccessibility());
 
-  EXPECT_EQ(styled->GetAccessibleName(), base::UTF8ToUTF16(text));
-  EXPECT_EQ(styled->GetAccessibleRole(), ax::mojom::Role::kStaticText);
+  EXPECT_EQ(styled->GetViewAccessibility().GetCachedName(),
+            base::UTF8ToUTF16(text));
+  EXPECT_EQ(styled->GetViewAccessibility().GetCachedRole(),
+            ax::mojom::Role::kStaticText);
 
   ui::AXNodeData data;
   styled->GetViewAccessibility().GetAccessibleNodeData(&data);
@@ -893,8 +896,11 @@ TEST_F(StyledLabelTest, AccessibleNameAndRole) {
   EXPECT_EQ(data.role, ax::mojom::Role::kStaticText);
 
   styled->SetTextContext(style::CONTEXT_DIALOG_TITLE);
-  EXPECT_EQ(styled->GetAccessibleName(), base::UTF8ToUTF16(text));
-  EXPECT_EQ(styled->GetAccessibleRole(), ax::mojom::Role::kTitleBar);
+
+  EXPECT_EQ(styled->GetViewAccessibility().GetCachedName(),
+            base::UTF8ToUTF16(text));
+  EXPECT_EQ(styled->GetViewAccessibility().GetCachedRole(),
+            ax::mojom::Role::kTitleBar);
 
   data = ui::AXNodeData();
   styled->GetViewAccessibility().GetAccessibleNodeData(&data);
@@ -902,9 +908,10 @@ TEST_F(StyledLabelTest, AccessibleNameAndRole) {
   EXPECT_EQ(data.role, ax::mojom::Role::kTitleBar);
 
   styled->SetText(u"New Text");
-  styled->SetAccessibleRole(ax::mojom::Role::kLink);
-  EXPECT_EQ(styled->GetAccessibleName(), u"New Text");
-  EXPECT_EQ(styled->GetAccessibleRole(), ax::mojom::Role::kLink);
+  styled->GetViewAccessibility().SetRole(ax::mojom::Role::kLink);
+  EXPECT_EQ(styled->GetViewAccessibility().GetCachedName(), u"New Text");
+  EXPECT_EQ(styled->GetViewAccessibility().GetCachedRole(),
+            ax::mojom::Role::kLink);
 
   data = ui::AXNodeData();
   styled->GetViewAccessibility().GetAccessibleNodeData(&data);

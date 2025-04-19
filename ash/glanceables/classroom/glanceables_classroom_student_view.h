@@ -14,34 +14,19 @@
 #include "ash/glanceables/common/glanceables_time_management_bubble_view.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "ui/base/metadata/metadata_header_macros.h"
-#include "ui/views/view_observer.h"
 
 class GURL;
 class PrefRegistrySimple;
 class PrefService;
 
-namespace ui {
-class ComboboxModel;
-}
-
 namespace views {
-class BoxLayoutView;
-class FlexLayoutView;
 class Label;
-class View;
-class ViewObserver;
 }  // namespace views
 
 namespace ash {
 
-class Combobox;
-class CounterExpandButton;
-class GlanceablesContentsScrollView;
-class GlanceablesListFooterView;
-class GlanceablesProgressBarView;
 struct GlanceablesClassroomAssignment;
 
 // This enum is used for metrics, so enum values should not be changed. New enum
@@ -56,8 +41,7 @@ enum class StudentAssignmentsListType {
 };
 
 class ASH_EXPORT GlanceablesClassroomStudentView
-    : public GlanceablesTimeManagementBubbleView,
-      public views::ViewObserver {
+    : public GlanceablesTimeManagementBubbleView {
   METADATA_HEADER(GlanceablesClassroomStudentView,
                   GlanceablesTimeManagementBubbleView)
 
@@ -75,26 +59,18 @@ class ASH_EXPORT GlanceablesClassroomStudentView
   // Clears any student glanceables state from user `pref_services`.
   static void ClearUserStatePrefs(PrefService* pref_service);
 
-  // views::ViewObserver:
-  void OnViewFocused(views::View* view) override;
-
   // Invalidates any pending assignments requests. Called when the
   // glanceables bubble widget starts closing to avoid unnecessary UI updates.
   void CancelUpdates();
 
-  // Creates `this` view's own background and updates layout accordingly.
-  void CreateElevatedBackground();
-
-  void SetExpandState(bool is_expanded);
-  bool is_expanded() const { return is_expanded_; }
-
  private:
-  // Toggles `is_expanded_` and updates the layout.
-  void ToggleExpandState();
+  // GlanceablesTimeManagementBubbleView:
+  void OnFooterButtonPressed() override;
+  void SelectedListChanged() override;
+  void AnimateResize(ResizeAnimation::Type resize_type) override;
 
-  // Handles press on the "See all" button in `GlanceablesListFooterView`. Opens
-  // classroom web UI based on the selected menu option.
-  void OnSeeAllPressed();
+  // Triggers classroom bubble resize animation to new preferred size, if an
+  // animation is required.
 
   // Opens classroom url.
   void OpenUrl(const GURL& url) const;
@@ -120,21 +96,7 @@ class ASH_EXPORT GlanceablesClassroomStudentView
   void AnnounceListStateOnComboBoxAccessibility();
 
   // Owned by views hierarchy.
-  raw_ptr<views::FlexLayoutView> header_view_ = nullptr;
-  raw_ptr<Combobox> combo_box_view_ = nullptr;
-  // This is a simple label that copies the label style on `combo_box_view_` so
-  // that it can visually replace it when `combo_box_view_` is hidden.
-  raw_ptr<views::Label> combobox_replacement_label_ = nullptr;
-  raw_ptr<GlanceablesContentsScrollView> content_scroll_view_ = nullptr;
-  raw_ptr<views::FlexLayoutView> body_container_ = nullptr;
-  raw_ptr<views::BoxLayoutView> list_container_view_ = nullptr;
-  raw_ptr<GlanceablesListFooterView> list_footer_view_ = nullptr;
-  raw_ptr<GlanceablesProgressBarView> progress_bar_ = nullptr;
   raw_ptr<views::Label> empty_list_label_ = nullptr;
-  raw_ptr<CounterExpandButton> expand_button_ = nullptr;
-
-  // Whether the view is expanded and showing the contents in `body_container_`.
-  bool is_expanded_ = true;
 
   // Total number of assignments in the selected assignment list.
   size_t total_assignments_ = 0u;
@@ -156,15 +118,9 @@ class ASH_EXPORT GlanceablesClassroomStudentView
   // of this view.
   int selected_list_change_count_ = 0;
 
-  // If true, always sets `list_footer_view_` to invisible.
-  bool force_hide_footer_view_ = false;
-
   // The currently selected assignment list.
   StudentAssignmentsListType selected_list_type_ =
       StudentAssignmentsListType::kAssigned;
-
-  base::ScopedObservation<views::View, views::ViewObserver>
-      combobox_view_observation_{this};
 
   base::WeakPtrFactory<GlanceablesClassroomStudentView> weak_ptr_factory_{this};
 };

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
 
 #include <stddef.h>
@@ -10,6 +15,7 @@
 #include <array>
 #include <functional>
 #include <iterator>
+#include <limits>
 #include <optional>
 #include <ostream>
 #include <random>
@@ -19,6 +25,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/base64.h"
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/containers/flat_set.h"
@@ -46,9 +53,11 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/web_applications/web_app_dialogs.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_integrity_block_data.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_storage_location.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/proto/web_app.pb.h"
+#include "chrome/browser/web_applications/proto/web_app_isolation_data.pb.h"
 #include "chrome/browser/web_applications/proto/web_app_os_integration_state.pb.h"
 #include "chrome/browser/web_applications/proto/web_app_proto_package.pb.h"
 #include "chrome/browser/web_applications/scope_extension_info.h"
@@ -102,6 +111,18 @@ namespace {
 std::vector<std::string> test_features = {
     "default_on_feature", "default_self_feature", "default_disabled_feature"};
 
+constexpr std::string_view kEd25519PublicKeyBase64 =
+    "3QrKLntnXWmBkrbLLoobC0uh7u0ahMcKQSqsbX4q7MM=";
+constexpr std::string_view kEd25519SignatureHex =
+    "94FBD9E3E0C0A4CD475067F1DC315E9EA30A5010350A9D3A4392CA9E0EBA854315372D7A6B"
+    "48B6C4DDF9A5FAAE4E159D3B80632413DA2850B54A4D5D98EAE906";
+
+constexpr std::string_view kEcdsaP256PublicKeyBase64 =
+    "AxyCBzvQfu1yaF01392k1gu2qCtT1uA2+WfIEhlyJB5S";
+constexpr std::string_view kEcdsaP256SHA256SignatureHex =
+    "3044022007381524F538B04F99CCC62703F06C87F66EF41BDA18A22D8E57952AA23E53A6"
+    "022063C7F81D3A44798CB95823FA38FC23B15E0483744657FF49E1E83AB8C06B63C2";
+
 }  // namespace
 
 namespace web_app {
@@ -137,12 +158,12 @@ class RandomHelper {
 
   int64_t next_proto_time() { return syncer::TimeToProtoTime(next_time()); }
 
-  template <typename T>
+  template <typename T, auto min = T::kMinValue, auto max = T::kMaxValue>
   T next_enum() {
-    constexpr uint32_t min = static_cast<uint32_t>(T::kMinValue);
-    constexpr uint32_t max = static_cast<uint32_t>(T::kMaxValue);
-    static_assert(min <= max, "min cannot be greater than max");
-    return static_cast<T>(min + next_uint(max - min));
+    constexpr uint32_t min_u32 = static_cast<uint32_t>(min);
+    constexpr uint32_t max_u32 = static_cast<uint32_t>(max);
+    static_assert(min_u32 <= max_u32, "min cannot be greater than max");
+    return static_cast<T>(min_u32 + next_uint(max_u32 - min_u32));
   }
 
  private:
@@ -545,6 +566,23 @@ proto::WebAppOsIntegrationState GenerateRandomWebAppOsIntegrationState(
   return state;
 }
 
+std::optional<IsolatedWebAppIntegrityBlockData> CreateIntegrityBlockData(
+    RandomHelper& random) {
+  if (!random.next_bool()) {
+    return std::nullopt;
+  }
+
+  auto signatures = CreateSignatures();
+
+  std::mt19937 rng(random.next_uint());
+  base::ranges::shuffle(signatures, rng);
+
+  size_t signatures_count = random.next_uint(signatures.size()) + 1;
+  signatures.erase(signatures.begin() + signatures_count, signatures.end());
+
+  return IsolatedWebAppIntegrityBlockData(std::move(signatures));
+}
+
 }  // namespace
 
 std::unique_ptr<WebApp> CreateWebApp(const GURL& start_url,
@@ -557,7 +595,13 @@ std::unique_ptr<WebApp> CreateWebApp(const GURL& start_url,
   web_app->AddSource(source_type);
   web_app->SetUserDisplayMode(mojom::UserDisplayMode::kStandalone);
   web_app->SetName("Name");
-  web_app->SetIsLocallyInstalled(true);
+  // Adding OS integration to this app introduces too many edge cases in tests.
+  // Simply set this to partially installed w/ no os integration, and the
+  // correct OS integration state to match that.
+  web_app->SetInstallState(
+      proto::InstallState::INSTALLED_WITHOUT_OS_INTEGRATION);
+  proto::WebAppOsIntegrationState os_state;
+  web_app->SetCurrentOsIntegrationStates(os_state);
 
   return web_app;
 }
@@ -673,7 +717,10 @@ std::unique_ptr<WebApp> CreateRandomWebApp(CreateRandomWebAppParams params) {
   app->SetDarkModeThemeColor(dark_mode_theme_color);
   app->SetBackgroundColor(background_color);
   app->SetDarkModeBackgroundColor(dark_mode_background_color);
-  app->SetIsLocallyInstalled(random.next_bool());
+  app->SetInstallState(random.next_enum<proto::InstallState,
+                                        /*min=*/proto::InstallState_MIN,
+                                        /*max=*/
+                                        proto::InstallState_MAX>());
   app->SetIsFromSyncAndPendingInstallation(random.next_bool());
 
   const sync_pb::WebAppSpecifics::UserDisplayMode user_display_modes[3] = {
@@ -732,7 +779,6 @@ std::unique_ptr<WebApp> CreateRandomWebApp(CreateRandomWebAppParams params) {
     app->SetLaunchQueryParams(base::NumberToString(random.next_uint()));
 
   app->SetRunOnOsLoginMode(random.next_enum<RunOnOsLoginMode>());
-  app->SetRunOnOsLoginOsIntegrationState(RunOnOsLoginMode::kNotRun);
 
   const SquareSizePx size = 256;
   const int num_icons = random.next_uint(10);
@@ -985,6 +1031,10 @@ std::unique_ptr<WebApp> CreateRandomWebApp(CreateRandomWebAppParams params) {
     });
 
     WebApp::IsolationData isolation_data(get_location_type(), version);
+
+    std::optional<IsolatedWebAppIntegrityBlockData> integrity_block_data =
+        CreateIntegrityBlockData(random);
+    isolation_data.integrity_block_data = integrity_block_data;
     if (random.next_bool()) {
       isolation_data.controlled_frame_partitions.insert("partition_name");
     }
@@ -995,7 +1045,7 @@ std::unique_ptr<WebApp> CreateRandomWebApp(CreateRandomWebAppParams params) {
           random.next_uint(),
       });
       WebApp::IsolationData::PendingUpdateInfo pending_update_info(
-          get_location_type(), pending_version);
+          get_location_type(), pending_version, integrity_block_data);
       isolation_data.SetPendingUpdateInfo(pending_update_info);
     }
     app->SetIsolationData(isolation_data);
@@ -1120,6 +1170,37 @@ void SynchronizeOsIntegration(Profile* profile,
   WebAppProvider::GetForTest(profile)->scheduler().SynchronizeOsIntegration(
       app_id, sync_future.GetCallback(), options);
   EXPECT_TRUE(sync_future.Wait());
+}
+
+std::vector<web_package::SignedWebBundleSignatureInfo> CreateSignatures() {
+  std::vector<web_package::SignedWebBundleSignatureInfo> signatures;
+
+  // EcdsaP256SHA256:
+  {
+    auto public_key = *web_package::EcdsaP256PublicKey::Create(
+        *base::Base64Decode(kEcdsaP256PublicKeyBase64));
+    std::vector<uint8_t> data;
+    CHECK(base::HexStringToBytes(kEcdsaP256SHA256SignatureHex, &data));
+    auto signature = *web_package::EcdsaP256SHA256Signature::Create(data);
+    signatures.push_back(
+        web_package::SignedWebBundleSignatureInfoEcdsaP256SHA256(
+            std::move(public_key), std::move(signature)));
+  }
+
+  // Ed25519:
+  {
+    auto public_key = *web_package::Ed25519PublicKey::Create(
+        *base::Base64Decode(kEd25519PublicKeyBase64));
+    std::vector<uint8_t> data;
+    CHECK(base::HexStringToBytes(kEd25519SignatureHex, &data));
+    auto signature = *web_package::Ed25519Signature::Create(data);
+    signatures.push_back(web_package::SignedWebBundleSignatureInfoEd25519(
+        std::move(public_key), std::move(signature)));
+  }
+
+  // Unknown:
+  signatures.push_back(web_package::SignedWebBundleSignatureInfoUnknown());
+  return signatures;
 }
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)

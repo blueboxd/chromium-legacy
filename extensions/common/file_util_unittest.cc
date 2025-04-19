@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "extensions/common/file_util.h"
 
 #include <stddef.h>
@@ -71,8 +76,9 @@ scoped_refptr<Extension> LoadExtensionManifest(
   JSONStringValueDeserializer deserializer(manifest_value);
   std::unique_ptr<base::Value> result =
       deserializer.Deserialize(nullptr, error);
-  if (!result.get())
+  if (!result.get()) {
     return nullptr;
+  }
   CHECK_EQ(base::Value::Type::DICT, result->type());
   return LoadExtensionManifest(std::move(*result).TakeDict(), manifest_dir,
                                location, extra_flags, error);
@@ -86,8 +92,9 @@ void RunUnderscoreDirectoriesTest(
   base::FilePath ext_path = temp.GetPath();
   ASSERT_TRUE(base::CreateDirectory(ext_path));
 
-  for (const auto& dir : underscore_directories)
+  for (const auto& dir : underscore_directories) {
     ASSERT_TRUE(base::CreateDirectory(ext_path.AppendASCII(dir)));
+  }
 
   ASSERT_TRUE(
       base::WriteFile(ext_path.AppendASCII("manifest.json"), kManifestContent));
@@ -108,8 +115,9 @@ void RunUnderscoreDirectoriesTest(
         "Cannot load extension with file or directory name %s. Filenames "
         "starting with \"_\" are reserved for use by the system.",
         dir.c_str());
-    if (expected_warning == warnings[0].message)
+    if (expected_warning == warnings[0].message) {
       warning_matched = true;
+    }
   }
 
   EXPECT_TRUE(warning_matched)

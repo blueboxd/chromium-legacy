@@ -31,7 +31,7 @@
 #import "ios/chrome/browser/prerender/model/prerender_service.h"
 #import "ios/chrome/browser/prerender/model/prerender_service_factory.h"
 #import "ios/chrome/browser/search_engines/model/template_url_service_factory.h"
-#import "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
+#import "ios/chrome/browser/sessions/model/ios_chrome_session_tab_helper.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/url/chrome_url_constants.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_ui_features.h"
@@ -94,7 +94,7 @@ PrefService* ChromeOmniboxClientIOS::GetPrefs() {
   return browser_state_->GetPrefs();
 }
 
-bookmarks::CoreBookmarkModel* ChromeOmniboxClientIOS::GetBookmarkModel() {
+bookmarks::BookmarkModel* ChromeOmniboxClientIOS::GetBookmarkModel() {
   return ios::BookmarkModelFactory::GetForBrowserState(browser_state_);
 }
 
@@ -280,9 +280,7 @@ void ChromeOmniboxClientIOS::OnAutocompleteAccept(
     const AutocompleteMatch& match,
     const AutocompleteMatch& alternative_nav_match,
     IDNA2008DeviationCharacter deviation_char_in_hostname) {
-  if (base::FeatureList::IsEnabled(
-          omnibox::kOmniboxPopulateShortcutsDatabase) &&
-      location_bar_->GetWebState()) {
+  if (location_bar_->GetWebState()) {
     web::WebState* web_state = location_bar_->GetWebState();
     const int32_t web_state_id = web_state->GetUniqueIdentifier().identifier();
     if (web_state_tracker_.find(web_state_id) == web_state_tracker_.end()) {
@@ -304,9 +302,6 @@ base::WeakPtr<OmniboxClient> ChromeOmniboxClientIOS::AsWeakPtr() {
 void ChromeOmniboxClientIOS::DidFinishNavigation(
     web::WebState* web_state,
     web::NavigationContext* navigation_context) {
-  CHECK(
-      base::FeatureList::IsEnabled(omnibox::kOmniboxPopulateShortcutsDatabase));
-
   const int32_t web_state_id = web_state->GetUniqueIdentifier().identifier();
   ShortcutElement shortcut = web_state_tracker_.extract(web_state_id).mapped();
   scoped_observations_.RemoveObservation(web_state);
@@ -324,9 +319,6 @@ void ChromeOmniboxClientIOS::DidFinishNavigation(
 }
 
 void ChromeOmniboxClientIOS::WebStateDestroyed(web::WebState* web_state) {
-  CHECK(
-      base::FeatureList::IsEnabled(omnibox::kOmniboxPopulateShortcutsDatabase));
-
   const int32_t web_state_id = web_state->GetUniqueIdentifier().identifier();
   web_state_tracker_.erase(web_state_id);
   scoped_observations_.RemoveObservation(web_state);

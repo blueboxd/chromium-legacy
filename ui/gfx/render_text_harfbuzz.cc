@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/354829279): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ui/gfx/render_text_harfbuzz.h"
 
 #include <limits>
@@ -315,7 +320,7 @@ size_t ScriptInterval(const std::u16string& text,
   UScriptCode scripts[kMaxScripts] = { USCRIPT_INVALID_CODE };
 
   base::i18n::UTF16CharIterator char_iterator(
-      std::u16string_view(text.c_str() + start, length));
+      std::u16string_view(text).substr(start, length));
   size_t scripts_size = GetScriptExtensions(char_iterator.get(), scripts);
   *script = scripts[0];
 
@@ -1928,6 +1933,9 @@ void RenderTextHarfBuzz::ItemizeAndShapeText(const std::u16string& text,
 
   run_list->InitIndexMap();
   run_list->ComputePrecedingRunWidths();
+
+  UMA_HISTOGRAM_COUNTS_1000("RenderTextHarfBuzz.MissingGlyphCount",
+                            run_list->MissingGlyphCount());
 }
 
 void RenderTextHarfBuzz::ItemizeTextToRuns(

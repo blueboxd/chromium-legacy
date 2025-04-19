@@ -13,6 +13,8 @@
   <release seq="1">
     <includes>
       <include name="IDR_NETWORK_SPEECH_SYNTHESIS_JS" file="network_speech_synthesis/tts_extension.js" type="BINDATA" />
+      <include name="IDR_READING_MODE_GDOC_HELPER_CONTENT_JS" file="reading_mode_gdocs_helper/content.js" type="BINDATA" />
+      <include name="IDR_READING_MODE_GDOC_HELPER_GDOCS_SCRIPT_JS" file="reading_mode_gdocs_helper/gdocs_script.js" type="BINDATA" />
 
       <if expr="chromeos_ash">
         <include name="IDR_BRAILLE_IME_JS" file="chromeos/accessibility/braille_ime/braille_ime.js" type="BINDATA" />
@@ -84,9 +86,9 @@
         <structure type="lottie" name="IDR_ARC_INPUT_OVERLAY_KEY_EDIT_NUDGE_JSON" file="chromeos/arc_input_overlay/key_edit_nudge.json" compress="gzip" />
         <structure type="lottie" name="IDR_ARC_INPUT_OVERLAY_BUTTON_PLACEMENT_MODE_NUDGE_JSON" file="chromeos/arc_input_overlay/button_placement_mode_nudge.json" compress="gzip" />
       </if>
-
-       <!-- Mahi -->
-      <structure type="lottie" name="IDR_MAGIC_BOOST_DISCLAIMER_IMAGE" file="chromeos/mahi/magic_boost_disclaimer_image.json" compress="gzip" />
+      <if expr="is_macosx">
+      <structure type="lottie" name="SCREEN_SHARING_TOGGLE_ANIMATION_JSON" file="screen_sharing/toggle_animation.json" compress="gzip" />
+      </if>
     </structures>
   </release>
 </grit>

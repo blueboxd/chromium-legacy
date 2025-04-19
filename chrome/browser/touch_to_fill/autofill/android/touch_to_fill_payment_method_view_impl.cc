@@ -4,15 +4,20 @@
 
 #include "chrome/browser/touch_to_fill/autofill/android/touch_to_fill_payment_method_view_impl.h"
 
+#include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/touch_to_fill/autofill/android/internal/jni/TouchToFillPaymentMethodViewBridge_jni.h"
 #include "chrome/browser/touch_to_fill/autofill/android/touch_to_fill_payment_method_view_controller.h"
+#include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
+
+// Must come after all headers that specialize FromJniType() / ToJniType().
+#include "chrome/browser/touch_to_fill/autofill/android/internal/jni/TouchToFillPaymentMethodViewBridge_jni.h"
 
 namespace autofill {
 
@@ -57,7 +62,9 @@ bool TouchToFillPaymentMethodViewImpl::IsReadyToShow(
 bool TouchToFillPaymentMethodViewImpl::Show(
     TouchToFillPaymentMethodViewController* controller,
     base::span<const autofill::CreditCard> cards_to_suggest,
+    base::span<const Suggestion> suggestions,
     bool should_show_scan_credit_card) {
+  CHECK_EQ(cards_to_suggest.size(), suggestions.size());
   JNIEnv* env = base::android::AttachCurrentThread();
   if (!IsReadyToShow(controller, env)) {
     return false;
@@ -69,9 +76,18 @@ bool TouchToFillPaymentMethodViewImpl::Show(
     credit_cards_array.push_back(
         PersonalDataManagerAndroid::CreateJavaCreditCardFromNative(env, card));
   }
+
+  std::vector<base::android::ScopedJavaLocalRef<jobject>> suggestions_array;
+  suggestions_array.reserve(suggestions.size());
+  for (const Suggestion& suggestion : suggestions) {
+    suggestions_array.push_back(
+        Java_TouchToFillPaymentMethodViewBridge_createAutofillSuggestion(
+            env, suggestion.main_text.value, suggestion.minor_text.value,
+            suggestion.apply_deactivated_style));
+  }
   Java_TouchToFillPaymentMethodViewBridge_showSheet(
       env, java_object_, std::move(credit_cards_array),
-      should_show_scan_credit_card);
+      std::move(suggestions_array), should_show_scan_credit_card);
   return true;
 }
 

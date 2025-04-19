@@ -14,6 +14,7 @@
 #include "base/trace_event/memory_dump_provider.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_backing.h"
 #include "gpu/gpu_gles2_export.h"
 #include "gpu/vulkan/buildflags.h"
@@ -27,7 +28,6 @@ class D3DSharedFence;
 namespace gpu {
 class DXGISharedHandleManager;
 class SharedImageRepresentationFactoryRef;
-class VaapiDependenciesFactory;
 
 class GPU_GLES2_EXPORT SharedImageManager
     : public base::trace_event::MemoryDumpProvider {
@@ -91,10 +91,6 @@ class GPU_GLES2_EXPORT SharedImageManager
   std::unique_ptr<OverlayImageRepresentation> ProduceOverlay(
       const Mailbox& mailbox,
       MemoryTypeTracker* ref);
-  std::unique_ptr<VaapiImageRepresentation> ProduceVASurface(
-      const Mailbox& mailbox,
-      MemoryTypeTracker* ref,
-      VaapiDependenciesFactory* dep_factory);
   std::unique_ptr<MemoryImageRepresentation> ProduceMemory(
       const Mailbox& mailbox,
       MemoryTypeTracker* ref);
@@ -111,7 +107,8 @@ class GPU_GLES2_EXPORT SharedImageManager
       const Mailbox& mailbox,
       MemoryTypeTracker* ref,
       gpu::VulkanDeviceQueue* vulkan_device_queue,
-      gpu::VulkanImplementation& vulkan_impl);
+      gpu::VulkanImplementation& vulkan_impl,
+      bool needs_detiling);
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
@@ -127,7 +124,7 @@ class GPU_GLES2_EXPORT SharedImageManager
 
   // Provides the usage flags supported by the given |mailbox|. Returns nullopt
   // if no backing is registered for `mailbox`.
-  std::optional<uint32_t> GetUsageForMailbox(const Mailbox& mailbox);
+  std::optional<SharedImageUsageSet> GetUsageForMailbox(const Mailbox& mailbox);
 
   // Called by SharedImageRepresentation in the destructor.
   void OnRepresentationDestroyed(const Mailbox& mailbox,

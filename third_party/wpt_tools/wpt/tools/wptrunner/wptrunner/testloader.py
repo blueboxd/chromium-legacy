@@ -497,16 +497,6 @@ class TestLoader:
         self.tests = tests_enabled
         self.disabled_tests = tests_disabled
 
-    def groups(self, test_types, chunk_type="none", total_chunks=1, chunk_number=1):
-        groups = set()
-
-        for test_type in test_types:
-            for test in self.tests[test_type]:
-                group = test.url.split("/")[1]
-                groups.add(group)
-
-        return groups
-
 
 
 def get_test_queue_builder(**kwargs: Any) -> Tuple[TestQueueBuilder, Mapping[str, Any]]:
@@ -553,13 +543,14 @@ class TestQueueBuilder:
         processes = self.process_count(self.kwargs["processes"], len(groups))
         if processes > 1:
             groups.sort(key=lambda group: (
-                # Place groups of the same test type together to minimize
-                # browser restarts.
+                # Place groups of the same subsuite, test type together to
+                # minimize browser restarts.
+                group.subsuite,
                 group.test_type,
                 # Next, run larger groups first to avoid straggler runners. Use
                 # timeout to give slow tests greater relative weight.
-                -sum(test.timeout for test in group.group),
-            ))
+                sum(test.timeout for test in group.group),
+            ), reverse=True)
         for item in groups:
             test_queue.put(item)
 

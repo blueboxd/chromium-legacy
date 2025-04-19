@@ -32,7 +32,6 @@
 #include "build/chromeos_buildflags.h"
 #include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/media_gpu_export.h"
-#include "media/gpu/vaapi/va_surface.h"
 #include "media/gpu/vaapi/vaapi_utils.h"
 #include "media/video/video_decode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
@@ -448,8 +447,6 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // See ExportVASurfaceAsNativePixmapDmaBufUnwrapped() for further
   // documentation.
   std::unique_ptr<NativePixmapAndSizeInfo> ExportVASurfaceAsNativePixmapDmaBuf(
-      const VASurface& va_surface);
-  std::unique_ptr<NativePixmapAndSizeInfo> ExportVASurfaceAsNativePixmapDmaBuf(
       const ScopedVASurface& scoped_va_surface);
 
   // Synchronize the VASurface explicitly. This is useful when sharing a surface
@@ -599,6 +596,7 @@ class MEDIA_GPU_EXPORT VaapiWrapper
  private:
   friend class base::RefCountedThreadSafe<VaapiWrapper>;
   friend class VaapiWrapperTest;
+  friend class VaapiVideoDecoderTest;
   friend class VaapiVideoEncodeAcceleratorTest;
 
   FRIEND_TEST_ALL_PREFIXES(VaapiTest, LowQualityEncodingSetting);
@@ -630,8 +628,8 @@ class MEDIA_GPU_EXPORT VaapiWrapper
       std::vector<VASurfaceID>* va_surfaces);
 
   // Syncs and exports |va_surface_id| as a gfx::NativePixmapDmaBuf. Currently,
-  // the only VAAPI surface pixel formats supported are VA_FOURCC_IMC3 and
-  // VA_FOURCC_NV12.
+  // the only VAAPI surface pixel formats supported are VA_FOURCC_IMC3,
+  // VA_FOURCC_NV12, VA_FOURCC_P010 and VA_FOURCC_ARGB.
   //
   // Notes:
   //
@@ -643,6 +641,12 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   //
   // - For VA_FOURCC_NV12, the format of the returned NativePixmapDmaBuf is
   //   gfx::BufferFormat::YUV_420_BIPLANAR.
+  //
+  // - For VA_FOURCC_P010, the format of the returned NativePixmapDmaBuf is
+  //   gfx::BufferFormat::P010.
+  //
+  // - For VA_FOURCC_ARGB, the format of the returned NativePixmapDmaBuf is
+  //   gfx::BufferFormat::BGRA_8888.
   //
   // Returns nullptr on failure, or if the exported surface can't contain
   // |va_surface_size|.

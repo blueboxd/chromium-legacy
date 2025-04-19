@@ -93,7 +93,7 @@ class CONTENT_EXPORT NavigationURLLoaderImpl
 
   // Creates a URLLoaderFactory for a navigation. The factory uses
   // `header_client`. This should have the same settings as the factory from
-  // the URLLoaderFactoryGetter. Called on the UI thread.
+  // the ReconnectableURLLoaderFactoryForIOThread. Called on the UI thread.
   static mojo::PendingRemote<network::mojom::URLLoaderFactory>
   CreateURLLoaderFactoryWithHeaderClient(
       mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
@@ -164,6 +164,11 @@ class CONTENT_EXPORT NavigationURLLoaderImpl
   void MaybeStartLoader(
       size_t next_interceptor_index,
       std::optional<NavigationLoaderInterceptor::Result> interceptor_result);
+
+  // Called from `MaybeStartLoader` when the request is elected to be
+  // intercepted. Intercepts the request with `single_request_factory`.
+  void StartInterceptedRequest(
+      scoped_refptr<network::SharedURLLoaderFactory> single_request_factory);
 
   // Start a loader with the default behavior. This should be used when no
   // interceptors have elected to handle the request in the first place.
@@ -255,6 +260,7 @@ class CONTENT_EXPORT NavigationURLLoaderImpl
       const net::HttpRequestHeaders& modified_headers,
       const net::HttpRequestHeaders& modified_cors_exempt_headers) override;
   bool SetNavigationTimeout(base::TimeDelta timeout) override;
+  void CancelNavigationTimeout() override;
 
   // Records UKM for the navigation load.
   void RecordReceivedResponseUkmForOutermostMainFrame();

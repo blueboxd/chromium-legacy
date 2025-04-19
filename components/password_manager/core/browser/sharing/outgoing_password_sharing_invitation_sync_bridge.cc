@@ -9,10 +9,10 @@
 #include "base/uuid.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/sharing/password_sender_service.h"
-#include "components/sync/model/dummy_metadata_change_list.h"
+#include "components/sync/model/data_type_local_change_processor.h"
+#include "components/sync/model/empty_metadata_change_list.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/metadata_change_list.h"
-#include "components/sync/model/model_type_change_processor.h"
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/protocol/password_sharing_invitation_specifics.pb.h"
 
@@ -70,8 +70,8 @@ CreateOutgoingPasswordSharingInvitationSpecifics(
 
 OutgoingPasswordSharingInvitationSyncBridge::
     OutgoingPasswordSharingInvitationSyncBridge(
-        std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor)
-    : syncer::ModelTypeSyncBridge(std::move(change_processor)) {
+        std::unique_ptr<syncer::DataTypeLocalChangeProcessor> change_processor)
+    : syncer::DataTypeSyncBridge(std::move(change_processor)) {
   // Current data type doesn't have persistent storage so it's ready to sync
   // immediately.
   this->change_processor()->ModelReadyToSync(
@@ -88,7 +88,7 @@ OutgoingPasswordSharingInvitationSyncBridge::CreateMetadataChangeList() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // The data type intentionally doesn't persist the data on disk, so metadata
   // is just ignored.
-  return std::make_unique<syncer::DummyMetadataChangeList>();
+  return std::make_unique<syncer::EmptyMetadataChangeList>();
 }
 
 void OutgoingPasswordSharingInvitationSyncBridge::SendPasswordGroup(
@@ -154,9 +154,9 @@ OutgoingPasswordSharingInvitationSyncBridge::ApplyIncrementalSyncChanges(
   return std::nullopt;
 }
 
-void OutgoingPasswordSharingInvitationSyncBridge::GetDataForCommit(
-    StorageKeyList storage_keys,
-    DataCallback callback) {
+std::unique_ptr<syncer::DataBatch>
+OutgoingPasswordSharingInvitationSyncBridge::GetDataForCommit(
+    StorageKeyList storage_keys) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   auto batch = std::make_unique<syncer::MutableDataBatch>();
@@ -167,11 +167,11 @@ void OutgoingPasswordSharingInvitationSyncBridge::GetDataForCommit(
       batch->Put(storage_key, ConvertToEntityData(iter->second));
     }
   }
-  std::move(callback).Run(std::move(batch));
+  return batch;
 }
 
-void OutgoingPasswordSharingInvitationSyncBridge::GetAllDataForDebugging(
-    DataCallback callback) {
+std::unique_ptr<syncer::DataBatch>
+OutgoingPasswordSharingInvitationSyncBridge::GetAllDataForDebugging() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   auto batch = std::make_unique<syncer::MutableDataBatch>();
@@ -180,7 +180,7 @@ void OutgoingPasswordSharingInvitationSyncBridge::GetAllDataForDebugging(
     batch->Put(GetStorageKeyFromSpecifics(outgoing_invitation.specifics),
                ConvertToEntityData(outgoing_invitation));
   }
-  std::move(callback).Run(std::move(batch));
+  return batch;
 }
 
 std::string OutgoingPasswordSharingInvitationSyncBridge::GetClientTag(
@@ -239,7 +239,7 @@ void OutgoingPasswordSharingInvitationSyncBridge::OnCommitAttemptErrors(
   }
 }
 
-syncer::ModelTypeSyncBridge::CommitAttemptFailedBehavior
+syncer::DataTypeSyncBridge::CommitAttemptFailedBehavior
 OutgoingPasswordSharingInvitationSyncBridge::OnCommitAttemptFailed(
     syncer::SyncCommitError commit_error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

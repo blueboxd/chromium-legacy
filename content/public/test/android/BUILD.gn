@@ -25,6 +25,7 @@ android_library("content_java_test_support") {
     "//base:base_java_test_support",
     "//base:base_java_test_support_uncommon",
     "//base:process_launcher_java",
+    "//cc:cc_java",
     "//content/public/android:content_java",
     "//mojo/public/java:bindings_java",
     "//net/android:net_java",
@@ -55,7 +56,6 @@ android_library("content_java_test_support") {
     "javatests/src/org/chromium/content_public/browser/test/util/ClickUtils.java",
     "javatests/src/org/chromium/content_public/browser/test/util/Coordinates.java",
     "javatests/src/org/chromium/content_public/browser/test/util/DOMUtils.java",
-    "javatests/src/org/chromium/content_public/browser/test/util/DigitalCredentialProviderUtils.java",
     "javatests/src/org/chromium/content_public/browser/test/util/DomAutomationController.java",
     "javatests/src/org/chromium/content_public/browser/test/util/FencedFrameUtils.java",
     "javatests/src/org/chromium/content_public/browser/test/util/HistoryUtils.java",
@@ -66,7 +66,6 @@ android_library("content_java_test_support") {
     "javatests/src/org/chromium/content_public/browser/test/util/TestInputMethodManagerWrapper.java",
     "javatests/src/org/chromium/content_public/browser/test/util/TestSelectionDropdownMenuDelegate.java",
     "javatests/src/org/chromium/content_public/browser/test/util/TestSelectionPopupController.java",
-    "javatests/src/org/chromium/content_public/browser/test/util/TestThreadUtils.java",
     "javatests/src/org/chromium/content_public/browser/test/util/TestTouchUtils.java",
     "javatests/src/org/chromium/content_public/browser/test/util/TestWebContentsObserver.java",
     "javatests/src/org/chromium/content_public/browser/test/util/TouchCommon.java",
@@ -92,7 +91,7 @@ android_library("content_transit_java") {
   sources = [
     "javatests/src/org/chromium/content_public/browser/test/transit/HtmlConditions.java",
     "javatests/src/org/chromium/content_public/browser/test/transit/HtmlElement.java",
-    "javatests/src/org/chromium/content_public/browser/test/transit/HtmlElementInState.java",
+    "javatests/src/org/chromium/content_public/browser/test/transit/HtmlElementSpec.java",
   ]
 }
 

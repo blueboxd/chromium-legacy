@@ -100,6 +100,8 @@ using content::BrowserThread;
 
 namespace safe_browsing {
 
+using enum ExtendedReportingLevel;
+
 namespace {
 
 // The number of user gestures to trace back for the referrer chain.
@@ -319,8 +321,8 @@ SafeBrowsingService::GetReferrerChainProviderFromBrowserContext(
 }
 
 #if BUILDFLAG(IS_ANDROID)
-LoginReputationClientRequest::ReferringAppInfo
-SafeBrowsingService::GetReferringAppInfo(content::WebContents* web_contents) {
+ReferringAppInfo SafeBrowsingService::GetReferringAppInfo(
+    content::WebContents* web_contents) {
   return safe_browsing::GetReferringAppInfo(web_contents);
 }
 #endif
@@ -583,7 +585,8 @@ bool SafeBrowsingService::SendPhishyInteractionsReport(
     const GURL& url,
     const GURL& page_url,
     const PhishySiteInteractionMap& phishy_interaction_data) {
-  if (!profile || !IsExtendedReportingEnabled(*profile->GetPrefs())) {
+  if (!profile || !IsExtendedReportingEnabled(*profile->GetPrefs()) ||
+      profile->IsOffTheRecord()) {
     return false;
   }
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -608,8 +611,9 @@ bool SafeBrowsingService::SendPhishyInteractionsReport(
           &new_phishy_site_interaction);
     }
   }
-  return ChromePingManagerFactory::GetForBrowserContext(profile)
-             ->ReportThreatDetails(std::move(report)) ==
+  auto* ping_manager = ChromePingManagerFactory::GetForBrowserContext(profile);
+  DCHECK(ping_manager);
+  return ping_manager->ReportThreatDetails(std::move(report)) ==
          PingManager::ReportThreatDetailsResult::SUCCESS;
 }
 #endif
@@ -624,7 +628,8 @@ bool SafeBrowsingService::MaybeSendNotificationsAcceptedReport(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!profile || !IsExtendedReportingEnabled(*profile->GetPrefs()) ||
       !base::FeatureList::IsEnabled(
-          kCreateNotificationsAcceptedClientSafeBrowsingReports)) {
+          kCreateNotificationsAcceptedClientSafeBrowsingReports) ||
+      profile->IsOffTheRecord()) {
     return false;
   }
   // Only send report if the UnsafeResource was allowlisted, due to the user
@@ -719,7 +724,6 @@ bool SafeBrowsingService::IsURLAllowlisted(
   security_interstitials::UnsafeResource resource;
   resource.url = url;
   resource.original_url = url;
-  resource.is_subresource = false;
   resource.threat_type = SBThreatType::SB_THREAT_TYPE_URL_PHISHING;
   const content::GlobalRenderFrameHostId primary_main_frame_id =
       primary_main_frame->GetGlobalId();

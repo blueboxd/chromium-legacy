@@ -53,15 +53,10 @@ class CrosComponentsUI : public content::WebUIController {
   ~CrosComponentsUI() override = default;
 };
 
-class CrosComponentsUIConfig : public content::WebUIConfig {
+class CrosComponentsUIConfig
+    : public content::DefaultWebUIConfig<CrosComponentsUI> {
  public:
-  CrosComponentsUIConfig() : WebUIConfig("chrome", kTestHost) {}
-
-  std::unique_ptr<content::WebUIController> CreateWebUIController(
-      content::WebUI* web_ui,
-      const GURL& url) override {
-    return std::make_unique<CrosComponentsUI>(web_ui);
-  }
+  CrosComponentsUIConfig() : DefaultWebUIConfig("chrome", kTestHost) {}
 };
 
 struct ComponentTestData {
@@ -266,6 +261,23 @@ static constexpr const ComponentTestData kComponentsTestData[] = {
             "chrome://resources/cros_components/snackbar/snackbar-item.js",
         .component_name = "cros-snackbar-item",
         .gtest_name = "CrosSnackbarItem",
+    },
+    {
+        .script_src = "chrome://resources/cros_components/tooltip/tooltip.js",
+        .component_name = "cros-tooltip",
+        .gtest_name = "CrosTooltip",
+    },
+    {
+        .script_src =
+            "chrome://resources/cros_components/accordion/accordion.js",
+        .component_name = "cros-accordion",
+        .gtest_name = "CrosAccordion",
+    },
+    {
+        .script_src =
+            "chrome://resources/cros_components/accordion/accordion_item.js",
+        .component_name = "cros-accordion-item",
+        .gtest_name = "CrosAccordionItem",
     },
     // TODO(b:332970280): Bring orca-feedback back once we can support safeHTML
     // properly.

@@ -75,6 +75,7 @@ static_library("search_engines") {
   deps = [
     "//base:i18n",
     "//components/country_codes",
+    "//components/crash/core/common:crash_key",
     "//components/database_utils",
     "//components/infobars/core",
     "//components/lens:lens",
@@ -102,6 +103,10 @@ static_library("search_engines") {
     "//ui/gfx/geometry",
     "//url",
   ]
+
+  if (!is_fuchsia) {
+    deps += [ "//components/variations/service" ]
+  }
 
   if (is_android) {
     sources += [
@@ -160,6 +165,8 @@ source_set("search_engine_type") {
 static_library("test_support") {
   testonly = true
   sources = [
+    "search_engines_test_environment.cc",
+    "search_engines_test_environment.h",
     "search_engines_test_util.cc",
     "search_engines_test_util.h",
     "template_url_service_test_util.cc",

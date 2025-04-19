@@ -14,8 +14,8 @@
 #include "build/build_config.h"
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
-#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-blink.h"
+#include "third_party/blink/public/platform/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_xr_depth_state_init.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_xr_tracked_image_init.h"
@@ -81,10 +81,6 @@ const char kImmersiveArModeNotValid[] =
 
 const char kTrackedImageWidthInvalid[] =
     "trackedImages[%d].widthInMeters invalid, must be a positive number.";
-
-const char kDepthSensingConfigurationNotSupported[] =
-    "The provided preferences depth sensing usage and format are not "
-    "supported, unable to create the session.";
 
 constexpr device::mojom::XRSessionFeature kDefaultImmersiveVrFeatures[] = {
     device::mojom::XRSessionFeature::REF_SPACE_VIEWER,
@@ -155,6 +151,8 @@ device::mojom::XRDepthDataFormat ParseDepthFormat(
       return device::mojom::XRDepthDataFormat::kLuminanceAlpha;
     case V8XRDepthDataFormat::Enum::kFloat32:
       return device::mojom::XRDepthDataFormat::kFloat32;
+    case V8XRDepthDataFormat::Enum::kUnsignedShort:
+      return device::mojom::XRDepthDataFormat::kUnsignedShort;
   }
 }
 
@@ -1352,19 +1350,6 @@ ScriptPromise<XRSession> XRSystem::requestSession(
     Vector<device::mojom::XRDepthDataFormat> preferred_format =
         ParseDepthFormats(session_init->depthSensing()->dataFormatPreference());
 
-    // If the depth API is required and either preferred usages or preferred
-    // formats are empty, we already know that the session creation will fail
-    // (as we won't be able to pick a supported usage & format combination), so
-    // let's fail it already:
-    if (query->RequiredFeatures().Contains(
-            device::mojom::XRSessionFeature::DEPTH) &&
-        (preferred_usage.empty() || preferred_format.empty())) {
-      query->RejectWithDOMException(DOMExceptionCode::kNotSupportedError,
-                                    kDepthSensingConfigurationNotSupported,
-                                    &exception_state);
-      return promise;
-    }
-
     query->SetDepthSensingConfiguration(preferred_usage, preferred_format);
   }
 
@@ -1550,7 +1535,9 @@ void XRSystem::FinishSessionCreation(
       session_ptr->interaction_mode, std::move(session_ptr->client_receiver),
       std::move(session_ptr->device_config), enabled_features);
 
-  frameProvider()->OnSessionStarted(session, std::move(session_ptr));
+  frameProvider()->OnSessionStarted(
+      session, std::move(session_ptr), result->get_success()->trace_id,
+      std::move(result->get_success()->xr_internals_listener));
 
   if (query->mode() == device::mojom::blink::XRSessionMode::kImmersiveVr ||
       query->mode() == device::mojom::blink::XRSessionMode::kImmersiveAr) {

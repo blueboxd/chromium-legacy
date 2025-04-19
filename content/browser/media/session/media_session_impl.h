@@ -389,8 +389,7 @@ class MediaSessionImpl : public MediaSession,
     bool operator==(const PlayerIdentifier& other) const;
     bool operator!=(const PlayerIdentifier& other) const;
     bool operator<(const PlayerIdentifier& other) const;
-    // This field is not a raw_ptr<> because it was filtered by the rewriter
-    // for: #constexpr-ctor-field-initializer, #union
+    // RAW_PTR_EXCLUSION: #union
     RAW_PTR_EXCLUSION MediaSessionPlayerObserver* observer;
     int player_id;
   };
@@ -482,6 +481,14 @@ class MediaSessionImpl : public MediaSession,
   // Iterates over all |normal_players_| and returns true if any of the players'
   // videos is sufficiently visible, false otherwise.
   CONTENT_EXPORT bool HasSufficientlyVisibleVideo() const;
+
+  // Iterates over all |normal_players_| and returns true if any of the players'
+  // videos is sufficiently visible, false otherwise.
+  //
+  // This is very similar to `HasSufficientlyVisibleVideo`, however this method
+  // is used to get notifications on demand, while `HasSufficientlyVisibleVideo`
+  // is constantly reporting visibility.
+  void GetVisibility(GetVisibilityCallback get_visibility_callback) override;
 
   // Returns the device ID for the audio output device being used by all of the
   // normal players. If the players are not all using the same audio output

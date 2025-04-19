@@ -10,12 +10,12 @@
 #include "base/values.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
-#include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/test_browser_autofill_manager.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_test_utils.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/form_data_test_api.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill {
@@ -108,13 +108,14 @@ FormData CreateFeedbackTestFormData() {
   form.set_action(GURL("https://myform.com/submit.html"));
   form.set_main_frame_origin(
       url::Origin::Create(GURL("https://myform_root.com/form.html")));
-  form.fields = {
-      CreateTestFormField("First Name on Card", "firstnameoncard", "",
-                          FormControlType::kInputText, "cc-given-name"),
-      CreateTestFormField("Last Name on Card", "lastnameoncard", "",
-                          FormControlType::kInputText, "cc-family-name"),
-      CreateTestFormField("Email", "email", "", FormControlType::kInputEmail)};
-  for (FormFieldData& field : form.fields) {
+  form.set_fields(
+      {CreateTestFormField("First Name on Card", "firstnameoncard", "",
+                           FormControlType::kInputText, "cc-given-name"),
+       CreateTestFormField("Last Name on Card", "lastnameoncard", "",
+                           FormControlType::kInputText, "cc-family-name"),
+       CreateTestFormField("Email", "email", "",
+                           FormControlType::kInputEmail)});
+  for (FormFieldData& field : test_api(form).fields()) {
     field.set_host_frame(form.host_frame());
   }
   return form;
@@ -131,7 +132,8 @@ class AutofillFeedbackDataUnitTest : public testing::Test {
         std::make_unique<TestBrowserAutofillManager>(autofill_driver_.get());
   }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   test::AutofillUnitTestEnvironment autofill_test_environment_;
   TestAutofillClient autofill_client_;
   std::unique_ptr<TestAutofillDriver> autofill_driver_;
@@ -158,14 +160,15 @@ TEST_F(AutofillFeedbackDataUnitTest, CreatesCompleteReport) {
 
 TEST_F(AutofillFeedbackDataUnitTest, IncludesLastAutofillEventLogEntry) {
   FormData form = CreateFeedbackTestFormData();
-  FormFieldData field = form.fields[0];
+  FormFieldData field = form.fields()[0];
   browser_autofill_manager_->OnFormsSeen(
       /*updated_forms=*/{form},
       /*removed_forms=*/{});
 
   // Simulates an autofill event.
-  browser_autofill_manager_->OnSingleFieldSuggestionSelected(
-      u"TestValue", SuggestionType::kIbanEntry, form, field);
+  Suggestion suggestion(u"TestValue", SuggestionType::kIbanEntry);
+  browser_autofill_manager_->OnSingleFieldSuggestionSelected(suggestion, form,
+                                                             field);
 
   ASSERT_OK_AND_ASSIGN(
       auto expected_data,
@@ -188,19 +191,19 @@ TEST_F(AutofillFeedbackDataUnitTest, IncludesLastAutofillEventLogEntry) {
 
 TEST_F(AutofillFeedbackDataUnitTest,
        NotIncludeLastAutofillEventIfExceedTimeLimit) {
-  TestAutofillClock clock(AutofillClock::Now());
   FormData form = CreateFeedbackTestFormData();
-  FormFieldData& field = form.fields[0];
+  const FormFieldData& field = form.fields()[0];
   browser_autofill_manager_->OnFormsSeen(
       /*updated_forms=*/{form},
       /*removed_forms=*/{});
 
   // Simulates an autofill event.
-  browser_autofill_manager_->OnSingleFieldSuggestionSelected(
-      u"TestValue", SuggestionType::kIbanEntry, form, field);
+  Suggestion suggestion(u"TestValue", SuggestionType::kIbanEntry);
+  browser_autofill_manager_->OnSingleFieldSuggestionSelected(suggestion, form,
+                                                             field);
 
   // Advance the clock 4 minutes should disregard the last autofill event log.
-  clock.Advance(base::Minutes(4));
+  task_environment_.FastForwardBy(base::Minutes(4));
 
   // Expected data does not contain the last_autofill_event entry.
   ASSERT_OK_AND_ASSIGN(

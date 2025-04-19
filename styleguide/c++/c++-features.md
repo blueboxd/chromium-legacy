@@ -966,6 +966,25 @@ implementation of a particular language feature.
 None
 ***
 
+### [[likely]], [[unlikely]] <sup>[allowed]</sup>
+
+```c++
+if (n > 0) [[likely]] {
+  return 1;
+}
+```
+
+**Description:** Tells the optimizer that a particular codepath is more or less
+likely than an alternative.
+
+**Documentation:**
+[C++ attribute: `likely`, `unlikely`](https://en.cppreference.com/w/cpp/language/attributes/likely)
+
+**Notes:**
+*** promo
+- [Discussion thread](https://groups.google.com/a/chromium.org/g/cxx/c/bk9YC5qSDF8)
+***
+
 ### Range-for statements with initializer <sup>[allowed]</sup>
 
 ```c++
@@ -1063,6 +1082,54 @@ machinery in `<type_traits>`.
 **Notes:**
 *** promo
 None
+***
+
+### Range algorithms <sup>[allowed]</sup>
+
+```c++
+constexpr int kArr[] = {2, 4, 6, 8, 10, 12};
+constexpr auto is_even = [] (auto x) { return x % 2 == 0; };
+static_assert(std::ranges::all_of(kArr, is_even));
+```
+
+**Description:** Provides versions of most algorithms that accept either an
+iterator-sentinel pair or a single range argument.
+
+**Documentation:**
+[Ranges algorithms](https://en.cppreference.com/w/cpp/algorithm/ranges)
+
+**Notes:**
+*** promo
+Supersedes `//base`'s backports in `//base/ranges/algorithm.h`.
+
+[Discussion thread](https://groups.google.com/a/chromium.org/g/cxx/c/ZnIbkfJ0Glw)
+***
+
+### Range access, range primitives, dangling iterator handling, and range concepts <sup>[allowed]</sup>
+
+```c++
+// Range access:
+constexpr int kArr[] = {2, 4, 6, 8, 10, 12};
+static_assert(std::ranges::size(kArr) == 6);
+
+// Range primitives:
+static_assert(
+    std::same_as<std::ranges::iterator_t<decltype(kArr)>, const int*>);
+
+// Range concepts:
+static_assert(std::ranges::contiguous_range<decltype(kArr)>);
+```
+
+**Description:** Various helper functions and types for working with ranges.
+
+**Documentation:**
+[Ranges library](https://en.cppreference.com/w/cpp/ranges)
+
+**Notes:**
+*** promo
+Supersedes `//base`'s backports in `//base//ranges/ranges.h`.
+
+[Discussion thread](https://groups.google.com/a/chromium.org/g/cxx/c/ZnIbkfJ0Glw)
 ***
 
 ### Library feature-test macros and &lt;version&gt; <sup>[allowed]</sup>
@@ -1449,6 +1516,34 @@ encoded using the current C locale.
 Chromium functionality should not vary with the C locale.
 ***
 
+### Views, range factories, and range adaptors <sup>[banned]</sup>
+
+```c++
+constexpr int kArr[] = {6, 2, 8, 4, 4, 2};
+constexpr auto plus_one = std::views::transform([](int n){ return n + 1; });
+static_assert(std::ranges::equal(kArr | plus_one, {7, 3, 9, 5, 5, 3}));
+
+// Prints 1, 2, 3, 4, 5, 6.
+for (auto i : std::ranges::iota_view(1, 7)) {
+  std::cout << i << '\n';
+}
+```
+
+**Description:** Lightweight objects that represent iterable sequences.
+Provides facilities for lazy operations on ranges, along with composition into
+pipelines.
+
+**Documentation:**
+[Ranges library](https://en.cppreference.com/w/cpp/ranges)
+
+**Notes:**
+*** promo
+Banned in Chrome due to questions about the design, impact on build time, and
+runtime performance.
+
+[Discussion thread](https://groups.google.com/a/chromium.org/g/cxx/c/ZnIbkfJ0Glw)
+***
+
 ### std::to_address <sup>[banned]</sup>
 
 ```c++
@@ -1538,25 +1633,6 @@ Requires significant support code and planning around API and migration.
 [Prototyping bug](https://crbug.com/1403840)
 ***
 
-### [[likely]], [[unlikely]] <sup>[tbd]</sup>
-
-```c++
-if (n > 0) [[likely]] {
-  return 1;
-}
-```
-
-**Description:** Tells the optimizer that a particular codepath is more or less
-likely than an alternative.
-
-**Documentation:**
-[C++ attribute: `likely`, `unlikely`](https://en.cppreference.com/w/cpp/language/attributes/likely)
-
-**Notes:**
-*** promo
-[Will be allowed soon](https://crbug.com/1414620); for now, use `[UN]LIKELY`.
-***
-
 ## C++20 TBD Library Features {#library-review-20}
 
 The following C++20 library features are not allowed in the Chromium codebase.
@@ -1594,28 +1670,6 @@ std::cout << std::format("Hello {}!\n", "world");
 *** promo
 Has both pros and cons compared to `absl::StrFormat` (which we don't yet use).
 Migration would be nontrivial.
-***
-
-### &lt;ranges&gt; <sup>[tbd]</sup>
-
-```c++
-constexpr int arr[] = {6, 2, 8, 4, 4, 2};
-constexpr auto plus_one = std::views::transform([](int n){ return n + 1; });
-static_assert(std::ranges::equal(arr | plus_one, {7, 3, 9, 5, 5, 3}));
-```
-
-**Description:** Generalizes algorithms using range views, which are lightweight
-objects that represent iterable sequences. Provides facilities for eager and
-lazy operations on ranges, along with composition into pipelines.
-
-**Documentation:**
-[Ranges library](https://en.cppreference.com/w/cpp/ranges)
-
-**Notes:**
-*** promo
-Significant concerns expressed internally. We should consider whether there are
-clearly-safe pieces to allow (e.g. to replace `base/ranges/algorithm.h`) and
-engage with the internal library team.
 ***
 
 ### &lt;source_location&gt; <sup>[tbd]</sup>
@@ -1798,7 +1852,7 @@ invocable type.
   conversion will trigger a `static_assert` requesting additional feedback for
   use cases where this conversion would be valuable.
 - *Important:* `base::FunctionRef` must not outlive the function call. Like
-  `base::StringPiece`, `base::FunctionRef` is a *non-owning* reference. Using a
+  `std::string_view`, `base::FunctionRef` is a *non-owning* reference. Using a
   `base::FunctionRef` as a return value or class field is dangerous and likely
   to result in lifetime bugs.
 

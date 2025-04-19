@@ -26,6 +26,8 @@ inline constexpr std::string_view kOnDeviceModelCrxId =
 
 class OnDeviceModelComponentState;
 
+enum class ModelBasedCapabilityKey;
+
 // Wraps the specification needed to determine compatibility of the
 // on-device base model with any feature specific code.
 struct OnDeviceBaseModelSpec {
@@ -88,7 +90,7 @@ class OnDeviceModelComponentStateManager
   void OnStartup();
 
   // Should be called whenever an on-device eligible feature was used.
-  void OnDeviceEligibleFeatureUsed();
+  void OnDeviceEligibleFeatureUsed(ModelBasedCapabilityKey feature);
 
   // Should be called whenever the device performance class changes.
   void DevicePerformanceClassChanged(
@@ -117,6 +119,9 @@ class OnDeviceModelComponentStateManager
 
   // Called after the installer is successfully registered.
   void InstallerRegistered();
+
+  // Returns the current OnDeviceModelStatus.
+  OnDeviceModelStatus GetOnDeviceModelStatus();
 
   base::WeakPtr<OnDeviceModelComponentStateManager> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
@@ -174,9 +179,7 @@ class OnDeviceModelComponentState {
   const base::Version& GetComponentVersion() const {
     return component_version_;
   }
-  const std::optional<OnDeviceBaseModelSpec>& GetBaseModelSpec() const {
-    return model_spec_;
-  }
+  const OnDeviceBaseModelSpec& GetBaseModelSpec() const { return model_spec_; }
 
  private:
   friend class OnDeviceModelAdaptationLoaderTest;
@@ -186,7 +189,7 @@ class OnDeviceModelComponentState {
 
   base::FilePath install_dir_;
   base::Version component_version_;
-  std::optional<OnDeviceBaseModelSpec> model_spec_;
+  OnDeviceBaseModelSpec model_spec_;
 };
 
 }  // namespace optimization_guide

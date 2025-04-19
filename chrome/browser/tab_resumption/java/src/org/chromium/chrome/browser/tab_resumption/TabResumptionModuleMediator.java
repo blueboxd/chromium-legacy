@@ -12,13 +12,19 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.magic_stack.ModuleDelegate;
 import org.chromium.chrome.browser.magic_stack.ModuleDelegate.ModuleType;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab_resumption.TabResumptionDataProvider.ResultStrength;
 import org.chromium.chrome.browser.tab_resumption.TabResumptionDataProvider.SuggestionsResult;
 import org.chromium.chrome.browser.tab_resumption.TabResumptionModuleMetricsUtils.ModuleNotShownReason;
 import org.chromium.chrome.browser.tab_resumption.TabResumptionModuleMetricsUtils.ModuleShowConfig;
 import org.chromium.chrome.browser.tab_resumption.TabResumptionModuleUtils.SuggestionClickCallback;
+import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.components.visited_url_ranking.ScoredURLUserAction;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.List;
@@ -81,6 +87,7 @@ public class TabResumptionModuleMediator {
      */
     private class Session {
         private final TabResumptionDataProvider mDataProvider;
+        private MultiTabObserver mLocalTabClosureObserver;
 
         private boolean mIsAlive;
         private Handler mHandler;
@@ -91,6 +98,8 @@ public class TabResumptionModuleMediator {
 
         private long mFirstLoadTime;
         private boolean mIsStable;
+        private SuggestionBundle mBundle;
+        private @ResultStrength int mStrength;
 
         /**
          * @param dataProvider TabResumptionDataProvider instance owned by this class.
@@ -102,21 +111,62 @@ public class TabResumptionModuleMediator {
                 @NonNull Runnable statusChangedCallback) {
             mDataProvider = dataProvider;
             mDataProvider.setStatusChangedCallback(statusChangedCallback);
+            mLocalTabClosureObserver =
+                    new MultiTabObserver() {
+                        @Override
+                        public void onClosingStateChanged(Tab tab, boolean closing) {
+                            if (!closing) return;
+
+                            // Tab is being closed and only cleanup should be done. We'd like to
+                            // reload, but doing so eagerly now is error-prone (in particular,
+                            // mTabModel.getTabById() on the closing Tab would return non-null).
+                            // Therefore defer reload by posting on current task runner.
+                            assert ThreadUtils.runningOnUiThread();
+                            PostTask.postTask(TaskTraits.UI_DEFAULT, mReloadSessionCallback);
+                        }
+                    };
+
+            mStrength = ResultStrength.TENTATIVE;
             mIsAlive = true;
         }
 
         void destroy() {
+            if (mBundle != null) { // Do not check `mStrength`.
+                recordSeenActionForEntries(mBundle.entries);
+            }
+
+            mLocalTabClosureObserver.destroy();
             mDataProvider.setStatusChangedCallback(null);
             mDataProvider.destroy();
             if (mHandler != null) {
                 mHandler.removeCallbacksAndMessages(null);
                 mHandler = null;
             }
-            // Activates if STABLE and FORCED_NULL results isn't seen, and timeout has triggered
-            // yet.
-            // This includes the case where TENTATIVE tiles are quickly clicked by a user.
+
+            // Activates if STABLE and FORCED_NULL results isn't seen, and timeout has not been
+            // triggered yet. This includes the case where TENTATIVE tiles are quickly clicked by a
+            // user.
             ensureStabilityAndLogMetrics(/* recordStabilityDelay= */ false, mModuleShowConfig);
             mIsAlive = false;
+        }
+
+        /** Records the "activated" action for the given `entry`. */
+        void recordActivatedActionForEntry(SuggestionEntry entry) {
+            if (entry.trainingInfo != null) {
+                entry.trainingInfo.record(ScoredURLUserAction.ACTIVATED);
+            }
+        }
+
+        /** Record the "seen" action for the given `entries`. */
+        private void recordSeenActionForEntries(List<SuggestionEntry> entries) {
+            // If needed, we can denoise this by requiring that rendered tiled have been scrolled
+            // onto screen. Another idea is to require suggestions to exist for some time bound.
+            for (SuggestionEntry entry : entries) {
+                if (entry.trainingInfo != null) {
+                    // If an entry has previously recorded() then this would be a no-op.
+                    entry.trainingInfo.record(ScoredURLUserAction.SEEN);
+                }
+            }
         }
 
         /**
@@ -176,15 +226,15 @@ public class TabResumptionModuleMediator {
             //
             // One way to address the ping issue is to always trigger INIT -> SHOW, render a
             // placeholder, and use a timeout that races against data request. If the timeout
-            // expires then cached data are deemed good-enough, and rendered.
+            // expires then potentially-cached data are deemed good-enough, and rendered.
             //
             // A drawback of the placeholder-timeout approach is that having no updates is common.
-            // So often placeholder would show, only to surrender to module rendered using cached
-            // data that was readily available to start with;
+            // So often placeholder would show, only to surrender to module rendered using
+            // potentially-cached data that was readily available to start with;
             //
-            // To better use cached data, we take the following hybrid approach:
-            // * TENTATIVE / "fast path" data: Fetch cached data on initial load. If "something"
-            //   then render and enter SHOWN. If "nothing" then stay in INIT and wait.
+            // To better use potentially-cached data, we take the following hybrid approach:
+            // * TENTATIVE / "fast path" data: Fetch potentially-cached data on initial load. If
+            //   "something" then render and enter SHOWN. If "nothing" then stay in INIT and wait.
             // * STABLE / "slow path" data: *If* "slow path" data arrives (can be triggered by
             //   `mDataProvider`), render UI with it, and enter SHOWN or GONE.
             //
@@ -226,18 +276,26 @@ public class TabResumptionModuleMediator {
             // that happens, to prevent interfering with the UI of a succeeding Session.
             if (!mIsAlive) return;
 
+            if (mBundle != null && mStrength != ResultStrength.TENTATIVE) {
+                // Suggestions have already been rendered, and is being overwritten. Record that the
+                // old suggestions were seen if not TENTATIVE, which might not have the chance to
+                // stay on screen long enough before being replaced.
+                recordSeenActionForEntries(mBundle.entries);
+            }
+
             List<SuggestionEntry> suggestions = result.suggestions;
-            SuggestionBundle bundle =
+            mBundle =
                     (suggestions != null && suggestions.size() > 0)
                             ? makeSuggestionBundle(suggestions)
                             : null;
+
             @ModuleShowConfig Integer prevModuleShowConfig = mModuleShowConfig;
             // This directly changes `mShowHideHelper` results.
-            mModuleShowConfig = TabResumptionModuleMetricsUtils.computeModuleShowConfig(bundle);
+            mModuleShowConfig = TabResumptionModuleMetricsUtils.computeModuleShowConfig(mBundle);
 
-            @ResultStrength int strength = result.strength;
-            if (strength == ResultStrength.TENTATIVE) {
-                setPropertiesAndTriggerRender(bundle);
+            mStrength = result.strength;
+            if (mStrength == ResultStrength.TENTATIVE) {
+                setPropertiesAndTriggerRender(mBundle);
                 // On first call, start timeout to transition to STABLE and log.
                 if (mHandler == null) {
                     mHandler = new Handler();
@@ -258,19 +316,30 @@ public class TabResumptionModuleMediator {
                     mShowHideHelper.maybeNotifyModuleDelegate();
                 }
 
-            } else if (strength == ResultStrength.STABLE) {
+            } else if (mStrength == ResultStrength.STABLE) {
                 mShowHideHelper.maybeNotifyModuleDelegate();
-                setPropertiesAndTriggerRender(bundle);
+                setPropertiesAndTriggerRender(mBundle);
                 ensureStabilityAndLogMetrics(/* recordStabilityDelay= */ true, mModuleShowConfig);
 
-            } else if (strength == ResultStrength.FORCED_NULL) {
+            } else if (mStrength == ResultStrength.FORCED_NULL) {
                 assert !mShowHideHelper.shouldShow();
                 mShowHideHelper.maybeNotifyModuleDelegate();
                 // Activates if STABLE was never encountered. In this case, TENTATIVE suggestions
                 // are considered stable (therefore log `prevModuleShowConfig`).
-                setPropertiesAndTriggerRender(bundle);
+                setPropertiesAndTriggerRender(mBundle);
                 ensureStabilityAndLogMetrics(
                         /* recordStabilityDelay= */ false, prevModuleShowConfig);
+            }
+
+            if (mBundle != null) {
+                mLocalTabClosureObserver.clear();
+                for (SuggestionEntry entry : mBundle.entries) {
+                    if (entry.isLocalTab()) {
+                        Tab tab = mTabModel.getTabById(entry.localTabId);
+                        assert tab != null; // isSuggestionValid() filtering ensures this.
+                        mLocalTabClosureObserver.add(tab);
+                    }
+                }
             }
         }
     }
@@ -281,9 +350,11 @@ public class TabResumptionModuleMediator {
 
     private final Context mContext;
     private final ModuleDelegate mModuleDelegate;
+    private final TabModel mTabModel;
     private final PropertyModel mModel;
 
     protected final UrlImageProvider mUrlImageProvider;
+    protected final Runnable mReloadSessionCallback;
     protected final Runnable mStatusChangedCallback;
     protected final SuggestionClickCallback mSuggestionClickCallback;
     private final ShowHideHelper mShowHideHelper;
@@ -293,17 +364,25 @@ public class TabResumptionModuleMediator {
     public TabResumptionModuleMediator(
             @NonNull Context context,
             @NonNull ModuleDelegate moduleDelegate,
+            @NonNull TabModel tabModel,
             @NonNull PropertyModel model,
             @NonNull UrlImageProvider urlImageProvider,
+            @NonNull Runnable reloadSessionCallback,
             @NonNull Runnable statusChangedCallback,
             @NonNull Runnable seeMoreLinkClickCallback,
             @NonNull SuggestionClickCallback suggestionClickCallback) {
         mContext = context;
         mModuleDelegate = moduleDelegate;
+        mTabModel = tabModel;
         mModel = model;
         mUrlImageProvider = urlImageProvider;
+        mReloadSessionCallback = reloadSessionCallback;
         mStatusChangedCallback = statusChangedCallback;
-        mSuggestionClickCallback = suggestionClickCallback;
+        mSuggestionClickCallback =
+                (SuggestionEntry entry) -> {
+                    mSession.recordActivatedActionForEntry(entry);
+                    suggestionClickCallback.onSuggestionClicked(entry);
+                };
         mShowHideHelper = new ShowHideHelper();
 
         mModel.set(TabResumptionModuleProperties.URL_IMAGE_PROVIDER, mUrlImageProvider);
@@ -311,24 +390,25 @@ public class TabResumptionModuleMediator {
                 TabResumptionModuleProperties.SEE_MORE_LINK_CLICK_CALLBACK,
                 seeMoreLinkClickCallback);
         mModel.set(TabResumptionModuleProperties.CLICK_CALLBACK, mSuggestionClickCallback);
-        mModel.set(
-                TabResumptionModuleProperties.USE_SALIENT_IMAGE,
-                TabResumptionModuleUtils.TAB_RESUMPTION_USE_SALIENT_IMAGE.getValue());
     }
 
+    /** Starts a new Session with the given `dataProvider`. There should be no existing Session. */
     void startSession(@NonNull TabResumptionDataProvider dataProvider) {
         assert mSession == null;
         mSession = new Session(dataProvider, mStatusChangedCallback);
     }
 
+    /** Ends the Session if one exists. If no Session exists then no-op (i.e., be forgiving). */
     void endSession() {
-        assert mSession != null;
-        mSession.destroy();
-        mSession = null;
+        if (mSession != null) {
+            mSession.destroy();
+            mSession = null;
+        }
     }
 
     void destroy() {
         assert mSession == null;
+        mModel.set(TabResumptionModuleProperties.URL_IMAGE_PROVIDER, null);
     }
 
     /**
@@ -342,8 +422,16 @@ public class TabResumptionModuleMediator {
     /**
      * @return Whether the given suggestion is qualified to be shown in UI.
      */
-    private static boolean isSuggestionValid(SuggestionEntry entry) {
-        return (entry.isLocalTab()) || !TextUtils.isEmpty(entry.title);
+    private boolean isSuggestionValid(SuggestionEntry entry) {
+        if (entry.isLocalTab()) {
+            // We already detect closure the of a suggested Local Tab, and perform refresh. Below
+            // guards against glitches where a Local Tab somehow gets closed, or is in the closing
+            // state, but still get suggested.
+            Tab tab = mTabModel.getTabById(entry.localTabId);
+            return tab != null && !tab.isClosing();
+        }
+
+        return !TextUtils.isEmpty(entry.title);
     }
 
     /**
@@ -356,9 +444,23 @@ public class TabResumptionModuleMediator {
         long currentTimeMs = TabResumptionModuleUtils.getCurrentTimeMs();
         SuggestionBundle bundle = new SuggestionBundle(currentTimeMs);
         int maxTilesNumber = TabResumptionModuleUtils.TAB_RESUMPTION_MAX_TILES_NUMBER.getValue();
+        boolean hasLocalTab = false;
         for (SuggestionEntry entry : suggestions) {
+            // At most one local Tab can be shown on the Tab resumption module.
+            if (hasLocalTab && entry.isLocalTab()) {
+                continue;
+            }
+
             if (isSuggestionValid(entry)) {
+                boolean isHistoryEntry = entry.type == SuggestionEntryType.HISTORY;
+                // The entry of type |HISTORY| will be in a single tile only.
+                if (isHistoryEntry) {
+                    if (!bundle.entries.isEmpty()) continue;
+                    bundle.entries.add(entry);
+                    break;
+                }
                 bundle.entries.add(entry);
+                hasLocalTab |= entry.isLocalTab();
                 if (bundle.entries.size() >= maxTilesNumber) {
                     break;
                 }

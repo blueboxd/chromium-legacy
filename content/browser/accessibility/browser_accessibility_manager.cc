@@ -102,18 +102,20 @@ BrowserAccessibilityFindInPageInfo::BrowserAccessibilityFindInPageInfo()
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
     const ui::AXTreeUpdate& initial_tree,
+    ui::AXNodeIdDelegate& node_id_delegate,
     ui::AXPlatformTreeManagerDelegate* delegate) {
   BrowserAccessibilityManager* manager =
-      new BrowserAccessibilityManager(delegate);
+      new BrowserAccessibilityManager(node_id_delegate, delegate);
   manager->Initialize(initial_tree);
   return manager;
 }
 
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
+    ui::AXNodeIdDelegate& node_id_delegate,
     ui::AXPlatformTreeManagerDelegate* delegate) {
   BrowserAccessibilityManager* manager =
-      new BrowserAccessibilityManager(delegate);
+      new BrowserAccessibilityManager(node_id_delegate, delegate);
   manager->Initialize(BrowserAccessibilityManager::GetEmptyDocument());
   return manager;
 }
@@ -135,12 +137,14 @@ BrowserAccessibilityManager* BrowserAccessibilityManager::FromID(
 }
 
 BrowserAccessibilityManager::BrowserAccessibilityManager(
+    ui::AXNodeIdDelegate& node_id_delegate,
     ui::AXPlatformTreeManagerDelegate* delegate)
     : AXPlatformTreeManager(std::make_unique<ui::AXSerializableTree>()),
       delegate_(delegate),
       user_is_navigating_away_(false),
       device_scale_factor_(1.0f),
-      use_custom_device_scale_factor_for_testing_(false) {}
+      use_custom_device_scale_factor_for_testing_(false),
+      node_id_delegate_(node_id_delegate) {}
 
 BrowserAccessibilityManager::~BrowserAccessibilityManager() = default;
 
@@ -339,10 +343,6 @@ void BrowserAccessibilityManager::UpdateAttributesOnParent(ui::AXNode* parent) {
   parent_wrapper->UpdatePlatformAttributes();
 }
 
-void BrowserAccessibilityManager::CleanUp() {
-  delegate_ = nullptr;
-}
-
 BrowserAccessibility* BrowserAccessibilityManager::GetPopupRoot() const {
   DCHECK_LE(popup_root_ids_.size(), 1u);
   if (popup_root_ids_.size() == 1) {
@@ -401,8 +401,11 @@ void BrowserAccessibilityManager ::
 
 bool BrowserAccessibilityManager::OnAccessibilityEvents(
     const ui::AXUpdatesAndEvents& details) {
-  TRACE_EVENT0("accessibility",
-               "BrowserAccessibilityManager::OnAccessibilityEvents");
+  TRACE_EVENT0(
+      "accessibility",
+      is_post_load_
+          ? "BrowserAccessibilityManager::OnAccessibilityEvents"
+          : "BrowserAccessibilityManager::OnAccessibilityEventsLoading");
   SCOPED_UMA_HISTOGRAM_TIMER_MICROS(
       "Accessibility.Performance.BrowserAccessibilityManager::"
       "OnAccessibilityEvents2");
@@ -627,6 +630,15 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
 
   // Allow derived classes to do event post-processing.
   FinalizeAccessibilityEvents();
+
+  if (!is_post_load_) {
+    for (const ui::AXEvent& event : details.events) {
+      if (event.event_type == ax::mojom::Event::kLoadComplete) {
+        is_post_load_ = true;
+      }
+    }
+  }
+
   return true;
 }
 
@@ -637,7 +649,9 @@ void BrowserAccessibilityManager::FinalizeAccessibilityEvents() {}
 void BrowserAccessibilityManager::OnLocationChanges(
     const std::vector<ui::AXLocationChanges>& changes) {
   TRACE_EVENT0("accessibility",
-               "BrowserAccessibilityManager::OnLocationChanges");
+               is_post_load_
+                   ? "BrowserAccessibilityManager::OnLocationChanges"
+                   : "BrowserAccessibilityManager::OnLocationChangesLoading");
   SCOPED_UMA_HISTOGRAM_TIMER_MICROS(
       "Accessibility.Performance.BrowserAccessibilityManager::"
       "OnLocationChanges");
@@ -1531,7 +1545,7 @@ void BrowserAccessibilityManager::OnNodeCreated(ui::AXTree* tree,
   DCHECK(tree->GetFromId(node->id()) || node->IsGenerated())
       << "Node must be in AXTree's map, unless it's an ExtraMacNode.";
 
-  id_wrapper_map_[node->id()] = BrowserAccessibility::Create(this, node);
+  id_wrapper_map_[node->id()] = CreateBrowserAccessibility(node);
 
   if (node->HasIntAttribute(ax::mojom::IntAttribute::kPopupForId)) {
     popup_root_ids_.insert(node->id());
@@ -1543,6 +1557,8 @@ void BrowserAccessibilityManager::OnNodeDeleted(ui::AXTree* tree,
   DCHECK_NE(node_id, ui::kInvalidAXNodeID);
   id_wrapper_map_.erase(node_id);
   popup_root_ids_.erase(node_id);
+
+  node_id_delegate_->OnAXNodeDeleted(node_id);
 }
 
 void BrowserAccessibilityManager::OnNodeReparented(ui::AXTree* tree,
@@ -1893,7 +1909,28 @@ bool BrowserAccessibilityManager::ShouldFireEventForNode(
   if (node->GetRole() == ax::mojom::Role::kInlineTextBox)
     return false;
 
+  // Don't fire events when the node has the role of "alert" and has no
+  // text content.
+  if (node->GetRole() == ax::mojom::Role::kAlert) {
+    std::u16string node_text = node->GetTextContentUTF16();
+
+    // The string is empty or contains only whitespace characters
+    if (node_text.empty() ||
+        base::ContainsOnlyChars(node_text, base::kWhitespaceUTF16)) {
+      return false;
+    }
+  }
+
   return true;
+}
+
+std::unique_ptr<BrowserAccessibility>
+BrowserAccessibilityManager::CreateBrowserAccessibility(ui::AXNode* node) {
+#if !BUILDFLAG(IS_ANDROID)
+  return BrowserAccessibility::Create(this, node);
+#else
+  NOTREACHED_NORETURN();
+#endif
 }
 
 BrowserAccessibility*
@@ -1912,6 +1949,11 @@ BrowserAccessibilityManager::RetargetBrowserAccessibilityForEvents(
     return nullptr;
   }
   return GetFromAXNode(RetargetForEvents(node->node(), event_type));
+}
+
+ui::AXPlatformNodeId BrowserAccessibilityManager::GetNodeUniqueId(
+    const BrowserAccessibility* node) {
+  return node_id_delegate_->GetOrCreateAXNodeUniqueId(node->node()->id());
 }
 
 float BrowserAccessibilityManager::device_scale_factor() const {

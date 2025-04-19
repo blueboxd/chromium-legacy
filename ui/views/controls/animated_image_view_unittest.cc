@@ -54,7 +54,7 @@ class AnimatedImageViewTest : public ViewsTestBase {
     ViewsTestBase::SetUp();
 
     Widget::InitParams params =
-        CreateParams(Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
+        CreateParams(Widget::InitParams::CLIENT_OWNS_WIDGET,
                      Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     params.bounds = gfx::Rect(kDefaultSize);
     widget_.Init(std::move(params));
@@ -84,7 +84,7 @@ class AnimatedImageViewTest : public ViewsTestBase {
     view()->Paint(PaintInfo::CreateRootPaintInfo(paint_context,
                                                  invalidation_rect.size()));
     RunPendingMessages();
-    return display_list->FinalizeAndReleaseAsRecord();
+    return display_list->FinalizeAndReleaseAsRecordForTesting();
   }
 
   AnimatedImageView* view() {

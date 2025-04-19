@@ -23,8 +23,8 @@
 #include "chrome/browser/chromeos/policy/dlp/dlp_files_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/enterprise/data_controls/component.h"
-#include "components/enterprise/data_controls/dlp_histogram_helper.h"
+#include "components/enterprise/data_controls/core/browser/component.h"
+#include "components/enterprise/data_controls/core/browser/dlp_histogram_helper.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
@@ -338,7 +338,8 @@ void FilesPolicyWarnDialog::MaybeAddJustificationPanel() {
       std::make_unique<views::Textarea>());
   justification_field_->SetID(
       PolicyDialogBase::kEnterpriseConnectorsJustificationTextareaId);
-  justification_field_->SetAccessibleName(justification_label_text);
+  justification_field_->GetViewAccessibility().SetName(
+      justification_label_text);
   justification_field_->GetViewAccessibility().SetDescription(
       l10n_util::GetStringFUTF16(
           IDS_POLICY_DLP_FILES_JUSTIFICATION_TEXTAREA_ACCESSIBLE_DESCRIPTION,

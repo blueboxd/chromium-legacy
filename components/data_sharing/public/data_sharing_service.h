@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_DATA_SHARING_PUBLIC_DATA_SHARING_SERVICE_H_
 #define COMPONENTS_DATA_SHARING_PUBLIC_DATA_SHARING_SERVICE_H_
 
+#include <set>
 #include <string>
 
 #include "base/functional/callback_forward.h"
@@ -14,7 +15,7 @@
 #include "build/build_config.h"
 #include "components/data_sharing/public/group_data.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/sync/model/model_type_sync_bridge.h"
+#include "components/sync/model/data_type_sync_bridge.h"
 
 #if BUILDFLAG(IS_ANDROID)
 #include "base/android/jni_android.h"
@@ -37,7 +38,7 @@ class DataSharingService : public KeyedService, public base::SupportsUserData {
     // User either created a new group or has been invited to the existing one.
     virtual void OnGroupAdded(const GroupData& group_data) {}
     // Either group has been deleted or user has been removed from the group.
-    virtual void OnGroupRemoved(const std::string& group_id) {}
+    virtual void OnGroupRemoved(const GroupId& group_id) {}
   };
 
   // GENERATED_JAVA_ENUM_PACKAGE: (
@@ -57,10 +58,20 @@ class DataSharingService : public KeyedService, public base::SupportsUserData {
     kPersistentFailure = 3
   };
 
+  // GENERATED_JAVA_ENUM_PACKAGE: (
+  //   org.chromium.components.data_sharing)
+  enum class ParseURLStatus {
+    kUnknown = 0,
+    kSuccess = 1,
+    kHostOrPathMismatchFailure = 2,
+    kQueryMissingFailure = 3
+  };
+
   using GroupDataOrFailureOutcome =
       base::expected<GroupData, PeopleGroupActionFailure>;
   using GroupsDataSetOrFailureOutcome =
       base::expected<std::set<GroupData>, PeopleGroupActionFailure>;
+  using ParseURLResult = base::expected<GroupToken, ParseURLStatus>;
 
 #if BUILDFLAG(IS_ANDROID)
   // Returns a Java object of the type DataSharingService for the given
@@ -87,8 +98,8 @@ class DataSharingService : public KeyedService, public base::SupportsUserData {
   // Returns the network loader for fetching data.
   virtual DataSharingNetworkLoader* GetDataSharingNetworkLoader() = 0;
 
-  // Returns ModelTypeControllerDelegate for the collaboration group datatype.
-  virtual base::WeakPtr<syncer::ModelTypeControllerDelegate>
+  // Returns DataTypeControllerDelegate for the collaboration group datatype.
+  virtual base::WeakPtr<syncer::DataTypeControllerDelegate>
   GetCollaborationGroupControllerDelegate() = 0;
 
   // People Group API.
@@ -100,7 +111,7 @@ class DataSharingService : public KeyedService, public base::SupportsUserData {
 
   // Refreshes data if necessary and passes the GroupData to `callback`.
   virtual void ReadGroup(
-      const std::string& group_id,
+      const GroupId& group_id,
       base::OnceCallback<void(const GroupDataOrFailureOutcome&)> callback) = 0;
 
   // Attempts to create a new group. Returns a created group on success.
@@ -110,18 +121,25 @@ class DataSharingService : public KeyedService, public base::SupportsUserData {
 
   // Attempts to delete a group.
   virtual void DeleteGroup(
-      const std::string& group_id,
+      const GroupId& group_id,
       base::OnceCallback<void(PeopleGroupActionOutcome)> callback) = 0;
 
   // Attempts to invite a new user to the group.
   virtual void InviteMember(
-      const std::string& group_id,
+      const GroupId& group_id,
       const std::string& invitee_email,
+      base::OnceCallback<void(PeopleGroupActionOutcome)> callback) = 0;
+
+  // Attempts to add the primary account associated with the current profile to
+  // the group.
+  virtual void AddMember(
+      const GroupId& group_id,
+      const std::string& access_token,
       base::OnceCallback<void(PeopleGroupActionOutcome)> callback) = 0;
 
   // Attempts to remove a user from the group.
   virtual void RemoveMember(
-      const std::string& group_id,
+      const GroupId& group_id,
       const std::string& member_email,
       base::OnceCallback<void(PeopleGroupActionOutcome)> callback) = 0;
 
@@ -130,6 +148,25 @@ class DataSharingService : public KeyedService, public base::SupportsUserData {
 
   // Called when a data sharing type URL has been intercepted.
   virtual void HandleShareURLNavigationIntercepted(const GURL& url) = 0;
+
+  // Create a data sharing URL used for sharing. This does not validate if the
+  // group is still active nor guarantee that the URL is not expired. The caller
+  // needs to get the valid group info from the other APIs above. Make sure
+  // EnsureGroupVisibility API is called before getting the URL for the group.
+  virtual std::unique_ptr<GURL> GetDataSharingURL(
+      const GroupData& group_data) = 0;
+
+  // Parse and validate a data sharing URL. This simply parses the url. The
+  // returned group may not be valid, the caller needs to check ReadGroup or
+  // other apis to validate the group.
+  virtual ParseURLResult ParseDataSharingURL(const GURL& url) = 0;
+
+  // This ensures that the group is open for new members to join. Only owner can
+  // call this API. The owner must always call this API before
+  // GetDataSharingURL().
+  virtual void EnsureGroupVisibility(
+      const GroupId& group_id,
+      base::OnceCallback<void(const GroupDataOrFailureOutcome&)> callback) = 0;
 };
 
 }  // namespace data_sharing

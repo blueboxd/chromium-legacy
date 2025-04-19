@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "media/filters/mac/audio_toolbox_audio_encoder.h"
 
 #include "base/apple/osstatus_logging.h"
@@ -185,8 +190,9 @@ void AudioToolboxAudioEncoder::Encode(std::unique_ptr<AudioBus> input_bus,
 
   DCHECK(timestamp_helper_);
 
-  if (timestamp_helper_->base_timestamp() == kNoTimestamp)
+  if (!timestamp_helper_->base_timestamp()) {
     timestamp_helper_->SetBaseTimestamp(capture_time - base::TimeTicks());
+  }
 
   current_done_cb_ = std::move(done_cb);
 
@@ -209,7 +215,7 @@ void AudioToolboxAudioEncoder::Flush(EncoderStatusCB flush_cb) {
     return;
   }
 
-  if (timestamp_helper_->base_timestamp() == kNoTimestamp) {
+  if (!timestamp_helper_->base_timestamp()) {
     // We never fed any data into the encoder. Skip the flush.
     std::move(flush_cb).Run(EncoderStatus::Codes::kOk);
     return;
@@ -232,7 +238,7 @@ void AudioToolboxAudioEncoder::Flush(EncoderStatusCB flush_cb) {
     status_code = EncoderStatus::Codes::kEncoderFailedFlush;
   }
 
-  timestamp_helper_->SetBaseTimestamp(kNoTimestamp);
+  timestamp_helper_->Reset();
 
   if (current_done_cb_) {
     // If |current_done_cb_| is null, DoEncode() has already reported an error.
@@ -380,11 +386,11 @@ void AudioToolboxAudioEncoder::DoEncode(const AudioBus* input_bus) {
       }
     }
 
-    int adts_header_size = 0;
     base::HeapArray<uint8_t> packet_buffer;
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
     if (format == AudioEncoder::AacOutputFormat::ADTS) {
+      int adts_header_size = 0;
       packet_buffer = aac_config_parser_.CreateAdtsFromEsds(temp_output_buf_,
                                                             &adts_header_size);
       adts_conversion_ok = !packet_buffer.empty();
@@ -399,21 +405,14 @@ void AudioToolboxAudioEncoder::DoEncode(const AudioBus* input_bus) {
     }
 
     if (packet_buffer.empty()) {
-      // There was no ADTS conversion, we should copy `temp_output_buf_` as is.
-      CHECK_EQ(adts_header_size, 0);
-      packet_buffer = base::HeapArray<uint8_t>::Uninit(temp_output_buf_.size());
-      std::memcpy(packet_buffer.data(), temp_output_buf_.data(),
-                  temp_output_buf_.size());
+      packet_buffer = base::HeapArray<uint8_t>::CopiedFrom(temp_output_buf_);
     }
-
-    const size_t packet_buffer_size =
-        temp_output_buf_.size() + adts_header_size;
 
     EncodedAudioBuffer encoded_buffer(
         AudioParameters(AudioParameters::AUDIO_PCM_LINEAR,
                         ChannelLayoutConfig::Guess(channel_count_),
                         sample_rate_, num_frames),
-        std::move(packet_buffer), packet_buffer_size,
+        std::move(packet_buffer),
         base::TimeTicks() + timestamp_helper_->GetTimestamp(),
         timestamp_helper_->GetFrameDuration(num_frames));
 

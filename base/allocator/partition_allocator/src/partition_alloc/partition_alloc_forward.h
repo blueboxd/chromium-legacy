@@ -10,9 +10,9 @@
 #include <cstdint>
 #include <type_traits>
 
+#include "partition_alloc/buildflags.h"
 #include "partition_alloc/partition_alloc_base/compiler_specific.h"
 #include "partition_alloc/partition_alloc_base/component_export.h"
-#include "partition_alloc/partition_alloc_base/debug/debugging_buildflags.h"
 #include "partition_alloc/partition_alloc_base/thread_annotations.h"
 #include "partition_alloc/partition_alloc_config.h"
 
@@ -45,6 +45,16 @@ class PA_LOCKABLE Lock;
 template <typename Z>
 static constexpr bool is_offset_type =
     std::is_integral_v<Z> && sizeof(Z) <= sizeof(ptrdiff_t);
+
+enum class MetadataKind { kWritable, kReadOnly };
+
+template <const MetadataKind kind, typename T>
+struct MaybeConst {
+  using Type = std::conditional_t<kind == MetadataKind::kReadOnly, T const, T>;
+};
+
+template <const MetadataKind kind, typename T>
+using MaybeConstT = MaybeConst<kind, T>::Type;
 
 }  // namespace internal
 

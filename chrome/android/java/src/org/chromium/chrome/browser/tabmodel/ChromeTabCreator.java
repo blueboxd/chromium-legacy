@@ -24,8 +24,6 @@ import org.chromium.chrome.browser.app.tab_activity_glue.ReparentingTask;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.new_tab_url.DseNewTabUrlManager;
-import org.chromium.chrome.browser.ntp.NewTabPageLaunchOrigin;
-import org.chromium.chrome.browser.ntp.NewTabPageUtils;
 import org.chromium.chrome.browser.prefetch.settings.PreloadPagesSettingsBridge;
 import org.chromium.chrome.browser.prefetch.settings.PreloadPagesState;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -41,7 +39,6 @@ import org.chromium.chrome.browser.tab.TabParentIntent;
 import org.chromium.chrome.browser.tab.TabResolver;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.components.embedder_support.util.UrlConstants;
-import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.Visibility;
@@ -52,24 +49,6 @@ import org.chromium.url.GURL;
 
 /** This class creates various kinds of new tabs and adds them to the right {@link TabModel}. */
 public class ChromeTabCreator extends TabCreator {
-    /** Interface to handle showing overview instead of NTP if needed. */
-    public interface OverviewNtpCreator {
-        /**
-         * Handles showing the StartSurface instead of the NTP if needed.
-         *
-         * @param isNtp Whether tab with NTP should be created.
-         * @param isIncognito Whether tab is created in incognito.
-         * @param parentTab The parent tab of the tab creation.
-         * @param launchOrigin The {@link NewTabPageLaunchOrigin} that launched the NTP.
-         * @return Whether NTP creation was handled.
-         */
-        boolean handleCreateNtpIfNeeded(
-                boolean isNtp,
-                boolean isIncognito,
-                Tab parentTab,
-                @NewTabPageLaunchOrigin int launchOrigin);
-    }
-
     private final Activity mActivity;
     private final OneshotSupplier<ProfileProvider> mProfileProviderSupplier;
     private final boolean mIncognito;
@@ -78,7 +57,6 @@ public class ChromeTabCreator extends TabCreator {
     private TabModel mTabModel;
     private TabModelOrderController mOrderController;
     private Supplier<TabDelegateFactory> mTabDelegateFactorySupplier;
-    @Nullable private final OverviewNtpCreator mOverviewNtpCreator;
     private final AsyncTabParamsManager mAsyncTabParamsManager;
     private final Supplier<TabModelSelector> mTabModelSelectorSupplier;
     private final Supplier<CompositorViewHolder> mCompositorViewHolderSupplier;
@@ -90,7 +68,6 @@ public class ChromeTabCreator extends TabCreator {
             Supplier<TabDelegateFactory> tabDelegateFactory,
             OneshotSupplier<ProfileProvider> profileProviderSupplier,
             boolean incognito,
-            OverviewNtpCreator overviewNtpCreator,
             AsyncTabParamsManager asyncTabParamsManager,
             Supplier<TabModelSelector> tabModelSelectorSupplier,
             Supplier<CompositorViewHolder> compositorViewHolderSupplier,
@@ -100,7 +77,6 @@ public class ChromeTabCreator extends TabCreator {
         mTabDelegateFactorySupplier = tabDelegateFactory;
         mProfileProviderSupplier = profileProviderSupplier;
         mIncognito = incognito;
-        mOverviewNtpCreator = overviewNtpCreator;
         mAsyncTabParamsManager = asyncTabParamsManager;
         mTabModelSelectorSupplier = tabModelSelectorSupplier;
         mCompositorViewHolderSupplier = compositorViewHolderSupplier;
@@ -137,8 +113,6 @@ public class ChromeTabCreator extends TabCreator {
                 return "NewIncognitoTab";
             case TabLaunchType.FROM_STARTUP:
                 return "Startup";
-            case TabLaunchType.FROM_START_SURFACE:
-                return "StartSurface";
             case TabLaunchType.FROM_TAB_GROUP_UI:
                 return "TabGroupUI";
             case TabLaunchType.FROM_LONGPRESS_BACKGROUND_IN_GROUP:
@@ -161,6 +135,8 @@ public class ChromeTabCreator extends TabCreator {
                 return "Unset";
             case TabLaunchType.FROM_SYNC_BACKGROUND:
                 return "SyncBackground";
+            case TabLaunchType.FROM_RECENT_TABS_FOREGROUND:
+                return "RecentTabsForeground";
             default:
                 assert false : "Unexpected serialization of tabLaunchType: " + tabLaunchType;
                 return "TypeUnknown";
@@ -284,14 +260,6 @@ public class ChromeTabCreator extends TabCreator {
             Tab parent,
             int position,
             Intent intent) {
-        if (mOverviewNtpCreator != null
-                && mOverviewNtpCreator.handleCreateNtpIfNeeded(
-                        UrlUtilities.isNtpUrl(loadUrlParams.getUrl()),
-                        mIncognito,
-                        parent,
-                        NewTabPageUtils.decodeOriginFromNtpUrl(loadUrlParams.getUrl()))) {
-            return null;
-        }
         // Measure tab creation duration for different launch types to understand tab creation
         // performance.
         try (TraceEvent te = TraceEvent.scoped("ChromeTabCreator.createNewTab");
@@ -576,7 +544,7 @@ public class ChromeTabCreator extends TabCreator {
                                 i,
                                 intent);
                 TabAssociatedApp.from(newTab).setAppId(appId);
-                mTabModel.closeTab(tab, false, false);
+                mTabModel.closeTabs(TabClosureParams.closeTab(tab).allowUndo(false).build());
                 return newTab;
             }
         }
@@ -656,7 +624,6 @@ public class ChromeTabCreator extends TabCreator {
             @PageTransition int originalTransitionType) {
         int transition = PageTransition.LINK;
         switch (tabLaunchType) {
-            case TabLaunchType.FROM_START_SURFACE:
             case TabLaunchType.FROM_OMNIBOX:
                 transition = originalTransitionType;
                 break;
@@ -686,6 +653,7 @@ public class ChromeTabCreator extends TabCreator {
             case TabLaunchType.FROM_LONGPRESS_BACKGROUND:
             case TabLaunchType.FROM_LONGPRESS_BACKGROUND_IN_GROUP:
             case TabLaunchType.FROM_RECENT_TABS:
+            case TabLaunchType.FROM_RECENT_TABS_FOREGROUND:
                 // On low end devices tabs are backgrounded in a frozen state, so we set the
                 // transition type to RELOAD to avoid handling intents when the tab is foregrounded.
                 // (https://crbug.com/758027)

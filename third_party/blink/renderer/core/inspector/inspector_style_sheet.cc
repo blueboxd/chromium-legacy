@@ -23,6 +23,7 @@
  * DAMAGE.
  */
 
+
 #include "third_party/blink/renderer/core/inspector/inspector_style_sheet.h"
 
 #include <algorithm>
@@ -210,7 +211,7 @@ class StyleSheetHandler final : public CSSParserObserver {
   void RemoveLastRuleFromSourceTree();
   CSSRuleSourceData* PopRuleData();
   template <typename CharacterType>
-  inline void SetRuleHeaderEnd(const CharacterType*, unsigned);
+  inline void SetRuleHeaderEnd(const base::span<const CharacterType>, unsigned);
   const LineEndings* GetLineEndings();
   void ReportPropertyRuleFailure(unsigned start_offset,
                                  CSSPropertyID invalid_property);
@@ -251,13 +252,15 @@ void StyleSheetHandler::StartRuleHeader(StyleRule::RuleType type,
 }
 
 template <typename CharacterType>
-inline void StyleSheetHandler::SetRuleHeaderEnd(const CharacterType* data_start,
-                                                unsigned list_end_offset) {
+inline void StyleSheetHandler::SetRuleHeaderEnd(
+    const base::span<const CharacterType> data_start,
+    unsigned list_end_offset) {
   while (list_end_offset > 1) {
-    if (IsHTMLSpace<CharacterType>(*(data_start + list_end_offset - 1)))
+    if (IsHTMLSpace<CharacterType>(data_start[list_end_offset - 1])) {
       --list_end_offset;
-    else
+    } else {
       break;
+    }
   }
 
   current_rule_data_stack_.back()->rule_header_range.end = list_end_offset;
@@ -270,9 +273,9 @@ void StyleSheetHandler::EndRuleHeader(unsigned offset) {
   DCHECK(!current_rule_data_stack_.empty());
 
   if (parsed_text_.Is8Bit())
-    SetRuleHeaderEnd<LChar>(parsed_text_.Characters8(), offset);
+    SetRuleHeaderEnd<LChar>(parsed_text_.Span8(), offset);
   else
-    SetRuleHeaderEnd<UChar>(parsed_text_.Characters16(), offset);
+    SetRuleHeaderEnd<UChar>(parsed_text_.Span16(), offset);
 }
 
 void StyleSheetHandler::ObserveSelector(unsigned start_offset,
@@ -1202,8 +1205,8 @@ bool InspectorStyle::CheckRegisteredPropertySyntaxWithVarSubstitution(
   CSSTokenizedValue tokenized_value{CSSParserTokenRange(tokens),
                                     property.value};
 
-  PropertyRegistry empty_registry;
-  CustomProperty p(atomic_name, &empty_registry);
+  PropertyRegistry* empty_registry = MakeGarbageCollected<PropertyRegistry>();
+  CustomProperty p(atomic_name, empty_registry);
 
   const CSSParserContext* parser_context = ParserContextForDocument(document);
   const CSSValue* result = p.Parse(tokenized_value, *parser_context, {});
@@ -2148,7 +2151,7 @@ void InspectorStyleSheet::ParseText(const String& text) {
           CSSTokenizer tokenizer(property_source_data.value);
           Vector<CSSParserToken, 32> tokens = tokenizer.TokenizeToEOF();
           CSSTokenizedValue tokenized_value{CSSParserTokenRange(tokens),
-                                            property_source_data.name};
+                                            property_source_data.value};
           if (!registration->Syntax().Parse(
                   tokenized_value, *style_sheet->ParserContext(), false)) {
             property_source_data.parsed_ok = false;
@@ -2449,7 +2452,8 @@ InspectorStyleSheet::BuildObjectForRuleUsage(CSSRule* rule, bool was_used) {
 
 std::unique_ptr<protocol::CSS::CSSPositionTryRule>
 InspectorStyleSheet::BuildObjectForPositionTryRule(
-    CSSPositionTryRule* position_try_rule) {
+    CSSPositionTryRule* position_try_rule,
+    bool active) {
   std::unique_ptr<protocol::CSS::Value> name =
       protocol::CSS::Value::create().setText(position_try_rule->name()).build();
   if (CSSRuleSourceData* source_data = SourceDataForRule(position_try_rule)) {
@@ -2460,6 +2464,7 @@ InspectorStyleSheet::BuildObjectForPositionTryRule(
           .setName(std::move(name))
           .setOrigin(origin_)
           .setStyle(BuildObjectForStyle(position_try_rule->style(), nullptr))
+          .setActive(active)
           .build();
   if (CanBind(origin_) && !Id().empty()) {
     result->setStyleSheetId(Id());

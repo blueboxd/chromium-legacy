@@ -57,7 +57,7 @@
           "group": "tryserver.chromium.chromiumos"
         }
       ],
-      "retry_failed_shards": true
+      "retry_failed_shards": false
     }
   },
   "$build/reclient": {
@@ -83,6 +83,9 @@
     ]
   },
   "builder_group": "chromium.chromiumos",
+  "gardener_rotations": [
+    "chromiumos"
+  ],
   "recipe": "chromium",
   "sheriff_rotations": [
     "chromiumos"

@@ -42,7 +42,6 @@ ERRORPRONE_WARNINGS_TO_DISABLE = [
     'InvalidLink',
     'InvalidInlineTag',
     'EmptyBlockTag',
-    'PublicConstructorForAbstractClass',
     'InvalidBlockTag',
     'StaticAssignmentInConstructor',
     'MutablePublicArray',
@@ -191,6 +190,66 @@ ERRORPRONE_WARNINGS_TO_DISABLE = [
     'UnicodeEscape',
     # Nice to have.
     'AlreadyChecked',
+    # A lot of existing violations. e.g. Should return List and not ArrayList
+    'NonApiType',
+    # Nice to have.
+    'LongDoubleConversion',
+    # Nice to have.
+    'ReturnAtTheEndOfVoidFunction',
+    # Nice to have.
+    'NarrowCalculation',
+    # Nice to have.
+    'Finalize',
+    # Nice to have.
+    'NotJavadoc',
+    # Nice to have.
+    'NullablePrimitive',
+    # Nice to have.
+    'DirectInvocationOnMock',
+    # Nice to have.
+    'EmptyTopLevelDeclaration',
+    # Nice to have.
+    'StringCharset',
+    # Nice to have.
+    'UnnecessaryStringBuilder',
+    # Nice to have.
+    'JUnitIncompatibleType',
+    # Nice to have.
+    'MockNotUsedInProduction',
+    # Nice to have.
+    'ImpossibleNullComparison',
+    # Nice to have.
+    'UnusedTypeParameter',
+    # Nice to have.
+    'EnumOrdinal',
+    # Nice to have.
+    'NullableOptional',
+    # Nice to have.
+    'SelfAssertion',
+    # Nice to have.
+    'IgnoredPureGetter',
+    # Nice to have.
+    'UnnecessaryLongToIntConversion',
+    # Nice to have.
+    'StringCaseLocaleUsage',
+    # Nice to have.
+    'InlineTrivialConstant',
+    # Nice to have.
+    'VoidUsed',
+    # Nice to have.
+    'SuperCallToObjectMethod',
+    # Nice to have.
+    'JUnit4TestNotRun',
+    # Nice to have.
+    'StaticAssignmentOfThrowable',
+    # Nice to have.
+    'SuperCallToObjectMethod',
+    # Nice to have.
+    'ComparisonOutOfRange',
+    # Nice to have.
+    'ExtendsObject',
+    # Nice to have
+    'AddressSelection',
 ]
 
 # Full list of checks: https://errorprone.info/bugpatterns
@@ -205,7 +264,6 @@ ERRORPRONE_WARNINGS_TO_ENABLE = [
     'MultiVariableDeclaration',
     'RedundantOverride',
     'StaticQualifiedUsingExpression',
-    'StringEquality',
     'TimeUnitMismatch',
     'UnnecessaryStaticImport',
     'UseBinds',
@@ -406,6 +464,15 @@ class _InfoFileContext:
 
 def _OnStaleMd5(changes, options, javac_cmd, javac_args, java_files, kt_files):
   logging.info('Starting _OnStaleMd5')
+
+  # Use the build server for errorprone runs.
+  if (options.enable_errorprone and not options.skip_build_server
+      and server_utils.MaybeRunCommand(name=options.target_name,
+                                       argv=sys.argv,
+                                       stamp_file=options.jar_path,
+                                       force=options.use_build_server)):
+    return
+
   if options.enable_kythe_annotations:
     # Kythe requires those env variables to be set and compile_java.py does the
     # same
@@ -443,10 +510,12 @@ def _OnStaleMd5(changes, options, javac_cmd, javac_args, java_files, kt_files):
   jar_info_path = None
   if not options.enable_errorprone:
     # Delete any stale files in the generated directory. The purpose of
-    # options.generated_dir is for codesearch.
+    # options.generated_dir is for codesearch and Android Studio.
     shutil.rmtree(options.generated_dir, True)
     intermediates_out_dir = options.generated_dir
 
+    # Write .info file only for the main javac invocation (no need to do it
+    # when running Error Prone.
     jar_info_path = options.jar_path + '.info'
 
   # Compiles with Error Prone take twice as long to run as pure javac. Thus GN
@@ -607,6 +676,15 @@ def _RunCompiler(changes,
     CreateJarFile(jar_path, classes_dir, service_provider_configuration,
                   options.additional_jar_files, options.kotlin_jar_path)
 
+    # Remove input srcjars that confuse Android Studio:
+    # https://crbug.com/353326240
+    for root, _, files in os.walk(intermediates_out_dir):
+      for subpath in files:
+        p = os.path.join(root, subpath)
+        # JNI Zero placeholders
+        if '_jni_java/' in p and not p.endswith('Jni.java'):
+          os.unlink(p)
+
     if save_info_file:
       info_file_context.Commit(jar_info_path)
 
@@ -731,14 +809,6 @@ def main(argv):
   build_utils.InitLogging('JAVAC_DEBUG')
   argv = build_utils.ExpandFileArgs(argv)
   options, java_files, kt_files = _ParseOptions(argv)
-
-  # Only use the build server for errorprone runs.
-  if (options.enable_errorprone and not options.skip_build_server
-      and server_utils.MaybeRunCommand(name=options.target_name,
-                                       argv=sys.argv,
-                                       stamp_file=options.jar_path,
-                                       force=options.use_build_server)):
-    return
 
   javac_cmd = [build_utils.JAVAC_PATH]
 

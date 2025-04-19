@@ -146,10 +146,13 @@
     "dependencies": ["permission:declarativeNetRequestFeedback", "permission:declarativeNetRequestWithHostAccess"],
     "location": "unpacked"
   }],
-  "declarativeNetRequest.testMatchOutcome": {
+  "declarativeNetRequest.testMatchOutcome": [{
     "dependencies": ["permission:declarativeNetRequest"],
     "location": "unpacked"
-  },
+  }, {
+    "dependencies": ["permission:declarativeNetRequestWithHostAccess"],
+    "location": "unpacked"
+  }],
   "declarativeWebRequest": {
     "dependencies": ["permission:declarativeWebRequest"],
     "contexts": ["privileged_extension"]
@@ -303,8 +306,14 @@
   }, {
     "channel": "stable",
     "contexts": ["web_page"],
-    "matches": ["https://chromewebstore.google.com/*"],
-    "feature_flag": "NewWebstoreDomain"
+    "matches": ["https://chromewebstore.google.com/*"]
+  }, {
+    // Used for webstore testing. See comment in
+    // chrome/common/extensions/webstore_override.cc
+    "channel": "stable",
+    "contexts": ["web_page"],
+    "requires_delegated_availability_check": true,
+    "matches": ["<all_urls>"]
   }],
   "management.getPermissionWarningsByManifest": {
     "dependencies": [],
@@ -369,8 +378,10 @@
     "channel": "stable",
     "contexts": ["webui_untrusted"],
     "matches": [
+      "chrome-untrusted://boca-app/*",
       "chrome-untrusted://compose/*",
       "chrome-untrusted://help-app/*",
+      "chrome-untrusted://lens/*",
       "chrome-untrusted://media-app/*",
       "chrome-untrusted://mako/*",
       "chrome-untrusted://projector/*",
@@ -738,11 +749,17 @@
   "system.storage.getAvailableCapacity": {
     "channel": "dev"
   },
+  // The test API also has custom checks in the bindings system which only make
+  // it available if specific command line flags are used:
+  //  - "extension-test-api-on-web-pages" for web_page contexts.
+  //  - "test-type=" for the other contexts listed here (set automatically in
+  //    browser, ui and gpu tests by the test harness).
+
   "test": [{
     "channel": "stable",
     "extension_types": "all",
-    // Everything except web pages and WebUI. WebUI is declared in a separate
-    // rule to keep the "matches" property isolated.
+    // Everything except web pages and WebUI. WebUI and web pages are declared
+    // in separate rules to keep the "matches" properties isolated.
     "contexts": [
       "privileged_extension",
       "privileged_web_page",
@@ -765,6 +782,12 @@
     "channel": "stable",
     "contexts": [ "webui_untrusted" ],
     "matches": [ "chrome-untrusted://api-test/*" ]
+  }, {
+    // This also depends on a special check in the NativeExtensionBindingsSystem
+    // that only exposes it if an associated command line flag is set.
+    "channel": "stable",
+    "contexts": ["web_page"],
+    "matches": ["<all_urls>"]
   }],
   "types": {
     "internal": true,

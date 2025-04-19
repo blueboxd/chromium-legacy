@@ -10,6 +10,7 @@
 #include "components/autofill/core/browser/address_data_cleaner_test_api.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/data_model/autofill_profile_comparator.h"
+#include "components/autofill/core/browser/data_model/autofill_profile_test_api.h"
 #include "components/autofill/core/browser/profile_token_quality.h"
 #include "components/autofill/core/browser/profile_token_quality_test_api.h"
 #include "components/autofill/core/browser/test_address_data_manager.h"
@@ -47,10 +48,11 @@ class AddressDataCleanerTest : public testing::Test {
   AddressDataCleaner data_cleaner_;
 };
 
-// Tests that for non-syncing users `MaybeCleanupAddressData()` immediately
-// performs clean-ups.
-TEST_F(AddressDataCleanerTest, MaybeCleanupAddressData_NotSyncing) {
-  sync_service_.SetHasSyncConsent(false);
+// Tests that for users not syncing addresses, `MaybeCleanupAddressData()`
+// immediately performs clean-ups.
+TEST_F(AddressDataCleanerTest, MaybeCleanupAddressData_NotSyncingAddresses) {
+  // Disable UserSelectableType::kAutofill.
+  sync_service_.GetUserSettings()->SetSelectedTypes(false, {});
   ASSERT_TRUE(test_api(data_cleaner_).AreCleanupsPending());
   data_cleaner_.MaybeCleanupAddressData();
   EXPECT_FALSE(test_api(data_cleaner_).AreCleanupsPending());
@@ -58,17 +60,17 @@ TEST_F(AddressDataCleanerTest, MaybeCleanupAddressData_NotSyncing) {
 
 // Tests that for syncing users `MaybeCleanupAddressData()` doesn't perform
 // clean-ups, since it's expecting another call once sync is ready.
-TEST_F(AddressDataCleanerTest, MaybeCleanupAddressData_Syncing) {
+TEST_F(AddressDataCleanerTest, MaybeCleanupAddressData_SyncingAddresses) {
   sync_service_.SetDownloadStatusFor(
-      {syncer::ModelType::AUTOFILL_PROFILE, syncer::ModelType::CONTACT_INFO},
-      syncer::SyncService::ModelTypeDownloadStatus::kWaitingForUpdates);
+      {syncer::DataType::AUTOFILL_PROFILE, syncer::DataType::CONTACT_INFO},
+      syncer::SyncService::DataTypeDownloadStatus::kWaitingForUpdates);
   ASSERT_TRUE(test_api(data_cleaner_).AreCleanupsPending());
   data_cleaner_.MaybeCleanupAddressData();
   EXPECT_TRUE(test_api(data_cleaner_).AreCleanupsPending());
 
   sync_service_.SetDownloadStatusFor(
-      {syncer::ModelType::AUTOFILL_PROFILE, syncer::ModelType::CONTACT_INFO},
-      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+      {syncer::DataType::AUTOFILL_PROFILE, syncer::DataType::CONTACT_INFO},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
   data_cleaner_.MaybeCleanupAddressData();
   EXPECT_FALSE(test_api(data_cleaner_).AreCleanupsPending());
 }
@@ -184,10 +186,10 @@ TEST_F(AddressDataCleanerTest, ApplyDeduplicationRoutine_OncePerVersion) {
 // Tests that `kAccount` profiles are not deduplicated against each other.
 TEST_F(AddressDataCleanerTest, Deduplicate_kAccountPairs) {
   AutofillProfile account_profile1 = test::StandardProfile();
-  account_profile1.set_source_for_testing(AutofillProfile::Source::kAccount);
+  test_api(account_profile1).set_source(AutofillProfile::Source::kAccount);
   test_adm_.AddProfile(account_profile1);
   AutofillProfile account_profile2 = test::StandardProfile();
-  account_profile2.set_source_for_testing(AutofillProfile::Source::kAccount);
+  test_api(account_profile2).set_source(AutofillProfile::Source::kAccount);
   test_adm_.AddProfile(account_profile2);
 
   test_api(data_cleaner_).ApplyDeduplicationRoutine();
@@ -205,7 +207,7 @@ TEST_F(AddressDataCleanerTest, Deduplicate_kAccountSuperset) {
       AutofillProfile::kInitialCreatorOrModifierChrome + 1;
   account_profile.set_initial_creator_id(non_chrome_service);
   account_profile.set_last_modifier_id(non_chrome_service);
-  account_profile.set_source_for_testing(AutofillProfile::Source::kAccount);
+  test_api(account_profile).set_source(AutofillProfile::Source::kAccount);
   test_adm_.AddProfile(account_profile);
   test_adm_.AddProfile(test::SubsetOfStandardProfile());
 
@@ -225,7 +227,7 @@ TEST_F(AddressDataCleanerTest, Deduplicate_kAccountSuperset) {
 // profile are not deduplicated.
 TEST_F(AddressDataCleanerTest, Deduplicate_kAccountSubset) {
   AutofillProfile account_profile = test::SubsetOfStandardProfile();
-  account_profile.set_source_for_testing(AutofillProfile::Source::kAccount);
+  test_api(account_profile).set_source(AutofillProfile::Source::kAccount);
   test_adm_.AddProfile(account_profile);
   AutofillProfile local_profile = test::StandardProfile();
   test_adm_.AddProfile(local_profile);

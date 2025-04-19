@@ -70,7 +70,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_DEVICE_BOUND_SESSIONS)
-#include "net/device_bound_sessions/device_bound_session_service.h"
+#include "net/device_bound_sessions/session_service.h"
 #include "net/device_bound_sessions/test_util.h"
 #endif
 
@@ -1236,15 +1236,16 @@ class URLRequestHttpJobWithMockSocketsDeviceBoundSessionServiceTest
     auto context_builder = CreateTestURLRequestContextBuilder();
     context_builder->set_client_socket_factory_for_testing(&socket_factory_);
     context_builder->set_device_bound_session_service(
-        std::make_unique<testing::StrictMock<DeviceBoundSessionServiceMock>>());
+        std::make_unique<
+            testing::StrictMock<device_bound_sessions::SessionServiceMock>>());
     context_ = context_builder->Build();
     request_ = context_->CreateRequest(GURL("http://www.example.com"),
                                        DEFAULT_PRIORITY, &delegate_,
                                        TRAFFIC_ANNOTATION_FOR_TESTS);
   }
 
-  DeviceBoundSessionServiceMock& GetMockService() {
-    return *static_cast<DeviceBoundSessionServiceMock*>(
+  device_bound_sessions::SessionServiceMock& GetMockService() {
+    return *static_cast<device_bound_sessions::SessionServiceMock*>(
         context_->device_bound_session_service());
   }
 
@@ -1265,11 +1266,11 @@ TEST_F(URLRequestHttpJobWithMockSocketsDeviceBoundSessionServiceTest,
                 "Accept-Language: en-us,fr\r\n\r\n")};
 
   const MockRead reads[] = {
-      MockRead(
-          "HTTP/1.1 200 OK\r\n"
-          "Accept-Ranges: bytes\r\n"
-          "Sec-Session-Registration: \"new\";challenge=:Y29kZWQ=:;es256\r\n"
-          "Content-Length: 12\r\n\r\n"),
+      MockRead("HTTP/1.1 200 OK\r\n"
+               "Accept-Ranges: bytes\r\n"
+               "Sec-Session-Registration: (ES256);path=\"new\";"
+               "challenge=\"test\"\r\n"
+               "Content-Length: 12\r\n\r\n"),
       MockRead("Test Content")};
 
   StaticSocketDataProvider socket_data(reads, writes);

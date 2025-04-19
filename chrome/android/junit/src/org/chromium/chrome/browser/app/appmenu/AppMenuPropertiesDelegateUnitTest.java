@@ -40,7 +40,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -57,7 +56,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
@@ -130,7 +128,6 @@ import java.util.Optional;
 @RunWith(BaseRobolectricTestRunner.class)
 @LooperMode(LooperMode.Mode.LEGACY)
 public class AppMenuPropertiesDelegateUnitTest {
-    @Rule public TestRule mProcessor = new Features.JUnitProcessor();
 
     @Rule public JniMocker mJniMocker = new JniMocker();
 
@@ -214,7 +211,6 @@ public class AppMenuPropertiesDelegateUnitTest {
         mJniMocker.mock(UserPrefsJni.TEST_HOOKS, mUserPrefsJniMock);
         mJniMocker.mock(WebsitePreferenceBridgeJni.TEST_HOOKS, mWebsitePreferenceBridgeJniMock);
         Mockito.when(mUserPrefsJniMock.get(mProfile)).thenReturn(mPrefService);
-        FeatureList.setTestCanUseDefaultsForTesting();
         PowerBookmarkUtils.setPriceTrackingEligibleForTesting(false);
         WebappRegistry.refreshSharedPrefsForTesting();
 
@@ -392,7 +388,6 @@ public class AppMenuPropertiesDelegateUnitTest {
             R.id.all_bookmarks_menu_id,
             R.id.recent_tabs_menu_id,
             R.id.divider_line_id,
-            R.id.share_row_menu_id,
             R.id.find_in_page_id,
             R.id.divider_line_id,
             R.id.preferences_id,
@@ -1094,37 +1089,6 @@ public class AppMenuPropertiesDelegateUnitTest {
 
         MenuItem item = menu.findItem(R.id.menu_select_tabs);
         assertFalse(item.isEnabled());
-    }
-
-    @Test
-    public void testStartSurfaceMenu() {
-        @LayoutType int layoutType = LayoutType.START_SURFACE;
-        setUpMocksForOverviewMenu(layoutType);
-        doReturn(true).when(mAppMenuPropertiesDelegate).isAutoDarkWebContentsEnabled();
-
-        when(mIncognitoTabModel.getCount()).thenReturn(0);
-        Assert.assertTrue(mAppMenuPropertiesDelegate.shouldShowPageMenu());
-        Assert.assertTrue(mAppMenuPropertiesDelegate.isInStartSurfaceHomepage());
-        Assert.assertEquals(MenuGroup.PAGE_MENU, mAppMenuPropertiesDelegate.getMenuGroup());
-
-        Menu menu = createTestMenu();
-        mAppMenuPropertiesDelegate.prepareMenu(menu, null);
-
-        Integer[] expectedItems = {
-            R.id.new_tab_menu_id,
-            R.id.new_incognito_tab_menu_id,
-            R.id.divider_line_id,
-            R.id.open_history_menu_id,
-            R.id.quick_delete_menu_id,
-            R.id.quick_delete_divider_line_id,
-            R.id.downloads_menu_id,
-            R.id.all_bookmarks_menu_id,
-            R.id.recent_tabs_menu_id,
-            R.id.divider_line_id,
-            R.id.preferences_id,
-            R.id.help_id
-        };
-        assertMenuItemsAreEqual(menu, expectedItems);
     }
 
     @Test

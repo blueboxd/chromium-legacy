@@ -7,7 +7,7 @@
 #include "base/check_op.h"
 #include "base/no_destructor.h"
 #include "base/sequence_checker.h"
-#include "services/device/public/cpp/geolocation/location_system_permission_status.h"
+#include "services/device/public/cpp/device_features.h"
 
 namespace device {
 
@@ -47,7 +47,7 @@ void GeolocationSystemPermissionManager::SetInstance(
   CheckedAccessWrapper::GetInstance().SetManager(std::move(manager));
 }
 
-#if BUILDFLAG(IS_APPLE) || BUILDFLAG(OS_LEVEL_GEOLOCATION_PERMISSION_SUPPORTED)
+#if BUILDFLAG(OS_LEVEL_GEOLOCATION_PERMISSION_SUPPORTED)
 GeolocationSystemPermissionManager::GeolocationSystemPermissionManager(
     std::unique_ptr<SystemGeolocationSource> system_geolocation_source)
     : system_geolocation_source_(std::move(system_geolocation_source)),
@@ -70,11 +70,6 @@ void GeolocationSystemPermissionManager::AddObserver(
 void GeolocationSystemPermissionManager::RemoveObserver(
     PermissionObserver* observer) {
   observers_->RemoveObserver(observer);
-}
-
-LocationSystemPermissionStatus
-GeolocationSystemPermissionManager::GetSystemPermission() const {
-  return permission_cache_;
 }
 
 void GeolocationSystemPermissionManager::UpdateSystemPermission(
@@ -100,14 +95,20 @@ GeolocationSystemPermissionManager::SystemGeolocationSourceForTest() {
 
 #endif
 
+LocationSystemPermissionStatus
+GeolocationSystemPermissionManager::GetSystemPermission() const {
+  CHECK(features::IsOsLevelGeolocationPermissionSupportEnabled());
+  return permission_cache_;
+}
+
 void GeolocationSystemPermissionManager::RequestSystemPermission() {
-#if BUILDFLAG(IS_APPLE)
+#if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_WIN)
   system_geolocation_source_->RequestPermission();
 #endif
 }
 
 void GeolocationSystemPermissionManager::OpenSystemPermissionSetting() {
-#if BUILDFLAG(IS_APPLE) || BUILDFLAG(OS_LEVEL_GEOLOCATION_PERMISSION_SUPPORTED)
+#if BUILDFLAG(OS_LEVEL_GEOLOCATION_PERMISSION_SUPPORTED)
   system_geolocation_source_->OpenSystemPermissionSetting();
 #endif
 }

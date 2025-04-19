@@ -232,6 +232,58 @@ chromium-metrics-reviews@google.com.
   <int value="2" label="Regular user added"/>
 </enum>
 
+<enum name="OnDeviceControlsAppRemoval">
+  <int value="0" label="Oldest uninstalled blocked app removed">
+    Recorded when the oldest uninstalled blocked app was successfully removed.
+  </int>
+  <int value="1" label="Oldest uninstalled blocked app not found">
+    Recorded when the oldest uninstalled blocked app failed to be removed
+    because it was not found.
+  </int>
+</enum>
+
+<enum name="OnDeviceControlsBlockAppAction">
+  <int value="0" label="Block app">
+    Recorded when a user has blocked an app with on-device controls.
+  </int>
+  <int value="1" label="Unblock app">
+    Recorded when a user has unblocked an app with on-device controls.
+  </int>
+  <int value="2" label="Uninstall blocked app">
+    Recorded when a user has uninstalled an app that is blocked with on-device
+    controls.
+  </int>
+  <int value="3" label="Block app error">
+    Recorded when attempting to block an already-blocked app.
+  </int>
+  <int value="4" label="Unblock app error">
+    Recorded when attempting to unblock an unblocked app.
+  </int>
+  <int value="5" label="Unblock all apps">
+    Recorded when a user has unblocked all apps with on-device controls.
+  </int>
+</enum>
+
+<enum name="OnDeviceControlsBlockedAppDialog">
+  <int value="0" label="Dialog shown"/>
+  <int value="1" label="Existing dialog replaced"/>
+</enum>
+
+<enum name="OnDeviceControlsDialogAction">
+  <int value="0" label="Dialog opened">
+    Recorded when the user opens the dialog.
+  </int>
+  <int value="1" label="Dialog flow completed">
+    Recorded when the user completes the dialog flow.
+  </int>
+</enum>
+
+<enum name="OnDeviceControlsPinDialogError">
+  <int value="0" label="Invalid PIN format on setup"/>
+  <int value="1" label="Incorrect PIN on verification"/>
+  <int value="2" label="Forgot PIN link clicked"/>
+</enum>
+
 <enum name="ParentAccessCodeAction">
   <summary>Action resulting from parent access code dialog</summary>
   <int value="0" label="Validation success"/>
@@ -311,14 +363,19 @@ chromium-metrics-reviews@google.com.
   <int value="2" label="Enable attempt failed"/>
 </enum>
 
+<!-- LINT.IfChange(SupervisedUserExtensionInstallDialog) -->
+
 <enum name="SupervisedUserExtensionInstallDialog">
   <summary>
     Tracks the actions of a supervised user on the Extension Install Dialog.
   </summary>
   <int value="0" label="Opened"/>
-  <int value="1" label="Asked Parent"/>
+  <int value="1" label="Asked Parent (Deprecated)"/>
   <int value="2" label="Child Canceled"/>
+  <int value="3" label="Child Accepted"/>
 </enum>
+
+<!-- LINT.ThenChange(//chrome/browser/supervised_user/supervised_user_extensions_metrics_recorder.h:ExtensionInstallDialogState) -->
 
 <!-- LINT.IfChange(SupervisedUserExtensionParentApprovalEntryPoint) -->
 
@@ -402,6 +459,38 @@ chromium-metrics-reviews@google.com.
   <int value="4" label="No Parent Error"/>
   <int value="5" label="Incorrect Parent Password Error"/>
 </enum>
+
+<!-- LINT.IfChange(SupervisedUserProtoFetcherStatus) -->
+
+<enum name="SupervisedUserProtoFetcherStatus">
+  <int value="0" label="NoError">
+    The overall request was successul.
+
+    If this endpoint uses BestEffort credentials mode, it is possible there was
+    an access token error, in which case the separate {RequestType}.AuthError
+    histogram is also output (but not the AuthError bucket of this histogram).
+  </int>
+  <int value="1" label="AuthError">
+    The request failed due to an error fetching the access token. The
+    {RequestType}.AuthError histogram contains more fine-grained error details.
+
+    This value is not output if the access token fetch failed, but the request
+    was still performed due to credentials being &quot;BestEffort&quot; on this
+    endpoint.
+  </int>
+  <int value="2" label="HttpStatusOrNetError">
+    The request was performed, but network or http returned errors.
+  </int>
+  <int value="3" label="ParseError">
+    The request was performed without error, but the response could not be
+    processed or was unexpected.
+  </int>
+  <int value="4" label="DataError">
+    The request was parsed, but did not contain all required data.
+  </int>
+</enum>
+
+<!-- LINT.ThenChange(//components/supervised_user/core/browser/proto_fetcher.h:State) -->
 
 <enum name="SupervisedUserSafetyFilterResult">
   <int value="100" label="LINK_ALLOWED">Link; Allowed as safe</int>

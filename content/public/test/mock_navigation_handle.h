@@ -116,6 +116,7 @@ class MockNavigationHandle : public NavigationHandle {
   }
   const GURL& GetBaseURLForDataURL() override { return base_url_for_data_url_; }
   MOCK_METHOD0(IsPost, bool());
+  MOCK_METHOD0(GetRequestMethod, std::string());
   const blink::mojom::Referrer& GetReferrer() override { return referrer_; }
   void SetReferrer(blink::mojom::ReferrerPtr referrer) override {
     referrer_ = *referrer;
@@ -223,10 +224,14 @@ class MockNavigationHandle : public NavigationHandle {
   MOCK_METHOD(bool, IsPdf, ());
   void WriteIntoTrace(perfetto::TracedProto<TraceProto>) const override {}
   MOCK_METHOD(bool, SetNavigationTimeout, (base::TimeDelta));
+  MOCK_METHOD(void, CancelNavigationTimeout, ());
   MOCK_METHOD(PreloadingTriggerType, GetPrerenderTriggerType, ());
   MOCK_METHOD(std::string, GetPrerenderEmbedderHistogramSuffix, ());
   MOCK_METHOD(void, SetAllowCookiesFromBrowser, (bool));
   MOCK_METHOD(void, GetResponseBody, (ResponseBodyCallback));
+  MOCK_METHOD(std::optional<NavigationDiscardReason>,
+              GetNavigationDiscardReason,
+              ());
 
 #if BUILDFLAG(IS_ANDROID)
   MOCK_METHOD(const base::android::JavaRef<jobject>&,

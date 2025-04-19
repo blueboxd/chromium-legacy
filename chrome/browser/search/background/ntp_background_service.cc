@@ -14,7 +14,6 @@
 #include "base/strings/strcat.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/search/background/ntp_background.pb.h"
 #include "chrome/browser/search/background/ntp_backgrounds.h"
 #include "components/search/ntp_features.h"
@@ -26,7 +25,6 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
-#include "ui/base/ui_base_features.h"
 
 namespace {
 
@@ -152,9 +150,7 @@ void NtpBackgroundService::FetchCollectionInfo() {
       {kFilteringLabel, ".M", version_info::GetMajorVersionNumber()}));
   // Add filtering for Panorama feature.
   request.add_filtering_label(base::StrCat({kFilteringLabel, ".panorama"}));
-  if (features::IsChromeWebuiRefresh2023()) {
-    request.add_filtering_label(base::StrCat({kFilteringLabel, ".gm3"}));
-  }
+  request.add_filtering_label(base::StrCat({kFilteringLabel, ".gm3"}));
   if (base::FeatureList::IsEnabled(
           ntp_features::kNtpBackgroundImageErrorDetection)) {
     request.add_filtering_label(
@@ -457,6 +453,10 @@ void NtpBackgroundService::OnCollectionPreviewURLHeadersReceived(
         CollectionInfo::CreateFromProto(collection, preview_image_url));
     std::move(collection_fetch_complete_closure).Run();
     return;
+  } else {
+    UMA_HISTOGRAM_ENUMERATION(
+        "NewTabPage.BackgroundService.Images.Headers.ErrorDetected",
+        NtpImageType::kCollections);
   }
 
   FetchCollectionImageInfoInternal(

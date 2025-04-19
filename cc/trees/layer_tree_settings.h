@@ -135,8 +135,8 @@ class CC_EXPORT LayerTreeSettings {
   // rendered in a different process from its ancestor frames.
   bool is_for_embedded_frame = false;
 
-  // Indicates when the LayerTree is for a portal element, GuestView, or top
-  // level frame. In all these cases we may have a page scale.
+  // Indicates when the LayerTree is for a GuestView or top level frame. In all
+  // these cases we may have a page scale.
   bool is_for_scalable_page = true;
 
   // Determines whether we disallow non-exact matches when finding resources
@@ -239,11 +239,6 @@ class CC_EXPORT LayerTreeSettings {
 
   // Whether to use variable refresh rates when generating begin frames.
   bool enable_variable_refresh_rate = false;
-};
-
-class CC_EXPORT LayerListSettings : public LayerTreeSettings {
- public:
-  LayerListSettings() { use_layer_lists = true; }
 };
 
 }  // namespace cc

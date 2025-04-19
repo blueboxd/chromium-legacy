@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/354829279): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ui/gfx/color_analysis.h"
 
 #include <stddef.h>
@@ -342,8 +347,8 @@ TEST_F(ColorAnalysisTest, ComputeProminentColors) {
   const SkColor kVibrantGreen = SkColorSetRGB(25, 200, 25);
   canvas.FillRect(gfx::Rect(0, 1, 300, 1), kVibrantGreen);
   bitmap = canvas.GetBitmap();
-  expectations[0] = Swatch(kVibrantGreen, 60);
-  expectations[1] = Swatch(kVibrantGreen, 60);
+  expectations[0] = Swatch(kVibrantGreen, 50);
+  expectations[1] = Swatch(kVibrantGreen, 50);
   computations = CalculateProminentColorsOfBitmap(
       bitmap, color_profiles, nullptr /* region */, ColorSwatchFilter());
   EXPECT_EQ(expectations, computations);
@@ -352,7 +357,7 @@ TEST_F(ColorAnalysisTest, ComputeProminentColors) {
   const SkColor kDarkGreen = SkColorSetRGB(50, 100, 50);
   canvas.FillRect(gfx::Rect(0, 2, 300, 1), kDarkGreen);
   bitmap = canvas.GetBitmap();
-  expectations[3] = Swatch(kDarkGreen, 60);
+  expectations[3] = Swatch(kDarkGreen, 50);
   computations = CalculateProminentColorsOfBitmap(
       bitmap, color_profiles, nullptr /* region */, ColorSwatchFilter());
   EXPECT_EQ(expectations, computations);
@@ -362,7 +367,7 @@ TEST_F(ColorAnalysisTest, ComputeProminentColors) {
   const SkColor kPureGreen = SkColorSetRGB(0, 255, 0);
   canvas.FillRect(gfx::Rect(0, 3, 300, 1), kPureGreen);
   bitmap = canvas.GetBitmap();
-  expectations[1] = Swatch(kPureGreen, 60);
+  expectations[1] = Swatch(kPureGreen, 50);
   computations = CalculateProminentColorsOfBitmap(
       bitmap, color_profiles, nullptr /* region */, ColorSwatchFilter());
   EXPECT_EQ(expectations, computations);
@@ -397,6 +402,70 @@ TEST_F(ColorAnalysisTest, ComputeColorSwatches) {
     EXPECT_EQ(2u, colors.size());
     EXPECT_EQ(kGreenSwatch, colors[0]);
     EXPECT_EQ(kYellowSwatch, colors[1]);
+  }
+}
+
+TEST_F(ColorAnalysisTest, ComputeColorSwatches_MaxConsideredPixels) {
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(200, 200);
+  bitmap.eraseColor(SK_ColorMAGENTA);
+  bitmap.erase(SK_ColorGREEN, {0, 0, 160, 160});
+  bitmap.erase(SK_ColorYELLOW, {80, 80, 120, 120});
+
+  {
+    std::vector<Swatch> colors =
+        CalculateColorSwatches(bitmap, 10, gfx::Rect(200, 200), std::nullopt);
+
+    size_t total_population = 0;
+    for (auto& color : colors) {
+      total_population += color.population;
+    }
+    EXPECT_EQ(static_cast<size_t>(kMaxConsideredPixelsForSwatches),
+              total_population);
+  }
+
+  {
+    std::vector<Swatch> colors =
+        CalculateColorSwatches(bitmap, 10, gfx::Rect(200, 200), std::nullopt);
+    EXPECT_EQ(3u, colors.size());
+    EXPECT_EQ(SK_ColorGREEN, colors[0].color);
+    EXPECT_NEAR(0.6,
+                static_cast<float>(colors[0].population) /
+                    kMaxConsideredPixelsForSwatches,
+                0.001);
+    EXPECT_EQ(SK_ColorMAGENTA, colors[1].color);
+    EXPECT_NEAR(0.36,
+                static_cast<float>(colors[1].population) /
+                    kMaxConsideredPixelsForSwatches,
+                0.001);
+    EXPECT_EQ(SK_ColorYELLOW, colors[2].color);
+    EXPECT_NEAR(0.04,
+                static_cast<float>(colors[2].population) /
+                    kMaxConsideredPixelsForSwatches,
+                0.001);
+  }
+
+  {
+    std::vector<Swatch> colors = CalculateColorSwatches(
+        bitmap, 10, gfx::Rect(20, 20, 140, 140), std::nullopt);
+
+    size_t total_population = 0;
+    for (auto& color : colors) {
+      total_population += color.population;
+    }
+    EXPECT_EQ(static_cast<size_t>(kMaxConsideredPixelsForSwatches),
+              total_population);
+    EXPECT_EQ(2u, colors.size());
+    EXPECT_EQ(SK_ColorGREEN, colors[0].color);
+    EXPECT_NEAR(0.918,
+                static_cast<float>(colors[0].population) /
+                    kMaxConsideredPixelsForSwatches,
+                0.001);
+    EXPECT_EQ(SK_ColorYELLOW, colors[1].color);
+    EXPECT_NEAR(0.082,
+                static_cast<float>(colors[1].population) /
+                    kMaxConsideredPixelsForSwatches,
+                0.001);
   }
 }
 

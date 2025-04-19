@@ -28,6 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/core/animation/compositor_animations.h"
 
 #include <algorithm>
@@ -878,7 +883,7 @@ void AddKeyframeToCurve(cc::KeyframedFilterAnimationCurve& curve,
                         Keyframe::PropertySpecificKeyframe* keyframe,
                         const CompositorKeyframeValue* value,
                         const TimingFunction& keyframe_timing_function) {
-  FilterEffectBuilder builder(gfx::RectF(), 1, Color::kBlack,
+  FilterEffectBuilder builder(gfx::RectF(), std::nullopt, 1, Color::kBlack,
                               mojom::blink::ColorScheme::kLight);
   CompositorFilterOperations operations = builder.BuildFilterOperations(
       To<CompositorKeyframeFilterOperations>(value)->Operations());
@@ -1148,30 +1153,18 @@ bool CompositorAnimations::CanStartScrollTimelineOnCompositor(Node* target) {
   if (!target) {
     return false;
   }
-  if (!RuntimeEnabledFeatures::ScrollTimelineOnCompositorEnabled()) {
-    return false;
-  }
   DCHECK_GE(target->GetDocument().Lifecycle().GetState(),
             DocumentLifecycle::kPrePaintClean);
   auto* layout_box = target->GetLayoutBox();
   if (!layout_box) {
     return false;
   }
-  if (RuntimeEnabledFeatures::ScrollTimelineAlwaysOnCompositorEnabled()) {
-    if (auto* properties = layout_box->FirstFragment().PaintProperties()) {
-      return properties->Scroll() &&
-             (!RuntimeEnabledFeatures::ScrollNodeForOverflowHiddenEnabled() ||
-              properties->Scroll()->UserScrollable());
-    }
+  if (auto* properties = layout_box->FirstFragment().PaintProperties()) {
+    return properties->Scroll() &&
+           (!RuntimeEnabledFeatures::ScrollNodeForOverflowHiddenEnabled() ||
+            properties->Scroll()->UserScrollable());
   }
-  if (NativePaintImageGenerator::NativePaintWorkletAnimationsEnabled() &&
-      target->GetDocument().Lifecycle().GetState() <
-          DocumentLifecycle::kPaintClean) {
-    // TODO(crbug.com/1434728): This happens when we paint a scroll-driven
-    // animating background.
-    return false;
-  }
-  return layout_box->UsesCompositedScrolling();
+  return false;
 }
 
 CompositorAnimations::FailureReasons

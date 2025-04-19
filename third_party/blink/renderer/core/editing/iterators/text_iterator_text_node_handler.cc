@@ -31,7 +31,13 @@ bool ShouldSkipInvisibleTextAt(const Text& text,
 
 String TextIgnoringCSSTextTransforms(const LayoutText& layout_text,
                                      const OffsetMappingUnit& unit) {
-  String text = layout_text.OriginalText();
+  // LayoutTextFragment represents text substring of the element that is split
+  // because of first-letter css. In that case, OriginalText() returns only a
+  // portion of the text. Use CompleteText() instead to get all text from the
+  // associated DOM node.
+  String text = layout_text.IsTextFragment()
+                    ? To<LayoutTextFragment>(layout_text).CompleteText()
+                    : layout_text.OriginalText();
   text = text.Substring(unit.DOMStart(), unit.DOMEnd() - unit.DOMStart());
   // Per the white space processing spec
   // https://drafts.csswg.org/css-text-3/#white-space-processing,
@@ -157,7 +163,7 @@ void TextIteratorTextNodeHandler::HandleTextNodeWithLayoutNG() {
     // Bail if |offset_| isn't advanced; Otherwise we enter a dead loop.
     // However, this shouldn't happen and should be fixed once reached.
     if (offset_ == initial_offset) {
-      DUMP_WILL_BE_NOTREACHED_NORETURN();
+      DUMP_WILL_BE_NOTREACHED();
       offset_ = end_offset_;
       return;
     }
@@ -179,8 +185,8 @@ void TextIteratorTextNodeHandler::HandleTextNodeInRange(const Text* node,
 
   const OffsetMapping* const mapping =
       OffsetMapping::ForceGetFor(Position(node, offset_));
-  if (UNLIKELY(!mapping)) {
-    DUMP_WILL_BE_NOTREACHED_NORETURN()
+  if (!mapping) [[unlikely]] {
+    DUMP_WILL_BE_NOTREACHED()
         << "We have LayoutText outside LayoutBlockFlow " << text_node_;
     return;
   }

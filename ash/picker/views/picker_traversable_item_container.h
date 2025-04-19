@@ -41,6 +41,8 @@ class ASH_EXPORT PickerTraversableItemContainer {
   // Returns the item directly to the right of `item`, or nullptr if there is no
   // such item in the container.
   virtual views::View* GetItemRightOf(views::View* item) = 0;
+
+  virtual bool ContainsItem(views::View* item) = 0;
 };
 
 }  // namespace ash

@@ -145,6 +145,7 @@ chromium-metrics-reviews@google.com.
   <int value="10" label="Share Chrome"/>
   <int value="11" label="Omnibox Most Visited Tile"/>
   <int value="12" label="Tab Strip Item"/>
+  <int value="13" label="Share in Web Context Menu"/>
 </enum>
 
 <enum name="IOSLensSupportStatus">
@@ -219,6 +220,7 @@ chromium-metrics-reviews@google.com.
   <int value="52" label="Remove Tab from Group"/>
   <int value="53" label="Open Link In New Group"/>
   <int value="54" label="Show Details"/>
+  <int value="55" label="Show Full URL"/>
 </enum>
 
 <enum name="IOSMenuScenario">
@@ -248,6 +250,8 @@ chromium-metrics-reviews@google.com.
   <int value="23" label="Autofill Manual Fallback All Passwords Entry"/>
   <int value="24" label="Autofill Manual Fallback Password Entry"/>
   <int value="25" label="Autofill Manual Fallback Payment Entry"/>
+  <int value="26" label="Autofill Manual Fallback Address Entry"/>
+  <int value="27" label="Tab Groups Panel Entry"/>
 </enum>
 
 <enum name="IOSShareAction">

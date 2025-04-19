@@ -19,8 +19,8 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.chrome.browser.magic_stack.HomeModulesMetricsUtils;
 import org.chromium.chrome.browser.tab_ui.TabThumbnailView;
-import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 
 /** View of the tab on the single tab tab switcher. */
 class SingleTabView extends LinearLayout {
@@ -46,14 +46,13 @@ class SingleTabView extends LinearLayout {
         mUrl = findViewById(R.id.tab_url_view);
 
         if (mTabThumbnail != null) {
-            if (StartSurfaceConfiguration.useMagicStack()) {
+            if (HomeModulesMetricsUtils.useMagicStack()) {
                 Resources resources = getResources();
                 MarginLayoutParams marginLayoutParams =
                         (MarginLayoutParams) mTabThumbnail.getLayoutParams();
                 int size =
                         resources.getDimensionPixelSize(
-                                org.chromium.chrome.browser.tab_ui.R.dimen
-                                        .single_tab_module_tab_thumbnail_size_big);
+                                R.dimen.single_tab_module_tab_thumbnail_size_big);
                 marginLayoutParams.width = size;
                 marginLayoutParams.height = size;
 

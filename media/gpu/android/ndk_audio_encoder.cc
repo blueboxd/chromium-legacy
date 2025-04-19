@@ -239,7 +239,7 @@ void NdkAudioEncoder::Encode(std::unique_ptr<AudioBus> audio_bus,
     return;
   }
 
-  if (input_timestamp_tracker_->base_timestamp() == kNoTimestamp) {
+  if (!input_timestamp_tracker_->base_timestamp()) {
     input_timestamp_tracker_->SetBaseTimestamp(capture_time -
                                                base::TimeTicks());
     output_timestamp_tracker_->SetBaseTimestamp(capture_time -
@@ -283,7 +283,7 @@ void NdkAudioEncoder::Flush(EncoderStatusCB done_cb) {
   }
 
   // Nothing to flush if we never fed input to the encoder.
-  if (input_timestamp_tracker_->base_timestamp() == kNoTimestamp) {
+  if (!input_timestamp_tracker_->base_timestamp()) {
     ReportOk(std::move(done_cb));
     return;
   }
@@ -431,8 +431,8 @@ void NdkAudioEncoder::CompleteFlush() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK_EQ(flush_state_, FlushState::kPendingEOS);
 
-  input_timestamp_tracker_->SetBaseTimestamp(kNoTimestamp);
-  output_timestamp_tracker_->SetBaseTimestamp(kNoTimestamp);
+  input_timestamp_tracker_->Reset();
+  output_timestamp_tracker_->Reset();
 
   ClearMediaCodec();
   flush_state_ = FlushState::kNeedsMediaCodec;
@@ -553,7 +553,6 @@ void NdkAudioEncoder::DrainOutput() {
 
   auto output_format = GetOutputFormat(options_);
 
-  int output_data_size;
 
   auto mc_data = base::make_span(buf_data + mc_buffer_offset, mc_buffer_size);
   base::HeapArray<uint8_t> output_data;
@@ -562,9 +561,6 @@ void NdkAudioEncoder::DrainOutput() {
     int adts_header_size = 0;
     output_data =
         aac_config_parser_.CreateAdtsFromEsds(mc_data, &adts_header_size);
-
-    output_data_size = mc_data.size() + adts_header_size;
-
     if (output_data.empty()) {
       AMediaCodec_releaseOutputBuffer(media_codec_->codec(),
                                       output_buffer.buffer_index, false);
@@ -574,10 +570,7 @@ void NdkAudioEncoder::DrainOutput() {
     }
 
   } else {
-    output_data = base::HeapArray<uint8_t>::Uninit(mc_data.size());
-    memcpy(output_data.data(), mc_data.data(), mc_data.size_bytes());
-
-    output_data_size = mc_data.size();
+    output_data = base::HeapArray<uint8_t>::CopiedFrom(mc_data);
   }
 
   AMediaCodec_releaseOutputBuffer(media_codec_->codec(),
@@ -595,7 +588,7 @@ void NdkAudioEncoder::DrainOutput() {
 
   output_cb_.Run(
       EncodedAudioBuffer(
-          output_params_, std::move(output_data), output_data_size, timestamp,
+          output_params_, std::move(output_data), timestamp,
           output_timestamp_tracker_->GetFrameDuration(kAacFramesPerBuffer)),
       desc);
 }

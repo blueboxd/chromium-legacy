@@ -32,6 +32,7 @@
 #include "content/browser/interest_group/header_direct_from_seller_signals.h"
 #include "content/browser/interest_group/interest_group_k_anonymity_manager.h"
 #include "content/browser/interest_group/interest_group_manager_impl.h"
+#include "content/browser/interest_group/interest_group_pa_report_util.h"
 #include "content/browser/interest_group/mock_auction_process_manager.h"
 #include "content/browser/interest_group/subresource_url_builder.h"
 #include "content/browser/interest_group/test_interest_group_manager_impl.h"
@@ -63,9 +64,6 @@
 
 namespace content {
 namespace {
-
-using PrivateAggregationKey =
-    InterestGroupAuctionReporter::PrivateAggregationKey;
 
 InterestGroupAuctionReporter::SellerWinningBidInfo CreateSellerWinningBidInfo(
     blink::AuctionConfig* auction_config) {
@@ -611,7 +609,8 @@ class InterestGroupAuctionReporterTest
                               auction_worklet::mojom::ForEventSignalValue::
                                   NewIntValue(2),
                               /*filtering_id=*/std::nullopt,
-                              "event_type")),
+                              auction_worklet::mojom::EventType::NewNonReserved(
+                                  "event_type"))),
               blink::mojom::AggregationServiceMode::kDefault,
               blink::mojom::DebugModeDetails::New());
   const auction_worklet::mojom::PrivateAggregationRequestPtr
@@ -626,7 +625,8 @@ class InterestGroupAuctionReporterTest
                               auction_worklet::mojom::ForEventSignalValue::
                                   NewIntValue(24),
                               /*filtering_id=*/std::nullopt,
-                              "event_type2")),
+                              auction_worklet::mojom::EventType::NewNonReserved(
+                                  "event_type2"))),
               blink::mojom::AggregationServiceMode::kDefault,
               blink::mojom::DebugModeDetails::New());
   const auction_worklet::mojom::PrivateAggregationRequestPtr
@@ -641,7 +641,8 @@ class InterestGroupAuctionReporterTest
                               auction_worklet::mojom::ForEventSignalValue::
                                   NewIntValue(4),
                               /*filtering_id=*/0,
-                              "event_type")),
+                              auction_worklet::mojom::EventType::NewNonReserved(
+                                  "event_type"))),
               blink::mojom::AggregationServiceMode::kDefault,
               blink::mojom::DebugModeDetails::New());
 
@@ -671,7 +672,8 @@ class InterestGroupAuctionReporterTest
           /*is_web_secure_context=*/true,
           /*ip_address_space=*/network::mojom::IPAddressSpace::kPublic,
           /*is_web_secure_context=*/
-          network::mojom::PrivateNetworkRequestPolicy::kBlock)};
+          network::mojom::PrivateNetworkRequestPolicy::kBlock,
+          network::DocumentIsolationPolicy())};
 
   const GURL kSellerReportUrl =
       GURL("https://seller.report.test/seller-report");

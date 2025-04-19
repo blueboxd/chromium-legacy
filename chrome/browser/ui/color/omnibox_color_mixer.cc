@@ -60,6 +60,9 @@ void ApplyCR2023OmniboxIconColors(ui::ColorMixer& mixer,
                                   const ui::ColorProviderKey& key) {
   mixer[kColorPageActionIconHover] = {ui::kColorSysStateHoverOnSubtle};
   mixer[kColorPageInfoBackground] = {ui::kColorSysBaseContainerElevated};
+  mixer[kColorPageInfoBackgroundTonal] = {ui::kColorSysTonalContainer};
+  mixer[kColorPageInfoForeground] = {ui::kColorSysOnSurface};
+  mixer[kColorPageInfoForegroundTonal] = {ui::kColorSysOnTonalContainer};
   mixer[kColorPageInfoIconHover] = {ui::kColorSysStateHoverDimBlendProtection};
   mixer[kColorPageInfoIconPressed] = {ui::kColorSysStateRippleNeutralOnSubtle};
   mixer[kColorPageActionIcon] = {ui::kColorSysOnSurfaceSubtle};
@@ -219,7 +222,7 @@ void AddOmniboxColorMixer(ui::ColorProvider* provider,
   mixer[kColorOmniboxBubbleOutlineExperimentalKeywordMode] = {
       kColorOmniboxKeywordSelected};
 
-  // Results background, button, and focus colors.
+  // Results background, chip, button, and focus colors.
   mixer[kColorOmniboxResultsBackground] =
       ui::GetColorWithMaxContrast(kColorOmniboxText);
   mixer[kColorOmniboxResultsBackgroundIPH] = {ui::kColorSysSurface2};
@@ -228,6 +231,7 @@ void AddOmniboxColorMixer(ui::ColorProvider* provider,
   mixer[kColorOmniboxResultsBackgroundSelected] = ui::BlendTowardMaxContrast(
       ui::GetColorWithMaxContrast(kColorOmniboxResultsTextSelected),
       gfx::kGoogleGreyAlpha200);
+  mixer[kColorOmniboxResultsChipBackground] = {ui::kColorSysNeutralContainer};
   mixer[kColorOmniboxResultsButtonBorder] = ui::BlendTowardMaxContrast(
       kColorToolbarBackgroundSubtleEmphasis, gfx::kGoogleGreyAlpha400);
   mixer[kColorOmniboxResultsButtonIcon] = {kColorOmniboxResultsIcon};
@@ -383,9 +387,14 @@ void AddOmniboxColorMixer(ui::ColorProvider* provider,
   mixer[kColorOmniboxAnswerIconGM3Background] = {ui::kColorSysTonalContainer};
   mixer[kColorOmniboxAnswerIconGM3Foreground] = {ui::kColorSysOnTonalContainer};
 
-  // location bar icon colors.
+  // Location bar icon colors for opaque page info elements. There is no
+  // distinction between regular and tonal page info backgrounds or foregrounds
+  // for CWS themes.
   mixer[kColorPageInfoBackground] = {kColorToolbar};
-  mixer[kColorPageInfoBackgroundTonal] = {ui::kColorSysTonalContainer};
+  mixer[kColorPageInfoBackgroundTonal] = {kColorPageInfoBackground};
+  mixer[kColorPageInfoForeground] = {
+      ui::GetColorWithMaxContrast(kColorToolbar)};
+  mixer[kColorPageInfoForegroundTonal] = {kColorPageInfoForeground};
   // Literal constants are `kOmniboxOpacityHovered` and
   // `kOmniboxOpacitySelected`. This is so that we can more cleanly use the
   // colors in the inkdrop instead of handling themes and non-themes separately

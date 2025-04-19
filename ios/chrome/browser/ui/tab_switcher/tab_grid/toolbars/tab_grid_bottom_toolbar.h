@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/keyboard/key_command_actions.h"
+#import "ios/chrome/browser/keyboard/ui_bundled/key_command_actions.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_paging.h"
 
 @class TabGridNewTabButton;
@@ -19,14 +19,16 @@
 // Horizontal-compact and vertical-regular screen size:
 //   Small newTabButton, translucent background.
 //   Incognito & Regular page: [CloseAllButton  newTabButton  DoneButton]
+//   Tab Groups page:          [                              DoneButton]
 //   Remote page:              [                              DoneButton]
 //   Selection mode:           [CloseTabButton  shareButton  AddToButton]
 //
 // Other screen size:
 //   Large newTabButton, floating layout without UIToolbar.
-//   Normal mode:    [                                      newTabButton]
-//   Remote page:    [                                                  ]
-//   Selection mode: [CloseTabButton       shareButton       AddToButton]
+//   Normal mode:     [                                      newTabButton]
+//   Tab Groups page: [                                                  ]
+//   Remote page:     [                                                  ]
+//   Selection mode:  [CloseTabButton       shareButton       AddToButton]
 @interface TabGridBottomToolbar : UIView <KeyCommandActions>
 
 // This property together with `mode` and self.traitCollection control the items

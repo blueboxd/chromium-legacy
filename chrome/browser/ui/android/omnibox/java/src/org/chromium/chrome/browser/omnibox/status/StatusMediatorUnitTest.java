@@ -28,7 +28,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
@@ -39,7 +38,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.merchant_viewer.MerchantTrustSignalsCoordinator;
@@ -78,7 +76,6 @@ public final class StatusMediatorUnitTest {
     public static final int CURRENT_TAB_ID = 5;
     public static final int NEW_TAB_ID = 1;
 
-    public @Rule TestRule mProcessor = new Features.JUnitProcessor();
     public @Rule MockitoRule mMockitoRule = MockitoJUnit.rule();
     public @Rule JniMocker mJniMocker = new JniMocker();
 
@@ -130,7 +127,6 @@ public final class StatusMediatorUnitTest {
         // By default return google g, but this behavior is overridden in some tests.
         var logo = new StatusIconResource(R.drawable.ic_logo_googleg_20dp, 0);
 
-        doReturn(false).when(mLocationBarDataProvider).isInOverviewAndShowingOmnibox();
         doReturn(false).when(mLocationBarDataProvider).isIncognito();
         doReturn(mNewTabPageDelegate).when(mLocationBarDataProvider).getNewTabPageDelegate();
         doReturn(logo).when(mSearchEngineUtils).getSearchEngineLogo(BrandedColorScheme.APP_DEFAULT);
@@ -255,7 +251,7 @@ public final class StatusMediatorUnitTest {
         Assert.assertTrue(mModel.get(StatusProperties.SHOW_STATUS_ICON));
         Assert.assertTrue(mMediator.shouldDisplaySearchEngineIcon());
 
-        doReturn(true).when(mLocationBarDataProvider).isIncognito();
+        doReturn(true).when(mLocationBarDataProvider).isIncognitoBranded();
         Assert.assertTrue(mModel.get(StatusProperties.SHOW_STATUS_ICON));
         Assert.assertFalse(mMediator.shouldDisplaySearchEngineIcon());
     }
@@ -587,21 +583,6 @@ public final class StatusMediatorUnitTest {
 
     @Test
     @SmallTest
-    public void searchEngineLogo_startSurface() {
-        doReturn(false).when(mNewTabPageDelegate).isCurrentlyVisible();
-        doReturn(true).when(mLocationBarDataProvider).isInOverviewAndShowingOmnibox();
-
-        mMediator.setUrlHasFocus(false);
-        mMediator.setShowIconsWhenUrlFocused(true);
-        Assert.assertTrue(mModel.get(StatusProperties.SHOW_STATUS_ICON));
-        Assert.assertFalse(mMediator.shouldDisplaySearchEngineIcon());
-
-        mMediator.setUrlFocusChangePercent(0.5f);
-        Assert.assertTrue(mMediator.shouldDisplaySearchEngineIcon());
-    }
-
-    @Test
-    @SmallTest
     public void iphCookieControls_animatesonHighlightCookieControl() {
         setupCookieControlsTest();
 
@@ -785,6 +766,7 @@ public final class StatusMediatorUnitTest {
      */
     private void setupStoreIconForTesting(boolean isIncognito) {
         doReturn(JUnitTestGURLs.BLUE_1).when(mLocationBarDataProvider).getCurrentGurl();
-        doReturn(isIncognito).when(mLocationBarDataProvider).isIncognito();
+        doReturn(isIncognito).when(mLocationBarDataProvider).isIncognitoBranded();
+        doReturn(isIncognito).when(mLocationBarDataProvider).isOffTheRecord();
     }
 }

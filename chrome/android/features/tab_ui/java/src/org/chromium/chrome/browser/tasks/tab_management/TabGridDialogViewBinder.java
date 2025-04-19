@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.tasks.tab_management;
 
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridDialogProperties.ADD_CLICK_LISTENER;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridDialogProperties.ANIMATION_BACKGROUND_COLOR;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridDialogProperties.ANIMATION_SOURCE_VIEW;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridDialogProperties.BINDING_TOKEN;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridDialogProperties.BROWSER_CONTROLS_STATE_PROVIDER;
@@ -18,6 +19,9 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabGridDialogProp
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridDialogProperties.DIALOG_UNGROUP_BAR_HOVERED_TEXT_COLOR;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridDialogProperties.DIALOG_UNGROUP_BAR_TEXT;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridDialogProperties.DIALOG_UNGROUP_BAR_TEXT_COLOR;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridDialogProperties.FORCE_ANIMATION_TO_FINISH;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridDialogProperties.HAIRLINE_COLOR;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridDialogProperties.HAIRLINE_VISIBILITY;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridDialogProperties.HEADER_TITLE;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridDialogProperties.INITIAL_SCROLL_INDEX;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridDialogProperties.IS_DIALOG_VISIBLE;
@@ -30,10 +34,8 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabGridDialogProp
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridDialogProperties.MENU_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridDialogProperties.PRIMARY_COLOR;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridDialogProperties.SCRIMVIEW_CLICK_RUNNABLE;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridDialogProperties.SHARE_BUTTON_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridDialogProperties.SHARE_IMAGE_TILES_CLICK_LISTENER;
-import static org.chromium.chrome.browser.tasks.tab_management.TabGridDialogProperties.SHARE_INVITE_CLICK_LISTENER;
-import static org.chromium.chrome.browser.tasks.tab_management.TabGridDialogProperties.SHARE_MANAGE_ADD_CLICK_LISTENER;
-import static org.chromium.chrome.browser.tasks.tab_management.TabGridDialogProperties.SHOULD_SHOW_SHARE;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridDialogProperties.TAB_GROUP_COLOR_ID;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridDialogProperties.TINT;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridDialogProperties.TITLE_CURSOR_VISIBILITY;
@@ -61,20 +63,17 @@ import org.chromium.ui.modelutil.PropertyModel;
 class TabGridDialogViewBinder {
     /** ViewHolder class to get access to all {@link View}s inside the TabGridDialog. */
     public static class ViewHolder {
-        public final TabGroupUiToolbarView toolbarView;
+        public final TabGridDialogToolbarView toolbarView;
         public final RecyclerView contentView;
         @Nullable public TabGridDialogView dialogView;
-        @Nullable public View shareBar;
 
         ViewHolder(
-                TabGroupUiToolbarView toolbarView,
+                TabGridDialogToolbarView toolbarView,
                 RecyclerView contentView,
-                @Nullable TabGridDialogView dialogView,
-                @Nullable View shareBar) {
+                @Nullable TabGridDialogView dialogView) {
             this.toolbarView = toolbarView;
             this.contentView = contentView;
             this.dialogView = dialogView;
-            this.shareBar = shareBar;
         }
     }
 
@@ -144,8 +143,7 @@ class TabGridDialogViewBinder {
             viewHolder.dialogView.setScrimClickRunnable(model.get(SCRIMVIEW_CLICK_RUNNABLE));
         } else if (IS_DIALOG_VISIBLE == propertyKey) {
             if (model.get(IS_DIALOG_VISIBLE)) {
-                viewHolder.dialogView.resetDialog(
-                        viewHolder.toolbarView, viewHolder.contentView, viewHolder.shareBar);
+                viewHolder.dialogView.resetDialog(viewHolder.toolbarView, viewHolder.contentView);
                 viewHolder.dialogView.showDialog();
             } else {
                 viewHolder.dialogView.hideDialog();
@@ -161,6 +159,14 @@ class TabGridDialogViewBinder {
                 int backgroundColorInt = model.get(DIALOG_BACKGROUND_COLOR);
                 viewHolder.dialogView.updateDialogContainerBackgroundColor(backgroundColorInt);
                 viewHolder.toolbarView.setBackgroundColorTint(backgroundColorInt);
+            }
+        } else if (HAIRLINE_COLOR == propertyKey) {
+            if (viewHolder.dialogView != null) {
+                viewHolder.dialogView.updateHairlineColor(model.get(HAIRLINE_COLOR));
+            }
+        } else if (HAIRLINE_VISIBILITY == propertyKey) {
+            if (viewHolder.dialogView != null) {
+                viewHolder.dialogView.setHairlineVisibility(model.get(HAIRLINE_VISIBILITY));
             }
         } else if (DIALOG_UNGROUP_BAR_BACKGROUND_COLOR == propertyKey) {
             if (viewHolder.dialogView != null) {
@@ -224,19 +230,19 @@ class TabGridDialogViewBinder {
         } else if (COLLAPSE_BUTTON_CONTENT_DESCRIPTION == propertyKey) {
             viewHolder.toolbarView.setLeftButtonContentDescription(
                     model.get(COLLAPSE_BUTTON_CONTENT_DESCRIPTION));
-        } else if (SHOULD_SHOW_SHARE == propertyKey) {
-            viewHolder.dialogView.updateShouldShowShare(model.get(SHOULD_SHOW_SHARE));
-        } else if (SHARE_INVITE_CLICK_LISTENER == propertyKey) {
-            viewHolder.dialogView.setShareInviteOnClickListener(
-                    model.get(SHARE_INVITE_CLICK_LISTENER));
+        } else if (SHARE_BUTTON_CLICK_LISTENER == propertyKey) {
+            viewHolder.toolbarView.setShareButtonClickListener(
+                    model.get(SHARE_BUTTON_CLICK_LISTENER));
         } else if (SHARE_IMAGE_TILES_CLICK_LISTENER == propertyKey) {
-            viewHolder.dialogView.setShareImageTilesOnClickListener(
+            viewHolder.toolbarView.setImageTilesClickListener(
                     model.get(SHARE_IMAGE_TILES_CLICK_LISTENER));
-        } else if (SHARE_MANAGE_ADD_CLICK_LISTENER == propertyKey) {
-            viewHolder.dialogView.setShareManageAddOnClickListener(
-                    model.get(SHARE_MANAGE_ADD_CLICK_LISTENER));
         } else if (IS_TAB_GROUP_SHARED == propertyKey) {
-            viewHolder.dialogView.refreshShareBar(model.get(IS_TAB_GROUP_SHARED));
+            boolean isTabGroupShared = model.get(IS_TAB_GROUP_SHARED);
+            boolean isIncognito = model.get(IS_INCOGNITO);
+            boolean showShareButton = !isTabGroupShared && !isIncognito;
+            boolean showImageTiles = isTabGroupShared && !isIncognito;
+            viewHolder.toolbarView.setShareButtonVisibility(showShareButton);
+            viewHolder.toolbarView.setImageTilesVisibility(showImageTiles);
         } else if (TAB_GROUP_COLOR_ID == propertyKey) {
             viewHolder.toolbarView.setColorIconColor(
                     model.get(TAB_GROUP_COLOR_ID), model.get(IS_INCOGNITO));
@@ -248,6 +254,17 @@ class TabGridDialogViewBinder {
                 // Fit the scrim to the TabGridDialog again after the bottom sheet visibility
                 // changes.
                 viewHolder.dialogView.refreshScrim();
+            }
+        } else if (ANIMATION_BACKGROUND_COLOR == propertyKey) {
+            // Only set in LIST mode not GRID mode. Will always be set in LIST mode. Mode is not
+            // mutable without restarting the app.
+            if (model.get(ANIMATION_BACKGROUND_COLOR) != null) {
+                viewHolder.dialogView.updateAnimationBackgroundColor(
+                        model.get(ANIMATION_BACKGROUND_COLOR));
+            }
+        } else if (FORCE_ANIMATION_TO_FINISH == propertyKey) {
+            if (model.get(FORCE_ANIMATION_TO_FINISH)) {
+                viewHolder.dialogView.forceAnimationToFinish();
             }
         }
     }

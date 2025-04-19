@@ -25,7 +25,6 @@
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/unified/unified_system_tray.h"
-#include "ash/wm/bounds_tracker/window_bounds_tracker.h"
 #include "ash/wm/window_util.h"
 #include "base/check.h"
 #include "base/containers/contains.h"
@@ -36,6 +35,7 @@
 #include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/system/sys_info.h"
 #include "base/task/single_thread_task_runner.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/focus_client.h"
@@ -78,10 +78,16 @@ namespace {
 int64_t primary_display_id = -1;
 
 // The compositor memory limit when display size is larger than a threshold.
-constexpr int kUICompositorLargeMemoryLimitMB = 1024;
-// The display size threshold, above which the larger memory limit is used.
+constexpr int kUICompositorLargeDisplayMemoryLimitMB = 1024;
+// The compositor memory limit when both the display size and device memory
+// are greater than some thresholds.
+constexpr int kUICompositorLargeDisplayandRamMemoryLimitMB = 2048;
+// The display size threshold, above which the larger memory limits are used.
 // Pixel size was chosen to trigger for 4K+ displays. See: crbug.com/1261776
 constexpr int kUICompositorMemoryLimitDisplaySizeThreshold = 3500;
+// The RAM capacity threshold in MB. When the device has a 4k+ display and
+// 16GB+ of memory, configure the compositor to use a higher memory limit.
+constexpr int kUICompositorMemoryLimitRamCapacityThreshold = 16 * 1024;
 
 // An UMA signal for the current effective resolution/dpi is sent at this rate.
 // This keeps track of the effective resolution/dpi most used on
@@ -401,9 +407,6 @@ void WindowTreeHostManager::InitHosts() {
       EnableRoundedCorners(display);
     }
   }
-
-  for (auto& observer : observers_)
-    observer.OnDisplaysInitialized();
 }
 
 void WindowTreeHostManager::AddObserver(Observer* observer) {
@@ -657,10 +660,6 @@ void WindowTreeHostManager::CreateDisplay(const display::Display& display) {
   if (display::features::IsRoundedDisplayEnabled()) {
     EnableRoundedCorners(display);
   }
-
-  if (Shell::Get()->window_bounds_tracker()) {
-    should_restore_windows_on_display_added_ = true;
-  }
 }
 
 void WindowTreeHostManager::DeleteHost(AshWindowTreeHost* host_to_delete) {
@@ -864,7 +863,7 @@ void WindowTreeHostManager::CreateOrUpdateMirroringDisplay(
     mirror_window_controller_->UpdateWindow(info_list);
     cursor_window_controller_->UpdateContainer();
   } else {
-    DUMP_WILL_BE_NOTREACHED_NORETURN();
+    DUMP_WILL_BE_NOTREACHED();
   }
 }
 
@@ -882,8 +881,7 @@ void WindowTreeHostManager::CloseMirroringDisplayIfNotNecessary() {
 void WindowTreeHostManager::PreDisplayConfigurationChange(bool clear_focus) {
   // Pause occlusion tracking during display configuration updates.
   scoped_pause_ = std::make_unique<aura::WindowOcclusionTracker::ScopedPause>();
-  for (auto& observer : observers_)
-    observer.OnDisplayConfigurationChanging();
+
   focus_activation_store_->Store(clear_focus);
   display::Screen* screen = display::Screen::GetScreen();
   gfx::Point point_in_screen = screen->GetCursorScreenPoint();
@@ -931,12 +929,6 @@ void WindowTreeHostManager::SetPrimaryDisplayId(int64_t id) {
       display::Screen::GetScreen()->GetPrimaryDisplay();
   const int64_t old_primary_id = old_primary_display.id();
   DCHECK_EQ(old_primary_id, primary_display_id);
-
-  auto* window_bounds_tracker = Shell::Get()->window_bounds_tracker();
-  if (window_bounds_tracker) {
-    window_bounds_tracker->OnWillSwapDisplayRootWindows(old_primary_id,
-                                                        new_primary_id);
-  }
 
   // Swap root windows between current and new primary display.
   AshWindowTreeHost* primary_host = window_tree_hosts_[primary_display_id];
@@ -992,28 +984,16 @@ void WindowTreeHostManager::SetPrimaryDisplayId(int64_t id) {
   GetDisplayManager()->set_force_bounds_changed(true);
   GetDisplayManager()->UpdateDisplays();
   GetDisplayManager()->set_force_bounds_changed(false);
-
-  if (window_bounds_tracker) {
-    window_bounds_tracker->OnDisplayRootWindowsSwapped(old_primary_id,
-                                                       new_primary_id);
-  }
 }
 
 void WindowTreeHostManager::PostDisplayConfigurationChange() {
   focus_activation_store_->Restore();
 
-  for (auto& observer : observers_)
-    observer.OnDisplayConfigurationChanged();
   UpdateMouseLocationAfterDisplayChange();
 
   // Enable cursor compositing, so that cursor could be mirrored to
   // destination displays along with other display content.
   Shell::Get()->UpdateCursorCompositingEnabled();
-
-  if (should_restore_windows_on_display_added_) {
-    Shell::Get()->window_bounds_tracker()->MaybeRestoreWindowsOnDisplayAdded();
-    should_restore_windows_on_display_added_ = false;
-  }
 
   // Unpause occlusion tracking.
   scoped_pause_.reset();
@@ -1072,7 +1052,10 @@ AshWindowTreeHost* WindowTreeHostManager::AddWindowTreeHostForDisplay(
                display.GetSizeInPixel().height()) >
       kUICompositorMemoryLimitDisplaySizeThreshold) {
     params_with_bounds.compositor_memory_limit_mb =
-        kUICompositorLargeMemoryLimitMB;
+        base::SysInfo::AmountOfPhysicalMemoryMB() >=
+                kUICompositorMemoryLimitRamCapacityThreshold
+            ? kUICompositorLargeDisplayandRamMemoryLimitMB
+            : kUICompositorLargeDisplayMemoryLimitMB;
   }
 
   // The AshWindowTreeHost ends up owned by the RootWindowControllers created

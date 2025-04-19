@@ -12,9 +12,48 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/url_row.h"
+#include "components/url_deduplication/url_deduplication_helper.h"
 #include "components/visited_url_ranking/public/fetch_result.h"
+#include "components/visited_url_ranking/public/fetcher_config.h"
 #include "components/visited_url_ranking/public/url_visit_util.h"
 #include "url/gurl.h"
+
+namespace {
+
+// Used to compute signals on whether related URL visit activity has periodicity
+// patterns based on the day of the week.
+enum DayGroup {
+  kWeekday = 0,
+  kWeekend = 1,
+};
+
+DayGroup GetDayGroupForExplodedTime(const base::Time::Exploded& exploded_time) {
+  return (exploded_time.day_of_week == 0 || exploded_time.day_of_week == 6)
+             ? DayGroup::kWeekend
+             : DayGroup::kWeekday;
+}
+
+// Used to compute signals on whether related URL visit activity has periodicity
+// patterns based on the time of the day. For simplicity, divides a day into 4
+// groups of 6 hours. Time group enum names are of no consequence.
+enum TimeGroup {
+  kGroup0 = 0,
+  kGroup1 = 1,
+  kGroup2 = 2,
+  kGroup3 = 3,
+};
+
+TimeGroup GetTimeGroupForExplodedTime(
+    const base::Time::Exploded& exploded_time) {
+  static constexpr int kHoursPerGroup = base::Time::kHoursPerDay / 4;
+
+  // Note that since the time groups are meant as approximations, relying only
+  // on the `hour` field should be acceptable for the generation of the
+  // corresponding signal.
+  return static_cast<TimeGroup>(exploded_time.hour / kHoursPerGroup);
+}
+
+}  // namespace
 
 namespace visited_url_ranking {
 
@@ -29,6 +68,7 @@ HistoryURLVisitDataFetcher::~HistoryURLVisitDataFetcher() = default;
 
 void HistoryURLVisitDataFetcher::FetchURLVisitData(
     const FetchOptions& options,
+    const FetcherConfig& config,
     FetchResultCallback callback) {
   history::QueryOptions query_options;
   query_options.begin_time = options.begin_time;
@@ -42,7 +82,7 @@ void HistoryURLVisitDataFetcher::FetchURLVisitData(
         /*get_unclustered_visits_only=*/false,
         base::BindOnce(&HistoryURLVisitDataFetcher::OnGotAnnotatedVisits,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                       options.fetcher_sources.at(Fetcher::kHistory)),
+                       options.fetcher_sources.at(Fetcher::kHistory), config),
         &task_tracker_);
     return;
   }
@@ -53,8 +93,14 @@ void HistoryURLVisitDataFetcher::FetchURLVisitData(
 void HistoryURLVisitDataFetcher::OnGotAnnotatedVisits(
     FetchResultCallback callback,
     FetchOptions::FetchSources requested_fetch_sources,
+    const FetcherConfig& config,
     std::vector<history::AnnotatedVisit> annotated_visits) {
   std::map<std::string, URLVisitAggregate::HistoryData> url_annotations;
+
+  base::Time::Exploded time_exploded;
+  config.clock->Now().LocalExplode(&time_exploded);
+  DayGroup current_day_group = GetDayGroupForExplodedTime(time_exploded);
+  TimeGroup current_time_group = GetTimeGroupForExplodedTime(time_exploded);
   for (auto& annotated_visit : annotated_visits) {
     // The `originator_cache_guid` field is only set for foreign session visits.
     Source current_visit_source =
@@ -65,25 +111,53 @@ void HistoryURLVisitDataFetcher::OnGotAnnotatedVisits(
       continue;
     }
 
-    auto url_key = ComputeURLMergeKey(annotated_visit.url_row.url());
+    auto url_key = ComputeURLMergeKey(annotated_visit.url_row.url(),
+                                      annotated_visit.url_row.title(),
+                                      config.deduplication_helper);
     if (url_annotations.find(url_key) == url_annotations.end()) {
       // `GetAnnotatedVisits` returns a reverse-chronological sorted list of
-      // annotated visits, thus, the first visit in the vector is the most
-      // recent visit for a given URL.
+      // annotated visits, thus, the first visit in the vector is the last
+      // active (i.e. most recent) visit for a given URL.
       url_annotations.emplace(url_key, std::move(annotated_visit));
     } else {
       auto& history = url_annotations.at(url_key);
       history.visit_count += 1;
-      history.total_foreground_duration +=
-          annotated_visit.context_annotations.total_foreground_duration;
+      if (annotated_visit.context_annotations.total_foreground_duration
+              .InMilliseconds() > 0) {
+        history.total_foreground_duration +=
+            annotated_visit.context_annotations.total_foreground_duration;
+      }
 
       if (!history.last_app_id.has_value() &&
           annotated_visit.visit_row.app_id.has_value()) {
         history.last_app_id = annotated_visit.visit_row.app_id;
       }
 
+      if (history.last_visited.content_annotations.model_annotations
+                  .visibility_score ==
+              history::VisitContentModelAnnotations::kDefaultVisibilityScore &&
+          annotated_visit.content_annotations.model_annotations
+                  .visibility_score !=
+              history::VisitContentModelAnnotations::kDefaultVisibilityScore) {
+        history.last_visited.content_annotations.model_annotations
+            .visibility_score = annotated_visit.content_annotations
+                                    .model_annotations.visibility_score;
+      }
+
       // TODO(crbug.com/340885723): Wire `in_cluster` signal.
       // TODO(crbug.com/340887237): Wire `interaction_state` signal.
+    }
+
+    auto& history = url_annotations.at(url_key);
+    base::Time::Exploded visit_time_exploded;
+    history.last_visited.visit_row.visit_time.LocalExplode(
+        &visit_time_exploded);
+    if (GetDayGroupForExplodedTime(visit_time_exploded) == current_day_group) {
+      history.same_day_group_visit_count++;
+    }
+    if (GetTimeGroupForExplodedTime(visit_time_exploded) ==
+        current_time_group) {
+      history.same_time_group_visit_count++;
     }
   }
 

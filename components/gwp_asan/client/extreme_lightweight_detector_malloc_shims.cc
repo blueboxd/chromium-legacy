@@ -6,6 +6,7 @@
 
 #include <atomic>
 
+#include "base/compiler_specific.h"
 #include "base/functional/bind.h"
 #include "base/no_destructor.h"
 #include "base/trace_event/malloc_dump_provider.h"
@@ -68,7 +69,7 @@ std::optional<base::NoDestructor<LightweightQuarantineBranch>>
 bool TryInitSlow();
 
 inline bool TryInit() {
-  if (LIKELY(is_quarantine_initialized.load(std::memory_order_acquire))) {
+  if (is_quarantine_initialized.load(std::memory_order_acquire)) [[likely]] {
     return true;
   }
 
@@ -129,16 +130,20 @@ bool TryInitSlow() {
 // CAUTION: No deallocation is allowed in this function because it causes
 // a reentrancy issue.
 inline bool Quarantine(void* object) {
-  if (UNLIKELY(!TryInit())) {
+  if (!TryInit()) [[unlikely]] {
     return false;
   }
 
-  if (UNLIKELY(!object)) {
+  if (!object) [[unlikely]] {
     return false;
   }
 
-  if (UNLIKELY(!partition_alloc::IsManagedByPartitionAlloc(
-          reinterpret_cast<uintptr_t>(object)))) {
+  // This function is going to zap the memory region allocated for `object`,
+  // but it can be cold in cache. So, prefetches it to avoid stall.
+  PA_PREFETCH_FOR_WRITE(object);
+
+  if (!partition_alloc::IsManagedByPartitionAlloc(
+          reinterpret_cast<uintptr_t>(object))) [[unlikely]] {
     return false;
   }
 
@@ -151,7 +156,7 @@ inline bool Quarantine(void* object) {
       partition_alloc::internal::SlotSpanMetadata::FromObject(object);
   partition_alloc::PartitionRoot* root =
       partition_alloc::PartitionRoot::FromSlotSpanMetadata(slot_span);
-  if (UNLIKELY(root != lightweight_quarantine_partition_root)) {
+  if (root != lightweight_quarantine_partition_root) [[unlikely]] {
     // The LightweightQuarantineRoot is configured for
     // lightweight_quarantine_partition_root. We cannot quarantine an object
     // in other partition roots.
@@ -162,30 +167,29 @@ inline bool Quarantine(void* object) {
   ExtremeLightweightDetectorUtil::Zap(object, usable_size);
 
   uintptr_t slot_start = root->ObjectToSlotStart(object);
-  lightweight_quarantine_branch->Quarantine(object, slot_span, slot_start);
+  lightweight_quarantine_branch->Quarantine(object, slot_span, slot_start,
+                                            usable_size);
 
   return true;
 }
 
-void FreeFn(const AllocatorDispatch* self, void* address, void* context) {
-  if (UNLIKELY(sampling_state.Sample())) {
-    if (LIKELY(Quarantine(address))) {
+void FreeFn(void* address, void* context) {
+  if (sampling_state.Sample()) [[unlikely]] {
+    if (Quarantine(address)) [[likely]] {
       return;
     }
   }
-  self->next->free_function(self->next, address, context);
+  MUSTTAIL return allocator_dispatch.next->free_function(address, context);
 }
 
-void FreeDefiniteSizeFn(const AllocatorDispatch* self,
-                        void* address,
-                        size_t size,
-                        void* context) {
-  if (UNLIKELY(sampling_state.Sample())) {
-    if (LIKELY(Quarantine(address))) {
+void FreeDefiniteSizeFn(void* address, size_t size, void* context) {
+  if (sampling_state.Sample()) [[unlikely]] {
+    if (Quarantine(address)) [[likely]] {
       return;
     }
   }
-  self->next->free_definite_size_function(self->next, address, size, context);
+  MUSTTAIL return allocator_dispatch.next->free_definite_size_function(
+      address, size, context);
 }
 
 AllocatorDispatch allocator_dispatch = {
@@ -196,6 +200,7 @@ AllocatorDispatch allocator_dispatch = {
     // realloc doesn't always deallocate memory, so the Extreme LUD doesn't
     // support realloc.
     nullptr,  // realloc_function
+    nullptr,  // realloc_unchecked_function
     FreeFn,   // free_function
     nullptr,  // get_size_estimate_function
     nullptr,  // good_size_function
@@ -209,8 +214,10 @@ AllocatorDispatch allocator_dispatch = {
     // try_free_default (at least for now).
     nullptr,  // try_free_default_function
     nullptr,  // aligned_malloc_function
+    nullptr,  // aligned_malloc_unchecked_function
     // The same reason with realloc_function.
     nullptr,  // aligned_realloc_function
+    nullptr,  // aligned_realloc_unchecked_function
     // As of 2024 Jan, only _aligned_free on Windows calls this function. The
     // function is rarely used, so the Extreme LUD doesn't support this for now.
     nullptr,  // aligned_free_function

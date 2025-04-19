@@ -65,7 +65,6 @@
 #include "ui/base/dragdrop/drop_target_event.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -1028,10 +1027,8 @@ class DragAndDropBrowserTest : public InProcessBrowserTest,
 // Scenario: drag text from outside the browser and drop to the right frame.
 // Test coverage: dragover, drop DOM events.
 IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, DropTextFromOutside) {
-  // TODO (crbug/1521094): Test fails when ChromeRefresh2023 and
-  //                       ChromeRefreshSecondary2023 is enabled. Evaluate cause
-  //                       and fix.
-  if (features::IsChromeRefresh2023() && std::get<double>(GetParam()) > 1.5) {
+  // TODO (crbug/1521094): Test fails since 2023 refresh.
+  if (std::get<double>(GetParam()) > 1.5) {
     GTEST_SKIP();
   }
   std::string frame_site = use_cross_site_subframe() ? "b.test" : "a.test";
@@ -1128,7 +1125,13 @@ IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, DropValidUrlFromOutside) {
 
 // Scenario: drag a URL into the Omnibox.  This is a regression test for
 // https://crbug.com/670123.
-IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, DropUrlIntoOmnibox) {
+// TODO(crbug.com/344168586): Very flaky on linux-chromeos-rel bots.
+#if BUILDFLAG(IS_CHROMEOS_ASH) && defined(NDEBUG)
+#define MAYBE_DropUrlIntoOmnibox DISABLED_DropUrlIntoOmnibox
+#else
+#define MAYBE_DropUrlIntoOmnibox DropUrlIntoOmnibox
+#endif
+IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, MAYBE_DropUrlIntoOmnibox) {
   std::string frame_site = use_cross_site_subframe() ? "b.test" : "a.test";
   ASSERT_TRUE(NavigateToTestPage("a.test"));
   ASSERT_TRUE(NavigateRightFrame(frame_site, "title1.html"));
@@ -1371,10 +1374,8 @@ struct DragAndDropBrowserTest::DragImageBetweenFrames_TestState {
 // Test coverage: dragleave, dragenter, dragover, dragend, drop DOM events.
 IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest,
                        MAYBE_DragSameOriginImageBetweenFrames) {
-  // TODO (crbug/1521094): Disabled when scale factor is > 1.5 and
-  //                       ChromeRefresh2023 and ChromeRefreshSecondary2023 is
-  //                       enabled.
-  if (features::IsChromeRefresh2023() && std::get<1>(GetParam()) > 1.5) {
+  // TODO (crbug/1521094): Test fails since 2023 refresh.
+  if (std::get<1>(GetParam()) > 1.5) {
     GTEST_SKIP();
   }
   DragImageBetweenFrames_Start(/*image_same_origin=*/true,
@@ -1398,10 +1399,8 @@ IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest,
 // Test coverage: dragleave, dragenter, dragover, dragend, drop DOM events.
 IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest,
                        MAYBE_DragCorsSameOriginImageBetweenFrames) {
-  // TODO (crbug/1521094): Disabled when scale factor is > 1.5 and
-  //                       ChromeRefresh2023 and ChromeRefreshSecondary2023 is
-  //                       enabled.
-  if (features::IsChromeRefresh2023() && std::get<1>(GetParam()) > 1.5) {
+  // TODO (crbug/1521094): Test fails since 2023 refresh.
+  if (std::get<1>(GetParam()) > 1.5) {
     GTEST_SKIP();
   }
   DragImageBetweenFrames_Start(/*image_same_origin=*/false,
@@ -1425,10 +1424,8 @@ IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest,
 // Regression test for https://crbug.com/1264873.
 IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest,
                        MAYBE_DragCrossOriginImageBetweenFrames) {
-  // TODO (crbug/1521094): Disabled when scale factor is > 1.5 and
-  //                       ChromeRefresh2023 and ChromeRefreshSecondary2023 is
-  //                       enabled.
-  if (features::IsChromeRefresh2023() && std::get<1>(GetParam()) > 1.5) {
+  // TODO (crbug/1521094): Test fails since 2023 refresh.
+  if (std::get<1>(GetParam()) > 1.5) {
     GTEST_SKIP();
   }
   DragImageBetweenFrames_Start(/*image_same_origin=*/false,
@@ -1690,10 +1687,8 @@ struct DragAndDropBrowserTest::DragImageFromDisappearingFrame_TestState {
 // Test coverage: dragenter, dragover, drop DOM events.
 IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest,
                        MAYBE_DragImageFromDisappearingFrame) {
-  // TODO (crbug/1521094): Disabled when scale factor is > 1.5 and
-  //                       ChromeRefresh2023 and ChromeRefreshSecondary2023 is
-  //                       enabled.
-  if (features::IsChromeRefresh2023() && std::get<1>(GetParam()) > 1.5) {
+  // TODO (crbug/1521094): Test fails since 2023 refresh.
+  if (std::get<1>(GetParam()) > 1.5) {
     GTEST_SKIP();
   }
   // Load the test page.
@@ -2038,10 +2033,8 @@ struct DragAndDropBrowserTest::CrossTabDrag_TestState {
 //
 // Test coverage: dragenter, dragover, dragend, drop DOM events.
 IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, MAYBE_CrossTabDrag) {
-  // TODO (crbug/1521094): Disabled when scale factor is > 1.5 and
-  //                       ChromeRefresh2023 and ChromeRefreshSecondary2023 is
-  //                       enabled.
-  if (features::IsChromeRefresh2023() && std::get<1>(GetParam()) > 1.5) {
+  // TODO (crbug/1521094): Test fails since 2023 refresh.
+  if (std::get<1>(GetParam()) > 1.5) {
     GTEST_SKIP();
   }
   std::string right_frame_site =

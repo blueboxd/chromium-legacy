@@ -20,10 +20,6 @@ class Time;
 class TimeDelta;
 }  // namespace base
 
-namespace network {
-class TriggerVerification;
-}  // namespace network
-
 namespace content {
 
 struct AttributionConfig;
@@ -83,16 +79,12 @@ class CONTENT_EXPORT AttributionResolverDelegateImpl
   std::optional<OfflineReportDelayConfig> GetOfflineReportDelayConfig()
       const override;
   void ShuffleReports(std::vector<AttributionReport>& reports) override;
-  void ShuffleTriggerVerifications(
-      std::vector<network::TriggerVerification>& verifications) override;
-  double GetRandomizedResponseRate(
+  std::optional<double> GetRandomizedResponseRate(
       const attribution_reporting::TriggerSpecs&,
-      attribution_reporting::MaxEventLevelReports,
       attribution_reporting::EventLevelEpsilon) const override;
   GetRandomizedResponseResult GetRandomizedResponse(
       attribution_reporting::mojom::SourceType,
       const attribution_reporting::TriggerSpecs&,
-      attribution_reporting::MaxEventLevelReports,
       attribution_reporting::EventLevelEpsilon) override;
   bool GenerateNullAggregatableReportForLookbackDay(
       int lookback_day,

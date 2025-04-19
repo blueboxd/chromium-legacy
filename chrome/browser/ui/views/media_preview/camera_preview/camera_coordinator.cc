@@ -53,7 +53,7 @@ CameraCoordinator::CameraCoordinator(
 }
 
 CameraCoordinator::~CameraCoordinator() {
-  if (allow_device_selection_) {
+  if (allow_device_selection_ && camera_mediator_.IsDeviceListInitialized()) {
     RecordDeviceSelectionTotalDevices(metrics_context_,
                                       eligible_device_infos_.size());
   }
@@ -105,6 +105,10 @@ void CameraCoordinator::OnVideoSourceChanged(
                                              std::move(video_source));
 }
 
+void CameraCoordinator::OnPermissionChange(bool has_permission) {
+  video_stream_coordinator_->OnPermissionChange(has_permission);
+}
+
 void CameraCoordinator::UpdateDevicePreferenceRanking() {
   if (active_device_id_.empty()) {
     return;
@@ -122,6 +126,8 @@ void CameraCoordinator::UpdateDevicePreferenceRanking() {
 
   media_prefs::UpdateVideoDevicePreferenceRanking(*prefs_, active_device_iter,
                                                   eligible_device_infos_);
+
+  video_stream_coordinator_->OnClosing();
 }
 
 void CameraCoordinator::ResetViewController() {

@@ -29,6 +29,7 @@
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/label.h"
@@ -243,7 +244,7 @@ LoginAuthFactorsView::LoginAuthFactorsView(
           kArrowButtonSizeDp));
   arrow_button_->SetInstallFocusRingOnFocus(true);
   views::InstallCircleHighlightPathGenerator(arrow_button_);
-  arrow_button_->SetAccessibleName(
+  arrow_button_->GetViewAccessibility().SetName(
       l10n_util::GetStringUTF16(IDS_AUTH_FACTOR_LABEL_CLICK_TO_ENTER));
 
   arrow_nudge_animation_ =
@@ -263,9 +264,7 @@ LoginAuthFactorsView::LoginAuthFactorsView(
   label_wrapper_->SetProperty(
       views::kMarginsKey,
       gfx::Insets::TLBR(kSpacingBetweenIconsAndLabelDp, 0, 0, 0));
-  if (chromeos::features::IsJellyEnabled()) {
-    label_wrapper_->label()->SetEnabledColorId(cros_tokens::kCrosSysOnSurface);
-  }
+  label_wrapper_->label()->SetEnabledColorId(cros_tokens::kCrosSysOnSurface);
 }
 
 LoginAuthFactorsView::~LoginAuthFactorsView() = default;
@@ -539,9 +538,9 @@ void LoginAuthFactorsView::ArrowButtonPressed(const ui::Event& event) {
 
 void LoginAuthFactorsView::RelayArrowButtonPressed() {
   if (arrow_button_) {
-    ArrowButtonPressed(ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(),
-                                      gfx::Point(), base::TimeTicks::Now(), 0,
-                                      0));
+    ArrowButtonPressed(ui::MouseEvent(ui::EventType::kMousePressed,
+                                      gfx::Point(), gfx::Point(),
+                                      base::TimeTicks::Now(), 0, 0));
   }
 }
 

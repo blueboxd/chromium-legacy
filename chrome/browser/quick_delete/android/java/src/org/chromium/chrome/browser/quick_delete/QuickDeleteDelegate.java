@@ -11,9 +11,8 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.sync.SyncServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
-import org.chromium.components.sync.ModelType;
+import org.chromium.components.sync.DataType;
 import org.chromium.components.sync.SyncService;
 
 import java.util.List;
@@ -54,15 +53,13 @@ abstract class QuickDeleteDelegate {
 
     /**
      * @param {@link Profile} from which to query the syncing history status.
-     *
      * @return A boolean indicating whether the user is syncing history and history deletions are
-     *         propagated.
+     *     propagated.
      */
     static boolean isSyncingHistory(@NonNull Profile profile) {
         SyncService syncService = SyncServiceFactory.getForProfile(profile);
         return syncService != null
-                && syncService.isSyncFeatureEnabled()
-                && syncService.getActiveDataTypes().contains(ModelType.HISTORY_DELETE_DIRECTIVES);
+                && syncService.getActiveDataTypes().contains(DataType.HISTORY_DELETE_DIRECTIVES);
     }
 
     /**
@@ -74,11 +71,6 @@ abstract class QuickDeleteDelegate {
      */
     abstract void performQuickDelete(
             @NonNull Runnable onDeleteFinished, @TimePeriod int timePeriod);
-
-    /**
-     * @return {@link SettingsLauncher} used to launch the Clear browsing data settings fragment.
-     */
-    abstract SettingsLauncher getSettingsLauncher();
 
     /**
      * Show the Quick Delete animation on the tab list.

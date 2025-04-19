@@ -43,6 +43,8 @@ using safe_browsing::SBThreatType;
 
 namespace safe_browsing {
 
+using enum ExtendedReportingLevel;
+
 SafeBrowsingUIManager::SafeBrowsingUIManager(
     std::unique_ptr<Delegate> delegate,
     std::unique_ptr<SafeBrowsingBlockingPageFactory> blocking_page_factory,
@@ -68,7 +70,7 @@ void SafeBrowsingUIManager::CreateAndSendHitReport(
   DCHECK(web_contents);
   std::unique_ptr<HitReport> hit_report = std::make_unique<HitReport>();
   hit_report->malicious_url = resource.url;
-  hit_report->is_subresource = resource.is_subresource;
+  hit_report->is_subresource = false;
   hit_report->threat_type = resource.threat_type;
   hit_report->threat_source = resource.threat_source;
   hit_report->population_id = resource.threat_metadata.population_id;
@@ -80,13 +82,11 @@ void SafeBrowsingUIManager::CreateAndSendHitReport(
     hit_report->referrer_url = entry->GetReferrer().url;
   }
 
-  // When the malicious url is on the main frame, and resource.original_url
-  // is not the same as the resource.url, that means we have a redirect from
-  // resource.original_url to resource.url.
-  // Also, at this point, page_url points to the _previous_ page that we
-  // were on. We replace page_url with resource.original_url and referrer
-  // with page_url.
-  if (!resource.is_subresource && !resource.original_url.is_empty() &&
+  // When resource.original_url is not the same as the resource.url, that means
+  // we have a redirect from resource.original_url to resource.url. Also, at
+  // this point, page_url points to the _previous_ page that we were on. We
+  // replace page_url with resource.original_url and referrer with page_url.
+  if (!resource.original_url.is_empty() &&
       resource.original_url != resource.url) {
     hit_report->referrer_url = hit_report->page_url;
     hit_report->page_url = resource.original_url;
@@ -114,13 +114,11 @@ void SafeBrowsingUIManager::CreateAndSendClientSafeBrowsingWarningShownReport(
       std::make_unique<ClientSafeBrowsingReportRequest>();
   client_report_utils::FillReportBasicResourceDetails(report.get(), resource);
 
-  // When the malicious url is on the main frame, and resource.original_url
-  // is not the same as the resource.url, that means we have a redirect from
-  // resource.original_url to resource.url.
-  // Also, at this point, page_url points to the _previous_ page that we
-  // were on. We replace page_url with resource.original_url and referrer
-  // with page_url.
-  if (!resource.is_subresource && !resource.original_url.is_empty() &&
+  // When resource.original_url is not the same as the resource.url, that means
+  // we have a redirect from resource.original_url to resource.url. Also, at
+  // this point, page_url points to the _previous_ page that we were on. We
+  // replace page_url with resource.original_url and referrer with page_url.
+  if (!resource.original_url.is_empty() &&
       resource.original_url != resource.url) {
     report->set_referrer_url(report->page_url());
     report->set_page_url(resource.original_url.spec());
@@ -326,7 +324,6 @@ std::string SafeBrowsingUIManager::GetThreatTypeStringForInterstitial(
     case SB_THREAT_TYPE_SAFE:
     case SB_THREAT_TYPE_URL_BINARY_MALWARE:
     case SB_THREAT_TYPE_EXTENSION:
-    case SB_THREAT_TYPE_BLOCKLISTED_RESOURCE:
     case SB_THREAT_TYPE_API_ABUSE:
     case SB_THREAT_TYPE_SUBRESOURCE_FILTER:
     case SB_THREAT_TYPE_CSD_ALLOWLIST:
@@ -426,12 +423,6 @@ void SafeBrowsingUIManager::OnBlockingPageDone(
         GetThreatTypeStringForInterstitial(resources[0].threat_type),
         /*net_error_code=*/0);
   }
-}
-
-// Static.
-GURL SafeBrowsingUIManager::GetMainFrameAllowlistUrlForResourceForTesting(
-    const security_interstitials::UnsafeResource& resource) {
-  return GetMainFrameAllowlistUrlForResource(resource);
 }
 
 security_interstitials::SecurityInterstitialPage*

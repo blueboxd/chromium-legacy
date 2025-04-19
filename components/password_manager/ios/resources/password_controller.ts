@@ -12,7 +12,7 @@ import {gCrWeb} from '//ios/web/public/js_messaging/resources/gcrweb.js';
  * It scans the DOM, extracting and storing password forms and returns a JSON
  * string representing an array of objects, each of which represents an Password
  * form with information about a form to be filled and/or submitted and it can
- * be translated to struct FormData for further processing.
+ * be translated to class FormData for further processing.
  */
 
 /**
@@ -292,8 +292,7 @@ function getPasswordInputElementForFill(
 function fillUsernameAndPassword(
     inputs: HTMLInputElement[], formData: AutofillFormData, username: string,
     password: string): FillResult {
-  const usernameRendererId: number =
-        Number(formData.fields[0]!.renderer_id);
+  const usernameRendererId: number = Number(formData.fields[0]!.renderer_id);
   let usernameInput;
   if (usernameRendererId !== Number(fillConstants.RENDERER_ID_NOT_SET)) {
     usernameInput = getUsernameInputElementForFill(inputs, usernameRendererId);
@@ -304,8 +303,7 @@ function fillUsernameAndPassword(
     }
   }
 
-  const passwordRendererId: number =
-      Number(formData.fields[1]!.renderer_id);
+  const passwordRendererId: number = Number(formData.fields[1]!.renderer_id);
   let passwordInput;
   if (passwordRendererId !== Number(fillConstants.RENDERER_ID_NOT_SET)) {
     passwordInput = getPasswordInputElementForFill(inputs, passwordRendererId);
@@ -379,7 +377,6 @@ function getPasswordFormDataList(formDataList: AutofillFormData[]) {
  * @return Object of data from formElement.
  */
 function getPasswordFormDataFromUnownedElements(): object|void {
-  const extractMask = fillConstants.EXTRACT_MASK_VALUE;
   const fieldsets: fillConstants.FormControlElement[] = [];
   const unownedControlElements =
       gCrWeb.fill.getUnownedAutofillableFormFieldElements(
@@ -388,10 +385,9 @@ function getPasswordFormDataFromUnownedElements(): object|void {
     return;
   }
   const unownedForm = new gCrWeb['common'].JSONSafeObject();
-  const hasUnownedForm =
-      gCrWeb.fill.unownedFormElementsAndFieldSetsToFormData(
-          window, fieldsets, unownedControlElements, extractMask, false,
-          unownedForm);
+  const hasUnownedForm = gCrWeb.fill.unownedFormElementsAndFieldSetsToFormData(
+      window, fieldsets, unownedControlElements, /* iframeElements= */[], false,
+      unownedForm);
   return hasUnownedForm ? unownedForm : null;
 }
 
@@ -402,11 +398,10 @@ function getPasswordFormDataFromUnownedElements(): object|void {
  */
 function getPasswordFormData(
     formElement: HTMLFormElement): AutofillFormData|null {
-  const extractMask = fillConstants.EXTRACT_MASK_VALUE;
   const formData = {} as AutofillFormData;
   const ok = gCrWeb.fill.webFormElementToFormData(
-      window, formElement, /* formControlElement=*/null, extractMask, formData,
-      /* field=*/null);
+      window, formElement, /*formControlElement=*/ null, formData,
+      /*field=*/ null);
   return ok ? formData : null;
 }
 

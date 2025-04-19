@@ -26,11 +26,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/views/accessibility/ax_aura_obj_cache.h"
-#include "ui/views/accessibility/ax_aura_obj_wrapper.h"
-#include "ui/views/accessibility/ax_event_manager.h"
-#include "ui/views/accessibility/ax_event_observer.h"
-#include "ui/views/accessibility/ax_widget_obj_wrapper.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/submenu_view.h"
@@ -40,8 +35,15 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/menu_test_utils.h"
 #include "ui/views/test/views_test_base.h"
-#include "ui/views/widget/unique_widget_ptr.h"
 #include "ui/views/widget/widget.h"
+
+#if defined(USE_AURA)
+#include "ui/views/accessibility/ax_aura_obj_cache.h"
+#include "ui/views/accessibility/ax_aura_obj_wrapper.h"
+#include "ui/views/accessibility/ax_event_manager.h"
+#include "ui/views/accessibility/ax_event_observer.h"
+#include "ui/views/accessibility/ax_widget_obj_wrapper.h"
+#endif
 
 namespace views::test {
 
@@ -60,6 +62,7 @@ class TestButton : public Button {
 BEGIN_METADATA(TestButton)
 END_METADATA
 
+#if defined(USE_AURA)
 class TestAXEventObserver : public AXEventObserver {
  public:
   explicit TestAXEventObserver(AXAuraObjCache* cache) : cache_(cache) {
@@ -81,6 +84,7 @@ class TestAXEventObserver : public AXEventObserver {
  private:
   raw_ptr<AXAuraObjCache> cache_;
 };
+#endif
 
 }  // namespace
 
@@ -95,13 +99,13 @@ class TestTableModel : public ui::TableModel {
   size_t RowCount() override { return 10; }
 
   std::u16string GetText(size_t row, int column_id) override {
-    const char* const cells[5][4] = {
-        {"Orange", "Orange", "South america", "$5"},
-        {"Apple", "Green", "Canada", "$3"},
-        {"Blue berries", "Blue", "Mexico", "$10.3"},
-        {"Strawberries", "Red", "California", "$7"},
-        {"Cantaloupe", "Orange", "South america", "$5"},
-    };
+    const std::array<std::array<const char* const, 4>, 5> cells({
+        {{"Orange", "Orange", "South america", "$5"}},
+        {{"Apple", "Green", "Canada", "$3"}},
+        {{"Blue berries", "Blue", "Mexico", "$10.3"}},
+        {{"Strawberries", "Red", "California", "$7"}},
+        {{"Cantaloupe", "Orange", "South america", "$5"}},
+    });
 
     return base::ASCIIToUTF16(cells[row % 5][column_id]);
   }
@@ -123,7 +127,7 @@ class ViewAXPlatformNodeDelegateTest : public ViewsTestBase {
 
     widget_ = std::make_unique<Widget>();
     Widget::InitParams params =
-        CreateParams(Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
+        CreateParams(Widget::InitParams::CLIENT_OWNS_WIDGET,
                      Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     params.bounds = gfx::Rect(0, 0, 200, 200);
     widget_->Init(std::move(params));
@@ -281,9 +285,8 @@ class ViewAXPlatformNodeDelegateMenuTest
     ViewAXPlatformNodeDelegateTest::SetUp();
 
     owner_ = std::make_unique<Widget>();
-    Widget::InitParams params =
-        CreateParams(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET,
-                     Widget::InitParams::TYPE_POPUP);
+    Widget::InitParams params = CreateParams(
+        Widget::InitParams::CLIENT_OWNS_WIDGET, Widget::InitParams::TYPE_POPUP);
     owner_->Init(std::move(params));
     owner_->Show();
 
@@ -336,7 +339,7 @@ class ViewAXPlatformNodeDelegateMenuTest
   raw_ptr<SubmenuView> submenu_ = nullptr;
   // Owned by runner_.
   raw_ptr<views::TestMenuItemView> menu_ = nullptr;
-  UniqueWidgetPtr owner_;
+  std::unique_ptr<Widget> owner_;
 };
 
 TEST_F(ViewAXPlatformNodeDelegateTest, FocusBehaviorShouldAffectIgnoredState) {
@@ -363,11 +366,8 @@ TEST_F(ViewAXPlatformNodeDelegateTest, FocusBehaviorShouldAffectIgnoredState) {
 TEST_F(ViewAXPlatformNodeDelegateTest, BoundsShouldMatch) {
   gfx::Rect bounds = gfx::ToEnclosingRect(
       button_accessibility()->GetData().relative_bounds.bounds);
-  gfx::Rect screen_bounds =
-      button_accessibility()->GetUnclippedScreenBoundsRect();
 
-  EXPECT_EQ(button_->GetBoundsInScreen(), bounds);
-  EXPECT_EQ(screen_bounds, bounds);
+  EXPECT_EQ(button_->bounds(), bounds);
 }
 
 TEST_F(ViewAXPlatformNodeDelegateTest, LabelIsChildOfButton) {
@@ -1014,10 +1014,10 @@ TEST_F(ViewAXPlatformNodeDelegateTest, GetUnignoredSelection) {
   textfield_->SetSelectedRange(
       gfx::Range(expected_anchor_offset, expected_focus_offset));
 
-  // TODO(accessibility): This is not obvious, but we need to call `GetData` to
-  // refresh the text offsets and accessible name. This won't be needed anymore
-  // once we finish the ViewsAX project and remove the temporary solution.
-  // See https://crbug.com/1468416.
+  // TODO(crbug.com/1468416): This is not obvious, but we need to call `GetData`
+  // to refresh the text offsets and accessible name. This won't be needed
+  // anymore once we finish the ViewsAX project and remove the temporary
+  // solution.
   textfield_accessibility()->GetData();
 
   const ui::AXSelection selection_2 =
@@ -1220,10 +1220,9 @@ TEST_F(AXViewTest, LayoutCalledInvalidateRootView) {
   // this observer to simulate it.
   AXAuraObjCache cache;
   TestAXEventObserver observer(&cache);
-  UniqueWidgetPtr widget = std::make_unique<Widget>();
-  Widget::InitParams params =
-      CreateParams(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET,
-                   Widget::InitParams::TYPE_POPUP);
+  auto widget = std::make_unique<Widget>();
+  Widget::InitParams params = CreateParams(
+      Widget::InitParams::CLIENT_OWNS_WIDGET, Widget::InitParams::TYPE_POPUP);
   widget->Init(std::move(params));
   widget->Show();
 

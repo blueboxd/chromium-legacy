@@ -24,6 +24,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/core/xml/parser/xml_document_parser.h"
 
 #include <libxml/parser.h>
@@ -533,8 +538,9 @@ static inline void SetAttributes(
 
 static void SwitchEncoding(xmlParserCtxtPtr ctxt, bool is_8bit) {
   // Make sure we don't call xmlSwitchEncoding in an error state.
-  if ((ctxt->errNo != XML_ERR_OK) && (ctxt->disableSAX == 1))
+  if (ctxt->errNo != XML_ERR_OK) {
     return;
+  }
 
   if (is_8bit) {
     xmlSwitchEncoding(ctxt, XML_CHAR_ENCODING_8859_1);
@@ -712,9 +718,8 @@ scoped_refptr<XMLParserContext> XMLParserContext::CreateStringParser(
   InitializeLibXMLIfNecessary();
   xmlParserCtxtPtr parser =
       xmlCreatePushParserCtxt(handlers, nullptr, nullptr, 0, nullptr);
-  xmlCtxtUseOptions(parser, XML_PARSE_HUGE);
+  xmlCtxtUseOptions(parser, XML_PARSE_HUGE | XML_PARSE_NOENT);
   parser->_private = user_data;
-  parser->replaceEntities = true;
   return base::AdoptRef(new XMLParserContext(parser));
 }
 
@@ -742,13 +747,16 @@ scoped_refptr<XMLParserContext> XMLParserContext::CreateMemoryParser(
   xmlCtxtUseOptions(parser,
                     XML_PARSE_NODICT | XML_PARSE_NOENT | XML_PARSE_HUGE);
 
-  // Internal initialization
+#if LIBXML_VERSION < 21300
+  // Internal initialization required before libxml2 2.13.
+  // Fixed with https://gitlab.gnome.org/GNOME/libxml2/-/commit/8c5848bd
   parser->sax2 = 1;
   parser->instate = XML_PARSER_CONTENT;  // We are parsing a CONTENT
   parser->depth = 0;
   parser->str_xml = xmlDictLookup(parser->dict, BAD_CAST "xml", 3);
   parser->str_xmlns = xmlDictLookup(parser->dict, BAD_CAST "xmlns", 5);
   parser->str_xml_ns = xmlDictLookup(parser->dict, XML_XML_NAMESPACE, 36);
+#endif
   parser->_private = user_data;
 
   return base::AdoptRef(new XMLParserContext(parser));
@@ -1441,6 +1449,9 @@ static void NormalErrorHandler(void* closure, const char* message, ...) {
 // Using a static entity and marking it XML_INTERNAL_PREDEFINED_ENTITY is a hack
 // to avoid malloc/free. Using a global variable like this could cause trouble
 // if libxml implementation details were to change
+// TODO(https://crbug.com/344484975): The XML_INTERNAL_PREDEFINED_ENTITY is in
+// fact overridden in GetXHTMLEntity() below for all uses, so it's not
+// behaving as documented.
 static xmlChar g_shared_xhtml_entity_result[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 static xmlEntityPtr SharedXHTMLEntity() {
@@ -1449,6 +1460,9 @@ static xmlEntityPtr SharedXHTMLEntity() {
     entity.type = XML_ENTITY_DECL;
     entity.orig = g_shared_xhtml_entity_result;
     entity.content = g_shared_xhtml_entity_result;
+    // TODO(https://crbug.com/344484975): The XML_INTERNAL_PREDEFINED_ENTITY
+    // is in fact overridden in GetXHTMLEntity() below for all uses, so it's
+    // not behaving as documented.  We should only set the value in one place.
     entity.etype = XML_INTERNAL_PREDEFINED_ENTITY;
   }
   return &entity;
@@ -1534,15 +1548,20 @@ static xmlEntityPtr GetEntityHandler(void* closure, const xmlChar* name) {
   xmlParserCtxtPtr ctxt = static_cast<xmlParserCtxtPtr>(closure);
   xmlEntityPtr ent = xmlGetPredefinedEntity(name);
   if (ent) {
-    ent->etype = XML_INTERNAL_PREDEFINED_ENTITY;
+    CHECK_EQ(ent->etype, XML_INTERNAL_PREDEFINED_ENTITY);
     return ent;
   }
 
   ent = xmlGetDocEntity(ctxt->myDoc, name);
   if (!ent && GetParser(closure)->IsXHTMLDocument()) {
     ent = GetXHTMLEntity(name);
-    if (ent)
+    if (ent) {
+      // TODO(https://crbug.com/344484975): This overrides the
+      // XML_INTERNAL_PREDEFINED_ENTITY value set above for every single case.
+      // We should figure out which one is correct and only set it to one,
+      // rather than assigning one value and then always overriding it.
       ent->etype = XML_INTERNAL_GENERAL_ENTITY;
+    }
   }
 
   return ent;
@@ -1760,6 +1779,7 @@ bool XMLDocumentParser::AppendFragmentSource(const String& chunk) {
   xmlParseContent(Context());
   EndDocument();  // Close any open text nodes.
 
+#if LIBXML_VERSION < 21400
   // FIXME: If this code is actually needed, it should probably move to
   // finish()
   // XMLDocumentParserQt has a similar check (m_stream.error() ==
@@ -1775,6 +1795,7 @@ bool XMLDocumentParser::AppendFragmentSource(const String& chunk) {
            (bytes_processed >= 0 && !chunk_as_utf8.data()[bytes_processed]));
     return false;
   }
+#endif
 
   // No error if the chunk is well formed or it is not but we have no error.
   return Context()->wellFormed || !xmlCtxtGetLastError(Context());

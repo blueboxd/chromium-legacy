@@ -12,6 +12,7 @@
 #include "base/feature_list.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ash/input_method/text_field_contextual_info_fetcher.h"
 #include "chrome/browser/ash/input_method/ui/candidate_view.h"
 #include "chrome/browser/ash/input_method/ui/candidate_window_constants.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -190,11 +191,7 @@ BEGIN_METADATA(InformationTextArea)
 END_METADATA
 
 CandidateWindowView::CandidateWindowView(gfx::NativeView parent)
-    : views::BubbleDialogDelegateView(nullptr,
-                                      views::BubbleBorder::TOP_LEFT,
-                                      views::BubbleBorder::DIALOG_SHADOW,
-                                      true),
-      selected_candidate_index_in_page_(-1) {
+    : selected_candidate_index_in_page_(-1) {
   DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
   SetCanActivate(false);
   DCHECK(parent);
@@ -260,8 +257,10 @@ void CandidateWindowView::OnThemeChanged() {
 }
 
 void CandidateWindowView::UpdateVisibility() {
-  if (!candidate_area_->GetVisible() && !auxiliary_text_->GetVisible() &&
-      !preedit_->GetVisible()) {
+  if (candidate_area_->GetVisible() || auxiliary_text_->GetVisible() ||
+      preedit_->GetVisible()) {
+    SizeToContents();
+  } else {
     GetWidget()->Close();
   }
 }

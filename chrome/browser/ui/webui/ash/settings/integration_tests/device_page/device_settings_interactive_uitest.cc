@@ -3,19 +3,28 @@
 // found in the LICENSE file.
 
 #include <linux/input-event-codes.h>
+
 #include <memory>
 
 #include "ash/ash_element_identifiers.h"
 #include "ash/constants/ash_features.h"
 #include "ash/shell.h"
+#include "ash/system/brightness_control_delegate.h"
+#include "ash/system/keyboard_brightness_control_delegate.h"
 #include "ash/webui/settings/public/constants/routes.mojom-forward.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
-#include "chrome/test/base/chromeos/crosier/interactive_ash_test.h"
+#include "chrome/grit/generated_resources.h"
+#include "chrome/test/base/ash/interactive/interactive_ash_test.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "device/udev_linux/fake_udev_loader.h"
 #include "ui/base/interaction/element_identifier.h"
+#include "ui/base/interaction/state_observer.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/events/ash/keyboard_capability.h"
 #include "ui/events/devices/device_data_manager_test_api.h"
@@ -141,12 +150,27 @@ class DeviceSettingsInteractiveUiTest : public InteractiveAshTest {
       "settings-device-page",
       "settings-per-device-keyboard",
       "settings-per-device-keyboard-subsection",
-      "h2#keyboardName",
+      "per-device-subsection-header",
+      "h2#deviceName",
   };
 
   const DeepQuery kKeyboardRowQuery{
       "os-settings-ui",       "os-settings-main",      "main-page-container",
       "settings-device-page", "#perDeviceKeyboardRow",
+  };
+
+  const DeepQuery kPerDeviceKeyboardSubsectionQuery{
+      "os-settings-ui",
+      "os-settings-main",
+      "main-page-container",
+      "settings-device-page",
+      "settings-per-device-keyboard",
+      "settings-per-device-keyboard-subsection",
+  };
+
+  const DeepQuery kDisplayPageQuery{
+      "os-settings-ui",       "os-settings-main", "#mainPageContainer",
+      "settings-device-page", "settings-display",
   };
 
   // Query to pierce through Shadow DOM to find the Settings search box.
@@ -186,13 +210,14 @@ class DeviceSettingsInteractiveUiTest : public InteractiveAshTest {
   auto LaunchSettingsApp(const ui::ElementIdentifier& element_id,
                          const std::string& subpage) {
     return Steps(
-        Log(std::format("Open OS Settings to {0}", subpage)),
+        Log(base::StringPrintf("Open OS Settings to %s", subpage.c_str())),
         InstrumentNextTab(element_id, AnyBrowser()), Do([&]() {
           chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
               GetActiveUserProfile(), subpage);
         }),
         WaitForShow(element_id),
-        Log(std::format("Waiting for OS Settings {0} page to load", subpage)),
+        Log(base::StringPrintf("Waiting for OS Settings %s page to load",
+                               subpage.c_str())),
 
         Log("Waiting for OS settings audio settings page to load"),
         WaitForWebContentsReady(element_id, chrome::GetOSSettingsUrl(subpage)));
@@ -218,6 +243,10 @@ class DeviceSettingsInteractiveUiTest : public InteractiveAshTest {
 
   auto SetupInternalKeyboard() {
     return Do([&]() { fake_keyboard_manager_->AddFakeInternalKeyboard(); });
+  }
+
+  auto FocusElement(const InteractiveAshTest::DeepQuery& query) {
+    return Steps(ExecuteJsAt(webcontents_id_, query, "el => el.focus()"));
   }
 
   void SetMouseDevices(const std::vector<ui::InputDevice>& mice) {
@@ -290,7 +319,8 @@ IN_PROC_BROWSER_TEST_F(DeviceSettingsInteractiveUiTest, OpenTouchpadSubpage) {
       "settings-device-page",
       "settings-per-device-touchpad",
       "settings-per-device-touchpad-subsection",
-      "h2#touchpadName",
+      "per-device-subsection-header",
+      "h2#deviceName",
   };
 
   SetTouchpadDevices({kSampleTouchpadInternal});
@@ -329,7 +359,8 @@ IN_PROC_BROWSER_TEST_F(DeviceSettingsInteractiveUiTest, AddNewMouse) {
       "settings-device-page",
       "settings-per-device-mouse",
       "settings-per-device-mouse-subsection",
-      "h2#mouseName",
+      "per-device-subsection-header",
+      "h2#deviceName",
   };
 
   SetMouseDevices({ui::InputDevice(
@@ -434,7 +465,8 @@ IN_PROC_BROWSER_TEST_F(DeviceSettingsInteractiveUiTest, TrackpointEnabled) {
       "settings-device-page",
       "settings-per-device-pointing-stick",
       "settings-per-device-pointing-stick-subsection",
-      "h2#pointingStickName",
+      "per-device-subsection-header",
+      "h2#deviceName",
   };
   SetPointingStickDevices({kSamplePointingStickInternal});
   RunTestSequence(
@@ -471,7 +503,7 @@ class DeviceSettingsSwapPrimaryMouseButtonInteractiveUiTest
       "#dropdownMenu",
   };
 
-  const DeepQuery kCursorAcceleartorToggleQuery{
+  const DeepQuery kCursorAcceleratorToggleQuery{
       "os-settings-ui",
       "os-settings-main",
       "main-page-container",
@@ -492,7 +524,7 @@ IN_PROC_BROWSER_TEST_F(DeviceSettingsSwapPrimaryMouseButtonInteractiveUiTest,
       StateChange::Type::kExistsAndConditionTrue;
   cursor_acceleration_toggle_enabled.event =
       kCursorAccelerationToggleEnabledEvent;
-  cursor_acceleration_toggle_enabled.where = kCursorAcceleartorToggleQuery;
+  cursor_acceleration_toggle_enabled.where = kCursorAcceleratorToggleQuery;
   cursor_acceleration_toggle_enabled.test_function = "el => !el.disabled";
 
   RunTestSequence(
@@ -501,14 +533,13 @@ IN_PROC_BROWSER_TEST_F(DeviceSettingsSwapPrimaryMouseButtonInteractiveUiTest,
       Log("Waiting for per device mouse row to be visible"),
       WaitForElementExists(webcontents_id_, kMouseRowQuery),
       ClickElement(webcontents_id_, kMouseRowQuery),
-      Log("Waiting for swap primary mouse toggle to be visible"),
-      WaitForElementExists(webcontents_id_, kMouseSwapButtonDropdownQuery),
       Log("Selecting 'Right button' from the dropdown menu"),
-      ExecuteJsAt(webcontents_id_, kMouseSwapButtonDropdownQuery,
-                  "(el) => {el.selectedIndex = 1; el.dispatchEvent(new "
-                  "Event('change'));}"),
+      SelectDropdownElementOption(
+          webcontents_id_, kMouseSwapButtonDropdownQuery,
+          l10n_util::GetStringUTF8(
+              IDS_SETTINGS_PRIMARY_MOUSE_BUTTON_RIGHT_LABEL)),
       Log("Verifying that right clicking behavior has changed"),
-      MoveMouseTo(webcontents_id_, kCursorAcceleartorToggleQuery),
+      MoveMouseTo(webcontents_id_, kCursorAcceleratorToggleQuery),
       ClickMouse(ui_controls::RIGHT),
       WaitForStateChange(webcontents_id_, cursor_acceleration_toggle_enabled));
 }
@@ -528,7 +559,8 @@ IN_PROC_BROWSER_TEST_F(DeviceSettingsInteractiveUiTest, AddNewTouchpad) {
       "settings-device-page",
       "settings-per-device-touchpad",
       "settings-per-device-touchpad-subsection",
-      "h2#touchpadName",
+      "per-device-subsection-header",
+      "h2#deviceName",
   };
 
   SetTouchpadDevices({kSampleTouchpadInternal});
@@ -835,14 +867,476 @@ IN_PROC_BROWSER_TEST_F(DeviceSettingsInteractiveUiTest, KeyboardFkeys) {
                   "Event('change'));}"),
       Log("Verifying 'F12' action contains the shift shortcut"),
       WaitForDropdownContainsValue(kF12DropdownQuery, /*value=*/1),
+      InstrumentNextTab(kDevToolsId, AnyBrowser()),
       SendKeyPressAndReleaseEvent(ui::VKEY_F2,
                                   ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN),
-      InstrumentNextTab(kDevToolsId, AnyBrowser()),
       Log("Verifying that 'F12' shortcut opens the developer console"),
-      WaitForShow(kDevToolsId));
+      InAnyContext(WaitForShow(kDevToolsId)));
   // Get settings browser and verify that the window is maximized.
   Browser* browser = BrowserList::GetInstance()->get(0);
   EXPECT_TRUE(browser->window()->IsFullscreen());
+}
+
+class KeyboardAmbientLightSensorStateObserver
+    : public ui::test::ObservationStateObserver<
+          bool,
+          chromeos::PowerManagerClient,
+          chromeos::PowerManagerClient::Observer> {
+ public:
+  explicit KeyboardAmbientLightSensorStateObserver(
+      chromeos::PowerManagerClient* power_manager_client)
+      : ObservationStateObserver(power_manager_client) {
+    keyboard_ambient_light_sensor_enabled_ = true;
+  }
+  ~KeyboardAmbientLightSensorStateObserver() override = default;
+
+ private:
+  // chromeos::PowerManagerClient::Observer
+  void KeyboardAmbientLightSensorEnabledChanged(
+      const power_manager::AmbientLightSensorChange& change) override {
+    const bool enabled = change.sensor_enabled();
+    if (enabled == keyboard_ambient_light_sensor_enabled_) {
+      return;
+    }
+    keyboard_ambient_light_sensor_enabled_ = enabled;
+    OnStateObserverStateChanged(
+        /*state=*/keyboard_ambient_light_sensor_enabled_);
+  }
+
+  // ui::test::ObservationStateObserver:
+  bool GetStateObserverInitialState() const override { return true; }
+
+  bool GetKeyboardAmbientLightSensorEnabled() {
+    return keyboard_ambient_light_sensor_enabled_;
+  }
+
+  bool keyboard_ambient_light_sensor_enabled_;
+};
+
+class AmbientLightSensorStateObserver
+    : public ui::test::ObservationStateObserver<
+          bool,
+          chromeos::PowerManagerClient,
+          chromeos::PowerManagerClient::Observer> {
+ public:
+  explicit AmbientLightSensorStateObserver(
+      chromeos::PowerManagerClient* power_manager_client)
+      : ObservationStateObserver(power_manager_client) {
+    ambient_light_sensor_enabled_ = true;
+  }
+  ~AmbientLightSensorStateObserver() override = default;
+
+ private:
+  // chromeos::PowerManagerClient::Observer
+  void AmbientLightSensorEnabledChanged(
+      const power_manager::AmbientLightSensorChange& change) override {
+    const bool enabled = change.sensor_enabled();
+    if (enabled == ambient_light_sensor_enabled_) {
+      return;
+    }
+    ambient_light_sensor_enabled_ = enabled;
+    OnStateObserverStateChanged(
+        /*state=*/ambient_light_sensor_enabled_);
+  }
+
+  // ui::test::ObservationStateObserver:
+  bool GetStateObserverInitialState() const override { return true; }
+  bool GetAmbientLightSensorEnabled() { return ambient_light_sensor_enabled_; }
+  bool ambient_light_sensor_enabled_;
+};
+
+class DeviceSettingsBrightnessInteractiveUiTest
+    : public DeviceSettingsInteractiveUiTest {
+ public:
+  DeviceSettingsBrightnessInteractiveUiTest() {
+    feature_list_.Reset();
+    feature_list_.InitWithFeatures(
+        {features::kInputDeviceSettingsSplit,
+         features::kPeripheralCustomization,
+         features::kEnableKeyboardBacklightControlInSettings,
+         features::kEnableBrightnessControlInSettings},
+        {});
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(DeviceSettingsBrightnessInteractiveUiTest,
+                       ToggleDisplayAutoBrightness) {
+  DEFINE_LOCAL_STATE_IDENTIFIER_VALUE(AmbientLightSensorStateObserver,
+                                      kAmbientLightSensorEnabledState);
+  const DeepQuery kAmbientLightSensorToggle{
+      "os-settings-ui",     "os-settings-main",
+      "#mainPageContainer", "settings-device-page",
+      "settings-display",   "cr-toggle#autoBrightnessToggle",
+  };
+  chromeos::FakePowerManagerClient::Get()->set_has_ambient_light_sensor(true);
+
+  RunTestSequence(
+      Log("Opening OS settings system web app"),
+      LaunchSettingsApp(webcontents_id_,
+                        chromeos::settings::mojom::kDisplaySubpagePath),
+
+      Log("Verifying ambient light sensor state"),
+      ObserveState(kAmbientLightSensorEnabledState,
+                   std::make_unique<AmbientLightSensorStateObserver>(
+                       chromeos::PowerManagerClient::Get())),
+      WaitForState(kAmbientLightSensorEnabledState, true),
+      WaitForElementExists(webcontents_id_, kDisplayPageQuery),
+      ExecuteJsAt(
+          webcontents_id_, kDisplayPageQuery,
+          "(display_page) => { if (display_page) { "
+          "display_page.selectedDisplay = {"
+          "  isInternal: true"
+          "};"
+          "display_page.notifyPath('selectedDisplay.isInternal', true); "
+          "}}"),
+
+      Log("Waiting for ambient light sensor toggle to exist"),
+      WaitForElementExists(webcontents_id_, kAmbientLightSensorToggle),
+
+      Log("Waiting for toggle to be checked"),
+      WaitForToggleState(webcontents_id_, kAmbientLightSensorToggle, true),
+
+      Log("Clicking ambient light sensor toggle"),
+      ClickElement(webcontents_id_, kAmbientLightSensorToggle),
+
+      Log("Waiting for ambient light sensor to be disabled"),
+      WaitForState(kAmbientLightSensorEnabledState, false),
+
+      Log("Waiting for the toggle to be unchecked"),
+      WaitForToggleState(webcontents_id_, kAmbientLightSensorToggle, false),
+
+      Log("Clicking ambient light sensor toggle again"),
+      ClickElement(webcontents_id_, kAmbientLightSensorToggle),
+
+      Log("Waiting for ambient light sensor to be enabled"),
+      WaitForState(kAmbientLightSensorEnabledState, true),
+
+      Log("Waiting for the toggle to be checked again"),
+      WaitForToggleState(webcontents_id_, kAmbientLightSensorToggle, true));
+}
+
+IN_PROC_BROWSER_TEST_F(DeviceSettingsBrightnessInteractiveUiTest,
+                       ToggleKeyboardAutoBrightness) {
+  DEFINE_LOCAL_STATE_IDENTIFIER_VALUE(KeyboardAmbientLightSensorStateObserver,
+                                      kKeyboardAmbientLightSensorEnabledState);
+
+  const DeepQuery kKeyboardAmbientLightSensorToggle{
+      "os-settings-ui",
+      "os-settings-main",
+      "#mainPageContainer",
+      "settings-device-page",
+      "settings-per-device-keyboard",
+      "settings-per-device-keyboard-subsection",
+      "#keyboardAutoBrightnessToggle",
+  };
+
+  RunTestSequence(
+      SetupInternalKeyboard(), Log("Opening OS settings system web app"),
+      LaunchSettingsApp(
+          webcontents_id_,
+          chromeos::settings::mojom::kPerDeviceKeyboardSubpagePath),
+
+      Log("Verifying keyboard ambient light sensor state"),
+      ObserveState(kKeyboardAmbientLightSensorEnabledState,
+                   std::make_unique<KeyboardAmbientLightSensorStateObserver>(
+                       chromeos::PowerManagerClient::Get())),
+      WaitForState(kKeyboardAmbientLightSensorEnabledState, true),
+
+      Log("Manually setting hasKeyboardBacklight and hasAmbientLightSensor to "
+          "true."),
+      WaitForElementExists(webcontents_id_, kPerDeviceKeyboardSubsectionQuery),
+      ExecuteJsAt(webcontents_id_, kPerDeviceKeyboardSubsectionQuery,
+                  "(subsection) => { if (subsection) { "
+                  "subsection.hasKeyboardBacklight = true; "
+                  "subsection.hasAmbientLightSensor = true; "
+                  "subsection.notifyPath('hasKeyboardBacklight', true); "
+                  "subsection.notifyPath('hasAmbientLightSensor', true); "
+                  "}}"),
+
+      Log("Waiting for keyboard ambient light sensor toggle to exist"),
+      WaitForElementExists(webcontents_id_, kKeyboardAmbientLightSensorToggle),
+
+      Log("Waiting for toggle to be checked"),
+      WaitForToggleState(webcontents_id_, kKeyboardAmbientLightSensorToggle,
+                         true),
+
+      Log("Clicking keyboard ambient light sensor toggle"),
+      ClickElement(webcontents_id_, kKeyboardAmbientLightSensorToggle),
+
+      Log("Waiting for keyboard ambient light sensor to be disabled"),
+      WaitForState(kKeyboardAmbientLightSensorEnabledState, false),
+
+      Log("Waiting for toggle to be unchecked"),
+      WaitForToggleState(webcontents_id_, kKeyboardAmbientLightSensorToggle,
+                         false),
+
+      Log("Clicking keyboard ambient light sensor toggle again"),
+      ClickElement(webcontents_id_, kKeyboardAmbientLightSensorToggle),
+
+      Log("Waiting for keyboard ambient light sensor to be enabled"),
+      WaitForState(kKeyboardAmbientLightSensorEnabledState, true),
+
+      Log("Waiting for toggle to be checked again"),
+      WaitForToggleState(webcontents_id_, kKeyboardAmbientLightSensorToggle,
+                         true));
+}
+
+IN_PROC_BROWSER_TEST_F(DeviceSettingsBrightnessInteractiveUiTest,
+                       AdjustDisplayBrightness) {
+  DEFINE_LOCAL_CUSTOM_ELEMENT_EVENT_TYPE(kFakeDisplaySliderExists);
+  DEFINE_LOCAL_STATE_IDENTIFIER_VALUE(AmbientLightSensorStateObserver,
+                                      kAmbientLightSensorEnabledState);
+
+  const DeepQuery kAmbientLightSensorToggle{
+      "os-settings-ui",     "os-settings-main",
+      "#mainPageContainer", "settings-device-page",
+      "settings-display",   "cr-toggle#autoBrightnessToggle",
+  };
+
+  const DeepQuery kDisplaySlider{
+      "os-settings-ui",       "os-settings-main", "#mainPageContainer",
+      "settings-device-page", "settings-display", "#brightnessSlider",
+  };
+
+  // Lambda function to get the current brightness.
+  auto get_display_brightness = [](double* out_brightness) {
+    base::RunLoop run_loop;
+    Shell::Get()->brightness_control_delegate()->GetBrightnessPercent(
+        base::BindOnce(
+            [](double* out_brightness, base::RunLoop* run_loop,
+               std::optional<double> brightness) {
+              *out_brightness = brightness.value_or(0.0);
+              run_loop->Quit();
+            },
+            out_brightness, &run_loop));
+    run_loop.Run();
+  };
+
+  double initial_brightness;
+  get_display_brightness(&initial_brightness);
+
+  StateChange fake_brightness_slider_exists;
+  fake_brightness_slider_exists.type = StateChange::Type::kExists;
+  fake_brightness_slider_exists.event = kFakeDisplaySliderExists;
+  fake_brightness_slider_exists.where = kDisplaySlider;
+
+  // Set device to have an ambient light sensor.
+  chromeos::FakePowerManagerClient::Get()->set_has_ambient_light_sensor(true);
+
+  RunTestSequence(
+      Log("Opening OS settings system web app"),
+      LaunchSettingsApp(webcontents_id_,
+                        chromeos::settings::mojom::kDisplaySubpagePath),
+
+      Log("Verifying ambient light sensor state"),
+      ObserveState(kAmbientLightSensorEnabledState,
+                   std::make_unique<AmbientLightSensorStateObserver>(
+                       chromeos::PowerManagerClient::Get())),
+      WaitForState(kAmbientLightSensorEnabledState, true),
+      WaitForElementExists(webcontents_id_, kDisplayPageQuery),
+      ExecuteJsAt(
+          webcontents_id_, kDisplayPageQuery,
+          "(display_page) => { if (display_page) { "
+          "display_page.selectedDisplay = {"
+          "  isInternal: true"
+          "};"
+          "display_page.notifyPath('selectedDisplay.isInternal', true); "
+          "}}"),
+
+      Log("Waiting for the ambient light sensor toggle to exist"),
+      WaitForElementExists(webcontents_id_, kAmbientLightSensorToggle),
+
+      Log("Waiting for display brightness slider to exist"),
+      WaitForElementExists(webcontents_id_, kDisplaySlider),
+
+      Log("Waiting for the toggle to be checked"),
+      WaitForToggleState(webcontents_id_, kAmbientLightSensorToggle, true),
+
+      Log("Move display brightness slider towards right"),
+      FocusElement(kDisplaySlider),
+      SendAccelerator(
+          webcontents_id_,
+          ui::Accelerator{ui::KeyboardCode::VKEY_RIGHT, ui::EF_NONE}),
+
+      Log("Waiting for display brighntess slider to be changed"),
+      WaitForStateChange(webcontents_id_, fake_brightness_slider_exists),
+
+      Log("Waiting for ambient light sensor to be disabled"),
+      WaitForState(kAmbientLightSensorEnabledState, false),
+
+      Log("Waiting for toggle to be unchecked"),
+      WaitForToggleState(webcontents_id_, kAmbientLightSensorToggle, false));
+
+  double current_brightness;
+  get_display_brightness(&current_brightness);
+  // Current brightness should be greater than initial brightness.
+  EXPECT_GE(current_brightness, initial_brightness);
+  initial_brightness = current_brightness;
+
+  RunTestSequence(
+      Log("Move display brightness slider to left"),
+      SendAccelerator(
+          webcontents_id_,
+          ui::Accelerator{ui::KeyboardCode::VKEY_LEFT, ui::EF_NONE}),
+      Log("Waiting for brighntess slider to be changed"),
+      WaitForStateChange(webcontents_id_, fake_brightness_slider_exists));
+
+  get_display_brightness(&current_brightness);
+  // Current brightness should be less than initial brighntess.
+  EXPECT_LE(current_brightness, initial_brightness);
+}
+
+IN_PROC_BROWSER_TEST_F(DeviceSettingsBrightnessInteractiveUiTest,
+                       NavigateToRgbCustomization) {
+  DEFINE_LOCAL_ELEMENT_IDENTIFIER_VALUE(kRgbKeyboardCustomizationSectionId);
+
+  const DeepQuery kKeyboardColorsQuery{
+      "os-settings-ui",
+      "os-settings-main",
+      "#mainPageContainer",
+      "settings-device-page",
+      "settings-per-device-keyboard",
+      "settings-per-device-keyboard-subsection",
+      "#rgbKeyboardControlLink",
+  };
+
+  RunTestSequence(
+      SetupInternalKeyboard(),
+      LaunchSettingsApp(
+          webcontents_id_,
+          chromeos::settings::mojom::kPerDeviceKeyboardSubpagePath),
+      Log("Manually enabling RGB keyboard support."),
+      WaitForElementExists(webcontents_id_, kPerDeviceKeyboardSubsectionQuery),
+      ExecuteJsAt(webcontents_id_, kPerDeviceKeyboardSubsectionQuery,
+                  "(subsection) => { if (subsection) { "
+                  "subsection.isRgbKeyboardSupported = true; "
+                  "subsection.notifyPath('isRgbKeyboardSupported', true); "
+                  "}}"),
+      Log("Waiting for keyboard colors section to exist"),
+      WaitForElementExists(webcontents_id_, kKeyboardColorsQuery),
+      Log("Clicking the keyboard colors section"),
+      ClickElement(webcontents_id_, kKeyboardColorsQuery),
+      Log("Verifying rgb customization page is open"),
+      InstrumentNextTab(kRgbKeyboardCustomizationSectionId, AnyBrowser()),
+      WaitForShow(kRgbKeyboardCustomizationSectionId));
+}
+
+IN_PROC_BROWSER_TEST_F(DeviceSettingsBrightnessInteractiveUiTest,
+                       AdjustKeyboardBrightness) {
+  DEFINE_LOCAL_CUSTOM_ELEMENT_EVENT_TYPE(kFakeKeyboardSliderExists);
+  DEFINE_LOCAL_STATE_IDENTIFIER_VALUE(KeyboardAmbientLightSensorStateObserver,
+                                      kKeyboardAmbientLightSensorEnabledState);
+
+  const DeepQuery kKeyboardSlider{
+      "os-settings-ui",
+      "os-settings-main",
+      "#mainPageContainer",
+      "settings-device-page",
+      "settings-per-device-keyboard",
+      "settings-per-device-keyboard-subsection",
+      "#keyboardBrightnessSlider",
+  };
+
+  const DeepQuery kKeyboardAmbientLightSensorToggle{
+      "os-settings-ui",
+      "os-settings-main",
+      "#mainPageContainer",
+      "settings-device-page",
+      "settings-per-device-keyboard",
+      "settings-per-device-keyboard-subsection",
+      "#keyboardAutoBrightnessToggle",
+  };
+
+  // Lambda function to get the current brightness.
+  auto get_keyboard_brightness = [](double* out_brightness) {
+    base::RunLoop run_loop;
+    Shell::Get()
+        ->keyboard_brightness_control_delegate()
+        ->HandleGetKeyboardBrightness(base::BindOnce(
+            [](double* out_brightness, base::RunLoop* run_loop,
+               std::optional<double> brightness) {
+              *out_brightness = brightness.value_or(0.0);
+              run_loop->Quit();
+            },
+            out_brightness, &run_loop));
+    run_loop.Run();
+  };
+
+  double initial_brightness;
+  get_keyboard_brightness(&initial_brightness);
+
+  StateChange fake_keyboard_slider_exists;
+  fake_keyboard_slider_exists.type = StateChange::Type::kExists;
+  fake_keyboard_slider_exists.event = kFakeKeyboardSliderExists;
+  fake_keyboard_slider_exists.where = kKeyboardSlider;
+
+  // Set device to have an ambient light sensor.
+  chromeos::FakePowerManagerClient::Get()->set_has_ambient_light_sensor(true);
+
+  RunTestSequence(
+      SetupInternalKeyboard(), Log("Opening OS settings system web app"),
+      LaunchSettingsApp(
+          webcontents_id_,
+          chromeos::settings::mojom::kPerDeviceKeyboardSubpagePath),
+
+      Log("Verifying keyboard ambient light sensor state"),
+      ObserveState(kKeyboardAmbientLightSensorEnabledState,
+                   std::make_unique<KeyboardAmbientLightSensorStateObserver>(
+                       chromeos::PowerManagerClient::Get())),
+      WaitForState(kKeyboardAmbientLightSensorEnabledState, true),
+
+      Log("Manually setting hasKeyboardBacklight to true"),
+      WaitForElementExists(webcontents_id_, kPerDeviceKeyboardSubsectionQuery),
+      ExecuteJsAt(webcontents_id_, kPerDeviceKeyboardSubsectionQuery,
+                  "(subsection) => { if (subsection) { "
+                  "subsection.hasKeyboardBacklight = true; "
+                  "subsection.notifyPath('hasKeyboardBacklight', true); "
+                  "}}"),
+
+      Log("Waiting for keyboard ambient light sensor toggle to exist"),
+      WaitForElementExists(webcontents_id_, kKeyboardAmbientLightSensorToggle),
+
+      Log("Waiting for keyboard brightness slider to exist"),
+      WaitForElementExists(webcontents_id_, kKeyboardSlider),
+
+      Log("Waiting for toggle to be checked"),
+      WaitForToggleState(webcontents_id_, kKeyboardAmbientLightSensorToggle,
+                         true),
+
+      Log("Move keyboard brightness slider towards right"),
+      FocusElement(kKeyboardSlider),
+      SendAccelerator(
+          webcontents_id_,
+          ui::Accelerator{ui::KeyboardCode::VKEY_RIGHT, ui::EF_NONE}),
+
+      Log("Waiting for keyboard brighntess slider to be changed"),
+      WaitForStateChange(webcontents_id_, fake_keyboard_slider_exists),
+
+      Log("Waiting for keyboard ambient light sensor to be disabled, because "
+          "user change brightness"),
+      WaitForState(kKeyboardAmbientLightSensorEnabledState, false),
+
+      Log("Waiting for toggle to be unchecked"),
+      WaitForToggleState(webcontents_id_, kKeyboardAmbientLightSensorToggle,
+                         false));
+
+  double current_brightness;
+  get_keyboard_brightness(&current_brightness);
+  // Current brightness should be greater than initial brightness.
+  EXPECT_GE(current_brightness, initial_brightness);
+  initial_brightness = current_brightness;
+
+  RunTestSequence(
+      Log("Move keyboard brightness slider towards left"),
+      SendAccelerator(
+          webcontents_id_,
+          ui::Accelerator{ui::KeyboardCode::VKEY_LEFT, ui::EF_NONE}),
+      Log("Waiting for keyboard brighntess slider to be changed"),
+      WaitForStateChange(webcontents_id_, fake_keyboard_slider_exists));
+
+  get_keyboard_brightness(&current_brightness);
+  // Current brightness should be less than initial brighntess.
+  EXPECT_LE(current_brightness, initial_brightness);
 }
 
 }  // namespace

@@ -16,7 +16,7 @@
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/navigation_request_info.h"
-#include "content/browser/service_worker/service_worker_container_host.h"
+#include "content/browser/service_worker/service_worker_client.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_main_resource_handle.h"
@@ -146,16 +146,14 @@ void ServiceWorkerMainResourceLoaderInterceptor::MaybeCreateLoader(
     return;
   }
 
-  // If this is the first request before redirects, a container info and
-  // container host has not yet been created.
-  if (!handle_->has_container_info()) {
-    // Create the ServiceWorkerContainerHost. Its lifetime is bound to
-    // `container_info`.
-    DCHECK(!handle_->service_worker_client());
+  // If this is the first request before redirects, the
+  // ScopedServiceWorkerClient has not yet been created.
+  if (!handle_->scoped_service_worker_client()) {
     if (blink::IsRequestDestinationFrame(request_destination_)) {
       handle_->set_service_worker_client(
-          context_core->CreateServiceWorkerClientForWindow(
-              are_ancestors_secure_, frame_tree_node_id_));
+          context_core->service_worker_client_owner()
+              .CreateServiceWorkerClientForWindow(are_ancestors_secure_,
+                                                  frame_tree_node_id_));
     } else {
       DCHECK(request_destination_ ==
                  network::mojom::RequestDestination::kWorker ||
@@ -163,9 +161,10 @@ void ServiceWorkerMainResourceLoaderInterceptor::MaybeCreateLoader(
                  network::mojom::RequestDestination::kSharedWorker);
 
       handle_->set_service_worker_client(
-          context_core->CreateServiceWorkerClientForWorker(
-              process_id_,
-              absl::ConvertVariantTo<ServiceWorkerClientInfo>(*worker_token_)));
+          context_core->service_worker_client_owner()
+              .CreateServiceWorkerClientForWorker(
+                  process_id_, absl::ConvertVariantTo<ServiceWorkerClientInfo>(
+                                   *worker_token_)));
     }
     CHECK(handle_->service_worker_client());
 
@@ -266,9 +265,7 @@ void ServiceWorkerMainResourceLoaderInterceptor::CompleteWithoutLoader(
   if (service_worker_client && service_worker_client->controller()) {
     std::move(loader_callback)
         .Run(NavigationLoaderInterceptor::Result(
-            /*factory=*/nullptr,
-            ServiceWorkerClient::MaybeCreateSubresourceLoaderParams(
-                service_worker_client)));
+            /*factory=*/nullptr, SubresourceLoaderParams()));
     return;
   }
 

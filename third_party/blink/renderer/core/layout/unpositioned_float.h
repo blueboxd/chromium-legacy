@@ -34,6 +34,8 @@ struct CORE_EXPORT UnpositionedFloat final {
                     const BfcOffset& origin_bfc_offset,
                     const ConstraintSpace& parent_space,
                     const ComputedStyle& parent_style,
+                    LayoutUnit fragmentainer_block_size,
+                    LayoutUnit fragmentainer_block_offset,
                     bool is_hidden_for_paint)
       : node(node),
         token(token),
@@ -43,6 +45,8 @@ struct CORE_EXPORT UnpositionedFloat final {
         origin_bfc_offset(origin_bfc_offset),
         parent_space(parent_space),
         parent_style(parent_style),
+        fragmentainer_block_size(fragmentainer_block_size),
+        fragmentainer_block_offset(fragmentainer_block_offset),
         is_hidden_for_paint(is_hidden_for_paint) {}
 
   BlockNode node;
@@ -54,6 +58,8 @@ struct CORE_EXPORT UnpositionedFloat final {
   const BfcOffset origin_bfc_offset;
   const ConstraintSpace& parent_space;
   const ComputedStyle& parent_style;
+  LayoutUnit fragmentainer_block_size;
+  LayoutUnit fragmentainer_block_offset;
   bool is_hidden_for_paint;
 
   // layout_result and margins are used as a cache when measuring the
@@ -69,6 +75,17 @@ struct CORE_EXPORT UnpositionedFloat final {
   }
   EClear ClearType(TextDirection cb_direction) const {
     return node.Style().Clear(cb_direction);
+  }
+
+  // Same as blink::FragmentainerSpaceLeft(), but with a different signature.
+  LayoutUnit FragmentainerSpaceLeft() const {
+    LayoutUnit space = fragmentainer_block_size - fragmentainer_block_offset;
+    return space.ClampNegativeToZero();
+  }
+
+  // Same as blink::FragmentainerOffsetAtBfc(), but with a different signature.
+  LayoutUnit FragmentainerOffsetAtBfc() const {
+    return fragmentainer_block_offset - parent_space.ExpectedBfcBlockOffset();
   }
 };
 

@@ -632,10 +632,12 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
                            IsolatedOriginsRemovedWhenBrowserContextDestroyed);
   FRIEND_TEST_ALL_PREFIXES(ChildProcessSecurityPolicyTest,
                            IsolateAllSuborigins);
-  FRIEND_TEST_ALL_PREFIXES(ChildProcessSecurityPolicyTest,
-                           WildcardAndNonWildcardOrigins);
-  FRIEND_TEST_ALL_PREFIXES(ChildProcessSecurityPolicyTest,
-                           WildcardAndNonWildcardEmbedded);
+  FRIEND_TEST_ALL_PREFIXES(
+      ChildProcessSecurityPolicyTest_NoOriginKeyedProcessesByDefault,
+      WildcardAndNonWildcardOrigins);
+  FRIEND_TEST_ALL_PREFIXES(
+      ChildProcessSecurityPolicyTest_NoOriginKeyedProcessesByDefault,
+      WildcardAndNonWildcardEmbedded);
   FRIEND_TEST_ALL_PREFIXES(ChildProcessSecurityPolicyTest,
                            ParseIsolatedOrigins);
   FRIEND_TEST_ALL_PREFIXES(ChildProcessSecurityPolicyTest, WildcardDefaultPort);
@@ -870,6 +872,10 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
                                           const GURL& url,
                                           bool url_is_for_opaque_origin,
                                           AccessType access_type);
+
+  // Helper used by CanAccessOrigin to impose additional restrictions on a
+  // process that only hosts PDF documents.
+  bool IsAccessAllowedForPdfProcess(AccessType access_type);
 
   // Utility function to simplify lookups for OriginAgentClusterOptInEntry
   // values by origin.

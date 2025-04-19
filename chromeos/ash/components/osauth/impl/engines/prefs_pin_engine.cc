@@ -114,7 +114,8 @@ void PrefsPinEngine::CleanUp(CleanupCallback callback) {
 
 void PrefsPinEngine::StopAuthFlow(ShutdownCallback callback) {
   observer_ = nullptr;
-  std::move(callback).Run(GetFactor());
+  shutdown_callback_ = std::move(callback);
+  core_->EndAuthSession(this);
 }
 
 AuthProofToken PrefsPinEngine::StoreAuthenticationContext() {
@@ -147,14 +148,6 @@ void PrefsPinEngine::OnCryptohomeAuthSessionStarted() {
   const AuthFactorsConfiguration& config =
       core_->GetCurrentContext()->GetAuthFactorsConfiguration();
 
-  // The following signals to `CryptohomeCore` the end of communication with
-  // `PrefsPinEngine`. We now know if cryptohome pins are supported or not.
-  // This will remove `PrefsPinEngine` from the list of `CryptohomeCore`
-  // clients, thus allowing `CryptohomeCore` to proceed with auth session
-  // invalidation when the remaining `CryptohomeBasedEngines`s trigger
-  // `StopAuthFlow`.
-  core_->EndAuthSession(this);
-
   if (!config.get_supported_factors().Has(cryptohome::AuthFactorType::kPin)) {
     is_supported_ = true;
     observer_->OnFactorPresenceChecked(GetFactor(), true);
@@ -167,7 +160,9 @@ void PrefsPinEngine::OnAuthSessionStartFailure() {}
 
 void PrefsPinEngine::OnAuthFactorUpdate(cryptohome::AuthFactorRef factor) {}
 
-void PrefsPinEngine::OnCryptohomeAuthSessionFinished() {}
+void PrefsPinEngine::OnCryptohomeAuthSessionFinished() {
+  std::move(shutdown_callback_).Run(GetFactor());
+}
 
 void PrefsPinEngine::OnCryptohomeReady(CommonInitCallback callback,
                                        bool service_available) {

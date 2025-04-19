@@ -190,7 +190,6 @@ class ScrollIntoViewBrowserTestBase : public ContentBrowserTest {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ContentBrowserTest::SetUpCommandLine(command_line);
     IsolateAllSitesForTesting(command_line);
 
     // Need this to control page scale factor via script or check for root
@@ -442,7 +441,7 @@ class ScrollIntoViewBrowserTestBase : public ContentBrowserTest {
 
   // Calls `func` with each FrameTreeNode in the page, starting from the root
   // and descending into the inner most frame, traversing frame tree boundaries
-  // such as fenced frames/portals.
+  // such as fenced frames.
   template <typename Function>
   void ForEachFrameFromRootToInnerMost(const Function& func) {
     FrameTreeNode* node = web_contents()->GetPrimaryFrameTree().root();

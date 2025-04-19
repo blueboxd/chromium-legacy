@@ -15,8 +15,6 @@ const char* PageNode::ToString(PageNode::EmbeddingType embedding_type) {
       return "kInvalid";
     case PageNode::EmbeddingType::kGuestView:
       return "kGuestView";
-    case PageNode::EmbeddingType::kPortal:
-      return "kPortal";
   }
   NOTREACHED_IN_MIGRATION();
 }
@@ -47,19 +45,6 @@ const char* PageNode::ToString(PageNode::LoadingState loading_state) {
       return "kLoadedBusy";
     case LoadingState::kLoadedIdle:
       return "kLoadedIdle";
-  }
-  NOTREACHED_IN_MIGRATION();
-}
-
-// static
-const char* PageNode::ToString(PageNode::PageState page_state) {
-  switch (page_state) {
-    case PageState::kActive:
-      return "kActive";
-    case PageState::kPrerendering:
-      return "kPrerendering";
-    case PageState::kBackForwardCache:
-      return "kBackForwardCache";
   }
   NOTREACHED_IN_MIGRATION();
 }

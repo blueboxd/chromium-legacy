@@ -16,7 +16,6 @@
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/policy_container_host.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
-#include "content/browser/url_loader_factory_getter.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/url_loader_throttles.h"
@@ -174,7 +173,6 @@ class KeepAliveURLLoaderService::KeepAliveURLLoaderFactoriesBase {
                   resource_request.url,
                   resource_request.attribution_reporting_src_token,
                   resource_request.devtools_request_id,
-                  resource_request.attribution_reporting_runtime_features,
                   context->attribution_context.value())
             : nullptr);
     // Adds a new loader receiver to the set held by `this`, binding the pending
@@ -525,6 +523,8 @@ void KeepAliveURLLoaderService::Shutdown() {
   // Only fetch_later_loader_factories_ needs shutdown notification to handle
   // its non-started loaders.
   fetch_later_loader_factories_->Shutdown();
+  // Notifies fetch keepalive loader factories for it to log debugging metrics.
+  url_loader_factories_->Shutdown();
 }
 
 size_t KeepAliveURLLoaderService::NumLoadersForTesting() const {

@@ -12,24 +12,14 @@
 namespace ui {
 namespace ime {
 
-AnnouncementLabel::AnnouncementLabel(const std::u16string& name)
-    : label_name_(name) {}
+AnnouncementLabel::AnnouncementLabel(const std::u16string& name) {
+  GetViewAccessibility().SetRole(ax::mojom::Role::kStatus);
+  GetViewAccessibility().SetName(name);
+  GetViewAccessibility().SetContainerLiveStatus("polite");
+  UpdateAccessibleDescription();
+}
 
 AnnouncementLabel::~AnnouncementLabel() = default;
-
-void AnnouncementLabel::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  Label::GetAccessibleNodeData(node_data);
-  // If there's no text to be announced, then don't make the announcement.
-  if (announcement_text_.empty()) {
-    return;
-  }
-
-  node_data->role = ax::mojom::Role::kStatus;
-  node_data->SetName(label_name_);
-  node_data->SetDescription(announcement_text_);
-  node_data->AddStringAttribute(
-      ax::mojom::StringAttribute::kContainerLiveStatus, "polite");
-}
 
 void AnnouncementLabel::AnnounceAfterDelay(const std::u16string& text,
                                            base::TimeDelta delay) {
@@ -45,12 +35,18 @@ void AnnouncementLabel::AnnounceAfterDelay(const std::u16string& text,
 void AnnouncementLabel::DoAnnouncement(const std::u16string text) {
   announcement_text_ = text;
 
-  SetAccessibleRole(ax::mojom::Role::kStatus);
-  SetAccessibleName(label_name_);
-  GetViewAccessibility().SetDescription(announcement_text_);
+  UpdateAccessibleDescription();
 
   NotifyAccessibilityEvent(ax::mojom::Event::kLiveRegionChanged,
                            /*send_native_event=*/false);
+}
+
+void AnnouncementLabel::UpdateAccessibleDescription() {
+  if (announcement_text_.empty()) {
+    GetViewAccessibility().RemoveDescription();
+  } else {
+    GetViewAccessibility().SetDescription(announcement_text_);
+  }
 }
 
 BEGIN_METADATA(AnnouncementLabel)

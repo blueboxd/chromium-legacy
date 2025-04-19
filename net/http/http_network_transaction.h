@@ -35,6 +35,7 @@
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/socket/connection_attempts.h"
 #include "net/ssl/ssl_config.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_versions.h"
 #include "net/websockets/websocket_handshake_stream_base.h"
 
 namespace net {
@@ -77,6 +78,7 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   void StopCaching() override;
   int64_t GetTotalReceivedBytes() const override;
   int64_t GetTotalSentBytes() const override;
+  int64_t GetReceivedBodyBytes() const override;
   void DoneReading() override;
   const HttpResponseInfo* GetResponseInfo() const override;
   LoadState GetLoadState() const override;
@@ -123,6 +125,11 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   void OnNeedsClientAuth(SSLCertRequestInfo* cert_info) override;
 
   void OnQuicBroken() override;
+
+  void OnSwitchesToHttpStreamPool(
+      HttpStreamKey stream_key,
+      quic::ParsedQuicVersion quic_version) override;
+
   ConnectionAttempts GetConnectionAttempts() const override;
 
  private:
@@ -498,6 +505,14 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
 
   // Set to true when the server required HTTP/1.1 fallback.
   bool http_1_1_was_required_ = false;
+
+  // If set, these values are used as DNS resolution times, rather than
+  // using DNS times coming from the established stream.
+  base::TimeTicks dns_resolution_start_time_override_;
+  base::TimeTicks dns_resolution_end_time_override_;
+
+  // The number of bytes of the body received from network.
+  int64_t received_body_bytes_ = 0;
 };
 
 }  // namespace net

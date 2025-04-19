@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "components/signin/core/browser/account_reconcilor.h"
 
 #include <cstring>
@@ -1610,7 +1615,7 @@ TEST_P(AccountReconcilorDiceTestWithUnoDesktop,
       prefs::kCookieClearOnExitMigrationNoticeComplete));
 
   // Changing cookie settings should trigger the migration.
-
+  test_signin_client()->set_are_signin_cookies_deleted_on_exit(false);
   reconcilor->OnContentSettingChanged(
       /*primary_pattern=*/ContentSettingsPattern(),
       /*secondary_pattern=*/ContentSettingsPattern(),
@@ -1651,7 +1656,7 @@ TEST_P(AccountReconcilorDiceTestWithUnoDesktop,
   ASSERT_FALSE(identity_test_env()->identity_manager()->HasPrimaryAccount(
       signin::ConsentLevel::kSignin));
 
-  // Implicit signin is auto-migrated.
+  // Signed out state is auto-migrated.
   GetMockReconcilor();
   EXPECT_EQ(is_uno_desktop_enabled(),
             pref_service()->GetBoolean(
@@ -1670,6 +1675,33 @@ TEST_P(AccountReconcilorDiceTestWithUnoDesktop, CookieSettingMigrationSync) {
   GetMockReconcilor();
   EXPECT_FALSE(pref_service()->GetBoolean(
       prefs::kCookieClearOnExitMigrationNoticeComplete));
+
+  // But is migrated on signout. Regression test for b/350888149.
+  identity_test_env()->ClearPrimaryAccount();
+  EXPECT_EQ(is_uno_desktop_enabled(),
+            pref_service()->GetBoolean(
+                prefs::kCookieClearOnExitMigrationNoticeComplete));
+}
+
+TEST_P(AccountReconcilorDiceTestWithUnoDesktop,
+       CookieSettingMigrationExplicitPref) {
+  ASSERT_FALSE(pref_service()->GetBoolean(
+      prefs::kCookieClearOnExitMigrationNoticeComplete));
+  AccountInfo account_info = identity_test_env()->MakePrimaryAccountAvailable(
+      kFakeEmail, signin::ConsentLevel::kSignin);
+  pref_service()->ClearPref(prefs::kExplicitBrowserSignin);
+  ASSERT_FALSE(pref_service()->GetBoolean(prefs::kExplicitBrowserSignin));
+
+  // Implicit signin is not auto-migrated.
+  GetMockReconcilor();
+  EXPECT_FALSE(pref_service()->GetBoolean(
+      prefs::kCookieClearOnExitMigrationNoticeComplete));
+
+  // Make the signin explicit, this triggers the migration.
+  pref_service()->SetBoolean(prefs::kExplicitBrowserSignin, true);
+  EXPECT_EQ(is_uno_desktop_enabled(),
+            pref_service()->GetBoolean(
+                prefs::kCookieClearOnExitMigrationNoticeComplete));
 }
 
 const std::vector<AccountReconcilorTestTableParam>

@@ -65,6 +65,8 @@ ci.builder(
             "updater",
             "debug_static_builder",
             "remoteexec",
+            "linux",
+            "x64",
         ],
     ),
     builderless = True,
@@ -96,6 +98,8 @@ ci.builder(
             "updater",
             "release_builder",
             "remoteexec",
+            "linux",
+            "x64",
         ],
     ),
     builderless = True,
@@ -175,6 +179,7 @@ ci.builder(
             "updater",
             "debug_static_builder",
             "remoteexec",
+            "mac",
             "x64",
         ],
     ),
@@ -209,6 +214,7 @@ ci.builder(
             "updater",
             "release_builder",
             "remoteexec",
+            "mac",
             "x64",
         ],
     ),
@@ -244,6 +250,7 @@ ci.builder(
             "updater",
             "debug_static_builder",
             "remoteexec",
+            "mac",
         ],
     ),
     builderless = True,
@@ -278,6 +285,7 @@ ci.builder(
             "updater",
             "release_builder",
             "remoteexec",
+            "mac",
         ],
     ),
     builderless = True,
@@ -312,6 +320,7 @@ ci.builder(
             "asan",
             "debug_static_builder",
             "remoteexec",
+            "mac",
             "x64",
         ],
     ),
@@ -322,54 +331,6 @@ ci.builder(
     console_view_entry = consoles.console_view_entry(
         category = "debug|mac",
         short_name = "bld-asan",
-    ),
-)
-
-ci.thin_tester(
-    name = "mac10.15-updater-tester-dbg",
-    triggered_by = ["mac-updater-builder-dbg"],
-    builder_spec = builder_config.builder_spec(
-        execution_mode = builder_config.execution_mode.TEST,
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = [
-                "mb",
-            ],
-            build_config = builder_config.build_config.DEBUG,
-            target_bits = 64,
-            target_platform = builder_config.target_platform.MAC,
-        ),
-    ),
-    console_view_entry = consoles.console_view_entry(
-        category = "debug|mac",
-        short_name = "10.15",
-    ),
-)
-
-ci.thin_tester(
-    name = "mac10.15-updater-tester-rel",
-    triggered_by = ["mac-updater-builder-rel"],
-    builder_spec = builder_config.builder_spec(
-        execution_mode = builder_config.execution_mode.TEST,
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = [
-                "mb",
-            ],
-            build_config = builder_config.build_config.RELEASE,
-            target_bits = 64,
-            target_platform = builder_config.target_platform.MAC,
-        ),
-    ),
-    console_view_entry = consoles.console_view_entry(
-        category = "release|mac",
-        short_name = "10.15",
     ),
 )
 
@@ -586,6 +547,8 @@ ci.builder(
             "updater",
             "debug_static_builder",
             "remoteexec",
+            "win",
+            "x64",
         ],
     ),
     builderless = True,
@@ -620,6 +583,7 @@ ci.builder(
             "remoteexec",
             "x86",
             "no_symbols",
+            "win",
         ],
     ),
     builderless = True,
@@ -654,6 +618,8 @@ ci.builder(
             "updater",
             "release_builder",
             "remoteexec",
+            "win",
+            "x64",
         ],
     ),
     builderless = True,
@@ -686,6 +652,7 @@ ci.builder(
             "updater",
             "release_builder",
             "remoteexec",
+            "win",
             "x86",
         ],
     ),

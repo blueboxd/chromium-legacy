@@ -34,8 +34,7 @@ class SchedulerTest : public testing::Test {
  public:
   SchedulerTest()
       : sync_point_manager_(new SyncPointManager),
-        scheduler_(new Scheduler(sync_point_manager_.get(), GpuPreferences())) {
-  }
+        scheduler_(new Scheduler(sync_point_manager_.get())) {}
 
  protected:
   void SetUp() override {
@@ -227,7 +226,7 @@ class SchedulerTaskRunOrderTest : public SchedulerTest {
     }
 
     auto info_it = sequence_info_.find(sequence_key);
-    DCHECK(info_it != sequence_info_.end());
+    CHECK(info_it != sequence_info_.end());
 
     auto closure = GetClosure([this, task_id, sequence_key, release] {
       if (release) {

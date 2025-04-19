@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/time/time.h"
+#include "cc/input/browser_controls_offset_tags_info.h"
 #include "cc/slim/layer.h"
 #include "cc/slim/layer_tree.h"
 #include "cc/slim/surface_layer.h"
@@ -121,6 +122,28 @@ void DelegatedFrameHostAndroid::SetIsFrameSinkIdOwner(bool is_owner) {
         frame_sink_id_, this, viz::ReportFirstSurfaceActivation::kNo);
     host_frame_sink_manager_->SetFrameSinkDebugLabel(
         frame_sink_id_, "DelegatedFrameHostAndroid");
+  }
+}
+
+void DelegatedFrameHostAndroid::RegisterOffsetTags(
+    const cc::BrowserControlsOffsetTagsInfo& tags_info) {
+  const viz::OffsetTag top_controls_offset_tag =
+      tags_info.top_controls_offset_tag;
+  if (!top_controls_offset_tag.IsEmpty()) {
+    int top_controls_height = tags_info.top_controls_height;
+    viz::OffsetTagConstraints top_controls_constraints(0, 0,
+                                                       -top_controls_height, 0);
+    content_layer_->RegisterOffsetTag(top_controls_offset_tag,
+                                      top_controls_constraints);
+  }
+}
+
+void DelegatedFrameHostAndroid::UnregisterOffsetTags(
+    const cc::BrowserControlsOffsetTagsInfo& tags_info) {
+  const viz::OffsetTag top_controls_offset_tag =
+      tags_info.top_controls_offset_tag;
+  if (!top_controls_offset_tag.IsEmpty()) {
+    content_layer_->UnregisterOffsetTag(top_controls_offset_tag);
   }
 }
 
@@ -262,7 +285,16 @@ void DelegatedFrameHostAndroid::ResetFallbackToFirstNavigationSurface() {
       !first_local_surface_id_after_navigation_.is_valid()) {
     // If we have a valid `pre_navigation_local_surface_id_`, we must not be in
     // BFCache.
-    CHECK(!bfcache_fallback_.is_valid());
+    {
+      // TODO(https://crbug.com/349073060): Remove the scope when the bug is
+      // fixed.
+      SCOPED_CRASH_KEY_STRING64("crbug/349073060", "bfc_fallback_crashed",
+                                bfcache_fallback_.ToString().c_str());
+      SCOPED_CRASH_KEY_STRING64(
+          "crbug/349073060", "pre_nav_lsid_crashed",
+          pre_navigation_local_surface_id_.ToString().c_str());
+      CHECK(!bfcache_fallback_.is_valid());
+    }
     EvictDelegatedFrame(frame_evictor_->CollectSurfaceIdsForEviction());
     content_layer_->SetBackgroundColor(SkColors::kTransparent);
   }

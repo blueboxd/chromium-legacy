@@ -15,15 +15,15 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import static org.chromium.chrome.browser.tasks.tab_groups.TabGroupColorUtils.INVALID_COLOR_ID;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 
 import androidx.collection.ArraySet;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -31,7 +31,6 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.Features;
 
 import java.util.Set;
 
@@ -39,11 +38,9 @@ import java.util.Set;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class TabGroupColorUtilsUnitTest {
-    @Rule public TestRule mProcessor = new Features.JUnitProcessor();
 
     private static final String TAB_GROUP_COLORS_FILE_NAME = "tab_group_colors";
     private static final String MIGRATION_CHECK = "migration_check";
-    private static final int INVALID_COLOR_ID = -1;
     private static final int MIGRATION_DONE = 1;
 
     private static final int ROOT_ID_1 = 123;
@@ -101,19 +98,6 @@ public class TabGroupColorUtilsUnitTest {
                 .thenReturn(COLOR_1);
 
         assertThat(TabGroupColorUtils.getTabGroupColor(ROOT_ID_1), equalTo(COLOR_1));
-    }
-
-    @Test
-    public void testGetOrCreateTabGroupColor_notExists() {
-        // Mock that we have a missing tab group color with reference to ROOT_ID.
-        when(mSharedPreferences.getInt(String.valueOf(ROOT_ID_1), INVALID_COLOR_ID))
-                .thenReturn(INVALID_COLOR_ID);
-
-        // Mock that no other colors have been used by other tab groups.
-        Set<Integer> rootIdsSet = new ArraySet<>();
-        when(mFilter.getAllTabGroupRootIds()).thenReturn(rootIdsSet);
-        assertThat(
-                TabGroupColorUtils.getOrCreateTabGroupColor(ROOT_ID_1, mFilter), equalTo(COLOR_1));
     }
 
     @Test

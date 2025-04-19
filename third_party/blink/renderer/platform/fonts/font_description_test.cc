@@ -23,6 +23,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 
 #include "third_party/blink/renderer/platform/testing/font_test_base.h"
@@ -178,6 +183,25 @@ TEST_F(FontDescriptionTest, VariantAlternatesDifferentCacheKey) {
   ASSERT_EQ(*variants_a, *variants_a);
   a.SetFontVariantAlternates(variants_a);
   b.SetFontVariantAlternates(variants_b);
+
+  ASSERT_NE(a, b);
+
+  FontFaceCreationParams test_creation_params;
+  FontCacheKey key_a = a.CacheKey(test_creation_params, false);
+  FontCacheKey key_b = b.CacheKey(test_creation_params, false);
+
+  ASSERT_NE(key_a, key_b);
+}
+
+TEST_F(FontDescriptionTest, VariantEmojiDifferentCacheKey) {
+  FontDescription a;
+  FontDescription b(a);
+
+  FontVariantEmoji variant_emoji_a = kEmojiVariantEmoji;
+  FontVariantEmoji variant_emoji_b = kUnicodeVariantEmoji;
+
+  a.SetVariantEmoji(variant_emoji_a);
+  b.SetVariantEmoji(variant_emoji_b);
 
   ASSERT_NE(a, b);
 

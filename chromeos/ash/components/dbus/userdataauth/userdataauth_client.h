@@ -11,7 +11,7 @@
 #include "base/scoped_observation_traits.h"
 #include "chromeos/ash/components/dbus/cryptohome/UserDataAuth.pb.h"
 #include "chromeos/ash/components/dbus/cryptohome/rpc.pb.h"
-#include "chromeos/dbus/common/dbus_method_call_status.h"
+#include "chromeos/dbus/common/dbus_callback.h"
 
 namespace dbus {
 class Bus;
@@ -94,6 +94,8 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) UserDataAuthClient {
       chromeos::DBusMethodCallback<::user_data_auth::UpdateAuthFactorReply>;
   using UpdateAuthFactorMetadataCallback = chromeos::DBusMethodCallback<
       ::user_data_auth::UpdateAuthFactorMetadataReply>;
+  using ReplaceAuthFactorCallback =
+      chromeos::DBusMethodCallback<::user_data_auth::ReplaceAuthFactorReply>;
   using RemoveAuthFactorCallback =
       chromeos::DBusMethodCallback<::user_data_auth::RemoveAuthFactorReply>;
   using ListAuthFactorsCallback =
@@ -113,8 +115,6 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) UserDataAuthClient {
       ::user_data_auth::PrepareEphemeralVaultReply>;
   using CreatePersistentUserCallback =
       chromeos::DBusMethodCallback<::user_data_auth::CreatePersistentUserReply>;
-  using RestoreDeviceKeyCallback =
-      chromeos::DBusMethodCallback<::user_data_auth::RestoreDeviceKeyReply>;
   using PreparePersistentVaultCallback = chromeos::DBusMethodCallback<
       ::user_data_auth::PreparePersistentVaultReply>;
   using PrepareVaultForMigrationCallback = chromeos::DBusMethodCallback<
@@ -130,6 +130,9 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) UserDataAuthClient {
 
   using GetRecoverableKeyStoresCallback = chromeos::DBusMethodCallback<
       ::user_data_auth::GetRecoverableKeyStoresReply>;
+
+  using SetUserDataStorageWriteEnabledCallback = chromeos::DBusMethodCallback<
+      ::user_data_auth::SetUserDataStorageWriteEnabledReply>;
 
   // Not copyable or movable.
   UserDataAuthClient(const UserDataAuthClient&) = delete;
@@ -248,13 +251,6 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) UserDataAuthClient {
       const ::user_data_auth::CreatePersistentUserRequest& request,
       CreatePersistentUserCallback callback) = 0;
 
-  // This will restore the filesystem keyset user directories needed to store
-  // keys and download policies. This will be called during lock screen if the
-  // device key is evicted.
-  virtual void RestoreDeviceKey(
-      const ::user_data_auth::RestoreDeviceKeyRequest& request,
-      RestoreDeviceKeyCallback callback) = 0;
-
   // This makes available user directories for them to use.
   virtual void PreparePersistentVault(
       const ::user_data_auth::PreparePersistentVaultRequest& request,
@@ -301,6 +297,13 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) UserDataAuthClient {
   virtual void UpdateAuthFactorMetadata(
       const ::user_data_auth::UpdateAuthFactorMetadataRequest& request,
       UpdateAuthFactorMetadataCallback callback) = 0;
+
+  // This call will be used in the case of a user wanting to remove an existing
+  // Authfactor and add a new one to replace it. (E.g. Changing to local
+  // password from Gaia password).
+  virtual void ReplaceAuthFactor(
+      const ::user_data_auth::ReplaceAuthFactorRequest& request,
+      ReplaceAuthFactorCallback callback) = 0;
 
   // This is called when a user wants to remove an
   // AuthFactor.
@@ -349,6 +352,11 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) UserDataAuthClient {
   virtual void GetRecoverableKeyStores(
       const ::user_data_auth::GetRecoverableKeyStoresRequest& request,
       GetRecoverableKeyStoresCallback callback) = 0;
+
+  // Enable/disable write access permissions to MyFiles directory.
+  virtual void SetUserDataStorageWriteEnabled(
+      const ::user_data_auth::SetUserDataStorageWriteEnabledRequest& request,
+      SetUserDataStorageWriteEnabledCallback callback) = 0;
 
  protected:
   // Initialize/Shutdown should be used instead.

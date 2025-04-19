@@ -9,11 +9,13 @@
 #include <vector>
 
 #include "base/memory/raw_ptr.h"
-#include "pdf/pdf_engine.h"
+#include "pdf/pdfium/pdfium_engine_client.h"
 
 namespace chrome_pdf {
 
-class TestClient : public PDFEngine::Client {
+class PDFiumEngine;
+
+class TestClient : public PDFiumEngineClient {
  public:
   TestClient();
 
@@ -22,10 +24,10 @@ class TestClient : public PDFEngine::Client {
 
   ~TestClient() override;
 
-  PDFEngine* engine() const { return engine_; }
-  void set_engine(PDFEngine* engine) { engine_ = engine; }
+  PDFiumEngine* engine() const { return engine_; }
+  void set_engine(PDFiumEngine* engine) { engine_ = engine; }
 
-  // PDFEngine::Client:
+  // PDFiumEngineClient:
   void ProposeDocumentLayout(const DocumentLayout& layout) override;
   bool Confirm(const std::string& message) override;
   std::string Prompt(const std::string& question,
@@ -45,7 +47,7 @@ class TestClient : public PDFEngine::Client {
  private:
   // Not owned. Expected to dangle briefly, as the engine usually is destroyed
   // before the client.
-  raw_ptr<PDFEngine, DisableDanglingPtrDetection> engine_ = nullptr;
+  raw_ptr<PDFiumEngine, DisableDanglingPtrDetection> engine_ = nullptr;
 };
 
 }  // namespace chrome_pdf

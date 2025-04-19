@@ -7,6 +7,7 @@ import {html} from '//resources/lit/v3_0/lit.rollup.js';
 import type {ComboboxGroup, ComboboxItem, CustomizeChromeComboboxElement} from './customize_chrome_combobox.js';
 
 export function getHtml(this: CustomizeChromeComboboxElement) {
+  // clang-format off
   return html`<!--_html_template_start_-->
 <button id="input" class="md-select"
     role="combobox" tabindex="0"
@@ -40,7 +41,7 @@ export function getHtml(this: CustomizeChromeComboboxElement) {
           </label>
           ${this.isGroupExpanded_(index) ? html`
             ${(item as ComboboxGroup).items.map(subitem => html`
-              <div class="item" role="option" .value="${subitem.label}"
+              <div class="item" role="option" .value="${subitem.key}"
                   aria-selected="${this.isItemSelected_(subitem)}">
                 <cr-icon icon="cr:check" aria-hidden="true"></cr-icon>
                 <span>${subitem.label}</span>
@@ -50,7 +51,7 @@ export function getHtml(this: CustomizeChromeComboboxElement) {
         </div>
       ` : ''}
       ${!this.isGroup_(item) ? html`
-        <div class="item" role="option" .value="${item.label}"
+        <div class="item" role="option" .value="${item.key}"
             aria-selected="${this.isItemSelected_(item)}">
           ${(item as ComboboxItem).imagePath ? html`
             <customize-chrome-check-mark-wrapper
@@ -67,4 +68,5 @@ export function getHtml(this: CustomizeChromeComboboxElement) {
     `)}
   </div>
 </div><!--_html_template_end_-->`;
+  // clang-format on
 }

@@ -7,13 +7,10 @@ package org.chromium.base.test.transit;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.Log;
-import org.chromium.base.test.transit.ConditionWaiter.ConditionWait;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /** A transition into and/or out of {@link ConditionalState}s. */
 public abstract class Transition {
@@ -31,32 +28,48 @@ public abstract class Transition {
 
     protected final int mId;
     protected final TransitionOptions mOptions;
-    protected final List<ConditionalState> mExitedStates;
-    protected final List<ConditionalState> mEnteredStates;
     @Nullable protected final Trigger mTrigger;
-
-    protected List<ConditionWait> mWaits;
+    protected final List<? extends ConditionalState> mExitedStates;
+    protected final List<? extends ConditionalState> mEnteredStates;
+    protected final ConditionWaiter mConditionWaiter;
 
     Transition(
             TransitionOptions options,
-            List<ConditionalState> exitedStates,
-            List<ConditionalState> enteredStates,
+            List<? extends ConditionalState> exitedStates,
+            List<? extends ConditionalState> enteredStates,
             @Nullable Trigger trigger) {
         mId = ++sLastTripId;
         mOptions = options;
+        mTrigger = trigger;
         mExitedStates = exitedStates;
         mEnteredStates = enteredStates;
-        mTrigger = trigger;
+        mConditionWaiter = new ConditionWaiter(this);
     }
 
     void transitionSync() {
-        Log.i(TAG, "%s: started", toDebugString());
-        onBeforeTransition();
-        performTransitionWithRetries();
-        onAfterTransition();
-        Log.i(TAG, "%s: finished", toDebugString());
+        try {
+            Log.i(TAG, "%s: started", toDebugString());
+            onBeforeTransition();
+            performTransitionWithRetries();
+            onAfterTransition();
+            Log.i(TAG, "%s: finished", toDebugString());
+        } catch (TravelException e) {
+            throw e;
+        } catch (Throwable e) {
+            throw newTransitionException(e);
+        }
 
         PublicTransitConfig.maybePauseAfterTransition(this);
+    }
+
+    private boolean shouldFailOnAlreadyFulfilled() {
+        // At least one Condition should be not fulfilled, or this is likely an incorrectly
+        // designed Transition. Exceptions to this rule:
+        //     1. null Trigger, for example when focusing on secondary elements of a screen that
+        //        aren't declared in Station#declareElements().
+        //     2. A explicit exception is made with TransitionOptions.mPossiblyAlreadyFulfilled.
+        //        E.g. when not possible to determine whether the trigger needs to be run.
+        return !mOptions.mPossiblyAlreadyFulfilled && mTrigger != null;
     }
 
     protected void onBeforeTransition() {
@@ -66,16 +79,17 @@ public abstract class Transition {
         for (ConditionalState entered : mEnteredStates) {
             entered.setStateTransitioningTo();
         }
+        mConditionWaiter.onBeforeTransition(shouldFailOnAlreadyFulfilled());
+    }
 
-        mWaits = createWaits();
-        try {
-            ConditionWaiter.preCheck(mWaits, mOptions, mTrigger);
-        } catch (Throwable e) {
-            throw newTransitionException(e);
+    protected void onAfterTransition() {
+        for (ConditionalState exited : mExitedStates) {
+            exited.setStateFinished();
         }
-        for (ConditionWait wait : mWaits) {
-            wait.getCondition().onStartMonitoring();
+        for (ConditionalState entered : mEnteredStates) {
+            entered.setStateActive();
         }
+        mConditionWaiter.onAfterTransition();
     }
 
     protected void performTransitionWithRetries() {
@@ -125,22 +139,17 @@ public abstract class Transition {
         // prints the state of all conditions. The timeout can be reduced when explicitly looking
         // for flakiness due to tight timeouts.
         try {
-            ConditionWaiter.waitFor(mWaits, mOptions);
+            mConditionWaiter.waitFor(toDebugString());
         } catch (Throwable e) {
             throw newTransitionException(e);
         }
     }
 
-    protected void onAfterTransition() {
-        for (ConditionalState exited : mExitedStates) {
-            exited.setStateFinished();
-        }
-        for (ConditionalState entered : mEnteredStates) {
-            entered.setStateActive();
-        }
-
-        for (ConditionWait wait : mWaits) {
-            wait.getCondition().onStopMonitoring();
+    protected List<Condition> getTransitionConditions() {
+        if (mOptions.mTransitionConditions == null) {
+            return Collections.EMPTY_LIST;
+        } else {
+            return mOptions.mTransitionConditions;
         }
     }
 
@@ -157,64 +166,21 @@ public abstract class Transition {
     /** Should return a String representation of the Transition for debugging. */
     public abstract String toDebugString();
 
-    /** Should create the {@link ConditionWait}s. */
-    protected abstract List<ConditionWait> createWaits();
-
     @Override
     public String toString() {
         return toDebugString();
     }
 
-    protected List<Condition> getTransitionConditions() {
-        if (mOptions.mTransitionConditions == null) {
-            return Collections.EMPTY_LIST;
-        } else {
-            return mOptions.mTransitionConditions;
-        }
+    public List<? extends ConditionalState> getEnteredStates() {
+        return mEnteredStates;
     }
 
-    protected static ArrayList<ConditionWait> calculateConditionWaits(
-            Elements originElements,
-            Elements destinationElements,
-            List<Condition> transitionConditions) {
-        ArrayList<ConditionWait> waits = new ArrayList<>();
+    public List<? extends ConditionalState> getExitedStates() {
+        return mExitedStates;
+    }
 
-        // Create ENTER Conditions for Views that should appear and LogicalElements that should
-        // be true.
-        Set<String> destinationElementIds = new HashSet<>();
-        for (ElementInState element : destinationElements.getElementsInState()) {
-            destinationElementIds.add(element.getId());
-            @Nullable Condition enterCondition = element.getEnterCondition();
-            if (enterCondition != null) {
-                waits.add(new ConditionWait(enterCondition, ConditionWaiter.ConditionOrigin.ENTER));
-            }
-        }
-
-        // Add extra ENTER Conditions.
-        for (Condition enterCondition : destinationElements.getOtherEnterConditions()) {
-            waits.add(new ConditionWait(enterCondition, ConditionWaiter.ConditionOrigin.ENTER));
-        }
-
-        // Create EXIT Conditions for Views that should disappear and LogicalElements that should
-        // be false.
-        for (ElementInState element : originElements.getElementsInState()) {
-            Condition exitCondition = element.getExitCondition(destinationElementIds);
-            if (exitCondition != null) {
-                waits.add(new ConditionWait(exitCondition, ConditionWaiter.ConditionOrigin.EXIT));
-            }
-        }
-
-        // Add extra EXIT Conditions.
-        for (Condition exitCondition : originElements.getOtherExitConditions()) {
-            waits.add(new ConditionWait(exitCondition, ConditionWaiter.ConditionOrigin.EXIT));
-        }
-
-        // Add transition (TRSTN) conditions
-        for (Condition condition : transitionConditions) {
-            waits.add(new ConditionWait(condition, ConditionWaiter.ConditionOrigin.TRANSITION));
-        }
-
-        return waits;
+    public TransitionOptions getOptions() {
+        return mOptions;
     }
 
     /**
@@ -233,6 +199,15 @@ public abstract class Transition {
     /** Convenience method equivalent to newOptions().withRetry().build(). */
     public static TransitionOptions retryOption() {
         return newOptions().withRetry().build();
+    }
+
+    /** Convenience method equivalent to newOptions().withCondition().withCondition().build(). */
+    public static TransitionOptions conditionOption(Condition... conditions) {
+        TransitionOptions.Builder builder = newOptions();
+        for (Condition condition : conditions) {
+            builder = builder.withCondition(condition);
+        }
+        return builder.build();
     }
 
     /** Options to configure the Transition. */

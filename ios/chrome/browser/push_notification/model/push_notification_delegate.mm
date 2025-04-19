@@ -16,12 +16,15 @@
 #import "components/search_engines/template_url.h"
 #import "components/search_engines/template_url_prepopulate_data.h"
 #import "components/search_engines/template_url_service.h"
+#import "components/send_tab_to_self/features.h"
+#import "components/sync_device_info/device_info_sync_service.h"
 #import "ios/chrome/app/startup/app_launch_metrics.h"
 #import "ios/chrome/browser/content_notification/model/content_notification_nau_configuration.h"
 #import "ios/chrome/browser/content_notification/model/content_notification_service.h"
 #import "ios/chrome/browser/content_notification/model/content_notification_service_factory.h"
 #import "ios/chrome/browser/content_notification/model/content_notification_settings_action.h"
 #import "ios/chrome/browser/content_notification/model/content_notification_util.h"
+#import "ios/chrome/browser/push_notification/model/constants.h"
 #import "ios/chrome/browser/push_notification/model/push_notification_client_manager.h"
 #import "ios/chrome/browser/push_notification/model/push_notification_configuration.h"
 #import "ios/chrome/browser/push_notification/model/push_notification_delegate.h"
@@ -33,13 +36,15 @@
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser/browser_provider.h"
 #import "ios/chrome/browser/shared/model/browser/browser_provider_interface.h"
-#import "ios/chrome/browser/shared/model/browser_state/browser_state_info_cache.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state_manager.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
+#import "ios/chrome/browser/shared/model/profile/profile_attributes_storage_ios.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/signin/model/authentication_service.h"
 #import "ios/chrome/browser/signin/model/authentication_service_factory.h"
+#import "ios/chrome/browser/sync/model/device_info_sync_service_factory.h"
+#import "ios/chrome/common/app_group/app_group_constants.h"
 
 namespace {
 // The time range's expected min and max values for custom histograms.
@@ -79,10 +84,10 @@ GaiaIdToPushNotificationPreferenceMapFromCache(
       continue;
     }
 
-    base::FilePath path = info_cache->GetPathOfBrowserStateAtIndex(i);
+    const std::string& name = info_cache->GetNameOfBrowserStateAtIndex(i);
     PrefService* pref_service = GetApplicationContext()
                                     ->GetChromeBrowserStateManager()
-                                    ->GetBrowserStateByPath(path)
+                                    ->GetBrowserStateByName(name)
                                     ->GetPrefs();
 
     NSMutableDictionary<NSString*, NSNumber*>* preference_map =
@@ -231,6 +236,12 @@ GaiaIdToPushNotificationPreferenceMapFromCache(
     } else {
       base::UmaHistogramBoolean("IOS.PushNotification.ChimeDeviceRegistration",
                                 true);
+      if (base::FeatureList::IsEnabled(
+              send_tab_to_self::kSendTabToSelfIOSPushNotifications) &&
+          browserState) {
+        DeviceInfoSyncServiceFactory::GetForBrowserState(browserState)
+            ->RefreshLocalDeviceInfo();
+      }
     }
   });
 }
@@ -270,13 +281,51 @@ GaiaIdToPushNotificationPreferenceMapFromCache(
   ChromeBrowserState* browserState =
       sceneState.browserProviderInterface.mainBrowserProvider.browser
           ->GetBrowserState();
-  if ([self isContentNotificationAvailable:browserState]) {
-    // Send an NAU every time the OS authorization status changes.
+  if (IsContentNotificationEnabled(browserState)) {
+    ContentNotificationService* contentNotificationService =
+        ContentNotificationServiceFactory::GetForBrowserState(browserState);
+    int maxNauSentPerSession = base::GetFieldTrialParamByFeatureAsInt(
+        kContentNotificationDeliveredNAU, kDeliveredNAUMaxPerSession,
+        kDeliveredNAUMaxSendsPerSession);
+    // Check if there are notifications received in the background to send the
+    // respective NAUs.
+    NSUserDefaults* defaults = app_group::GetGroupUserDefaults();
+    if ([defaults objectForKey:kContentNotificationContentArrayKey] != nil) {
+      NSMutableArray* contentArray = [[defaults
+          objectForKey:kContentNotificationContentArrayKey] mutableCopy];
+      // Report in 5 item increments.
+      NSMutableArray* uploadedItems = [NSMutableArray array];
+      for (NSData* item in contentArray) {
+        ContentNotificationNAUConfiguration* config =
+            [[ContentNotificationNAUConfiguration alloc] init];
+        config.actionType = NAUActionTypeDisplayed;
+        UNNotificationContent* content = [NSKeyedUnarchiver
+            unarchivedObjectOfClass:UNMutableNotificationContent.class
+                           fromData:item
+                              error:nil];
+        config.content = content;
+        contentNotificationService->SendNAUForConfiguration(config);
+        [uploadedItems addObject:item];
+        base::UmaHistogramEnumeration(
+            kContentNotificationActionHistogramName,
+            NotificationActionType::kNotificationActionTypeDisplayed);
+        if ((int)uploadedItems.count == maxNauSentPerSession) {
+          break;
+        }
+      }
+      [contentArray removeObjectsInArray:uploadedItems];
+      if (contentArray.count > 0) {
+        [defaults setObject:contentArray
+                     forKey:kContentNotificationContentArrayKey];
+      } else {
+        [defaults setObject:nil forKey:kContentNotificationContentArrayKey];
+      }
+    }
+    // Send an NAU on every foreground to report the OS Auth Settings.
     [PushNotificationUtil
         getPermissionSettings:^(UNNotificationSettings* settings) {
           UNAuthorizationStatus previousAuthStatus =
               [PushNotificationUtil getSavedPermissionSettings];
-          if (previousAuthStatus != settings.authorizationStatus) {
             ContentNotificationNAUConfiguration* config =
                 [[ContentNotificationNAUConfiguration alloc] init];
             ContentNotificationSettingsAction* settingsAction =
@@ -284,13 +333,8 @@ GaiaIdToPushNotificationPreferenceMapFromCache(
             settingsAction.previousAuthorizationStatus = previousAuthStatus;
             settingsAction.currentAuthorizationStatus =
                 settings.authorizationStatus;
-            config.settingsAction =
-                [[ContentNotificationSettingsAction alloc] init];
-            ContentNotificationService* contentNotificationService =
-                ContentNotificationServiceFactory::GetForBrowserState(
-                    browserState);
+            config.settingsAction = settingsAction;
             contentNotificationService->SendNAUForConfiguration(config);
-          }
         }];
   }
   [PushNotificationUtil
@@ -305,31 +349,8 @@ GaiaIdToPushNotificationPreferenceMapFromCache(
 }
 
 - (BOOL)isContentNotificationAvailable:(ChromeBrowserState*)browserState {
-  if (!IsContentNotificationExperimentEnabled()) {
-    return false;
-  }
-  if (!browserState) {
-    return false;
-  }
-  AuthenticationService* authService =
-      AuthenticationServiceFactory::GetForBrowserState(browserState);
-  BOOL isSignedIn = authService && authService->HasPrimaryIdentity(
-                                       signin::ConsentLevel::kSignin);
-  const TemplateURL* defaultSearchURLTemplate =
-      ios::TemplateURLServiceFactory::GetForBrowserState(browserState)
-          ->GetDefaultSearchProvider();
-  bool isDefaultSearchEngine =
-      defaultSearchURLTemplate && defaultSearchURLTemplate->prepopulate_id() ==
-                                      TemplateURLPrepopulateData::google.id;
-  PrefService* prefService = browserState->GetPrefs();
-  // Created the local variables to make sure all experimental types have been
-  // checked, because multiple experimental types can be enabled at the same
-  // time, and the UMA will be active after the feature check.
-  bool contentNotificationEnabled = IsContentNotificationEnabled(
-      isSignedIn, isDefaultSearchEngine, prefService);
-  bool contentNotificationRegistered = IsContentNotificationRegistered(
-      isSignedIn, isDefaultSearchEngine, prefService);
-  return contentNotificationEnabled || contentNotificationRegistered;
+  return IsContentNotificationEnabled(browserState) ||
+         IsContentNotificationRegistered(browserState);
 }
 
 @end

@@ -5,6 +5,8 @@
 #import <Foundation/Foundation.h>
 #include <stddef.h>
 
+#include <array>
+
 #include "base/strings/sys_string_conversions.h"
 #import "components/autofill/ios/form_util/form_util_java_script_feature.h"
 #import "ios/web/public/test/js_test_util.h"
@@ -32,23 +34,23 @@ TEST_F(FillJsTest, GetCanonicalActionForForm) {
   struct TestData {
     NSString* html_action;
     NSString* expected_action;
-  } test_data[] = {
-      // Empty action.
-      {nil, @"baseurl/"},
-      // Absolute urls.
-      {@"http://foo1.com/bar", @"http://foo1.com/bar"},
-      {@"http://foo2.com/bar#baz", @"http://foo2.com/bar"},
-      {@"http://foo3.com/bar?baz", @"http://foo3.com/bar"},
-      // Relative urls.
-      {@"action.php", @"baseurl/action.php"},
-      {@"action.php?abc", @"baseurl/action.php"},
-      // Non-http protocols.
-      {@"data:abc", @"data:abc"},
-      {@"javascript:login()", @"javascript:login()"},
   };
+  const auto test_data = std::to_array<TestData>(
+      {// Empty action.
+       TestData{nil, @"baseurl/"},
+       // Absolute urls.
+       TestData{@"http://foo1.com/bar", @"http://foo1.com/bar"},
+       TestData{@"http://foo2.com/bar#baz", @"http://foo2.com/bar"},
+       TestData{@"http://foo3.com/bar?baz", @"http://foo3.com/bar"},
+       // Relative urls.
+       TestData{@"action.php", @"baseurl/action.php"},
+       TestData{@"action.php?abc", @"baseurl/action.php"},
+       // Non-http protocols.
+       TestData{@"data:abc", @"data:abc"},
+       TestData{@"javascript:login()", @"javascript:login()"}});
 
-  for (size_t i = 0; i < std::size(test_data); i++) {
-    TestData& data = test_data[i];
+  for (size_t i = 0; i < test_data.size(); i++) {
+    const TestData& data = test_data[i];
     NSString* html_action =
         data.html_action == nil
             ? @""

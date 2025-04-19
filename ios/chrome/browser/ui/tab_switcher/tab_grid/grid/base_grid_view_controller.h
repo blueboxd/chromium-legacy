@@ -23,6 +23,8 @@
 @protocol SuggestedActionsDelegate;
 @protocol TabContextMenuProvider;
 @protocol TabCollectionDragDropHandler;
+@protocol TabGridCommands;
+@protocol TabGroupConfirmationCommands;
 @class TabGridTransitionItem;
 class TabGroup;
 
@@ -74,13 +76,13 @@ class WebStateID;
 
 // Tells the delegate that the inactive tabs button was tapped in
 // `gridViewController`, i.e., there was an intention to show inactive tabs (in
-// TabGridModeNormal).
+// TabGridMode::kNormal).
 - (void)didTapInactiveTabsButtonInGridViewController:
     (BaseGridViewController*)gridViewController;
 
 // Tells the delegate that the inactive tabs settings link was tapped in
 // `gridViewController`, i.e., there was an intention to show inactive tabs
-// settings (in TabGridModeInactive).
+// settings (in the Inactive grid).
 - (void)didTapInactiveTabsSettingsLinkInGridViewController:
     (BaseGridViewController*)gridViewController;
 
@@ -105,12 +107,10 @@ class WebStateID;
     BOOL containedGridEmpty;
 // The visual look of the grid.
 @property(nonatomic, assign) GridTheme theme;
-// The current mode for the grid.
-@property(nonatomic, assign) TabGridMode mode;
 // The current search text to use for filtering results when the search mode is
 // active.
 @property(nonatomic, copy) NSString* searchText;
-// Delegate for search results suggested actions.
+// Delegate for search results suggested actions. Only available in regular.
 @property(nonatomic, weak) id<SuggestedActionsDelegate>
     suggestedActionsDelegate;
 // Delegate is informed of user interactions in the grid UI.
@@ -138,6 +138,16 @@ class WebStateID;
 // of a scrollview, they don't all get the correct information when being laid
 // out. To that end, contentInsets are manually added.
 @property(nonatomic, assign) UIEdgeInsets contentInsets;
+// A Boolean value that controls whether the scroll-to-top gesture is enabled.
+// It is a wrapper around the inner `collectionView.scrollsToTop` property.
+// The default value of this property is YES.
+@property(nonatomic, assign, getter=isGridScrollsToTopEnabled)
+    BOOL gridScrollsToTopEnabled;
+// Tab Grid handler.
+@property(nonatomic, weak) id<TabGridCommands> tabGridHandler;
+// Handler for tab group confirmation commands.
+@property(nonatomic, weak) id<TabGroupConfirmationCommands>
+    tabGroupConfirmationHandler;
 
 // Returns the layout of the grid for use in an animated transition.
 - (LegacyGridTransitionLayout*)transitionLayout;

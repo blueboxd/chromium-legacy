@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/webui/downloads/mock_downloads_page.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/download/public/common/download_item.h"
+#include "components/download/public/common/download_item_rename_handler.h"
 #include "components/download/public/common/mock_download_item.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/test/browser_task_environment.h"
@@ -54,6 +55,16 @@ bool ShouldShowItem(const DownloadItem& item) {
   DownloadItemModel model(const_cast<DownloadItem*>(&item));
   return model.ShouldShowInShelf();
 }
+
+class FakeRenameHandler : public download::DownloadItemRenameHandler {
+ public:
+  explicit FakeRenameHandler(DownloadItem* download_item)
+      : DownloadItemRenameHandler(download_item) {}
+  ~FakeRenameHandler() override = default;
+
+  // DownloadItemRenameHandler interface:
+  bool ShowRenameProgress() override { return true; }
+};
 
 }  // namespace
 
@@ -109,6 +120,9 @@ class DownloadsListTrackerTest : public testing::Test {
             ReturnRefOfCopy(base::FilePath(FILE_PATH_LITERAL("foo.txt"))));
     ON_CALL(*new_item, GetURL())
         .WillByDefault(ReturnRefOfCopy(GURL("https://example.test")));
+    ON_CALL(*new_item, GetReferrerUrl())
+        .WillByDefault(ReturnRefOfCopy(GURL("https://referrerexample.test")));
+
     content::DownloadItemUtils::AttachInfoForTesting(new_item, profile(),
                                                      nullptr);
 
@@ -488,6 +502,113 @@ TEST_F(DownloadsListTrackerTest, CreateDownloadData_UrlFormatting_VeryLong) {
   downloads::mojom::DataPtr data = tracker->CreateDownloadData(item);
   EXPECT_FALSE(data->url);
   EXPECT_EQ(data->display_url, expected);
+}
+
+TEST_F(DownloadsListTrackerTest, CreateDownloadData_ReferrerUrlPresent) {
+  MockDownloadItem* item = CreateNextItem();
+
+  auto tracker = std::make_unique<DownloadsListTracker>(
+      manager(), page_.BindAndGetRemote());
+
+  downloads::mojom::DataPtr data = tracker->CreateDownloadData(item);
+  EXPECT_EQ(*data->url, "https://example.test/");
+  EXPECT_EQ(*data->referrer_url, "https://referrerexample.test/");
+  EXPECT_EQ(data->display_url, u"https://example.test");
+  EXPECT_EQ(data->display_referrer_url, u"https://referrerexample.test");
+}
+
+TEST_F(DownloadsListTrackerTest, CreateDownloadData_ReferrerUrlNotPresent) {
+  MockDownloadItem* item = CreateNextItem();
+  ON_CALL(*item, GetReferrerUrl()).WillByDefault(ReturnRefOfCopy(GURL()));
+
+  auto tracker = std::make_unique<DownloadsListTracker>(
+      manager(), page_.BindAndGetRemote());
+
+  downloads::mojom::DataPtr data = tracker->CreateDownloadData(item);
+  EXPECT_TRUE(data->url);
+  EXPECT_FALSE(data->referrer_url);
+  EXPECT_EQ(data->display_referrer_url, u"");
+}
+
+TEST_F(DownloadsListTrackerTest,
+       CreateDownloadData_ReferrerUrlFormatting_OmitUserPass) {
+  MockDownloadItem* item = CreateNextItem();
+  ON_CALL(*item, GetReferrerUrl())
+      .WillByDefault(ReturnRefOfCopy(GURL("https://user:pass@example.test")));
+
+  auto tracker = std::make_unique<DownloadsListTracker>(
+      manager(), page_.BindAndGetRemote());
+
+  downloads::mojom::DataPtr data = tracker->CreateDownloadData(item);
+  EXPECT_TRUE(data->referrer_url);
+  EXPECT_EQ(*data->referrer_url, "https://user:pass@example.test/");
+  EXPECT_EQ(data->display_referrer_url, u"https://example.test");
+}
+
+TEST_F(DownloadsListTrackerTest, CreateDownloadData_ReferrerUrlFormatting_Idn) {
+  MockDownloadItem* item = CreateNextItem();
+  ON_CALL(*item, GetReferrerUrl())
+      .WillByDefault(ReturnRefOfCopy(GURL("https://xn--6qqa088eba.test")));
+
+  auto tracker = std::make_unique<DownloadsListTracker>(
+      manager(), page_.BindAndGetRemote());
+
+  downloads::mojom::DataPtr data = tracker->CreateDownloadData(item);
+  EXPECT_TRUE(data->referrer_url);
+  EXPECT_EQ(*data->referrer_url, "https://xn--6qqa088eba.test/");
+  EXPECT_EQ(data->display_referrer_url,
+            u"https://\u4f60\u597d\u4f60\u597d.test");
+}
+
+// URL longer than 16K but less than 2M.
+TEST_F(DownloadsListTrackerTest,
+       CreateDownloadData_ReferrerUrlFormatting_Long) {
+  std::string url = "https://" + std::string(16 * 1024, 'a') + ".test";
+  // The string should truncate the beginning to 16K.
+  std::u16string expected = std::u16string(16 * 1024 - 5, 'a') + u".test";
+
+  MockDownloadItem* item = CreateNextItem();
+  ON_CALL(*item, GetReferrerUrl()).WillByDefault(ReturnRefOfCopy(GURL(url)));
+
+  auto tracker = std::make_unique<DownloadsListTracker>(
+      manager(), page_.BindAndGetRemote());
+
+  downloads::mojom::DataPtr data = tracker->CreateDownloadData(item);
+  EXPECT_TRUE(data->referrer_url);
+  EXPECT_EQ(data->display_referrer_url, expected);
+}
+
+// URL longer than 2M.
+TEST_F(DownloadsListTrackerTest,
+       CreateDownloadData_ReferrerUrlFormatting_VeryLong) {
+  std::string url = "https://" + std::string(2 * 1024 * 1024, 'a') + ".test";
+  // The string should truncate the beginning to 16K.
+  std::u16string expected = std::u16string(16 * 1024 - 5, 'a') + u".test";
+
+  MockDownloadItem* item = CreateNextItem();
+  ON_CALL(*item, GetReferrerUrl()).WillByDefault(ReturnRefOfCopy(GURL(url)));
+
+  auto tracker = std::make_unique<DownloadsListTracker>(
+      manager(), page_.BindAndGetRemote());
+
+  downloads::mojom::DataPtr data = tracker->CreateDownloadData(item);
+  EXPECT_FALSE(data->referrer_url);
+  EXPECT_EQ(data->display_referrer_url, expected);
+}
+
+TEST_F(DownloadsListTrackerTest, RenamingProgress) {
+  MockDownloadItem* item = CreateNextItem();
+  FakeRenameHandler renamer(item);
+  ON_CALL(*item, GetRenameHandler()).WillByDefault(Return(&renamer));
+  ON_CALL(*item, GetReceivedBytes()).WillByDefault(Return(10));
+  ON_CALL(*item, GetUploadedBytes()).WillByDefault(Return(4));
+  ON_CALL(*item, GetTotalBytes()).WillByDefault(Return(10));
+
+  auto tracker = std::make_unique<DownloadsListTracker>(
+      manager(), page_.BindAndGetRemote());
+
+  downloads::mojom::DataPtr data = tracker->CreateDownloadData(item);
+  EXPECT_EQ(data->percent, 70);
 }
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)

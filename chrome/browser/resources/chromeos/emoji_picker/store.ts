@@ -5,7 +5,7 @@
 import {EMOJI_PER_ROW} from './constants.js';
 import {Category} from './emoji_picker.mojom-webui.js';
 import {EmojiPickerApiProxy} from './emoji_picker_api_proxy.js';
-import {CategoryEnum, Emoji, EmojiVariants, Gender, PreferenceMapping, Tone, VisualContent} from './types.js';
+import {CategoryEnum, Emoji, EmojiHistoryItem, EmojiVariants, Gender, PreferenceMapping, Tone, VisualContent} from './types.js';
 
 const MAX_RECENTS = EMOJI_PER_ROW * 2;
 
@@ -72,7 +72,7 @@ class Store<T> {
 }
 
 interface RecentlyUsed {
-  history: EmojiVariants[];
+  history: EmojiHistoryItem[];
   preference: PreferenceMapping;
 }
 
@@ -82,6 +82,34 @@ export class RecentlyUsedStore {
   constructor(private readonly category: CategoryEnum) {
     this.store =
         new Store(`${category}-recently-used`, {history: [], preference: {}});
+  }
+
+  async mergeWithPrefsHistory() {
+    if (this.category === CategoryEnum.GIF) {
+      return;
+    }
+    const prefsHistory =
+        await EmojiPickerApiProxy.getInstance().getHistoryFromPrefs(
+            convertCategoryEnum(this.category));
+    const mergedHistory: EmojiHistoryItem[] =
+        prefsHistory.history.map((item) => ({
+                                   base: {string: item.emoji},
+                                   timestamp: item.timestamp.msec,
+                                   alternates: [],
+                                 }));
+    for (const item of this.store.data.history) {
+      const index = mergedHistory.findIndex(
+          (emoji) => emoji.base.string === item.base.string);
+      if (index >= 0) {
+        item.timestamp = mergedHistory[index].timestamp;
+        mergedHistory[index] = item;
+      } else if (mergedHistory.length < MAX_RECENTS) {
+        mergedHistory.push(item);
+      }
+    }
+    this.store.data.history = mergedHistory;
+    this.store.save();
+    this.updateHistoryInPrefs();
   }
 
   /**
@@ -171,8 +199,11 @@ export class RecentlyUsedStore {
     if (oldIndex !== -1) {
       history.splice(oldIndex, 1);
     }
+
+    const newHistoryItem: EmojiHistoryItem = newItem;
+    newHistoryItem.timestamp = Date.now();
     // insert newItem to the front of the array.
-    history.unshift(newItem);
+    history.unshift(newHistoryItem);
     // slice from end of array if it exceeds MAX_RECENTS.
     if (history.length > MAX_RECENTS) {
       // setting length is sufficient to truncate an array.
@@ -209,7 +240,12 @@ export class RecentlyUsedStore {
     if (this.category !== CategoryEnum.GIF) {
       EmojiPickerApiProxy.getInstance().updateHistoryInPrefs(
           convertCategoryEnum(this.category),
-          this.store.data.history.map(x => x.base.string!));
+          this.store.data.history.map((x) => ({
+                                        emoji: x.base.string!,
+                                        timestamp: {
+                                          msec: x.timestamp || 0,
+                                        },
+                                      })));
     }
   }
 

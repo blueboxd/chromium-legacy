@@ -23,12 +23,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 
 #include "base/trace_event/trace_event.h"
 #include "third_party/blink/renderer/core/clipboard/clipboard_mime_types.h"
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
 #include "third_party/blink/renderer/core/clipboard/data_transfer.h"
+#include "third_party/blink/renderer/core/clipboard/data_transfer_access_policy.h"
 #include "third_party/blink/renderer/core/clipboard/system_clipboard.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
@@ -40,6 +46,8 @@
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/ime/edit_context.h"
+#include "third_party/blink/renderer/core/editing/ime/input_method_controller.h"
 #include "third_party/blink/renderer/core/editing/iterators/text_iterator.h"
 #include "third_party/blink/renderer/core/editing/local_caret_rect.h"
 #include "third_party/blink/renderer/core/editing/plain_text_range.h"
@@ -536,11 +544,8 @@ PositionTemplate<Strategy> FirstEditablePositionAfterPositionInRootAlgorithm(
   // - If `non_editable_node` is not the last child, we will bypass the next
   //   editable sibling position. See http://crbug.com/1334557 for more details.
   bool need_obtain_next =
-      RuntimeEnabledFeatures::GetNextSiblingPositionWhenLastChildEnabled()
-          ? non_editable_node && editable_position.AnchorNode() &&
-                non_editable_node == editable_position.AnchorNode()->lastChild()
-          : non_editable_node && non_editable_node->IsDescendantOf(
-                                     editable_position.AnchorNode());
+      non_editable_node && editable_position.AnchorNode() &&
+      non_editable_node == editable_position.AnchorNode()->lastChild();
   if (need_obtain_next) {
     // Make sure not to move out of |highest_root|
     const PositionTemplate<Strategy> boundary =
@@ -551,9 +556,7 @@ PositionTemplate<Strategy> FirstEditablePositionAfterPositionInRootAlgorithm(
     // `position`, so use `NextCandidate` here.
     // See http://crbug.com/1406207 for more details.
     const PositionTemplate<Strategy> next_candidate =
-        RuntimeEnabledFeatures::NextSiblingPositionUseNextCandidateEnabled()
-            ? NextCandidate(editable_position)
-            : NextVisuallyDistinctCandidate(editable_position);
+        NextCandidate(editable_position);
     editable_position = next_candidate.IsNotNull()
                             ? std::min(boundary, next_candidate)
                             : boundary;
@@ -992,8 +995,7 @@ bool IsHTMLListElement(const Node* n) {
 }
 
 bool IsListItem(const Node* n) {
-  return n && n->GetLayoutObject() &&
-         n->GetLayoutObject()->IsListItemIncludingNG();
+  return n && n->GetLayoutObject() && n->GetLayoutObject()->IsListItem();
 }
 
 bool IsListItemTag(const Node* n) {
@@ -1625,6 +1627,57 @@ DispatchEventResult DispatchBeforeInputDataTransfer(
         TargetRangesForInputEvent(*target));
   }
   return target->DispatchEvent(*before_input_event);
+}
+
+void InsertTextAndSendInputEventsOfTypeInsertReplacementText(
+    LocalFrame& frame,
+    const String& replacement,
+    bool allow_edit_context) {
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  frame.GetDocument()->UpdateStyleAndLayout(DocumentUpdateReason::kSpellCheck);
+
+  Document& current_document = *frame.GetDocument();
+
+  // Dispatch 'beforeinput'.
+  Element* const target = FindEventTargetFrom(
+      frame, frame.Selection().ComputeVisibleSelectionInDOMTree());
+
+  DataTransfer* const data_transfer = DataTransfer::Create(
+      DataTransfer::DataTransferType::kInsertReplacementText,
+      DataTransferAccessPolicy::kReadable,
+      DataObject::CreateFromString(replacement));
+
+  const bool is_canceled =
+      DispatchBeforeInputDataTransfer(
+          target, InputEvent::InputType::kInsertReplacementText,
+          data_transfer) != DispatchEventResult::kNotCanceled;
+
+  // 'beforeinput' event handler may destroy target frame.
+  if (current_document != frame.GetDocument()) {
+    return;
+  }
+
+  // When allowed, insert the text into the active edit context if it exists.
+  if (auto* edit_context =
+          frame.GetInputMethodController().GetActiveEditContext()) {
+    if (allow_edit_context) {
+      edit_context->InsertText(replacement);
+    }
+    return;
+  }
+
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  frame.GetDocument()->UpdateStyleAndLayout(DocumentUpdateReason::kSpellCheck);
+
+  if (is_canceled) {
+    return;
+  }
+
+  frame.GetEditor().InsertTextWithoutSendingTextEvent(
+      replacement, false, nullptr,
+      InputEvent::InputType::kInsertReplacementText);
 }
 
 // |IsEmptyNonEditableNodeInEditable()| is introduced for fixing

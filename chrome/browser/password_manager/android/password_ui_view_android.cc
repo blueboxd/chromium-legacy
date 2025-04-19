@@ -22,7 +22,6 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/strings/string_piece.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/password_manager/android/local_passwords_migration_warning_util.h"
@@ -41,7 +40,7 @@
 #include "url/gurl.h"
 
 // Must come after other includes, because FromJniType() uses Profile.
-#include "chrome/android/chrome_jni_headers/PasswordUIView_jni.h"
+#include "chrome/browser/password_manager/android/jni_headers/PasswordUIView_jni.h"
 
 namespace {
 
@@ -250,7 +249,6 @@ void PasswordUIViewAndroid::HandleSerializePasswords(
 void PasswordUIViewAndroid::HandleShowPasswordEntryEditingView(
     JNIEnv* env,
     const base::android::JavaRef<jobject>& context,
-    const base::android::JavaRef<jobject>& settings_launcher,
     int index,
     const JavaParamRef<jobject>& obj) {
   if (static_cast<size_t>(index) >= passwords_.size() ||
@@ -267,13 +265,12 @@ void PasswordUIViewAndroid::HandleShowPasswordEntryEditingView(
       &saved_passwords_presenter_,
       base::BindOnce(&PasswordUIViewAndroid::OnEditUIDismissed,
                      base::Unretained(this)),
-      context, settings_launcher);
+      context);
 }
 
 void PasswordUIViewAndroid::HandleShowBlockedCredentialView(
     JNIEnv* env,
     const base::android::JavaRef<jobject>& context,
-    const base::android::JavaRef<jobject>& settings_launcher,
     int index,
     const JavaParamRef<jobject>& obj) {
   if (static_cast<size_t>(index) >= blocked_sites_.size() ||
@@ -285,7 +282,7 @@ void PasswordUIViewAndroid::HandleShowBlockedCredentialView(
       std::vector<std::u16string>(), &saved_passwords_presenter_,
       base::BindOnce(&PasswordUIViewAndroid::OnEditUIDismissed,
                      base::Unretained(this)),
-      context, settings_launcher);
+      context);
 }
 
 void PasswordUIViewAndroid::ShowMigrationWarning(

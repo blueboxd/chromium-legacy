@@ -7,15 +7,27 @@
 #include "base/android/build_info.h"
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/buildflag.h"
 #include "components/password_manager/core/browser/features/password_features.h"
+#include "components/password_manager/core/browser/password_manager_buildflags.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/sync/base/user_selectable_type.h"
+#include "components/sync/service/sync_service.h"
+#include "components/sync/service/sync_user_settings.h"
 
-using password_manager::features::kUnifiedPasswordManagerSyncOnlyInGMSCore;
 using password_manager::prefs::kCurrentMigrationVersionToGoogleMobileServices;
 using password_manager::prefs::UseUpmLocalAndSeparateStoresState;
 
 namespace password_manager {
+
+namespace {
+
+// Do not expose these constants! Use GetLocalUpmMinGmsVersion() instead.
+const int kLocalUpmMinGmsVersionForNonAuto = 240212000;
+const int kLocalUpmMinGmsVersionForAuto = 241512000;
+
+}  // namespace
 
 bool UsesSplitStoresAndUPMForLocal(const PrefService* pref_service) {
   switch (
@@ -30,13 +42,13 @@ bool UsesSplitStoresAndUPMForLocal(const PrefService* pref_service) {
   NOTREACHED_NORETURN();
 }
 
-bool IsGmsCoreUpdateRequired(PrefService* pref_service,
-                             bool is_pwd_sync_enabled,
-                             std::string gms_version_str) {
-  if (!features::IsUnifiedPasswordManagerSyncOnlyInGMSCoreEnabled()) {
-    return false;
-  }
-
+bool IsGmsCoreUpdateRequired(const PrefService* pref_service,
+                             const syncer::SyncService* sync_service) {
+#if BUILDFLAG(USE_LOGIN_DATABASE_AS_BACKEND)
+  return false;
+#else
+  std::string gms_version_str =
+      base::android::BuildInfo::GetInstance()->gms_version_code();
   int gms_version = 0;
   // GMSCore version could not be parsed, probably no GMSCore installed.
   if (!base::StringToInt(gms_version_str, &gms_version)) {
@@ -44,30 +56,25 @@ bool IsGmsCoreUpdateRequired(PrefService* pref_service,
   }
 
   // GMSCore version is pre-UPM, update is required.
-  if (gms_version < password_manager::features::kAccountUpmMinGmsVersion) {
+  if (gms_version < kAccountUpmMinGmsVersion) {
     return true;
   }
 
   // GMSCore version is post-UPM with local passwords, no update required.
-  bool is_automotive = base::android::BuildInfo::GetInstance()->is_automotive();
-  if (is_automotive &&
-      gms_version >= base::GetFieldTrialParamByFeatureAsInt(
-                         kUnifiedPasswordManagerSyncOnlyInGMSCore,
-                         features::kLocalUpmMinGmsVersionParamForAuto,
-                         features::kDefaultLocalUpmMinGmsVersionForAuto)) {
-    return false;
-  }
-  if (!is_automotive &&
-      gms_version >= base::GetFieldTrialParamByFeatureAsInt(
-                         kUnifiedPasswordManagerSyncOnlyInGMSCore,
-                         features::kLocalUpmMinGmsVersionParam,
-                         features::kDefaultLocalUpmMinGmsVersion)) {
+  if (gms_version >= GetLocalUpmMinGmsVersion()) {
     return false;
   }
 
   // GMSCore supports account storage only, thus update is required if password
   // syncing is disabled.
-  if (!is_pwd_sync_enabled) {
+  // TODO(crbug.com/345791498): Re-arrange build targets so
+  // password_manager::sync_util::HasChosenToSyncPasswords() can be called here
+  // without causing a cyclic dependency.
+  bool has_chosen_to_sync_passwords =
+      sync_service && sync_service->GetDisableReasons().empty() &&
+      sync_service->GetUserSettings()->GetSelectedTypes().Has(
+          syncer::UserSelectableType::kPasswords);
+  if (!has_chosen_to_sync_passwords) {
     return true;
   }
 
@@ -85,6 +92,13 @@ bool IsGmsCoreUpdateRequired(PrefService* pref_service,
   bool is_user_unenrolled = pref_service->GetBoolean(
       prefs::kUnenrolledFromGoogleMobileServicesDueToErrors);
   return is_user_unenrolled || is_initial_migration_missing;
+#endif  //  BUILDFLAG(USE_LOGIN_DATABASE_AS_BACKEND)
+}
+
+int GetLocalUpmMinGmsVersion() {
+  return base::android::BuildInfo::GetInstance()->is_automotive()
+             ? kLocalUpmMinGmsVersionForAuto
+             : kLocalUpmMinGmsVersionForNonAuto;
 }
 
 }  // namespace password_manager

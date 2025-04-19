@@ -6,6 +6,7 @@ include_rules = [
     "+third_party/blink/renderer/platform/testing",
 
     # Dependencies.
+    "+base/base_switches.h",
     "+base/path_service.h",
     "+base/process",
     "+base/task/single_thread_task_executor.h",
@@ -50,9 +51,6 @@ include_rules = [
 specific_include_rules = {
     "blink_fuzzer_test_support\.cc": [
         "+content/public/test/blink_test_environment.h",
-    ],
-    "task_environment\.cc": [
-        "+third_party/blink/renderer/modules/scheduler/task_attribution_tracker_impl.h",
     ],
     "empty_web_media_player\.cc": [
         "+media/base/video_frame.h",

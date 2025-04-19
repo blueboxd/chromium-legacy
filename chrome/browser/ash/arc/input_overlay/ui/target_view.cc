@@ -23,6 +23,7 @@
 #include "ui/events/types/event_type.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/widget/widget.h"
 
 namespace arc::input_overlay {
@@ -79,7 +80,7 @@ TargetView::TargetView(DisplayOverlayController* controller,
   center_.set_x(bounds.width() / 2);
   center_.set_y(bounds.height() / 2);
   SetFocusBehavior(FocusBehavior::ALWAYS);
-  SetAccessibilityProperties(
+  GetViewAccessibility().SetProperties(
       ax::mojom::Role::kPane,
       l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_BUTTON_PLACEMENT_A11Y_LABEL));
 }
@@ -164,8 +165,10 @@ void TargetView::OnGestureEvent(ui::GestureEvent* event) {
   event->SetHandled();
 
   // When the gesture event is released, add a new action.
-  if (type == ui::ET_GESTURE_SCROLL_END || type == ui::ET_SCROLL_FLING_START ||
-      type == ui::ET_GESTURE_PINCH_END || type == ui::ET_GESTURE_END) {
+  if (type == ui::EventType::kGestureScrollEnd ||
+      type == ui::EventType::kScrollFlingStart ||
+      type == ui::EventType::kGesturePinchEnd ||
+      type == ui::EventType::kGestureEnd) {
     controller_->AddNewAction(action_type_, center_);
   }
 }

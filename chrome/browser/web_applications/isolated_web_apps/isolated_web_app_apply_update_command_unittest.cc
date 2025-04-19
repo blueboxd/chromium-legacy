@@ -96,7 +96,6 @@ class IsolatedWebAppApplyUpdateCommandTest : public WebAppTest {
  protected:
   void SetUp() override {
     SetTrustedWebBundleIdsForTesting({web_bundle_id_});
-
     WebAppTest::SetUp();
   }
 
@@ -118,7 +117,7 @@ class IsolatedWebAppApplyUpdateCommandTest : public WebAppTest {
     isolated_web_app->SetScope(isolated_web_app->start_url());
     isolated_web_app->SetIsolationData(WebApp::IsolationData(
         installed_location_, installed_version_, {"some-partition"},
-        std::move(pending_update_info)));
+        std::move(pending_update_info), /*integrity_block_data=*/std::nullopt));
 
     {
       ScopedRegistryUpdate update =
@@ -154,7 +153,7 @@ class IsolatedWebAppApplyUpdateCommandTest : public WebAppTest {
   FakeWebContentsManager::FakePageState& CreateDefaultPageState() {
     GURL url(
         base::StrCat({chrome::kIsolatedAppScheme, url::kStandardSchemeSeparator,
-                      kTestEd25519WebBundleId,
+                      test::GetDefaultEd25519WebBundleId().id(),
                       "/.well-known/_generated_install_page.html"}));
     auto& page_state = fake_web_contents_manager().GetOrCreatePageState(url);
 
@@ -170,8 +169,9 @@ class IsolatedWebAppApplyUpdateCommandTest : public WebAppTest {
   }
 
   WebApp::IsolationData::PendingUpdateInfo update_info() {
-    return WebApp::IsolationData::PendingUpdateInfo(update_bundle_location_,
-                                                    update_version_);
+    return WebApp::IsolationData::PendingUpdateInfo(
+        update_bundle_location_, update_version_,
+        /*integrity_block_data=*/std::nullopt);
   }
 
   void ExpectAppNotUpdatedAndDataCleared() {
@@ -183,7 +183,8 @@ class IsolatedWebAppApplyUpdateCommandTest : public WebAppTest {
                     WebApp::IsolationData(
                         installed_location_, installed_version_,
                         /*controlled_frame_partitions=*/{"some-partition"},
-                        /*pending_update_info=*/std::nullopt)));
+                        /*pending_update_info=*/std::nullopt,
+                        /*integrity_block_data=*/std::nullopt)));
 
     const IsolatedWebAppStorageLocation installed_app_location =
         web_app->isolation_data()->location;
@@ -206,7 +207,7 @@ class IsolatedWebAppApplyUpdateCommandTest : public WebAppTest {
   data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
 
   web_package::SignedWebBundleId web_bundle_id_ =
-      *web_package::SignedWebBundleId::Create(kTestEd25519WebBundleId);
+      test::GetDefaultEd25519WebBundleId();
   IsolatedWebAppUrlInfo url_info_ =
       IsolatedWebAppUrlInfo::CreateFromSignedWebBundleId(web_bundle_id_);
 
@@ -240,7 +241,8 @@ TEST_F(IsolatedWebAppApplyUpdateCommandTest, Succeeds) {
                   WebApp::IsolationData(
                       update_bundle_location_, update_version_,
                       /*controlled_frame_partitions=*/{"some-partition"},
-                      /*pending_update_info=*/std::nullopt)));
+                      /*pending_update_info=*/std::nullopt,
+                      /*integrity_block_data=*/std::nullopt)));
 }
 
 TEST_F(IsolatedWebAppApplyUpdateCommandTest,

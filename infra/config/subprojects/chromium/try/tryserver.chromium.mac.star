@@ -5,11 +5,11 @@
 
 load("//lib/branches.star", "branches")
 load("//lib/builder_config.star", "builder_config")
-load("//lib/builder_url.star", "linkify_builder")
 load("//lib/builders.star", "cpu", "os", "siso")
 load("//lib/try.star", "try_")
 load("//lib/consoles.star", "consoles")
 load("//lib/gn_args.star", "gn_args")
+load("//lib/html.star", "linkify_builder")
 load("//lib/xcode.star", "xcode")
 
 try_.defaults.set(
@@ -74,6 +74,7 @@ try_.builder(
         "ci/mac-archive-rel",
     ],
     gn_args = "ci/mac-archive-rel",
+    cpu = cpu.ARM64,
     siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -146,7 +147,7 @@ try_.orchestrator_builder(
     branch_selector = branches.selector.MAC_BRANCHES,
     mirrors = [
         "ci/Mac Builder",
-        "ci/Mac13 Tests",
+        "ci/mac14-tests",
         "ci/GPU Mac Builder",
         "ci/Mac Release (Intel)",
         "ci/Mac Retina Release (AMD)",
@@ -161,6 +162,7 @@ try_.orchestrator_builder(
             "partial_code_coverage_instrumentation",
             "enable_dangling_raw_ptr_feature_flag",
             "enable_backup_ref_ptr_feature_flag",
+            "mac",
             "x64",
         ],
     ),
@@ -171,6 +173,8 @@ try_.orchestrator_builder(
         "chromium.add_one_test_shard": 10,
         # crbug/940930
         "chromium.enable_cleandead": 100,
+        # b/346598710
+        "chromium.luci_analysis_v2": 100,
     },
     main_list_view = "try",
     tryjob = try_.job(),
@@ -201,9 +205,12 @@ try_.builder(
             "release_try_builder",
             "remoteexec",
             "no_symbols",
+            "mac",
         ],
     ),
     builderless = True,
+    cores = None,
+    cpu = cpu.ARM64,
 )
 
 try_.builder(
@@ -237,6 +244,7 @@ try_.builder(
             "release_try_builder",
             "remoteexec",
             "no_symbols",
+            "mac",
         ],
     ),
     builderless = True,
@@ -245,7 +253,7 @@ try_.builder(
     main_list_view = "try",
 )
 
-try_.orchestrator_builder(
+try_.builder(
     name = "mac13-arm64-rel",
     branch_selector = branches.selector.MAC_BRANCHES,
     mirrors = [
@@ -259,21 +267,12 @@ try_.orchestrator_builder(
             "release_try_builder",
             "remoteexec",
             "no_symbols",
+            "mac",
         ],
     ),
-    compilator = "mac13-arm64-rel-compilator",
-    main_list_view = "try",
-    tryjob = try_.job(
-        experiment_percentage = 100,
-    ),
-)
-
-try_.compilator_builder(
-    name = "mac13-arm64-rel-compilator",
-    branch_selector = branches.selector.MAC_BRANCHES,
+    builderless = True,
+    cores = None,
     cpu = cpu.ARM64,
-    # TODO (crbug.com/1245171): Revert when root issue is fixed
-    grace_period = 4 * time.minute,
     main_list_view = "try",
 )
 
@@ -292,16 +291,17 @@ try_.orchestrator_builder(
             "release_try_builder",
             "remoteexec",
             "no_symbols",
+            "mac",
         ],
     ),
     compilator = "mac14-arm64-rel-compilator",
     contact_team_email = "bling-engprod@google.com",
     main_list_view = "try",
     tryjob = try_.job(
-        # TODO (crbug.com/338209817): change to 100,
-        # then move out of experimental CQ after,
-        # mac14-arm64-rel replaces mac13-arm64-rel on CQ.
-        experiment_percentage = 1,
+        # TODO (crbug.com/338209817): move out of
+        # experimental CQ after confirming it's consistently
+        # green and fast.
+        experiment_percentage = 100,
     ),
 )
 
@@ -320,22 +320,6 @@ try_.compilator_builder(
 # they are built, hence no additional dimension is specified.
 # The 10.xx version translates to which bots will run isolated tests.
 try_.builder(
-    name = "mac_chromium_10.15_rel_ng",
-    branch_selector = branches.selector.MAC_BRANCHES,
-    mirrors = [
-        "ci/Mac Builder",
-        "ci/Mac10.15 Tests",
-    ],
-    gn_args = gn_args.config(
-        configs = [
-            "release_try_builder",
-            "remoteexec",
-        ],
-    ),
-    siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
-)
-
-try_.builder(
     name = "mac_chromium_11.0_rel_ng",
     branch_selector = branches.selector.MAC_BRANCHES,
     mirrors = [
@@ -346,6 +330,8 @@ try_.builder(
         configs = [
             "release_try_builder",
             "remoteexec",
+            "mac",
+            "x64",
         ],
     ),
     builderless = False,
@@ -363,12 +349,14 @@ try_.builder(
             "ci/Mac Builder",
             "release_try_builder",
             "remoteexec",
+            "x64",
         ],
     ),
 )
 
 try_.builder(
     name = "mac13-tests",
+    branch_selector = branches.selector.MAC_BRANCHES,
     mirrors = [
         "ci/Mac Builder",
         "ci/Mac13 Tests",
@@ -378,6 +366,7 @@ try_.builder(
             "ci/Mac Builder",
             "release_try_builder",
             "remoteexec",
+            "x64",
         ],
     ),
     cpu = cpu.ARM64,
@@ -414,6 +403,8 @@ try_.builder(
             "dcheck_always_on",
             "release_builder",
             "remoteexec",
+            "mac",
+            "x64",
         ],
     ),
     siso_remote_jobs = siso.remote_jobs.HIGH_JOBS_FOR_CQ,
@@ -459,6 +450,7 @@ try_.builder(
             "gpu_tests",
             "release_try_builder",
             "remoteexec",
+            "mac",
             "x64",
         ],
     ),
@@ -565,7 +557,6 @@ ios_builder(
     name = "ios-m1-simulator",
     mirrors = ["ci/ios-m1-simulator"],
     gn_args = "ci/ios-m1-simulator",
-    os = os.MAC_BETA,
     cpu = cpu.ARM64,
 )
 
@@ -593,6 +584,8 @@ try_.orchestrator_builder(
     experiments = {
         # go/nplus1shardsproposal
         "chromium.add_one_test_shard": 10,
+        # b/346598710
+        "chromium.luci_analysis_v2": 100,
     },
     main_list_view = "try",
     tryjob = try_.job(),
@@ -663,13 +656,6 @@ ios_builder(
 )
 
 ios_builder(
-    name = "ios-simulator-multi-window",
-    mirrors = ["ci/ios-simulator-multi-window"],
-    gn_args = "ci/ios-simulator-multi-window",
-    cpu = cpu.ARM64,
-)
-
-ios_builder(
     name = "ios-simulator-noncq",
     mirrors = [
         "ci/ios-simulator-noncq",
@@ -707,7 +693,6 @@ ios_builder(
     name = "ios17-sdk-simulator",
     mirrors = ["ci/ios17-sdk-simulator"],
     gn_args = "ci/ios17-sdk-simulator",
-    os = os.MAC_BETA,
     cpu = cpu.ARM64,
     xcode = xcode.x15betabots,
 )
@@ -728,9 +713,8 @@ ios_builder(
         "ci/ios18-sdk-simulator",
     ],
     gn_args = "ci/ios18-sdk-simulator",
-    os = os.MAC_BETA,
     cpu = cpu.ARM64,
-    xcode = xcode.x15betabots,
+    xcode = xcode.x16betabots,
 )
 
 ios_builder(
@@ -753,9 +737,6 @@ try_.gpu.optional_tests_builder(
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
-            apply_configs = [
-                "angle_internal",
-            ],
         ),
         chromium_config = builder_config.chromium_config(
             config = "chromium",
@@ -776,6 +757,7 @@ try_.gpu.optional_tests_builder(
             "remoteexec",
             "minimal_symbols",
             "dcheck_always_on",
+            "mac",
             "x64",
         ],
     ),
@@ -787,6 +769,7 @@ try_.gpu.optional_tests_builder(
             # Inclusion filters.
             cq.location_filter(path_regexp = "chrome/browser/vr/.+"),
             cq.location_filter(path_regexp = "content/browser/xr/.+"),
+            cq.location_filter(path_regexp = "content/test/data/gpu/.+"),
             cq.location_filter(path_regexp = "content/test/gpu/.+"),
             cq.location_filter(path_regexp = "gpu/.+"),
             cq.location_filter(path_regexp = "media/audio/.+"),

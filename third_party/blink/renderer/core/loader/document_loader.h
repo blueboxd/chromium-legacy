@@ -39,6 +39,7 @@
 #include "base/uuid.h"
 #include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/bindings/shared_remote.h"
+#include "net/storage_access_api/status.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/common/fenced_frame/redacted_fenced_frame_config.h"
 #include "third_party/blink/public/common/frame/view_transition_state.h"
@@ -79,6 +80,7 @@
 #include "third_party/blink/renderer/core/loader/preload_helper.h"
 #include "third_party/blink/renderer/core/page/viewport_description.h"
 #include "third_party/blink/renderer/core/permissions_policy/policy_helper.h"
+#include "third_party/blink/renderer/core/speculation_rules/speculation_rule_set.h"
 #include "third_party/blink/renderer/platform/bindings/source_location.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -127,6 +129,8 @@ enum class CommitResult : int32_t;
 namespace {
 struct SameSizeAsDocumentLoader;
 }  // namespace
+
+enum class FirePopstate { kYes, kNo };
 
 // The DocumentLoader fetches a main resource and handles the result.
 // TODO(https://crbug.com/855189). This was originally structured to have a
@@ -242,6 +246,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
                                    mojom::blink::SameDocumentNavigationType,
                                    scoped_refptr<SerializedScriptValue>,
                                    WebFrameLoadType,
+                                   FirePopstate,
                                    bool is_browser_initiated = false,
                                    bool is_synchronously_committed = true,
                                    std::optional<scheduler::TaskAttributionId>
@@ -256,6 +261,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
       mojom::blink::SameDocumentNavigationType,
       scoped_refptr<SerializedScriptValue>,
       WebFrameLoadType,
+      FirePopstate,
       const SecurityOrigin* initiator_origin,
       bool is_browser_initiated,
       bool is_synchronously_committed,
@@ -310,6 +316,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
       Element* source_element,
       mojom::blink::TriggeringEventInfo,
       bool is_browser_initiated,
+      bool has_ua_visual_transition,
       std::optional<scheduler::TaskAttributionId>
           soft_navigation_heuristics_task_id);
 
@@ -585,9 +592,10 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   // WebNavigationBodyLoader::Client
   void BodyDataReceived(base::span<const char> data) override;
-  void DecodedBodyDataReceived(const WebString& data,
-                               const WebEncodingData& encoding_data,
-                               base::span<const char> encoded_data) override;
+  void DecodedBodyDataReceived(
+      const WebString& data,
+      const WebEncodingData& encoding_data,
+      base::SpanOrSize<const char> encoded_data) override;
   void BodyLoadingFinished(base::TimeTicks completion_time,
                            int64_t total_encoded_data_length,
                            int64_t total_encoded_body_length,
@@ -628,7 +636,8 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   // contents (currently only detected JavaScript frameworks). Configured by the
   // AutoSpeculationRules feature.
   void InjectAutoSpeculationRules(const JavaScriptFrameworkDetectionResult&);
-  void InjectSpeculationRulesFromString(const String&);
+  void InjectSpeculationRulesFromString(const String&,
+                                        BrowserInjectedSpeculationRuleOptOut);
 
   // Params are saved in constructor and are cleared after StartLoading().
   // TODO(dgozman): remove once StartLoading is merged with constructor.
@@ -659,6 +668,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   const bool grant_load_local_resources_ = false;
   const std::optional<blink::mojom::FetchCacheMode> force_fetch_cache_mode_;
   const FramePolicy frame_policy_;
+  std::optional<uint64_t> visited_link_salt_;
 
   Member<LocalFrame> frame_;
 
@@ -840,9 +850,8 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   std::optional<FencedFrame::RedactedFencedFrameProperties>
       fenced_frame_properties_;
 
-  // Indicates whether the document should be loaded with its has_storage_access
-  // bit set.
-  const bool load_with_storage_access_;
+  // The StorageAccessApiStatus that the document should be loaded with.
+  const net::StorageAccessApiStatus storage_access_api_status_;
 
   // Only container-initiated navigations (e.g. iframe change src) report
   // their resource timing to the parent.

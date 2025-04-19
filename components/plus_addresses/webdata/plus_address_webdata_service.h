@@ -20,7 +20,7 @@
 class WebDatabaseService;
 
 namespace syncer {
-class ModelTypeControllerDelegate;
+class DataTypeControllerDelegate;
 }
 
 namespace plus_addresses {
@@ -69,7 +69,7 @@ class PlusAddressWebDataService : public WebDataServiceBase {
   void ClearPlusProfiles();
 
   // Returns a controller delegate for the `sync_bridge` owned this service.
-  std::unique_ptr<syncer::ModelTypeControllerDelegate>
+  std::unique_ptr<syncer::DataTypeControllerDelegate>
   GetSyncControllerDelegate();
 
  protected:
@@ -114,6 +114,10 @@ class PlusAddressWebDataService : public WebDataServiceBase {
 // Returns true if `syncer::kSyncPlusAddress` is enabled. This only exists to
 // avoid a sync dependency in components/plus_addresses.
 bool IsSyncingPlusAddresses();
+
+// Returns the `syncer::kSyncPlusAddress` feature to be accessed from tests.
+// This only exists to avoid a sync dependency in components/plus_addresses.
+const base::Feature& GetSyncPlusAddressFeatureForTests();
 
 }  // namespace plus_addresses
 

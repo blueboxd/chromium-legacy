@@ -1468,7 +1468,7 @@ TEST_F(ExtensionContextMenuModelTest,
   InitializeEmptyExtensionService();
 
   scoped_refptr<const Extension> extension =
-      ExtensionBuilder("extension").AddPermissions({"activeTab"}).Build();
+      ExtensionBuilder("extension").AddAPIPermission("activeTab").Build();
   InitializeAndAddExtension(*extension);
 
   // Navigate to a url that should have "customize by extension" site
@@ -1561,7 +1561,7 @@ TEST_F(ExtensionContextMenuModelTest,
 
   // Add an extension that wants access to a.com.
   scoped_refptr<const Extension> extension =
-      ExtensionBuilder("extension").AddPermission("*://a.com/*").Build();
+      ExtensionBuilder("extension").AddHostPermission("*://a.com/*").Build();
   InitializeAndAddExtension(*extension);
 
   // Additionally, grant it the (unrequested) access to b.com.
@@ -1674,7 +1674,7 @@ TEST_F(ExtensionContextMenuModelTest,
   // Add an extension that wants access to a.com and b.com.
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("extension")
-          .AddPermissions({"*://a.com/*", "*://b.com/*"})
+          .AddHostPermissions({"*://a.com/*", "*://b.com/*"})
           .Build();
   InitializeAndAddExtension(*extension);
 
@@ -1725,7 +1725,7 @@ TEST_F(ExtensionContextMenuModelTest, TestClickingPageAccessLearnMore) {
 
   // Add an extension that wants access to a.com.
   scoped_refptr<const Extension> extension =
-      ExtensionBuilder("extension").AddPermission("*://a.com/*").Build();
+      ExtensionBuilder("extension").AddHostPermission("*://a.com/*").Build();
   InitializeAndAddExtension(*extension);
 
   PermissionsManager* permissions_manager = PermissionsManager::Get(profile());
@@ -1814,7 +1814,7 @@ TEST_F(ExtensionContextMenuModelTest, HistogramTest_CustomCommand) {
   InitializeEmptyExtensionService();
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("extension")
-          .SetAction(ActionInfo::Type::kBrowser)
+          .SetAction(ActionInfo::Type::kAction)
           .Build();
   InitializeAndAddExtension(*extension);
 
@@ -1822,7 +1822,7 @@ TEST_F(ExtensionContextMenuModelTest, HistogramTest_CustomCommand) {
   ASSERT_TRUE(manager);
 
   MenuBuilder builder(extension, GetBrowser(), manager);
-  builder.AddContextItem(MenuItem::BROWSER_ACTION);
+  builder.AddContextItem(MenuItem::ACTION);
   std::unique_ptr<ExtensionContextMenuModel> menu = builder.BuildMenu();
   EXPECT_EQ(1, CountExtensionItems(*menu));
 
@@ -2299,7 +2299,7 @@ TEST_P(ExtensionContextMenuModelWithUserHostControlsTest,
 
   // Add an extension that wants access to a.com.
   scoped_refptr<const Extension> extension =
-      ExtensionBuilder("extension").AddPermission("*://a.com/*").Build();
+      ExtensionBuilder("extension").AddHostPermission("*://a.com/*").Build();
   InitializeAndAddExtension(*extension);
 
   EXPECT_FALSE(PermissionsManager::Get(profile())->HasWithheldHostPermissions(

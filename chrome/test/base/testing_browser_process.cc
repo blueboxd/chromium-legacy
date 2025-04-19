@@ -16,6 +16,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/download/download_request_limiter.h"
+#include "chrome/browser/global_features.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/media/webrtc/webrtc_log_uploader.h"
 #include "chrome/browser/notifications/notification_platform_bridge.h"
@@ -39,7 +40,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/subresource_filter/content/shared/browser/ruleset_service.h"
 #include "content/public/browser/network_service_instance.h"
-#include "content/public/browser/notification_service.h"
 #include "extensions/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
 #include "printing/buildflags/buildflags.h"
@@ -50,6 +50,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(OS_LEVEL_GEOLOCATION_PERMISSION_SUPPORTED)
+#include "services/device/public/cpp/device_features.h"
 #include "services/device/public/cpp/geolocation/geolocation_system_permission_manager.h"
 #include "services/device/public/cpp/test/fake_geolocation_system_permission_manager.h"
 #endif
@@ -111,12 +112,14 @@ void TestingBrowserProcess::CreateInstance() {
   process->Init();
 
 #if BUILDFLAG(OS_LEVEL_GEOLOCATION_PERMISSION_SUPPORTED)
-  auto fake_geolocation_system_permission_manager =
-      std::make_unique<device::FakeGeolocationSystemPermissionManager>();
-  fake_geolocation_system_permission_manager->SetSystemPermission(
-      device::LocationSystemPermissionStatus::kAllowed);
-  device::GeolocationSystemPermissionManager::SetInstance(
-      std::move(fake_geolocation_system_permission_manager));
+  if (features::IsOsLevelGeolocationPermissionSupportEnabled()) {
+    auto fake_geolocation_system_permission_manager =
+        std::make_unique<device::FakeGeolocationSystemPermissionManager>();
+    fake_geolocation_system_permission_manager->SetSystemPermission(
+        device::LocationSystemPermissionStatus::kAllowed);
+    device::GeolocationSystemPermissionManager::SetInstance(
+        std::move(fake_geolocation_system_permission_manager));
+  }
 #endif  // BUILDFLAG(OS_LEVEL_GEOLOCATION_PERMISSION_SUPPORTED)
 }
 
@@ -146,11 +149,6 @@ TestingBrowserProcess::TestingBrowserProcess()
     : app_locale_("en"),
       platform_part_(std::make_unique<TestingBrowserProcessPlatformPart>()),
       os_crypt_async_(os_crypt_async::GetTestOSCryptAsyncForTesting()) {
-  // TestingBrowserProcess is used in unit_tests which sets this up through
-  // content::UnitTestTestSuite but also through other test binaries which don't
-  // use that test suite in which case we have to set it up.
-  if (!content::NotificationService::current())
-    notification_service_.reset(content::NotificationService::Create());
 }
 
 TestingBrowserProcess::~TestingBrowserProcess() {
@@ -199,6 +197,9 @@ void TestingBrowserProcess::Init() {
   usb_system_tray_icon_ = std::make_unique<UsbStatusIcon>();
 #endif  // BUILDFLAG(IS_CHROMEOS)
 #endif  // !BUILDFLAG(IS_ANDROID)
+
+  features_ = GlobalFeatures::CreateGlobalFeatures();
+  features_->Init();
 }
 
 void TestingBrowserProcess::FlushLocalStateAndReply(base::OnceClosure reply) {
@@ -269,12 +270,22 @@ void TestingBrowserProcess::SetProfileManager(
   profile_manager_ = std::move(profile_manager);
 }
 
+void TestingBrowserProcess::SetVariationsService(
+    variations::VariationsService* variations_service) {
+  variations_service_ = variations_service;
+}
+
 PrefService* TestingBrowserProcess::local_state() {
   return local_state_;
 }
 
-variations::VariationsService* TestingBrowserProcess::variations_service() {
+signin::ActivePrimaryAccountsMetricsRecorder*
+TestingBrowserProcess::active_primary_accounts_metrics_recorder() {
   return nullptr;
+}
+
+variations::VariationsService* TestingBrowserProcess::variations_service() {
+  return variations_service_;
 }
 
 StartupData* TestingBrowserProcess::startup_data() {
@@ -544,6 +555,10 @@ BuildState* TestingBrowserProcess::GetBuildState() {
 #else
   return nullptr;
 #endif
+}
+
+GlobalFeatures* TestingBrowserProcess::GetFeatures() {
+  return features_.get();
 }
 
 resource_coordinator::TabManager* TestingBrowserProcess::GetTabManager() {

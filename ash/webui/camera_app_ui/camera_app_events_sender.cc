@@ -335,8 +335,10 @@ void CameraAppEventsSender::SendPerfEvent(
           .SetDuration(static_cast<int64_t>(params->duration))
           .SetFacing(static_cast<cros_events::CameraAppFacing>(params->facing))
           .SetResolutionWidth(static_cast<int64_t>(params->resolution_width))
-          .SetResolutionHeight(
-              static_cast<int64_t>(params->resolution_height))));
+          .SetResolutionHeight(static_cast<int64_t>(params->resolution_height))
+          .SetPageCount(static_cast<int64_t>(params->page_count))
+          .SetPressure(
+              static_cast<cros_events::CameraAppPressure>(params->pressure))));
 }
 
 void CameraAppEventsSender::SendUnsupportedProtocolEvent() {
@@ -355,6 +357,22 @@ void CameraAppEventsSender::UpdateMemoryUsageEventParams(
   }
 
   session_memory_usage_ = params.Clone();
+}
+
+void CameraAppEventsSender::SendOcrEvent(
+    camera_app::mojom::OcrEventParamsPtr params) {
+  if (!CanSendEvents()) {
+    return;
+  }
+
+  metrics::structured::StructuredMetricsClient::Record(std::move(
+      cros_events::CameraApp_Ocr()
+          .SetEventType(static_cast<cros_events::CameraAppOcrEventType>(
+              params->event_type))
+          .SetLineCount(static_cast<int64_t>(params->line_count))
+          .SetWordCount(static_cast<int64_t>(params->word_count))
+          .SetIsPrimaryLanguage(
+              static_cast<int64_t>(params->is_primary_language))));
 }
 
 void CameraAppEventsSender::OnMojoDisconnected() {

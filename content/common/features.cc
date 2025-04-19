@@ -24,10 +24,9 @@ BASE_FEATURE(kAndroidDownloadableFontsMatching,
              "AndroidDownloadableFontsMatching",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enables exposure of the Cross App Web Attribution Reporting in the renderer
-// without an origin trial token.
-BASE_FEATURE(kAttributionReportingCrossAppWebOverride,
-             "AttributionReportingCrossAppWebOverride",
+// Adds OOPIF support for android drag and drop.
+BASE_FEATURE(kAndroidDragDropOopif,
+             "AndroidDragDropOopif",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables controlling the time to live for pages in the BackForwardCache.
@@ -182,6 +181,12 @@ BASE_FEATURE(kFedCmIdAssertionCORS,
              "FedCmIdAssertionCORS",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enables sending SameSite=Lax cookies in credentialed FedCM requests
+// (accounts endpoint, ID assertion endpoint and disconnect endpoint).
+BASE_FEATURE(kFedCmSameSiteLax,
+             "FedCmSameSiteLax",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables sending only SameSite=None cookies in credentialed FedCM requests
 // (accounts endpoint and ID assertion endpoint). If kFedCmIdAssertionCORS
 // is enabled, this is a no-op for the ID assertion endpoint.
@@ -232,6 +237,19 @@ BASE_FEATURE(kFledgeSellerWorkletThreadPool,
 const base::FeatureParam<int> kFledgeSellerWorkletThreadPoolSize{
     &kFledgeSellerWorkletThreadPool, "seller_worklet_thread_pool_size", 1};
 
+// Enables multi-threaded bidder worklet.
+BASE_FEATURE(kFledgeBidderWorkletThreadPool,
+             "FledgeBidderWorkletThreadPool",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// The scaling factor for calculating the number of bidder worklet threads based
+// on the number of Interest Groups.
+// Formula: #threads = 1 + scaling_factor * log10(#IGs)
+const base::FeatureParam<double>
+    kFledgeBidderWorkletThreadPoolSizeLogarithmicScalingFactor{
+        &kFledgeBidderWorkletThreadPool,
+        "bidder_worklet_thread_pool_size_logarithmic_scaling_factor", 0};
+
 // This is a kill switch for focusing the RenderWidgetHostViewAndroid on
 // ActionDown on every touch sequence if not focused already, please see
 // b/340824076. We are adding this to confirm the hypothesis that root view,
@@ -248,6 +266,16 @@ BASE_FEATURE(kFocusRenderWidgetHostViewAndroidOnActionDown,
 BASE_FEATURE(kFontSrcLocalMatching,
              "FontSrcLocalMatching",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+#if BUILDFLAG(IS_ANDROID)
+// Controls whether building a database of unique font names is performed
+// using the Fontations library. If off, FreeType is used instead.
+// Used as a kill switch, expected to be removed after one stable cycle
+// of using Fontations. See https://crbug.com/349952802
+BASE_FEATURE(kFontIndexingFontations,
+             "FontIndexingFontations",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#endif
 
 // Feature controlling whether or not memory pressure signals will be forwarded
 // to the GPU process.
@@ -310,7 +338,7 @@ BASE_FEATURE(kInnerFrameCompositorSurfaceEviction,
 // typical 24 hour wait.
 BASE_FEATURE(kInterestGroupUpdateIfOlderThan,
              "InterestGroupUpdateIfOlderThan",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable IOSurface based screen capturer.
 #if BUILDFLAG(IS_MAC)
@@ -324,7 +352,7 @@ BASE_FEATURE(kIOSurfaceCapturer,
 #if BUILDFLAG(IS_MAC)
 BASE_FEATURE(kMacWebContentsOcclusion,
              "MacWebContentsOcclusion",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
 // If this feature is enabled, media-device enumerations use a cache that is
@@ -367,10 +395,6 @@ BASE_FEATURE(kPermissionsPolicyVerificationInContent,
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // !BUILDFLAG(IS_ANDROID)
 
-// Preload cookie database on NetworkContext creation.
-BASE_FEATURE(kPreloadCookies,
-             "PreloadCookies",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 // Preloading holdback feature disables preloading (e.g., preconnect, prefetch,
 // and prerender) on all predictors. This is useful in comparing the impact of
 // blink::features::kPrerender2 experiment with and without them.
@@ -387,6 +411,15 @@ BASE_FEATURE(kPreloadingConfig,
 BASE_FEATURE(kPrivacySandboxAdsAPIsM1Override,
              "PrivacySandboxAdsAPIsM1Override",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+#if BUILDFLAG(IS_ANDROID)
+// When disabled("legacy behavior") it resets ongoing gestures when window loses
+// focus. In split screen scenario this means we can't continue scroll on a
+// chrome window, when we start interacting with another window.
+BASE_FEATURE(kContinueGestureOnLosingFocus,
+             "ContinueGestureOnLosingFocus",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
 
 // Enables reporting ResourceTiming entries for document, who initiated a
 // cancelled navigation in one of their <iframe>.
@@ -469,6 +502,10 @@ BASE_FEATURE(kRunStableVideoDecoderFactoryProcessServiceOnIOThread,
 // crbug.com/1472634 for more details.
 BASE_FEATURE(kServiceWorkerAutoPreload,
              "ServiceWorkerAutoPreload",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kServiceWorkerAvoidMainThreadForInitialization,
+             "ServiceWorkerAvoidMainThreadForInitialization",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // (crbug.com/1371756): When enabled, the static routing API starts
@@ -566,6 +603,11 @@ BASE_FEATURE(kWebOTPAssertionFeaturePolicy,
 // Flag guard for fix for crbug.com/1504324.
 BASE_FEATURE(kWindowOpenFileSelectFix,
              "WindowOpenFileSelectFix",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Flag guard for fix for crbug.com/346629231.
+BASE_FEATURE(kScrollBubblingFix,
+             "ScrollBubblingFix",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Please keep features in alphabetical order.

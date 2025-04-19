@@ -5,29 +5,18 @@
 #ifndef COMPONENTS_AUTOFILL_CONTENT_RENDERER_FORM_CACHE_H_
 #define COMPONENTS_AUTOFILL_CONTENT_RENDERER_FORM_CACHE_H_
 
-#include <stddef.h>
-
 #include <map>
-#include <set>
-#include <string>
 #include <vector>
 
 #include "base/containers/flat_set.h"
-#include "base/gtest_prod_util.h"
-#include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "components/autofill/core/common/field_data_manager.h"
 #include "components/autofill/core/common/form_data.h"
-#include "components/autofill/core/common/form_data_predictions.h"
 #include "components/autofill/core/common/unique_ids.h"
-
-namespace blink {
-class WebLocalFrame;
-}  // namespace blink
 
 namespace autofill {
 
-struct FormData;
-struct FormDataPredictions;
+class AutofillAgent;
 
 // Manages the forms in a single RenderFrame.
 class FormCache {
@@ -46,12 +35,14 @@ class FormCache {
     base::flat_set<FormRendererId> removed_forms;
   };
 
-  explicit FormCache(blink::WebLocalFrame* frame);
+  explicit FormCache(AutofillAgent* owner);
 
   FormCache(const FormCache&) = delete;
   FormCache& operator=(const FormCache&) = delete;
 
   ~FormCache();
+
+  void Reset();
 
   // Returns the diff of forms since the last call to UpdateFormCache(): the new
   // forms, the still present but changed forms, and the removed forms.
@@ -86,26 +77,14 @@ class FormCache {
   UpdateFormCacheResult UpdateFormCache(
       const FieldDataManager& field_data_manager);
 
-  // For each field in the |form|, if |attach_predictions_to_dom| is true, sets
-  // the title to include the field's heuristic type, server type, and
-  // signature; as well as the form's signature and the experiment id for the
-  // server predictions. In all cases, may emit console warnings regarding the
-  // use of autocomplete attributes.
-  bool ShowPredictions(const FormDataPredictions& form,
-                       bool attach_predictions_to_dom);
-
  private:
   friend class FormCacheTestApi;
 
-  // The frame this FormCache is associated with. Weak reference.
-  raw_ptr<blink::WebLocalFrame> frame_;
+  // The owning AutofillAgent.
+  const raw_ref<AutofillAgent> agent_;
 
   // The cached forms. Used to prevent re-extraction of forms.
   std::map<FormRendererId, FormData> extracted_forms_;
-
-  // The synthetic FormData is for all the fieldsets in the document without a
-  // form owner.
-  FormData synthetic_form_;
 };
 
 }  // namespace autofill

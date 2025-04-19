@@ -4,6 +4,7 @@
 
 #include "chrome/browser/permissions/chrome_permissions_client.h"
 
+#include <optional>
 #include <vector>
 
 #include "base/containers/contains.h"
@@ -14,6 +15,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/ash/shimless_rma/chrome_shimless_rma_delegate.h"
 #include "chrome/browser/bluetooth/bluetooth_chooser_context_factory.h"
 #include "chrome/browser/browser_process.h"
@@ -47,6 +49,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/content_settings/core/browser/content_settings_type_set.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "components/google/core/common/google_util.h"
 #include "components/permissions/constants.h"
 #include "components/permissions/contexts/bluetooth_chooser_context.h"
@@ -290,6 +293,9 @@ void ChromePermissionsClient::TriggerPromptHatsSurveyIfEnabled(
     std::optional<base::TimeDelta> prompt_display_duration,
     bool is_post_prompt,
     const GURL& gurl,
+    std::optional<permissions::feature_params::PermissionElementPromptPosition>
+        pepc_prompt_position,
+    ContentSetting initial_permission_status,
     base::OnceCallback<void()> hats_shown_callback) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
@@ -309,7 +315,7 @@ void ChromePermissionsClient::TriggerPromptHatsSurveyIfEnabled(
           prompt_display_duration,
           permissions::PermissionHatsTriggerHelper::
               GetOneTimePromptsDecidedBucket(profile->GetPrefs()),
-          recorded_gurl);
+          recorded_gurl, pepc_prompt_position, initial_permission_status);
 
   if (!permissions::PermissionHatsTriggerHelper::
           ArePromptTriggerCriteriaSatisfied(prompt_parameters)) {
@@ -382,6 +388,9 @@ void ChromePermissionsClient::OnPromptResolved(
     permissions::PermissionRequestGestureType gesture_type,
     std::optional<QuietUiReason> quiet_ui_reason,
     base::TimeDelta prompt_display_duration,
+    std::optional<permissions::feature_params::PermissionElementPromptPosition>
+        pepc_prompt_position,
+    ContentSetting initial_permission_status,
     content::WebContents* web_contents) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
@@ -424,8 +433,9 @@ void ChromePermissionsClient::OnPromptResolved(
   TriggerPromptHatsSurveyIfEnabled(
       web_contents, request_type, std::make_optional(action),
       prompt_disposition, prompt_disposition_reason, gesture_type,
-      std::make_optional(prompt_display_duration), true,
-      web_contents->GetLastCommittedURL(), base::DoNothing());
+      std::make_optional(prompt_display_duration), /*is_post_prompt=*/true,
+      web_contents->GetLastCommittedURL(), pepc_prompt_position,
+      initial_permission_status, base::DoNothing());
 }
 
 std::optional<bool>
@@ -483,6 +493,32 @@ std::optional<url::Origin> ChromePermissionsClient::GetAutoApprovalOrigin(
   }
 #endif
   return std::nullopt;
+}
+
+std::optional<permissions::PermissionAction>
+ChromePermissionsClient::GetAutoApprovalStatus(
+    content::BrowserContext* browser_context,
+    const GURL& origin) {
+  if (base::FeatureList::IsEnabled(
+          permissions::features::kAllowMultipleOriginsForWebKioskPermissions)) {
+    Profile* profile = Profile::FromBrowserContext(browser_context);
+    if (chrome::IsWebKioskOriginAllowed(profile->GetPrefs(), origin)) {
+      return permissions::PermissionAction::GRANTED;
+    }
+  }
+
+  std::optional<url::Origin> auto_approval_origin =
+      GetAutoApprovalOrigin(browser_context);
+
+  if (!auto_approval_origin.has_value()) {
+    return std::nullopt;
+  }
+
+  if (url::Origin::Create(origin) == auto_approval_origin.value()) {
+    return permissions::PermissionAction::GRANTED;
+  }
+
+  return permissions::PermissionAction::IGNORED;
 }
 
 bool ChromePermissionsClient::CanBypassEmbeddingOriginCheck(

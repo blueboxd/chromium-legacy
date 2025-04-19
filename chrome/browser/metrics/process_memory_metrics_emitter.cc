@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/metrics/process_memory_metrics_emitter.h"
 
 #include <set>
@@ -10,7 +15,6 @@
 #include <utility>
 
 #include "base/allocator/buildflags.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_buildflags.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/containers/flat_map.h"
@@ -42,6 +46,7 @@
 #include "content/public/common/content_switches.h"
 #include "extensions/buildflags/buildflags.h"
 #include "media/mojo/mojom/cdm_service.mojom.h"
+#include "partition_alloc/buildflags.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -227,6 +232,8 @@ const Metric kAllocatorDumpNamesForMetrics[] = {
      &Memory_Experimental::SetExtensions_ValueStore},
     {"font_caches", "FontCaches", MetricSize::kSmall, kEffectiveSize,
      EmitTo::kSizeInUkmAndUma, &Memory_Experimental::SetFontCaches},
+    {"gpu/dawn", "DawnSharedContext", MetricSize::kLarge, kEffectiveSize,
+     EmitTo::kSizeInUmaOnly, nullptr},
     {"gpu/discardable_cache", "ServiceDiscardableManager", MetricSize::kCustom,
      kSize, EmitTo::kSizeInUmaOnly, nullptr, ImageSizeMetricRange},
     {"gpu/discardable_cache", "ServiceDiscardableManager.AvgImageSize",
@@ -508,6 +515,8 @@ const Metric kAllocatorDumpNamesForMetrics[] = {
      &Memory_Experimental::SetSiteStorage_SessionStorage},
     {"skia", "Skia", MetricSize::kLarge, kEffectiveSize,
      EmitTo::kSizeInUkmAndUma, &Memory_Experimental::SetSkia},
+    {"skia", "Skia.PurgeableSize", MetricSize::kLarge, "purgeable_size",
+     EmitTo::kSizeInUmaOnly, nullptr},
     {"skia/gpu_resources", "SharedContextState", MetricSize::kLarge,
      kEffectiveSize, EmitTo::kIgnored, nullptr},
     {"skia/sk_glyph_cache", "Skia.SkGlyphCache", MetricSize::kLarge,
@@ -1623,11 +1632,10 @@ void ProcessMemoryMetricsEmitter::GetProcessToPageInfoMap(
     GetProcessToPageInfoMapCallback callback,
     performance_manager::Graph* graph) {
   std::vector<ProcessInfo> process_infos;
-  std::vector<const performance_manager::ProcessNode*> process_nodes =
-      graph->GetAllProcessNodes();
   // Assign page nodes unique IDs within this lookup only.
   base::flat_map<const performance_manager::PageNode*, uint64_t> page_id_map;
-  for (auto* process_node : process_nodes) {
+  for (const performance_manager::ProcessNode* process_node :
+       graph->GetAllProcessNodes()) {
     if (process_node->GetProcessId() == base::kNullProcessId)
       continue;
 
@@ -1649,14 +1657,18 @@ void ProcessMemoryMetricsEmitter::GetProcessToPageInfoMap(
       if (page_node->GetUkmSourceID() == ukm::kInvalidSourceId)
         continue;
 
-      if (page_id_map.find(page_node) == page_id_map.end())
-        page_id_map.insert(std::make_pair(page_node, page_id_map.size() + 1));
+      // Get or generate the tab id.
+      uint64_t& tab_id = page_id_map[page_node];
+      if (tab_id == 0u) {
+        // 0 is an invalid id, meaning `page_node` was just inserted in
+        // `page_id_map` and its tab id must be generated.
+        tab_id = page_id_map.size();
+      }
 
       PageInfo& page_info = process_info.page_infos.emplace_back();
       page_info.ukm_source_id = page_node->GetUkmSourceID();
 
-      DCHECK(page_id_map.find(page_node) != page_id_map.end());
-      page_info.tab_id = page_id_map[page_node];
+      page_info.tab_id = tab_id;
       page_info.hosts_main_frame = HostsMainFrame(process_node, page_node);
       page_info.is_visible = page_node->IsVisible();
       page_info.time_since_last_visibility_change =

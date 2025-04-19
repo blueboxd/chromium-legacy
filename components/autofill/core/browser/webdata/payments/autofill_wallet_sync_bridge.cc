@@ -23,9 +23,9 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/browser/webdata/payments/payments_autofill_table.h"
 #include "components/autofill/core/browser/webdata/payments/payments_sync_bridge_util.h"
+#include "components/sync/base/data_type.h"
 #include "components/sync/base/hash_util.h"
-#include "components/sync/base/model_type.h"
-#include "components/sync/model/client_tag_based_model_type_processor.h"
+#include "components/sync/model/client_tag_based_data_type_processor.h"
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/model/sync_metadata_store_change_list.h"
 #include "components/sync/protocol/entity_data.h"
@@ -171,14 +171,14 @@ void AutofillWalletSyncBridge::CreateForWebDataServiceAndBackend(
   web_data_service->GetDBUserData()->SetUserData(
       &kAutofillWalletSyncBridgeUserDataKey,
       std::make_unique<AutofillWalletSyncBridge>(
-          std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
+          std::make_unique<syncer::ClientTagBasedDataTypeProcessor>(
               syncer::AUTOFILL_WALLET_DATA,
               /*dump_stack=*/base::DoNothing()),
           web_data_backend));
 }
 
 // static
-syncer::ModelTypeSyncBridge* AutofillWalletSyncBridge::FromWebDataService(
+syncer::DataTypeSyncBridge* AutofillWalletSyncBridge::FromWebDataService(
     AutofillWebDataService* web_data_service) {
   return static_cast<AutofillWalletSyncBridge*>(
       web_data_service->GetDBUserData()->GetUserData(
@@ -186,9 +186,9 @@ syncer::ModelTypeSyncBridge* AutofillWalletSyncBridge::FromWebDataService(
 }
 
 AutofillWalletSyncBridge::AutofillWalletSyncBridge(
-    std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor,
+    std::unique_ptr<syncer::DataTypeLocalChangeProcessor> change_processor,
     AutofillWebDataBackend* web_data_backend)
-    : ModelTypeSyncBridge(std::move(change_processor)),
+    : DataTypeSyncBridge(std::move(change_processor)),
       web_data_backend_(web_data_backend) {
   DCHECK(web_data_backend_);
 
@@ -204,7 +204,7 @@ AutofillWalletSyncBridge::CreateMetadataChangeList() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return std::make_unique<syncer::SyncMetadataStoreChangeList>(
       GetSyncMetadataStore(), syncer::AUTOFILL_WALLET_DATA,
-      base::BindRepeating(&syncer::ModelTypeChangeProcessor::ReportError,
+      base::BindRepeating(&syncer::DataTypeLocalChangeProcessor::ReportError,
                           change_processor()->GetWeakPtr()));
 }
 
@@ -230,14 +230,16 @@ AutofillWalletSyncBridge::ApplyIncrementalSyncChanges(
   return std::nullopt;
 }
 
-void AutofillWalletSyncBridge::GetDataForCommit(StorageKeyList storage_keys,
-                                                DataCallback callback) {
+std::unique_ptr<syncer::DataBatch> AutofillWalletSyncBridge::GetDataForCommit(
+    StorageKeyList storage_keys) {
   // This data type is never synced "up" so we don't need to implement this.
   NOTIMPLEMENTED();
+  return nullptr;
 }
 
-void AutofillWalletSyncBridge::GetAllDataForDebugging(DataCallback callback) {
-  GetAllDataImpl(std::move(callback), /*enforce_utf8=*/true);
+std::unique_ptr<syncer::DataBatch>
+AutofillWalletSyncBridge::GetAllDataForDebugging() {
+  return GetAllDataImpl(/*enforce_utf8=*/true);
 }
 
 std::string AutofillWalletSyncBridge::GetClientTag(
@@ -274,12 +276,13 @@ void AutofillWalletSyncBridge::ApplyDisableSyncChanges(
   SetSyncData(syncer::EntityChangeList(), /*notify_webdata_backend=*/false);
 }
 
-void AutofillWalletSyncBridge::GetAllDataForTesting(DataCallback callback) {
-  GetAllDataImpl(std::move(callback), /*enforce_utf8=*/false);
+std::unique_ptr<syncer::DataBatch>
+AutofillWalletSyncBridge::GetAllDataForTesting() {
+  return GetAllDataImpl(/*enforce_utf8=*/false);
 }
 
-void AutofillWalletSyncBridge::GetAllDataImpl(DataCallback callback,
-                                              bool enforce_utf8) {
+std::unique_ptr<syncer::DataBatch> AutofillWalletSyncBridge::GetAllDataImpl(
+    bool enforce_utf8) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   std::vector<std::unique_ptr<CreditCard>> cards;
@@ -295,7 +298,7 @@ void AutofillWalletSyncBridge::GetAllDataImpl(DataCallback callback,
        !GetAutofillTable()->GetMaskedBankAccounts(bank_accounts))) {
     change_processor()->ReportError(
         {FROM_HERE, "Failed to load entries from table."});
-    return;
+    return nullptr;
   }
 
   auto batch = std::make_unique<syncer::MutableDataBatch>();
@@ -307,7 +310,7 @@ void AutofillWalletSyncBridge::GetAllDataImpl(DataCallback callback,
             entry->instrument_id(), benefits)) {
       change_processor()->ReportError(
           {FROM_HERE, "Failed to load entries from table."});
-      return;
+      return nullptr;
     }
     for (const CreditCardBenefit& benefit : benefits) {
       CHECK(*absl::visit(
@@ -345,7 +348,7 @@ void AutofillWalletSyncBridge::GetAllDataImpl(DataCallback callback,
     }
   }
 
-  std::move(callback).Run(std::move(batch));
+  return batch;
 }
 
 void AutofillWalletSyncBridge::SetSyncData(
@@ -360,9 +363,10 @@ void AutofillWalletSyncBridge::SetSyncData(
   std::vector<CreditCardCloudTokenData> cloud_token_data;
   std::vector<BankAccount> bank_accounts;
   std::vector<CreditCardBenefit> card_benefits;
-  PopulateWalletTypesFromSyncData(entity_data, wallet_cards, wallet_ibans,
-                                  customer_data, cloud_token_data,
-                                  bank_accounts, card_benefits);
+  std::vector<sync_pb::PaymentInstrument> payment_instruments;
+  PopulateWalletTypesFromSyncData(
+      entity_data, wallet_cards, wallet_ibans, customer_data, cloud_token_data,
+      bank_accounts, card_benefits, payment_instruments);
 
   bool wallet_card_data_changed =
       SetWalletCards(std::move(wallet_cards), notify_webdata_backend);
@@ -381,8 +385,8 @@ void AutofillWalletSyncBridge::SetSyncData(
   }
   // Commit the transaction to make sure the data and the metadata with the
   // new progress marker is written down (especially on Android where we
-  // cannot rely on commiting transactions on shutdown). We need to commit
-  // even if the wallet data has not changed because the model type state incl.
+  // cannot rely on committing transactions on shutdown). We need to commit
+  // even if the wallet data has not changed because the data type state incl.
   // the progress marker always changes.
   web_data_backend_->CommitChanges();
 

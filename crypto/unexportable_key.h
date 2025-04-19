@@ -61,6 +61,13 @@ class CRYPTO_EXPORT UnexportableSigningKey {
   virtual std::optional<std::vector<uint8_t>> SignSlowly(
       base::span<const uint8_t> data) = 0;
 
+  // Returns true if the underlying key is stored in "hardware". Something like
+  // ARM TrustZone would count as hardware for these purposes. Ideally all
+  // implementations of this class would return true here, because software
+  // implementations aren't really "unexportable", but a software implementation
+  // does exist.
+  virtual bool IsHardwareBacked() const;
+
 #if BUILDFLAG(IS_MAC)
   // Returns the underlying reference to a Keychain key owned by the current
   // instance.
@@ -88,9 +95,6 @@ class CRYPTO_EXPORT UnexportableKeyProvider {
       // LAContext when signing, macOS will prompt the user for biometrics and
       // the thread will block until that resolves.
       kUserPresence,
-
-      // Like `kUserPresence` but also allows authorization via an Apple Watch.
-      kUserPresenceOrWatch,
     };
 
     // The keychain access group the key is shared with. The binary must be
@@ -263,6 +267,8 @@ CRYPTO_EXPORT std::unique_ptr<UnexportableKeyProvider>
 GetSoftwareUnsecureUnexportableKeyProvider();
 
 namespace internal {
+
+CRYPTO_EXPORT bool HasScopedUnexportableKeyProvider();
 
 CRYPTO_EXPORT void SetUnexportableKeyProviderForTesting(
     std::unique_ptr<UnexportableKeyProvider> (*func)());

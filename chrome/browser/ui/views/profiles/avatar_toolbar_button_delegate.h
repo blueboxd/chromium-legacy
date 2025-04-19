@@ -31,6 +31,11 @@ class StateManager;
 enum class ButtonState;
 }  // namespace internal
 
+namespace gfx {
+class Canvas;
+class Rect;
+}  // namespace gfx
+
 // Handles the business logic for AvatarToolbarButton.
 // Listens to Chrome and Profile changes in order to compute the proper state of
 // the button. This state is used to compute the information requested by
@@ -65,13 +70,16 @@ class AvatarToolbarButtonDelegate : public signin::IdentityManager::Observer {
       const ui::ColorProvider* const color_provider) const;
   SkColor GetHighlightTextColor(
       const ui::ColorProvider* const color_provider) const;
+  std::optional<std::u16string> GetAccessibilityLabel() const;
   std::u16string GetAvatarTooltipText() const;
   std::pair<ChromeColorIds, ChromeColorIds> GetInkdropColors() const;
   ui::ImageModel GetAvatarIcon(int icon_size, SkColor icon_color) const;
   bool ShouldPaintBorder() const;
+  void PaintIcon(gfx::Canvas* canvas, const gfx::Rect& icon_bounds) const;
 
   [[nodiscard]] base::ScopedClosureRunner ShowExplicitText(
-      const std::u16string& text);
+      const std::u16string& text,
+      std::optional<std::u16string> accessibility_label);
 
   // Called by the AvatarToolbarButton to notify the delegate about events.
   void OnThemeChanged(const ui::ColorProvider* color_provider);
@@ -91,6 +99,9 @@ class AvatarToolbarButtonDelegate : public signin::IdentityManager::Observer {
   gfx::Image GetGaiaAccountImage() const;
 
   // signin::IdentityManager::Observer:
+  void OnPrimaryAccountChanged(
+      const signin::PrimaryAccountChangeEvent& event_details) override;
+  void OnExtendedAccountInfoUpdated(const AccountInfo& info) override;
   void OnErrorStateOfRefreshTokenUpdatedForAccount(
       const CoreAccountInfo& account_info,
       const GoogleServiceAuthError& error,
@@ -101,6 +112,11 @@ class AvatarToolbarButtonDelegate : public signin::IdentityManager::Observer {
   const raw_ptr<Browser> browser_;
   const raw_ptr<Profile> profile_;
   const raw_ptr<signin::IdentityManager> identity_manager_;
+
+  // Gaia Id of the account that was signed in from having it's choice
+  // remembered following a web sign-in event but waiting for the available
+  // account information to be fetched in order to show the sign in IPH.
+  std::string gaia_id_for_signin_choice_remembered_;
 
   // Initialized in `InitializeStates()`.
   std::unique_ptr<internal::StateManager> state_manager_;

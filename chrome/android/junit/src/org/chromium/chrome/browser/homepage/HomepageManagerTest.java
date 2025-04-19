@@ -9,7 +9,6 @@ import static org.mockito.Mockito.doReturn;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatchers;
@@ -21,10 +20,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.Features;
-import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.chrome.browser.common.ChromeUrlConstants;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.new_tab_url.DseNewTabUrlManager;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
@@ -75,8 +71,6 @@ public class HomepageManagerTest {
             sPartnerBrowserCustomizations = partnerBrowserCustomizations;
         }
     }
-
-    @Rule public Features.JUnitProcessor mFeaturesProcessor = new Features.JUnitProcessor();
 
     @Mock private PartnerBrowserCustomizations mPartnerBrowserCustomizations;
 
@@ -222,7 +216,6 @@ public class HomepageManagerTest {
     }
 
     @Test
-    @EnableFeatures({ChromeFeatureList.NEW_TAB_SEARCH_ENGINE_URL_ANDROID})
     public void testOverrideNtpHomepage() {
         HomepageManager homepageManager = HomepageManager.getInstance();
 

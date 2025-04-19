@@ -32,18 +32,17 @@ FieldType GetServerType(const AutofillType::ServerPrediction& prediction) {
   // send additional predictions in `field.server_predictions()`. This function
   // chooses the relevant one for Password Manager predictions.
 
-  // 1. If there is cvc or credit card number prediction returns the prediction.
+  // 1. If there is credit card related prediction, return the prediction.
   for (const auto& server_predictions : prediction.server_predictions) {
-    if (server_predictions.type() == autofill::CREDIT_CARD_VERIFICATION_CODE ||
-        server_predictions.type() == autofill::CREDIT_CARD_NUMBER) {
-      return static_cast<FieldType>(server_predictions.type());
+    FieldType type = static_cast<FieldType>(server_predictions.type());
+    if (GroupTypeOfFieldType(type) == autofill::FieldTypeGroup::kCreditCard) {
+      return type;
     }
   }
 
   // 2. If there is password related prediction returns it.
   for (const auto& server_predictions : prediction.server_predictions) {
-    FieldType type =
-        ToSafeFieldType(server_predictions.type(), FieldType::NO_SERVER_DATA);
+    FieldType type = static_cast<FieldType>(server_predictions.type());
     if (DeriveFromFieldType(type) != CredentialFieldType::kNone) {
       return type;
     }
@@ -75,6 +74,28 @@ CredentialFieldType DeriveFromFieldType(FieldType type) {
   }
 }
 
+PasswordFieldPrediction::PasswordFieldPrediction(
+    autofill::FieldRendererId renderer_id,
+    autofill::FieldSignature signature,
+    autofill::FieldType type,
+    bool may_use_prefilled_placeholder,
+    bool is_override)
+    : renderer_id(renderer_id),
+      signature(signature),
+      type(ToSafeFieldType(type, FieldType::NO_SERVER_DATA)),
+      may_use_prefilled_placeholder(may_use_prefilled_placeholder),
+      is_override(is_override) {}
+
+PasswordFieldPrediction::PasswordFieldPrediction(
+    const PasswordFieldPrediction&) = default;
+PasswordFieldPrediction& PasswordFieldPrediction::operator=(
+    const PasswordFieldPrediction&) = default;
+PasswordFieldPrediction::PasswordFieldPrediction(PasswordFieldPrediction&&) =
+    default;
+PasswordFieldPrediction& PasswordFieldPrediction::operator=(
+    PasswordFieldPrediction&&) = default;
+PasswordFieldPrediction::~PasswordFieldPrediction() = default;
+
 FormPredictions::FormPredictions() = default;
 FormPredictions::FormPredictions(const FormPredictions&) = default;
 FormPredictions& FormPredictions::operator=(const FormPredictions&) = default;
@@ -102,7 +123,7 @@ FormPredictions ConvertToFormPredictions(
   FieldSignature last_new_password;
 
   bool explicit_confirmation_hint_present = false;
-  for (const auto& field : form.fields) {
+  for (const auto& field : form.fields()) {
     if (auto it = predictions.find(field.global_id());
         it != predictions.end() &&
         it->second.server_type() == autofill::CONFIRMATION_PASSWORD) {
@@ -112,7 +133,7 @@ FormPredictions ConvertToFormPredictions(
   }
 
   std::vector<PasswordFieldPrediction> field_predictions;
-  for (const auto& field : form.fields) {
+  for (const auto& field : form.fields()) {
     auto it = predictions.find(field.global_id());
     CHECK(it != predictions.end());
     const AutofillType::ServerPrediction& autofill_prediction = it->second;
@@ -130,13 +151,11 @@ FormPredictions ConvertToFormPredictions(
       }
     }
 
-    field_predictions.emplace_back();
-    field_predictions.back().renderer_id = field.renderer_id();
-    field_predictions.back().signature = current_signature;
-    field_predictions.back().type = server_type;
-    field_predictions.back().may_use_prefilled_placeholder =
-        autofill_prediction.may_use_prefilled_placeholder.value_or(false);
-    field_predictions.back().is_override = autofill_prediction.is_override();
+    field_predictions.emplace_back(
+        field.renderer_id(), current_signature, server_type,
+        /*may_use_prefilled_placeholder=*/
+        autofill_prediction.may_use_prefilled_placeholder.value_or(false),
+        /*is_override=*/autofill_prediction.is_override());
   }
 
   FormPredictions result;

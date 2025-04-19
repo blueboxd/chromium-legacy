@@ -15,7 +15,7 @@
 #include "third_party/blink/renderer/core/layout/hit_test_request.h"
 #include "third_party/blink/renderer/core/layout/physical_box_fragment.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
-#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
 namespace blink {
 
@@ -93,6 +93,31 @@ TEST_F(HitTestingTest, OcclusionHitTest) {
   EXPECT_EQ(result.InnerNode(), occluder);
 }
 
+TEST_F(HitTestingTest, OcclusionHitTestSVGTextWithFilterCrash) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    div {
+      width: 100px;
+      height: 100px;
+    }
+    text {
+      filter: blur(10px);
+    }
+    </style>
+
+    <div id="target"></div>
+    <svg overflow="visible" display="block">
+      <text id="occluder" y="40" font-size="50px">M</text>
+    </svg>
+  )HTML");
+
+  Element* target = GetElementById("target");
+  Element* occluder = GetElementById("occluder");
+  HitTestResult result = target->GetLayoutObject()->HitTestForOcclusion();
+  // The intersection will be flagged on the text node.
+  EXPECT_EQ(result.InnerNode(), occluder->firstChild());
+}
+
 TEST_F(HitTestingTest, HitTestWithCallback) {
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -150,17 +175,18 @@ TEST_F(HitTestingTest, HitTestWithCallback) {
 
   // Set up HitNodeCb helper, and the HitNodeCb expectations.
   Node* stop_node = GetElementById("occluder_2");
-  HitNodeCallbackStopper hit_node_callback_stopper(stop_node);
+  HitNodeCallbackStopper* hit_node_callback_stopper =
+      MakeGarbageCollected<HitNodeCallbackStopper>(stop_node);
   EXPECT_CALL(hit_node_cb, Run(_))
-      .WillRepeatedly(testing::Invoke(&hit_node_callback_stopper,
+      .WillRepeatedly(testing::Invoke(hit_node_callback_stopper,
                                       &HitNodeCallbackStopper::StopAtNode));
-  EXPECT_FALSE(hit_node_callback_stopper.DidStopHitTesting());
+  EXPECT_FALSE(hit_node_callback_stopper->DidStopHitTesting());
 
   // Perform hit test and verify that hit testing stops at the given node.
   result = frame->GetEventHandler().HitTestResultAtLocation(
       location, hit_type, target->GetLayoutObject(), true, hit_node_cb.Get());
   EXPECT_TRUE(result.ListBasedTestResult().Contains(stop_node));
-  EXPECT_TRUE(hit_node_callback_stopper.DidStopHitTesting());
+  EXPECT_TRUE(hit_node_callback_stopper->DidStopHitTesting());
 }
 
 TEST_F(HitTestingTest, OcclusionHitTestWithClipPath) {

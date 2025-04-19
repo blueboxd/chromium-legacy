@@ -53,8 +53,18 @@ enum class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_GROWTH)
       kNotificationPayloadMissingButtonAction = 30,
       kInvalidNotificationPayload = 31,
       kInvalidTrigger = 32,
+      kNudgeAnchorWidgetNotFound = 33,
+      kNudgeAnchorPositionNotSupported = 34,
+      kTrackerInitializationFail = 35,
+      kTrackerNotAvailableInSession = 36,
+      kUserPrefServiceNotAvailable = 37,
+      kUserPrefValueTypeMismatch = 38,
+      kUserPrefNotFound = 39,
+      kTargetingUserPrefNotFound = 40,
+      kTargetingUserPrefParsingFail = 41,
+      kMissingActionPerformerAction = 42,
 
-      kMaxValue = kInvalidTrigger,
+      kMaxValue = kMissingActionPerformerAction,
     };
 
 // Records errors encountered during the campaigns loading and matching flow.

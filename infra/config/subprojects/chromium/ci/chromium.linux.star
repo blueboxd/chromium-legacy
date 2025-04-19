@@ -4,10 +4,10 @@
 """Definitions of builders in the chromium.linux builder group."""
 
 load("//lib/args.star", "args")
+load("//lib/branches.star", "branches")
 load("//lib/builder_config.star", "builder_config")
 load("//lib/builder_health_indicators.star", "health_spec")
-load("//lib/builders.star", "builders", "os", "sheriff_rotations", "siso")
-load("//lib/branches.star", "branches")
+load("//lib/builders.star", "builders", "gardener_rotations", "os", "siso")
 load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
 load("//lib/gn_args.star", "gn_args")
@@ -22,7 +22,7 @@ ci.defaults.set(
     pool = ci.DEFAULT_POOL,
     cores = 8,
     os = os.LINUX_DEFAULT,
-    sheriff_rotations = sheriff_rotations.CHROMIUM,
+    gardener_rotations = gardener_rotations.CHROMIUM,
     tree_closing = True,
     main_console_view = "main",
     execution_timeout = ci.DEFAULT_EXECUTION_TIMEOUT,
@@ -41,94 +41,11 @@ consoles.console_view(
     ordering = {
         None: ["release", "debug"],
         "release": consoles.ordering(short_names = ["bld", "tst", "nsl", "gcc"]),
-        "cast": ["x64", "arm64"],
     },
 )
 
 targets.builder_defaults.set(
     mixins = ["chromium-tester-service-account"],
-)
-
-ci.builder(
-    name = "linux-x64-cast-dbg",
-    branch_selector = branches.selector.MAIN,
-    description_html = "Run Linux and Cast Receiver tests on Linux x64",
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-            apply_configs = [
-            ],
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium_clang",
-            apply_configs = [
-                "mb",
-            ],
-            build_config = builder_config.build_config.RELEASE,
-            target_bits = 64,
-            target_platform = builder_config.target_platform.LINUX,
-        ),
-        build_gs_bucket = "chromium-linux-archive",
-    ),
-    gn_args = gn_args.config(
-        configs = [
-            "cast_receiver",
-            "remoteexec",
-            "minimal_symbols",
-        ],
-    ),
-    # TODO(crbug.com/332735845): Garden this once stabilized.
-    sheriff_rotations = args.ignore_default(None),
-    tree_closing = False,
-    console_view_entry = consoles.console_view_entry(
-        category = "cast",
-        short_name = "x64",
-    ),
-    cq_mirrors_console_view = "mirrors",
-    contact_team_email = "cast-eng@google.com",
-)
-
-ci.builder(
-    name = "linux-arm64-cast-rel",
-    branch_selector = branches.selector.MAIN,
-    description_html = "Run Linux and Cast Receiver tests on Linux arm64",
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-            apply_configs = [
-                "arm64",
-            ],
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium_clang",
-            apply_configs = [
-                "mb",
-            ],
-            build_config = builder_config.build_config.RELEASE,
-            target_arch = builder_config.target_arch.ARM,
-            target_bits = 64,
-            target_platform = builder_config.target_platform.LINUX,
-        ),
-        build_gs_bucket = "chromium-linux-archive",
-    ),
-    gn_args = gn_args.config(
-        configs = [
-            "cast_receiver",
-            "release_builder",
-            "remoteexec",
-            "arm64",
-            "minimal_symbols",
-        ],
-    ),
-    # TODO(crbug.com/332735845): Garden this once stabilized.
-    sheriff_rotations = args.ignore_default(None),
-    tree_closing = False,
-    console_view_entry = consoles.console_view_entry(
-        category = "cast",
-        short_name = "rel",
-    ),
-    cq_mirrors_console_view = "mirrors",
-    contact_team_email = "cast-eng@google.com",
 )
 
 ci.builder(
@@ -139,6 +56,8 @@ ci.builder(
             "release_builder",
             "remoteexec",
             "minimal_symbols",
+            "linux",
+            "x64",
         ],
     ),
     ssd = True,
@@ -161,9 +80,11 @@ ci.builder(
     name = "Deterministic Linux (dbg)",
     executable = "recipe:swarming/deterministic_build",
     gn_args = {
-        "local": "debug_builder",
+        "local": gn_args.config(
+            configs = ["debug_builder", "linux", "x64"],
+        ),
         "reclient": gn_args.config(
-            configs = ["debug_builder", "remoteexec"],
+            configs = ["debug_builder", "remoteexec", "linux", "x64"],
         ),
     },
     cores = 32,
@@ -190,9 +111,14 @@ ci.builder(
         build_gs_bucket = "chromium-linux-archive",
     ),
     gn_args = gn_args.config(
-        configs = ["release_builder", "remoteexec"],
+        configs = [
+            "release_builder",
+            "remoteexec",
+            "linux",
+            "x64",
+        ],
     ),
-    sheriff_rotations = args.ignore_default(None),
+    gardener_rotations = args.ignore_default(None),
     tree_closing = False,
     console_view_entry = consoles.console_view_entry(
         console_view = "chromium.fyi",
@@ -234,6 +160,8 @@ ci.builder(
             "release_builder",
             "remoteexec",
             "devtools_do_typecheck",
+            "linux",
+            "x64",
         ],
     ),
     console_view_entry = consoles.console_view_entry(
@@ -270,6 +198,8 @@ ci.builder(
             "gpu_tests",
             "debug_builder",
             "remoteexec",
+            "linux",
+            "x64",
         ],
     ),
     targets = targets.bundle(
@@ -314,6 +244,7 @@ ci.builder(
             "remoteexec",
             "linux_wayland",
             "ozone_headless",
+            "x64",
         ],
     ),
     targets = targets.bundle(
@@ -570,7 +501,12 @@ ci.builder(
         build_gs_bucket = "chromium-linux-archive",
     ),
     gn_args = gn_args.config(
-        configs = ["release_builder", "remoteexec"],
+        configs = [
+            "release_builder",
+            "remoteexec",
+            "linux",
+            "x64",
+        ],
     ),
     console_view_entry = consoles.console_view_entry(
         category = "release",
@@ -600,7 +536,12 @@ ci.builder(
         build_gs_bucket = "chromium-linux-archive",
     ),
     gn_args = gn_args.config(
-        configs = ["release_builder_blink", "remoteexec"],
+        configs = [
+            "release_builder_blink",
+            "remoteexec",
+            "linux",
+            "x64",
+        ],
     ),
     console_view_entry = consoles.console_view_entry(
         category = "bfcache",
@@ -634,6 +575,8 @@ ci.builder(
             "release_builder",
             "remoteexec",
             "extended_tracing",
+            "linux",
+            "x64",
         ],
     ),
     console_view_entry = consoles.console_view_entry(
@@ -669,6 +612,8 @@ ci.builder(
             "release_builder",
             "minimal_symbols",
             "no_clang",
+            "linux",
+            "x64",
         ],
     ),
     # Focal is needed for better C++20 support. See crbug.com/1284275.
@@ -706,6 +651,8 @@ ci.builder(
             "chrome_with_codecs",
             "release_builder",
             "remoteexec",
+            "linux",
+            "x64",
         ],
     ),
     tree_closing = False,

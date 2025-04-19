@@ -95,8 +95,7 @@ class CONTENT_EXPORT PrerenderCancellationReason {
   PrerenderCancellationReason(PrerenderCancellationReason&& reason);
 
   // Reports UMA and UKM metrics.
-  void ReportMetrics(PreloadingTriggerType trigger_type,
-                     const std::string& embedder_histogram_suffix) const;
+  void ReportMetrics(const std::string& histogram_suffix) const;
 
   PrerenderFinalStatus final_status() const { return final_status_; }
 
@@ -132,6 +131,10 @@ enum class PrerenderCrossOriginRedirectionProtocolChange {
   kMaxValue = kHttpProtocolDowngrade
 };
 
+std::string GeneratePrerenderHistogramSuffix(
+    PreloadingTriggerType trigger_type,
+    const std::string& embedder_suffix);
+
 void RecordPrerenderTriggered(ukm::SourceId ukm_id);
 
 void RecordPrerenderActivationTime(
@@ -155,33 +158,36 @@ void ReportSuccessActivation(const PrerenderAttributes& attributes,
 // initial prerender navigation when activation fails.
 void RecordPrerenderActivationNavigationParamsMatch(
     PrerenderHost::ActivationNavigationParamsMatch result,
-    PreloadingTriggerType trigger_type,
-    const std::string& embedder_suffix);
+    const std::string& histogram_suffix);
 
 // Records the detailed types of the cross-origin redirection, e.g., changes to
 // scheme, host name etc.
 void RecordPrerenderRedirectionMismatchType(
     PrerenderCrossOriginRedirectionMismatch case_type,
-    PreloadingTriggerType trigger_type,
-    const std::string& embedder_histogram_suffix);
+    const std::string& histogram_suffix);
 
 // Records whether the redirection was caused by HTTP protocol upgrade.
 void RecordPrerenderRedirectionProtocolChange(
     PrerenderCrossOriginRedirectionProtocolChange change_type,
-    PreloadingTriggerType trigger_type,
-    const std::string& embedder_histogram_suffix);
+    const std::string& histogram_suffix);
 
 // Records ui::PageTransition of prerender activation navigation when transition
 // mismatch happens on prerender activation.
 void RecordPrerenderActivationTransition(
     int32_t potential_activation_transition,
-    PreloadingTriggerType trigger_type,
-    const std::string& embedder_histogram_suffix);
+    const std::string& histogram_suffix);
 
+// If you change this, please follow the process in
+// go/preloading-dashboard-updates to update the mapping reflected in dashboard,
+// or if you are not a Googler, please file an FYI bug on https://crbug.new with
+// component Internals>Preload.
+//
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 // These are also mapped onto the second content internal range of
 // `PreloadingEligibility`.
+//
+// LINT.IfChange
 enum class PrerenderBackNavigationEligibility {
   kEligible = 0,
 
@@ -198,6 +204,7 @@ enum class PrerenderBackNavigationEligibility {
 
   kMaxValue = kRelatedActiveContents,
 };
+// LINT.ThenChange()
 
 // Maps `eligibility` onto a content internal range of PreloadingEligibility.
 CONTENT_EXPORT PreloadingEligibility

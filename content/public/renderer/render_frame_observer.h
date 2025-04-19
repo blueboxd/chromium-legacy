@@ -28,6 +28,7 @@
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/common/use_counter/use_counter_feature.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
+#include "third_party/blink/public/mojom/frame/lifecycle.mojom.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_meaningful_layout.h"
@@ -42,7 +43,6 @@ namespace blink {
 class WebDocumentLoader;
 class WebElement;
 class WebFormElement;
-class WebSecurityOrigin;
 class WebString;
 class WebURLRequest;
 class WebWorkerFetchContext;
@@ -93,6 +93,10 @@ class CONTENT_EXPORT RenderFrameObserver
   // Called when the RenderFrame visiblity is changed.
   virtual void WasHidden() {}
   virtual void WasShown() {}
+
+  // Called when the RenderFrame's visibility status changes.
+  virtual void OnFrameVisibilityChanged(
+      blink::mojom::FrameVisibility render_status) {}
 
   // Navigation callbacks.
   //
@@ -373,11 +377,6 @@ class CONTENT_EXPORT RenderFrameObserver
   // return true. All other observers should return false (default).
   virtual bool SetUpSmoothnessReporting(
       base::ReadOnlySharedMemoryRegion& shared_memory);
-
-  // Notifies the observers of the origins for which subresource redirect
-  // optimizations can be preloaded.
-  virtual void PreloadSubresourceOptimizationsForOrigins(
-      const std::vector<blink::WebSecurityOrigin>& origins) {}
 
 #if BUILDFLAG(CONTENT_ENABLE_LEGACY_IPC)
   // IPC::Listener implementation.

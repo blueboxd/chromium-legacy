@@ -30,6 +30,7 @@ const TARGET = BridgeConstants.ChromeVoxPrefs.TARGET;
 export class ChromeVoxPrefs {
   static instance?: ChromeVoxPrefs;
 
+  static darkScreen = false;
   /**
    * This indicates whether or not the sticky mode pref is toggled on.
    * Use ChromeVoxPrefs.isStickyModeOn() to test if sticky mode is enabled
@@ -127,7 +128,7 @@ export class ChromeVoxPrefs {
     } else if (key === 'enableEventStreamLogging') {
       EventStreamLogger.instance.updateAllFilters(value);
     }
-    this.enableOrDisableLogUrlWatcher_();
+    this.enableOrDisableLogUrlWatcher();
   }
 
   /**
@@ -166,7 +167,7 @@ export class ChromeVoxPrefs {
     ChromeVoxPrefs.darkScreen_ = newVal;
   }
 
-  private enableOrDisableLogUrlWatcher_(): void {
+  enableOrDisableLogUrlWatcher(): void {
     for (const pref of Object.values(LoggingPrefs)) {
       if (SettingsManager.getBoolean(pref)) {
         LogUrlWatcher.create();

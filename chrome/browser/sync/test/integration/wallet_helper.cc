@@ -15,24 +15,25 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/webdata_services/web_data_service_factory.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
-#include "components/autofill/core/browser/data_model/autofill_metadata.h"
+#include "components/autofill/core/browser/data_model/payments_metadata.h"
 #include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/payments_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_sync_metadata_table.h"
 #include "components/autofill/core/browser/webdata/payments/payments_autofill_table.h"
+#include "components/autofill/core/common/credit_card_network_identifiers.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/protocol/autofill_wallet_credential_specifics.pb.h"
 #include "components/sync/protocol/data_type_progress_marker.pb.h"
-#include "components/sync/protocol/model_type_state.pb.h"
+#include "components/sync/protocol/data_type_state.pb.h"
 
-using autofill::AutofillMetadata;
 using autofill::AutofillWebDataService;
 using autofill::CreditCard;
 using autofill::CreditCardCloudTokenData;
 using autofill::PaymentsAutofillTable;
 using autofill::PaymentsCustomerData;
+using autofill::PaymentsMetadata;
 using autofill::PersonalDataManager;
 using autofill::ServerCvc;
 using autofill::data_util::TruncateUTF8;
@@ -63,7 +64,7 @@ bool ListsMatch(int profile_a,
   }
 
   // This seems to be a transient state that will eventually be rectified by
-  // model type logic. We don't need to check b for duplicates directly because
+  // data type logic. We don't need to check b for duplicates directly because
   // after the first is erased from |autofill_profiles_a_map| the second will
   // not be found.
   if (list_a.size() != list_a_map.size()) {
@@ -133,7 +134,7 @@ bool ListsMatch(int profile_a,
   }
 
   // This seems to be a transient state that will eventually be rectified by
-  // model type logic. We don't need to check b for duplicates directly because
+  // data type logic. We don't need to check b for duplicates directly because
   // after the first is erased from |autofill_profiles_a_map| the second will
   // not be found.
   if (list_a.size() != list_a_map.size()) {
@@ -225,20 +226,20 @@ void SetCreditCardCloudTokenDataOnDBSequence(
 
 void GetServerCardsMetadataOnDBSequence(
     AutofillWebDataService* wds,
-    std::vector<AutofillMetadata>* cards_metadata) {
+    std::vector<PaymentsMetadata>* cards_metadata) {
   DCHECK(wds->GetDBTaskRunner()->RunsTasksInCurrentSequence());
   PaymentsAutofillTable::FromWebDatabase(wds->GetDatabase())
       ->GetServerCardsMetadata(*cards_metadata);
 }
 
-void GetModelTypeStateOnDBSequence(syncer::ModelType model_type,
-                                   AutofillWebDataService* wds,
-                                   sync_pb::ModelTypeState* model_type_state) {
+void GetDataTypeStateOnDBSequence(syncer::DataType data_type,
+                                  AutofillWebDataService* wds,
+                                  sync_pb::DataTypeState* data_type_state) {
   DCHECK(wds->GetDBTaskRunner()->RunsTasksInCurrentSequence());
   syncer::MetadataBatch metadata_batch;
   autofill::AutofillSyncMetadataTable::FromWebDatabase(wds->GetDatabase())
-      ->GetAllSyncMetadata(model_type, &metadata_batch);
-  *model_type_state = metadata_batch.GetModelTypeState();
+      ->GetAllSyncMetadata(data_type, &metadata_batch);
+  *data_type_state = metadata_batch.GetDataTypeState();
 }
 
 }  // namespace
@@ -246,7 +247,7 @@ void GetModelTypeStateOnDBSequence(syncer::ModelType model_type,
 namespace wallet_helper {
 
 PersonalDataManager* GetPersonalDataManager(int index) {
-  return autofill::PersonalDataManagerFactory::GetForProfile(
+  return autofill::PersonalDataManagerFactory::GetForBrowserContext(
       test()->GetProfile(index));
 }
 
@@ -315,8 +316,8 @@ void UpdateServerCardMetadata(int profile, const CreditCard& credit_card) {
   WaitForCurrentTasksToComplete(wds->GetDBTaskRunner());
 }
 
-std::vector<AutofillMetadata> GetServerCardsMetadata(int profile) {
-  std::vector<AutofillMetadata> cards_metadata;
+std::vector<PaymentsMetadata> GetServerCardsMetadata(int profile) {
+  std::vector<PaymentsMetadata> cards_metadata;
   scoped_refptr<AutofillWebDataService> wds = GetProfileWebDataService(profile);
   wds->GetDBTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&GetServerCardsMetadataOnDBSequence,
@@ -325,14 +326,14 @@ std::vector<AutofillMetadata> GetServerCardsMetadata(int profile) {
   return cards_metadata;
 }
 
-sync_pb::ModelTypeState GetWalletModelTypeState(syncer::ModelType model_type,
-                                                int profile) {
-  DCHECK(model_type == syncer::AUTOFILL_WALLET_DATA ||
-         model_type == syncer::AUTOFILL_WALLET_OFFER);
-  sync_pb::ModelTypeState result;
+sync_pb::DataTypeState GetWalletDataTypeState(syncer::DataType data_type,
+                                              int profile) {
+  DCHECK(data_type == syncer::AUTOFILL_WALLET_DATA ||
+         data_type == syncer::AUTOFILL_WALLET_OFFER);
+  sync_pb::DataTypeState result;
   scoped_refptr<AutofillWebDataService> wds = GetProfileWebDataService(profile);
   wds->GetDBTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&GetModelTypeStateOnDBSequence, model_type,
+      FROM_HERE, base::BindOnce(&GetDataTypeStateOnDBSequence, data_type,
                                 base::Unretained(wds.get()), &result));
   WaitForCurrentTasksToComplete(wds->GetDBTaskRunner());
   return result;
@@ -573,9 +574,9 @@ void AutofillWalletMetadataSizeChecker::OnPaymentsDataChanged() {
 bool AutofillWalletMetadataSizeChecker::IsExitConditionSatisfiedImpl() {
   // There could be trailing metadata left on one of the clients. Check that
   // metadata.size() is the same on both clients.
-  std::vector<AutofillMetadata> cards_metadata_a =
+  std::vector<PaymentsMetadata> cards_metadata_a =
       wallet_helper::GetServerCardsMetadata(profile_a_);
-  std::vector<AutofillMetadata> cards_metadata_b =
+  std::vector<PaymentsMetadata> cards_metadata_b =
       wallet_helper::GetServerCardsMetadata(profile_b_);
   if (cards_metadata_a.size() != cards_metadata_b.size()) {
     DVLOG(1) << "Server cards metadata mismatch, expected "
@@ -589,11 +590,11 @@ bool AutofillWalletMetadataSizeChecker::IsExitConditionSatisfiedImpl() {
 FullUpdateTypeProgressMarkerChecker::FullUpdateTypeProgressMarkerChecker(
     base::Time min_required_progress_marker_timestamp,
     syncer::SyncService* service,
-    syncer::ModelType model_type)
+    syncer::DataType data_type)
     : min_required_progress_marker_timestamp_(
           min_required_progress_marker_timestamp),
       service_(service),
-      model_type_(model_type) {
+      data_type_(data_type) {
   scoped_observation_.Observe(service);
 }
 
@@ -608,7 +609,7 @@ bool FullUpdateTypeProgressMarkerChecker::IsExitConditionSatisfied(
       service_->GetLastCycleSnapshotForDebugging();
   const syncer::ProgressMarkerMap& progress_markers =
       snap.download_progress_markers();
-  auto marker_it = progress_markers.find(model_type_);
+  auto marker_it = progress_markers.find(data_type_);
   if (marker_it == progress_markers.end()) {
     *os << "Waiting for an updated progress marker timestamp "
         << min_required_progress_marker_timestamp_

@@ -14,6 +14,7 @@
 #include "ash/wm/overview/overview_metrics.h"
 #include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/overview/overview_types.h"
+#include "ash/wm/overview/overview_window_occlusion_calculator.h"
 #include "ash/wm/raster_scale/raster_scale_controller.h"
 #include "base/cancelable_callback.h"
 #include "base/memory/weak_ptr.h"
@@ -148,11 +149,7 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
                          aura::Window* gained_active,
                          aura::Window* lost_active) override {}
 
-  void set_disable_app_id_check_for_saved_desks_for_test(
-      bool disable_app_id_check_for_saved_desks) {
-    disable_app_id_check_for_saved_desks_ =
-        disable_app_id_check_for_saved_desks;
-  }
+  base::AutoReset<bool> SetDisableAppIdCheckForTests();
 
   void set_occlusion_pause_duration_for_start_for_test(
       base::TimeDelta duration) {
@@ -191,6 +188,8 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   void MaybePauseOcclusionTracker();
   void MaybeUnpauseOcclusionTracker(base::TimeDelta delay);
   void ResetPauser();
+
+  bool IsDeskBarOpen() const;
 
   // Collection of DelayedAnimationObserver objects that own widgets that may be
   // still animating after overview mode ends. If shell needs to shut down while
@@ -256,6 +255,13 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   // overview mode as finished its enter animation. Otherwise, we must mark
   // all windows as visible immediately.
   bool windows_have_snapshot_ = false;
+
+  // For metrics purposes only. When entering overview, records whether the
+  // desk bar was shown immediately in the first frame (as opposed to after
+  // the animation completes or not at all).
+  bool desk_bar_shown_immediately_ = false;
+
+  OverviewWindowOcclusionCalculator overview_window_occlusion_calculator_;
 
   base::WeakPtrFactory<OverviewController> weak_ptr_factory_{this};
 };

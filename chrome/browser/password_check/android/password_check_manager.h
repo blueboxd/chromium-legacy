@@ -88,10 +88,8 @@ class PasswordCheckManager
                         std::string_view new_password);
 
   // Called by java to launch the edit credential UI for `credential`.
-  void OnEditCredential(
-      const password_manager::CredentialUIEntry& credential,
-      const base::android::JavaParamRef<jobject>& context,
-      const base::android::JavaParamRef<jobject>& settings_launcher);
+  void OnEditCredential(const password_manager::CredentialUIEntry& credential,
+                        const base::android::JavaParamRef<jobject>& context);
 
   // Called by java to remove the given compromised `credential` and trigger a
   // UI update on completion.
@@ -218,13 +216,7 @@ class PasswordCheckManager
 
   // Used to obtain the list of insecure credentials.
   password_manager::InsecureCredentialsManager insecure_credentials_manager_{
-      &saved_passwords_presenter_,
-      ProfilePasswordStoreFactory::GetForProfile(
-          profile_,
-          ServiceAccessType::EXPLICIT_ACCESS),
-      AccountPasswordStoreFactory::GetForProfile(
-          profile_,
-          ServiceAccessType::EXPLICIT_ACCESS)};
+      &saved_passwords_presenter_};
 
   // Adapter used to start, monitor and stop a bulk leak check.
   password_manager::BulkLeakCheckServiceAdapter

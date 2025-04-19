@@ -67,25 +67,17 @@ class AuthenticationFlowTest : public PlatformTest {
         AuthenticationServiceFactory::GetInstance(),
         AuthenticationServiceFactory::GetDefaultFactory());
     builder.SetPrefService(CreatePrefService());
-    browser_state_ = builder.Build();
+    browser_state_ = std::move(builder).Build();
     AuthenticationServiceFactory::CreateAndInitializeForBrowserState(
         browser_state_.get(),
         std::make_unique<FakeAuthenticationServiceDelegate>());
     browser_ = std::make_unique<TestBrowser>(browser_state_.get());
 
-    fake_system_identity_manager()->AddIdentities(
-        @[ @"identity1", @"identity2" ]);
-
-    ChromeAccountManagerService* account_manager_service =
-        ChromeAccountManagerServiceFactory::GetForBrowserState(
-            browser_state_.get());
-    NSArray<id<SystemIdentity>>* identities =
-        account_manager_service->GetAllIdentities();
-    identity1_ = identities[0];
-    identity2_ = identities[1];
-    managed_identity_ = [FakeSystemIdentity identityWithEmail:@"managed@foo.com"
-                                                       gaiaID:@"managed"
-                                                         name:@"managed"];
+    identity1_ = [FakeSystemIdentity fakeIdentity1];
+    fake_system_identity_manager()->AddIdentity(identity1_);
+    identity2_ = [FakeSystemIdentity fakeIdentity2];
+    fake_system_identity_manager()->AddIdentity(identity2_);
+    managed_identity_ = [FakeSystemIdentity fakeManagedIdentity];
     fake_system_identity_manager()->AddIdentity(managed_identity_);
 
     sign_in_completion_ = ^(BOOL success) {

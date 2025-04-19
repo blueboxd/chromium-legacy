@@ -260,122 +260,130 @@ FederatedAuthRequestResultToProtocol(
     case FederatedAuthRequestResult::kShouldEmbargo: {
       return FederatedAuthRequestIssueReasonEnum::ShouldEmbargo;
     }
-    case FederatedAuthRequestResult::kErrorDisabledInSettings: {
+    case FederatedAuthRequestResult::kDisabledInSettings: {
       return FederatedAuthRequestIssueReasonEnum::DisabledInSettings;
     }
-    case FederatedAuthRequestResult::kErrorTooManyRequests: {
+    case FederatedAuthRequestResult::kDisabledInFlags: {
+      return FederatedAuthRequestIssueReasonEnum::DisabledInFlags;
+    }
+    case FederatedAuthRequestResult::kIdpNotPotentiallyTrustworthy: {
+      return FederatedAuthRequestIssueReasonEnum::IdpNotPotentiallyTrustworthy;
+    }
+    case FederatedAuthRequestResult::kTooManyRequests: {
       return FederatedAuthRequestIssueReasonEnum::TooManyRequests;
     }
-    case FederatedAuthRequestResult::kErrorFetchingWellKnownHttpNotFound: {
+    case FederatedAuthRequestResult::kWellKnownHttpNotFound: {
       return FederatedAuthRequestIssueReasonEnum::WellKnownHttpNotFound;
     }
-    case FederatedAuthRequestResult::kErrorFetchingWellKnownNoResponse: {
+    case FederatedAuthRequestResult::kWellKnownNoResponse: {
       return FederatedAuthRequestIssueReasonEnum::WellKnownNoResponse;
     }
-    case FederatedAuthRequestResult::kErrorFetchingWellKnownInvalidResponse: {
+    case FederatedAuthRequestResult::kWellKnownInvalidResponse: {
       return FederatedAuthRequestIssueReasonEnum::WellKnownInvalidResponse;
     }
-    case FederatedAuthRequestResult::kErrorFetchingWellKnownListEmpty: {
+    case FederatedAuthRequestResult::kWellKnownListEmpty: {
       return FederatedAuthRequestIssueReasonEnum::WellKnownListEmpty;
     }
-    case FederatedAuthRequestResult::
-        kErrorFetchingWellKnownInvalidContentType: {
+    case FederatedAuthRequestResult::kWellKnownInvalidContentType: {
       return FederatedAuthRequestIssueReasonEnum::WellKnownInvalidContentType;
     }
-    case FederatedAuthRequestResult::kErrorConfigNotInWellKnown: {
+    case FederatedAuthRequestResult::kConfigNotInWellKnown: {
       return FederatedAuthRequestIssueReasonEnum::ConfigNotInWellKnown;
     }
-    case FederatedAuthRequestResult::kErrorWellKnownTooBig: {
+    case FederatedAuthRequestResult::kWellKnownTooBig: {
       return FederatedAuthRequestIssueReasonEnum::WellKnownTooBig;
     }
-    case FederatedAuthRequestResult::kErrorFetchingConfigHttpNotFound: {
+    case FederatedAuthRequestResult::kConfigHttpNotFound: {
       return FederatedAuthRequestIssueReasonEnum::ConfigHttpNotFound;
     }
-    case FederatedAuthRequestResult::kErrorFetchingConfigNoResponse: {
+    case FederatedAuthRequestResult::kConfigNoResponse: {
       return FederatedAuthRequestIssueReasonEnum::ConfigNoResponse;
     }
-    case FederatedAuthRequestResult::kErrorFetchingConfigInvalidResponse: {
+    case FederatedAuthRequestResult::kConfigInvalidResponse: {
       return FederatedAuthRequestIssueReasonEnum::ConfigInvalidResponse;
     }
-    case FederatedAuthRequestResult::kErrorFetchingConfigInvalidContentType: {
+    case FederatedAuthRequestResult::kConfigInvalidContentType: {
       return FederatedAuthRequestIssueReasonEnum::ConfigInvalidContentType;
     }
-    case FederatedAuthRequestResult::kErrorFetchingClientMetadataHttpNotFound: {
+    case FederatedAuthRequestResult::kClientMetadataHttpNotFound: {
       return FederatedAuthRequestIssueReasonEnum::ClientMetadataHttpNotFound;
     }
-    case FederatedAuthRequestResult::kErrorFetchingClientMetadataNoResponse: {
+    case FederatedAuthRequestResult::kClientMetadataNoResponse: {
       return FederatedAuthRequestIssueReasonEnum::ClientMetadataNoResponse;
     }
-    case FederatedAuthRequestResult::
-        kErrorFetchingClientMetadataInvalidResponse: {
+    case FederatedAuthRequestResult::kClientMetadataInvalidResponse: {
       return FederatedAuthRequestIssueReasonEnum::ClientMetadataInvalidResponse;
     }
-    case FederatedAuthRequestResult::
-        kErrorFetchingClientMetadataInvalidContentType: {
+    case FederatedAuthRequestResult::kClientMetadataInvalidContentType: {
       return FederatedAuthRequestIssueReasonEnum::
           ClientMetadataInvalidContentType;
     }
-    case FederatedAuthRequestResult::kErrorFetchingAccountsHttpNotFound: {
+    case FederatedAuthRequestResult::kAccountsHttpNotFound: {
       return FederatedAuthRequestIssueReasonEnum::AccountsHttpNotFound;
     }
-    case FederatedAuthRequestResult::kErrorFetchingAccountsNoResponse: {
+    case FederatedAuthRequestResult::kAccountsNoResponse: {
       return FederatedAuthRequestIssueReasonEnum::AccountsNoResponse;
     }
-    case FederatedAuthRequestResult::kErrorFetchingAccountsInvalidResponse: {
+    case FederatedAuthRequestResult::kAccountsInvalidResponse: {
       return FederatedAuthRequestIssueReasonEnum::AccountsInvalidResponse;
     }
-    case FederatedAuthRequestResult::kErrorFetchingAccountsListEmpty: {
+    case FederatedAuthRequestResult::kAccountsListEmpty: {
       return FederatedAuthRequestIssueReasonEnum::AccountsListEmpty;
     }
-    case FederatedAuthRequestResult::kErrorFetchingAccountsInvalidContentType: {
+    case FederatedAuthRequestResult::kAccountsInvalidContentType: {
       return FederatedAuthRequestIssueReasonEnum::AccountsInvalidContentType;
     }
-    case FederatedAuthRequestResult::kErrorFetchingIdTokenHttpNotFound: {
+    case FederatedAuthRequestResult::kIdTokenHttpNotFound: {
       return FederatedAuthRequestIssueReasonEnum::IdTokenHttpNotFound;
     }
-    case FederatedAuthRequestResult::kErrorFetchingIdTokenNoResponse: {
+    case FederatedAuthRequestResult::kIdTokenNoResponse: {
       return FederatedAuthRequestIssueReasonEnum::IdTokenNoResponse;
     }
-    case FederatedAuthRequestResult::kErrorFetchingIdTokenInvalidResponse: {
+    case FederatedAuthRequestResult::kIdTokenInvalidResponse: {
       return FederatedAuthRequestIssueReasonEnum::IdTokenInvalidResponse;
     }
-    case FederatedAuthRequestResult::kErrorFetchingIdTokenIdpErrorResponse: {
+    case FederatedAuthRequestResult::kIdTokenIdpErrorResponse: {
       return FederatedAuthRequestIssueReasonEnum::IdTokenIdpErrorResponse;
     }
-    case FederatedAuthRequestResult::
-        kErrorFetchingIdTokenCrossSiteIdpErrorResponse: {
+    case FederatedAuthRequestResult::kIdTokenCrossSiteIdpErrorResponse: {
       return FederatedAuthRequestIssueReasonEnum::
           IdTokenCrossSiteIdpErrorResponse;
     }
-    case FederatedAuthRequestResult::kErrorFetchingIdTokenInvalidContentType: {
+    case FederatedAuthRequestResult::kIdTokenInvalidContentType: {
       return FederatedAuthRequestIssueReasonEnum::IdTokenInvalidContentType;
     }
-    case FederatedAuthRequestResult::kErrorCanceled: {
+    case FederatedAuthRequestResult::kCanceled: {
       return FederatedAuthRequestIssueReasonEnum::Canceled;
     }
-    case FederatedAuthRequestResult::kErrorRpPageNotVisible:
+    case FederatedAuthRequestResult::kRpPageNotVisible:
       return FederatedAuthRequestIssueReasonEnum::RpPageNotVisible;
     case FederatedAuthRequestResult::kError: {
       return FederatedAuthRequestIssueReasonEnum::ErrorIdToken;
     }
-    case FederatedAuthRequestResult::kErrorSilentMediationFailure: {
+    case FederatedAuthRequestResult::kSilentMediationFailure: {
       return FederatedAuthRequestIssueReasonEnum::SilentMediationFailure;
     }
-    case FederatedAuthRequestResult::kErrorThirdPartyCookiesBlocked: {
+    case FederatedAuthRequestResult::kThirdPartyCookiesBlocked: {
       return FederatedAuthRequestIssueReasonEnum::ThirdPartyCookiesBlocked;
     }
-    case FederatedAuthRequestResult::kErrorNotSignedInWithIdp: {
+    case FederatedAuthRequestResult::kNotSignedInWithIdp: {
       return FederatedAuthRequestIssueReasonEnum::NotSignedInWithIdp;
     }
-    case FederatedAuthRequestResult::kErrorMissingTransientUserActivation: {
+    case FederatedAuthRequestResult::kMissingTransientUserActivation: {
       return FederatedAuthRequestIssueReasonEnum::
           MissingTransientUserActivation;
     }
-    case FederatedAuthRequestResult::kErrorReplacedByButtonMode: {
+    case FederatedAuthRequestResult::kReplacedByButtonMode: {
       return FederatedAuthRequestIssueReasonEnum::ReplacedByButtonMode;
     }
-    case FederatedAuthRequestResult::kErrorRelyingPartyOriginIsOpaque: {
+    case FederatedAuthRequestResult::kInvalidFieldsSpecified: {
+      return FederatedAuthRequestIssueReasonEnum::InvalidFieldsSpecified;
+    }
+    case FederatedAuthRequestResult::kRelyingPartyOriginIsOpaque: {
       return FederatedAuthRequestIssueReasonEnum::RelyingPartyOriginIsOpaque;
+    }
+    case FederatedAuthRequestResult::kTypeNotMatching: {
+      return FederatedAuthRequestIssueReasonEnum::TypeNotMatching;
     }
     case FederatedAuthRequestResult::kSuccess: {
       NOTREACHED_NORETURN();
@@ -707,6 +715,15 @@ void DidActivatePrerender(const NavigationRequest& nav_request,
   UpdateChildFrameTrees(ftn, /* update_target_info= */ true);
 }
 
+void DidUpdatePolicyContainerHost(FrameTreeNode* ftn) {
+  if (!ftn) {
+    return;
+  }
+
+  DispatchToAgents(ftn,
+                   &protocol::NetworkHandler::OnPolicyContainerHostUpdated);
+}
+
 void DidUpdatePrefetchStatus(
     FrameTreeNode* ftn,
     const base::UnguessableToken& initiator_devtools_navigation_token,
@@ -750,6 +767,9 @@ namespace {
 
 protocol::String BuildBlockedByResponseReason(
     network::mojom::BlockedByResponseReason reason) {
+  // TODO(crbug.com/336752983):
+  // Add specific error messages when a subresource load was blocked due to
+  // Document-Isolation-Policy (Dip).
   switch (reason) {
     case network::mojom::BlockedByResponseReason::
         kCoepFrameResourceNeedsCoepHeader:
@@ -763,6 +783,10 @@ protocol::String BuildBlockedByResponseReason(
       return protocol::Audits::BlockedByResponseReasonEnum::CorpNotSameOrigin;
     case network::mojom::BlockedByResponseReason::
         kCorpNotSameOriginAfterDefaultedToSameOriginByCoep:
+    case network::mojom::BlockedByResponseReason::
+        kCorpNotSameOriginAfterDefaultedToSameOriginByDip:
+    case network::mojom::BlockedByResponseReason::
+        kCorpNotSameOriginAfterDefaultedToSameOriginByCoepAndDip:
       return protocol::Audits::BlockedByResponseReasonEnum::
           CorpNotSameOriginAfterDefaultedToSameOriginByCoep;
     case network::mojom::BlockedByResponseReason::kCorpNotSameSite:
@@ -1140,6 +1164,41 @@ DevToolsAgentHostImpl* GetDevToolsAgentHostForNetworkOverrides(
   return RenderFrameDevToolsAgentHost::GetFor(frame_tree_node);
 }
 
+void ApplyNetworkRequestOverrides(
+    DevToolsAgentHostImpl* agent_host,
+    net::HttpRequestHeaders* headers,
+    bool* disable_cache,
+    bool* network_instrumentation_enabled,
+    bool* skip_service_worker,
+    std::optional<std::vector<net::SourceStream::SourceType>>*
+        devtools_accepted_stream_types,
+    bool* devtools_user_agent_overridden,
+    bool* devtools_accept_language_overridden) {
+  for (auto* network : protocol::NetworkHandler::ForAgentHost(agent_host)) {
+    if (!network->enabled()) {
+      continue;
+    }
+    if (network_instrumentation_enabled) {
+      *network_instrumentation_enabled = true;
+    }
+    network->ApplyOverrides(headers, skip_service_worker, disable_cache,
+                            devtools_accepted_stream_types);
+  }
+
+  for (auto* emulation : protocol::EmulationHandler::ForAgentHost(agent_host)) {
+    bool ua_overridden = false;
+    bool accept_language_overridden = false;
+    emulation->ApplyOverrides(headers, &ua_overridden,
+                              &accept_language_overridden);
+    if (devtools_user_agent_overridden) {
+      *devtools_user_agent_overridden |= ua_overridden;
+    }
+    if (devtools_accept_language_overridden) {
+      *devtools_accept_language_overridden |= accept_language_overridden;
+    }
+  }
+}
+
 }  // namespace
 
 void ApplyAuctionNetworkRequestOverrides(
@@ -1152,24 +1211,10 @@ void ApplyAuctionNetworkRequestOverrides(
   if (!agent_host) {
     return;
   }
-
-  for (auto* network : protocol::NetworkHandler::ForAgentHost(agent_host)) {
-    if (!network->enabled()) {
-      continue;
-    }
-    *network_instrumentation_enabled = true;
-    network->ApplyOverrides(&request->headers, &request->skip_service_worker,
-                            &disable_cache,
-                            &request->devtools_accepted_stream_types);
-  }
-
-  for (auto* emulation : protocol::EmulationHandler::ForAgentHost(agent_host)) {
-    bool ua_overridden = false;
-    bool accept_language_overridden = false;
-    emulation->ApplyOverrides(&request->headers, &ua_overridden,
-                              &accept_language_overridden);
-  }
-
+  ApplyNetworkRequestOverrides(
+      agent_host, &request->headers, &disable_cache,
+      network_instrumentation_enabled, &request->skip_service_worker,
+      &request->devtools_accepted_stream_types, nullptr, nullptr);
   if (disable_cache) {
     request->load_flags = net::LOAD_BYPASS_CACHE;
   }
@@ -1193,24 +1238,10 @@ void ApplyNetworkRequestOverrides(
   }
   net::HttpRequestHeaders headers;
   headers.AddHeadersFromString(begin_params->headers);
-  for (auto* network : protocol::NetworkHandler::ForAgentHost(agent_host)) {
-    if (!network->enabled()) {
-      continue;
-    }
-    *report_raw_headers = true;
-    network->ApplyOverrides(&headers, &begin_params->skip_service_worker,
-                            &disable_cache, devtools_accepted_stream_types);
-  }
-
-  for (auto* emulation : protocol::EmulationHandler::ForAgentHost(agent_host)) {
-    bool ua_overridden = false;
-    bool accept_language_overridden = false;
-    emulation->ApplyOverrides(&headers, &ua_overridden,
-                              &accept_language_overridden);
-    *devtools_user_agent_overridden |= ua_overridden;
-    *devtools_accept_language_overridden |= accept_language_overridden;
-  }
-
+  ApplyNetworkRequestOverrides(
+      agent_host, &headers, &disable_cache, report_raw_headers,
+      &begin_params->skip_service_worker, devtools_accepted_stream_types,
+      devtools_user_agent_overridden, devtools_accept_language_overridden);
   if (disable_cache) {
     begin_params->load_flags &=
         ~(net::LOAD_VALIDATE_CACHE | net::LOAD_SKIP_CACHE_VALIDATION |
@@ -1390,11 +1421,13 @@ WillCreateURLLoaderFactoryParams::ForSharedWorker(SharedWorkerHost* host) {
 WillCreateURLLoaderFactoryParams
 WillCreateURLLoaderFactoryParams::ForWorkerMainScript(
     DevToolsAgentHostImpl* agent_host,
-    const base::UnguessableToken& worker_token) {
-  RenderProcessHost* rph = agent_host->GetProcessHost();
-  CHECK(rph);
-  return WillCreateURLLoaderFactoryParams(
-      agent_host, worker_token, rph->GetID(), rph->GetStoragePartition());
+    const base::UnguessableToken& worker_token,
+    RenderFrameHostImpl& ancestor_render_frame_host) {
+  // Use the ancestor frame's interceptor to align with the interception
+  // behavior in the renderer that reuses the same url loader factory from
+  // the ancestor frame for the worker.
+  return WillCreateURLLoaderFactoryParams::ForFrame(
+      &ancestor_render_frame_host);
 }
 
 void OnPrefetchRequestWillBeSent(
@@ -2157,6 +2190,21 @@ void OnWorkerMainScriptRequestWillBeSent(
     return;
   }
   MaybeAssignResourceRequestId(owner_host, worker_token.ToString(), request);
+
+  // Note: we apply overrides from the owner frame to match the behavior in the
+  // renderer.
+  bool disable_cache = false;
+  ApplyNetworkRequestOverrides(owner_host, &request.headers, &disable_cache,
+                               nullptr, &request.skip_service_worker,
+                               &request.devtools_accepted_stream_types, nullptr,
+                               nullptr);
+  if (disable_cache) {
+    request.load_flags &=
+        ~(net::LOAD_VALIDATE_CACHE | net::LOAD_SKIP_CACHE_VALIDATION |
+          net::LOAD_ONLY_FROM_CACHE | net::LOAD_DISABLE_CACHE);
+    request.load_flags |= net::LOAD_BYPASS_CACHE;
+  }
+
   DispatchToAgents(
       ftn, &protocol::NetworkHandler::RequestSent, worker_token.ToString(),
       /*loader_id=*/"", request.headers, *request_info,
@@ -2222,10 +2270,6 @@ void ApplyNetworkContextParamsOverrides(
 protocol::Audits::GenericIssueErrorType GenericIssueErrorTypeToProtocol(
     blink::mojom::GenericIssueErrorType error_type) {
   switch (error_type) {
-    case blink::mojom::GenericIssueErrorType::
-        kCrossOriginPortalPostMessageError:
-      return protocol::Audits::GenericIssueErrorTypeEnum::
-          CrossOriginPortalPostMessageError;
     case blink::mojom::GenericIssueErrorType::kFormLabelForNameError:
       return protocol::Audits::GenericIssueErrorTypeEnum::FormLabelForNameError;
     case blink::mojom::GenericIssueErrorType::kFormDuplicateIdForInputError:

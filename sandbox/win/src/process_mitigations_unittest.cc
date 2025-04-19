@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "sandbox/win/src/process_mitigations.h"
 
 #include <windows.h>
@@ -453,6 +458,36 @@ SBOX_TESTS_COMMAND int CheckPolicy(int argc, wchar_t** argv) {
       // We wish to disable the policy.
       if (!policy.DisallowFsctlSystemCalls) {
         return SBOX_TEST_FAILED;
+      }
+
+      break;
+    }
+
+    //--------------------------------------------------
+    // MITIGATION_RESTRICT_CORE_SHARING
+    //--------------------------------------------------
+    case (TESTPOLICY_RESTRICTCORESHARING): {
+      PROCESS_MITIGATION_SIDE_CHANNEL_ISOLATION_POLICY policy = {};
+      if (!::GetProcessMitigationPolicy(::GetCurrentProcess(),
+                                        ProcessSideChannelIsolationPolicy,
+                                        &policy, sizeof(policy))) {
+        return SBOX_TEST_NOT_FOUND;
+      }
+
+      if (!(policy.RestrictCoreSharing)) {
+        // ERROR_NOT_SUPPORTED is returned if the OS doesn't support this
+        // mitigation policy.
+        // If SetProcessMitigationPolicy was able to set the policy then the
+        // test is marked failure since this test sets
+        // |MITIGATION_RESTRICT_CORE_SHARING| which should have enabled the
+        // policy.
+        policy.RestrictCoreSharing = true;
+        bool is_core_sharing_set_successful = ::SetProcessMitigationPolicy(
+            ProcessSideChannelIsolationPolicy, &policy, sizeof(policy));
+        if (is_core_sharing_set_successful ||
+            ::GetLastError() != ERROR_NOT_SUPPORTED) {
+          return SBOX_TEST_FAILED;
+        }
       }
 
       break;
@@ -1345,6 +1380,33 @@ TEST(ProcessMitigationsTest, FsctlDisabled) {
   sandbox::TargetConfig* config = runner.GetPolicy()->GetConfig();
 
   EXPECT_EQ(config->SetProcessMitigations(MITIGATION_FSCTL_DISABLED),
+            SBOX_ALL_OK);
+  EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(test_command.c_str()));
+}
+
+// This test validates setting restrict_core_sharing policy which will
+// make sure process threads never share a core with threads outside it's
+// security domain.
+// The policy setting can fail on device which doesn't have the right scheduler
+// as described in
+// https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-process_
+// mitigation_side_channel_isolation_policy
+// This test passes if we are able to set the policy or the policy set fails
+// with ERROR_NOT_SUPPORTED due to incorrect scheduler type.
+TEST(ProcessMitigationsTest, RestrictCoreSharing) {
+  // This feature is enabled starting with build number 25922.
+  const auto& version = base::win::OSInfo::GetInstance()->version_number();
+  if (version.build < 25922) {
+    return;
+  }
+
+  std::wstring test_command = L"CheckPolicy ";
+  test_command += std::to_wstring(TESTPOLICY_RESTRICTCORESHARING);
+
+  TestRunner runner;
+  sandbox::TargetConfig* config = runner.GetPolicy()->GetConfig();
+
+  EXPECT_EQ(config->SetProcessMitigations(MITIGATION_RESTRICT_CORE_SHARING),
             SBOX_ALL_OK);
   EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(test_command.c_str()));
 }

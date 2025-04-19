@@ -125,6 +125,16 @@ size_t DnsResourceRecord::CalculateRecordSize() const {
 
 DnsRecordParser::DnsRecordParser() = default;
 
+DnsRecordParser::~DnsRecordParser() = default;
+
+DnsRecordParser::DnsRecordParser(const DnsRecordParser&) = default;
+
+DnsRecordParser::DnsRecordParser(DnsRecordParser&&) = default;
+
+DnsRecordParser& DnsRecordParser::operator=(const DnsRecordParser&) = default;
+
+DnsRecordParser& DnsRecordParser::operator=(DnsRecordParser&&) = default;
+
 DnsRecordParser::DnsRecordParser(base::span<const uint8_t> packet,
                                  size_t offset,
                                  size_t num_records)
@@ -346,7 +356,7 @@ DnsResponse::DnsResponse(
                       response_size, do_accumulation);
 
   auto io_buffer = base::MakeRefCounted<IOBufferWithSize>(response_size);
-  auto writer = base::SpanWriter(base::as_writable_bytes(io_buffer->span()));
+  auto writer = base::SpanWriter(io_buffer->span());
   success &= WriteHeader(&writer, header);
   DCHECK(success);
   if (has_query) {

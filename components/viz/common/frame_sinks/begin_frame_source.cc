@@ -118,17 +118,6 @@ BeginFrameSource::BeginFrameArgsGenerator::GenerateBeginFrameArgs(
       next_sequence_number_ +
       EstimateTickCountsBetween(frame_time, next_expected_frame_time_,
                                 vsync_interval);
-  // This is utilized by ExternalBeginFrameSourceAndroid,
-  // ExternalBeginFrameSourceWin, and DelayBasedBeginFrameSource. Which covers
-  // the main Viz use cases. BackToBackBeginFrameSource is not relevant. We also
-  // are not looking to adjust ExternalBeginFrameSourceMojo which is used in
-  // headless.
-  if (dynamic_begin_frame_deadline_offset_source_) {
-    base::TimeDelta deadline_offset =
-        dynamic_begin_frame_deadline_offset_source_->GetDeadlineOffset(
-            vsync_interval);
-    deadline -= deadline_offset;
-  }
   next_expected_frame_time_ = deadline;
   next_sequence_number_ = sequence_number + 1;
   return BeginFrameArgs::Create(BEGINFRAME_FROM_HERE, source_id,
@@ -213,10 +202,6 @@ void BeginFrameSource::AsProtozeroInto(
   // The lower 32 bits of source_id are the interesting piece of |source_id_|.
   state->set_source_id(static_cast<uint32_t>(source_id_));
 }
-
-void BeginFrameSource::SetDynamicBeginFrameDeadlineOffsetSource(
-    DynamicBeginFrameDeadlineOffsetSource*
-        dynamic_begin_frame_deadline_offset_source) {}
 
 #if BUILDFLAG(IS_MAC)
 void BeginFrameSource::RecordBeginFrameSourceAccuracy(base::TimeDelta delta) {
@@ -311,6 +296,9 @@ void BackToBackBeginFrameSource::SetMaxVrrInterval(
 void BackToBackBeginFrameSource::OnTimerTick() {
   if (RequestCallbackOnGpuAvailable())
     return;
+  if (!time_source_->Active()) {
+    return;
+  }
   base::TimeTicks frame_time = time_source_->LastTickTime();
   base::TimeDelta interval = max_vrr_interval_.value_or(vsync_interval_);
   BeginFrameArgs args = BeginFrameArgs::Create(
@@ -336,6 +324,7 @@ DelayBasedBeginFrameSource::DelayBasedBeginFrameSource(
     : SyntheticBeginFrameSource(restart_id),
       time_source_(std::move(time_source)) {
   time_source_->SetClient(this);
+  last_vsync_interval_ = BeginFrameArgs::DefaultInterval();
 }
 
 DelayBasedBeginFrameSource::~DelayBasedBeginFrameSource() {
@@ -412,13 +401,6 @@ void DelayBasedBeginFrameSource::OnGpuNoLongerBusy() {
   OnTimerTick();
 }
 
-void DelayBasedBeginFrameSource::SetDynamicBeginFrameDeadlineOffsetSource(
-    DynamicBeginFrameDeadlineOffsetSource*
-        dynamic_begin_frame_deadline_offset_source) {
-  begin_frame_args_generator_.set_dynamic_begin_frame_deadline_offset_source(
-      dynamic_begin_frame_deadline_offset_source);
-}
-
 void DelayBasedBeginFrameSource::SetMaxVrrInterval(
     const std::optional<base::TimeDelta>& max_vrr_interval) {
   DCHECK(!max_vrr_interval.has_value() || max_vrr_interval->is_positive());
@@ -454,6 +436,7 @@ void DelayBasedBeginFrameSource::OnTimerTick() {
   for (BeginFrameObserver* obs : observers) {
     IssueBeginFrameToObserver(obs, last_begin_frame_args_);
   }
+  last_vsync_interval_ = time_source_->Interval();
 }
 
 void DelayBasedBeginFrameSource::IssueBeginFrameToObserver(
@@ -461,17 +444,22 @@ void DelayBasedBeginFrameSource::IssueBeginFrameToObserver(
     const BeginFrameArgs& args) {
   BeginFrameArgs last_args = obs->LastUsedBeginFrameArgs();
 
-  // We should use |last_args| for margin calculation with
-  // |obs->LastUsedBeginFrameArgs()| cached during last OnBeginFrame, as the
-  // passed in |args| is updated if interval changes since last frame.
-  auto args_for_margin =
-      base::FeatureList::IsEnabled(features::kUseLastBeginFrameArgs) ? last_args
-                                                                     : args;
-
+  // * If a FrameSink is throttled, |last_args.interval| is the throttled
+  //   interval (e.g. 50ms) while the frame_time delta is still the actual
+  //   vsync (OnTimerTick) interval.
+  // * If the vsync (OnTimerTick) interval is throttled, at the first tick after
+  //   throttling, the |args.interval| is updated to the throttled interval
+  //   while the frame_time delta is not.
+  //
+  // Both cases can cause the double tick check below to fail and an unexpected
+  // frame drop. To avoid this, we use the cached |last_vsync_interval_| here.
+  auto interval_for_margin =
+      base::FeatureList::IsEnabled(features::kLastVSyncArgsKillswitch)
+          ? args.interval
+          : last_vsync_interval_;
   const base::TimeDelta double_tick_margin =
-      max_vrr_interval_.has_value()
-          ? base::TimeDelta()
-          : args_for_margin.interval / kDoubleTickDivisor;
+      max_vrr_interval_.has_value() ? base::TimeDelta()
+                                    : interval_for_margin / kDoubleTickDivisor;
   if (!last_args.IsValid() ||
       (args.frame_time > last_args.frame_time + double_tick_margin)) {
     if (args.type == BeginFrameArgs::MISSED) {
@@ -571,9 +559,9 @@ void ExternalBeginFrameSource::OnBeginFrame(const BeginFrameArgs& args) {
     return;
   }
 
-  TRACE_EVENT2("viz", "ExternalBeginFrameSource::OnBeginFrame", "frame_time",
-               args.frame_time.since_origin().InMicroseconds(), "interval",
-               args.interval.InMicroseconds());
+  TRACE_EVENT2("viz,input.scrolling", "ExternalBeginFrameSource::OnBeginFrame",
+               "frame_time", args.frame_time.since_origin().InMicroseconds(),
+               "interval", args.interval.InMicroseconds());
 
   last_begin_frame_args_ = args;
   base::flat_set<raw_ptr<BeginFrameObserver, CtnExperimental>> observers(
@@ -615,7 +603,7 @@ base::TimeDelta ExternalBeginFrameSource::GetMaximumRefreshFrameInterval() {
   return BeginFrameArgs::DefaultInterval();
 }
 
-std::vector<base::TimeDelta>
+base::flat_set<base::TimeDelta>
 ExternalBeginFrameSource::GetSupportedFrameIntervals(base::TimeDelta interval) {
   return {interval, interval * 2};
 }

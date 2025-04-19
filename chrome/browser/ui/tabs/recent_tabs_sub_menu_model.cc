@@ -338,12 +338,11 @@ void RecentTabsSubMenuModel::Build() {
   SetCommandIcon(this, IDC_SHOW_HISTORY,
                  vector_icons::kHistoryChromeRefreshIcon);
 
-  if (features::IsSidePanelPinningEnabled()) {
-    InsertItemWithStringIdAt(1, IDC_SHOW_HISTORY_CLUSTERS_SIDE_PANEL,
-                             IDS_HISTORY_CLUSTERS_SHOW_SIDE_PANEL);
-    SetCommandIcon(this, IDC_SHOW_HISTORY_CLUSTERS_SIDE_PANEL,
-                   vector_icons::kHistoryChromeRefreshIcon);
-  }
+  InsertItemWithStringIdAt(1, IDC_SHOW_HISTORY_CLUSTERS_SIDE_PANEL,
+                           IDS_HISTORY_CLUSTERS_SHOW_SIDE_PANEL);
+  SetCommandIcon(this, IDC_SHOW_HISTORY_CLUSTERS_SIDE_PANEL,
+                 vector_icons::kHistoryChromeRefreshIcon);
+
   AddSeparator(ui::NORMAL_SEPARATOR);
   history_separator_index_ = GetItemCount() - 1;
   BuildLocalEntries();
@@ -369,9 +368,7 @@ void RecentTabsSubMenuModel::BuildLocalEntries() {
   } else {
     recent_tabs_title_index_ = ++last_local_model_index_;
     InsertTitleWithStringIdAt(recent_tabs_title_index_.value(),
-                              features::IsChromeRefresh2023()
-                                  ? IDS_RECENT_TABS
-                                  : IDS_RECENTLY_CLOSED);
+                              IDS_RECENT_TABS);
 
     int added_count = 0;
     for (const auto& entry : service->entries()) {

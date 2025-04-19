@@ -187,10 +187,6 @@ void AddPrivacySandboxStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_AD_MEASUREMENT_PAGE_TOGGLE_LABEL},
       {"adMeasurementPageToggleSubLabel",
        IDS_SETTINGS_AD_MEASUREMENT_PAGE_TOGGLE_SUB_LABEL},
-      {"adMeasurementPageEnabledHeading",
-       IDS_SETTINGS_AD_MEASUREMENT_PAGE_ENABLED_HEADING},
-      {"adMeasurementPageConsiderHeading",
-       IDS_SETTINGS_AD_MEASUREMENT_PAGE_CONSIDER_HEADING},
       {"adMeasurementPageEnabledBullet1",
        IDS_SETTINGS_AD_MEASUREMENT_PAGE_ENABLED_BULLET_1},
       {"adMeasurementPageEnabledBullet2",
@@ -215,6 +211,40 @@ void AddPrivacySandboxStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_UNBLOCK_TOPIC_TOAST_BUTTON_TEXT},
       {"fledgePageExplanation", IDS_SETTINGS_FLEDGE_PAGE_EXPLANATION},
       {"unblockTopicButtonTextV2", IDS_SETTINGS_UNBLOCK_TOPIC_BUTTON_TEXT_V2},
+      {"privacyGuideAdTopicsHeading",
+       IDS_SETTINGS_PRIVACY_GUIDE_AD_TOPICS_HEADING},
+      {"privacyGuideAdTopicsToggleLabel",
+       IDS_SETTINGS_PRIVACY_GUIDE_AD_TOPICS_TOGGLE_LABEL},
+      {"privacyGuideAdTopicsWhenOnBullet1",
+       IDS_SETTINGS_PRIVACY_GUIDE_AD_TOPICS_WHEN_ON_BULLET1},
+      {"privacyGuideAdTopicsWhenOnBullet2",
+       IDS_SETTINGS_PRIVACY_GUIDE_AD_TOPICS_WHEN_ON_BULLET2},
+      {"privacyGuideAdTopicsThingsToConsiderBullet1",
+       IDS_SETTINGS_PRIVACY_GUIDE_AD_TOPICS_THINGS_TO_CONSIDER_BULLET1},
+      {"privacyGuideAdTopicsThingsToConsiderBullet2",
+       IDS_SETTINGS_PRIVACY_GUIDE_AD_TOPICS_THINGS_TO_CONSIDER_BULLET2},
+      {"tpcAndKnownTrackersPageTitle",
+       IDS_SETTINGS_3PC_AND_KNOWN_TRACKERS_PAGE_TITLE},
+      {"tpcAndKnownTrackersExceptionsListTitle",
+       IDS_SETTINGS_3PC_AND_KNOWN_TRACKERS_EXCEPTIONS_LIST_TITLE},
+      {"tpcAndKnownTrackersExceptionsListDescription",
+       IDS_SETTINGS_3PC_AND_KNOWN_TRACKERS_EXCEPTIONS_LIST_DESCRIPTION},
+      {"tpcAndKnownTrackersLinkRowLabel",
+       IDS_SETTINGS_3PC_AND_KNOWN_TRACKERS_LINK_ROW_LABEL},
+      {"trackingProtectionDefaultHeader",
+       IDS_SETTINGS_TRACKING_PROTECTION_DEFAULT_HEADER},
+      {"trackingProtectionTpcdBulletOne",
+       IDS_SETTINGS_TRACKING_PROTECTION_TPCD_BULLET_ONE},
+      {"trackingProtectionTpcdBulletTwoDescription",
+       IDS_SETTINGS_TRACKING_PROTECTION_TPCD_BULLET_TWO_DESCRIPTION},
+      {"trackingProtectionAdditionalProtectionsHeader",
+       IDS_SETTINGS_TRACKING_PROTECTION_ADDITIONAL_PROTECTIONS_HEADER},
+      {"trackingProtectionBlockAll3pcsSubLabel",
+       IDS_SETTINGS_TRACKING_PROTECTION_BLOCK_ALL_3PCS_SUB_LABEL},
+      {"trackingProtectionExceptionsListTitle",
+       IDS_SETTINGS_TRACKING_PROTECTION_EXCEPTIONS_LIST_TITLE},
+      {"trackingProtectionExceptionsListDescription",
+       IDS_SETTINGS_TRACKING_PROTECTION_EXCEPTIONS_LIST_DESCRIPTION},
 
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
@@ -224,6 +254,26 @@ void AddPrivacySandboxStrings(content::WebUIDataSource* html_source,
                              GURL(chrome::kAdPrivacyLearnMoreURL),
                              g_browser_process->GetApplicationLocale())
                              .spec());
+
+  // Tracking Protection strings containing HC links
+  html_source->AddString(
+      "trackingProtectionDefaultDescription",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_TRACKING_PROTECTION_DEFAULT_DESCRIPTION,
+          // TODO(https://b/350525567): Update with finalized URL
+          chrome::kUserBypassHelpCenterURL,
+          l10n_util::GetStringUTF16(
+              IDS_SETTINGS_TRACKING_PROTECTION_DEFAULT_LEARN_MORE_ARIA_LABEL),
+          l10n_util::GetStringUTF16(IDS_SETTINGS_OPENS_IN_NEW_TAB)));
+  html_source->AddString(
+      "trackingProtectionAdditionalProtectionsDescription",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_TRACKING_PROTECTION_ADDITIONAL_PROTECTIONS_DESCRIPTION,
+          // TODO(https://b/350525567): Update with finalized URL
+          chrome::kUserBypassHelpCenterURL,
+          l10n_util::GetStringUTF16(
+              IDS_SETTINGS_TRACKING_PROTECTION_ADDITIONAL_PROTECTIONS_LEARN_MORE_ARIA_LABEL),
+          l10n_util::GetStringUTF16(IDS_SETTINGS_OPENS_IN_NEW_TAB)));
 
   // Topics and fledge link to help center articles in their learn more dialog.
   html_source->AddString(
@@ -246,8 +296,7 @@ void AddPrivacySandboxStrings(content::WebUIDataSource* html_source,
       "manageTopicsPageLearnMoreLink",
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_MANAGE_TOPICS_PAGE_LEARN_MORE_LINK,
-          base::ASCIIToUTF16(
-              chrome::kChromeUIPrivacySandboxManageTopicsLearnMoreURL),
+          chrome::kChromeUIPrivacySandboxManageTopicsLearnMoreURL,
           l10n_util::GetStringUTF16(
               IDS_SETTINGS_MANAGE_TOPICS_PAGE_DESCRIPTION_LEARN_MORE_ARIA_LABEL),
           l10n_util::GetStringUTF16(IDS_SETTINGS_OPENS_IN_NEW_TAB)));
@@ -255,39 +304,34 @@ void AddPrivacySandboxStrings(content::WebUIDataSource* html_source,
       "topicsPageDisclaimerDesktop",
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_TOPICS_PAGE_DISCLAIMER_DESKTOP,
-          base::ASCIIToUTF16(
-              chrome::kChromeUIPrivacySandboxManageTopicsLearnMoreURL),
+          chrome::kChromeUIPrivacySandboxManageTopicsLearnMoreURL,
           l10n_util::GetStringUTF16(IDS_SETTINGS_OPENS_IN_NEW_TAB)));
   // Topics and fledge both link to the cookies setting page and cross-link
   // each other in the footers.
   html_source->AddString(
       "topicsPageFooter",
-      l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_TOPICS_PAGE_FOOTER,
-          base::ASCIIToUTF16(chrome::kChromeUIPrivacySandboxFledgeURL),
-          base::ASCIIToUTF16(chrome::kChromeUICookieSettingsURL)));
+      l10n_util::GetStringFUTF16(IDS_SETTINGS_TOPICS_PAGE_FOOTER,
+                                 chrome::kChromeUIPrivacySandboxFledgeURL,
+                                 chrome::kChromeUICookieSettingsURL));
   html_source->AddString(
       "topicsPageFooterV2",
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_TOPICS_PAGE_FOOTER_V2,
-          base::ASCIIToUTF16(chrome::kChromeUIPrivacySandboxFledgeURL),
-          base::ASCIIToUTF16(chrome::kChromeUICookieSettingsURL),
-          base::ASCIIToUTF16(
-              chrome::kChromeUIPrivacySandboxManageTopicsLearnMoreURL)));
+          chrome::kChromeUIPrivacySandboxFledgeURL,
+          chrome::kChromeUICookieSettingsURL,
+          chrome::kChromeUIPrivacySandboxManageTopicsLearnMoreURL));
   html_source->AddString(
       "fledgePageFooter",
-      l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_FLEDGE_PAGE_FOOTER,
-          base::ASCIIToUTF16(chrome::kChromeUIPrivacySandboxTopicsURL),
-          base::ASCIIToUTF16(chrome::kChromeUICookieSettingsURL)));
+      l10n_util::GetStringFUTF16(IDS_SETTINGS_FLEDGE_PAGE_FOOTER,
+                                 chrome::kChromeUIPrivacySandboxTopicsURL,
+                                 chrome::kChromeUICookieSettingsURL));
   html_source->AddString(
       "fledgePageFooterV2",
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_FLEDGE_PAGE_FOOTER_V2,
-          base::ASCIIToUTF16(chrome::kChromeUIPrivacySandboxTopicsURL),
-          base::ASCIIToUTF16(chrome::kChromeUICookieSettingsURL),
-          base::ASCIIToUTF16(
-              chrome::kChromeUIPrivacySandboxManageTopicsLearnMoreURL)));
+          chrome::kChromeUIPrivacySandboxTopicsURL,
+          chrome::kChromeUICookieSettingsURL,
+          chrome::kChromeUIPrivacySandboxManageTopicsLearnMoreURL));
   html_source->AddBoolean(
       "firstPartySetsUIEnabled",
       base::FeatureList::IsEnabled(

@@ -36,6 +36,11 @@
  * version of this file under any of the LGPL, the MPL or the GPL.
  */
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/platform/image-decoders/png/png_image_decoder.h"
 
 #include <memory>
@@ -43,7 +48,6 @@
 #include "base/containers/adapters.h"
 #include "base/numerics/checked_math.h"
 #include "media/base/video_color_space.h"
-#include "third_party/blink/renderer/platform/image-decoders/exif_reader.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/modules/skcms/skcms.h"
 
@@ -491,10 +495,8 @@ void PNGImageDecoder::HeaderAvailable() {
   if (png_get_eXIf_1(png, info, &exif_size, &exif_buffer) != 0) {
     // exif data exists
     if (exif_size != 0 && exif_buffer) {
-      DecodedImageMetaData metadata;
-      base::span<const uint8_t> exif_span(exif_buffer, exif_size);
-      ReadExif(exif_span, metadata);
-      ApplyMetadata(metadata, gfx::Size(width, height));
+      ApplyExifMetadata(SkData::MakeWithoutCopy(exif_buffer, exif_size).get(),
+                        gfx::Size(width, height));
     }
   }
 

@@ -11,11 +11,12 @@
 #include "base/functional/callback_helpers.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "chrome/browser/ash/external_metrics.h"
+#include "chrome/browser/ash/external_metrics/external_metrics.h"
 #include "chrome/browser/ash/pcie_peripheral/ash_usb_detector.h"
 #include "chrome/browser/chrome_browser_main_linux.h"
 #include "chrome/browser/memory/memory_kills_monitor.h"
 
+class AmbientClientImpl;
 class AssistantBrowserDelegateImpl;
 class AssistantStateClient;
 class ChromeKeyboardControllerClient;
@@ -88,6 +89,7 @@ class SessionTerminationManager;
 class ShortcutMappingPrefService;
 class ShutdownPolicyForwarder;
 class SigninProfileHandler;
+class SuspendPerfReporter;
 class SystemTokenCertDBInitializer;
 class VideoConferenceAppServiceClient;
 class VideoConferenceAshFeatureClient;
@@ -134,10 +136,6 @@ namespace system {
 class DarkResumeController;
 }  // namespace system
 
-namespace traffic_counters {
-class TrafficCountersHandler;
-}  // namespace traffic_counters
-
 // ChromeBrowserMainParts implementation for chromeos specific code.
 // NOTE: Chromeos UI (Ash) support should be added to
 // ChromeBrowserMainExtraPartsAsh instead. This class should not depend on
@@ -177,6 +175,7 @@ class ChromeBrowserMainPartsAsh : public ChromeBrowserMainPartsLinux {
   std::unique_ptr<IdleActionWarningObserver> idle_action_warning_observer_;
   std::unique_ptr<RendererFreezer> renderer_freezer_;
   std::unique_ptr<PowerMetricsReporter> power_metrics_reporter_;
+  std::unique_ptr<SuspendPerfReporter> suspend_perf_reporter_;
   std::unique_ptr<FastTransitionObserver> fast_transition_observer_;
   std::unique_ptr<NetworkThrottlingObserver> network_throttling_observer_;
   std::unique_ptr<NetworkChangeManagerClient> network_change_manager_client_;
@@ -216,6 +215,7 @@ class ChromeBrowserMainPartsAsh : public ChromeBrowserMainPartsLinux {
 
   std::unique_ptr<LowDiskNotification> low_disk_notification_;
   std::unique_ptr<KioskController> kiosk_controller_;
+  std::unique_ptr<AmbientClientImpl> ambient_client_;
   std::unique_ptr<MultiCaptureNotifications> multi_capture_notifications_;
 
   std::unique_ptr<ShortcutMappingPrefService> shortcut_mapping_pref_service_;
@@ -295,8 +295,6 @@ class ChromeBrowserMainPartsAsh : public ChromeBrowserMainPartsLinux {
   // only be used by ChromeFeaturesServiceProvider.
   std::unique_ptr<base::FeatureList::Accessor> feature_list_accessor_;
 
-  std::unique_ptr<traffic_counters::TrafficCountersHandler>
-      traffic_counters_handler_;
   std::unique_ptr<ash::AuthEventsRecorder> auth_events_recorder_;
   std::unique_ptr<ash::ChromeAuthParts> auth_parts_;
 

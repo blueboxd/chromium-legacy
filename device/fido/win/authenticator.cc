@@ -212,7 +212,7 @@ void WinWebAuthnApiAuthenticator::MakeCredential(
 
 void WinWebAuthnApiAuthenticator::MakeCredentialDone(
     MakeCredentialCallback callback,
-    std::pair<CtapDeviceResponseCode,
+    std::pair<MakeCredentialStatus,
               std::optional<AuthenticatorMakeCredentialResponse>> result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(is_pending_);
@@ -223,15 +223,11 @@ void WinWebAuthnApiAuthenticator::MakeCredentialDone(
     waiting_for_cancellation_ = false;
     return;
   }
-  if (result.first != CtapDeviceResponseCode::kSuccess) {
+  if (result.first != MakeCredentialStatus::kSuccess) {
     std::move(callback).Run(result.first, std::nullopt);
     return;
   }
-  if (!result.second) {
-    std::move(callback).Run(CtapDeviceResponseCode::kCtap2ErrInvalidCBOR,
-                            std::nullopt);
-    return;
-  }
+  CHECK(result.second);
   std::move(callback).Run(result.first, std::move(result.second));
 }
 
@@ -257,7 +253,7 @@ void WinWebAuthnApiAuthenticator::GetAssertion(CtapGetAssertionRequest request,
 
 void WinWebAuthnApiAuthenticator::GetAssertionDone(
     GetAssertionCallback callback,
-    std::pair<CtapDeviceResponseCode,
+    std::pair<GetAssertionStatus,
               std::optional<AuthenticatorGetAssertionResponse>> result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(is_pending_);
@@ -266,14 +262,11 @@ void WinWebAuthnApiAuthenticator::GetAssertionDone(
     waiting_for_cancellation_ = false;
     return;
   }
-  if (result.first != CtapDeviceResponseCode::kSuccess) {
+  if (result.first != GetAssertionStatus::kSuccess) {
     std::move(callback).Run(result.first, {});
     return;
   }
-  if (!result.second) {
-    std::move(callback).Run(CtapDeviceResponseCode::kCtap2ErrInvalidCBOR, {});
-    return;
-  }
+  CHECK(result.second);
   std::vector<AuthenticatorGetAssertionResponse> responses;
   responses.emplace_back(std::move(*result.second));
   std::move(callback).Run(result.first, std::move(responses));

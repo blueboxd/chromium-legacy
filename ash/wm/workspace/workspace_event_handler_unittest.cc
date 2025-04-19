@@ -21,6 +21,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_processor.h"
 #include "ui/events/event_utils.h"
@@ -39,10 +40,10 @@ void ClickButtonWithFlags(ui::test::EventGenerator* generator,
                           int button,
                           int flags) {
   gfx::Point location = generator->current_screen_location();
-  ui::MouseEvent press(ui::ET_MOUSE_PRESSED, location, location,
+  ui::MouseEvent press(ui::EventType::kMousePressed, location, location,
                        ui::EventTimeForNow(), button | flags, button);
   generator->Dispatch(&press);
-  ui::MouseEvent release(ui::ET_MOUSE_RELEASED, location, location,
+  ui::MouseEvent release(ui::EventType::kMouseReleased, location, location,
                          ui::EventTimeForNow(), button | flags, button);
   generator->Dispatch(&release);
 }
@@ -307,7 +308,7 @@ TEST_F(WorkspaceEventHandlerTest,
                       aura::client::kResizeBehaviorCanMaximize);
   delegate1.set_window_component(HTCAPTION);
 
-  child->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
+  child->SetProperty(aura::client::kModalKey, ui::mojom::ModalType::kWindow);
   ::wm::AddTransientChild(window.get(), child.get());
 
   WindowState* window_state = WindowState::Get(window.get());

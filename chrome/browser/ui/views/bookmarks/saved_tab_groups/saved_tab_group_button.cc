@@ -53,6 +53,7 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/label_button_border.h"
@@ -97,10 +98,9 @@ SavedTabGroupButton::SavedTabGroupButton(const SavedTabGroup& group,
           base::BindRepeating(
               &SavedTabGroupUtils::CreateSavedTabGroupContextMenuModel,
               browser,
-              group.saved_guid(),
-              /*show_pin_unpin_option=*/true),
+              group.saved_guid()),
           views::MenuRunner::CONTEXT_MENU | views::MenuRunner::IS_NESTED) {
-  SetAccessibilityProperties(
+  GetViewAccessibility().SetProperties(
       ax::mojom::Role::kButton, /*name=*/GetAccessibleNameForButton(),
       /*description=*/std::nullopt,
       l10n_util::GetStringUTF16(
@@ -162,15 +162,19 @@ bool SavedTabGroupButton::OnKeyPressed(const ui::KeyEvent& event) {
 }
 
 bool SavedTabGroupButton::IsTriggerableEvent(const ui::Event& e) {
-  return e.type() == ui::ET_GESTURE_TAP ||
-         e.type() == ui::ET_GESTURE_TAP_DOWN ||
+  return e.type() == ui::EventType::kGestureTap ||
+         e.type() == ui::EventType::kGestureTapDown ||
          event_utils::IsPossibleDispositionEvent(e);
 }
 
 void SavedTabGroupButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   views::MenuButton::GetAccessibleNodeData(node_data);
-  node_data->SetNameChecked(GetAccessibleNameForButton());
-  node_data->role = ax::mojom::Role::kButton;
+  // We must set the updated accessible name directly in the cache to override
+  // the one set in `LabelButton::SetText`. This is temporary.
+  //
+  // TODO(crbug.com/325137417): Remove this once the accessible name is set in
+  // the cache as soon as the name is updated.
+  GetViewAccessibility().SetName(GetAccessibleNameForButton());
 }
 
 void SavedTabGroupButton::PaintButtonContents(gfx::Canvas* canvas) {
@@ -212,7 +216,7 @@ std::u16string SavedTabGroupButton::GetAccessibleNameForButton() const {
 }
 
 void SavedTabGroupButton::SetTextProperties(const SavedTabGroup& group) {
-  SetAccessibleName(GetAccessibleNameForButton());
+  GetViewAccessibility().SetName(GetAccessibleNameForButton());
   SetTooltipText(group.title());
   SetText(group.title());
 }

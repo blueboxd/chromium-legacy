@@ -25,6 +25,7 @@ enum class ParseStatusCode : StatusCodeType {
   kFailedToParseStableId,
   kFailedToParseInstreamId,
   kFailedToParseAudioChannels,
+  kFailedToParseHexadecimalString,
   kInvalidPlaylistVersion,
   kUnknownPlaylistType,
   kMalformedAttributeList,
@@ -63,6 +64,7 @@ enum class ParseStatusCode : StatusCodeType {
   kRenditionGroupHasMultipleDefaultRenditions,
   kRenditionGroupHasDuplicateRenditionNames,
   kRenditionGroupDoesNotExist,
+  kUnsupportedEncryptionMethod,
 };
 
 struct ParseStatusTraits {

@@ -182,9 +182,7 @@ class BookmarkBarView : public views::AccessiblePaneView,
   void OnThemeChanged() override;
   void VisibilityChanged(views::View* starting_from, bool is_visible) override;
   void ChildPreferredSizeChanged(views::View* child) override;
-
-  // AccessiblePaneView:
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void AddedToWidget() override;
 
   // views::AnimationDelegateViews:
   void AnimationProgressed(const gfx::Animation* animation) override;
@@ -355,6 +353,9 @@ class BookmarkBarView : public views::AccessiblePaneView,
 
   void OnShowManagedBookmarksPrefChanged();
 
+  // Updates the look and feel of the bookmarks bar based on the pref value.
+  void OnCompactModeChanged();
+
   void LayoutAndPaint() {
     InvalidateLayout();
     SchedulePaint();
@@ -385,8 +386,14 @@ class BookmarkBarView : public views::AccessiblePaneView,
   int GetDropLocationModelIndexForTesting() const;
   const views::View* GetSavedTabGroupsSeparatorViewForTesting() const;
 
+  void MaybeShowSavedTabGroupsIntroPromo() const;
+
   // Needed to react to bookmark bar pref changes.
   PrefChangeRegistrar profile_pref_registrar_;
+
+  // When true denotes if the bookmarks bar view should use the compact mode
+  // layout. Otherwise, layout normally.
+  bool is_compact_mode_ = false;
 
   // Used for opening urls.
   raw_ptr<content::PageNavigator, AcrossTasksDanglingUntriaged>

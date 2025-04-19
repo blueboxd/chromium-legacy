@@ -278,8 +278,7 @@ TEST_F(BackgroundDownloaderTest, DISABLED_ServerHangup) {
               "Content-Range",
               base::StringPrintf("bytes %d-%zu/%zu", lower_range, data.size(),
                                  data.size()));
-          response->set_content(
-              std::string(data.begin() + lower_range, data.end()));
+          response->set_content(data.substr(lower_range));
           return base::WrapUnique<HttpResponse>(response.release());
         } else {
           return base::WrapUnique<HttpResponse>(
@@ -310,7 +309,7 @@ TEST_F(BackgroundDownloaderTest, DISABLED_DuplicateDownload) {
   base::RunLoop second_download_run_loop;
   request_handler_ = base::BindLambdaForTesting([&](const HttpRequest&) {
     current_task_runner->PostTask(
-        FROM_HERE, base::BindLambdaForTesting([&]() {
+        FROM_HERE, base::BindLambdaForTesting([&] {
           DoStartDownload(
               GetURL(),
               base::BindLambdaForTesting(
@@ -413,7 +412,7 @@ TEST_F(BackgroundDownloaderTest, DISABLED_MaxDownloads) {
   // is an alternative to adding intrusive instrumentation to the
   // implementation.
   base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
-      FROM_HERE, base::BindLambdaForTesting([&]() {
+      FROM_HERE, base::BindLambdaForTesting([&] {
         DoStartDownload(
             GetURL(),
             base::BindLambdaForTesting(
@@ -574,8 +573,7 @@ TEST_F(BackgroundDownloaderCrashingClientTest, DISABLED_ClientCrash) {
               "Content-Range",
               base::StringPrintf("bytes %d-%zu/%zu", lower_range, data.size(),
                                  data.size()));
-          response->set_content(
-              std::string(data.begin() + lower_range, data.end()));
+          response->set_content(data.substr(lower_range));
           return base::WrapUnique<HttpResponse>(response.release());
         } else {
           return base::WrapUnique<HttpResponse>(

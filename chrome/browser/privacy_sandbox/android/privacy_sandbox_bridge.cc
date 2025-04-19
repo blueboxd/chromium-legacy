@@ -12,7 +12,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
-#include "chrome/browser/privacy_sandbox/android/jni_headers/PrivacySandboxBridge_jni.h"
+#include "chrome/browser/privacy_sandbox/privacy_sandbox_countries.h"
+#include "chrome/browser/privacy_sandbox/privacy_sandbox_countries_impl.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_service.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_service_factory.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_settings_factory.h"
@@ -23,6 +24,9 @@
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
+
+// Must come after all headers that specialize FromJniType() / ToJniType().
+#include "chrome/browser/privacy_sandbox/android/jni_headers/PrivacySandboxBridge_jni.h"
 
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
@@ -127,13 +131,12 @@ static void JNI_PrivacySandboxBridge_GetFledgeJoiningEtldPlusOneForDisplay(
           base::android::ScopedJavaGlobalRef<jobject>(j_callback)));
 }
 
-static base::android::ScopedJavaLocalRef<jobjectArray>
+static std::vector<std::string>
 JNI_PrivacySandboxBridge_GetBlockedFledgeJoiningTopFramesForDisplay(
     JNIEnv* env,
     const JavaParamRef<jobject>& j_profile) {
-  return base::android::ToJavaArrayOfStrings(
-      env, GetPrivacySandboxService(j_profile)
-               ->GetBlockedFledgeJoiningTopFramesForDisplay());
+  return GetPrivacySandboxService(j_profile)
+      ->GetBlockedFledgeJoiningTopFramesForDisplay();
 }
 
 static void JNI_PrivacySandboxBridge_SetFledgeJoiningAllowed(
@@ -228,4 +231,18 @@ JNI_PrivacySandboxBridge_SetAllPrivacySandboxAllowedForTesting(  // IN-TEST
   PrivacySandboxSettingsFactory::GetForProfile(
       Profile::FromJavaObject(j_profile))
       ->SetAllPrivacySandboxAllowedForTesting();  // IN-TEST
+}
+
+static void JNI_PrivacySandboxBridge_RecordActivityType(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& j_profile,
+    jint activity_type) {
+  GetPrivacySandboxService(j_profile)->RecordActivityType(
+      static_cast<PrivacySandboxService::PrivacySandboxStorageActivityType>(
+          activity_type));
+}
+
+static jboolean JNI_PrivacySandboxBridge_IsConsentCountry(JNIEnv* env) {
+  PrivacySandboxCountriesImpl instance;
+  return instance.IsConsentCountry();
 }

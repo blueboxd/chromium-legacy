@@ -9,6 +9,7 @@
 #include <optional>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
@@ -32,6 +33,7 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/point_f.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/scrollbar/base_scroll_bar_thumb.h"
 #include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
@@ -411,8 +413,10 @@ class WidgetScrollViewTest : public test::WidgetTest,
   }
 
   void TestClickAt(const gfx::Point& location) {
-    ui::MouseEvent press(TestLeftMouseAt(location, ui::ET_MOUSE_PRESSED));
-    ui::MouseEvent release(TestLeftMouseAt(location, ui::ET_MOUSE_RELEASED));
+    ui::MouseEvent press(
+        TestLeftMouseAt(location, ui::EventType::kMousePressed));
+    ui::MouseEvent release(
+        TestLeftMouseAt(location, ui::EventType::kMouseReleased));
     widget_->OnMouseEvent(&press);
     widget_->OnMouseEvent(&release);
   }
@@ -595,6 +599,15 @@ TEST_F(ScrollViewTest, VerticallScrollbarDoesNotAppearIfDisabled) {
   views::test::RunScheduledLayout(scroll_view_.get());
   EXPECT_FALSE(scroll_view_->vertical_scroll_bar()->GetVisible());
   EXPECT_FALSE(scroll_view_->horizontal_scroll_bar()->GetVisible());
+}
+
+TEST_F(ScrollViewTest, AccessibleProperties) {
+  ScrollViewTestApi test_api(scroll_view_.get());
+  InstallContents();
+
+  ui::AXNodeData data;
+  scroll_view_->GetViewAccessibility().GetAccessibleNodeData(&data);
+  EXPECT_EQ(data.role, ax::mojom::Role::kScrollView);
 }
 
 // Verifies the scrollbars are added as necessary.
@@ -871,6 +884,100 @@ TEST_F(ScrollViewTest, ScrollToPositionUpdatesScrollBar) {
   EXPECT_EQ(0, scroll_bar->GetPosition());
   scroll_view_->ScrollToPosition(scroll_bar, 20);
   EXPECT_GT(scroll_bar->GetPosition(), 0);
+}
+
+TEST_F(ScrollViewTest, HorizontalScrollBarAccessibleScrollXProperties) {
+  ScrollViewTestApi test_api(scroll_view_.get());
+  View* contents = InstallContents();
+  contents->SetBounds(0, 0, 500, 20);
+  InvalidateAndRunScheduledLayoutOnScrollView();
+  auto* scroll_bar = test_api.GetScrollBar(HORIZONTAL);
+  ASSERT_TRUE(scroll_bar);
+
+  // Verify kScrollXMin and kScrollXMax with initial content size.
+  ui::AXNodeData scroll_view_node_data;
+  scroll_view_node_data = ui::AXNodeData();
+  scroll_view_->GetViewAccessibility().GetAccessibleNodeData(
+      &scroll_view_node_data);
+  EXPECT_TRUE(scroll_view_node_data.GetBoolAttribute(
+      ax::mojom::BoolAttribute::kScrollable));
+  EXPECT_EQ(scroll_bar->GetMinPosition(),
+            scroll_view_node_data.GetIntAttribute(
+                ax::mojom::IntAttribute::kScrollXMin));
+  EXPECT_EQ(scroll_bar->GetMaxPosition(),
+            scroll_view_node_data.GetIntAttribute(
+                ax::mojom::IntAttribute::kScrollXMax));
+
+  // Set the content width to 400 after which kScrollXMax should be updated
+  // and kScrollXMin remains 0 as GetMinPosition() always returns 0.
+  contents->SetBounds(0, 0, 400, 50);
+  InvalidateAndRunScheduledLayoutOnScrollView();
+  scroll_view_node_data = ui::AXNodeData();
+  scroll_view_->GetViewAccessibility().GetAccessibleNodeData(
+      &scroll_view_node_data);
+  EXPECT_EQ(0, scroll_view_node_data.GetIntAttribute(
+                   ax::mojom::IntAttribute::kScrollXMin));
+  EXPECT_EQ(400 - test_api.contents_viewport()->width(),
+            scroll_view_node_data.GetIntAttribute(
+                ax::mojom::IntAttribute::kScrollXMax));
+
+  // Scroll the horizontal scrollbar after which kScrollX should be updated.
+  EXPECT_EQ(0, scroll_view_node_data.GetIntAttribute(
+                   ax::mojom::IntAttribute::kScrollX));
+  scroll_view_->ScrollToPosition(scroll_bar, 20);
+  scroll_view_node_data = ui::AXNodeData();
+  scroll_view_->GetViewAccessibility().GetAccessibleNodeData(
+      &scroll_view_node_data);
+  EXPECT_EQ(
+      test_api.CurrentOffset().x(),
+      scroll_view_node_data.GetIntAttribute(ax::mojom::IntAttribute::kScrollX));
+}
+
+TEST_F(ScrollViewTest, VerticalScrollBarAccessibleScrollYProperties) {
+  ScrollViewTestApi test_api(scroll_view_.get());
+  View* contents = InstallContents();
+  contents->SetBounds(0, 0, 50, 500);
+  InvalidateAndRunScheduledLayoutOnScrollView();
+  auto* scroll_bar = test_api.GetScrollBar(VERTICAL);
+  ASSERT_TRUE(scroll_bar);
+
+  // Verify kScrollYMin and kScrollYMax with initial content size.
+  ui::AXNodeData scroll_view_node_data;
+  scroll_view_node_data = ui::AXNodeData();
+  scroll_view_->GetViewAccessibility().GetAccessibleNodeData(
+      &scroll_view_node_data);
+  EXPECT_TRUE(scroll_view_node_data.GetBoolAttribute(
+      ax::mojom::BoolAttribute::kScrollable));
+  EXPECT_EQ(scroll_bar->GetMinPosition(),
+            scroll_view_node_data.GetIntAttribute(
+                ax::mojom::IntAttribute::kScrollYMin));
+  EXPECT_EQ(scroll_bar->GetMaxPosition(),
+            scroll_view_node_data.GetIntAttribute(
+                ax::mojom::IntAttribute::kScrollYMax));
+
+  // Set the content width to 400 after which kScrollYMax should be updated
+  // and kScrollYMin remains 0 as GetMinPosition() always returns 0.
+  contents->SetBounds(0, 0, 50, 400);
+  InvalidateAndRunScheduledLayoutOnScrollView();
+  scroll_view_node_data = ui::AXNodeData();
+  scroll_view_->GetViewAccessibility().GetAccessibleNodeData(
+      &scroll_view_node_data);
+  EXPECT_EQ(0, scroll_view_node_data.GetIntAttribute(
+                   ax::mojom::IntAttribute::kScrollYMin));
+  EXPECT_EQ(400 - test_api.contents_viewport()->height(),
+            scroll_view_node_data.GetIntAttribute(
+                ax::mojom::IntAttribute::kScrollYMax));
+
+  // Scroll the vertical scrollbar after which kScrollY should be updated.
+  EXPECT_EQ(0, scroll_view_node_data.GetIntAttribute(
+                   ax::mojom::IntAttribute::kScrollY));
+  scroll_view_->ScrollToPosition(scroll_bar, 20);
+  scroll_view_node_data = ui::AXNodeData();
+  scroll_view_->GetViewAccessibility().GetAccessibleNodeData(
+      &scroll_view_node_data);
+  EXPECT_EQ(
+      test_api.CurrentOffset().y(),
+      scroll_view_node_data.GetIntAttribute(ax::mojom::IntAttribute::kScrollY));
 }
 
 // Test that calling ScrollToPosition() also updates the position of the
@@ -1571,11 +1678,11 @@ TEST_F(WidgetScrollViewTest, ScrollersOnRest) {
   ScrollView* scroll_view = AddScrollViewWithContentSize(
       gfx::Size(kDefaultWidth * 5, kDefaultHeight * 5));
   ScrollViewTestApi test_api(scroll_view);
-  ScrollBar* bar[]{test_api.GetScrollBar(HORIZONTAL),
-                   test_api.GetScrollBar(VERTICAL)};
-  base::RetainingOneShotTimer* hide_timer[] = {
-      test_api.GetScrollBarHideTimer(HORIZONTAL),
-      test_api.GetScrollBarHideTimer(VERTICAL)};
+  const auto bar = std::to_array<ScrollBar*>(
+      {test_api.GetScrollBar(HORIZONTAL), test_api.GetScrollBar(VERTICAL)});
+  const auto hide_timer = std::to_array<base::RetainingOneShotTimer*>(
+      {test_api.GetScrollBarHideTimer(HORIZONTAL),
+       test_api.GetScrollBarHideTimer(VERTICAL)});
 
   EXPECT_EQ(0, bar[HORIZONTAL]->layer()->opacity());
   EXPECT_EQ(0, bar[VERTICAL]->layer()->opacity());
@@ -1721,12 +1828,13 @@ TEST_F(ScrollViewTest, ArrowKeyScrolling) {
   EXPECT_EQ(0, test_api.IntegralViewOffset().y());
 
   // Pressing the down arrow key scrolls down. The amount isn't important.
-  ui::KeyEvent down_arrow(ui::ET_KEY_PRESSED, ui::VKEY_DOWN, ui::EF_NONE);
+  ui::KeyEvent down_arrow(ui::EventType::kKeyPressed, ui::VKEY_DOWN,
+                          ui::EF_NONE);
   EXPECT_TRUE(scroll_view_->OnKeyPressed(down_arrow));
   EXPECT_GT(0, test_api.IntegralViewOffset().y());
 
   // Pressing the up arrow key scrolls back to the origin.
-  ui::KeyEvent up_arrow(ui::ET_KEY_PRESSED, ui::VKEY_UP, ui::EF_NONE);
+  ui::KeyEvent up_arrow(ui::EventType::kKeyPressed, ui::VKEY_UP, ui::EF_NONE);
   EXPECT_TRUE(scroll_view_->OnKeyPressed(up_arrow));
   EXPECT_EQ(0, test_api.IntegralViewOffset().y());
 }
@@ -1748,7 +1856,7 @@ TEST_F(ScrollViewTest, ArrowKeyScrollingDisabled) {
   EXPECT_EQ(0, test_api.IntegralViewOffset().y());
 
   // Pressing the down arrow key does not consume the event, nor scroll.
-  ui::KeyEvent down(ui::ET_KEY_PRESSED, ui::VKEY_DOWN, ui::EF_NONE);
+  ui::KeyEvent down(ui::EventType::kKeyPressed, ui::VKEY_DOWN, ui::EF_NONE);
   EXPECT_FALSE(scroll_view_->OnKeyPressed(down));
   EXPECT_EQ(0, test_api.IntegralViewOffset().y());
 }
@@ -2275,8 +2383,9 @@ TEST_F(WidgetScrollViewTest, ScrollTrackScrolling) {
   // Click in the middle of the track, ensuring it's below the thumb.
   const gfx::Point location = scroll_bar->bounds().CenterPoint();
   EXPECT_GT(location.y(), thumb->bounds().bottom());
-  ui::MouseEvent press(TestLeftMouseAt(location, ui::ET_MOUSE_PRESSED));
-  ui::MouseEvent release(TestLeftMouseAt(location, ui::ET_MOUSE_RELEASED));
+  ui::MouseEvent press(TestLeftMouseAt(location, ui::EventType::kMousePressed));
+  ui::MouseEvent release(
+      TestLeftMouseAt(location, ui::EventType::kMouseReleased));
 
   const base::OneShotTimer& timer = test_api.GetScrollBarTimer(VERTICAL);
   EXPECT_FALSE(timer.IsRunning());
@@ -2548,8 +2657,8 @@ TEST_F(WidgetScrollViewTest, CompositedScrollEvents) {
   ScrollViewTestApi test_api(scroll_view);
 
   // Create a fake scroll event and send it to the scroll view.
-  ui::ScrollEvent scroll(ui::ET_SCROLL, gfx::Point(), base::TimeTicks::Now(), 0,
-                         0, -10, 0, -10, 3);
+  ui::ScrollEvent scroll(ui::EventType::kScroll, gfx::Point(),
+                         base::TimeTicks::Now(), 0, 0, -10, 0, -10, 3);
   ApplyScrollEvent(test_api, scroll_view, scroll);
 
   // Check if the scroll view has been offset.
@@ -2568,8 +2677,8 @@ TEST_F(WidgetScrollViewTest, CompositedTransposedScrollEvents) {
   // Create a fake scroll event and send it to the scroll view.
   // Note that this is still a VERTICAL scroll event, but we'll be looking for
   // HORIZONTAL motion later because we're transposed.
-  ui::ScrollEvent scroll(ui::ET_SCROLL, gfx::Point(), base::TimeTicks::Now(), 0,
-                         0, -10, 0, -10, 3);
+  ui::ScrollEvent scroll(ui::EventType::kScroll, gfx::Point(),
+                         base::TimeTicks::Now(), 0, 0, -10, 0, -10, 3);
   ApplyScrollEvent(test_api, scroll_view, scroll);
 
   // Check if the scroll view has been offset.
@@ -2592,8 +2701,8 @@ TEST_F(WidgetScrollViewTest,
   // This will be a horizontal scroll event but there will be a conflicting
   // vertical element. We should still scroll horizontally, since the horizontal
   // component is greater.
-  ui::ScrollEvent scroll(ui::ET_SCROLL, gfx::Point(), base::TimeTicks::Now(), 0,
-                         -10, 7, -10, 7, 3);
+  ui::ScrollEvent scroll(ui::EventType::kScroll, gfx::Point(),
+                         base::TimeTicks::Now(), 0, -10, 7, -10, 7, 3);
   ApplyScrollEvent(test_api, scroll_view, scroll);
 
   // Check if the scroll view has been offset.
@@ -2616,8 +2725,8 @@ TEST_F(WidgetScrollViewTest,
   // This will be a vertical scroll event but there will be a conflicting
   // horizontal element. We should still scroll horizontally, since the vertical
   // component is greater.
-  ui::ScrollEvent scroll(ui::ET_SCROLL, gfx::Point(), base::TimeTicks::Now(), 0,
-                         7, -10, 7, -10, 3);
+  ui::ScrollEvent scroll(ui::EventType::kScroll, gfx::Point(),
+                         base::TimeTicks::Now(), 0, 7, -10, 7, -10, 3);
   ApplyScrollEvent(test_api, scroll_view, scroll);
 
   // Check if the scroll view has been offset.

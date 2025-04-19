@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "media/gpu/vaapi/av1_vaapi_video_encoder_delegate.h"
 
 #include <bit>
@@ -265,8 +270,8 @@ AV1BitstreamBuilder::SequenceHeader FillAV1BuilderSequenceHeader(
   sequence_header.tier = 0;
   sequence_header.frame_width_bits_minus_1 = 15;
   sequence_header.frame_height_bits_minus_1 = 15;
-  sequence_header.width = visible_size.width() - 1;
-  sequence_header.height = visible_size.height() - 1;
+  sequence_header.width = visible_size.width();
+  sequence_header.height = visible_size.height();
 
   sequence_header.use_128x128_superblock = false;
   sequence_header.enable_filter_intra = false;
@@ -307,9 +312,7 @@ AV1BitstreamBuilder::FrameHeader FillAV1BuilderFrameHeader(
   pic_hdr.sharpness_level = pic_param.loop_filter_flags.bits.sharpness_level;
   // Disable loop filter delta.
   pic_hdr.loop_filter_delta_enabled = false;
-  // Set primary reference frame to index 0.
-  // TODO(b:274756117): We may want to tune the reference frames.
-  pic_hdr.primary_ref_frame = 0;
+  pic_hdr.primary_ref_frame = pic_param.primary_ref_frame;
   // Set all reference frame indices to 0
   for (uint8_t& ref_idx : pic_hdr.ref_frame_idx) {
     ref_idx = 0;
@@ -318,7 +321,7 @@ AV1BitstreamBuilder::FrameHeader FillAV1BuilderFrameHeader(
   pic_hdr.refresh_frame_flags = 1 << (libgav1::kReferenceFrameLast - 1);
   // Set order hint for each reference frame.
   pic_hdr.ref_order_hint[0] = pic_param.order_hint - 1;
-  // Since we only use the last keyframe as the reference, these should
+  // Since we only use the last frame as the reference, these should
   // always be 0.
   for (int i = 1; i < libgav1::kNumReferenceFrameTypes; i++) {
     pic_hdr.ref_order_hint[i] = 0;
@@ -630,9 +633,11 @@ bool AV1VaapiVideoEncoderDelegate::SubmitSequenceParam() {
   seq_param.seq_fields.bits.enable_cdef = sequence_header_.enable_cdef;
   seq_param.seq_fields.bits.enable_restoration =
       sequence_header_.enable_restoration;
+#if VA_CHECK_VERSION(1, 15, 0)
   seq_param.seq_fields.bits.bit_depth_minus8 = 0;
   seq_param.seq_fields.bits.subsampling_x = 1;
   seq_param.seq_fields.bits.subsampling_y = 1;
+#endif
 
   return vaapi_wrapper_->SubmitBuffer(VAEncSequenceParameterBufferType,
                                       sizeof(VAEncSequenceParameterBufferAV1),
@@ -712,8 +717,7 @@ bool AV1VaapiVideoEncoderDelegate::FillPictureParam(
 
   pic_param.coded_buf = job.coded_buffer_id();
   pic_param.reconstructed_frame = reinterpret_cast<const VaapiAV1Picture*>(&pic)
-                                      ->reconstruct_va_surface()
-                                      ->id();
+                                      ->reconstruct_va_surface_id();
   for (int i = 0; i < libgav1::kNumReferenceFrameTypes; i++) {
     pic_param.reference_frames[i] = VA_INVALID_ID;
   }
@@ -742,8 +746,7 @@ bool AV1VaapiVideoEncoderDelegate::FillPictureParam(
     // recent frame.
     pic_param.reference_frames[0] =
         reinterpret_cast<VaapiAV1Picture*>(last_frame_.get())
-            ->reconstruct_va_surface()
-            ->id();
+            ->reconstruct_va_surface_id();
     pic_param.ref_frame_ctrl_l0.fields.search_idx0 =
         libgav1::kReferenceFrameLast;
     pic_param.ref_frame_ctrl_l1.fields.search_idx0 =

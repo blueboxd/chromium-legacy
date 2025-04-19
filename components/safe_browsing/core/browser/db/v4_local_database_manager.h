@@ -9,7 +9,10 @@
 // and database that holds the downloaded updates.
 
 #include <memory>
+#include <set>
+#include <string>
 #include <unordered_set>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
@@ -78,10 +81,9 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   // compiles, but this difference should be eliminated.
   bool CheckExtensionIDs(const std::set<FullHashStr>& extension_ids,
                          Client* client) override;
-  bool CheckResourceUrl(const GURL& url, Client* client) override;
-  void CheckUrlForHighConfidenceAllowlist(
+  std::optional<HighConfidenceAllowlistCheckLoggingDetails>
+  CheckUrlForHighConfidenceAllowlist(
       const GURL& url,
-      const std::string& metric_variation,
       base::OnceCallback<void(bool)> callback) override;
   bool CheckUrlForSubresourceFilter(const GURL& url, Client* client) override;
   void MatchDownloadAllowlistUrl(
@@ -90,7 +92,6 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   safe_browsing::ThreatSource GetBrowseUrlThreatSource(
       CheckBrowseUrlType check_type) const override;
   safe_browsing::ThreatSource GetNonBrowseUrlThreatSource() const override;
-  bool IsDownloadProtectionEnabled() const override;
 
   void StartOnSBThread(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -132,10 +133,6 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
     // URLs in a vector of URLs is unsafe for downloading binaries.
     CHECK_DOWNLOAD_URLS,
 
-    // This represents the case when we're trying to determine if a URL is an
-    // unsafe resource.
-    CHECK_RESOURCE_URL,
-
     // This represents the case when we're trying to determine if a Chrome
     // extension is a unsafe.
     CHECK_EXTENSION_IDS,
@@ -169,8 +166,15 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
 
     ~PendingCheck();
 
+    // Abandon this check by nulling out the `client` pointer and thus
+    // guaranteeing this check will not henceforth produce a response.
+    void Abandon();
+
     // The SafeBrowsing client that's waiting for the safe/unsafe verdict.
-    raw_ptr<Client, AcrossTasksDanglingUntriaged> client;
+    // This is required to be non-null if a `client_callback_type` other than
+    // CHECK_OTHER (for synchronous checks) is expected. Upon Abandon()'ment,
+    // this is set to null.
+    raw_ptr<Client> client;
 
     // Determines which funtion from the |client| needs to be called once we
     // know whether the URL in |url| is safe or unsafe.
@@ -210,10 +214,6 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
     // The metadata associated with the full hash of the severest match found
     // for that URL.
     ThreatMetadata url_metadata;
-
-    // The full hash that matched for a blocklisted resource URL. Used only for
-    // |CheckResourceUrl| case.
-    FullHashStr matching_full_hash;
 
     // Specifies whether the PendingCheck is in the V4LocalDatabaseManager's
     // |pending_checks_| set. This property is for sanity-checking that when the
@@ -269,17 +269,15 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
       base::OnceCallback<void(FullHashToStoreAndHashPrefixesMap)> callback);
 
   // Goes over the |full_hash_infos| and stores the most severe SBThreatType in
-  // |most_severe_threat_type|, the corresponding metadata in |metadata|, and
-  // the matching full hash in |matching_full_hash|. Also, updates in
-  // |full_hash_threat_types|, the threat type for each full hash in
-  // |full_hashes|.
+  // |most_severe_threat_type|, and the corresponding metadata in |metadata|.
+  // Also, updates in |full_hash_threat_types|, the threat type for each full
+  // hash in |full_hashes|.
   void GetSeverestThreatTypeAndMetadata(
       const std::vector<FullHashInfo>& full_hash_infos,
       const std::vector<FullHashStr>& full_hashes,
       std::vector<SBThreatType>* full_hash_threat_types,
       SBThreatType* most_severe_threat_type,
-      ThreatMetadata* metadata,
-      FullHashStr* matching_full_hash);
+      ThreatMetadata* metadata);
 
   // Returns the SBThreatType for a given ListIdentifier.
   SBThreatType GetSBThreatTypeForList(const ListIdentifier& list_id);
@@ -357,13 +355,16 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   void DropQueuedAndPendingChecks();
 
   // Calls the appropriate method on the |client| object, based on the contents
-  // of |pending_check|.
+  // of |pending_check|. May only be invoked once on a given check. May not be
+  // invoked on an Abandon()'ed check.
   void RespondToClient(std::unique_ptr<PendingCheck> pending_check);
 
   // Callers should generally use |RespondToClient| instead, which will clean up
   // the |pending_check|. Callers should use this function when they don't own
   // the |pending_check|. Like |RespondToClient|, this calls the appropriate
   // method on the |client| object, based on the contents of |pending_check|.
+  // May only be invoked once on a given check, and resets the `client` pointer.
+  // May not be invoked on an Abandon()'ed check.
   void RespondToClientWithoutPendingCheckCleanup(PendingCheck* pending_check);
 
   // Instantiates and initializes |v4_database_| on the task runner. Sets up the

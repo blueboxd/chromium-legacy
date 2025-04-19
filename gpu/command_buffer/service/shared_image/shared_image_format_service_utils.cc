@@ -13,10 +13,15 @@
 #include "base/logging.h"
 #include "base/notreached.h"
 #include "build/buildflag.h"
+#include "components/crash/core/common/crash_key.h"
 #include "components/viz/common/resources/shared_image_format_utils.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/ipc/common/vulkan_ycbcr_info.h"
 #include "ui/gl/gl_version_info.h"
+
+#if BUILDFLAG(SKIA_USE_DAWN)
+#include "third_party/skia/include/gpu/graphite/dawn/DawnTypes.h"
+#endif
 
 namespace gpu {
 
@@ -77,6 +82,134 @@ VkFormat ToVkFormatSinglePlanarInternal(viz::SharedImageFormat format) {
 }
 #endif
 
+// Returns GL data format for given `format`.
+GLenum GLDataFormat(viz::SharedImageFormat format, int plane_index) {
+  DCHECK(format.IsValidPlaneIndex(plane_index));
+  if (format.is_single_plane()) {
+    if (format == viz::SinglePlaneFormat::kRGBA_8888 ||
+        format == viz::SinglePlaneFormat::kRGBA_4444 ||
+        format == viz::SinglePlaneFormat::kRGBA_F16 ||
+        format == viz::SinglePlaneFormat::kRGBA_1010102 ||
+        format == viz::SinglePlaneFormat::kBGRA_1010102) {
+      return GL_RGBA;
+    } else if (format == viz::SinglePlaneFormat::kBGRA_8888) {
+      return GL_BGRA_EXT;
+    } else if (format == viz::SinglePlaneFormat::kALPHA_8) {
+      return GL_ALPHA;
+    } else if (format == viz::SinglePlaneFormat::kLUMINANCE_8 ||
+               format == viz::SinglePlaneFormat::kLUMINANCE_F16) {
+      return GL_LUMINANCE;
+    } else if (format == viz::SinglePlaneFormat::kRGB_565 ||
+               format == viz::SinglePlaneFormat::kBGR_565 ||
+               format == viz::SinglePlaneFormat::kETC1 ||
+               format == viz::SinglePlaneFormat::kRGBX_8888 ||
+               format == viz::SinglePlaneFormat::kBGRX_8888) {
+      return GL_RGB;
+    } else if (format == viz::SinglePlaneFormat::kR_8 ||
+               format == viz::SinglePlaneFormat::kR_16 ||
+               format == viz::SinglePlaneFormat::kR_F16) {
+      return GL_RED_EXT;
+    } else if (format == viz::SinglePlaneFormat::kRG_88 ||
+               format == viz::SinglePlaneFormat::kRG_1616) {
+      return GL_RG_EXT;
+    }
+
+    return GL_ZERO;
+  }
+
+  // For multiplanar formats without external sampler, GL formats are per
+  // plane. For single channel planes Y, U, V, A return GL_RED_EXT. For 2
+  // channel plane UV return GL_RG_EXT.
+  int num_channels = format.NumChannelsInPlane(plane_index);
+  DCHECK_LE(num_channels, 2);
+  return num_channels == 2 ? GL_RG_EXT : GL_RED_EXT;
+}
+
+// Returns GL data type for given `format`.
+GLenum GLDataType(viz::SharedImageFormat format) {
+  if (format.is_single_plane()) {
+    if (format == viz::SinglePlaneFormat::kRGBA_8888 ||
+        format == viz::SinglePlaneFormat::kBGRA_8888 ||
+        format == viz::SinglePlaneFormat::kALPHA_8 ||
+        format == viz::SinglePlaneFormat::kLUMINANCE_8 ||
+        format == viz::SinglePlaneFormat::kETC1 ||
+        format == viz::SinglePlaneFormat::kR_8 ||
+        format == viz::SinglePlaneFormat::kRG_88 ||
+        format == viz::SinglePlaneFormat::kRGBX_8888 ||
+        format == viz::SinglePlaneFormat::kBGRX_8888) {
+      return GL_UNSIGNED_BYTE;
+    } else if (format == viz::SinglePlaneFormat::kRGBA_4444) {
+      return GL_UNSIGNED_SHORT_4_4_4_4;
+    } else if (format == viz::SinglePlaneFormat::kBGR_565 ||
+               format == viz::SinglePlaneFormat::kRGB_565) {
+      return GL_UNSIGNED_SHORT_5_6_5;
+    } else if (format == viz::SinglePlaneFormat::kLUMINANCE_F16 ||
+               format == viz::SinglePlaneFormat::kR_F16 ||
+               format == viz::SinglePlaneFormat::kRGBA_F16) {
+      return GL_HALF_FLOAT_OES;
+    } else if (format == viz::SinglePlaneFormat::kR_16 ||
+               format == viz::SinglePlaneFormat::kRG_1616) {
+      return GL_UNSIGNED_SHORT;
+    } else if (format == viz::SinglePlaneFormat::kRGBA_1010102 ||
+               format == viz::SinglePlaneFormat::kBGRA_1010102) {
+      return GL_UNSIGNED_INT_2_10_10_10_REV_EXT;
+    }
+
+    return GL_ZERO;
+  }
+
+  switch (format.channel_format()) {
+    case ChannelFormat::k8:
+      return GL_UNSIGNED_BYTE;
+    case ChannelFormat::k10:
+      return GL_UNSIGNED_SHORT;
+    case ChannelFormat::k16:
+      return GL_UNSIGNED_SHORT;
+    case ChannelFormat::k16F:
+      return GL_HALF_FLOAT_OES;
+  }
+}
+
+// Returns the GL format used internally for matching with the texture format
+// for a given `format`.
+GLenum GLInternalFormat(viz::SharedImageFormat format, int plane_index) {
+  DCHECK(format.IsValidPlaneIndex(plane_index));
+  if (format.is_single_plane()) {
+    // In GLES2, the internal format must match the texture format. (It no
+    // longer is true in GLES3, however it still holds for the BGRA
+    // extension.) GL_EXT_texture_norm16 follows GLES3 semantics and only
+    // exposes a sized internal format (GL_R16_EXT).
+    if (format == viz::SinglePlaneFormat::kR_16) {
+      return GL_R16_EXT;
+    } else if (format == viz::SinglePlaneFormat::kRG_1616) {
+      return GL_RG16_EXT;
+    } else if (format == viz::SinglePlaneFormat::kETC1) {
+      return GL_ETC1_RGB8_OES;
+    } else if (format == viz::SinglePlaneFormat::kRGBA_1010102 ||
+               format == viz::SinglePlaneFormat::kBGRA_1010102) {
+      return GL_RGB10_A2_EXT;
+    }
+    return GLDataFormat(format, /*plane_index=*/0);
+  }
+
+  // For multiplanar formats without external sampler, GL formats are per
+  // plane. For single channel 8-bit planes Y, U, V, A return GL_RED_EXT. For
+  // single channel 10/16-bit planes Y,  U, V, A return GL_R16_EXT. For 2
+  // channel plane 8-bit UV return GL_RG_EXT. For 2 channel plane 10/16-bit UV
+  // return GL_RG16_EXT.
+  int num_channels = format.NumChannelsInPlane(plane_index);
+  DCHECK_LE(num_channels, 2);
+  switch (format.channel_format()) {
+    case ChannelFormat::k8:
+      return num_channels == 2 ? GL_RG_EXT : GL_RED_EXT;
+    case ChannelFormat::k10:
+    case ChannelFormat::k16:
+      return num_channels == 2 ? GL_RG16_EXT : GL_R16_EXT;
+    case ChannelFormat::k16F:
+      return num_channels == 2 ? GL_RG16F_EXT : GL_R16F_EXT;
+  }
+}
+
 }  // namespace
 
 // Wraps functions from shared_image_format_utils.h that are made private with
@@ -89,81 +222,6 @@ VkFormat ToVkFormatSinglePlanarInternal(viz::SharedImageFormat format) {
 // purpose).
 class SharedImageFormatRestrictedUtilsAccessor {
  public:
-  // Returns GL data format for given `format`.
-  static GLenum GLDataFormat(viz::SharedImageFormat format, int plane_index) {
-    DCHECK(format.IsValidPlaneIndex(plane_index));
-    if (format.is_single_plane()) {
-      return viz::SharedImageFormatRestrictedSinglePlaneUtils::ToGLDataFormat(
-          format);
-    }
-
-    // For multiplanar formats without external sampler, GL formats are per
-    // plane. For single channel planes Y, U, V, A return GL_RED_EXT. For 2
-    // channel plane UV return GL_RG_EXT.
-    int num_channels = format.NumChannelsInPlane(plane_index);
-    DCHECK_LE(num_channels, 2);
-    return num_channels == 2 ? GL_RG_EXT : GL_RED_EXT;
-  }
-
-  // Returns GL data type for given `format`.
-  static GLenum GLDataType(viz::SharedImageFormat format) {
-    if (format.is_single_plane()) {
-      return viz::SharedImageFormatRestrictedSinglePlaneUtils::ToGLDataType(
-          format);
-    }
-
-    switch (format.channel_format()) {
-      case ChannelFormat::k8:
-        return GL_UNSIGNED_BYTE;
-      case ChannelFormat::k10:
-        return GL_UNSIGNED_SHORT;
-      case ChannelFormat::k16:
-        return GL_UNSIGNED_SHORT;
-      case ChannelFormat::k16F:
-        return GL_HALF_FLOAT_OES;
-    }
-  }
-
-  // Returns the GL format used internally for matching with the texture format
-  // for a given `format`.
-  static GLenum GLInternalFormat(viz::SharedImageFormat format,
-                                 int plane_index) {
-    DCHECK(format.IsValidPlaneIndex(plane_index));
-    if (format.is_single_plane()) {
-      // In GLES2, the internal format must match the texture format. (It no
-      // longer is true in GLES3, however it still holds for the BGRA
-      // extension.) GL_EXT_texture_norm16 follows GLES3 semantics and only
-      // exposes a sized internal format (GL_R16_EXT).
-      if (format == viz::SinglePlaneFormat::kR_16) {
-        return GL_R16_EXT;
-      } else if (format == viz::SinglePlaneFormat::kRG_1616) {
-        return GL_RG16_EXT;
-      } else if (format == viz::SinglePlaneFormat::kETC1) {
-        return GL_ETC1_RGB8_OES;
-      } else if (format == viz::SinglePlaneFormat::kRGBA_1010102 ||
-                 format == viz::SinglePlaneFormat::kBGRA_1010102) {
-        return GL_RGB10_A2_EXT;
-      }
-      return GLDataFormat(format, /*plane_index=*/0);
-    }
-
-    // For multiplanar formats without external sampler, GL formats are per
-    // plane. For single channel 8-bit planes Y, U, V, A return GL_RED_EXT. For
-    // single channel 10/16-bit planes Y,  U, V, A return GL_R16_EXT. For 2
-    // channel plane 8-bit UV return GL_RG_EXT. For 2 channel plane 10/16-bit UV
-    // return GL_RG16_EXT.
-    int num_channels = format.NumChannelsInPlane(plane_index);
-    DCHECK_LE(num_channels, 2);
-    switch (format.channel_format()) {
-      case ChannelFormat::k8:
-        return num_channels == 2 ? GL_RG_EXT : GL_RED_EXT;
-      case ChannelFormat::k10:
-      case ChannelFormat::k16:
-        return num_channels == 2 ? GL_RG16_EXT : GL_R16_EXT;
-      case ChannelFormat::k16F:
-        return num_channels == 2 ? GL_RG16F_EXT : GL_R16F_EXT;
-    }
-  }
 
   // Returns texture storage format for given `format`.
   static GLenum TextureStorageFormat(viz::SharedImageFormat format,
@@ -294,14 +352,9 @@ GLFormatDesc GLFormatCaps::ToGLFormatDescExternalSampler(
 GLFormatDesc GLFormatCaps::ToGLFormatDesc(viz::SharedImageFormat format,
                                           int plane_index) const {
   GLFormatDesc gl_format;
-  gl_format.data_type =
-      SharedImageFormatRestrictedUtilsAccessor::GLDataType(format);
-  gl_format.data_format =
-      SharedImageFormatRestrictedUtilsAccessor::GLDataFormat(format,
-                                                             plane_index);
-  gl_format.image_internal_format =
-      SharedImageFormatRestrictedUtilsAccessor::GLInternalFormat(format,
-                                                                 plane_index);
+  gl_format.data_type = GLDataType(format);
+  gl_format.data_format = GLDataFormat(format, plane_index);
+  gl_format.image_internal_format = GLInternalFormat(format, plane_index);
   gl_format.storage_internal_format =
       SharedImageFormatRestrictedUtilsAccessor::TextureStorageFormat(
           format, plane_index, angle_rgbx_internal_format_);
@@ -490,6 +543,12 @@ wgpu::TextureFormat ToDawnFormat(viz::SharedImageFormat format) {
   } else if (format == viz::MultiPlaneFormat::kP410) {
     return wgpu::TextureFormat::R10X6BG10X6Biplanar444Unorm;
   }
+
+  // Unknown format: crash, surfacing the format.
+  static crash_reporter::CrashKeyString<256> crash_key(
+      "SIFServiceUtils ToDawnFormat error");
+  crash_reporter::ScopedCrashKeyString crash_key_scope(&crash_key,
+                                                       format.ToString());
   NOTREACHED_IN_MIGRATION() << "Unsupported format: " << format.ToString();
   return wgpu::TextureFormat::Undefined;
 }
@@ -558,8 +617,6 @@ wgpu::TextureUsage SupportedDawnTextureUsage(
            wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::CopyDst;
   }
 
-  // TODO(crbug.com/40270683): Use read/write intent instead of format to get
-  // correct usages.
   if (!is_yuv_plane) {
     return usage | wgpu::TextureUsage::RenderAttachment |
            wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::CopyDst;
@@ -609,17 +666,20 @@ skgpu::graphite::TextureInfo GraphiteBackendTextureInfo(
 #if BUILDFLAG(SKIA_USE_METAL)
     return GraphiteMetalTextureInfo(format, plane_index, is_yuv_plane,
                                     mipmapped);
+#else
+  NOTREACHED_NORETURN();
 #endif
   } else {
     CHECK_EQ(gr_context_type, GrContextType::kGraphiteDawn);
 #if BUILDFLAG(SKIA_USE_DAWN)
-    return DawnBackendTextureInfo(
+    return skgpu::graphite::TextureInfos::MakeDawn(DawnBackendTextureInfo(
         format, readonly, is_yuv_plane, plane_index,
         /*array_slice=*/0, mipmapped, scanout_dcomp_surface,
-        supports_multiplanar_rendering, supports_multiplanar_copy);
+        supports_multiplanar_rendering, supports_multiplanar_copy));
+#else
+  NOTREACHED_NORETURN();
 #endif
   }
-  NOTREACHED_NORETURN();
 }
 
 skgpu::graphite::TextureInfo GraphitePromiseTextureInfo(
@@ -632,6 +692,8 @@ skgpu::graphite::TextureInfo GraphitePromiseTextureInfo(
 #if BUILDFLAG(SKIA_USE_METAL)
     return GraphiteMetalTextureInfo(format, plane_index,
                                     /*is_yuv_plane=*/false, mipmapped);
+#else
+  NOTREACHED_NORETURN();
 #endif
   } else {
     CHECK_EQ(gr_context_type, GrContextType::kGraphiteDawn);
@@ -640,13 +702,12 @@ skgpu::graphite::TextureInfo GraphitePromiseTextureInfo(
 
     wgpu::TextureFormat wgpu_view_format;
     if (ycbcr_info) {
-      // TODO(crbug.com/41488897): Set to EXTERNAL.
-      wgpu_view_format = wgpu::TextureFormat::RGBA8Unorm;
+      wgpu_view_format = wgpu::TextureFormat::External;
     } else {
       wgpu_view_format = gpu::ToDawnTextureViewFormat(format, plane_index);
     }
     if (wgpu_view_format == wgpu::TextureFormat::Undefined) {
-      return dawn_texture_info;
+      return skgpu::graphite::TextureInfos::MakeDawn(dawn_texture_info);
     }
     dawn_texture_info.fSampleCount = 1;
     // For multiplanar shared image, we don't know the real texture format until
@@ -688,10 +749,11 @@ skgpu::graphite::TextureInfo GraphitePromiseTextureInfo(
     }
 #endif
 
-    return dawn_texture_info;
+    return skgpu::graphite::TextureInfos::MakeDawn(dawn_texture_info);
+#else
+  NOTREACHED_NORETURN();
 #endif
   }
-  NOTREACHED_NORETURN();
 }
 
 #if BUILDFLAG(SKIA_USE_DAWN)
@@ -735,13 +797,13 @@ skgpu::graphite::TextureInfo FallbackGraphiteBackendTextureInfo(
     const skgpu::graphite::TextureInfo& texture_info) {
 #if BUILDFLAG(SKIA_USE_DAWN)
   skgpu::graphite::DawnTextureInfo info;
-  if (texture_info.getDawnTextureInfo(&info) &&
+  if (skgpu::graphite::TextureInfos::GetDawnTextureInfo(texture_info, &info) &&
       info.fFormat == wgpu::TextureFormat::Undefined) {
     // For multiplanar textures, the fFormat of promise images is Undefined,
     // so the fViewFormat should be used to create fallback textures.
     info.fFormat = info.fViewFormat;
     info.fAspect = wgpu::TextureAspect::All;
-    return skgpu::graphite::TextureInfo(info);
+    return skgpu::graphite::TextureInfos::MakeDawn(info);
   }
 #endif
   return texture_info;

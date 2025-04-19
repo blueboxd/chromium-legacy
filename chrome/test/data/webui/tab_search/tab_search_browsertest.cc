@@ -19,12 +19,8 @@ IN_PROC_BROWSER_TEST_F(TabSearchTest, Page) {
   RunTest("tab_search/tab_search_page_test.js", "mocha.run()");
 }
 
-IN_PROC_BROWSER_TEST_F(TabSearchTest, BiMap) {
-  RunTest("tab_search/bimap_test.js", "mocha.run()");
-}
-
-IN_PROC_BROWSER_TEST_F(TabSearchTest, FuzzySearch) {
-  RunTest("tab_search/fuzzy_search_test.js", "mocha.run()");
+IN_PROC_BROWSER_TEST_F(TabSearchTest, Search) {
+  RunTest("tab_search/search_test.js", "mocha.run()");
 }
 
 IN_PROC_BROWSER_TEST_F(TabSearchTest, InfiniteList) {
@@ -40,5 +36,5 @@ IN_PROC_BROWSER_TEST_F(TabSearchTest, MediaTabs) {
 }
 
 IN_PROC_BROWSER_TEST_F(TabSearchTest, Organization) {
-  RunTest("tab_search/tab_organization_page_test.js", "mocha.run()");
+  RunTest("tab_search/auto_tab_groups_page_test.js", "mocha.run()");
 }

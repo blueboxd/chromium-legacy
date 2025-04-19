@@ -274,7 +274,10 @@ void ResourcePrefetchPredictor::StartInitialization() {
   auto origin_data = std::make_unique<OriginDataMap>(
       tables_, tables_->origin_table(), config_.max_hosts_to_track,
       base::Seconds(config_.flush_data_to_disk_delay_seconds));
-  auto lcpp_data = std::make_unique<LcppDataMap>(*tables_, config_);
+  auto lcpp_data =
+      use_lcpp_mock_table_for_testing_
+          ? LcppDataMap::CreateWithMockTableForTesting(tables_, config_)
+          : std::make_unique<LcppDataMap>(tables_, config_);
 
   // Get raw pointers to pass to the first task. Ownership of the unique_ptrs
   // will be passed to the reply task.
@@ -407,6 +410,7 @@ void ResourcePrefetchPredictor::CreateCaches(
 
   host_redirect_data_ = std::move(host_redirect_data);
   origin_data_ = std::move(origin_data);
+  lcpp_data->InitializeAfterDBInitialization();
   lcpp_data_ = std::move(lcpp_data);
 
   ConnectToHistoryService();
@@ -623,18 +627,22 @@ void ResourcePrefetchPredictor::LearnOrigins(
     origin_data_->UpdateData(host, data);
 }
 
-void ResourcePrefetchPredictor::LearnLcpp(const GURL& url,
-                                          const LcppDataInputs& inputs) {
+void ResourcePrefetchPredictor::LearnLcpp(
+    const std::optional<url::Origin>& initiator_origin,
+    const GURL& url,
+    const LcppDataInputs& inputs) {
   if (!TryEnsureRecordingPrecondition()) {
     return;
   }
-  const bool data_updated = lcpp_data_->LearnLcpp(url, inputs);
+  const bool data_updated =
+      lcpp_data_->LearnLcpp(initiator_origin, url, inputs);
   if (data_updated && observer_) {
     observer_->OnLcppLearned();
   }
 }
 
 std::optional<LcppStat> ResourcePrefetchPredictor::GetLcppStat(
+    const std::optional<url::Origin>& initiator_origin,
     const GURL& url) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // The `initialization_state_` can be not `INITIALIZED` in the very first
@@ -643,7 +651,7 @@ std::optional<LcppStat> ResourcePrefetchPredictor::GetLcppStat(
   if (initialization_state_ != INITIALIZED) {
     return std::nullopt;
   }
-  return lcpp_data_->GetLcppStat(url);
+  return lcpp_data_->GetLcppStat(initiator_origin, url);
 }
 
 void ResourcePrefetchPredictor::OnHistoryDeletions(

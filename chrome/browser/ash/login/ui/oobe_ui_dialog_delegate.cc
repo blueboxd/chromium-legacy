@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/ash/login/ui/oobe_ui_dialog_delegate.h"
 
 #include <memory>
@@ -32,6 +37,7 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -120,7 +126,7 @@ class OobeWebDialogView : public views::WebDialogView {
 
   bool HandleKeyboardEvent(
       content::WebContents* source,
-      const content::NativeWebKeyboardEvent& event) override {
+      const input::NativeWebKeyboardEvent& event) override {
     return unhandled_keyboard_event_handler_.HandleKeyboardEvent(
         event, GetFocusManager());
   }
@@ -202,7 +208,9 @@ class LayoutWidgetDelegateView : public views::WidgetDelegateView {
   bool GetHasShelf() const { return has_shelf_; }
 
   // views::WidgetDelegateView:
-  ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_WINDOW; }
+  ui::mojom::ModalType GetModalType() const override {
+    return ui::mojom::ModalType::kWindow;
+  }
 
   void Layout(PassKey) override {
     if (fullscreen_) {
@@ -247,7 +255,7 @@ OobeUIDialogDelegate::OobeUIDialogDelegate(
   set_can_close(true);
   set_can_resize(false);
   set_dialog_content_url(GURL(kGaiaURL));
-  set_dialog_modal_type(ui::MODAL_TYPE_WINDOW);
+  set_dialog_modal_type(ui::mojom::ModalType::kWindow);
   set_show_dialog_title(false);
   keyboard_observer_.Observe(ChromeKeyboardControllerClient::Get());
 

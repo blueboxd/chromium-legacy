@@ -26,6 +26,7 @@
 #include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/gfx/skia_paint_util.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
@@ -277,7 +278,7 @@ ToggleButton::ToggleButton(PressedCallback callback, bool has_thumb_shadow)
   FocusRing::Get(this)->SetPathGenerator(
       std::make_unique<FocusRingHighlightPathGenerator>());
 
-  SetAccessibleRole(ax::mojom::Role::kSwitch);
+  GetViewAccessibility().SetRole(ax::mojom::Role::kSwitch);
 }
 
 ToggleButton::~ToggleButton() {
@@ -508,7 +509,6 @@ SkPath ToggleButton::GetFocusRingPath() const {
 void ToggleButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   Button::GetAccessibleNodeData(node_data);
 
-  node_data->role = ax::mojom::Role::kSwitch;
   node_data->SetCheckedState(GetIsOn() ? ax::mojom::CheckedState::kTrue
                                        : ax::mojom::CheckedState::kFalse);
 }

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.customtabs;
 import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 
 import android.app.Activity;
@@ -45,6 +46,7 @@ import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
@@ -58,6 +60,8 @@ import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.base.test.util.PackageManagerWrapper;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.app.metrics.LaunchCauseMetrics;
 import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.CustomTabsUiType;
@@ -67,6 +71,10 @@ import org.chromium.chrome.browser.dependency_injection.ModuleOverridesRule;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.incognito.reauth.IncognitoReauthSettingUtils;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.theme.TopUiThemeColorProvider;
 import org.chromium.chrome.browser.translate.TranslateBridge;
 import org.chromium.chrome.browser.translate.TranslateBridgeJni;
@@ -77,8 +85,8 @@ import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuTestSupport;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.R;
+import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.components.webapps.WebappsUtils;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.test.util.DeviceRestriction;
@@ -163,7 +171,7 @@ public class CustomTabActivityAppMenuTest {
                 mTranslateBridgeJniMock);
         jniMocker.mock(TranslateBridgeJni.TEST_HOOKS, mTranslateBridgeJniMock);
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(true));
+        ThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(true));
         mTestPage = mCustomTabActivityTestRule.getTestServer().getURL(TEST_PAGE);
         WebappsUtils.setAddToHomeIntentSupportedForTesting(true);
         LibraryLoader.getInstance().ensureInitialized();
@@ -171,11 +179,11 @@ public class CustomTabActivityAppMenuTest {
 
     @After
     public void tearDown() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(false));
+        ThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(false));
 
         // finish() is called on a non-UI thread by the testing harness. Must hide the menu
         // first, otherwise the UI is manipulated on a non-UI thread.
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     if (mCustomTabActivityTestRule.getActivity() == null) return;
                     AppMenuCoordinator coordinator =
@@ -442,7 +450,7 @@ public class CustomTabActivityAppMenuTest {
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(createMinimalCustomTabIntent());
         // Mark the first run as not completed. This has to be done after we start the intent,
         // otherwise we are going to hit the FRE.
-        TestThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(false));
+        ThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(false));
 
         openAppMenuAndAssertMenuShown();
         ModelList menuItemsModelList =
@@ -678,6 +686,97 @@ public class CustomTabActivityAppMenuTest {
                 5000L,
                 CriteriaHelper.DEFAULT_POLLING_INTERVAL);
         activity.finish();
+    }
+
+    /**
+     * Test whether clicking "Open in Incognito Chrome" takes us to a new chrome incognito tab,
+     * loading the same url.
+     */
+    @Test
+    @SmallTest
+    @EnableFeatures(ChromeFeatureList.CCT_EPHEMERAL_MODE)
+    public void testOpenInIncognitoBrowser() throws Exception {
+        IncognitoReauthSettingUtils.setIsDeviceScreenLockEnabledForTesting(false);
+        // Augment the CustomTabsSession to catch the callback.
+        CallbackHelper callbackTriggered = new CallbackHelper();
+        CustomTabsSession session =
+                CustomTabsTestUtils.bindWithCallback(
+                                new CustomTabsCallback() {
+                                    @Override
+                                    public void extraCallback(String callbackName, Bundle args) {
+                                        if (callbackName.equals(
+                                                CustomTabsConnection.OPEN_IN_BROWSER_CALLBACK)) {
+                                            callbackTriggered.notifyCalled();
+                                        }
+                                    }
+                                })
+                        .session;
+
+        Intent intent = new CustomTabsIntent.Builder(session).build().intent;
+        // Set up an OTR custom tab to trigger "Open in Chrome Incognito".
+        intent.putExtra(IntentHandler.EXTRA_ENABLE_EPHEMERAL_BROWSING, true);
+        intent.setData(Uri.parse(mTestPage));
+        intent.setComponent(
+                new ComponentName(
+                        ApplicationProvider.getApplicationContext(), ChromeLauncherActivity.class));
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        IntentUtils.addTrustedIntentExtras(intent);
+
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+        assertEquals(
+                1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        LaunchCauseMetrics.LAUNCH_CAUSE_HISTOGRAM,
+                        LaunchCauseMetrics.LaunchCause.CUSTOM_TAB));
+
+        final Instrumentation.ActivityMonitor monitor =
+                InstrumentationRegistry.getInstrumentation()
+                        .addMonitor(ChromeTabbedActivity.class.getName(), null, false);
+        openAppMenuAndAssertMenuShown();
+        PostTask.runOrPostTask(
+                TaskTraits.UI_DEFAULT,
+                () -> {
+                    Assert.assertNotNull(
+                            AppMenuTestSupport.getMenuItemPropertyModel(
+                                    mCustomTabActivityTestRule.getAppMenuCoordinator(),
+                                    R.id.open_in_browser_id));
+                    mCustomTabActivityTestRule
+                            .getActivity()
+                            .onMenuOrKeyboardAction(R.id.open_in_browser_id, false);
+                });
+        final ChromeTabbedActivity tabbedActivity =
+                (ChromeTabbedActivity)
+                        monitor.waitForActivityWithTimeout(CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
+
+        callbackTriggered.waitForCallback(0);
+
+        CriteriaHelper.pollInstrumentationThread(
+                () -> {
+                    Criteria.checkThat(
+                            RecordHistogram.getHistogramValueCountForTesting(
+                                    LaunchCauseMetrics.LAUNCH_CAUSE_HISTOGRAM,
+                                    LaunchCauseMetrics.LaunchCause.OPEN_IN_BROWSER_FROM_MENU),
+                            is(1));
+
+                    TabModel tabModel = tabbedActivity.getCurrentTabModel();
+                    Criteria.checkThat(
+                            "Incognito tab model not selected",
+                            tabModel.isIncognitoBranded(),
+                            is(true));
+
+                    Tab tab = TabModelUtils.getCurrentTab(tabModel);
+                    Criteria.checkThat("Tab is null", tab, Matchers.notNullValue());
+                    Criteria.checkThat(
+                            "Incognito tab not selected", tab.isIncognitoBranded(), is(true));
+                    Criteria.checkThat(
+                            "Wrong URL loaded in incognito tab",
+                            ChromeTabUtils.getUrlStringOnUiThread(tab),
+                            is(mTestPage));
+                },
+                5000L,
+                CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+
+        tabbedActivity.finish();
     }
 
     @Test

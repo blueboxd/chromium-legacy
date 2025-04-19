@@ -195,10 +195,10 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       StatusCodeCallback callback) override;
   void UnregisterServiceWorker(const GURL& scope,
                                const blink::StorageKey& key,
-                               ResultCallback callback) override;
+                               StatusCodeCallback callback) override;
   void UnregisterServiceWorkerImmediately(const GURL& scope,
                                           const blink::StorageKey& key,
-                                          ResultCallback callback) override;
+                                          StatusCodeCallback callback) override;
   ServiceWorkerExternalRequestResult StartingExternalRequest(
       int64_t service_worker_version_id,
       ServiceWorkerExternalRequestTimeoutType timeout_type,
@@ -437,6 +437,9 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
     return context_core_.get();
   }
 
+  void SetForceUpdateOnPageLoadForTesting(
+      bool force_update_on_page_load) override;
+
  private:
   friend class BackgroundSyncManagerTest;
   friend class base::DeleteHelper<ServiceWorkerContextWrapper>;
@@ -470,12 +473,17 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
                                     bool include_installing_version,
                                     FindRegistrationCallback callback);
 
-  // Helper method for `UnregisterServiceWorker()` and
-  // `UnregisterServiceWorkerImmediately()`.
+  // Helper methods for `UnregisterServiceWorker()` and
+  // `UnregisterServiceWorkerImmediately()`. `callback` provides the status that
+  // was encountered. `blink::ServiceWorkerStatusCode::kOk` means the request to
+  // unregister was sent. It does not mean the worker has been fully
+  // unregistered though.
   void UnregisterServiceWorkerImpl(const GURL& scope,
                                    const blink::StorageKey& key,
-                                   bool is_immediate,
-                                   ResultCallback callback);
+                                   StatusCodeCallback callback);
+  void UnregisterServiceWorkerImmediatelyImpl(const GURL& scope,
+                                              const blink::StorageKey& key,
+                                              StatusCodeCallback callback);
 
   void MaybeProcessPendingWarmUpRequest();
 

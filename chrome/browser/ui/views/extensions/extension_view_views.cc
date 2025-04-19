@@ -96,7 +96,7 @@ void ExtensionViewViews::SetContainer(
 }
 
 ExtensionViewViews::Container* ExtensionViewViews::GetContainer() const {
-  return container_;
+  return container_.get();
 }
 
 void ExtensionViewViews::AddObserver(Observer* observer) {
@@ -131,7 +131,7 @@ void ExtensionViewViews::RenderFrameCreated(
 
 bool ExtensionViewViews::HandleKeyboardEvent(
     content::WebContents* source,
-    const content::NativeWebKeyboardEvent& event) {
+    const input::NativeWebKeyboardEvent& event) {
   return unhandled_keyboard_event_handler_.HandleKeyboardEvent(
       event, GetFocusManager());
 }

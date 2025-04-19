@@ -28,6 +28,7 @@
 #include "chrome/updater/linux/systemd_util.h"
 #include "chrome/updater/persisted_data.h"
 #include "chrome/updater/prefs.h"
+#include "chrome/updater/registration_data.h"
 #include "chrome/updater/service_proxy_factory.h"
 #include "chrome/updater/test/integration_tests_impl.h"
 #include "chrome/updater/test/unit_test_util.h"
@@ -71,7 +72,7 @@ std::optional<base::FilePath> GetInstalledExecutablePath(UpdaterScope scope) {
   return path->Append(GetExecutableRelativePath());
 }
 
-bool WaitForUpdaterExit(UpdaterScope /*scope*/) {
+bool WaitForUpdaterExit() {
   const std::set<base::FilePath::StringType> process_names =
       GetTestProcessNames();
   return WaitFor(
@@ -199,6 +200,9 @@ void SetupRealUpdaterLowerVersion(UpdaterScope scope) {
 #elif BUILDFLAG(GOOGLE_CHROME_BRANDING)
   old_updater_path = old_updater_path.AppendASCII("chrome_linux64");
 #endif
+#if BUILDFLAG(CHROMIUM_BRANDING) || BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  old_updater_path = old_updater_path.AppendASCII("cipd");
+#endif
   old_updater_path = old_updater_path.AppendASCII(
       base::StrCat({kExecutableName, kExecutableSuffix}));
 
@@ -221,7 +225,10 @@ void ExpectLegacyUpdaterMigrated(UpdaterScope scope) {
 void InstallApp(UpdaterScope scope,
                 const std::string& app_id,
                 const base::Version& version) {
-  RegisterApp(scope, app_id, version);
+  RegistrationRequest registration;
+  registration.app_id = app_id;
+  registration.version = version;
+  RegisterApp(scope, registration);
 }
 
 void UninstallApp(UpdaterScope scope, const std::string& app_id) {

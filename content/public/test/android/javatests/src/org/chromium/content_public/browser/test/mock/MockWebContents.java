@@ -5,13 +5,16 @@
 package org.chromium.content_public.browser.test.mock;
 
 import android.annotation.SuppressLint;
+import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Parcel;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.base.Callback;
 import org.chromium.blink_public.input.SelectionGranularity;
+import org.chromium.cc.input.BrowserControlsOffsetTagsInfo;
 import org.chromium.content_public.browser.GlobalRenderFrameHostId;
 import org.chromium.content_public.browser.ImageDownloadCallback;
 import org.chromium.content_public.browser.JavaScriptCallback;
@@ -33,9 +36,6 @@ import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.mojom.VirtualKeyboardMode;
 import org.chromium.url.GURL;
-
-import java.util.Collections;
-import java.util.List;
 
 /** Mock class for {@link WebContents}. */
 @SuppressLint("ParcelCreator")
@@ -115,11 +115,6 @@ public class MockWebContents implements WebContents {
     @Nullable
     public RenderWidgetHostView getRenderWidgetHostView() {
         return null;
-    }
-
-    @Override
-    public List<? extends WebContents> getInnerWebContents() {
-        return Collections.emptyList();
     }
 
     @Override
@@ -381,4 +376,15 @@ public class MockWebContents implements WebContents {
     public int getCurrentBackForwardTransitionStage() {
         return AnimationStage.NONE;
     }
+
+    @Override
+    public void captureContentAsBitmapForTesting(Callback<Bitmap> callback) {}
+
+    @Override
+    public void setLongPressLinkSelectText(boolean enabled) {}
+
+    @Override
+    public void notifyControlsConstraintsChanged(
+            BrowserControlsOffsetTagsInfo oldOffsetTagsInfo,
+            BrowserControlsOffsetTagsInfo offsetTagsInfo) {}
 }

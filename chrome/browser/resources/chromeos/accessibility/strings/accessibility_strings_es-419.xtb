@@ -220,6 +220,7 @@
 <translation id="2490721194269245365">Marrón rosado</translation>
 <translation id="249330843868392562">Abrir la configuración de texto a voz</translation>
 <translation id="2497706219848005458">Amarillo verdoso</translation>
+<translation id="2512979179176933762">mostrar ventanas</translation>
 <translation id="2523609930580546572">Instructivo de ChromeVox</translation>
 <translation id="2525706221823668172">Combinaciones de teclas para Chromebook</translation>
 <translation id="2553108862507765288">grammatical mistake</translation>
@@ -264,7 +265,6 @@
 <translation id="2783001728278437613">{COUNT,plural, =1{# más}other{# más}}</translation>
 <translation id="2792200646155001340">También puedes deslizar un dedo de derecha a izquierda para moverte hacia el elemento anterior. Pruébalo ahora.</translation>
 <translation id="280499067616661124">ChromeVox se encuentra en la página</translation>
-<translation id="2811019999044652585">Para pasar a otras partes de la pantalla, como barras de tareas o la bandeja del sistema, presiona Ctrl + flecha hacia adelante. En una Chromebook, la tecla de la flecha hacia adelante está arriba de la del número 2.</translation>
 <translation id="2811204574343810641">Fila</translation>
 <translation id="2816868829355607410">Área de práctica: Comandos de salto</translation>
 <translation id="2841013758207633010">Hora</translation>
@@ -520,6 +520,7 @@
 <translation id="4432457053224379116">Rojo indio</translation>
 <translation id="4432896207833262240">Contenido marcado</translation>
 <translation id="4437615272777527928">Escribe para realizar una búsqueda en los menús. Usa las flechas hacia arriba y abajo para moverte entre los resultados. Usa las flechas hacia la izquierda y la derecha para ajustar el símbolo de intercalación de texto y para moverte entre los menús.</translation>
+<translation id="4453530046591759283">Para pasar a otras partes de la pantalla, como barras de herramientas o la bandeja del sistema, presiona Ctrl + F1. F1 es la primera tecla a la derecha de la tecla escape.</translation>
 <translation id="4457472090507035117">Seleccionar voz actual:</translation>
 <translation id="4476183483923481720">Nueva línea</translation>
 <translation id="4479068155583208887">Rojo ladrillo</translation>
@@ -880,6 +881,7 @@
 <translation id="7091296112653361280">Blanco navajo</translation>
 <translation id="7095834689119144465">Modificar solo texto numérico</translation>
 <translation id="7096001299300236431">Archivo multimedia anterior</translation>
+<translation id="7096668131290451939">Vuelve a presionar Escape para salir del Modo de aprendizaje</translation>
 <translation id="7116595520562830928">multln</translation>
 <translation id="712735679809149106">reproducción oral de palabras</translation>
 <translation id="7137397390322864165">Salmón</translation>
@@ -1072,7 +1074,6 @@
 <translation id="847040613207937740">No hay casillas de verificación siguientes</translation>
 <translation id="8473540203671727883">Pronunciar el texto cuando pasas el puntero del mouse</translation>
 <translation id="8476408756881832830">Pausar la reproducción cuando ChromeVox esté hablando</translation>
-<translation id="8476508772960940536">vista general de ventana</translation>
 <translation id="8480873377842220259">Ya aprendiste algunos aspectos básicos de la navegación. Para desplazarte por la pantalla, mantén presionada la tecla Búsqueda y presiona las flechas. Para continuar, presiona Búsqueda + flecha hacia la derecha.</translation>
 <translation id="8503360654911991865">Disminuir nivel de detalle de navegación</translation>
 <translation id="8520472399088452386">Botón de número</translation>

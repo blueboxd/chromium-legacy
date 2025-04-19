@@ -162,8 +162,6 @@ class AXFragmentRootPlatformNodeWin : public AXPlatformNodeWin,
       IRawElementProviderFragment** element_provider) override {
     WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_ELEMENT_PROVIDER_FROM_POINT);
     WIN_ACCESSIBILITY_API_PERF_HISTOGRAM(UMA_API_ELEMENT_PROVIDER_FROM_POINT);
-    WIN_ACCESSIBILITY_SOURCE_API_PERF_HISTOGRAM(
-        UMA_API_ELEMENT_PROVIDER_FROM_POINT);
     UIA_VALIDATE_CALL_1_ARG(element_provider);
 
     *element_provider = nullptr;
@@ -345,7 +343,7 @@ gfx::NativeViewAccessible AXFragmentRootWin::GetFocus() const {
   return nullptr;
 }
 
-const ui::AXUniqueId& AXFragmentRootWin::GetUniqueId() const {
+AXPlatformNodeId AXFragmentRootWin::GetUniqueId() const {
   return unique_id_;
 }
 

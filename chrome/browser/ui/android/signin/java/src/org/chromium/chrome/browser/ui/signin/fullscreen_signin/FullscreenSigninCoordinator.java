@@ -16,6 +16,7 @@ import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.chrome.browser.firstrun.MobileFreProgress;
 import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.profiles.ProfileProvider;
+import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -30,14 +31,12 @@ public class FullscreenSigninCoordinator {
         void addAccount();
 
         /**
-         * Notifies when the user accepts the terms of service.
+         * Notifies when the user accepts the terms of service. Only implemented for the FRE.
          *
          * @param allowMetricsAndCrashUploading Whether the user has opted into uploading crash
          *     reports and UMA.
          */
-        // TODO(crbug.com/41493788): This method is FRE-specific. Figure out what to do with this
-        // when the coordinator is used for the upgrade promo.
-        void acceptTermsOfService(boolean allowMetricsAndCrashUploading);
+        default void acceptTermsOfService(boolean allowMetricsAndCrashUploading) {}
 
         /** Called when the interaction with the page is over and the next page should be shown. */
         void advanceToNextPage();
@@ -46,28 +45,30 @@ public class FullscreenSigninCoordinator {
         void displayDeviceLockPage(Account selectedAccount);
 
         /**
-         * Records the FRE progress histogram MobileFre.Progress.*.
+         * Records the FRE progress histogram MobileFre.Progress.*. Only implemented for the FRE.
          *
          * @param state FRE state to record.
          */
-        // TODO(crbug.com/41493788): This method is FRE-specific. Figure out what to do with this
-        //  when the coordinator is used for the upgrade promo.
-        void recordFreProgressHistogram(@MobileFreProgress int state);
-
-        /** Records MobileFre.FromLaunch.NativeAndPoliciesLoaded histogram. */
-        void recordNativePolicyAndChildStatusLoadedHistogram();
-
-        /** Records MobileFre.FromLaunch.NativeInitialized histogram. */
-        void recordNativeInitializedHistogram();
+        default void recordFreProgressHistogram(@MobileFreProgress int state) {}
 
         /**
-         * Show an informational web page. The page doesn't show navigation control.
+         * Records MobileFre.FromLaunch.NativeAndPoliciesLoaded histogram. Only implemented for the
+         * FRE.
+         */
+        default void recordNativePolicyAndChildStatusLoadedHistogram() {}
+
+        /**
+         * Records MobileFre.FromLaunch.NativeInitialized histogram. Only implemented for the FRE.
+         */
+        default void recordNativeInitializedHistogram() {}
+
+        /**
+         * Show an informational web page. The page doesn't show navigation control. Only
+         * implemented for the FRE.
          *
          * @param url Resource id for the URL of the web page.
          */
-        // TODO(crbug.com/41493788): This method is FRE-specific. Figure out what to do with this
-        //  when the coordinator is used for the upgrade promo.
-        void showInfoPage(@StringRes int url);
+        default void showInfoPage(@StringRes int url) {}
 
         /** Returns the supplier that provides the Profile (when available). */
         OneshotSupplier<ProfileProvider> getProfileSupplier();
@@ -114,10 +115,15 @@ public class FullscreenSigninCoordinator {
             Context context,
             ModalDialogManager modalDialogManager,
             Delegate delegate,
-            PrivacyPreferencesManager privacyPreferencesManager) {
+            PrivacyPreferencesManager privacyPreferencesManager,
+            @SigninAccessPoint int accessPoint) {
         mMediator =
                 new FullscreenSigninMediator(
-                        context, modalDialogManager, delegate, privacyPreferencesManager);
+                        context,
+                        modalDialogManager,
+                        delegate,
+                        privacyPreferencesManager,
+                        accessPoint);
     }
 
     /** Releases the resources used by the coordinator. */

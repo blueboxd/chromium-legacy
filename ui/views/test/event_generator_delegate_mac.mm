@@ -86,31 +86,31 @@ NSEventType EventTypeToNative(ui::EventType ui_event_type,
   if (modifiers)
     *modifiers = EventFlagsToModifiers(flags);
   switch (ui_event_type) {
-    case ui::ET_KEY_PRESSED:
+    case ui::EventType::kKeyPressed:
       return NSEventTypeKeyDown;
-    case ui::ET_KEY_RELEASED:
+    case ui::EventType::kKeyReleased:
       return NSEventTypeKeyUp;
-    case ui::ET_MOUSE_PRESSED:
+    case ui::EventType::kMousePressed:
       return PickMouseEventType(flags, NSEventTypeLeftMouseDown,
                                 NSEventTypeRightMouseDown,
                                 NSEventTypeOtherMouseDown);
-    case ui::ET_MOUSE_RELEASED:
+    case ui::EventType::kMouseReleased:
       return PickMouseEventType(flags, NSEventTypeLeftMouseUp,
                                 NSEventTypeRightMouseUp,
                                 NSEventTypeOtherMouseUp);
-    case ui::ET_MOUSE_DRAGGED:
+    case ui::EventType::kMouseDragged:
       return PickMouseEventType(flags, NSEventTypeLeftMouseDragged,
                                 NSEventTypeRightMouseDragged,
                                 NSEventTypeOtherMouseDragged);
-    case ui::ET_MOUSE_MOVED:
+    case ui::EventType::kMouseMoved:
       return NSEventTypeMouseMoved;
-    case ui::ET_MOUSEWHEEL:
+    case ui::EventType::kMousewheel:
       return NSEventTypeScrollWheel;
-    case ui::ET_MOUSE_ENTERED:
+    case ui::EventType::kMouseEntered:
       return NSEventTypeMouseEntered;
-    case ui::ET_MOUSE_EXITED:
+    case ui::EventType::kMouseExited:
       return NSEventTypeMouseExited;
-    case ui::ET_SCROLL_FLING_START:
+    case ui::EventType::kScrollFlingStart:
       return NSEventTypeSwipe;
     default:
       NOTREACHED_NORETURN();
@@ -196,8 +196,8 @@ NSEvent* CreateMouseEventInWindow(NSWindow* window,
                                   const base::TimeTicks time_stamp,
                                   int flags) {
   NSUInteger click_count = 0;
-  if (event_type == ui::ET_MOUSE_PRESSED ||
-      event_type == ui::ET_MOUSE_RELEASED) {
+  if (event_type == ui::EventType::kMousePressed ||
+      event_type == ui::EventType::kMouseReleased) {
     if (flags & ui::EF_IS_TRIPLE_CLICK)
       click_count = 3;
     else if (flags & ui::EF_IS_DOUBLE_CLICK)
@@ -208,7 +208,8 @@ NSEvent* CreateMouseEventInWindow(NSWindow* window,
   NSPoint point = ConvertRootPointToTarget(window, point_in_root);
   NSUInteger modifiers = 0;
   NSEventType type = EventTypeToNative(event_type, flags, &modifiers);
-  if (event_type == ui::ET_MOUSE_ENTERED || event_type == ui::ET_MOUSE_EXITED) {
+  if (event_type == ui::EventType::kMouseEntered ||
+      event_type == ui::EventType::kMouseExited) {
     return
         [NSEvent enterExitEventWithType:type
                                location:point
@@ -233,7 +234,7 @@ NSEvent* CreateMouseEventInWindow(NSWindow* window,
 
 NSEvent* CreateMouseWheelEventInWindow(NSWindow* window,
                                        const ui::MouseEvent* mouse_event) {
-  DCHECK_EQ(mouse_event->type(), ui::ET_MOUSEWHEEL);
+  DCHECK_EQ(mouse_event->type(), ui::EventType::kMousewheel);
   const ui::MouseWheelEvent* mouse_wheel_event =
       mouse_event->AsMouseWheelEvent();
   return cocoa_test_event_utils::TestScrollEvent(
@@ -361,25 +362,25 @@ EventGeneratorDelegateMac::EventGeneratorDelegateMac(
   DCHECK(!instance_);
   instance_ = this;
   SetTargetHandler(this);
-  // Install a fake "edit" menu. This is normally provided by Chrome's
-  // MainMenu.xib, but src/ui shouldn't depend on that.
+  // Install a fake "edit" menu.
   fake_menu_ = [[NSMenu alloc] initWithTitle:@"Edit"];
-  struct {
+  struct FakeMenuItem {
     NSString* title;
     SEL action;
     NSString* key_equivalent;
-  } fake_menu_item[] = {
+  };
+  const auto kFakeMenuItems = std::to_array<FakeMenuItem>({
       {@"Undo", @selector(undo:), @"z"},
       {@"Redo", @selector(redo:), @"Z"},
       {@"Copy", @selector(copy:), @"c"},
       {@"Cut", @selector(cut:), @"x"},
       {@"Paste", @selector(paste:), @"v"},
       {@"Select All", @selector(selectAll:), @"a"},
-  };
-  for (size_t i = 0; i < std::size(fake_menu_item); ++i) {
-    [fake_menu_ insertItemWithTitle:fake_menu_item[i].title
-                             action:fake_menu_item[i].action
-                      keyEquivalent:fake_menu_item[i].key_equivalent
+  });
+  for (size_t i = 0; i < kFakeMenuItems.size(); ++i) {
+    [fake_menu_ insertItemWithTitle:kFakeMenuItems[i].title
+                             action:kFakeMenuItems[i].action
+                      keyEquivalent:kFakeMenuItems[i].key_equivalent
                             atIndex:i];
   }
 
@@ -431,7 +432,7 @@ EventGeneratorDelegateMac::GetChildIterator() const {
 
 void EventGeneratorDelegateMac::OnMouseEvent(ui::MouseEvent* event) {
   NSEvent* ns_event =
-      event->type() == ui::ET_MOUSEWHEEL
+      event->type() == ui::EventType::kMousewheel
           ? CreateMouseWheelEventInWindow(target_window_, event)
           : CreateMouseEventInWindow(target_window_, event->type(),
                                      event->location(), event->time_stamp(),
@@ -454,8 +455,9 @@ void EventGeneratorDelegateMac::OnMouseEvent(ui::MouseEvent* event) {
 void EventGeneratorDelegateMac::OnKeyEvent(ui::KeyEvent* event) {
   NSUInteger modifiers = EventFlagsToModifiers(event->flags());
   NSEvent* ns_event = cocoa_test_event_utils::SynthesizeKeyEvent(
-      target_window_, event->type() == ui::ET_KEY_PRESSED, event->key_code(),
-      modifiers, event->is_char() ? event->GetDomKey() : ui::DomKey::NONE);
+      target_window_, event->type() == ui::EventType::kKeyPressed,
+      event->key_code(), modifiers,
+      event->is_char() ? event->GetDomKey() : ui::DomKey::NONE);
 
   using Target = ui::test::EventGenerator::Target;
   switch (owner_->target()) {
@@ -492,8 +494,9 @@ void EventGeneratorDelegateMac::OnScrollEvent(ui::ScrollEvent* event) {
   // fling. For now, this method simulates a momentum stream using a single
   // update with a momentum phase (plus begin/end phase events), triggered when
   // the EventGenerator requests a FLING_START.
-  if (event->type() == ui::ET_SCROLL_FLING_CANCEL)
+  if (event->type() == ui::EventType::kScrollFlingCancel) {
     return;
+  }
 
   NSPoint location =
       ConvertRootPointToTarget(target_window_, event->location());
@@ -521,7 +524,7 @@ void EventGeneratorDelegateMac::OnScrollEvent(ui::ScrollEvent* event) {
   NSEventPhase momentum_phase = NSEventPhaseNone;
 
   // Treat FLING_START as the beginning of a momentum phase.
-  if (event->type() == ui::ET_SCROLL_FLING_START) {
+  if (event->type() == ui::EventType::kScrollFlingStart) {
     DCHECK(in_trackpad_scroll);
     // First end the non-momentum phase.
     NSEvent* end = cocoa_test_event_utils::TestScrollEvent(
@@ -546,13 +549,13 @@ void EventGeneratorDelegateMac::OnScrollEvent(ui::ScrollEvent* event) {
     in_trackpad_scroll = true;
   }
 
-  if (event->type() == ui::ET_SCROLL) {
+  if (event->type() == ui::EventType::kScroll) {
     NSEvent* update = cocoa_test_event_utils::TestScrollEvent(
         location, target_window_, -event->x_offset(), -event->y_offset(), true,
         NSEventPhaseChanged, NSEventPhaseNone);
     EmulateSendEvent(target_window_, update);
   } else {
-    DCHECK_EQ(event->type(), ui::ET_SCROLL_FLING_START);
+    DCHECK_EQ(event->type(), ui::EventType::kScrollFlingStart);
     // Mac generates a stream of events. For the purposes of testing, just
     // generate one.
     NSEvent* update = cocoa_test_event_utils::TestScrollEvent(
@@ -597,7 +600,7 @@ ui::EventDispatchDetails EventGeneratorDelegateMac::PreDispatchEvent(
     // Similar to the logic in Aura's
     // EnvInputStateController::UpdateStateForMouseEvent(), capture change and
     // synthesized events don't need to update the cursor location.
-    if (mouse_event->type() != ui::ET_MOUSE_CAPTURE_CHANGED &&
+    if (mouse_event->type() != ui::EventType::kMouseCaptureChanged &&
         !(mouse_event->flags() & ui::EF_IS_SYNTHESIZED)) {
       // Update the cursor location on screen.
       owner_->set_current_screen_location(mouse_event->root_location());

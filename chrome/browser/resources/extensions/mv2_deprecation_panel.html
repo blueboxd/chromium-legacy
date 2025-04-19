@@ -49,25 +49,44 @@
         <div class="extension-buttons">
           <cr-button class="find-alternative-button"
               on-click="onFindAlternativeButtonClick_"
-              hidden="[[!item.recommendationsUrl]]">
+              hidden$="[[!showExtensionFindAlternativeButton_(item)]]"
+              aria-label="[[getFindAlternativeButtonLabelFor_(item.name)]]">
             $i18n{mv2DeprecationPanelFindAlternativeButton}
             <iron-icon icon="cr:open-in-new" slot="suffix-icon"></iron-icon>
           </cr-button>
-          <cr-icon-button class="icon-more-vert header-aligned-button"
-              on-click="onExtensionActionMenuClick_">
+          <cr-icon-button id="removeButton"
+              class="icon-delete-gray"
+              on-click="onRemoveButtonClick_"
+              title="$i18n{remove}"
+              aria-label$="[[getRemoveButtonLabelFor_(item.name)]]"
+              hidden$="[[!showExtensionRemoveButton_(item,
+                  mv2ExperimentStage)]]">
+          </cr-icon-button>
+          <cr-icon-button id="actionMenuButton"
+              class="icon-more-vert header-aligned-button"
+              on-click="onExtensionActionMenuClick_"
+              title="$i18n{moreOptions}"
+              aria-label="[[getActionMenuButtonLabelFor_(item.name)]]">
           </cr-icon-button>
         </div>
       </div>
     </template>
 
     <cr-action-menu id="actionMenu">
+      <button class="dropdown-item" id="findAlternativeAction"
+          on-click="onFindAlternativeExtensionActionClick_"
+          hidden$="[[!showExtensionFindAlternativeAction_(
+              extensionWithActionMenuOpened_, mv2ExperimentStage)]]">
+        Find alternatives
+      </button>
       <button class="dropdown-item" id="keepAction"
           on-click="onKeepExtensionActionClick_">
         $i18n{mv2DeprecationPanelKeepForNowButton}
       </button>
       <button class="dropdown-item" id="removeAction"
           on-click="onRemoveExtensionActionClicked_"
-          hidden="[[extensionWithActionMenuOpened_.mustRemainInstalled]]">
+          hidden$="[[!showExtensionRemoveAction_(
+              extensionWithActionMenuOpened_, mv2ExperimentStage)]]">
         $i18n{mv2DeprecationPanelRemoveExtensionButton}
       </button>
     </cr-action-menu>

@@ -24,6 +24,7 @@
 #include "components/webapps/browser/installable/installable_logging.h"
 #include "components/webapps/browser/installable/installable_manager.h"
 #include "components/webapps/browser/installable/installable_params.h"
+#include "components/webapps/common/web_app_id.h"
 #include "components/webapps/common/web_page_metadata.mojom.h"
 #include "components/webapps/common/web_page_metadata_agent.mojom.h"
 #include "content/public/browser/browser_context.h"
@@ -50,9 +51,9 @@ void WebAppDataRetriever::PopulateWebAppInfoFromMetadata(
     info->description = metadata.description;
   }
   if (metadata.application_url.is_valid()) {
-    info->start_url = metadata.application_url;
-    info->manifest_id =
-        web_app::GenerateManifestIdFromStartUrlOnly(info->start_url);
+    const GURL& start_url = metadata.application_url;
+    info->SetManifestIdAndStartUrl(
+        web_app::GenerateManifestIdFromStartUrlOnly(start_url), start_url);
   }
 
   for (const auto& icon : metadata.icons) {
@@ -112,13 +113,14 @@ void WebAppDataRetriever::GetWebAppInstallInfo(
 
   // Makes a copy of WebContents fields right after Commit but before a mojo
   // request to the renderer process.
-  fallback_install_info_ = std::make_unique<WebAppInstallInfo>(
-      GenerateManifestIdFromStartUrlOnly(web_contents->GetLastCommittedURL()));
-  fallback_install_info_->start_url = web_contents->GetLastCommittedURL();
+  GURL start_url = web_contents->GetLastCommittedURL();
+  webapps::ManifestId manifest_id =
+      GenerateManifestIdFromStartUrlOnly(start_url);
+  fallback_install_info_ =
+      std::make_unique<WebAppInstallInfo>(manifest_id, start_url);
   fallback_install_info_->title = web_contents->GetTitle();
   if (fallback_install_info_->title.empty()) {
-    fallback_install_info_->title =
-        base::UTF8ToUTF16(fallback_install_info_->start_url.spec());
+    fallback_install_info_->title = base::UTF8ToUTF16(start_url.spec());
   }
 
   mojo::AssociatedRemote<webapps::mojom::WebPageMetadataAgent> metadata_agent;
@@ -296,8 +298,8 @@ void WebAppDataRetriever::OnDidPerformInstallableCheck(
 
   CHECK(!check_installability_callback_.is_null());
   std::move(check_installability_callback_)
-      .Run(std::move(opt_manifest), *data.manifest_url,
-           data.installable_check_passed, data.GetFirstError());
+      .Run(std::move(opt_manifest), data.installable_check_passed,
+           data.GetFirstError());
 }
 
 void WebAppDataRetriever::OnIconsDownloaded(
@@ -334,7 +336,7 @@ void WebAppDataRetriever::CallCallbackOnError(
     std::move(get_web_app_info_callback_).Run(nullptr);
   } else if (check_installability_callback_) {
     std::move(check_installability_callback_)
-        .Run(/*manifest=*/nullptr, /*manifest_url=*/GURL(),
+        .Run(/*manifest=*/nullptr,
              /*installable_check_passed_for_web_app=*/false,
              /*error_code=*/
              error_code);

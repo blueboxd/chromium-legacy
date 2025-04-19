@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_idioms.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
@@ -122,11 +127,6 @@ UChar CSSTokenizer::Consume() {
   return current;
 }
 
-CSSParserToken CSSTokenizer::WhiteSpace(UChar cc) {
-  input_.AdvanceUntilNonWhitespace();
-  return CSSParserToken(kWhitespaceToken);
-}
-
 CSSParserToken CSSTokenizer::BlockStart(CSSParserTokenType type) {
   block_stack_.push_back(type);
   return CSSParserToken(type, CSSParserToken::kBlockStart);
@@ -148,61 +148,6 @@ CSSParserToken CSSTokenizer::BlockEnd(CSSParserTokenType type,
   return CSSParserToken(type);
 }
 
-CSSParserToken CSSTokenizer::LeftParenthesis(UChar cc) {
-  return BlockStart(kLeftParenthesisToken);
-}
-
-CSSParserToken CSSTokenizer::RightParenthesis(UChar cc) {
-  return BlockEnd(kRightParenthesisToken, kLeftParenthesisToken);
-}
-
-CSSParserToken CSSTokenizer::LeftBracket(UChar cc) {
-  return BlockStart(kLeftBracketToken);
-}
-
-CSSParserToken CSSTokenizer::RightBracket(UChar cc) {
-  return BlockEnd(kRightBracketToken, kLeftBracketToken);
-}
-
-CSSParserToken CSSTokenizer::LeftBrace(UChar cc) {
-  return BlockStart(kLeftBraceToken);
-}
-
-CSSParserToken CSSTokenizer::RightBrace(UChar cc) {
-  return BlockEnd(kRightBraceToken, kLeftBraceToken);
-}
-
-CSSParserToken CSSTokenizer::PlusOrFullStop(UChar cc) {
-  if (NextCharsAreNumber(cc)) {
-    Reconsume(cc);
-    return ConsumeNumericToken();
-  }
-  return CSSParserToken(kDelimiterToken, cc);
-}
-
-CSSParserToken CSSTokenizer::Asterisk(UChar cc) {
-  DCHECK_EQ(cc, '*');
-  if (ConsumeIfNext('=')) {
-    return CSSParserToken(kSubstringMatchToken);
-  }
-  return CSSParserToken(kDelimiterToken, '*');
-}
-
-CSSParserToken CSSTokenizer::LessThan(UChar cc) {
-  DCHECK_EQ(cc, '<');
-  if (input_.PeekWithoutReplacement(0) == '!' &&
-      input_.PeekWithoutReplacement(1) == '-' &&
-      input_.PeekWithoutReplacement(2) == '-') {
-    input_.Advance(3);
-    return CSSParserToken(kCDOToken);
-  }
-  return CSSParserToken(kDelimiterToken, '<');
-}
-
-CSSParserToken CSSTokenizer::Comma(UChar cc) {
-  return CSSParserToken(kCommaToken);
-}
-
 CSSParserToken CSSTokenizer::HyphenMinus(UChar cc) {
   if (NextCharsAreNumber(cc)) {
     Reconsume(cc);
@@ -220,14 +165,6 @@ CSSParserToken CSSTokenizer::HyphenMinus(UChar cc) {
   return CSSParserToken(kDelimiterToken, cc);
 }
 
-CSSParserToken CSSTokenizer::Colon(UChar cc) {
-  return CSSParserToken(kColonToken);
-}
-
-CSSParserToken CSSTokenizer::SemiColon(UChar cc) {
-  return CSSParserToken(kSemicolonToken);
-}
-
 CSSParserToken CSSTokenizer::Hash(UChar cc) {
   UChar next_char = input_.PeekWithoutReplacement(0);
   if (IsNameCodePoint(next_char) ||
@@ -240,62 +177,6 @@ CSSParserToken CSSTokenizer::Hash(UChar cc) {
   return CSSParserToken(kDelimiterToken, cc);
 }
 
-CSSParserToken CSSTokenizer::CircumflexAccent(UChar cc) {
-  DCHECK_EQ(cc, '^');
-  if (ConsumeIfNext('=')) {
-    return CSSParserToken(kPrefixMatchToken);
-  }
-  return CSSParserToken(kDelimiterToken, '^');
-}
-
-CSSParserToken CSSTokenizer::DollarSign(UChar cc) {
-  DCHECK_EQ(cc, '$');
-  if (ConsumeIfNext('=')) {
-    return CSSParserToken(kSuffixMatchToken);
-  }
-  return CSSParserToken(kDelimiterToken, '$');
-}
-
-CSSParserToken CSSTokenizer::VerticalLine(UChar cc) {
-  DCHECK_EQ(cc, '|');
-  if (ConsumeIfNext('=')) {
-    return CSSParserToken(kDashMatchToken);
-  }
-  if (ConsumeIfNext('|')) {
-    return CSSParserToken(kColumnToken);
-  }
-  return CSSParserToken(kDelimiterToken, '|');
-}
-
-CSSParserToken CSSTokenizer::Tilde(UChar cc) {
-  DCHECK_EQ(cc, '~');
-  if (ConsumeIfNext('=')) {
-    return CSSParserToken(kIncludeMatchToken);
-  }
-  return CSSParserToken(kDelimiterToken, '~');
-}
-
-CSSParserToken CSSTokenizer::CommercialAt(UChar cc) {
-  DCHECK_EQ(cc, '@');
-  if (NextCharsAreIdentifier()) {
-    return CSSParserToken(kAtKeywordToken, ConsumeName());
-  }
-  return CSSParserToken(kDelimiterToken, '@');
-}
-
-CSSParserToken CSSTokenizer::ReverseSolidus(UChar cc) {
-  if (TwoCharsAreValidEscape(cc, input_.PeekWithoutReplacement(0))) {
-    Reconsume(cc);
-    return ConsumeIdentLikeToken();
-  }
-  return CSSParserToken(kDelimiterToken, cc);
-}
-
-CSSParserToken CSSTokenizer::AsciiDigit(UChar cc) {
-  Reconsume(cc);
-  return ConsumeNumericToken();
-}
-
 CSSParserToken CSSTokenizer::LetterU(UChar cc) {
   if (unicode_ranges_allowed_ && input_.PeekWithoutReplacement(0) == '+' &&
       (IsASCIIHexDigit(input_.PeekWithoutReplacement(1)) ||
@@ -305,19 +186,6 @@ CSSParserToken CSSTokenizer::LetterU(UChar cc) {
   }
   Reconsume(cc);
   return ConsumeIdentLikeToken();
-}
-
-CSSParserToken CSSTokenizer::NameStart(UChar cc) {
-  Reconsume(cc);
-  return ConsumeIdentLikeToken();
-}
-
-CSSParserToken CSSTokenizer::StringStart(UChar cc) {
-  return ConsumeStringTokenUntil(cc);
-}
-
-CSSParserToken CSSTokenizer::EndOfFile(UChar cc) {
-  return CSSParserToken(kEOFToken);
 }
 
 template <bool SkipComments, bool StoreOffset>
@@ -338,16 +206,17 @@ CSSParserToken CSSTokenizer::NextToken() {
 
     switch (cc) {
       case 0:
-        return EndOfFile(cc);
+        return CSSParserToken(kEOFToken);
       case '\t':
       case '\n':
       case '\f':
       case '\r':
       case ' ':
-        return WhiteSpace(cc);
+        input_.AdvanceUntilNonWhitespace();
+        return CSSParserToken(kWhitespaceToken);
       case '\'':
       case '"':
-        return StringStart(cc);
+        return ConsumeStringTokenUntil(cc);
       case '0':
       case '1':
       case '2':
@@ -358,30 +227,44 @@ CSSParserToken CSSTokenizer::NextToken() {
       case '7':
       case '8':
       case '9':
-        return AsciiDigit(cc);
+        Reconsume(cc);
+        return ConsumeNumericToken();
       case '(':
-        return LeftParenthesis(cc);
+        return BlockStart(kLeftParenthesisToken);
       case ')':
-        return RightParenthesis(cc);
+        return BlockEnd(kRightParenthesisToken, kLeftParenthesisToken);
       case '[':
-        return LeftBracket(cc);
+        return BlockStart(kLeftBracketToken);
       case ']':
-        return RightBracket(cc);
+        return BlockEnd(kRightBracketToken, kLeftBracketToken);
       case '{':
-        return LeftBrace(cc);
+        return BlockStart(kLeftBraceToken);
       case '}':
-        return RightBrace(cc);
+        return BlockEnd(kRightBraceToken, kLeftBraceToken);
       case '+':
       case '.':
-        return PlusOrFullStop(cc);
+        if (NextCharsAreNumber(cc)) {
+          Reconsume(cc);
+          return ConsumeNumericToken();
+        }
+        return CSSParserToken(kDelimiterToken, cc);
       case '-':
         return HyphenMinus(cc);
       case '*':
-        return Asterisk(cc);
+        if (ConsumeIfNext('=')) {
+          return CSSParserToken(kSubstringMatchToken);
+        }
+        return CSSParserToken(kDelimiterToken, '*');
       case '<':
-        return LessThan(cc);
+        if (input_.PeekWithoutReplacement(0) == '!' &&
+            input_.PeekWithoutReplacement(1) == '-' &&
+            input_.PeekWithoutReplacement(2) == '-') {
+          input_.Advance(3);
+          return CSSParserToken(kCDOToken);
+        }
+        return CSSParserToken(kDelimiterToken, '<');
       case ',':
-        return Comma(cc);
+        return CSSParserToken(kCommaToken);
       case '/':
         if (ConsumeIfNext('*')) {
           ConsumeUntilCommentEndFound();
@@ -393,23 +276,45 @@ CSSParserToken CSSTokenizer::NextToken() {
         }
         return CSSParserToken(kDelimiterToken, cc);
       case '\\':
-        return ReverseSolidus(cc);
+        if (TwoCharsAreValidEscape(cc, input_.PeekWithoutReplacement(0))) {
+          Reconsume(cc);
+          return ConsumeIdentLikeToken();
+        }
+        return CSSParserToken(kDelimiterToken, cc);
       case ':':
-        return Colon(cc);
+        return CSSParserToken(kColonToken);
       case ';':
-        return SemiColon(cc);
+        return CSSParserToken(kSemicolonToken);
       case '#':
         return Hash(cc);
       case '^':
-        return CircumflexAccent(cc);
+        if (ConsumeIfNext('=')) {
+          return CSSParserToken(kPrefixMatchToken);
+        }
+        return CSSParserToken(kDelimiterToken, '^');
       case '$':
-        return DollarSign(cc);
+        if (ConsumeIfNext('=')) {
+          return CSSParserToken(kSuffixMatchToken);
+        }
+        return CSSParserToken(kDelimiterToken, '$');
       case '|':
-        return VerticalLine(cc);
+        if (ConsumeIfNext('=')) {
+          return CSSParserToken(kDashMatchToken);
+        }
+        if (ConsumeIfNext('|')) {
+          return CSSParserToken(kColumnToken);
+        }
+        return CSSParserToken(kDelimiterToken, '|');
       case '~':
-        return Tilde(cc);
+        if (ConsumeIfNext('=')) {
+          return CSSParserToken(kIncludeMatchToken);
+        }
+        return CSSParserToken(kDelimiterToken, '~');
       case '@':
-        return CommercialAt(cc);
+        if (NextCharsAreIdentifier()) {
+          return CSSParserToken(kAtKeywordToken, ConsumeName());
+        }
+        return CSSParserToken(kDelimiterToken, '@');
       case 'u':
       case 'U':
         return LetterU(cc);
@@ -450,7 +355,8 @@ CSSParserToken CSSTokenizer::NextToken() {
       case 127:
         return CSSParserToken(kDelimiterToken, cc);
       default:
-        return NameStart(cc);
+        Reconsume(cc);
+        return ConsumeIdentLikeToken();
     }
   } while (SkipComments);
 }
@@ -785,7 +691,8 @@ StringView CSSTokenizer::ConsumeName() {
       // or all-one for each byte, so we can use the code from
       // https://community.arm.com/arm-community-blogs/b/infrastructure-solutions-blog/posts/porting-x86-vector-bitmask-optimizations-to-arm-neon
       non_name_mask = non_name_mask && (b >= 0);
-      uint8x8_t narrowed_mask = vshrn_n_u16(non_name_mask, 4);
+      uint8x8_t narrowed_mask =
+          vshrn_n_u16(vreinterpretq_u16_s8(non_name_mask), 4);
       uint64_t bits = vget_lane_u64(vreinterpret_u64_u8(narrowed_mask), 0);
       if (bits == 0) {
         size += 16;

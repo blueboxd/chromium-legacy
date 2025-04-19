@@ -29,10 +29,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include <windows.h>  // For GetACP()
 
-#include <freetype/freetype.h>
-#include <ft2build.h>
 #include <unicode/uscript.h>
 
 #include <memory>
@@ -173,13 +176,13 @@ const SimpleFontData* FontCache::GetFallbackFamilyNameFromHardcodedChoices(
     UChar32 codepoint,
     FontFallbackPriority fallback_priority) {
   UScriptCode script;
-  const UChar* legacy_fallback_family = GetFallbackFamily(
-      codepoint, font_description.GenericFamily(), font_description.Locale(),
-      &script, fallback_priority, font_manager_.get());
-
-  if (legacy_fallback_family) {
+  DCHECK(font_manager_);
+  if (const AtomicString fallback_family =
+          GetFallbackFamily(codepoint, font_description.GenericFamily(),
+                            font_description.Locale(), fallback_priority,
+                            *font_manager_, script)) {
     FontFaceCreationParams create_by_family =
-        FontFaceCreationParams(AtomicString(legacy_fallback_family));
+        FontFaceCreationParams(fallback_family);
     const FontPlatformData* data =
         GetFontPlatformData(font_description, create_by_family);
     if (data && data->FontContainsCharacter(codepoint)) {

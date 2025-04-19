@@ -64,8 +64,14 @@ std::string ToString(const FaceGazeGesture& gesture) {
       return "eyesLookRight";
     case FaceGazeGesture::EYES_LOOK_UP:
       return "eyesLookUp";
+    case FaceGazeGesture::JAW_LEFT:
+      return "jawLeft";
     case FaceGazeGesture::JAW_OPEN:
       return "jawOpen";
+    case FaceGazeGesture::JAW_RIGHT:
+      return "jawRight";
+    case FaceGazeGesture::MOUTH_FUNNEL:
+      return "mouthFunnel";
     case FaceGazeGesture::MOUTH_LEFT:
       return "mouthLeft";
     case FaceGazeGesture::MOUTH_PUCKER:
@@ -111,8 +117,14 @@ std::string ToString(const MediapipeGesture& gesture) {
       return "eyeSquintLeft";
     case MediapipeGesture::EYE_SQUINT_RIGHT:
       return "eyeSquintRight";
+    case MediapipeGesture::JAW_LEFT:
+      return "jawLeft";
     case MediapipeGesture::JAW_OPEN:
       return "jawOpen";
+    case MediapipeGesture::JAW_RIGHT:
+      return "jawRight";
+    case MediapipeGesture::MOUTH_FUNNEL:
+      return "mouthFunnel";
     case MediapipeGesture::MOUTH_LEFT:
       return "mouthLeft";
     case MediapipeGesture::MOUTH_PUCKER:
@@ -140,6 +152,8 @@ FaceGazeTestUtils::Config& FaceGazeTestUtils::Config::Default() {
   cursor_location_ = gfx::Point(600, 400);
   buffer_size_ = 1;
   use_cursor_acceleration_ = false;
+  dialog_accepted_ = true;
+
   return *this;
 }
 
@@ -163,6 +177,12 @@ FaceGazeTestUtils::Config& FaceGazeTestUtils::Config::WithBufferSize(int size) {
 FaceGazeTestUtils::Config& FaceGazeTestUtils::Config::WithCursorAcceleration(
     bool acceleration) {
   use_cursor_acceleration_ = acceleration;
+  return *this;
+}
+
+FaceGazeTestUtils::Config& FaceGazeTestUtils::Config::WithDialogAccepted(
+    bool accepted) {
+  dialog_accepted_ = accepted;
   return *this;
 }
 
@@ -219,6 +239,12 @@ FaceGazeTestUtils::MockFaceLandmarkerResult::WithGesture(
   return *this;
 }
 
+FaceGazeTestUtils::MockFaceLandmarkerResult&
+FaceGazeTestUtils::MockFaceLandmarkerResult::WithLatency(int latency) {
+  latency_ = latency;
+  return *this;
+}
+
 FaceGazeTestUtils::FaceGazeTestUtils() = default;
 FaceGazeTestUtils::~FaceGazeTestUtils() = default;
 
@@ -229,6 +255,12 @@ void FaceGazeTestUtils::EnableFaceGaze(const Config& config) {
       .UpdateDisplay(kDefaultDisplaySize);
   event_generator_ = std::make_unique<ui::test::EventGenerator>(
       Shell::Get()->GetPrimaryRootWindow());
+
+  // Before enabling FaceGaze, ensure that the dialog accepted pref matches
+  // what is specified in the config.
+  GetPrefs()->SetBoolean(
+      prefs::kAccessibilityFaceGazeAcceleratorDialogHasBeenAccepted,
+      config.dialog_accepted());
 
   FaceGazeTestUtils::SetUpMediapipeDir();
   ASSERT_FALSE(AccessibilityManager::Get()->IsFaceGazeEnabled());
@@ -242,6 +274,7 @@ void FaceGazeTestUtils::EnableFaceGaze(const Config& config) {
   host_helper.WaitForHostCompletedFirstLoad();
 
   WaitForJSReady();
+  SkipInitializeWebCamFaceLandmarker();
   SetUpJSTestSupport();
   CancelMouseControllerInterval();
   CreateFaceLandmarker();
@@ -261,9 +294,18 @@ void FaceGazeTestUtils::ProcessFaceLandmarkerResult(
       base::WriteJson(result.forehead_location()).value();
   std::string recognized_gestures_json =
       base::WriteJson(result.recognized_gestures()).value();
-  std::string script = base::StringPrintf(
-      "faceGazeTestSupport.processFaceLandmarkerResult(%s, %s)",
-      forehead_location_json.c_str(), recognized_gestures_json.c_str());
+  std::string script;
+  if (result.latency().has_value()) {
+    script = base::StringPrintf(
+        "faceGazeTestSupport.processFaceLandmarkerResult(%s, %s, %d)",
+        forehead_location_json.c_str(), recognized_gestures_json.c_str(),
+        result.latency().value());
+  } else {
+    script = base::StringPrintf(
+        "faceGazeTestSupport.processFaceLandmarkerResult(%s, %s)",
+        forehead_location_json.c_str(), recognized_gestures_json.c_str());
+  }
+
   ExecuteAccessibilityCommonScript(script);
 }
 
@@ -307,6 +349,17 @@ void FaceGazeTestUtils::WaitForJSReady() {
           () => {
             chrome.test.sendScriptResult('ready');
           });
+    })();
+  )JS");
+  ExecuteAccessibilityCommonScript(script);
+}
+
+void FaceGazeTestUtils::SkipInitializeWebCamFaceLandmarker() {
+  std::string script = base::StringPrintf(R"JS(
+    (function() {
+      window.accessibilityCommon.getFaceGazeForTest()
+          .setSkipInitializeWebCamFaceLandmarkerForTesting(true);
+      chrome.test.sendScriptResult('ready');
     })();
   )JS");
   ExecuteAccessibilityCommonScript(script);

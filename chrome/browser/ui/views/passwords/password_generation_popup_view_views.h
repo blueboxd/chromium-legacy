@@ -10,6 +10,8 @@
 #include "chrome/browser/ui/passwords/password_generation_popup_view.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_base_view.h"
 #include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/views/accessibility/view_accessibility.h"
+
 class PasswordGenerationPopupController;
 
 class PasswordGenerationPopupViewViews : public autofill::PopupBaseView,
@@ -33,8 +35,14 @@ class PasswordGenerationPopupViewViews : public autofill::PopupBaseView,
   void UpdateGeneratedPasswordValue() override;
   [[nodiscard]] bool UpdateBoundsAndRedrawPopup() override;
   void PasswordSelectionUpdated() override;
-  void EditPasswordSelectionUpdated() override;
   void NudgePasswordSelectionUpdated() override;
+
+  const views::ViewAccessibility& GetPasswordViewViewAccessibilityForTest();
+  int GetHelpTextMessageIdForTesting() const;
+
+  // static
+  static std::u16string JoinMultiplePasswordGenerationStrings(
+      const std::u16string& help_text);
 
  private:
   class GeneratedPasswordBox;
@@ -48,11 +56,12 @@ class PasswordGenerationPopupViewViews : public autofill::PopupBaseView,
   gfx::Size CalculatePreferredSize(
       const views::SizeBounds& available_size) const override;
 
+  // Helper function to update the expanded and collapsed accessible states of
+  // the view.
+  void UpdateExpandedCollapsedAccessibleState() const;
+
   // Sub view that displays the actual generated password.
   raw_ptr<GeneratedPasswordBox> password_view_ = nullptr;
-
-  // Sub view that displays the edit password row.
-  raw_ptr<views::View> edit_password_view_ = nullptr;
 
   // Sub view that displays the nudge password buttons row.
   raw_ptr<views::View> nudge_password_buttons_view_ = nullptr;

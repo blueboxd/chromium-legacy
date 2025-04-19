@@ -28,16 +28,16 @@ declare namespace chrome {
     let endNodeId: number;
     let endOffset: number;
 
-    // Items in the ReadAnythingTheme struct, see read_anything.mojom for info.
+    // The current style theme values.
     let fontName: string;
     let fontSize: number;
     let linksEnabled: boolean;
-    let foregroundColor: number;
-    let backgroundColor: number;
+    let imagesEnabled: boolean;
+    let imagesFeatureEnabled: boolean;
+    // The numerical enum value of these styles, not the actual value used to
+    // style the app.
     let lineSpacing: number;
     let letterSpacing: number;
-
-    // The current color theme value.
     let colorTheme: number;
 
     // Current audio settings values.
@@ -56,10 +56,6 @@ declare namespace chrome {
     let darkTheme: number;
     let yellowTheme: number;
     let blueTheme: number;
-    let highlightOn: number;
-
-    // Whether the WebUI toolbar feature flag is enabled.
-    let isWebUIToolbarVisible: boolean;
 
     // Whether the Read Aloud feature flag is enabled.
     let isReadAloudEnabled: boolean;
@@ -75,8 +71,11 @@ declare namespace chrome {
     // Indicates if this page is a Google doc.
     let isGoogleDocs: boolean;
 
-    // Fonts supported by the browser's preferred language.
+    // Fonts supported by the user's current language.
     let supportedFonts: string[];
+
+    // All fonts supported by Reading mode.
+    let allFonts: string[];
 
     // The base language code that should be used for speech synthesis voices.
     let baseLanguageForSpeech: string;
@@ -91,7 +90,10 @@ declare namespace chrome {
     // If distillations have been queued up.
     let requiresDistillation: boolean;
 
-    // Returns the stored user voice preference for the current language
+    // Returns whether the reading highlight is currently on.
+    function isHighlightOn(): boolean;
+
+    // Returns the stored user voice preference for the current language.
     function getStoredVoice(): string;
 
     // Returns the stored user preference for enabled languages.
@@ -145,7 +147,7 @@ declare namespace chrome {
     function onCopy(): void;
 
     // Called when speech is paused or played.
-    function onSpeechPlayingStateChanged(paused: boolean): void;
+    function onSpeechPlayingStateChanged(isSpeechActive: boolean): void;
 
     // Called when the Read Anything panel is scrolled.
     function onScroll(onSelection: boolean): void;
@@ -155,9 +157,7 @@ declare namespace chrome {
     function onLinkClicked(nodeId: number): void;
 
     // Called when the line spacing is changed via the webui toolbar.
-    function onStandardLineSpacing(): void;
-    function onLooseLineSpacing(): void;
-    function onVeryLooseLineSpacing(): void;
+    function onLineSpacingChange(value: number): void;
 
     // Called when a user makes a font size change via the webui toolbar.
     function onFontSizeChanged(increase: boolean): void;
@@ -166,17 +166,17 @@ declare namespace chrome {
     // Called when a user toggles links via the webui toolbar.
     function onLinksEnabledToggled(): void;
 
+    // Called when a user toggles images via the webui toolbar.
+    function onImagesEnabledToggled(): void;
+
     // Called when the letter spacing is changed via the webui toolbar.
-    function onStandardLetterSpacing(): void;
-    function onWideLetterSpacing(): void;
-    function onVeryWideLetterSpacing(): void;
+    function onLetterSpacingChange(value: number): void;
 
     // Called when the color theme is changed via the webui toolbar.
-    function onDefaultTheme(): void;
-    function onLightTheme(): void;
-    function onDarkTheme(): void;
-    function onYellowTheme(): void;
-    function onBlueTheme(): void;
+    function onThemeChange(value: number): void;
+
+    // Returns the css name of the given font, or the default if it's not valid.
+    function getValidatedFontName(font: string): string;
 
     // Called when the font is changed via the webui toolbar.
     function onFontChange(font: string): void;
@@ -214,10 +214,6 @@ declare namespace chrome {
     // by clicking.
     function onCollapseSelection(): void;
 
-    // Called when we are restarting read aloud after we've already started
-    // playing speech.
-    function onRestartReadAloud(): void;
-
     // Set the content. Used by tests only.
     // SnapshotLite is a data structure which resembles an AXTreeUpdate. E.g.:
     //   const axTree = {
@@ -251,6 +247,9 @@ declare namespace chrome {
     // SidePanelWebUIView::ShowUI
     function shouldShowUi(): boolean;
 
+    // Called when the Read Anything panel is scrolled all the way down.
+    function onScrolledToBottom(): void;
+
     ////////////////////////////////////////////////////////////////
     // Implemented in read_anything/app.ts and called by native c++.
     ////////////////////////////////////////////////////////////////
@@ -268,16 +267,11 @@ declare namespace chrome {
     // Redraws links when the enabled state changes.
     function updateLinks(): void;
 
-    // Updates an images src attribute with a data url. The data url must have
-    // been requested first.
-    function updateImage(nodeId: number): void;
+    // Redraws images when the enabled state changes.
+    function updateImages(): void;
 
     // Ping that the selection has been updated.
     function updateSelection(): void;
-
-    // Ping that the theme choices of the user have been changed using the
-    // toolbar and are ready to consume.
-    function updateTheme(): void;
 
     // Read Aloud state should be updated if the lock screen state changes.
     function onLockScreen(): void;
@@ -303,6 +297,10 @@ declare namespace chrome {
     // Returns -1 if the node is invalid.
     function getCurrentTextStartIndex(nodeId: number): number;
 
+    // The starting index for a granularity-based highlight of the given node.
+    function getHighlightStartIndex(nodeId: number, boundaryIndex: number):
+        number;
+
     // Gets the ending text index for the current Read Aloud text segment
     // for the given node. nodeId should be a node returned by getCurrentText or
     // getPreviousText. Returns -1 if the node is invalid.
@@ -312,6 +310,15 @@ declare namespace chrome {
     // Use getCurrentTextStartIndex and getCurrentTextEndIndex to get the bounds
     // for text associated with these nodes.
     function getCurrentText(): number[];
+
+    // Begins processing the speech segments on the current page to be used by
+    // Read Aloud. This will split the speech into segments and process
+    // words to be used by word highlighting. This allows text to be traversed
+    // more quickly after speech begins.
+    function preprocessTextForSpeech(): void;
+
+    // Resets the granularity index.
+    function resetGranularityIndex(): void;
 
     // Increments the processed_granularity_index_ in ReadAnythingAppModel,
     // effectively updating ReadAloud's state of the current granularity to
@@ -330,9 +337,19 @@ declare namespace chrome {
     function getAccessibleBoundary(text: string, maxSpeechLength: number):
         number;
 
-    // Requests the image in the form of a data url. The result will then be
-    // stored in the AXNode which can be fetched on content update.
-    function requestImageDataUrl(nodeId: number): void;
+    // Requests the image in the form of bitmap. onImageDownloaded will be
+    // called when the image has been downloaded.
+    function requestImageData(nodeId: number): void;
+
+    // Called to inform the web ui that an image has been downloaded for the
+    // given node id.
+    function onImageDownloaded(nodeId: number): void;
+
+    // Should be called in onImageDownloaded. This function gets the bitmap data
+    // as a byte array along with the height and width of the image so that the
+    // bitmap can be rendered to a canvas.
+    function getImageBitmap(nodeId: number):
+        {data: Uint8ClampedArray, width: number, height: number};
 
     // Gets the stored image data url from the AXNode.
     function getImageDataUrl(nodeId: number): string;
@@ -350,12 +367,6 @@ declare namespace chrome {
     // specific language. The response is sent back to the UI via
     // updateVoicePackStatusFromInstallResponse()
     function sendInstallVoicePackRequest(language: string): void;
-
-    // Log UmaHistogram
-    function logMetric(time: number, metricName: string): void;
-
-    // Log UmaHistogramLong
-    function logLongMetric(time: number, metricName: string): void;
 
     // Log UmaHistogramCount
     function incrementMetricCount(metricName: string): void;

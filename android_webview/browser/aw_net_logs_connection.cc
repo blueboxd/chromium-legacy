@@ -8,7 +8,6 @@
 
 #include <string>
 
-#include "android_webview/browser_jni_headers/AwNetLogsConnection_jni.h"
 #include "base/base64.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
@@ -18,6 +17,9 @@
 #include "net/log/file_net_log_observer.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_util.h"
+
+// Must come after all headers that specialize FromJniType() / ToJniType().
+#include "android_webview/browser_jni_headers/AwNetLogsConnection_jni.h"
 
 using base::android::JavaParamRef;
 
@@ -37,7 +39,10 @@ void AwNetLogsConnection::startNetLogBounded(int file_descriptor) {
     return;
   }
 
-  // TODO(thomasbull): Create net log observer
+  aw_net_log_observer_ = net::FileNetLogObserver::CreateBoundedFile(
+      base::File(file_descriptor), max_file_size,
+      net::NetLogCaptureMode::kDefault, /*constants=*/nullptr);
+  aw_net_log_observer_->StartObserving(net::NetLog::Get());
 }
 
 void AwNetLogsConnection::stopNetLogs() {

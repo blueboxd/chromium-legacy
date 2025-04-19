@@ -22,6 +22,7 @@
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
+#include "chrome/browser/permissions/system/system_permission_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/blocked_content/framebust_block_tab_helper.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -47,7 +48,6 @@
 #include "content/public/browser/web_contents.h"
 #include "net/base/schemeful_site.h"
 #include "services/device/public/cpp/device_features.h"
-#include "services/device/public/cpp/geolocation/buildflags.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/base/ui_base_features.h"
@@ -60,13 +60,8 @@
 #if BUILDFLAG(IS_MAC)
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/media/webrtc/system_media_capture_permissions_mac.h"
-#include "chrome/browser/web_applications/app_shim_registry_mac.h"
+#include "chrome/browser/web_applications/os_integration/mac/app_shim_registry.h"
 #include "chrome/browser/web_applications/web_app_tab_helper.h"
-#endif
-
-#if BUILDFLAG(OS_LEVEL_GEOLOCATION_PERMISSION_SUPPORTED)
-#include "services/device/public/cpp/geolocation/geolocation_system_permission_manager.h"
-#include "services/device/public/cpp/geolocation/location_system_permission_status.h"
 #endif
 
 using content::WebContents;
@@ -116,8 +111,6 @@ class ContentSettingGeolocationImageModel : public ContentSettingImageModel {
   bool UpdateAndGetVisibility(WebContents* web_contents) override;
 
   bool IsGeolocationAccessed();
-  bool IsGeolocationAllowedOnASystemLevel();
-  bool IsGeolocationPermissionDetermined();
 
   std::unique_ptr<ContentSettingBubbleModel> CreateBubbleModelImpl(
       ContentSettingBubbleModel::Delegate* delegate,
@@ -342,8 +335,8 @@ void GetIconChromeRefresh(ContentSettingsType type,
                       : &vector_icons::kFileDownloadChromeRefreshIcon;
       return;
     case ContentSettingsType::CLIPBOARD_READ_WRITE:
-      *icon = blocked ? &vector_icons::kContentPasteOffChromeRefreshIcon
-                      : &vector_icons::kContentPasteChromeRefreshIcon;
+      *icon = blocked ? &vector_icons::kContentPasteOffIcon
+                      : &vector_icons::kContentPasteIcon;
       return;
     case ContentSettingsType::MEDIASTREAM_MIC:
       *icon = blocked ? &vector_icons::kMicOffChromeRefreshIcon
@@ -523,21 +516,6 @@ void ContentSettingImageModel::SetPromoWasShown(
                                                                   true);
 }
 
-bool ContentSettingImageModel::
-    IsMacRestoreLocationPermissionExperimentActive() {
-#if BUILDFLAG(IS_MAC)
-  return base::FeatureList::IsEnabled(
-             features::kLocationPermissionsExperiment) &&
-         g_browser_process->local_state()->GetInteger(
-             prefs::kMacRestoreLocationPermissionsExperimentCount) <
-             (features::GetLocationPermissionsExperimentBubblePromptLimit() +
-              features::GetLocationPermissionsExperimentLabelPromptLimit()) &&
-         explanatory_string_id() == IDS_GEOLOCATION_TURNED_OFF;
-#else
-  return false;
-#endif
-}
-
 bool ContentSettingImageModel::ShouldAutoOpenBubble(
     content::WebContents* contents) {
   return should_auto_open_bubble_ &&
@@ -547,13 +525,6 @@ bool ContentSettingImageModel::ShouldAutoOpenBubble(
 
 void ContentSettingImageModel::SetBubbleWasAutoOpened(
     content::WebContents* contents) {
-  // Do nothing if this is part of the Mac restore location permission
-  // experiment. In that case we do not want to restrict showing the bubble
-  // again.
-  if (image_type() == ImageType::GEOLOCATION &&
-      IsMacRestoreLocationPermissionExperimentActive()) {
-    return;
-  }
   ContentSettingImageModelStates::Get(contents)->SetBubbleWasAutoOpened(
       image_type(), true);
 }
@@ -658,64 +629,35 @@ bool ContentSettingGeolocationImageModel::UpdateAndGetVisibility(
   set_explanatory_string_id(0);
 
   if (is_allowed) {
-    if (!IsGeolocationAllowedOnASystemLevel()) {
+    if (!system_permission_settings::IsAllowed(
+            ContentSettingsType::GEOLOCATION)) {
       SetIcon(ContentSettingsType::GEOLOCATION, /*blocked=*/true);
       base::RecordAction(base::UserMetricsAction(
           "ContentSettings.Geolocation.BlockedIconShown"));
       set_tooltip(l10n_util::GetStringUTF16(IDS_BLOCKED_GEOLOCATION_MESSAGE));
       if (content_settings->geolocation_was_just_granted_on_site_level()) {
-#if BUILDFLAG(IS_MAC)
-        if (IsGeolocationPermissionDetermined()) {
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+        if (system_permission_settings::CanPrompt(
+                ContentSettingsType::GEOLOCATION)) {
+          // Ask the system to display a permission prompt for location access.
+          system_permission_settings::Request(ContentSettingsType::GEOLOCATION,
+                                              base::DoNothing());
+        } else {
           // If the system permission is already denied then requesting the
           // system permission will not show a prompt. Show the bubble instead.
           set_should_auto_open_bubble(true);
-        } else {
-          // Ask the system to display a permission prompt for location access.
-          device::GeolocationSystemPermissionManager::GetInstance()
-              ->RequestSystemPermission();
         }
 #else
         set_should_auto_open_bubble(true);
-#endif  // BUILDFLAG(IS_MAC)
+#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
       }
       // At this point macOS may not have told us whether location permission
       // has been allowed or blocked. Wait until the permission state is
       // determined before displaying this message since it triggers an
       // animation that cannot be cancelled
-      if (IsGeolocationPermissionDetermined()) {
-#if BUILDFLAG(IS_MAC)
-        if (base::FeatureList::IsEnabled(
-                features::kLocationPermissionsExperiment)) {
-          PrefService* prefs = g_browser_process->local_state();
-          int count = prefs->GetInteger(
-              prefs::kMacRestoreLocationPermissionsExperimentCount);
-          if (count <
-              features::GetLocationPermissionsExperimentBubblePromptLimit()) {
-            // Show the bubble when the location is denied.
-            set_should_auto_open_bubble(true);
-            prefs->SetInteger(
-                prefs::kMacRestoreLocationPermissionsExperimentCount, ++count);
-            prefs->CommitPendingWrite();
-          } else if (
-              count <
-              (features::GetLocationPermissionsExperimentBubblePromptLimit() +
-               features::GetLocationPermissionsExperimentLabelPromptLimit())) {
-            // Show a persistent label without a bubble when the location is
-            // denied.
-            set_explanatory_string_id(IDS_GEOLOCATION_TURNED_OFF);
-            prefs->SetInteger(
-                prefs::kMacRestoreLocationPermissionsExperimentCount, ++count);
-            prefs->CommitPendingWrite();
-          } else {
-            // Return to normal behavior.
-            set_explanatory_string_id(IDS_GEOLOCATION_TURNED_OFF);
-          }
-        } else {
-          set_explanatory_string_id(IDS_GEOLOCATION_TURNED_OFF);
-        }
-#else
+      if (!system_permission_settings::CanPrompt(
+              ContentSettingsType::GEOLOCATION)) {
         set_explanatory_string_id(IDS_GEOLOCATION_TURNED_OFF);
-#endif  // BUILDFLAG(IS_MAC)
       }
       return true;
     }
@@ -728,37 +670,6 @@ bool ContentSettingGeolocationImageModel::UpdateAndGetVisibility(
   set_accessibility_string_id(message_id);
 
   return true;
-}
-
-bool ContentSettingGeolocationImageModel::IsGeolocationAllowedOnASystemLevel() {
-#if !BUILDFLAG(OS_LEVEL_GEOLOCATION_PERMISSION_SUPPORTED)
-  return true;
-#else
-  device::GeolocationSystemPermissionManager*
-      geolocation_system_permission_manager =
-          device::GeolocationSystemPermissionManager::GetInstance();
-  CHECK(geolocation_system_permission_manager);
-  device::LocationSystemPermissionStatus permission =
-      geolocation_system_permission_manager->GetSystemPermission();
-
-  return permission == device::LocationSystemPermissionStatus::kAllowed;
-#endif
-}
-
-bool ContentSettingGeolocationImageModel::IsGeolocationPermissionDetermined() {
-#if !BUILDFLAG(OS_LEVEL_GEOLOCATION_PERMISSION_SUPPORTED)
-  return true;
-#else
-
-  device::GeolocationSystemPermissionManager*
-      geolocation_system_permission_manager =
-          device::GeolocationSystemPermissionManager::GetInstance();
-  CHECK(geolocation_system_permission_manager);
-  device::LocationSystemPermissionStatus permission =
-      geolocation_system_permission_manager->GetSystemPermission();
-
-  return permission != device::LocationSystemPermissionStatus::kNotDetermined;
-#endif
 }
 
 std::unique_ptr<ContentSettingBubbleModel>
@@ -781,8 +692,7 @@ ContentSettingRPHImageModel::ContentSettingRPHImageModel()
 bool ContentSettingRPHImageModel::UpdateAndGetVisibility(
     WebContents* web_contents) {
   auto* content_settings_delegate =
-      chrome::PageSpecificContentSettingsDelegate::FromWebContents(
-          web_contents);
+      PageSpecificContentSettingsDelegate::FromWebContents(web_contents);
   if (!content_settings_delegate)
     return false;
   if (content_settings_delegate->pending_protocol_handler().IsEmpty())

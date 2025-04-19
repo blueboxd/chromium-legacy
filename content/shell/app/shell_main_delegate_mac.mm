@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/342213636): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "content/shell/app/shell_main_delegate_mac.h"
 
 #include <unistd.h>
@@ -54,12 +59,6 @@ void EnsureCorrectResolutionSettings() {
   argv[original_argv.size()] = nullptr;
 
   CHECK(execvp(argv[0], argv));
-}
-
-void OverrideBundleID() {
-  NSBundle* bundle = base::apple::OuterBundle();
-  base::apple::SetBaseBundleID(
-      base::SysNSStringToUTF8([bundle bundleIdentifier]).c_str());
 }
 
 void RegisterShellCrApp() {

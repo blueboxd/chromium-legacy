@@ -58,6 +58,10 @@ constexpr auto kControlKeys = base::MakeFixedFlatSet<ui::KeyboardCode>({
     ui::VKEY_RCONTROL,
 });
 
+constexpr auto kFunctionKeys = base::MakeFixedFlatSet<ui::KeyboardCode>({
+    ui::VKEY_FUNCTION,
+});
+
 // The ModifierKeyCombo metric is formed as follows:
 // The bottom 16 bits are composed of the `AcceleratorKeyInputType` that matches
 // what key was pressed. The top 16 bits are composed of bitfields from the
@@ -167,7 +171,8 @@ void ModifierKeyComboRecorder::Initialize() {
 
 void ModifierKeyComboRecorder::OnPrerewriteKeyInputEvent(
     const ui::KeyEvent& key_event) {
-  if (key_event.type() == ui::ET_KEY_RELEASED || key_event.is_repeat()) {
+  if (key_event.type() == ui::EventType::kKeyReleased ||
+      key_event.is_repeat()) {
     return;
   }
 
@@ -220,6 +225,11 @@ uint32_t ModifierKeyComboRecorder::GenerateModifierFlagsFromKeyEvent(
   if (event.flags() & ui::EF_SHIFT_DOWN &&
       !kShiftKeys.contains(event.key_code())) {
     modifier_flags += GetModifierFlagFromModifier(Modifier::kShift);
+  }
+
+  if (event.flags() & ui::EF_FUNCTION_DOWN &&
+      !kFunctionKeys.contains(event.key_code())) {
+    modifier_flags += 1 << static_cast<uint32_t>(ModifierFlag::kFunction);
   }
 
   return modifier_flags;

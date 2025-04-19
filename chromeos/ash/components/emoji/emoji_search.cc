@@ -4,7 +4,9 @@
 
 #include "chromeos/ash/components/emoji/emoji_search.h"
 
+#include <iterator>
 #include <memory>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -12,6 +14,7 @@
 #include <vector>
 
 #include "base/check_is_test.h"
+#include "base/containers/fixed_flat_map.h"
 #include "base/containers/span.h"
 #include "base/i18n/case_conversion.h"
 #include "base/json/json_reader.h"
@@ -23,6 +26,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/branding_buildflags.h"
 #include "chromeos/ash/components/emoji/grit/emoji.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -30,6 +34,9 @@
 namespace emoji {
 
 namespace {
+
+constexpr std::string_view kDefaultLanguageCode = "en";
+
 // Map from keyword -> sum of position weightings
 std::map<std::string, double, std::less<>> CombineSearchTerms(
     base::span<const std::string> long_search_terms) {
@@ -56,8 +63,8 @@ std::map<std::string, double, std::less<>> CombineSearchTerms(
   return ret;
 }
 
-// Convert a JSON file to a map from search term to emoji weighted by position
-// in keyword / name.
+// Convert a JSON file to a map from search term to emoji weighted by
+// position in keyword / name.
 void AddDataFromFileToMap(
     const int file_id_in_resources,
     std::map<std::string, std::vector<EmojiSearchEntry>, std::less<>>& map) {
@@ -109,6 +116,38 @@ void AddDataFromFileToMap(
   }
 }
 
+// Convert a JSON file to a map of emoji to name.
+void AddNamesFromFileToMap(
+    const int file_id_in_resources,
+    std::map<std::string, std::string, std::less<>>& names) {
+  std::string json_string =
+      ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
+          file_id_in_resources);
+  // Can be empty in certain test environments.
+  if (json_string.empty()) {
+    CHECK_IS_TEST();
+    return;
+  }
+
+  // TODO(b/309343774): switch to JSON reading service
+  std::optional<base::Value> json = base::JSONReader::Read(json_string);
+  CHECK(json) << "parse failed for " << file_id_in_resources << ":"
+              << json_string << "EOF";
+  base::Value::List groups = std::move(*json).TakeList();
+  // TODO(b/309343774): Consider using json_value_converter
+  for (auto& group : groups) {
+    for (const auto& emoji : *group.GetDict().FindList("emoji")) {
+      const base::Value::Dict* base = emoji.GetDict().FindDict("base");
+      const std::string* emoji_string = base->FindString("string");
+      CHECK(emoji_string) << "All emoji should have names";
+      const std::string* name = base->FindString("name");
+      if (name) {
+        names.emplace(*emoji_string, *name);
+      }
+    }
+  }
+}
+
 std::unordered_map<std::string, double> GetResultsFromASingleWordQuery(
     const std::map<std::string, std::vector<EmojiSearchEntry>, std::less<>>&
         map,
@@ -121,8 +160,8 @@ std::unordered_map<std::string, double> GetResultsFromASingleWordQuery(
   std::string lower_bound =
       base::UTF16ToUTF8(base::i18n::ToLower(base::UTF8ToUTF16(query)));
   std::string upper_bound = lower_bound;
-  // will break if someone searches for some very specific char, but should be
-  // fine.
+  // will break if someone searches for some very specific char, but
+  // should be fine.
   upper_bound.back() = upper_bound.back() + 1;
   // This should ensure we get everything that is a substring match
   auto upper_bound_iterator = map.upper_bound(upper_bound);
@@ -173,6 +212,99 @@ std::vector<EmojiSearchEntry> GetResultsFromMap(
   return ret;
 }
 
+std::optional<EmojiLanguageCode> GetLanguageCode(std::string_view code) {
+  static constexpr auto kLangCodeStrToEnum =
+      base::MakeFixedFlatMap<std::string_view, EmojiLanguageCode>({
+          {"da", EmojiLanguageCode::kDa},
+          {"de", EmojiLanguageCode::kDe},
+          {"en", EmojiLanguageCode::kEn},
+          {"es", EmojiLanguageCode::kEs},
+          {"fi", EmojiLanguageCode::kFi},
+          {"fr", EmojiLanguageCode::kFr},
+          {"ja", EmojiLanguageCode::kJa},
+          {"no", EmojiLanguageCode::kNo},
+          {"sv", EmojiLanguageCode::kSv},
+      });
+
+  if (const auto& it = kLangCodeStrToEnum.find(code);
+      it != kLangCodeStrToEnum.end()) {
+    return std::optional<EmojiLanguageCode>(it->second);
+  }
+
+  return std::nullopt;
+}
+
+std::optional<EmojiLanguageResourceIds> GetLanguageResourceIds(
+    EmojiLanguageCode code) {
+  static constexpr auto kLanguageToData =
+      base::MakeFixedFlatMap<EmojiLanguageCode, EmojiLanguageResourceIds>({
+          {EmojiLanguageCode::kDa,
+           {
+               .emoji_start_resource_id = IDR_EMOJI_PICKER_DA_START,
+               .emoji_remaining_resource_id = IDR_EMOJI_PICKER_DA_REMAINING,
+               .symbols_resource_id = IDR_EMOJI_PICKER_SYMBOL_DA,
+           }},
+          {EmojiLanguageCode::kDe,
+           {
+               .emoji_start_resource_id = IDR_EMOJI_PICKER_DE_START,
+               .emoji_remaining_resource_id = IDR_EMOJI_PICKER_DE_REMAINING,
+               .symbols_resource_id = IDR_EMOJI_PICKER_SYMBOL_DE,
+           }},
+          {EmojiLanguageCode::kEn,
+           {
+               .emoji_start_resource_id =
+                   IDR_EMOJI_PICKER_EMOJI_15_0_ORDERING_JSON_START,
+               .emoji_remaining_resource_id =
+                   IDR_EMOJI_PICKER_EMOJI_15_0_ORDERING_JSON_REMAINING,
+               .symbols_resource_id = IDR_EMOJI_PICKER_SYMBOL_ORDERING_JSON,
+           }},
+          {EmojiLanguageCode::kEs,
+           {
+               .emoji_start_resource_id = IDR_EMOJI_PICKER_ES_START,
+               .emoji_remaining_resource_id = IDR_EMOJI_PICKER_ES_REMAINING,
+               .symbols_resource_id = IDR_EMOJI_PICKER_SYMBOL_ES,
+           }},
+          {EmojiLanguageCode::kFi,
+           {
+               .emoji_start_resource_id = IDR_EMOJI_PICKER_FI_START,
+               .emoji_remaining_resource_id = IDR_EMOJI_PICKER_FI_REMAINING,
+               .symbols_resource_id = IDR_EMOJI_PICKER_SYMBOL_FI,
+           }},
+          {EmojiLanguageCode::kFr,
+           {
+               .emoji_start_resource_id = IDR_EMOJI_PICKER_FR_START,
+               .emoji_remaining_resource_id = IDR_EMOJI_PICKER_FR_REMAINING,
+               .symbols_resource_id = IDR_EMOJI_PICKER_SYMBOL_FR,
+           }},
+
+          {EmojiLanguageCode::kJa,
+           {
+               .emoji_start_resource_id = IDR_EMOJI_PICKER_JA_START,
+               .emoji_remaining_resource_id = IDR_EMOJI_PICKER_JA_REMAINING,
+               .symbols_resource_id = IDR_EMOJI_PICKER_SYMBOL_JA,
+           }},
+          {EmojiLanguageCode::kNo,
+           {
+               .emoji_start_resource_id = IDR_EMOJI_PICKER_NO_START,
+               .emoji_remaining_resource_id = IDR_EMOJI_PICKER_NO_REMAINING,
+               .symbols_resource_id = IDR_EMOJI_PICKER_SYMBOL_NO,
+           }},
+          {EmojiLanguageCode::kSv,
+           {
+               .emoji_start_resource_id = IDR_EMOJI_PICKER_SV_START,
+               .emoji_remaining_resource_id = IDR_EMOJI_PICKER_SV_REMAINING,
+               .symbols_resource_id = IDR_EMOJI_PICKER_SYMBOL_SV,
+           }},
+      });
+
+  if (const auto& it = kLanguageToData.find(code);
+      it != kLanguageToData.end()) {
+    return std::optional<EmojiLanguageResourceIds>(it->second);
+  }
+
+  return std::nullopt;
+}
+
 }  // namespace
 
 EmojiSearchResult::EmojiSearchResult(std::vector<EmojiSearchEntry> emojis,
@@ -185,35 +317,116 @@ EmojiSearchResult::EmojiSearchResult(std::vector<EmojiSearchEntry> emojis,
 EmojiSearchResult::~EmojiSearchResult() = default;
 
 EmojiSearch::EmojiSearch() {
-  AddDataFromFileToMap(IDR_EMOJI_PICKER_EMOJI_15_0_ORDERING_JSON_REMAINING,
-                       emojis_);
-  AddDataFromFileToMap(IDR_EMOJI_PICKER_EMOJI_15_0_ORDERING_JSON_START,
-                       emojis_);
-  AddDataFromFileToMap(IDR_EMOJI_PICKER_SYMBOL_ORDERING_JSON, symbols_);
-  AddDataFromFileToMap(IDR_EMOJI_PICKER_EMOTICON_ORDERING_JSON, emoticons_);
+  // Adds default language emoji data on startup.
+  LoadLanguage(kDefaultLanguageCode);
 }
 
 EmojiSearch::~EmojiSearch() = default;
 
-EmojiSearchResult EmojiSearch::SearchEmoji(const std::string_view query) {
-  return EmojiSearchResult(GetResultsFromMap(emojis_, query),
-                           GetResultsFromMap(symbols_, query),
-                           GetResultsFromMap(emoticons_, query));
+EmojiLanguageData::EmojiLanguageData() = default;
+EmojiLanguageData::~EmojiLanguageData() = default;
+EmojiLanguageData::EmojiLanguageData(EmojiLanguageData& emoji_language_data) =
+    default;
+EmojiLanguageData::EmojiLanguageData(EmojiLanguageData&& emoji_language_data) =
+    default;
+
+EmojiSearchResult EmojiSearch::SearchEmoji(
+    std::string_view query,
+    base::span<const std::string> language_codes) {
+  std::vector<EmojiSearchEntry> emojis;
+  std::vector<EmojiSearchEntry> symbols;
+  std::vector<EmojiSearchEntry> emoticons;
+
+  for (const std::string& code_str : language_codes) {
+    std::optional<EmojiLanguageCode> code = GetLanguageCode(code_str);
+    if (!code.has_value()) {
+      continue;
+    }
+    if (const auto& it = language_data_.find(*code);
+        it != language_data_.end()) {
+      std::vector<EmojiSearchEntry> new_emojis =
+          GetResultsFromMap(it->second.emojis, query);
+      emojis.insert(emojis.end(), std::make_move_iterator(new_emojis.begin()),
+                    std::make_move_iterator(new_emojis.end()));
+      std::vector<EmojiSearchEntry> new_symbols =
+          GetResultsFromMap(it->second.symbols, query);
+      symbols.insert(symbols.end(),
+                     std::make_move_iterator(new_symbols.begin()),
+                     std::make_move_iterator(new_symbols.end()));
+      std::vector<EmojiSearchEntry> new_emoticons =
+          GetResultsFromMap(it->second.emoticons, query);
+      emoticons.insert(emoticons.end(),
+                       std::make_move_iterator(new_emoticons.begin()),
+                       std::make_move_iterator(new_emoticons.end()));
+    }
+  }
+  return EmojiSearchResult(emojis, symbols, emoticons);
 }
 
-std::vector<std::string> EmojiSearch::AllResultsForTesting(
-    const std::string& query) {
-  std::vector<std::string> ret;
-  for (EmojiSearchEntry& r : GetResultsFromMap(emojis_, query)) {
-    ret.push_back(std::move(r).emoji_string);
+void EmojiSearch::LoadEmojiLanguages(
+    base::span<const std::string> language_codes) {
+  for (const std::string& code : language_codes) {
+    LoadLanguage(code);
   }
-  for (EmojiSearchEntry& r : GetResultsFromMap(emoticons_, query)) {
-    ret.push_back(std::move(r).emoji_string);
+}
+
+void EmojiSearch::LoadLanguage(std::string_view language_code) {
+  std::optional<EmojiLanguageCode> lang = GetLanguageCode(language_code);
+  if (!lang.has_value() || language_data_.contains(*lang)) {
+    return;
   }
-  for (EmojiSearchEntry& r : GetResultsFromMap(symbols_, query)) {
-    ret.push_back(std::move(r).emoji_string);
+
+  language_data_.emplace(*lang, EmojiLanguageData());
+  EmojiLanguageData& new_data = language_data_.at(*lang);
+
+  if (std::optional<EmojiLanguageResourceIds> resource_ids =
+          GetLanguageResourceIds(*lang);
+      resource_ids.has_value()) {
+    AddDataFromFileToMap(resource_ids->emoji_start_resource_id,
+                         new_data.emojis);
+    AddDataFromFileToMap(resource_ids->emoji_remaining_resource_id,
+                         new_data.emojis);
+    AddDataFromFileToMap(resource_ids->symbols_resource_id, new_data.symbols);
+
+    AddNamesFromFileToMap(resource_ids->emoji_start_resource_id,
+                          new_data.names);
+    AddNamesFromFileToMap(resource_ids->emoji_remaining_resource_id,
+                          new_data.names);
+    AddNamesFromFileToMap(resource_ids->symbols_resource_id, new_data.names);
+
+    if (*lang == EmojiLanguageCode::kEn) {
+      // Only English has Emoticons.
+      AddDataFromFileToMap(IDR_EMOJI_PICKER_EMOTICON_ORDERING_JSON,
+                           new_data.emoticons);
+      AddNamesFromFileToMap(IDR_EMOJI_PICKER_EMOTICON_ORDERING_JSON,
+                            new_data.names);
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+      // English has special internal emoji strings.
+      AddDataFromFileToMap(IDR_EMOJI_PICKER_EN_INTERNAL, new_data.emojis);
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+    }
   }
-  return ret;
+
+  return;
+}
+
+std::string EmojiSearch::GetEmojiName(std::string_view emoji,
+                                      std::string_view language_code) const {
+  std::optional<EmojiLanguageCode> lang = GetLanguageCode(language_code);
+
+  if (!lang.has_value()) {
+    return "";
+  }
+
+  if (const auto& data_it = language_data_.find(*lang);
+      data_it != language_data_.end()) {
+    if (const auto it = data_it->second.names.find(emoji);
+        it != data_it->second.names.end()) {
+      return it->second;
+    }
+  }
+
+  return "";
 }
 
 }  // namespace emoji

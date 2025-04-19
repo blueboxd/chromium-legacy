@@ -503,6 +503,20 @@ export interface SiteSettingsPrefsBrowserProxy {
    * @param numCookies The number of cookies.
    */
   getNumCookiesString(numCookies: number): Promise<string>;
+
+  /**
+   * Gets the warning messages for the permissions types blocked at the OS
+   * level.
+   */
+  getOsGlobalPermissionStatus(): Promise<Record<ContentSettingsTypes, string>>;
+
+  /**
+   * Attempts to open a system setting page that allows to modify the system
+   * wide block for a given permission type. If this is not possible, the call
+   * will fail silently and no window will open.
+   * @param contentType The permission type.
+   */
+  openSystemPermissionSettings(contentType: string): void;
 }
 
 export class SiteSettingsPrefsBrowserProxyImpl implements
@@ -673,6 +687,14 @@ export class SiteSettingsPrefsBrowserProxyImpl implements
 
   getNumCookiesString(numCookies: number) {
     return sendWithPromise('getNumCookiesString', numCookies);
+  }
+
+  getOsGlobalPermissionStatus() {
+    return sendWithPromise('getOsGlobalPermissionStatus');
+  }
+
+  openSystemPermissionSettings(contentType: string) {
+    chrome.send('openSystemPermissionSettings', [contentType]);
   }
 
   static getInstance(): SiteSettingsPrefsBrowserProxy {

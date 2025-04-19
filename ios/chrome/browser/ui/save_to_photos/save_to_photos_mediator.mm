@@ -16,6 +16,7 @@
 #import "components/prefs/pref_service.h"
 #import "components/signin/public/base/signin_metrics.h"
 #import "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/account_picker/ui_bundled/account_picker_configuration.h"
 #import "ios/chrome/browser/drive/model/manage_storage_url_util.h"
 #import "ios/chrome/browser/photos/model/photos_metrics.h"
 #import "ios/chrome/browser/photos/model/photos_service.h"
@@ -23,10 +24,12 @@
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/manage_storage_alert_commands.h"
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/ui/symbols/buildflags.h"
+#import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/signin/model/authentication_service.h"
 #import "ios/chrome/browser/signin/model/chrome_account_manager_service.h"
 #import "ios/chrome/browser/signin/model/system_identity.h"
-#import "ios/chrome/browser/ui/account_picker/account_picker_configuration.h"
 #import "ios/chrome/browser/ui/save_to_photos/save_to_photos_mediator_delegate.h"
 #import "ios/chrome/browser/web/model/image_fetch/image_fetch_tab_helper.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -297,8 +300,20 @@ NSString* const kGooglePhotosAppURLScheme = @"googlephotos";
   // If no default account can be used, present the account picker instead.
   AccountPickerConfiguration* configuration =
       [[AccountPickerConfiguration alloc] init];
-  configuration.titleText =
-      l10n_util::GetNSString(IDS_IOS_SAVE_TO_PHOTOS_ACCOUNT_PICKER_TITLE);
+  if (IsSaveToPhotosTitleImprovementEnabled()) {
+    configuration.useBrandedTitle = YES;
+#if BUILDFLAG(IOS_USE_BRANDED_SYMBOLS)
+    configuration.brandedSymbolName = kGoogleFullSymbol;
+    configuration.titleText = l10n_util::GetNSString(
+        IDS_IOS_SAVE_TO_PHOTOS_ACCOUNT_PICKER_GOOGLE_PHOTOS_TITLE);
+#else
+    configuration.titleText = l10n_util::GetNSString(
+        IDS_IOS_SETTINGS_DOWNLOADS_SAVE_TO_PHOTOS_HEADER);
+#endif
+  } else {
+    configuration.titleText =
+        l10n_util::GetNSString(IDS_IOS_SAVE_TO_PHOTOS_ACCOUNT_PICKER_TITLE);
+  }
   NSString* imageSize = GetSizeString(_imageData.length);
   configuration.bodyText =
       l10n_util::GetNSStringF(IDS_IOS_SAVE_TO_PHOTOS_ACCOUNT_PICKER_BODY,
@@ -306,8 +321,14 @@ NSString* const kGooglePhotosAppURLScheme = @"googlephotos";
                               base::SysNSStringToUTF16(imageSize));
   configuration.submitButtonTitle =
       l10n_util::GetNSString(IDS_IOS_SAVE_TO_PHOTOS_ACCOUNT_PICKER_SUBMIT);
-  configuration.askEveryTimeSwitchLabelText = l10n_util::GetNSString(
-      IDS_IOS_SAVE_TO_PHOTOS_ACCOUNT_PICKER_ASK_EVERY_TIME);
+
+  if (IsSaveToPhotosAccountPickerImprovementEnabled()) {
+    configuration.askEveryTimeSwitchLabelText = l10n_util::GetNSString(
+        IDS_IOS_SAVE_TO_PHOTOS_ACCOUNT_PICKER_THIS_ACCOUNT_EVERY_TIME);
+  } else {
+    configuration.askEveryTimeSwitchLabelText = l10n_util::GetNSString(
+        IDS_IOS_SAVE_TO_PHOTOS_ACCOUNT_PICKER_ASK_EVERY_TIME);
+  }
   [self.delegate showAccountPickerWithConfiguration:configuration
                                    selectedIdentity:defaultIdentity];
 }

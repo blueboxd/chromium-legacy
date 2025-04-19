@@ -17,7 +17,7 @@
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "content/browser/loader/response_head_update_params.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
-#include "content/browser/service_worker/service_worker_container_host.h"
+#include "content/browser/service_worker/service_worker_client.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_host.h"
@@ -203,12 +203,13 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
         EmbeddedWorkerTestHelper::CreateMainScriptResponse());
 
     // An empty host.
-    remote_endpoints_.emplace_back();
-    service_worker_client_ = CreateServiceWorkerClientForWindow(
-        GlobalRenderFrameHostId(helper_->mock_render_process_id(),
-                                /*mock frame_routing_id=*/1),
-        is_parent_frame_secure, helper_->context()->AsWeakPtr(),
-        &remote_endpoints_.back());
+    ScopedServiceWorkerClient service_worker_client =
+        helper_->context()
+            ->service_worker_client_owner()
+            .CreateServiceWorkerClientForWindow(is_parent_frame_secure,
+                                                /*frame_tree_node_id=*/1);
+    service_worker_client_ = service_worker_client.AsWeakPtr();
+    service_worker_clients_.push_back(std::move(service_worker_client));
   }
 
   void TearDown() override {
@@ -219,10 +220,7 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
 
   ServiceWorkerContextCore* context() const { return helper_->context(); }
 
-  void CloseRemotes() {
-    for (auto& remote_endpoint : remote_endpoints_)
-      remote_endpoint.host_remote()->reset();
-  }
+  void CloseRemotes() { service_worker_clients_.clear(); }
 
  protected:
   BrowserTaskEnvironment task_environment_;
@@ -234,7 +232,7 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
   net::TestDelegate url_request_delegate_;
   GURL scope_;
   GURL script_url_;
-  std::vector<ServiceWorkerRemoteContainerEndpoint> remote_endpoints_;
+  std::vector<ScopedServiceWorkerClient> service_worker_clients_;
 };
 
 class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {

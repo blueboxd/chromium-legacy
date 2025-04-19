@@ -6,6 +6,7 @@
 #define IOS_CHROME_BROWSER_SHARED_PUBLIC_COMMANDS_SETTINGS_COMMANDS_H_
 
 namespace autofill {
+class AutofillProfile;
 class CreditCard;
 }  // namespace autofill
 enum class DefaultBrowserSettingsPageSource;
@@ -59,6 +60,13 @@ enum class PasswordCheckReferrer;
                               inEditMode:(BOOL)editMode
                         showCancelButton:(BOOL)showCancelButton;
 
+// Shows the address details view. `editMode` indicates whether the details page
+// should be opened in edit mode. `offerMigrateToAccount` indicates whether or
+// not the option to migrate the address to the account should be available.
+- (void)showAddressDetails:(const autofill::AutofillProfile*)address
+                inEditMode:(BOOL)editMode
+     offerMigrateToAccount:(BOOL)offerMigrateToAccount;
+
 // Shows the list of profiles (addresses) in the settings.
 - (void)showProfileSettingsFromViewController:
     (UIViewController*)baseViewController;
@@ -66,8 +74,10 @@ enum class PasswordCheckReferrer;
 // Shows the list of credit cards in the settings.
 - (void)showCreditCardSettings;
 
-// Shows the credit card details view.
-- (void)showCreditCardDetails:(const autofill::CreditCard*)creditCard;
+// Shows the credit card details view. `editMode` indicates whether the details
+// page should be opened in edit mode.
+- (void)showCreditCardDetails:(const autofill::CreditCard*)creditCard
+                   inEditMode:(BOOL)editMode;
 
 // Shows the settings page informing the user how to set Chrome as the default
 // browser.
@@ -81,15 +91,15 @@ enum class PasswordCheckReferrer;
 - (void)showClearBrowsingDataSettings;
 
 // Shows the Safety Check page and starts the Safety Check for `referrer`.
-// `showHalfSheet` determines whether the Safety Check will be displayed as a
-// half-sheet, or full-page modal.
-- (void)showAndStartSafetyCheckInHalfSheet:(BOOL)showHalfSheet
-                                  referrer:
-                                      (password_manager::PasswordCheckReferrer)
-                                          referrer;
+- (void)showAndStartSafetyCheckForReferrer:
+    (password_manager::PasswordCheckReferrer)referrer;
 
 // Shows the Safe Browsing page.
 - (void)showSafeBrowsingSettings;
+
+// Navigates the user to the Safe Browsing settings menu page when the user
+// clicks the inline promo's primary button.
+- (void)showSafeBrowsingSettingsFromPromoInteraction;
 
 // Shows the Password Manager's search page.
 - (void)showPasswordSearchPage;

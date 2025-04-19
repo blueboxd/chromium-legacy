@@ -14,10 +14,10 @@ import android.net.Uri;
 import android.provider.Browser;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.Px;
 import androidx.annotation.VisibleForTesting;
 import androidx.browser.customtabs.CustomTabsIntent;
@@ -25,6 +25,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.base.IntentUtils;
+import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.blink.mojom.RpContext;
+import org.chromium.blink.mojom.RpMode;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.app.ChromeActivity;
@@ -32,7 +35,9 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.ui.android.webid.data.Account;
 import org.chromium.chrome.browser.ui.android.webid.data.ClientIdMetadata;
 import org.chromium.chrome.browser.ui.android.webid.data.IdentityCredentialTokenError;
+import org.chromium.chrome.browser.ui.android.webid.data.IdentityProviderData;
 import org.chromium.chrome.browser.ui.android.webid.data.IdentityProviderMetadata;
+import org.chromium.chrome.browser.ui.signin.account_picker.AccountPickerItemDecoration;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.util.ConversionUtils;
 import org.chromium.components.browser_ui.util.GlobalDiscardableReferencePool;
@@ -44,6 +49,7 @@ import org.chromium.content.webid.IdentityRequestDialogLinkType;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.base.WindowAndroid.ActivityStateObserver;
+import org.chromium.ui.modelutil.LayoutViewBuilder;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -71,18 +77,23 @@ public class AccountSelectionCoordinator
     // call occurs.
     private static int sCurrentFedcmId;
 
+    private Tab mTab;
     private WindowAndroid mWindowAndroid;
     private BottomSheetController mBottomSheetController;
     private AccountSelectionBottomSheetContent mBottomSheetContent;
     private AccountSelectionComponent.Delegate mDelegate;
     private AccountSelectionMediator mMediator;
     private RecyclerView mSheetItemListView;
+    private WeakReference<AccountSelectionComponent> mPopupComponent;
+    private WeakReference<AccountSelectionComponent.Delegate> mOpenerDelegate;
 
     public AccountSelectionCoordinator(
             Tab tab,
             WindowAndroid windowAndroid,
             BottomSheetController sheetController,
+            @RpMode.EnumType int rpMode,
             AccountSelectionComponent.Delegate delegate) {
+        mTab = tab;
         mBottomSheetController = sheetController;
         mWindowAndroid = windowAndroid;
         mDelegate = delegate;
@@ -93,13 +104,16 @@ public class AccountSelectionCoordinator
                         .build();
         // Construct view and its related adaptor to be displayed in the bottom sheet.
         ModelList sheetItems = new ModelList();
-        View contentView = setupContentView(context, model, sheetItems);
+        View contentView = setupContentView(context, model, sheetItems, rpMode);
         mSheetItemListView = contentView.findViewById(R.id.sheet_item_list);
 
         // Setup the bottom sheet content view.
         mBottomSheetContent =
                 new AccountSelectionBottomSheetContent(
-                        contentView, mSheetItemListView::computeVerticalScrollOffset);
+                        contentView,
+                        mBottomSheetController,
+                        mSheetItemListView::computeVerticalScrollOffset,
+                        rpMode);
 
         ImageFetcher imageFetcher =
                 ImageFetcherFactory.createImageFetcher(
@@ -111,7 +125,10 @@ public class AccountSelectionCoordinator
         @Px
         int avatarSize =
                 context.getResources()
-                        .getDimensionPixelSize(R.dimen.account_selection_account_avatar_size);
+                        .getDimensionPixelSize(
+                                rpMode == RpMode.BUTTON
+                                        ? R.dimen.account_selection_button_mode_sheet_avatar_size
+                                        : R.dimen.account_selection_account_avatar_size);
         mMediator =
                 new AccountSelectionMediator(
                         tab,
@@ -121,14 +138,32 @@ public class AccountSelectionCoordinator
                         mBottomSheetController,
                         mBottomSheetContent,
                         imageFetcher,
-                        avatarSize);
+                        avatarSize,
+                        rpMode);
+
+        // If this object is corresponding to the custom tab opened by showModalDialog, this
+        // is the first chance to associate it with the opener, so do so now.
+        int fedcmId = getFedCmId();
+        if (fedcmId == -1) return;
+        mOpenerDelegate = sFedCMDelegateMap.remove(fedcmId);
+        if (mOpenerDelegate == null || mOpenerDelegate.get() == null) {
+            return;
+        }
+        mOpenerDelegate.get().setPopupComponent(this);
     }
 
-    static View setupContentView(Context context, PropertyModel model, ModelList sheetItems) {
+    static View setupContentView(
+            Context context,
+            PropertyModel model,
+            ModelList sheetItems,
+            @RpMode.EnumType int rpMode) {
+        int accountSelectionSheetLayout =
+                rpMode == RpMode.BUTTON
+                        ? R.layout.account_selection_button_mode_sheet
+                        : R.layout.account_selection_sheet;
         View contentView =
                 (LinearLayout)
-                        LayoutInflater.from(context)
-                                .inflate(R.layout.account_selection_sheet, null);
+                        LayoutInflater.from(context).inflate(accountSelectionSheetLayout, null);
 
         PropertyModelChangeProcessor.create(
                 model, contentView, AccountSelectionViewBinder::bindContentView);
@@ -138,31 +173,28 @@ public class AccountSelectionCoordinator
                 new LinearLayoutManager(
                         sheetItemListView.getContext(), LinearLayoutManager.VERTICAL, false));
         sheetItemListView.setItemAnimator(null);
+        if (rpMode == RpMode.BUTTON) {
+            // AccountPickerItemDecoration updates the background and rounds the edges of the
+            // account list items.
+            sheetItemListView.addItemDecoration(new AccountPickerItemDecoration());
+        }
 
         // Setup the recycler view to be updated as we update the sheet items.
         SimpleRecyclerViewAdapter adapter = new SimpleRecyclerViewAdapter(sheetItems);
         adapter.registerType(
                 AccountSelectionProperties.ITEM_TYPE_ACCOUNT,
-                AccountSelectionCoordinator::buildAccountView,
+                new LayoutViewBuilder(
+                        rpMode == RpMode.BUTTON
+                                ? R.layout.account_selection_button_mode_account_item
+                                : R.layout.account_selection_account_item),
                 AccountSelectionViewBinder::bindAccountView);
+        adapter.registerType(
+                AccountSelectionProperties.ITEM_TYPE_ADD_ACCOUNT,
+                new LayoutViewBuilder(R.layout.account_selection_add_account_row_item),
+                AccountSelectionViewBinder::bindAddAccountView);
         sheetItemListView.setAdapter(adapter);
 
         return contentView;
-    }
-
-    static View buildAccountView(ViewGroup parent) {
-        return LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.account_selection_account_item, parent, false);
-    }
-
-    static View buildDataSharingConsentView(ViewGroup parent) {
-        return LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.account_selection_data_sharing_consent_item, parent, false);
-    }
-
-    static View buildContinueButtonView(ViewGroup parent) {
-        return LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.account_selection_continue_button, parent, false);
     }
 
     static int generatedFedCMId() {
@@ -172,53 +204,64 @@ public class AccountSelectionCoordinator
 
     @Override
     public void showAccounts(
-            String topFrameEtldPlusOne,
-            String iframeEtldPlusOne,
+            String rpEtldPlusOne,
             String idpEtldPlusOne,
             List<Account> accounts,
             IdentityProviderMetadata idpMetadata,
             ClientIdMetadata clientMetadata,
             boolean isAutoReauthn,
-            String rpContext,
-            boolean requestPermission) {
+            @RpContext.EnumType int rpContext,
+            boolean requestPermission,
+            @Nullable IdentityProviderData newAccountsIdp) {
         mMediator.showAccounts(
-                topFrameEtldPlusOne,
-                iframeEtldPlusOne,
+                rpEtldPlusOne,
                 idpEtldPlusOne,
                 accounts,
                 idpMetadata,
                 clientMetadata,
                 isAutoReauthn,
                 rpContext,
-                requestPermission);
+                requestPermission,
+                newAccountsIdp);
     }
 
     @Override
     public void showFailureDialog(
-            String topFrameForDisplay,
-            String iframeForDisplay,
+            String rpForDisplay,
             String idpForDisplay,
             IdentityProviderMetadata idpMetadata,
-            String rpContext) {
-        mMediator.showFailureDialog(
-                topFrameForDisplay, iframeForDisplay, idpForDisplay, idpMetadata, rpContext);
+            @RpContext.EnumType int rpContext) {
+        mMediator.showFailureDialog(rpForDisplay, idpForDisplay, idpMetadata, rpContext);
     }
 
     @Override
     public void showErrorDialog(
-            String topFrameForDisplay,
-            String iframeForDisplay,
+            String rpForDisplay,
             String idpForDisplay,
             IdentityProviderMetadata idpMetadata,
-            String rpContext,
+            @RpContext.EnumType int rpContext,
             IdentityCredentialTokenError error) {
-        mMediator.showErrorDialog(
-                topFrameForDisplay, iframeForDisplay, idpForDisplay, idpMetadata, rpContext, error);
+        mMediator.showErrorDialog(rpForDisplay, idpForDisplay, idpMetadata, rpContext, error);
+    }
+
+    @Override
+    public void showLoadingDialog(
+            String rpForDisplay, String idpForDisplay, @RpContext.EnumType int rpContext) {
+        mMediator.showLoadingDialog(rpForDisplay, idpForDisplay, rpContext);
     }
 
     @Override
     public void close() {
-        mMediator.close();
+        if (mOpenerDelegate == null) {
+            // Close the bottom sheet.
+            mMediator.close();
+            return;
+        }
+        // This is the popup.
+        Activity activity = mWindowAndroid.getActivity().get();
+        if (activity != null) {
+            activity.finish();
+        }
     }
 
     @Override
@@ -275,25 +318,11 @@ public class AccountSelectionCoordinator
 
     @Override
     public void closeModalDialog() {
-        // Note that this method is invoked on the object corresponding to the CCT. It
-        // will notify the opener that it is being closed and close itself.
-        Activity activity = mWindowAndroid.getActivity().get();
-        if (!(activity instanceof ChromeActivity)) {
+        if (mPopupComponent == null || mPopupComponent.get() == null) {
             return;
         }
-        ChromeActivity chromeActivity = (ChromeActivity) activity;
-        int fedcmId =
-                IntentUtils.safeGetIntExtra(
-                        chromeActivity.getIntent(), IntentHandler.EXTRA_FEDCM_ID, -1);
-        // Close the current tab by finishing the activity, if we know it was initiated
-        // by the FedCM API.
-        if (fedcmId == -1) return;
-        activity.finish();
-        WeakReference<AccountSelectionComponent.Delegate> delegate =
-                sFedCMDelegateMap.remove(fedcmId);
-        if (delegate != null && delegate.get() != null) {
-            delegate.get().onModalDialogClosed();
-        }
+        mPopupComponent.get().close();
+        mDelegate.onModalDialogClosed();
     }
 
     @Override
@@ -303,6 +332,24 @@ public class AccountSelectionCoordinator
         // activity is resumed.
         mWindowAndroid.removeActivityStateObserver(this);
         mMediator.onModalDialogClosed();
+    }
+
+    @Override
+    public WebContents getWebContents() {
+        return mTab.getWebContents();
+    }
+
+    @Override
+    public WebContents getRpWebContents() {
+        if (mOpenerDelegate == null || mOpenerDelegate.get() == null) {
+            return null;
+        }
+        return mOpenerDelegate.get().getWebContents();
+    }
+
+    @Override
+    public void setPopupComponent(AccountSelectionComponent component) {
+        mPopupComponent = new WeakReference<AccountSelectionComponent>(component);
     }
 
     // ActivityStateObserver
@@ -320,10 +367,26 @@ public class AccountSelectionCoordinator
     }
 
     @Override
-    public void onActivityDestroyed() {}
+    public void onActivityDestroyed() {
+        // The observer is only registered while the popup is being
+        // shown, so we can just unconditionally record this histogram.
+        RecordHistogram.recordBooleanHistogram(
+                "Blink.FedCm.Android.ActivityDestroyedWhileCctShown", true);
+    }
 
     @VisibleForTesting
     AccountSelectionMediator getMediator() {
         return mMediator;
+    }
+
+    private int getFedCmId() {
+        // This should be called on the object corresponding to the CCT.
+        Activity activity = mWindowAndroid.getActivity().get();
+        if (!(activity instanceof ChromeActivity)) {
+            return -1;
+        }
+        ChromeActivity chromeActivity = (ChromeActivity) activity;
+        return IntentUtils.safeGetIntExtra(
+                chromeActivity.getIntent(), IntentHandler.EXTRA_FEDCM_ID, -1);
     }
 }

@@ -29,7 +29,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="ReadAloud.DurationListened" units="ms"
-    expires_after="2024-10-06">
+    expires_after="2024-12-08">
   <owner>andreaxg@google.com</owner>
   <owner>basiaz@google.com</owner>
   <owner>iwells@chromium.org</owner>
@@ -41,7 +41,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ReadAloud.DurationListened.LockedScreen" units="ms"
-    expires_after="2024-10-06">
+    expires_after="2024-12-08">
   <owner>andreaxg@google.com</owner>
   <owner>basiaz@google.com</owner>
   <owner>iwells@chromium.org</owner>
@@ -52,8 +52,32 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="ReadAloud.DurationScrubbingBackwardsSeekbar" units="ms"
+    expires_after="2024-12-27">
+  <owner>sanaakbani@google.com</owner>
+  <owner>basiaz@google.com</owner>
+  <summary>
+    Records when a user scrubs backwards on the expanded player seekbar.
+    Measures the duration (in milliseconds) between the user starting and
+    stopping a touch on the seekbar. Max value is 1 hour. Any interval longer
+    than 1 hour will be logged as 1 hour.
+  </summary>
+</histogram>
+
+<histogram name="ReadAloud.DurationScrubbingForwardsSeekbar" units="ms"
+    expires_after="2024-12-27">
+  <owner>sanaakbani@google.com</owner>
+  <owner>basiaz@google.com</owner>
+  <summary>
+    Records when a user scrubs forwards on the expanded player seekbar. Measures
+    the duration (in milliseconds) between the user starting and stopping a
+    touch on the seekbar. Max value is 1 hour. Any interval longer than 1 hour
+    will be logged as 1 hour.
+  </summary>
+</histogram>
+
 <histogram name="ReadAloud.Eligibility.IneligiblityReason"
-    enum="ReadAloudIneligibilityReason" expires_after="2024-10-06">
+    enum="ReadAloudIneligibilityReason" expires_after="2024-12-08">
   <owner>andreaxg@google.com</owner>
   <owner>basiaz@google.com</owner>
   <owner>iwells@chromium.org</owner>
@@ -66,7 +90,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ReadAloud.Eligibility.IsUserEligible" enum="BooleanEligible"
-    expires_after="2024-10-06">
+    expires_after="2025-02-09">
   <owner>andreaxg@google.com</owner>
   <owner>basiaz@google.com</owner>
   <owner>iwells@chromium.org</owner>
@@ -77,7 +101,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ReadAloud.EmptyURLPlayback" enum="ReadAloudEntrypoint"
-    expires_after="2024-10-06">
+    expires_after="2024-12-08">
   <owner>andreaxg@google.com</owner>
   <owner>basiaz@google.com</owner>
   <owner>iwells@chromium.org</owner>
@@ -88,7 +112,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ReadAloud.HasDateModified" enum="BooleanSuccess"
-    expires_after="2024-08-04">
+    expires_after="2025-08-04">
   <owner>andreaxg@google.com</owner>
   <owner>basiaz@google.com</owner>
   <owner>iwells@chromium.org</owner>
@@ -100,7 +124,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ReadAloud.HasTapToSeekFoundMatch" enum="BooleanSuccess"
-    expires_after="2024-10-06">
+    expires_after="2024-12-15">
   <owner>andreaxg@google.com</owner>
   <owner>basiaz@google.com</owner>
   <owner>iwells@chromium.org</owner>
@@ -111,7 +135,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ReadAloud.HighlightingEnabled" enum="BooleanEnabled"
-    expires_after="2024-10-13">
+    expires_after="2024-12-15">
   <owner>andreaxg@google.com</owner>
   <owner>basiaz@google.com</owner>
   <owner>iwells@chromium.org</owner>
@@ -122,7 +146,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ReadAloud.HighlightingEnabled.OnStartup" enum="BooleanEnabled"
-    expires_after="2024-11-03">
+    expires_after="2025-01-05">
   <owner>andreaxg@google.com</owner>
   <owner>basiaz@google.com</owner>
   <owner>iwells@chromium.org</owner>
@@ -133,7 +157,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ReadAloud.HighlightingSupported" enum="BooleanSupported"
-    expires_after="2024-10-06">
+    expires_after="2024-12-08">
   <owner>andreaxg@google.com</owner>
   <owner>basiaz@google.com</owner>
   <owner>iwells@chromium.org</owner>
@@ -144,7 +168,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ReadAloud.IsPageReadabilitySuccessful" enum="BooleanSuccess"
-    expires_after="2024-10-06">
+    expires_after="2024-12-08">
   <owner>andreaxg@google.com</owner>
   <owner>basiaz@google.com</owner>
   <owner>iwells@chromium.org</owner>
@@ -156,7 +180,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ReadAloud.IsPageReadable" enum="BooleanEligible"
-    expires_after="2024-10-06">
+    expires_after="2025-02-09">
   <owner>andreaxg@google.com</owner>
   <owner>basiaz@google.com</owner>
   <owner>iwells@chromium.org</owner>
@@ -174,7 +198,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ReadAloud.IsTabPlaybackCreationSuccessful"
-    enum="BooleanSuccess" expires_after="2024-10-06">
+    enum="BooleanSuccess" expires_after="2024-12-08">
   <owner>andreaxg@google.com</owner>
   <owner>basiaz@google.com</owner>
   <owner>iwells@chromium.org</owner>
@@ -185,7 +209,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ReadAloud.ReadAloudError.{Phase}" enum="ReadAloudErrorCode"
-    expires_after="2024-10-06">
+    expires_after="2024-12-08">
   <owner>andreaxg@google.com</owner>
   <owner>basiaz@google.com</owner>
   <owner>iwells@chromium.org</owner>
@@ -199,7 +223,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ReadAloud.ReadAloudNetError.{Phase}" enum="NetErrorCodes"
-    expires_after="2024-11-17">
+    expires_after="2025-01-26">
   <owner>andreaxg@google.com</owner>
   <owner>basiaz@google.com</owner>
   <owner>iwells@chromium.org</owner>
@@ -214,7 +238,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ReadAloud.ReadAloudPlaybackWithoutReadabilityCheckError"
-    enum="ReadAloudEntrypoint" expires_after="2024-10-06">
+    enum="ReadAloudEntrypoint" expires_after="2024-12-08">
   <owner>andreaxg@google.com</owner>
   <owner>basiaz@google.com</owner>
   <owner>iwells@chromium.org</owner>
@@ -226,7 +250,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ReadAloud.ReadAloudUnsuportedError.{Phase}"
-    enum="RejectionReason" expires_after="2024-10-06">
+    enum="RejectionReason" expires_after="2024-12-08">
   <owner>andreaxg@google.com</owner>
   <owner>basiaz@google.com</owner>
   <owner>iwells@chromium.org</owner>
@@ -238,7 +262,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ReadAloud.ServerReadabilityResult" enum="BooleanEligible"
-    expires_after="2024-10-20">
+    expires_after="2024-12-24">
   <owner>andreaxg@google.com</owner>
   <owner>basiaz@google.com</owner>
   <owner>iwells@chromium.org</owner>
@@ -253,7 +277,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ReadAloud.SpeedChange" enum="ReadAloudSpeed"
-    expires_after="2024-10-13">
+    expires_after="2024-12-15">
   <owner>andreaxg@google.com</owner>
   <owner>basiaz@google.com</owner>
   <owner>iwells@chromium.org</owner>
@@ -264,7 +288,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ReadAloud.TabPlaybackCreationFailure"
-    enum="ReadAloudEntrypoint" expires_after="2024-08-04">
+    enum="ReadAloudEntrypoint" expires_after="2025-08-04">
   <owner>andreaxg@google.com</owner>
   <owner>basiaz@google.com</owner>
   <owner>iwells@chromium.org</owner>
@@ -276,7 +300,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ReadAloud.TabPlaybackCreationSuccess"
-    enum="ReadAloudEntrypoint" expires_after="2024-10-06">
+    enum="ReadAloudEntrypoint" expires_after="2024-12-08">
   <owner>andreaxg@google.com</owner>
   <owner>basiaz@google.com</owner>
   <owner>iwells@chromium.org</owner>
@@ -287,7 +311,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="ReadAloud.TapToSeekTime" units="ms" expires_after="2024-08-04">
+<histogram name="ReadAloud.TabPlaybackStoppedReason"
+    enum="PlaybackStoppedReason" expires_after="2024-12-08">
+  <owner>andreaxg@google.com</owner>
+  <owner>basiaz@google.com</owner>
+  <owner>iwells@chromium.org</owner>
+  <summary>
+    Android only. Records reason for stopping a tab playback. Note that this
+    doesn't include stopping the voice preview playbacks.
+  </summary>
+</histogram>
+
+<histogram name="ReadAloud.TapToSeekTime" units="ms" expires_after="2024-12-15">
   <owner>andreaxg@google.com</owner>
   <owner>basiaz@google.com</owner>
   <owner>iwells@chromium.org</owner>

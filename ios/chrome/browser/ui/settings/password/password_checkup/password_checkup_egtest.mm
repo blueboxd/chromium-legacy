@@ -10,7 +10,6 @@
 #import "ios/chrome/browser/ui/settings/password/password_checkup/password_checkup_constants.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_table_view_constants.h"
 #import "ios/chrome/browser/ui/settings/password/password_manager_egtest_utils.h"
-#import "ios/chrome/browser/ui/settings/password/password_manager_ui_features.h"
 #import "ios/chrome/browser/ui/settings/password/password_settings_app_interface.h"
 #import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -49,15 +48,6 @@ constexpr NSString* kSite3 = @"https://example3.com/";
 constexpr NSString* kReusedPassword = @"reused password";
 constexpr NSString* kSafePassword = @"s@fe pa55word!";
 constexpr NSString* kWeakPassword = @"1";
-
-#pragma mark - Password Manager matchers
-
-// Matcher for the Password Manager's view that's presented when the user
-// doesn't have any saved passwords.
-id<GREYMatcher> PasswordManagerEmptyView() {
-  return grey_text(
-      l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_EMPTY_TITLE));
-}
 
 #pragma mark - Password Checkup Homepage matchers
 
@@ -283,10 +273,6 @@ NSString* LeakedPasswordDescription() {
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   AppLaunchConfiguration config;
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
-
-  config.features_enabled.push_back(
-      password_manager::features::kIOSPasswordAuthOnEntryV2);
-
   return config;
 }
 
@@ -315,15 +301,7 @@ NSString* LeakedPasswordDescription() {
 #pragma mark - Tests
 
 // Tests the safe state of the Password Checkup Homepage.
-// TODO(crbug.com/343389608): Test fails on device.
-#if !TARGET_IPHONE_SIMULATOR
-#define MAYBE_testPasswordCheckupHomepageSafeState \
-  DISABLED_testPasswordCheckupHomepageSafeState
-#else
-#define MAYBE_testPasswordCheckupHomepageSafeState \
-  testPasswordCheckupHomepageSafeState
-#endif
-- (void)MAYBE_testPasswordCheckupHomepageSafeState {
+- (void)testPasswordCheckupHomepageSafeState {
   SavePasswordFormToProfileStore();
 
   OpenPasswordCheckupHomepage(/*result_state=*/PasswordCheckStateSafe,
@@ -344,15 +322,7 @@ NSString* LeakedPasswordDescription() {
 
 // Validates that the Password Manager UI is dismissed when local authentication
 // fails while in the Password Checkup UI.
-// TODO(crbug.com/343389608): Test fails on device.
-#if !TARGET_IPHONE_SIMULATOR
-#define MAYBE_testPasswordCheckupHomepageWithFailedAuth \
-  DISABLED_testPasswordCheckupHomepageWithFailedAuth
-#else
-#define MAYBE_testPasswordCheckupHomepageWithFailedAuth \
-  testPasswordCheckupHomepageWithFailedAuth
-#endif
-- (void)MAYBE_testPasswordCheckupHomepageWithFailedAuth {
+- (void)testPasswordCheckupHomepageWithFailedAuth {
   SavePasswordFormToProfileStore();
 
   OpenPasswordCheckupHomepage(/*result_state=*/PasswordCheckStateSafe,
@@ -385,15 +355,7 @@ NSString* LeakedPasswordDescription() {
 }
 
 // Tests the warning state of the Password Checkup Homepage.
-// TODO(crbug.com/343389608): Test fails on device.
-#if !TARGET_IPHONE_SIMULATOR
-#define MAYBE_testPasswordCheckupHomepageWarningState \
-  DISABLED_testPasswordCheckupHomepageWarningState
-#else
-#define MAYBE_testPasswordCheckupHomepageWarningState \
-  testPasswordCheckupHomepageWarningState
-#endif
-- (void)MAYBE_testPasswordCheckupHomepageWarningState {
+- (void)testPasswordCheckupHomepageWarningState {
   SaveMutedCompromisedPasswordFormToProfileStore();
   SaveReusedPasswordFormsToProfileStore();
   SaveWeakPasswordFormToProfileStore();
@@ -429,15 +391,7 @@ NSString* LeakedPasswordDescription() {
 }
 
 // Tests the severe warning state of the Password Checkup Homepage.
-// TODO(crbug.com/343389608): Test fails on device.
-#if !TARGET_IPHONE_SIMULATOR
-#define MAYBE_testPasswordCheckupHomepageCompromisedState \
-  DISABLED_testPasswordCheckupHomepageCompromisedState
-#else
-#define MAYBE_testPasswordCheckupHomepageCompromisedState \
-  testPasswordCheckupHomepageCompromisedState
-#endif
-- (void)MAYBE_testPasswordCheckupHomepageCompromisedState {
+- (void)testPasswordCheckupHomepageCompromisedState {
   SaveCompromisedPasswordFormToProfileStore();
 
   OpenPasswordCheckupHomepage(
@@ -507,15 +461,7 @@ NSString* LeakedPasswordDescription() {
 }
 
 // Tests the error state of the Password Checkup Homepage.
-// TODO(crbug.com/343389608): Test fails on device.
-#if !TARGET_IPHONE_SIMULATOR
-#define MAYBE_testPasswordCheckupHomepageErrorState \
-  DISABLED_testPasswordCheckupHomepageErrorState
-#else
-#define MAYBE_testPasswordCheckupHomepageErrorState \
-  testPasswordCheckupHomepageErrorState
-#endif
-- (void)MAYBE_testPasswordCheckupHomepageErrorState {
+- (void)testPasswordCheckupHomepageErrorState {
   SaveCompromisedPasswordFormToProfileStore();
 
   OpenPasswordCheckupHomepage(
@@ -550,15 +496,7 @@ NSString* LeakedPasswordDescription() {
 
 // Tests that the Password Checkup Homepage header image view is correctly
 // shown/hidden depending on the device's orientation.
-// TODO(crbug.com/343389608): Test fails on device.
-#if !TARGET_IPHONE_SIMULATOR
-#define MAYBE_testPasswordCheckupHomepageDeviceOrientation \
-  DISABLED_testPasswordCheckupHomepageDeviceOrientation
-#else
-#define MAYBE_testPasswordCheckupHomepageDeviceOrientation \
-  testPasswordCheckupHomepageDeviceOrientation
-#endif
-- (void)MAYBE_testPasswordCheckupHomepageDeviceOrientation {
+- (void)testPasswordCheckupHomepageDeviceOrientation {
   if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Landscape orientation doesn't change the look of "
                            @"the Password Checkup Homepage.");
@@ -593,16 +531,29 @@ NSString* LeakedPasswordDescription() {
       assertWithMatcher:grey_notVisible()];
 }
 
+// Tests opening the Password Issues page.
+- (void)testOpeningPasswordIssues {
+  SaveCompromisedPasswordFormToProfileStore();
+
+  OpenPasswordCheckupHomepage(
+      /*result_state=*/PasswordCheckStateUnmutedCompromisedPasswords,
+      /*result_password_count=*/1);
+
+  // Auth should not be required to open Password Issues. The user is
+  // authenticated when opening the Password Manager page. Catch any unexpected
+  // authentication requests.
+  [PasswordSettingsAppInterface mockReauthenticationModuleCanAttempt:NO];
+
+  // Open the compromised issues page.
+  [[EarlGrey selectElementWithMatcher:
+                 PasswordCheckupHomepageCompromisedPasswordsItem()]
+      performAction:grey_tap()];
+
+  VerifyCompromisedPasswordIssuesPageIsVisible(/*issue_count=*/1);
+}
+
 // Tests dismissing a compromised password warning.
-// TODO(crbug.com/343389608): Test fails on device.
-#if !TARGET_IPHONE_SIMULATOR
-#define MAYBE_testPasswordCheckupDismissCompromisedPasswordWarning \
-  DISABLED_testPasswordCheckupDismissCompromisedPasswordWarning
-#else
-#define MAYBE_testPasswordCheckupDismissCompromisedPasswordWarning \
-  testPasswordCheckupDismissCompromisedPasswordWarning
-#endif
-- (void)MAYBE_testPasswordCheckupDismissCompromisedPasswordWarning {
+- (void)testPasswordCheckupDismissCompromisedPasswordWarning {
   SaveCompromisedPasswordFormToProfileStore();
 
   OpenPasswordCheckupHomepage(
@@ -661,15 +612,7 @@ NSString* LeakedPasswordDescription() {
 }
 
 // Tests restoring a muted compromised password warning.
-// TODO(crbug.com/343389608): Test fails on device.
-#if !TARGET_IPHONE_SIMULATOR
-#define MAYBE_testPasswordCheckupRestoreCompromisedPasswordWarning \
-  DISABLED_testPasswordCheckupRestoreCompromisedPasswordWarning
-#else
-#define MAYBE_testPasswordCheckupRestoreCompromisedPasswordWarning \
-  testPasswordCheckupRestoreCompromisedPasswordWarning
-#endif
-- (void)MAYBE_testPasswordCheckupRestoreCompromisedPasswordWarning {
+- (void)testPasswordCheckupRestoreCompromisedPasswordWarning {
   SaveMutedCompromisedPasswordFormToProfileStore();
 
   OpenPasswordCheckupHomepage(
@@ -728,13 +671,7 @@ NSString* LeakedPasswordDescription() {
 }
 
 // Tests deleting the last saved password through Password Checkup.
-// TODO(crbug.com/343389608): Test fails on device.
-#if !TARGET_IPHONE_SIMULATOR
-#define MAYBE_testDeleteLastPassword DISABLED_testDeleteLastPassword
-#else
-#define MAYBE_testDeleteLastPassword testDeleteLastPassword
-#endif
-- (void)MAYBE_testDeleteLastPassword {
+- (void)testDeleteLastPassword {
   SaveCompromisedPasswordFormToProfileStore();
 
   OpenPasswordCheckupHomepage(
@@ -759,21 +696,14 @@ NSString* LeakedPasswordDescription() {
   [ChromeEarlGreyUI waitForAppToIdle];
 
   // Verify that the empty view of Password Manager is now displayed.
-  [[EarlGrey selectElementWithMatcher:PasswordManagerEmptyView()]
+  [[EarlGrey selectElementWithMatcher:password_manager_test_utils::
+                                          PasswordManagerEmptyView()]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
 // Tests resolving the last reused passwords issue by editing a password through
 // Password Checkup.
-// TODO(crbug.com/343389608): Test fails on device.
-#if !TARGET_IPHONE_SIMULATOR
-#define MAYBE_testResolveLastIssueByEditingPassword \
-  DISABLED_testResolveLastIssueByEditingPassword
-#else
-#define MAYBE_testResolveLastIssueByEditingPassword \
-  testResolveLastIssueByEditingPassword
-#endif
-- (void)MAYBE_testResolveLastIssueByEditingPassword {
+- (void)testResolveLastIssueByEditingPassword {
   SaveReusedPasswordFormsToProfileStore();
 
   OpenPasswordCheckupHomepage(
@@ -809,15 +739,7 @@ NSString* LeakedPasswordDescription() {
 
 // Tests resolving the last compromised passwords issue by deleting a password
 // through Password Checkup.
-// TODO(crbug.com/343389608): Test fails on device.
-#if !TARGET_IPHONE_SIMULATOR
-#define MAYBE_testResolveLastIssueByDeletingPassword \
-  DISABLED_testResolveLastIssueByDeletingPassword
-#else
-#define MAYBE_testResolveLastIssueByDeletingPassword \
-  testResolveLastIssueByDeletingPassword
-#endif
-- (void)MAYBE_testResolveLastIssueByDeletingPassword {
+- (void)testResolveLastIssueByDeletingPassword {
   SavePasswordFormToProfileStore(kSafePassword, kDefaultUsername, kSite1);
   SaveCompromisedPasswordFormToProfileStore();
 
@@ -854,15 +776,7 @@ NSString* LeakedPasswordDescription() {
 
 // Tests resolving the last compromised passwords issue by deleting a password
 // through Password Checkup.
-// TODO(crbug.com/343389608): Test fails on device.
-#if !TARGET_IPHONE_SIMULATOR
-#define MAYBE_testChangeCompromisedPasswordToSafePassword \
-  DISABLED_testChangeCompromisedPasswordToSafePassword
-#else
-#define MAYBE_testChangeCompromisedPasswordToSafePassword \
-  testChangeCompromisedPasswordToSafePassword
-#endif
-- (void)MAYBE_testChangeCompromisedPasswordToSafePassword {
+- (void)testChangeCompromisedPasswordToSafePassword {
   SaveCompromisedPasswordFormToProfileStore();
 
   OpenPasswordCheckupHomepage(
@@ -898,15 +812,7 @@ NSString* LeakedPasswordDescription() {
 
 // Tests changing the password of a muted compromised password to a weak
 // password.
-// TODO(crbug.com/343389608): Test fails on device.
-#if !TARGET_IPHONE_SIMULATOR
-#define MAYBE_testChangeMutedPasswordToWeakPassword \
-  DISABLED_testChangeMutedPasswordToWeakPassword
-#else
-#define MAYBE_testChangeMutedPasswordToWeakPassword \
-  testChangeMutedPasswordToWeakPassword
-#endif
-- (void)MAYBE_testChangeMutedPasswordToWeakPassword {
+- (void)testChangeMutedPasswordToWeakPassword {
   SaveMutedCompromisedPasswordFormToProfileStore();
 
   OpenPasswordCheckupHomepage(
@@ -967,15 +873,7 @@ NSString* LeakedPasswordDescription() {
 
 // Tests the details page of a credential that is both weak and compromised when
 // opened from the weak issues page.
-// TODO(crbug.com/343389608): Test fails on device.
-#if !TARGET_IPHONE_SIMULATOR
-#define MAYBE_testCompromisedAndWeakPasswordOpenedInWeakContext \
-  DISABLED_testCompromisedAndWeakPasswordOpenedInWeakContext
-#else
-#define MAYBE_testCompromisedAndWeakPasswordOpenedInWeakContext \
-  testCompromisedAndWeakPasswordOpenedInWeakContext
-#endif
-- (void)MAYBE_testCompromisedAndWeakPasswordOpenedInWeakContext {
+- (void)testCompromisedAndWeakPasswordOpenedInWeakContext {
   SaveCompromisedPasswordFormToProfileStore(kWeakPassword);
 
   OpenPasswordCheckupHomepage(
@@ -1001,15 +899,7 @@ NSString* LeakedPasswordDescription() {
 
 // Tests the details page of a credential that is both reused and compromised
 // when opened from the reused issues page.
-// TODO(crbug.com/343389608): Test fails on device.
-#if !TARGET_IPHONE_SIMULATOR
-#define MAYBE_testCompromisedAndReusedPasswordOpenedInReusedContext \
-  DISABLED_testCompromisedAndReusedPasswordOpenedInReusedContext
-#else
-#define MAYBE_testCompromisedAndReusedPasswordOpenedInReusedContext \
-  testCompromisedAndReusedPasswordOpenedInReusedContext
-#endif
-- (void)MAYBE_testCompromisedAndReusedPasswordOpenedInReusedContext {
+- (void)testCompromisedAndReusedPasswordOpenedInReusedContext {
   SaveCompromisedPasswordFormToProfileStore(kReusedPassword);
   SaveReusedPasswordFormsToProfileStore();
 
@@ -1036,15 +926,7 @@ NSString* LeakedPasswordDescription() {
 
 // Tests that Password Checkup Homepage is dismissed when there are no saved
 // passwords.
-// TODO(crbug.com/343389608): Test fails on device.
-#if !TARGET_IPHONE_SIMULATOR
-#define MAYBE_testPasswordCheckupDismissedAfterAllPasswordsGone \
-  DISABLED_testPasswordCheckupDismissedAfterAllPasswordsGone
-#else
-#define MAYBE_testPasswordCheckupDismissedAfterAllPasswordsGone \
-  testPasswordCheckupDismissedAfterAllPasswordsGone
-#endif
-- (void)MAYBE_testPasswordCheckupDismissedAfterAllPasswordsGone {
+- (void)testPasswordCheckupDismissedAfterAllPasswordsGone {
   SavePasswordFormToProfileStore();
 
   OpenPasswordCheckupHomepage(
@@ -1062,14 +944,7 @@ NSString* LeakedPasswordDescription() {
 
 // Validates that the Password Manager UI is dismissed when local authentication
 // fails while in the Password Issues UI.
-// TODO(crbug.com/343389608): Test fails on device.
-#if !TARGET_IPHONE_SIMULATOR
-#define MAYBE_testPasswordIssuesWithFailedAuth \
-  DISABLED_testPasswordIssuesWithFailedAuth
-#else
-#define MAYBE_testPasswordIssuesWithFailedAuth testPasswordIssuesWithFailedAuth
-#endif
-- (void)MAYBE_testPasswordIssuesWithFailedAuth {
+- (void)testPasswordIssuesWithFailedAuth {
   SaveWeakPasswordFormToProfileStore();
 
   OpenPasswordCheckupHomepage(

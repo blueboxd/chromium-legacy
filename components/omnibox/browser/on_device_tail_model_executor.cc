@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "components/omnibox/browser/on_device_tail_model_executor.h"
 
 #include <cmath>
@@ -46,6 +51,10 @@ static constexpr std::string_view kRnnStepCStateOutputNamePrefix = "c_out_";
 static constexpr std::string_view kRnnStepMStateOutputNamePrefix = "m_out_";
 
 static constexpr char kRnnStepOutputProbsNodeName[] = "probs";
+
+// Some default values of params needed to run the model.
+static constexpr size_t kDefaultMaxNumSteps = 20;
+static constexpr float kDefaultProbabilityThreshold = 0.01;
 
 // The sizes of the caches.
 static constexpr size_t kPreQueryEncodingCacheSize = 10;
@@ -93,14 +102,10 @@ OnDeviceTailModelExecutor::ModelInput::ModelInput() = default;
 
 OnDeviceTailModelExecutor::ModelInput::ModelInput(std::string prefix,
                                                   std::string previous_query,
-                                                  size_t max_num_suggestions,
-                                                  size_t max_rnn_steps,
-                                                  float probability_threshold)
+                                                  size_t max_num_suggestions)
     : prefix(std::move(prefix)),
       previous_query(std::move(previous_query)),
-      max_num_suggestions(max_num_suggestions),
-      max_rnn_steps(max_rnn_steps),
-      probability_threshold(probability_threshold) {}
+      max_num_suggestions(max_num_suggestions) {}
 
 OnDeviceTailModelExecutor::ModelInput::~ModelInput() = default;
 
@@ -185,6 +190,21 @@ bool OnDeviceTailModelExecutor::Init() {
   state_size_ = metadata_.lstm_model_params().state_size();
   num_layer_ = metadata_.lstm_model_params().num_layer();
   embedding_dimension_ = metadata_.lstm_model_params().embedding_dimension();
+
+  if (metadata_.lstm_model_params().max_num_steps() > 0) {
+    max_num_steps_ = metadata_.lstm_model_params().max_num_steps();
+  } else {
+    max_num_steps_ = kDefaultMaxNumSteps;
+  }
+
+  if (metadata_.lstm_model_params().probability_threshold() > 0) {
+    log_probability_threshold_ = GetLogProbability(
+        metadata_.lstm_model_params().probability_threshold());
+  } else {
+    log_probability_threshold_ =
+        GetLogProbability(kDefaultProbabilityThreshold);
+  }
+
   vocab_size_ = tokenizer_->vocab_size();
   LoadBadSubstringSet();
   LoadBadwordHashSet();
@@ -698,9 +718,8 @@ OnDeviceTailModelExecutor::GenerateSuggestionsForPrefix(
   OnDeviceTailModelExecutor::CandidateQueue partial_candidates,
       completed_candidates;
   partial_candidates.emplace(std::move(root_beam));
-  float log_prob_threshold = GetLogProbability(input.probability_threshold);
 
-  for (size_t i = 0; i < input.max_rnn_steps; ++i) {
+  for (size_t i = 0; i < max_num_steps_; ++i) {
     if (partial_candidates.empty()) {
       break;
     }
@@ -716,7 +735,7 @@ OnDeviceTailModelExecutor::GenerateSuggestionsForPrefix(
       if (RunRnnStep(beam.rnn_step_cache_key, beam.token_ids.back(),
                      prev_query_encoding, beam.states, &rnn_step_output)) {
         CreateNewBeams(rnn_step_output, beam, input.max_num_suggestions,
-                       log_prob_threshold, &partial_candidates,
+                       log_probability_threshold_, &partial_candidates,
                        &completed_candidates);
 
       } else {

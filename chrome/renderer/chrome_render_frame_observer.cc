@@ -33,6 +33,7 @@
 #include "components/crash/core/common/crash_key.h"
 #include "components/lens/lens_metadata.mojom.h"
 #include "components/no_state_prefetch/renderer/no_state_prefetch_helper.h"
+#include "components/no_state_prefetch/renderer/no_state_prefetch_utils.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/optimization_guide/content/renderer/page_text_agent.h"
 #include "components/translate/content/renderer/translate_agent.h"
@@ -48,7 +49,7 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
-#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/platform/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_console_message.h"
 #include "third_party/blink/public/web/web_document.h"
@@ -70,7 +71,6 @@
 #if !BUILDFLAG(IS_ANDROID)
 #include "chrome/renderer/accessibility/read_anything_app_controller.h"
 #include "chrome/renderer/searchbox/searchbox_extension.h"
-#include "ui/accessibility/accessibility_features.h"
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
@@ -260,7 +260,7 @@ void ChromeRenderFrameObserver::DidFinishLoad() {
   if (!osdd_url.is_empty()) {
     mojo::Remote<chrome::mojom::OpenSearchDescriptionDocumentHandler>
         osdd_handler;
-    render_frame()->GetBrowserInterfaceBroker()->GetInterface(
+    render_frame()->GetBrowserInterfaceBroker().GetInterface(
         osdd_handler.BindNewPipeAndPassReceiver());
     osdd_handler->PageHasOpenSearchDescriptionDocument(
         frame->GetDocument().Url(), osdd_url);
@@ -330,9 +330,8 @@ void ChromeRenderFrameObserver::DidClearWindowObject() {
   // url, which is chrome-untrusted. ReadAnythingAppController installs v8
   // bindings in the chrome.readingMode namespace which are consumed by
   // read_anything/app.ts, the resource of the Read Anything WebUI.
-  if (features::IsReadAnythingEnabled() &&
-      render_frame()->GetWebFrame()->GetDocument().Url() ==
-          chrome::kChromeUIUntrustedReadAnythingSidePanelURL) {
+  if (render_frame()->GetWebFrame()->GetDocument().Url() ==
+      chrome::kChromeUIUntrustedReadAnythingSidePanelURL) {
     ReadAnythingAppController::Install(render_frame());
   }
 #endif  // !BUILDFLAG(IS_ANDROID)
@@ -509,18 +508,54 @@ void ChromeRenderFrameObserver::RequestBitmapForContextNode(
   std::move(callback).Run(image);
 }
 
-void ChromeRenderFrameObserver::RequestBoundsForContextNodeDiagnostic(
-    RequestBoundsForContextNodeDiagnosticCallback callback) {
+void ChromeRenderFrameObserver::RequestBitmapForContextNodeWithBoundsHint(
+    RequestBitmapForContextNodeWithBoundsHintCallback callback) {
   WebNode context_node = render_frame()->GetWebFrame()->ContextMenuImageNode();
+  SkBitmap image;
   gfx::Rect bounds;
   if (context_node.IsNull() || !context_node.IsElementNode()) {
-    std::move(callback).Run(bounds);
+    std::move(callback).Run(image, bounds);
     return;
   }
 
   WebElement web_element = context_node.To<WebElement>();
+  image = web_element.ImageContents();
   bounds = web_element.BoundsInWidget();
-  std::move(callback).Run(bounds);
+  std::move(callback).Run(image, bounds);
+}
+
+void ChromeRenderFrameObserver::RequestBoundsHintForAllImages(
+    RequestBoundsHintForAllImagesCallback callback) {
+  std::vector<blink::WebElement> image_elements;
+  std::vector<gfx::Rect> all_bounds;
+  const blink::WebDocument doc = render_frame()->GetWebFrame()->GetDocument();
+  if (doc.IsNull() || doc.Body().IsNull()) {
+    return;
+  }
+  FindImageElements(doc.Body(), image_elements);
+
+  for (auto& element : image_elements) {
+    all_bounds.emplace_back(
+        render_frame()->ConvertViewportToWindow(element.BoundsInWidget()));
+  }
+  std::move(callback).Run(all_bounds);
+}
+
+// Depth-first search for recursively traversing DOM elements and pulling out
+// references for images.
+void ChromeRenderFrameObserver::FindImageElements(
+    blink::WebElement element,
+    std::vector<blink::WebElement>& images) {
+  if (element.ImageContents().isNull()) {
+    for (blink::WebNode child = element.FirstChild(); !child.IsNull();
+         child = child.NextSibling()) {
+      if (child.IsElementNode()) {
+        FindImageElements(child.To<blink::WebElement>(), images);
+      }
+    }
+  } else {
+    images.emplace_back(element);
+  }
 }
 
 void ChromeRenderFrameObserver::RequestReloadImageForContextNode() {
@@ -571,6 +606,10 @@ void ChromeRenderFrameObserver::SetSupportsDraggableRegions(
     bool supports_draggable_regions) {
   render_frame()->GetWebView()->SetSupportsDraggableRegions(
       supports_draggable_regions);
+}
+
+void ChromeRenderFrameObserver::SetShouldDeferMediaLoad(bool should_defer) {
+  prerender::SetShouldDeferMediaLoad(render_frame(), should_defer);
 }
 
 void ChromeRenderFrameObserver::SetClientSidePhishingDetection() {

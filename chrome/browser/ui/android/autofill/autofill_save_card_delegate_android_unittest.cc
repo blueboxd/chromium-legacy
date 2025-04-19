@@ -7,6 +7,7 @@
 #include "autofill_save_card_delegate_android.h"
 #include "base/logging.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/autofill/core/browser/payments/payments_autofill_client.h"
 #include "components/browser_ui/device_lock/android/device_lock_bridge.h"
 #include "components/browser_ui/device_lock/android/test_device_lock_bridge.h"
 #include "content/public/browser/web_contents.h"
@@ -22,7 +23,8 @@ class AutofillSaveCardDelegateAndroidTest
     ChromeRenderViewHostTestHarness::SetUp();
 
     delegate_ = std::make_unique<AutofillSaveCardDelegateAndroid>(
-        CreateSaveCardCallback(), AutofillClient::SaveCreditCardOptions(),
+        CreateSaveCardCallback(),
+        payments::PaymentsAutofillClient::SaveCreditCardOptions(),
         web_contents());
     auto bridge = std::make_unique<TestDeviceLockBridge>();
     test_bridge_ = bridge.get();
@@ -44,7 +46,8 @@ class AutofillSaveCardDelegateAndroidTest
     save_card_decisions_.push_back(decision);
   }
 
-  AutofillClient::LocalSaveCardPromptCallback CreateSaveCardCallback() {
+  payments::PaymentsAutofillClient::LocalSaveCardPromptCallback
+  CreateSaveCardCallback() {
     return base::BindOnce(
         &AutofillSaveCardDelegateAndroidTest::SaveCardCallback,
         base::Unretained(

@@ -8,6 +8,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
+#include "chrome/browser/resource_coordinator/tab_load_tracker.h"
 #include "components/history/core/browser/history_types.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -25,7 +26,8 @@ class NavigationHandle;
 
 class HistoryEmbeddingsTabHelper
     : public content::WebContentsObserver,
-      public content::WebContentsUserData<HistoryEmbeddingsTabHelper> {
+      public content::WebContentsUserData<HistoryEmbeddingsTabHelper>,
+      public resource_coordinator::TabLoadTracker::Observer {
  public:
   ~HistoryEmbeddingsTabHelper() override;
 
@@ -45,9 +47,18 @@ class HistoryEmbeddingsTabHelper
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
 
+  // resource_coordinator::TabLoadTracker:
+  void OnLoadingStateChange(content::WebContents* web_contents,
+                            LoadingState old_loading_state,
+                            LoadingState new_loading_state) override;
+
  private:
   explicit HistoryEmbeddingsTabHelper(content::WebContents* web_contents);
   friend class content::WebContentsUserData<HistoryEmbeddingsTabHelper>;
+
+  // Utility method to delay passage extraction until tabs are done loading.
+  // Returns true if actually scheduled; false if weak pointer was invalidated.
+  bool ScheduleExtraction(content::WeakDocumentPtr weak_render_frame_host);
 
   // This is called some time after `DidFinishLoad` to do passage extraction.
   // Calls may be canceled by weak pointer invalidation.

@@ -17,6 +17,8 @@
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/queue.h"
+#include "base/debug/alias.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/functional/bind.h"
@@ -35,6 +37,7 @@
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "base/version.h"
+#include "build/build_config.h"
 #include "chrome/updater/auto_run_on_os_upgrade_task.h"
 #include "chrome/updater/change_owners_task.h"
 #include "chrome/updater/check_for_updates_task.h"
@@ -59,6 +62,10 @@
 #include "components/update_client/protocol_definition.h"
 #include "components/update_client/update_client.h"
 #include "components/update_client/update_client_errors.h"
+
+#if BUILDFLAG(IS_MAC)
+#include <sys/mount.h>
+#endif  // BUILDFLAG(IS_MAC)
 
 #if BUILDFLAG(IS_WIN)
 #include <winhttp.h>
@@ -179,44 +186,6 @@ void GetComponents(
 #if BUILDFLAG(IS_WIN)
 namespace {
 
-std::wstring GetTextForInstallerError(int error_code) {
-#define POLICY_ERROR_SWITCH_ENTRY(error_code)                                 \
-  case error_code:                                                            \
-    return GetLocalizedStringF(IDS_APP_INSTALL_DISABLED_BY_GROUP_POLICY_BASE, \
-                               L#error_code)
-
-  switch (error_code) {
-    POLICY_ERROR_SWITCH_ENTRY(GOOPDATE_E_APP_INSTALL_DISABLED_BY_POLICY);
-    POLICY_ERROR_SWITCH_ENTRY(GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY);
-    POLICY_ERROR_SWITCH_ENTRY(GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY_MANUAL);
-
-    case GOOPDATEINSTALL_E_FILENAME_INVALID:
-      return GetLocalizedString(IDS_INVALID_INSTALLER_FILENAME_BASE);
-
-    case GOOPDATEINSTALL_E_INSTALLER_FAILED_START:
-      return GetLocalizedString(IDS_INSTALLER_FAILED_TO_START_BASE);
-
-    case GOOPDATEINSTALL_E_INSTALLER_TIMED_OUT:
-      return GetLocalizedString(IDS_INSTALLER_TIMED_OUT_BASE);
-
-    case GOOPDATEINSTALL_E_INSTALL_ALREADY_RUNNING:
-      return GetLocalizedStringF(
-          IDS_GENERIC_INSTALL_ERROR_BASE,
-          GetTextForSystemError(ERROR_INSTALL_ALREADY_RUNNING));
-
-    case ERROR_SUCCESS_REBOOT_INITIATED:
-    case ERROR_SUCCESS_REBOOT_REQUIRED:
-    case ERROR_SUCCESS_RESTART_REQUIRED:
-      return GetLocalizedStringF(IDS_INSTALL_REBOOT_BASE,
-                                 GetTextForSystemError(error_code));
-
-    default:
-      return GetLocalizedStringF(IDS_GENERIC_INSTALL_ERROR_BASE,
-                                 GetTextForSystemError(error_code));
-  }
-#undef POLICY_ERROR_SWITCH_ENTRY
-}
-
 std::wstring GetTextForUpdateClientInstallError(int error_code) {
 #define INSTALL_SWITCH_ENTRY(error_code) \
   case static_cast<int>(error_code):     \
@@ -317,8 +286,11 @@ std::wstring GetTextForServiceError(int error) {
   switch (error) {
     SERVICE_SWITCH_ENTRY(update_client::ServiceError::SERVICE_WAIT_FAILED);
     SERVICE_SWITCH_ENTRY(update_client::ServiceError::UPDATE_DISABLED);
-    SERVICE_SWITCH_ENTRY(update_client::ServiceError::CANCELLED);
     SERVICE_SWITCH_ENTRY(update_client::ServiceError::CHECK_FOR_UPDATE_ONLY);
+
+    case static_cast<int>(update_client::ServiceError::CANCELLED):
+      return GetLocalizedString(IDS_SERVICE_ERROR_CANCELLED_BASE);
+
     default:
       return GetLocalizedStringF(IDS_GENERIC_SERVICE_ERROR_BASE,
                                  GetTextForSystemError(error));
@@ -389,22 +361,57 @@ std::wstring GetTextForUpdateCheckError(int error) {
 #undef UPDATE_CHECK_SWITCH_ENTRY
 }
 
+std::wstring GetTextForInstallerError(int error_code) {
+#define POLICY_ERROR_SWITCH_ENTRY(error_code)                                 \
+  case error_code:                                                            \
+    return GetLocalizedStringF(IDS_APP_INSTALL_DISABLED_BY_GROUP_POLICY_BASE, \
+                               L#error_code)
+
+  switch (error_code) {
+    POLICY_ERROR_SWITCH_ENTRY(GOOPDATE_E_APP_INSTALL_DISABLED_BY_POLICY);
+    POLICY_ERROR_SWITCH_ENTRY(GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY);
+    POLICY_ERROR_SWITCH_ENTRY(GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY_MANUAL);
+
+    case GOOPDATEINSTALL_E_FILENAME_INVALID:
+      return GetLocalizedString(IDS_INVALID_INSTALLER_FILENAME_BASE);
+
+    case GOOPDATEINSTALL_E_INSTALLER_FAILED_START:
+      return GetLocalizedString(IDS_INSTALLER_FAILED_TO_START_BASE);
+
+    case GOOPDATEINSTALL_E_INSTALLER_TIMED_OUT:
+      return GetLocalizedString(IDS_INSTALLER_TIMED_OUT_BASE);
+
+    case GOOPDATEINSTALL_E_INSTALL_ALREADY_RUNNING:
+      return GetLocalizedStringF(
+          IDS_GENERIC_INSTALLER_ERROR_BASE,
+          GetTextForSystemError(ERROR_INSTALL_ALREADY_RUNNING));
+
+    case ERROR_SUCCESS_REBOOT_INITIATED:
+    case ERROR_SUCCESS_REBOOT_REQUIRED:
+    case ERROR_SUCCESS_RESTART_REQUIRED:
+      return GetLocalizedStringF(IDS_INSTALL_REBOOT_BASE,
+                                 GetTextForSystemError(error_code));
+
+    default:
+      return GetLocalizedStringF(IDS_GENERIC_INSTALLER_ERROR_BASE,
+                                 GetTextForSystemError(error_code));
+  }
+#undef POLICY_ERROR_SWITCH_ENTRY
+}
+
 }  // namespace
 
 std::string GetInstallerText(UpdateService::ErrorCategory error_category,
                              int error_code,
-                             int extra_code,
-                             bool is_installer_error) {
+                             int extra_code) {
   if (!error_code) {
     return {};
   }
   return base::WideToUTF8(base::StrCat(
-      {[&]() -> std::wstring {
+      {[&] {
          switch (error_category) {
            case UpdateService::ErrorCategory::kInstall:
-             return is_installer_error
-                        ? GetTextForInstallerError(error_code)
-                        : GetTextForUpdateClientInstallError(error_code);
+             return GetTextForUpdateClientInstallError(error_code);
            case UpdateService::ErrorCategory::kDownload:
              return GetTextForDownloadError(error_code);
            case UpdateService::ErrorCategory::kUnpack:
@@ -413,14 +420,16 @@ std::string GetInstallerText(UpdateService::ErrorCategory error_category,
              return GetTextForServiceError(error_code);
            case UpdateService::ErrorCategory::kUpdateCheck:
              return GetTextForUpdateCheckError(error_code);
+           case UpdateService::ErrorCategory::kInstaller:
+             return GetTextForInstallerError(error_code);
            default:
              LOG(ERROR) << "Unknown error category: " << error_category;
-             return {};
+             return std::wstring();
          }
        }(),
-       [&]() -> std::wstring {
+       [&] {
          if (!extra_code) {
-           return {};
+           return std::wstring();
          }
          return base::StrCat(
              {L"\n", GetLocalizedStringF(IDS_EXTRA_CODE_BASE,
@@ -509,6 +518,8 @@ UpdateService::ErrorCategory ToErrorCategory(
       return UpdateService::ErrorCategory::kService;
     case update_client::ErrorCategory::kUpdateCheck:
       return UpdateService::ErrorCategory::kUpdateCheck;
+    case update_client::ErrorCategory::kInstaller:
+      return UpdateService::ErrorCategory::kInstaller;
   }
 }
 
@@ -546,9 +557,8 @@ MakeUpdateClientCrxStateChangeCallback(
 #if BUILDFLAG(IS_WIN)
           if (update_state.installer_text.empty())
             update_state.installer_text = internal::GetInstallerText(
-                UpdateService::ErrorCategory::kInstall, update_state.error_code,
-                update_state.extra_code1,
-                /*is_installer_error=*/true);
+                UpdateService::ErrorCategory::kInstaller,
+                update_state.error_code, update_state.extra_code1);
 #endif  // BUILDFLAG(IS_WIN)
         }
 
@@ -582,9 +592,31 @@ MakeUpdateClientCrxStateChangeCallback(
           config->GetPrefService()->CommitPendingWrite();
         }
 
+        // TODO(crbug.com/345250525): remove dump instrumentation when fixed.
+        base::debug::Alias(&update_state);
+        if (update_state.app_id.empty() ||
+            update_state.state == UpdateService::UpdateState::State::kUnknown) {
+          base::debug::DumpWithoutCrashing();
+        }
         callback.Run(update_state);
       },
       config, persisted_data, new_install, callback);
+}
+
+bool IsPathOnReadOnlyMount(const base::FilePath& path) {
+  if (path.empty()) {
+    return false;
+  }
+#if BUILDFLAG(IS_MAC)
+  struct statfs fsinfo = {};
+  if (statfs(path.value().c_str(), &fsinfo) == -1) {
+    LOG(ERROR) << "Failed to stat: " << path;
+    return false;
+  }
+  return fsinfo.f_flags & MNT_RDONLY;
+#else
+  return false;
+#endif  // BUILDFLAG(IS_MAC)
 }
 
 }  // namespace
@@ -621,6 +653,14 @@ void UpdateServiceImplImpl::RegisterApp(
     base::OnceCallback<void(int)> callback) {
   VLOG(1) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (IsPathOnReadOnlyMount(request.existence_checker_path)) {
+    VLOG(1) << "Existence check path " << request.existence_checker_path
+            << " is on read-only file system. Registration of "
+            << request.app_id << " is skipped.";
+    std::move(callback).Run(kRegistrationError);
+    return;
+  }
+
   if (!base::EqualsCaseInsensitiveASCII(request.app_id, kUpdaterAppId)) {
     config_->GetUpdaterPersistedData()->SetHadApps();
   }
@@ -649,6 +689,7 @@ void UpdateServiceImplImpl::GetAppStates(
     app_state.brand_code = persisted_data->GetBrandCode(app_id);
     app_state.brand_path = persisted_data->GetBrandPath(app_id);
     app_state.ecp = persisted_data->GetExistenceCheckerPath(app_id);
+    app_state.cohort = persisted_data->GetCohort(app_id);
     apps.push_back(app_state);
   }
   main_task_runner_->PostTask(
@@ -1074,7 +1115,7 @@ void UpdateServiceImplImpl::RunInstaller(const std::string& app_id,
               persisted_data->SetProductVersion(app_id, installer_version);
               config->GetPrefService()->CommitPendingWrite();
             } else {
-              state.error_category = UpdateService::ErrorCategory::kInstall;
+              state.error_category = UpdateService::ErrorCategory::kInstaller;
             }
 
             // Handle the offline installer cases similar to the online cases,
@@ -1086,8 +1127,7 @@ void UpdateServiceImplImpl::RunInstaller(const std::string& app_id,
 #if BUILDFLAG(IS_WIN)
             if (state.installer_text.empty())
               state.installer_text = internal::GetInstallerText(
-                  state.error_category, state.error_code, state.extra_code1,
-                  /*is_installer_error=*/true);
+                  state.error_category, state.error_code, state.extra_code1);
 #endif  // BUILDFLAG(IS_WIN)
             state.installer_cmd_line = result.installer_cmd_line;
             state_update.Run(state);
@@ -1165,7 +1205,7 @@ void UpdateServiceImplImpl::HandleUpdateDisabledByPolicy(
   UpdateState update_state;
   update_state.app_id = app_id;
   update_state.state = UpdateService::UpdateState::State::kUpdateError;
-  update_state.error_category = UpdateService::ErrorCategory::kInstall;
+  update_state.error_category = UpdateService::ErrorCategory::kInstaller;
   update_state.error_code =
       is_install ? GOOPDATE_E_APP_INSTALL_DISABLED_BY_POLICY
       : policy != kPolicyAutomaticUpdatesOnly
@@ -1175,8 +1215,7 @@ void UpdateServiceImplImpl::HandleUpdateDisabledByPolicy(
 #if BUILDFLAG(IS_WIN)
   update_state.installer_text = internal::GetInstallerText(
       update_state.error_category, update_state.error_code,
-      update_state.extra_code1,
-      /*is_installer_error=*/true);
+      update_state.extra_code1);
 #endif  // BUILDFLAG(IS_WIN)
 
   base::BindPostTask(main_task_runner_, state_update).Run(update_state);

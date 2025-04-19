@@ -224,7 +224,8 @@ class WebGLConformanceIntegrationTestBase(
         cls._original_environ = os.environ.copy()
       os.environ['MTL_DEBUG_LAYER'] = '1'
       os.environ['MTL_DEBUG_LAYER_VALIDATE_LOAD_ACTIONS'] = '1'
-      os.environ['MTL_DEBUG_LAYER_VALIDATE_STORE_ACTIONS'] = '1'
+      # TODO(crbug.com/40275874)  Re-enable when Apple fixes the validation
+      # os.environ['MTL_DEBUG_LAYER_VALIDATE_STORE_ACTIONS'] = '1'
       os.environ['MTL_DEBUG_LAYER_VALIDATE_UNRETAINED_RESOURCES'] = '4'
 
   @classmethod
@@ -327,7 +328,8 @@ class WebGLConformanceIntegrationTestBase(
           'connectWebsocket("%d")' %
           self.__class__.websocket_server.server_port,
           timeout=WEBSOCKET_JAVASCRIPT_TIMEOUT_S)
-      self.__class__.websocket_server.WaitForConnection()
+      self.__class__.websocket_server.WaitForConnection(
+          websocket_utils.GetScaledConnectionTimeout(self.child.jobs))
       response = self.__class__.websocket_server.Receive(
           WEBSOCKET_JAVASCRIPT_TIMEOUT_S)
       response = json.loads(response)

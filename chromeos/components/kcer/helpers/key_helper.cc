@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chromeos/components/kcer/helpers/key_helper.h"
 
 #include <pk11pub.h>
@@ -41,7 +46,7 @@ std::vector<uint8_t> MakePkcs11IdForEcKey(base::span<const uint8_t> key_data) {
     return std::vector<uint8_t>(key_data.begin(), key_data.end());
   }
 
-  base::SHA1Digest hash = base::SHA1HashSpan(key_data);
+  base::SHA1Digest hash = base::SHA1Hash(key_data);
   return std::vector<uint8_t>(hash.begin(), hash.end());
 }
 

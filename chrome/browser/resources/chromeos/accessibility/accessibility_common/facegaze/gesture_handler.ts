@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {CustomCallbackMacro} from '/common/action_fulfillment/macros/custom_callback_macro.js';
 import {KeyPressMacro} from '/common/action_fulfillment/macros/key_press_macro.js';
 import {Macro} from '/common/action_fulfillment/macros/macro.js';
 import {MacroName} from '/common/action_fulfillment/macros/macro_names.js';
-import {MouseClickMacro} from '/common/action_fulfillment/macros/mouse_click_macro.js';
+import {MouseClickLeftDoubleMacro, MouseClickMacro} from '/common/action_fulfillment/macros/mouse_click_macro.js';
 import {ToggleDictationMacro} from '/common/action_fulfillment/macros/toggle_dictation_macro.js';
+import {AsyncUtil} from '/common/async_util.js';
 import {TestImportManager} from '/common/testing/test_import_manager.js';
 import type {FaceLandmarkerResult} from '/third_party/mediapipe/vision.js';
 
@@ -15,6 +17,10 @@ import {GestureDetector} from './gesture_detector.js';
 import {ResetCursorMacro} from './macros/reset_cursor_macro.js';
 import {MouseController} from './mouse_controller.js';
 
+import RoleType = chrome.automation.RoleType;
+import StateType = chrome.automation.StateType;
+
+type AutomationNode = chrome.automation.AutomationNode;
 type PrefObject = chrome.settingsPrivate.PrefObject;
 
 /**
@@ -27,17 +33,42 @@ export class GestureHandler {
   private mouseController_: MouseController;
   private repeatDelayMs_ = GestureHandler.DEFAULT_REPEAT_DELAY_MS;
   private prefsListener_: (prefs: any) => void;
+  private toggleInfoListener_: (enabled: boolean) => void;
   // The most recently detected gestures. We track this to know when a gesture
   // has ended.
   private previousGestures_: FacialGesture[] = [];
   private macrosToCompleteLater_: Map<FacialGesture, Macro> = new Map();
+  private paused_ = false;
 
   constructor(mouseController: MouseController) {
     this.mouseController_ = mouseController;
-
     this.prefsListener_ = prefs => this.updateFromPrefs_(prefs);
+    this.toggleInfoListener_ = enabled =>
+        GestureDetector.toggleSendGestureDetectionInfo(enabled);
+  }
+
+  start(): void {
+    this.paused_ = false;
     chrome.settingsPrivate.getAllPrefs(prefs => this.updateFromPrefs_(prefs));
     chrome.settingsPrivate.onPrefsChanged.addListener(this.prefsListener_);
+
+    chrome.accessibilityPrivate.onToggleGestureInfoForSettings.addListener(
+        this.toggleInfoListener_);
+  }
+
+  stop(): void {
+    this.paused_ = false;
+    chrome.settingsPrivate.onPrefsChanged.removeListener(this.prefsListener_);
+    chrome.accessibilityPrivate.onToggleGestureInfoForSettings.removeListener(
+        this.toggleInfoListener_);
+    this.previousGestures_ = [];
+    this.gestureLastRecognized_.clear();
+    // Executing these macros clears their state, so that we aren't left in a
+    // mouse down or key down state.
+    this.macrosToCompleteLater_.forEach((macro) => {
+      macro.run();
+    });
+    this.macrosToCompleteLater_.clear();
   }
 
   private updateFromPrefs_(prefs: PrefObject[]): void {
@@ -93,6 +124,14 @@ export class GestureHandler {
         ...this.popMacrosOnGestureEnd(gestures, this.previousGestures_));
     this.previousGestures_ = gestures;
     return macros;
+  }
+
+  togglePaused(): void {
+    const newPaused = !this.paused_;
+    // Run start/stop before assigning the new pause value, since start/stop
+    // will modify the pause value.
+    newPaused ? this.stop() : this.start();
+    this.paused_ = newPaused;
   }
 
   private gesturesToMacros_(gestures: FacialGesture[]): Macro[] {
@@ -169,6 +208,10 @@ export class GestureHandler {
   }
 
   private macroFromName_(name: MacroName): Macro|undefined {
+    if (this.paused_ && name !== MacroName.TOGGLE_FACEGAZE) {
+      return;
+    }
+
     switch (name) {
       case MacroName.TOGGLE_DICTATION:
         return new ToggleDictationMacro();
@@ -181,6 +224,9 @@ export class GestureHandler {
         return new MouseClickMacro(
             this.mouseController_.mouseLocation(), /*leftClick=*/ true,
             /*clickImmediately=*/ false);
+      case MacroName.MOUSE_CLICK_LEFT_DOUBLE:
+        return new MouseClickLeftDoubleMacro(
+            this.mouseController_.mouseLocation());
       case MacroName.RESET_CURSOR:
         return new ResetCursorMacro(this.mouseController_);
       case MacroName.KEY_PRESS_SPACE:
@@ -191,6 +237,36 @@ export class GestureHandler {
       case MacroName.KEY_PRESS_TOGGLE_OVERVIEW:
       case MacroName.KEY_PRESS_MEDIA_PLAY_PAUSE:
         return new KeyPressMacro(name);
+      case MacroName.OPEN_FACEGAZE_SETTINGS:
+        return new CustomCallbackMacro(MacroName.OPEN_FACEGAZE_SETTINGS, () => {
+          chrome.accessibilityPrivate.openSettingsSubpage(
+              GestureHandler.SETTINGS_PATH);
+        });
+      case MacroName.TOGGLE_FACEGAZE:
+        return new CustomCallbackMacro(MacroName.TOGGLE_FACEGAZE, () => {
+          this.mouseController_.togglePaused();
+          this.togglePaused();
+        });
+      case MacroName.TOGGLE_VIRTUAL_KEYBOARD:
+        return new CustomCallbackMacro(
+            MacroName.TOGGLE_VIRTUAL_KEYBOARD, async () => {
+              // TODO(b/355662617): Unify with SwitchAccessPredicate.
+              const isVisible = (node: AutomationNode): boolean => {
+                return Boolean(
+                    !node.state![StateType.OFFSCREEN] && node.location &&
+                    node.location.top >= 0 && node.location.left >= 0 &&
+                    !node.state![StateType.INVISIBLE]);
+              };
+
+              const desktop = await AsyncUtil.getDesktop();
+              const keyboard = desktop.find({role: RoleType.KEYBOARD});
+              const currentlyVisible = Boolean(
+                  keyboard && isVisible(keyboard) &&
+                  keyboard.find({role: RoleType.ROOT_WEB_AREA}));
+              // Toggle the visibility of the virtual keyboard.
+              chrome.accessibilityPrivate.setVirtualKeyboardVisible(
+                  !currentlyVisible);
+            });
       default:
         return;
     }
@@ -213,6 +289,8 @@ export namespace GestureHandler {
 
   export const GESTURE_TO_CONFIDENCE_PREF =
       'settings.a11y.face_gaze.gestures_to_confidence';
+
+  export const SETTINGS_PATH = 'manageAccessibility/faceGaze';
 }
 
 TestImportManager.exportForTesting(GestureHandler);

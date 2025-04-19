@@ -14,6 +14,7 @@
 #import "components/segmentation_platform/public/constants.h"
 #import "components/segmentation_platform/public/features.h"
 #import "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/first_run/ui_bundled/first_run_constants.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/signin/model/fake_system_identity.h"
@@ -25,7 +26,6 @@
 #import "ios/chrome/browser/ui/content_suggestions/new_tab_page_app_interface.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/content_suggestions/set_up_list/constants.h"
-#import "ios/chrome/browser/ui/first_run/first_run_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/common/ui/confirmation_alert/constants.h"
@@ -112,9 +112,13 @@ void TapSecondaryActionButton() {
       [self isRunningTest:@selector(testMagicStackEditButton)] ||
       [self isRunningTest:@selector
             (testMagicStackCompactedSetUpListCompleteAllItems)]) {
-    config.features_enabled.push_back(kIOSMagicStackCollectionView);
     config.features_disabled.push_back(kContentPushNotifications);
     config.features_disabled.push_back(kIOSTipsNotifications);
+  }
+  if ([self isRunningTest:@selector(testMVTInMagicStack)]) {
+    std::string enable_mvt_arg = std::string(kMagicStack.name) + ":" +
+                                 kMagicStackMostVisitedModuleParam + "/true";
+    config.additional_args.push_back("--enable-features=" + enable_mvt_arg);
   }
   return config;
 }
@@ -472,6 +476,60 @@ void TapSecondaryActionButton() {
       selectElementWithMatcher:grey_accessibilityID(
                                    [NewTabPageAppInterface setUpListTitle])]
       assertWithMatcher:grey_notVisible()];
+}
+
+// Test that MVT navigation and removal works when the module is put in the
+// Magic Stack.
+- (void)testMVTInMagicStack {
+  self.testServer->RegisterRequestHandler(
+      base::BindRepeating(&StandardResponse));
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
+  const GURL pageURL = self.testServer->GetURL(kPageURL);
+  NSString* pageTitle = base::SysUTF8ToNSString(kPageTitle);
+
+  // Clear history and verify that the tile does not exist.
+  [ChromeEarlGrey clearBrowsingHistory];
+  [ChromeEarlGrey loadURL:pageURL];
+  [ChromeEarlGrey waitForWebStateContainingText:kPageLoadedString];
+
+  // After loading URL, need to do another action before opening a new tab
+  // with the icon present.
+  [ChromeEarlGrey goBack];
+
+  [[self class] closeAllTabs];
+  [ChromeEarlGrey openNewTab];
+
+  [[EarlGrey selectElementWithMatcher:
+                 grey_accessibilityID(l10n_util::GetNSString(
+                     IDS_IOS_CONTENT_SUGGESTIONS_MOST_VISITED_MODULE_TITLE))]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Navigate to MVT
+  id<GREYMatcher> matcher =
+      grey_allOf(chrome_test_util::StaticTextWithAccessibilityLabel(pageTitle),
+                 grey_sufficientlyVisible(), nil);
+  [[EarlGrey selectElementWithMatcher:matcher] performAction:grey_tap()];
+
+  [ChromeEarlGrey waitForWebStateContainingText:kPageLoadedString];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
+                                          pageURL.GetContent())]
+      assertWithMatcher:grey_notNil()];
+
+  [ChromeEarlGrey goBack];
+  [[EarlGrey selectElementWithMatcher:matcher] performAction:grey_longPress()];
+
+  // Tap on remove.
+  [[EarlGrey selectElementWithMatcher:
+                 chrome_test_util::ContextMenuItemWithAccessibilityLabelId(
+                     IDS_IOS_CONTENT_SUGGESTIONS_REMOVE)]
+      performAction:grey_tap()];
+
+  // Check the tile is removed.
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_allOf(
+              chrome_test_util::StaticTextWithAccessibilityLabel(pageTitle),
+              grey_sufficientlyVisible(), nil)] assertWithMatcher:grey_nil()];
 }
 
 #pragma mark - Test utils

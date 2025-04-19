@@ -100,8 +100,16 @@ static_library("devtools") {
     "//build/config:precompiled_headers",
   ]
 
+  public_deps = [
+    "//chrome/browser:browser_public_dependencies",
+    "//chrome/browser:primitives",
+  ]
+
   deps = [
     "//base",
+    "//chrome/browser/search",
+    "//chrome/browser/search_engines",
+    "//chrome/browser/sync",
 
     # To prevent circular GN dependencies, this target does not depend on
     # //chrome/browser:browser, even though it has a real build dependency on
@@ -140,7 +148,9 @@ static_library("devtools") {
       "//chrome/browser/apps/app_service:constants",
       "//chrome/browser/media/router:media_router_feature",
       "//chrome/browser/profiles:profile",
+      "//chrome/browser/task_manager",
       "//chrome/browser/themes",
+      "//chrome/browser/ui/exclusive_access",
       "//chrome/browser/web_applications",
       "//chrome/common",
       "//components/guest_view/browser",
@@ -316,6 +326,14 @@ static_library("devtools") {
         "//components/printing/browser/headless",
         "//components/printing/browser/print_to_pdf",
       ]
+      if (enable_oop_printing) {
+        # protocol/page_handler.cc directly includes
+        # chrome/browser/printing/print_view_manager.h, and thus is dependent
+        # upon some mojom files.  This could go away and have a cleaner dep on
+        # //chrome/browser/printing if the //chrome build layer could get
+        # sufficiently untangled.
+        deps += [ "//chrome/services/printing/public/mojom" ]
+      }
     }
     sources += rebase_path(_protocol_generated, ".", target_gen_dir)
   }

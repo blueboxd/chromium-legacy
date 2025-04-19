@@ -62,11 +62,13 @@ public class PlusAddressCreationViewBridge {
                 PlusAddressCreationViewBridge bridge,
                 String modalTitle,
                 String plusAddressDescription,
+                @Nullable String plusAddressNotice,
                 String proposedPlusAddressPlaceholder,
                 String plusAddressModalOkText,
-                String plusAddressModalCancelText,
+                @Nullable String plusAddressModalCancelText,
                 String errorReportInstruction,
-                GURL manageUrl,
+                boolean refreshSupported,
+                GURL learnMoreUrl,
                 GURL errorReportUrl);
     }
 
@@ -88,12 +90,14 @@ public class PlusAddressCreationViewBridge {
     void show(
             String modalTitle,
             String plusAddressDescription,
+            @Nullable String plusAddressNotice,
             String proposedPlusAddressPlaceholder,
             String plusAddressModalOkText,
-            String plusAddressModalCancelText,
+            @Nullable String plusAddressModalCancelText,
             String errorReportInstruction,
-            String manageUrl,
-            String errorReportUrl) {
+            String learnMoreUrl,
+            String errorReportUrl,
+            boolean refreshSupported) {
         if (mNativePlusAddressCreationPromptAndroid != 0) {
             mCoordinator =
                     mCoordinatorFactory.create(
@@ -105,11 +109,13 @@ public class PlusAddressCreationViewBridge {
                             this,
                             modalTitle,
                             plusAddressDescription,
+                            plusAddressNotice,
                             proposedPlusAddressPlaceholder,
                             plusAddressModalOkText,
                             plusAddressModalCancelText,
                             errorReportInstruction,
-                            new GURL(manageUrl),
+                            refreshSupported,
+                            new GURL(learnMoreUrl),
                             new GURL(errorReportUrl));
             mCoordinator.requestShowContent();
         }
@@ -136,6 +142,13 @@ public class PlusAddressCreationViewBridge {
         }
     }
 
+    @CalledByNative
+    void hideRefreshButton() {
+        if (mNativePlusAddressCreationPromptAndroid != 0 && mCoordinator != null) {
+            mCoordinator.hideRefreshButton();
+        }
+    }
+
     // Hide the bottom sheet (if showing) and clean up observers.
     @CalledByNative
     void destroy() {
@@ -144,6 +157,15 @@ public class PlusAddressCreationViewBridge {
             mCoordinator = null;
         }
         mNativePlusAddressCreationPromptAndroid = 0;
+    }
+
+    public void onRefreshClicked() {
+        if (mNativePlusAddressCreationPromptAndroid != 0) {
+            PlusAddressCreationViewBridgeJni.get()
+                    .onRefreshClicked(
+                            mNativePlusAddressCreationPromptAndroid,
+                            PlusAddressCreationViewBridge.this);
+        }
     }
 
     public void onConfirmRequested() {
@@ -180,6 +202,9 @@ public class PlusAddressCreationViewBridge {
 
     @NativeMethods
     interface Natives {
+        void onRefreshClicked(
+                long nativePlusAddressCreationViewAndroid, PlusAddressCreationViewBridge caller);
+
         void onConfirmRequested(
                 long nativePlusAddressCreationViewAndroid, PlusAddressCreationViewBridge caller);
 

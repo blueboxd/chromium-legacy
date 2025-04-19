@@ -9,6 +9,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -18,6 +19,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import static org.chromium.chrome.browser.tasks.tab_management.MessageCardViewProperties.MESSAGE_TYPE;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.CARD_ALPHA;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.CARD_TYPE;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.ModelType.TAB;
@@ -30,24 +32,25 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.Features;
+import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
+import org.chromium.chrome.browser.tasks.tab_management.MessageService.MessageType;
 import org.chromium.chrome.browser.tasks.tab_management.TabListCoordinator.TabListMode;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
@@ -65,7 +68,6 @@ import org.chromium.ui.modelutil.SimpleRecyclerViewAdapter;
             "androidx.recyclerview.widget.RecyclerView" // required to mock final
         })
 public class TabGridItemTouchHelperCallbackUnitTest {
-    @Rule public TestRule mProcessor = new Features.JUnitProcessor();
 
     private static final String TAB1_TITLE = "Tab1";
     private static final String TAB2_TITLE = "Tab2";
@@ -80,6 +82,7 @@ public class TabGridItemTouchHelperCallbackUnitTest {
     private static final int POSITION3 = 2;
     private static final int POSITION4 = 3;
     private static final float THRESHOLD = 2f;
+    private static final float MERGE_AREA_THRESHOLD = 0.5f;
 
     @Mock Canvas mCanvas;
     @Mock RecyclerView mRecyclerView;
@@ -91,6 +94,7 @@ public class TabGridItemTouchHelperCallbackUnitTest {
     @Mock Profile mProfile;
     @Mock Tracker mTracker;
     @Mock GridLayoutManager mGridLayoutManager;
+    @Mock TabGroupCreationDialogManager mTabGroupCreationDialogManager;
 
     @Mock
     TabGridItemTouchHelperCallback.OnLongPressTabItemEventListener mOnLongPressTabItemEventListener;
@@ -145,6 +149,10 @@ public class TabGridItemTouchHelperCallbackUnitTest {
         doReturn(tab2).when(mTabGroupModelFilter).getTabAt(POSITION2);
         doReturn(tab3).when(mTabGroupModelFilter).getTabAt(POSITION3);
         doReturn(tab4).when(mTabGroupModelFilter).getTabAt(POSITION4);
+        doReturn(TAB1_ID).when(tab1).getRootId();
+        doReturn(TAB2_ID).when(tab2).getRootId();
+        doReturn(TAB3_ID).when(tab3).getRootId();
+        doReturn(TAB4_ID).when(tab4).getRootId();
         setupRecyclerView();
 
         mModel = new TabListModel();
@@ -180,6 +188,7 @@ public class TabGridItemTouchHelperCallbackUnitTest {
         mItemTouchHelperCallback =
                 new TabGridItemTouchHelperCallback(
                         ContextUtils.getApplicationContext(),
+                        mTabGroupCreationDialogManager,
                         mModel,
                         mTabModelFilterSupplier,
                         mTabClosedListener,
@@ -189,7 +198,7 @@ public class TabGridItemTouchHelperCallbackUnitTest {
                         TabListMode.GRID);
         mItemTouchHelperCallback.setOnLongPressTabItemEventListener(
                 mOnLongPressTabItemEventListener);
-        mItemTouchHelperCallback.setupCallback(THRESHOLD, THRESHOLD, THRESHOLD);
+        mItemTouchHelperCallback.setupCallback(THRESHOLD, MERGE_AREA_THRESHOLD, THRESHOLD);
         mItemTouchHelperCallback.getMovementFlags(mRecyclerView, mMockViewHolder1);
     }
 
@@ -222,7 +231,7 @@ public class TabGridItemTouchHelperCallbackUnitTest {
 
         mItemTouchHelperCallback.onSwiped(mMockViewHolder1, POSITION1);
 
-        verify(mTabClosedListener).run(TAB1_ID);
+        verify(mTabClosedListener).run(null, TAB1_ID);
     }
 
     @Test
@@ -501,12 +510,12 @@ public class TabGridItemTouchHelperCallbackUnitTest {
     public void onDragTab_NotHovered_GTS_Horizontal() {
         initAndAssertAllProperties();
 
-        // With merge threshold equal to 2, any horizontal drag with |dX| <= (5 - threshold) should
-        // never trigger hovering.
+        // With merge threshold equal to 50% of the overlapped area, the following dX should never
+        // trigger hovering.
         verifyDrag(mFakeViewHolder1, 3, 0, POSITION2, TabGridView.AnimationStatus.CARD_RESTORE);
         verifyDrag(mFakeViewHolder2, -3, 0, POSITION1, TabGridView.AnimationStatus.CARD_RESTORE);
-        // With merge threshold equal to 2, any horizontal drag with |dX| >= (5 + threshold) should
-        // never trigger hovering.
+        // With merge threshold equal to 50% of the overlapped area, the following dX should never
+        // trigger hovering.
         verifyDrag(mFakeViewHolder1, 7, 0, POSITION2, TabGridView.AnimationStatus.CARD_RESTORE);
         verifyDrag(mFakeViewHolder2, -7, 0, POSITION1, TabGridView.AnimationStatus.CARD_RESTORE);
     }
@@ -515,12 +524,12 @@ public class TabGridItemTouchHelperCallbackUnitTest {
     public void onDragTab_NotHovered_GTS_Vertical() {
         initAndAssertAllProperties();
 
-        // With merge threshold equal to 2, any vertical drag with |dY| <= (5 - threshold) should
-        // never trigger hovering.
+        // With merge threshold equal to 50% of the overlapped area, the following dX should never
+        // trigger hovering.
         verifyDrag(mFakeViewHolder1, 0, 3, POSITION3, TabGridView.AnimationStatus.CARD_RESTORE);
         verifyDrag(mFakeViewHolder3, 0, -3, POSITION1, TabGridView.AnimationStatus.CARD_RESTORE);
-        // With merge threshold equal to 2, any vertical drag with |dY| >= (5 + threshold) should
-        // never trigger hovering.
+        // With merge threshold equal to 50% of the overlapped area, the following dX should never
+        // trigger hovering.
         verifyDrag(mFakeViewHolder1, 0, 7, POSITION3, TabGridView.AnimationStatus.CARD_RESTORE);
         verifyDrag(mFakeViewHolder3, 0, -7, POSITION1, TabGridView.AnimationStatus.CARD_RESTORE);
     }
@@ -529,14 +538,14 @@ public class TabGridItemTouchHelperCallbackUnitTest {
     public void onDragTab_NotHovered_GTS_Diagonal() {
         initAndAssertAllProperties();
 
-        // With merge threshold equal to 2, any diagonal drag with |dX| <= (5 - threshold) or |dY|
-        // <= (5 - threshold) should never trigger hovering.
+        // With merge threshold equal to 50% of the overlapped area, the following dX should never
+        // trigger hovering.
         verifyDrag(mFakeViewHolder1, 3, 4, POSITION4, TabGridView.AnimationStatus.CARD_RESTORE);
         verifyDrag(mFakeViewHolder1, 4, 3, POSITION4, TabGridView.AnimationStatus.CARD_RESTORE);
         verifyDrag(mFakeViewHolder4, -4, -3, POSITION1, TabGridView.AnimationStatus.CARD_RESTORE);
         verifyDrag(mFakeViewHolder4, -3, -4, POSITION1, TabGridView.AnimationStatus.CARD_RESTORE);
-        // With merge threshold equal to 2, any vertical drag with |dX| >= (5 + threshold) or |dY|
-        // >= (5 + threshold) should never trigger hovering.
+        // With merge threshold equal to 50% of the overlapped area, the following dX should never
+        // trigger hovering.
         verifyDrag(mFakeViewHolder1, 7, 6, POSITION4, TabGridView.AnimationStatus.CARD_RESTORE);
         verifyDrag(mFakeViewHolder1, 6, 7, POSITION4, TabGridView.AnimationStatus.CARD_RESTORE);
         verifyDrag(mFakeViewHolder4, -6, -7, POSITION1, TabGridView.AnimationStatus.CARD_RESTORE);
@@ -733,6 +742,18 @@ public class TabGridItemTouchHelperCallbackUnitTest {
         setupItemTouchHelperCallback(false);
         assertFalse(
                 mItemTouchHelperCallback.hasDragFlagForTesting(mRecyclerView, mMockViewHolder1));
+
+        when(mMockViewHolder1.getItemViewType()).thenReturn(TabProperties.UiType.LARGE_MESSAGE);
+
+        setupItemTouchHelperCallback(false);
+        assertFalse(
+                mItemTouchHelperCallback.hasDragFlagForTesting(mRecyclerView, mMockViewHolder1));
+
+        when(mMockViewHolder1.getItemViewType()).thenReturn(TabProperties.UiType.CUSTOM_MESSAGE);
+        mMockViewHolder1.model = Mockito.mock(PropertyModel.class);
+        setupItemTouchHelperCallback(false);
+        assertFalse(
+                mItemTouchHelperCallback.hasDragFlagForTesting(mRecyclerView, mMockViewHolder1));
     }
 
     @Test
@@ -740,6 +761,17 @@ public class TabGridItemTouchHelperCallbackUnitTest {
         when(mMockViewHolder1.getItemViewType()).thenReturn(TabProperties.UiType.MESSAGE);
         setupItemTouchHelperCallback(false);
         assertTrue(mItemTouchHelperCallback.hasSwipeFlag(mRecyclerView, mMockViewHolder1));
+    }
+
+    @Test
+    public void messageItemSwipeable_archivedTabsMessageNotSwipable() {
+        PropertyModel model = Mockito.mock(PropertyModel.class);
+        when(model.get(MESSAGE_TYPE)).thenReturn(MessageType.ARCHIVED_TABS_MESSAGE);
+        when(mMockViewHolder1.getItemViewType()).thenReturn(TabProperties.UiType.CUSTOM_MESSAGE);
+        mMockViewHolder1.model = model;
+
+        setupItemTouchHelperCallback(false);
+        assertFalse(mItemTouchHelperCallback.hasSwipeFlag(mRecyclerView, mMockViewHolder1));
     }
 
     @Test
@@ -860,6 +892,28 @@ public class TabGridItemTouchHelperCallbackUnitTest {
         assertFalse(mItemTouchHelperCallback.shouldBlockAction());
     }
 
+    @Test
+    @EnableFeatures({
+        ChromeFeatureList.TAB_GROUP_PARITY_ANDROID,
+        ChromeFeatureList.TAB_GROUP_CREATION_DIALOG_ANDROID
+    })
+    public void onTabMergeToGroup_willMergingCreateNewGroup() {
+        initAndAssertAllProperties();
+        doReturn(true).when(mTabGroupModelFilter).willMergingCreateNewGroup(any());
+
+        // Simulate the selection of card#1 in TabListModel.
+        mItemTouchHelperCallback.setSelectedTabIndexForTesting(POSITION1);
+
+        // Simulate hovering on card#2.
+        mItemTouchHelperCallback.setHoveredTabIndexForTesting(POSITION2);
+
+        mItemTouchHelperCallback.onSelectedChanged(
+                mMockViewHolder1, ItemTouchHelper.ACTION_STATE_IDLE);
+
+        verify(mTabGroupModelFilter).mergeTabsToGroup(TAB1_ID, TAB2_ID);
+        verify(mTabGroupCreationDialogManager).showDialog(TAB2_ID, mTabGroupModelFilter);
+    }
+
     private void verifyDrag(
             RecyclerView.ViewHolder viewHolder, float dX, float dY, int targetIndex, int status) {
         // Simulate the process of dragging one card to a position.
@@ -951,6 +1005,8 @@ public class TabGridItemTouchHelperCallbackUnitTest {
         doReturn(top).when(view).getTop();
         doReturn(right).when(view).getRight();
         doReturn(bottom).when(view).getBottom();
+        doReturn(right - left).when(view).getWidth();
+        doReturn(bottom - top).when(view).getHeight();
         return view;
     }
 

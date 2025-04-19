@@ -217,7 +217,6 @@ void ArcAppQueueRestoreHandler::OnArcPlayStoreEnabledChanged(bool enabled) {
 
   StopRestore();
 
-#if BUILDFLAG(ENABLE_WAYLAND_SERVER)
   if (window_handler_) {
     std::set<int32_t> session_ids;
     for (const auto& it : session_id_to_window_id_)
@@ -225,7 +224,6 @@ void ArcAppQueueRestoreHandler::OnArcPlayStoreEnabledChanged(bool enabled) {
     for (auto session_id : session_ids)
       window_handler_->CloseWindow(session_id);
   }
-#endif
 
   app_ids_.clear();
   windows_.clear();
@@ -379,6 +377,16 @@ void ArcAppQueueRestoreHandler::AddWindows(const std::string& app_id) {
 void ArcAppQueueRestoreHandler::PrepareLaunchApps() {
   is_shelf_ready_ = true;
 
+  // Explicit check if the root window controller initialized. b/321719023
+  if (RootWindowController::root_window_controllers().empty()) {
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&ArcAppQueueRestoreHandler::PrepareLaunchApps,
+                       weak_ptr_factory_.GetWeakPtr()),
+        kAppLaunchCheckingDelay);
+    return;
+  }
+
   if (app_ids_.empty())
     return;
 
@@ -440,7 +448,6 @@ void ArcAppQueueRestoreHandler::PrepareAppLaunching(const std::string& app_id) {
     session_id_to_window_id_[arc_session_id] = window_id;
 
     bool launch_ghost_window = false;
-#if BUILDFLAG(ENABLE_WAYLAND_SERVER)
     if (window_handler_ &&
         arc::CanLaunchGhostWindowByRestoreData(*app_restore_data) &&
         window_handler_->LaunchArcGhostWindow(app_id, arc_session_id,
@@ -457,7 +464,6 @@ void ArcAppQueueRestoreHandler::PrepareAppLaunching(const std::string& app_id) {
                                              app_info->need_fixup);
       }
     }
-#endif
     RecordArcGhostWindowLaunch(launch_ghost_window);
 
     const auto& file_path = handler_->profile()->GetPath();
@@ -865,12 +871,10 @@ void ArcAppQueueRestoreHandler::RecordRestoreResult() {
 
   base::UmaHistogramEnumeration(kRestoreArcAppStatesHistogram, restore_state);
 
-#if BUILDFLAG(ENABLE_WAYLAND_SERVER)
   if (window_handler_) {
     base::UmaHistogramCounts100(kGhostWindowPopToArcHistogram,
                                 window_handler_->ghost_window_pop_count());
   }
-#endif
 }
 
 SchedulerConfigurationManager*

@@ -14,7 +14,6 @@
 #include "components/performance_manager/graph/process_node_impl.h"
 #include "components/performance_manager/public/freezing/freezing.h"
 #include "components/performance_manager/public/graph/page_node.h"
-#include "components/performance_manager/public/web_contents_proxy.h"
 #include "components/performance_manager/test_support/graph_test_harness.h"
 #include "components/performance_manager/test_support/mock_graphs.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -125,7 +124,7 @@ TEST_F(PageNodeImplTest, GetTimeSinceLastAudibleChange) {
 
   // Test a page that's audible at creation.
   auto audible_page = CreateNode<PageNodeImpl>(
-      WebContentsProxy(), /*browser_context_id=*/std::string(), GURL(),
+      nullptr, /*browser_context_id=*/std::string(), GURL(),
       PagePropertyFlags{PagePropertyFlag::kIsAudible});
   AdvanceClock(base::Seconds(56));
   EXPECT_EQ(base::Seconds(56), audible_page->GetTimeSinceLastAudibleChange());
@@ -185,8 +184,7 @@ TEST_F(PageNodeImplTest, GetTimeSinceLastNavigation) {
 TEST_F(PageNodeImplTest, BrowserContextID) {
   const std::string kTestBrowserContextId =
       base::UnguessableToken::Create().ToString();
-  auto page_node =
-      CreateNode<PageNodeImpl>(WebContentsProxy(), kTestBrowserContextId);
+  auto page_node = CreateNode<PageNodeImpl>(nullptr, kTestBrowserContextId);
 
   EXPECT_EQ(page_node->GetBrowserContextID(), kTestBrowserContextId);
 }
@@ -248,33 +246,50 @@ class LenientMockObserver : public PageNodeImpl::Observer {
   LenientMockObserver() {}
   ~LenientMockObserver() override {}
 
-  MOCK_METHOD1(OnPageNodeAdded, void(const PageNode*));
-  MOCK_METHOD1(OnBeforePageNodeRemoved, void(const PageNode*));
+  MOCK_METHOD(void, OnPageNodeAdded, (const PageNode*), (override));
+  MOCK_METHOD(void, OnBeforePageNodeRemoved, (const PageNode*), (override));
   // Note that opener/embedder functionality is actually tested in the
   // FrameNodeImpl and GraphImpl unittests.
-  MOCK_METHOD2(OnOpenerFrameNodeChanged,
-               void(const PageNode*, const FrameNode*));
-  MOCK_METHOD3(OnEmbedderFrameNodeChanged,
-               void(const PageNode*, const FrameNode*, EmbeddingType));
-  MOCK_METHOD2(OnTypeChanged, void(const PageNode*, PageType));
-  MOCK_METHOD1(OnIsFocusedChanged, void(const PageNode*));
-  MOCK_METHOD1(OnIsVisibleChanged, void(const PageNode*));
-  MOCK_METHOD1(OnIsAudibleChanged, void(const PageNode*));
-  MOCK_METHOD1(OnHasPictureInPictureChanged, void(const PageNode*));
-  MOCK_METHOD2(OnLoadingStateChanged,
-               void(const PageNode*, PageNode::LoadingState));
-  MOCK_METHOD1(OnUkmSourceIdChanged, void(const PageNode*));
-  MOCK_METHOD1(OnPageLifecycleStateChanged, void(const PageNode*));
-  MOCK_METHOD1(OnPageIsHoldingWebLockChanged, void(const PageNode*));
-  MOCK_METHOD1(OnPageIsHoldingIndexedDBLockChanged, void(const PageNode*));
-  MOCK_METHOD1(OnMainFrameUrlChanged, void(const PageNode*));
-  MOCK_METHOD1(OnMainFrameDocumentChanged, void(const PageNode*));
-  MOCK_METHOD1(OnTitleUpdated, void(const PageNode*));
-  MOCK_METHOD1(OnFaviconUpdated, void(const PageNode*));
-  MOCK_METHOD1(OnHadFormInteractionChanged, void(const PageNode*));
-  MOCK_METHOD1(OnHadUserEditsChanged, void(const PageNode*));
-  MOCK_METHOD2(OnPageStateChanged, void(const PageNode*, PageNode::PageState));
-  MOCK_METHOD2(OnAboutToBeDiscarded, void(const PageNode*, const PageNode*));
+  MOCK_METHOD(void,
+              OnOpenerFrameNodeChanged,
+              (const PageNode*, const FrameNode*),
+              (override));
+  MOCK_METHOD(void,
+              OnEmbedderFrameNodeChanged,
+              (const PageNode*, const FrameNode*, EmbeddingType),
+              (override));
+  MOCK_METHOD(void, OnTypeChanged, (const PageNode*, PageType), (override));
+  MOCK_METHOD(void, OnIsFocusedChanged, (const PageNode*), (override));
+  MOCK_METHOD(void, OnIsVisibleChanged, (const PageNode*), (override));
+  MOCK_METHOD(void, OnIsAudibleChanged, (const PageNode*), (override));
+  MOCK_METHOD(void,
+              OnHasPictureInPictureChanged,
+              (const PageNode*),
+              (override));
+  MOCK_METHOD(void,
+              OnLoadingStateChanged,
+              (const PageNode*, PageNode::LoadingState),
+              (override));
+  MOCK_METHOD(void, OnUkmSourceIdChanged, (const PageNode*), (override));
+  MOCK_METHOD(void, OnPageLifecycleStateChanged, (const PageNode*), (override));
+  MOCK_METHOD(void,
+              OnPageIsHoldingWebLockChanged,
+              (const PageNode*),
+              (override));
+  MOCK_METHOD(void,
+              OnPageIsHoldingIndexedDBLockChanged,
+              (const PageNode*),
+              (override));
+  MOCK_METHOD(void, OnMainFrameUrlChanged, (const PageNode*), (override));
+  MOCK_METHOD(void, OnMainFrameDocumentChanged, (const PageNode*), (override));
+  MOCK_METHOD(void, OnTitleUpdated, (const PageNode*), (override));
+  MOCK_METHOD(void, OnFaviconUpdated, (const PageNode*), (override));
+  MOCK_METHOD(void, OnHadFormInteractionChanged, (const PageNode*), (override));
+  MOCK_METHOD(void, OnHadUserEditsChanged, (const PageNode*), (override));
+  MOCK_METHOD(void,
+              OnAboutToBeDiscarded,
+              (const PageNode*, const PageNode*),
+              (override));
 
   void SetNotifiedPageNode(const PageNode* page_node) {
     notified_page_node_ = page_node;
@@ -453,67 +468,6 @@ TEST_F(PageNodeImplTest, GetMainFrameNodes) {
   auto frames = ToPublic(page.get())->GetMainFrameNodes();
   EXPECT_THAT(frames, testing::UnorderedElementsAre(ToPublic(frame1.get()),
                                                     ToPublic(frame2.get())));
-}
-
-TEST_F(PageNodeImplTest, VisitMainFrameNodes) {
-  auto process = CreateNode<ProcessNodeImpl>();
-  auto page = CreateNode<PageNodeImpl>();
-  auto frame1 = CreateFrameNodeAutoId(process.get(), page.get());
-  auto frame2 = CreateFrameNodeAutoId(process.get(), page.get());
-
-  std::set<const FrameNode*> visited;
-  EXPECT_TRUE(ToPublic(page.get())
-                  ->VisitMainFrameNodes([&visited](const FrameNode* frame) {
-                    EXPECT_TRUE(visited.insert(frame).second);
-                    return true;
-                  }));
-  EXPECT_THAT(visited, testing::UnorderedElementsAre(ToPublic(frame1.get()),
-                                                     ToPublic(frame2.get())));
-
-  // Do an aborted visit.
-  visited.clear();
-  EXPECT_FALSE(ToPublic(page.get())
-                   ->VisitMainFrameNodes([&visited](const FrameNode* frame) {
-                     EXPECT_TRUE(visited.insert(frame).second);
-                     return false;
-                   }));
-  EXPECT_EQ(1u, visited.size());
-}
-
-TEST_F(PageNodeImplTest, BackForwardCache) {
-  auto process = CreateNode<ProcessNodeImpl>();
-  auto page = CreateNode<PageNodeImpl>();
-  EXPECT_EQ(PageNode::PageState::kActive, page->GetPageState());
-
-  MockObserver obs;
-  graph()->AddPageNodeObserver(&obs);
-
-  EXPECT_CALL(obs, OnPageStateChanged(_, PageNode::PageState::kActive));
-  page->set_page_state(PageNode::PageState::kBackForwardCache);
-  EXPECT_EQ(PageNode::PageState::kBackForwardCache, page->GetPageState());
-
-  graph()->RemovePageNodeObserver(&obs);
-}
-
-TEST_F(PageNodeImplTest, Prerendering) {
-  auto process = CreateNode<ProcessNodeImpl>();
-  auto page = CreateNode<PageNodeImpl>(
-      WebContentsProxy(),                   // wc_proxy
-      std::string(),                        // browser_context_id
-      GURL(),                               // url
-      PagePropertyFlags{},                  // initial_property_flags
-      base::TimeTicks::Now(),               // visibility_change_time
-      PageNode::PageState::kPrerendering);  // page_state
-  EXPECT_EQ(PageNode::PageState::kPrerendering, page->GetPageState());
-
-  MockObserver obs;
-  graph()->AddPageNodeObserver(&obs);
-
-  EXPECT_CALL(obs, OnPageStateChanged(_, PageNode::PageState::kPrerendering));
-  page->set_page_state(PageNode::PageState::kActive);
-  EXPECT_EQ(PageNode::PageState::kActive, page->GetPageState());
-
-  graph()->RemovePageNodeObserver(&obs);
 }
 
 }  // namespace performance_manager

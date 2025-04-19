@@ -59,6 +59,7 @@
 #include "components/password_manager/core/browser/features/password_manager_features_util.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_request_utils.h"
 #include "components/password_manager/core/browser/password_form.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_sync_util.h"
 #include "components/password_manager/core/browser/sharing/password_sender_service.h"
@@ -67,9 +68,11 @@
 #include "components/password_manager/core/browser/ui/credential_utils.h"
 #include "components/password_manager/core/common/password_manager_constants.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/sync/base/features.h"
+#include "components/sync/service/sync_user_settings.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/storage_partition.h"
@@ -81,7 +84,6 @@
 
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/device_reauth/chrome_device_authenticator_factory.h"
-#include "components/password_manager/core/common/password_manager_pref_names.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -234,13 +236,17 @@ extensions::api::passwords_private::ImportResults ConvertImportResults(
 
 using password_manager::prefs::kBiometricAuthenticationBeforeFilling;
 
-void ChangeBiometricAuthenticationBeforeFillingSetting(PrefService* prefs,
-                                                       bool success) {
+void ChangeBiometricAuthenticationBeforeFillingSetting(
+    PrefService* prefs,
+    extensions::PasswordsPrivateDelegate::AuthenticationCallback callback,
+    bool success) {
   if (success) {
     prefs->SetBoolean(
         kBiometricAuthenticationBeforeFilling,
         !prefs->GetBoolean(kBiometricAuthenticationBeforeFilling));
   }
+
+  std::move(callback).Run(success);
 }
 
 std::u16string GetMessageForBiometricAuthenticationBeforeFillingSetting(
@@ -284,6 +290,37 @@ webauthn::PasskeyModel* MaybeGetPasskeyModel(Profile* profile) {
   return nullptr;
 }
 
+std::string GetGroupIconUrl(const password_manager::AffiliatedGroup& group,
+                            const syncer::SyncService* sync_service) {
+  if (!sync_service) {
+    return group.GetFallbackIconURL().spec();
+  }
+
+  if (sync_service->GetUserSettings()->IsUsingExplicitPassphrase()) {
+    // Users with explicit passphrase should only use fallback icon.
+    return group.GetFallbackIconURL().spec();
+  }
+
+  // TODO(crbug.com/40067296): Migrate away from `ConsentLevel::kSync` on
+  // desktop platforms.
+  if (password_manager::sync_util::IsSyncFeatureEnabledIncludingPasswords(
+          sync_service)) {
+    // Syncing users can use icon provided by the affiliation service.
+    return group.GetIconURL().spec();
+  }
+
+  for (const CredentialUIEntry& credential : group.GetCredentials()) {
+    if (credential.stored_in.contains(
+            password_manager::PasswordForm::Store::kAccountStore)) {
+      // If at least one credential is stored in the account, icon provided by
+      // the affiliation service can be used for the whole group.
+      return group.GetIconURL().spec();
+    }
+  }
+
+  return group.GetFallbackIconURL().spec();
+}
+
 }  // namespace
 
 namespace extensions {
@@ -310,8 +347,7 @@ PasswordsPrivateDelegateImpl::PasswordsPrivateDelegateImpl(Profile* profile)
           &saved_passwords_presenter_,
           &credential_id_generator_,
           PasswordsPrivateEventRouterFactory::GetForProfile(profile_)),
-      current_entries_initialized_(false),
-      is_initialized_(false) {
+      current_entries_initialized_(false) {
   auth_timeout_handler_.Init(
       base::BindRepeating(&PasswordsPrivateDelegateImpl::OsReauthTimeoutCall,
                           weak_ptr_factory_.GetWeakPtr()));
@@ -354,7 +390,8 @@ PasswordsPrivateDelegateImpl::GetDeviceAuthenticator(
       "PasswordManager.ReauthToAccessPasswordInSettings");
 
   return ChromeDeviceAuthenticatorFactory::GetForProfile(
-      Profile::FromBrowserContext(web_contents->GetBrowserContext()), params);
+      Profile::FromBrowserContext(web_contents->GetBrowserContext()),
+      web_contents->GetTopLevelNativeWindow(), params);
 }
 #endif
 
@@ -370,19 +407,14 @@ void PasswordsPrivateDelegateImpl::GetSavedPasswordsList(
 PasswordsPrivateDelegate::CredentialsGroups
 PasswordsPrivateDelegateImpl::GetCredentialGroups() {
   std::vector<api::passwords_private::CredentialGroup> groups;
-  // TODO(crbug.com/40067296): Migrate away from `ConsentLevel::kSync` on
-  // desktop platforms.
-  bool sync_enabled =
-      password_manager::sync_util::IsSyncFeatureEnabledIncludingPasswords(
-          SyncServiceFactory::GetForProfile(profile_));
   for (const password_manager::AffiliatedGroup& group :
        saved_passwords_presenter_.GetAffiliatedGroups()) {
     api::passwords_private::CredentialGroup group_api;
     group_api.name = group.GetDisplayName();
-    group_api.icon_url = sync_enabled ? group.GetIconURL().spec()
-                                      : group.GetFallbackIconURL().spec();
+    group_api.icon_url =
+        GetGroupIconUrl(group, SyncServiceFactory::GetForProfile(profile_));
 
-    DCHECK(!group.GetCredentials().empty());
+    CHECK(!group.GetCredentials().empty());
     for (const CredentialUIEntry& credential : group.GetCredentials()) {
       group_api.entries.push_back(
           CreatePasswordUiEntryFromCredentialUiEntry(credential));
@@ -445,18 +477,7 @@ bool PasswordsPrivateDelegateImpl::AddPassword(
   credential.password = password;
   credential.note = note;
   credential.stored_in = {store_to_use};
-  bool success = saved_passwords_presenter_.AddCredential(credential);
-
-  auto* client = ChromePasswordManagerClient::FromWebContents(web_contents);
-  DCHECK(client);
-  // Update the default store to the last used one.
-  if (success &&
-      client->GetPasswordFeatureManager()->IsOptedInForAccountStorage() &&
-      !base::FeatureList::IsEnabled(
-          password_manager::features::kButterOnDesktopFollowup)) {
-    client->GetPasswordFeatureManager()->SetDefaultPasswordStore(store_to_use);
-  }
-  return success;
+  return saved_passwords_presenter_.AddCredential(credential);
 }
 
 bool PasswordsPrivateDelegateImpl::ChangeCredential(
@@ -494,14 +515,6 @@ bool PasswordsPrivateDelegateImpl::ChangeCredential(
 void PasswordsPrivateDelegateImpl::RemoveCredential(
     int id,
     api::passwords_private::PasswordStoreSet from_stores) {
-  ExecuteFunction(
-      base::BindOnce(&PasswordsPrivateDelegateImpl::RemoveEntryInternal,
-                     base::Unretained(this), id, from_stores));
-}
-
-void PasswordsPrivateDelegateImpl::RemoveEntryInternal(
-    int id,
-    api::passwords_private::PasswordStoreSet from_stores) {
   const CredentialUIEntry* entry = credential_id_generator_.TryGetKey(id);
   if (!entry) {
     return;
@@ -511,6 +524,22 @@ void PasswordsPrivateDelegateImpl::RemoveEntryInternal(
   copy.stored_in = ConvertToPasswordFormStores(from_stores);
 
   saved_passwords_presenter_.RemoveCredential(copy);
+
+  // Record that a password removal action happened.
+  if (copy.stored_in.contains(
+          password_manager::PasswordForm::Store::kAccountStore)) {
+    AddPasswordRemovalReason(
+        profile_->GetPrefs(), password_manager::IsAccountStore(true),
+        password_manager::metrics_util::PasswordManagerCredentialRemovalReason::
+            kSettings);
+  }
+  if (copy.stored_in.contains(
+          password_manager::PasswordForm::Store::kProfileStore)) {
+    AddPasswordRemovalReason(
+        profile_->GetPrefs(), password_manager::IsAccountStore(false),
+        password_manager::metrics_util::PasswordManagerCredentialRemovalReason::
+            kSettings);
+  }
 
   if (entry->blocked_by_user) {
     base::RecordAction(
@@ -525,20 +554,11 @@ void PasswordsPrivateDelegateImpl::RemoveEntryInternal(
 }
 
 void PasswordsPrivateDelegateImpl::RemovePasswordException(int id) {
-  ExecuteFunction(base::BindOnce(
-      &PasswordsPrivateDelegateImpl::RemoveEntryInternal,
-      base::Unretained(this), id,
-      api::passwords_private::PasswordStoreSet::kDeviceAndAccount));
+  RemoveCredential(id,
+                   api::passwords_private::PasswordStoreSet::kDeviceAndAccount);
 }
 
 void PasswordsPrivateDelegateImpl::UndoRemoveSavedPasswordOrException() {
-  ExecuteFunction(base::BindOnce(
-      &PasswordsPrivateDelegateImpl::UndoRemoveSavedPasswordOrExceptionInternal,
-      base::Unretained(this)));
-}
-
-void PasswordsPrivateDelegateImpl::
-    UndoRemoveSavedPasswordOrExceptionInternal() {
   saved_passwords_presenter_.UndoLastRemoval();
 }
 
@@ -650,8 +670,8 @@ void PasswordsPrivateDelegateImpl::SetCredentials(
   }
 
   if (current_entries_initialized_) {
-    DCHECK(get_saved_passwords_list_callbacks_.empty());
-    DCHECK(get_password_exception_list_callbacks_.empty());
+    CHECK(get_saved_passwords_list_callbacks_.empty());
+    CHECK(get_password_exception_list_callbacks_.empty());
   }
 
   PasswordsPrivateEventRouter* router =
@@ -662,7 +682,6 @@ void PasswordsPrivateDelegateImpl::SetCredentials(
   }
 
   current_entries_initialized_ = true;
-  InitializeIfNecessary();
 
   for (auto& callback : get_saved_passwords_list_callbacks_) {
     std::move(callback).Run(current_entries_);
@@ -696,12 +715,8 @@ void PasswordsPrivateDelegateImpl::MovePasswordsToAccount(
 
   saved_passwords_presenter_.MoveCredentialsToAccount(
       credentials_to_move,
-      base::FeatureList::IsEnabled(
-          password_manager::features::kButterOnDesktopFollowup)
-          ? password_manager::metrics_util::MoveToAccountStoreTrigger::
-                kExplicitlyTriggeredInSettings
-          : password_manager::metrics_util::MoveToAccountStoreTrigger::
-                kExplicitlyTriggeredForMultiplePasswordsInSettings);
+      password_manager::metrics_util::MoveToAccountStoreTrigger::
+          kExplicitlyTriggeredInSettings);
 }
 
 void PasswordsPrivateDelegateImpl::FetchFamilyMembers(
@@ -758,15 +773,6 @@ void PasswordsPrivateDelegateImpl::ImportPasswords(
   password_manager_porter_->Import(
       web_contents, store_to_use,
       base::BindOnce(&ConvertImportResults).Then(std::move(results_callback)));
-
-  auto* client = ChromePasswordManagerClient::FromWebContents(web_contents);
-  DCHECK(client);
-  // Update the default store to the last used one.
-  if (client->GetPasswordFeatureManager()->IsOptedInForAccountStorage() &&
-      !base::FeatureList::IsEnabled(
-          password_manager::features::kButterOnDesktopFollowup)) {
-    client->GetPasswordFeatureManager()->SetDefaultPasswordStore(store_to_use);
-  }
 }
 
 void PasswordsPrivateDelegateImpl::ContinueImport(
@@ -839,13 +845,7 @@ void PasswordsPrivateDelegateImpl::SetAccountStorageOptIn(
     return;
   }
   if (!opt_in) {
-    if (base::FeatureList::IsEnabled(
-            password_manager::features::kButterOnDesktopFollowup)) {
-      client->GetPasswordFeatureManager()->OptOutOfAccountStorage();
-    } else {
-      client->GetPasswordFeatureManager()
-          ->OptOutOfAccountStorageAndClearSettings();
-    }
+    client->GetPasswordFeatureManager()->OptOutOfAccountStorage();
     return;
   }
 
@@ -899,12 +899,15 @@ PasswordsPrivateDelegateImpl::GetPasswordCheckStatus() {
 }
 
 void PasswordsPrivateDelegateImpl::SwitchBiometricAuthBeforeFillingState(
-    content::WebContents* web_contents) {
+
+    content::WebContents* web_contents,
+    AuthenticationCallback authentication_callback) {
 #if !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_WIN)
   NOTIMPLEMENTED();
 #else
-  AuthResultCallback callback = base::BindOnce(
-      &ChangeBiometricAuthenticationBeforeFillingSetting, profile_->GetPrefs());
+  AuthResultCallback callback =
+      base::BindOnce(&ChangeBiometricAuthenticationBeforeFillingSetting,
+                     profile_->GetPrefs(), std::move(authentication_callback));
 
   AuthenticateUser(web_contents, base::Seconds(0),
                    GetMessageForBiometricAuthenticationBeforeFillingSetting(
@@ -948,14 +951,16 @@ void PasswordsPrivateDelegateImpl::ChangePasswordManagerPin(
   }
 }
 
-bool PasswordsPrivateDelegateImpl::IsPasswordManagerPinAvailable(
-    content::WebContents* web_contents) {
+void PasswordsPrivateDelegateImpl::IsPasswordManagerPinAvailable(
+    content::WebContents* web_contents,
+    base::OnceCallback<void(bool)> pin_available_callback) {
   ChangePinController* controller =
       ChangePinController::ForWebContents(web_contents);
   if (!controller) {
-    return false;
+    std::move(pin_available_callback).Run(false);
+    return;
   }
-  return controller->IsChangePinFlowAvailable();
+  controller->IsChangePinFlowAvailable(std::move(pin_available_callback));
 }
 
 void PasswordsPrivateDelegateImpl::DisconnectCloudAuthenticator(
@@ -980,6 +985,38 @@ bool PasswordsPrivateDelegateImpl::IsConnectedToCloudAuthenticator(
   }
 
   return enclave_manager->is_registered();
+}
+
+void PasswordsPrivateDelegateImpl::DeleteAllPasswordManagerData(
+    content::WebContents* web_contents,
+    base::OnceCallback<void(bool)> success_callback) {
+  std::u16string message;
+#if BUILDFLAG(IS_MAC)
+  message = l10n_util::GetStringFUTF16(
+      IDS_PASSWORDS_PAGE_DELETE_ALL_DATA_AUTHENTICATION_PROMPT_BIOMETRIC_SUFFIX,
+      l10n_util::GetStringUTF16(
+          IDS_PASSWORD_BUBBLES_PASSWORD_MANAGER_LINK_TEXT_SAVING_ON_DEVICE));
+#elif BUILDFLAG(IS_WIN)
+  message = l10n_util::GetStringUTF16(
+      IDS_PASSWORDS_PAGE_DELETE_ALL_DATA_AUTHENTICATION_PROMPT);
+#endif
+
+  AuthenticateUser(
+      web_contents, base::Seconds(0), message,
+      base::BindOnce(&PasswordsPrivateDelegateImpl::OnDeleteAllDataAuthResult,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(success_callback)));
+}
+
+void PasswordsPrivateDelegateImpl::OnDeleteAllDataAuthResult(
+    base::OnceCallback<void(bool)> success_callback,
+    bool authenticated) {
+  if (!authenticated) {
+    std::move(success_callback).Run(false);
+    return;
+  }
+
+  saved_passwords_presenter_.DeleteAllData(std::move(success_callback));
 }
 
 base::WeakPtr<PasswordsPrivateDelegate>
@@ -1117,8 +1154,6 @@ void PasswordsPrivateDelegateImpl::OnImportPasswordsAuthResult(
     bool authenticated) {
   if (!authenticated) {
     password_manager::ImportResults result;
-    // TODO(crbug.com/40894187): Use specific enum for reauth_failed.
-    // TODO(crbug.com/40894187): Record metric for reauth failed.
     result.status = password_manager::ImportResults::DISMISSED;
     std::move(results_callback).Run(ConvertImportResults(result));
     return;
@@ -1149,15 +1184,6 @@ void PasswordsPrivateDelegateImpl::OnReauthCompleted(bool authenticated) {
   auth_timeout_handler_.OnUserReauthenticationResult(authenticated);
 }
 
-void PasswordsPrivateDelegateImpl::ExecuteFunction(base::OnceClosure callback) {
-  if (is_initialized_) {
-    std::move(callback).Run();
-    return;
-  }
-
-  pre_initialization_callbacks_.emplace_back(std::move(callback));
-}
-
 void PasswordsPrivateDelegateImpl::OnSavedPasswordsChanged(
     const password_manager::PasswordStoreChangeList& changes) {
   SetCredentials(saved_passwords_presenter_.GetSavedCredentials());
@@ -1181,19 +1207,6 @@ void PasswordsPrivateDelegateImpl::OnWebAppInstalledWithOsHooks(
 
 void PasswordsPrivateDelegateImpl::OnWebAppInstallManagerDestroyed() {
   install_manager_observation_.Reset();
-}
-
-void PasswordsPrivateDelegateImpl::InitializeIfNecessary() {
-  if (is_initialized_ || !current_entries_initialized_) {
-    return;
-  }
-
-  is_initialized_ = true;
-
-  for (base::OnceClosure& callback : pre_initialization_callbacks_) {
-    std::move(callback).Run();
-  }
-  pre_initialization_callbacks_.clear();
 }
 
 void PasswordsPrivateDelegateImpl::EmitHistogramsForCredentialAccess(
@@ -1280,10 +1293,10 @@ PasswordsPrivateDelegateImpl::CreatePasswordUiEntryFromCredentialUiEntry(
         credential.creation_time->InMillisecondsSinceUnixEpoch();
   }
   entry.stored_in = extensions::StoreSetFromCredential(credential);
-  if (!credential.federation_origin.opaque()) {
+  if (credential.federation_origin.IsValid()) {
     std::u16string formatted_origin =
-        url_formatter::FormatOriginForSecurityDisplay(
-            credential.federation_origin,
+        url_formatter::FormatUrlForSecurityDisplay(
+            credential.federation_origin.GetURL(),
             url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
 
     entry.federation_text = base::UTF16ToUTF8(formatted_origin);

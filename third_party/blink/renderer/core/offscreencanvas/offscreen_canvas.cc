@@ -225,7 +225,7 @@ ImageBitmap* OffscreenCanvas::transferToImageBitmap(
 
   ImageBitmap* image =
       context_->TransferToImageBitmap(script_state, exception_state);
-  if (UNLIKELY(exception_state.HadException())) {
+  if (exception_state.HadException()) [[unlikely]] {
     return nullptr;
   }
 
@@ -569,7 +569,8 @@ CanvasResourceProvider* OffscreenCanvas::GetOrCreateResourceProvider() {
     provider = CanvasResourceProvider::CreateSharedBitmapProvider(
         resource_info, filter_quality,
         CanvasResourceProvider::ShouldInitialize::kCallClear,
-        std::move(dispatcher_weakptr), this);
+        std::move(dispatcher_weakptr),
+        SharedGpuContext::SharedImageInterfaceProvider(), this);
   }
 
   if (!provider) {

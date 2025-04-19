@@ -179,9 +179,6 @@ class PasswordManagerUtilTest : public testing::Test {
   void EnableSyncForTestAccount() {
     sync_service_.GetUserSettings()->SetSelectedTypes(
         /*sync_everything=*/false, {syncer::UserSelectableType::kPasswords});
-    AccountInfo account_info;
-    account_info.email = "test@gmail.com";
-    sync_service_.SetAccountInfo(account_info);
   }
 
   void DisableSyncFeature() {
@@ -365,12 +362,15 @@ TEST(PasswordManagerUtil, FindBestMatches) {
       matches.push_back(form);
     }
 
-    const PasswordForm* preferred_match = nullptr;
+    // TODO(crbug.com/343879843) Copy is needed as FindBestMatches mutates its
+    // parameter. This is okay for FormFetcher logic, but not good for a
+    // standalone function. To be fixed with moving FindBestMatches into
+    // FormFetcher.
+    auto copy_matches = matches;
 
-    std::vector<raw_ptr<const PasswordForm, VectorExperimental>>
-        same_scheme_matches;
-    std::vector<PasswordForm> best_matches = FindBestMatches(
-        matches, PasswordForm::Scheme::kHtml, &same_scheme_matches);
+    std::vector<PasswordForm> best_matches = FindBestMatches(copy_matches);
+
+    const PasswordForm* preferred_match = nullptr;
     if (!best_matches.empty()) {
       preferred_match = &best_matches[0];
     }
@@ -434,13 +434,10 @@ TEST(PasswordManagerUtil, FindBestMatchesInProfileAndAccountStores) {
   profile_form2.password_value = kPassword2;
   profile_form2.in_store = PasswordForm::Store::kProfileStore;
 
-  std::vector<const PasswordForm> matches{account_form1, profile_form1,
-                                          account_form2, profile_form2};
+  std::vector<PasswordForm> matches{account_form1, profile_form1, account_form2,
+                                    profile_form2};
 
-  std::vector<raw_ptr<const PasswordForm, VectorExperimental>>
-      same_scheme_matches;
-  std::vector<PasswordForm> best_matches = FindBestMatches(
-      matches, PasswordForm::Scheme::kHtml, &same_scheme_matches);
+  std::vector<PasswordForm> best_matches = FindBestMatches(matches);
   EXPECT_EQ(best_matches.size(), 3U);
   account_form1.in_store =
       password_manager::PasswordForm::Store::kProfileStore |
@@ -475,7 +472,7 @@ TEST(PasswordManagerUtil, GetMatchForUpdating_FederatedCredential) {
   stored.match_type = PasswordForm::MatchType::kExact;
   PasswordForm parsed = GetTestCredential();
   parsed.password_value.clear();
-  parsed.federation_origin = url::Origin::Create(GURL(kTestFederationURL));
+  parsed.federation_origin = url::SchemeHostPort(GURL(kTestFederationURL));
 
   EXPECT_EQ(nullptr, GetMatchForUpdating(parsed, {&stored}));
 }

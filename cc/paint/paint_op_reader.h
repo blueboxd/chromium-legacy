@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bits.h"
+#include "base/containers/span.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/stack_allocated.h"
 #include "cc/paint/draw_looper.h"
@@ -17,6 +18,7 @@
 #include "cc/paint/paint_filter.h"
 #include "cc/paint/paint_op_writer.h"
 #include "cc/paint/transfer_cache_deserialize_helper.h"
+#include "third_party/skia/include/effects/SkGradientShader.h"
 
 struct SkGainmapInfo;
 struct SkHighContrastConfig;
@@ -67,7 +69,7 @@ class CC_PAINT_EXPORT PaintOpReader {
   bool valid() const { return valid_; }
   size_t remaining_bytes() const { return remaining_bytes_; }
 
-  void ReadData(size_t bytes, void* data);
+  void ReadData(base::span<uint8_t> data);
   void ReadSize(size_t* size);
 
   void Read(SkScalar* data);
@@ -102,6 +104,7 @@ class CC_PAINT_EXPORT PaintOpReader {
   void Read(gpu::Mailbox* mailbox);
   void Read(SkHighContrastConfig* config);
   void Read(gfx::HDRMetadata* hdr_metadata);
+  void Read(SkGradientShader::Interpolation* interpolation);
 
   void Read(scoped_refptr<SkottieWrapper>* skottie);
 
@@ -144,8 +147,8 @@ class CC_PAINT_EXPORT PaintOpReader {
   // there is not enough data, the PaintOpReader is marked invalid.
   template <typename T>
   bool CanReadVector(size_t size, const std::vector<T>& vec) {
-    if (UNLIKELY(size > vec.max_size() ||
-                 remaining_bytes_ < size * sizeof(T))) {
+    if (size > vec.max_size() || remaining_bytes_ < size * sizeof(T))
+        [[unlikely]] {
       SetInvalid(DeserializationError::kInsufficientRemainingBytes_ReadData);
       return false;
     }
@@ -156,7 +159,7 @@ class CC_PAINT_EXPORT PaintOpReader {
   void Read(std::vector<T>* vec) {
     size_t size = 0;
     ReadSize(&size);
-    if (UNLIKELY(!CanReadVector(size, *vec))) {
+    if (!CanReadVector(size, *vec)) [[unlikely]] {
       return;
     }
     ReadVectorContent(size, vec);
@@ -180,7 +183,7 @@ class CC_PAINT_EXPORT PaintOpReader {
  private:
   enum class DeserializationError {
     // Enum values must remain synchronized with PaintOpDeserializationError
-    // in tools/metrics/histograms/enums.xml.
+    // in tools/metrics/histograms/metadata/gpu/enums.xml.
     kDrawLooperForbidden = 0,
     kEnumValueOutOfRange = 1,
     kForbiddenSerializedImageType = 2,
@@ -219,7 +222,7 @@ class CC_PAINT_EXPORT PaintOpReader {
     kSharedImageOpenFailure = 35,  // Obsolete
     kSkColorFilterUnflattenFailure = 36,
     kSkColorSpaceDeserializeFailure = 37,
-    kSkDrawLooperUnflattenFailure = 38,
+    kSkDrawLooperUnflattenFailure = 38,  // Obsolete
     kSkMaskFilterUnflattenFailure = 39,
     kSkPathEffectUnflattenFailure = 40,
     kSkPathReadFromMemoryFailure = 41,
@@ -349,7 +352,7 @@ class CC_PAINT_EXPORT PaintOpReader {
     requires(std::is_trivially_copyable_v<T>)
   void ReadVectorContent(size_t size, std::vector<T>* vec) {
     vec->resize(size);
-    ReadData(size * sizeof(T), vec->data());
+    ReadData(base::as_writable_byte_span(*vec));
   }
 
   template <typename T>
@@ -361,7 +364,7 @@ class CC_PAINT_EXPORT PaintOpReader {
     }
   }
 
-  const volatile char* memory_ = nullptr;
+  const volatile uint8_t* memory_ = nullptr;
   size_t remaining_bytes_ = 0u;
   bool valid_ = true;
   const PaintOp::DeserializeOptions& options_;

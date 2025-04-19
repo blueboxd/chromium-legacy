@@ -29,6 +29,8 @@ SevenZipAnalyzer::~SevenZipAnalyzer() = default;
 void SevenZipAnalyzer::OnOpenError(seven_zip::Result result) {
   results()->success = false;
   results()->analysis_result = ArchiveAnalysisResult::kFailedToOpen;
+  results()->encryption_info.is_encrypted |=
+      result == seven_zip::Result::kEncryptedHeaders;
 }
 
 base::File SevenZipAnalyzer::OnTempFileRequest() {
@@ -59,7 +61,7 @@ bool SevenZipAnalyzer::OnEntry(const seven_zip::EntryInfo& entry,
     return false;
   }
 
-  output = base::span<uint8_t>(mapped_file_->data(), mapped_file_->length());
+  output = mapped_file_->mutable_bytes();
   return true;
 }
 
@@ -93,9 +95,6 @@ bool SevenZipAnalyzer::EntryDone(seven_zip::Result result,
 }
 
 void SevenZipAnalyzer::Init() {
-  // Request two temp files.
-  GetTempFile(base::BindOnce(&SevenZipAnalyzer::OnGetTempFile,
-                             weak_factory_.GetWeakPtr()));
   GetTempFile(base::BindOnce(&SevenZipAnalyzer::OnGetTempFile,
                              weak_factory_.GetWeakPtr()));
 }
@@ -117,6 +116,9 @@ void SevenZipAnalyzer::OnGetTempFile(base::File temp_file) {
   }
   if (!temp_file_.IsValid()) {
     temp_file_ = std::move(temp_file);
+    // Get the other temp file, returning here.
+    GetTempFile(base::BindOnce(&SevenZipAnalyzer::OnGetTempFile,
+                               weak_factory_.GetWeakPtr()));
     return;
   } else {
     temp_file2_ = std::move(temp_file);

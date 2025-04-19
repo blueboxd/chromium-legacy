@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/extension_telemetry/tabs_api_signal_processor.h"
 
+#include <array>
+
 #include "chrome/browser/safe_browsing/extension_telemetry/extension_js_callstacks.h"
 #include "chrome/browser/safe_browsing/extension_telemetry/tabs_api_signal.h"
 #include "components/safe_browsing/core/common/proto/csd.pb.h"
@@ -21,8 +23,8 @@ using CallDetails =
 constexpr const char* kExtensionIds[] = {"aaaaaaaabbbbbbbbccccccccdddddddd",
                                          "eeeeeeeeffffffffgggggggghhhhhhhh",
                                          "aaaaeeeebbbbffffccccggggddddhhhh"};
-constexpr TabsApiInfo::ApiMethod kApiMethods[] = {
-    TabsApiInfo::CREATE, TabsApiInfo::UPDATE, TabsApiInfo::REMOVE};
+constexpr auto kApiMethods = std::to_array(
+    {TabsApiInfo::CREATE, TabsApiInfo::UPDATE, TabsApiInfo::REMOVE});
 constexpr const char* kUrls[] = {"http://www.example1.com/",
                                  "https://www.example2.com/"};
 
@@ -197,19 +199,19 @@ TEST_F(TabsApiSignalProcessorTest, EnforcesMaxUniqueCallDetails) {
 }
 
 TEST_F(TabsApiSignalProcessorTest, IncludesJSCallStacksInSignalInfo) {
-  extensions::StackTrace stack_trace[] = {
-      {{1, 1, u"foo1.js", u"chrome.tabs.create"},
-       {2, 2, u"foo2.js", u"Func2"},
-       {3, 3, u"foo3.js", u"Func3"},
-       {4, 4, u"foo4.js", u"Func4"},
-       {5, 5, u"foo5.js", u"Func5"}},
-      {{1, 1, u"foo1.js", u"chrome.tabs.update"},
-       {2, 2, u"foo2.js", u"Func2"},
-       {3, 3, u"foo3.js", u"Func3"},
-       {5, 5, u"foo5.js", u"Func4"}},
-      {{1, 1, u"foo1.js", u"chrome.tabs.remove"},
-       {2, 2, u"foo2.js", u"Func2"},
-       {3, 3, u"foo3.js", u"Func3"}}};
+  const std::array<extensions::StackTrace, 3> stack_trace = {
+      {{{1, 1, u"foo1.js", u"chrome.tabs.create"},
+        {2, 2, u"foo2.js", u"Func2"},
+        {3, 3, u"foo3.js", u"Func3"},
+        {4, 4, u"foo4.js", u"Func4"},
+        {5, 5, u"foo5.js", u"Func5"}},
+       {{1, 1, u"foo1.js", u"chrome.tabs.update"},
+        {2, 2, u"foo2.js", u"Func2"},
+        {3, 3, u"foo3.js", u"Func3"},
+        {5, 5, u"foo5.js", u"Func4"}},
+       {{1, 1, u"foo1.js", u"chrome.tabs.remove"},
+        {2, 2, u"foo2.js", u"Func2"},
+        {3, 3, u"foo3.js", u"Func3"}}}};
 
   // Process 3 signals, each corresponding to a different tabs API method.
   {

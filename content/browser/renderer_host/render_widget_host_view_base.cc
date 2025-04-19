@@ -14,6 +14,9 @@
 #include "base/observer_list.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
+#include "components/input/event_with_latency_info.h"
+#include "components/input/render_widget_host_input_event_router.h"
+#include "components/input/render_widget_host_view_input_observer.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/surfaces/subtree_capture_id.h"
 #include "components/viz/host/host_frame_sink_manager.h"
@@ -27,15 +30,12 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
-#include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_owner_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/renderer_host/scoped_view_transition_resources.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/browser/renderer_host/visible_time_request_trigger.h"
 #include "content/common/content_switches_internal.h"
-#include "content/common/input/event_with_latency_info.h"
-#include "content/common/input/render_widget_host_view_input_observer.h"
 #include "content/public/common/page_visibility_state.h"
 #include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom.h"
 #include "ui/base/ui_base_types.h"
@@ -47,6 +47,10 @@
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/size_f.h"
+
+#if BUILDFLAG(IS_OZONE)
+#include "ui/ozone/public/ozone_platform.h"
+#endif
 
 namespace content {
 
@@ -406,6 +410,7 @@ void RenderWidgetHostViewBase::WheelEventAck(
 
 void RenderWidgetHostViewBase::GestureEventAck(
     const blink::WebGestureEvent& event,
+    blink::mojom::InputEventResultSource ack_source,
     blink::mojom::InputEventResultState ack_result) {}
 
 void RenderWidgetHostViewBase::ChildDidAckGestureEvent(
@@ -510,9 +515,9 @@ bool RenderWidgetHostViewBase::RequestRepaintForTesting() {
 }
 
 void RenderWidgetHostViewBase::ProcessAckedTouchEvent(
-    const TouchEventWithLatencyInfo& touch,
+    const input::TouchEventWithLatencyInfo& touch,
     blink::mojom::InputEventResultState ack_result) {
-  DUMP_WILL_BE_NOTREACHED_NORETURN();
+  DUMP_WILL_BE_NOTREACHED();
 }
 
 // Send system cursor size to the renderer via UpdateScreenInfo().
@@ -560,6 +565,32 @@ void RenderWidgetHostViewBase::UpdateScreenInfo() {
              << new_screen_infos.current().device_scale_factor
              << " for capture.";
   }
+
+#if BUILDFLAG(IS_OZONE)
+  // There are platforms where no global screen coordinates are available for
+  // client applications, and scaling is done in a per-window basis (rather than
+  // per-display) and controlled by the display server. In such cases, the
+  // ScreenInfo Web API is mostly pointless. To avoid distorted graphics in web
+  // contents, override the display scale with the preferred window scale here.
+  // TODO(crbug.com/336007385): Consolidate screen representation and a less
+  // hacky scale handling in platforms that support per-window scaling.
+  if (ui::OzonePlatform::GetInstance()
+          ->GetPlatformRuntimeProperties()
+          .supports_per_window_scaling) {
+    const float window_scale =
+        display::Screen::GetScreen()
+            ->GetPreferredScaleFactorForView(GetNativeView())
+            .value_or(1.0f);
+    auto& screen = new_screen_infos.mutable_current();
+    const float old = screen.device_scale_factor;
+    if (window_scale != old) {
+      VLOG(1) << __func__ << ": Overriding scale for screen '" << screen.label
+              << "' from " << old << " with windows scale " << window_scale;
+      screen.device_scale_factor = window_scale;
+      force_sync_visual_properties = true;
+    }
+  }
+#endif  // BUILDFLAG(IS_OZONE)
 
   if (screen_infos_ == new_screen_infos && !force_sync_visual_properties)
     return;
@@ -654,16 +685,17 @@ float RenderWidgetHostViewBase::GetDeviceScaleFactor() const {
   return screen_infos_.current().device_scale_factor;
 }
 
-base::WeakPtr<RenderWidgetHostViewInput>
+base::WeakPtr<input::RenderWidgetHostViewInput>
 RenderWidgetHostViewBase::GetInputWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-RenderInputRouter* RenderWidgetHostViewBase::GetViewRenderInputRouter() {
+input::RenderInputRouter* RenderWidgetHostViewBase::GetViewRenderInputRouter() {
   return host()->GetRenderInputRouter();
 }
 
-RenderWidgetHostViewInput* RenderWidgetHostViewBase::GetParentViewInput() {
+input::RenderWidgetHostViewInput*
+RenderWidgetHostViewBase::GetParentViewInput() {
   return nullptr;
 }
 
@@ -713,12 +745,17 @@ void RenderWidgetHostViewBase::DisplayCursor(const ui::Cursor& cursor) {
   return;
 }
 
-CursorManager* RenderWidgetHostViewBase::GetCursorManager() {
+input::CursorManager* RenderWidgetHostViewBase::GetCursorManager() {
   return nullptr;
 }
 
 void RenderWidgetHostViewBase::TransformPointToRootSurface(gfx::PointF* point) {
   return;
+}
+
+const viz::LocalSurfaceId&
+RenderWidgetHostViewBase::IncrementSurfaceIdForNavigation() {
+  NOTREACHED_NORETURN();
 }
 
 void RenderWidgetHostViewBase::OnOldViewDidNavigatePreCommit() {}
@@ -785,7 +822,8 @@ void RenderWidgetHostViewBase::ProcessTouchEvent(
   }
 
   PreProcessTouchEvent(event);
-  host()->ForwardTouchEventWithLatencyInfo(event, latency);
+  host()->GetRenderInputRouter()->ForwardTouchEventWithLatencyInfo(event,
+                                                                   latency);
 }
 
 void RenderWidgetHostViewBase::ProcessGestureEvent(
@@ -799,7 +837,8 @@ void RenderWidgetHostViewBase::ProcessGestureEvent(
     NOTREACHED_NORETURN();
   }
 
-  host()->ForwardGestureEventWithLatencyInfo(event, latency);
+  host()->GetRenderInputRouter()->ForwardGestureEventWithLatencyInfo(event,
+                                                                     latency);
 }
 
 gfx::PointF RenderWidgetHostViewBase::TransformPointToRootCoordSpaceF(
@@ -814,7 +853,7 @@ gfx::PointF RenderWidgetHostViewBase::TransformRootPointToViewCoordSpace(
 
 bool RenderWidgetHostViewBase::TransformPointToCoordSpaceForView(
     const gfx::PointF& point,
-    RenderWidgetHostViewInput* target_view,
+    input::RenderWidgetHostViewInput* target_view,
     gfx::PointF* transformed_point) {
   NOTREACHED_IN_MIGRATION();
   return true;
@@ -840,16 +879,8 @@ bool RenderWidgetHostViewBase::CanSynchronizeVisualProperties() {
   return true;
 }
 
-// This function is called from host, so host and delegate should be set up.
-double RenderWidgetHostViewBase::GetZoomLevel() const {
-  CHECK(host());
-  CHECK(host()->delegate());
-  return host()->delegate()->GetPendingPageZoomLevel();
-}
-
-std::vector<std::unique_ptr<ui::TouchEvent>>
-RenderWidgetHostViewBase::ExtractAndCancelActiveTouches() {
-  return {};
+double RenderWidgetHostViewBase::GetCSSZoomFactor() const {
+  return 1.0;
 }
 
 void RenderWidgetHostViewBase::TextInputStateChanged(
@@ -903,12 +934,12 @@ void RenderWidgetHostViewBase::StopFling() {
 }
 
 void RenderWidgetHostViewBase::AddObserver(
-    RenderWidgetHostViewInputObserver* observer) {
+    input::RenderWidgetHostViewInputObserver* observer) {
   observers_.AddObserver(observer);
 }
 
 void RenderWidgetHostViewBase::RemoveObserver(
-    RenderWidgetHostViewInputObserver* observer) {
+    input::RenderWidgetHostViewInputObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
@@ -964,8 +995,8 @@ void RenderWidgetHostViewBase::SetTooltipObserverForTesting(
 // TODO(wjmaclean): Would it simplify this function if we re-implemented it
 // using GetTransformToViewCoordSpace()?
 bool RenderWidgetHostViewBase::TransformPointToTargetCoordSpace(
-    RenderWidgetHostViewInput* original_view,
-    RenderWidgetHostViewInput* target_view,
+    input::RenderWidgetHostViewInput* original_view,
+    input::RenderWidgetHostViewInput* target_view,
     const gfx::PointF& point,
     gfx::PointF* transformed_point) const {
   CHECK(original_view);
@@ -983,7 +1014,7 @@ bool RenderWidgetHostViewBase::TransformPointToTargetCoordSpace(
   std::vector<viz::FrameSinkId> target_ancestors;
   target_ancestors.push_back(target_view->GetFrameSinkId());
 
-  RenderWidgetHostViewInput* cur_view = target_view;
+  input::RenderWidgetHostViewInput* cur_view = target_view;
   while (cur_view->GetParentViewInput()) {
     cur_view = cur_view->GetParentViewInput();
     if (!cur_view)
@@ -1017,7 +1048,7 @@ bool RenderWidgetHostViewBase::TransformPointToTargetCoordSpace(
 }
 
 bool RenderWidgetHostViewBase::GetTransformToViewCoordSpace(
-    RenderWidgetHostViewInput* target_view,
+    input::RenderWidgetHostViewInput* target_view,
     gfx::Transform* transform) {
   CHECK(transform);
   if (target_view == this) {
@@ -1195,10 +1226,6 @@ void RenderWidgetHostViewBase::UpdateFrameSinkIdRegistration() {
 void RenderWidgetHostViewBase::SetViewTransitionResources(
     std::unique_ptr<ScopedViewTransitionResources> resources) {
   view_transition_resources_ = std::move(resources);
-}
-
-bool RenderWidgetHostViewBase::IsTestRenderWidgetHostView() const {
-  return false;
 }
 
 }  // namespace content

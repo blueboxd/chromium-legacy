@@ -102,10 +102,6 @@ class CONTENT_EXPORT IndexedDBDatabase {
   // IndexedDBBucketContextHandle while calling this methods.
   leveldb::Status ForceCloseAndRunTasks();
 
-  void TransactionCreated();
-  void TransactionFinished(blink::mojom::IDBTransactionMode mode,
-                           bool committed);
-
   void ScheduleOpenConnection(
       std::unique_ptr<IndexedDBPendingConnection> connection);
 
@@ -142,13 +138,13 @@ class CONTENT_EXPORT IndexedDBDatabase {
 
   // The following methods are all of the ones actually scheduled asynchronously
   // within transctions:
-
   leveldb::Status CreateObjectStoreOperation(
       int64_t object_store_id,
       const std::u16string& name,
       const blink::IndexedDBKeyPath& key_path,
       bool auto_increment,
       IndexedDBTransaction* transaction);
+
   void CreateObjectStoreAbortOperation(int64_t object_store_id);
 
   leveldb::Status DeleteObjectStoreOperation(int64_t object_store_id,
@@ -195,15 +191,6 @@ class CONTENT_EXPORT IndexedDBDatabase {
       std::unique_ptr<blink::IndexedDBKeyRange> key_range,
       indexed_db::CursorType cursor_type,
       blink::mojom::IDBDatabase::GetCallback callback,
-      IndexedDBTransaction* transaction);
-
-  leveldb::Status GetAllOperation(
-      int64_t object_store_id,
-      int64_t index_id,
-      std::unique_ptr<blink::IndexedDBKeyRange> key_range,
-      indexed_db::CursorType cursor_type,
-      int64_t max_count,
-      blink::mojom::IDBDatabase::GetAllCallback callback,
       IndexedDBTransaction* transaction);
 
   struct CONTENT_EXPORT PutOperationParams {
@@ -276,6 +263,17 @@ class CONTENT_EXPORT IndexedDBDatabase {
       blink::mojom::IDBDatabase::ClearCallback callback,
       IndexedDBTransaction* transaction);
 
+  // Use this factory function for GetAll instead of creating the operation
+  // directly.
+  base::OnceCallback<leveldb::Status(IndexedDBTransaction*)>
+  CreateGetAllOperation(int64_t object_store_id,
+                        int64_t index_id,
+                        std::unique_ptr<blink::IndexedDBKeyRange> key_range,
+                        indexed_db::CursorType cursor_type,
+                        int64_t max_count,
+                        blink::mojom::IDBDatabase::GetAllCallback callback,
+                        IndexedDBTransaction* transaction);
+
   bool IsObjectStoreIdInMetadata(int64_t object_store_id) const;
   bool IsObjectStoreIdAndIndexIdInMetadata(int64_t object_store_id,
                                            int64_t index_id) const;
@@ -283,6 +281,12 @@ class CONTENT_EXPORT IndexedDBDatabase {
                                                 int64_t index_id) const;
   bool IsObjectStoreIdInMetadataAndIndexNotInMetadata(int64_t object_store_id,
                                                       int64_t index_id) const;
+
+  // Returns metadata relevant to idb-internals.
+  storage::mojom::IdbDatabaseMetadataPtr GetIdbInternalsMetadata() const;
+  // Called when the data used to populate the struct in
+  // `GetIdbInternalsMetadata` is changed in a significant way.
+  void NotifyOfIdbInternalsRelevantChange();
 
   base::WeakPtr<IndexedDBDatabase> AsWeakPtr() {
     return weak_factory_.GetWeakPtr();
@@ -310,6 +314,34 @@ class CONTENT_EXPORT IndexedDBDatabase {
 
   leveldb::Status OpenInternal();
 
+  // This class informs its result sink of an error if a `GetAllOperation` is
+  // deleted without being run. This functionality mimics that of
+  // AbortOnDestruct callbacks. `GetAll()` cannot easily be shoe-horned into the
+  // abort-on-destruct callback templating.
+  class GetAllResultSinkWrapper {
+   public:
+    GetAllResultSinkWrapper(base::WeakPtr<IndexedDBTransaction> transaction,
+                            blink::mojom::IDBDatabase::GetAllCallback callback);
+    ~GetAllResultSinkWrapper();
+
+    mojo::AssociatedRemote<blink::mojom::IDBDatabaseGetAllResultSink>& Get();
+
+   private:
+    base::WeakPtr<IndexedDBTransaction> transaction_;
+    blink::mojom::IDBDatabase::GetAllCallback callback_;
+    mojo::AssociatedRemote<blink::mojom::IDBDatabaseGetAllResultSink>
+        result_sink_;
+  };
+
+  leveldb::Status GetAllOperation(
+      int64_t object_store_id,
+      int64_t index_id,
+      std::unique_ptr<blink::IndexedDBKeyRange> key_range,
+      indexed_db::CursorType cursor_type,
+      int64_t max_count,
+      std::unique_ptr<GetAllResultSinkWrapper> result_sink,
+      IndexedDBTransaction* transaction);
+
   // If there is no active request, grab a new one from the pending queue and
   // start it. Afterwards, possibly release the database by calling
   // MaybeReleaseDatabase().
@@ -323,7 +355,7 @@ class CONTENT_EXPORT IndexedDBDatabase {
       std::unique_ptr<IndexedDBDatabaseCallbacks> database_callbacks,
       mojo::Remote<storage::mojom::IndexedDBClientStateChecker>
           client_state_checker,
-      uint64_t client_id);
+      base::UnguessableToken client_token);
 
   // Ack that one of the connections notified with a "versionchange" event did
   // not promptly close. Therefore a "blocked" event should be fired at the
@@ -359,8 +391,6 @@ class CONTENT_EXPORT IndexedDBDatabase {
 
   // The object that owns `this`.
   raw_ref<IndexedDBBucketContext> bucket_context_;
-
-  int64_t transaction_count_ = 0;
 
   list_set<IndexedDBConnection*> connections_;
 

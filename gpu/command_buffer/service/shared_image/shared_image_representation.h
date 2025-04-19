@@ -16,6 +16,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/types/pass_key.h"
 #include "build/build_config.h"
+#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_backing.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_manager.h"
 #include "gpu/gpu_gles2_export.h"
@@ -74,10 +75,6 @@ namespace gfx {
 class NativePixmap;
 }  // namespace gfx
 
-namespace media {
-class VASurface;
-}  // namespace media
-
 namespace gpu {
 class TextureBase;
 
@@ -114,7 +111,7 @@ class GPU_GLES2_EXPORT SharedImageRepresentation {
   const gfx::ColorSpace& color_space() const { return backing_->color_space(); }
   GrSurfaceOrigin surface_origin() const { return backing_->surface_origin(); }
   SkAlphaType alpha_type() const { return backing_->alpha_type(); }
-  uint32_t usage() const { return backing_->usage(); }
+  SharedImageUsageSet usage() const { return backing_->usage(); }
   const gpu::Mailbox& mailbox() const { return backing_->mailbox(); }
   const std::string& debug_label() const { return backing_->debug_label(); }
   const char* backing_name() const { return backing_->GetName(); }
@@ -787,12 +784,24 @@ class GPU_GLES2_EXPORT DawnImageRepresentation
       wgpu::TextureUsage usage,
       AllowUnclearedAccess allow_uncleared);
 
+  // Allawos passing internal usages to the created Dawn texture.
+  std::unique_ptr<ScopedAccess> BeginScopedAccess(
+      wgpu::TextureUsage usage,
+      wgpu::TextureUsage internal_usage,
+      AllowUnclearedAccess allow_uncleared);
+
   // For write usage, the update_rect is a hint to the backend about the portion
   // of the image that will be drawn to. Callers shouldn't draw outside of this
   // area, but aren't required to overwrite every pixel inside it.
   // For non-write usage, the update_rect can be ignored.
   std::unique_ptr<ScopedAccess> BeginScopedAccess(
       wgpu::TextureUsage usage,
+      AllowUnclearedAccess allow_uncleared,
+      const gfx::Rect& update_rect);
+
+  std::unique_ptr<ScopedAccess> BeginScopedAccess(
+      wgpu::TextureUsage usage,
+      wgpu::TextureUsage internal_usage,
       AllowUnclearedAccess allow_uncleared,
       const gfx::Rect& update_rect);
 
@@ -803,8 +812,10 @@ class GPU_GLES2_EXPORT DawnImageRepresentation
 
   // This can return null in case of a Dawn validation error, for example if
   // usage is invalid.
-  virtual wgpu::Texture BeginAccess(wgpu::TextureUsage usage) = 0;
   virtual wgpu::Texture BeginAccess(wgpu::TextureUsage usage,
+                                    wgpu::TextureUsage internal_usage) = 0;
+  virtual wgpu::Texture BeginAccess(wgpu::TextureUsage usage,
+                                    wgpu::TextureUsage internal_usage,
                                     const gfx::Rect& update_rect);
   virtual void EndAccess() = 0;
 };
@@ -955,71 +966,6 @@ class GPU_GLES2_EXPORT MemoryImageRepresentation
 
  protected:
   virtual SkPixmap BeginReadAccess() = 0;
-};
-
-// An interface that allows a SharedImageBacking to hold a reference to VA-API
-// surface without depending on //media/gpu/vaapi targets.
-class VaapiDependencies {
- public:
-  virtual ~VaapiDependencies() = default;
-  virtual const media::VASurface* GetVaSurface() const = 0;
-  virtual bool SyncSurface() = 0;
-};
-
-// Interface that allows a SharedImageBacking to create VaapiDependencies from a
-// NativePixmap without depending on //media/gpu/vaapi targets.
-class VaapiDependenciesFactory {
- public:
-  virtual ~VaapiDependenciesFactory() = default;
-  // Returns a VaapiDependencies or nullptr on failure.
-  virtual std::unique_ptr<VaapiDependencies> CreateVaapiDependencies(
-      scoped_refptr<gfx::NativePixmap> pixmap) = 0;
-};
-
-///////////////////////////////////////////////////////////////////////////////
-// VaapiImageRepresentation
-
-// Representation of a SharedImageBacking as a VA-API surface.
-// This representation is currently only supported by OzoneImageBacking.
-//
-// Synchronized access is currently not required in this representation because:
-//
-// For reads:
-// We will be using this for the destination of decoding work, so no read access
-// synchronization is needed from the point of view of the VA-API.
-//
-// For writes:
-// Because of the design of the current video pipeline, we don't start the
-// decoding work until we're sure that the destination buffer is not being used
-// by the rest of the pipeline. However, we still need to keep track of write
-// accesses so that other representations can synchronize with the decoder.
-class GPU_GLES2_EXPORT VaapiImageRepresentation
-    : public SharedImageRepresentation {
- public:
-  class GPU_GLES2_EXPORT ScopedWriteAccess
-      : public ScopedAccessBase<VaapiImageRepresentation> {
-   public:
-    ScopedWriteAccess(base::PassKey<VaapiImageRepresentation> pass_key,
-                      VaapiImageRepresentation* representation);
-
-    ~ScopedWriteAccess();
-
-    const media::VASurface* va_surface();
-  };
-  VaapiImageRepresentation(SharedImageManager* manager,
-                           SharedImageBacking* backing,
-                           MemoryTypeTracker* tracker,
-                           VaapiDependencies* vaapi_dependency);
-  ~VaapiImageRepresentation() override;
-
-  std::unique_ptr<ScopedWriteAccess> BeginScopedWriteAccess();
-
- private:
-  friend class WrappedVaapiRepresentation;
-
-  raw_ptr<VaapiDependencies> vaapi_deps_;
-  virtual void EndAccess() = 0;
-  virtual void BeginAccess() = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

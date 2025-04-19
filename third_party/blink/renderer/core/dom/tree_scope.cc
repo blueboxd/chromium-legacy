@@ -238,12 +238,12 @@ static bool PointInFrameContentIfVisible(Document& document,
 
   auto* scrollable_area = frame_view->LayoutViewport();
   gfx::Rect visible_frame_rect(scrollable_area->VisibleContentRect().size());
-  visible_frame_rect =
-      gfx::ScaleToRoundedRect(visible_frame_rect, 1 / frame->PageZoomFactor());
+  visible_frame_rect = gfx::ScaleToRoundedRect(visible_frame_rect,
+                                               1 / frame->LayoutZoomFactor());
   if (!visible_frame_rect.Contains(gfx::ToRoundedPoint(point_in_frame)))
     return false;
 
-  point_in_frame.Scale(frame->PageZoomFactor());
+  point_in_frame.Scale(frame->LayoutZoomFactor());
   return true;
 }
 
@@ -287,10 +287,12 @@ Element* TreeScope::HitTestPointInternal(Node* node,
   if (!node || node->IsDocumentNode())
     return nullptr;
   Element* element;
-  if (node->IsPseudoElement() || node->IsTextNode())
+  if ((node->IsPseudoElement() && !node->IsScrollMarkerPseudoElement()) ||
+      node->IsTextNode()) {
     element = node->ParentOrShadowHostElement();
-  else
+  } else {
     element = To<Element>(node);
+  }
   if (!element)
     return nullptr;
   if (type == HitTestPointType::kWebExposed)
@@ -494,7 +496,7 @@ Node* TreeScope::FindAnchor(const String& fragment) {
 
 void TreeScope::AdoptIfNeeded(Node& node) {
   DCHECK(!node.IsDocumentNode());
-  if (LIKELY(&node.GetTreeScope() == this)) {
+  if (&node.GetTreeScope() == this) [[likely]] {
     return;
   }
 

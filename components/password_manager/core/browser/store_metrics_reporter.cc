@@ -21,12 +21,14 @@
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/password_manager_settings_service.h"
 #include "components/password_manager/core/browser/password_reuse_detector.h"
 #include "components/password_manager/core/browser/password_reuse_manager.h"
 #include "components/password_manager/core/browser/password_store/password_store_consumer.h"
 #include "components/password_manager/core/browser/password_store/password_store_interface.h"
 #include "components/password_manager/core/browser/password_sync_util.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -54,6 +56,14 @@ constexpr char kOverallSuffix[] = ".Overall";
 // histograms.xml.
 constexpr char kWithCustomPassphraseSuffix[] = ".WithCustomPassphrase";
 constexpr char kWithoutCustomPassphraseSuffix[] = ".WithoutCustomPassphrase";
+
+// Suffix for the histogram that tracks password loss.
+constexpr char kPasswordLossSuffix[] = ".PasswordLoss";
+
+// Suffix for the histogram that tracks the reasons why passwords were recently
+// removed.
+constexpr char kPasswordLossPotentialReasonSuffix[] =
+    ".PasswordLossPotentialReason.WIP";
 
 bool IsCustomPassphraseEnabled(
     password_manager::sync_util::SyncState sync_state) {
@@ -106,7 +116,7 @@ void LogTimesUsedStat(const std::string& name, int sample) {
   base::UmaHistogramCustomCounts(name, sample, 0, 100, 10);
 }
 
-void ReportNumberOfAccountsMetrics(
+int ReportNumberOfAccountsMetrics(
     bool is_account_store,
     bool custom_passphrase_enabled,
     const std::vector<std::unique_ptr<PasswordForm>>& forms) {
@@ -182,24 +192,25 @@ void ReportNumberOfAccountsMetrics(
                     kReceivedViaSharingSuffix, custom_passphrase_suffix}),
       total_received_via_sharing_accounts);
 
+  int total_accounts = total_user_created_accounts + total_generated_accounts +
+                       total_received_via_sharing_accounts;
   LogAccountStatHiRes(
       base::StrCat({kPasswordManager, store_suffix, kTotalAccountsByTypeSuffix,
                     kOverallSuffix, custom_passphrase_suffix}),
-      total_user_created_accounts + total_generated_accounts +
-          total_received_via_sharing_accounts);
+      total_accounts);
 
   // Same as above but not split by custom passphrase which is most always
   // useless.
   LogAccountStatHiRes(
       base::StrCat({kPasswordManager, store_suffix, kTotalAccountsByTypeSuffix,
                     kOverallSuffix}),
-      total_user_created_accounts + total_generated_accounts +
-          total_received_via_sharing_accounts);
+      total_accounts);
 
   LogAccountStatHiRes(
       base::StrCat({kPasswordManager, store_suffix, ".BlacklistedSitesHiRes3",
                     custom_passphrase_suffix}),
       blocklisted_sites);
+  return total_accounts;
 }
 
 void ReportLoginsWithSchemesMetrics(
@@ -453,13 +464,13 @@ void ReportPasswordProtectedMetrics(
   }
 }
 
-void ReportStoreMetrics(bool is_account_store,
-                        bool custom_passphrase_enabled,
-                        const std::string& sync_username,
-                        bool is_safe_browsing_enabled,
-                        std::vector<std::unique_ptr<PasswordForm>> results) {
-  ReportNumberOfAccountsMetrics(is_account_store, custom_passphrase_enabled,
-                                results);
+int ReportStoreMetrics(bool is_account_store,
+                       bool custom_passphrase_enabled,
+                       const std::string& sync_username,
+                       bool is_safe_browsing_enabled,
+                       std::vector<std::unique_ptr<PasswordForm>> results) {
+  int total_accounts = ReportNumberOfAccountsMetrics(
+      is_account_store, custom_passphrase_enabled, results);
   ReportLoginsWithSchemesMetrics(is_account_store, results);
   ReportTimesPasswordUsedMetrics(is_account_store, custom_passphrase_enabled,
                                  results);
@@ -475,13 +486,17 @@ void ReportStoreMetrics(bool is_account_store,
   // - DuplicateCredentials *could* be recorded for the account store, but are
   //   not very critical.
   // - Compromised credentials are only stored in the profile store.
+  // TODO: crbug.com/344573277 - Rethink about the comment above. The note about
+  // SyncingAccountState2 is not true on Android and the one about
+  // DuplicateCredentials may change in the future.
   if (is_account_store) {
-    return;
+    return total_accounts;
   }
 
   ReportSyncingAccountStateMetrics(sync_username, results);
   ReportDuplicateCredentialsMetrics(results);
   ReportPasswordIssuesMetrics(results);
+  return total_accounts;
 }
 
 void ReportMultiStoreMetrics(
@@ -563,14 +578,15 @@ void ReportMultiStoreMetrics(
   }
 }
 
-void ReportAllMetrics(bool custom_passphrase_enabled,
-                      const std::string& sync_username,
-                      bool is_opted_in_account_storage,
-                      bool is_safe_browsing_enabled,
-                      std::optional<std::vector<std::unique_ptr<PasswordForm>>>
-                          profile_store_results,
-                      std::optional<std::vector<std::unique_ptr<PasswordForm>>>
-                          account_store_results) {
+StoreMetricsReporter::CredentialsCount ReportAllMetrics(
+    bool custom_passphrase_enabled,
+    const std::string& sync_username,
+    bool is_opted_in_account_storage,
+    bool is_safe_browsing_enabled,
+    std::optional<std::vector<std::unique_ptr<PasswordForm>>>
+        profile_store_results,
+    std::optional<std::vector<std::unique_ptr<PasswordForm>>>
+        account_store_results) {
   // Maps from (signon_realm, username) to password.
   std::unique_ptr<
       std::map<std::pair<std::string, std::u16string>, std::u16string>>
@@ -601,15 +617,17 @@ void ReportAllMetrics(bool custom_passphrase_enabled,
     }
   }
 
+  StoreMetricsReporter::CredentialsCount credentials_count;
+
   if (profile_store_results.has_value()) {
-    ReportStoreMetrics(/*is_account_store=*/false, custom_passphrase_enabled,
-                       sync_username, is_safe_browsing_enabled,
-                       std::move(profile_store_results).value());
+    credentials_count.profile_credentials_count = ReportStoreMetrics(
+        /*is_account_store=*/false, custom_passphrase_enabled, sync_username,
+        is_safe_browsing_enabled, std::move(profile_store_results).value());
   }
   if (account_store_results.has_value()) {
-    ReportStoreMetrics(/*is_account_store=*/true, custom_passphrase_enabled,
-                       sync_username, is_safe_browsing_enabled,
-                       std::move(account_store_results).value());
+    credentials_count.account_credentials_count = ReportStoreMetrics(
+        /*is_account_store=*/true, custom_passphrase_enabled, sync_username,
+        is_safe_browsing_enabled, std::move(account_store_results).value());
   }
 
   // If both stores exist, kick off the MultiStoreMetricsReporter.
@@ -620,21 +638,8 @@ void ReportAllMetrics(bool custom_passphrase_enabled,
         std::move(account_store_passwords_per_signon_and_username),
         is_opted_in_account_storage);
   }
-}
 
-void OnMetricsReportingCompleted(
-    base::WeakPtr<StoreMetricsReporter> reporter_weak_ptr,
-    base::OnceClosure done_callback) {
-  // Metrics reporting is performed asynchronously on a background thread. By
-  // the time metrics reporting is completed, it could be the case that the
-  // StoreMetricsReporter has been destructed already (e.g. if the user closes
-  // the browser profile for which metrics are being reported). If the reporter
-  // doesn't exist anymore, it's pointless (and wrong) to run the
-  // `done_callback` since the main purpose of the `done_callback` is to
-  // destroy the reporter (as in password_store_utils.cc).
-  if (reporter_weak_ptr) {
-    std::move(done_callback).Run();
-  }
+  return credentials_count;
 }
 
 void ReportBiometricAuthenticationBeforeFillingMetrics(PrefService* prefs) {
@@ -654,15 +659,15 @@ StoreMetricsReporter::StoreMetricsReporter(
     const syncer::SyncService* sync_service,
     PrefService* prefs,
     password_manager::PasswordReuseManager* password_reuse_manager,
+    PasswordManagerSettingsService* settings,
     base::OnceClosure done_callback)
     : profile_store_(profile_store),
       account_store_(account_store),
+      prefs_(prefs),
       done_callback_(std::move(done_callback)) {
-  DCHECK(prefs);
-
   base::TimeDelta time_since_last_metrics_reporting =
       base::Time::Now() -
-      base::Time::FromTimeT(prefs->GetDouble(
+      base::Time::FromTimeT(prefs_->GetDouble(
           password_manager::prefs::kLastTimePasswordStoreMetricsReported));
   if (time_since_last_metrics_reporting < kMetricsReportingThreshold) {
     // Upon constructing StoreMetricsReporter, it's moved into member variable
@@ -675,7 +680,7 @@ StoreMetricsReporter::StoreMetricsReporter(
     return;
   }
 
-  prefs->SetDouble(
+  prefs_->SetDouble(
       password_manager::prefs::kLastTimePasswordStoreMetricsReported,
       base::Time::Now().InSecondsFSinceUnixEpoch());
 
@@ -686,17 +691,21 @@ StoreMetricsReporter::StoreMetricsReporter(
       password_manager::sync_util::GetPasswordSyncState(sync_service));
 
   is_opted_in_account_storage_ =
-      features_util::IsOptedInForAccountStorage(prefs, sync_service);
+      features_util::IsOptedInForAccountStorage(prefs_, sync_service);
 
-  is_safe_browsing_enabled_ = safe_browsing::IsSafeBrowsingEnabled(*prefs);
+  is_safe_browsing_enabled_ = safe_browsing::IsSafeBrowsingEnabled(*prefs_);
 
+  // TODO(crbug/358998546): use PasswordManagerSettingsService here.
   base::UmaHistogramEnumeration(
       base::StrCat({kPasswordManager, ".EnableState"}),
       CredentialsEnableServiceSettingToPasswordManagerEnableState(
-          prefs->FindPreference(
+          prefs_->FindPreference(
               password_manager::prefs::kCredentialsEnableService)));
+  base::UmaHistogramBoolean(
+      base::StrCat({kPasswordManager, ".AutoSignin"}),
+      settings->IsSettingEnabled(PasswordManagerSetting::kAutoSignIn));
 
-  ReportBiometricAuthenticationBeforeFillingMetrics(prefs);
+  ReportBiometricAuthenticationBeforeFillingMetrics(prefs_);
 
   // May be null in tests.
   if (profile_store) {
@@ -746,18 +755,82 @@ void StoreMetricsReporter::OnGetPasswordStoreResultsFrom(
 
   DCHECK(done_callback_);
 
-  base::ThreadPool::PostTaskAndReply(
+  // Metrics reporting is performed asynchronously on a background thread. By
+  // the time metrics reporting is completed, it could be the case that the
+  // StoreMetricsReporter has been destructed already (e.g. if the user closes
+  // the browser profile for which metrics are being reported) so
+  // `OnBackgroundMetricsReportingCompleted` won't run.
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
       base::BindOnce(&ReportAllMetrics, custom_passphrase_enabled_,
                      sync_username_, is_opted_in_account_storage_,
                      is_safe_browsing_enabled_,
                      std::exchange(profile_store_results_, std::nullopt),
                      std::exchange(account_store_results_, std::nullopt)),
-      base::BindOnce(&OnMetricsReportingCompleted,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     std::move(done_callback_)));
+      base::BindOnce(
+          &StoreMetricsReporter::OnBackgroundMetricsReportingCompleted,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
-StoreMetricsReporter::~StoreMetricsReporter() = default;
+StoreMetricsReporter::~StoreMetricsReporter() {
+  // Avoid complaints in case those objects are already dead.
+  prefs_ = nullptr;
+}
+
+void StoreMetricsReporter::OnBackgroundMetricsReportingCompleted(
+    CredentialsCount credentials_count) {
+  // Check for password loss and record metrics if a loss occurred.
+  // These metrics can't be recorded together with the rest of the metrics on
+  // the background thread because they require reading from Chrome prefs,
+  // which can't happen on the background thread.
+  int old_account_credentials_count =
+      prefs_->GetInteger(prefs::kTotalPasswordsAvailableForAccount);
+  if (old_account_credentials_count > 0 &&
+      credentials_count.account_credentials_count == 0) {
+    std::string_view store_suffix =
+        GetMetricsSuffixForStore(/*is_account_store=*/true);
+    base::UmaHistogramCustomCounts(
+        base::StrCat({kPasswordManager, store_suffix, kPasswordLossSuffix}),
+        old_account_credentials_count, 0, 1000, 100);
+
+    int credential_removal_reasons =
+        prefs_->GetInteger(prefs::kPasswordRemovalReasonForAccount);
+    base::UmaHistogramSparse(base::StrCat({kPasswordManager, store_suffix,
+                                           kPasswordLossPotentialReasonSuffix}),
+                             credential_removal_reasons);
+  }
+
+  int old_profile_credentials_count =
+      prefs_->GetInteger(prefs::kTotalPasswordsAvailableForProfile);
+  if (old_profile_credentials_count > 0 &&
+      credentials_count.profile_credentials_count == 0) {
+    std::string_view store_suffix =
+        GetMetricsSuffixForStore(/*is_account_store=*/false);
+    base::UmaHistogramCustomCounts(
+        base::StrCat({kPasswordManager, store_suffix, kPasswordLossSuffix}),
+        old_profile_credentials_count, 0, 1000, 100);
+
+    int credential_removal_reasons =
+        prefs_->GetInteger(prefs::kPasswordRemovalReasonForProfile);
+    base::UmaHistogramSparse(base::StrCat({kPasswordManager, store_suffix,
+                                           kPasswordLossPotentialReasonSuffix}),
+                             credential_removal_reasons);
+  }
+
+  // Store the current total count of passwords per store for tracking
+  // potential password loss in the future.
+  prefs_->SetInteger(prefs::kTotalPasswordsAvailableForAccount,
+                     credentials_count.account_credentials_count);
+  prefs_->SetInteger(prefs::kTotalPasswordsAvailableForProfile,
+                     credentials_count.profile_credentials_count);
+
+  // The reasons for password loss need to be tracked anew because the old
+  // ones were already processed.
+  prefs_->ClearPref(prefs::kPasswordRemovalReasonForAccount);
+  prefs_->ClearPref(prefs::kPasswordRemovalReasonForProfile);
+
+  // `done_callback_` may delete `this` object.
+  std::move(done_callback_).Run();
+}
 
 }  // namespace password_manager

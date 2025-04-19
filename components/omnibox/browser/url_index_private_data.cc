@@ -22,6 +22,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/not_fatal_until.h"
 #include "base/ranges/algorithm.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
@@ -29,8 +30,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/trace_event/memory_usage_estimator.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
-#include "components/bookmarks/browser/core_bookmark_model.h"
 #include "components/history/core/browser/history_database.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service.h"
@@ -129,7 +130,7 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
     size_t cursor_position,
     const std::string& host_filter,
     size_t max_matches,
-    bookmarks::CoreBookmarkModel* bookmark_model,
+    bookmarks::BookmarkModel* bookmark_model,
     TemplateURLService* template_url_service,
     OmniboxTriggeredFeatureService* triggered_feature_service) {
   // This list will contain the original search string and any other string
@@ -643,7 +644,7 @@ void URLIndexPrivateData::HistoryIdsToScoredMatches(
     const std::u16string& lower_raw_string,
     const std::string& host_filter,
     const TemplateURLService* template_url_service,
-    bookmarks::CoreBookmarkModel* bookmark_model,
+    bookmarks::BookmarkModel* bookmark_model,
     ScoredHistoryMatches* scored_items,
     OmniboxTriggeredFeatureService* triggered_feature_service) const {
   if (history_ids.empty())
@@ -696,7 +697,7 @@ void URLIndexPrivateData::HistoryIdsToScoredMatches(
     auto hist_pos = history_info_map_.find(history_id);
     const history::URLRow& hist_item = hist_pos->second.url_row;
     auto starts_pos = word_starts_map_.find(history_id);
-    DCHECK(starts_pos != word_starts_map_.end());
+    CHECK(starts_pos != word_starts_map_.end(), base::NotFatalUntil::M130);
 
     bool is_highly_visited_host =
         !host_filter.empty() ||
@@ -876,7 +877,8 @@ void URLIndexPrivateData::RemoveRowWordsFromIndex(const history::URLRow& row) {
   // Reconcile any changes to word usage.
   for (WordID word_id : word_id_set) {
     auto word_id_history_map_iter = word_id_history_map_.find(word_id);
-    DCHECK(word_id_history_map_iter != word_id_history_map_.end());
+    CHECK(word_id_history_map_iter != word_id_history_map_.end(),
+          base::NotFatalUntil::M130);
 
     word_id_history_map_iter->second.erase(history_id);
     if (!word_id_history_map_iter->second.empty())

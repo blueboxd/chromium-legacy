@@ -30,7 +30,6 @@
 #include "chrome/browser/ui/translate/partial_translate_bubble_model.h"
 #include "chrome/browser/ui/translate/partial_translate_bubble_ui_action_logger.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
-#include "chrome/browser/ui/views/controls/md_text_button_with_down_arrow.h"
 #include "chrome/browser/ui/views/translate/translate_icon_view.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -64,6 +63,7 @@
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
+#include "ui/views/controls/button/md_text_button_with_down_arrow.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/highlight_path_generator.h"
@@ -709,8 +709,9 @@ PartialTranslateBubbleView::CreateViewAdvancedSource() {
   source_language_combobox->SetCallback(
       base::BindRepeating(&PartialTranslateBubbleView::SourceLanguageChanged,
                           base::Unretained(this)));
-  source_language_combobox->SetAccessibleName(l10n_util::GetStringUTF16(
-      IDS_TRANSLATE_BUBBLE_SOURCE_LANG_COMBOBOX_ACCNAME));
+  source_language_combobox->GetViewAccessibility().SetName(
+      l10n_util::GetStringUTF16(
+          IDS_TRANSLATE_BUBBLE_SOURCE_LANG_COMBOBOX_ACCNAME));
   source_language_combobox_ = source_language_combobox.get();
 
   auto advanced_reset_button = std::make_unique<views::MdTextButton>(
@@ -757,8 +758,9 @@ PartialTranslateBubbleView::CreateViewAdvancedTarget() {
   target_language_combobox->SetCallback(
       base::BindRepeating(&PartialTranslateBubbleView::TargetLanguageChanged,
                           base::Unretained(this)));
-  target_language_combobox->SetAccessibleName(l10n_util::GetStringUTF16(
-      IDS_TRANSLATE_BUBBLE_TARGET_LANG_COMBOBOX_ACCNAME));
+  target_language_combobox->GetViewAccessibility().SetName(
+      l10n_util::GetStringUTF16(
+          IDS_TRANSLATE_BUBBLE_TARGET_LANG_COMBOBOX_ACCNAME));
   target_language_combobox_ = target_language_combobox.get();
 
   auto advanced_reset_button = std::make_unique<views::MdTextButton>(
@@ -882,7 +884,7 @@ PartialTranslateBubbleView::CreateOptionsMenuButton() {
   InstallCircleHighlightPathGenerator(tab_translate_options_button.get());
   std::u16string translate_options_button_label(
       l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_OPTIONS_MENU_BUTTON));
-  tab_translate_options_button->SetAccessibleName(
+  tab_translate_options_button->GetViewAccessibility().SetName(
       translate_options_button_label);
   tab_translate_options_button->SetTooltipText(translate_options_button_label);
   tab_translate_options_button->SetRequestFocusOnPress(true);

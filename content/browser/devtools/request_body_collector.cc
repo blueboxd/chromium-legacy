@@ -2,8 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/342213636): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "content/browser/devtools/request_body_collector.h"
 
+#include "base/containers/extend.h"
 #include "base/memory/raw_ref.h"
 #include "base/numerics/safe_conversions.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -23,13 +29,12 @@ class RequestBodyCollector::BodyReader : public mojo::DataPipeDrainer::Client {
       : collector_(collector), data_pipe_getter_(std::move(data_pipe_getter)) {
     data_pipe_getter_.set_disconnect_handler(
         base::BindOnce(&BodyReader::OnFailure, base::Unretained(this)));
-    mojo::ScopedDataPipeProducerHandle producer;
-    mojo::ScopedDataPipeConsumerHandle consumer;
-    MojoResult result = CreateDataPipe(/*options=*/nullptr, producer, consumer);
+    mojo::ScopedDataPipeProducerHandle pipe_producer;
+    MojoResult result =
+        CreateDataPipe(/*options=*/nullptr, pipe_producer, pipe_consumer_);
     CHECK_EQ(MOJO_RESULT_OK, result);
-    pipe_drainer_.emplace(this, std::move(consumer));
     data_pipe_getter_->Read(
-        std::move(producer),
+        std::move(pipe_producer),
         base::BindOnce(&BodyReader::OnReadStarted, base::Unretained(this)));
   }
 
@@ -37,10 +42,9 @@ class RequestBodyCollector::BodyReader : public mojo::DataPipeDrainer::Client {
 
  private:
   // mojo::DataPipeDrainer::Client overrides
-  void OnDataAvailable(const void* data, size_t num_bytes) override {
+  void OnDataAvailable(base::span<const uint8_t> data) override {
     CHECK_NE(expected_size_, 0ul);
-    auto* const begin = reinterpret_cast<const uint8_t*>(data);
-    bytes_.insert(bytes_.end(), begin, begin + num_bytes);
+    base::Extend(bytes_, data);
   }
 
   void OnDataComplete() override {
@@ -63,11 +67,13 @@ class RequestBodyCollector::BodyReader : public mojo::DataPipeDrainer::Client {
     }
     expected_size_ = base::checked_cast<size_t>(size);
     bytes_.reserve(expected_size_);
+    pipe_drainer_.emplace(this, std::move(pipe_consumer_));
   }
 
   const raw_ref<RequestBodyCollector> collector_;
   mojo::Remote<network::mojom::DataPipeGetter> data_pipe_getter_;
   size_t expected_size_ = 0;
+  mojo::ScopedDataPipeConsumerHandle pipe_consumer_;
   std::optional<mojo::DataPipeDrainer> pipe_drainer_;
   std::vector<uint8_t> bytes_;
 };

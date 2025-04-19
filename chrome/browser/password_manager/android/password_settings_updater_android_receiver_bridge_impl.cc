@@ -5,9 +5,11 @@
 #include "chrome/browser/password_manager/android/password_settings_updater_android_receiver_bridge_impl.h"
 
 #include "base/android/jni_android.h"
-#include "chrome/browser/password_manager/android/jni_headers/PasswordSettingsUpdaterReceiverBridge_jni.h"
 #include "chrome/browser/password_manager/android/password_settings_updater_android_receiver_bridge.h"
 #include "components/password_manager/core/browser/password_manager_setting.h"
+
+// Must come after all headers that specialize FromJniType() / ToJniType().
+#include "chrome/browser/password_manager/android/jni_headers/PasswordSettingsUpdaterReceiverBridge_jni.h"
 
 namespace password_manager {
 
@@ -53,8 +55,7 @@ void PasswordSettingsUpdaterAndroidReceiverBridgeImpl::SetConsumer(
 void PasswordSettingsUpdaterAndroidReceiverBridgeImpl::OnSettingValueFetched(
     JNIEnv* env,
     jint setting,
-    jboolean setting_value,
-    jboolean is_part_of_migration) {
+    jboolean setting_value) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_checker_);
   if (!consumer_) {
     return;
@@ -65,8 +66,7 @@ void PasswordSettingsUpdaterAndroidReceiverBridgeImpl::OnSettingValueFetched(
 
 void PasswordSettingsUpdaterAndroidReceiverBridgeImpl::OnSettingValueAbsent(
     JNIEnv* env,
-    jint setting,
-    jboolean is_part_of_migration) {
+    jint setting) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_checker_);
   if (!consumer_) {
     return;
@@ -78,8 +78,7 @@ void PasswordSettingsUpdaterAndroidReceiverBridgeImpl::OnSettingFetchingError(
     JNIEnv* env,
     jint setting,
     jint error,
-    jint api_error_code,
-    jboolean is_part_of_migration) {
+    jint api_error_code) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_checker_);
   consumer_->OnSettingFetchingError(
       static_cast<PasswordManagerSetting>(setting),
@@ -87,9 +86,7 @@ void PasswordSettingsUpdaterAndroidReceiverBridgeImpl::OnSettingFetchingError(
 }
 
 void PasswordSettingsUpdaterAndroidReceiverBridgeImpl::
-    OnSuccessfulSettingChange(JNIEnv* env,
-                              jint setting,
-                              jboolean is_part_of_migration) {
+    OnSuccessfulSettingChange(JNIEnv* env, jint setting) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_checker_);
   // TODO(crbug.com/40212062): Record metrics.
   consumer_->OnSuccessfulSettingChange(
@@ -100,8 +97,7 @@ void PasswordSettingsUpdaterAndroidReceiverBridgeImpl::OnFailedSettingChange(
     JNIEnv* env,
     jint setting,
     jint error,
-    jint api_error_code,
-    jboolean is_part_of_migration) {
+    jint api_error_code) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_checker_);
   consumer_->OnFailedSettingChange(
       static_cast<PasswordManagerSetting>(setting),

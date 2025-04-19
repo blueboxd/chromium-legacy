@@ -26,20 +26,8 @@
 #include "ui/views/layout/animating_layout_manager_test_util.h"
 #include "ui/views/view_utils.h"
 
-namespace {
-
 using PermissionsManager = extensions::PermissionsManager;
 using SitePermissionsHelper = extensions::SitePermissionsHelper;
-
-base::Value::List ToListValue(const std::vector<std::string>& permissions) {
-  base::Value::List builder;
-  for (const std::string& permission : permissions) {
-    builder.Append(permission);
-  }
-  return builder;
-}
-
-}  // namespace
 
 ExtensionsToolbarUnitTest::ExtensionsToolbarUnitTest() = default;
 
@@ -112,8 +100,8 @@ ExtensionsToolbarUnitTest::InstallExtension(
       extensions::ExtensionBuilder(name)
           .SetManifestVersion(3)
           .SetLocation(location)
-          .AddPermissions(permissions)
-          .SetManifestKey("host_permissions", ToListValue(host_permissions))
+          .AddAPIPermissions(permissions)
+          .AddHostPermissions(host_permissions)
           .SetID(crx_file::id_util::GenerateId(name))
           .Build();
   extension_service()->AddExtension(extension.get());
@@ -165,11 +153,11 @@ void ExtensionsToolbarUnitTest::WithholdHostPermissions(
 }
 
 void ExtensionsToolbarUnitTest::ClickButton(views::Button* button) const {
-  ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-                             ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
-                             0);
+  ui::MouseEvent press_event(ui::EventType::kMousePressed, gfx::Point(),
+                             gfx::Point(), ui::EventTimeForNow(),
+                             ui::EF_LEFT_MOUSE_BUTTON, 0);
   button->OnMousePressed(press_event);
-  ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, gfx::Point(),
+  ui::MouseEvent release_event(ui::EventType::kMouseReleased, gfx::Point(),
                                gfx::Point(), ui::EventTimeForNow(),
                                ui::EF_LEFT_MOUSE_BUTTON, 0);
   button->OnMouseReleased(release_event);

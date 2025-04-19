@@ -73,7 +73,7 @@ class WindowRestoreControllerTest : public AshTestBase,
 
   WindowRestoreControllerTest() {
     scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{features::kFasterSplitScreenSetup,
+        /*enabled_features=*/{features::kSnapGroup,
                               features::kOsSettingsRevampWayfinding},
         /*disabled_features=*/{});
   }

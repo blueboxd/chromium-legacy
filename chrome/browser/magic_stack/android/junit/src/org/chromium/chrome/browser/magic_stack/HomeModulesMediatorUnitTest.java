@@ -18,18 +18,18 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import static org.chromium.chrome.browser.magic_stack.HomeModulesMediator.INVALID_FRESHNESS_SCORE;
+
 import android.os.SystemClock;
 import android.text.TextUtils;
 
 import androidx.test.filters.SmallTest;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
@@ -38,17 +38,14 @@ import org.mockito.junit.MockitoRule;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
-import org.chromium.base.FeatureList;
-import org.chromium.base.FeatureList.TestValues;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.magic_stack.HomeModulesConfigManager.HomeModulesStateListener;
 import org.chromium.chrome.browser.magic_stack.ModuleDelegate.ModuleType;
-import org.chromium.chrome.browser.util.BrowserUiUtils.HostSurface;
 import org.chromium.components.segmentation_platform.ClassificationResult;
+import org.chromium.components.segmentation_platform.InputContext;
+import org.chromium.components.segmentation_platform.PredictionOptions;
 import org.chromium.components.segmentation_platform.prediction_status.PredictionStatus;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
@@ -65,7 +62,6 @@ import java.util.Set;
 @Config(manifest = Config.NONE)
 public class HomeModulesMediatorUnitTest {
 
-    @Rule public TestRule mProcessor = new Features.JUnitProcessor();
     @Rule public MockitoRule mMockitoRule = MockitoJUnit.rule();
 
     private static final int MODULE_TYPES = 3;
@@ -73,16 +69,14 @@ public class HomeModulesMediatorUnitTest {
     @Mock private ModuleDelegate mModuleDelegate;
     @Mock private ModuleRegistry mModuleRegistry;
     @Mock private ModuleDelegateHost mModuleDelegateHost;
-    @Mock private HomeModulesConfigManager mHomeModulesConfigManager;
+    @Mock private ModuleConfigChecker mModuleConfigChecker;
     @Spy private ModelList mModel;
-    @Captor private ArgumentCaptor<HomeModulesStateListener> mHomeModulesStateListener;
 
     private int[] mModuleTypeList;
     private ListItem[] mListItems;
     private ModuleProviderBuilder[] mModuleProviderBuilderList;
     private ModuleProvider[] mModuleProviders;
-
-    private @HostSurface int mHostSurface = HostSurface.START_SURFACE;
+    private HomeModulesConfigManager mHomeModulesConfigManager;
     private HomeModulesMediator mMediator;
 
     @Before
@@ -99,10 +93,20 @@ public class HomeModulesMediatorUnitTest {
             mListItems[i] = new ListItem(mModuleTypeList[i], Mockito.mock(PropertyModel.class));
             mModuleProviders[i] = Mockito.mock(ModuleProvider.class);
         }
-        when(mModuleDelegate.getHostSurfaceType()).thenReturn(mHostSurface);
+        mHomeModulesConfigManager = HomeModulesConfigManager.getInstance();
         mMediator =
                 new HomeModulesMediator(
                         mModel, mModuleRegistry, mModuleDelegateHost, mHomeModulesConfigManager);
+        when(mModuleConfigChecker.isEligible()).thenReturn(true);
+    }
+
+    @After
+    public void tearDown() {
+        for (int i = 0; i < ModuleType.NUM_ENTRIES; i++) {
+            mHomeModulesConfigManager.resetFreshnessCount(i);
+            mHomeModulesConfigManager.resetFreshnessTimeStampForTesting(i);
+        }
+        mHomeModulesConfigManager.cleanupForTesting();
     }
 
     @Test
@@ -336,7 +340,7 @@ public class HomeModulesMediatorUnitTest {
         assertEquals(0, mMediator.getModuleTypeToModuleProviderMapForTesting().size());
         assertEquals(0, mMediator.getModuleTypeToRankingIndexMapForTesting().size());
 
-        verify(mModel).clear();
+        assertEquals(0, mModel.size());
         verify(mSetVisibilityCallback).onResult(false);
     }
 
@@ -525,6 +529,12 @@ public class HomeModulesMediatorUnitTest {
             when(mModuleRegistry.build(eq(mModuleTypeList[i]), eq(mModuleDelegate), any()))
                     .thenReturn(true);
         }
+        ModuleProvider[] moduleProviders = new ModuleProvider[MODULE_TYPES];
+        for (int i = 0; i < MODULE_TYPES; i++) {
+            moduleProviders[i] = Mockito.mock(ModuleProvider.class);
+            // Modules are built successfully.
+            mMediator.onModuleBuilt(mModuleTypeList[i], moduleProviders[i]);
+        }
         assertEquals(0, mMediator.getModuleResultsWaitingIndexForTesting());
 
         // Calls buildModulesAndShow() to initialize ranking index map.
@@ -542,8 +552,8 @@ public class HomeModulesMediatorUnitTest {
     @SmallTest
     public void testGetFilteredEnabledModuleSet() {
         when(mModuleDelegateHost.isHomeSurface()).thenReturn(true);
-        when(mHomeModulesConfigManager.getEnabledModuleSet())
-                .thenReturn(new HashSet<>(Set.of(ModuleType.SINGLE_TAB)));
+        mHomeModulesConfigManager.registerModuleEligibilityChecker(
+                ModuleType.SINGLE_TAB, mModuleConfigChecker);
 
         Set<Integer> expectedModuleSet = Set.of(ModuleType.SINGLE_TAB);
         assertEquals(expectedModuleSet, mMediator.getFilteredEnabledModuleSet());
@@ -553,22 +563,24 @@ public class HomeModulesMediatorUnitTest {
     @SmallTest
     public void testGetFilteredEnabledModuleSet_AllModules() {
         HomeModulesMetricsUtils.HOME_MODULES_SHOW_ALL_MODULES.setForTesting(true);
-        when(mHomeModulesConfigManager.getEnabledModuleSet())
-                .thenReturn(
-                        new HashSet<>(
-                                Set.of(
-                                        ModuleType.SINGLE_TAB,
-                                        ModuleType.PRICE_CHANGE,
-                                        ModuleType.TAB_RESUMPTION)));
+        for (@ModuleType int i = 0; i < ModuleType.NUM_ENTRIES; i++) {
+            mHomeModulesConfigManager.registerModuleEligibilityChecker(i, mModuleConfigChecker);
+        }
+
         when(mModuleDelegateHost.isHomeSurface()).thenReturn(true);
         Set<Integer> expectedModuleSet =
-                Set.of(ModuleType.PRICE_CHANGE, ModuleType.SINGLE_TAB, ModuleType.TAB_RESUMPTION);
+                Set.of(
+                        ModuleType.PRICE_CHANGE,
+                        ModuleType.SINGLE_TAB,
+                        ModuleType.TAB_RESUMPTION,
+                        ModuleType.SAFETY_HUB);
         assertEquals(expectedModuleSet, mMediator.getFilteredEnabledModuleSet());
 
         // Verifies that the single tab module isn't shown if it isn't the home surface even with
         // "show all modules" parameter is enabled.
         when(mModuleDelegateHost.isHomeSurface()).thenReturn(false);
-        expectedModuleSet = Set.of(ModuleType.PRICE_CHANGE, ModuleType.TAB_RESUMPTION);
+        expectedModuleSet =
+                Set.of(ModuleType.PRICE_CHANGE, ModuleType.TAB_RESUMPTION, ModuleType.SAFETY_HUB);
         assertEquals(expectedModuleSet, mMediator.getFilteredEnabledModuleSet());
     }
 
@@ -576,19 +588,16 @@ public class HomeModulesMediatorUnitTest {
     @SmallTest
     @EnableFeatures({ChromeFeatureList.TAB_RESUMPTION_MODULE_ANDROID})
     public void testGetFilteredEnabledModuleSet_CombineTabs_TabResumptionEnabled() {
-        HomeModulesMetricsUtils.HOME_MODULES_COMBINE_TABS.setForTesting(true);
-        when(mHomeModulesConfigManager.getEnabledModuleSet())
-                .thenReturn(
-                        new HashSet<>(
-                                Set.of(
-                                        ModuleType.SINGLE_TAB,
-                                        ModuleType.PRICE_CHANGE,
-                                        ModuleType.TAB_RESUMPTION)));
+        HomeModulesMetricsUtils.TAB_RESUMPTION_COMBINE_TABS.setForTesting(true);
+        for (@ModuleType int i = 0; i < ModuleType.NUM_ENTRIES; i++) {
+            mHomeModulesConfigManager.registerModuleEligibilityChecker(i, mModuleConfigChecker);
+        }
         when(mModuleDelegateHost.isHomeSurface()).thenReturn(true);
 
         // Verifies that the tab resumption module will be added to the list without the single tab
         // module.
-        Set<Integer> expectedModuleSet = Set.of(ModuleType.PRICE_CHANGE, ModuleType.TAB_RESUMPTION);
+        Set<Integer> expectedModuleSet =
+                Set.of(ModuleType.PRICE_CHANGE, ModuleType.TAB_RESUMPTION, ModuleType.SAFETY_HUB);
         assertEquals(expectedModuleSet, mMediator.getFilteredEnabledModuleSet());
     }
 
@@ -598,9 +607,11 @@ public class HomeModulesMediatorUnitTest {
         ChromeFeatureList.TAB_RESUMPTION_MODULE_ANDROID,
     })
     public void testGetFilteredEnabledModuleSet_CombineTabs_TabResumptionDisabled() {
-        HomeModulesMetricsUtils.HOME_MODULES_COMBINE_TABS.setForTesting(true);
-        when(mHomeModulesConfigManager.getEnabledModuleSet())
-                .thenReturn(new HashSet<>(Set.of(ModuleType.SINGLE_TAB, ModuleType.PRICE_CHANGE)));
+        HomeModulesMetricsUtils.TAB_RESUMPTION_COMBINE_TABS.setForTesting(true);
+        mHomeModulesConfigManager.registerModuleEligibilityChecker(
+                ModuleType.PRICE_CHANGE, mModuleConfigChecker);
+        mHomeModulesConfigManager.registerModuleEligibilityChecker(
+                ModuleType.SINGLE_TAB, mModuleConfigChecker);
 
         when(mModuleDelegateHost.isHomeSurface()).thenReturn(true);
         // Verifies that the single tab module will be added to the set if the tab resumption
@@ -617,89 +628,110 @@ public class HomeModulesMediatorUnitTest {
 
     @Test
     @SmallTest
-    @DisableFeatures({ChromeFeatureList.SEGMENTATION_PLATFORM_ANDROID_HOME_MODULE_RANKER})
-    public void testCreateContextInputDisabled() {
-        setFieldTrialForUseFreshnessScoreParam("false");
-        assertFalse(
-                ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                        ChromeFeatureList.SEGMENTATION_PLATFORM_ANDROID_HOME_MODULE_RANKER,
-                        HomeModulesMediator.USE_FRESHNESS_SCORE_PARAM,
-                        false));
-        Set<Integer> filteredEnabledModuleSet = Set.of(ModuleType.PRICE_CHANGE);
-
-        // Verifies that createInputContext() returns null if the feature parameter isn't enabled.
-        assertNull(mMediator.createInputContext(filteredEnabledModuleSet));
-    }
-
-    @Test
-    @SmallTest
-    @EnableFeatures({ChromeFeatureList.SEGMENTATION_PLATFORM_ANDROID_HOME_MODULE_RANKER})
+    @EnableFeatures({
+        ChromeFeatureList.SEGMENTATION_PLATFORM_ANDROID_HOME_MODULE_RANKER,
+        ChromeFeatureList.SEGMENTATION_PLATFORM_ANDROID_HOME_MODULE_RANKER_V2
+    })
     public void testCreateContextInputEnabled_Empty() {
-        setFieldTrialForUseFreshnessScoreParam("true");
         assertTrue(
-                ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                        ChromeFeatureList.SEGMENTATION_PLATFORM_ANDROID_HOME_MODULE_RANKER,
-                        HomeModulesMediator.USE_FRESHNESS_SCORE_PARAM,
-                        false));
-        Set<Integer> filteredEnabledModuleSet = new HashSet<>();
+                ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.SEGMENTATION_PLATFORM_ANDROID_HOME_MODULE_RANKER_V2));
 
-        // Verifies that createInputContext() returns null if there isn't any enabled modules.
-        assertNull(mMediator.createInputContext(filteredEnabledModuleSet));
+        // Verifies that createInputContext() returns an empty one with invalid score value.
+        InputContext inputContext = mMediator.createInputContext();
+        verifyEmptyInputContext(inputContext);
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures({
+        ChromeFeatureList.SEGMENTATION_PLATFORM_ANDROID_HOME_MODULE_RANKER,
+        ChromeFeatureList.SEGMENTATION_PLATFORM_ANDROID_HOME_MODULE_RANKER_V2
+    })
+    public void testCreateOptions_FlagEnabled() {
+        assertTrue(
+                ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.SEGMENTATION_PLATFORM_ANDROID_HOME_MODULE_RANKER_V2));
+
+        // Verifies that createPredictionOptions() returns ondemand prediction options.
+        PredictionOptions actualOptions = mMediator.createPredictionOptions();
+        PredictionOptions expectedOptions =
+                new PredictionOptions(
+                        /* onDemandExecution= */ true,
+                        /* canUpdateCacheForFutureRequests= */ true,
+                        /* fallbackAllowed= */ true);
+        actualOptions.equals(expectedOptions);
     }
 
     @Test
     @SmallTest
     @EnableFeatures({ChromeFeatureList.SEGMENTATION_PLATFORM_ANDROID_HOME_MODULE_RANKER})
+    @DisableFeatures({ChromeFeatureList.SEGMENTATION_PLATFORM_ANDROID_HOME_MODULE_RANKER_V2})
+    public void testCreateOptions_FlagDisabled() {
+        assertFalse(
+                ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.SEGMENTATION_PLATFORM_ANDROID_HOME_MODULE_RANKER_V2));
+
+        // Verifies that createPredictionOptions() returns cache prediction options.
+        PredictionOptions actualOptions = mMediator.createPredictionOptions();
+        PredictionOptions expectedOptions = new PredictionOptions(false);
+        actualOptions.equals(expectedOptions);
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures({ChromeFeatureList.SEGMENTATION_PLATFORM_ANDROID_HOME_MODULE_RANKER})
+    @DisableFeatures({ChromeFeatureList.SEGMENTATION_PLATFORM_ANDROID_HOME_MODULE_RANKER_V2})
     public void testCreateContextInputEnabled_NoFreshnessScore() {
-        setFieldTrialForUseFreshnessScoreParam("true");
-        assertTrue(
-                ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                        ChromeFeatureList.SEGMENTATION_PLATFORM_ANDROID_HOME_MODULE_RANKER,
-                        HomeModulesMediator.USE_FRESHNESS_SCORE_PARAM,
-                        false));
+        assertFalse(
+                ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.SEGMENTATION_PLATFORM_ANDROID_HOME_MODULE_RANKER_V2));
         @ModuleType int moduleType = ModuleType.PRICE_CHANGE;
-        Set<Integer> filteredEnabledModuleSet = Set.of(moduleType);
 
-        // Verifies that no InputContext is created if the freshness score is invalid or not added.
-        when(mHomeModulesConfigManager.getFreshnessCount(moduleType))
-                .thenReturn(HomeModulesConfigManager.INVALID_FRESHNESS_SCORE);
-        assertNull(mMediator.createInputContext(filteredEnabledModuleSet));
+        // Verifies that createInputContext() returns an empty one with invalid score value if the
+        // freshness score is invalid or not added.
+        mHomeModulesConfigManager.setFreshnessCountForTesting(
+                moduleType, HomeModulesConfigManager.INVALID_FRESHNESS_SCORE);
+        InputContext inputContext = mMediator.createInputContext();
+        verifyEmptyInputContext(inputContext);
     }
 
     @Test
     @SmallTest
-    @EnableFeatures({ChromeFeatureList.SEGMENTATION_PLATFORM_ANDROID_HOME_MODULE_RANKER})
+    @EnableFeatures({
+        ChromeFeatureList.SEGMENTATION_PLATFORM_ANDROID_HOME_MODULE_RANKER,
+        ChromeFeatureList.SEGMENTATION_PLATFORM_ANDROID_HOME_MODULE_RANKER_V2
+    })
     public void testCreateContextInputEnabled() {
-        setFieldTrialForUseFreshnessScoreParam("true");
         assertTrue(
-                ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                        ChromeFeatureList.SEGMENTATION_PLATFORM_ANDROID_HOME_MODULE_RANKER,
-                        HomeModulesMediator.USE_FRESHNESS_SCORE_PARAM,
-                        false));
+                ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.SEGMENTATION_PLATFORM_ANDROID_HOME_MODULE_RANKER_V2));
         @ModuleType int moduleType = ModuleType.PRICE_CHANGE;
-        Set<Integer> filteredEnabledModuleSet = Set.of(moduleType);
 
         // Verifies that if the logged time is longer than the threshold, the freshness score is
-        // rejected.
+        // invalid.
+        int expectedScore = 100;
         long scoreLoggedTime =
                 SystemClock.elapsedRealtime() - HomeModulesMediator.FRESHNESS_THRESHOLD_MS - 10;
-        when(mHomeModulesConfigManager.getFreshnessScoreTimeStamp(moduleType))
-                .thenReturn(scoreLoggedTime);
-        when(mHomeModulesConfigManager.getFreshnessCount(moduleType)).thenReturn(0);
-        assertNull(mMediator.createInputContext(filteredEnabledModuleSet));
+        mHomeModulesConfigManager.setFreshnessScoreTimeStamp(moduleType, scoreLoggedTime);
+        mHomeModulesConfigManager.setFreshnessCountForTesting(moduleType, expectedScore);
+        InputContext inputContext = mMediator.createInputContext();
+        verifyEmptyInputContext(inputContext);
 
         // Verifies that the freshness score will be used if the logging time is less than the
         // threshold.
         scoreLoggedTime = SystemClock.elapsedRealtime() - 10;
-        when(mHomeModulesConfigManager.getFreshnessScoreTimeStamp(moduleType))
-                .thenReturn(scoreLoggedTime);
-        assertNotNull(mMediator.createInputContext(filteredEnabledModuleSet));
+        mHomeModulesConfigManager.setFreshnessScoreTimeStamp(moduleType, scoreLoggedTime);
+        mHomeModulesConfigManager.setFreshnessCountForTesting(moduleType, expectedScore);
+        int[] scores = new int[] {-1, expectedScore, -1, -1};
+        inputContext = mMediator.createInputContext();
+        verifyInputContext(inputContext, scores);
 
         // Verifies that if the freshness score becomes invalid or removed, there isn't any entry
         // added to the InputContext.
-        when(mHomeModulesConfigManager.getFreshnessCount(moduleType))
-                .thenReturn(HomeModulesConfigManager.INVALID_FRESHNESS_SCORE);
-        assertNull(mMediator.createInputContext(filteredEnabledModuleSet));
+        mHomeModulesConfigManager.setFreshnessCountForTesting(moduleType, INVALID_FRESHNESS_SCORE);
+        inputContext = mMediator.createInputContext();
+        verifyEmptyInputContext(inputContext);
     }
 
     // newly added:
@@ -819,12 +851,27 @@ public class HomeModulesMediatorUnitTest {
                 HomeModulesMetricsUtils.getFreshnessInputContextString(moduleType));
     }
 
-    private void setFieldTrialForUseFreshnessScoreParam(String useFreshnessScoreParamValue) {
-        FeatureList.TestValues testValues = new TestValues();
-        testValues.addFieldTrialParamOverride(
-                ChromeFeatureList.SEGMENTATION_PLATFORM_ANDROID_HOME_MODULE_RANKER,
-                HomeModulesMediator.USE_FRESHNESS_SCORE_PARAM,
-                useFreshnessScoreParamValue);
-        FeatureList.setTestValues(testValues);
+    private void verifyInputContext(InputContext inputContext, int[] scores) {
+        assertEquals(ModuleType.NUM_ENTRIES, inputContext.getSizeForTesting());
+        for (int i = 0; i < ModuleType.NUM_ENTRIES; i++) {
+            assertEquals(
+                    scores[i],
+                    inputContext.getEntryForTesting(
+                                    HomeModulesMetricsUtils.getFreshnessInputContextString(i))
+                            .floatValue,
+                    0.01);
+        }
+    }
+
+    private void verifyEmptyInputContext(InputContext inputContext) {
+        assertEquals(ModuleType.NUM_ENTRIES, inputContext.getSizeForTesting());
+        for (int i = 0; i < ModuleType.NUM_ENTRIES; i++) {
+            assertEquals(
+                    INVALID_FRESHNESS_SCORE,
+                    inputContext.getEntryForTesting(
+                                    HomeModulesMetricsUtils.getFreshnessInputContextString(i))
+                            .floatValue,
+                    0.01);
+        }
     }
 }

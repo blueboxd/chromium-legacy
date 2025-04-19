@@ -8,6 +8,8 @@
 #include <utility>
 
 #include "base/barrier_closure.h"
+#include "base/containers/span.h"
+#include "base/not_fatal_until.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
@@ -73,10 +75,8 @@ class Receiver {
   void OnReadable(MojoResult) {
     // It isn't necessary to handle MojoResult here since BeginReadDataRaw()
     // returns an equivalent error.
-    const void* buffer = nullptr;
-    size_t bytes_read = 0;
-    MojoResult rv =
-        handle_->BeginReadData(&buffer, &bytes_read, MOJO_READ_DATA_FLAG_NONE);
+    base::span<const uint8_t> buffer;
+    MojoResult rv = handle_->BeginReadData(MOJO_READ_DATA_FLAG_NONE, buffer);
     switch (rv) {
       case MOJO_RESULT_BUSY:
       case MOJO_RESULT_INVALID_ARGUMENT:
@@ -99,15 +99,14 @@ class Receiver {
         return;
     }
 
-    if (bytes_read > 0) {
-      data_.Append(static_cast<const uint8_t*>(buffer),
-                   base::checked_cast<wtf_size_t>(bytes_read));
+    if (!buffer.empty()) {
+      data_.AppendSpan(base::as_chars(buffer));
     }
 
-    rv = handle_->EndReadData(bytes_read);
+    rv = handle_->EndReadData(buffer.size());
     DCHECK_EQ(rv, MOJO_RESULT_OK);
-    CHECK_GE(remaining_bytes_, bytes_read);
-    remaining_bytes_ -= bytes_read;
+    CHECK_GE(remaining_bytes_, buffer.size());
+    remaining_bytes_ -= buffer.size();
     watcher_.ArmOrNotify();
   }
 
@@ -218,7 +217,7 @@ class Internal : public mojom::blink::ServiceWorkerInstalledScriptsManager {
   void OnScriptReceived(mojom::blink::ServiceWorkerScriptInfoPtr script_info) {
     DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
     auto iter = running_receivers_.find(script_info->script_url);
-    DCHECK(iter != running_receivers_.end());
+    CHECK(iter != running_receivers_.end(), base::NotFatalUntil::M130);
     std::unique_ptr<BundledReceivers> receivers = std::move(iter->value);
     DCHECK(receivers);
     if (!receivers->body()->HasReceivedAllData() ||

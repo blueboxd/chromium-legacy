@@ -35,6 +35,7 @@ import textwrap
 import unittest
 from unittest import mock
 
+from blinkpy.common.checkout.git import FileStatus, FileStatusType
 from blinkpy.common.host_mock import MockHost
 from blinkpy.common.system.executive_mock import MockExecutive
 from blinkpy.common.system.log_testing import LoggingTestCase
@@ -141,6 +142,33 @@ class PortTest(LoggingTestCase):
         self.assertEqual(
             port.output_filename(test_file, '-actual', '.png'),
             'fast/test_include=HTML._-actual.png')
+
+    def test_parse_output_filename(self):
+        port = self.make_port()
+
+        location, base_path = port.parse_output_filename('passes/text.html')
+        self.assertEqual(location.platform, '')
+        self.assertEqual(location.flag_specific, '')
+        self.assertEqual(location.virtual_suite, '')
+        self.assertEqual(base_path, 'passes/text.html')
+
+        location, base_path = port.parse_output_filename(
+            '/mock-checkout/third_party/blink/web_tests/'
+            'flag-specific/fake-flag')
+        self.assertEqual(location.platform, '')
+        self.assertEqual(location.flag_specific, 'fake-flag')
+        self.assertEqual(location.virtual_suite, '')
+        self.assertEqual(base_path, '')
+
+        location, base_path = port.parse_output_filename(
+            'platform/mac/virtual/fake-vts/passes/text.html')
+        self.assertEqual(location.platform, 'mac')
+        self.assertEqual(location.flag_specific, '')
+        self.assertEqual(location.virtual_suite, 'fake-vts')
+        self.assertEqual(base_path, 'passes/text.html')
+
+        with self.assertRaises(ValueError):
+            port.parse_output_filename('/mock-checkout/not/web_tests')
 
     def test_test_from_output_filename_html(self):
         port = self.make_port()
@@ -598,18 +626,6 @@ class PortTest(LoggingTestCase):
         self.assertEqual(list(port.expectations_dict().values()),
                          ['content1\n', 'content2\n'])
 
-    def test_additional_driver_flags_for_chrome(self):
-        port = self.make_port()
-        port.set_option_default('driver_name', 'chrome')
-        flags = port.additional_driver_flags()
-        self.assertNotIn('--run-web-tests', flags)
-        self.assertIn('--enable-blink-test-features', flags)
-        ignore_certs_flags = [
-            flag for flag in flags
-            if flag.startswith('--ignore-certificate-errors-spki-list=')
-        ]
-        self.assertEqual(len(ignore_certs_flags), 1)
-
     def test_flag_specific_expectations(self):
         port = self.make_port(port_name='foo')
         port.host.filesystem.remove(MOCK_WEB_TESTS + 'TestExpectations')
@@ -836,9 +852,10 @@ class PortTest(LoggingTestCase):
             'rev-parse': '012345\n',
             'ls-files': '',
         }[command[0]]
-        mock_git.changed_files.return_value = [
-            'third_party/blink/web_tests/external/wpt/deleted.html'
-        ]
+        mock_git.changed_files.return_value = {
+            'third_party/blink/web_tests/external/wpt/deleted.html':
+            FileStatus(FileStatusType.DELETE),
+        }
 
         with mock.patch.object(port.host, 'git', return_value=mock_git):
             self.assertTrue(port.should_update_manifest('external/wpt'))
@@ -875,9 +892,10 @@ class PortTest(LoggingTestCase):
             'ls-files':
             'third_party/blink/web_tests/external/wpt/untracked.html\x00',
         }[command[0]]
-        mock_git.changed_files.return_value = [
-            'third_party/blink/web_tests/external/wpt/uncommitted.html'
-        ]
+        mock_git.changed_files.return_value = {
+            'third_party/blink/web_tests/external/wpt/uncommitted.html':
+            FileStatus(FileStatusType.ADD),
+        }
 
         with mock.patch.object(port.host, 'git', return_value=mock_git):
             self.assertFalse(port.should_update_manifest('external/wpt'))
@@ -919,9 +937,10 @@ class PortTest(LoggingTestCase):
             'rev-parse': '012345\n',
             'ls-files': '',
         }[command[0]]
-        mock_git.changed_files.return_value = [
-            'third_party/blink/web_tests/wpt_internal/changed.html'
-        ]
+        mock_git.changed_files.return_value = {
+            'third_party/blink/web_tests/wpt_internal/changed.html':
+            FileStatus(FileStatusType.MODIFY),
+        }
 
         with mock.patch.object(port.host, 'git', return_value=mock_git):
             self.assertTrue(port.should_update_manifest('wpt_internal'))
@@ -1316,6 +1335,30 @@ class PortTest(LoggingTestCase):
             port.is_slow_wpt_test('/dom/ranges/Range-attributes.html'))
         self.assertFalse(
             port.is_slow_wpt_test('/dom/ranges/Range-attributes-slow.html'))
+
+    def test_is_testharness_test_wpt(self):
+        port = self.make_port(with_tests=True)
+        add_manifest_to_mock_filesystem(port)
+        self.assertTrue(
+            port.is_testharness_test(
+                'external/wpt/dom/ranges/Range-attributes.html'))
+        self.assertFalse(
+            port.is_testharness_test(
+                'external/wpt/portals/portals-no-frame-crash.html'))
+
+    def test_is_testhanress_test_legacy(self):
+        port = self.make_port(with_tests=True)
+        fs = port.host.filesystem
+        fs.write_text_file(
+            fs.join(port.web_tests_dir(), 'testharness.html'),
+            '<html><script src="../../resources/testharness.js"></script>')
+        fs.write_text_file(
+            fs.join(port.web_tests_dir(), 'not-testharness.html'),
+            '<html><script src="../../resources/js-test.js"></script>')
+
+        self.assertTrue(port.is_testharness_test('testharness.html'))
+        self.assertFalse(port.is_testharness_test('not-testharness.html'))
+        self.assertFalse(port.is_testharness_test('does-not-exist.html'))
 
     def test_get_wpt_fuzzy_metadata_for_non_wpt_test(self):
         port = self.make_port(with_tests=True)
@@ -2170,15 +2213,6 @@ class PortTest(LoggingTestCase):
             port.path_to_never_fix_tests_file(),
             '# results: [ Skip ]\nfailures/expected/image.html [ Skip ]\n')
         self.assertTrue(port.skips_test('failures/expected/image.html'))
-
-    def test_disable_system_font_check_and_nocheck_sys_deps(self):
-        port = self.make_port()
-        self.assertNotIn('--disable-system-font-check',
-                         port.additional_driver_flags())
-        port = self.make_port(
-            options=optparse.Values({'nocheck_sys_deps': True}))
-        self.assertIn('--disable-system-font-check',
-                      port.additional_driver_flags())
 
     def test_enable_tracing(self):
         options, _ = optparse.OptionParser().parse_args([])

@@ -313,25 +313,6 @@ enum {
   SCOPED_UMA_HISTOGRAM_TIMER_MICROS(                     \
       "Accessibility.Performance.WinAPIs." #enum_value)
 
-#define StringForSource_WebContents "WebContents."
-#define StringForSource_Views "Views."
-
-#define WIN_ACCESSIBILITY_SOURCE_API_PERF_HISTOGRAM(api_enum)                  \
-  if (GetDelegate() && GetDelegate()->node()) {                                \
-    if (!GetDelegate()->node()->IsView()) {                                    \
-      SCOPED_UMA_HISTOGRAM_TIMER_MICROS(                                       \
-          "Accessibility.Performance."                                         \
-          "WinAPIs." StringForSource_WebContents #api_enum);                   \
-    } else {                                                                   \
-      SCOPED_UMA_HISTOGRAM_TIMER_MICROS(                                       \
-          "Accessibility.Performance."                                         \
-          "WinAPIs." StringForSource_Views #api_enum);                         \
-    }                                                                          \
-  } else {                                                                     \
-    SCOPED_UMA_HISTOGRAM_TIMER_MICROS(                                         \
-        "Accessibility.Performance.WinAPIs." StringForSource_Views #api_enum); \
-  }
-
 //
 // Macros to use at the top of any AXPlatformNodeWin (or derived class) method
 // that implements a UIA COM interface. The error code UIA_E_ELEMENTNOTAVAILABLE
@@ -1569,6 +1550,12 @@ class COMPONENT_EXPORT(AX_PLATFORM) __declspec(
   UIARoleProperties GetUIARoleProperties();
 
   AXPlatformNodeWin* GetUIATableAncestor() const;
+
+  bool IsSelectionItemSupported() const;
+
+  bool IsToggleSupported() const;
+
+  bool IsInvokeSupported() const;
 
   // Start and end offsets of an active composition
   gfx::Range active_composition_range_;

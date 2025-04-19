@@ -7,6 +7,7 @@
 #include <optional>
 
 #include "base/base64.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -14,7 +15,10 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/types/expected.h"
+#include "base/version_info/channel.h"
 #include "chrome/browser/os_crypt/app_bound_encryption_win.h"
+#include "chrome/common/channel_info.h"
+#include "components/crash/core/common/crash_key.h"
 #include "components/os_crypt/async/common/algorithm.mojom.h"
 #include "components/os_crypt/async/common/encryptor.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -36,36 +40,37 @@ constexpr uint8_t kCryptAppBoundKeyPrefix[] = {'A', 'P', 'P', 'B'};
 // OSCryptAsync to identify that data has been encrypted with this key.
 constexpr char kAppBoundDataPrefix[] = "v20";
 
-// Whether or not this provider will be used for encryption. For now this is
-// only controlled by tests, but in the future this will be controlled
-// dynamically via variations.
-bool g_enable_encryption_for_testing = false;
+namespace features {
+// Emergency 'off-switch' just in case a ton of these log entries are created.
+// Current metrics show that fewer than 0.1% of clients should emit a log
+// though.
+BASE_FEATURE(kAppBoundEncryptionMetricsExtendedLogs,
+             "AppBoundEncryptionMetricsExtendedLogs",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+}  // namespace features
 
 }  // namespace
 
 AppBoundEncryptionProviderWin::AppBoundEncryptionProviderWin(
-    PrefService* local_state)
+    PrefService* local_state,
+    bool use_for_encryption)
     : local_state_(local_state),
-      com_worker_(
-          base::ThreadPool::CreateCOMSTATaskRunner({base::MayBlock()})) {}
+      com_worker_(base::ThreadPool::CreateCOMSTATaskRunner({base::MayBlock()})),
+      use_for_encryption_(use_for_encryption) {}
 
 AppBoundEncryptionProviderWin::~AppBoundEncryptionProviderWin() = default;
 
 class AppBoundEncryptionProviderWin::COMWorker {
  public:
-  std::optional<const std::vector<const uint8_t>> EncryptKey(
+  std::optional<const std::vector<uint8_t>> EncryptKey(
       const std::vector<uint8_t>& decrypted_key) {
     std::string plaintext_string(decrypted_key.begin(), decrypted_key.end());
     std::string ciphertext;
     DWORD last_error;
-    HRESULT res;
 
-    {
-      SCOPED_UMA_HISTOGRAM_TIMER("OSCrypt.AppBoundProvider.Encrypt.Time");
-      res = os_crypt::EncryptAppBoundString(
-          ProtectionLevel::PROTECTION_PATH_VALIDATION, plaintext_string,
-          ciphertext, last_error);
-    }
+    HRESULT res = os_crypt::EncryptAppBoundString(
+        ProtectionLevel::PROTECTION_PATH_VALIDATION, plaintext_string,
+        ciphertext, last_error);
 
     base::UmaHistogramSparse("OSCrypt.AppBoundProvider.Encrypt.ResultCode",
                              res);
@@ -79,21 +84,18 @@ class AppBoundEncryptionProviderWin::COMWorker {
       return std::nullopt;
     }
 
-    return std::vector<const uint8_t>(ciphertext.cbegin(), ciphertext.cend());
+    return std::vector<uint8_t>(ciphertext.cbegin(), ciphertext.cend());
   }
 
   std::optional<const std::vector<uint8_t>> DecryptKey(
-      const std::vector<const uint8_t>& encrypted_key) {
+      const std::vector<uint8_t>& encrypted_key) {
     DWORD last_error;
     std::string encrypted_key_string(encrypted_key.begin(),
                                      encrypted_key.end());
     std::string decrypted_key_string;
-    HRESULT res;
-    {
-      SCOPED_UMA_HISTOGRAM_TIMER("OSCrypt.AppBoundProvider.Decrypt.Time");
-      res = os_crypt::DecryptAppBoundString(encrypted_key_string,
-                                            decrypted_key_string, last_error);
-    }
+    std::string log_message;
+    HRESULT res = os_crypt::DecryptAppBoundString(
+        encrypted_key_string, decrypted_key_string, last_error, &log_message);
 
     base::UmaHistogramSparse("OSCrypt.AppBoundProvider.Decrypt.ResultCode",
                              res);
@@ -104,6 +106,18 @@ class AppBoundEncryptionProviderWin::COMWorker {
                  << " GetLastError: " << last_error;
       base::UmaHistogramSparse(
           "OSCrypt.AppBoundProvider.Decrypt.ResultLastError", last_error);
+      // Only log this extended data on Dev channel.
+      if (!log_message.empty() &&
+          chrome::GetChannel() == version_info::Channel::DEV &&
+          base::FeatureList::IsEnabled(
+              features::kAppBoundEncryptionMetricsExtendedLogs)) {
+        // Log message is two paths and some linking text totalling fewer than
+        // 25 characters.
+        static crash_reporter::CrashKeyString<(MAX_PATH * 2) + 25>
+            app_bound_log_message("app_bound_log");
+        app_bound_log_message.Set(log_message);
+        base::debug::DumpWithoutCrashing();
+      }
       return std::nullopt;
     }
 
@@ -122,11 +136,6 @@ void AppBoundEncryptionProviderWin::RegisterLocalPrefs(
   registry->RegisterStringPref(kEncryptedKeyPrefName, std::string());
 }
 
-void AppBoundEncryptionProviderWin::SetEnableEncryptionForTesting(
-    bool use_for_encryption) {
-  g_enable_encryption_for_testing = use_for_encryption;
-}
-
 void AppBoundEncryptionProviderWin::GetKey(KeyCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto encrypted_key_data = RetrieveEncryptedKey();
@@ -136,6 +145,10 @@ void AppBoundEncryptionProviderWin::GetKey(KeyCallback callback) {
       encrypted_key_data.error_or(KeyRetrievalStatus::kSuccess));
   const auto support_level =
       os_crypt::GetAppBoundEncryptionSupportLevel(local_state_);
+
+  base::UmaHistogramEnumeration("OSCrypt.AppBoundEncryption.SupportLevel",
+                                support_level);
+
   if (support_level == os_crypt::SupportLevel::kNotSystemLevel) {
     // No service. No App-Bound APIs are available, so fail now.
     std::move(callback).Run(kAppBoundDataPrefix, std::nullopt);
@@ -177,14 +190,14 @@ void AppBoundEncryptionProviderWin::GetKey(KeyCallback callback) {
 
 bool AppBoundEncryptionProviderWin::UseForEncryption() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return g_enable_encryption_for_testing;
+  return use_for_encryption_;
 }
 
 bool AppBoundEncryptionProviderWin::IsCompatibleWithOsCryptSync() {
   return false;
 }
 
-base::expected<std::vector<const uint8_t>,
+base::expected<std::vector<uint8_t>,
                AppBoundEncryptionProviderWin::KeyRetrievalStatus>
 AppBoundEncryptionProviderWin::RetrieveEncryptedKey() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -209,7 +222,7 @@ AppBoundEncryptionProviderWin::RetrieveEncryptedKey() {
   }
 
   // Trim off the key prefix.
-  return std::vector<const uint8_t>(
+  return std::vector<uint8_t>(
       encrypted_key_with_header->cbegin() + sizeof(kCryptAppBoundKeyPrefix),
       encrypted_key_with_header->cend());
 }
@@ -217,7 +230,7 @@ AppBoundEncryptionProviderWin::RetrieveEncryptedKey() {
 void AppBoundEncryptionProviderWin::StoreEncryptedKeyAndReply(
     const std::vector<uint8_t>& decrypted_key,
     KeyCallback callback,
-    const std::optional<std::vector<const uint8_t>>& encrypted_key) {
+    const std::optional<std::vector<uint8_t>>& encrypted_key) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!encrypted_key) {
     // Failure here causes the provider not to be registered.

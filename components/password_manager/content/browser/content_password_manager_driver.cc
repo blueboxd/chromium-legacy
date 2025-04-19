@@ -64,7 +64,7 @@ bool HasValidURL(content::RenderFrameHost* render_frame_host) {
   if (!url.is_valid())
     return false;
 
-  return password_manager::bad_message::CheckChildProcessSecurityPolicyForURL(
+  return password_manager::bad_message::CheckForIllegalURL(
       render_frame_host, url,
       password_manager::BadMessageReason::CPMD_BAD_ORIGIN_FORM_SUBMITTED);
 }
@@ -148,7 +148,10 @@ ContentPasswordManagerDriver::GetForRenderFrameHost(
   ContentPasswordManagerDriverFactory* factory =
       ContentPasswordManagerDriverFactory::FromWebContents(
           content::WebContents::FromRenderFrameHost(render_frame_host));
-  return factory ? factory->GetDriverForFrame(render_frame_host) : nullptr;
+  return factory ? factory->GetDriverForFrame(
+                       render_frame_host,
+                       base::PassKey<ContentPasswordManagerDriver>())
+                 : nullptr;
 }
 
 void ContentPasswordManagerDriver::BindPendingReceiver(
@@ -226,16 +229,17 @@ void ContentPasswordManagerDriver::FocusNextFieldAfterPasswords() {
   GetPasswordGenerationAgent()->FocusNextFieldAfterPasswords();
 }
 
-void ContentPasswordManagerDriver::FillField(autofill::FieldRendererId field_id,
-                                             const std::u16string& value) {
+void ContentPasswordManagerDriver::FillField(const std::u16string& value) {
   if (const auto& agent = GetPasswordAutofillAgent()) {
-    agent->FillField(field_id, value);
+    LogFilledFieldType();
+    agent->FillField(last_triggering_field_id_, value);
   }
 }
 
 void ContentPasswordManagerDriver::FillSuggestion(
     const std::u16string& username,
     const std::u16string& password) {
+  LogFilledFieldType();
   GetPasswordAutofillAgent()->FillPasswordSuggestion(username, password);
 }
 
@@ -243,6 +247,7 @@ void ContentPasswordManagerDriver::FillIntoFocusedField(
     bool is_password,
     const std::u16string& credential) {
   if (const auto& agent = GetPasswordAutofillAgent()) {
+    LogFilledFieldType();
     agent->FillIntoFocusedField(is_password, credential);
   }
 }
@@ -294,7 +299,7 @@ ContentPasswordManagerDriver::GetPasswordGenerationHelper() {
   return &password_generation_helper_;
 }
 
-PasswordManager* ContentPasswordManagerDriver::GetPasswordManager() {
+PasswordManagerInterface* ContentPasswordManagerDriver::GetPasswordManager() {
   return client_->GetPasswordManager();
 }
 
@@ -505,12 +510,14 @@ void ContentPasswordManagerDriver::ShowPasswordSuggestions(
           render_frame_host_))
     return;
 
-  if ((request.username_field_index > request.form_data.fields.size()) ||
-      (request.password_field_index > request.form_data.fields.size())) {
+  if ((request.username_field_index > request.form_data.fields().size()) ||
+      (request.password_field_index > request.form_data.fields().size())) {
     mojo::ReportBadMessage(
         "username_field_index or password_field_index cannot be greater than "
         "form.fields.size()!");
   }
+
+  last_triggering_field_id_ = request.element_id;
 
   base::OnceClosure show_with_autofill_manager_cb = base::BindOnce(
       &PasswordAutofillManager::OnShowPasswordSuggestions,
@@ -598,6 +605,14 @@ void ContentPasswordManagerDriver::LogFirstFillingResult(
           render_frame_host_))
     return;
   GetPasswordManager()->LogFirstFillingResult(this, form_renderer_id, result);
+}
+
+void ContentPasswordManagerDriver::LogFilledFieldType() {
+  bool field_classified_as_target_filling_password =
+      GetPasswordManager()->GetPasswordFormCache()->HasPasswordForm(
+          this, last_triggering_field_id_);
+  base::UmaHistogramBoolean("Autofill.FilledFieldType.Password",
+                            field_classified_as_target_filling_password);
 }
 
 const mojo::AssociatedRemote<autofill::mojom::AutofillAgent>&

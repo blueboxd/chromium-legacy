@@ -204,6 +204,7 @@ class PrerenderHostRegistryTest : public RenderViewHostImplTestHarness {
             contents()->GetWeakPtr(), rfh->GetFrameToken(),
             rfh->GetFrameTreeNodeId(), rfh->GetPageUkmSourceId(),
             ui::PAGE_TRANSITION_LINK,
+            /*should_warm_up_compositor=*/false,
             /*url_match_predicate=*/{},
             /*prerender_navigation_handle_callback=*/{});
       case PreloadingTriggerType::kEmbedder:
@@ -221,6 +222,7 @@ class PrerenderHostRegistryTest : public RenderViewHostImplTestHarness {
             /*initiator_ukm_id=*/ukm::kInvalidSourceId,
             ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
                                       ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
+            /*should_warm_up_compositor=*/false,
             /*url_match_predicate=*/{},
             /*prerender_navigation_handle_callback=*/{});
     }
@@ -344,6 +346,7 @@ TEST_F(PrerenderHostRegistryTest, CreateAndStartHost_PreloadingConfigHoldback) {
   PreloadingAttempt* preloading_attempt = preloading_data->AddPreloadingAttempt(
       content_preloading_predictor::kSpeculationRules,
       PreloadingType::kPrerender, std::move(same_url_matcher),
+      /*planned_max_preloading_type=*/std::nullopt,
       contents()->GetPrimaryMainFrame()->GetPageUkmSourceId());
   const int prerender_frame_tree_node_id = registry().CreateAndStartHost(
       GeneratePrerenderAttributes(kPrerenderingUrl,
@@ -363,6 +366,7 @@ TEST_F(PrerenderHostRegistryTest,
   PreloadingAttempt* preloading_attempt = preloading_data->AddPreloadingAttempt(
       content_preloading_predictor::kSpeculationRules,
       PreloadingType::kPrerender, std::move(same_url_matcher),
+      /*planned_max_preloading_type=*/std::nullopt,
       contents()->GetPrimaryMainFrame()->GetPageUkmSourceId());
 
   auto attributes = GeneratePrerenderAttributes(
@@ -389,6 +393,7 @@ TEST_F(PrerenderHostRegistryTest, CreateAndStartHost_HoldbackOverride_Allowed) {
   PreloadingAttempt* preloading_attempt = preloading_data->AddPreloadingAttempt(
       content_preloading_predictor::kSpeculationRules,
       PreloadingType::kPrerender, std::move(same_url_matcher),
+      /*planned_max_preloading_type=*/std::nullopt,
       contents()->GetPrimaryMainFrame()->GetPageUkmSourceId());
 
   auto attributes = GeneratePrerenderAttributes(
@@ -443,20 +448,11 @@ TEST_F(PrerenderHostRegistryTest, CreateAndStartHostForSameURL) {
 class PrerenderHostRegistryLimitTest : public PrerenderHostRegistryTest {
  public:
   PrerenderHostRegistryLimitTest() {
-    if (base::FeatureList::IsEnabled(
-            features::kPrerender2NewLimitAndScheduler)) {
-      scoped_feature_list_.InitWithFeaturesAndParameters(
-          {{features::kPrerender2NewLimitAndScheduler,
-            {{"max_num_of_running_speculation_rules_eager_prerenders",
-              base::NumberToString(MaxNumOfRunningSpeculationRules())}}}},
-          {});
-    } else {
-      scoped_feature_list_.InitWithFeaturesAndParameters(
-          {{blink::features::kPrerender2,
-            {{"max_num_of_running_speculation_rules",
-              base::NumberToString(MaxNumOfRunningSpeculationRules())}}}},
-          {});
-    }
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {{features::kPrerender2NewLimitAndScheduler,
+          {{"max_num_of_running_speculation_rules_eager_prerenders",
+            base::NumberToString(MaxNumOfRunningSpeculationRules())}}}},
+        {});
   }
 
   int MaxNumOfRunningSpeculationRules() { return 2; }

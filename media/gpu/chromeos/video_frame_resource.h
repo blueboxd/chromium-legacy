@@ -38,7 +38,8 @@ class VideoFrameResource : public FrameResource {
   scoped_refptr<const gfx::NativePixmapDmaBuf> GetNativePixmapDmaBuf()
       const override;
   gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferHandle() const override;
-  gfx::GpuMemoryBuffer* GetGpuMemoryBuffer() const override;
+  std::unique_ptr<VideoFrame::ScopedMapping> MapGMBOrSharedImage()
+      const override;
   gfx::GenericSharedMemoryId GetSharedMemoryId() const override;
   const VideoFrameLayout& layout() const override;
   VideoPixelFormat format() const override;
@@ -63,6 +64,8 @@ class VideoFrameResource : public FrameResource {
       const gfx::Rect& visible_rect,
       const gfx::Size& natural_size) override;
   std::string AsHumanReadableString() const override;
+  gfx::GpuMemoryBufferHandle GetGpuMemoryBufferHandleForTesting()
+      const override;
 
   // GetMutableVideoFrame() and GetVideoFrame() return a pointer to the
   // underlying VideoFrame. This lets VideoFrameResource be used to adapt code

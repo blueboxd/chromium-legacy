@@ -8,11 +8,13 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "chrome/browser/password_manager/android/jni_headers/PasswordSettingsUpdaterDispatcherBridge_jni.h"
 #include "chrome/browser/password_manager/android/password_manager_android_util.h"
 #include "chrome/browser/password_manager/android/password_settings_updater_android_dispatcher_bridge.h"
 #include "chrome/browser/password_manager/android/password_settings_updater_android_receiver_bridge.h"
 #include "components/password_manager/core/browser/password_manager_setting.h"
+
+// Must come after all headers that specialize FromJniType() / ToJniType().
+#include "chrome/browser/password_manager/android/jni_headers/PasswordSettingsUpdaterDispatcherBridge_jni.h"
 
 namespace password_manager {
 
@@ -59,25 +61,21 @@ void PasswordSettingsUpdaterAndroidDispatcherBridgeImpl::Init(
 
 void PasswordSettingsUpdaterAndroidDispatcherBridgeImpl::
     GetPasswordSettingValue(std::optional<SyncingAccount> account,
-                            PasswordManagerSetting setting,
-                            bool is_part_of_migration) {
+                            PasswordManagerSetting setting) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   Java_PasswordSettingsUpdaterDispatcherBridge_getSettingValue(
       base::android::AttachCurrentThread(), java_object_,
-      GetJavaStringFromAccount(account), static_cast<int>(setting),
-      is_part_of_migration);
+      GetJavaStringFromAccount(account), static_cast<int>(setting));
 }
 
 void PasswordSettingsUpdaterAndroidDispatcherBridgeImpl::
     SetPasswordSettingValue(std::optional<SyncingAccount> account,
                             PasswordManagerSetting setting,
-                            bool value,
-                            bool is_part_of_migration) {
+                            bool value) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   Java_PasswordSettingsUpdaterDispatcherBridge_setSettingValue(
       base::android::AttachCurrentThread(), java_object_,
-      GetJavaStringFromAccount(account), static_cast<int>(setting), value,
-      is_part_of_migration);
+      GetJavaStringFromAccount(account), static_cast<int>(setting), value);
 }
 
 }  // namespace password_manager

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/ui/webui/tab_search/tab_search_ui.h"
 
 #include <algorithm>
@@ -9,6 +14,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/trace_event/trace_event.h"
 #include "build/branding_buildflags.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tabs/organization/tab_organization_service_factory.h"
 #include "chrome/browser/ui/tabs/organization/tab_organization_utils.h"
@@ -30,6 +36,22 @@
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/webui/color_change_listener/color_change_handler.h"
+
+TabSearchUIConfig::TabSearchUIConfig()
+    : DefaultTopChromeWebUIConfig(content::kChromeUIScheme,
+                                  chrome::kChromeUITabSearchHost) {}
+
+bool TabSearchUIConfig::ShouldAutoResizeHost() {
+  return true;
+}
+
+bool TabSearchUIConfig::IsPreloadable() {
+  return true;
+}
+
+std::optional<int> TabSearchUIConfig::GetCommandIdForTesting() {
+  return IDC_TAB_SEARCH;
+}
 
 TabSearchUI::TabSearchUI(content::WebUI* web_ui)
     : TopChromeWebUIController(web_ui,
@@ -77,50 +99,43 @@ TabSearchUI::TabSearchUI(content::WebUI* web_ui)
       {"createGroups", IDS_TAB_ORGANIZATION_CREATE_GROUPS},
       {"dismiss", IDS_TAB_ORGANIZATION_DISMISS},
       {"editAriaLabel", IDS_TAB_ORGANIZATION_EDIT_ARIA_LABEL},
-      {"failureBodyGeneric",
-       IDS_TAB_ORGANIZATION_FAILURE_BODY_GENERIC},
-      {"failureBodyGrouping",
-       IDS_TAB_ORGANIZATION_FAILURE_BODY_GROUPING},
+      {"failureBodyGeneric", IDS_TAB_ORGANIZATION_FAILURE_BODY_GENERIC},
+      {"failureBodyGrouping", IDS_TAB_ORGANIZATION_FAILURE_BODY_GROUPING},
       {"failureTitleGeneric", IDS_TAB_ORGANIZATION_FAILURE_TITLE_GENERIC},
       {"failureTitleGrouping", IDS_TAB_ORGANIZATION_FAILURE_TITLE_GROUPING},
       {"inProgressTitle", IDS_TAB_ORGANIZATION_IN_PROGRESS_TITLE},
       {"inputAriaLabel", IDS_TAB_ORGANIZATION_INPUT_ARIA_LABEL},
       {"learnMore", IDS_TAB_ORGANIZATION_LEARN_MORE},
       {"learnMoreAriaLabel", IDS_TAB_ORGANIZATION_LEARN_MORE_ARIA_LABEL},
-      {"learnMoreDisclaimer", IDS_TAB_ORGANIZATION_DISCLAIMER},
+      {"learnMoreDisclaimer1", IDS_TAB_ORGANIZATION_DISCLAIMER_1},
+      {"learnMoreDisclaimer2", IDS_TAB_ORGANIZATION_DISCLAIMER_2},
       {"newTabs", IDS_TAB_ORGANIZATION_NEW_TABS},
       {"notStartedBody", IDS_TAB_ORGANIZATION_NOT_STARTED_BODY},
-      {"notStartedBodyFRE", IDS_TAB_ORGANIZATION_NOT_STARTED_BODY_FRE},
-      {"notStartedBodyLinkFRE", IDS_TAB_ORGANIZATION_NOT_STARTED_BODY_LINK_FRE},
+      {"notStartedBodyFREHeader",
+       IDS_TAB_ORGANIZATION_NOT_STARTED_BODY_FRE_HEADER},
+      {"notStartedBodyFREBullet1",
+       IDS_TAB_ORGANIZATION_NOT_STARTED_BODY_FRE_BULLET_1},
+      {"notStartedBodyFREBullet2",
+       IDS_TAB_ORGANIZATION_NOT_STARTED_BODY_FRE_BULLET_2},
+      {"notStartedBodyFREBullet3",
+       IDS_TAB_ORGANIZATION_NOT_STARTED_BODY_FRE_BULLET_3},
       {"notStartedBodySignedOut",
        IDS_TAB_ORGANIZATION_NOT_STARTED_BODY_SIGNED_OUT},
-      {"notStartedBodySyncPaused",
-       IDS_TAB_ORGANIZATION_NOT_STARTED_BODY_SYNC_PAUSED},
-      {"notStartedBodyUnsynced",
-       IDS_TAB_ORGANIZATION_NOT_STARTED_BODY_UNSYNCED},
-      {"notStartedBodyUnsyncedHistory",
-       IDS_TAB_ORGANIZATION_NOT_STARTED_BODY_UNSYNCED_HISTORY},
       {"notStartedButton", IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON},
       {"notStartedButtonAriaLabel",
        IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON_ARIA_LABEL},
       {"notStartedButtonFRE", IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON_FRE},
       {"notStartedButtonFREAriaLabel",
        IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON_FRE_ARIA_LABEL},
-      {"notStartedButtonSyncPaused",
-       IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON_SYNC_PAUSED},
-      {"notStartedButtonSyncPausedAriaLabel",
-       IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON_SYNC_PAUSED_ARIA_LABEL},
-      {"notStartedButtonUnsynced",
-       IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON_UNSYNCED},
-      {"notStartedButtonUnsyncedAriaLabel",
-       IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON_UNSYNCED_ARIA_LABEL},
-      {"notStartedButtonUnsyncedHistory",
-       IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON_UNSYNCED_HISTORY},
-      {"notStartedButtonUnsyncedHistoryAriaLabel",
-       IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON_UNSYNCED_HISTORY_ARIA_LABEL},
+      {"notStartedButtonSignedOut",
+       IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON_SIGNED_OUT},
+      {"notStartedButtonSignedOutAriaLabel",
+       IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON_SIGNED_OUT_ARIA_LABEL},
       {"notStartedTitle", IDS_TAB_ORGANIZATION_NOT_STARTED_TITLE},
       {"notStartedTitleFRE", IDS_TAB_ORGANIZATION_NOT_STARTED_TITLE_FRE},
       {"rejectAriaLabel", IDS_TAB_ORGANIZATION_REJECT_ARIA_LABEL},
+      {"successMissingActiveTabTitle",
+       IDS_TAB_ORGANIZATION_SUCCESS_MISSING_ACTIVE_TAB_TITLE},
       {"successTitle", IDS_TAB_ORGANIZATION_SUCCESS_TITLE},
       {"successTitleSingle", IDS_TAB_ORGANIZATION_SUCCESS_TITLE_SINGLE},
       {"successTitleMulti", IDS_TAB_ORGANIZATION_SUCCESS_TITLE_MULTI},
@@ -139,27 +154,6 @@ TabSearchUI::TabSearchUI(content::WebUI* web_ui)
   source->AddLocalizedStrings(kStrings);
   source->AddBoolean("useRipples", views::PlatformStyle::kUseRipples);
 
-  // Add the configuration parameters for fuzzy search.
-  source->AddBoolean("useFuzzySearch", base::FeatureList::IsEnabled(
-                                           features::kTabSearchFuzzySearch));
-
-  source->AddBoolean("searchIgnoreLocation",
-                     features::kTabSearchSearchIgnoreLocation.Get());
-  source->AddInteger("searchDistance",
-                     features::kTabSearchSearchDistance.Get());
-  source->AddDouble(
-      "searchThreshold",
-      std::clamp<double>(features::kTabSearchSearchThreshold.Get(),
-                         features::kTabSearchSearchThresholdMin,
-                         features::kTabSearchSearchThresholdMax));
-  source->AddDouble("searchTitleWeight", features::kTabSearchTitleWeight.Get());
-  source->AddDouble("searchHostnameWeight",
-                    features::kTabSearchHostnameWeight.Get());
-  source->AddDouble("searchGroupTitleWeight",
-                    features::kTabSearchGroupTitleWeight.Get());
-
-  source->AddBoolean("moveActiveTabToBottom",
-                     features::kTabSearchMoveActiveTabToBottom.Get());
   source->AddLocalizedString("close", IDS_CLOSE);
 
   source->AddInteger(

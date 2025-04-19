@@ -5,9 +5,11 @@
 #import "ios/chrome/browser/visited_url_ranking/model/ios_tab_model_url_visit_data_fetcher.h"
 
 #import "components/sync_device_info/device_info.h"
+#import "components/url_deduplication/url_deduplication_helper.h"
+#import "components/visited_url_ranking/public/fetcher_config.h"
 #import "components/visited_url_ranking/public/url_visit.h"
 #import "components/visited_url_ranking/public/url_visit_util.h"
-#import "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
+#import "ios/chrome/browser/sessions/model/ios_chrome_session_tab_helper.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser/browser_list.h"
 #import "ios/chrome/browser/shared/model/browser/browser_list_factory.h"
@@ -63,6 +65,7 @@ IOSTabModelURLVisitDataFetcher::~IOSTabModelURLVisitDataFetcher() {}
 
 void IOSTabModelURLVisitDataFetcher::FetchURLVisitData(
     const FetchOptions& options,
+    const FetcherConfig& config,
     FetchResultCallback callback) {
   // OTR URL should never be processed.
   CHECK(!browser_state_->IsOffTheRecord());
@@ -70,7 +73,8 @@ void IOSTabModelURLVisitDataFetcher::FetchURLVisitData(
   std::map<URLMergeKey, URLVisitAggregate::TabData> url_visit_tab_data_map;
   const BrowserList* browser_list =
       BrowserListFactory::GetForBrowserState(browser_state_);
-  for (Browser* browser : browser_list->AllRegularBrowsers()) {
+  for (Browser* browser : browser_list->BrowsersOfType(
+           BrowserList::BrowserType::kRegularAndInactive)) {
     WebStateList* web_state_list = browser->GetWebStateList();
     for (int i = 0; i < web_state_list->count(); i++) {
       web::WebState* web_state = web_state_list->GetWebStateAt(i);
@@ -83,7 +87,8 @@ void IOSTabModelURLVisitDataFetcher::FetchURLVisitData(
         continue;
       }
 
-      auto url_key = ComputeURLMergeKey(url);
+      auto url_key = ComputeURLMergeKey(url, web_state->GetTitle(),
+                                        config.deduplication_helper);
       auto it = url_visit_tab_data_map.find(url_key);
       bool tab_data_map_already_has_url_entry =
           (it != url_visit_tab_data_map.end());

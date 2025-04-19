@@ -23,6 +23,10 @@
 #include "third_party/blink/public/mojom/navigation/navigation_params.mojom-forward.h"
 #include "url/gurl.h"
 
+namespace base {
+class TimeDelta;
+}  // namespace base
+
 namespace blink {
 class EnabledClientHints;
 }  // namespace blink
@@ -35,6 +39,7 @@ namespace content {
 
 class DevToolsPrerenderAttempt;
 class FrameTreeNode;
+class NavigationHandle;
 class PrerenderCancellationReason;
 class PrerenderHostRegistry;
 class RenderFrameHostImpl;
@@ -84,12 +89,39 @@ class CONTENT_EXPORT PrerenderHost : public FrameTree::Delegate,
     kMaxValue = kRequestDestination,
   };
 
+  // Reasons blocking navigation while waiting for headers started.
+  enum class WaitingForHeadersStartedReason { kWithoutTimeout, kWithTimeout };
+
+  // Reasons blocking navigation while waiting for headers finished.
+  enum class WaitingForHeadersFinishedReason {
+    kHeadersReceived,
+    kHostDestroyed,
+    kTimeoutElapsed,
+    kMaybeNavigationCancelled
+  };
+
   // Observes a triggered prerender. Note that the observer should overlive the
   // prerender host instance, or be removed properly upon destruction.
   class Observer : public base::CheckedObserver {
    public:
     // Called on the page activation.
     virtual void OnActivated() {}
+
+    // Called from PrerenderHost::ReadyToCommitNavigation when headers are
+    // received for the initial navigation.
+    virtual void OnHeadersReceived() {}
+
+    // Called from PrerenderHost::OnWaitingForHeadersStarted when we start
+    // blocking navigation waiting for headers.
+    virtual void OnWaitingForHeadersStarted(
+        NavigationHandle& navigation_handle,
+        WaitingForHeadersStartedReason reason) {}
+
+    // Called from PrerenderHost::OnWaitingForHeadersFinished when we are
+    // done blocking navigation waiting for headers.
+    virtual void OnWaitingForHeadersFinished(
+        NavigationHandle& navigation_handle,
+        WaitingForHeadersFinishedReason reason) {}
 
     // Called from the PrerenderHost's destructor. The observer should drop any
     // reference to the host.
@@ -117,7 +149,7 @@ class CONTENT_EXPORT PrerenderHost : public FrameTree::Delegate,
       const std::string& potential_activation_headers_str,
       const std::string& prerender_headers_str,
       PreloadingTriggerType trigger_type,
-      const std::string& embedder_histogram_suffix,
+      const std::string& histogram_suffix,
       PrerenderCancellationReason& reason);
 
   // Sets a callback to be called on PrerenderHost creation.
@@ -262,7 +294,11 @@ class CONTENT_EXPORT PrerenderHost : public FrameTree::Delegate,
 
   // Returns true if the given `url` indicates the same destination to the
   // initial_url.
-  bool IsUrlMatch(const GURL& url) const;
+  std::optional<UrlMatchType> IsUrlMatch(const GURL& url) const;
+
+  // Returns true if the given `url` might indicate the same destination to the
+  // initial_url based on `no_vary_search_expected`.
+  bool IsNoVarySearchHintUrlMatch(const GURL& url) const;
 
   // Called when the prerender pages asks the client to change the Accept Client
   // Hints. The instruction applies to the prerendering page before activation,
@@ -276,6 +312,8 @@ class CONTENT_EXPORT PrerenderHost : public FrameTree::Delegate,
       const url::Origin& origin,
       blink::EnabledClientHints* client_hints) const;
 
+  std::string GetHistogramSuffix() const;
+
   // Returns std::nullopt iff prerendering is initiated by the browser (not by
   // a renderer using Speculation Rules API).
   std::optional<url::Origin> initiator_origin() const {
@@ -286,8 +324,6 @@ class CONTENT_EXPORT PrerenderHost : public FrameTree::Delegate,
       const {
     return attributes_.initiator_devtools_navigation_token;
   }
-
-  const GURL& prerendering_url() const { return attributes_.prerendering_url; }
 
   bool IsBrowserInitiated() { return attributes_.IsBrowserInitiated(); }
 
@@ -304,10 +340,6 @@ class CONTENT_EXPORT PrerenderHost : public FrameTree::Delegate,
   int initiator_ukm_id() const { return attributes_.initiator_ukm_id; }
 
   bool is_ready_for_activation() const { return is_ready_for_activation_; }
-
-  const std::optional<PrerenderFinalStatus>& final_status() const {
-    return final_status_;
-  }
 
   PreloadingTriggerType trigger_type() const {
     return attributes_.trigger_type;
@@ -331,7 +363,23 @@ class CONTENT_EXPORT PrerenderHost : public FrameTree::Delegate,
     return attributes_.no_vary_search_expected;
   }
 
+  bool should_warm_up_compositor() const {
+    return attributes_.should_warm_up_compositor;
+  }
+
   bool IsInitialNavigation(const NavigationRequest& navigation_request) const;
+
+  bool were_headers_received() const { return were_headers_received_; }
+
+  // Gets the timeout configured for waiting on head.
+  base::TimeDelta WaitUntilHeadTimeout();
+
+  // Called when we start blocking navigation while waiting for headers.
+  void OnWaitingForHeadersStarted(NavigationHandle& navigation_handle,
+                                  WaitingForHeadersStartedReason reason);
+  // Called when we stop blocking navigation while waiting for headers.
+  void OnWaitingForHeadersFinished(NavigationHandle& navigation_handle,
+                                   WaitingForHeadersFinishedReason reason);
 
  private:
   void RecordFailedFinalStatusImpl(const PrerenderCancellationReason& reason);
@@ -368,6 +416,11 @@ class CONTENT_EXPORT PrerenderHost : public FrameTree::Delegate,
   int frame_tree_node_id_ = RenderFrameHost::kNoFrameTreeNodeId;
 
   std::optional<PrerenderFinalStatus> final_status_;
+
+  // Cache the suffix of metrics based on trigger type and embedder suffix.
+  // TODO(https://crbug.com/40243375): Remove the use pattern of
+  // `Report*(base_name, trigger_type(), embedder_suffix())`
+  const std::string metric_suffix_;
 
   base::ObserverList<Observer> observers_;
 
@@ -411,6 +464,9 @@ class CONTENT_EXPORT PrerenderHost : public FrameTree::Delegate,
   // No-Vary-Search header information for the main frame of the prerendered
   // page.
   std::optional<net::HttpNoVarySearchData> no_vary_search_;
+
+  // True if headers were received.
+  bool were_headers_received_ = false;
 };
 
 }  // namespace content

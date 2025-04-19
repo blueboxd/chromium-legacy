@@ -10,8 +10,60 @@ if (is_ios) {
   import("//build/config/ios/config.gni")  # For `target_environment`
 }
 
+config("raw_ptr_check") {
+  if (clang_use_chrome_plugins || clang_use_raw_ptr_plugin) {
+    cflags = []
+
+    # The plugin is built directly into clang, so there's no need to load it
+    # dynamically.
+    cflags += [
+      "-Xclang",
+      "-add-plugin",
+      "-Xclang",
+      "raw-ptr-plugin",
+
+      "-Xclang",
+      "-plugin-arg-raw-ptr-plugin",
+      "-Xclang",
+      "check-raw-ptr-to-stack-allocated",
+
+      "-Xclang",
+      "-plugin-arg-raw-ptr-plugin",
+      "-Xclang",
+      "disable-check-raw-ptr-to-stack-allocated-error",
+
+      # TODO(crbug.com/40944547): Remove when raw_ptr check has been
+      # enabled for the dawn repo.
+      "-Xclang",
+      "-plugin-arg-raw-ptr-plugin",
+      "-Xclang",
+      "raw-ptr-exclude-path=" +
+          rebase_path("//third_party/dawn/", root_build_dir),
+    ]
+
+    if (enable_check_raw_ptr_fields) {
+      cflags += [
+        "-Xclang",
+        "-plugin-arg-raw-ptr-plugin",
+        "-Xclang",
+        "check-raw-ptr-fields",
+      ]
+    }
+
+    if (enable_check_raw_ref_fields) {
+      cflags += [
+        "-Xclang",
+        "-plugin-arg-raw-ptr-plugin",
+        "-Xclang",
+        "check-raw-ref-fields",
+      ]
+    }
+  }
+}
+
 config("find_bad_constructs") {
   if (clang_use_chrome_plugins) {
+    configs = []
     cflags = []
 
     # The plugin is built directly into clang, so there's no need to load it
@@ -21,6 +73,11 @@ config("find_bad_constructs") {
       "-add-plugin",
       "-Xclang",
       "find-bad-constructs",
+
+      "-Xclang",
+      "-plugin-arg-find-bad-constructs",
+      "-Xclang",
+      "span-ctor-from-string-literal",
 
       "-Xclang",
       "-plugin-arg-find-bad-constructs",
@@ -37,23 +94,6 @@ config("find_bad_constructs") {
       "-plugin-arg-find-bad-constructs",
       "-Xclang",
       "check-allow-auto-typedefs-better-nested",
-
-      "-Xclang",
-      "-plugin-arg-find-bad-constructs",
-      "-Xclang",
-      "check-raw-ptr-to-stack-allocated",
-
-      "-Xclang",
-      "-plugin-arg-find-bad-constructs",
-      "-Xclang",
-      "disable-check-raw-ptr-to-stack-allocated-error",
-
-      # TODO(crbug.com/40944547): Remove when raw_ptr check has been
-      # enabled for the dawn repo.
-      "-Xclang",
-      "-plugin-arg-find-bad-constructs",
-      "-Xclang",
-      "raw-ptr-exclude-path=/third_party/dawn/",
     ]
 
     if (is_linux || is_chromeos || is_android || is_fuchsia) {
@@ -65,23 +105,7 @@ config("find_bad_constructs") {
       ]
     }
 
-    if (enable_check_raw_ptr_fields) {
-      cflags += [
-        "-Xclang",
-        "-plugin-arg-find-bad-constructs",
-        "-Xclang",
-        "check-raw-ptr-fields",
-      ]
-    }
-
-    if (enable_check_raw_ref_fields) {
-      cflags += [
-        "-Xclang",
-        "-plugin-arg-find-bad-constructs",
-        "-Xclang",
-        "check-raw-ref-fields",
-      ]
-    }
+    configs += [ ":raw_ptr_check" ]
   }
 }
 
@@ -213,12 +237,7 @@ template("clang_lib") {
 
 # Adds a dependency on the Clang runtime library clang_rt.builtins.
 clang_lib("compiler_builtins") {
-  if (!toolchain_has_rust) {
-    # Since there's no Rust in the toolchain, there's no concern that we'll use
-    # the Rust stdlib's intrinsics here.
-    #
-    # Don't define libname which makes this target do nothing.
-  } else if (is_mac) {
+  if (is_mac) {
     libname = "osx"
   } else if (is_ios) {
     if (target_environment == "simulator") {

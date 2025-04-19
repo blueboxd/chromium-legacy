@@ -342,6 +342,26 @@ class WallpaperPrefManagerImpl : public WallpaperPrefManager {
     return SetWallpaperInfo(account_id, info, pref_service, GetSyncPrefName());
   }
 
+  bool GetSyncedWallpaperInfoFromDeprecatedPref(
+      const AccountId& account_id,
+      WallpaperInfo* info) const override {
+    CHECK(features::IsVersionWallpaperInfoEnabled());
+    PrefService* pref_service =
+        profile_helper_->GetUserPrefServiceSyncable(account_id);
+    if (!pref_service) {
+      return false;
+    }
+
+    return GetWallpaperInfo(account_id, pref_service,
+                            prefs::kSyncableWallpaperInfo, info);
+  }
+
+  void ClearDeprecatedPref(const AccountId& account_id) override {
+    RemoveWallpaperInfo(account_id,
+                        profile_helper_->GetUserPrefServiceSyncable(account_id),
+                        prefs::kSyncableWallpaperInfo);
+  }
+
   base::TimeDelta GetTimeToNextDailyRefreshUpdate(
       const AccountId& account_id) const override {
     WallpaperInfo info;
@@ -416,6 +436,10 @@ const char* WallpaperPrefManager::GetSyncPrefName() {
 
 // static
 bool WallpaperPrefManager::ShouldSyncOut(const WallpaperInfo& local_info) {
+  if (features::IsVersionWallpaperInfoEnabled() &&
+      !local_info.version.IsValid()) {
+    return false;
+  }
   if (IsTimeOfDayWallpaper(local_info.collection_id)) {
     // Time Of Day wallpapers are not syncable.
     return false;

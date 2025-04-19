@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_MEMBER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_MEMBER_H_
 
@@ -13,7 +18,7 @@
 #include "third_party/blink/renderer/platform/wtf/hash_functions.h"
 #include "third_party/blink/renderer/platform/wtf/hash_traits.h"
 #include "third_party/blink/renderer/platform/wtf/type_traits.h"
-#include "v8/include/cppgc/member.h"
+#include "v8/include/cppgc/member.h"  // IWYU pragma: export
 
 namespace blink {
 
@@ -229,8 +234,10 @@ class MemberConstructTraits {
   static void NotifyNewElements(T* array, size_t len) {
     // Checking the first element is sufficient for determining whether a
     // marking or generational barrier is required.
-    if (LIKELY((len == 0) || !blink::WriteBarrier::IsWriteBarrierNeeded(array)))
+    if ((len == 0) || !blink::WriteBarrier::IsWriteBarrierNeeded(array))
+        [[likely]] {
       return;
+    }
 
     while (len-- > 0) {
       blink::WriteBarrier::DispatchForObject(array);

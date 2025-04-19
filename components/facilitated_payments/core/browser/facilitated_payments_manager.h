@@ -9,17 +9,19 @@
 #include <memory>
 #include <vector>
 
+#include "base/functional/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ref.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/types/expected.h"
-#include "components/autofill/core/browser/autofill_client.h"
+#include "components/autofill/core/browser/payments/payments_autofill_client.h"
 #include "components/facilitated_payments/core/browser/facilitated_payments_api_client.h"
 #include "components/facilitated_payments/core/browser/facilitated_payments_driver.h"
 #include "components/facilitated_payments/core/browser/network_api/facilitated_payments_initiate_payment_request_details.h"
 #include "components/facilitated_payments/core/browser/network_api/facilitated_payments_initiate_payment_response_details.h"
+#include "components/facilitated_payments/core/metrics/facilitated_payments_metrics.h"
 #include "components/facilitated_payments/core/mojom/facilitated_payments_agent.mojom.h"
 #include "components/optimization_guide/core/optimization_guide_decider.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
@@ -40,7 +42,7 @@ class FacilitatedPaymentsManager {
   FacilitatedPaymentsManager(
       FacilitatedPaymentsDriver* driver,
       FacilitatedPaymentsClient* client,
-      std::unique_ptr<FacilitatedPaymentsApiClient> api_client,
+      FacilitatedPaymentsApiClientCreator api_client_creator,
       optimization_guide::OptimizationGuideDecider* optimization_guide_decider);
   FacilitatedPaymentsManager(const FacilitatedPaymentsManager&) = delete;
   FacilitatedPaymentsManager& operator=(const FacilitatedPaymentsManager&) =
@@ -66,31 +68,39 @@ class FacilitatedPaymentsManager {
       ukm::SourceId ukm_source_id,
       int attempt_number = 1);
 
+  // Checks whether the `render_frame_host_url` is allowlisted and validates the
+  // `pix_code` before trigger the Pix payments flow. Note: If the Pix payment
+  // flow has already been triggered by the other code detection methods like
+  // DOM search then this method is a no-op.
+  void OnPixCodeCopiedToClipboard(const GURL& render_frame_host_url,
+                                  const std::string& pix_code,
+                                  ukm::SourceId ukm_source_id);
+
  private:
   // Defined here so they can be accessed by the tests.
   static constexpr base::TimeDelta kOptimizationGuideDeciderWaitTime =
       base::Seconds(0.5);
   static constexpr int kMaxAttemptsForAllowlistCheck = 6;
-  static constexpr base::TimeDelta kPageLoadWaitTime = base::Seconds(2);
+  static constexpr base::TimeDelta kPageLoadWaitTime = base::Seconds(1);
   static constexpr base::TimeDelta kRetriggerPixCodeDetectionWaitTime =
-      base::Seconds(1);
-  static constexpr int kMaxAttemptsForPixCodeDetection = 6;
+      base::Seconds(3);
+  static constexpr int kMaxAttemptsForPixCodeDetection = 15;
 
   friend class FacilitatedPaymentsManagerTest;
   FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerTest,
                            RegisterPixAllowlist);
   FRIEND_TEST_ALL_PREFIXES(
       FacilitatedPaymentsManagerTest,
-      CheckAllowlistResultUnknown_PixCodeDetectionNotTriggered);
+      DOMSearch_CheckAllowlistResultUnknown_PixCodeDetectionNotTriggered);
   FRIEND_TEST_ALL_PREFIXES(
       FacilitatedPaymentsManagerTest,
-      CheckAllowlistResultShortDelay_UrlInAllowlist_PixCodeDetectionTriggered);
+      DOMSearch_CheckAllowlistResultShortDelay_UrlInAllowlist_PixCodeDetectionTriggered);
   FRIEND_TEST_ALL_PREFIXES(
       FacilitatedPaymentsManagerTest,
-      CheckAllowlistResultShortDelay_UrlNotInAllowlist_PixCodeDetectionNotTriggered);
+      DOMSearch_CheckAllowlistResultShortDelay_UrlNotInAllowlist_PixCodeDetectionNotTriggered);
   FRIEND_TEST_ALL_PREFIXES(
       FacilitatedPaymentsManagerTest,
-      CheckAllowlistResultLongDelay_UrlInAllowlist_PixCodeDetectionNotTriggered);
+      DOMSearch_CheckAllowlistResultLongDelay_UrlInAllowlist_PixCodeDetectionNotTriggered);
   FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerTest,
                            NoPixCode_PixCodeNotFoundLoggedAfterMaxAttempts);
   FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerTest,
@@ -108,6 +118,8 @@ class FacilitatedPaymentsManager {
                            NoPixPaymentPromptWhenApiClientNotAvailable);
   FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerTest,
                            ShowsPixPaymentPromptWhenApiClientAvailable);
+  FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerTest,
+                           ShowsPixPaymentPrompt_HistogramLogged);
   FRIEND_TEST_ALL_PREFIXES(
       FacilitatedPaymentsManagerTest,
       ApiClientNotAvailable_RiskDataNotLoaded_DoesNotTriggerLoadRiskData);
@@ -129,6 +141,12 @@ class FacilitatedPaymentsManager {
                            GetClientTokenHistogram_ClientTokenNotEmpty);
   FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerTest,
                            GetClientTokenHistogram_ClientTokenEmpty);
+  FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerTest,
+                           PixPaymentPromptAccepted_ProgressSceenShown);
+  FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerTest,
+                           PixPaymentPromptRejected_ProgressSceenNotShown);
+  FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerTest,
+                           OnGetClientToken_ClientTokenEmpty_ErrorScreenShown);
   FRIEND_TEST_ALL_PREFIXES(
       FacilitatedPaymentsManagerTest,
       TriggerPixDetectionOnDomContentLoadedExpDisabled_Ukm);
@@ -139,6 +157,17 @@ class FacilitatedPaymentsManager {
   FRIEND_TEST_ALL_PREFIXES(
       FacilitatedPaymentsManagerWithPixPaymentsDisabledTest,
       ValidPixCodeDetectionResult_HasPixAccounts_ApiClientNotTriggered);
+  FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
+                           CopyTrigger_UrlInAllowlist_PixValidationTriggered);
+  FRIEND_TEST_ALL_PREFIXES(
+      FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
+      CopyTrigger_UrlNotInAllowlist_PixValidationNotTriggered);
+  FRIEND_TEST_ALL_PREFIXES(
+      FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
+      CopyTriggerHappenedBeforeDOMSearch_ApiClientIsAvailableCalledOnlyOnce);
+  FRIEND_TEST_ALL_PREFIXES(
+      FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
+      DOMSearchHappenedBeforeCopyTrigger_ApiClientIsAvailableCalledOnlyOnce);
   FRIEND_TEST_ALL_PREFIXES(
       FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
       ValidPixCodeDetectionResult_HasPixAccounts_ApiClientTriggered);
@@ -173,21 +202,45 @@ class FacilitatedPaymentsManager {
                            PaymentNotOfferedReason_ApiNotAvailable);
   FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
                            SendInitiatePaymentRequest);
-  FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
-                           OnInitiatePaymentResponseReceived_FailureResponse);
-  FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
-                           OnInitiatePaymentResponseReceived_NoActionToken);
-  FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
-                           OnInitiatePaymentResponseReceived_NoCoreAccountInfo);
-  FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
-                           OnInitiatePaymentResponseReceived_LoggedOutProfile);
+  FRIEND_TEST_ALL_PREFIXES(
+      FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
+      OnInitiatePaymentResponseReceived_FailureResponse_ErrorScreenShown);
+  FRIEND_TEST_ALL_PREFIXES(
+      FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
+      OnInitiatePaymentResponseReceived_NoActionToken_ErrorScreenShown);
+  FRIEND_TEST_ALL_PREFIXES(
+      FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
+      OnInitiatePaymentResponseReceived_NoCoreAccountInfo_ErrorScreenShown);
+  FRIEND_TEST_ALL_PREFIXES(
+      FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
+      OnInitiatePaymentResponseReceived_LoggedOutProfile_ErrorScreenShown);
   FRIEND_TEST_ALL_PREFIXES(
       FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
       OnInitiatePaymentResponseReceived_InvokePurchaseActionTriggered);
   FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
+                           OnPurchaseActionPositiveResult_UiPromptDismissed);
+  FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
+                           OnPurchaseActionNegativeResult_UiPromptDismissed);
+  FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
                            InvokePurchaseActionCompleted_HistogramLogged);
   FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
                            OnInitiatePaymentResponseReceived_HistogramLogged);
+  FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
+                           TransactionSuccess_HistogramLogged);
+  FRIEND_TEST_ALL_PREFIXES(
+      FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
+      TransactionAbandonedAfterInvokePurchaseAction_HistogramLogged);
+  FRIEND_TEST_ALL_PREFIXES(
+      FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
+      TransactionFailedAfterInvokePurchaseAction_HistogramLogged);
+  FRIEND_TEST_ALL_PREFIXES(
+      FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
+      FOPSelectorNotShown_TransactionResultHistogramNotLogged);
+  FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
+                           ApiClientInitializedLazily);
+  FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
+                           HandlesFailureToLazilyInitializeApiClient);
+
   // Register optimization guide deciders for PIX. It is an allowlist of URLs
   // where we attempt PIX code detection.
   void RegisterPixAllowlist() const;
@@ -218,6 +271,13 @@ class FacilitatedPaymentsManager {
   void OnPixCodeValidated(std::string pix_code,
                           base::expected<bool, std::string> is_pix_code_valid);
 
+  // Lazily initializes an API client and returns a pointer to it. Returns a
+  // pointer to the existing API client, if one is already initialized. The
+  // FacilitatedPaymentManager owns this API client. This method can return
+  // `nullptr` if the API client fails to initialize, e.g., if the
+  // `RenderFrameHost` has been destroyed.
+  FacilitatedPaymentsApiClient* GetApiClient();
+
   // Starts `pix_code_detection_latency_measuring_timestamp_`.
   void StartPixCodeDetectionLatencyTimer();
 
@@ -246,7 +306,7 @@ class FacilitatedPaymentsManager {
   // Called after receiving the `result` of the initiate payment call. The
   // `response_details` contains the action token used for payment.
   void OnInitiatePaymentResponseReceived(
-      autofill::AutofillClient::PaymentsRpcResult result,
+      autofill::payments::PaymentsAutofillClient::PaymentsRpcResult result,
       std::unique_ptr<FacilitatedPaymentsInitiatePaymentResponseDetails>
           response_details);
 
@@ -264,6 +324,9 @@ class FacilitatedPaymentsManager {
 
   // Indirect owner.
   const raw_ref<FacilitatedPaymentsClient> client_;
+
+  // The creator of the facilitated payment API client.
+  FacilitatedPaymentsApiClientCreator api_client_creator_;
 
   // The client for the facilitated payment API.
   std::unique_ptr<FacilitatedPaymentsApiClient> api_client_;
@@ -300,6 +363,10 @@ class FacilitatedPaymentsManager {
   // Measures the time take to complete the purchase action.
   base::TimeTicks purchase_action_start_time_;
 
+  // Stores the time when the FOP selector was shown to the user. This is used
+  // to calculate the entire transaction latency.
+  base::TimeTicks fop_selector_shown_time_;
+
   // Contains the details required for the `InitiatePayment` request to be sent
   // to the Payments server. Its ownership is transferred to
   // `FacilitatedPaymentsInitiatePaymentRequest` in
@@ -308,11 +375,23 @@ class FacilitatedPaymentsManager {
   std::unique_ptr<FacilitatedPaymentsInitiatePaymentRequestDetails>
       initiate_payment_request_details_;
 
+  // Flag to help determine whether a valid Pix code has already been detected
+  // and acted upon. This is required as there are mupltiple ways of detecting a
+  // Pix code (DOM Search or Copy trigger) and it is expected that if the
+  // process of showing the FOP selector is triggered by one of the triggers,
+  // the following trigger should simply be ignored.
+  bool valid_pix_code_detected_ = false;
+
   // Informs whether this instance was created in a test.
   bool is_test_ = false;
 
   // Utility process validator for PIX code strings.
   data_decoder::DataDecoder utility_process_validator_;
+
+  // The source of the trigger for the facilitated payments form of payment(FOP)
+  // selector to show up. It is used for logging purposes. It is set whenever a
+  // trigger occurs and reset if the FOP selector is not shown for some reason.
+  TriggerSource trigger_source_ = TriggerSource::kUnknown;
 
   base::WeakPtrFactory<FacilitatedPaymentsManager> weak_ptr_factory_{this};
 };

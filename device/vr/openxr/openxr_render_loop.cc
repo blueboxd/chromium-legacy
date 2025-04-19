@@ -365,6 +365,10 @@ void OpenXrRenderLoop::StartRuntimeFinish(
   session->device_config->enable_anti_aliasing =
       openxr_->CanEnableAntiAliasing();
   session->device_config->views = openxr_->GetDefaultViews();
+  if (auto* depth = openxr_->GetDepthSensor(); depth) {
+    session->device_config->depth_configuration = depth->GetDepthConfig();
+  }
+
   session->enviroment_blend_mode =
       openxr_->PickEnvironmentBlendModeForSession(options->mode);
   session->interaction_mode = device::mojom::XRInteractionMode::kWorldSpace;
@@ -631,49 +635,50 @@ mojom::XRFrameDataPtr OpenXrRenderLoop::GetNextFrameData() {
     frame_data->buffer_sync_token = swap_chain_info.sync_token;
   }
 
-  frame_data->time_delta =
-      base::Nanoseconds(openxr_->GetPredictedDisplayTime());
+  const XrTime frame_time = openxr_->GetPredictedDisplayTime();
+
+  frame_data->time_delta = base::Nanoseconds(frame_time);
   frame_data->views = openxr_->GetViews();
   frame_data->input_state = openxr_->GetInputState();
 
   frame_data->mojo_from_viewer = openxr_->GetViewerPose();
 
-  if (openxr_->StageParametersEnabled()) {
-    UpdateStageParameters();
-  }
+  UpdateStageParameters();
 
   if (openxr_->HasFrameState()) {
-    OpenXrAnchorManager* anchor_manager =
-        openxr_->GetOrCreateAnchorManager(*extension_helper_);
+    OpenXrAnchorManager* anchor_manager = openxr_->GetAnchorManager();
 
     if (anchor_manager) {
       frame_data->anchors_data = anchor_manager->ProcessAnchorsForFrame(
           openxr_.get(), current_stage_parameters_,
-          frame_data->input_state.value(), openxr_->GetPredictedDisplayTime());
+          frame_data->input_state.value(), frame_time);
     }
 
-    OpenXrLightEstimator* light_estimator =
-        openxr_->GetOrCreateLightEstimator(*extension_helper_);
+    OpenXrLightEstimator* light_estimator = openxr_->GetLightEstimator();
 
     if (light_estimator) {
       frame_data->light_estimation_data =
-          light_estimator->GetLightEstimate(openxr_->GetPredictedDisplayTime());
+          light_estimator->GetLightEstimate(frame_time);
     }
   }
 
   OpenXRSceneUnderstandingManager* scene_understanding_manager =
-      openxr_->GetOrCreateSceneUnderstandingManager(*extension_helper_);
+      openxr_->GetSceneUnderstandingManager();
 
   if (scene_understanding_manager && frame_data->mojo_from_viewer->position &&
       frame_data->mojo_from_viewer->orientation) {
-    scene_understanding_manager->OnFrameUpdate(
-        openxr_->GetPredictedDisplayTime());
+    scene_understanding_manager->OnFrameUpdate(frame_time);
     device::Pose mojo_from_viewer(*frame_data->mojo_from_viewer->position,
                                   *frame_data->mojo_from_viewer->orientation);
     // Get results for hit test subscriptions.
     frame_data->hit_test_subscription_results =
         scene_understanding_manager->GetHitTestResults(
             mojo_from_viewer.ToTransform(), frame_data->input_state.value());
+  }
+
+  OpenXrDepthSensor* depth_sensor = openxr_->GetDepthSensor();
+  if (depth_sensor) {
+    depth_sensor->PopulateDepthData(frame_time, frame_data->views);
   }
 
   return frame_data;
@@ -855,9 +860,12 @@ void OpenXrRenderLoop::UpdateStageParameters() {
   if (openxr_->GetStageParameters(stage_bounds, local_from_stage)) {
     mojom::VRStageParametersPtr stage_parameters =
         mojom::VRStageParameters::New();
-    // mojo_from_local is identity, as is stage_from_floor, so we can directly
-    // assign local_from_stage and mojo_from_floor.
-    stage_parameters->mojo_from_floor = local_from_stage;
+    // mojo_from_local is currently identity.
+    gfx::Transform mojo_from_local;
+    // stage_from_floor is identity.
+    gfx::Transform stage_from_floor;
+    stage_parameters->mojo_from_floor =
+        mojo_from_local * local_from_stage * stage_from_floor;
     stage_parameters->bounds = std::move(stage_bounds);
     SetStageParameters(std::move(stage_parameters));
   } else {
@@ -884,7 +892,7 @@ void OpenXrRenderLoop::SubscribeToHitTest(
            << ", ray direction=" << ray->direction.ToString();
 
   OpenXRSceneUnderstandingManager* scene_understanding_manager =
-      openxr_->GetOrCreateSceneUnderstandingManager(*extension_helper_);
+      openxr_->GetSceneUnderstandingManager();
 
   if (!scene_understanding_manager) {
     std::move(callback).Run(
@@ -917,7 +925,7 @@ void OpenXrRenderLoop::SubscribeToHitTestForTransientInput(
            << ", ray direction=" << ray->direction.ToString();
 
   OpenXRSceneUnderstandingManager* scene_understanding_manager =
-      openxr_->GetOrCreateSceneUnderstandingManager(*extension_helper_);
+      openxr_->GetSceneUnderstandingManager();
 
   if (!scene_understanding_manager) {
     std::move(callback).Run(
@@ -943,7 +951,7 @@ void OpenXrRenderLoop::SubscribeToHitTestForTransientInput(
 void OpenXrRenderLoop::UnsubscribeFromHitTest(uint64_t subscription_id) {
   DVLOG(2) << __func__;
   OpenXRSceneUnderstandingManager* scene_understanding_manager =
-      openxr_->GetOrCreateSceneUnderstandingManager(*extension_helper_);
+      openxr_->GetSceneUnderstandingManager();
   if (scene_understanding_manager)
     scene_understanding_manager->UnsubscribeFromHitTest(
         HitTestSubscriptionId(subscription_id));
@@ -953,8 +961,7 @@ void OpenXrRenderLoop::CreateAnchor(
     mojom::XRNativeOriginInformationPtr native_origin_information,
     const device::Pose& native_origin_from_anchor,
     CreateAnchorCallback callback) {
-  OpenXrAnchorManager* anchor_manager =
-      openxr_->GetOrCreateAnchorManager(*extension_helper_);
+  OpenXrAnchorManager* anchor_manager = openxr_->GetAnchorManager();
   if (!anchor_manager) {
     return;
   }
@@ -973,8 +980,7 @@ void OpenXrRenderLoop::CreatePlaneAnchor(
 }
 
 void OpenXrRenderLoop::DetachAnchor(uint64_t anchor_id) {
-  OpenXrAnchorManager* anchor_manager =
-      openxr_->GetOrCreateAnchorManager(*extension_helper_);
+  OpenXrAnchorManager* anchor_manager = openxr_->GetAnchorManager();
   if (!anchor_manager) {
     return;
   }

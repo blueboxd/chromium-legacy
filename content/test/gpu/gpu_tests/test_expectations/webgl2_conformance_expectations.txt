@@ -36,8 +36,8 @@
 #         google google-0xffff google-0xc0de
 #         intel intel-gen-9 intel-gen-12 intel-0xa2e intel-0xd26 intel-0xa011
 #             intel-0x3e92 intel-0x3e9b intel-0x4680 intel-0x5912 intel-0x9bc5
-#         nvidia nvidia-0xfe9 nvidia-0x1cb3 nvidia-0x2184
-#         qualcomm qualcomm-0x41333430 ]
+#         nvidia nvidia-0xfe9 nvidia-0x1cb3 nvidia-0x2184 nvidia-0x2783
+#         qualcomm qualcomm-0x41333430 qualcomm-0x36333630 qualcomm-0x36334330 ]
 # Architecture
 # tags: [ mac-arm64 mac-x86_64 ]
 # Decoder
@@ -59,7 +59,8 @@
 # tags: [ mesa_lt_19.1
 #         mesa_ge_21.0
 #         mesa_ge_23.2
-#         nvidia_ge_31.0.15.4601 nvidia_lt_31.0.15.4601 ]
+#         nvidia_ge_31.0.15.4601 nvidia_lt_31.0.15.4601
+#         nvidia_ge_535.183.01 nvidia_lt_535.183.01 ]
 # ASan
 # tags: [ asan no-asan ]
 # Display Server
@@ -70,8 +71,6 @@
 # tags: [ dawn-backend-validation dawn-no-backend-validation ]
 # WebGPU Adapter
 # tags: [ webgpu-adapter-default webgpu-adapter-swiftshader ]
-# WebGPU Compat Mode
-# tags: [ webgpu-compat webgpu-not-compat ]
 # WebGPU DXC
 # tags: [ webgpu-dxc-enabled webgpu-dxc-disabled ]
 # WebGPU worker usage
@@ -396,6 +395,141 @@ crbug.com/1473838 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] 
 crbug.com/329130354 [ mac amd-0x679e ] conformance2/textures/canvas_sub_rectangle/tex-3d-rgba4-rgba-unsigned_short_4_4_4_4.html [ Skip ]
 crbug.com/329130354 [ mac amd-0x679e ] deqp/functional/gles3/fborender/resize_03.html [ Skip ]
 
+# Crashes fuchsia on qemu
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] WebglExtension_OVR_multiview2 [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance/extensions/oes-texture-float-linear.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance/glsl/samplers/glsl-function-texture2dprojlod.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/canvas/tex-2d-alpha-alpha-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/canvas/tex-2d-luminance-luminance-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/canvas/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/canvas/tex-2d-rgb-rgb-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/canvas/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/canvas/tex-2d-rgba-rgba-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/canvas/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/canvas/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/canvas_sub_rectangle/tex-2d-alpha-alpha-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/canvas_sub_rectangle/tex-2d-luminance-luminance-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/canvas_sub_rectangle/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/canvas_sub_rectangle/tex-2d-rgb-rgb-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/canvas_sub_rectangle/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/canvas_sub_rectangle/tex-2d-rgba-rgba-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/canvas_sub_rectangle/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/canvas_sub_rectangle/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/misc/texture-corner-case-videos.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/misc/texture-upload-size.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/video/tex-2d-alpha-alpha-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/video/tex-2d-luminance-luminance-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance/uniforms/uniform-default-values.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/buffers/uniform-buffers-state-restoration.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/query/occlusion-query.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/rendering/blitframebuffer-resolve-to-back-buffer.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas/tex-2d-r11f_g11f_b10f-rgb-float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas/tex-2d-r11f_g11f_b10f-rgb-half_float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas/tex-2d-r11f_g11f_b10f-rgb-unsigned_int_10f_11f_11f_rev.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas/tex-2d-r16f-red-float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas/tex-2d-r16f-red-half_float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas/tex-2d-r32f-red-float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas/tex-2d-r8-red-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas/tex-2d-rg16f-rg-float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas/tex-2d-rg16f-rg-half_float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas/tex-2d-rg32f-rg-float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas/tex-2d-rg8-rg-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas/tex-2d-rg8ui-rg_integer-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas/tex-2d-rgb10_a2-rgba-unsigned_int_2_10_10_10_rev.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas/tex-2d-rgb16f-rgb-float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas/tex-2d-rgb16f-rgb-half_float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas/tex-2d-rgb32f-rgb-float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas/tex-2d-rgb565-rgb-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas/tex-2d-rgb565-rgb-unsigned_short_5_6_5.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas/tex-2d-rgb5_a1-rgba-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas/tex-2d-rgb5_a1-rgba-unsigned_short_5_5_5_1.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas/tex-2d-rgb8-rgb-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas/tex-2d-rgb8ui-rgb_integer-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas/tex-2d-rgb9_e5-rgb-float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas/tex-2d-rgb9_e5-rgb-half_float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas/tex-2d-rgba16f-rgba-float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas/tex-2d-rgba16f-rgba-half_float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas/tex-2d-rgba32f-rgba-float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas/tex-2d-rgba4-rgba-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas/tex-2d-rgba4-rgba-unsigned_short_4_4_4_4.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas/tex-2d-rgba8-rgba-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas/tex-2d-rgba8ui-rgba_integer-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas/tex-2d-srgb8-rgb-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas/tex-2d-srgb8_alpha8-rgba-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas_sub_rectangle/tex-2d-r11f_g11f_b10f-rgb-float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas_sub_rectangle/tex-2d-r11f_g11f_b10f-rgb-half_float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas_sub_rectangle/tex-2d-r11f_g11f_b10f-rgb-unsigned_int_10f_11f_11f_rev.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas_sub_rectangle/tex-2d-r16f-red-float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas_sub_rectangle/tex-2d-r16f-red-half_float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas_sub_rectangle/tex-2d-r32f-red-float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas_sub_rectangle/tex-2d-r8-red-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas_sub_rectangle/tex-2d-rg16f-rg-float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas_sub_rectangle/tex-2d-rg16f-rg-half_float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas_sub_rectangle/tex-2d-rg32f-rg-float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas_sub_rectangle/tex-2d-rg8-rg-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas_sub_rectangle/tex-2d-rg8ui-rg_integer-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas_sub_rectangle/tex-2d-rgb10_a2-rgba-unsigned_int_2_10_10_10_rev.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas_sub_rectangle/tex-2d-rgb16f-rgb-float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas_sub_rectangle/tex-2d-rgb16f-rgb-half_float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas_sub_rectangle/tex-2d-rgb32f-rgb-float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas_sub_rectangle/tex-2d-rgb565-rgb-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas_sub_rectangle/tex-2d-rgb565-rgb-unsigned_short_5_6_5.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas_sub_rectangle/tex-2d-rgb5_a1-rgba-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas_sub_rectangle/tex-2d-rgb5_a1-rgba-unsigned_short_5_5_5_1.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas_sub_rectangle/tex-2d-rgb8-rgb-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas_sub_rectangle/tex-2d-rgb8ui-rgb_integer-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas_sub_rectangle/tex-2d-rgb9_e5-rgb-float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas_sub_rectangle/tex-2d-rgb9_e5-rgb-half_float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas_sub_rectangle/tex-2d-rgba16f-rgba-float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas_sub_rectangle/tex-2d-rgba16f-rgba-half_float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas_sub_rectangle/tex-2d-rgba32f-rgba-float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas_sub_rectangle/tex-2d-rgba4-rgba-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas_sub_rectangle/tex-2d-rgba4-rgba-unsigned_short_4_4_4_4.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas_sub_rectangle/tex-2d-rgba8-rgba-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas_sub_rectangle/tex-2d-rgba8ui-rgba_integer-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas_sub_rectangle/tex-2d-srgb8-rgb-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/canvas_sub_rectangle/tex-2d-srgb8_alpha8-rgba-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/image_bitmap_from_video/tex-2d-rg8ui-rg_integer-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/video/tex-2d-r11f_g11f_b10f-rgb-float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/video/tex-2d-r11f_g11f_b10f-rgb-half_float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/video/tex-2d-r11f_g11f_b10f-rgb-unsigned_int_10f_11f_11f_rev.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/video/tex-2d-r16f-red-float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/video/tex-2d-r16f-red-half_float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/video/tex-2d-r32f-red-float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/video/tex-2d-r8-red-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/video/tex-2d-rg16f-rg-float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/video/tex-2d-rg16f-rg-half_float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/video/tex-2d-rg32f-rg-float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/video/tex-2d-rg8-rg-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/video/tex-2d-rg8ui-rg_integer-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/video/tex-2d-rgb10_a2-rgba-unsigned_int_2_10_10_10_rev.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/video/tex-2d-rgb16f-rgb-float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/video/tex-2d-rgb16f-rgb-half_float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/video/tex-2d-rgb32f-rgb-float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/video/tex-2d-rgb565-rgb-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/video/tex-2d-rgb565-rgb-unsigned_short_5_6_5.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/video/tex-2d-rgb5_a1-rgba-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/video/tex-2d-rgb5_a1-rgba-unsigned_short_5_5_5_1.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/video/tex-2d-rgb8-rgb-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/video/tex-2d-rgb8ui-rgb_integer-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/video/tex-2d-rgb9_e5-rgb-float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/video/tex-2d-rgb9_e5-rgb-half_float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/video/tex-2d-rgba16f-rgba-float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/video/tex-2d-rgba16f-rgba-half_float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/video/tex-2d-rgba32f-rgba-float.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/video/tex-2d-rgba4-rgba-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/video/tex-2d-rgba4-rgba-unsigned_short_4_4_4_4.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/video/tex-2d-rgba8-rgba-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/video/tex-2d-rgba8ui-rgba_integer-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/video/tex-2d-srgb8-rgb-unsigned_byte.html [ Skip ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/video/tex-2d-srgb8_alpha8-rgba-unsigned_byte.html [ Skip ]
+
 ###############################
 # Permanent Slow Expectations #
 ###############################
@@ -458,9 +592,9 @@ crbug.com/angleproject/1465 [ win angle-d3d11 ] conformance2/glsl3/tricky-loop-c
 
 ## Win / NVIDIA ##
 
-crbug.com/1073613 [ angle-d3d11 win nvidia-0x2184 ] conformance2/textures/misc/tex-3d-mipmap-levels-intel-bug.html [ Failure ]
-crbug.com/1073613 [ angle-d3d11 win nvidia-0x2184 ] conformance2/textures/misc/tex-mipmap-levels.html [ Failure ]
-crbug.com/1073613 [ angle-d3d11 win nvidia-0x2184 ] deqp/functional/gles3/shadertexturefunction/texturesize.html [ Failure ]
+crbug.com/1073613 [ angle-d3d11 win nvidia ] conformance2/textures/misc/tex-3d-mipmap-levels-intel-bug.html [ Failure ]
+crbug.com/1073613 [ angle-d3d11 win nvidia ] conformance2/textures/misc/tex-mipmap-levels.html [ Failure ]
+crbug.com/1073613 [ angle-d3d11 win nvidia ] deqp/functional/gles3/shadertexturefunction/texturesize.html [ Failure ]
 
 
 ## Win / AMD ##
@@ -520,7 +654,6 @@ crbug.com/332745399 [ win graphite-enabled ] conformance2/extensions/webgl-shade
 ## Metal Common ##
 # Common to all GPU types (both AMD and Intel, at least)
 
-crbug.com/angleproject/7079 [ angle-metal intel-0x3e9b mac-x86_64 passthrough ventura ] deqp/functional/gles3/fboinvalidate/whole.html [ Failure ]
 
 ## SkiaGraphite on AMD/Intel ##
 
@@ -545,17 +678,8 @@ crbug.com/angleproject/6430 [ mac passthrough angle-metal amd ] deqp/functional/
 crbug.com/angleproject/6430 [ mac passthrough angle-metal amd ] deqp/functional/gles3/texturespecification/texstorage2d_format_depth_stencil.html [ Failure ]
 crbug.com/angleproject/7425 [ mac passthrough angle-metal amd ] deqp/functional/gles3/texturespecification/texstorage3d_format_depth_stencil.html [ Failure ]
 
-crbug.com/1316389 [ amd-0x67ef angle-metal passthrough ventura ] deqp/functional/gles3/fboinvalidate/default.html [ Failure ]
-crbug.com/1316389 [ amd-0x67ef angle-metal passthrough ventura ] deqp/functional/gles3/transformfeedback/basic_types_separate_points.html [ Failure ]
-crbug.com/1316389 [ amd-0x67ef angle-metal passthrough ventura ] deqp/functional/gles3/transformfeedback/interpolation_centroid.html [ Failure ]
-crbug.com/1316389 [ amd-0x67ef angle-metal passthrough ventura ] deqp/functional/gles3/transformfeedback/interpolation_flat.html [ Failure ]
-crbug.com/1316389 [ amd-0x67ef angle-metal passthrough ventura ] deqp/functional/gles3/transformfeedback/interpolation_smooth.html [ Failure ]
-crbug.com/1316389 [ amd-0x67ef angle-metal passthrough ventura ] deqp/functional/gles3/transformfeedback/point_size.html [ Failure ]
-crbug.com/1316389 [ amd-0x67ef angle-metal passthrough ventura ] deqp/functional/gles3/transformfeedback/random_interleaved_points.html [ Failure ]
-crbug.com/1316389 [ amd-0x67ef angle-metal passthrough ventura ] deqp/functional/gles3/transformfeedback/random_separate_points.html [ Failure ]
-crbug.com/1487266 [ amd-0x679e angle-metal monterey passthrough release ] deqp/functional/gles3/texturefiltering/2d_array_combinations_05.html [ Failure ]
 
-crbug.com/328100306 [ amd-0x67ef angle-metal graphite-enabled sonoma ] conformance/glsl/bugs/sampler-array-using-loop-index.html [ Failure ]
+crbug.com/328100306 [ amd angle-metal graphite-enabled sonoma ] conformance/glsl/bugs/sampler-array-using-loop-index.html [ Failure ]
 
 ## SkiaGraphite on Metal AMD ##
 
@@ -563,43 +687,18 @@ crbug.com/328100306 [ amd-0x67ef angle-metal graphite-enabled sonoma ] conforman
 ## Metal Intel ##
 
 crbug.com/angleproject/6430 [ angle-metal intel mac passthrough ] deqp/functional/gles3/readpixel.html [ Failure ]
-crbug.com/1316389 [ angle-metal intel passthrough ventura ] deqp/functional/gles3/fboinvalidate/default.html [ Failure ]
-crbug.com/1316389 [ angle-metal intel passthrough ventura ] deqp/functional/gles3/transformfeedback/basic_types_interleaved_points.html [ Failure ]
-crbug.com/1316389 [ angle-metal intel passthrough ventura ] deqp/functional/gles3/transformfeedback/basic_types_separate_points.html [ Failure ]
-crbug.com/1316389 [ angle-metal intel passthrough ventura ] deqp/functional/gles3/transformfeedback/interpolation_centroid.html [ Failure ]
-crbug.com/1316389 [ angle-metal intel passthrough ventura ] deqp/functional/gles3/transformfeedback/interpolation_flat.html [ Failure ]
-crbug.com/1316389 [ angle-metal intel passthrough ventura ] deqp/functional/gles3/transformfeedback/interpolation_smooth.html [ Failure ]
-crbug.com/1316389 [ angle-metal intel passthrough ventura ] deqp/functional/gles3/transformfeedback/point_size.html [ Failure ]
-crbug.com/1316389 [ angle-metal intel passthrough ventura ] deqp/functional/gles3/transformfeedback/random_interleaved_points.html [ Failure ]
-crbug.com/1316389 [ angle-metal intel passthrough ventura ] deqp/functional/gles3/transformfeedback/random_separate_points.html [ Failure ]
 
 crbug.com/327017906 [ angle-metal intel passthrough sonoma graphite-enabled ] deqp/functional/gles3/fboinvalidate/default.html [ Failure ]
 crbug.com/327017906 [ angle-metal intel passthrough sonoma graphite-enabled ] deqp/functional/gles3/fboinvalidate/whole.html [ Failure ]
-crbug.com/327026290 [ angle-metal intel passthrough sonoma graphite-enabled ] deqp/functional/gles3/transformfeedback/basic_types_interleaved_points.html [ Failure ]
-crbug.com/327026290 [ angle-metal intel passthrough sonoma graphite-enabled ] deqp/functional/gles3/transformfeedback/basic_types_separate_points.html [ Failure ]
-crbug.com/327026290 [ angle-metal intel passthrough sonoma graphite-enabled ] deqp/functional/gles3/transformfeedback/interpolation_centroid.html [ Failure ]
-crbug.com/327026290 [ angle-metal intel passthrough sonoma graphite-enabled ] deqp/functional/gles3/transformfeedback/interpolation_flat.html [ Failure ]
-crbug.com/327026290 [ angle-metal intel passthrough sonoma graphite-enabled ] deqp/functional/gles3/transformfeedback/interpolation_smooth.html [ Failure ]
-crbug.com/327026290 [ angle-metal intel passthrough sonoma graphite-enabled ] deqp/functional/gles3/transformfeedback/point_size.html [ Failure ]
-crbug.com/327026290 [ angle-metal intel passthrough sonoma graphite-enabled ] deqp/functional/gles3/transformfeedback/random_interleaved_points.html [ Failure ]
-crbug.com/327026290 [ angle-metal intel passthrough sonoma graphite-enabled ] deqp/functional/gles3/transformfeedback/random_separate_points.html [ Failure ]
 crbug.com/327026292 [ angle-metal intel passthrough sonoma graphite-enabled ] conformance2/glsl3/float-parsing.html [ Failure ]
 
 ## Metal Apple Silicon ##
 
-crbug.com/1298619 [ mac passthrough angle-metal apple ] deqp/functional/gles3/occlusionquery_strict.html [ Failure ]
 crbug.com/1465035 [ mac passthrough angle-metal apple ] deqp/functional/gles3/fboinvalidate/default.html [ Failure ]
 crbug.com/1465035 [ mac passthrough angle-metal apple mac-arm64 ] deqp/functional/gles3/fboinvalidate/whole.html [ Failure ]
-crbug.com/1465035 [ mac passthrough angle-metal apple ] deqp/functional/gles3/transformfeedback/basic_types_interleaved_points.html [ Failure ]
-crbug.com/1465035 [ mac passthrough angle-metal apple ] deqp/functional/gles3/transformfeedback/basic_types_separate_points.html [ Failure ]
-crbug.com/1465035 [ mac passthrough angle-metal apple ] deqp/functional/gles3/transformfeedback/interpolation_centroid.html [ Failure ]
-crbug.com/1465035 [ mac passthrough angle-metal apple ] deqp/functional/gles3/transformfeedback/interpolation_flat.html [ Failure ]
-crbug.com/1465035 [ mac passthrough angle-metal apple ] deqp/functional/gles3/transformfeedback/interpolation_smooth.html [ Failure ]
-crbug.com/1465035 [ mac passthrough angle-metal apple ] deqp/functional/gles3/transformfeedback/point_size.html [ Failure ]
-crbug.com/1465035 [ mac passthrough angle-metal apple ] deqp/functional/gles3/transformfeedback/random_interleaved_points.html [ Failure ]
-crbug.com/1465035 [ mac passthrough angle-metal apple ] deqp/functional/gles3/transformfeedback/random_separate_points.html [ Failure ]
 
 crbug.com/327026292 [ angle-metal apple passthrough sonoma graphite-enabled ] conformance2/glsl3/float-parsing.html [ Failure ]
+
 
 ## Metal Graphite ##
 
@@ -624,7 +723,6 @@ crbug.com/630800 [ angle-opengl intel mac ] deqp/functional/gles3/fbocompletenes
 crbug.com/630800 [ nvidia mac ] deqp/functional/gles3/fbocompleteness.html [ Failure ]
 crbug.com/1289803 [ angle-opengl mac mac-x86_64 oop-c ] conformance2/extensions/webgl-multi-draw-instanced-base-vertex-base-instance.html [ Failure ]
 
-crbug.com/328102507 [ mac angle-opengl graphite-disabled ] conformance/renderbuffers/stencil-renderbuffer-initialization.html [ Failure ]
 
 ## Mac Retina NVIDIA ##
 
@@ -639,7 +737,6 @@ crbug.com/1457723 [ bigsur nvidia-0xfe9 angle-opengl ] conformance2/textures/can
 crbug.com/1475765 [ bigsur nvidia-0xfe9 angle-opengl ] conformance/textures/canvas_sub_rectangle/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Failure ]
 crbug.com/1475765 [ angle-opengl bigsur nvidia-0xfe9 nvidia_lt_31.0.15.4601 ] conformance2/textures/canvas_sub_rectangle/tex-2d-rgb5_a1-rgba-unsigned_short_5_5_5_1.html [ Failure ]
 crbug.com/1488444 [ mac-x86_64 nvidia-0xfe9 angle-opengl passthrough ] conformance2/rendering/vertex-id-large-count.html [ Failure ]
-crbug.com/339041262 [ bigsur nvidia-0xfe9 angle-opengl graphite-disabled passthrough ] conformance/textures/canvas_sub_rectangle/tex-2d-rgba-rgba-unsigned_byte.html [ Failure ]
 
 ## Mac AMD ##
 
@@ -654,9 +751,9 @@ crbug.com/339041262 [ bigsur nvidia-0xfe9 angle-opengl graphite-disabled passthr
 # driver on 10.13.6 specifically, and are still flaky. Unfortunately when the
 # tests fail, they fail three times in a row, so we must mark them failing
 # rather than flaky.
-crbug.com/870856 [ mac amd-0x67ef angle-opengl ] conformance2/textures/misc/tex-base-level-bug.html [ Failure ]
+crbug.com/870856 [ mac amd angle-opengl ] conformance2/textures/misc/tex-base-level-bug.html [ Failure ]
 
-crbug.com/1230781 [ mac amd-0x67ef angle-opengl ] conformance/canvas/to-data-url-test.html [ Failure ]
+crbug.com/1230781 [ mac amd angle-opengl ] conformance/canvas/to-data-url-test.html [ Failure ]
 
 crbug.com/642822 [ mac amd ] conformance2/rendering/clipping-wide-points.html [ Failure ]
 
@@ -687,6 +784,14 @@ crbug.com/1422032 [ mac amd-0x67ef angle-opengl ] deqp/functional/gles3/transfor
 crbug.com/1422032 [ mac amd-0x67ef angle-opengl ] deqp/functional/gles3/transformfeedback/random_interleaved_lines.html [ Failure ]
 crbug.com/1422032 [ mac amd-0x67ef angle-opengl ] deqp/functional/gles3/transformfeedback/random_interleaved_points.html [ Failure ]
 crbug.com/1422032 [ mac amd-0x67ef angle-opengl ] deqp/functional/gles3/transformfeedback/random_interleaved_triangles.html [ Failure ]
+
+crbug.com/354627705 [ mac amd-0x7340 angle-opengl ] conformance/context/context-attributes-alpha-depth-stencil-antialias.html [ Failure ]
+crbug.com/354627705 [ mac amd-0x7340 angle-metal ] conformance/extensions/webgl-polygon-mode.html [ Failure ]
+crbug.com/354627705 [ mac amd-0x7340 angle-opengl ] conformance/rendering/color-mask-preserved-during-implicit-clears.html [ Failure ]
+crbug.com/354627705 [ mac amd-0x7340 angle-opengl ] conformance2/rendering/blitframebuffer-resolve-to-back-buffer.html [ Failure ]
+crbug.com/354627705 [ mac amd-0x7340 angle-metal ] deqp/functional/gles3/fbomultisample.2_samples.html [ Failure ]
+crbug.com/354627705 [ mac amd-0x7340 angle-metal ] deqp/functional/gles3/fbomultisample.4_samples.html [ Failure ]
+crbug.com/354627705 [ mac amd-0x7340 angle-opengl ] deqp/functional/gles3/instancedrendering.html [ Failure ]
 
 ## Mac Intel ##
 
@@ -859,8 +964,6 @@ crbug.com/1238075 [ chromeos chromeos-board-amd64-generic ] conformance/renderin
 crbug.com/1241179 [ chromeos chromeos-board-amd64-generic passthrough ] conformance2/extensions/ext-texture-norm16.html [ Failure ]
 crbug.com/1399117 [ chromeos chromeos-board-amd64-generic passthrough ] WebglExtension_WEBGL_provoking_vertex [ Skip ]
 
-# Must investigate ChromeOS failures with passthrough command decoder.
-crbug.com/angleproject/5038 [ chromeos passthrough ] conformance/extensions/ext-color-buffer-half-float.html [ Failure ]
 
 
 # ANGLE disallows WEBGL_clip_cull_distance if the underlying GL extension doesn't support requirements for number of distances.
@@ -895,7 +998,6 @@ crbug.com/1499536 [ chromeos cros-chrome chromeos-board-jacuzzi ] deqp/functiona
 crbug.com/1499536 [ chromeos cros-chrome chromeos-board-jacuzzi ] deqp/functional/gles3/uniformbuffers/random.html [ Failure ]
 crbug.com/1499536 [ chromeos cros-chrome chromeos-board-jacuzzi ] deqp/functional/gles3/uniformbuffers/single_basic_array.html [ Failure ]
 crbug.com/1499536 [ chromeos cros-chrome chromeos-board-jacuzzi ] deqp/functional/gles3/uniformbuffers/single_basic_type.html [ Failure ]
-crbug.com/1500045 [ chromeos cros-chrome chromeos-board-jacuzzi ] conformance2/rendering/blitframebuffer-r11f-g11f-b10f.html [ Failure ]
 # Broadly flaky unsymbolized crashes on Jacuzzi
 crbug.com/1518007 [ chromeos cros-chrome chromeos-board-jacuzzi ] conformance/* [ RetryOnFailure ]
 crbug.com/1518007 [ chromeos cros-chrome chromeos-board-jacuzzi ] conformance2/* [ RetryOnFailure ]
@@ -913,20 +1015,7 @@ crbug.com/324952609 [ chromeos cros-chrome chromeos-board-volteer ] conformance2
 
 crbug.com/324952609 [ chromeos lacros-chrome chromeos-board-octopus passthrough ] conformance2/extensions/oes-draw-buffers-indexed.html [ Failure ]
 
-crbug.com/1446435 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] conformance/glsl/bugs/constant-precision-qualifier.html [ Failure ]
-crbug.com/1446435 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] conformance/limits/gl-max-texture-dimensions.html [ Failure ]
-crbug.com/1446435 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] conformance/misc/shader-precision-format.html [ Failure ]
-crbug.com/1446435 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] conformance2/buffers/uniform-buffers.html [ Failure ]
-crbug.com/1446435 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] conformance2/glsl3/array-as-return-value.html [ Failure ]
-crbug.com/1446435 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] conformance2/glsl3/matrix-row-major.html [ Failure ]
-crbug.com/1446435 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] conformance2/glsl3/tricky-loop-conditions.html [ Failure ]
-crbug.com/1446435 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] conformance2/glsl3/uninitialized-local-global-variables.html [ Failure ]
-crbug.com/1446435 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] conformance2/reading/read-pixels-pack-parameters.html [ Failure ]
-crbug.com/1446435 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] conformance2/transform_feedback/transform_feedback.html [ Failure ]
 
-crbug.com/326490772 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] conformance2/extensions/webgl-shader-pixel-local-storage.html [ Failure ]
-crbug.com/326490772 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] conformance2/glsl3/texture-bias.html [ Failure ]
-crbug.com/326490772 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] conformance2/extensions/oes-sample-variables.html [ Failure ]
 
 ##############################
 # Lacros-like Linux Failures #
@@ -981,26 +1070,58 @@ crbug.com/1399117 [ linux intel display-server-wayland no-passthrough ] WebglExt
 #[ highsierra nvidia debug angle-opengl ] WebglExtension_test_10 [ Failure ]
 #[ mac nvidia debug angle-opengl ] WebglExtension_test_10 [ Failure ]
 
+####################
+# Fuchsia Failures #
+####################
+
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] WebglExtension_WEBGL_compressed_texture_pvrtc [ Failure ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] WebglExtension_WEBGL_provoking_vertex [ Failure ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance/context/context-attributes-alpha-depth-stencil-antialias.html [ Failure ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance/glsl/samplers/glsl-function-texture2dproj.html [ Failure ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/misc/canvas-teximage-after-multiple-drawimages.html [ Failure ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/misc/gl-teximage.html [ Failure ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/misc/image-decoder-to-texture.html [ Failure ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/misc/tex-video-using-tex-unit-non-zero.html [ Failure ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/misc/texparameter-test.html [ Failure ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/misc/texture-active-bind-2.html [ Failure ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/misc/texture-active-bind.html [ Failure ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/misc/texture-srgb-upload.html [ Failure ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/misc/texture-video-transparent.html [ Failure ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/canvas/drawingbuffer-storage-test.html [ Failure ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/extensions/ext-disjoint-timer-query-webgl2.html [ Failure ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/extensions/webgl-multi-draw-instanced-base-vertex-base-instance.html [ Failure ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/extensions/webgl-stencil-texturing.html [ Failure ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/misc/uninitialized-test-2.html [ Failure ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/samplers/sampler-drawing-test.html [ Failure ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/textures/misc/copy-texture-image-same-texture.html [ Failure ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] conformance2/transform_feedback/transform_feedback.html [ Failure ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] deqp/functional/gles3/fbomultisample.2_samples.html [ Failure ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] deqp/functional/gles3/fbomultisample.4_samples.html [ Failure ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] deqp/functional/gles3/fborender/recreate_color_01.html [ Failure ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] deqp/functional/gles3/fborender/recreate_color_02.html [ Failure ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] deqp/functional/gles3/fborender/resize_01.html [ Failure ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] deqp/functional/gles3/fborender/resize_02.html [ Failure ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 ] deqp/functional/gles3/shaderoperator/unary_operator_00.html [ Failure ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 passthrough ] WebglExtension_EXT_render_snorm [ Failure ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 passthrough ] WebglExtension_EXT_texture_mirror_clamp_to_edge [ Failure ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 passthrough ] WebglExtension_WEBGL_blend_func_extended [ Failure ]
+crbug.com/352104898 [ fuchsia fuchsia-board-qemu-x64 passthrough angle-swiftshader ] WebglExtension_WEBGL_render_shared_exponent [ Failure ]
+
+
 ###############################
 # New failures in WebGL rolls #
 ###############################
 
 # Roll WebGL d1b65aa..b934957.
-crbug.com/1448567 [ android ] conformance2/transform_feedback/simultaneous_binding.html [ Failure ]
-crbug.com/1448567 [ chromeos ] conformance2/transform_feedback/simultaneous_binding.html [ Failure ]
-crbug.com/1448567 [ linux ] conformance2/transform_feedback/simultaneous_binding.html [ Failure ]
-crbug.com/1448567 [ mac ] conformance2/transform_feedback/simultaneous_binding.html [ Failure ]
-crbug.com/1448567 [ win ] conformance2/transform_feedback/simultaneous_binding.html [ Failure ]
+crbug.com/1448567 [ android android-pixel-2 passthrough ] conformance2/transform_feedback/simultaneous_binding.html [ Failure ]
 crbug.com/1448570 [ android-pixel-4 angle-disabled no-passthrough ] conformance/extensions/webgl-compressed-texture-etc.html [ Failure ]
 crbug.com/1448570 [ android-pixel-4 angle-disabled no-passthrough ] conformance/extensions/webgl-compressed-texture-etc1.html [ Failure ]
 crbug.com/1448570 [ android android-pixel-2 angle-disabled no-passthrough ] conformance/extensions/webgl-compressed-texture-etc.html [ Failure ]
 crbug.com/1448570 [ android android-pixel-2 angle-disabled no-passthrough ] conformance/extensions/webgl-compressed-texture-etc1.html [ Failure ]
 crbug.com/1448569 [ win angle-d3d11 ] conformance2/glsl3/texture-bias.html [ Failure ]
 
-crbug.com/332743717 conformance/uniforms/uniform-location.html [ Failure ]
 crbug.com/332743717 [ android android-pixel-4 ] conformance2/canvas/drawingbuffer-storage-test.html [ Failure ]
 crbug.com/332743717 [ linux ] conformance2/canvas/drawingbuffer-storage-test.html [ Failure ]
-crbug.com/332743717 [ mac angle-metal ] conformance2/query/occlusion-query-scissor.html [ Failure ]
 crbug.com/332743717 [ mac intel angle-opengl ] conformance2/canvas/drawingbuffer-storage-test.html [ Failure ]
 crbug.com/332743717 [ chromeos chromeos-board-amd64-generic ] conformance2/canvas/drawingbuffer-storage-test.html [ Failure ]
 crbug.com/332743717 [ chromeos chromeos-board-octopus ] conformance2/canvas/drawingbuffer-storage-test.html [ Failure ]

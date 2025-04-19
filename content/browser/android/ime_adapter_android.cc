@@ -22,13 +22,15 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/public/android/content_jni_headers/ImeAdapterImpl_jni.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/mojom/input/ime_host.mojom.h"
 #include "third_party/blink/public/mojom/input/stylus_writing_gesture.mojom.h"
 #include "third_party/blink/public/platform/web_text_input_type.h"
 #include "ui/base/ime/ime_text_span.h"
+
+// Must come after all headers that specialize FromJniType() / ToJniType().
+#include "content/public/android/content_jni_headers/ImeAdapterImpl_jni.h"
 
 using base::android::AppendJavaStringArrayToStringVector;
 using base::android::AttachCurrentThread;
@@ -46,7 +48,7 @@ namespace {
 // type, |modifiers|, |time_ms|, |key_code|, |unicode_char| is used to create
 // WebKeyboardEvent. |key_code| is also needed ad need to treat the enter key
 // as a key press of character \r.
-NativeWebKeyboardEvent NativeWebKeyboardEventFromKeyEvent(
+input::NativeWebKeyboardEvent NativeWebKeyboardEventFromKeyEvent(
     JNIEnv* env,
     const base::android::JavaRef<jobject>& java_key_event,
     int type,
@@ -56,7 +58,7 @@ NativeWebKeyboardEvent NativeWebKeyboardEventFromKeyEvent(
     int scan_code,
     bool is_system_key,
     int unicode_char) {
-  return NativeWebKeyboardEvent(
+  return input::NativeWebKeyboardEvent(
       env, java_key_event, static_cast<blink::WebInputEvent::Type>(type),
       modifiers, base::TimeTicks() + base::Milliseconds(time_ms), key_code,
       scan_code, unicode_char, is_system_key);
@@ -298,7 +300,7 @@ bool ImeAdapterAndroid::SendKeyEvent(
     int unicode_char) {
   if (!rwhva_)
     return false;
-  NativeWebKeyboardEvent event = NativeWebKeyboardEventFromKeyEvent(
+  input::NativeWebKeyboardEvent event = NativeWebKeyboardEventFromKeyEvent(
       env, original_key_event, type, modifiers, time_ms, key_code, scan_code,
       is_system_key, unicode_char);
   rwhva_->SendKeyEvent(event);

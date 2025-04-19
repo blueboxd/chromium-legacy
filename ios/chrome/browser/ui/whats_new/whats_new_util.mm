@@ -79,6 +79,12 @@ const char* WhatsNewTypeToString(WhatsNewType type) {
       return "PinnedTabs";
     case WhatsNewType::kInactiveTabs:
       return "InactiveTabs";
+    case WhatsNewType::kPackageTracking:
+      return "PackageTracking";
+    case WhatsNewType::kPasswordSharing:
+      return "PasswordSharing";
+    case WhatsNewType::kCustomizableOverflowMenu:
+      return "CustomizableOverflowMenu";
     case WhatsNewType::kError:
       return nil;
   };

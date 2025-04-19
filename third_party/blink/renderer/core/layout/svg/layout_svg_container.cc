@@ -155,6 +155,8 @@ void LayoutSVGContainer::RemoveChild(LayoutObject* child) {
   NOT_DESTROYED();
   LayoutSVGModelObject::RemoveChild(child);
 
+  content_.MarkBoundsDirtyFromRemovedChild();
+
   bool had_non_isolated_descendants =
       (child->IsBlendingAllowed() && child->StyleRef().HasBlendMode()) ||
       child->HasNonIsolatedBlendingDescendants();
@@ -167,25 +169,26 @@ void LayoutSVGContainer::StyleDidChange(StyleDifference diff,
   NOT_DESTROYED();
   LayoutSVGModelObject::StyleDidChange(diff, old_style);
 
-  bool had_isolation =
-      old_style && !IsSVGHiddenContainer() &&
+  if (IsSVGHiddenContainer()) {
+    return;
+  }
+
+  const bool had_isolation =
+      old_style &&
       SVGLayoutSupport::WillIsolateBlendingDescendantsForStyle(*old_style);
+  const bool will_isolate_blending_descendants =
+      SVGLayoutSupport::WillIsolateBlendingDescendantsForStyle(StyleRef());
+  const bool isolation_changed =
+      had_isolation != will_isolate_blending_descendants;
 
-  bool will_isolate_blending_descendants =
-      SVGLayoutSupport::WillIsolateBlendingDescendantsForObject(this);
-
-  bool isolation_changed = had_isolation != will_isolate_blending_descendants;
-
-  if (isolation_changed)
+  if (isolation_changed) {
     SetNeedsPaintPropertyUpdate();
 
-  if (!Parent() || !isolation_changed)
-    return;
-
-  if (HasNonIsolatedBlendingDescendants()) {
-    Parent()->DescendantIsolationRequirementsChanged(
-        will_isolate_blending_descendants ? kDescendantIsolationNeedsUpdate
-                                          : kDescendantIsolationRequired);
+    if (Parent() && HasNonIsolatedBlendingDescendants()) {
+      Parent()->DescendantIsolationRequirementsChanged(
+          will_isolate_blending_descendants ? kDescendantIsolationNeedsUpdate
+                                            : kDescendantIsolationRequired);
+    }
   }
 }
 
@@ -213,7 +216,8 @@ void LayoutSVGContainer::DescendantIsolationRequirementsChanged(
       has_non_isolated_blending_descendants_dirty_ = true;
       break;
   }
-  if (SVGLayoutSupport::WillIsolateBlendingDescendantsForObject(this)) {
+  if (!IsSVGHiddenContainer() &&
+      SVGLayoutSupport::WillIsolateBlendingDescendantsForStyle(StyleRef())) {
     SetNeedsPaintPropertyUpdate();
     return;
   }

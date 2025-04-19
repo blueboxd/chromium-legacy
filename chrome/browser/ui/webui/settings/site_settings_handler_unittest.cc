@@ -50,6 +50,8 @@
 #include "chrome/browser/hid/hid_chooser_context_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
+#include "chrome/browser/permissions/system/mock_platform_handle.h"
+#include "chrome/browser/permissions/system/system_permission_settings.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/privacy_sandbox/mock_privacy_sandbox_service.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_service_factory.h"
@@ -97,6 +99,7 @@
 #include "components/permissions/test/object_permission_context_base_mock_permission_observer.h"
 #include "components/permissions/test/permission_test_util.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/privacy_sandbox/privacy_sandbox_features.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/app_update.h"
@@ -337,8 +340,9 @@ class SiteSettingsHandlerBaseTest : public testing::Test {
     EXPECT_TRUE(testing_profile_manager_->SetUp());
     profile_ = testing_profile_manager_->CreateTestingProfile(
         kTestUserEmail,
-        {{HistoryServiceFactory::GetInstance(),
-          HistoryServiceFactory::GetDefaultFactory()}},
+        {TestingProfile::TestingFactory{
+            HistoryServiceFactory::GetInstance(),
+            HistoryServiceFactory::GetDefaultFactory()}},
         /*is_main_profile=*/true);
     EXPECT_TRUE(profile_);
 
@@ -2290,6 +2294,55 @@ TEST_F(SiteSettingsHandlerTest, IncrementsTrackingProtectionMetrics) {
             1);
 }
 
+class Reset3pcCategoryPermissionTest
+    : public SiteSettingsHandlerBaseTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  Reset3pcCategoryPermissionTest() {
+    if (GetParam()) {
+      feature_list_.InitAndEnableFeature(
+          privacy_sandbox::kTrackingProtectionContentSettingInSettings);
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(All, Reset3pcCategoryPermissionTest, testing::Bool());
+
+TEST_P(Reset3pcCategoryPermissionTest,
+       RemovesTrackingProtectionExceptionsWhenFeatureIsOff) {
+  constexpr char kOrigin[] = "https://www.test.com:443";
+  base::Value::List set_args;
+  set_args.Append("*");        // Primary pattern.
+  set_args.Append(kOrigin);  // Secondary pattern.
+  set_args.Append(kTrackingProtection);
+  set_args.Append(
+      content_settings::ContentSettingToString(CONTENT_SETTING_ALLOW));
+  set_args.Append(false);  // Incognito
+  handler()->HandleSetCategoryPermissionForPattern(set_args);
+  // We should have 1 Tracking Protection exception
+  base::Value::List initial_exceptions;
+  site_settings::GetExceptionsForContentType(
+      ContentSettingsType::TRACKING_PROTECTION, profile(), web_ui(),
+      /*incognito=*/false, &initial_exceptions);
+  EXPECT_EQ(initial_exceptions.size(), 1U);
+
+  base::Value::List reset_args;
+  reset_args.Append("*");      // Primary pattern.
+  reset_args.Append(kOrigin);  // Secondary pattern.
+  reset_args.Append(kCookies);
+  reset_args.Append(false);  // Incognito
+  handler()->HandleResetCategoryPermissionForPattern(reset_args);
+  base::Value::List actual_exceptions;
+  site_settings::GetExceptionsForContentType(
+      ContentSettingsType::TRACKING_PROTECTION, profile(), web_ui(),
+      /*incognito=*/false, &actual_exceptions);
+  // The exception should only have been removed if the feature is off.
+  EXPECT_EQ(actual_exceptions.size(), GetParam() ? 1U : 0U);
+}
+
 // TODO(crbug.com/40688152): Test flakes on TSAN and ASAN.
 #if defined(THREAD_SANITIZER) || defined(ADDRESS_SANITIZER)
 #define MAYBE_DefaultSettingSource DISABLED_DefaultSettingSource
@@ -2948,9 +3001,10 @@ class SiteSettingsHandlerInfobarTest : public BrowserWithTestWindowTest {
   }
 
   void TearDown() override {
-    // SiteSettingsHandler maintains a HostZoomMap::Subscription internally, so
-    // make sure that's cleared before BrowserContext / profile destruction.
-    handler()->DisallowJavascript();
+    // SiteSettingsHandler maintains a HostZoomMap::Subscription internally and
+    // has a PrefChangeRegistrar that observes the profile's preference, so make
+    // sure that it's cleared before profile destruction.
+    handler_.reset();
 
     // Also destroy `browser2_` before the profile.
     browser2()->tab_strip_model()->CloseAllTabs();
@@ -3843,8 +3897,8 @@ class PersistentPermissionsSiteSettingsHandlerTest
   }
 
  protected:
-  std::unique_ptr<SiteSettingsHandler> handler_;
   TestingProfile profile_;
+  std::unique_ptr<SiteSettingsHandler> handler_;
 
  private:
   base::test::ScopedFeatureList feature_list_;
@@ -6367,5 +6421,93 @@ TEST_F(SiteSettingsHandlerTest, IsolatedWebAppClearUnpartitionedUsage) {
       /*expected_cookie_string=*/"",
       /*expected_fps_member_count_string=*/"", /*expected_fps_policy=*/false);
 }
+
+#if BUILDFLAG(IS_CHROMEOS)
+class SiteSettingsGlobalPermissionTest
+    : public SiteSettingsHandlerBaseTest,
+      public testing::WithParamInterface<std::tuple<bool, bool, bool>> {
+ protected:
+  bool CamBlocked() const { return std::get<0>(GetParam()); }
+  bool MicBlocked() const { return std::get<1>(GetParam()); }
+  bool GeoBlocked() const { return std::get<2>(GetParam()); }
+};
+
+TEST_P(SiteSettingsGlobalPermissionTest, GetOSGlobalPermissionStatus) {
+  system_permission_settings::ScopedSettingsForTesting cam_settings(
+      ContentSettingsType::MEDIASTREAM_CAMERA, CamBlocked());
+  system_permission_settings::ScopedSettingsForTesting mic_settings(
+      ContentSettingsType::MEDIASTREAM_MIC, MicBlocked());
+  system_permission_settings::ScopedSettingsForTesting geo_settings(
+      ContentSettingsType::GEOLOCATION, GeoBlocked());
+
+  base::Value::List args;
+  args.Append(kCallbackId);
+  handler()->HandleGetOSGlobalPermissionStatus(args);
+  EXPECT_LT(0u, CHECK_DEREF(web_ui()).call_data().size());
+  const auto& call_data = *(CHECK_DEREF(web_ui()).call_data().back());
+  EXPECT_EQ(3u, call_data.args().size());
+  EXPECT_EQ(base::Value(kCallbackId), CHECK_DEREF(call_data.arg1()));
+  EXPECT_EQ(base::Value(true), CHECK_DEREF(call_data.arg2()));
+
+  base::Value::Dict expected_result;
+  if (CamBlocked()) {
+    expected_result.Set(
+        "media-stream-camera",
+        base::Value(
+            "To use your camera, give Chrome access in system settings."));
+  }
+  if (MicBlocked()) {
+    expected_result.Set(
+        "media-stream-mic",
+        base::Value("To use your microphone, give Chrome access in "
+                    "system settings."));
+  }
+  if (GeoBlocked()) {
+    expected_result.Set(
+        "location",
+        base::Value(
+            "To use your location, give Chrome access in system settings."));
+  }
+
+  EXPECT_EQ(expected_result, CHECK_DEREF(call_data.arg3()));
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         SiteSettingsGlobalPermissionTest,
+                         testing::Combine(testing::Bool(),
+                                          testing::Bool(),
+                                          testing::Bool()));
+
+class SiteSettingsOpenSystemSettingsTest
+    : public SiteSettingsHandlerBaseTest,
+      public testing::WithParamInterface<ContentSettingsType> {
+ public:
+  SiteSettingsOpenSystemSettingsTest() {
+    system_permission_settings::SetInstanceForTesting(&mock_platform_handle);
+  }
+  ~SiteSettingsOpenSystemSettingsTest() {
+    system_permission_settings::SetInstanceForTesting(nullptr);
+  }
+
+  ContentSettingsType PermissionType() const { return GetParam(); }
+
+  NiceMock<system_permission_settings::MockPlatformHandle> mock_platform_handle;
+};
+
+TEST_P(SiteSettingsOpenSystemSettingsTest, OpenSystemSettings) {
+  base::Value permission_type(
+      site_settings::ContentSettingsTypeToGroupName(PermissionType()));
+  auto args = base::Value::List().Append(std::move(permission_type));
+  EXPECT_CALL(mock_platform_handle, OpenSystemSettings(_, PermissionType()));
+  handler()->HandleOpenSystemPermissionSettings(args);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    SiteSettingsOpenSystemSettingsTest,
+    testing::Values(ContentSettingsType::MEDIASTREAM_CAMERA,
+                    ContentSettingsType::MEDIASTREAM_MIC,
+                    ContentSettingsType::GEOLOCATION));
+#endif
 
 }  // namespace settings

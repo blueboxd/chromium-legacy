@@ -59,50 +59,39 @@ bool IsValidType(ContentSettingsType type) {
 
 net::CookieInclusionStatus::ExemptionReason GetExemptionReason(
     CookieSettings::ThirdPartyCookieAllowMechanism allow_mechanism) {
+  using AllowMechanism = CookieSettings::ThirdPartyCookieAllowMechanism;
+  using ExemptionReason = net::CookieInclusionStatus::ExemptionReason;
   switch (allow_mechanism) {
-    case CookieSettings::ThirdPartyCookieAllowMechanism::
-        kAllowByExplicitSetting:
-    case CookieSettings::ThirdPartyCookieAllowMechanism::
-        kAllowByTrackingProtectionException:
-      return net::CookieInclusionStatus::ExemptionReason::kUserSetting;
-    case CookieSettings::ThirdPartyCookieAllowMechanism::kAllowBy3PCDHeuristics:
-      return net::CookieInclusionStatus::ExemptionReason::k3PCDHeuristics;
-    case CookieSettings::ThirdPartyCookieAllowMechanism::
-        kAllowBy3PCDMetadataSourceUnspecified:
-    case CookieSettings::ThirdPartyCookieAllowMechanism::
-        kAllowBy3PCDMetadataSourceTest:
-    case CookieSettings::ThirdPartyCookieAllowMechanism::
-        kAllowBy3PCDMetadataSource1pDt:
-    case CookieSettings::ThirdPartyCookieAllowMechanism::
-        kAllowBy3PCDMetadataSource3pDt:
-    case CookieSettings::ThirdPartyCookieAllowMechanism::
-        kAllowBy3PCDMetadataSourceDogFood:
-    case CookieSettings::ThirdPartyCookieAllowMechanism::
-        kAllowBy3PCDMetadataSourceCriticalSector:
-    case CookieSettings::ThirdPartyCookieAllowMechanism::
-        kAllowBy3PCDMetadataSourceCuj:
-    case CookieSettings::ThirdPartyCookieAllowMechanism::
-        kAllowBy3PCDMetadataSourceGovEduTld:
-      return net::CookieInclusionStatus::ExemptionReason::k3PCDMetadata;
-    case CookieSettings::ThirdPartyCookieAllowMechanism::kAllowBy3PCD:
-    case CookieSettings::ThirdPartyCookieAllowMechanism::kAllowByTopLevel3PCD:
-      return net::CookieInclusionStatus::ExemptionReason::k3PCDDeprecationTrial;
-    case CookieSettings::ThirdPartyCookieAllowMechanism::kAllowByGlobalSetting:
-    case CookieSettings::ThirdPartyCookieAllowMechanism::
-        kAllowByEnterprisePolicyCookieAllowedForUrls:
-      return net::CookieInclusionStatus::ExemptionReason::kEnterprisePolicy;
-    case CookieSettings::ThirdPartyCookieAllowMechanism::kAllowByStorageAccess:
-      return net::CookieInclusionStatus::ExemptionReason::kStorageAccess;
-    case CookieSettings::ThirdPartyCookieAllowMechanism::
-        kAllowByTopLevelStorageAccess:
-      return net::CookieInclusionStatus::ExemptionReason::
-          kTopLevelStorageAccess;
-    case CookieSettings::ThirdPartyCookieAllowMechanism::kAllowByCORSException:
-      return net::CookieInclusionStatus::ExemptionReason::kCorsOptIn;
-    case CookieSettings::ThirdPartyCookieAllowMechanism::kNone:
-      return net::CookieInclusionStatus::ExemptionReason::kNone;
-    case CookieSettings::ThirdPartyCookieAllowMechanism::kAllowByScheme:
-      return net::CookieInclusionStatus::ExemptionReason::kScheme;
+    case AllowMechanism::kAllowByExplicitSetting:
+    case AllowMechanism::kAllowByTrackingProtectionException:
+      return ExemptionReason::kUserSetting;
+    case AllowMechanism::kAllowBy3PCDHeuristics:
+      return ExemptionReason::k3PCDHeuristics;
+    case AllowMechanism::kAllowBy3PCDMetadataSourceUnspecified:
+    case AllowMechanism::kAllowBy3PCDMetadataSourceTest:
+    case AllowMechanism::kAllowBy3PCDMetadataSource1pDt:
+    case AllowMechanism::kAllowBy3PCDMetadataSource3pDt:
+    case AllowMechanism::kAllowBy3PCDMetadataSourceDogFood:
+    case AllowMechanism::kAllowBy3PCDMetadataSourceCriticalSector:
+    case AllowMechanism::kAllowBy3PCDMetadataSourceCuj:
+    case AllowMechanism::kAllowBy3PCDMetadataSourceGovEduTld:
+      return ExemptionReason::k3PCDMetadata;
+    case AllowMechanism::kAllowBy3PCD:
+    case AllowMechanism::kAllowByTopLevel3PCD:
+      return ExemptionReason::k3PCDDeprecationTrial;
+    case AllowMechanism::kAllowByGlobalSetting:
+    case AllowMechanism::kAllowByEnterprisePolicyCookieAllowedForUrls:
+      return ExemptionReason::kEnterprisePolicy;
+    case AllowMechanism::kAllowByStorageAccess:
+      return ExemptionReason::kStorageAccess;
+    case AllowMechanism::kAllowByTopLevelStorageAccess:
+      return ExemptionReason::kTopLevelStorageAccess;
+    case AllowMechanism::kAllowByCORSException:
+      return ExemptionReason::kCorsOptIn;
+    case AllowMechanism::kNone:
+      return ExemptionReason::kNone;
+    case AllowMechanism::kAllowByScheme:
+      return ExemptionReason::kScheme;
   }
 }
 
@@ -161,8 +150,10 @@ void CookieSettings::set_content_settings(
   content_settings_[type] =
       content_settings::HostIndexedContentSettings::Create(settings);
 
-  if (type == ContentSettingsType::COOKIES) {
-    // Ensure that a default cookie setting is specified.
+  if (type == ContentSettingsType::COOKIES ||
+      type == ContentSettingsType::TOP_LEVEL_TPCD_ORIGIN_TRIAL) {
+    // Cookies and the top-level origin trial for 3PCD use allow-by-default
+    // settings, so ensure their default is set appropriately.
     if (settings.empty() ||
         settings.back().primary_pattern != ContentSettingsPattern::Wildcard() ||
         settings.back().secondary_pattern !=
@@ -220,11 +211,10 @@ bool CookieSettings::IsCookieAccessible(
                                    base::OptionalToPtr(top_frame_origin),
                                    overrides);
   bool allowed = IsCookieAllowed(cookie, setting_with_metadata);
-  bool is_third_party_request = IsThirdPartyRequest(url, site_for_cookies);
   if (cookie_inclusion_status) {
     AugmentInclusionStatus(cookie, base::OptionalToPtr(top_frame_origin),
-                           is_third_party_request, setting_with_metadata,
-                           first_party_set_metadata, *cookie_inclusion_status);
+                           setting_with_metadata, first_party_set_metadata,
+                           *cookie_inclusion_status);
   }
   return allowed;
 }
@@ -264,8 +254,9 @@ CookieSettings::GetCookieSettingWithMetadata(
     const url::Origin* top_frame_origin,
     net::CookieSettingOverrides overrides) const {
   return GetCookieSettingInternal(
-      url, FirstPartyURLForMetadata(site_for_cookies, top_frame_origin),
-      IsThirdPartyRequest(url, site_for_cookies), overrides, nullptr);
+      url, site_for_cookies,
+      FirstPartyURLForMetadata(site_for_cookies, top_frame_origin), overrides,
+      nullptr);
 }
 
 // static
@@ -288,21 +279,17 @@ bool CookieSettings::AnnotateAndMoveUserBlockedCookies(
   const CookieSettingWithMetadata setting_with_metadata =
       GetCookieSettingWithMetadata(url, site_for_cookies, top_frame_origin,
                                    overrides);
-  const bool is_third_party_request =
-      IsThirdPartyRequest(url, site_for_cookies);
   // Add `WARN_THIRD_PARTY_PHASEOUT` `WarningReason` for allowed cookies
   // that meets the conditions and add the `ExclusionReason` for cookies
   // that ought to be blocked.
   for (net::CookieWithAccessResult& cookie : maybe_included_cookies) {
     AugmentInclusionStatus(cookie.cookie, top_frame_origin,
-                           is_third_party_request, setting_with_metadata,
-                           first_party_set_metadata,
+                           setting_with_metadata, first_party_set_metadata,
                            cookie.access_result.status);
   }
   for (net::CookieWithAccessResult& cookie : excluded_cookies) {
     AugmentInclusionStatus(cookie.cookie, top_frame_origin,
-                           is_third_party_request, setting_with_metadata,
-                           first_party_set_metadata,
+                           setting_with_metadata, first_party_set_metadata,
                            cookie.access_result.status);
   }
   const auto to_be_moved = base::ranges::stable_partition(
@@ -391,14 +378,12 @@ bool CookieSettings::IsThirdPartyPhaseoutEnabled() const {
 }
 
 bool CookieSettings::MitigationsEnabledFor3pcd() const {
-  return net::cookie_util::IsForceThirdPartyCookieBlockingEnabled() ||
-         mitigations_enabled_for_3pcd_;
+  return mitigations_enabled_for_3pcd_;
 }
 
 void CookieSettings::AugmentInclusionStatus(
     const net::CanonicalCookie& cookie,
     const url::Origin* top_frame_origin,
-    bool is_third_party_request,
     const CookieSettings::CookieSettingWithMetadata& setting_with_metadata,
     const net::FirstPartySetMetadata& first_party_set_metadata,
     net::CookieInclusionStatus& out_status) const {
@@ -407,7 +392,8 @@ void CookieSettings::AugmentInclusionStatus(
       IsBlockedByTopLevel3pcdOriginTrial(top_frame_origin->GetURL());
 
   if (IsCookieAllowed(cookie, setting_with_metadata)) {
-    if (!is_third_party_request || !ShouldApply3pcdRelatedReasons(cookie)) {
+    if (!setting_with_metadata.is_third_party_request() ||
+        !ShouldApply3pcdRelatedReasons(cookie)) {
       return;
     }
     if (ShouldBlockThirdPartyCookies() || affected_by_3pcd_origin_trial) {
@@ -426,7 +412,7 @@ void CookieSettings::AugmentInclusionStatus(
 
   // The cookie is blocked.
 
-  if (is_third_party_request &&
+  if (setting_with_metadata.is_third_party_request() &&
       setting_with_metadata.allow_partitioned_cookies()) {
     if (IsThirdPartyPhaseoutEnabled() &&
         !setting_with_metadata.is_explicit_setting()) {

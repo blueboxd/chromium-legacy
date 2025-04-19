@@ -5,15 +5,13 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INTERSECTION_OBSERVER_INTERSECTION_OBSERVER_CONTROLLER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INTERSECTION_OBSERVER_INTERSECTION_OBSERVER_CONTROLLER_H_
 
+#include "base/time/time.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_linked_hash_set.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
-
-#if CHECK_SKIPPED_UPDATE_ON_SCROLL()
-#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-#endif
 
 // Design doc for IntersectionObserver implementation:
 //   https://docs.google.com/a/google.com/document/d/1hLK0eyT5_BzyNS4OkjsnoqqFQDYCbKfyBinj94OnLiQ
@@ -21,8 +19,41 @@
 namespace blink {
 
 class ExecutionContext;
+class LocalFrameView;
 
-class IntersectionObserverController
+class CORE_EXPORT ComputeIntersectionsContext {
+  STACK_ALLOCATED();
+
+ public:
+  ~ComputeIntersectionsContext() {
+    // GetAndResetNextRunDelay() must have been called.
+    CHECK_EQ(next_run_delay_, base::TimeDelta::Max());
+  }
+
+  base::TimeTicks GetMonotonicTime();
+  DOMHighResTimeStamp GetTimeStamp(const IntersectionObserver& observer);
+  std::optional<IntersectionGeometry::RootGeometry>& GetRootGeometry(
+      const IntersectionObserver& observer,
+      unsigned flags);
+  void UpdateNextRunDelay(base::TimeDelta delay);
+  base::TimeDelta GetAndResetNextRunDelay();
+
+ private:
+  base::TimeTicks monotonic_time_;
+  ExecutionContext* explicit_root_execution_context_ = nullptr;
+  DOMHighResTimeStamp explicit_root_timestamp_ = -1;
+  ExecutionContext* implicit_root_execution_context_ = nullptr;
+  DOMHighResTimeStamp implicit_root_timestamp_ = -1;
+
+  const IntersectionObserver* explicit_root_geometry_observer_ = nullptr;
+  std::optional<IntersectionGeometry::RootGeometry> explicit_root_geometry_;
+  const IntersectionObserver* implicit_root_geometry_observer_ = nullptr;
+  std::optional<IntersectionGeometry::RootGeometry> implicit_root_geometry_;
+
+  base::TimeDelta next_run_delay_ = base::TimeDelta::Max();
+};
+
+class CORE_EXPORT IntersectionObserverController
     : public GarbageCollected<IntersectionObserverController>,
       public ExecutionContextClient,
       public NameClient {
@@ -43,12 +74,10 @@ class IntersectionObserverController
   // observer.
   bool ComputeIntersections(
       unsigned flags,
-      LocalFrameUkmAggregator* metrics_aggregator,
-      std::optional<base::TimeTicks>& monotonic_time,
-      gfx::Vector2dF accumulated_scroll_delta_since_last_update);
+      LocalFrameView&,
+      gfx::Vector2dF accumulated_scroll_delta_since_last_update,
+      ComputeIntersectionsContext&);
 
-  // The second argument indicates whether the Element is a target of any
-  // observers for which observer->trackVisibility() is true.
   void AddTrackedObserver(IntersectionObserver&);
   void AddTrackedObservation(IntersectionObservation&);
   void RemoveTrackedObserver(IntersectionObserver&);
@@ -61,26 +90,20 @@ class IntersectionObserverController
     return "IntersectionObserverController";
   }
 
-  unsigned GetTrackedObserverCountForTesting() const {
+  wtf_size_t GetTrackedObserverCountForTesting() const {
     return tracked_explicit_root_observers_.size();
   }
-  unsigned GetTrackedObservationCountForTesting() const {
-    return tracked_implicit_root_observations_.size();
-  }
-
-#if CHECK_SKIPPED_UPDATE_ON_SCROLL()
-  const String& DebugInfo() const { return debug_info_; }
-#endif
+  wtf_size_t GetTrackedObservationCountForTesting() const;
 
  private:
   void PostTaskToDeliverNotifications();
 
- private:
   // IntersectionObserver's with a connected explicit root in this document.
   HeapHashSet<Member<IntersectionObserver>> tracked_explicit_root_observers_;
   // IntersectionObservations with an implicit root and connected target in this
-  // document.
-  HeapHashSet<Member<IntersectionObservation>>
+  // document, grouped by IntersectionObservers.
+  HeapHashMap<Member<IntersectionObserver>,
+              HeapHashSet<Member<IntersectionObservation>>>
       tracked_implicit_root_observations_;
   // IntersectionObservers for which this is the execution context of the
   // callback, and with unsent notifications.
@@ -88,10 +111,6 @@ class IntersectionObserverController
   // This is 'true' if any tracked node is the target of an observer for
   // which observer->trackVisibility() is true.
   bool needs_occlusion_tracking_;
-
-#if CHECK_SKIPPED_UPDATE_ON_SCROLL()
-  String debug_info_;
-#endif
 };
 
 }  // namespace blink

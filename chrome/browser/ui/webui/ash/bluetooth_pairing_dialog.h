@@ -15,8 +15,12 @@
 #include "content/public/browser/webui_config.h"
 #include "content/public/common/url_constants.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "ui/base/interaction/element_identifier.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
-#include "ui/webui/resources/cr_components/color_change_listener/color_change_listener.mojom.h"
+
+namespace color_change_listener::mojom {
+class PageHandler;
+}  // namespace color_change_listener::mojom
 
 namespace ui {
 class ColorChangeHandler;
@@ -26,6 +30,8 @@ namespace ash {
 
 class BluetoothPairingDialog : public SystemWebDialogDelegate {
  public:
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kBluetoothPairingDialogElementId);
+
   BluetoothPairingDialog(const BluetoothPairingDialog&) = delete;
   BluetoothPairingDialog& operator=(const BluetoothPairingDialog&) = delete;
 
@@ -46,7 +52,7 @@ class BluetoothPairingDialog : public SystemWebDialogDelegate {
       std::optional<std::string_view> canonical_device_address);
 
  private:
-  // SystemWebDialogDelegate
+  // SystemWebDialogDelegate:
   std::string Id() override;
   void AdjustWidgetInitParams(views::Widget::InitParams* params) override;
 

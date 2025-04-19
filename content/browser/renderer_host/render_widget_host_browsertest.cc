@@ -15,20 +15,21 @@
 #include "base/test/test_timeouts.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/input/input_router_impl.h"
+#include "components/input/render_widget_host_input_event_router.h"
+#include "components/input/touch_action_filter.h"
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/browser/renderer_host/input/touch_emulator_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
-#include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/content_navigation_policy.h"
-#include "content/common/input/input_router_impl.h"
 #include "content/common/input/synthetic_smooth_drag_gesture.h"
-#include "content/common/input/touch_action_filter.h"
 #include "content/public/browser/render_widget_host_observer.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -45,6 +46,7 @@
 #include "third_party/blink/public/common/switches.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/switches.h"
 #include "ui/latency/latency_info.h"
 
 #if BUILDFLAG(IS_MAC)
@@ -114,7 +116,6 @@ class RenderWidgetHostBrowserTest : public ContentBrowserTest {
 class RenderWidgetHostSitePerProcessTest : public ContentBrowserTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ContentBrowserTest::SetUpCommandLine(command_line);
     IsolateAllSitesForTesting(command_line);
     // Slow bots are flaky due to slower loading interacting with
     // deferred commits.
@@ -132,8 +133,9 @@ class RenderWidgetHostSitePerProcessTest : public ContentBrowserTest {
     return static_cast<WebContentsImpl*>(shell()->web_contents());
   }
 
-  TouchActionFilter* GetTouchActionFilterForWidget(RenderWidgetHostImpl* rwhi) {
-    return &static_cast<InputRouterImpl*>(rwhi->input_router())
+  input::TouchActionFilter* GetTouchActionFilterForWidget(
+      RenderWidgetHostImpl* rwhi) {
+    return &static_cast<input::InputRouterImpl*>(rwhi->input_router())
                 ->touch_action_filter_;
   }
 };
@@ -202,7 +204,7 @@ class RenderWidgetHostTouchEmulatorBrowserTest : public ContentBrowserTest {
       event.button = blink::WebMouseEvent::Button::kLeft;
     }
     event.SetTimeStamp(GetNextSimulatedEventTime());
-    RenderWidgetHostInputEventRouter* router =
+    input::RenderWidgetHostInputEventRouter* router =
         static_cast<WebContentsImpl*>(shell()->web_contents())
             ->GetInputEventRouter();
     ASSERT_TRUE(router);
@@ -237,7 +239,7 @@ class RenderWidgetHostTouchEmulatorBrowserTest : public ContentBrowserTest {
 IN_PROC_BROWSER_TEST_F(RenderWidgetHostTouchEmulatorBrowserTest,
                        TouchEmulatorPinchWithGestureFling) {
   auto* touch_emulator = host()->GetTouchEmulator(/*create_if_necessary=*/true);
-  touch_emulator->Enable(TouchEmulator::Mode::kEmulatingTouchFromMouse,
+  touch_emulator->Enable(input::TouchEmulator::Mode::kEmulatingTouchFromMouse,
                          ui::GestureProviderConfigType::GENERIC_MOBILE);
   touch_emulator->SetPinchGestureModeForTesting(true);
 
@@ -299,7 +301,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostTouchEmulatorBrowserTest,
                        MAYBE_TouchEmulator) {
   host()
       ->GetTouchEmulator(/*create_if_necessary=*/true)
-      ->Enable(TouchEmulator::Mode::kEmulatingTouchFromMouse,
+      ->Enable(input::TouchEmulator::Mode::kEmulatingTouchFromMouse,
                ui::GestureProviderConfigType::GENERIC_MOBILE);
 
   TestInputEventObserver observer;
@@ -469,7 +471,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostTouchEmulatorBrowserTest,
   // Turn on emulation.
   host()
       ->GetTouchEmulator(/*create_if_necessary=*/true)
-      ->Enable(TouchEmulator::Mode::kEmulatingTouchFromMouse,
+      ->Enable(input::TouchEmulator::Mode::kEmulatingTouchFromMouse,
                ui::GestureProviderConfigType::GENERIC_MOBILE);
 
   // Another touch.
@@ -601,7 +603,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostSitePerProcessTest,
 
   // Open the <select> menu by focusing it and sending a space key
   // at the focused node. This creates a popup widget.
-  NativeWebKeyboardEvent event(
+  input::NativeWebKeyboardEvent event(
       blink::WebKeyboardEvent::Type::kChar, blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   event.text[0] = ' ';
@@ -809,7 +811,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostSitePerProcessTest,
                                               permission_exclusion_area_bounds);
 #endif  // BUILDFLAG(IS_MAC)
 
-  NativeWebKeyboardEvent event(
+  input::NativeWebKeyboardEvent event(
       blink::WebKeyboardEvent::Type::kChar, blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   event.text[0] = ' ';
@@ -1142,7 +1144,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostFoldableCSSTest,
       /* mask_length */ kDisplayFeatureLength};
   {
     view()->SetDisplayFeatureForTesting(&emulated_display_feature);
-    host()->SynchronizeVisualProperties();
+    host()->SynchronizeVisualPropertiesIgnoringPendingAck();
   }
 
   EXPECT_EQ(
@@ -1255,9 +1257,8 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostDelegatedInkMetadataTest,
 
 // If the DelegatedInkTrailPresenter creates a metadata that has the same
 // timestamp as the previous one, it does not set the metadata.
-// TODO(crbug.com/40852704). Flaky.
 IN_PROC_BROWSER_TEST_F(RenderWidgetHostDelegatedInkMetadataTest,
-                       DISABLED_DuplicateMetadata) {
+                       DuplicateMetadata) {
   ASSERT_TRUE(ExecJs(shell()->web_contents(), R"(
       let presenter = null;
       navigator.ink.requestPresenter().then(e => { presenter = e; });
@@ -1395,6 +1396,11 @@ class RenderWidgetHostSameDocNavUpdatesLocalSurfaceIdTest
     ASSERT_TRUE(embedded_test_server()->Start());
   }
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    RenderWidgetHostBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kForcePrefersNoReducedMotion);
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
@@ -1442,5 +1448,193 @@ IN_PROC_BROWSER_TEST_P(RenderWidgetHostSameDocNavUpdatesLocalSurfaceIdTest,
 INSTANTIATE_TEST_SUITE_P(All,
                          RenderWidgetHostSameDocNavUpdatesLocalSurfaceIdTest,
                          ::testing::Bool());
+
+namespace {
+
+enum class TestConfig { kSameDoc = 0, kBFCacheEnabled, kBFCacheDisabled };
+
+static std::string DescribeTest(
+    const ::testing::TestParamInfo<TestConfig>& info) {
+  switch (info.param) {
+    case TestConfig::kSameDoc:
+      return "SameDoc";
+    case TestConfig::kBFCacheEnabled:
+      return "CrossDoc_BFCacheEnabled";
+    case TestConfig::kBFCacheDisabled:
+      return "CrossDoc_BFCacheDisabled";
+  }
+}
+
+class ItemSequenceNumberObserver : public RenderFrameMetadataProvider::Observer,
+                                   public WebContentsObserver {
+ public:
+  ItemSequenceNumberObserver(WebContents* web_contents,
+                             int64_t expected_sequence_number)
+      : WebContentsObserver(web_contents),
+        expected_sequence_number_(expected_sequence_number) {}
+  ~ItemSequenceNumberObserver() override {
+    if (provider_) {
+      provider_->RemoveObserver(this);
+    }
+  }
+
+  // `RenderFrameMetadataProvider::Observer`:
+  void OnRenderFrameMetadataChangedBeforeActivation(
+      const cc::RenderFrameMetadata& metadata) override {}
+  void OnRenderFrameMetadataChangedAfterActivation(
+      base::TimeTicks activation_time) override {
+    ASSERT_TRUE(provider_);
+    if (expected_sequence_number_ ==
+        provider_->LastRenderFrameMetadata()
+            .primary_main_frame_item_sequence_number) {
+      observed_expected_number_ = true;
+    } else {
+      return;
+    }
+    if (run_loop_) {
+      run_loop_->Quit();
+    }
+  }
+  void OnRenderFrameSubmission() override {}
+  void OnLocalSurfaceIdChanged(
+      const cc::RenderFrameMetadata& metadata) override {}
+
+  // `WebContentsObserver`:
+  void ReadyToCommitNavigation(NavigationHandle* navigation_handle) override {
+    ASSERT_FALSE(navigation_handle->IsSameDocument());
+    auto* request = static_cast<NavigationRequest*>(navigation_handle);
+    RenderFrameHostImpl* rfhi = request->GetRenderFrameHost();
+    ASSERT_TRUE(rfhi);
+    provider_ = rfhi->GetView()->host()->render_frame_metadata_provider();
+    provider_->AddObserver(this);
+  }
+
+  // For same-doc navigations, we don't get `WCO::ReadyToCommitNavigation`.
+  // Since this is testing code, we just set the provider directly (instead of
+  // registering a new `CommitDeferringCondition`).
+  void SetProviderForSameDocNavigations(
+      RenderFrameMetadataProviderImpl* provider) {
+    ASSERT_FALSE(provider_);
+    provider_ = provider;
+    provider_->AddObserver(this);
+  }
+
+  [[nodiscard]] bool WaitForExpectedItemSequenceNumber() {
+    if (!provider_) {
+      return false;
+    }
+    // If `OnRenderFrameMetadataChangedAfterActivation()` is called before
+    // `WaitForExpectedItemSequenceNumber()`.
+    if (observed_expected_number_) {
+      return true;
+    }
+    CHECK(!run_loop_);
+    run_loop_ = std::make_unique<base::RunLoop>();
+    run_loop_->Run();
+    return observed_expected_number_;
+  }
+
+ private:
+  const int64_t expected_sequence_number_;
+
+  raw_ptr<RenderFrameMetadataProviderImpl> provider_;
+  std::unique_ptr<base::RunLoop> run_loop_;
+  bool observed_expected_number_ = false;
+};
+
+class RenderWidgetHostItemSequenceNumberInRenderFrameMetadataTest
+    : public RenderWidgetHostBrowserTest,
+      public ::testing::WithParamInterface<TestConfig> {
+ public:
+  RenderWidgetHostItemSequenceNumberInRenderFrameMetadataTest() = default;
+  ~RenderWidgetHostItemSequenceNumberInRenderFrameMetadataTest() override =
+      default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    auto test_config = GetParam();
+    switch (test_config) {
+      case TestConfig::kSameDoc: {
+        first_url_ = "/session_history/fragment.html";
+        second_url_ = "/session_history/fragment.html#a";
+        break;
+      }
+      case TestConfig::kBFCacheEnabled: {
+        first_url_ = "/empty.html";
+        second_url_ = "/title1.html";
+        scoped_feature_list_.InitWithFeaturesAndParameters(
+            GetDefaultEnabledBackForwardCacheFeaturesForTesting(),
+            GetDefaultDisabledBackForwardCacheFeaturesForTesting());
+        break;
+      }
+      case TestConfig::kBFCacheDisabled: {
+        first_url_ = "/empty.html";
+        second_url_ = "/title1.html";
+        command_line->AppendSwitch(switches::kDisableBackForwardCache);
+        break;
+      }
+    }
+    RenderWidgetHostBrowserTest::SetUpCommandLine(command_line);
+  }
+
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    ASSERT_TRUE(embedded_test_server()->Start());
+  }
+
+  GURL FirstURL() { return embedded_test_server()->GetURL(first_url_); }
+
+  GURL SecondURL() { return embedded_test_server()->GetURL(second_url_); }
+
+ private:
+  std::string first_url_;
+  std::string second_url_;
+  std::vector<std::string> hosts_;
+
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_P(
+    RenderWidgetHostItemSequenceNumberInRenderFrameMetadataTest,
+    ItemSequenceNumberExpected) {
+  ASSERT_TRUE(NavigateToURL(shell(), FirstURL()));
+  ASSERT_TRUE(NavigateToURL(shell(), SecondURL()));
+
+  auto* controller = static_cast<NavigationControllerImpl*>(
+      &(web_contents()->GetController()));
+  ASSERT_EQ(controller->GetEntryCount(), 2);
+  int64_t expected_sequence_number =
+      controller->GetEntryAtIndex(0)
+          ->GetFrameEntry(controller->frame_tree().root())
+          ->item_sequence_number();
+
+  ItemSequenceNumberObserver obs(web_contents(), expected_sequence_number);
+  if (GetParam() == TestConfig::kSameDoc) {
+    obs.SetProviderForSameDocNavigations(
+        view()->host()->render_frame_metadata_provider());
+  }
+
+  TestNavigationObserver nav_observer(web_contents(), 1);
+  ASSERT_TRUE(web_contents()->GetController().CanGoBack());
+  web_contents()->GetController().GoBack();
+
+  nav_observer.WaitForNavigationFinished();
+  ASSERT_TRUE(obs.WaitForExpectedItemSequenceNumber());
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    RenderWidgetHostItemSequenceNumberInRenderFrameMetadataTest,
+#if BUILDFLAG(IS_FUCHSIA)
+    // TODO(crbug/345304287): Temporary disable the same-doc variant while
+    // investigate the cause for flakiness.
+    ::testing::ValuesIn({TestConfig::kBFCacheEnabled,
+                         TestConfig::kBFCacheDisabled}),
+#else
+    ::testing::ValuesIn({TestConfig::kSameDoc, TestConfig::kBFCacheEnabled,
+                         TestConfig::kBFCacheDisabled}),
+#endif
+    &DescribeTest);
 
 }  // namespace content

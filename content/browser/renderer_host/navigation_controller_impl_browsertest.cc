@@ -152,9 +152,7 @@ class NavigationControllerBrowserTestBase : public ContentBrowserTest {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ContentBrowserTest::SetUpCommandLine(command_line);
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kExposeInternalsForTesting);
+    command_line->AppendSwitch(switches::kExposeInternalsForTesting);
   }
 
   WebContentsImpl* contents() const {
@@ -15663,18 +15661,16 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   // This test expects going back to trigger a new page load and fetch a URL
   // (which would fail with a 404 error). Disable back/forward cache to ensure
   // that it doesn't happen.
-  DisableBackForwardCacheForTesting(shell()->web_contents(),
+  DisableBackForwardCacheForTesting(contents(),
                                     BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
-  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
-      shell()->web_contents()->GetController());
+  NavigationControllerImpl& controller =
+      static_cast<NavigationControllerImpl&>(contents()->GetController());
   // 1) Navigate to |start_url|.
   GURL start_url(embedded_test_server()->GetURL("/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), start_url));
 
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetPrimaryFrameTree()
-                            .root();
+  FrameTreeNode* root = contents()->GetPrimaryFrameTree().root();
 
   // 2) pushState to a URL that will 404 & result in Chrome's error page if
   // loaded from scratch.
@@ -15693,12 +15689,13 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
 
   // 4) Go back. This will 404 so we will show an error page.
   {
-    TestNavigationObserver observer(shell()->web_contents());
+    TestNavigationObserver observer(contents());
     controller.GoBack();
     observer.Wait();
     EXPECT_EQ(error_url, root->current_url());
     EXPECT_EQ(net::ERR_HTTP_RESPONSE_CODE_FAILURE,
               observer.last_net_error_code());
+    EXPECT_EQ(404, contents()->GetPrimaryMainFrame()->last_http_status_code());
     EXPECT_FALSE(observer.last_navigation_succeeded());
   }
 
@@ -15707,7 +15704,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   // because the previous page is an error page.
   {
     FrameNavigateParamsCapturer capturer(root);
-    TestNavigationObserver observer(shell()->web_contents());
+    TestNavigationObserver observer(contents());
     controller.GoBack();
     capturer.Wait();
     observer.Wait();
@@ -16227,14 +16224,11 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
     EXPECT_FALSE(observer.last_navigation_succeeded());
     EXPECT_EQ(net::ERR_HTTP_RESPONSE_CODE_FAILURE,
               observer.last_net_error_code());
+    EXPECT_EQ(404, contents()->GetPrimaryMainFrame()->last_http_status_code());
     EXPECT_EQ(NAVIGATION_TYPE_MAIN_FRAME_NEW_ENTRY,
               observer.last_navigation_type());
     EXPECT_EQ(PAGE_TYPE_ERROR,
               controller.GetLastCommittedEntry()->GetPageType());
-
-    // Check that the error page contains the error code.
-    EXPECT_EQ(true,
-              EvalJs(contents(), "document.body.innerText.includes('404')"));
   }
 
   {
@@ -16245,6 +16239,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
     EXPECT_FALSE(reload_observer.last_navigation_succeeded());
     EXPECT_EQ(net::ERR_HTTP_RESPONSE_CODE_FAILURE,
               reload_observer.last_net_error_code());
+    EXPECT_EQ(404, contents()->GetPrimaryMainFrame()->last_http_status_code());
     EXPECT_EQ(NAVIGATION_TYPE_MAIN_FRAME_EXISTING_ENTRY,
               reload_observer.last_navigation_type());
     EXPECT_EQ(PAGE_TYPE_ERROR,
@@ -16260,6 +16255,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
     EXPECT_FALSE(same_url_observer.last_navigation_succeeded());
     EXPECT_EQ(net::ERR_HTTP_RESPONSE_CODE_FAILURE,
               same_url_observer.last_net_error_code());
+    EXPECT_EQ(404, contents()->GetPrimaryMainFrame()->last_http_status_code());
     EXPECT_EQ(NAVIGATION_TYPE_MAIN_FRAME_NEW_ENTRY,
               same_url_observer.last_navigation_type());
     EXPECT_EQ(PAGE_TYPE_ERROR,
@@ -16290,11 +16286,8 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTestNoServer,
   EXPECT_FALSE(observer.last_navigation_succeeded());
   EXPECT_EQ(net::ERR_HTTP_RESPONSE_CODE_FAILURE,
             observer.last_net_error_code());
+  EXPECT_EQ(500, contents()->GetPrimaryMainFrame()->last_http_status_code());
   EXPECT_EQ(PAGE_TYPE_ERROR, controller.GetLastCommittedEntry()->GetPageType());
-
-  // Check that the error page contains the error code.
-  EXPECT_EQ(true,
-            EvalJs(contents(), "document.body.innerText.includes('500')"));
 }
 
 // Verify that navigating to a page with status 404 but a non-empty body won't
@@ -21559,12 +21552,13 @@ IN_PROC_BROWSER_TEST_P(
     // Main frame same-site navigation creates a speculative RenderFrameHost.
     TestNavigationManager navigation_manager(contents(), url_a);
     EXPECT_TRUE(ExecJs(root, JsReplace("location.href = $1;", url_a)));
-    EXPECT_TRUE(navigation_manager.WaitForRequestStart());
+    navigation_manager.WaitForSpeculativeRenderFrameHostCreation();
     EXPECT_TRUE(root->render_manager()->speculative_frame_host());
 
     // Cancel the navigation. This should trigger the deletion of the
     // speculative RenderFrameHost.
-    root->ResetNavigationRequest(NavigationDiscardReason::kCancelled);
+    root->ResetNavigationRequest(
+        NavigationDiscardReason::kExplicitCancellation);
     EXPECT_FALSE(root->render_manager()->speculative_frame_host());
   }
 
@@ -21574,11 +21568,12 @@ IN_PROC_BROWSER_TEST_P(
     // Main frame cross-site navigation creates a speculative RenderFrameHost.
     TestNavigationManager navigation_manager(contents(), url_b);
     EXPECT_TRUE(ExecJs(root, JsReplace("location.href = $1;", url_b)));
-    EXPECT_TRUE(navigation_manager.WaitForRequestStart());
+    navigation_manager.WaitForSpeculativeRenderFrameHostCreation();
     EXPECT_TRUE(root->render_manager()->speculative_frame_host());
     // Cancel the navigation. This should trigger the deletion of the
     // speculative RenderFrameHost.
-    root->ResetNavigationRequest(NavigationDiscardReason::kCancelled);
+    root->ResetNavigationRequest(
+        NavigationDiscardReason::kExplicitCancellation);
     EXPECT_FALSE(root->render_manager()->speculative_frame_host());
   }
 }
@@ -21604,11 +21599,12 @@ IN_PROC_BROWSER_TEST_P(
     // Subframe same-site navigation creates a speculative RenderFrameHost.
     TestNavigationManager navigation_manager(contents(), url_a);
     EXPECT_TRUE(ExecJs(child, JsReplace("location.href = $1;", url_a)));
-    EXPECT_TRUE(navigation_manager.WaitForRequestStart());
+    navigation_manager.WaitForSpeculativeRenderFrameHostCreation();
     EXPECT_TRUE(child->render_manager()->speculative_frame_host());
     // Cancel the navigation. This should trigger the deletion of the
     // speculative RenderFrameHost.
-    child->ResetNavigationRequest(NavigationDiscardReason::kCancelled);
+    child->ResetNavigationRequest(
+        NavigationDiscardReason::kExplicitCancellation);
     EXPECT_FALSE(child->render_manager()->speculative_frame_host());
   }
 
@@ -21620,9 +21616,10 @@ IN_PROC_BROWSER_TEST_P(
     // Subframe cross-site navigation creates a speculative RenderFrameHost.
     TestNavigationManager navigation_manager(contents(), url_b);
     EXPECT_TRUE(ExecJs(child, JsReplace("location.href = $1;", url_b)));
-    EXPECT_TRUE(navigation_manager.WaitForRequestStart());
+    navigation_manager.WaitForSpeculativeRenderFrameHostCreation();
     EXPECT_TRUE(child->render_manager()->speculative_frame_host());
-    child->ResetNavigationRequest(NavigationDiscardReason::kCancelled);
+    child->ResetNavigationRequest(
+        NavigationDiscardReason::kExplicitCancellation);
 
     // Cancel the navigation. This should trigger the deletion of the
     // speculative RenderFrameHost.
@@ -21663,7 +21660,7 @@ IN_PROC_BROWSER_TEST_P(
     TestNavigationManager navigation_manager(new_shell->web_contents(), url_a);
     EXPECT_TRUE(
         ExecJs(new_window_root, JsReplace("location.href = $1;", url_a)));
-    EXPECT_TRUE(navigation_manager.WaitForRequestStart());
+    navigation_manager.WaitForSpeculativeRenderFrameHostCreation();
     EXPECT_TRUE(new_window_root->render_manager()->speculative_frame_host());
 
     // Close the window. This should trigger the deletion of the
@@ -21694,7 +21691,7 @@ IN_PROC_BROWSER_TEST_P(
     TestNavigationManager navigation_manager(new_shell->web_contents(), url_b);
     EXPECT_TRUE(
         ExecJs(new_window_root, JsReplace("location.href = $1;", url_b)));
-    EXPECT_TRUE(navigation_manager.WaitForRequestStart());
+    navigation_manager.WaitForSpeculativeRenderFrameHostCreation();
     EXPECT_TRUE(new_window_root->render_manager()->speculative_frame_host());
 
     // Close the window. This should trigger the deletion of the
@@ -21732,7 +21729,7 @@ IN_PROC_BROWSER_TEST_P(
     TestNavigationManager navigation_manager(contents(), url_a);
     EXPECT_TRUE(
         ExecJs(root->child_at(0), JsReplace("location.href = $1;", url_a)));
-    EXPECT_TRUE(navigation_manager.WaitForRequestStart());
+    navigation_manager.WaitForSpeculativeRenderFrameHostCreation();
     EXPECT_TRUE(root->child_at(0)->render_manager()->speculative_frame_host());
 
     // Close the window. This should trigger the deletion of the
@@ -21761,7 +21758,7 @@ IN_PROC_BROWSER_TEST_P(
     TestNavigationManager navigation_manager(contents(), url_b);
     EXPECT_TRUE(
         ExecJs(root->child_at(0), JsReplace("location.href = $1;", url_b)));
-    EXPECT_TRUE(navigation_manager.WaitForRequestStart());
+    navigation_manager.WaitForSpeculativeRenderFrameHostCreation();
     EXPECT_TRUE(root->child_at(0)->render_manager()->speculative_frame_host());
 
     // Close the iframe. This should trigger the deletion of the
@@ -22070,7 +22067,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
 
   // Cancel the navigation to `url_b2` by calling ResetNavigationRequest().
   // This shouldn't cancel the navigation to `url_b1`.
-  root->ResetNavigationRequest(NavigationDiscardReason::kCancelled);
+  root->ResetNavigationRequest(NavigationDiscardReason::kExplicitCancellation);
   ASSERT_TRUE(b2_nav.WaitForNavigationFinished());
   EXPECT_FALSE(b2_nav.was_committed());
   EXPECT_FALSE(b2_nav.GetNavigationHandle());
@@ -22517,6 +22514,33 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, error_observer.last_net_error_code());
   EXPECT_EQ(PAGE_TYPE_ERROR, controller.GetLastCommittedEntry()->GetPageType());
   EXPECT_EQ(error_html, EvalJs(new_shell, "document.body.innerHTML"));
+}
+
+// Test that navigation cancellation triggered by document.write() can cancel
+// about:blank navigations. Regresstion test for crbug.com/352352911.
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
+                       DocumentWriteAfterNavigatingToAboutBlank) {
+  // Navigate to a page with iframes.
+  GURL main_url(embedded_test_server()->GetURL("/page_with_iframe.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  EXPECT_TRUE(WaitForLoadStop(contents()));
+
+  // Start a navigation to about:blank, then immediately do a document.write(),
+  // which should cancel the navigation.
+  TestNavigationObserver nav_observer(contents());
+  EXPECT_TRUE(ExecJs(contents(), R"(
+    const frame = document.getElementById('test_iframe');
+    let doc = frame.contentDocument; frame.src = 'about:blank';
+    doc.write('foo'); doc.close();
+  )"));
+  nav_observer.Wait();
+  // Check that the navigation didn't succeed.
+  EXPECT_FALSE(nav_observer.last_navigation_succeeded());
+
+  // Check that the document.write() succeeds and isn't replaced by about:blank.
+  EXPECT_EQ("foo", EvalJs(shell(),
+                          "document.getElementById('test_iframe')."
+                          "contentDocument.body.innerText"));
 }
 
 INSTANTIATE_TEST_SUITE_P(

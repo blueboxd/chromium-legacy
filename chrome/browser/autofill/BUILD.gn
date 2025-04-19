@@ -28,8 +28,6 @@ static_library("autofill") {
     "merchant_promo_code_manager_factory.h",
     "personal_data_manager_factory.cc",
     "personal_data_manager_factory.h",
-    "shopping_service_delegate_impl.cc",
-    "shopping_service_delegate_impl.h",
     "strike_database_factory.cc",
     "strike_database_factory.h",
     "subkey_requester_factory.cc",
@@ -42,6 +40,7 @@ static_library("autofill") {
 
   public_deps = [
     "//base",
+    "//chrome/browser:browser_public_dependencies",
     "//chrome/browser/profiles:profile",
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
@@ -57,9 +56,9 @@ static_library("autofill") {
   deps = [
     "//chrome/browser:browser_process",
     "//chrome/browser/profiles",
+    "//chrome/browser/sync",
     "//chrome/common:constants",
     "//components/autofill/content/browser",
-    "//components/commerce/core:shopping_service",
     "//components/image_fetcher/core",
     "//components/prefs",
     "//components/strings:components_strings_grit",
@@ -70,6 +69,7 @@ static_library("autofill") {
 
   if (is_android) {
     sources += [
+      "android/android_autofill_availability_status.h",
       "android/autofill_image_fetcher_impl.cc",
       "android/autofill_image_fetcher_impl.h",
       "android/personal_data_manager_android.cc",
@@ -95,6 +95,10 @@ static_library("autofill") {
       "//components/messages/android:feature_flags",
       "//components/password_manager/core/browser",
       "//third_party/libaddressinput",
+
+      # TODO(crbug.com/352191610): Use //chrome/browser instead after fixing cyclic
+      # dependency.
+      "//chrome/browser/page_info:page_info_buildflags",
     ]
   } else {
     # !is_android
@@ -154,7 +158,6 @@ static_library("test_support") {
       "//chrome/browser/autofill",
       "//chrome/browser/keyboard_accessory/test_utils/android",
     ]
-    public_deps += [ "test:test_support" ]
   }
 }
 
@@ -168,7 +171,6 @@ if (!is_android) {
       "autofill_browsertest.cc",
       "autofill_metrics_browsertest.cc",
       "autofill_server_browsertest.cc",
-      "content_autofill_driver_browsertest.cc",
       "form_structure_browsertest.cc",
     ]
 
@@ -181,6 +183,7 @@ if (!is_android) {
       "//chrome/browser/autofill",
       "//chrome/test:test_support",
       "//components/autofill/content/browser:test_support",
+      "//components/autofill/core/common:test_support",
       "//components/password_manager/content/browser:test_support",
       "//components/ukm:test_support",
       "//testing/data_driven_testing",
@@ -256,7 +259,8 @@ if (!is_android) {
     if (is_chromeos_ash && enable_extensions) {
       deps += [
         "//chrome/browser/ash",
-        "//chrome/browser/ash:test_support",
+        "//chrome/browser/ash/accessibility",
+        "//chrome/browser/ash/accessibility:test_support",
         "//extensions/browser:test_support",
         "//ui/base:test_support",
       ]

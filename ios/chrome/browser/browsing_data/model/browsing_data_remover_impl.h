@@ -50,6 +50,10 @@ class BrowsingDataRemoverImpl : public BrowsingDataRemover {
                      base::Time end_time,
                      BrowsingDataRemoveMask mask,
                      base::OnceClosure callback) override;
+  // Should be called with a meaningful value prior to using `Remove` or
+  // `RemoveInRange` if `BrowsingDataRemoveMask::CLOSE_TABS is selected`.
+  void SetCachedTabsInfo(
+      tabs_closure_util::WebStateIDToTime cached_tabs_info) override;
 
  private:
   // Represents a single removal task. Contains all parameters to execute it.
@@ -81,6 +85,12 @@ class BrowsingDataRemoverImpl : public BrowsingDataRemover {
   // Execute the next removal task. Called after the previous task was finished
   // or directly from Remove.
   void RunNextTask();
+
+  // If necessary, shows an activity indicator while the deletion is ongoing.
+  void PrepareForRemoval(BrowsingDataRemoveMask mask);
+
+  // Removes the activity indicator, reloads all web states and resets NTPs.
+  void CleanupAfterRemoval(BrowsingDataRemoveMask mask);
 
   // Removes the specified items related to browsing.
   void RemoveImpl(base::Time delete_begin,
@@ -115,6 +125,12 @@ class BrowsingDataRemoverImpl : public BrowsingDataRemover {
 
   // Used to delete data from HTTP cache.
   scoped_refptr<net::URLRequestContextGetter> context_getter_;
+
+  // Holds the cached information for tabs. It's used when closing tabs is
+  // selected. Should be set with a meaningful value in order to correctly close
+  // tabs.
+  tabs_closure_util::WebStateIDToTime cached_tabs_info_;
+  bool cached_tabs_info_initialized_;
 
   // Is the object currently in the process of removing data?
   bool is_removing_ = false;

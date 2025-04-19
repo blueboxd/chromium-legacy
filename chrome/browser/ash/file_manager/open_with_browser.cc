@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/ash/file_manager/open_with_browser.h"
 
 #include <stddef.h>
@@ -23,8 +28,10 @@
 #include "chrome/browser/ash/fileapi/external_file_url_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_util.h"
+#include "chrome/browser/ui/webui/ash/cloud_upload/hats_office_trigger.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/common/chrome_content_client.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/ash/components/drivefs/drivefs_util.h"
@@ -173,6 +180,11 @@ bool OpenHostedFileInNewTabOrApp(Profile* profile,
   if (!app_id.has_value()) {
     std::move(callback).Run(std::nullopt);
     return OpenNewTab(hosted_url);
+  } else if (base::FeatureList::IsEnabled(
+                 ::features::kHappinessTrackingOffice) &&
+             file_tasks::IsOfficeFile(file_path)) {
+    ash::cloud_upload::HatsOfficeTrigger::Get().ShowSurveyAfterAppInactive(
+        app_id.value(), ash::cloud_upload::HatsOfficeLaunchingApp::kDrive);
   }
   apps::AppServiceProxy* app_service =
       apps::AppServiceProxyFactory::GetForProfile(profile);

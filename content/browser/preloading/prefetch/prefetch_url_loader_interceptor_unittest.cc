@@ -8,6 +8,7 @@
 #include <memory>
 #include <optional>
 
+#include "base/containers/span.h"
 #include "base/functional/callback.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -17,6 +18,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/timer/elapsed_timer.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "components/variations/scoped_variations_ids_provider.h"
 #include "content/browser/loader/response_head_update_params.h"
 #include "content/browser/preloading/prefetch/prefetch_container.h"
 #include "content/browser/preloading/prefetch/prefetch_features.h"
@@ -471,6 +473,7 @@ class PrefetchURLLoaderInterceptorTestBase : public RenderViewHostTestHarness {
         preloading_data->AddPreloadingAttempt(
             GetPredictorForPreloadingTriggerType(prefetch_type.trigger_type()),
             PreloadingType::kPrefetch, std::move(matcher),
+            /*planned_max_preloading_type=*/std::nullopt,
             web_contents()->GetPrimaryMainFrame()->GetPageUkmSourceId()));
 
     attempt->SetSpeculationEagerness(prefetch_type.GetEagerness());
@@ -528,6 +531,9 @@ class PrefetchURLLoaderInterceptorTestBase : public RenderViewHostTestHarness {
   std::unique_ptr<base::ScopedMockElapsedTimersForTest> scoped_test_timer_;
   // Disable sampling of UKM preloading logs.
   content::test::PreloadingConfigOverride preloading_config_override_;
+
+  variations::ScopedVariationsIdsProvider scoped_variations_ids_provider_{
+      variations::VariationsIdsProvider::Mode::kIgnoreSignedInState};
 };
 
 namespace {
@@ -1150,10 +1156,8 @@ TEST_P(PrefetchURLLoaderInterceptorBecomeNotServableTest, DISABLE_ASAN(Basic)) {
     CHECK_EQ(
         mojo::CreateDataPipe(content.size(), producer_handle, consumer_handle),
         MOJO_RESULT_OK);
-    size_t bytes_written = content.size();
     CHECK_EQ(MOJO_RESULT_OK,
-             producer_handle->WriteData(content.data(), &bytes_written,
-                                        MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
+             producer_handle->WriteAllData(base::as_byte_span(content)));
     pending_request.client->OnReceiveResponse(
         network::mojom::URLResponseHead::New(), std::move(consumer_handle),
         std::nullopt);
@@ -1289,9 +1293,6 @@ INSTANTIATE_TEST_SUITE_P(
                         NotServableReason::kAnotherRequestCompleted)));
 
 TEST_P(PrefetchURLLoaderInterceptorTest, DISABLE_ASAN(HandleRedirects)) {
-  base::test::ScopedFeatureList scoped_feature_list(
-      features::kPrefetchRedirects);
-
   const GURL kTestUrl("https://example.com");
   const GURL kRedirectUrl("https://redirect.com");
 
@@ -1369,8 +1370,6 @@ TEST_P(PrefetchURLLoaderInterceptorTest, DISABLE_ASAN(HandleRedirects)) {
 
 TEST_P(PrefetchURLLoaderInterceptorTest,
        DISABLE_ASAN(HandleRedirectsWithSwitchInNetworkContext)) {
-  base::test::ScopedFeatureList scoped_feature_list(
-      features::kPrefetchRedirects);
   const GURL kTestUrl("https://example.com");
   const GURL kRedirectUrl("https://redirect.com");
 
@@ -1449,9 +1448,6 @@ TEST_P(PrefetchURLLoaderInterceptorTest,
 
 TEST_P(PrefetchURLLoaderInterceptorTest,
        DISABLE_ASAN(HandleRedirectsWithCookieChange)) {
-  base::test::ScopedFeatureList scoped_feature_list(
-      features::kPrefetchRedirects);
-
   const GURL kTestUrl("https://example.com");
   const GURL kRedirectUrl("https://redirect.com");
 
@@ -1525,10 +1521,8 @@ TEST_P(PrefetchURLLoaderInterceptorTest,
     CHECK_EQ(
         mojo::CreateDataPipe(content.size(), producer_handle, consumer_handle),
         MOJO_RESULT_OK);
-    size_t bytes_written = content.size();
     CHECK_EQ(MOJO_RESULT_OK,
-             producer_handle->WriteData(content.data(), &bytes_written,
-                                        MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
+             producer_handle->WriteAllData(base::as_byte_span(content)));
     pending_request.client->OnReceiveResponse(
         network::mojom::URLResponseHead::New(), std::move(consumer_handle),
         std::nullopt);
@@ -1599,10 +1593,8 @@ TEST_P(PrefetchURLLoaderInterceptorTest,
     CHECK_EQ(
         mojo::CreateDataPipe(content.size(), producer_handle, consumer_handle),
         MOJO_RESULT_OK);
-    size_t bytes_written = content.size();
     CHECK_EQ(MOJO_RESULT_OK,
-             producer_handle->WriteData(content.data(), &bytes_written,
-                                        MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
+             producer_handle->WriteAllData(base::as_byte_span(content)));
     pending_request.client->OnReceiveResponse(
         network::mojom::URLResponseHead::New(), std::move(consumer_handle),
         std::nullopt);

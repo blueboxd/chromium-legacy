@@ -6,13 +6,17 @@
 #include "base/strings/strcat.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ash/crostini/fake_crostini_features.h"
+#include "chrome/browser/ash/login/test/cryptohome_mixin.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_features.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/chromeos/lacros_only_mocha_browser_test.h"
 #include "chrome/test/base/web_ui_mocha_browser_test.h"
+#include "chromeos/ash/components/cryptohome/cryptohome_parameters.h"
+#include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
 #include "chromeos/ash/components/standalone_browser/standalone_browser_features.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "components/user_manager/user_names.h"
 #include "content/public/test/browser_test.h"
 #include "ui/accessibility/accessibility_features.h"
 #include "ui/base/ui_base_features.h"
@@ -75,13 +79,32 @@ INSTANTIATE_TEST_SUITE_P(RevampParameterized,
                          testing::Bool(),
                          OSSettingsRevampMochaTest::DescribeParams);
 
+class OSSettingsRevampMochaTestWithExistingUser
+    : public OSSettingsRevampMochaTest {
+ public:
+  OSSettingsRevampMochaTestWithExistingUser() {
+    UserDataAuthClient::Get()->InitializeFake();
+  }
+
+  void SetUpOnMainThread() override {
+    OSSettingsRevampMochaTest::SetUpOnMainThread();
+    FakeUserDataAuthClient::TestApi::Get()->AddExistingUser(
+        cryptohome::CreateAccountIdentifierFromAccountId(
+            user_manager::StubAccountId()));
+  }
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    RevampParameterized,
+    OSSettingsRevampMochaTestWithExistingUser,
+    testing::Bool(),
+    OSSettingsRevampMochaTestWithExistingUser::DescribeParams);
+
 class OSSettingsMochaTestRevampEnabled : public OSSettingsMochaTest {
  protected:
   OSSettingsMochaTestRevampEnabled() {
     scoped_feature_list_.InitWithFeatures(
-        {ash::features::kOsSettingsRevampWayfinding,
-         ash::features::kFasterSplitScreenSetup},
-        {});
+        {ash::features::kOsSettingsRevampWayfinding}, {});
   }
 
  private:
@@ -146,6 +169,13 @@ INSTANTIATE_TEST_SUITE_P(
     testing::Bool(),
     OSSettingsRevampMochaTestReducedAnimationsEnabled::DescribeParams);
 
+class OSSettingsMochaTestMagnifierFollowsChromeVoxEnabled
+    : public OSSettingsMochaTest {
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_{
+      ::features::kAccessibilityMagnifierFollowsChromeVox};
+};
+
 class OSSettingsMochaTestMagnifierFollowsStsEnabled
     : public OSSettingsMochaTest {
  private:
@@ -172,6 +202,19 @@ INSTANTIATE_TEST_SUITE_P(
     testing::Bool(),
     OSSettingsRevampMochaTestMouseKeysEnabled::DescribeParams);
 
+class OSSettingsRevampMochaTestFaceGazeEnabled
+    : public OSSettingsRevampMochaTest {
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_{
+      ::features::kAccessibilityFaceGaze};
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    RevampParameterized,
+    OSSettingsRevampMochaTestFaceGazeEnabled,
+    testing::Bool(),
+    OSSettingsRevampMochaTestFaceGazeEnabled::DescribeParams);
+
 class OSSettingsRevampMochaTestCaretBlinkSettingEnabled
     : public OSSettingsRevampMochaTest {
  private:
@@ -184,6 +227,19 @@ INSTANTIATE_TEST_SUITE_P(
     OSSettingsRevampMochaTestCaretBlinkSettingEnabled,
     testing::Bool(),
     OSSettingsRevampMochaTestCaretBlinkSettingEnabled::DescribeParams);
+
+class OSSettingsRevampMochaTestFlashNotificationsEnabled
+    : public OSSettingsRevampMochaTest {
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_{
+      ::features::kAccessibilityFlashScreenFeature};
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    RevampParameterized,
+    OSSettingsRevampMochaTestFlashNotificationsEnabled,
+    testing::Bool(),
+    OSSettingsRevampMochaTestFlashNotificationsEnabled::DescribeParams);
 
 class OSSettingsMochaTestLacrosOnlyEnabled : public LacrosOnlyMochaBrowserTest {
  protected:
@@ -232,9 +288,17 @@ class OSSettingsMochaTestLacrosEnabledRevampDisabled
 
 class OSSettingsMochaTestLacrosAndRevampEnabled
     : public OSSettingsMochaTestLacrosOnlyEnabled {
+ protected:
+  OSSettingsMochaTestLacrosAndRevampEnabled() {
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled=*/
+        {ash::features::kOsSettingsRevampWayfinding},
+        /*disabled=*/
+        {ash::features::kSecondaryAccountAllowedInArcPolicy});
+  }
+
  private:
-  base::test::ScopedFeatureList scoped_feature_list_{
-      ash::features::kOsSettingsRevampWayfinding};
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 class OSSettingsRevampMochaTestAppParentalControlsEnabled
@@ -475,17 +539,18 @@ INSTANTIATE_TEST_SUITE_P(
     testing::Bool(),
     OSSettingsRevampNearbyShareTestSharingEnabled::DescribeParams);
 
-class OSSettingsRevampOsA11yTestPdfOcrEnabled
+class OSSettingsRevampOsA11yTestMainNodeAnnotationsEnabled
     : public OSSettingsRevampMochaTest {
  private:
-  base::test::ScopedFeatureList scoped_feature_list_{::features::kPdfOcr};
+  base::test::ScopedFeatureList scoped_feature_list_{
+      ::features::kMainNodeAnnotations};
 };
 
 INSTANTIATE_TEST_SUITE_P(
     RevampParameterized,
-    OSSettingsRevampOsA11yTestPdfOcrEnabled,
+    OSSettingsRevampOsA11yTestMainNodeAnnotationsEnabled,
     testing::Bool(),
-    OSSettingsRevampOsA11yTestPdfOcrEnabled::DescribeParams);
+    OSSettingsRevampOsA11yTestMainNodeAnnotationsEnabled::DescribeParams);
 
 class OSSettingsRevampFilesTestCrosComponentsAndJellyEnabled
     : public OSSettingsRevampMochaTest {
@@ -601,38 +666,6 @@ INSTANTIATE_TEST_SUITE_P(RevampParameterized,
                          testing::Bool(),
                          OSSettingsTestSearchBox::DescribeParams);
 
-class OSSettingsRevampMochaTestFasterSplitScreenEnabled
-    : public OSSettingsRevampMochaTest {
- private:
-  base::test::ScopedFeatureList scoped_feature_list_{
-      ash::features::kFasterSplitScreenSetup};
-};
-
-INSTANTIATE_TEST_SUITE_P(
-    RevampParameterized,
-    OSSettingsRevampMochaTestFasterSplitScreenEnabled,
-    testing::Bool(),
-    OSSettingsRevampMochaTestFasterSplitScreenEnabled::DescribeParams);
-
-class OSSettingsRevampMochaTestFasterSplitScreenDisabled
-    : public OSSettingsRevampMochaTest {
- public:
-  OSSettingsRevampMochaTestFasterSplitScreenDisabled() {
-    scoped_feature_list_.InitWithFeatures(
-        /*enabled=*/{},
-        /*disabled=*/{ash::features::kFasterSplitScreenSetup});
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-INSTANTIATE_TEST_SUITE_P(
-    RevampParameterized,
-    OSSettingsRevampMochaTestFasterSplitScreenDisabled,
-    testing::Bool(),
-    OSSettingsRevampMochaTestFasterSplitScreenDisabled::DescribeParams);
-
 using OSSettingsRevampTestOsAboutPage = OSSettingsRevampMochaTest;
 
 INSTANTIATE_TEST_SUITE_P(RevampParameterized,
@@ -700,8 +733,20 @@ IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTest, PrefControlMixinInternal) {
   RunSettingsTest("controls/v2/pref_control_mixin_internal_test.js");
 }
 
+IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTest, SettingsDropdownRow) {
+  RunSettingsTest("controls/v2/settings_dropdown_row_test.js");
+}
+
 IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTest, SettingsDropdownV2) {
   RunSettingsTest("controls/v2/settings_dropdown_v2_test.js");
+}
+
+IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTest, SettingsRow) {
+  RunSettingsTest("controls/v2/settings_row_test.js");
+}
+
+IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTest, SettingsSliderRow) {
+  RunSettingsTest("controls/v2/settings_slider_row_test.js");
 }
 
 IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTest, SettingsSliderV2) {
@@ -874,6 +919,16 @@ IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTestSplitEnabled,
   RunSettingsTest("device_page/keyboard_six_pack_key_row_test.js");
 }
 
+IN_PROC_BROWSER_TEST_P(OSSettingsRevampDeviceTestPeripheralAndSplitEnabled,
+                       DevicePagePerDeviceAppInstalledRow) {
+  RunSettingsTest("device_page/per_device_app_installed_row_test.js");
+}
+
+IN_PROC_BROWSER_TEST_P(OSSettingsRevampDeviceTestPeripheralAndSplitEnabled,
+                       DevicePagePerDeviceInstallRow) {
+  RunSettingsTest("device_page/per_device_install_row_test.js");
+}
+
 IN_PROC_BROWSER_TEST_P(OSSettingsRevampDeviceTestSplitAndBacklightEnabled,
                        DevicePagePerDeviceKeyboard) {
   RunSettingsTest("device_page/per_device_keyboard_test.js");
@@ -907,6 +962,11 @@ IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTestSplitEnabled,
 IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTestSplitEnabled,
                        DevicePagePerDevicePointingStickSubsection) {
   RunSettingsTest("device_page/per_device_pointing_stick_subsection_test.js");
+}
+
+IN_PROC_BROWSER_TEST_P(OSSettingsRevampDeviceTestPeripheralAndSplitEnabled,
+                       DevicePagePerDeviceSubsectionHeader) {
+  RunSettingsTest("device_page/per_device_subsection_header_test.js");
 }
 
 IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTestSplitEnabled,
@@ -1215,7 +1275,7 @@ IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTest, OncMojoTest) {
   RunSettingsTest("onc_mojo_test.js");
 }
 
-IN_PROC_BROWSER_TEST_P(OSSettingsRevampOsA11yTestPdfOcrEnabled, OsA11yPage) {
+IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTest, OsA11yPage) {
   RunSettingsTest("os_a11y_page/os_a11y_page_test.js");
 }
 
@@ -1230,6 +1290,11 @@ IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTest,
 }
 
 IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTest,
+                       OsA11yPageAudioAndCaptionsPage) {
+  RunSettingsTest("os_a11y_page/audio_and_captions_page_test.js");
+}
+
+IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTestFlashNotificationsEnabled,
                        OsA11yPageAudioAndCaptionsPage) {
   RunSettingsTest("os_a11y_page/audio_and_captions_page_test.js");
 }
@@ -1253,6 +1318,26 @@ IN_PROC_BROWSER_TEST_F(OSSettingsMochaTestOverscrollFeatureEnabled,
   RunSettingsTest("os_a11y_page/cursor_and_touchpad_page_test.js");
 }
 
+IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTestFaceGazeEnabled,
+                       OsA11yPageFaceGazeSubpage) {
+  RunSettingsTest("os_a11y_page/facegaze_subpage_test.js");
+}
+
+IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTestFaceGazeEnabled,
+                       OsA11yPageFaceGazeCursorCard) {
+  RunSettingsTest("os_a11y_page/facegaze_cursor_card_test.js");
+}
+
+IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTestFaceGazeEnabled,
+                       OsA11yPageFaceGazeActionsCard) {
+  RunSettingsTest("os_a11y_page/facegaze_actions_card_test.js");
+}
+
+IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTestFaceGazeEnabled,
+                       OsA11yPageFaceGazeActionsAddDialog) {
+  RunSettingsTest("os_a11y_page/facegaze_actions_add_dialog_test.js");
+}
+
 IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTest,
                        OsA11yPageChangeDictationLocaleDialog) {
   RunSettingsTest("os_a11y_page/change_dictation_locale_dialog_test.js");
@@ -1264,6 +1349,11 @@ IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTest,
 }
 
 IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTestReducedAnimationsEnabled,
+                       OsA11yPageDisplayAndMagnificationSubpage) {
+  RunSettingsTest("os_a11y_page/display_and_magnification_subpage_test.js");
+}
+
+IN_PROC_BROWSER_TEST_F(OSSettingsMochaTestMagnifierFollowsChromeVoxEnabled,
                        OsA11yPageDisplayAndMagnificationSubpage) {
   RunSettingsTest("os_a11y_page/display_and_magnification_subpage_test.js");
 }
@@ -1308,9 +1398,14 @@ IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTest,
   RunSettingsTest("os_a11y_page/switch_access_subpage_test.js");
 }
 
-IN_PROC_BROWSER_TEST_P(OSSettingsRevampOsA11yTestPdfOcrEnabled,
+IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTest,
                        OsA11yPageTextToSpeechSubpage) {
   RunSettingsTest("os_a11y_page/text_to_speech_subpage_test.js");
+}
+
+IN_PROC_BROWSER_TEST_P(OSSettingsRevampOsA11yTestMainNodeAnnotationsEnabled,
+                       OsA11yPageAxAnnotationsSection) {
+  RunSettingsTest("os_a11y_page/ax_annotations_section_test.js");
 }
 
 IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTest, OsA11yPageTtsVoiceSubpage) {
@@ -1494,10 +1589,18 @@ IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTestAppParentalControlsEnabled,
 }
 
 IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTestAppParentalControlsEnabled,
-                       OsAppsPageAppParentalControlsPageAppSetupPinKeyboard) {
+                       OsAppsPageAppParentalControlsPageAppSetupPinDialog) {
   RunSettingsTest(
       "os_apps_page/app_parental_controls_page/"
-      "app_setup_pin_keyboard_test.js");
+      "app_setup_pin_dialog_test.js");
+}
+
+IN_PROC_BROWSER_TEST_P(
+    OSSettingsRevampMochaTestAppParentalControlsEnabled,
+    OsAppsPageAppParentalControlsPageAppVerifyPinDialogTest) {
+  RunSettingsTest(
+      "os_apps_page/app_parental_controls_page/"
+      "app_verify_pin_dialog_test.js");
 }
 
 IN_PROC_BROWSER_TEST_P(
@@ -1722,7 +1825,8 @@ IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTest, OsPrintingPagePrinterStatus) {
   RunSettingsTest("os_printing_page/printer_status_test.js");
 }
 
-IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTest, OsPrivacyPage) {
+IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTestWithExistingUser,
+                       OsPrivacyPage) {
   RunSettingsTest("os_privacy_page/os_privacy_page_test.js");
 }
 
@@ -1906,13 +2010,13 @@ IN_PROC_BROWSER_TEST_F(OSSettingsMochaTestRevampEnabled,
       "os_settings_ui/os_settings_ui_page_visibility_revamp_test.js");
 }
 
-IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTest,
-                       OsSettingsUiPrefSync) {
+IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTest, OsSettingsUiPrefSync) {
   RunSettingsTest("os_settings_ui/os_settings_ui_pref_sync_test.js");
 }
 
+// TODO(b/354464273) Fix this flaky test.
 IN_PROC_BROWSER_TEST_F(OSSettingsMochaTestRevampDisabled,
-                       OsSettingsUiScrollRestoration) {
+                       DISABLED_OsSettingsUiScrollRestoration) {
   RunSettingsTest("os_settings_ui/scroll_restoration_test.js");
 }
 
@@ -1933,20 +2037,6 @@ IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTest,
                        ParentalControlsSettingsCard) {
   RunSettingsTest(
       "parental_controls_page/parental_controls_settings_card_test.js");
-}
-
-IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTestFasterSplitScreenEnabled,
-                       PersonalizationPageWithPersonalizationHub) {
-  RunSettingsTest(
-      "personalization_page/"
-      "personalization_page_with_personalization_hub_test.js");
-}
-
-IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTestFasterSplitScreenDisabled,
-                       PersonalizationPageWithPersonalizationHub) {
-  RunSettingsTest(
-      "personalization_page/"
-      "personalization_page_with_personalization_hub_test.js");
 }
 
 IN_PROC_BROWSER_TEST_F(OSSettingsMochaTest,

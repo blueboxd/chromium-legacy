@@ -8,10 +8,11 @@
 
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
-#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "base/numerics/safe_conversions.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/font_access/font_enumeration_table.pb.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-blink.h"
+#include "third_party/blink/public/platform/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
@@ -150,7 +151,9 @@ void FontAccess::DidGetEnumerationResponse(
   }
 
   HeapVector<Member<FontMetadata>> entries;
-  table.ParseFromArray(mapping.memory(), static_cast<int>(mapping.size()));
+  base::span<const uint8_t> mapped_mem(mapping);
+  table.ParseFromArray(mapped_mem.data(),
+                       base::checked_cast<int>(mapped_mem.size()));
   for (const auto& element : table.fonts()) {
     // If the optional postscript name filter is set in QueryOptions,
     // only allow items that match.

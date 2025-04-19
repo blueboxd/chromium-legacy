@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_CHILD_PROCESS_LAUNCHER_H_
 
 #include <memory>
+#include <optional>
 #include <string>
 
 #include "base/memory/raw_ptr.h"
@@ -41,6 +42,7 @@
 namespace base {
 class CommandLine;
 class UnsafeSharedMemoryRegion;
+class ReadOnlySharedMemoryRegion;
 #if BUILDFLAG(IS_ANDROID)
 namespace android {
 enum class ChildBindingState;
@@ -85,10 +87,15 @@ struct RenderProcessPriority {
                         bool has_foreground_service_worker,
                         unsigned int frame_depth,
                         bool intersects_viewport,
-                        bool boost_for_pending_views
+                        bool boost_for_pending_views,
+                        bool boost_for_loading
 #if BUILDFLAG(IS_ANDROID)
                         ,
                         ChildProcessImportance importance
+#endif
+#if !BUILDFLAG(IS_ANDROID)
+                        ,
+                        std::optional<base::Process::Priority> priority_override
 #endif
                         )
       : visible(visible),
@@ -96,27 +103,34 @@ struct RenderProcessPriority {
         has_foreground_service_worker(has_foreground_service_worker),
         frame_depth(frame_depth),
         intersects_viewport(intersects_viewport),
-        boost_for_pending_views(boost_for_pending_views)
+        boost_for_pending_views(boost_for_pending_views),
+        boost_for_loading(boost_for_loading)
 #if BUILDFLAG(IS_ANDROID)
         ,
         importance(importance)
+#endif
+#if !BUILDFLAG(IS_ANDROID)
+        ,
+        priority_override(priority_override)
 #endif
   {
   }
 
   // Returns true if the child process is backgrounded.
+  // DEPRECATED NOTICE: Use GetProcessPriority() instead.
   bool is_background() const;
 
+  // Returns the process priority for this child process.
+  base::Process::Priority GetProcessPriority() const;
+
   bool operator==(const RenderProcessPriority& other) const;
-  bool operator!=(const RenderProcessPriority& other) const {
-    return !(*this == other);
-  }
+  bool operator!=(const RenderProcessPriority& other) const;
 
   using TraceProto = perfetto::protos::pbzero::ChildProcessLauncherPriority;
   void WriteIntoTrace(perfetto::TracedProto<TraceProto> proto) const;
 
-  // Prefer |is_background()| to inspecting these fields individually (to ensure
-  // all logic uses the same notion of "backgrounded").
+  // Prefer `GetProcessPriority()` to inspecting these fields individually (to
+  // ensure all priority logic is consistent).
 
   // |visible| is true if the process is responsible for one or more widget(s)
   // in foreground tabs. The notion of "visible" is determined by the embedder
@@ -151,8 +165,18 @@ struct RenderProcessPriority {
   // during navigation).
   bool boost_for_pending_views;
 
+  // |boost_for_loading| is true if this process is responsible for committing
+  // navigation and initial loading.
+  bool boost_for_loading;
+
 #if BUILDFLAG(IS_ANDROID)
   ChildProcessImportance importance;
+#endif
+
+#if !BUILDFLAG(IS_ANDROID)
+  // If this is set then the built-in process priority calculation system is
+  // ignored, and an externally computed process priority is used.
+  std::optional<base::Process::Priority> priority_override;
 #endif
 };
 
@@ -222,6 +246,7 @@ class CONTENT_EXPORT ChildProcessLauncher {
       const mojo::ProcessErrorCallback& process_error_callback,
       std::unique_ptr<ChildProcessLauncherFileData> file_data,
       base::UnsafeSharedMemoryRegion = {},
+      base::ReadOnlySharedMemoryRegion = {},
       bool terminate_on_shutdown = true);
 
   ChildProcessLauncher(const ChildProcessLauncher&) = delete;

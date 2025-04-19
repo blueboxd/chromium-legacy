@@ -12,8 +12,8 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * Implemented internally.
  *
- * Interface for logging latency and availability signals for feed launches. All timestamps are in
- * terms of nanoseconds since system boot. One instance exists per feed surface and lasts for the
+ * <p>Interface for logging latency and availability signals for feed launches. All timestamps are
+ * in terms of nanoseconds since system boot. One instance exists per feed surface and lasts for the
  * surface's lifetime.
  */
 public interface FeedLaunchReliabilityLogger {
@@ -22,7 +22,7 @@ public interface FeedLaunchReliabilityLogger {
     public @interface SurfaceType {
         int UNSPECIFIED = 0;
         int NEW_TAB_PAGE = 1;
-        int START_SURFACE = 2;
+        @Deprecated int START_SURFACE = 2;
     }
 
     @IntDef({
@@ -152,8 +152,12 @@ public interface FeedLaunchReliabilityLogger {
     /** Drop anything kept with pendingFinished(). */
     default void cancelPendingFinished() {}
 
+    /** Include experiment IDs sent from the server in the reliability log. */
+    default void reportExperiments(int[] experimentIds) {}
+
     /**
      * Log when the feed is launched because its UI surface was created.
+     *
      * @param surfaceType Feed surface type (e.g. new tab page or Start Surface).
      * @param timestamp Time at which the surface began to be created.
      */

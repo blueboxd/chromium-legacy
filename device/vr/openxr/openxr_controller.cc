@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "device/vr/openxr/openxr_controller.h"
 
 #include <stdint.h>
@@ -320,8 +325,7 @@ XrResult OpenXrController::Update(XrSpace base_space,
     RETURN_IF_XR_FAILED(UpdateInteractionProfile());
   }
 
-  if (hand_tracker_ &&
-      (hand_joints_enabled_ || IsCurrentProfileFromHandTracker())) {
+  if (IsHandTrackingEnabled() || IsCurrentProfileFromHandTracker()) {
     RETURN_IF_XR_FAILED(
         hand_tracker_->Update(base_space, predicted_display_time));
   }
@@ -346,8 +350,8 @@ mojom::XRInputSourceDescriptionPtr OpenXrController::GetDescription(
     description_ = device::mojom::XRInputSourceDescription::New();
     description_->handedness = GetHandness();
     description_->target_ray_mode = GetTargetRayMode();
-    description_->profiles =
-        path_helper_->GetInputProfiles(interaction_profile_);
+    description_->profiles = path_helper_->GetInputProfiles(
+        interaction_profile_, hand_joints_enabled_);
   }
 
   description_->input_from_pointer =
@@ -529,14 +533,18 @@ XrResult OpenXrController::UpdateInteractionProfile() {
   }
 
   if (description_) {
-    description_->profiles =
-        path_helper_->GetInputProfiles(interaction_profile_);
+    description_->profiles = path_helper_->GetInputProfiles(
+        interaction_profile_, hand_joints_enabled_);
   }
   return XR_SUCCESS;
 }
 
+bool OpenXrController::IsHandTrackingEnabled() const {
+  return hand_joints_enabled_ && hand_tracker_;
+}
+
 mojom::XRHandTrackingDataPtr OpenXrController::GetHandTrackingData() {
-  if (!hand_joints_enabled_ || !hand_tracker_) {
+  if (!IsHandTrackingEnabled()) {
     return nullptr;
   }
 

@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "ash/controls/rounded_scroll_bar.h"
+#include "ash/controls/scroll_view_gradient_helper.h"
 #include "ash/picker/views/picker_style.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
@@ -18,13 +19,15 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/scrollbar/scroll_bar.h"
+#include "ui/views/layout/box_layout_view.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/layout/flex_layout_view.h"
 #include "ui/views/layout/layout_types.h"
 #include "ui/views/view_class_properties.h"
 
 namespace ash {
 namespace {
+
+constexpr int kScrollViewGradientHeight = 16;
 
 gfx::Insets GetScrollViewContentsBorderInsets(PickerLayoutType layout_type) {
   switch (layout_type) {
@@ -57,13 +60,13 @@ class PickerScrollView : public views::ScrollView {
         .SetBackgroundColor(std::nullopt)
         .SetHorizontalScrollBarMode(views::ScrollView::ScrollBarMode::kDisabled)
         .BuildChildren();
+    // Paint to layer so that we can apply a gradient mask.
+    SetPaintToLayer();
+    layer()->SetFillsBoundsOpaquely(false);
   }
   PickerScrollView(const PickerScrollView&) = delete;
   PickerScrollView& operator=(const PickerScrollView&) = delete;
   ~PickerScrollView() override = default;
-
-  // TODO: b/330785264 - Add back gradient helper once the flickering issue is
-  // resolved.
 };
 
 BEGIN_METADATA(PickerScrollView)
@@ -80,12 +83,15 @@ PickerContentsView::PickerContentsView(PickerLayoutType layout_type) {
   vertical_scroll_bar->SetInsets(GetPickerScrollBarInsets(layout_type));
   scroll_view->SetVerticalScrollBar(std::move(vertical_scroll_bar));
 
-  auto page_container = std::make_unique<views::FlexLayoutView>();
-  page_container->SetOrientation(views::LayoutOrientation::kVertical);
-  page_container->SetCrossAxisAlignment(views::LayoutAlignment::kStretch);
-  page_container->SetBorder(
-      views::CreateEmptyBorder(GetScrollViewContentsBorderInsets(layout_type)));
-  page_container_ = scroll_view->SetContents(std::move(page_container));
+  gradient_helper_ = std::make_unique<ScrollViewGradientHelper>(
+      scroll_view, kScrollViewGradientHeight);
+
+  page_container_ = scroll_view->SetContents(
+      views::Builder<views::BoxLayoutView>()
+          .SetOrientation(views::LayoutOrientation::kVertical)
+          .SetCrossAxisAlignment(views::LayoutAlignment::kStretch)
+          .SetInsideBorderInsets(GetScrollViewContentsBorderInsets(layout_type))
+          .Build());
 }
 
 PickerContentsView::~PickerContentsView() = default;
@@ -94,6 +100,11 @@ void PickerContentsView::SetActivePage(views::View* view) {
   for (views::View* child : page_container_->children()) {
     child->SetVisible(child == view);
   }
+}
+
+void PickerContentsView::Layout(PassKey) {
+  LayoutSuperclass<views::View>(this);
+  gradient_helper_->UpdateGradientMask();
 }
 
 BEGIN_METADATA(PickerContentsView)

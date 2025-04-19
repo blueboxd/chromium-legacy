@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chromeos/ash/components/nearby/common/connections_manager/nearby_connections_manager_impl.h"
 
 #include <algorithm>
@@ -168,6 +173,11 @@ class MockPayloadStatusListener
 class MockBandwidthUpgradeListener
     : public NearbyConnectionsManager::BandwidthUpgradeListener {
  public:
+  MOCK_METHOD(void,
+              OnInitialMedium,
+              (const std::string& endpoint_id, const Medium medium),
+              (override));
+
   MOCK_METHOD(void,
               OnBandwidthUpgrade,
               (const std::string& endpoint_id, const Medium medium),

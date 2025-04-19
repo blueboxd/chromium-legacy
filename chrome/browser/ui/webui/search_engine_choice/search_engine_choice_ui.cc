@@ -2,12 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/ui/webui/search_engine_choice/search_engine_choice_ui.h"
 
 #include "base/check_deref.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
 #include "base/json/json_writer.h"
+#include "base/not_fatal_until.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engine_choice/search_engine_choice_dialog_service.h"
@@ -35,6 +41,7 @@ std::string GetChoiceListJSON(Profile& profile) {
   base::Value::List choice_value_list;
   SearchEngineChoiceDialogService* search_engine_choice_dialog_service =
       SearchEngineChoiceDialogServiceFactory::GetForProfile(&profile);
+  CHECK(search_engine_choice_dialog_service);
   const TemplateURL::TemplateURLVector choices =
       search_engine_choice_dialog_service->GetSearchEngines();
 
@@ -139,9 +146,23 @@ void SearchEngineChoiceUI::Initialize(
   display_dialog_callback_ = std::move(display_dialog_callback);
   on_choice_made_callback_ = std::move(on_choice_made_callback);
   entry_point_ = entry_point;
+
+  if (entry_point_ != SearchEngineChoiceDialogService::EntryPoint::kDialog) {
+    // This callback should always be populated.
+    // TODO(b/344899110): Cleanup once the bug root cause is found.
+    CHECK(on_choice_made_callback_, base::NotFatalUntil::M131);
+  }
 }
 
 void SearchEngineChoiceUI::HandleSearchEngineChoiceMade(int prepopulate_id) {
+  if (entry_point_ != SearchEngineChoiceDialogService::EntryPoint::kDialog) {
+    // If this callback is null, then this method has already been called, which
+    // is a bug. (Or the initialization was skipped, but that would point to
+    // users manually entering the URL, which is not supported)
+    // TODO(b/344899110): Cleanup once the bug root cause is found.
+    CHECK(on_choice_made_callback_, base::NotFatalUntil::M131);
+  }
+
   SearchEngineChoiceDialogService* search_engine_choice_dialog_service =
       SearchEngineChoiceDialogServiceFactory::GetForProfile(&profile_.get());
   search_engine_choice_dialog_service->NotifyChoiceMade(prepopulate_id,
@@ -160,6 +181,13 @@ void SearchEngineChoiceUI::HandleLearnMoreLinkClicked() {
   search_engine_choice_dialog_service->NotifyLearnMoreLinkClicked(entry_point_);
 }
 
+void SearchEngineChoiceUI::HandleMoreButtonClicked() {
+  SearchEngineChoiceDialogService* search_engine_choice_dialog_service =
+      SearchEngineChoiceDialogServiceFactory::GetForProfile(&profile_.get());
+
+  search_engine_choice_dialog_service->NotifyMoreButtonClicked(entry_point_);
+}
+
 void SearchEngineChoiceUI::CreatePageHandler(
     mojo::PendingReceiver<search_engine_choice::mojom::PageHandler> receiver) {
   page_handler_ = std::make_unique<SearchEngineChoiceHandler>(
@@ -167,5 +195,7 @@ void SearchEngineChoiceUI::CreatePageHandler(
       base::BindOnce(&SearchEngineChoiceUI::HandleSearchEngineChoiceMade,
                      weak_ptr_factory_.GetWeakPtr()),
       base::BindRepeating(&SearchEngineChoiceUI::HandleLearnMoreLinkClicked,
-                          weak_ptr_factory_.GetWeakPtr()));
+                          weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&SearchEngineChoiceUI::HandleMoreButtonClicked,
+                     weak_ptr_factory_.GetWeakPtr()));
 }

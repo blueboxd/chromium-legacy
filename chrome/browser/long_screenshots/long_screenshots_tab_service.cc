@@ -14,12 +14,14 @@
 #include "base/functional/callback.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/memory_pressure_monitor.h"
-#include "chrome/android/chrome_jni_headers/LongScreenshotsTabService_jni.h"
 #include "components/google/core/common/google_util.h"
 #include "components/paint_preview/browser/file_manager.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/render_frame_host.h"
 #include "url/android/gurl_android.h"
+
+// Must come after all headers that specialize FromJniType() / ToJniType().
+#include "chrome/android/chrome_jni_headers/LongScreenshotsTabService_jni.h"
 
 namespace long_screenshots {
 
@@ -106,9 +108,9 @@ void LongScreenshotsTabService::CaptureTab(int tab_id,
   // Mark |contents| as being captured so that the renderer doesn't go away
   // until the capture is finished. This is done even before a file is created
   // to ensure the renderer doesn't go away while that happens.
-  capture_handle_ =
-      contents->IncrementCapturerCount(gfx::Size(), /*stay_hidden=*/true,
-                                       /*stay_awake=*/true);
+  capture_handle_ = contents->IncrementCapturerCount(
+      gfx::Size(), /*stay_hidden=*/true,
+      /*stay_awake=*/true, /*is_activity=*/true);
   content::RenderFrameHost* rfh =
       GetRootRenderFrameHost(contents->GetPrimaryMainFrame(), url);
   if (in_memory) {

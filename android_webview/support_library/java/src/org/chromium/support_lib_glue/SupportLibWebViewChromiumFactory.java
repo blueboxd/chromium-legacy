@@ -94,7 +94,9 @@ public class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryB
                 Features.WEBVIEW_MEDIA_INTEGRITY_API_STATUS,
                 Features.MUTE_AUDIO,
                 Features.WEB_AUTHENTICATION,
-                Features.SPECULATIVE_LOADING + Features.DEV_SUFFIX,
+                Features.SPECULATIVE_LOADING,
+                Features.BACK_FORWARD_CACHE,
+                Features.PREFETCH_WITH_URL + Features.DEV_SUFFIX,
                 // Add new features above. New features must include `+ Features.DEV_SUFFIX`
                 // when they're initially added (this can be removed in a future CL). The final
                 // feature should have a trailing comma for cleaner diffs.
@@ -102,6 +104,7 @@ public class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryB
 
     // These values are persisted to logs. Entries should not be renumbered and
     // numeric values should never be reused.
+    // LINT.IfChange(ApiCall)
     @IntDef({
         ApiCall.ADD_WEB_MESSAGE_LISTENER,
         ApiCall.CLEAR_PROXY_OVERRIDE,
@@ -208,6 +211,10 @@ public class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryB
         ApiCall.WEB_SETTINGS_GET_WEBAUTHN_SUPPORT,
         ApiCall.SET_SPECULATIVE_LOADING_STATUS,
         ApiCall.GET_SPECULATIVE_LOADING_STATUS,
+        ApiCall.SET_BACK_FORWARD_CACHE_ENABLED,
+        ApiCall.GET_BACK_FORWARD_CACHE_ENABLED,
+        ApiCall.PREFETCH_URL,
+        ApiCall.CLEAR_PREFETCH_CACHE,
         // Add new constants above. The final constant should have a trailing comma for cleaner
         // diffs.
         ApiCall.COUNT, // Added to suppress WrongConstant in #recordApiCall
@@ -320,9 +327,16 @@ public class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryB
         int WEB_SETTINGS_GET_WEBAUTHN_SUPPORT = 103;
         int SET_SPECULATIVE_LOADING_STATUS = 104;
         int GET_SPECULATIVE_LOADING_STATUS = 105;
+        int SET_BACK_FORWARD_CACHE_ENABLED = 106;
+        int GET_BACK_FORWARD_CACHE_ENABLED = 107;
+        int PREFETCH_URL = 108;
+        int CLEAR_PREFETCH_CACHE = 109;
+
         // Remember to update AndroidXWebkitApiCall in enums.xml when adding new values here
-        int COUNT = 106;
+        int COUNT = 110;
     }
+
+    // LINT.ThenChange(/tools/metrics/histograms/metadata/android/enums.xml:AndroidXWebkitApiCall)
 
     public static void recordApiCall(@ApiCall int apiCall) {
         RecordHistogram.recordEnumeratedHistogram(

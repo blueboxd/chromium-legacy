@@ -15,8 +15,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/types/expected.h"
 #include "components/optimization_guide/core/model_execution/redactor.h"
+#include "components/optimization_guide/core/model_execution/response_parser.h"
 #include "components/optimization_guide/core/model_execution/substitution.h"
+#include "components/optimization_guide/core/optimization_guide_model_executor.h"
 #include "components/optimization_guide/proto/features/text_safety.pb.h"
 #include "components/optimization_guide/proto/on_device_model_execution_config.pb.h"
 
@@ -38,14 +41,11 @@ class OnDeviceModelFeatureAdapter final
       const google::protobuf::MessageLite& request,
       bool want_input_context) const;
 
-  // Constructs the output metadata for model `output`.
-  // Will return std::nullopt on error.
-  std::optional<proto::Any> ConstructOutputMetadata(
-      const std::string& output) const;
-
-  // Redacts the content of current response, given the last executed message.
-  RedactResult Redact(const google::protobuf::MessageLite& last_message,
-                      std::string& current_response) const;
+  // Converts model response into this feature's expected response type.
+  // Replies with std::nullopt on error.
+  void ParseResponse(const google::protobuf::MessageLite& request,
+                     const std::string& model_response,
+                     ResponseParser::ResultCallback callback) const;
 
   // Constructs the request for text safety server fallback.
   // Will return std::nullopt on error or if the config does not allow for it.
@@ -55,16 +55,23 @@ class OnDeviceModelFeatureAdapter final
 
   bool CanSkipTextSafety() const { return config_.can_skip_text_safety(); }
 
+  std::optional<SamplingParams> MaybeSamplingParams() const;
+
  private:
   friend class base::RefCounted<OnDeviceModelFeatureAdapter>;
   ~OnDeviceModelFeatureAdapter();
+
+  // Redacts the content of current response, given the last executed message.
+  RedactResult Redact(const google::protobuf::MessageLite& last_message,
+                      std::string& current_response) const;
 
   // Returns the string that is used for checking redaction against.
   std::string GetStringToCheckForRedacting(
       const google::protobuf::MessageLite& message) const;
 
   proto::OnDeviceModelExecutionFeatureConfig config_;
-  std::unique_ptr<Redactor> redactor_;
+  Redactor redactor_;
+  std::unique_ptr<ResponseParser> parser_;
 };
 
 }  // namespace optimization_guide

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "media/base/video_util.h"
 
 #include <cmath>
@@ -68,7 +73,7 @@ void FillRegionOutsideVisibleRect(uint8_t* data,
 }
 
 VideoPixelFormat ReadbackFormat(const VideoFrame& frame) {
-  // The |frame|.BitDepth() restriction is to avoid treating a P016LE frame as a
+  // The |frame|.BitDepth() restriction is to avoid treating a P010LE frame as a
   // low-bit depth frame.
   if (frame.RequiresExternalSampler() && frame.BitDepth() == 8u)
     return PIXEL_FORMAT_XRGB;
@@ -204,17 +209,17 @@ void LetterboxPlane(VideoFrame* frame,
 // Helper for `LetterboxVideoFrame()`, assumes that if |frame| is GMB-backed,
 // the GpuMemoryBuffer is already mapped (via a call to `Map()`).
 void LetterboxPlane(VideoFrame* frame,
+                    VideoFrame::ScopedMapping* scoped_mapping,
                     int plane,
                     const gfx::Rect& view_area_in_pixels,
                     uint8_t fill_byte) {
   uint8_t* ptr = nullptr;
   if (frame->IsMappable()) {
     ptr = frame->writable_data(plane);
-  } else if (frame->HasGpuMemoryBuffer()) {
-    ptr = static_cast<uint8_t*>(frame->GetGpuMemoryBuffer()->memory(plane));
+  } else if (scoped_mapping) {
+    ptr = scoped_mapping->Memory(plane);
   }
-
-  DCHECK(ptr);
+  CHECK(ptr);
 
   LetterboxPlane(frame, plane, ptr, view_area_in_pixels, fill_byte);
 }
@@ -244,15 +249,17 @@ void FillYUVA(VideoFrame* frame, uint8_t y, uint8_t u, uint8_t v, uint8_t a) {
 }
 
 void LetterboxVideoFrame(VideoFrame* frame, const gfx::Rect& view_area) {
-  bool gmb_mapped = false;
-  if (!frame->IsMappable() && frame->HasGpuMemoryBuffer()) {
-    gmb_mapped = frame->GetGpuMemoryBuffer()->Map();
-    DCHECK(gmb_mapped);
+  std::unique_ptr<VideoFrame::ScopedMapping> scoped_mapping;
+  if (!frame->IsMappable() &&
+      frame->storage_type() == media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
+    scoped_mapping = frame->MapGMBOrSharedImage();
+    CHECK(scoped_mapping);
   }
 
   switch (frame->format()) {
     case PIXEL_FORMAT_ARGB:
-      LetterboxPlane(frame, VideoFrame::Plane::kARGB, view_area, 0x00);
+      LetterboxPlane(frame, scoped_mapping.get(), VideoFrame::Plane::kARGB,
+                     view_area, 0x00);
       break;
     case PIXEL_FORMAT_YV12:
     case PIXEL_FORMAT_I420: {
@@ -261,11 +268,14 @@ void LetterboxVideoFrame(VideoFrame* frame, const gfx::Rect& view_area) {
       DCHECK(!(view_area.width() & 1));
       DCHECK(!(view_area.height() & 1));
 
-      LetterboxPlane(frame, VideoFrame::Plane::kY, view_area, 0x00);
+      LetterboxPlane(frame, scoped_mapping.get(), VideoFrame::Plane::kY,
+                     view_area, 0x00);
       gfx::Rect half_view_area(view_area.x() / 2, view_area.y() / 2,
                                view_area.width() / 2, view_area.height() / 2);
-      LetterboxPlane(frame, VideoFrame::Plane::kU, half_view_area, 0x80);
-      LetterboxPlane(frame, VideoFrame::Plane::kV, half_view_area, 0x80);
+      LetterboxPlane(frame, scoped_mapping.get(), VideoFrame::Plane::kU,
+                     half_view_area, 0x80);
+      LetterboxPlane(frame, scoped_mapping.get(), VideoFrame::Plane::kV,
+                     half_view_area, 0x80);
       break;
     }
     case PIXEL_FORMAT_NV12: {
@@ -274,11 +284,13 @@ void LetterboxVideoFrame(VideoFrame* frame, const gfx::Rect& view_area) {
       DCHECK(!(view_area.width() & 1));
       DCHECK(!(view_area.height() & 1));
 
-      LetterboxPlane(frame, VideoFrame::Plane::kY, view_area, 0x00);
+      LetterboxPlane(frame, scoped_mapping.get(), VideoFrame::Plane::kY,
+                     view_area, 0x00);
       gfx::Rect half_view_area(view_area.x() / 2, view_area.y() / 2,
                                view_area.width() / 2, view_area.height() / 2);
 
-      LetterboxPlane(frame, VideoFrame::Plane::kUV, half_view_area, 0x80);
+      LetterboxPlane(frame, scoped_mapping.get(), VideoFrame::Plane::kUV,
+                     half_view_area, 0x80);
       break;
     }
     case PIXEL_FORMAT_NV12A: {
@@ -287,19 +299,18 @@ void LetterboxVideoFrame(VideoFrame* frame, const gfx::Rect& view_area) {
       DCHECK(!(view_area.width() & 1));
       DCHECK(!(view_area.height() & 1));
 
-      LetterboxPlane(frame, VideoFrame::Plane::kY, view_area, 0x00);
+      LetterboxPlane(frame, scoped_mapping.get(), VideoFrame::Plane::kY,
+                     view_area, 0x00);
       gfx::Rect half_view_area(view_area.x() / 2, view_area.y() / 2,
                                view_area.width() / 2, view_area.height() / 2);
-      LetterboxPlane(frame, VideoFrame::Plane::kUV, half_view_area, 0x80);
-      LetterboxPlane(frame, VideoFrame::Plane::kATriPlanar, view_area, 0x00);
+      LetterboxPlane(frame, scoped_mapping.get(), VideoFrame::Plane::kUV,
+                     half_view_area, 0x80);
+      LetterboxPlane(frame, scoped_mapping.get(),
+                     VideoFrame::Plane::kATriPlanar, view_area, 0x00);
       break;
     }
     default:
       NOTREACHED_IN_MIGRATION();
-  }
-
-  if (gmb_mapped) {
-    frame->GetGpuMemoryBuffer()->Unmap();
   }
 }
 
@@ -546,17 +557,18 @@ gfx::Size PadToMatchAspectRatio(const gfx::Size& size,
 
 scoped_refptr<VideoFrame> ConvertToMemoryMappedFrame(
     scoped_refptr<VideoFrame> video_frame) {
-  DCHECK(video_frame);
-  DCHECK(video_frame->HasGpuMemoryBuffer());
+  CHECK(video_frame);
+  CHECK(video_frame->HasMappableGpuBuffer());
 
-  auto* gmb = video_frame->GetGpuMemoryBuffer();
-  if (!gmb->Map())
+  auto scoped_mapping = video_frame->MapGMBOrSharedImage();
+  if (!scoped_mapping) {
     return nullptr;
+  }
 
   const size_t num_planes = VideoFrame::NumPlanes(video_frame->format());
   uint8_t* plane_addrs[VideoFrame::kMaxPlanes] = {};
   for (size_t i = 0; i < num_planes; i++)
-    plane_addrs[i] = static_cast<uint8_t*>(gmb->memory(i));
+    plane_addrs[i] = scoped_mapping->Memory(i);
 
   auto mapped_frame = VideoFrame::WrapExternalYuvDataWithLayout(
       video_frame->layout(), video_frame->visible_rect(),
@@ -564,7 +576,6 @@ scoped_refptr<VideoFrame> ConvertToMemoryMappedFrame(
       plane_addrs[2], video_frame->timestamp());
 
   if (!mapped_frame) {
-    gmb->Unmap();
     return nullptr;
   }
 
@@ -574,11 +585,14 @@ scoped_refptr<VideoFrame> ConvertToMemoryMappedFrame(
   // Pass |video_frame| so that it outlives |mapped_frame| and the mapped buffer
   // is unmapped on destruction.
   mapped_frame->AddDestructionObserver(base::BindOnce(
-      [](scoped_refptr<VideoFrame> frame) {
-        DCHECK(frame->HasGpuMemoryBuffer());
-        frame->GetGpuMemoryBuffer()->Unmap();
+      [](scoped_refptr<VideoFrame> frame,
+         std::unique_ptr<VideoFrame::ScopedMapping> scoped_mapping) {
+        CHECK(scoped_mapping);
+        // The VideoFrame::ScopedMapping must be destroyed before the
+        // FrameResource that produced it in order to avoid dangling pointers.
+        scoped_mapping.reset();
       },
-      std::move(video_frame)));
+      std::move(video_frame), std::move(scoped_mapping)));
   return mapped_frame;
 }
 
@@ -667,7 +681,7 @@ scoped_refptr<VideoFrame> ReadbackTextureBackedFrameToMemorySync(
                  txt_frame.natural_size(), txt_frame.timestamp());
   result->set_color_space(txt_frame.ColorSpace());
   result->metadata().MergeMetadataFrom(txt_frame.metadata());
-  result->metadata().ClearTextureFrameMedatada();
+  result->metadata().ClearTextureFrameMetadata();
 
   // NOTE: Iterating over the number of planes of the readback format (rather
   // than `txt_frame`) ensures that frames with external
@@ -693,11 +707,6 @@ bool ReadbackTexturePlaneToMemorySync(VideoFrame& src_frame,
                                       gpu::raster::RasterInterface* ri,
                                       const gpu::Capabilities& caps) {
   DCHECK(ri);
-
-  // All platforms except android have shipped passthrough command decoder which
-  // supports it. On Android this code path should always use RasterDecoder
-  // which also supports this.
-  CHECK(caps.supports_yuv_to_rgb_conversion);
 
   bool result = ReadbackTexturePlaneToMemorySyncOOP(
       src_frame, src_plane, src_rect, dest_pixels, dest_stride, ri);
@@ -728,9 +737,9 @@ MEDIA_EXPORT SkColorType SkColorTypeForPlane(VideoPixelFormat format,
                      plane == VideoFrame::Plane::kATriPlanar
                  ? kAlpha_8_SkColorType
                  : kR8G8_unorm_SkColorType;
-    case PIXEL_FORMAT_P016LE:
-    case PIXEL_FORMAT_P216LE:
-    case PIXEL_FORMAT_P416LE:
+    case PIXEL_FORMAT_P010LE:
+    case PIXEL_FORMAT_P210LE:
+    case PIXEL_FORMAT_P410LE:
       return plane == VideoFrame::Plane::kY ? kA16_unorm_SkColorType
                                             : kR16G16_unorm_SkColorType;
     case PIXEL_FORMAT_XBGR:
@@ -804,13 +813,13 @@ VideoPixelFormatToSkiaValues(VideoPixelFormat video_format) {
   // To expand support for additional VideoFormats expand this switch.
   switch (video_format) {
     case PIXEL_FORMAT_NV12:
-    case PIXEL_FORMAT_P016LE:
+    case PIXEL_FORMAT_P010LE:
       return {SkYUVAInfo::PlaneConfig::kY_UV, SkYUVAInfo::Subsampling::k420};
     case PIXEL_FORMAT_NV16:
-    case PIXEL_FORMAT_P216LE:
+    case PIXEL_FORMAT_P210LE:
       return {SkYUVAInfo::PlaneConfig::kY_UV, SkYUVAInfo::Subsampling::k422};
     case PIXEL_FORMAT_NV24:
-    case PIXEL_FORMAT_P416LE:
+    case PIXEL_FORMAT_P410LE:
       return {SkYUVAInfo::PlaneConfig::kY_UV, SkYUVAInfo::Subsampling::k444};
     case PIXEL_FORMAT_NV12A:
       return {SkYUVAInfo::PlaneConfig::kY_UV_A, SkYUVAInfo::Subsampling::k420};

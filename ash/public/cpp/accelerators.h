@@ -28,6 +28,7 @@ struct AcceleratorData {
   ui::KeyboardCode keycode;
   int modifiers;
   AcceleratorAction action;
+  bool accelerator_locked = false;
 };
 
 // A mask of all the modifiers used for debug accelerators.
@@ -71,6 +72,10 @@ ASH_PUBLIC_EXPORT extern const size_t kToggleGameDashboardAcceleratorDataLength;
 // Accelerators that are enabled with the Picker feature.
 ASH_PUBLIC_EXPORT extern const AcceleratorData kTogglePickerAcceleratorData[];
 ASH_PUBLIC_EXPORT extern const size_t kTogglePickerAcceleratorDataLength;
+
+ASH_PUBLIC_EXPORT extern const AcceleratorData
+    kTilingWindowResizeAcceleratorData[];
+ASH_PUBLIC_EXPORT extern const size_t kTilingWindowResizeAcceleratorDataLength;
 
 // The public-facing interface for accelerator handling, which is Ash's duty to
 // implement.

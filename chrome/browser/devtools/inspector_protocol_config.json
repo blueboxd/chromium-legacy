@@ -35,7 +35,7 @@
             },
             {
                 "domain": "Extensions",
-                "async": [ "loadUnpacked" ]
+                "async": [ "loadUnpacked", "getStorageItems", "removeStorageItems", "clearStorageItems" ]
             },
             {
                 "domain": "Security",
@@ -57,7 +57,7 @@
             },
             {
                 "domain": "PWA",
-                "async": [ "getOsAppState", "install", "launch", "launchFilesInApp", "uninstall" ]
+                "async": [ "changeAppUserSettings", "getOsAppState", "install", "launch", "launchFilesInApp", "uninstall" ]
             }
         ]
     },

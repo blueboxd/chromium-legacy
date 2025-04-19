@@ -42,7 +42,7 @@ import org.chromium.chrome.browser.metrics.SimpleStartupForegroundSessionDetecto
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcherImpl;
 import org.chromium.chrome.browser.profiles.ProfileProvider;
-import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
+import org.chromium.chrome.browser.util.BrowserUiUtils;
 import org.chromium.components.browser_ui.share.ShareHelper;
 import org.chromium.components.browser_ui.util.FirstDrawDetector;
 import org.chromium.ui.base.ActivityIntentRequestTrackerDelegate;
@@ -221,7 +221,7 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
                 firstDrawView,
                 () -> {
                     mFirstDrawComplete = true;
-                    StartSurfaceConfiguration.recordHistogram(
+                    BrowserUiUtils.recordHistogram(
                             FIRST_DRAW_COMPLETED_TIME_MS_UMA,
                             SystemClock.elapsedRealtime() - getOnCreateTimestampMs());
                     if (!mStartupDelayed) {
@@ -299,11 +299,14 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
         throw new ProcessInitException(LoaderErrors.NATIVE_STARTUP_FAILED, failureCause);
     }
 
+    @Override
+    public void onTopResumedActivityChangedWithNative(boolean isTopResumedActivity) {}
+
     /**
      * Extending classes should override {@link AsyncInitializationActivity#preInflationStartup()},
-     * {@link AsyncInitializationActivity#triggerLayoutInflation()} and
-     * {@link AsyncInitializationActivity#postInflationStartup()} instead of this call which will
-     * be called on that order.
+     * {@link AsyncInitializationActivity#triggerLayoutInflation()} and {@link
+     * AsyncInitializationActivity#postInflationStartup()} instead of this call which will be called
+     * on that order.
      */
     @Override
     @SuppressLint("MissingSuperCall") // Called in onCreateInternal.
@@ -764,6 +767,7 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
         super.onTopResumedActivityChanged(isTopResumedActivity);
 
         mLifecycleDispatcher.dispatchOnTopResumedActivityChanged(isTopResumedActivity);
+        mNativeInitializationController.onTopResumedActivityChanged(isTopResumedActivity);
     }
 
     /**

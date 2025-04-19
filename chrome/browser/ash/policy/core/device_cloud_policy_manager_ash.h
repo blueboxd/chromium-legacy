@@ -164,6 +164,10 @@ class DeviceCloudPolicyManagerAsh : public CloudPolicyManager,
 
   HeartbeatScheduler* GetHeartbeatSchedulerForTesting() const;
 
+  reporting::OsUpdatesReporter* GetOsUpdatesReporter() const;
+
+  reporting::MetricReportingManager* GetMetricReportingManager();
+
  protected:
   // Object that monitors managed session related events used by reporting
   // services, protected for testing.

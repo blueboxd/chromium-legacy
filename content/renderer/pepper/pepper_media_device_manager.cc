@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/342213636): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "content/renderer/pepper/pepper_media_device_manager.h"
 #include <vector>
 
@@ -279,7 +284,7 @@ blink::mojom::MediaStreamDispatcherHost*
 PepperMediaDeviceManager::GetMediaStreamDispatcherHost() {
   if (!dispatcher_host_) {
     CHECK(render_frame());
-    render_frame()->GetBrowserInterfaceBroker()->GetInterface(
+    render_frame()->GetBrowserInterfaceBroker().GetInterface(
         dispatcher_host_.BindNewPipeAndPassReceiver());
   }
   return dispatcher_host_.get();
@@ -299,7 +304,7 @@ blink::mojom::MediaDevicesDispatcherHost*
 PepperMediaDeviceManager::GetMediaDevicesDispatcher() {
   if (!media_devices_dispatcher_) {
     CHECK(render_frame());
-    render_frame()->GetBrowserInterfaceBroker()->GetInterface(
+    render_frame()->GetBrowserInterfaceBroker().GetInterface(
         media_devices_dispatcher_.BindNewPipeAndPassReceiver());
   }
 

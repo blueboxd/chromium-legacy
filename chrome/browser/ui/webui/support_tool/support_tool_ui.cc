@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/ui/webui/support_tool/support_tool_ui.h"
 
 #include <optional>
@@ -156,11 +161,9 @@ class SupportToolMessageHandler : public content::WebUIMessageHandler,
   void HandleGenerateSupportToken(const base::Value::List& args);
 
   // SelectFileDialog::Listener implementation.
-  void FileSelected(const ui::SelectedFileInfo& file,
-                    int index,
-                    void* params) override;
+  void FileSelected(const ui::SelectedFileInfo& file, int index) override;
 
-  void FileSelectionCanceled(void* params) override;
+  void FileSelectionCanceled() override;
 
  private:
   base::Value::List GetAccountsList();
@@ -412,8 +415,7 @@ void SupportToolMessageHandler::HandleStartDataExport(
 }
 
 void SupportToolMessageHandler::FileSelected(const ui::SelectedFileInfo& file,
-                                             int index,
-                                             void* params) {
+                                             int index) {
   base::UmaHistogramEnumeration(
       kSupportToolWebUIActionHistogram,
       SupportToolWebUIActionType::kCreateSupportPacket);
@@ -428,7 +430,7 @@ void SupportToolMessageHandler::FileSelected(const ui::SelectedFileInfo& file,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void SupportToolMessageHandler::FileSelectionCanceled(void* params) {
+void SupportToolMessageHandler::FileSelectionCanceled() {
   selected_pii_to_keep_.clear();
   select_file_dialog_.reset();
 }

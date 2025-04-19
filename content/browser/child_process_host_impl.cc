@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/342213636): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "content/browser/child_process_host_impl.h"
 
 #include <limits>
@@ -318,8 +323,8 @@ uint64_t ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(
 
   // The hash value is incremented so that the tracing id is never equal to
   // MemoryDumpManager::kInvalidTracingProcessId.
-  return static_cast<uint64_t>(base::PersistentHash(
-             base::as_bytes(base::make_span(&child_process_id, 1u)))) +
+  return static_cast<uint64_t>(
+             base::PersistentHash(base::byte_span_from_ref(child_process_id))) +
          1;
 }
 
@@ -428,5 +433,10 @@ void ChildProcessHostImpl::NotifyMemoryPressureToChildProcess(
   child_process()->OnMemoryPressure(level);
 }
 #endif
+
+void ChildProcessHostImpl::SetBatterySaverMode(
+    bool battery_saver_mode_enabled) {
+  child_process()->SetBatterySaverMode(battery_saver_mode_enabled);
+}
 
 }  // namespace content

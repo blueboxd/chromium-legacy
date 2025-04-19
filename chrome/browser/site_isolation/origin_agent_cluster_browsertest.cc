@@ -14,6 +14,7 @@
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/page_load_metrics/browser/page_load_metrics_test_waiter.h"
 #include "components/variations/active_field_trials.h"
+#include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -285,6 +286,8 @@ IN_PROC_BROWSER_TEST_F(OriginAgentClusterBrowserTest,
 // We expect the OAC overhead to be zero when no OAC origins are present.
 IN_PROC_BROWSER_TEST_F(OriginAgentClusterBrowserTest,
                        ProcessCountMetricsNoOACs) {
+  bool origin_keyed_processes_by_default =
+      content::SiteIsolationPolicy::AreOriginKeyedProcessesEnabledByDefault();
   GURL start_url(https_server()->GetURL("foo.com", "/iframe.html"));
   GURL sub_origin_url(https_server()->GetURL("sub.foo.com", "/title1.html"));
 
@@ -298,9 +301,18 @@ IN_PROC_BROWSER_TEST_F(OriginAgentClusterBrowserTest,
   scoped_refptr<TestMemoryDetails> details = new TestMemoryDetails();
   details->StartFetchAndWait();
 
-  EXPECT_EQ(1, details->GetTotalProcessCount());
-  EXPECT_EQ(0, details->GetOacProcessCount());
-  EXPECT_EQ(0, details->GetOacProcessCountPercent());
+  if (origin_keyed_processes_by_default) {
+    // Even though sub.foo.com doesn't have an OAC opt-in header, it will still
+    // be isolated in this case due to the Origin Isolation mode, and thus it
+    // should still count as overhead.
+    EXPECT_EQ(2, details->GetTotalProcessCount());
+    EXPECT_EQ(1, details->GetOacProcessCount());
+    EXPECT_EQ(50, details->GetOacProcessCountPercent());
+  } else {
+    EXPECT_EQ(1, details->GetTotalProcessCount());
+    EXPECT_EQ(0, details->GetOacProcessCount());
+    EXPECT_EQ(0, details->GetOacProcessCountPercent());
+  }
 }
 
 // Two distinct OAC sub-origins with a base-origin should have an overhead of

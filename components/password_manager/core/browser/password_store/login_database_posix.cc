@@ -8,7 +8,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "components/os_crypt/async/common/encryptor.h"
 #include "components/os_crypt/sync/os_crypt.h"
+#include "components/password_manager/core/browser/password_store/login_database.h"
 
 namespace password_manager {
 
@@ -28,17 +30,19 @@ void RecordPasswordDecryptionResult(PasswordDecryptionResult result) {
 
 }  // namespace
 
-LoginDatabase::EncryptionResult LoginDatabase::EncryptedString(
+EncryptionResult LoginDatabase::EncryptedString(
     const std::u16string& plain_text,
-    std::string* cipher_text) {
-  return OSCrypt::EncryptString16(plain_text, cipher_text)
-             ? ENCRYPTION_RESULT_SUCCESS
-             : ENCRYPTION_RESULT_SERVICE_FAILURE;
+    std::string* cipher_text) const {
+  bool result = encryptor_
+                    ? encryptor_->EncryptString16(plain_text, cipher_text)
+                    : OSCrypt::EncryptString16(plain_text, cipher_text);
+  return result ? EncryptionResult::kSuccess
+                : EncryptionResult::kServiceFailure;
 }
 
-LoginDatabase::EncryptionResult LoginDatabase::DecryptedString(
+EncryptionResult LoginDatabase::DecryptedString(
     const std::string& cipher_text,
-    std::u16string* plain_text) {
+    std::u16string* plain_text) const {
 #if !BUILDFLAG(IS_FUCHSIA)
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
   // On Android and ChromeOS, we have a mix of obfuscated and plain-text
@@ -46,7 +50,7 @@ LoginDatabase::EncryptionResult LoginDatabase::DecryptedString(
   // else is plain-text.
   // TODO(crbug.com/41457193): Remove this when there isn't a mix of plain-text
   // and obfuscated passwords.
-  bool use_encryption = base::StartsWith(cipher_text, "v10");
+  bool use_encryption = base::StartsWith(cipher_text, "v10") || encryptor_;
 #else
   bool use_encryption = true;
 #endif
@@ -55,11 +59,13 @@ LoginDatabase::EncryptionResult LoginDatabase::DecryptedString(
     *plain_text = base::UTF8ToUTF16(cipher_text);
     RecordPasswordDecryptionResult(
         PasswordDecryptionResult::kSucceededBySkipping);
-    return ENCRYPTION_RESULT_SUCCESS;
+    return EncryptionResult::kSuccess;
   }
 #endif  // !BUILDFLAG(IS_FUCHSIA)
 
-  bool decryption_success = OSCrypt::DecryptString16(cipher_text, plain_text);
+  bool decryption_success =
+      encryptor_ ? encryptor_->DecryptString16(cipher_text, plain_text)
+                 : OSCrypt::DecryptString16(cipher_text, plain_text);
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
   // If decryption failed, we assume it was because the value was actually a
   // plain-text password which started with "v10".
@@ -69,14 +75,14 @@ LoginDatabase::EncryptionResult LoginDatabase::DecryptedString(
     *plain_text = base::UTF8ToUTF16(cipher_text);
     RecordPasswordDecryptionResult(
         PasswordDecryptionResult::kSucceededByIgnoringFailure);
-    return ENCRYPTION_RESULT_SUCCESS;
+    return EncryptionResult::kSuccess;
   }
 #endif
   RecordPasswordDecryptionResult(decryption_success
                                      ? PasswordDecryptionResult::kSucceeded
                                      : PasswordDecryptionResult::kFailed);
-  return decryption_success ? ENCRYPTION_RESULT_SUCCESS
-                            : ENCRYPTION_RESULT_SERVICE_FAILURE;
+  return decryption_success ? EncryptionResult::kSuccess
+                            : EncryptionResult::kServiceFailure;
 }
 
 }  // namespace password_manager

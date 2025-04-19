@@ -83,6 +83,10 @@ import org.chromium.url.GURL;
         mBottomSheetContent.showError();
     }
 
+    void hideRefreshButton() {
+        mBottomSheetContent.hideRefreshButton();
+    }
+
     /** Hide the bottom sheet (if showing) and clean up observers. */
     void destroy() {
         mBottomSheetController.hideContent(mBottomSheetContent, /* animate= */ false);
@@ -93,21 +97,24 @@ import org.chromium.url.GURL;
 
     // PlusAddressCreationDelegate implementation:
     @Override
+    public void onRefreshClicked() {
+        mBridge.onRefreshClicked();
+    }
+
+    @Override
     public void onConfirmRequested() {
         mBridge.onConfirmRequested();
+    }
+
+    @Override
+    public void onCanceled() {
+        mBridge.onCanceled();
     }
 
     @Override
     public void onConfirmFinished() {
         mBottomSheetController.hideContent(
                 mBottomSheetContent, /* animate= */ true, StateChangeReason.INTERACTION_COMPLETE);
-    }
-
-    @Override
-    public void onCanceled() {
-        mBottomSheetController.hideContent(
-                mBottomSheetContent, /* animate= */ true, StateChangeReason.INTERACTION_COMPLETE);
-        mBridge.onCanceled();
     }
 
     @Override

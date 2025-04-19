@@ -10,6 +10,7 @@
 #include <ostream>
 
 #include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "build/chromeos_buildflags.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 #include "ui/gfx/geometry/insets.h"
@@ -40,7 +41,7 @@ class ShellToplevelWrapper;
 class WaylandToplevelWindow : public WaylandWindow,
                               public WmMoveResizeHandler,
                               public WmMoveLoopHandler,
-                              public WaylandExtension,
+                              public WaylandToplevelExtension,
                               public WorkspaceExtension,
                               public DeskExtension,
                               public PinnedModeExtension,
@@ -102,6 +103,7 @@ class WaylandToplevelWindow : public WaylandWindow,
                    const base::TimeDelta hide_delay) override;
   void HideTooltip() override;
   void PropagateBufferScale(float new_scale) override;
+  base::WeakPtr<WaylandWindow> AsWeakPtr() override;
   void OnRotateFocus(uint32_t serial, uint32_t direction, bool restart);
   void OnOverviewChange(uint32_t in_overview_as_int);
 
@@ -124,6 +126,8 @@ class WaylandToplevelWindow : public WaylandWindow,
   void Restore() override;
   void Activate() override;
   void Deactivate() override;
+  void SetWindowIcons(const gfx::ImageSkia& window_icon,
+                      const gfx::ImageSkia& app_icon) override;
   void SizeConstraintsChanged() override;
   // `SetZOrderLevel()` must be called on `z_order_` in
   // `SetUpShellIntegration()`.
@@ -151,7 +155,7 @@ class WaylandToplevelWindow : public WaylandWindow,
   bool RunMoveLoop(const gfx::Vector2d& drag_offset) override;
   void EndMoveLoop() override;
 
-  // WaylandExtension:
+  // WaylandToplevelExtension:
   void StartWindowDraggingSessionIfNeeded(
       ui::mojom::DragEventSource event_source,
       bool allow_system_drag) override;
@@ -161,11 +165,6 @@ class WaylandToplevelWindow : public WaylandWindow,
   gfx::RoundedCornersF GetWindowCornersRadii() override;
   void SetShadowCornersRadii(const gfx::RoundedCornersF& radii) override;
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
-  void RoundTripQueue() override;
-  bool HasInFlightRequestsForState() const override;
-  int64_t GetVizSequenceIdForAppliedState() const override;
-  int64_t GetVizSequenceIdForLatchedState() const override;
-  void SetLatchImmediately(bool latch_immediately) override;
   void ShowSnapPreview(WaylandWindowSnapDirection snap,
                        bool allow_haptic_feedback) override;
   void CommitSnap(WaylandWindowSnapDirection snap, float snap_ratio) override;
@@ -219,9 +218,8 @@ class WaylandToplevelWindow : public WaylandWindow,
   bool ShouldTriggerStateChange(PlatformWindowState state,
                                 int64_t target_display_id) const;
 
-  // Takes ownership of the xdg-activation token if it can be used and a token
-  // was found.
-  std::optional<std::string> TakeActivationToken() const;
+  // Activates the surface using XDG activation given an activation token.
+  void ActivateWithToken(std::string token);
 
   WaylandOutput* GetWaylandOutputForDisplayId(int64_t display_id);
 
@@ -331,6 +329,8 @@ class WaylandToplevelWindow : public WaylandWindow,
   std::optional<float> last_sent_buffer_scale_;
 
   raw_ptr<WorkspaceExtensionDelegate> workspace_extension_delegate_ = nullptr;
+
+  base::WeakPtrFactory<WaylandToplevelWindow> weak_ptr_factory_{this};
 };
 
 }  // namespace ui

@@ -9,16 +9,16 @@
 #import "base/strings/utf_string_conversions.h"
 #import "components/signin/public/identity_manager/account_info.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
-#import "ios/chrome/browser/shared/model/browser_state/browser_state_info_cache.h"
-#import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state_manager.h"
+#import "ios/chrome/browser/shared/model/profile/profile_attributes_storage_ios.h"
+#import "ios/chrome/browser/shared/model/profile/profile_manager_ios.h"
 
 SigninBrowserStateInfoUpdater::SigninBrowserStateInfoUpdater(
     signin::IdentityManager* identity_manager,
     SigninErrorController* signin_error_controller,
-    const base::FilePath& browser_state_path)
+    const std::string& browser_state_name)
     : identity_manager_(identity_manager),
       signin_error_controller_(signin_error_controller),
-      browser_state_path_(browser_state_path) {
+      browser_state_name_(browser_state_name) {
   // Some tests don't have a ChromeBrowserStateManager, disable this service.
   if (!GetApplicationContext()->GetChromeBrowserStateManager())
     return;
@@ -41,11 +41,11 @@ void SigninBrowserStateInfoUpdater::Shutdown() {
 }
 
 void SigninBrowserStateInfoUpdater::UpdateBrowserStateInfo() {
-  ios::ChromeBrowserStateManager* browser_state_manager =
+  ChromeBrowserStateManager* browser_state_manager =
       GetApplicationContext()->GetChromeBrowserStateManager();
   BrowserStateInfoCache* cache =
       browser_state_manager->GetBrowserStateInfoCache();
-  size_t index = cache->GetIndexOfBrowserStateWithPath(browser_state_path_);
+  size_t index = cache->GetIndexOfBrowserStateWithName(browser_state_name_);
 
   if (index == std::string::npos)
     return;
@@ -53,11 +53,11 @@ void SigninBrowserStateInfoUpdater::UpdateBrowserStateInfo() {
   if (identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSignin)) {
     CoreAccountInfo account_info =
         identity_manager_->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin);
-    cache->SetAuthInfoOfBrowserStateAtIndex(
-        index, account_info.gaia, base::UTF8ToUTF16(account_info.email));
+    cache->SetAuthInfoOfBrowserStateAtIndex(index, account_info.gaia,
+                                            account_info.email);
   } else {
     cache->SetAuthInfoOfBrowserStateAtIndex(index, /*gaia_id=*/std::string(),
-                                            /*user_name=*/std::u16string());
+                                            /*user_name=*/std::string());
   }
 }
 
@@ -65,7 +65,7 @@ void SigninBrowserStateInfoUpdater::OnErrorChanged() {
   BrowserStateInfoCache* cache = GetApplicationContext()
                                      ->GetChromeBrowserStateManager()
                                      ->GetBrowserStateInfoCache();
-  size_t index = cache->GetIndexOfBrowserStateWithPath(browser_state_path_);
+  size_t index = cache->GetIndexOfBrowserStateWithName(browser_state_name_);
   if (index == std::string::npos)
     return;
 

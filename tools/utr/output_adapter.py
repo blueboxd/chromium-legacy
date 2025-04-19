@@ -23,9 +23,6 @@ class PassthroughAdapter:
   def ProcessLine(self, line):
     basic_logger.log(logging.DEBUG, line)
 
-  def GetTestResultsLink(self):
-    return None
-
 
 class LegacyOutputAdapter:
   """Interprets the legacy recipe run mode output to logging
@@ -41,7 +38,6 @@ class LegacyOutputAdapter:
   ANNOTATOR_PREFIX_SUFIX = '@@@'
   TRIGGER_STEP_PREFIX = 'test_pre_run.[trigger] '
   TRIGGER_LINK_TEXT = '@@@STEP_LINK@task UI:'
-  RDB_FINALIZED_LINK = 'rdb-stream: finalized invocation - '
 
   def __init__(self):
     self._trigger_link_re = re.compile(r'.+@(https://.+)@@@$')
@@ -107,15 +103,14 @@ class LegacyOutputAdapter:
     self._current_step_name = ''
     self._dot_count = 0
 
-    self._test_results_link = None
-
-  def GetTestResultsLink(self):
-    return self._test_results_link
-
   def _StdoutProcessLine(self, line):
     if not line.startswith(self.ANNOTATOR_PREFIX_SUFIX):
       # Pass through any non-engine text
-      basic_logger.log(self._current_log_level, line)
+      is_urlish = re.match(r'^http[s]?://\S+$', line)
+      if is_urlish:
+        logging.log(self._current_log_level, line)
+      else:
+        basic_logger.log(self._current_log_level, line)
 
   def _StepNameProcessLine(self, line):
     if line.startswith(self.SEED_STEP_TEXT):
@@ -123,9 +118,7 @@ class LegacyOutputAdapter:
       logging.log(self._current_log_level,
                   '\n[cyan]Running: ' + self._current_step_name + '[/]')
       return
-    if not line.startswith(self.ANNOTATOR_PREFIX_SUFIX):
-      # Pass through any non-engine text
-      basic_logger.log(self._current_log_level, line)
+    self._StdoutProcessLine(line)
 
   def _ProcessTriggerLine(self, line):
     if line.startswith(self.SEED_STEP_TEXT + self.TRIGGER_STEP_PREFIX):
@@ -188,12 +181,6 @@ class LegacyOutputAdapter:
                                          ):-len(self.ANNOTATOR_PREFIX_SUFIX)]
       self._current_proccess_fn = self._get_processor(self._current_step_name)
       self._current_log_level = self._get_log_level(self._current_step_name)
-    elif line.startswith(self.RDB_FINALIZED_LINK):
-      # The finalized invocation comes from the rdb wrap, not the recipe itself
-      # so it can't be handed off to a specific step processor. Save the link
-      # for printing later.
-      link = line[len(self.RDB_FINALIZED_LINK):]
-      self._test_results_link = link
     self._current_proccess_fn(line)
     self._last_line = line
     if line.startswith(self.STEP_CLOSED_TEXT):

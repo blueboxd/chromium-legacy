@@ -4,6 +4,7 @@
 
 #include "chrome/browser/password_manager/android/local_passwords_migration_warning_util.h"
 
+#include "base/android/build_info.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/sync/sync_service_factory.h"
@@ -75,6 +76,10 @@ TEST_F(LocalPasswordsMigrationWarningUtilTest,
 }
 
 TEST_F(LocalPasswordsMigrationWarningUtilTest, TestShouldShowWhenMoreThanADay) {
+  // The warning isn't shown on automotive at all.
+  if (base::android::BuildInfo::GetInstance()->is_automotive()) {
+    GTEST_SKIP();
+  }
   base::test::ScopedFeatureList scoped_feature_list(
       password_manager::features::
           kUnifiedPasswordManagerLocalPasswordsMigrationWarning);
@@ -86,7 +91,7 @@ TEST_F(LocalPasswordsMigrationWarningUtilTest, TestShouldShowWhenMoreThanADay) {
       password_manager::prefs::kLocalPasswordsMigrationWarningShownTimestamp,
       base::Time::Now());
   task_env()->FastForwardBy(base::Hours(25));
-  sync_service()->SetHasSyncConsent(false);
+  sync_service()->SetSignedOut();
   EXPECT_TRUE(local_password_migration::ShouldShowWarning(profile()));
 }
 
@@ -103,7 +108,7 @@ TEST_F(LocalPasswordsMigrationWarningUtilTest,
       password_manager::prefs::kLocalPasswordsMigrationWarningShownTimestamp,
       base::Time::Now());
   task_env()->FastForwardBy(base::Hours(23));
-  sync_service()->SetHasSyncConsent(false);
+  sync_service()->SetSignedOut();
   EXPECT_FALSE(local_password_migration::ShouldShowWarning(profile()));
 }
 
@@ -131,7 +136,7 @@ TEST_F(LocalPasswordsMigrationWarningUtilTest,
       password_manager::prefs::kPasswordsUseUPMLocalAndSeparateStores,
       static_cast<int>(
           password_manager::prefs::UseUpmLocalAndSeparateStoresState::kOff));
-  sync_service()->SetHasSyncConsent(true);
+  sync_service()->SetSignedIn(signin::ConsentLevel::kSync);
   sync_service()->GetUserSettings()->SetSelectedTypes(
       /* sync_everything = */ false, {syncer::UserSelectableType::kPasswords});
   EXPECT_FALSE(local_password_migration::ShouldShowWarning(profile()));
@@ -146,7 +151,7 @@ TEST_F(LocalPasswordsMigrationWarningUtilTest,
       password_manager::prefs::kPasswordsUseUPMLocalAndSeparateStores,
       static_cast<int>(
           password_manager::prefs::UseUpmLocalAndSeparateStoresState::kOff));
-  sync_service()->SetHasSyncConsent(true);
+  sync_service()->SetSignedIn(signin::ConsentLevel::kSync);
   sync_service()->GetUserSettings()->SetSelectedTypes(
       /* sync_everything = */ true, {});
   EXPECT_FALSE(local_password_migration::ShouldShowWarning(profile()));
@@ -154,6 +159,10 @@ TEST_F(LocalPasswordsMigrationWarningUtilTest,
 
 TEST_F(LocalPasswordsMigrationWarningUtilTest,
        TestShouldShowWhenNotSyncingPasswords) {
+  // The warning isn't shown on automotive at all.
+  if (base::android::BuildInfo::GetInstance()->is_automotive()) {
+    GTEST_SKIP();
+  }
   base::test::ScopedFeatureList scoped_feature_list(
       password_manager::features::
           kUnifiedPasswordManagerLocalPasswordsMigrationWarning);
@@ -161,7 +170,7 @@ TEST_F(LocalPasswordsMigrationWarningUtilTest,
       password_manager::prefs::kPasswordsUseUPMLocalAndSeparateStores,
       static_cast<int>(
           password_manager::prefs::UseUpmLocalAndSeparateStoresState::kOff));
-  sync_service()->SetHasSyncConsent(true);
+  sync_service()->SetSignedIn(signin::ConsentLevel::kSync);
   sync_service()->GetUserSettings()->SetSelectedTypes(
       /* sync_everything = */ false, {syncer::UserSelectableType::kBookmarks});
   EXPECT_TRUE(local_password_migration::ShouldShowWarning(profile()));
@@ -230,6 +239,10 @@ TEST_F(LocalPasswordsMigrationWarningUtilTest,
 
 TEST_F(LocalPasswordsMigrationWarningUtilTest,
        ShouldShowPostPasswordMigrationSheetWithAllPreconditionsTrue) {
+  // The warning isn't shown on automotive at all.
+  if (base::android::BuildInfo::GetInstance()->is_automotive()) {
+    GTEST_SKIP();
+  }
   pref_service()->SetBoolean(
       password_manager::prefs::kShouldShowPostPasswordMigrationSheetAtStartup,
       true);
@@ -239,5 +252,22 @@ TEST_F(LocalPasswordsMigrationWarningUtilTest,
           password_manager::prefs::UseUpmLocalAndSeparateStoresState::kOff));
 
   EXPECT_TRUE(
+      local_password_migration::ShouldShowPostMigrationSheet(profile()));
+}
+
+TEST_F(LocalPasswordsMigrationWarningUtilTest,
+       ShouldNotPostPasswordMigrationSheetWithAllPreconditionsTrueAuto) {
+  if (!base::android::BuildInfo::GetInstance()->is_automotive()) {
+    GTEST_SKIP();
+  }
+  pref_service()->SetBoolean(
+      password_manager::prefs::kShouldShowPostPasswordMigrationSheetAtStartup,
+      true);
+  pref_service()->SetInteger(
+      password_manager::prefs::kPasswordsUseUPMLocalAndSeparateStores,
+      static_cast<int>(
+          password_manager::prefs::UseUpmLocalAndSeparateStoresState::kOff));
+
+  EXPECT_FALSE(
       local_password_migration::ShouldShowPostMigrationSheet(profile()));
 }

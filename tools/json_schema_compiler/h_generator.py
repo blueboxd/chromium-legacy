@@ -238,10 +238,10 @@ class _Generator(object):
       (c.Append()
         .Append('%sconst char* ToString(%s as_enum);' %
                 (maybe_static, classname))
-        .Append('%s%s Parse%s(base::StringPiece as_string);' %
+        .Append('%s%s Parse%s(std::string_view as_string);' %
                 (maybe_static, classname, classname))
         .Append(
-            '%sstd::u16string Get%sParseError(base::StringPiece as_string);' %
+            '%sstd::u16string Get%sParseError(std::string_view as_string);' %
             (maybe_static, classname))
       )
     elif type_.property_type in (PropertyType.CHOICES,
@@ -267,7 +267,9 @@ class _Generator(object):
                     if type_.property_type is PropertyType.CHOICES else
                     'base::Value::Dict')
 
-      if type_.origin.from_json:
+      if (type_.origin.from_json or
+          (type_.origin.from_manifest_keys and
+               type_.property_type is PropertyType.CHOICES)):
         (c.Append()
           .Comment('Populates a %s object from a base::Value& instance. Returns'
                    ' whether |out| was successfully populated.' %  classname)
@@ -455,10 +457,10 @@ class _Generator(object):
     else:
       params = [
         'const base::Value::Dict& root_dict',
-        'base::StringPiece key',
+        'std::string_view key',
         '%s& out' % classname,
         'std::u16string& error',
-        'std::vector<base::StringPiece>& error_path_reversed'
+        'std::vector<std::string_view>& error_path_reversed'
       ]
       comment = (
         'Parses the given |key| from |root_dict|. Any keys not available to the'

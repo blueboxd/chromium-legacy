@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string_view>
 #include <utility>
 #include <vector>
@@ -32,6 +33,7 @@
 #include "chrome/browser/ash/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ash/app_list/app_list_model_updater.h"
 #include "chrome/browser/ash/app_list/app_list_notifier_impl.h"
+#include "chrome/browser/ash/app_list/app_list_survey_handler.h"
 #include "chrome/browser/ash/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ash/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ash/app_list/app_sync_ui_state_watcher.h"
@@ -98,17 +100,6 @@ ChromeSearchResult* FindAppResultByAppId(
         base::StrCat({extensions::kExtensionScheme, "://", app_id, "/"}));
   }
   return result;
-}
-
-std::string GetAppsCollectionsExperimentSuffixForHistogram() {
-  std::string apps_collections_state;
-  if (app_list_features::IsAppsCollectionsEnabled()) {
-    apps_collections_state =
-        app_list_features::IsAppsCollectionsEnabledCounterfactually()
-            ? ".Counterfactual"
-            : ".Enabled";
-  }
-  return apps_collections_state;
 }
 
 void RecordDefaultAppsForHistogram(const std::string& histogram_name,
@@ -444,11 +435,33 @@ void AppListClientImpl::OnAppListVisibilityWillChange(bool visible) {
   }
 }
 
+void AppListClientImpl::MaybeRecalculateAppsGridDefaultOrder() {
+  // Do not attempt to calculate the experimental arm if the active
+  // profile is not the primary profile.
+  if (!IsPrimaryProfile(ProfileManager::GetActiveUserProfile())) {
+    return;
+  }
+
+  ash::AppsCollectionsController* apps_collections_controller =
+      ash::AppsCollectionsController::Get();
+  apps_collections_controller->CalculateExperimentalArm();
+  if (apps_collections_controller->GetUserExperimentalArm() !=
+      ash::AppsCollectionsController::ExperimentalArm::kModifiedOrder) {
+    return;
+  }
+  CHECK(current_model_updater_);
+
+  current_model_updater_->RequestDefaultPositionForModifiedOrder();
+}
+
 void AppListClientImpl::OnAppListVisibilityChanged(bool visible) {
   app_list_visible_ = visible;
   if (visible) {
     RecordViewShown(
         ash::AppsCollectionsController::Get()->ShouldShowAppsCollection());
+    if (survey_handler_) {
+      survey_handler_->MaybeTriggerSurvey();
+    }
   } else if (current_model_updater_) {
     current_model_updater_->OnAppListHidden();
     // If the user started search, record no action if a result open event has
@@ -725,12 +738,17 @@ void AppListClientImpl::OnProfileAdded(Profile* profile) {
     app_list_syncable_service->OnFirstSync(base::BindOnce(
         [](const base::WeakPtr<AppListClientImpl>& self,
            bool was_first_sync_ever) {
-          if (self) {
-            self->is_primary_profile_new_user_ = was_first_sync_ever;
+          if (!self) {
+            return;
+          }
+          self->is_primary_profile_new_user_ = was_first_sync_ever;
+          if (was_first_sync_ever) {
+            self->MaybeRecalculateAppsGridDefaultOrder();
           }
         },
         weak_ptr_factory_.GetWeakPtr()));
   }
+  survey_handler_ = std::make_unique<app_list::AppListSurveyHandler>(profile);
 }
 
 void AppListClientImpl::OnProfileManagerDestroying() {
@@ -750,6 +768,14 @@ void AppListClientImpl::RecalculateWouldTriggerLauncherSearchIph() {
   }
 
   current_model_updater_->RecalculateWouldTriggerLauncherSearchIph();
+}
+
+bool AppListClientImpl::HasReordered() {
+  if (!current_model_updater_) {
+    return false;
+  }
+
+  return current_model_updater_->ModelHasBeenReorderedInThisSession();
 }
 
 std::unique_ptr<ash::ScopedIphSession>
@@ -975,16 +1001,19 @@ void AppListClientImpl::MaybeRecordActivatedItemVisibility(
   base::UmaHistogramEnumeration(
       base::StrCat({"Apps.AppListBubble.", app_list_page,
                     ".AppLaunchesByVisibility.", visibility,
-                    GetAppsCollectionsExperimentSuffixForHistogram()}),
+                    ash::AppsCollectionsController::Get()
+                        ->GetUserExperimentalArmAsHistogramSuffix()}),
       default_app_name.value());
 }
 
 std::optional<bool> AppListClientImpl::IsNewUser(
     const AccountId& account_id) const {
   // NOTE: Apps Collections in Ash is currently only supported for the primary
-  // user profile. This is a self-imposed restriction.
+  // user profile. This is a self-imposed restriction but may happen in tests.
   auto* const profile = GetProfile(account_id);
-  CHECK(IsPrimaryProfile(profile));
+  if (!IsPrimaryProfile(profile)) {
+    return false;
+  }
   return is_primary_profile_new_user_;
 }
 
@@ -1003,12 +1032,14 @@ void AppListClientImpl::RecordAppsDefaultVisibility(
   RecordDefaultAppsForHistogram(
       base::StrCat({"Apps.AppListBubble.", app_list_page,
                     ".AppVisibilityOnLauncherShown.AboveTheFold",
-                    GetAppsCollectionsExperimentSuffixForHistogram()}),
+                    ash::AppsCollectionsController::Get()
+                        ->GetUserExperimentalArmAsHistogramSuffix()}),
       apps_above_the_fold);
 
   RecordDefaultAppsForHistogram(
       base::StrCat({"Apps.AppListBubble.", app_list_page,
                     ".AppVisibilityOnLauncherShown.BelowTheFold",
-                    GetAppsCollectionsExperimentSuffixForHistogram()}),
+                    ash::AppsCollectionsController::Get()
+                        ->GetUserExperimentalArmAsHistogramSuffix()}),
       apps_below_the_fold);
 }

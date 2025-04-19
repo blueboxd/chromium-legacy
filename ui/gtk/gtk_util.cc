@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ui/gtk/gtk_util.h"
 
 #include <locale.h>
@@ -684,8 +689,9 @@ GdkModifierType GetGdkKeyEventState(const ui::KeyEvent& key_event) {
 
 GdkEvent* GdkEventFromKeyEvent(const ui::KeyEvent& key_event) {
   DCHECK(!GtkCheckVersion(4));
-  GdkEventType event_type =
-      key_event.type() == ui::ET_KEY_PRESSED ? GdkKeyPress() : GdkKeyRelease();
+  GdkEventType event_type = key_event.type() == ui::EventType::kKeyPressed
+                                ? GdkKeyPress()
+                                : GdkKeyRelease();
   auto event_time = key_event.time_stamp() - base::TimeTicks();
   int hw_code = GetKeyEventProperty(key_event, ui::kPropertyKeyboardHwKeyCode);
   int group = GetKeyEventProperty(key_event, ui::kPropertyKeyboardGroup);

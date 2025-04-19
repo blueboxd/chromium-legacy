@@ -57,6 +57,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/crosapi/browser_action.h"
+#include "chrome/browser/ash/crosapi/browser_data_back_migrator.h"
 #include "chrome/browser/ash/crosapi/browser_data_migrator.h"
 #include "chrome/browser/ash/crosapi/browser_data_migrator_util.h"
 #include "chrome/browser/ash/crosapi/browser_launcher.h"
@@ -79,6 +80,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/web_applications/user_uninstalled_preinstalled_web_app_prefs.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/ash/components/browser_context_helper/browser_context_helper.h"
@@ -107,6 +109,7 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
+#include "components/user_prefs/user_prefs.h"
 #include "components/version_info/version_info.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -242,6 +245,13 @@ bool ShouldPrelaunchLacrosAtLoginScreen() {
   }
 
   return true;
+}
+
+bool RemoveLacrosUserDataDir() {
+  const base::FilePath lacros_data_dir = browser_util::GetUserDataDir();
+
+  return base::PathExists(lacros_data_dir) &&
+         base::DeletePathRecursively(lacros_data_dir);
 }
 
 // TODO(b/330659545): Investigate why we cannot run this inside
@@ -637,7 +647,8 @@ void BrowserManager::InitializeAndStartIfNeeded() {
     }
   } else {
     SetState(State::UNAVAILABLE);
-    browser_loader_->Unload();  // NOTE: This deletes the user data dir.
+    browser_loader_->Unload();
+    ClearLacrosData();
   }
 
   // Post `DryRunToCollectUMA()` to send UMA stats about sizes of files/dirs
@@ -870,6 +881,67 @@ void BrowserManager::PerformAction(std::unique_ptr<BrowserAction> action) {
                      weak_factory_.GetWeakPtr(), std::move(action)));
 }
 
+void BrowserManager::ClearLacrosData() {
+  // Check that Lacros is not running.
+  CHECK_EQ(state_, State::UNAVAILABLE);
+  // Skip if Chrome is in safe mode to avoid deleting
+  // user data when Lacros is disabled only temporarily.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ash::switches::kSafeMode)) {
+    return;
+  }
+
+  if (ash::BrowserDataBackMigrator::IsBackMigrationEnabled(
+          ash::standalone_browser::migrator_util::PolicyInitState::
+              kAfterInit)) {
+    return;
+  }
+
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::BindOnce(RemoveLacrosUserDataDir),
+      base::BindOnce(&BrowserManager::OnLacrosUserDataDirRemoved,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void BrowserManager::OnLacrosUserDataDirRemoved(bool cleared) {
+  if (!cleared) {
+    // Do nothing if Lacros user data dir did not exist or could not be deleted.
+    return;
+  }
+
+  LOG(WARNING) << "Lacros user data directory was cleared. Now clearing lacros "
+                  "related prefs.";
+
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->GetPrimaryUser();
+  if (!user) {
+    CHECK_IS_TEST();
+    return;
+  }
+  content::BrowserContext* context =
+      ash::BrowserContextHelper::Get()->GetBrowserContextByUser(user);
+  if (!context) {
+    CHECK_IS_TEST();
+    return;
+  }
+  PrefService* pref_service = user_prefs::UserPrefs::Get(context);
+
+  // Clear prefs set by Lacros and stored in
+  // 'standalone_browser_preferences.json' if Lacros is disabled.
+  pref_service->RemoveAllStandaloneBrowserPrefs();
+
+  // Do a one time clearing of `kUserUninstalledPreinstalledWebAppPref`. This is
+  // because some users who had Lacros enabled before M114 had this pref set by
+  // accident for preinstalled web apps such as Calendar or Gmail. Without
+  // clearing this pref, if users disable Lacros, these apps will be considered
+  // uninstalled (and cannot easily be reinstalled). Note that this means that
+  // some users who intentionally uninstalled these apps on Lacros will find
+  // these apps reappear until they unistall them again.
+  web_app::UserUninstalledPreinstalledWebAppPrefs(pref_service).ClearAllApps();
+}
+
 void BrowserManager::OnBrowserServiceConnected(
     CrosapiId id,
     mojo::RemoteSetElementId mojo_id,
@@ -1022,6 +1094,7 @@ void BrowserManager::OnLacrosChromeTerminated() {
     DCHECK(!relaunch_requested_);
     SetState(State::UNAVAILABLE);
     browser_loader_->Unload();
+    ClearLacrosData();
     return;
   }
 

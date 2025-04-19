@@ -15,18 +15,16 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/geo/phone_number_i18n.h"
 #include "components/autofill/core/browser/geo/state_names.h"
 #include "components/autofill/core/common/autofill_regex_constants.h"
 #include "components/autofill/core/common/autofill_regexes.h"
+#include "components/autofill/core/common/credit_card_network_identifiers.h"
 #include "components/strings/grit/components_strings.h"
 
 namespace autofill {
 
-bool IsValidCreditCardExpirationDate(int year,
-                                     int month,
-                                     const base::Time& now) {
+bool IsValidCreditCardExpirationDate(int year, int month, base::Time now) {
   if (month < 1 || month > 12)
     return false;
 
@@ -36,7 +34,7 @@ bool IsValidCreditCardExpirationDate(int year,
          (year == now_exploded.year && month >= now_exploded.month);
 }
 
-bool IsValidCreditCardExpirationYear(int year, const base::Time& now) {
+bool IsValidCreditCardExpirationYear(int year, base::Time now) {
   base::Time::Exploded now_exploded;
   now.LocalExplode(&now_exploded);
   return year >= now_exploded.year;

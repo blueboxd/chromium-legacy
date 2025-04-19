@@ -10,13 +10,8 @@
 
 namespace autofill {
 
-TestCreditCardSaveManager::TestCreditCardSaveManager(
-    AutofillDriver* driver,
-    AutofillClient* client,
-    PersonalDataManager* personal_data_manager)
-    : CreditCardSaveManager(client,
-                            "en-US",
-                            personal_data_manager) {}
+TestCreditCardSaveManager::TestCreditCardSaveManager(AutofillClient* client)
+    : CreditCardSaveManager(client, "en-US") {}
 
 TestCreditCardSaveManager::~TestCreditCardSaveManager() = default;
 
@@ -92,7 +87,7 @@ void TestCreditCardSaveManager::InitVirtualCardEnroll(
 }
 
 void TestCreditCardSaveManager::OnDidUploadCard(
-    AutofillClient::PaymentsRpcResult result,
+    payments::PaymentsAutofillClient::PaymentsRpcResult result,
     const payments::PaymentsNetworkInterface::UploadCardResponseDetails&
         upload_card_response_details) {
   credit_card_was_uploaded_ = true;

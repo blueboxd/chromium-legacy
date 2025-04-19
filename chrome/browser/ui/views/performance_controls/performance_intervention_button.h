@@ -50,13 +50,24 @@ class PerformanceInterventionButton
     return controller_.get();
   }
 
+  views::BubbleDialogModelHost* bubble_dialog_model_host() {
+    return bubble_dialog_model_host_;
+  }
+
  private:
   void OnClicked();
   void CreateBubble();
+  void UpdateIconColor();
 
   std::unique_ptr<PerformanceInterventionButtonController> controller_;
   const raw_ptr<BrowserView> browser_view_;
   raw_ptr<views::BubbleDialogModelHost> bubble_dialog_model_host_ = nullptr;
+
+  // Boolean that keeps track if the intervention button icon should be shown
+  // in the active color. The intervention button should show the active color
+  // when it becomes visible and stay in the active color until the user clicks
+  // on the button.
+  bool is_active_ = true;
   base::ScopedObservation<views::Widget, views::WidgetObserver>
       scoped_widget_observation_{this};
 };

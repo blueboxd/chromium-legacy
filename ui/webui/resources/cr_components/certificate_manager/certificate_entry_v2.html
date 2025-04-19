@@ -1,11 +1,17 @@
 <style include="cr-shared-style cr-icons">
   .cert-row {
     display: flex;
+    border-top: none;
+    overflow-wrap: anywhere;
+    padding-top: 10px;
+    padding-bottom: 10px;
   }
 
   .cert-hash {
     --cr-input-error-display: none;
     margin-left: auto;
+    min-width: 20em;
+    max-width: 20em;
   }
 </style>
 
@@ -14,11 +20,13 @@
   <cr-input id="certhash" class="input-field cert-hash"
       value="[[sha256hashHex]]" readonly>
     <cr-icon-button id="copy" class="icon-copy-content"
-        slot="inline-suffix" aria-label="Copy hash to clipboard"
+        slot="inline-suffix"
+        aria-label="[[i18n('certificateManagerV2CertHashCopyAriaLabel', displayName)]]"
         on-click="onCopyHash_">
     </cr-icon-button>
   </cr-input>
   <cr-icon-button id="view" class="icon-visibility"
+      aria-label="[[i18n('certificateManagerV2CertEntryViewAriaLabel', displayName)]]"
       on-click="onViewCertificate_" aria-label="View certificate details">
   </cr-icon-button>
 </div>

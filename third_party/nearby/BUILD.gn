@@ -21,11 +21,18 @@ config("nearby_include_config") {
 
     # For bloom filter.
     "//third_party/smhasher",
+
+    # For beto-core apis
+    "//third_party/beto-core/src/nearby/presence/np_cpp_ffi/include",
+    "//third_party/beto-core/src/nearby/presence/np_c_ffi/include/cpp",
   ]
 }
 
 config("nearby_defines") {
-  defines = [ "NEARBY_CHROMIUM=1" ]
+  defines = [
+    "NEARBY_CHROMIUM=1",
+    "USE_RUST_DECODER=1",
+  ]
 }
 
 ###############################################################################
@@ -289,11 +296,13 @@ source_set("connections_implementation_mediums") {
     "src/connections/implementation/mediums/ble_v2/bloom_filter.cc",
     "src/connections/implementation/mediums/ble_v2/discovered_peripheral_tracker.cc",
     "src/connections/implementation/mediums/ble_v2/instant_on_lost_advertisement.cc",
+    "src/connections/implementation/mediums/ble_v2/instant_on_lost_manager.cc",
     "src/connections/implementation/mediums/bluetooth_classic.cc",
     "src/connections/implementation/mediums/bluetooth_radio.cc",
     "src/connections/implementation/mediums/mediums.cc",
     "src/connections/implementation/mediums/multiplex/multiplex_frames.cc",
     "src/connections/implementation/mediums/multiplex/multiplex_output_stream.cc",
+    "src/connections/implementation/mediums/multiplex/multiplex_socket.cc",
     "src/connections/implementation/mediums/webrtc.cc",
     "src/connections/implementation/mediums/wifi_direct.cc",
     "src/connections/implementation/mediums/wifi_hotspot.cc",
@@ -311,12 +320,14 @@ source_set("connections_implementation_mediums") {
     "src/connections/implementation/mediums/ble_v2/discovered_peripheral_callback.h",
     "src/connections/implementation/mediums/ble_v2/discovered_peripheral_tracker.h",
     "src/connections/implementation/mediums/ble_v2/instant_on_lost_advertisement.h",
+    "src/connections/implementation/mediums/ble_v2/instant_on_lost_manager.h",
     "src/connections/implementation/mediums/bluetooth_classic.h",
     "src/connections/implementation/mediums/bluetooth_radio.h",
     "src/connections/implementation/mediums/lost_entity_tracker.h",
     "src/connections/implementation/mediums/mediums.h",
     "src/connections/implementation/mediums/multiplex/multiplex_frames.h",
     "src/connections/implementation/mediums/multiplex/multiplex_output_stream.h",
+    "src/connections/implementation/mediums/multiplex/multiplex_socket.h",
     "src/connections/implementation/mediums/webrtc.h",
     "src/connections/implementation/mediums/wifi_direct.h",
     "src/connections/implementation/mediums/wifi_hotspot.h",
@@ -328,6 +339,7 @@ source_set("connections_implementation_mediums") {
     ":connections_implementation_mediums_webrtc",
     ":connections_types",
     ":multiplex_frames_proto",
+    ":platform_api_types",
     ":platform_base",
     ":platform_base_cancellation_flag",
     ":platform_base_util",
@@ -811,6 +823,7 @@ source_set("platform_public_types") {
     ":nearby_defines",
   ]
   sources = [
+    "src/internal/platform/blocking_queue_stream.cc",
     "src/internal/platform/monitored_runnable.cc",
     "src/internal/platform/pending_job_registry.cc",
     "src/internal/platform/pipe.cc",
@@ -818,6 +831,7 @@ source_set("platform_public_types") {
   public = [
     "src/internal/platform/atomic_boolean.h",
     "src/internal/platform/atomic_reference.h",
+    "src/internal/platform/blocking_queue_stream.h",
     "src/internal/platform/borrowable.h",
     "src/internal/platform/cancelable.h",
     "src/internal/platform/cancelable_alarm.h",
@@ -1018,7 +1032,7 @@ source_set("presence_internal") {
   ]
   sources = [
     "src/presence/implementation/action_factory.cc",
-    "src/presence/implementation/advertisement_decoder_impl.cc",
+    "src/presence/implementation/advertisement_decoder_rust_impl.cc",
     "src/presence/implementation/advertisement_factory.cc",
     "src/presence/implementation/advertisement_filter.cc",
     "src/presence/implementation/base_broadcast_request.cc",
@@ -1032,7 +1046,7 @@ source_set("presence_internal") {
   public = [
     "src/presence/implementation/action_factory.h",
     "src/presence/implementation/advertisement_decoder.h",
-    "src/presence/implementation/advertisement_decoder_impl.h",
+    "src/presence/implementation/advertisement_decoder_rust_impl.h",
     "src/presence/implementation/advertisement_factory.h",
     "src/presence/implementation/advertisement_filter.h",
     "src/presence/implementation/base_broadcast_request.h",
@@ -1061,6 +1075,7 @@ source_set("presence_internal") {
     "//crypto:crypto",
     "//third_party/abseil-cpp:absl",
     "//third_party/beto-core:ldt_np_adv_ffi",
+    "//third_party/beto-core:np_cpp_ffi",
     "//third_party/boringssl:boringssl",
   ]
   configs -= [ "//build/config/compiler:chromium_code" ]

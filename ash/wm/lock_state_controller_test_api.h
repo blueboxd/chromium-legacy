@@ -8,6 +8,10 @@
 #include "ash/wm/lock_state_controller.h"
 #include "base/memory/raw_ptr.h"
 
+namespace ui {
+class Layer;
+}  // namespace ui
+
 namespace ash {
 
 // Helper class used by tests to access LockStateController's internal state.
@@ -29,7 +33,7 @@ class LockStateControllerTestApi {
     return controller_->cancelable_shutdown_timer_.IsRunning();
   }
   bool real_shutdown_timer_is_running() const {
-    return controller_->real_shutdown_timer_.IsRunning();
+    return controller_->session_state_change_timer_.IsRunning();
   }
   bool is_animating_lock() const { return controller_->animating_lock_; }
 
@@ -37,11 +41,12 @@ class LockStateControllerTestApi {
     controller_->cancelable_shutdown_timer_.FireNow();
   }
   void trigger_real_shutdown_timeout() {
-    controller_->real_shutdown_timer_.FireNow();
+    controller_->session_state_change_timer_.FireNow();
   }
 
-  void set_pine_image_callback(base::OnceClosure callback) {
-    controller_->pine_image_callback_for_test_ = std::move(callback);
+  void set_informed_restore_image_callback(base::OnceClosure callback) {
+    controller_->informed_restore_image_callback_for_test_ =
+        std::move(callback);
   }
 
   void disable_screenshot_timeout_for_test(bool value) {
@@ -52,8 +57,12 @@ class LockStateControllerTestApi {
     controller_->take_screenshot_fail_timer_.FireNow();
   }
 
+  const ui::Layer* mirror_wallpaper_layer() const {
+    return controller_->mirror_wallpaper_layer_.get();
+  }
+
  private:
-  raw_ptr<LockStateController, DanglingUntriaged> controller_;  // not owned
+  raw_ptr<LockStateController> controller_;  // not owned
 };
 
 }  // namespace ash

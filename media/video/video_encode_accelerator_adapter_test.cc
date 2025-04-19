@@ -19,6 +19,7 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/viz/test/test_context_provider.h"
 #include "media/base/bitrate.h"
 #include "media/base/media_util.h"
 #include "media/base/video_frame.h"
@@ -52,8 +53,10 @@ class VideoEncodeAcceleratorAdapterTest
     vea_runner_ = base::ThreadPool::CreateSequencedTaskRunner({});
 
     vea_ = new FakeVideoEncodeAccelerator(vea_runner_);
+    sii_ = base::MakeRefCounted<gpu::TestSharedImageInterface>();
+    sii_->UseTestGMBInSharedImageCreationWithBufferUsage();
     gpu_factories_ =
-        std::make_unique<MockGpuVideoAcceleratorFactories>(nullptr);
+        std::make_unique<MockGpuVideoAcceleratorFactories>(sii_.get());
     supported_profiles_ = {
         VideoEncodeAccelerator::SupportedProfile(
             profile_,
@@ -104,12 +107,8 @@ class VideoEncodeAcceleratorAdapterTest
            gmb->stride(1) * gmb_size.height() / 2);
     gmb->Unmap();
 
-    scoped_refptr<gpu::ClientSharedImage>
-        empty_shared_images[media::VideoFrame::kMaxPlanes];
     auto frame = VideoFrame::WrapExternalGpuMemoryBuffer(
-        gfx::Rect(gmb_size), size, std::move(gmb), empty_shared_images,
-        gpu::SyncToken(), /*texture_target=*/0, base::NullCallback(),
-        timestamp);
+        gfx::Rect(gmb_size), size, std::move(gmb), timestamp);
     frame->set_color_space(kYUVColorSpace);
     return frame;
   }
@@ -219,6 +218,7 @@ class VideoEncodeAcceleratorAdapterTest
   base::test::TaskEnvironment task_environment_;
   raw_ptr<FakeVideoEncodeAccelerator, AcrossTasksDanglingUntriaged>
       vea_;  // owned by |vae_adapter_|
+  scoped_refptr<gpu::TestSharedImageInterface> sii_;
   std::unique_ptr<MockGpuVideoAcceleratorFactories> gpu_factories_;
   std::unique_ptr<VideoEncodeAcceleratorAdapter> vae_adapter_;
   scoped_refptr<base::SequencedTaskRunner> vea_runner_;
@@ -609,7 +609,7 @@ TEST_F(VideoEncodeAcceleratorAdapterTest, DroppedFrame) {
   VideoEncoder::OutputCB output_cb = base::BindLambdaForTesting(
       [&](VideoEncoderOutput output,
           std::optional<VideoEncoder::CodecDescription>) {
-        if (output.size == 0) {
+        if (output.data.empty()) {
           dropped_output_timestamps.push_back(output.timestamp);
           return;
         }

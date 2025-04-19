@@ -23,14 +23,11 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.util.DisplayMetrics;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.ViewStub;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -38,7 +35,6 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.Features;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
@@ -66,7 +62,7 @@ public class MostVisitedMediatorUnitTest {
     @Mock Configuration mConfiguration;
     @Mock UiConfig mUiConfig;
     @Mock DisplayMetrics mDisplayMetrics;
-    @Mock ViewGroup mMvTilesLayout;
+    @Mock MostVisitedTilesLayout mMvTilesLayout;
     @Mock ViewStub mNoMvPlaceholderStub;
     @Mock View mNoMvPlaceholder;
     @Mock Tile mTile;
@@ -85,8 +81,6 @@ public class MostVisitedMediatorUnitTest {
     private FakeMostVisitedSites mMostVisitedSites;
     private PropertyModel mModel;
     private MostVisitedTilesMediator mMediator;
-
-    @Rule public TestRule mProcessor = new Features.JUnitProcessor();
 
     @Before
     public void setUp() {
@@ -294,16 +288,16 @@ public class MostVisitedMediatorUnitTest {
 
         mMediator.destroy();
 
-        verify((MostVisitedTilesCarouselLayout) mMvTilesLayout).destroy();
+        verify(mMvTilesLayout).destroy();
         verify(mTemplateUrlService).removeObserver(mMediator);
     }
 
     @Test
-    public void testUpdateTilesViewForCarouselLayout_Tablet() {
+    public void testUpdateTilesView_Tablet() {
         int expectedTileViewEdgePadding =
-                mResources.getDimensionPixelSize(R.dimen.tile_view_padding_edge_tablet_polish);
+                mResources.getDimensionPixelSize(R.dimen.tile_view_padding_edge_tablet);
         int expectedTileViewIntervalPadding =
-                mResources.getDimensionPixelSize(R.dimen.tile_view_padding_interval_tablet_polish);
+                mResources.getDimensionPixelSize(R.dimen.tile_view_padding_interval_tablet);
         mConfiguration.orientation = Configuration.ORIENTATION_PORTRAIT;
         createMediator(/* isTablet= */ true);
         mMediator.onTileDataChanged();
@@ -330,7 +324,7 @@ public class MostVisitedMediatorUnitTest {
     }
 
     @Test
-    public void testUpdateTilesViewForCarouselLayout_Phone() {
+    public void testUpdateTilesView_Phone() {
         mConfiguration.orientation = Configuration.ORIENTATION_PORTRAIT;
         createMediator(/* isTablet= */ false);
         mMediator.onTileDataChanged();
@@ -354,7 +348,7 @@ public class MostVisitedMediatorUnitTest {
     }
 
     private void createMediator(boolean isTablet) {
-        mMvTilesLayout = Mockito.mock(MostVisitedTilesCarouselLayout.class);
+        mMvTilesLayout = Mockito.mock(MostVisitedTilesLayout.class);
 
         mMvTilesLayout.addView(mTileView);
         when(mMvTilesLayout.getChildCount()).thenReturn(1);
@@ -369,7 +363,6 @@ public class MostVisitedMediatorUnitTest {
                         mNoMvPlaceholderStub,
                         mTileRenderer,
                         mModel,
-                        /* isScrollableMVTEnabled= */ true,
                         isTablet,
                         mSnapshotTileGridChangedRunnable,
                         mTileCountChangedRunnable);

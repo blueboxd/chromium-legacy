@@ -30,6 +30,8 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "cc/trees/render_frame_metadata.h"
+#include "components/input/input_router.h"
+#include "components/input/mouse_wheel_event_queue.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/surfaces/child_local_surface_id_allocator.h"
@@ -56,8 +58,6 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view_aura.h"
 #include "content/common/features.h"
-#include "content/common/input/input_router.h"
-#include "content/common/input/mouse_wheel_event_queue.h"
 #include "content/public/browser/context_menu_params.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -330,7 +330,9 @@ class FullscreenLayoutManager : public aura::LayoutManager {
 
 class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
  public:
-  ~MockRenderWidgetHostImpl() override {}
+  using RenderWidgetHostImpl::render_input_router_;
+
+  ~MockRenderWidgetHostImpl() override = default;
 
   // Extracts |latency_info| for wheel event, and stores it in
   // |last_wheel_or_touch_event_latency_info_|.
@@ -339,31 +341,8 @@ class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
       const ui::LatencyInfo& ui_latency) override {
     RenderWidgetHostImpl::ForwardWheelEventWithLatencyInfo(wheel_event,
                                                            ui_latency);
-    last_wheel_or_touch_event_latency_info_ = ui::LatencyInfo(ui_latency);
-  }
-
-  // Extracts |latency_info| for touch event, and stores it in
-  // |last_wheel_or_touch_event_latency_info_|.
-  void ForwardTouchEventWithLatencyInfo(
-      const blink::WebTouchEvent& touch_event,
-      const ui::LatencyInfo& ui_latency) override {
-    RenderWidgetHostImpl::ForwardTouchEventWithLatencyInfo(touch_event,
-                                                           ui_latency);
-    last_wheel_or_touch_event_latency_info_ = ui::LatencyInfo(ui_latency);
-  }
-
-  void ForwardGestureEventWithLatencyInfo(
-      const blink::WebGestureEvent& gesture_event,
-      const ui::LatencyInfo& ui_latency) override {
-    RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(gesture_event,
-                                                             ui_latency);
-    last_forwarded_gesture_event_ = gesture_event;
-  }
-
-  std::optional<WebGestureEvent> GetAndResetLastForwardedGestureEvent() {
-    std::optional<WebGestureEvent> ret;
-    last_forwarded_gesture_event_.swap(ret);
-    return ret;
+    GetMockRenderInputRouter()->SetLastWheelOrTouchEventLatencyInfo(
+        ui::LatencyInfo(ui_latency));
   }
 
   void ClearVisualProperties() {
@@ -398,11 +377,15 @@ class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
   }
 
   MockWidgetInputHandler* input_handler() {
-    return mock_render_input_router_->mock_widget_input_handler_.get();
+    return GetMockRenderInputRouter()->mock_widget_input_handler_.get();
   }
 
-  RenderInputRouter* GetRenderInputRouter() override {
-    return mock_render_input_router_.get();
+  MockRenderInputRouter* GetMockRenderInputRouter() {
+    return static_cast<MockRenderInputRouter*>(render_input_router_.get());
+  }
+
+  input::RenderInputRouter* GetRenderInputRouter() override {
+    return render_input_router_.get();
   }
 
   void reset_new_content_rendering_timeout_fired() {
@@ -415,10 +398,6 @@ class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
 
   void SetTouchActionFromMain(cc::TouchAction touch_action) {
     widget_.SetTouchActionFromMain(touch_action);
-  }
-
-  const ui::LatencyInfo& LastWheelOrTouchEventLatencyInfo() const {
-    return last_wheel_or_touch_event_latency_info_;
   }
 
  private:
@@ -448,18 +427,15 @@ class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
   }
 
   void SetupMockRenderInputRouter() {
-    mock_render_input_router_.reset();
-    mock_render_input_router_ = std::make_unique<MockRenderInputRouter>(
-        this, this, MakeFlingScheduler(), this,
+    render_input_router_.reset();
+    render_input_router_ = std::make_unique<MockRenderInputRouter>(
+        this, MakeFlingScheduler(), this,
         base::SingleThreadTaskRunner::GetCurrentDefault());
     SetupInputRouter();
   }
 
-  ui::LatencyInfo last_wheel_or_touch_event_latency_info_;
   bool new_content_rendering_timeout_fired_ = false;
   MockWidget widget_;
-  std::unique_ptr<MockRenderInputRouter> mock_render_input_router_;
-  std::optional<WebGestureEvent> last_forwarded_gesture_event_;
 };
 
 class TestScopedKeyboardHook : public aura::ScopedKeyboardHook {
@@ -922,7 +898,8 @@ class RenderWidgetHostViewAuraOverscrollTest
   void SimulateGestureEventCoreWithLatencyInfo(
       const WebGestureEvent& gesture_event,
       const ui::LatencyInfo& ui_latency) {
-    widget_host_->ForwardGestureEventWithLatencyInfo(gesture_event, ui_latency);
+    widget_host_->GetRenderInputRouter()->ForwardGestureEventWithLatencyInfo(
+        gesture_event, ui_latency);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -1004,8 +981,8 @@ class RenderWidgetHostViewAuraOverscrollTest
 
   uint32_t SendTouchEvent() {
     uint32_t touch_event_id = touch_event_.unique_touch_event_id;
-    widget_host_->ForwardTouchEventWithLatencyInfo(touch_event_,
-                                                   ui::LatencyInfo());
+    widget_host_->GetMockRenderInputRouter()->ForwardTouchEventWithLatencyInfo(
+        touch_event_, ui::LatencyInfo());
     touch_event_.ResetPoints();
     base::RunLoop().RunUntilIdle();
     return touch_event_id;
@@ -1406,9 +1383,9 @@ TEST_F(RenderWidgetHostViewAuraTest, FinishCompositionByMouse) {
   EXPECT_EQ("SetComposition", GetMessageNames(GetAndResetDispatchedMessages()));
 
   // Simulates the mouse press.
-  ui::MouseEvent mouse_event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-                             ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
-                             0);
+  ui::MouseEvent mouse_event(ui::EventType::kMousePressed, gfx::Point(),
+                             gfx::Point(), ui::EventTimeForNow(),
+                             ui::EF_LEFT_MOUSE_BUTTON, 0);
   view_->OnMouseEvent(&mouse_event);
   base::RunLoop().RunUntilIdle();
 
@@ -1469,13 +1446,13 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
       HasTouchEventHandlers(false), HasHitTestableScrollbar(false));
   widget_host_->SetHasTouchEventConsumers(std::move(touch_event_consumers));
 
-  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(30, 30),
+  ui::TouchEvent press(ui::EventType::kTouchPressed, gfx::Point(30, 30),
                        ui::EventTimeForNow(),
                        ui::PointerDetails(ui::EventPointerType::kTouch, 0));
-  ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(20, 20),
+  ui::TouchEvent move(ui::EventType::kTouchMoved, gfx::Point(20, 20),
                       ui::EventTimeForNow(),
                       ui::PointerDetails(ui::EventPointerType::kTouch, 0));
-  ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(20, 20),
+  ui::TouchEvent release(ui::EventType::kTouchReleased, gfx::Point(20, 20),
                          ui::EventTimeForNow(),
                          ui::PointerDetails(ui::EventPointerType::kTouch, 0));
 
@@ -1549,7 +1526,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
   events = GetAndResetDispatchedMessages();
   EXPECT_EQ(0U, events.size());
 
-  ui::TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::Point(20, 20),
+  ui::TouchEvent move2(ui::EventType::kTouchMoved, gfx::Point(20, 20),
                        base::TimeTicks::Now(),
                        ui::PointerDetails(ui::EventPointerType::kTouch, 0));
   view_->OnTouchEvent(&move2);
@@ -1558,7 +1535,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
   EXPECT_EQ(ui::MotionEvent::Action::MOVE, pointer_state().GetAction());
   EXPECT_EQ(1U, pointer_state().GetPointerCount());
 
-  ui::TouchEvent release2(ui::ET_TOUCH_RELEASED, gfx::Point(20, 20),
+  ui::TouchEvent release2(ui::EventType::kTouchReleased, gfx::Point(20, 20),
                           base::TimeTicks::Now(),
                           ui::PointerDetails(ui::EventPointerType::kTouch, 0));
   view_->OnTouchEvent(&release2);
@@ -1580,11 +1557,11 @@ TEST_F(RenderWidgetHostViewAuraTest,
   view_->event_handler()->scoped_keyboard_hook_ = std::move(test_hook);
 
   // This locked key will skip the prehandler and be sent to the input handler.
-  ui::KeyEvent key_event1(ui::ET_KEY_PRESSED,
+  ui::KeyEvent key_event1(ui::EventType::kKeyPressed,
                           ui::DomCodeToUsLayoutKeyboardCode(ui::DomCode::US_A),
                           ui::DomCode::US_A, ui::EF_NONE);
   view_->OnKeyEvent(&key_event1);
-  const NativeWebKeyboardEvent* event1 =
+  const input::NativeWebKeyboardEvent* event1 =
       render_widget_host_delegate()->last_event();
   ASSERT_FALSE(event1);
   // Run the runloop to ensure input messages are dispatched.  Otherwise the
@@ -1605,11 +1582,11 @@ TEST_F(RenderWidgetHostViewAuraTest,
       ui::DomCode::US_B,     ui::DomCode::US_Z,  ui::DomCode::TAB,
       ui::DomCode::ALT_LEFT, ui::DomCode::ENTER, ui::DomCode::ESCAPE};
   for (ui::DomCode dom_code : dom_codes) {
-    ui::KeyEvent key_event(ui::ET_KEY_PRESSED,
+    ui::KeyEvent key_event(ui::EventType::kKeyPressed,
                            ui::DomCodeToUsLayoutKeyboardCode(dom_code),
                            dom_code, ui::EF_NONE);
     view_->OnKeyEvent(&key_event);
-    const NativeWebKeyboardEvent* event =
+    const input::NativeWebKeyboardEvent* event =
         render_widget_host_delegate()->last_event();
     ASSERT_TRUE(event) << "Failed for DomCode: "
                        << ui::KeycodeConverter::DomCodeToCodeString(dom_code);
@@ -1631,11 +1608,11 @@ TEST_F(RenderWidgetHostViewAuraTest,
   // Although this key was locked, it will still pass through the prehandler as
   // we do not want to prevent ESC from being used to exit fullscreen.
   ui::KeyEvent key_event1(
-      ui::ET_KEY_PRESSED,
+      ui::EventType::kKeyPressed,
       ui::DomCodeToUsLayoutKeyboardCode(ui::DomCode::ESCAPE),
       ui::DomCode::ESCAPE, ui::EF_NONE);
   view_->OnKeyEvent(&key_event1);
-  const NativeWebKeyboardEvent* event1 =
+  const input::NativeWebKeyboardEvent* event1 =
       render_widget_host_delegate()->last_event();
   ASSERT_TRUE(event1);
   ASSERT_EQ(key_event1.key_code(), event1->windows_key_code);
@@ -1643,11 +1620,11 @@ TEST_F(RenderWidgetHostViewAuraTest,
             event1->native_key_code);
 
   // This event will pass through the prehandler since it isn't locked.
-  ui::KeyEvent key_event2(ui::ET_KEY_PRESSED,
+  ui::KeyEvent key_event2(ui::EventType::kKeyPressed,
                           ui::DomCodeToUsLayoutKeyboardCode(ui::DomCode::US_B),
                           ui::DomCode::US_B, ui::EF_NONE);
   view_->OnKeyEvent(&key_event2);
-  const NativeWebKeyboardEvent* event2 =
+  const input::NativeWebKeyboardEvent* event2 =
       render_widget_host_delegate()->last_event();
   ASSERT_TRUE(event2);
   ASSERT_EQ(key_event2.key_code(), event2->windows_key_code);
@@ -1669,11 +1646,11 @@ TEST_F(RenderWidgetHostViewAuraTest,
                                         ui::DomCode::TAB, ui::DomCode::ALT_LEFT,
                                         ui::DomCode::ENTER};
   for (ui::DomCode dom_code : dom_codes) {
-    ui::KeyEvent key_event(ui::ET_KEY_PRESSED,
+    ui::KeyEvent key_event(ui::EventType::kKeyPressed,
                            ui::DomCodeToUsLayoutKeyboardCode(dom_code),
                            dom_code, ui::EF_NONE);
     view_->OnKeyEvent(&key_event);
-    const NativeWebKeyboardEvent* event =
+    const input::NativeWebKeyboardEvent* event =
         render_widget_host_delegate()->last_event();
     ASSERT_FALSE(event) << "Failed for DomCode: "
                         << ui::KeycodeConverter::DomCodeToCodeString(dom_code);
@@ -1698,11 +1675,11 @@ TEST_F(RenderWidgetHostViewAuraTest,
   // Although this key was locked, it will still pass through the prehandler as
   // we do not want to prevent ESC from being used to exit fullscreen.
   ui::KeyEvent esc_key_event(
-      ui::ET_KEY_PRESSED,
+      ui::EventType::kKeyPressed,
       ui::DomCodeToUsLayoutKeyboardCode(ui::DomCode::ESCAPE),
       ui::DomCode::ESCAPE, ui::EF_NONE);
   view_->OnKeyEvent(&esc_key_event);
-  const NativeWebKeyboardEvent* esc_event =
+  const input::NativeWebKeyboardEvent* esc_event =
       render_widget_host_delegate()->last_event();
   ASSERT_TRUE(esc_event);
   ASSERT_EQ(esc_key_event.key_code(), esc_event->windows_key_code);
@@ -1741,16 +1718,17 @@ TEST_F(RenderWidgetHostViewAuraTest,
       ui::DomCode::US_A,     ui::DomCode::ENTER, ui::DomCode::TAB,
       ui::DomCode::ALT_LEFT, ui::DomCode::US_Z,  ui::DomCode::ESCAPE};
   for (ui::DomCode dom_code : dom_codes) {
-    ui::KeyEvent key_event(ui::ET_KEY_PRESSED,
+    ui::KeyEvent key_event(ui::EventType::kKeyPressed,
                            ui::DomCodeToUsLayoutKeyboardCode(dom_code),
                            dom_code, ui::EF_NONE);
     parent_view_->OnKeyEvent(&key_event);
-    const NativeWebKeyboardEvent* parent_event = delegates_[0]->last_event();
+    const input::NativeWebKeyboardEvent* parent_event =
+        delegates_[0]->last_event();
     ASSERT_FALSE(parent_event)
         << "Failed for DomCode: "
         << ui::KeycodeConverter::DomCodeToCodeString(dom_code);
 
-    const NativeWebKeyboardEvent* child_event =
+    const input::NativeWebKeyboardEvent* child_event =
         render_widget_host_delegate()->last_event();
     ASSERT_TRUE(child_event)
         << "Failed for DomCode: "
@@ -1832,7 +1810,7 @@ void RenderWidgetHostViewAuraTest::RunTimerBasedWheelEventPhaseInfoTest(
 
   // Send a ui::ScrollEvent instead of ui::MouseWheel event, the timer based
   // phase info doesn't differentiate between the two types of events.
-  ui::ScrollEvent scroll1(ui::ET_SCROLL, gfx::Point(2, 2),
+  ui::ScrollEvent scroll1(ui::EventType::kScroll, gfx::Point(2, 2),
                           ui::EventTimeForNow(), 0, 0, 2, 0, 2, 2);
   view_->OnScrollEvent(&scroll1);
   base::RunLoop().RunUntilIdle();
@@ -2121,12 +2099,13 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchpadFlingStartResetsWheelPhaseState) {
       TestTimeouts::action_max_timeout());
 
   // When the user puts their fingers down a GFC is receieved.
-  ui::ScrollEvent fling_cancel(ui::ET_SCROLL_FLING_CANCEL, gfx::Point(2, 2),
-                               ui::EventTimeForNow(), 0, 0, 0, 0, 0, 2);
+  ui::ScrollEvent fling_cancel(ui::EventType::kScrollFlingCancel,
+                               gfx::Point(2, 2), ui::EventTimeForNow(), 0, 0, 0,
+                               0, 0, 2);
   view_->OnScrollEvent(&fling_cancel);
 
   // Scrolling starts.
-  ui::ScrollEvent scroll0(ui::ET_SCROLL, gfx::Point(2, 2),
+  ui::ScrollEvent scroll0(ui::EventType::kScroll, gfx::Point(2, 2),
                           ui::EventTimeForNow(), 0, 0, 5, 0, 5, 2);
   view_->OnScrollEvent(&scroll0);
   base::RunLoop().RunUntilIdle();
@@ -2164,7 +2143,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchpadFlingStartResetsWheelPhaseState) {
   base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(), base::Milliseconds(200));
   run_loop.Run();
-  ui::ScrollEvent scroll1(ui::ET_SCROLL, gfx::Point(2, 2),
+  ui::ScrollEvent scroll1(ui::EventType::kScroll, gfx::Point(2, 2),
                           ui::EventTimeForNow(), 0, 0, 15, 0, 15, 2);
   view_->OnScrollEvent(&scroll1);
   base::RunLoop().RunUntilIdle();
@@ -2187,8 +2166,9 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchpadFlingStartResetsWheelPhaseState) {
   // reset the scroll state of the wheel phase handler. The velocity should be
   // big enough to make sure that fling is still active while sending the scroll
   // event.
-  ui::ScrollEvent fling_start(ui::ET_SCROLL_FLING_START, gfx::Point(2, 2),
-                              ui::EventTimeForNow(), 0, 0, 1000, 0, 1000, 2);
+  ui::ScrollEvent fling_start(ui::EventType::kScrollFlingStart,
+                              gfx::Point(2, 2), ui::EventTimeForNow(), 0, 0,
+                              1000, 0, 1000, 2);
   view_->OnScrollEvent(&fling_start);
   base::RunLoop().RunUntilIdle();
 
@@ -2201,11 +2181,11 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchpadFlingStartResetsWheelPhaseState) {
   if (progress_event_sent)
     EXPECT_EQ("MouseWheel GestureScrollUpdate", GetMessageNames(events));
 
-  // Handling the next ui::ET_SCROLL event will generate a GFC which resets the
-  // phase state. The fling controller processes GFC and generates a wheel event
-  // with momentum_phase == kPhaseEnded. The mouse wheel created from scroll2
-  // will have phase == kPhaseBegan.
-  ui::ScrollEvent scroll2(ui::ET_SCROLL, gfx::Point(2, 2),
+  // Handling the next ui::EventType::kScroll event will generate a GFC which
+  // resets the phase state. The fling controller processes GFC and generates a
+  // wheel event with momentum_phase == kPhaseEnded. The mouse wheel created
+  // from scroll2 will have phase == kPhaseBegan.
+  ui::ScrollEvent scroll2(ui::EventType::kScroll, gfx::Point(2, 2),
                           ui::EventTimeForNow(), 0, 0, 15, 0, 15, 2);
   view_->OnScrollEvent(&scroll2);
   base::RunLoop().RunUntilIdle();
@@ -2238,8 +2218,9 @@ TEST_F(RenderWidgetHostViewAuraTest, MouseWheelScrollingAfterGFCWithoutGFS) {
   EXPECT_EQ(
       content::TOUCHPAD_SCROLL_STATE_UNKNOWN,
       GetMouseWheelPhaseHandler()->touchpad_scroll_phase_state_for_test());
-  ui::ScrollEvent fling_cancel(ui::ET_SCROLL_FLING_CANCEL, gfx::Point(2, 2),
-                               ui::EventTimeForNow(), 0, 0, 0, 0, 0, 2);
+  ui::ScrollEvent fling_cancel(ui::EventType::kScrollFlingCancel,
+                               gfx::Point(2, 2), ui::EventTimeForNow(), 0, 0, 0,
+                               0, 0, 2);
   view_->OnScrollEvent(&fling_cancel);
   GetAndResetDispatchedMessages();
   EXPECT_EQ(
@@ -2288,12 +2269,13 @@ TEST_F(RenderWidgetHostViewAuraTest,
   sink_->ClearMessages();
 
   // When the user puts their fingers down a GFC is receieved.
-  ui::ScrollEvent fling_cancel(ui::ET_SCROLL_FLING_CANCEL, gfx::Point(2, 2),
-                               ui::EventTimeForNow(), 0, 0, 0, 0, 0, 2);
+  ui::ScrollEvent fling_cancel(ui::EventType::kScrollFlingCancel,
+                               gfx::Point(2, 2), ui::EventTimeForNow(), 0, 0, 0,
+                               0, 0, 2);
   view_->OnScrollEvent(&fling_cancel);
 
-  // Start touchpad scrolling by sending a ui::ET_SCROLL event.
-  ui::ScrollEvent scroll0(ui::ET_SCROLL, gfx::Point(2, 2),
+  // Start touchpad scrolling by sending a ui::EventType::kScroll event.
+  ui::ScrollEvent scroll0(ui::EventType::kScroll, gfx::Point(2, 2),
                           ui::EventTimeForNow(), 0, 0, 5, 0, 5, 2);
   view_->OnScrollEvent(&scroll0);
   base::RunLoop().RunUntilIdle();
@@ -2327,8 +2309,8 @@ TEST_F(RenderWidgetHostViewAuraTest,
   events[1]->ToEvent()->CallCallback(
       blink::mojom::InputEventResultState::kConsumed);
 
-  // Start mouse wheel scrolling by sending a ui::ET_MOUSEWHEEL event. This
-  // should end the touchpad scrolling sequence and start a new timer-based
+  // Start mouse wheel scrolling by sending a ui::EventType::kMousewheel event.
+  // This should end the touchpad scrolling sequence and start a new timer-based
   // wheel scrolling sequence.
   ui::MouseWheelEvent wheel(gfx::Vector2d(0, 5), gfx::Point(2, 2),
                             gfx::Point(2, 2), ui::EventTimeForNow(), 0, 0);
@@ -2358,7 +2340,7 @@ TEST_F(RenderWidgetHostViewAuraTest,
   view_->event_handler()->set_mouse_wheel_wheel_phase_handler_timeout(
       TestTimeouts::action_max_timeout());
 
-  ui::ScrollEvent scroll0(ui::ET_SCROLL, gfx::Point(2, 2),
+  ui::ScrollEvent scroll0(ui::EventType::kScroll, gfx::Point(2, 2),
                           ui::EventTimeForNow(), 0, 0, 5, 0, 5, 2);
   view_->OnScrollEvent(&scroll0);
   base::RunLoop().RunUntilIdle();
@@ -2386,7 +2368,8 @@ TEST_F(RenderWidgetHostViewAuraTest,
   events[1]->ToEvent()->CallCallback(
       blink::mojom::InputEventResultState::kConsumed);
 
-  ui::GestureEventDetails gesture_tap_down_details(ui::ET_GESTURE_TAP_DOWN);
+  ui::GestureEventDetails gesture_tap_down_details(
+      ui::EventType::kGestureTapDown);
   gesture_tap_down_details.set_is_source_touch_event_set_blocking(true);
   gesture_tap_down_details.set_device_type(
       ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
@@ -2396,7 +2379,7 @@ TEST_F(RenderWidgetHostViewAuraTest,
   base::RunLoop().RunUntilIdle();
   events = GetAndResetDispatchedMessages();
 
-  ui::GestureEventDetails event_details(ui::ET_GESTURE_SCROLL_BEGIN);
+  ui::GestureEventDetails event_details(ui::EventType::kGestureScrollBegin);
   event_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
   ui::GestureEvent scroll_begin(2, 2, 0, ui::EventTimeForNow(), event_details);
   view_->OnGestureEvent(&scroll_begin);
@@ -2427,7 +2410,7 @@ TEST_F(RenderWidgetHostViewAuraTest,
 
 TEST_F(RenderWidgetHostViewAuraTest,
        SyntheticFlingCancelAtTouchpadScrollBegin) {
-  ui::ScrollEvent scroll_event(ui::ET_SCROLL, gfx::Point(2, 2),
+  ui::ScrollEvent scroll_event(ui::EventType::kScroll, gfx::Point(2, 2),
                                ui::EventTimeForNow(), 0, 0, 5, 0, 5, 2);
 
   // Send the beginning scroll event. This should generate a synthetic fling
@@ -2435,7 +2418,8 @@ TEST_F(RenderWidgetHostViewAuraTest,
   view_->OnScrollEvent(&scroll_event);
   base::RunLoop().RunUntilIdle();
   std::optional<WebGestureEvent> last_gesture =
-      widget_host_->GetAndResetLastForwardedGestureEvent();
+      widget_host_->GetMockRenderInputRouter()
+          ->GetAndResetLastForwardedGestureEvent();
   ASSERT_TRUE(last_gesture);
   EXPECT_EQ(WebInputEvent::Type::kGestureFlingCancel, last_gesture->GetType());
 
@@ -2453,7 +2437,8 @@ TEST_F(RenderWidgetHostViewAuraTest,
   // this sequence, so we should not generate another.
   view_->OnScrollEvent(&scroll_event);
   base::RunLoop().RunUntilIdle();
-  last_gesture = widget_host_->GetAndResetLastForwardedGestureEvent();
+  last_gesture = widget_host_->GetMockRenderInputRouter()
+                     ->GetAndResetLastForwardedGestureEvent();
   EXPECT_FALSE(last_gesture);
 
   dispatched_events = GetAndResetDispatchedMessages();
@@ -2472,12 +2457,13 @@ TEST_F(RenderWidgetHostViewAuraTest, MultiTouchPointsStates) {
   view_->Show();
   view_->UseFakeDispatcher();
 
-  ui::TouchEvent press0(ui::ET_TOUCH_PRESSED, gfx::Point(30, 30),
+  ui::TouchEvent press0(ui::EventType::kTouchPressed, gfx::Point(30, 30),
                         ui::EventTimeForNow(),
                         ui::PointerDetails(ui::EventPointerType::kTouch, 0));
 
   view_->OnTouchEvent(&press0);
-  static_cast<InputRouterImpl*>(view_->GetFocusedWidget()->input_router())
+  static_cast<input::InputRouterImpl*>(
+      view_->GetFocusedWidget()->input_router())
       ->SetTouchActionFromMain(cc::TouchAction::kAuto);
   base::RunLoop().RunUntilIdle();
 
@@ -2490,7 +2476,7 @@ TEST_F(RenderWidgetHostViewAuraTest, MultiTouchPointsStates) {
   EXPECT_EQ(1U, pointer_state().GetPointerCount());
   EXPECT_EQ(1U, view_->dispatcher_->GetAndResetProcessedTouchEventCount());
 
-  ui::TouchEvent move0(ui::ET_TOUCH_MOVED, gfx::Point(20, 20),
+  ui::TouchEvent move0(ui::EventType::kTouchMoved, gfx::Point(20, 20),
                        ui::EventTimeForNow(),
                        ui::PointerDetails(ui::EventPointerType::kTouch, 0));
 
@@ -2506,7 +2492,7 @@ TEST_F(RenderWidgetHostViewAuraTest, MultiTouchPointsStates) {
 
   // For the second touchstart, only the state of the second touch point is
   // StatePressed, the state of the first touch point is StateStationary.
-  ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(10, 10),
+  ui::TouchEvent press1(ui::EventType::kTouchPressed, gfx::Point(10, 10),
                         ui::EventTimeForNow(),
                         ui::PointerDetails(ui::EventPointerType::kTouch, 1));
 
@@ -2523,7 +2509,7 @@ TEST_F(RenderWidgetHostViewAuraTest, MultiTouchPointsStates) {
 
   // For the touchmove of second point, the state of the second touch point is
   // StateMoved, the state of the first touch point is StateStationary.
-  ui::TouchEvent move1(ui::ET_TOUCH_MOVED, gfx::Point(30, 30),
+  ui::TouchEvent move1(ui::EventType::kTouchMoved, gfx::Point(30, 30),
                        ui::EventTimeForNow(),
                        ui::PointerDetails(ui::EventPointerType::kTouch, 1));
 
@@ -2539,7 +2525,7 @@ TEST_F(RenderWidgetHostViewAuraTest, MultiTouchPointsStates) {
 
   // For the touchmove of first point, the state of the first touch point is
   // StateMoved, the state of the second touch point is StateStationary.
-  ui::TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::Point(10, 10),
+  ui::TouchEvent move2(ui::EventType::kTouchMoved, gfx::Point(10, 10),
                        ui::EventTimeForNow(),
                        ui::PointerDetails(ui::EventPointerType::kTouch, 0));
 
@@ -2553,7 +2539,7 @@ TEST_F(RenderWidgetHostViewAuraTest, MultiTouchPointsStates) {
   EXPECT_EQ(2U, pointer_state().GetPointerCount());
   EXPECT_EQ(1U, view_->dispatcher_->GetAndResetProcessedTouchEventCount());
 
-  ui::TouchEvent cancel0(ui::ET_TOUCH_CANCELLED, gfx::Point(10, 10),
+  ui::TouchEvent cancel0(ui::EventType::kTouchCancelled, gfx::Point(10, 10),
                          ui::EventTimeForNow(),
                          ui::PointerDetails(ui::EventPointerType::kTouch, 0));
 
@@ -2566,7 +2552,7 @@ TEST_F(RenderWidgetHostViewAuraTest, MultiTouchPointsStates) {
   EXPECT_EQ(1U, pointer_state().GetPointerCount());
   EXPECT_EQ(1U, view_->dispatcher_->GetAndResetProcessedTouchEventCount());
 
-  ui::TouchEvent cancel1(ui::ET_TOUCH_CANCELLED, gfx::Point(30, 30),
+  ui::TouchEvent cancel1(ui::EventType::kTouchCancelled, gfx::Point(30, 30),
                          ui::EventTimeForNow(),
                          ui::PointerDetails(ui::EventPointerType::kTouch, 1));
 
@@ -2588,13 +2574,13 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventSyncAsync) {
       HasTouchEventHandlers(true), HasHitTestableScrollbar(false));
   widget_host_->SetHasTouchEventConsumers(std::move(touch_event_consumers));
 
-  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(30, 30),
+  ui::TouchEvent press(ui::EventType::kTouchPressed, gfx::Point(30, 30),
                        ui::EventTimeForNow(),
                        ui::PointerDetails(ui::EventPointerType::kTouch, 0));
-  ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(20, 20),
+  ui::TouchEvent move(ui::EventType::kTouchMoved, gfx::Point(20, 20),
                       ui::EventTimeForNow(),
                       ui::PointerDetails(ui::EventPointerType::kTouch, 0));
-  ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(20, 20),
+  ui::TouchEvent release(ui::EventType::kTouchReleased, gfx::Point(20, 20),
                          ui::EventTimeForNow(),
                          ui::PointerDetails(ui::EventPointerType::kTouch, 0));
 
@@ -3427,33 +3413,6 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithMemoryPressure) {
     views[i]->Destroy();
 }
 
-TEST_F(RenderWidgetHostViewAuraTest, SourceEventTypeExistsInLatencyInfo) {
-  // WHEEL source exists.
-  ui::ScrollEvent scroll(ui::ET_SCROLL, gfx::Point(2, 2), ui::EventTimeForNow(),
-                         0, 0, 0, 0, 0, 2);
-  view_->OnScrollEvent(&scroll);
-  EXPECT_EQ(
-      widget_host_->LastWheelOrTouchEventLatencyInfo().source_event_type(),
-      ui::SourceEventType::WHEEL);
-
-  // TOUCH source exists.
-  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(30, 30),
-                       ui::EventTimeForNow(),
-                       ui::PointerDetails(ui::EventPointerType::kTouch, 0));
-  ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(20, 20),
-                      ui::EventTimeForNow(),
-                      ui::PointerDetails(ui::EventPointerType::kTouch, 0));
-  ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(20, 20),
-                         ui::EventTimeForNow(),
-                         ui::PointerDetails(ui::EventPointerType::kTouch, 0));
-  view_->OnTouchEvent(&press);
-  view_->OnTouchEvent(&move);
-  EXPECT_EQ(
-      widget_host_->LastWheelOrTouchEventLatencyInfo().source_event_type(),
-      ui::SourceEventType::TOUCH);
-  view_->OnTouchEvent(&release);
-}
-
 TEST_F(RenderWidgetHostViewAuraTest, VisibleViewportTest) {
   gfx::Rect view_rect(100, 100);
 
@@ -3507,7 +3466,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventPositionsArentRounded) {
   InitViewForFrame(nullptr);
   view_->Show();
 
-  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(),
+  ui::TouchEvent press(ui::EventType::kTouchPressed, gfx::Point(),
                        ui::EventTimeForNow(),
                        ui::PointerDetails(ui::EventPointerType::kTouch, 0));
   press.set_location_f(gfx::PointF(kX, kY));
@@ -5056,13 +5015,13 @@ TEST_F(RenderWidgetHostViewAuraTest,
       HasTouchEventHandlers(true), HasHitTestableScrollbar(false));
   widget_host_->SetHasTouchEventConsumers(std::move(touch_event_consumers));
 
-  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(30, 30),
+  ui::TouchEvent press(ui::EventType::kTouchPressed, gfx::Point(30, 30),
                        ui::EventTimeForNow(),
                        ui::PointerDetails(ui::EventPointerType::kTouch, 0));
 
   // Construct a move with a touch id which doesn't exist.
   ui::TouchEvent invalid_move(
-      ui::ET_TOUCH_MOVED, gfx::Point(30, 30), ui::EventTimeForNow(),
+      ui::EventType::kTouchMoved, gfx::Point(30, 30), ui::EventTimeForNow(),
       ui::PointerDetails(ui::EventPointerType::kTouch, 1));
 
   // Valid press is handled asynchronously.
@@ -5090,11 +5049,11 @@ TEST_F(RenderWidgetHostViewAuraTest, KeyEvent) {
   InitViewForFrame(nullptr);
   view_->Show();
 
-  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::DomCode::US_A,
-                         ui::EF_NONE);
+  ui::KeyEvent key_event(ui::EventType::kKeyPressed, ui::VKEY_A,
+                         ui::DomCode::US_A, ui::EF_NONE);
   view_->OnKeyEvent(&key_event);
 
-  const NativeWebKeyboardEvent* event = delegates_.back()->last_event();
+  const input::NativeWebKeyboardEvent* event = delegates_.back()->last_event();
   ASSERT_TRUE(event);
   EXPECT_EQ(key_event.key_code(), event->windows_key_code);
   EXPECT_EQ(ui::KeycodeConverter::DomCodeToNativeKeycode(key_event.code()),
@@ -5105,7 +5064,7 @@ TEST_F(RenderWidgetHostViewAuraTest, KeyEventsHandled) {
   InitViewForFrame(nullptr);
   view_->Show();
 
-  ui::KeyEvent key_event1(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
+  ui::KeyEvent key_event1(ui::EventType::kKeyPressed, ui::VKEY_A, ui::EF_NONE);
   view_->OnKeyEvent(&key_event1);
   // Normally event should be handled.
   EXPECT_TRUE(key_event1.handled());
@@ -5114,7 +5073,7 @@ TEST_F(RenderWidgetHostViewAuraTest, KeyEventsHandled) {
   // Make the delegate mark the event as not-handled.
   delegates_.back()->set_pre_handle_keyboard_event_result(
       KeyboardEventProcessingResult::HANDLED_DONT_UPDATE_EVENT);
-  ui::KeyEvent key_event2(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
+  ui::KeyEvent key_event2(ui::EventType::kKeyPressed, ui::VKEY_A, ui::EF_NONE);
   view_->OnKeyEvent(&key_event2);
   EXPECT_FALSE(key_event2.handled());
 }
@@ -5171,8 +5130,9 @@ TEST_F(RenderWidgetHostViewAuraTest, SetCanScrollForWebMouseWheelEvent) {
       blink::mojom::InputEventResultState::kConsumed);
 
   // Simulates the scroll event with ctrl modifier applied.
-  ui::ScrollEvent scroll(ui::ET_SCROLL, gfx::Point(2, 2), ui::EventTimeForNow(),
-                         ui::EF_CONTROL_DOWN, 0, 5, 0, 5, 2);
+  ui::ScrollEvent scroll(ui::EventType::kScroll, gfx::Point(2, 2),
+                         ui::EventTimeForNow(), ui::EF_CONTROL_DOWN, 0, 5, 0, 5,
+                         2);
   view_->OnScrollEvent(&scroll);
   base::RunLoop().RunUntilIdle();
 
@@ -5199,7 +5159,7 @@ TEST_F(RenderWidgetHostViewAuraTest, CorrectNumberOfAcksAreDispatched) {
   view_->Show();
   view_->UseFakeDispatcher();
 
-  ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(30, 30),
+  ui::TouchEvent press1(ui::EventType::kTouchPressed, gfx::Point(30, 30),
                         ui::EventTimeForNow(),
                         ui::PointerDetails(ui::EventPointerType::kTouch, 0));
 
@@ -5211,7 +5171,7 @@ TEST_F(RenderWidgetHostViewAuraTest, CorrectNumberOfAcksAreDispatched) {
   events[1]->ToEvent()->CallCallback(
       blink::mojom::InputEventResultState::kConsumed);
 
-  ui::TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(20, 20),
+  ui::TouchEvent press2(ui::EventType::kTouchPressed, gfx::Point(20, 20),
                         ui::EventTimeForNow(),
                         ui::PointerDetails(ui::EventPointerType::kTouch, 1));
   view_->OnTouchEvent(&press2);
@@ -5324,14 +5284,14 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardMouseEvent) {
   InitViewForFrame(parent.get());
 
   // Simulate mouse events, ensure they are forwarded to delegate.
-  ui::MouseEvent mouse_event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-                             ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
-                             0);
+  ui::MouseEvent mouse_event(ui::EventType::kMousePressed, gfx::Point(),
+                             gfx::Point(), ui::EventTimeForNow(),
+                             ui::EF_LEFT_MOUSE_BUTTON, 0);
   view_->OnMouseEvent(&mouse_event);
   EXPECT_EQ("1 0", delegate.GetMouseButtonCountsAndReset());
 
   // Simulate mouse events, ensure they are forwarded to delegate.
-  mouse_event = ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(1, 1),
+  mouse_event = ui::MouseEvent(ui::EventType::kMouseMoved, gfx::Point(1, 1),
                                gfx::Point(), ui::EventTimeForNow(), 0, 0);
   view_->OnMouseEvent(&mouse_event);
   EXPECT_EQ("0 1 0", delegate.GetMouseMotionCountsAndReset());
@@ -5340,13 +5300,13 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardMouseEvent) {
   view_->LockPointer(false /* request_unadjusted_movement */);
 
   mouse_event =
-      ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+      ui::MouseEvent(ui::EventType::kMousePressed, gfx::Point(), gfx::Point(),
                      ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0);
   view_->OnMouseEvent(&mouse_event);
   EXPECT_EQ("1 0", delegate.GetMouseButtonCountsAndReset());
 
-  mouse_event = ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(),
-                               ui::EventTimeForNow(), 0, 0);
+  mouse_event = ui::MouseEvent(ui::EventType::kMouseMoved, gfx::Point(),
+                               gfx::Point(), ui::EventTimeForNow(), 0, 0);
   view_->OnMouseEvent(&mouse_event);
   EXPECT_EQ("0 1 0", delegate.GetMouseMotionCountsAndReset());
 
@@ -5482,16 +5442,16 @@ TEST_F(RenderWidgetHostViewAuraTest, LegacyRenderWidgetHostHWNDAuraLookup) {
 // Test that we elide touchpad pinch gesture steams consisting of only begin
 // and end events.
 TEST_F(RenderWidgetHostViewAuraTest, ElideEmptyTouchpadPinchSequence) {
-  ui::GestureEventDetails begin_details(ui::ET_GESTURE_PINCH_BEGIN);
+  ui::GestureEventDetails begin_details(ui::EventType::kGesturePinchBegin);
   begin_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHPAD);
   ui::GestureEvent begin_event(0, 0, 0, ui::EventTimeForNow(), begin_details);
 
-  ui::GestureEventDetails update_details(ui::ET_GESTURE_PINCH_UPDATE);
+  ui::GestureEventDetails update_details(ui::EventType::kGesturePinchUpdate);
   update_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHPAD);
   update_details.set_scale(1.23);
   ui::GestureEvent update_event(0, 0, 0, ui::EventTimeForNow(), update_details);
 
-  ui::GestureEventDetails end_details(ui::ET_GESTURE_PINCH_END);
+  ui::GestureEventDetails end_details(ui::EventType::kGesturePinchEnd);
   end_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHPAD);
   ui::GestureEvent end_event(0, 0, 0, ui::EventTimeForNow(), end_details);
 
@@ -5538,8 +5498,8 @@ TEST_F(RenderWidgetHostViewAuraTest,
   sink_->ClearMessages();
 
   ui::ScrollEvent begin_scroll(
-      ui::ET_SCROLL, gfx::Point(2, 2), ui::EventTimeForNow(), 0, 2, 2, 2, 2, 2,
-      ui::EventMomentumPhase::NONE, ui::ScrollEventPhase::kBegan);
+      ui::EventType::kScroll, gfx::Point(2, 2), ui::EventTimeForNow(), 0, 2, 2,
+      2, 2, 2, ui::EventMomentumPhase::NONE, ui::ScrollEventPhase::kBegan);
   view_->OnScrollEvent(&begin_scroll);
   base::RunLoop().RunUntilIdle();
 
@@ -5547,8 +5507,8 @@ TEST_F(RenderWidgetHostViewAuraTest,
   // momentum_phase == BLOCKED so that the end phase event can be dispatched
   // immediately, rather than scheduling for later dispatch.
   ui::ScrollEvent end_scroll_with_pinch_next(
-      ui::ET_SCROLL, gfx::Point(2, 2), ui::EventTimeForNow(), 0, 0, 0, 0, 0, 2,
-      ui::EventMomentumPhase::BLOCKED, ui::ScrollEventPhase::kEnd);
+      ui::EventType::kScroll, gfx::Point(2, 2), ui::EventTimeForNow(), 0, 0, 0,
+      0, 0, 2, ui::EventMomentumPhase::BLOCKED, ui::ScrollEventPhase::kEnd);
   view_->OnScrollEvent(&end_scroll_with_pinch_next);
   base::RunLoop().RunUntilIdle();
 
@@ -5574,8 +5534,8 @@ TEST_F(RenderWidgetHostViewAuraTest,
 
   // Now, try the same thing as above, but without knowing if pinch is next.
   ui::ScrollEvent begin_scroll2(
-      ui::ET_SCROLL, gfx::Point(2, 2), ui::EventTimeForNow(), 0, 2, 2, 2, 2, 2,
-      ui::EventMomentumPhase::NONE, ui::ScrollEventPhase::kBegan);
+      ui::EventType::kScroll, gfx::Point(2, 2), ui::EventTimeForNow(), 0, 2, 2,
+      2, 2, 2, ui::EventMomentumPhase::NONE, ui::ScrollEventPhase::kBegan);
   view_->OnScrollEvent(&begin_scroll2);
   base::RunLoop().RunUntilIdle();
 
@@ -5583,8 +5543,8 @@ TEST_F(RenderWidgetHostViewAuraTest,
   // This results in the phase end event being scheduled for dispatch, but not
   // ultimately dispatched in this test.
   ui::ScrollEvent end_scroll_with_momentum_next_maybe(
-      ui::ET_SCROLL, gfx::Point(2, 2), ui::EventTimeForNow(), 0, 0, 0, 0, 0, 2,
-      ui::EventMomentumPhase::NONE, ui::ScrollEventPhase::kEnd);
+      ui::EventType::kScroll, gfx::Point(2, 2), ui::EventTimeForNow(), 0, 0, 0,
+      0, 0, 2, ui::EventMomentumPhase::NONE, ui::ScrollEventPhase::kEnd);
   view_->OnScrollEvent(&end_scroll_with_momentum_next_maybe);
   base::RunLoop().RunUntilIdle();
 
@@ -5626,10 +5586,11 @@ TEST_F(RenderWidgetHostViewAuraTest, GestureTapFromStylusHasPointerType) {
 
   // GestureTap event should have correct pointer type.
   events = GetAndResetDispatchedMessages();
-  EXPECT_EQ("GestureTapDown GestureShowPress GestureTap",
-            GetMessageNames(events));
+  EXPECT_EQ(
+      "GestureBegin GestureTapDown GestureShowPress GestureTap GestureEnd",
+      GetMessageNames(events));
   const WebGestureEvent* gesture_event = static_cast<const WebGestureEvent*>(
-      &events[2]->ToEvent()->Event()->Event());
+      &events[3]->ToEvent()->Event()->Event());
   EXPECT_EQ(WebInputEvent::Type::kGestureTap, gesture_event->GetType());
   EXPECT_EQ(blink::WebPointerProperties::PointerType::kPen,
             gesture_event->primary_pointer_type);
@@ -6545,9 +6506,9 @@ TEST_F(RenderWidgetHostViewAuraTest, FocusReasonMouse) {
   parent_view_->Focus();
   ActivateViewForTextInputManager(parent_view_, ui::TEXT_INPUT_TYPE_TEXT);
 
-  ui::MouseEvent mouse_event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-                             ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
-                             0);
+  ui::MouseEvent mouse_event(ui::EventType::kMousePressed, gfx::Point(),
+                             gfx::Point(), ui::EventTimeForNow(),
+                             ui::EF_LEFT_MOUSE_BUTTON, 0);
   parent_view_->OnMouseEvent(&mouse_event);
   parent_view_->FocusedNodeChanged(true, gfx::Rect());
 
@@ -6559,7 +6520,7 @@ TEST_F(RenderWidgetHostViewAuraTest, FocusReasonTouch) {
   parent_view_->Focus();
   ActivateViewForTextInputManager(parent_view_, ui::TEXT_INPUT_TYPE_TEXT);
 
-  ui::GestureEventDetails tap_details(ui::ET_GESTURE_TAP_DOWN);
+  ui::GestureEventDetails tap_details(ui::EventType::kGestureTapDown);
   tap_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
   tap_details.set_primary_pointer_type(ui::EventPointerType::kTouch);
   ui::GestureEvent touch_event(0, 0, 0, base::TimeTicks(), tap_details);
@@ -6575,7 +6536,7 @@ TEST_F(RenderWidgetHostViewAuraTest, FocusReasonPen) {
   parent_view_->Focus();
   ActivateViewForTextInputManager(parent_view_, ui::TEXT_INPUT_TYPE_TEXT);
 
-  ui::GestureEventDetails tap_details(ui::ET_GESTURE_TAP_DOWN);
+  ui::GestureEventDetails tap_details(ui::EventType::kGestureTapDown);
   tap_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
   tap_details.set_primary_pointer_type(ui::EventPointerType::kPen);
   ui::GestureEvent pen_event(0, 0, 0, base::TimeTicks(), tap_details);
@@ -6593,7 +6554,7 @@ TEST_F(RenderWidgetHostViewAuraTest, FocusReasonMultipleEventsOnSameNode) {
 
   // Touch then pen.
   {
-    ui::GestureEventDetails tap_details(ui::ET_GESTURE_TAP_DOWN);
+    ui::GestureEventDetails tap_details(ui::EventType::kGestureTapDown);
     tap_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
     tap_details.set_primary_pointer_type(ui::EventPointerType::kTouch);
     ui::GestureEvent touch_event(0, 0, 0, base::TimeTicks(), tap_details);
@@ -6603,7 +6564,7 @@ TEST_F(RenderWidgetHostViewAuraTest, FocusReasonMultipleEventsOnSameNode) {
   }
 
   {
-    ui::GestureEventDetails tap_details(ui::ET_GESTURE_TAP_DOWN);
+    ui::GestureEventDetails tap_details(ui::EventType::kGestureTapDown);
     tap_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
     tap_details.set_primary_pointer_type(ui::EventPointerType::kPen);
     ui::GestureEvent pen_event(0, 0, 0, base::TimeTicks(), tap_details);

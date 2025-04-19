@@ -19,7 +19,6 @@
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
-#include "ui/display/types/display_configuration_params.h"
 #include "ui/gfx/native_pixmap_handle.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/platform/drm/common/display_types.h"
@@ -36,9 +35,9 @@ class FilePath;
 }  // namespace base
 
 namespace display {
-class GammaCurve;
 struct ColorCalibration;
 struct ColorTemperatureAdjustment;
+struct DisplayConfigurationParams;
 struct GammaAdjustment;
 }  // namespace display
 
@@ -190,11 +189,6 @@ class DrmThread : public base::Thread,
       const display::ColorCalibration& calibration) override;
   void SetGammaAdjustment(int64_t display_id,
                           const display::GammaAdjustment& adjustment) override;
-  void SetColorMatrix(int64_t display_id,
-                      const std::vector<float>& color_matrix) override;
-  void SetGammaCorrection(int64_t display_id,
-                          const display::GammaCurve& degamma,
-                          const display::GammaCurve& gamma) override;
   void SetPrivacyScreen(int64_t display_id,
                         bool enabled,
                         base::OnceCallback<void(bool)> callback) override;

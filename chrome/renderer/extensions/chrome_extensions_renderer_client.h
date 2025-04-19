@@ -77,10 +77,6 @@ class ChromeExtensionsRendererClient
   void OnExtensionUnloaded(
       const extensions::ExtensionId& extension_id) override;
 
-  bool ExtensionAPIEnabledForServiceWorkerScript(
-      const GURL& scope,
-      const GURL& script_url) const override;
-
   // See ChromeContentRendererClient methods with the same names.
   void WebViewCreated(blink::WebView* web_view,
                       const url::Origin* outermost_origin);
@@ -92,7 +88,8 @@ class ChromeExtensionsRendererClient
   blink::ProtocolHandlerSecurityLevel GetProtocolHandlerSecurityLevel();
   void WillSendRequest(blink::WebLocalFrame* frame,
                        ui::PageTransition transition_type,
-                       const blink::WebURL& url,
+                       const blink::WebURL& upstream_url,
+                       const blink::WebURL& target_url,
                        const net::SiteForCookies& site_for_cookies,
                        const url::Origin* initiator_origin,
                        GURL* new_url);

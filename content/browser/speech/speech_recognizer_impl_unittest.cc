@@ -21,6 +21,7 @@
 #include "base/threading/thread.h"
 #include "content/browser/speech/network_speech_recognition_engine_impl.h"
 #include "content/public/browser/google_streaming_api.pb.h"
+#include "content/public/browser/speech_recognition_audio_forwarder_config.h"
 #include "content/public/browser/speech_recognition_event_listener.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_task_environment.h"
@@ -114,9 +115,9 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
         std::make_unique<media::AudioSystemImpl>(audio_manager_.get());
     SpeechRecognizerImpl::SetAudioEnvironmentForTesting(
         audio_system_.get(), audio_capturer_source_.get());
-    recognizer_ =
-        new SpeechRecognizerImpl(this, audio_system_.get(), kTestingSessionId,
-                                 false, false, std::move(sr_engine));
+    recognizer_ = new SpeechRecognizerImpl(this, audio_system_.get(),
+                                           kTestingSessionId, false, false,
+                                           std::move(sr_engine), std::nullopt);
 
     int audio_packet_length_bytes =
         (SpeechRecognizerImpl::kAudioSampleRate *
@@ -475,13 +476,12 @@ TEST_F(SpeechRecognizerImplTest, StopWithData) {
     while (true) {
       base::RunLoop().RunUntilIdle();
 
-      const void* buffer;
-      size_t num_bytes;
-      MojoResult result = consumer_handle->BeginReadData(
-          &buffer, &num_bytes, MOJO_READ_DATA_FLAG_NONE);
+      base::span<const uint8_t> buffer;
+      MojoResult result =
+          consumer_handle->BeginReadData(MOJO_READ_DATA_FLAG_NONE, buffer);
       if (result == MOJO_RESULT_OK) {
-        data.append(static_cast<const char*>(buffer), num_bytes);
-        consumer_handle->EndReadData(num_bytes);
+        data.append(base::as_string_view(buffer));
+        consumer_handle->EndReadData(buffer.size());
         continue;
       }
       if (result == MOJO_RESULT_SHOULD_WAIT) {
@@ -516,7 +516,7 @@ TEST_F(SpeechRecognizerImplTest, StopWithData) {
   proto_alternative->set_transcript("123");
   std::string msg_string;
   proto_event.SerializeToString(&msg_string);
-  msg_string.insert(0u, base::as_string_view(base::numerics::U32ToBigEndian(
+  msg_string.insert(0u, base::as_string_view(base::U32ToBigEndian(
                             base::checked_cast<uint32_t>(msg_string.size()))));
 
   // Issue the network callback to complete the process.

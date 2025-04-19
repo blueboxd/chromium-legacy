@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/modules/webaudio/audio_worklet_handler.h"
 
 #include "third_party/blink/public/platform/task_type.h"
@@ -117,7 +122,9 @@ void AudioWorkletHandler::Process(uint32_t frames_to_process) {
   // state. If so, silence the connected outputs and return.
   if (!processor_ || processor_->hasErrorOccurred()) {
     for (unsigned i = 0; i < NumberOfOutputs(); ++i) {
-      Output(i).Bus()->Zero();
+      if (Output(i).IsConnectedDuringRendering()) {
+        Output(i).Bus()->Zero();
+      }
     }
     return;
   }
@@ -231,7 +238,8 @@ void AudioWorkletHandler::SetProcessorOnRenderThread(
     PostCrossThreadTask(
         *main_thread_task_runner_, FROM_HERE,
         CrossThreadBindOnce(
-            &AudioWorkletHandler::NotifyProcessorError, AsWeakPtr(),
+            &AudioWorkletHandler::NotifyProcessorError,
+            weak_ptr_factory_.GetWeakPtr(),
             AudioWorkletProcessorErrorState::kConstructionError));
   }
 }
@@ -246,7 +254,7 @@ void AudioWorkletHandler::FinishProcessorOnRenderThread() {
     PostCrossThreadTask(
         *main_thread_task_runner_, FROM_HERE,
         CrossThreadBindOnce(&AudioWorkletHandler::NotifyProcessorError,
-                            AsWeakPtr(), error_state));
+                            weak_ptr_factory_.GetWeakPtr(), error_state));
   }
 
   // After this point, the handler has no more pending activity and is ready for
@@ -261,7 +269,7 @@ void AudioWorkletHandler::FinishProcessorOnRenderThread() {
       *main_thread_task_runner_, FROM_HERE,
       CrossThreadBindOnce(
           &AudioWorkletHandler::MarkProcessorInactiveOnMainThread,
-          AsWeakPtr()));
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AudioWorkletHandler::NotifyProcessorError(

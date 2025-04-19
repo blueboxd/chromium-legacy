@@ -2,11 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/renderer/cart/commerce_hint_agent.h"
 
 #include <string_view>
 
-#include "base/features.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/field_trial_params.h"
@@ -31,8 +35,8 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
-#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/loader/http_body_element_type.h"
+#include "third_party/blink/public/platform/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/scheduler/web_agent_group_scheduler.h"
 #include "third_party/blink/public/platform/web_http_body.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -281,7 +285,7 @@ mojo::Remote<mojom::CommerceHintObserver> GetObserver(
   // Subframes including fenced frames shouldn't be reached here.
   DCHECK(render_frame->IsMainFrame() && !render_frame->IsInFencedFrameTree());
 
-  render_frame->GetBrowserInterfaceBroker()->GetInterface(
+  render_frame->GetBrowserInterfaceBroker().GetInterface(
       observer.BindNewPipeAndPassReceiver());
   return observer;
 }
@@ -872,7 +876,7 @@ void CommerceHintAgent::ExtractCartWithUpdatedScript(
       GetProductExtractionScript(product_id_json, cart_extraction_script));
 
   main_frame->RequestExecuteScript(
-      ISOLATED_WORLD_ID_CHROME_INTERNAL, base::make_span(&source, 1u),
+      ISOLATED_WORLD_ID_CHROME_INTERNAL, base::span_from_ref(source),
       blink::mojom::UserActivationOption::kDoNotActivate,
       blink::mojom::EvaluationTiming::kAsynchronous,
       blink::mojom::LoadEventBlockingOption::kDoNotBlock,
@@ -996,10 +1000,8 @@ void CommerceHintAgent::WillSendRequest(const blink::WebURLRequest& request) {
 
   // The rest of this method is not concerned with data URLs but makes a copy of
   // the URL which can be expensive for large data URLs.
-  // TODO(crbug.com/40224104): Clean up this method to avoid copies once this
-  // optimization has been measured in the field and launches.
-  if (base::FeatureList::IsEnabled(base::features::kOptimizeDataUrls) &&
-      request.Url().ProtocolIs(url::kDataScheme)) {
+  // TODO(crbug.com/40224104): Clean up this method to avoid copies.
+  if (request.Url().ProtocolIs(url::kDataScheme)) {
     return;
   }
 

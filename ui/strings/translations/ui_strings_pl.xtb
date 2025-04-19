@@ -49,6 +49,7 @@
 <translation id="2295140143284145483">Ankieta</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="2353636109065292463">Sprawdzanie połączenia z internetem</translation>
+<translation id="2359808026110333948">Dalej</translation>
 <translation id="2388990488038464401">Zadzwonić pod ten numer z Twojego telefonu?</translation>
 <translation id="2435457462613246316">Pokaż hasło</translation>
 <translation id="24452542372838207">Rozwiń powiadomienie</translation>
@@ -129,6 +130,7 @@
 <translation id="5574202486608032840">System <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">Strzałka w lewo</translation>
+<translation id="5633029987065897167">Puste</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}few{# min}many{# min}other{# min}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Aktywność dzisiaj}=1{Aktywność 1 dzień temu}few{Aktywność # dni temu}many{Aktywność # dni temu}other{Aktywność # dnia temu}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 dzień i }few{# dni i }many{# dni i }other{# dnia i }}</translation>

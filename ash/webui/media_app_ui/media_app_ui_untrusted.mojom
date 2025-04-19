@@ -81,6 +81,11 @@ interface OcrUntrustedPage {
   // `kScrollToMakeVisible` or `kSetScrollOffset`.
   //   viewport_box: The bounding box representing the new camera position.
   SetViewport(gfx.mojom.RectF viewport_box);
+
+  // Tells the MediaApp when the OCR service has been turned on or off (either
+  // due to the PDF OCR setting being changed, or the accessibility service
+  // being toggled on or off).
+  SetPdfOcrEnabled(bool enabled);
 };
 
 
@@ -92,6 +97,11 @@ interface MahiUntrustedPageHandler {
   // Notifies when media app finishes loading a PDF file. This may be used for
   // Mahi refresh availability.
   OnPdfLoaded();
+
+  // Notifies when the file name of the loaded PDF file is updated (e.g. after
+  // rename or save as), so that the Mahi UI (e.g. title on the result panel and
+  // the refresh banner) can show the fresh file name.
+  OnPdfFileNameUpdated(string new_name);
 
   // Notifies when the PDF context menu is shown. This may be used to show the
   // Mahi widget card.

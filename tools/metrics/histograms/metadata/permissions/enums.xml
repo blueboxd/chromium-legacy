@@ -71,6 +71,18 @@ chromium-metrics-reviews@google.com.
   <int value="1" label="DISMISSED_SCRIM"/>
 </enum>
 
+<!-- LINT.IfChange(ExternalProtocolScheme) -->
+
+<enum name="ExternalProtocolScheme">
+  <int value="0" label="Other"/>
+  <int value="1" label="search-ms"/>
+  <int value="2" label="search"/>
+  <int value="3" label="mailto"/>
+  <int value="4" label="microsoft-edge"/>
+</enum>
+
+<!-- LINT.ThenChange(/chrome/browser/external_protocol/external_protocol_handler.cc:LoggedScheme) -->
+
 <enum name="HandleStateType">
   <int value="0" label="Launch"/>
   <int value="1" label="Checked launch"/>
@@ -86,11 +98,6 @@ chromium-metrics-reviews@google.com.
   <int value="3" label="Expired in the background due to non-usage"/>
   <int value="4" label="Expired after maximum lifetime"/>
   <int value="5" label="Expired because the device was suspended"/>
-</enum>
-
-<enum name="OsScreen">
-  <int value="0" label="OS_PROMPT"/>
-  <int value="1" label="OS_SYSTEM_SETTINGS"/>
 </enum>
 
 <enum name="OsScreenAction">
@@ -221,13 +228,6 @@ chromium-metrics-reviews@google.com.
   <int value="2" label="Permission granted"/>
   <int value="3" label="Ephemeral permission granted"/>
   <int value="4" label="Dismissed due to loss of focus"/>
-</enum>
-
-<enum name="WebSiteSettingsAllSitesAction">
-  <int value="0" label="All Sites Loaded"/>
-  <int value="1" label="Reset Permissions"/>
-  <int value="2" label="Clear Data"/>
-  <int value="3" label="Enter Site Details"/>
 </enum>
 
 <enum name="WebSiteSettingsAllSitesAction2">

@@ -6,8 +6,8 @@
 #define IOS_CHROME_BROWSER_UI_TAB_SWITCHER_TAB_GRID_GRID_BASE_GRID_COORDINATOR_H_
 
 #import "ios/chrome/browser/shared/coordinator/chrome_coordinator/chrome_coordinator.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/tab_groups/create_or_edit_tab_group_coordinator_delegate.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/tab_groups/tab_groups_commands.h"
+#import "ios/chrome/browser/shared/public/commands/tab_groups_commands.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_groups/create_or_edit_tab_group_coordinator_delegate.h"
 
 class Browser;
 @protocol DisabledGridViewControllerDelegate;
@@ -16,6 +16,7 @@ class Browser;
 @protocol GridToolbarsMutator;
 @class LegacyGridTransitionLayout;
 @protocol TabContextMenuDelegate;
+@class TabGridModeHolder;
 @protocol TabGroupPositioner;
 
 @interface BaseGridCoordinator
@@ -39,6 +40,9 @@ class Browser;
 // Positioner providing layer information for Tab Group.
 @property(nonatomic, weak) id<TabGroupPositioner> tabGroupPositioner;
 
+// Holder for the current Tab Grid mode.
+@property(nonatomic, strong) TabGridModeHolder* modeHolder;
+
 - (instancetype)initWithBaseViewController:(UIViewController*)baseViewController
                                    browser:(Browser*)browser
                            toolbarsMutator:
@@ -51,6 +55,11 @@ class Browser;
 // Shows the TabGroup view while the TabGrid is being opened at the same time.
 - (void)showTabGroupForTabGridOpening:(const TabGroup*)tabGroup;
 
+// Brings the `tabGroup` into view by making it part of the visible element of
+// its grid, if present. Returns whether the group was present.
+- (BOOL)bringTabGroupIntoViewIfPresent:(const TabGroup*)tabGroup
+                              animated:(BOOL)animated;
+
 // Returns the transition layout for this grid.
 - (LegacyGridTransitionLayout*)transitionLayout;
 
@@ -62,6 +71,9 @@ class Browser;
 
 // Returns the container for the grid, to be used during transitions.
 - (UIView*)gridContainerForAnimation;
+
+// Stops all child coordinators.
+- (void)stopChildCoordinators;
 
 @end
 

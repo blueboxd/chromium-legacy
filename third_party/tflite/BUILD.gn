@@ -7,6 +7,7 @@ import("//build/config/android/config.gni")
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//third_party/cpuinfo/cpuinfo.gni")
+import("//third_party/flatbuffers/flatbuffer.gni")
 import("//third_party/mediapipe/features.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("//third_party/tflite/features.gni")
@@ -16,6 +17,7 @@ proto_library("tflite_proto") {
   proto_in_dir = "src"
   sources = [
     "src/tensorflow/lite/acceleration/configuration/configuration.proto",
+    "src/tensorflow/lite/profiling/proto/profiling_info.proto",
     "src/third_party/xla/third_party/tsl/tsl/protobuf/coordination_config.proto",
   ]
   cc_generator_options = "lite=true:"
@@ -32,6 +34,7 @@ proto_library("tflite_op_resolver_proto") {
 
 config("tflite_config") {
   include_dirs = [
+    "$root_gen_dir/third_party/tflite/src",
     "shims",
     "src",
     "src/third_party/xla",
@@ -80,6 +83,7 @@ config("tflite_flags") {
       "XNNPACK_DELEGATE_ENABLE_QS8",
       "XNNPACK_DELEGATE_ENABLE_QU8",
       "XNNPACK_DELEGATE_USE_LATEST_OPS",
+      "TFLITE_KERNEL_USE_XNNPACK",
     ]
   } else {
     defines += [ "TFLITE_WITHOUT_XNNPACK" ]
@@ -164,6 +168,7 @@ tflite_static_library("tflite_builtin_op_resolver") {
     "src/tensorflow/lite/kernels/sign.cc",
     "src/tensorflow/lite/kernels/sign_custom.cc",
     "src/tensorflow/lite/kernels/stablehlo_add.cc",
+    "src/tensorflow/lite/kernels/stablehlo_composite.cc",
     "src/tensorflow/lite/kernels/stablehlo_elementwise.cc",
     "src/tensorflow/lite/kernels/stablehlo_min_max.cc",
     "src/tensorflow/lite/kernels/stablehlo_multiply.cc",
@@ -194,6 +199,7 @@ tflite_static_library("tflite_builtin_op_resolver") {
 
   visibility = [
     ":tflite_benchmark",
+    "//services/webnn/*",
     "//third_party/mediapipe/*",
   ]
 
@@ -202,6 +208,7 @@ tflite_static_library("tflite_builtin_op_resolver") {
 
 source_set("tflite_public_headers") {
   public = [
+    "src/tensorflow/compiler/mlir/lite/schema/schema_utils.h",
     "src/tensorflow/lite/allocation.h",
     "src/tensorflow/lite/arena_planner.h",
     "src/tensorflow/lite/array.h",
@@ -224,7 +231,6 @@ source_set("tflite_public_headers") {
     "src/tensorflow/lite/op_resolver.h",
     "src/tensorflow/lite/optional_debug_tools.h",
     "src/tensorflow/lite/schema/schema_generated.h",
-    "src/tensorflow/lite/schema/schema_utils.h",
     "src/tensorflow/lite/signature_runner.h",
     "src/tensorflow/lite/stderr_reporter.h",
     "src/tensorflow/lite/string_type.h",
@@ -394,6 +400,7 @@ source_set("tflite_kernel_internals") {
   configs += [
     ":tflite_config",
     ":tflite_flags",
+    "//third_party/eigen3:eigen_includes",
   ]
 
   public_configs = [ "//third_party/eigen3:eigen_public_includes" ]
@@ -546,6 +553,10 @@ tflite_static_library("tflite_kernels") {
     include_dirs = [ "//third_party/cpuinfo/src" ]
   }
 
+  if (build_tflite_with_xnnpack) {
+    conditional_deps += [ "//third_party/xnnpack:xnnpack" ]
+  }
+
   configs_to_add = [
     ":tflite_config",
     ":tflite_flags",
@@ -592,10 +603,21 @@ source_set("tflite_logging_standalone") {
   visibility = [ ":*" ]
 }
 
+flatbuffer("weight_cache_schema_generated") {
+  sources = [ "src/tensorflow/lite/delegates/xnnpack/weight_cache_schema.fbs" ]
+  args = [ "--gen-object-api" ]
+}
+
 # TODO(crbug.com/1147996): Update to a component build. Will require updating the
 # tflite version.
 tflite_static_library("tflite") {
   sources = [
+    "src/tensorflow/compiler/mlir/lite/core/model_builder_base.cc",
+    "src/tensorflow/compiler/mlir/lite/core/model_builder_base.h",
+    "src/tensorflow/compiler/mlir/lite/experimental/remat/metadata_util.cc",
+    "src/tensorflow/compiler/mlir/lite/experimental/remat/metadata_util.h",
+    "src/tensorflow/compiler/mlir/lite/schema/schema_utils.cc",
+    "src/tensorflow/compiler/mlir/lite/utils/string_utils.cc",
     "src/tensorflow/lite/acceleration/configuration/flatbuffer_to_proto.cc",
     "src/tensorflow/lite/acceleration/configuration/flatbuffer_to_proto.h",
     "src/tensorflow/lite/acceleration/configuration/proto_to_flatbuffer.cc",
@@ -628,7 +650,6 @@ tflite_static_library("tflite") {
     "src/tensorflow/lite/core/interpreter.cc",
     "src/tensorflow/lite/core/interpreter_builder.cc",
     "src/tensorflow/lite/core/interpreter_experimental.cc",
-    "src/tensorflow/lite/core/model_builder.cc",
     "src/tensorflow/lite/core/model_builder.h",
     "src/tensorflow/lite/core/signature_runner.cc",
     "src/tensorflow/lite/core/signature_runner.h",
@@ -643,8 +664,6 @@ tflite_static_library("tflite") {
     "src/tensorflow/lite/delegates/utils.h",
     "src/tensorflow/lite/experimental/acceleration/mini_benchmark/mini_benchmark.cc",
     "src/tensorflow/lite/experimental/acceleration/mini_benchmark/mini_benchmark.h",
-    "src/tensorflow/lite/experimental/remat/metadata_util.cc",
-    "src/tensorflow/lite/experimental/remat/metadata_util.h",
     "src/tensorflow/lite/experimental/resource/initialization_status.cc",
     "src/tensorflow/lite/experimental/resource/initialization_status.h",
     "src/tensorflow/lite/experimental/resource/lookup_interfaces.h",
@@ -684,7 +703,6 @@ tflite_static_library("tflite") {
     "src/tensorflow/lite/profiling/telemetry/telemetry.h",
     "src/tensorflow/lite/profiling/time.cc",
     "src/tensorflow/lite/profiling/time.h",
-    "src/tensorflow/lite/schema/schema_utils.cc",
     "src/tensorflow/lite/signature_runner.h",
     "src/tensorflow/lite/simple_memory_arena.cc",
     "src/tensorflow/lite/simple_memory_arena.h",
@@ -764,7 +782,10 @@ tflite_static_library("tflite") {
   ]
 
   if (build_tflite_with_xnnpack) {
-    deps += [ "//third_party/cpuinfo" ]
+    deps += [
+      ":weight_cache_schema_generated",
+      "//third_party/cpuinfo",
+    ]
     conditional_deps += [ "//third_party/xnnpack:xnnpack" ]
   }
 
@@ -828,8 +849,8 @@ executable("tflite_benchmark") {
     "src/tensorflow/lite/tools/utils.h",
   ]
   deps = [
-    ":tflite_standalone",
     ":tflite_builtin_op_resolver_standalone",
+    ":tflite_standalone",
     "//third_party/abseil-cpp:absl",
     "//third_party/ruy",
   ]

@@ -81,28 +81,6 @@ void ShowDownloads(Browser* browser);
 void ShowExtensions(Browser* browser,
                     const std::string& extension_to_highlight = std::string());
 
-// ShowFeedbackPage() uses |browser| to determine the URL of the current tab.
-// |browser| should be NULL if there are no currently open browser windows.
-void ShowFeedbackPage(const Browser* browser,
-                      feedback::FeedbackSource source,
-                      const std::string& description_template,
-                      const std::string& description_placeholder_text,
-                      const std::string& category_tag,
-                      const std::string& extra_diagnostics,
-                      base::Value::Dict autofill_metadata = base::Value::Dict(),
-                      base::Value::Dict ai_metadata = base::Value::Dict());
-
-// Displays the Feedback ui.
-void ShowFeedbackPage(const GURL& page_url,
-                      Profile* profile,
-                      feedback::FeedbackSource source,
-                      const std::string& description_template,
-                      const std::string& description_placeholder_text,
-                      const std::string& category_tag,
-                      const std::string& extra_diagnostics,
-                      base::Value::Dict autofill_metadata = base::Value::Dict(),
-                      base::Value::Dict ai_metadata = base::Value::Dict());
-
 void ShowHelp(Browser* browser, HelpSource source);
 void ShowHelpForProfile(Profile* profile, HelpSource source);
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -164,10 +142,10 @@ void ShowAllSitesSettingsFilteredByFpsOwner(
     Browser* browser,
     const std::string& fps_owner_host_name);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Shows the enterprise management info page in a browser tab.
 void ShowEnterpriseManagementPageInTabbedBrowser(Browser* browser);
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 void ShowAppManagementPage(Profile* profile,
                            const std::string& app_id,
                            ash::settings::AppManagementEntryPoint entry_point);

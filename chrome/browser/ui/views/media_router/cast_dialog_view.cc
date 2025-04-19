@@ -58,10 +58,7 @@ CastDialogView::CastDialogView(
     Profile* profile,
     const base::Time& start_time,
     MediaRouterDialogActivationLocation activation_location)
-    : BubbleDialogDelegateView(anchor_view,
-                               anchor_position,
-                               views::BubbleBorder::DIALOG_SHADOW,
-                               /*autosize=*/true),
+    : BubbleDialogDelegateView(anchor_view, anchor_position),
       controller_(controller),
       profile_(profile),
       metrics_(start_time, activation_location, profile) {
@@ -93,14 +90,17 @@ std::u16string CastDialogView::GetWindowTitle() const {
 }
 
 void CastDialogView::OnModelUpdated(const CastDialogModel& model) {
-  if (model.media_sinks().empty()) {
-    scroll_position_ = 0;
+  if (base::FeatureList::IsEnabled(kShowCastPermissionRejectedError) &&
+      model.is_permission_rejected()) {
+    ShowPermissionRejectedView();
+  } else if (model.media_sinks().empty()) {
     ShowNoSinksView();
   } else {
-    if (scroll_view_)
+    if (scroll_view_) {
       scroll_position_ = scroll_view_->GetVisibleRect().y();
-    else
+    } else {
       ShowScrollView();
+    }
     PopulateScrollView(model.media_sinks());
     RestoreSinkListState();
     metrics_.OnSinksLoaded(base::Time::Now());
@@ -115,10 +115,7 @@ void CastDialogView::OnModelUpdated(const CastDialogModel& model) {
                                 IsAccessCodeCastingEnabled());
 
   dialog_title_ = model.dialog_header();
-
-  // Update title.
-  InvalidateLayout();
-
+  MaybeSizeToContents();
   // Update the main action button.
   DialogModelChanged();
   for (Observer& observer : observers_)
@@ -206,35 +203,52 @@ void CastDialogView::MaybeShowAccessCodeCastButton() {
   auto callback = base::BindRepeating(&CastDialogView::ShowAccessCodeCastDialog,
                                       base::Unretained(this));
 
-  access_code_cast_button_ = new CastDialogAccessCodeCastButton(callback);
-  AddChildView(access_code_cast_button_.get());
+  access_code_cast_button_ =
+      AddChildView(std::make_unique<CastDialogAccessCodeCastButton>(callback));
 }
 
 void CastDialogView::ShowNoSinksView() {
   if (no_sinks_view_)
     return;
-  if (scroll_view_) {
-    // The dtor of |scroll_view_| removes it from the dialog.
-    delete scroll_view_;
-    scroll_view_ = nullptr;
-    sink_views_.clear();
+  ResetViews();
+  no_sinks_view_ = AddChildView(std::make_unique<CastDialogNoSinksView>(
+      profile_, /*permission_rejected*/ false));
+}
+
+void CastDialogView::ShowPermissionRejectedView() {
+  if (permission_rejected_view_) {
+    return;
   }
-  no_sinks_view_ = new CastDialogNoSinksView(profile_);
-  AddChildView(no_sinks_view_.get());
+  ResetViews();
+  permission_rejected_view_ =
+      AddChildView(std::make_unique<CastDialogNoSinksView>(
+          profile_, /*permission_rejected*/ true));
 }
 
 void CastDialogView::ShowScrollView() {
   if (scroll_view_)
     return;
-  if (no_sinks_view_) {
-    // The dtor of |no_sinks_view_| removes it from the dialog.
-    delete no_sinks_view_;
-    no_sinks_view_ = nullptr;
-  }
-  scroll_view_ = new views::ScrollView();
-  AddChildView(scroll_view_.get());
+  ResetViews();
+  scroll_view_ = AddChildView(std::make_unique<views::ScrollView>());
   constexpr int kSinkButtonHeight = 56;
   scroll_view_->ClipHeightTo(0, kSinkButtonHeight * 6.5);
+}
+
+void CastDialogView::ResetViews() {
+  if (no_sinks_view_) {
+    auto temp = RemoveChildViewT(no_sinks_view_);
+    no_sinks_view_ = nullptr;
+  }
+  if (permission_rejected_view_) {
+    auto temp = RemoveChildViewT(permission_rejected_view_);
+    permission_rejected_view_ = nullptr;
+  }
+  if (scroll_view_) {
+    auto temp = RemoveChildViewT(scroll_view_);
+    scroll_view_ = nullptr;
+    sink_views_.clear();
+    scroll_position_ = 0;
+  }
 }
 
 void CastDialogView::RestoreSinkListState() {
@@ -284,6 +298,9 @@ void CastDialogView::PopulateScrollView(const std::vector<UIMediaSink>& sinks) {
     sink_views_.push_back(sink_view);
   }
   scroll_view_->SetContents(std::move(sink_list_view));
+
+  MaybeSizeToContents();
+  DeprecatedLayoutImmediately();
 }
 
 void CastDialogView::InitializeSourcesButton() {
@@ -386,6 +403,12 @@ void CastDialogView::FreezePressed(size_t index) {
   } else { /* is_frozen == false */
     controller_->FreezeRoute(sink.route->media_route_id());
   }
+}
+
+void CastDialogView::MaybeSizeToContents() {
+  // The widget may be null if this is called while the dialog is opening.
+  if (GetWidget())
+    SizeToContents();
 }
 
 std::optional<MediaCastMode> CastDialogView::GetCastModeToUse(

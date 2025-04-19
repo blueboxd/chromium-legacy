@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "device/fido/enclave/verify/rekor.h"
 
 #include <cstdint>
@@ -11,7 +16,6 @@
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/path_service.h"
-#include "device/fido/enclave/verify/hash.h"
 #include "device/fido/enclave/verify/test_utils.h"
 #include "device/fido/enclave/verify/utils.h"
 #include "testing/gtest/include/gtest/gtest.h"

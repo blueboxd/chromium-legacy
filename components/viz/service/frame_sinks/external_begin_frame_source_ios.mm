@@ -217,17 +217,10 @@ void ExternalBeginFrameSourceIOS::SetPreferredInterval(
 base::TimeDelta ExternalBeginFrameSourceIOS::GetMaximumRefreshFrameInterval() {
   const int64_t max_refresh_rate =
       [objc_storage_->display_link_impl maximumRefreshRate];
-  if (UNLIKELY(max_refresh_rate <= 0)) {
+  if (max_refresh_rate <= 0) [[unlikely]] {
     return BeginFrameArgs::DefaultInterval();
   }
   return base::Hertz(max_refresh_rate);
-}
-
-void ExternalBeginFrameSourceIOS::SetDynamicBeginFrameDeadlineOffsetSource(
-    DynamicBeginFrameDeadlineOffsetSource*
-        dynamic_begin_frame_deadline_offset_source) {
-  begin_frame_args_generator_.set_dynamic_begin_frame_deadline_offset_source(
-      dynamic_begin_frame_deadline_offset_source);
 }
 
 void ExternalBeginFrameSourceIOS::OnVSync(base::TimeTicks vsync_time,

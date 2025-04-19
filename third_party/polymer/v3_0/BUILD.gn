@@ -14,16 +14,12 @@ assert(include_polymer)
 js_files = [
   "iron-a11y-keys-behavior/iron-a11y-keys-behavior.js",
   "iron-a11y-keys/iron-a11y-keys.js",
-  "iron-collapse/iron-collapse.js",
-  "iron-fit-behavior/iron-fit-behavior.js",
   "iron-flex-layout/iron-flex-layout-classes.js",
   "iron-icon/iron-icon.js",
   "iron-iconset-svg/iron-iconset-svg.js",
   "iron-list/iron-list.js",
   "iron-media-query/iron-media-query.js",
   "iron-meta/iron-meta.js",
-  "iron-pages/iron-pages.js",
-  "iron-range-behavior/iron-range-behavior.js",
   "iron-resizable-behavior/iron-resizable-behavior.js",
   "iron-scroll-target-behavior/iron-scroll-target-behavior.js",
   "iron-scroll-threshold/iron-scroll-threshold.js",
@@ -31,7 +27,6 @@ js_files = [
   "iron-selector/iron-selectable.js",
   "iron-selector/iron-selection.js",
   "iron-selector/iron-selector.js",
-  "iron-test-helpers/mock-interactions.js",
   "paper-behaviors/paper-ripple-mixin.js",
   "paper-ripple/paper-ripple.js",
   "paper-spinner/paper-spinner-behavior.js",
@@ -39,10 +34,17 @@ js_files = [
   "paper-spinner/paper-spinner-styles.js",
 ]
 
+# Also needed on LaCros for Print Preview. Remove once CrOS Print Preview
+# launches.
+if (is_chromeos) {
+  js_files += [ "iron-fit-behavior/iron-fit-behavior.js" ]
+}
+
 if (is_chromeos_ash) {
   js_files += [
     "iron-a11y-announcer/iron-a11y-announcer.js",
     "iron-behaviors/iron-control-state.js",
+    "iron-collapse/iron-collapse.js",
     "iron-dropdown/iron-dropdown.js",
     "iron-dropdown/iron-dropdown-scroll-manager.js",
     "iron-location/iron-location.js",
@@ -52,6 +54,9 @@ if (is_chromeos_ash) {
     "iron-overlay-behavior/iron-overlay-behavior.js",
     "iron-overlay-behavior/iron-overlay-manager.js",
     "iron-overlay-behavior/iron-scroll-manager.js",
+    "iron-pages/iron-pages.js",
+    "iron-range-behavior/iron-range-behavior.js",
+    "iron-test-helpers/mock-interactions.js",
     "neon-animation/animations/fade-in-animation.js",
     "neon-animation/animations/fade-out-animation.js",
     "neon-animation/neon-animatable-behavior.js",
@@ -101,55 +106,42 @@ ts_library("library") {
     # (targeting end of Q2 2024).
 
     "//chrome/browser/resources/access_code_cast:build_ts",
-    "//chrome/browser/resources/app_home:build_ts",
     "//chrome/browser/resources/app_service_internals:build_ts",
-    "//chrome/browser/resources/app_settings:build_ts",
     "//chrome/browser/resources/bookmarks:build_ts",
-    "//chrome/browser/resources/browser_switch:build_ts",
     "//chrome/browser/resources/commerce/product_specifications:build_ts",
     "//chrome/browser/resources/compose:build_ts",
     "//chrome/browser/resources/discards:build_ts",
     "//chrome/browser/resources/downloads:build_ts",
     "//chrome/browser/resources/extensions:build_ts",
-    "//chrome/browser/resources/feedback:build_ts",
     "//chrome/browser/resources/history:build_ts",
     "//chrome/browser/resources/inline_login:build_ts",
     "//chrome/browser/resources/internals/user_education:build_ts",
-    "//chrome/browser/resources/intro:build_ts",
     "//chrome/browser/resources/lens/overlay:build_ts",
     "//chrome/browser/resources/lens/overlay/search_bubble:build_ts",
-    "//chrome/browser/resources/management:build_ts",
-    "//chrome/browser/resources/media_router/cast_feedback:build_ts",
     "//chrome/browser/resources/new_tab_page:build_ts",
-    "//chrome/browser/resources/new_tab_page_third_party:build_ts",
     "//chrome/browser/resources/omnibox_popup:build_ts",
     "//chrome/browser/resources/on_device_internals:build_ts",
     "//chrome/browser/resources/password_manager:build_ts",
     "//chrome/browser/resources/pdf:build_ts",
     "//chrome/browser/resources/print_preview:build_ts",
     "//chrome/browser/resources/privacy_sandbox:build_ts",
-    "//chrome/browser/resources/profile_internals:build_ts",
-    "//chrome/browser/resources/reset_password:build_ts",
     "//chrome/browser/resources/search_engine_choice:build_ts",
     "//chrome/browser/resources/settings:build_ts",
     "//chrome/browser/resources/settings_shared:build_ts",
     "//chrome/browser/resources/side_panel/bookmarks:build_ts",
     "//chrome/browser/resources/side_panel/commerce:build_ts",
-    "//chrome/browser/resources/side_panel/performance_controls:build_ts",
     "//chrome/browser/resources/side_panel/read_anything:build_ts",
     "//chrome/browser/resources/side_panel/shared:build_ts",
-    "//chrome/browser/resources/side_panel/user_notes:build_ts",
     "//chrome/browser/resources/signin:build_ts",
     "//chrome/browser/resources/signin/profile_picker:build_ts",
     "//chrome/browser/resources/suggest_internals:build_ts",
     "//chrome/browser/resources/support_tool:build_ts",
-    "//chrome/browser/resources/tab_search:build_ts",
     "//chrome/test/data/pdf:build_ts",
     "//chrome/test/data/webui:build_ts",
-    "//chrome/test/data/webui/app_home:build_ts",
-    "//chrome/test/data/webui/app_settings:build_ts",
     "//chrome/test/data/webui/bookmarks:build_ts",
     "//chrome/test/data/webui/cr_components:build_ts",
+    "//chrome/test/data/webui/cr_components/certificate_manager:build_ts",
+    "//chrome/test/data/webui/cr_components/help_bubble:build_ts",
     "//chrome/test/data/webui/cr_elements:build_ts",
     "//chrome/test/data/webui/downloads:build_ts",
     "//chrome/test/data/webui/extensions:build_ts",
@@ -162,12 +154,9 @@ ts_library("library") {
     "//chrome/test/data/webui/privacy_sandbox:build_ts",
     "//chrome/test/data/webui/settings:build_ts",
     "//chrome/test/data/webui/side_panel:build_ts",
-    "//chrome/test/data/webui/side_panel/customize_chrome:build_ts",
     "//chrome/test/data/webui/side_panel/read_anything:build_ts",
     "//chrome/test/data/webui/signin:build_ts",
     "//chrome/test/data/webui/support_tool:build_ts",
-    "//chrome/test/data/webui/tab_search:build_ts",
-    "//content/browser/resources/traces_internals:build_ts",
     "//ui/webui/resources/cr_components/certificate_manager:build_ts",
     "//ui/webui/resources/cr_components/customize_themes:build_ts",
     "//ui/webui/resources/cr_components/help_bubble:build_ts",
@@ -182,6 +171,10 @@ ts_library("library") {
       "//chrome/browser/resources/chromeos/kerberos:build_ts",
       "//chrome/browser/resources/dlp_internals:build_ts",
     ]
+  }
+
+  if (is_chromeos_lacros) {
+    visibility += [ "//chrome/browser/resources/intro:build_ts" ]
   }
 
   if (is_chromeos_ash) {
@@ -203,17 +196,13 @@ ts_library("library") {
   definitions = [
     "components-chromium/iron-a11y-keys-behavior/iron-a11y-keys-behavior.d.ts",
     "components-chromium/iron-a11y-keys/iron-a11y-keys.d.ts",
-    "components-chromium/iron-collapse/iron-collapse.d.ts",
     "components-chromium/iron-behaviors/iron-control-state.d.ts",
-    "components-chromium/iron-fit-behavior/iron-fit-behavior.d.ts",
     "components-chromium/iron-flex-layout/iron-flex-layout-classes.d.ts",
     "components-chromium/iron-icon/iron-icon.d.ts",
     "components-chromium/iron-iconset-svg/iron-iconset-svg.d.ts",
     "components-chromium/iron-list/iron-list.d.ts",
     "components-chromium/iron-media-query/iron-media-query.d.ts",
     "components-chromium/iron-meta/iron-meta.d.ts",
-    "components-chromium/iron-pages/iron-pages.d.ts",
-    "components-chromium/iron-range-behavior/iron-range-behavior.d.ts",
     "components-chromium/iron-resizable-behavior/iron-resizable-behavior.d.ts",
     "components-chromium/iron-scroll-target-behavior/iron-scroll-target-behavior.d.ts",
     "components-chromium/iron-scroll-threshold/iron-scroll-threshold.d.ts",
@@ -221,7 +210,6 @@ ts_library("library") {
     "components-chromium/iron-selector/iron-selectable.d.ts",
     "components-chromium/iron-selector/iron-selection.d.ts",
     "components-chromium/iron-selector/iron-selector.d.ts",
-    "components-chromium/iron-test-helpers/mock-interactions.d.ts",
     "components-chromium/paper-behaviors/paper-ripple-mixin.d.ts",
     "components-chromium/paper-ripple/paper-ripple.d.ts",
     "components-chromium/paper-spinner/paper-spinner-behavior.d.ts",
@@ -276,9 +264,17 @@ ts_library("library") {
     "components-chromium/polymer/polymer-legacy.d.ts",
   ]
 
+  # Also needed on LaCros for Print Preview. Remove once CrOS Print Preview
+  # launches.
+  if (is_chromeos) {
+    definitions +=
+        [ "components-chromium/iron-fit-behavior/iron-fit-behavior.d.ts" ]
+  }
+
   if (is_chromeos_ash) {
     definitions += [
       "components-chromium/iron-a11y-announcer/iron-a11y-announcer.d.ts",
+      "components-chromium/iron-collapse/iron-collapse.d.ts",
       "components-chromium/iron-dropdown/iron-dropdown.d.ts",
       "components-chromium/iron-dropdown/iron-dropdown-scroll-manager.d.ts",
       "components-chromium/iron-location/iron-location.d.ts",
@@ -288,6 +284,9 @@ ts_library("library") {
       "components-chromium/iron-overlay-behavior/iron-overlay-behavior.d.ts",
       "components-chromium/iron-overlay-behavior/iron-overlay-manager.d.ts",
       "components-chromium/iron-overlay-behavior/iron-scroll-manager.d.ts",
+      "components-chromium/iron-pages/iron-pages.d.ts",
+      "components-chromium/iron-range-behavior/iron-range-behavior.d.ts",
+      "components-chromium/iron-test-helpers/mock-interactions.d.ts",
       "components-chromium/neon-animation/animations/fade-in-animation.d.ts",
       "components-chromium/neon-animation/animations/fade-out-animation.d.ts",
       "components-chromium/neon-animation/neon-animatable-behavior.d.ts",

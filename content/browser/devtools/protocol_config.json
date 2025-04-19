@@ -42,6 +42,9 @@
                   "setDevicePostureOverride",
                   "clearDevicePostureOverride",
 
+                  "setPressureSourceOverrideEnabled",
+                  "setPressureStateOverride",
+
                   "setIdleOverride",
                   "clearIdleOverride",
                   "setGeolocationOverride",
@@ -57,8 +60,8 @@
                 ],
                 "async": [
                   "getOverriddenSensorInformation",
-                  "setSensorOverrideEnabled",
-                  "setSensorOverrideReadings"
+                  "setSensorOverrideReadings",
+                  "setPressureStateOverride"
                 ]
             },
             {
@@ -93,7 +96,7 @@
             {
                 "domain": "Network",
                 "include": ["enable", "disable", "clearBrowserCache", "clearBrowserCookies", "getCookies", "getAllCookies", "deleteCookies", "setCookie", "setCookies", "setExtraHTTPHeaders", "canEmulateNetworkConditions", "emulateNetworkConditions", "setBypassServiceWorker", "setRequestInterception", "continueInterceptedRequest", "getResponseBody", "getResponseBodyForInterception", "setCacheDisabled", "takeResponseBodyForInterceptionAsStream", "getSecurityIsolationStatus", "loadNetworkResource", "setAcceptedEncodings", "clearAcceptedEncodingsOverride", "enableReportingApi"],
-                "include_events": ["requestWillBeSent", "responseReceived", "loadingFinished", "loadingFailed", "requestIntercepted", "signedExchangeReceived", "requestWillBeSentExtraInfo", "responseReceivedExtraInfo", "responseReceivedEarlyHints", "trustTokenOperationDone", "subresourceWebBundleMetadataReceived", "subresourceWebBundleMetadataError", "subresourceWebBundleInnerResponseParsed", "subresourceWebBundleInnerResponseError", "reportingApiReportAdded", "reportingApiReportUpdated", "reportingApiEndpointsChangedForOrigin"],
+                "include_events": ["requestWillBeSent", "responseReceived", "loadingFinished", "loadingFailed", "requestIntercepted", "signedExchangeReceived", "requestWillBeSentExtraInfo", "responseReceivedExtraInfo", "responseReceivedEarlyHints", "trustTokenOperationDone", "subresourceWebBundleMetadataReceived", "subresourceWebBundleMetadataError", "subresourceWebBundleInnerResponseParsed", "subresourceWebBundleInnerResponseError", "policyUpdated", "reportingApiReportAdded", "reportingApiReportUpdated", "reportingApiEndpointsChangedForOrigin"],
                 "async": ["clearBrowserCookies", "clearBrowserCache", "getCookies", "getAllCookies", "deleteCookies", "setCookie", "setCookies", "continueInterceptedRequest", "getResponseBody", "getResponseBodyForInterception", "takeResponseBodyForInterceptionAsStream", "loadNetworkResource"]
             },
             {
@@ -169,6 +172,13 @@
                 "domain": "DeviceAccess",
                 "include": ["enable", "disable", "selectPrompt", "cancelPrompt"],
                 "include_events": ["deviceRequestPrompted"]
+            },
+            {
+                "domain": "BluetoothEmulation",
+                "async": [
+                    "simulatePreconnectedPeripheral",
+                    "simulateAdvertisement"
+                ]
             }
         ]
     },

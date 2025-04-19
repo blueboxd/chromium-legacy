@@ -25,6 +25,7 @@
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom.h"
+#include "third_party/blink/public/mojom/page/prerender_page_param.mojom.h"
 #include "third_party/blink/public/platform/scheduler/web_agent_group_scheduler.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_policy_container.h"
@@ -121,8 +122,8 @@ bool WebViewPlugin::Initialize(WebPluginContainer* container) {
 
   old_title_ = container_->GetElement().GetAttribute("title");
 
-  web_view()->SetZoomLevel(
-      blink::PageZoomFactorToZoomLevel(container_->PageZoomFactor()));
+  web_view()->MainFrameWidget()->SetZoomLevel(
+      blink::ZoomFactorToZoomLevel(container_->LayoutZoomFactor()));
 
   return true;
 }
@@ -270,8 +271,7 @@ WebViewPlugin::WebViewHelper::WebViewHelper(
   web_view_ = WebView::Create(
       /*client=*/this,
       /*is_hidden=*/false,
-      /*is_prerendering=*/false,
-      /*is_inside_portal=*/false,
+      /*prerender_param=*/nullptr,
       /*fenced_frame_mode=*/std::nullopt,
       /*compositing_enabled=*/false,
       /*widgets_never_composited=*/false,
@@ -291,7 +291,7 @@ WebViewPlugin::WebViewHelper::WebViewHelper(
   web_view_->SetRendererPreferences(renderer_preferences);
 
   WebLocalFrame* web_frame = WebLocalFrame::CreateMainFrame(
-      web_view_, this, nullptr, blink::LocalFrameToken(),
+      web_view_, this, nullptr, mojo::NullRemote(), blink::LocalFrameToken(),
       blink::DocumentToken(), nullptr);
   blink::WebFrameWidget* frame_widget = web_frame->InitializeFrameWidget(
       blink::CrossVariantMojoAssociatedRemote<
@@ -410,8 +410,8 @@ void WebViewPlugin::WebViewHelper::FrameDetached() {
 
 void WebViewPlugin::OnZoomLevelChanged() {
   if (container_) {
-    web_view()->SetZoomLevel(
-        blink::PageZoomFactorToZoomLevel(container_->PageZoomFactor()));
+    web_view()->MainFrameWidget()->SetZoomLevel(
+        blink::ZoomFactorToZoomLevel(container_->LayoutZoomFactor()));
   }
 }
 

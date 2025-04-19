@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/supervised_user/supervised_user_browser_utils.h"
+
 #include <string>
 
 #include "base/check.h"
@@ -12,10 +13,13 @@
 #include "chrome/browser/profiles/profile_selections.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/url_constants.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/supervised_user/core/common/features.h"
+#include "components/supervised_user/core/common/pref_names.h"
+#include "components/supervised_user/core/common/supervised_user_constants.h"
 #include "components/url_matcher/url_util.h"
 #include "extensions/buildflags/buildflags.h"
 #include "extensions/common/extension_urls.h"
@@ -72,6 +76,31 @@ bool IsSupportedChromeExtensionURL(const GURL& effective_url) {
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 }
 
+bool SupervisedUserCanSkipExtensionParentApprovals(const Profile* profile) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  return profile->IsChild() &&
+         IsSupervisedUserSkipParentApprovalToInstallExtensionsEnabled() &&
+         profile->GetPrefs()->GetBoolean(
+             prefs::kSkipParentApprovalToInstallExtensions);
+#else
+  return false;
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+}
+
+bool AreExtensionsPermissionsEnabled(Profile* profile) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#if BUILDFLAG(IS_CHROMEOS)
+  return profile->IsChild();
+#else
+  return profile->IsChild() &&
+         base::FeatureList::IsEnabled(
+             kEnableExtensionsPermissionsForSupervisedUsersOnDesktop);
+#endif  // BUILDFLAG(IS_CHROMEOS)
+#else
+  return false;
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+}
+
 bool ShouldContentSkipParentAllowlistFiltering(content::WebContents* contents) {
   // Note that |contents| can be an inner WebContents. Get the outer most
   // WebContents and check if it belongs to the EDUCoexistence login flow.
@@ -87,6 +116,8 @@ ProfileSelections BuildProfileSelectionsForRegularAndGuest() {
   return ProfileSelections::Builder()
       .WithRegular(ProfileSelection::kOriginalOnly)
       .WithGuest(ProfileSelection::kRedirectedToOriginal)
+      // TODO(crbug.com/41488885): Check if this is needed for Ash Internals.
+      .WithAshInternals(ProfileSelection::kOriginalOnly)
       .Build();
 }
 

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ash/wm/desks/desks_controller.h"
 
 #include <algorithm>
@@ -36,6 +41,7 @@
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/scoped_overview_hide_windows.h"
+#include "ash/wm/snap_group/snap_group_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/switchable_windows.h"
@@ -117,6 +123,10 @@ constexpr int kDeskTraversalsMaxValue = 20;
 // interval.
 constexpr base::TimeDelta kDeskTraversalsTimeout = base::Seconds(5);
 
+// The timeout duration that we allow an app window on a closed desk to run
+// its "close" hooks before being forcefully closed.
+base::TimeDelta g_close_all_window_close_timeout = base::Seconds(1);
+
 constexpr int kDeskDefaultNameIds[] = {
     IDS_ASH_DESKS_DESK_1_MINI_VIEW_TITLE,
     IDS_ASH_DESKS_DESK_2_MINI_VIEW_TITLE,
@@ -168,7 +178,7 @@ void RemoveAllWindowsFromOverview() {
       Shell::Get()->overview_controller()->overview_session();
   for (const auto& grid : overview_session->grid_list()) {
     while (!grid->empty()) {
-      OverviewItemBase* overview_item = grid->window_list()[0].get();
+      OverviewItemBase* overview_item = grid->item_list()[0].get();
 
       // We want to restore the window here primarily because when we are
       // undoing the removal of an active desk outside of overview, we do not
@@ -262,6 +272,7 @@ void ShowDeskRemovalUndoToast(const std::string& toast_id,
   undo_toast_data.show_on_all_root_windows = true;
   undo_toast_data.dismiss_callback = std::move(dismiss_callback);
   undo_toast_data.expired_callback = std::move(expired_callback);
+  undo_toast_data.activatable = use_persistent_toast;
   ToastManager::Get()->Show(std::move(undo_toast_data));
 }
 
@@ -991,6 +1002,14 @@ void DesksController::AddVisibleOnAllDesksWindow(aura::Window* window) {
   if (!visible_on_all_desks_windows_.emplace(window).second)
     return;
 
+  if (SnapGroupController* snap_group_controller = SnapGroupController::Get()) {
+    if (SnapGroup* snap_group =
+            snap_group_controller->GetSnapGroupForGivenWindow(window)) {
+      snap_group_controller->RemoveSnapGroup(
+          snap_group, SnapGroupExitPoint::kVisibleOnAllDesks);
+    }
+  }
+
   // A window is made visible on all desks by always keeping it on the active
   // desk. If `window` isn't already on the active desk, then we need to move it
   // there. We will also skip the bounce animation.
@@ -1009,9 +1028,7 @@ void DesksController::AddVisibleOnAllDesksWindow(aura::Window* window) {
                            /*unminimize=*/false);
   }
 
-  if (features::IsPerDeskZOrderEnabled()) {
-    TrackWindowOnAllDesks(window);
-  }
+  TrackWindowOnAllDesks(window);
 
   if (do_window_bound_animation) {
     wm::AnimateWindow(window, wm::WINDOW_ANIMATION_TYPE_BOUNCE);
@@ -1026,9 +1043,7 @@ void DesksController::AddVisibleOnAllDesksWindow(aura::Window* window) {
 
 void DesksController::MaybeRemoveVisibleOnAllDesksWindow(aura::Window* window) {
   if (visible_on_all_desks_windows_.erase(window)) {
-    if (features::IsPerDeskZOrderEnabled()) {
-      UntrackWindowFromAllDesks(window);
-    }
+    UntrackWindowFromAllDesks(window);
 
     wm::AnimateWindow(window, wm::WINDOW_ANIMATION_TYPE_BOUNCE);
     NotifyAllDesksForContentChanged();
@@ -1041,7 +1056,6 @@ void DesksController::MaybeRemoveVisibleOnAllDesksWindow(aura::Window* window) {
 }
 
 void DesksController::NotifyAllDeskWindowMovedToNewRoot(aura::Window* window) {
-  CHECK(features::IsPerDeskZOrderEnabled());
   for (auto& desk : desks_) {
     desk->AllDeskWindowMovedToNewRoot(window);
   }
@@ -1494,27 +1508,15 @@ void DesksController::MaybeDismissPersistentDeskRemovalToast() {
   }
 }
 
-bool DesksController::MaybeToggleA11yHighlightOnUndoDeskRemovalToast() {
+bool DesksController::RequestFocusOnUndoDeskRemovalToast() {
   if (!Shell::Get()->accessibility_controller()->spoken_feedback().enabled() ||
       !temporary_removed_desk_ ||
       !ToastManager::Get()->IsToastShown(temporary_removed_desk_->toast_id())) {
     return false;
   }
 
-  return ToastManager::Get()
-      ->MaybeToggleA11yHighlightOnActiveToastDismissButton(
-          temporary_removed_desk_->toast_id());
-}
-
-bool DesksController::MaybeActivateDeskRemovalUndoButtonOnHighlightedToast() {
-  if (!temporary_removed_desk_ ||
-      !ToastManager::Get()->IsToastShown(temporary_removed_desk_->toast_id())) {
-    return false;
-  }
-
-  return ToastManager::Get()
-      ->MaybeActivateHighlightedDismissButtonOnActiveToast(
-          temporary_removed_desk_->toast_id());
+  return ToastManager::Get()->RequestFocusOnActiveToastDismissButton(
+      temporary_removed_desk_->toast_id());
 }
 
 bool DesksController::CanEnterOverview() const {
@@ -1678,9 +1680,9 @@ void DesksController::OnAnimationFinished(DeskAnimationBase* animation) {
   animation_.reset();
 
   // If we just switched desks due to removing the active desk, we immediately
-  // highlight the undo button.
+  // focus the undo button.
   if (Shell::Get()->accessibility_controller()->spoken_feedback().enabled()) {
-    MaybeToggleA11yHighlightOnUndoDeskRemovalToast();
+    RequestFocusOnUndoDeskRemovalToast();
   }
 }
 
@@ -1703,9 +1705,7 @@ void DesksController::ActivateDeskInternal(const Desk* desk,
   // `old_active` desk do not activate other windows on the same desk. See
   // `ash::AshFocusRules::GetNextActivatableWindow()`.
   Desk* old_active = active_desk_;
-
-  if (features::IsPerDeskZOrderEnabled())
-    old_active->BuildAllDeskStackingData();
+  old_active->BuildAllDeskStackingData();
 
   auto* shell = Shell::Get();
   auto* overview_controller = shell->overview_controller();
@@ -2190,7 +2190,7 @@ void DesksController::FinalizeDeskRemoval(RemovedDeskData* removed_desk_data) {
       base::BindOnce(&DesksController::CleanUpClosedAppWindowsTask,
                      weak_ptr_factory_.GetWeakPtr(),
                      std::move(closing_window_tracker)),
-      kCloseAllWindowCloseTimeout);
+      g_close_all_window_close_timeout);
 
   // `temporary_removed_desk_` should not be set at this point.
   DCHECK(!temporary_removed_desk_);
@@ -2212,14 +2212,9 @@ void DesksController::MaybeCommitPendingDeskRemoval(
   }
 }
 
-bool DesksController::IsUndoToastShown() const {
+bool DesksController::IsUndoToastFocused() const {
   return temporary_removed_desk_ &&
-         ToastManager::Get()->IsToastShown(temporary_removed_desk_->toast_id());
-}
-
-bool DesksController::IsUndoToastHighlighted() const {
-  return temporary_removed_desk_ &&
-         ToastManager::Get()->IsToastDismissButtonHighlighted(
+         ToastManager::Get()->IsToastDismissButtonFocused(
              temporary_removed_desk_->toast_id());
 }
 
@@ -2296,65 +2291,7 @@ void DesksController::NotifyFullScreenStateChangedAcrossDesksIfNeeded(
 }
 
 void DesksController::RestackVisibleOnAllDesksWindowsOnActiveDesk() {
-  if (features::IsPerDeskZOrderEnabled()) {
-    active_desk_->RestackAllDeskWindows();
-    return;
-  }
-
-  auto mru_windows =
-      Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
-  for (aura::Window* visible_on_all_desks_window :
-       visible_on_all_desks_windows_) {
-    // If the window is floated, it will always be on top, so there is no need
-    // to restack it.
-    if (WindowState::Get(visible_on_all_desks_window)->IsFloated()) {
-      continue;
-    }
-
-    auto visible_on_all_desks_window_iter =
-        base::ranges::find(mru_windows, visible_on_all_desks_window);
-    if (visible_on_all_desks_window_iter == mru_windows.end())
-      continue;
-
-    auto* desk_container =
-        visible_on_all_desks_window->GetRootWindow()->GetChildById(
-            active_desk_->container_id());
-    if (desk_container != visible_on_all_desks_window->parent()) {
-      // TODO(b/295371112): Clean this up when the root cause has been resolved.
-      // This can sometimes happen and we're still trying to nail down the root
-      // cause. Rather than proceeding to stack the window (which will crash),
-      // we'll log some info and skip the window.
-      SCOPED_CRASH_KEY_NUMBER(
-          "Restack", "adw_app_type",
-          static_cast<int>(
-              visible_on_all_desks_window->GetProperty(chromeos::kAppTypeKey)));
-      SCOPED_CRASH_KEY_STRING32(
-          "Restack", "adw_app_id",
-          ::full_restore::GetAppId(visible_on_all_desks_window));
-      base::debug::DumpWithoutCrashing();
-      continue;
-    }
-
-    // Search through the MRU list for the next element that shares the same
-    // parent. This will be used to stack |visible_on_all_desks_window| in
-    // the active desk so its stacking respects global MRU order.
-    auto closest_window_below_iter =
-        std::next(visible_on_all_desks_window_iter);
-    while (closest_window_below_iter != mru_windows.end() &&
-           (*closest_window_below_iter)->parent() !=
-               visible_on_all_desks_window->parent()) {
-      closest_window_below_iter = std::next(closest_window_below_iter);
-    }
-
-    if (closest_window_below_iter == mru_windows.end()) {
-      // There was no element in the MRU list that was used after
-      // |visible_on_all_desks_window| so stack it at the bottom.
-      desk_container->StackChildAtBottom(visible_on_all_desks_window);
-    } else {
-      desk_container->StackChildAbove(visible_on_all_desks_window,
-                                      *closest_window_below_iter);
-    }
-  }
+  active_desk_->RestackAllDeskWindows();
 }
 
 const Desk* DesksController::FindDeskOfWindow(aura::Window* window) const {
@@ -2444,6 +2381,18 @@ void DesksController::ReportCustomDeskNames() const {
                               custom_names_count);
   base::UmaHistogramPercentage(kPercentageOfCustomNamesHistogramName,
                                custom_names_count * 100 / desks_.size());
+}
+
+// static
+base::TimeDelta DesksController::GetCloseAllWindowCloseTimeoutForTest() {
+  return g_close_all_window_close_timeout;
+}
+
+// static
+base::AutoReset<base::TimeDelta>
+DesksController::SetCloseAllWindowCloseTimeoutForTest(
+    base::TimeDelta interval) {
+  return {&g_close_all_window_close_timeout, interval};
 }
 
 }  // namespace ash

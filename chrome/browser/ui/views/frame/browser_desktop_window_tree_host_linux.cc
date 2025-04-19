@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "third_party/skia/include/core/SkRRect.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/skia_conversions.h"
@@ -132,7 +133,7 @@ void BrowserDesktopWindowTreeHostLinux::FrameTypeChanged() {
 }
 
 bool BrowserDesktopWindowTreeHostLinux::SupportsMouseLock() {
-  auto* wayland_extension = ui::GetWaylandExtension(*platform_window());
+  auto* wayland_extension = ui::GetWaylandToplevelExtension(*platform_window());
   if (!wayland_extension) {
     return false;
   }
@@ -144,7 +145,8 @@ void BrowserDesktopWindowTreeHostLinux::LockMouse(aura::Window* window) {
   DesktopWindowTreeHostLinux::LockMouse(window);
 
   if (SupportsMouseLock()) {
-    auto* wayland_extension = ui::GetWaylandExtension(*platform_window());
+    auto* wayland_extension =
+        ui::GetWaylandToplevelExtension(*platform_window());
     wayland_extension->LockPointer(true /*enabled*/);
   }
 }
@@ -153,7 +155,8 @@ void BrowserDesktopWindowTreeHostLinux::UnlockMouse(aura::Window* window) {
   DesktopWindowTreeHostLinux::UnlockMouse(window);
 
   if (SupportsMouseLock()) {
-    auto* wayland_extension = ui::GetWaylandExtension(*platform_window());
+    auto* wayland_extension =
+        ui::GetWaylandToplevelExtension(*platform_window());
     wayland_extension->LockPointer(false /*enabled*/);
   }
 }
@@ -177,7 +180,8 @@ void BrowserDesktopWindowTreeHostLinux::TabDraggingKindChanged(
     }
   }
 
-  if (auto* wayland_extension = ui::GetWaylandExtension(*platform_window())) {
+  if (auto* wayland_extension =
+          ui::GetWaylandToplevelExtension(*platform_window())) {
     if (tab_drag_kind != TabDragKind::kNone) {
       if (auto event_source = GetCurrentTabDragEventSource()) {
         const auto allow_system_drag = base::FeatureList::IsEnabled(
@@ -340,7 +344,7 @@ gfx::Insets BrowserDesktopWindowTreeHostLinux::CalculateInsetsInDIP(
   }
 
   return static_cast<BrowserNonClientFrameView*>(browser_frame_->GetFrameView())
-      ->MirroredFrameBorderInsets();
+      ->RestoredMirroredFrameBorderInsets();
 }
 
 void BrowserDesktopWindowTreeHostLinux::OnWindowStateChanged(
@@ -354,6 +358,13 @@ void BrowserDesktopWindowTreeHostLinux::OnWindowStateChanged(
     // If the browser view initiated this state change,
     // BrowserView::ProcessFullscreen will no-op, so this call is harmless.
     browser_view_->FullscreenStateChanging();
+
+    // In sync fullscreen window state mode, the FullscreenStateChanged()
+    // is called just after requesting to set fullscreen property
+    // to the platform, so not to call here to avoid duplicated invocation.
+    if (base::FeatureList::IsEnabled(features::kAsyncFullscreenWindowState)) {
+      browser_view_->FullscreenStateChanged();
+    }
   }
 
   UpdateFrameHints();

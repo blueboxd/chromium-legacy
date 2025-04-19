@@ -15,7 +15,6 @@ import org.jni_zero.CalledByNative;
 import org.jni_zero.JNINamespace;
 import org.jni_zero.JniType;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -40,9 +39,8 @@ public class FormData {
             int sessionId,
             @JniType("std::u16string") String name,
             @JniType("std::string") String origin,
-            @JniType("std::vector") Object[] fields) {
-        return new FormData(
-                sessionId, name, origin, (List<FormFieldData>) (List<?>) Arrays.asList(fields));
+            @JniType("std::vector") List<FormFieldData> fields) {
+        return new FormData(sessionId, name, origin, fields);
     }
 
     public FormData(int sessionId, String name, String host, List<FormFieldData> fields) {
@@ -56,8 +54,9 @@ public class FormData {
      * Translates the current form into a ViewStructure processed by Android's Autofill framework.
      *
      * @param structure out parameter, the structure passed to the framework.
+     * @param focusFieldIndex the index of the field that is currently focused. -1 if unknown.
      */
-    public void fillViewStructure(ViewStructure structure) {
+    public void fillViewStructure(ViewStructure structure, short focusFieldIndex) {
         structure.setWebDomain(mHost);
         structure.setHtmlInfo(
                 structure.newHtmlInfoBuilder("form").addAttribute("name", mName).build());
@@ -65,6 +64,9 @@ public class FormData {
         short fieldIndex = 0;
         for (FormFieldData field : mFields) {
             ViewStructure child = structure.newChild(index++);
+            if (focusFieldIndex == fieldIndex) {
+                child.setFocused(true);
+            }
             int virtualId = toFieldVirtualId(mSessionId, fieldIndex++);
             child.setAutofillId(structure.getAutofillId(), virtualId);
             field.setAutofillId(child.getAutofillId());

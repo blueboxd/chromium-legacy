@@ -22,9 +22,13 @@
 #include "chrome/browser/keyboard_accessory/android/accessory_sheet_data.h"
 #include "chrome/browser/keyboard_accessory/android/accessory_sheet_enums.h"
 #include "chrome/browser/keyboard_accessory/android/address_accessory_controller.h"
+#include "chrome/browser/keyboard_accessory/android/affiliated_plus_profiles_cache.h"
 #include "chrome/browser/keyboard_accessory/android/password_accessory_controller.h"
 #include "chrome/browser/keyboard_accessory/android/payment_method_accessory_controller.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
+#include "chrome/browser/plus_addresses/plus_address_service_factory.h"
+#include "components/autofill/content/browser/content_autofill_client.h"
+#include "components/plus_addresses/features.h"
 #include "content/public/browser/web_contents.h"
 
 using autofill::AccessoryAction;
@@ -42,90 +46,12 @@ constexpr auto kAllowedFillingSources = base::MakeFixedFlatSet<FillingSource>(
     {FillingSource::PASSWORD_FALLBACKS, FillingSource::CREDIT_CARD_FALLBACKS,
      FillingSource::ADDRESS_FALLBACKS});
 
-FillingSource GetSourceForTabType(const AccessorySheetData& accessory_sheet) {
-  switch (accessory_sheet.get_sheet_type()) {
-    case AccessoryTabType::PASSWORDS:
-      return FillingSource::PASSWORD_FALLBACKS;
-    case AccessoryTabType::CREDIT_CARDS:
-      return FillingSource::CREDIT_CARD_FALLBACKS;
-    case AccessoryTabType::ADDRESSES:
-      return FillingSource::ADDRESS_FALLBACKS;
-    case AccessoryTabType::OBSOLETE_TOUCH_TO_FILL:
-    case AccessoryTabType::ALL:
-    case AccessoryTabType::COUNT:
-      NOTREACHED_IN_MIGRATION() << "Cannot determine filling source";
-      return FillingSource::PASSWORD_FALLBACKS;
-  }
-}
-
-// This method describes whether an action is sufficiently relevant to show a
-// fallback sheet for their own sake in the accessory V1. As of this writing,
-// they filter mainly the "Manage" entry points since they are only useful if
-// users stored data already.
-bool IsRelevantActionForVisibility(AccessoryAction action) {
-  switch (action) {
-    case AccessoryAction::MANAGE_CREDIT_CARDS:
-    case AccessoryAction::MANAGE_ADDRESSES:
-      // These options don't provide merit on their own. If the user has no data
-      // in the fallback sheet, "manage" is not likely to be useful. The space
-      // the accessory consumes is very hard to justify in this case.
-      return false;
-
-    case AccessoryAction::MANAGE_PASSWORDS:
-      // Technically, the "Manage" entry point justifies showing the bar if two
-      // conditions are met:
-      // a) the user has at least one password for *any* site (and looks for it)
-      // b) the user wants to sign up and needs to adjust their settings
-      // But a) is covered by the presence of USE_OTHER_PASSWORD and b) is
-      // covered by
-      // * the pwd generation logic showing the bar for new sites, OR
-      // * the recovery toggle showing the bar for already encountered sites.
-      // Therefore, Manage Passwords is a weak signal that shows the accessory
-      // too often and in cases where it doesn't make sense: most notably on
-      // non-search inputs that *could be a username* – even without any stored
-      // passwords. This applies to almost every form in a field
-      return false;
-
-    // The cases below don't exist in fallback sheets as of this writing. But if
-    // they ever move there, the sheet has a strong reason to be accessible.
-    case AccessoryAction::AUTOFILL_SUGGESTION:
-    case AccessoryAction::GENERATE_PASSWORD_AUTOMATIC:
-    case AccessoryAction::TOGGLE_SAVE_PASSWORDS:
-      return true;
-
-    // These cases are sufficient as a reason for showing the fallback sheet.
-    case AccessoryAction::USE_OTHER_PASSWORD:
-    case AccessoryAction::GENERATE_PASSWORD_MANUAL:
-    case AccessoryAction::CREDMAN_CONDITIONAL_UI_REENTRY:
-    case AccessoryAction::CROSS_DEVICE_PASSKEY:
-      return true;
-
-    case AccessoryAction::COUNT:
-      NOTREACHED_IN_MIGRATION();
-  }
-  return false;
-}
-
-// This method filters which actions are sufficient on their own to justify
-// showing the V1 version of the accessory. With V2, that decision is moved into
-// each `AccessoryController::GetSheetData` implementation.
-// In general, if there is any saved data, we want to show the fallback.
-bool HasRelevantSuggestions(const AccessorySheetData& accessory_sheet_data) {
-  return !accessory_sheet_data.user_info_list().empty() ||
-         !accessory_sheet_data.promo_code_info_list().empty() ||
-         accessory_sheet_data.option_toggle().has_value() ||
-         base::ranges::any_of(accessory_sheet_data.footer_commands(),
-                              &IsRelevantActionForVisibility,
-                              &autofill::FooterCommand::accessory_action);
-}
-
 }  // namespace
 
 ManualFillingControllerImpl::~ManualFillingControllerImpl() {
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
 }
-
 // static
 base::WeakPtr<ManualFillingController> ManualFillingController::GetOrCreate(
     content::WebContents* contents) {
@@ -179,16 +105,6 @@ void ManualFillingControllerImpl::OnAccessoryActionAvailabilityChanged(
   view_->OnAccessoryActionAvailabilityChanged(shouldShowAction, action);
 }
 
-void ManualFillingControllerImpl::RefreshSuggestions(
-    const AccessorySheetData& accessory_sheet_data) {
-  TRACE_EVENT0("passwords", "ManualFillingControllerImpl::RefreshSuggestions");
-  view_->OnItemsAvailable(accessory_sheet_data);
-  available_sheets_.insert_or_assign(GetSourceForTabType(accessory_sheet_data),
-                                     accessory_sheet_data);
-  UpdateSourceAvailability(GetSourceForTabType(accessory_sheet_data),
-                           HasRelevantSuggestions(accessory_sheet_data));
-}
-
 void ManualFillingControllerImpl::NotifyFocusedInputChanged(
     autofill::FieldRendererId focused_field_id,
     autofill::mojom::FocusedFieldType focused_field_type) {
@@ -213,6 +129,11 @@ void ManualFillingControllerImpl::NotifyFocusedInputChanged(
     view_->CloseAccessorySheet();
 
   UpdateVisibility();
+}
+
+autofill::FieldGlobalId ManualFillingControllerImpl::GetLastFocusedFieldId()
+    const {
+  return last_focused_field_id_;
 }
 
 void ManualFillingControllerImpl::ShowAccessorySheetTab(
@@ -342,6 +263,8 @@ ManualFillingControllerImpl::ManualFillingControllerImpl(
       PaymentMethodAccessoryController::GetOrCreate(web_contents)->AsWeakPtr();
   DCHECK(payment_method_controller_);
 
+  InitializePlusProfilesCache();
+
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "ManualFillingCache",
       base::SingleThreadTaskRunner::GetCurrentDefault());
@@ -358,9 +281,30 @@ ManualFillingControllerImpl::ManualFillingControllerImpl(
       address_controller_(std::move(address_controller)),
       payment_method_controller_(std::move(payment_method_controller)),
       view_(std::move(view)) {
+  InitializePlusProfilesCache();
+
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "ManualFillingCache",
       base::SingleThreadTaskRunner::GetCurrentDefault());
+}
+
+void ManualFillingControllerImpl::InitializePlusProfilesCache() {
+  if (!base::FeatureList::IsEnabled(
+          plus_addresses::features::kPlusAddressAndroidManualFallbackEnabled)) {
+    return;
+  }
+  auto* client =
+      autofill::ContentAutofillClient::FromWebContents(&GetWebContents());
+  auto* service = PlusAddressServiceFactory::GetForBrowserContext(
+      GetWebContents().GetBrowserContext());
+  if (client && service) {
+    plus_profiles_cache_ =
+        std::make_unique<AffiliatedPlusProfilesCache>(client, service);
+    pwd_controller_->RegisterPlusProfilesProvider(
+        plus_profiles_cache_->GetWeakPtr());
+    address_controller_->RegisterPlusProfilesProvider(
+        plus_profiles_cache_->GetWeakPtr());
+  }
 }
 
 bool ManualFillingControllerImpl::OnMemoryDump(
@@ -369,9 +313,10 @@ bool ManualFillingControllerImpl::OnMemoryDump(
   auto* dump = process_memory_dump->CreateAllocatorDump(
       base::StringPrintf("passwords/manual_filling_controller/0x%" PRIXPTR,
                          reinterpret_cast<uintptr_t>(this)));
+  // TODO: crbug.com/40165275 - Clean up memory usage logging.
   dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                   base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                  base::trace_event::EstimateMemoryUsage(available_sheets_));
+                  /*value=*/0);
   return true;
 }
 
@@ -405,12 +350,6 @@ void ManualFillingControllerImpl::UpdateVisibility() {
   TRACE_EVENT0("passwords", "ManualFillingControllerImpl::UpdateVisibility");
   if (ShouldShowAccessory()) {
     for (const FillingSource& source : available_sources_) {
-      if (available_sheets_.contains(source)) {
-        // Use a local cached copy if it exists. This will be deprecated with
-        // crbug.com/1169167.
-        view_->OnItemsAvailable(available_sheets_.find(source)->second);
-        continue;
-      }
       if (source == FillingSource::AUTOFILL)
         continue;  // Autofill suggestions have no sheet.
       AccessoryController* controller = GetControllerForFillingSource(source);
@@ -421,11 +360,17 @@ void ManualFillingControllerImpl::UpdateVisibility() {
       if (sheet.has_value())
         view_->OnItemsAvailable(std::move(sheet.value()));
     }
+    if (plus_profiles_cache_) {
+      plus_profiles_cache_->FetchAffiliatedPlusProfiles();
+    }
     view_->Show(ManualFillingViewInterface::WaitForKeyboard(
         last_focused_field_type_ != FocusedFieldType::kUnfillableElement &&
         last_focused_field_type_ != FocusedFieldType::kUnknown));
 
   } else {
+    if (plus_profiles_cache_) {
+      plus_profiles_cache_->ClearCachedPlusProfiles();
+    }
     view_->Hide();
   }
 }
@@ -484,8 +429,12 @@ AccessoryController* ManualFillingControllerImpl::GetControllerForAction(
     case AccessoryAction::TOGGLE_SAVE_PASSWORDS:
     case AccessoryAction::CREDMAN_CONDITIONAL_UI_REENTRY:
     case AccessoryAction::CROSS_DEVICE_PASSKEY:
+    case AccessoryAction::CREATE_PLUS_ADDRESS_FROM_PASSWORD_SHEET:
+    case AccessoryAction::SELECT_PLUS_ADDRESS_FROM_PASSWORD_SHEET:
       return pwd_controller_.get();
     case AccessoryAction::MANAGE_ADDRESSES:
+    case AccessoryAction::CREATE_PLUS_ADDRESS_FROM_ADDRESS_SHEET:
+    case AccessoryAction::SELECT_PLUS_ADDRESS_FROM_ADDRESS_SHEET:
       return address_controller_.get();
     case AccessoryAction::MANAGE_CREDIT_CARDS:
       return payment_method_controller_.get();

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ui/ozone/platform/x11/x11_window.h"
 
 #include "base/memory/scoped_refptr.h"
@@ -69,8 +74,9 @@ bool CoalesceEventsIfNeeded(const x11::Event& xev,
                             x11::Event* out) {
   if (xev.As<x11::MotionNotifyEvent>() ||
       (xev.As<x11::Input::DeviceEvent>() &&
-       (type == ui::ET_TOUCH_MOVED || type == ui::ET_MOUSE_MOVED ||
-        type == ui::ET_MOUSE_DRAGGED))) {
+       (type == ui::EventType::kTouchMoved ||
+        type == ui::EventType::kMouseMoved ||
+        type == ui::EventType::kMouseDragged))) {
     return ui::CoalescePendingMotionEvents(xev, out) > 0;
   }
   return false;
@@ -690,6 +696,8 @@ void X11Window::SetFullscreen(bool fullscreen, int64_t target_display_id) {
     }
   }
 
+  UpdateDecorationInsets();
+
   // Do not go through SetBounds as long as it adjusts bounds and sets them to X
   // Server. Instead, we just store the bounds and notify the client that the
   // window occupies the entire screen.
@@ -1301,7 +1309,7 @@ bool X11Window::HandleAsAtkEvent(const x11::KeyEvent& key_event,
 
 void X11Window::OnEvent(const x11::Event& xev) {
   auto event_type = ui::EventTypeFromXEvent(xev);
-  if (event_type != ET_UNKNOWN) {
+  if (event_type != EventType::kUnknown) {
     // If this event can be translated, it will be handled in ::DispatchEvent.
     // Otherwise, we end up processing XEvents twice that could lead to unwanted
     // behaviour like loosing activation during tab drag and etc.
@@ -1379,7 +1387,8 @@ void X11Window::DispatchUiEvent(ui::Event* event, const x11::Event& xev) {
   if (event->IsLocatedEvent() && located_events_grabber &&
       located_events_grabber != this) {
     if (event->IsMouseEvent() ||
-        (event->IsTouchEvent() && event->type() == ui::ET_TOUCH_PRESSED)) {
+        (event->IsTouchEvent() &&
+         event->type() == ui::EventType::kTouchPressed)) {
       // Another X11Window has installed itself as capture. Translate the
       // event's location and dispatch to the other.
       ConvertEventLocationToTargetWindowLocation(
@@ -1497,6 +1506,7 @@ void X11Window::OnXWindowStateChanged() {
     tiled_state_ = tiled_state;
 #if BUILDFLAG(IS_LINUX)
     platform_window_delegate_->OnWindowTiledStateChanged(tiled_state);
+    UpdateDecorationInsets();
 #endif
   }
 }
@@ -1928,6 +1938,8 @@ void X11Window::Map(bool inactive) {
   }
 
   UpdateMinAndMaxSize();
+
+  UpdateDecorationInsets();
 
   if (window_properties_.empty()) {
     connection_->DeleteProperty(xwindow_, x11::GetAtom("_NET_WM_STATE"));
@@ -2394,8 +2406,8 @@ void X11Window::UpdateWMUserTime(Event* event) {
   }
   DCHECK(event);
   EventType type = event->type();
-  if (type == ET_MOUSE_PRESSED || type == ET_KEY_PRESSED ||
-      type == ET_TOUCH_PRESSED) {
+  if (type == EventType::kMousePressed || type == EventType::kKeyPressed ||
+      type == EventType::kTouchPressed) {
     uint32_t wm_user_time_ms =
         (event->time_stamp() - base::TimeTicks()).InMilliseconds();
     connection_->SetProperty(xwindow_, x11::GetAtom("_NET_WM_USER_TIME"),

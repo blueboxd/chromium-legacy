@@ -55,6 +55,21 @@
 
 namespace blink {
 
+namespace {
+
+// http://dev.w3.org/2006/webapi/FileAPI/#constructorBlob
+bool IsValidBlobType(const String& type) {
+  for (unsigned i = 0; i < type.length(); ++i) {
+    UChar c = type[i];
+    if (c < 0x20 || c > 0x7E) {
+      return false;
+    }
+  }
+  return true;
+}
+
+}  // namespace
+
 // TODO(https://crbug.com/989876): This is not used any more, refactor
 // PublicURLManager to deprecate this.
 class NullURLRegistry final : public URLRegistry {
@@ -147,14 +162,10 @@ Blob* Blob::Create(ExecutionContext* context,
       BlobDataHandle::Create(std::move(blob_data), blob_size));
 }
 
-Blob* Blob::Create(const unsigned char* data,
-                   size_t size,
-                   const String& content_type) {
-  DCHECK(data);
-
+Blob* Blob::Create(base::span<const uint8_t> data, const String& content_type) {
   auto blob_data = std::make_unique<BlobData>();
   blob_data->SetContentType(content_type);
-  blob_data->AppendBytes(data, size);
+  blob_data->AppendBytes(data);
   uint64_t blob_size = blob_data->length();
 
   return MakeGarbageCollected<Blob>(
@@ -169,14 +180,12 @@ void Blob::PopulateBlobData(BlobData* blob_data,
     switch (item->GetContentType()) {
       case V8BlobPart::ContentType::kArrayBuffer: {
         DOMArrayBuffer* array_buffer = item->GetAsArrayBuffer();
-        blob_data->AppendBytes(array_buffer->Data(),
-                               array_buffer->ByteLength());
+        blob_data->AppendBytes(array_buffer->ByteSpan());
         break;
       }
       case V8BlobPart::ContentType::kArrayBufferView: {
         auto&& array_buffer_view = item->GetAsArrayBufferView();
-        blob_data->AppendBytes(array_buffer_view->BaseAddress(),
-                               array_buffer_view->byteLength());
+        blob_data->AppendBytes(array_buffer_view->ByteSpan());
         break;
       }
       case V8BlobPart::ContentType::kBlob: {
@@ -266,6 +275,15 @@ ScriptPromise<DOMArrayBuffer> Blob::arrayBuffer(ScriptState* script_state) {
   return promise;
 }
 
+scoped_refptr<BlobDataHandle> Blob::GetBlobDataHandleWithKnownSize() const {
+  if (!blob_data_handle_->IsSingleUnknownSizeFile()) {
+    return blob_data_handle_;
+  }
+  return BlobDataHandle::Create(blob_data_handle_->Uuid(),
+                                blob_data_handle_->GetType(), size(),
+                                blob_data_handle_->CloneBlobRemote());
+}
+
 void Blob::AppendTo(BlobData& blob_data) const {
   blob_data.AppendBlob(blob_data_handle_, 0, size());
 }
@@ -289,23 +307,14 @@ mojo::PendingRemote<mojom::blink::Blob> Blob::AsMojoBlob() const {
 
 // static
 String Blob::NormalizeType(const String& type) {
-  if (type.IsNull())
+  if (type.IsNull()) {
     return g_empty_string;
-  const size_t length = type.length();
-  if (length > 65535)
+  }
+  if (type.length() > 65535) {
     return g_empty_string;
-  if (type.Is8Bit()) {
-    const LChar* chars = type.Characters8();
-    for (size_t i = 0; i < length; ++i) {
-      if (chars[i] < 0x20 || chars[i] > 0x7e)
-        return g_empty_string;
-    }
-  } else {
-    const UChar* chars = type.Characters16();
-    for (size_t i = 0; i < length; ++i) {
-      if (chars[i] < 0x0020 || chars[i] > 0x007e)
-        return g_empty_string;
-    }
+  }
+  if (!IsValidBlobType(type)) {
+    return g_empty_string;
   }
   return type.DeprecatedLower();
 }

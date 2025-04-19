@@ -4,6 +4,15 @@
 
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_constants.h"
 
+NSString* const kInactiveTabButtonSectionIdentifier =
+    @"InactiveTabSectionIdentifier";
+NSString* const kGridOpenTabsSectionIdentifier = @"OpenTabsSectionIdentifier";
+NSString* const kSuggestedActionsSectionIdentifier =
+    @"SuggestedActionsSectionIdentifier";
+
+NSString* const kInactiveTabsButtonAccessibilityIdentifier =
+    @"InactiveTabsButtonAccessibilityIdentifier";
+
 // Accessibility identifier prefix of a grid cell.
 NSString* const kGridCellIdentifierPrefix = @"GridCellIdentifierPrefix";
 

@@ -62,6 +62,9 @@ void CommitNavigation(std::unique_ptr<content::NavigationSimulator> simulator) {
 }  // namespace
 
 IsolatedWebAppBrowserTestHarness::IsolatedWebAppBrowserTestHarness() {
+  // Note: We cannot enable blink::features::kControlledFrame here since there
+  // are tests that inherit from this class which depend on being able to start
+  // without kControlledFrame in their feature list.
   iwa_scoped_feature_list_.InitWithFeatures(
       {features::kIsolatedWebApps, features::kIsolatedWebAppDevMode,
        blink::features::kUnrestrictedUsb},
@@ -175,7 +178,8 @@ void CreateIframe(content::RenderFrameHost* parent_frame,
               document.body.appendChild(f);
             });
         )",
-                                         iframe_id, url, permissions_policy)));
+                                         iframe_id, url, permissions_policy),
+                      content::EXECUTE_SCRIPT_NO_USER_GESTURE));
 }
 
 // TODO(crbug.com/40274184): This function should probably be built on top of

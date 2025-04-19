@@ -22,9 +22,8 @@ from pylib.utils import dexdump
 from pylib.utils import gold_utils
 from pylib.utils import test_filter
 
-
-with host_paths.SysPath(host_paths.BUILD_COMMON_PATH):
-  import unittest_util # pylint: disable=import-error
+with host_paths.SysPath(host_paths.BUILD_UTIL_PATH):
+  from lib.common import unittest_util
 
 # Ref: http://developer.android.com/reference/android/app/Activity.html
 _ACTIVITY_RESULT_CANCELED = 0
@@ -56,15 +55,22 @@ _BUNDLE_CURRENT_ID = 'current'
 _BUNDLE_CLASS_ID = 'class'
 # The ID of the bundle value Instrumentation uses to report the test name.
 _BUNDLE_TEST_ID = 'test'
-# The ID of the bundle value Instrumentation uses to report if a test was
-# skipped.
-_BUNDLE_SKIPPED_ID = 'test_skipped'
 # The ID of the bundle value Instrumentation uses to report the crash stack, if
 # the test crashed.
 _BUNDLE_STACK_ID = 'stack'
 
 # The ID of the bundle value Chrome uses to report the test duration.
 _BUNDLE_DURATION_ID = 'duration_ms'
+
+# The following error messages are too general to be useful in failure
+# clustering. The runner doesn't report failure reason when such failure
+# reason is parsed from test logs.
+_BANNED_FAILURE_REASONS = [
+    # Default error message from org.chromium.base.test.util.CallbackHelper
+    # when timeout at expecting call back.
+    'java.util.concurrent.TimeoutException: waitForCallback timed out!',
+]
+
 
 class MissingSizeAnnotationError(test_exception.TestException):
   def __init__(self, class_name):
@@ -100,6 +106,16 @@ def GenerateTestResults(result_code, result_bundle, statuses, duration_ms,
   """
 
   results = []
+  # Results from synthetic ClassName#null tests, which occur from exceptions in
+  # @BeforeClass / @AfterClass.
+  class_failure_results = []
+
+  def add_result(result):
+    if result.GetName().endswith('#null'):
+      assert result.GetType() == base_test_result.ResultType.FAIL
+      class_failure_results.append(result)
+    else:
+      results.append(result)
 
   current_result = None
   cumulative_duration = 0
@@ -132,14 +148,12 @@ def GenerateTestResults(result_code, result_bundle, statuses, duration_ms,
 
     if status_code == instrumentation_parser.STATUS_CODE_START:
       if current_result:
-        results.append(current_result)
+        add_result(current_result)
       current_result = test_result.InstrumentationTestResult(
           test_name, base_test_result.ResultType.UNKNOWN, duration_ms)
     else:
       if status_code == instrumentation_parser.STATUS_CODE_OK:
-        if bundle.get(_BUNDLE_SKIPPED_ID, '').lower() in ('true', '1', 'yes'):
-          current_result.SetType(base_test_result.ResultType.SKIP)
-        elif current_result.GetType() == base_test_result.ResultType.UNKNOWN:
+        if current_result.GetType() == base_test_result.ResultType.UNKNOWN:
           current_result.SetType(base_test_result.ResultType.PASS)
       elif status_code == instrumentation_parser.STATUS_CODE_SKIP:
         current_result.SetType(base_test_result.ResultType.SKIP)
@@ -160,12 +174,23 @@ def GenerateTestResults(result_code, result_bundle, statuses, duration_ms,
       if crashed:
         current_result.SetType(base_test_result.ResultType.CRASH)
 
-    results.append(current_result)
+    add_result(current_result)
 
   if results:
     logging.info('Adding cumulative overhead to test %s: %dms',
                  results[0].GetName(), duration_ms - cumulative_duration)
     results[0].SetDuration(duration_ms - cumulative_duration)
+
+  # Copy failures from @BeforeClass / @AfterClass into all tests that are
+  # marked as passing.
+  for class_result in class_failure_results:
+    prefix = class_result.GetName()[:-len('null')]
+    for result in results:
+      if (result.GetName().startswith(prefix)
+          and result.GetType() == base_test_result.ResultType.PASS):
+        result.SetType(base_test_result.ResultType.FAIL)
+        result.SetLog(class_result.GetLog())
+        result.SetFailureReason(class_result.GetFailureReason())
 
   return results
 
@@ -179,7 +204,9 @@ def _MaybeSetLog(bundle, current_result, symbolizer, device_abi):
     else:
       current_result.SetLog(stack)
 
-    current_result.SetFailureReason(_ParseExceptionMessage(stack))
+    parsed_failure_reason = _ParseExceptionMessage(stack)
+    if parsed_failure_reason not in _BANNED_FAILURE_REASONS:
+      current_result.SetFailureReason(parsed_failure_reason)
 
 
 def _ParseExceptionMessage(stack):
@@ -525,6 +552,7 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     self._junit4_runner_class = None
     self._uses_base_instrumentation = None
     self._has_chromium_test_listener = None
+    self._use_native_coverage_listener = None
     self._test_support_apk = None
     self._initializeApkAttributes(args, error_func)
 
@@ -587,6 +615,8 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     self._approve_app_links_domain = None
     self._approve_app_links_package = None
     self._initializeApproveAppLinksAttributes(args)
+
+    self._webview_process_mode = args.webview_process_mode
 
     self._wpr_enable_record = args.wpr_enable_record
 
@@ -664,6 +694,8 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     test_apk_metadata = dict(self._test_apk.GetAllMetadata())
     self._has_chromium_test_listener = bool(
         test_apk_metadata.get('org.chromium.hasTestRunListener'))
+    self._use_native_coverage_listener = bool(
+        test_apk_metadata.get('org.chromium.useNativeCoverageListener'))
     if self._junit4_runner_class:
       if self._test_apk_incremental_install_json:
         for name, value in test_apk_metadata.items():
@@ -902,6 +934,10 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     return self._uses_base_instrumentation
 
   @property
+  def use_native_coverage_listener(self):
+    return self._use_native_coverage_listener
+
+  @property
   def package_info(self):
     return self._package_info
 
@@ -1012,6 +1048,10 @@ class InstrumentationTestInstance(test_instance.TestInstance):
   @property
   def wpr_record_mode(self):
     return self._wpr_enable_record
+
+  @property
+  def webview_process_mode(self):
+    return self._webview_process_mode
 
   @property
   def wpr_replay_mode(self):

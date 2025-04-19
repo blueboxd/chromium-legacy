@@ -25,7 +25,6 @@
 #include "ash/wm/desks/templates/saved_desk_presenter.h"
 #include "ash/wm/desks/templates/saved_desk_util.h"
 #include "ash/wm/overview/overview_controller.h"
-#include "ash/wm/overview/overview_focus_cycler_old.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_utils.h"
@@ -41,6 +40,7 @@
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/animation_builder.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/focus_ring.h"
@@ -283,14 +283,6 @@ SavedDeskItemView::SavedDeskItemView(std::unique_ptr<DeskTemplate> saved_desk)
 
   views::FocusRing* focus_ring =
       StyleUtil::SetUpFocusRingForView(this, kWindowMiniViewFocusRingHaloInset);
-  if (!features::IsOverviewNewFocusEnabled()) {
-    focus_ring->SetHasFocusPredicate(
-        base::BindRepeating([](const views::View* view) {
-          const auto* v = views::AsViewClass<SavedDeskItemView>(view);
-          CHECK(v);
-          return v->is_focused();
-        }));
-  }
   focus_ring->SetColorId(cros_tokens::kCrosSysFocusRing);
 
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
@@ -305,6 +297,8 @@ SavedDeskItemView::SavedDeskItemView(std::unique_ptr<DeskTemplate> saved_desk)
   icon_container_view_->layer()->SetOpacity(1.0f);
 
   AddAccelerator(ui::Accelerator(ui::VKEY_W, ui::EF_CONTROL_DOWN));
+
+  GetViewAccessibility().SetRole(ax::mojom::Role::kButton);
 }
 
 SavedDeskItemView::~SavedDeskItemView() {
@@ -394,7 +388,7 @@ void SavedDeskItemView::UpdateSavedDesk(
   auto new_name = saved_desk_->template_name();
   DCHECK(!new_name.empty());
   name_view_->SetText(new_name);
-  SetAccessibleName(ComputeAccessibleName());
+  GetViewAccessibility().SetName(ComputeAccessibleName());
 
   // This will trigger `name_view_` to compute its new preferred bounds and
   // invalidate the layout for `this`
@@ -402,8 +396,12 @@ void SavedDeskItemView::UpdateSavedDesk(
 }
 
 void SavedDeskItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ax::mojom::Role::kButton;
-  node_data->SetName(ComputeAccessibleName());
+  // We must set the updated accessible name directly in the cache to override
+  // the one set in `LabelButton::SetText`. This is temporary.
+  //
+  // TODO(crbug.com/325137417): Remove this once the accessible name is set in
+  // the cache as soon as the name is updated.
+  GetViewAccessibility().SetName(ComputeAccessibleName());
 
   node_data->AddStringAttribute(
       ax::mojom::StringAttribute::kDescription,
@@ -452,18 +450,6 @@ void SavedDeskItemView::OnViewFocused(views::View* observed_view) {
   // Hide the hover container when we are modifying the saved desk name.
   hover_container_->layer()->SetOpacity(0.0f);
   icon_container_view_->layer()->SetOpacity(1.0f);
-
-  // Move the overview focus ring to `name_view_`.
-  auto* focus_cycler = Shell::Get()
-                           ->overview_controller()
-                           ->overview_session()
-                           ->focus_cycler_old();
-  if (focus_cycler && focus_cycler->IsFocusVisible()) {
-    focus_cycler->MoveFocusToView(name_view_);
-
-    // Update a11y focus window.
-    focus_cycler->UpdateA11yFocusWindow(name_view_);
-  }
 
   if (!defer_select_all_)
     name_view_->SelectAll(false);
@@ -542,17 +528,6 @@ void SavedDeskItemView::OnViewBlurred(views::View* observed_view) {
   }
 
   UpdateSavedDeskName();
-}
-
-void SavedDeskItemView::OnFocus() {
-  MoveFocusToView(this);
-  OnFocusableViewFocused();
-  View::OnFocus();
-}
-
-void SavedDeskItemView::OnBlur() {
-  OnFocusableViewBlurred();
-  View::OnBlur();
 }
 
 views::Button::KeyClickAction SavedDeskItemView::GetKeyClickActionForEvent(
@@ -641,8 +616,9 @@ bool SavedDeskItemView::HandleKeyEvent(views::Textfield* sender,
   // Pressing enter or escape should blur the focus away from `name_view_` so
   // that editing the saved desk item's name ends. Pressing tab should do the
   // same, but is handled in `OverviewSession`.
-  if (key_event.type() != ui::ET_KEY_PRESSED)
+  if (key_event.type() != ui::EventType::kKeyPressed) {
     return false;
+  }
 
   if (key_event.key_code() != ui::VKEY_RETURN &&
       key_event.key_code() != ui::VKEY_ESCAPE) {
@@ -665,7 +641,7 @@ bool SavedDeskItemView::HandleMouseEvent(views::Textfield* sender,
   DCHECK_EQ(sender, name_view_);
 
   switch (mouse_event.type()) {
-    case ui::ET_MOUSE_PRESSED:
+    case ui::EventType::kMousePressed:
       // If this is the first mouse press on the `name_view_`, then it's not
       // focused yet. `OnViewFocused()` should not select all text, since it
       // will be undone by the mouse release event. Instead we defer it until we
@@ -675,7 +651,7 @@ bool SavedDeskItemView::HandleMouseEvent(views::Textfield* sender,
       }
       break;
 
-    case ui::ET_MOUSE_RELEASED:
+    case ui::EventType::kMouseReleased:
       if (defer_select_all_) {
         defer_select_all_ = false;
         // The user may have already clicked and dragged to select some range
@@ -756,36 +732,11 @@ void SavedDeskItemView::OnSavedDeskNameChanged(const std::u16string& new_name) {
   DCHECK(!new_name.empty());
   name_view_->SetText(new_name);
   name_view_->ResetTemporaryName();
-  SetAccessibleName(ComputeAccessibleName());
+  GetViewAccessibility().SetName(ComputeAccessibleName());
 
   // This will trigger `name_view_` to compute its new preferred bounds and
   // invalidate the layout for `this`.
   name_view_->OnContentsChanged();
-}
-
-views::View* SavedDeskItemView::GetView() {
-  return this;
-}
-
-void SavedDeskItemView::MaybeActivateFocusedView() {
-  MaybeLaunchSavedDesk();
-}
-
-void SavedDeskItemView::MaybeCloseFocusedView(bool primary_action) {
-  if (primary_action)
-    OnDeleteButtonPressed();
-}
-
-void SavedDeskItemView::MaybeSwapFocusedView(bool right) {}
-
-void SavedDeskItemView::OnFocusableViewFocused() {
-  views::FocusRing::Get(this)->SchedulePaint();
-
-  ScrollViewToVisible();
-}
-
-void SavedDeskItemView::OnFocusableViewBlurred() {
-  views::FocusRing::Get(this)->SchedulePaint();
 }
 
 BEGIN_METADATA(SavedDeskItemView)

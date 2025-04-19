@@ -28,6 +28,7 @@ class ASH_EXPORT DeskActionView : public views::BoxLayoutView,
  public:
   DeskActionView(const std::u16string& combine_desks_target_name,
                  const std::u16string& close_all_target_name,
+                 base::RepeatingClosure context_menu_callback,
                  base::RepeatingClosure combine_desks_callback,
                  base::RepeatingClosure close_all_callback,
                  base::RepeatingClosure focus_change_callback,
@@ -35,6 +36,11 @@ class ASH_EXPORT DeskActionView : public views::BoxLayoutView,
   DeskActionView(const DeskActionView&) = delete;
   DeskActionView& operator=(const DeskActionView&) = delete;
   ~DeskActionView() override;
+
+  const DeskActionButton* context_menu_button() const {
+    return context_menu_button_;
+  }
+  DeskActionButton* context_menu_button() { return context_menu_button_; }
 
   const DeskActionButton* close_all_button() const { return close_all_button_; }
   DeskActionButton* close_all_button() { return close_all_button_; }
@@ -51,14 +57,18 @@ class ASH_EXPORT DeskActionView : public views::BoxLayoutView,
   // focus.
   bool ChildHasFocus() const;
 
-  void OnFocusChange();
-
  private:
   // views::ViewObserver:
   void OnViewFocused(views::View* observed) override;
   void OnViewBlurred(views::View* observed) override;
 
+  void OnFocusChange();
+
+  // Only one of the following two buttons will be shown, based on if the Forest
+  // feature is enabled.
+  raw_ptr<DeskActionButton> context_menu_button_;
   raw_ptr<DeskActionButton> combine_desks_button_;
+
   raw_ptr<DeskActionButton> close_all_button_;
 
   // Maintains blurred rounded rect background without clipping. Useful when

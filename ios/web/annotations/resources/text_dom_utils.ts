@@ -43,7 +43,7 @@ const IGNORE_NODE_NAMES = new Set([
   'HEAD',     'APPLET',   'AREA',     'AUDIO',    'BUTTON',
   'CANVAS',   'FRAME',    'FRAMESET', 'KEYGEN',   'LABEL',
   'MAP',      'OPTGROUP', 'OPTION',   'PROGRESS', 'SELECT',
-  'VIDEO',    'A',        'APP',      'FORM',
+  'VIDEO',    'A',        'APP',      'FORM',     'SVG',
 ]);
 
 // Gets the content of a meta tag by httpEquiv for `httpEquiv`. The function is
@@ -92,6 +92,11 @@ function hasNoIntentDetection(): boolean {
     }
   }
   return false;
+}
+
+// Returns whether an annotation of type `annotationType` can be across element.
+function annotationCanBeCrossElement(annotationType: String) {
+  return ['address', 'email'].includes(annotationType.toLowerCase());
 }
 
 // Returns the client rectangle for the given `element` {x, y, width, height}.
@@ -177,6 +182,7 @@ export {
   NodeWithSymbolIndex,
   TextWithSymbolIndex,
   Rect,
+  annotationCanBeCrossElement,
   getMetaContentByHttpEquiv,
   noFormatDetectionTypes,
   hasNoIntentDetection,

@@ -304,14 +304,6 @@ using feed::FeedUserActionType;
       base::UserMetricsAction(kDiscoverFeedUserActionManageActivityTapped));
 }
 
-- (void)recordHeaderMenuManageInterestsTapped {
-  [self recordDiscoverFeedUserActionHistogram:FeedUserActionType::
-                                                  kTappedManageInterests
-                                asInteraction:NO];
-  base::RecordAction(
-      base::UserMetricsAction(kDiscoverFeedUserActionManageInterestsTapped));
-}
-
 - (void)recordHeaderMenuManageHiddenTapped {
   [self recordDiscoverFeedUserActionHistogram:FeedUserActionType::
                                                   kTappedManageHidden
@@ -347,7 +339,7 @@ using feed::FeedUserActionType;
                                 asInteraction:YES];
   base::RecordAction(
       base::UserMetricsAction(kDiscoverFeedUserActionOpenSameTab));
-  [self recordOpenURL];
+  [self handleURLOpened];
 }
 
 - (void)recordOpenURLInNewTab {
@@ -356,7 +348,7 @@ using feed::FeedUserActionType;
                                 asInteraction:YES];
   base::RecordAction(
       base::UserMetricsAction(kDiscoverFeedUserActionOpenNewTab));
-  [self recordOpenURL];
+  [self handleURLOpened];
 }
 
 - (void)recordOpenURLInIncognitoTab {
@@ -365,7 +357,7 @@ using feed::FeedUserActionType;
                                 asInteraction:YES];
   base::RecordAction(
       base::UserMetricsAction(kDiscoverFeedUserActionOpenIncognitoTab));
-  [self recordOpenURL];
+  [self handleURLOpened];
 }
 
 - (void)recordAddURLToReadLater {
@@ -463,8 +455,13 @@ using feed::FeedUserActionType;
 }
 
 - (void)recordCardTappedAtIndex:(NSUInteger)index {
-  // TODO(crbug.com/40746586): No-op since this function gets called multiple
-  // times for a tap. Log index when this is fixed.
+  switch (self.NTPState.selectedFeed) {
+    case FeedTypeDiscover:
+      UMA_HISTOGRAM_EXACT_LINEAR(kDiscoverFeedURLOpened, 0, 1);
+      break;
+    case FeedTypeFollowing:
+      UMA_HISTOGRAM_EXACT_LINEAR(kFollowingFeedURLOpened, 0, 1);
+  }
 }
 
 - (void)recordNoticeCardShown:(BOOL)shown {
@@ -583,7 +580,10 @@ using feed::FeedUserActionType;
 
 - (void)recordFeedSelected:(FeedType)feedType
     fromPreviousFeedPosition:(NSUInteger)index {
-  DCHECK(self.followDelegate);
+  if (!self.followDelegate) {
+    NOTREACHED(base::NotFatalUntil::M129);
+    return;
+  }
   switch (feedType) {
     case FeedTypeDiscover:
       [self recordDiscoverFeedUserActionHistogram:FeedUserActionType::
@@ -1232,7 +1232,7 @@ using feed::FeedUserActionType;
   if (additionalTimeInFeed.is_negative()) {
     // TODO(crbug.com/340554892): Fix Good Visits metric.
     // Temporary fix, but it should reduce the number of occurances.
-    self.feedBecameVisibleTime = base::Time::Now();
+    self.feedBecameVisibleTime = now;
     additionalTimeInFeed = now - self.feedBecameVisibleTime;
   }
   // Temporary fix to resolve negative values in prefs.
@@ -1367,25 +1367,15 @@ using feed::FeedUserActionType;
   UMA_HISTOGRAM_MEDIUM_TIMES(kDiscoverFeedNetworkDuration, duration);
 }
 
-// Records that a URL was opened regardless of the target surface (e.g. New Tab,
+// Called when a URL was opened regardless of the target surface (e.g. New Tab,
 // Same Tab, Incognito Tab, etc.).
-- (void)recordOpenURL {
+- (void)handleURLOpened {
   // Save the time of the open so we can then calculate how long the user spent
   // in that page.
   self.prefService->SetTime(kArticleVisitTimestampKey, base::Time::Now());
-
   self.prefService->SetInteger(kLastUsedFeedForGoodVisitsKey,
                                self.NTPState.selectedFeed);
-
   [self.NTPMetricsDelegate feedArticleOpened];
-
-  switch (self.NTPState.selectedFeed) {
-    case FeedTypeDiscover:
-      UMA_HISTOGRAM_EXACT_LINEAR(kDiscoverFeedURLOpened, 0, 1);
-      break;
-    case FeedTypeFollowing:
-      UMA_HISTOGRAM_EXACT_LINEAR(kFollowingFeedURLOpened, 0, 1);
-  }
 }
 
 #pragma mark - Converters

@@ -30,7 +30,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -50,7 +49,6 @@ import org.chromium.base.jank_tracker.PlaceholderJankTracker;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.JniMocker;
@@ -89,15 +87,11 @@ import org.chromium.components.feed.proto.wire.ReliabilityLoggingEnums.DiscoverL
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.components.signin.AccountCapabilitiesConstants;
-import org.chromium.components.signin.Tribool;
 import org.chromium.components.signin.base.AccountCapabilities;
 import org.chromium.components.signin.base.AccountInfo;
 import org.chromium.components.signin.base.CoreAccountId;
-import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.identitymanager.IdentityManager;
-import org.chromium.components.supervised_user.SupervisedUserPreferences;
-import org.chromium.components.supervised_user.SupervisedUserPreferencesJni;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.components.user_prefs.UserPrefsJni;
 import org.chromium.ui.base.WindowAndroid;
@@ -113,7 +107,6 @@ import java.util.Map;
 @DisableFeatures({
     ChromeFeatureList.WEB_FEED_SORT,
     ChromeFeatureList.WEB_FEED_ONBOARDING,
-    ChromeFeatureList.FEED_USER_INTERACTION_RELIABILITY_REPORT,
     // TODO(crbug.com/40858677): Disabling the feature explicitly, because native is not
     // available to provide a default value. This should be enabled if the feature is enabled by
     // default or removed if the flag is removed.
@@ -142,7 +135,7 @@ public class FeedSurfaceCoordinatorTest {
     private class TestSurfaceDelegate implements FeedSurfaceDelegate {
         @Override
         public FeedSurfaceLifecycleManager createStreamLifecycleManager(
-                Activity activity, SurfaceCoordinator coordinator) {
+                Activity activity, SurfaceCoordinator coordinator, Profile profile) {
             mLifecycleManager =
                     new TestLifecycleManager(activity, (FeedSurfaceCoordinator) coordinator);
             return mLifecycleManager;
@@ -198,7 +191,6 @@ public class FeedSurfaceCoordinatorTest {
     @Mock private FeedProcessScopeDependencyProvider.Natives mProcessScopeJniMock;
     @Mock private FeedReliabilityLoggingBridge.Natives mFeedReliabilityLoggingBridgeJniMock;
     @Mock private UserPrefs.Natives mUserPrefsJniMock;
-    @Mock private SupervisedUserPreferences.Natives mSupervisedUserPreferencesJniMock;
 
     // Mocked xSurface setup.
     @Mock private ProcessScope mProcessScope;
@@ -207,7 +199,6 @@ public class FeedSurfaceCoordinatorTest {
     @Captor private ArgumentCaptor<FeedListContentManager> mContentManagerCaptor;
 
     // Mocked indirect dependencies.
-    @Rule public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
     @Mock private Profile mProfileMock;
     @Mock private IdentityServicesProvider mIdentityService;
     @Mock private SigninManager mSigninManager;
@@ -244,7 +235,6 @@ public class FeedSurfaceCoordinatorTest {
                 FeedReliabilityLoggingBridge.getTestHooksForTesting(),
                 mFeedReliabilityLoggingBridgeJniMock);
         mocker.mock(UserPrefsJni.TEST_HOOKS, mUserPrefsJniMock);
-        mocker.mock(SupervisedUserPreferencesJni.TEST_HOOKS, mSupervisedUserPreferencesJniMock);
 
         when(mFeedServiceBridgeJniMock.getLoadMoreTriggerLookahead()).thenReturn(5);
 
@@ -268,8 +258,6 @@ public class FeedSurfaceCoordinatorTest {
         TemplateUrlServiceFactory.setInstanceForTesting(mUrlService);
         when(mPrivacyPreferencesManager.isMetricsReportingEnabled()).thenReturn(true);
         when(mUserPrefsJniMock.get(any(Profile.class))).thenReturn(mPrefService);
-        when(mSupervisedUserPreferencesJniMock.isSubjectToParentalControls(any(PrefService.class)))
-                .thenAnswer(invocation -> isPrimaryAccountSupervised());
 
         // Resources set up.
         when(mSectionHeaderView.getResources()).thenReturn(mResources);
@@ -283,7 +271,7 @@ public class FeedSurfaceCoordinatorTest {
         when(mProcessScope.obtainFeedSurfaceScope(any(FeedSurfaceScopeDependencyProvider.class)))
                 .thenReturn(mSurfaceScope);
         when(mSurfaceScope.provideListRenderer()).thenReturn(mRenderer);
-        when(mRenderer.bind(mContentManagerCaptor.capture(), isNull(), eq(false)))
+        when(mRenderer.bind(mContentManagerCaptor.capture(), isNull(), anyInt()))
                 .thenReturn(mRecyclerView);
         when(mSurfaceScope.getLaunchReliabilityLogger()).thenReturn(mLaunchReliabilityLogger);
         TrackerFactory.setTrackerForTests(mTracker);
@@ -491,6 +479,8 @@ public class FeedSurfaceCoordinatorTest {
         when(mIdentityManager.getPrimaryAccountInfo(ConsentLevel.SIGNIN)).thenReturn(account);
         when(mIdentityManager.findExtendedAccountInfoByEmailAddress(account.getEmail()))
                 .thenReturn(account);
+        when(mProfileMock.isChild()).thenReturn(true);
+
         assertTrue(mCoordinator.shouldDisplaySupervisedFeed());
     }
 
@@ -510,7 +500,6 @@ public class FeedSurfaceCoordinatorTest {
     }
 
     @Test
-    @EnableFeatures(ChromeFeatureList.DYNAMIC_TOP_CHROME)
     @DisableFeatures(ChromeFeatureList.TAB_STRIP_LAYOUT_OPTIMIZATION)
     public void testTabStripHeightChangeCallback() {
         ArgumentCaptor<Callback<Integer>> captor = ArgumentCaptor.forClass(Callback.class);
@@ -541,16 +530,6 @@ public class FeedSurfaceCoordinatorTest {
                 capabilities);
     }
 
-    private boolean isPrimaryAccountSupervised() {
-        CoreAccountInfo account = mIdentityManager.getPrimaryAccountInfo(ConsentLevel.SIGNIN);
-        if (account == null) {
-            return false;
-        }
-        AccountInfo info =
-                mIdentityManager.findExtendedAccountInfoByEmailAddress(account.getEmail());
-        return info.getAccountCapabilities().isSubjectToParentalControls() == Tribool.TRUE;
-    }
-
     private boolean hasStreamBound() {
         if (mCoordinator.getMediatorForTesting().getCurrentStreamForTesting() == null) {
             return false;
@@ -579,13 +558,11 @@ public class FeedSurfaceCoordinatorTest {
                 () -> {
                     return null;
                 },
-                SURFACE_TYPE,
                 SURFACE_CREATION_TIME_NS,
                 null,
                 false,
                 /* viewportView= */ null,
                 mFeedActionDelegate,
-                /* helpAndFeedbackLauncher= */ null,
                 mTabStripHeightSupplier);
     }
 }

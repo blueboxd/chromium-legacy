@@ -2,11 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "components/android_autofill/browser/android_autofill_features.h"
 
 #include <jni.h>
 
 #include "base/feature_list.h"
+
+// Must come after all headers that specialize FromJniType() / ToJniType().
 #include "components/android_autofill/browser/jni_headers_features/AndroidAutofillFeatures_jni.h"
 
 namespace autofill::features {
@@ -16,7 +23,6 @@ namespace {
 const base::Feature* kFeaturesExposedToJava[] = {
     &kAndroidAutofillBottomSheetWorkaround,
     &kAndroidAutofillPrefillRequestsForLoginForms,
-    &kAndroidAutofillUsePwmPredictionsForOverrides,
 };
 
 }  // namespace
@@ -35,7 +41,7 @@ BASE_FEATURE(kAndroidAutofillBottomSheetWorkaround,
 // session.
 BASE_FEATURE(kAndroidAutofillCancelSessionOnNavigation,
              "AndroidAutofillCancelSessionOnNavigation",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, we stop relying on `known_success` in FormSubmitted signal to
 // decide whether to defer submission on not, and instead we directly inform the
@@ -51,17 +57,7 @@ BASE_FEATURE(kAndroidAutofillDirectFormSubmission,
 // Future features may extend prefill requests to more form types.
 BASE_FEATURE(kAndroidAutofillPrefillRequestsForLoginForms,
              "AndroidAutofillPrefillRequestsForLoginForms",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// If enabled, username and password field predictions are taken from
-// `password_manager::FormDataParser` and overwrite Autofill's native
-// predictions. Furthermore, similarity checks between cached forms and focused
-// forms that serve to decide whether to show a bottomsheet are performed using
-// these predictions: Two forms are considered similar iff they have the same
-// `FormDataParser` predictions.
-BASE_FEATURE(kAndroidAutofillUsePwmPredictionsForOverrides,
-             "AndroidAutofillUsePwmPredictionsForOverrides",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, offer prefill requests (i.e. calls to
 // `AutofillManager.notifyVirtualViewsReady`) to change

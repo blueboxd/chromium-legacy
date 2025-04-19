@@ -4,6 +4,7 @@
 
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
+
 #import <map>
 #import <memory>
 
@@ -11,8 +12,11 @@
 #import "base/strings/stringprintf.h"
 #import "base/strings/sys_string_conversions.h"
 #import "build/branding_buildflags.h"
+#import "components/browsing_data/core/browsing_data_utils.h"
+#import "components/browsing_data/core/pref_names.h"
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/ui/elements/activity_overlay_egtest_util.h"
 #import "ios/chrome/browser/signin/model/test_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_matchers.h"
@@ -89,6 +93,10 @@ id<GREYMatcher> ClearBrowsingDataCell() {
         performAction:grey_tap()];
   }
 
+  // Shutdown network process after tests run to avoid hanging from
+  // clearing browsing history.
+  [ChromeEarlGrey killWebKitNetworkProcess];
+
   [super tearDown];
 }
 
@@ -100,6 +108,8 @@ id<GREYMatcher> ClearBrowsingDataCell() {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::
                                           ConfirmClearBrowsingDataButton()]
       performAction:grey_tap()];
+  [ChromeEarlGreyUI waitForAppToIdle];
+  WaitForActivityOverlayToDisappear();
 
   // Before returning, make sure that the top of the Clear Browsing Data
   // settings screen is visible to match the state at the start of the method.
@@ -259,10 +269,16 @@ id<GREYMatcher> ClearBrowsingDataCell() {
 // local server to navigate to a page that sets then tests a cookie, and then
 // clears the cookie and tests it is not set.
 - (void)testClearCookies {
+  // Set pref to the last hour.
+  [ChromeEarlGrey
+      setIntegerValue:static_cast<int>(browsing_data::TimePeriod::LAST_HOUR)
+          forUserPref:browsing_data::prefs::kDeleteTimePeriod];
+
   GREYAssertTrue(self.testServer->Start(), @"Server did not start.");
 
   // Load `kUrl` and check that cookie is not set.
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/echo")];
+  [ChromeEarlGrey waitForWebStateContainingText:"Echo"];
 
   NSDictionary* cookies = [ChromeEarlGrey cookies];
   GREYAssertEqual(0U, cookies.count, @"No cookie should be found.");
@@ -273,8 +289,10 @@ id<GREYMatcher> ClearBrowsingDataCell() {
       "/set-cookie?%s=%s", base::SysNSStringToUTF8(kCookieName).c_str(),
       base::SysNSStringToUTF8(kCookieValue).c_str());
   [ChromeEarlGrey loadURL:self.testServer->GetURL(setCookiePath)];
+  [ChromeEarlGrey waitForPageToFinishLoading];
 
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/echo")];
+  [ChromeEarlGrey waitForWebStateContainingText:"Echo"];
 
   cookies = [ChromeEarlGrey cookies];
   GREYAssertEqualObjects(kCookieValue, cookies[kCookieName],
@@ -292,6 +310,7 @@ id<GREYMatcher> ClearBrowsingDataCell() {
 
   // Reload and test that there are no cookies left.
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/echo")];
+  [ChromeEarlGrey waitForPageToFinishLoading];
 
   cookies = [ChromeEarlGrey cookies];
   GREYAssertEqual(0U, cookies.count, @"No cookie should be found.");

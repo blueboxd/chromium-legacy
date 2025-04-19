@@ -26,8 +26,8 @@ void FillCommonFields(FormFieldData* data) {
   data->set_is_focusable(true);
   data->set_should_autocomplete(false);
   data->set_text_direction(base::i18n::RIGHT_TO_LEFT);
-  data->set_options({{.value = u"First", .content = u"First"},
-                     {.value = u"Second", .content = u"Second"}});
+  data->set_options({{.value = u"First", .text = u"First"},
+                     {.value = u"Second", .text = u"Second"}});
 }
 
 void FillVersion2Fields(FormFieldData* data) {
@@ -87,7 +87,7 @@ void WriteSection2(const FormFieldData& data, base::Pickle* pickle) {
   }
   pickle->WriteInt(static_cast<int>(data.options().size()));
   for (const auto& option : data.options()) {
-    pickle->WriteString16(option.content);
+    pickle->WriteString16(option.text);
   }
 }
 
@@ -96,7 +96,7 @@ void WriteVersion9Specific(const FormFieldData& data, base::Pickle* pickle) {
   pickle->WriteInt(static_cast<int>(data.options().size()));
   for (const SelectOption& option : data.options()) {
     pickle->WriteString16(option.value);
-    pickle->WriteString16(option.content);
+    pickle->WriteString16(option.text);
   }
 }
 
@@ -449,6 +449,27 @@ TEST(FormFieldDataTest, IsTextInputElement) {
     data.set_form_control_type(test_case.form_control_type);
     EXPECT_EQ(test_case.expected, data.IsTextInputElement());
   }
+}
+
+// Tests that FormFieldData::selected_option() finds the first matching option.
+TEST(FormFieldDataTest, SelectedOption) {
+  FormFieldData f;
+  EXPECT_EQ(f.selected_option(), std::nullopt);
+
+  f.set_options({SelectOption{.value = u"value1", .text = u"text1"},
+                 SelectOption{.value = u"value2", .text = u"text2"},
+                 SelectOption{.value = u"value2", .text = u"text3"}});
+
+  f.set_value(u"garbage");
+  EXPECT_EQ(f.selected_option(), std::nullopt);
+
+  f.set_value(u"value1");
+  EXPECT_EQ(f.selected_option().CopyAsOptional(),
+            (SelectOption{.value = u"value1", .text = u"text1"}));
+
+  f.set_value(u"value2");
+  EXPECT_EQ(f.selected_option().CopyAsOptional(),
+            (SelectOption{.value = u"value2", .text = u"text2"}));
 }
 
 }  // namespace autofill

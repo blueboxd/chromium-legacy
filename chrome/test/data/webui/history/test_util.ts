@@ -4,8 +4,8 @@
 
 import type {ForeignSession, ForeignSessionTab, ForeignSessionWindow, HistoryAppElement, HistoryEntry, HistoryQuery} from 'chrome://history/history.js';
 import type {CrLitElement} from 'chrome://resources/lit/v3_0/lit.rollup.js';
-import {middleOfNode} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {middleOfNode} from 'chrome://webui-test/mouse_mock_interactions.js';
 
 
 /**
@@ -117,10 +117,28 @@ export async function shiftClick(element: CrLitElement): Promise<void> {
     buttons: 1,
     shiftKey: true,
   };
-
   element.dispatchEvent(new MouseEvent('mousedown', props));
   element.dispatchEvent(new MouseEvent('mouseup', props));
   element.dispatchEvent(new MouseEvent('click', props));
+  await element.updateComplete;
+}
+
+/**
+ * Sends a shift click event to |element|, using PointerEvent.
+ */
+export async function shiftPointerClick(element: CrLitElement): Promise<void> {
+  const xy = middleOfNode(element);
+  const props = {
+    bubbles: true,
+    cancelable: true,
+    clientX: xy.x,
+    clientY: xy.y,
+    buttons: 1,
+    shiftKey: true,
+  };
+  element.dispatchEvent(new PointerEvent('pointerdown', props));
+  element.dispatchEvent(new PointerEvent('pointerup', props));
+  element.dispatchEvent(new PointerEvent('click', props));
   await element.updateComplete;
 }
 

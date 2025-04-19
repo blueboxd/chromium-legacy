@@ -29,6 +29,7 @@ import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab_ui.TabListFaviconProvider;
 import org.chromium.chrome.browser.tab_ui.TabUiThemeUtils;
+import org.chromium.chrome.browser.tasks.tab_groups.TabGroupColorUtils;
 import org.chromium.chrome.browser.tasks.tab_management.TabListMediator.TabGroupInfo;
 import org.chromium.chrome.browser.tasks.tab_management.TabProperties.TabActionState;
 import org.chromium.chrome.tab_ui.R;
@@ -38,7 +39,6 @@ import org.chromium.ui.widget.ViewLookupCachingFrameLayout;
 
 /** {@link org.chromium.ui.modelutil.SimpleRecyclerViewMcp.ViewBinder} for tab List. */
 class TabListViewBinder {
-    private static final int INVALID_COLOR_ID = -1;
     private static final int TAB_GROUP_ICON_COLOR_LEVEL = 1;
 
     /**
@@ -107,6 +107,17 @@ class TabListViewBinder {
             ((TextView) view.findViewById(R.id.description)).setText(domain);
         } else if (TabProperties.TAB_GROUP_COLOR_ID == propertyKey) {
             setTabGroupColorIcon(view, model);
+        } else if (TabProperties.TAB_ACTION_BUTTON_LISTENER == propertyKey) {
+            TabGridViewBinder.setNullableClickListener(
+                    model.get(TabProperties.TAB_ACTION_BUTTON_LISTENER),
+                    view.findViewById(R.id.end_button),
+                    model);
+        } else if (TabProperties.TAB_CLICK_LISTENER == propertyKey) {
+            TabGridViewBinder.setNullableClickListener(
+                    model.get(TabProperties.TAB_CLICK_LISTENER), view, model);
+        } else if (TabProperties.TAB_LONG_CLICK_LISTENER == propertyKey) {
+            TabGridViewBinder.setNullableLongClickListener(
+                    model.get(TabProperties.TAB_LONG_CLICK_LISTENER), view, model);
         }
     }
 
@@ -122,7 +133,7 @@ class TabListViewBinder {
         bindListTab(model, view, propertyKey);
 
         if (TabProperties.IS_INCOGNITO == propertyKey) {
-            ImageView closeButton = (ImageView) view.findViewById(R.id.end_button);
+            ImageView closeButton = view.findViewById(R.id.end_button);
             ImageViewCompat.setImageTintList(
                     closeButton,
                     TabUiThemeProvider.getActionButtonTintList(
@@ -133,33 +144,10 @@ class TabListViewBinder {
             view.findViewById(R.id.end_button)
                     .setContentDescription(
                             model.get(TabProperties.ACTION_BUTTON_DESCRIPTION_STRING));
-        } else if (TabProperties.TAB_SELECTED_LISTENER == propertyKey) {
-            // Stub out the long click listener to avoid selection for closable tabs.
-            view.setOnLongClickListener(v -> true);
-            if (model.get(TabProperties.TAB_SELECTED_LISTENER) == null) {
-                view.setOnClickListener(null);
-            } else {
-                view.setOnClickListener(
-                        v -> {
-                            int tabId = model.get(TabProperties.TAB_ID);
-                            model.get(TabProperties.TAB_SELECTED_LISTENER).run(tabId);
-                        });
-            }
-        } else if (TabProperties.TAB_ACTION_BUTTON_LISTENER == propertyKey) {
-            if (model.get(TabProperties.TAB_ACTION_BUTTON_LISTENER) == null) {
-                view.findViewById(R.id.end_button).setOnClickListener(null);
-            } else {
-                view.findViewById(R.id.end_button)
-                        .setOnClickListener(
-                                v -> {
-                                    int tabId = model.get(TabProperties.TAB_ID);
-                                    model.get(TabProperties.TAB_ACTION_BUTTON_LISTENER).run(tabId);
-                                });
-            }
         } else if (TabProperties.TAB_GROUP_INFO == propertyKey
                 || TabProperties.TAB_ID == propertyKey) {
             @Nullable TabGroupInfo tabGroupInfo = model.get(TabProperties.TAB_GROUP_INFO);
-            ImageView actionButton = (ImageView) view.findViewById(R.id.end_button);
+            ImageView actionButton = view.findViewById(R.id.end_button);
             Resources res = view.getResources();
 
             // Only change the drawable if the property key in question is for tab groups.
@@ -178,31 +166,6 @@ class TabListViewBinder {
                     actionButton.setImageBitmap(bitmap);
                 }
             }
-
-            // Note: TAB_ID changes are NOT flag guarded, so this code will still be used.
-            // However, TAB_GROUP_INFO will never be set since it is flag guarded and will be
-            // defaulted to null so in theory this should never cause problems. If the flag is
-            // set ensure that this specific click listener is only set for tab groups.
-            if (tabGroupInfo != null && tabGroupInfo.getIsTabGroup()) {
-                actionButton.setOnClickListener(
-                        TabListGroupMenuCoordinator.getTabListGroupMenuOnClickListener(
-                                model.get(TabProperties.ON_MENU_ITEM_CLICKED_CALLBACK),
-                                model.get(TabProperties.TAB_ID),
-                                model.get(TabProperties.IS_INCOGNITO),
-                                tabGroupInfo.getShouldShowDeleteTabGroup()));
-            } else {
-                if (model.get(TabProperties.TAB_ACTION_BUTTON_LISTENER) == null) {
-                    view.findViewById(R.id.end_button).setOnClickListener(null);
-                } else {
-                    view.findViewById(R.id.end_button)
-                            .setOnClickListener(
-                                    v -> {
-                                        int tabId = model.get(TabProperties.TAB_ID);
-                                        model.get(TabProperties.TAB_ACTION_BUTTON_LISTENER)
-                                                .run(tabId);
-                                    });
-                }
-            }
         }
     }
 
@@ -218,22 +181,22 @@ class TabListViewBinder {
         // colored so it should use the unselected color. This will be addressed in a fixit.
 
         // Shared by both classes, from tab_list_card_item.
-        View cardView = view.findViewById(R.id.content_view);
-        cardView.getBackground().mutate();
+        View contentView = view.findViewById(R.id.content_view);
+        contentView.getBackground().mutate();
         final @ColorInt int backgroundColor =
                 TabUiThemeUtils.getCardViewBackgroundColor(
                         view.getContext(), isIncognito, /* isSelected= */ false);
-        ViewCompat.setBackgroundTintList(cardView, ColorStateList.valueOf(backgroundColor));
+        ViewCompat.setBackgroundTintList(contentView, ColorStateList.valueOf(backgroundColor));
 
         final @ColorInt int textColor =
                 TabUiThemeUtils.getTitleTextColor(
                         view.getContext(), isIncognito, /* isSelected= */ false);
-        TextView titleView = (TextView) view.findViewById(R.id.title);
-        TextView descriptionView = (TextView) view.findViewById(R.id.description);
+        TextView titleView = view.findViewById(R.id.title);
+        TextView descriptionView = view.findViewById(R.id.description);
         titleView.setTextColor(textColor);
         descriptionView.setTextColor(textColor);
 
-        ImageView faviconView = (ImageView) view.findViewById(R.id.start_icon);
+        ImageView faviconView = view.findViewById(R.id.start_icon);
         if (faviconView.getBackground() == null) {
             faviconView.setBackgroundResource(R.drawable.list_item_icon_modern_bg);
         }
@@ -262,32 +225,12 @@ class TabListViewBinder {
                 view.getResources().getInteger(R.integer.list_item_level_selected);
         TabListView tabListView = (TabListView) view;
 
-        if (TabProperties.SELECTABLE_TAB_CLICKED_LISTENER == propertyKey) {
-            View.OnClickListener onClickListener =
-                    v -> {
-                        model.get(TabProperties.SELECTABLE_TAB_CLICKED_LISTENER).run(tabId);
-                        tabListView.onClick(tabListView);
-                    };
-            View.OnLongClickListener onLongClickListener =
-                    v -> {
-                        model.get(TabProperties.SELECTABLE_TAB_CLICKED_LISTENER).run(tabId);
-                        return tabListView.onLongClick(tabListView);
-                    };
-            tabListView.setOnClickListener(onClickListener);
-            tabListView.setOnLongClickListener(onLongClickListener);
-
-            // The row should act as one large button.
-            ImageView endButton = tabListView.findViewById(R.id.end_button);
-            endButton.setOnClickListener(onClickListener);
-            endButton.setOnLongClickListener(onLongClickListener);
-            endButton.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
-        } else if (TabProperties.TAB_SELECTION_DELEGATE == propertyKey) {
-            assert model.get(TabProperties.TAB_SELECTION_DELEGATE) != null;
+        if (TabProperties.TAB_SELECTION_DELEGATE == propertyKey) {
             tabListView.setSelectionDelegate(model.get(TabProperties.TAB_SELECTION_DELEGATE));
             tabListView.setItem(tabId);
         } else if (TabProperties.IS_SELECTED == propertyKey) {
             boolean isSelected = model.get(TabProperties.IS_SELECTED);
-            ImageView actionButton = (ImageView) view.findViewById(R.id.end_button);
+            ImageView actionButton = view.findViewById(R.id.end_button);
             actionButton.getBackground().setLevel(isSelected ? selectedLevel : defaultLevel);
             DrawableCompat.setTintList(
                     actionButton.getBackground().mutate(),
@@ -306,19 +249,20 @@ class TabListViewBinder {
     }
 
     private static void setFavicon(View view, Drawable favicon) {
-        ImageView faviconView = (ImageView) view.findViewById(R.id.start_icon);
+        ImageView faviconView = view.findViewById(R.id.start_icon);
         faviconView.setImageDrawable(favicon);
     }
 
     private static void setTabGroupColorIcon(ViewGroup view, PropertyModel model) {
-        ImageView colorIconView = (ImageView) view.findViewById(R.id.icon);
+        ImageView colorIconView = view.findViewById(R.id.icon);
 
         if (ChromeFeatureList.sTabGroupParityAndroid.isEnabled()) {
             colorIconView.setVisibility(View.VISIBLE);
 
             // If the tab is a single tab item, a tab that is part of a group but shown in the
             // TabGridDialogView list representation, or an invalid case, do not set/show.
-            if (model.get(TabProperties.TAB_GROUP_COLOR_ID) == INVALID_COLOR_ID) {
+            if (model.get(TabProperties.TAB_GROUP_COLOR_ID)
+                    == TabGroupColorUtils.INVALID_COLOR_ID) {
                 colorIconView.setVisibility(View.GONE);
                 return;
             }

@@ -19,22 +19,16 @@
 #include "content/browser/attribution_reporting/attribution_config.h"
 #include "content/browser/attribution_reporting/attribution_reporting.mojom-forward.h"
 #include "content/common/content_export.h"
-#include "third_party/abseil-cpp/absl/numeric/int128.h"
 
 namespace attribution_reporting {
 class EventLevelEpsilon;
 class EventReportWindows;
-class MaxEventLevelReports;
 class TriggerSpecs;
 }  // namespace attribution_reporting
 
 namespace base {
 class Uuid;
 }  // namespace base
-
-namespace network {
-class TriggerVerification;
-}  // namespace network
 
 namespace content {
 
@@ -102,10 +96,6 @@ class CONTENT_EXPORT AttributionResolverDelegate {
   // SourceType.
   double GetMaxChannelCapacity(attribution_reporting::mojom::SourceType) const;
 
-  // Returns the max number of report states allowed for any source
-  // registration.
-  absl::uint128 GetMaxTriggerStateCardinality() const;
-
   // Returns the maximum frequency at which to delete expired sources.
   // Must be positive.
   virtual base::TimeDelta GetDeleteExpiredSourcesFrequency() const = 0;
@@ -131,18 +121,12 @@ class CONTENT_EXPORT AttributionResolverDelegate {
   // ordering on their conversion metadata bits.
   virtual void ShuffleReports(std::vector<AttributionReport>& reports) = 0;
 
-  // Shuffles trigger verifications to provide plausible deniability on the
-  // ordering and use of verification tokens.
-  virtual void ShuffleTriggerVerifications(
-      std::vector<network::TriggerVerification>& verifications) = 0;
-
   // Returns the rate used to determine whether to randomize the response to a
   // source with the given trigger specs, as implemented by
   // `GetRandomizedResponse()`. Must be in the range [0, 1] and remain constant
   // for the lifetime of the delegate for calls with identical inputs.
-  virtual double GetRandomizedResponseRate(
+  virtual std::optional<double> GetRandomizedResponseRate(
       const attribution_reporting::TriggerSpecs&,
-      attribution_reporting::MaxEventLevelReports,
       attribution_reporting::EventLevelEpsilon) const = 0;
 
   using GetRandomizedResponseResult =
@@ -155,12 +139,14 @@ class CONTENT_EXPORT AttributionResolverDelegate {
   virtual GetRandomizedResponseResult GetRandomizedResponse(
       attribution_reporting::mojom::SourceType,
       const attribution_reporting::TriggerSpecs&,
-      attribution_reporting::MaxEventLevelReports,
       attribution_reporting::EventLevelEpsilon) = 0;
 
   int GetMaxAggregatableReportsPerSource() const;
 
   AttributionConfig::DestinationRateLimit GetDestinationRateLimit() const;
+
+  AttributionConfig::AggregatableDebugRateLimit GetAggregatableDebugRateLimit()
+      const;
 
   virtual bool GenerateNullAggregatableReportForLookbackDay(
       int lookback_day,

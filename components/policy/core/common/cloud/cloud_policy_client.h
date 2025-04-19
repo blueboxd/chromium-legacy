@@ -17,6 +17,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
@@ -50,6 +51,8 @@ struct DMServerJobResult;
 
 inline constexpr char kPolicyFetchingTimeHistogramName[] =
     "Enterprise.CloudManagement.PolicyFetchingTime";
+
+POLICY_EXPORT BASE_DECLARE_FEATURE(kPolicyFetchWithSha256);
 
 // Implements the core logic required to talk to the device management service.
 // Also keeps track of the current state of the association with the service,
@@ -186,6 +189,11 @@ class POLICY_EXPORT CloudPolicyClient {
     // kDemoRequisition ("cros-demo-mode").
     std::optional<enterprise_management::DemoModeDimensions>
         demo_mode_dimensions;
+
+    // The following field is relevant only to Browsers undergoing profile
+    // registration via the generic OIDC, and contains OIDC specific state
+    // details.
+    std::string oidc_state;
   };
 
   // If non-empty, |machine_id|, |machine_model|, |brand_code|,
@@ -289,7 +297,8 @@ class POLICY_EXPORT CloudPolicyClient {
       const RegistrationParameters& parameters,
       const std::string& oauth_token,
       const std::string& oidc_id_token,
-      const std::string& client_id);
+      const std::string& client_id,
+      const base::TimeDelta& timeout_duration);
 
   // Sets information about a policy invalidation. Subsequent fetch operations
   // will use the given info, and callers can use fetched_invalidation_version
@@ -462,6 +471,11 @@ class POLICY_EXPORT CloudPolicyClient {
   virtual void ClientCertProvisioningRequest(
       enterprise_management::ClientCertificateProvisioningRequest request,
       ClientCertProvisioningRequestCallback callback);
+
+  // Sends a request to store FM registration token used for invalidations.
+  virtual void UploadFmRegistrationToken(
+      enterprise_management::FmRegistrationTokenUploadRequest request,
+      ResultCallback callback);
 
   // Used the update the current service account email associated with this
   // policy client and notify observers.
@@ -708,6 +722,10 @@ class POLICY_EXPORT CloudPolicyClient {
       ClientCertProvisioningRequestCallback callback,
       DMServerJobResult result);
 
+  // Callback for `UploadFmRegistrationToken` request.
+  void OnUploadFmRegistrationTokenResponse(ResultCallback callback,
+                                           DMServerJobResult result);
+
   // Helper to remove a job from request_jobs_.
   void RemoveJob(const DeviceManagementService::Job* job);
 
@@ -852,6 +870,9 @@ class POLICY_EXPORT CloudPolicyClient {
   // Records the fetch status for each supported type to fetch used by the
   // client.
   void RecordFetchStatus(DeviceManagementStatus status);
+
+  enterprise_management::PolicyFetchRequest::SignatureType
+  GetPolicyFetchRequestSignatureType();
 
 #if BUILDFLAG(IS_WIN)
   // Callback to get browser device identifier.

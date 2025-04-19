@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/core/layout/inline/inline_item_segment.h"
 
 #include "third_party/blink/renderer/core/layout/inline/inline_item.h"
@@ -107,13 +112,14 @@ std::unique_ptr<InlineItemSegments> InlineItemSegments::Clone() const {
 
 unsigned InlineItemSegments::OffsetForSegment(
     const InlineItemSegment& segment) const {
-  return &segment == segments_.begin() ? 0 : std::prev(&segment)->EndOffset();
+  return &segment == segments_.data() ? 0 : std::prev(&segment)->EndOffset();
 }
 
 #if DCHECK_IS_ON()
 void InlineItemSegments::CheckOffset(unsigned offset,
                                      const InlineItemSegment* segment) const {
-  DCHECK(segment >= segments_.begin() && segment < segments_.end());
+  DCHECK(segment >= segments_.data() &&
+         segment < segments_.data() + segments_.size());
   DCHECK_GE(offset, OffsetForSegment(*segment));
   DCHECK_LT(offset, segment->EndOffset());
 }
@@ -232,7 +238,7 @@ void InlineItemSegments::Split(unsigned index, unsigned offset) {
 void InlineItemSegments::ComputeItemIndex(const HeapVector<InlineItem>& items) {
   DCHECK_EQ(items.back().EndOffset(), EndOffset());
   unsigned segment_index = 0;
-  const InlineItemSegment* segment = segments_.begin();
+  const InlineItemSegment* segment = segments_.data();
   unsigned item_index = 0;
   items_to_segments_.resize(items.size());
   for (const InlineItem& item : items) {

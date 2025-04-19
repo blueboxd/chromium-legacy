@@ -29,7 +29,7 @@ ci.defaults.set(
 consoles.console_view(
     name = "chromium.android.fyi",
     ordering = {
-        None: ["android", "memory", "weblayer", "webview"],
+        None: ["android", "memory", "webview"],
     },
 )
 
@@ -71,7 +71,8 @@ ci.builder(
 )
 
 ci.builder(
-    name = "android-chrome-pie-x86-wpt-android-specific",
+    name = "android-chrome-13-x64-wpt-android-specific",
+    description_html = "Run wpt tests on Chrome Android in Android 13 emulators.",
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
@@ -79,12 +80,13 @@ ci.builder(
         ),
         chromium_config = builder_config.chromium_config(
             config = "android",
-            apply_configs = ["mb"],
             build_config = builder_config.build_config.RELEASE,
-            target_bits = 32,
+            target_bits = 64,
             target_platform = builder_config.target_platform.ANDROID,
         ),
-        android_config = builder_config.android_config(config = "x86_builder"),
+        android_config = builder_config.android_config(
+            config = "x64_builder_mb",
+        ),
         build_gs_bucket = "chromium-android-archive",
     ),
     gn_args = gn_args.config(
@@ -93,18 +95,57 @@ ci.builder(
             "release_builder",
             "remoteexec",
             "minimal_symbols",
-            "x86",
+            "x64",
             "strip_debug_info",
             "android_fastbuild",
-            "webview_monochrome",
-            "webview_shell",
+            "no_secondary_abi",
         ],
     ),
     console_view_entry = consoles.console_view_entry(
         category = "wpt|chrome",
-        short_name = "p-x86",
+        short_name = "13-x64",
     ),
-    experimental = True,
+    contact_team_email = "chrome-blink-engprod@google.com",
+)
+
+ci.builder(
+    name = "android-webview-13-x64-wpt-android-specific",
+    description_html = "Run wpt tests on Android Webview in Android 13 emulators.",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = ["android"],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(
+            config = "x64_builder_mb",
+        ),
+        build_gs_bucket = "chromium-android-archive",
+    ),
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "release_builder",
+            "remoteexec",
+            "minimal_symbols",
+            "x64",
+            "strip_debug_info",
+            "android_fastbuild",
+            "webview_trichrome",
+            "no_secondary_abi",
+            "webview_shell",
+        ],
+    ),
+    console_view_entry = consoles.console_view_entry(
+        category = "wpt|webview",
+        short_name = "13-x64",
+    ),
+    contact_team_email = "chrome-blink-engprod@google.com",
 )
 
 ci.builder(
@@ -323,6 +364,86 @@ ci.builder(
     # Android x64 builds take longer than x86 builds to compile
     # So they need longer timeouts
     # Matching the execution time out of the android-12-x64-rel
+    execution_timeout = 4 * time.hour,
+)
+
+ci.builder(
+    name = "android-14-arm64-fyi-rel",
+    description_html = "Run chromium tests on Android 14 devices",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "android",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(
+            config = "main_builder_mb",
+        ),
+        build_gs_bucket = "chromium-android-archive",
+    ),
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "release_builder",
+            "remoteexec",
+            "minimal_symbols",
+            "arm64",
+            "strip_debug_info",
+            "webview_trichrome",
+        ],
+    ),
+    console_view_entry = consoles.console_view_entry(
+        category = "builder_tester|arm64|rel",
+        short_name = "14",
+    ),
+    contact_team_email = "clank-engprod@google.com",
+    execution_timeout = 4 * time.hour,
+)
+
+ci.builder(
+    name = "android-tablet-14-arm64-fyi-rel",
+    description_html = "Run chromium tests on Android 14 tablets.",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "android",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(
+            config = "main_builder_mb",
+        ),
+        build_gs_bucket = "chromium-android-archive",
+    ),
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "release_builder",
+            "remoteexec",
+            "minimal_symbols",
+            "arm64",
+            "strip_debug_info",
+            "webview_trichrome",
+        ],
+    ),
+    console_view_entry = consoles.console_view_entry(
+        category = "builder_tester|arm64|rel",
+        short_name = "tablet-14",
+    ),
+    contact_team_email = "clank-engprod@google.com",
     execution_timeout = 4 * time.hour,
 )
 

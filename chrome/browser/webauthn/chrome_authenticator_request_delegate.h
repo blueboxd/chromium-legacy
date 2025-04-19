@@ -12,6 +12,7 @@
 
 #include "base/functional/callback.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -96,6 +97,19 @@ class ChromeWebAuthenticationDelegate final
   content::WebAuthenticationRequestProxy* MaybeGetRequestProxy(
       content::BrowserContext* browser_context,
       const url::Origin& caller_origin) override;
+  void DeletePasskey(content::WebContents* web_contents,
+                     const std::vector<uint8_t>& passkey_credential_id,
+                     const std::string& relying_party_id) override;
+  void DeleteUnacceptedPasskeys(content::WebContents* web_contents,
+                                const std::string& relying_party_id,
+                                const std::vector<uint8_t>& user_id,
+                                const std::vector<std::vector<uint8_t>>&
+                                    all_accepted_credentials_ids) override;
+  void UpdateUserPasskeys(content::WebContents* web_contents,
+                          const std::string& relying_party_id,
+                          std::vector<uint8_t>& user_id,
+                          const std::string& name,
+                          const std::string& display_name) override;
   void BrowserProvidedPasskeysAvailable(
       content::BrowserContext* browser_context,
       base::OnceCallback<void(bool)> callback) override;
@@ -110,11 +124,9 @@ class ChromeWebAuthenticationDelegate final
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
  private:
-#if BUILDFLAG(IS_WIN)
   // Caches the result from looking up whether a TPM is available for Enclave
   // requests.
   std::optional<bool> tpm_available_;
-#endif
   base::WeakPtrFactory<ChromeWebAuthenticationDelegate> weak_ptr_factory_{this};
 };
 
@@ -195,7 +207,10 @@ class ChromeAuthenticatorRequestDelegate
       base::RepeatingClosure start_over_callback,
       AccountPreselectedCallback account_preselected_callback,
       device::FidoRequestHandlerBase::RequestCallback request_callback,
-      base::RepeatingClosure bluetooth_adapter_power_on_callback) override;
+      base::RepeatingClosure bluetooth_adapter_power_on_callback,
+      base::RepeatingCallback<
+          void(device::FidoRequestHandlerBase::BlePermissionCallback)>
+          bluetooth_query_status_callback) override;
   void OnTransactionSuccessful(RequestSource request_source,
                                device::FidoRequestType,
                                device::AuthenticatorType) override;
@@ -239,7 +254,8 @@ class ChromeAuthenticatorRequestDelegate
   void FidoAuthenticatorAdded(
       const device::FidoAuthenticator& authenticator) override;
   void FidoAuthenticatorRemoved(std::string_view authenticator_id) override;
-  void BluetoothAdapterPowerChanged(bool is_powered_on) override;
+  void BluetoothAdapterStatusChanged(
+      device::FidoRequestHandlerBase::BleStatus ble_status) override;
   bool SupportsPIN() const override;
   void CollectPIN(
       CollectPINOptions options,
@@ -346,7 +362,7 @@ class ChromeAuthenticatorRequestDelegate
 #endif
 
   const content::GlobalRenderFrameHostId render_frame_host_id_;
-  const std::unique_ptr<AuthenticatorRequestDialogModel> dialog_model_;
+  const scoped_refptr<AuthenticatorRequestDialogModel> dialog_model_;
   const std::unique_ptr<AuthenticatorRequestDialogController>
       dialog_controller_;
   base::OnceClosure cancel_callback_;

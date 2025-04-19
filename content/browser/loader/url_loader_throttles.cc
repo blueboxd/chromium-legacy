@@ -70,14 +70,15 @@ CreateContentBrowserURLLoaderThrottles(
   // Creating a throttle only for outermost main frames to persist the reduced
   // accept language for an origin and to restart requests if needed, due to
   // language negotiation.
-  if (base::FeatureList::IsEnabled(network::features::kReduceAcceptLanguage) ||
-      base::FeatureList::IsEnabled(
-          network::features::kReduceAcceptLanguageOriginTrial)) {
+  if (base::FeatureList::IsEnabled(network::features::kReduceAcceptLanguage)) {
     ReduceAcceptLanguageControllerDelegate* reduce_accept_lang_delegate =
         browser_context->GetReduceAcceptLanguageControllerDelegate();
+    OriginTrialsControllerDelegate* origin_trials_delegate =
+        browser_context->GetOriginTrialsControllerDelegate();
     if (request.is_outermost_main_frame && reduce_accept_lang_delegate) {
       throttles.push_back(std::make_unique<ReduceAcceptLanguageThrottle>(
-          *reduce_accept_lang_delegate));
+          *reduce_accept_lang_delegate, origin_trials_delegate,
+          frame_tree_node_id));
     }
   }
 
@@ -109,8 +110,13 @@ CreateContentBrowserURLLoaderThrottles(
                          ->GetOutermostMainFrame()
                          ->GetLastCommittedOrigin();
       }
+      std::optional<ukm::SourceId> source_id =
+          navigation_id.has_value()
+              ? std::make_optional(ukm::ConvertToSourceId(
+                    navigation_id.value(), ukm::SourceIdType::NAVIGATION_ID))
+              : std::nullopt;
       throttles.push_back(std::make_unique<CriticalOriginTrialsThrottle>(
-          *origin_trials_delegate, std::move(top_origin)));
+          *origin_trials_delegate, std::move(top_origin), source_id));
     }
   }
 

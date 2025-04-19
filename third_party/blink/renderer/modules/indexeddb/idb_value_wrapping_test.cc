@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/modules/indexeddb/idb_value_wrapping.h"
 
 #include <algorithm>
@@ -461,13 +466,10 @@ TEST(IDBValueUnwrapperTest, IsWrapped) {
   Vector<scoped_refptr<BlobDataHandle>> blob_data_handles =
       wrapper.TakeBlobDataHandles();
   Vector<WebBlobInfo> blob_infos = wrapper.TakeBlobInfo();
-  scoped_refptr<SharedBuffer> wrapped_marker_buffer = wrapper.TakeWireBytes();
+  Vector<char> wrapped_marker_buffer = wrapper.TakeWireBytes();
   IDBKeyPath key_path(String("primaryKey"));
 
-  Vector<char> wrapped_marker_bytes(
-      static_cast<wtf_size_t>(wrapped_marker_buffer->size()));
-  ASSERT_TRUE(wrapped_marker_buffer->GetBytes(wrapped_marker_bytes.data(),
-                                              wrapped_marker_bytes.size()));
+  const Vector<char> wrapped_marker_bytes = wrapped_marker_buffer;
 
   auto wrapped_value = std::make_unique<IDBValue>(
       std::move(wrapped_marker_buffer), std::move(blob_infos));
@@ -480,7 +482,7 @@ TEST(IDBValueUnwrapperTest, IsWrapped) {
   ASSERT_LT(3U, wrapped_marker_bytes.size());
   for (wtf_size_t i = 0; i < 3; ++i) {
     auto mutant_value = std::make_unique<IDBValue>(
-        SharedBuffer::Create(wrapped_marker_bytes.data(), i),
+        Vector<char>(base::span(wrapped_marker_bytes).subspan(0, i)),
         std::move(blob_infos));
     mutant_value->SetIsolate(scope.GetIsolate());
 
@@ -493,15 +495,12 @@ TEST(IDBValueUnwrapperTest, IsWrapped) {
   for (wtf_size_t i = 0; i < 3; ++i) {
     for (int j = 0; j < 8; ++j) {
       char mask = 1 << j;
-      wrapped_marker_bytes[i] ^= mask;
-      auto mutant_value = std::make_unique<IDBValue>(
-          SharedBuffer::Create(wrapped_marker_bytes.data(),
-                               wrapped_marker_bytes.size()),
-          std::move(blob_infos));
+      Vector<char> copy = wrapped_marker_bytes;
+      copy[i] ^= mask;
+      auto mutant_value =
+          std::make_unique<IDBValue>(std::move(copy), std::move(blob_infos));
       mutant_value->SetIsolate(scope.GetIsolate());
       EXPECT_FALSE(IDBValueUnwrapper::IsWrapped(mutant_value.get()));
-
-      wrapped_marker_bytes[i] ^= mask;
     }
   }
 }
@@ -536,12 +535,10 @@ TEST(IDBValueUnwrapperTest, Compression) {
     Vector<scoped_refptr<BlobDataHandle>> blob_data_handles =
         wrapper.TakeBlobDataHandles();
     Vector<WebBlobInfo> blob_infos = wrapper.TakeBlobInfo();
-    scoped_refptr<SharedBuffer> buffer = wrapper.TakeWireBytes();
+    Vector<char> buffer = wrapper.TakeWireBytes();
 
     // Verify whether the serialized bytes show the compression marker.
-    Vector<char> serialized_bytes(static_cast<wtf_size_t>(buffer->size()));
-    ASSERT_TRUE(
-        buffer->GetBytes(serialized_bytes.data(), serialized_bytes.size()));
+    base::span<const char> serialized_bytes = base::span(buffer);
     ASSERT_GT(serialized_bytes.size(), 3u);
     if (test_case.should_compress) {
       EXPECT_EQ(serialized_bytes[0], static_cast<char>(kVersionTag));
@@ -551,9 +548,9 @@ TEST(IDBValueUnwrapperTest, Compression) {
 
     // Verify whether the decompressed bytes show the standard serialization
     // marker.
-    scoped_refptr<SharedBuffer> decompressed = SharedBuffer::Create();
+    Vector<char> decompressed;
     ASSERT_EQ(test_case.should_compress,
-              IDBValueUnwrapper::Decompress(*buffer, &decompressed));
+              IDBValueUnwrapper::Decompress(buffer, &decompressed));
 
     // Round trip to v8 value.
     auto value =
@@ -572,7 +569,7 @@ TEST(IDBValueUnwrapperTest, Compression) {
 TEST(IDBValueUnwrapperTest, Decompression) {
   test::TaskEnvironment task_environment;
   Vector<WebBlobInfo> blob_infos;
-  scoped_refptr<SharedBuffer> buffer;
+  Vector<char> buffer;
   V8TestingScope scope;
   v8::Local<v8::Value> v8_value;
   {

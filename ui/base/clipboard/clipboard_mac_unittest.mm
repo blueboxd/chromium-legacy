@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #import "ui/base/clipboard/clipboard_mac.h"
 
 #import <AppKit/AppKit.h>
@@ -18,6 +23,8 @@
 #include "testing/platform_test.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
+#include "ui/base/clipboard/clipboard_monitor.h"
+#include "ui/base/clipboard/clipboard_observer.h"
 #include "ui/base/clipboard/clipboard_util_mac.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -32,6 +39,24 @@ void CreateImageBufferReleaser(void* info, const void* data, size_t size) {
   DCHECK_EQ(info, data);
   free(info);
 }
+
+class TestClipboardObserver : public ClipboardObserver {
+ public:
+  TestClipboardObserver() {
+    ClipboardMonitor::GetInstance()->AddObserver(this);
+  }
+
+  ~TestClipboardObserver() override {
+    ClipboardMonitor::GetInstance()->RemoveObserver(this);
+  }
+
+  void OnClipboardDataChanged() override { ++data_changed_count_; }
+
+  int data_changed_count() const { return data_changed_count_; }
+
+ private:
+  int data_changed_count_ = 0;
+};
 
 }  // namespace
 
@@ -198,6 +223,7 @@ TEST_F(ClipboardMacTest, WriteBitmapAddsPNGToClipboard) {
 }
 
 TEST_F(ClipboardMacTest, SourceTracking) {
+  TestClipboardObserver observer;
   scoped_refptr<UniquePasteboard> pasteboard = new UniquePasteboard;
 
   Clipboard* clipboard = Clipboard::GetForCurrentThread();
@@ -207,6 +233,7 @@ TEST_F(ClipboardMacTest, SourceTracking) {
   WritePortableAndPlatformRepresentations(
       clipboard_mac, std::make_unique<DataTransferEndpoint>(google_url),
       pasteboard->get());
+  ASSERT_EQ(observer.data_changed_count(), 1);
 
   auto source = GetSource(clipboard_mac, pasteboard->get());
   ASSERT_TRUE(source);
@@ -217,6 +244,7 @@ TEST_F(ClipboardMacTest, SourceTracking) {
   WritePortableAndPlatformRepresentations(
       clipboard_mac, std::make_unique<DataTransferEndpoint>(chromium_url),
       pasteboard->get());
+  ASSERT_EQ(observer.data_changed_count(), 2);
 
   source = GetSource(clipboard_mac, pasteboard->get());
   ASSERT_TRUE(source);

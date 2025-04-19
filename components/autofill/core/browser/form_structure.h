@@ -52,7 +52,7 @@ using FormAndFieldSignatures =
     std::vector<std::pair<FormSignature, std::vector<FieldSignature>>>;
 using FieldSuggestion = AutofillQueryResponse::FormSuggestion::FieldSuggestion;
 
-struct FormData;
+class FormData;
 struct FormDataPredictions;
 
 class RandomizedEncoder;
@@ -293,6 +293,13 @@ class FormStructure {
     return form_parsed_timestamp_;
   }
 
+  std::optional<base::TimeTicks> last_filling_timestamp() const {
+    return last_filling_timestamp_;
+  }
+  void set_last_filling_timestamp(base::TimeTicks last_filling_timestamp) {
+    last_filling_timestamp_ = last_filling_timestamp;
+  }
+
   bool all_fields_are_passwords() const { return all_fields_are_passwords_; }
 
   FormSignature form_signature() const { return form_signature_; }
@@ -387,7 +394,8 @@ class FormStructure {
   // Classifies each field using the regular expressions. The classifications
   // are returned, but not assigned to the `fields_` yet. Use
   // `AssignBestFieldTypes()` to do so.
-  FieldCandidatesMap ParseFieldTypesWithPatterns(ParsingContext& context) const;
+  [[nodiscard]] FieldCandidatesMap ParseFieldTypesWithPatterns(
+      ParsingContext& context) const;
 
   // Assigns the best heuristic types from the `field_type_map` to the heuristic
   // types of the corresponding fields for the `pattern_source`.
@@ -495,6 +503,9 @@ class FormStructure {
 
   // The timestamp (not wallclock time) when this form was initially parsed.
   base::TimeTicks form_parsed_timestamp_;
+
+  // The timestamp when this form or one of its fields was last filled.
+  std::optional<base::TimeTicks> last_filling_timestamp_;
 
   // If phone number rationalization has been performed for a given section.
   std::set<Section> phone_rationalized_;

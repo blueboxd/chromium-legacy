@@ -22,8 +22,10 @@ ContentAnalysysDialogUiTest.*
 ContentSettingBubbleDialogTest.*
 CookieClearOnExitMigrationNoticePixelTest.*
 CookieControlsBubbleViewPixelTest.*
+CookieControlsBubbleViewTrackingProtectionUiPixelTest.*
 OldCookieControlsBubbleViewTest.*
 *CreatePopupRowViewTest.*
+*CreatePopupRowViewWithNoUserEducationRateLimitTest.*
 CryptoModulePasswordDialogTest.*
 *DataControlsDialogUiTest.*
 DeepScanningFailureModalDialogTest.*
@@ -34,6 +36,8 @@ DeleteAddressProfileDialogControllerImplTest.InvokeUi_*
 DesktopPaymentsWindowManagerInteractiveUiTest*
 DocumentPictureInPicturePixelTest.*
 EditAddressProfileDialogControllerImplTest.InvokeUi_*
+*EmbeddedPermissionPromptUiTest.InvokeUi_*
+MahiMenuPixelBrowserTest.*
 ManagedUserNoticeUIDialogPixelTest.*
 ManagedUserNoticeUIWindowPixelTest.*
 ExtensionInstallDialogViewInteractiveBrowserTest.*
@@ -57,6 +61,7 @@ IntentPickerDialogGridViewTest.*
 InteractionTestUtilBrowserTest.CompareScreenshot_*
 InteractionTestUtilBrowserUiTest.CompareScreenshot_*
 IsolatedWebAppInstallerViewUiPixelTest.*
+LHSIndicatorsUiBrowserTest.*
 LocalCardMigrationBrowserUiTest.*
 *MemorySaverChipInteractiveTest.*
 *MemorySaverFaviconTreatmentTest.*
@@ -81,11 +86,12 @@ PasswordBubbleInteractiveUiTest.NavigateToManagementDetailsViewWithMoveFooterVis
 *PasswordBubbleWithManagePasswordButtonInteractiveUiTest.*
 PasswordReuseModalWarningTest.*
 PaymentsWindowUserConsentDialogBrowserTest*
-PerformanceToolbarButtonInteractiveUiTest.*
 PerformanceInterventionInteractiveTest.InterventionToolbarButton
 PermissionRequestChipBrowserUiTest.*
 *PermissionPromptBubble*View*BrowserTest.InvokeUi_*
 PermissionPromptPreviewBrowserTest.InvokeUi_*
+*PlusAddressCreationDialogUiVariationsTest*
+PlusAddressCreationDialogWithNoticeTest.ShowNoticeAndCancel
 *PopupViewViewsBrowsertest*
 PrivacySandboxDialogViewBrowserTest.*
 PrivacySandboxNoticeBubbleBrowserTest.*
@@ -109,7 +115,7 @@ SyncConfirmationUIDialogPixelTest.*
 SyncConfirmationUIWindowPixelTest.*
 TabGroupEditorBubbleViewDialogBrowserTest.*
 TabHoverCardBubbleViewDialogBrowserTest.*
-TabSearchBubbleHostUIBrowserTest.*
+TabSearchBubbleUIBrowserTest.*
 *TailoredSecurityDesktopDialogManagerTest.InvokeUi_*
 TranslateBubbleVisualTest.InvokeUi_*
 UpdateRecommendedDialogTest.*
@@ -122,3 +128,7 @@ ZoomBubbleDialogTest.*
 #
 # # TODO(crbug.com/xxx): Fix xyz and re-enable.
 # -MyTestSuite.InvokeUi_MyTestCase
+
+# TODO(crbug.com/359386795): Failing on Win10 Tests x64, linux-win-cross-rel
+-AppMenuBrowserTest.InvokeUi_main
+-AppMenuBrowserTestRefreshOnly.InvokeUi_main*

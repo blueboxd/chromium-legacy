@@ -83,11 +83,14 @@ class MEDIA_EXPORT ManifestDemuxerEngineHost {
   // Appends data to the chunk demuxer, parses it, and returns true if the new
   // data was parsed successfully.
   virtual bool AppendAndParseData(std::string_view role,
-                                  base::TimeDelta start,
                                   base::TimeDelta end,
                                   base::TimeDelta* offset,
-                                  const uint8_t* data,
-                                  size_t data_size) = 0;
+                                  base::span<const uint8_t> data) = 0;
+
+  // Reset the parser state in chunk demuxer.
+  virtual void ResetParserState(std::string_view role,
+                                base::TimeDelta end,
+                                base::TimeDelta* offset);
 
   // Allow seeking from within an implementation.
   virtual void RequestSeek(base::TimeDelta time) = 0;
@@ -151,8 +154,9 @@ class MEDIA_EXPORT ManifestDemuxer : public Demuxer, ManifestDemuxerEngineHost {
     // and network fetches.
     virtual void StartWaitingForSeek() = 0;
 
-    // Abort any pending reads, parses, or network requests.
-    virtual void AbortPendingReads() = 0;
+    // Abort any pending reads, parses, or network requests. calls CB when
+    // finished.
+    virtual void AbortPendingReads(base::OnceClosure cb) = 0;
 
     // Returns whether this engine supports seeking. Some live stream content
     // can't be seeked.
@@ -218,11 +222,12 @@ class MEDIA_EXPORT ManifestDemuxer : public Demuxer, ManifestDemuxerEngineHost {
                         base::TimeDelta time,
                         size_t data_size) override;
   bool AppendAndParseData(std::string_view role,
-                          base::TimeDelta start,
                           base::TimeDelta end,
                           base::TimeDelta* offset,
-                          const uint8_t* data,
-                          size_t data_size) override;
+                          base::span<const uint8_t> data) override;
+  void ResetParserState(std::string_view role,
+                        base::TimeDelta end,
+                        base::TimeDelta* offset) override;
   void OnError(PipelineStatus status) override;
   void RequestSeek(base::TimeDelta time) override;
   void SetGroupStartTimestamp(std::string_view role,

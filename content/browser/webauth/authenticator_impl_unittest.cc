@@ -2,50 +2,65 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/342213636): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "content/browser/webauth/authenticator_impl.h"
 
+#include <algorithm>
+#include <array>
+#include <cstddef>
+#include <cstdint>
+#include <cstring>
 #include <list>
+#include <map>
 #include <memory>
+#include <optional>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
 #include "base/base64url.h"
+#include "base/check.h"
+#include "base/check_op.h"
 #include "base/compiler_specific.h"
-#include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
-#include "base/files/file.h"
+#include "base/containers/span.h"
 #include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_forward.h"
 #include "base/functional/callback_helpers.h"
 #include "base/json/json_reader.h"
-#include "base/json/json_writer.h"
+#include "base/location.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/raw_ptr_exclusion.h"
-#include "base/path_service.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/memory/stack_allocated.h"
+#include "base/notreached.h"
 #include "base/rand_util.h"
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/system/sys_info.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
-#include "base/test/gtest_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/test_mock_time_task_runner.h"
-#include "base/time/tick_clock.h"
+#include "base/test/task_environment.h"
+#include "base/test/test_future.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/cbor/reader.h"
 #include "components/cbor/values.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "components/webauthn/content/browser/internal_authenticator_impl.h"
 #include "content/browser/webauth/authenticator_common_impl.h"
 #include "content/browser/webauth/authenticator_environment.h"
@@ -53,18 +68,19 @@
 #include "content/public/browser/authenticator_request_client_delegate.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/web_authentication_request_proxy.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
-#include "content/public/test/test_browser_context.h"
-#include "content/test/test_render_frame_host.h"
+#include "content/public/test/test_renderer_host.h"
 #include "crypto/sha2.h"
-#include "device/base/features.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/fido/attested_credential_data.h"
 #include "device/fido/authenticator_data.h"
+#include "device/fido/authenticator_get_assertion_response.h"
+#include "device/fido/authenticator_selection_criteria.h"
+#include "device/fido/cable/cable_discovery_data.h"
 #include "device/fido/cable/fido_tunnel_device.h"
 #include "device/fido/cable/v2_authenticator.h"
 #include "device/fido/cable/v2_constants.h"
@@ -76,56 +92,62 @@
 #include "device/fido/features.h"
 #include "device/fido/fido_authenticator.h"
 #include "device/fido/fido_constants.h"
+#include "device/fido/fido_discovery_base.h"
 #include "device/fido/fido_parsing_utils.h"
-#include "device/fido/fido_test_data.h"
+#include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_transport_protocol.h"
 #include "device/fido/fido_types.h"
 #include "device/fido/filter.h"
-#include "device/fido/hid/fake_hid_impl_for_testing.h"
 #include "device/fido/large_blob.h"
 #include "device/fido/mock_fido_device.h"
 #include "device/fido/multiple_virtual_fido_device_factory.h"
 #include "device/fido/pin.h"
-#include "device/fido/public_key.h"
 #include "device/fido/public_key_credential_descriptor.h"
+#include "device/fido/public_key_credential_params.h"
+#include "device/fido/public_key_credential_rp_entity.h"
 #include "device/fido/public_key_credential_user_entity.h"
-#include "device/fido/test_callback_receiver.h"
 #include "device/fido/virtual_ctap2_device.h"
 #include "device/fido/virtual_fido_device.h"
 #include "device/fido/virtual_fido_device_factory.h"
 #include "mojo/public/cpp/base/big_buffer.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/functions.h"
 #include "services/data_decoder/gzipper.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_source.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
+#include "third_party/boringssl/src/include/openssl/base.h"
 #include "third_party/boringssl/src/include/openssl/bytestring.h"
+#include "third_party/boringssl/src/include/openssl/ec.h"
 #include "third_party/boringssl/src/include/openssl/ec_key.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
 #include "third_party/boringssl/src/include/openssl/hmac.h"
 #include "third_party/boringssl/src/include/openssl/obj.h"
-#include "third_party/zlib/google/compression_utils.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/base/resource/resource_scale_factor.h"
-#include "ui/base/ui_base_paths.h"
 #include "url/origin.h"
 #include "url/url_util.h"
 
 #if BUILDFLAG(IS_MAC)
+#include "base/files/file_path.h"
+#include "base/path_service.h"
 #include "crypto/scoped_fake_apple_keychain_v2.h"
 #include "device/fido/mac/authenticator_config.h"
 #include "device/fido/mac/credential_store.h"
 #include "device/fido/mac/icloud_keychain.h"
 #include "device/fido/mac/scoped_icloud_keychain_test_environment.h"
 #include "device/fido/mac/scoped_touch_id_test_environment.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/base/resource/resource_scale_factor.h"
 #endif
 
 #if BUILDFLAG(IS_WIN)
+#include "content/public/test/test_browser_context.h"
+#include "device/fido/fido_test_data.h"
 #include "device/fido/win/fake_webauthn_api.h"
+#include "device/fido/win/util.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -136,6 +158,10 @@
 namespace content {
 
 using ::testing::_;
+
+using GetAssertionOutcome = AuthenticatorCommonImpl::GetAssertionOutcome;
+using MakeCredentialOutcome = AuthenticatorCommonImpl::MakeCredentialOutcome;
+using RequestMode = AuthenticatorCommonImpl::RequestMode;
 
 using blink::mojom::AttestationConveyancePreference;
 using blink::mojom::AuthenticationExtensionsClientInputs;
@@ -157,6 +183,8 @@ using blink::mojom::PublicKeyCredentialDescriptor;
 using blink::mojom::PublicKeyCredentialDescriptorPtr;
 using blink::mojom::PublicKeyCredentialParameters;
 using blink::mojom::PublicKeyCredentialParametersPtr;
+using blink::mojom::PublicKeyCredentialReportOptions;
+using blink::mojom::PublicKeyCredentialReportOptionsPtr;
 using blink::mojom::PublicKeyCredentialRequestOptions;
 using blink::mojom::PublicKeyCredentialRequestOptionsPtr;
 using blink::mojom::PublicKeyCredentialRpEntity;
@@ -178,8 +206,7 @@ namespace {
 
 using InterestingFailureReason =
     AuthenticatorRequestClientDelegate::InterestingFailureReason;
-using FailureReasonCallbackReceiver =
-    ::device::test::TestCallbackReceiver<InterestingFailureReason>;
+using FailureReasonFuture = base::test::TestFuture<InterestingFailureReason>;
 
 constexpr base::TimeDelta kTestTimeout = base::Minutes(1);
 
@@ -349,17 +376,18 @@ constexpr OriginClaimedAuthorityPair kInvalidRelyingPartyTestCases[] = {
      AuthenticatorStatus::BAD_RELYING_PARTY_ID},
 };
 
-using TestIsUvpaaCallback = device::test::ValueCallbackReceiver<bool>;
-using TestMakeCredentialCallback =
-    device::test::StatusAndValuesCallbackReceiver<
-        AuthenticatorStatus,
-        MakeCredentialAuthenticatorResponsePtr,
-        WebAuthnDOMExceptionDetailsPtr>;
-using TestGetAssertionCallback = device::test::StatusAndValuesCallbackReceiver<
-    AuthenticatorStatus,
-    GetAssertionAuthenticatorResponsePtr,
-    WebAuthnDOMExceptionDetailsPtr>;
-using TestRequestStartedCallback = device::test::TestCallbackReceiver<>;
+using TestIsUvpaaFuture = base::test::TestFuture<bool>;
+using TestMakeCredentialFuture =
+    base::test::TestFuture<AuthenticatorStatus,
+                           MakeCredentialAuthenticatorResponsePtr,
+                           WebAuthnDOMExceptionDetailsPtr>;
+using TestGetAssertionFuture =
+    base::test::TestFuture<AuthenticatorStatus,
+                           GetAssertionAuthenticatorResponsePtr,
+                           WebAuthnDOMExceptionDetailsPtr>;
+using TestRequestStartedFuture = base::test::TestFuture<void>;
+using TestReportFuture =
+    base::test::TestFuture<AuthenticatorStatus, WebAuthnDOMExceptionDetailsPtr>;
 
 std::vector<uint8_t> GetTestChallengeBytes() {
   return std::vector<uint8_t>(std::begin(kTestChallengeBytes),
@@ -436,6 +464,14 @@ GetTestPublicKeyCredentialRequestOptions() {
   options->timeout = base::Minutes(1);
   options->user_verification = device::UserVerificationRequirement::kPreferred;
   options->allow_credentials = GetTestCredentials();
+  return options;
+}
+
+PublicKeyCredentialReportOptionsPtr GetTestPublicKeyCredentialReportOptions() {
+  auto options = PublicKeyCredentialReportOptions::New();
+  options->relying_party_id = std::string(kTestRelyingPartyId);
+  std::vector<uint8_t> id(32, 0x0A);
+  options->unknown_credential_id = id;
   return options;
 }
 
@@ -593,6 +629,12 @@ class AuthenticatorTestBase : public RenderViewHostTestHarness {
     // Disable the Windows WebAuthn API integration by default. Individual tests
     // can modify this.
     fake_win_webauthn_api_.set_available(false);
+
+    // Prevent `FidoRequestHandlerBase` from doing a system API call, which can
+    // cause tests to finish early since `RunUntilIdle` won't see it in the task
+    // queue.
+    biometrics_override_ =
+        std::make_unique<device::fido::win::ScopedBiometricsOverride>(false);
 #endif
 
     ResetVirtualDevice();
@@ -638,6 +680,8 @@ class AuthenticatorTestBase : public RenderViewHostTestHarness {
   device::FakeWinWebAuthnApi fake_win_webauthn_api_;
   device::WinWebAuthnApi::ScopedOverride win_webauthn_api_override_{
       &fake_win_webauthn_api_};
+  std::unique_ptr<device::fido::win::ScopedBiometricsOverride>
+      biometrics_override_;
 #endif
 
  private:
@@ -678,21 +722,22 @@ class AuthenticatorImplTest : public AuthenticatorTestBase {
   }
 
   bool AuthenticatorIsUvpaa() {
-    TestIsUvpaaCallback cb;
+    TestIsUvpaaFuture future;
     mojo::Remote<blink::mojom::Authenticator> authenticator =
         ConnectToAuthenticator();
-    authenticator->IsUserVerifyingPlatformAuthenticatorAvailable(cb.callback());
-    cb.WaitForCallback();
-    return cb.value();
+    authenticator->IsUserVerifyingPlatformAuthenticatorAvailable(
+        future.GetCallback());
+    EXPECT_TRUE(future.Wait());
+    return future.Get();
   }
 
   bool AuthenticatorIsConditionalMediationAvailable() {
-    TestIsUvpaaCallback cb;
+    TestIsUvpaaFuture future;
     mojo::Remote<blink::mojom::Authenticator> authenticator =
         ConnectToAuthenticator();
-    authenticator->IsConditionalMediationAvailable(cb.callback());
-    cb.WaitForCallback();
-    return cb.value();
+    authenticator->IsConditionalMediationAvailable(future.GetCallback());
+    EXPECT_TRUE(future.Wait());
+    return future.Get();
   }
 
   struct MakeCredentialResult {
@@ -709,11 +754,10 @@ class AuthenticatorImplTest : public AuthenticatorTestBase {
       PublicKeyCredentialCreationOptionsPtr options) {
     mojo::Remote<blink::mojom::Authenticator> authenticator =
         ConnectToAuthenticator();
-    TestMakeCredentialCallback callback_receiver;
-    authenticator->MakeCredential(std::move(options),
-                                  callback_receiver.callback());
-    callback_receiver.WaitForCallback();
-    auto [status, response, dom_exception] = callback_receiver.TakeResult();
+    TestMakeCredentialFuture future;
+    authenticator->MakeCredential(std::move(options), future.GetCallback());
+    EXPECT_TRUE(future.Wait());
+    auto [status, response, dom_exception] = future.Take();
     return {status, std::move(response)};
   }
 
@@ -721,12 +765,11 @@ class AuthenticatorImplTest : public AuthenticatorTestBase {
       PublicKeyCredentialCreationOptionsPtr options) {
     mojo::Remote<blink::mojom::Authenticator> authenticator =
         ConnectToAuthenticator();
-    TestMakeCredentialCallback callback_receiver;
-    authenticator->MakeCredential(std::move(options),
-                                  callback_receiver.callback());
+    TestMakeCredentialFuture future;
+    authenticator->MakeCredential(std::move(options), future.GetCallback());
     task_environment()->FastForwardBy(kTestTimeout);
-    callback_receiver.WaitForCallback();
-    auto [status, response, dom_exception] = callback_receiver.TakeResult();
+    EXPECT_TRUE(future.Wait());
+    auto [status, response, dom_exception] = future.Take();
     return {status, std::move(response)};
   }
 
@@ -744,11 +787,10 @@ class AuthenticatorImplTest : public AuthenticatorTestBase {
       PublicKeyCredentialRequestOptionsPtr options) {
     mojo::Remote<blink::mojom::Authenticator> authenticator =
         ConnectToAuthenticator();
-    TestGetAssertionCallback callback_receiver;
-    authenticator->GetAssertion(std::move(options),
-                                callback_receiver.callback());
-    callback_receiver.WaitForCallback();
-    auto [status, response, dom_exception] = callback_receiver.TakeResult();
+    TestGetAssertionFuture future;
+    authenticator->GetAssertion(std::move(options), future.GetCallback());
+    EXPECT_TRUE(future.Wait());
+    auto [status, response, dom_exception] = future.Take();
     return {status, std::move(response)};
   }
 
@@ -756,12 +798,26 @@ class AuthenticatorImplTest : public AuthenticatorTestBase {
       PublicKeyCredentialRequestOptionsPtr options) {
     mojo::Remote<blink::mojom::Authenticator> authenticator =
         ConnectToAuthenticator();
-    TestGetAssertionCallback callback_receiver;
-    authenticator->GetAssertion(std::move(options),
-                                callback_receiver.callback());
+    TestGetAssertionFuture future;
+    authenticator->GetAssertion(std::move(options), future.GetCallback());
     task_environment()->FastForwardBy(kTestTimeout);
-    auto [status, response, dom_exception] = callback_receiver.TakeResult();
+    auto [status, response, dom_exception] = future.Take();
     return {status, std::move(response)};
+  }
+
+  AuthenticatorStatus AuthenticatorReport() {
+    return AuthenticatorReport(GetTestPublicKeyCredentialReportOptions());
+  }
+
+  AuthenticatorStatus AuthenticatorReport(
+      PublicKeyCredentialReportOptionsPtr options) {
+    mojo::Remote<blink::mojom::Authenticator> authenticator =
+        ConnectToAuthenticator();
+    TestReportFuture future;
+    authenticator->Report(std::move(options), future.GetCallback());
+    EXPECT_TRUE(future.Wait());
+    auto [status, dom_exception] = future.Take();
+    return status;
   }
 
   AuthenticatorStatus TryAuthenticationWithAppId(const std::string& origin,
@@ -791,16 +847,44 @@ class AuthenticatorImplTest : public AuthenticatorTestBase {
     return AuthenticatorMakeCredential(std::move(options)).status;
   }
 
+  ukm::TestUkmRecorder* GetTestUkmRecorder() { return &test_ukm_recorder_; }
+
+  void VerifyGetAssertionOutcomeUkm(uint32_t index,
+                                    GetAssertionOutcome outcome,
+                                    RequestMode mode) {
+    auto entries = GetTestUkmRecorder()->GetEntriesByName(
+        ukm::builders::WebAuthn_SignCompletion::kEntryName);
+    ASSERT_GT(entries.size(), index);
+    GetTestUkmRecorder()->ExpectEntryMetric(
+        entries[index], "SignCompletionResult", static_cast<int64_t>(outcome));
+    GetTestUkmRecorder()->ExpectEntryMetric(entries[index], "RequestMode",
+                                            static_cast<int64_t>(mode));
+  }
+
+  void VerifyMakeCredentialOutcomeUkm(uint32_t index,
+                                      MakeCredentialOutcome outcome,
+                                      RequestMode mode) {
+    auto entries = GetTestUkmRecorder()->GetEntriesByName(
+        ukm::builders::WebAuthn_RegisterCompletion::kEntryName);
+    ASSERT_GT(entries.size(), index);
+    GetTestUkmRecorder()->ExpectEntryMetric(entries[index],
+                                            "RegisterCompletionResult",
+                                            static_cast<int64_t>(outcome));
+    GetTestUkmRecorder()->ExpectEntryMetric(entries[index], "RequestMode",
+                                            static_cast<int64_t>(mode));
+  }
+
   scoped_refptr<::testing::NiceMock<device::MockBluetoothAdapter>>
       mock_adapter_ = base::MakeRefCounted<
           ::testing::NiceMock<device::MockBluetoothAdapter>>();
 
  private:
-  std::unique_ptr<device::BluetoothAdapterFactory::GlobalValuesForTesting>
+  std::unique_ptr<device::BluetoothAdapterFactory::GlobalOverrideValues>
       bluetooth_global_values_ =
-          device::BluetoothAdapterFactory::Get()->InitGlobalValuesForTesting();
+          device::BluetoothAdapterFactory::Get()->InitGlobalOverrideValues();
   data_decoder::test::InProcessDataDecoder data_decoder_service_;
   url::ScopedSchemeRegistryForTests scoped_registry_;
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder_;
 };
 
 TEST_F(AuthenticatorImplTest, ClientDataJSONSerialization) {
@@ -885,6 +969,7 @@ TEST_F(AuthenticatorImplTest, MakeCredentialOriginAndRpIds) {
       tests.end(), &kInvalidRelyingPartyTestCases[0],
       &kInvalidRelyingPartyTestCases[std::size(kInvalidRelyingPartyTestCases)]);
 
+  int test_case_count = 0;
   for (const auto& test_case : tests) {
     SCOPED_TRACE(std::string(test_case.claimed_authority) + " " +
                  std::string(test_case.origin));
@@ -896,6 +981,12 @@ TEST_F(AuthenticatorImplTest, MakeCredentialOriginAndRpIds) {
 
     EXPECT_EQ(AuthenticatorMakeCredential(std::move(options)).status,
               test_case.expected_status);
+    VerifyMakeCredentialOutcomeUkm(
+        test_case_count++,
+        (test_case.expected_status == AuthenticatorStatus::SUCCESS)
+            ? MakeCredentialOutcome::kSuccess
+            : MakeCredentialOutcome::kSecurityError,
+        RequestMode::kModalWebAuthn);
   }
 }
 
@@ -924,6 +1015,8 @@ TEST_F(AuthenticatorImplTest, MakeCredentialResidentKeyUnsupported) {
 
   EXPECT_EQ(AuthenticatorMakeCredential(std::move(options)).status,
             AuthenticatorStatus::RESIDENT_CREDENTIALS_UNSUPPORTED);
+  VerifyMakeCredentialOutcomeUkm(0, MakeCredentialOutcome::kRkNotSupported,
+                                 RequestMode::kModalWebAuthn);
 }
 
 // Test that MakeCredential request times out with NOT_ALLOWED_ERROR if a
@@ -939,6 +1032,8 @@ TEST_F(AuthenticatorImplTest, MakeCredentialPlatformAuthenticator) {
   EXPECT_EQ(
       AuthenticatorMakeCredentialAndWaitForTimeout(std::move(options)).status,
       AuthenticatorStatus::NOT_ALLOWED_ERROR);
+  VerifyMakeCredentialOutcomeUkm(0, MakeCredentialOutcome::kUiTimeout,
+                                 RequestMode::kModalWebAuthn);
 }
 
 // Parses its arguments as JSON and expects that all the keys in the first are
@@ -979,6 +1074,8 @@ TEST(ClientDataSerializationTest, Sign) {
 }
 
 TEST_F(AuthenticatorImplTest, TestMakeCredentialTimeout) {
+  base::HistogramTester histogram_tester;
+
   // Don't provide an authenticator tap so the request times out.
   virtual_device_factory_->mutable_state()->simulate_press_callback =
       base::BindLambdaForTesting(
@@ -991,6 +1088,11 @@ TEST_F(AuthenticatorImplTest, TestMakeCredentialTimeout) {
   EXPECT_EQ(
       AuthenticatorMakeCredentialAndWaitForTimeout(std::move(options)).status,
       AuthenticatorStatus::NOT_ALLOWED_ERROR);
+  histogram_tester.ExpectUniqueSample(
+      "WebAuthentication.MakeCredential.Result",
+      AuthenticatorCommonImpl::CredentialRequestResult::kTimeout, 1);
+  VerifyMakeCredentialOutcomeUkm(0, MakeCredentialOutcome::kUiTimeout,
+                                 RequestMode::kModalWebAuthn);
 }
 
 // Verify behavior for various combinations of origins and RP IDs.
@@ -1009,6 +1111,25 @@ TEST_F(AuthenticatorImplTest, GetAssertionOriginAndRpIds) {
     options->relying_party_id = test_case.claimed_authority;
 
     EXPECT_EQ(AuthenticatorGetAssertion(std::move(options)).status,
+              test_case.expected_status);
+  }
+}
+
+// Verify behavior for various combinations of origins and RP IDs.
+TEST_F(AuthenticatorImplTest, ReportOriginAndRpIds) {
+  // These instances should return security errors (for circumstances
+  // that would normally crash the renderer).
+  for (const OriginClaimedAuthorityPair& test_case :
+       kInvalidRelyingPartyTestCases) {
+    SCOPED_TRACE(std::string(test_case.claimed_authority) + " " +
+                 std::string(test_case.origin));
+
+    NavigateAndCommit(GURL(test_case.origin));
+    PublicKeyCredentialReportOptionsPtr options =
+        GetTestPublicKeyCredentialReportOptions();
+    options->relying_party_id = test_case.claimed_authority;
+
+    EXPECT_EQ(AuthenticatorReport(std::move(options)),
               test_case.expected_status);
   }
 }
@@ -1241,7 +1362,9 @@ TEST_F(AuthenticatorImplTest, TestGetAssertionTimeout) {
       AuthenticatorStatus::NOT_ALLOWED_ERROR);
   histogram_tester.ExpectUniqueSample(
       "WebAuthentication.GetAssertion.Result",
-      AuthenticatorCommonImpl::GetAssertionResult::kTimeout, 1);
+      AuthenticatorCommonImpl::CredentialRequestResult::kTimeout, 1);
+  VerifyGetAssertionOutcomeUkm(0, GetAssertionOutcome::kUiTimeout,
+                               RequestMode::kModalWebAuthn);
 }
 
 TEST_F(AuthenticatorImplTest, OversizedCredentialId) {
@@ -1353,6 +1476,8 @@ TEST_F(AuthenticatorImplTest, GetAssertionWithEmptyAllowCredentials) {
 
   EXPECT_EQ(AuthenticatorGetAssertion(std::move(options)).status,
             AuthenticatorStatus::RESIDENT_CREDENTIALS_UNSUPPORTED);
+  VerifyGetAssertionOutcomeUkm(0, GetAssertionOutcome::kRkNotSupported,
+                               RequestMode::kModalWebAuthn);
 }
 
 TEST_F(AuthenticatorImplTest, MakeCredentialAlreadyRegistered) {
@@ -1367,6 +1492,8 @@ TEST_F(AuthenticatorImplTest, MakeCredentialAlreadyRegistered) {
 
   EXPECT_EQ(AuthenticatorMakeCredential(std::move(options)).status,
             AuthenticatorStatus::CREDENTIAL_EXCLUDED);
+  VerifyMakeCredentialOutcomeUkm(0, MakeCredentialOutcome::kCredentialExcluded,
+                                 RequestMode::kModalWebAuthn);
 }
 
 TEST_F(AuthenticatorImplTest, MakeCredentialPendingRequest) {
@@ -1377,23 +1504,21 @@ TEST_F(AuthenticatorImplTest, MakeCredentialPendingRequest) {
   // Make first request.
   PublicKeyCredentialCreationOptionsPtr options =
       GetTestPublicKeyCredentialCreationOptions();
-  TestMakeCredentialCallback callback_receiver;
-  authenticator->MakeCredential(std::move(options),
-                                callback_receiver.callback());
+  TestMakeCredentialFuture future;
+  authenticator->MakeCredential(std::move(options), future.GetCallback());
 
   // Make second request.
   // TODO(crbug.com/41355992): Rework to ensure there are potential race
   // conditions once we have VirtualAuthenticatorEnvironment.
   PublicKeyCredentialCreationOptionsPtr options2 =
       GetTestPublicKeyCredentialCreationOptions();
-  TestMakeCredentialCallback callback_receiver2;
-  authenticator->MakeCredential(std::move(options2),
-                                callback_receiver2.callback());
-  callback_receiver2.WaitForCallback();
+  TestMakeCredentialFuture future2;
+  authenticator->MakeCredential(std::move(options2), future2.GetCallback());
+  EXPECT_TRUE(future2.Wait());
 
-  EXPECT_EQ(AuthenticatorStatus::PENDING_REQUEST, callback_receiver2.status());
+  EXPECT_EQ(AuthenticatorStatus::PENDING_REQUEST, std::get<0>(future2.Get()));
 
-  callback_receiver.WaitForCallback();
+  EXPECT_TRUE(future.Wait());
 }
 
 TEST_F(AuthenticatorImplTest, GetAssertionPendingRequest) {
@@ -1404,22 +1529,44 @@ TEST_F(AuthenticatorImplTest, GetAssertionPendingRequest) {
   // Make first request.
   PublicKeyCredentialRequestOptionsPtr options =
       GetTestPublicKeyCredentialRequestOptions();
-  TestGetAssertionCallback callback_receiver;
-  authenticator->GetAssertion(std::move(options), callback_receiver.callback());
+  TestGetAssertionFuture future;
+  authenticator->GetAssertion(std::move(options), future.GetCallback());
 
   // Make second request.
   // TODO(crbug.com/41355992): Rework to ensure there are potential race
   // conditions once we have VirtualAuthenticatorEnvironment.
   PublicKeyCredentialRequestOptionsPtr options2 =
       GetTestPublicKeyCredentialRequestOptions();
-  TestGetAssertionCallback callback_receiver2;
-  authenticator->GetAssertion(std::move(options2),
-                              callback_receiver2.callback());
-  callback_receiver2.WaitForCallback();
+  TestGetAssertionFuture future2;
+  authenticator->GetAssertion(std::move(options2), future2.GetCallback());
+  EXPECT_TRUE(future2.Wait());
 
-  EXPECT_EQ(AuthenticatorStatus::PENDING_REQUEST, callback_receiver2.status());
+  EXPECT_EQ(AuthenticatorStatus::PENDING_REQUEST, std::get<0>(future2.Get()));
 
-  callback_receiver.WaitForCallback();
+  EXPECT_TRUE(future.Wait());
+}
+
+TEST_F(AuthenticatorImplTest, ReportPendingRequest) {
+  NavigateAndCommit(GURL(kTestOrigin1));
+  mojo::Remote<blink::mojom::Authenticator> authenticator =
+      ConnectToAuthenticator();
+
+  // Make first request.
+  PublicKeyCredentialRequestOptionsPtr options =
+      GetTestPublicKeyCredentialRequestOptions();
+  TestGetAssertionFuture future;
+  authenticator->GetAssertion(std::move(options), future.GetCallback());
+
+  // Make second request.
+  PublicKeyCredentialReportOptionsPtr options2 =
+      GetTestPublicKeyCredentialReportOptions();
+  TestReportFuture future2;
+  authenticator->Report(std::move(options2), future2.GetCallback());
+  EXPECT_TRUE(future2.Wait());
+
+  EXPECT_EQ(AuthenticatorStatus::PENDING_REQUEST, std::get<0>(future2.Get()));
+
+  EXPECT_TRUE(future.Wait());
 }
 
 TEST_F(AuthenticatorImplTest, NavigationDuringOperation) {
@@ -1433,8 +1580,8 @@ TEST_F(AuthenticatorImplTest, NavigationDuringOperation) {
   // Make first request.
   PublicKeyCredentialRequestOptionsPtr options =
       GetTestPublicKeyCredentialRequestOptions();
-  TestGetAssertionCallback callback_receiver;
-  authenticator->GetAssertion(std::move(options), callback_receiver.callback());
+  TestGetAssertionFuture future;
+  authenticator->GetAssertion(std::move(options), future.GetCallback());
 
   // Simulate a navigation while waiting for the user to press the token.
   virtual_device_factory_->mutable_state()->simulate_press_callback =
@@ -1495,6 +1642,9 @@ TEST_F(AuthenticatorImplTest, Ctap2AssertionWithUnknownCredential) {
         AuthenticatorGetAssertion(GetTestPublicKeyCredentialRequestOptions())
             .status,
         AuthenticatorStatus::NOT_ALLOWED_ERROR);
+    VerifyGetAssertionOutcomeUkm(0,
+                                 GetAssertionOutcome::kCredentialNotRecognized,
+                                 RequestMode::kModalWebAuthn);
     // The user must have pressed the authenticator for the operation to
     // resolve.
     EXPECT_TRUE(pressed);
@@ -1942,7 +2092,10 @@ class TestAuthenticatorRequestDelegate
       base::RepeatingClosure start_over_callback,
       AccountPreselectedCallback account_preselected_callback,
       device::FidoRequestHandlerBase::RequestCallback request_callback,
-      base::RepeatingClosure bluetooth_adapter_power_on_callback) override {
+      base::RepeatingClosure bluetooth_adapter_power_on_callback,
+      base::RepeatingCallback<
+          void(device::FidoRequestHandlerBase::BlePermissionCallback)>
+          ble_status_callback) override {
     ASSERT_TRUE(action_callbacks_registered_callback_)
         << "RegisterActionCallbacks called twice.";
     cancel_callback_ = std::move(cancel_callback);
@@ -2278,6 +2431,8 @@ TEST_F(AuthenticatorContentBrowserClientTest, MakeCredentialTLSError) {
       GetTestPublicKeyCredentialCreationOptions();
   EXPECT_EQ(AuthenticatorMakeCredential(std::move(options)).status,
             AuthenticatorStatus::CERTIFICATE_ERROR);
+  VerifyMakeCredentialOutcomeUkm(0, MakeCredentialOutcome::kOtherFailure,
+                                 RequestMode::kModalWebAuthn);
 }
 
 TEST_F(AuthenticatorContentBrowserClientTest, GetAssertionTLSError) {
@@ -2287,6 +2442,8 @@ TEST_F(AuthenticatorContentBrowserClientTest, GetAssertionTLSError) {
       GetTestPublicKeyCredentialRequestOptions();
   EXPECT_EQ(AuthenticatorGetAssertion(std::move(options)).status,
             AuthenticatorStatus::CERTIFICATE_ERROR);
+  VerifyGetAssertionOutcomeUkm(0, GetAssertionOutcome::kOtherFailure,
+                               RequestMode::kModalWebAuthn);
 }
 
 TEST_F(AuthenticatorContentBrowserClientTest,
@@ -2325,14 +2482,28 @@ TEST_F(AuthenticatorContentBrowserClientTest, TestGetAssertionCancel) {
   NavigateAndCommit(GURL(kTestOrigin1));
   test_client_.simulate_user_cancelled_ = true;
   base::HistogramTester histogram_tester;
-  PublicKeyCredentialRequestOptionsPtr options =
-      GetTestPublicKeyCredentialRequestOptions();
 
   EXPECT_EQ(AuthenticatorGetAssertion().status,
             AuthenticatorStatus::NOT_ALLOWED_ERROR);
   histogram_tester.ExpectUniqueSample(
       "WebAuthentication.GetAssertion.Result",
-      AuthenticatorCommonImpl::GetAssertionResult::kUserCancelled, 1);
+      AuthenticatorCommonImpl::CredentialRequestResult::kUserCancelled, 1);
+  VerifyGetAssertionOutcomeUkm(0, GetAssertionOutcome::kUserCancellation,
+                               RequestMode::kModalWebAuthn);
+}
+
+TEST_F(AuthenticatorContentBrowserClientTest, TestMakeCredentialCancel) {
+  NavigateAndCommit(GURL(kTestOrigin1));
+  test_client_.simulate_user_cancelled_ = true;
+  base::HistogramTester histogram_tester;
+
+  EXPECT_EQ(AuthenticatorMakeCredential().status,
+            AuthenticatorStatus::NOT_ALLOWED_ERROR);
+  histogram_tester.ExpectUniqueSample(
+      "WebAuthentication.MakeCredential.Result",
+      AuthenticatorCommonImpl::CredentialRequestResult::kUserCancelled, 1);
+  VerifyMakeCredentialOutcomeUkm(0, MakeCredentialOutcome::kUserCancellation,
+                                 RequestMode::kModalWebAuthn);
 }
 
 // Test that credentials can be created and used from an extension origin when
@@ -3185,11 +3356,11 @@ TEST_F(AuthenticatorContentBrowserClientTest,
   PublicKeyCredentialCreationOptionsPtr options =
       GetTestPublicKeyCredentialCreationOptions();
 
-  TestRequestStartedCallback request_started;
+  TestRequestStartedFuture request_started_future;
   test_client_.action_callbacks_registered_callback =
-      request_started.callback();
+      request_started_future.GetCallback();
   authenticator->MakeCredential(std::move(options), base::DoNothing());
-  request_started.WaitForCallback();
+  EXPECT_TRUE(request_started_future.Wait());
 }
 
 TEST_F(AuthenticatorContentBrowserClientTest,
@@ -3201,11 +3372,11 @@ TEST_F(AuthenticatorContentBrowserClientTest,
   PublicKeyCredentialRequestOptionsPtr options =
       GetTestPublicKeyCredentialRequestOptions();
 
-  TestRequestStartedCallback request_started;
+  TestRequestStartedFuture request_started_future;
   test_client_.action_callbacks_registered_callback =
-      request_started.callback();
+      request_started_future.GetCallback();
   authenticator->GetAssertion(std::move(options), base::DoNothing());
-  request_started.WaitForCallback();
+  EXPECT_TRUE(request_started_future.Wait());
 }
 
 TEST_F(AuthenticatorContentBrowserClientTest, MakeCredentialStartOver) {
@@ -3219,15 +3390,15 @@ TEST_F(AuthenticatorContentBrowserClientTest, MakeCredentialStartOver) {
   options->authenticator_selection->user_verification_requirement =
       device::UserVerificationRequirement::kRequired;
 
-  TestRequestStartedCallback request_started;
+  TestRequestStartedFuture request_started_future;
   test_client_.action_callbacks_registered_callback =
-      request_started.callback();
-  TestRequestStartedCallback request_restarted;
-  test_client_.started_over_callback_ = request_restarted.callback();
+      request_started_future.GetCallback();
+  TestRequestStartedFuture request_restarted_future;
+  test_client_.started_over_callback_ = request_restarted_future.GetCallback();
 
   authenticator->MakeCredential(std::move(options), base::DoNothing());
-  request_started.WaitForCallback();
-  request_restarted.WaitForCallback();
+  EXPECT_TRUE(request_started_future.Wait());
+  EXPECT_TRUE(request_restarted_future.Wait());
 
   const auto& discoveries_trace = virtual_device_factory_->trace()->discoveries;
   ASSERT_EQ(discoveries_trace.size(), 2u);
@@ -3245,15 +3416,15 @@ TEST_F(AuthenticatorContentBrowserClientTest, GetAssertionStartOver) {
   PublicKeyCredentialRequestOptionsPtr options =
       GetTestPublicKeyCredentialRequestOptions();
 
-  TestRequestStartedCallback request_started;
+  TestRequestStartedFuture request_started_future;
   test_client_.action_callbacks_registered_callback =
-      request_started.callback();
-  TestRequestStartedCallback request_restarted;
-  test_client_.started_over_callback_ = request_restarted.callback();
+      request_started_future.GetCallback();
+  TestRequestStartedFuture request_restarted_future;
+  test_client_.started_over_callback_ = request_restarted_future.GetCallback();
 
   authenticator->GetAssertion(std::move(options), base::DoNothing());
-  request_started.WaitForCallback();
-  request_restarted.WaitForCallback();
+  EXPECT_TRUE(request_started_future.Wait());
+  EXPECT_TRUE(request_restarted_future.Wait());
 
   const auto& discoveries_trace = virtual_device_factory_->trace()->discoveries;
   ASSERT_EQ(discoveries_trace.size(), 2u);
@@ -3272,15 +3443,15 @@ TEST_F(AuthenticatorContentBrowserClientTest, Unfocused) {
   NavigateAndCommit(GURL(kTestOrigin1));
 
   {
-    TestRequestStartedCallback request_started;
+    TestRequestStartedFuture request_started_future;
     test_client_.action_callbacks_registered_callback =
-        request_started.callback();
+        request_started_future.GetCallback();
 
     EXPECT_EQ(
         AuthenticatorMakeCredential(GetTestPublicKeyCredentialCreationOptions())
             .status,
         AuthenticatorStatus::NOT_FOCUSED);
-    EXPECT_FALSE(request_started.was_called());
+    EXPECT_FALSE(request_started_future.IsReady());
   }
 
   {
@@ -3296,13 +3467,13 @@ TEST_F(AuthenticatorContentBrowserClientTest, Unfocused) {
         GetTestPublicKeyCredentialRequestOptions();
     options->allow_credentials.emplace_back(credential);
 
-    TestRequestStartedCallback request_started;
+    TestRequestStartedFuture request_started_future;
     test_client_.action_callbacks_registered_callback =
-        request_started.callback();
+        request_started_future.GetCallback();
 
     EXPECT_EQ(AuthenticatorGetAssertion(std::move(options)).status,
               AuthenticatorStatus::SUCCESS);
-    EXPECT_TRUE(request_started.was_called());
+    EXPECT_TRUE(request_started_future.IsReady());
   }
 }
 
@@ -3648,7 +3819,7 @@ TEST_F(AuthenticatorImplRequestDelegateTest,
   NavigateAndCommit(GURL(kTestOrigin1));
   PublicKeyCredentialRequestOptionsPtr options =
       GetTestPublicKeyCredentialRequestOptions();
-  TestGetAssertionCallback callback_receiver;
+  TestGetAssertionFuture future;
 
   auto mock_delegate =
       std::make_unique<MockAuthenticatorRequestDelegateObserver>();
@@ -3675,7 +3846,7 @@ TEST_F(AuthenticatorImplRequestDelegateTest,
       .WillOnce(testing::InvokeWithoutArgs(
           [&usb_device_lost_done]() { usb_device_lost_done.Quit(); }));
 
-  authenticator->GetAssertion(std::move(options), callback_receiver.callback());
+  authenticator->GetAssertion(std::move(options), future.GetCallback());
   fake_hid_discovery->WaitForCallToStartAndSimulateSuccess();
   fake_hid_discovery->AddDevice(std::move(mock_usb_device));
   usb_device_found_done.Run();
@@ -3692,35 +3863,35 @@ TEST_F(AuthenticatorImplRequestDelegateTest, FailureReasonForTimeout) {
 
   NavigateAndCommit(GURL(kTestOrigin1));
 
-  FailureReasonCallbackReceiver failure_reason_receiver;
+  FailureReasonFuture failure_reason_future;
   auto mock_delegate = std::make_unique<
       ::testing::NiceMock<MockAuthenticatorRequestDelegateObserver>>(
-      failure_reason_receiver.callback());
+      failure_reason_future.GetCallback());
   auto authenticator = ConnectToFakeAuthenticator(std::move(mock_delegate));
 
-  TestGetAssertionCallback callback_receiver;
+  TestGetAssertionFuture future;
   authenticator->GetAssertion(GetTestPublicKeyCredentialRequestOptions(),
-                              callback_receiver.callback());
+                              future.GetCallback());
 
   task_environment()->FastForwardBy(kTestTimeout);
 
-  callback_receiver.WaitForCallback();
-  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
+  EXPECT_TRUE(future.Wait());
+  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, std::get<0>(future.Get()));
 
-  ASSERT_TRUE(failure_reason_receiver.was_called());
+  ASSERT_TRUE(failure_reason_future.IsReady());
   EXPECT_EQ(
       AuthenticatorRequestClientDelegate::InterestingFailureReason::kTimeout,
-      std::get<0>(*failure_reason_receiver.result()));
+      failure_reason_future.Get());
 }
 
 TEST_F(AuthenticatorImplRequestDelegateTest,
        FailureReasonForDuplicateRegistration) {
   NavigateAndCommit(GURL(kTestOrigin1));
 
-  FailureReasonCallbackReceiver failure_reason_receiver;
+  FailureReasonFuture failure_reason_future;
   auto mock_delegate = std::make_unique<
       ::testing::NiceMock<MockAuthenticatorRequestDelegateObserver>>(
-      failure_reason_receiver.callback());
+      failure_reason_future.GetCallback());
   auto authenticator = ConnectToFakeAuthenticator(std::move(mock_delegate));
 
   PublicKeyCredentialCreationOptionsPtr options =
@@ -3729,41 +3900,40 @@ TEST_F(AuthenticatorImplRequestDelegateTest,
   ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
       options->exclude_credentials[0].id, kTestRelyingPartyId));
 
-  TestMakeCredentialCallback callback_receiver;
-  authenticator->MakeCredential(std::move(options),
-                                callback_receiver.callback());
+  TestMakeCredentialFuture future;
+  authenticator->MakeCredential(std::move(options), future.GetCallback());
 
-  callback_receiver.WaitForCallback();
+  EXPECT_TRUE(future.Wait());
   EXPECT_EQ(AuthenticatorStatus::CREDENTIAL_EXCLUDED,
-            callback_receiver.status());
+            std::get<0>(future.Get()));
 
-  ASSERT_TRUE(failure_reason_receiver.was_called());
+  ASSERT_TRUE(failure_reason_future.IsReady());
   EXPECT_EQ(AuthenticatorRequestClientDelegate::InterestingFailureReason::
                 kKeyAlreadyRegistered,
-            std::get<0>(*failure_reason_receiver.result()));
+            failure_reason_future.Get());
 }
 
 TEST_F(AuthenticatorImplRequestDelegateTest,
        FailureReasonForMissingRegistration) {
   NavigateAndCommit(GURL(kTestOrigin1));
 
-  FailureReasonCallbackReceiver failure_reason_receiver;
+  FailureReasonFuture failure_reason_future;
   auto mock_delegate = std::make_unique<
       ::testing::NiceMock<MockAuthenticatorRequestDelegateObserver>>(
-      failure_reason_receiver.callback());
+      failure_reason_future.GetCallback());
   auto authenticator = ConnectToFakeAuthenticator(std::move(mock_delegate));
 
-  TestGetAssertionCallback callback_receiver;
+  TestGetAssertionFuture future;
   authenticator->GetAssertion(GetTestPublicKeyCredentialRequestOptions(),
-                              callback_receiver.callback());
+                              future.GetCallback());
 
-  callback_receiver.WaitForCallback();
-  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
+  EXPECT_TRUE(future.Wait());
+  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, std::get<0>(future.Get()));
 
-  ASSERT_TRUE(failure_reason_receiver.was_called());
+  ASSERT_TRUE(failure_reason_future.IsReady());
   EXPECT_EQ(AuthenticatorRequestClientDelegate::InterestingFailureReason::
                 kKeyNotRegistered,
-            std::get<0>(*failure_reason_receiver.result()));
+            failure_reason_future.Get());
 }
 
 TEST_F(AuthenticatorImplTest, NoNonAuthoritativeTransports) {
@@ -3926,7 +4096,7 @@ TEST_F(AuthenticatorImplTest, GetAssertionResultMetricError) {
             AuthenticatorStatus::NOT_ALLOWED_ERROR);
   histogram_tester.ExpectUniqueSample(
       "WebAuthentication.GetAssertion.Result",
-      AuthenticatorCommonImpl::GetAssertionResult::kOtherError, 1);
+      AuthenticatorCommonImpl::CredentialRequestResult::kOtherError, 1);
 }
 
 TEST_F(AuthenticatorImplTest, GetAssertionResultMetricSuccess) {
@@ -3941,7 +4111,33 @@ TEST_F(AuthenticatorImplTest, GetAssertionResultMetricSuccess) {
             AuthenticatorStatus::SUCCESS);
   histogram_tester.ExpectUniqueSample(
       "WebAuthentication.GetAssertion.Result",
-      AuthenticatorCommonImpl::GetAssertionResult::kOtherSuccess, 1);
+      AuthenticatorCommonImpl::CredentialRequestResult::kOtherSuccess, 1);
+}
+
+TEST_F(AuthenticatorImplTest, MakeCredentialResultMetricError) {
+  NavigateAndCommit(GURL(kTestOrigin1));
+
+  base::HistogramTester histogram_tester;
+  PublicKeyCredentialCreationOptionsPtr options =
+      GetTestPublicKeyCredentialCreationOptions();
+  options->exclude_credentials = GetTestCredentials();
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
+      options->exclude_credentials[0].id, kTestRelyingPartyId));
+  EXPECT_EQ(AuthenticatorMakeCredential(std::move(options)).status,
+            AuthenticatorStatus::CREDENTIAL_EXCLUDED);
+  histogram_tester.ExpectUniqueSample(
+      "WebAuthentication.MakeCredential.Result",
+      AuthenticatorCommonImpl::CredentialRequestResult::kOtherError, 1);
+}
+
+TEST_F(AuthenticatorImplTest, MakeCredentialResultMetricSuccess) {
+  NavigateAndCommit(GURL(kTestOrigin1));
+
+  base::HistogramTester histogram_tester;
+  EXPECT_EQ(AuthenticatorMakeCredential().status, AuthenticatorStatus::SUCCESS);
+  histogram_tester.ExpectUniqueSample(
+      "WebAuthentication.MakeCredential.Result",
+      AuthenticatorCommonImpl::CredentialRequestResult::kOtherSuccess, 1);
 }
 
 // Tests that for an authenticator that does not support batching, credential
@@ -4502,6 +4698,9 @@ TEST_F(AuthenticatorImplTest, AlgorithmsOmitted) {
     MakeCredentialResult result =
         AuthenticatorMakeCredential(std::move(options));
     EXPECT_EQ(result.status, AuthenticatorStatus::NOT_ALLOWED_ERROR);
+    VerifyMakeCredentialOutcomeUkm(
+        1, MakeCredentialOutcome::kAlgorithmNotSupported,
+        RequestMode::kModalWebAuthn);
     EXPECT_TRUE(touched);
   }
 }
@@ -4512,10 +4711,11 @@ TEST_F(AuthenticatorImplTest, VirtualAuthenticatorPublicKeyAlgos) {
   NavigateAndCommit(GURL(kTestOrigin1));
 
   static const struct {
+    STACK_ALLOCATED();
+
+   public:
     device::CoseAlgorithmIdentifier algo;
-    // This field is not a raw_ptr<> because it was filtered by the rewriter
-    // for: #global-scope
-    RAW_PTR_EXCLUSION const EVP_MD* digest;
+    const EVP_MD* digest;
   } kTests[] = {
       {device::CoseAlgorithmIdentifier::kEs256, EVP_sha256()},
       {device::CoseAlgorithmIdentifier::kRs256, EVP_sha256()},
@@ -4626,12 +4826,12 @@ TEST_F(AuthenticatorImplTest, ResetDiscoveryFactoryOverride) {
   NavigateAndCommit(GURL(kTestOrigin1));
 
   // Make the entire discovery factory disappear mid-request.
-  bool was_called = false;
+  bool IsReady = false;
   virtual_device_factory_->SetSupportedProtocol(
       device::ProtocolVersion::kCtap2);
   virtual_device_factory_->mutable_state()->simulate_press_callback =
       base::BindLambdaForTesting([&](device::VirtualFidoDevice* device) {
-        was_called = true;
+        IsReady = true;
         ResetVirtualDevice();
         return false;
       });
@@ -5276,6 +5476,8 @@ TEST_F(PINAuthenticatorImplTest, MakeCredentialSoftLock) {
   ASSERT_TRUE(test_client_.failure_reason.has_value());
   EXPECT_EQ(InterestingFailureReason::kSoftPINBlock,
             *test_client_.failure_reason);
+  VerifyMakeCredentialOutcomeUkm(0, MakeCredentialOutcome::kSoftPinBlock,
+                                 RequestMode::kModalWebAuthn);
 }
 
 TEST_F(PINAuthenticatorImplTest, MakeCredentialHardLock) {
@@ -5289,6 +5491,8 @@ TEST_F(PINAuthenticatorImplTest, MakeCredentialHardLock) {
   ASSERT_TRUE(test_client_.failure_reason.has_value());
   EXPECT_EQ(InterestingFailureReason::kHardPINBlock,
             *test_client_.failure_reason);
+  VerifyMakeCredentialOutcomeUkm(0, MakeCredentialOutcome::kHardPinBlock,
+                                 RequestMode::kModalWebAuthn);
 }
 
 TEST_F(PINAuthenticatorImplTest, MakeCredentialWrongPINFirst) {
@@ -5682,6 +5886,8 @@ TEST_F(PINAuthenticatorImplTest, GetAssertionSoftLock) {
   ASSERT_TRUE(test_client_.failure_reason.has_value());
   EXPECT_EQ(InterestingFailureReason::kSoftPINBlock,
             *test_client_.failure_reason);
+  VerifyGetAssertionOutcomeUkm(0, GetAssertionOutcome::kSoftPinBlock,
+                               RequestMode::kModalWebAuthn);
 }
 
 TEST_F(PINAuthenticatorImplTest, GetAssertionHardLock) {
@@ -5699,6 +5905,8 @@ TEST_F(PINAuthenticatorImplTest, GetAssertionHardLock) {
   ASSERT_TRUE(test_client_.failure_reason.has_value());
   EXPECT_EQ(InterestingFailureReason::kHardPINBlock,
             *test_client_.failure_reason);
+  VerifyGetAssertionOutcomeUkm(0, GetAssertionOutcome::kHardPinBlock,
+                               RequestMode::kModalWebAuthn);
 }
 
 TEST_F(PINAuthenticatorImplTest, GetAssertionSkipPINTouch) {
@@ -6339,6 +6547,8 @@ TEST_F(UVTokenAuthenticatorImplTest, GetAssertionUvFails) {
 
   EXPECT_EQ(AuthenticatorGetAssertion(get_credential_options()).status,
             AuthenticatorStatus::NOT_ALLOWED_ERROR);
+  VerifyGetAssertionOutcomeUkm(0, GetAssertionOutcome::kUvNotSupported,
+                               RequestMode::kModalWebAuthn);
   EXPECT_EQ(0, expected_retries);
 }
 
@@ -6524,7 +6734,10 @@ class BlockingAuthenticatorRequestDelegate
       base::RepeatingClosure start_over_callback,
       AccountPreselectedCallback account_preselected_callback,
       device::FidoRequestHandlerBase::RequestCallback request_callback,
-      base::RepeatingClosure bluetooth_adapter_power_on_callback) override {
+      base::RepeatingClosure bluetooth_adapter_power_on_callback,
+      base::RepeatingCallback<
+          void(device::FidoRequestHandlerBase::BlePermissionCallback)>
+          ble_status_callback) override {
     cancel_callback_ = std::move(cancel_callback);
   }
 
@@ -6706,7 +6919,10 @@ class ResidentKeyTestAuthenticatorRequestDelegate
       base::RepeatingClosure start_over_callback,
       AccountPreselectedCallback account_preselected_callback,
       device::FidoRequestHandlerBase::RequestCallback request_callback,
-      base::RepeatingClosure bluetooth_adapter_power_on_callback) override {
+      base::RepeatingClosure bluetooth_adapter_power_on_callback,
+      base::RepeatingCallback<
+          void(device::FidoRequestHandlerBase::BlePermissionCallback)>
+          ble_status_callback) override {
     account_preselected_callback_ = account_preselected_callback;
     request_callback_ = request_callback;
   }
@@ -7004,18 +7220,46 @@ TEST_F(ResidentKeyAuthenticatorImplTest, StorageFull) {
           kStorageFull;
   EXPECT_EQ(AuthenticatorMakeCredential(make_credential_options()).status,
             AuthenticatorStatus::NOT_ALLOWED_ERROR);
+  VerifyMakeCredentialOutcomeUkm(0, MakeCredentialOutcome::kStorageFull,
+                                 RequestMode::kModalWebAuthn);
 }
 
-TEST_F(ResidentKeyAuthenticatorImplTest, MakeCredentialEmptyFields) {
+TEST_F(ResidentKeyAuthenticatorImplTest,
+       MakeCredentialEmptyFields_SecurityKey) {
+  VirtualCtap2Device::Config config;
+  config.pin_support = true;
+  config.resident_key_support = true;
+  config.reject_empty_display_name = true;
+  virtual_device_factory_->SetCtap2Config(std::move(config));
+  virtual_device_factory_->SetTransport(
+      device::FidoTransportProtocol::kUsbHumanInterfaceDevice);
+
   PublicKeyCredentialCreationOptionsPtr options = make_credential_options();
+
   // This value is perfectly legal, but our VirtualCtap2Device simulates
   // some security keys in rejecting empty values. CBOR serialisation should
   // omit these values rather than send empty ones.
   options->user.display_name = "";
 
-  MakeCredentialResult result = AuthenticatorMakeCredential(std::move(options));
+  EXPECT_EQ(AuthenticatorStatus::SUCCESS,
+            AuthenticatorMakeCredential(std::move(options)).status);
+}
 
-  EXPECT_EQ(AuthenticatorStatus::SUCCESS, result.status);
+// Regression test for crbug.com/346835891.
+TEST_F(ResidentKeyAuthenticatorImplTest, MakeCredentialEmptyFields_Phone) {
+  // iPhones reject a request with a missing display name.
+  VirtualCtap2Device::Config config;
+  config.pin_support = true;
+  config.resident_key_support = true;
+  config.reject_missing_display_name = true;
+  virtual_device_factory_->SetCtap2Config(std::move(config));
+  virtual_device_factory_->SetTransport(device::FidoTransportProtocol::kHybrid);
+
+  PublicKeyCredentialCreationOptionsPtr options = make_credential_options();
+  options->user.display_name = "";
+
+  EXPECT_EQ(AuthenticatorStatus::SUCCESS,
+            AuthenticatorMakeCredential(std::move(options)).status);
 }
 
 TEST_F(ResidentKeyAuthenticatorImplTest, GetAssertionSingleNoPII) {
@@ -8379,6 +8623,8 @@ TEST_F(ResidentKeyAuthenticatorImplTest, ConditionalUI) {
   options->is_conditional = true;
   GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
   EXPECT_EQ(AuthenticatorStatus::SUCCESS, result.status);
+  VerifyGetAssertionOutcomeUkm(0, GetAssertionOutcome::kSuccess,
+                               RequestMode::kConditional);
 }
 
 // Tests that the AuthenticatorRequestDelegate can choose a known platform
@@ -8501,10 +8747,11 @@ TEST_F(InternalAuthenticatorImplTest, MakeCredentialSkipTLSCheck) {
   test_client_.is_webauthn_security_level_acceptable = false;
   PublicKeyCredentialCreationOptionsPtr options =
       GetTestPublicKeyCredentialCreationOptions();
-  TestMakeCredentialCallback callback;
-  authenticator->MakeCredential(std::move(options), callback.callback());
-  callback.WaitForCallback();
-  EXPECT_EQ(callback.status(), blink::mojom::AuthenticatorStatus::SUCCESS);
+  TestMakeCredentialFuture future;
+  authenticator->MakeCredential(std::move(options), future.GetCallback());
+  EXPECT_TRUE(future.Wait());
+  EXPECT_EQ(std::get<0>(future.Get()),
+            blink::mojom::AuthenticatorStatus::SUCCESS);
 }
 
 // Regression test for crbug.com/1433416.
@@ -8517,10 +8764,11 @@ TEST_F(InternalAuthenticatorImplTest, GetAssertionSkipTLSCheck) {
       GetTestPublicKeyCredentialRequestOptions();
   ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
       options->allow_credentials[0].id, options->relying_party_id));
-  TestGetAssertionCallback callback;
-  authenticator->GetAssertion(std::move(options), callback.callback());
-  callback.WaitForCallback();
-  EXPECT_EQ(callback.status(), blink::mojom::AuthenticatorStatus::SUCCESS);
+  TestGetAssertionFuture future;
+  authenticator->GetAssertion(std::move(options), future.GetCallback());
+  EXPECT_TRUE(future.Wait());
+  EXPECT_EQ(std::get<0>(future.Get()),
+            blink::mojom::AuthenticatorStatus::SUCCESS);
 }
 
 // Verify behavior for various combinations of origins and RP IDs.
@@ -8543,11 +8791,10 @@ TEST_F(InternalAuthenticatorImplTest, MakeCredentialOriginAndRpIds) {
     PublicKeyCredentialCreationOptionsPtr options =
         GetTestPublicKeyCredentialCreationOptions();
     options->relying_party.id = test_case.claimed_authority;
-    TestMakeCredentialCallback callback_receiver;
-    authenticator->MakeCredential(std::move(options),
-                                  callback_receiver.callback());
-    callback_receiver.WaitForCallback();
-    EXPECT_EQ(test_case.expected_status, callback_receiver.status());
+    TestMakeCredentialFuture future;
+    authenticator->MakeCredential(std::move(options), future.GetCallback());
+    EXPECT_TRUE(future.Wait());
+    EXPECT_EQ(test_case.expected_status, std::get<0>(future.Get()));
   }
 
   // These instances should bypass security errors, by setting the effective
@@ -8564,11 +8811,10 @@ TEST_F(InternalAuthenticatorImplTest, MakeCredentialOriginAndRpIds) {
     options->relying_party.id = test_case.claimed_authority;
 
     ResetVirtualDevice();
-    TestMakeCredentialCallback callback_receiver;
-    authenticator->MakeCredential(std::move(options),
-                                  callback_receiver.callback());
-    callback_receiver.WaitForCallback();
-    EXPECT_EQ(test_case.expected_status, callback_receiver.status());
+    TestMakeCredentialFuture future;
+    authenticator->MakeCredential(std::move(options), future.GetCallback());
+    EXPECT_TRUE(future.Wait());
+    EXPECT_EQ(test_case.expected_status, std::get<0>(future.Get()));
   }
 }
 
@@ -8594,11 +8840,10 @@ TEST_F(InternalAuthenticatorImplTest, GetAssertionOriginAndRpIds) {
         GetTestPublicKeyCredentialRequestOptions();
     options->relying_party_id = test_case.claimed_authority;
 
-    TestGetAssertionCallback callback_receiver;
-    authenticator->GetAssertion(std::move(options),
-                                callback_receiver.callback());
-    callback_receiver.WaitForCallback();
-    EXPECT_EQ(test_case.expected_status, callback_receiver.status());
+    TestGetAssertionFuture future;
+    authenticator->GetAssertion(std::move(options), future.GetCallback());
+    EXPECT_TRUE(future.Wait());
+    EXPECT_EQ(test_case.expected_status, std::get<0>(future.Get()));
   }
 
   // These instances should bypass security errors, by setting the effective
@@ -8618,11 +8863,10 @@ TEST_F(InternalAuthenticatorImplTest, GetAssertionOriginAndRpIds) {
     ResetVirtualDevice();
     ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
         options->allow_credentials[0].id, test_case.claimed_authority));
-    TestGetAssertionCallback callback_receiver;
-    authenticator->GetAssertion(std::move(options),
-                                callback_receiver.callback());
-    callback_receiver.WaitForCallback();
-    EXPECT_EQ(test_case.expected_status, callback_receiver.status());
+    TestGetAssertionFuture future;
+    authenticator->GetAssertion(std::move(options), future.GetCallback());
+    EXPECT_TRUE(future.Wait());
+    EXPECT_EQ(test_case.expected_status, std::get<0>(future.Get()));
   }
 }
 
@@ -8886,7 +9130,8 @@ class ICloudKeychainAuthenticatorImplTest : public AuthenticatorImplTest {
   InspectTAIAuthenticatorRequestDelegate::Callback tai_callback_;
 };
 
-TEST_F(ICloudKeychainAuthenticatorImplTest, Discovery) {
+// Gardener 2024-06-18: Disabled due to asan failures (crbug.com/347287026).
+TEST_F(ICloudKeychainAuthenticatorImplTest, DISABLED_Discovery) {
   if (__builtin_available(macOS 13.5, *)) {
     NavigateAndCommit(GURL(kTestOrigin1));
     device::fido::icloud_keychain::ScopedTestEnvironment test_environment(
@@ -9093,7 +9338,7 @@ class AuthenticatorCableV2Test : public AuthenticatorImplRequestDelegateTest {
         /*contact_device_stream=*/nullptr,
         /*extension_contents=*/std::vector<device::CableDiscoveryData>(),
         GetPairingCallback(), GetInvalidatedPairingCallback(),
-        GetEventCallback());
+        GetEventCallback(), /*must_support_ctap=*/true);
 
     ReplaceDiscoveryFactory(
         std::make_unique<DiscoveryFactory>(std::move(discovery)));
@@ -9135,7 +9380,7 @@ class AuthenticatorCableV2Test : public AuthenticatorImplRequestDelegateTest {
         std::move(callback_and_event_stream.second),
         /*extension_contents=*/std::vector<device::CableDiscoveryData>(),
         GetPairingCallback(), GetInvalidatedPairingCallback(),
-        GetEventCallback());
+        GetEventCallback(), /*must_support_ctap=*/true);
 
     maybe_contact_phones_callback_ = base::BindLambdaForTesting([&]() {
       callback_and_event_stream.first.Run(
@@ -9143,7 +9388,7 @@ class AuthenticatorCableV2Test : public AuthenticatorImplRequestDelegateTest {
     });
 
     const std::array<uint8_t, device::cablev2::kRoutingIdSize> routing_id = {0};
-    bool contact_callback_was_called = false;
+    bool contact_callback_IsReady = false;
     // When the |cablev2::Discovery| starts it'll make a connection to the
     // tunnel service with the contact ID from the pairing data. This will be
     // handled by the |TestNetworkContext| and turned into a call to
@@ -9151,15 +9396,15 @@ class AuthenticatorCableV2Test : public AuthenticatorImplRequestDelegateTest {
     // message to a phone. Given the information from the connection, a
     // transaction can be created.
     contact_callback_ = base::BindLambdaForTesting(
-        [this, &transaction, routing_id, contact_id,
-         &contact_callback_was_called, &expected_request_type_string](
+        [this, &transaction, routing_id, contact_id, &contact_callback_IsReady,
+         &expected_request_type_string](
             base::span<const uint8_t, device::cablev2::kTunnelIdSize> tunnel_id,
             base::span<const uint8_t, device::cablev2::kPairingIDSize>
                 pairing_id,
             base::span<const uint8_t, device::cablev2::kClientNonceSize>
                 client_nonce,
             const std::string& request_type_hint) -> void {
-          contact_callback_was_called = true;
+          contact_callback_IsReady = true;
           CHECK_EQ(request_type_hint, expected_request_type_string);
           transaction = device::cablev2::authenticator::TransactFromFCM(
               device::cablev2::authenticator::NewMockPlatform(
@@ -9176,7 +9421,7 @@ class AuthenticatorCableV2Test : public AuthenticatorImplRequestDelegateTest {
 
     EXPECT_EQ(AuthenticatorMakeCredential().status,
               AuthenticatorStatus::SUCCESS);
-    EXPECT_TRUE(contact_callback_was_called);
+    EXPECT_TRUE(contact_callback_IsReady);
   }
 
   void ResetNetworkService() {
@@ -9241,8 +9486,8 @@ TEST_F(AuthenticatorCableV2Test, QRBasedWithNoPairing) {
       qr_generator_key_, std::move(ble_advert_events_),
       /*contact_device_stream=*/nullptr,
       /*extension_contents=*/std::vector<device::CableDiscoveryData>(),
-      GetPairingCallback(), GetInvalidatedPairingCallback(),
-      GetEventCallback());
+      GetPairingCallback(), GetInvalidatedPairingCallback(), GetEventCallback(),
+      /*must_support_ctap=*/true);
 
   ReplaceDiscoveryFactory(
       std::make_unique<DiscoveryFactory>(std::move(discovery)));
@@ -9271,8 +9516,8 @@ TEST_F(AuthenticatorCableV2Test, HandshakeError) {
       qr_generator_key_, std::move(ble_advert_events_),
       /*contact_device_stream=*/nullptr,
       /*extension_contents=*/std::vector<device::CableDiscoveryData>(),
-      GetPairingCallback(), GetInvalidatedPairingCallback(),
-      GetEventCallback());
+      GetPairingCallback(), GetInvalidatedPairingCallback(), GetEventCallback(),
+      /*must_support_ctap=*/true);
 
   ReplaceDiscoveryFactory(
       std::make_unique<DiscoveryFactory>(std::move(discovery)));
@@ -9284,23 +9529,23 @@ TEST_F(AuthenticatorCableV2Test, HandshakeError) {
               /*observer=*/nullptr),
           network_context_factory, zero_qr_secret_);
 
-  FailureReasonCallbackReceiver failure_reason_receiver;
+  FailureReasonFuture failure_reason_future;
   auto mock_delegate = std::make_unique<
       ::testing::NiceMock<MockAuthenticatorRequestDelegateObserver>>(
-      failure_reason_receiver.callback());
+      failure_reason_future.GetCallback());
   auto authenticator = ConnectToFakeAuthenticator(std::move(mock_delegate));
 
-  TestMakeCredentialCallback callback_receiver;
+  TestMakeCredentialFuture future;
   authenticator->MakeCredential(GetTestPublicKeyCredentialCreationOptions(),
-                                callback_receiver.callback());
+                                future.GetCallback());
 
-  callback_receiver.WaitForCallback();
-  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
+  EXPECT_TRUE(future.Wait());
+  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, std::get<0>(future.Get()));
 
-  ASSERT_TRUE(failure_reason_receiver.was_called());
+  ASSERT_TRUE(failure_reason_future.IsReady());
   EXPECT_EQ(AuthenticatorRequestClientDelegate::InterestingFailureReason::
                 kHybridTransportError,
-            std::get<0>(*failure_reason_receiver.result()));
+            failure_reason_future.Get());
 }
 
 // Test having the network service crash between creating a discovery and
@@ -9312,8 +9557,8 @@ TEST_F(AuthenticatorCableV2Test, NetworkServiceCrash) {
       qr_generator_key_, std::move(ble_advert_events_),
       /*contact_device_stream=*/nullptr,
       /*extension_contents=*/std::vector<device::CableDiscoveryData>(),
-      GetPairingCallback(), GetInvalidatedPairingCallback(),
-      GetEventCallback());
+      GetPairingCallback(), GetInvalidatedPairingCallback(), GetEventCallback(),
+      /*must_support_ctap=*/true);
 
   ReplaceDiscoveryFactory(
       std::make_unique<DiscoveryFactory>(std::move(discovery)));
@@ -9390,8 +9635,8 @@ TEST_F(AuthenticatorCableV2Test, ContactIDDisabled) {
       qr_generator_key_, std::move(ble_advert_events_),
       std::move(callback_and_event_stream.second),
       /*extension_contents=*/std::vector<device::CableDiscoveryData>(),
-      GetPairingCallback(), GetInvalidatedPairingCallback(),
-      GetEventCallback());
+      GetPairingCallback(), GetInvalidatedPairingCallback(), GetEventCallback(),
+      /*must_support_ctap=*/true);
 
   ReplaceDiscoveryFactory(
       std::make_unique<DiscoveryFactory>(std::move(discovery)));
@@ -9464,7 +9709,8 @@ TEST_F(AuthenticatorCableV2Test, ServerLink) {
       base::BindLambdaForTesting([&]() { return network_context_.get(); }),
       qr_generator_key_, std::move(ble_advert_events_),
       /*contact_device_stream=*/nullptr, extension_values, GetPairingCallback(),
-      GetInvalidatedPairingCallback(), GetEventCallback());
+      GetInvalidatedPairingCallback(), GetEventCallback(),
+      /*must_support_ctap=*/true);
 
   ReplaceDiscoveryFactory(
       std::make_unique<DiscoveryFactory>(std::move(discovery)));
@@ -9497,8 +9743,8 @@ TEST_F(AuthenticatorCableV2Test, LateLinking) {
       qr_generator_key_, std::move(ble_advert_events_),
       /*contact_device_stream=*/nullptr,
       /*extension_contents=*/std::vector<device::CableDiscoveryData>(),
-      GetPairingCallback(), GetInvalidatedPairingCallback(),
-      GetEventCallback());
+      GetPairingCallback(), GetInvalidatedPairingCallback(), GetEventCallback(),
+      /*must_support_ctap=*/true);
 
   ReplaceDiscoveryFactory(
       std::make_unique<DiscoveryFactory>(std::move(discovery)));
@@ -9541,7 +9787,7 @@ class AuthenticatorCableV2AuthenticatorTest
         /*contact_device_stream=*/nullptr,
         /*extension_contents=*/std::vector<device::CableDiscoveryData>(),
         GetPairingCallback(), GetInvalidatedPairingCallback(),
-        GetEventCallback());
+        GetEventCallback(), /*must_support_ctap=*/true);
 
     ReplaceDiscoveryFactory(
         std::make_unique<DiscoveryFactory>(std::move(discovery)));

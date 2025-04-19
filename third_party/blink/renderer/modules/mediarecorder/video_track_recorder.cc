@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/modules/mediarecorder/video_track_recorder.h"
 
 #include <memory>
@@ -527,7 +532,7 @@ void VideoTrackRecorderImpl::Encoder::StartFrameEncode(
 
   const bool is_format_supported =
       (video_frame->format() == media::PIXEL_FORMAT_NV12 &&
-       video_frame->HasGpuMemoryBuffer()) ||
+       video_frame->HasMappableGpuBuffer()) ||
       (video_frame->IsMappable() &&
        (video_frame->format() == media::PIXEL_FORMAT_I420 ||
         video_frame->format() == media::PIXEL_FORMAT_I420A));
@@ -540,7 +545,7 @@ void VideoTrackRecorderImpl::Encoder::StartFrameEncode(
   }
   if (frame && frame->format() == media::PIXEL_FORMAT_I420A &&
       !CanEncodeAlphaChannel()) {
-    CHECK(!frame->HasGpuMemoryBuffer());
+    CHECK(!frame->HasMappableGpuBuffer());
     // Drop alpha channel if the encoder does not support it yet.
     frame = media::WrapAsI420VideoFrame(std::move(frame));
   }
@@ -708,7 +713,7 @@ VideoTrackRecorderImpl::Encoder::ConvertToI420ForSoftwareEncoder(
     scoped_refptr<media::VideoFrame> frame) {
   DCHECK_EQ(frame->format(), media::VideoPixelFormat::PIXEL_FORMAT_NV12);
 
-  if (frame->HasGpuMemoryBuffer()) {
+  if (frame->HasMappableGpuBuffer()) {
     frame = media::ConvertToMemoryMappedFrame(frame);
   }
   if (!frame)

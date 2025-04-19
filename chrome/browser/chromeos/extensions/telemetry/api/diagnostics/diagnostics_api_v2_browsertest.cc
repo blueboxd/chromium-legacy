@@ -1220,16 +1220,9 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
 
 IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
                        CreateLedLitUpRoutineSuccess) {
-  base::test::TestFuture<void> led_routine_created;
+  base::test::TestFuture<void> routine_created_future;
   fake_service().SetOnCreateRoutineCalled(
-      base::BindLambdaForTesting([this, &led_routine_created]() {
-        auto* control = fake_service().GetCreatedRoutineControlForRoutineType(
-            crosapi::TelemetryDiagnosticRoutineArgument::Tag::kLedLitUp);
-        ASSERT_TRUE(control);
-        if (control) {
-          led_routine_created.SetValue();
-        }
-      }));
+      routine_created_future.GetRepeatingCallback());
 
   OpenAppUiAndMakeItSecure();
 
@@ -1260,7 +1253,116 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
     ]);
   )");
 
-  EXPECT_TRUE(led_routine_created.Wait());
+  EXPECT_TRUE(routine_created_future.Wait());
+  EXPECT_TRUE(fake_service().GetCreatedRoutineControlForRoutineType(
+      crosapi::TelemetryDiagnosticRoutineArgument::Tag::kLedLitUp));
+}
+
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
+                       CreateKeyboardBacklightRoutineSuccess) {
+  base::test::TestFuture<void> routine_created_future;
+  fake_service().SetOnCreateRoutineCalled(
+      routine_created_future.GetRepeatingCallback());
+
+  OpenAppUiAndMakeItSecure();
+
+  CreateExtensionAndRunServiceWorker(R"(
+    chrome.test.runTests([
+       async function createRoutine() {
+        let resolver;
+        // Set later once the routine was created.
+        var uuid = new Promise((resolve) => {
+          resolver = resolve;
+        });
+
+        chrome.os.diagnostics.onRoutineInitialized.addListener(
+          async (status) => {
+          chrome.test.assertEq(status.uuid, await uuid);
+          chrome.test.succeed();
+        });
+
+        const response = await chrome.os.diagnostics.createRoutine({
+          keyboardBacklight: {},
+        });
+        chrome.test.assertTrue(response !== undefined);
+        resolver(response.uuid);
+      }
+    ]);
+  )");
+
+  EXPECT_TRUE(routine_created_future.Wait());
+  EXPECT_TRUE(fake_service().GetCreatedRoutineControlForRoutineType(
+      crosapi::TelemetryDiagnosticRoutineArgument::Tag::kKeyboardBacklight));
+}
+
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
+                       ReplyToKeyboardBacklightRoutineInquirySuccess) {
+  base::test::TestFuture<crosapi::TelemetryDiagnosticRoutineInquiryReplyPtr>
+      on_reply_to_inquiry;
+
+  fake_service().SetOnCreateRoutineCalled(
+      base::BindLambdaForTesting([this, &on_reply_to_inquiry]() {
+        auto* control = fake_service().GetCreatedRoutineControlForRoutineType(
+            crosapi::TelemetryDiagnosticRoutineArgument::Tag::
+                kKeyboardBacklight);
+        ASSERT_TRUE(control);
+
+        control->SetOnReplyToInquiryCalled(
+            on_reply_to_inquiry.GetRepeatingCallback());
+      }));
+
+  OpenAppUiAndMakeItSecure();
+
+  CreateExtensionAndRunServiceWorker(R"(
+    chrome.test.runTests([
+       async function createRoutine() {
+        let resolver;
+        // Set later once the routine was created.
+        var uuid = new Promise((resolve) => {
+          resolver = resolve;
+        });
+
+        chrome.os.diagnostics.onRoutineInitialized.addListener(
+          async (status) => {
+            chrome.test.assertEq(status.uuid, await uuid);
+          }
+        );
+
+        // Only resolve the test once we got the final event.
+        chrome.os.diagnostics.onRoutineRunning.addListener(
+          async (status) => {
+            chrome.test.assertEq(status.uuid, await uuid);
+
+            await chrome.os.diagnostics.replyToRoutineInquiry({
+              uuid: response.uuid,
+              reply: {
+                checkKeyboardBacklightState: {
+                  state: "ok",
+                }
+              },
+            });
+
+            chrome.test.succeed();
+          }
+        );
+
+        const response = await chrome.os.diagnostics.createRoutine({
+          keyboardBacklight: {},
+        });
+        chrome.test.assertTrue(response !== undefined);
+        resolver(response.uuid);
+
+        await chrome.os.diagnostics.startRoutine({ uuid: response.uuid });
+      }
+    ]);
+  )");
+
+  auto reply = on_reply_to_inquiry.Take();
+  ASSERT_TRUE(reply);
+  ASSERT_TRUE(reply->is_check_keyboard_backlight_state());
+  EXPECT_EQ(
+      reply->get_check_keyboard_backlight_state()->state,
+      crosapi::TelemetryDiagnosticCheckKeyboardBacklightStateReply::State::kOk);
 }
 
 IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
@@ -1333,6 +1435,43 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
       }
     ]);
   )");
+}
+
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiV2BrowserTest,
+                       CreateCameraFrameAnalysisRoutineSuccess) {
+  base::test::TestFuture<void> routine_created_future;
+  fake_service().SetOnCreateRoutineCalled(
+      routine_created_future.GetRepeatingCallback());
+
+  OpenAppUiAndMakeItSecure();
+
+  CreateExtensionAndRunServiceWorker(R"(
+    chrome.test.runTests([
+       async function createRoutine() {
+        let resolver;
+        // Set later once the routine was created.
+        var uuid = new Promise((resolve) => {
+          resolver = resolve;
+        });
+
+        chrome.os.diagnostics.onRoutineInitialized.addListener(
+          async (status) => {
+          chrome.test.assertEq(status.uuid, await uuid);
+          chrome.test.succeed();
+        });
+
+        const response = await chrome.os.diagnostics.createRoutine({
+          cameraFrameAnalysis: {},
+        });
+        chrome.test.assertTrue(response !== undefined);
+        resolver(response.uuid);
+      }
+    ]);
+  )");
+
+  EXPECT_TRUE(routine_created_future.Wait());
+  EXPECT_TRUE(fake_service().GetCreatedRoutineControlForRoutineType(
+      crosapi::TelemetryDiagnosticRoutineArgument::Tag::kCameraFrameAnalysis));
 }
 
 class NoExtraPermissionTelemetryExtensionDiagnosticsApiV2BrowserTest

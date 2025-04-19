@@ -31,6 +31,8 @@ class PLATFORM_EXPORT PaintChunker final {
   PaintChunker(const PaintChunker&) = delete;
   PaintChunker& operator=(const PaintChunker&) = delete;
 
+  void Trace(Visitor* visitor) const { visitor->Trace(current_properties_); }
+
   // Finishes current chunks if any, and makes it ready to create chunks into
   // the given vector if not null.
   void ResetChunks(PaintChunks*);
@@ -83,8 +85,9 @@ class PLATFORM_EXPORT PaintChunker final {
       const PaintChunk::Id&,
       const DisplayItemClient&,
       const TransformPaintPropertyNode* scroll_translation,
-      const gfx::Rect&,
-      cc::HitTestOpaqueness);
+      const gfx::Rect& scroll_hit_test_rect,
+      cc::HitTestOpaqueness,
+      const gfx::Rect& scrolling_contents_cull_rect);
 
   // The id will be used when we need to create a new current chunk.
   // Otherwise it's ignored. Returns true if a new chunk is added.

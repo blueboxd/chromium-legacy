@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_UI_ANDROID_PLUS_ADDRESSES_PLUS_ADDRESS_CREATION_VIEW_ANDROID_H_
 #define CHROME_BROWSER_UI_ANDROID_PLUS_ADDRESSES_PLUS_ADDRESS_CREATION_VIEW_ANDROID_H_
 
+#include <jni.h>
+
 #include "chrome/browser/ui/plus_addresses/plus_address_creation_controller.h"
 #include "components/plus_addresses/plus_address_types.h"
 #include "content/public/browser/web_contents.h"
-
-#include <jni.h>
 
 namespace plus_addresses {
 
@@ -26,7 +26,11 @@ class PlusAddressCreationViewAndroid {
       content::WebContents* web_contents);
   ~PlusAddressCreationViewAndroid();
 
-  void ShowInit(const std::string& primary_email_address);
+  void ShowInit(const std::string& primary_email_address,
+                bool refresh_supported,
+                bool has_accepted_notice);
+  void OnRefreshClicked(JNIEnv* env,
+                        const base::android::JavaParamRef<jobject>& obj);
   void OnConfirmRequested(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj);
   void OnCanceled(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
@@ -38,6 +42,9 @@ class PlusAddressCreationViewAndroid {
   void ShowReserveResult(const PlusProfileOrError& maybe_plus_profile);
   // Either shows an error message on the bottomsheet or closes the bottomsheet.
   void ShowConfirmResult(const PlusProfileOrError& maybe_plus_profile);
+  // Hides the refresh icon in case no more plus address refreshes are available
+  // to the user.
+  void HideRefreshButton();
 
  private:
   // The corresponding java object.

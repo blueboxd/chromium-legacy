@@ -98,7 +98,6 @@
             <div class="corner-container"></div>
           </div>
           <div class="barcode-scan-box centered-overlay"></div>
-          <div class="snackbar" aria-live="polite"></div>
           <div id="camera-mode" class="centered-overlay">
             <svg-wrapper name="camera_mode_photo.svg" class="photo">
             </svg-wrapper>
@@ -113,7 +112,7 @@
         <div id="barcode-chip-url-container"
              class="invisible barcode-chip-container"
              role="dialog"
-             i18n-label="label_barcode_url">
+             i18n-aria="label_barcode_url">
           <button id="barcode-chip-url"
                   class="barcode-chip-button" tabindex="0">
             <svg-wrapper name="barcode_url.svg"></svg-wrapper>
@@ -122,17 +121,21 @@
           </button>
           <div class="circle">
             <button class="barcode-copy-button" tabindex="0"
-              data-svg="barcode_copy.svg"></button>
+              data-svg="barcode_copy.svg"
+              i18n-aria="barcode_copy_link_button"></button>
           </div>
         </div>
         <div id="barcode-chip-text-container"
              class="invisible barcode-chip-container"
              role="dialog"
-             i18n-label="label_barcode_text">
+             aria-describedby="barcode-chip-text-description"
+             i18n-aria="label_barcode_text">
           <div class="barcode-chip-text">
             <span id="barcode-chip-text-content"></span>
             <button id="barcode-chip-text-expand"
-                    aria-expanded="false">
+                    aria-expanded="false"
+                    i18n-aria="label_expand_detected_content_button"
+                    tabindex="0">
               <svg-wrapper name="barcode_chevron_up.svg" class="up-icon">
               </svg-wrapper>
               <svg-wrapper name="barcode_chevron_down.svg" class="down-icon">
@@ -141,13 +144,15 @@
           </div>
           <div class="circle">
             <button class="barcode-copy-button" tabindex="0"
-              data-svg="barcode_copy.svg"></button>
+            data-svg="barcode_copy.svg"
+            i18n-aria="barcode_copy_text_button"></button>
           </div>
+          <div id="barcode-chip-text-description" hidden></div>
         </div>
         <div id="barcode-chip-wifi-container"
             class="invisible barcode-chip-container"
             role="dialog"
-            i18n-label="label_barcode_wifi">
+            i18n-aria="label_barcode_wifi">
           <button id="barcode-chip-wifi"
                   class="barcode-chip-button" tabindex="0">
             <svg-wrapper name="wifi.svg"></svg-wrapper>
@@ -284,7 +289,9 @@
       </div>
       <switch-device-button tabindex="0" class="bottom-stripe left-stripe">
       </switch-device-button>
-      <mode-selector class="bottom-stripe" tabindex="0"></mode-selector>
+      <mode-selector i18n-new-feature="new_preview_ocr_toast"
+                     class="bottom-stripe"
+                     tabindex="0"></mode-selector>
       <div id="document-page-count" class="bottom-stripe"></div>
       <gallery-button class="bottom-stripe right-stripe" tabindex="0">
       </gallery-button>
@@ -345,6 +352,19 @@
           </div>
           <div class="expand" data-svg="settings_button_expand.svg"></div>
         </button>
+        <label class="menu-item inkdrop" id="settings-preview-ocr">
+          <div class="icon" data-svg="preview_ocr_icon.svg"></div>
+          <div>
+            <div i18n-text="preview_ocr_option"></div>
+            <div class="description"
+                 i18n-text="preview_ocr_option_description"></div>
+          </div>
+          <div id="settings-preview-ocr-option">
+            <input class="icon" type="checkbox" tabindex="0"
+                   data-state="enable-preview-ocr" data-key="enablePreviewOcr">
+            <svg-wrapper class="icon" name="check_mark.svg"></svg-wrapper>
+          </div>
+        </label>
         <button id="settings-feedback" class="menu-item inkdrop" tabindex="0">
           <div class="icon" data-svg="settings_feedback.svg"></div>
           <div i18n-text="feedback_button"></div>
@@ -414,29 +434,6 @@
                  data-key="customVideoParameters">
           <span i18n-text="expert_custom_video_parameters"></span>
         </label>
-        <div id="multistream-group" role="radiogroup">
-          <label class="menu-item inkdrop require-chromeos-vcd"
-                 i18n-text="expert_multistream_recording"></label>
-          <label class="menu-item inkdrop require-chromeos-vcd">
-            <input class="icon" type="radio" tabindex="0" name="multistream"
-                   checked>
-            <span i18n-text="expert_multistream_recording_disabled"></span>
-          </label>
-          <label class="menu-item inkdrop require-chromeos-vcd">
-            <input class="icon" id="expert-enable-multistream-recording"
-                   type="radio" tabindex="0" name="multistream"
-                   data-state="enable-multistream-recording"
-                   data-key="enableMultistreamRecording">
-            <span i18n-text="expert_multistream_recording_hal"></span>
-          </label>
-          <label class="menu-item inkdrop require-chromeos-vcd">
-            <input class="icon" id="expert-enable-multistream-recording-chrome"
-                   type="radio" tabindex="0" name="multistream"
-                   data-state="enable-multistream-recording-chrome"
-                   data-key="enableMultistreamRecordingChrome">
-            <span i18n-text="expert_multistream_recording_chrome"></span>
-          </label>
-        </div>
         <label class="menu-item inkdrop">
           <input id="expert-enable-full-sized-video-snapshot" class="icon"
                  type="checkbox" tabindex="0"
@@ -585,6 +582,7 @@
     <div id="toast" class="centered-overlay" tabindex="-1"
          aria-live="polite"></div>
     <text-tooltip></text-tooltip>
+    <div class="snackbar" aria-live="polite"></div>
     <template id="preview-video-template">
       <video id="preview-video" class="preview-content" aria-hidden="true"
         muted></video>

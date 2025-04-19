@@ -12,6 +12,7 @@
 #import "base/containers/adapters.h"
 #import "base/containers/contains.h"
 #import "base/memory/raw_ptr.h"
+#import "components/tab_groups/tab_group_id.h"
 #import "ios/chrome/browser/shared/model/web_state_list/order_controller.h"
 #import "ios/chrome/browser/shared/model/web_state_list/order_controller_source_from_web_state_list.h"
 #import "ios/chrome/browser/shared/model/web_state_list/removing_indexes.h"
@@ -357,6 +358,8 @@ void WebStateList::CloseWebStatesAtIndices(int close_flags,
   // quadratic behavior if observers iterate the WebStateList.
   std::vector<std::unique_ptr<web::WebState>> detached_web_states =
       DetachWebStatesAtIndicesImpl(removing_indexes, detach_params);
+
+  detached_web_states.clear();
 }
 
 const TabGroup* WebStateList::GetGroupOfWebStateAt(int index) const {
@@ -378,10 +381,11 @@ std::set<const TabGroup*> WebStateList::GetGroups() const {
 
 const TabGroup* WebStateList::CreateGroup(
     const std::set<int>& indices,
-    const tab_groups::TabGroupVisualData& visual_data) {
+    const tab_groups::TabGroupVisualData& visual_data,
+    tab_groups::TabGroupId tab_group_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto lock = LockForMutation();
-  return CreateGroupImpl(indices, visual_data);
+  return CreateGroupImpl(indices, visual_data, tab_group_id);
 }
 
 bool WebStateList::ContainsGroup(const TabGroup* group) const {
@@ -795,7 +799,8 @@ int WebStateList::SetWebStatePinnedAtImpl(int index, bool pinned) {
 
 const TabGroup* WebStateList::CreateGroupImpl(
     const std::set<int>& indices,
-    const tab_groups::TabGroupVisualData& visual_data) {
+    const tab_groups::TabGroupVisualData& visual_data,
+    tab_groups::TabGroupId tab_group_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(locked_);
   DCHECK(!indices.empty());
@@ -821,8 +826,8 @@ const TabGroup* WebStateList::CreateGroupImpl(
   DCHECK_NE(pivot_index, kInvalidIndex);
 
   // Create the group.
-  auto group =
-      std::make_unique<TabGroup>(visual_data, TabGroupRange(pivot_index, 0));
+  auto group = std::make_unique<TabGroup>(tab_group_id, visual_data,
+                                          TabGroupRange(pivot_index, 0));
   const TabGroup* new_group = group.get();
   groups_.insert(std::move(group));
 
@@ -1226,13 +1231,14 @@ void WebStateList::OnActiveWebStateChanged() {
 }
 
 void CloseAllWebStates(WebStateList& web_state_list, int close_flags) {
+  const int count = web_state_list.count();
+
   const WebStateList::ScopedBatchOperation batch =
       web_state_list.StartBatchOperation();
-  web_state_list.CloseWebStatesAtIndices(close_flags,
-                                         RemovingIndexes({
-                                             .start = 0,
-                                             .count = web_state_list.count(),
-                                         }));
+  web_state_list.CloseWebStatesAtIndices(close_flags, RemovingIndexes({
+                                                          .start = 0,
+                                                          .count = count,
+                                                      }));
 }
 
 void CloseAllNonPinnedWebStates(WebStateList& web_state_list, int close_flags) {

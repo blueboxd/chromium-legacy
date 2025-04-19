@@ -9,6 +9,7 @@
 #import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/app/application_delegate/app_state_observer.h"
 #import "ios/chrome/browser/default_browser/model/utils.h"
+#import "ios/chrome/browser/default_promo/ui_bundled/post_default_abandonment/features.h"
 #import "ios/chrome/browser/feature_engagement/model/tracker_factory.h"
 #import "ios/chrome/browser/promos_manager/model/constants.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
@@ -16,7 +17,6 @@
 #import "ios/chrome/browser/shared/model/browser/browser_provider_interface.h"
 #import "ios/chrome/browser/signin/model/authentication_service.h"
 #import "ios/chrome/browser/signin/model/authentication_service_factory.h"
-#import "ios/chrome/browser/ui/default_promo/post_default_abandonment/features.h"
 
 @interface DefaultBrowserPromoSceneAgent ()
 
@@ -135,6 +135,29 @@
       feature_engagement::events::kGenericDefaultBrowserPromoConditionsMet);
 }
 
+- (void)maybeSetTriggerCriteriaExperimentStartTimestamp {
+  if (IsDefaultBrowserTriggerCriteraExperimentEnabled() &&
+      !HasTriggerCriteriaExperimentStarted()) {
+    SetTriggerCriteriaExperimentStartTimestamp();
+  }
+}
+
+- (void)maybeNotifyFETTriggerCriteriaExperimentConditionMet {
+  if (IsDefaultBrowserTriggerCriteraExperimentEnabled() &&
+      HasTriggerCriteriaExperimentStarted21days()) {
+    Browser* browser =
+        self.sceneState.browserProviderInterface.mainBrowserProvider.browser;
+    if (!browser || !browser->GetBrowserState()) {
+      return;
+    }
+    feature_engagement::Tracker* tracker =
+        feature_engagement::TrackerFactory::GetForBrowserState(
+            browser->GetBrowserState());
+    tracker->NotifyEvent(feature_engagement::events::
+                             kDefaultBrowserPromoTriggerCriteriaConditionsMet);
+  }
+}
+
 #pragma mark - SceneStateObserver
 
 - (void)sceneState:(SceneState*)sceneState
@@ -154,6 +177,8 @@
     [self updateGenericPromoRegistration];
 
     [self notifyFETSigninStatus];
+    [self maybeSetTriggerCriteriaExperimentStartTimestamp];
+    [self maybeNotifyFETTriggerCriteriaExperimentConditionMet];
   }
 }
 

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_ITEM_WARNING_DATA_H_
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_ITEM_WARNING_DATA_H_
 
+#include <optional>
 #include <vector>
 
 #include "base/supports_user_data.h"
@@ -28,19 +29,14 @@ class DownloadItemWarningData : public base::SupportsUserData::Data {
     // Applicable actions: DISCARD, OPEN_SUBPAGE
     BUBBLE_MAINPAGE = 1,
     // Applicable actions: PROCEED, DISCARD, DISMISS, CLOSE, BACK,
-    // PROCEED_DEEP_SCAN, OPEN_LEARN_MORE_LINK
+    // PROCEED_DEEP_SCAN, ACCEPT_DEEP_SCAN, OPEN_LEARN_MORE_LINK
     BUBBLE_SUBPAGE = 2,
-    // Applicable actions: DISCARD, KEEP, PROCEED
-    // Under ImprovedDownloadPageWarnings:
+    // Applicable actions: DISCARD, KEEP, PROCEED, ACCEPT_DEEP_SCAN
     // PROCEED on the downloads page indicates saving a "suspicious" download
     // directly, without going through the prompt. In contrast, KEEP indicates
     // opening the prompt, for a "dangerous" download.
     DOWNLOADS_PAGE = 3,
-    // Applicable actions: PROCEED, CANCEL, CLOSE
-    // Under ImprovedDownloadPageWarnings: CLOSE is no longer a separate option
-    // because the new dialog only has PROCEED and CANCEL buttons, and we treat
-    // dismissing it with Escape the same as pressing cancel.
-    // TODO(chlily): Clean this comment up once the feature launches.
+    // Applicable actions: PROCEED, CANCEL
     DOWNLOAD_PROMPT = 4,
     // Applicable actions: OPEN_SUBPAGE
     // Note: This is only used on Lacros. DownloadItemWarningData is only
@@ -90,7 +86,9 @@ class DownloadItemWarningData : public base::SupportsUserData::Data {
     PROCEED_DEEP_SCAN = 9,
     // The user clicks the learn more link on the bubble subpage.
     OPEN_LEARN_MORE_LINK = 10,
-    kMaxValue = OPEN_LEARN_MORE_LINK
+    // The user accepts starting a deep scan.
+    ACCEPT_DEEP_SCAN = 11,
+    kMaxValue = ACCEPT_DEEP_SCAN
   };
 
   struct WarningActionEvent {
@@ -116,6 +114,7 @@ class DownloadItemWarningData : public base::SupportsUserData::Data {
   // Enum representing the trigger of the scan request.
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
+  // LINT.IfChange
   enum class DeepScanTrigger {
     // The trigger is unknown.
     TRIGGER_UNKNOWN = 0,
@@ -137,6 +136,7 @@ class DownloadItemWarningData : public base::SupportsUserData::Data {
 
     kMaxValue = TRIGGER_IMMEDIATE_DEEP_SCAN,
   };
+  // LINT.ThenChange(/tools/metrics/histograms/metadata/sb_client/enums.xml)
 
   ~DownloadItemWarningData() override;
 

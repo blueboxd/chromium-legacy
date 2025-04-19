@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "media/filters/blocking_url_protocol.h"
 
 #include <stddef.h>
@@ -69,7 +74,7 @@ int BlockingUrlProtocol::Read(int size, uint8_t* data) {
   size_t index;
   {
     base::ScopedAllowBaseSyncPrimitives allow_base_sync_primitives;
-    index = base::WaitableEvent::WaitMany(events, std::size(events));
+    index = base::WaitableEvent::WaitMany(events);
   }
 
   if (events[index] == &aborted_)

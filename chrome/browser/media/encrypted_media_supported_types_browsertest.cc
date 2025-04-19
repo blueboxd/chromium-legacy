@@ -30,6 +30,7 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/media_switches.h"
+#include "media/base/supported_types.h"
 #include "media/base/test_data_util.h"
 #include "media/cdm/clear_key_cdm_common.h"
 #include "media/media_buildflags.h"
@@ -285,10 +286,8 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
 
   void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-    base::CommandLine default_command_line(base::CommandLine::NO_PROGRAM);
-    InProcessBrowserTest::SetUpDefaultCommandLine(&default_command_line);
-    test_launcher_utils::RemoveCommandLineSwitch(
-        default_command_line, switches::kDisableComponentUpdate, command_line);
+    InProcessBrowserTest::SetUpDefaultCommandLine(command_line);
+    command_line->RemoveSwitch(switches::kDisableComponentUpdate);
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
     // TODO(crbug.com/40787541): WhatsNewUI might be causing timeouts.
@@ -498,15 +497,9 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
     // TODO(crbug.com/40226210): Fix this so that we can inject HEVC support on
     // Windows.
     EXPECT_UNSUPPORTED(hevc_supported);
-#elif BUILDFLAG(IS_MAC)
-    // On Mac platforms, HEVC support should be available if OS >= Big Sur 11.0
-    // and kPlatformHEVCDecoderSupport is enabled.
-    if (__builtin_available(macOS 11.0, *)) {
-      EXPECT_ECK_PROPRIETARY(hevc_supported);
-    } else {
-      EXPECT_UNSUPPORTED(hevc_supported);
-    }
 #else
+    // On other platforms, HEVC support should be available if
+    // kPlatformHEVCDecoderSupport is enabled.
     EXPECT_ECK_PROPRIETARY(hevc_supported);
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
 #else
@@ -908,13 +901,13 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesClearKeyTest,
 
 // High 10-bit Profile is supported when using ClearKey if it is supported for
 // clear content on this platform.
-#if BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
-  EXPECT_PROPRIETARY(IsSupportedByKeySystem(kClearKey, kVideoMP4MimeType,
-                                            video_mp4_hi10p_codecs()));
-#else
-  EXPECT_UNSUPPORTED(IsSupportedByKeySystem(kClearKey, kVideoMP4MimeType,
-                                            video_mp4_hi10p_codecs()));
-#endif
+  if (media::IsBuiltInVideoCodec(media::VideoCodec::kH264)) {
+    EXPECT_PROPRIETARY(IsSupportedByKeySystem(kClearKey, kVideoMP4MimeType,
+                                              video_mp4_hi10p_codecs()));
+  } else {
+    EXPECT_UNSUPPORTED(IsSupportedByKeySystem(kClearKey, kVideoMP4MimeType,
+                                              video_mp4_hi10p_codecs()));
+  }
 
   // Non-video MP4 codecs.
   EXPECT_UNSUPPORTED(

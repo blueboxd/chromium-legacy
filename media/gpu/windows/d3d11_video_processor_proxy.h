@@ -5,14 +5,12 @@
 #ifndef MEDIA_GPU_WINDOWS_D3D11_VIDEO_PROCESSOR_PROXY_H_
 #define MEDIA_GPU_WINDOWS_D3D11_VIDEO_PROCESSOR_PROXY_H_
 
-#include <d3d11.h>
-#include <wrl/client.h>
 #include <cstdint>
 
 #include "base/memory/ref_counted.h"
 #include "media/gpu/media_gpu_export.h"
-#include "media/gpu/windows/d3d11_com_defs.h"
 #include "media/gpu/windows/d3d11_status.h"
+#include "media/gpu/windows/d3d_com_defs.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/hdr_metadata.h"
 

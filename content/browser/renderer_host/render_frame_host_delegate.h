@@ -299,8 +299,8 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Called when accessibility events or location changes are received
   // from a render frame, when the accessibility mode has the
   // ui::AXMode::kWebContents flag set.
-  virtual void AccessibilityEventReceived(
-      const ui::AXUpdatesAndEvents& details) {}
+  virtual void ProcessAccessibilityUpdatesAndEvents(
+      ui::AXUpdatesAndEvents& details) {}
   virtual void AccessibilityLocationChangesReceived(
       const std::vector<ui::AXLocationChanges>& details) {}
 
@@ -525,7 +525,7 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
 
   // Returns FrameTreeNodes that are logically owned by another frame even
   // though this relationship is not yet reflected in their frame trees. This
-  // can happen, for example, with unattached guests and orphaned portals.
+  // can happen, for example, with unattached guests.
   virtual std::vector<FrameTreeNode*> GetUnattachedOwnedNodes(
       RenderFrameHostImpl* owner);
 
@@ -554,7 +554,7 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // ui::ClipboardFormatType::HtmlType() is used.
   //
   // It is also possible for the data type to be
-  // ui::ClipboardFormatType::WebCustomDataType() indicating that the paste
+  // ui::ClipboardFormatType::DataTransferCustomType() indicating that the paste
   // uses a custom data format.  It is up to the implementation to attempt to
   // understand the type if possible.  It is acceptable to deny pastes of
   // unknown data types.
@@ -570,6 +570,11 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
       const ClipboardMetadata& metadata,
       ClipboardPasteData clipboard_paste_data,
       IsClipboardPasteAllowedCallback callback);
+
+  // Notifies the delegate that `copied_text` has been
+  // copied to the clipboard from the `render_frame_host`.
+  virtual void OnTextCopiedToClipboard(RenderFrameHostImpl* render_frame_host,
+                                       const std::u16string& copied_text) {}
 
   // Notified when the main frame of `source` adjusts the page scale.
   virtual void OnPageScaleFactorChanged(PageImpl& source) {}
@@ -717,6 +722,9 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Updates the draggable regions defined by the app-region CSS property.
   virtual void DraggableRegionsChanged(
       const std::vector<blink::mojom::DraggableRegionPtr>& regions) {}
+
+  // Whether this window was initially opened as a new popup.
+  virtual bool IsPopup() const;
 
  protected:
   virtual ~RenderFrameHostDelegate() = default;

@@ -14,11 +14,11 @@
 #import "base/task/single_thread_task_runner.h"
 #import "base/task/thread_pool.h"
 #import "base/threading/scoped_blocking_call.h"
-#import "components/bookmarks/browser/core_bookmark_model.h"
+#import "components/bookmarks/browser/bookmark_model.h"
 #import "components/bookmarks/browser/url_and_title.h"
 #import "components/sessions/core/tab_restore_service.h"
 #import "ios/chrome/browser/bookmarks/model/bookmark_model_factory.h"
-#import "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
+#import "ios/chrome/browser/sessions/model/ios_chrome_tab_restore_service_factory.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser/browser_list.h"
 #import "ios/chrome/browser/shared/model/browser/browser_list_factory.h"
@@ -242,9 +242,11 @@ NSSet* ExternalFileRemoverImpl::GetReferencedExternalFiles() {
   NSMutableSet* referenced_external_files = [NSMutableSet set];
   BrowserList* browser_list =
       BrowserListFactory::GetForBrowserState(browser_state_);
-  std::set<Browser*> browsers = browser_state_->IsOffTheRecord()
-                                    ? browser_list->AllIncognitoBrowsers()
-                                    : browser_list->AllRegularBrowsers();
+  const BrowserList::BrowserType browser_types =
+      browser_state_->IsOffTheRecord()
+          ? BrowserList::BrowserType::kIncognito
+          : BrowserList::BrowserType::kRegularAndInactive;
+  std::set<Browser*> browsers = browser_list->BrowsersOfType(browser_types);
   for (Browser* browser : browsers) {
     NSSet* files = ComputeReferencedExternalFiles(browser);
     if (files) {
@@ -252,7 +254,7 @@ NSSet* ExternalFileRemoverImpl::GetReferencedExternalFiles() {
     }
   }
 
-  bookmarks::CoreBookmarkModel* bookmark_model =
+  bookmarks::BookmarkModel* bookmark_model =
       ios::BookmarkModelFactory::GetForBrowserState(browser_state_);
   // Check if the bookmark model is loaded.
   if (!bookmark_model || !bookmark_model->loaded())

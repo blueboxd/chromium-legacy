@@ -11,6 +11,7 @@ Preinstalled web apps are configured in two ways:
     - Only used for testing.
     - Works on all platforms.
   - [`chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS`](https://source.chromium.org/search?q=DIR_STANDALONE_EXTERNAL_EXTENSIONS)/web_apps
+    - Being removed in feature PreinstalledWebAppsCoreOnly (b/341824938).
     - Chrome OS only (ozone included).
     - `/usr/share/google-chrome/extensions/web_apps` for branded builds.
     - `/usr/share/chromium/extensions/web_apps` for unbranded builds.
@@ -35,13 +36,10 @@ Icon bitmaps get checked out at:
 Icons are packaged into the build via:
 [`chrome/browser/resources/preinstalled_web_apps/resources.grd`](../../resources/preinstalled_web_apps/resources.grd)
 
-### Internal Configs
+### ChromeOS PreinstalledWebAppsCoreOnly
 
-C++ configs which are not suitable to include in an open source repository are
-stored in the same internal repo as icons (see [Icons](#Icons)):
-https://chrome-internal.googlesource.com/chrome/components/default_apps.git
-
-This internal repo only gets checked out for internal Chromium checkouts.
-
-Internal configs get checked out at:
-`chrome/browser/resources/preinstalled_web_apps/internal`
+Feature `PreinstalledWebAppsCoreOnly` is part of work to switch ChromeOS from
+using PreinstalledWebAppManager to AppPreloadService. The feature changes
+ChromeOS to only install the same core apps which are configured for all
+platforms. Once the feature is fully rolled out, it is expected that any
+ChromeOS-specific code can be removed.

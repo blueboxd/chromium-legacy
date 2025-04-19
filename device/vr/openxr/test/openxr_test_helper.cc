@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "device/vr/openxr/test/openxr_test_helper.h"
 
 #include <cmath>
@@ -439,6 +444,32 @@ XrPath OpenXrTestHelper::GetCurrentInteractionProfile() {
   return GetPath(interaction_profile_);
 }
 
+XrHandTrackerEXT OpenXrTestHelper::CreateHandTracker(XrHandEXT hand) {
+  switch (hand) {
+    case XR_HAND_LEFT_EXT:
+      DCHECK_EQ(left_hand_, static_cast<XrHandTrackerEXT>(XR_NULL_HANDLE));
+      left_hand_ = TreatIntegerAsHandle<XrHandTrackerEXT>(++next_handle_);
+      return left_hand_;
+    case XR_HAND_RIGHT_EXT:
+      DCHECK_EQ(right_hand_, static_cast<XrHandTrackerEXT>(XR_NULL_HANDLE));
+      right_hand_ = TreatIntegerAsHandle<XrHandTrackerEXT>(++next_handle_);
+      return right_hand_;
+    default:
+      NOTREACHED_NORETURN();
+  }
+}
+
+XrResult OpenXrTestHelper::DestroyHandTracker(XrHandTrackerEXT hand_tracker) {
+  RETURN_IF_XR_FAILED(ValidateHandTracker(hand_tracker));
+  if (left_hand_ == hand_tracker) {
+    left_hand_ = XR_NULL_HANDLE;
+  } else if (right_hand_ == hand_tracker) {
+    right_hand_ = XR_NULL_HANDLE;
+  }
+
+  return XR_SUCCESS;
+}
+
 device::OpenXrViewConfiguration& OpenXrTestHelper::GetViewConfigInfo(
     XrViewConfigurationType view_config) {
   const auto& primary_config = primary_configs_supported_.find(view_config);
@@ -448,7 +479,7 @@ device::OpenXrViewConfiguration& OpenXrTestHelper::GetViewConfigInfo(
 
   const auto& secondary_config = secondary_configs_supported_.find(view_config);
   // The view configuration type should have been validated by the caller.
-  DCHECK(secondary_config != secondary_configs_supported_.end());
+  CHECK(secondary_config != secondary_configs_supported_.end());
 
   return secondary_config->second;
 }
@@ -613,7 +644,7 @@ void OpenXrTestHelper::ReinitializeTextures() {
   // view configuration.
   const auto primary =
       primary_configs_supported_.find(view_configs_enabled_[0]);
-  DCHECK(primary != primary_configs_supported_.end());
+  CHECK(primary != primary_configs_supported_.end());
   AddDimensions(primary->second, total_width, total_height);
 
   // Add secondary views
@@ -623,7 +654,7 @@ void OpenXrTestHelper::ReinitializeTextures() {
            primary_configs_supported_.end());
     const auto secondary =
         secondary_configs_supported_.find(view_configs_enabled_[i]);
-    DCHECK(secondary != secondary_configs_supported_.end());
+    CHECK(secondary != secondary_configs_supported_.end());
     if (secondary->second.Active()) {
       AddDimensions(secondary->second, total_width, total_height);
     }
@@ -1004,7 +1035,6 @@ void OpenXrTestHelper::UpdateInteractionProfile(
       interaction_profile_ = device::kExtHandInteractionProfilePath;
       break;
     case device::mojom::OpenXrInteractionProfileType::kInvalid:
-    case device::mojom::OpenXrInteractionProfileType::kAndroidHandGestures:
     case device::mojom::OpenXrInteractionProfileType::kMetaHandAim:
       NOTREACHED_IN_MIGRATION() << "Invalid EventData interaction_profile type";
       break;
@@ -1199,6 +1229,15 @@ XrResult OpenXrTestHelper::ValidateActionSpaceCreateInfo(
             XR_ERROR_VALIDATION_FAILURE,
             "ValidateActionSpaceCreateInfo subactionPath != XR_NULL_PATH");
   RETURN_IF_XR_FAILED(ValidateXrPosefIsIdentity(create_info.poseInActionSpace));
+  return XR_SUCCESS;
+}
+
+XrResult OpenXrTestHelper::ValidateHandTracker(
+    XrHandTrackerEXT hand_tracker) const {
+  RETURN_IF(left_hand_ == XR_NULL_HANDLE && right_hand_ == XR_NULL_HANDLE,
+            XR_ERROR_HANDLE_INVALID, "No Hand Tracker has been created");
+  RETURN_IF(left_hand_ != hand_tracker && right_hand_ != hand_tracker,
+            XR_ERROR_HANDLE_INVALID, "Hand Tracker invalid");
   return XR_SUCCESS;
 }
 

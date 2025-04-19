@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_arraybuffer_arraybufferview.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_all_accepted_credentials_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_authentication_extensions_client_inputs.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_authentication_extensions_client_outputs.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_authentication_extensions_large_blob_inputs.h"
@@ -32,7 +33,9 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_authenticator_selection_criteria.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_credential_creation_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_credential_properties_output.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_credential_report_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_credential_request_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_current_user_details_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_federated_credential_request_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_identity_credential_request_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_identity_provider_config.h"
@@ -41,6 +44,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_creation_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_parameters.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_report_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_request_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_rp_entity.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_user_entity.h"
@@ -105,6 +109,8 @@ using MojoPublicKeyCredentialCreationOptions =
 using mojom::blink::MakeCredentialAuthenticatorResponsePtr;
 using MojoPublicKeyCredentialRequestOptions =
     mojom::blink::PublicKeyCredentialRequestOptions;
+using MojoPublicKeyCredentialReportOptions =
+    mojom::blink::PublicKeyCredentialReportOptions;
 using mojom::blink::GetAssertionAuthenticatorResponsePtr;
 using mojom::blink::RequestTokenStatus;
 using payments::mojom::blink::PaymentCredentialStorageStatus;
@@ -171,6 +177,32 @@ bool AreUniqueOriginsLessOrEqualTo(const Frame* frame, int max_unique_origins) {
       return false;
     }
     parent = parent->Tree().Parent();
+  }
+  return true;
+}
+
+const SecurityOrigin* GetSecurityOrigin(const Frame* frame) {
+  const SecurityContext* frame_security_context = frame->GetSecurityContext();
+  if (!frame_security_context) {
+    return nullptr;
+  }
+  return frame_security_context->GetSecurityOrigin();
+}
+
+bool IsSameSecurityOriginWithAncestors(const Frame* frame) {
+  const Frame* current = frame;
+  const SecurityOrigin* frame_origin = GetSecurityOrigin(frame);
+  if (!frame_origin) {
+    return false;
+  }
+
+  while (current->Tree().Parent()) {
+    current = current->Tree().Parent();
+    const SecurityOrigin* current_security_origin = GetSecurityOrigin(current);
+    if (!current_security_origin ||
+        !frame_origin->IsSameOriginWith(current_security_origin)) {
+      return false;
+    }
   }
   return true;
 }
@@ -979,6 +1011,21 @@ void OnSmsReceive(ScriptPromiseResolver<IDLNullable<Credential>>* resolver,
     return;
   }
   resolver->Resolve(MakeGarbageCollected<OTPCredential>(otp));
+}
+
+void OnReportComplete(std::unique_ptr<ScopedPromiseResolver> scoped_resolver,
+                      AuthenticatorStatus status,
+                      WebAuthnDOMExceptionDetailsPtr dom_exception_details) {
+  auto* resolver = scoped_resolver->Release()->DowncastTo<IDLUndefined>();
+  const auto required_origin_type = RequiredOriginType::kSecure;
+  AssertSecurityRequirementsBeforeResponse(resolver, required_origin_type);
+
+  if (status != AuthenticatorStatus::SUCCESS) {
+    resolver->Reject(
+        AuthenticatorStatusToDOMException(status, dom_exception_details));
+    return;
+  }
+  resolver->Resolve();
 }
 
 // Validates the "payment" extension for public key credential creation. The
@@ -1898,6 +1945,94 @@ AuthenticationCredentialsContainer::preventSilentAccess(
   return promise;
 }
 
+ScriptPromise<IDLUndefined> AuthenticationCredentialsContainer::report(
+    ScriptState* script_state,
+    const CredentialReportOptions* options,
+    ExceptionState& exception_state) {
+  if (!script_state->ContextIsValid()) {
+    return ScriptPromise<IDLUndefined>::RejectWithDOMException(
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
+                                           "Context is detached"));
+  }
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver<IDLUndefined>>(
+      script_state, exception_state.GetContext());
+  auto promise = resolver->Promise();
+
+  mojom::blink::PublicKeyCredentialReportOptionsPtr mojo_options;
+  if (options->hasPublicKey()) {
+    int report_count = options->publicKey()->hasAllAcceptedCredentials() +
+                       options->publicKey()->hasUnknownCredentialId() +
+                       options->publicKey()->hasCurrentUserDetails();
+    // This checks if there are more than two reports simultaneously; if so, the
+    // call is rejected. This will be removed once each report has its own
+    // method.
+    if (report_count > 1) {
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotSupportedError,
+          "Multiple reports at the same time are not supported for this "
+          "credential type."));
+      return promise;
+    }
+
+    if (options->publicKey()->hasAllAcceptedCredentials()) {
+      const AllAcceptedCredentialsOptions& credentials_options =
+          *options->publicKey()->allAcceptedCredentials();
+
+      Vector<char> decoded_user_id;
+      if (!WTF::Base64UnpaddedURLDecode(credentials_options.userId(),
+                                        decoded_user_id)) {
+        resolver->RejectWithTypeError("Invalid base64url string for userId.");
+        return promise;
+      }
+
+      for (WTF::String credential_id :
+           credentials_options.allAcceptedCredentialsIds()) {
+        Vector<char> decoded_cred_id;
+        if (!WTF::Base64UnpaddedURLDecode(credential_id, decoded_cred_id)) {
+          resolver->RejectWithTypeError(
+              "Invalid base64url string for allAcceptedCredentialsIds.");
+          return promise;
+        }
+      }
+    } else if (options->publicKey()->hasCurrentUserDetails()) {
+      Vector<char> decoded_user_id;
+      if (!WTF::Base64UnpaddedURLDecode(
+              options->publicKey()->currentUserDetails()->userId(),
+              decoded_user_id)) {
+        resolver->RejectWithTypeError("Invalid base64url string for userId.");
+        return promise;
+      }
+    } else if (options->publicKey()->hasUnknownCredentialId()) {
+      Vector<char> decoded_cred_id;
+      if (!WTF::Base64UnpaddedURLDecode(
+              options->publicKey()->unknownCredentialId(), decoded_cred_id)) {
+        resolver->RejectWithTypeError(
+            "Invalid base64url string for unknownCredentialId.");
+        return promise;
+      }
+    }
+    mojo_options =
+        MojoPublicKeyCredentialReportOptions::From(*options->publicKey());
+  }
+
+  if (mojo_options) {
+    if (!mojo_options->relying_party_id) {
+      mojo_options->relying_party_id =
+          ExecutionContext::From(script_state)->GetSecurityOrigin()->Domain();
+    }
+    auto* authenticator =
+        CredentialManagerProxy::From(script_state)->Authenticator();
+    authenticator->Report(
+        std::move(mojo_options),
+        WTF::BindOnce(&OnReportComplete,
+                      std::make_unique<ScopedPromiseResolver>(resolver)));
+  } else {
+    resolver->Resolve();
+  }
+  return promise;
+}
+
 void AuthenticationCredentialsContainer::Trace(Visitor* visitor) const {
   Supplement<Navigator>::Trace(visitor);
   CredentialsContainer::Trace(visitor);
@@ -1972,6 +2107,8 @@ void AuthenticationCredentialsContainer::GetForIdentity(
     }
 
     if (blink::RuntimeEnabledFeatures::FedCmIdPRegistrationEnabled() &&
+        blink::RuntimeEnabledFeatures::FedCmMultipleIdentityProvidersEnabled(
+            context) &&
         provider->hasConfigURL() && provider->configURL() == "any") {
       mojom::blink::IdentityProviderRequestOptionsPtr identity_provider =
           blink::mojom::blink::IdentityProviderRequestOptions::From(*provider);
@@ -2025,21 +2162,6 @@ void AuthenticationCredentialsContainer::GetForIdentity(
   }
   base::UmaHistogramEnumeration("Blink.FedCm.RpContext", rp_context);
 
-  mojom::blink::RpMode rp_mode = mojom::blink::RpMode::kWidget;
-  if (blink::RuntimeEnabledFeatures::FedCmButtonModeEnabled(
-          resolver->GetExecutionContext())) {
-    // TODO(crbug.com/1429083): add use counters for rp mode.
-    rp_mode = mojo::ConvertTo<mojom::blink::RpMode>(identity_options.mode());
-    if (rp_mode == mojom::blink::RpMode::kButton &&
-        identity_provider_ptrs.size() > 1u) {
-      resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kInvalidStateError,
-          "Button mode is not currently supported with multiple identity "
-          "providers."));
-    }
-  }
-  // TODO(crbug.com/1429083): add uma histograms for rp mode.
-
   CredentialMediationRequirement mediation_requirement;
   if (options.mediation() == "conditional") {
     resolver->Reject(MakeGarbageCollected<DOMException>(
@@ -2054,6 +2176,36 @@ void AuthenticationCredentialsContainer::GetForIdentity(
   } else {
     DCHECK_EQ("optional", options.mediation());
     mediation_requirement = CredentialMediationRequirement::kOptional;
+  }
+
+  if (identity_options.hasMediation()) {
+    resolver->GetExecutionContext()->AddConsoleMessage(
+        MakeGarbageCollected<ConsoleMessage>(
+            mojom::blink::ConsoleMessageSource::kJavaScript,
+            mojom::blink::ConsoleMessageLevel::kWarning,
+            "The 'mediation' parameter should be used outside of 'identity' in "
+            "the FedCM API call."));
+  }
+
+  mojom::blink::RpMode rp_mode = mojom::blink::RpMode::kWidget;
+  if (blink::RuntimeEnabledFeatures::FedCmButtonModeEnabled(
+          resolver->GetExecutionContext())) {
+    rp_mode = mojo::ConvertTo<mojom::blink::RpMode>(identity_options.mode());
+    if (rp_mode == mojom::blink::RpMode::kButton) {
+      if (identity_provider_ptrs.size() > 1u) {
+        resolver->Reject(MakeGarbageCollected<DOMException>(
+            DOMExceptionCode::kInvalidStateError,
+            "Button mode is not currently supported with multiple identity "
+            "providers."));
+        return;
+      }
+      if (mediation_requirement == CredentialMediationRequirement::kSilent) {
+        resolver->Reject(MakeGarbageCollected<DOMException>(
+            DOMExceptionCode::kNotSupportedError,
+            "mediation:silent is not supported in button mode"));
+        return;
+      }
+    }
   }
 
   std::unique_ptr<ScopedAbortState> scoped_abort_state;

@@ -11,7 +11,7 @@
 #import "ios/chrome/browser/policy/model/policy_conversions_client_ios.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state_manager.h"
+#import "ios/chrome/browser/shared/model/profile/profile_manager_ios.h"
 #import "ios/chrome/browser/signin/model/authentication_service.h"
 #import "ios/chrome/browser/signin/model/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/model/system_identity.h"
@@ -23,9 +23,12 @@ ProfileReportGeneratorIOS::ProfileReportGeneratorIOS() = default;
 ProfileReportGeneratorIOS::~ProfileReportGeneratorIOS() = default;
 
 bool ProfileReportGeneratorIOS::Init(const base::FilePath& path) {
+  // TODO(crbug.com/356050207): this API should not assume that the name of
+  // a ChromeBrowserState can be derived from its path.
+  const std::string name = path.BaseName().AsUTF8Unsafe();
   browser_state_ = GetApplicationContext()
                        ->GetChromeBrowserStateManager()
-                       ->GetBrowserStateByPath(path);
+                       ->GetBrowserStateByName(name);
 
   if (!browser_state_) {
     return false;

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/core/loader/resource/multipart_image_resource_parser.h"
 
 #include "base/ranges/algorithm.h"
@@ -163,11 +168,11 @@ bool MultipartImageResourceParser::ParseHeaders() {
 // doesn't require the dashes to exist.  See nsMultiMixedConv::FindToken.
 wtf_size_t MultipartImageResourceParser::FindBoundary(const Vector<char>& data,
                                                       Vector<char>* boundary) {
-  auto* it = base::ranges::search(data, *boundary);
+  auto it = base::ranges::search(data, *boundary);
   if (it == data.end())
     return kNotFound;
 
-  wtf_size_t boundary_position = static_cast<wtf_size_t>(it - data.data());
+  wtf_size_t boundary_position = static_cast<wtf_size_t>(it - data.begin());
   // Back up over -- for backwards compat
   // TODO(tc): Don't we only want to do this once?  Gecko code doesn't seem to
   // care.

@@ -7,7 +7,9 @@ package org.chromium.chrome.browser.browsing_data;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.RootMatchers.isDialog;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
@@ -45,6 +47,7 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.espresso.NoMatchingViewException;
 import androidx.test.espresso.UiController;
 import androidx.test.espresso.ViewAction;
+import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.filters.LargeTest;
 import androidx.test.filters.MediumTest;
 import androidx.viewpager2.widget.ViewPager2;
@@ -62,6 +65,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.stubbing.Answer;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -75,6 +79,7 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataBridge.OnClearBrowsingDataListener;
 import org.chromium.chrome.browser.browsing_data.ClearBrowsingDataFragment.DialogOption;
 import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncher;
+import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncherFactory;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
@@ -85,15 +90,19 @@ import org.chromium.chrome.browser.searchwidget.SearchActivity;
 import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
+import org.chromium.chrome.browser.sync.FakeSyncServiceImpl;
+import org.chromium.chrome.browser.sync.SyncServiceFactory;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.R;
+import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.chrome.test.util.browser.signin.SigninTestRule;
 import org.chromium.components.browser_ui.settings.SpinnerPreference;
 import org.chromium.components.browsing_data.DeleteBrowsingDataAction;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.components.sync.DataType;
+import org.chromium.ui.test.util.ViewUtils;
 
 import java.util.Arrays;
 import java.util.Set;
@@ -156,7 +165,7 @@ public class ClearBrowsingDataFragmentTest {
         // TODO(crbug.com/41452182): Find a general solution to avoid leaking channels between
         // tests.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            TestThreadUtils.runOnUiThreadBlocking(
+            ThreadUtils.runOnUiThreadBlocking(
                     () -> {
                         SiteChannelsManager manager = SiteChannelsManager.getInstance();
                         manager.deleteAllSiteChannels();
@@ -191,7 +200,7 @@ public class ClearBrowsingDataFragmentTest {
                                 mActivityTestRule.getActivity().getClass().getName(),
                                 /* isFetcherSuppliedFromOutside= */ false));
         ClearBrowsingDataFragment fragment = mSettingsActivityTestRule.getFragment();
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     fragment.getClearBrowsingDataFetcher()
                             .fetchImportantSites(fragment.getProfile());
@@ -201,7 +210,8 @@ public class ClearBrowsingDataFragmentTest {
 
     @Test
     @LargeTest
-    public void testSigningOut() {
+    @Features.DisableFeatures(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
+    public void testSigningOut_Legacy() {
         mSigninTestRule.addTestAccountThenSigninAndEnableSync();
         final ClearBrowsingDataFragment preferences =
                 (ClearBrowsingDataFragment) startPreferences().getMainFragment();
@@ -213,7 +223,7 @@ public class ClearBrowsingDataFragmentTest {
                             != null;
                 });
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     RecyclerView recyclerView =
                             preferences.getView().findViewById(R.id.recycler_view);
@@ -229,6 +239,70 @@ public class ClearBrowsingDataFragmentTest {
                                 .hasPrimaryAccount(ConsentLevel.SIGNIN),
                 "Account should be signed out!");
 
+        // Footer should be hidden after sign-out.
+        onView(withText(preferences.buildSignOutOfChromeText().toString())).check(doesNotExist());
+    }
+
+    @Test
+    @LargeTest
+    @Features.EnableFeatures(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
+    public void testSigningOut() {
+        mSigninTestRule.addAccountThenSignin(AccountManagerTestRule.TEST_ACCOUNT_1);
+        final ClearBrowsingDataFragment preferences =
+                (ClearBrowsingDataFragment) startPreferences().getMainFragment();
+        ViewUtils.waitForVisibleView(withId(R.id.menu_id_targeted_help));
+
+        onView(withId(R.id.recycler_view)).perform(RecyclerViewActions.scrollToLastPosition());
+        onView(withText(preferences.buildSignOutOfChromeText().toString()))
+                .perform(clickOnSignOutLink());
+
+        // Title of the confirm sign out dialog.
+        onView(withText(R.string.sign_out_title)).inRoot(isDialog()).check(matches(isDisplayed()));
+        onView(withText(R.string.sign_out)).inRoot(isDialog()).perform(click());
+
+        CriteriaHelper.pollUiThread(
+                () ->
+                        !IdentityServicesProvider.get()
+                                .getIdentityManager(ProfileManager.getLastUsedRegularProfile())
+                                .hasPrimaryAccount(ConsentLevel.SIGNIN),
+                "Account should be signed out!");
+        // Footer should be hidden after sign-out.
+        onView(withText(preferences.buildSignOutOfChromeText().toString())).check(doesNotExist());
+    }
+
+    @Test
+    @LargeTest
+    @Features.EnableFeatures(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
+    public void testSigningOut_UnsavedDataDialog() {
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    FakeSyncServiceImpl fakeSyncService = new FakeSyncServiceImpl();
+                    fakeSyncService.setTypesWithUnsyncedData(Set.of(DataType.BOOKMARKS));
+                    SyncServiceFactory.setInstanceForTesting(fakeSyncService);
+                });
+        mSigninTestRule.addAccountThenSignin(AccountManagerTestRule.TEST_ACCOUNT_1);
+        final ClearBrowsingDataFragment preferences =
+                (ClearBrowsingDataFragment) startPreferences().getMainFragment();
+        ViewUtils.waitForVisibleView(withId(R.id.menu_id_targeted_help));
+
+        onView(withId(R.id.recycler_view)).perform(RecyclerViewActions.scrollToLastPosition());
+        onView(withText(preferences.buildSignOutOfChromeText().toString()))
+                .perform(clickOnSignOutLink());
+
+        // Title of the confirm sign out dialog.
+        onView(withText(R.string.sign_out_unsaved_data_title))
+                .inRoot(isDialog())
+                .check(matches(isDisplayed()));
+        onView(withText(R.string.sign_out_unsaved_data_primary_button))
+                .inRoot(isDialog())
+                .perform(click());
+
+        CriteriaHelper.pollUiThread(
+                () ->
+                        !IdentityServicesProvider.get()
+                                .getIdentityManager(ProfileManager.getLastUsedRegularProfile())
+                                .hasPrimaryAccount(ConsentLevel.SIGNIN),
+                "Account should be signed out!");
         // Footer should be hidden after sign-out.
         onView(withText(preferences.buildSignOutOfChromeText().toString())).check(doesNotExist());
     }
@@ -250,7 +324,7 @@ public class ClearBrowsingDataFragmentTest {
         // Verify tab preference is loaded.
         verify(mBrowsingDataBridgeMock).getLastClearBrowsingDataTab(any(), any());
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     ViewPager2 viewPager =
                             (ViewPager2)
@@ -298,7 +372,7 @@ public class ClearBrowsingDataFragmentTest {
                         "Privacy.DeleteBrowsingData.Action",
                         DeleteBrowsingDataAction.CLEAR_BROWSING_DATA_DIALOG);
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     PreferenceScreen screen = preferences.getPreferenceScreen();
 
@@ -314,7 +388,7 @@ public class ClearBrowsingDataFragmentTest {
                 });
 
         waitForProgressToComplete(preferences);
-        mCallbackHelper.waitForFirst();
+        mCallbackHelper.waitForOnly();
 
         // Verify DeleteBrowsingDataAction metric is recorded.
         histogramWatcher.assertExpected();
@@ -355,14 +429,14 @@ public class ClearBrowsingDataFragmentTest {
                 (ClearBrowsingDataFragment) startPreferences().getMainFragment();
         final Profile expectedProfile = preferences.getProfile();
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     changeTimePeriodTo(preferences, TimePeriod.LAST_HOUR);
                     clickClearButton(preferences);
                 });
 
         waitForProgressToComplete(preferences);
-        mCallbackHelper.waitForFirst();
+        mCallbackHelper.waitForOnly();
 
         // Verify that we got the appropriate call to clear all data.
         verify(mBrowsingDataBridgeMock)
@@ -401,9 +475,9 @@ public class ClearBrowsingDataFragmentTest {
         SettingsActivity activity = startPreferences();
         ClearBrowsingDataFragment fragment = mSettingsActivityTestRule.getFragment();
 
-        fragment.setHelpAndFeedbackLauncher(mHelpAndFeedbackLauncher);
+        HelpAndFeedbackLauncherFactory.setInstanceForTesting(mHelpAndFeedbackLauncher);
         onView(withId(R.id.menu_id_targeted_help)).perform(click());
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     verify(mHelpAndFeedbackLauncher)
                             .show(
@@ -485,7 +559,7 @@ public class ClearBrowsingDataFragmentTest {
         // "Clear" button won't be enabled.
         setDataTypesToClear(DialogOption.CLEAR_CACHE);
         final SettingsActivity settingsActivity1 = startPreferences();
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 new OpenPreferencesEnableDialogAndClickClearRunnable(settingsActivity1));
         mCallbackHelper.waitForCallback(0);
 
@@ -497,7 +571,7 @@ public class ClearBrowsingDataFragmentTest {
         // Reopen Clear Browsing Data preferences, this time with history selected for clearing.
         setDataTypesToClear(DialogOption.CLEAR_HISTORY);
         final SettingsActivity settingsActivity2 = startPreferences();
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 new OpenPreferencesEnableDialogAndClickClearRunnable(settingsActivity2));
 
         // The dialog about other forms of history should now be shown.
@@ -512,7 +586,7 @@ public class ClearBrowsingDataFragmentTest {
                 });
 
         // Close that dialog.
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     ClearBrowsingDataFragment fragment =
                             (ClearBrowsingDataFragment) settingsActivity2.getMainFragment();
@@ -531,7 +605,7 @@ public class ClearBrowsingDataFragmentTest {
         setDataTypesToClear(DialogOption.CLEAR_HISTORY);
         final SettingsActivity settingsActivity3 = startPreferences();
         final Profile expectedProfile = mSettingsActivityTestRule.getFragment().getProfile();
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 new OpenPreferencesEnableDialogAndClickClearRunnable(settingsActivity3));
 
         // The dialog about other forms of browsing history is still enabled, and history has been
@@ -656,14 +730,14 @@ public class ClearBrowsingDataFragmentTest {
                 (ClearBrowsingDataFragment) startPreferences().getMainFragment();
 
         // Clear in root preference.
-        TestThreadUtils.runOnUiThreadBlocking(getPressClearRunnable(preferences));
+        ThreadUtils.runOnUiThreadBlocking(getPressClearRunnable(preferences));
         // Check that the important sites dialog is shown, and the list is visible.
         waitForImportantDialogToShow(preferences, 2);
         // Clear in important dialog.
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 getPressButtonInImportantDialogRunnable(preferences, AlertDialog.BUTTON_POSITIVE));
         waitForProgressToComplete(preferences);
-        mCallbackHelper.waitForFirst();
+        mCallbackHelper.waitForOnly();
 
         // Verify history cleared.
         assertDataTypesCleared(BrowsingDataType.HISTORY, BrowsingDataType.CACHE);
@@ -690,11 +764,11 @@ public class ClearBrowsingDataFragmentTest {
         ClearBrowsingDataFragment fragment =
                 (ClearBrowsingDataFragment) settingsActivity.getMainFragment();
         Profile expectedProfile = fragment.getProfile();
-        TestThreadUtils.runOnUiThreadBlocking(getPressClearRunnable(fragment));
+        ThreadUtils.runOnUiThreadBlocking(getPressClearRunnable(fragment));
         // Check that the important sites dialog is shown, and the list is visible.
         waitForImportantDialogToShow(fragment, 2);
         // Press the cancel button.
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 getPressButtonInImportantDialogRunnable(fragment, AlertDialog.BUTTON_NEGATIVE));
         settingsActivity.finish();
 
@@ -739,9 +813,9 @@ public class ClearBrowsingDataFragmentTest {
         final Profile expectedProfile = fragment.getProfile();
 
         // Uncheck the first item (our internal web server).
-        TestThreadUtils.runOnUiThreadBlocking(getPressClearRunnable(fragment));
+        ThreadUtils.runOnUiThreadBlocking(getPressClearRunnable(fragment));
         waitForImportantDialogToShow(fragment, 2);
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     ListView sitesList = fragment.getImportantSitesDialogFragment().getSitesList();
                     sitesList.performItemClick(
@@ -758,11 +832,11 @@ public class ClearBrowsingDataFragmentTest {
                 });
 
         // Click the clear button.
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 getPressButtonInImportantDialogRunnable(fragment, AlertDialog.BUTTON_POSITIVE));
 
         waitForProgressToComplete(fragment);
-        mCallbackHelper.waitForFirst();
+        mCallbackHelper.waitForOnly();
 
         int[] expectedTypes = new int[] {BrowsingDataType.HISTORY, BrowsingDataType.CACHE};
         String[] keepDomains = new String[] {kKeepDomain};
@@ -856,13 +930,13 @@ public class ClearBrowsingDataFragmentTest {
         final ClearBrowsingDataFragment preferences =
                 (ClearBrowsingDataFragment) startPreferences().getMainFragment();
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     clickClearButton(preferences);
                 });
 
         waitForProgressToComplete(preferences);
-        mCallbackHelper.waitForFirst();
+        mCallbackHelper.waitForOnly();
 
         ChromeTabbedActivity activity = mActivityTestRule.getActivity();
         final String expectedSnackbarMessage =
@@ -882,14 +956,14 @@ public class ClearBrowsingDataFragmentTest {
         final ClearBrowsingDataFragment preferences =
                 (ClearBrowsingDataFragment) startPreferences().getMainFragment();
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     changeTimePeriodTo(preferences, TimePeriod.LAST_HOUR);
                     clickClearButton(preferences);
                 });
 
         waitForProgressToComplete(preferences);
-        mCallbackHelper.waitForFirst();
+        mCallbackHelper.waitForOnly();
 
         ChromeTabbedActivity activity = mActivityTestRule.getActivity();
         final String expectedSnackbarMessage =
@@ -935,7 +1009,7 @@ public class ClearBrowsingDataFragmentTest {
 
     private void setDataTypesToClear(final Integer... typesToClear) {
         Set<Integer> typesToClearSet = new ArraySet<Integer>(Arrays.asList(typesToClear));
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     for (@DialogOption Integer option : ClearBrowsingDataFragment.getAllOptions()) {
                         boolean enabled = typesToClearSet.contains(option);

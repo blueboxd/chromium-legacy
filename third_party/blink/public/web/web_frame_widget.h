@@ -64,6 +64,7 @@ class RectF;
 
 namespace viz {
 struct FrameTimingDetails;
+class LocalSurfaceId;
 }  // namespace viz
 
 namespace blink {
@@ -241,6 +242,23 @@ class WebFrameWidget : public WebWidget {
   // This should be called for the local root frame before calling the final
   // UpdateAllLifecyclePhases() just before dumping pixels.
   virtual void PrepareForFinalLifecyclUpdateForTesting() = 0;
+
+  // Returns the current zoom level.  0 is "original size", and each increment
+  // above or below represents zooming 20% larger or smaller to default limits
+  // of 300% and 50% of original size, respectively.  Only plugins use
+  // non whole-numbers, since they might choose to have specific zoom level so
+  // that fixed-width content is fit-to-page-width, for example.
+  virtual double GetZoomLevel() = 0;
+  // Changes the zoom level to the specified level, clamping at the limits
+  // defined by the associated `webView`.
+  virtual void SetZoomLevel(double zoom_level) = 0;
+
+  // Returns the cumulative effect of the CSS "zoom" property on the embedding
+  // element of this widget (if any) and all of its WebFrame ancestors.
+  virtual double GetCSSZoomFactor() const = 0;
+
+  // Update the LocalSurfaceId used for frames produced by this widget.
+  virtual void ApplyLocalSurfaceIdUpdate(const viz::LocalSurfaceId& id) = 0;
 
  private:
   // This is a private virtual method so we don't expose cc::LayerTreeHost

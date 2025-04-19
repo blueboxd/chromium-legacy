@@ -33,12 +33,10 @@ class TestBookmarkClientWithUndo : public bookmarks::TestBookmarkClient {
 
   // BookmarkClient overrides.
   void OnBookmarkNodeRemovedUndoable(
-      BookmarkModel* model,
       const BookmarkNode* parent,
       size_t index,
       std::unique_ptr<BookmarkNode> node) override {
-    undo_service_->AddUndoEntryForRemovedNode(model, parent, index,
-                                              std::move(node));
+    undo_service_->AddUndoEntryForRemovedNode(parent, index, std::move(node));
   }
 
  private:
@@ -60,7 +58,7 @@ class BookmarkUndoServiceTest : public testing::Test {
 
  private:
   base::test::ScopedFeatureList features_{
-      syncer::kEnableBookmarkFoldersForAccountStorage};
+      syncer::kSyncEnableBookmarksInTransportMode};
   std::unique_ptr<BookmarkUndoService> bookmark_undo_service_;
   std::unique_ptr<bookmarks::BookmarkModel> bookmark_model_;
 };
@@ -541,47 +539,6 @@ TEST_F(BookmarkUndoServiceTest, TestUpperLimit) {
   const BookmarkNode* node = model->other_node()->children().front().get();
   EXPECT_EQ(node->GetTitle(), u"foo");
   EXPECT_EQ(node->url(), GURL("http://www.foo.com"));
-}
-
-TEST_F(BookmarkUndoServiceTest, UndoMoveToOtherModel) {
-  base::test::ScopedFeatureList features;
-  features.InitAndDisableFeature(
-      syncer::kEnableBookmarkFoldersForAccountStorage);
-
-  std::unique_ptr<BookmarkModel> second_model =
-      bookmarks::TestBookmarkClient::CreateModel();
-  GetUndoService()->StartObservingBookmarkModel(second_model.get());
-  bookmarks::test::WaitForBookmarkModelToLoad(second_model.get());
-
-  const BookmarkNode* root = GetModel()->mobile_node();
-  const BookmarkNode* folder = GetModel()->AddFolder(root, 0, u"folder");
-  GetModel()->AddURL(folder, 0, u"foo", GURL("http://foo.com"));
-  GetModel()->AddURL(folder, 1, u"bar", GURL("http://bar.com"));
-  base::Uuid folder_uuid_before_move = folder->uuid();
-  const BookmarkNode* dest_folder = second_model->mobile_node();
-  ASSERT_TRUE(dest_folder->children().empty());
-
-  GetModel()->MoveToOtherModelWithNewNodeIdsAndUuids(folder, second_model.get(),
-                                                     dest_folder);
-
-  GetUndoService()->undo_manager()->Undo();
-
-  ASSERT_EQ(root->children().size(), 1u);
-  const BookmarkNode* undone_folder = root->children().front().get();
-  EXPECT_EQ(undone_folder->GetTitle(), u"folder");
-  ASSERT_EQ(undone_folder->children().size(), 2u);
-  const BookmarkNode* undone_foo = undone_folder->children()[0].get();
-  EXPECT_EQ(undone_foo->GetTitle(), u"foo");
-  EXPECT_EQ(undone_foo->GetTitledUrlNodeUrl(), GURL("http://foo.com"));
-  const BookmarkNode* undone_bar = undone_folder->children()[1].get();
-  EXPECT_EQ(undone_bar->GetTitle(), u"bar");
-  EXPECT_EQ(undone_bar->GetTitledUrlNodeUrl(), GURL("http://bar.com"));
-  // Undoing the move should preserve UUIDs.
-  EXPECT_EQ(undone_folder->uuid(), folder_uuid_before_move);
-
-  EXPECT_TRUE(dest_folder->children().empty());
-
-  second_model->Shutdown();
 }
 
 } // namespace

@@ -129,7 +129,7 @@ std::vector<std::u16string> TestClipboard::GetStandardFormats(
   if (IsFormatAvailable(ClipboardFormatType::FilenamesType(), buffer, data_dst))
     types.push_back(base::UTF8ToUTF16(kMimeTypeURIList));
 
-  auto it = store.data.find(ClipboardFormatType::WebCustomDataType());
+  auto it = store.data.find(ClipboardFormatType::DataTransferCustomType());
   if (it != store.data.end())
     ReadCustomDataTypes(base::as_bytes(base::span(it->second)), &types);
 
@@ -243,11 +243,24 @@ void TestClipboard::ReadPng(ClipboardBuffer buffer,
   std::move(callback).Run(store.png);
 }
 
-// TODO(crbug.com/1103215): |data_dst| should be supported.
-void TestClipboard::ReadCustomData(ClipboardBuffer buffer,
-                                   const std::u16string& type,
-                                   const DataTransferEndpoint* data_dst,
-                                   std::u16string* result) const {}
+void TestClipboard::ReadDataTransferCustomData(
+    ClipboardBuffer buffer,
+    const std::u16string& type,
+    const DataTransferEndpoint* data_dst,
+    std::u16string* result) const {
+  const DataStore& store = GetStore(buffer);
+  if (!MaybeRetrieveSyncedSourceAndCheckIfReadIsAllowed(buffer, store.data_src,
+                                                        data_dst)) {
+    return;
+  }
+
+  auto it = store.data.find(ClipboardFormatType::DataTransferCustomType());
+  if (it != store.data.end()) {
+    result->clear();
+    *result = ReadCustomDataForType(base::as_byte_span(it->second), type)
+                  .value_or(u"");
+  }
+}
 
 void TestClipboard::ReadFilenames(ClipboardBuffer buffer,
                                   const DataTransferEndpoint* data_dst,

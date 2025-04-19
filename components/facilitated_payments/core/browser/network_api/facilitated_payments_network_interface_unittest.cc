@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
-#include "components/autofill/core/browser/autofill_client.h"
+#include "components/autofill/core/browser/payments/payments_autofill_client.h"
 #include "components/autofill/core/browser/payments/payments_network_interface_test_base.h"
 #include "components/facilitated_payments/core/browser/network_api/facilitated_payments_initiate_payment_request_details.h"
 #include "components/facilitated_payments/core/browser/network_api/facilitated_payments_initiate_payment_response_details.h"
@@ -48,7 +48,7 @@ class FacilitatedPaymentsNetworkInterfaceTest
     request_details->client_token_ =
         std::vector<uint8_t>{'t', 'o', 'k', 'e', 'n'};
     request_details->billing_customer_number_ = 11;
-    request_details->merchant_payment_page_url_ = GURL("https://foo.com/bar");
+    request_details->merchant_payment_page_hostname_ = "foo.com";
     request_details->instrument_id_ = 13;
     request_details->pix_code_ = "a valid code";
     payments_network_interface_->InitiatePayment(
@@ -66,7 +66,7 @@ class FacilitatedPaymentsNetworkInterfaceTest
 
  private:
   void OnInitiatePaymentResponseReceived(
-      autofill::AutofillClient::PaymentsRpcResult result,
+      autofill::payments::PaymentsAutofillClient::PaymentsRpcResult result,
       std::unique_ptr<FacilitatedPaymentsInitiatePaymentResponseDetails>
           response_details) {
     result_ = result;
@@ -87,7 +87,7 @@ TEST_F(FacilitatedPaymentsNetworkInterfaceTest,
   IssueOAuthToken();
   ReturnResponse(
       payments_network_interface_.get(), net::HTTP_OK,
-      "{\"trigger_purchase_manager\":{\"o2_action_token\":\"token\"}}");
+      "{\"trigger_purchase_manager\":{\"o2_action_token\":\"dG9rZW4=\"}}");
 
   // Verify the request contains necessary info like the payment details, and
   // the instrument id.
@@ -97,7 +97,9 @@ TEST_F(FacilitatedPaymentsNetworkInterfaceTest,
 
   // Verify that a success result was received because the response contained
   // the action token.
-  EXPECT_EQ(autofill::AutofillClient::PaymentsRpcResult::kSuccess, result_);
+  EXPECT_EQ(
+      autofill::payments::PaymentsAutofillClient::PaymentsRpcResult::kSuccess,
+      result_);
   std::vector<uint8_t> expected_action_token = {'t', 'o', 'k', 'e', 'n'};
   EXPECT_EQ(expected_action_token, response_details_->action_token_);
 }
@@ -118,7 +120,8 @@ TEST_F(FacilitatedPaymentsNetworkInterfaceTest,
 
   // Verify that a failure result was received because the response contained
   // error.
-  EXPECT_EQ(autofill::AutofillClient::PaymentsRpcResult::kPermanentFailure,
+  EXPECT_EQ(autofill::payments::PaymentsAutofillClient::PaymentsRpcResult::
+                kPermanentFailure,
             result_);
   EXPECT_EQ("Something went wrong!", response_details_->error_message_.value());
 }

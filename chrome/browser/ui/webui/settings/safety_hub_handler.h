@@ -68,12 +68,23 @@ class SafetyHubHandler : public settings::SettingsPageUIHandler,
 
  private:
   friend class SafetyHubHandlerTest;
+  friend class
+      SafetyHubHandlerEitherAbusiveOrUnusedPermissionRevocationDisabledTest;
   FRIEND_TEST_ALL_PREFIXES(SafetyHubHandlerTest,
                            PopulateUnusedSitePermissionsData);
   FRIEND_TEST_ALL_PREFIXES(SafetyHubHandlerTest,
                            HandleAllowPermissionsAgainForUnusedSite);
   FRIEND_TEST_ALL_PREFIXES(SafetyHubHandlerTest,
                            HandleAcknowledgeRevokedUnusedSitePermissionsList);
+  FRIEND_TEST_ALL_PREFIXES(SafetyHubHandlerTest,
+                           PopulateAbusiveAndUnusedSitePermissionsData);
+  FRIEND_TEST_ALL_PREFIXES(SafetyHubHandlerTest,
+                           HandleAllowPermissionsAgainForAbusiveSite);
+  FRIEND_TEST_ALL_PREFIXES(SafetyHubHandlerTest,
+                           HandleAllowPermissionsAgainForAbusiveAndUnusedSite);
+  FRIEND_TEST_ALL_PREFIXES(
+      SafetyHubHandlerTest,
+      HandleAcknowledgeRevokedAbusiveAndUnusedSitePermissionsList);
   FRIEND_TEST_ALL_PREFIXES(SafetyHubHandlerTest,
                            HandleIgnoreOriginsForNotificationPermissionReview);
   FRIEND_TEST_ALL_PREFIXES(SafetyHubHandlerTest,
@@ -100,6 +111,15 @@ class SafetyHubHandler : public settings::SettingsPageUIHandler,
   FRIEND_TEST_ALL_PREFIXES(SafetyHubHandlerTest, VersionCardOutOfDate);
   FRIEND_TEST_ALL_PREFIXES(SafetyHubHandlerTest,
                            ExtensionPrefAndInitialization);
+  FRIEND_TEST_ALL_PREFIXES(
+      SafetyHubHandlerEitherAbusiveOrUnusedPermissionRevocationDisabledTest,
+      PopulateSitePermissionsData);
+  FRIEND_TEST_ALL_PREFIXES(
+      SafetyHubHandlerEitherAbusiveOrUnusedPermissionRevocationDisabledTest,
+      HandleAllowPermissionsAgainForSite);
+  FRIEND_TEST_ALL_PREFIXES(
+      SafetyHubHandlerEitherAbusiveOrUnusedPermissionRevocationDisabledTest,
+      HandleAcknowledgeRevokedSitePermissionsList);
 
   // SettingsPageUIHandler implementation.
   void OnJavascriptAllowed() override;

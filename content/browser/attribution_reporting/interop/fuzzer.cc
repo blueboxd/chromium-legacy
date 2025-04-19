@@ -9,11 +9,12 @@
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
+#include "base/i18n/icu_util.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/test_timeouts.h"
-#include "content/browser/aggregation_service/public_key.h"
+#include "content/browser/aggregation_service/aggregation_service_test_utils.h"
 #include "content/browser/attribution_reporting/interop/parser.h"
 #include "content/browser/attribution_reporting/interop/runner.h"
 #include "testing/libfuzzer/proto/json.pb.h"
@@ -28,6 +29,7 @@ class Environment {
   Environment()
       : should_dump_input_(std::getenv("LPM_DUMP_NATIVE_INPUT") != nullptr) {
     base::CommandLine::Init(0, nullptr);
+    base::i18n::InitializeICU();
     TestTimeouts::Initialize();
   }
 
@@ -67,12 +69,11 @@ DEFINE_PROTO_FUZZER(const json_proto::JsonObject& json_object) {
     return;
   }
 
-  static const PublicKey kMockPublicKey(/*id=*/"", /*key=*/{});
+  static const content::aggregation_service::TestHpkeKey kHpkeKey;
 
   // TODO(crbug.com/332721859) Fuzz the `AttributionInteropConfig()` parameter
   // when we define a custom protobuf input for this fuzzer.
-  std::ignore =
-      RunAttributionInteropSimulation(std::move(*run), kMockPublicKey);
+  std::ignore = RunAttributionInteropSimulation(*std::move(run), kHpkeKey);
 }
 
 }  // namespace

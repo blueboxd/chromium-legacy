@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences.Editor;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
@@ -111,6 +112,17 @@ public class BookmarkUtils {
             return;
         }
 
+        BookmarkId parent = null;
+        if (fromExplicitTrackUi) {
+            // If account bookmarks are enabled and active, they take precedence, otherwise fall
+            // back to the local-or-syncable mobile folder, e.g. for users that have
+            // sync-the-feature enabled.
+            parent =
+                    bookmarkModel.areAccountBookmarkFoldersActive()
+                            ? bookmarkModel.getAccountMobileFolderId()
+                            : bookmarkModel.getMobileFolderId();
+        }
+
         BookmarkId newBookmarkId =
                 addBookmarkInternal(
                         activity,
@@ -118,7 +130,7 @@ public class BookmarkUtils {
                         bookmarkModel,
                         tab.getTitle(),
                         tab.getOriginalUrl(),
-                        fromExplicitTrackUi ? bookmarkModel.getMobileFolderId() : null,
+                        parent,
                         bookmarkType);
         showSaveFlow(
                 activity,
@@ -396,6 +408,29 @@ public class BookmarkUtils {
     }
 
     /**
+     * Adds a bookmark with the given {@link Tab} without showing save flow.
+     *
+     * @param context The current Android {@link Context}.
+     * @param tab The tab to add or edit a bookmark.
+     * @param bookmarkModel The current {@link BookmarkModel} which talks to native.
+     */
+    public static BookmarkId addBookmarkWithoutShowingSaveFlow(
+            Context context, Tab tab, BookmarkModel bookmarkModel) {
+        BookmarkId parent =
+                bookmarkModel.areAccountBookmarkFoldersActive()
+                        ? bookmarkModel.getAccountMobileFolderId()
+                        : bookmarkModel.getMobileFolderId();
+        return addBookmarkInternal(
+                context,
+                tab.getProfile(),
+                bookmarkModel,
+                tab.getTitle(),
+                tab.getOriginalUrl(),
+                parent,
+                BookmarkType.NORMAL);
+    }
+
+    /**
      * Adds a bookmark with the given {@link Tab}. This will reset last used parent if it fails to
      * add a bookmark.
      *
@@ -614,10 +649,12 @@ public class BookmarkUtils {
                         ChromePreferenceKeys.BOOKMARKS_LAST_USED_URL, UrlConstants.BOOKMARKS_URL);
     }
 
-    static void clearLastUsedPrefs() {
-        SharedPreferencesManager prefsManager = ChromeSharedPreferences.getInstance();
-        prefsManager.removeKey(ChromePreferenceKeys.BOOKMARKS_LAST_USED_PARENT);
-        prefsManager.removeKey(ChromePreferenceKeys.BOOKMARKS_LAST_USED_URL);
+    @VisibleForTesting
+    public static void clearLastUsedPrefs() {
+        Editor editor = ChromeSharedPreferences.getInstance().getEditor();
+        editor.remove(ChromePreferenceKeys.BOOKMARKS_LAST_USED_PARENT);
+        editor.remove(ChromePreferenceKeys.BOOKMARKS_LAST_USED_URL);
+        editor.apply();
     }
 
     /** Save the last used {@link BookmarkId} as a folder to put new bookmarks to. */

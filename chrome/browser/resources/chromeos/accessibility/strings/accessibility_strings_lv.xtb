@@ -220,6 +220,7 @@
 <translation id="2490721194269245365">Sārti brūna</translation>
 <translation id="249330843868392562">Atvērt teksta pārvēršanas runā iestatījumus</translation>
 <translation id="2497706219848005458">Zaļdzeltena</translation>
+<translation id="2512979179176933762">rādīt logus</translation>
 <translation id="2523609930580546572">ChromeVox mācības</translation>
 <translation id="2525706221823668172">Īsinājumtaustiņi Chromebook datorā</translation>
 <translation id="2553108862507765288">gramatikas kļūda</translation>
@@ -264,7 +265,6 @@
 <translation id="2783001728278437613">{COUNT,plural, =1{un vēl #}zero{un vēl #}one{un vēl #}other{un vēl #}}</translation>
 <translation id="2792200646155001340">Varat arī vilkt vienu pirkstu no labās puses uz kreiso, lai pārietu uz iepriekšējo vienumu. Izmēģiniet tūlīt!</translation>
 <translation id="280499067616661124">ChromeVox — atrast lapā</translation>
-<translation id="2811019999044652585">Lai pārietu uz citām ekrāna daļām, piemēram, rīkjoslām vai sistēmas tekni, vienlaikus nospiediet vadības taustiņu un pārejas uz priekšu taustiņu. Chromebook datorā pārejas uz priekšu taustiņš atrodas tieši virs cipara 2 taustiņa.</translation>
 <translation id="2811204574343810641">Rinda</translation>
 <translation id="2816868829355607410">Vingrināšanās apgabals: pārejas komandas</translation>
 <translation id="2841013758207633010">Laiks</translation>
@@ -520,6 +520,7 @@
 <translation id="4432457053224379116">Dzelzs oksīda sarkana</translation>
 <translation id="4432896207833262240">Atzīmētais saturs</translation>
 <translation id="4437615272777527928">Rakstiet, lai meklētu saturu izvēlnēs. Lai pārlūkotu rezultātus, izmantojiet augšupvērsto un lejupvērsto bultiņu. Izmantojiet pa kreisi un pa labi vērstās bultiņas, lai pielāgotu teksta ievietošanas punktu un pārvietotos pa izvēlnēm.</translation>
+<translation id="4453530046591759283">Lai pārietu uz citām ekrāna daļām, piemēram, rīkjoslām vai sistēmas tekni, vienlaikus nospiediet vadības taustiņu un F1. F1 ir pirmais taustiņš pa labi no atsoļa taustiņa.</translation>
 <translation id="4457472090507035117">Atlasiet pašreizējo balsi:</translation>
 <translation id="4476183483923481720">jauna rindiņa</translation>
 <translation id="4479068155583208887">Ķieģeļsarkana</translation>
@@ -880,6 +881,7 @@
 <translation id="7091296112653361280">Oranžīgi balta</translation>
 <translation id="7095834689119144465">Rediģējams teksts: tikai skaitļi</translation>
 <translation id="7096001299300236431">Iepriekšējais multivides vienums</translation>
+<translation id="7096668131290451939">Lai izietu no mācīšanās režīma, vēlreiz nospiediet taustiņu Esc</translation>
 <translation id="7116595520562830928">vairākrindu</translation>
 <translation id="712735679809149106">vārdu atbalss</translation>
 <translation id="7137397390322864165">Lašu</translation>
@@ -1072,7 +1074,6 @@
 <translation id="847040613207937740">Nav nākamās izvēles rūtiņas.</translation>
 <translation id="8473540203671727883">Izrunāt tekstu, virs kura novietots kursors</translation>
 <translation id="8476408756881832830">Apturēt atskaņošanu ChromeVox komentāru izvades laikā</translation>
-<translation id="8476508772960940536">loga kopsavilkums</translation>
 <translation id="8480873377842220259">Tagad jūs uzzināsiet par dažām navigācijas pamatiespējām. Varat turēt nospiestu meklēšanas taustiņu un nospiest bultiņus, lai pārvietotos ekrānā. Lai turpinātu, nospiediet meklēšanas taustiņu un labo bultiņu.</translation>
 <translation id="8503360654911991865">Samazināt navigācijas precizitāti</translation>
 <translation id="8520472399088452386">Skaitītājpoga</translation>

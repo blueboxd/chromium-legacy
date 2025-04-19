@@ -13,15 +13,18 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
 #include "base/functional/callback.h"
+#include "base/memory/ref_counted.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_future.h"
 #include "base/time/time.h"
 #include "crypto/secure_hash.h"
 #include "net/base/hash_value.h"
 #include "net/base/io_buffer.h"
+#include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_isolation_key.h"
 #include "net/base/schemeful_site.h"
@@ -30,11 +33,12 @@
 #include "net/extras/shared_dictionary/shared_dictionary_info.h"
 #include "net/extras/shared_dictionary/shared_dictionary_usage_info.h"
 #include "net/http/http_response_headers.h"
+#include "net/shared_dictionary/shared_dictionary.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/shared_dictionary_error.mojom.h"
-#include "services/network/shared_dictionary/shared_dictionary.h"
 #include "services/network/shared_dictionary/shared_dictionary_constants.h"
 #include "services/network/shared_dictionary/shared_dictionary_disk_cache.h"
+#include "services/network/shared_dictionary/shared_dictionary_in_memory.h"
 #include "services/network/shared_dictionary/shared_dictionary_manager_on_disk.h"
 #include "services/network/shared_dictionary/shared_dictionary_storage.h"
 #include "services/network/shared_dictionary/shared_dictionary_storage_in_memory.h"
@@ -1115,7 +1119,7 @@ TEST_P(SharedDictionaryManagerTest, WriteAndReadDictionary) {
   }
 
   // Check the returned dictionary from GetDictionarySync().
-  std::unique_ptr<SharedDictionary> dict =
+  scoped_refptr<net::SharedDictionary> dict =
       storage->GetDictionarySync(GURL("https://origin1.test/testfile?hello"),
                                  mojom::RequestDestination::kEmpty);
   ASSERT_TRUE(dict);
@@ -1163,9 +1167,12 @@ TEST_P(SharedDictionaryManagerTest, WriteAndReadDictionary) {
       EXPECT_EQ(GetDefaultExpiration(), dictionary_info.expiration());
       EXPECT_EQ("/testfile*", dictionary_info.match());
       EXPECT_EQ(data1.size() + data2.size(), dictionary_info.size());
-      EXPECT_EQ(data1 + data2, std::string(dictionary_info.data()->data(),
-                                           dictionary_info.size()));
-      EXPECT_EQ(sha256, dictionary_info.hash());
+      EXPECT_EQ(net::OK, dictionary_info.dictionary()->ReadAll(base::BindOnce(
+                             [](int) { NOTREACHED_NORETURN(); })));
+      EXPECT_EQ(data1 + data2,
+                std::string(dictionary_info.dictionary()->data()->data(),
+                            dictionary_info.size()));
+      EXPECT_EQ(sha256, dictionary_info.dictionary()->hash());
       break;
     }
     case TestManagerType::kOnDisk: {
@@ -1341,7 +1348,7 @@ TEST_P(SharedDictionaryManagerTest, ZeroSizeDictionaryShouldNotBeStored) {
                   {});
 
   // Check the returned dictionary from GetDictionarySync().
-  std::unique_ptr<SharedDictionary> dict =
+  scoped_refptr<net::SharedDictionary> dict =
       storage->GetDictionarySync(GURL("https://origin1.test/testfile?hello"),
                                  mojom::RequestDestination::kEmpty);
   EXPECT_FALSE(dict);
@@ -1544,7 +1551,7 @@ TEST_P(SharedDictionaryManagerTest, CacheEvictionAfterUpdatingLastUsedTime) {
   task_environment_.FastForwardBy(base::Seconds(1));
 
   // Call GetDictionary to update the last used time of the dictionary 1-1.
-  std::unique_ptr<SharedDictionary> dict1 = storage1->GetDictionarySync(
+  scoped_refptr<net::SharedDictionary> dict1 = storage1->GetDictionarySync(
       GURL("https://origin1.test/p1?"), mojom::RequestDestination::kEmpty);
   ASSERT_TRUE(dict1);
 
@@ -1956,7 +1963,7 @@ TEST_P(SharedDictionaryManagerTest, ClearDataDoNotInvalidateActiveDictionary) {
   }
 
   // Get a dictionary before calling ClearData().
-  std::unique_ptr<SharedDictionary> dict = storage->GetDictionarySync(
+  scoped_refptr<net::SharedDictionary> dict = storage->GetDictionarySync(
       GURL("https://origin.test/p2?"), mojom::RequestDestination::kEmpty);
   ASSERT_TRUE(dict);
 
@@ -2268,6 +2275,216 @@ TEST_P(SharedDictionaryManagerTest, DeleteExpiredDictionariesOnGetDictionary) {
   EXPECT_FALSE(storage->GetDictionarySync(GURL("https://origin.test/p1?"),
                                           mojom::RequestDestination::kEmpty));
   EXPECT_TRUE(GetSharedDictionaryInfo(manager.get(), isolation_key).empty());
+}
+
+TEST_P(SharedDictionaryManagerTest, DictionaryEquality) {
+  net::SharedDictionaryIsolationKey isolation_key(url::Origin::Create(kUrl1),
+                                                  kSite1);
+  std::unique_ptr<SharedDictionaryManager> manager =
+      CreateSharedDictionaryManager();
+
+  scoped_refptr<SharedDictionaryStorage> storage =
+      manager->GetStorage(isolation_key);
+  WriteDictionary(storage.get(), GURL("https://origin1.test/dict"), "a*",
+                  {"Hello"});
+  WriteDictionary(storage.get(), GURL("https://origin1.test/dict"), "b*",
+                  {"Hello"});
+  if (GetManagerType() == TestManagerType::kOnDisk) {
+    FlushCacheTasks();
+  }
+
+  auto dictionary_a1 = storage->GetDictionarySync(
+      GURL("https://origin1.test/a1"), mojom::RequestDestination::kEmpty);
+  auto dictionary_a2 = storage->GetDictionarySync(
+      GURL("https://origin1.test/a2"), mojom::RequestDestination::kEmpty);
+  auto dictionary_b = storage->GetDictionarySync(
+      GURL("https://origin1.test/b"), mojom::RequestDestination::kEmpty);
+  ASSERT_TRUE(dictionary_a1);
+  ASSERT_TRUE(dictionary_a2);
+  ASSERT_TRUE(dictionary_b);
+
+  EXPECT_TRUE(dictionary_a1.get() == dictionary_a2.get());
+  EXPECT_TRUE(dictionary_a1.get() != dictionary_b.get());
+  EXPECT_TRUE(dictionary_a2.get() != dictionary_b.get());
+}
+
+TEST_P(SharedDictionaryManagerTest, PreloadSharedDictionaryInfo) {
+  net::SharedDictionaryIsolationKey isolation_key(url::Origin::Create(kUrl1),
+                                                  kSite1);
+  std::unique_ptr<SharedDictionaryManager> manager =
+      CreateSharedDictionaryManager();
+  scoped_refptr<SharedDictionaryStorage> storage =
+      manager->GetStorage(isolation_key);
+  WriteDictionary(storage.get(), GURL("https://origin1.test/dict"), "p*",
+                  {"Hello"});
+  if (GetManagerType() == TestManagerType::kOnDisk) {
+    FlushCacheTasks();
+  }
+
+  EXPECT_FALSE(manager->HasPreloadedSharedDictionaryInfo());
+  mojo::PendingRemote<network::mojom::PreloadedSharedDictionaryInfoHandle>
+      handle;
+  manager->PreloadSharedDictionaryInfoForDocument(
+      {GURL("https://origin1.test/p1"), GURL("https://origin1.test/p2")},
+      handle.InitWithNewPipeAndPassReceiver());
+  EXPECT_TRUE(manager->HasPreloadedSharedDictionaryInfo());
+
+  // Make sure that the preload dictionary is loaded.
+  if (GetManagerType() == TestManagerType::kOnDisk) {
+    FlushCacheTasks();
+  }
+
+  // The binary of dictionary for "https://origin1.test/p2" must be already
+  // available.
+  auto dictionary = storage->GetDictionarySync(
+      GURL("https://origin1.test/p3"), mojom::RequestDestination::kEmpty);
+  EXPECT_EQ(net::OK, dictionary->ReadAll(
+                         base::BindOnce([](int) { NOTREACHED_NORETURN(); })));
+
+  // Resetting `handle` must clear the preloaded shared dictionary info.
+  handle.reset();
+  task_environment_.RunUntilIdle();
+  EXPECT_FALSE(manager->HasPreloadedSharedDictionaryInfo());
+}
+
+TEST_P(SharedDictionaryManagerTest,
+       PreloadSharedDictionaryInfoOpaqueOriginDoNotCrash) {
+  std::unique_ptr<SharedDictionaryManager> manager =
+      CreateSharedDictionaryManager();
+  mojo::PendingRemote<network::mojom::PreloadedSharedDictionaryInfoHandle>
+      handle;
+  // Test that opaque origin URL doesn't cause crash.
+  manager->PreloadSharedDictionaryInfoForDocument(
+      {GURL("opaque-origin://url")}, handle.InitWithNewPipeAndPassReceiver());
+}
+
+TEST_P(SharedDictionaryManagerTest, MaybeCreateSharedDictionaryGetterFlags) {
+  std::unique_ptr<SharedDictionaryManager> manager =
+      CreateSharedDictionaryManager();
+  EXPECT_FALSE(manager->MaybeCreateSharedDictionaryGetter(
+      net::LOAD_NORMAL, mojom::RequestDestination::kDocument));
+  EXPECT_TRUE(manager->MaybeCreateSharedDictionaryGetter(
+      net::LOAD_CAN_USE_SHARED_DICTIONARY,
+      mojom::RequestDestination::kDocument));
+}
+
+TEST_P(SharedDictionaryManagerTest, MaybeCreateSharedDictionaryGetter) {
+  std::unique_ptr<SharedDictionaryManager> manager =
+      CreateSharedDictionaryManager();
+  auto dictionary_getter = manager->MaybeCreateSharedDictionaryGetter(
+      net::LOAD_CAN_USE_SHARED_DICTIONARY,
+      mojom::RequestDestination::kDocument);
+
+  // Register a test dictionary.
+  net::SharedDictionaryIsolationKey isolation_key(url::Origin::Create(kUrl1),
+                                                  kSite1);
+  scoped_refptr<SharedDictionaryStorage> storage =
+      manager->GetStorage(isolation_key);
+  WriteDictionary(storage.get(), GURL("https://origin1.test/dict"), "p*",
+                  {"Hello"});
+  if (GetManagerType() == TestManagerType::kOnDisk) {
+    FlushCacheTasks();
+  }
+
+  // Matching path.
+  EXPECT_TRUE(
+      dictionary_getter.Run(isolation_key, GURL("https://origin1.test/p1")));
+
+  // No matching path.
+  EXPECT_FALSE(
+      dictionary_getter.Run(isolation_key, GURL("https://origin1.test/x1")));
+
+  // Nullopt isolation_key.
+  EXPECT_FALSE(dictionary_getter.Run(/*isolation_key=*/std::nullopt,
+                                     GURL("https://origin1.test/p1")));
+
+  manager.reset();
+  // After `manager` is deleted.
+  EXPECT_FALSE(
+      dictionary_getter.Run(isolation_key, GURL("https://origin1.test/p1")));
+}
+
+TEST_P(SharedDictionaryManagerTest, PreloadedDictionaryConditionalUseEnabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures({features::kPreloadedDictionaryConditionalUse},
+                                {});
+
+  std::unique_ptr<SharedDictionaryManager> manager =
+      CreateSharedDictionaryManager();
+  auto dictionary_getter = manager->MaybeCreateSharedDictionaryGetter(
+      net::LOAD_CAN_USE_SHARED_DICTIONARY,
+      mojom::RequestDestination::kDocument);
+
+  // Register a test dictionary.
+  net::SharedDictionaryIsolationKey isolation_key(url::Origin::Create(kUrl1),
+                                                  kSite1);
+  scoped_refptr<SharedDictionaryStorage> storage =
+      manager->GetStorage(isolation_key);
+  WriteDictionary(storage.get(), GURL("https://origin1.test/dict"), "p*",
+                  {"Hello"});
+  if (GetManagerType() == TestManagerType::kOnDisk) {
+    FlushCacheTasks();
+  }
+
+  mojo::PendingRemote<network::mojom::PreloadedSharedDictionaryInfoHandle>
+      handle;
+  manager->PreloadSharedDictionaryInfoForDocument(
+      {GURL("https://origin1.test/p1")},
+      handle.InitWithNewPipeAndPassReceiver());
+
+  if (GetManagerType() == TestManagerType::kInMemory) {
+    // For the memory type manager, the binary of the dictionary is in memory.
+    // So the getter returns nullptr.
+    EXPECT_TRUE(
+        dictionary_getter.Run(isolation_key, GURL("https://origin1.test/p1")));
+    return;
+  }
+
+  // For the disk type manager, the binary of the dictionary should not be
+  // loaded yet. In that case, if kPreloadedDictionaryConditionalUse is enabled,
+  // the getter returns nullptr.
+  EXPECT_FALSE(
+      dictionary_getter.Run(isolation_key, GURL("https://origin1.test/p2")));
+
+  FlushCacheTasks();
+  // After running `FlushCacheTasks()`, the binary of the dictionary must have
+  // been loaded. So the getter must return a dictionary.
+  EXPECT_TRUE(
+      dictionary_getter.Run(isolation_key, GURL("https://origin1.test/p3")));
+}
+
+TEST_P(SharedDictionaryManagerTest, PreloadedDictionaryConditionalUseDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures({},
+                                {features::kPreloadedDictionaryConditionalUse});
+
+  std::unique_ptr<SharedDictionaryManager> manager =
+      CreateSharedDictionaryManager();
+  auto dictionary_getter = manager->MaybeCreateSharedDictionaryGetter(
+      net::LOAD_CAN_USE_SHARED_DICTIONARY,
+      mojom::RequestDestination::kDocument);
+
+  // Register a test dictionary.
+  net::SharedDictionaryIsolationKey isolation_key(url::Origin::Create(kUrl1),
+                                                  kSite1);
+  scoped_refptr<SharedDictionaryStorage> storage =
+      manager->GetStorage(isolation_key);
+  WriteDictionary(storage.get(), GURL("https://origin1.test/dict"), "p*",
+                  {"Hello"});
+  if (GetManagerType() == TestManagerType::kOnDisk) {
+    FlushCacheTasks();
+  }
+
+  mojo::PendingRemote<network::mojom::PreloadedSharedDictionaryInfoHandle>
+      handle;
+  manager->PreloadSharedDictionaryInfoForDocument(
+      {GURL("https://origin1.test/p1")},
+      handle.InitWithNewPipeAndPassReceiver());
+
+  // When kPreloadedDictionaryConditionalUse is disabled, the getter returns a
+  // dictionary.
+  EXPECT_TRUE(
+      dictionary_getter.Run(isolation_key, GURL("https://origin1.test/p2")));
 }
 
 }  // namespace network

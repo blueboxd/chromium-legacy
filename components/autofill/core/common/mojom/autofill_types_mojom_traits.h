@@ -13,6 +13,7 @@
 
 #include "base/i18n/rtl.h"
 #include "components/autofill/core/common/aliases.h"
+#include "components/autofill/core/common/autocomplete_parsing_util.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_data_predictions.h"
 #include "components/autofill/core/common/form_field_data_predictions.h"
@@ -84,8 +85,8 @@ struct StructTraits<autofill::mojom::SelectOptionDataView,
     return r.value;
   }
 
-  static const std::u16string& content(const autofill::SelectOption& r) {
-    return r.content;
+  static const std::u16string& text(const autofill::SelectOption& r) {
+    return r.text;
   }
 
   static bool Read(autofill::mojom::SelectOptionDataView data,
@@ -181,6 +182,10 @@ struct StructTraits<autofill::mojom::AutocompleteParsingResultDataView,
   static autofill::mojom::HtmlFieldType field_type(
       const autofill::AutocompleteParsingResult& r) {
     return r.field_type;
+  }
+
+  static bool webauthn(const autofill::AutocompleteParsingResult& r) {
+    return r.webauthn;
   }
 
   static bool Read(autofill::mojom::AutocompleteParsingResultDataView data,
@@ -438,7 +443,7 @@ struct StructTraits<autofill::mojom::FormDataDataView, autofill::FormData> {
 
   static const std::vector<autofill::FormFieldData>& fields(
       const autofill::FormData& r) {
-    return r.fields;
+    return r.fields();
   }
 
   static const std::vector<autofill::FieldRendererId>& username_predictions(
@@ -449,6 +454,10 @@ struct StructTraits<autofill::mojom::FormDataDataView, autofill::FormData> {
   static bool is_gaia_with_skip_save_password_form(
       const autofill::FormData& d) {
     return d.is_gaia_with_skip_save_password_form();
+  }
+
+  static bool likely_contains_captcha(const autofill::FormData& d) {
+    return d.likely_contains_captcha();
   }
 
   static bool Read(autofill::mojom::FormDataDataView data,
@@ -610,6 +619,11 @@ struct StructTraits<autofill::mojom::PasswordFormFillDataDataView,
 
   static bool wait_for_username(const autofill::PasswordFormFillData& r) {
     return r.wait_for_username;
+  }
+
+  static std::vector<autofill::FieldRendererId> suggestion_banned_fields(
+      const autofill::PasswordFormFillData& r) {
+    return r.suggestion_banned_fields;
   }
 
   static bool Read(autofill::mojom::PasswordFormFillDataDataView data,

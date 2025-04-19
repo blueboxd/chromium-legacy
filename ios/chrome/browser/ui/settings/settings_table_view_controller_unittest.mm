@@ -27,7 +27,6 @@
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state_manager.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
-#import "ios/chrome/browser/shared/public/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/settings_commands.h"
 #import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
@@ -44,14 +43,11 @@
 #import "ios/chrome/browser/sync/model/mock_sync_service_utils.h"
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/tabs/model/inactive_tabs/features.h"
-#import "ios/chrome/browser/tabs/model/tab_pickup/features.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_account_item.h"
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller_constants.h"
 #import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
-#import "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
 #import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
-#import "ios/chrome/test/testing_application_context.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -83,20 +79,11 @@ class SettingsTableViewControllerTest
         base::BindRepeating(
             &password_manager::BuildPasswordStore<
                 web::BrowserState, password_manager::TestPasswordStore>));
-    chrome_browser_state_ = builder.Build();
+    chrome_browser_state_ =
+        browser_state_manager_.AddBrowserStateWithBuilder(std::move(builder));
 
     // Prepare mocks for PushNotificationClient dependency
-    TestingApplicationContext::GetGlobal()->SetLocalState(nullptr);
-    test_manager_ =
-        std::make_unique<TestChromeBrowserStateManager>(base::FilePath());
-    test_manager_pref_service_ =
-        TestingApplicationContext::GetGlobal()->GetLocalState();
-    TestingApplicationContext::GetGlobal()->SetLocalState(GetLocalState());
-    TestingApplicationContext::GetGlobal()->SetChromeBrowserStateManager(
-        test_manager_.get());
-
     browser_ = std::make_unique<TestBrowser>(chrome_browser_state_.get());
-    browser_state_ = TestChromeBrowserState::Builder().Build();
 
     AuthenticationServiceFactory::CreateAndInitializeForBrowserState(
         chrome_browser_state_.get(),
@@ -132,11 +119,6 @@ class SettingsTableViewControllerTest
     [[NSUserDefaults standardUserDefaults]
         removeObjectForKey:kPolicyLoaderIOSConfigurationKey];
 
-    TestingApplicationContext::GetGlobal()->SetLocalState(
-        test_manager_pref_service_);
-    test_manager_.reset();
-    TestingApplicationContext::GetGlobal()->SetLocalState(GetLocalState());
-
     [static_cast<SettingsTableViewController*>(controller())
         settingsWillBeDismissed];
     LegacyChromeTableViewControllerTest::TearDown();
@@ -160,7 +142,9 @@ class SettingsTableViewControllerTest
                              forProtocol:@protocol(SnackbarCommands)];
 
     SettingsTableViewController* controller =
-        [[SettingsTableViewController alloc] initWithBrowser:browser_.get()];
+        [[SettingsTableViewController alloc]
+                     initWithBrowser:browser_.get()
+            hasDefaultBrowserBlueDot:has_default_browser_blue_dot_];
     controller.applicationHandler =
         HandlerForProtocol(dispatcher, ApplicationCommands);
     controller.settingsHandler =
@@ -192,25 +176,43 @@ class SettingsTableViewControllerTest
            forKey:kPolicyLoaderIOSConfigurationKey];
   }
 
-  PrefService* GetLocalState() { return scoped_testing_local_state_.Get(); }
+  PrefService* GetLocalState() {
+    return GetApplicationContext()->GetLocalState();
+  }
+
+  void VerifyDefaultBrowwserBlueDot(bool has_default_browser_blue_dot) {
+    has_default_browser_blue_dot_ = has_default_browser_blue_dot;
+    CreateController();
+    CheckController();
+
+    NSArray<TableViewItem*>* default_section_items =
+        [controller().tableViewModel
+            itemsInSectionWithIdentifier:SettingsSectionIdentifier::
+                                             SettingsSectionIdentifierDefaults];
+
+    TableViewDetailIconItem* default_browser_item =
+        static_cast<TableViewDetailIconItem*>(default_section_items[0]);
+
+    EXPECT_EQ(has_default_browser_blue_dot,
+              BadgeType::kNotificationDot == default_browser_item.badgeType);
+  }
 
  protected:
   // Needed for test browser state created by TestChromeBrowserState().
   web::WebTaskEnvironment task_environment_;
   IOSChromeScopedTestingLocalState scoped_testing_local_state_;
-  raw_ptr<PrefService> test_manager_pref_service_;
+  TestChromeBrowserStateManager browser_state_manager_;
 
   FakeSystemIdentity* fake_identity_ = nullptr;
   raw_ptr<AuthenticationService> auth_service_ = nullptr;
   raw_ptr<syncer::MockSyncService> sync_service_mock_ = nullptr;
   scoped_refptr<password_manager::TestPasswordStore> password_store_mock_;
 
-  std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-  std::unique_ptr<ios::ChromeBrowserStateManager> test_manager_;
+  raw_ptr<TestChromeBrowserState> chrome_browser_state_;
   std::unique_ptr<TestBrowser> browser_;
-  std::unique_ptr<TestChromeBrowserState> browser_state_;
 
   SettingsTableViewController* controller_ = nullptr;
+  BOOL has_default_browser_blue_dot_ = false;
 };
 
 // Verifies that the Sync icon displays the on state when the user has turned
@@ -498,10 +500,9 @@ TEST_F(SettingsTableViewControllerTest, HasDownloadsMenuItem) {
   CheckController();
 
   // The section to check for depends on some other features.
-  SettingsSectionIdentifier section =
-      IsInactiveTabsAvailable() || IsTabPickupEnabled()
-          ? SettingsSectionIdentifierInfo
-          : SettingsSectionIdentifierAdvanced;
+  SettingsSectionIdentifier section = IsInactiveTabsAvailable()
+                                          ? SettingsSectionIdentifierInfo
+                                          : SettingsSectionIdentifierAdvanced;
 
   EXPECT_TRUE([controller().tableViewModel
       hasItemForItemType:SettingsItemTypeDownloadsSettings
@@ -524,4 +525,14 @@ TEST_F(SettingsTableViewControllerTest, NoPlusAddressesByDefault) {
   for (TableViewItem* advanced_item in advanced_items) {
     EXPECT_NE(advanced_item.accessibilityIdentifier, kSettingsPlusAddressesId);
   }
+}
+
+// Verifies that the default browser blue dot is displayed when indicated.
+TEST_F(SettingsTableViewControllerTest, TestHasDefaultBrowserBlueDot) {
+  VerifyDefaultBrowwserBlueDot(true);
+}
+
+// Verifies that the default browser blue dot is not displayed when indicated.
+TEST_F(SettingsTableViewControllerTest, TestHasNoDefaultBrowserBlueDot) {
+  VerifyDefaultBrowwserBlueDot(false);
 }

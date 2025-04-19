@@ -11,7 +11,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.CoreMatchers.allOf;
 
-import static org.chromium.base.test.transit.ViewElement.sharedViewElement;
+import static org.chromium.base.test.transit.ViewSpec.viewSpec;
 
 import android.view.View;
 
@@ -29,12 +29,17 @@ import org.chromium.base.test.transit.Elements;
 import org.chromium.base.test.transit.Facility;
 import org.chromium.base.test.transit.ScrollableFacility;
 import org.chromium.base.test.transit.Station;
+import org.chromium.base.test.transit.ViewSpec;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuItemProperties;
+import org.chromium.chrome.test.transit.ntp.IncognitoNewTabPageStation;
+import org.chromium.chrome.test.transit.ntp.RegularNewTabPageStation;
+import org.chromium.chrome.test.transit.settings.SettingsStation;
 import org.chromium.ui.modelutil.MVCListAdapter;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 
 import java.util.concurrent.Callable;
+import java.util.function.Function;
 
 /**
  * Base class for app menus shown when pressing ("...").
@@ -51,7 +56,9 @@ public abstract class AppMenuFacility<HostStationT extends Station>
 
     /** Create a new app menu item which runs |selectHandler| when selected. */
     protected <SelectReturnT> Item<SelectReturnT> declareMenuItem(
-            ItemsBuilder items, @IdRes int id, Callable<SelectReturnT> selectHandler) {
+            ItemsBuilder items,
+            @IdRes int id,
+            Function<ItemOnScreenFacility<SelectReturnT>, SelectReturnT> selectHandler) {
         return items.declareItem(itemViewMatcher(id), itemDataMatcher(id), selectHandler);
     }
 
@@ -66,11 +73,10 @@ public abstract class AppMenuFacility<HostStationT extends Station>
     }
 
     /** Create a new app menu item which enters a |EnteredFacilityT| when selected. */
-    protected <EnteredFacilityT extends Facility<HostStationT>>
-            Item<EnteredFacilityT> declareMenuItemToFacility(
-                    ItemsBuilder items,
-                    @IdRes int id,
-                    Callable<EnteredFacilityT> destinationFacilityFactory) {
+    protected <EnteredFacilityT extends Facility> Item<EnteredFacilityT> declareMenuItemToFacility(
+            ItemsBuilder items,
+            @IdRes int id,
+            Callable<EnteredFacilityT> destinationFacilityFactory) {
         return items.declareItemToFacility(
                 itemViewMatcher(id), itemDataMatcher(id), destinationFacilityFactory);
     }
@@ -100,11 +106,14 @@ public abstract class AppMenuFacility<HostStationT extends Station>
      * selected.
      */
     protected <SelectReturnT> Item<SelectReturnT> declarePossibleMenuItem(
-            ItemsBuilder items, @IdRes int id, Callable<SelectReturnT> selectHandler) {
+            ItemsBuilder items,
+            @IdRes int id,
+            Function<ItemOnScreenFacility<SelectReturnT>, SelectReturnT> selectHandler) {
         return items.declarePossibleItem(itemViewMatcher(id), itemDataMatcher(id), selectHandler);
     }
 
-    public static final Matcher<View> MENU_LIST = withId(R.id.app_menu_list);
+    public static final Matcher<View> MENU_LIST_MATCHER = withId(R.id.app_menu_list);
+    public static final ViewSpec MENU_LIST = viewSpec(MENU_LIST_MATCHER);
 
     public static final @IdRes int NEW_TAB_ID = R.id.new_tab_menu_id;
     public static final @IdRes int NEW_INCOGNITO_TAB_ID = R.id.new_incognito_tab_menu_id;
@@ -125,14 +134,10 @@ public abstract class AppMenuFacility<HostStationT extends Station>
     public static final @IdRes int SETTINGS_ID = R.id.preferences_id;
     public static final @IdRes int HELP_AND_FEEDBACK_ID = R.id.help_id;
 
-    protected AppMenuFacility(HostStationT station) {
-        super(station);
-    }
-
     @CallSuper
     @Override
     public void declareElements(Elements.Builder elements) {
-        elements.declareView(sharedViewElement(MENU_LIST));
+        elements.declareView(MENU_LIST);
 
         super.declareElements(elements);
     }
@@ -145,8 +150,11 @@ public abstract class AppMenuFacility<HostStationT extends Station>
     }
 
     /** Default behavior for "Open new tab". */
-    protected NewTabPageStation createNewTabPageStation() {
-        return NewTabPageStation.newBuilder().withIsOpeningTabs(1).withIsSelectingTabs(1).build();
+    protected RegularNewTabPageStation createNewTabPageStation() {
+        return RegularNewTabPageStation.newBuilder()
+                .withIsOpeningTabs(1)
+                .withIsSelectingTabs(1)
+                .build();
     }
 
     /** Default behavior for "Open new Incognito tab". */
@@ -163,11 +171,11 @@ public abstract class AppMenuFacility<HostStationT extends Station>
     }
 
     protected static Matcher<View> itemViewMatcher(@IdRes int id) {
-        return allOf(withId(id), isDescendantOfA(MENU_LIST));
+        return allOf(withId(id), isDescendantOfA(MENU_LIST_MATCHER));
     }
 
     protected static Matcher<View> itemViewMatcher(String text) {
-        return allOf(withText(text), isDescendantOfA(MENU_LIST));
+        return allOf(withText(text), isDescendantOfA(MENU_LIST_MATCHER));
     }
 
     protected static Matcher<ListItem> itemDataMatcher(@IdRes int id) {
@@ -204,6 +212,6 @@ public abstract class AppMenuFacility<HostStationT extends Station>
                         },
                         Press.FINGER);
         mHostStation.exitFacilitySync(
-                this, () -> onView(MENU_LIST).perform(clickBetweenViewAndLeftEdge));
+                this, () -> onView(MENU_LIST_MATCHER).perform(clickBetweenViewAndLeftEdge));
     }
 }

@@ -183,6 +183,7 @@ All changes to this list should go through Blink's feature review process: http:
     font-optical-sizing
     font-palette
     font-size
+    font-size-adjust
     font-stretch
     font-style
     font-synthesis-small-caps
@@ -220,6 +221,7 @@ All changes to this list should go through Blink's feature review process: http:
     inset-block-start
     inset-inline-end
     inset-inline-start
+    interpolate-size
     isolation
     justify-content
     justify-items
@@ -304,7 +306,8 @@ All changes to this list should go through Blink's feature review process: http:
     pointer-events
     position
     position-anchor
-    position-try-options
+    position-area
+    position-try-fallbacks
     position-try-order
     position-visibility
     quotes
@@ -313,6 +316,7 @@ All changes to this list should go through Blink's feature review process: http:
     right
     rotate
     row-gap
+    ruby-align
     ruby-position
     rx
     ry
@@ -599,6 +603,7 @@ All changes to this list should go through Blink's feature review process: http:
         font-kerning
         font-optical-sizing
         font-size
+        font-size-adjust
         font-stretch
         font-style
         font-variant-alternates
@@ -732,7 +737,7 @@ All changes to this list should go through Blink's feature review process: http:
         align-self
         justify-self
     position-try
-        position-try-options
+        position-try-fallbacks
         position-try-order
     scroll-margin
         scroll-margin-bottom

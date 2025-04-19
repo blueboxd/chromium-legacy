@@ -3,30 +3,35 @@
 // found in the LICENSE file.
 
 import 'chrome://resources/cr_elements/cr_auto_img/cr_auto_img.js';
+import './description_citation.js';
 import './product_selector.js';
+import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_icons.css.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/cr_hidden_style.css.js';
+import 'chrome://resources/cr_elements/cr_tooltip/cr_tooltip.js';
 
+import {assert} from '//resources/js/assert.js';
+import {getFaviconForPageURL} from '//resources/js/icon.js';
+import type {DomRepeat} from '//resources/polymer/v3_0/polymer/lib/elements/dom-repeat.js';
 import type {BrowserProxy} from 'chrome://resources/cr_components/commerce/browser_proxy.js';
 import {BrowserProxyImpl} from 'chrome://resources/cr_components/commerce/browser_proxy.js';
 import type {DomRepeatEvent} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import type {TableColumn} from './app.js';
+import {DragAndDropManager} from './drag_and_drop_manager.js';
+import type {ProductSpecificationsDescriptionText} from './shopping_service.mojom-webui.js';
 import {getTemplate} from './table.html.js';
-import type {UrlListEntry} from './utils.js';
+import {WindowProxy} from './window_proxy.js';
 
-/** Describes a row in a ProductSpecs table. */
-export interface TableRow {
-  title: string;
-  values: string[];
-}
-/** Describes a column in a ProductSpecs table. */
-export interface TableColumn {
-  selectedItem: UrlListEntry;
+export interface TableElement {
+  $: {
+    table: HTMLElement,
+    columnRepeat: DomRepeat,
+  };
 }
 
-/** Element for rendering a ProductSpecs table. */
 export class TableElement extends PolymerElement {
   static get is() {
     return 'product-specifications-table';
@@ -39,54 +44,191 @@ export class TableElement extends PolymerElement {
   static get properties() {
     return {
       columns: Array,
-      rows: Array,
-      hoveredColumnIndex_: {type: Number, value: -1},
+      draggingColumn: HTMLElement,
+      hoveredColumnIndex_: Number,
     };
   }
 
   columns: TableColumn[];
-  rows: TableRow[];
-  private hoveredColumnIndex_: number;
+  draggingColumn: HTMLElement|null = null;
+  private hoveredColumnIndex_: number|null = null;
 
+  private dragAndDropManager_: DragAndDropManager = new DragAndDropManager();
   private shoppingApi_: BrowserProxy = BrowserProxyImpl.getInstance();
 
+  override connectedCallback(): void {
+    super.connectedCallback();
+    this.dragAndDropManager_.init(this);
+  }
+
+  override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this.dragAndDropManager_.destroy();
+  }
+
+  // Called by |dragAndDropManager|.
+  moveColumnOnDrop(fromIndex: number, dropIndex: number) {
+    const columns = this.columns;
+    const [draggingColumn] = columns.splice(fromIndex, 1);
+    assert(draggingColumn);
+    columns.splice(dropIndex, 0, draggingColumn);
+    this.notifySplices('columns', [
+      {
+        index: fromIndex,
+        removed: [draggingColumn],
+        addedCount: 0,
+        object: columns,
+        type: 'splice',
+      },
+      {
+        index: dropIndex,
+        removed: [],
+        addedCount: 1,
+        object: columns,
+        type: 'splice',
+      },
+    ]);
+
+    this.dispatchEvent(new Event('url-order-update'));
+  }
+
+  // |this.draggingColumn| is set by |dragAndDropManager|.
+  private isDragging_(columnIndex: number): boolean {
+    return !!this.draggingColumn &&
+        columnIndex ===
+        (this.$.columnRepeat.modelForElement(this.draggingColumn) as unknown as
+         {
+           columnIndex: number,
+         }).columnIndex;
+  }
+
+  private isFirstColumn_(columnIndex: number): boolean|undefined {
+    if (!this.draggingColumn) {
+      return columnIndex === 0;
+    }
+    // While dragging, |dragAndDropManager| toggles this attribute, as the first
+    // column shown in the table may have a non-zero `columnIndex`.
+    return undefined;
+  }
+
+  // Determines the number of rows needed in the grid layout.
+  // This is the sum of:
+  //   - 1 row for the product selector.
+  //   - 1 row for the image container.
+  //   - Number of product details.
+  private getRowCount_(numProductDetails: number): number {
+    return 2 + numProductDetails;
+  }
+
+  private getUrls_() {
+    return this.columns.map(column => column.selectedItem.url);
+  }
+
   private onHideOpenTabButton_() {
-    this.hoveredColumnIndex_ = -1;
+    this.hoveredColumnIndex_ = null;
   }
 
-  private onShowOpenTabButton_(e: DomRepeatEvent<TableColumn|TableRow>) {
-    this.hoveredColumnIndex_ = e.model.index;
+  private onShowOpenTabButton_(e: DomRepeatEvent<TableColumn>&
+                               {model: {columnIndex: number}}) {
+    this.hoveredColumnIndex_ = e.model.columnIndex;
   }
 
-  private shouldShowOpenTabButton_(columnIndex: number): boolean {
-    return columnIndex === this.hoveredColumnIndex_;
+  private showOpenTabButton_(columnIndex: number): boolean {
+    return !this.draggingColumn && this.hoveredColumnIndex_ !== null &&
+        this.hoveredColumnIndex_ === columnIndex;
   }
 
-  private onOpenTabButtonClick_(e: DomRepeatEvent<TableColumn, CustomEvent>) {
+  private onOpenTabButtonClick_(e: DomRepeatEvent<TableColumn>&
+                                {model: {columnIndex: number}}) {
+    if (!WindowProxy.getInstance().onLine) {
+      this.dispatchEvent(new Event('unavailable-action-attempted'));
+      return;
+    }
     this.shoppingApi_.switchToOrOpenTab(
-        {url: this.columns[e.model.index].selectedItem.url});
+        {url: this.columns[e.model.columnIndex].selectedItem.url});
   }
 
   private onSelectedUrlChange_(
-      e: DomRepeatEvent<TableColumn, CustomEvent<{url: string}>>) {
+      e: DomRepeatEvent<TableColumn, CustomEvent<{url: string}>>&
+      {model: {columnIndex: number}}) {
     this.dispatchEvent(new CustomEvent('url-change', {
       bubbles: true,
       composed: true,
       detail: {
         url: e.detail.url,
-        index: e.model.index,
+        index: e.model.columnIndex,
       },
     }));
   }
 
-  private onUrlRemove_(e: DomRepeatEvent<TableColumn>) {
+  private onUrlRemove_(e: DomRepeatEvent<TableColumn>&
+                       {model: {columnIndex: number}}) {
     this.dispatchEvent(new CustomEvent('url-remove', {
       bubbles: true,
       composed: true,
       detail: {
-        index: e.model.index,
+        index: e.model.columnIndex,
       },
     }));
+  }
+
+  private showRow_(title: string, rowIndex: number): boolean {
+    return this.showDescription_(title, rowIndex) ||
+        this.showSummary_(title, rowIndex) || this.rowHasText_(title, rowIndex);
+  }
+
+  private computeCitationIndex_(
+      summaries: ProductSpecificationsDescriptionText[], summaryIndex: number,
+      urlIndex: number): number {
+    // Citations should start from 1.
+    let citationIndex = 1;
+    for (let i = 0; i < summaryIndex; i++) {
+      citationIndex += summaries[i].urls.length;
+    }
+    return citationIndex + urlIndex;
+  }
+
+  private rowHasText_(title: string, rowIndex: number): boolean {
+    const rowDetails = this.columns.map(
+        column => column.productDetails && column.productDetails[rowIndex]);
+
+    return rowDetails.some(
+        detail => detail && detail.title === title && detail.text);
+  }
+
+  private showDescription_(title: string, rowIndex: number): boolean {
+    const rowDetails = this.columns.map(
+        column => column.productDetails && column.productDetails[rowIndex]);
+
+    return rowDetails.some(detail => {
+      if (!detail || detail.title !== title) {
+        return false;
+      }
+      if (detail.text) {
+        // If we're showing text, we shouldn't have any description data.
+        assert(detail.description.length === 0);
+        return false;
+      }
+      return detail.description && detail.description.some(desc => {
+        return desc.description.length > 0 && desc.description !== 'N/A';
+      });
+    });
+  }
+
+  private showSummary_(title: string, rowIndex: number): boolean {
+    const rowDetails = this.columns.map(
+        column => column.productDetails && column.productDetails[rowIndex]);
+
+    return rowDetails.some(detail => {
+      return detail && detail.title === title && detail.summary &&
+          detail.summary.length > 0 &&
+          detail.summary.some((summaryObj) => summaryObj.text !== 'N/A');
+    });
+  }
+
+  // This method provides a string that is intended to be used primarily in CSS.
+  private getFavicon_(url: string): string {
+    return getFaviconForPageURL(url, false, '', 32);
   }
 }
 

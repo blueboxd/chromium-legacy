@@ -107,12 +107,24 @@ std::vector<uint32_t> BrowserAccessibilityFuchsia::GetFuchsiaChildIDs() const {
   return child_ids;
 }
 
+bool BrowserAccessibilityFuchsia::IsFuchsiaDefaultAction() const {
+  // Nodes given the Default action map to Fuchsia's Default action.
+  if (HasAction(ax::mojom::Action::kDoDefault)) {
+    return true;
+  }
+  // Action verbs other than None and ClickAncestor also map to the Fuchsia's
+  // Default action. ClickAncestor should be excluded, as the node itself is not
+  // clickable (only an ancestor in the tree).
+  auto verb = GetData().GetDefaultActionVerb();
+  return verb != ax::mojom::DefaultActionVerb::kNone &&
+         verb != ax::mojom::DefaultActionVerb::kClickAncestor;
+}
+
 std::vector<fuchsia_accessibility_semantics::Action>
 BrowserAccessibilityFuchsia::GetFuchsiaActions() const {
   std::vector<fuchsia_accessibility_semantics::Action> actions;
 
-  if (HasAction(ax::mojom::Action::kDoDefault) ||
-      GetData().GetDefaultActionVerb() != ax::mojom::DefaultActionVerb::kNone) {
+  if (IsFuchsiaDefaultAction()) {
     actions.push_back(fuchsia_accessibility_semantics::Action::kDefault);
   }
 
@@ -144,6 +156,8 @@ BrowserAccessibilityFuchsia::GetFuchsiaRole() const {
       return FuchsiaRole::kColumnHeader;
     case AXRole::kGrid:
       return FuchsiaRole::kGrid;
+    case AXRole::kGridCell:
+      return FuchsiaRole::kCell;
     case AXRole::kHeader:
       return FuchsiaRole::kHeader;
     case AXRole::kImage:

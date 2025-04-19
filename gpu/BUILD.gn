@@ -76,94 +76,6 @@ component("webgpu") {
   public_deps = [ "//gpu/command_buffer/client:webgpu_sources" ]
 }
 
-if (!use_static_angle) {
-  shared_library("command_buffer_gles2") {
-    sources = [
-      # TODO(hendrikw): Move egl out of gles2_conform_support.
-      "gles2_conform_support/egl/config.cc",
-      "gles2_conform_support/egl/config.h",
-      "gles2_conform_support/egl/context.cc",
-      "gles2_conform_support/egl/context.h",
-      "gles2_conform_support/egl/display.cc",
-      "gles2_conform_support/egl/display.h",
-      "gles2_conform_support/egl/egl.cc",
-      "gles2_conform_support/egl/surface.cc",
-      "gles2_conform_support/egl/surface.h",
-      "gles2_conform_support/egl/test_support.cc",
-      "gles2_conform_support/egl/test_support.h",
-      "gles2_conform_support/egl/thread_state.cc",
-      "gles2_conform_support/egl/thread_state.h",
-    ]
-
-    deps = [
-      ":gpu",
-      "//base",
-      "//gpu/command_buffer/client:gles2_c_lib",
-      "//gpu/command_buffer/client:gles2_cmd_helper",
-      "//gpu/command_buffer/client:gles2_implementation",
-      "//gpu/command_buffer/service:gles2",
-      "//ui/gl",
-      "//ui/gl/init",
-    ]
-
-    if (use_ozone) {
-      deps += [ "//ui/ozone" ]
-    }
-
-    defines = [
-      "COMMAND_BUFFER_GLES_LIB_SUPPORT_ONLY",
-      "EGLAPIENTRY=",
-    ]
-    if (is_android) {
-      configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
-    }
-    if (current_os == "win") {
-      defines += [ "EGLAPI=__declspec(dllexport)" ]
-    } else {
-      defines += [ "EGLAPI=__attribute__((visibility(\"default\")))" ]
-    }
-  }
-
-  test("command_buffer_gles2_tests") {
-    sources = [
-      "command_buffer/tests/command_buffer_gles2_tests_main.cc",
-      "command_buffer/tests/egl_test.cc",
-    ]
-
-    deps = [
-      ":command_buffer_gles2",
-      "//base",
-      "//base/test:test_support",
-      "//testing/gmock",
-      "//testing/gtest",
-    ]
-
-    defines = [
-      "COMMAND_BUFFER_GLES_LIB_SUPPORT_ONLY",
-      "EGLAPIENTRY=",
-    ]
-    if (current_os == "win") {
-      defines += [ "EGLAPI=__declspec(dllimport)" ]
-    } else {
-      defines += [ "EGLAPI=" ]
-    }
-
-    libs = []
-
-    if (is_android) {
-      libs += [ "android" ]
-      deps += [ "//ui/android:ui_java" ]
-    }
-    if ((is_linux || is_chromeos) && !is_component_build) {
-      configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
-    }
-
-    if (use_ozone) {
-      deps += [ "//ui/base:features" ]
-    }
-  }
-}  # if (!use_static_angle)
-
 static_library("test_support") {
   testonly = true
   sources = [
@@ -227,6 +139,12 @@ static_library("test_support") {
     "//ui/gl:test_support",
   ]
 
+  if (is_fuchsia) {
+    deps += [
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sysmem2:fuchsia.sysmem2_hlcpp",
+      "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
+    ]
+  }
   if (use_static_angle) {
     deps += [ "//third_party/angle:translator" ]
   } else {
@@ -308,6 +226,7 @@ test("gl_tests") {
 
   sources = [
     "command_buffer/service/gles2_external_framebuffer_unittest.cc",
+    "command_buffer/service/shared_image/egl_image_backing_factory_unittest.cc",
     "command_buffer/service/shared_image/gl_texture_image_backing_factory_unittest.cc",
     "command_buffer/service/shared_image/shared_image_factory_unittest.cc",
     "command_buffer/service/shared_image/shared_image_manager_unittest.cc",
@@ -363,14 +282,11 @@ test("gl_tests") {
     "command_buffer/tests/gl_virtual_contexts_unittest.cc",
     "command_buffer/tests/gl_webgl_multi_draw_test.cc",
     "command_buffer/tests/occlusion_query_unittest.cc",
+    "config/gpu_info_collector_gl_test.cc",
     "ipc/client/gpu_context_tests.h",
     "ipc/client/gpu_in_process_context_tests.cc",
     "ipc/client/raster_in_process_context_tests.cc",
   ]
-
-  if (use_egl) {
-    sources += [ "command_buffer/service/shared_image/egl_image_backing_factory_unittest.cc" ]
-  }
 
   if (is_android) {
     sources += [ "command_buffer/tests/gl_unittests_android.cc" ]
@@ -528,6 +444,7 @@ test("gpu_unittests") {
     "command_buffer/common/id_allocator_test.cc",
     "command_buffer/common/raster_cmd_format_test.cc",
     "command_buffer/common/raster_cmd_format_test_autogen.h",
+    "command_buffer/common/shared_image_usage_unittest.cc",
     "command_buffer/common/shm_count_unittest.cc",
     "command_buffer/common/unittest_main.cc",
     "command_buffer/common/webgpu_cmd_format_test.cc",
@@ -569,6 +486,7 @@ test("gpu_unittests") {
     "command_buffer/service/raster_decoder_unittest_base.h",
     "command_buffer/service/raster_decoder_unittest_context_lost.cc",
     "command_buffer/service/renderbuffer_manager_unittest.cc",
+    "command_buffer/service/retaining_one_shot_timer_holder_unittest.cc",
     "command_buffer/service/scheduler_dfs_unittest.cc",
     "command_buffer/service/scheduler_unittest.cc",
     "command_buffer/service/service_discardable_manager_unittest.cc",
@@ -581,6 +499,7 @@ test("gpu_unittests") {
     "command_buffer/service/shared_image/gl_repack_utils_unittest.cc",
     "command_buffer/service/shared_memory_region_wrapper_unittest.cc",
     "command_buffer/service/sync_point_manager_unittest.cc",
+    "command_buffer/service/task_graph_unittest.cc",
     "command_buffer/service/texture_manager_unittest.cc",
     "command_buffer/service/transfer_buffer_manager_unittest.cc",
     "command_buffer/service/transform_feedback_manager_unittest.cc",

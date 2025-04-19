@@ -8,10 +8,12 @@
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_screen_test_api.h"
 #include "base/check.h"
+#include "base/check_deref.h"
 #include "base/command_line.h"
 #include "base/test/gtest_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/ash/app_mode/consumer_kiosk_test_helper.h"
 #include "chrome/browser/ash/app_mode/kiosk_chrome_app_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_test_helper.h"
 #include "chrome/browser/ash/login/app_mode/test/kiosk_apps_mixin.h"
@@ -34,6 +36,7 @@
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ash/ownership/fake_owner_settings_service.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
+#include "chrome/browser/ash/policy/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/ash/policy/enrollment/auto_enrollment_type_checker.h"
 #include "chrome/browser/ash/policy/enrollment/enrollment_requisition_manager.h"
 #include "chrome/browser/ash/policy/enrollment/psm/rlwe_test_support.h"
@@ -45,11 +48,13 @@
 #include "chrome/browser/ui/webui/ash/login/device_disabled_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/gaia_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/online_login_utils.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/fake_gaia_mixin.h"
 #include "chromeos/ash/components/attestation/mock_attestation_flow.h"
 #include "chromeos/ash/components/attestation/stub_attestation_features.h"
+#include "chromeos/ash/components/dbus/attestation/attestation_client.h"
 #include "chromeos/ash/components/dbus/constants/attestation_constants.h"
 #include "chromeos/ash/components/dbus/dbus_thread_manager.h"
 #include "chromeos/ash/components/dbus/session_manager/fake_session_manager_client.h"
@@ -108,9 +113,7 @@ class EnrollmentEmbeddedPolicyServerBase : public OobeBaseTest {
       const EnrollmentEmbeddedPolicyServerBase&) = delete;
 
   void SetUpOnMainThread() override {
-    fake_gaia_.SetupFakeGaiaForLogin(FakeGaiaMixin::kFakeUserEmail,
-                                     FakeGaiaMixin::kFakeUserGaiaId,
-                                     FakeGaiaMixin::kFakeRefreshToken);
+    fake_gaia_.SetupFakeGaiaForLoginWithDefaults();
     policy_server_.SetUpdateDeviceAttributesPermission(false);
     OobeBaseTest::SetUpOnMainThread();
   }
@@ -139,6 +142,16 @@ class EnrollmentEmbeddedPolicyServerBase : public OobeBaseTest {
         WizardController::default_controller()->screen_manager());
     EXPECT_NE(enrollment_screen, nullptr);
     return enrollment_screen;
+  }
+
+  login::OnlineSigninArtifacts GetFakeSinginArtifactsForEnterpriseUser1() {
+    login::OnlineSigninArtifacts signin_artifacts;
+    signin_artifacts.email = FakeGaiaMixin::kEnterpriseUser1;
+    signin_artifacts.gaia_id = FakeGaiaMixin::kEnterpriseUser1GaiaId;
+    signin_artifacts.password = FakeGaiaMixin::kFakeUserPassword;
+    signin_artifacts.using_saml = false;
+
+    return signin_artifacts;
   }
 
   AutoEnrollmentCheckScreen* auto_enrollment_screen() {
@@ -1064,7 +1077,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentRecoveryTest, Success) {
             enrollment_ui_.WaitForScreenExit());
 
   enrollment_screen()->OnLoginDone(
-      FakeGaiaMixin::kEnterpriseUser1,
+      GetFakeSinginArtifactsForEnterpriseUser1(),
       static_cast<int>(policy::LicenseType::kEnterprise),
       FakeGaiaMixin::kFakeAuthCode);
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
@@ -1080,8 +1093,15 @@ IN_PROC_BROWSER_TEST_F(EnrollmentRecoveryTest, DifferentDomain) {
 
   ASSERT_TRUE(StartupUtils::IsDeviceRegistered());
   ASSERT_TRUE(InstallAttributes::Get()->IsEnterpriseManaged());
+
+  login::OnlineSigninArtifacts signin_artifacts;
+  signin_artifacts.email = FakeGaiaMixin::kFakeUserEmail;
+  signin_artifacts.gaia_id = FakeGaiaMixin::kFakeUserGaiaId;
+  signin_artifacts.password = FakeGaiaMixin::kFakeUserPassword;
+  signin_artifacts.using_saml = false;
+
   enrollment_screen()->OnLoginDone(
-      FakeGaiaMixin::kFakeUserEmail,
+      std::move(signin_artifacts),
       static_cast<int>(policy::LicenseType::kEnterprise),
       FakeGaiaMixin::kFakeAuthCode);
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepError);
@@ -1126,7 +1146,7 @@ IN_PROC_BROWSER_TEST_F(InitialEnrollmentTest, MAYBE_EnrollmentForced) {
   // Domain is actually different from what the server sent down. But Chrome
   // does not enforce that domain if device is not locked.
   enrollment_screen()->OnLoginDone(
-      FakeGaiaMixin::kEnterpriseUser1,
+      GetFakeSinginArtifactsForEnterpriseUser1(),
       static_cast<int>(policy::LicenseType::kEnterprise),
       FakeGaiaMixin::kFakeAuthCode);
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
@@ -1172,7 +1192,7 @@ IN_PROC_BROWSER_TEST_F(InitialEnrollmentTest,
   // Domain is actually different from what the server sent down. But Chrome
   // does not enforce that domain if device is not locked.
   enrollment_screen()->OnLoginDone(
-      FakeGaiaMixin::kEnterpriseUser1,
+      GetFakeSinginArtifactsForEnterpriseUser1(),
       static_cast<int>(policy::LicenseType::kEnterprise),
       FakeGaiaMixin::kFakeAuthCode);
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
@@ -1367,9 +1387,11 @@ class KioskEnrollmentTest : public EnrollmentEmbeddedPolicyServerBase {
   }
 
   void SetupAutoLaunchApp(FakeOwnerSettingsService* service) {
-    KioskChromeAppManager::Get()->AddApp(KioskAppsMixin::kKioskAppId, service);
-    KioskChromeAppManager::Get()->SetAutoLaunchApp(KioskAppsMixin::kKioskAppId,
-                                                   service);
+    AddConsumerKioskChromeAppForTesting(CHECK_DEREF(service),
+                                        KioskAppsMixin::kTestChromeAppId);
+    SetConsumerKioskAutoLaunchChromeAppForTesting(
+        CHECK_DEREF(KioskChromeAppManager::Get()), CHECK_DEREF(service),
+        KioskAppsMixin::kTestChromeAppId);
   }
 
  private:

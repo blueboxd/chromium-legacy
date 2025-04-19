@@ -8,7 +8,7 @@ import {EventTracker} from 'chrome://resources/js/event_tracker.js';
 import {getFakePreviewTicket} from '../fakes/fake_data.js';
 import {createCustomEvent} from '../utils/event_utils.js';
 import {getPrintPreviewPageHandler} from '../utils/mojo_data_providers.js';
-import {type PrintPreviewPageHandler, SessionContext} from '../utils/print_preview_cros_app_types.js';
+import {FakeGeneratePreviewObserver, type PrintPreviewPageHandlerCompositeInterface, SessionContext} from '../utils/print_preview_cros_app_types.js';
 
 /**
  * @fileoverview
@@ -23,7 +23,8 @@ export const PREVIEW_REQUEST_FINISHED_EVENT =
 export const PREVIEW_TICKET_MANAGER_SESSION_INITIALIZED =
     'preview-ticket-manager.session-initialized';
 
-export class PreviewTicketManager extends EventTarget {
+export class PreviewTicketManager extends EventTarget implements
+    FakeGeneratePreviewObserver {
   private static instance: PreviewTicketManager|null = null;
 
   static getInstance(): PreviewTicketManager {
@@ -39,10 +40,14 @@ export class PreviewTicketManager extends EventTarget {
   }
 
   // Non-static properties:
-  private printPreviewPageHandler: PrintPreviewPageHandler|null;
+  private printPreviewPageHandler: PrintPreviewPageHandlerCompositeInterface|
+      null;
   private previewLoaded = false;
   private sessionContext: SessionContext;
   private eventTracker = new EventTracker();
+  // Represents the request id for the latest preview request. All responses
+  // for ids below this will be ignored.
+  private activeRequestId = 0;
 
   // Prevent additional initialization.
   private constructor() {
@@ -50,6 +55,7 @@ export class PreviewTicketManager extends EventTarget {
 
     // Setup mojo data providers.
     this.printPreviewPageHandler = getPrintPreviewPageHandler();
+    this.printPreviewPageHandler.observePreviewReady(this);
   }
 
   // `initializeSession` is only intended to be called once from the
@@ -72,16 +78,25 @@ export class PreviewTicketManager extends EventTarget {
   // Send a request to generate a preview PDF with the desired print settings.
   // TODO(b/323421684): Rely on an observer to determine when the request is
   // finished.
-  private sendPreviewRequest(): void {
+  sendPreviewRequest(): void {
+    ++this.activeRequestId;
     this.previewLoaded = false;
     this.dispatchEvent(createCustomEvent(PREVIEW_REQUEST_STARTED_EVENT));
 
     // TODO(b/323421684): Replace with actual preview settings.
-    this.printPreviewPageHandler!.generatePreview(getFakePreviewTicket())
-        .then(() => {
-          this.previewLoaded = true;
-          this.dispatchEvent(createCustomEvent(PREVIEW_REQUEST_FINISHED_EVENT));
-        });
+    this.printPreviewPageHandler!.generatePreview(
+        getFakePreviewTicket(this.activeRequestId));
+  }
+
+  // FakeGeneratePreviewObserver:
+  onDocumentReady(previewRequestId: number): void {
+    // Only acknowledge responses for the latest preview request.
+    if (previewRequestId !== this.activeRequestId) {
+      return;
+    }
+
+    this.previewLoaded = true;
+    this.dispatchEvent(createCustomEvent(PREVIEW_REQUEST_FINISHED_EVENT));
   }
 
   // Returns true only after the `initializeSession` function has been called

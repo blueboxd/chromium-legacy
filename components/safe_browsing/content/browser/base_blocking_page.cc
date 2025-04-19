@@ -63,7 +63,6 @@ BaseBlockingPage::BaseBlockingPage(
       threat_details_proceed_delay_ms_(kThreatDetailsProceedDelayMilliSeconds),
       sb_error_ui_(std::make_unique<SafeBrowsingLoudErrorUI>(
           unsafe_resources_[0].url,
-          main_frame_url_,
           GetInterstitialReason(unsafe_resources_),
           display_options,
           ui_manager->app_locale(),
@@ -79,7 +78,7 @@ const security_interstitials::BaseSafeBrowsingErrorUI::SBErrorDisplayOptions
 BaseBlockingPage::CreateDefaultDisplayOptions(
     const UnsafeResourceList& unsafe_resources) {
   return BaseSafeBrowsingErrorUI::SBErrorDisplayOptions(
-      IsMainPageLoadPending(unsafe_resources), IsSubresource(unsafe_resources),
+      IsMainPageLoadPending(unsafe_resources),
       false,                 // kSafeBrowsingExtendedReportingOptInAllowed
       false,                 // is_off_the_record
       false,                 // is_extended_reporting
@@ -100,19 +99,6 @@ bool BaseBlockingPage::IsMainPageLoadPending(
   // pending. Otherwise, check if the one resource is.
   return unsafe_resources.size() == 1 &&
          AsyncCheckTracker::IsMainPageLoadPending(unsafe_resources[0]);
-}
-
-// static
-bool BaseBlockingPage::IsSubresource(
-    const UnsafeResourceList& unsafe_resources) {
-  // As long as there is one resource that is from subresource, the page is
-  // considered unsafe due to a subresource.
-  for (auto unsafe_resource : unsafe_resources) {
-    if (unsafe_resource.is_subresource) {
-      return true;
-    }
-  }
-  return false;
 }
 
 void BaseBlockingPage::SetThreatDetailsProceedDelayForTesting(int64_t delay) {
@@ -163,16 +149,15 @@ BaseBlockingPage::UnsafeResourceMap* BaseBlockingPage::GetUnsafeResourcesMap() {
 std::string BaseBlockingPage::GetMetricPrefix(
     const UnsafeResourceList& unsafe_resources,
     BaseSafeBrowsingErrorUI::SBInterstitialReason interstitial_reason) {
-  bool primary_subresource = unsafe_resources[0].is_subresource;
   switch (interstitial_reason) {
     case BaseSafeBrowsingErrorUI::SB_REASON_MALWARE:
-      return primary_subresource ? "malware_subresource" : "malware";
+      return "malware";
     case BaseSafeBrowsingErrorUI::SB_REASON_HARMFUL:
-      return primary_subresource ? "harmful_subresource" : "harmful";
+      return "harmful";
     case BaseSafeBrowsingErrorUI::SB_REASON_BILLING:
-      return primary_subresource ? "billing_subresource" : "billing";
+      return "billing";
     case BaseSafeBrowsingErrorUI::SB_REASON_PHISHING:
-      return primary_subresource ? "phishing_subresource" : "phishing";
+      return "phishing";
   }
   NOTREACHED_IN_MIGRATION();
   return "unkown_metric_prefix";

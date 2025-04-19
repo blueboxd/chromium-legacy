@@ -36,7 +36,6 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "pdf/buildflags.h"
 #include "pdf/pdf_features.h"
-#include "services/screen_ai/buildflags/buildflags.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -211,6 +210,10 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionJSTest, PageChange) {
   RunTestsInJsModule("page_change_test.js", "test-bookmarks.pdf");
 }
 
+IN_PROC_BROWSER_TEST_P(PDFExtensionJSTest, PageSelector) {
+  RunTestsInJsModule("page_selector_test.js", "test-bookmarks.pdf");
+}
+
 IN_PROC_BROWSER_TEST_P(PDFExtensionJSTest, ScrollWithFormFieldFocusedTest) {
   RunTestsInJsModule("scroll_with_form_field_focused_test.js",
                      "test-bookmarks.pdf");
@@ -310,16 +313,6 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionJSTest, ViewerToolbarDropdown) {
   RunTestsInJsModule("viewer_toolbar_dropdown_test.js", "test.pdf");
 }
 #endif  // BUILDFLAG(ENABLE_INK)
-
-#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-// TODO(crbug.com/40912114): Re-enable it when integrating PDF OCR with
-// Select-to-Speak.
-IN_PROC_BROWSER_TEST_P(PDFExtensionJSTest, DISABLED_PdfOcrToolbar) {
-  // Although this test file does not require a PDF to be loaded, loading the
-  // elements without loading a PDF is difficult.
-  RunTestsInJsModule("pdf_ocr_toolbar_test.js", "test.pdf");
-}
-#endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
 // PDFExtensionJSTest with forced Pacific Time Zone.
 class PDFExtensionPacificTimeZoneJSTest : public PDFExtensionJSTest {
@@ -481,12 +474,16 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionJSInk2Test, Ink2) {
   RunTestsInJsModule("ink2_test.js", "test.pdf");
 }
 
-IN_PROC_BROWSER_TEST_P(PDFExtensionJSInk2Test, Ink2ViewerToolbar) {
-  RunTestsInJsModule("ink2_viewer_toolbar_test.js", "test.pdf");
+IN_PROC_BROWSER_TEST_P(PDFExtensionJSInk2Test, Ink2Save) {
+  RunTestsInJsModule("ink2_save_test.js", "test.pdf");
 }
 
-IN_PROC_BROWSER_TEST_P(PDFExtensionJSInk2Test, Ink2AnnotationBar) {
-  RunTestsInJsModule("ink2_annotation_bar_test.js", "test.pdf");
+IN_PROC_BROWSER_TEST_P(PDFExtensionJSInk2Test, Ink2SidePanel) {
+  RunTestsInJsModule("ink2_side_panel_test.js", "test.pdf");
+}
+
+IN_PROC_BROWSER_TEST_P(PDFExtensionJSInk2Test, Ink2ViewerToolbar) {
+  RunTestsInJsModule("ink2_viewer_toolbar_test.js", "test.pdf");
 }
 #endif  // BUILDFLAG(ENABLE_PDF_INK2)
 

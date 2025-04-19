@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/platform/media/resource_multi_buffer_data_provider.h"
 
 #include <stdint.h>
@@ -91,11 +96,9 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
 
     first_position_ = first_position;
 
-    std::unique_ptr<ResourceMultiBufferDataProvider> loader(
-        new ResourceMultiBufferDataProvider(
-            url_data_.get(), first_position_,
-            false /* is_client_audio_element */,
-            task_environment_.GetMainThreadTaskRunner()));
+    auto loader = std::make_unique<ResourceMultiBufferDataProvider>(
+        url_data_.get(), first_position_, false /* is_client_audio_element */,
+        task_environment_.GetMainThreadTaskRunner());
     loader_ = loader.get();
     url_data_->multibuffer()->AddProvider(std::move(loader));
   }

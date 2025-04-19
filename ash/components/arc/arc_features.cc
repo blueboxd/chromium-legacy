@@ -8,11 +8,29 @@
 
 namespace arc {
 
+// When enabled, the versions of ChromeOS and ARC are exchanged during
+// handshake. This feature reduces unnecessary inter-process communications.
+BASE_FEATURE(kArcExchangeVersionOnMojoHandshake,
+             "ArcExchangeVersionOnMojoHandshake",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Controls whether to always start ARC automatically, or wait for the user's
-// action to start it later in an on-demand manner.
-BASE_FEATURE(kArcOnDemandFeature,
-             "ArcOnDemand",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+// action to start it later in an on-demand manner. Already enabled by default
+// for managed users. In V2, it will be expand to more users such as unmanaged
+// users.
+BASE_FEATURE(kArcOnDemandV2,
+             "ArcOnDemandV2",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Controls whether ARC should be activated on any app launches. If set to
+// false, inactive_interval will be checked.
+const base::FeatureParam<bool> kArcOnDemandActivateOnAppLaunch{
+    &kArcOnDemandV2, "activate_on_app_launch", true};
+
+// Controls how long of invactivity are allowed before ARC on Demand is
+// triggered.
+const base::FeatureParam<base::TimeDelta> kArcOnDemandInactiveInterval{
+    &kArcOnDemandV2, "inactive_interval", base::Days(0)};
 
 // Controls whether to start ARC with the GKI kernel.
 BASE_FEATURE(kArcVmGki,
@@ -22,7 +40,7 @@ BASE_FEATURE(kArcVmGki,
 // Controls block IO schedulers in ARCVM.
 BASE_FEATURE(kBlockIoScheduler,
              "ArcBlockIoScheduler",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether to enable block IO scheduler for virtio-blk /data.
 const base::FeatureParam<bool> kEnableDataBlockIoScheduler{
@@ -78,6 +96,11 @@ BASE_FEATURE(kDocumentsProviderUnknownSizeFeature,
              "ArcDocumentsProviderUnknownSize",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Controls whether attestation will be used on ARCVM.
+BASE_FEATURE(kEnableArcAttestation,
+             "ArcAttestation",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Controls whether we automatically send ARCVM into Doze mode
 // when it is mostly idle - even if Chrome is still active.
 BASE_FEATURE(kEnableArcIdleManager,
@@ -110,6 +133,12 @@ BASE_FEATURE(kEnableArcS2Idle, "ArcS2Idle", base::FEATURE_DISABLED_BY_DEFAULT);
 // /data without going through the migration.
 BASE_FEATURE(kEnableArcVmDataMigration,
              "ArcVmDataMigration",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Controls whether to enable friendlier error dialog (switching to notification
+// for certain types of ARC error dialogs).
+BASE_FEATURE(kEnableFriendlierErrorDialog,
+             "FriendlierErrorDialog",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls whether WebView Zygote is lazily initialized in ARC.
@@ -158,6 +187,21 @@ BASE_FEATURE(kEnableVirtioBlkForData,
 // Controls whether to enable the multiple-worker feature in virtio-blk disks
 BASE_FEATURE(kEnableVirtioBlkMultipleWorkers,
              "ArcEnableVirtioBlkMultipleWorkers",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Controls whether to extend the input event ANR timeout time.
+BASE_FEATURE(kExtendInputAnrTimeout,
+             "ArcExtendInputAnrTimeout",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Controls whether to extend the broadcast of intent ANR timeout time.
+BASE_FEATURE(kExtendIntentAnrTimeout,
+             "ArcExtendIntentAnrTimeout",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Controls whether to extend the executing service ANR timeout time.
+BASE_FEATURE(kExtendServiceAnrTimeout,
+             "ArcExtendServiceAnrTimeout",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls whether to allow Android apps to access external storage devices
@@ -224,10 +268,15 @@ const base::FeatureParam<bool> kVirtualSwapEnabled{
 const base::FeatureParam<int> kVirtualSwapIntervalMs{
     &kGuestSwap, "virtual_swap_interval_ms", 1000};
 
+// Controls whether to enable virtio-pvclock in ARCVM
+BASE_FEATURE(kArcVmPvclock,
+             "ArcEnablePvclock",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Controls whether enable ignoring hover event ANR in input dispatcher.
 BASE_FEATURE(kIgnoreHoverEventAnr,
              "IgnoreHoverEventAnr",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables/disables ghost when user launch ARC app from shelf/launcher when
 // App already ready for launch.
@@ -358,16 +407,11 @@ BASE_FEATURE(kTouchscreenEmulation,
              "ArcTouchscreenEmulation",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Controls whether ARC should be enabled on unaffiliated devices on client side
-BASE_FEATURE(kUnaffiliatedDeviceArcRestriction,
-             "UnaffiliatedDeviceArcRestriction",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // When enabled, ARC will not be throttled when there is active audio stream
 // from ARC.
 BASE_FEATURE(kUnthrottleOnActiveAudio,
              "ArcUnthrottleOnActiveAudio",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls ARC USB Storage UI feature.
 // When enabled, chrome://settings and Files.app will ask if the user wants

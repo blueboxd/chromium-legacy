@@ -563,6 +563,8 @@ TEST_F(WebStateTest, RestorePageTitles) {
               item->GetVirtualURL());
     EXPECT_EQ(base::ASCIIToUTF16(base::StringPrintf("Test%u", i)),
               item->GetTitle());
+    EXPECT_EQ(base::ASCIIToUTF16(base::StringPrintf("Test%u", i)),
+              item->GetTitleForDisplay());
   }
 }
 

@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//services/device/public/cpp/compute_pressure/buildflags.gni")
 import("//third_party/blink/renderer/config.gni")
 
 # Statically-defined (not build-time-generated) IDL files in 'modules' component
@@ -16,9 +17,12 @@ static_idl_files_in_modules = [
   "//third_party/blink/renderer/modules/ad_auction/navigator_auction.idl",
   "//third_party/blink/renderer/modules/ad_auction/protected_audience.idl",
   "//third_party/blink/renderer/modules/ai/ai.idl",
+  "//third_party/blink/renderer/modules/ai/ai_text_model_info.idl",
+  "//third_party/blink/renderer/modules/ai/ai_summarizer.idl",
+  "//third_party/blink/renderer/modules/ai/ai_summarizer_factory.idl",
   "//third_party/blink/renderer/modules/ai/ai_text_session.idl",
   "//third_party/blink/renderer/modules/ai/ai_text_session_options.idl",
-  "//third_party/blink/renderer/modules/ai/window_ai.idl",
+  "//third_party/blink/renderer/modules/ai/window_or_worker_global_scope_ai.idl",
   "//third_party/blink/renderer/modules/animationworklet/animation_worklet_global_scope.idl",
   "//third_party/blink/renderer/modules/animationworklet/css_animation_worklet.idl",
   "//third_party/blink/renderer/modules/animationworklet/worklet_animation.idl",
@@ -95,8 +99,8 @@ static_idl_files_in_modules = [
   "//third_party/blink/renderer/modules/cache_storage/window_cache_storage.idl",
   "//third_party/blink/renderer/modules/cache_storage/worker_cache_storage.idl",
   "//third_party/blink/renderer/modules/canvas/canvas2d/canvas_filter.idl",
-  "//third_party/blink/renderer/modules/canvas/canvas2d/canvas_2d_webgpu_transfer.idl",
-  "//third_party/blink/renderer/modules/canvas/canvas2d/canvas_2d_webgpu_transfer_option.idl",
+  "//third_party/blink/renderer/modules/canvas/canvas2d/canvas_2d_gpu_transfer.idl",
+  "//third_party/blink/renderer/modules/canvas/canvas2d/canvas_2d_gpu_transfer_option.idl",
   "//third_party/blink/renderer/modules/canvas/canvas2d/canvas_filter_dictionary.idl",
   "//third_party/blink/renderer/modules/canvas/canvas2d/canvas_gradient.idl",
   "//third_party/blink/renderer/modules/canvas/canvas2d/canvas_path.idl",
@@ -119,10 +123,6 @@ static_idl_files_in_modules = [
   "//third_party/blink/renderer/modules/clipboard/navigator_clipboard.idl",
   "//third_party/blink/renderer/modules/compression/compression_stream.idl",
   "//third_party/blink/renderer/modules/compression/decompression_stream.idl",
-  "//third_party/blink/renderer/modules/compute_pressure/pressure_observer.idl",
-  "//third_party/blink/renderer/modules/compute_pressure/pressure_observer_options.idl",
-  "//third_party/blink/renderer/modules/compute_pressure/pressure_record.idl",
-  "//third_party/blink/renderer/modules/compute_pressure/pressure_update_callback.idl",
   "//third_party/blink/renderer/modules/contacts_picker/contact_address.idl",
   "//third_party/blink/renderer/modules/contacts_picker/contact_info.idl",
   "//third_party/blink/renderer/modules/contacts_picker/contacts_manager.idl",
@@ -151,6 +151,7 @@ static_idl_files_in_modules = [
   "//third_party/blink/renderer/modules/cookie_store/service_worker_registration_cookies.idl",
   "//third_party/blink/renderer/modules/cookie_store/window_cookie_store.idl",
   "//third_party/blink/renderer/modules/credentialmanagement/authentication_extensions_client_inputs.idl",
+  "//third_party/blink/renderer/modules/credentialmanagement/authentication_extensions_client_inputs_json.idl",
   "//third_party/blink/renderer/modules/credentialmanagement/authentication_extensions_client_outputs.idl",
   "//third_party/blink/renderer/modules/credentialmanagement/authentication_extensions_client_outputs_json.idl",
   "//third_party/blink/renderer/modules/credentialmanagement/authentication_extensions_supplemental_pub_keys_inputs.idl",
@@ -173,6 +174,7 @@ static_idl_files_in_modules = [
   "//third_party/blink/renderer/modules/credentialmanagement/credential_creation_options.idl",
   "//third_party/blink/renderer/modules/credentialmanagement/credential_data.idl",
   "//third_party/blink/renderer/modules/credentialmanagement/credential_properties_output.idl",
+  "//third_party/blink/renderer/modules/credentialmanagement/credential_report_options.idl",
   "//third_party/blink/renderer/modules/credentialmanagement/credential_request_options.idl",
   "//third_party/blink/renderer/modules/credentialmanagement/credential_user_data.idl",
   "//third_party/blink/renderer/modules/credentialmanagement/credentials_container.idl",
@@ -201,9 +203,12 @@ static_idl_files_in_modules = [
   "//third_party/blink/renderer/modules/credentialmanagement/public_key_credential_creation_options.idl",
   "//third_party/blink/renderer/modules/credentialmanagement/public_key_credential_creation_options_json.idl",
   "//third_party/blink/renderer/modules/credentialmanagement/public_key_credential_descriptor.idl",
+  "//third_party/blink/renderer/modules/credentialmanagement/public_key_credential_descriptor_json.idl",
   "//third_party/blink/renderer/modules/credentialmanagement/public_key_credential_entity.idl",
   "//third_party/blink/renderer/modules/credentialmanagement/public_key_credential_json.idl",
   "//third_party/blink/renderer/modules/credentialmanagement/public_key_credential_parameters.idl",
+  "//third_party/blink/renderer/modules/credentialmanagement/public_key_credential_request_options_json.idl",
+  "//third_party/blink/renderer/modules/credentialmanagement/public_key_credential_report_options.idl",
   "//third_party/blink/renderer/modules/credentialmanagement/public_key_credential_request_options.idl",
   "//third_party/blink/renderer/modules/credentialmanagement/public_key_credential_rp_entity.idl",
   "//third_party/blink/renderer/modules/credentialmanagement/public_key_credential_user_entity.idl",
@@ -492,12 +497,7 @@ static_idl_files_in_modules = [
   "//third_party/blink/renderer/modules/ml/ml.idl",
   "//third_party/blink/renderer/modules/ml/ml_context.idl",
   "//third_party/blink/renderer/modules/ml/ml_context_options.idl",
-  "//third_party/blink/renderer/modules/ml/ml_model.idl",
-  "//third_party/blink/renderer/modules/ml/ml_model_loader.idl",
-  "//third_party/blink/renderer/modules/ml/ml_tensor.idl",
-  "//third_party/blink/renderer/modules/ml/ml_tensor_info.idl",
   "//third_party/blink/renderer/modules/ml/navigator_ml.idl",
-  "//third_party/blink/renderer/modules/ml/webnn/ml_activation.idl",
   "//third_party/blink/renderer/modules/ml/webnn/ml_buffer.idl",
   "//third_party/blink/renderer/modules/ml/webnn/ml_buffer_descriptor.idl",
   "//third_party/blink/renderer/modules/ml/webnn/ml_graph.idl",
@@ -529,6 +529,7 @@ static_idl_files_in_modules = [
   "//third_party/blink/renderer/modules/notifications/service_worker_global_scope_notifications.idl",
   "//third_party/blink/renderer/modules/notifications/service_worker_registration_notifications.idl",
   "//third_party/blink/renderer/modules/notifications/timestamp_trigger.idl",
+  "//third_party/blink/renderer/modules/on_device_translation/language_detector.idl",
   "//third_party/blink/renderer/modules/on_device_translation/language_translator.idl",
   "//third_party/blink/renderer/modules/on_device_translation/translation_language_options.idl",
   "//third_party/blink/renderer/modules/on_device_translation/translation.idl",
@@ -574,6 +575,7 @@ static_idl_files_in_modules = [
   "//third_party/blink/renderer/modules/payments/payment_shipping_option.idl",
   "//third_party/blink/renderer/modules/payments/payment_validation_errors.idl",
   "//third_party/blink/renderer/modules/payments/secure_payment_confirmation_request.idl",
+  "//third_party/blink/renderer/modules/peerconnection/dedicated_worker_global_scope_rtc_transform.idl",
   "//third_party/blink/renderer/modules/peerconnection/rtc_answer_options.idl",
   "//third_party/blink/renderer/modules/peerconnection/rtc_certificate.idl",
   "//third_party/blink/renderer/modules/peerconnection/rtc_codec_specifics.idl",
@@ -613,6 +615,8 @@ static_idl_files_in_modules = [
   "//third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_ice_event.idl",
   "//third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_ice_event_init.idl",
   "//third_party/blink/renderer/modules/peerconnection/rtc_rtcp_parameters.idl",
+  "//third_party/blink/renderer/modules/peerconnection/rtc_rtp_acks.idl",
+  "//third_party/blink/renderer/modules/peerconnection/rtc_rtp_ack.idl",
   "//third_party/blink/renderer/modules/peerconnection/rtc_rtp_capabilities.idl",
   "//third_party/blink/renderer/modules/peerconnection/rtc_rtp_codec.idl",
   "//third_party/blink/renderer/modules/peerconnection/rtc_rtp_codec_capability.idl",
@@ -626,10 +630,18 @@ static_idl_files_in_modules = [
   "//third_party/blink/renderer/modules/peerconnection/rtc_rtp_parameters.idl",
   "//third_party/blink/renderer/modules/peerconnection/rtc_rtp_receive_parameters.idl",
   "//third_party/blink/renderer/modules/peerconnection/rtc_rtp_receiver.idl",
+  "//third_party/blink/renderer/modules/peerconnection/rtc_rtp_packet_init.idl",
+  "//third_party/blink/renderer/modules/peerconnection/rtc_rtp_header_extension_init.idl",
+  "//third_party/blink/renderer/modules/peerconnection/rtc_rtp_script_transform.idl",
+  "//third_party/blink/renderer/modules/peerconnection/rtc_rtp_script_transformer.idl",
   "//third_party/blink/renderer/modules/peerconnection/rtc_rtp_send_parameters.idl",
+  "//third_party/blink/renderer/modules/peerconnection/rtc_rtp_send_result.idl",
+  "//third_party/blink/renderer/modules/peerconnection/rtc_rtp_send_stream.idl",
   "//third_party/blink/renderer/modules/peerconnection/rtc_rtp_sender.idl",
+  "//third_party/blink/renderer/modules/peerconnection/rtc_rtp_sent.idl",
   "//third_party/blink/renderer/modules/peerconnection/rtc_rtp_synchronization_source.idl",
   "//third_party/blink/renderer/modules/peerconnection/rtc_rtp_transceiver.idl",
+  "//third_party/blink/renderer/modules/peerconnection/rtc_rtp_transport.idl",
   "//third_party/blink/renderer/modules/peerconnection/rtc_rtp_transceiver_init.idl",
   "//third_party/blink/renderer/modules/peerconnection/rtc_sctp_transport.idl",
   "//third_party/blink/renderer/modules/peerconnection/rtc_session_description.idl",
@@ -638,8 +650,10 @@ static_idl_files_in_modules = [
   "//third_party/blink/renderer/modules/peerconnection/rtc_stats_report.idl",
   "//third_party/blink/renderer/modules/peerconnection/rtc_track_event.idl",
   "//third_party/blink/renderer/modules/peerconnection/rtc_track_event_init.idl",
+  "//third_party/blink/renderer/modules/peerconnection/rtc_transform_event.idl",
   "//third_party/blink/renderer/modules/permissions/camera_device_permission_descriptor.idl",
   "//third_party/blink/renderer/modules/permissions/clipboard_permission_descriptor.idl",
+  "//third_party/blink/renderer/modules/permissions/fullscreen_permission_descriptor.idl",
   "//third_party/blink/renderer/modules/permissions/midi_permission_descriptor.idl",
   "//third_party/blink/renderer/modules/permissions/navigator_permissions.idl",
   "//third_party/blink/renderer/modules/permissions/permission_descriptor.idl",
@@ -696,20 +710,6 @@ static_idl_files_in_modules = [
   "//third_party/blink/renderer/modules/sanitizer_api/element_sanitizer.idl",
   "//third_party/blink/renderer/modules/sanitizer_api/sanitizer.idl",
   "//third_party/blink/renderer/modules/sanitizer_api/sanitizer_config.idl",
-  "//third_party/blink/renderer/modules/scheduler/scheduler.idl",
-  "//third_party/blink/renderer/modules/scheduler/scheduler_post_task_callback.idl",
-  "//third_party/blink/renderer/modules/scheduler/scheduler_post_task_options.idl",
-  "//third_party/blink/renderer/modules/scheduler/scheduler_yield_options.idl",
-  "//third_party/blink/renderer/modules/scheduler/script_wrappable_task_state.idl",
-  "//third_party/blink/renderer/modules/scheduler/task_controller.idl",
-  "//third_party/blink/renderer/modules/scheduler/task_controller_init.idl",
-  "//third_party/blink/renderer/modules/scheduler/task_priority_change_event.idl",
-  "//third_party/blink/renderer/modules/scheduler/task_priority_change_event_init.idl",
-  "//third_party/blink/renderer/modules/scheduler/task_signal.idl",
-  "//third_party/blink/renderer/modules/scheduler/task_signal_any_init.idl",
-  "//third_party/blink/renderer/modules/scheduler/window_idle_tasks.idl",
-  "//third_party/blink/renderer/modules/scheduler/window_or_worker_global_scope_timers.idl",
-  "//third_party/blink/renderer/modules/scheduler/window_or_worker_scheduler.idl",
   "//third_party/blink/renderer/modules/screen_details/screen_detailed.idl",
   "//third_party/blink/renderer/modules/screen_details/screen_details.idl",
   "//third_party/blink/renderer/modules/screen_details/window_screen_details.idl",
@@ -770,6 +770,7 @@ static_idl_files_in_modules = [
   "//third_party/blink/renderer/modules/shared_storage/shared_storage_url_with_metadata.idl",
   "//third_party/blink/renderer/modules/shared_storage/shared_storage_worklet.idl",
   "//third_party/blink/renderer/modules/shared_storage/shared_storage_worklet_global_scope.idl",
+  "//third_party/blink/renderer/modules/shared_storage/shared_storage_worklet_options.idl",
   "//third_party/blink/renderer/modules/shared_storage/window_shared_storage.idl",
   "//third_party/blink/renderer/modules/speech/speech_grammar.idl",
   "//third_party/blink/renderer/modules/speech/speech_grammar_list.idl",
@@ -803,7 +804,7 @@ static_idl_files_in_modules = [
   "//third_party/blink/renderer/modules/subapps/sub_apps_list_result.idl",
   "//third_party/blink/renderer/modules/vibration/navigator_vibration.idl",
   "//third_party/blink/renderer/modules/video_rvfc/html_video_element_request_video_frame_callback.idl",
-  "//third_party/blink/renderer/modules/video_rvfc/video_frame_metadata.idl",
+  "//third_party/blink/renderer/modules/video_rvfc/video_frame_callback_metadata.idl",
   "//third_party/blink/renderer/modules/video_rvfc/video_frame_request_callback.idl",
   "//third_party/blink/renderer/modules/virtualkeyboard/navigator_virtual_keyboard.idl",
   "//third_party/blink/renderer/modules/virtualkeyboard/virtual_keyboard.idl",
@@ -925,6 +926,7 @@ static_idl_files_in_modules = [
   "//third_party/blink/renderer/modules/webcodecs/video_decoder_init.idl",
   "//third_party/blink/renderer/modules/webcodecs/video_decoder_support.idl",
   "//third_party/blink/renderer/modules/webcodecs/video_encoder.idl",
+  "//third_party/blink/renderer/modules/webcodecs/video_encoder_buffer.idl",
   "//third_party/blink/renderer/modules/webcodecs/video_encoder_config.idl",
   "//third_party/blink/renderer/modules/webcodecs/video_encoder_encode_options.idl",
   "//third_party/blink/renderer/modules/webcodecs/video_encoder_encode_options_for_av1.idl",
@@ -1366,6 +1368,16 @@ if (!target_os_is_android) {
   ]
 }
 
+# Compute Pressure
+if (enable_compute_pressure) {
+  static_idl_files_in_modules += [
+    "//third_party/blink/renderer/modules/compute_pressure/pressure_observer.idl",
+    "//third_party/blink/renderer/modules/compute_pressure/pressure_observer_options.idl",
+    "//third_party/blink/renderer/modules/compute_pressure/pressure_record.idl",
+    "//third_party/blink/renderer/modules/compute_pressure/pressure_update_callback.idl",
+  ]
+}
+
 # Statically-defined (not runtime-generated) IDL files in 'modules' component.
 # These IDL definitions are used only for testing.
 static_idl_files_in_modules_for_testing = [
@@ -1387,3 +1399,11 @@ static_idl_files_in_modules_for_testing = [
   "//third_party/blink/renderer/modules/vibration/testing/internals_vibration.idl",
   "//third_party/blink/renderer/modules/webaudio/testing/internals_web_audio.idl",
 ]
+
+# Compute Pressure
+if (enable_compute_pressure) {
+  static_idl_files_in_modules_for_testing += [
+    "//third_party/blink/renderer/modules/compute_pressure/testing/create_virtual_pressure_source_options.idl",
+    "//third_party/blink/renderer/modules/compute_pressure/testing/internals_compute_pressure.idl",
+  ]
+}

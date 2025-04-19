@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/values.h"
+#include "net/base/features.h"
 #include "net/base/host_mapping_rules.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -24,10 +25,13 @@
 #include "net/base/session_usage.h"
 #include "net/base/url_util.h"
 #include "net/http/bidirectional_stream_impl.h"
+#include "net/http/http_stream_key.h"
+#include "net/http/http_stream_pool.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_with_source.h"
+#include "net/proxy_resolution/proxy_info.h"
 #include "net/proxy_resolution/proxy_resolution_request.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/quic/quic_session_key.h"
@@ -151,7 +155,9 @@ HttpStreamFactory::JobController::JobController(
       net_log_(NetLogWithSource::Make(
           session->net_log(),
           NetLogSourceType::HTTP_STREAM_JOB_CONTROLLER)) {
-  DCHECK(factory);
+  DCHECK(factory_);
+  DCHECK(session_);
+  DCHECK(job_factory_);
   DCHECK(base::EqualsCaseInsensitiveASCII(origin_url_.scheme_piece(),
                                           url::kHttpScheme) ||
          base::EqualsCaseInsensitiveASCII(origin_url_.scheme_piece(),
@@ -170,6 +176,12 @@ HttpStreamFactory::JobController::JobController(
     dict.Set("is_preconnect", is_preconnect_);
     dict.Set("privacy_mode",
              PrivacyModeToDebugString(request_info_.privacy_mode));
+    base::Value::List allowed_bad_certs_list;
+    for (const auto& cert_and_status : allowed_bad_certs_) {
+      allowed_bad_certs_list.Append(
+          cert_and_status.cert->subject().GetDisplayName());
+    }
+    dict.Set("allowed_bad_certs", std::move(allowed_bad_certs_list));
     return dict;
   });
 }
@@ -193,7 +205,6 @@ std::unique_ptr<HttpStreamRequest> HttpStreamFactory::JobController::Start(
     const NetLogWithSource& source_net_log,
     HttpStreamRequest::StreamType stream_type,
     RequestPriority priority) {
-  DCHECK(factory_);
   DCHECK(!request_);
 
   stream_type_ = stream_type;
@@ -213,6 +224,7 @@ std::unique_ptr<HttpStreamRequest> HttpStreamFactory::JobController::Start(
       source_net_log.source());
 
   RunLoop(OK);
+
   return request;
 }
 
@@ -373,6 +385,24 @@ void HttpStreamFactory::JobController::OnWebSocketHandshakeStreamReady(
   DCHECK(request_->completed());
   delegate_->OnWebSocketHandshakeStreamReady(used_proxy_info,
                                              std::move(stream));
+}
+
+void HttpStreamFactory::JobController::OnQuicHostResolution(
+    const url::SchemeHostPort& destination,
+    base::TimeTicks dns_resolution_start_time,
+    base::TimeTicks dns_resolution_end_time) {
+  if (!request_) {
+    return;
+  }
+  if (destination != url::SchemeHostPort(origin_url_)) {
+    // Ignores different destination alternative job's DNS resolution time.
+    return;
+  }
+  // QUIC jobs (ALTERNATIVE, DNS_ALPN_H3) are started before the non-QUIC (MAIN)
+  // job. So we set the DNS resolution overrides to use the DNS timing of the
+  // QUIC jobs.
+  request_->SetDnsResolutionTimeOverrides(dns_resolution_start_time,
+                                          dns_resolution_end_time);
 }
 
 void HttpStreamFactory::JobController::OnStreamFailed(Job* job, int status) {
@@ -753,7 +783,6 @@ int HttpStreamFactory::JobController::DoLoop(int rv) {
 
 int HttpStreamFactory::JobController::DoResolveProxy() {
   DCHECK(!proxy_resolve_request_);
-  DCHECK(session_);
 
   next_state_ = STATE_RESOLVE_PROXY_COMPLETE;
 
@@ -823,6 +852,13 @@ int HttpStreamFactory::JobController::DoCreateJobs() {
         SelectQuicVersion(alternative_service_info_.advertised_versions());
     DCHECK_NE(quic_version, quic::ParsedQuicVersion::Unsupported());
   }
+
+  if (base::FeatureList::IsEnabled(features::kHappyEyeballsV3) &&
+      proxy_info_.is_direct() && !is_websocket_) {
+    SwitchToHttpStreamPool(quic_version);
+    return OK;
+  }
+
   // Getting ALPN for H3 from DNS has a lot of preconditions. Among them:
   // - proxied connections perform DNS on the proxy, so they can't get supported
   //   ALPNs from DNS
@@ -1119,6 +1155,11 @@ void HttpStreamFactory::JobController::MaybeReportBrokenAlternativeService(
 }
 
 void HttpStreamFactory::JobController::MaybeNotifyFactoryOfCompletion() {
+  if (switched_to_http_stream_pool_) {
+    factory_->OnJobControllerComplete(this);
+    return;
+  }
+
   if (main_job_ || alternative_job_ || dns_alpn_h3_job_) {
     return;
   }
@@ -1398,7 +1439,6 @@ int HttpStreamFactory::JobController::ReconsiderProxyAfterError(Job* job,
   // ReconsiderProxyAfterError() should only be called when the last job fails.
   DCHECK_EQ(1, GetJobCount());
   DCHECK(!proxy_resolve_request_);
-  DCHECK(session_);
 
   if (!job->should_reconsider_proxy()) {
     return error;
@@ -1453,6 +1493,55 @@ bool HttpStreamFactory::JobController::IsQuicAllowedForHost(
 
   std::string lowered_host = base::ToLowerASCII(host);
   return base::Contains(host_allowlist, lowered_host);
+}
+
+void HttpStreamFactory::JobController::SwitchToHttpStreamPool(
+    quic::ParsedQuicVersion quic_version) {
+  CHECK(request_info_.socket_tag == SocketTag());
+  CHECK_EQ(stream_type_, HttpStreamRequest::HTTP_STREAM);
+
+  switched_to_http_stream_pool_ = true;
+
+  bool disable_cert_network_fetches =
+      !!(request_info_.load_flags & LOAD_DISABLE_CERT_NETWORK_FETCHES);
+  HttpStreamKey stream_key(
+      url::SchemeHostPort(origin_url_), request_info_.privacy_mode,
+      request_info_.socket_tag, request_info_.network_anonymization_key,
+      request_info_.secure_dns_policy, disable_cert_network_fetches);
+
+  if (is_preconnect_) {
+    int rv = session_->http_stream_pool()->Preconnect(
+        stream_key, num_streams_, quic_version,
+        base::BindOnce(&JobController::OnPoolPreconnectsComplete,
+                       ptr_factory_.GetWeakPtr()));
+    if (rv != ERR_IO_PENDING) {
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+          FROM_HERE, base::BindOnce(&JobController::OnPoolPreconnectsComplete,
+                                    ptr_factory_.GetWeakPtr(), rv));
+    }
+    return;
+  }
+
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE, base::BindOnce(&JobController::CallOnSwitchesToHttpStreamPool,
+                                ptr_factory_.GetWeakPtr(),
+                                std::move(stream_key), quic_version));
+}
+
+void HttpStreamFactory::JobController::OnPoolPreconnectsComplete(int rv) {
+  CHECK(switched_to_http_stream_pool_);
+  factory_->OnPreconnectsCompleteInternal();
+  MaybeNotifyFactoryOfCompletion();
+}
+
+void HttpStreamFactory::JobController::CallOnSwitchesToHttpStreamPool(
+    HttpStreamKey stream_key,
+    quic::ParsedQuicVersion quic_version) {
+  CHECK(request_);
+  CHECK(delegate_);
+
+  // `request_` and `delegate_` will be reset later.
+  delegate_->OnSwitchesToHttpStreamPool(std::move(stream_key), quic_version);
 }
 
 }  // namespace net

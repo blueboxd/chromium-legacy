@@ -4,15 +4,19 @@
 
 #include "content/browser/attribution_reporting/attribution_report_network_sender.h"
 
+#include <optional>
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "base/check.h"
 #include "base/functional/bind.h"
 #include "base/functional/overloaded.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/strcat.h"
 #include "base/values.h"
 #include "components/attribution_reporting/suitable_origin.h"
+#include "content/browser/attribution_reporting/aggregatable_debug_report.h"
 #include "content/browser/attribution_reporting/attribution_debug_report.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_utils.h"
@@ -38,6 +42,8 @@ namespace {
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
+//
+// LINT.IfChange(Status)
 enum class Status {
   kOk = 0,
   // Corresponds to a non-zero NET_ERROR.
@@ -46,24 +52,27 @@ enum class Status {
   kExternalError = 2,
   kMaxValue = kExternalError
 };
+// LINT.ThenChange(//tools/metrics/histograms/metadata/attribution_reporting/enums.xml:ConversionReportStatus)
 
-#define NETWORK_HISTOGRAM(suffix, hist_func, is_debug_report, \
-                          has_trigger_context_id, value)      \
-  if (!value.has_value()) {                                   \
-    return;                                                   \
-  }                                                           \
-  if (is_debug_report) {                                      \
-    hist_func("Conversions.DebugReport." suffix, *value);     \
-  } else {                                                    \
-    hist_func("Conversions." suffix, *value);                 \
-    if (has_trigger_context_id.has_value()) {                 \
-      if (*has_trigger_context_id) {                          \
-        hist_func("Conversions.ContextID." suffix, *value);   \
-      } else {                                                \
-        hist_func("Conversions.NoContextID." suffix, *value); \
-      }                                                       \
-    }                                                         \
+template <typename T>
+void NetworkHistogram(std::string_view suffix,
+                      void (*hist_func)(const std::string&, T value),
+                      bool is_debug_report,
+                      std::optional<bool> has_trigger_context_id,
+                      T value) {
+  if (is_debug_report) {
+    hist_func(base::StrCat({"Conversions.DebugReport.", suffix}), value);
+  } else {
+    hist_func(base::StrCat({"Conversions.", suffix}), value);
+    if (has_trigger_context_id.has_value()) {
+      if (*has_trigger_context_id) {
+        hist_func(base::StrCat({"Conversions.ContextID.", suffix}), value);
+      } else {
+        hist_func(base::StrCat({"Conversions.NoContextID.", suffix}), value);
+      }
+    }
   }
+}
 
 }  // namespace
 
@@ -81,11 +90,9 @@ void AttributionReportNetworkSender::SendReport(
     ReportSentCallback sent_callback) {
   GURL url = report.ReportURL(is_debug_report);
   std::string body = SerializeAttributionJson(report.ReportBody());
-  net::HttpRequestHeaders headers;
-  report.PopulateAdditionalHeaders(headers);
 
-  url::Origin origin(report.GetReportingOrigin());
-  SendReport(std::move(url), std::move(origin), body, std::move(headers),
+  url::Origin origin(report.reporting_origin());
+  SendReport(std::move(url), std::move(origin), body,
              base::BindOnce(&AttributionReportNetworkSender::OnReportSent,
                             base::Unretained(this), std::move(report),
                             is_debug_report, std::move(sent_callback)));
@@ -98,20 +105,33 @@ void AttributionReportNetworkSender::SendReport(
   url::Origin origin(report.reporting_origin());
   std::string body = SerializeAttributionJson(report.ReportBody());
   SendReport(
-      std::move(url), std::move(origin), body, net::HttpRequestHeaders(),
+      std::move(url), std::move(origin), body,
       base::BindOnce(&AttributionReportNetworkSender::OnVerboseDebugReportSent,
                      base::Unretained(this),
                      base::BindOnce(std::move(callback), std::move(report))));
 }
 
+void AttributionReportNetworkSender::SendReport(
+    AggregatableDebugReport report,
+    base::Value::Dict report_body,
+    AggregatableDebugReportSentCallback callback) {
+  GURL url(report.ReportUrl());
+  url::Origin origin(report.reporting_origin());
+  std::string body = SerializeAttributionJson(report_body);
+  SendReport(std::move(url), std::move(origin), body,
+             base::BindOnce(
+                 &AttributionReportNetworkSender::OnAggregatableDebugReportSent,
+                 base::Unretained(this),
+                 base::BindOnce(std::move(callback), std::move(report),
+                                std::move(report_body))));
+}
+
 void AttributionReportNetworkSender::SendReport(GURL url,
                                                 url::Origin origin,
                                                 const std::string& body,
-                                                net::HttpRequestHeaders headers,
                                                 UrlLoaderCallback callback) {
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = std::move(url);
-  resource_request->headers = std::move(headers);
   resource_request->method = net::HttpRequestHeaders::kPostMethod;
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   resource_request->mode = network::mojom::RequestMode::kSameOrigin;
@@ -140,8 +160,8 @@ void AttributionReportNetworkSender::SendReport(GURL url,
             "a noisy low-entropy data value declared on the destination site."
             "Aggregatable reports include encrypted information generated "
             "from both source-side and trigger-side registrations."
-            "Verbose debug reports include data related to attribution source "
-            "or trigger registration failures."
+            "Debug reports include data related to attribution source or "
+            "trigger registration failures."
           destination:OTHER
         }
         policy {
@@ -194,15 +214,12 @@ void AttributionReportNetworkSender::OnReportSent(
   int response_code = headers ? headers->response_code() : -1;
   bool external_ok = response_code >= 200 && response_code <= 299;
 
-  // `std::optional` is used for metric values intentionally for the histogram
-  // macro.
-  std::optional<Status> status = internal_ok && external_ok ? Status::kOk
-                                 : !internal_ok ? Status::kInternalError
-                                                : Status::kExternalError;
+  Status status = internal_ok && external_ok ? Status::kOk
+                  : !internal_ok             ? Status::kInternalError
+                                             : Status::kExternalError;
   // Since net errors are always negative and HTTP errors are always positive,
   // it is fine to combine these in a single histogram.
-  std::optional<int> response_or_net_error =
-      internal_ok ? response_code : net_error;
+  int response_or_net_error = internal_ok ? response_code : net_error;
   std::optional<bool> retry_succeed =
       loader->GetNumRetries() > 0
           ? std::make_optional<bool>(status == Status::kOk)
@@ -213,30 +230,34 @@ void AttributionReportNetworkSender::OnReportSent(
   absl::visit(
       base::Overloaded{
           [&](const AttributionReport::EventLevelData&) {
-            NETWORK_HISTOGRAM("ReportStatusEventLevel",
-                              base::UmaHistogramEnumeration, is_debug_report,
-                              has_trigger_context_id, status);
-            NETWORK_HISTOGRAM("HttpResponseOrNetErrorCodeEventLevel",
-                              base::UmaHistogramSparse, is_debug_report,
-                              has_trigger_context_id, response_or_net_error);
-            NETWORK_HISTOGRAM("ReportRetrySucceedEventLevel",
-                              base::UmaHistogramBoolean, is_debug_report,
-                              has_trigger_context_id, retry_succeed);
+            NetworkHistogram("ReportStatusEventLevel",
+                             &base::UmaHistogramEnumeration, is_debug_report,
+                             has_trigger_context_id, status);
+            NetworkHistogram("HttpResponseOrNetErrorCodeEventLevel",
+                             &base::UmaHistogramSparse, is_debug_report,
+                             has_trigger_context_id, response_or_net_error);
+            if (retry_succeed.has_value()) {
+              NetworkHistogram("ReportRetrySucceedEventLevel",
+                               &base::UmaHistogramBoolean, is_debug_report,
+                               has_trigger_context_id, *retry_succeed);
+            }
           },
           [&](const AttributionReport::AggregatableAttributionData& data) {
             has_trigger_context_id =
                 data.common_data.aggregatable_trigger_config
                     .trigger_context_id()
                     .has_value();
-            NETWORK_HISTOGRAM("ReportStatusAggregatable",
-                              base::UmaHistogramEnumeration, is_debug_report,
-                              has_trigger_context_id, status);
-            NETWORK_HISTOGRAM("HttpResponseOrNetErrorCodeAggregatable",
-                              base::UmaHistogramSparse, is_debug_report,
-                              has_trigger_context_id, response_or_net_error);
-            NETWORK_HISTOGRAM("ReportRetrySucceedAggregatable",
-                              base::UmaHistogramBoolean, is_debug_report,
-                              has_trigger_context_id, retry_succeed);
+            NetworkHistogram("ReportStatusAggregatable",
+                             &base::UmaHistogramEnumeration, is_debug_report,
+                             has_trigger_context_id, status);
+            NetworkHistogram("HttpResponseOrNetErrorCodeAggregatable",
+                             &base::UmaHistogramSparse, is_debug_report,
+                             has_trigger_context_id, response_or_net_error);
+            if (retry_succeed.has_value()) {
+              NetworkHistogram("ReportRetrySucceedAggregatable",
+                               &base::UmaHistogramBoolean, is_debug_report,
+                               has_trigger_context_id, *retry_succeed);
+            }
           },
           [](const AttributionReport::NullAggregatableData&) {},
       },
@@ -244,27 +265,29 @@ void AttributionReportNetworkSender::OnReportSent(
 
   loaders_in_progress_.erase(it);
 
-  // Retry reports that have not received headers and failed with one of the
-  // specified error codes. These codes are chosen from the
-  // "Conversions.Report.HttpResponseOrNetErrorCode" histogram. HTTP errors
-  // should not be retried to prevent over requesting servers.
-  bool should_retry =
-      !headers && (net_error == net::ERR_INTERNET_DISCONNECTED ||
-                   net_error == net::ERR_NAME_NOT_RESOLVED ||
-                   net_error == net::ERR_TIMED_OUT ||
-                   net_error == net::ERR_CONNECTION_TIMED_OUT ||
-                   net_error == net::ERR_CONNECTION_ABORTED ||
-                   net_error == net::ERR_CONNECTION_RESET);
-
-  SendResult::Status report_status =
-      (status == Status::kOk)
-          ? SendResult::Status::kSent
-          : (should_retry ? SendResult::Status::kTransientFailure
-                          : SendResult::Status::kFailure);
-
-  std::move(sent_callback)
-      .Run(report, SendResult(report_status, net_error,
-                              headers ? headers->response_code() : 0));
+  if (status == Status::kOk) {
+    std::move(sent_callback)
+        .Run(report,
+             SendResult::Sent(SendResult::Sent::Result::kSent, response_code));
+  } else {
+    // Retry reports that have not received headers and failed with one of the
+    // specified error codes. These codes are chosen from the
+    // "Conversions.Report.HttpResponseOrNetErrorCode" histogram. HTTP errors
+    // should not be retried to prevent over requesting servers.
+    bool should_retry =
+        !headers && (net_error == net::ERR_INTERNET_DISCONNECTED ||
+                     net_error == net::ERR_NAME_NOT_RESOLVED ||
+                     net_error == net::ERR_TIMED_OUT ||
+                     net_error == net::ERR_CONNECTION_TIMED_OUT ||
+                     net_error == net::ERR_CONNECTION_ABORTED ||
+                     net_error == net::ERR_CONNECTION_RESET);
+    std::move(sent_callback)
+        .Run(report,
+             SendResult::Sent(should_retry
+                                  ? SendResult::Sent::Result::kTransientFailure
+                                  : SendResult::Sent::Result::kFailure,
+                              net_error));
+  }
 }
 
 void AttributionReportNetworkSender::OnVerboseDebugReportSent(
@@ -278,6 +301,22 @@ void AttributionReportNetworkSender::OnVerboseDebugReportSent(
   // it is fine to combine these in a single histogram.
   base::UmaHistogramSparse(
       "Conversions.VerboseDebugReport.HttpResponseOrNetErrorCode", status);
+
+  loaders_in_progress_.erase(it);
+  std::move(callback).Run(status);
+}
+
+void AttributionReportNetworkSender::OnAggregatableDebugReportSent(
+    base::OnceCallback<void(int status)> callback,
+    UrlLoaderList::iterator it,
+    scoped_refptr<net::HttpResponseHeaders> headers) {
+  // HTTP statuses are positive; network errors are negative.
+  int status = headers ? headers->response_code() : (*it)->NetError();
+
+  // Since net errors are always negative and HTTP errors are always positive,
+  // it is fine to combine these in a single histogram.
+  base::UmaHistogramSparse(
+      "Conversions.AggregatableDebugReport.HttpResponseOrNetErrorCode", status);
 
   loaders_in_progress_.erase(it);
   std::move(callback).Run(status);

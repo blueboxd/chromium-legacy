@@ -24,7 +24,10 @@ export enum MediapipeFacialGesture {
   EYE_LOOK_UP_RIGHT = 'eyeLookUpRight',
   EYE_SQUINT_LEFT = 'eyeSquintLeft',
   EYE_SQUINT_RIGHT = 'eyeSquintRight',
+  JAW_LEFT = 'jawLeft',
   JAW_OPEN = 'jawOpen',
+  JAW_RIGHT = 'jawRight',
+  MOUTH_FUNNEL = 'mouthFunnel',
   MOUTH_LEFT = 'mouthLeft',
   MOUTH_PUCKER = 'mouthPucker',
   MOUTH_RIGHT = 'mouthRight',
@@ -84,7 +87,10 @@ export const FacialGesturesToMediapipeGestures = new Map([
       MediapipeFacialGesture.EYE_LOOK_UP_RIGHT,
     ],
   ],
+  [FacialGesture.JAW_LEFT, [MediapipeFacialGesture.JAW_LEFT]],
   [FacialGesture.JAW_OPEN, [MediapipeFacialGesture.JAW_OPEN]],
+  [FacialGesture.JAW_RIGHT, [MediapipeFacialGesture.JAW_RIGHT]],
+  [FacialGesture.MOUTH_FUNNEL, [MediapipeFacialGesture.MOUTH_FUNNEL]],
   [FacialGesture.MOUTH_LEFT, [MediapipeFacialGesture.MOUTH_LEFT]],
   [FacialGesture.MOUTH_PUCKER, [MediapipeFacialGesture.MOUTH_PUCKER]],
   [FacialGesture.MOUTH_RIGHT, [MediapipeFacialGesture.MOUTH_RIGHT]],
@@ -107,6 +113,11 @@ export const FacialGesturesToMediapipeGestures = new Map([
 export class GestureDetector {
   private static mediapipeFacialGestureSet_ =
       new Set(Object.values(MediapipeFacialGesture));
+  declare private static shouldSendGestureDetectionInfo_: boolean;
+
+  static toggleSendGestureDetectionInfo(enabled: boolean): void {
+    this.shouldSendGestureDetectionInfo_ = enabled;
+  }
 
   /**
    * Computes which FacialGestures were detected. Note that this will only
@@ -160,6 +171,9 @@ export class GestureDetector {
         continue;
       }
 
+      // TODO(b:341771347): Call API to send gesture information to the
+      // settings page.
+
       if (score < confidence) {
         continue;
       }
@@ -171,6 +185,6 @@ export class GestureDetector {
 }
 
 TestImportManager.exportForTesting(
-    ['FacialGesture', FacialGesture],
+    GestureDetector, ['FacialGesture', FacialGesture],
     ['MediapipeFacialGesture', MediapipeFacialGesture],
     ['FacialGesturesToMediapipeGestures', FacialGesturesToMediapipeGestures]);

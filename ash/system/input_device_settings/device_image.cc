@@ -10,6 +10,9 @@
 
 namespace ash {
 
+DeviceImage::DeviceImage() = default;
+DeviceImage::~DeviceImage() = default;
+
 DeviceImage::DeviceImage(const std::string& device_key,
                          const std::string& data_url)
     : device_key_(device_key), data_url_(data_url) {}
@@ -18,8 +21,13 @@ DeviceImage::DeviceImage(const std::string& device_key,
                          const gfx::ImageSkia& image)
     : device_key_(device_key), image_(image) {
   if (!image_.isNull()) {
-    data_url_ = webui::GetBitmapDataUrl(*image_.bitmap());
+    const SkBitmap bitmap = *image_.bitmap();
+    data_url_ = webui::GetBitmapDataUrl(bitmap);
   }
+}
+
+bool DeviceImage::IsValid() const {
+  return !data_url_.empty() || !image_.isNull();
 }
 
 }  // namespace ash

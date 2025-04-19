@@ -23,8 +23,6 @@
 #import "components/sync/service/sync_service.h"
 #import "components/sync/service/sync_user_settings.h"
 #import "ios/chrome/browser/bookmarks/model/bookmarks_utils.h"
-#import "ios/chrome/browser/bookmarks/model/legacy_bookmark_model.h"
-#import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_model_factory.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_controller.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
@@ -40,6 +38,7 @@
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_identity_cell.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/chrome/test/app/signin_test_util.h"
 #import "ios/testing/earl_grey/earl_grey_app.h"
 #import "net/base/apple/url_conversions.h"
 #import "url/gurl.h"
@@ -58,6 +57,15 @@
   }
 }
 
++ (void)addFakeIdentity:(FakeSystemIdentity*)fakeIdentity
+       withCapabilities:(NSDictionary<NSString*, NSNumber*>*)capabilities {
+  FakeSystemIdentityManager* systemIdentityManager =
+      FakeSystemIdentityManager::FromSystemIdentityManager(
+          GetApplicationContext()->GetSystemIdentityManager());
+  systemIdentityManager->AddIdentityWithCapabilities(fakeIdentity,
+                                                     capabilities);
+}
+
 + (void)addFakeIdentityForSSOAuthAddAccountFlow:
             (FakeSystemIdentity*)fakeIdentity
                         withUnknownCapabilities:(BOOL)usingUnknownCapabilities {
@@ -70,6 +78,13 @@
       FakeSystemIdentityManager::FromSystemIdentityManager(
           GetApplicationContext()->GetSystemIdentityManager());
   systemIdentityManager->ForgetIdentity(fakeIdentity, base::DoNothing());
+}
+
++ (BOOL)isIdentityAdded:(FakeSystemIdentity*)fakeIdentity {
+  FakeSystemIdentityManager* systemIdentityManager =
+      FakeSystemIdentityManager::FromSystemIdentityManager(
+          GetApplicationContext()->GetSystemIdentityManager());
+  return systemIdentityManager->ContainsIdentity(fakeIdentity);
 }
 
 + (NSString*)primaryAccountGaiaID {
@@ -110,7 +125,10 @@
 }
 
 + (void)signinWithFakeIdentity:(FakeSystemIdentity*)identity {
-  [self addFakeIdentity:identity withUnknownCapabilities:NO];
+  if (![self isIdentityAdded:identity]) {
+    // For convenience, add the identity, if it was not added yet.
+    [self addFakeIdentity:identity withUnknownCapabilities:NO];
+  }
   ChromeBrowserState* browserState =
       chrome_test_util::GetOriginalBrowserState();
   AuthenticationService* authenticationService =
@@ -144,6 +162,10 @@
       syncer::SyncFirstSetupCompleteSource::BASIC_FLOW);
 }
 
++ (void)signInWithoutHistorySyncWithFakeIdentity:(FakeSystemIdentity*)identity {
+  chrome_test_util::SignInWithoutSync(identity);
+}
+
 + (void)triggerReauthDialogWithFakeIdentity:(FakeSystemIdentity*)identity {
   [FakeSystemIdentityInteractionManager setIdentity:identity
                             withUnknownCapabilities:NO];
@@ -153,7 +175,7 @@
   prefService->SetString(prefs::kGoogleServicesLastSyncingUsername,
                          emailAddress);
   ShowSigninCommand* command = [[ShowSigninCommand alloc]
-      initWithOperation:AuthenticationOperation::kSigninAndSyncReauth
+      initWithOperation:AuthenticationOperation::kResignin
             accessPoint:signin_metrics::AccessPoint::
                             ACCESS_POINT_RESIGNIN_INFOBAR];
   UIViewController* baseViewController =
@@ -175,53 +197,6 @@
 
 + (void)presentSignInAccountsViewControllerIfNecessary {
   chrome_test_util::PresentSignInAccountsViewControllerIfNecessary();
-}
-
-#pragma mark - Capability Setters
-
-+ (void)setIsSubjectToParentalControls:(BOOL)value
-                           forIdentity:(FakeSystemIdentity*)fakeIdentity {
-  FakeSystemIdentityManager* systemIdentityManager =
-      FakeSystemIdentityManager::FromSystemIdentityManager(
-          GetApplicationContext()->GetSystemIdentityManager());
-  AccountCapabilitiesTestMutator* mutator =
-      systemIdentityManager->GetCapabilitiesMutator(fakeIdentity);
-  mutator->set_is_subject_to_parental_controls(value);
-
-  // Update child account status to reflect parental controls support.
-  // TODO(b/276899041): Add support for test classes to listen to extended
-  // account info changes and reflect the new state in services.
-  PrefService* prefService =
-      chrome_test_util::GetOriginalBrowserState()->GetPrefs();
-  if (value) {
-    supervised_user::EnableParentalControls(*prefService);
-  } else {
-    supervised_user::DisableParentalControls(*prefService);
-  }
-  systemIdentityManager->FireIdentityUpdatedNotification(fakeIdentity);
-}
-
-+ (void)setCanHaveEmailAddressDisplayed:(BOOL)value
-                            forIdentity:(FakeSystemIdentity*)fakeIdentity {
-  FakeSystemIdentityManager* systemIdentityManager =
-      FakeSystemIdentityManager::FromSystemIdentityManager(
-          GetApplicationContext()->GetSystemIdentityManager());
-  AccountCapabilitiesTestMutator* mutator =
-      systemIdentityManager->GetCapabilitiesMutator(fakeIdentity);
-  mutator->set_can_have_email_address_displayed(value);
-}
-
-+ (void)setCanShowHistorySyncOptInsWithoutMinorModeRestrictions:(BOOL)value
-                                                    forIdentity:
-                                                        (FakeSystemIdentity*)
-                                                            fakeIdentity {
-  FakeSystemIdentityManager* systemIdentityManager =
-      FakeSystemIdentityManager::FromSystemIdentityManager(
-          GetApplicationContext()->GetSystemIdentityManager());
-  AccountCapabilitiesTestMutator* mutator =
-      systemIdentityManager->GetCapabilitiesMutator(fakeIdentity);
-  mutator->set_can_show_history_sync_opt_ins_without_minor_mode_restrictions(
-      value);
 }
 
 + (void)setSelectedType:(syncer::UserSelectableType)type enabled:(BOOL)enabled {

@@ -6,6 +6,7 @@
 
 #include <limits>
 
+#include "base/functional/callback_helpers.h"
 #include "components/account_manager_core/account_manager_facade_impl.h"
 #include "components/account_manager_core/chromeos/account_manager_mojo_service.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
@@ -37,13 +38,15 @@ TestProfileOAuth2TokenServiceDelegateChromeOS::
       client, account_tracker_service,
       network::TestNetworkConnectionTracker::GetInstance(),
       account_manager_facade_.get(), is_regular_profile);
-  delegate_->AddObserver(this);
+  // This still mimics in product behavior as the `delegate_` 's only
+  // observer is this class. When `OnRefreshTokenRevoked()` is called, `This`
+  // calls `FireRefreshTokenAvailable()` which has the callback set correctly.
+  delegate_->SetOnRefreshTokenRevokedNotified(base::DoNothing());
+  token_service_observation_.Observe(delegate_.get());
 }
 
 TestProfileOAuth2TokenServiceDelegateChromeOS::
-    ~TestProfileOAuth2TokenServiceDelegateChromeOS() {
-  delegate_->RemoveObserver(this);
-}
+    ~TestProfileOAuth2TokenServiceDelegateChromeOS() = default;
 
 std::unique_ptr<OAuth2AccessTokenFetcher>
 TestProfileOAuth2TokenServiceDelegateChromeOS::CreateAccessTokenFetcher(

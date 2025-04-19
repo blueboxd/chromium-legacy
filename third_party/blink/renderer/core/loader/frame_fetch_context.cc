@@ -35,12 +35,12 @@
 #include <optional>
 
 #include "base/feature_list.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "net/http/structured_headers.h"
-#include "services/network/public/cpp/attribution_reporting_runtime_features.h"
 #include "services/network/public/cpp/client_hints.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/web_client_hints_types.mojom-blink.h"
@@ -88,6 +88,7 @@
 #include "third_party/blink/renderer/core/loader/interactive_detector.h"
 #include "third_party/blink/renderer/core/loader/loader_factory_for_frame.h"
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
+#include "third_party/blink/renderer/core/loader/resource/image_resource.h"
 #include "third_party/blink/renderer/core/loader/resource_load_observer_for_frame.h"
 #include "third_party/blink/renderer/core/loader/subresource_filter.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -351,8 +352,8 @@ void FrameFetchContext::PrepareRequest(
     return;
 
   request.SetUkmSourceId(document_->UkmSourceID());
-  request.SetHasStorageAccess(
-      document_->GetExecutionContext()->HasStorageAccess());
+  request.SetStorageAccessApiStatus(
+      document_->GetExecutionContext()->GetStorageAccessApiStatus());
 
   if (document_loader_->ForceFetchCacheMode())
     request.SetCacheMode(*document_loader_->ForceFetchCacheMode());
@@ -361,8 +362,6 @@ void FrameFetchContext::PrepareRequest(
           GetFrame()->GetAttributionSrcLoader()) {
     request.SetAttributionReportingSupport(
         attribution_src_loader->GetSupport());
-    request.SetAttributionReportingRuntimeFeatures(
-        attribution_src_loader->GetRuntimeFeatures());
   }
 
   // If the original request included the attribute to opt-in to shared storage,
@@ -513,17 +512,7 @@ void FrameFetchContext::AddReducedAcceptLanguageIfNecessary(
     ResourceRequest& request) {
   // If the feature is enabled, then reduce accept language are allowed only on
   // http and https.
-
-  // For detached frame, we check whether the feature flag turns on because it
-  // will crash when detach frame calls GetExecutionContext().
-  if (GetResourceFetcherProperties().IsDetached() &&
-      !base::FeatureList::IsEnabled(network::features::kReduceAcceptLanguage)) {
-    return;
-  }
-
-  if (!GetResourceFetcherProperties().IsDetached() &&
-      !RuntimeEnabledFeatures::ReduceAcceptLanguageEnabled(
-          GetExecutionContext())) {
+  if (!base::FeatureList::IsEnabled(network::features::kReduceAcceptLanguage)) {
     return;
   }
 
@@ -798,10 +787,12 @@ String FrameFetchContext::GetReducedAcceptLanguage() const {
   // header as the overridden value.
   String override_accept_language;
   probe::ApplyAcceptLanguageOverride(Probe(), &override_accept_language);
-  return override_accept_language.empty()
-             ? frame->GetReducedAcceptLanguage().GetString()
-             : network_utils::GenerateAcceptLanguageHeader(
-                   override_accept_language);
+  if (override_accept_language.empty()) {
+    String expanded_language = network_utils::ExpandLanguageList(
+        frame->GetReducedAcceptLanguage().GetString());
+    return network_utils::GenerateAcceptLanguageHeader(expanded_language);
+  }
+  return network_utils::GenerateAcceptLanguageHeader(override_accept_language);
 }
 
 float FrameFetchContext::GetDevicePixelRatio() const {

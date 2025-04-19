@@ -5,12 +5,12 @@
 #ifndef IOS_CHROME_BROWSER_SHARED_PUBLIC_COMMANDS_CONTEXTUAL_PANEL_ENTRYPOINT_COMMANDS_H_
 #define IOS_CHROME_BROWSER_SHARED_PUBLIC_COMMANDS_CONTEXTUAL_PANEL_ENTRYPOINT_COMMANDS_H_
 
-// Commands for the Contextual Panel Entrypoint.
+// Commands for the Contextual Panel's Entrypoint.
 @protocol ContextualPanelEntrypointCommands
 
-// Tells the Contextual Panel Entrypoint that the model has been updated,
-// allowing the entrypoint to act accordingly and update the UI.
-- (void)updateContextualPanelEntrypointForNewModelData;
+// Notifies the Contextual Panel Entrypoint that the IPH (in-product help) was
+// dismissed.
+- (void)contextualPanelEntrypointIPHWasDismissed;
 
 @end
 

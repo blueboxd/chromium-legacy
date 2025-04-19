@@ -28,6 +28,7 @@
 #include "ui/accessibility/ax_range.h"
 #include "ui/accessibility/ax_text_attributes.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
+#include "ui/accessibility/platform/ax_platform_node_id.h"
 #include "ui/accessibility/platform/child_iterator.h"
 #include "ui/base/buildflags.h"
 
@@ -412,6 +413,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   ui::AXPlatformNode* GetTableCaption() const override;
 
   bool AccessibilityPerformAction(const ui::AXActionData& data) override;
+  std::u16string GetLocalizedString(int message_id) const;
   std::u16string GetLocalizedStringForImageAnnotationStatus(
       ax::mojom::ImageAnnotationStatus status) const override;
   std::u16string GetLocalizedRoleDescriptionForUnlabeledImage() const override;
@@ -456,11 +458,12 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // The manager of this tree of accessibility objects. Weak, owns us.
   const raw_ptr<BrowserAccessibilityManager> manager_;
 
+  // A unique ID, needed by some platform APIs, since node IDs are frame-local.
   // Protected so that it can't be called directly on a BrowserAccessibility
   // where it could be confused with an id that comes from the node data,
   // which is only unique to the Blink process.
   // Does need to be called by subclasses such as BrowserAccessibilityAndroid.
-  const ui::AXUniqueId& GetUniqueId() const override;
+  ui::AXPlatformNodeId GetUniqueId() const override;
 
   // Returns a text attribute map indicating the offsets in the text of a leaf
   // object, such as a text field or static text, where spelling and grammar
@@ -543,11 +546,9 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // in a test.
   static bool ignore_hovered_state_for_testing_;
 
-  // A unique ID, since node IDs are frame-local.
-  // TODO(accessibility) We should be able to get rid of this, because node IDs
-  // are actually local to the renderer process, and each renderer process has
-  // its own OS-level window, which is all the uniqueness we need.
-  const ui::AXUniqueId unique_id_{ui::AXUniqueId::Create()};
+  // The node's unique identifier as chosen by the node's manager. The value is
+  // computed on first use.
+  mutable ui::AXPlatformNodeId unique_id_;
 };
 
 }  // namespace content

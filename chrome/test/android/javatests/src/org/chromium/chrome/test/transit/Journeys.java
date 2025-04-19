@@ -6,11 +6,12 @@ package org.chromium.chrome.test.transit;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.test.transit.page.PageStation;
 import org.chromium.chrome.test.util.ChromeTabUtils;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /* Helper class for extended multi-stage Trips. */
 public class Journeys {
@@ -30,19 +31,13 @@ public class Journeys {
         assert numTabs >= 1;
         assert url != null;
         TabModelSelector tabModelSelector =
-                TestThreadUtils.runOnUiThreadBlockingNoException(
+                ThreadUtils.runOnUiThreadBlocking(
                         () -> startingStation.getActivity().getTabModelSelector());
         int currentTabCount = tabModelSelector.getModel(/* incognito= */ false).getCount();
         int currentIncognitoTabCount = tabModelSelector.getModel(/* incognito= */ true).getCount();
         assert currentTabCount == 1;
         assert currentIncognitoTabCount == 0;
-        Tab currentTab = startingStation.getActivity().getActivityTab();
-        PageStation pageStation =
-                PageStation.newPageStationBuilder()
-                        .withIsOpeningTabs(0)
-                        .withTabAlreadySelected(currentTab)
-                        .build();
-        PageStation station = startingStation.loadPageProgramatically(pageStation, url);
+        PageStation station = startingStation.loadPageProgrammatically(url);
         // One tab already exists.
         station = createTabs(station, numTabs - 1, url, /* isIncognito= */ false);
         if (numIncognitoTabs > 0) {
@@ -69,6 +64,7 @@ public class Journeys {
                             .withIsOpeningTabs(1)
                             .withIsSelectingTabs(1)
                             .withIncognito(isIncognito)
+                            .withExpectedUrlSubstring(url)
                             .build();
             startingStation =
                     startingStation.travelToSync(

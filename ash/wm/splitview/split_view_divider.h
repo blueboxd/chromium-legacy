@@ -75,8 +75,13 @@ class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
     return previous_event_location_;
   }
 
+  // Returns the divider widget's native window, or nullptr if none exists.
+  aura::Window* GetDividerWindow();
+
   // Returns true if the divider widget is created.
   bool HasDividerWidget() const;
+
+  bool IsDividerWidgetVisible() const;
 
   // Updates the divider's target visibility.
   void SetVisible(bool visible);
@@ -161,6 +166,8 @@ class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
   SplitViewDividerView* divider_view_for_testing() { return divider_view_; }
 
  private:
+  class SplitViewDividerWidget;
+
   // Refreshes the divider's state by creating or closing the divider widget if
   // needed, and updating its visibility, bounds, and stacking order as needed.
   // If `observed_windows_changed` is true, this will refresh the divider
@@ -198,7 +205,7 @@ class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
 
   // The distance between the origin of `divider_widget_` and the origin
   // of the current display's work area in screen coordinates, which essentially
-  // makes it relative to the divider widget's root window.
+  // makes it relative to the divider widget's root window's work area.
   //     |<---     divider_position_    --->|
   //     ---------------------------------------------------------------
   //     |                                  | |                        |

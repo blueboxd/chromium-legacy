@@ -14,6 +14,7 @@ import {HotspotAllowStatus, HotspotInfo, HotspotState, WiFiBand, WiFiSecurityMod
 import {FakeHotspotConfig} from 'chrome://resources/ash/common/hotspot/fake_hotspot_config.js';
 import {MojoInterfaceProviderImpl} from 'chrome://resources/ash/common/network/mojo_interface_provider.js';
 import {OncMojo} from 'chrome://resources/ash/common/network/onc_mojo.js';
+
 import {getDeepActiveElement} from 'chrome://resources/ash/common/util.js';
 import {assert} from 'chrome://resources/js/assert.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
@@ -771,7 +772,6 @@ suite('<settings-internet-page>', () => {
   });
 
   test('Show carrier lock sub header when locked', async () => {
-    loadTimeData.overrideValues({isCellularCarrierLockEnabled: true});
     await init();
 
     const params = new URLSearchParams();
@@ -800,7 +800,6 @@ suite('<settings-internet-page>', () => {
   test(
       'Verify carrier lock sub header not displayed when unlocked',
       async () => {
-        loadTimeData.overrideValues({isCellularCarrierLockEnabled: true});
         await init();
 
         const params = new URLSearchParams();
@@ -827,38 +826,6 @@ suite('<settings-internet-page>', () => {
                 '#cellularSubtitle');
         assertNull(cellularSubtitle);
       });
-
-  test(
-      'Verify carrier lock sub header not displayed when feature disabled',
-      async () => {
-        loadTimeData.overrideValues({isCellularCarrierLockEnabled: false});
-        await init();
-
-        const params = new URLSearchParams();
-        params.append(
-            'type', OncMojo.getNetworkTypeString(NetworkType.kCellular));
-
-        // Pretend that we initially started on the INTERNET_NETWORKS route with
-        // the params.
-        Router.getInstance().navigateTo(routes.INTERNET_NETWORKS, params);
-        internetPage.currentRouteChanged(routes.INTERNET_NETWORKS, undefined);
-
-        // Update the device state here to trigger an onDeviceStatesChanged_()
-        // call.
-        mojoApi.setDeviceStateForTest({
-          type: NetworkType.kCellular,
-          deviceState: DeviceStateType.kEnabled,
-          inhibitReason: InhibitReason.kNotInhibited,
-          isCarrierLocked: true,
-        } as DeviceStateProperties);
-        await flushTasks();
-
-        const cellularSubtitle =
-            internetPage.shadowRoot!.querySelector<HTMLElement>(
-                '#cellularSubtitle');
-        assertNull(cellularSubtitle);
-      });
-
 
   test(
       'Show no connection toast if receive show-cellular-setup' +
@@ -1163,14 +1130,16 @@ suite('<settings-internet-page>', () => {
         });
   });
 
-  [true, false].forEach(isApnRevampAndPoliciesEnabled => {
+  [true, false].forEach(isApnRevampAndAllowApnModificationPolicyEnabled => {
     test(
-        `Managed APN UI states when isApnRevampAndPoliciesEnabled is ${
-            isApnRevampAndPoliciesEnabled}`,
+        `Managed APN UI states when ` +
+            `isApnRevampAndAllowApnModificationPolicyEnabled is ${
+                isApnRevampAndAllowApnModificationPolicyEnabled}`,
         async () => {
           loadTimeData.overrideValues({
             isApnRevampEnabled: true,
-            isApnRevampAndPoliciesEnabled: isApnRevampAndPoliciesEnabled,
+            isApnRevampAndAllowApnModificationPolicyEnabled:
+                isApnRevampAndAllowApnModificationPolicyEnabled,
           });
           await navigateToApnSubpage();
 
@@ -1206,11 +1175,14 @@ suite('<settings-internet-page>', () => {
           } as GlobalPolicy;
           mojoApi.setGlobalPolicy(globalPolicy);
           await flushTasks();
-          assertEquals(isApnRevampAndPoliciesEnabled, !!getApnManagedIcon());
           assertEquals(
-              isApnRevampAndPoliciesEnabled, apnActionMenuButton.disabled);
+              isApnRevampAndAllowApnModificationPolicyEnabled,
+              !!getApnManagedIcon());
           assertEquals(
-              isApnRevampAndPoliciesEnabled,
+              isApnRevampAndAllowApnModificationPolicyEnabled,
+              apnActionMenuButton.disabled);
+          assertEquals(
+              isApnRevampAndAllowApnModificationPolicyEnabled,
               apnSubpage.shouldDisallowApnModification);
         });
   });

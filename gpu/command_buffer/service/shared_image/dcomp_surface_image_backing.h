@@ -36,7 +36,7 @@ class GPU_GLES2_EXPORT DCompSurfaceImageBacking
       const gfx::ColorSpace& color_space,
       GrSurfaceOrigin surface_origin,
       SkAlphaType alpha_type,
-      uint32_t usage,
+      gpu::SharedImageUsageSet usage,
       std::string debug_label);
 
   DCompSurfaceImageBacking(const DCompSurfaceImageBacking&) = delete;
@@ -84,7 +84,7 @@ class GPU_GLES2_EXPORT DCompSurfaceImageBacking
       const gfx::ColorSpace& color_space,
       GrSurfaceOrigin surface_origin,
       SkAlphaType alpha_type,
-      uint32_t usage,
+      gpu::SharedImageUsageSet usage,
       std::string debug_label,
       Microsoft::WRL::ComPtr<IDCompositionSurface> dcomp_surface);
 
@@ -112,6 +112,7 @@ class GPU_GLES2_EXPORT DCompSurfaceImageBacking
   friend class DCompSurfaceDawnImageRepresentation;
   wgpu::Texture BeginDrawDawn(const wgpu::Device& device,
                               const wgpu::TextureUsage usage,
+                              const wgpu::TextureUsage internal_usage,
                               const gfx::Rect& update_rect);
   void EndDrawDawn(const wgpu::Device& device, wgpu::Texture texture);
 

@@ -47,10 +47,12 @@
 #include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_font_cache.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_font_data.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_shaper.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/variation_selector_mode.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
 #include "third_party/blink/renderer/platform/fonts/skia/skia_text_metrics.h"
 #include "third_party/blink/renderer/platform/fonts/unicode_range_set.h"
 #include "third_party/blink/renderer/platform/resolution_units.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/text/character.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
@@ -77,19 +79,40 @@ void HarfBuzzFace::Trace(Visitor* visitor) const {
   visitor->Trace(harfbuzz_font_data_);
 }
 
-bool& GetIgnoreVariationSelectors() {
+VariationSelectorMode& GetIgnoreVariationSelectorModeRef() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(WTF::ThreadSpecific<VariationSelectorMode>,
+                                  variation_selector_mode, ());
+  return *variation_selector_mode;
+}
+
+VariationSelectorMode HarfBuzzFace::GetVariationSelectorMode() {
+  return GetIgnoreVariationSelectorModeRef();
+}
+
+void HarfBuzzFace::SetVariationSelectorMode(VariationSelectorMode value) {
+  // Ignore variation selectors mode should be on only when the
+  // FontVariationSequences runtime flag is enabled.
+  DCHECK(RuntimeEnabledFeatures::FontVariationSequencesEnabled() ||
+         !ShouldIgnoreVariationSelector(value));
+  DCHECK(RuntimeEnabledFeatures::FontVariantEmojiEnabled() ||
+         !UseFontVariantEmojiVariationSelector(value));
+  GetIgnoreVariationSelectorModeRef() = value;
+}
+
+bool& GetIsSystemFallbackStageRef() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(WTF::ThreadSpecific<bool>,
-                                  ignore_variation_selectors, ());
-  return *ignore_variation_selectors;
+                                  is_system_fallback_stage, ());
+  return *is_system_fallback_stage;
 }
 
-bool HarfBuzzFace::ShouldIgnoreVariationSelectors() {
-  return GetIgnoreVariationSelectors();
+bool HarfBuzzFace::GetIsSystemFallbackStage() {
+  DCHECK(RuntimeEnabledFeatures::SystemFallbackEmojiVSSupportEnabled());
+  return GetIsSystemFallbackStageRef();
 }
 
-void HarfBuzzFace::SetIgnoreVariationSelectors(bool value) {
-  DCHECK(RuntimeEnabledFeatures::FontVariationSequencesEnabled() || value);
-  GetIgnoreVariationSelectors() = value;
+void HarfBuzzFace::SetIsSystemFallbackStage(bool value) {
+  DCHECK(RuntimeEnabledFeatures::SystemFallbackEmojiVSSupportEnabled());
+  GetIsSystemFallbackStageRef() = value;
 }
 
 static hb_bool_t HarfBuzzGetGlyph(hb_font_t* hb_font,
@@ -118,18 +141,67 @@ static hb_bool_t HarfBuzzGetGlyph(hb_font_t* hb_font,
     unicode = kSpaceCharacter;
   }
 
+  bool consider_variation_selector = false;
+  bool is_variation_sequence = false;
+  bool ignore_vs_for_emoji_system_fallback = false;
+
+// Emoji System Fonts on Mac, Win and Android either do not have cmap 14
+// subtable or it does not include all emojis from their cmap table. We use
+// cmap 14 subtable to identify whether there is a colored (emoji
+// presentation) or a monochromatic (text presentation) glyph in the font.
+// This may lead to the cases when we will not be able to get the glyph ID
+// for the requested variation sequence using fallback system font and will
+// continue the second shaping fallback list pass ignoring variation
+// selectors and may end up using web font with wrong emoji presentation instead
+// of using system font with the correct presentation. To prevent that once we
+// reached system fallback fonts, we can ignore emoji variation selectors since
+// we will get the font with the correct presentation relying on
+// FontFallbackPriority in `FontCache::PlatformFallbackFontForCharacter`.
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_WIN)
+  if (RuntimeEnabledFeatures::SystemFallbackEmojiVSSupportEnabled() &&
+      HarfBuzzFace::GetIsSystemFallbackStage()) {
+    ignore_vs_for_emoji_system_fallback = true;
+  }
+#endif
+
+  VariationSelectorMode variation_selector_mode =
+      HarfBuzzFace::GetVariationSelectorMode();
+  if (RuntimeEnabledFeatures::FontVariationSequencesEnabled()) {
+    if (!ShouldIgnoreVariationSelector(variation_selector_mode) &&
+        Character::IsUnicodeVariationSelector(variation_selector) &&
+        Character::IsVariationSequence(unicode, variation_selector)) {
+      is_variation_sequence = true;
+      // We only want to ignore emoji variation sectors for system fallback
+      // fonts, standardized and ideographic variation selectors should be still
+      // considered.
+      ignore_vs_for_emoji_system_fallback =
+          Character::IsUnicodeEmojiVariationSelector(variation_selector) &&
+          ignore_vs_for_emoji_system_fallback;
+      consider_variation_selector = !ignore_vs_for_emoji_system_fallback;
+    } else if (RuntimeEnabledFeatures::FontVariantEmojiEnabled() &&
+               UseFontVariantEmojiVariationSelector(variation_selector_mode) &&
+               Character::IsEmoji(unicode)) {
+      consider_variation_selector = !ignore_vs_for_emoji_system_fallback;
+    }
+  }
+
   // Variation sequences are a special case because we want to distinguish
   // between the cases when we found a glyph for the whole variation sequence in
   // cmap format 14 subtable and when we found only a base character of the
   // variation sequence. In the latter case we set the glyph value to
   // `kUnmatchedVSGlyphId`.
-  bool consider_variation_selector =
-      RuntimeEnabledFeatures::FontVariationSequencesEnabled() &&
-      !HarfBuzzFace::ShouldIgnoreVariationSelectors() &&
-      Character::IsUnicodeVariationSelector(variation_selector) &&
-      Character::IsVariationSequence(unicode, variation_selector);
-
   if (consider_variation_selector) {
+    if (!is_variation_sequence) {
+      if (variation_selector_mode == kForceVariationSelector15 ||
+          (variation_selector_mode == kUseUnicodeDefaultPresentation &&
+           Character::IsEmojiTextDefault(unicode))) {
+        variation_selector = kVariationSelector15Character;
+      } else if (variation_selector_mode == kForceVariationSelector16 ||
+                 (variation_selector_mode == kUseUnicodeDefaultPresentation &&
+                  Character::IsEmojiEmojiDefault(unicode))) {
+        variation_selector = kVariationSelector16Character;
+      }
+    }
     hb_bool_t hb_has_vs_glyph = hb_font_get_variation_glyph(
         hb_font_get_parent(hb_font), unicode, variation_selector, glyph);
     if (hb_has_vs_glyph) {
@@ -137,8 +209,8 @@ static hb_bool_t HarfBuzzGetGlyph(hb_font_t* hb_font,
       // character, can just return.
       return true;
     }
-    // Unable to find a glyph for variation sequence, now we need to look for a
-    // glyph for the base character from variation sequence.
+    // Unable to find a glyph for variation sequence, now we need to look
+    // for a glyph for the base character from variation sequence.
     variation_selector = 0;
   }
 
@@ -345,7 +417,6 @@ Glyph HarfBuzzFace::HbGlyphForCharacter(UChar32 character) {
 hb_codepoint_t HarfBuzzFace::HarfBuzzGetGlyphForTesting(
     UChar32 character,
     UChar32 variation_selector) {
-  DCHECK(RuntimeEnabledFeatures::FontVariationSequencesEnabled());
   hb_codepoint_t glyph = 0;
   HarfBuzzGetGlyph(harfbuzz_font_data_->unscaled_font_.get(),
                    harfbuzz_font_data_, character, variation_selector, &glyph,
@@ -384,9 +455,9 @@ class HarfBuzzSkiaFontFuncs final {
 
     const int num_tags = typeface->countTables();
 
-    SkFontTableTag tags[num_tags];
+    Vector<SkFontTableTag> tags(num_tags);
 
-    const int returned_tags = typeface->getTableTags(tags);
+    const int returned_tags = typeface->getTableTags(tags.data());
     DCHECK_EQ(num_tags, returned_tags);
 
     for (auto& tag : tags) {

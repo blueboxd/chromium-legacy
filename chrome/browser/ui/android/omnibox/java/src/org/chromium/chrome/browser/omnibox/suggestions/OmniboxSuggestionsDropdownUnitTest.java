@@ -24,7 +24,6 @@ import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
 import android.view.ViewGroup.MarginLayoutParams;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView.LayoutParams;
 import androidx.test.core.app.ApplicationProvider;
@@ -33,7 +32,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -48,7 +46,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.Features;
 import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionsDropdownEmbedder.OmniboxAlignment;
 import org.chromium.chrome.browser.omnibox.test.R;
@@ -60,7 +57,6 @@ import org.chromium.ui.base.WindowDelegate;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(sdk = 28)
 public class OmniboxSuggestionsDropdownUnitTest {
-    public @Rule TestRule mProcessor = new Features.JUnitProcessor();
     public @Rule MockitoRule mMockitoRule = MockitoJUnit.rule();
     private @Mock Runnable mDropdownScrollListener;
     private @Mock Runnable mDropdownScrollToTopListener;
@@ -78,12 +74,6 @@ public class OmniboxSuggestionsDropdownUnitTest {
     private boolean mAttachedToWindow;
     private OmniboxSuggestionsDropdownEmbedder mEmbedder =
             new OmniboxSuggestionsDropdownEmbedder() {
-                @NonNull
-                @Override
-                public WindowDelegate getWindowDelegate() {
-                    return mWindowDelegate;
-                }
-
                 @Override
                 public boolean isTablet() {
                     return mIsTablet;
@@ -446,6 +436,22 @@ public class OmniboxSuggestionsDropdownUnitTest {
 
         mDropdown.onChildDetachedFromWindow(childView);
         verify(childView).setTranslationY(0.0f);
+    }
+
+    @Test
+    public void setChildAlpha() {
+        mDropdown.setAdapter(mAdapter);
+        mDropdown.setEmbedder(mEmbedder);
+        mDropdown.onOmniboxSessionStateChange(true);
+
+        View childView = Mockito.mock(View.class);
+
+        mDropdown.setChildAlpha(0.6f);
+        mDropdown.onChildAttachedToWindow(childView);
+        verify(childView).setAlpha(0.6f);
+
+        mDropdown.onChildDetachedFromWindow(childView);
+        verify(childView).setAlpha(1.0f);
     }
 
     private void layoutDropdown(int width, int height) {

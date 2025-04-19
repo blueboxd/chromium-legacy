@@ -65,8 +65,9 @@ bool StructTraits<
                                   autofill::SelectOption* out) {
   if (!data.ReadValue(&out->value))
     return false;
-  if (!data.ReadContent(&out->content))
+  if (!data.ReadText(&out->text)) {
     return false;
+  }
   return true;
 }
 
@@ -159,6 +160,7 @@ bool StructTraits<autofill::mojom::AutocompleteParsingResultDataView,
     return false;
   if (!data.ReadFieldType(&out->field_type))
     return false;
+  out->webauthn = data.webauthn();
   return true;
 }
 
@@ -465,7 +467,7 @@ bool StructTraits<autofill::mojom::FormDataDataView, autofill::FormData>::Read(
     if (!data.ReadFields(&fields)) {
       return false;
     }
-    out->fields = std::move(fields);
+    out->set_fields(std::move(fields));
   }
   {
     std::vector<autofill::FieldRendererId> username_predictions;
@@ -476,11 +478,12 @@ bool StructTraits<autofill::mojom::FormDataDataView, autofill::FormData>::Read(
   }
   out->set_is_gaia_with_skip_save_password_form(
       data.is_gaia_with_skip_save_password_form());
+  out->set_likely_contains_captcha(data.likely_contains_captcha());
   return base::ranges::all_of(
       out->child_frames(),
       [&](int predecessor) {
         return predecessor == -1 ||
-               base::checked_cast<size_t>(predecessor) < out->fields.size();
+               base::checked_cast<size_t>(predecessor) < out->fields().size();
       },
       &autofill::FrameTokenWithPredecessor::predecessor);
 }
@@ -563,7 +566,8 @@ bool StructTraits<autofill::mojom::PasswordFormFillDataDataView,
       !data.ReadUsernameElementRendererId(&out->username_element_renderer_id) ||
       !data.ReadPasswordElementRendererId(&out->password_element_renderer_id) ||
       !data.ReadPreferredLogin(&out->preferred_login) ||
-      !data.ReadAdditionalLogins(&out->additional_logins)) {
+      !data.ReadAdditionalLogins(&out->additional_logins) ||
+      !data.ReadSuggestionBannedFields(&out->suggestion_banned_fields)) {
     return false;
   }
 

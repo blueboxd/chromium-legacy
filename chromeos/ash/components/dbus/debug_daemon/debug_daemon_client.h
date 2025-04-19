@@ -20,8 +20,8 @@
 #include "base/observer_list_types.h"
 #include "base/task/task_runner.h"
 #include "base/trace_event/tracing_agent.h"
+#include "chromeos/dbus/common/dbus_callback.h"
 #include "chromeos/dbus/common/dbus_client.h"
-#include "chromeos/dbus/common/dbus_method_call_status.h"
 #include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/debugd/dbus-constants.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -348,6 +348,15 @@ class COMPONENT_EXPORT(DEBUG_DAEMON) DebugDaemonClient
 
   virtual void PacketCaptureStartSignalReceived(dbus::Signal* signal) = 0;
   virtual void PacketCaptureStopSignalReceived(dbus::Signal* signal) = 0;
+
+  // A callback to handle the result of
+  // BluetoothStartBtsnoop/BluetoothStopBtsnoop.
+  using BluetoothBtsnoopCallback = base::OnceCallback<void(bool success)>;
+  // Starts capturing btsnoop logs, which is kept inside daemon-store
+  virtual void BluetoothStartBtsnoop(BluetoothBtsnoopCallback callback) = 0;
+  // Stops capturing btsnoop logs and copy it to the Downloads directory.
+  virtual void BluetoothStopBtsnoop(int fd,
+                                    BluetoothBtsnoopCallback callback) = 0;
 
  protected:
   // For creating a second instance of DebugDaemonClient on another thread for

@@ -13,6 +13,10 @@
 #include "ui/aura/window.h"
 #include "url/gurl.h"
 
+namespace content {
+class WebContents;
+}
+
 class Profile;
 
 // Campaigns Manager session to store camapigns manager specific state, and to
@@ -36,7 +40,7 @@ class CampaignsManagerSession : public session_manager::SessionManagerObserver,
   void OnInstanceRegistryWillBeDestroyed(
       apps::InstanceRegistry* cache) override;
 
-  void PrimaryPageChanged(const GURL& url);
+  void PrimaryPageChanged(const content::WebContents* web_contents);
   aura::Window* GetOpenedWindow() { return opened_window_; }
 
   void SetProfileForTesting(Profile* profile);
@@ -47,7 +51,25 @@ class CampaignsManagerSession : public session_manager::SessionManagerObserver,
   void SetupWindowObserver();
   void OnOwnershipDetermined(bool is_user_owner);
   void OnLoadCampaignsCompleted();
-  void HandleAppInstanceCreation(const apps::InstanceUpdate& update);
+
+  void CacheAppOpenContext(const apps::InstanceUpdate& update, const GURL& url);
+  void ClearAppOpenContext();
+
+  // Handles instance update of app other than web browser/pwa/swa and Arc app.
+  void HandleAppInstanceUpdate(const apps::InstanceUpdate& update);
+
+  // Handles Arc instance update.
+  void HandleArcInstanceUpdate(const apps::InstanceUpdate& update);
+
+  // Handles Chrome browser and Lacros browser instance update. It caches
+  // current web browser context but defers campaign trigger to
+  // PrimaryPageChanged when page navigations happens.
+  void HandleWebBrowserInstanceUpdate(const apps::InstanceUpdate& update);
+
+  // Handles Pwa or Swa instance update.
+  void HandlePwaInstanceUpdate(const apps::InstanceUpdate& update);
+
+  // Handles app destruction update.
   void HandleAppInstanceDestruction(const apps::InstanceUpdate& update);
 
   base::ScopedObservation<session_manager::SessionManager,

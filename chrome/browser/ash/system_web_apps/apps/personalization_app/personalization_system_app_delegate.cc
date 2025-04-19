@@ -42,7 +42,7 @@ PersonalizationSystemAppDelegate::GetWebAppInfo() const {
       IDS_PERSONALIZATION_APP_PERSONALIZATION_HUB_TITLE);
 
   web_app::CreateIconInfoForSystemWebApp(
-      info->start_url,
+      info->start_url(),
       {
           {
               "app_hub_icon_64.png",
@@ -81,14 +81,10 @@ gfx::Rect PersonalizationSystemAppDelegate::GetDefaultBounds(
     Browser* browser) const {
   gfx::Rect bounds =
       display::Screen::GetScreen()->GetDisplayForNewWindows().work_area();
-  if (ash::features::IsPersonalizationJellyEnabled()) {
-    if (ash::Shell::Get()->rgb_keyboard_manager()->IsRgbKeyboardSupported()) {
-      bounds.ClampToCenteredSize({826, 881});
-    } else {
-      bounds.ClampToCenteredSize({826, 708});
-    }
+  if (ash::Shell::Get()->rgb_keyboard_manager()->IsRgbKeyboardSupported()) {
+    bounds.ClampToCenteredSize({826, 881});
   } else {
-    bounds.ClampToCenteredSize({826, 745});
+    bounds.ClampToCenteredSize({826, 708});
   }
   return bounds;
 }

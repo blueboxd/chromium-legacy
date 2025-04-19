@@ -128,6 +128,22 @@ bool WaylandWindowDragController::StartDragSession(
   if (state_ != State::kIdle)
     return true;
 
+  // TODO(crbug.com/340398746): This should be a CHECK instead. However
+  // currently buggy compositors, eg: KWin 6, which do not send
+  // data_source.dnd_finish|cancelled in some cases. In such a case for a data
+  // drag, the data drag controller is left in an inconsistent state and shared
+  // dragging state is not reset. This may cause chrome to crash if a window
+  // drag session is requested before the shared dragging state is reset. Reset
+  // the shared drag state in this case, revert this handling once it stabilizes
+  // at compositors side (see also comment in
+  // WaylandDataDragController::StartSession).
+  if (connection_->IsDragInProgress()) {
+    LOG(ERROR) << "Received window drag request for active data drag, "
+                  "resetting shared data device state.";
+    data_device_->ResetDragDelegate();
+    CHECK(!connection_->IsDragInProgress());
+  }
+
   auto serial = GetSerial(drag_source, origin);
   if (!serial) {
     LOG(ERROR) << "Failed to retrieve dnd serial. origin=" << origin
@@ -334,9 +350,9 @@ void WaylandWindowDragController::OnDragLeave(base::TimeTicks timestamp) {
 
   drag_target_window_ = nullptr;
 
-  // In order to guarantee ET_MOUSE_RELEASED event is delivered once the DND
-  // session finishes, the focused window is not reset here. This is similar to
-  // the "implicit grab" behavior implemented by Wayland compositors for
+  // In order to guarantee EventType::kMouseReleased event is delivered once the
+  // DND session finishes, the focused window is not reset here. This is similar
+  // to the "implicit grab" behavior implemented by Wayland compositors for
   // wl_pointer events. Additionally, this makes it possible for the drag
   // controller to overcome deviations in the order that wl_data_source and
   // wl_pointer events arrive when the drop happens. For example, unlike Weston
@@ -495,11 +511,12 @@ uint32_t WaylandWindowDragController::DispatchEvent(
   }
 
   if (state_ == State::kDetached &&
-      (event->type() == ET_MOUSE_MOVED || event->type() == ET_MOUSE_DRAGGED ||
-       event->type() == ET_TOUCH_MOVED)) {
+      (event->type() == EventType::kMouseMoved ||
+       event->type() == EventType::kMouseDragged ||
+       event->type() == EventType::kTouchMoved)) {
     HandleMotionEvent(event->AsLocatedEvent());
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-    if (event->type() != ET_TOUCH_MOVED) {
+    if (event->type() != EventType::kTouchMoved) {
       // Pass through touch so that touch position will be updated.
       return POST_DISPATCH_STOP_PROPAGATION;
     }
@@ -531,6 +548,7 @@ void WaylandWindowDragController::OnWindowRemoved(WaylandWindow* window) {
   }
 
   if (window == origin_window_) {
+    // See the declaration of TakeWaylandSurface() for why this is needed.
     origin_surface_ = origin_window_->TakeWaylandSurface();
     origin_window_ = nullptr;
   }

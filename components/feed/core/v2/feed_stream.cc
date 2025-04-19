@@ -632,7 +632,8 @@ bool FeedStream::IsFeedEnabledByDse() {
 
 bool FeedStream::IsWebFeedEnabled() {
   return feed::IsWebFeedEnabledForLocale(delegate_->GetCountry()) &&
-         !delegate_->IsSupervisedAccount();
+         !delegate_->IsSupervisedAccount() &&
+         !base::FeatureList::IsEnabled(kWebFeedKillSwitch);
 }
 
 void FeedStream::EnabledPreferencesChanged() {

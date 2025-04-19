@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_REQUEST_LOADER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_REQUEST_LOADER_H_
 
+#include <cstdint>
 #include <memory>
 
 #include "base/dcheck_is_on.h"
@@ -59,7 +60,7 @@ class IDBRequestLoader : public GarbageCollected<IDBRequestLoader>,
 
   // FileReaderClient implementation.
   FileErrorCode DidStartLoading(uint64_t) override;
-  FileErrorCode DidReceiveData(const char* data, unsigned data_length) override;
+  FileErrorCode DidReceiveData(base::span<const uint8_t> data) override;
   void DidFinishLoading() override;
   void DidFail(FileErrorCode) override;
   void Trace(Visitor* visitor) const override {

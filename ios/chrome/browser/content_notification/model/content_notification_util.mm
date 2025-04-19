@@ -62,7 +62,7 @@ int GetFeedActivityLevel(PrefService* pref_service) {
 
 // Return true if the user installed Chrome less than 4 weeks.
 bool IsNewUser() {
-  return !IsFirstRunRecent(base::Days(28));
+  return IsFirstRunRecent(base::Days(28));
 }
 
 // Return a dictionary that stores values that impact user enrollment
@@ -158,6 +158,10 @@ void LogHistogramForEligibilityType(ContentNotificationEligibilityType type) {
   base::UmaHistogramEnumeration("ContentNotifications.EligibilityType", type);
 }
 
+const std::string& GetEnrollmentType(PrefService* pref_service) {
+  return pref_service->GetString(prefs::kContentNotificationsEnrollmentType);
+}
+
 }  // namespace
 
 bool IsContentNotificationEnabled(ChromeBrowserState* browser_state) {
@@ -171,69 +175,79 @@ bool IsContentNotificationEnabled(ChromeBrowserState* browser_state) {
 
   AuthenticationService* auth_service =
       AuthenticationServiceFactory::GetForBrowserState(browser_state);
-  BOOL is_signed_in = auth_service && auth_service->HasPrimaryIdentity(
-                                          signin::ConsentLevel::kSignin);
-
-  if (is_signed_in && IsContentPushNotificationsProvisionalBypass()) {
-    return true;
-  }
+  BOOL user_signed_in = auth_service && auth_service->HasPrimaryIdentity(
+                                            signin::ConsentLevel::kSignin);
 
   const TemplateURL* default_search_url_template =
       ios::TemplateURLServiceFactory::GetForBrowserState(browser_state)
           ->GetDefaultSearchProvider();
-  bool is_default_search_engine =
-      default_search_url_template &&
-      default_search_url_template->prepopulate_id() ==
-          TemplateURLPrepopulateData::google.id;
-  PrefService* pref_service = browser_state->GetPrefs();
+  bool default_search_engine = default_search_url_template &&
+                               default_search_url_template->prepopulate_id() ==
+                                   TemplateURLPrepopulateData::google.id;
 
-  return IsContentNotificationEnabled(is_signed_in, is_default_search_engine,
-                                      pref_service);
-}
-
-bool IsContentNotificationEnabled(bool user_signed_in,
-                                  bool default_search_engine,
-                                  PrefService* pref_service) {
-  if (user_signed_in && IsContentPushNotificationsProvisionalBypass()) {
-    return true;
+  if (IsClientEligible(user_signed_in, default_search_engine)) {
+    PrefService* pref_service = browser_state->GetPrefs();
+    const std::string& type = GetEnrollmentType(pref_service);
+    if (!type.empty()) {
+      return type == kEnrollmentTypePromoEnabled ||
+             type == kEnrollmentTypeProvisionalEnabled ||
+             type == kEnrollmentTypeSetUpListEnabled;
+    }
   }
 
-  // Make sure all enabled types are checked since more than one types can be
-  // enabled, and the UMA will only be active after checking the pref.
-  bool promo_enabled = IsContentNotificationPromoEnabled(
-      user_signed_in, default_search_engine, pref_service);
-  bool provisional_enabled = IsContentNotificationProvisionalEnabled(
-      user_signed_in, default_search_engine, pref_service);
-  bool set_up_list_enabled = IsContentNotificationSetUpListEnabled(
-      user_signed_in, default_search_engine, pref_service);
-
-  return promo_enabled || provisional_enabled || set_up_list_enabled;
+  return false;
 }
 
-bool IsContentNotificationRegistered(bool user_signed_in,
-                                     bool default_search_engine,
-                                     PrefService* pref_service) {
-  // Make sure all registration only types are checked since more than one types
-  // can be enabled, and the UMA will only be active after checking the pref.
-  bool promo_register_only = IsContentNotificationPromoRegistered(
-      user_signed_in, default_search_engine, pref_service);
-  bool provisional_register_only = IsContentNotificationProvisionalRegistered(
-      user_signed_in, default_search_engine, pref_service);
-  bool set_up_list_register_only = IsContentNotificationSetUpListRegistered(
-      user_signed_in, default_search_engine, pref_service);
+bool IsContentNotificationRegistered(ChromeBrowserState* browser_state) {
+  if (!browser_state) {
+    return false;
+  }
 
-  return promo_register_only || provisional_register_only ||
-         set_up_list_register_only;
+  if (!IsContentNotificationExperimentEnabled()) {
+    return false;
+  }
+
+  AuthenticationService* auth_service =
+      AuthenticationServiceFactory::GetForBrowserState(browser_state);
+  BOOL user_signed_in = auth_service && auth_service->HasPrimaryIdentity(
+                                            signin::ConsentLevel::kSignin);
+
+  const TemplateURL* default_search_url_template =
+      ios::TemplateURLServiceFactory::GetForBrowserState(browser_state)
+          ->GetDefaultSearchProvider();
+  bool default_search_engine = default_search_url_template &&
+                               default_search_url_template->prepopulate_id() ==
+                                   TemplateURLPrepopulateData::google.id;
+
+  if (IsClientEligible(user_signed_in, default_search_engine)) {
+    PrefService* pref_service = browser_state->GetPrefs();
+    const std::string& type = GetEnrollmentType(pref_service);
+    if (!type.empty()) {
+      return type == kEnrollmentTypePromoRegistered ||
+             type == kEnrollmentTypeProvisionalRegistered ||
+             type == kEnrollmentTypeSetUpListRegistered;
+    }
+  }
+
+  return false;
 }
 
 bool IsContentNotificationPromoEnabled(bool user_signed_in,
                                        bool default_search_engine,
                                        PrefService* pref_service) {
-  if (IsPromoEligible(user_signed_in, default_search_engine, pref_service) &&
-      IsContentPushNotificationsPromoEnabled()) {
-    LogHistogramForEligibilityType(
-        ContentNotificationEligibilityType::kPromoEnabled);
-    return true;
+  if (IsClientEligible(user_signed_in, default_search_engine)) {
+    const std::string& type = GetEnrollmentType(pref_service);
+    if (!type.empty()) {
+      return type == kEnrollmentTypePromoEnabled;
+    } else if (IsPromoEligible(user_signed_in, default_search_engine,
+                               pref_service) &&
+               IsContentPushNotificationsPromoEnabled()) {
+      pref_service->SetString(prefs::kContentNotificationsEnrollmentType,
+                              kEnrollmentTypePromoEnabled);
+      LogHistogramForEligibilityType(
+          ContentNotificationEligibilityType::kPromoEnabled);
+      return true;
+    }
   }
   return false;
 }
@@ -241,12 +255,23 @@ bool IsContentNotificationPromoEnabled(bool user_signed_in,
 bool IsContentNotificationProvisionalEnabled(bool user_signed_in,
                                              bool default_search_engine,
                                              PrefService* pref_service) {
-  if (IsProvisionalEligible(user_signed_in, default_search_engine,
-                            pref_service) &&
-      IsContentPushNotificationsProvisionalEnabled()) {
-    LogHistogramForEligibilityType(
-        ContentNotificationEligibilityType::kProvisionalEnabled);
+  if (user_signed_in && IsContentNotificationProvisionalIgnoreConditions()) {
     return true;
+  }
+
+  if (IsClientEligible(user_signed_in, default_search_engine)) {
+    const std::string& type = GetEnrollmentType(pref_service);
+    if (!type.empty()) {
+      return type == kEnrollmentTypeProvisionalEnabled;
+    } else if (IsProvisionalEligible(user_signed_in, default_search_engine,
+                                     pref_service) &&
+               IsContentPushNotificationsProvisionalEnabled()) {
+      pref_service->SetString(prefs::kContentNotificationsEnrollmentType,
+                              kEnrollmentTypeProvisionalEnabled);
+      LogHistogramForEligibilityType(
+          ContentNotificationEligibilityType::kProvisionalEnabled);
+      return true;
+    }
   }
   return false;
 }
@@ -254,12 +279,19 @@ bool IsContentNotificationProvisionalEnabled(bool user_signed_in,
 bool IsContentNotificationSetUpListEnabled(bool user_signed_in,
                                            bool default_search_engine,
                                            PrefService* pref_service) {
-  if (IsSetUpListEligible(user_signed_in, default_search_engine,
-                          pref_service) &&
-      IsContentPushNotificationsSetUpListEnabled()) {
-    LogHistogramForEligibilityType(
-        ContentNotificationEligibilityType::kSetUpListEnabled);
-    return true;
+  if (IsClientEligible(user_signed_in, default_search_engine)) {
+    const std::string& type = GetEnrollmentType(pref_service);
+    if (!type.empty()) {
+      return type == kEnrollmentTypeSetUpListEnabled;
+    } else if (IsSetUpListEligible(user_signed_in, default_search_engine,
+                                   pref_service) &&
+               IsContentPushNotificationsSetUpListEnabled()) {
+      pref_service->SetString(prefs::kContentNotificationsEnrollmentType,
+                              kEnrollmentTypeSetUpListEnabled);
+      LogHistogramForEligibilityType(
+          ContentNotificationEligibilityType::kSetUpListEnabled);
+      return true;
+    }
   }
   return false;
 }
@@ -267,11 +299,19 @@ bool IsContentNotificationSetUpListEnabled(bool user_signed_in,
 bool IsContentNotificationPromoRegistered(bool user_signed_in,
                                           bool default_search_engine,
                                           PrefService* pref_service) {
-  if (IsPromoEligible(user_signed_in, default_search_engine, pref_service) &&
-      IsContentPushNotificationsPromoRegistrationOnly()) {
-    LogHistogramForEligibilityType(
-        ContentNotificationEligibilityType::kPromoRegistered);
-    return true;
+  if (IsClientEligible(user_signed_in, default_search_engine)) {
+    const std::string& type = GetEnrollmentType(pref_service);
+    if (!type.empty()) {
+      return type == kEnrollmentTypePromoRegistered;
+    } else if (IsPromoEligible(user_signed_in, default_search_engine,
+                               pref_service) &&
+               IsContentPushNotificationsPromoRegistrationOnly()) {
+      pref_service->SetString(prefs::kContentNotificationsEnrollmentType,
+                              kEnrollmentTypePromoRegistered);
+      LogHistogramForEligibilityType(
+          ContentNotificationEligibilityType::kPromoRegistered);
+      return true;
+    }
   }
   return false;
 }
@@ -279,12 +319,19 @@ bool IsContentNotificationPromoRegistered(bool user_signed_in,
 bool IsContentNotificationProvisionalRegistered(bool user_signed_in,
                                                 bool default_search_engine,
                                                 PrefService* pref_service) {
-  if (IsProvisionalEligible(user_signed_in, default_search_engine,
-                            pref_service) &&
-      IsContentPushNotificationsProvisionalRegistrationOnly()) {
-    LogHistogramForEligibilityType(
-        ContentNotificationEligibilityType::kProvisionalRegistered);
-    return true;
+  if (IsClientEligible(user_signed_in, default_search_engine)) {
+    const std::string& type = GetEnrollmentType(pref_service);
+    if (!type.empty()) {
+      return type == kEnrollmentTypeProvisionalRegistered;
+    } else if (IsProvisionalEligible(user_signed_in, default_search_engine,
+                                     pref_service) &&
+               IsContentPushNotificationsProvisionalRegistrationOnly()) {
+      pref_service->SetString(prefs::kContentNotificationsEnrollmentType,
+                              kEnrollmentTypeProvisionalRegistered);
+      LogHistogramForEligibilityType(
+          ContentNotificationEligibilityType::kProvisionalRegistered);
+      return true;
+    }
   }
   return false;
 }
@@ -292,12 +339,19 @@ bool IsContentNotificationProvisionalRegistered(bool user_signed_in,
 bool IsContentNotificationSetUpListRegistered(bool user_signed_in,
                                               bool default_search_engine,
                                               PrefService* pref_service) {
-  if (IsSetUpListEligible(user_signed_in, default_search_engine,
-                          pref_service) &&
-      IsContentPushNotificationsSetUpListRegistrationOnly()) {
-    LogHistogramForEligibilityType(
-        ContentNotificationEligibilityType::kSetUpListRegistered);
-    return true;
+  if (IsClientEligible(user_signed_in, default_search_engine)) {
+    const std::string& type = GetEnrollmentType(pref_service);
+    if (!type.empty()) {
+      return type == kEnrollmentTypeSetUpListRegistered;
+    } else if (IsSetUpListEligible(user_signed_in, default_search_engine,
+                                   pref_service) &&
+               IsContentPushNotificationsSetUpListRegistrationOnly()) {
+      pref_service->SetString(prefs::kContentNotificationsEnrollmentType,
+                              kEnrollmentTypeSetUpListRegistered);
+      LogHistogramForEligibilityType(
+          ContentNotificationEligibilityType::kSetUpListRegistered);
+      return true;
+    }
   }
   return false;
 }

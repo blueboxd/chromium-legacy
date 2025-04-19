@@ -361,7 +361,11 @@ message DeviceRegisterRequest {
   // DeviceRegisterRequest.requisition == "cros-demo-mode".
   optional DemoModeDimensions demo_mode_dimensions = 21;
 
-  // Next id: 22.
+  // Contains encoded customer information relevant for the generic OIDC profile
+  // enrollment process.
+  optional string oidc_profile_enrollment_state = 22;
+
+  // Next id: 23.
 }
 
 // Identification of a device used during its registration.
@@ -4311,13 +4315,29 @@ message CertProvAuthorizeInstruction {
 // the private key.
 message CertProvProofOfPossessionInstruction {
   // Data to sign for CSR creation.
-  // The signing algorithm is currently RSA_PKCS1_V1_5. The client will perform
-  // PKCS#1 v1.5 padding on `data_to_sign`. `data_to_sign` is expected to
-  // already contain a PKCS#1 DigestInfo prefix - the client will not attempt to
-  // add such a prefix. Also `data_to_sign` must be shorter than (key_size-11)
-  // bytes. If no other key size was specified in the
-  // RequiredClientCertificateFor{User,Device} policy, 2048 bits is assumed.
+  // Depending on the `signature_algorithm` this may either contain the PKCS#1
+  // DigestInfo in DER format (note that it must be shorter than (key_size-11)
+  // bytes) or unhashed data. The client must process `data_to_sign` according
+  // to the specified `signature_algorithm`, see comments in the
+  // `CertProvSignatureAlgorithm` enum for more details.
   optional bytes data_to_sign = 1;
+
+  // The signature algorithm that the client uses to process `data_to_sign`.
+  // This defines both the hashing and signing algorithm the client should use.
+  optional CertProvSignatureAlgorithm signature_algorithm = 2;
+}
+
+// The algorithm that the client should use / has used to sign data using its
+// private key for proof-of-posession.
+enum CertProvSignatureAlgorithm {
+  // Default value. This value is unused.
+  SIGNATURE_ALGORITHM_UNSPECIFIED = 0;
+
+  // The server-side builds the PKCS#1 DigestInfo, i.e., the SHA256 hash
+  // is constructed on the server-side. The client should sign using RSA
+  // with PKCS#1 v1.5 padding. If no other key size was specified in the
+  // RequiredClientCertificateFor{User,Device} policy, 2048 bits is assumed.
+  SIGNATURE_ALGORITHM_RSA_PKCS1_V1_5_NO_HASH = 1;
 }
 
 // The client should import an issued certificate.
@@ -4377,6 +4397,13 @@ message ClientCertificateProvisioningRequest {
 // (see existing usage of HTTP error codes described in the
 // `DeviceManagementResponse` comment).
 message CertProvBackendError {
+  // If a new error code is added to the enum and used by the DM Server to
+  // propagate an error, ChromeOS clients running older versions
+  // will not be aware of the new error code. As proto2 is using closed enums,
+  // accessing such an unknown enum field returns the enum's default value
+  // which is the first defined enum value, i.e., `ERROR_UNSPECIFIED`. ChromeOS
+  // clients treat this error by marking the associated certificate provisioning
+  // process as failing.
   enum Error {
     ERROR_UNSPECIFIED = 0;
     // The attempted request is invalid in the current state of the certificate
@@ -4542,26 +4569,21 @@ message BrowserPublicKeyUploadResponse {
 // `FmRegistrationTokenUploadResponse`.
 // See go/cros-invalidation-with-direct-messaging.
 message FmRegistrationTokenUploadRequest {
-  message TokenData {
-    // Scope of the uploaded token.
-    enum TokenType {
-      DEVICE = 0;
-      BROWSER = 1;
-      USER = 2;
-    }
-
-    optional string token = 1;
-    // Invalidation protocol version that uploader currently supports.
-    optional int64 protocol_version = 2;
-    // Scope of the uploaded token.
-    optional TokenType token_type = 3;
-    // Token's expiration timestamp in milliseconds since Epoch in UTC timezone
-    // (Java time).
-    optional int64 expiration_timestamp_ms = 4;
+  // Scope of the uploaded token.
+  enum TokenType {
+    DEVICE = 0;
+    BROWSER = 1;
+    USER = 2;
   }
 
-  // Of type `FmRegistrationTokenUploadRequest.TokenData`.
-  optional SignedData signed_request = 1;
+  optional string token = 1;
+  // Invalidation protocol version that uploader currently supports.
+  optional int64 protocol_version = 2;
+  // Scope of the uploaded token.
+  optional TokenType token_type = 3;
+  // Token's expiration timestamp in milliseconds since Epoch in UTC timezone
+  // (Java time).
+  optional int64 expiration_timestamp_ms = 4;
 }
 
 // Response to `FmRegistrationTokenUploadRequest`.

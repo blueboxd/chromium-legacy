@@ -27,6 +27,7 @@
 #include "ui/base/class_property.h"
 #include "ui/base/default_style.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/color/color_id.h"
@@ -41,6 +42,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/bubble_histograms_variant.h"
 #include "ui/views/layout/layout_manager.h"
@@ -305,6 +307,12 @@ class BubbleDialogDelegate::AnchorWidgetObserver : public WidgetObserver,
     owner_->OnAnchorBoundsChanged();
   }
 
+  void OnWidgetThemeChanged(Widget* widget) override {
+    // TODO(dfried): Consider merging BubbleWidget with ThemeCopyingWidget
+    // instead of observing the theme here.
+    owner_->GetWidget()->ThemeChanged();
+  }
+
 #if !BUILDFLAG(IS_MAC)
   // aura::WindowObserver:
   void OnWindowTransformed(aura::Window* window,
@@ -508,7 +516,7 @@ Widget* BubbleDialogDelegate::CreateBubble(
   // anchored at a specific point - they are always placed near the top center
   // of the window. To avoid unpleasant surprises, disallow setting an anchor
   // view or rectangle on these types of bubbles.
-  if (bubble_delegate->GetModalType() == ui::MODAL_TYPE_WINDOW) {
+  if (bubble_delegate->GetModalType() == ui::mojom::ModalType::kWindow) {
     DCHECK(!bubble_delegate->GetAnchorView());
     DCHECK_EQ(bubble_delegate->GetAnchorRect(), gfx::Rect());
   }
@@ -661,6 +669,9 @@ void BubbleDialogDelegate::OnAnchorWidgetBoundsChanged() {
 
 
 BubbleBorder::Shadow BubbleDialogDelegate::GetShadow() const {
+  if (!Widget::IsWindowCompositingSupported()) {
+    return BubbleBorder::Shadow::NO_SHADOW;
+  }
   return shadow_;
 }
 
@@ -737,9 +748,6 @@ gfx::Rect BubbleDialogDelegate::GetAnchorRect() const {
   // translation into account, so undo that here. Without this, features which
   // apply transforms on windows such as ChromeOS overview mode will see bubbles
   // offset.
-  // TODO(sammiequon): Investigate if we can remove |anchor_widget_| and just
-  // replace its calls with anchor_view->GetWidget().
-  DCHECK_EQ(anchor_widget_, anchor_view->GetWidget());
   if (anchor_widget_) {
     gfx::Transform transform =
         anchor_widget_->GetNativeWindow()->layer()->GetTargetTransform();
@@ -1006,7 +1014,10 @@ void BubbleDialogDelegate::SetAnchorView(View* anchor_view) {
       anchor_widget_ = nullptr;
     }
     if (anchor_view) {
-      anchor_widget_ = anchor_view->GetWidget();
+      anchor_widget_ = anchor_view->GetProperty(kWidgetForAnchoringKey);
+      if (!anchor_widget_) {
+        anchor_widget_ = anchor_view->GetWidget();
+      }
       if (anchor_widget_) {
         const bool visible = GetWidget() && GetWidget()->IsVisible();
         UpdateHighlightedButton(visible);
@@ -1129,15 +1140,17 @@ void BubbleDialogDelegate::OnBubbleWidgetVisibilityChanged(bool visible) {
   // the bubble in its entirety rather than just its title and initially focused
   // view.  See http://crbug.com/474622 for details.
   if (visible && ui::IsAlert(GetAccessibleWindowRole())) {
-    GetWidget()->GetRootView()->SetAccessibleRole(GetAccessibleWindowRole());
+    GetWidget()->GetRootView()->GetViewAccessibility().SetRole(
+        GetAccessibleWindowRole());
     GetWidget()->GetRootView()->NotifyAccessibilityEvent(
         ax::mojom::Event::kAlert, true);
   }
 }
 
 void BubbleDialogDelegate::OnDeactivate() {
-  if (ShouldCloseOnDeactivate() && GetWidget())
+  if (ShouldCloseOnDeactivate() && GetWidget()) {
     GetWidget()->CloseWithReason(views::Widget::ClosedReason::kLostFocus);
+  }
 }
 
 void BubbleDialogDelegate::NotifyAnchoredBubbleIsPrimary() {
@@ -1167,9 +1180,9 @@ void BubbleDialogDelegate::UpdateHighlightedButton(bool highlighted) {
   button = button ? button : Button::AsButton(GetAnchorView());
   if (button && highlight_button_when_shown_) {
     if (highlighted) {
-      button_anchor_higlight_ = button->AddAnchorHighlight();
+      button_anchor_highlight_ = button->AddAnchorHighlight();
     } else {
-      button_anchor_higlight_.reset();
+      button_anchor_highlight_.reset();
     }
   }
 }

@@ -46,6 +46,34 @@ using TreeEdgesList =
 constexpr FieldTypeSet kAddressComputedTypes = {
     ADDRESS_HOME_LINE1, ADDRESS_HOME_LINE2, ADDRESS_HOME_LINE3};
 
+std::u16string GetFormattingExpressionOverrides(
+    FieldType field_type,
+    AddressCountryCode country_code) {
+  // The list of countries for which the street location is composed of the
+  // house number followed by the street name. The default value returned by the
+  // formatting API is the opposite (i.e. street name followed by house number).
+  static constexpr auto kHouseNumberFirstCountriesSet =
+      base::MakeFixedFlatSet<std::string_view>(
+          {"AU", "CA", "CN", "FR", "IE", "IL", "MY", "NZ", "PK", "PH", "SA",
+           "SG", "LK", "TH", "GB", "US", "VN", "ZA"});
+
+  if (field_type == ADDRESS_HOME_STREET_LOCATION) {
+    if (base::Contains(kHouseNumberFirstCountriesSet, country_code.value())) {
+      return u"${ADDRESS_HOME_HOUSE_NUMBER;;} ${ADDRESS_HOME_STREET_NAME;;}";
+    }
+  }
+
+  if (field_type == ADDRESS_HOME_STREET_ADDRESS &&
+      country_code.value() == "ES") {
+    // TODO(crbug.com/40275657): Remove once an address model for Spain is
+    // introduced.
+    return u"${ADDRESS_HOME_STREET_NAME} ${ADDRESS_HOME_HOUSE_NUMBER}"
+           u"${ADDRESS_HOME_FLOOR;, ;º}${ADDRESS_HOME_APT_NUM;, ;ª}";
+  }
+
+  return u"";
+}
+
 // Returns an instance of the `AddressComponent` implementation that matches
 // the corresponding FieldType if exists. Otherwise, returns a default
 // `AddressComponent`.
@@ -310,6 +338,11 @@ std::u16string GetFormattingExpression(FieldType field_type,
                  : u"";
     }
 
+    if (std::u16string format_override =
+            GetFormattingExpressionOverrides(field_type, country_code);
+        !format_override.empty()) {
+      return format_override;
+    }
     // Otherwise return a legacy formatting expression that exists.
     auto legacy_it = kAutofillFormattingRulesMap.find(
         {kLegacyHierarchyCountryCode.value(), field_type});
@@ -385,13 +418,28 @@ bool IsCustomHierarchyAvailableForCountry(AddressCountryCode country_code) {
     return false;
   }
 
+  if (country_code == AddressCountryCode("CA") &&
+      !base::FeatureList::IsEnabled(features::kAutofillUseCAAddressModel)) {
+    return false;
+  }
+
   if (country_code == AddressCountryCode("DE") &&
       !base::FeatureList::IsEnabled(features::kAutofillUseDEAddressModel)) {
     return false;
   }
 
+  if (country_code == AddressCountryCode("FR") &&
+      !base::FeatureList::IsEnabled(features::kAutofillUseFRAddressModel)) {
+    return false;
+  }
+
   if (country_code == AddressCountryCode("IN") &&
       !base::FeatureList::IsEnabled(features::kAutofillUseINAddressModel)) {
+    return false;
+  }
+
+  if (country_code == AddressCountryCode("IT") &&
+      !base::FeatureList::IsEnabled(features::kAutofillUseITAddressModel)) {
     return false;
   }
 

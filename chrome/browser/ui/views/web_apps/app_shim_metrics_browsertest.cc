@@ -20,7 +20,7 @@ using AppShimMetricsTest = WebAppIntegrationTest;
 
 IN_PROC_BROWSER_TEST_F(AppShimMetricsTest, Basics) {
   base::HistogramTester histogram_tester;
-  helper_.CreateShortcut(Site::kStandalone, WindowOptions::kWindowed);
+  helper_.InstallMenuOption(InstallableSite::kStandalone);
   helper_.CheckWindowCreated();
 
   FetchHistogramsFromChildProcesses();

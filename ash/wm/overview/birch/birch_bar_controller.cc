@@ -6,18 +6,21 @@
 
 #include "ash/birch/birch_model.h"
 #include "ash/constants/ash_pref_names.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/birch/birch_bar_constants.h"
 #include "ash/wm/overview/birch/birch_bar_context_menu_model.h"
 #include "ash/wm/overview/birch/birch_bar_menu_model_adapter.h"
 #include "ash/wm/overview/birch/birch_bar_view.h"
 #include "ash/wm/overview/birch/birch_chip_context_menu_model.h"
+#include "ash/wm/overview/birch/birch_privacy_nudge_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
 namespace ash {
@@ -62,8 +65,12 @@ std::string GetPrefNameFromSuggestionType(BirchSuggestionType type) {
       return prefs::kBirchUseCalendar;
     case BirchSuggestionType::kDrive:
       return prefs::kBirchUseFileSuggest;
-    case BirchSuggestionType::kTab:
-      return prefs::kBirchUseRecentTabs;
+    case BirchSuggestionType::kChromeTab:
+      return prefs::kBirchUseChromeTabs;
+    case BirchSuggestionType::kMedia:
+      return prefs::kBirchUseLostMedia;
+    case BirchSuggestionType::kCoral:
+      return prefs::kBirchUseCoral;
     case BirchSuggestionType::kExplore:
     case BirchSuggestionType::kUndefined:
       NOTREACHED_NORETURN();
@@ -72,8 +79,8 @@ std::string GetPrefNameFromSuggestionType(BirchSuggestionType type) {
 
 }  // namespace
 
-BirchBarController::BirchBarController(bool from_pine_service)
-    : from_pine_service_(from_pine_service) {
+BirchBarController::BirchBarController(bool is_informed_restore)
+    : is_informed_restore_(is_informed_restore) {
   // Init and register the show suggestions pref changed callback.
   show_suggestions_pref_registrar_.Init(GetPrefService());
   show_suggestions_pref_registrar_.Add(
@@ -86,8 +93,8 @@ BirchBarController::BirchBarController(bool from_pine_service)
 
   for (const auto& suggestion_pref :
        {prefs::kBirchUseCalendar, prefs::kBirchUseWeather,
-        prefs::kBirchUseFileSuggest, prefs::kBirchUseRecentTabs,
-        prefs::kBirchUseSelfShare, prefs::kBirchUseReleaseNotes}) {
+        prefs::kBirchUseFileSuggest, prefs::kBirchUseChromeTabs,
+        prefs::kBirchUseLostMedia, prefs::kBirchUseReleaseNotes}) {
     customize_suggestions_pref_registrar_.Add(
         suggestion_pref,
         base::BindRepeating(
@@ -104,7 +111,7 @@ BirchBarController::BirchBarController(bool from_pine_service)
 BirchBarController::~BirchBarController() {
   // Avoid dangling pointers to our `items_`.
   for (auto& bar_view : bar_views_) {
-    bar_view->Shutdown();
+    bar_view->ShutdownChips();
   }
 }
 
@@ -125,11 +132,8 @@ void BirchBarController::RegisterBar(BirchBarView* bar_view) {
   bar_views_.emplace_back(bar_view);
 
   // Directly initialize the bar view if data fetching is done.
-  if (!birch_model_observer_.IsObserving() && !data_fetch_in_progress_) {
+  if (!IsDataLoading()) {
     InitBarWithItems(bar_view, items_);
-  } else if (from_pine_service_) {
-    // Perform loading animation at the beginning of pine section.
-    bar_view->Loading();
   }
 }
 
@@ -153,6 +157,7 @@ void BirchBarController::ShowChipContextMenu(BirchChipButton* chip,
                      weak_ptr_factory_.GetWeakPtr()),
       Shell::Get()->IsInTabletMode());
   chip_menu_model_adapter_->set_close_menu_on_customizing_suggestions(true);
+  BirchPrivacyNudgeController::DidShowContextMenu();
   chip_menu_model_adapter_->Run(gfx::Rect(point, gfx::Size()),
                                 views::MenuAnchorPosition::kBubbleTopRight,
                                 views::MenuRunner::CONTEXT_MENU |
@@ -161,16 +166,20 @@ void BirchBarController::ShowChipContextMenu(BirchChipButton* chip,
 }
 
 void BirchBarController::OnItemHiddenByUser(BirchItem* item) {
+  // Do not remove the item if the bars are animating.
+  if (std::ranges::any_of(bar_views_, [](BirchBarView* bar_view) {
+        return bar_view->IsAnimating();
+      })) {
+    return;
+  }
+
   // Remove the item from birch bars. If there is an extra item not showing in
   // the bars, push it in the bars.
   BirchItem* extra_item = items_.size() > BirchBarView::kMaxChipsNum
                               ? items_[BirchBarView::kMaxChipsNum].get()
                               : nullptr;
   for (auto& bar_view : bar_views_) {
-    bar_view->RemoveChip(item);
-    if (extra_item) {
-      bar_view->AddChip(extra_item);
-    }
+    bar_view->RemoveChip(item, extra_item);
   }
 
   // Erase the item from model and controller.
@@ -200,6 +209,23 @@ bool BirchBarController::GetShowSuggestionType(BirchSuggestionType type) const {
       GetPrefNameFromSuggestionType(type));
 }
 
+bool BirchBarController::IsDataLoading() const {
+  return birch_model_observer_.IsObserving() || data_fetch_in_progress_;
+}
+
+void BirchBarController::ToggleTemperatureUnits() {
+  // Toggle the preference.
+  auto* pref_service = GetPrefService();
+  bool current_value = pref_service->GetBoolean(prefs::kBirchUseCelsius);
+  pref_service->SetBoolean(prefs::kBirchUseCelsius, !current_value);
+
+  // Refresh the suggestion chips.
+  for (auto& bar_view : bar_views_) {
+    bar_view->SetState(BirchBarView::State::kReloading);
+  }
+  MaybeFetchDataFromModel();
+}
+
 void BirchBarController::ExecuteCommand(int command_id, int event_flags) {
   if (command_id ==
       base::to_underlying(BirchBarContextMenuModel::CommandId::kReset)) {
@@ -210,7 +236,8 @@ void BirchBarController::ExecuteCommand(int command_id, int event_flags) {
           &hold_data_request_on_suggestion_pref_change_, true);
       for (const auto& pref_name :
            {prefs::kBirchUseWeather, prefs::kBirchUseCalendar,
-            prefs::kBirchUseFileSuggest, prefs::kBirchUseRecentTabs}) {
+            prefs::kBirchUseFileSuggest, prefs::kBirchUseChromeTabs,
+            prefs::kBirchUseLostMedia}) {
         auto* pref_service = GetPrefService();
         suggestion_pref_changed |= !pref_service->GetBoolean(pref_name);
         pref_service->SetBoolean(pref_name, true);
@@ -235,7 +262,7 @@ void BirchBarController::MaybeFetchDataFromModel() {
     // Fetching data from model.
     data_fetch_in_progress_ = true;
     birch_model->RequestBirchDataFetch(
-        /*is_post_login=*/from_pine_service_,
+        /*is_post_login=*/is_informed_restore_,
         base::BindOnce(&BirchBarController::OnItemsFetchedFromModel,
                        weak_ptr_factory_.GetWeakPtr()));
   } else if (!birch_model_observer_.IsObserving()) {
@@ -309,9 +336,10 @@ void BirchBarController::OnShowSuggestionsPrefChanged() {
   for (auto& root : Shell::GetAllRootWindows()) {
     auto* overview_grid = overview_session->GetGridWithRootWindow(root);
     if (show) {
+      MaybeFetchDataFromModel();
       overview_grid->MaybeInitBirchBarWidget(/*by_user=*/true);
     } else {
-      overview_grid->DestroyBirchBarWidget(/*by_user=*/true);
+      overview_grid->ShutdownBirchBarWidgetByUser();
     }
   }
 }
@@ -322,7 +350,7 @@ void BirchBarController::OnCustomizeSuggestionsPrefChanged() {
   }
 
   for (auto& bar_view : bar_views_) {
-    bar_view->Reloading();
+    bar_view->SetState(BirchBarView::State::kReloading);
   }
 
   MaybeFetchDataFromModel();

@@ -16,12 +16,13 @@
 #include "base/strings/strcat.h"
 #include "base/time/time.h"
 #include "base/types/cxx23_to_underlying.h"
+#include "components/optimization_guide/core/model_execution/model_execution_features.h"
+#include "components/optimization_guide/core/model_execution/model_execution_prefs.h"
 #include "components/optimization_guide/core/model_execution/model_execution_util.h"
 #include "components/optimization_guide/core/model_util.h"
 #include "components/optimization_guide/core/optimization_guide_constants.h"
 #include "components/optimization_guide/core/optimization_guide_enums.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
-#include "components/optimization_guide/core/optimization_guide_prefs.h"
 #include "components/prefs/pref_service.h"
 
 namespace optimization_guide {
@@ -46,19 +47,21 @@ base::WeakPtr<OnDeviceModelComponentStateManager>& GetInstance() {
   return *state_manager_instance.get();
 }
 
-bool WasAnOnDeviceFeatureRecentlyUsed(const PrefService& local_state) {
-  base::Time last_use = local_state.GetTime(
-      prefs::localstate::kLastTimeOnDeviceEligibleFeatureWasUsed);
-  constexpr base::TimeDelta grace_period = base::Days(7);
-  auto time_since_use = base::Time::Now() - last_use;
-  // Note: Since we're storing a base::Time, we need to consider the possibility
-  // of clock changes.
-  return time_since_use < grace_period && time_since_use > -grace_period;
+bool WasAnyOnDeviceEligibleFeatureRecentlyUsed(const PrefService& local_state) {
+  for (const ModelBasedCapabilityKey key : kAllModelBasedCapabilityKeys) {
+    if (!features::internal::IsOnDeviceModelEnabled(key)) {
+      continue;
+    }
+    if (WasOnDeviceEligibleFeatureRecentlyUsed(key, local_state)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 bool IsDeviceCapable(const PrefService& local_state) {
-  int value =
-      local_state.GetInteger(prefs::localstate::kOnDevicePerformanceClass);
+  int value = local_state.GetInteger(
+      model_execution::prefs::localstate::kOnDevicePerformanceClass);
   if (value < 0 ||
       value > static_cast<int>(OnDeviceModelPerformanceClass::kMaxValue)) {
     return false;
@@ -136,34 +139,38 @@ void LogInstallCriteria(
 }  // namespace
 
 void OnDeviceModelComponentStateManager::UninstallComplete() {
-  local_state_->ClearPref(
-      prefs::localstate::kLastTimeEligibleForOnDeviceModelDownload);
+  local_state_->ClearPref(model_execution::prefs::localstate::
+                              kLastTimeEligibleForOnDeviceModelDownload);
   component_installer_registered_ = false;
 }
 
-void OnDeviceModelComponentStateManager::OnDeviceEligibleFeatureUsed() {
+OnDeviceModelStatus
+OnDeviceModelComponentStateManager::GetOnDeviceModelStatus() {
+  if (GetState() != nullptr) {
+    return OnDeviceModelStatus::kReady;
+  }
+  if (!registration_criteria_) {
+    return OnDeviceModelStatus::kNotReadyForUnknownReason;
+  }
+  if (component_installer_registered_) {
+    return OnDeviceModelStatus::kInstallNotComplete;
+  }
+  if (registration_criteria_->should_install()) {
+    // This may happen before the first registration.
+    return OnDeviceModelStatus::kModelInstallerNotRegisteredForUnknownReason;
+  }
+  return OnDeviceModelStatus::kNotEligible;
+}
+
+void OnDeviceModelComponentStateManager::OnDeviceEligibleFeatureUsed(
+    ModelBasedCapabilityKey feature) {
   local_state_->SetTime(
-      prefs::localstate::kLastTimeOnDeviceEligibleFeatureWasUsed,
+      model_execution::prefs::GetOnDeviceFeatureRecentlyUsedPref(feature),
       base::Time::Now());
 
-  OnDeviceModelStatus status;
-  if (GetState() != nullptr) {
-    status = OnDeviceModelStatus::kReady;
-  } else if (!registration_criteria_) {
-    status = OnDeviceModelStatus::kNotReadyForUnknownReason;
-  } else {
-    if (component_installer_registered_) {
-      status = OnDeviceModelStatus::kInstallNotComplete;
-    } else if (registration_criteria_->should_install()) {
-      status =
-          OnDeviceModelStatus::kModelInstallerNotRegisteredForUnknownReason;
-    } else {
-      status = OnDeviceModelStatus::kNotEligible;
-    }
-  }
-
   base::UmaHistogramEnumeration(
-      "OptimizationGuide.ModelExecution.OnDeviceModelStatusAtUseTime", status);
+      "OptimizationGuide.ModelExecution.OnDeviceModelStatusAtUseTime",
+      GetOnDeviceModelStatus());
 
   if (registration_criteria_) {
     LogInstallCriteria(*registration_criteria_, "AtAttemptedUse");
@@ -174,8 +181,9 @@ void OnDeviceModelComponentStateManager::OnDeviceEligibleFeatureUsed() {
 
 void OnDeviceModelComponentStateManager::DevicePerformanceClassChanged(
     OnDeviceModelPerformanceClass performance_class) {
-  local_state_->SetInteger(prefs::localstate::kOnDevicePerformanceClass,
-                           base::to_underlying(performance_class));
+  local_state_->SetInteger(
+      model_execution::prefs::localstate::kOnDevicePerformanceClass,
+      base::to_underlying(performance_class));
 
   BeginUpdateRegistration();
 }
@@ -184,9 +192,12 @@ void OnDeviceModelComponentStateManager::OnStartup() {
   if (auto model_path_override_switch =
           switches::GetOnDeviceModelExecutionOverride()) {
     is_model_allowed_ = true;
-    SetReady(base::Version("override"),
-             *StringToFilePath(*model_path_override_switch),
-             base::Value::Dict());
+    SetReady(
+        base::Version("override"),
+        *StringToFilePath(*model_path_override_switch),
+        base::Value::Dict().Set("BaseModelSpec", base::Value::Dict()
+                                                     .Set("version", "override")
+                                                     .Set("name", "override")));
     return;
   }
   BeginUpdateRegistration();
@@ -200,6 +211,9 @@ void OnDeviceModelComponentStateManager::InstallerRegistered() {
 }
 
 void OnDeviceModelComponentStateManager::BeginUpdateRegistration() {
+  if (switches::GetOnDeviceModelExecutionOverride()) {
+    return;
+  }
   delegate_->GetFreeDiskSpace(
       delegate_->GetInstallDirectory(),
       base::BindOnce(
@@ -215,9 +229,9 @@ void OnDeviceModelComponentStateManager::CompleteUpdateRegistration(
   registration_criteria_ = std::make_unique<RegistrationCriteria>(criteria);
 
   if (criteria.should_install()) {
-    local_state_->SetTime(
-        prefs::localstate::kLastTimeEligibleForOnDeviceModelDownload,
-        base::Time::Now());
+    local_state_->SetTime(model_execution::prefs::localstate::
+                              kLastTimeEligibleForOnDeviceModelDownload,
+                          base::Time::Now());
   }
 
   bool was_allowed = is_model_allowed_;
@@ -257,14 +271,16 @@ OnDeviceModelComponentStateManager::GetRegistrationCriteria(
       IsFreeDiskSpaceSufficientForOnDeviceModelInstall(disk_space_free_bytes);
   result.device_capable = IsDeviceCapable(*local_state_);
   result.on_device_feature_recently_used =
-      WasAnOnDeviceFeatureRecentlyUsed(*local_state_);
+      WasAnyOnDeviceEligibleFeatureRecentlyUsed(*local_state_);
   result.enabled_by_feature = features::IsOnDeviceExecutionEnabled();
   result.enabled_by_enterprise_policy =
       GetGenAILocalFoundationalModelEnterprisePolicySettings(local_state_) ==
-      prefs::GenAILocalFoundationalModelEnterprisePolicySettings::kAllowed;
+      model_execution::prefs::
+          GenAILocalFoundationalModelEnterprisePolicySettings::kAllowed;
 
-  auto last_time_eligible = local_state_->GetTime(
-      prefs::localstate::kLastTimeEligibleForOnDeviceModelDownload);
+  auto last_time_eligible =
+      local_state_->GetTime(model_execution::prefs::localstate::
+                                kLastTimeEligibleForOnDeviceModelDownload);
 
   result.is_already_installing = last_time_eligible != base::Time::Min();
 
@@ -339,14 +355,16 @@ void OnDeviceModelComponentStateManager::SetReady(
     const base::Version& version,
     const base::FilePath& install_dir,
     const base::Value::Dict& manifest) {
-  state_ = base::WrapUnique(new OnDeviceModelComponentState);
-  state_->install_dir_ = install_dir;
-  // This version refers to the component version specifically, not the model
-  // version.
-  state_->component_version_ = version;
-  // Populate the model version and name from the manifest into the Chrome
-  // pref cache. If not present, clears the state and cache.
-  state_->model_spec_ = ReadBaseModelSpecFromManifest(manifest);
+  state_.reset();
+
+  if (auto model_spec = ReadBaseModelSpecFromManifest(manifest)) {
+    state_ = base::WrapUnique(new OnDeviceModelComponentState);
+    state_->install_dir_ = install_dir;
+    // This version refers to the component version specifically, not the model
+    // version.
+    state_->component_version_ = version;
+    state_->model_spec_ = *model_spec;
+  }
   if (is_model_allowed_) {
     NotifyStateChanged();
   }

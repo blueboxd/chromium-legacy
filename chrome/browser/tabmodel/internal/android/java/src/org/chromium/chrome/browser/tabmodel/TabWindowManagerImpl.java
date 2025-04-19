@@ -80,6 +80,8 @@ public class TabWindowManagerImpl implements ActivityStateListener, TabWindowMan
     private final AsyncTabParamsManager mAsyncTabParamsManager;
     private final int mMaxSelectors;
 
+    private TabModelSelector mArchivedTabModelSelector;
+
     TabWindowManagerImpl(
             TabModelSelectorFactory selectorFactory,
             AsyncTabParamsManager asyncTabParamsManager,
@@ -428,12 +430,38 @@ public class TabWindowManagerImpl implements ActivityStateListener, TabWindowMan
             return mAsyncTabParamsManager.getAsyncTabParams().get(tabId).getTabToReparent();
         }
 
+        if (mArchivedTabModelSelector != null) {
+            final Tab tab = mArchivedTabModelSelector.getTabById(tabId);
+            if (tab != null) return tab;
+        }
+
         return null;
     }
 
     @Override
     public TabModelSelector getTabModelSelectorById(int index) {
         return mSelectors.get(index);
+    }
+
+    @Override
+    public void setArchivedTabModelSelector(TabModelSelector archivedTabModelSelector) {
+        mArchivedTabModelSelector = archivedTabModelSelector;
+    }
+
+    @Override
+    public boolean canTabStateBeDeleted(int tabId) {
+        boolean isPossiblyAnArchivedTab = isPossiblyAnArchivedTab();
+        RecordHistogram.recordBooleanHistogram(
+                "Tabs.TabStateCleanupAbortedByArchive", isPossiblyAnArchivedTab);
+        return !isPossiblyAnArchivedTab && getTabById(tabId) == null;
+    }
+
+    @Override
+    public boolean canTabThumbnailBeDeleted(int tabId) {
+        boolean isPossiblyAnArchivedTab = isPossiblyAnArchivedTab();
+        RecordHistogram.recordBooleanHistogram(
+                "Tabs.TabThumbnailCleanupAbortedByArchive", isPossiblyAnArchivedTab);
+        return !isPossiblyAnArchivedTab && getTabById(tabId) == null;
     }
 
     // ActivityStateListener
@@ -452,5 +480,11 @@ public class TabWindowManagerImpl implements ActivityStateListener, TabWindowMan
             mSelectors.set(index, null);
         }
         return index;
+    }
+
+    private boolean isPossiblyAnArchivedTab() {
+        return ChromeFeatureList.sAndroidTabDeclutter.isEnabled()
+                && (mArchivedTabModelSelector == null
+                        || !mArchivedTabModelSelector.isTabStateInitialized());
     }
 }

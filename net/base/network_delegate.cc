@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/ranges/algorithm.h"
+#include "base/threading/thread_checker.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/trace_constants.h"
@@ -79,6 +80,12 @@ void NetworkDelegate::NotifyBeforeRedirect(URLRequest* request,
   OnBeforeRedirect(request, new_location);
 }
 
+void NetworkDelegate::NotifyBeforeRetry(URLRequest* request) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  CHECK(request);
+  OnBeforeRetry(request);
+}
+
 void NetworkDelegate::NotifyCompleted(URLRequest* request,
                                       bool started,
                                       int net_error) {
@@ -126,6 +133,12 @@ bool NetworkDelegate::CanSetCookie(
   DCHECK(!(request.load_flags() & LOAD_DO_NOT_SAVE_COOKIES));
   return OnCanSetCookie(request, cookie, options, first_party_set_metadata,
                         inclusion_status);
+}
+
+std::optional<cookie_util::StorageAccessStatus>
+NetworkDelegate::GetStorageAccessStatus(const URLRequest& request) const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  return OnGetStorageAccessStatus(request);
 }
 
 NetworkDelegate::PrivacySetting NetworkDelegate::ForcePrivacyMode(

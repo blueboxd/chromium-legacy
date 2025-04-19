@@ -153,15 +153,16 @@ void CustomScrollbarTheme::PaintScrollCorner(
   context.FillRect(corner_rect, Color::kWhite, AutoDarkMode::Disabled());
 }
 
-void CustomScrollbarTheme::PaintTrackAndButtons(GraphicsContext& context,
-                                                const Scrollbar& scrollbar,
-                                                const gfx::Vector2d& offset) {
+void CustomScrollbarTheme::PaintTrackBackgroundAndButtons(
+    GraphicsContext& context,
+    const Scrollbar& scrollbar,
+    const gfx::Rect& rect) {
   // Custom scrollbars are always painted in their original coordinate space,
   // i.e. the space of Scrollbar::FrameRect() and ScrollbarTheme::XXXRect()
   // which is |context|'s current space.
-  DCHECK_EQ(offset, gfx::Vector2d());
+  CHECK_EQ(rect, scrollbar.FrameRect());
 
-  PaintPart(context, scrollbar, scrollbar.FrameRect(), kScrollbarBGPart);
+  PaintPart(context, scrollbar, rect, kScrollbarBGPart);
 
   if (HasButtons(scrollbar)) {
     PaintButton(context, scrollbar, ButtonRect(scrollbar, kBackButtonStartPart),

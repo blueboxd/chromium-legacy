@@ -12,6 +12,7 @@
 #include "ash/ash_export.h"
 #include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
 
 namespace gfx {
 struct VectorIcon;
@@ -44,7 +45,8 @@ class ASH_EXPORT VcEffectState {
                 int accessible_name_id,
                 base::RepeatingClosure button_callback,
                 std::optional<int> state_value = std::nullopt,
-                int view_id = -1);
+                int view_id = -1,
+                bool is_disabled_by_enterprise = false);
 
   VcEffectState(const VcEffectState&) = delete;
   VcEffectState& operator=(const VcEffectState&) = delete;
@@ -56,8 +58,12 @@ class ASH_EXPORT VcEffectState {
   const std::u16string& label_text() const { return label_text_; }
   int accessible_name_id() const { return accessible_name_id_; }
   int view_id() const { return view_id_; }
+  bool is_disabled_by_enterprise() const { return is_disabled_by_enterprise_; }
   const base::RepeatingClosure& button_callback() const {
     return button_callback_;
+  }
+  base::WeakPtr<const VcEffectState> get_weak_state() const {
+    return weak_ptr_factory_.GetWeakPtr();
   }
 
  private:
@@ -81,6 +87,11 @@ class ASH_EXPORT VcEffectState {
 
   // Optional id used to identify the state view.
   const int view_id_;
+
+  // Whether this effect state is disabled by enterprise policy.
+  bool is_disabled_by_enterprise_;
+
+  base::WeakPtrFactory<const VcEffectState> weak_ptr_factory_{this};
 };
 
 // Designates the type of user-adjustments made to this effect.
@@ -102,7 +113,8 @@ enum class VcEffectId {
   kNoiseCancellation = 2,
   kLiveCaption = 3,
   kCameraFraming = 4,
-  kMaxValue = kCameraFraming,
+  kStyleTransfer = 5,
+  kMaxValue = kStyleTransfer,
 };
 
 // Represents a single video conference effect that's being "hosted" by an
@@ -148,6 +160,8 @@ class ASH_EXPORT VcHostedEffect {
   // Retrieves a raw pointer to the `VcEffectState` at `index`.
   const VcEffectState* GetState(int index) const;
 
+  base::WeakPtr<const VcEffectState> GetWeakState(int index) const;
+
   VcEffectType type() const { return type_; }
 
   const GetEffectStateCallback& get_state_callback() const {
@@ -173,6 +187,10 @@ class ASH_EXPORT VcHostedEffect {
 
   std::optional<int> container_id() const { return container_id_; }
   void set_container_id(std::optional<int> id) { container_id_ = id; }
+
+  base::WeakPtr<const VcHostedEffect> get_weak_ptr() const {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
 
  private:
   // The type of value adjustment of this effect,
@@ -205,6 +223,8 @@ class ASH_EXPORT VcHostedEffect {
 
   // The effects delegate associated with this effect.
   raw_ptr<VcEffectsDelegate> delegate_ = nullptr;
+
+  base::WeakPtrFactory<VcHostedEffect> weak_ptr_factory_{this};
 };
 
 }  // namespace ash

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/debug/stack_trace.h"
+#include "base/not_fatal_until.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "components/viz/common/features.h"
@@ -275,7 +276,8 @@ bool CanvasResourceDispatcher::PrepareFrame(
       canvas_resource->FilterQuality() == cc::PaintFlags::FilterQuality::kNone;
 
   canvas_resource->PrepareTransferableResource(
-      &resource, &frame_resource->release_callback, kVerifiedSyncToken);
+      &resource, &frame_resource->release_callback,
+      /*needs_verified_synctoken=*/true);
   const viz::ResourceId resource_id = next_resource_id;
   resource.id = resource_id;
 
@@ -410,7 +412,7 @@ void CanvasResourceDispatcher::ReclaimResources(
   for (const auto& resource : resources) {
     auto it = resources_.find(resource.id);
 
-    DCHECK(it != resources_.end());
+    CHECK(it != resources_.end(), base::NotFatalUntil::M130);
     if (it == resources_.end())
       continue;
 

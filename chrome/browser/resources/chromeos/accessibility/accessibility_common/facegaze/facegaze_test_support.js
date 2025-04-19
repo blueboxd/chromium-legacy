@@ -41,6 +41,14 @@ class FaceGazeTestSupport {
     return this.getFaceGaze_().gestureHandler_;
   }
 
+  /**
+   * @return {!WebCamFaceLandmarker}
+   * @private
+   */
+  getWebCamFaceLandmarker_() {
+    return this.getFaceGaze_().webCamFaceLandmarker_;
+  }
+
   /** Cancels the MouseController interval to increase stability in tests. */
   cancelMouseControllerInterval() {
     clearInterval(this.getMouseController_().mouseInterval_);
@@ -58,21 +66,9 @@ class FaceGazeTestSupport {
     this.notifyCcTests_();
   }
 
-  /**
-   * Gets the WebCamFaceLandmarker object off of the camera stream window.
-   * @return {!webCamFaceLandmarker}
-   * @private
-   */
-  async waitForWebCamFaceLandmarker_() {
-    await this.getFaceGaze_().cameraStreamReadyPromise_;
-    const window = chrome.extension.getViews().find(
-        view => view.location.href.includes('camera_stream.html'));
-    return window.webCamFaceLandmarker;
-  }
-
   /** Instantiates the FaceLandmarker. */
   async createFaceLandmarker() {
-    const webCamFaceLandmarker = await this.waitForWebCamFaceLandmarker_();
+    const webCamFaceLandmarker = this.getWebCamFaceLandmarker_();
     await webCamFaceLandmarker.createFaceLandmarker_();
     if (webCamFaceLandmarker.faceLandmarker_) {
       this.notifyCcTests_();
@@ -126,15 +122,17 @@ class FaceGazeTestSupport {
    * camera data.
    * @param {!{x: number, y: number, z: number}} foreheadLocation
    * @param {!Array<{categoryName: string, score: number}>} recognizedGestures
+   * @param {number|undefined} latency
    */
-  async processFaceLandmarkerResult(foreheadLocation, recognizedGestures) {
+  async processFaceLandmarkerResult(
+      foreheadLocation, recognizedGestures, latency) {
     const result = {
       faceBlendshapes: [{categories: []}],
       faceLandmarks: [[null, null, null, null, null, null, null, null, null]],
     };
     result.faceBlendshapes[0].categories = recognizedGestures;
     result.faceLandmarks[0][8] = foreheadLocation;
-    this.getFaceGaze_().processFaceLandmarkerResult_(result);
+    this.getFaceGaze_().processFaceLandmarkerResult_(result, latency);
     this.notifyCcTests_();
   }
 

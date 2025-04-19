@@ -7,7 +7,7 @@ import 'chrome-untrusted://read-anything-side-panel.top-chrome/read_anything.js'
 import {BrowserProxy} from '//resources/cr_components/color_change_listener/browser_proxy.js';
 import type {CrIconButtonElement} from '//resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import {flush} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {LETTER_SPACING_EVENT} from 'chrome-untrusted://read-anything-side-panel.top-chrome/read_anything.js';
+import {ToolbarEvent} from 'chrome-untrusted://read-anything-side-panel.top-chrome/read_anything.js';
 import type {ReadAnythingToolbarElement} from 'chrome-untrusted://read-anything-side-panel.top-chrome/read_anything.js';
 import {assertEquals, assertTrue} from 'chrome-untrusted://webui-test/chai_assert.js';
 
@@ -18,7 +18,7 @@ import {TestColorUpdaterBrowserProxy} from './test_color_updater_browser_proxy.j
 suite('LetterSpacing', () => {
   let testBrowserProxy: TestColorUpdaterBrowserProxy;
   let toolbar: ReadAnythingToolbarElement;
-  let spacingEmitted: number;
+  let spacingEmitted: boolean;
 
   setup(() => {
     suppressInnocuousErrors();
@@ -27,10 +27,9 @@ suite('LetterSpacing', () => {
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
     const readingMode = new FakeReadingMode();
     chrome.readingMode = readingMode as unknown as typeof chrome.readingMode;
-    spacingEmitted = -1;
-    document.addEventListener(LETTER_SPACING_EVENT, event => {
-      spacingEmitted = (event as CustomEvent).detail.data;
-    });
+    spacingEmitted = false;
+    document.addEventListener(
+        ToolbarEvent.LETTER_SPACING, () => spacingEmitted = true);
     toolbar = document.createElement('read-anything-toolbar');
     document.body.appendChild(toolbar);
     flush();
@@ -55,34 +54,34 @@ suite('LetterSpacing', () => {
     });
 
     test('has 3 options', () => {
-      assertEquals(letterSpacingMenuOptions.length, 3);
+      assertEquals(3, letterSpacingMenuOptions.length);
     });
 
     test('first option propagates standard spacing', () => {
       letterSpacingMenuOptions[0]!.click();
 
-      assertEquals(spacingEmitted, chrome.readingMode.standardLetterSpacing);
+      assertTrue(spacingEmitted);
       assertEquals(
-          chrome.readingMode.letterSpacing,
-          chrome.readingMode.standardLetterSpacing);
+          chrome.readingMode.standardLetterSpacing,
+          chrome.readingMode.letterSpacing);
     });
 
     test('second option propagates wide spacing', () => {
       letterSpacingMenuOptions[1]!.click();
 
-      assertEquals(spacingEmitted, chrome.readingMode.wideLetterSpacing);
+      assertTrue(spacingEmitted);
       assertEquals(
-          chrome.readingMode.letterSpacing,
-          chrome.readingMode.wideLetterSpacing);
+          chrome.readingMode.wideLetterSpacing,
+          chrome.readingMode.letterSpacing);
     });
 
     test('third option propagates very wide spacing', () => {
       letterSpacingMenuOptions[2]!.click();
 
-      assertEquals(spacingEmitted, chrome.readingMode.veryWideLetterSpacing);
+      assertTrue(spacingEmitted);
       assertEquals(
-          chrome.readingMode.letterSpacing,
-          chrome.readingMode.veryWideLetterSpacing);
+          chrome.readingMode.veryWideLetterSpacing,
+          chrome.readingMode.letterSpacing);
     });
   });
 });

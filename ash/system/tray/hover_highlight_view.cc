@@ -84,9 +84,10 @@ void HoverHighlightView::AddRightView(views::View* view,
   tri_view_->SetContainerVisible(TriView::Container::END, true);
 
   GetViewAccessibility().SetRole(ax::mojom::Role::kGenericContainer);
-  GetViewAccessibility().SetName(GetAccessibleName());
+  GetViewAccessibility().SetName(GetViewAccessibility().GetCachedName());
   GetViewAccessibility().SetDescription(
       l10n_util::GetStringUTF16(IDS_ASH_A11Y_ROLE_BUTTON));
+  SetAndUpdateAccessibleDefaultAction();
 }
 
 void HoverHighlightView::AddAdditionalRightView(views::View* view) {
@@ -110,6 +111,7 @@ void HoverHighlightView::SetRightViewVisible(bool visible) {
   }
 
   DeprecatedLayoutImmediately();
+  SetAndUpdateAccessibleDefaultAction();
 }
 
 void HoverHighlightView::SetSubText(const std::u16string& sub_text) {
@@ -182,7 +184,7 @@ void HoverHighlightView::AddViewAndLabel(std::unique_ptr<views::View> view,
 
   AddSubRowContainer();
 
-  SetAccessibleName(text);
+  GetViewAccessibility().SetName(text);
 }
 
 void HoverHighlightView::AddLabelRow(const std::u16string& text) {
@@ -203,7 +205,7 @@ void HoverHighlightView::AddLabelRow(const std::u16string& text) {
 
   AddSubRowContainer();
 
-  SetAccessibleName(text);
+  GetViewAccessibility().SetName(text);
 }
 
 void HoverHighlightView::AddLabelRow(const std::u16string& text,
@@ -250,6 +252,7 @@ void HoverHighlightView::Reset() {
   tri_view_ = nullptr;
 
   RemoveAllChildViews();
+  SetAndUpdateAccessibleDefaultAction();
 
   is_populated_ = false;
 }
@@ -273,38 +276,6 @@ void HoverHighlightView::PerformAction() {
   }
 
   listener_->OnViewClicked(this);
-}
-
-void HoverHighlightView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  if (right_view_ && right_view_->GetVisible() &&
-      std::string(right_view_->GetClassName()).find("Button") !=
-          std::string::npos) {
-    // Allow selection of sub-components.
-    node_data->role = ax::mojom::Role::kGenericContainer;
-
-    // Include "press search plus space to activate" when announcing.
-    node_data->SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kClick);
-
-    node_data->SetName(GetAccessibleName());
-    node_data->SetDescription(
-        l10n_util::GetStringUTF16(IDS_ASH_A11Y_ROLE_BUTTON));
-  } else {
-    views::Button::GetAccessibleNodeData(node_data);
-  }
-
-  ax::mojom::CheckedState checked_state;
-
-  if (accessibility_state_ == AccessibilityState::CHECKED_CHECKBOX) {
-    checked_state = ax::mojom::CheckedState::kTrue;
-  } else if (accessibility_state_ == AccessibilityState::UNCHECKED_CHECKBOX) {
-    checked_state = ax::mojom::CheckedState::kFalse;
-  } else {
-    return;  // Not a checkbox
-  }
-
-  // Checkbox
-  node_data->role = ax::mojom::Role::kCheckBox;
-  node_data->SetCheckedState(checked_state);
 }
 
 gfx::Size HoverHighlightView::CalculatePreferredSize(
@@ -339,6 +310,7 @@ void HoverHighlightView::AddSubRowContainer() {
 }
 
 void HoverHighlightView::OnEnabledChanged() {
+  views::Button::OnEnabledChanged();
   if (left_view_) {
     left_view_->SetEnabled(GetEnabled());
   }
@@ -348,6 +320,16 @@ void HoverHighlightView::OnEnabledChanged() {
   if (right_view_) {
     right_view_->SetEnabled(GetEnabled());
   }
+}
+
+void HoverHighlightView::SetAndUpdateAccessibleDefaultAction() {
+  SetDefaultActionVerb(
+      (right_view_ && right_view_->GetVisible() &&
+       std::string(right_view_->GetClassName()).find("Button") !=
+           std::string::npos)
+          ? ax::mojom::DefaultActionVerb::kClick
+          : ax::mojom::DefaultActionVerb::kPress);
+  UpdateAccessibleDefaultActionVerb();
 }
 
 BEGIN_METADATA(HoverHighlightView)

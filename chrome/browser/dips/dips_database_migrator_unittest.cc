@@ -103,8 +103,7 @@ class DIPSDatabaseMigrationTest : public testing::Test {
         db,
         base::StringPrintf("SELECT first_%s_time,last_%s_time FROM bounces "
                            "WHERE site='%s'",
-                           column, column, site)
-            .c_str(),
+                           column, column, site),
         "|", ",");
 
     return base::SplitString(both_times, "|", base::KEEP_WHITESPACE,
@@ -118,8 +117,7 @@ class DIPSDatabaseMigrationTest : public testing::Test {
         sql::test::ExecuteWithResult(
             db,
             base::StringPrintf("SELECT COUNT(*) FROM %s WHERE %s IS NOT NULL",
-                               table, column)
-                .c_str());
+                               table, column));
     EXPECT_EQ(num_rows_with_non_null_column_value, "0");
   }
 
@@ -527,5 +525,47 @@ TEST_F(DIPSDatabaseMigrationTest, MigrateV5ToV6) {
 
     EXPECT_EQ(GetPrepopulatedFromMetaTable(&db), std::nullopt);
     EXPECT_EQ(GetPrepopulatedFromConfigTable(&db), 1);
+  }
+}
+
+TEST_F(DIPSDatabaseMigrationTest, MigrateV6ToV7) {
+  ASSERT_TRUE(LoadDatabase("v6.sql"));
+
+  {
+    sql::Database db;
+    ASSERT_TRUE(db.Open(db_path()));
+
+    // Verify pre-migration conditions.
+
+    ASSERT_EQ(GetDatabaseVersion(&db), 6);
+    ASSERT_EQ(GetDatabaseLastCompatibleVersion(&db), 6);
+
+    ASSERT_TRUE(db.DoesTableExist("config"));
+    ASSERT_TRUE(db.DoesColumnExist("config", "key"));
+    ASSERT_TRUE(db.DoesColumnExist("config", "int_value"));
+
+    ASSERT_EQ(GetPrepopulatedFromConfigTable(&db), 1);
+
+    // Migrate.
+
+    sql::MetaTable meta_table;
+    ASSERT_TRUE(meta_table.Init(&db, 6, 6));
+
+    sql::Transaction transaction(&db);
+    ASSERT_TRUE(transaction.Begin());
+    DIPSDatabaseMigrator migrator(&db, &meta_table);
+    ASSERT_TRUE(migrator.MigrateSchemaVersionFrom6To7());
+    ASSERT_TRUE(transaction.Commit());
+
+    // Verify post-migration conditions.
+
+    EXPECT_EQ(GetDatabaseVersion(&db), 7);
+    EXPECT_EQ(GetDatabaseLastCompatibleVersion(&db), 6);
+
+    EXPECT_TRUE(db.DoesTableExist("config"));
+    EXPECT_TRUE(db.DoesColumnExist("config", "key"));
+    EXPECT_TRUE(db.DoesColumnExist("config", "int_value"));
+
+    EXPECT_EQ(GetPrepopulatedFromConfigTable(&db), std::nullopt);
   }
 }

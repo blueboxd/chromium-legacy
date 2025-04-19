@@ -16,7 +16,11 @@ class AndroidAutofillProviderTestApi {
 
   const FormDataAndroid* form() && { return provider_->form_.get(); }
   const FieldGlobalId last_focused_field_id() && {
-    return provider_->last_focused_field_id_;
+    return provider_->current_field_.id;
+  }
+
+  TouchToFillKeyboardSuppressor& keyboard_suppressor() {
+    return *provider_->keyboard_suppressor_;
   }
 
  private:

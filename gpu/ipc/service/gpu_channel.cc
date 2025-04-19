@@ -49,7 +49,6 @@
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/ipc/common/command_buffer_id.h"
 #include "gpu/ipc/common/gpu_channel.mojom.h"
-#include "gpu/ipc/common/gpu_client_ids.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl_shared_memory.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "gpu/ipc/service/gles2_command_buffer_stub.h"
@@ -238,7 +237,7 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelMessageFilter
 #if BUILDFLAG(IS_FUCHSIA)
   void RegisterSysmemBufferCollection(mojo::PlatformHandle service_handle,
                                       mojo::PlatformHandle sysmem_token,
-                                      gfx::BufferFormat format,
+                                      const viz::SharedImageFormat& format,
                                       gfx::BufferUsage usage,
                                       bool register_with_image_pipe) override {
     base::AutoLock lock(gpu_channel_lock_);
@@ -330,6 +329,16 @@ void GpuChannelMessageFilter::Destroy() {
     return;
 
   image_decode_accelerator_stub_->Shutdown();
+
+  // Ensure all sync points from this channel are released.
+  for (const auto& entry : route_sequences_) {
+    gpu_channel_->sync_point_manager()->EnsureFenceSyncReleased(
+        SyncToken(CommandBufferNamespace::GPU_IO,
+                  CommandBufferIdFromChannelAndRoute(gpu_channel_->client_id(),
+                                                     entry.first),
+                  UINT64_MAX));
+  }
+
   gpu_channel_ = nullptr;
 }
 
@@ -398,19 +407,27 @@ void GpuChannelMessageFilter::FlushDeferredRequests(
       DLOG(ERROR) << "Invalid route id in flush list";
       continue;
     }
+
+    SyncToken release;
+    if (request->release_count != 0) {
+      release = SyncToken(CommandBufferNamespace::GPU_IO,
+                          CommandBufferIdFromChannelAndRoute(
+                              gpu_channel_->client_id(), routing_id),
+                          request->release_count);
+    }
+
     tasks.emplace_back(
-        it->second /* sequence_id */,
+        /*sequence_id=*/it->second,
         base::BindOnce(&gpu::GpuChannel::ExecuteDeferredRequest,
                        gpu_channel_->AsWeakPtr(), std::move(request->params),
                        request->release_count),
-        std::move(request->sync_token_fences));
+        std::move(request->sync_token_fences), release);
   }
 
   // Threading: GpuChannelManager outlives gpu_channel_, so even though it is a
   // main thread object, we don't have a lifetime issue. However we may be
   // reading something stale here, but we don't synchronize anything here.
-  if (base::FeatureList::IsEnabled(features::kGpuCleanupInBackground) &&
-      gpu_channel_->gpu_channel_manager()->application_backgrounded()) {
+  if (gpu_channel_->gpu_channel_manager()->application_backgrounded()) {
     // We expect to clean shared images, so put it on this sequence, to make
     // sure that ordering is conserved, and we execute after.
     auto it = route_sequences_.find(
@@ -468,32 +485,17 @@ void GpuChannelMessageFilter::CreateGpuMemoryBuffer(
   auto buffer_format = ToBufferFormat(format);
   gfx::GpuMemoryBufferHandle handle;
 
-  // Hardcoding the GpuMemoryBufferId to 1 here instead of having a different
-  // value for each handle. GpuMemoryBufferId is used as a cache key in
-  // GpuMemoryBufferFactory but since we immediately call
-  // DestroyGpuMemoryBuffer here, this value does not matter.
-  // kMappableSIClientId and GpuMemoryBufferId(1) will ensure that the cache key
-  // is always unique and does not clash with non-mappable GMB cases.
-  auto id = gfx::GpuMemoryBufferId(1);
   if (IsNativeBufferSupported(buffer_format, buffer_usage)) {
-    handle = gpu_memory_buffer_factory_->CreateGpuMemoryBuffer(
-        id, size, /*framebuffer_size=*/size, buffer_format, buffer_usage,
-        kMappableSIClientId, /*surface_handle=*/0);
-
-    // Note that this removes the handle from the cache in
-    // GpuMemoryBufferFactory. Shared image backings caches the handle and still
-    // has the ref. So the handle is still alive until the mailbox is destroyed.
-    // This is only needed since we are currently using GpuMemoryBufferFactory.
-    // TODO(crbug.com/40283108) : Once we remove the GMB abstraction and starts
-    // using a separate factory to create the native buffers, we can stop
-    // caching the handles in them and hence remove this destroy api.
-    gpu_memory_buffer_factory_->DestroyGpuMemoryBuffer(id, kMappableSIClientId);
+    handle = gpu_memory_buffer_factory_->CreateNativeGmbHandle(
+        MappableSIClientGmbId::kGpuChannel, size, buffer_format, buffer_usage);
   } else {
     if (gpu::GpuMemoryBufferImplSharedMemory::IsUsageSupported(buffer_usage) &&
         gpu::GpuMemoryBufferImplSharedMemory::IsSizeValidForFormat(
             size, buffer_format)) {
       handle = gpu::GpuMemoryBufferImplSharedMemory::CreateGpuMemoryBuffer(
-          id, size, buffer_format, buffer_usage);
+          gfx::GpuMemoryBufferId(
+              static_cast<int>(MappableSIClientGmbId::kGpuChannel)),
+          size, buffer_format, buffer_usage);
     }
   }
   if (handle.is_null()) {
@@ -1264,7 +1266,7 @@ bool GpuChannel::RegisterOverlayStateObserver(
 void GpuChannel::RegisterSysmemBufferCollection(
     mojo::PlatformHandle service_handle,
     mojo::PlatformHandle sysmem_token,
-    gfx::BufferFormat format,
+    const viz::SharedImageFormat& format,
     gfx::BufferUsage usage,
     bool register_with_image_pipe) {
   shared_image_stub_->RegisterSysmemBufferCollection(

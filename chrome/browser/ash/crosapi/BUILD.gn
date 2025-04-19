@@ -10,7 +10,7 @@ import("//printing/buildflags/buildflags.gni")
 assert(is_chromeos_ash)
 assert(use_ozone)
 
-source_set("browser_util") {
+static_library("browser_util") {
   sources = [
     "browser_util.cc",
     "browser_util.h",
@@ -35,12 +35,7 @@ source_set("browser_util") {
   ]
 }
 
-source_set("crosapi") {
-  defines = []
-  if (use_cras) {
-    defines += [ "USE_CRAS" ]
-  }
-
+static_library("crosapi") {
   sources = [
     "arc_ash.cc",
     "arc_ash.h",
@@ -202,6 +197,8 @@ source_set("crosapi") {
     "login_screen_storage_ash.h",
     "login_state_ash.cc",
     "login_state_ash.h",
+    "media_app_ash.cc",
+    "media_app_ash.h",
     "media_ui_ash.cc",
     "media_ui_ash.h",
     "message_center_ash.cc",
@@ -332,22 +329,78 @@ source_set("crosapi") {
     "//base",
     "//build/config/chromebox_for_meetings:buildflags",
     "//chrome/browser:browser_process",
+    "//chrome/browser:primitives",
     "//chrome/browser/apps/app_service/app_icon",
-    "//chrome/browser/ash:print_job_info_proto",
-    "//chrome/browser/ash/mahi:mahi_ash",
+    "//chrome/browser/ash/accessibility",
+    "//chrome/browser/ash/app_list",
+    "//chrome/browser/ash/app_list/arc",
+    "//chrome/browser/ash/app_list/search",
+    "//chrome/browser/ash/app_restore",
+    "//chrome/browser/ash/apps",
+    "//chrome/browser/ash/arc",
+    "//chrome/browser/ash/attestation",
+    "//chrome/browser/ash/cert_provisioning",
+    "//chrome/browser/ash/drive",
+    "//chrome/browser/ash/exo",
+    "//chrome/browser/ash/file_manager",
+    "//chrome/browser/ash/file_manager/virtual_tasks",
+    "//chrome/browser/ash/file_system_provider",
+    "//chrome/browser/ash/fileapi",
+    "//chrome/browser/ash/floating_workspace",
+    "//chrome/browser/ash/guest_os",
+    "//chrome/browser/ash/guest_os/public",
+    "//chrome/browser/ash/input_method",
+    "//chrome/browser/ash/login",
+    "//chrome/browser/ash/login/quick_unlock",
+    "//chrome/browser/ash/login/session",
+    "//chrome/browser/ash/login/ui",
+    "//chrome/browser/ash/magic_boost",
+    "//chrome/browser/ash/mahi",
+    "//chrome/browser/ash/mahi/media_app",
+    "//chrome/browser/ash/net",
+    "//chrome/browser/ash/network_change_manager",
+    "//chrome/browser/ash/notifications",
+    "//chrome/browser/ash/platform_keys",
+    "//chrome/browser/ash/platform_keys/key_permissions",
+    "//chrome/browser/ash/plugin_vm",
+    "//chrome/browser/ash/policy/core",
+    "//chrome/browser/ash/policy/dlp",
+    "//chrome/browser/ash/policy/handlers",
+    "//chrome/browser/ash/policy/multi_screen_capture",
+    "//chrome/browser/ash/printing",
+    "//chrome/browser/ash/printing/history",
+    "//chrome/browser/ash/printing/history:print_job_info_proto",
+    "//chrome/browser/ash/printing/oauth2",
+    "//chrome/browser/ash/printing/print_management",
+    "//chrome/browser/ash/printing/print_preview",
+    "//chrome/browser/ash/privacy_hub",
+    "//chrome/browser/ash/profiles",
+    "//chrome/browser/ash/remote_apps",
+    "//chrome/browser/ash/settings",
     "//chrome/browser/ash/smart_reader",
-    "//chrome/browser/ash/system_web_apps:system_web_apps",
-    "//chrome/browser/ash/system_web_apps/types:types",
+    "//chrome/browser/ash/sync",
+    "//chrome/browser/ash/system",
+    "//chrome/browser/ash/system_web_apps",
+    "//chrome/browser/ash/system_web_apps/apps",
+    "//chrome/browser/ash/system_web_apps/apps/help_app",
+    "//chrome/browser/ash/system_web_apps/apps/media_app",
+    "//chrome/browser/ash/system_web_apps/types",
+    "//chrome/browser/ash/trusted_vault",
+    "//chrome/browser/ash/url_handler",
+    "//chrome/browser/chromeos/platform_keys",
+    "//chrome/browser/feedback",
     "//chrome/browser/image_decoder:image_decoder",
     "//chrome/browser/media/router/discovery/access_code:access_code_cast_feature",
     "//chrome/browser/profiles:profile",
     "//chrome/browser/screen_ai:screen_ai_install_state",
+    "//chrome/browser/ui/ash/keyboard",
+    "//chrome/browser/ui/webui/ash/kerberos",
     "//chrome/browser/ui/webui/ash/parent_access:mojo_bindings",
     "//chrome/browser/web_applications",
     "//chrome/common",
     "//chrome/common:constants",
     "//chromeos/ash/components/account_manager",
-    "//chromeos/ash/components/browser_context_helper:browser_context_helper",
+    "//chromeos/ash/components/browser_context_helper",
     "//chromeos/ash/components/channel",
     "//chromeos/ash/components/cryptohome",
     "//chromeos/ash/components/dbus",
@@ -368,7 +421,9 @@ source_set("crosapi") {
     "//chromeos/ash/components/nearby/common/connections_manager",
     "//chromeos/ash/components/network",
     "//chromeos/ash/components/network/portal_detector",
+    "//chromeos/ash/components/nonclosable_app_ui",
     "//chromeos/ash/components/osauth/public",
+    "//chromeos/ash/components/report:utils",
     "//chromeos/ash/components/settings",
     "//chromeos/ash/components/standalone_browser",
     "//chromeos/ash/components/system",
@@ -399,7 +454,7 @@ source_set("crosapi") {
     "//chromeos/startup",
     "//chromeos/startup:constants",
     "//chromeos/ui/clipboard_history",
-    "//chromeos/ui/wm:wm",
+    "//chromeos/ui/wm",
     "//chromeos/version",
     "//components/app_restore",
     "//components/arc",
@@ -411,7 +466,7 @@ source_set("crosapi") {
     "//components/flags_ui",
     "//components/global_media_controls",
     "//components/keyed_service/content",
-    "//components/language/core/browser:browser",
+    "//components/language/core/browser",
     "//components/live_caption:utils",
     "//components/metrics",
     "//components/metrics/structured",
@@ -424,7 +479,7 @@ source_set("crosapi") {
     "//components/services/app_service/public/cpp:instance_update",
     "//components/session_manager/core",
     "//components/ukm:ukm",
-    "//components/user_prefs:user_prefs",
+    "//components/user_prefs",
     "//components/variations",
     "//components/variations/service",
     "//components/version_info:channel",
@@ -439,10 +494,10 @@ source_set("crosapi") {
     "//media/mojo/mojom/stable:stable_video_decoder",
     "//printing/backend",
     "//remoting/host/chromeos:remoting_service",
-    "//services/data_decoder/public/cpp:cpp",
+    "//services/data_decoder/public/cpp",
     "//services/device/wake_lock/power_save_blocker",
     "//services/video_capture:lib",
-    "//services/video_capture/public/cpp:cpp",
+    "//services/video_capture/public/cpp",
     "//services/video_capture/public/mojom",
     "//ui/base",
     "//ui/message_center",
@@ -465,13 +520,39 @@ source_set("crosapi") {
 
   public_deps = [
     ":browser_util",
+    "//chrome/browser:browser_public_dependencies",
+    "//chrome/browser/task_manager",
+    "//chrome/browser/ui/webui/ash/parent_access",
     "//media/gpu:buildflags",
     "//printing",
   ]
+
+  allow_circular_includes_from = [
+    "//chrome/browser/ash/app_list",
+    "//chrome/browser/ash/app_list/search",
+    "//chrome/browser/ash/app_restore",
+    "//chrome/browser/ash/apps",
+    "//chrome/browser/ash/drive",
+    "//chrome/browser/ash/file_manager/virtual_tasks",
+    "//chrome/browser/ash/file_system_provider",
+    "//chrome/browser/ash/input_method",
+    "//chrome/browser/ash/login",
+    "//chrome/browser/ash/login/session",
+    "//chrome/browser/ash/mahi",
+    "//chrome/browser/ash/mahi/media_app",
+    "//chrome/browser/ash/net",
+    "//chrome/browser/ash/policy/core",
+    "//chrome/browser/ash/policy/dlp",
+    "//chrome/browser/ash/system_web_apps/apps/help_app",
+    "//chrome/browser/ash/system_web_apps/apps/media_app",
+    "//chrome/browser/ash/url_handler",
+    "//chrome/browser/chromeos/platform_keys",
+  ]
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
+
   sources = [
     "ash_requires_lacros_browsertestbase.cc",
     "ash_requires_lacros_browsertestbase.h",
@@ -492,7 +573,9 @@ source_set("test_support") {
     "test_crosapi_environment.cc",
     "test_crosapi_environment.h",
   ]
+
   allow_circular_includes_from = [ "//chrome/test:test_support" ]
+
   deps = [
     ":crosapi",
     "//ash",
@@ -501,7 +584,12 @@ source_set("test_support") {
     "//ash/components/arc:arc_test_support",
     "//base",
     "//chrome/browser/apps/app_service",
-    "//chrome/browser/ash:test_support",
+    "//chrome/browser/ash/accessibility",
+    "//chrome/browser/ash/printing",
+    "//chrome/browser/ash/printing:test_support",
+    "//chrome/browser/ash/printing/history:test_support",
+    "//chrome/browser/ui/ash/desks",
+    "//chrome/browser/ui/webui/ash/app_install",
     "//chrome/test:test_support",
     "//chromeos/ash/components/dbus/shill",
     "//chromeos/ash/components/standalone_browser:test_support",
@@ -592,9 +680,37 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_config",
     "//base/test:test_support",
-    "//chrome/browser/ash:test_support",
+    "//chrome/browser/ash/attestation",
+    "//chrome/browser/ash/attestation:test_support",
+    "//chrome/browser/ash/cert_provisioning:test_support",
+    "//chrome/browser/ash/file_manager",
+    "//chrome/browser/ash/file_manager:test_support",
+    "//chrome/browser/ash/login",
+    "//chrome/browser/ash/login/users:test_support",
+    "//chrome/browser/ash/platform_keys:test_support",
+    "//chrome/browser/ash/platform_keys/key_permissions:test_support",
+    "//chrome/browser/ash/policy/core",
+    "//chrome/browser/ash/policy/core:test_support",
+    "//chrome/browser/ash/policy/dlp",
+    "//chrome/browser/ash/policy/dlp/test:test_support",
+    "//chrome/browser/ash/printing",
+    "//chrome/browser/ash/printing:test_support",
+    "//chrome/browser/ash/printing/oauth2",
+    "//chrome/browser/ash/printing/oauth2:test_support",
+    "//chrome/browser/ash/scanning",
+    "//chrome/browser/ash/scanning:test_support",
+    "//chrome/browser/ash/settings",
+    "//chrome/browser/ash/settings:test_support",
+    "//chrome/browser/ash/wallpaper_handlers:test_support",
     "//chrome/browser/chromeos:test_support",
     "//chrome/browser/chromeos/launcher_search:search_util",
+    "//chrome/browser/chromeos/platform_keys",
+    "//chrome/browser/ui/ash",
+    "//chrome/browser/ui/ash:test_support",
+    "//chrome/browser/ui/ash/desks",
+    "//chrome/browser/ui/ash/picker",
+    "//chrome/browser/ui/ash/shelf",
+    "//chrome/browser/ui/webui/ash/parent_access",
     "//chrome/common/printing",
     "//chrome/test:test_support",
     "//chromeos/ash/components/channel",
@@ -622,5 +738,82 @@ source_set("unit_tests") {
     "//printing/backend:test_support",
     "//testing/gtest:gtest",
     "//ui/display:test_support",
+  ]
+}
+
+source_set("browser_tests") {
+  testonly = true
+
+  defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
+
+  sources = [
+    "browser_data_back_migrator_browsertest.cc",
+    "browser_data_migrator_browsertest.cc",
+    "file_change_service_bridge_ash_browsertest.cc",
+    "magic_boost_ash_browsertest.cc",
+    "mahi_ash_browsertest.cc",
+    "media_ui_ash_browsertest.cc",
+    "network_settings_service_ash_browsertest.cc",
+    "power_ash_apitest.cc",
+    "print_preview_ash_browsertest.cc",
+    "screen_manager_ash_browsertest.cc",
+    "suggestion_service_ash_browsertest.cc",
+    "task_manager_ash_browsertest.cc",
+    "video_conference_ash_browsertest.cc",
+    "vpn_extension_observer_ash_browsertest.cc",
+    "web_app_provider_bridge_browsertest.cc",
+  ]
+
+  if (!is_official_build) {
+    sources += [ "sharesheet_ash_browsertest.cc" ]
+  }
+
+  if (enable_print_preview) {
+    sources += [ "extension_printer_service_ash_browsertest.cc" ]
+  }
+
+  deps = [
+    ":crosapi",
+    ":test_support",
+    "//ash/constants",
+    "//ash/public/cpp",
+    "//base",
+    "//base/test:test_support",
+    "//chrome/browser",
+    "//chrome/browser:browser_process",
+    "//chrome/browser/apps/app_service",
+    "//chrome/browser/apps/app_service:app_registry_cache_waiter",
+    "//chrome/browser/ash",
+    "//chrome/browser/ash/login",
+    "//chrome/browser/ash/login:test_support",
+    "//chrome/browser/ash/login/app_mode/test:test_support",
+    "//chrome/browser/ash/login/test:test_support",
+    "//chrome/browser/ash/magic_boost",
+    "//chrome/browser/ash/mahi",
+    "//chrome/browser/ash/net",
+    "//chrome/browser/ash/printing/print_preview",
+    "//chrome/browser/ash/system_web_apps/test_support:test_support_ui",
+    "//chrome/browser/ash/video_conference",
+    "//chrome/browser/ui",
+    "//chrome/browser/ui/ash",
+    "//chrome/browser/ui/ash:test_support",
+    "//chrome/common",
+    "//chrome/test:test_support",
+    "//chromeos/ash/components/dbus/session_manager",
+    "//chromeos/ash/components/dbus/shill",
+    "//chromeos/ash/components/standalone_browser",
+    "//chromeos/crosapi/mojom",
+    "//chromeos/printing:test_support",
+    "//chromeos/services/network_config/public/mojom",
+    "//components/account_id",
+    "//components/exo",
+    "//components/global_media_controls:test_support",
+    "//components/user_manager",
+    "//components/webapps/common",
+    "//content/test:test_support",
+    "//mojo/public/cpp/bindings",
+    "//testing/gtest",
+    "//ui/aura",
+    "//ui/base/idle:test_support",
   ]
 }

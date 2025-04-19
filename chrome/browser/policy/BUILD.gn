@@ -93,6 +93,11 @@ source_set("onc") {
     deps += [
       "//ash/constants:constants",
       "//base",
+      "//chrome/browser/ash/login",
+      "//chrome/browser/ash/login/session",
+      "//chrome/browser/ash/policy/core",
+      "//chrome/browser/ash/profiles",
+      "//chrome/browser/ui/webui/ash/login",
       "//chromeos/ash/components/install_attributes",
       "//chromeos/ash/components/network",
       "//chromeos/ash/components/settings",
@@ -100,6 +105,11 @@ source_set("onc") {
       "//components/policy/core/common:common_constants",
       "//components/user_manager:user_manager",
       "//dbus",
+    ]
+    allow_circular_includes_from = [
+      "//chrome/browser/ash/login",
+      "//chrome/browser/ash/policy/core",
+      "//chrome/browser/ui/webui/ash/login",
     ]
   }
 }
@@ -187,7 +197,6 @@ source_set("policy_specific_browser_tests") {
   sources = [
     "policy_network_browsertest.cc",
     "site_isolation_policy_browsertest.cc",
-    "test/automatic_fullscreen_policy_browsertest.cc",
     "test/back_forward_cache_policy_browsertest.cc",
     "test/certificate_transparency_policy_browsertest.cc",
     "test/css_custom_state_deprecated_syntax_policy_browsertest.cc",
@@ -201,6 +210,7 @@ source_set("policy_specific_browser_tests") {
     "test/safe_browsing_policy_browsertest.cc",
     "test/shared_clipboard_enabled_browsertest.cc",
     "test/ssl_error_overriding_allowed_policy_browsertest.cc",
+    "test/standardized_browser_zoom_browsertest.cc",
     "test/url_keyed_anonymized_data_collection_enabled_browsertest.cc",
     "test/web_rtc_udp_port_range_policy_browsertest.cc",
   ]
@@ -213,6 +223,7 @@ source_set("policy_specific_browser_tests") {
     "//base",
     "//chrome/app:command_ids",
     "//chrome/browser",
+    "//chrome/browser/media/webrtc",
     "//chrome/common",
     "//chrome/test:test_support",
     "//components/policy/core/common",
@@ -234,16 +245,21 @@ source_set("policy_specific_browser_tests") {
       "//crypto:test_support",
     ]
   }
+
   if (is_chromeos_ash) {
     deps += [
-      "//components/session_manager/core:core",
-      "//components/user_manager:user_manager",
+      "//chrome/browser/ash/login/lock:test_support",
+      "//chrome/browser/ash/login/saml:test_support",
+      "//chrome/browser/ash/net",
+      "//components/session_manager/core",
+      "//components/user_manager",
     ]
   }
 
   if (!is_android) {
     sources += [
       "test/autofill_policy_browsertest.cc",
+      "test/automatic_fullscreen_policy_browsertest.cc",
       "test/autoplay_policy_browsertest.cc",
       "test/bookmark_bar_enabled_browsertest.cc",
       "test/component_updater_policy_browsertest.cc",
@@ -267,6 +283,7 @@ source_set("policy_specific_browser_tests") {
       "//chrome/browser/autofill",
       "//chrome/browser/devtools:test_support",
       "//chrome/browser/profiles:profile",
+      "//chrome/browser/task_manager",
       "//components/autofill/content/browser:test_support",
       "//components/bookmarks/common:common",
       "//components/enterprise",
@@ -315,10 +332,13 @@ source_set("browser_tests") {
     "//chrome/browser",
     "//chrome/browser:main_extra_parts",
     "//chrome/browser/profiles:profile",
+    "//chrome/browser/search",
+    "//chrome/browser/ui:ui_features",
     "//chrome/common",
     "//chrome/test:test_support",
     "//components/enterprise",
     "//components/enterprise:test_support",
+    "//components/invalidation:test_support",
     "//components/invalidation/impl:test_support",
     "//components/invalidation/public:public",
     "//components/keyed_service/core",
@@ -387,8 +407,19 @@ source_set("browser_tests") {
       "//ash/components/arc/session:session",
       "//chrome/browser/apps/app_service/app_icon",
       "//chrome/browser/ash",
-      "//chrome/browser/ash:test_support",
+      "//chrome/browser/ash/accessibility",
+      "//chrome/browser/ash/arc/session",
+      "//chrome/browser/ash/crostini:test_support",
+      "//chrome/browser/ash/guest_os",
+      "//chrome/browser/ash/input_method",
+      "//chrome/browser/ash/login/users/avatar",
+      "//chrome/browser/ash/login/users/avatar:test_support",
+      "//chrome/browser/ash/login/users/default_user_image",
+      "//chrome/browser/ash/policy/core",
+      "//chrome/browser/ash/policy/handlers",
+      "//chrome/browser/ash/system_web_apps/apps/personalization_app",
       "//chrome/browser/ash/system_web_apps/test_support",
+      "//chrome/browser/ui/ash/keyboard",
       "//chromeos/ash/components/audio",
       "//chromeos/ash/components/cryptohome",
       "//chromeos/ash/components/dbus/userdataauth",
@@ -414,6 +445,7 @@ source_set("browser_tests") {
       "test/audio_process_high_priority_enabled_browsertest.cc",
       "test/browser_dynamic_code_blocked_win_browsertest.cc",
       "test/locale_policy_browsertest.cc",
+      "test/printing_lpac_sandbox_enabled_win_browsertest.cc",
       "test/renderer_app_container_enabled_win_browsertest.cc",
     ]
   }
@@ -458,7 +490,9 @@ source_set("browser_tests") {
   if (is_win || is_linux || is_chromeos) {
     sources += [ "test/full_screen_allowed_policy_browsertest.cc" ]
 
-    deps += [ "//chrome/browser/apps/app_service" ]
+    if (enable_extensions) {
+      deps += [ "//chrome/browser/apps/app_service" ]
+    }
   }
 
   if (!is_chromeos) {
@@ -503,7 +537,9 @@ source_set("unit_tests") {
   if (is_chromeos_ash) {
     deps += [
       "//chrome/browser/ash",
-      "//chrome/browser/ash:test_support",
+      "//chrome/browser/ash/login/users:test_support",
+      "//chrome/browser/ash/settings",
+      "//chrome/browser/ash/settings:test_support",
       "//chromeos/ash/components/system",
     ]
   }

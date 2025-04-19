@@ -6,8 +6,7 @@ package org.chromium.chrome.browser.autofill;
 
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 
-import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
-import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlockingNoException;
+import static org.chromium.base.ThreadUtils.runOnUiThreadBlocking;
 
 import android.os.SystemClock;
 import android.view.InputDevice;
@@ -20,8 +19,6 @@ import androidx.test.espresso.ViewAction;
 import androidx.test.espresso.util.HumanReadables;
 
 import org.hamcrest.Matcher;
-import org.jni_zero.JNINamespace;
-import org.jni_zero.NativeMethods;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
@@ -29,10 +26,10 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.Iban;
 import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.components.autofill.AddressNormalizer;
 import org.chromium.components.autofill.AutofillProfile;
+import org.chromium.components.autofill.AutofillSuggestion;
 import org.chromium.components.autofill.SubKeyRequester;
 import org.chromium.components.autofill.VirtualCardEnrollmentState;
 import org.chromium.components.autofill.payments.BankAccount;
-import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.url.GURL;
 
@@ -41,7 +38,6 @@ import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 /** Helper class for testing AutofillProfiles. */
-@JNINamespace("autofill")
 public class AutofillTestHelper {
     private final CallbackHelper mOnPersonalDataChangedHelper = new CallbackHelper();
 
@@ -64,7 +60,7 @@ public class AutofillTestHelper {
      * ProfileManager#getLastUsedRegularProfile()}.
      */
     public static PersonalDataManager getPersonalDataManagerForLastUsedProfile() {
-        return runOnUiThreadBlockingNoException(
+        return runOnUiThreadBlocking(
                 () ->
                         PersonalDataManagerFactory.getForProfile(
                                 ProfileManager.getLastUsedRegularProfile()));
@@ -76,19 +72,19 @@ public class AutofillTestHelper {
     }
 
     AutofillProfile getProfile(final String guid) {
-        return runOnUiThreadBlockingNoException(
+        return runOnUiThreadBlocking(
                 () -> getPersonalDataManagerForLastUsedProfile().getProfile(guid));
     }
 
     List<AutofillProfile> getProfilesToSuggest(final boolean includeNameInLabel) {
-        return runOnUiThreadBlockingNoException(
+        return runOnUiThreadBlocking(
                 () ->
                         getPersonalDataManagerForLastUsedProfile()
                                 .getProfilesToSuggest(includeNameInLabel));
     }
 
     List<AutofillProfile> getProfilesForSettings() {
-        return runOnUiThreadBlockingNoException(
+        return runOnUiThreadBlocking(
                 () -> getPersonalDataManagerForLastUsedProfile().getProfilesForSettings());
     }
 
@@ -103,7 +99,7 @@ public class AutofillTestHelper {
     public String setProfile(final AutofillProfile profile) throws TimeoutException {
         int callCount = mOnPersonalDataChangedHelper.getCallCount();
         String guid =
-                runOnUiThreadBlockingNoException(
+                runOnUiThreadBlocking(
                         () -> getPersonalDataManagerForLastUsedProfile().setProfile(profile));
         mOnPersonalDataChangedHelper.waitForCallback(callCount);
         return guid;
@@ -116,17 +112,17 @@ public class AutofillTestHelper {
     }
 
     public CreditCard getCreditCard(final String guid) {
-        return runOnUiThreadBlockingNoException(
+        return runOnUiThreadBlocking(
                 () -> getPersonalDataManagerForLastUsedProfile().getCreditCard(guid));
     }
 
     List<CreditCard> getCreditCardsToSuggest() {
-        return runOnUiThreadBlockingNoException(
+        return runOnUiThreadBlocking(
                 () -> getPersonalDataManagerForLastUsedProfile().getCreditCardsToSuggest());
     }
 
     List<CreditCard> getCreditCardsForSettings() {
-        return runOnUiThreadBlockingNoException(
+        return runOnUiThreadBlocking(
                 () -> getPersonalDataManagerForLastUsedProfile().getCreditCardsForSettings());
     }
 
@@ -141,7 +137,7 @@ public class AutofillTestHelper {
     public String setCreditCard(final CreditCard card) throws TimeoutException {
         int callCount = mOnPersonalDataChangedHelper.getCallCount();
         String guid =
-                runOnUiThreadBlockingNoException(
+                runOnUiThreadBlocking(
                         () -> getPersonalDataManagerForLastUsedProfile().setCreditCard(card));
         mOnPersonalDataChangedHelper.waitForCallback(callCount);
         return guid;
@@ -212,7 +208,7 @@ public class AutofillTestHelper {
      * @return The non-negative use count of the profile.
      */
     public int getProfileUseCountForTesting(final String guid) {
-        return runOnUiThreadBlockingNoException(
+        return runOnUiThreadBlocking(
                 () ->
                         getPersonalDataManagerForLastUsedProfile()
                                 .getProfileUseCountForTesting(guid));
@@ -223,11 +219,11 @@ public class AutofillTestHelper {
      *
      * @param guid The GUID of the profile to query.
      * @return A non-negative long representing the last use date of the profile. It represents an
-     *         absolute point in coordinated universal time (UTC) represented as microseconds since
-     *         the Windows epoch. For more details see the comment header in time.h.
+     *     absolute point in coordinated universal time (UTC) represented as microseconds since the
+     *     Windows epoch. For more details see the comment header in time.h.
      */
     public long getProfileUseDateForTesting(final String guid) {
-        return runOnUiThreadBlockingNoException(
+        return runOnUiThreadBlocking(
                 () -> getPersonalDataManagerForLastUsedProfile().getProfileUseDateForTesting(guid));
     }
 
@@ -271,7 +267,7 @@ public class AutofillTestHelper {
      * @return The non-negative use count of the credit card.
      */
     public int getCreditCardUseCountForTesting(final String guid) {
-        return runOnUiThreadBlockingNoException(
+        return runOnUiThreadBlocking(
                 () ->
                         getPersonalDataManagerForLastUsedProfile()
                                 .getCreditCardUseCountForTesting(guid));
@@ -282,11 +278,11 @@ public class AutofillTestHelper {
      *
      * @param guid The GUID of the credit card to query.
      * @return A non-negative long representing the last use date of the credit card. It represents
-     *         an absolute point in coordinated universal time (UTC) represented as microseconds
-     *         since the Windows epoch. For more details see the comment header in time.h.
+     *     an absolute point in coordinated universal time (UTC) represented as microseconds since
+     *     the Windows epoch. For more details see the comment header in time.h.
      */
     public long getCreditCardUseDateForTesting(final String guid) {
-        return runOnUiThreadBlockingNoException(
+        return runOnUiThreadBlocking(
                 () ->
                         getPersonalDataManagerForLastUsedProfile()
                                 .getCreditCardUseDateForTesting(guid));
@@ -296,11 +292,11 @@ public class AutofillTestHelper {
      * Get the current use date to be used in test to compare with credit card or profile use dates.
      *
      * @return A non-negative long representing the current date. It represents an absolute point in
-     *         coordinated universal time (UTC) represented as microseconds since the Windows epoch.
-     *         For more details see the comment header in time.h.
+     *     coordinated universal time (UTC) represented as microseconds since the Windows epoch. For
+     *     more details see the comment header in time.h.
      */
     public long getCurrentDateForTesting() {
-        return runOnUiThreadBlockingNoException(
+        return runOnUiThreadBlocking(
                 () -> getPersonalDataManagerForLastUsedProfile().getCurrentDateForTesting());
     }
 
@@ -309,28 +305,28 @@ public class AutofillTestHelper {
      *
      * @param days The number of days from today.
      * @return A non-negative long representing the time N days ago. It represents an absolute point
-     *         in coordinated universal time (UTC) represented as microseconds since the Windows
-     *         epoch. For more details see the comment header in time.h.
+     *     in coordinated universal time (UTC) represented as microseconds since the Windows epoch.
+     *     For more details see the comment header in time.h.
      */
     public long getDateNDaysAgoForTesting(final int days) {
-        return runOnUiThreadBlockingNoException(
+        return runOnUiThreadBlocking(
                 () -> getPersonalDataManagerForLastUsedProfile().getDateNDaysAgoForTesting(days));
     }
 
     public Iban getIban(final String guid) {
-        return runOnUiThreadBlockingNoException(
+        return runOnUiThreadBlocking(
                 () -> getPersonalDataManagerForLastUsedProfile().getIban(guid));
     }
 
     Iban[] getLocalIbansForSettings() throws TimeoutException {
-        return runOnUiThreadBlockingNoException(
+        return runOnUiThreadBlocking(
                 () -> getPersonalDataManagerForLastUsedProfile().getLocalIbansForSettings());
     }
 
     public String addOrUpdateLocalIban(final Iban iban) throws TimeoutException {
         int callCount = mOnPersonalDataChangedHelper.getCallCount();
         String guid =
-                runOnUiThreadBlockingNoException(
+                runOnUiThreadBlocking(
                         () ->
                                 getPersonalDataManagerForLastUsedProfile()
                                         .addOrUpdateLocalIban(iban));
@@ -465,6 +461,15 @@ public class AutofillTestHelper {
                 /* cvc= */ "");
     }
 
+    public static AutofillSuggestion createCreditCardSuggestion(
+            String label, String subLabel, boolean applyDeactivatedStyle) {
+        return new AutofillSuggestion.Builder()
+                .setLabel(label)
+                .setSubLabel(subLabel)
+                .setApplyDeactivatedStyle(applyDeactivatedStyle)
+                .build();
+    }
+
     public static void addMaskedBankAccount(BankAccount bankAccount) {
         runOnUiThreadBlocking(
                 () ->
@@ -476,7 +481,7 @@ public class AutofillTestHelper {
         try {
             int callCount = mOnPersonalDataChangedHelper.getCallCount();
             boolean isDataLoaded =
-                    runOnUiThreadBlockingNoException(
+                    runOnUiThreadBlocking(
                             () -> {
                                 return getPersonalDataManagerForLastUsedProfile()
                                         .registerDataObserver(
@@ -487,12 +492,6 @@ public class AutofillTestHelper {
         } catch (TimeoutException e) {
             throw new AssertionError(e);
         }
-    }
-
-    // Disables minimum time that popup needs to be shown prior to click being processed.
-    // Only has an effect if autofill popup is being shown.
-    public static void disableThresholdForCurrentlyShownAutofillPopup(WebContents webContents) {
-        AutofillTestHelperJni.get().disableThresholdForCurrentlyShownAutofillPopup(webContents);
     }
 
     // Creates an action which dispatches 2 motion events to the target view:
@@ -570,10 +569,5 @@ public class AutofillTestHelper {
                 /* edgeFlags= */ 0,
                 /* source= */ InputDevice.SOURCE_CLASS_POINTER,
                 /* flags= */ flags);
-    }
-
-    @NativeMethods
-    interface Natives {
-        void disableThresholdForCurrentlyShownAutofillPopup(WebContents webContents);
     }
 }

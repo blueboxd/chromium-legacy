@@ -118,7 +118,9 @@ static_library("android") {
     "//components/autofill/content/browser",
     "//components/password_manager/core/browser/form_parsing",
     "//components/prefs",
+    "//components/security_state/content",
     "//components/user_prefs",
+    "//components/webauthn/android:android",
     "//content/public/browser",
     "//third_party/jni_zero",
     "//ui/android",
@@ -144,6 +146,7 @@ static_library("browser") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "android_autofill_client_unittest.cc",
     "android_autofill_provider_unittest.cc",
     "form_data_android_unittest.cc",
     "form_event_logger_weblayer_android_unittest.cc",
@@ -154,7 +157,10 @@ source_set("unit_tests") {
     ":browser",
     ":features",
     ":test_support",
+    "//components/autofill/android:keyboard_suppressor",
     "//components/autofill/content/browser:test_support",
+    "//components/webauthn/android",
+    "//components/webauthn/android:test_support",
     "//content/test:test_support",
     "//testing/gmock",
     "//testing/gtest",

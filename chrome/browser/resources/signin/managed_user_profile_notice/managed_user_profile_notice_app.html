@@ -33,100 +33,6 @@
     position: relative;
   }
 
-  #header-container {
-    position: relative;
-    width: 100%;
-  }
-
-  #avatar-container {
-    height: var(--tangible-sync-style-avatar-size);
-    left: 0;
-    margin: auto;
-    position: relative;
-    right: 0;
-    width: var(--tangible-sync-style-avatar-size);
-    z-index: 1;
-  }
-
-  #avatar {
-    border: 2px solid var(--md-background-color);
-    border-radius: 50%;
-    height: 100%;
-    width: 100%;
-  }
-
-  .work-badge {
-    bottom: 0;
-    position: absolute;
-  }
-
-  #text-container {
-    text-align: center;
-  }
-
-  h1.title {
-    font-size: 36px;
-    font-weight: 500;
-    line-height: 44px;
-    text-align: center;
-
-  }
-
-  .subtitle {
-    margin-top: 0;
-    line-height: 24px;
-    font-size: 20px;
-    font-weight: 400;
-    text-align: center;
-
-  }
-
-  h2 {
-    font-size: 15px;
-    font-weight: 500;
-    line-height: 32px;
-    text-align: center;
-  }
-
-  .disclaimer-container {
-    display: flex;
-    justify-content: center;
-    margin-block-start: 30px;
-    min-height: 212px;
-    max-height: 300px;
-    flex-wrap: wrap;
-    overflow-y: auto;
-    overflow-x: hidden;
-    gap: 24px;
-    box-sizing: border-box;
-  }
-
-  .disclaimer {
-    min-width: 360px;
-    width: 360px;
-    border-radius: 24px;
-    background-color: var(--md-background-color);
-    padding: 24px;
-    text-align: center;
-    box-sizing: border-box;
-  }
-
-  .disclaimer .icon {
-    height: 24px;
-    width: 24px;
-    color: var(--google-blue-500);
-  }
-
-  .disclaimer h3 {
-    line-height: 32px;
-    text-align: center;
-  }
-
-  .disclaimer p {
-    line-height: 20px;
-    text-align: center;
-  }
-
   .action-container #cancel-button {
     font-weight: normal;
   }
@@ -139,16 +45,25 @@
     content: url(images/right-banner.svg);
   }
 
+  .success-icon {
+    content: url(images/enrollment_success.svg);
+    height: 130px;
+    width: 180px;
+  }
+
+  .timeout-icon {
+    content: url(images/enrollment_timeout.svg);
+    height: 130px;
+    width: 180px;
+  }
+
+  .error-icon {
+    content: url(images/enrollment_failure.svg);
+    height: 130px;
+    width: 180px;
+  }
+
   @media (prefers-color-scheme: dark) {
-    .work-badge {
-      border-color: var(--md-background-color);
-    }
-
-    .work-badge > iron-icon {
-      box-shadow: 0 0 2px rgba(var(--google-grey-800-rgb), 0.12),
-         0 0 6px rgba(var(--google-grey-800-rgb), 0.15);
-    }
-
     .tangible-sync-style-right-banner {
       content: url(images/right-banner-dark.svg);
     }
@@ -157,9 +72,23 @@
       content: url(images/left-banner-dark.svg);
     }
 
-    .disclaimer {
-      background-color: var(--cr-fallback-color-surface);
+    .success-icon {
+      content: url(images/enrollment_success_dark.svg);
     }
+
+    .timeout-icon {
+      content: url(images/enrollment_timeout_dark.svg);
+    }
+
+    .error-icon {
+      content: url(images/enrollment_failure_dark.svg);
+    }
+  }
+
+  paper-spinner-lite {
+    --paper-spinner-stroke-width: 6px;
+    height: 60px;
+    width: 60px;
   }
 </style>
 
@@ -168,47 +97,48 @@
     <img class="tangible-sync-style-left-banner" alt="">
     <img class="tangible-sync-style-right-banner" alt="">
     <div id="content-container">
-      <div id="header-container">
-        <div id="avatar-container">
-          <img id="avatar" alt="" src="[[pictureUrl_]]">
-          <div class="work-badge" hidden="[[!showEnterpriseBadge_]]">
-            <iron-icon class="icon" icon="cr:domain"></iron-icon>
-          </div>
-        </div>
-      </div>
-      <div id="text-container">
-        <template is="dom-if" if="[[title_]]">
-          <h1 class="title">
-            [[title_]]
-          </h1>
-        </template>
-        <template is="dom-if" if="[[subtitle_]]">
-          <p class="subtitle">
-            [[subtitle_]]
-          </p>
-        </template>
-      </div>
-      <div class="disclaimer-container">
-        <section class="disclaimer">
-          <iron-icon class="icon" icon="cr:person"></iron-icon>
-          <h2>$i18n{profileInformationTitle}</h2>
-          <p>$i18n{profileInformationDetails}</p>
-        </section>
-        <section class="disclaimer">
-          <iron-icon class="icon" icon="cr:phonelink"></iron-icon>
-          <h2>$i18n{deviceInformationTitle}</h2>
-          <p>$i18n{deviceInformationDetails}</p>
-        </section>
-      </div>
+      <template is="dom-if" if="[[showDisclosure_]]">
+        <managed-user-profile-notice-disclosure id="disclosure"
+            title="[[title_]]" subtitle="[[subtitle_]]"
+            picture-url="[[pictureUrl_]]"
+            show-enterprise-badge="[[showEnterpriseBadge_]]">
+        </managed-user-profile-notice-disclosure>
+      </template>
+      <template is="dom-if" if="[[showProcessing_]]">
+        <managed-user-profile-notice-state id="processing"
+            subtitle="$i18n{processingSubtitle}" icon="cr:domain">
+              <paper-spinner-lite active class="thick">
+              </paper-spinner-lite>
+        </managed-user-profile-notice-state>
+      </template>
+      <template is="dom-if" if="[[showSuccess_]]">
+        <managed-user-profile-notice-state id="success" icon="cr:domain"
+            title="$i18n{successTitle}" subtitle="$i18n{successSubtitle}">
+          <img class="success-icon" alt="">
+        </managed-user-profile-notice-state>
+      </template>
+      <template is="dom-if" if="[[showTimeout_]]">
+        <managed-user-profile-notice-state id="timeout" icon="cr:domain"
+            title="$i18n{timeoutTitle}" subtitle="$i18n{timeoutSubtitle}">
+          <img class="timeout-icon" alt="">
+        </managed-user-profile-notice-state>
+      </template>
+      <template is="dom-if" if="[[showError_]]">
+        <managed-user-profile-notice-state id="error" icon="cr:domain"
+            title="$i18n{errorTitle}" subtitle="$i18n{errorSubtitle}">
+          <img class="error-icon" alt="">
+        </managed-user-profile-notice-state>
+      </template>
     </div>
   </div>
   <div class="action-container tangible-sync-style">
     <cr-button id="proceed-button" class="action-button" on-click="onProceed_"
-        autofocus$="[[isModalDialog_]]" disabled="[[disableProceedButton_]]">
+        autofocus$="[[isModalDialog_]]" disabled="[[disableProceedButton_]]"
+        hidden="[[showProcessing_]]">
       [[proceedLabel_]]
     </cr-button>
     <cr-button id="cancel-button" on-click="onCancel_"
-        hidden="[[!showCancelButton_]]">
+        hidden="[[!allowCancel_(showCancelButton_, showDisclosure_)]]">
       $i18n{cancelLabel}
     </cr-button>
   </div>

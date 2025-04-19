@@ -66,6 +66,7 @@ the generic promo launch. -->
 <enum name="DesktopIOSPromoImpression">
   <int value="0" label="FirstImpression"/>
   <int value="1" label="SecondImpression"/>
+  <int value="2" label="ThirdImpression"/>
 </enum>
 
 <enum name="DocumentDownloadConflictResolution">
@@ -92,13 +93,6 @@ the generic promo launch. -->
   </summary>
   <int value="0" label="Google Calendar"/>
   <int value="1" label="Apple Calendar"/>
-</enum>
-
-<enum name="FormInputAccessoryAction">
-  <int value="0" label="PreviousElement"/>
-  <int value="1" label="NextElement"/>
-  <int value="2" label="Done"/>
-  <int value="3" label="Unkown"/>
 </enum>
 
 <enum name="InactiveTabsThresholdSettingType">
@@ -265,6 +259,8 @@ the generic promo launch. -->
   <int value="45" label="Autofill passwords"/>
   <int value="46" label="Autofill contacts"/>
   <int value="47" label="Autofill others"/>
+  <int value="48" label="StartWritingTools"/>
+  <int value="49" label="ShowTextFormattingOptions"/>
 </enum>
 
 <enum name="IOSEditMenuError">
@@ -321,36 +317,11 @@ the generic promo launch. -->
   <int value="3" label="Skipped Default Browser Settings For NTP"/>
 </enum>
 
-<enum name="IOSFullscreenMimeType">
-  <int value="0" label="Other"/>
-  <int value="1" label="Animated Portable Network Graphics"/>
-  <int value="2" label="AVIF Image"/>
-  <int value="3" label="Bitmap"/>
-  <int value="4" label="CSS"/>
-  <int value="5" label="CSV"/>
-  <int value="6" label="Microsoft Word"/>
-  <int value="7" label="Microsoft Word XML"/>
-  <int value="8" label="GIF"/>
-  <int value="9" label="HTML"/>
-  <int value="10" label="Icon"/>
-  <int value="11" label="JPEG"/>
-  <int value="12" label="JS"/>
-  <int value="13" label="JSON"/>
-  <int value="14" label="JSON LD"/>
-  <int value="15" label="PNG"/>
-  <int value="16" label="PDF"/>
-  <int value="17" label="PHP"/>
-  <int value="18" label="PowerPoint"/>
-  <int value="19" label="PowerPoint XML"/>
-  <int value="20" label="Rich Text Format"/>
-  <int value="21" label="SVG"/>
-  <int value="22" label="TIFF"/>
-  <int value="23" label="Plain Text"/>
-  <int value="24" label="Webp"/>
-  <int value="25" label="XHTML"/>
-  <int value="26" label="Microsoft Excel"/>
-  <int value="27" label="Microsoft Excel XML"/>
-  <int value="28" label="XML"/>
+<enum name="IOSFilePickerInstallError">
+  <int value="0" label="The file picker was not found"/>
+  <int value="1" label="The file picker configuration was not found"/>
+  <int value="2" label="The file picker cannot submit the selection"/>
+  <int value="3" label="The file picker cannot present a sub menu"/>
 </enum>
 
 <enum name="IOSHomeActionType">
@@ -403,6 +374,7 @@ the generic promo launch. -->
   <int value="12" label="Obsolete in M123 - Parcel Tracking See More"/>
   <int value="13" label="Set Up List Notifications"/>
   <int value="14" label="Placeholder"/>
+  <int value="15" label="Price Tracking Promo"/>
 </enum>
 
 <enum name="IOSMainThreadFreezeDetectionNotRunningAfterReportBlock">
@@ -664,6 +636,11 @@ the generic promo launch. -->
   <int value="6" label="Success"/>
 </enum>
 
+<enum name="IOSSafetyCheckFreshnessTrigger">
+  <int value="0" label="Password Check - State Changed"/>
+  <int value="1" label="Update Chrome Check - State Changed"/>
+</enum>
+
 <enum name="IOSSaveToDriveOutcomeType">
   <int value="0" label="Failure - WebState Hidden"/>
   <int value="1" label="Failure - WebState Destroyed"/>
@@ -837,19 +814,6 @@ the generic promo launch. -->
   <int value="5" label="Open tab"/>
 </enum>
 
-<enum name="IOSStorageCapacity">
-  <int value="0" label="Unknown"/>
-  <int value="1" label="0 GB"/>
-  <int value="2" label="16 GB"/>
-  <int value="3" label="32 GB"/>
-  <int value="4" label="64 GB"/>
-  <int value="5" label="128 GB"/>
-  <int value="6" label="256 GB"/>
-  <int value="7" label="512 GB"/>
-  <int value="8" label="1 TB"/>
-  <int value="9" label="2 TB"/>
-</enum>
-
 <enum name="IOSTabSwitcherDragDropTabs">
   <int value="0" label="A tab is dragged."/>
   <int value="1" label="A tab is dropped at the same index position."/>
@@ -880,6 +844,14 @@ the generic promo launch. -->
   <int value="2" label="Sign In"/>
   <int value="3" label="Error"/>
   <int value="4" label="SetUpList Continuation"/>
+  <int value="5" label="Docking"/>
+  <int value="6" label="Omnibox Position"/>
+</enum>
+
+<enum name="IOSTipsNotificationUserType">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Less Engaged"/>
+  <int value="2" label="Active Seeker"/>
 </enum>
 
 <enum name="IOSUpgradeCenterFailureReason">
@@ -1051,6 +1023,14 @@ the generic promo launch. -->
   <int value="1" label="Open Instructions"/>
 </enum>
 
+<enum name="PushNotificationClientId">
+  <int value="1" label="Commerce"/>
+  <int value="2" label="Content"/>
+  <int value="3" label="Tips"/>
+  <int value="4" label="Sports"/>
+  <int value="5" label="Safety Check"/>
+</enum>
+
 <enum name="PushNotificationLifecycleEvent">
   <int value="0" label="Notification received on device"/>
   <int value="1"
@@ -1152,6 +1132,9 @@ the generic promo launch. -->
   <int value="15" label="Password Manager Widget"/>
   <int value="16" label="Pinned Tabs"/>
   <int value="17" label="Inactive Tabs"/>
+  <int value="18" label="Package Tracking"/>
+  <int value="19" label="Password Sharing"/>
+  <int value="20" label="Customizable Overflow Menu"/>
 </enum>
 
 <enum name="WindowActivityOrigin">

@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/keyboard/key_command_actions.h"
+#import "ios/chrome/browser/keyboard/ui_bundled/key_command_actions.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/disabled_grid_view_controller.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_consumer.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_consumer.h"
@@ -24,6 +24,7 @@ class GURL;
 @class IncognitoGridViewController;
 @protocol IncognitoReauthCommands;
 @protocol IncognitoReauthConsumer;
+enum class IPHDismissalReasonType;
 @class LayoutGuideCenter;
 @class PinnedTabsViewController;
 @protocol PriceCardDataSource;
@@ -36,10 +37,10 @@ class GURL;
 @protocol TabGridActivityObserver;
 @protocol TabGridConsumer;
 @protocol TabContextMenuProvider;
-@protocol TabGridMediatorProviderWrangler;
 @protocol TabGridMutator;
 @protocol TabGridToolbarsCommandsWrangler;
 @class TabGridTopToolbar;
+@class TabGroupsPanelViewController;
 
 // Configurations for tab grid pages.
 enum class TabGridPageConfiguration {
@@ -64,13 +65,6 @@ enum class TabGridPageConfiguration {
 // Opens a link when the user clicks on the in-text link.
 - (void)openLinkWithURL:(const GURL&)URL;
 
-// Asks the delegate to open history modal with results filtered by
-// `searchText`.
-- (void)showHistoryFilteredBySearchText:(NSString*)searchText;
-
-// Asks the delegate to open a new tab page with a web search for `searchText`.
-- (void)openSearchResultsPageForSearchText:(NSString*)searchText;
-
 // Asks the delegate to show the inactive tabs.
 - (void)showInactiveTabs;
 
@@ -87,20 +81,21 @@ enum class TabGridPageConfiguration {
 - (BOOL)tabGridShouldPresentSwipeToIncognitoIPH;
 
 // Notifies the delegate that the tab grid has dismissed the swipe-to-incognito
-// in-product help message.
-- (void)tabGridDidDismissSwipeToIncognitoIPH;
+// in-product help message with `reason`.
+- (void)tabGridDidDismissSwipeToIncognitoIPHWithReason:
+    (IPHDismissalReasonType)reason;
 
 @end
 
 // View controller representing a tab switcher. The tab switcher has an
-// incognito tab grid, regular tab grid, and remote tabs.
+// incognito tab grid, regular tab grid, and a third panel (either Tab Groups or
+// Recent Tabs).
 @interface TabGridViewController
     : UIViewController <DisabledGridViewControllerDelegate,
                         GridConsumer,
                         KeyCommandActions,
                         TabGridConsumer,
                         TabGridIdleStatusHandler,
-                        TabGridPaging,
                         TabGridToolbarsMainTabGridDelegate,
                         TabGridTransitionLayoutProviding,
                         UISearchBarDelegate>
@@ -118,17 +113,11 @@ enum class TabGridPageConfiguration {
 // Mutator to apply all user change in the model.
 @property(nonatomic, weak) id<TabGridMutator> mutator;
 
-// Temporary provider to determine where the mediator and the view controller
-// lose current page sync.
-// TODO(crbug.com/40273478): Remove once all the flow have been matched.
-@property(nonatomic, weak) id<TabGridMediatorProviderWrangler> provider;
-
 // Consumers send updates from the model layer to the UI layer.
 @property(nonatomic, readonly) id<RecentTabsConsumer> remoteTabsConsumer;
 
 // Delegates send updates from the UI layer to the model layer.
 @property(nonatomic, weak) id<GridCommands> regularGridHandler;
-@property(nonatomic, weak) id<GridCommands> inactiveGridHandler;
 @property(nonatomic, weak) id<GridCommands> incognitoGridHandler;
 
 // Data source for acquiring data which power the PriceCardView
@@ -145,7 +134,9 @@ enum class TabGridPageConfiguration {
 @property(nonatomic, strong) PinnedTabsViewController* pinnedTabsViewController;
 @property(nonatomic, strong)
     IncognitoGridViewController* incognitoTabsViewController;
-// The view controller for remote tabs.
+@property(nonatomic, strong)
+    TabGroupsPanelViewController* tabGroupsPanelViewController;
+// The view controller for Recent Tabs.
 // TODO(crbug.com/41390276) : This was only exposed in the public interface so
 // that TabGridViewController does not need to know about model objects. The
 // model objects used in this view controller should be factored out.
@@ -167,14 +158,21 @@ enum class TabGridPageConfiguration {
 @property(nonatomic, weak) UIViewController* regularDisabledGridViewController;
 @property(nonatomic, weak)
     UIViewController* incognitoDisabledGridViewController;
+@property(nonatomic, weak)
+    UIViewController* tabGroupsDisabledGridViewController;
 
 // Contains grids (available or disabled one).
 @property(nonatomic, weak) UIViewController* regularGridContainerViewController;
 @property(nonatomic, weak)
     UIViewController* incognitoGridContainerViewController;
 @property(nonatomic, weak)
+    UIViewController* tabGroupsGridContainerViewController;
+@property(nonatomic, weak)
     GridContainerViewController* remoteGridContainerViewController;
 
+// Active page of the tab grid. The active page is the page that
+// contains the most recent active tab.
+@property(nonatomic, assign, readonly) TabGridPage activePage;
 // The currently visible page.
 @property(nonatomic, assign, readonly) TabGridPage currentPage;
 

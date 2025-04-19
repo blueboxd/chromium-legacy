@@ -40,6 +40,11 @@ class Rect;
 class Size;
 }  // namespace gfx
 
+namespace input {
+struct NativeWebKeyboardEvent;
+class RenderWidgetHostInputEventRouter;
+}  // namespace input
+
 namespace ui {
 class Compositor;
 }  // namespace ui
@@ -49,12 +54,10 @@ namespace content {
 class BrowserAccessibilityManager;
 class RenderFrameProxyHost;
 class RenderWidgetHostImpl;
-class RenderWidgetHostInputEventRouter;
 class RenderViewHostDelegateView;
 class TextInputManager;
 class VisibleTimeRequestTrigger;
 enum class KeyboardEventProcessingResult;
-struct NativeWebKeyboardEvent;
 
 //
 // RenderWidgetHostDelegate
@@ -100,7 +103,7 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // event before sending it to the renderer. See enum for details on return
   // value.
   virtual KeyboardEventProcessingResult PreHandleKeyboardEvent(
-      const NativeWebKeyboardEvent& event);
+      const input::NativeWebKeyboardEvent& event);
 
   // Callback to inform the browser that the renderer did not process the
   // specified events. This gives an opportunity to the browser to process the
@@ -110,7 +113,7 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // Callback to inform the browser that the renderer did not process the
   // specified events. This gives an opportunity to the browser to process the
   // event (used for keyboard shortcuts).
-  virtual bool HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
+  virtual bool HandleKeyboardEvent(const input::NativeWebKeyboardEvent& event);
 
   // Callback to inform the browser that the renderer did not process the
   // specified mouse wheel event.  Returns true if the browser has handled
@@ -167,7 +170,7 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // Request the renderer to Move the caret to the new position.
   virtual void MoveCaret(const gfx::Point& extent) {}
 
-  virtual RenderWidgetHostInputEventRouter* GetInputEventRouter();
+  virtual input::RenderWidgetHostInputEventRouter* GetInputEventRouter();
 
   virtual void GetRenderWidgetHostAtPointAsynchronously(
       RenderWidgetHostViewBase* root_view,
@@ -332,9 +335,6 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   virtual void OnVerticalScrollDirectionChanged(
       viz::VerticalScrollDirection scroll_direction) {}
 
-  // Returns true if the delegate is a portal.
-  virtual bool IsPortal();
-
   // Notify the delegate that the screen orientation has been changed.
   virtual void DidChangeScreenOrientation() {}
 
@@ -354,14 +354,6 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // Returns false if it's a private window, and text entered into this page
   // shouldn't be used to improve typing suggestions for the user.
   virtual bool ShouldDoLearning();
-
-  // Zoom level is normally inherited from the parent. The delegate can override
-  // this behavior by returning a value.
-  // This is used in <webview>, which permits zoom level to be set
-  // programmatically by script:
-  // https://developer.chrome.com/docs/apps/reference/webviewTag#method-setZoom
-  virtual std::optional<double> AdjustedChildZoom(
-      const RenderWidgetHostViewChildFrame* render_widget);
 
  protected:
   virtual ~RenderWidgetHostDelegate() {}

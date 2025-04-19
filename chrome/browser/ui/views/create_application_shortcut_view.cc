@@ -24,6 +24,7 @@
 #include "extensions/common/extension.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -84,7 +85,7 @@ CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
                                           std::move(close_callback)) {
   web_app::WebAppProvider* provider =
       web_app::WebAppProvider::GetForWebApps(profile);
-  provider->os_integration_manager().GetShortcutInfoForApp(
+  provider->os_integration_manager().GetShortcutInfoForAppFromRegistrar(
       web_app_id,
       base::BindRepeating(&CreateChromeApplicationShortcutView::OnAppInfoLoaded,
                           weak_ptr_factory_.GetWeakPtr()));
@@ -98,7 +99,7 @@ CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
       prefs_(profile->GetPrefs()),
       is_extension_(is_extension),
       close_callback_(std::move(close_callback)) {
-  SetModalType(ui::MODAL_TYPE_WINDOW);
+  SetModalType(ui::mojom::ModalType::kWindow);
   SetButtonLabel(ui::DIALOG_BUTTON_OK,
                  l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_COMMIT));
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
@@ -223,7 +224,8 @@ void CreateChromeApplicationShortcutView::OnDialogAccepted() {
     provider->scheduler().SynchronizeOsIntegration(
         shortcut_info_->app_id, base::DoNothing(),
         web_app::ConvertShortcutLocationsToSynchronizeOptions(
-            creation_locations, web_app::SHORTCUT_CREATION_BY_USER));
+            creation_locations, web_app::SHORTCUT_CREATION_BY_USER),
+        /*upgrade_to_fully_installed_if_installed=*/true);
   } else {
     web_app::CreateShortcutsWithInfo(web_app::SHORTCUT_CREATION_BY_USER,
                                      creation_locations, base::DoNothing(),

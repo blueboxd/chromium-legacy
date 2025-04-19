@@ -8,6 +8,10 @@ source_set("compare") {
     "candidate_product.h",
     "cluster_manager.cc",
     "cluster_manager.h",
+    "cluster_server_proxy.cc",
+    "cluster_server_proxy.h",
+    "compare_utils.cc",
+    "compare_utils.h",
     "product_group.cc",
     "product_group.h",
     "product_specifications_server_proxy.cc",
@@ -23,6 +27,7 @@ source_set("compare") {
     "//components/commerce/core:feature_list",
     "//components/commerce/core:feature_utils",
     "//components/commerce/core:proto",
+    "//components/commerce/core:utils",
     "//components/commerce/core/product_specifications",
     "//components/endpoint_fetcher:endpoint_fetcher",
     "//components/leveldb_proto",
@@ -41,6 +46,7 @@ source_set("unit_tests") {
 
   sources = [
     "cluster_manager_unittest.cc",
+    "cluster_server_proxy_unittest.cc",
     "product_specifications_server_proxy_unittest.cc",
   ]
 
@@ -54,12 +60,15 @@ source_set("unit_tests") {
     "//components/commerce/core:feature_list",
     "//components/commerce/core:pref_names",
     "//components/commerce/core:proto",
+    "//components/commerce/core:utils",
     "//components/commerce/core/product_specifications",
     "//components/commerce/core/product_specifications:test_support",
     "//components/endpoint_fetcher:endpoint_fetcher",
     "//components/endpoint_fetcher:test_support",
     "//components/prefs:test_support",
+    "//components/signin/public/identity_manager:test_support",
     "//services/data_decoder/public/cpp:test_support",
+    "//services/network:test_support",
     "//services/network/public/cpp",
     "//testing/gmock",
     "//testing/gtest",

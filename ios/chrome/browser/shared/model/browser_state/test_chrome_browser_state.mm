@@ -33,36 +33,87 @@
 #import "ios/web/public/thread/web_thread.h"
 #import "net/url_request/url_request_test_util.h"
 
+namespace {
+
+// Assigns `testing_factories` to `browser_state`.
+void AssignTestingFactories(
+    TestChromeBrowserState* browser_state,
+    TestChromeBrowserState::TestingFactories testing_factories) {
+  for (auto& item : testing_factories) {
+    absl::visit(
+        [browser_state](auto& p) {
+          p.first->SetTestingFactory(browser_state, std::move(p.second));
+        },
+        item.service_factory_and_testing_factory);
+  }
+}
+
+}  // namespace
+
+TestChromeBrowserState::TestingFactory::TestingFactory(
+    BrowserStateKeyedServiceFactory* service_factory,
+    BrowserStateKeyedServiceFactory::TestingFactory testing_factory)
+    : service_factory_and_testing_factory(
+          std::make_pair(service_factory, std::move(testing_factory))) {}
+
+TestChromeBrowserState::TestingFactory::TestingFactory(
+    RefcountedBrowserStateKeyedServiceFactory* service_factory,
+    RefcountedBrowserStateKeyedServiceFactory::TestingFactory testing_factory)
+    : service_factory_and_testing_factory(
+          std::make_pair(service_factory, std::move(testing_factory))) {}
+
+TestChromeBrowserState::TestingFactory::TestingFactory(TestingFactory&&) =
+    default;
+
+TestChromeBrowserState::TestingFactory&
+TestChromeBrowserState::TestingFactory::operator=(TestingFactory&&) = default;
+
+TestChromeBrowserState::TestingFactory::~TestingFactory() = default;
+
+TestChromeBrowserState::TestingFactories::TestingFactories() = default;
+
+TestChromeBrowserState::TestingFactories::TestingFactories(TestingFactories&&) =
+    default;
+
+TestChromeBrowserState::TestingFactories&
+TestChromeBrowserState::TestingFactories::operator=(TestingFactories&&) =
+    default;
+
+TestChromeBrowserState::TestingFactories::~TestingFactories() = default;
+
 TestChromeBrowserState::TestChromeBrowserState(
     const base::FilePath& state_path,
     TestChromeBrowserState* original_browser_state,
     TestingFactories testing_factories)
-    : ChromeBrowserState(state_path, original_browser_state->GetIOTaskRunner()),
+    : ChromeBrowserState(state_path,
+                         /*browser_state_name=*/std::string(),
+                         original_browser_state->GetIOTaskRunner()),
       testing_prefs_(nullptr),
       otr_browser_state_(nullptr),
       original_browser_state_(original_browser_state) {
+  DCHECK(original_browser_state_);
+
+  BrowserStateDependencyManager::GetInstance()->MarkBrowserStateLive(this);
+
+  AssignTestingFactories(this, std::move(testing_factories));
+  profile_metrics::SetBrowserProfileType(
+      this, profile_metrics::BrowserProfileType::kIncognito);
+
   // Not calling Init() here as the bi-directional link between original and
   // off-the-record TestChromeBrowserState must be established before this
   // method can be called.
-  DCHECK(original_browser_state_);
-
-  for (const auto& pair : testing_factories) {
-    pair.first->SetTestingFactory(this, std::move(pair.second));
-  }
-
-  profile_metrics::SetBrowserProfileType(
-      this, profile_metrics::BrowserProfileType::kIncognito);
 }
 
 TestChromeBrowserState::TestChromeBrowserState(
     const base::FilePath& state_path,
+    std::string_view browser_state_name,
     std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs,
     TestingFactories testing_factories,
-    RefcountedTestingFactories refcounted_testing_factories,
     std::unique_ptr<BrowserStatePolicyConnector> policy_connector,
     std::unique_ptr<policy::UserCloudPolicyManager> user_cloud_policy_manager)
     : ChromeBrowserState(
           state_path,
+          browser_state_name,
           base::ThreadPool::CreateSequencedTaskRunner(
               {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
       prefs_(std::move(prefs)),
@@ -71,14 +122,11 @@ TestChromeBrowserState::TestChromeBrowserState(
       policy_connector_(std::move(policy_connector)),
       otr_browser_state_(nullptr),
       original_browser_state_(nullptr) {
-  for (const auto& pair : testing_factories) {
-    pair.first->SetTestingFactory(this, std::move(pair.second));
-  }
+  DCHECK(!browser_state_name.empty());
 
-  for (const auto& pair : refcounted_testing_factories) {
-    pair.first->SetTestingFactory(this, std::move(pair.second));
-  }
+  BrowserStateDependencyManager::GetInstance()->MarkBrowserStateLive(this);
 
+  AssignTestingFactories(this, std::move(testing_factories));
   profile_metrics::SetBrowserProfileType(
       this, profile_metrics::BrowserProfileType::kRegular);
 
@@ -115,8 +163,9 @@ void TestChromeBrowserState::Init() {
   DCHECK(!web::WebThread::IsThreadInitialized(web::WebThread::UI) ||
          web::WebThread::CurrentlyOn(web::WebThread::UI));
 
-  if (!base::PathExists(state_path_)) {
-    base::CreateDirectory(state_path_);
+  const base::FilePath state_path = GetStatePath();
+  if (!base::PathExists(state_path)) {
+    base::CreateDirectory(state_path);
   }
 
   // Normally this would happen during browser startup, but for tests we need to
@@ -196,7 +245,7 @@ TestChromeBrowserState::CreateOffTheRecordBrowserStateWithTestingFactories(
   DCHECK(!IsOffTheRecord());
   DCHECK(!otr_browser_state_);
   otr_browser_state_.reset(new TestChromeBrowserState(
-      GetOffTheRecordStatePath(), this, testing_factories));
+      GetOffTheRecordStatePath(), this, std::move(testing_factories)));
   otr_browser_state_->Init();
   return otr_browser_state_.get();
 }
@@ -242,47 +291,6 @@ TestChromeBrowserState::GetTestingPrefService() {
   return testing_prefs_;
 }
 
-TestChromeBrowserState::Builder::Builder() : build_called_(false) {}
-
-TestChromeBrowserState::Builder::~Builder() {}
-
-void TestChromeBrowserState::Builder::AddTestingFactory(
-    BrowserStateKeyedServiceFactory* service_factory,
-    BrowserStateKeyedServiceFactory::TestingFactory testing_factory) {
-  DCHECK(!build_called_);
-  testing_factories_.emplace_back(service_factory, std::move(testing_factory));
-}
-
-void TestChromeBrowserState::Builder::AddTestingFactory(
-    RefcountedBrowserStateKeyedServiceFactory* service_factory,
-    RefcountedBrowserStateKeyedServiceFactory::TestingFactory testing_factory) {
-  DCHECK(!build_called_);
-  refcounted_testing_factories_.emplace_back(service_factory,
-                                             std::move(testing_factory));
-}
-
-void TestChromeBrowserState::Builder::SetPath(const base::FilePath& path) {
-  DCHECK(!build_called_);
-  state_path_ = path;
-}
-
-void TestChromeBrowserState::Builder::SetPrefService(
-    std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs) {
-  DCHECK(!build_called_);
-  pref_service_ = std::move(prefs);
-}
-
-void TestChromeBrowserState::Builder::SetPolicyConnector(
-    std::unique_ptr<BrowserStatePolicyConnector> policy_connector) {
-  DCHECK(!build_called_);
-  policy_connector_ = std::move(policy_connector);
-}
-
-void TestChromeBrowserState::Builder::SetUserCloudPolicyManager(
-    std::unique_ptr<policy::UserCloudPolicyManager> user_cloud_policy_manager) {
-  user_cloud_policy_manager_ = std::move(user_cloud_policy_manager);
-}
-
 policy::UserCloudPolicyManager*
 TestChromeBrowserState::GetUserCloudPolicyManager() {
   return user_cloud_policy_manager_.get();
@@ -291,23 +299,6 @@ TestChromeBrowserState::GetUserCloudPolicyManager() {
 void TestChromeBrowserState::DestroyOffTheRecordChromeBrowserState() {
   DCHECK(!IsOffTheRecord());
   otr_browser_state_.reset();
-}
-
-std::unique_ptr<TestChromeBrowserState>
-TestChromeBrowserState::Builder::Build() {
-  DCHECK(!build_called_);
-  build_called_ = true;
-
-  // Ensure that `state_path_` is not empty, creating a new temporary
-  // directory if needed.
-  if (state_path_.empty()) {
-    state_path_ = base::CreateUniqueTempDirectoryScopedToTest();
-  }
-
-  return base::WrapUnique(new TestChromeBrowserState(
-      state_path_, std::move(pref_service_), std::move(testing_factories_),
-      std::move(refcounted_testing_factories_), std::move(policy_connector_),
-      std::move(user_cloud_policy_manager_)));
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>
@@ -320,4 +311,85 @@ TestChromeBrowserState::GetSharedURLLoaderFactory() {
 void TestChromeBrowserState::SetSharedURLLoaderFactory(
     scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory) {
   test_shared_url_loader_factory_ = std::move(shared_url_loader_factory);
+}
+
+TestChromeBrowserState::Builder::Builder() = default;
+
+TestChromeBrowserState::Builder::Builder(Builder&&) = default;
+
+TestChromeBrowserState::Builder& TestChromeBrowserState::Builder::operator=(
+    Builder&&) = default;
+
+TestChromeBrowserState::Builder::~Builder() = default;
+
+TestChromeBrowserState::Builder&
+TestChromeBrowserState::Builder::AddTestingFactory(
+    BrowserStateKeyedServiceFactory* service_factory,
+    BrowserStateKeyedServiceFactory::TestingFactory testing_factory) {
+  testing_factories_.emplace_back(service_factory, std::move(testing_factory));
+  return *this;
+}
+
+TestChromeBrowserState::Builder&
+TestChromeBrowserState::Builder::AddTestingFactory(
+    RefcountedBrowserStateKeyedServiceFactory* service_factory,
+    RefcountedBrowserStateKeyedServiceFactory::TestingFactory testing_factory) {
+  testing_factories_.emplace_back(service_factory, std::move(testing_factory));
+  return *this;
+}
+
+TestChromeBrowserState::Builder&
+TestChromeBrowserState::Builder::AddTestingFactories(
+    TestingFactories testing_factories) {
+  for (auto& item : testing_factories) {
+    testing_factories.emplace_back(std::move(item));
+  }
+  return *this;
+}
+
+TestChromeBrowserState::Builder& TestChromeBrowserState::Builder::SetName(
+    const std::string& name) {
+  browser_state_name_ = name;
+  return *this;
+}
+
+TestChromeBrowserState::Builder&
+TestChromeBrowserState::Builder::SetPrefService(
+    std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs) {
+  pref_service_ = std::move(prefs);
+  return *this;
+}
+
+TestChromeBrowserState::Builder&
+TestChromeBrowserState::Builder::SetPolicyConnector(
+    std::unique_ptr<BrowserStatePolicyConnector> policy_connector) {
+  policy_connector_ = std::move(policy_connector);
+  return *this;
+}
+
+TestChromeBrowserState::Builder&
+TestChromeBrowserState::Builder::SetUserCloudPolicyManager(
+    std::unique_ptr<policy::UserCloudPolicyManager> user_cloud_policy_manager) {
+  user_cloud_policy_manager_ = std::move(user_cloud_policy_manager);
+  return *this;
+}
+
+std::unique_ptr<TestChromeBrowserState>
+TestChromeBrowserState::Builder::Build() && {
+  return std::move(*this).Build(base::CreateUniqueTempDirectoryScopedToTest());
+}
+
+std::unique_ptr<TestChromeBrowserState> TestChromeBrowserState::Builder::Build(
+    const base::FilePath& data_dir) && {
+  CHECK(!data_dir.empty());
+
+  // Ensure that the name is not empty.
+  if (browser_state_name_.empty()) {
+    browser_state_name_ = "Test";
+  }
+
+  return base::WrapUnique(new TestChromeBrowserState(
+      data_dir.Append(browser_state_name_), browser_state_name_,
+      std::move(pref_service_), std::move(testing_factories_),
+      std::move(policy_connector_), std::move(user_cloud_policy_manager_)));
 }

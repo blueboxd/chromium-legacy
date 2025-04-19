@@ -49,6 +49,7 @@
 <translation id="2295140143284145483">سروے</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="2353636109065292463">آپ کا انٹرنیٹ کنکشن چیک کیا جا رہا ہے</translation>
+<translation id="2359808026110333948">جاری رکھیں</translation>
 <translation id="2388990488038464401">آپ کے فون سے اس نمبر پر کال کریں؟</translation>
 <translation id="2435457462613246316">پاس ورڈ دکھائیں</translation>
 <translation id="24452542372838207">اطلاع پھیلائيں</translation>
@@ -129,6 +130,7 @@
 <translation id="5574202486608032840"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /> سسٹم</translation>
 <translation id="5583640892426849032">بیک اسپیس</translation>
 <translation id="5613020302032141669">بایاں تیر کا نشان</translation>
+<translation id="5633029987065897167">خالی ہے</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 منٹ}other{# منٹ}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{آج فعال تھا}=1{1 دن پہلے فعال تھا}other{# دن پہلے فعال تھا}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 دن اور }other{# دن اور }}</translation>

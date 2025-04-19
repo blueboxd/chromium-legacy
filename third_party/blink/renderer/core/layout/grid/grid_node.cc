@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/core/layout/grid/grid_node.h"
 
 #include "third_party/blink/renderer/core/layout/grid/grid_layout_algorithm.h"
@@ -113,7 +118,7 @@ GridItems GridNode::ConstructGridItems(
   }
 
   // Copy each resolved position to its respective grid item data.
-  auto* resolved_position = cached_placement_data->grid_item_positions.begin();
+  auto resolved_position = cached_placement_data->grid_item_positions.begin();
   for (auto& grid_item : grid_items) {
     grid_item.resolved_position = *(resolved_position++);
   }

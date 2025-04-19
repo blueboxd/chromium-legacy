@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "sandbox/win/src/process_mitigations.h"
 
 #include <windows.h>
@@ -530,6 +535,14 @@ void ConvertProcessMitigationsToPolicy(MitigationFlags flags,
       *policy_value_2 |=
           PROCESS_CREATION_MITIGATION_POLICY2_FSCTL_SYSTEM_CALL_DISABLE_ALWAYS_ON;
     }
+  }
+
+  // This mitigation is supported on systems with no non-architectural core
+  // sharing and have enabled support for SMT isolation scheduling.
+  if (version >= base::win::Version::WIN11_23H2 &&
+      flags & MITIGATION_RESTRICT_CORE_SHARING) {
+    *policy_value_2 |=
+        PROCESS_CREATION_MITIGATION_POLICY2_RESTRICT_CORE_SHARING_ALWAYS_ON;
   }
 
   // When done setting policy flags, sanity check supported policies on this

@@ -46,6 +46,7 @@ targets.legacy_compound_suite(
         "linux_flavor_specific_chromium_gtests",
         "vr_android_specific_chromium_tests",
         "vr_platform_specific_chromium_gtests",
+        "webview_instrumentation_test_apk_single_process_mode_gtests",
     ],
 )
 
@@ -64,6 +65,7 @@ targets.legacy_compound_suite(
         "system_webview_shell_instrumentation_tests",  # Not an experimental test
         "webview_cts_tests_gtest",
         "webview_ui_instrumentation_tests",
+        "webview_instrumentation_test_apk_single_process_mode_gtests",
     ],
 )
 
@@ -94,6 +96,7 @@ targets.legacy_compound_suite(
         "system_webview_shell_instrumentation_tests",  # Not an experimental test
         "webview_cts_tests_gtest",
         "webview_ui_instrumentation_tests",
+        "webview_instrumentation_test_apk_single_process_mode_gtests",
     ],
 )
 
@@ -114,6 +117,7 @@ targets.legacy_compound_suite(
         # "vr_android_specific_chromium_tests",
         # "vr_platform_specific_chromium_gtests",
         "webview_64_cts_tests_gtest",
+        "webview_instrumentation_test_apk_single_process_mode_gtests",
         "webview_ui_instrumentation_tests",
     ],
 )
@@ -123,6 +127,8 @@ targets.legacy_compound_suite(
     basic_suites = [
         "bfcache_android_specific_gtests",
         "bfcache_generic_gtests",
+        "webview_bot_instrumentation_test_apk_bfcache_mutations_gtest",
+        "webview_cts_tests_bfcache_mutations_gtest",
     ],
 )
 
@@ -139,15 +145,6 @@ targets.legacy_compound_suite(
     basic_suites = [
         "chrome_isolated_script_tests",
         "chrome_private_code_test_isolated_scripts",
-    ],
-)
-
-targets.legacy_compound_suite(
-    name = "chrome_wpt_tests_three_modes",
-    basic_suites = [
-        "chromium_wpt_tests_isolated_scripts",
-        "chromium_wpt_tests_headful_isolated_scripts",
-        "headless_shell_wpt_tests_isolated_scripts",
     ],
 )
 
@@ -213,6 +210,7 @@ targets.legacy_compound_suite(
         "linux_flavor_specific_chromium_gtests",
         "vr_android_specific_chromium_tests",
         "vr_platform_specific_chromium_gtests",
+        "webview_instrumentation_test_apk_single_process_mode_gtests",
     ],
 )
 
@@ -278,15 +276,6 @@ targets.legacy_compound_suite(
     ],
 )
 
-targets.legacy_compound_suite(
-    name = "chromium_linux_cast_receiver_gtests",
-    basic_suites = [
-        "cast_receiver_gtests",
-        "chromium_gtests",
-        "linux_flavor_specific_chromium_gtests",
-    ],
-)
-
 # When changing something here, change chromium_linux_and_gl_gtests,
 # chromium_linux_and_gl_and_vulkan_gtests in the same way.
 targets.legacy_compound_suite(
@@ -318,10 +307,6 @@ targets.legacy_compound_suite(
         "telemetry_perf_unittests_isolated_scripts",
         "vulkan_swiftshader_isolated_scripts",
         "chromium_web_tests_high_dpi_isolated_scripts",
-        # TODO(crbug.com/328079854): we should eventually run chrome_wpt_tests where
-        # blink_wpt_tests runs on Linux. There should not have any resource
-        # concern on this because those are all CI builders.
-        #"chromium_wpt_tests_isolated_scripts",
     ],
 )
 
@@ -360,7 +345,6 @@ targets.legacy_compound_suite(
         # TODO(crbug.com/40287410): Remove this once the BackgroundResourceFetch
         # feature launches.
         "chromium_web_tests_brfetch_isolated_scripts",
-        "chromium_wpt_tests_isolated_scripts",
     ],
 )
 
@@ -397,6 +381,18 @@ targets.legacy_compound_suite(
         "chromedriver_py_tests_isolated_scripts",
         "components_perftests_isolated_scripts",
         "desktop_chromium_isolated_scripts",
+        "mac_specific_isolated_scripts",
+        "mojo_python_unittests_isolated_scripts",
+        "telemetry_perf_unittests_isolated_scripts",
+    ],
+)
+
+targets.legacy_compound_suite(
+    name = "chromium_mac_osxbeta_rel_isolated_scripts",
+    basic_suites = [
+        "chromedriver_py_tests_isolated_scripts",
+        "components_perftests_isolated_scripts",
+        "desktop_chromium_mac_osxbeta_scripts",
         "mac_specific_isolated_scripts",
         "mojo_python_unittests_isolated_scripts",
         "telemetry_perf_unittests_isolated_scripts",
@@ -441,6 +437,14 @@ targets.legacy_compound_suite(
     ],
 )
 
+# Multiscreen tests for desktop platforms. See: crbug.com/346565331.
+targets.legacy_compound_suite(
+    name = "chromium_multiscreen_gtests_fyi",
+    basic_suites = [
+        "chromium_multiscreen_gtests",
+    ],
+)
+
 # Pixel tests only enabled on Win 10. So this is
 # 'chromium_win_gtests' + 'pixel_browser_tests_gtests' +
 # 'non_android_chromium_gtests_skia_gold'. When changing
@@ -459,13 +463,6 @@ targets.legacy_compound_suite(
         "pixel_browser_tests_gtests",
         "vr_platform_specific_chromium_gtests",
         "win_specific_chromium_gtests",
-    ],
-)
-
-targets.legacy_compound_suite(
-    name = "chromium_win10_gtests_multiscreen_fyi",
-    basic_suites = [
-        "chromium_gtests_for_windows_multiscreen",
     ],
 )
 
@@ -790,13 +787,6 @@ targets.legacy_compound_suite(
 )
 
 targets.legacy_compound_suite(
-    name = "gpu_fuchsia_telemetry_tests",
-    basic_suites = [
-        "gpu_validating_telemetry_tests",
-    ],
-)
-
-targets.legacy_compound_suite(
     name = "gpu_fyi_android_gtests",
     basic_suites = [
         "gpu_angle_unit_gtests",
@@ -878,7 +868,6 @@ targets.legacy_compound_suite(
     name = "gpu_fyi_linux_debug_gtests",
     basic_suites = [
         "gpu_common_gtests_passthrough",
-        "gpu_gles2_conform_gtests",
     ],
 )
 
@@ -897,7 +886,6 @@ targets.legacy_compound_suite(
         "gpu_angle_unit_gtests",
         "gpu_common_gtests_passthrough",
         "gpu_desktop_specific_gtests",
-        "gpu_gles2_conform_gtests",
         "gpu_memory_buffer_impl_tests_suite",
         "gpu_vulkan_gtests",
     ],
@@ -935,7 +923,6 @@ targets.legacy_compound_suite(
         "gpu_common_gtests_passthrough",
         "gpu_fyi_and_optional_non_linux_gtests",
         "gpu_fyi_mac_specific_gtests",
-        "gpu_gles2_conform_gtests",
     ],
 )
 
@@ -969,7 +956,6 @@ targets.legacy_compound_suite(
         "gpu_desktop_specific_gtests",
         "gpu_fyi_and_optional_non_linux_gtests",
         "gpu_fyi_mac_specific_gtests",
-        "gpu_gles2_conform_gtests",
     ],
 )
 
@@ -1041,7 +1027,6 @@ targets.legacy_compound_suite(
         "gpu_desktop_specific_gtests",
         "gpu_fyi_and_optional_non_linux_gtests",
         "gpu_fyi_and_optional_win_specific_gtests",
-        "gpu_gles2_conform_gtests",
     ],
 )
 
@@ -1270,6 +1255,15 @@ targets.legacy_compound_suite(
         "webview_cts_tests_gtest_no_field_trial",
         "webview_ui_instrumentation_tests",
         "webview_ui_instrumentation_tests_no_field_trial",
+    ],
+)
+
+targets.legacy_compound_suite(
+    name = "webview_native_coverage_bot_gtests",
+    basic_suites = [
+        "webview_bot_instrumentation_test_apk_mutations_gtest",
+        "webview_bot_instrumentation_test_apk_no_field_trial_gtest",
+        "webview_bot_unittests_gtest",
     ],
 )
 

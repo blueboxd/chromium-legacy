@@ -15,6 +15,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/types/expected.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "build/build_config.h"
@@ -235,18 +236,21 @@ struct WebAppInstallInfo {
       const std::u16string& document_title,
       const WebAppInstallInfo& other);
 
+  // This creates WebAppInstallInfo in the same way as the default constructor
+  // does, but it will return an error on invalid arguments instead of failing
+  // with a CHECK().
+  static base::expected<WebAppInstallInfo, std::string> Create(
+      const GURL& manifest_url,
+      const webapps::ManifestId& manifest_id,
+      const GURL& start_url);
+
   // This creates a WebAppInstallInfo where the `manifest_id` is derived from
   // the `start_url` using `GenerateManifestIdFromStartUrlOnly`.
   static std::unique_ptr<WebAppInstallInfo> CreateWithStartUrlForTesting(
       const GURL& start_url);
 
-  // TODO(b/280862254): Remove this constructor to force users to use specify
-  // both the manifest_id and start_url (or call
-  // `CreateWithStartUrlForTesting`).
-  explicit WebAppInstallInfo(const webapps::ManifestId& manifest_id);
-
-  // The `manifest_id` and the `start_url` MUST be valid. The `manifest_id` MUST
-  // be created properly, and cannot contain refs (e.g. '#refs').
+  // The `manifest_id` and the `start_url` MUST be valid and same-origin. The
+  // `manifest_id` MUST NOT contain refs (e.g. '#refs').
   WebAppInstallInfo(const webapps::ManifestId& manifest_id,
                     const GURL& start_url);
 
@@ -260,21 +264,28 @@ struct WebAppInstallInfo {
   // Creates a deep copy of this struct.
   WebAppInstallInfo Clone() const;
 
-  // Id specified in the manifest.
-  // TODO(b/280862254): After the manifest id constructor is required, this can
-  // be guaranteed to be valid & non-empty.
+  // ID specified in the manifest.
+  // Guaranteed to be valid & non-empty & same-origin with `start_url()` & have
+  // no "#ref" part in the URL.
   // https://www.w3.org/TR/appmanifest/#id-member
-  webapps::ManifestId manifest_id;
+  const webapps::ManifestId& manifest_id() const { return manifest_id_; }
+
+  // URL the site would prefer the user agent load when launching the app.
+  // Guaranteed to be valid & non-empty & same-origin with `manifest_id()`.
+  // https://www.w3.org/TR/appmanifest/#start_url-member
+  const GURL& start_url() const { return start_url_; }
+
+  // Set the `manifest_id` and `start_url` fields. Both are set at once to allow
+  // origin changes if necessary. The `manifest_id` and the `start_url` have the
+  // same requirements as in the WebAppInstallInfo constructor.
+  void SetManifestIdAndStartUrl(const webapps::ManifestId& manifest_id,
+                                const GURL& start_url);
 
   // Title of the application.
   std::u16string title;
 
   // Description of the application.
   std::u16string description;
-
-  // The URL the site would prefer the user agent load when launching the app.
-  // https://www.w3.org/TR/appmanifest/#start_url-member
-  GURL start_url;
 
   // The URL of the manifest.
   // https://www.w3.org/TR/appmanifest/#web-application-manifest
@@ -448,6 +459,12 @@ struct WebAppInstallInfo {
  private:
   // Used this method in Clone() method. Use Clone() to deep copy explicitly.
   WebAppInstallInfo(const WebAppInstallInfo& other);
+
+  // See `manifest_id()`.
+  webapps::ManifestId manifest_id_;
+
+  // See `start_url()`.
+  GURL start_url_;
 };
 
 bool operator==(const IconSizes& icon_sizes1, const IconSizes& icon_sizes2);

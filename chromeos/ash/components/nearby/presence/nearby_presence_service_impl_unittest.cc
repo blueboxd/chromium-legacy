@@ -343,6 +343,8 @@ TEST_F(NearbyPresenceServiceImplTest, StartScan_DeviceChanged) {
 
   EXPECT_TRUE(scan_delegate_.WasOnPresenceDeviceChangedCalled());
   EXPECT_TRUE(IsScanSessionActive());
+  histogram_tester()->ExpectBucketCount("Nearby.Presence.ScanRequest.Result",
+                                        enums::StatusCode::kAbslOk, 1);
 }
 
 TEST_F(NearbyPresenceServiceImplTest, StartScan_DeviceLost) {
@@ -378,6 +380,8 @@ TEST_F(NearbyPresenceServiceImplTest, StartScan_DeviceLost) {
 
   EXPECT_TRUE(scan_delegate_.WasOnPresenceDeviceLostCalled());
   EXPECT_TRUE(IsScanSessionActive());
+  histogram_tester()->ExpectBucketCount("Nearby.Presence.ScanRequest.Result",
+                                        enums::StatusCode::kAbslOk, 1);
 }
 
 TEST_F(NearbyPresenceServiceImplTest, EndScan) {
@@ -524,8 +528,6 @@ TEST_F(NearbyPresenceServiceImplTest, NullProcessReference) {
 
 TEST_F(NearbyPresenceServiceImplTest, Reset) {
   // Test that stopping the Nearby Process does not cause any crashes.
-  // TODO(b/277819923): When metric is added for Nearby Process shutdown
-  // reason, test the metric is correctly recorded here.
   nearby_process_reference_.reset();
 }
 

@@ -20,6 +20,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/not_fatal_until.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
@@ -114,9 +115,7 @@ internal::AccountType ToProtoAccountType(
 
 // Returns a Base16 encoded SHA1 digest of `data`.
 std::string Sha1Digest(const std::string& data) {
-  const base::SHA1Digest hash =
-      base::SHA1HashSpan(base::as_bytes(base::make_span(data)));
-  return base::HexEncode(hash);
+  return base::HexEncode(base::SHA1Hash(base::as_byte_span(data)));
 }
 
 }  // namespace
@@ -582,7 +581,7 @@ void AccountManager::UpdateToken(
 
   DCHECK_EQ(init_state_, InitializationState::kInitialized);
   auto it = accounts_.find(account_key);
-  DCHECK(it != accounts_.end())
+  CHECK(it != accounts_.end(), base::NotFatalUntil::M130)
       << "UpdateToken cannot be used for adding accounts";
   UpsertAccountInternal(account_key, AccountInfo{it->second.raw_email, token});
 }

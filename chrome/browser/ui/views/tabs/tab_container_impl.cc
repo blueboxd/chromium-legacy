@@ -11,6 +11,7 @@
 #include "base/ranges/algorithm.h"
 #include "base/types/to_address.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/tabs/features.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_root_view.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
@@ -224,13 +225,14 @@ void TabContainerImpl::SetActiveTab(std::optional<size_t> prev_active_index,
     // When tabs are wide enough, selecting a new tab cannot change the
     // ideal bounds, so only a repaint is necessary.
     SchedulePaint();
-  } else if (IsAnimating() || drag_context_->IsDragSessionActive()) {
-    // The selection change will have modified the ideal bounds of the tabs
-    // in |selected_tabs_| and |new_selection|.  We need to recompute and
-    // retarget the animation to these new bounds. Note: This is safe even if
-    // we're in the midst of mouse-based tab closure--we won't expand the
-    // tabstrip back to the full window width--because PrepareForCloseAt() will
-    // have set |override_available_width_for_tabs_| already.
+  } else if (controller_->IsAnimatingInTabStrip() ||
+             drag_context_->IsDragSessionActive()) {
+    // The selection change will have modified the ideal bounds of the tabs. We
+    // need to recompute and retarget the animation to these new bounds. Note:
+    // This is safe even if we're in the midst of mouse-based tab closure--we
+    // won't expand the tabstrip back to the full window width--because
+    // PrepareForCloseAt() will have set `override_available_width_for_tabs_`
+    // already.
     AnimateToIdealBounds();
   } else {
     // As in the animating case above, the selection change will have
@@ -239,7 +241,7 @@ void TabContainerImpl::SetActiveTab(std::optional<size_t> prev_active_index,
     CompleteAnimationAndLayout();
   }
 
-  if (base::FeatureList::IsEnabled(features::kScrollableTabStrip) &&
+  if (base::FeatureList::IsEnabled(tabs::kScrollableTabStrip) &&
       new_active_index.has_value()) {
     ScrollTabToVisible(new_active_index.value());
   }
@@ -1277,6 +1279,9 @@ void TabContainerImpl::StartInsertTabAnimation(int model_index) {
 
 void TabContainerImpl::StartRemoveTabAnimation(Tab* tab,
                                                int former_model_index) {
+  // Update ideal bounds before using them to check if we should stay in tab
+  // closing mode. See crbug.com/40838229.
+  UpdateIdealBounds();
   if (in_tab_close_ && GetTabCount() > 0 &&
       override_available_width_for_tabs_ >
           tabs_view_model_.ideal_bounds(GetTabCount() - 1).right()) {
@@ -1614,7 +1619,7 @@ bool TabContainerImpl::ShouldTabBeVisible(const Tab* tab) const {
   // N.B. This is separate from the tab being potentially scrolled offscreen -
   // this solely determines whether the tab should be clipped for the
   // pre-scrolling overflow behavior.
-  if (base::FeatureList::IsEnabled(features::kScrollableTabStrip)) {
+  if (base::FeatureList::IsEnabled(tabs::kScrollableTabStrip)) {
     return true;
   }
 

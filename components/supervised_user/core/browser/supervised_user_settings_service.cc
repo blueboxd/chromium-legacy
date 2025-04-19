@@ -33,8 +33,8 @@ namespace supervised_user {
 using base::JSONReader;
 using base::UserMetricsAction;
 using base::Value;
+using syncer::DataType;
 using syncer::ModelError;
-using syncer::ModelType;
 using syncer::SUPERVISED_USER_SETTINGS;
 using syncer::SyncChange;
 using syncer::SyncChangeList;
@@ -286,7 +286,7 @@ void SupervisedUserSettingsService::WaitUntilReadyToSync(
 
 std::optional<syncer::ModelError>
 SupervisedUserSettingsService::MergeDataAndStartSyncing(
-    ModelType type,
+    DataType type,
     const SyncDataList& initial_sync_data,
     std::unique_ptr<SyncChangeProcessor> sync_processor) {
   DCHECK_EQ(SUPERVISED_USER_SETTINGS, type);
@@ -366,13 +366,13 @@ SupervisedUserSettingsService::MergeDataAndStartSyncing(
   return std::nullopt;
 }
 
-void SupervisedUserSettingsService::StopSyncing(ModelType type) {
+void SupervisedUserSettingsService::StopSyncing(DataType type) {
   DCHECK_EQ(syncer::SUPERVISED_USER_SETTINGS, type);
   sync_processor_.reset();
 }
 
 SyncDataList SupervisedUserSettingsService::GetAllSyncDataForTesting(
-    ModelType type) const {
+    DataType type) const {
   DCHECK_EQ(syncer::SUPERVISED_USER_SETTINGS, type);
   SyncDataList data;
   for (const auto it : *GetAtomicSettings()) {
@@ -457,9 +457,6 @@ SupervisedUserSettingsService::ProcessSyncChanges(
 base::WeakPtr<syncer::SyncableService>
 SupervisedUserSettingsService::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
-}
-
-void SupervisedUserSettingsService::OnPrefValueChanged(const std::string& key) {
 }
 
 void SupervisedUserSettingsService::OnInitializationCompleted(bool success) {

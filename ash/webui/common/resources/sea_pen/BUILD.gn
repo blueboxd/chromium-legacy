@@ -36,6 +36,7 @@ build_webui("build_ts") {
   ]
 
   web_component_files = [
+    "sea_pen_error_element.ts",
     "sea_pen_feedback_element.ts",
     "sea_pen_image_loading_element.ts",
     "sea_pen_images_element.ts",
@@ -43,8 +44,11 @@ build_webui("build_ts") {
     "sea_pen_options_element.ts",
     "sea_pen_recent_wallpapers_element.ts",
     "sea_pen_router_element.ts",
+    "sea_pen_samples_element.ts",
     "sea_pen_toast_element.ts",
     "sea_pen_chip_text_element.ts",
+    "sea_pen_freeform_element.ts",
+    "sea_pen_suggestions_element.ts",
     "sea_pen_template_query_element.ts",
     "sea_pen_templates_element.ts",
     "sea_pen_introduction_dialog_element.ts",
@@ -61,9 +65,11 @@ build_webui("build_ts") {
     "sea_pen_controller.ts",
     "sea_pen_interface_provider.ts",
     "sea_pen_metrics_logger.ts",
+    "sea_pen_observer.ts",
     "sea_pen_reducer.ts",
     "sea_pen_state.ts",
     "sea_pen_store.ts",
+    "sea_pen_untranslated_constants.ts",
     "sea_pen_utils.ts",
     "transition.ts",
     "surface_effects/sparkle_shader.ts",

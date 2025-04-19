@@ -52,6 +52,9 @@
 #include "build/chromeos_buildflags.h"
 #include "cc/base/math_util.h"
 #include "cc/input/touch_action.h"
+#include "components/input/input_router.h"
+#include "components/input/render_widget_host_input_event_router.h"
+#include "components/input/switches.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/process_lock.h"
@@ -68,16 +71,13 @@
 #include "content/browser/renderer_host/render_frame_proxy_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/site_info.h"
 #include "content/browser/storage_partition_impl.h"
-#include "content/browser/url_loader_factory_getter.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/common/frame.mojom-test-utils.h"
 #include "content/common/input/actions_parser.h"
-#include "content/common/input/input_router.h"
 #include "content/common/input/synthetic_gesture.h"
 #include "content/common/input/synthetic_gesture_target.h"
 #include "content/common/input/synthetic_pinch_gesture_params.h"
@@ -85,6 +85,7 @@
 #include "content/common/input/synthetic_tap_gesture.h"
 #include "content/common/input/synthetic_touchscreen_pinch_gesture.h"
 #include "content/common/renderer.mojom.h"
+#include "content/common/renderer_host.mojom-test-utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -473,10 +474,9 @@ std::string SitePerProcessBrowserTestBase::WaitForMessageScript(
 
 void SitePerProcessBrowserTestBase::SetUpCommandLine(
     base::CommandLine* command_line) {
-  ContentBrowserTest::SetUpCommandLine(command_line);
   IsolateAllSitesForTesting(command_line);
 
-  command_line->AppendSwitch(switches::kValidateInputEventStream);
+  command_line->AppendSwitch(input::switches::kValidateInputEventStream);
   // Without this, FocusFrame can be flaky. It depends on dispatching input
   // events which can inadventently get dropped.
   command_line->AppendSwitch(blink::switches::kAllowPreCommitInput);
@@ -561,6 +561,23 @@ class SitePerProcessAutoplayBrowserTest : public SitePerProcessBrowserTest {
                                     : EXECUTE_SCRIPT_NO_USER_GESTURE)
         .ExtractBool();
   }
+};
+
+// Certain tests require the speculative RFH to be created before the browser
+// receives any data from the server. The delay of creating the RFH is set to 0
+// in these tests so that the speculative RFH is created when the request is
+// sent.
+class SitePerProcessBrowserTestWithoutSpeculativeRFHDelay
+    : public SitePerProcessBrowserTest {
+ public:
+  SitePerProcessBrowserTestWithoutSpeculativeRFHDelay() {
+    feature_list_for_defer_speculative_rfh_.InitAndEnableFeatureWithParameters(
+        features::kDeferSpeculativeRFHCreation,
+        {{"create_speculative_rfh_delay_ms", "0"}});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_for_defer_speculative_rfh_;
 };
 
 // Ensure that navigating subframes in --site-per-process mode works and the
@@ -851,7 +868,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
       ui::ScrollGranularity::kScrollByPrecisePixel;
   gesture_scroll_update.data.scroll_update.delta_x = 0.f;
   gesture_scroll_update.data.scroll_update.delta_y = 5.f;
-  gesture_scroll_update.data.scroll_update.velocity_y = 5.f;
 
   child_rwh->ForwardGestureEvent(gesture_scroll_update);
 
@@ -2240,11 +2256,13 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, ProxyCreationSkipsSubtree) {
   std::string cross_site_rfh_type = "speculative";
   {
     TestNavigationObserver observer(shell()->web_contents());
-    TestFrameNavigationObserver navigation_observer(child);
+    TestNavigationManager navigation_manager(shell()->web_contents(),
+                                             cross_site_url);
     NavigationController::LoadURLParams params(cross_site_url);
     params.transition_type = PageTransitionFromInt(ui::PAGE_TRANSITION_LINK);
     params.frame_tree_node_id = child->frame_tree_node_id();
     child->navigator().controller().LoadURLWithParams(params);
+    navigation_manager.WaitForSpeculativeRenderFrameHostCreation();
 
     site = child->render_manager()->speculative_frame_host()->GetSiteInstance();
     EXPECT_NE(shell()->web_contents()->GetSiteInstance(), site);
@@ -2263,7 +2281,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, ProxyCreationSkipsSubtree) {
 
     // Now that the verification is done, run the message loop and wait for the
     // navigation to complete.
-    navigation_observer.Wait();
+    ASSERT_TRUE(navigation_manager.WaitForNavigationFinished());
     EXPECT_TRUE(observer.last_navigation_succeeded());
     EXPECT_EQ(cross_site_url, observer.last_navigation_url());
 
@@ -2286,11 +2304,13 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, ProxyCreationSkipsSubtree) {
     // verify that the intermediate SiteInstance/RenderFrameHost have been
     // properly cleaned up.
     TestNavigationObserver observer(shell()->web_contents());
-    TestFrameNavigationObserver navigation_observer(child);
+    TestNavigationManager navigation_manager(shell()->web_contents(),
+                                             cross_site_url);
     NavigationController::LoadURLParams params(cross_site_url);
     params.transition_type = PageTransitionFromInt(ui::PAGE_TRANSITION_LINK);
     params.frame_tree_node_id = child->frame_tree_node_id();
     child->navigator().controller().LoadURLWithParams(params);
+    navigation_manager.WaitForSpeculativeRenderFrameHostCreation();
 
     SiteInstance* site2 =
         child->render_manager()->speculative_frame_host()->GetSiteInstance();
@@ -2307,7 +2327,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, ProxyCreationSkipsSubtree) {
         cross_site_rfh_type.c_str());
     EXPECT_EQ(tree, DepictFrameTree(root));
 
-    navigation_observer.Wait();
+    ASSERT_TRUE(navigation_manager.WaitForNavigationFinished());
     EXPECT_TRUE(observer.last_navigation_succeeded());
     EXPECT_EQ(cross_site_url, observer.last_navigation_url());
     EXPECT_EQ(0U, child->child_count());
@@ -3948,9 +3968,10 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 
   // Start a navigation back to A, being careful to stay in the same
   // BrowsingInstance, and check that the RenderViewHost wasn't reused.
-  TestNavigationObserver navigation_observer(shell()->web_contents());
+  TestNavigationManager navigation_manager(shell()->web_contents(), a_url);
   shell()->LoadURLForFrame(a_url, std::string(),
                            ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK));
+  navigation_manager.WaitForSpeculativeRenderFrameHostCreation();
   RenderFrameHostImpl* pending_rfh =
       root->render_manager()->speculative_frame_host();
   RenderViewHostImpl* pending_rvh = pending_rfh->render_view_host();
@@ -3966,7 +3987,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                rvh_process_id == pending_rvh->GetProcess()->GetID());
 
   // Make sure the last navigation finishes without crashing.
-  navigation_observer.Wait();
+  ASSERT_TRUE(navigation_manager.WaitForNavigationFinished());
 }
 
 // Test for https://crbug.com/591478, where navigating to a cross-site page with
@@ -6260,7 +6281,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   // at the focused node. This creates a popup widget in both processes.
   // Wait for and then drop the ViewHostMsg_ShowWidget messages, so that both
   // widgets are left in pending-but-not-shown state.
-  NativeWebKeyboardEvent event(
+  input::NativeWebKeyboardEvent event(
       blink::WebKeyboardEvent::Type::kChar, blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   event.text[0] = ' ';
@@ -6385,7 +6406,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   GURL stall_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
   TestNavigationManager delayer(shell()->web_contents(), stall_url);
   EXPECT_TRUE(ExecJs(shell(), JsReplace("location = $1", stall_url)));
-  EXPECT_TRUE(delayer.WaitForRequestStart());
+  delayer.WaitForSpeculativeRenderFrameHostCreation();
 
   // The pending RFH should be in the same process as the popup.
   RenderFrameHostImpl* pending_rfh =
@@ -6443,7 +6464,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   NavigationHandleObserver handle_observer(shell()->web_contents(), stall_url);
   TestNavigationManager delayer(shell()->web_contents(), stall_url);
   EXPECT_TRUE(ExecJs(shell(), JsReplace("location = $1", stall_url)));
-  EXPECT_TRUE(delayer.WaitForRequestStart());
+  delayer.WaitForSpeculativeRenderFrameHostCreation();
 
   // Kill the b.com process, currently in use by the pending RenderFrameHost
   // and the popup.
@@ -6824,7 +6845,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 // Check that when a pending RFH is canceled and a proxy needs to be created in
 // its place, the proxy is properly initialized on the renderer side.  See
 // https://crbug.com/653746.
-IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
+// The test disables the delay of creating the speculative RFH since it requires
+// the created RFH to be cancelld because of the cross-origin redirect.
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTestWithoutSpeculativeRFHDelay,
                        CommunicateWithProxyAfterCancelPending) {
   GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   GURL b_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
@@ -8283,7 +8306,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 
   // Wait for main frame request, but don't commit it yet.  This should create
   // a speculative RenderFrameHost.
-  ASSERT_TRUE(manager1.WaitForRequestStart());
+  manager1.WaitForSpeculativeRenderFrameHostCreation();
   RenderFrameHostImpl* root_speculative_rfh =
       root->render_manager()->speculative_frame_host();
   EXPECT_TRUE(root_speculative_rfh);
@@ -8300,7 +8323,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   EXPECT_TRUE(root_proxy->is_render_frame_proxy_live());
 
   // Wait for subframe request, but don't commit it yet.
-  ASSERT_TRUE(manager2.WaitForRequestStart());
+  manager2.WaitForSpeculativeRenderFrameHostCreation();
   RenderFrameHostImpl* subframe_speculative_rfh =
       child->render_manager()->speculative_frame_host();
   EXPECT_TRUE(child->render_manager()->speculative_frame_host());
@@ -8334,10 +8357,12 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   EXPECT_EQ(0, EvalJs(web_contents(), "frames.length;"));
 
   // The root proxy should be gone.
-  EXPECT_FALSE(
-      root->current_frame_host()
-          ->browsing_context_state()
-          ->GetRenderFrameProxyHost(b_subframe_site_instance->group()));
+  if (b_subframe_site_instance->group()) {
+    EXPECT_FALSE(
+        root->current_frame_host()
+            ->browsing_context_state()
+            ->GetRenderFrameProxyHost(b_subframe_site_instance->group()));
+  }
 }
 
 // Similar to TwoCrossSitePendingNavigationsAndMainFrameWins, but checks the
@@ -8371,7 +8396,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 
   // Wait for main frame request and check the frame tree.  There should be a
   // proxy for b.com at the root, but nowhere else at this point.
-  ASSERT_TRUE(manager1.WaitForRequestStart());
+  manager1.WaitForSpeculativeRenderFrameHostCreation();
   EXPECT_EQ(
       " Site A (B speculative) -- proxies for B\n"
       "   |--Site A\n"
@@ -8387,7 +8412,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
       ExecJs(web_contents(), JsReplace("frames[0].location = $1", new_url_2)));
 
   // Wait for subframe request.
-  ASSERT_TRUE(manager2.WaitForRequestStart());
+  manager2.WaitForSpeculativeRenderFrameHostCreation();
   RenderFrameHostImpl* child_speculative_rfh =
       child->render_manager()->speculative_frame_host();
   EXPECT_TRUE(child_speculative_rfh);
@@ -8467,7 +8492,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 
   // Cancel the pending main frame navigation, and verify that the subframe can
   // still communicate with the (old) main frame.
-  root->navigator().CancelNavigation(root, NavigationDiscardReason::kCancelled);
+  root->navigator().CancelNavigation(
+      root, NavigationDiscardReason::kExplicitCancellation);
   EXPECT_FALSE(root->render_manager()->speculative_frame_host());
 
   EXPECT_TRUE(
@@ -8499,7 +8525,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   GURL new_url_1(embedded_test_server()->GetURL("b.com", "/title1.html"));
   TestNavigationManager manager(web_contents(), new_url_1);
   EXPECT_TRUE(ExecJs(web_contents(), JsReplace("location = $1", new_url_1)));
-  ASSERT_TRUE(manager.WaitForRequestStart());
+  manager.WaitForSpeculativeRenderFrameHostCreation();
 
   // Before it commits, start and commit a navigation to b.com in the second
   // tab.
@@ -8533,7 +8559,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 
   // Cancel the pending main frame navigation, and verify that the subframe can
   // still communicate with the (old) main frame.
-  root->navigator().CancelNavigation(root, NavigationDiscardReason::kCancelled);
+  root->navigator().CancelNavigation(
+      root, NavigationDiscardReason::kExplicitCancellation);
   EXPECT_FALSE(root->render_manager()->speculative_frame_host());
 
   EXPECT_TRUE(
@@ -8558,7 +8585,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 
   // Wait for the request, but don't commit it yet. This should create a
   // speculative RenderFrameHost.
-  ASSERT_TRUE(nav_manager.WaitForRequestStart());
+  nav_manager.WaitForSpeculativeRenderFrameHostCreation();
   FrameTreeNode* root = web_contents()->GetPrimaryFrameTree().root();
   RenderFrameHostImpl* speculative_rfh = root->current_frame_host()
                                              ->child_at(0)
@@ -8680,8 +8707,11 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 
   const bool using_speculative_rfh =
       !!first_child->render_manager()->speculative_frame_host();
+  // Speculative RFH will not be created at this point if we enable deferring.
   EXPECT_EQ(using_speculative_rfh,
-            GetRenderDocumentLevel() >= RenderDocumentLevel::kSubframe);
+            GetRenderDocumentLevel() >= RenderDocumentLevel::kSubframe &&
+                !base::FeatureList::IsEnabled(
+                    features::kDeferSpeculativeRFHCreation));
 
   ASSERT_TRUE(nav_manager.WaitForNavigationFinished());
   // There should be no commit...
@@ -8700,7 +8730,10 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 // Test that a cross-site navigation in <object> that fails with an HTTP error
 // directly triggers fallback handling, rather than triggering fallback handling
 // in the renderer after it receives a `CommitNavigation()` IPC.
-IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
+// The test disables the delay of creating the speculative RFH since it
+// will check the created speculative RFH for a failing request. The speculative
+// RFH will not be created after receiving the 404 response.
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTestWithoutSpeculativeRFHDelay,
                        ObjectTagCrossSiteNavigationWithHTTPError) {
   // Set up a test page with a same-site child frame hosted in an <object> tag.
   // TODO(dcheng): In the future, it might be useful to also have a test where
@@ -8725,7 +8758,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   FrameTreeNode* first_child = root->child_at(0);
   EXPECT_TRUE(BeginNavigateToURLFromRenderer(
       first_child->render_manager()->current_frame_host(), url2));
-
+  nav_manager.WaitForSpeculativeRenderFrameHostCreation();
   // Cross-site navigations always force a speculative RFH to be created.
   EXPECT_TRUE(first_child->render_manager()->speculative_frame_host());
 
@@ -8807,8 +8840,11 @@ IN_PROC_BROWSER_TEST_P(
 
   const bool using_speculative_rfh =
       !!first_child->render_manager()->speculative_frame_host();
+  // Speculative RFH will not be created at this point if we enable deferring.
   EXPECT_EQ(using_speculative_rfh,
-            GetRenderDocumentLevel() >= RenderDocumentLevel::kSubframe);
+            GetRenderDocumentLevel() >= RenderDocumentLevel::kSubframe &&
+                !base::FeatureList::IsEnabled(
+                    features::kDeferSpeculativeRFHCreation));
 
   ASSERT_TRUE(nav_manager.WaitForNavigationFinished());
   // There should be no commit...
@@ -8832,8 +8868,11 @@ IN_PROC_BROWSER_TEST_P(
 // and also subsequently fails to load the body still directly triggers fallback
 // handling, rather than triggering fallback handling in the renderer after it
 // receives a `CommitNavigation()` IPC.
+// The test disables the delay of creating the speculative RFH since it
+// will check the created speculative RFH for a failing request. The speculative
+// RFH will not be created after receiving the 404 response.
 IN_PROC_BROWSER_TEST_P(
-    SitePerProcessBrowserTest,
+    SitePerProcessBrowserTestWithoutSpeculativeRFHDelay,
     ObjectTagCrossSiteNavigationWithHTTPErrorAndFailedBodyLoad) {
   // Set up a test page with a same-site child frame hosted in an <object> tag.
   // TODO(dcheng): In the future, it might be useful to also have a test where
@@ -8888,7 +8927,7 @@ IN_PROC_BROWSER_TEST_P(
   FrameTreeNode* first_child = root->child_at(0);
   EXPECT_TRUE(BeginNavigateToURLFromRenderer(
       first_child->render_manager()->current_frame_host(), url2));
-
+  nav_manager.WaitForSpeculativeRenderFrameHostCreation();
   // Cross-site navigations always force a speculative RFH to be created.
   EXPECT_TRUE(first_child->render_manager()->speculative_frame_host());
 
@@ -8913,7 +8952,10 @@ IN_PROC_BROWSER_TEST_P(
 // Test that a same-site navigation in <object> that fails with a network error
 // directly triggers fallback handling, rather than triggering fallback handling
 // in the renderer after it receives a `CommitFailedNavigation()` IPC.
-IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
+// The test disables the delay of creating the speculative RFH since it
+// will check the created speculative RFH for a failing request. The speculative
+// RFH will not be created after the network error.
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTestWithoutSpeculativeRFHDelay,
                        ObjectTagSameSiteNavigationWithNetworkError) {
   // Set up a test page with a same-site child frame hosted in an <object> tag.
   GURL url1(embedded_test_server()->GetURL("a.com", "/object-frame.html"));
@@ -8934,6 +8976,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   FrameTreeNode* first_child = root->child_at(0);
   EXPECT_TRUE(BeginNavigateToURLFromRenderer(
       first_child->render_manager()->current_frame_host(), error_url));
+  if (GetRenderDocumentLevel() >= RenderDocumentLevel::kSubframe) {
+    nav_manager.WaitForSpeculativeRenderFrameHostCreation();
+  }
 
   const bool using_speculative_rfh =
       !!first_child->render_manager()->speculative_frame_host();
@@ -8954,7 +8999,10 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 // Test that a cross-site navigation in <object> that fails with a network error
 // directly triggers fallback handling, rather than triggering fallback handling
 // in the renderer after it receives a `CommitFailedNavigation()` IPC.
-IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
+// The test disables the delay of creating the speculative RFH since it
+// will check the created speculative RFH for a failing request. The speculative
+// RFH will not be created after the network error.
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTestWithoutSpeculativeRFHDelay,
                        ObjectTagCrossSiteNavigationWithNetworkError) {
   // Set up a test page with a same-site child frame hosted in an <object> tag.
   GURL url1(embedded_test_server()->GetURL("a.com", "/object-frame.html"));
@@ -8974,7 +9022,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   FrameTreeNode* first_child = root->child_at(0);
   EXPECT_TRUE(BeginNavigateToURLFromRenderer(
       first_child->render_manager()->current_frame_host(), error_url));
-
+  nav_manager.WaitForSpeculativeRenderFrameHostCreation();
   // Cross-site navigations always force a speculative RFH to be created.
   EXPECT_TRUE(first_child->render_manager()->speculative_frame_host());
 
@@ -9165,7 +9213,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 
   // Wait for the request, but don't commit it yet. This should create a
   // speculative RenderFrameHost.
-  ASSERT_TRUE(nav_manager.WaitForRequestStart());
+  nav_manager.WaitForSpeculativeRenderFrameHostCreation();
   RenderFrameHostImpl* root_speculative_rfh =
       root->render_manager()->speculative_frame_host();
   EXPECT_TRUE(root_speculative_rfh);
@@ -11219,7 +11267,7 @@ class SitePerProcessBrowserTouchActionTest : public SitePerProcessBrowserTest {
   SitePerProcessBrowserTouchActionTest() = default;
 
   bool GetTouchActionForceEnableZoom(RenderWidgetHost* rwh) {
-    InputRouterImpl* input_router = static_cast<InputRouterImpl*>(
+    input::InputRouterImpl* input_router = static_cast<input::InputRouterImpl*>(
         static_cast<RenderWidgetHostImpl*>(rwh)->input_router());
     return input_router->touch_action_filter_.force_enable_zoom_;
   }
@@ -11230,7 +11278,7 @@ class SitePerProcessBrowserTouchActionTest : public SitePerProcessBrowserTest {
   // descendent) of |rwhv_root| to get the touch action of. |event_position|
   // should be within |rwhv_child| in |rwhv_root|'s coordinate space.
   void GetTouchActionsForChild(
-      RenderWidgetHostInputEventRouter* router,
+      input::RenderWidgetHostInputEventRouter* router,
       RenderWidgetHostViewBase* rwhv_root,
       RenderWidgetHostViewBase* rwhv_child,
       const gfx::Point& event_position,
@@ -11246,7 +11294,7 @@ class SitePerProcessBrowserTouchActionTest : public SitePerProcessBrowserTest {
                  event.GetType() == blink::WebGestureEvent::Type::kTouchEnd;
         }));
 
-    InputRouterImpl* input_router = static_cast<InputRouterImpl*>(
+    input::InputRouterImpl* input_router = static_cast<input::InputRouterImpl*>(
         static_cast<RenderWidgetHostImpl*>(rwhv_child->GetRenderWidgetHost())
             ->input_router());
     // Clear the touch actions that were set by previous touches.
@@ -11256,8 +11304,7 @@ class SitePerProcessBrowserTouchActionTest : public SitePerProcessBrowserTest {
     ack_observer.Reset();
     blink::SyntheticWebTouchEvent touch_event;
     int index = touch_event.PressPoint(event_position.x(), event_position.y());
-    router->RouteTouchEvent(rwhv_root, &touch_event,
-                            ui::LatencyInfo(ui::SourceEventType::TOUCH));
+    router->RouteTouchEvent(rwhv_root, &touch_event, ui::LatencyInfo());
     ack_observer.Wait();
     // Reset them to get the new value.
     effective_touch_action.reset();
@@ -11274,14 +11321,12 @@ class SitePerProcessBrowserTouchActionTest : public SitePerProcessBrowserTest {
     // avoids triggering DCHECKs when sending followup events.
     ack_observer.Reset();
     touch_event.MovePoint(index, 1, 1);
-    router->RouteTouchEvent(rwhv_root, &touch_event,
-                            ui::LatencyInfo(ui::SourceEventType::TOUCH));
+    router->RouteTouchEvent(rwhv_root, &touch_event, ui::LatencyInfo());
     ack_observer.Wait();
 
     ack_observer.Reset();
     touch_event.ReleasePoint(index);
-    router->RouteTouchEvent(rwhv_root, &touch_event,
-                            ui::LatencyInfo(ui::SourceEventType::TOUCH));
+    router->RouteTouchEvent(rwhv_root, &touch_event, ui::LatencyInfo());
     ack_observer.Wait();
   }
 
@@ -11430,7 +11475,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTouchActionTest,
   gfx::Point point_inside_child = ToFlooredPoint(
       child_view->TransformPointToRootCoordSpaceF(gfx::PointF(+5.f, +5.f)));
 
-  RenderWidgetHostInputEventRouter* router =
+  input::RenderWidgetHostInputEventRouter* router =
       static_cast<WebContentsImpl*>(web_contents())->GetInputEventRouter();
 
   WaitForTouchActionUpdated(root_thread_observer.get(),
@@ -11508,7 +11553,7 @@ IN_PROC_BROWSER_TEST_F(
   gfx::Point point_inside_child = ToFlooredPoint(
       child_view->TransformPointToRootCoordSpaceF(gfx::PointF(+5.f, +5.f)));
 
-  RenderWidgetHostInputEventRouter* router =
+  input::RenderWidgetHostInputEventRouter* router =
       static_cast<WebContentsImpl*>(web_contents())->GetInputEventRouter();
 
   // Child should inherit effective touch action none from root.
@@ -11587,7 +11632,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTouchActionTest,
   gfx::Point point_inside_child = gfx::ToFlooredPoint(
       child_view->TransformPointToRootCoordSpaceF(gfx::PointF(+5.f, +5.f)));
 
-  RenderWidgetHostInputEventRouter* router =
+  input::RenderWidgetHostInputEventRouter* router =
       static_cast<WebContentsImpl*>(web_contents())->GetInputEventRouter();
   // Child should inherit effective touch action none from root.
   WaitForTouchActionUpdated(root_thread_observer.get(),
@@ -12063,7 +12108,8 @@ IN_PROC_BROWSER_TEST_P(
   // b.com renderer process exits cleanly without a crash.  In
   // https://crbug.com/794625, the crash was caused by trying to recreate the
   // reused proxy, which had been incorrectly set as non-live.
-  popup_root->ResetNavigationRequest(NavigationDiscardReason::kCancelled);
+  popup_root->ResetNavigationRequest(
+      NavigationDiscardReason::kExplicitCancellation);
   b_process_observer.Wait();
   EXPECT_TRUE(b_process_observer.did_exit_normally());
 }
@@ -12600,7 +12646,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   // 2) Navigation from B to C. The server is slow to respond.
   TestNavigationManager navigation_observer(web_contents(), url_c);
   EXPECT_TRUE(ExecJs(rfh_b, JsReplace("location.href=$1;", url_c)));
-  EXPECT_TRUE(navigation_observer.WaitForRequestStart());
+  navigation_observer.WaitForSpeculativeRenderFrameHostCreation();
   RenderFrameHostImpl* rfh_c =
       rfh_b->frame_tree_node()->render_manager()->speculative_frame_host();
 
@@ -12655,7 +12701,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   // 2) Navigation from C to D. The server is slow to respond.
   TestNavigationManager navigation_observer(web_contents(), url_d);
   EXPECT_TRUE(ExecJs(rfh_c, JsReplace("location.href=$1;", url_d)));
-  EXPECT_TRUE(navigation_observer.WaitForRequestStart());
+  navigation_observer.WaitForSpeculativeRenderFrameHostCreation();
   RenderFrameHostImpl* rfh_d =
       rfh_c->frame_tree_node()->render_manager()->speculative_frame_host();
 
@@ -13355,13 +13401,20 @@ IN_PROC_BROWSER_TEST_P(DisableProcessReusePolicyTest,
 class SitePerProcessWithMainFrameThresholdTestBase
     : public SitePerProcessBrowserTestBase {
  public:
-  static constexpr size_t kThreshold = 2;
+  static constexpr size_t kDefaultThreshold = 3;
 
-  SitePerProcessWithMainFrameThresholdTestBase() {
+  explicit SitePerProcessWithMainFrameThresholdTestBase(
+      size_t frame_threshold = kDefaultThreshold,
+      size_t total_memory_threshold = 0) {
+    base::FieldTrialParams params = {
+        {"ProcessPerSiteMainFrameThreshold",
+         base::StringPrintf("%zu", frame_threshold)}};
+    if (total_memory_threshold != 0) {
+      params["ProcessPerSiteMainFrameTotalMemoryLimit"] =
+          base::StringPrintf("%zu", total_memory_threshold);
+    }
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        features::kProcessPerSiteUpToMainFrameThreshold,
-        {{"ProcessPerSiteMainFrameThreshold",
-          base::StringPrintf("%zu", kThreshold)}});
+        features::kProcessPerSiteUpToMainFrameThreshold, params);
   }
   ~SitePerProcessWithMainFrameThresholdTestBase() override = default;
 
@@ -13413,7 +13466,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessWithMainFrameThresholdTest,
             subframe_in_main_shell->GetProcess());
 
   std::vector<Shell*> shells;
-  for (size_t i = 0; i < kThreshold - 1; ++i) {
+  for (size_t i = 0; i < kDefaultThreshold - 1; ++i) {
     Shell* new_shell = CreateShellAndNavigateToURL(kUrl);
     RenderFrameHostImpl* new_frame =
         static_cast<WebContentsImpl*>(new_shell->web_contents())
@@ -13447,6 +13500,136 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessWithMainFrameThresholdTest,
   for (auto*& shell : shells) {
     shell->Close();
   }
+}
+
+// A test fixture that provides an upper limit of 4 bytes, so should fail the
+// assignment of another outermost main frame into the process.
+class SitePerProcessWithMainFrameThresholdWithTotalLimitTest
+    : public SitePerProcessWithMainFrameThresholdTestBase,
+      public ::testing::WithParamInterface<std::string> {
+ public:
+  SitePerProcessWithMainFrameThresholdWithTotalLimitTest()
+      : SitePerProcessWithMainFrameThresholdTestBase(
+            /*frame_threshold=*/10,
+            /*total_memory_threshold=*/9) {}
+  ~SitePerProcessWithMainFrameThresholdWithTotalLimitTest() override = default;
+};
+
+class RendererHostInterceptor
+    : public mojom::RendererHostInterceptorForTesting {
+ public:
+  explicit RendererHostInterceptor(RenderProcessHostImpl* process_host)
+      : swapped_impl_(process_host->renderer_host_receiver_for_testing(),
+                      this) {}
+  mojom::RendererHost* GetForwardingInterface() override {
+    return swapped_impl_.old_impl();
+  }
+
+#if BUILDFLAG(IS_ANDROID)
+  void SetPrivateMemoryFootprint(
+      uint64_t private_memory_footprint_bytes) override {
+    // Drop this message from the renderer.
+  }
+#endif
+
+ private:
+  mojo::test::ScopedSwapImplForTesting<mojom::RendererHost> swapped_impl_;
+};
+
+// Tests that a RenderProcessHost is not reused when the private memory
+// footprint of the process exceeds a certain amount.
+IN_PROC_BROWSER_TEST_P(SitePerProcessWithMainFrameThresholdWithTotalLimitTest,
+                       ExcessiveAllocation) {
+  const GURL kUrl =
+      embedded_test_server()->GetURL("foo.test", "/page_with_iframe.html");
+
+  base::HistogramTester histograms;
+  ASSERT_TRUE(NavigateToURL(shell(), kUrl));
+  RenderFrameHostImpl* main_frame_in_main_shell =
+      static_cast<WebContentsImpl*>(shell()->web_contents())
+          ->GetPrimaryMainFrame();
+  RenderFrameHostImpl* subframe_in_main_shell =
+      main_frame_in_main_shell->child_at(0)->current_frame_host();
+  ASSERT_EQ(main_frame_in_main_shell->GetProcess(),
+            subframe_in_main_shell->GetProcess());
+
+  Shell* new_shell = CreateShellAndNavigateToURL(kUrl);
+  RenderFrameHostImpl* new_frame =
+      static_cast<WebContentsImpl*>(new_shell->web_contents())
+          ->GetPrimaryMainFrame();
+  ASSERT_NE(main_frame_in_main_shell->GetProcess(), new_frame->GetProcess());
+  new_shell->Close();
+
+  // Verify that we hit a limit histogram.
+  histograms.ExpectTotalCount(
+      "BrowserRenderProcessHost.ProcessPerSiteMainFrameLimit", 1);
+  histograms.ExpectBucketCount(
+      "BrowserRenderProcessHost.ProcessPerSiteMainFrameLimit", 1, 1);
+}
+
+// Tests that opening a fourth tab will put it over the limit and will allocate
+// a new process. We allocate 3 main frames that are 2 bytes each. Placing
+// a fourth would exceeded the limit of 9.
+IN_PROC_BROWSER_TEST_P(SitePerProcessWithMainFrameThresholdWithTotalLimitTest,
+                       AllowedAllocation) {
+  const GURL kUrl =
+      embedded_test_server()->GetURL("foo.test", "/page_with_iframe.html");
+
+  base::HistogramTester histograms;
+  ASSERT_TRUE(NavigateToURL(shell(), kUrl));
+  RenderFrameHostImpl* main_frame_in_main_shell =
+      static_cast<WebContentsImpl*>(shell()->web_contents())
+          ->GetPrimaryMainFrame();
+  RenderFrameHostImpl* subframe_in_main_shell =
+      main_frame_in_main_shell->child_at(0)->current_frame_host();
+  ASSERT_EQ(main_frame_in_main_shell->GetProcess(),
+            subframe_in_main_shell->GetProcess());
+
+  auto* process_host = static_cast<RenderProcessHostImpl*>(
+      main_frame_in_main_shell->GetProcess());
+  RendererHostInterceptor interceptor(process_host);
+  process_host->SetPrivateMemoryFootprintForTesting(2);
+
+  std::vector<Shell*> shells;
+  for (size_t i = 0; i < 2; ++i) {
+    Shell* new_shell = CreateShellAndNavigateToURL(kUrl);
+    RenderFrameHostImpl* new_frame =
+        static_cast<WebContentsImpl*>(new_shell->web_contents())
+            ->GetPrimaryMainFrame();
+    // Currently the reuse policy is only applied for sites that require a
+    // dedicated process, and if this not the case, the two main frames won't
+    // share a process due to being under the process limit.
+    if (main_frame_in_main_shell->GetSiteInstance()
+            ->RequiresDedicatedProcess()) {
+      ASSERT_EQ(main_frame_in_main_shell->GetProcess(),
+                new_frame->GetProcess());
+    } else {
+      ASSERT_NE(main_frame_in_main_shell->GetProcess(),
+                new_frame->GetProcess());
+    }
+    process_host->SetPrivateMemoryFootprintForTesting(2 * (i + 2));
+    shells.emplace_back(new_shell);
+  }
+  EXPECT_EQ(
+      6u, main_frame_in_main_shell->GetProcess()->GetPrivateMemoryFootprint());
+
+  // The 4th outermostmain frame will not fit.
+  // The expected size of a frame will be 2, with a scale factor of 1.5
+  // 6 + (2 * 1.5) > 9 so the check should fail.
+  Shell* fourth_shell = CreateShellAndNavigateToURL(kUrl);
+  RenderFrameHostImpl* fourth_frame =
+      static_cast<WebContentsImpl*>(fourth_shell->web_contents())
+          ->GetPrimaryMainFrame();
+  ASSERT_NE(main_frame_in_main_shell->GetProcess(), fourth_frame->GetProcess());
+  shells.emplace_back(fourth_shell);
+  for (auto*& shell : shells) {
+    shell->Close();
+  }
+  // Verify that we hit a limit histogram.
+  histograms.ExpectTotalCount(
+      "BrowserRenderProcessHost.ProcessPerSiteMainFrameLimit", 1);
+  histograms.ExpectBucketCount(
+      "BrowserRenderProcessHost.ProcessPerSiteMainFrameLimit", 3, 1);
 }
 
 // Tests that opening a new tab from an existing page via ctrl-click reuses a
@@ -13498,7 +13681,7 @@ class SitePerProcessWithMainFrameThresholdLocalhostTest
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
         features::kProcessPerSiteUpToMainFrameThreshold,
         {{"ProcessPerSiteMainFrameThreshold",
-          base::StringPrintf("%zu", kThreshold)},
+          base::StringPrintf("%zu", kDefaultThreshold)},
          {"ProcessPerSiteMainFrameAllowIPAndLocalhost",
           IsLocalhostAllowed() ? "true" : "false"}});
   }
@@ -13585,6 +13768,9 @@ INSTANTIATE_TEST_SUITE_P(All,
                          SitePerProcessBrowserTest,
                          testing::ValuesIn(RenderDocumentFeatureLevelValues()));
 INSTANTIATE_TEST_SUITE_P(All,
+                         SitePerProcessBrowserTestWithoutSpeculativeRFHDelay,
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
+INSTANTIATE_TEST_SUITE_P(All,
                          SitePerProcessBrowserTouchActionTest,
                          testing::ValuesIn(RenderDocumentFeatureLevelValues()));
 INSTANTIATE_TEST_SUITE_P(All,
@@ -13595,6 +13781,9 @@ INSTANTIATE_TEST_SUITE_P(All,
                          testing::ValuesIn(RenderDocumentFeatureLevelValues()));
 INSTANTIATE_TEST_SUITE_P(All,
                          SitePerProcessWithMainFrameThresholdTest,
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
+INSTANTIATE_TEST_SUITE_P(All,
+                         SitePerProcessWithMainFrameThresholdWithTotalLimitTest,
                          testing::ValuesIn(RenderDocumentFeatureLevelValues()));
 #if BUILDFLAG(IS_ANDROID)
 INSTANTIATE_TEST_SUITE_P(All,

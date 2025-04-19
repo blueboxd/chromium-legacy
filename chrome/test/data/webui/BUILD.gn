@@ -56,16 +56,15 @@ source_set("browser_tests") {
     "password_manager/password_manager_browsertest.cc",
     "password_manager_internals/password_manager_internals_browsertest.cc",
     "privacy_sandbox/internals/privacy_sandbox_internals_browsertest.cc",
+    "privacy_sandbox/internals/private_state_tokens/private_state_tokens_browsertest.cc",
+    "privacy_sandbox/internals/related_website_sets/related_website_sets_browsertest.cc",
     "privacy_sandbox/privacy_sandbox_dialog_browsertest.cc",
     "sandbox/sandbox_browsertest.cc",
     "settings/settings_browsertest.cc",
-    "side_panel/bookmarks/sp_bookmarks_browsertest.cc",
     "side_panel/commerce/commerce_browsertest.cc",
     "side_panel/customize_chrome/customize_chrome_browsertest.cc",
-    "side_panel/performance_controls/performance_controls_browsertest.cc",
     "side_panel/read_anything/read_anything_browsertest.cc",
     "side_panel/reading_list/reading_list_browsertest.cc",
-    "side_panel/user_notes/user_notes_browsertest.cc",
     "sync_internals/sync_internals_browsertest.cc",
     "tab_search/tab_search_browsertest.cc",
     "usb_internals/usb_internals_browsertest.cc",
@@ -96,6 +95,10 @@ source_set("browser_tests") {
         [ "certificate_viewer_dialog/certificate_viewer_dialog_browsertest.cc" ]
   }
 
+  if (chrome_root_store_cert_management_ui) {
+    sources += [ "certificate_manager/certificate_manager_browsertest.cc" ]
+  }
+
   if (is_chromeos_ash) {
     sources += [
       "chromeos/ash_common/ash_common_browsertest.cc",
@@ -103,11 +106,13 @@ source_set("browser_tests") {
       "chromeos/ash_common/cr_elements/ash_common_cr_elements_browsertest.cc",
       "chromeos/ash_common/sea_pen/sea_pen_browsertest.cc",
       "chromeos/ash_common/webui_resource_browsertest.cc",
+      "chromeos/boca_ui/boca_app_browsertest.cc",
       "chromeos/diagnostics/diagnostics_browsertest.cc",
       "chromeos/edu_coexistence/edu_coexistence_browsertest.cc",
       "chromeos/enterprise_reporting/enterprise_reporting_browsertest.cc",
       "chromeos/extended_updates/extended_updates_browsertest.cc",
       "chromeos/firmware_update/firmware_update_browsertest.cc",
+      "chromeos/healthd_internals/healthd_internals_browsertest.cc",
       "chromeos/inline_login/inline_login_browsertest.cc",
       "chromeos/oobe/security_token_pin_browsertest.cc",
       "chromeos/os_feedback_ui/os_feedback_browsertest.cc",
@@ -166,43 +171,58 @@ source_set("browser_tests") {
   deps = [
     "//build/config/coverage:buildflags",
     "//chrome/app:command_ids",
-    "//chrome/browser/devtools:devtools",
+    "//chrome/browser/devtools",
     "//chrome/browser/devtools:test_support",
     "//chrome/browser/media/router/discovery/access_code:access_code_cast_feature",
     "//chrome/browser/optimization_guide:test_support",
+    "//chrome/browser/ui:ui_features",
+    "//chrome/browser/ui/browser_window",
     "//chrome/browser/ui/lens",
+    "//chrome/browser/ui/tabs",
+    "//chrome/browser/ui/views/side_panel",
     "//chrome/test:test_support",
-    "//components/bookmarks/browser:browser",
-    "//components/bookmarks/managed:managed",
+    "//components/bookmarks/browser",
+    "//components/bookmarks/managed",
+    "//components/commerce/core:account_checker_test_support",
     "//components/commerce/core:commerce_constants",
     "//components/commerce/core:feature_list",
+    "//components/commerce/core:shopping_service_test_support",
     "//components/compose/core/browser:features",
-    "//components/history/core/common:common",
-    "//components/history_clusters/core:core",
+    "//components/history/core/common",
+    "//components/history_clusters/core",
     "//components/history_clusters/history_clusters_internals/webui:constants",
     "//components/history_embeddings",
+    "//components/lens:enterprise_policy",
     "//components/lens:features",
-    "//components/optimization_guide/core:core",
+    "//components/optimization_guide/core",
     "//components/optimization_guide/optimization_guide_internals/webui:url_constants",
-    "//components/password_manager/content/browser:browser",
-    "//components/password_manager/content/common:common",
+    "//components/password_manager/content/browser",
+    "//components/password_manager/content/common",
     "//components/performance_manager:performance_manager",
     "//components/power_bookmarks/core:features",
     "//components/privacy_sandbox:features",
     "//components/privacy_sandbox/privacy_sandbox_attestations:privacy_sandbox_attestations",
     "//components/privacy_sandbox/privacy_sandbox_attestations:test_support",
-    "//components/safe_browsing/core/common:common",
-    "//components/search:search",
-    "//components/site_engagement/content:content",
+    "//components/safe_browsing/core/common",
+    "//components/search",
+    "//components/site_engagement/content",
+    "//components/user_education/common",
     "//components/user_notes:features",
     "//net:test_support",
   ]
 
   if (is_chromeos_ash) {
     deps += [
-      "//chrome/browser/ash:ash",
-      "//chrome/browser/ash:test_support",
-      "//chrome/browser/nearby_sharing/common:common",
+      "//chrome/browser/ash",
+      "//chrome/browser/ash/crostini:test_support",
+      "//chrome/browser/ash/extended_updates/test:test_support",
+      "//chrome/browser/ash/login/ui",
+      "//chrome/browser/ash/ownership",
+      "//chrome/browser/ash/system_web_apps/apps/personalization_app",
+      "//chrome/browser/ash/system_web_apps/apps/personalization_app:test_support",
+      "//chrome/browser/nearby_sharing/common",
+      "//chrome/browser/ui/webui/ash/extended_updates",
+      "//chrome/browser/ui/webui/ash/login",
       "//chromeos/ash/components/standalone_browser",
       "//components/manta",
     ]
@@ -224,6 +244,7 @@ source_set("interactive_ui_tests") {
     "new_tab_page/new_tab_page_focus_test.cc",
     "password_manager/password_manager_focus_test.cc",
     "settings/settings_focus_test.cc",
+    "side_panel/bookmarks/sp_bookmarks_interactive_test.cc",
     "support_tool/support_tool_focus_test.cc",
     "tab_search/tab_search_focus_test.cc",
   ]
@@ -253,8 +274,10 @@ source_set("interactive_ui_tests") {
 
   deps = [
     "//chrome/test:test_support",
-    "//components/password_manager/content/common:common",
-    "//components/search:search",
+    "//components/password_manager/content/common",
+    "//components/power_bookmarks/core:features",
+    "//components/search",
+    "//components/user_notes:features",
   ]
 
   if (enable_compose) {
@@ -317,12 +340,14 @@ webui_ts_library("build_ts") {
     "chrome_timeticks_test.ts",
     "fake_chrome_event.ts",
     "fake_settings_private.ts",
+    "keyboard_mock_interactions.ts",
     "metrics_test_support.ts",
     "mocha_adapter_simple.ts",
     "mock_controller.ts",
     "mocked_metrics_reporter.ts",
     "mock_timer_test.ts",
     "mock_timer.ts",
+    "mouse_mock_interactions.ts",
     "polymer_test_util.ts",
     "test_api.ts",
     "test_browser_proxy.ts",
@@ -373,6 +398,11 @@ generate_grd("build_grd") {
     "commerce/product_specifications:build_grdp",
     "commerce_internals:build_grdp",
     "cr_components:build_grdp",
+    "cr_components/help_bubble:build_grdp",
+    "cr_components/history_clusters:build_grdp",
+    "cr_components/history_embeddings:build_grdp",
+    "cr_components/searchbox:build_grdp",
+    "cr_components/theme_color_picker:build_grdp",
     "cr_elements:build_grdp",
     "css:build_grdp",
     "discards:build_grdp",
@@ -400,6 +430,8 @@ generate_grd("build_grd") {
     "password_manager_internals:build_grdp",
     "privacy_sandbox:build_grdp",
     "privacy_sandbox/internals:build_grdp",
+    "privacy_sandbox/internals/private_state_tokens:build_grdp",
+    "privacy_sandbox/internals/related_website_sets:build_grdp",
     "sandbox:build_grdp",
     "settings:build_grdp",
     "side_panel:build_grdp",
@@ -419,6 +451,11 @@ generate_grd("build_grd") {
     "$target_gen_dir/commerce/product_specifications/resources.grdp",
     "$target_gen_dir/commerce_internals/resources.grdp",
     "$target_gen_dir/cr_components/resources.grdp",
+    "$target_gen_dir/cr_components/help_bubble/resources.grdp",
+    "$target_gen_dir/cr_components/history_clusters/resources.grdp",
+    "$target_gen_dir/cr_components/history_embeddings/resources.grdp",
+    "$target_gen_dir/cr_components/searchbox/resources.grdp",
+    "$target_gen_dir/cr_components/theme_color_picker/resources.grdp",
     "$target_gen_dir/cr_elements/resources.grdp",
     "$target_gen_dir/css/resources.grdp",
     "$target_gen_dir/discards/resources.grdp",
@@ -446,6 +483,8 @@ generate_grd("build_grd") {
     "$target_gen_dir/password_manager/resources.grdp",
     "$target_gen_dir/password_manager_internals/resources.grdp",
     "$target_gen_dir/privacy_sandbox/internals/resources.grdp",
+    "$target_gen_dir/privacy_sandbox/internals/private_state_tokens/resources.grdp",
+    "$target_gen_dir/privacy_sandbox/internals/related_website_sets/resources.grdp",
     "$target_gen_dir/privacy_sandbox/resources.grdp",
     "$target_gen_dir/sandbox/resources.grdp",
     "$target_gen_dir/settings/resources.grdp",
@@ -457,6 +496,12 @@ generate_grd("build_grd") {
     "$target_gen_dir/tab_search/resources.grdp",
     "$target_gen_dir/usb_internals/resources.grdp",
   ]
+
+  if (use_nss_certs || chrome_root_store_cert_management_ui) {
+    deps += [ "cr_components/certificate_manager:build_grdp" ]
+    grdp_files +=
+        [ "$target_gen_dir/cr_components/certificate_manager/resources.grdp" ]
+  }
 
   if (enable_extensions) {
     deps += [ "extensions:build_grdp" ]
@@ -471,6 +516,11 @@ generate_grd("build_grd") {
   if (enable_webui_certificate_viewer) {
     deps += [ "certificate_viewer_dialog:build_grdp" ]
     grdp_files += [ "$target_gen_dir/certificate_viewer_dialog/resources.grdp" ]
+  }
+
+  if (chrome_root_store_cert_management_ui) {
+    deps += [ "certificate_manager:build_grdp" ]
+    grdp_files += [ "$target_gen_dir/certificate_manager/resources.grdp" ]
   }
 
   if (enable_webui_tab_strip) {
@@ -516,6 +566,7 @@ generate_grd("build_grd") {
       "chromeos/ash_common:build_grdp",
       "chromeos/ash_common/cr_elements:build_grdp",
       "chromeos/ash_common/sea_pen:build_grdp",
+      "chromeos/boca_ui:build_grdp",
       "chromeos/borealis_installer:build_grdp",
       "chromeos/cloud_upload:build_grdp",
       "chromeos/diagnostics:build_grdp",
@@ -524,6 +575,7 @@ generate_grd("build_grd") {
       "chromeos/enterprise_reporting:build_grdp",
       "chromeos/extended_updates:build_grdp",
       "chromeos/firmware_update:build_grdp",
+      "chromeos/healthd_internals:build_grdp",
       "chromeos/inline_login:build_grdp",
       "chromeos/manage_mirrorsync:build_grdp",
       "chromeos/office_fallback:build_grdp",
@@ -548,6 +600,7 @@ generate_grd("build_grd") {
       "$target_gen_dir/chromeos/ash_common/resources.grdp",
       "$target_gen_dir/chromeos/ash_common/cr_elements/resources.grdp",
       "$target_gen_dir/chromeos/ash_common/sea_pen/resources.grdp",
+      "$target_gen_dir/chromeos/boca_ui/resources.grdp",
       "$target_gen_dir/chromeos/borealis_installer/resources.grdp",
       "$target_gen_dir/chromeos/cloud_upload/resources.grdp",
       "$target_gen_dir/chromeos/diagnostics/resources.grdp",
@@ -556,6 +609,7 @@ generate_grd("build_grd") {
       "$target_gen_dir/chromeos/enterprise_reporting/resources.grdp",
       "$target_gen_dir/chromeos/extended_updates/resources.grdp",
       "$target_gen_dir/chromeos/firmware_update/resources.grdp",
+      "$target_gen_dir/chromeos/healthd_internals/resources.grdp",
       "$target_gen_dir/chromeos/inline_login/resources.grdp",
       "$target_gen_dir/chromeos/manage_mirrorsync/resources.grdp",
       "$target_gen_dir/chromeos/office_fallback/resources.grdp",

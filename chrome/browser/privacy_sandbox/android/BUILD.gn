@@ -6,14 +6,12 @@ import("//build/config/android/rules.gni")
 import("//third_party/jni_zero/jni_zero.gni")
 
 generate_jni("jni_headers") {
-  sources = [
-    "java/src/org/chromium/chrome/browser/privacy_sandbox/PrivacySandboxBridge.java",
-    "java/src/org/chromium/chrome/browser/privacy_sandbox/TrackingProtectionBridge.java",
-  ]
+  sources = [ "java/src/org/chromium/chrome/browser/privacy_sandbox/PrivacySandboxBridge.java" ]
 }
 
 android_library("java") {
   sources = [
+    "java/src/org/chromium/chrome/browser/privacy_sandbox/ActivityTypeMapper.java",
     "java/src/org/chromium/chrome/browser/privacy_sandbox/AdMeasurementFragment.java",
     "java/src/org/chromium/chrome/browser/privacy_sandbox/FledgeAllSitesFragment.java",
     "java/src/org/chromium/chrome/browser/privacy_sandbox/FledgeBlockedSitesFragment.java",
@@ -42,12 +40,12 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/privacy_sandbox/TopicsLearnMoreFragment.java",
     "java/src/org/chromium/chrome/browser/privacy_sandbox/TopicsManageFragment.java",
     "java/src/org/chromium/chrome/browser/privacy_sandbox/TopicsUtils.java",
-    "java/src/org/chromium/chrome/browser/privacy_sandbox/TrackingProtectionBridge.java",
   ]
   deps = [
     ":java_resources",
     "//base:base_java",
     "//build/android:build_java",
+    "//chrome/browser/android/browserservices/intents:java",
     "//chrome/browser/flags:java",
     "//chrome/browser/preferences:java",
     "//chrome/browser/profiles/android:java",
@@ -92,7 +90,6 @@ android_library("javatests") {
   sources = [
     "javatests/src/org/chromium/chrome/browser/privacy_sandbox/AdMeasurementFragmentTest.java",
     "javatests/src/org/chromium/chrome/browser/privacy_sandbox/FakePrivacySandboxBridge.java",
-    "javatests/src/org/chromium/chrome/browser/privacy_sandbox/FakeTrackingProtectionBridge.java",
     "javatests/src/org/chromium/chrome/browser/privacy_sandbox/FledgeFragmentTest.java",
     "javatests/src/org/chromium/chrome/browser/privacy_sandbox/PrivacySandboxBridgeTest.java",
     "javatests/src/org/chromium/chrome/browser/privacy_sandbox/PrivacySandboxDialogTest.java",
@@ -100,7 +97,6 @@ android_library("javatests") {
     "javatests/src/org/chromium/chrome/browser/privacy_sandbox/PrivacySandboxTestUtils.java",
     "javatests/src/org/chromium/chrome/browser/privacy_sandbox/TopicsFragmentTest.java",
     "javatests/src/org/chromium/chrome/browser/privacy_sandbox/TopicsManageFragmentTest.java",
-    "javatests/src/org/chromium/chrome/browser/privacy_sandbox/TrackingProtectionNoticeTest.java",
   ]
   deps = [
     ":java",
@@ -109,9 +105,11 @@ android_library("javatests") {
     "//base:base_java_test_support",
     "//base/test:test_support_java",
     "//chrome/android:chrome_java",
+    "//chrome/browser/android/browserservices/intents:java",
     "//chrome/browser/flags:java",
     "//chrome/browser/preferences:java",
     "//chrome/browser/profiles/android:java",
+    "//chrome/browser/settings:factory_java",
     "//chrome/browser/settings:test_support_java",
     "//chrome/browser/tab:java",
     "//chrome/test/android:chrome_java_integration_test_support",

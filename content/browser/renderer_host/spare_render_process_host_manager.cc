@@ -7,11 +7,14 @@
 #include "base/check.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/memory/memory_pressure_monitor.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/site_instance_impl.h"
+#include "content/common/features.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_main_runner.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
@@ -27,19 +30,51 @@ SpareRenderProcessHostManager& SpareRenderProcessHostManager::GetInstance() {
   return *s_instance;
 }
 
+void SpareRenderProcessHostManager::StartDestroyTimer(
+    std::optional<base::TimeDelta> timeout) {
+  if (!timeout) {
+    return;
+  }
+  deferred_destroy_timer_.Start(
+      FROM_HERE, timeout.value(),
+      base::BindOnce(
+          &SpareRenderProcessHostManager::CleanupSpareRenderProcessHost,
+          base::Unretained(this)));
+}
+
+bool SpareRenderProcessHostManager::DestroyTimerWillFireBefore(
+    base::TimeDelta timeout) {
+  return deferred_destroy_timer_.IsRunning() &&
+         deferred_destroy_timer_.GetCurrentDelay() < timeout;
+}
+
 void SpareRenderProcessHostManager::WarmupSpareRenderProcessHost(
-    BrowserContext* browser_context) {
+    BrowserContext* browser_context,
+    std::optional<base::TimeDelta> timeout) {
   if (delay_timer_) {
-    UMA_HISTOGRAM_TIMES("BrowserRenderProcessHost.SpareProcessDelayTime",
-                        delay_timer_->Elapsed());
-    delay_timer_.reset();
+    // If the timeout does not have a value, the delayed creation is no longer
+    // required since we will create the spare renderer here.
+    // Otherwise we will create the spare renderer and have the delayed creation
+    // override the timeout later on.
+    if (!timeout.has_value()) {
+      UMA_HISTOGRAM_TIMES("BrowserRenderProcessHost.SpareProcessDelayTime",
+                          delay_timer_->Elapsed());
+      delay_timer_.reset();
+    }
   }
 
   if (spare_render_process_host_ &&
       spare_render_process_host_->GetBrowserContext() == browser_context) {
     DCHECK_EQ(browser_context->GetDefaultStoragePartition(),
               spare_render_process_host_->GetStoragePartition());
-    return;  // Nothing to warm up.
+
+    // Use the new timeout if the specified timeout will be triggered after the
+    // current timeout (or not triggered at all).
+    if (!timeout.has_value() || DestroyTimerWillFireBefore(timeout.value())) {
+      deferred_destroy_timer_.Stop();
+      StartDestroyTimer(timeout);
+    }
+    return;
   }
 
   bool had_spare_renderer = !!spare_render_process_host_;
@@ -57,6 +92,13 @@ void SpareRenderProcessHostManager::WarmupSpareRenderProcessHost(
     // any problematic callers.
     base::debug::DumpWithoutCrashing();
 
+    return;
+  }
+
+  if (BrowserMainRunner::ExitedMainMessageLoop()) {
+    // Don't create a new process when the browser is shutting down. No
+    // DumpWithoutCrashing here since there are known cases in the wild. See
+    // https://crbug.com/40274462 for details.
     return;
   }
 
@@ -84,6 +126,14 @@ void SpareRenderProcessHostManager::WarmupSpareRenderProcessHost(
       browser_context, nullptr /* site_instance */);
   spare_render_process_host_->AddObserver(this);
   spare_render_process_host_->Init();
+  // Use the new timeout if there is no previous renderer or
+  // the specified timeout will be triggered after the current timeout
+  // (or not triggered at all).
+  if (!had_spare_renderer || !timeout.has_value() ||
+      DestroyTimerWillFireBefore(timeout.value())) {
+    deferred_destroy_timer_.Stop();
+    StartDestroyTimer(timeout);
+  }
 
   // The spare render process isn't ready, so wait and do the "spare render
   // process changed" callback in RenderProcessReady().
@@ -91,23 +141,22 @@ void SpareRenderProcessHostManager::WarmupSpareRenderProcessHost(
 
 void SpareRenderProcessHostManager::DeferredWarmupSpareRenderProcessHost(
     BrowserContext* browser_context,
-    base::TimeDelta delay) {
-  if (delay == base::TimeDelta::Max()) {
-    return;
-  }
-
+    base::TimeDelta delay,
+    std::optional<base::TimeDelta> timeout) {
   deferred_warmup_timer_.Start(
       FROM_HERE, delay,
       base::BindOnce(
           [](SpareRenderProcessHostManager* self,
-             base::WeakPtr<BrowserContext> browser_context) {
+             base::WeakPtr<BrowserContext> browser_context,
+             std::optional<base::TimeDelta> timeout) {
             // Don't create spare process if the browser context is destroyed
             // or the shutdown has started.
             if (browser_context && !browser_context->ShutdownStarted()) {
-              self->WarmupSpareRenderProcessHost(browser_context.get());
+              self->WarmupSpareRenderProcessHost(browser_context.get(),
+                                                 timeout);
             }
           },
-          base::Unretained(this), browser_context->GetWeakPtr()));
+          base::Unretained(this), browser_context->GetWeakPtr(), timeout));
 }
 
 RenderProcessHost*
@@ -129,9 +178,11 @@ SpareRenderProcessHostManager::MaybeTakeSpareRenderProcessHost(
   // process-per-site scenarios + to work correctly even if
   // ShouldUseSpareRenderProcessHost starts covering non-process-per-site
   // scenarios).
-  bool embedder_allows_spare_usage =
-      GetContentClient()->browser()->ShouldUseSpareRenderProcessHost(
-          browser_context, site_instance->GetSiteInfo().site_url());
+  std::optional<ContentBrowserClient::SpareProcessRefusedByEmbedderReason>
+      refuse_reason =
+          GetContentClient()->browser()->ShouldUseSpareRenderProcessHost(
+              browser_context, site_instance->GetSiteInfo().site_url());
+  bool embedder_allows_spare_usage = !refuse_reason.has_value();
 
   // The spare RenderProcessHost always launches with JIT enabled, so if JIT
   // is disabled for the site then it's not possible to use this as the JIT
@@ -139,6 +190,13 @@ SpareRenderProcessHostManager::MaybeTakeSpareRenderProcessHost(
   if (GetContentClient()->browser()->IsJitDisabledForSite(
           browser_context, site_instance->GetSiteInfo().process_lock_url())) {
     embedder_allows_spare_usage = false;
+    refuse_reason =
+        ContentBrowserClient::SpareProcessRefusedByEmbedderReason::JitDisabled;
+  }
+  if (refuse_reason.has_value()) {
+    base::UmaHistogramEnumeration(
+        "BrowserRenderProcessHost.SpareProcessRefusedByEmbedderReason",
+        refuse_reason.value());
   }
 
   // Do not use spare renderer if running an experiment to run SkiaFontManager.
@@ -230,16 +288,28 @@ void SpareRenderProcessHostManager::PrepareForFutureRequests(
     BrowserContext* browser_context,
     std::optional<base::TimeDelta> delay) {
   if (RenderProcessHostImpl::IsSpareProcessKeptAtAllTimes()) {
+    std::optional<base::TimeDelta> timeout = std::nullopt;
+    if (base::FeatureList::IsEnabled(
+            features::kAndroidWarmUpSpareRendererWithTimeout)) {
+      if (features::kAndroidSpareRendererCreationTiming.Get() !=
+          features::kAndroidSpareRendererCreationDelayedDuringLoading) {
+        // The creation of the spare renderer will be managed in
+        // WebContentsImpl::DidStopLoading or
+        // WebContentsImpl::OnFirstVisuallyNonEmptyPaint.
+        return;
+      }
+      if (features::kAndroidSpareRendererTimeoutSeconds.Get() > 0) {
+        timeout =
+            base::Seconds(features::kAndroidSpareRendererTimeoutSeconds.Get());
+      }
+    }
     // Always keep around a spare process for the most recently requested
     // |browser_context|.
     if (delay.has_value()) {
-      // The actual delay time is not necessarily `delay` because the
-      // process can be delayed until the page stops loading, in which case
-      // `delay` is TimeDelta::Max().
       delay_timer_ = std::make_unique<base::ElapsedTimer>();
-      DeferredWarmupSpareRenderProcessHost(browser_context, *delay);
+      DeferredWarmupSpareRenderProcessHost(browser_context, *delay, timeout);
     } else {
-      WarmupSpareRenderProcessHost(browser_context);
+      WarmupSpareRenderProcessHost(browser_context, timeout);
     }
   } else {
     // Discard the ignored (probably non-matching) spare so as not to waste
@@ -260,6 +330,9 @@ void SpareRenderProcessHostManager::CleanupSpareRenderProcessHost() {
       spare_render_process_host_->Cleanup();
     }
 
+    // Stop the destroy timer since it is no longer required.
+    deferred_destroy_timer_.Stop();
+
     // Drop reference to the RenderProcessHost object.
     spare_render_process_host_ = nullptr;
     spare_render_process_host_changed_callback_list_.Notify(nullptr);
@@ -273,6 +346,12 @@ SpareRenderProcessHostManager::RegisterSpareRenderProcessHostChangedCallback(
   // current spare host is.
   cb.Run(spare_render_process_host_.get());
   return spare_render_process_host_changed_callback_list_.Add(cb);
+}
+
+void SpareRenderProcessHostManager::SetDeferTimerTaskRunnerForTesting(
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+  deferred_warmup_timer_.SetTaskRunner(task_runner);
+  deferred_destroy_timer_.SetTaskRunner(task_runner);
 }
 
 void SpareRenderProcessHostManager::ReleaseSpareRenderProcessHost() {

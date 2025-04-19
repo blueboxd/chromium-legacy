@@ -35,16 +35,6 @@
     }
   }
 
-  pref-toggle-button:first-of-type {
-    border-top-left-radius: inherit;
-    border-top-right-radius: inherit;
-  }
-
-  cr-link-row:last-of-type {
-    border-bottom-left-radius: inherit;
-    border-bottom-right-radius: inherit;
-  }
-
   /* Hide the default icon element.*/
   cr-link-row[hide-icon]::part(icon) {
     display: none;
@@ -137,6 +127,7 @@
           if="[[!isDisconnectCloudAuthenticatorInProgress_]]" restamp>
         <cr-button id="disconnectCloudAuthenticatorButton"
             class="cr-row-action-button"
+            aria-label="[[getAriaLabelForCloudAuthenticatorButton_()]]"
             on-click="onDisconnectCloudAuthenticatorClick_">
           $i18n{disconnectCloudAuthenticatorButton}
         </cr-button>
@@ -163,6 +154,12 @@
       </cr-link-row>
     </template>
   </if>
+  <template is="dom-if"
+      if="[[isDeleteAllPasswordManagerDataRowAvailable_]]" restamp>
+    <full-data-reset is-account-store-user="[[isAccountStoreUser]]"
+        is-syncing-passwords="[[isSyncingPasswords]]">
+    </full-data-reset>
+  </template>
 </div>
 <div hidden="[[!blockedSites_.length]]">
   <h3 id="blockedSitesTitle" class="page-title">$i18n{blockedSitesTitle}</h3>

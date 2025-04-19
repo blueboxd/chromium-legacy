@@ -29,7 +29,6 @@
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/metrics/chrome_feature_list_creator.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/profiler/main_thread_stack_sampling_profiler.h"
 #include "chrome/install_static/test/scoped_install_details.h"
@@ -179,28 +178,6 @@ ChromeTestLauncherDelegate::GetUserDataDirectoryCommandLineSwitch() {
   return switches::kUserDataDir;
 }
 
-// Acts like normal ChromeContentBrowserClient but injects a test TaskTracker to
-// watch for long-running tasks and produce a useful timeout message in order to
-// find the cause of flaky timeout tests. On Windows, this client also overrides
-// the GetAppContainerId to add a test-specific suffix to avoid hitting a race
-// condition in CreateAppContainerProfile.
-class BrowserTestChromeContentBrowserClient
-    : public ChromeContentBrowserClient {
- public:
-
-#if BUILDFLAG(IS_WIN)
-  std::string GetAppContainerId() override {
-    base::FilePath path = base::PathService::CheckedGet(chrome::DIR_USER_DATA);
-    // Multiple tests running at the same time from the same binary might try to
-    // race each other to create the AppContainer profile for sandboxed
-    // processes. To avoid this hitting in tests, append the data dir so they
-    // are all unique for each test instance. See https://crbug.com/40223285.
-    return base::StrCat({ContentBrowserClient::GetAppContainerId(),
-                         base::WideToUTF8(path.value())});
-  }
-#endif  // BUILDFLAG(IS_WIN)
-};
-
 // A replacement ChromeContentUtilityClient that binds the
 // echo::mojom::EchoService within the Utility process. For use with testing
 // only.
@@ -212,13 +189,6 @@ class BrowserTestChromeContentUtilityClient
     services.Add(RunEchoService);
   }
 };
-
-content::ContentBrowserClient*
-ChromeTestChromeMainDelegate::CreateContentBrowserClient() {
-  chrome_content_browser_client_ =
-      std::make_unique<BrowserTestChromeContentBrowserClient>();
-  return chrome_content_browser_client_.get();
-}
 
 content::ContentUtilityClient*
 ChromeTestChromeMainDelegate::CreateContentUtilityClient() {
@@ -255,12 +225,20 @@ bool ChromeTestChromeMainDelegate::ShouldHandleConsoleControlEvents() {
 
 void ChromeTestChromeMainDelegate::CreateThreadPool(std::string_view name) {
   base::test::TaskEnvironment::CreateThreadPool();
+
+// `ChromeMainDelegateAndroid::PreSandboxStartup` creates the profiler a little
+// later.
+#if !BUILDFLAG(IS_ANDROID)
+  // Start the sampling profiler as early as possible - namely, once the thread
+  // pool has been created.
+  sampling_profiler_ = std::make_unique<MainThreadStackSamplingProfiler>();
+#endif
 }
 
 #if !BUILDFLAG(IS_ANDROID)
 content::ContentMainDelegate*
 ChromeTestLauncherDelegate::CreateContentMainDelegate() {
-  return new ChromeTestChromeMainDelegate(base::TimeTicks::Now());
+  return new ChromeTestChromeMainDelegate();
 }
 #endif
 
@@ -329,8 +307,6 @@ int LaunchChromeTests(size_t parallel_jobs,
   base::debug::HandleHooks::PatchLoadedModules();
 #endif  // BUILDFLAG(IS_WIN)
 
-  const auto& command_line = *base::CommandLine::ForCurrentProcess();
-
   // PoissonAllocationSampler's TLS slots need to be set up before
   // MainThreadStackSamplingProfiler, which can allocate TLS slots of its own.
   // On some platforms pthreads can malloc internally to access higher-numbered
@@ -339,13 +315,6 @@ int LaunchChromeTests(size_t parallel_jobs,
   // TODO(crbug.com/40062835): Clean up other paths that call this Init()
   // function, which are now redundant.
   base::PoissonAllocationSampler::Init();
-
-  // Initialize sampling profiler for tests that relaunching a browser. This
-  // mimics the behavior in standalone Chrome, where this is done in
-  // chrome/app/chrome_main.cc, which does not get called by tests.
-  std::unique_ptr<MainThreadStackSamplingProfiler> sampling_profiler;
-  if (command_line.HasSwitch(switches::kLaunchAsBrowser))
-    sampling_profiler = std::make_unique<MainThreadStackSamplingProfiler>();
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
   ChromeCrashReporterClient::Create();

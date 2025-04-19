@@ -30,6 +30,7 @@
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/chrome_safe_browsing_local_state_delegate.h"
+#include "chrome/browser/search_engine_choice/search_engine_choice_dialog_service_factory.h"
 #include "chrome/browser/ui/webui/about/about_ui.h"
 #include "chrome/browser/ui/webui/components/components_ui.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
@@ -68,6 +69,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "components/commerce/content/browser/commerce_internals_ui.h"
 #include "components/commerce/core/commerce_constants.h"
+#include "components/commerce/core/product_specifications/product_specifications_set.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon_base/favicon_util.h"
 #include "components/favicon_base/select_favicon_frames.h"
@@ -86,7 +88,6 @@
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/content/browser/web_ui/safe_browsing_ui.h"
 #include "components/safe_browsing/core/common/web_ui_constants.h"
-#include "components/search_engines/search_engine_choice/search_engine_choice_utils.h"
 #include "components/security_interstitials/content/connection_help_ui.h"
 #include "components/security_interstitials/content/known_interception_disclosure_ui.h"
 #include "components/security_interstitials/content/urls.h"
@@ -119,12 +120,10 @@
 #include "chrome/browser/ui/webui/feed_internals/feed_internals_ui.h"
 #include "chrome/browser/ui/webui/offline/offline_internals_ui.h"
 #include "chrome/browser/ui/webui/webapks/webapks_ui.h"
-#include "components/feed/buildflags.h"
 #include "components/feed/feed_feature_list.h"
 #else  // BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/media/router/discovery/access_code/access_code_cast_feature.h"
 #include "chrome/browser/media/router/media_router_feature.h"
-#include "chrome/browser/ui/side_panel/customize_chrome/customize_chrome_utils.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/access_code_cast/access_code_cast_ui.h"
 #include "chrome/browser/ui/webui/app_service_internals/app_service_internals_ui.h"
@@ -148,10 +147,6 @@
 #include "chrome/browser/ui/webui/search_engine_choice/search_engine_choice_ui.h"
 #include "chrome/browser/ui/webui/settings/settings_ui.h"
 #include "chrome/browser/ui/webui/settings/settings_utils.h"
-#include "chrome/browser/ui/webui/side_panel/customize_chrome/customize_chrome_ui.h"
-#include "chrome/browser/ui/webui/side_panel/history_clusters/history_clusters_side_panel_ui.h"
-#include "chrome/browser/ui/webui/side_panel/performance_controls/performance_side_panel_ui.h"
-#include "chrome/browser/ui/webui/side_panel/user_notes/user_notes_side_panel_ui.h"
 #include "chrome/browser/ui/webui/signin/sync_confirmation_ui.h"
 #include "chrome/browser/ui/webui/support_tool/support_tool_ui.h"
 #include "chrome/browser/ui/webui/sync_file_system_internals/sync_file_system_internals_ui.h"
@@ -172,18 +167,16 @@
 #include "ash/webui/mall/url_constants.h"
 #include "ash/webui/multidevice_debug/url_constants.h"
 #include "ash/webui/print_preview_cros/url_constants.h"
+#include "ash/webui/recorder_app_ui/url_constants.h"
 #include "ash/webui/vc_background_ui/url_constants.h"
+#include "chrome/browser/ash/app_mode/kiosk_controller.h"
 #include "chrome/browser/ash/extensions/url_constants.h"
 #include "chrome/browser/extensions/extension_keeplist_chromeos.h"
 #include "chrome/browser/ui/webui/ash/cellular_setup/mobile_setup_ui.h"
+#include "chromeos/ash/components/kiosk/vision/internals_page_processor.h"
 #include "chromeos/ash/components/kiosk/vision/webui/constants.h"
 #include "chromeos/ash/components/kiosk/vision/webui/ui_controller.h"
 #include "chromeos/ash/components/scalable_iph/scalable_iph_constants.h"
-
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-#include "ash/webui/conch/url_constants.h"
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
-
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -222,6 +215,7 @@
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS)
+#include "chrome/browser/ui/webui/commerce/product_specifications_ui.h"
 #include "chrome/browser/ui/webui/discards/discards_ui.h"
 #endif
 
@@ -247,8 +241,8 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/ui/webui/extensions/extensions_ui.h"
-#include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"  // nogncheck
+#include "extensions/browser/extension_system.h"    // nogncheck
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/feature_switch.h"
@@ -320,18 +314,16 @@ WebUIController* NewWebUI<PageNotAvailableForGuestUI>(WebUI* web_ui,
 }
 #endif
 
-// Special case for older about: handlers.
-template <>
-WebUIController* NewWebUI<AboutUI>(WebUI* web_ui, const GURL& url) {
-  return new AboutUI(web_ui, url.host());
-}
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 template <>
 WebUIController* NewWebUI<ash::kiosk_vision::UIController>(WebUI* web_ui,
                                                            const GURL& url) {
   return new ash::kiosk_vision::UIController(
-      web_ui, base::BindRepeating(webui::SetupWebUIDataSource));
+      web_ui, base::BindRepeating(webui::SetupWebUIDataSource),
+      base::BindRepeating([]() {
+        return ash::KioskController::Get()
+            .GetKioskVisionInternalsPageProcessor();
+      }));
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -375,31 +367,6 @@ WebUIController* NewWebUI<WelcomeUI>(WebUI* web_ui, const GURL& url) {
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
-#if !BUILDFLAG(IS_ANDROID)
-template <>
-WebUIController* NewWebUI<PerformanceSidePanelUI>(WebUI* web_ui,
-                                                  const GURL& url) {
-  return new PerformanceSidePanelUI(web_ui, url);
-}
-#endif  // !BUILDFLAG(IS_ANDROID)
-
-bool IsAboutUI(const GURL& url) {
-  return (url.host_piece() == chrome::kChromeUIChromeURLsHost ||
-          url.host_piece() == chrome::kChromeUICreditsHost
-#if !BUILDFLAG(IS_ANDROID)
-          || url.host_piece() == chrome::kChromeUITermsHost
-#endif
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_OPENBSD)
-          || url.host_piece() == chrome::kChromeUILinuxProxyConfigHost
-#endif
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-          || url.host_piece() == chrome::kChromeUIOSCreditsHost ||
-          url.host_piece() == chrome::kChromeUIBorealisCreditsHost ||
-          url.host_piece() == chrome::kChromeUICrostiniCreditsHost
-#endif
-  );  // NOLINT
-}
-
 // Returns a function that can be used to create the right type of WebUI for a
 // tab, based on its URL. Returns nullptr if the URL doesn't have WebUI
 // associated with it.
@@ -436,11 +403,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #endif
   if (url.host_piece() == chrome::kChromeUIDeviceLogHost)
     return &NewWebUI<chromeos::DeviceLogUI>;
-  if (url.host_piece() == chrome::kChromeUIDownloadInternalsHost)
-    return &NewWebUI<DownloadInternalsUI>;
-  if (url.host_piece() == chrome::kChromeUIFlagsHost &&
-      FlagsDeprecatedUI::IsDeprecatedUrl(url))
-    return &NewWebUI<FlagsDeprecatedUI>;
   if (url.host_piece() == chrome::kChromeUIGCMInternalsHost)
     return &NewWebUI<GCMInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIInternalsHost)
@@ -453,7 +415,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   }
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (url.host_piece() ==
-      ash::kiosk_vision::kChromeUIKioskVisionInternalsHost) {
+          ash::kiosk_vision::kChromeUIKioskVisionInternalsHost &&
+      ash::kiosk_vision::IsInternalsPageEnabled()) {
     return &NewWebUI<ash::kiosk_vision::UIController>;
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -552,18 +515,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     if (url.host_piece() == chrome::kChromeUINewTabPageThirdPartyHost)
       return &NewWebUI<NewTabPageThirdPartyUI>;
   }
-  if (url.host_piece() == chrome::kChromeUICustomizeChromeSidePanelHost) {
-    return &NewWebUI<CustomizeChromeUI>;
-  }
-  if (base::FeatureList::IsEnabled(history_clusters::kSidePanelJourneys)) {
-    if (url.host_piece() == chrome::kChromeUIHistoryClustersSidePanelHost)
-      return &NewWebUI<HistoryClustersSidePanelUI>;
-  }
-  if (url.host_piece() == chrome::kChromeUIUserNotesSidePanelHost)
-    return &NewWebUI<UserNotesSidePanelUI>;
-  if (url.host_piece() == chrome::kChromeUIPerformanceSidePanelHost) {
-    return &NewWebUI<PerformanceSidePanelUI>;
-  }
   // Settings are implemented with native UI elements on Android.
   if (url.host_piece() == chrome::kChromeUISettingsHost)
     return &NewWebUI<settings::SettingsUI>;
@@ -608,11 +559,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<OfflineInternalsUI>;
   if (url.host_piece() == chrome::kChromeUISnippetsInternalsHost &&
       !profile->IsOffTheRecord()) {
-#if BUILDFLAG(ENABLE_FEED_V2)
     return &NewWebUI<FeedInternalsUI>;
-#else
-    return nullptr;
-#endif  // BUILDFLAG(ENABLE_FEED_V2)
   }
   if (url.host_piece() == chrome::kChromeUIWebApksHost)
     return &NewWebUI<WebApksUI>;
@@ -733,8 +680,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<policy::DlpInternalsUI>;
   }
 #endif
-  if (IsAboutUI(url))
-    return &NewWebUI<AboutUI>;
 
   if (url.host_piece() == security_interstitials::kChromeUIConnectionHelpHost) {
     return &NewWebUI<security_interstitials::ConnectionHelpUI>;
@@ -786,8 +731,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<PrivacySandboxDialogUI>;
 
   if (url.host_piece() == chrome::kChromeUISearchEngineChoiceHost &&
-      search_engines::IsChoiceScreenFlagEnabled(
-          search_engines::ChoicePromo::kAny)) {
+      SearchEngineChoiceDialogServiceFactory::GetForProfile(profile)) {
     return &NewWebUI<SearchEngineChoiceUI>;
   }
 #endif  // !BUILDFLAG(IS_ANDROID)
@@ -990,6 +934,15 @@ base::RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
   if (page_url.host_piece() == chrome::kChromeUIManagementHost)
     return ManagementUI::GetFaviconResourceBytes(scale_factor);
 
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_CHROMEOS)
+  if (page_url.host_piece() == commerce::kChromeUICompareHost) {
+    return commerce::ProductSpecificationsUI::GetFaviconResourceBytes(
+        scale_factor);
+  }
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) ||
+        // BUILDFLAG(IS_CHROMEOS)
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (page_url.host_piece() == chrome::kChromeUIExtensionsHost) {
     return extensions::ExtensionsUI::GetFaviconResourceBytes(scale_factor);
@@ -1050,6 +1003,7 @@ ChromeWebUIControllerFactory::GetListOfAcceptableURLs() {
     GURL(ash::kChromeUIMallUrl),
     GURL(ash::kChromeUIPrintPreviewCrosURL),
     GURL(ash::multidevice::kChromeUIProximityAuthURL),
+    GURL(ash::kChromeUIRecorderAppURL),
     GURL(ash::vc_background_ui::kChromeUIVcBackgroundURL),
     GURL(chrome::kChromeUIAccountManagerErrorURL),
     GURL(chrome::kChromeUIAccountMigrationWelcomeURL),
@@ -1063,6 +1017,7 @@ ChromeWebUIControllerFactory::GetListOfAcceptableURLs() {
     GURL(chrome::kChromeUIBorealisCreditsURL),
     GURL(chrome::kChromeUIBorealisInstallerUrl),
     GURL(chrome::kChromeUICloudUploadURL),
+    GURL(chrome::kChromeUILocalFilesMigrationURL),
     GURL(chrome::kChromeUIConnectivityDiagnosticsAppURL),
     GURL(chrome::kChromeUICrashesUrl),
     GURL(chrome::kChromeUICrostiniCreditsURL),
@@ -1077,7 +1032,6 @@ ChromeWebUIControllerFactory::GetListOfAcceptableURLs() {
     GURL(chrome::kChromeUIFirmwareUpdaterAppURL),
     GURL(chrome::kChromeUIFocusModeMediaURL),
     GURL(chrome::kChromeUIHealthdInternalsURL),
-    GURL(chrome::kChromeUIHumanPresenceInternalsURL),
     GURL(chrome::kChromeUIInternetConfigDialogURL),
     GURL(chrome::kChromeUIInternetDetailDialogURL),
     GURL(chrome::kChromeUILauncherInternalsURL),
@@ -1107,10 +1061,6 @@ ChromeWebUIControllerFactory::GetListOfAcceptableURLs() {
     GURL(chrome::kChromeUIUserImageURL),
     GURL(chrome::kChromeUIVmUrl),
     GURL(scalable_iph::kScalableIphDebugURL),
-
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-    GURL(ash::kChromeUIConchURL),
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
     // Pages that only exist in Lacros, where they are reachable via chrome://.

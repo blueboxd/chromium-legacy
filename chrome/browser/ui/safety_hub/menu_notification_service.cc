@@ -11,7 +11,7 @@
 #include "base/functional/callback_forward.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/ui/safety_hub/extensions_result.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/safety_hub/menu_notification.h"
 #include "chrome/browser/ui/safety_hub/notification_permission_review_service.h"
 #include "chrome/browser/ui/safety_hub/safe_browsing_result.h"
@@ -19,9 +19,15 @@
 #include "chrome/browser/ui/safety_hub/safety_hub_prefs.h"
 #include "chrome/browser/ui/safety_hub/safety_hub_service.h"
 #include "chrome/browser/ui/safety_hub/unused_site_permissions_service.h"
+#include "chrome/common/chrome_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 
+#if BUILDFLAG(IS_ANDROID)
+#include "chrome/browser/ui/safety_hub/password_status_check_result_android.h"
+#else  // BUILDFLAG(IS_ANDROID)
+#include "chrome/browser/ui/safety_hub/extensions_result.h"
+#endif  // BUILDFLAG(IS_ANDROID)
 namespace {
 SafetyHubModuleInfoElement::SafetyHubModuleInfoElement() = default;
 SafetyHubModuleInfoElement::~SafetyHubModuleInfoElement() = default;
@@ -43,8 +49,9 @@ SafetyHubMenuNotificationService::SafetyHubMenuNotificationService(
     PrefService* pref_service,
     UnusedSitePermissionsService* unused_site_permissions_service,
     NotificationPermissionsReviewService* notification_permissions_service,
-    extensions::CWSInfoService* extension_info_service,
+#if !BUILDFLAG(IS_ANDROID)
     PasswordStatusCheckService* password_check_service,
+#endif  // !BUILDFLAG(IS_ANDROID)
     Profile* profile) {
   pref_service_ = std::move(pref_service);
   const base::Value::Dict& stored_notifications =
@@ -56,14 +63,7 @@ SafetyHubMenuNotificationService::SafetyHubMenuNotificationService(
       {safety_hub::SafetyHubModuleType::NOTIFICATION_PERMISSIONS,
        "notification-permissions"},
       {safety_hub::SafetyHubModuleType::SAFE_BROWSING, "safe-browsing"},
-      {safety_hub::SafetyHubModuleType::EXTENSIONS, "extensions"},
   };
-  // PasswordStatusCheckService might be null for some profiles and testing. Add
-  // to the dictionary only if the service is available.
-  if (password_check_service) {
-    pref_dict_key_map_.emplace(safety_hub::SafetyHubModuleType::PASSWORDS,
-                               "passwords");
-  }
 
   // TODO(crbug.com/40267370): Make the interval for each service finch
   // configurable.
@@ -71,37 +71,63 @@ SafetyHubMenuNotificationService::SafetyHubMenuNotificationService(
   // method is called, so it is safe to use |base::Unretained| here.
   SetInfoElement(
       safety_hub::SafetyHubModuleType::UNUSED_SITE_PERMISSIONS,
-      MenuNotificationPriority::LOW, base::Days(10),
+      MenuNotificationPriority::LOW,
+      features::kRevokedPermissionsNotificationInterval.Get(),
       base::BindRepeating(&SafetyHubService::GetCachedResult,
                           base::Unretained(unused_site_permissions_service)),
       stored_notifications);
   SetInfoElement(
       safety_hub::SafetyHubModuleType::NOTIFICATION_PERMISSIONS,
-      MenuNotificationPriority::LOW, base::Days(10),
+      MenuNotificationPriority::LOW,
+      features::kNotificationPermissionsNotificationInterval.Get(),
       base::BindRepeating(&SafetyHubService::GetCachedResult,
                           base::Unretained(notification_permissions_service)),
       stored_notifications);
   SetInfoElement(safety_hub::SafetyHubModuleType::SAFE_BROWSING,
-                 MenuNotificationPriority::MEDIUM, base::Days(90),
+                 MenuNotificationPriority::MEDIUM,
+                 features::kSafeBrowsingNotificationInterval.Get(),
                  base::BindRepeating(&SafetyHubSafeBrowsingResult::GetResult,
                                      base::Unretained(pref_service)),
                  stored_notifications);
+
+// Extensions are not available on Android, so we cannot fetch any information
+// about them. Passwords are handled by GMS Core on Android and our
+// PasswordStatusCheckService is not compatible with GMS Core.
+#if !BUILDFLAG(IS_ANDROID)
+  pref_dict_key_map_.emplace(safety_hub::SafetyHubModuleType::EXTENSIONS,
+                             "extensions");
   SetInfoElement(safety_hub::SafetyHubModuleType::EXTENSIONS,
                  MenuNotificationPriority::LOW, base::Days(10),
                  base::BindRepeating(&SafetyHubExtensionsResult::GetResult,
-                                     base::Unretained(extension_info_service),
                                      profile, true),
                  stored_notifications);
+
   // PasswordStatusCheckService might be null for some profiles and testing. Add
   // the info item only if the service is available.
   if (password_check_service) {
+    pref_dict_key_map_.emplace(safety_hub::SafetyHubModuleType::PASSWORDS,
+                               "passwords");
     SetInfoElement(
         safety_hub::SafetyHubModuleType::PASSWORDS,
-        MenuNotificationPriority::HIGH, base::Days(0),
+        MenuNotificationPriority::HIGH,
+        features::kPasswordCheckNotificationInterval.Get(),
         base::BindRepeating(&PasswordStatusCheckService::GetCachedResult,
                             base::Unretained(password_check_service)),
         stored_notifications);
   }
+#else   // !BUILDFLAG(IS_ANDROID)
+  if (base::FeatureList::IsEnabled(features::kSafetyHubFollowup)) {
+    pref_dict_key_map_.emplace(safety_hub::SafetyHubModuleType::PASSWORDS,
+                               "passwords");
+    SetInfoElement(
+        safety_hub::SafetyHubModuleType::PASSWORDS,
+        MenuNotificationPriority::HIGH,
+        features::kPasswordCheckNotificationInterval.Get(),
+        base::BindRepeating(&PasswordStatusCheckResultAndroid::GetResult,
+                            base::Unretained(pref_service)),
+        stored_notifications);
+  }
+#endif  // !BUILDFLAG(IS_ANDROID)
 
   // Listen for changes to the Safe Browsing pref to accommodate the trigger
   // logic.
@@ -210,11 +236,6 @@ void SafetyHubMenuNotificationService::SaveNotificationsToPrefs() const {
                          std::move(notifications));
 }
 
-SafetyHubMenuNotification*
-SafetyHubMenuNotificationService::GetNotificationForTesting(
-    safety_hub::SafetyHubModuleType service_type) {
-  return module_info_map_.find(service_type)->second.get()->notification.get();
-}
 
 std::unique_ptr<SafetyHubMenuNotification>
 SafetyHubMenuNotificationService::GetNotificationFromDict(

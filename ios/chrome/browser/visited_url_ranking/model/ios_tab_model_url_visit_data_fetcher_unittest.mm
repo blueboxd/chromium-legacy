@@ -4,9 +4,11 @@
 
 #import "ios/chrome/browser/visited_url_ranking/model/ios_tab_model_url_visit_data_fetcher.h"
 
+#import "components/tab_groups/tab_group_id.h"
 #import "components/tab_groups/tab_group_visual_data.h"
+#import "components/visited_url_ranking/public/fetcher_config.h"
 #import "components/visited_url_ranking/public/url_visit.h"
-#import "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
+#import "ios/chrome/browser/sessions/model/ios_chrome_session_tab_helper.h"
 #import "ios/chrome/browser/shared/model/browser/browser_list.h"
 #import "ios/chrome/browser/shared/model/browser/browser_list_factory.h"
 #import "ios/chrome/browser/shared/model/browser/test/test_browser.h"
@@ -17,11 +19,13 @@
 #import "ios/web/public/test/web_task_environment.h"
 #import "testing/platform_test.h"
 
+using tab_groups::TabGroupId;
+
 class IOSTabModelURLVisitDataFetcherTest : public PlatformTest {
  protected:
   IOSTabModelURLVisitDataFetcherTest() {
     TestChromeBrowserState::Builder builder;
-    browser_state_ = builder.Build();
+    browser_state_ = std::move(builder).Build();
 
     main_browser_ = std::make_unique<TestBrowser>(browser_state_.get());
     otr_browser_ = std::make_unique<TestBrowser>(
@@ -30,7 +34,7 @@ class IOSTabModelURLVisitDataFetcherTest : public PlatformTest {
     BrowserList* browser_list =
         BrowserListFactory::GetForBrowserState(browser_state_.get());
     browser_list->AddBrowser(main_browser_.get());
-    browser_list->AddIncognitoBrowser(otr_browser_.get());
+    browser_list->AddBrowser(otr_browser_.get());
   }
 
   std::unique_ptr<web::FakeWebState> CreateFakeWebStateWithURL(
@@ -85,7 +89,8 @@ TEST_F(IOSTabModelURLVisitDataFetcherTest, FetchNormalTabsAndNotOtr) {
   visited_url_ranking::FetchOptions options = visited_url_ranking::
       FetchOptions::CreateDefaultFetchOptionsForTabResumption();
   fetcher->FetchURLVisitData(
-      options, base::BindOnce(^(visited_url_ranking::FetchResult result) {
+      options, visited_url_ranking::FetcherConfig(),
+      base::BindOnce(^(visited_url_ranking::FetchResult result) {
         EXPECT_EQ(result.status,
                   visited_url_ranking::FetchResult::Status::kSuccess);
         ASSERT_EQ(result.data.size(), 3u);
@@ -122,20 +127,20 @@ TEST_F(IOSTabModelURLVisitDataFetcherTest, FetchNormalTabsWithData) {
       ->GetLastCommittedItem()
       ->SetTimestamp(now - base::Hours(1));
 
-  // Second WebState has time now - 25 hours. It should be ignored.
+  // Second WebState has time now -7days, 1 hour. It should be ignored.
   EXPECT_EQ(GURL(normal_urls[1]),
             web_state_list->GetWebStateAt(1)->GetLastCommittedURL());
   web_state_list->GetWebStateAt(1)
       ->GetNavigationManager()
       ->GetLastCommittedItem()
-      ->SetTimestamp(now - base::Hours(25));
+      ->SetTimestamp(now - base::Hours(169));
 
   // Third WebState is in a group and has time now - 23 hours.
   tab_groups::TabGroupVisualData visual_data(
       u"test", tab_groups::TabGroupColorId::kGrey);
   EXPECT_EQ(GURL(normal_urls[2]),
             web_state_list->GetWebStateAt(2)->GetLastCommittedURL());
-  web_state_list->CreateGroup({2}, visual_data);
+  web_state_list->CreateGroup({2}, visual_data, TabGroupId::GenerateNew());
   web_state_list->GetWebStateAt(2)
       ->GetNavigationManager()
       ->GetLastCommittedItem()
@@ -147,7 +152,8 @@ TEST_F(IOSTabModelURLVisitDataFetcherTest, FetchNormalTabsWithData) {
   visited_url_ranking::FetchOptions options = visited_url_ranking::
       FetchOptions::CreateDefaultFetchOptionsForTabResumption();
   fetcher->FetchURLVisitData(
-      options, base::BindOnce(^(visited_url_ranking::FetchResult result) {
+      options, visited_url_ranking::FetcherConfig(),
+      base::BindOnce(^(visited_url_ranking::FetchResult result) {
         EXPECT_EQ(result.status,
                   visited_url_ranking::FetchResult::Status::kSuccess);
         ASSERT_EQ(result.data.size(), 2u);
@@ -198,7 +204,8 @@ TEST_F(IOSTabModelURLVisitDataFetcherTest, FetchUnrealizedTab) {
   visited_url_ranking::FetchOptions options = visited_url_ranking::
       FetchOptions::CreateDefaultFetchOptionsForTabResumption();
   fetcher->FetchURLVisitData(
-      options, base::BindOnce(^(visited_url_ranking::FetchResult result) {
+      options, visited_url_ranking::FetcherConfig(),
+      base::BindOnce(^(visited_url_ranking::FetchResult result) {
         ASSERT_EQ(result.data.size(), 1u);
         EXPECT_TRUE(result.data.count(url));
         auto element_iterator = result.data.find(url);
@@ -242,7 +249,7 @@ TEST_F(IOSTabModelURLVisitDataFetcherTest, AggregateEntries) {
   EXPECT_EQ(GURL(url), web_state1->GetLastCommittedURL());
   tab_groups::TabGroupVisualData visual_data(
       u"test", tab_groups::TabGroupColorId::kGrey);
-  web_state_list->CreateGroup({1}, visual_data);
+  web_state_list->CreateGroup({1}, visual_data, TabGroupId::GenerateNew());
   web_state1->GetNavigationManager()->GetLastCommittedItem()->SetTimestamp(
       now - base::Hours(1));
   web_state1->SetLastActiveTime(now - base::Hours(5));
@@ -269,7 +276,8 @@ TEST_F(IOSTabModelURLVisitDataFetcherTest, AggregateEntries) {
   visited_url_ranking::FetchOptions options = visited_url_ranking::
       FetchOptions::CreateDefaultFetchOptionsForTabResumption();
   fetcher->FetchURLVisitData(
-      options, base::BindOnce(^(visited_url_ranking::FetchResult result) {
+      options, visited_url_ranking::FetcherConfig(),
+      base::BindOnce(^(visited_url_ranking::FetchResult result) {
         ASSERT_EQ(result.data.size(), 2u);
 
         std::string key0 = url;

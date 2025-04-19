@@ -16,6 +16,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import static org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetTabItemsModel.AccessorySheetDataPiece.Type.ADDRESS_INFO;
+import static org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetTabItemsModel.AccessorySheetDataPiece.Type.PLUS_ADDRESS_SECTION;
 import static org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetTabItemsModel.AccessorySheetDataPiece.Type.TITLE;
 import static org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetTabItemsModel.AccessorySheetDataPiece.getType;
 
@@ -23,24 +24,24 @@ import android.graphics.drawable.Drawable;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.task.test.CustomShadowAsyncTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.Features;
 import org.chromium.chrome.browser.keyboard_accessory.AccessoryTabType;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.AccessorySheetData;
+import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.PlusAddressSection;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.UserInfo;
 import org.chromium.chrome.browser.keyboard_accessory.data.PropertyProvider;
 import org.chromium.chrome.browser.keyboard_accessory.data.UserInfoField;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.ui.modelutil.ListObservable;
 
@@ -50,8 +51,8 @@ import org.chromium.ui.modelutil.ListObservable;
         manifest = Config.NONE,
         shadows = {CustomShadowAsyncTask.class})
 public class AddressAccessorySheetControllerTest {
-    @Rule public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
 
+    @Mock private Profile mProfile;
     @Mock private AccessorySheetTabView mMockView;
     @Mock private ListObservable.ListObserver<Void> mMockItemListObserver;
 
@@ -61,8 +62,11 @@ public class AddressAccessorySheetControllerTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        when(mMockView.getContext()).thenReturn(ContextUtils.getApplicationContext());
         AccessorySheetTabCoordinator.IconProvider.setIconForTesting(mock(Drawable.class));
-        mCoordinator = new AddressAccessorySheetCoordinator(RuntimeEnvironment.application, null);
+        mCoordinator =
+                new AddressAccessorySheetCoordinator(
+                        RuntimeEnvironment.application, mProfile, null);
         assertNotNull(mCoordinator);
         mSheetDataPieces = mCoordinator.getSheetDataPiecesForTesting();
     }
@@ -136,6 +140,16 @@ public class AddressAccessorySheetControllerTest {
         final PropertyProvider<AccessorySheetData> testProvider = new PropertyProvider<>();
         final AccessorySheetData testData =
                 new AccessorySheetData(AccessoryTabType.ADDRESSES, "Addresses for this site", "");
+        testData.getPlusAddressSectionList()
+                .add(
+                        new PlusAddressSection(
+                                "google.com",
+                                new UserInfoField(
+                                        "example@gmail.com",
+                                        "example@gmail.com",
+                                        "",
+                                        false,
+                                        field -> {})));
         testData.getUserInfoList().add(new UserInfo("", false));
         testData.getUserInfoList()
                 .get(0)
@@ -147,9 +161,13 @@ public class AddressAccessorySheetControllerTest {
         mCoordinator.registerDataProvider(testProvider);
         testProvider.notifyObservers(testData);
 
-        assertThat(mSheetDataPieces.size(), is(1));
-        assertThat(getType(mSheetDataPieces.get(0)), is(ADDRESS_INFO));
-        assertThat(mSheetDataPieces.get(0).getDataPiece(), is(testData.getUserInfoList().get(0)));
+        assertThat(mSheetDataPieces.size(), is(2));
+        assertThat(getType(mSheetDataPieces.get(0)), is(PLUS_ADDRESS_SECTION));
+        assertThat(getType(mSheetDataPieces.get(1)), is(ADDRESS_INFO));
+        assertThat(
+                mSheetDataPieces.get(0).getDataPiece(),
+                is(testData.getPlusAddressSectionList().get(0)));
+        assertThat(mSheetDataPieces.get(1).getDataPiece(), is(testData.getUserInfoList().get(0)));
     }
 
     @Test

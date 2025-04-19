@@ -20,12 +20,13 @@
 
 class ChromeBrowserState;
 class GURL;
-class WebLocationBar;
+class OmniboxClient;
 struct AutocompleteMatch;
 @protocol OmniboxAdditionalTextConsumer;
 @class OmniboxTextFieldIOS;
 @protocol OmniboxCommands;
 @protocol ToolbarCommands;
+@protocol OmniboxFocusDelegate;
 
 // iOS implementation of OmniBoxView.  Wraps a UITextField and
 // interfaces with the rest of the autocomplete system.
@@ -36,9 +37,10 @@ class OmniboxViewIOS : public OmniboxView,
  public:
   // Retains `field`.
   OmniboxViewIOS(OmniboxTextFieldIOS* field,
-                 WebLocationBar* location_bar,
+                 std::unique_ptr<OmniboxClient> client,
                  ChromeBrowserState* browser_state,
                  id<OmniboxCommands> omnibox_focuser,
+                 id<OmniboxFocusDelegate> focus_delegate,
                  id<ToolbarCommands> toolbar_commands_handler,
                  id<OmniboxAdditionalTextConsumer> additional_text_consumer);
 
@@ -128,7 +130,6 @@ class OmniboxViewIOS : public OmniboxView,
   void OnDidBeginEditing() override;
   bool OnWillChange(NSRange range, NSString* new_text) override;
   void OnDidChange(bool processing_user_input) override;
-  void OnWillEndEditing() override;
   void EndEditing() override;
   void OnCopy() override;
   void ClearText() override;
@@ -148,6 +149,7 @@ class OmniboxViewIOS : public OmniboxView,
                                  const GURL& alternate_nav_url,
                                  const std::u16string& pasted_text,
                                  size_t index) override;
+  void OnCallActionTap() override;
 
   // Updates this edit view to show the proper text, highlight and images.
   void UpdateAppearance();
@@ -180,10 +182,13 @@ class OmniboxViewIOS : public OmniboxView,
 
   OmniboxTextFieldIOS* field_;
 
-  raw_ptr<WebLocationBar> location_bar_;  // weak, owns us
   // Focuser, used to transition the location bar to focused/defocused state as
   // necessary.
   __weak id<OmniboxCommands> omnibox_focuser_;
+
+  // Delegate that manages the browser UI changes in response to omnibox being
+  // focused and defocused.
+  __weak id<OmniboxFocusDelegate> focus_delegate_;
 
   // Handler for ToolbarCommands.
   __weak id<ToolbarCommands> toolbar_commands_handler_;

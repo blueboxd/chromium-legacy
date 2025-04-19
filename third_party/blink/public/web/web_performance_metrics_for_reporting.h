@@ -86,10 +86,16 @@ class BLINK_EXPORT WebPerformanceMetricsForReporting {
   WebNavigationType GetNavigationType() const;
 
   // These functions return time in seconds (not milliseconds) since the epoch.
+  //
+  // TODO (crbug.com/355962211): Update the methods which return double for
+  // timing information to return `base::TimeTicks`.
   double InputForNavigationStart() const;
   double NavigationStart() const;
   base::TimeTicks NavigationStartAsMonotonicTime() const;
   BackForwardCacheRestoreTimings BackForwardCacheRestore() const;
+  double DomainLookupStart() const;
+  double DomainLookupEnd() const;
+  double ConnectStart() const;
   double ResponseStart() const;
   double DomContentLoadedEventStart() const;
   double DomContentLoadedEventEnd() const;
@@ -122,11 +128,12 @@ class BLINK_EXPORT WebPerformanceMetricsForReporting {
   double ParseBlockedOnScriptLoadFromDocumentWriteDuration() const;
   double ParseBlockedOnScriptExecutionDuration() const;
   double ParseBlockedOnScriptExecutionFromDocumentWriteDuration() const;
-  std::optional<base::TimeTicks> LastPortalActivatedPaint() const;
   std::optional<base::TimeDelta> PrerenderActivationStart() const;
   std::optional<base::TimeDelta> UserTimingMarkFullyLoaded() const;
   std::optional<base::TimeDelta> UserTimingMarkFullyVisible() const;
   std::optional<base::TimeDelta> UserTimingMarkInteractive() const;
+  std::optional<std::tuple<std::string, base::TimeDelta>> CustomUserTimingMark()
+      const;
 
 #if INSIDE_BLINK
   explicit WebPerformanceMetricsForReporting(WindowPerformance*);

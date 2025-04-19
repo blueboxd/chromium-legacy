@@ -5,6 +5,8 @@
 #ifndef ASH_SYSTEM_VIDEO_CONFERENCE_BUBBLE_VC_TILE_UI_CONTROLLER_H_
 #define ASH_SYSTEM_VIDEO_CONFERENCE_BUBBLE_VC_TILE_UI_CONTROLLER_H_
 
+#include <string>
+
 #include "ash/ash_export.h"
 #include "ash/system/unified/feature_tile.h"
 #include "ash/system/video_conference/effects/video_conference_tray_effects_manager_types.h"
@@ -118,9 +120,13 @@ class ASH_EXPORT VcTileUiController : public DlcserviceClient::Observer {
   VcEffectId effect_id_;
 
   // Information about the associated video conferencing effect needed to
-  // display the UI of the tile controlled by this controller.
-  raw_ptr<const VcEffectState> effect_state_ = nullptr;
-  raw_ptr<const VcHostedEffect> effect_ = nullptr;
+  // display the UI of the tile controlled by this controller. WeakPtr's are
+  // saved because the `VcTileUiController` may outlive its dependencies.
+  base::WeakPtr<const VcEffectState> effect_state_;
+  base::WeakPtr<const VcHostedEffect> effect_;
+
+  // The initial label for `effect_state_`, used for debugging.
+  std::u16string effect_state_label_for_debug_;
 
   // A list of ids for the DLCs associated with the tile managed by this
   // controller. This is empty for tiles not associated with any DLC.

@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.profiles.ProfileProvider;
 import org.chromium.chrome.browser.tab_ui.TabContentManager;
 import org.chromium.chrome.browser.tabmodel.MismatchedIndicesHandler;
 import org.chromium.chrome.browser.tabmodel.NextTabPolicy.NextTabPolicySupplier;
+import org.chromium.chrome.browser.tabmodel.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorBase;
@@ -116,7 +117,12 @@ public class TabbedModeTabModelOrchestrator extends TabModelOrchestrator {
                 new TabbedModeTabPersistencePolicy(
                         assignedIndex, mergeTabsOnStartup, mTabMergingEnabled);
         mTabPersistentStore =
-                new TabPersistentStore(mTabPersistencePolicy, mTabModelSelector, tabCreatorManager);
+                new TabPersistentStore(
+                        TabPersistentStore.CLIENT_TAG_REGULAR,
+                        mTabPersistencePolicy,
+                        mTabModelSelector,
+                        tabCreatorManager,
+                        TabWindowManagerSingleton.getInstance());
 
         wireSelectorAndStore();
         markTabModelsInitialized();
@@ -193,16 +199,17 @@ public class TabbedModeTabModelOrchestrator extends TabModelOrchestrator {
         Profile profile = mProfileProviderSupplier.get().getOriginalProfile();
         assert profile != null;
 
+        TabCreator regularTabCreator = mTabCreatorManager.getTabCreator(/* incognito= */ false);
         mArchivedTabModelOrchestrator = ArchivedTabModelOrchestrator.getForProfile(profile);
-        mArchivedTabModelOrchestrator.maybeCreateAndInitTabModels(tabContentManager);
+        mArchivedTabModelOrchestrator.maybeCreateAndInitTabModels(
+                tabContentManager, regularTabCreator);
 
         // If the feature flag is enabled, then start the declutter process. Otherwise, rescue
         // tabs that may have been archived previously.
         if (ChromeFeatureList.sAndroidTabDeclutter.isEnabled()) {
             mArchivedTabModelOrchestrator.maybeBeginDeclutter();
         } else {
-            mArchivedTabModelOrchestrator.maybeRescueArchivedTabs(
-                    mTabCreatorManager.getTabCreator(/* incognito= */ false));
+            mArchivedTabModelOrchestrator.maybeRescueArchivedTabs();
         }
     }
 

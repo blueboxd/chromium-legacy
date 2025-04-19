@@ -42,8 +42,6 @@ class Profile;
 
 namespace extensions {
 
-BASE_DECLARE_FEATURE(kDirectSocketsInChromeApps);
-
 // Implements the extensions portion of ChromeContentBrowserClient.
 class ChromeContentBrowserClientExtensionsPart
     : public ChromeContentBrowserClientParts {
@@ -71,6 +69,10 @@ class ChromeContentBrowserClientExtensionsPart
   static bool DoesSiteRequireDedicatedProcess(
       content::BrowserContext* browser_context,
       const GURL& effective_site_url);
+  static bool ShouldAllowCrossProcessSandboxedFrameForPrecursor(
+      content::BrowserContext* browser_context,
+      const GURL& precursor,
+      const GURL& url);
   static bool CanCommitURL(content::RenderProcessHost* process_host,
                            const GURL& url);
   static bool IsSuitableHost(Profile* profile,

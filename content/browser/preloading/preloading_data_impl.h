@@ -72,6 +72,7 @@ class CONTENT_EXPORT PreloadingDataImpl
       PreloadingPredictor predictor,
       PreloadingType preloading_type,
       PreloadingURLMatchCallback url_match_predicate,
+      std::optional<PreloadingType> planned_max_preloading_type,
       ukm::SourceId triggering_primary_page_source_id) override;
   void AddPreloadingPrediction(
       PreloadingPredictor predictor,
@@ -83,6 +84,9 @@ class CONTENT_EXPORT PreloadingDataImpl
       PredictorDomainCallback is_navigation_in_domain_callback) override;
   void SetHasSpeculationRulesPrerender();
   bool HasSpeculationRulesPrerender() override;
+  void OnPreloadingHeuristicsModelInput(
+      const GURL& url,
+      ModelPredictionTrainingData::OutcomeCallback on_record_outcome) override;
 
   void AddPreloadingPrediction(const PreloadingPredictor& predictor,
                                PreloadingConfidence confidence,
@@ -98,6 +102,7 @@ class CONTENT_EXPORT PreloadingDataImpl
       const PreloadingPredictor& enacting_predictor,
       PreloadingType preloading_type,
       PreloadingURLMatchCallback url_match_predicate,
+      std::optional<PreloadingType> planned_max_preloading_type,
       ukm::SourceId triggering_primary_page_source_id);
 
   void CopyPredictorDomains(const PreloadingDataImpl& other,
@@ -171,6 +176,9 @@ class CONTENT_EXPORT PreloadingDataImpl
   // destroyed.
   std::vector<ExperimentalPreloadingPrediction> experimental_predictions_;
   size_t total_seen_experimental_predictions_ = 0;
+
+  std::vector<ModelPredictionTrainingData> ml_predictions_;
+  size_t total_seen_ml_predictions_ = 0;
 
   // Stores all the preloading attempts that are happening for the next
   // navigation until the navigation takes place.

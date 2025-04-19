@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include <memory>
 #include <tuple>
 
@@ -230,10 +235,9 @@ void ReadbackNV12Planes(TestGpuServiceHolder* gpu_service_holder,
             gfx::Size(texture_size.width() / 2, texture_size.height() / 2),
             kR8G8_unorm_SkColorType, out_chroma_planes);
 
-        ReadbackTexturesOnGpuThread(
-            shared_image_manager, context_state,
-            result.GetTextureResult()->mailbox_holders[0].mailbox,
-            texture_infos);
+        ReadbackTexturesOnGpuThread(shared_image_manager, context_state,
+                                    result.GetTextureResult()->mailbox,
+                                    texture_infos);
 
         wait.Signal();
       }));
@@ -247,7 +251,7 @@ void ReadbackResultRGBA(TestGpuServiceHolder* gpu_service_holder,
                         CopyOutputResult& result,
                         const gfx::Size& texture_size,
                         SkBitmap& out_plane) {
-  auto mailbox = result.GetTextureResult()->mailbox_holders[0].mailbox;
+  auto mailbox = result.GetTextureResult()->mailbox;
   CHECK(!mailbox.IsZero());
 
   if (is_software) {
@@ -710,10 +714,8 @@ TEST_P(ReadbackPixelTestRGBAWithBlit, ExecutesCopyRequestWithBlit) {
         request.set_result_selection(result_selection);
 
         request.set_blit_request(BlitRequest(
-            destination_subregion.origin(), GetLetterboxingBehavior(),
-            {gpu::MailboxHolder(mailbox, gpu::SyncToken(), 0),
-             gpu::MailboxHolder(), gpu::MailboxHolder()},
-            populates_gpu_memory_buffer()));
+            destination_subregion.origin(), GetLetterboxingBehavior(), mailbox,
+            gpu::SyncToken(), populates_gpu_memory_buffer()));
       }));
 
   // Check that a result was produced and is of the expected rect/size.
@@ -796,7 +798,7 @@ class ReadbackPixelTestNV12
   }
 
   CopyOutputResult::Format RequestFormat() const {
-    return CopyOutputResult::Format::NV12_MULTIPLANE;
+    return CopyOutputResult::Format::NV12;
   }
 
   void SetUp() override {
@@ -918,7 +920,7 @@ class ReadbackPixelTestNV12WithBlit
   }
 
   CopyOutputResult::Format RequestFormat() const {
-    return CopyOutputResult::Format::NV12_MULTIPLANE;
+    return CopyOutputResult::Format::NV12;
   }
 
   void SetUp() override {
@@ -1045,7 +1047,8 @@ TEST_P(ReadbackPixelTestNV12WithBlit, ExecutesCopyRequestWithBlit) {
 
         request.set_blit_request(BlitRequest(
             destination_subregion.origin(), GetLetterboxingBehavior(),
-            mailbox_holder, populates_gpu_memory_buffer()));
+            mailbox_holder.mailbox, mailbox_holder.sync_token,
+            populates_gpu_memory_buffer()));
       }));
 
   // Check that a result was produced and is of the expected rect/size.

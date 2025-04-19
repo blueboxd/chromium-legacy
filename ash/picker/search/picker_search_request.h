@@ -5,8 +5,10 @@
 #ifndef ASH_PICKER_SEARCH_PICKER_SEARCH_REQUEST_H_
 #define ASH_PICKER_SEARCH_PICKER_SEARCH_REQUEST_H_
 
+#include <array>
+#include <cstddef>
 #include <optional>
-#include <string>
+#include <string_view>
 #include <vector>
 
 #include "ash/ash_export.h"
@@ -20,16 +22,13 @@
 #include "base/memory/raw_ref.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "chromeos/ash/components/emoji/emoji_search.h"
-
-namespace emoji {
-class EmojiSearch;
-}
+#include "base/types/cxx23_to_underlying.h"
+#include "base/values.h"
 
 namespace ash {
 
 class PickerClient;
-class PickerClipboardProvider;
+class PickerClipboardHistoryProvider;
 
 // Represents a single Picker search query. Constructing this class starts a
 // search, and destructing it stops the search.
@@ -39,64 +38,69 @@ class ASH_EXPORT PickerSearchRequest {
       base::RepeatingCallback<void(PickerSearchSource source,
                                    std::vector<PickerSearchResult> results,
                                    bool has_more_results)>;
+  using DoneCallback = base::OnceCallback<void(bool interrupted)>;
 
-  explicit PickerSearchRequest(
-      const std::u16string& query,
-      std::optional<PickerCategory> category,
-      SearchResultsCallback callback,
-      PickerClient* client,
-      emoji::EmojiSearch* emoji_search,
-      base::span<const PickerCategory> available_categories);
+  struct Options {
+    base::span<const PickerCategory> available_categories;
+    bool caps_lock_state_to_search = false;
+    bool search_case_transforms = false;
+  };
+
+  // `done_closure` is guaranteed to be called strictly after the last call to
+  // `callback`.
+  explicit PickerSearchRequest(std::u16string_view query,
+                               std::optional<PickerCategory> category,
+                               SearchResultsCallback callback,
+                               DoneCallback done_callback,
+                               PickerClient* client,
+                               const Options& options);
   PickerSearchRequest(const PickerSearchRequest&) = delete;
   PickerSearchRequest& operator=(const PickerSearchRequest&) = delete;
   ~PickerSearchRequest();
 
-  static constexpr base::TimeDelta kGifDebouncingDelay =
-      base::Milliseconds(200);
-  static constexpr base::TimeDelta kDriveSearchTimeout = base::Seconds(1);
-
  private:
-  void StartGifSearch(const std::string& query);
-
   void HandleSearchSourceResults(PickerSearchSource source,
                                  std::vector<PickerSearchResult> results,
                                  bool has_more_results);
 
-  void HandleCategorySearchResults(std::vector<PickerSearchResult> results);
+  void HandleActionSearchResults(std::vector<PickerSearchResult> results);
   void HandleCrosSearchResults(ash::AppListSearchResultType type,
                                std::vector<PickerSearchResult> results);
-  void HandleGifSearchResults(std::string query,
-                              std::vector<PickerSearchResult> results);
-  void HandleEmojiSearchResults(emoji::EmojiSearchResult results);
   void HandleDateSearchResults(std::vector<PickerSearchResult> results);
   void HandleMathSearchResults(std::optional<PickerSearchResult> result);
   void HandleClipboardSearchResults(std::vector<PickerSearchResult> results);
   void HandleEditorSearchResults(PickerSearchSource source,
                                  std::optional<PickerSearchResult> result);
 
-  void OnDriveSearchTimeout();
+  // Sets the search for the source to be started right now.
+  // `CHECK` fails if a search was already started.
+  void MarkSearchStarted(PickerSearchSource source);
+  // Sets the search for the source to be not started, and emits a metric for
+  // the source.
+  // `CHECK` fails if a search wasn't started.
+  void MarkSearchEnded(PickerSearchSource source);
+  std::optional<base::TimeTicks> SwapSearchStart(
+      PickerSearchSource source,
+      std::optional<base::TimeTicks> new_value);
+
+  void MaybeCallDoneClosure();
 
   bool is_category_specific_search_;
   const raw_ref<PickerClient> client_;
 
-  std::unique_ptr<PickerClipboardProvider> clipboard_provider_;
-
-  const raw_ref<emoji::EmojiSearch> emoji_search_;
+  std::unique_ptr<PickerClipboardHistoryProvider> clipboard_provider_;
 
   SearchResultsCallback current_callback_;
+  // Set to true once all the searches have started at the end of the ctor.
+  bool can_call_done_closure_ = false;
+  // Guaranteed to be non-null in the ctor.
+  // Guaranteed to be null after it is called - it will never be reassigned.
+  // Once called, `current_callback_` will also be reset to null.
+  DoneCallback done_callback_;
 
-  std::optional<base::TimeTicks> date_search_start_;
-  std::optional<base::TimeTicks> cros_search_start_;
-  std::optional<base::TimeTicks> gif_search_start_;
-  std::optional<base::TimeTicks> emoji_search_start_;
-  std::optional<base::TimeTicks> category_search_start_;
-  std::optional<base::TimeTicks> math_search_start_;
-  std::optional<base::TimeTicks> clipboard_search_start_;
-  std::optional<base::TimeTicks> editor_search_start_;
-
-  PickerSearchDebouncer gif_search_debouncer_;
-
-  base::OneShotTimer drive_search_timeout_timer_;
+  static constexpr size_t kNumSources =
+      base::to_underlying(PickerSearchSource::kMaxValue) + 1;
+  std::array<std::optional<base::TimeTicks>, kNumSources> search_starts_;
 
   base::WeakPtrFactory<PickerSearchRequest> weak_ptr_factory_{this};
 };

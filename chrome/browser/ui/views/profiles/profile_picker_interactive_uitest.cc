@@ -216,6 +216,8 @@ class ProfilePickerParametrizedInteractiveUiTest
       // is only displayed for EEA countries.
       command_line->AppendSwitchASCII(switches::kSearchEngineChoiceCountry,
                                       "BE");
+      command_line->AppendSwitch(
+          switches::kIgnoreNoFirstRunForSearchEngineChoiceScreen);
     }
   }
 
@@ -266,6 +268,7 @@ class ProfilePickerParametrizedInteractiveUiTest
                                            "cr-radio-button"};
     const DeepQuery searchEngineChoiceList{"search-engine-choice-app",
                                            "#choiceList"};
+
     return Steps(
         WaitForWebContentsNavigation(
             kPickerWebContentsId, GURL(chrome::kChromeUISearchEngineChoiceURL)),
@@ -288,7 +291,6 @@ class ProfilePickerParametrizedInteractiveUiTest
         WaitForButtonDisabled(kPickerWebContentsId,
                               kSearchEngineChoiceActionButton),
 
-        PressJsButton(kPickerWebContentsId, kSearchEngineChoiceActionButton),
         PressJsButton(kPickerWebContentsId, first_search_engine),
         WaitForButtonEnabled(kPickerWebContentsId,
                              kSearchEngineChoiceActionButton),
@@ -430,7 +432,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerInteractiveUiTest,
 
       // Navigate again back with the keyboard.
       SendAccelerator(kProfilePickerViewId, GetAccelerator(IDC_BACK)),
-      CheckResult(HasPendingNav(), IsTrue()),
+      WithoutDelay(CheckResult(HasPendingNav(), IsTrue())),
       WaitForStateChange(kPickerWebContentsId,
                          UrlEntryMatches(GURL("chrome://profile-picker"))),
       CheckResult(GetNavState(), Eq(NavState{.entry_count = 2,
@@ -438,7 +440,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerInteractiveUiTest,
 
       // Navigating back once again does nothing.
       SendAccelerator(kProfilePickerViewId, GetAccelerator(IDC_BACK)),
-      CheckResult(HasPendingNav(), IsFalse()));
+      WithoutDelay(CheckResult(HasPendingNav(), IsFalse())));
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
@@ -471,7 +473,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerInteractiveUiTest,
 
       // Navigate back with the keyboard.
       SendAccelerator(kProfilePickerViewId, GetAccelerator(IDC_BACK)),
-      CheckResult(HasPendingNav(), IsTrue()),
+      WithoutDelay(CheckResult(HasPendingNav(), IsTrue())),
       WaitForStateChange(kPickerWebContentsId,
                          UrlEntryMatches(GURL("chrome://profile-picker"))),
       CheckResult(GetNavState(), Eq(NavState{.entry_count = 2,
@@ -479,7 +481,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerInteractiveUiTest,
 
       // Navigating back once again does nothing.
       SendAccelerator(kProfilePickerViewId, GetAccelerator(IDC_BACK)),
-      CheckResult(HasPendingNav(), IsFalse()));
+      WithoutDelay(CheckResult(HasPendingNav(), IsFalse())));
 }
 
 IN_PROC_BROWSER_TEST_F(ProfilePickerInteractiveUiTest,
@@ -508,8 +510,8 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerInteractiveUiTest,
 
       // Navigate back with the keyboard.
       SendAccelerator(kPickerWebContentsId, GetAccelerator(IDC_BACK)),
-      CheckResult(HasPendingNav(), IsTrue(),
-                  /*check_description=*/"HasPendingNav"),
+      WithoutDelay(CheckResult(HasPendingNav(), IsTrue(),
+                               /*check_description=*/"HasPendingNav")),
       WaitForStateChange(kPickerWebContentsId,
                          UrlEntryMatches(GURL("chrome://profile-picker"))),
       CheckResult(GetNavState(), Eq(NavState{.entry_count = 2,
@@ -517,19 +519,11 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerInteractiveUiTest,
 
       // Navigating back once again does nothing.
       SendAccelerator(kProfilePickerViewId, GetAccelerator(IDC_BACK)),
-      CheckResult(HasPendingNav(), IsFalse())
-
-  );
+      WithoutDelay(CheckResult(HasPendingNav(), IsFalse())));
 }
 
-// TODO(crbug.com/330201475): Flaky on win-asan.
-#if BUILDFLAG(IS_WIN) && defined(ADDRESS_SANITIZER)
-#define MAYBE_ContinueWithoutAccount DISABLED_ContinueWithoutAccount
-#else
-#define MAYBE_ContinueWithoutAccount ContinueWithoutAccount
-#endif
 IN_PROC_BROWSER_TEST_P(ProfilePickerParametrizedInteractiveUiTest,
-                       MAYBE_ContinueWithoutAccount) {
+                       ContinueWithoutAccount) {
   ShowAndFocusPicker(ProfilePicker::EntryPoint::kProfileMenuManageProfiles,
                      GURL("chrome://profile-picker"));
 

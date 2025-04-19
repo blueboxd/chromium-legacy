@@ -8,6 +8,7 @@ import "ash/public/mojom/accelerator_actions.mojom";
 import "ash/public/mojom/accelerator_keys.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "ui/events/ash/mojom/extended_fkeys_modifier.mojom";
+import "ui/events/ash/mojom/meta_key.mojom";
 import "ui/events/ash/mojom/modifier_key.mojom";
 import "ui/events/ash/mojom/simulate_right_click_modifier.mojom";
 import "ui/events/ash/mojom/six_pack_shortcut_modifier.mojom";
@@ -88,16 +89,6 @@ struct MousePolicies {
   InputDeviceSettingsPolicy? swap_right_policy;
 };
 
-// MetaKey denotes all the possible options deducable from the users external or
-// internal keyboard. Used to show the correct key to the user in the settings
-// UI.
-enum MetaKey {
-  kSearch,
-  kLauncher,
-  kExternalMeta,
-  kCommand
-};
-
 // Contains top row action keys found on different keyboards.
 // Note: that this enumeration will need to be extended if new keys are added.
 enum TopRowActionKey {
@@ -148,6 +139,30 @@ struct BatteryInfo {
   ChargeState charge_state;
 };
 
+// Represents the different states a companion app can be in.
+enum CompanionAppState {
+  kAvailable,
+  kInstalled,
+};
+
+// Holds information about a companion app for a connected device.
+struct CompanionAppInfo {
+  // The PackageId for this app.
+  string package_id;
+
+  // The localised human readable string for the name of this app.
+  string app_name;
+
+  // The URL to invoke to initiate Unified App Installation for this app.
+  string action_link;
+
+  // The URL of the icon to represent the companion app visually.
+  string icon_url;
+
+  // The current state of the companion app (e.g., available, installed, etc.)
+  CompanionAppState state;
+};
+
 // Contains all information needed to display, apply, and update keyboard
 // settings.
 struct Keyboard {
@@ -164,7 +179,7 @@ struct Keyboard {
   // Example: 5022:18d1.
   string device_key;
   // Meta key type (launcher, search, etc) for this keyboard.
-  MetaKey meta_key;
+  ui.mojom.MetaKey meta_key;
   // List of modifier keys (caps lock, assistant, etc) present on this device.
   array<ui.mojom.ModifierKey> modifier_keys;
   // List of top row action keys (back, refresh, etc) present on this device.
@@ -172,6 +187,7 @@ struct Keyboard {
   array<TopRowActionKey> top_row_action_keys;
   KeyboardSettings settings;
   BatteryInfo? battery_info;
+  CompanionAppInfo? app_info;
 };
 
 // Contains all existing keyboard settings available for use.
@@ -209,6 +225,7 @@ struct Mouse {
   MouseButtonConfig mouse_button_config;
   MouseSettings settings;
   BatteryInfo? battery_info;
+  CompanionAppInfo? app_info;
 };
 
 // Contains all existing mouse settings available for use.
@@ -248,6 +265,7 @@ struct Touchpad {
   bool is_haptic;
   TouchpadSettings settings;
   BatteryInfo? battery_info;
+  CompanionAppInfo? app_info;
 };
 
 // Contains all existing touchpad settings available for use.
@@ -332,6 +350,7 @@ struct GraphicsTablet {
   GraphicsTabletButtonConfig graphics_tablet_button_config;
   GraphicsTabletSettings settings;
   BatteryInfo? battery_info;
+  CompanionAppInfo? app_info;
 };
 
 // Contains all existing graphics tablet settings available for use.
@@ -423,6 +442,9 @@ enum GraphicsTabletButtonConfig {
   // Graphics tablets that follow standard button configurations with four
   // tablet buttons.
   kWacomStandardFourButtons = 2,
+  // Graphics tablets that follow standard button configuration with no tablet
+  // buttons and only one applicable pen button.
+  kWacomStandardPenOnlyOneButton = 3,
 };
 
 // Contains the valid set of static shortcut actions.
@@ -458,4 +480,6 @@ enum CustomizationRestriction {
   kAllowHorizontalScrollWheelRewrites = 5,
   // Allow tab events in addition to normal mouse events to be rewritten.
   kAllowTabEventRewrites = 6,
+  // Allow F-key events in addition to normal mouse events to be rewritten.
+  kAllowFKeyRewrites = 7,
 };

@@ -24,7 +24,6 @@ import androidx.core.view.MarginLayoutParamsCompat;
 import androidx.core.widget.ImageViewCompat;
 
 import org.chromium.base.MathUtils;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lens.LensEntryPoint;
 import org.chromium.chrome.browser.omnibox.status.StatusCoordinator;
 import org.chromium.chrome.browser.omnibox.status.StatusView;
@@ -64,8 +63,7 @@ public class LocationBarLayout extends FrameLayout {
     protected SearchEngineUtils mSearchEngineUtils;
     private float mUrlFocusPercentage;
     private boolean mUrlBarLaidOutAtFocusedWidth;
-    private final boolean mIsSurfacePolishEnabled;
-    private int mStatusIconAndUrlBarOffsetForSurfacePolish;
+    private int mStatusIconAndUrlBarOffset;
     private int mUrlActionContainerEndMargin;
     private boolean mIsUrlFocusChangeInProgress;
 
@@ -90,9 +88,8 @@ public class LocationBarLayout extends FrameLayout {
         mStatusViewRightSpace = findViewById(R.id.location_bar_status_view_right_space);
         mMinimumUrlBarWidthPx =
                 context.getResources().getDimensionPixelSize(R.dimen.location_bar_min_url_width);
-        mIsSurfacePolishEnabled = ChromeFeatureList.sSurfacePolish.isEnabled();
-        mStatusIconAndUrlBarOffsetForSurfacePolish =
-                OmniboxResourceProvider.getToolbarSidePaddingForStartSurfaceOrNtp(context)
+        mStatusIconAndUrlBarOffset =
+                OmniboxResourceProvider.getToolbarSidePaddingForNtp(context)
                         - OmniboxResourceProvider.getToolbarSidePadding(context);
         mUrlActionContainerEndMargin =
                 getResources().getDimensionPixelOffset(R.dimen.location_bar_url_action_offset);
@@ -256,7 +253,6 @@ public class LocationBarLayout extends FrameLayout {
                         setUrlFocusChangePercent(
                                 mUrlFocusPercentage,
                                 mUrlFocusPercentage,
-                                mUrlFocusPercentage,
                                 mIsUrlFocusChangeInProgress);
                     }
 
@@ -302,8 +298,7 @@ public class LocationBarLayout extends FrameLayout {
 
         ViewGroup.MarginLayoutParams urlActionContainerParams =
                 (ViewGroup.MarginLayoutParams) mUrlActionContainer.getLayoutParams();
-        if (mIsSurfacePolishEnabled
-                && urlActionContainerParams.getMarginEnd() != mUrlActionContainerEndMargin) {
+        if (urlActionContainerParams.getMarginEnd() != mUrlActionContainerEndMargin) {
             urlActionContainerParams.setMarginEnd(mUrlActionContainerEndMargin);
         }
 
@@ -383,7 +378,7 @@ public class LocationBarLayout extends FrameLayout {
     public int getEndPaddingPixelSizeOnFocusDelta() {
         return getResources()
                 .getDimensionPixelSize(
-                        mLocationBarDataProvider.isIncognito()
+                        mLocationBarDataProvider.isIncognitoBranded()
                                 ? R.dimen.location_bar_icon_end_padding_focused_incognito
                                 : R.dimen.location_bar_icon_end_padding_focused);
     }
@@ -394,33 +389,20 @@ public class LocationBarLayout extends FrameLayout {
      *
      * @param ntpSearchBoxScrollFraction The degree to which the omnibox has expanded to full width
      *     in NTP due to the NTP search box is being scrolled up.
-     * @param startSurfaceScrollFraction The degree to which the omnibox has expanded to full width
-     *     in Start Surface due to the Start Surface search box is being scrolled up.
      * @param urlFocusChangeFraction The degree to which the omnibox has expanded due to it is
      *     getting focused.
      * @param isUrlFocusChangeInProgress True if the url focus change is in progress.
      */
     protected void setUrlFocusChangePercent(
             float ntpSearchBoxScrollFraction,
-            float startSurfaceScrollFraction,
             float urlFocusChangeFraction,
             boolean isUrlFocusChangeInProgress) {
         mIsUrlFocusChangeInProgress = isUrlFocusChangeInProgress;
-        mUrlFocusPercentage =
-                getMaxValue(
-                        ntpSearchBoxScrollFraction,
-                        startSurfaceScrollFraction,
-                        urlFocusChangeFraction);
+        mUrlFocusPercentage = Math.max(ntpSearchBoxScrollFraction, urlFocusChangeFraction);
         setStatusViewLeftSpacePercent(
-                ntpSearchBoxScrollFraction,
-                startSurfaceScrollFraction,
-                urlFocusChangeFraction,
-                isUrlFocusChangeInProgress);
+                ntpSearchBoxScrollFraction, urlFocusChangeFraction, isUrlFocusChangeInProgress);
         setStatusViewRightSpacePercent(
-                ntpSearchBoxScrollFraction,
-                startSurfaceScrollFraction,
-                urlFocusChangeFraction,
-                isUrlFocusChangeInProgress);
+                ntpSearchBoxScrollFraction, urlFocusChangeFraction, isUrlFocusChangeInProgress);
     }
 
     /**
@@ -430,35 +412,22 @@ public class LocationBarLayout extends FrameLayout {
      *
      * @param ntpSearchBoxScrollFraction The degree to which the omnibox has expanded to full width
      *     in NTP due to the NTP search box is being scrolled up.
-     * @param startSurfaceScrollFraction The degree to which the omnibox has expanded to full width
-     *     in Start Surface due to the Start Surface search box is being scrolled up.
      * @param urlFocusChangeFraction The degree to which the omnibox has expanded due to it is
      *     getting focused.
      * @param isUrlFocusChangeInProgress True if the url focus change is in progress.
      */
     protected void setStatusViewLeftSpacePercent(
             float ntpSearchBoxScrollFraction,
-            float startSurfaceScrollFraction,
             float urlFocusChangeFraction,
             boolean isUrlFocusChangeInProgress) {
-        float maxPercent =
-                getMaxValue(
-                        ntpSearchBoxScrollFraction,
-                        startSurfaceScrollFraction,
-                        urlFocusChangeFraction);
+        float maxPercent = Math.max(ntpSearchBoxScrollFraction, urlFocusChangeFraction);
         boolean isOnTablet = DeviceFormFactor.isNonMultiDisplayContextOnTablet(getContext());
         // The tablet UI doesn't have status view spacer elements so must use translation.
         float translationX;
-        if (mIsSurfacePolishEnabled
-                && !isOnTablet
-                && isUrlFocusChangeInProgress
-                && (ntpSearchBoxScrollFraction == 1 || startSurfaceScrollFraction == 1)) {
-            // Ignore the case that the new modernize visual UI update is not shown for
-            // surface polish.
+        if (!isOnTablet && isUrlFocusChangeInProgress && ntpSearchBoxScrollFraction == 1) {
             translationX =
                     OmniboxResourceProvider.getFocusedStatusViewLeftSpacing(getContext())
-                            + mStatusIconAndUrlBarOffsetForSurfacePolish
-                                    * (1 - urlFocusChangeFraction);
+                            + mStatusIconAndUrlBarOffset * (1 - urlFocusChangeFraction);
         } else {
             translationX =
                     OmniboxResourceProvider.getFocusedStatusViewLeftSpacing(getContext())
@@ -475,24 +444,20 @@ public class LocationBarLayout extends FrameLayout {
      *
      * @param ntpSearchBoxScrollFraction The degree to which the omnibox has expanded to full width
      *     in NTP due to the NTP search box is being scrolled up.
-     * @param startSurfaceScrollFraction The degree to which the omnibox has expanded to full width
-     *     in Start Surface due to the Start Surface search box is being scrolled up.
      * @param urlFocusChangeFraction The degree to which the omnibox has expanded due to it is
      *     getting focused.
      * @param isUrlFocusChangeInProgress True if the url focus change is in progress.
      */
     protected void setStatusViewRightSpacePercent(
             float ntpSearchBoxScrollFraction,
-            float startSurfaceScrollFraction,
             float urlFocusChangeFraction,
             boolean isUrlFocusChangeInProgress) {
         // The tablet UI doesn't have status view spacer elements so must use translation.
         float translationX;
         if (mUrlBarLaidOutAtFocusedWidth) {
             translationX =
-                    getUrlbarTranslationXForFocusAndScrollAnimationOnStartSurfaceAndNtp(
+                    getUrlbarTranslationXForFocusAndScrollAnimationOnNtp(
                             ntpSearchBoxScrollFraction,
-                            startSurfaceScrollFraction,
                             urlFocusChangeFraction,
                             isUrlFocusChangeInProgress,
                             DeviceFormFactor.isNonMultiDisplayContextOnTablet(getContext()));
@@ -510,27 +475,21 @@ public class LocationBarLayout extends FrameLayout {
      *
      * @param ntpSearchBoxScrollFraction The degree to which the omnibox has expanded to full width
      *     in NTP due to the NTP search box is being scrolled up.
-     * @param startSurfaceScrollFraction The degree to which the omnibox has expanded to full width
-     *     in Start Surface due to the Start Surface search box is being scrolled up.
      * @param urlFocusChangeFraction The degree to which the omnibox has expanded due to it is
      *     getting focused.
      * @param isUrlFocusChangeInProgress True if the url focus change is in progress.
      * @param isOnTablet True if the current page is on the tablet.
      */
-    float getUrlbarTranslationXForFocusAndScrollAnimationOnStartSurfaceAndNtp(
+    float getUrlbarTranslationXForFocusAndScrollAnimationOnNtp(
             float ntpSearchBoxScrollFraction,
-            float startSurfaceScrollFraction,
             float urlFocusChangeFraction,
             boolean isUrlFocusChangeInProgress,
             boolean isOnTablet) {
 
-        if (mIsSurfacePolishEnabled
-                && !isOnTablet
-                && isUrlFocusChangeInProgress
-                && (ntpSearchBoxScrollFraction == 1 || startSurfaceScrollFraction == 1)) {
+        if (!isOnTablet && isUrlFocusChangeInProgress && ntpSearchBoxScrollFraction == 1) {
             // For the focus and un-focus animation when the real search box is visible
-            // on Start Surface or NTP.
-            return mStatusIconAndUrlBarOffsetForSurfacePolish * (1 - urlFocusChangeFraction);
+            // on NTP.
+            return mStatusIconAndUrlBarOffset * (1 - urlFocusChangeFraction);
         }
 
         float translationX = -getFocusedStatusViewSpacingDelta();
@@ -553,7 +512,7 @@ public class LocationBarLayout extends FrameLayout {
                 isNtpOnPhone
                         && mSearchEngineUtils != null
                         && mSearchEngineUtils.doesDefaultSearchEngineHaveLogo();
-        if (mIsSurfacePolishEnabled && isInSingleUrlBarMode) {
+        if (isInSingleUrlBarMode) {
             translationX +=
                     (getResources().getDimensionPixelSize(R.dimen.fake_search_box_start_padding)
                             - getResources()
@@ -564,11 +523,7 @@ public class LocationBarLayout extends FrameLayout {
         // If the url bar is laid out at its smaller, focused width, translate back towards
         // start to compensate for the increased start margin set in #updateLayoutParams. The
         // magnitude of the compensation decreases as % increases and is 0 at full focus %.
-        float percent =
-                getMaxValue(
-                        ntpSearchBoxScrollFraction,
-                        startSurfaceScrollFraction,
-                        urlFocusChangeFraction);
+        float percent = Math.max(ntpSearchBoxScrollFraction, urlFocusChangeFraction);
         return translationX * (1.0f - percent);
     }
 
@@ -605,7 +560,7 @@ public class LocationBarLayout extends FrameLayout {
      *
      * @param useDefaultUrlActionContainerEndMargin Whether to use the default end margin for the
      *     url action container in the search box. If not we will use the specific end margin value
-     *     for surface polish.
+     *     for NTP's un-focus state.
      */
     public void updateUrlActionContainerEndMargin(boolean useDefaultUrlActionContainerEndMargin) {
         mUrlActionContainerEndMargin =
@@ -613,23 +568,10 @@ public class LocationBarLayout extends FrameLayout {
                         ? getResources()
                                 .getDimensionPixelSize(R.dimen.location_bar_url_action_offset)
                         : getResources()
-                                .getDimensionPixelSize(
-                                        R.dimen.location_bar_url_action_offset_polish);
+                                .getDimensionPixelSize(R.dimen.location_bar_url_action_offset_ntp);
     }
 
     int getUrlActionContainerEndMarginForTesting() {
         return mUrlActionContainerEndMargin;
-    }
-
-    /**
-     * Returns the maximum value among the three provided variables.
-     *
-     * @param a the first value
-     * @param b the second value
-     * @param c the third value
-     * @return the maximum value among a, b, and c
-     */
-    private float getMaxValue(float a, float b, float c) {
-        return Math.max(Math.max(a, b), c);
     }
 }

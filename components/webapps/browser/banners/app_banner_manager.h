@@ -332,6 +332,9 @@ class AppBannerManager : public content::WebContentsObserver,
   // web contents observer overrides.
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
+  void DidFailLoad(content::RenderFrameHost* render_frame_host,
+                   const GURL& validated_url,
+                   int error_code) override;
 
   // TODO(http://crbug.com/322342499): Make this private.
   State state() const { return state_; }
@@ -417,7 +420,8 @@ class AppBannerManager : public content::WebContentsObserver,
   void OnEngagementEvent(content::WebContents* web_contents,
                          const GURL& url,
                          double score,
-                         site_engagement::EngagementType type) override;
+                         site_engagement::EngagementType type,
+                         const std::optional<webapps::AppId>& app_id) override;
 
   // Subclass accessors for private fields which should not be changed outside
   // this class.
@@ -454,14 +458,6 @@ class AppBannerManager : public content::WebContentsObserver,
 
   // Fetches the data required to display a banner for the current page.
   raw_ptr<InstallableManager> manager_;
-
-  // The manifest object. This is never null, it will instead be an empty
-  // manifest so callers don't have to worry about null checks.
-  blink::mojom::ManifestPtr manifest_;
-
-  // The web page metadata object. This is never null, it will instead be
-  // empty so callers don't have to worry about null checks.
-  mojom::WebPageMetadataPtr web_page_metadata_;
 
   // We do not want to trigger a banner when the manager is attached to
   // a WebContents that is playing video. Banners triggering on a site in the

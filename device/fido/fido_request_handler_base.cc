@@ -10,8 +10,10 @@
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
@@ -22,22 +24,26 @@
 #include "device/fido/discoverable_credential_metadata.h"
 #include "device/fido/features.h"
 #include "device/fido/fido_authenticator.h"
+#include "device/fido/fido_constants.h"
 #include "device/fido/fido_discovery_base.h"
 #include "device/fido/fido_discovery_factory.h"
 #include "device/fido/mac/icloud_keychain.h"
 
 #if BUILDFLAG(IS_WIN)
 #include "device/fido/win/authenticator.h"
+#include "device/fido/win/util.h"
 #include "device/fido/win/webauthn_api.h"
 #endif
 
 #if BUILDFLAG(IS_MAC)
 #include "base/process/process_info.h"
+#include "device/fido/mac/util.h"
 #endif
 
 namespace device {
 
 namespace {
+
 bool IsGpmPasskeyAuthenticator(const FidoAuthenticator& authenticator) {
   switch (authenticator.GetType()) {
     case AuthenticatorType::kWinNative:
@@ -53,6 +59,31 @@ bool IsGpmPasskeyAuthenticator(const FidoAuthenticator& authenticator) {
   }
   NOTREACHED_NORETURN();
 }
+
+void MaybeRecordPlatformCredentialStatus(AuthenticatorType type,
+                                         base::TimeDelta elapsed_time) {
+  std::string metric_name;
+
+  switch (type) {
+    case AuthenticatorType::kWinNative:
+      metric_name = "WebAuthentication.CredentialFetchDuration.WinHello";
+      break;
+    case AuthenticatorType::kTouchID:
+      metric_name = "WebAuthentication.CredentialFetchDuration.TouchId";
+      break;
+    case AuthenticatorType::kChromeOS:
+      metric_name = "WebAuthentication.CredentialFetchDuration.ChromeOS";
+      break;
+    case AuthenticatorType::kICloudKeychain:
+      metric_name = "WebAuthentication.CredentialFetchDuration.ICloudKeychain";
+      break;
+    default:
+      return;
+  }
+
+  base::UmaHistogramTimes(metric_name, elapsed_time);
+}
+
 }  // namespace
 
 // TransportAvailabilityCallbackReadiness stores state that tracks whether
@@ -78,6 +109,10 @@ struct TransportAvailabilityCallbackReadiness {
   // callback is pending |OnIsUvpaa| being called.
   bool win_is_uvpaa_check_pending = false;
 
+  // platform_biometrics_check_pending is set if an asynchronous check for
+  // local biometric availability is pending.
+  bool platform_biometrics_check_pending = false;
+
   // num_discoveries_pending is the number of discoveries that are still yet to
   // signal that they have started.
   unsigned num_discoveries_pending = 0;
@@ -91,7 +126,8 @@ struct TransportAvailabilityCallbackReadiness {
   bool CanMakeCallback() const {
     return !callback_made && !ble_information_pending &&
            num_platform_credential_checks_pending == 0 &&
-           !win_is_uvpaa_check_pending && num_discoveries_pending == 0;
+           !win_is_uvpaa_check_pending && !platform_biometrics_check_pending &&
+           num_discoveries_pending == 0;
   }
 };
 
@@ -280,7 +316,29 @@ void FidoRequestHandlerBase::InitDiscoveries(
                        weak_factory_.GetWeakPtr()));
   }
 
+#if BUILDFLAG(IS_MAC)
+  transport_availability_info_.platform_has_biometrics =
+      device::fido::mac::DeviceHasBiometricsAvailable();
   MaybeSignalTransportsEnumerated();
+#elif BUILDFLAG(IS_WIN)
+  transport_availability_callback_readiness_
+      ->platform_biometrics_check_pending = true;
+  device::fido::win::DeviceHasBiometricsAvailable(base::BindOnce(
+      [](base::WeakPtr<FidoRequestHandlerBase> handler,
+         bool biometrics_available) {
+        if (!handler) {
+          return;
+        }
+        handler->transport_availability_info_.platform_has_biometrics =
+            biometrics_available;
+        handler->transport_availability_callback_readiness_
+            ->platform_biometrics_check_pending = false;
+        handler->MaybeSignalTransportsEnumerated();
+      },
+      GetWeakPtr()));
+#else
+  MaybeSignalTransportsEnumerated();
+#endif
 }
 
 FidoRequestHandlerBase::~FidoRequestHandlerBase() {
@@ -313,7 +371,7 @@ void FidoRequestHandlerBase::CancelActiveAuthenticators(
 
 void FidoRequestHandlerBase::OnBluetoothAdapterEnumerated(
     bool is_present,
-    bool is_powered_on,
+    BleStatus ble_status,
     bool can_power_on,
     bool is_peripheral_role_supported) {
   if (!is_present) {
@@ -322,17 +380,17 @@ void FidoRequestHandlerBase::OnBluetoothAdapterEnumerated(
   }
 
   transport_availability_callback_readiness_->ble_information_pending = false;
-  transport_availability_info_.is_ble_powered = is_powered_on;
+  transport_availability_info_.ble_status = ble_status;
   transport_availability_info_.can_power_on_ble_adapter = can_power_on;
   MaybeSignalTransportsEnumerated();
 }
 
-void FidoRequestHandlerBase::OnBluetoothAdapterPowerChanged(
-    bool is_powered_on) {
-  transport_availability_info_.is_ble_powered = is_powered_on;
+void FidoRequestHandlerBase::OnBluetoothAdapterStatusChanged(
+    BleStatus ble_status) {
+  transport_availability_info_.ble_status = ble_status;
 
   if (observer_) {
-    observer_->BluetoothAdapterPowerChanged(is_powered_on);
+    observer_->BluetoothAdapterStatusChanged(ble_status);
   }
 }
 
@@ -342,6 +400,12 @@ void FidoRequestHandlerBase::PowerOnBluetoothAdapter() {
   }
 
   bluetooth_adapter_manager_->SetAdapterPower(true /* set_power_on */);
+}
+
+void FidoRequestHandlerBase::RequestBluetoothPermission(
+    BlePermissionCallback callback) {
+  return bluetooth_adapter_manager_->RequestBluetoothPermission(
+      std::move(callback));
 }
 
 base::WeakPtr<FidoRequestHandlerBase> FidoRequestHandlerBase::GetWeakPtr() {
@@ -487,10 +551,6 @@ void FidoRequestHandlerBase::AuthenticatorAdded(
 #endif  // BUILDFLAG(IS_WIN)
 }
 
-void FidoRequestHandlerBase::BleDenied() {
-  transport_availability_info_.ble_access_denied = true;
-}
-
 void FidoRequestHandlerBase::GetPlatformCredentialStatus(
     FidoAuthenticator* platform_authenticator) {
   transport_availability_callback_readiness_
@@ -499,8 +559,13 @@ void FidoRequestHandlerBase::GetPlatformCredentialStatus(
 
 void FidoRequestHandlerBase::OnHavePlatformCredentialStatus(
     AuthenticatorType authenticator_type,
+    std::optional<base::ElapsedTimer> timer,
     std::vector<DiscoverableCredentialMetadata> creds,
     RecognizedCredential has_credentials) {
+  if (creds.size() > 0 && timer.has_value()) {
+    MaybeRecordPlatformCredentialStatus(authenticator_type, timer->Elapsed());
+  }
+
   if (authenticator_type == AuthenticatorType::kICloudKeychain) {
     // iCloud Keychain is the second platform authenticator on the system and
     // its status is reported via a different field.

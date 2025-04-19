@@ -136,7 +136,7 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Returns the insets from the edge of the native window to the client view in
   // DIPs. The value is left-to-right even on RTL locales. That is,
   // insets.left() will be on the left in screen coordinates.
-  virtual gfx::Insets MirroredFrameBorderInsets() const;
+  virtual gfx::Insets RestoredMirroredFrameBorderInsets() const;
 
   // Returns the insets from the client view to the input region. The returned
   // insets will be negative, such that view_rect.Inset(GetInputInsets()) will
@@ -157,6 +157,9 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Used by TabContainerOverlayView to paint tab strip background.
   virtual void PaintThemedFrame(gfx::Canvas* canvas) {}
 #endif
+
+  // Sets the bounds of `frame_`.
+  virtual void SetFrameBounds(const gfx::Rect& bounds);
 
  protected:
   // Called when |frame_|'s "paint as active" state has changed.

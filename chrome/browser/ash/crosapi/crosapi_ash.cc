@@ -13,7 +13,6 @@
 #include "base/functional/callback.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
-#include "chrome/browser/apps/app_service/publishers/browser_shortcuts_crosapi_publisher.h"
 #include "chrome/browser/apps/app_service/publishers/standalone_browser_apps.h"
 #include "chrome/browser/apps/app_service/publishers/standalone_browser_extension_apps.h"
 #include "chrome/browser/apps/app_service/publishers/standalone_browser_extension_apps_factory.h"
@@ -81,6 +80,7 @@
 #include "chrome/browser/ash/crosapi/login_ash.h"
 #include "chrome/browser/ash/crosapi/login_screen_storage_ash.h"
 #include "chrome/browser/ash/crosapi/login_state_ash.h"
+#include "chrome/browser/ash/crosapi/media_app_ash.h"
 #include "chrome/browser/ash/crosapi/media_ui_ash.h"
 #include "chrome/browser/ash/crosapi/message_center_ash.h"
 #include "chrome/browser/ash/crosapi/metrics_ash.h"
@@ -123,12 +123,14 @@
 #include "chrome/browser/ash/crosapi/web_page_info_ash.h"
 #include "chrome/browser/ash/input_method/editor_mediator_factory.h"
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_factory.h"
+#include "chrome/browser/ash/magic_boost/magic_boost_controller_ash.h"
 #include "chrome/browser/ash/mahi/mahi_browser_delegate_ash.h"
 #include "chrome/browser/ash/printing/print_preview/print_preview_webcontents_adapter_ash.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/remote_apps/remote_apps_manager_factory.h"
 #include "chrome/browser/ash/sync/sync_mojo_service_ash.h"
 #include "chrome/browser/ash/sync/sync_mojo_service_factory_ash.h"
+#include "chrome/browser/ash/trusted_vault/trusted_vault_backend_ash.h"
 #include "chrome/browser/ash/trusted_vault/trusted_vault_backend_service_ash.h"
 #include "chrome/browser/ash/trusted_vault/trusted_vault_backend_service_factory_ash.h"
 #include "chrome/browser/ash/video_conference/video_conference_manager_ash.h"
@@ -166,6 +168,7 @@
 #include "chromeos/crosapi/mojom/keystore_service.mojom.h"
 #include "chromeos/crosapi/mojom/lacros_shelf_item_tracker.mojom.h"
 #include "chromeos/crosapi/mojom/local_printer.mojom.h"
+#include "chromeos/crosapi/mojom/magic_boost.mojom.h"
 #include "chromeos/crosapi/mojom/mahi.mojom.h"
 #include "chromeos/crosapi/mojom/message_center.mojom.h"
 #include "chromeos/crosapi/mojom/multi_capture_service.mojom.h"
@@ -294,8 +297,11 @@ CrosapiAsh::CrosapiAsh(CrosapiDependencyRegistry* registry)
       login_ash_(std::make_unique<LoginAsh>()),
       login_screen_storage_ash_(std::make_unique<LoginScreenStorageAsh>()),
       login_state_ash_(std::make_unique<LoginStateAsh>()),
+      magic_boost_controller_ash_(
+          std::make_unique<ash::MagicBoostControllerAsh>()),
       mahi_browser_delegate_ash_(
           std::make_unique<ash::MahiBrowserDelegateAsh>()),
+      media_app_ash_(std::make_unique<MediaAppAsh>()),
       media_ui_ash_(std::make_unique<MediaUIAsh>()),
       message_center_ash_(std::make_unique<MessageCenterAsh>()),
       metrics_ash_(std::make_unique<MetricsAsh>()),
@@ -441,14 +447,8 @@ void CrosapiAsh::BindBrowserServiceHost(
 
 void CrosapiAsh::BindBrowserShortcutPublisher(
     mojo::PendingReceiver<mojom::AppShortcutPublisher> receiver) {
-  Profile* profile = ProfileManager::GetPrimaryUserProfile();
-  auto* app_service_proxy =
-      apps::AppServiceProxyFactory::GetForProfile(profile);
-  apps::BrowserShortcutsCrosapiPublisher* browser_shortcuts =
-      app_service_proxy->BrowserShortcutsCrosapiPublisher();
-  if (browser_shortcuts) {
-    browser_shortcuts->RegisterCrosapiHost(std::move(receiver));
-  }
+  // TODO(b/352513798): Remove after M131.
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void CrosapiAsh::BindBrowserVersionService(
@@ -821,6 +821,15 @@ void CrosapiAsh::BindMahiBrowserDelegate(
   mahi_browser_delegate_ash_->BindReceiver(std::move(receiver));
 }
 
+void CrosapiAsh::BindMagicBoostController(
+    mojo::PendingReceiver<mojom::MagicBoostController> receiver) {
+  magic_boost_controller_ash_->BindReceiver(std::move(receiver));
+}
+
+void CrosapiAsh::BindMediaApp(mojo::PendingRemote<mojom::MediaApp> remote) {
+  media_app_ash_->BindRemote(std::move(remote));
+}
+
 void CrosapiAsh::BindMediaUI(mojo::PendingReceiver<mojom::MediaUI> receiver) {
   media_ui_ash_->BindReceiver(std::move(receiver));
 }
@@ -1104,6 +1113,18 @@ void CrosapiAsh::BindTrustedVaultBackend(
           trusted_vault::kChromeOSTrustedVaultClientShared)) {
     return;
   }
+  auto* backend_service =
+      ash::TrustedVaultBackendServiceFactoryAsh::GetForProfile(GetAshProfile());
+  if (!backend_service) {
+    // Nullable in Guest profile.
+    return;
+  }
+  backend_service->chrome_sync_trusted_vault_backend()->BindReceiver(
+      std::move(receiver));
+}
+
+void CrosapiAsh::BindTrustedVaultBackendService(
+    mojo::PendingReceiver<mojom::TrustedVaultBackendService> receiver) {
   auto* backend_service =
       ash::TrustedVaultBackendServiceFactoryAsh::GetForProfile(GetAshProfile());
   if (!backend_service) {

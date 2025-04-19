@@ -50,6 +50,12 @@ class TestChromeUpdateClientConfig
 
   bool EnabledCupSigning() const final { return false; }
 
+  bool EnabledBackgroundDownloader() const final {
+    // Some tests rely on URLFetcher network interceptors, which won't intercept
+    // BITS requests.
+    return false;
+  }
+
   std::unique_ptr<update_client::ProtocolHandlerFactory>
   GetProtocolHandlerFactory() const final {
     return std::make_unique<update_client::ProtocolHandlerFactoryJSON>();
@@ -215,8 +221,9 @@ ExtensionUpdateClientBaseTest::WaitOnComponentUpdaterCompleteEvent(
 
 bool ExtensionUpdateClientBaseTest::OnRequest(
     content::URLLoaderInterceptor::RequestParams* params) {
-  if (params->url_request.url.host() != "localhost")
+  if (params->url_request.url.host() != "localhost") {
     return false;
+  }
 
   get_interceptor_count_++;
   return callback_ && callback_.Run(params);

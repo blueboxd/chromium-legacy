@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/ui/webui/management/management_ui.h"
 
 #include <memory>
@@ -57,6 +62,7 @@ content::WebUIDataSource* CreateAndAddManagementUIHtmlSource(Profile* profile) {
 #if BUILDFLAG(IS_CHROMEOS)
       {"learnMore", IDS_LEARN_MORE},
       {"localTrustRoots", IDS_MANAGEMENT_LOCAL_TRUST_ROOTS},
+      {"filesCloudUpload", IDS_MANAGEMENT_FILES_CLOUD_UPLOAD},
       {"managementTrustRootsConfigured", IDS_MANAGEMENT_TRUST_ROOTS_CONFIGURED},
       {"deviceConfiguration", IDS_MANAGEMENT_DEVICE_CONFIGURATION},
       {"deviceReporting", IDS_MANAGEMENT_DEVICE_REPORTING},
@@ -139,6 +145,8 @@ content::WebUIDataSource* CreateAndAddManagementUIHtmlSource(Profile* profile) {
        IDS_MANAGEMENT_EXTENSION_REPORT_PERF_CRASH},
       {kManagementExtensionReportUserBrowsingData,
        IDS_MANAGEMENT_EXTENSION_REPORT_USER_BROWSING_DATA},
+      {kManagementExtensionReportVisitedUrl,
+       IDS_MANAGEMENT_EXTENSION_REPORT_VISITED_URL},
       {kThreatProtectionTitle, IDS_MANAGEMENT_THREAT_PROTECTION},
       {"connectorEvent", IDS_MANAGEMENT_CONNECTORS_EVENT},
       {"connectorVisibleData", IDS_MANAGEMENT_CONNECTORS_VISIBLE_DATA},

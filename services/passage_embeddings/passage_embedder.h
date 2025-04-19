@@ -6,6 +6,7 @@
 #define SERVICES_PASSAGE_EMBEDDINGS_PASSAGE_EMBEDDER_H_
 
 #include "base/containers/heap_array.h"
+#include "base/containers/lru_cache.h"
 #include "base/files/file.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/passage_embeddings/passage_embedder_execution_task.h"
@@ -14,6 +15,9 @@
 #include "third_party/tflite_support/src/tensorflow_lite_support/cc/task/core/base_task_api.h"
 
 namespace passage_embeddings {
+
+inline constexpr char kCacheHitMetricName[] =
+    "History.Embeddings.Embedder.CacheHit";
 
 // Class implementation of the passage embedder mojo interface.
 class PassageEmbedder : public mojom::PassageEmbedder {
@@ -39,6 +43,7 @@ class PassageEmbedder : public mojom::PassageEmbedder {
 
   // mojom::PassageEmbedder:
   void GenerateEmbeddings(const std::vector<std::string>& inputs,
+                          mojom::PassagePriority priority,
                           GenerateEmbeddingsCallback callback) override;
 
  private:
@@ -55,6 +60,11 @@ class PassageEmbedder : public mojom::PassageEmbedder {
   // Unloads all associated models.
   void UnloadModelFiles();
 
+  // Builds a new execution task configured with the right number of threads
+  // according to the priority. Replaces the old task if one exists. Returns
+  // true on success.
+  bool BuildExecutionTask();
+
   // Executes the model to generate text embeddings result for the input.
   std::optional<OutputType> Execute(InputType input);
 
@@ -69,6 +79,18 @@ class PassageEmbedder : public mojom::PassageEmbedder {
 
   // The input window size that the embeddings model expects.
   uint32_t embeddings_input_window_size_;
+
+  // The priority that the active tflite_engine is set up for.
+  mojom::PassagePriority current_priority_;
+
+  // Whether the tflite engine has been overridden by caller during setup.
+  bool tflite_engine_overridden_;
+
+  // Temporarily stores the pointer to the override engine. Will be null when
+  // it is loaded into an execution task.
+  std::unique_ptr<tflite::task::core::TfLiteEngine> override_tflite_engine_;
+
+  base::LRUCache<std::string, std::vector<float>> embeddings_cache_;
 };
 
 }  // namespace passage_embeddings

@@ -75,6 +75,8 @@ class FixedBrowsingTopicsService
     return {};
   }
 
+  void ValidateCalculationSchedule() override {}
+
   Annotator* GetAnnotator() override { return &test_annotator_; }
 
   void ClearTopic(
@@ -430,7 +432,8 @@ class BrowsingTopicsInternalsBrowserTest
          {features::kPrivacySandboxAdsAPIsOverride, {}},
          {privacy_sandbox::kPrivacySandboxSettings4,
           {{"consent-required", "true"}}}},
-        /*disabled_features=*/{});
+        /*disabled_features=*/{
+            privacy_sandbox::kPrivacySandboxLocalNoticeConfirmation});
   }
 
   // BrowserTestBase::SetUpInProcessBrowserTestFixture

@@ -5,6 +5,10 @@
 #ifndef PDF_INK_INK_STROKE_INPUT_H_
 #define PDF_INK_INK_STROKE_INPUT_H_
 
+#include <cstdint>
+
+#include "pdf/ink/ink_point.h"
+
 namespace chrome_pdf {
 
 struct InkStrokeInput {
@@ -15,8 +19,7 @@ struct InkStrokeInput {
   static constexpr float kNoOrientation = -1;
 
   ToolType tool_type = ToolType::kUnknown;
-  float position_x;
-  float position_y;
+  InkPoint position;
   float elapsed_time_seconds;
   float pressure = kNoPressure;
   float tilt_in_radians = kNoTilt;

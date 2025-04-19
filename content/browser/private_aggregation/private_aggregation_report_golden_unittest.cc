@@ -13,11 +13,13 @@
 
 #include "base/base64.h"
 #include "base/base_paths.h"
+#include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/functional/callback_helpers.h"
 #include "base/path_service.h"
+#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/bind.h"
@@ -45,6 +47,7 @@
 #include "content/public/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/aggregation_service/aggregatable_report.mojom.h"
 #include "third_party/boringssl/src/include/openssl/hpke.h"
 #include "url/gurl.h"
@@ -134,6 +137,7 @@ class PrivateAggregationReportGoldenLatestVersionTest : public testing::Test {
             std::move(debug_details),
             /*scheduled_report_time=*/
             base::Time::FromMillisecondsSinceUnixEpoch(1234486400000),
+            /*delay_type=*/AggregatableReportRequest::DelayType::Unscheduled,
             /*report_id=*/
             base::Uuid::ParseLowercase("21abd97f-73e8-4b88-9389-a9fee6abda5e"),
             /*reporting_origin=*/kExampleOrigin, api_identifier,
@@ -430,6 +434,21 @@ TEST_F(PrivateAggregationReportGoldenLatestVersionTest, VerifyGoldenReport) {
   };
 
   for (auto& test_case : kTestCases) {
+    // This reflects the logic in
+    // `PrivateAggregationHost::ContributeToHistogram()` and is copied here to
+    // avoid hitting a CHECK().
+    bool use_new_report_version =
+        base::FeatureList::IsEnabled(
+            blink::features::kPrivateAggregationApiFilteringIds) &&
+        base::FeatureList::IsEnabled(
+            kPrivacySandboxAggregationServiceFilteringIds);
+    if (!use_new_report_version) {
+      base::ranges::for_each(
+          test_case.contributions,
+          [](blink::mojom::AggregatableReportHistogramContribution&
+                 contribution) { contribution.filtering_id.reset(); });
+    }
+
     AssembleAndVerifyReport(
         std::move(test_case.debug_details), std::move(test_case.contributions),
         std::move(test_case.api_identifier), test_case.report_file,

@@ -72,7 +72,6 @@ void AddHighContrastSysColors(ColorMixer& mixer) {
   mixer[kColorSysBase] = {kColorNativeBtnFace};
   mixer[kColorSysBaseContainer] = {kColorNativeBtnFace};
   mixer[kColorSysBaseContainerElevated] = {kColorNativeBtnFace};
-  mixer[kColorSysOnBaseSecondary] = {kColorNativeWindowText};
   mixer[kColorSysHeader] = {kColorNativeWindow};
   mixer[kColorSysHeaderInactive] = {kColorNativeWindow};
   mixer[kColorSysHeaderContainer] = {kColorNativeBtnFace};
@@ -196,7 +195,6 @@ void AddNativeUiColorMixer(ColorProvider* provider,
 
   // Hyperlinks
   mixer[kColorLinkForegroundDefault] = {kColorNativeHotlight};
-  mixer[kColorLinkForegroundPressedDefault] = {kColorNativeHotlight};
   mixer[kColorMenuItemForegroundHighlighted] = {kColorNativeHotlight};
 
   // Gray/Disabled Text

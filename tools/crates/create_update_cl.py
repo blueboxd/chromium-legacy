@@ -90,6 +90,11 @@ def Git(*args) -> str:
     return RunCommandAndCheckForErrors(['git'] + list(args), False)
 
 
+def GitAddRustFiles():
+    Git("add", "-f", f"{VENDOR_DIR}")
+    Git("add", f"{THIRD_PARTY_RUST}")
+
+
 def Gnrt(*args) -> str:
     """Runs a gnrt command."""
     return RunCommandAndCheckForErrors([RUN_GNRT] + list(args), True)
@@ -444,13 +449,12 @@ def UpdateCrate(args, crate_id: str, upstream_branch: str):
     new_branch = f"{BRANCH_BASENAME}--{crate_id.replace('@', '-')}"
     Git("checkout", upstream_branch, "-b", new_branch)
     Git("branch", "--set-upstream-to", upstream_branch)
-    Git("add", "-f", f"{THIRD_PARTY_RUST}")
+    GitAddRustFiles()
     Git("commit", "-m", description)
     if args.upload:
         print(f"  Running `git cl upload ...` ...")
-        Git("cl", "upload", "--bypass-hooks", "--force",
-            "--hashtag=cratesio-autoupdate",
-            "--cc=chrome-rust-experiments+autoupdate@google.com")
+        GitClUpload("--hashtag=cratesio-autoupdate",
+                    "--cc=chrome-rust-experiments+autoupdate@google.com")
 
     FinishUpdatingCrate(args, title, diff)
     return new_branch
@@ -473,14 +477,14 @@ def FinishUpdatingCrate(args, title: str, diff: CratesDiff):
         new_target_dir = ConvertCrateIdToEpochDir(update.new_crate_id)
         if old_target_dir != new_target_dir:
             Git("mv", "--force", old_target_dir, new_target_dir)
-    Git("add", "-f", f"{THIRD_PARTY_RUST}")
+    GitAddRustFiles()
     GitCommit(args, "git mv <old dir> <new dir> (for better diff)")
     Git("reset", "--hard", "HEAD^")  # Undoing `git mv ...`
 
     # gnrt vendor
     print(f"  Running `gnrt vendor`...")
     Gnrt("vendor")
-    Git("add", "-f", f"{THIRD_PARTY_RUST}")
+    GitAddRustFiles()
     # `INCLUSIVE_LANG_SCRIPT` below uses `git grep` and therefore depends on the
     # earlier `Git("add"...)` above.  Please don't reorder/coalesce the `add`.
     new_content = RunCommandAndCheckForErrors([INCLUSIVE_LANG_SCRIPT], False)
@@ -489,9 +493,10 @@ def FinishUpdatingCrate(args, title: str, diff: CratesDiff):
     Git("add", INCLUSIVE_LANG_CONFIG)
     GitCommit(args, "gnrt vendor")
     if args.upload:
-        print(f"  Running `git cl description ...` ...")
+        print(f"  Running `git cl upload --commit-description=...` ...")
         description = CreateCommitDescription(title, diff, True)
-        Git("cl", "description", f"--new-description={description}")
+        GitClUpload(f"--commit-description={description}", "-t",
+                    "Edit CL description to include vet policy")
 
     # gnrt gen
     print(f"  Running `gnrt gen`...")
@@ -499,7 +504,7 @@ def FinishUpdatingCrate(args, title: str, diff: CratesDiff):
     # Some crates (e.g. ones in the `remove_crates` list of `gnrt_config.toml`)
     # may result in no changes - this is why we have an `if` below...
     if Git("status", "--porcelain"):
-        Git("add", "-f", f"{THIRD_PARTY_RUST}")
+        GitAddRustFiles()
         GitCommit(args, "gnrt gen")
 
     if args.upload:
@@ -532,11 +537,27 @@ def CheckoutInitialBranch(branch):
     RunCommandAndCheckForErrors([UPDATE_RUST_SCRIPT], False)
 
 
+def GitClUpload(*args):
+    # `--bypass-hooks` because the uploaded CL will initially fail
+    # `tools/crates/run_cargo_vet.py check`.
+    #
+    # `-o banned-words-skip` is used, because the CL is auto-generated and only
+    # modifies third-party libraries (where any banned words would be purely
+    # accidental; see also https://crbug.com/346174899).
+    #
+    # I am not 100% sure exactly why `--force` is needed, but without it
+    # `git cl upload` hangs sometimes.  I am guessing that `--force` is needed
+    # to suppress a prompt, although I am not sure what prompt + why that prompt
+    # appears.
+    Git("cl", "upload", "--bypass-hooks", "--force", "-o", "banned-words~skip",
+        *args)
+
+
 def GitCommit(args, title):
     Git("commit", "-m", title)
     if args.upload:
         print(f"  Running `git cl upload ...` ...")
-        Git("cl", "upload", "--bypass-hooks", "--force", "-m", title)
+        GitClUpload("-m", title)
 
 
 def ResolveCrateNameToCrateId(crate_name):
@@ -572,20 +593,46 @@ def AutoUpdate(args):
     upstream_branch = args.upstream_branch
     CheckoutInitialBranch(upstream_branch)
 
-    crate_ids = FindUpdateableCrates()
-    if not crate_ids:
+    todo_crate_ids = FindUpdateableCrates()
+
+    if args.skip:
+        todo_crate_ids = list([
+            crate_id for crate_id in todo_crate_ids
+            if not crate_id.split("@")[0] in args.skip
+        ])
+
+    if not todo_crate_ids:
         print("There were no updates - exiting early...")
         return 0
 
     update_sizes = dict()
-    for crate_id in crate_ids:
+    for crate_id in todo_crate_ids:
         update_sizes[crate_id] = FindSizeOfCrateUpdate(crate_id)
 
-    crate_ids = sorted(crate_ids, key=lambda crate_id: update_sizes[crate_id])
-    print(f"** Updating {len(crate_ids)} crates! "
-          f"Expect this to take about {len(crate_ids) * 2} minutes.")
-    for crate_id in crate_ids:
-        upstream_branch = UpdateCrate(args, crate_id, upstream_branch)
+    todo_crate_ids = sorted(todo_crate_ids,
+                            key=lambda crate_id: update_sizes[crate_id])
+    print(f"** Updating {len(todo_crate_ids)} crates! "
+          f"Expect this to take about {len(todo_crate_ids) * 2} minutes.")
+    while todo_crate_ids:
+        old_crate_ids = GetCurrentCrateIds()
+        for crate_id in todo_crate_ids:
+            upstream_branch = UpdateCrate(args, crate_id, upstream_branch)
+
+        new_crate_ids = GetCurrentCrateIds()
+        diff = DiffCrateIds(old_crate_ids, new_crate_ids)
+        actually_updated_crate_ids = set([u.old_crate_id for u in diff.updates])
+        missed_crate_ids = [
+            crate_id for crate_id in todo_crate_ids
+            if crate_id not in actually_updated_crate_ids
+        ]
+        if missed_crate_ids:
+            if len(missed_crate_ids) == len(todo_crate_ids):
+                print("ERROR: Failed to make progress with these crates:")
+                print(f"{', '.join(todo_crate_ids)}")
+                raise RuntimeError("Failed to make progress")
+            else:
+                print(f"** Retrying {len(missed_crate_ids)} crates.")
+        todo_crate_ids = missed_crate_ids
 
 
 def SingleCrate(args):
@@ -666,7 +713,7 @@ def main():
                         action='store_false',
                         help="Avoids uploading CLs to Gerrit")
     parser.add_argument("--verbose", action='store_true')
-    subparsers = parser.add_subparsers(required=True)
+    subparsers = parser.add_subparsers(required=False)
 
     parser_auto = subparsers.add_parser(
         "auto", description="Automatically update minor version of all crates")
@@ -675,6 +722,9 @@ def main():
         "--upstream-branch",
         default="origin/main",
         help="The upstream branch on which to base the series of CLs.")
+    parser_auto.add_argument("--skip",
+                             nargs="+",
+                             help="Skip updating this crate name.")
 
     parser_single = subparsers.add_parser(
         "single",
@@ -697,6 +747,11 @@ def main():
                                help="The first line of CL description.")
 
     args = parser.parse_args()
+    if "func" not in args:
+        msg = "ERROR: No auto/single/manual mode specified"
+        print(msg)
+        parser.print_help()
+        raise RuntimeError(msg)
 
     global g_is_verbose
     g_is_verbose = args.verbose

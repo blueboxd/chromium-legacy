@@ -7,6 +7,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/system/focus_mode/focus_mode_histogram_names.h"
+#include "ash/system/focus_mode/focus_mode_tasks_provider.h"
+#include "ash/system/focus_mode/focus_mode_util.h"
 #include "base/time/time.h"
 #include "ui/message_center/message_center_observer.h"
 
@@ -27,7 +29,11 @@ class ASH_EXPORT FocusModeMetricsRecorder
   // message_center::MessageCenterObserver:
   void OnQuietModeChanged(bool in_quiet_mode) override;
 
-  void RecordHistogramsOnStart(focus_mode_histogram_names::ToggleSource source);
+  void SetHasSelectedSoundType(
+      const focus_mode_util::SelectedPlaylist& selected_playlist);
+
+  void RecordHistogramsOnStart(focus_mode_histogram_names::ToggleSource source,
+                               const TaskId& selected_task_id);
 
   // Called by `FocusModeController::ResetFocusSession` to record the data on a
   // session completing.
@@ -46,6 +52,14 @@ class ASH_EXPORT FocusModeMetricsRecorder
   // True if the user turns DND on or off in an active session.
   bool has_user_interactions_on_dnd_in_focus_session_ = false;
   const base::TimeDelta initial_session_duration_;
+
+  // True if a soundscape playlist was played during this session.
+  bool has_selected_soundscapes_ = false;
+  // True if a youtube music playlist was played during this session.
+  bool has_selected_youtube_music_ = false;
+
+  // Counts the number of playlists played during a session.
+  int playlists_played_count_ = 0;
 };
 
 }  // namespace ash

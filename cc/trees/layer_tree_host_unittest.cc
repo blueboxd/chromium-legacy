@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "cc/trees/layer_tree_host.h"
 
 #include <stddef.h>
@@ -45,12 +50,12 @@
 #include "cc/test/fake_frame_info.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_paint_image_generator.h"
-#include "cc/test/fake_painted_scrollbar_layer.h"
 #include "cc/test/fake_picture_layer.h"
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/fake_proxy.h"
 #include "cc/test/fake_recording_source.h"
 #include "cc/test/fake_scoped_ui_resource.h"
+#include "cc/test/fake_scrollbar_layer.h"
 #include "cc/test/fake_video_frame_provider.h"
 #include "cc/test/layer_test_common.h"
 #include "cc/test/layer_tree_test.h"
@@ -2682,10 +2687,11 @@ class LayerTreeHostTestNoExtraCommitFromScrollbarInvalidate
     root_layer_ = Layer::Create();
     root_layer_->SetBounds(gfx::Size(10, 20));
 
-    bool paint_scrollbar = true;
-    bool has_thumb = false;
-    scrollbar_ = FakePaintedScrollbarLayer::Create(paint_scrollbar, has_thumb,
-                                                   root_layer_->element_id());
+    auto scrollbar = FakePaintedScrollbarLayer::CreateScrollbar();
+    scrollbar->set_should_paint(true);
+    scrollbar->set_has_thumb(false);
+    scrollbar_ = base::MakeRefCounted<FakePaintedScrollbarLayer>(
+        root_layer_->element_id());
     scrollbar_->SetPosition(gfx::PointF(0.f, 10.f));
     scrollbar_->SetBounds(gfx::Size(10, 10));
 
@@ -2955,7 +2961,7 @@ class LayerTreeHostTestSetNeedsCommitWithForcedRedraw
   void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
     if (num_draws_ == 3) {
       host_impl->SetViewportDamage(invalid_rect_);
-      host_impl->SetNeedsRedraw();
+      host_impl->SetNeedsRedraw(RedrawReason::kUntracked);
     }
   }
 
@@ -3339,7 +3345,7 @@ class LayerTreeHostTestFrameTimeUpdatesAfterDraw : public LayerTreeHostTest {
     frame_++;
     if (frame_ == 1) {
       first_frame_time_ = impl->CurrentBeginFrameArgs().frame_time;
-      impl->SetNeedsRedraw();
+      impl->SetNeedsRedraw(RedrawReason::kUntracked);
 
       // Since we might use a low-resolution clock on Windows, we need to
       // make sure that the clock has incremented past first_frame_time_.
@@ -4855,10 +4861,11 @@ class LayerTreeHostTestPropertyChangesDuringUpdateArePushed
     root_ = Layer::Create();
     root_->SetBounds(gfx::Size(1, 1));
 
-    bool paint_scrollbar = true;
-    bool has_thumb = false;
-    scrollbar_layer_ = FakePaintedScrollbarLayer::Create(
-        paint_scrollbar, has_thumb, root_->element_id());
+    auto scrollbar = FakePaintedScrollbarLayer::CreateScrollbar();
+    scrollbar->set_should_paint(true);
+    scrollbar->set_has_thumb(false);
+    scrollbar_layer_ =
+        base::MakeRefCounted<FakePaintedScrollbarLayer>(root_->element_id());
 
     root_->AddChild(scrollbar_layer_);
 
@@ -6768,7 +6775,7 @@ class LayerTreeHostTestGpuRasterizationEnabledWithMSAA : public LayerTreeTest {
                               host_impl->sync_tree()->LayerById(layer_->id()))
                               ->GetRasterSource();
     EXPECT_GT(host_impl->GetMSAASampleCountForRaster(
-                  raster_source->GetDisplayItemList()),
+                  *raster_source->GetDisplayItemList()),
               0);
     EXPECT_TRUE(host_impl->pending_tree()->use_gpu_rasterization());
     EXPECT_TRUE(host_impl->use_gpu_rasterization());
@@ -9176,7 +9183,7 @@ class LayerTreeHostTestDelegatedInkMetadataCompositorOnlyFrame
     } else if (begin_frame_count_ == 4) {
       PostIssueBeginFrame(false);
     }
-    host_impl->SetNeedsRedraw();
+    host_impl->SetNeedsRedraw(RedrawReason::kUntracked);
     host_impl->SetViewportDamage(gfx::Rect(1, 1));
   }
 
@@ -9293,7 +9300,7 @@ class LayerTreeHostTestEventsMetrics : public LayerTreeHostTest {
     tick_clock.Advance(base::Microseconds(10));
     std::unique_ptr<EventMetrics> metrics =
         ScrollUpdateEventMetrics::CreateForTesting(
-            ui::ET_GESTURE_SCROLL_UPDATE, ui::ScrollInputType::kWheel,
+            ui::EventType::kGestureScrollUpdate, ui::ScrollInputType::kWheel,
             /*is_inertial=*/false,
             ScrollUpdateEventMetrics::ScrollUpdateType::kContinued,
             /*delta=*/10.0f, event_time, arrived_in_browser_main_timestamp,
@@ -9695,7 +9702,7 @@ class LayerTreeHostUkmSmoothnessMetric : public LayerTreeTest {
     // Mark every frame as a dropped frame affecting smoothness.
     host_impl->dropped_frame_counter()->OnEndFrame(
         last_args_, CreateFakeImplDroppedFrameInfo());
-    host_impl->SetNeedsRedraw();
+    host_impl->SetNeedsRedraw(RedrawReason::kUntracked);
     --frames_counter_;
   }
 
@@ -9751,7 +9758,7 @@ class LayerTreeHostUkmSmoothnessMemoryOwnership : public LayerTreeTest {
     // main-thread update.
     host_impl->dropped_frame_counter()->OnEndFrame(
         last_args_, CreateFakeImplDroppedFrameInfo());
-    host_impl->SetNeedsRedraw();
+    host_impl->SetNeedsRedraw(RedrawReason::kUntracked);
     --frames_counter_;
   }
 
@@ -10138,7 +10145,7 @@ class LayerTreeHostTestDelayRecreateTiling
       host_impl->pending_tree()->set_needs_update_draw_properties();
 
       // to make sure Draw happen
-      host_impl->SetNeedsRedraw();
+      host_impl->SetNeedsRedraw(RedrawReason::kUntracked);
     }
   }
 
@@ -10294,7 +10301,7 @@ class LayerTreeHostTestInvalidateImplSideForRerasterTiling
         // implside will be requested for rerastering tiling.
         ClearAnimationForLayer(host_impl->active_tree(), target_layer);
         ClearAnimationForLayer(host_impl->recycle_tree(), target_layer);
-        host_impl->SetNeedsRedraw();
+        host_impl->SetNeedsRedraw(RedrawReason::kUntracked);
       }
     }
   }
@@ -10322,7 +10329,7 @@ class LayerTreeHostTestInvalidateImplSideForRerasterTiling
 
           // trigger draw to check if invalidating implside is not triggered
           // if animation is still active.
-          host_impl->SetNeedsRedraw();
+          host_impl->SetNeedsRedraw(RedrawReason::kUntracked);
         } else {
           // check if invalidation implside was requested successfully.
           // new tiling should be created.

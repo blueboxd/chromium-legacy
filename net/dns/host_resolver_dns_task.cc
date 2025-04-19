@@ -8,6 +8,7 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/not_fatal_until.h"
 #include "base/ranges/algorithm.h"
 #include "base/time/tick_clock.h"
 #include "net/base/features.h"
@@ -381,7 +382,8 @@ void HostResolverDnsTask::OnDnsTransactionComplete(
     uint16_t request_port,
     int net_error,
     const DnsResponse* response) {
-  DCHECK(transaction_info_it != transactions_in_progress_.end());
+  CHECK(transaction_info_it != transactions_in_progress_.end(),
+        base::NotFatalUntil::M130);
   DCHECK(base::Contains(transactions_in_progress_, *transaction_info_it));
 
   // Pull the TransactionInfo out of `transactions_in_progress_` now, so it
@@ -536,7 +538,7 @@ void HostResolverDnsTask::OnDnsTransactionComplete(
   }
 
   if (base::FeatureList::IsEnabled(features::kUseHostResolverCache) ||
-      base::FeatureList::IsEnabled(features::kUseServiceEndpointRequest)) {
+      base::FeatureList::IsEnabled(features::kHappyEyeballsV3)) {
     SortTransactionAndHandleResults(std::move(transaction_info),
                                     std::move(results).value());
   } else {
@@ -631,8 +633,9 @@ void HostResolverDnsTask::SortTransactionAndHandleResults(
     // Sort() potentially calls OnTransactionSorted() synchronously.
     client_->GetAddressSorter()->Sort(
         endpoints_to_sort,
-        base::BindOnce(&HostResolverDnsTask::OnTransactionSorted, AsWeakPtr(),
-                       insertion_result.first, std::move(transaction_results)));
+        base::BindOnce(&HostResolverDnsTask::OnTransactionSorted,
+                       weak_ptr_factory_.GetWeakPtr(), insertion_result.first,
+                       std::move(transaction_results)));
   } else {
     HandleTransactionResults(std::move(transaction_info),
                              std::move(transaction_results));
@@ -831,7 +834,8 @@ void HostResolverDnsTask::OnTransactionsFinished(
       // Sort addresses if needed.  Sort could complete synchronously.
       client_->GetAddressSorter()->Sort(
           ip_endpoints,
-          base::BindOnce(&HostResolverDnsTask::OnSortComplete, AsWeakPtr(),
+          base::BindOnce(&HostResolverDnsTask::OnSortComplete,
+                         weak_ptr_factory_.GetWeakPtr(),
                          tick_clock_->NowTicks(), std::move(results), secure_));
       return;
     }

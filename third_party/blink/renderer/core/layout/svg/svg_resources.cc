@@ -115,8 +115,12 @@ void SVGResources::UpdateEffects(LayoutObject& object,
       (style.HasFilter() || (old_style && old_style->HasFilter()))) {
     // We either created one above, or had one already.
     DCHECK(GetClient(object));
-    object.SetNeedsPaintPropertyUpdate();
-    GetClient(object)->MarkFilterDataDirty();
+    if (RuntimeEnabledFeatures::SvgTransformOptimizationEnabled()) {
+      GetClient(object)->InvalidateFilterData();
+    } else {
+      object.SetNeedsPaintPropertyUpdate();
+      GetClient(object)->MarkFilterDataDirty();
+    }
   }
   if (!old_style || !had_client)
     return;
@@ -354,7 +358,8 @@ void SVGElementResourceClient::UpdateFilterData(
     return;
   const ComputedStyle& style = object.StyleRef();
   FilterEffectBuilder builder(
-      reference_box, 1, style.VisitedDependentColor(GetCSSPropertyColor()),
+      reference_box, std::nullopt, 1,
+      style.VisitedDependentColor(GetCSSPropertyColor()),
       style.UsedColorScheme());
   builder.SetShorthandScale(1 / style.EffectiveZoom());
   const FilterOperations& filter = style.Filter();

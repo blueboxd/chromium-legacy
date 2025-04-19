@@ -16,9 +16,14 @@
 #import "components/autofill/core/browser/payments/payments_service_url.h"
 #import "components/autofill/core/browser/payments_data_manager.h"
 #import "components/autofill/core/browser/personal_data_manager.h"
-#import "components/autofill/core/common/autofill_payments_features.h"
+#import "components/autofill/core/common/credit_card_network_identifiers.h"
+#import "components/autofill/core/common/credit_card_number_validation.h"
 #import "components/autofill/ios/browser/credit_card_util.h"
 #import "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/autofill/ui_bundled/autofill_credit_card_ui_type.h"
+#import "ios/chrome/browser/autofill/ui_bundled/autofill_credit_card_util.h"
+#import "ios/chrome/browser/autofill/ui_bundled/autofill_ui_type_util.h"
+#import "ios/chrome/browser/autofill/ui_bundled/cells/autofill_credit_card_edit_item.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
@@ -26,10 +31,6 @@
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_text_edit_item_delegate.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_utils.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/ui/autofill/autofill_credit_card_ui_type.h"
-#import "ios/chrome/browser/ui/autofill/autofill_ui_type_util.h"
-#import "ios/chrome/browser/ui/autofill/cells/autofill_credit_card_edit_item.h"
-#import "ios/chrome/browser/ui/settings/autofill/autofill_credit_card_util.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_settings_constants.h"
 #import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -92,21 +93,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark - SettingsRootTableViewController
 
 - (void)editButtonPressed {
-  // In the case of server cards, open the Payments editing page instead.
-  if (_creditCard.record_type() ==
-          autofill::CreditCard::RecordType::kMaskedServerCard) {
+  // Check if the card should be edited from the Payments web page.
+  if ([AutofillCreditCardUtil shouldEditCardFromPaymentsWebPage:&_creditCard]) {
     GURL paymentsURL =
-        base::FeatureList::IsEnabled(
-            autofill::features::kAutofillUpdateChromeSettingsLinkToGPayWeb)
-            ? autofill::payments::GetManageInstrumentUrl(
-                  _creditCard.instrument_id())
-            : autofill::payments::GetManageInstrumentsUrl();
+        autofill::payments::GetManageInstrumentUrl(_creditCard.instrument_id());
     OpenNewTabCommand* command =
         [OpenNewTabCommand commandWithURLFromChrome:paymentsURL];
     [self.applicationHandler closeSettingsUIAndOpenURL:command];
 
-    // Don't call [super editButtonPressed] because edit mode is not actually
-    // entered in this case.
     return;
   }
 
@@ -193,7 +187,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     // If the user is typing in the credit card number field, update the card
     // type icon (e.g. "Visa") to reflect the number being typed.
     if (item.autofillCreditCardUIType == AutofillCreditCardUIType::kNumber) {
-      const char* network = autofill::CreditCard::GetCardNetwork(
+      const char* network = autofill::GetCardNetwork(
           base::SysNSStringToUTF16(item.textFieldValue));
       item.identifyingIcon = [self cardTypeIconFromNetwork:network];
       [self reconfigureCellsForItems:@[ item ]];

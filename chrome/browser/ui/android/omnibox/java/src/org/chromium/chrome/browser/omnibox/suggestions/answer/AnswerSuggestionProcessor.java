@@ -16,11 +16,11 @@ import org.chromium.chrome.browser.omnibox.styles.OmniboxDrawableState;
 import org.chromium.chrome.browser.omnibox.styles.OmniboxImageSupplier;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionHost;
 import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewProcessor;
-import org.chromium.components.omnibox.AnswerType;
+import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewProperties;
+import org.chromium.components.omnibox.AnswerTypeProto.AnswerType;
 import org.chromium.components.omnibox.AutocompleteMatch;
+import org.chromium.components.omnibox.OmniboxFeatures;
 import org.chromium.components.omnibox.OmniboxSuggestionType;
-import org.chromium.components.omnibox.RichAnswerTemplateProto.RichAnswerTemplate;
-import org.chromium.components.omnibox.SuggestionAnswer;
 import org.chromium.components.omnibox.suggestions.OmniboxSuggestionUiType;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.url.GURL;
@@ -70,17 +70,39 @@ public class AnswerSuggestionProcessor extends BaseSuggestionViewProcessor {
 
     private void setStateForSuggestion(
             PropertyModel model, AutocompleteMatch suggestion, int position) {
-        @AnswerType
-        int answerType =
+        AnswerType answerType =
                 suggestion.getAnswer() == null
-                        ? AnswerType.INVALID
+                        ? suggestion.getAnswerType()
                         : suggestion.getAnswer().getType();
         boolean suggestionTextColorReversal = checkColorReversalRequired(answerType);
         AnswerText[] details;
+        boolean shouldShowCardUi = false;
+        model.set(BaseSuggestionViewProperties.TOP_PADDING, 0);
+        model.set(AnswerSuggestionViewProperties.RIGHT_PADDING, 0);
         if (suggestion.getAnswerTemplate() != null) {
+            shouldShowCardUi =
+                    OmniboxFeatures.shouldShowRichAnswerCard()
+                            && suggestion.getActions().size() > 0;
             details =
                     RichAnswerText.from(
-                            mContext, suggestion.getAnswerTemplate(), suggestionTextColorReversal);
+                            mContext,
+                            suggestion.getAnswerTemplate(),
+                            answerType,
+                            suggestionTextColorReversal,
+                            shouldShowCardUi);
+
+            model.set(BaseSuggestionViewProperties.USE_LARGE_DECORATION, shouldShowCardUi);
+            if (shouldShowCardUi) {
+                int leadInSpacing =
+                        mContext.getResources()
+                                .getDimensionPixelSize(R.dimen.omnibox_simple_card_leadin);
+                model.set(BaseSuggestionViewProperties.ACTION_CHIP_LEAD_IN_SPACING, leadInSpacing);
+                model.set(
+                        BaseSuggestionViewProperties.TOP_PADDING,
+                        mContext.getResources()
+                                .getDimensionPixelSize(R.dimen.omnibox_simple_card_top_padding));
+                model.set(AnswerSuggestionViewProperties.RIGHT_PADDING, leadInSpacing);
+            }
         } else {
             details =
                     AnswerTextNewLayout.from(
@@ -103,14 +125,33 @@ public class AnswerSuggestionProcessor extends BaseSuggestionViewProcessor {
         model.set(AnswerSuggestionViewProperties.TEXT_LINE_1_MAX_LINES, details[0].getMaxLines());
         model.set(AnswerSuggestionViewProperties.TEXT_LINE_2_MAX_LINES, details[1].getMaxLines());
 
-        setTabSwitchOrRefineAction(model, suggestion, position);
+        if (shouldShowCardUi) {
+            setActionButtons(model, null);
+        } else {
+            setTabSwitchOrRefineAction(model, suggestion, position);
+        }
         if (suggestion.hasAnswer() && suggestion.getAnswer().getSecondLine().hasImage()) {
             fetchImage(model, new GURL(suggestion.getAnswer().getSecondLine().getImage()));
-        } else if (suggestion.getAnswerTemplate() != null
-                && suggestion.getAnswerTemplate().getAnswers(0).hasImage()) {
-            fetchImage(
-                    model,
-                    new GURL(suggestion.getAnswerTemplate().getAnswers(0).getImage().getUrl()));
+        } else if (suggestion.getAnswerTemplate() != null) {
+            GURL imageUrl =
+                    suggestion.getAnswerTemplate().getAnswers(0).hasImage()
+                            ? new GURL(
+                                    suggestion
+                                            .getAnswerTemplate()
+                                            .getAnswers(0)
+                                            .getImage()
+                                            .getUrl())
+                            : new GURL("");
+            if (imageUrl.isValid()) {
+                fetchImage(
+                        model,
+                        new GURL(suggestion.getAnswerTemplate().getAnswers(0).getImage().getUrl()));
+            } else if (shouldShowCardUi) {
+                // The card ui should not show fallback images; if there is not an answer-specific
+                // image, there should be no decoration at all.
+                model.set(BaseSuggestionViewProperties.SHOW_DECORATION, false);
+                setOmniboxDrawableState(model, null);
+            }
         }
     }
 
@@ -121,8 +162,8 @@ public class AnswerSuggestionProcessor extends BaseSuggestionViewProcessor {
      * @return true, if red/green colors should be swapped.
      */
     @VisibleForTesting
-    public boolean checkColorReversalRequired(@AnswerType int answerType) {
-        boolean isFinanceAnswer = answerType == AnswerType.FINANCE;
+    public boolean checkColorReversalRequired(AnswerType answerType) {
+        boolean isFinanceAnswer = answerType == AnswerType.ANSWER_TYPE_FINANCE;
         // Country not eligible.
         if (!isCountryEligibleForColorReversal()) return false;
         // Not a finance answer.
@@ -141,36 +182,38 @@ public class AnswerSuggestionProcessor extends BaseSuggestionViewProcessor {
     public @NonNull OmniboxDrawableState getFallbackIcon(@NonNull AutocompleteMatch suggestion) {
         int icon = 0;
 
-        SuggestionAnswer answer = suggestion.getAnswer();
-        int type = answer != null ? answer.getType() : AnswerType.INVALID;
-        RichAnswerTemplate template = suggestion.getAnswerTemplate();
-        type = template != null ? template.getAnswerType().getNumber() : type;
-        if (type != AnswerType.INVALID) {
+        AnswerType type =
+                suggestion.getAnswer() == null
+                        ? suggestion.getAnswerType()
+                        : suggestion.getAnswer().getType();
+        if (type != AnswerType.ANSWER_TYPE_UNSPECIFIED) {
             switch (type) {
-                case AnswerType.DICTIONARY:
+                case ANSWER_TYPE_DICTIONARY:
                     icon = R.drawable.ic_book_round;
                     break;
-                case AnswerType.FINANCE:
+                case ANSWER_TYPE_FINANCE:
                     icon = R.drawable.ic_swap_vert_round;
                     break;
-                case AnswerType.KNOWLEDGE_GRAPH:
-                case AnswerType.SPORTS:
+                case ANSWER_TYPE_GENERIC_ANSWER:
+                case ANSWER_TYPE_SPORTS:
                     icon = R.drawable.ic_google_round;
                     break;
-                case AnswerType.SUNRISE:
+                case ANSWER_TYPE_SUNRISE_SUNSET:
                     icon = R.drawable.ic_wb_sunny_round;
                     break;
-                case AnswerType.TRANSLATION:
+                case ANSWER_TYPE_TRANSLATION:
                     icon = R.drawable.logo_translate_round;
                     break;
-                case AnswerType.WEATHER:
+                case ANSWER_TYPE_WEATHER:
                     icon = R.drawable.logo_partly_cloudy;
                     break;
-                case AnswerType.WHEN_IS:
+                case ANSWER_TYPE_WHEN_IS:
                     icon = R.drawable.ic_event_round;
                     break;
-                case AnswerType.CURRENCY:
+                case ANSWER_TYPE_CURRENCY:
                     icon = R.drawable.ic_loop_round;
+                    break;
+                default:
                     break;
             }
         } else if (suggestion.getType() == OmniboxSuggestionType.CALCULATOR) {

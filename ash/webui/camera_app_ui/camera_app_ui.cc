@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ash/webui/camera_app_ui/camera_app_ui.h"
 
 #include "ash/public/cpp/window_properties.h"
@@ -203,8 +208,7 @@ CreateCameraAppDeviceProvider(
 std::unique_ptr<CameraAppHelperImpl> CreateCameraAppHelper(
     CameraAppUI* camera_app_ui,
     content::BrowserContext* browser_context,
-    aura::Window* window,
-    HoldingSpaceClient* holding_space_client) {
+    aura::Window* window) {
   DCHECK_NE(window, nullptr);
   auto handle_result_callback =
       base::BindRepeating(&HandleCameraResult, browser_context);
@@ -213,7 +217,7 @@ std::unique_ptr<CameraAppHelperImpl> CreateCameraAppHelper(
 
   return std::make_unique<CameraAppHelperImpl>(
       camera_app_ui, std::move(handle_result_callback),
-      std::move(send_broadcast_callback), window, holding_space_client);
+      std::move(send_broadcast_callback), window);
 }
 
 }  // namespace
@@ -301,8 +305,7 @@ void CameraAppUI::BindInterface(
 void CameraAppUI::BindInterface(
     mojo::PendingReceiver<camera_app::mojom::CameraAppHelper> receiver) {
   helper_ = CreateCameraAppHelper(
-      this, web_ui()->GetWebContents()->GetBrowserContext(), window(),
-      delegate_->GetHoldingSpaceClient());
+      this, web_ui()->GetWebContents()->GetBrowserContext(), window());
   helper_->Bind(std::move(receiver));
 }
 

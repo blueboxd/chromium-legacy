@@ -343,7 +343,8 @@ export class AppManagementPermissionItemElement extends
     return getPermissionDescriptionString(
         app, permissionType, this.sensorAvailable_,
         this.isSensorBlocked(permissionType),
-        this.microphoneHardwareToggleActive);
+        this.microphoneHardwareToggleActive,
+        this.microphoneMutedBySecurityCurtain, this.cameraSwitchForceDisabled);
   }
 
   private launchAllowSensorAccessDialog_(e: CustomEvent): void {

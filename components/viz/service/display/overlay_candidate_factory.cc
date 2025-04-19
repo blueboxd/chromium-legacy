@@ -33,11 +33,11 @@ namespace viz {
 
 namespace {
 
-const gfx::BufferFormat kOverlayFormats[] = {
-    gfx::BufferFormat::RGBX_8888, gfx::BufferFormat::RGBA_8888,
-    gfx::BufferFormat::BGRX_8888, gfx::BufferFormat::BGRA_8888,
-    gfx::BufferFormat::BGR_565,   gfx::BufferFormat::YUV_420_BIPLANAR,
-    gfx::BufferFormat::P010};
+const SharedImageFormat kOverlayFormats[] = {
+    SinglePlaneFormat::kRGBX_8888, SinglePlaneFormat::kRGBA_8888,
+    SinglePlaneFormat::kBGRX_8888, SinglePlaneFormat::kBGRA_8888,
+    SinglePlaneFormat::kBGR_565,   MultiPlaneFormat::kNV12,
+    MultiPlaneFormat::kP010};
 
 enum Axis { NONE, AXIS_POS_X, AXIS_NEG_X, AXIS_POS_Y, AXIS_NEG_Y };
 
@@ -173,6 +173,16 @@ OverlayCandidate::CandidateStatus OverlayCandidateFactory::FromDrawQuad(
   candidate.requires_overlay = OverlayCandidate::RequiresOverlay(quad);
   candidate.overlay_damage_index =
       sqs->overlay_damage_index.value_or(OverlayCandidate::kInvalidDamageIndex);
+
+  if (sqs->layer_id != 0) {
+    static_assert(
+        std::is_same<decltype(SharedQuadState::layer_id), uint32_t>::value);
+    static_assert(std::is_same<decltype(SharedQuadState::layer_namespace_id),
+                               uint32_t>::value);
+    candidate.aggregated_layer_id =
+        static_cast<uint64_t>(sqs->layer_id) |
+        (static_cast<uint64_t>(sqs->layer_namespace_id) << 32);
+  }
 
   auto status = CandidateStatus::kFailQuadNotSupported;
   switch (quad->material) {
@@ -333,8 +343,7 @@ OverlayCandidate::CandidateStatus OverlayCandidateFactory::FromDrawQuadResource(
     ResourceId resource_id,
     bool y_flipped,
     OverlayCandidate& candidate) const {
-  if (!context_.allow_non_overlay_resources &&
-      resource_id != kInvalidResourceId &&
+  if (resource_id != kInvalidResourceId &&
       !resource_provider_->IsOverlayCandidate(resource_id)) {
     return CandidateStatus::kFailNotOverlay;
   }
@@ -343,7 +352,7 @@ OverlayCandidate::CandidateStatus OverlayCandidateFactory::FromDrawQuadResource(
     return CandidateStatus::kFailVisible;
 
   if (resource_id != kInvalidResourceId) {
-    candidate.format = resource_provider_->GetBufferFormat(resource_id);
+    candidate.format = resource_provider_->GetSharedImageFormat(resource_id);
     candidate.color_space = resource_provider_->GetColorSpace(resource_id);
     candidate.needs_detiling =
         resource_provider_->GetNeedsDetiling(resource_id);
@@ -396,7 +405,7 @@ OverlayCandidate::CandidateStatus OverlayCandidateFactory::FromDrawQuadResource(
       // Intentionally throwing away the high bits (assuming that hash entropy
       // is uniformly spread across all the bits).
       size_t original_hash =
-          base::FastHash(base::as_bytes(base::span_from_ref(track_data)));
+          base::FastHash(base::byte_span_from_ref(track_data));
       uint32_t narrow_hash = static_cast<uint32_t>(original_hash);
       candidate.tracking_id = narrow_hash;
     }
@@ -710,8 +719,8 @@ void OverlayCandidateFactory::HandleClipAndSubsampling(
     return;
 
   // Make sure it's in a format we can deal with, we only support YUV and P010.
-  if (candidate.format != gfx::BufferFormat::YUV_420_BIPLANAR &&
-      candidate.format != gfx::BufferFormat::P010) {
+  if (candidate.format != MultiPlaneFormat::kNV12 &&
+      candidate.format != MultiPlaneFormat::kP010) {
     return;
   }
   // Clip the clip rect to the primary plane. An overlay will only be shown on

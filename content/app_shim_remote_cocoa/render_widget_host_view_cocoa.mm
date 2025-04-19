@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/342213636): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #import "content/app_shim_remote_cocoa/render_widget_host_view_cocoa.h"
 
 #include <AppKit/AppKit.h>
@@ -54,19 +59,19 @@
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
 
-using content::NativeWebKeyboardEvent;
-using content::RenderWidgetHostViewMacEditCommandHelper;
-using content::WebGestureEventBuilder;
-using content::WebMouseEventBuilder;
-using content::WebMouseWheelEventBuilder;
-using content::WebTouchEventBuilder;
+using blink::WebGestureEvent;
 using blink::WebInputEvent;
 using blink::WebMouseEvent;
 using blink::WebMouseWheelEvent;
-using blink::WebGestureEvent;
 using blink::WebTouchEvent;
-using remote_cocoa::mojom::RenderWidgetHostNSViewHost;
+using content::RenderWidgetHostViewMacEditCommandHelper;
+using input::NativeWebKeyboardEvent;
+using input::WebGestureEventBuilder;
+using input::WebMouseEventBuilder;
+using input::WebMouseWheelEventBuilder;
+using input::WebTouchEventBuilder;
 using remote_cocoa::RenderWidgetHostNSViewHostHelper;
+using remote_cocoa::mojom::RenderWidgetHostNSViewHost;
 
 namespace {
 
@@ -95,10 +100,10 @@ class DummyHostHelper : public RenderWidgetHostNSViewHostHelper {
   id GetRootBrowserAccessibilityElement() override { return nil; }
   id GetFocusedBrowserAccessibilityElement() override { return nil; }
   void SetAccessibilityWindow(NSWindow* window) override {}
-  void ForwardKeyboardEvent(const NativeWebKeyboardEvent& key_event,
+  void ForwardKeyboardEvent(const input::NativeWebKeyboardEvent& key_event,
                             const ui::LatencyInfo& latency_info) override {}
   void ForwardKeyboardEventWithCommands(
-      const NativeWebKeyboardEvent& key_event,
+      const input::NativeWebKeyboardEvent& key_event,
       const ui::LatencyInfo& latency_info,
       const std::vector<blink::mojom::EditCommandPtr> commands) override {}
   void RouteOrProcessMouseEvent(
@@ -1183,11 +1188,6 @@ void ExtractUnderlines(NSAttributedString* string,
 
   NativeWebKeyboardEvent event((base::apple::OwnedNSEvent(theEvent)));
   ui::LatencyInfo latencyInfo;
-  if (event.GetType() == blink::WebInputEvent::Type::kRawKeyDown ||
-      event.GetType() == blink::WebInputEvent::Type::kChar) {
-    latencyInfo.set_source_event_type(ui::SourceEventType::KEY_PRESS);
-  }
-
   latencyInfo.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT);
 
   // If KeyboardLock has been requested for this keyCode, then mark the event
@@ -1420,7 +1420,6 @@ void ExtractUnderlines(NSAttributedString* string,
     fakeEvent.SetType(blink::WebInputEvent::Type::kKeyUp);
     fakeEvent.skip_if_unhandled = true;
     ui::LatencyInfo fakeEventLatencyInfo = latencyInfo;
-    fakeEventLatencyInfo.set_source_event_type(ui::SourceEventType::OTHER);
     _hostHelper->ForwardKeyboardEvent(fakeEvent, fakeEventLatencyInfo);
     _hostHelper->ForwardKeyboardEventWithCommands(event, fakeEventLatencyInfo,
                                                   std::move(_editCommands));

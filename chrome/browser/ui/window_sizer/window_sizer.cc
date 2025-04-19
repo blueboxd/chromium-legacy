@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/functional/function_ref.h"
 #include "base/memory/raw_ptr.h"
+#include "base/not_fatal_until.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -34,6 +35,12 @@ namespace {
 const int kMinVisibleHeight = 30;
 // Minimum width of the visible part of a window.
 const int kMinVisibleWidth = 30;
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// This specifies the minimum percentage of a window's dimension (either width
+// or height) that must remain visible with the display area.
+constexpr float kMinVisibleRatio = 0.3f;
+#endif
 
 BrowserWindow* FindMostRecentBrowserWindow(
     base::FunctionRef<bool(Browser*)> matcher) {
@@ -183,14 +190,6 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
   raw_ptr<const Browser> browser_;
 };
 
-// This function, unlike hardened std::clamp(), does not check if `min` is
-// greater than `max`, and returns a bogus answer if it is.
-// TODO(crbug.com/40192413) migrate all code that calls this function to use
-// std::clamp() instead.
-constexpr int BrokenClampThatShouldNotBeUsed(int value, int min, int max) {
-  return std::min(std::max(value, min), max);
-}
-
 }  // namespace
 
 WindowSizer::WindowSizer(std::unique_ptr<StateProvider> state_provider,
@@ -338,7 +337,7 @@ void WindowSizer::AdjustBoundsToBeVisibleOnDisplay(
     const display::Display& display,
     const gfx::Rect& saved_work_area,
     gfx::Rect* bounds) const {
-  DCHECK(bounds);
+  CHECK(bounds);
 
   // If |bounds| is empty, reset to the default size.
   if (bounds->IsEmpty()) {
@@ -353,7 +352,8 @@ void WindowSizer::AdjustBoundsToBeVisibleOnDisplay(
   bounds->set_height(std::max(kMinVisibleHeight, bounds->height()));
   bounds->set_width(std::max(kMinVisibleWidth, bounds->width()));
 
-  gfx::Rect work_area = display.work_area();
+  const gfx::Rect work_area = display.work_area();
+  CHECK(!work_area.IsEmpty(), base::NotFatalUntil::M131);
   // Ensure that the title bar is not above the work area.
   if (bounds->y() < work_area.y())
     bounds->set_y(work_area.y());
@@ -364,22 +364,10 @@ void WindowSizer::AdjustBoundsToBeVisibleOnDisplay(
   if (!saved_work_area.IsEmpty() &&
       saved_work_area != work_area &&
       !work_area.Contains(*bounds)) {
-    bounds->set_width(std::min(bounds->width(), work_area.width()));
-    bounds->set_height(std::min(bounds->height(), work_area.height()));
-    // TODO(crbug.com/40192413): Make sure these use correct ranges (lo <= hi)
-    // and migrate to std::clamp().
-    bounds->set_x(BrokenClampThatShouldNotBeUsed(
-        bounds->x(), work_area.x(), work_area.right() - bounds->width()));
-    bounds->set_y(BrokenClampThatShouldNotBeUsed(
-        bounds->y(), work_area.y(), work_area.bottom() - bounds->height()));
+    bounds->AdjustToFit(work_area);
   }
 
 #if BUILDFLAG(IS_MAC)
-  // Limit the maximum height.  On the Mac the sizer is on the
-  // bottom-right of the window, and a window cannot be moved "up"
-  // past the menubar.  If the window is too tall you'll never be able
-  // to shrink it again.  Windows does not have this limitation
-  // (e.g. can be resized from the top).
   bounds->set_height(std::min(work_area.height(), bounds->height()));
 
   // On mac, we want to be aggressive about repositioning windows that are
@@ -393,16 +381,32 @@ void WindowSizer::AdjustBoundsToBeVisibleOnDisplay(
   if (bounds->y() < work_area.y() || bounds->bottom() > work_area.bottom())
     bounds->set_y(work_area.y());
 #else
-  // On non-Mac platforms, we are less aggressive about repositioning.  Simply
-  // ensure that at least kMinVisibleWidth * kMinVisibleHeight is visible.
-  const int min_y = work_area.y() + kMinVisibleHeight - bounds->height();
-  const int min_x = work_area.x() + kMinVisibleWidth - bounds->width();
-  const int max_y = work_area.bottom() - kMinVisibleHeight;
-  const int max_x = work_area.right() - kMinVisibleWidth;
-  // TODO(crbug.com/40192413): Make sure these use correct ranges (lo <= hi)
-  // and migrate to std::clamp().
-  bounds->set_y(BrokenClampThatShouldNotBeUsed(bounds->y(), min_y, max_y));
-  bounds->set_x(BrokenClampThatShouldNotBeUsed(bounds->x(), min_x, max_x));
+  // On non-Mac platforms, we are less aggressive about repositioning. Simply
+  // ensure that at least kMinVisibleWidth * kMinVisibleHeight is visible or
+  // `kMinVisibleRatio` of width and height is visible on ChromeOS.
+  int min_visible_width = kMinVisibleWidth;
+  int min_visible_height = kMinVisibleHeight;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  min_visible_width = std::max(
+      min_visible_width, base::ClampRound(bounds->width() * kMinVisibleRatio));
+  min_visible_height =
+      std::max(min_visible_height,
+               base::ClampRound(bounds->height() * kMinVisibleRatio));
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+  const int min_y = work_area.y() + min_visible_height - bounds->height();
+  const int min_x = work_area.x() + min_visible_width - bounds->width();
+  const int max_y = work_area.bottom() - min_visible_height;
+  const int max_x = work_area.right() - min_visible_width;
+  // Reposition and resize the bounds to make it fully visible inside the work
+  // area if the work area and bounds are both small.
+  // `min_x >= max_x` happens when `work_area.width() + bounds.width() <= 2 *
+  // min_visible_width`. Similar for `min_y >= max_y` in height dimension.
+  if (min_x >= max_x || min_y >= max_y) {
+    bounds->AdjustToFit(work_area);
+  } else {
+    bounds->set_y(std::clamp(bounds->y(), min_y, max_y));
+    bounds->set_x(std::clamp(bounds->x(), min_x, max_x));
+  }
 #endif  // BUILDFLAG(IS_MAC)
 }
 

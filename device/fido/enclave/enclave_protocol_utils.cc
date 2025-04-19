@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "device/fido/enclave/enclave_protocol_utils.h"
 
 #include <array>
@@ -25,6 +30,7 @@
 #include "device/fido/attestation_statement.h"
 #include "device/fido/authenticator_data.h"
 #include "device/fido/enclave/constants.h"
+#include "device/fido/enclave/types.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
 #include "device/fido/fido_transport_protocol.h"
@@ -127,10 +133,14 @@ cbor::Value toCbor(const base::Value& json) {
 
 const char* ToString(ClientKeyType key_type) {
   switch (key_type) {
+    case ClientKeyType::kSoftware:
+      return kSoftwareKey;
     case ClientKeyType::kHardware:
-      return "hw";
+      return kHardwareKey;
     case ClientKeyType::kUserVerified:
-      return "uv";
+      return kUserVerificationKey;
+    case ClientKeyType::kSoftwareUserVerified:
+      return kSoftwareUserVerificationKey;
   }
 }
 

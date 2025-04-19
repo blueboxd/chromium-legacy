@@ -13,6 +13,7 @@
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/events/event.h"
 #include "ui/wm/core/focus_rules.h"
@@ -26,8 +27,10 @@ namespace {
 // to the front. This function must be called before the modal transient is
 // stacked at the top to ensure correct stacking order.
 void StackTransientParentsBelowModalWindow(aura::Window* window) {
-  if (window->GetProperty(aura::client::kModalKey) != ui::MODAL_TYPE_WINDOW)
+  if (window->GetProperty(aura::client::kModalKey) !=
+      ui::mojom::ModalType::kWindow) {
     return;
+  }
 
   aura::Window* transient_parent = wm::GetTransientParent(window);
   while (transient_parent) {
@@ -135,11 +138,13 @@ aura::Window* FocusController::GetFocusedWindow() {
 void FocusController::OnKeyEvent(ui::KeyEvent* event) {}
 
 void FocusController::OnMouseEvent(ui::MouseEvent* event) {
-  if ((event->type() == ui::ET_MOUSE_PRESSED ||
-       (event->type() == ui::ET_MOUSE_ENTERED && focus_follows_cursor_)) &&
-      !event->handled())
+  if ((event->type() == ui::EventType::kMousePressed ||
+       (event->type() == ui::EventType::kMouseEntered &&
+        focus_follows_cursor_)) &&
+      !event->handled()) {
     WindowFocusedFromInputEvent(static_cast<aura::Window*>(event->target()),
                                 event);
+  }
 }
 
 void FocusController::OnScrollEvent(ui::ScrollEvent* event) {}
@@ -147,7 +152,7 @@ void FocusController::OnScrollEvent(ui::ScrollEvent* event) {}
 void FocusController::OnTouchEvent(ui::TouchEvent* event) {}
 
 void FocusController::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() == ui::ET_GESTURE_BEGIN &&
+  if (event->type() == ui::EventType::kGestureBegin &&
       event->details().touch_points() == 1 && !event->handled()) {
     WindowFocusedFromInputEvent(static_cast<aura::Window*>(event->target()),
                                 event);
@@ -271,9 +276,11 @@ void FocusController::FocusAndActivateWindow(
 void FocusController::SetFocusedWindow(aura::Window* window) {
   if (updating_focus_ || window == focused_window_)
     return;
+
   DCHECK(rules_->CanFocusWindow(window, nullptr));
-  if (window)
+  if (window) {
     DCHECK_EQ(window, rules_->GetFocusableWindow(window));
+  }
 
   base::AutoReset<bool> updating_focus(&updating_focus_, true);
   aura::Window* lost_focus = focused_window_;
@@ -476,7 +483,7 @@ void FocusController::WindowFocusedFromInputEvent(aura::Window* window,
                                                   const ui::Event* event) {
   // For focus follows cursor: avoid activating when `window` is a child of the
   // currently active window.
-  bool is_mouse_entered_event = event->type() == ui::ET_MOUSE_ENTERED;
+  bool is_mouse_entered_event = event->type() == ui::EventType::kMouseEntered;
   if (is_mouse_entered_event && active_window_ &&
       active_window_->Contains(window)) {
     return;

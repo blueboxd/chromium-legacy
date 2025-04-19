@@ -1970,7 +1970,7 @@ TEST_P(IntersectionObserverTest, MinScrollDeltaToUpdateWithPageZoom) {
     return;
   }
   WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
-  GetDocument().GetFrame()->SetPageZoomFactor(2);
+  GetDocument().GetFrame()->SetLayoutZoomFactor(2);
 
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
@@ -2588,7 +2588,6 @@ TEST_P(IntersectionObserverTest, MinScrollDeltaToUpdateThresholdOneOfRoot) {
   EXPECT_EQ(observer_delegate->CallCount(), 2);
   EXPECT_EQ(observer_delegate->EntryCount(), 2);
   EXPECT_TRUE(observer_delegate->LastEntry()->isIntersecting());
-  EXPECT_EQ(gfx::Vector2dF(), observation->MinScrollDeltaToUpdate());
   EXPECT_EQ(gfx::Vector2dF(0, 0), observation->MinScrollDeltaToUpdate());
   EXPECT_EQ(LocalFrameView::kNotNeeded,
             frame_view->GetIntersectionObservationStateForTesting());

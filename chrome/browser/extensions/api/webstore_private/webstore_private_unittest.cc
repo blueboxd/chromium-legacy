@@ -20,10 +20,13 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/mv2_experiment_stage.h"
 #include "chrome/browser/extensions/test_extension_system.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/supervised_user/supervised_user_test_util.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/supervised_user/core/common/features.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/web_contents_tester.h"
 #include "extensions/browser/api/management/management_api.h"
@@ -31,6 +34,7 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/event_router_factory.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/extension_builder.h"
@@ -262,6 +266,69 @@ TEST_F(WebstorePrivateGetExtensionStatusTest,
   std::optional<base::Value> response = RunFunctionAndReturnValue(
       function.get(), GenerateArgs(kExtensionId, kExtensionManifest));
   VerifyResponse(ExtensionInstallStatus::kInstallable, *response);
+}
+
+TEST_F(WebstorePrivateGetExtensionStatusTest, ExtensionCorrupted) {
+  ExtensionRegistry::Get(profile())->AddDisabled(CreateExtension(kExtensionId));
+  ExtensionPrefs::Get(profile())->SetExtensionDisabled(
+      kExtensionId, disable_reason::DISABLE_CORRUPTED);
+  auto function =
+      base::MakeRefCounted<WebstorePrivateGetExtensionStatusFunction>();
+  std::optional<base::Value> response = RunFunctionAndReturnValue(
+      function.get(), GenerateArgs(kExtensionId, kExtensionManifest));
+  VerifyResponse(ExtensionInstallStatus::kCorrupted, *response);
+}
+
+class SupervisedUserWebstorePrivateGetExtensionStatusTest
+    : public WebstorePrivateGetExtensionStatusTest {
+ public:
+  SupervisedUserWebstorePrivateGetExtensionStatusTest() {
+    std::vector<base::test::FeatureRef> enabled_features;
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
+    enabled_features.push_back(
+        supervised_user::
+            kEnableExtensionsPermissionsForSupervisedUsersOnDesktop);
+#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
+    enabled_features.push_back(
+        supervised_user::
+            kEnableSupervisedUserSkipParentApprovalToInstallExtensions);
+    enabled_features.push_back(
+        supervised_user::kExposedParentalControlNeededForExtensionInstallation);
+    feature_list_.InitWithFeatures(enabled_features, /*disabled_features=*/{});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+TEST_F(SupervisedUserWebstorePrivateGetExtensionStatusTest,
+       ExtensionCustodianApprovalRequired) {
+  profile()->SetIsSupervisedProfile(true);
+
+  ExtensionRegistry::Get(profile())->AddDisabled(CreateExtension(kExtensionId));
+  ExtensionPrefs::Get(profile())->SetExtensionDisabled(
+      kExtensionId, disable_reason::DISABLE_CUSTODIAN_APPROVAL_REQUIRED);
+  auto function =
+      base::MakeRefCounted<WebstorePrivateGetExtensionStatusFunction>();
+  std::optional<base::Value> response =
+      RunFunctionAndReturnValue(function.get(), GenerateArgs(kExtensionId));
+  VerifyResponse(ExtensionInstallStatus::kCustodianApprovalRequired, *response);
+}
+
+TEST_F(SupervisedUserWebstorePrivateGetExtensionStatusTest,
+       ExtensionCustodianApprovalRequiredForInstallation) {
+  profile()->SetIsSupervisedProfile(true);
+
+  auto function =
+      base::MakeRefCounted<WebstorePrivateGetExtensionStatusFunction>();
+  std::optional<base::Value> response =
+      RunFunctionAndReturnValue(function.get(), GenerateArgs(kExtensionId));
+
+  ASSERT_FALSE(
+      ExtensionRegistry::Get(profile())->GetInstalledExtension(kExtensionId));
+  VerifyResponse(
+      ExtensionInstallStatus::kCustodianApprovalRequiredForInstallation,
+      *response);
 }
 
 class WebstorePrivateBeginInstallWithManifest3Test
@@ -755,9 +822,19 @@ WebstorePrivateManifestV2DeprecationUnitTest::
     case MV2ExperimentStage::kNone:
       disabled_features.push_back(
           extensions_features::kExtensionManifestV2DeprecationWarning);
+      disabled_features.push_back(
+          extensions_features::kExtensionManifestV2Disabled);
       break;
     case MV2ExperimentStage::kWarning:
       enabled_features.push_back(
+          extensions_features::kExtensionManifestV2DeprecationWarning);
+      disabled_features.push_back(
+          extensions_features::kExtensionManifestV2Disabled);
+      break;
+    case MV2ExperimentStage::kDisableWithReEnable:
+      enabled_features.push_back(
+          extensions_features::kExtensionManifestV2Disabled);
+      disabled_features.push_back(
           extensions_features::kExtensionManifestV2DeprecationWarning);
       break;
   }
@@ -775,6 +852,8 @@ INSTANTIATE_TEST_SUITE_P(
           return "ExperimentDisabled";
         case MV2ExperimentStage::kWarning:
           return "WarningExperiment";
+        case MV2ExperimentStage::kDisableWithReEnable:
+          return "DisableExperiment";
       }
     });
 
@@ -795,6 +874,9 @@ TEST_P(WebstorePrivateManifestV2DeprecationUnitTest,
       break;
     case MV2ExperimentStage::kWarning:
       expected = "warning";
+      break;
+    case MV2ExperimentStage::kDisableWithReEnable:
+      expected = "soft_disable";
       break;
   }
 

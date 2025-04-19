@@ -15,11 +15,13 @@
 #include "base/notreached.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/trace_event/trace_event.h"
+#include "base/types/optional_ref.h"
 #include "build/chromeos_buildflags.h"
 #include "cc/base/completion_event.h"
 #include "cc/base/devtools_instrumentation.h"
 #include "cc/benchmarks/benchmark_instrumentation.h"
 #include "cc/input/browser_controls_offset_manager.h"
+#include "cc/input/browser_controls_offset_tags_info.h"
 #include "cc/metrics/compositor_timing_history.h"
 #include "cc/paint/paint_worklet_layer_painter.h"
 #include "cc/resources/ui_resource_manager.h"
@@ -93,7 +95,6 @@ void SingleThreadProxy::Start() {
 
     std::unique_ptr<CompositorTimingHistory> compositor_timing_history(
         new CompositorTimingHistory(
-            scheduler_settings.using_synchronous_renderer_compositor,
             CompositorTimingHistory::BROWSER_UMA,
             layer_tree_host_->rendering_stats_instrumentation()));
     scheduler_on_impl_thread_ = std::make_unique<Scheduler>(
@@ -312,7 +313,7 @@ void SingleThreadProxy::SetNeedsRedraw(const gfx::Rect& damage_rect) {
   DCHECK(task_runner_provider_->IsMainThread());
   DebugScopedSetImplThread impl(task_runner_provider_);
   host_impl_->SetViewportDamage(damage_rect);
-  SetNeedsRedrawOnImplThread();
+  SetNeedsRedrawOnImplThread(RedrawReason::kUntracked);
 }
 
 void SingleThreadProxy::SetTargetLocalSurfaceId(
@@ -459,6 +460,13 @@ void SingleThreadProxy::Stop() {
   layer_tree_host_ = nullptr;
 }
 
+void SingleThreadProxy::QueueImageDecode(int request_id,
+                                         const PaintImage& image) {
+  DCHECK(task_runner_provider_->IsMainThread());
+  DebugScopedSetImplThread impl(task_runner_provider_);
+  host_impl_->QueueImageDecode(request_id, image);
+}
+
 void SingleThreadProxy::SetMutator(std::unique_ptr<LayerTreeMutator> mutator) {
   DCHECK(task_runner_provider_->IsMainThread());
   DebugScopedSetImplThread impl(task_runner_provider_);
@@ -502,11 +510,12 @@ void SingleThreadProxy::NotifyReadyToDraw() {
     scheduler_on_impl_thread_->NotifyReadyToDraw();
 }
 
-void SingleThreadProxy::SetNeedsRedrawOnImplThread() {
+void SingleThreadProxy::SetNeedsRedrawOnImplThread(RedrawReason reason) {
   DCHECK(!task_runner_provider_->HasImplThread() ||
          task_runner_provider_->IsImplThread());
-  if (scheduler_on_impl_thread_)
-    scheduler_on_impl_thread_->SetNeedsRedraw();
+  if (scheduler_on_impl_thread_) {
+    scheduler_on_impl_thread_->SetNeedsRedraw(reason);
+  }
 }
 
 void SingleThreadProxy::SetNeedsOneBeginImplFrameOnImplThread() {
@@ -571,13 +580,6 @@ void SingleThreadProxy::DidActivateSyncTree() {
   CommitComplete();
 }
 
-void SingleThreadProxy::WillPrepareTiles() {
-  DCHECK(!task_runner_provider_->HasImplThread() ||
-         task_runner_provider_->IsImplThread());
-  if (scheduler_on_impl_thread_)
-    scheduler_on_impl_thread_->WillPrepareTiles();
-}
-
 void SingleThreadProxy::DidPrepareTiles() {
   DCHECK(!task_runner_provider_->HasImplThread() ||
          task_runner_provider_->IsImplThread());
@@ -640,26 +642,35 @@ void SingleThreadProxy::OnDrawForLayerTreeFrameSink(
       << "Implemented by ThreadProxy for synchronous compositor.";
 }
 
-void SingleThreadProxy::NeedsImplSideInvalidation(
-    bool needs_first_draw_on_activation) {
+void SingleThreadProxy::SetNeedsImplSideInvalidation(
+    bool needs_first_draw_on_activation,
+    RedrawReason reason) {
   DCHECK(!task_runner_provider_->HasImplThread() ||
          task_runner_provider_->IsImplThread());
   if (scheduler_on_impl_thread_) {
     scheduler_on_impl_thread_->SetNeedsImplSideInvalidation(
-        needs_first_draw_on_activation);
+        needs_first_draw_on_activation, reason);
   }
 }
 
-void SingleThreadProxy::NotifyImageDecodeRequestFinished() {
+void SingleThreadProxy::NotifyImageDecodeRequestFinished(
+    int request_id,
+    bool decode_succeeded) {
   DCHECK(!task_runner_provider_->HasImplThread() ||
          task_runner_provider_->IsImplThread());
-  // If we don't have a scheduler, then just issue the callbacks here.
-  // Otherwise, schedule a commit.
-  if (!scheduler_on_impl_thread_) {
+  if (base::FeatureList::IsEnabled(
+          features::kSendExplicitDecodeRequestsImmediately)) {
     DebugScopedSetMainThread main_thread(task_runner_provider_);
-    IssueImageDecodeFinishedCallbacks();
+    layer_tree_host_->NotifyImageDecodeFinished(request_id, decode_succeeded);
   } else {
-    SetNeedsCommitOnImplThread();
+    // If we don't have a scheduler, then just issue the callbacks here.
+    // Otherwise, schedule a commit.
+    if (!scheduler_on_impl_thread_) {
+      DebugScopedSetMainThread main_thread(task_runner_provider_);
+      IssueImageDecodeFinishedCallbacks();
+    } else {
+      SetNeedsCommitOnImplThread();
+    }
   }
 }
 
@@ -980,11 +991,12 @@ double SingleThreadProxy::GetPercentDroppedFrames() const {
 void SingleThreadProxy::UpdateBrowserControlsState(
     BrowserControlsState constraints,
     BrowserControlsState current,
-    bool animate) {
+    bool animate,
+    base::optional_ref<const BrowserControlsOffsetTagsInfo> offset_tags_info) {
   DCHECK(task_runner_provider_->IsMainThread());
   DebugScopedSetImplThread impl(task_runner_provider_);
   host_impl_->browser_controls_manager()->UpdateBrowserControlsState(
-      constraints, current, animate);
+      constraints, current, animate, offset_tags_info);
 }
 
 bool SingleThreadProxy::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
@@ -1022,6 +1034,10 @@ void SingleThreadProxy::ScheduledActionSendBeginMainFrame(
 void SingleThreadProxy::FrameIntervalUpdated(base::TimeDelta interval) {
   DebugScopedSetImplThread impl(task_runner_provider_);
   single_thread_client_->FrameIntervalUpdated(interval);
+}
+
+void SingleThreadProxy::OnBeginImplFrameDeadline() {
+  host_impl_->OnBeginImplFrameDeadline();
 }
 
 void SingleThreadProxy::SendBeginMainFrameNotExpectedSoon() {
@@ -1188,6 +1204,8 @@ DrawResult SingleThreadProxy::ScheduledActionDrawIfPossible() {
       scheduler_on_impl_thread_->CurrentBeginFrameAckForActiveTree();
   frame.origin_begin_main_frame_args =
       scheduler_on_impl_thread_->last_activate_origin_frame_args();
+  frame.set_needs_redraw_reasons =
+      scheduler_on_impl_thread_->GetRedrawReasons();
   return DoComposite(&frame);
 }
 

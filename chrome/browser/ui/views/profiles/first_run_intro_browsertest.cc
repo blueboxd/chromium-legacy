@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/profiles/first_run_flow_controller_dice.h"
-
 #include "base/functional/callback_helpers.h"
 #include "base/strings/strcat.h"
+#include "build/build_config.h"
 #include "chrome/browser/enterprise/browser_management/management_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/test/test_browser_ui.h"
+#include "chrome/browser/ui/views/profiles/first_run_flow_controller_dice.h"
 #include "chrome/browser/ui/views/profiles/profile_management_step_controller.h"
 #include "chrome/browser/ui/views/profiles/profile_picker_view_test_utils.h"
 #include "chrome/browser/ui/views/profiles/profiles_pixel_test_utils.h"
@@ -45,14 +45,17 @@ const FirstRunTestParam kTestParams[] = {
     {.pixel_test_param = {.test_suffix = "DarkThemeFixedSize",
                           .use_dark_theme = true},
      .use_fixed_size = true},
+#if !BUILDFLAG(IS_WIN)
+    // TODO(https://crbug.com/40261456): The following test has been frequently
+    // flaking on "Win10 Tests x64" since 2024-05-09:
+    // FirstRunIntroPixelTest.InvokeUi_default/LightTheme
     {.pixel_test_param = {.test_suffix = "LightTheme"}},
+#endif
     {.pixel_test_param = {.test_suffix = "LongerStringsFixedSize"},
      .use_fixed_size = true,
      .use_longer_strings = true},
     {.pixel_test_param = {.test_suffix = "RightToLeftLanguage",
                           .use_right_to_left_language = true}},
-    {.pixel_test_param = {.test_suffix = "CR2023",
-                          .use_chrome_refresh_2023_style = true}},
 };
 
 const char kMakeCardDescriptionLongerJsString[] =

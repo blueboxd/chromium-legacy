@@ -19,7 +19,8 @@ enum class ContentNotificationTopOfFeedPromoAction {
   kMainButtonTapped = 2,
   kDismissedFromCloseButton = 3,
   kDismissedFromSecondaryButton = 4,
-  kMaxValue = kDismissedFromSecondaryButton,
+  kDisplayed = 5,
+  kMaxValue = kDisplayed,
 };
 // LINT.ThenChange(/tools/metrics/histograms/metadata/content/enums.xml)
 
@@ -42,7 +43,7 @@ typedef NS_ENUM(NSInteger, NotificationsExperimentType) {
   NotificationsExperimentTypePromoEnabled = 1,
   NotificationsExperimentTypeSetUpListsEnabled = 2,
   NotificationsExperimentTypeProvisional = 3,
-  NotificationsExperimentTypeProvisionalBypass = 4,
+  NotificationsExperimentTypeProvisionalBypassDeprecatedDoNoUse = 4,
   NotificationsExperimentTypePromoRegistrationOnly = 5,
   NotificationsExperimentTypeProvisionalRegistrationOnly = 6,
   NotificationsExperimentTypeSetUpListsRegistrationOnly = 7,

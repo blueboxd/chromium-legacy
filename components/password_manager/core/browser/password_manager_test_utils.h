@@ -94,6 +94,7 @@ std::unique_ptr<PasswordForm> PasswordFormFromData(
 // function will set the form's |federation_origin|.
 std::unique_ptr<PasswordForm> FillPasswordFormWithData(
     const PasswordFormData& form_data,
+    bool is_account_store,
     bool use_federated_login = false);
 
 PasswordForm CreateEntry(const std::string& username,
@@ -134,6 +135,32 @@ MATCHER_P(LoginsResultsOrErrorAre, expectations, "") {
       *expectations, std::move(absl::get<LoginsResult>(arg)),
       result_listener->stream());
 }
+
+// Matches a password form that has the primary_key field set, and that other
+// fields (except `primary_key` and `keychain_identifier`) are the same as in
+// |expected_form|.
+MATCHER_P(HasPrimaryKeyAndEquals, expected_form, "") {
+  PasswordForm expected_with_key = expected_form;
+  expected_with_key.primary_key = arg.primary_key;
+  expected_with_key.keychain_identifier = arg.keychain_identifier;
+  return ExplainMatchResult(testing::Optional(testing::_), arg.primary_key,
+                            result_listener) &&
+         ExplainMatchResult(testing::Eq(expected_with_key), arg,
+                            result_listener);
+}
+
+MATCHER_P(EqualsIgnorePrimaryKey, expected_form, "") {
+  PasswordForm expected_with_key = expected_form;
+  expected_with_key.primary_key = arg.primary_key;
+  expected_with_key.keychain_identifier = arg.keychain_identifier;
+  return ExplainMatchResult(testing::Eq(expected_with_key), arg,
+                            result_listener);
+}
+
+// Matcher for `forms` that ignores PasswordForm::primary_key and
+// PasswordForm::keychain_identifier.
+std::vector<::testing::Matcher<PasswordForm>> FormsIgnoringPrimaryKey(
+    const std::vector<PasswordForm>& forms);
 
 class MockPasswordStoreObserver : public PasswordStoreInterface::Observer {
  public:

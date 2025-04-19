@@ -8,7 +8,7 @@
  * Autofill keyboard accessory.
  */
 
-// Requires functions from fill.js, form.js, and autofill_form_features.js.
+// Requires functions from fill.ts, form.ts, and autofill_form_features.ts.
 
 import {processChildFrameMessage} from '//components/autofill/ios/form_util/resources/child_frame_registration_lib.js';
 import {gCrWeb} from '//ios/web/public/js_messaging/resources/gcrweb.js';
@@ -246,7 +246,7 @@ function sendFormMutationMessagesAfterDelay(
  * Checks if cross-frame filling is enabled and, if so, forwards messages to
  * the Child Frame Registration lib.
  */
-function maybeProcessChildFrame(event: MessageEvent<any>): void {
+function processInboundMessage(event: MessageEvent<any>): void {
   if (gCrWeb.autofill_form_features.isAutofillAcrossIframesEnabled()) {
     processChildFrameMessage(event);
   }
@@ -276,7 +276,7 @@ function attachListeners(): void {
    * Receipt of cross-frame messages for Child Frame Registration don't use the
    * `formActivity` handler, but need to be attached under the same conditions.
    */
-  window.addEventListener('message', maybeProcessChildFrame);
+  window.addEventListener('message', processInboundMessage);
 
   // Per specification, SubmitEvent is not triggered when calling form.submit().
   // Hook the method to call the handler in that case.

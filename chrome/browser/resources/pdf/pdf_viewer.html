@@ -133,9 +133,12 @@
     embedded-viewer="[[embedded_]]" page-no="[[pageNo_]]"
     load-progress="[[loadProgress_]]" has-edits="[[hasEdits_]]"
     has-entered-annotation-mode="[[hasEnteredAnnotationMode_]]"
+<if expr="enable_pdf_ink2">
+    has-ink2-edits="[[hasInk2Edits_]]"
+</if>
     printing-enabled="[[printingEnabled_]]"
     rotated="[[isRotated_(clockwiseRotations_)]]"
-    is-form-field-focused="[[isFormFieldFocused_]]"
+    form-field-focus="[[formFieldFocus_]]"
     sidenav-collapsed="[[sidenavCollapsed_]]"
     two-up-view-enabled="[[twoUpViewEnabled_]]"
     viewport-zoom="[[viewportZoom_]]" zoom-bounds="[[zoomBounds_]]"
@@ -145,9 +148,6 @@
 </if>
 <if expr="enable_pdf_ink2">
     pdf-ink2-enabled="[[pdfInk2Enabled_]]"
-</if>
-<if expr="enable_screen_ai_service">
-    pdf-ocr-enabled="[[pdfOcrEnabled_]]"
 </if>
     on-change-page="onChangePage_"
     on-display-annotations-changed="onDisplayAnnotationsChanged_"
@@ -162,7 +162,11 @@
 <if expr="enable_ink or enable_pdf_ink2">
     on-annotation-mode-toggled="onAnnotationModeToggled_"
 </if>
-    on-print="onPrint_" on-save="onToolbarSave_" hidden>
+    on-print="onPrint_" on-save="onToolbarSave_"
+<if expr="enable_pdf_ink2">
+    on-can-undo-changed="onCanUndoChanged_"
+</if>
+    hidden>
 </viewer-toolbar>
 
 <div id="container">
@@ -183,6 +187,11 @@
     </div>
     <div id="content-focus-rectangle" hidden$="[[!documentHasFocus_]]"></div>
   </div>
+  <if expr="enable_pdf_ink2">
+    <template is="dom-if" if="[[inInk2AnnotationMode_(annotationMode_)]]">
+      <viewer-side-panel></viewer-side-panel>
+    </template>
+  </if>
 </div>
 
 <template is="dom-if" if="[[showErrorDialog]]" on-dom-change="onErrorDialog_">

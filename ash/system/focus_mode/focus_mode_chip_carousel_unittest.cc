@@ -64,8 +64,7 @@ class FocusModeChipCarouselTest : public AshTestBase {
     base::Time updated = base::Time::Now();
     for (size_t i = 0; i != titles.size(); ++i) {
       FocusModeTask& task = tasks.emplace_back();
-      task.task_list_id = "task_list_id";
-      task.task_id = base::NumberToString(i);
+      task.task_id = {.list_id = "task_list_id", .id = base::NumberToString(i)};
       task.title = titles[i];
       task.updated = updated - base::Seconds(i);
     }
@@ -78,11 +77,11 @@ class FocusModeChipCarouselTest : public AshTestBase {
   }
 
   views::ScrollView* GetScrollView() {
-    return focus_mode_chip_carousel_->scroll_view_;
+    return focus_mode_chip_carousel_->GetScrollViewForTesting();
   }
 
   views::View* GetScrollContents() {
-    return focus_mode_chip_carousel_->scroll_view_->contents();
+    return focus_mode_chip_carousel_->GetScrollViewForTesting()->contents();
   }
 
   views::ImageButton* GetLeftOverflowIcon() {

@@ -1260,15 +1260,17 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerOverwritePlaceholderTest,
       autofill::test::CreateFieldPrediction(autofill::FieldType::PASSWORD)};
   // Simulate password manager receiving server predictions.
   password_manager::ContentPasswordManagerDriver* driver =
-      password_manager::ContentPasswordManagerDriverFactory::FromWebContents(
-          WebContents())
-          ->GetDriverForFrame(WebContents()->GetPrimaryMainFrame());
+      password_manager::ContentPasswordManagerDriver::GetForRenderFrameHost(
+          WebContents()->GetPrimaryMainFrame());
   autofill::FormData form_data(
-      *driver->GetPasswordManager()->form_managers()[0]->observed_form());
+      *static_cast<const password_manager::PasswordManager*>(
+           driver->GetPasswordManager())
+           ->form_managers()[0]
+           ->observed_form());
   driver->GetPasswordManager()->ProcessAutofillPredictions(
       driver, form_data,
-      {{form_data.fields[0].global_id(), std::move(username_prediction)},
-       {form_data.fields[1].global_id(), std::move(password_prediction)}});
+      {{form_data.fields()[0].global_id(), std::move(username_prediction)},
+       {form_data.fields()[1].global_id(), std::move(password_prediction)}});
 
   // Password Manager will not autofill on page load until user interacted with
   // the page.
@@ -4459,10 +4461,8 @@ class MockPrerenderPasswordManagerDriverInjector
  private:
   password_manager::ContentPasswordManagerDriver* GetDriverForFrame(
       content::RenderFrameHost* rfh) {
-    password_manager::ContentPasswordManagerDriverFactory* driver_factory =
-        password_manager::ContentPasswordManagerDriverFactory::FromWebContents(
-            web_contents());
-    return driver_factory->GetDriverForFrame(rfh);
+    return password_manager::ContentPasswordManagerDriver::
+        GetForRenderFrameHost(rfh);
   }
 
   // content::WebContentsObserver:
@@ -4517,7 +4517,7 @@ class PasswordManagerPrerenderBrowserTest : public PasswordManagerBrowserTest {
         blink::WebInputEvent::kNoModifiers,
         blink::WebInputEvent::GetStaticTimeStampForTests());
 
-    content::NativeWebKeyboardEvent event(web_event, gfx::NativeView());
+    input::NativeWebKeyboardEvent event(web_event, gfx::NativeView());
     event.windows_key_code = key;
     render_frame_host->GetRenderWidgetHost()->ForwardKeyboardEvent(event);
   }
@@ -4548,6 +4548,7 @@ class PasswordManagerPrerenderBrowserTest : public PasswordManagerBrowserTest {
     browser()->tab_strip_model()->AppendWebContents(
         std::move(owned_web_contents), true);
     if (preexisting_tab) {
+      ClearWebContentsPtr();
       browser()->tab_strip_model()->CloseWebContentsAt(
           0, TabCloseTypes::CLOSE_NONE);
     }
@@ -4710,10 +4711,8 @@ class MockPasswordManagerDriverInjector : public content::WebContentsObserver {
  private:
   password_manager::ContentPasswordManagerDriver* GetDriverForFrame(
       content::RenderFrameHost* rfh) {
-    password_manager::ContentPasswordManagerDriverFactory* driver_factory =
-        password_manager::ContentPasswordManagerDriverFactory::FromWebContents(
-            web_contents());
-    return driver_factory->GetDriverForFrame(rfh);
+    return password_manager::ContentPasswordManagerDriver::
+        GetForRenderFrameHost(rfh);
   }
 
   // content::WebContentsObserver:

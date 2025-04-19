@@ -12,6 +12,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
@@ -19,7 +20,6 @@ import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.sync.SyncServiceFactory;
 import org.chromium.components.sync.SyncService;
 import org.chromium.components.sync.UserSelectableType;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -41,28 +41,33 @@ public final class SyncTestUtil {
      * Return the {@link SyncService} for the {@link ProfileManager#getLastUsedRegularProfile()}.
      */
     public static SyncService getSyncServiceForLastUsedProfile() {
-        return TestThreadUtils.runOnUiThreadBlockingNoException(
+        return ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     return SyncServiceFactory.getForProfile(
                             ProfileManager.getLastUsedRegularProfile());
                 });
     }
 
-    /** Returns whether sync-the-feature can start. */
-    public static boolean canSyncFeatureStart() {
-        return TestThreadUtils.runOnUiThreadBlockingNoException(
-                () -> getSyncServiceForLastUsedProfile().canSyncFeatureStart());
+    /**
+     * Returns whether the user has sync consent.
+     *
+     * <p>TODO(crbug.com/40066949): Remove once kSync becomes unreachable or is deleted from the
+     * codebase. See ConsentLevel::kSync documentation for details.
+     */
+    public static boolean hasSyncConsent() {
+        return ThreadUtils.runOnUiThreadBlocking(
+                () -> getSyncServiceForLastUsedProfile().hasSyncConsent());
     }
 
     /** Returns whether sync-the-feature is enabled. */
     public static boolean isSyncFeatureEnabled() {
-        return TestThreadUtils.runOnUiThreadBlockingNoException(
+        return ThreadUtils.runOnUiThreadBlocking(
                 () -> getSyncServiceForLastUsedProfile().isSyncFeatureEnabled());
     }
 
     /** Returns whether sync-the-feature is active. */
     public static boolean isSyncFeatureActive() {
-        return TestThreadUtils.runOnUiThreadBlockingNoException(
+        return ThreadUtils.runOnUiThreadBlocking(
                 () -> getSyncServiceForLastUsedProfile().isSyncFeatureActive());
     }
 
@@ -90,11 +95,16 @@ public final class SyncTestUtil {
                 INTERVAL_MS);
     }
 
-    /** Waits for canSyncFeatureStart() to return true. */
-    public static void waitForCanSyncFeatureStart() {
+    /**
+     * Waits for hasSyncConsent() to return true.
+     *
+     * <p>TODO(crbug.com/40066949): Remove once kSync becomes unreachable or is deleted from the
+     * codebase. See ConsentLevel::kSync documentation for details.
+     */
+    public static void waitForSyncConsent() {
         CriteriaHelper.pollUiThread(
-                () -> getSyncServiceForLastUsedProfile().canSyncFeatureStart(),
-                "Timed out waiting for sync being able to start.",
+                () -> getSyncServiceForLastUsedProfile().hasSyncConsent(),
+                "Timed out waiting for sync consent.",
                 TIMEOUT_MS,
                 INTERVAL_MS);
     }
@@ -144,7 +154,7 @@ public final class SyncTestUtil {
 
     /** Returns whether history sync is active. */
     public static boolean isHistorySyncEnabled() {
-        return TestThreadUtils.runOnUiThreadBlockingNoException(
+        return ThreadUtils.runOnUiThreadBlocking(
                 () ->
                         getSyncServiceForLastUsedProfile()
                                 .getSelectedTypes()
@@ -168,7 +178,7 @@ public final class SyncTestUtil {
 
     /** Triggers a sync cycle. */
     public static void triggerSync() {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     getSyncServiceForLastUsedProfile().triggerRefresh();
                 });
@@ -193,7 +203,7 @@ public final class SyncTestUtil {
     }
 
     private static long getCurrentSyncTime() {
-        return TestThreadUtils.runOnUiThreadBlockingNoException(
+        return ThreadUtils.runOnUiThreadBlocking(
                 () -> getSyncServiceForLastUsedProfile().getLastSyncedTimeForDebugging());
     }
 
@@ -207,7 +217,7 @@ public final class SyncTestUtil {
             public JSONArray nodes;
         }
         NodesCallbackHelper callbackHelper = new NodesCallbackHelper();
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     getSyncServiceForLastUsedProfile()
                             .getAllNodes(
@@ -228,7 +238,7 @@ public final class SyncTestUtil {
 
     /**
      * Extracts datatype-specific information from the given JSONObject. The returned JSONObject
-     * contains the same data as a specifics protocol buffer (e.g., TypedUrlSpecifics).
+     * contains the same data as a specifics protocol buffer (e.g., ReadingListSpecifics).
      */
     private static JSONObject extractSpecifics(JSONObject node) throws JSONException {
         JSONObject specifics = node.getJSONObject("SPECIFICS");
@@ -251,19 +261,19 @@ public final class SyncTestUtil {
             return bookmarkSpecifics;
         }
 
-        JSONObject model_type_info = specifics.getJSONObject(key);
+        JSONObject specificsWithMetadata = specifics.getJSONObject(key);
         if (node.has("metadata")) {
-            model_type_info.put("metadata", node.getJSONObject("metadata"));
+            specificsWithMetadata.put("metadata", node.getJSONObject("metadata"));
         }
-        return model_type_info;
+        return specificsWithMetadata;
     }
 
     /**
      * Converts the given ID to the format stored by the server.
      *
-     * See the SyncableId (C++) class for more information about ID encoding. To paraphrase,
-     * the client prepends "s" or "c" to the server's ID depending on the commit state of the data.
-     * IDs can also be "r" to indicate the root node, but that entity is not supported here.
+     * <p>See the SyncableId (C++) class for more information about ID encoding. To paraphrase, the
+     * client prepends "s" or "c" to the server's ID depending on the commit state of the data. IDs
+     * can also be "r" to indicate the root node, but that entity is not supported here.
      *
      * @param clientId the ID to be converted
      * @return the converted ID
@@ -284,17 +294,15 @@ public final class SyncTestUtil {
     /**
      * Returns the local Sync data present for a single datatype.
      *
-     * For each data entity, a Pair is returned. The first piece of data is the entity's server ID.
-     * This is useful for activities like deleting an entity on the server. The second piece of data
-     * is a JSONObject representing the datatype-specific information for the entity. This data is
-     * the same as the data stored in a specifics protocol buffer (e.g., TypedUrlSpecifics).
+     * <p>For each data entity, a Pair is returned. The first piece of data is the entity's server
+     * ID. This is useful for activities like deleting an entity on the server. The second piece of
+     * data is a JSONObject representing the datatype-specific information for the entity. This data
+     * is the same as the data stored in a specifics protocol buffer (e.g., ReadingListSpecifics).
      *
      * @param context the Context used to retreive the correct SyncService
      * @param typeString a String representing a specific datatype.
-     *
-     * TODO(pvalenzuela): Replace typeString with the native ModelType enum or something else
-     * that will avoid callers needing to specify the native string version.
-     *
+     *     <p>TODO(pvalenzuela): Replace typeString with the native DataType enum or something else
+     *     that will avoid callers needing to specify the native string version.
      * @return a List of Pair<String, JSONObject> representing the local Sync data
      */
     public static List<Pair<String, JSONObject>> getLocalData(Context context, String typeString)
@@ -325,11 +333,11 @@ public final class SyncTestUtil {
     }
 
     /**
-     * Encrypts the profile with the input |passphrase|. It will then block until the sync server
-     * is successfully using the passphrase.
+     * Encrypts the profile with the input |passphrase|. It will then block until the sync server is
+     * successfully using the passphrase.
      */
     public static void encryptWithPassphrase(final String passphrase) {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> getSyncServiceForLastUsedProfile().setEncryptionPassphrase(passphrase));
         // Make sure the new encryption settings make it to the server.
         SyncTestUtil.triggerSyncAndWaitForCompletion();
@@ -337,7 +345,7 @@ public final class SyncTestUtil {
 
     /** Decrypts the profile using the input |passphrase|. */
     public static void decryptWithPassphrase(final String passphrase) {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     getSyncServiceForLastUsedProfile().setDecryptionPassphrase(passphrase);
                 });

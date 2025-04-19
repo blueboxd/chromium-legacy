@@ -9,7 +9,9 @@
 #include <vector>
 
 #include "base/types/expected.h"
-#include "components/ml/webnn/graph_validation_utils.h"
+#include "services/webnn/public/cpp/graph_validation_utils.h"
+#include "services/webnn/public/cpp/operand_descriptor.h"
+#include "services/webnn/public/mojom/webnn_graph.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_conv_2d_filter_operand_layout.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_conv_transpose_2d_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_input_operand_layout.h"
@@ -31,37 +33,15 @@ class MLOperator;
 MODULES_EXPORT HeapVector<Member<const MLOperator>>*
 GetOperatorsInTopologicalOrder(const MLNamedOperands& named_outputs);
 
-// Stores information about a transferred `ArrayBufferView`. This struct doesn't
-// include Blink GC objects, and can be accessed by any threads.
-//
-// The information is used to recreate `ArrayBufferView` when computation
-// completes.
-struct ArrayBufferViewInfo {
-  ArrayBufferViewInfo() = default;
-  ~ArrayBufferViewInfo() = default;
-
-  ArrayBufferViewInfo(ArrayBufferViewInfo&& other) = default;
-  ArrayBufferViewInfo& operator=(ArrayBufferViewInfo&& other) = default;
-
-  ArrayBufferViewInfo(const ArrayBufferViewInfo&) = delete;
-  ArrayBufferViewInfo& operator=(const ArrayBufferViewInfo&) = delete;
-
-  DOMArrayBufferView::ViewType type;
-  size_t offset;
-  size_t length;
-  ArrayBufferContents contents;
-};
-
 // `TransferNamedArrayBufferViews()` and `CreateNamedArrayBufferViews()`
 // implement the MLNamedArrayBufferViews transfer algorithm of WebNN spec:
 // https://www.w3.org/TR/webnn/#mlnamedarraybufferviews-transfer
 //
 // The `NamedArrayBufferViewsInfo` returned by `TransferNamedArrayBufferViews()`
 // doesn't contain any GC objects, so it is safe to be posted to a background
-// thread that invokes the XNNPACK Runtime. After that,
-// `NamedArrayBufferViewsInfo` should be posted back to the calling thread and
-// call `CreateNamedArrayBufferViews()` to create `MLNamedArrayBufferViews` from
-// the info.
+// thread. After that, the `NamedArrayBufferViewsInfo` should be posted back to
+// the calling thread and call `CreateNamedArrayBufferViews()` to create
+// `MLNamedArrayBufferViews` from the info.
 //
 // If it fails to transfer an `ArrayBufferView` of the
 // `MLNamedArrayBufferViews`, the current implementation leaves the
@@ -84,6 +64,9 @@ MODULES_EXPORT DOMArrayBufferView* CreateArrayBufferView(
 
 MODULES_EXPORT MLNamedArrayBufferViews* CreateNamedArrayBufferViews(
     std::unique_ptr<Vector<std::pair<String, ArrayBufferViewInfo>>> views_info);
+
+MODULES_EXPORT DOMArrayBufferView::ViewType GetArrayBufferViewType(
+    webnn::OperandDataType data_type);
 
 // Create a default permutation vector [rank - 1, ..., 0].
 Vector<uint32_t> CreateDefaultPermutation(const wtf_size_t rank);
@@ -116,9 +99,11 @@ webnn::Size2d<uint32_t> CalculateConvTransposeOutputSize2D(
     uint32_t output_padding_height,
     uint32_t output_padding_width);
 
-// Helper to validate gemm options.
-base::expected<void, String> ValidateGemmOptions(const MLGemmOptions* options,
-                                                 uint32_t output_channels);
+V8MLOperandDataType ToBlinkDataType(webnn::OperandDataType data_type);
+webnn::OperandDataType FromBlinkDataType(V8MLOperandDataType::Enum data_type);
+
+MODULES_EXPORT bool IsLogicalBinaryOperator(
+    webnn::mojom::blink::ElementWiseBinary::Kind kind);
 
 }  // namespace blink
 

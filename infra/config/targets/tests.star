@@ -20,6 +20,13 @@ targets.tests.gtest_test(
     name = "accessibility_unittests",
 )
 
+targets.tests.isolated_script_test(
+    name = "android_blink_wpt_tests",
+    args = [
+    ],
+    binary = "chrome_public_wpt",
+)
+
 targets.tests.gtest_test(
     name = "android_browsertests",
 )
@@ -375,42 +382,6 @@ targets.tests.junit_test(
 
 # TODO(crbug.com/41489655): Eliminate cast_* suites that are no longer
 # needed.
-
-targets.tests.gtest_test(
-    name = "cast_audio_backend_unittests",
-)
-
-targets.tests.gtest_test(
-    name = "cast_base_unittests",
-)
-
-targets.tests.gtest_test(
-    name = "cast_cast_core_unittests",
-)
-
-targets.tests.gtest_test(
-    name = "cast_crash_unittests",
-)
-
-targets.tests.gtest_test(
-    name = "cast_display_settings_unittests",
-)
-
-targets.tests.gtest_test(
-    name = "cast_graphics_unittests",
-)
-
-targets.tests.gtest_test(
-    name = "cast_media_unittests",
-)
-
-targets.tests.gtest_test(
-    name = "cast_shell_browsertests",
-)
-
-targets.tests.gtest_test(
-    name = "cast_shell_unittests",
-)
 
 targets.tests.junit_test(
     name = "cast_shell_junit_tests",
@@ -834,6 +805,10 @@ targets.tests.gtest_test(
 )
 
 targets.tests.gtest_test(
+    name = "enterprise_companion_tests",
+)
+
+targets.tests.gtest_test(
     name = "env_chromium_unittests",
 )
 
@@ -894,7 +869,6 @@ targets.tests.gpu_telemetry_test(
     name = "expected_color_pixel_validating_test",
     telemetry_test_name = "expected_color",
     mixins = [
-        "skia_gold_test",
         "has_native_resultdb_integration",
     ],
 )
@@ -1006,22 +980,8 @@ targets.tests.gtest_test(
 )
 
 targets.tests.gtest_test(
-    name = "gles2_conform_d3d9_test",
-    binary = "gles2_conform_test",
-)
-
-targets.tests.gtest_test(
     name = "gpu_memory_buffer_impl_tests",
     binary = "gpu_unittests",
-)
-
-targets.tests.gtest_test(
-    name = "gles2_conform_test",
-)
-
-targets.tests.gtest_test(
-    name = "gles2_conform_gl_test",
-    binary = "gles2_conform_test",
 )
 
 targets.tests.isolated_script_test(
@@ -1107,6 +1067,10 @@ targets.tests.gtest_test(
         "--use-wire",
     ],
     binary = "dawn_end2end_tests",
+)
+
+targets.tests.gtest_test(
+    name = "fuzzing_unittests",
 )
 
 targets.tests.gpu_telemetry_test(
@@ -1762,7 +1726,6 @@ targets.tests.gpu_telemetry_test(
     name = "pixel_skia_gold_validating_test",
     telemetry_test_name = "pixel",
     mixins = [
-        "skia_gold_test",
         "has_native_resultdb_integration",
     ],
 )
@@ -2394,7 +2357,7 @@ targets.tests.gpu_telemetry_test(
     ],
     args = [
         "--webgl-conformance-version=2.0.1",
-        "$$MAGIC_SUBSTITUTION_GPUWebGLRuntimeFile",
+        targets.magic_args.GPU_WEBGL_RUNTIME_FILE,
         # On dual-GPU devices we want the high-performance GPU to be active
         "--extra-browser-args=--use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu --disable-features=SkiaGraphite",
     ],
@@ -2408,7 +2371,7 @@ targets.tests.gpu_telemetry_test(
     ],
     args = [
         "--webgl-conformance-version=2.0.1",
-        "$$MAGIC_SUBSTITUTION_GPUWebGLRuntimeFile",
+        targets.magic_args.GPU_WEBGL_RUNTIME_FILE,
         # On dual-GPU devices we want the high-performance GPU to be active
         "--extra-browser-args=--use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu",
     ],
@@ -2438,7 +2401,7 @@ targets.tests.gpu_telemetry_test(
     ],
     args = [
         "--webgl-conformance-version=2.0.1",
-        "$$MAGIC_SUBSTITUTION_GPUWebGLRuntimeFile",
+        targets.magic_args.GPU_WEBGL_RUNTIME_FILE,
         # On dual-GPU devices we want the high-performance GPU to be active
         "--extra-browser-args=--use-gl=angle --use-angle=metal --use-cmd-decoder=passthrough --enable-features=EGLDualGPURendering,ForceHighPerformanceGPUForWebGL,SkiaGraphite",
         "--enable-metal-debug-layers",
@@ -2478,7 +2441,7 @@ targets.tests.gpu_telemetry_test(
     args = [
         # On dual-GPU devices we want the high-performance GPU to be active
         "--extra-browser-args=--use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu --disable-features=SkiaGraphite",
-        "$$MAGIC_SUBSTITUTION_GPUWebGLRuntimeFile",
+        targets.magic_args.GPU_WEBGL_RUNTIME_FILE,
     ],
 )
 
@@ -2515,7 +2478,7 @@ targets.tests.gpu_telemetry_test(
     args = [
         # On dual-GPU devices we want the high-performance GPU to be active
         "--extra-browser-args=--use-gl=angle --use-angle=metal --use-cmd-decoder=passthrough --enable-features=EGLDualGPURendering,ForceHighPerformanceGPUForWebGL --disable-features=SkiaGraphite",
-        "$$MAGIC_SUBSTITUTION_GPUWebGLRuntimeFile",
+        targets.magic_args.GPU_WEBGL_RUNTIME_FILE,
         "--enable-metal-debug-layers",
     ],
 )
@@ -2529,7 +2492,7 @@ targets.tests.gpu_telemetry_test(
     args = [
         # On dual-GPU devices we want the high-performance GPU to be active
         "--extra-browser-args=--use-gl=angle --use-angle=metal --use-cmd-decoder=passthrough --enable-features=EGLDualGPURendering,ForceHighPerformanceGPUForWebGL,SkiaGraphite",
-        "$$MAGIC_SUBSTITUTION_GPUWebGLRuntimeFile",
+        targets.magic_args.GPU_WEBGL_RUNTIME_FILE,
         "--enable-metal-debug-layers",
     ],
 )
@@ -2704,11 +2667,30 @@ targets.tests.gtest_test(
     binary = "blink_unittests",
 )
 
+targets.tests.isolated_script_test(
+    name = "webview_blink_wpt_tests",
+    args = [
+    ],
+    binary = "trichrome_webview_wpt_64",
+)
+
 targets.tests.gtest_test(
     name = "webview_cts_tests",
     mixins = [
         "webview_cts_archive",
     ],
+)
+
+targets.tests.gtest_test(
+    name = "webview_cts_tests_bfcache_mutations",
+    mixins = [
+        "webview_cts_archive",
+    ],
+    args = [
+        "--use-apk-under-test-flags-file",
+        "--enable-features=WebViewBackForwardCache",
+    ],
+    binary = "webview_cts_tests",
 )
 
 targets.tests.gtest_test(
@@ -2765,11 +2747,37 @@ targets.tests.gtest_test(
     name = "webview_instrumentation_test_apk",
 )
 
+# This target is only to run on Android versions <= Android Q (10).
+targets.tests.gtest_test(
+    name = "webview_instrumentation_test_apk_single_process_mode",
+    args = [
+        "--webview-process-mode=single",
+    ],
+    binary = "webview_instrumentation_test_apk",
+)
+
+targets.tests.gtest_test(
+    name = "webview_instrumentation_test_apk_multiple_process_mode",
+    args = [
+        "--webview-process-mode=multiple",
+    ],
+    binary = "webview_instrumentation_test_apk",
+)
+
 targets.tests.gtest_test(
     name = "webview_instrumentation_test_apk_mutations",
     args = [
         "--use-apk-under-test-flags-file",
         "--webview-mutations-enabled",
+    ],
+    binary = "webview_instrumentation_test_apk",
+)
+
+targets.tests.gtest_test(
+    name = "webview_instrumentation_test_apk_bfcache_mutations",
+    args = [
+        "--use-apk-under-test-flags-file",
+        "--enable-features=WebViewBackForwardCache",
     ],
     binary = "webview_instrumentation_test_apk",
 )

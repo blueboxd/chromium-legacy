@@ -47,9 +47,11 @@
 #include "components/desks_storage/core/fake_desk_sync_service.h"
 #include "components/services/app_service/public/cpp/app_registry_cache_wrapper.h"
 #include "components/session_manager/core/session_manager.h"
-#include "components/sync/base/model_type.h"
+#include "components/sync/base/data_type.h"
 #include "components/sync/service/sync_service.h"
 #include "components/sync/test/test_sync_service.h"
+#include "components/sync_device_info/device_info.h"
+#include "components/sync_device_info/fake_device_info_sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "components/sync_sessions/synced_session.h"
@@ -105,6 +107,26 @@ std::unique_ptr<app_restore::RestoreData> CreateRestoreData(
     }
   }
   return restore_data;
+}
+
+std::unique_ptr<syncer::DeviceInfo> CreateFakeDeviceInfo(
+    const std::string& guid,
+    const std::string& name,
+    base::Time last_updated_timestamp) {
+  return std::make_unique<syncer::DeviceInfo>(
+      guid, name, "chrome_version", "user_agent",
+      sync_pb::SyncEnums::TYPE_UNSET, syncer::DeviceInfo::OsType::kUnknown,
+      syncer::DeviceInfo::FormFactor::kUnknown, "device_id",
+      "manufacturer_name", "model_name", "full_hardware_class",
+      last_updated_timestamp, base::Minutes(60),
+      /*send_tab_to_self_receiving_enabled=*/
+      false,
+      /*send_tab_to_self_receiving_type=*/
+      sync_pb::
+          SyncEnums_SendTabReceivingType_SEND_TAB_RECEIVING_TYPE_CHROME_OR_UNSPECIFIED,
+      /*sharing_info=*/std::nullopt, /*paask_info=*/std::nullopt, "token",
+      syncer::DataTypeSet(),
+      /*floating_workspace_last_signin_timestamp=*/last_updated_timestamp);
 }
 
 std::unique_ptr<ash::DeskTemplate> MakeTestFloatingWorkspaceDeskTemplate(
@@ -233,14 +255,16 @@ class TestFloatingWorkSpaceService : public FloatingWorkspaceService {
       TestingProfile* profile,
       raw_ptr<desks_storage::FakeDeskSyncService> fake_desk_sync_service,
       raw_ptr<syncer::TestSyncService> mock_sync_service,
+      raw_ptr<syncer::FakeDeviceInfoSyncService> fake_device_info_sync_service,
       floating_workspace_util::FloatingWorkspaceVersion version)
       : FloatingWorkspaceService(profile, version) {
-    Init(mock_sync_service, fake_desk_sync_service);
+    Init(mock_sync_service, fake_desk_sync_service,
+         fake_device_info_sync_service);
     mock_open_tabs_ = std::make_unique<MockOpenTabsUIDelegate>();
   }
 
   void RestoreLocalSessionWindows() override {
-    mock_open_tabs_->GetLocalSession(&restored_session_);
+    mock_open_tabs_->GetLocalSession(&restored_session_.AsEphemeralRawAddr());
   }
 
   void RestoreForeignSessionWindows(
@@ -249,7 +273,7 @@ class TestFloatingWorkSpaceService : public FloatingWorkspaceService {
   }
 
   const sync_sessions::SyncedSession* GetRestoredSession() {
-    return restored_session_;
+    return restored_session_.get();
   }
 
   void SetLocalSessionForTesting(sync_sessions::SyncedSession* session) {
@@ -272,10 +296,7 @@ class TestFloatingWorkSpaceService : public FloatingWorkspaceService {
     restored_floating_workspace_template_ = desk_template;
   }
 
-  // This field is not a raw_ptr<> because it was filtered by the rewriter
-  // for: #addr-of
-  RAW_PTR_EXCLUSION const sync_sessions::SyncedSession* restored_session_ =
-      nullptr;
+  raw_ptr<const sync_sessions::SyncedSession> restored_session_ = nullptr;
   raw_ptr<const DeskTemplate, DanglingUntriaged>
       restored_floating_workspace_template_ = nullptr;
   raw_ptr<DeskTemplate> uploaded_desk_template_ = nullptr;
@@ -306,12 +327,14 @@ class FloatingWorkspaceServiceTest : public testing::Test {
     return display_service_.get();
   }
 
-  syncer::TestSyncService* test_sync_service() {
-    return test_sync_service_.get();
-  }
+  syncer::TestSyncService* test_sync_service() { return &test_sync_service_; }
 
   ui::UserActivityDetector* user_activity_detector() {
     return ui::UserActivityDetector::Get();
+  }
+
+  syncer::FakeDeviceInfoSyncService* fake_device_info_sync_service() {
+    return fake_device_info_sync_service_.get();
   }
 
   user_manager::FakeUserManager* fake_user_manager() const {
@@ -349,6 +372,8 @@ class FloatingWorkspaceServiceTest : public testing::Test {
   apps::AppRegistryCache* cache() { return cache_.get(); }
 
   AccountId& account_id() { return account_id_; }
+
+  AshTestHelper* ash_test_helper() { return &ash_test_helper_; }
 
   // We want to hold off on populating the apps cache before each test is run
   // because the list of initialization types do not get reset. To test that the
@@ -391,6 +416,11 @@ class FloatingWorkspaceServiceTest : public testing::Test {
     fake_user_manager()->UserLoggedIn(account_id_, username_hash,
                                       /*browser_restart=*/false,
                                       /*is_child=*/false);
+    CoreAccountInfo account_info;
+    account_info.email = kTestAccount;
+    account_info.gaia = "gaia";
+    account_info.account_id = CoreAccountId::FromGaiaId(account_info.gaia);
+    test_sync_service_.SetSignedIn(signin::ConsentLevel::kSync, account_info);
 
     auto prefs =
         std::make_unique<sync_preferences::TestingPrefServiceSyncable>();
@@ -406,8 +436,13 @@ class FloatingWorkspaceServiceTest : public testing::Test {
     display_service_ =
         std::make_unique<NotificationDisplayServiceTester>(profile_.get());
     network_handler_test_helper_ = std::make_unique<NetworkHandlerTestHelper>();
+    fake_device_info_sync_service_ =
+        std::make_unique<syncer::FakeDeviceInfoSyncService>(
+            /*skip_engine_connection=*/true);
     AddTestNetworkDevice();
-    test_sync_service_ = std::make_unique<syncer::TestSyncService>();
+    test_sync_service()->SetDownloadStatusFor(
+        {syncer::DataType::DEVICE_INFO},
+        syncer::SyncService::DataTypeDownloadStatus::kWaitingForUpdates);
     user_activity_detector()->set_last_activity_time_for_test(
         base::TimeTicks::Now());
     cache_ = std::make_unique<apps::AppRegistryCache>();
@@ -433,14 +468,16 @@ class FloatingWorkspaceServiceTest : public testing::Test {
  private:
   content::BrowserTaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
-  std::unique_ptr<syncer::TestSyncService> test_sync_service_;
+  syncer::TestSyncService test_sync_service_;
   std::unique_ptr<desks_storage::FakeDeskSyncService> fake_desk_sync_service_;
   std::unique_ptr<NotificationDisplayServiceTester> display_service_;
+  std::unique_ptr<syncer::FakeDeviceInfoSyncService>
+      fake_device_info_sync_service_;
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<NetworkHandlerTestHelper> network_handler_test_helper_;
   std::unique_ptr<apps::AppRegistryCache> cache_;
   AccountId account_id_;
-  ash::AshTestHelper ash_test_helper_;
+  AshTestHelper ash_test_helper_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   std::unique_ptr<MockDesksClient> mock_desks_client_;
   user_manager::TypedScopedUserManager<user_manager::FakeUserManager>
@@ -485,11 +522,6 @@ class FloatingWorkspaceServiceV2Test : public FloatingWorkspaceServiceTest {
 
 TEST_F(FloatingWorkspaceServiceV1Test, RestoreRemoteSession) {
   PopulateAppsCache();
-  TestFloatingWorkSpaceService test_floating_workspace_service(
-      profile(), /*fake_desk_sync_service=*/nullptr,
-      /*mock_sync_service=*/nullptr,
-      floating_workspace_util::FloatingWorkspaceVersion::
-          kFloatingWorkspaceV1Enabled);
   std::unique_ptr<sync_sessions::SyncedSession> local_session =
       CreateNewSession(kLocalSessionName, more_recent_time);
   std::vector<raw_ptr<const sync_sessions::SyncedSession, VectorExperimental>>
@@ -503,12 +535,18 @@ TEST_F(FloatingWorkspaceServiceV1Test, RestoreRemoteSession) {
           CreateNewSession(kRemoteSession2Name, least_recent_time);
   foreign_sessions.push_back(less_recent_remote_session.get());
   foreign_sessions.push_back(most_recent_remote_session.get());
-
+  TestFloatingWorkSpaceService test_floating_workspace_service(
+      profile(), /*fake_desk_sync_service=*/nullptr,
+      /*mock_sync_service=*/nullptr,
+      /*fake_device_info_sync_service*/ nullptr,
+      floating_workspace_util::FloatingWorkspaceVersion::
+          kFloatingWorkspaceV1Enabled);
   test_floating_workspace_service.SetLocalSessionForTesting(
       local_session.get());
   test_floating_workspace_service.SetForeignSessionForTesting(foreign_sessions);
   test_floating_workspace_service
       .RestoreBrowserWindowsFromMostRecentlyUsedDevice();
+
   task_environment().FastForwardBy(
       ash::features::kFloatingWorkspaceMaxTimeAvailableForRestoreAfterLogin
           .Get() +
@@ -521,11 +559,6 @@ TEST_F(FloatingWorkspaceServiceV1Test, RestoreRemoteSession) {
 
 TEST_F(FloatingWorkspaceServiceV1Test, RestoreLocalSession) {
   PopulateAppsCache();
-  TestFloatingWorkSpaceService test_floating_workspace_service(
-      profile(), /*fake_desk_sync_service=*/nullptr,
-      /*mock_sync_service=*/nullptr,
-      floating_workspace_util::FloatingWorkspaceVersion::
-          kFloatingWorkspaceV1Enabled);
   // Local session has most recent timestamp and should be restored.
   std::unique_ptr<sync_sessions::SyncedSession> local_session =
       CreateNewSession(kLocalSessionName, most_recent_time);
@@ -539,12 +572,18 @@ TEST_F(FloatingWorkspaceServiceV1Test, RestoreLocalSession) {
           CreateNewSession(kRemoteSession2Name, least_recent_time);
   foreign_sessions.push_back(less_recent_remote_session.get());
   foreign_sessions.push_back(most_recent_remote_session.get());
-
+  TestFloatingWorkSpaceService test_floating_workspace_service(
+      profile(), /*fake_desk_sync_service=*/nullptr,
+      /*mock_sync_service=*/nullptr,
+      /*fake_device_info_sync_service*/ nullptr,
+      floating_workspace_util::FloatingWorkspaceVersion::
+          kFloatingWorkspaceV1Enabled);
   test_floating_workspace_service.SetLocalSessionForTesting(
       local_session.get());
   test_floating_workspace_service.SetForeignSessionForTesting(foreign_sessions);
   test_floating_workspace_service
       .RestoreBrowserWindowsFromMostRecentlyUsedDevice();
+
   task_environment().FastForwardBy(
       ash::features::kFloatingWorkspaceMaxTimeAvailableForRestoreAfterLogin
           .Get() +
@@ -557,11 +596,6 @@ TEST_F(FloatingWorkspaceServiceV1Test, RestoreLocalSession) {
 
 TEST_F(FloatingWorkspaceServiceV1Test, RestoreRemoteSessionAfterUpdated) {
   PopulateAppsCache();
-  TestFloatingWorkSpaceService test_floating_workspace_service(
-      profile(), /*fake_desk_sync_service=*/nullptr,
-      /*mock_sync_service=*/nullptr,
-      floating_workspace_util::FloatingWorkspaceVersion::
-          kFloatingWorkspaceV1Enabled);
   // Local session has most recent timestamp and should be restored.
   std::unique_ptr<sync_sessions::SyncedSession> local_session =
       CreateNewSession(kLocalSessionName, most_recent_time);
@@ -575,12 +609,18 @@ TEST_F(FloatingWorkspaceServiceV1Test, RestoreRemoteSessionAfterUpdated) {
           CreateNewSession(kRemoteSession2Name, least_recent_time);
   foreign_sessions.push_back(less_recent_remote_session.get());
   foreign_sessions.push_back(most_recent_remote_session.get());
-
+  TestFloatingWorkSpaceService test_floating_workspace_service(
+      profile(), /*fake_desk_sync_service=*/nullptr,
+      /*mock_sync_service=*/nullptr,
+      /*fake_device_info_sync_service*/ nullptr,
+      floating_workspace_util::FloatingWorkspaceVersion::
+          kFloatingWorkspaceV1Enabled);
   test_floating_workspace_service.SetLocalSessionForTesting(
       local_session.get());
   test_floating_workspace_service.SetForeignSessionForTesting(foreign_sessions);
   test_floating_workspace_service
       .RestoreBrowserWindowsFromMostRecentlyUsedDevice();
+
   // Simulate remote session update arrives 1 seconds after service
   // initialization.
   base::TimeDelta remote_session_update_arrival_time = base::Seconds(1);
@@ -604,11 +644,6 @@ TEST_F(FloatingWorkspaceServiceV1Test, RestoreRemoteSessionAfterUpdated) {
 
 TEST_F(FloatingWorkspaceServiceV1Test, NoLocalSession) {
   PopulateAppsCache();
-  TestFloatingWorkSpaceService test_floating_workspace_service(
-      profile(), /*fake_desk_sync_service=*/nullptr,
-      /*mock_sync_service=*/nullptr,
-      floating_workspace_util::FloatingWorkspaceVersion::
-          kFloatingWorkspaceV1Enabled);
   std::vector<raw_ptr<const sync_sessions::SyncedSession, VectorExperimental>>
       foreign_sessions;
   const std::unique_ptr<sync_sessions::SyncedSession>
@@ -619,10 +654,16 @@ TEST_F(FloatingWorkspaceServiceV1Test, NoLocalSession) {
           CreateNewSession(kRemoteSession2Name, least_recent_time);
   foreign_sessions.push_back(less_recent_remote_session.get());
   foreign_sessions.push_back(most_recent_remote_session.get());
+  TestFloatingWorkSpaceService test_floating_workspace_service(
+      profile(), /*fake_desk_sync_service=*/nullptr,
+      /*mock_sync_service=*/nullptr,
+      /*fake_device_info_sync_service*/ nullptr,
+      floating_workspace_util::FloatingWorkspaceVersion::
+          kFloatingWorkspaceV1Enabled);
   test_floating_workspace_service.SetForeignSessionForTesting(foreign_sessions);
-
   test_floating_workspace_service
       .RestoreBrowserWindowsFromMostRecentlyUsedDevice();
+
   // Wait for kFloatingWorkspaceMaxTimeAvailableForRestoreAfterLogin seconds.
   task_environment().FastForwardBy(
       ash::features::kFloatingWorkspaceMaxTimeAvailableForRestoreAfterLogin
@@ -636,17 +677,20 @@ TEST_F(FloatingWorkspaceServiceV1Test, NoLocalSession) {
 
 TEST_F(FloatingWorkspaceServiceV1Test, NoRemoteSession) {
   PopulateAppsCache();
-  TestFloatingWorkSpaceService test_floating_workspace_service(
-      profile(), /*fake_desk_sync_service=*/nullptr,
-      /*mock_sync_service=*/nullptr,
-      floating_workspace_util::FloatingWorkspaceVersion::
-          kFloatingWorkspaceV1Enabled);
+
   std::unique_ptr<sync_sessions::SyncedSession> local_session =
       CreateNewSession(kLocalSessionName, least_recent_time);
+
+  TestFloatingWorkSpaceService test_floating_workspace_service(
+      profile(), /*fake_desk_sync_service=*/nullptr,
+      /*mock_sync_service=*/nullptr, /*fake_device_info_sync_service*/ nullptr,
+      floating_workspace_util::FloatingWorkspaceVersion::
+          kFloatingWorkspaceV1Enabled);
   test_floating_workspace_service.SetLocalSessionForTesting(
       local_session.get());
   test_floating_workspace_service
       .RestoreBrowserWindowsFromMostRecentlyUsedDevice();
+
   // Wait for kFloatingWorkspaceMaxTimeAvailableForRestoreAfterLogin seconds.
   task_environment().FastForwardBy(
       ash::features::kFloatingWorkspaceMaxTimeAvailableForRestoreAfterLogin
@@ -660,13 +704,15 @@ TEST_F(FloatingWorkspaceServiceV1Test, NoRemoteSession) {
 
 TEST_F(FloatingWorkspaceServiceV1Test, NoSession) {
   PopulateAppsCache();
+
   TestFloatingWorkSpaceService test_floating_workspace_service(
       profile(), /*fake_desk_sync_service=*/nullptr,
-      /*mock_sync_service=*/nullptr,
+      /*mock_sync_service=*/nullptr, /*fake_device_info_sync_service*/ nullptr,
       floating_workspace_util::FloatingWorkspaceVersion::
           kFloatingWorkspaceV1Enabled);
   test_floating_workspace_service
       .RestoreBrowserWindowsFromMostRecentlyUsedDevice();
+
   // Wait for kFloatingWorkspaceMaxTimeAvailableForRestoreAfterLogin seconds.
   task_environment().FastForwardBy(
       ash::features::kFloatingWorkspaceMaxTimeAvailableForRestoreAfterLogin
@@ -693,11 +739,11 @@ TEST_F(FloatingWorkspaceServiceV2Test, RestoreFloatingWorkspaceTemplate) {
   auto* floating_workspace_service =
       FloatingWorkspaceService::GetForProfile(profile());
   floating_workspace_service->Init(test_sync_service(),
-                                   fake_desk_sync_service());
-
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
   test_sync_service()->SetDownloadStatusFor(
-      {syncer::ModelType::WORKSPACE_DESK},
-      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
   test_sync_service()->FireStateChanged();
   ASSERT_TRUE(mock_desks_client()->restored_desk_template());
   EXPECT_EQ(mock_desks_client()->restored_desk_template()->template_name(),
@@ -711,7 +757,8 @@ TEST_F(FloatingWorkspaceServiceV2Test, NoNetworkForFloatingWorkspaceTemplate) {
   auto* floating_workspace_service =
       FloatingWorkspaceService::GetForProfile(profile());
   floating_workspace_service->Init(test_sync_service(),
-                                   fake_desk_sync_service());
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
 
   task_environment().RunUntilIdle();
   EXPECT_TRUE(HasNotificationFor(kNotificationForNoNetworkConnection));
@@ -724,9 +771,10 @@ TEST_F(FloatingWorkspaceServiceV2Test,
   auto* floating_workspace_service =
       FloatingWorkspaceService::GetForProfile(profile());
   floating_workspace_service->Init(test_sync_service(),
-                                   fake_desk_sync_service());
-
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
   task_environment().RunUntilIdle();
+
   EXPECT_FALSE(HasNotificationFor(kNotificationForNoNetworkConnection));
   task_environment().FastForwardBy(
       ash::features::kFloatingWorkspaceV2MaxTimeAvailableForRestoreAfterLogin
@@ -746,9 +794,10 @@ TEST_F(
   auto* floating_workspace_service =
       FloatingWorkspaceService::GetForProfile(profile());
   floating_workspace_service->Init(test_sync_service(),
-                                   fake_desk_sync_service());
-
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
   task_environment().RunUntilIdle();
+
   EXPECT_TRUE(HasNotificationFor(kNotificationForNoNetworkConnection));
   AddTestNetworkDevice();
   network_handler_test_helper()->ResetDevicesAndServices();
@@ -781,11 +830,12 @@ TEST_F(FloatingWorkspaceServiceV2Test,
   auto* floating_workspace_service =
       FloatingWorkspaceService::GetForProfile(profile());
   floating_workspace_service->Init(test_sync_service(),
-                                   fake_desk_sync_service());
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
 
   test_sync_service()->SetDownloadStatusFor(
-      {syncer::ModelType::WORKSPACE_DESK},
-      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
   test_sync_service()->FireStateChanged();
   ASSERT_TRUE(mock_desks_client()->restored_desk_template());
   EXPECT_EQ(mock_desks_client()->restored_desk_template()->template_name(),
@@ -802,7 +852,6 @@ TEST_F(FloatingWorkspaceServiceV2Test,
       R"({"GUID": "wifi1_guid", "Type": "wifi", "State": "online",
             "Strength": 50, "AutoConnect": true, "WiFi.HiddenSSID":
             false})");
-  task_environment().RunUntilIdle();
   floating_workspace_service->DefaultNetworkChanged(
       NetworkHandler::Get()->network_state_handler()->DefaultNetwork());
   EXPECT_FALSE(HasNotificationFor(kNotificationForNoNetworkConnection));
@@ -814,13 +863,14 @@ TEST_F(FloatingWorkspaceServiceV2Test,
   CreateFloatingWorkspaceServiceForTesting(profile());
   auto* floating_workspace_service =
       FloatingWorkspaceService::GetForProfile(profile());
-  test_sync_service()->SetHasSyncConsent(false);
+  test_sync_service()->SetAllowedByEnterprisePolicy(false);
   ASSERT_FALSE(test_sync_service()->IsSyncFeatureEnabled());
   floating_workspace_service->Init(test_sync_service(),
-                                   fake_desk_sync_service());
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
   test_sync_service()->FireStateChanged();
   EXPECT_TRUE(HasNotificationFor(kNotificationForNoNetworkConnection));
-  test_sync_service()->SetHasSyncConsent(true);
+  test_sync_service()->SetAllowedByEnterprisePolicy(true);
   ASSERT_TRUE(test_sync_service()->IsSyncFeatureEnabled());
   test_sync_service()->FireStateChanged();
   EXPECT_FALSE(HasNotificationFor(kNotificationForNoNetworkConnection));
@@ -845,7 +895,8 @@ TEST_F(FloatingWorkspaceServiceV2Test,
   auto* floating_workspace_service =
       FloatingWorkspaceService::GetForProfile(profile());
   floating_workspace_service->Init(test_sync_service(),
-                                   fake_desk_sync_service());
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
 
   task_environment().FastForwardBy(
       ash::features::kFloatingWorkspaceV2MaxTimeAvailableForRestoreAfterLogin
@@ -854,8 +905,8 @@ TEST_F(FloatingWorkspaceServiceV2Test,
   EXPECT_TRUE(HasNotificationFor(kNotificationForSyncErrorOrTimeOut));
 
   test_sync_service()->SetDownloadStatusFor(
-      {syncer::ModelType::WORKSPACE_DESK},
-      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
   test_sync_service()->FireStateChanged();
   EXPECT_FALSE(mock_desks_client()->restored_desk_template());
   EXPECT_TRUE(HasNotificationFor(kNotificationForRestoreAfterError));
@@ -889,7 +940,8 @@ TEST_F(FloatingWorkspaceServiceV2Test,
   auto* floating_workspace_service =
       FloatingWorkspaceService::GetForProfile(profile());
   floating_workspace_service->Init(test_sync_service(),
-                                   fake_desk_sync_service());
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
 
   task_environment().FastForwardBy(
       ash::features::kFloatingWorkspaceV2MaxTimeAvailableForRestoreAfterLogin
@@ -899,8 +951,8 @@ TEST_F(FloatingWorkspaceServiceV2Test,
 
   // Download completes after timeout.
   test_sync_service()->SetDownloadStatusFor(
-      {syncer::ModelType::WORKSPACE_DESK},
-      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
   test_sync_service()->FireStateChanged();
   EXPECT_FALSE(mock_desks_client()->restored_desk_template());
   EXPECT_TRUE(HasNotificationFor(kNotificationForRestoreAfterError));
@@ -931,11 +983,12 @@ TEST_F(FloatingWorkspaceServiceV2Test, CanRecordTemplateLoadMetric) {
   auto* floating_workspace_service =
       FloatingWorkspaceService::GetForProfile(profile());
   floating_workspace_service->Init(test_sync_service(),
-                                   fake_desk_sync_service());
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
 
   test_sync_service()->SetDownloadStatusFor(
-      {syncer::ModelType::WORKSPACE_DESK},
-      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
   test_sync_service()->FireStateChanged();
   EXPECT_TRUE(mock_desks_client()->restored_desk_template());
   EXPECT_EQ(mock_desks_client()->restored_desk_template()->template_name(),
@@ -965,7 +1018,8 @@ TEST_F(FloatingWorkspaceServiceV2Test, CanRecordTemplateLaunchTimeout) {
   auto* floating_workspace_service =
       FloatingWorkspaceService::GetForProfile(profile());
   floating_workspace_service->Init(test_sync_service(),
-                                   fake_desk_sync_service());
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
 
   task_environment().FastForwardBy(
       ash::features::kFloatingWorkspaceV2MaxTimeAvailableForRestoreAfterLogin
@@ -991,7 +1045,8 @@ TEST_F(FloatingWorkspaceServiceV2Test, CaptureFloatingWorkspaceTemplate) {
   auto* floating_workspace_service =
       FloatingWorkspaceService::GetForProfile(profile());
   floating_workspace_service->Init(test_sync_service(),
-                                   fake_desk_sync_service());
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
 
   const std::string template_name = "floating_workspace_captured_template";
   const base::Time creation_time = base::Time::Now();
@@ -1000,8 +1055,8 @@ TEST_F(FloatingWorkspaceServiceV2Test, CaptureFloatingWorkspaceTemplate) {
   mock_desks_client()->SetCapturedDeskTemplate(
       std::move(floating_workspace_template));
   test_sync_service()->SetDownloadStatusFor(
-      {syncer::ModelType::WORKSPACE_DESK},
-      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
   test_sync_service()->FireStateChanged();
   task_environment().FastForwardBy(
       ash::features::kFloatingWorkspaceV2PeriodicJobIntervalInSeconds.Get() +
@@ -1022,11 +1077,12 @@ TEST_F(FloatingWorkspaceServiceV2Test, CaptureSameFloatingWorkspaceTemplate) {
   auto* floating_workspace_service =
       FloatingWorkspaceService::GetForProfile(profile());
   floating_workspace_service->Init(test_sync_service(),
-                                   fake_desk_sync_service());
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
 
   test_sync_service()->SetDownloadStatusFor(
-      {syncer::ModelType::WORKSPACE_DESK},
-      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
   test_sync_service()->FireStateChanged();
   const std::string template_name = "floating_workspace_captured_template";
   const base::Time first_captured_template_creation_time = base::Time::Now();
@@ -1071,11 +1127,12 @@ TEST_F(FloatingWorkspaceServiceV2Test,
   auto* floating_workspace_service =
       FloatingWorkspaceService::GetForProfile(profile());
   floating_workspace_service->Init(test_sync_service(),
-                                   fake_desk_sync_service());
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
 
   test_sync_service()->SetDownloadStatusFor(
-      {syncer::ModelType::WORKSPACE_DESK},
-      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
   test_sync_service()->FireStateChanged();
   const std::string template_name = "floating_workspace_captured_template";
   const base::Time first_captured_template_creation_time = base::Time::Now();
@@ -1134,11 +1191,12 @@ TEST_F(FloatingWorkspaceServiceV2Test, PopulateFloatingWorkspaceTemplate) {
   auto* floating_workspace_service =
       FloatingWorkspaceService::GetForProfile(profile());
   floating_workspace_service->Init(test_sync_service(),
-                                   fake_desk_sync_service());
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
 
   test_sync_service()->SetDownloadStatusFor(
-      {syncer::ModelType::WORKSPACE_DESK},
-      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
   test_sync_service()->FireStateChanged();
   EXPECT_EQ(
       floating_workspace_service->GetFloatingWorkspaceTemplateEntries().size(),
@@ -1166,11 +1224,12 @@ TEST_F(FloatingWorkspaceServiceV2Test,
   auto* floating_workspace_service =
       FloatingWorkspaceService::GetForProfile(profile());
   floating_workspace_service->Init(test_sync_service(),
-                                   fake_desk_sync_service());
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
 
   test_sync_service()->SetDownloadStatusFor(
-      {syncer::ModelType::WORKSPACE_DESK},
-      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
   test_sync_service()->FireStateChanged();
   EXPECT_EQ(
       floating_workspace_service->GetFloatingWorkspaceTemplateEntries().size(),
@@ -1201,15 +1260,15 @@ TEST_F(FloatingWorkspaceServiceV2Test,
   loop3.Run();
 
   test_sync_service()->SetDownloadStatusFor(
-      {syncer::ModelType::WORKSPACE_DESK},
-      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
   test_sync_service()->FireStateChanged();
   EXPECT_EQ(
       floating_workspace_service->GetFloatingWorkspaceTemplateEntries().size(),
       1u);
   test_sync_service()->SetDownloadStatusFor(
-      {syncer::ModelType::WORKSPACE_DESK},
-      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
   test_sync_service()->FireStateChanged();
   EXPECT_EQ(floating_workspace_service->GetFloatingWorkspaceTemplateEntries()[0]
                 ->uuid(),
@@ -1239,11 +1298,12 @@ TEST_F(FloatingWorkspaceServiceV2Test,
   auto* floating_workspace_service =
       FloatingWorkspaceService::GetForProfile(profile());
   floating_workspace_service->Init(test_sync_service(),
-                                   fake_desk_sync_service());
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
 
   test_sync_service()->SetDownloadStatusFor(
-      {syncer::ModelType::WORKSPACE_DESK},
-      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
   test_sync_service()->FireStateChanged();
   ASSERT_TRUE(mock_desks_client()->restored_desk_template());
   EXPECT_EQ(mock_desks_client()->restored_desk_template()->template_name(),
@@ -1291,11 +1351,12 @@ TEST_F(FloatingWorkspaceServiceV2Test, PerformGarbageCollectionOnStaleEntries) {
   auto* floating_workspace_service =
       FloatingWorkspaceService::GetForProfile(profile());
   floating_workspace_service->Init(test_sync_service(),
-                                   fake_desk_sync_service());
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
 
   test_sync_service()->SetDownloadStatusFor(
-      {syncer::ModelType::WORKSPACE_DESK},
-      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
   test_sync_service()->FireStateChanged();
 
   ASSERT_TRUE(mock_desks_client()->restored_desk_template());
@@ -1313,15 +1374,16 @@ TEST_F(FloatingWorkspaceServiceV2Test,
   auto* floating_workspace_service =
       FloatingWorkspaceService::GetForProfile(profile());
   floating_workspace_service->Init(test_sync_service(),
-                                   fake_desk_sync_service());
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
 
   task_environment().FastForwardBy(base::Seconds(5));
   EXPECT_TRUE(HasNotificationFor(kNotificationForProgressStatus));
 
   // Wait for download to complete and check that the progress bar is gone.
   test_sync_service()->SetDownloadStatusFor(
-      {syncer::ModelType::WORKSPACE_DESK},
-      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
   test_sync_service()->FireStateChanged();
   EXPECT_FALSE(HasNotificationFor(kNotificationForProgressStatus));
 }
@@ -1333,7 +1395,8 @@ TEST_F(FloatingWorkspaceServiceV2Test,
   auto* floating_workspace_service =
       FloatingWorkspaceService::GetForProfile(profile());
   floating_workspace_service->Init(test_sync_service(),
-                                   fake_desk_sync_service());
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
 
   task_environment().FastForwardBy(base::Seconds(5));
   EXPECT_TRUE(HasNotificationFor(kNotificationForProgressStatus));
@@ -1353,14 +1416,15 @@ TEST_F(FloatingWorkspaceServiceV2Test,
   auto* floating_workspace_service =
       FloatingWorkspaceService::GetForProfile(profile());
   floating_workspace_service->Init(test_sync_service(),
-                                   fake_desk_sync_service());
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
 
   task_environment().FastForwardBy(base::Seconds(5));
   EXPECT_TRUE(HasNotificationFor(kNotificationForProgressStatus));
   // Send sync error to service.
   test_sync_service()->SetDownloadStatusFor(
-      {syncer::ModelType::WORKSPACE_DESK},
-      syncer::SyncService::ModelTypeDownloadStatus::kError);
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kError);
   test_sync_service()->FireStateChanged();
   EXPECT_FALSE(HasNotificationFor(kNotificationForProgressStatus));
   EXPECT_TRUE(HasNotificationFor(kNotificationForSyncErrorOrTimeOut));
@@ -1386,7 +1450,8 @@ TEST_F(FloatingWorkspaceServiceV2Test,
   auto* floating_workspace_service =
       FloatingWorkspaceService::GetForProfile(profile());
   floating_workspace_service->Init(test_sync_service(),
-                                   fake_desk_sync_service());
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
 
   task_environment().FastForwardBy(
       ash::features::kFloatingWorkspaceV2MaxTimeAvailableForRestoreAfterLogin
@@ -1395,8 +1460,8 @@ TEST_F(FloatingWorkspaceServiceV2Test,
   EXPECT_TRUE(HasNotificationFor(kNotificationForSyncErrorOrTimeOut));
 
   test_sync_service()->SetDownloadStatusFor(
-      {syncer::ModelType::WORKSPACE_DESK},
-      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
   test_sync_service()->FireStateChanged();
   EXPECT_FALSE(mock_desks_client()->restored_desk_template());
   EXPECT_TRUE(HasNotificationFor(kNotificationForRestoreAfterError));
@@ -1439,11 +1504,12 @@ TEST_F(FloatingWorkspaceServiceV2Test,
   auto* floating_workspace_service =
       FloatingWorkspaceService::GetForProfile(profile());
   floating_workspace_service->Init(test_sync_service(),
-                                   fake_desk_sync_service());
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
 
   test_sync_service()->SetDownloadStatusFor(
-      {syncer::ModelType::WORKSPACE_DESK},
-      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
   test_sync_service()->FireStateChanged();
   EXPECT_FALSE(mock_desks_client()->restored_desk_template());
 }
@@ -1455,11 +1521,12 @@ TEST_F(FloatingWorkspaceServiceV2Test, CanRecordTemplateNotFoundMetric) {
   auto* floating_workspace_service =
       FloatingWorkspaceService::GetForProfile(profile());
   floating_workspace_service->Init(test_sync_service(),
-                                   fake_desk_sync_service());
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
 
   test_sync_service()->SetDownloadStatusFor(
-      {syncer::ModelType::WORKSPACE_DESK},
-      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
   test_sync_service()->FireStateChanged();
   EXPECT_FALSE(mock_desks_client()->restored_desk_template());
   histogram_tester.ExpectTotalCount(
@@ -1474,7 +1541,8 @@ TEST_F(FloatingWorkspaceServiceV2Test, CanRecordFloatingWorkspaceV2InitMetric) {
   auto* floating_workspace_service =
       FloatingWorkspaceService::GetForProfile(profile());
   floating_workspace_service->Init(test_sync_service(),
-                                   fake_desk_sync_service());
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
 
   histogram_tester.ExpectTotalCount(
       floating_workspace_metrics_util::kFloatingWorkspaceV2Initialized, 1u);
@@ -1495,11 +1563,12 @@ TEST_F(FloatingWorkspaceServiceV2Test,
   auto* floating_workspace_service =
       FloatingWorkspaceService::GetForProfile(profile());
   floating_workspace_service->Init(test_sync_service(),
-                                   fake_desk_sync_service());
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
 
   test_sync_service()->SetDownloadStatusFor(
-      {syncer::ModelType::WORKSPACE_DESK},
-      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
   test_sync_service()->FireStateChanged();
   const std::string template_name = "floating_workspace_captured_template";
   const base::Time first_captured_template_creation_time = base::Time::Now();
@@ -1537,13 +1606,14 @@ TEST_F(FloatingWorkspaceServiceV2Test,
   auto* floating_workspace_service =
       FloatingWorkspaceService::GetForProfile(profile());
   floating_workspace_service->Init(test_sync_service(),
-                                   fake_desk_sync_service());
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
 
   wrapper.AddAppRegistryCache(account_id(), cache());
 
   test_sync_service()->SetDownloadStatusFor(
-      {syncer::ModelType::WORKSPACE_DESK},
-      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
   test_sync_service()->FireStateChanged();
   EXPECT_FALSE(mock_desks_client()->restored_desk_template());
   PopulateAppsCache();
@@ -1564,10 +1634,11 @@ TEST_F(FloatingWorkspaceServiceV2Test,
   auto* floating_workspace_service =
       FloatingWorkspaceService::GetForProfile(profile());
   floating_workspace_service->Init(test_sync_service(),
-                                   fake_desk_sync_service());
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
   test_sync_service()->SetDownloadStatusFor(
-      {syncer::ModelType::WORKSPACE_DESK},
-      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
   test_sync_service()->FireStateChanged();
   const std::string template_name = "floating_workspace_captured_template";
   const base::Time first_captured_template_creation_time = base::Time::Now();
@@ -1619,15 +1690,16 @@ TEST_F(FloatingWorkspaceServiceV2Test, CaptureImmediatelyAfterRestore) {
   auto* floating_workspace_service =
       FloatingWorkspaceService::GetForProfile(profile());
   floating_workspace_service->Init(test_sync_service(),
-                                   fake_desk_sync_service());
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
   const base::Time creation_time = base::Time::Now();
   std::unique_ptr<DeskTemplate> floating_workspace_template =
       MakeTestFloatingWorkspaceDeskTemplate(template_name, creation_time);
   mock_desks_client()->SetCapturedDeskTemplate(
       std::move(floating_workspace_template));
   test_sync_service()->SetDownloadStatusFor(
-      {syncer::ModelType::WORKSPACE_DESK},
-      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
   test_sync_service()->FireStateChanged();
   user_activity_detector()->set_last_activity_time_for_test(
       base::TimeTicks::Now() + base::Milliseconds(1));
@@ -1647,15 +1719,16 @@ TEST_F(FloatingWorkspaceServiceV2Test,
   auto* floating_workspace_service =
       FloatingWorkspaceService::GetForProfile(profile());
   floating_workspace_service->Init(test_sync_service(),
-                                   fake_desk_sync_service());
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
 
   const std::string template_name = "floating_workspace_captured_template";
   const base::Time creation_time = base::Time::Now();
   std::unique_ptr<DeskTemplate> floating_workspace_template =
       MakeTestFloatingWorkspaceDeskTemplate(template_name, creation_time);
   test_sync_service()->SetDownloadStatusFor(
-      {syncer::ModelType::WORKSPACE_DESK},
-      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
   test_sync_service()->FireStateChanged();
   mock_desks_client()->SetCapturedDeskTemplate(
       std::move(floating_workspace_template));
@@ -1675,15 +1748,16 @@ TEST_F(FloatingWorkspaceServiceV2Test,
   auto* floating_workspace_service =
       FloatingWorkspaceService::GetForProfile(profile());
   floating_workspace_service->Init(test_sync_service(),
-                                   fake_desk_sync_service());
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
 
   const std::string template_name = "floating_workspace_captured_template";
   const base::Time creation_time = base::Time::Now();
   std::unique_ptr<DeskTemplate> floating_workspace_template =
       MakeTestFloatingWorkspaceDeskTemplate(template_name, creation_time);
   test_sync_service()->SetDownloadStatusFor(
-      {syncer::ModelType::WORKSPACE_DESK},
-      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
   test_sync_service()->FireStateChanged();
   user_activity_detector()->set_last_activity_time_for_test(
       base::TimeTicks::Now());
@@ -1721,11 +1795,12 @@ TEST_F(FloatingWorkspaceServiceV2Test,
   auto* floating_workspace_service =
       FloatingWorkspaceService::GetForProfile(profile());
   floating_workspace_service->Init(test_sync_service(),
-                                   fake_desk_sync_service());
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
 
   test_sync_service()->SetDownloadStatusFor(
-      {syncer::ModelType::WORKSPACE_DESK},
-      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
   test_sync_service()->FireStateChanged();
   ASSERT_TRUE(mock_desks_client()->restored_desk_template());
   EXPECT_EQ(mock_desks_client()->restored_desk_template()->template_name(),
@@ -1754,12 +1829,12 @@ TEST_F(FloatingWorkspaceServiceV2Test,
   power_manager_client()->SendSuspendDone();
   floating_workspace_service->OnLockStateChanged(/*locked=*/false);
   test_sync_service()->SetDownloadStatusFor(
-      {syncer::ModelType::WORKSPACE_DESK},
-      syncer::SyncService::ModelTypeDownloadStatus::kWaitingForUpdates);
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kWaitingForUpdates);
   test_sync_service()->FireStateChanged();
   test_sync_service()->SetDownloadStatusFor(
-      {syncer::ModelType::WORKSPACE_DESK},
-      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
   test_sync_service()->FireStateChanged();
   ASSERT_TRUE(mock_desks_client()->restored_template_uuid().is_valid());
   EXPECT_EQ(mock_desks_client()->restored_template_uuid(),
@@ -1785,11 +1860,12 @@ TEST_F(FloatingWorkspaceServiceV2Test,
   auto* floating_workspace_service =
       FloatingWorkspaceService::GetForProfile(profile());
   floating_workspace_service->Init(test_sync_service(),
-                                   fake_desk_sync_service());
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
 
   test_sync_service()->SetDownloadStatusFor(
-      {syncer::ModelType::WORKSPACE_DESK},
-      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
   test_sync_service()->FireStateChanged();
   ASSERT_TRUE(mock_desks_client()->restored_desk_template());
   EXPECT_EQ(mock_desks_client()->restored_desk_template()->template_name(),
@@ -1805,8 +1881,8 @@ TEST_F(FloatingWorkspaceServiceV2Test,
 
   task_environment().FastForwardBy(base::Seconds(3));
   test_sync_service()->SetDownloadStatusFor(
-      {syncer::ModelType::WORKSPACE_DESK},
-      syncer::SyncService::ModelTypeDownloadStatus::kWaitingForUpdates);
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kWaitingForUpdates);
   test_sync_service()->FireStateChanged();
   task_environment().FastForwardBy(
       ash::features::kFloatingWorkspaceV2MaxTimeAvailableForRestoreAfterLogin
@@ -1826,12 +1902,12 @@ TEST_F(FloatingWorkspaceServiceV2Test,
           }));
   loop2.Run();
   test_sync_service()->SetDownloadStatusFor(
-      {syncer::ModelType::WORKSPACE_DESK},
-      syncer::SyncService::ModelTypeDownloadStatus::kWaitingForUpdates);
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kWaitingForUpdates);
   test_sync_service()->FireStateChanged();
   test_sync_service()->SetDownloadStatusFor(
-      {syncer::ModelType::WORKSPACE_DESK},
-      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
   test_sync_service()->FireStateChanged();
   EXPECT_TRUE(HasNotificationFor(kNotificationForRestoreAfterError));
   // User clicks restore button on the notification.
@@ -1864,11 +1940,12 @@ TEST_F(
   auto* floating_workspace_service =
       FloatingWorkspaceService::GetForProfile(profile());
   floating_workspace_service->Init(test_sync_service(),
-                                   fake_desk_sync_service());
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
 
   test_sync_service()->SetDownloadStatusFor(
-      {syncer::ModelType::WORKSPACE_DESK},
-      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
   test_sync_service()->FireStateChanged();
   ASSERT_TRUE(mock_desks_client()->restored_desk_template());
   EXPECT_EQ(mock_desks_client()->restored_desk_template()->template_name(),
@@ -1884,8 +1961,8 @@ TEST_F(
           .Get() +
       base::Seconds(1));
   test_sync_service()->SetDownloadStatusFor(
-      {syncer::ModelType::WORKSPACE_DESK},
-      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
   test_sync_service()->FireStateChanged();
   EXPECT_FALSE(HasNotificationFor(kNotificationForRestoreAfterError));
   ASSERT_TRUE(mock_desks_client()->restored_desk_template());
@@ -1912,11 +1989,12 @@ TEST_F(FloatingWorkspaceServiceV2Test,
   auto* floating_workspace_service =
       FloatingWorkspaceService::GetForProfile(profile());
   floating_workspace_service->Init(test_sync_service(),
-                                   fake_desk_sync_service());
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
 
   test_sync_service()->SetDownloadStatusFor(
-      {syncer::ModelType::WORKSPACE_DESK},
-      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
   test_sync_service()->FireStateChanged();
   ASSERT_TRUE(mock_desks_client()->restored_desk_template());
   EXPECT_EQ(mock_desks_client()->restored_desk_template()->template_name(),
@@ -1929,8 +2007,8 @@ TEST_F(FloatingWorkspaceServiceV2Test,
   floating_workspace_service->OnLockStateChanged(/*locked=*/false);
   task_environment().FastForwardBy(base::Seconds(3));
   test_sync_service()->SetDownloadStatusFor(
-      {syncer::ModelType::WORKSPACE_DESK},
-      syncer::SyncService::ModelTypeDownloadStatus::kWaitingForUpdates);
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kWaitingForUpdates);
   test_sync_service()->FireStateChanged();
   task_environment().FastForwardBy(
       ash::features::kFloatingWorkspaceV2MaxTimeAvailableForRestoreAfterLogin
@@ -1958,11 +2036,12 @@ TEST_F(FloatingWorkspaceServiceV2Test,
   auto* floating_workspace_service =
       FloatingWorkspaceService::GetForProfile(profile());
   floating_workspace_service->Init(test_sync_service(),
-                                   fake_desk_sync_service());
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
 
   test_sync_service()->SetDownloadStatusFor(
-      {syncer::ModelType::WORKSPACE_DESK},
-      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
   test_sync_service()->FireStateChanged();
   ASSERT_TRUE(mock_desks_client()->restored_desk_template());
   EXPECT_EQ(mock_desks_client()->restored_desk_template()->template_name(),
@@ -1979,6 +2058,198 @@ TEST_F(FloatingWorkspaceServiceV2Test,
           .Get() +
       base::Seconds(1));
   EXPECT_FALSE(HasNotificationFor(kNotificationForSyncErrorOrTimeOut));
+}
+
+TEST_F(FloatingWorkspaceServiceV2Test, AutoSignoutWithDeviceInfo) {
+  PopulateAppsCache();
+  base::RunLoop loop;
+  CreateFloatingWorkspaceServiceForTesting(profile());
+  auto* floating_workspace_service =
+      FloatingWorkspaceService::GetForProfile(profile());
+  floating_workspace_service->Init(test_sync_service(),
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
+
+  test_sync_service()->SetDownloadStatusFor(
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
+  test_sync_service()->FireStateChanged();
+  fake_device_info_sync_service()->GetDeviceInfoTracker()->Add(
+      CreateFakeDeviceInfo("guid1", "device1",
+                           base::Time::Now() + base::Seconds(10)));
+  test_sync_service()->SetDownloadStatusFor(
+      {syncer::DataType::DEVICE_INFO},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
+  test_sync_service()->FireStateChanged();
+  EXPECT_EQ(ash_test_helper()
+                ->test_session_controller_client()
+                ->request_sign_out_count(),
+            1);
+}
+
+TEST_F(FloatingWorkspaceServiceV2Test,
+       AutoSignoutDontTriggerWithSameDeviceInfoGuid) {
+  PopulateAppsCache();
+  const std::string template_name = "floating_workspace_template";
+  base::RunLoop loop;
+  CreateFloatingWorkspaceServiceForTesting(profile());
+  auto* floating_workspace_service =
+      FloatingWorkspaceService::GetForProfile(profile());
+  floating_workspace_service->Init(test_sync_service(),
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
+
+  test_sync_service()->SetDownloadStatusFor(
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
+  test_sync_service()->FireStateChanged();
+  fake_device_info_sync_service()->GetDeviceInfoTracker()->Add(
+      CreateFakeDeviceInfo("guid1", "device1",
+                           base::Time::Now() + base::Seconds(10)));
+  fake_device_info_sync_service()->GetDeviceInfoTracker()->SetLocalCacheGuid(
+      "guid1");
+  test_sync_service()->SetDownloadStatusFor(
+      {syncer::DataType::DEVICE_INFO},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
+  test_sync_service()->FireStateChanged();
+  EXPECT_EQ(ash_test_helper()
+                ->test_session_controller_client()
+                ->request_sign_out_count(),
+            0);
+}
+
+TEST_F(FloatingWorkspaceServiceV2Test,
+       AutoSignoutDontTriggerWithOldDeviceInfo) {
+  PopulateAppsCache();
+  const std::string template_name = "floating_workspace_template";
+  base::RunLoop loop;
+  CreateFloatingWorkspaceServiceForTesting(profile());
+  auto* floating_workspace_service =
+      FloatingWorkspaceService::GetForProfile(profile());
+  floating_workspace_service->Init(test_sync_service(),
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
+
+  test_sync_service()->SetDownloadStatusFor(
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
+  test_sync_service()->FireStateChanged();
+  fake_device_info_sync_service()->GetDeviceInfoTracker()->Add(
+      CreateFakeDeviceInfo("guid1", "device1",
+                           base::Time::Now() - base::Seconds(10)));
+  test_sync_service()->SetDownloadStatusFor(
+      {syncer::DataType::DEVICE_INFO},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
+  test_sync_service()->FireStateChanged();
+  EXPECT_EQ(ash_test_helper()
+                ->test_session_controller_client()
+                ->request_sign_out_count(),
+            0);
+}
+
+TEST_F(FloatingWorkspaceServiceV2Test, AutoSignoutWithWorkspaceDesk) {
+  // Upload should be executed if two captured templates are the different.
+  PopulateAppsCache();
+  CreateFloatingWorkspaceServiceForTesting(profile());
+  auto* floating_workspace_service =
+      FloatingWorkspaceService::GetForProfile(profile());
+  floating_workspace_service->Init(test_sync_service(),
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
+
+  const std::string template_name = "floating_workspace_captured_template";
+  const base::Time creation_time = base::Time::Now();
+  std::unique_ptr<DeskTemplate> floating_workspace_template =
+      MakeTestFloatingWorkspaceDeskTemplate(template_name, creation_time);
+  mock_desks_client()->SetCapturedDeskTemplate(
+      std::move(floating_workspace_template));
+  test_sync_service()->SetDownloadStatusFor(
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
+  test_sync_service()->FireStateChanged();
+  task_environment().FastForwardBy(
+      ash::features::kFloatingWorkspaceV2PeriodicJobIntervalInSeconds.Get() +
+      base::Seconds(1));
+  user_activity_detector()->set_last_activity_time_for_test(
+      base::TimeTicks::Now());
+  base::RunLoop loop;
+  fake_desk_sync_service()->GetDeskModel()->AddOrUpdateEntry(
+      MakeTestFloatingWorkspaceDeskTemplate(
+          template_name,
+          base::Time::Now() +
+              ash::features::kFloatingWorkspaceV2PeriodicJobIntervalInSeconds
+                  .Get() +
+              base::Seconds(1)),
+      base::BindLambdaForTesting(
+          [&](desks_storage::DeskModel::AddOrUpdateEntryStatus status,
+              std::unique_ptr<ash::DeskTemplate> new_entry) {
+            EXPECT_EQ(desks_storage::DeskModel::AddOrUpdateEntryStatus::kOk,
+                      status);
+            loop.Quit();
+          }));
+  loop.Run();
+  test_sync_service()->SetDownloadStatusFor(
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
+  test_sync_service()->FireStateChanged();
+  EXPECT_TRUE(floating_workspace_service->GetLatestFloatingWorkspaceTemplate());
+  EXPECT_EQ(ash_test_helper()
+                ->test_session_controller_client()
+                ->request_sign_out_count(),
+            1);
+}
+
+TEST_F(FloatingWorkspaceServiceV2Test,
+       AutoSignoutDontTriggerWithStaleWorkspaceDesk) {
+  // Upload should be executed if two captured templates are the different.
+  PopulateAppsCache();
+  CreateFloatingWorkspaceServiceForTesting(profile());
+  auto* floating_workspace_service =
+      FloatingWorkspaceService::GetForProfile(profile());
+  floating_workspace_service->Init(test_sync_service(),
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
+
+  const std::string template_name = "floating_workspace_captured_template";
+  const base::Time creation_time = base::Time::Now();
+  std::unique_ptr<DeskTemplate> floating_workspace_template =
+      MakeTestFloatingWorkspaceDeskTemplate(template_name, creation_time);
+  mock_desks_client()->SetCapturedDeskTemplate(
+      std::move(floating_workspace_template));
+  test_sync_service()->SetDownloadStatusFor(
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
+  test_sync_service()->FireStateChanged();
+  task_environment().FastForwardBy(
+      ash::features::kFloatingWorkspaceV2PeriodicJobIntervalInSeconds.Get() +
+      base::Seconds(1));
+  user_activity_detector()->set_last_activity_time_for_test(
+      base::TimeTicks::Now());
+  base::RunLoop loop;
+  fake_desk_sync_service()->GetDeskModel()->AddOrUpdateEntry(
+      MakeTestFloatingWorkspaceDeskTemplate(
+          template_name,
+          base::Time::Now() -
+              ash::features::kFloatingWorkspaceV2PeriodicJobIntervalInSeconds
+                  .Get() -
+              base::Seconds(1)),
+      base::BindLambdaForTesting(
+          [&](desks_storage::DeskModel::AddOrUpdateEntryStatus status,
+              std::unique_ptr<ash::DeskTemplate> new_entry) {
+            EXPECT_EQ(desks_storage::DeskModel::AddOrUpdateEntryStatus::kOk,
+                      status);
+            loop.Quit();
+          }));
+  loop.Run();
+  test_sync_service()->SetDownloadStatusFor(
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
+  test_sync_service()->FireStateChanged();
+  EXPECT_TRUE(floating_workspace_service->GetLatestFloatingWorkspaceTemplate());
+  EXPECT_EQ(ash_test_helper()
+                ->test_session_controller_client()
+                ->request_sign_out_count(),
+            0);
 }
 
 class FloatingWorkspaceServiceMultiUserTest
@@ -1999,6 +2270,10 @@ class FloatingWorkspaceServiceMultiUserTest
 
   syncer::TestSyncService* test_sync_service2() {
     return test_sync_service2_.get();
+  }
+
+  syncer::FakeDeviceInfoSyncService* fake_device_info_sync_service2() {
+    return fake_device_info_sync_service2_.get();
   }
 
   void PopulateAppsCache2() {
@@ -2024,6 +2299,11 @@ class FloatingWorkspaceServiceMultiUserTest
     fake_user_manager()->UserLoggedIn(account_id2_, username_hash2,
                                       /*browser_restart=*/false,
                                       /*is_child=*/false);
+    CoreAccountInfo account_info;
+    account_info.email = kTestAccount2;
+    account_info.gaia = "gaia2";
+    account_info.account_id = CoreAccountId::FromGaiaId(account_info.gaia);
+    test_sync_service()->SetSignedIn(signin::ConsentLevel::kSync, account_info);
     fake_desk_sync_service2_ =
         std::make_unique<desks_storage::FakeDeskSyncService>(
             /*skip_engine_connection=*/true);
@@ -2032,6 +2312,9 @@ class FloatingWorkspaceServiceMultiUserTest
     display_service2_ =
         std::make_unique<NotificationDisplayServiceTester>(profile2_.get());
     cache2_ = std::make_unique<apps::AppRegistryCache>();
+    fake_device_info_sync_service2_ =
+        std::make_unique<syncer::FakeDeviceInfoSyncService>(
+            /*skip_engine_connection=*/true);
     apps::AppRegistryCacheWrapper::Get().AddAppRegistryCache(account_id2_,
                                                              cache2_.get());
   }
@@ -2053,6 +2336,8 @@ class FloatingWorkspaceServiceMultiUserTest
   AccountId account_id2_;
   std::unique_ptr<NotificationDisplayServiceTester> display_service2_;
   std::unique_ptr<apps::AppRegistryCache> cache2_;
+  std::unique_ptr<syncer::FakeDeviceInfoSyncService>
+      fake_device_info_sync_service2_;
   raw_ptr<TestingProfile> profile2_ = nullptr;
 };
 
@@ -2064,18 +2349,20 @@ TEST_F(FloatingWorkspaceServiceMultiUserTest, TwoUserLoggedInAndCaptureStops) {
   auto* floating_workspace_service =
       FloatingWorkspaceService::GetForProfile(profile());
   floating_workspace_service->Init(test_sync_service(),
-                                   fake_desk_sync_service());
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
   auto* floating_workspace_service2 =
       FloatingWorkspaceService::GetForProfile(profile2());
   floating_workspace_service2->Init(test_sync_service2(),
-                                    fake_desk_sync_service2());
+                                    fake_desk_sync_service2(),
+                                    fake_device_info_sync_service2());
   test_sync_service()->SetDownloadStatusFor(
-      {syncer::ModelType::WORKSPACE_DESK},
-      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
   test_sync_service()->FireStateChanged();
   test_sync_service2()->SetDownloadStatusFor(
-      {syncer::ModelType::WORKSPACE_DESK},
-      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
   test_sync_service2()->FireStateChanged();
 
   fake_user_manager()->SwitchActiveUser(account_id());
@@ -2126,19 +2413,21 @@ TEST_F(FloatingWorkspaceServiceMultiUserTest,
   auto* floating_workspace_service =
       FloatingWorkspaceService::GetForProfile(profile());
   floating_workspace_service->Init(test_sync_service(),
-                                   fake_desk_sync_service());
+                                   fake_desk_sync_service(),
+                                   fake_device_info_sync_service());
   auto* floating_workspace_service2 =
       FloatingWorkspaceService::GetForProfile(profile2());
   floating_workspace_service2->Init(test_sync_service2(),
-                                    fake_desk_sync_service2());
+                                    fake_desk_sync_service2(),
+                                    fake_device_info_sync_service2());
 
   test_sync_service()->SetDownloadStatusFor(
-      {syncer::ModelType::WORKSPACE_DESK},
-      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
   test_sync_service()->FireStateChanged();
   test_sync_service2()->SetDownloadStatusFor(
-      {syncer::ModelType::WORKSPACE_DESK},
-      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+      {syncer::DataType::WORKSPACE_DESK},
+      syncer::SyncService::DataTypeDownloadStatus::kUpToDate);
   test_sync_service2()->FireStateChanged();
 
   const std::string template_name = "floating_workspace_captured_template";

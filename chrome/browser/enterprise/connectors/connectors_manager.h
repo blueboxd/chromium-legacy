@@ -9,13 +9,10 @@
 
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/enterprise/connectors/analysis/analysis_service_settings.h"
-#include "chrome/browser/enterprise/connectors/common.h"
-#include "chrome/browser/enterprise/connectors/reporting/extension_install_event_router.h"
-#include "chrome/browser/enterprise/connectors/reporting/extension_telemetry_event_router.h"
-#include "chrome/browser/enterprise/connectors/reporting/reporting_service_settings.h"
-#include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
 #include "components/enterprise/buildflags/buildflags.h"
-#include "components/enterprise/connectors/service_provider_config.h"
+#include "components/enterprise/connectors/core/analysis_settings.h"
+#include "components/enterprise/connectors/core/reporting_service_settings.h"
+#include "components/enterprise/connectors/core/service_provider_config.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "url/gurl.h"
@@ -25,12 +22,15 @@
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #endif  // BUILDFLAG(ENTERPRISE_LOCAL_CONTENT_ANALYSIS)
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "content/public/browser/browser_context.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 namespace storage {
 class FileSystemURL;
 }
 
 namespace enterprise_connectors {
-class BrowserCrashEventRouter;
 
 // Manages access to Connector policies for a given profile. This class is
 // responsible for caching the Connector policies, validate them against
@@ -49,14 +49,9 @@ class ConnectorsManager {
   using ReportingConnectorsSettings =
       std::map<ReportingConnector, std::vector<ReportingServiceSettings>>;
 
-  ConnectorsManager(
-      std::unique_ptr<BrowserCrashEventRouter> browser_crash_event_router,
-      std::unique_ptr<ExtensionInstallEventRouter> extension_install_router,
-      std::unique_ptr<ExtensionTelemetryEventRouter>
-          extension_telemetry_event_router,
-      PrefService* pref_service,
-      const ServiceProviderConfig* config,
-      bool observe_prefs = true);
+  ConnectorsManager(PrefService* pref_service,
+                    const ServiceProviderConfig* config,
+                    bool observe_prefs = true);
 #if BUILDFLAG(ENTERPRISE_LOCAL_CONTENT_ANALYSIS)
   ~ConnectorsManager() override;
 #else
@@ -108,10 +103,14 @@ class ConnectorsManager {
   std::vector<const AnalysisConfig*> GetAnalysisServiceConfigs(
       AnalysisConnector connector);
 
+  void SetTelemetryObserverCallback(base::RepeatingCallback<void()> callback);
+
   // Public testing functions.
   const AnalysisConnectorsSettings& GetAnalysisConnectorsSettingsForTesting()
       const;
   const ReportingConnectorsSettings& GetReportingConnectorsSettingsForTesting()
+      const;
+  const base::RepeatingCallback<void()> GetTelemetryObserverCallbackForTesting()
       const;
 
  private:
@@ -127,19 +126,12 @@ class ConnectorsManager {
       const TabStripSelectionChange& selection) override;
 #endif  // BUILDFLAG(ENTERPRISE_LOCAL_CONTENT_ANALYSIS)
 
-  // Validates which settings should be applied to an analysis connector event
-  // against connector policies. Cache the policy value the first time this is
-  // called for every different connector.
-  std::optional<AnalysisSettings> GetAnalysisSettingsFromConnectorPolicy(
-      const GURL& url,
-      AnalysisConnector connector);
-
   // Read and cache the policy corresponding to |connector|.
   void CacheAnalysisConnectorPolicy(AnalysisConnector connector) const;
   void CacheReportingConnectorPolicy(ReportingConnector connector);
 
   // Get data location region from policy.
-  safe_browsing::DataRegion GetDataRegion() const;
+  DataRegion GetDataRegion() const;
 
 #if BUILDFLAG(ENTERPRISE_LOCAL_CONTENT_ANALYSIS)
   // Close connection with local agent if all the relevant connectors are turned
@@ -150,18 +142,13 @@ class ConnectorsManager {
   // Re-cache analysis connector policy and update local agent connection if
   // needed.
   void OnPrefChanged(AnalysisConnector connector);
+  void OnPrefChanged(ReportingConnector connector);
 
   // Sets up |pref_change_registrar_|. Used by the constructor and
   // SetUpForTesting.
   void StartObservingPrefs(PrefService* pref_service);
   void StartObservingPref(AnalysisConnector connector);
   void StartObservingPref(ReportingConnector connector);
-
-  // Validates which settings should be applied to an analysis connector event
-  // against connector policies. Cache the policy value the first time this is
-  // called for every different connector.
-  std::optional<ReportingSettings> GetReportingSettingsFromConnectorPolicy(
-      ReportingConnector connector);
 
   PrefService* prefs() { return pref_change_registrar_.prefs(); }
 
@@ -182,15 +169,8 @@ class ConnectorsManager {
   // |connector_settings_|.
   PrefChangeRegistrar pref_change_registrar_;
 
-  // A router to report browser crash events via the reporting pipeline.
-  std::unique_ptr<BrowserCrashEventRouter> browser_crash_event_router_;
-
-  // An observer to report extension install events via the reporting pipeline.
-  std::unique_ptr<ExtensionInstallEventRouter> extension_install_event_router_;
-
-  // A router to report extension telemetry events via the reporting pipeline.
-  std::unique_ptr<ExtensionTelemetryEventRouter>
-      extension_telemetry_event_router_;
+  // Used to report changes of reporting connector policy.
+  base::RepeatingCallback<void()> telemetry_observer_callback_;
 };
 
 }  // namespace enterprise_connectors

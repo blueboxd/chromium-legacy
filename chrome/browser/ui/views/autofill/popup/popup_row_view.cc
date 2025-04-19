@@ -8,36 +8,49 @@
 #include <optional>
 #include <string>
 #include <utility>
+#include <vector>
 
+#include "base/check.h"
 #include "base/check_op.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
+#include "base/i18n/rtl.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "base/strings/string_util.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_cell_utils.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_row_content_view.h"
-#include "chrome/browser/ui/views/autofill/popup/popup_row_factory_utils.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_row_with_button_view.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_view_utils.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_view_views.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "components/autofill/core/browser/filling_product.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/browser/ui/suggestion_type.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/vector_icons/vector_icons.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
+#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/base_type_conversion.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/color/color_id.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/outsets_f.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/background.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
 
@@ -65,6 +78,11 @@ constexpr int kExpandChildSuggestionsViewWidth = 24;
 constexpr int kExpandChildSuggestionsIconWidth = 16;
 constexpr int kExpandChildSuggestionsViewHorizontalPadding =
     (kExpandChildSuggestionsViewWidth - kExpandChildSuggestionsIconWidth) / 2;
+
+// The suggestion is considered acceptable if the following is true:
+// row view visible area >= total area * kAcceptingGuardVisibleAreaPortion.
+// See how it is used in `PopupRowView::OnVisibleBoundsChanged()` for details.
+constexpr float kAcceptingGuardVisibleAreaPortion = 0.5;
 
 // Computes the position and set size of the suggestion at `suggestion_index` in
 // `controller`'s suggestions ignoring `SuggestionType::kSeparator`s.
@@ -114,6 +132,31 @@ std::u16string GetSuggestionA11yString(const Suggestion& suggestion,
   return base::JoinString(text, u". ");
 }
 
+// Returns whether the expand subpopup icon can have its visibility updated on
+// hover/select. This method will return true when the following
+// conditions are met:
+// 1. The suggestion has children (otherwise a subpopup does not exist for it).
+// 2. A suggestion is acceptable.
+// 3. The `FillingProduct` is `FillingProduct::kAddress` (to avoid interfering
+// with `FillingProduct::kCompose` suggestions).
+// 4. The respective feature and feature param is enabled. This is currently
+// done as part of an experiment arm to understand users behaviour.
+//
+// Note that when a suggestion is not acceptable, the only
+// possible action the user can take is opening the subpopup and accepting a
+// suggestion in it, therefore the icon is always visible in this case.
+bool CanUpdateOpenSubPopupIconVisibilityOnHover(const Suggestion& suggestion) {
+  CHECK(suggestion.children.size() > 0);
+  return suggestion.is_acceptable &&
+         GetFillingProductFromSuggestionType(suggestion.type) ==
+             FillingProduct::kAddress &&
+         base::FeatureList::IsEnabled(
+             features::kAutofillGranularFillingAvailable) &&
+         features::
+             kAutofillGranularFillingAvailableWithExpandControlVisibleOnSelectionOnly
+                 .Get();
+}
+
 }  // namespace
 
 EnterExitHandler::EnterExitHandler(base::RepeatingClosure enter_callback,
@@ -124,17 +167,17 @@ EnterExitHandler::EnterExitHandler(base::RepeatingClosure enter_callback,
 EnterExitHandler::~EnterExitHandler() = default;
 void EnterExitHandler::OnEvent(ui::Event* event) {
   switch (event->type()) {
-    case ui::ET_MOUSE_ENTERED:
+    case ui::EventType::kMouseEntered:
       enter_callback_.Run();
       break;
-    case ui::ET_MOUSE_EXITED:
+    case ui::EventType::kMouseExited:
       exit_callback_.Run();
       break;
-    case ui::ET_GESTURE_TAP_DOWN:
+    case ui::EventType::kGestureTapDown:
       enter_callback_.Run();
       break;
-    case ui::ET_GESTURE_TAP_CANCEL:
-    case ui::ET_GESTURE_END:
+    case ui::EventType::kGestureTapCancel:
+    case ui::EventType::kGestureEnd:
       exit_callback_.Run();
       break;
     default:
@@ -214,7 +257,7 @@ PopupRowView::PopupRowView(
 
   content_view_ = AddChildView(std::move(content_view));
   content_view_->SetFocusBehavior(FocusBehavior::ALWAYS);
-  content_view_->AddObserver(this);
+  content_view_observer_.Observe(content_view_);
   content_view_->GetViewAccessibility().SetRole(
       ax::mojom::Role::kListBoxOption);
   content_view_->GetViewAccessibility().SetName(
@@ -226,6 +269,12 @@ PopupRowView::PopupRowView(
   content_view_->GetViewAccessibility().SetPosInSet(position);
   content_view_->GetViewAccessibility().SetSetSize(set_size);
   content_view_->GetViewAccessibility().SetIsSelected(false);
+
+  if (controller_ && line_number_ < controller_->GetLineCount()) {
+    GetViewAccessibility().SetPosInSet(position);
+    GetViewAccessibility().SetSetSize(set_size);
+    GetViewAccessibility().SetRole(ax::mojom::Role::kListBoxOption);
+  }
   content_event_handler_ =
       set_exit_enter_callbacks(CellType::kContent, *content_view_);
   layout->SetFlexForView(content_view_.get(), 1);
@@ -238,14 +287,19 @@ PopupRowView::PopupRowView(
         std::make_unique<views::BoxLayout>(
             views::BoxLayout::Orientation::kHorizontal,
             gfx::Insets(kExpandChildSuggestionsViewHorizontalPadding)));
-    expand_child_suggestions_view_->AddChildView(
-        popup_cell_utils::ImageViewFromVectorIcon(
-            popup_cell_utils::GetExpandableMenuIcon(suggestion.type),
-            kExpandChildSuggestionsIconWidth));
-    expand_child_suggestions_view_->AddObserver(this);
+    expand_child_suggestions_view_icon_ =
+        expand_child_suggestions_view_->AddChildView(
+            std::make_unique<views::ImageView>(
+                popup_cell_utils::ImageModelFromVectorIcon(
+                    popup_cell_utils::GetExpandableMenuIcon(suggestion.type),
+                    kExpandChildSuggestionsIconWidth)));
+    expand_child_suggestions_view_observer_.Observe(
+        expand_child_suggestions_view_);
     control_event_handler_ = set_exit_enter_callbacks(
         CellType::kControl, *expand_child_suggestions_view_);
     layout->SetFlexForView(expand_child_suggestions_view_.get(), 0);
+
+    UpdateOpenSubPopupIconVisibility();
   }
 }
 
@@ -280,15 +334,17 @@ void PopupRowView::OnMouseReleased(const ui::MouseEvent& event) {
   }
 
   if (event.IsOnlyLeftMouseButton() &&
-      content_view_->HitTestPoint(event.location()) && controller_) {
+      content_view_->HitTestPoint(event.location()) && controller_ &&
+      IsViewVisibleEnough()) {
     controller_->AcceptSuggestion(line_number_);
   }
 }
 
 void PopupRowView::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
-    case ui::ET_GESTURE_TAP:
-      if (content_view_->HitTestPoint(event->location()) && controller_) {
+    case ui::EventType::kGestureTap:
+      if (content_view_->HitTestPoint(event->location()) && controller_ &&
+          IsViewVisibleEnough()) {
         controller_->AcceptSuggestion(line_number_);
       }
       break;
@@ -302,21 +358,25 @@ void PopupRowView::OnPaint(gfx::Canvas* canvas) {
   mouse_observed_outside_item_bounds_ |= !IsMouseHovered();
 }
 
+bool PopupRowView::GetNeedsNotificationWhenVisibleBoundsChange() const {
+  return base::FeatureList::IsEnabled(
+      features::kAutofillPopupDontAcceptNonVisibleEnoughSuggestion);
+}
+
+void PopupRowView::OnVisibleBoundsChanged() {
+  if (GetVisibleBounds().size().GetArea() >=
+      size().GetArea() * kAcceptingGuardVisibleAreaPortion) {
+    barrier_for_accepting_ = NextIdleBarrier::CreateNextIdleBarrierWithDelay(
+        AutofillSuggestionController::kIgnoreEarlyClicksOnSuggestionsDuration);
+  } else {
+    barrier_for_accepting_.reset();
+  }
+}
+
 void PopupRowView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   views::View::GetAccessibleNodeData(node_data);
 
   if (controller_ && line_number_ < controller_->GetLineCount()) {
-    ui::AXNodeData content_node_data;
-    content_view_->GetViewAccessibility().GetAccessibleNodeData(
-        &content_node_data);
-
-    node_data->role = content_node_data.role;
-    node_data->AddIntAttribute(
-        ax::mojom::IntAttribute::kPosInSet,
-        content_node_data.GetIntAttribute(ax::mojom::IntAttribute::kPosInSet));
-    node_data->AddIntAttribute(
-        ax::mojom::IntAttribute::kSetSize,
-        content_node_data.GetIntAttribute(ax::mojom::IntAttribute::kSetSize));
     node_data->SetName(
         GetSuggestionA11yString(controller_->GetSuggestionAt(line_number_),
                                 /*add_call_to_action_if_expandable=*/false));
@@ -371,14 +431,14 @@ void PopupRowView::SetSelectedCell(std::optional<CellType> new_cell) {
     selected_cell_ = std::nullopt;
   }
 
-  UpdateBackground();
+  UpdateUI();
 }
 
 void PopupRowView::SetChildSuggestionsDisplayed(
     bool child_suggestions_displayed) {
   child_suggestions_displayed_ = child_suggestions_displayed;
 
-  UpdateBackground();
+  UpdateUI();
 }
 
 gfx::RectF PopupRowView::GetControlCellBounds() const {
@@ -399,7 +459,7 @@ gfx::RectF PopupRowView::GetControlCellBounds() const {
 }
 
 bool PopupRowView::HandleKeyPressEvent(
-    const content::NativeWebKeyboardEvent& event) {
+    const input::NativeWebKeyboardEvent& event) {
   // Some cells may want to define their own behavior.
   CHECK(GetSelectedCell());
 
@@ -408,7 +468,7 @@ bool PopupRowView::HandleKeyPressEvent(
       const bool kHasKeyModifierPressed =
           event.GetModifiers() & blink::WebInputEvent::kKeyModifiers;
       if (*GetSelectedCell() == CellType::kContent && controller_ &&
-          !kHasKeyModifierPressed) {
+          !kHasKeyModifierPressed && IsViewVisibleEnough()) {
         controller_->AcceptSuggestion(line_number_);
         return true;
       }
@@ -417,6 +477,11 @@ bool PopupRowView::HandleKeyPressEvent(
     default:
       return false;
   }
+}
+
+void PopupRowView::UpdateUI() {
+  UpdateBackground();
+  UpdateOpenSubPopupIconVisibility();
 }
 
 void PopupRowView::UpdateBackground() {
@@ -433,6 +498,33 @@ void PopupRowView::UpdateBackground() {
   SetBackground(views::CreateThemedRoundedRectBackground(
       kBackgroundColorId, ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
                               views::Emphasis::kMedium)));
+}
+
+void PopupRowView::UpdateOpenSubPopupIconVisibility() {
+  if (!expand_child_suggestions_view_icon_ ||
+      line_number_ >= controller_->GetLineCount() ||
+      controller_->GetSuggestionAt(line_number_).children.size() == 0 ||
+      !CanUpdateOpenSubPopupIconVisibilityOnHover(
+          controller_->GetSuggestionAt(line_number_))) {
+    return;
+  }
+
+  expand_child_suggestions_view_icon_->SetVisible(selected_cell_ ||
+                                                  child_suggestions_displayed_);
+}
+
+bool PopupRowView::IsViewVisibleEnough() const {
+  if (controller_ &&
+      !controller_->IsViewVisibilityAcceptingThresholdEnabled()) {
+    return true;
+  }
+
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillPopupDontAcceptNonVisibleEnoughSuggestion)) {
+    return true;
+  }
+
+  return barrier_for_accepting_ && barrier_for_accepting_->value();
 }
 
 BEGIN_METADATA(PopupRowView)

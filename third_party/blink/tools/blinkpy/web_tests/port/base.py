@@ -43,7 +43,7 @@ import time
 from collections import defaultdict
 from copy import deepcopy
 from datetime import datetime
-from typing import Literal, Optional, Set, Tuple
+from typing import List, Literal, NamedTuple, Optional, Set, Tuple
 
 import six
 from six.moves import zip_longest
@@ -140,6 +140,31 @@ DISABLE_THREADED_COMPOSITING_FLAG = '--disable-threaded-compositing'
 DISABLE_THREADED_ANIMATION_FLAG = '--disable-threaded-animation'
 
 
+class BaselineLocation(NamedTuple):
+    """A representation of a baseline that may exist on disk."""
+    virtual_suite: str = ''
+    platform: str = ''
+    flag_specific: str = ''
+
+    @property
+    def root(self) -> bool:
+        # Also check that this baseline is not flag-specific. A flag-specific
+        # suite implies a platform, even without `platform/*/` in its path.
+        return not self.platform and not self.flag_specific
+
+    def __str__(self) -> str:
+        parts = []
+        if self.virtual_suite:
+            parts.append('virtual/%s' % self.virtual_suite)
+        if self.platform:
+            parts.append(self.platform)
+        elif self.flag_specific:
+            parts.append(self.flag_specific)
+        if not parts:
+            parts.append('(generic)')
+        return ':'.join(parts)
+
+
 class Port(object):
     """Abstract class for Port-specific hooks for the web_test package."""
 
@@ -156,12 +181,12 @@ class Port(object):
 
     CONTENT_SHELL_NAME = 'content_shell'
     CHROME_NAME = 'chrome'
+    HEADLESS_SHELL_NAME = 'headless_shell'
 
     # Update the first line in third_party/blink/web_tests/TestExpectations and
     # the documentation in docs/testing/web_test_expectations.md when this list
     # changes.
     ALL_SYSTEMS = (
-        ('mac10.15', 'x86'),
         ('mac11', 'x86'),
         ('mac11-arm64', 'arm64'),
         ('mac12', 'x86_64'),
@@ -170,6 +195,8 @@ class Port(object):
         ('mac13-arm64', 'arm64'),
         ('mac14', 'x86_64'),
         ('mac14-arm64', 'arm64'),
+        ('mac15', 'x86_64'),
+        ('mac15-arm64', 'arm64'),
         ('win10.20h2', 'x86'),
         ('win11-arm64', 'arm64'),
         ('win11', 'x86_64'),
@@ -180,8 +207,8 @@ class Port(object):
 
     CONFIGURATION_SPECIFIER_MACROS = {
         'mac': [
-            'mac10.15', 'mac11', 'mac11-arm64', 'mac12', 'mac12-arm64',
-            'mac13', 'mac13-arm64', 'mac14', 'mac14-arm64'
+            'mac11', 'mac11-arm64', 'mac12', 'mac12-arm64', 'mac13',
+            'mac13-arm64', 'mac14', 'mac14-arm64', 'mac15', 'mac15-arm64'
         ],
         'ios': ['ios17-simulator'],
         'win': ['win10.20h2', 'win11-arm64', 'win11'],
@@ -238,6 +265,12 @@ class Port(object):
         r'<(?:html:)?meta\s+name=(?:fuzzy|"fuzzy")\s+content='
         r'"(?:(.+):)?(?:\s*maxDifference\s*=\s*)?(?:(\d+)-)?(\d+);(?:\s*totalPixels\s*=\s*)?(?:(\d+)-)?(\d+)"\s*/?>'
     )
+
+    # Pattern for detecting testharness tests from their contents. Like
+    # `WPT_FUZZY_REGEX`, this pattern is only used for non-WPT tests. The
+    # manifest supplies this information for WPTs.
+    _TESTHARNESS_PATTERN = re.compile(
+        r'<script\s.*src=.*resources/testharness\.js.*>', re.IGNORECASE)
 
     # Add fully-qualified test names here to generate per-test traces.
     #
@@ -396,55 +429,26 @@ class Port(object):
         flags += self.get_option('additional_driver_flag', [])
         return flags
 
-    def additional_driver_flags(self):
+    def additional_driver_flags(self) -> List[str]:
+        """Get extra switches to apply to all tests in this run.
+
+        Note on layering: Only hardcode switches here if they're useful for all
+        embedders and test scenarios (e.g., `//content/public/` switches).
+        Embedder-specific switches should be added to the corresponding
+        `Driver.cmd_line()` implementation.
+        """
         flags = self._specified_additional_driver_flags()
-        driver_name = self.driver_name()
-
-        # Enable "test" and "experimental" features by passing either
-        # `--run-web-tests` or `--enable-blink-test-features`.
-        if driver_name == self.CONTENT_SHELL_NAME:
-            flags.extend([
-                '--run-web-tests',
-                # `--ignore-certificate-errors-spki-list` requires
-                # `--user-data-dir` to take effect. `--user-data-dir` is an
-                # embedder-defined switch; it seems that we don't need to pass
-                # this for `chrome`, as `chromedriver` will supply its own
-                # value.
-                '--user-data-dir',
-            ])
-        elif driver_name == self.CHROME_NAME:
-            flags.extend([
-                '--enable-blink-test-features',
-                # Expose the non-standard `window.gc()` for `wpt_internal/`
-                # tests. See: crbug.com/1509657
-                '--js-flags=--expose-gc',
-            ])
-
-        if driver_name in {self.CONTENT_SHELL_NAME, self.CHROME_NAME}:
-            known_fingerprints = [
-                WPT_FINGERPRINT,
-                SXG_FINGERPRINT,
-                SXG_WPT_FINGERPRINT,
-            ]
-            flags.extend([
-                '--ignore-certificate-errors-spki-list=' +
-                ','.join(known_fingerprints),
-                # Required for WebTransport tests.
-                '--webtransport-developer-mode',
-            ])
-            if self.get_option('nocheck_sys_deps', False):
-                flags.append('--disable-system-font-check')
-
-        # If we're already repeating the tests more than once, then we're not
-        # particularly concerned with speed. Resetting the shell between tests
-        # increases test run time by 2-5X, but provides more consistent results
-        # [less state leaks between tests].
-        if (self.get_option('reset_shell_between_tests')
-                or (self.get_option('repeat_each')
-                    and self.get_option('repeat_each') > 1)
-                or (self.get_option('iterations')
-                    and self.get_option('iterations') > 1)):
-            flags += ['--reset-shell-between-tests']
+        known_fingerprints = [
+            WPT_FINGERPRINT,
+            SXG_FINGERPRINT,
+            SXG_WPT_FINGERPRINT,
+        ]
+        flags.extend([
+            '--ignore-certificate-errors-spki-list=' +
+            ','.join(known_fingerprints),
+            # Required for WebTransport tests.
+            '--webtransport-developer-mode',
+        ])
         return flags
 
     def supports_per_test_timeout(self):
@@ -718,6 +722,11 @@ class Port(object):
     def driver_name(self):
         if self.get_option('driver_name'):
             return self.get_option('driver_name')
+        product = self.get_option('product')
+        if product == 'chrome':
+            return self.CHROME_NAME
+        elif product == 'headless_shell':
+            return self.HEADLESS_SHELL_NAME
         return self.CONTENT_SHELL_NAME
 
     def expected_baselines_by_extension(self, test_name):
@@ -774,6 +783,44 @@ class Port(object):
         else:
             test_name_root, _ = self._filesystem.splitext(test_name)
         return test_name_root + suffix + extension
+
+    def parse_output_filename(
+            self, baseline_path: str) -> Tuple[BaselineLocation, str]:
+        """Parse a baseline path into its virtual/platform/flag-specific pieces.
+
+        Note that this method doesn't validate that the underlying baseline
+        exists and corresponds to a real test.
+
+        Arguments:
+            baseline_path: Absolute or relative path to an `*-expected.*` file.
+
+        Returns:
+            A `BaselineLocation` with the parsed parameters, and the rest of
+            the baseline's relative path.
+
+        Raises:
+            ValueError: If the provided path is a non-web test absolute path.
+        """
+        if self._filesystem.isabs(baseline_path):
+            if baseline_path.startswith(self.web_tests_dir()):
+                baseline_path = self._filesystem.relpath(
+                    baseline_path, self.web_tests_dir())
+            else:
+                raise ValueError(
+                    f'{baseline_path!r} is not under `web_tests/`')
+
+        parts = baseline_path.split(self._filesystem.sep)
+        platform = flag_specific = virtual_suite = ''
+        if len(parts) >= 2:
+            if parts[0] == 'platform':
+                platform, parts = parts[1], parts[2:]
+            elif parts[0] == 'flag-specific':
+                flag_specific, parts = parts[1], parts[2:]
+        if len(parts) >= 2 and parts[0] == 'virtual':
+            virtual_suite, parts = parts[1], parts[2:]
+        base_path = self._filesystem.join(*parts) if parts else ''
+        location = BaselineLocation(virtual_suite, platform, flag_specific)
+        return location, base_path
 
     @memoized
     def test_from_output_filename(self, baseline_path: str) -> Optional[str]:
@@ -1375,6 +1422,17 @@ class Port(object):
         path_in_wpt = match.group(2)
         return self.wpt_manifest(wpt_path).is_slow_test(path_in_wpt)
 
+    def is_testharness_test(self, test_name: str) -> bool:
+        """Detect whether a test uses the testharness.js framework."""
+        base_test = self.lookup_virtual_test_base(test_name) or test_name
+        wpt_dir, path_from_root = self.split_wpt_dir(base_test)
+        if wpt_dir:
+            manifest = self.wpt_manifest(wpt_dir)
+            return manifest.get_test_type(path_from_root) == 'testharness'
+        maybe_test_contents = self.read_test(base_test, 'latin-1')
+        return maybe_test_contents and bool(
+            self._TESTHARNESS_PATTERN.search(maybe_test_contents))
+
     def extract_wpt_pac(self, test_name):
         match = self.WPT_REGEX.match(test_name)
         if not match:
@@ -1618,6 +1676,17 @@ class Port(object):
                 continue
             tests.add(line)
         return tests
+
+    def skipped_due_to_manual_test(self, test_name):
+        """Checks whether a manual test should be skipped."""
+        base_test = self.lookup_virtual_test_base(test_name)
+        if not base_test:
+            base_test = test_name
+        # TODO(crbug.com/346563686): remove this once we have testdriver api for
+        # file-system-access
+        if base_test.startswith("external/wpt/file-system-access/"):
+            return False
+        return self.is_manual_test(base_test)
 
     def skipped_due_to_smoke_tests(self, test):
         """Checks if the test is skipped based on the set of Smoke tests.

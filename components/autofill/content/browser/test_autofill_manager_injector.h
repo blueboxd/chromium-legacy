@@ -11,6 +11,7 @@
 #include "components/autofill/content/browser/content_autofill_driver_factory_test_api.h"
 #include "components/autofill/content/browser/content_autofill_driver_test_api.h"
 #include "components/autofill/content/browser/test_autofill_driver_injector.h"
+#include "components/autofill/core/browser/autofill_manager_test_api.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test_utils.h"
@@ -44,7 +45,7 @@ class TestAutofillManagerInjectorBase {
 // driver, for example with
 //   NavigateAndCommit(GURL("about:blank"))
 // or force-create the driver manually with
-//   client->GetAutofillDriverFactory()->DriverForFrame(rfh).
+//   client->GetAutofillDriverFactory().DriverForFrame(rfh).
 //
 // To prevent hard-to-find bugs, only one TestAutofillManagerInjector may be
 // alive at a time. It must not be created before a TestAutofillClientInjector.
@@ -124,7 +125,7 @@ class TestAutofillManagerInjector : public TestAutofillManagerInjectorBase {
       if (!client) {
         return;
       }
-      factory_ = client->GetAutofillDriverFactory();
+      factory_ = &client->GetAutofillDriverFactory();
       // The injectors' observers should come first so that production-code
       // observers affect the injected objects.
       // The AutofillManager injector should come right after the
@@ -151,10 +152,20 @@ class TestAutofillManagerInjector : public TestAutofillManagerInjectorBase {
       test_api(driver).set_autofill_manager(std::move(new_manager));
     }
 
-    void OnContentAutofillDriverWillBeDeleted(
+    void OnContentAutofillDriverStateChanged(
         ContentAutofillDriverFactory& factory,
-        ContentAutofillDriver& driver) override {
-      owner_->managers_.erase(driver.render_frame_host());
+        ContentAutofillDriver& driver,
+        AutofillDriver::LifecycleState old_state,
+        AutofillDriver::LifecycleState new_state) override {
+      switch (new_state) {
+        case AutofillDriver::LifecycleState::kInactive:
+        case AutofillDriver::LifecycleState::kActive:
+        case AutofillDriver::LifecycleState::kPendingReset:
+          break;
+        case AutofillDriver::LifecycleState::kPendingDeletion:
+          owner_->managers_.erase(driver.render_frame_host());
+          break;
+      }
     }
 
    private:

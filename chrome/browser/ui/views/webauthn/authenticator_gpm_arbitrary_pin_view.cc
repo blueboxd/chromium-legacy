@@ -4,26 +4,41 @@
 
 #include "chrome/browser/ui/views/webauthn/authenticator_gpm_arbitrary_pin_view.h"
 
+#include <string>
+
 #include "chrome/browser/ui/views/webauthn/reveal_button_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
+
+namespace {
+constexpr int kBetweenChildSpacing = 8;
+constexpr int kPinTextfieldWidthInChars = 25;
+}  // namespace
 
 AuthenticatorGPMArbitraryPinView::AuthenticatorGPMArbitraryPinView(
     bool ui_disabled,
     const std::u16string& pin,
+    const std::u16string& pin_accessible_name,
+    const std::u16string& pin_accessible_description,
     Delegate* delegate)
     : delegate_(delegate) {
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>());
   layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
+  layout->set_between_child_spacing(kBetweenChildSpacing);
 
   auto pin_textfield = std::make_unique<views::Textfield>();
   pin_textfield->SetController(this);
-  pin_textfield->SetAccessibleName(u"Pin field (UNTRANSLATED)");
+  pin_textfield->GetViewAccessibility().SetName(pin_accessible_name);
+  if (!pin_accessible_description.empty()) {
+    pin_textfield->GetViewAccessibility().SetDescription(
+        pin_accessible_description);
+  }
   pin_textfield->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
-  pin_textfield->SetDefaultWidthInChars(20);
+  pin_textfield->SetDefaultWidthInChars(kPinTextfieldWidthInChars);
   pin_textfield->SetReadOnly(ui_disabled);
   pin_textfield->SetText(pin);
   pin_textfield->SetEnabled(!ui_disabled);

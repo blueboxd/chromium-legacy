@@ -33,9 +33,11 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CommandLine;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
@@ -66,7 +68,6 @@ import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.permissions.PermissionDialogController;
 import org.chromium.content_public.browser.test.NativeLibraryTestUtils;
 import org.chromium.content_public.browser.test.util.DOMUtils;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.PageTransition;
@@ -205,6 +206,7 @@ public class WebappNavigationTest {
     @SmallTest
     @Feature({"Webapps"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    @DisabledTest(message = "Flaky - crbug.com/359629160")
     public void testFormSubmitOffOrigin() throws Exception {
         Intent launchIntent =
                 mActivityTestRule
@@ -257,6 +259,7 @@ public class WebappNavigationTest {
     @Test
     @SmallTest
     @Feature({"Webapps"})
+    @DisabledTest(message = "Flaky, see crbug.com/352075550")
     public void testInScopeNewTabLinkShowsToolbar() throws Exception {
         String inScopeUrl =
                 WebappTestPage.getNonServiceWorkerUrl(mActivityTestRule.getTestServer());
@@ -333,7 +336,7 @@ public class WebappNavigationTest {
                                         WebappConstants.EXTRA_DISPLAY_MODE,
                                         DisplayMode.MINIMAL_UI));
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     activity.getComponent().resolveNavigationController().openCurrentUrlInBrowser();
                 });
@@ -370,7 +373,7 @@ public class WebappNavigationTest {
         WebappActivityTestRule.assertToolbarShownMaybeHideable(activity);
 
         // Navigate back to in-scope through a close button.
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () ->
                         activity.getToolbarManager()
                                 .getToolbarLayoutForTesting()
@@ -414,7 +417,7 @@ public class WebappNavigationTest {
 
         // Close the Minimal UI.
         WebappActivityTestRule.assertToolbarShownMaybeHideable(activity);
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () ->
                         activity.getToolbarManager()
                                 .getToolbarLayoutForTesting()
@@ -458,7 +461,7 @@ public class WebappNavigationTest {
         WebappActivityTestRule.assertToolbarShownMaybeHideable(activity);
 
         // Navigate back to in-scope through a close button.
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () ->
                         activity.getToolbarManager()
                                 .getToolbarLayoutForTesting()

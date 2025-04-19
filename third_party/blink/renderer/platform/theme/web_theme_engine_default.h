@@ -29,6 +29,10 @@ class WebThemeEngineDefault : public WebThemeEngine {
              bool in_forced_colors,
              const ui::ColorProvider* color_provider,
              const std::optional<SkColor>& accent_color) override;
+  gfx::Insets GetScrollbarSolidColorThumbInsets(Part part) const override;
+  SkColor4f GetScrollbarThumbColor(WebThemeEngine::State,
+                                   const WebThemeEngine::ExtraParams*,
+                                   const ui::ColorProvider*) const override;
   void GetOverlayScrollbarStyle(WebThemeEngine::ScrollbarStyle*) override;
   bool SupportsNinePatch(Part part) const override;
   gfx::Size NinePatchCanvasSize(Part part) const override;
@@ -43,9 +47,9 @@ class WebThemeEngineDefault : public WebThemeEngine {
                                     int32_t vertical_arrow_bitmap_height,
                                     int32_t horizontal_arrow_bitmap_width);
 #endif
+  bool IsFluentScrollbarEnabled() const override;
   bool IsFluentOverlayScrollbarEnabled() const override;
   int GetPaintedScrollbarTrackInset() const override;
-
 };
 
 }  // namespace blink

@@ -49,9 +49,6 @@ extern const char kExtensionProcess[];
 // manifest.
 extern const char kExtensionsOnChromeURLs[];
 
-// Whether to force developer mode extensions highlighting.
-extern const char kForceDevModeHighlighting[];
-
 // Comma-separated list of paths to apps to load at startup. The first app in
 // the list will be launched.
 extern const char kLoadApps[];
@@ -87,6 +84,12 @@ extern const char kEnableCrxHashCheck[];
 
 // Mute extension errors while working with new manifest version.
 extern const char kAllowFutureManifestVersion[];
+
+// Allow the chrome.test API to be exposed on web page contexts for testing.
+// TODO(tjudkins): This will need to be added to the list of flags that get
+// copied from the browser to the renderer in ChromeContentBrowserClient to
+// actually use it in browser tests.
+extern const char kExtensionTestApiOnWebPages[];
 
 }  // namespace extensions::switches
 

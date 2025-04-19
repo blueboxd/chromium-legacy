@@ -20,10 +20,12 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "base/trace_event/typed_macros.h"
+#include "base/types/optional_ref.h"
 #include "cc/base/devtools_instrumentation.h"
 #include "cc/base/features.h"
 #include "cc/benchmarks/benchmark_instrumentation.h"
 #include "cc/input/browser_controls_offset_manager.h"
+#include "cc/input/browser_controls_offset_tags_info.h"
 #include "cc/metrics/compositor_timing_history.h"
 #include "cc/paint/paint_worklet_layer_painter.h"
 #include "cc/trees/compositor_commit_data.h"
@@ -120,7 +122,6 @@ ProxyImpl::ProxyImpl(
 
   std::unique_ptr<CompositorTimingHistory> compositor_timing_history(
       new CompositorTimingHistory(
-          scheduler_settings.using_synchronous_renderer_compositor,
           CompositorTimingHistory::RENDERER_UMA,
           rendering_stats_instrumentation));
   scheduler_ = std::make_unique<Scheduler>(
@@ -172,10 +173,11 @@ void ProxyImpl::InitializePaintWorkletLayerPainterOnImpl(
 void ProxyImpl::UpdateBrowserControlsStateOnImpl(
     BrowserControlsState constraints,
     BrowserControlsState current,
-    bool animate) {
+    bool animate,
+    base::optional_ref<const BrowserControlsOffsetTagsInfo> offset_tags_info) {
   DCHECK(IsImplThread());
   host_impl_->browser_controls_manager()->UpdateBrowserControlsState(
-      constraints, current, animate);
+      constraints, current, animate, offset_tags_info);
 }
 
 void ProxyImpl::InitializeLayerTreeFrameSinkOnImpl(
@@ -233,7 +235,7 @@ void ProxyImpl::SetDeferBeginMainFrameFromImpl(bool defer_begin_main_frame) {
 void ProxyImpl::SetNeedsRedrawOnImpl(const gfx::Rect& damage_rect) {
   DCHECK(IsImplThread());
   host_impl_->SetViewportDamage(damage_rect);
-  SetNeedsRedrawOnImplThread();
+  SetNeedsRedrawOnImplThread(RedrawReason::kUntracked);
 }
 
 void ProxyImpl::SetNeedsCommitOnImpl() {
@@ -461,10 +463,10 @@ void ProxyImpl::NotifyReadyToDraw() {
   scheduler_->NotifyReadyToDraw();
 }
 
-void ProxyImpl::SetNeedsRedrawOnImplThread() {
+void ProxyImpl::SetNeedsRedrawOnImplThread(RedrawReason reason) {
   TRACE_EVENT0("cc", "ProxyImpl::SetNeedsRedrawOnImplThread");
   DCHECK(IsImplThread());
-  scheduler_->SetNeedsRedraw();
+  scheduler_->SetNeedsRedraw(reason);
 }
 
 void ProxyImpl::SetNeedsOneBeginImplFrameOnImplThread() {
@@ -579,11 +581,6 @@ void ProxyImpl::DidActivateSyncTree() {
   }
 }
 
-void ProxyImpl::WillPrepareTiles() {
-  DCHECK(IsImplThread());
-  scheduler_->WillPrepareTiles();
-}
-
 void ProxyImpl::DidPrepareTiles() {
   DCHECK(IsImplThread());
   scheduler_->DidPrepareTiles();
@@ -603,14 +600,26 @@ void ProxyImpl::OnDrawForLayerTreeFrameSink(bool resourceless_software_draw,
                                           skip_draw);
 }
 
-void ProxyImpl::NeedsImplSideInvalidation(bool needs_first_draw_on_activation) {
+void ProxyImpl::SetNeedsImplSideInvalidation(
+    bool needs_first_draw_on_activation,
+    RedrawReason reason) {
   DCHECK(IsImplThread());
-  scheduler_->SetNeedsImplSideInvalidation(needs_first_draw_on_activation);
+  scheduler_->SetNeedsImplSideInvalidation(needs_first_draw_on_activation,
+                                           reason);
 }
 
-void ProxyImpl::NotifyImageDecodeRequestFinished() {
+void ProxyImpl::NotifyImageDecodeRequestFinished(int request_id,
+                                                 bool decode_succeeded) {
   DCHECK(IsImplThread());
-  SetNeedsCommitOnImplThread();
+  if (base::FeatureList::IsEnabled(
+          features::kSendExplicitDecodeRequestsImmediately)) {
+    MainThreadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&ProxyMain::NotifyImageDecodeRequestFinished,
+                       proxy_main_weak_ptr_, request_id, decode_succeeded));
+  } else {
+    SetNeedsCommitOnImplThread();
+  }
 }
 
 void ProxyImpl::NotifyTransitionRequestFinished(uint32_t sequence_id) {
@@ -715,6 +724,9 @@ void ProxyImpl::ScheduledActionSendBeginMainFrame(
                        : nullptr);
   begin_main_frame_state->completed_image_decode_requests =
       host_impl_->TakeCompletedImageDecodeRequests();
+  DCHECK(!base::FeatureList::IsEnabled(
+             features::kSendExplicitDecodeRequestsImmediately) ||
+         begin_main_frame_state->completed_image_decode_requests.empty());
   begin_main_frame_state->mutator_events = host_impl_->TakeMutatorEvents();
   begin_main_frame_state->active_sequence_trackers =
       host_impl_->FrameSequenceTrackerActiveTypes();
@@ -795,7 +807,8 @@ void ProxyImpl::ScheduledActionUpdateDisplayTree() {
   // The tile visibility/priority of the pending tree needs to be updated so
   // that it doesn't get activated before the raster is complete.
   if (host_impl_->pending_tree()) {
-    host_impl_->pending_tree()->UpdateDrawProperties();
+    host_impl_->pending_tree()->UpdateDrawProperties(
+        /*update_tiles=*/true, /*update_image_animation_controller=*/true);
   }
 }
 
@@ -901,11 +914,16 @@ void ProxyImpl::ScheduledActionBeginMainFrameNotExpectedUntil(
                                 proxy_main_weak_ptr_, time));
 }
 
+void ProxyImpl::OnBeginImplFrameDeadline() {
+  DCHECK(IsImplThread());
+  host_impl_->OnBeginImplFrameDeadline();
+}
+
 DrawResult ProxyImpl::DrawInternal(bool forced_draw) {
   DCHECK(IsImplThread());
   DCHECK(host_impl_.get());
 
-  TRACE_EVENT_WITH_FLOW0("viz,benchmark", "MainFrame.Draw",
+  TRACE_EVENT_WITH_FLOW0("viz,benchmark,input.scrolling", "MainFrame.Draw",
                          TRACE_ID_LOCAL(host_impl_->active_tree()->trace_id()),
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
 
@@ -926,6 +944,7 @@ DrawResult ProxyImpl::DrawInternal(bool forced_draw) {
   frame.begin_frame_ack = scheduler_->CurrentBeginFrameAckForActiveTree();
   frame.origin_begin_main_frame_args =
       scheduler_->last_activate_origin_frame_args();
+  frame.set_needs_redraw_reasons = scheduler_->GetRedrawReasons();
   bool draw_frame = false;
 
   DrawResult result;
@@ -965,8 +984,10 @@ DrawResult ProxyImpl::DrawInternal(bool forced_draw) {
   // The tile visibility/priority of the pending tree needs to be updated so
   // that it doesn't get activated before the raster is complete. But this needs
   // to happen after the draw, off of the critical path to draw.
-  if (host_impl_->pending_tree())
-    host_impl_->pending_tree()->UpdateDrawProperties();
+  if (host_impl_->pending_tree()) {
+    host_impl_->pending_tree()->UpdateDrawProperties(
+        /*update_tiles=*/true, /*update_image_animation_controller=*/true);
+  }
 
   DCHECK_NE(DrawResult::kInvalidResult, result);
   return result;
@@ -982,6 +1003,11 @@ bool ProxyImpl::IsMainThreadBlocked() const {
 
 base::SingleThreadTaskRunner* ProxyImpl::MainThreadTaskRunner() {
   return task_runner_provider_->MainThreadTaskRunner();
+}
+
+void ProxyImpl::QueueImageDecodeOnImpl(int request_id,
+                                       std::unique_ptr<PaintImage> image) {
+  host_impl_->QueueImageDecode(request_id, *image);
 }
 
 void ProxyImpl::SetSourceURL(ukm::SourceId source_id, const GURL& url) {

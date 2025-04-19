@@ -132,6 +132,7 @@ void SupervisionMixin::SetParentalControlsAccountCapability(
 
   AccountCapabilitiesTestMutator mutator(&account.capabilities);
   mutator.set_is_subject_to_parental_controls(is_supervised_profile);
+  mutator.set_can_fetch_family_member_info(is_supervised_profile);
   signin::UpdateAccountInfoForAccount(identity_manager, account);
 }
 
@@ -210,21 +211,21 @@ void SupervisionMixin::SignIn(SignInMode mode) {
 }
 
 std::ostream& operator<<(std::ostream& stream,
-                         const SupervisionMixin::SignInMode& sign_in_mode) {
+                         SupervisionMixin::SignInMode sign_in_mode) {
+  stream << SignInModeAsString(sign_in_mode);
+  return stream;
+}
+std::string SignInModeAsString(SupervisionMixin::SignInMode sign_in_mode) {
   switch (sign_in_mode) {
     case SupervisionMixin::SignInMode::kSignedOut:
-      stream << "SignedOut";
-      break;
+      return "SignedOut";
     case SupervisionMixin::SignInMode::kRegular:
-      stream << "Regular";
-      break;
+      return "Regular";
     case SupervisionMixin::SignInMode::kSupervised:
-      stream << "Supervised";
-      break;
+      return "Supervised";
     default:
       NOTREACHED_NORETURN();
   }
-  return stream;
 }
 
 }  // namespace supervised_user

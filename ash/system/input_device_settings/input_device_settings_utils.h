@@ -35,7 +35,8 @@ bool IsValidModifier(int val);
 
 // Builds `device_key` for use in storing device settings in prefs.
 ASH_EXPORT std::string BuildDeviceKey(const ui::InputDevice& device);
-
+// Builds a unique device key string based on vendor and product IDs.
+ASH_EXPORT std::string BuildDeviceKey(uint16_t vendor_id, uint16_t product_id);
 // Decides based on the existing settings storage and default value if the given
 // setting should be persisted.
 // Settings should be persisted if any of the following are true:
@@ -141,6 +142,11 @@ ASH_EXPORT bool IsChromeOSKeyboard(const mojom::Keyboard& keyboard);
 // Returns whether the given keyboard is a split modifier keyboard.
 ASH_EXPORT bool IsSplitModifierKeyboard(const mojom::Keyboard& keyboard);
 ASH_EXPORT bool IsSplitModifierKeyboard(int keyboard_id);
+
+// Rewrites `device_key` to a known, supported device key if the
+// `kWelcomeExperienceTestUnsupportedDevices` flag is enabled.
+ASH_EXPORT std::string GetDeviceKeyForMetadataRequest(
+    const std::string& device_key);
 
 }  // namespace ash
 

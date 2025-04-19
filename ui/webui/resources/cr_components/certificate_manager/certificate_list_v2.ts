@@ -20,20 +20,25 @@ import '//resources/cr_elements/cr_shared_style.css.js';
 import '//resources/cr_elements/cr_shared_vars.css.js';
 
 import type {CrCollapseElement} from '//resources/cr_elements/cr_collapse/cr_collapse.js';
+import {I18nMixin} from '//resources/cr_elements/i18n_mixin.js';
 import {PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './certificate_list_v2.html.js';
-import type {CertificateSource, SummaryCertInfo} from './certificate_manager_v2.mojom-webui.js';
+import type {CertificateSource, ImportResult, SummaryCertInfo} from './certificate_manager_v2.mojom-webui.js';
 import {CertificatesV2BrowserProxy} from './certificates_v2_browser_proxy.js';
+
+const CertificateListV2ElementBase = I18nMixin(PolymerElement);
 
 export interface CertificateListV2Element {
   $: {
     certs: CrCollapseElement,
     exportCerts: HTMLElement,
+    importCert: HTMLElement,
+    noCertsRow: HTMLElement,
   };
 }
 
-export class CertificateListV2Element extends PolymerElement {
+export class CertificateListV2Element extends CertificateListV2ElementBase {
   static get is() {
     return 'certificate-list-v2';
   }
@@ -46,17 +51,28 @@ export class CertificateListV2Element extends PolymerElement {
     return {
       certSource: Number,
       headerText: String,
+      showImport: Boolean,
+      // True if the export button should be hidden.
+      // Export button may also be hidden if there are no certs in the list.
       hideExport: Boolean,
+      inSubpage: Boolean,
       expanded_: Boolean,
       certificates_: Array,
+      hasCerts_: {
+        type: Boolean,
+        computed: 'computeHasCerts_(certificates_)',
+      },
     };
   }
 
   certSource: CertificateSource;
   headerText: string;
+  showImport: boolean = false;
   hideExport: boolean = false;
+  inSubpage: boolean = false;
   private expanded_: boolean = true;
   private certificates_: SummaryCertInfo[] = [];
+  private hasCerts_: boolean;
 
   override ready() {
     super.ready();
@@ -65,11 +81,39 @@ export class CertificateListV2Element extends PolymerElement {
         .then((results: {certs: SummaryCertInfo[]}) => {
           this.certificates_ = results.certs;
         });
+
+    if (!this.inSubpage) {
+      this.$.certs.classList.add('card');
+    }
   }
 
-  private onExportCerts() {
+  private onExportCertsClick_(e: Event) {
+    // Export button click shouldn't collapse the list as well.
+    e.stopPropagation();
     CertificatesV2BrowserProxy.getInstance().handler.exportCertificates(
         this.certSource);
+  }
+
+  private onImportCertClick_(e: Event) {
+    // Import button click shouldn't collapse the list as well.
+    e.stopPropagation();
+    CertificatesV2BrowserProxy.getInstance()
+        .handler.importCertificate(this.certSource)
+        .then((value: {result: ImportResult|null}) => {
+          // TODO(crbug.com/40928765): on successful import, refresh the
+          // certificate list.
+          this.dispatchEvent(new CustomEvent(
+              'import-result',
+              {composed: true, bubbles: true, detail: value.result}));
+        });
+  }
+
+  private computeHasCerts_(): boolean {
+    return this.certificates_.length > 0;
+  }
+
+  private hideExportButton_(): boolean {
+    return this.hideExport || !this.hasCerts_;
   }
 }
 

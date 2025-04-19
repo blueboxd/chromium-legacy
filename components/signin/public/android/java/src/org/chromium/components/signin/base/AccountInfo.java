@@ -39,6 +39,15 @@ public class AccountInfo extends CoreAccountInfo {
             mCoreAccountInfo = coreAccountInfo;
         }
 
+        /** Creates a builder constructor which holds a copy of {@param accountInfo}. */
+        public Builder(AccountInfo accountInfo) {
+            this(accountInfo.getEmail(), accountInfo.getGaiaId());
+            mFullName = accountInfo.getFullName();
+            mGivenName = accountInfo.getGivenName();
+            mAccountImage = accountInfo.getAccountImage();
+            mAccountCapabilities = accountInfo.getAccountCapabilities();
+        }
+
         public Builder fullName(String fullName) {
             mFullName = fullName;
             return this;
@@ -143,11 +152,5 @@ public class AccountInfo extends CoreAccountInfo {
         return !TextUtils.isEmpty(mFullName)
                 || !TextUtils.isEmpty(mGivenName)
                 || mAccountImage != null;
-    }
-
-    /** Manually replace the previously set capabilities with given accountCapabilities */
-    @VisibleForTesting
-    public void setAccountCapabilities(AccountCapabilities accountCapabilities) {
-        mAccountCapabilities = accountCapabilities;
     }
 }

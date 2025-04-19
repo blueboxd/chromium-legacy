@@ -31,7 +31,10 @@ enum class WhatsNewType {
   kPWMWidget = 15,
   kPinnedTabs = 16,
   kInactiveTabs = 17,
-  kMaxValue = kInactiveTabs
+  kPackageTracking = 18,
+  kPasswordSharing = 19,
+  kCustomizableOverflowMenu = 20,
+  kMaxValue = kCustomizableOverflowMenu
 };
 
 // An enum representing the different primary button actions for features in
@@ -46,7 +49,8 @@ enum class WhatsNewPrimaryAction {
   kIOSSettingsPasswords = 4,
   kLens = 5,
   kSafeBrowsingSettings = 6,
-  kMaxValue = kSafeBrowsingSettings,
+  kChromePasswordManager = 7,
+  kMaxValue = kChromePasswordManager,
 };
 
 class GURL;

@@ -66,7 +66,7 @@ class MockPasswordManagerClient
               (),
               (override));
   MOCK_METHOD(bool,
-              CanUseBiometricAuthForFilling,
+              IsReauthBeforeFillingRequired,
               (device_reauth::DeviceAuthenticator*),
               (override));
 };
@@ -121,8 +121,10 @@ AccountChooserDialogAndroid* AccountChooserDialogAndroidTest::CreateDialog(
 AccountChooserDialogAndroid*
 AccountChooserDialogAndroidTest::CreateDialogManyAccounts() {
   std::vector<std::unique_ptr<password_manager::PasswordForm>> credentials;
-  credentials.push_back(FillPasswordFormWithData(kFormData1));
-  credentials.push_back(FillPasswordFormWithData(kFormData2));
+  credentials.push_back(
+      FillPasswordFormWithData(kFormData1, /*is_account_store=*/false));
+  credentials.push_back(
+      FillPasswordFormWithData(kFormData2, /*is_account_store=*/false));
   return CreateDialog(std::move(credentials));
 }
 
@@ -136,11 +138,11 @@ TEST_F(AccountChooserDialogAndroidTest, SendsCredentialIfAuthNotAvailable) {
 
   auto authenticator = std::make_unique<MockDeviceAuthenticator>();
 
-  EXPECT_CALL(client_, CanUseBiometricAuthForFilling).WillOnce(Return(false));
+  EXPECT_CALL(client_, IsReauthBeforeFillingRequired).WillOnce(Return(false));
   EXPECT_CALL(client_, GetDeviceAuthenticator)
       .WillOnce(Return(testing::ByMove(std::move(authenticator))));
   std::unique_ptr<password_manager::PasswordForm> form =
-      FillPasswordFormWithData(kFormData2);
+      FillPasswordFormWithData(kFormData2, /*is_account_store=*/false);
 
   EXPECT_CALL(credential_callback_, Run(Pointee(*form.get())));
 
@@ -154,14 +156,14 @@ TEST_F(AccountChooserDialogAndroidTest, SendsCredentialIfAuthSuccessful) {
 
   auto authenticator = std::make_unique<MockDeviceAuthenticator>();
 
-  ON_CALL(client_, CanUseBiometricAuthForFilling).WillByDefault(Return(true));
+  ON_CALL(client_, IsReauthBeforeFillingRequired).WillByDefault(Return(true));
   EXPECT_CALL(*authenticator, AuthenticateWithMessage)
       .WillOnce(RunOnceCallback<1>(true));
   EXPECT_CALL(client_, GetDeviceAuthenticator)
       .WillOnce(Return(testing::ByMove(std::move(authenticator))));
 
   std::unique_ptr<password_manager::PasswordForm> form =
-      FillPasswordFormWithData(kFormData2);
+      FillPasswordFormWithData(kFormData2, /*is_account_store=*/false);
   EXPECT_CALL(credential_callback_, Run(Pointee(*form.get())));
 
   dialog->OnCredentialClicked(base::android::AttachCurrentThread(),
@@ -174,14 +176,14 @@ TEST_F(AccountChooserDialogAndroidTest, DoesntSendCredentialIfAuthFailed) {
 
   auto authenticator = std::make_unique<MockDeviceAuthenticator>();
 
-  ON_CALL(client_, CanUseBiometricAuthForFilling).WillByDefault(Return(true));
+  ON_CALL(client_, IsReauthBeforeFillingRequired).WillByDefault(Return(true));
   EXPECT_CALL(*authenticator, AuthenticateWithMessage)
       .WillOnce(RunOnceCallback<1>(false));
   EXPECT_CALL(client_, GetDeviceAuthenticator)
       .WillOnce(Return(testing::ByMove(std::move(authenticator))));
 
   std::unique_ptr<password_manager::PasswordForm> form =
-      FillPasswordFormWithData(kFormData2);
+      FillPasswordFormWithData(kFormData2, /*is_account_store=*/false);
   EXPECT_CALL(credential_callback_, Run(nullptr));
 
   dialog->OnCredentialClicked(base::android::AttachCurrentThread(),
@@ -195,7 +197,7 @@ TEST_F(AccountChooserDialogAndroidTest, CancelsAuthIfDestroyed) {
   auto authenticator = std::make_unique<MockDeviceAuthenticator>();
   auto* authenticator_ptr = authenticator.get();
 
-  ON_CALL(client_, CanUseBiometricAuthForFilling).WillByDefault(Return(true));
+  ON_CALL(client_, IsReauthBeforeFillingRequired).WillByDefault(Return(true));
   EXPECT_CALL(*authenticator_ptr, AuthenticateWithMessage);
   EXPECT_CALL(client_, GetDeviceAuthenticator)
       .WillOnce(Return(testing::ByMove(std::move(authenticator))));

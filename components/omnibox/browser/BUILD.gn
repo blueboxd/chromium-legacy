@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/buildflag_header.gni")
+import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//components/optimization_guide/features.gni")
@@ -52,7 +53,6 @@ aggregate_vector_icons("omnibox_vector_icons") {
     "clock.icon",
     "clock_chrome_refresh.icon",
     "cookie_chrome_refresh.icon",
-    "cookie_crossed_chrome_refresh.icon",
     "dino.icon",
     "dino_cr2023.icon",
     "drive_docs.icon",
@@ -64,30 +64,28 @@ aggregate_vector_icons("omnibox_vector_icons") {
     "drive_sheets.icon",
     "drive_slides.icon",
     "drive_video.icon",
+    "enterprise.icon",
     "extension_app.icon",
-    "find_in_page.icon",
     "find_in_page_chrome_refresh.icon",
     "http.icon",
     "http_chrome_refresh.icon",
-    "https_valid_in_chip.icon",
     "incognito.icon",
     "incognito_cr2023.icon",
     "install_desktop.icon",
     "journeys.icon",
     "journeys_chrome_refresh.icon",
-    "keyword_search.icon",
     "offline_pin.icon",
     "page.icon",
     "page_chrome_refresh.icon",
     "pedal.icon",
     "price_tracking_disabled.icon",
     "price_tracking_disabled_refresh.icon",
-    "price_tracking_enabled_filled.icon",
     "price_tracking_enabled_refresh.icon",
     "product.icon",
     "product_chrome_refresh.icon",
     "product_specifications_add.icon",
     "product_specifications_added.icon",
+    "search_spark.icon",
     "secure_page_info_chrome_refresh.icon",
     "share.icon",
     "share_chrome_refresh.icon",
@@ -139,6 +137,8 @@ static_library("browser") {
     "actions/omnibox_action_concepts.h",
     "actions/omnibox_action_in_suggest.cc",
     "actions/omnibox_action_in_suggest.h",
+    "actions/omnibox_answer_action.cc",
+    "actions/omnibox_answer_action.h",
     "actions/omnibox_pedal.cc",
     "actions/omnibox_pedal.h",
     "actions/omnibox_pedal_concepts.h",
@@ -275,6 +275,8 @@ static_library("browser") {
     "scoring_functor.h",
     "search_provider.cc",
     "search_provider.h",
+    "search_scoring_signals_annotator.cc",
+    "search_scoring_signals_annotator.h",
     "search_suggestion_parser.cc",
     "search_suggestion_parser.h",
     "shortcuts_backend.cc",
@@ -505,6 +507,10 @@ static_library("location_bar") {
     deps += [ "//chromeos/crosapi/cpp:cpp" ]
   }
 
+  if (is_chromeos_ash) {
+    deps += [ "//chromeos/constants" ]
+  }
+
   if ((!is_android || enable_vr) && !is_ios) {
     deps += [ ":vector_icons" ]
   }
@@ -729,6 +735,7 @@ static_library("test_support") {
     "//components/query_tiles/test:test_support",
     "//components/resources",
     "//components/search_engines",
+    "//components/search_engines:test_support",
     "//components/sessions",
     "//net",
     "//services/network:test_support",
@@ -780,6 +787,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "actions/omnibox_action_in_suggest_unittest.cc",
+    "actions/omnibox_answer_action_unittest.cc",
     "actions/omnibox_pedal_provider_unittest.cc",
     "actions/omnibox_pedal_unittest.cc",
     "answers_cache_unittest.cc",
@@ -877,6 +885,7 @@ source_set("unit_tests") {
     "//components/dom_distiller/core:core",
     "//components/favicon/core/test:test_support",
     "//components/history/core/test",
+    "//components/memory_pressure:test_support",
     "//components/ntp_tiles:ntp_tiles",
     "//components/omnibox/common",
     "//components/open_from_clipboard:test_support",
@@ -924,8 +933,13 @@ source_set("unit_tests") {
     ]
     deps += [
       "//components/history_embeddings",
+      "//components/history_embeddings:unit_tests",
       "//ui/base/clipboard:clipboard_test_support",
     ]
+  }
+
+  if (is_chromeos) {
+    deps += [ "//chromeos/constants:constants" ]
   }
 
   if (use_blink) {

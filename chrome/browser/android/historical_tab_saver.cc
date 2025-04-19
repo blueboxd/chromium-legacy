@@ -15,8 +15,8 @@
 #include "base/android/jni_string.h"
 #include "base/android/token_android.h"
 #include "base/memory/raw_ptr.h"
+#include "base/not_fatal_until.h"
 #include "base/uuid.h"
-#include "chrome/android/chrome_jni_headers/HistoricalTabSaverImpl_jni.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -29,6 +29,9 @@
 #include "components/sessions/content/content_live_tab.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "content/public/browser/web_contents.h"
+
+// Must come after all headers that specialize FromJniType() / ToJniType().
+#include "chrome/android/chrome_jni_headers/HistoricalTabSaverImpl_jni.h"
 
 using base::android::JavaParamRef;
 using base::android::JavaRef;
@@ -242,7 +245,7 @@ void CreateHistoricalBulkClosure(
     if (per_tab_root_id[i] != kInvalidRootId) {
       int root_id = per_tab_root_id[i];
       auto it = group_id_mapping.find(root_id);
-      DCHECK(it != group_id_mapping.end());
+      CHECK(it != group_id_mapping.end(), base::NotFatalUntil::M130);
       tab_id_to_group_id.insert(
           std::make_pair(tab->GetAndroidId(), it->second));
     }

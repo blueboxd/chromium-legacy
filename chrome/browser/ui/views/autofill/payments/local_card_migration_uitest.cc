@@ -68,6 +68,7 @@
 #include "components/autofill/core/browser/webdata/payments/payments_autofill_table.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
+#include "components/autofill/core/common/credit_card_network_identifiers.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/network_session_configurator/common/network_switches.h"
@@ -216,7 +217,8 @@ class LocalCardMigrationBrowserTest
     client->GetFormDataImporter()
         ->local_card_migration_manager()
         ->SetEventObserverForTesting(this);
-    personal_data_ = PersonalDataManagerFactory::GetForProfile(GetProfile(0));
+    personal_data_ =
+        PersonalDataManagerFactory::GetForBrowserContext(GetProfile(0));
 
     // Wait for Personal Data Manager to be fully loaded to prevent that
     // spurious notifications deceive the tests.
@@ -396,14 +398,14 @@ class LocalCardMigrationBrowserTest
 
   void ClickOnView(views::View* view) {
     CHECK(view);
-    ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-                           ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
-                           ui::EF_LEFT_MOUSE_BUTTON);
+    ui::MouseEvent pressed(ui::EventType::kMousePressed, gfx::Point(),
+                           gfx::Point(), ui::EventTimeForNow(),
+                           ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
     view->OnMousePressed(pressed);
     ui::MouseEvent released_event =
-        ui::MouseEvent(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(),
-                       ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
-                       ui::EF_LEFT_MOUSE_BUTTON);
+        ui::MouseEvent(ui::EventType::kMouseReleased, gfx::Point(),
+                       gfx::Point(), ui::EventTimeForNow(),
+                       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
     view->OnMouseReleased(released_event);
   }
 
@@ -1154,8 +1156,9 @@ IN_PROC_BROWSER_TEST_F(
     LocalCardMigrationBrowserTest,
     // TODO(crbug.com/40649134): Flaky, but feature should soon be removed.
     DISABLED_IconViewAccessibleName) {
-  EXPECT_EQ(GetLocalCardMigrationIconView()->GetAccessibleName(),
-            l10n_util::GetStringUTF16(IDS_TOOLTIP_MIGRATE_LOCAL_CARD));
+  EXPECT_EQ(
+      GetLocalCardMigrationIconView()->GetViewAccessibility().GetCachedName(),
+      l10n_util::GetStringUTF16(IDS_TOOLTIP_MIGRATE_LOCAL_CARD));
   EXPECT_EQ(
       GetLocalCardMigrationIconView()->GetTextForTooltipAndAccessibleName(),
       l10n_util::GetStringUTF16(IDS_TOOLTIP_MIGRATE_LOCAL_CARD));

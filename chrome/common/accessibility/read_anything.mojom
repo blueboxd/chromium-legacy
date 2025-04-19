@@ -7,33 +7,11 @@
 module read_anything.mojom;
 
 import "skia/public/mojom/skcolor.mojom";
+import "skia/public/mojom/bitmap.mojom";
 import "ui/accessibility/mojom/ax_event.mojom";
 import "ui/accessibility/mojom/ax_tree_id.mojom";
 import "ui/accessibility/mojom/ax_tree_update.mojom";
 import "mojo/public/mojom/base/values.mojom";
-
-// Used to represent the current user choices for the Read Anything visual
-// presentation/theme. This includes font name, size, spacing, and colors.
-struct ReadAnythingTheme {
-  // The name of the user's font choice.
-  string font_name;
-
-  // The px value of the user's font size.
-  float font_size;
-
-  // True if links are disabled.
-  bool links_enabled;
-
-  // The various colors of the user's chosen theme.
-  skia.mojom.SkColor foreground_color;
-  skia.mojom.SkColor background_color;
-
-  // The enum value of the user's line spacing choice
-  read_anything.mojom.LineSpacing line_spacing;
-
-  // The enum value of the user's letter spacing choice.
-  read_anything.mojom.LetterSpacing letter_spacing;
-};
 
 [Extensible]
 enum InstallationState {
@@ -148,6 +126,10 @@ interface UntrustedPageHandler {
   // via the webui toolbar.
   OnLinksEnabledChanged(bool enabled);
 
+  // Informs the browser controller that the user has toggled images
+  // via the webui toolbar.
+  OnImagesEnabledChanged(bool enabled);
+
   // Informs the browser controller that the user updated the color theme via
   // the webui toolbar.
   OnColorChange(read_anything.mojom.Colors color);
@@ -199,6 +181,14 @@ interface UntrustedPageHandler {
 
   // Requests the browser to take a snapshot of the active web contents.
   OnSnapshotRequested();
+
+  // Informs the browser controller that the side page was scrolled to the end.
+  // The browser controller responds by scrolling the main page to show the
+  // last line of text on the side page. target_node_id should be the last
+  // display node shown in the side page.
+  // TODO (b/358169090): Create a cpp typemap to use the ui::AXNodeID type
+  // instead of int32
+  ScrollToTargetNode(ax.mojom.AXTreeID target_tree_id, int32 target_node_id);
 };
 
 // Untrusted WebUI-side handler for requests from the browser.
@@ -226,9 +216,6 @@ interface UntrustedPage {
   // previously passed to AccessibilityEventsReceived.
   OnAXTreeDestroyed(ax.mojom.AXTreeID tree_id);
 
-  // Send an updated theme to the WebUI.
-  OnThemeChanged(ReadAnythingTheme new_theme);
-
   // Send an updated language code to the WebUI. Will either be the page
   // language or the browser language depending on what's available.
   SetLanguageCode(string code);
@@ -248,6 +235,7 @@ interface UntrustedPage {
                            string font,
                            double font_size,
                            bool links_enabled,
+                           bool images_enabled,
                            read_anything.mojom.Colors color,
                            double speech_rate,
                            mojo_base.mojom.DictionaryValue voices,
@@ -256,4 +244,10 @@ interface UntrustedPage {
 
   // Notifies the WebUI that the ScreenAI service is ready on this device.
   ScreenAIServiceReady();
+
+  // Notifies the WebUI that an image has been downloaded for a given node.
+  OnImageDataDownloaded(ax.mojom.AXTreeID tree_id,
+    int32 node_id,
+    skia.mojom.BitmapN32 image
+  );
 };

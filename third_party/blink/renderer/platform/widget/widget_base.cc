@@ -19,7 +19,6 @@
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "cc/trees/paint_holding_reason.h"
-#include "cc/trees/ukm_manager.h"
 #include "components/viz/common/features.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
@@ -576,13 +575,18 @@ void WidgetBase::CancelSuccessfulPresentationTimeRequest() {
 }
 
 void WidgetBase::SetupRenderInputRouterConnections(
-    mojo::PendingReceiver<mojom::blink::RenderInputRouterClient> request) {
+    mojo::PendingReceiver<mojom::blink::RenderInputRouterClient>
+        browser_request,
+    mojo::PendingReceiver<mojom::blink::RenderInputRouterClient> viz_request) {
   TRACE_EVENT("renderer", "WidgetBase::SetupRenderInputRouterConnections");
 
-  // TODO(b/322833330): Investigate binding |input_receiver_| on
+  // TODO(b/322833330): Investigate binding |browser_input_receiver_| on
   // RendererCompositor to break dependency on CrRendererMain and avoiding
   // contention with javascript during method calls.
-  input_receiver_.Bind(std::move(request), task_runner_);
+  browser_input_receiver_.Bind(std::move(browser_request), task_runner_);
+  if (viz_request) {
+    viz_input_receiver_.Bind(std::move(viz_request), task_runner_);
+  }
 }
 
 void WidgetBase::ApplyViewportChanges(
@@ -1178,7 +1182,7 @@ void WidgetBase::UpdateTextInputStateInternal(bool show_virtual_keyboard,
     params->edit_context_control_bounds = control_bounds;
     params->edit_context_selection_bounds = selection_bounds;
 
-    if (!new_info.ime_text_spans.empty()) {
+    if (!new_info.ime_text_spans.empty() && frame_widget) {
       params->ime_text_spans_info =
           frame_widget->GetImeTextSpansInfo(new_info.ime_text_spans);
     }
@@ -1310,7 +1314,7 @@ void WidgetBase::BindWidgetCompositor(
   if (widget_compositor_)
     widget_compositor_->Shutdown();
 
-  widget_compositor_ = base::MakeRefCounted<WidgetCompositor>(
+  widget_compositor_ = WidgetCompositor::Create(
       weak_ptr_factory_.GetWeakPtr(),
       LayerTreeHost()->GetTaskRunnerProvider()->MainThreadTaskRunner(),
       LayerTreeHost()->GetTaskRunnerProvider()->ImplThreadTaskRunner(),

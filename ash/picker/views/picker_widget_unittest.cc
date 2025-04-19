@@ -5,9 +5,11 @@
 #include "ash/picker/views/picker_widget.h"
 
 #include <memory>
+#include <string_view>
 
 #include "ash/picker/metrics/picker_session_metrics.h"
 #include "ash/picker/model/picker_action_type.h"
+#include "ash/picker/model/picker_caps_lock_position.h"
 #include "ash/picker/views/picker_preview_bubble.h"
 #include "ash/picker/views/picker_view.h"
 #include "ash/picker/views/picker_view_delegate.h"
@@ -15,6 +17,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
+#include "ui/display/screen.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
@@ -33,24 +36,23 @@ class FakePickerViewDelegate : public PickerViewDelegate {
  public:
   // PickerViewDelegate:
   std::vector<PickerCategory> GetAvailableCategories() override { return {}; }
-  std::vector<PickerCategory> GetRecentResultsCategories() override {
-    return {};
-  }
+  void GetZeroStateSuggestedResults(
+      SuggestedResultsCallback callback) override {}
   void GetResultsForCategory(PickerCategory category,
                              SearchResultsCallback callback) override {}
-  void TransformSelectedText(PickerCategory category) override {}
-  void StartSearch(const std::u16string& query,
+  void StartSearch(std::u16string_view query,
                    std::optional<PickerCategory> category,
                    SearchResultsCallback callback) override {}
-  void InsertResultOnNextFocus(const PickerSearchResult& result) override {}
+  void StopSearch() override {}
+  void StartEmojiSearch(std::u16string_view query,
+                        EmojiSearchResultsCallback callback) override {}
+  void CloseWidgetThenInsertResultOnNextFocus(
+      const PickerSearchResult& result) override {}
   void OpenResult(const PickerSearchResult& result) override {}
   void ShowEmojiPicker(ui::EmojiPickerCategory category,
                        std::u16string_view query) override {}
   void ShowEditor(std::optional<std::string> preset_query_id,
                   std::optional<std::string> freeform_text) override {}
-  void SetCapsLockEnabled(bool enabled) override {}
-  void GetSuggestedEditorResults(
-      SuggestedEditorResultsCallback callback) override {}
   PickerAssetFetcher* GetAssetFetcher() override { return nullptr; }
   PickerSessionMetrics& GetSessionMetrics() override {
     return session_metrics_;
@@ -58,6 +60,12 @@ class FakePickerViewDelegate : public PickerViewDelegate {
   PickerActionType GetActionForResult(
       const PickerSearchResult& result) override {
     return PickerActionType::kInsert;
+  }
+  std::vector<PickerSearchResult> GetSuggestedEmoji() override { return {}; }
+  bool IsGifsEnabled() override { return true; }
+  PickerModeType GetMode() override { return PickerModeType::kNoSelection; }
+  PickerCapsLockPosition GetCapsLockPosition() override {
+    return PickerCapsLockPosition::kTop;
   }
 
  private:
@@ -136,6 +144,19 @@ TEST_F(PickerWidgetTest, PreviewBubbleDoesNotStealFocusPickerWidget) {
   EXPECT_FALSE(picker_widget->IsClosed());
 
   bubble_view->GetWidget()->CloseNow();
+}
+
+TEST_F(PickerWidgetTest, CreatesCenteredWidget) {
+  FakePickerViewDelegate delegate;
+  auto widget =
+      PickerWidget::CreateCentered(&delegate, gfx::Rect(10, 10, 10, 10));
+  widget->Show();
+
+  EXPECT_EQ(widget->GetWindowBoundsInScreen().CenterPoint(),
+            display::Screen::GetScreen()
+                ->GetPrimaryDisplay()
+                .work_area()
+                .CenterPoint());
 }
 
 }  // namespace

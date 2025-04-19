@@ -10,13 +10,16 @@
 #include <string>
 
 #include "ash/ash_export.h"
+#include "ash/metrics/post_login_event_observer.h"
+#include "ash/metrics/post_login_metrics_recorder.h"
 #include "ash/metrics/ui_metrics_recorder.h"
-#include "ash/public/cpp/session/session_observer.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "base/task/deferred_sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -37,16 +40,17 @@ class ShelfModel;
 // during login time and triggers callbacks on some events.
 class ASH_EXPORT WindowRestoreTracker {
  public:
+  using NotifyCallback = base::OnceCallback<void(base::TimeTicks)>;
+
   WindowRestoreTracker();
   ~WindowRestoreTracker();
   WindowRestoreTracker(const WindowRestoreTracker&) = delete;
   WindowRestoreTracker& operator=(const WindowRestoreTracker&) = delete;
 
-  void Init(base::OnceClosure on_all_window_created,
-            base::OnceClosure on_all_window_shown,
-            base::OnceClosure on_all_window_presented);
+  void Init(NotifyCallback on_all_window_created,
+            NotifyCallback on_all_window_shown,
+            NotifyCallback on_all_window_presented);
 
-  int NumberOfWindows() const;
   void AddWindow(int window_id, const std::string& app_id);
   void OnCreated(int window_id);
   void OnShown(int window_id, ui::Compositor* compositor);
@@ -62,14 +66,14 @@ class ASH_EXPORT WindowRestoreTracker {
 
   void OnCompositorFramePresented(int window_id,
                                   const viz::FrameTimingDetails& details);
-  void OnPresented(int window_id);
+  void OnPresented(int window_id, base::TimeTicks presentation_time);
   int CountWindowsInState(State state) const;
 
   // Map from window id to window state.
   std::map<int, State> windows_;
-  base::OnceClosure on_created_;
-  base::OnceClosure on_shown_;
-  base::OnceClosure on_presented_;
+  NotifyCallback on_created_;
+  NotifyCallback on_shown_;
+  NotifyCallback on_presented_;
 
   base::WeakPtrFactory<WindowRestoreTracker> weak_ptr_factory_{this};
 };
@@ -100,12 +104,11 @@ class ASH_EXPORT ShelfTracker {
   base::OnceClosure on_ready_;
 };
 
-class ASH_EXPORT LoginUnlockThroughputRecorder : public SessionObserver,
-                                                 public LoginState::Observer {
+class ASH_EXPORT LoginUnlockThroughputRecorder : public LoginState::Observer {
  public:
-  enum RestoreWindowType {
-    kBrowser,
-    kArc,
+  struct RestoreWindowID {
+    int session_window_id;
+    std::string app_name;
   };
 
   LoginUnlockThroughputRecorder();
@@ -114,18 +117,11 @@ class ASH_EXPORT LoginUnlockThroughputRecorder : public SessionObserver,
       const LoginUnlockThroughputRecorder&) = delete;
   ~LoginUnlockThroughputRecorder() override;
 
-  // ShellObserver:
-  void OnLockStateChanged(bool locked) override;
+  void AddObserver(PostLoginEventObserver* obs);
+  void RemoveObserver(PostLoginEventObserver* obs);
 
   // LoginState::Observer:
   void LoggedInStateChanged() override;
-
-  // Adds "restore_window_id" to the list of potentially restored windows.
-  // See
-  // https://source.chromium.org/chromium/chromium/src/+/main:ui/views/widget/widget.h;l=404-415.
-  void AddScheduledRestoreWindow(int restore_window_id,
-                                 const std::string& app_id,
-                                 RestoreWindowType window_type);
 
   // This is called when restored window was created.
   void OnRestoredWindowCreated(int restore_window_id);
@@ -140,22 +136,12 @@ class ASH_EXPORT LoginUnlockThroughputRecorder : public SessionObserver,
   // This is called when the list of shelf icons is updated.
   void UpdateShelfIconList(const ShelfModel* model);
 
-  // This is called when ARC++ becomes enabled.
-  void OnArcOptedIn();
-
-  // This is called when list of ARC++ apps is updated.
-  void OnArcAppListReady();
-
   // This is called when cryptohome was successfully created/unlocked.
   void OnAuthSuccess();
 
   // This is called when ash-chrome is restarted (i.e. on start up procedure
   // of restoring).
   void OnAshRestart();
-
-  // This is true if we need to report Ash.ArcAppInitialAppsInstallDuration
-  // histogram in this session but it has not been reported yet.
-  bool NeedReportArcAppListReady() const;
 
   void ResetScopedThroughputReporterBlockerForTesting();
 
@@ -164,16 +150,13 @@ class ASH_EXPORT LoginUnlockThroughputRecorder : public SessionObserver,
     return login_animation_throughput_reporter_.get();
   }
 
-  // Add a time marker for login animations events. A timeline will be sent to
-  // tracing after login is done.
-  void AddLoginTimeMarker(const std::string& marker_name);
-
-  // This flag signals that all expected browser windows are already scheduled.
-  void BrowserSessionRestoreDataLoaded();
-
-  // This flag signals that Full Session restore has reported all the expected
-  // windows to be created.
-  void FullSessionRestoreDataLoaded();
+  // This is called when the list of restore windows is ready. `window_ids`
+  // includes session window ids for browser windows that were created in the
+  // previous session. `restore_automatically` is true if session restore will
+  // start immediately after this call. More specifically, it will be true if
+  // the apps restore settings is set to "Always restore" in the OS settings.
+  void FullSessionRestoreDataLoaded(std::vector<RestoreWindowID> window_ids,
+                                    bool restore_automatically);
 
   // Records that ARC has finished booting.
   void ArcUiAvailableAfterLogin();
@@ -186,33 +169,17 @@ class ASH_EXPORT LoginUnlockThroughputRecorder : public SessionObserver,
     return &window_restore_tracker_;
   }
 
+  PostLoginMetricsRecorder* post_login_metrics_recorder() {
+    return &post_login_metrics_recorder_;
+  }
+
   void SetLoginFinishedReportedForTesting();
 
  private:
-  class TimeMarker {
-   public:
-    explicit TimeMarker(const std::string& name);
-    TimeMarker(const TimeMarker& other) = default;
-    ~TimeMarker() = default;
-
-    const std::string& name() const { return name_; }
-    base::TimeTicks time() const { return time_; }
-
-    // Comparator for sorting.
-    bool operator<(const TimeMarker& other) const {
-      return time_ < other.time_;
-    }
-
-   private:
-    friend class std::vector<TimeMarker>;
-
-    const std::string name_;
-    const base::TimeTicks time_ = base::TimeTicks::Now();
-  };
-
   void OnCompositorAnimationFinished(
-      base::TimeTicks start,
-      const cc::FrameSequenceMetrics::CustomReportData& data);
+      const cc::FrameSequenceMetrics::CustomReportData& data,
+      base::TimeTicks first_animation_started_at,
+      base::TimeTicks last_animation_finished_at);
 
   void ScheduleWaitForShelfAnimationEndIfNeeded();
 
@@ -222,56 +189,30 @@ class ASH_EXPORT LoginUnlockThroughputRecorder : public SessionObserver,
 
   void OnPostLoginDeferredTaskTimerFired();
 
-  void MaybeRestoreDataLoaded();
-
-  // We only want to initialize the slice name on certain expected events.
-  // If we miss these, it will ne names "Unordered" and we will know that
-  // we missed the expected event.
-  void EnsureTracingSliceNamed();
-
-  void OnAllWindowsCreated();
-  void OnAllWindowsShown();
-  void OnAllWindowsPresented();
+  void OnAllWindowsCreated(base::TimeTicks time);
+  void OnAllWindowsShown(base::TimeTicks time);
+  void OnAllWindowsPresented(base::TimeTicks time);
 
   UiMetricsRecorder ui_recorder_;
 
   WindowRestoreTracker window_restore_tracker_;
   ShelfTracker shelf_tracker_;
 
-  std::optional<base::TimeTicks> timestamp_on_auth_success_;
-  std::optional<base::TimeTicks> timestamp_primary_user_logged_in_;
-
   // Whether ash is restarted (due to crash, or applying flags etc).
   bool is_ash_restart_ = false;
 
   bool user_logged_in_ = false;
 
-  // Session restore data comes from chrome::SessionRestore and ash::FullRestore
-  // independently.
-
-  // This flag is true after SessionRestore has finished loading its data.
-  bool browser_session_restore_data_loaded_ = false;
-
-  // This flag is true after FullRestore has finished loading its data.
+  // Flags to DCHECK conditions.
   bool full_session_restore_data_loaded_ = false;
+  bool shelf_animation_end_scheduled_ = false;
 
-  bool window_restore_done_ = false;
-
-  // |shelf_icons_loaded_| is true when all shelf icons are considered loaded,
-  // i.e. there is no pending icon on shelf after shelf is initialized.
-  bool shelf_icons_loaded_ = false;
-
-  bool dcheck_shelf_animation_end_scheduled_ = false;
-
-  bool shelf_animation_finished_ = false;
-
-  bool arc_app_list_ready_reported_ = false;
-
-  bool login_animation_throughput_received_ = false;
-
+  // Flags to track state transition.
+  std::optional<base::TimeTicks> time_window_restore_done_;
+  std::optional<base::TimeTicks> time_shelf_icons_loaded_;
+  std::optional<base::TimeTicks> time_shelf_animation_finished_;
+  std::optional<base::TimeTicks> time_compositor_animation_finished_;
   bool login_finished_reported_ = false;
-
-  std::optional<base::TimeTicks> arc_opt_in_time_;
 
   base::WeakPtr<ui::TotalAnimationThroughputReporter>
       login_animation_throughput_reporter_;
@@ -280,15 +221,16 @@ class ASH_EXPORT LoginUnlockThroughputRecorder : public SessionObserver,
       ui::TotalAnimationThroughputReporter::ScopedThroughputReporterBlocker>
       scoped_throughput_reporter_blocker_;
 
-  std::vector<TimeMarker> login_time_markers_;
-
   // Timer that triggers post-login tasks in case the login animation is taking
   // longer time than expected.
   base::OneShotTimer post_login_deferred_task_timer_;
-
   // Deferred task runner for the post-login tasks.
   scoped_refptr<base::DeferredSequencedTaskRunner>
       post_login_deferred_task_runner_;
+
+  base::ObserverList<PostLoginEventObserver> observers_;
+
+  PostLoginMetricsRecorder post_login_metrics_recorder_;
 
   base::WeakPtrFactory<LoginUnlockThroughputRecorder> weak_ptr_factory_{this};
 };

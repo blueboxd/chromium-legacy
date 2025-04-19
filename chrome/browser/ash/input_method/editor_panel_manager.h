@@ -38,15 +38,16 @@ class EditorPanelManager : public crosapi::mojom::EditorPanelManager {
         mojo::PendingReceiver<orca::mojom::EditorClient> pending_receiver) = 0;
 
     virtual void OnPromoCardDeclined() = 0;
+    virtual void ProcessConsentAction(ConsentAction consent_action) = 0;
     virtual void HandleTrigger(
         std::optional<std::string_view> preset_query_id,
         std::optional<std::string_view> freeform_text) = 0;
     virtual EditorMode GetEditorMode() const = 0;
+    virtual ConsentStatus GetConsentStatus() const = 0;
     virtual EditorMetricsRecorder* GetMetricsRecorder() = 0;
     virtual EditorOpportunityMode GetEditorOpportunityMode() const = 0;
     virtual std::vector<EditorBlockedReason> GetBlockedReasons() const = 0;
 
-    virtual void FetchAndUpdateInputContext() = 0;
     virtual void CacheContext() = 0;
   };
 
@@ -64,6 +65,7 @@ class EditorPanelManager : public crosapi::mojom::EditorPanelManager {
   void GetEditorPanelContext(GetEditorPanelContextCallback callback) override;
   void OnPromoCardDismissed() override;
   void OnPromoCardDeclined() override;
+  void OnConsentRejected() override;
   void StartEditingFlow() override;
   void StartEditingFlowWithPreset(const std::string& text_query_id) override;
   void StartEditingFlowWithFreeform(const std::string& text) override;
@@ -79,10 +81,20 @@ class EditorPanelManager : public crosapi::mojom::EditorPanelManager {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
   void NotifyEditorModeChanged(const EditorMode& mode);
+  void RequestCacheContext();
+
+  // Used by the Magic Boost opt-in flow. Virtual for testing.
+  virtual void OnConsentApproved();
+  void OnMagicBoostPromoCardDeclined();
+
+  // For testing
+  void SetEditorClientForTesting(
+      mojo::PendingRemote<orca::mojom::EditorClient> client_for_testing);
 
  private:
   void OnGetPresetTextQueriesResult(
       GetEditorPanelContextCallback callback,
+      crosapi::mojom::EditorPanelMode panel_mode,
       std::vector<orca::mojom::PresetTextQueryPtr> queries);
 
   raw_ptr<Delegate> delegate_;

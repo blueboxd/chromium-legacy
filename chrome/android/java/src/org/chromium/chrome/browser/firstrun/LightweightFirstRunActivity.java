@@ -20,6 +20,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.IntentUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.back_press.SecondaryActivityBackPressUma.SecondaryActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
@@ -49,8 +50,6 @@ public class LightweightFirstRunActivity extends FirstRunActivityBase
     private boolean mViewCreated;
     private boolean mNativeInitialized;
     private boolean mTriggerAcceptAfterNativeInit;
-
-    private long mViewCreatedTimeMs;
 
     private Handler mHandler;
     private Runnable mExitFreRunnable;
@@ -139,12 +138,12 @@ public class LightweightFirstRunActivity extends FirstRunActivityBase
                                     "<LINK2>", "</LINK2>", clickableChromeAdditionalTermsSpan));
         }
 
-        mTosAndPrivacyTextView = (TextView) findViewById(R.id.lightweight_fre_tos_and_privacy);
+        mTosAndPrivacyTextView = findViewById(R.id.lightweight_fre_tos_and_privacy);
         mTosAndPrivacyTextView.setText(tosAndPrivacyText);
         mTosAndPrivacyTextView.setMovementMethod(LinkMovementMethod.getInstance());
 
         mLightweightFreButtons = findViewById(R.id.lightweight_fre_buttons);
-        mOkButton = (Button) findViewById(R.id.button_primary);
+        mOkButton = findViewById(R.id.button_primary);
         mOkButton.setOnClickListener(view -> acceptTermsOfService());
 
         ((Button) findViewById(R.id.button_secondary))
@@ -156,7 +155,6 @@ public class LightweightFirstRunActivity extends FirstRunActivityBase
         mPrivacyDisclaimer = findViewById(R.id.privacy_disclaimer);
 
         mViewCreated = true;
-        mViewCreatedTimeMs = SystemClock.elapsedRealtime();
 
         if (mSkipTosDialogPolicyListener != null) {
             // Check if we need to setup logic for policy loading.
@@ -209,6 +207,8 @@ public class LightweightFirstRunActivity extends FirstRunActivityBase
         assert !mNativeInitialized;
 
         mNativeInitialized = true;
+        RecordHistogram.recordTimesHistogram(
+                "MobileFre.NativeInitialized", SystemClock.elapsedRealtime() - getStartTime());
         if (mTriggerAcceptAfterNativeInit) acceptTermsOfService();
     }
 

@@ -275,7 +275,9 @@ class PrerenderHostTest : public RenderViewHostImplTestHarness {
 
   PrerenderAttributes GeneratePrerenderAttributesWithPredicate(
       const GURL& url,
-      base::RepeatingCallback<bool(const GURL&)> url_match_predicate) {
+      base::RepeatingCallback<bool(const GURL&,
+                                   const std::optional<content::UrlMatchType>&)>
+          url_match_predicate) {
     RenderFrameHostImpl* rfh = contents()->GetPrimaryMainFrame();
     return PrerenderAttributes(
         url, PreloadingTriggerType::kSpeculationRule,
@@ -286,7 +288,7 @@ class PrerenderHostTest : public RenderViewHostImplTestHarness {
         rfh->GetProcess()->GetID(), contents()->GetWeakPtr(),
         rfh->GetFrameToken(), rfh->GetFrameTreeNodeId(),
         rfh->GetPageUkmSourceId(), ui::PAGE_TRANSITION_LINK,
-        std::move(url_match_predicate),
+        /*should_warm_up_compositor=*/false, std::move(url_match_predicate),
         /*prerender_navigation_handle_callback=*/{});
   }
 
@@ -641,8 +643,10 @@ TEST_F(PrerenderHostTest, DontCancelPrerenderWhenTriggerGetsOcculded) {
 
 TEST_F(PrerenderHostTest, UrlMatchPredicate) {
   const GURL kPrerenderingUrl = GURL("https://example.com/empty.html");
-  base::RepeatingCallback callback =
-      base::BindRepeating([](const GURL&) { return true; });
+  base::RepeatingCallback callback = base::BindRepeating(
+      [](const GURL&, const std::optional<content::UrlMatchType>&) {
+        return true;
+      });
   const int prerender_frame_tree_node_id = registry().CreateAndStartHost(
       GeneratePrerenderAttributesWithPredicate(kPrerenderingUrl, callback));
   PrerenderHost* prerender_host =
@@ -671,6 +675,7 @@ TEST_F(PrerenderHostTest, CanceledPrerenderCannotBeReadyForActivation) {
   PreloadingAttempt* preloading_attempt = preloading_data->AddPreloadingAttempt(
       content_preloading_predictor::kSpeculationRules,
       PreloadingType::kPrerender, std::move(same_url_matcher),
+      /*planned_max_preloading_type=*/std::nullopt,
       contents()->GetPrimaryMainFrame()->GetPageUkmSourceId());
 
   const int prerender_frame_tree_node_id = registry().CreateAndStartHost(

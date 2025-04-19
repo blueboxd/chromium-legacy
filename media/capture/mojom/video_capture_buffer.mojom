@@ -40,14 +40,11 @@ struct ReadyBuffer {
   VideoFrameInfo info;
 };
 
+// Represents an ExportedSharedImage when used with GpuMemoryBufferHandle as
+// part of VideoBufferHandle.
 struct SharedImageBufferHandleSet {
-  // The size of the |shared_images| array is always 1 when storing
-  // MultiplanarSharedImage, and should otherwise match the plane number
-  // of the corresponding pixel format listed in media::VideoPixelFormat.
-  // In either case, the size should never exceed media::VideoFrame::kMaxPlanes.
-  array<gpu.mojom.ExportedSharedImage> shared_images;
+  gpu.mojom.ExportedSharedImage shared_image;
   gpu.mojom.SyncToken sync_token;
-  uint32 texture_target;
 };
 
 union VideoBufferHandle {
@@ -57,6 +54,6 @@ union VideoBufferHandle {
   // into more distinct types.
   mojo_base.mojom.UnsafeSharedMemoryRegion unsafe_shmem_region;
   mojo_base.mojom.ReadOnlySharedMemoryRegion read_only_shmem_region;
-  SharedImageBufferHandleSet shared_image_handles;
+  SharedImageBufferHandleSet shared_image_handle;
   gfx.mojom.GpuMemoryBufferHandle gpu_memory_buffer_handle;
 };

@@ -30,6 +30,7 @@
 #include "content/public/browser/reload_type.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
+#include "net/storage_access_api/status.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "third_party/blink/public/common/navigation/navigation_params.h"
@@ -444,7 +445,9 @@ NavigationEntryImpl::NavigationEntryImpl(
               : InitialNavigationEntryState::kNonInitial) {}
 
 NavigationEntryImpl::~NavigationEntryImpl() {
-  if (same_document_navigation_entry_screenshot_token_.has_value()) {
+  if (navigation_transition_data_
+          .same_document_navigation_entry_screenshot_token()
+          .has_value()) {
     // We get here if:
     // - `DidCommitSameDocumentNavigation` sets the token, promising a
     //    screenshot was supposed to arrive.
@@ -453,7 +456,9 @@ NavigationEntryImpl::~NavigationEntryImpl() {
     viz::HostFrameSinkManager* manager = GetHostFrameSinkManager();
     CHECK(manager);
     manager->InvalidateCopyOutputReadyCallback(
-        same_document_navigation_entry_screenshot_token_.value());
+        navigation_transition_data_
+            .same_document_navigation_entry_screenshot_token()
+            .value());
   }
 }
 
@@ -516,8 +521,8 @@ const GURL& NavigationEntryImpl::GetVirtualURL() {
   return virtual_url_.is_empty() ? GetURL() : virtual_url_;
 }
 
-void NavigationEntryImpl::SetTitle(const std::u16string& title) {
-  title_ = title;
+void NavigationEntryImpl::SetTitle(std::u16string title) {
+  title_ = std::move(title);
   cached_display_title_.clear();
 }
 
@@ -854,6 +859,16 @@ NavigationEntryImpl::CloneAndReplaceInternal(
   copy->should_skip_on_back_forward_ui_ = should_skip_on_back_forward_ui_;
   copy->initial_navigation_entry_state_ = initial_navigation_entry_state_;
 
+  if (navigation_transition_data().cache_hit_or_miss_reason() ==
+      NavigationTransitionData::CacheHitOrMissReason::kCacheHit) {
+    copy->navigation_transition_data().set_cache_hit_or_miss_reason(
+        NavigationTransitionData::CacheHitOrMissReason::
+            kCacheMissClonedNavigationEntry);
+  } else {
+    copy->navigation_transition_data().set_cache_hit_or_miss_reason(
+        navigation_transition_data().cache_hit_or_miss_reason());
+  }
+
   return copy;
 }
 
@@ -957,7 +972,7 @@ NavigationEntryImpl::ConstructCommitNavigationParams(
 #if BUILDFLAG(IS_ANDROID)
           std::string(),
 #endif
-          false /* is_browser_initiated */,
+          false /* is_browser_initiated */, false /*has_ua_visual_transition*/,
           ukm::kInvalidSourceId /* document_ukm_source_id */, frame_policy,
           std::vector<std::string>() /* force_enabled_origin_trials */,
           false /* origin_agent_cluster */,
@@ -981,11 +996,13 @@ NavigationEntryImpl::ConstructCommitNavigationParams(
           base::flat_map<::blink::mojom::RuntimeFeature, bool>(),
           /*fenced_frame_properties=*/std::nullopt,
           /*not_restored_reasons=*/nullptr,
-          /*load_with_storage_access=*/false,
+          /*load_with_storage_access=*/
+          net::StorageAccessApiStatus::kNone,
           /*browsing_context_group_info=*/std::nullopt,
           /*lcpp_hint=*/nullptr, blink::CreateDefaultRendererContentSettings(),
           /*cookie_deprecation_label=*/std::nullopt,
-          /*visited_link_salt=*/std::nullopt);
+          /*visited_link_salt=*/std::nullopt,
+          /*local_surface_id=*/std::nullopt);
 #if BUILDFLAG(IS_ANDROID)
   // `data_url_as_string` is saved in NavigationEntry but should only be used by
   // main frames, because loadData* navigations can only happen on the main
@@ -1255,18 +1272,6 @@ void NavigationEntryImpl::UpdateBackForwardCacheNotRestoredReasons(
 
 GURL NavigationEntryImpl::GetHistoryURLForDataURL() {
   return GetBaseURLForDataURL().is_empty() ? GURL() : GetVirtualURL();
-}
-
-void NavigationEntryImpl::SetSameDocumentNavigationEntryScreenshotToken(
-    const std::optional<blink::SameDocNavigationScreenshotDestinationToken>&
-        token) {
-  viz::HostFrameSinkManager* manager = GetHostFrameSinkManager();
-  CHECK(manager);
-  if (same_document_navigation_entry_screenshot_token_.has_value()) {
-    manager->InvalidateCopyOutputReadyCallback(
-        same_document_navigation_entry_screenshot_token_.value());
-  }
-  same_document_navigation_entry_screenshot_token_ = token;
 }
 
 }  // namespace content

@@ -59,7 +59,8 @@ BASE_FEATURE(kGpuLPAC,
              "GpuLPAC",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enables Print Compositor Low Privilege AppContainer.
+// Enables Print Compositor Low Privilege AppContainer. Note, this might be
+// overridden and disabled by policy.
 BASE_FEATURE(kPrintCompositorLPAC,
              "PrintCompositorLPAC",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -113,6 +114,21 @@ BASE_FEATURE(kNetworkServiceCodeIntegrity,
 BASE_FEATURE(kWinSboxNoFakeGdiInit,
              "WinSboxNoFakeGdiInit",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables Restrict Core Sharing mitigation for the renderer process, when
+// running Windows 11 Build 25922 and above. See param definition of
+// RestrictCoreSharing in
+// https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-
+// process_mitigation_side_channel_isolation_policy
+BASE_FEATURE(kWinSboxRestrictCoreSharingOnRenderer,
+             "WinSboxRestrictCoreSharingOnRenderer",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Creates an AppContainer policy without registering with the Windows firewall
+// service. See crbug.com/352720904 for details.
+BASE_FEATURE(kWinSboxACProfileWithoutFirewall,
+             "WinSboxACProfileWithoutFirewall",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -122,13 +138,6 @@ BASE_FEATURE(kWinSboxNoFakeGdiInit,
 BASE_FEATURE(kSpectreVariant2Mitigation,
              "SpectreVariant2Mitigation",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-// An override for the Spectre variant 2 default behavior. Security sensitive
-// users can enable this feature to ensure that the mitigation is always
-// enabled.
-BASE_FEATURE(kForceSpectreVariant2Mitigation,
-             "ForceSpectreVariant2Mitigation",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
@@ -138,8 +147,7 @@ BASE_FEATURE(kForceSpectreVariant2Mitigation,
 // mitigations.
 //
 // On ChromeOS Ash, this overrides the system-wide kSpectreVariant2Mitigation
-// feature above, but not the user-controlled kForceSpectreVariant2Mitigation
-// feature.
+// feature above.
 BASE_FEATURE(kForceDisableSpectreVariant2MitigationInNetworkService,
              "kForceDisableSpectreVariant2MitigationInNetworkService",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -183,6 +191,15 @@ BASE_FEATURE(kRestrictCloneParameters,
 
 #if BUILDFLAG(IS_WIN)
 bool IsNetworkSandboxSupported() {
+  // Temporary fix to avoid using network sandbox on ARM64 until root cause for
+  // https://crbug.com/40223285 is diagnosed.
+  if (base::win::OSInfo::GetInstance()->GetArchitecture() ==
+          base::win::OSInfo::ARM64_ARCHITECTURE ||
+      base::win::OSInfo::GetInstance()->IsWowX86OnARM64() ||
+      base::win::OSInfo::GetInstance()->IsWowAMD64OnARM64()) {
+    return false;
+  }
+
   // Network service sandbox uses GetNetworkConnectivityHint which is only
   // supported on Windows 10 Build 19041 (20H1) so versions before that wouldn't
   // have a working network change notifier when running in the sandbox.

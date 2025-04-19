@@ -41,12 +41,8 @@ scoped_refptr<media::VideoFrame> CreateTestFrame(
                            << " has no corresponding gfx::BufferFormat";
       auto gmb = std::make_unique<media::FakeGpuMemoryBuffer>(
           coded_size, buffer_format.value());
-      scoped_refptr<gpu::ClientSharedImage>
-          empty_shared_images[media::VideoFrame::kMaxPlanes];
       return media::VideoFrame::WrapExternalGpuMemoryBuffer(
-          visible_rect, natural_size, std::move(gmb), empty_shared_images,
-          gpu::SyncToken(), /*texture_target=*/0, base::NullCallback(),
-          timestamp);
+          visible_rect, natural_size, std::move(gmb), timestamp);
     }
     case media::VideoFrame::STORAGE_OPAQUE: {
       std::optional<gfx::BufferFormat> buffer_format =
@@ -56,16 +52,13 @@ scoped_refptr<media::VideoFrame> CreateTestFrame(
                            << " has no corresponding gfx::BufferFormat";
       auto gmb = std::make_unique<media::FakeGpuMemoryBuffer>(
           coded_size, buffer_format.value());
-      scoped_refptr<gpu::ClientSharedImage>
-          shared_images[media::VideoFrame::kMaxPlanes];
-      for (size_t i = 0; i < media::VideoFrame::NumPlanes(pixel_format); ++i) {
-        shared_images[i] = gpu::ClientSharedImage::CreateForTesting();
-      }
+      scoped_refptr<gpu::ClientSharedImage> shared_image =
+          gpu::ClientSharedImage::CreateForTesting();
 
-      return media::VideoFrame::WrapSharedImages(
-          pixel_format, shared_images, gpu::SyncToken(), 0,
-          base::NullCallback(), coded_size, visible_rect, natural_size,
-          timestamp);
+      return media::VideoFrame::WrapSharedImage(
+          pixel_format, shared_image, gpu::SyncToken(),
+          shared_image->GetTextureTarget(), base::NullCallback(), coded_size,
+          visible_rect, natural_size, timestamp);
     }
     default:
       NOTREACHED_IN_MIGRATION() << "Unsupported storage type or pixel format";

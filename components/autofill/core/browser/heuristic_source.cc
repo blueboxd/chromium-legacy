@@ -17,19 +17,12 @@ HeuristicSource GetActiveHeuristicSource() {
       features::kAutofillModelPredictionsAreActive.Get()) {
     return HeuristicSource::kMachineLearning;
   }
-#if !BUILDFLAG(USE_INTERNAL_AUTOFILL_PATTERNS)
-  return HeuristicSource::kLegacy;
+#if BUILDFLAG(USE_INTERNAL_AUTOFILL_PATTERNS)
+  return features::kAutofillParsingPatternActiveSource.Get() == "default"
+             ? HeuristicSource::kDefault
+             : HeuristicSource::kExperimental;
 #else
-  if (!base::FeatureList::IsEnabled(
-          features::kAutofillParsingPatternProvider)) {
-    return HeuristicSource::kLegacy;
-  }
-  const std::string& source =
-      features::kAutofillParsingPatternActiveSource.Get();
-  CHECK(source == "default" || source == "experimental" || source == "nextgen");
-  return source == "default"        ? HeuristicSource::kDefault
-         : source == "experimental" ? HeuristicSource::kExperimental
-                                    : HeuristicSource::kNextGen;
+  return HeuristicSource::kLegacy;
 #endif
 }
 
@@ -43,12 +36,9 @@ DenseSet<HeuristicSource> GetNonActiveHeuristicSources() {
       non_active_sources.insert(HeuristicSource::kExperimental);
       break;
     case HeuristicSource::kExperimental:
-      non_active_sources.insert(HeuristicSource::kNextGen);
       break;
-    case HeuristicSource::kNextGen:
 #endif
-    // Prior to PatternProvider and on non Chrome-branded builds, no alternative
-    // `PatternSource`s exist.
+    // On non Chrome-branded builds, no alternative `PatternSource`s exist.
     case HeuristicSource::kLegacy:
       break;
     // If ML is active, compare against the `PatternSource`-based predictions
@@ -56,10 +46,7 @@ DenseSet<HeuristicSource> GetNonActiveHeuristicSources() {
     case HeuristicSource::kMachineLearning:
       non_active_sources.insert(
 #if BUILDFLAG(USE_INTERNAL_AUTOFILL_PATTERNS)
-          base::FeatureList::IsEnabled(
-              features::kAutofillParsingPatternProvider)
-              ? HeuristicSource::kDefault
-              : HeuristicSource::kLegacy
+          HeuristicSource::kDefault
 #else
           HeuristicSource::kLegacy
 #endif
@@ -84,8 +71,6 @@ std::optional<PatternSource> HeuristicSourceToPatternSource(
       return PatternSource::kDefault;
     case HeuristicSource::kExperimental:
       return PatternSource::kExperimental;
-    case HeuristicSource::kNextGen:
-      return PatternSource::kNextGen;
 #endif
     case autofill::HeuristicSource::kMachineLearning:
       return std::nullopt;
@@ -102,8 +87,6 @@ HeuristicSource PatternSourceToHeuristicSource(PatternSource source) {
       return HeuristicSource::kDefault;
     case PatternSource::kExperimental:
       return HeuristicSource::kExperimental;
-    case PatternSource::kNextGen:
-      return HeuristicSource::kNextGen;
 #endif
   }
   NOTREACHED_NORETURN();

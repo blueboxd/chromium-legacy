@@ -65,6 +65,10 @@ class PLATFORM_EXPORT CalculationExpressionNode
   bool HasPercent() const { return has_percent_; }
   bool HasPercentOrStretch() const { return has_percent_ || has_stretch_; }
 
+  virtual bool HasMinContent() const { return false; }
+  virtual bool HasMaxContent() const { return false; }
+  virtual bool HasFitContent() const { return false; }
+
   virtual bool IsNumber() const { return false; }
   virtual bool IsIdentifier() const { return false; }
   virtual bool IsSizingKeyword() const { return false; }
@@ -177,6 +181,7 @@ class PLATFORM_EXPORT CalculationExpressionSizingKeywordNode final
     kSize,
     kAny,
     kAuto,
+    kContent,
 
     // The keywords below should match those accepted by
     // css_parsing_utils::ValidWidthOrHeightKeyword.
@@ -207,6 +212,19 @@ class PLATFORM_EXPORT CalculationExpressionSizingKeywordNode final
     return this;
   }
   bool IsSizingKeyword() const final { return true; }
+
+  bool HasMinContent() const final {
+    return keyword_ == Keyword::kMinContent ||
+           keyword_ == Keyword::kWebkitMinContent;
+  }
+  bool HasMaxContent() const final {
+    return keyword_ == Keyword::kMaxContent ||
+           keyword_ == Keyword::kWebkitMaxContent;
+  }
+  bool HasFitContent() const final {
+    return keyword_ == Keyword::kFitContent ||
+           keyword_ == Keyword::kWebkitFitContent;
+  }
 
 #if DCHECK_IS_ON()
   ResultType ResolvedResultType() const final {
@@ -288,6 +306,9 @@ class PLATFORM_EXPORT CalculationExpressionOperationNode final
   scoped_refptr<const CalculationExpressionNode> Zoom(
       double factor) const final;
   bool IsOperation() const final { return true; }
+  bool HasMinContent() const final;
+  bool HasMaxContent() const final;
+  bool HasFitContent() const final;
   ~CalculationExpressionOperationNode() final = default;
 
 #if DCHECK_IS_ON()

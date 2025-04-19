@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "media/renderers/paint_canvas_video_renderer.h"
 
 #include <GLES3/gl3.h>
@@ -139,14 +144,15 @@ const gpu::MailboxHolder& GetVideoFrameMailboxHolder(VideoFrame* video_frame) {
          PIXEL_FORMAT_XBGR == video_frame->format() ||
          PIXEL_FORMAT_XB30 == video_frame->format() ||
          PIXEL_FORMAT_XR30 == video_frame->format() ||
+         PIXEL_FORMAT_I420 == video_frame->format() ||
          PIXEL_FORMAT_YV12 == video_frame->format() ||
          PIXEL_FORMAT_NV12 == video_frame->format() ||
          PIXEL_FORMAT_NV16 == video_frame->format() ||
          PIXEL_FORMAT_NV24 == video_frame->format() ||
          PIXEL_FORMAT_NV12A == video_frame->format() ||
-         PIXEL_FORMAT_P016LE == video_frame->format() ||
-         PIXEL_FORMAT_P216LE == video_frame->format() ||
-         PIXEL_FORMAT_P416LE == video_frame->format() ||
+         PIXEL_FORMAT_P010LE == video_frame->format() ||
+         PIXEL_FORMAT_P210LE == video_frame->format() ||
+         PIXEL_FORMAT_P410LE == video_frame->format() ||
          PIXEL_FORMAT_RGBAF16 == video_frame->format() ||
          PIXEL_FORMAT_BGRA == video_frame->format())
       << "Format: " << VideoPixelFormatToString(video_frame->format());
@@ -307,10 +313,12 @@ const libyuv::YuvConstants* GetYuvContantsForColorSpace(SkYUVColorSpace cs) {
     case kBT2020_8bit_Full_SkYUVColorSpace:
     case kBT2020_10bit_Full_SkYUVColorSpace:
     case kBT2020_12bit_Full_SkYUVColorSpace:
+    case kBT2020_16bit_Full_SkYUVColorSpace:
       return &YUV_MATRIX(libyuv::kYuvV2020Constants);
     case kBT2020_8bit_Limited_SkYUVColorSpace:
     case kBT2020_10bit_Limited_SkYUVColorSpace:
     case kBT2020_12bit_Limited_SkYUVColorSpace:
+    case kBT2020_16bit_Limited_SkYUVColorSpace:
       return &YUV_MATRIX(libyuv::kYuv2020Constants);
     case kFCC_Full_SkYUVColorSpace:
     case kFCC_Limited_SkYUVColorSpace:
@@ -326,6 +334,8 @@ const libyuv::YuvConstants* GetYuvContantsForColorSpace(SkYUVColorSpace cs) {
     case kYCgCo_10bit_Limited_SkYUVColorSpace:
     case kYCgCo_12bit_Full_SkYUVColorSpace:
     case kYCgCo_12bit_Limited_SkYUVColorSpace:
+    case kYCgCo_16bit_Full_SkYUVColorSpace:
+    case kYCgCo_16bit_Limited_SkYUVColorSpace:
       // TODO(crbug.com/41486014): Return color space for default
       // kRec601_SkYUVColorSpace as libyuv does not have FCC, SMPTE240M, YDZDX,
       // GBR, YCgCo equivalent support.
@@ -626,8 +636,8 @@ void ConvertVideoFrameToRGBPixelsTask(const VideoFrame* video_frame,
                                  plane_meta[VideoFrame::Plane::kUV].stride,
                                  pixels, row_bytes, matrix, width, rows);
       break;
-    case PIXEL_FORMAT_P016LE:
-      libyuv::P016ToARGBMatrix(
+    case PIXEL_FORMAT_P010LE:
+      libyuv::P010ToARGBMatrix(
           reinterpret_cast<const uint16_t*>(
               plane_meta[VideoFrame::Plane::kY].data.get()),
           plane_meta[VideoFrame::Plane::kY].stride,
@@ -654,8 +664,8 @@ void ConvertVideoFrameToRGBPixelsTask(const VideoFrame* video_frame,
     case PIXEL_FORMAT_NV16:
     case PIXEL_FORMAT_NV24:
     case PIXEL_FORMAT_NV12A:
-    case PIXEL_FORMAT_P216LE:
-    case PIXEL_FORMAT_P416LE:
+    case PIXEL_FORMAT_P210LE:
+    case PIXEL_FORMAT_P410LE:
     case PIXEL_FORMAT_YUY2:
     case PIXEL_FORMAT_ARGB:
     case PIXEL_FORMAT_BGRA:
@@ -681,8 +691,6 @@ bool ValidFormatForDirectUploading(
     viz::RasterContextProvider* raster_context_provider,
     GrGLenum format,
     unsigned int type) {
-  const gpu::Capabilities& context_caps =
-      raster_context_provider->ContextCapabilities();
   switch (format) {
     case GL_RGBA:
       return type == GL_UNSIGNED_BYTE || type == GL_UNSIGNED_SHORT_4_4_4_4;
@@ -695,7 +703,9 @@ bool ValidFormatForDirectUploading(
     case GL_RGB8:
     case GL_RGB10_A2:
     case GL_RGBA4:
-      return context_caps.major_version >= 3;
+      // TODO(crbug.com/356649879): RasterContextProvider never has ES3 context.
+      // Use the correct WebGL major version here.
+      return false;
     default:
       return false;
   }
@@ -802,12 +812,9 @@ class VideoImageGenerator : public cc::PaintImageGenerator {
       yuv_color_space = kRec601_SkYUVColorSpace;
     }
 
-    // We use the Y plane size because it may get rounded up to an even size.
-    // Our implementation of GetYUVAPlanes expects this.
-    auto y_size = VideoFrame::PlaneSizeInSamples(
-        frame_->format(), VideoFrame::Plane::kY, frame_->visible_rect().size());
-    auto yuva_info = SkYUVAInfo({y_size.width(), y_size.height()}, plane_config,
-                                subsampling, yuv_color_space);
+    auto yuva_info = SkYUVAInfo(
+        {frame_->visible_rect().width(), frame_->visible_rect().height()},
+        plane_config, subsampling, yuv_color_space);
     *info = SkYUVAPixmapInfo(yuva_info, SkYUVAPixmapInfo::DataType::kUnorm8,
                              /*rowBytes=*/nullptr);
     return true;
@@ -1609,10 +1616,6 @@ bool PaintCanvasVideoRenderer::UploadVideoFrameToGLTexture(
 
   DCHECK(video_frame->metadata().texture_origin_is_top_left);
 
-  // All platforms except Android (on which this code does not run) exclusively
-  // use the passthrough decoder, which supports YUV->RGB conversion.
-  CHECK(destination_gl_capabilities.supports_yuv_to_rgb_conversion);
-
   CHECK(video_frame->HasTextures());
 
   // Trigger resource allocation for dst texture to back SkSurface.
@@ -1647,7 +1650,7 @@ bool PaintCanvasVideoRenderer::UploadVideoFrameToGLTexture(
       mailboxes[i] = mailbox_holder.mailbox;
     }
 
-    auto mailbox_name_size = sizeof(mailboxes[0].name);
+    constexpr auto mailbox_name_size = sizeof(mailboxes[0].name);
     GLbyte mailbox_names[mailbox_name_size * SkYUVAInfo::kMaxPlanes];
     for (int i = 0; i < SkYUVAInfo::kMaxPlanes; i++) {
       memcpy(mailbox_names + mailbox_name_size * i, mailboxes[i].name,
@@ -1725,8 +1728,8 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameYUVDataToGLTexture(
     // We copy the contents of the source VideoFrame into the intermediate SI
     // over the raster interface and read out the contents of the intermediate
     // SI into the destination GL texture via the GLES2 interface.
-    uint32_t usage = gpu::SHARED_IMAGE_USAGE_RASTER_WRITE |
-                     gpu::SHARED_IMAGE_USAGE_GLES2_READ;
+    gpu::SharedImageUsageSet usage = gpu::SHARED_IMAGE_USAGE_RASTER_WRITE |
+                                     gpu::SHARED_IMAGE_USAGE_GLES2_READ;
     if (raster_context_provider->ContextCapabilities().gpu_rasterization) {
       usage |= gpu::SHARED_IMAGE_USAGE_OOP_RASTERIZATION;
     } else {
@@ -1955,7 +1958,7 @@ bool PaintCanvasVideoRenderer::UpdateLastImage(
 
         // This SI is used to cache the VideoFrame. We will eventually read out
         // its contents into a destination GL texture via the GLES2 interface.
-        uint32_t flags = gpu::SHARED_IMAGE_USAGE_GLES2_READ;
+        gpu::SharedImageUsageSet flags = gpu::SHARED_IMAGE_USAGE_GLES2_READ;
         // We copy the contents of the source VideoFrame *into* the
         // cached SI over the raster interface - the usage bits depend on
         // whether OOP-Raster is enabled.

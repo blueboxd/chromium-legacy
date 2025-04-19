@@ -64,6 +64,11 @@ partial interface Navigator {
 [SecureContext]
 partial interface Navigator {
   Promise<(USVString or FencedFrameConfig)?> runAdAuction(AuctionAdConfig config);
+  readonly attribute boolean deprecatedRunAdAuctionEnforcesKAnonymity;
+};
+
+dictionary AuctionRealTimeReportingConfig {
+  required DOMString type;
 };
 
 dictionary AuctionAdConfig {
@@ -94,9 +99,16 @@ dictionary AuctionAdConfig {
   sequence<record<DOMString, DOMString>> allSlotsRequestedSizes;
   Promise<undefined> additionalBids;
   DOMString auctionNonce;
+  AuctionRealTimeReportingConfig sellerRealTimeReportingConfig;
+  record<USVString, AuctionRealTimeReportingConfig> perBuyerRealTimeReportingConfig;
   sequence<AuctionAdConfig> componentAuctions = [];
   AbortSignal? signal;
   Promise<boolean> resolveToConfig;
+};
+
+[SecureContext]
+partial interface Navigator {
+  boolean canLoadAdAuctionFencedFrame();
 };
 
 [SecureContext]
@@ -114,11 +126,22 @@ interface ForDebuggingOnly {
   undefined reportAdAuctionLoss(USVString url);
 };
 
+[Exposed=InterestGroupBiddingAndScoringScriptRunnerGlobalScope]
+interface RealTimeReporting {
+  undefined contributeToHistogram(RealTimeContribution contribution);
+};
+
+dictionary RealTimeContribution {
+  required long bucket;
+  required double priorityWeight;
+  long latencyThreshold;
+};
+
 [Exposed=InterestGroupBiddingAndScoringScriptRunnerGlobalScope,
  Global=InterestGroupBiddingAndScoringScriptRunnerGlobalScope]
 interface InterestGroupBiddingAndScoringScriptRunnerGlobalScope : InterestGroupScriptRunnerGlobalScope {
-
   readonly attribute ForDebuggingOnly forDebuggingOnly;
+  readonly attribute RealTimeReporting realTimeReporting;
 };
 
 [Exposed=InterestGroupBiddingScriptRunnerGlobalScope,
@@ -204,10 +227,12 @@ dictionary BiddingBrowserSignals {
   required long adComponentsLimit;
   required unsigned short multiBidLimit;
 
+  record<DOMString, DOMString> requestedSize;
   USVString topLevelSeller;
   sequence<PreviousWin> prevWinsMs;
   object wasmHelper;
   unsigned long dataVersion;
+  unsigned long crossOriginDataVersion;
   boolean forDebuggingOnlyInCooldownOrLockout = false;
 };
 
@@ -218,7 +243,9 @@ dictionary ScoringBrowserSignals {
   required unsigned long biddingDurationMsec;
   required DOMString bidCurrency;
 
+  record<DOMString, DOMString> renderSize;
   unsigned long dataVersion;
+  unsigned long crossOriginDataVersion;
   sequence<USVString> adComponents;
   boolean forDebuggingOnlyInCooldownOrLockout = false;
 };

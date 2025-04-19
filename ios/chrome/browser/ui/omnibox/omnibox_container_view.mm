@@ -14,9 +14,7 @@
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/shared/ui/util/util_swift.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_constants.h"
-#import "ios/chrome/browser/ui/omnibox/omnibox_text_field_experimental.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
-#import "ios/chrome/browser/ui/omnibox/omnibox_text_field_legacy.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_ui_features.h"
 #import "ios/chrome/common/material_timing.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -30,6 +28,13 @@
 #import "ui/gfx/image/image.h"
 
 namespace {
+
+/// Width and height of the thumbnail image view.
+const CGFloat kOmniboxThumbnailImageSize = 24;
+/// Corner radius of the thumbnail image.
+const CGFloat kThumbnailImageCornerRadius = 4;
+/// Space between the thumbnail image and the omnibox text.
+const CGFloat kThumbnailImageTrailingMargin = 8;
 
 /// Space between the clear button and the edge of the omnibox.
 const CGFloat kTextFieldClearButtonTrailingOffset = 4;
@@ -57,10 +62,12 @@ const CGFloat kClearButtonSize = 28.5f;
 @implementation OmniboxContainerView {
   /// The leading image view. Used for autocomplete icons.
   UIImageView* _leadingImageView;
+  /// Thumbnail image used in image search.
+  UIImageView* _thumbnailImageView;
   /// UILabel for additional text.
   FadeTruncatingLabel* _additionalTextLabel;
   /// Horizontal stack view containing the `_leadingImageView` ,
-  /// `_textScrollView` and `clearButton`.
+  /// `_thumbnailImageView`, `_textScrollView` and `clearButton`.
   UIStackView* _stackView;
 
   /// Horizontal scroll view containing `_textStackView`.
@@ -78,17 +85,9 @@ const CGFloat kClearButtonSize = 28.5f;
                      iconTint:(UIColor*)iconTint {
   self = [super initWithFrame:frame];
   if (self) {
-    // Text field.
-    if (base::FeatureList::IsEnabled(kIOSNewOmniboxImplementation)) {
-      _textField =
-          [[OmniboxTextFieldExperimental alloc] initWithFrame:frame
-                                                    textColor:textColor
-                                                    tintColor:textFieldTint];
-    } else {
-      _textField = [[OmniboxTextFieldLegacy alloc] initWithFrame:frame
-                                                       textColor:textColor
-                                                       tintColor:textFieldTint];
-    }
+    _textField = [[OmniboxTextFieldIOS alloc] initWithFrame:frame
+                                                  textColor:textColor
+                                                  tintColor:textFieldTint];
     _textField.translatesAutoresizingMaskIntoConstraints = NO;
 
     // Leading image view.
@@ -116,6 +115,27 @@ const CGFloat kClearButtonSize = 28.5f;
         _stackView, self,
         NSDirectionalEdgeInsetsMake(0, kOmniboxLeadingImageViewEdgeOffset, 0,
                                     kTextFieldClearButtonTrailingOffset));
+
+    // Thumbnail image view.
+    if (base::FeatureList::IsEnabled(kEnableLensOverlay)) {
+      _thumbnailImageView = [[UIImageView alloc] init];
+      _thumbnailImageView.translatesAutoresizingMaskIntoConstraints = NO;
+      _thumbnailImageView.contentMode = UIViewContentModeCenter;
+      _thumbnailImageView.backgroundColor = UIColor.clearColor;
+      _thumbnailImageView.layer.cornerRadius = kThumbnailImageCornerRadius;
+      _thumbnailImageView.clipsToBounds = YES;
+      _thumbnailImageView.hidden = YES;
+      [NSLayoutConstraint activateConstraints:@[
+        [_thumbnailImageView.widthAnchor
+            constraintEqualToConstant:kOmniboxThumbnailImageSize],
+        [_thumbnailImageView.heightAnchor
+            constraintEqualToConstant:kOmniboxThumbnailImageSize],
+      ]];
+      [_stackView addArrangedSubview:_thumbnailImageView];
+      // Spacing between thumbnail and text field.
+      [_stackView setCustomSpacing:kThumbnailImageTrailingMargin
+                         afterView:_thumbnailImageView];
+    }
 
     if (IsRichAutocompletionEnabled(RichAutocompletionImplementation::kLabel)) {
       // Text scroll view.
@@ -225,14 +245,14 @@ const CGFloat kClearButtonSize = 28.5f;
   _leadingImageView.accessibilityIdentifier = accessibilityIdentifier;
 }
 
-- (void)setIncognito:(BOOL)incognito {
-  _incognito = incognito;
-  self.textField.incognito = incognito;
-}
-
 - (void)setLeadingImageScale:(CGFloat)scaleValue {
   _leadingImageView.transform =
       CGAffineTransformMakeScale(scaleValue, scaleValue);
+}
+
+- (void)setThumbnailImage:(UIImage*)image {
+  _thumbnailImageView.image = image;
+  _thumbnailImageView.hidden = !image;
 }
 
 - (void)setLayoutGuideCenter:(LayoutGuideCenter*)layoutGuideCenter {

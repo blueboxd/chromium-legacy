@@ -15,6 +15,11 @@
 #include "components/user_prefs/user_prefs.h"
 #include "testing/platform_test.h"
 
+#if BUILDFLAG(USE_BLINK)
+#include "components/enterprise/connectors/core/common.h"
+#include "components/enterprise/connectors/core/connectors_prefs.h"
+#endif  // BUILDFLAG(USE_BLINK)
+
 namespace safe_browsing {
 
 // Used in tests of CanPerformFullURLLookupWithToken().
@@ -32,6 +37,9 @@ class RealTimePolicyEngineTest : public PlatformTest {
 
   void SetUp() override {
     RegisterProfilePrefs(pref_service_.registry());
+#if BUILDFLAG(USE_BLINK)
+    enterprise_connectors::RegisterProfilePrefs(pref_service_.registry());
+#endif  // BUILDFLAG(USE_BLINK)
     unified_consent::UnifiedConsentService::RegisterPrefs(
         pref_service_.registry());
   }
@@ -173,22 +181,27 @@ TEST_F(RealTimePolicyEngineTest, TestCanPerformEnterpriseFullURLLookup) {
     EXPECT_FALSE(CanPerformEnterpriseFullURLLookup(
         /*has_valid_dm_token=*/false, /*is_off_the_record=*/false));
   }
+
+#if BUILDFLAG(USE_BLINK)
   // Policy disabled.
   {
     pref_service_.SetUserPref(
-        prefs::kSafeBrowsingEnterpriseRealTimeUrlCheckMode,
-        std::make_unique<base::Value>(REAL_TIME_CHECK_DISABLED));
+        enterprise_connectors::kEnterpriseRealTimeUrlCheckMode,
+        std::make_unique<base::Value>(
+            enterprise_connectors::REAL_TIME_CHECK_DISABLED));
     EXPECT_FALSE(CanPerformEnterpriseFullURLLookup(
         /*has_valid_dm_token=*/true, /*is_off_the_record=*/false));
   }
   // Policy enabled.
   {
     pref_service_.SetUserPref(
-        prefs::kSafeBrowsingEnterpriseRealTimeUrlCheckMode,
-        std::make_unique<base::Value>(REAL_TIME_CHECK_FOR_MAINFRAME_ENABLED));
+        enterprise_connectors::kEnterpriseRealTimeUrlCheckMode,
+        std::make_unique<base::Value>(
+            enterprise_connectors::REAL_TIME_CHECK_FOR_MAINFRAME_ENABLED));
     EXPECT_TRUE(CanPerformEnterpriseFullURLLookup(
         /*has_valid_dm_token=*/true, /*is_off_the_record=*/false));
   }
+#endif  // BUILDFLAG(USE_BLINK)
 }
 
 TEST_F(RealTimePolicyEngineTest, TestIsInExcludedCountry) {

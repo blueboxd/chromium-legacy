@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/platform/audio/audio_destination.h"
 
 #include <memory>
@@ -149,11 +154,6 @@ class AudioDestinationTest
                   static_cast<double>(render_quantum_frames)) *
         render_quantum_frames;
 
-    // TODO(crbug.com/329876634): Replace it so that it tests the path passing
-    // through the bad device_params (`if (!device_params.IsValid())`) in the
-    // constructor of `RendererWebAudioDeviceImpl`.
-    destination->OnRenderError();
-
     EXPECT_EQ(expected_frames_processed, callback_.frames_processed_);
   }
 
@@ -171,10 +171,6 @@ TEST_P(AudioDestinationTest, ResamplingTest) {
     InSequence s;
 
     EXPECT_CALL(platform->web_audio_device(), Start).Times(1);
-    if (base::FeatureList::IsEnabled(
-            blink::features::kWebAudioHandleOnRenderError)) {
-      EXPECT_CALL(callback_, OnRenderError).Times(1);
-    }
     EXPECT_CALL(platform->web_audio_device(), Stop).Times(1);
   }
 

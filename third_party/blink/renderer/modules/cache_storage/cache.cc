@@ -140,8 +140,9 @@ CodeCachePolicy GetCodeCachePolicy(ExecutionContext* context,
   // Count the hint usage regardless of its value.
   context->CountUse(mojom::WebFeature::kCacheStorageCodeCacheHint);
 
-  if (header_value.LowerASCII() == "none")
+  if (EqualIgnoringASCIICase(header_value, "none")) {
     return CodeCachePolicy::kNone;
+  }
 
   return CodeCachePolicy::kAuto;
 }
@@ -620,8 +621,7 @@ class Cache::CodeCacheHandleCallbackForPut final
       base::span<const uint8_t> serialized_data =
           cached_metadata->SerializedData();
       auto side_data_blob_data = std::make_unique<BlobData>();
-      side_data_blob_data->AppendBytes(serialized_data.data(),
-                                       serialized_data.size());
+      side_data_blob_data->AppendBytes(serialized_data);
 
       batch_operation->response->side_data_blob_for_cache_put =
           BlobDataHandle::Create(std::move(side_data_blob_data),
@@ -873,14 +873,19 @@ Cache::Cache(GlobalFetch::ScopedFetcher* fetcher,
              CacheStorageBlobClientList* blob_client_list,
              mojo::PendingAssociatedRemote<mojom::blink::CacheStorageCache>
                  cache_pending_remote,
-             scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : scoped_fetcher_(fetcher), blob_client_list_(blob_client_list) {
-  cache_remote_.Bind(std::move(cache_pending_remote), std::move(task_runner));
+             ExecutionContext* execution_context,
+             TaskType task_type)
+    : scoped_fetcher_(fetcher),
+      blob_client_list_(blob_client_list),
+      cache_remote_(execution_context) {
+  cache_remote_.Bind(std::move(cache_pending_remote),
+                     execution_context->GetTaskRunner(task_type));
 }
 
 void Cache::Trace(Visitor* visitor) const {
   visitor->Trace(scoped_fetcher_);
   visitor->Trace(blob_client_list_);
+  visitor->Trace(cache_remote_);
   ScriptWrappable::Trace(visitor);
 }
 

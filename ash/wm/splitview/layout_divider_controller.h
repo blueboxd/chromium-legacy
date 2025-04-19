@@ -6,11 +6,15 @@
 #define ASH_WM_SPLITVIEW_LAYOUT_DIVIDER_CONTROLLER_H_
 
 #include "ash/wm/splitview/split_view_types.h"
-#include "ui/aura/window.h"
 
 namespace gfx {
 class Point;
+class Rect;
 }  // namespace gfx
+
+namespace aura {
+class Window;
+}  // namespace aura
 
 namespace ash {
 
@@ -21,7 +25,7 @@ namespace ash {
 class LayoutDividerController {
  public:
   // Returns the root window for the layout.
-  virtual aura::Window* GetRootWindow() = 0;
+  virtual aura::Window* GetRootWindow() const = 0;
 
   // Resizing functions used when resizing via the divider, where
   // `location_in_screen` is the location of the event that started this resize

@@ -2,20 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/ui/views/toolbar/chrome_labs/chrome_labs_item_view.h"
 
 #include "base/callback_list.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
 #include "build/build_config.h"
+#include "chrome/browser/feedback/show_feedback_page.h"
 #include "chrome/browser/flag_descriptions.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/toolbar/chrome_labs/chrome_labs_model.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/flags_ui/feature_entry.h"
+#include "components/user_education/common/new_badge_controller.h"
 #include "components/user_education/views/new_badge_label.h"
 #include "extensions/browser/api/feedback_private/feedback_private_api.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -122,11 +128,6 @@ ChromeLabsItemView::ChromeLabsItemView(
 
   experiment_name_ = AddChildView(
       std::make_unique<user_education::NewBadgeLabel>(lab.visible_name));
-  // The NewBadgeLabel’s default visibility is true. However, we only want the
-  // new badge to show if PrefService conditions are met. Here we set the
-  // default to false. Then, when the bubble is being shown the view controller
-  // will set the NewBadgeLabel’s visibility to true if applicable.
-  experiment_name_->SetDisplayNewBadge(false);
   experiment_name_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   experiment_name_->SetBadgePlacement(
       user_education::NewBadgeLabel::BadgePlacement::kImmediatelyAfterText);
@@ -238,8 +239,9 @@ std::optional<size_t> ChromeLabsItemView::GetSelectedIndex() const {
 
 // Same as NewBadgeLabel::SetDisplayNewBadge this should only be called before
 // the label is shown.
-void ChromeLabsItemView::ShowNewBadge() {
-  experiment_name_->SetDisplayNewBadge(true);
+void ChromeLabsItemView::SetShowNewBadge(
+    user_education::DisplayNewBadge show_new_badge) {
+  experiment_name_->SetDisplayNewBadge(show_new_badge);
 }
 
 const flags_ui::FeatureEntry* ChromeLabsItemView::GetFeatureEntry() {

@@ -102,12 +102,24 @@ class LenientMockObserver : public ProcessNodeImpl::Observer {
   LenientMockObserver() {}
   ~LenientMockObserver() override {}
 
-  MOCK_METHOD1(OnProcessNodeAdded, void(const ProcessNode*));
-  MOCK_METHOD1(OnProcessLifetimeChange, void(const ProcessNode*));
-  MOCK_METHOD1(OnBeforeProcessNodeRemoved, void(const ProcessNode*));
-  MOCK_METHOD1(OnMainThreadTaskLoadIsLow, void(const ProcessNode*));
-  MOCK_METHOD2(OnPriorityChanged, void(const ProcessNode*, base::TaskPriority));
-  MOCK_METHOD1(OnAllFramesInProcessFrozen, void(const ProcessNode*));
+  MOCK_METHOD(void, OnProcessNodeAdded, (const ProcessNode*), (override));
+  MOCK_METHOD(void, OnProcessLifetimeChange, (const ProcessNode*), (override));
+  MOCK_METHOD(void,
+              OnBeforeProcessNodeRemoved,
+              (const ProcessNode*),
+              (override));
+  MOCK_METHOD(void,
+              OnMainThreadTaskLoadIsLow,
+              (const ProcessNode*),
+              (override));
+  MOCK_METHOD(void,
+              OnPriorityChanged,
+              (const ProcessNode*, base::TaskPriority),
+              (override));
+  MOCK_METHOD(void,
+              OnAllFramesInProcessFrozen,
+              (const ProcessNode*),
+              (override));
 
   void SetNotifiedProcessNode(const ProcessNode* process_node) {
     notified_process_node_ = process_node;
@@ -249,23 +261,15 @@ TEST_F(ProcessNodeImplTest, PublicInterface) {
   EXPECT_TRUE(process_node->GetMainThreadTaskLoadIsLow());
 
   // For properties returning nodes, simply test that the public interface impls
-  //  yield the same result as their private counterpart.
+  // yield the same result as their private counterpart.
 
-  const auto& frame_nodes = process_node->frame_nodes();
+  auto frame_nodes = process_node->frame_nodes();
   auto public_frame_nodes = public_process_node->GetFrameNodes();
   EXPECT_EQ(frame_nodes.size(), public_frame_nodes.size());
   for (const FrameNodeImpl* frame_node : frame_nodes) {
     const FrameNode* public_frame_node = frame_node;
     EXPECT_TRUE(base::Contains(public_frame_nodes, public_frame_node));
   }
-
-  decltype(public_frame_nodes) visited_frame_nodes;
-  public_process_node->VisitFrameNodes(
-      [&visited_frame_nodes](const FrameNode* frame_node) -> bool {
-        visited_frame_nodes.insert(frame_node);
-        return true;
-      });
-  EXPECT_EQ(public_frame_nodes, visited_frame_nodes);
 }
 
 namespace {

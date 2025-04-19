@@ -4,30 +4,48 @@
 
 #include "chrome/browser/ui/webauthn/authenticator_request_window.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/notreached.h"
 #include "base/strings/strcat.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
+#include "chrome/browser/webauthn/gpm_enclave_controller.h"
 #include "chrome/browser/webauthn/webauthn_switches.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "device/fido/enclave/metrics.h"
+#include "device/fido/features.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
+#include "ui/base/page_transition_types.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
+#include "url/origin.h"
 
 namespace {
 
 const char kGpmPinResetReauthUrl[] =
     "https://passwords.google.com/encryption/pin/reset";
+const char kGpmPasskeyResetSuccessUrl[] =
+    "https://passwords.google.com/embedded/passkeys/reset/done";
+const char kGpmPasskeyResetFailUrl[] =
+    "https://passwords.google.com/embedded/passkeys/reset/error";
 
 // The kdi parameter here was generated from the following protobuf:
 //
@@ -72,8 +90,9 @@ class ReauthWebContentsObserver : public content::WebContentsObserver {
 
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override {
+    const GURL& url = navigation_handle->GetURL();
     if (!callback_ || !navigation_handle->IsInPrimaryMainFrame() ||
-        !url::IsSameOriginWith(reauth_url_, navigation_handle->GetURL()) ||
+        !url::IsSameOriginWith(reauth_url_, url) ||
         !navigation_handle->GetResponseHeaders() ||
         !IsValidHttpStatus(
             navigation_handle->GetResponseHeaders()->response_code())) {
@@ -81,8 +100,7 @@ class ReauthWebContentsObserver : public content::WebContentsObserver {
     }
 
     std::string rapt;
-    if (!net::GetValueForKeyInQuery(navigation_handle->GetURL(), "rapt",
-                                    &rapt)) {
+    if (!net::GetValueForKeyInQuery(url, "rapt", &rapt)) {
       return;
     }
 
@@ -98,19 +116,85 @@ class ReauthWebContentsObserver : public content::WebContentsObserver {
   base::OnceCallback<void(std::string)> callback_;
 };
 
+// The user may be prompted to reset their passkeys if the MagicArch PIN
+// challenge fails. MagicArch will then navigate to either
+// `kGpmPasskeyResetSuccessUrl` or `kGpmPasskeyResetFailUrl` after completing a
+// reset. The pages have a message on and a button. If the user clicks the
+// button, a ref is appended to the URL. This observer will observe which page
+// the user is on and call the `callback_`.
+class PasskeyResetWebContentsObserver : public content::WebContentsObserver {
+ public:
+  enum class Status {
+    // Passkeys reset flow not started. The user is still in the PIN screen.
+    kNotStarted,
+    // Passkeys reset flow not completed.
+    kStarted,
+    // Passkeys reset flow succeeded. The user has not clicked the button in the
+    // page yet.
+    kSuccess,
+    // Passkeys reset flow failed. The user has not clicked the button in the
+    // page yet.
+    kFail,
+  };
+  PasskeyResetWebContentsObserver(content::WebContents* web_contents,
+                                  base::OnceCallback<void(bool)> callback)
+      : content::WebContentsObserver(web_contents),
+        callback_(std::move(callback)) {}
+
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override {
+    const GURL& url = navigation_handle->GetURL();
+    if (!callback_ || !navigation_handle->IsInPrimaryMainFrame() ||
+        !url::IsSameOriginWith(url, GURL(kGpmPasskeyResetSuccessUrl)) ||
+        !url.has_path()) {
+      return;
+    }
+    status_ = Status::kStarted;
+    if (url.path() == GURL(kGpmPasskeyResetSuccessUrl).path()) {
+      status_ = Status::kSuccess;
+    } else if (url.path() == GURL(kGpmPasskeyResetFailUrl).path()) {
+      status_ = Status::kFail;
+    }
+
+    MaybeRunCallback(url.has_ref() ? url.ref() : "");
+  }
+
+  Status status() const { return status_; }
+
+ private:
+  void MaybeRunCallback(const std::string& ref) {
+    if (status_ == Status::kStarted || ref.empty()) {
+      return;
+    }
+    if (status_ == Status::kSuccess && ref == "success") {
+      std::move(callback_).Run(true);
+    } else if (status_ == Status::kFail && ref == "fail") {
+      std::move(callback_).Run(false);
+    }
+    status_ = Status::kNotStarted;
+  }
+
+  Status status_ = Status::kNotStarted;
+  base::OnceCallback<void(bool)> callback_;
+};
+
 // Shows a pop-up window containing some WebAuthn-related UI. This object
 // owns itself.
 class AuthenticatorRequestWindow
     : public content::WebContentsObserver,
       public AuthenticatorRequestDialogModel::Observer {
  public:
+  using PasskeyResetStatus = PasskeyResetWebContentsObserver::Status;
   explicit AuthenticatorRequestWindow(content::WebContents* caller_web_contents,
                                       AuthenticatorRequestDialogModel* model)
       : step_(model->step()), model_(model) {
     model_->observers.AddObserver(this);
 
+    // The original profile is used so that cookies are available. If this is an
+    // Incognito session then a warning has already been shown to the user.
     Profile* const profile =
-        Profile::FromBrowserContext(caller_web_contents->GetBrowserContext());
+        Profile::FromBrowserContext(caller_web_contents->GetBrowserContext())
+            ->GetOriginalProfile();
     // If the profile is shutting down, don't attempt to create a pop-up.
     if (Browser::GetCreationStatusForProfile(profile) !=
         Browser::CreationStatus::kOk) {
@@ -149,6 +233,15 @@ class AuthenticatorRequestWindow
         url = GaiaUrls::GetInstance()->gaia_url().Resolve(
             base::StrCat({"/encryption/unlock/desktop?kdi=", kKdi}));
         device::enclave::RecordEvent(device::enclave::Event::kRecoveryShown);
+        if (base::FeatureList::IsEnabled(device::kWebAuthnPasskeysReset)) {
+          passkey_reset_observer_ =
+              std::make_unique<PasskeyResetWebContentsObserver>(
+                  web_contents.get(),
+                  // Unretained: `passkey_reset_observer_` is owned by this
+                  // object so if it exists, this object also exists.
+                  base::BindOnce(&AuthenticatorRequestWindow::OnPasskeysReset,
+                                 base::Unretained(this)));
+        }
         break;
 
       case AuthenticatorRequestDialogModel::Step::kGPMReauthForPinReset:
@@ -185,7 +278,19 @@ class AuthenticatorRequestWindow
  protected:
   void WebContentsDestroyed() override {
     WebContentsObserver::Observe(nullptr);
-    if (model_ && model_->step() == step_) {
+    if (!model_) {
+      return;
+    }
+    // If the passkey reset is complete and the user has not clicked the button
+    // in the page, we still wish to react to the reset.
+    if (passkey_reset_observer_ &&
+        (passkey_reset_observer_->status() == PasskeyResetStatus::kSuccess ||
+         passkey_reset_observer_->status() == PasskeyResetStatus::kFail)) {
+      OnPasskeysReset(passkey_reset_observer_->status() ==
+                      PasskeyResetStatus::kSuccess);
+      return;
+    }
+    if (model_->step() == step_) {
       model_->OnRecoverSecurityDomainClosed();
     }
   }
@@ -217,9 +322,16 @@ class AuthenticatorRequestWindow
     }
   }
 
+  void OnPasskeysReset(bool success) {
+    if (model_) {
+      model_->OnGpmPasskeysReset(success);
+    }
+  }
+
   const AuthenticatorRequestDialogModel::Step step_;
   raw_ptr<AuthenticatorRequestDialogModel> model_;
   std::unique_ptr<ReauthWebContentsObserver> reauth_observer_;
+  std::unique_ptr<PasskeyResetWebContentsObserver> passkey_reset_observer_;
   base::WeakPtr<content::WebContents> web_contents_weak_ptr_;
 };
 

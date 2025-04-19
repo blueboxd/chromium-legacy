@@ -6,10 +6,11 @@
 load("//lib/branches.star", "branches")
 load("//lib/builder_config.star", "builder_config")
 load("//lib/builder_health_indicators.star", "health_spec")
-load("//lib/builders.star", "free_space", "os", "sheriff_rotations", "siso")
+load("//lib/builders.star", "free_space", "gardener_rotations", "os", "siso")
 load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
 load("//lib/gn_args.star", "gn_args")
+load("//lib/targets.star", "targets")
 
 ci.defaults.set(
     executable = ci.DEFAULT_EXECUTABLE,
@@ -20,7 +21,7 @@ ci.defaults.set(
     pool = ci.DEFAULT_POOL,
     cores = 8,
     os = os.LINUX_DEFAULT,
-    sheriff_rotations = sheriff_rotations.CHROMIUM,
+    gardener_rotations = gardener_rotations.CHROMIUM,
     tree_closing = True,
     main_console_view = "main",
     cq_mirrors_console_view = "mirrors",
@@ -42,6 +43,15 @@ consoles.console_view(
     },
 )
 
+targets.builder_defaults.set(
+    mixins = ["chromium-tester-service-account"],
+)
+
+targets.settings_defaults.set(
+    browser_config = targets.browser_config.WEB_ENGINE_SHELL,
+    os_type = targets.os_type.FUCHSIA,
+)
+
 ci.builder(
     name = "Deterministic Fuchsia (dbg)",
     executable = "recipe:swarming/deterministic_build",
@@ -50,6 +60,7 @@ ci.builder(
             "debug_builder",
             "remoteexec",
             "fuchsia_smart_display",
+            "x64",
         ],
     ),
     # Runs two builds, which can cause the builder to run out of disk space
@@ -103,6 +114,40 @@ ci.builder(
             "cast_receiver_size_optimized",
         ],
     ),
+    targets = targets.bundle(
+        targets = [
+            "fuchsia_arm64_tests",
+        ],
+        additional_compile_targets = [
+            "all",
+            "cast_test_lists",
+        ],
+        mixins = [
+            "arm64",
+            "docker",
+            "linux-jammy-or-focal",
+        ],
+        per_test_modifications = {
+            "context_lost_validating_tests": targets.remove(
+                reason = "crbug.com/42050042, crbug.com/42050537 this test does not work on swiftshader on arm64",
+            ),
+            "expected_color_pixel_validating_test": targets.remove(
+                reason = "crbug.com/42050042, crbug.com/42050537 this test does not work on swiftshader on arm64",
+            ),
+            "gpu_process_launch_tests": targets.remove(
+                reason = "crbug.com/42050042, crbug.com/42050537 this test does not work on swiftshader on arm64",
+            ),
+            "hardware_accelerated_feature_tests": targets.remove(
+                reason = "crbug.com/42050042, crbug.com/42050537 this test does not work on swiftshader on arm64",
+            ),
+            "pixel_skia_gold_validating_test": targets.remove(
+                reason = "crbug.com/42050042, crbug.com/42050537 this test does not work on swiftshader on arm64",
+            ),
+            "screenshot_sync_validating_tests": targets.remove(
+                reason = "crbug.com/42050042, crbug.com/42050537 this test does not work on swiftshader on arm64",
+            ),
+        },
+    ),
     console_view_entry = [
         consoles.console_view_entry(
             category = "cast-receiver",
@@ -146,7 +191,44 @@ ci.builder(
             "remoteexec",
             "fuchsia",
             "cast_receiver_size_optimized",
+            "x64",
         ],
+    ),
+    targets = targets.bundle(
+        targets = [
+            "fuchsia_standard_tests",
+        ],
+        additional_compile_targets = [
+            "all",
+            "cast_test_lists",
+        ],
+        mixins = [
+            "isolate_profile_data",
+            "linux-jammy",
+            targets.mixin(
+                swarming = targets.swarming(
+                    dimensions = {
+                        "kvm": "1",
+                    },
+                ),
+            ),
+        ],
+        per_test_modifications = {
+            "blink_web_tests": [
+                targets.mixin(
+                    swarming = targets.swarming(
+                        shards = 1,
+                    ),
+                ),
+            ],
+            "blink_wpt_tests": [
+                targets.mixin(
+                    swarming = targets.swarming(
+                        shards = 1,
+                    ),
+                ),
+            ],
+        },
     ),
     free_space = free_space.high,
     console_view_entry = [
@@ -191,7 +273,49 @@ ci.builder(
             "remoteexec",
             "fuchsia",
             "cast_receiver_size_optimized",
+            "x64",
         ],
+    ),
+    targets = targets.bundle(
+        targets = [
+            "fuchsia_standard_tests",
+        ],
+        additional_compile_targets = [
+            "all",
+            "cast_test_lists",
+        ],
+        mixins = [
+            "isolate_profile_data",
+            "linux-jammy",
+            targets.mixin(
+                swarming = targets.swarming(
+                    dimensions = {
+                        "kvm": "1",
+                    },
+                ),
+            ),
+        ],
+        per_test_modifications = {
+            "blink_web_tests": [
+                targets.mixin(
+                    swarming = targets.swarming(
+                        shards = 1,
+                    ),
+                ),
+            ],
+            "blink_wpt_tests": [
+                targets.mixin(
+                    swarming = targets.swarming(
+                        shards = 1,
+                    ),
+                ),
+            ],
+            "content_browsertests": [
+                # Temporarily only run this on CI due to resource requirements.
+                # TODO(crbug.com/40872145): Remove this once resources are available.
+                "ci_only",
+            ],
+        },
     ),
     console_view_entry = [
         consoles.console_view_entry(

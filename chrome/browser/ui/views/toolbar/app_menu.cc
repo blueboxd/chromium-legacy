@@ -19,6 +19,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/not_fatal_until.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
@@ -33,14 +34,19 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sharing_hub/sharing_hub_features.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/bookmarks/bookmark_stats.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
+#include "chrome/browser/ui/hats/trust_safety_sentiment_service_factory.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/profiles/profile_view_utils.h"
+#include "chrome/browser/ui/safety_hub/safety_hub_hats_service.h"
+#include "chrome/browser/ui/safety_hub/safety_hub_hats_service_factory.h"
 #include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_service_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
@@ -73,6 +79,7 @@
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/themed_vector_icon.h"
 #include "ui/base/ui_base_features.h"
@@ -247,7 +254,6 @@ class InMenuButtonBackground : public views::Background {
       menu_item.corner_radius = kCircularButtonSize / 2;
     }
     const auto* const color_provider = view->GetColorProvider();
-    if (features::IsChromeRefresh2023()) {
       cc::PaintFlags flags;
       flags.setColor(color_provider->GetColor(
           state == views::Button::STATE_NORMAL
@@ -256,13 +262,6 @@ class InMenuButtonBackground : public views::Background {
       canvas->DrawRoundRect(gfx::RectF(bounds_rect), menu_item.corner_radius,
                             flags);
       return;
-    }
-    if (state != views::Button::STATE_NORMAL) {
-      view->GetNativeTheme()->Paint(canvas->sk_canvas(), color_provider,
-                                    ui::NativeTheme::kMenuItemBackground,
-                                    ui::NativeTheme::kHovered, bounds_rect,
-                                    ui::NativeTheme::ExtraParams(menu_item));
-    }
   }
 
   const ButtonType type_;
@@ -308,11 +307,8 @@ class InMenuButton : public LabelButton {
     SetBorder(views::CreateEmptyBorder(
         gfx::Insets::TLBR(0, kHorizontalPadding, 0, kHorizontalPadding)));
     label()->SetFontList(MenuConfig::instance().font_list);
-  }
 
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    LabelButton::GetAccessibleNodeData(node_data);
-    node_data->role = ax::mojom::Role::kMenuItem;
+    GetViewAccessibility().SetRole(ax::mojom::Role::kMenuItem);
   }
 
   // views::LabelButton:
@@ -348,11 +344,8 @@ class InMenuImageButton : public ImageButton {
     SetBackground(std::make_unique<InMenuButtonBackground>(type, shape));
     SetBorder(views::CreateEmptyBorder(
         gfx::Insets::TLBR(0, kHorizontalPadding, 0, kHorizontalPadding)));
-  }
 
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    ImageButton::GetAccessibleNodeData(node_data);
-    node_data->role = ax::mojom::Role::kMenuItem;
+    GetViewAccessibility().SetRole(ax::mojom::Role::kMenuItem);
   }
 };
 
@@ -375,6 +368,22 @@ std::u16string GetUpgradeDialogSubstringText() {
   return std::u16string();
 }
 
+std::u16string GetSigninStatusChipString(Profile* profile) {
+  const AccountInfo account_info = GetAccountInfoFromProfile(profile);
+
+  if (IsSyncPaused(profile) || account_info.IsEmpty()) {
+    return l10n_util::GetStringUTF16(IDS_PROFILES_LOCAL_PROFILE_STATE);
+  }
+
+  if (signin_util::IsSigninPending(
+          IdentityManagerFactory::GetForProfile(profile))) {
+    // TODO(b/347011002): Use a non sync related string.
+    return l10n_util::GetStringUTF16(IDS_AVATAR_BUTTON_SYNC_PAUSED);
+  }
+
+  return l10n_util::GetStringUTF16(IDS_PROFILE_ROW_SIGNED_IN_MESSAGE);
+}
+
 // Helper method that adds a bespoke chip to the profile related menu items.
 void AddSignedInChipToProfileMenuItem(
     Profile* profile,
@@ -390,12 +399,6 @@ void AddSignedInChipToProfileMenuItem(
   raw_ptr<views::Label> profile_chip_label;
   const MenuConfig& config = MenuConfig::instance();
 
-  const AccountInfo account_info = GetAccountInfoFromProfile(profile);
-
-  const std::u16string signed_in_status =
-      (IsSyncPaused(profile) || account_info.IsEmpty())
-          ? l10n_util::GetStringUTF16(IDS_PROFILES_LOCAL_PROFILE_STATE)
-          : l10n_util::GetStringUTF16(IDS_PROFILE_ROW_SIGNED_IN_MESSAGE);
   // We need to have the label of the profile chip within a
   // BoxLayoutView and inside border insets because MenuItemView will
   // layout the child items to the full height of the menu item in
@@ -406,7 +409,7 @@ void AddSignedInChipToProfileMenuItem(
               gfx::Insets::VH(config.item_vertical_margin, 0))
           .AddChildren(
               views::Builder<views::Label>()
-                  .SetText(signed_in_status)
+                  .SetText(GetSigninStatusChipString(profile))
                   .CopyAddressTo(&profile_chip_label)
                   .SetBackground(views::CreateThemedRoundedRectBackground(
                       item->IsSelected()
@@ -486,19 +489,11 @@ class AppMenuView : public views::View {
     DCHECK(menu_);
 
     std::unique_ptr<views::Button> menu_button;
-    if (features::IsChromeRefresh2023()) {
       auto button = std::make_unique<InMenuImageButton>(std::move(callback));
       button->Init(type, InMenuButtonBackground::ButtonShape::kCircular,
                    image_model);
       menu_button = std::move(button);
-    } else {
-      auto button = std::make_unique<InMenuButton>(
-          std::move(callback),
-          gfx::RemoveAccelerator(l10n_util::GetStringUTF16(string_id)));
-      button->Init(type);
-      menu_button = std::move(button);
-    }
-    menu_button->SetAccessibleName(GetAccessibleNameForAppMenuItem(
+    menu_button->GetViewAccessibility().SetName(GetAccessibleNameForAppMenuItem(
         menu_model_, index, accessible_name_id, add_accelerator_text));
     menu_button->set_tag(index);
     menu_button->SetEnabled(menu_model_->IsEnabledAt(index));
@@ -547,13 +542,12 @@ class FullscreenButton : public ImageButton {
     SetImageVerticalAlignment(ImageButton::ALIGN_MIDDLE);
     SetBackground(std::make_unique<InMenuButtonBackground>(
         InMenuButtonBackground::ButtonType::kLeadingBorder,
-        features::IsChromeRefresh2023()
-            ? InMenuButtonBackground::ButtonShape::kCircular
-            : InMenuButtonBackground::ButtonShape::kRectangular));
+        InMenuButtonBackground::ButtonShape::kCircular));
     const int accname_string_id =
         is_in_fullscreen ? IDS_ACCNAME_EXIT_FULLSCREEN : IDS_ACCNAME_FULLSCREEN;
     SetTooltipText(l10n_util::GetStringUTF16(accname_string_id));
-    SetAccessibleName(GetAccessibleNameForAppMenuItem(
+    GetViewAccessibility().SetRole(ax::mojom::Role::kMenuItem);
+    GetViewAccessibility().SetName(GetAccessibleNameForAppMenuItem(
         menu_model, fullscreen_index, accname_string_id,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
         // ChromeOS uses a dedicated "fullscreen" media key for fullscreen
@@ -577,11 +571,6 @@ class FullscreenButton : public ImageButton {
     const gfx::Insets insets = GetInsets();
     pref.Enlarge(insets.width(), insets.height());
     return pref;
-  }
-
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    ImageButton::GetAccessibleNodeData(node_data);
-    node_data->role = ax::mojom::Role::kMenuItem;
   }
 };
 
@@ -675,7 +664,6 @@ class AppMenu::ZoomView : public AppMenuView {
            size_t increment_index,
            size_t fullscreen_index)
       : AppMenuView(menu, menu_model) {
-    const bool is_chrome_refresh = features::IsChromeRefresh2023();
     browser_zoom_subscription_ =
         zoom::ZoomEventManager::GetForBrowserContext(menu->browser_->profile())
             ->AddZoomLevelChangedCallback(
@@ -685,15 +673,11 @@ class AppMenu::ZoomView : public AppMenuView {
     const auto activate = [](ButtonMenuItemModel* menu_model, size_t index) {
       menu_model->ActivatedAt(index);
     };
-    auto image_model = is_chrome_refresh ? ui::ImageModel::FromVectorIcon(
-                                               kZoomMinusMenuRefreshIcon,
-                                               ui::kColorMenuItemForeground)
-                                         : ui::ImageModel();
+    auto image_model = ui::ImageModel::FromVectorIcon(
+        kZoomMinusMenuRefreshIcon, ui::kColorMenuItemForeground);
     decrement_button_ = CreateButtonWithAccessibleName(
         base::BindRepeating(activate, menu_model, decrement_index),
-        IDS_ZOOM_MINUS2,
-        is_chrome_refresh ? InMenuButtonBackground::ButtonType::kNoBorder
-                          : InMenuButtonBackground::ButtonType::kLeadingBorder,
+        IDS_ZOOM_MINUS2, InMenuButtonBackground::ButtonType::kNoBorder,
         decrement_index, IDS_ACCNAME_ZOOM_MINUS2,
         /*add_accelerator_text=*/false,
         /*use_accessible_name_as_tooltip_text=*/true,
@@ -725,10 +709,8 @@ class AppMenu::ZoomView : public AppMenuView {
 
     zoom_label_ = AddChildView(std::move(zoom_label));
 
-    image_model = is_chrome_refresh ? ui::ImageModel::FromVectorIcon(
-                                          kZoomPlusMenuRefreshIcon,
-                                          ui::kColorMenuItemForeground)
-                                    : ui::ImageModel();
+    image_model = ui::ImageModel::FromVectorIcon(kZoomPlusMenuRefreshIcon,
+                                                 ui::kColorMenuItemForeground);
     increment_button_ = CreateButtonWithAccessibleName(
         base::BindRepeating(activate, menu_model, increment_index),
         IDS_ZOOM_PLUS2, InMenuButtonBackground::ButtonType::kNoBorder,
@@ -744,8 +726,7 @@ class AppMenu::ZoomView : public AppMenuView {
             menu, menu_model, fullscreen_index),
         menu_model, fullscreen_index,
         menu->browser_->window() && menu->browser_->window()->IsFullscreen());
-    const auto& fullscreen_icon =
-        is_chrome_refresh ? kFullscreenRefreshIcon : kFullscreenIcon;
+    const auto& fullscreen_icon = kFullscreenRefreshIcon;
     fullscreen_button->SetImageModel(
         ImageButton::STATE_NORMAL,
         ui::ImageModel::FromVectorIcon(fullscreen_icon,
@@ -1143,11 +1124,6 @@ bool AppMenu::ShowContextMenu(MenuItemView* source,
                               int command_id,
                               const gfx::Point& p,
                               ui::MenuSourceType source_type) {
-  if (IsTabGroupsCommand(command_id)) {
-    stg_everything_menu_->SetShowPinOption(false);
-    return stg_everything_menu_->ShowContextMenu(source, command_id, p,
-                                                 source_type);
-  }
   return IsBookmarkCommand(command_id)
              ? bookmark_menu_delegate_->ShowContextMenu(source, command_id, p,
                                                         source_type)
@@ -1192,9 +1168,12 @@ bool AppMenu::IsCommandEnabled(int command_id) const {
     return false;  // The root item, a separator, or a title.
   }
 
-  if (command_id == IDC_CREATE_NEW_TAB_GROUP ||
-      IsTabGroupsCommand(command_id)) {
+  if (command_id == IDC_CREATE_NEW_TAB_GROUP) {
     return true;
+  }
+
+  if (IsTabGroupsCommand(command_id)) {
+    return stg_everything_menu_->ShouldEnableCommand(command_id);
   }
 
   if (IsBookmarkCommand(command_id) ||
@@ -1302,7 +1281,10 @@ void AppMenu::WillShowMenu(MenuItemView* menu) {
                               LIMIT_MENU_ACTION);
     stg_everything_menu_ =
           std::make_unique<tab_groups::STGEverythingMenu>(nullptr, browser_);
+    stg_everything_menu_->SetShowSubmenu(true);
     stg_everything_menu_->PopulateMenu(menu);
+  } else if (IsTabGroupsCommand(menu->GetCommand())) {
+    stg_everything_menu_->PopulateTabGroupSubMenu(menu);
   } else if (menu == bookmark_menu_) {
     CreateBookmarkMenu();
   } else if (bookmark_menu_delegate_) {
@@ -1330,6 +1312,22 @@ bool AppMenu::ShouldCloseOnDragComplete() {
 }
 
 void AppMenu::OnMenuClosed(views::MenuItemView* menu) {
+  // If the menu contained a Safety Hub notification, mark as trigger for HaTS
+  // survey if the menu was open for at least 5 seconds.
+  static constexpr auto kSafetyHubCommandIds =
+      std::array{IDC_OPEN_SAFETY_HUB, IDC_SAFETY_HUB_MANAGE_EXTENSIONS,
+                 IDC_SAFETY_HUB_SHOW_PASSWORD_CHECKUP};
+  const bool has_safety_hub_notification = base::ranges::any_of(
+      kSafetyHubCommandIds,
+      [&](int id) { return command_id_to_entry_.contains(id); });
+  if (has_safety_hub_notification &&
+      menu_opened_timer_.Elapsed() >= base::Seconds(5)) {
+    if (SafetyHubHatsService* hats_service =
+            SafetyHubHatsServiceFactory::GetForProfile(browser_->profile())) {
+      hats_service->SafetyHubNotificationSeen();
+    }
+  }
+
   auto* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
   browser_view->toolbar_button_provider()->GetAppMenuButton()->OnMenuClosed();
 
@@ -1383,16 +1381,6 @@ void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
     MenuItemView* item =
         AddMenuItem(parent, menu_index, model, i, model->GetTypeAt(i));
 
-#if BUILDFLAG(IS_CHROMEOS)
-    if (!features::IsChromeRefresh2023() &&
-        (model->GetCommandIdAt(i) == IDC_EDIT_MENU ||
-         model->GetCommandIdAt(i) == IDC_ZOOM_MENU)) {
-      // ChromeOS adds extra vertical space for the menu buttons.
-      const MenuConfig& config = views::MenuConfig::instance();
-      item->set_vertical_margin(config.item_vertical_margin * 2 +
-                                config.separator_height / 2);
-    }
-#endif
     if (model->GetTypeAt(i) == MenuModel::TYPE_SUBMENU) {
       PopulateMenu(item, model->GetSubmenuModelAt(i));
     }
@@ -1409,7 +1397,6 @@ void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
 
     switch (model->GetCommandIdAt(i)) {
       case IDC_PROFILE_MENU_IN_APP_MENU: {
-        if (features::IsChromeRefresh2023()) {
           add_menu_row_background(
               ChromeLayoutProvider::Get()->GetDistanceMetric(
                   DISTANCE_CONTENT_LIST_VERTICAL_MULTI),
@@ -1424,7 +1411,6 @@ void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
                 config.arrow_to_edge_padding + config.arrow_size,
                 profile_menu_item_selected_subscription_list_);
           }
-        }
         break;
       }
       case IDC_UPGRADE_DIALOG: {
@@ -1443,6 +1429,7 @@ void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
                              MenuItemView::kChildHorizontalPadding)))
                   .Build());
           item->SetHighlightWhenSelectedWithChildViews(true);
+          item->SetTriggerActionWithNonIconChildViews(true);
         }
         break;
       }
@@ -1582,6 +1569,10 @@ void AppMenu::CreateBookmarkMenu() {
 
 size_t AppMenu::ModelIndexFromCommandId(int command_id) const {
   auto ix = command_id_to_entry_.find(command_id);
-  DCHECK(ix != command_id_to_entry_.end());
+  CHECK(ix != command_id_to_entry_.end(), base::NotFatalUntil::M130);
   return ix->second.second;
+}
+
+void AppMenu::SetTimerForTesting(base::ElapsedTimer timer) {
+  menu_opened_timer_ = std::move(timer);
 }

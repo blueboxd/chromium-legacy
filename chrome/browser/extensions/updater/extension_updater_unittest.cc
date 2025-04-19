@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/extensions/updater/extension_updater.h"
 
 #include <stddef.h>
@@ -10,7 +15,9 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <optional>
 #include <set>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -769,17 +776,18 @@ class ExtensionUpdaterTest : public testing::Test {
         fetch_headers.HasHeader(ExtensionDownloader::kUpdateUpdaterHeader));
 
     if (should_include_traffic_management_headers) {
-      std::string interactivity_value;
-      fetch_headers.GetHeader(ExtensionDownloader::kUpdateInteractivityHeader,
-                              &interactivity_value);
+      std::string interactivity_value =
+          fetch_headers
+              .GetHeader(ExtensionDownloader::kUpdateInteractivityHeader)
+              .value_or(std::string());
 
       std::string expected_interactivity_value =
           fetch_priority == DownloadFetchPriority::kForeground ? "fg" : "bg";
       EXPECT_EQ(expected_interactivity_value, interactivity_value);
 
-      std::string appid_value;
-      fetch_headers.GetHeader(ExtensionDownloader::kUpdateAppIdHeader,
-                              &appid_value);
+      std::string appid_value =
+          fetch_headers.GetHeader(ExtensionDownloader::kUpdateAppIdHeader)
+              .value_or(std::string());
       if (num_extensions > 1) {
         for (int i = 0; i < num_extensions; ++i) {
           EXPECT_TRUE(
@@ -789,9 +797,9 @@ class ExtensionUpdaterTest : public testing::Test {
         EXPECT_EQ(extensions[0]->id(), appid_value);
       }
 
-      std::string updater_value;
-      fetch_headers.GetHeader(ExtensionDownloader::kUpdateUpdaterHeader,
-                              &updater_value);
+      std::string updater_value =
+          fetch_headers.GetHeader(ExtensionDownloader::kUpdateUpdaterHeader)
+              .value_or(std::string());
       const std::string expected_updater_value = base::StringPrintf(
           "%s-%s", UpdateQueryParams::GetProdIdString(UpdateQueryParams::CRX),
           UpdateQueryParams::GetProdVersion().c_str());
@@ -1817,9 +1825,9 @@ class ExtensionUpdaterTest : public testing::Test {
             net::HttpRequestHeaders::kAuthorization));
         std::string expected_header_value = base::StringPrintf("Bearer %s",
             kFakeOAuth2Token);
-        std::string actual_header_value;
-        fetch_headers.GetHeader(net::HttpRequestHeaders::kAuthorization,
-                                &actual_header_value);
+        std::string actual_header_value =
+            fetch_headers.GetHeader(net::HttpRequestHeaders::kAuthorization)
+                .value_or(std::string());
         EXPECT_EQ(expected_header_value, actual_header_value);
         using_oauth2 = true;
       } else {
@@ -2582,6 +2590,78 @@ TEST_F(ExtensionUpdaterTest, TestUpdatingRemotelyDisabledExtensions) {
 
   service.set_extensions(enabled_extensions, ExtensionList(),
                          blocklisted_extensions);
+  updater.Start();
+  updater.CheckNow(ExtensionUpdater::CheckParams());
+}
+
+TEST_F(ExtensionUpdaterTest, TestPendingInstall) {
+  class ServiceForPendingVersionTests : public MockService {
+   public:
+    explicit ServiceForPendingVersionTests(
+        TestExtensionPrefs* prefs,
+        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+        : MockService(prefs, url_loader_factory),
+          registry_(ExtensionRegistry::Get(profile())) {
+      base::Value::Dict manifest;
+      manifest.Set(manifest_keys::kName, "Fake extension");
+      manifest.Set(manifest_keys::kVersion, "1.0.0.1");
+      manifest.Set(manifest_keys::kManifestVersion, 2);
+      manifest.Set(manifest_keys::kDifferentialFingerprint, "fingerprint");
+      pending_update_ = prefs_->AddExtensionWithManifest(
+          manifest, ManifestLocation::kInternal);
+    }
+
+    void SetExtensions(const ExtensionList& extensions) {
+      registry_->ClearAll();
+      for (auto extension : extensions) {
+        registry_->AddEnabled(extension);
+      }
+    }
+
+    PendingExtensionManager* pending_extension_manager() override {
+      return &pending_extension_manager_;
+    }
+
+    const Extension* GetPendingExtensionUpdate(
+        const std::string& id) const override {
+      return pending_update_.get();
+    }
+
+   private:
+    raw_ptr<ExtensionRegistry> registry_;
+    scoped_refptr<Extension> pending_update_;
+  };
+
+  ExtensionDownloaderTestHelper helper;
+  ServiceForPendingVersionTests service(prefs_.get(),
+                                        helper.url_loader_factory());
+  ExtensionUpdater updater(&service, service.extension_prefs(),
+                           service.pref_service(), service.profile(),
+                           kUpdateFrequencySecs, nullptr,
+                           service.GetDownloaderFactory());
+  NiceMock<MockUpdateService> update_service;
+  OverrideUpdateService(&updater, &update_service);
+
+  ExtensionList enabled_extensions;
+  service.CreateTestExtensions(1, 1, &enabled_extensions, nullptr,
+                               ManifestLocation::kInternal);
+  ASSERT_EQ(1u, enabled_extensions.size());
+  ASSERT_EQ(enabled_extensions[0]->VersionString(), "1.0.0.0");
+
+  // When StartUpdateCheck is called, we expect the pending version is used.
+  EXPECT_CALL(
+      update_service,
+      StartUpdateCheck(
+          ::testing::Field(
+              &ExtensionUpdateCheckParams::update_info,
+              ::testing::ElementsAre(::testing::Pair(
+                  enabled_extensions[0]->id(),
+                  ::testing::FieldsAre(
+                      "", false, ::testing::Optional(std::string("1.0.0.1")),
+                      ::testing::Optional(std::string("fingerprint")))))),
+          _, _));
+
+  service.SetExtensions(enabled_extensions);
   updater.Start();
   updater.CheckNow(ExtensionUpdater::CheckParams());
 }

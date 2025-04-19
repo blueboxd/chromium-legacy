@@ -51,6 +51,7 @@
 #include "chrome/browser/ash/accessibility/accessibility_event_rewriter_delegate_impl.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ash/accessibility/magnification_manager.h"
+#include "chrome/browser/ash/ambient/ambient_client_impl.h"
 #include "chrome/browser/ash/app_mode/app_launch_utils.h"
 #include "chrome/browser/ash/app_mode/kiosk_controller_impl.h"
 #include "chrome/browser/ash/app_mode/kiosk_mode_idle_app_name_notification.h"
@@ -60,7 +61,7 @@
 #include "chrome/browser/ash/audio/cras_audio_handler_delegate_impl.h"
 #include "chrome/browser/ash/bluetooth/bluetooth_log_controller.h"
 #include "chrome/browser/ash/bluetooth/hats_bluetooth_revamp_trigger_impl.h"
-#include "chrome/browser/ash/boot_times_recorder.h"
+#include "chrome/browser/ash/boot_times_recorder/boot_times_recorder.h"
 #include "chrome/browser/ash/camera/camera_general_survey_handler.h"
 #include "chrome/browser/ash/crosapi/browser_data_back_migrator.h"
 #include "chrome/browser/ash/crosapi/browser_data_migrator.h"
@@ -99,13 +100,14 @@
 #include "chrome/browser/ash/diagnostics/diagnostics_browser_delegate_impl.h"
 #include "chrome/browser/ash/display/quirks_manager_delegate_impl.h"
 #include "chrome/browser/ash/events/event_rewriter_delegate_impl.h"
+#include "chrome/browser/ash/events/shortcut_mapping_pref_service.h"
 #include "chrome/browser/ash/extensions/default_app_order.h"
 #include "chrome/browser/ash/extensions/login_screen_ui/ui_handler.h"
-#include "chrome/browser/ash/external_metrics.h"
+#include "chrome/browser/ash/external_metrics/external_metrics.h"
 #include "chrome/browser/ash/input_method/input_method_configuration.h"
-#include "chrome/browser/ash/language_preferences.h"
+#include "chrome/browser/ash/locale/startup_settings_cache.h"
 #include "chrome/browser/ash/lock_screen_apps/state_controller.h"
-#include "chrome/browser/ash/logging.h"
+#include "chrome/browser/ash/logging/logging.h"
 #include "chrome/browser/ash/login/demo_mode/demo_mode_resources_remover.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ash/login/helper.h"
@@ -127,9 +129,8 @@
 #include "chrome/browser/ash/net/network_throttling_observer.h"
 #include "chrome/browser/ash/net/rollback_network_config/rollback_network_config_service.h"
 #include "chrome/browser/ash/net/system_proxy_manager.h"
-#include "chrome/browser/ash/net/traffic_counters_handler.h"
-#include "chrome/browser/ash/network_change_manager_client.h"
-#include "chrome/browser/ash/note_taking_helper.h"
+#include "chrome/browser/ash/network_change_manager/network_change_manager_client.h"
+#include "chrome/browser/ash/note_taking/note_taking_helper.h"
 #include "chrome/browser/ash/notifications/debugd_notification_handler.h"
 #include "chrome/browser/ash/notifications/gnubby_notification.h"
 #include "chrome/browser/ash/notifications/low_disk_notification.h"
@@ -148,16 +149,15 @@
 #include "chrome/browser/ash/power/power_metrics_reporter.h"
 #include "chrome/browser/ash/power/renderer_freezer.h"
 #include "chrome/browser/ash/power/smart_charging/smart_charging_manager.h"
+#include "chrome/browser/ash/power/suspend_perf_reporter.h"
 #include "chrome/browser/ash/printing/enterprise/bulk_printers_calculator_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/profiles/signin_profile_handler.h"
 #include "chrome/browser/ash/quick_pair/quick_pair_browser_delegate_impl.h"
-#include "chrome/browser/ash/report_controller_initializer.h"
-#include "chrome/browser/ash/scheduler_configuration_manager.h"
+#include "chrome/browser/ash/report_controller_initializer/report_controller_initializer.h"
+#include "chrome/browser/ash/scheduler_config/scheduler_configuration_manager.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/ash/settings/shutdown_policy_forwarder.h"
-#include "chrome/browser/ash/shortcut_mapping_pref_service.h"
-#include "chrome/browser/ash/startup_settings_cache.h"
 #include "chrome/browser/ash/system/input_device_settings.h"
 #include "chrome/browser/ash/system/user_removal_manager.h"
 #include "chrome/browser/ash/system_token_cert_db_initializer.h"
@@ -166,7 +166,6 @@
 #include "chrome/browser/ash/video_conference/video_conference_ash_feature_client.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_ash.h"
-#include "chrome/browser/chromeos/kcer/kcer_factory.h"
 #include "chrome/browser/chromeos/mahi/mahi_web_contents_manager.h"
 #include "chrome/browser/chromeos/printing/print_preview/print_preview_webcontents_manager.h"
 #include "chrome/browser/chromeos/video_conference/video_conference_manager_client.h"
@@ -221,6 +220,7 @@
 #include "chromeos/ash/components/fwupd/firmware_update_manager.h"
 #include "chromeos/ash/components/geolocation/simple_geolocation_provider.h"
 #include "chromeos/ash/components/install_attributes/install_attributes.h"
+#include "chromeos/ash/components/language_preferences/language_preferences.h"
 #include "chromeos/ash/components/local_search_service/public/cpp/local_search_service_proxy_factory.h"
 #include "chromeos/ash/components/login/auth/auth_events_recorder.h"
 #include "chromeos/ash/components/login/login_state/login_state.h"
@@ -230,6 +230,7 @@
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/portal_detector/network_portal_detector_stub.h"
 #include "chromeos/ash/components/network/system_token_cert_db_storage.h"
+#include "chromeos/ash/components/network/traffic_counters_handler.h"
 #include "chromeos/ash/components/peripheral_notification/peripheral_notification_manager.h"
 #include "chromeos/ash/components/power/dark_resume_controller.h"
 #include "chromeos/ash/components/report/device_metrics/use_case/real_psm_client_manager.h"
@@ -974,6 +975,8 @@ void ChromeBrowserMainPartsAsh::PreProfileInit() {
   kiosk_controller_ =
       std::make_unique<KioskControllerImpl>(user_manager::UserManager::Get());
 
+  ambient_client_ = std::make_unique<AmbientClientImpl>();
+
   if (base::FeatureList::IsEnabled(features::kEnableHostnameSetting)) {
     DeviceNameStore::Initialize(g_browser_process->local_state(),
                                 g_browser_process->platform_part()
@@ -1050,11 +1053,9 @@ void ChromeBrowserMainPartsAsh::PreProfileInit() {
   multi_capture_notifications_ = std::make_unique<MultiCaptureNotifications>();
 
   // Initialize Cellular Carrier Lock provisioning manager before login
-  if (base::FeatureList::IsEnabled(features::kCellularCarrierLock)) {
-    carrier_lock_manager_ = carrier_lock::CarrierLockManager::Create(
-        g_browser_process->local_state(), g_browser_process->gcm_driver(),
-        g_browser_process->shared_url_loader_factory());
-  }
+  carrier_lock_manager_ = carrier_lock::CarrierLockManager::Create(
+      g_browser_process->local_state(), g_browser_process->gcm_driver(),
+      g_browser_process->shared_url_loader_factory());
 
   if (immediate_login) {
     const user_manager::CryptohomeId cryptohome_id(
@@ -1112,7 +1113,6 @@ void ChromeBrowserMainPartsAsh::PreProfileInit() {
 
     session_manager::SessionManager::Get()->CreateSessionForRestart(
         account_id, user_id_hash);
-    ash::Shell::Get()->login_unlock_throughput_recorder()->OnAshRestart();
 
     // If restarting demo session, mark demo session as started before primary
     // profile starts initialization so browser context keyed services created
@@ -1250,11 +1250,9 @@ void ChromeBrowserMainPartsAsh::PostProfileInit(Profile* profile,
     // Create the service connection to CrosHealthd platform service instance.
     cros_healthd::ServiceConnection::GetInstance();
 
+    // Initialize the TrafficCountersHandler instance.
     if (features::IsTrafficCountersEnabled()) {
-      // Initialize the TrafficCountersHandler instance.
-      traffic_counters_handler_ =
-          std::make_unique<traffic_counters::TrafficCountersHandler>();
-      traffic_counters_handler_->Start();
+      traffic_counters::TrafficCountersHandler::Initialize();
     }
 
     // Initialize input methods.
@@ -1288,6 +1286,9 @@ void ChromeBrowserMainPartsAsh::PostProfileInit(Profile* profile,
 
     power_metrics_reporter_ = std::make_unique<PowerMetricsReporter>(
         chromeos::PowerManagerClient::Get(), g_browser_process->local_state());
+
+    suspend_perf_reporter_ = std::make_unique<SuspendPerfReporter>(
+        chromeos::PowerManagerClient::Get());
 
     g_browser_process->platform_part()->InitializeAutomaticRebootManager();
     user_removal_manager::RemoveUsersIfNeeded();
@@ -1515,7 +1516,8 @@ void ChromeBrowserMainPartsAsh::PostMainMessageLoopRun() {
   crostini_unsupported_action_notifier_.reset();
   carrier_lock_manager_.reset();
 
-  BootTimesRecorder::Get()->AddLogoutTimeMarker("UIMessageLoopEnded", true);
+  BootTimesRecorder::Get()->AddLogoutTimeMarker("UIMessageLoopEnded",
+                                                /*send_to_uma=*/false);
 
   if (base::FeatureList::IsEnabled(features::kEnableHostnameSetting)) {
     DeviceNameStore::Shutdown();
@@ -1569,6 +1571,7 @@ void ChromeBrowserMainPartsAsh::PostMainMessageLoopRun() {
   // We should remove observers attached to D-Bus clients before
   // DBusThreadManager is shut down.
   network_pref_state_observer_.reset();
+  suspend_perf_reporter_.reset();
   power_metrics_reporter_.reset();
   renderer_freezer_.reset();
   fast_transition_observer_.reset();
@@ -1588,7 +1591,7 @@ void ChromeBrowserMainPartsAsh::PostMainMessageLoopRun() {
   debugd_notification_handler_.reset();
   shortcut_mapping_pref_service_.reset();
   if (features::IsTrafficCountersEnabled()) {
-    traffic_counters_handler_.reset();
+    traffic_counters::TrafficCountersHandler::Shutdown();
   }
   bluetooth_pref_state_observer_.reset();
   auth_events_recorder_.reset();
@@ -1650,6 +1653,7 @@ void ChromeBrowserMainPartsAsh::PostMainMessageLoopRun() {
   // Dependens on Profile, so needs to be destroyed before ProfileManager, which
   // happens in `ChromeBrowserMainPartsLinux::PostMainMessageLoopRun()` below.
   kiosk_controller_.reset();
+  ambient_client_.reset();
 
   // Make sure that there is no pending URLRequests.
   if (pre_profile_init_called_) {
@@ -1711,10 +1715,6 @@ void ChromeBrowserMainPartsAsh::PostMainMessageLoopRun() {
 
   // NOTE: Closes ash and destroys `Shell`.
   ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();
-
-  // Contains a raw_ptr to ChapsService (an object owned by `crosapi_manager_`)
-  // and should be shut down before `crosapi_manager_`.
-  kcer::KcerFactory::Shutdown();
 
   // BrowserManager and CrosapiManager need to outlive the Profile, which
   // is destroyed inside ChromeBrowserMainPartsLinux::PostMainMessageLoopRun().

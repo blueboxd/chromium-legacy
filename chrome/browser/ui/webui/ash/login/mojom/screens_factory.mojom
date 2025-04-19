@@ -5,6 +5,7 @@
 module ash.screens_factory.mojom;
 
 import "chrome/browser/ui/webui/ash/login/mojom/screens_common.mojom";
+import "chrome/browser/ui/webui/ash/login/mojom/screens_login.mojom";
 import "chrome/browser/ui/webui/ash/login/mojom/screens_oobe.mojom";
 import "chrome/browser/ui/webui/ash/login/mojom/screens_osauth.mojom";
 
@@ -13,11 +14,29 @@ import "chrome/browser/ui/webui/ash/login/mojom/screens_osauth.mojom";
 interface ScreensFactory {
   // ash.screens_common.mojom
 
+  // Establish a AiIntroScreen pipe for handling the communication for
+  // the AiIntroPageHandler component.
+  EstablishAiIntroScreenPipe(
+      pending_receiver<ash.screens_common.mojom.AiIntroPageHandler> handler)
+      => (pending_receiver<ash.screens_common.mojom.AiIntroPage> pending);
+
+  // Establish a AppDownloadingScreen pipe for handling the communication for
+  // the AppDownloadingPageHandler component.
+  EstablishAppDownloadingScreenPipe(
+      pending_receiver<ash.screens_common.mojom.AppDownloadingPageHandler>
+          handler);
+
   // Establish a DrivePinningScreen pipe for handling the communication for the
   // DrivePinningPageHandler and the DrivePinningPage component.
   EstablishDrivePinningScreenPipe(
       pending_receiver<ash.screens_common.mojom.DrivePinningPageHandler> handler)
       => (pending_receiver<ash.screens_common.mojom.DrivePinningPage> pending);
+
+  // Establish a GaiaInfoScreen pipe for handling the communication for the
+  // GaiaInfoPageHandler and the GaiaInfoPage component.
+  EstablishGaiaInfoScreenPipe(
+      pending_receiver<ash.screens_common.mojom.GaiaInfoPageHandler> handler)
+      => (pending_receiver<ash.screens_common.mojom.GaiaInfoPage> pending);
 
   // Establish a GestureNavigationScreen pipe for handling the communication for
   // the GestureNavigationPageHandler component.
@@ -25,11 +44,10 @@ interface ScreensFactory {
       pending_receiver<ash.screens_common.mojom.GestureNavigationPageHandler>
           handler);
 
-  // Establish a GaiaInfoScreen pipe for handling the communication for the
-  // GaiaInfoPageHandler and the GaiaInfoPage component.
-  EstablishGaiaInfoScreenPipe(
-      pending_receiver<ash.screens_common.mojom.GaiaInfoPageHandler> handler)
-      => (pending_receiver<ash.screens_common.mojom.GaiaInfoPage> pending);
+  // Establish a GeminiIntroScreen pipe for handling the communication for the
+  // GeminiIntroPageHandler and the GeminiIntroPage component.
+  EstablishGeminiIntroScreenPipe(
+      pending_receiver<ash.screens_common.mojom.GeminiIntroPageHandler> handler);
 
   // ash.screens_oobe.mojom
 
@@ -46,6 +64,33 @@ interface ScreensFactory {
           handler);
 
   // ash.screens_login.mojom
+
+  // Establish a ArcVmDataMigrationScreen pipe for handling the communication
+  // for the ArcVmDataMigrationPageHandler and the ArcVmDataMigrationPage
+  // component.
+  EstablishArcVmDataMigrationScreenPipe(
+      pending_receiver<ash.screens_login.mojom.ArcVmDataMigrationPageHandler>
+          handler)
+      => (pending_receiver<ash.screens_login.mojom.ArcVmDataMigrationPage>
+              pending);
+
+  // Establish a EncryptionMigrationScreen pipe for handling the communication
+  // for the EncryptionMigrationPageHandler and the EncryptionMigrationPage component.
+  EstablishEncryptionMigrationScreenPipe(
+    pending_receiver<ash.screens_login.mojom.EncryptionMigrationPageHandler>
+        handler) => (pending_receiver<ash.screens_login.mojom.EncryptionMigrationPage> pending) ;
+
+  // Establish a LacrosDataBackwardMigrationScreen pipe for handling the communication
+  // for the LacrosDataBackwardMigrationPageHandler and the LacrosDataBackwardMigrationPage component.
+  EstablishLacrosDataBackwardMigrationScreenPipe(
+    pending_receiver<ash.screens_login.mojom.LacrosDataBackwardMigrationPageHandler>
+        handler) => (pending_receiver<ash.screens_login.mojom.LacrosDataBackwardMigrationPage> pending) ;
+
+  // Establish a LacrosDataMigrationScreen pipe for handling the communication
+  // for the LacrosDataMigrationPageHandler and the LacrosDataMigrationPage component.
+  EstablishLacrosDataMigrationScreenPipe(
+      pending_receiver<ash.screens_login.mojom.LacrosDataMigrationPageHandler>
+          handler) => (pending_receiver<ash.screens_login.mojom.LacrosDataMigrationPage> pending) ;
 
   // ash.screens_osauth.mojom
 

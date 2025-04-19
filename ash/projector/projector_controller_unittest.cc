@@ -2,24 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/projector/projector_controller_impl.h"
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
 
 #include <initializer_list>
 #include <memory>
 #include <string>
 #include <vector>
 
+#include "ash/annotator/annotator_controller.h"
 #include "ash/constants/ash_features.h"
 #include "ash/projector/model/projector_session_impl.h"
+#include "ash/projector/projector_controller_impl.h"
 #include "ash/projector/projector_metadata_controller.h"
 #include "ash/projector/projector_metrics.h"
 #include "ash/projector/test/mock_projector_metadata_controller.h"
-#include "ash/projector/test/mock_projector_ui_controller.h"
 #include "ash/public/cpp/projector/projector_new_screencast_precondition.h"
 #include "ash/public/cpp/projector/speech_recognition_availability.h"
 #include "ash/public/cpp/test/mock_projector_client.h"
 #include "ash/shell.h"
+#include "ash/system/tray/tray_container.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/webui/annotator/test/mock_annotator_client.h"
 #include "ash/webui/projector_app/public/cpp/projector_app_constants.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
@@ -139,11 +145,6 @@ class ProjectorControllerTest : public AshTestBase {
     controller_ =
         static_cast<ProjectorControllerImpl*>(ProjectorController::Get());
 
-    auto mock_ui_controller =
-        std::make_unique<MockProjectorUiController>(controller_);
-    mock_ui_controller_ = mock_ui_controller.get();
-    controller_->SetProjectorUiControllerForTest(std::move(mock_ui_controller));
-
     auto mock_metadata_controller =
         std::make_unique<MockProjectorMetadataController>();
     mock_metadata_controller_ = mock_metadata_controller.get();
@@ -156,6 +157,9 @@ class ProjectorControllerTest : public AshTestBase {
     ON_CALL(mock_client_, GetSpeechRecognitionAvailability)
         .WillByDefault(testing::Return(availability));
     controller_->SetClient(&mock_client_);
+
+    auto* annotator_controller = Shell::Get()->annotator_controller();
+    annotator_controller->SetToolClient(&mock_annotator_client_);
   }
 
   void InitializeRealMetadataController() {
@@ -188,14 +192,13 @@ class ProjectorControllerTest : public AshTestBase {
     CrasAudioHandler::Get()->SetActiveInputNodes({kInternalMic->id});
   }
 
-  raw_ptr<MockProjectorUiController, DanglingUntriaged> mock_ui_controller_ =
-      nullptr;
   raw_ptr<MockProjectorMetadataController, DanglingUntriaged>
       mock_metadata_controller_ = nullptr;
   raw_ptr<ProjectorMetadataControllerForTest, DanglingUntriaged>
       metadata_controller_;
   raw_ptr<ProjectorControllerImpl, DanglingUntriaged> controller_;
   MockProjectorClient mock_client_;
+  MockAnnotatorClient mock_annotator_client_;
   base::HistogramTester histogram_tester_;
   base::ScopedTempDir temp_dir_;
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -278,25 +281,11 @@ TEST_F(ProjectorControllerTest, OnSpeechRecognitionAvailabilityChanged) {
   controller_->OnSpeechRecognitionAvailabilityChanged();
 }
 
-TEST_F(ProjectorControllerTest, EnableAnnotatorTool) {
-  // Verify that |OnMarkerPressed| in |ProjectorUiController| is called.
-  EXPECT_CALL(*mock_ui_controller_, EnableAnnotatorTool());
-  controller_->EnableAnnotatorTool();
-}
-
-TEST_F(ProjectorControllerTest, SetAnnotatorTool) {
-  AnnotatorTool tool;
-  // Verify that |SetAnnotatorTool| in |ProjectorUiController| is called.
-  EXPECT_CALL(*mock_ui_controller_, SetAnnotatorTool(tool));
-  controller_->SetAnnotatorTool(tool);
-}
-
 TEST_F(ProjectorControllerTest, RecordingStarted) {
   EXPECT_CALL(mock_client_, StartSpeechRecognition());
   EXPECT_CALL(*mock_metadata_controller_, OnRecordingStarted());
 
   auto* root = Shell::GetPrimaryRootWindow();
-  EXPECT_CALL(*mock_ui_controller_, ShowAnnotationTray(root)).Times(1);
   controller_->projector_session()->Start(
       base::SafeBaseName::Create("projector_data").value());
   histogram_tester_.ExpectUniqueSample(
@@ -316,9 +305,6 @@ TEST_F(ProjectorControllerTest, RecordingEnded) {
   ON_CALL(mock_client_, IsDriveFsMounted())
       .WillByDefault(testing::Return(true));
 
-  // Verify that |HideAnnotationTray| in |ProjectorUiController| is
-  // called.
-  EXPECT_CALL(*mock_ui_controller_, HideAnnotationTray()).Times(1);
   EXPECT_CALL(mock_client_, OpenProjectorApp()).Times(0);
   EXPECT_CALL(mock_client_,
               OnNewScreencastPreconditionChanged(NewScreencastPrecondition(

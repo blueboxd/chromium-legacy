@@ -82,6 +82,8 @@ std::optional<WebFeature> FeatureCoop(CrossOriginOpenerPolicyValue value) {
       return WebFeature::kCrossOriginOpenerPolicySameOriginAllowPopups;
     case CrossOriginOpenerPolicyValue::kRestrictProperties:
       return WebFeature::kCrossOriginOpenerPolicyRestrictProperties;
+    case CrossOriginOpenerPolicyValue::kNoopenerAllowPopups:
+      return WebFeature::kCrossOriginOpenerPolicyNoopenerAllowPopups;
     case CrossOriginOpenerPolicyValue::kSameOriginPlusCoep:
     case CrossOriginOpenerPolicyValue::kRestrictPropertiesPlusCoep:
       return WebFeature::kCoopAndCoepIsolated;
@@ -101,6 +103,8 @@ std::optional<WebFeature> FeatureCoopRO(CrossOriginOpenerPolicyValue value) {
           kCrossOriginOpenerPolicySameOriginAllowPopupsReportOnly;
     case CrossOriginOpenerPolicyValue::kRestrictProperties:
       return WebFeature::kCrossOriginOpenerPolicyRestrictPropertiesReportOnly;
+    case CrossOriginOpenerPolicyValue::kNoopenerAllowPopups:
+      return WebFeature::kCrossOriginOpenerPolicyNoopenerAllowPopupsReportOnly;
     case CrossOriginOpenerPolicyValue::kSameOriginPlusCoep:
     case CrossOriginOpenerPolicyValue::kRestrictPropertiesPlusCoep:
       return WebFeature::kCoopAndCoepIsolatedReportOnly;
@@ -236,7 +240,11 @@ void RecordWebPlatformSecurityMetrics(RenderFrameHostImpl* rfh,
     DCHECK((page_coop == CoopValue::kSameOriginAllowPopups &&
             other_page_coop == CoopValue::kUnsafeNone) ||
            (page_coop == CoopValue::kUnsafeNone &&
-            other_page_coop == CoopValue::kSameOriginAllowPopups));
+            other_page_coop == CoopValue::kSameOriginAllowPopups) ||
+           (page_coop == CoopValue::kUnsafeNone &&
+            other_page_coop == CoopValue::kNoopenerAllowPopups) ||
+           (page_coop == CoopValue::kSameOriginAllowPopups &&
+            other_page_coop == CoopValue::kNoopenerAllowPopups));
     for (FrameTreeNode* frame_tree_node :
          other_tld->frame_tree_node()->frame_tree().Nodes()) {
       RenderFrameHostImpl* other_rfh = frame_tree_node->current_frame_host();
@@ -501,14 +509,10 @@ void Navigator::DidNavigate(
   // will hide the old View, and the
   // `RenderFrameHostManager::DidNavigateFrame()` will subsequently unload the
   // old page and show the new View.
-  //
-  // TODO(crbug.com/40278956): Move this into
-  // `RenderFrameHostManager::CommitPending` to accommodate both regular
-  // navigations and early-commit.
   if (!was_within_same_document) {
     NavigationTransitionUtils::
         CaptureNavigationEntryScreenshotForCrossDocumentNavigations(
-            *navigation_request);
+            *navigation_request, /*did_receive_commit_ack=*/true);
   }
 
   if (ui::PageTransitionIsMainFrame(params.transition)) {
@@ -848,7 +852,8 @@ void Navigator::RequestOpenURL(
     blink::mojom::TriggeringEventInfo triggering_event_info,
     const std::string& href_translate,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
-    const std::optional<blink::Impression>& impression) {
+    const std::optional<blink::Impression>& impression,
+    bool has_rel_opener) {
   // Note: This can be called for subframes (even when OOPIFs are not possible)
   // if the disposition calls for a different window.
 
@@ -922,6 +927,7 @@ void Navigator::RequestOpenURL(
   params.blob_url_loader_factory = std::move(blob_url_loader_factory);
   params.href_translate = href_translate;
   params.impression = impression;
+  params.has_rel_opener = has_rel_opener;
 
   delegate_->OpenURL(params, /*navigation_handle_callback=*/{});
 }
@@ -953,6 +959,8 @@ void Navigator::NavigateFromFrameProxy(
     bool is_unfenced_top_navigation,
     bool force_new_browsing_instance,
     bool is_container_initiated,
+    bool has_rel_opener,
+    net::StorageAccessApiStatus storage_access_api_status,
     std::optional<std::u16string> embedder_shared_storage_context) {
   // |method != "POST"| should imply absence of |post_body|.
   if (method != "POST" && post_body) {
@@ -998,8 +1006,8 @@ void Navigator::NavigateFromFrameProxy(
       std::move(blob_url_loader_factory), is_form_submission, impression,
       initiator_activation_and_ad_status, navigation_start_time,
       is_embedder_initiated_fenced_frame_navigation, is_unfenced_top_navigation,
-      force_new_browsing_instance, is_container_initiated,
-      embedder_shared_storage_context);
+      force_new_browsing_instance, is_container_initiated, has_rel_opener,
+      storage_access_api_status, embedder_shared_storage_context);
 }
 
 void Navigator::BeforeUnloadCompleted(FrameTreeNode* frame_tree_node,
@@ -1021,7 +1029,8 @@ void Navigator::BeforeUnloadCompleted(FrameTreeNode* frame_tree_node,
   // after the navigation started. The last user input should be respected, and
   // the navigation cancelled anyway.
   if (!proceed) {
-    CancelNavigation(frame_tree_node, NavigationDiscardReason::kCancelled);
+    CancelNavigation(frame_tree_node,
+                     NavigationDiscardReason::kExplicitCancellation);
     return;
   }
 
@@ -1093,7 +1102,7 @@ void Navigator::OnBeginNavigation(
     // Preemptively clear this local pointer before deleting the request.
     ongoing_navigation_request = nullptr;
     frame_tree_node->ResetNavigationRequest(
-        NavigationDiscardReason::kNewNavigation);
+        NavigationDiscardReason::kNewOtherNavigationRendererInitiated);
   }
 
   // Verify this navigation has precedence.

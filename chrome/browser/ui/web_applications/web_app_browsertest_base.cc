@@ -250,15 +250,15 @@ const char* WebAppBrowserTestBase::GetInstallableAppName() {
 void WebAppBrowserTestBase::SetUp() {
   https_server_.AddDefaultHandlers(GetChromeTestDataDir());
   webapps::TestAppBannerManagerDesktop::SetUp();
-  InProcessBrowserTest::SetUp();
+  WebAppBrowserTestBaseParent::SetUp();
 }
 
 void WebAppBrowserTestBase::TearDown() {
-  InProcessBrowserTest::TearDown();
+  WebAppBrowserTestBaseParent::TearDown();
 }
 
 void WebAppBrowserTestBase::SetUpInProcessBrowserTestFixture() {
-  InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
+  WebAppBrowserTestBaseParent::SetUpInProcessBrowserTestFixture();
   cert_verifier_.SetUpInProcessBrowserTestFixture();
   create_services_subscription_ =
       BrowserContextDependencyManager::GetInstance()
@@ -268,7 +268,7 @@ void WebAppBrowserTestBase::SetUpInProcessBrowserTestFixture() {
 }
 
 void WebAppBrowserTestBase::TearDownInProcessBrowserTestFixture() {
-  InProcessBrowserTest::TearDownInProcessBrowserTestFixture();
+  WebAppBrowserTestBaseParent::TearDownInProcessBrowserTestFixture();
   cert_verifier_.TearDownInProcessBrowserTestFixture();
 }
 
@@ -284,7 +284,8 @@ void WebAppBrowserTestBase::TearDownOnMainThread() {
     CloseAllAshBrowserWindows();
   }
 #endif
-  InProcessBrowserTest::TearDownOnMainThread();
+
+  WebAppBrowserTestBaseParent::TearDownOnMainThread();
 }
 
 void WebAppBrowserTestBase::SetUpCommandLine(
@@ -301,7 +302,8 @@ void WebAppBrowserTestBase::SetUpOnMainThread() {
   }
 #endif
 
-  InProcessBrowserTest::SetUpOnMainThread();
+  WebAppBrowserTestBaseParent::SetUpOnMainThread();
+
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(https_server()->Start());
 

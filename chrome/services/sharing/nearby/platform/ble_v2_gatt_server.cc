@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/services/sharing/nearby/platform/ble_v2_gatt_server.h"
 
 #include "base/check.h"
@@ -12,6 +17,7 @@
 #include "base/task/thread_pool.h"
 #include "chrome/services/sharing/nearby/platform/bluetooth_utils.h"
 #include "chrome/services/sharing/nearby/platform/count_down_latch.h"
+#include "chrome/services/sharing/nearby/platform/nearby_platform_metrics.h"
 #include "device/bluetooth/bluetooth_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_gatt_service.h"
 #include "device/bluetooth/public/cpp/bluetooth_uuid.h"
@@ -132,9 +138,11 @@ BleV2GattServer::CreateCharacteristic(
 
     if (!gatt_service_pending_remote) {
       LOG(WARNING) << __func__ << ": Unable to get or create GATT service";
+      metrics::RecordCreateLocalGattServiceResult(/*success=*/false);
       return std::nullopt;
     }
 
+    metrics::RecordCreateLocalGattServiceResult(/*success=*/true);
     auto gatt_service = gatt_service_factory_->Create();
     gatt_service->gatt_service_remote.Bind(
         std::move(gatt_service_pending_remote),
@@ -185,6 +193,7 @@ BleV2GattServer::CreateCharacteristic(
 
   if (!create_characteristic_success) {
     LOG(WARNING) << __func__ << ": Unable to create GATT characteristic";
+    metrics::RecordCreateLocalGattCharacteristicResult(/*success=*/false);
     return std::nullopt;
   }
 
@@ -193,6 +202,7 @@ BleV2GattServer::CreateCharacteristic(
   // Connections library. This will be used to trigger requests to notify or
   // update the GATT characteristic in other methods. The browser process
   // retrieves the corresponding GATT characteristic by `charactertistic_uuid`.
+  metrics::RecordCreateLocalGattCharacteristicResult(/*success=*/true);
   api::ble_v2::GattCharacteristic gatt_characteristic = {
       characteristic_uuid, service_uuid, permission, property};
   gatt_service->characteristic_uuid_to_characteristic_map.insert_or_assign(
@@ -210,6 +220,7 @@ bool BleV2GattServer::UpdateCharacteristic(
     LOG(WARNING) << __func__
                  << ": trying to update a characteristic in a service that "
                     "doesn't exist";
+    metrics::RecordUpdateCharacteristicResult(/*success=*/false);
     return false;
   }
 
@@ -221,6 +232,7 @@ bool BleV2GattServer::UpdateCharacteristic(
     LOG(WARNING) << __func__
                  << ": trying to update a characteristic that doesn't exist in "
                     "the GATT service";
+    metrics::RecordUpdateCharacteristicResult(/*success=*/false);
     return false;
   }
 
@@ -234,6 +246,7 @@ bool BleV2GattServer::UpdateCharacteristic(
           << characteristic.uuid.Get16BitAsString();
   gatt_service->characteristic_uuid_to_value_map.emplace(characteristic.uuid,
                                                          value);
+  metrics::RecordUpdateCharacteristicResult(/*success=*/true);
   return true;
 }
 
@@ -303,12 +316,15 @@ void BleV2GattServer::OnRegisterGattService(
     LOG(WARNING) << __func__ << ": failed due to error = "
                  << GattErrorCodeToString(*error_code);
     did_any_gatt_services_fail_to_register_ = true;
+    metrics::RecordGattServiceRegistrationErrorReason(error_code.value());
   }
 
   if (!registration_barrier_->Decrement()) {
     VLOG(1) << __func__ << ": registration result = "
             << (!did_any_gatt_services_fail_to_register_ ? "success"
                                                          : "failure");
+    metrics::RecordGattServiceRegistrationResult(
+        /*success=*/!did_any_gatt_services_fail_to_register_);
     CHECK(on_registration_complete_callback_);
     std::move(on_registration_complete_callback_)
         .Run(/*success=*/!did_any_gatt_services_fail_to_register_);
@@ -350,6 +366,7 @@ void BleV2GattServer::OnLocalCharacteristicRead(
     LOG(WARNING) << __func__
                  << ": trying to read a characteristic that does not support "
                     "read requests";
+    metrics::RecordOnLocalCharacteristicReadResult(/*success=*/false);
     std::move(callback).Run(
         bluetooth::mojom::LocalCharacteristicReadResult::NewErrorCode(
             device::BluetoothGattService::GattErrorCode::kNotPermitted));
@@ -366,6 +383,7 @@ void BleV2GattServer::OnLocalCharacteristicRead(
   if (new_value_it == new_value_map.end()) {
     LOG(WARNING) << __func__
                  << ": value for the characteristic read request not found";
+    metrics::RecordOnLocalCharacteristicReadResult(/*success=*/false);
     std::move(callback).Run(
         bluetooth::mojom::LocalCharacteristicReadResult::NewErrorCode(
             device::BluetoothGattService::GattErrorCode::kNotSupported));
@@ -383,6 +401,7 @@ void BleV2GattServer::OnLocalCharacteristicRead(
 
   const uint8_t* bytes = reinterpret_cast<const uint8_t*>(data.data());
   std::vector<uint8_t> read_value(bytes + offset, bytes + data.size());
+  metrics::RecordOnLocalCharacteristicReadResult(/*success=*/true);
   std::move(callback).Run(
       bluetooth::mojom::LocalCharacteristicReadResult::NewData(
           std::move(read_value)));

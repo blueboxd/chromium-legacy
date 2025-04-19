@@ -8,6 +8,9 @@
 #include <jni.h>
 
 #include "base/android/scoped_java_ref.h"
+#include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "components/autofill/core/browser/data_model/bank_account.h"
 #include "ui/android/window_android.h"
 
 class FacilitatedPaymentsController;
@@ -22,7 +25,9 @@ namespace payments::facilitated {
 // bottom sheet on Android.
 class FacilitatedPaymentsBottomSheetBridge {
  public:
-  FacilitatedPaymentsBottomSheetBridge();
+  FacilitatedPaymentsBottomSheetBridge(
+      content::WebContents* web_contents,
+      FacilitatedPaymentsController* controller);
 
   FacilitatedPaymentsBottomSheetBridge(
       const FacilitatedPaymentsBottomSheetBridge&) = delete;
@@ -31,13 +36,32 @@ class FacilitatedPaymentsBottomSheetBridge {
 
   virtual ~FacilitatedPaymentsBottomSheetBridge();
 
-  // Request show the content of PIX bottom sheet.
+  // Show the payment prompt containing user's `bank_account_suggestions`.
   // Return true if a new bottom sheet is created and shown. Otherwise, return
   // false.
-  virtual bool RequestShowContent(FacilitatedPaymentsController* controller,
-                                  content::WebContents* web_contents);
+  virtual bool RequestShowContent(
+      base::span<const autofill::BankAccount> bank_account_suggestions);
+
+  // Triggers showing the progress screen. Virtual for overriding in tests.
+  virtual void ShowProgressScreen();
+
+  // Triggers showing the error screen. Virtual for overriding in tests.
+  virtual void ShowErrorScreen();
+
+  // Closes the bottom sheet. Virtual for overriding in tests.
+  virtual void Dismiss();
+
+  // Called whenever the surface gets hidden (regardless of the cause). Virtual
+  // for testing.
+  virtual void OnDismissed();
 
  private:
+  // Lazily initializes and returns `java_bridge_`;
+  base::android::ScopedJavaLocalRef<jobject> GetJavaBridge();
+
+  base::WeakPtr<content::WebContents> web_contents_;
+  // Owner.
+  raw_ptr<FacilitatedPaymentsController> controller_;
   // The corresponding Java FacilitatedPaymentsPaymentMethodsViewBridge. This
   // bridge is used to pass info and commands from native side to Java side for
   // showing UI prompts.

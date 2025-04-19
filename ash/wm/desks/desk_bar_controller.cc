@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/accessibility/accessibility_controller.h"
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/desk_button_widget.h"
 #include "ash/shelf/shelf.h"
@@ -46,8 +47,8 @@ namespace ash {
 namespace {
 
 bool ShouldProcessLocatedEvent(const ui::LocatedEvent& event) {
-  if (event.type() != ui::ET_MOUSE_PRESSED &&
-      event.type() != ui::ET_TOUCH_PRESSED) {
+  if (event.type() != ui::EventType::kMousePressed &&
+      event.type() != ui::EventType::kTouchPressed) {
     return false;
   }
 
@@ -63,46 +64,13 @@ bool ShouldProcessLocatedEvent(const ui::LocatedEvent& event) {
   return true;
 }
 
-// Moves the focus ring to the next traversable view.
-void MoveFocus(const DeskBarController::BarWidgetAndView& desk_bar,
-               bool reverse) {
-  DesksController* desks_controller = DesksController::Get();
-  auto* focus_manager = desk_bar.bar_widget->GetFocusManager();
-  views::View* focused_view = focus_manager->GetFocusedView();
-
-  // Focus the first/last focusable view when tabbing out from the toast.
-  if (desks_controller->IsUndoToastHighlighted()) {
-    desks_controller->MaybeToggleA11yHighlightOnUndoDeskRemovalToast();
-    focus_manager->AdvanceFocus(reverse);
-    return;
-  }
-
-  // Focus the toast when tabbing out from the first/last focusable view.
-  if (desks_controller->IsUndoToastShown() &&
-      Shell::Get()->accessibility_controller()->spoken_feedback().enabled()) {
-    if (focused_view) {
-      const views::View* first_focusable_view =
-          desk_bar.GetFirstFocusableView();
-      const views::View* last_focusable_view = desk_bar.GetLastFocusableView();
-      const views::View* next_focusable_view =
-          desk_bar.GetNextFocusableView(focused_view, reverse);
-      if (((next_focusable_view == first_focusable_view && !reverse) ||
-           (next_focusable_view == last_focusable_view && reverse)) &&
-          desks_controller->MaybeToggleA11yHighlightOnUndoDeskRemovalToast()) {
-        focus_manager->ClearFocus();
-        return;
-      }
+bool TargetsSettingsBubbleContainer(const ui::LocatedEvent& event) {
+  if (aura::Window* target = static_cast<aura::Window*>(event.target())) {
+    if (aura::Window* container = GetContainerForWindow(target)) {
+      return container->GetId() == kShellWindowId_SettingBubbleContainer;
     }
   }
-
-  // Focus from and to views within the desk bar.
-  if (focused_view) {
-    focus_manager->AdvanceFocus(reverse);
-  } else {
-    focus_manager->SetFocusedView(
-        desk_bar.bar_view->FindMiniViewForDesk(desks_controller->active_desk())
-            ->desk_preview());
-  }
+  return false;
 }
 
 }  // namespace
@@ -165,27 +133,15 @@ void DeskBarController::OnDeskSwitchAnimationLaunching() {
 }
 
 void DeskBarController::OnMouseEvent(ui::MouseEvent* event) {
-  if (ShouldProcessLocatedEvent(*event)) {
-    OnMaybePressOffBar(*event);
-  }
-
-  if (event->type() == ui::ET_MOUSE_PRESSED) {
-    DesksController::Get()->MaybeDismissPersistentDeskRemovalToast();
-  }
+  OnLocatedEvent(*event);
 }
 
 void DeskBarController::OnTouchEvent(ui::TouchEvent* event) {
-  if (ShouldProcessLocatedEvent(*event)) {
-    OnMaybePressOffBar(*event);
-  }
-
-  if (event->type() == ui::ET_TOUCH_PRESSED) {
-    DesksController::Get()->MaybeDismissPersistentDeskRemovalToast();
-  }
+  OnLocatedEvent(*event);
 }
 
 void DeskBarController::OnKeyEvent(ui::KeyEvent* event) {
-  const bool is_key_press = event->type() == ui::ET_KEY_PRESSED;
+  const bool is_key_press = event->type() == ui::EventType::kKeyPressed;
 
   // We return early if we are in an overview session because the overview desk
   // bar has its own predefined key event handling logic. This will handle key
@@ -206,7 +162,7 @@ void DeskBarController::OnKeyEvent(ui::KeyEvent* event) {
   //    showing. If this is the case, we should try to close the toast.
   DesksController* desks_controller = DesksController::Get();
   if (event->key_code() == ui::VKEY_RETURN) {
-    desks_controller->MaybeActivateDeskRemovalUndoButtonOnHighlightedToast();
+    // Fallthrough to the toast and let its button handle the return key.
     return;
   }
 
@@ -237,8 +193,8 @@ void DeskBarController::OnKeyEvent(ui::KeyEvent* event) {
 
     auto* focus_manager = desk_bar.bar_widget->GetFocusManager();
     views::View* focused_view = focus_manager->GetFocusedView();
-    DeskNameView* focused_name_view =
-        views::AsViewClass<DeskNameView>(focused_view);
+    const bool focused_name_view =
+        views::IsViewClass<DeskNameView>(focused_view);
 
     // TODO(b/290651821): Consolidates arrow key behaviors for the desk bar.
     switch (event->key_code()) {
@@ -266,6 +222,11 @@ void DeskBarController::OnKeyEvent(ui::KeyEvent* event) {
         break;
       case ui::VKEY_LEFT:
       case ui::VKEY_RIGHT:
+        // Let the textfield handle left/right to move the caret, unless using
+        // ChromeVox traversal.
+        if (!event->IsCommandDown() && focused_name_view) {
+          return;
+        }
         // Control + left/right falls through to be handed by the desk preview
         // to swap desks.
         if (is_control_down) {
@@ -381,6 +342,11 @@ bool DeskBarController::IsShowingDeskBar() const {
 void DeskBarController::OpenDeskBar(aura::Window* root) {
   CHECK(root && root->IsRootWindow());
 
+  if (!window_occlusion_calculator_ &&
+      features::IsDeskBarWindowOcclusionOptimizationEnabled()) {
+    window_occlusion_calculator_.emplace();
+  }
+
   auto presentation_time_recorder = CreatePresentationTimeHistogramRecorder(
       root->layer()->GetCompositor(), kDeskBarEnterPresentationHistogram, "",
       kDeskBarEnterExitPresentationMaxLatency);
@@ -404,7 +370,10 @@ void DeskBarController::OpenDeskBar(aura::Window* root) {
     // before setting the contents view to prevent the wrong layer being
     // mirrored in `DeskPreviewView`. See b/287116737#comment6 for more details.
     bar_widget->Show();
-    bar_view = bar_widget->SetContentsView(std::make_unique<DeskBarView>(root));
+    bar_view = bar_widget->SetContentsView(std::make_unique<DeskBarView>(
+        root, window_occlusion_calculator_
+                  ? window_occlusion_calculator_->AsWeakPtr()
+                  : nullptr));
     bar_view->Init();
 
     // Ownership transfer and bookkeeping.
@@ -429,6 +398,10 @@ void DeskBarController::CloseDeskBar(aura::Window* root) {
       it++;
     }
   }
+
+  if (desk_bars_.empty()) {
+    window_occlusion_calculator_.reset();
+  }
 }
 
 void DeskBarController::CloseAllDeskBars() {
@@ -443,6 +416,45 @@ void DeskBarController::CloseAllDeskBars() {
   }
 
   desk_bars_.clear();
+  window_occlusion_calculator_.reset();
+}
+
+void DeskBarController::MoveFocus(const BarWidgetAndView& desk_bar,
+                                  bool reverse) {
+  DesksController* desks_controller = DesksController::Get();
+  auto* focus_manager = desk_bar.bar_widget->GetFocusManager();
+  views::View* focused_view = focus_manager->GetFocusedView();
+
+  // Focus the first/last focusable view when tabbing out from the toast.
+  if (desks_controller->IsUndoToastFocused()) {
+    focus_manager->AdvanceFocus(reverse);
+    return;
+  }
+
+  // Attempt to focus the toast when tabbing out from the first/last focusable
+  // view.
+  if (focused_view) {
+    const views::View* first_focusable_view = desk_bar.GetFirstFocusableView();
+    const views::View* last_focusable_view = desk_bar.GetLastFocusableView();
+    const views::View* next_focusable_view =
+        desk_bar.GetNextFocusableView(focused_view, reverse);
+    if ((next_focusable_view == first_focusable_view && !reverse) ||
+        (next_focusable_view == last_focusable_view && reverse)) {
+      base::AutoReset<bool> auto_reset(&should_ignore_activation_change_, true);
+      if (desks_controller->RequestFocusOnUndoDeskRemovalToast()) {
+        return;
+      }
+    }
+  }
+
+  // Focus from and to views within the desk bar.
+  if (focused_view) {
+    focus_manager->AdvanceFocus(reverse);
+  } else {
+    focus_manager->SetFocusedView(
+        desk_bar.bar_view->FindMiniViewForDesk(desks_controller->active_desk())
+            ->desk_preview());
+  }
 }
 
 void DeskBarController::CloseDeskBarInternal(BarWidgetAndView& desk_bar) {
@@ -465,6 +477,21 @@ void DeskBarController::CloseDeskBarInternal(BarWidgetAndView& desk_bar) {
 
   SetDeskButtonActivation(desk_bar.bar_view->root(),
                           /*is_activated=*/false);
+}
+
+void DeskBarController::OnLocatedEvent(ui::LocatedEvent& event) {
+  if (ShouldProcessLocatedEvent(event)) {
+    OnMaybePressOffBar(event);
+  }
+
+  // Maybe dismiss the persistent toast, unless the event might be targeting the
+  // toast itself. If that is the case, we'd better let the toast handle the
+  // event.
+  if ((event.type() == ui::EventType::kMousePressed ||
+       event.type() == ui::EventType::kTouchPressed) &&
+      !TargetsSettingsBubbleContainer(event)) {
+    DesksController::Get()->MaybeDismissPersistentDeskRemovalToast();
+  }
 }
 
 void DeskBarController::OnMaybePressOffBar(ui::LocatedEvent& event) {

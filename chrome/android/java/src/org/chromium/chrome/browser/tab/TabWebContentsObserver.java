@@ -179,7 +179,9 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
                             || NativePage.isNativePageUrl(
                                     mTab.getUrl(),
                                     mTab.isIncognito(),
-                                    PdfUtils.isPdfNavigation(mTab.getUrl().getSpec(), null)))) {
+                                    PdfUtils.shouldOpenPdfInline(mTab.isIncognito())
+                                            && PdfUtils.isDownloadedPdf(
+                                                    mTab.getUrl().getSpec())))) {
                 return;
             }
 

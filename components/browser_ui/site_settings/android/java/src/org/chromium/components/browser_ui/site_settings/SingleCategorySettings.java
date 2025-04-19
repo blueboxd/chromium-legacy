@@ -86,7 +86,6 @@ import org.chromium.ui.modaldialog.ModalDialogProperties.Controller;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
-import org.chromium.ui.text.SpanApplier.SpanInfo;
 import org.chromium.ui.widget.Toast;
 
 import java.lang.annotation.Retention;
@@ -189,10 +188,10 @@ public class SingleCategorySettings extends BaseSiteSettingsFragment
     @Override
     public void onCookiesDetailsRequested(@CookieControlsMode int cookieSettingsState) {
         Bundle fragmentArgs = new Bundle();
-        fragmentArgs.putInt(FPSCookieSettings.EXTRA_COOKIE_PAGE_STATE, cookieSettingsState);
+        fragmentArgs.putInt(RWSCookieSettings.EXTRA_COOKIE_PAGE_STATE, cookieSettingsState);
 
         mSettingsLauncher.launchSettingsActivity(
-                getActivity(), FPSCookieSettings.class, fragmentArgs);
+                getActivity(), RWSCookieSettings.class, fragmentArgs);
     }
 
     @Override
@@ -1351,10 +1350,9 @@ public class SingleCategorySettings extends BaseSiteSettingsFragment
         params.isIncognitoModeEnabled = getSiteSettingsDelegate().isIncognitoModeEnabled();
         params.isPrivacySandboxFirstPartySetsUIEnabled =
                 getSiteSettingsDelegate().isPrivacySandboxFirstPartySetsUIFeatureEnabled();
-        params.isFirstPartySetsDataAccessEnabled =
-                getSiteSettingsDelegate().isFirstPartySetsDataAccessEnabled();
+        params.isRelatedWebSetsDataAccessEnabled =
+                getSiteSettingsDelegate().isRelatedWebSetsDataAccessEnabled();
         triStateCookieToggle.setState(params);
-        maybeShowOffboardingCard();
     }
 
     private int getCookieControlsMode() {
@@ -1633,28 +1631,6 @@ public class SingleCategorySettings extends BaseSiteSettingsFragment
                 return false;
             }
         };
-    }
-
-    private void maybeShowOffboardingCard() {
-        if (getSiteSettingsDelegate().shouldShowSettingsOffboardingNotice()) {
-            mCardPreference = findPreference(CARD_PREFERENCE_KEY);
-            mCardPreference.setVisible(true);
-            mCardPreference.setSummary(
-                    SpanApplier.applySpans(
-                            getResources()
-                                    .getString(
-                                            R.string.tracking_protection_settings_rollback_notice),
-                            new SpanInfo(
-                                    "<link>",
-                                    "</link>",
-                                    new NoUnderlineClickableSpan(
-                                            getContext(),
-                                            (view) -> openUrlInCct(TP_LEARN_MORE_URL)))));
-            mCardPreference.setIconDrawable(
-                    SettingsUtils.getTintedIcon(getContext(), R.drawable.infobar_warning));
-            mCardPreference.setCloseIconVisibility(View.VISIBLE);
-            mCardPreference.setOnCloseClickListener(this::onOffboardingCardCloseClick);
-        }
     }
 
     private void onOffboardingCardCloseClick(View button) {

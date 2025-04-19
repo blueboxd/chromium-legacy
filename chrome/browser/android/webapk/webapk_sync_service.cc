@@ -18,7 +18,7 @@
 #include "components/sync/base/features.h"
 #include "ui/gfx/android/java_bitmap.h"
 
-// Must come after other includes, because FromJniType() uses Profile.
+// Must come after all headers that specialize FromJniType() / ToJniType().
 #include "chrome/android/chrome_jni_headers/WebApkSyncService_jni.h"
 
 using base::android::JavaParamRef;
@@ -86,9 +86,9 @@ const Registry& WebApkSyncService::GetRegistryForTesting() const {
   return sync_bridge_->GetRegistryForTesting();  // IN-TEST
 }
 
-base::WeakPtr<syncer::ModelTypeControllerDelegate>
-WebApkSyncService::GetModelTypeControllerDelegate() {
-  return sync_bridge_->GetModelTypeControllerDelegate();
+base::WeakPtr<syncer::DataTypeControllerDelegate>
+WebApkSyncService::GetDataTypeControllerDelegate() {
+  return sync_bridge_->GetDataTypeControllerDelegate();
 }
 
 void WebApkSyncService::OnWebApkUsed(

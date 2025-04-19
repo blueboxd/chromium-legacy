@@ -25,6 +25,7 @@
 #include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
 #include "components/variations/variations_switches.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/preloading_data.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/message.h"
@@ -88,6 +89,18 @@ PathLengthDepthAndHash GetUrlPathLengthDepthAndHash(const GURL& target_url) {
           hash_bucket};
 }
 
+// Returns the minimum of the bucket that |value| belongs in, used for
+// |ratio_distance_root_top|.
+int GetLinearBucketForLinkLocation(int value) {
+  return ukm::GetLinearBucketMin(static_cast<int64_t>(value), 10);
+}
+
+// Returns the minimum of the bucket that |value| belongs in, used for
+// |ratio_area|.
+int GetLinearBucketForRatioArea(int value) {
+  return ukm::GetLinearBucketMin(static_cast<int64_t>(value), 5);
+}
+
 base::TimeDelta MLModelExecutionTimerStartDelay() {
   static int timer_start_delay =
       blink::features::kPreloadingModelTimerStartDelay.Get();
@@ -104,6 +117,57 @@ bool MLModelOneExecutionPerHover() {
   static bool one_execution_per_hover =
       blink::features::kPreloadingModelOneExecutionPerHover.Get();
   return one_execution_per_hover;
+}
+
+base::TimeDelta MLModelMaxHoverTime() {
+  static const base::TimeDelta max_hover_time =
+      blink::features::kPreloadingModelMaxHoverTime.Get();
+  return max_hover_time;
+}
+
+void RecordMetricsForModelTraining(
+    const PreloadingModelKeyedService::Inputs& inputs,
+    ukm::SourceId ukm_source,
+    std::optional<double> sampling_likelihood,
+    bool is_accurate) {
+  constexpr double kBucketSpacing = 1.3;
+
+  const int sampling_likelihood_per_million =
+      static_cast<int>(1'000'000 * sampling_likelihood.value_or(1.0));
+  const int sampling_amount_bucket = ukm::GetExponentialBucketMin(
+      1'000'000 - sampling_likelihood_per_million, kBucketSpacing);
+
+  ukm::builders::Preloading_NavigationPredictorModelTrainingData builder(
+      ukm_source);
+
+  builder.SetSamplingAmount(sampling_amount_bucket);
+  builder.SetIsAccurate(is_accurate);
+  builder.SetContainsImage(inputs.contains_image);
+  // Font size is already bucketed. See `FontSizeBucket`.
+  builder.SetFontSize(inputs.font_size);
+  builder.SetHasTextSibling(inputs.has_text_sibling);
+  builder.SetIsBold(inputs.is_bold);
+  builder.SetIsInIframe(inputs.is_in_iframe);
+  builder.SetIsURLIncrementedByOne(inputs.is_url_incremented_by_one);
+  builder.SetNavigationStartToLinkLoggedMs(ukm::GetExponentialBucketMin(
+      inputs.navigation_start_to_link_logged.InMilliseconds(), kBucketSpacing));
+  builder.SetPathDepth(inputs.path_depth);
+  // Path length is already bucketed.
+  DCHECK_EQ(
+      inputs.path_length,
+      ukm::GetLinearBucketMin(static_cast<int64_t>(inputs.path_length), 10));
+  builder.SetPathLength(inputs.path_length);
+  builder.SetPercentClickableArea(
+      GetLinearBucketForRatioArea(inputs.percent_clickable_area));
+  builder.SetPercentVerticalDistance(
+      GetLinearBucketForLinkLocation(inputs.percent_vertical_distance));
+  builder.SetSameHost(inputs.is_same_host);
+  builder.SetHoverDwellTimeMs(ukm::GetExponentialBucketMin(
+      inputs.hover_dwell_time.InMilliseconds(), kBucketSpacing));
+  builder.SetPointerHoveringOverCount(ukm::GetExponentialBucketMin(
+      inputs.pointer_hovering_over_count, kBucketSpacing));
+
+  builder.Record(ukm::UkmRecorder::Get());
 }
 
 bool MaySendTraffic() {
@@ -199,18 +263,6 @@ void NavigationPredictor::Create(
   // The object is bound to the lifetime of the |render_frame_host| and the mojo
   // connection. See DocumentService for details.
   new NavigationPredictor(*render_frame_host, std::move(receiver));
-}
-
-int NavigationPredictor::GetBucketMinForPageMetrics(int value) const {
-  return ukm::GetExponentialBucketMin(value, 1.3);
-}
-
-int NavigationPredictor::GetLinearBucketForLinkLocation(int value) const {
-  return ukm::GetLinearBucketMin(static_cast<int64_t>(value), 10);
-}
-
-int NavigationPredictor::GetLinearBucketForRatioArea(int value) const {
-  return ukm::GetLinearBucketMin(static_cast<int64_t>(value), 5);
 }
 
 NavigationPredictorMetricsDocumentData&
@@ -423,6 +475,14 @@ void NavigationPredictor::OnMLModelExecutionTimerFired() {
   if (model_score_callback_) {
     std::move(model_score_callback_).Run(inputs);
   }
+
+  content::PreloadingData* preloading_data =
+      content::PreloadingData::GetOrCreateForWebContents(
+          content::WebContents::FromRenderFrameHost(&render_frame_host()));
+  preloading_data->OnPreloadingHeuristicsModelInput(
+      anchor.target_url,
+      base::BindOnce(&RecordMetricsForModelTraining, inputs,
+                     render_frame_host().GetPageUkmSourceId()));
   model_service->Score(
       &scoring_model_task_tracker_, inputs,
       base::BindOnce(&NavigationPredictor::OnPreloadingHeuristicsModelDone,
@@ -433,10 +493,9 @@ void NavigationPredictor::OnMLModelExecutionTimerFired() {
   // repeated executions wasteful. So we only do one execution per mouse over.
   // As we iterate on the model, multiple executions may become useful, but we
   // need to take care to not produce a large amount of redundant predictions
-  // (as seen in crbug.com/338200075 ). Other ideas here could be to only report
-  // when the score differs from the previous execution and/or to have a fixed
-  // limit on the number of executions while dwelling.
+  // (as seen in crbug.com/338200075 ).
   if (!MLModelOneExecutionPerHover() &&
+      inputs.hover_dwell_time < MLModelMaxHoverTime() &&
       !ml_model_execution_timer_.IsRunning()) {
     ml_model_execution_timer_.Start(
         FROM_HERE, MLModelExecutionTimerInterval(),
@@ -580,6 +639,31 @@ void NavigationPredictor::ReportAnchorElementsLeftViewport(
     user_interaction.max_time_in_viewport = std::max(
         user_interaction.max_time_in_viewport.value_or(base::TimeDelta()),
         element->time_in_viewport);
+    user_interaction.percent_vertical_position.reset();
+    user_interaction.percent_distance_from_pointer_down.reset();
+  }
+}
+
+void NavigationPredictor::ReportAnchorElementsPositionUpdate(
+    std::vector<blink::mojom::AnchorElementPositionUpdatePtr> elements) {
+  CHECK(base::FeatureList::IsEnabled(
+      blink::features::kNavigationPredictorNewViewportFeatures));
+  auto& user_interactions =
+      GetNavigationPredictorMetricsDocumentData().GetUserInteractionsData();
+  for (const auto& element : elements) {
+    auto index_it =
+        tracked_anchor_id_to_index_.find(AnchorId(element->anchor_id));
+    if (index_it == tracked_anchor_id_to_index_.end()) {
+      continue;
+    }
+    auto& user_interaction = user_interactions[index_it->second];
+    user_interaction.percent_vertical_position =
+        base::saturated_cast<int>(element->vertical_position_ratio * 100);
+    if (element->distance_from_pointer_down_ratio.has_value()) {
+      user_interaction.percent_distance_from_pointer_down =
+          base::saturated_cast<int>(
+              element->distance_from_pointer_down_ratio.value() * 100);
+    }
   }
 }
 

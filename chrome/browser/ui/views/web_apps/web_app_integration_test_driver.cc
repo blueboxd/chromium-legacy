@@ -98,6 +98,7 @@
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/preinstalled_web_app_config_utils.h"
 #include "chrome/browser/web_applications/preinstalled_web_app_manager.h"
+#include "chrome/browser/web_applications/proto/web_app_install_state.pb.h"
 #include "chrome/browser/web_applications/test/debug_info_printer.h"
 #include "chrome/browser/web_applications/test/os_integration_test_override_impl.h"
 #include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
@@ -159,7 +160,6 @@
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/ui/views/apps/app_dialog/app_uninstall_dialog_view.h"
-#include "chromeos/constants/chromeos_features.h"
 #else
 #include "chrome/browser/ui/webui/app_home/app_home.mojom.h"
 #include "chrome/browser/ui/webui/app_home/app_home_page_handler.h"
@@ -187,8 +187,8 @@
 #include "chrome/browser/apps/app_shim/app_shim_manager_mac.h"
 #include "chrome/browser/apps/app_shim/web_app_shim_manager_delegate_mac.h"
 #include "chrome/browser/chrome_browser_main.h"
-#include "chrome/browser/web_applications/app_shim_registry_mac.h"
-#include "chrome/browser/web_applications/os_integration/web_app_shortcut_mac.h"
+#include "chrome/browser/web_applications/os_integration/mac/app_shim_launch.h"
+#include "chrome/browser/web_applications/os_integration/mac/app_shim_registry.h"
 #include "chrome/browser/web_applications/web_app_ui_manager.h"
 #include "chrome/common/mac/app_mode_common.h"
 #include "chrome/test/base/launchservices_utils_mac.h"
@@ -1293,10 +1293,12 @@ void WebAppIntegrationTestDriver::CreateShortcut(Site site,
                                                  WindowOptions options) {
   bool open_in_window = options == WindowOptions::kWindowed;
 
-#if BUILDFLAG(IS_CHROMEOS)
-  if (chromeos::features::IsCrosShortstandEnabled() && open_in_window) {
-    GTEST_SKIP() << "With project Shortstand, users are no longer allowed to "
-                    "create shortcut and open in window.";
+#if !BUILDFLAG(IS_CHROMEOS)
+  // TODO(crbug.com/344912771): Remove tests that use the current create
+  // shortcut flow once ShortcutsNotApps is launched to 100% Stable.
+  if (base::FeatureList::IsEnabled(features::kShortcutsNotApps)) {
+    GTEST_SKIP()
+        << "Shortcuts are no longer web apps if kShortcutsNotApps is enabled";
   }
 #endif
 
@@ -1895,7 +1897,8 @@ void WebAppIntegrationTestDriver::LaunchFromPlatformShortcut(Site site) {
     }
     base::RunLoop run_loop;
     apps::SetMacShimStartupDoneCallbackForTesting(run_loop.QuitClosure());
-    LaunchFromAppShim(site, /*urls=*/{}, /*wait_for_complete_launch=*/true);
+    ASSERT_TRUE(LaunchFromAppShim(site, /*urls=*/{},
+                                  /*wait_for_complete_launch=*/true));
     run_loop.Run();
     if (!app_browser_ && !had_open_browsers) {
       browser_added_waiter.Wait();
@@ -1908,7 +1911,8 @@ void WebAppIntegrationTestDriver::LaunchFromPlatformShortcut(Site site) {
   } else {
     base::RunLoop run_loop;
     apps::SetMacShimStartupDoneCallbackForTesting(run_loop.QuitClosure());
-    LaunchFromAppShim(site, /*urls=*/{}, /*wait_for_complete_launch=*/true);
+    ASSERT_TRUE(LaunchFromAppShim(site, /*urls=*/{},
+                                  /*wait_for_complete_launch=*/true));
     run_loop.Run();
   }
 #else
@@ -2182,9 +2186,6 @@ void WebAppIntegrationTestDriver::SyncAndInstallPreinstalledAppConfig(
     std::string_view app_config_string) {
   base::AutoReset<bool> bypass_offline_manifest_requirement =
       PreinstalledWebAppManager::BypassOfflineManifestRequirementForTesting();
-  // TODO: resolve how to handle return value.
-  std::ignore =
-      PreinstalledWebAppManager::BypassOfflineManifestRequirementForTesting();
   base::FilePath test_config_dir = GetResourceFile(
       FILE_PATH_LITERAL("webapps_integration/preinstalled_config_dir/"));
   web_app::SetPreinstalledWebAppConfigDirForTesting(&test_config_dir);
@@ -2203,7 +2204,7 @@ void WebAppIntegrationTestDriver::SyncAndInstallPreinstalledAppConfig(
 
   using InstallAppsResults =
       std::map<GURL, web_app::ExternallyManagedAppManager::InstallResult>;
-  using UninstallAppsResults = std::map<GURL, bool>;
+  using UninstallAppsResults = std::map<GURL, webapps::UninstallResultCode>;
   base::test::TestFuture<InstallAppsResults, UninstallAppsResults> test_future;
   provider()->preinstalled_web_app_manager().LoadAndSynchronizeForTesting(
       test_future.GetCallback());
@@ -3123,7 +3124,7 @@ void WebAppIntegrationTestDriver::CheckAppIcon(Site site, Color color) {
   std::map<int, SkColor> shortcut_colors;
 
   base::RunLoop shortcut_run_loop;
-  provider()->os_integration_manager().GetShortcutInfoForApp(
+  provider()->os_integration_manager().GetShortcutInfoForAppFromRegistrar(
       active_app_id_, base::BindLambdaForTesting(
                           [&](std::unique_ptr<ShortcutInfo> shortcut_info) {
                             if (shortcut_info) {
@@ -3177,6 +3178,14 @@ void WebAppIntegrationTestDriver::CheckAppTitle(Site site, Title title) {
 }
 
 void WebAppIntegrationTestDriver::CheckCreateShortcutNotShown() {
+#if !BUILDFLAG(IS_CHROMEOS)
+  // TODO(crbug.com/344912771): Remove tests that use the current create
+  // shortcut flow once ShortcutsNotApps is launched to 100% Stable.
+  if (base::FeatureList::IsEnabled(features::kShortcutsNotApps)) {
+    GTEST_SKIP()
+        << "Shortcuts are no longer web apps if kShortcutsNotApps is enabled";
+  }
+#endif  // !BUILDFLAG(IS_CHROMEOS)
   if (!BeforeStateCheckAction(__FUNCTION__)) {
     return;
   }
@@ -3185,6 +3194,14 @@ void WebAppIntegrationTestDriver::CheckCreateShortcutNotShown() {
 }
 
 void WebAppIntegrationTestDriver::CheckCreateShortcutShown() {
+#if !BUILDFLAG(IS_CHROMEOS)
+  // TODO(crbug.com/344912771): Remove tests that use the current create
+  // shortcut flow once ShortcutsNotApps is launched to 100% Stable.
+  if (base::FeatureList::IsEnabled(features::kShortcutsNotApps)) {
+    GTEST_SKIP()
+        << "Shortcuts are no longer web apps if kShortcutsNotApps is enabled";
+  }
+#endif  // !BUILDFLAG(IS_CHROMEOS)
   if (!BeforeStateCheckAction(__FUNCTION__)) {
     return;
   }
@@ -4088,8 +4105,7 @@ webapps::AppId GetAppIdForIsolatedSite(Site site) {
       GetKeyPairForSite(parent_site ? parent_site.value() : site);
 
   auto url_info = IsolatedWebAppUrlInfo::CreateFromSignedWebBundleId(
-      web_package::SignedWebBundleId::CreateForEd25519PublicKey(
-          key_pair.public_key));
+      web_package::SignedWebBundleId::CreateForPublicKey(key_pair.public_key));
 
   if (parent_site) {
     // The scope and manifest ID of an Isolated Web App are always the unique
@@ -4215,11 +4231,15 @@ WebAppIntegrationTestDriver::ConstructStateSnapshot() {
             registrar.GetAppEffectiveDisplayMode(app_id),
             registrar.GetAppUserDisplayMode(app_id),
             manifest_launcher_icon_filename,
-            registrar.IsLocallyInstalled(app_id),
+            registrar.IsInstallState(
+                app_id, {web_app::proto::INSTALLED_WITHOUT_OS_INTEGRATION,
+                         web_app::proto::INSTALLED_WITH_OS_INTEGRATION}),
             IsShortcutAndIconCreated(profile, registrar.GetAppShortName(app_id),
                                      app_id));
 #if !BUILDFLAG(IS_CHROMEOS)
-        if (registrar.IsLocallyInstalled(app_id)) {
+        if (registrar.IsInstallState(
+                app_id, {web_app::proto::INSTALLED_WITHOUT_OS_INTEGRATION,
+                         web_app::proto::INSTALLED_WITH_OS_INTEGRATION})) {
           CheckAppSettingsAppState(profile->GetOriginalProfile(), state);
         }
 #endif
@@ -4770,7 +4790,7 @@ WebAppIntegrationTest::WebAppIntegrationTest() : helper_(this) {
   // TODO(crbug.com/40236806): Update test driver to work with new UI.
   enabled_features.push_back(apps::features::kLinkCapturingUiUpdate);
 #else
-  // TOOD(b/313492499): Update test driver to work with new intent picker UI.
+  // TODO(b/313492499): Update test driver to work with new intent picker UI.
   enabled_features.push_back(features::kDesktopPWAsLinkCapturing);
 #endif  // BUILDFLAG(IS_CHROMEOS)
   scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);

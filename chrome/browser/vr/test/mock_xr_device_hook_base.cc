@@ -2,7 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/vr/test/mock_xr_device_hook_base.h"
+
 #include "content/public/test/xr_test_utils.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
@@ -130,7 +136,7 @@ void MockXRDeviceHookBase::WaitGetControllerData(
   if (tracked_classes_[index] ==
       device_test::mojom::TrackedDeviceClass::kTrackedDeviceController) {
     auto iter = controller_data_map_.find(index);
-    DCHECK(iter != controller_data_map_.end());
+    CHECK(iter != controller_data_map_.end());
     std::move(callback).Run(DeviceToMojoControllerFrameData(iter->second));
     return;
   }
@@ -184,7 +190,7 @@ void MockXRDeviceHookBase::UpdateController(
     unsigned int index,
     const device::ControllerFrameData& updated_data) {
   auto iter = controller_data_map_.find(index);
-  DCHECK(iter != controller_data_map_.end());
+  CHECK(iter != controller_data_map_.end());
   iter->second = updated_data;
 }
 
@@ -192,7 +198,7 @@ void MockXRDeviceHookBase::DisconnectController(unsigned int index) {
   DCHECK(tracked_classes_[index] ==
          device_test::mojom::TrackedDeviceClass::kTrackedDeviceController);
   auto iter = controller_data_map_.find(index);
-  DCHECK(iter != controller_data_map_.end());
+  CHECK(iter != controller_data_map_.end());
   controller_data_map_.erase(iter);
   tracked_classes_[index] =
       device_test::mojom::TrackedDeviceClass::kTrackedDeviceInvalid;

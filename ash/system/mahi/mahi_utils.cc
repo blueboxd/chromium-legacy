@@ -19,6 +19,8 @@ bool CalculateRetryLinkVisible(chromeos::MahiResponseStatus error) {
       return true;
     case chromeos::MahiResponseStatus::kQuotaLimitHit:
     case chromeos::MahiResponseStatus::kResourceExhausted:
+    case chromeos::MahiResponseStatus::kRestrictedCountry:
+    case chromeos::MahiResponseStatus::kUnsupportedLanguage:
       return false;
     case chromeos::MahiResponseStatus::kLowQuota:
     case chromeos::MahiResponseStatus::kSuccess:
@@ -30,16 +32,23 @@ int GetErrorStatusViewTextId(chromeos::MahiResponseStatus error) {
   switch (error) {
     case chromeos::MahiResponseStatus::kCantFindOutputData:
     case chromeos::MahiResponseStatus::kContentExtractionError:
-    case chromeos::MahiResponseStatus::kInappropriate:
     case chromeos::MahiResponseStatus::kUnknownError:
       return IDS_ASH_MAHI_ERROR_STATUS_LABEL_GENERAL;
+    case chromeos::MahiResponseStatus::kInappropriate:
+      return IDS_ASH_MAHI_RESPONSE_STATUS_INAPPROPRIATE_LABEL_TEXT;
     case chromeos::MahiResponseStatus::kQuotaLimitHit:
-      return IDS_ASH_MAHI_ERROR_STATUS_LABEL_QUOTA_LIMIT_HIT;
     case chromeos::MahiResponseStatus::kResourceExhausted:
-      return IDS_ASH_MAHI_ERROR_STATUS_LABEL_RESOURCE_EXHAUSTED;
+      return IDS_ASH_MAHI_ERROR_STATUS_LABEL_AT_CAPACITY;
+    case chromeos::MahiResponseStatus::kRestrictedCountry:
+      return IDS_ASH_MAHI_ERROR_STATUS_LABEL_RESTRICTED_COUNTRY;
+    case chromeos::MahiResponseStatus::kUnsupportedLanguage:
+      return IDS_ASH_MAHI_ERROR_STATUS_LABEL_UNSUPPORTED_LANGUAGE;
     case chromeos::MahiResponseStatus::kLowQuota:
     case chromeos::MahiResponseStatus::kSuccess:
       NOTREACHED_NORETURN();
+    default:
+      // TOOD(b/343472496): Remove this when UI is added.
+      return IDS_ASH_MAHI_ERROR_STATUS_LABEL_GENERAL;
   }
 }
 

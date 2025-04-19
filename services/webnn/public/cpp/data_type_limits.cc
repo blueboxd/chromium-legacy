@@ -1,0 +1,111 @@
+// Copyright 2024 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "services/webnn/public/cpp/data_type_limits.h"
+
+namespace webnn {
+
+DataTypeLimits::DataTypeLimits(mojo::DefaultConstruct::Tag) {}
+
+DataTypeLimits::DataTypeLimits(SupportedDataTypes input,
+                               SupportedDataTypes constant,
+                               SupportedDataTypes arg_min_max_input,
+                               SupportedDataTypes arg_min_max_output,
+                               SupportedDataTypes concat_inputs,
+                               SupportedDataTypes add_input,
+                               SupportedDataTypes sub_input,
+                               SupportedDataTypes mul_input,
+                               SupportedDataTypes div_input,
+                               SupportedDataTypes max_input,
+                               SupportedDataTypes min_input,
+                               SupportedDataTypes pow_input,
+                               SupportedDataTypes equal_input,
+                               SupportedDataTypes greater_input,
+                               SupportedDataTypes greater_or_equal_input,
+                               SupportedDataTypes lesser_input,
+                               SupportedDataTypes lesser_or_equal_input,
+                               SupportedDataTypes logical_not_input,
+                               SupportedDataTypes logical_output,
+                               SupportedDataTypes abs_input,
+                               SupportedDataTypes ceil_input,
+                               SupportedDataTypes cos_input,
+                               SupportedDataTypes erf_input,
+                               SupportedDataTypes exp_input,
+                               SupportedDataTypes floor_input,
+                               SupportedDataTypes identity_input,
+                               SupportedDataTypes log_input,
+                               SupportedDataTypes neg_input,
+                               SupportedDataTypes reciprocal_input,
+                               SupportedDataTypes sin_input,
+                               SupportedDataTypes sqrt_input,
+                               SupportedDataTypes tan_input,
+                               SupportedDataTypes elu_input,
+                               SupportedDataTypes gather_input,
+                               SupportedDataTypes gather_indices,
+                               SupportedDataTypes gelu_input,
+                               SupportedDataTypes leaky_relu_input,
+                               SupportedDataTypes relu_input,
+                               SupportedDataTypes sigmoid_input,
+                               SupportedDataTypes slice_input,
+                               SupportedDataTypes softmax_input,
+                               SupportedDataTypes softplus_input,
+                               SupportedDataTypes softsign_input,
+                               SupportedDataTypes split_input,
+                               SupportedDataTypes where_condition,
+                               SupportedDataTypes where_value)
+    : input(input),
+      constant(constant),
+      arg_min_max_input(arg_min_max_input),
+      arg_min_max_output(arg_min_max_output),
+      concat_inputs(concat_inputs),
+      add_input(add_input),
+      sub_input(sub_input),
+      mul_input(mul_input),
+      div_input(div_input),
+      max_input(max_input),
+      min_input(min_input),
+      pow_input(pow_input),
+      equal_input(equal_input),
+      greater_input(greater_input),
+      greater_or_equal_input(greater_or_equal_input),
+      lesser_input(lesser_input),
+      lesser_or_equal_input(lesser_or_equal_input),
+      logical_not_input(logical_not_input),
+      logical_output(logical_output),
+      abs_input(abs_input),
+      ceil_input(ceil_input),
+      cos_input(cos_input),
+      erf_input(erf_input),
+      exp_input(exp_input),
+      floor_input(floor_input),
+      identity_input(identity_input),
+      log_input(log_input),
+      neg_input(neg_input),
+      reciprocal_input(reciprocal_input),
+      sin_input(sin_input),
+      sqrt_input(sqrt_input),
+      tan_input(tan_input),
+      elu_input(elu_input),
+      gather_input(gather_input),
+      gather_indices(gather_indices),
+      gelu_input(gelu_input),
+      leaky_relu_input(leaky_relu_input),
+      relu_input(relu_input),
+      sigmoid_input(sigmoid_input),
+      slice_input(slice_input),
+      softmax_input(softmax_input),
+      softplus_input(softplus_input),
+      softsign_input(softsign_input),
+      split_input(split_input),
+      where_condition(where_condition),
+      where_value(where_value) {}
+
+DataTypeLimits::DataTypeLimits(const DataTypeLimits&) = default;
+DataTypeLimits& DataTypeLimits::operator=(const DataTypeLimits&) = default;
+DataTypeLimits::DataTypeLimits(DataTypeLimits&&) noexcept = default;
+DataTypeLimits& DataTypeLimits::operator=(DataTypeLimits&&) noexcept = default;
+
+DataTypeLimits::~DataTypeLimits() = default;
+
+}  // namespace webnn

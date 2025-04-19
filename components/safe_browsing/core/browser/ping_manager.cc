@@ -18,6 +18,7 @@
 #include "base/functional/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/not_fatal_until.h"
 #include "base/notreached.h"
 #include "base/rand_util.h"
 #include "base/strings/escape.h"
@@ -247,7 +248,7 @@ void PingManager::OnURLLoaderComplete(
     network::SimpleURLLoader* source,
     std::unique_ptr<std::string> response_body) {
   auto it = safebrowsing_reports_.find(source);
-  DCHECK(it != safebrowsing_reports_.end());
+  CHECK(it != safebrowsing_reports_.end(), base::NotFatalUntil::M130);
   safebrowsing_reports_.erase(it);
 }
 
@@ -269,8 +270,8 @@ void PingManager::OnThreatDetailsReportURLLoaderComplete(
 // Sends a SafeBrowsing "hit" report.
 void PingManager::ReportSafeBrowsingHit(
     std::unique_ptr<safe_browsing::HitReport> hit_report) {
-  base::UmaHistogramBoolean("SafeBrowsing.HitReport.IsSubresource",
-                            hit_report->is_subresource);
+  base::UmaHistogramEnumeration("SafeBrowsing.HitReport.ThreatType",
+                                hit_report->threat_type);
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
   SanitizeHitReport(hit_report.get());

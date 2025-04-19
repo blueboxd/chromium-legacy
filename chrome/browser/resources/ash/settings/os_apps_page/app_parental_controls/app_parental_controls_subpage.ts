@@ -4,6 +4,7 @@
 
 import '../../settings_shared.css.js';
 
+import {I18nMixin} from 'chrome://resources/ash/common/cr_elements/i18n_mixin.js';
 import {assert} from 'chrome://resources/js/assert.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -13,7 +14,10 @@ import {Router, routes} from '../../router.js';
 import {getTemplate} from './app_parental_controls_subpage.html.js';
 import {getAppParentalControlsProvider} from './mojo_interface_provider.js';
 
-export class SettingsAppParentalControlsSubpageElement extends PolymerElement {
+const SettingsAppParentalControlsSubpageElementBase = I18nMixin(PolymerElement);
+
+export class SettingsAppParentalControlsSubpageElement extends
+    SettingsAppParentalControlsSubpageElementBase {
   static get is() {
     return 'settings-app-parental-controls-subpage';
   }
@@ -99,7 +103,21 @@ export class SettingsAppParentalControlsSubpageElement extends PolymerElement {
     return apps.length === 0;
   }
 
-  onReadinessChanged(updatedApp: App): void {
+  private getBlockedAppsCountString_(apps: App[]): string {
+    const blockedAppsCount = apps.filter(app => app.isBlocked).length;
+    const appListCount = apps.length;
+
+    return this.i18n(
+        'appParentalControlsBlockedAppsCountText', blockedAppsCount,
+        appListCount);
+  }
+
+  private shouldShowBlockedAppsCountString_(apps: App[], searchString: string):
+      boolean {
+    return apps.length > 0 && !searchString;
+  }
+
+  onAppInstalledOrUpdated(updatedApp: App): void {
     // Using Polymer mutation methods do not properly handle splice updates with
     // object that have deep properties. Create and assign a copy list instead.
     const appList = Array.from(this.appList_);
@@ -107,7 +125,10 @@ export class SettingsAppParentalControlsSubpageElement extends PolymerElement {
       return app.id === updatedApp.id;
     });
 
+    // If app is not found, then it is a newly installed app.
     if (foundIdx === -1) {
+      appList.push(updatedApp);
+      this.appList_ = appList;
       return;
     }
 
@@ -117,6 +138,25 @@ export class SettingsAppParentalControlsSubpageElement extends PolymerElement {
       appList[foundIdx] = updatedApp;
       this.appList_ = appList;
     }
+  }
+
+  onAppUninstalled(updatedApp: App): void {
+    // Using Polymer mutation methods do not properly handle splice updates with
+    // object that have deep properties. Create and assign a copy list instead.
+    const appList = Array.from(this.appList_);
+    const foundIdx = this.appList_.findIndex(app => {
+      return app.id === updatedApp.id;
+    });
+
+    if (foundIdx === -1) {
+      console.error(
+          'app-controls: Attempting to remove app: ', updatedApp.id,
+          ' which is not installed.');
+      return;
+    }
+
+    appList.splice(foundIdx, 1);
+    this.appList_ = appList;
   }
 }
 

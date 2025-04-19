@@ -305,7 +305,7 @@ class AppListPresenterTest : public AshTestBase,
   void LongPressAt(const gfx::Point& point) {
     ui::GestureEvent long_press(
         point.x(), point.y(), 0, base::TimeTicks::Now(),
-        ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
+        ui::GestureEventDetails(ui::EventType::kGestureLongPress));
     GetEventGenerator()->Dispatch(&long_press);
   }
 };
@@ -487,7 +487,7 @@ class AppListBubbleAndTabletTestBase : public AshTestBase {
   void LongPressAt(const gfx::Point& point) {
     ui::GestureEvent long_press(
         point.x(), point.y(), 0, base::TimeTicks::Now(),
-        ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
+        ui::GestureEventDetails(ui::EventType::kGestureLongPress));
     GetEventGenerator()->Dispatch(&long_press);
   }
 
@@ -1713,17 +1713,17 @@ TEST_P(AppListBubbleAndTabletTest, AppListEventTargeterForAssistantScrolling) {
 
   // Scroll events are blocked for that window.
   constexpr int offset = 10;
-  ui::ScrollEvent scroll_down(ui::ET_SCROLL, gfx::Point(),
+  ui::ScrollEvent scroll_down(ui::EventType::kScroll, gfx::Point(),
                               base::TimeTicks::Now(), ui::EF_NONE, 0, offset, 0,
                               offset, /*finger_count=*/2);
   EXPECT_FALSE(targeter->SubtreeShouldBeExploredForEvent(child, scroll_down));
 
   // Click events are not blocked.
-  ui::MouseEvent press(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+  ui::MouseEvent press(ui::EventType::kMousePressed, gfx::Point(), gfx::Point(),
                        base::TimeTicks::Now(), ui::EF_NONE,
                        ui::EF_LEFT_MOUSE_BUTTON);
-  ui::MouseEvent release(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(),
-                         base::TimeTicks::Now(), ui::EF_NONE,
+  ui::MouseEvent release(ui::EventType::kMouseReleased, gfx::Point(),
+                         gfx::Point(), base::TimeTicks::Now(), ui::EF_NONE,
                          ui::EF_LEFT_MOUSE_BUTTON);
   EXPECT_TRUE(targeter->SubtreeShouldBeExploredForEvent(child, press));
   EXPECT_TRUE(targeter->SubtreeShouldBeExploredForEvent(child, press));
@@ -2276,7 +2276,7 @@ TEST_P(AppListBubbleAndTabletTest,
 
   auto* const keyboard_ui_controller = keyboard::KeyboardUIController::Get();
   keyboard_ui_controller->ShowKeyboard(false /* locked */);
-  ASSERT_TRUE(keyboard::WaitUntilShown());
+  ASSERT_TRUE(keyboard::test::WaitUntilShown());
 
   // Show remove suggestion dialog.
   result_view->GetWidget()->LayoutRootViewIfNecessary();
@@ -3360,7 +3360,7 @@ TEST_P(PopulatedAppListWithVKEnabledTest,
   // Manually show the virtual keyboard.
   auto* const keyboard_controller = keyboard::KeyboardUIController::Get();
   keyboard_controller->ShowKeyboard(true /* locked */);
-  ASSERT_TRUE(keyboard::WaitUntilShown());
+  ASSERT_TRUE(keyboard::test::WaitUntilShown());
 
   // Touch the apps_grid outside of any apps. Expect that the keyboard is
   // closed.
@@ -3369,7 +3369,7 @@ TEST_P(PopulatedAppListWithVKEnabledTest,
 
   // Reshow the VKeyboard
   keyboard_controller->ShowKeyboard(true);
-  ASSERT_TRUE(keyboard::WaitUntilShown());
+  ASSERT_TRUE(keyboard::test::WaitUntilShown());
 
   // Touch the apps_grid between two apps. Expect that the keyboard is closed.
   GetEventGenerator()->GestureTapAt(between_apps);
@@ -3833,7 +3833,8 @@ TEST_P(AppListPresenterTest, ShouldNotCrashOnItemClickAfterMonitorDisconnect) {
 
   // Click on an item.
   AppListItemView* item_view = apps_grid_view()->GetItemViewAt(0);
-  EXPECT_EQ(item_view->GetAccessibleName(), base::UTF8ToUTF16(item0->id()));
+  EXPECT_EQ(item_view->GetViewAccessibility().GetCachedName(),
+            base::UTF8ToUTF16(item0->id()));
   LeftClickOn(item_view);
 
   // No crash. No use-after-free detected by ASAN.
@@ -3851,7 +3852,8 @@ TEST_F(AppListPresenterTest, TapAppListThenSystemTrayShowsAutoHiddenShelf) {
   shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
 
   // Create a normal unmaximized window; the shelf should be hidden.
-  std::unique_ptr<views::Widget> window = CreateTestWidget();
+  std::unique_ptr<views::Widget> window =
+      CreateTestWidget(views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET);
   window->SetBounds(gfx::Rect(0, 0, 100, 100));
   GetAppListTestHelper()->CheckVisibility(false);
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
@@ -3880,7 +3882,8 @@ TEST_F(AppListPresenterTest, TapAppListThenShelfHidesAutoHiddenShelf) {
   shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
 
   // Create a normal unmaximized window; the shelf should be hidden.
-  std::unique_ptr<views::Widget> window = CreateTestWidget();
+  std::unique_ptr<views::Widget> window =
+      CreateTestWidget(views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET);
   window->SetBounds(gfx::Rect(0, 0, 100, 100));
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 
@@ -4481,33 +4484,33 @@ TEST_F(AppListPresenterHomeLauncherTest, WallpaperContextMenu) {
   ui::test::EventGenerator* generator = GetEventGenerator();
   ui::GestureEvent long_press(
       onscreen_point.x(), onscreen_point.y(), 0, base::TimeTicks(),
-      ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
+      ui::GestureEventDetails(ui::EventType::kGestureLongPress));
   generator->Dispatch(&long_press);
   GetAppListTestHelper()->WaitUntilIdle();
   const aura::Window* root = window_util::GetRootWindowAt(onscreen_point);
   const RootWindowController* root_window_controller =
       RootWindowController::ForWindow(root);
-  EXPECT_TRUE(root_window_controller->IsContextMenuShown());
+  EXPECT_TRUE(root_window_controller->IsContextMenuShownForTest());
 
   // Tap down to close the context menu.
-  ui::GestureEvent tap_down(onscreen_point.x(), onscreen_point.y(), 0,
-                            base::TimeTicks(),
-                            ui::GestureEventDetails(ui::ET_GESTURE_TAP_DOWN));
+  ui::GestureEvent tap_down(
+      onscreen_point.x(), onscreen_point.y(), 0, base::TimeTicks(),
+      ui::GestureEventDetails(ui::EventType::kGestureTapDown));
   generator->Dispatch(&tap_down);
   GetAppListTestHelper()->WaitUntilIdle();
-  EXPECT_FALSE(root_window_controller->IsContextMenuShown());
+  EXPECT_FALSE(root_window_controller->IsContextMenuShownForTest());
 
   // Right click to open the context menu.
   generator->MoveMouseTo(onscreen_point);
   generator->ClickRightButton();
   GetAppListTestHelper()->WaitUntilIdle();
-  EXPECT_TRUE(root_window_controller->IsContextMenuShown());
+  EXPECT_TRUE(root_window_controller->IsContextMenuShownForTest());
 
   // Left click to close the context menu.
   generator->MoveMouseTo(onscreen_point);
   generator->ClickLeftButton();
   GetAppListTestHelper()->WaitUntilIdle();
-  EXPECT_FALSE(root_window_controller->IsContextMenuShown());
+  EXPECT_FALSE(root_window_controller->IsContextMenuShownForTest());
 }
 
 // Test backdrop exists for active non-fullscreen window in tablet mode.
@@ -4601,7 +4604,7 @@ TEST_P(AppListPresenterVirtualKeyboardTest,
   // Manually show the virtual keyboard.
   auto* const keyboard_controller = keyboard::KeyboardUIController::Get();
   keyboard_controller->ShowKeyboard(true);
-  ASSERT_TRUE(keyboard::WaitUntilShown());
+  ASSERT_TRUE(keyboard::test::WaitUntilShown());
 
   // Tap or click outside the searchbox, the virtual keyboard should hide.
   ClickOrTap(GetPointOutsideSearchbox());
@@ -4635,7 +4638,7 @@ TEST_P(AppListPresenterVirtualKeyboardTest,
   // Manually show the virtual keyboard.
   auto* const keyboard_controller = keyboard::KeyboardUIController::Get();
   keyboard_controller->ShowKeyboard(true);
-  ASSERT_TRUE(keyboard::WaitUntilShown());
+  ASSERT_TRUE(keyboard::test::WaitUntilShown());
 
   // Tap or click outside the searchbox, the virtual keyboard should hide and
   // the searchbox should be inactive when there is no text in the searchbox.

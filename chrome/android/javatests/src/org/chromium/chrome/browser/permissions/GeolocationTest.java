@@ -11,16 +11,18 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.permissions.PermissionTestRule.PermissionUpdateWaiter;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.device.geolocation.LocationProviderOverrider;
 import org.chromium.device.geolocation.MockLocationProvider;
+import org.chromium.ui.test.util.UiDisableIf;
 
 /**
  * Test suite for Geo-Location functionality.
@@ -49,10 +51,10 @@ public class GeolocationTest {
         Tab tab = mPermissionRule.getActivity().getActivityTab();
         PermissionUpdateWaiter updateWaiter =
                 new PermissionUpdateWaiter("Count:", mPermissionRule.getActivity());
-        TestThreadUtils.runOnUiThreadBlocking(() -> tab.addObserver(updateWaiter));
+        ThreadUtils.runOnUiThreadBlocking(() -> tab.addObserver(updateWaiter));
         mPermissionRule.runAllowTest(
                 updateWaiter, TEST_FILE, javascript, nUpdates, withGesture, isDialog);
-        TestThreadUtils.runOnUiThreadBlocking(() -> tab.removeObserver(updateWaiter));
+        ThreadUtils.runOnUiThreadBlocking(() -> tab.removeObserver(updateWaiter));
     }
 
     /**
@@ -88,6 +90,7 @@ public class GeolocationTest {
     @Test
     @MediumTest
     @Feature({"Location"})
+    @DisableIf.Device(type = {UiDisableIf.TABLET}) // crbug.com/353912604
     public void testGeolocationWatchDialog() throws Exception {
         runTest("initiate_watchPosition()", 2, true, true);
     }

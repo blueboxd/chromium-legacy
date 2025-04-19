@@ -12,8 +12,6 @@
 #include "android_webview/browser/aw_settings.h"
 #include "android_webview/browser/network_service/aw_web_resource_intercept_response.h"
 #include "android_webview/browser/network_service/aw_web_resource_request.h"
-#include "android_webview/browser_jni_headers/AwContentsBackgroundThreadClient_jni.h"
-#include "android_webview/browser_jni_headers/AwContentsIoThreadClient_jni.h"
 #include "android_webview/common/aw_features.h"
 #include "android_webview/common/devtools_instrumentation.h"
 #include "base/android/jni_array.h"
@@ -41,6 +39,10 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "net/base/data_url.h"
 #include "services/network/public/cpp/resource_request.h"
+
+// Must come after all headers that specialize FromJniType() / ToJniType().
+#include "android_webview/browser_jni_headers/AwContentsBackgroundThreadClient_jni.h"
+#include "android_webview/browser_jni_headers/AwContentsIoThreadClient_jni.h"
 
 using base::LazyInstance;
 using base::android::AttachCurrentThread;
@@ -494,6 +496,13 @@ bool AwContentsIoThreadClient::ShouldBlockSpecialFileUrls() const {
   JNIEnv* env = AttachCurrentThread();
   return Java_AwContentsIoThreadClient_shouldBlockSpecialFileUrls(env,
                                                                   java_object_);
+}
+
+bool AwContentsIoThreadClient::ShouldAcceptCookies() const {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  JNIEnv* env = AttachCurrentThread();
+  return Java_AwContentsIoThreadClient_shouldAcceptCookies(env, java_object_);
 }
 
 bool AwContentsIoThreadClient::ShouldAcceptThirdPartyCookies() const {

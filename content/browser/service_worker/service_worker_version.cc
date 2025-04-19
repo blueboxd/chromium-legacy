@@ -21,6 +21,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/not_fatal_until.h"
 #include "base/observer_list.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
@@ -35,6 +36,7 @@
 #include "content/browser/renderer_host/back_forward_cache_can_store_document_result.h"
 #include "content/browser/renderer_host/private_network_access_util.h"
 #include "content/browser/service_worker/payment_handler_support.h"
+#include "content/browser/service_worker/service_worker_client.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -64,6 +66,7 @@
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/public/common/service_worker/service_worker_type_converters.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 
 namespace content {
 namespace {
@@ -661,11 +664,13 @@ bool ServiceWorkerVersion::OnRequestTermination() {
     }
   }
 
-  will_warm_up_on_stopped_ =
-      will_be_terminated &&
+  static const bool kSpeculativeServiceWorkerWarmUpOnIdleTimeoutEnabled =
       base::FeatureList::IsEnabled(
           blink::features::kSpeculativeServiceWorkerWarmUp) &&
-      blink::features::kSpeculativeServiceWorkerWarmUpOnIdleTimeout.Get() &&
+      blink::features::kSpeculativeServiceWorkerWarmUpOnIdleTimeout.Get();
+  will_warm_up_on_stopped_ =
+      will_be_terminated &&
+      kSpeculativeServiceWorkerWarmUpOnIdleTimeoutEnabled &&
       scope_.SchemeIsHTTPOrHTTPS();
 
   if (will_be_terminated) {
@@ -934,6 +939,14 @@ void ServiceWorkerVersion::AddControllee(
   CHECK(!base::Contains(controllee_map_, uuid));
 
   controllee_map_[uuid] = service_worker_client->AsWeakPtr();
+  // Even if `context_` is invalid, `controllee_map_` should have `uuid`.
+  // Otherwise, `Uncontrol()` may fail with CHECK. (crbug.com/357954498)
+  // However, if `context_` is invalid, we may not need to raise a worker to
+  // foreground priority or reset timer because this ServiceWorkerVersion is
+  // shutting down.
+  if (!context_) {
+    return;
+  }
   embedded_worker_->UpdateForegroundPriority();
   ClearTick(&no_controllees_time_);
 
@@ -986,7 +999,7 @@ void ServiceWorkerVersion::OnControlleeNavigationCommitted(
 #if DCHECK_IS_ON()
   // Ensures this function is only called for a known window client.
   auto it = controllee_map_.find(client_uuid);
-  DCHECK(it != controllee_map_.end());
+  CHECK(it != controllee_map_.end(), base::NotFatalUntil::M130);
 
   DCHECK_EQ(it->second->GetClientType(),
             blink::mojom::ServiceWorkerClientType::kWindow);
@@ -1646,7 +1659,8 @@ void ServiceWorkerVersion::GetClient(const std::string& client_uuid,
     return;
   }
   ServiceWorkerClient* service_worker_client =
-      context_->GetServiceWorkerClientByClientID(client_uuid);
+      context_->service_worker_client_owner().GetServiceWorkerClientByClientID(
+          client_uuid);
   if (!service_worker_client ||
       service_worker_client->url().DeprecatedGetOriginAsURL() !=
           script_url_.DeprecatedGetOriginAsURL()) {
@@ -1677,7 +1691,8 @@ void ServiceWorkerVersion::GetClientInternal(const std::string& client_uuid,
   }
 
   ServiceWorkerClient* service_worker_client =
-      context_->GetServiceWorkerClientByClientID(client_uuid);
+      context_->service_worker_client_owner().GetServiceWorkerClientByClientID(
+          client_uuid);
   if (!service_worker_client || !service_worker_client->is_execution_ready()) {
     std::move(callback).Run(nullptr);
     return;
@@ -1728,7 +1743,8 @@ void ServiceWorkerVersion::PostMessageToClient(
   if (!context_)
     return;
   ServiceWorkerClient* service_worker_client =
-      context_->GetServiceWorkerClientByClientID(client_uuid);
+      context_->service_worker_client_owner().GetServiceWorkerClientByClientID(
+          client_uuid);
   if (!service_worker_client) {
     // The client may already have been closed, just ignore.
     return;
@@ -1783,7 +1799,8 @@ void ServiceWorkerVersion::PostMessageToClient(
   // As we don't track tasks between workers and renderers, we can nullify the
   // message's parent task ID.
   message.parent_task_id = std::nullopt;
-  service_worker_client->PostMessageToClient(*this, std::move(message));
+  service_worker_client->container_host()->PostMessageToClient(
+      *this, std::move(message));
 }
 
 void ServiceWorkerVersion::FocusClient(const std::string& client_uuid,
@@ -1793,7 +1810,8 @@ void ServiceWorkerVersion::FocusClient(const std::string& client_uuid,
     return;
   }
   ServiceWorkerClient* service_worker_client =
-      context_->GetServiceWorkerClientByClientID(client_uuid);
+      context_->service_worker_client_owner().GetServiceWorkerClientByClientID(
+          client_uuid);
   if (!service_worker_client) {
     // The client may already have been closed, just fail.
     std::move(callback).Run(nullptr /* client */);
@@ -1849,7 +1867,8 @@ void ServiceWorkerVersion::NavigateClient(const std::string& client_uuid,
   }
 
   ServiceWorkerClient* service_worker_client =
-      context_->GetServiceWorkerClientByClientID(client_uuid);
+      context_->service_worker_client_owner().GetServiceWorkerClientByClientID(
+          client_uuid);
   if (!service_worker_client) {
     std::move(callback).Run(false /* success */, nullptr /* client */,
                             std::string("The client was not found."));
@@ -1929,15 +1948,22 @@ void ServiceWorkerVersion::AddRoutes(
         "Unexpected router registration call during the feature is disabled.");
     return;
   }
-  if (!SetupRouterEvaluator(rules)) {
-    // The renderer should have denied calling this method while the setup
-    // fails.
-    // TODO(crbug.com/40241479): revisit this to confirm no case for this error.
-    associated_interface_receiver_.ReportBadMessage(
-        "Failed to configure a router. Possibly a syntax error");
-    return;
+  auto error = SetupRouterEvaluator(rules);
+  bool is_parse_error = false;
+  switch (error) {
+    case ServiceWorkerRouterEvaluatorErrorEnums::kNoError:
+      break;
+    case ServiceWorkerRouterEvaluatorErrorEnums::kParseError:
+      is_parse_error = true;
+      break;
+    default:
+      // The renderer should have denied calling this method while the setup
+      // fails.
+      associated_interface_receiver_.ReportBadMessage(
+          "Failed to configure a router. Possibly a syntax error");
+      return;
   }
-  std::move(callback).Run();
+  std::move(callback).Run(is_parse_error);
 }
 
 void ServiceWorkerVersion::OnSetCachedMetadataFinished(int64_t callback_id,
@@ -2063,6 +2089,13 @@ ServiceWorkerVersion::cross_origin_embedder_policy() const {
              : nullptr;
 }
 
+const network::DocumentIsolationPolicy*
+ServiceWorkerVersion::document_isolation_policy() const {
+  return policy_container_host_
+             ? &policy_container_host_->document_isolation_policy()
+             : nullptr;
+}
+
 const network::mojom::ClientSecurityStatePtr
 ServiceWorkerVersion::BuildClientSecurityState() const {
   if (!policy_container_host_) {
@@ -2075,7 +2108,8 @@ ServiceWorkerVersion::BuildClientSecurityState() const {
       policies.ip_address_space,
       DerivePrivateNetworkRequestPolicy(policies.ip_address_space,
                                         policies.is_web_secure_context,
-                                        PrivateNetworkRequestContext::kWorker));
+                                        PrivateNetworkRequestContext::kWorker),
+      policies.document_isolation_policy);
 }
 
 // static
@@ -2459,8 +2493,9 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
                                     : kStartNewWorkerTimeout;
 
   if (IsWarmedUp()) {
-    start_limit =
+    static const base::TimeDelta kStartLimit =
         blink::features::kSpeculativeServiceWorkerWarmUpDuration.Get();
+    start_limit = kStartLimit;
   }
 
   if (GetTickDuration(start_time_) > start_limit) {
@@ -2659,6 +2694,10 @@ ServiceWorkerVersion::DeduceStartWorkerFailureReason(
   }
 
   return default_code;
+}
+
+net::Error ServiceWorkerVersion::GetMainScriptNetError() {
+  return net::Error(script_cache_map()->main_script_net_error());
 }
 
 void ServiceWorkerVersion::MarkIfStale() {
@@ -2943,7 +2982,7 @@ ServiceWorkerVersion::compared_script_info_map() const {
 ServiceWorkerUpdateChecker::ComparedScriptInfo
 ServiceWorkerVersion::TakeComparedScriptInfo(const GURL& script_url) {
   auto it = compared_script_info_map_.find(script_url);
-  DCHECK(it != compared_script_info_map_.end());
+  CHECK(it != compared_script_info_map_.end(), base::NotFatalUntil::M130);
   ServiceWorkerUpdateChecker::ComparedScriptInfo info = std::move(it->second);
   compared_script_info_map_.erase(it);
   return info;
@@ -2981,7 +3020,7 @@ bool ServiceWorkerVersion::ShouldRequireForegroundPriority(
     // Require foreground if the controllee is in different process and is
     // foreground.
     if (controllee_process_id != worker_process_id &&
-        !render_host->IsProcessBackgrounded()) {
+        render_host->GetPriority() != base::Process::Priority::kBestEffort) {
       return true;
     }
   }
@@ -3045,7 +3084,8 @@ void ServiceWorkerVersion::SetResources(
       script_url_, script_cache_map_, fetch_handler_type_);
 }
 
-bool ServiceWorkerVersion::SetupRouterEvaluator(
+ServiceWorkerRouterEvaluatorErrorEnums
+ServiceWorkerVersion::SetupRouterEvaluator(
     const blink::ServiceWorkerRouterRules& rules) {
   CHECK(IsStaticRouterEnabled());
   blink::ServiceWorkerRouterRules new_rules;
@@ -3062,16 +3102,22 @@ bool ServiceWorkerVersion::SetupRouterEvaluator(
   }
   router_evaluator_ = std::make_unique<ServiceWorkerRouterEvaluator>(new_rules);
   if (!router_evaluator_->IsValid()) {
+    auto error = router_evaluator_->invalid_error_code();
+    CHECK(error.has_value());
     router_evaluator_.reset();
-    return false;
+    return *error;
   }
   CHECK_NE(fetch_handler_existence(), FetchHandlerExistence::UNKNOWN);
+
+  // Check if we have fetch handler. This is a rare case, since this should have
+  // been validated in the renderer already when adding a new router rule.
   if (router_evaluator_->has_fetch_event_source() &&
       fetch_handler_existence() == FetchHandlerExistence::DOES_NOT_EXIST) {
     router_evaluator_.reset();
-    return false;
+    return ServiceWorkerRouterEvaluatorErrorEnums::
+        kFetchSourceWithoutFetchHandler;
   }
-  return true;
+  return ServiceWorkerRouterEvaluatorErrorEnums::kNoError;
 }
 
 bool ServiceWorkerVersion::NeedRouterEvaluate() const {
@@ -3146,8 +3192,14 @@ ServiceWorkerVersion::GetRemoteCacheStorage() {
     return mojo::NullRemote();
   }
 
+  // Similarly, DIP should be passed to cache storage to enforce it.
+  const network::DocumentIsolationPolicy* dip = document_isolation_policy();
+  if (!dip) {
+    return mojo::NullRemote();
+  }
+
   mojo::PendingRemote<blink::mojom::CacheStorage> remote;
-  control->AddReceiver(*coep, embedded_worker()->GetCoepReporter(),
+  control->AddReceiver(*coep, embedded_worker()->GetCoepReporter(), *dip,
                        storage::BucketLocator::ForDefaultBucket(key()),
                        storage::mojom::CacheStorageOwner::kCacheAPI,
                        remote.InitWithNewPipeAndPassReceiver());

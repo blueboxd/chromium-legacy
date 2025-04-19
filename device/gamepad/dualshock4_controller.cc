@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "device/gamepad/dualshock4_controller.h"
 
 #include <algorithm>
@@ -122,7 +127,7 @@ uint32_t ComputeDualshock4Checksum(base::span<const uint8_t> report_data) {
   // The Bluetooth report checksum includes a constant header byte not contained
   // in the report data.
   constexpr uint8_t bt_header = 0xa2;
-  uint32_t crc = base::Crc32(0xffffffff, base::make_span(&bt_header, 1u));
+  uint32_t crc = base::Crc32(0xffffffff, base::span_from_ref(bt_header));
   // Extend the checksum with the contents of the report.
   return ~base::Crc32(crc, report_data);
 }

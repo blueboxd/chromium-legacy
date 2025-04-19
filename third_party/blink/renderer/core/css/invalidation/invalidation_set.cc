@@ -73,7 +73,7 @@ const unsigned char* GetCachedTracingFlags() {
 
 #define TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART_IF_ENABLED( \
     element, reason, invalidationSet, singleSelectorPart)             \
-  if (UNLIKELY(*GetCachedTracingFlags()))                             \
+  if (*GetCachedTracingFlags()) [[unlikely]]                          \
     TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART(                \
         element, reason, invalidationSet, singleSelectorPart);
 
@@ -211,6 +211,10 @@ void InvalidationSet::Combine(const InvalidationSet& other) {
     if (other_siblings.Descendants()) {
       siblings.EnsureDescendants().Combine(*other_siblings.Descendants());
     }
+  }
+
+  if (other.InvalidatesNth()) {
+    SetInvalidatesNth();
   }
 
   if (other.InvalidatesSelf()) {
@@ -512,6 +516,7 @@ String InvalidationSet::ToString() const {
 
   StringBuilder metadata;
   metadata.Append(InvalidatesSelf() ? "$" : "");
+  metadata.Append(InvalidatesNth() ? "N" : "");
   metadata.Append(invalidation_flags_.WholeSubtreeInvalid() ? "W" : "");
   metadata.Append(invalidation_flags_.InvalidateCustomPseudo() ? "C" : "");
   metadata.Append(invalidation_flags_.TreeBoundaryCrossing() ? "T" : "");

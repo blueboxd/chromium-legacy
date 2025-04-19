@@ -75,7 +75,6 @@ class TabContentManager : public thumbnail::ThumbnailCacheObserver {
   void CaptureThumbnail(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& tab,
                         jfloat thumbnail_scale,
-                        jboolean write_to_cache,
                         jboolean return_bitmap,
                         const base::android::JavaParamRef<jobject>& j_callback);
   void CacheTabWithBitmap(JNIEnv* env,
@@ -101,7 +100,7 @@ class TabContentManager : public thumbnail::ThumbnailCacheObserver {
       jboolean save_jpeg,
       const base::android::JavaParamRef<jobject>& j_callback);
   void SetCaptureMinRequestTimeForTesting(JNIEnv* env, jint timeMs);
-  jint GetInFlightCapturesForTesting(JNIEnv* env);
+  jboolean IsTabCaptureInFlightForTesting(JNIEnv* env, jint tab_id);
 
   // ThumbnailCacheObserver implementation;
   void OnThumbnailAddedToCache(thumbnail::TabId tab_id) override;
@@ -120,13 +119,13 @@ class TabContentManager : public thumbnail::ThumbnailCacheObserver {
       const base::android::JavaParamRef<jobject>& tab);
   std::unique_ptr<thumbnail::ThumbnailCaptureTracker, base::OnTaskRunnerDeleter>
   TrackCapture(thumbnail::TabId tab_id);
+  void CleanupTrackers();
   void OnTrackingFinished(int tab_id,
                           thumbnail::ThumbnailCaptureTracker* tracker);
   void OnTabReadback(int tab_id,
                      std::unique_ptr<thumbnail::ThumbnailCaptureTracker,
                                      base::OnTaskRunnerDeleter> tracker,
                      base::android::ScopedJavaGlobalRef<jobject> j_callback,
-                     bool write_to_cache,
                      bool return_bitmap,
                      float thumbnail_scale,
                      const SkBitmap& bitmap);

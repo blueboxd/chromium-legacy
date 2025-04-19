@@ -23,7 +23,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_observer_chromeos.h"
 #include "chrome/browser/ui/webui/ash/settings/pages/a11y/accessibility_handler.h"
-#include "chrome/browser/ui/webui/ash/settings/pages/a11y/pdf_ocr_handler.h"
+#include "chrome/browser/ui/webui/ash/settings/pages/a11y/facegaze_settings_handler.h"
 #include "chrome/browser/ui/webui/ash/settings/pages/a11y/select_to_speak_handler.h"
 #include "chrome/browser/ui/webui/ash/settings/pages/a11y/switch_access_handler.h"
 #include "chrome/browser/ui/webui/ash/settings/pages/a11y/tts_handler.h"
@@ -230,6 +230,14 @@ const std::vector<SearchConcept>& GetA11ySearchConcepts() {
        {.setting = mojom::Setting::kHighlightTextCaret},
        {IDS_OS_SETTINGS_TAG_A11Y_HIGHLIGHT_TEXT_CARET_ALT1,
         SearchConcept::kAltTagEnd}},
+      {IDS_OS_SETTINGS_TAG_A11Y_CARET_BROWSING,
+       mojom::kKeyboardAndTextInputSubpagePath,
+       mojom::SearchResultIcon::kA11y,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kCaretBrowsing},
+       {IDS_OS_SETTINGS_TAG_A11Y_CARET_BROWSING_ALT1,
+        SearchConcept::kAltTagEnd}},
       {IDS_OS_SETTINGS_TAG_A11Y_DICTATION,
        mojom::kKeyboardAndTextInputSubpagePath,
        mojom::SearchResultIcon::kDictation,
@@ -325,14 +333,15 @@ const std::vector<SearchConcept>& GetA11ySearchConcepts() {
        {.setting = mojom::Setting::kEnableCursorColor},
        {IDS_OS_SETTINGS_TAG_A11Y_CURSOR_COLOR_ALT1,
         IDS_OS_SETTINGS_TAG_A11Y_CURSOR_COLOR_ALT2, SearchConcept::kAltTagEnd}},
-      {IDS_OS_SETTINGS_TAG_A11Y_PDF_OCR,
-       mojom::kTextToSpeechPagePath,
-       kIsRevampEnabled ? mojom::SearchResultIcon::kTextToSpeech
-                        : mojom::SearchResultIcon::kA11y,
+      {IDS_OS_SETTINGS_TAG_A11Y_REDUCED_ANIMATIONS,
+       mojom::kDisplayAndMagnificationSubpagePath,
+       mojom::SearchResultIcon::kReducedAnimations,
        mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSetting,
-       {.setting = mojom::Setting::kPdfOcrOnOff},
-       {IDS_OS_SETTINGS_TAG_A11Y_PDF_OCR_ALT1, SearchConcept::kAltTagEnd}},
+       {.setting = mojom::Setting::kReducedAnimationsEnabled},
+       {IDS_OS_SETTINGS_TAG_A11Y_REDUCED_ANIMATIONS_ALT1,
+        IDS_OS_SETTINGS_TAG_A11Y_REDUCED_ANIMATIONS_ALT2,
+        SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
@@ -420,6 +429,20 @@ const std::vector<SearchConcept>& GetA11yOverscrollSettingSearchConcepts() {
   return *tags;
 }
 
+const std::vector<SearchConcept>& GetA11yFlashNotificationsSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_A11Y_FLASH_NOTIFICATIONS,
+       mojom::kAudioAndCaptionsSubpagePath,
+       mojom::SearchResultIcon::kA11y,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kFlashNotifications},
+       {IDS_OS_SETTINGS_TAG_A11Y_FLASH_NOTIFICATIONS_ALT1,
+        SearchConcept::kAltTagEnd}},
+  });
+  return *tags;
+}
+
 const std::vector<SearchConcept>& GetA11ySwitchAccessKeyboardSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
       {IDS_OS_SETTINGS_TAG_A11Y_SWITCH_ACCESS_AUTO_SCAN_KEYBOARD,
@@ -487,6 +510,19 @@ GetA11yFullscreenMagnifierSelectToSpeakFocusFollowingSearchConcepts() {
   return *tags;
 }
 
+const std::vector<SearchConcept>&
+GetA11yMagnifierChromeVoxFocusFollowingSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_A11Y_MAGNIFIER_CHROMEVOX_FOLLOWING,
+       mojom::kDisplayAndMagnificationSubpagePath,
+       mojom::SearchResultIcon::kA11y,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kMagnifierFollowsChromeVox}},
+  });
+  return *tags;
+}
+
 const std::vector<SearchConcept>& GetA11yColorCorrectionSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
       {IDS_OS_SETTINGS_TAG_A11Y_COLOR_CORRECTION,
@@ -526,6 +562,10 @@ bool IsAccessibilityReducedAnimationsEnabled() {
   return ::features::IsAccessibilityReducedAnimationsEnabled();
 }
 
+bool IsAccessibilityMagnifierFollowsChromeVoxEnabled() {
+  return ::features::IsAccessibilityMagnifierFollowsChromeVoxEnabled();
+}
+
 bool IsAccessibilityMagnifierFollowsStsEnabled() {
   return ::features::IsAccessibilityMagnifierFollowsStsEnabled();
 }
@@ -540,6 +580,10 @@ bool IsAccessibilityMouseKeysEnabled() {
 
 bool IsAccessibilityOverscrollSettingFeatureEnabled() {
   return ::features::IsAccessibilityOverscrollSettingFeatureEnabled();
+}
+
+bool IsAccessibilityFlashNotificationFeatureEnabled() {
+  return ::features::IsAccessibilityFlashScreenFeatureEnabled();
 }
 
 }  // namespace
@@ -899,10 +943,31 @@ void AccessibilitySection::AddLoadTimeData(
       {"caretBlinkIntervalLabel", IDS_SETTINGS_CARET_BLINK_INTERVAL_LABEL},
       {"caretBlinkIntervalOff", IDS_SETTINGS_CARET_BLINK_INTERVAL_OFF},
       {"caretBlinkIntervalFast", IDS_SETTINGS_CARET_BLINK_INTERVAL_FAST},
+      {"faceGazePrevious", IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_PREVIOUS},
+      {"faceGazeActionsSectionTitle",
+       IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_ACTIONS_SECTION_TITLE},
+      {"faceGazeActionsAddAction",
+       IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_ACTIONS_ADD_ACTION},
+      {"faceGazeActionsDialogTitle",
+       IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_ACTIONS_DIALOG_TITLE},
+      {"faceGazeActionsDialogSelectGestureTitle",
+       IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_ACTIONS_DIALOG_SELECT_GESTURE_TITLE},
+      {"faceGazeActionsDialogSelectGestureSubtitle",
+       IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_ACTIONS_DIALOG_SELECT_GESTURE_SUBTITLE},
+      {"faceGazeActionsDialogGestureThresholdTitle",
+       IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_ACTIONS_DIALOG_GESTURE_THRESHOLD_TITLE},
+      {"faceGazeActionsDialogGestureThresholdSubtitle",
+       IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_ACTIONS_DIALOG_GESTURE_THRESHOLD_SUBTITLE},
+      {"faceGazeActionsDialogGestureThresholdKnobLabel",
+       IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_ACTIONS_DIALOG_GESTURE_THRESHOLD_KNOB_LABEL},
       {"faceGazeCursorAccelerationLabel",
        IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_CURSOR_ACCELERATION_LABEL},
+      {"faceGazeCursorAccelerationDescription",
+       IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_CURSOR_ACCELERATION_DESCRIPTION},
       {"faceGazeCursorSmoothingLabel",
        IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_CURSOR_SMOOTHING_LABEL},
+      {"faceGazeCursorSmoothingDescription",
+       IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_CURSOR_SMOOTHING_DESCRIPTION},
       {"faceGazeCursorDownSpeedLabel",
        IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_CURSOR_SPEED_DOWN_LABEL},
       {"faceGazeCursorLeftSpeedLabel",
@@ -911,6 +976,33 @@ void AccessibilitySection::AddLoadTimeData(
        IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_CURSOR_SPEED_RIGHT_LABEL},
       {"faceGazeCursorUpSpeedLabel",
        IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_CURSOR_SPEED_UP_LABEL},
+      {"faceGazeActionsEnabledLabel",
+       IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_ACTIONS_ENABLED_LABEL},
+      {"faceGazeCursorControlEnabledLabel",
+       IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_CURSOR_CONTROL_ENABLED_LABEL},
+      {"faceGazeCursorAdjustSeparatelyLabel",
+       IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_ADJUST_SEPARATELY_LABEL},
+      {"faceGazeCursorSpeedLabel",
+       IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_CURSOR_SPEED_LABEL},
+      {"faceGazeCursorSpeedSlow",
+       IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_CURSOR_SPEED_SLOW},
+      {"faceGazeCursorSpeedFast",
+       IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_CURSOR_SPEED_FAST},
+      {"faceGazeCursorSliderLabelResponsive",
+       IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_CURSOR_SLIDER_LABEL_RESPONSIVE},
+      {"faceGazeCursorSliderLabelSmooth",
+       IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_CURSOR_SLIDER_LABEL_SMOOTH},
+      {"faceGazeCursorSpeedSectionName",
+       IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_CURSOR_SPEED_SECTION_NAME},
+      {"faceGazeCursorSettingsReset",
+       IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_CURSOR_SETTINGS_RESET},
+      {"flashNotificationsLabel", IDS_SETTINGS_FLASH_NOTIFICATIONS_LABEL},
+      {"flashNotificationsDescription",
+       IDS_SETTINGS_FLASH_NOTIFICATIONS_DESCRIPTION},
+      {"flashNotificationsColorOptionsLabel",
+       IDS_SETTINGS_FLASH_NOTIFICATIONS_COLOR_OPTIONS_LABEL},
+      {"flashNotificationsPreviewButton",
+       IDS_SETTINGS_FLASH_NOTIFICATIONS_PREVIEW_BUTTON},
       {"keyboardAndTextInputHeading",
        IDS_SETTINGS_ACCESSIBILITY_KEYBOARD_AND_TEXT_INPUT_HEADING},
       {"keyboardAndTextInputLinkDescription",
@@ -947,12 +1039,6 @@ void AccessibilitySection::AddLoadTimeData(
       {"onScreenKeyboardLabel", IDS_SETTINGS_ON_SCREEN_KEYBOARD_LABEL},
       {"optionsInMenuDescription", IDS_SETTINGS_OPTIONS_IN_MENU_DESCRIPTION},
       {"optionsInMenuLabel", IDS_SETTINGS_OPTIONS_IN_MENU_LABEL},
-      {"pdfOcrDownloadCompleteLabel", IDS_SETTINGS_PDF_OCR_DOWNLOAD_COMPLETE},
-      {"pdfOcrDownloadErrorLabel", IDS_SETTINGS_PDF_OCR_DOWNLOAD_ERROR},
-      {"pdfOcrDownloadProgressLabel", IDS_SETTINGS_PDF_OCR_DOWNLOAD_PROGRESS},
-      {"pdfOcrDownloadingLabel", IDS_SETTINGS_PDF_OCR_DOWNLOADING},
-      {"pdfOcrSubtitle", IDS_SETTINGS_PDF_OCR_SUBTITLE},
-      {"pdfOcrTitle", IDS_SETTINGS_PDF_OCR_TITLE},
       {"percentage", IDS_SETTINGS_PERCENTAGE},
       {"screenMagnifierDescriptionOff",
        IDS_SETTINGS_SCREEN_MAGNIFIER_DESCRIPTION_OFF},
@@ -962,6 +1048,8 @@ void AccessibilitySection::AddLoadTimeData(
        IDS_SETTINGS_SCREEN_MAGNIFIER_FOCUS_FOLLOWING_LABEL},
       {"screenMagnifierSelectToSpeakFocusFollowingLabel",
        IDS_SETTINGS_SCREEN_MAGNIFIER_SELECT_TO_SPEAK_FOCUS_FOLLOWING_LABEL},
+      {"screenMagnifierChromeVoxFocusFollowingLabel",
+       IDS_SETTINGS_SCREEN_MAGNIFIER_CHROMEVOX_FOCUS_FOLLOWING_LABEL},
       {"screenMagnifierLabel", IDS_SETTINGS_SCREEN_MAGNIFIER_LABEL},
       {"screenMagnifierMouseFollowingModeCentered",
        IDS_SETTINGS_SCREEN_MANIFIER_MOUSE_FOLLOWING_MODE_CENTERED},
@@ -1236,6 +1324,13 @@ void AccessibilitySection::AddLoadTimeData(
   html_source->AddInteger("defaultCaretBlinkIntervalMs",
                           ash::kDefaultCaretBlinkIntervalMs);
 
+  html_source->AddInteger("defaultFaceGazeCursorSpeed",
+                          ash::kDefaultFaceGazeCursorSpeed);
+  html_source->AddInteger("defaultFaceGazeCursorSmoothing",
+                          ash::kDefaultFaceGazeCursorSmoothing);
+  html_source->AddBoolean("defaultFaceGazeCursorUseAcceleration",
+                          ash::kDefaultFaceGazeCursorUseAcceleration);
+
   html_source->AddBoolean(
       "showExperimentalAccessibilitySwitchAccessImprovedTextInput",
       IsSwitchAccessTextAllowed());
@@ -1246,11 +1341,11 @@ void AccessibilitySection::AddLoadTimeData(
   html_source->AddString("tabletModeShelfNavigationButtonsLearnMoreUrl",
                          chrome::kTabletModeGesturesLearnMoreURL);
 
-  html_source->AddBoolean("pdfOcrEnabled",
-                          base::FeatureList::IsEnabled(::features::kPdfOcr));
-
   html_source->AddBoolean("isAccessibilityReducedAnimationsEnabled",
                           IsAccessibilityReducedAnimationsEnabled());
+
+  html_source->AddBoolean("isAccessibilityMagnifierFollowsChromeVoxEnabled",
+                          IsAccessibilityMagnifierFollowsChromeVoxEnabled());
 
   html_source->AddBoolean("isAccessibilityMagnifierFollowsStsEnabled",
                           IsAccessibilityMagnifierFollowsStsEnabled());
@@ -1268,6 +1363,10 @@ void AccessibilitySection::AddLoadTimeData(
   html_source->AddBoolean("isAccessibilityOverscrollSettingFeatureEnabled",
                           IsAccessibilityOverscrollSettingFeatureEnabled());
 
+  html_source->AddBoolean("isAccessibilityFlashNotificationFeatureEnabled",
+                          IsAccessibilityFlashNotificationFeatureEnabled());
+
+  ::settings::AddAxAnnotationsSectionStrings(html_source);
   ::settings::AddCaptionSubpageStrings(html_source);
 }
 
@@ -1283,9 +1382,7 @@ void AccessibilitySection::AddHandlers(content::WebUI* web_ui) {
       std::make_unique<::settings::FontHandler>(profile()));
   web_ui->AddMessageHandler(
       std::make_unique<::settings::CaptionsHandler>(profile()->GetPrefs()));
-  if (base::FeatureList::IsEnabled(::features::kPdfOcr)) {
-    web_ui->AddMessageHandler(std::make_unique<::settings::PdfOcrHandler>());
-  }
+  web_ui->AddMessageHandler(std::make_unique<FaceGazeSettingsHandler>());
 }
 
 int AccessibilitySection::GetSectionNameMessageId() const {
@@ -1320,6 +1417,11 @@ bool AccessibilitySection::LogMetric(mojom::Setting setting,
           "FullscreenMagnifierSelectToSpeakFollowing",
           value.GetBool());
       return true;
+    case mojom::Setting::kMagnifierFollowsChromeVox:
+      base::UmaHistogramBoolean(
+          "ChromeOS.Settings.Accessibility.MagnifierFollowsChromeVox",
+          value.GetBool());
+      return true;
     case mojom::Setting::kFullscreenMagnifierMouseFollowingMode:
       base::UmaHistogramEnumeration(
           "ChromeOS.Settings.Accessibility."
@@ -1348,6 +1450,11 @@ bool AccessibilitySection::LogMetric(mojom::Setting setting,
     case mojom::Setting::kLiveCaption:
       base::UmaHistogramBoolean(
           "ChromeOS.Settings.Accessibility.LiveCaption.Enabled",
+          value.GetBool());
+      return true;
+    case mojom::Setting::kMainNodeAnnotationsEnabled:
+      base::UmaHistogramBoolean(
+          "ChromeOS.Settings.Accessibility.MainNodeAnnotations.Enabled",
           value.GetBool());
       return true;
     case mojom::Setting::kMonoAudio:
@@ -1397,6 +1504,11 @@ bool AccessibilitySection::LogMetric(mojom::Setting setting,
           "ChromeOS.Settings.Accessibility.CaretHighlight.Enabled",
           value.GetBool());
       return true;
+    case mojom::Setting::kCaretBrowsing:
+      base::UmaHistogramBoolean(
+          "ChromeOS.Settings.Accessibility.CaretBrowsing.Enabled",
+          value.GetBool());
+      return true;
     case mojom::Setting::kHighContrastMode:
       base::UmaHistogramBoolean(
           "ChromeOS.Settings.Accessibility.HighContrast.Enabled",
@@ -1432,15 +1544,14 @@ bool AccessibilitySection::LogMetric(mojom::Setting setting,
           "ChromeOS.Settings.Accessibility.ReducedAnimations.Enabled",
           value.GetBool());
       return true;
-    case mojom::Setting::kPdfOcrOnOff:
-      base::UmaHistogramBoolean(
-          "ChromeOS.Settings.Accessibility.PdfOcr.Enabled",
-          value.GetBool());
-      return true;
     case mojom::Setting::kOverscrollEnabled:
       base::UmaHistogramBoolean(
           "ChromeOS.Settings.OverscrollHistoryNavigation.Enabled",
           value.GetBool());
+      return true;
+    case mojom::Setting::kFlashNotifications:
+      base::UmaHistogramBoolean("ChromeOS.Settings.FlashNotifications.Enabled",
+                                value.GetBool());
       return true;
     default:
       return false;
@@ -1515,6 +1626,7 @@ void AccessibilitySection::RegisterHierarchy(
       mojom::Setting::kFullscreenMagnifier,
       mojom::Setting::kFullscreenMagnifierFocusFollowing,
       mojom::Setting::kAccessibilityMagnifierFollowsSts,
+      mojom::Setting::kMagnifierFollowsChromeVox,
       mojom::Setting::kFullscreenMagnifierMouseFollowingMode,
       mojom::Setting::kDockedMagnifier,
       mojom::Setting::kStickyKeys,
@@ -1523,6 +1635,7 @@ void AccessibilitySection::RegisterHierarchy(
       mojom::Setting::kHighlightKeyboardFocus,
       mojom::Setting::kEnableSwitchAccess,
       mojom::Setting::kHighlightTextCaret,
+      mojom::Setting::kCaretBrowsing,
       mojom::Setting::kAutoClickWhenCursorStops,
       mojom::Setting::kMouseKeysEnabled,
       mojom::Setting::kMouseKeysShortcutToPauseEnabled,
@@ -1534,6 +1647,7 @@ void AccessibilitySection::RegisterHierarchy(
       mojom::Setting::kHighlightCursorWhileMoving,
       mojom::Setting::kTabletNavigationButtons,
       mojom::Setting::kLiveCaption,
+      mojom::Setting::kMainNodeAnnotationsEnabled,
       mojom::Setting::kMonoAudio,
       mojom::Setting::kStartupSound,
       mojom::Setting::kEnableCursorColor,
@@ -1542,8 +1656,8 @@ void AccessibilitySection::RegisterHierarchy(
       mojom::Setting::kColorCorrectionFilterAmount,
       mojom::Setting::kCaretBlinkInterval,
       mojom::Setting::kReducedAnimationsEnabled,
-      mojom::Setting::kPdfOcrOnOff,
       mojom::Setting::kOverscrollEnabled,
+      mojom::Setting::kFlashNotifications,
   };
   RegisterNestedSettingBulk(mojom::Subpage::kManageAccessibility,
                             kManageAccessibilitySettings, generator);
@@ -1654,6 +1768,14 @@ void AccessibilitySection::UpdateSearchTags() {
         GetA11yFullscreenMagnifierFocusFollowingSearchConcepts());
   }
 
+  if (IsAccessibilityMagnifierFollowsChromeVoxEnabled()) {
+    updater.AddSearchTags(
+        GetA11yMagnifierChromeVoxFocusFollowingSearchConcepts());
+  } else {
+    updater.RemoveSearchTags(
+        GetA11yMagnifierChromeVoxFocusFollowingSearchConcepts());
+  }
+
   if (IsAccessibilityMagnifierFollowsStsEnabled()) {
     updater.AddSearchTags(
         GetA11yFullscreenMagnifierSelectToSpeakFocusFollowingSearchConcepts());
@@ -1666,6 +1788,10 @@ void AccessibilitySection::UpdateSearchTags() {
 
   if (IsAccessibilityOverscrollSettingFeatureEnabled()) {
     updater.AddSearchTags(GetA11yOverscrollSettingSearchConcepts());
+  }
+
+  if (IsAccessibilityFlashNotificationFeatureEnabled()) {
+    updater.AddSearchTags(GetA11yFlashNotificationsSearchConcepts());
   }
 
   if (!pref_service_->GetBoolean(prefs::kAccessibilitySwitchAccessEnabled)) {

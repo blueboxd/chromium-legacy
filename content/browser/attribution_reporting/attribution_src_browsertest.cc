@@ -40,7 +40,6 @@
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/common/features.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/common/content_features.h"
@@ -67,7 +66,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/navigation/impression.h"
-#include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom.h"
 #include "third_party/blink/public/mojom/fenced_frame/fenced_frame.mojom.h"
 #include "url/gurl.h"
 
@@ -793,10 +791,14 @@ IN_PROC_BROWSER_TEST_P(AttributionSrcBrowserTest,
              JsReplace("createAttributionEligibleImgSrc($1);", register_url)));
 
   register_response->WaitForRequest();
-  EXPECT_FALSE(base::Contains(register_response->http_request()->headers,
-                              "Attribution-Reporting-Eligible"));
-  EXPECT_FALSE(base::Contains(register_response->http_request()->headers,
-                              "Attribution-Reporting-Support"));
+  ExpectEmptyAttributionReportingEligibleHeader(
+      register_response->http_request()->headers.at(
+          "Attribution-Reporting-Eligible"));
+  ExpectValidAttributionReportingSupportHeader(
+      register_response->http_request()->headers.at(
+          "Attribution-Reporting-Support"),
+      /*web_expected=*/false,
+      /*os_expected=*/false);
 }
 
 // Regression test for https://crbug.com/1498717.
@@ -1247,77 +1249,11 @@ IN_PROC_BROWSER_TEST_P(AttributionSrcFencedFrameBrowserTest,
   run_loop.Run();
 }
 
-// Tests to verify that cross app web is not enabled when base::Feature is
-// enabled but runtime feature is disabled (without
-// `features::kPrivacySandboxAdsAPIsOverride` override).
-class AttributionSrcCrossAppWebRuntimeDisabledBrowserTest
-    : public AttributionSrcBrowserTest {
- public:
-  AttributionSrcCrossAppWebRuntimeDisabledBrowserTest()
-      : AttributionSrcBrowserTest(
-            /*enabled_features=*/{network::features::
-                                      kAttributionReportingCrossAppWeb},
-            /*disabled_featurs=*/{
-                features::kAttributionReportingCrossAppWebOverride}) {}
-};
-INSTANTIATE_TEST_SUITE_P(All,
-                         AttributionSrcCrossAppWebRuntimeDisabledBrowserTest,
-                         ::testing::Bool());
-
-// Verify that the Attribution-Reporting-Support header setting is gated by the
-// runtime feature.
-IN_PROC_BROWSER_TEST_P(AttributionSrcCrossAppWebRuntimeDisabledBrowserTest,
-                       Img_SupportHeaderNotSet) {
-  // Create a separate server as we cannot register a `ControllableHttpResponse`
-  // after the server starts.
-  std::unique_ptr<EmbeddedTestServer> https_server =
-      CreateAttributionTestHttpsServer();
-
-  auto register_response1 =
-      std::make_unique<net::test_server::ControllableHttpResponse>(
-          https_server.get(), "/register_source1");
-  auto register_response2 =
-      std::make_unique<net::test_server::ControllableHttpResponse>(
-          https_server.get(), "/register_source2");
-  ASSERT_TRUE(https_server->Start());
-
-  GURL page_url =
-      https_server->GetURL("b.test", "/page_with_impression_creator.html");
-  ASSERT_TRUE(NavigateToURL(web_contents(), page_url));
-
-  GURL register_url = https_server->GetURL("d.test", "/register_source1");
-  ASSERT_TRUE(ExecJs(web_contents(),
-                     JsReplace("createAttributionSrcImg($1);", register_url)));
-
-  register_response1->WaitForRequest();
-  ExpectValidAttributionReportingEligibleHeaderForImg(
-      register_response1->http_request()->headers.at(
-          "Attribution-Reporting-Eligible"));
-  ASSERT_FALSE(base::Contains(register_response1->http_request()->headers,
-                              "Attribution-Reporting-Support"));
-
-  auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
-  http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
-  http_response->AddCustomHeader("Location", "/register_source2");
-  register_response1->Send(http_response->ToResponseString());
-  register_response1->Done();
-
-  // Ensure that redirect requests also don't contain the
-  // Attribution-Reporting-Support header.
-  register_response2->WaitForRequest();
-  ExpectValidAttributionReportingEligibleHeaderForImg(
-      register_response2->http_request()->headers.at(
-          "Attribution-Reporting-Eligible"));
-  ASSERT_FALSE(base::Contains(register_response2->http_request()->headers,
-                              "Attribution-Reporting-Support"));
-}
-
 class AttributionSrcCrossAppWebEnabledBrowserTest
     : public AttributionSrcBrowserTest {
  public:
   AttributionSrcCrossAppWebEnabledBrowserTest()
       : AttributionSrcBrowserTest(/*enabled_features=*/{
-            features::kPrivacySandboxAdsAPIsOverride,
             network::features::kAttributionReportingCrossAppWeb}) {}
 };
 INSTANTIATE_TEST_SUITE_P(All,

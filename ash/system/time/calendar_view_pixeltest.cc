@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "ash/calendar/calendar_controller.h"
-#include "ash/constants/ash_switches.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
@@ -15,7 +14,6 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/pixel/ash_pixel_differ.h"
 #include "ash/test/pixel/ash_pixel_test_init_params.h"
-#include "base/command_line.h"
 #include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
@@ -30,27 +28,27 @@ std::unique_ptr<google_apis::calendar::CalendarEvent> CreateEvent(
     const char* id,
     const base::Time start_time,
     const base::Time end_time,
-    const char* summary) {
+    const char* summary,
+    const GURL video_conference_url = GURL()) {
   return calendar_test_utils::CreateEvent(
       id, summary, start_time, end_time,
       google_apis::calendar::CalendarEvent::EventStatus::kConfirmed,
       google_apis::calendar::CalendarEvent::ResponseStatus::kAccepted, false,
-      GURL());
+      video_conference_url);
 }
 
 }  // namespace
 
 class CalendarViewPixelTest
     : public AshTestBase,
-      public testing::WithParamInterface</*glanceables_v2_enabled=*/bool> {
+      public testing::WithParamInterface</*glanceables_enabled=*/bool> {
  public:
   CalendarViewPixelTest() {
     scoped_feature_list_.InitWithFeatureStates(
-        {{features::kGlanceablesV2, AreGlanceablesV2Enabled()},
+        {{features::kGlanceablesTimeManagementClassroomStudentView,
+          AreGlanceablesEnabled()},
          {features::kGlanceablesTimeManagementTasksView,
-          AreGlanceablesV2Enabled()}});
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kGlanceablesIgnoreEnableMergeRequestBuildFlag);
+          AreGlanceablesEnabled()}});
   }
 
   void SetUp() override {
@@ -69,7 +67,7 @@ class CalendarViewPixelTest
     AshTestBase::TearDown();
   }
 
-  bool AreGlanceablesV2Enabled() { return GetParam(); }
+  bool AreGlanceablesEnabled() { return GetParam(); }
 
   // AshTestBase:
   std::optional<pixel_test::InitParams> CreatePixelTestInitParams()
@@ -80,7 +78,7 @@ class CalendarViewPixelTest
   void OpenCalendarView() {
     // Presses the `DateTray` to open the `CalendarView`.
     GetPrimaryShelf()->GetStatusAreaWidget()->date_tray()->OnButtonPressed(
-        ui::KeyEvent(ui::EventType::ET_MOUSE_PRESSED, ui::VKEY_UNKNOWN,
+        ui::KeyEvent(ui::EventType::kMousePressed, ui::VKEY_UNKNOWN,
                      ui::EF_NONE));
     calendar_view_ = GetPrimaryUnifiedSystemTray()
                          ->bubble()
@@ -118,7 +116,9 @@ class CalendarViewPixelTest
   static base::Time fake_time_;
 };
 
-INSTANTIATE_TEST_SUITE_P(GlanceablesV2, CalendarViewPixelTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(GlanceablesEnabled,
+                         CalendarViewPixelTest,
+                         testing::Bool());
 
 base::Time CalendarViewPixelTest::fake_time_;
 
@@ -178,7 +178,8 @@ TEST_P(CalendarViewPixelTest, EventList) {
   events.push_back(CreateEvent(
       "id_1", start_time2, end_time2,
       "Event with a very very very very very very very long name that should "
-      "ellipsis"));
+      "ellipsis",
+      GURL("https://meet.google.com/abc-123")));
   InsertEvents(std::move(events));
 
   OpenCalendarView();
@@ -186,7 +187,7 @@ TEST_P(CalendarViewPixelTest, EventList) {
 
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "event_list_view",
-      /*revision_number=*/10, GetEventListView()));
+      /*revision_number=*/11, GetEventListView()));
 }
 
 }  // namespace ash

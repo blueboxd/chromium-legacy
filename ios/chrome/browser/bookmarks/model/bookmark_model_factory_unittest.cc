@@ -9,17 +9,11 @@
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "components/bookmarks/browser/bookmark_model.h"
-#include "components/bookmarks/browser/core_bookmark_model.h"
 #include "components/bookmarks/browser/url_and_title.h"
 #include "components/bookmarks/common/bookmark_constants.h"
-#include "components/sync/base/features.h"
-#include "ios/chrome/browser/bookmarks/model/account_bookmark_model_factory.h"
 #include "ios/chrome/browser/bookmarks/model/bookmark_ios_unit_test_support.h"
 #include "ios/chrome/browser/bookmarks/model/bookmark_model_factory.h"
-#include "ios/chrome/browser/bookmarks/model/legacy_bookmark_model.h"
-#include "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_model_factory.h"
 #include "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -53,78 +47,11 @@ const base::FilePath& GetTestDataDir() {
 
 }  // namespace
 
-class BookmarkModelFactoryTest : public BookmarkIOSUnitTestSupport,
-                                 public ::testing::WithParamInterface<bool> {
+class BookmarkModelFactoryTest : public BookmarkIOSUnitTestSupport {
  public:
-  BookmarkModelFactoryTest() {
-    if (GetEnableBookmarkFoldersForAccountStorageTestParam()) {
-      scoped_feature_list_.InitAndEnableFeature(
-          syncer::kEnableBookmarkFoldersForAccountStorage);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          syncer::kEnableBookmarkFoldersForAccountStorage);
-    }
-  }
-
-  bool GetEnableBookmarkFoldersForAccountStorageTestParam() const {
-    return GetParam();
-  }
-
+  BookmarkModelFactoryTest() = default;
   ~BookmarkModelFactoryTest() override = default;
 };
-
-TEST_P(BookmarkModelFactoryTest, IsBookmarked) {
-  const GURL kUrl1("https://foo.com/");
-  const GURL kUrl2("https://bar.com/");
-  const GURL kUrl3("https://baz.com/");
-
-  local_or_syncable_bookmark_model_->AddURL(
-      local_or_syncable_bookmark_model_->bookmark_bar_node(), 0, u"title",
-      kUrl1);
-  account_bookmark_model_->AddURL(account_bookmark_model_->bookmark_bar_node(),
-                                  0, u"title", kUrl2);
-
-  ASSERT_TRUE(local_or_syncable_bookmark_model_->IsBookmarked(kUrl1));
-  ASSERT_FALSE(local_or_syncable_bookmark_model_->IsBookmarked(kUrl2));
-  ASSERT_FALSE(local_or_syncable_bookmark_model_->IsBookmarked(kUrl3));
-
-  ASSERT_FALSE(account_bookmark_model_->IsBookmarked(kUrl1));
-  ASSERT_TRUE(account_bookmark_model_->IsBookmarked(kUrl2));
-  ASSERT_FALSE(account_bookmark_model_->IsBookmarked(kUrl3));
-
-  // The merged view should return true if either of the two underlying trees
-  // has the URL bookmarked.
-  EXPECT_TRUE(bookmark_model_->IsBookmarked(kUrl1));
-  EXPECT_TRUE(bookmark_model_->IsBookmarked(kUrl2));
-  EXPECT_FALSE(bookmark_model_->IsBookmarked(kUrl3));
-}
-
-TEST_P(BookmarkModelFactoryTest, GetUniqueUrls) {
-  const GURL kUrl1("https://foo.com/");
-  const GURL kUrl2("https://bar.com/");
-  const GURL kUrl3("https://baz.com/");
-
-  local_or_syncable_bookmark_model_->AddURL(
-      local_or_syncable_bookmark_model_->bookmark_bar_node(), 0, u"title1",
-      kUrl1);
-  account_bookmark_model_->AddURL(account_bookmark_model_->bookmark_bar_node(),
-                                  0, u"title2", kUrl2);
-
-  // `kUrl3` exists in both.
-  local_or_syncable_bookmark_model_->AddURL(
-      local_or_syncable_bookmark_model_->bookmark_bar_node(), 0, u"title3",
-      kUrl3);
-  account_bookmark_model_->AddURL(account_bookmark_model_->bookmark_bar_node(),
-                                  0, u"title4", kUrl3);
-
-  EXPECT_THAT(
-      bookmark_model_->GetUniqueUrls(),
-      UnorderedElementsAre(HasUrl(kUrl1), HasUrl(kUrl2), HasUrl(kUrl3)));
-}
-
-INSTANTIATE_TEST_SUITE_P(UnifiedBookmarkModel,
-                         BookmarkModelFactoryTest,
-                         testing::Bool());
 
 class BookmarkModelFactoryWithIdCollisionsWithinOneFileOnDiskTest
     : public BookmarkModelFactoryTest {
@@ -152,7 +79,7 @@ class BookmarkModelFactoryWithIdCollisionsWithinOneFileOnDiskTest
   base::HistogramTester histogram_tester_;
 };
 
-TEST_P(BookmarkModelFactoryWithIdCollisionsWithinOneFileOnDiskTest,
+TEST_F(BookmarkModelFactoryWithIdCollisionsWithinOneFileOnDiskTest,
        ReassignIdsAndLogMetrics) {
   histogram_tester_.ExpectUniqueSample(kAccountIdsReassignedMetricName,
                                        /*sample=*/false,
@@ -161,11 +88,6 @@ TEST_P(BookmarkModelFactoryWithIdCollisionsWithinOneFileOnDiskTest,
                                        /*sample=*/true,
                                        /*expected_bucket_count=*/1);
 }
-
-INSTANTIATE_TEST_SUITE_P(
-    UnifiedBookmarkModel,
-    BookmarkModelFactoryWithIdCollisionsWithinOneFileOnDiskTest,
-    testing::Bool());
 
 class BookmarkModelFactoryWithIdCollisionsAcrossTwoFilesOnDiskTest
     : public BookmarkModelFactoryTest {
@@ -194,22 +116,15 @@ class BookmarkModelFactoryWithIdCollisionsAcrossTwoFilesOnDiskTest
   base::HistogramTester histogram_tester_;
 };
 
-TEST_P(BookmarkModelFactoryWithIdCollisionsAcrossTwoFilesOnDiskTest,
+TEST_F(BookmarkModelFactoryWithIdCollisionsAcrossTwoFilesOnDiskTest,
        ReassignIdsAndLogMetrics) {
   histogram_tester_.ExpectUniqueSample(kAccountIdsReassignedMetricName,
                                        /*sample=*/false,
                                        /*expected_bucket_count=*/1);
-  // If and only if a single BookmarkModel instance is used, the ID collisions
-  // across two files are detected and reassigned.
-  histogram_tester_.ExpectUniqueSample(
-      kLocalOrSyncableIdsReassignedMetricName,
-      /*sample=*/GetEnableBookmarkFoldersForAccountStorageTestParam(),
-      /*expected_bucket_count=*/1);
+  // The ID collisions across two files are detected and reassigned.
+  histogram_tester_.ExpectUniqueSample(kLocalOrSyncableIdsReassignedMetricName,
+                                       /*sample=*/1,
+                                       /*expected_bucket_count=*/1);
 }
-
-INSTANTIATE_TEST_SUITE_P(
-    UnifiedBookmarkModel,
-    BookmarkModelFactoryWithIdCollisionsAcrossTwoFilesOnDiskTest,
-    testing::Bool());
 
 }  // namespace ios

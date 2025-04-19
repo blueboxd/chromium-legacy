@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ui/display/screen.h"
 
 #import <AppKit/AppKit.h>
@@ -281,7 +286,12 @@ DisplayMac BuildDisplayForScreen(NSScreen* screen) {
   display.set_is_monochrome(CGDisplayUsesForceToGray());
 
   // Query the display's refresh rate.
-  {
+  if (@available(macos 12.0, *)) {
+    // NSScreen.minimumRefreshInterval is available on macOS 12.0+
+    double refresh_rate = 1.0 / screen.minimumRefreshInterval;
+    display.set_display_frequency(refresh_rate);
+  } else {
+    // CVDisplayLink is available on macOS 10.4–15.0.
     CVDisplayLinkRef display_link = nullptr;
     if (CVDisplayLinkCreateWithCGDisplay(display_id, &display_link) ==
         kCVReturnSuccess) {

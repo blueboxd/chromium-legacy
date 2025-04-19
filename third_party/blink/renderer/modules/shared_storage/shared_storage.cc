@@ -13,11 +13,11 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/strcat.h"
 #include "base/time/time.h"
-#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/shared_storage/shared_storage_utils.h"
 #include "third_party/blink/public/mojom/shared_storage/shared_storage.mojom-blink.h"
 #include "third_party/blink/public/mojom/shared_storage/shared_storage_worklet_service.mojom-blink.h"
+#include "third_party/blink/public/platform/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_shared_storage_run_operation_method_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_shared_storage_set_method_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_shared_storage_url_with_metadata.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_shared_storage_worklet_options.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -153,6 +154,16 @@ bool CanGetOutsideWorklet(ScriptState* script_state) {
   // has been restricted. We can't check the network access part in the
   // renderer, so we'll defer to the browser for that.
   return frame->IsInFencedFrameTree();
+}
+
+SharedStorageDataOrigin ParseDataOrigin(const String& data_origin_value) {
+  if (data_origin_value == "context-origin") {
+    return SharedStorageDataOrigin::kContextOrigin;
+  }
+  if (data_origin_value == "script-origin") {
+    return SharedStorageDataOrigin::kScriptOrigin;
+  }
+  NOTREACHED_NORETURN();
 }
 
 }  // namespace
@@ -386,7 +397,7 @@ ScriptPromise<IDLAny> SharedStorage::set(
       execution_context->GetSecurityOrigin()->IsOpaque()) {
     resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
         script_state->GetIsolate(), DOMExceptionCode::kInvalidAccessError,
-        kOpaqueOriginCheckErrorMessage));
+        kOpaqueContextOriginCheckErrorMessage));
     return promise;
   }
 
@@ -451,7 +462,7 @@ ScriptPromise<IDLAny> SharedStorage::append(ScriptState* script_state,
       execution_context->GetSecurityOrigin()->IsOpaque()) {
     resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
         script_state->GetIsolate(), DOMExceptionCode::kInvalidAccessError,
-        kOpaqueOriginCheckErrorMessage));
+        kOpaqueContextOriginCheckErrorMessage));
     return promise;
   }
 
@@ -514,7 +525,7 @@ ScriptPromise<IDLAny> SharedStorage::Delete(ScriptState* script_state,
       execution_context->GetSecurityOrigin()->IsOpaque()) {
     resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
         script_state->GetIsolate(), DOMExceptionCode::kInvalidAccessError,
-        kOpaqueOriginCheckErrorMessage));
+        kOpaqueContextOriginCheckErrorMessage));
     return promise;
   }
 
@@ -567,7 +578,7 @@ ScriptPromise<IDLAny> SharedStorage::clear(ScriptState* script_state,
       execution_context->GetSecurityOrigin()->IsOpaque()) {
     resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
         script_state->GetIsolate(), DOMExceptionCode::kInvalidAccessError,
-        kOpaqueOriginCheckErrorMessage));
+        kOpaqueContextOriginCheckErrorMessage));
     return promise;
   }
 
@@ -614,7 +625,7 @@ ScriptPromise<IDLString> SharedStorage::get(ScriptState* script_state,
     if (execution_context->GetSecurityOrigin()->IsOpaque()) {
       resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
           script_state->GetIsolate(), DOMExceptionCode::kInvalidAccessError,
-          kOpaqueOriginCheckErrorMessage));
+          kOpaqueContextOriginCheckErrorMessage));
       return promise;
     }
 
@@ -852,7 +863,7 @@ ScriptPromise<IDLAny> SharedStorage::run(
 ScriptPromise<SharedStorageWorklet> SharedStorage::createWorklet(
     ScriptState* script_state,
     const String& module_url,
-    const WorkletOptions* options,
+    const SharedStorageWorkletOptions* options,
     ExceptionState& exception_state) {
   SharedStorageWorklet* worklet = SharedStorageWorklet::Create(
       script_state, /*cross_origin_script_allowed=*/true);
@@ -860,9 +871,18 @@ ScriptPromise<SharedStorageWorklet> SharedStorage::createWorklet(
       MakeGarbageCollected<ScriptPromiseResolver<SharedStorageWorklet>>(
           script_state);
   auto promise = resolver->Promise();
+  SharedStorageDataOrigin data_origin_type =
+      ParseDataOrigin(options->dataOrigin());
+
+  // We intentionally allow the implicit downcast of `options` to a
+  // `WorkletOptions*` here.
+  //
+  // Note that we currently ignore the `dataOrigin` option that we've parsed
+  // into `data_origin_type`, except to gate a use counter invoked in
+  // `SharedStorageWorklet::AddModuleHelper()`.
   worklet->AddModuleHelper(script_state, resolver, module_url, options,
-                           exception_state,
-                           /*resolve_to_worklet=*/true);
+                           exception_state, /*resolve_to_worklet=*/true,
+                           data_origin_type);
   return promise;
 }
 
@@ -870,7 +890,9 @@ SharedStorageWorklet* SharedStorage::worklet(ScriptState* script_state,
                                              ExceptionState& exception_state) {
   if (!shared_storage_worklet_) {
     shared_storage_worklet_ = SharedStorageWorklet::Create(
-        script_state, /*cross_origin_script_allowed=*/false);
+        script_state,
+        /*cross_origin_script_allowed=*/base::FeatureList::IsEnabled(
+            features::kSharedStorageCrossOriginScript));
   }
 
   return shared_storage_worklet_.Get();

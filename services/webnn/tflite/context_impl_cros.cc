@@ -6,16 +6,28 @@
 
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
 #include "services/webnn/tflite/buffer_impl_tflite.h"
+#include "services/webnn/tflite/context_impl_tflite.h"
+#include "services/webnn/tflite/graph_builder_tflite.h"
 #include "services/webnn/tflite/graph_impl_cros.h"
+#include "services/webnn/webnn_context_impl.h"
 
 namespace webnn::tflite {
 
 ContextImplCrOS::ContextImplCrOS(
     mojo::PendingReceiver<mojom::WebNNContext> receiver,
-    WebNNContextProviderImpl* context_provider)
-    : WebNNContextImpl(std::move(receiver), context_provider) {}
+    WebNNContextProviderImpl* context_provider,
+    mojom::CreateContextOptionsPtr options)
+    : WebNNContextImpl(std::move(receiver),
+                       context_provider,
+                       GraphBuilderTflite::GetContextProperties(),
+                       std::move(options)) {}
 
 ContextImplCrOS::~ContextImplCrOS() = default;
+
+base::WeakPtr<WebNNContextImpl> ContextImplCrOS::AsWeakPtr() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return weak_factory_.GetWeakPtr();
+}
 
 void ContextImplCrOS::LoadModel(
     flatbuffers::DetachedBuffer model_content,
@@ -81,17 +93,19 @@ void ContextImplCrOS::OnModelLoaderCreated(
 
 void ContextImplCrOS::CreateGraphImpl(
     mojom::GraphInfoPtr graph_info,
-    mojom::WebNNContext::CreateGraphCallback callback) {
+    WebNNGraphImpl::ComputeResourceInfo compute_resource_info,
+    CreateGraphImplCallback callback) {
   GraphImplCrOS::CreateAndBuild(this, std::move(graph_info),
+                                std::move(compute_resource_info),
                                 std::move(callback));
 }
 
-std::unique_ptr<WebNNBufferImpl> ContextImplCrOS::CreateBufferImpl(
+void ContextImplCrOS::CreateBufferImpl(
     mojo::PendingAssociatedReceiver<mojom::WebNNBuffer> receiver,
     mojom::BufferInfoPtr buffer_info,
-    const base::UnguessableToken& buffer_handle) {
-  return BufferImplTflite::Create(std::move(receiver), this,
-                                  std::move(buffer_info), buffer_handle);
+    CreateBufferImplCallback callback) {
+  std::move(callback).Run(BufferImplTflite::Create(std::move(receiver), this,
+                                                   std::move(buffer_info)));
 }
 
 }  // namespace webnn::tflite

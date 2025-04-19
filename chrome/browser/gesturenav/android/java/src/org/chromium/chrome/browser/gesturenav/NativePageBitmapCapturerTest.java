@@ -10,6 +10,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.base.test.util.Batch;
@@ -18,10 +19,11 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Features;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.tab.TabTestUtils;
+import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.components.embedder_support.util.UrlConstants;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.concurrent.TimeoutException;
 
@@ -39,33 +41,47 @@ public class NativePageBitmapCapturerTest {
     @SmallTest
     public void testWithNativePage() throws TimeoutException {
         mTabbedActivityTestRule.startMainActivityWithURL(UrlConstants.NTP_URL);
+
+        final TabWebContentsDelegateAndroid delegate =
+                TabTestUtils.getTabWebContentsDelegate(
+                        mTabbedActivityTestRule.getActivity().getActivityTab());
+        final int topControlsHeight = delegate.getTopControlsHeight();
+
         CallbackHelper callbackHelper = new CallbackHelper();
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     Assert.assertTrue(
                             NativePageBitmapCapturer.maybeCaptureNativeView(
                                     mTabbedActivityTestRule.getActivity().getActivityTab(),
                                     (bitmap) -> {
                                         callbackHelper.notifyCalled();
-                                    }));
+                                    },
+                                    topControlsHeight));
                 });
 
-        callbackHelper.waitForFirst();
+        callbackHelper.waitForOnly();
     }
 
     @Test
     @SmallTest
     public void testWithNonNativePage() {
         mTabbedActivityTestRule.startMainActivityOnBlankPage();
+
+        final TabWebContentsDelegateAndroid delegate =
+                TabTestUtils.getTabWebContentsDelegate(
+                        mTabbedActivityTestRule.getActivity().getActivityTab());
+        final int topControlsHeight = delegate.getTopControlsHeight();
+
         CallbackHelper callbackHelper = new CallbackHelper();
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     Assert.assertFalse(
                             NativePageBitmapCapturer.maybeCaptureNativeView(
                                     mTabbedActivityTestRule.getActivity().getActivityTab(),
                                     (bitmap) -> {
                                         callbackHelper.notifyCalled();
-                                    }));
+                                    },
+                                    topControlsHeight));
                 });
 
         // Capture will be finished before the following task.

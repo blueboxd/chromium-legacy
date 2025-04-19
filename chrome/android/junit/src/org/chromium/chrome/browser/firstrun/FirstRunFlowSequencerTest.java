@@ -17,7 +17,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
@@ -54,10 +53,6 @@ import org.chromium.components.sync.SyncService;
 @LooperMode(LooperMode.Mode.LEGACY)
 public class FirstRunFlowSequencerTest {
     private static final String ADULT_ACCOUNT_NAME = "adult.account@gmail.com";
-    private static final String CHILD_ACCOUNT_NAME =
-            AccountManagerTestRule.generateChildEmail(/* baseName= */ "account@gmail.com");
-
-    @Rule public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
 
     @Rule public final MockitoRule mMockitoRule = MockitoJUnit.rule();
 
@@ -149,7 +144,7 @@ public class FirstRunFlowSequencerTest {
     @Feature({"FirstRun"})
     @Features.DisableFeatures(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
     public void testFlowOneChildAccount() {
-        mAccountManagerTestRule.addAccount(CHILD_ACCOUNT_NAME);
+        mAccountManagerTestRule.addAccount(AccountManagerTestRule.TEST_CHILD_ACCOUNT);
         setDelegateFactory(false);
         HistogramWatcher numberOfAccountsHistogram =
                 HistogramWatcher.newSingleRecordWatcher(
@@ -174,7 +169,7 @@ public class FirstRunFlowSequencerTest {
     @Feature({"FirstRun"})
     @Features.EnableFeatures(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
     public void testFlowOneChildAccount_historySyncEnabled() {
-        mAccountManagerTestRule.addAccount(CHILD_ACCOUNT_NAME);
+        mAccountManagerTestRule.addAccount(AccountManagerTestRule.TEST_CHILD_ACCOUNT);
         setDelegateFactory(false);
         HistogramWatcher numberOfAccountsHistogram =
                 HistogramWatcher.newSingleRecordWatcher(
@@ -200,7 +195,7 @@ public class FirstRunFlowSequencerTest {
     @Features.EnableFeatures(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
     public void testFlowOneChildAccount_historySyncManagedByCustodian_historySyncEnabled() {
         when(mHistorySyncHelperMock.isHistorySyncDisabledByCustodian()).thenReturn(true);
-        mAccountManagerTestRule.addAccount(CHILD_ACCOUNT_NAME);
+        mAccountManagerTestRule.addAccount(AccountManagerTestRule.TEST_CHILD_ACCOUNT);
         setDelegateFactory(false);
         HistogramWatcher numberOfAccountsHistogram =
                 HistogramWatcher.newSingleRecordWatcher(

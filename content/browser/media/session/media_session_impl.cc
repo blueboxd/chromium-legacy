@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/browser/media/session/audio_focus_delegate.h"
+#include "content/browser/media/session/media_players_callback_aggregator.h"
 #include "content/browser/media/session/media_session_controller.h"
 #include "content/browser/media/session/media_session_player_observer.h"
 #include "content/browser/media/session/media_session_service_impl.h"
@@ -651,16 +652,12 @@ void MediaSessionImpl::RebuildAndNotifyMediaPositionChanged() {
 }
 
 void MediaSessionImpl::Resume(SuspendType suspend_type) {
-  if (!IsSuspended())
+  // If the site has registered an action handler for play, we should pass it to
+  // the site and let them handle it.
+  if (suspend_type == SuspendType::kUI &&
+      ShouldRouteAction(media_session::mojom::MediaSessionAction::kPlay)) {
+    DidReceiveAction(media_session::mojom::MediaSessionAction::kPlay);
     return;
-
-  if (suspend_type == SuspendType::kUI) {
-    // If the site has registered an action handler for play then we should
-    // pass it to the site and let them handle it.
-    if (ShouldRouteAction(media_session::mojom::MediaSessionAction::kPlay)) {
-      DidReceiveAction(media_session::mojom::MediaSessionAction::kPlay);
-      return;
-    }
   }
 
   // When the resume requests comes from another source than system, audio focus
@@ -1075,7 +1072,7 @@ MediaSessionImpl::GetMediaSessionInfoSync() {
   // If we have Pepper players then we should force ducking.
   info->force_duck = HasPepper();
 
-#if BUILDFLAG(IS_WIN)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
   // If this is a webapp, and instanced media controls are on, mark this session
   // as a pwa session so that the browser sessions can stay isolated. This is
   // used to differentiate webapp sessions for different handling.
@@ -1086,7 +1083,7 @@ MediaSessionImpl::GetMediaSessionInfoSync() {
       web_contents_delegate->ShouldUseInstancedSystemMediaControls();
 #else
   info->ignore_for_active_session = false;
-#endif
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 
   if (always_ignore_for_active_session_for_testing_) {
     info->ignore_for_active_session = true;
@@ -1678,13 +1675,21 @@ MediaSessionServiceImpl* MediaSessionImpl::ComputeServiceForRouting() {
     min_depth = depth;
   }
 
-  // If we don't have a suitable frame and the topmost frame has a
-  // MediaSessionService, then use that.
+  // If we don't have a suitable frame yet, then take the topmost frame that has
+  // a MediaSessionService.
   if (!best_frame && base::FeatureList::IsEnabled(
                          blink::features::kMediaSessionEnterPictureInPicture)) {
-    RenderFrameHost* main_rfh = web_contents()->GetPrimaryMainFrame();
-    if (IsServiceActiveForRenderFrameHost(main_rfh)) {
-      best_frame = main_rfh;
+    // `FrameTree::Nodes()` iterates in breadth-first order, so this is
+    // guaranteed to find the topmost (or tied topmost) frame with an active
+    // MediaSessionService.
+    for (FrameTreeNode* node : static_cast<WebContentsImpl*>(web_contents())
+                                   ->GetPrimaryFrameTree()
+                                   .Nodes()) {
+      RenderFrameHost* rfh = node->current_frame_host();
+      if (IsServiceActiveForRenderFrameHost(rfh)) {
+        best_frame = rfh;
+        break;
+      }
     }
   }
 
@@ -1948,6 +1953,25 @@ bool MediaSessionImpl::HasSufficientlyVisibleVideo() const {
   }
 
   return false;
+}
+
+void MediaSessionImpl::GetVisibility(
+    GetVisibilityCallback get_visibility_callback) {
+  if (normal_players_.empty()) {
+    std::move(get_visibility_callback).Run(false);
+    return;
+  }
+
+  scoped_refptr<MediaPlayersCallbackAggregator> aggregator =
+      MakeRefCounted<MediaPlayersCallbackAggregator>(
+          std::move(get_visibility_callback));
+  for (const auto& player : normal_players_) {
+    if (player.first.observer->IsPaused(player.first.player_id)) {
+      continue;
+    }
+    player.first.observer->OnRequestVisibility(
+        player.first.player_id, aggregator->CreateVisibilityCallback());
+  }
 }
 
 std::string MediaSessionImpl::GetSharedAudioOutputDeviceId() const {

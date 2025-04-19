@@ -506,16 +506,18 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
 
 - (void)sharedPasswordController:(SharedPasswordController*)controller
     showGeneratedPotentialPassword:(NSString*)generatedPotentialPassword
+                         proactive:(BOOL)proactive
                    decisionHandler:(void (^)(BOOL accept))decisionHandler {
   [self.passwordSuggestionDispatcher
       showPasswordSuggestion:generatedPotentialPassword
+                   proactive:proactive
+                    webState:_webState
              decisionHandler:decisionHandler];
 }
 
 - (void)sharedPasswordController:(SharedPasswordController*)controller
              didAcceptSuggestion:(FormSuggestion*)suggestion {
-  if (suggestion.popupItemId ==
-      autofill::SuggestionType::kAllSavedPasswordsEntry) {
+  if (suggestion.type == autofill::SuggestionType::kAllSavedPasswordsEntry) {
     // Navigate to the settings list.
     [self.delegate displaySavedPasswordList];
   }
@@ -528,6 +530,18 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
       AutofillBottomSheetTabHelper::FromWebState(_webState);
   if (bottomSheetTabHelper) {
     bottomSheetTabHelper->AttachPasswordListeners(rendererIds, frameId);
+  }
+}
+
+- (void)attachListenersForPasswordGenerationBottomSheet:
+            (const std::vector<autofill::FieldRendererId>&)rendererIds
+                                             forFrameId:
+                                                 (const std::string&)frameId {
+  AutofillBottomSheetTabHelper* bottomSheetTabHelper =
+      AutofillBottomSheetTabHelper::FromWebState(_webState);
+  if (bottomSheetTabHelper) {
+    bottomSheetTabHelper->AttachPasswordGenerationListeners(rendererIds,
+                                                            frameId);
   }
 }
 

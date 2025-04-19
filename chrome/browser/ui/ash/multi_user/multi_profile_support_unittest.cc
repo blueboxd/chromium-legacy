@@ -64,6 +64,7 @@
 #include "ui/aura/test/env_test_helper.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/manager/display_manager.h"
@@ -337,7 +338,8 @@ MultiProfileSupportTest::SetUpOneWindowEachDeskForUser(AccountId account_id) {
   const int kActiveDeskIndex = 0;
   for (int i = 0; i < desks_controller->GetNumberOfDesks(); i++) {
     widgets.push_back(
-        CreateTestWidget(nullptr, container_ids[i], gfx::Rect(700, 0, 50, 50)));
+        CreateTestWidget(views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
+                         nullptr, container_ids[i], gfx::Rect(700, 0, 50, 50)));
     aura::Window* win = widgets[i]->GetNativeWindow();
     windows_.push_back(win);
     // `TargetVisibility` is the local visibility of the window
@@ -1422,10 +1424,12 @@ TEST_F(MultiProfileSupportTest, TransientWindowActivationTest) {
   multi_user_window_manager()->SetWindowOwner(window(0), account_id_A);
 
   ::wm::AddTransientChild(window(0), window(1));
-  window(1)->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
+  window(1)->SetProperty(aura::client::kModalKey,
+                         ui::mojom::ModalType::kWindow);
 
   ::wm::AddTransientChild(window(1), window(2));
-  window(2)->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
+  window(2)->SetProperty(aura::client::kModalKey,
+                         ui::mojom::ModalType::kWindow);
 
   ::wm::ActivationClient* activation_client =
       ::wm::GetActivationClient(window(0)->GetRootWindow());
@@ -1446,11 +1450,11 @@ TEST_F(MultiProfileSupportTest, TransientWindowActivationTest) {
   EXPECT_FALSE(::wm::CanActivateWindow(window(1)));
 
   // Test that switching user doesn't change the property of the windows.
-  EXPECT_EQ(ui::MODAL_TYPE_NONE,
+  EXPECT_EQ(ui::mojom::ModalType::kNone,
             window(0)->GetProperty(aura::client::kModalKey));
-  EXPECT_EQ(ui::MODAL_TYPE_WINDOW,
+  EXPECT_EQ(ui::mojom::ModalType::kWindow,
             window(1)->GetProperty(aura::client::kModalKey));
-  EXPECT_EQ(ui::MODAL_TYPE_WINDOW,
+  EXPECT_EQ(ui::mojom::ModalType::kWindow,
             window(2)->GetProperty(aura::client::kModalKey));
 
   ::wm::RemoveTransientChild(window(0), window(1));

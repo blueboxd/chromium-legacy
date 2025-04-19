@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/views/tabs/tab_drag_context.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_scroll_session.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_types.h"
+#include "components/saved_tab_groups/tab_group_sync_service.h"
 #include "components/tab_groups/tab_group_visual_data.h"
 #include "components/webapps/common/web_app_id.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
@@ -42,7 +43,7 @@ namespace tabs {
 class TabModel;
 }
 class Browser;
-class KeyEventTracker;
+class EventTracker;
 class Tab;
 class TabDragControllerTest;
 class TabDragContext;
@@ -164,10 +165,10 @@ class TabDragController : public views::WidgetObserver,
   // instead of a move loop.
   static bool IsSystemDragAndDropSessionRunning();
 
-  // Called by TabStrip::OnDrag{Entered,Updated}() to inform TabDragController.
+  // Called by TabStrip / TabStripRegionView to inform TabDragController.
   static void OnSystemDragAndDropUpdated(const ui::DropTargetEvent& event);
-  // Called by TabStrip::OnDragExited().
   static void OnSystemDragAndDropExited();
+  static void OnSystemDragAndDropEnded();
 
   // Returns the pointer of |source_context_|.
   static TabDragContext* GetSourceContext();
@@ -244,10 +245,9 @@ class TabDragController : public views::WidgetObserver,
     // tabstrip.
     kDraggingWindow,
     // The platform does not support client controlled window dragging; instead,
-    // a regular drag and drop session is running (i.e. no window is being
-    // dragged).  The dragged tabs are detached immediately (with one exception;
-    // see |attached_context_hidden_|'s comment), but |attached_context_| stays
-    // valid.  On platforms where this state is used, the kDraggingWindow and
+    // a regular drag and drop session is running. The dragged tabs are still
+    // moved to a new browser, but it stays hidden until the drag ends. On
+    // platforms where this state is used, the kDraggingWindow and
     // kWaitingToDragTabs states are not used.
     kDraggingUsingSystemDragAndDrop,
     // The session has already attached to the target tabstrip, but must wait
@@ -409,13 +409,19 @@ class TabDragController : public views::WidgetObserver,
       TabDragContext* target_context,
       const gfx::Point& point_in_screen);
 
+  // Returns true if we should use a system drag and drop session when dragging
+  // tabs outside of a tabstrip.
+  bool ShouldDragWindowUsingSystemDnD();
+
   // Returns the drag image to be used for the system drag and drop session.
   gfx::ImageSkia GetDragImageForSystemDnD();
 
-  // Starts a regular drag session as a fallback if RunMoveLoop() is not
-  // supported and no drag session is currently running.
-  Liveness StartSystemDragAndDropSessionIfNecessary(
-      const gfx::Point& point_in_screen);
+  // Starts a regular drag and drop session as a fallback if RunMoveLoop() is
+  // not supported and no drag session is currently running. `context` is used
+  // to get the widget that will initiate the drag session, and can be NULL if
+  // `system_drag_and_drop_session_running_` is true.
+  Liveness StartSystemDnDSessionIfNecessary(TabDragContext* context,
+                                            const gfx::Point& point_in_screen);
 
   // Returns the compatible TabDragContext to drag to at the
   // specified point (screen coordinates), or nullptr if there is none.
@@ -484,13 +490,11 @@ class TabDragController : public views::WidgetObserver,
   // not TAB_DESTROYED then one of CompleteDrag() or RevertDrag() is invoked.
   void EndDragImpl(EndDragType how_end);
 
-  // Creates a new browser and attaches the dragged tabs to it. Only called if
-  // EndDrag() is called in the kDraggingUsingSystemDragAndDrop state and
-  // |attached_context_hidden_| is false.
-  void AttachTabsToNewBrowserOnDrop();
-
   // Reverts a cancelled drag operation.
   void RevertDrag();
+
+  // Reverts the drag for all the tabs belonging to a group.
+  void RevertHeaderDrag(tab_groups::TabGroupId group_id);
 
   // Reverts the tab at |drag_index| in |drag_data_|.
   void RevertDragAt(size_t drag_index);
@@ -622,18 +626,10 @@ class TabDragController : public views::WidgetObserver,
   // (NORMAL vs APP).
   bool CanAttachTo(gfx::NativeWindow window);
 
-  // Helper method for TabDragController::MoveAttached to update the tab group
-  // membership of selected tabs. UpdateGroupForDraggedTabs should be called
-  // after the tabs move in a drag so the first selected index is the target
-  // index of the move.
-  void UpdateGroupForDraggedTabs();
-
-  // Helper method for TabDragController::UpdateGroupForDraggedTabs to decide if
-  // a dragged tab should stay in the tab group. Returns std::nullopt if the
-  // tab should not be in a group. Otherwise returns tab_groups::TabGroupId of
-  // the group the selected tabs should join.
-  std::optional<tab_groups::TabGroupId> GetTabGroupForTargetIndex(
-      const std::vector<int>& selected);
+  // Helper method for TabDragController::MoveAttached to precompute the tab
+  // group membership of selected tabs after performing the move.
+  std::optional<tab_groups::TabGroupId> CalculateGroupForDraggedTabs(
+      int to_index);
 
   // Helper method for OnSystemDragAndDropExited() to calculate a y-coordinate
   // that is out of the bounds of |attached_context_|, keeping
@@ -717,9 +713,12 @@ class TabDragController : public views::WidgetObserver,
   // group header, indicating that the entire group is being dragged together.
   std::optional<tab_groups::TabGroupId> group_;
 
-  // The GUID of the saved tab group whose tracking is paused between paired
-  // Detach() and Attach() calls, if dragging a saved tab group between windows.
-  std::optional<base::Uuid> paused_saved_group_id_;
+  // Used to pause observation of all open SavedTabGroups when a drag is
+  // occurring. This object is assigned when MaybePauseTrackingSavedTabGroup()
+  // is called and reset when MaybeResumeTrackingSavedTabGroup() is called. The
+  // primary use cases are when we are in the middle of a drag session (Paired
+  // Detach() and Attach() calls) or when reverting a drag (RevertDrag()).
+  std::unique_ptr<tab_groups::ScopedLocalObservationPauser> observation_pauser_;
 
   // True until MoveAttached() is first invoked.
   bool initial_move_;
@@ -767,7 +766,7 @@ class TabDragController : public views::WidgetObserver,
   // Called when the loop in RunMoveLoop finishes. Only for tests.
   base::OnceClosure drag_loop_done_callback_;
 
-  std::unique_ptr<KeyEventTracker> key_event_tracker_;
+  std::unique_ptr<EventTracker> event_tracker_;
 
   std::unique_ptr<SourceTabStripEmptinessTracker>
       source_context_emptiness_tracker_;
@@ -790,13 +789,6 @@ class TabDragController : public views::WidgetObserver,
   // |kDraggingTabs|, and we must not start a new system drag session the next
   // time StartSystemDragAndDropSessionIfNecessary() is called.
   bool system_drag_and_drop_session_running_ = false;
-
-  // True if |attached_context_| has been hidden. This is done in the
-  // kDraggingUsingSystemDragAndDrop state when dragging all of a window's tabs,
-  // to prevent RunShellDrag() from returning early because the window was
-  // destroyed when we detached all tabs. Note that this can be true even though
-  // the window is still visible; see the comment in Drag() for the reason.
-  bool attached_context_hidden_ = false;
 
   // Returns true if in the process of reverting the drag and the last tab in
   // the TabStrip is being removed from `attached_context_` so that it can be

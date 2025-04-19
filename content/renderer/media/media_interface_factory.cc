@@ -12,12 +12,12 @@
 #include "media/mojo/mojom/content_decryption_module.mojom.h"
 #include "media/mojo/mojom/renderer.mojom.h"
 #include "media/mojo/mojom/renderer_extensions.mojom.h"
-#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/platform/browser_interface_broker_proxy.h"
 
 namespace content {
 
 MediaInterfaceFactory::MediaInterfaceFactory(
-    blink::BrowserInterfaceBrokerProxy* interface_broker)
+    const blink::BrowserInterfaceBrokerProxy* interface_broker)
     : interface_broker_(interface_broker) {
   task_runner_ = base::SingleThreadTaskRunner::GetCurrentDefault();
   weak_this_ = weak_factory_.GetWeakPtr();

@@ -6,6 +6,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -50,7 +51,10 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/ash/components/drivefs/drivefs_bootstrap.h"
 #include "chromeos/ash/components/drivefs/drivefs_pinning_manager.h"
+#include "chromeos/ash/components/drivefs/drivefs_search_query.h"
 #include "chromeos/ash/components/drivefs/mojom/drivefs.mojom-shared.h"
+#include "chromeos/ash/components/drivefs/mojom/drivefs.mojom.h"
+#include "chromeos/ash/components/drivefs/mojom/notifications.mojom-forward.h"
 #include "chromeos/ash/components/drivefs/mojom/notifications.mojom.h"
 #include "chromeos/components/drivefs/mojom/drivefs_native_messaging.mojom.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -400,6 +404,37 @@ void RecordBulkPinningMountFailureReason(
   }
 }
 
+std::optional<PersistedMessage> ConvertNotificationToMessage(
+    drivefs::mojom::DriveFsNotificationPtr notification) {
+  PersistedMessage message;
+  message.source = PersistedMessage::Source::kNotification;
+  message.type = notification->which();
+  switch (notification->which()) {
+    case drivefs::mojom::DriveFsNotification::Tag::kMirrorDownloadDeleted:
+      message.path = base::FilePath(
+          notification->get_mirror_download_deleted()->parent_title);
+      // Currently we don't have stable_id returned from DriveFs for this type
+      // of notification, assign it to -1 instead.
+      message.stable_id = -1;
+      return message;
+    case drivefs::mojom::DriveFsNotification::Tag::kUnknown:
+      LOG(ERROR) << "unknown notification received";
+      return std::nullopt;
+  }
+  NOTREACHED_IN_MIGRATION();
+}
+
+std::optional<PersistedMessage> ConvertSyncErrorToMessage(
+    mojo::InlinedStructPtr<drivefs::mojom::MirrorSyncError> const& error) {
+  if (error->type == drivefs::mojom::MirrorSyncError::Type::kUnknown) {
+    LOG(ERROR) << "unknown sync error received";
+    return std::nullopt;
+  }
+
+  return PersistedMessage({PersistedMessage::Source::kError, error->type,
+                           base::FilePath(error->name), error->stable_id});
+}
+
 }  // namespace
 
 // Observes changes in Drive's Preferences and network connections.
@@ -614,16 +649,28 @@ class DriveIntegrationService::DriveFsHolder
     if (!ash::features::IsDriveFsMirroringEnabled()) {
       return;
     }
-    switch (notification->which()) {
-      case drivefs::mojom::DriveFsNotification::Tag::kMirrorDownloadDeleted:
-        persisted_notification_
-            [drivefs::mojom::DriveFsNotification::Tag::kMirrorDownloadDeleted]
-                .emplace_back(
-                    notification->get_mirror_download_deleted()->parent_title);
-        break;
-      case drivefs::mojom::DriveFsNotification::Tag::kUnknown:
-        LOG(ERROR) << "unknown notification received";
-        break;
+
+    std::optional<PersistedMessage> opt_message =
+        ConvertNotificationToMessage(std::move(notification));
+    if (opt_message.has_value()) {
+      PersistedMessage message = opt_message.value();
+      persisted_messages_[message.type].push_back(std::move(message));
+    }
+  }
+
+  void PersistSyncErrors(
+      drivefs::mojom::MirrorSyncErrorListPtr error_list) override {
+    if (!ash::features::IsDriveFsMirroringEnabled()) {
+      return;
+    }
+
+    for (const auto& error : error_list->errors) {
+      std::optional<PersistedMessage> opt_message =
+          ConvertSyncErrorToMessage(error);
+      if (opt_message.has_value()) {
+        PersistedMessage message = opt_message.value();
+        persisted_messages_[message.type].push_back(std::move(message));
+      }
     }
   }
 
@@ -641,10 +688,9 @@ class DriveIntegrationService::DriveFsHolder
   mojo::Remote<crosapi::mojom::DriveFsNativeMessageHostBridge>
       native_message_host_bridge_;
   base::OnceClosure pending_connect_to_extension_request_;
-  // Notification received from DriveFS which requires persistence.
-  std::unordered_map<drivefs::mojom::DriveFsNotification::Tag,
-                     std::vector<std::string>>
-      persisted_notification_;
+  // Notifications/Errors received from DriveFS which requires persistence.
+  std::unordered_map<PersistedMessage::Type, std::vector<PersistedMessage>>
+      persisted_messages_;
 };
 
 DriveIntegrationService::DriveIntegrationService(
@@ -1332,11 +1378,7 @@ void DriveIntegrationService::GetQuickAccessItems(
       base::BindOnce(&DriveIntegrationService::OnGetQuickAccessItems,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback));
 
-  GetDriveFsHost()->PerformSearch(
-      std::move(query),
-      mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-          std::move(on_response), FILE_ERROR_ABORT,
-          std::optional<std::vector<drivefs::mojom::QueryItemPtr>>()));
+  GetDriveFsHost()->PerformSearch(std::move(query), std::move(on_response));
 }
 
 void DriveIntegrationService::OnGetQuickAccessItems(
@@ -1375,27 +1417,28 @@ void DriveIntegrationService::SearchDriveByFileName(
   drive_query->sort_direction = sort_direction;
   drive_query->query_source = query_source;
 
-  auto on_response = base::BindOnce(
-      &DriveIntegrationService::OnSearchDriveByFileName,
-      weak_ptr_factory_.GetMutableWeakPtr(), std::move(callback));
-
-  GetDriveFsHost()->PerformSearch(
-      std::move(drive_query),
-      mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-          std::move(on_response), FILE_ERROR_ABORT,
-          std::optional<std::vector<drivefs::mojom::QueryItemPtr>>()));
+  GetDriveFsHost()->PerformSearch(std::move(drive_query), std::move(callback));
 }
 
-void DriveIntegrationService::OnSearchDriveByFileName(
-    SearchDriveByFileNameCallback callback,
-    FileError error,
-    std::optional<std::vector<drivefs::mojom::QueryItemPtr>> items) {
-  if (error != FILE_ERROR_OK || !items.has_value()) {
-    std::move(callback).Run(error, {});
-    return;
+std::unique_ptr<drivefs::DriveFsSearchQuery>
+DriveIntegrationService::CreateSearchQueryByFileName(
+    std::string query,
+    int max_results,
+    drivefs::mojom::QueryParameters::SortField sort_field,
+    drivefs::mojom::QueryParameters::SortDirection sort_direction,
+    drivefs::mojom::QueryParameters::QuerySource query_source) const {
+  if (!GetDriveFsHost()) {
+    return nullptr;
   }
 
-  std::move(callback).Run(error, std::move(items.value()));
+  auto drive_query = drivefs::mojom::QueryParameters::New();
+  drive_query->title = query;
+  drive_query->page_size = max_results;
+  drive_query->sort_field = sort_field;
+  drive_query->sort_direction = sort_direction;
+  drive_query->query_source = query_source;
+
+  return GetDriveFsHost()->CreateSearchQuery(std::move(drive_query));
 }
 
 void DriveIntegrationService::OnEnableMirroringStatusUpdate(
@@ -1900,6 +1943,9 @@ DriveIntegrationServiceFactory::DriveIntegrationServiceFactory()
               // TODO(crbug.com/40257657): Check if this service is needed in
               // Guest mode.
               .WithGuest(ProfileSelection::kRedirectedToOriginal)
+              // TODO(crbug.com/41488885): Check if this service is needed for
+              // Ash Internals.
+              .WithAshInternals(ProfileSelection::kRedirectedToOriginal)
               .Build()) {
   DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(DownloadCoreServiceFactory::GetInstance());

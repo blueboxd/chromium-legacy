@@ -34,8 +34,13 @@ enum class AutofillErrorDialogType {
   // Error shown when the server returns a temporary error for unmasking a
   // server IBAN.
   kMaskedServerIbanUnmaskingTemporaryError = 6,
+  // Error shown when the server returns result for credit card upload as
+  // unsuccessful.
+  kCreditCardUploadError = 7,
+  // Error shown when the server cannot enroll the virtual card.
+  kVirtualCardEnrollmentTemporaryError = 8,
   // kMaxValue is required for logging histograms.
-  kMaxValue = kMaskedServerIbanUnmaskingTemporaryError,
+  kMaxValue = kVirtualCardEnrollmentTemporaryError,
 };
 
 // The context for the autofill error dialog.

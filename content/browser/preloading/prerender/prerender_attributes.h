@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_PRELOADING_PRERENDER_PRERENDER_ATTRIBUTES_H_
 #define CONTENT_BROWSER_PRELOADING_PRERENDER_PRERENDER_ATTRIBUTES_H_
 
+#include <optional>
 #include <string>
 
 #include "content/common/content_export.h"
@@ -38,7 +39,10 @@ struct CONTENT_EXPORT PrerenderAttributes {
       int initiator_frame_tree_node_id,
       ukm::SourceId initiator_ukm_id,
       ui::PageTransition transition_type,
-      base::RepeatingCallback<bool(const GURL&)> url_match_predicate,
+      bool should_warm_up_compositor,
+      base::RepeatingCallback<bool(const GURL&,
+                                   const std::optional<UrlMatchType>&)>
+          url_match_predicate,
       base::RepeatingCallback<void(NavigationHandle&)>
           prerender_navigation_handle_callback,
       // TODO(crbug.com/40246462): use pattern other than default parameter.
@@ -99,6 +103,11 @@ struct CONTENT_EXPORT PrerenderAttributes {
 
   ui::PageTransition transition_type;
 
+  // If true, warms up compositor on a certain loading event of prerender
+  // initial navigation. Please see crbug.com/41496019 and comments on
+  // Page::should_warm_up_compositor_on_prerender_ for more details.
+  bool should_warm_up_compositor = false;
+
   // If the caller wants to override the default holdback processing, they can
   // set this. Otherwise, it will be computed as part of
   // PrerenderHostRegistry::CreateAndStartHost.
@@ -108,7 +117,8 @@ struct CONTENT_EXPORT PrerenderAttributes {
   // Triggers can specify their own predicate judging whether two URLs are
   // considered as pointing to the same destination. The URLs must be in
   // same-origin.
-  base::RepeatingCallback<bool(const GURL&)> url_match_predicate;
+  base::RepeatingCallback<bool(const GURL&, const std::optional<UrlMatchType>&)>
+      url_match_predicate;
 
   base::RepeatingCallback<void(NavigationHandle&)>
       prerender_navigation_handle_callback;

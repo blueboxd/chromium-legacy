@@ -220,6 +220,7 @@
 <translation id="2490721194269245365">ଗୋଲାପି ମାଟିଆ</translation>
 <translation id="249330843868392562">ଟେକ୍ସଟ୍-ରୁ-ସ୍ପୀଚ୍‍ ସେଟିଂସ୍‌ ଖୋଲନ୍ତୁ</translation>
 <translation id="2497706219848005458">ସବୁଜ ହଳଦିଆ</translation>
+<translation id="2512979179176933762">ୱିଣ୍ଡୋଗୁଡ଼ିକ ଦେଖାନ୍ତୁ</translation>
 <translation id="2523609930580546572">ChromeVox ଟ୍ୟୁଟୋରିଆଲ୍</translation>
 <translation id="2525706221823668172">Chromebook କୀବୋର୍ଡ ସର୍ଟକଟ୍‍ଗୁଡ଼ିକ</translation>
 <translation id="2553108862507765288">ବ୍ୟାକରଣ ନିୟମ ଅନୁଯାୟୀ ତ୍ରୁଟି</translation>
@@ -264,7 +265,6 @@
 <translation id="2783001728278437613">{COUNT,plural, =1{+#}other{+#}}</translation>
 <translation id="2792200646155001340">ପୂର୍ବବର୍ତ୍ତୀ ଆଇଟମକୁ ମୁଭ୍ କରିବା ପାଇଁ ଆପଣ ଗୋଟିଏ ଆଙ୍ଗୁଠିରେ ଡାହାଣରୁ ବାମକୁ ସ୍ୱାଇପ୍ ମଧ୍ୟ କରିପାରିବେ। ବର୍ତ୍ତମାନ ଏହାକୁ ବ୍ୟବହାର କରି ଦେଖନ୍ତୁ।</translation>
 <translation id="280499067616661124">ପୃଷ୍ଠାରେ ChromeVox ଖୋଜନ୍ତୁ</translation>
-<translation id="2811019999044652585">ସ୍କ୍ରିନ୍‌ର ଅନ୍ୟଭାଗଗୁଡ଼ିକ ଯେପରିକି, ଟୁଲ୍‌ବାର୍ କିମ୍ବା ସିଷ୍ଟମ୍ ଟ୍ରେ ଆଦିକୁ ଯିବା ପାଇଁ, Control+Forward କୀ ଦବାନ୍ତୁ। ଏକ Chromebookରେ, ଫରୱାର୍ଡ କୀ, 2 ନମ୍ବର କୀ'ର ଠିକ୍ ଉପରେ ଅଛି।</translation>
 <translation id="2811204574343810641">ଧାଡ଼ି</translation>
 <translation id="2816868829355607410">ଅଭ୍ୟାସ କ୍ଷେତ୍ର: ଜମ୍ପ୍ କମାଣ୍ଡଗୁଡ଼ିକ</translation>
 <translation id="2841013758207633010">ସମୟ</translation>
@@ -520,6 +520,7 @@
 <translation id="4432457053224379116">ଇଣ୍ଡିଆନ୍ ରେଡ୍</translation>
 <translation id="4432896207833262240">ଚିହ୍ନଟ କରାଯାଇଥିବା ବିଷୟବସ୍ତୁ</translation>
 <translation id="4437615272777527928">ମେନୁ ସର୍ଚ୍ଚ କରିବାକୁ ଟାଇପ କରନ୍ତୁ। ଫଳାଫଳକୁ ଯିବା ପାଇଁ ଅପ ଏବଂ ଡାଉନ ତୀର କୀ'ଗୁଡ଼ିକ ବ୍ୟବହାର କରନ୍ତୁ। ଟେକ୍ସଟ କେରେଟ ଆଡଜଷ୍ଟ କରିବାକୁ ଏବଂ ମେନୁଗୁଡ଼ିକ ମଧ୍ୟରେ ମୁଭ କରିବାକୁ ବାମ ଏବଂ ଡାହାଣ ତୀର କୀ'ଗୁଡ଼ିକୁ ବ୍ୟବହାର କରନ୍ତୁ।</translation>
+<translation id="4453530046591759283">ଟୁଲବାର କିମ୍ବା ସିଷ୍ଟମ ଟ୍ରେ ପରି ସ୍କ୍ରିନର ଅନ୍ୟ ଅଂଶଗୁଡ଼ିକୁ ଯିବା ପାଇଁ Control+F1 କୀ ଦବାନ୍ତୁ। F1 ହେଉଛି ଏସକେପ କୀ'ର ଡାହାଣପଟରେ ଥିବା ପ୍ରଥମ କୀ।</translation>
 <translation id="4457472090507035117">ବର୍ତ୍ତମାନର ସ୍ୱରକୁ ଚୟନ କରନ୍ତୁ:</translation>
 <translation id="4476183483923481720">ନୂଆ ରେଖା</translation>
 <translation id="4479068155583208887">ଫାୟାର୍ ବ୍ରିକ୍</translation>
@@ -880,6 +881,7 @@
 <translation id="7091296112653361280">ନାଭାଜୋ ଧଳା</translation>
 <translation id="7095834689119144465">କେବଳ ସାଂଖ୍ୟିକ ଟେକ୍ସଟ୍‍ ଏଡ଼ିଟ୍‍ କରନ୍ତୁ</translation>
 <translation id="7096001299300236431">ପୂର୍ବବର୍ତ୍ତୀ ମିଡିଆ</translation>
+<translation id="7096668131290451939">ଜାଣନ୍ତୁ ମୋଡରୁ ବାହାରି ଯିବା ପାଇଁ ପୁଣି Escape ଦବାନ୍ତୁ</translation>
 <translation id="7116595520562830928">multln</translation>
 <translation id="712735679809149106">ଶବ୍ଦ ଇକୋ</translation>
 <translation id="7137397390322864165">ସାଲ୍‌ମନ୍</translation>
@@ -1072,7 +1074,6 @@
 <translation id="847040613207937740">କୌଣସି ପରବର୍ତ୍ତୀ ଚେକବକ୍ସ ନାହିଁ</translation>
 <translation id="8473540203671727883">ମାଉସର ତଳେ ଥିବା ଟେକ୍ସଟ କୁହନ୍ତୁ</translation>
 <translation id="8476408756881832830">ChromeVox କହୁଥିବା ସମୟରେ ପ୍ଲେବ୍ୟାକ୍‌ ବିରତ କରନ୍ତୁ</translation>
-<translation id="8476508772960940536">ୱିଣ୍ଡୋର ସଂକ୍ଷିପ୍ତ ବିବରଣୀ</translation>
 <translation id="8480873377842220259">ବର୍ତ୍ତମାନ ଆପଣ କିଛି ବେସିକ ନାଭିଗେସନ ଜାଣିବେ। ସ୍କ୍ରିନର ଚାରିପାଖରେ ମୁଭ କରିବାକୁ ଆପଣ Search କୀ'କୁ ଧରି ରଖି ତୀର କୀଗୁଡ଼ିକୁ ଦବାଇ ପାରିବେ। ଜାରି ରଖିବାକୁ, Search + Right ତୀର କୀ ଦବାନ୍ତୁ।</translation>
 <translation id="8503360654911991865">ନାଭିଗେସନ୍ ଗ୍ରାନୁଲାରିଟି ହ୍ରାସ କରନ୍ତୁ</translation>
 <translation id="8520472399088452386">ସ୍ପିନ୍ ବଟନ୍</translation>

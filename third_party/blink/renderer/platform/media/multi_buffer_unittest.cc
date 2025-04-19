@@ -2,11 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/platform/media/multi_buffer.h"
 
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -201,9 +207,9 @@ class TestMultiBuffer : public MultiBuffer {
     DCHECK(create_ok_);
     writers_created_++;
     CHECK_LT(writers.size(), max_writers_);
-    return std::unique_ptr<DataProvider>(new FakeMultiBufferDataProvider(
+    return std::make_unique<FakeMultiBufferDataProvider>(
         pos, file_size_, max_blocks_after_defer_, must_read_whole_file_, this,
-        rnd_));
+        rnd_);
   }
   void Prune(size_t max_to_free) override {
     // Prune should not cause additional writers to be spawned.
@@ -560,10 +566,10 @@ TEST_F(MultiBufferTest, RandomTest) {
   size_t file_size = 1000000;
   multibuffer_.SetFileSize(file_size);
   multibuffer_.SetMaxBlocksAfterDefer(10);
-  std::vector<ReadHelper*> read_helpers;
+  std::vector<std::unique_ptr<ReadHelper>> read_helpers;
   for (size_t i = 0; i < 20; i++) {
-    read_helpers.push_back(
-        new ReadHelper(file_size, 1000, &multibuffer_, &rnd_, task_runner_));
+    read_helpers.push_back(std::make_unique<ReadHelper>(
+        file_size, 1000, &multibuffer_, &rnd_, task_runner_));
   }
   for (int i = 0; i < 100; i++) {
     for (int j = 0; j < 100; j++) {
@@ -580,21 +586,17 @@ TEST_F(MultiBufferTest, RandomTest) {
     multibuffer_.CheckLRUState();
   }
   multibuffer_.CheckPresentState();
-  while (!read_helpers.empty()) {
-    delete read_helpers.back();
-    read_helpers.pop_back();
-  }
 }
 
 TEST_F(MultiBufferTest, RandomTest_RangeSupported) {
   size_t file_size = 1000000;
   multibuffer_.SetFileSize(file_size);
   multibuffer_.SetMaxBlocksAfterDefer(10);
-  std::vector<ReadHelper*> read_helpers;
+  std::vector<std::unique_ptr<ReadHelper>> read_helpers;
   multibuffer_.SetRangeSupported(true);
   for (size_t i = 0; i < 20; i++) {
-    read_helpers.push_back(
-        new ReadHelper(file_size, 1000, &multibuffer_, &rnd_, task_runner_));
+    read_helpers.push_back(std::make_unique<ReadHelper>(
+        file_size, 1000, &multibuffer_, &rnd_, task_runner_));
   }
   for (int i = 0; i < 100; i++) {
     for (int j = 0; j < 100; j++) {
@@ -611,10 +613,6 @@ TEST_F(MultiBufferTest, RandomTest_RangeSupported) {
     multibuffer_.CheckLRUState();
   }
   multibuffer_.CheckPresentState();
-  while (!read_helpers.empty()) {
-    delete read_helpers.back();
-    read_helpers.pop_back();
-  }
 }
 
 }  // namespace blink

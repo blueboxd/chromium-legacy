@@ -18,7 +18,7 @@
 #include "chrome/browser/fast_checkout/fast_checkout_client_impl.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/plus_addresses/plus_address_service_factory.h"
-#include "chrome/browser/ssl/security_state_tab_helper.h"
+#include "chrome/browser/ssl/chrome_security_state_tab_helper.h"
 #include "chrome/browser/ui/autofill/autofill_field_promo_controller.h"
 #include "chrome/browser/ui/autofill/edit_address_profile_dialog_controller_impl.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -29,8 +29,8 @@
 #include "components/autofill/content/browser/test_content_autofill_driver.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/autofill_profile_test_api.h"
 #include "components/autofill/core/browser/payments/payments_autofill_client.h"
-#include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/test_autofill_manager_waiter.h"
 #include "components/autofill/core/browser/test_browser_autofill_manager.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
@@ -80,6 +80,7 @@ using ::testing::Field;
 using ::testing::InSequence;
 using ::testing::Ref;
 using ::testing::Return;
+using PasswordFormClassification = AutofillClient::PasswordFormClassification;
 using user_education::test::MockFeaturePromoController;
 
 #if BUILDFLAG(IS_ANDROID)
@@ -148,6 +149,10 @@ class TestChromeAutofillClient : public ChromeAutofillClient {
 
 class ChromeAutofillClientTest : public ChromeRenderViewHostTestHarness {
  public:
+  ChromeAutofillClientTest()
+      : ChromeRenderViewHostTestHarness(
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
+
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     PreparePersonalDataManager();
@@ -162,7 +167,7 @@ class ChromeAutofillClientTest : public ChromeRenderViewHostTestHarness {
         std::move(autofill_field_promo_controller_manual_fallback));
 
 #if !BUILDFLAG(IS_ANDROID)
-    SecurityStateTabHelper::CreateForWebContents(web_contents());
+    ChromeSecurityStateTabHelper::CreateForWebContents(web_contents());
 
     auto save_card_bubble_controller =
         std::make_unique<MockSaveCardBubbleController>(web_contents());
@@ -184,7 +189,7 @@ class ChromeAutofillClientTest : public ChromeRenderViewHostTestHarness {
   }
 
   ContentAutofillDriver* driver(content::RenderFrameHost* rfh) {
-    return client()->GetAutofillDriverFactory()->DriverForFrame(rfh);
+    return ContentAutofillDriver::GetForRenderFrameHost(rfh);
   }
 
   TestPersonalDataManager* personal_data_manager() {
@@ -208,7 +213,7 @@ class ChromeAutofillClientTest : public ChromeRenderViewHostTestHarness {
     personal_data_manager_ =
         autofill::PersonalDataManagerFactory::GetInstance()
             ->SetTestingSubclassFactoryAndUse(
-                profile(), base::BindRepeating([](content::BrowserContext*) {
+                profile(), base::BindOnce([](content::BrowserContext*) {
                   return std::make_unique<TestPersonalDataManager>();
                 }));
 
@@ -258,10 +263,13 @@ TEST_F(ChromeAutofillClientTest, ClassifiesLoginFormOnMainFrame) {
     ASSERT_TRUE(waiter.Wait(/*num_awaiting_calls=*/1));
   }
 
+  const auto expected = PasswordFormClassification{
+      .type = PasswordFormClassification::Type::kLoginForm,
+      .username_field = form.fields()[0].global_id()};
   EXPECT_EQ(client()->ClassifyAsPasswordForm(
                 autofill_driver->GetAutofillManager(), form.global_id(),
-                form.fields[0].global_id()),
-            AutofillClient::PasswordFormType::kLoginForm);
+                form.fields()[0].global_id()),
+            expected);
 }
 
 // Tests that `ClassifyAsPasswordForm()` correctly recognizes a login form on
@@ -314,63 +322,54 @@ TEST_F(ChromeAutofillClientTest, ClassifiesLoginFormOnChildFrame) {
   // The form fields in the main frame do not form a valid password form.
   EXPECT_EQ(client()->ClassifyAsPasswordForm(main_driver->GetAutofillManager(),
                                              main_form.global_id(),
-                                             main_form.fields[0].global_id()),
-            AutofillClient::PasswordFormType::kNoPasswordForm);
+                                             main_form.fields()[0].global_id()),
+            PasswordFormClassification());
   // The form fields in the child frame form a login form.
-  EXPECT_EQ(client()->ClassifyAsPasswordForm(main_driver->GetAutofillManager(),
-                                             main_form.global_id(),
-                                             child_form.fields[0].global_id()),
-            AutofillClient::PasswordFormType::kLoginForm);
+  const auto expected = PasswordFormClassification{
+      .type = PasswordFormClassification::Type::kLoginForm,
+      .username_field = child_form.fields()[0].global_id()};
+  EXPECT_EQ(client()->ClassifyAsPasswordForm(
+                main_driver->GetAutofillManager(), main_form.global_id(),
+                child_form.fields()[0].global_id()),
+            expected);
 }
 
 TEST_F(ChromeAutofillClientTest, GetFormInteractionsFlowId_BelowMaxFlowTime) {
-  // Arbitrary fixed date to avoid using Now().
-  base::Time july_2022 = base::Time::FromSecondsSinceUnixEpoch(1658620440);
   base::TimeDelta below_max_flow_time = base::Minutes(10);
-
-  autofill::TestAutofillClock test_clock(july_2022);
 
   FormInteractionsFlowId first_interaction_flow_id =
       client()->GetCurrentFormInteractionsFlowId();
 
-  test_clock.Advance(below_max_flow_time);
+  task_environment()->FastForwardBy(below_max_flow_time);
 
   EXPECT_EQ(first_interaction_flow_id,
             client()->GetCurrentFormInteractionsFlowId());
 }
 
 TEST_F(ChromeAutofillClientTest, GetFormInteractionsFlowId_AboveMaxFlowTime) {
-  // Arbitrary fixed date to avoid using Now().
-  base::Time july_2022 = base::Time::FromSecondsSinceUnixEpoch(1658620440);
   base::TimeDelta above_max_flow_time = base::Minutes(21);
-
-  autofill::TestAutofillClock test_clock(july_2022);
 
   FormInteractionsFlowId first_interaction_flow_id =
       client()->GetCurrentFormInteractionsFlowId();
 
-  test_clock.Advance(above_max_flow_time);
+  task_environment()->FastForwardBy(above_max_flow_time);
 
   EXPECT_NE(first_interaction_flow_id,
             client()->GetCurrentFormInteractionsFlowId());
 }
 
 TEST_F(ChromeAutofillClientTest, GetFormInteractionsFlowId_AdvancedTwice) {
-  // Arbitrary fixed date to avoid using Now().
-  base::Time july_2022 = base::Time::FromSecondsSinceUnixEpoch(1658620440);
   base::TimeDelta above_half_max_flow_time = base::Minutes(15);
-
-  autofill::TestAutofillClock test_clock(july_2022);
 
   FormInteractionsFlowId first_interaction_flow_id =
       client()->GetCurrentFormInteractionsFlowId();
 
-  test_clock.Advance(above_half_max_flow_time);
+  task_environment()->FastForwardBy(above_half_max_flow_time);
 
   FormInteractionsFlowId second_interaction_flow_id =
       client()->GetCurrentFormInteractionsFlowId();
 
-  test_clock.Advance(above_half_max_flow_time);
+  task_environment()->FastForwardBy(above_half_max_flow_time);
 
   EXPECT_EQ(first_interaction_flow_id, second_interaction_flow_id);
   EXPECT_NE(first_interaction_flow_id,
@@ -463,7 +462,7 @@ TEST_F(ChromeAutofillClientTest, EditAddressDialogFooter) {
 
   // Account profile
   AutofillProfile profile2 = test::GetFullProfile();
-  profile2.set_source_for_testing(AutofillProfile::Source::kAccount);
+  test_api(profile2).set_source(AutofillProfile::Source::kAccount);
   client()->ShowEditAddressProfileDialog(profile2, base::DoNothing());
   std::optional<AccountInfo> account = GetPrimaryAccountInfoFromBrowserContext(
       web_contents()->GetBrowserContext());
@@ -505,153 +504,6 @@ TEST_F(ChromeAutofillClientTest, AutofillManualFallbackIPH_NotifyFeatureUsed) {
           feature_engagement::TrackerFactory::GetForBrowserContext(profile())),
       NotifyUsedEvent);
   client()->NotifyAutofillManualFallbackUsed();
-}
-#endif
-
-#if BUILDFLAG(IS_ANDROID)
-// Verify that the prompt to upload save a user's card without CVC is shown in a
-// bottom sheet.
-TEST_F(
-    ChromeAutofillClientTest,
-    ConfirmSaveCreditCardToCloud_CardSaveTypeIsOnlyCard_RequestsBottomSheet) {
-  TestChromeAutofillClient* autofill_client = client();
-  auto* bottom_sheet_bridge =
-      autofill_client->InjectMockAutofillSaveCardBottomSheetBridge();
-
-  std::u16string expected_description;
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  expected_description =
-      u"To pay faster next time, save your card and billing address in your "
-      u"Google Account";
-#endif
-
-  // Verify that `AutofillSaveCardUiInfo` has the correct attributes that
-  // indicate upload save card prompt without CVC.
-  EXPECT_CALL(*bottom_sheet_bridge,
-              RequestShowContent(
-                  AllOf(Field(&AutofillSaveCardUiInfo::is_for_upload, true),
-                        Field(&AutofillSaveCardUiInfo::description_text,
-                              expected_description)),
-                  testing::NotNull()));
-
-  autofill_client->ConfirmSaveCreditCardToCloud(
-      CreditCard(), LegalMessageLines(),
-      ChromeAutofillClient::SaveCreditCardOptions()
-          .with_card_save_type(AutofillClient::CardSaveType::kCardSaveOnly)
-          .with_show_prompt(true),
-      base::DoNothing());
-}
-
-// Verify that the prompt to upload save a user's card with CVC is shown in a
-// bottom sheet.
-TEST_F(ChromeAutofillClientTest,
-       ConfirmSaveCreditCardToCloud_CardSaveTypeIsWithCvc_RequestsBottomSheet) {
-  TestChromeAutofillClient* autofill_client = client();
-  auto* bottom_sheet_bridge =
-      autofill_client->InjectMockAutofillSaveCardBottomSheetBridge();
-
-  std::u16string expected_description;
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  expected_description =
-      u"To pay faster next time, save your card, encrypted security code, and "
-      u"billing address in your Google Account";
-#endif
-
-  // Verify that `AutofillSaveCardUiInfo` has the correct attributes that
-  // indicate upload save card prompt with CVC.
-  EXPECT_CALL(*bottom_sheet_bridge,
-              RequestShowContent(
-                  AllOf(Field(&AutofillSaveCardUiInfo::is_for_upload, true),
-                        Field(&AutofillSaveCardUiInfo::description_text,
-                              expected_description)),
-                  testing::NotNull()));
-
-  autofill_client->ConfirmSaveCreditCardToCloud(
-      CreditCard(), LegalMessageLines(),
-      ChromeAutofillClient::SaveCreditCardOptions()
-          .with_card_save_type(AutofillClient::CardSaveType::kCardSaveWithCvc)
-          .with_show_prompt(true),
-      base::DoNothing());
-}
-
-TEST_F(ChromeAutofillClientTest,
-       ConfirmSaveCreditCardToCloud_DoesNotFailWithoutAWindow) {
-  TestChromeAutofillClient* autofill_client = client();
-
-  EXPECT_NO_FATAL_FAILURE(autofill_client->ConfirmSaveCreditCardToCloud(
-      CreditCard(), LegalMessageLines(),
-      ChromeAutofillClient::SaveCreditCardOptions().with_show_prompt(true),
-      base::DoNothing()));
-}
-
-// Verify that the prompt to local save a user's card is shown in a bottom
-// sheet.
-TEST_F(
-    ChromeAutofillClientTest,
-    ConfirmSaveCreditCardLocally_CardSaveTypeIsOnlyCard_RequestsBottomSheet) {
-  base::test::ScopedFeatureList scoped_feature_list{
-      features::kAutofillEnableCvcStorageAndFilling};
-
-  TestChromeAutofillClient* autofill_client = client();
-  auto* bottom_sheet_bridge =
-      autofill_client->InjectMockAutofillSaveCardBottomSheetBridge();
-
-  // Verify that `AutofillSaveCardUiInfo` has the correct attributes that
-  // indicate local save card prompt without CVC.
-  EXPECT_CALL(
-      *bottom_sheet_bridge,
-      RequestShowContent(
-          AllOf(
-              Field(&AutofillSaveCardUiInfo::is_for_upload, false),
-              Field(&AutofillSaveCardUiInfo::description_text,
-                    u"To pay faster next time, save your card to your device")),
-          testing::NotNull()));
-
-  autofill_client->ConfirmSaveCreditCardLocally(
-      CreditCard(),
-      ChromeAutofillClient::SaveCreditCardOptions()
-          .with_card_save_type(AutofillClient::CardSaveType::kCardSaveOnly)
-          .with_show_prompt(true),
-      base::DoNothing());
-}
-
-// Verify that the prompt to local save a user's card and CVC is shown in a
-// bottom sheet.
-TEST_F(ChromeAutofillClientTest,
-       ConfirmSaveCreditCardLocally_CardSaveTypeIsWithCvc_RequestsBottomSheet) {
-  base::test::ScopedFeatureList scoped_feature_list{
-      features::kAutofillEnableCvcStorageAndFilling};
-
-  TestChromeAutofillClient* autofill_client = client();
-  auto* bottom_sheet_bridge =
-      autofill_client->InjectMockAutofillSaveCardBottomSheetBridge();
-
-  // Verify that `AutofillSaveCardUiInfo` has the correct attributes that
-  // indicate local save card prompt with CVC.
-  EXPECT_CALL(*bottom_sheet_bridge,
-              RequestShowContent(
-                  AllOf(Field(&AutofillSaveCardUiInfo::is_for_upload, false),
-                        Field(&AutofillSaveCardUiInfo::description_text,
-                              u"To pay faster next time, save your card and "
-                              u"encrypted security code to your device")),
-                  testing::NotNull()));
-
-  autofill_client->ConfirmSaveCreditCardLocally(
-      CreditCard(),
-      ChromeAutofillClient::SaveCreditCardOptions()
-          .with_card_save_type(AutofillClient::CardSaveType::kCardSaveWithCvc)
-          .with_show_prompt(true),
-      base::DoNothing());
-}
-
-TEST_F(ChromeAutofillClientTest,
-       ConfirmSaveCreditCardLocally_DoesNotFailWithoutAWindow) {
-  TestChromeAutofillClient* autofill_client = client();
-
-  EXPECT_NO_FATAL_FAILURE(autofill_client->ConfirmSaveCreditCardLocally(
-      CreditCard(),
-      ChromeAutofillClient::SaveCreditCardOptions().with_show_prompt(true),
-      base::DoNothing()));
 }
 #endif
 }  // namespace

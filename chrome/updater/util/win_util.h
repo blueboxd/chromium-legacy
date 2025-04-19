@@ -233,6 +233,10 @@ bool SetRegistryKey(HKEY root,
                     const std::wstring& name,
                     const std::wstring& value);
 
+// Deletes or sets the `eulaaccepted` value in the `Google\Update` key, based on
+// whether `eula_accepted` is `true` or `false`. Returns `true` on success.
+bool SetEulaAccepted(UpdaterScope scope, bool eula_accepted);
+
 // Returns `true` if the token is an elevated administrator. If
 // `token` is `NULL`, the current thread token is used.
 HResultOr<bool> IsTokenAdmin(HANDLE token);
@@ -291,10 +295,15 @@ HResultOr<DWORD> ShellExecuteAndWait(const base::FilePath& file_path,
 HResultOr<DWORD> RunElevated(const base::FilePath& file_path,
                              const std::wstring& parameters);
 
+// Runs `command_line` de-elevated. The function waits until the spawned process
+// has completed. Returns the exit code of the process or HRESULT on failure.
+HResultOr<DWORD> RunDeElevated(const base::CommandLine& command_line);
+
 // Runs `path` de-elevated. `path` specifies the exe or url to be launched.
 // `parameters` can be an empty string. The function does not wait for the
 // spawned process.
-HRESULT RunDeElevated(const std::wstring& path, const std::wstring& parameters);
+HRESULT RunDeElevatedNoWait(const std::wstring& path,
+                            const std::wstring& parameters);
 
 // Runs `cmd_line` de-elevated.The function does not wait for the spawned
 // process.
@@ -451,6 +460,11 @@ bool IsOemInstalling();
 
 // Stores the runtime enrollment token to the persistent storage.
 bool StoreRunTimeEnrollmentToken(const std::string& enrollment_token);
+
+// Returns a unique temp file path of the form
+// `%TMP%\{name}{guid}.{fileextension}`, where `name` and `extension` are the
+// name and extension of `file`.
+std::optional<base::FilePath> GetUniqueTempFilePath(base::FilePath file);
 
 }  // namespace updater
 

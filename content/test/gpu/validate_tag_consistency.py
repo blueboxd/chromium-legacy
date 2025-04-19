@@ -108,9 +108,15 @@ TAG_SPECIALIZATIONS = {
             'nvidia-0xfe9',
             'nvidia-0x1cb3',
             'nvidia-0x2184',
+            'nvidia-0x2783',
         ],
         'qualcomm': [
+            # 043a = 0x41333430 = older Adreno GPU
+            # 0636 = 0x36333630 = Adreno 690 GPU (such as Surface Pro 9 5G)
+            # 0c36 = 0x36334330 = Adreno 741 GPU
             'qualcomm-0x41333430',
+            'qualcomm-0x36333630',
+            'qualcomm-0x36334330',
         ],
     },
 }
@@ -206,7 +212,8 @@ TAG_HEADER = """\
 # tags: [ mesa_lt_19.1
 #         mesa_ge_21.0
 #         mesa_ge_23.2
-#         nvidia_ge_31.0.15.4601 nvidia_lt_31.0.15.4601 ]
+#         nvidia_ge_31.0.15.4601 nvidia_lt_31.0.15.4601
+#         nvidia_ge_535.183.01 nvidia_lt_535.183.01 ]
 # ASan
 # tags: [ asan no-asan ]
 # Display Server
@@ -217,8 +224,6 @@ TAG_HEADER = """\
 # tags: [ dawn-backend-validation dawn-no-backend-validation ]
 # WebGPU Adapter
 # tags: [ webgpu-adapter-default webgpu-adapter-swiftshader ]
-# WebGPU Compat Mode
-# tags: [ webgpu-compat webgpu-not-compat ]
 # WebGPU DXC
 # tags: [ webgpu-dxc-enabled webgpu-dxc-disabled ]
 # WebGPU worker usage

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 // A class to emulate GLES2 over command buffers.
 
 #include "gpu/command_buffer/client/gles2_implementation.h"
@@ -83,8 +88,7 @@
 //
 // If it was up to us we'd just always write to the destination but the OpenGL
 // spec defines the behavior of OpenGL functions, not us. :-(
-#if defined(__native_client__) || defined(GLES2_CONFORMANCE_TESTS) || \
-    BUILDFLAG(IS_MINIMAL_TOOLCHAIN)
+#if defined(__native_client__) || BUILDFLAG(IS_MINIMAL_TOOLCHAIN)
 #define GPU_CLIENT_VALIDATE_DESTINATION_INITALIZATION_ASSERT(v)
 #define GPU_CLIENT_DCHECK(v)
 #elif defined(GPU_DCHECK)
@@ -855,7 +859,7 @@ bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
       *params = bound_pixel_unpack_transfer_buffer_id_;
       return true;
     case GL_READ_FRAMEBUFFER_BINDING:
-      if (capabilities_.major_version >= 3 ||
+      if (gl_capabilities_.major_version >= 3 ||
           IsChromiumFramebufferMultisampleAvailable()) {
         *params = bound_read_framebuffer_;
         return true;
@@ -959,7 +963,7 @@ bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
       break;
   }
 
-  if (capabilities_.major_version < 3) {
+  if (gl_capabilities_.major_version < 3) {
     return false;
   }
 
@@ -972,7 +976,7 @@ bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
       *params = bound_copy_write_buffer_;
       return true;
     case GL_MAJOR_VERSION:
-      *params = capabilities_.major_version;
+      *params = gl_capabilities_.major_version;
       return true;
     case GL_MAX_3D_TEXTURE_SIZE:
       *params = gl_capabilities_.max_3d_texture_size;
@@ -1058,7 +1062,7 @@ bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
       *params = gl_capabilities_.min_program_texel_offset;
       return true;
     case GL_MINOR_VERSION:
-      *params = capabilities_.minor_version;
+      *params = gl_capabilities_.minor_version;
       return true;
     case GL_NUM_EXTENSIONS:
       UpdateCachedExtensionsIfNeeded();
@@ -1141,7 +1145,7 @@ bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
       break;
   }
 
-  if (capabilities_.minor_version < 1) {
+  if (gl_capabilities_.minor_version < 1) {
     return false;
   }
 
@@ -2263,7 +2267,7 @@ void GLES2Implementation::PixelStorei(GLenum pname, GLint param) {
     case GL_PACK_SKIP_ROWS:
     case GL_UNPACK_IMAGE_HEIGHT:
     case GL_UNPACK_SKIP_IMAGES:
-      if (capabilities_.major_version < 3) {
+      if (gl_capabilities_.major_version < 3) {
         SetGLError(GL_INVALID_ENUM, "glPixelStorei", "invalid pname");
         return;
       }
@@ -2305,7 +2309,7 @@ void GLES2Implementation::PixelStorei(GLenum pname, GLint param) {
       break;
     case GL_UNPACK_ROW_LENGTH:
       unpack_row_length_ = param;
-      if (capabilities_.major_version < 3) {
+      if (gl_capabilities_.major_version < 3) {
         // In ES2 with EXT_unpack_subimage, it's handled on the client side
         // and there is no need to send it to the service side.
         return;
@@ -4844,7 +4848,7 @@ GLboolean GLES2Implementation::ReadbackARGBImagePixelsINTERNAL(
          sizeof(gpu::Mailbox));
 
   helper_->ReadbackARGBImagePixelsINTERNAL(
-      plane_index, src_x, src_y, dst_width, dst_height, dst_row_bytes,
+      src_x, src_y, plane_index, dst_width, dst_height, dst_row_bytes,
       dst_sk_color_type, dst_sk_alpha_type, shm_id, shm_offset,
       color_space_offset, pixels_offset, mailbox_offset);
 
@@ -4855,7 +4859,7 @@ GLboolean GLES2Implementation::ReadbackARGBImagePixelsINTERNAL(
     return GL_FALSE;
   }
   memcpy(pixels, static_cast<uint8_t*>(shm_address) + pixels_offset, dst_size);
-  return GL_FALSE;
+  return GL_TRUE;
 }
 
 void GLES2Implementation::ReadPixels(GLint xoffset,
@@ -5305,7 +5309,7 @@ void GLES2Implementation::BindFramebufferHelper(GLenum target,
       break;
     case GL_READ_FRAMEBUFFER:
 #if EXPENSIVE_DCHECKS_ARE_ON()
-      DCHECK(capabilities_.major_version >= 3 ||
+      DCHECK(gl_capabilities_.major_version >= 3 ||
              IsChromiumFramebufferMultisampleAvailable());
 #endif
       if (bound_read_framebuffer_ != framebuffer) {
@@ -5315,7 +5319,7 @@ void GLES2Implementation::BindFramebufferHelper(GLenum target,
       break;
     case GL_DRAW_FRAMEBUFFER:
 #if EXPENSIVE_DCHECKS_ARE_ON()
-      DCHECK(capabilities_.major_version >= 3 ||
+      DCHECK(gl_capabilities_.major_version >= 3 ||
              IsChromiumFramebufferMultisampleAvailable());
 #endif
       if (bound_framebuffer_ != framebuffer) {
@@ -6496,12 +6500,9 @@ void GLES2Implementation::BeginQueryEXT(GLenum target, GLuint id) {
       }
       break;
     case GL_SAMPLES_PASSED_ARB:
-      if (!gl_capabilities_.occlusion_query) {
-        SetGLError(GL_INVALID_OPERATION, "glBeginQueryEXT",
-                   "not enabled for occlusion queries");
-        return;
-      }
-      break;
+      SetGLError(GL_INVALID_OPERATION, "glBeginQueryEXT",
+                 "not enabled for occlusion queries");
+      return;
     case GL_ANY_SAMPLES_PASSED:
     case GL_ANY_SAMPLES_PASSED_CONSERVATIVE:
       if (!gl_capabilities_.occlusion_query_boolean) {
@@ -6518,8 +6519,9 @@ void GLES2Implementation::BeginQueryEXT(GLenum target, GLuint id) {
       }
       break;
     case GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN:
-      if (capabilities_.major_version >= 3)
+      if (gl_capabilities_.major_version >= 3) {
         break;
+      }
       [[fallthrough]];
     default:
       SetGLError(GL_INVALID_ENUM, "glBeginQueryEXT", "unknown query target");

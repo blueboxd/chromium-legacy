@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/webui/tab_search/tab_search.mojom.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search_page_handler.h"
 #include "chrome/browser/ui/webui/top_chrome/top_chrome_web_ui_controller.h"
+#include "chrome/browser/ui/webui/top_chrome/top_chrome_webui_config.h"
 #include "chrome/browser/ui/webui/webui_load_timer.h"
 #include "chrome/common/webui_url_constants.h"
 #include "content/public/browser/webui_config.h"
@@ -28,11 +29,14 @@ class ColorChangeHandler;
 
 class TabSearchUI;
 
-class TabSearchUIConfig : public content::DefaultWebUIConfig<TabSearchUI> {
+class TabSearchUIConfig : public DefaultTopChromeWebUIConfig<TabSearchUI> {
  public:
-  TabSearchUIConfig()
-      : DefaultWebUIConfig(content::kChromeUIScheme,
-                           chrome::kChromeUITabSearchHost) {}
+  TabSearchUIConfig();
+
+  // DefaultTopChromeWebUIConfig:
+  bool ShouldAutoResizeHost() override;
+  bool IsPreloadable() override;
+  std::optional<int> GetCommandIdForTesting() override;
 };
 
 class TabSearchUI : public TopChromeWebUIController,

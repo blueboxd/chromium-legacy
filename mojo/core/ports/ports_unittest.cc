@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -372,9 +377,10 @@ class PortsTest : public testing::Test, public MessageRouter {
       // Wait for any Node to signal that it's idle.
       base::AutoUnlock global_unlock(global_lock_);
       std::vector<base::WaitableEvent*> events;
-      for (const auto& entry : nodes_)
+      for (const auto& entry : nodes_) {
         events.push_back(&entry.second->idle_event());
-      base::WaitableEvent::WaitMany(events.data(), events.size());
+      }
+      base::WaitableEvent::WaitMany(events);
     }
   }
 

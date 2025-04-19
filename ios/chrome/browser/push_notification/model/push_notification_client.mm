@@ -47,10 +47,9 @@ void PushNotificationClient::OnSceneActiveForegroundBrowserReady() {
         break;
       case PushNotificationClientId::kTips:
       case PushNotificationClientId::kCommerce:
+      case PushNotificationClientId::kSafetyCheck:
         // Features do not support feedback.
         NOTREACHED_IN_MIGRATION();
-        break;
-      default:
         break;
     }
   }
@@ -69,12 +68,11 @@ void PushNotificationClient::OnSceneActiveForegroundBrowserReady() {
 Browser* PushNotificationClient::GetSceneLevelForegroundActiveBrowser() {
   BrowserList* browser_list =
       BrowserListFactory::GetForBrowserState(GetLastUsedBrowserState());
-  for (Browser* browser : browser_list->AllRegularBrowsers()) {
-    if (!browser->IsInactive()) {
-      if (browser->GetSceneState().activationLevel ==
-          SceneActivationLevelForegroundActive) {
-        return browser;
-      }
+  for (Browser* browser :
+       browser_list->BrowsersOfType(BrowserList::BrowserType::kRegular)) {
+    if (browser->GetSceneState().activationLevel ==
+        SceneActivationLevelForegroundActive) {
+      return browser;
     }
   }
   return nullptr;
@@ -108,6 +106,8 @@ void PushNotificationClient::loadFeedbackWithPayloadAndClientId(
   }
 }
 
+// TODO(crbug.com/355627607): this API needs to be re-designed to work
+// with Multiple Identities.
 ChromeBrowserState* PushNotificationClient::GetLastUsedBrowserState() {
   if (last_used_browser_state_for_testing_) {
     return last_used_browser_state_for_testing_;

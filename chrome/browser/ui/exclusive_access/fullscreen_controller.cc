@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/functional/bind.h"
 #include "base/location.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/notreached.h"
@@ -120,7 +121,7 @@ void CheckUrlForAllowlistAndRecordMetric(
   g_browser_process->safe_browsing_service()
       ->database_manager()
       ->CheckUrlForHighConfidenceAllowlist(
-          url, "RT" /*realtime*/,
+          url,
           base::BindOnce(
               [](history::HistoryLastVisitResult result, bool on_allowlist) {
                 RecordWebsiteStateAtApiRequest(result, on_allowlist);
@@ -226,9 +227,11 @@ bool FullscreenController::CanEnterFullscreenModeForTab(
   auto* web_contents = WebContents::FromRenderFrameHost(requesting_frame);
   DCHECK(web_contents);
 
-  if (web_contents !=
-      exclusive_access_manager()->context()->GetActiveWebContents())
+  if (web_contents != exclusive_access_manager()
+                          ->context()
+                          ->GetWebContentsForExclusiveAccess()) {
     return false;
+  }
 
   return true;
 }
@@ -378,8 +381,8 @@ void FullscreenController::FullscreenTabOpeningPopup(
 
 void FullscreenController::OnTabDeactivated(
     content::WebContents* web_contents) {
-  base::AutoReset<content::WebContents*> auto_resetter(&deactivated_contents_,
-                                                       web_contents);
+  base::AutoReset<raw_ptr<content::WebContents>> auto_resetter(
+      &deactivated_contents_, web_contents);
   ExclusiveAccessControllerBase::OnTabDeactivated(web_contents);
 }
 
@@ -475,7 +478,7 @@ void FullscreenController::RunOrDeferUntilTransitionIsComplete(
 
 bool FullscreenController::HandleUserPressedEscape() {
   WebContents* const active_web_contents =
-      exclusive_access_manager()->context()->GetActiveWebContents();
+      exclusive_access_manager()->context()->GetWebContentsForExclusiveAccess();
   if (IsFullscreenWithinTab(active_web_contents)) {
     active_web_contents->ExitFullscreen(
         /* will_cause_resize */ IsFullscreenCausedByTab());

@@ -13,12 +13,16 @@ import "components/optimization_guide/proto/descriptors.proto";
 import "components/optimization_guide/proto/redaction.proto";
 import "components/optimization_guide/proto/substitution.proto";
 import "components/optimization_guide/proto/model_execution.proto";
+import "components/optimization_guide/proto/parser_kind.proto";
 
 message OnDeviceModelExecutionConfig {
   // The set of configs for features that leverage the on-device model.
   //
   // It is expected that there is only one feature config per feature.
   repeated OnDeviceModelExecutionFeatureConfig feature_configs = 1;
+
+  // A config used for validating the model and device after download.
+  optional OnDeviceModelValidationConfig validation_config = 2;
 }
 
 message OnDeviceModelExecutionFeatureConfig {
@@ -37,6 +41,10 @@ message OnDeviceModelExecutionFeatureConfig {
 
   // Whether text safety can be skipped for this feature, if not configured.
   optional bool can_skip_text_safety = 5;
+
+  // Sampling parameters to use with the model.
+  // These will override global defaults, but not per session configurations.
+  optional SamplingParams sampling_params = 6;
 }
 
 message OnDeviceModelExecutionInputConfig {
@@ -70,10 +78,32 @@ message OnDeviceModelExecutionOutputConfig {
 
   // Rules that result in redacting the output.
   optional RedactRules redact_rules = 3;
+
+  // Which output parsing implementation to use.
+  optional ParserKind parser_kind = 4;
 }
 
 message TextSafetyFallbackConfig {
   // The proto field in the input request that contains the URL this request was
   // activated on, if any.
   optional ProtoField input_url_proto_field = 1;
+}
+
+message OnDeviceModelValidationConfig {
+  // Prompts and responses used for basic model validation.
+  repeated ValidationPrompt validation_prompts = 1;
+}
+
+message ValidationPrompt {
+  // The input prompt to send.
+  optional string prompt = 1;
+
+  // A string that the output is expected to contain. This is not case
+  // sensitive.
+  optional string expected_output = 2;
+}
+
+message SamplingParams {
+  optional uint32 top_k = 1;
+  optional float temperature = 2;
 }

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ui/display/manager/display_change_observer.h"
 
 #include <algorithm>
@@ -16,6 +21,7 @@
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
+#include "base/not_fatal_until.h"
 #include "base/notreached.h"
 #include "base/values.h"
 #include "build/chromeos_buildflags.h"
@@ -99,14 +105,6 @@ std::optional<gfx::RoundedCornersF> ParsePanelRadiiFromCommandLine() {
   return ParseDisplayPanelRadii(&display_switch_value.value());
 }
 
-std::optional<float> GetVSyncRateMin(const DisplaySnapshot* snapshot,
-                                     const DisplayMode* mode_info) {
-  if (snapshot->vsync_rate_min().has_value()) {
-    return mode_info->GetVSyncRateMin(snapshot->vsync_rate_min().value());
-  }
-  return std::nullopt;
-}
-
 }  // namespace
 
 // static
@@ -174,7 +172,7 @@ DisplayChangeObserver::GetExternalManagedDisplayModeList(
     const gfx::Size size = native_mode.size();
 
     auto it = display_mode_map.find(size);
-    DCHECK(it != display_mode_map.end())
+    CHECK(it != display_mode_map.end(), base::NotFatalUntil::M130)
         << "Native mode must be part of the mode list.";
 
     // If the native mode was replaced (e.g. by a mode with similar size but
@@ -352,7 +350,7 @@ ManagedDisplayInfo DisplayChangeObserver::CreateManagedDisplayInfo(
 
   new_info.set_refresh_rate(mode_info->refresh_rate());
   new_info.set_is_interlaced(mode_info->is_interlaced());
-  new_info.set_vsync_rate_min(GetVSyncRateMin(snapshot, mode_info));
+  new_info.set_vsync_rate_min(mode_info->vsync_rate_min());
   new_info.set_variable_refresh_rate_state(
       snapshot->variable_refresh_rate_state());
   new_info.set_connection_type(snapshot->type());

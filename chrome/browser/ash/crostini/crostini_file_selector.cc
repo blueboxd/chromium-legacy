@@ -54,7 +54,7 @@ void CrostiniFileSelector::SelectFile(
       l10n_util::GetStringUTF16(
           IDS_SETTINGS_CROSTINI_FILE_SELECTOR_DIALOG_TITLE),
       downloads_path, &file_type_info, 0, FILE_PATH_LITERAL(""),
-      GetBrowserWindow(), nullptr);
+      GetBrowserWindow());
 }
 
 gfx::NativeWindow CrostiniFileSelector::GetBrowserWindow() {
@@ -63,12 +63,11 @@ gfx::NativeWindow CrostiniFileSelector::GetBrowserWindow() {
 }
 
 void CrostiniFileSelector::FileSelected(const ui::SelectedFileInfo& file,
-                                        int index,
-                                        void* params) {
+                                        int index) {
   std::move(selected_callback_).Run(file.path());
 }
 
-void CrostiniFileSelector::FileSelectionCanceled(void* params) {
+void CrostiniFileSelector::FileSelectionCanceled() {
   if (cancelled_callback_) {
     std::move(cancelled_callback_).Run();
   }

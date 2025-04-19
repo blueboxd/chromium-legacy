@@ -2,6 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
+#include "chrome/browser/predictors/loading_predictor.h"
+
 #include <map>
 #include <memory>
 #include <set>
@@ -23,12 +30,12 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_features.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_features.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_preconnect_client.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/predictors/lcp_critical_path_predictor/lcp_critical_path_predictor_util.h"
-#include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/predictors/loading_test_util.h"
 #include "chrome/browser/predictors/preconnect_manager.h"
@@ -57,12 +64,15 @@
 #include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/fenced_frame_test_util.h"
 #include "content/public/test/prerender_test_util.h"
 #include "content/public/test/simple_url_loader_test_helper.h"
+#include "content/public/test/test_frame_navigation_observer.h"
 #include "net/base/features.h"
 #include "net/base/network_anonymization_key.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/connection_tracker.h"
+#include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/embedded_test_server_connection_listener.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -71,6 +81,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/cors/cors_error_status.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/network_quality_tracker.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/clear_data_filter.mojom.h"
@@ -394,7 +405,10 @@ class LoadingPredictorBrowserTest : public InProcessBrowserTest {
          features::kNavigationPredictorPreconnectHoldback},
         // TODO(crbug.com/40248833): Use HTTPS URLs in tests to avoid having to
         // disable this feature.
-        {features::kHttpsUpgrades});
+        {features::kHttpsUpgrades,
+         // TODO(crbug.com/354087603): Update tests when this feature has
+         // positive (or neutral) effect of loading performance.
+         features::kLoadingPredictorLimitPreconnectSocketCount});
   }
 
   LoadingPredictorBrowserTest(const LoadingPredictorBrowserTest&) = delete;
@@ -914,7 +928,8 @@ class LCPCriticalPathPredictorBrowserTest : public LoadingPredictorBrowserTest {
       const GURL& url,
       size_t expected_locator_count) {
     auto lcpp_stat =
-        loading_predictor()->resource_prefetch_predictor()->GetLcppStat(url);
+        loading_predictor()->resource_prefetch_predictor()->GetLcppStat(
+            /*initiator_origin=*/std::nullopt, url);
     std::vector<std::string> locators;
     if (lcpp_stat) {
       std::optional<blink::mojom::LCPCriticalPathPredictorNavigationTimeHint>
@@ -947,7 +962,8 @@ class LCPCriticalPathPredictorBrowserTest : public LoadingPredictorBrowserTest {
 
   std::vector<std::string> GetLCPPFonts(const GURL& url) {
     auto lcpp_stat =
-        loading_predictor()->resource_prefetch_predictor()->GetLcppStat(url);
+        loading_predictor()->resource_prefetch_predictor()->GetLcppStat(
+            /*initiator_origin=*/std::nullopt, url);
     if (!lcpp_stat) {
       return std::vector<std::string>();
     }
@@ -1055,6 +1071,57 @@ IN_PROC_BROWSER_TEST_F(LCPCriticalPathPredictorBrowserTest, LearnLCPPFont) {
   EXPECT_EQ(expected, GetLCPPFonts(kUrlA));
   EXPECT_EQ(std::vector<std::string>(), GetLCPPFonts(kUrlB));
   EXPECT_EQ(std::vector<std::string>(), GetLCPPFonts(kUrlC));
+}
+
+class SuppressesLoadingPredictorOnSlowNetworkBrowserTest
+    : public LoadingPredictorBrowserTest {
+ public:
+  SuppressesLoadingPredictorOnSlowNetworkBrowserTest() {
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {{features::kSuppressesLoadingPredictorOnSlowNetwork,
+          {{features::kSuppressesLoadingPredictorOnSlowNetworkThreshold.name,
+            "500ms"}}}},
+        {});
+  }
+
+  network::NetworkQualityTracker& GetNetworkQualityTracker() const {
+    return *g_browser_process->network_quality_tracker();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Tests that kSuppressesLoadingPredictorOnSlowNetwork feature suppresses
+// LoadingPredictor on slow network.
+IN_PROC_BROWSER_TEST_F(SuppressesLoadingPredictorOnSlowNetworkBrowserTest,
+                       SuppressesOnSlowNetwork) {
+  GURL url = embedded_test_server()->GetURL("/nocontent");
+  base::TimeDelta http_rtt = GetNetworkQualityTracker().GetHttpRTT();
+  int32_t downstream_throughput_kbps =
+      GetNetworkQualityTracker().GetDownstreamThroughputKbps();
+
+  {
+    // LoadingPredictor will be suppressed on slow networks.
+    GetNetworkQualityTracker().ReportRTTsAndThroughputForTesting(
+        base::Milliseconds(501), downstream_throughput_kbps);
+    auto observer = NavigateToURLAsync(url);
+    ASSERT_TRUE(observer->WaitForNavigationFinished());
+    EXPECT_EQ(0u, loading_predictor()->GetTotalHintsActivatedForTesting());
+  }
+
+  {
+    // LoadingPredictor will not be suppressed on fast networks.
+    GetNetworkQualityTracker().ReportRTTsAndThroughputForTesting(
+        base::Milliseconds(500), downstream_throughput_kbps);
+    auto observer = NavigateToURLAsync(url);
+    ASSERT_TRUE(observer->WaitForNavigationFinished());
+    EXPECT_EQ(1u, loading_predictor()->GetTotalHintsActivatedForTesting());
+  }
+
+  // Reset to the original values.
+  GetNetworkQualityTracker().ReportRTTsAndThroughputForTesting(
+      http_rtt, downstream_throughput_kbps);
 }
 
 enum class NetworkIsolationKeyMode {
@@ -2484,6 +2551,287 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorMultiplePageBrowserTest,
   ASSERT_TRUE(content::HistoryGoBack(GetWebContents()));
   ASSERT_EQ(GetWebContents()->GetPrimaryMainFrame(), rfh_1.get());
   EXPECT_EQ(2u, loading_predictor->GetTotalHintsActivatedForTesting());
+}
+
+// Test interaction with fenced frame `window.fence.disableUntrustedNetwork()`
+// API. See:
+// https://github.com/WICG/fenced-frame/blob/master/explainer/fenced_frames_with_local_unpartitioned_data_access.md#revoking-network-access
+class FencedFrameLoadingPredictorBrowserTest
+    : public LoadingPredictorBrowserTest {
+ public:
+  void SetUpOnMainThread() override {
+    LoadingPredictorBrowserTest::SetUpOnMainThread();
+
+    // Set up the embedded https test server for fenced frame which requires a
+    // secure context to load.
+    embedded_https_test_server().SetSSLConfig(
+        net::EmbeddedTestServer::CERT_TEST_NAMES);
+
+    // Add content/test/data for cross_site_iframe_factory.html.
+    embedded_https_test_server().ServeFilesFromSourceDirectory(
+        "content/test/data");
+    embedded_https_test_server().ServeFilesFromDirectory(
+        GetChromeTestDataDir());
+  }
+
+  content::test::FencedFrameTestHelper& fenced_frame_test_helper() {
+    return fenced_frame_test_helper_;
+  }
+
+  content::WebContents* GetWebContents() {
+    return browser()->tab_strip_model()->GetActiveWebContents();
+  }
+
+ private:
+  content::test::FencedFrameTestHelper fenced_frame_test_helper_;
+};
+
+// Verify DNS prefetch is working in fenced frame.
+IN_PROC_BROWSER_TEST_F(FencedFrameLoadingPredictorBrowserTest, DnsPrefetch) {
+  ASSERT_TRUE(embedded_https_test_server().Start());
+
+  // Navigate to a page that contains a fenced frame.
+  const GURL main_url = embedded_https_test_server().GetURL(
+      "a.test", "/cross_site_iframe_factory.html?a.test(a.test{fenced})");
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), main_url));
+
+  // Get fenced frame render frame host.
+  std::vector<content::RenderFrameHost*> child_frames =
+      fenced_frame_test_helper().GetChildFencedFrameHosts(
+          GetWebContents()->GetPrimaryMainFrame());
+  ASSERT_EQ(child_frames.size(), 1u);
+  content::RenderFrameHost* fenced_frame_rfh = child_frames[0];
+
+  // Get fenced frame NetworkAnonymizationKey.
+  const net::NetworkAnonymizationKey& network_anonymization_key =
+      fenced_frame_rfh->GetIsolationInfoForSubresources()
+          .network_anonymization_key();
+
+  GURL dns_prefetch_url("https://chromium.org");
+
+  // Add a link element in fenced frame that does a DNS prefetch.
+  EXPECT_TRUE(ExecJs(fenced_frame_rfh, content::JsReplace(R"(
+                    var link_element = document.createElement('link');
+                    link_element.href = $1;
+                    link_element.rel = 'dns-prefetch';
+                    document.body.appendChild(link_element);
+          )",
+                                                          dns_prefetch_url)));
+
+  // The observer should observe a DNS prefetch which succeeds.
+  preconnect_manager_observer()->WaitUntilHostLookedUp(
+      dns_prefetch_url.host(), network_anonymization_key);
+  EXPECT_TRUE(preconnect_manager_observer()->HasHostBeenLookedUp(
+      dns_prefetch_url.host(), network_anonymization_key));
+  EXPECT_TRUE(preconnect_manager_observer()->HostFound(
+      dns_prefetch_url.host(), network_anonymization_key));
+}
+
+// Verify DNS prefetch is disabled after fenced frame untrusted network cutoff.
+IN_PROC_BROWSER_TEST_F(FencedFrameLoadingPredictorBrowserTest,
+                       NetworkCutoffDisablesDnsPrefetch) {
+  ASSERT_TRUE(embedded_https_test_server().Start());
+
+  // Navigate to a page that contains a fenced frame.
+  const GURL main_url = embedded_https_test_server().GetURL(
+      "a.test", "/cross_site_iframe_factory.html?a.test(a.test{fenced})");
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), main_url));
+
+  // Get fenced frame render frame host.
+  std::vector<content::RenderFrameHost*> child_frames =
+      fenced_frame_test_helper().GetChildFencedFrameHosts(
+          GetWebContents()->GetPrimaryMainFrame());
+  ASSERT_EQ(child_frames.size(), 1u);
+  content::RenderFrameHost* fenced_frame_rfh = child_frames[0];
+
+  // Get fenced frame NetworkAnonymizationKey.
+  const net::NetworkAnonymizationKey& network_anonymization_key =
+      fenced_frame_rfh->GetIsolationInfoForSubresources()
+          .network_anonymization_key();
+
+  GURL dns_prefetch_url("https://chromium.org");
+
+  // Disable fenced frame untrusted network access, then add a link element
+  // that does a DNS prefetch.
+  EXPECT_TRUE(ExecJs(fenced_frame_rfh, content::JsReplace(R"(
+            (async () => {
+              await window.fence.disableUntrustedNetwork().then(
+                () => {
+                  var link_element = document.createElement('link');
+                  link_element.href = $1;
+                  link_element.rel = 'dns-prefetch';
+                  document.body.appendChild(link_element);
+                }
+              );
+            })();
+          )",
+                                                          dns_prefetch_url)));
+
+  // The observer should observe a DNS prefetch which is cancelled.
+  preconnect_manager_observer()->WaitUntilHostLookedUp(
+      dns_prefetch_url.host(), network_anonymization_key);
+
+  // The host is looked up, but the lookup is eventually cancelled because the
+  // fenced frame untrusted network access has been disabled.
+  EXPECT_TRUE(preconnect_manager_observer()->HasHostBeenLookedUp(
+      dns_prefetch_url.host(), network_anonymization_key));
+  EXPECT_FALSE(preconnect_manager_observer()->HostFound(
+      dns_prefetch_url.host(), network_anonymization_key));
+}
+
+// Verify DNS prefetch triggered by link response header is working in fenced
+// frame.
+IN_PROC_BROWSER_TEST_F(FencedFrameLoadingPredictorBrowserTest,
+                       DnsPrefetchFromLinkHeader) {
+  std::string relative_url = "/title1.html";
+  net::test_server::ControllableHttpResponse response(
+      &embedded_https_test_server(), relative_url);
+
+  ASSERT_TRUE(embedded_https_test_server().Start());
+
+  // Navigate to a page that contains a fenced frame.
+  const GURL main_url = embedded_https_test_server().GetURL(
+      "a.test", "/cross_site_iframe_factory.html?a.test(a.test{fenced})");
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), main_url));
+
+  // Get fenced frame render frame host.
+  std::vector<content::RenderFrameHost*> child_frames =
+      fenced_frame_test_helper().GetChildFencedFrameHosts(
+          GetWebContents()->GetPrimaryMainFrame());
+  ASSERT_EQ(child_frames.size(), 1u);
+  content::RenderFrameHost* fenced_frame_rfh = child_frames[0];
+
+  GURL dns_prefetch_url("https://chromium.org");
+  GURL navigation_url =
+      embedded_https_test_server().GetURL("a.test", relative_url);
+
+  // Navigate the fenced frame.
+  content::TestFrameNavigationObserver observer(fenced_frame_rfh);
+
+  EXPECT_TRUE(
+      ExecJs(GetWebContents()->GetPrimaryMainFrame(),
+             content::JsReplace(
+                 R"(document.getElementsByTagName('fencedframe')[0].config =
+                         new FencedFrameConfig($1);)",
+                 navigation_url)));
+
+  // Send a response header with link dns-prefetch field.
+  response.WaitForRequest();
+  response.Send(
+      base::StringPrintf("HTTP/1.1 200 OK\r\n"
+                         "Content-Type: text/html; charset=utf-8\r\n"
+                         "Supports-Loading-Mode: fenced-frame\r\n"
+                         "Link: <%s>; rel=dns-prefetch\r\n"
+                         "\r\n",
+                         dns_prefetch_url.spec().c_str()));
+  response.Done();
+
+  // Wait until navigation commits.
+  observer.WaitForCommit();
+
+  // Get the fenced frame render frame host again as it has changed after
+  // navigation.
+  child_frames = fenced_frame_test_helper().GetChildFencedFrameHosts(
+      GetWebContents()->GetPrimaryMainFrame());
+  ASSERT_EQ(child_frames.size(), 1u);
+  fenced_frame_rfh = child_frames[0];
+
+  // Get fenced frame NetworkAnonymizationKey after navigation commits. This
+  // is because DNS prefetch uses the NetworkAnonymizationKey from the
+  // IsolationInfo of the pending navigation. So the NetworkAnonymizationKey
+  // used for the checks below needs to be obtained from the new fenced frame
+  // render frame host.
+  const net::NetworkAnonymizationKey& network_anonymization_key =
+      fenced_frame_rfh->GetIsolationInfoForSubresources()
+          .network_anonymization_key();
+
+  // The observer should observe a DNS prefetch which succeeds.
+  preconnect_manager_observer()->WaitUntilHostLookedUp(
+      dns_prefetch_url.host(), network_anonymization_key);
+  EXPECT_TRUE(preconnect_manager_observer()->HasHostBeenLookedUp(
+      dns_prefetch_url.host(), network_anonymization_key));
+  EXPECT_TRUE(preconnect_manager_observer()->HostFound(
+      dns_prefetch_url.host(), network_anonymization_key));
+}
+
+// Verify DNS prefetch triggered by link response header is disabled after
+// fenced frame untrusted network cutoff.
+IN_PROC_BROWSER_TEST_F(FencedFrameLoadingPredictorBrowserTest,
+                       NetworkCutoffDisablesDnsPrefetchFromLinkHeader) {
+  std::string relative_url = "/title1.html";
+  net::test_server::ControllableHttpResponse dns_prefetch_response(
+      &embedded_https_test_server(), relative_url);
+
+  ASSERT_TRUE(embedded_https_test_server().Start());
+
+  // Navigate to a page that contains a fenced frame and a nested iframe.
+  const GURL main_url = embedded_https_test_server().GetURL(
+      "a.test",
+      "/cross_site_iframe_factory.html?a.test(a.test{fenced}(a.test))");
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), main_url));
+
+  // Get fenced frame render frame host.
+  std::vector<content::RenderFrameHost*> child_frames =
+      fenced_frame_test_helper().GetChildFencedFrameHosts(
+          GetWebContents()->GetPrimaryMainFrame());
+  ASSERT_EQ(child_frames.size(), 1u);
+  content::RenderFrameHost* fenced_frame_rfh = child_frames[0];
+
+  // Get nested iframe render frame host.
+  content::RenderFrameHost* nested_iframe_rfh =
+      content::ChildFrameAt(fenced_frame_rfh, 0);
+
+  // Get fenced frame NetworkAnonymizationKey.
+  const net::NetworkAnonymizationKey& network_anonymization_key =
+      fenced_frame_rfh->GetIsolationInfoForSubresources()
+          .network_anonymization_key();
+
+  GURL dns_prefetch_url("https://chromium.org");
+  GURL navigation_url =
+      embedded_https_test_server().GetURL("a.test", relative_url);
+
+  // Disable fenced frame untrusted network access.
+  EXPECT_TRUE(ExecJs(fenced_frame_rfh, R"(
+                    (async () => {
+                      await window.fence.disableUntrustedNetwork();
+                    })();
+          )"));
+
+  // Exempt `navigation_url` from fenced frame network revocation.
+  content::test::ExemptUrlsFromFencedFrameNetworkRevocation(fenced_frame_rfh,
+                                                            {navigation_url});
+
+  // Navigate the nested iframe. The navigation is allowed because the url has
+  // been exempted from network revocation.
+  content::TestFrameNavigationObserver observer(nested_iframe_rfh);
+
+  EXPECT_TRUE(ExecJs(
+      fenced_frame_rfh,
+      content::JsReplace("document.getElementsByTagName('iframe')[0].src = $1;",
+                         navigation_url)));
+
+  // Send a response header with link dns-prefetch field.
+  dns_prefetch_response.WaitForRequest();
+  dns_prefetch_response.Send(
+      base::StringPrintf("HTTP/1.1 200 OK\r\n"
+                         "Content-Type: text/html; charset=utf-8\r\n"
+                         "Supports-Loading-Mode: fenced-frame\r\n"
+                         "Link: <%s>; rel=dns-prefetch\r\n"
+                         "\r\n",
+                         dns_prefetch_url.spec().c_str()));
+  dns_prefetch_response.Done();
+
+  // Wait until navigation commits.
+  observer.WaitForCommit();
+  ASSERT_TRUE(WaitForLoadStop(GetWebContents()));
+
+  base::RunLoop().RunUntilIdle();
+
+  // In rare cases, the NetworkHintsHandler will not receive the dns prefetch
+  // IPC call. Then there is no dns prefetch request initiated at all.
+  // `HasHostBeenLookedUp()` is not checked here to avoid flakiness.
+  EXPECT_FALSE(preconnect_manager_observer()->HostFound(
+      dns_prefetch_url.host(), network_anonymization_key));
 }
 
 }  // namespace predictors

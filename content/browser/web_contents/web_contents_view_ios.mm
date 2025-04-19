@@ -93,7 +93,11 @@ gfx::Rect WebContentsViewIOS::GetContainerBounds() const {
 
 void WebContentsViewIOS::OnCapturerCountChanged() {}
 
-void WebContentsViewIOS::FullscreenStateChanged(bool is_fullscreen) {}
+void WebContentsViewIOS::FullscreenStateChanged(bool is_fullscreen) {
+  if (is_fullscreen && popup_menu_helper_) {
+    popup_menu_helper_->CloseMenu();
+  }
+}
 
 void WebContentsViewIOS::UpdateWindowControlsOverlay(
     const gfx::Rect& bounding_rect) {}
@@ -157,12 +161,9 @@ DropData* WebContentsViewIOS::GetDropData() const {
   return nullptr;
 }
 
-void WebContentsViewIOS::TransferDragSecurityInfo(WebContentsView* view) {
-  NOTIMPLEMENTED();
-}
-
 gfx::Rect WebContentsViewIOS::GetViewBounds() const {
-  return gfx::Rect();
+  return gfx::Rect(ui_view_->view_.contentSize.width,
+                   ui_view_->view_.contentSize.height);
 }
 
 void WebContentsViewIOS::GotFocus(RenderWidgetHostImpl* render_widget_host) {
@@ -242,7 +243,7 @@ void WebContentsViewIOS::RenderViewHostChanged(RenderViewHost* old_host,
   }
   web_contents_->UpdateBrowserControlsState(cc::BrowserControlsState::kBoth,
                                             cc::BrowserControlsState::kHidden,
-                                            false);
+                                            false, std::nullopt);
 }
 
 void WebContentsViewIOS::SetOverscrollControllerEnabled(bool enabled) {}

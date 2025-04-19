@@ -21,8 +21,7 @@
 #include "partition_alloc/partition_alloc_base/debug/alias.h"
 #include "partition_alloc/partition_alloc_base/immediate_crash.h"
 
-#if BUILDFLAG(IS_WIN)
-#include <io.h>
+#if PA_BUILDFLAG(IS_WIN)
 #include <windows.h>
 
 #elif BUILDFLAG(IS_APPLE)
@@ -52,7 +51,7 @@
 #include <mach/mach_time.h>
 #endif
 
-#if BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
+#if PA_BUILDFLAG(IS_POSIX) || PA_BUILDFLAG(IS_FUCHSIA)
 #include <unistd.h>
 
 #include <cerrno>
@@ -69,7 +68,7 @@ namespace {
 
 int g_min_log_level = 0;
 
-#if !BUILDFLAG(IS_WIN)
+#if !PA_BUILDFLAG(IS_WIN)
 void WriteToStderr(const char* data, size_t length) {
   size_t bytes_written = 0;
   int rv;
@@ -83,7 +82,7 @@ void WriteToStderr(const char* data, size_t length) {
     bytes_written += rv;
   }
 }
-#else   // !BUILDFLAG(IS_WIN)
+#else   // !PA_BUILDFLAG(IS_WIN)
 void WriteToStderr(const char* data, size_t length) {
   HANDLE handle = ::GetStdHandle(STD_ERROR_HANDLE);
   const char* ptr = data;
@@ -98,7 +97,7 @@ void WriteToStderr(const char* data, size_t length) {
     ptr += bytes_written;
   }
 }
-#endif  // !BUILDFLAG(IS_WIN)
+#endif  // !PA_BUILDFLAG(IS_WIN)
 
 }  // namespace
 
@@ -125,11 +124,11 @@ int GetVlogVerbosity() {
 
 void RawLog(int level, const char* message) {
   if (level >= g_min_log_level && message) {
-#if !BUILDFLAG(IS_WIN)
+#if !PA_BUILDFLAG(IS_WIN)
     const size_t message_len = strlen(message);
-#else   // !BUILDFLAG(IS_WIN)
+#else   // !PA_BUILDFLAG(IS_WIN)
     const size_t message_len = ::lstrlenA(message);
-#endif  // !BUILDFLAG(IS_WIN)
+#endif  // !PA_BUILDFLAG(IS_WIN)
     WriteToStderr(message, message_len);
 
     if (message_len > 0 && message[message_len - 1] != '\n') {

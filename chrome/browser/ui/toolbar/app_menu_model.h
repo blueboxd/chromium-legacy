@@ -26,6 +26,8 @@ class Browser;
 class ChromeLabsModel;
 
 // Values should correspond to 'WrenchMenuAction' enum in enums.xml.
+//
+// LINT.IfChange(AppMenuAction)
 enum AppMenuAction {
   MENU_ACTION_NEW_TAB = 0,
   MENU_ACTION_NEW_WINDOW = 1,
@@ -107,12 +109,15 @@ enum AppMenuAction {
   MENU_ACTION_SHOW_HISTORY_CLUSTER_SIDE_PANEL = 84,
   MENU_ACTION_SHOW_READING_MODE_SIDE_PANEL = 85,
   MENU_ACTION_SHOW_SAFETY_HUB = 86,
-  MENU_ACTION_SHOW_PASSWORD_CHECKUP = 87,
+  MENU_ACTION_SAFETY_HUB_SHOW_PASSWORD_CHECKUP = 87,
   MENU_ACTION_SET_BROWSER_AS_DEFAULT = 88,
   MENU_ACTION_SHOW_SAVED_TAB_GROUPS = 89,
   MENU_ACTION_SHOW_LENS_OVERLAY = 90,
+  MENU_ACTION_SAFETY_HUB_MANAGE_EXTENSIONS = 91,
+  MENU_ACTION_SHOW_CUSTOMIZE_CHROME_SIDE_PANEL = 92,
   LIMIT_MENU_ACTION
 };
+// LINT.ThenChange(/tools/metrics/histograms/enums.xml:WrenchMenuAction)
 
 enum class AlertMenuItem { kNone, kPasswordManager };
 
@@ -166,6 +171,8 @@ class AppMenuModel : public ui::SimpleMenuModel,
                      public ui::SimpleMenuModel::Delegate,
                      public ui::ButtonMenuItemModel::Delegate {
  public:
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kProfileMenuItem);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kProfileOpenGuestItem);
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kBookmarksMenuItem);
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kTabGroupsMenuItem);
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kDownloadsMenuItem);
@@ -177,7 +184,6 @@ class AppMenuModel : public ui::SimpleMenuModel,
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kPasswordManagerMenuItem);
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kShowLensOverlay);
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kShowSearchCompanion);
-  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kPerformanceMenuItem);
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kSaveAndShareMenuItem);
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kCastTitleItem);
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kInstallAppItem);

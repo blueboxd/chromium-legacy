@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 
 #include <cursor-shape-v1-client-protocol.h>
@@ -72,7 +77,6 @@
 #include "ui/ozone/platform/wayland/test/test_output.h"
 #include "ui/ozone/platform/wayland/test/test_region.h"
 #include "ui/ozone/platform/wayland/test/test_touch.h"
-#include "ui/ozone/platform/wayland/test/test_util.h"
 #include "ui/ozone/platform/wayland/test/test_wayland_server_thread.h"
 #include "ui/ozone/platform/wayland/test/test_zaura_toplevel.h"
 #include "ui/ozone/platform/wayland/test/wayland_test.h"
@@ -215,7 +219,7 @@ class TestWaylandWindowDelegate : public PlatformWindowDelegate {
 class WaylandWindowTest : public WaylandTest {
  public:
   WaylandWindowTest()
-      : test_mouse_event_(ET_MOUSE_PRESSED,
+      : test_mouse_event_(EventType::kMousePressed,
                           gfx::Point(10, 15),
                           gfx::Point(10, 15),
                           ui::EventTimeStampFromSeconds(123456),
@@ -262,7 +266,7 @@ class WaylandWindowTest : public WaylandTest {
       WaylandWindow* window,
       const MockWaylandPlatformWindowDelegate& delegate,
       int64_t viz_seq) {
-    wl::SyncDisplay(connection_->display_wrapper(), *connection_->display());
+    WaylandConnectionTestApi(connection_.get()).SyncDisplay();
     window->OnSequencePoint(viz_seq);
     window->root_surface()->ApplyPendingState();
   }
@@ -363,8 +367,8 @@ class WaylandWindowTest : public WaylandTest {
     }
 
     PointerDetails pointer_details(EventPointerType::kTouch, 1);
-    TouchEvent test_touch_event(ET_TOUCH_PRESSED, {1, 1}, base::TimeTicks(),
-                                pointer_details);
+    TouchEvent test_touch_event(EventType::kTouchPressed, {1, 1},
+                                base::TimeTicks(), pointer_details);
     if (touch_focused_window) {
       Event::DispatcherApi(&test_touch_event).set_target(touch_focused_window);
     }
@@ -393,7 +397,7 @@ class WaylandWindowTest : public WaylandTest {
       EXPECT_FALSE(keyboard_focused_window);
     }
 
-    KeyEvent test_key_event(ET_KEY_PRESSED, VKEY_0, 0);
+    KeyEvent test_key_event(EventType::kKeyPressed, VKEY_0, 0);
     if (keyboard_focused_window) {
       Event::DispatcherApi(&test_key_event).set_target(keyboard_focused_window);
     }
@@ -498,7 +502,8 @@ TEST_P(WaylandWindowTest, ApplyPendingStatesAndCommit) {
   window_->root_surface()->set_surface_buffer_scale(2);
   VerifyAndClearExpectations();
 
-  wl::SyncDisplay(connection_->display_wrapper(), *connection_->display());
+  WaylandConnectionTestApi test_api(connection_.get());
+  test_api.SyncDisplay();
 
   PostToServerAndWait([id = surface_id_](wl::TestWaylandServerThread* server) {
     auto* mock_surface = server->GetObject<wl::MockSurface>(id);
@@ -514,7 +519,7 @@ TEST_P(WaylandWindowTest, ApplyPendingStatesAndCommit) {
   window_->root_surface()->Commit();
   VerifyAndClearExpectations();
 
-  wl::SyncDisplay(connection_->display_wrapper(), *connection_->display());
+  test_api.SyncDisplay();
 }
 
 #if BUILDFLAG(IS_LINUX)
@@ -1113,7 +1118,8 @@ TEST_P(WaylandWindowTest, StartWithFullscreen) {
   auto window =
       delegate.CreateWaylandWindow(connection_.get(), std::move(properties));
 
-  wl::SyncDisplay(connection_->display_wrapper(), *connection_->display());
+  WaylandConnectionTestApi test_api(connection_.get());
+  test_api.SyncDisplay();
 
   // Make sure the window is initialized to normal state from the beginning.
   EXPECT_EQ(PlatformWindowState::kNormal, window->GetPlatformWindowState());
@@ -1137,7 +1143,7 @@ TEST_P(WaylandWindowTest, StartWithFullscreen) {
   // The state of the window must already be fullscreen one.
   EXPECT_EQ(window->GetPlatformWindowState(), PlatformWindowState::kFullScreen);
 
-  wl::SyncDisplay(connection_->display_wrapper(), *connection_->display());
+  test_api.SyncDisplay();
 
   Mock::VerifyAndClearExpectations(&delegate);
 
@@ -1169,7 +1175,8 @@ TEST_P(WaylandWindowTest, StartMaximized) {
   auto window =
       delegate.CreateWaylandWindow(connection_.get(), std::move(properties));
 
-  wl::SyncDisplay(connection_->display_wrapper(), *connection_->display());
+  WaylandConnectionTestApi test_api(connection_.get());
+  test_api.SyncDisplay();
 
   // Make sure the window is initialized to normal state from the beginning.
   EXPECT_EQ(PlatformWindowState::kNormal, window->GetPlatformWindowState());
@@ -1192,7 +1199,7 @@ TEST_P(WaylandWindowTest, StartMaximized) {
   // The state of the window must already be fullscreen one.
   EXPECT_EQ(window->GetPlatformWindowState(), PlatformWindowState::kMaximized);
 
-  wl::SyncDisplay(connection_->display_wrapper(), *connection_->display());
+  test_api.SyncDisplay();
 
   Mock::VerifyAndClearExpectations(&delegate);
 
@@ -1918,22 +1925,22 @@ TEST_P(WaylandWindowTest, DispatchEventResult) {
   auto window = WaylandWindow::Create(&window_delegate, connection_.get(),
                                       std::move(properties));
 
-  KeyEvent event_1(ET_KEY_PRESSED, VKEY_0, 0);
+  KeyEvent event_1(EventType::kKeyPressed, VKEY_0, 0);
   window_delegate.SetDispatchEventCallback(
       base::BindOnce([](Event* event) { event->SetSkipped(); }));
   EXPECT_EQ(window->DispatchEvent(&event_1), POST_DISPATCH_PERFORM_DEFAULT);
 
-  KeyEvent event_2(ET_KEY_PRESSED, VKEY_0, 0);
+  KeyEvent event_2(EventType::kKeyPressed, VKEY_0, 0);
   window_delegate.SetDispatchEventCallback(
       base::BindOnce([](Event* event) { event->StopPropagation(); }));
   EXPECT_EQ(window->DispatchEvent(&event_2), POST_DISPATCH_STOP_PROPAGATION);
 
-  KeyEvent event_3(ET_KEY_PRESSED, VKEY_0, 0);
+  KeyEvent event_3(EventType::kKeyPressed, VKEY_0, 0);
   window_delegate.SetDispatchEventCallback(
       base::BindOnce([](Event* event) { event->SetHandled(); }));
   EXPECT_EQ(window->DispatchEvent(&event_3), POST_DISPATCH_STOP_PROPAGATION);
 
-  KeyEvent event_4(ET_KEY_PRESSED, VKEY_0, 0);
+  KeyEvent event_4(EventType::kKeyPressed, VKEY_0, 0);
   window_delegate.SetDispatchEventCallback(base::BindOnce([](Event* event) {
     // Do nothing.
   }));
@@ -2372,8 +2379,8 @@ TEST_P(WaylandWindowTest, ConvertEventToTarget) {
   // coordinate system of the menu.  Its coordinates must be equal to:
   //     -(offset of the menu).
   constexpr gfx::PointF kParentPoint{0, 0};
-  ui::MouseEvent event(ui::EventType::ET_MOUSE_MOVED, kParentPoint,
-                       kParentPoint, {}, ui::EF_NONE, ui::EF_NONE);
+  ui::MouseEvent event(ui::EventType::kMouseMoved, kParentPoint, kParentPoint,
+                       {}, ui::EF_NONE, ui::EF_NONE);
 
   ui::Event::DispatcherApi dispatcher_api(&event);
   dispatcher_api.set_target(window_.get());
@@ -2794,6 +2801,7 @@ TEST_P(WaylandWindowTest, ToplevelWindowUpdateWindowScale) {
   EXPECT_EQ(gfx::Rect(800, 600), window_->GetBoundsInDIP());
 }
 
+// TODO(crbug.com/328783999): Remove the use of runloops in PostToServerAndWait
 TEST_P(WaylandWindowTest, ToplevelWindowOnRotateFocus) {
   if (!IsAuraShellEnabled()) {
     GTEST_SKIP();
@@ -2802,13 +2810,15 @@ TEST_P(WaylandWindowTest, ToplevelWindowOnRotateFocus) {
   base::MockRepeatingCallback<void(uint32_t, uint32_t)> ack_cb;
 
   // For asserting server requests emitted by the client.
-  PostToServerAndWait([&](wl::TestWaylandServerThread* server) {
-    server->GetObject<wl::MockSurface>(surface_id_)
-        ->xdg_surface()
-        ->xdg_toplevel()
-        ->zaura_toplevel()
-        ->set_ack_rotate_focus_callback(ack_cb.Get());
-  });
+  PostToServerAndWait(
+      [&](wl::TestWaylandServerThread* server) {
+        server->GetObject<wl::MockSurface>(surface_id_)
+            ->xdg_surface()
+            ->xdg_toplevel()
+            ->zaura_toplevel()
+            ->set_ack_rotate_focus_callback(ack_cb.Get());
+      },
+      /*no_nested_runloops=*/false);
   SendConfigureEvent(surface_id_, {10, 10},
                      InitializeWlArrayWithActivatedState());
   SetKeyboardFocusedWindow(window_.get());
@@ -2821,62 +2831,79 @@ TEST_P(WaylandWindowTest, ToplevelWindowOnRotateFocus) {
   // Forward, restart
   EXPECT_CALL(delegate_, OnRotateFocus(Direction::kForward, true))
       .WillOnce(Return(true));
-  PostToServerAndWait([&](wl::TestWaylandServerThread* server) {
-    EXPECT_CALL(ack_cb,
-                Run(serial, ZAURA_TOPLEVEL_ROTATE_HANDLED_STATE_HANDLED));
+  PostToServerAndWait(
+      [&](wl::TestWaylandServerThread* server) {
+        EXPECT_CALL(ack_cb,
+                    Run(serial, ZAURA_TOPLEVEL_ROTATE_HANDLED_STATE_HANDLED));
 
-    auto* surface = server->GetObject<wl::MockSurface>(surface_id_);
-    auto* toplevel = surface->xdg_surface()->xdg_toplevel()->zaura_toplevel();
-    zaura_toplevel_send_rotate_focus(
-        toplevel->resource(), serial++, ZAURA_TOPLEVEL_ROTATE_DIRECTION_FORWARD,
-        ZAURA_TOPLEVEL_ROTATE_RESTART_STATE_RESTART);
-  });
+        auto* surface = server->GetObject<wl::MockSurface>(surface_id_);
+        auto* toplevel =
+            surface->xdg_surface()->xdg_toplevel()->zaura_toplevel();
+        zaura_toplevel_send_rotate_focus(
+            toplevel->resource(), serial++,
+            ZAURA_TOPLEVEL_ROTATE_DIRECTION_FORWARD,
+            ZAURA_TOPLEVEL_ROTATE_RESTART_STATE_RESTART);
+      },
+      /*no_nested_runloops=*/false);
 
   // Backward, no restart
   EXPECT_CALL(delegate_, OnRotateFocus(Direction::kBackward, false))
       .WillOnce(Return(true));
-  PostToServerAndWait([&](wl::TestWaylandServerThread* server) {
-    EXPECT_CALL(ack_cb,
-                Run(serial, ZAURA_TOPLEVEL_ROTATE_HANDLED_STATE_HANDLED));
+  PostToServerAndWait(
+      [&](wl::TestWaylandServerThread* server) {
+        EXPECT_CALL(ack_cb,
+                    Run(serial, ZAURA_TOPLEVEL_ROTATE_HANDLED_STATE_HANDLED));
 
-    auto* surface = server->GetObject<wl::MockSurface>(surface_id_);
-    auto* toplevel = surface->xdg_surface()->xdg_toplevel()->zaura_toplevel();
-    zaura_toplevel_send_rotate_focus(
-        toplevel->resource(), serial++,
-        ZAURA_TOPLEVEL_ROTATE_DIRECTION_BACKWARD,
-        ZAURA_TOPLEVEL_ROTATE_RESTART_STATE_NO_RESTART);
-  });
+        auto* surface = server->GetObject<wl::MockSurface>(surface_id_);
+        auto* toplevel =
+            surface->xdg_surface()->xdg_toplevel()->zaura_toplevel();
+        zaura_toplevel_send_rotate_focus(
+            toplevel->resource(), serial++,
+            ZAURA_TOPLEVEL_ROTATE_DIRECTION_BACKWARD,
+            ZAURA_TOPLEVEL_ROTATE_RESTART_STATE_NO_RESTART);
+      },
+      /*no_nested_runloops=*/false);
 
   // Test unsuccessful return cases
 
   // Forward
   EXPECT_CALL(delegate_, OnRotateFocus(_, _)).WillOnce(Return(false));
-  PostToServerAndWait([&](wl::TestWaylandServerThread* server) {
-    EXPECT_CALL(ack_cb,
-                Run(serial, ZAURA_TOPLEVEL_ROTATE_HANDLED_STATE_NOT_HANDLED));
+  PostToServerAndWait(
+      [&](wl::TestWaylandServerThread* server) {
+        EXPECT_CALL(
+            ack_cb,
+            Run(serial, ZAURA_TOPLEVEL_ROTATE_HANDLED_STATE_NOT_HANDLED));
 
-    auto* surface = server->GetObject<wl::MockSurface>(surface_id_);
-    auto* toplevel = surface->xdg_surface()->xdg_toplevel()->zaura_toplevel();
-    zaura_toplevel_send_rotate_focus(
-        toplevel->resource(), serial++, ZAURA_TOPLEVEL_ROTATE_DIRECTION_FORWARD,
-        ZAURA_TOPLEVEL_ROTATE_RESTART_STATE_RESTART);
-  });
+        auto* surface = server->GetObject<wl::MockSurface>(surface_id_);
+        auto* toplevel =
+            surface->xdg_surface()->xdg_toplevel()->zaura_toplevel();
+        zaura_toplevel_send_rotate_focus(
+            toplevel->resource(), serial++,
+            ZAURA_TOPLEVEL_ROTATE_DIRECTION_FORWARD,
+            ZAURA_TOPLEVEL_ROTATE_RESTART_STATE_RESTART);
+      },
+      /*no_nested_runloops=*/false);
 
   // Backward
   EXPECT_CALL(delegate_, OnRotateFocus(_, _)).WillOnce(Return(false));
-  PostToServerAndWait([&](wl::TestWaylandServerThread* server) {
-    EXPECT_CALL(ack_cb,
-                Run(serial, ZAURA_TOPLEVEL_ROTATE_HANDLED_STATE_NOT_HANDLED));
+  PostToServerAndWait(
+      [&](wl::TestWaylandServerThread* server) {
+        EXPECT_CALL(
+            ack_cb,
+            Run(serial, ZAURA_TOPLEVEL_ROTATE_HANDLED_STATE_NOT_HANDLED));
 
-    auto* surface = server->GetObject<wl::MockSurface>(surface_id_);
-    auto* toplevel = surface->xdg_surface()->xdg_toplevel()->zaura_toplevel();
-    zaura_toplevel_send_rotate_focus(
-        toplevel->resource(), serial++,
-        ZAURA_TOPLEVEL_ROTATE_DIRECTION_BACKWARD,
-        ZAURA_TOPLEVEL_ROTATE_RESTART_STATE_NO_RESTART);
-  });
+        auto* surface = server->GetObject<wl::MockSurface>(surface_id_);
+        auto* toplevel =
+            surface->xdg_surface()->xdg_toplevel()->zaura_toplevel();
+        zaura_toplevel_send_rotate_focus(
+            toplevel->resource(), serial++,
+            ZAURA_TOPLEVEL_ROTATE_DIRECTION_BACKWARD,
+            ZAURA_TOPLEVEL_ROTATE_RESTART_STATE_NO_RESTART);
+      },
+      /*no_nested_runloops=*/false);
 }
 
+// TODO(crbug.com/328783999): Remove the use of runloops in PostToServerAndWait
 TEST_P(WaylandWindowTest, ToplevelWindowOnRotateFocus_NotActiveOrNotFocused) {
   if (!IsAuraShellEnabled()) {
     GTEST_SKIP();
@@ -2885,13 +2912,15 @@ TEST_P(WaylandWindowTest, ToplevelWindowOnRotateFocus_NotActiveOrNotFocused) {
   base::MockRepeatingCallback<void(uint32_t, uint32_t)> ack_cb;
 
   // For asserting server requests emitted by the client.
-  PostToServerAndWait([&](wl::TestWaylandServerThread* server) {
-    server->GetObject<wl::MockSurface>(surface_id_)
-        ->xdg_surface()
-        ->xdg_toplevel()
-        ->zaura_toplevel()
-        ->set_ack_rotate_focus_callback(ack_cb.Get());
-  });
+  PostToServerAndWait(
+      [&](wl::TestWaylandServerThread* server) {
+        server->GetObject<wl::MockSurface>(surface_id_)
+            ->xdg_surface()
+            ->xdg_toplevel()
+            ->zaura_toplevel()
+            ->set_ack_rotate_focus_callback(ack_cb.Get());
+      },
+      /*no_nested_runloops=*/false);
 
   int serial = 1;
 
@@ -2899,47 +2928,61 @@ TEST_P(WaylandWindowTest, ToplevelWindowOnRotateFocus_NotActiveOrNotFocused) {
   SendConfigureEvent(surface_id_, {10, 10}, wl::ScopedWlArray({}));
   SetKeyboardFocusedWindow(nullptr);
 
-  PostToServerAndWait([&](wl::TestWaylandServerThread* server) {
-    EXPECT_CALL(ack_cb,
-                Run(serial, ZAURA_TOPLEVEL_ROTATE_HANDLED_STATE_NOT_HANDLED));
+  PostToServerAndWait(
+      [&](wl::TestWaylandServerThread* server) {
+        EXPECT_CALL(
+            ack_cb,
+            Run(serial, ZAURA_TOPLEVEL_ROTATE_HANDLED_STATE_NOT_HANDLED));
 
-    auto* surface = server->GetObject<wl::MockSurface>(surface_id_);
-    auto* toplevel = surface->xdg_surface()->xdg_toplevel()->zaura_toplevel();
-    zaura_toplevel_send_rotate_focus(
-        toplevel->resource(), serial++, ZAURA_TOPLEVEL_ROTATE_DIRECTION_FORWARD,
-        ZAURA_TOPLEVEL_ROTATE_RESTART_STATE_RESTART);
-  });
+        auto* surface = server->GetObject<wl::MockSurface>(surface_id_);
+        auto* toplevel =
+            surface->xdg_surface()->xdg_toplevel()->zaura_toplevel();
+        zaura_toplevel_send_rotate_focus(
+            toplevel->resource(), serial++,
+            ZAURA_TOPLEVEL_ROTATE_DIRECTION_FORWARD,
+            ZAURA_TOPLEVEL_ROTATE_RESTART_STATE_RESTART);
+      },
+      /*no_nested_runloops=*/false);
 
   // Now activate, but don't grab keyboard focus, should still be rejected.
   // Not active, should fail
   SendConfigureEvent(surface_id_, {10, 10},
                      InitializeWlArrayWithActivatedState());
 
-  PostToServerAndWait([&](wl::TestWaylandServerThread* server) {
-    EXPECT_CALL(ack_cb,
-                Run(serial, ZAURA_TOPLEVEL_ROTATE_HANDLED_STATE_NOT_HANDLED));
+  PostToServerAndWait(
+      [&](wl::TestWaylandServerThread* server) {
+        EXPECT_CALL(
+            ack_cb,
+            Run(serial, ZAURA_TOPLEVEL_ROTATE_HANDLED_STATE_NOT_HANDLED));
 
-    auto* surface = server->GetObject<wl::MockSurface>(surface_id_);
-    auto* toplevel = surface->xdg_surface()->xdg_toplevel()->zaura_toplevel();
-    zaura_toplevel_send_rotate_focus(
-        toplevel->resource(), serial++, ZAURA_TOPLEVEL_ROTATE_DIRECTION_FORWARD,
-        ZAURA_TOPLEVEL_ROTATE_RESTART_STATE_RESTART);
-  });
+        auto* surface = server->GetObject<wl::MockSurface>(surface_id_);
+        auto* toplevel =
+            surface->xdg_surface()->xdg_toplevel()->zaura_toplevel();
+        zaura_toplevel_send_rotate_focus(
+            toplevel->resource(), serial++,
+            ZAURA_TOPLEVEL_ROTATE_DIRECTION_FORWARD,
+            ZAURA_TOPLEVEL_ROTATE_RESTART_STATE_RESTART);
+      },
+      /*no_nested_runloops=*/false);
 
   // Now grab keyboard focus, we should have great success now.
   SetKeyboardFocusedWindow(window_.get());
 
   EXPECT_CALL(delegate_, OnRotateFocus(_, _)).WillOnce(Return(true));
-  PostToServerAndWait([&](wl::TestWaylandServerThread* server) {
-    EXPECT_CALL(ack_cb,
-                Run(serial, ZAURA_TOPLEVEL_ROTATE_HANDLED_STATE_HANDLED));
+  PostToServerAndWait(
+      [&](wl::TestWaylandServerThread* server) {
+        EXPECT_CALL(ack_cb,
+                    Run(serial, ZAURA_TOPLEVEL_ROTATE_HANDLED_STATE_HANDLED));
 
-    auto* surface = server->GetObject<wl::MockSurface>(surface_id_);
-    auto* toplevel = surface->xdg_surface()->xdg_toplevel()->zaura_toplevel();
-    zaura_toplevel_send_rotate_focus(
-        toplevel->resource(), serial++, ZAURA_TOPLEVEL_ROTATE_DIRECTION_FORWARD,
-        ZAURA_TOPLEVEL_ROTATE_RESTART_STATE_RESTART);
-  });
+        auto* surface = server->GetObject<wl::MockSurface>(surface_id_);
+        auto* toplevel =
+            surface->xdg_surface()->xdg_toplevel()->zaura_toplevel();
+        zaura_toplevel_send_rotate_focus(
+            toplevel->resource(), serial++,
+            ZAURA_TOPLEVEL_ROTATE_DIRECTION_FORWARD,
+            ZAURA_TOPLEVEL_ROTATE_RESTART_STATE_RESTART);
+      },
+      /*no_nested_runloops=*/false);
 }
 
 TEST_P(WaylandWindowTest, WaylandPopupSurfaceScale) {
@@ -3011,7 +3054,7 @@ TEST_P(WaylandWindowTest, WaylandPopupSurfaceScale) {
     EXPECT_EQ(2, window_->applied_state().window_scale);
     wayland_popup->Show(false);
 
-    wl::SyncDisplay(connection_->display_wrapper(), *connection_->display());
+    WaylandConnectionTestApi(connection_.get()).SyncDisplay();
 
     // |wayland_popup|'s scale and bounds must change whenever its parents
     // scale is changed.
@@ -4015,7 +4058,7 @@ TEST_P(WaylandWindowTest, SetsPropertiesOnShow) {
 
   window->Hide();
 
-  wl::SyncDisplay(connection_->display_wrapper(), *connection_->display());
+  WaylandConnectionTestApi(connection_.get()).SyncDisplay();
 
   window->Show(false);
 
@@ -4543,11 +4586,11 @@ class WaylandSubsurfaceTest : public WaylandWindowTest {
 TEST_P(WaylandSubsurfaceTest, OneWaylandSubsurfaceInteger) {
   ASSERT_FALSE(connection_->surface_augmenter());
 
-  constexpr gfx::RectF test_data[2][2] = {
-      {gfx::RectF({15.12, 15.912}, {10.351, 10.742}),
-       gfx::RectF({16, 16}, {11, 11})},
-      {gfx::RectF({7.041, 8.583}, {13.452, 20.231}),
-       gfx::RectF({7.041, 8.583}, {13.452, 20.231})}};
+  constexpr std::array<std::array<gfx::RectF, 2>, 2> test_data = {
+      {{gfx::RectF({15.12, 15.912}, {10.351, 10.742}),
+        gfx::RectF({16, 16}, {11, 11})},
+       {gfx::RectF({7.041, 8.583}, {13.452, 20.231}),
+        gfx::RectF({7.041, 8.583}, {13.452, 20.231})}}};
 
   for (const auto& item : test_data) {
     OneWaylandSubsurfaceTestHelper(item[0] /* subsurface_bounds */,
@@ -4562,9 +4605,9 @@ TEST_P(WaylandSubsurfaceTest, OneWaylandSubsurfaceInteger) {
 TEST_P(WaylandSubsurfaceTest, OneWaylandSubsurfaceNonInteger) {
   ASSERT_FALSE(connection_->surface_augmenter());
 
-  constexpr gfx::RectF test_data[2][2] = {
-      {gfx::RectF({15, 15}, {10, 10}), gfx::RectF({15, 15}, {10, 10})},
-      {gfx::RectF({7, 8}, {16, 18}), gfx::RectF({7, 8}, {16, 18})}};
+  constexpr std::array<std::array<gfx::RectF, 2>, 2> test_data = {
+      {{gfx::RectF({15, 15}, {10, 10}), gfx::RectF({15, 15}, {10, 10})},
+       {gfx::RectF({7, 8}, {16, 18}), gfx::RectF({7, 8}, {16, 18})}}};
 
   for (const auto& item : test_data) {
     OneWaylandSubsurfaceTestHelper(item[0] /* subsurface_bounds */,
@@ -4874,7 +4917,7 @@ class BlockableWaylandToplevelWindow : public WaylandToplevelWindow {
   // WaylandToplevelWindow overrides:
   uint32_t DispatchEvent(const PlatformEvent& platform_event) override {
     ui::Event* event(platform_event);
-    if (event->type() == ET_TOUCH_RELEASED && !blocked_) {
+    if (event->type() == EventType::kTouchReleased && !blocked_) {
       base::RunLoop run_loop{base::RunLoop::Type::kNestableTasksAllowed};
       blocked_ = true;
 
@@ -4986,7 +5029,7 @@ TEST_P(WaylandWindowTest, ChangeFocusDuringDispatch) {
   EXPECT_CALL(other_delegate, DispatchEvent(_)).Times(1);
   EXPECT_CALL(delegate_, DispatchEvent(_)).WillRepeatedly([&](Event* event) {
     count++;
-    if (event->type() == ui::ET_MOUSE_PRESSED) {
+    if (event->type() == ui::EventType::kMousePressed) {
       PostToServerAndWait(
           [id = surface_id_,
            other_id = other_window->root_surface()->get_surface_id()](

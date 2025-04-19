@@ -6,6 +6,8 @@ module attribution_reporting.mojom;
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
+//
+// LINT.IfChange(SourceRegistrationError)
 enum SourceRegistrationError {
   kInvalidJson = 0,
   kRootWrongType = 1,
@@ -55,10 +57,19 @@ enum SourceRegistrationError {
 
   kTopLevelTriggerDataAndTriggerSpecs = 37,
 
-  kSummaryWindowOperatorValueInvalid = 38,
+  kSummaryOperatorValueInvalid = 38,
 
   kSummaryBucketsListInvalid = 39,
   kSummaryBucketsValueInvalid = 40,
 
   kEventLevelEpsilonValueInvalid = 41,
+
+  kDestinationLimitPriorityInvalid = 42,
+
+  kAttributionScopeLimitInvalid = 43,
+  kAttributionScopeLimitRequired = 44,
+  kMaxEventStatesInvalid = 45,
+  kAttributionScopesInvalid = 46,
+  kAttributionScopesValueInvalid = 47,
 };
+// LINT.ThenChange(//tools/metrics/histograms/metadata/attribution_reporting/enums.xml:ConversionSourceRegistrationError)

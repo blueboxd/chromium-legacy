@@ -783,6 +783,16 @@ def _MergeAssets(all_assets):
   return create_list(compressed), create_list(uncompressed), locale_paks
 
 
+def _SuffixAssets(suffix_names, suffix, assets):
+  new_assets = []
+  for x in assets:
+    src_path, apk_subpath = x.split(':', 1)
+    if apk_subpath in suffix_names:
+      apk_subpath += suffix
+    new_assets.append(f'{src_path}:{apk_subpath}')
+  return new_assets
+
+
 def _ResolveGroupsAndPublicDeps(config_paths):
   """Returns a list of configs with all groups inlined."""
 
@@ -1180,6 +1190,10 @@ def main(argv):
                     help="Path to the target's generated incremental install "
                     "json.")
   parser.add_option(
+      '--suffix-apk-assets-used-by',
+      help='Path to the build config of the apk whose asset list should be '
+      'suffixed.')
+  parser.add_option(
       '--tested-apk-config',
       help='Path to the build config of the tested apk (for an instrumentation '
       'test apk).')
@@ -1355,13 +1369,14 @@ def main(argv):
   all_deps = deps.All()
   all_library_deps = deps.All('java_library')
 
+  direct_resources_deps = deps.Direct('android_resources')
   if options.type == 'java_library':
     # For Java libraries, restrict to resource targets that are direct deps, or
     # are indirect via other resource targets.
     # The indirect-through-other-targets ones are picked up because
     # _ResolveGroupsAndPublicDeps() treats resource deps of resource targets as
     # public_deps.
-    all_resources_deps = deps.Direct('android_resources')
+    all_resources_deps = direct_resources_deps
   else:
     all_resources_deps = deps.All('android_resources')
 
@@ -1497,11 +1512,11 @@ def main(argv):
     # You are allowed to depend on both android |deps_require_android| and
     # non-android |deps_not_support_android| targets.
     if not options.bypass_platform_checks and not options.is_robolectric:
-      deps_require_android = all_resources_deps + [
-          d for d in all_library_deps if d['requires_android']
+      deps_require_android = direct_resources_deps + [
+          d for d in deps.Direct() if d.get('requires_android', False)
       ]
       deps_not_support_android = [
-          d for d in all_library_deps if not d['supports_android']
+          d for d in deps.Direct() if not d.get('supports_android', True)
       ]
 
       if deps_require_android and not options.requires_android:
@@ -1823,10 +1838,12 @@ def main(argv):
         deps_info['version_code'] = c['version_code']
         deps_info['version_name'] = c['version_name']
         deps_info['base_module_config'] = c['path']
-        # Use the base module's android manifest for linting.
         deps_info['lint_android_manifest'] = c['android_manifest']
       else:
+        # All manifests nodes are merged into the main manfiest by lint.py.
         lint_extra_android_manifests.add(c['android_manifest'])
+
+      lint_extra_android_manifests.update(c['extra_android_manifests'])
       lint_aars.update(c['lint_aars'])
       lint_srcjars.update(c['lint_srcjars'])
       lint_sources.update(c['lint_sources'])
@@ -2113,17 +2130,37 @@ def main(argv):
     # Manifests are listed from highest priority to lowest priority.
     # Ensure directly manfifests come first, and then sort the rest by name.
     # https://developer.android.com/build/manage-manifests#merge_priorities
-    config['extra_android_manifests'] = list(mergeable_android_manifests)
+    deps_info['extra_android_manifests'] = list(mergeable_android_manifests)
     manifests_from_deps = []
     for c in extra_manifest_deps:
       manifests_from_deps += c.get('mergeable_android_manifests', [])
     manifests_from_deps.sort(key=lambda p: (os.path.basename(p), p))
-    config['extra_android_manifests'] += manifests_from_deps
+    deps_info['extra_android_manifests'] += manifests_from_deps
 
-    config['assets'], config['uncompressed_assets'], locale_paks = (
-        _MergeAssets(deps.All('android_assets')))
+    assets, uncompressed_assets, locale_paks = _MergeAssets(
+        deps.All('android_assets'))
+    deps_info['assets'] = assets
+    deps_info['uncompressed_assets'] = uncompressed_assets
     deps_info['locales_java_list'] = _CreateJavaLocaleListFromAssets(
-        config['uncompressed_assets'], locale_paks)
+        uncompressed_assets, locale_paks)
+    if options.suffix_apk_assets_used_by:
+      if options.suffix_apk_assets_used_by == options.build_config:
+        target_config = deps_info
+      else:
+        target_config = GetDepConfig(options.suffix_apk_assets_used_by)
+      all_assets = (target_config['assets'] +
+                    target_config['uncompressed_assets'])
+      suffix = '+' + target_config['package_name'] + '+'
+      suffix_names = {
+          x.split(':', 1)[1].replace(suffix, '')
+          for x in all_assets
+      }
+      deps_info['assets'] = _SuffixAssets(suffix_names, suffix, assets)
+      deps_info['uncompressed_assets'] = _SuffixAssets(suffix_names, suffix,
+                                                       uncompressed_assets)
+      config['apk_assets_suffixed_list'] = ','.join(
+          f'"assets/{x}"' for x in sorted(suffix_names))
+      config['apk_assets_suffix'] = suffix
 
   if options.java_resources_jar_path:
     deps_info['java_resources_jar'] = options.java_resources_jar_path
@@ -2149,8 +2186,8 @@ def main(argv):
     for ancestor in ancestors:
       RemoveObjDups(config, ancestor, 'deps_info', 'dependency_zips')
       RemoveObjDups(config, ancestor, 'deps_info', 'dependency_zip_overlays')
+      RemoveObjDups(config, ancestor, 'deps_info', 'extra_android_manifests')
       RemoveObjDups(config, ancestor, 'deps_info', 'extra_package_names')
-      RemoveObjDups(config, ancestor, 'extra_android_manifests')
 
   if is_java_target:
     jar_to_target = {}

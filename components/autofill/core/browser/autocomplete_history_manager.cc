@@ -15,7 +15,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
-#include "components/autofill/core/browser/suggestions_context.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/browser/webdata/autocomplete/autocomplete_entry.h"
@@ -23,6 +22,7 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_regexes.h"
+#include "components/autofill/core/common/credit_card_number_validation.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
@@ -69,10 +69,11 @@ AutocompleteHistoryManager::~AutocompleteHistoryManager() {
 }
 
 bool AutocompleteHistoryManager::OnGetSingleFieldSuggestions(
+    const FormStructure* form_structure,
     const FormFieldData& field,
+    const AutofillField* autofill_field,
     const AutofillClient& client,
-    OnSuggestionsReturnedCallback on_suggestions_returned,
-    const SuggestionsContext& context) {
+    OnSuggestionsReturnedCallback on_suggestions_returned) {
   if (!field.should_autocomplete()) {
     return false;
   }
@@ -137,15 +138,14 @@ void AutocompleteHistoryManager::OnRemoveCurrentSingleFieldSuggestion(
 }
 
 void AutocompleteHistoryManager::OnSingleFieldSuggestionSelected(
-    const std::u16string& value,
-    SuggestionType type) {
+    const Suggestion& suggestion) {
   // Try to find the AutofillEntry associated with the given suggestion.
-  auto last_entries_iter = last_entries_.find(value);
+  auto last_entries_iter = last_entries_.find(suggestion.main_text.value);
   if (last_entries_iter == last_entries_.end()) {
     // Not found, therefore nothing to do. Most likely there was a race
     // condition, but it's not that big of a deal in the current scenario
     // (logging metrics).
-    DUMP_WILL_BE_NOTREACHED_NORETURN();
+    DUMP_WILL_BE_NOTREACHED();
     return;
   }
 

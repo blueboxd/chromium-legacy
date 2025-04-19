@@ -5,17 +5,14 @@
 #import "ios/chrome/browser/commerce/model/push_notification/commerce_push_notification_client.h"
 
 #import "base/base64.h"
-#import "base/feature_list.h"
 #import "base/memory/raw_ptr.h"
 #import "base/run_loop.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/strings/utf_string_conversions.h"
 #import "base/test/metrics/histogram_tester.h"
-#import "base/test/scoped_feature_list.h"
 #import "components/bookmarks/browser/bookmark_model.h"
 #import "components/bookmarks/test/bookmark_test_helpers.h"
 #import "components/bookmarks/test/test_bookmark_client.h"
-#import "components/browser_sync/browser_sync_switches.h"
 #import "components/commerce/core/mock_shopping_service.h"
 #import "components/commerce/core/price_tracking_utils.h"
 #import "components/commerce/core/proto/commerce_subscription_db_content.pb.h"
@@ -25,13 +22,10 @@
 #import "components/optimization_guide/core/optimization_guide_features.h"
 #import "components/optimization_guide/proto/push_notification.pb.h"
 #import "components/session_proto_db/session_proto_db.h"
-#import "components/sync/base/features.h"
 #import "components/sync_bookmarks/bookmark_sync_service.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
+#import "ios/chrome/browser/bookmarks/model/account_bookmark_sync_service_factory.h"
 #import "ios/chrome/browser/bookmarks/model/bookmark_model_factory.h"
-#import "ios/chrome/browser/bookmarks/model/legacy_bookmark_model.h"
-#import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_model_factory.h"
-#import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_sync_service_factory.h"
 #import "ios/chrome/browser/commerce/model/session_proto_db_factory.h"
 #import "ios/chrome/browser/commerce/model/shopping_service_factory.h"
 #import "ios/chrome/browser/optimization_guide/model/optimization_guide_service.h"
@@ -152,13 +146,7 @@ class MockDelegate
 
 class CommercePushNotificationClientTest : public PlatformTest {
  public:
-  CommercePushNotificationClientTest() {
-    // TODO(crbug.com/326185948): These tests rely on Sync-the-feature and thus
-    // break with kMigrateSyncingUserToSignedIn enabled. Once
-    // kEnableBookmarkFoldersForAccountStorage gets enabled, that should resolve
-    // this.
-    features_.InitAndDisableFeature(switches::kMigrateSyncingUserToSignedIn);
-  }
+  CommercePushNotificationClientTest() = default;
   ~CommercePushNotificationClientTest() override = default;
 
   void SetUp() override {
@@ -167,13 +155,11 @@ class CommercePushNotificationClientTest : public PlatformTest {
     builder.AddTestingFactory(ios::BookmarkModelFactory::GetInstance(),
                               ios::BookmarkModelFactory::GetDefaultFactory());
     builder.AddTestingFactory(
-        ios::LocalOrSyncableBookmarkModelFactory::GetInstance(),
-        ios::LocalOrSyncableBookmarkModelFactory::GetDefaultFactory());
-    builder.AddTestingFactory(
         commerce::ShoppingServiceFactory::GetInstance(),
         base::BindRepeating(
             [](web::BrowserState*) -> std::unique_ptr<KeyedService> {
-              return std::make_unique<commerce::MockShoppingService>();
+              return std::make_unique<
+                  testing::NiceMock<commerce::MockShoppingService>>();
             }));
     builder.AddTestingFactory(
         SessionProtoDBFactory<
@@ -185,7 +171,7 @@ class CommercePushNotificationClientTest : public PlatformTest {
     builder.AddTestingFactory(
         OptimizationGuideServiceFactory::GetInstance(),
         OptimizationGuideServiceFactory::GetDefaultFactory());
-    chrome_browser_state_ = builder.Build();
+    chrome_browser_state_ = std::move(builder).Build();
     browser_list_ =
         BrowserListFactory::GetForBrowserState(chrome_browser_state_.get());
     app_state_ = [[AppState alloc] initWithStartupInformation:nil];
@@ -203,22 +189,13 @@ class CommercePushNotificationClientTest : public PlatformTest {
     FakeUrlLoadingBrowserAgent::InjectForBrowser(browser_.get());
     commerce_push_notification_client_.SetLastUsedChromeBrowserStateForTesting(
         chrome_browser_state_.get());
-    if (base::FeatureList::IsEnabled(
-            syncer::kEnableBookmarkFoldersForAccountStorage)) {
-      bookmark_model_ = ios::BookmarkModelFactory::
-          GetModelForBrowserStateIfUnificationEnabledOrDie(
-              chrome_browser_state_.get());
-    } else {
-      bookmark_model_ = ios::LocalOrSyncableBookmarkModelFactory::
-          GetDedicatedUnderlyingModelForBrowserStateIfUnificationDisabledOrDie(
-              chrome_browser_state_.get());
-    }
+    bookmark_model_ = ios::BookmarkModelFactory::GetForBrowserState(
+        chrome_browser_state_.get());
     bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model_);
-    // Pretend sync is on and bookmarks have been downloaded from the server,
-    // required for price tracking.
-    // TODO(crbug.com/326185948): This is questionable because it means the test
-    // is effectively turning on sync-the-feature.
-    ios::LocalOrSyncableBookmarkSyncServiceFactory::GetForBrowserState(
+    // Pretend account bookmark sync is on and bookmarks have been downloaded
+    // from the server, required for price tracking.
+    bookmark_model_->CreateAccountPermanentFolders();
+    ios::AccountBookmarkSyncServiceFactory::GetForBrowserState(
         chrome_browser_state_.get())
         ->SetIsTrackingMetadataForTesting();
     shopping_service_ = static_cast<commerce::MockShoppingService*>(
@@ -264,8 +241,6 @@ class CommercePushNotificationClientTest : public PlatformTest {
   }
 
  protected:
-  base::test::ScopedFeatureList features_;
-
   web::WebTaskEnvironment task_environment_;
   CommercePushNotificationClient commerce_push_notification_client_;
   std::unique_ptr<Browser> browser_;

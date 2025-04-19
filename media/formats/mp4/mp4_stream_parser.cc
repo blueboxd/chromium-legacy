@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "media/formats/mp4/mp4_stream_parser.h"
 
 #include <stddef.h>
@@ -63,13 +68,66 @@ EncryptionScheme GetEncryptionScheme(const ProtectionSchemeInfo& sinf) {
 class ExternalMemoryAdapter : public DecoderBuffer::ExternalMemory {
  public:
   explicit ExternalMemoryAdapter(std::vector<uint8_t> memory)
-      : memory_(std::move(memory)) {
-    span_ = {memory_.data(), memory_.size()};
-  }
+      : memory_(std::move(memory)) {}
+
+  const base::span<const uint8_t> Span() const override { return memory_; }
 
  private:
   std::vector<uint8_t> memory_;
 };
+
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+base::HeapArray<uint8_t> PrepareAACBuffer(
+    const AAC& aac_config,
+    base::span<const uint8_t> frame_buf,
+    std::vector<SubsampleEntry>* subsamples) {
+  base::HeapArray<uint8_t> output_buffer;
+
+  // Append an ADTS header to every audio sample unless it's xHE-AAC.
+  int adts_header_size = 0;
+  if (aac_config.GetProfile() != AudioCodecProfile::kXHE_AAC) {
+    output_buffer = aac_config.CreateAdtsFromEsds(frame_buf, &adts_header_size);
+  } else {
+    output_buffer = base::HeapArray<uint8_t>::CopiedFrom(frame_buf);
+  }
+
+  if (output_buffer.empty()) {
+    return output_buffer;
+  }
+
+  // As above, adjust subsample information to account for the headers. AAC is
+  // not required to use subsample encryption, so we may need to add an entry.
+  if (subsamples->empty()) {
+    subsamples->emplace_back(adts_header_size, frame_buf.size());
+  } else {
+    (*subsamples)[0].clear_bytes += adts_header_size;
+  }
+
+  return output_buffer;
+}
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+
+#if BUILDFLAG(ENABLE_PLATFORM_IAMF_AUDIO)
+base::HeapArray<uint8_t> PrependIADescriptors(
+    const IamfSpecificBox& iacb,
+    base::span<const uint8_t> frame_buf,
+    std::vector<SubsampleEntry>* subsamples) {
+  // Prepend the IA Descriptors to every IA Sample.
+  const size_t descriptors_size = iacb.ia_descriptors.size();
+  const size_t total_size = frame_buf.size() + descriptors_size;
+  auto output_buffer = base::HeapArray<uint8_t>::Uninit(total_size);
+  output_buffer.copy_from(iacb.ia_descriptors);
+  output_buffer.last(frame_buf.size()).copy_from(frame_buf);
+
+  if (subsamples->empty()) {
+    subsamples->emplace_back(descriptors_size, frame_buf.size());
+  } else {
+    (*subsamples)[0].clear_bytes += descriptors_size;
+  }
+
+  return output_buffer;
+}
+#endif  // BUILDFLAG(ENABLE_PLATFORM_IAMF_AUDIO)
 
 }  // namespace
 
@@ -141,7 +199,7 @@ bool MP4StreamParser::GetGenerateTimestampsFlag() const {
   return false;
 }
 
-bool MP4StreamParser::AppendToParseBuffer(const uint8_t* buf, size_t size) {
+bool MP4StreamParser::AppendToParseBuffer(base::span<const uint8_t> buf) {
   DCHECK_NE(state_, kWaitingForInit);
 
   if (state_ == kError) {
@@ -164,8 +222,9 @@ bool MP4StreamParser::AppendToParseBuffer(const uint8_t* buf, size_t size) {
   // could lead to memory corruption, preferring CHECK.
   CHECK_EQ(queue_.tail(), max_parse_offset_);
 
-  if (!queue_.Push(buf, base::checked_cast<int>(size))) {
-    DVLOG(2) << "AppendToParseBuffer(): Failed to push buf of size " << size;
+  if (!queue_.Push(buf)) {
+    DVLOG(2) << "AppendToParseBuffer(): Failed to push buf of size "
+             << buf.size();
     return false;
   }
 
@@ -666,7 +725,7 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
       audio_track_ids_.insert(audio_track_id);
       const char* track_kind = (audio_track_ids_.size() == 1 ? "main" : "");
       media_tracks->AddAudioTrack(
-          audio_config, audio_track_id, MediaTrack::Kind(track_kind),
+          audio_config, true, audio_track_id, MediaTrack::Kind(track_kind),
           MediaTrack::Label(track->media.handler.name),
           MediaTrack::Language(track->media.header.language()));
       continue;
@@ -766,7 +825,7 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
       auto track_kind =
           MediaTrack::Kind(video_track_ids_.size() == 1 ? "main" : "");
       media_tracks->AddVideoTrack(
-          video_config, video_track_id, track_kind,
+          video_config, true, video_track_id, track_kind,
           MediaTrack::Label(track->media.handler.name),
           MediaTrack::Language(track->media.header.language()));
       continue;
@@ -868,47 +927,6 @@ void MP4StreamParser::OnEncryptedMediaInitData(
   }
   encrypted_media_init_data_cb_.Run(EmeInitDataType::CENC, init_data);
 }
-
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
-bool MP4StreamParser::PrepareAACBuffer(
-    const AAC& aac_config,
-    std::vector<uint8_t>* frame_buf,
-    std::vector<SubsampleEntry>* subsamples) const {
-  // Append an ADTS header to every audio sample.
-  int adts_header_size = 0;
-  RCHECK(aac_config.ConvertEsdsToADTS(frame_buf, &adts_header_size));
-
-  // As above, adjust subsample information to account for the headers. AAC is
-  // not required to use subsample encryption, so we may need to add an entry.
-  if (subsamples->empty()) {
-    subsamples->push_back(
-        SubsampleEntry(adts_header_size, frame_buf->size() - adts_header_size));
-  } else {
-    (*subsamples)[0].clear_bytes += adts_header_size;
-  }
-  return true;
-}
-#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
-
-#if BUILDFLAG(ENABLE_PLATFORM_IAMF_AUDIO)
-bool MP4StreamParser::PrependIADescriptors(
-    const IamfSpecificBox& iacb,
-    std::vector<uint8_t>* frame_buf,
-    std::vector<SubsampleEntry>* subsamples) const {
-  // Prepend the IA Descriptors to every IA Sample.
-  frame_buf->insert(frame_buf->begin(), iacb.ia_descriptors.begin(),
-                    iacb.ia_descriptors.end());
-  size_t descriptors_size = iacb.ia_descriptors.size();
-  if (subsamples->empty()) {
-    subsamples->push_back(
-        SubsampleEntry(descriptors_size, frame_buf->size() - descriptors_size));
-  } else {
-    (*subsamples)[0].clear_bytes += descriptors_size;
-  }
-
-  return true;
-}
-#endif  // BUILDFLAG(ENABLE_PLATFORM_IAMF_AUDIO)
 
 ParseResult MP4StreamParser::EnqueueSample(BufferQueueMap* buffers) {
   DCHECK_EQ(state_, kEmittingSamples);
@@ -1016,7 +1034,11 @@ ParseResult MP4StreamParser::EnqueueSample(BufferQueueMap* buffers) {
   // opposite of what the coded frame contains.
   bool is_keyframe = runs_->is_keyframe();
 
-  std::vector<uint8_t> frame_buf(buf, buf + sample_size);
+  // `frame_buf` or `heap_frame_buf` should be used for post-processing buffer
+  // storage if [buf, buf + sample_size] needs any kind of processing before
+  // being put in a StreamParserBuffer. Prefer `heap_frame_buf` where possible.
+  std::vector<uint8_t> frame_buf;
+  base::HeapArray<uint8_t> heap_frame_buf;
   if (video) {
     if (runs_->video_description().video_info.codec == VideoCodec::kH264 ||
         runs_->video_description().video_info.codec == VideoCodec::kHEVC ||
@@ -1024,6 +1046,7 @@ ParseResult MP4StreamParser::EnqueueSample(BufferQueueMap* buffers) {
             VideoCodec::kDolbyVision) {
       DCHECK(runs_->video_description().frame_bitstream_converter);
       BitstreamConverter::AnalysisResult analysis;
+      frame_buf.assign(buf, buf + sample_size);
       if (!runs_->video_description()
                .frame_bitstream_converter->ConvertAndAnalyzeFrame(
                    &frame_buf, is_keyframe, &subsamples, &analysis)) {
@@ -1071,8 +1094,9 @@ ParseResult MP4StreamParser::EnqueueSample(BufferQueueMap* buffers) {
   if (audio) {
     if (ESDescriptor::IsAAC(runs_->audio_description().esds.object_type)) {
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-      if (!PrepareAACBuffer(runs_->audio_description().esds.aac, &frame_buf,
-                            &subsamples)) {
+      heap_frame_buf = PrepareAACBuffer(runs_->audio_description().esds.aac,
+                                        {buf, buf + sample_size}, &subsamples);
+      if (heap_frame_buf.empty()) {
         MEDIA_LOG(ERROR, media_log_)
             << "Failed to prepare AAC sample for decode";
         return ParseResult::kError;
@@ -1083,8 +1107,10 @@ ParseResult MP4StreamParser::EnqueueSample(BufferQueueMap* buffers) {
     } else {
 #if BUILDFLAG(ENABLE_PLATFORM_IAMF_AUDIO)
       if (runs_->audio_description().format == FOURCC_IAMF) {
-        if (!PrependIADescriptors(runs_->audio_description().iacb, &frame_buf,
-                                  &subsamples)) {
+        heap_frame_buf =
+            PrependIADescriptors(runs_->audio_description().iacb,
+                                 {buf, buf + sample_size}, &subsamples);
+        if (heap_frame_buf.empty()) {
           MEDIA_LOG(ERROR, media_log_)
               << "Failed to prepare IA sample for decode";
         }
@@ -1104,22 +1130,40 @@ ParseResult MP4StreamParser::EnqueueSample(BufferQueueMap* buffers) {
     // else, use the existing config.
   }
 
-  StreamParserBuffer::Type buffer_type = audio ? DemuxerStream::AUDIO :
-      DemuxerStream::VIDEO;
+  // Either both buffers should be empty or only one should be filled.
+  CHECK(frame_buf.empty() || heap_frame_buf.empty());
 
+  const auto buffer_type = audio ? DemuxerStream::AUDIO : DemuxerStream::VIDEO;
   scoped_refptr<StreamParserBuffer> stream_buf;
 
   if (auto* media_client = GetMediaClient()) {
     if (auto* alloc = media_client->GetMediaAllocator()) {
       stream_buf = StreamParserBuffer::FromExternalMemory(
-          alloc->CopyFrom(frame_buf), is_keyframe, buffer_type,
-          runs_->track_id());
+          alloc->CopyFrom(
+              frame_buf.empty()
+                  ? (heap_frame_buf.empty()
+                         ? base::span<const uint8_t>{buf, buf + sample_size}
+                         : heap_frame_buf)
+                  : frame_buf),
+          is_keyframe, buffer_type, runs_->track_id());
     }
   }
   if (!stream_buf) {
-    stream_buf = StreamParserBuffer::FromExternalMemory(
-        std::make_unique<ExternalMemoryAdapter>(std::move(frame_buf)),
-        is_keyframe, buffer_type, runs_->track_id());
+    // Skip using the ExternalMemoryAdapter if possible since it can have more
+    // overhead in some applications. See https://crbug.com/353751208.
+    if (frame_buf.empty() && heap_frame_buf.empty()) {
+      stream_buf = StreamParserBuffer::CopyFrom(buf, sample_size, is_keyframe,
+                                                buffer_type, runs_->track_id());
+    } else if (frame_buf.empty()) {
+      stream_buf =
+          StreamParserBuffer::FromArray(std::move(heap_frame_buf), is_keyframe,
+                                        buffer_type, runs_->track_id());
+
+    } else {
+      stream_buf = StreamParserBuffer::FromExternalMemory(
+          std::make_unique<ExternalMemoryAdapter>(std::move(frame_buf)),
+          is_keyframe, buffer_type, runs_->track_id());
+    }
   }
 
   if (decrypt_config)

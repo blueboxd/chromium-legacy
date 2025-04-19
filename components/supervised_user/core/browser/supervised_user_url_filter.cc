@@ -235,13 +235,10 @@ std::optional<FilteringSubdomainConflictType> AddConflict(
 
 SupervisedUserURLFilter::SupervisedUserURLFilter(
     PrefService& user_prefs,
-    std::unique_ptr<safe_search_api::URLCheckerClient> url_checker_client,
-    ValidateURLSupportCallback check_webstore_url_callback)
+    std::unique_ptr<Delegate> delegate)
     : default_behavior_(FilteringBehavior::kAllow),
       user_prefs_(user_prefs),
-      async_url_checker_(std::make_unique<safe_search_api::URLChecker>(
-          std::move(url_checker_client))),
-      check_webstore_url_callback_(std::move(check_webstore_url_callback)) {}
+      delegate_(std::move(delegate)) {}
 
 SupervisedUserURLFilter::~SupervisedUserURLFilter() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -353,21 +350,6 @@ bool SupervisedUserURLFilter::HostMatchesPattern(
   return trimmed_host == trimmed_pattern;
 }
 
-// static
-std::string SupervisedUserURLFilter::WebFilterTypeToDisplayString(
-    WebFilterType web_filter_type) {
-  switch (web_filter_type) {
-    case WebFilterType::kAllowAllSites:
-      return "allow_all_sites";
-    case WebFilterType::kCertainSites:
-      return "allow_certain_sites";
-    case WebFilterType::kTryToBlockMatureSites:
-      return "block_mature_sites";
-    case WebFilterType::kMixed:
-      NOTREACHED_NORETURN();
-  }
-}
-
 SupervisedUserFilterTopLevelResult
 SupervisedUserURLFilter::GetHistogramValueForTopLevelFilteringBehavior(
     FilteringBehavior behavior,
@@ -468,12 +450,12 @@ SupervisedUserURLFilter::GetFilteringBehaviorForURL(const GURL& url) {
 
 bool SupervisedUserURLFilter::IsExemptedFromGuardianApproval(
     const GURL& effective_url) {
-  DCHECK(!check_webstore_url_callback_.is_null());
+  DCHECK(delegate_);
   return IsNonStandardUrlScheme(effective_url) ||
          IsAlwaysAllowedHost(effective_url) ||
          IsAlwaysAllowedUrlPrefix(effective_url) ||
          IsPlayStoreTermsOfServiceUrl(effective_url) ||
-         check_webstore_url_callback_.Run(effective_url);
+         delegate_->SupportsWebstoreURL(effective_url);
 }
 
 bool SupervisedUserURLFilter::GetManualFilteringBehaviorForURL(
@@ -697,6 +679,7 @@ void SupervisedUserURLFilter::Clear() {
   url_map_.clear();
   allowed_host_list_.clear();
   blocked_host_list_.clear();
+  async_url_checker_.reset();
   is_filter_initialized_ = false;
 }
 
@@ -792,13 +775,14 @@ bool SupervisedUserURLFilter::RunAsyncChecker(
     return true;
   }
 
+  CHECK(async_url_checker_);
   return async_url_checker_->CheckURL(
       url_matcher::util::Normalize(url),
       base::BindOnce(&SupervisedUserURLFilter::CheckCallback,
                      base::Unretained(this), std::move(callback)));
 }
 
-void SupervisedUserURLFilter::SetURLCheckerClientForTesting(
+void SupervisedUserURLFilter::SetURLCheckerClient(
     std::unique_ptr<safe_search_api::URLCheckerClient> url_checker_client) {
   async_url_checker_.reset(
       new safe_search_api::URLChecker(std::move(url_checker_client)));

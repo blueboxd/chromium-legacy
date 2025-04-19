@@ -75,7 +75,6 @@ class WebContentsViewMac : public WebContentsView,
   void RestoreFocus() override;
   void FocusThroughTabTraversal(bool reverse) override;
   DropData* GetDropData() const override;
-  void TransferDragSecurityInfo(WebContentsView* view) override;
   gfx::Rect GetViewBounds() const override;
   void CreateView(gfx::NativeView context) override;
   RenderWidgetHostViewBase* CreateViewForWidget(
@@ -170,6 +169,7 @@ class WebContentsViewMac : public WebContentsView,
   bool DragPromisedFileTo(const base::FilePath& file_path,
                           const DropData& drop_data,
                           const GURL& download_url,
+                          const url::Origin& source_origin,
                           base::FilePath* out_file_path) override;
   void EndDrag(uint32_t drag_opeation,
                const gfx::PointF& local_point,
@@ -185,6 +185,7 @@ class WebContentsViewMac : public WebContentsView,
   void DragPromisedFileTo(const base::FilePath& file_path,
                           const DropData& drop_data,
                           const GURL& download_url,
+                          const url::Origin& source_origin,
                           DragPromisedFileToCallback callback) override;
 
   // Return the list of child RenderWidgetHostViewMacs. This will remove any

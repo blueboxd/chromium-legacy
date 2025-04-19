@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "extensions/browser/image_loader.h"
 
 #include <stddef.h>
@@ -84,8 +89,9 @@ class ImageLoaderTest : public ExtensionsTest {
     std::unique_ptr<base::Value> valid_value =
         deserializer.Deserialize(&error_code, &error);
     EXPECT_EQ(0, error_code) << error;
-    if (error_code != 0)
+    if (error_code != 0) {
       return nullptr;
+    }
 
     EXPECT_TRUE(valid_value.get());
     EXPECT_TRUE(valid_value->is_dict());

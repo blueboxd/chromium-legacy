@@ -13,6 +13,7 @@
 #include <string>
 #include <utility>
 
+#include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_macros.h"
@@ -48,9 +49,12 @@
 #include "components/viz/service/display/display_resource_provider_software.h"
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/display/display_utils.h"
+#include "components/viz/service/display/frame_interval_decider.h"
+#include "components/viz/service/display/frame_interval_matchers.h"
 #include "components/viz/service/display/null_renderer.h"
 #include "components/viz/service/display/occlusion_culler.h"
 #include "components/viz/service/display/output_surface.h"
+#include "components/viz/service/display/overlay_candidate_factory.h"
 #include "components/viz/service/display/renderer_utils.h"
 #include "components/viz/service/display/skia_output_surface.h"
 #include "components/viz/service/display/skia_renderer.h"
@@ -59,14 +63,18 @@
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_manager.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
+#include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/scheduler_sequence.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_format_service_utils.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 #include "third_party/abseil-cpp/absl/cleanup/cleanup.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/chrome_latency_info.pbzero.h"
 #include "ui/gfx/buffer_types.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_fence_handle.h"
+#include "ui/gfx/overlay_transform.h"
 #include "ui/gfx/overlay_transform_utils.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/swap_result.h"
@@ -78,20 +86,9 @@ namespace viz {
 
 namespace {
 
-// Try turning off aggregate only damaged everywhere to verify it doesn't cause
-// performance problems.
-BASE_FEATURE(kUseAggregateOnlyDamaged,
-             "UseAggregateOnlyDamaged",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 #if !BUILDFLAG(IS_MAC)
 constexpr base::TimeDelta kAllowedDeltaFromFuture = base::Milliseconds(16);
 #endif
-
-// A lower bounds for GetEstimatedDisplayDrawTime, influenced by
-// Compositing.Display.DrawToSwapUs.
-constexpr base::TimeDelta kMinEstimatedDisplayDrawTime =
-    base::Microseconds(250);
 
 // Assign each Display instance a starting value for the the display-trace id,
 // so that multiple Displays all don't start at 0, because that makes it
@@ -139,18 +136,6 @@ gfx::PresentationFeedback SanitizePresentationFeedback(
 #endif
 
   return feedback;
-}
-
-bool SupportsSetFrameRate(const OutputSurface* output_surface) {
-#if BUILDFLAG(IS_ANDROID)
-  return output_surface->capabilities().supports_surfaceless &&
-         gfx::SurfaceControl::SupportsSetFrameRate();
-#elif BUILDFLAG(IS_WIN)
-  return output_surface->capabilities().supports_dc_layers &&
-         features::ShouldUseSetPresentDuration();
-#else
-  return false;
-#endif
 }
 
 void IssueDisplayRenderingStatsEvent() {
@@ -224,6 +209,7 @@ Display::Display(
     SharedBitmapManager* bitmap_manager,
     gpu::SharedImageManager* shared_image_manager,
     gpu::SyncPointManager* sync_point_manager,
+    gpu::Scheduler* gpu_scheduler,
     const RendererSettings& settings,
     const DebugRendererSettings* debug_settings,
     const FrameSinkId& frame_sink_id,
@@ -235,6 +221,7 @@ Display::Display(
     : bitmap_manager_(bitmap_manager),
       shared_image_manager_(shared_image_manager),
       sync_point_manager_(sync_point_manager),
+      gpu_scheduler_(gpu_scheduler),
       settings_(settings),
       debug_settings_(debug_settings),
       frame_sink_id_(frame_sink_id),
@@ -249,6 +236,16 @@ Display::Display(
       last_presented_trace_id_(swapped_trace_id_) {
   DCHECK(output_surface_);
   DCHECK(frame_sink_id_.is_valid());
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  static bool logged = false;
+  // TODO(b/329688656): Remove this after the issue is resolved.
+  if (!logged && output_surface_->capabilities().max_texture_size > 0) {
+    logged = true;
+    LOG(ERROR) << "Max Texture Size="
+               << output_surface_->capabilities().max_texture_size;
+  }
+#endif
 
   occlusion_culler_ = std::make_unique<OcclusionCuller>(
       overlay_processor_.get(), settings_.occlusion_culler_settings);
@@ -294,7 +291,6 @@ Display::~Display() {
 
 void Display::Initialize(DisplayClient* client,
                          SurfaceManager* surface_manager,
-                         bool enable_shared_images,
                          bool hw_support_for_multiple_refresh_rates) {
   DCHECK(client);
   DCHECK(surface_manager);
@@ -306,11 +302,20 @@ void Display::Initialize(DisplayClient* client,
   if (output_surface_->software_device())
     output_surface_->software_device()->BindToClient(this);
 
-  frame_rate_decider_ = std::make_unique<FrameRateDecider>(
-      surface_manager_, this, hw_support_for_multiple_refresh_rates,
-      SupportsSetFrameRate(output_surface_.get()));
+  if (features::IsUsingFrameIntervalDecider()) {
+    frame_interval_decider_ = std::make_unique<FrameIntervalDecider>();
+  } else {
+    bool output_surface_supports_set_frame_rate = false;
+#if BUILDFLAG(IS_ANDROID)
+    output_surface_supports_set_frame_rate =
+        OutputSurfaceSupportsSetFrameRate();
+#endif
+    frame_rate_decider_ = std::make_unique<FrameRateDecider>(
+        surface_manager_, this, hw_support_for_multiple_refresh_rates,
+        output_surface_supports_set_frame_rate);
+  }
 
-  InitializeRenderer(enable_shared_images);
+  InitializeRenderer();
 
   damage_tracker_ = std::make_unique<DisplayDamageTracker>(surface_manager_,
                                                            aggregator_.get());
@@ -448,7 +453,7 @@ void Display::SetOutputIsSecure(bool secure) {
   }
 }
 
-void Display::InitializeRenderer(bool enable_shared_images) {
+void Display::InitializeRenderer() {
   if (skia_output_surface_) {
     auto resource_provider = std::make_unique<DisplayResourceProviderSkia>();
     renderer_ = std::make_unique<SkiaRenderer>(
@@ -464,7 +469,8 @@ void Display::InitializeRenderer(bool enable_shared_images) {
     resource_provider_ = std::move(resource_provider);
   } else {
     auto resource_provider = std::make_unique<DisplayResourceProviderSoftware>(
-        bitmap_manager_, shared_image_manager_, sync_point_manager_);
+        bitmap_manager_, shared_image_manager_, sync_point_manager_,
+        gpu_scheduler_);
     DCHECK(!overlay_processor_->IsOverlaySupported());
     auto renderer = std::make_unique<SoftwareRenderer>(
         &settings_, debug_settings_, output_surface_.get(),
@@ -476,14 +482,6 @@ void Display::InitializeRenderer(bool enable_shared_images) {
 
   renderer_->Initialize();
   renderer_->SetVisible(visible_);
-
-  // Outputting a partial list of quads might not work in cases where contents
-  // outside the damage rect might be needed by the renderer.
-  bool output_partial_list =
-      base::FeatureList::IsEnabled(kUseAggregateOnlyDamaged) &&
-      renderer_->use_partial_swap() &&
-      output_surface_->capabilities().only_invalidates_damage_rect &&
-      !overlay_processor_->IsOverlaySupported();
 
   SurfaceAggregator::ExtraPassForReadbackOption extra_pass_option =
       SurfaceAggregator::ExtraPassForReadbackOption::kNone;
@@ -497,12 +495,15 @@ void Display::InitializeRenderer(bool enable_shared_images) {
 #if BUILDFLAG(IS_WIN)
   const bool prevent_merging_surfaces_to_root_pass =
       features::IsDelegatedCompositingEnabled() &&
-      base::FeatureList::IsEnabled(features::kDelegatedCompositingLimitToUi);
+      features::kDelegatedCompositingModeParam.Get() ==
+          features::DelegatedCompositingMode::kLimitToUi &&
+      output_surface_->capabilities().dc_support_level >=
+          OutputSurface::DCSupportLevel::kDCompTexture;
 #else
   const bool prevent_merging_surfaces_to_root_pass = false;
 #endif
   aggregator_ = std::make_unique<SurfaceAggregator>(
-      surface_manager_, resource_provider_.get(), output_partial_list,
+      surface_manager_, resource_provider_.get(),
       overlay_processor_->NeedsSurfaceDamageRectList(), extra_pass_option,
       prevent_merging_surfaces_to_root_pass);
 
@@ -602,8 +603,8 @@ void DebugDrawFrame(
       if (quad->resources.ids[0] != kInvalidResourceId) {
         DBG_DRAW_TEXT_OPT(
             "frame.render_pass.buf_format", DBG_OPT_BLUE, display_rect.origin(),
-            base::NumberToString(static_cast<int>(
-                resource_provider->GetBufferFormat(quad->resources.ids[0]))));
+            resource_provider->GetSharedImageFormat(quad->resources.ids[0])
+                .ToString());
         DBG_DRAW_TEXT_OPT(
             "frame.render_pass.buf_color_space", DBG_OPT_GREEN,
             display_rect.origin(),
@@ -665,6 +666,142 @@ void VisualDebuggerSync(gfx::OverlayTransform current_display_transform,
 }
 
 }  // namespace
+
+void Display::MaybeLogQuadsProperties(
+    AggregatedRenderPass& last_render_pass,
+    const SurfaceDamageRectList* surface_damage_rect_list) {
+  // A restraint on how frequently we log quad infos in number of frames.
+  constexpr double kLogQuadInfoProbability = 1.0 / 20000;
+  if (!metrics_subsampler_.ShouldSample(kLogQuadInfoProbability)) {
+    return;
+  }
+  base::ElapsedTimer logging_timer;
+  int num_nonopaque_quads = 0;
+  int num_roundedcorners_quads = 0;
+  int num_transformation_quads = 0;
+  int num_nonaligned_quads = 0;
+  int num_nonpixelaligned_quads = 0;
+  int num_solid_quads = 0;
+  int num_scaled_quads = 0;
+  int num_failed_candidate = 0;
+
+  OverlayCandidateFactory::OverlayContext context;
+  context.is_delegated_context = true;
+  context.supports_clip_rect = true;
+  context.supports_out_of_window_clip_rect = true;
+  context.supports_arbitrary_transform = true;
+  context.supports_mask_filter = true;
+  context.transform_and_clip_rpdq = true;
+  context.supports_flip_rotate_transform = true;
+
+  SkM44 color_matrix;
+  // auto resource_provider = std::make_unique<DisplayResourceProviderSkia>();
+  base::flat_map<AggregatedRenderPassId, cc::FilterOperations*>
+      render_pass_filters;
+  render_pass_filters[last_render_pass.id] = &(last_render_pass.filters);
+  OverlayCandidateFactory candidate_factory = OverlayCandidateFactory(
+      &last_render_pass, resource_provider_.get(), surface_damage_rect_list,
+      &color_matrix, gfx::RectF(), &render_pass_filters, context);
+
+  OverlayCandidate candidate;
+
+  for (auto* quad : last_render_pass.quad_list) {
+    auto result = candidate_factory.FromDrawQuad(quad, candidate);
+    if (result == OverlayCandidate::CandidateStatus::kFailNotAxisAligned ||
+        result ==
+            OverlayCandidate::CandidateStatus::kFailNotAxisAligned3dTransform ||
+        result ==
+            OverlayCandidate::CandidateStatus::kFailNotAxisAligned2dShear ||
+        result ==
+            OverlayCandidate::CandidateStatus::kFailNotAxisAligned2dRotation) {
+      num_nonaligned_quads++;
+    }
+
+    if (result != OverlayCandidate::CandidateStatus::kSuccess) {
+      num_failed_candidate++;
+    }
+
+    if (!candidate.rounded_corners.IsEmpty()) {
+      num_roundedcorners_quads++;
+    }
+    if (!candidate.is_opaque) {
+      num_nonopaque_quads++;
+    }
+    if (!absl::holds_alternative<gfx::OverlayTransform>(candidate.transform) ||
+        absl::get<gfx::OverlayTransform>(candidate.transform) !=
+             gfx::OVERLAY_TRANSFORM_NONE) {
+      num_transformation_quads++;
+    }
+    if (candidate.is_solid_color) {
+      num_solid_quads++;
+    }
+    auto rect = OverlayCandidate::DisplayRectInTargetSpace(candidate);
+    if (IsNearestRectWithinDistance(rect,
+                                    std::numeric_limits<float>::epsilon())) {
+      num_nonpixelaligned_quads++;
+    }
+    UMA_HISTOGRAM_ENUMERATION(
+        "Compositing.Display.Draw.LastPass.Quads.ColorSpacePrimaryID",
+        candidate.color_space.GetPrimaryID());
+    UMA_HISTOGRAM_ENUMERATION(
+        "Compositing.Display.Draw.LastPass.Quads.ColorSpaceTransferID",
+        candidate.color_space.GetTransferID());
+    UMA_HISTOGRAM_ENUMERATION(
+        "Compositing.Display.Draw.LastPass.Quads.BufferFormat",
+        gpu::ToBufferFormat(candidate.format));
+    gfx::RectF uv_rect = candidate.uv_rect;
+    candidate_factory.HandleClipAndSubsampling(candidate);
+    if (uv_rect != candidate.uv_rect) {
+      num_scaled_quads++;
+    }
+  }
+
+  UMA_HISTOGRAM_COUNTS_100("Compositing.Display.Draw.LastPass.Quads",
+                           last_render_pass.quad_list.size());
+  UMA_HISTOGRAM_COUNTS_100("Compositing.Display.Draw.LastPass.Quads.NonOpaque",
+                           num_nonopaque_quads);
+  UMA_HISTOGRAM_COUNTS_100(
+      "Compositing.Display.Draw.LastPass.Quads.RoundedCorners",
+      num_roundedcorners_quads);
+  UMA_HISTOGRAM_COUNTS_100("Compositing.Display.Draw.Quads.Transformations",
+                           num_transformation_quads);
+  UMA_HISTOGRAM_COUNTS_100("Compositing.Display.Draw.Quads.NonAligned",
+                           num_nonaligned_quads);
+  UMA_HISTOGRAM_COUNTS_100("Compositing.Display.Draw.Quads.NonPixelAligned",
+                           num_nonpixelaligned_quads);
+  UMA_HISTOGRAM_COUNTS_100("Compositing.Display.Draw.Quads.SolidColor",
+                           num_solid_quads);
+  UMA_HISTOGRAM_COUNTS_100("Compositing.Display.Draw.Quads.Scaled",
+                           num_scaled_quads);
+  UMA_HISTOGRAM_COUNTS_100("Compositing.Display.Draw.Quads.FailedCandidate",
+                           num_failed_candidate);
+
+  UMA_HISTOGRAM_COUNTS_1M("Compositing.Display.Draw.Quads.LoggingTimeUs",
+                          logging_timer.Elapsed().InMicroseconds());
+}
+
+void Display::StartTrackingOverdraw(int interval_length_in_seconds) {
+  CHECK(!overdraw_tracker_);
+
+  OverdrawTracker::Settings settings;
+  settings.interval_length_in_seconds = interval_length_in_seconds;
+
+  overdraw_tracker_ = std::make_unique<OverdrawTracker>(settings);
+}
+
+OverdrawTracker::OverdrawTimeSeries Display::StopTrackingOverdraw() {
+  // Returns empty time series if `overdraw_tracker_` has no value. This could
+  // happen when gpu-process is restarted in middle of test and test scripts
+  // still calls this at the end.
+  if (!overdraw_tracker_) {
+    return OverdrawTracker::OverdrawTimeSeries();
+  }
+
+  auto overdraw_data = overdraw_tracker_->TakeDataAsTimeSeries();
+  overdraw_tracker_.reset();
+
+  return overdraw_data;
+}
 
 bool Display::DrawAndSwap(const DrawAndSwapParams& params) {
   TRACE_EVENT0("viz", "Display::DrawAndSwap");
@@ -731,8 +868,16 @@ bool Display::DrawAndSwap(const DrawAndSwapParams& params) {
   base::ElapsedTimer aggregate_timer;
   AggregatedFrame frame;
   {
-    FrameRateDecider::ScopedAggregate scoped_aggregate(
-        frame_rate_decider_.get());
+    std::optional<FrameRateDecider::ScopedAggregate> scoped_aggregate;
+    if (frame_rate_decider_) {
+      scoped_aggregate.emplace(frame_rate_decider_.get());
+    }
+    std::unique_ptr<FrameIntervalDecider::ScopedAggregate>
+        scoped_interval_decider;
+    if (frame_interval_decider_) {
+      scoped_interval_decider = frame_interval_decider_->WrapAggregate(
+          *surface_manager_, params.frame_time);
+    }
     gfx::Rect target_damage_bounding_rect;
     if (output_surface_->capabilities().supports_target_damage)
       target_damage_bounding_rect = renderer_->GetTargetDamageBoundingRect();
@@ -808,6 +953,12 @@ bool Display::DrawAndSwap(const DrawAndSwapParams& params) {
   bool have_damage = false;
   auto& last_render_pass = *frame.render_pass_list.back();
 
+  // log quad types every so often if experiment and n-th frame
+  if (features::ShouldLogFrameQuadInfo()) {
+    MaybeLogQuadsProperties(last_render_pass,
+                            &(frame.surface_damage_rect_list_));
+  }
+
   // The CompositorFrame provided by the SurfaceAggregator includes the display
   // transform while |current_surface_size_| is the pre-transform size received
   // from the client.
@@ -849,24 +1000,13 @@ bool Display::DrawAndSwap(const DrawAndSwapParams& params) {
         "Compositing.Display.Draw.Occlusion.Calculation.Time",
         draw_occlusion_timer.Elapsed().InMicroseconds());
 
-    // TODO(vmpstr): This used to set to
-    // frame.metadata.is_resourceless_software_draw_with_scroll_or_animation
-    // from CompositedFrame. However, after changing this to AggregatedFrame, it
-    // seems that the value is never changed from the default false (i.e.
-    // SurfaceAggregator has no reference to
-    // is_resourceless_software_draw_with_scroll_or_animation). The TODO here is
-    // to clean up the code below or to figure out if this value is important.
-    bool disable_image_filtering = false;
-    if (software_renderer_) {
-      software_renderer_->SetDisablePictureQuadImageFiltering(
-          disable_image_filtering);
-    } else {
-      // This should only be set for software draws in synchronous compositor.
-      DCHECK(!disable_image_filtering);
-    }
-
     DBG_LOG("renderer.ptr", "renderer = %p%s", this,
             renderer_.get() == software_renderer_ ? " (software)" : "");
+
+    if (overdraw_tracker_) {
+      overdraw_tracker_->EstimateAndRecordOverdraw(&frame,
+                                                   base::TimeTicks::Now());
+    }
 
     draw_timer.emplace();
     overlay_processor_->SetFrameSequenceNumber(frame_sequence_number_);
@@ -928,6 +1068,8 @@ bool Display::DrawAndSwap(const DrawAndSwapParams& params) {
         current_surface_id_.local_surface_id().parent_sequence_number();
     swap_frame_data.choreographer_vsync_id = params.choreographer_vsync_id;
     swap_frame_data.swap_trace_id = swapped_trace_id_;
+    swap_frame_data.display_hdr_headroom =
+        display_color_spaces_.GetHDRMaxLuminanceRelative();
 
     TRACE_EVENT(
         "viz,benchmark,graphics.pipeline", "Graphics.Pipeline",
@@ -1018,8 +1160,12 @@ void Display::DidReceiveSwapBuffersAck(
         data->set_display_trace_id(params.swap_trace_id);
       });
 
+  // Both cases require full damage. That is, if buffers are recreated or
+  // non-simple overlays failed, a frame is expected to be sent again.
   if (params.swap_response.result ==
-      gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS) {
+          gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS ||
+      params.swap_response.result ==
+          gfx::SwapResult::SWAP_NON_SIMPLE_OVERLAYS_FAILED) {
     aggregator_->SetFullDamageForSurface(current_surface_id_);
     damage_tracker_->SetRootSurfaceDamaged();
   }
@@ -1067,7 +1213,6 @@ void Display::DidReceiveSwapBuffersAck(
   // the swap was triggered. Note that not all output surfaces provide timing
   // information, hence the check for a valid swap_start.
 
-  base::TimeDelta draw_start_to_swap_end;
   if (!timings.swap_start.is_null()) {
     DCHECK_LE(draw_start_timestamp, timings.swap_start);
     base::TimeDelta draw_start_to_swap_start =
@@ -1075,14 +1220,12 @@ void Display::DidReceiveSwapBuffersAck(
     UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
         "Compositing.Display.DrawToSwapUs", draw_start_to_swap_start,
         kDrawToSwapMin, kDrawToSwapMax, kDrawToSwapUsBuckets);
-    draw_start_to_swap_end = timings.swap_end - draw_start_timestamp;
   }
 
-  base::TimeDelta schedule_draw_to_gpu_start;
   if (!timings.viz_scheduled_draw.is_null()) {
     DCHECK(!timings.gpu_started_draw.is_null());
     DCHECK_LE(timings.viz_scheduled_draw, timings.gpu_started_draw);
-    schedule_draw_to_gpu_start =
+    base::TimeDelta schedule_draw_to_gpu_start =
         timings.gpu_started_draw - timings.viz_scheduled_draw;
     UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
         "Compositing.Display.VizScheduledDrawToGpuStartedDrawUs",
@@ -1105,13 +1248,6 @@ void Display::DidReceiveSwapBuffersAck(
     UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
         "Compositing.Display.VizDependencyResolvedToGpuStartedDrawUs",
         scheduling_delta, kDrawToSwapMin, kDrawToSwapMax, kDrawToSwapUsBuckets);
-  }
-
-  if (!timings.swap_start.is_null()) {
-    draw_time_without_scheduling_waits_.InsertSample(
-        draw_start_to_swap_end - schedule_draw_to_gpu_start);
-    // These two values can be equal in unit tests.
-    DCHECK_GE(draw_start_to_swap_end, schedule_draw_to_gpu_start);
   }
 }
 
@@ -1184,22 +1320,6 @@ void Display::DidFinishFrame(const BeginFrameAck& ack) {
   frame_sequence_number_ = ack.frame_id.sequence_number;
 }
 
-base::TimeDelta Display::GetEstimatedDisplayDrawTime(base::TimeDelta interval,
-                                                     double percentile) const {
-  base::TimeDelta default_estimate =
-      BeginFrameArgs::DefaultEstimatedDisplayDrawTime(interval);
-  if (draw_time_without_scheduling_waits_.sample_count() >= 60 &&
-      default_estimate > kMinEstimatedDisplayDrawTime) {
-    // We do not want the deadline adjustmens to exceed a default of 1/3 VSync,
-    // as we would not give other processes enough time to produce content. So
-    // this would make high latency situations worse.
-    return std::clamp(
-        draw_time_without_scheduling_waits_.Percentile(percentile),
-        kMinEstimatedDisplayDrawTime, default_estimate);
-  }
-  return default_estimate;
-}
-
 const SurfaceId& Display::CurrentSurfaceId() const {
   return current_surface_id_;
 }
@@ -1231,16 +1351,12 @@ void Display::SetNeedsOneBeginFrame() {
 }
 
 void Display::SetPreferredFrameInterval(base::TimeDelta interval) {
-  if (frame_rate_decider_->supports_set_frame_rate()) {
-    float interval_s = interval.InSecondsF();
-    float frame_rate = interval_s == 0 ? 0 : (1 / interval_s);
-    output_surface_->SetFrameRate(frame_rate);
 #if BUILDFLAG(IS_ANDROID)
-    // On Android we want to return early because the |client_| callback hits
-    // a platform API in the browser process.
+  if (OutputSurfaceSupportsSetFrameRate()) {
+    SetFrameIntervalOnOutputSurface(interval);
     return;
-#endif  // BUILDFLAG(IS_ANDROID)
   }
+#endif
 
   client_->SetPreferredFrameInterval(interval);
 }
@@ -1252,13 +1368,35 @@ base::TimeDelta Display::GetPreferredFrameIntervalForFrameSinkId(
 }
 
 void Display::SetSupportedFrameIntervals(
-    std::vector<base::TimeDelta> intervals) {
-  frame_rate_decider_->SetSupportedFrameIntervals(std::move(intervals));
+    base::flat_set<base::TimeDelta> intervals) {
+  if (frame_rate_decider_) {
+    frame_rate_decider_->SetSupportedFrameIntervals(intervals);
+  }
+}
+
+void Display::SetHwSupportForMultipleRefreshRates(bool support) {
+  if (frame_rate_decider_) {
+    frame_rate_decider_->SetHwSupportForMultipleRefreshRates(support);
+  }
+}
+
+#if BUILDFLAG(IS_ANDROID)
+bool Display::OutputSurfaceSupportsSetFrameRate() {
+  return output_surface_ &&
+         output_surface_->capabilities().supports_surfaceless &&
+         gfx::SurfaceControl::SupportsSetFrameRate();
+}
+
+void Display::SetFrameIntervalOnOutputSurface(base::TimeDelta interval) {
+  float interval_s = interval.InSecondsF();
+  float frame_rate = interval_s == 0 ? 0 : (1 / interval_s);
+  output_surface_->SetFrameRate(frame_rate);
 }
 
 base::ScopedClosureRunner Display::GetCacheBackBufferCb() {
   return output_surface_->GetCacheBackBufferCb();
 }
+#endif
 
 void Display::DisableGPUAccessByDefault() {
   DCHECK(resource_provider_);
@@ -1274,8 +1412,7 @@ void Display::PreserveChildSurfaceControls() {
 void Display::InitDelegatedInkPointRendererReceiver(
     mojo::PendingReceiver<gfx::mojom::DelegatedInkPointRenderer>
         pending_receiver) {
-  if (DoesPlatformSupportDelegatedInk() &&
-      features::ShouldUsePlatformDelegatedInk() && output_surface_) {
+  if (DoesPlatformSupportDelegatedInk() && output_surface_) {
     output_surface_->InitDelegatedInkPointRendererReceiver(
         std::move(pending_receiver));
   } else if (DelegatedInkPointRendererBase* ink_renderer =

@@ -13,6 +13,7 @@
 #include "ui/base/interaction/element_tracker.h"
 #include "ui/base/models/dialog_model.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/interaction/element_tracker_views.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/test/widget_test.h"
@@ -41,8 +42,8 @@ class WeakDialogModelDelegate : public ui::DialogModelDelegate {
 }  // namespace
 
 TEST_F(BubbleDialogModelHostTest, CloseIsSynchronousAndCallsWindowClosing) {
-  std::unique_ptr<Widget> anchor_widget =
-      CreateTestWidget(Widget::InitParams::TYPE_WINDOW);
+  std::unique_ptr<Widget> anchor_widget = CreateTestWidget(
+      Widget::InitParams::CLIENT_OWNS_WIDGET, Widget::InitParams::TYPE_WINDOW);
 
   auto delegate = std::make_unique<WeakDialogModelDelegate>();
   auto weak_delegate = delegate->GetWeakPtr();
@@ -80,8 +81,8 @@ TEST_F(BubbleDialogModelHostTest, ElementIDsReportedCorrectly) {
   constexpr char16_t kOkButtonText[] = u"OK";
   constexpr char16_t kExtraButtonText[] = u"Button";
 
-  std::unique_ptr<Widget> anchor_widget =
-      CreateTestWidget(Widget::InitParams::TYPE_WINDOW);
+  std::unique_ptr<Widget> anchor_widget = CreateTestWidget(
+      Widget::InitParams::CLIENT_OWNS_WIDGET, Widget::InitParams::TYPE_WINDOW);
   anchor_widget->Show();
   const auto context =
       views::ElementTrackerViews::GetContextForWidget(anchor_widget.get());
@@ -179,11 +180,34 @@ TEST_F(BubbleDialogModelHostTest,
             kFocusedField);
 }
 
+TEST_F(BubbleDialogModelHostTest, SetCustomInitiallyFocusedView) {
+  DEFINE_LOCAL_ELEMENT_IDENTIFIER_VALUE(kCustomFieldId);
+
+  std::unique_ptr<View> container = Builder<View>().Build();
+  std::unique_ptr<Textfield> textfield_unique = Builder<Textfield>().Build();
+  raw_ptr<View> textfield = textfield_unique.get();
+  container->AddChildView(std::move(textfield_unique));
+
+  auto host = std::make_unique<BubbleDialogModelHost>(
+      ui::DialogModel::Builder()
+          .AddCustomField(
+              std::make_unique<views::BubbleDialogModelHost::CustomView>(
+                  std::move(container),
+                  views::BubbleDialogModelHost::FieldType::kControl, textfield),
+              kCustomFieldId)
+          .SetInitiallyFocusedField(kCustomFieldId)
+          .Build(),
+      /*anchor_view=*/nullptr, BubbleBorder::Arrow::TOP_RIGHT);
+
+  EXPECT_EQ(host->GetInitiallyFocusedView(), textfield);
+  textfield = nullptr;
+}
+
 TEST_F(BubbleDialogModelHostTest, SetEnabledButtons) {
   constexpr char16_t kExtraButtonText[] = u"Button";
 
-  std::unique_ptr<Widget> anchor_widget =
-      CreateTestWidget(Widget::InitParams::TYPE_WINDOW);
+  std::unique_ptr<Widget> anchor_widget = CreateTestWidget(
+      Widget::InitParams::CLIENT_OWNS_WIDGET, Widget::InitParams::TYPE_WINDOW);
   anchor_widget->Show();
 
   auto host_unique = std::make_unique<BubbleDialogModelHost>(
@@ -214,8 +238,8 @@ TEST_F(BubbleDialogModelHostTest, SetEnabledButtons) {
 TEST_F(BubbleDialogModelHostTest, TestFieldVisibility) {
   DEFINE_LOCAL_ELEMENT_IDENTIFIER_VALUE(kField);
 
-  std::unique_ptr<Widget> anchor_widget =
-      CreateTestWidget(Widget::InitParams::TYPE_WINDOW);
+  std::unique_ptr<Widget> anchor_widget = CreateTestWidget(
+      Widget::InitParams::CLIENT_OWNS_WIDGET, Widget::InitParams::TYPE_WINDOW);
   anchor_widget->Show();
   const ui::ElementContext context =
       views::ElementTrackerViews::GetContextForWidget(anchor_widget.get());
@@ -268,8 +292,8 @@ TEST_F(BubbleDialogModelHostTest, TestButtonLabelUpdate) {
   constexpr char16_t kStartingButtonLabel[] = u"Starting";
   constexpr char16_t kFinalButtonLabel[] = u"Final";
 
-  std::unique_ptr<Widget> anchor_widget =
-      CreateTestWidget(Widget::InitParams::TYPE_WINDOW);
+  std::unique_ptr<Widget> anchor_widget = CreateTestWidget(
+      Widget::InitParams::CLIENT_OWNS_WIDGET, Widget::InitParams::TYPE_WINDOW);
   anchor_widget->Show();
 
   std::unique_ptr<ui::DialogModel> dialog_model =
@@ -307,8 +331,8 @@ TEST_F(BubbleDialogModelHostTest, TestButtonLabelUpdate) {
 TEST_F(BubbleDialogModelHostTest, TestButtonEnableUpdate) {
   DEFINE_LOCAL_ELEMENT_IDENTIFIER_VALUE(kOkButtonId);
 
-  std::unique_ptr<Widget> anchor_widget =
-      CreateTestWidget(Widget::InitParams::TYPE_WINDOW);
+  std::unique_ptr<Widget> anchor_widget = CreateTestWidget(
+      Widget::InitParams::CLIENT_OWNS_WIDGET, Widget::InitParams::TYPE_WINDOW);
   anchor_widget->Show();
 
   std::unique_ptr<ui::DialogModel> dialog_model =
@@ -345,8 +369,8 @@ TEST_F(BubbleDialogModelHostTest, TestButtonEnableUpdate) {
 }
 
 TEST_F(BubbleDialogModelHostTest, TestAddButtonsWithCloseCallback) {
-  std::unique_ptr<Widget> anchor_widget =
-      CreateTestWidget(Widget::InitParams::TYPE_WINDOW);
+  std::unique_ptr<Widget> anchor_widget = CreateTestWidget(
+      Widget::InitParams::CLIENT_OWNS_WIDGET, Widget::InitParams::TYPE_WINDOW);
   anchor_widget->Show();
 
   std::unique_ptr<ui::DialogModel> dialog_model =

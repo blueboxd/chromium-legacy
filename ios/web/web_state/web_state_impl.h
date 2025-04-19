@@ -74,7 +74,9 @@ class WebStateImpl final : public WebState {
   explicit WebStateImpl(const CreateParams& params);
 
   // Constructor for WebStateImpls created for deserialized sessions
-  WebStateImpl(const CreateParams& params, CRWSessionStorage* session_storage);
+  WebStateImpl(const CreateParams& params,
+               CRWSessionStorage* session_storage,
+               NativeSessionFetcher session_fetcher);
 
   // Constructor for WebStateImpls created for deserialized sessions. The
   // callbacks are used to load the complete serialized data from disk when
@@ -141,6 +143,9 @@ class WebStateImpl final : public WebState {
   // Notifies web state observers when any of the web state's permission has
   // changed.
   void OnStateChangedForPermission(Permission permission);
+
+  // Notifies the observers that the under pagebackground color was changed.
+  void OnUnderPageBackgroundColorChanged();
 
   // Returns the NavigationManager for this WebState.
   NavigationManagerImpl& GetNavigationManagerImpl();

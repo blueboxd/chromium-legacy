@@ -40,9 +40,10 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/ui/webui/ash/login/error_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/online_login_utils.h"
 #include "chromeos/ash/components/dbus/dbus_thread_manager.h"
 #include "chromeos/ash/components/dbus/device_management/install_attributes_util.h"
-#include "chromeos/dbus/common/dbus_method_call_status.h"
+#include "chromeos/dbus/common/dbus_callback.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -499,13 +500,14 @@ void EnrollmentScreen::AuthenticateUsingEnrollmentToken() {
   enrollment_launcher_->EnrollUsingEnrollmentToken();
 }
 
-void EnrollmentScreen::OnLoginDone(const std::string& user,
-                                   int license_type,
-                                   const std::string& auth_code) {
+void EnrollmentScreen::OnLoginDone(
+    login::OnlineSigninArtifacts signin_artifacts,
+    int license_type,
+    const std::string& auth_code) {
   LOG_IF(ERROR, auth_code.empty()) << "Auth code is empty.";
   scoped_network_observation_.Reset();
   elapsed_timer_ = std::make_unique<base::ElapsedTimer>();
-  enrolling_user_domain_ = gaia::ExtractDomainName(user);
+  enrolling_user_domain_ = gaia::ExtractDomainName(signin_artifacts.email);
   effective_config_.license_type =
       static_cast<policy::LicenseType>(license_type);
   UMA(enrollment_failed_once_ ? policy::kMetricEnrollmentRestarted

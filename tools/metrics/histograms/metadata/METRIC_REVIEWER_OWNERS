@@ -16,6 +16,7 @@ wenyufu@chromium.org
 nancylingwang@chromium.org
 tby@chromium.org
 yulunwu@chromium.org
+mek@chromium.org
 # arc
 mhasank@chromium.org
 batoon@google.com
@@ -32,8 +33,13 @@ jimmyxgong@chromium.org
 zentaro@chromium.org
 yulunwu@chromium.org
 michelefan@chromium.org
+# ash_growth
+wutao@chromium.com
 # assistant
 xiaohuic@chromium.org
+# attribution_reporting
+csharrison@chromium.org
+johnidel@chromium.org
 # autofill
 fleimgruber@google.com
 jihadghanna@google.com
@@ -180,7 +186,10 @@ shaktisahu@chromium.org
 dfried@chromium.org
 # file
 nigeltao@chromium.org
+# fingerprint
+hcyang@google.com
 # fingerprinting_protection
+rizvis@google.com
 thesalsa@google.com
 # gcm
 peter@chromium.org
@@ -222,6 +231,10 @@ jorgelo@chromium.org
 alemate@chromium.org
 # mac
 bur@google.com
+mek@chromium.org
+# magic_stack
+ckitagawa@chromium.org
+hanxi@chromium.org
 # media
 evliu@google.com
 kron@chromium.org
@@ -266,9 +279,11 @@ toyoshim@chromium.org
 # new_tab_page
 dewittj@chromium.org
 tiborg@chromium.org
+hanxi@chromium.org
+romanarora@chromium.org
 # notifications
 peter@chromium.org
-rayankans@chromium.org
+mek@chromium.org
 # offline
 curranmax@chromium.org
 tbansal@chromium.org
@@ -279,6 +294,8 @@ manukh@chromium.org
 toyoshim@chromium.org
 # oobe
 alemate@chromium.org
+bohdanty@google.com
+ziegltrum@google.com
 # optimization
 mcrouse@chromium.org
 robertogden@chromium.org
@@ -310,8 +327,6 @@ xinghuilu@chromium.org
 # payment
 rouslan@chromium.org
 smcgruer@chromium.org
-# pcscan
-mlippautz@chromium.org
 # pdf
 awscreen@chromium.org
 # performance_controls
@@ -328,7 +343,6 @@ hansberry@chromium.org
 julietlevesque@google.com
 # platform
 iby@chromium.org
-xuhong@chromium.org
 hcyang@google.com
 # plugin_vm
 # see crostini
@@ -358,6 +372,7 @@ johnidel@chromium.org
 boujane@google.com
 # profile
 alexilin@chromium.org
+rsult@google.com
 # quick_answers
 xiaohuic@chromium.org
 # quota
@@ -415,12 +430,17 @@ knollr@chromium.org
 dmurph@chromium.org
 # signin
 alexilin@chromium.org
+bsazonov@chromium.org
+rsult@google.com
 # simple
 wanderview@chromium.org
 # software
 drubery@chromium.org
 thefrog@chromium.org
 xinghuilu@chromium.org
+# startup
+fdoray@chromium.org
+spvw@chromium.org
 # storage
 ayui@chromium.org
 wanderview@chromium.org
@@ -432,6 +452,7 @@ johnidel@chromium.org
 tbansal@chromium.org
 # sync
 rushans@google.com
+victorvianna@google.com
 # tab
 ckitagawa@chromium.org
 joenotcharles@google.com
@@ -447,6 +468,7 @@ toyoshim@chromium.org
 poromov@chromium.org
 # user_education
 dfried@chromium.org
+mickeyburks@chromium.org
 # v8
 mlippautz@chromium.org
 # web_apk
@@ -456,8 +478,8 @@ hartmanng@chromium.org
 alancutter@chromium.org
 dmurph@chromium.org
 eirage@chromium.org
-glenrob@chromium.org
 hartmanng@chromium.org
+mek@chromium.org
 # web_audio
 hongchan@chromium.org
 mjwilson@chromium.org

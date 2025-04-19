@@ -4,9 +4,12 @@
 
 #include "ash/picker/metrics/picker_session_metrics.h"
 
+#include "ash/constants/ash_pref_names.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "components/metrics/structured/structured_events.h"
 #include "components/metrics/structured/test/test_structured_metrics_recorder.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/fake_text_input_client.h"
@@ -140,11 +143,11 @@ TEST_F(PickerSessionMetricsTest, RecordsDefaultFinishSessionEvent) {
 TEST_F(PickerSessionMetricsTest, RecordsFinishSessionEventForInsert) {
   {
     PickerSessionMetrics metrics;
-    metrics.SetAction(PickerCategory::kDatesTimes);
+    metrics.SetSelectedCategory(PickerCategory::kDatesTimes);
     metrics.UpdateSearchQuery(u"abc");
     metrics.UpdateSearchQuery(u"abcdef");
     metrics.UpdateSearchQuery(u"abcde");
-    metrics.SetInsertedResult(
+    metrics.SetSelectedResult(
         PickerSearchResult::Text(u"primary",
                                  PickerSearchResult::TextData::Source::kDate),
         3);
@@ -169,17 +172,16 @@ TEST_F(PickerSessionMetricsTest, RecordsFinishSessionEventForInsert) {
 TEST_F(PickerSessionMetricsTest, RecordsFinishSessionEventForCaseTransform) {
   {
     PickerSessionMetrics metrics;
-    metrics.SetAction(PickerCategory::kUpperCase);
-    metrics.SetInsertedResult(
-        PickerSearchResult::Text(
-            u"primary", PickerSearchResult::TextData::Source::kCaseTransform),
+    metrics.SetSelectedResult(
+        PickerSearchResult::CaseTransform(
+            PickerSearchResult::CaseTransformData::Type::kUpperCase),
         0);
     metrics.SetOutcome(PickerSessionMetrics::SessionOutcome::kFormat);
   }
 
   cros_events::Picker_FinishSession expected_event;
   expected_event.SetOutcome(cros_events::PickerSessionOutcome::FORMAT)
-      .SetAction(cros_events::PickerAction::TRANSFORM_UPPER_CASE)
+      .SetAction(cros_events::PickerAction::UNKNOWN)
       .SetResultSource(cros_events::PickerResultSource::CASE_TRANSFORM)
       .SetResultType(cros_events::PickerResultType::TEXT)
       .SetTotalEdits(0)
@@ -189,6 +191,91 @@ TEST_F(PickerSessionMetricsTest, RecordsFinishSessionEventForCaseTransform) {
       metrics_recorder_->GetEvents();
   ASSERT_EQ(events.size(), 1U);
   EXPECT_THAT(events, ContainsEvent(expected_event));
+}
+
+TEST_F(PickerSessionMetricsTest, UpdatesCapsLockPrefsWhenNotSelected) {
+  TestingPrefServiceSimple prefs;
+  prefs.registry()->RegisterIntegerPref(
+      prefs::kPickerCapsLockDislayedCountPrefName, 2);
+  prefs.registry()->RegisterIntegerPref(
+      prefs::kPickerCapsLockSelectedCountPrefName, 1);
+
+  {
+    PickerSessionMetrics metrics(&prefs);
+    metrics.SetCapsLockDisplayed(true);
+    metrics.SetSelectedResult(
+        PickerSearchResult::CaseTransform(
+            PickerSearchResult::CaseTransformData::Type::kUpperCase),
+        0);
+    metrics.SetOutcome(PickerSessionMetrics::SessionOutcome::kFormat);
+  }
+
+  EXPECT_EQ(prefs.GetInteger(prefs::kPickerCapsLockDislayedCountPrefName), 3);
+  EXPECT_EQ(prefs.GetInteger(prefs::kPickerCapsLockSelectedCountPrefName), 1);
+}
+
+TEST_F(PickerSessionMetricsTest, UpdatesCapsLockPrefsWhenSelected) {
+  TestingPrefServiceSimple prefs;
+  prefs.registry()->RegisterIntegerPref(
+      prefs::kPickerCapsLockDislayedCountPrefName, 2);
+  prefs.registry()->RegisterIntegerPref(
+      prefs::kPickerCapsLockSelectedCountPrefName, 1);
+
+  {
+    PickerSessionMetrics metrics(&prefs);
+    metrics.SetCapsLockDisplayed(true);
+    metrics.SetSelectedResult(
+        PickerSearchResult::CapsLock(
+            /*enabled=*/true,
+            PickerSearchResult::CapsLockData::Shortcut::kAltSearch),
+        0);
+    metrics.SetOutcome(PickerSessionMetrics::SessionOutcome::kFormat);
+  }
+
+  EXPECT_EQ(prefs.GetInteger(prefs::kPickerCapsLockDislayedCountPrefName), 3);
+  EXPECT_EQ(prefs.GetInteger(prefs::kPickerCapsLockSelectedCountPrefName), 2);
+}
+
+TEST_F(PickerSessionMetricsTest, DoesNotUpdateCapsLockPrefsWhenNotDisplayed) {
+  TestingPrefServiceSimple prefs;
+  prefs.registry()->RegisterIntegerPref(
+      prefs::kPickerCapsLockDislayedCountPrefName, 2);
+  prefs.registry()->RegisterIntegerPref(
+      prefs::kPickerCapsLockSelectedCountPrefName, 1);
+
+  {
+    PickerSessionMetrics metrics(&prefs);
+    metrics.SetSelectedResult(
+        PickerSearchResult::CaseTransform(
+            PickerSearchResult::CaseTransformData::Type::kUpperCase),
+        0);
+    metrics.SetOutcome(PickerSessionMetrics::SessionOutcome::kFormat);
+  }
+
+  EXPECT_EQ(prefs.GetInteger(prefs::kPickerCapsLockDislayedCountPrefName), 2);
+  EXPECT_EQ(prefs.GetInteger(prefs::kPickerCapsLockSelectedCountPrefName), 1);
+}
+
+TEST_F(PickerSessionMetricsTest, HalvesCapsLockPrefs) {
+  TestingPrefServiceSimple prefs;
+  prefs.registry()->RegisterIntegerPref(
+      prefs::kPickerCapsLockDislayedCountPrefName, 19);
+  prefs.registry()->RegisterIntegerPref(
+      prefs::kPickerCapsLockSelectedCountPrefName, 9);
+
+  {
+    PickerSessionMetrics metrics(&prefs);
+    metrics.SetCapsLockDisplayed(true);
+    metrics.SetSelectedResult(
+        PickerSearchResult::CapsLock(
+            /*enabled=*/true,
+            PickerSearchResult::CapsLockData::Shortcut::kAltSearch),
+        0);
+    metrics.SetOutcome(PickerSessionMetrics::SessionOutcome::kFormat);
+  }
+
+  EXPECT_EQ(prefs.GetInteger(prefs::kPickerCapsLockDislayedCountPrefName), 10);
+  EXPECT_EQ(prefs.GetInteger(prefs::kPickerCapsLockSelectedCountPrefName), 5);
 }
 
 }  // namespace

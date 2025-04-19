@@ -31,6 +31,7 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/button/toggle_button.h"
@@ -43,6 +44,9 @@ DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(PermissionToggleRowView,
                                       kRowSubTitleCameraElementId);
 DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(PermissionToggleRowView,
                                       kRowSubTitleMicrophoneElementId);
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(
+    PermissionToggleRowView,
+    kPermissionDisabledAtSystemLevelElementId);
 
 using content_settings::SettingSource;
 
@@ -104,6 +108,12 @@ PermissionToggleRowView::PermissionToggleRowView(
     blocked_on_system_level_label_->AddStyleRange(
         gfx::Range(offset, offset + settings_text_for_link.length()),
         views::StyledLabel::RangeStyleInfo::CreateForLink(clicked));
+
+    // Setting the element identifier key to easily get a handle to the label in
+    // tests.
+    blocked_on_system_level_label_->SetProperty(
+        views::kElementIdentifierKey,
+        kPermissionDisabledAtSystemLevelElementId);
 
     // When permission is blocked on the system level, all control elements are
     // disabled. The permission row's title should match color with disabled
@@ -180,7 +190,7 @@ void PermissionToggleRowView::InitForUserSource(
                              gfx::Insets::VH(0, icon_label_spacing));
   toggle_button->SetTooltipText(PageInfoUI::PermissionTooltipUiString(
       permission_.type, permission_.requesting_origin));
-  toggle_button->SetAccessibleName(toggle_accessible_name);
+  toggle_button->GetViewAccessibility().SetName(toggle_accessible_name);
 
   toggle_button_ = row_view_->AddControl(std::move(toggle_button));
 
@@ -200,8 +210,8 @@ void PermissionToggleRowView::InitForUserSource(
             },
             base::Unretained(this)),
         vector_icons::kLaunchIcon);
-    subpage_button->SetTooltipText(l10n_util::GetStringUTF16(
-        IDS_PAGE_INFO_PERMISSIONS_SUBPAGE_BUTTON_TOOLTIP));
+    subpage_button->SetTooltipText(
+        PageInfoUI::PermissionSubpageButtonTooltipString(permission_.type));
     views::InstallCircleHighlightPathGenerator(subpage_button.get());
     subpage_button->SetMinimumImageSize({icon_size, icon_size});
     subpage_button->SetFlipCanvasOnPaintForRTLUI(false);
@@ -213,7 +223,7 @@ void PermissionToggleRowView::InitForUserSource(
           features::kFileSystemAccessPersistentPermissions) &&
       base::FeatureList::IsEnabled(
           features::kFileSystemAccessPersistentPermissionsUpdatedPageInfo);
-  if (permissions::PermissionUtil::CanPermissionBeAllowedOnce(
+  if (permissions::PermissionUtil::DoesSupportTemporaryGrants(
           permission_.type) ||
       permission_.is_one_time || show_updated_page_info_file_system) {
     auto subpage_button = views::CreateVectorImageButtonWithNativeTheme(
@@ -223,9 +233,9 @@ void PermissionToggleRowView::InitForUserSource(
                   row->permission_.type);
             },
             base::Unretained(this)),
-        vector_icons::kSubmenuArrowIcon);
-    subpage_button->SetTooltipText(l10n_util::GetStringUTF16(
-        IDS_PAGE_INFO_PERMISSIONS_SUBPAGE_BUTTON_TOOLTIP));
+        vector_icons::kSubmenuArrowChromeRefreshIcon, icon_size);
+    subpage_button->SetTooltipText(
+        PageInfoUI::PermissionSubpageButtonTooltipString(permission_.type));
     views::InstallCircleHighlightPathGenerator(subpage_button.get());
     subpage_button->SetMinimumImageSize({icon_size, icon_size});
     subpage_button->SetFlipCanvasOnPaintForRTLUI(false);

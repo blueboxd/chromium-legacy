@@ -14,9 +14,9 @@
 #include "net/dns/public/host_resolver_results.h"
 #include "net/log/net_log_with_source.h"
 #include "net/quic/quic_chromium_client_session.h"
+#include "net/quic/quic_session_attempt.h"
 #include "net/quic/quic_session_pool.h"
 #include "net/quic/quic_session_pool_job.h"
-#include "net/quic/quic_session_pool_session_attempt.h"
 #include "net/third_party/quiche/src/quiche/quic/core/quic_versions.h"
 
 namespace net {
@@ -31,7 +31,7 @@ class QuicSessionPool::DirectJob : public QuicSessionPool::Job {
   DirectJob(QuicSessionPool* pool,
             quic::ParsedQuicVersion quic_version,
             HostResolver* host_resolver,
-            const QuicSessionAliasKey& key,
+            QuicSessionAliasKey key,
             std::unique_ptr<CryptoClientConfigHandle> client_config_handle,
             bool retry_on_alternate_network_before_handshake,
             RequestPriority priority,
@@ -86,7 +86,7 @@ class QuicSessionPool::DirectJob : public QuicSessionPool::Job {
   std::unique_ptr<HostResolver::ResolveHostRequest> resolve_host_request_;
   base::TimeTicks dns_resolution_start_time_;
   base::TimeTicks dns_resolution_end_time_;
-  std::unique_ptr<SessionAttempt> session_attempt_;
+  std::unique_ptr<QuicSessionAttempt> session_attempt_;
   base::WeakPtrFactory<DirectJob> weak_factory_{this};
 };
 

@@ -75,7 +75,6 @@ class FakeSelectFileDialog : public SelectFileDialog {
                       int file_type_index,
                       const base::FilePath::StringType& default_extension,
                       gfx::NativeWindow owning_window,
-                      void* params,
                       const GURL* caller) override;
   bool HasMultipleFileTypeChoicesImpl() override;
   bool IsRunning(gfx::NativeWindow owning_window) const override;
@@ -109,7 +108,6 @@ class FakeSelectFileDialog : public SelectFileDialog {
   std::u16string title_;
   FileTypeInfo file_types_;
   std::string default_extension_;
-  raw_ptr<void, DanglingUntriaged> params_;
   raw_ptr<const GURL, DanglingUntriaged> caller_;
   base::WeakPtrFactory<FakeSelectFileDialog> weak_ptr_factory_{this};
 };

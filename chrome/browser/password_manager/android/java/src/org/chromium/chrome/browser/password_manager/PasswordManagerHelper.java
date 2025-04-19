@@ -20,29 +20,36 @@ import android.text.TextUtils;
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+import androidx.fragment.app.FragmentActivity;
 
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.ApiException;
+
+import org.jni_zero.JniType;
+import org.jni_zero.NativeMethods;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.Supplier;
+import org.chromium.chrome.browser.access_loss.PasswordAccessLossDialogSettingsCoordinator;
+import org.chromium.chrome.browser.access_loss.PasswordAccessLossWarningType;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.loading_modal.LoadingModalDialogCoordinator;
 import org.chromium.chrome.browser.password_manager.CredentialManagerLauncher.CredentialManagerBackendException;
 import org.chromium.chrome.browser.password_manager.CredentialManagerLauncher.CredentialManagerError;
 import org.chromium.chrome.browser.password_manager.PasswordCheckupClientHelper.PasswordCheckBackendException;
+import org.chromium.chrome.browser.password_manager.settings.PasswordAccessLossExportDialogFragment;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileKeyedMap;
+import org.chromium.chrome.browser.settings.SettingsLauncherFactory;
 import org.chromium.chrome.browser.sync.SyncServiceFactory;
-import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.browser_ui.settings.SettingsLauncher.SettingsFragment;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.signin.base.CoreAccountInfo;
-import org.chromium.components.sync.ModelType;
+import org.chromium.components.sync.DataType;
 import org.chromium.components.sync.SyncService;
-import org.chromium.components.sync.UserSelectableType;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 
@@ -150,7 +157,6 @@ public class PasswordManagerHelper {
     public void showPasswordSettings(
             Context context,
             @ManagePasswordsReferrer int referrer,
-            SettingsLauncher settingsLauncher,
             Supplier<ModalDialogManager> modalDialogManagerSupplier,
             boolean managePasskeys,
             @Nullable String account) {
@@ -161,13 +167,23 @@ public class PasswordManagerHelper {
         SyncService syncService = SyncServiceFactory.getForProfile(mProfile);
         PrefService prefService = UserPrefs.get(mProfile);
 
+        @PasswordAccessLossWarningType int warningType = getAccessLossWarningType(prefService);
+        if (warningType != PasswordAccessLossWarningType.NONE) {
+            new PasswordAccessLossDialogSettingsCoordinator()
+                    .showPasswordAccessLossDialog(
+                            context,
+                            modalDialogManagerSupplier.get(),
+                            warningType,
+                            PasswordManagerHelper::launchGmsUpdate,
+                            this::launchExportFlow);
+            return;
+        }
+
         // Force instantiation of GMSCore password settings if GMSCore update is required. Launching
         // Password settings will fail and instead the blocking dialog with the suggestion to update
-        // will be displayed. This is the desired behavior with the
-        // `UnifiedPasswordManagerSyncOnlyInGMSCore` feature on.
+        // will be displayed.
         if (canUseUpm()
-                || PasswordManagerUtilBridge.isGmsCoreUpdateRequired(
-                        prefService, hasChosenToSyncPasswords(syncService))) {
+                || PasswordManagerUtilBridge.isGmsCoreUpdateRequired(prefService, syncService)) {
             LoadingModalDialogCoordinator loadingDialogCoordinator =
                     LoadingModalDialogCoordinator.create(modalDialogManagerSupplier, context);
             launchTheCredentialManager(
@@ -211,8 +227,9 @@ public class PasswordManagerHelper {
         Bundle fragmentArgs = new Bundle();
         fragmentArgs.putInt(MANAGE_PASSWORDS_REFERRER, referrer);
         context.startActivity(
-                settingsLauncher.createSettingsActivityIntent(
-                        context, SettingsFragment.PASSWORDS, fragmentArgs));
+                SettingsLauncherFactory.createSettingsLauncher()
+                        .createSettingsActivityIntent(
+                                context, SettingsFragment.PASSWORDS, fragmentArgs));
     }
 
     /**
@@ -229,12 +246,9 @@ public class PasswordManagerHelper {
     public boolean canUseUpm() {
         SyncService syncService = SyncServiceFactory.getForProfile(mProfile);
         PrefService prefService = UserPrefs.get(mProfile);
-        // TODO(crbug.com/40226137): Reevaluate if passing the syncService instead of the boolean is
-        // better.
-        // TODO(crbug.com/40226137): Move the syncService and backend presence checks in the util.
-        boolean isPwdSyncEnabled = hasChosenToSyncPasswords(syncService);
+        // TODO(crbug.com/40226137): Move the backend presence checks in the util.
         return syncService != null
-                && PasswordManagerUtilBridge.shouldUseUpmWiring(isPwdSyncEnabled, prefService)
+                && PasswordManagerUtilBridge.shouldUseUpmWiring(syncService, prefService)
                 && PasswordManagerBackendSupportHelper.getInstance().isBackendPresent();
     }
 
@@ -363,32 +377,15 @@ public class PasswordManagerHelper {
     }
 
     /**
-     * Checks whether the sync feature is enabled and the user has chosen to sync passwords. Note
-     * that this doesn't mean that passwords are actively syncing.
+     * Checks whether the user has chosen to store passwords in their Google Account (no matter
+     * whether sync-the-feature is on or not). Note that this doesn't mean that passwords are
+     * actively syncing.
      *
      * @param syncService the service to query about the sync status.
      * @return true if syncing passwords is enabled
      */
     public static boolean hasChosenToSyncPasswords(SyncService syncService) {
-        return syncService != null
-                && syncService.isSyncFeatureEnabled()
-                && syncService.getSelectedTypes().contains(UserSelectableType.PASSWORDS);
-    }
-
-    /**
-     * Checks whether the sync feature is enabled, the user has chosen to sync passwords and they
-     * haven't set up a custom passphrase. The caller should make sure that the sync engine is
-     * initialized before calling this method.
-     *
-     * <p>Note that this doesn't mean that passwords are actively syncing.
-     *
-     * @param syncService the service to query about the sync status.
-     * @return true if syncing passwords is enabled without custom passphrase.
-     */
-    public static boolean hasChosenToSyncPasswordsWithNoCustomPassphrase(SyncService syncService) {
-        assert syncService.isEngineInitialized();
-        return PasswordManagerHelper.hasChosenToSyncPasswords(syncService)
-                && !syncService.isUsingExplicitPassphrase();
+        return PasswordManagerHelperJni.get().hasChosenToSyncPasswords(syncService);
     }
 
     /**
@@ -401,7 +398,7 @@ public class PasswordManagerHelper {
     public static boolean isSyncingPasswordsWithNoCustomPassphrase(SyncService syncService) {
         assert syncService.isEngineInitialized();
         if (syncService == null || !syncService.hasSyncConsent()) return false;
-        if (!syncService.getActiveDataTypes().contains(ModelType.PASSWORDS)) return false;
+        if (!syncService.getActiveDataTypes().contains(DataType.PASSWORDS)) return false;
         if (syncService.isUsingExplicitPassphrase()) return false;
         return true;
     }
@@ -446,6 +443,15 @@ public class PasswordManagerHelper {
             // updating GMS Core, either don't offer the option at all or indicate why the update
             // button didn't work.
         }
+    }
+
+    private void launchExportFlow(Context context) {
+        FragmentActivity activity = (FragmentActivity) ContextUtils.activityFromContext(context);
+        assert activity != null : "Context is expected to be a fragment activity";
+
+        PasswordAccessLossExportDialogFragment fragment =
+                new PasswordAccessLossExportDialogFragment();
+        fragment.show(activity.getSupportFragmentManager(), null);
     }
 
     @VisibleForTesting
@@ -713,13 +719,10 @@ public class PasswordManagerHelper {
                     "Backend version is not supported.",
                     CredentialManagerError.BACKEND_VERSION_NOT_SUPPORTED);
         }
-        // This check only may return true if the feature flag
-        // `UnifiedPasswordManagerSyncOnlyInGMSCore` is enabled. This checks against the account
-        // store GMSCore version if the user is syncing and against the local version if the user is
-        // not syncing.
+        // This checks against the account store GMSCore version if the user is syncing and against
+        // the local version if the user is not syncing.
         if (PasswordManagerUtilBridge.isGmsCoreUpdateRequired(
-                UserPrefs.get(mProfile),
-                hasChosenToSyncPasswords(SyncServiceFactory.getForProfile(mProfile)))) {
+                UserPrefs.get(mProfile), SyncServiceFactory.getForProfile(mProfile))) {
             throw new PasswordCheckBackendException(
                     "Backend version is not supported.",
                     CredentialManagerError.BACKEND_VERSION_NOT_SUPPORTED);
@@ -746,13 +749,10 @@ public class PasswordManagerHelper {
                     "Backend version is not supported.",
                     CredentialManagerError.BACKEND_VERSION_NOT_SUPPORTED);
         }
-        // This check only may return true if the feature flag
-        // UnifiedPasswordManagerSyncOnlyInGMSCore is enabled. This checks against the account store
-        // GMSCore version if the user is syncing and against the local version if the user is not
-        // syncing.
+        // This checks against the account store GMSCore version if the user is syncing and against
+        // the local version if the user is not syncing.
         if (PasswordManagerUtilBridge.isGmsCoreUpdateRequired(
-                UserPrefs.get(mProfile),
-                hasChosenToSyncPasswords(SyncServiceFactory.getForProfile(mProfile)))) {
+                UserPrefs.get(mProfile), SyncServiceFactory.getForProfile(mProfile))) {
             throw new CredentialManagerBackendException(
                     "Backend version is not supported.",
                     CredentialManagerError.BACKEND_VERSION_NOT_SUPPORTED);
@@ -774,5 +774,21 @@ public class PasswordManagerHelper {
             } catch (ActivityNotFoundException e) {
             }
         }
+    }
+
+    public @PasswordAccessLossWarningType int getAccessLossWarningType(PrefService prefService) {
+        // TODO(crbug.com/323149739): Enable this feature flag in SafetyCheckMediatorTest and
+        // PasswordManagerHelperTest in all tests before launch.
+        if (!ChromeFeatureList.isEnabled(
+                ChromeFeatureList
+                        .UNIFIED_PASSWORD_MANAGER_LOCAL_PASSWORDS_ANDROID_ACCESS_LOSS_WARNING)) {
+            return PasswordAccessLossWarningType.NONE;
+        }
+        return PasswordManagerUtilBridge.getPasswordAccessLossWarningType(prefService);
+    }
+
+    @NativeMethods
+    public interface Natives {
+        boolean hasChosenToSyncPasswords(@JniType("syncer::SyncService*") SyncService syncService);
     }
 }

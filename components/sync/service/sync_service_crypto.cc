@@ -75,7 +75,7 @@ class SyncEncryptionObserverProxy : public SyncEncryptionHandler::Observer {
             observer_));
   }
 
-  void OnEncryptedTypesChanged(ModelTypeSet encrypted_types,
+  void OnEncryptedTypesChanged(DataTypeSet encrypted_types,
                                bool encrypt_everything) override {
     task_runner_->PostTask(
         FROM_HERE,
@@ -258,7 +258,7 @@ void SyncServiceCrypto::SetEncryptionPassphrase(const std::string& passphrase) {
       // TODO(crbug.com/40904402): this is currently reachable on iOS due to
       // discrepancy in UI code. Fix iOS implementation and avoid using more
       // strict checks here until this is done.
-      DUMP_WILL_BE_NOTREACHED_NORETURN()
+      DUMP_WILL_BE_NOTREACHED()
           << "Can not set explicit passphrase when decryption is needed.";
       return;
   }
@@ -363,7 +363,8 @@ std::optional<PassphraseType> SyncServiceCrypto::GetPassphraseType() const {
 
 void SyncServiceCrypto::SetSyncEngine(const CoreAccountInfo& account_info,
                                       SyncEngine* engine) {
-  DCHECK(engine);
+  CHECK(engine);
+  CHECK(!state_.engine);
   state_.account_info = account_info;
   state_.engine = engine;
 
@@ -407,7 +408,7 @@ SyncServiceCrypto::GetEncryptionObserverProxy() {
       base::SequencedTaskRunner::GetCurrentDefault());
 }
 
-ModelTypeSet SyncServiceCrypto::GetAllEncryptedDataTypes() const {
+DataTypeSet SyncServiceCrypto::GetAllEncryptedDataTypes() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(state_.encrypted_types.HasAll(AlwaysEncryptedUserTypes()));
   // We may be called during the setup process before we're
@@ -527,13 +528,13 @@ void SyncServiceCrypto::OnTrustedVaultKeyAccepted() {
   delegate_->ReconfigureDataTypesDueToCrypto();
 }
 
-void SyncServiceCrypto::OnEncryptedTypesChanged(ModelTypeSet encrypted_types,
+void SyncServiceCrypto::OnEncryptedTypesChanged(DataTypeSet encrypted_types,
                                                 bool encrypt_everything) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   state_.encrypted_types = encrypted_types;
   state_.encrypt_everything = encrypt_everything;
   DVLOG(1) << "Encrypted types changed to "
-           << ModelTypeSetToDebugString(state_.encrypted_types)
+           << DataTypeSetToDebugString(state_.encrypted_types)
            << " (encrypt everything is set to "
            << (state_.encrypt_everything ? "true" : "false") << ")";
   DCHECK(state_.encrypted_types.HasAll(AlwaysEncryptedUserTypes()));

@@ -24,7 +24,10 @@ public class TabGroupSyncConversionsBridge {
             String title,
             int color,
             long creationTimeMs,
-            long updateTimeMs) {
+            long updateTimeMs,
+            String creatorCacheGuid,
+            String lastUpdaterCacheGuid,
+            String collaborationId) {
         SavedTabGroup group = new SavedTabGroup();
         group.syncId = syncId;
         group.localId = localId;
@@ -33,6 +36,9 @@ public class TabGroupSyncConversionsBridge {
         assert group.color != -1;
         group.creationTimeMs = creationTimeMs;
         group.updateTimeMs = updateTimeMs;
+        group.creatorCacheGuid = creatorCacheGuid;
+        group.lastUpdaterCacheGuid = lastUpdaterCacheGuid;
+        group.collaborationId = collaborationId;
         return group;
     }
 
@@ -46,6 +52,8 @@ public class TabGroupSyncConversionsBridge {
             String title,
             long creationTimeMs,
             long updateTimeMs,
+            String creatorCacheGuid,
+            String lastUpdaterCacheGuid,
             SavedTabGroup group) {
         SavedTabGroupTab tab = new SavedTabGroupTab();
         tab.syncId = syncId;
@@ -56,6 +64,8 @@ public class TabGroupSyncConversionsBridge {
         tab.title = title;
         tab.creationTimeMs = creationTimeMs;
         tab.updateTimeMs = updateTimeMs;
+        tab.creatorCacheGuid = creatorCacheGuid;
+        tab.lastUpdaterCacheGuid = lastUpdaterCacheGuid;
         if (group != null) {
             group.savedTabs.add(tab);
         }

@@ -51,7 +51,7 @@ class MockPrefNotifier : public PrefNotifierImpl {
       : PrefNotifierImpl(pref_service) {}
   ~MockPrefNotifier() override {}
 
-  MOCK_METHOD1(FireObservers, void(const std::string& path));
+  MOCK_METHOD(void, FireObservers, (std::string_view path), (override));
 
   size_t CountObserver(const std::string& path, PrefObserver* obs) {
     auto observer_iterator = pref_observers()->find(path);
@@ -59,7 +59,7 @@ class MockPrefNotifier : public PrefNotifierImpl {
       return false;
 
     size_t count = 0;
-    for (auto& existing_obs : *observer_iterator->second) {
+    for (PrefObserver& existing_obs : observer_iterator->second) {
       if (&existing_obs == obs)
         count++;
     }
@@ -74,10 +74,10 @@ class MockPrefNotifier : public PrefNotifierImpl {
 
 class PrefObserverMock : public PrefObserver {
  public:
-  PrefObserverMock() {}
-  virtual ~PrefObserverMock() {}
-
-  MOCK_METHOD2(OnPreferenceChanged, void(PrefService*, const std::string&));
+  MOCK_METHOD(void,
+              OnPreferenceChanged,
+              (PrefService*, std::string_view),
+              (override));
 };
 
 // Test fixture class.

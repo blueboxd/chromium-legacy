@@ -70,7 +70,8 @@ class LocationIconViewTest : public ChromeViewsTestBase {
 
     gfx::FontList font_list;
 
-    widget_ = CreateTestWidget();
+    widget_ =
+        CreateTestWidget(views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET);
 
     location_bar_model_ = std::make_unique<TestLocationBarModel>();
     delegate_ =
@@ -158,22 +159,24 @@ TEST_F(LocationIconViewTest, ShouldNotAnimateWarningToDangerous) {
 TEST_F(LocationIconViewTest, IconViewAccessibleNameAndRole) {
   ui::AXNodeData data;
   view()->GetViewAccessibility().GetAccessibleNodeData(&data);
-  EXPECT_EQ(view()->GetAccessibleName(),
+  EXPECT_EQ(view()->GetViewAccessibility().GetCachedName(),
             l10n_util::GetStringUTF16(IDS_TOOLTIP_LOCATION_ICON));
   EXPECT_EQ(data.GetString16Attribute(ax::mojom::StringAttribute::kName),
             l10n_util::GetStringUTF16(IDS_TOOLTIP_LOCATION_ICON));
-  EXPECT_EQ(view()->GetAccessibleRole(), ax::mojom::Role::kPopUpButton);
+  EXPECT_EQ(view()->GetViewAccessibility().GetCachedRole(),
+            ax::mojom::Role::kPopUpButton);
   EXPECT_EQ(data.role, ax::mojom::Role::kPopUpButton);
 
   delegate()->set_is_editing_or_empty(true);
   view()->Update(/*suppress_animations=*/true);
   data = ui::AXNodeData();
   view()->GetViewAccessibility().GetAccessibleNodeData(&data);
-  EXPECT_EQ(view()->GetAccessibleName(),
+  EXPECT_EQ(view()->GetViewAccessibility().GetCachedName(),
             l10n_util::GetStringUTF16(IDS_ACC_SEARCH_ICON));
   EXPECT_EQ(data.GetString16Attribute(ax::mojom::StringAttribute::kName),
             l10n_util::GetStringUTF16(IDS_ACC_SEARCH_ICON));
-  EXPECT_EQ(view()->GetAccessibleRole(), ax::mojom::Role::kImage);
+  EXPECT_EQ(view()->GetViewAccessibility().GetCachedRole(),
+            ax::mojom::Role::kImage);
   EXPECT_EQ(data.role, ax::mojom::Role::kImage);
 
   delegate()->set_is_editing_or_empty(false);
@@ -181,9 +184,10 @@ TEST_F(LocationIconViewTest, IconViewAccessibleNameAndRole) {
   view()->Update(/*suppress_animations=*/true);
   data = ui::AXNodeData();
   view()->GetViewAccessibility().GetAccessibleNodeData(&data);
-  EXPECT_EQ(view()->GetAccessibleName(), u"Insecure");
+  EXPECT_EQ(view()->GetViewAccessibility().GetCachedName(), u"Insecure");
   EXPECT_EQ(data.GetString16Attribute(ax::mojom::StringAttribute::kName),
             u"Insecure");
-  EXPECT_EQ(view()->GetAccessibleRole(), ax::mojom::Role::kPopUpButton);
+  EXPECT_EQ(view()->GetViewAccessibility().GetCachedRole(),
+            ax::mojom::Role::kPopUpButton);
   EXPECT_EQ(data.role, ax::mojom::Role::kPopUpButton);
 }

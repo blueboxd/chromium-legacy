@@ -327,7 +327,7 @@ public class CustomTabBottomBarDelegate
     private ViewGroup getBottomBarView() {
         if (mBottomBarView == null) {
             assert isViewReady() : "The required view stub couldn't be found! (Called too early?)";
-            ViewStub bottomBarStub = ((ViewStub) mActivity.findViewById(R.id.bottombar_stub));
+            ViewStub bottomBarStub = mActivity.findViewById(R.id.bottombar_stub);
             mBottomBarView = (CustomTabBottomBarView) bottomBarStub.inflate();
         }
         return mBottomBarView;
@@ -486,7 +486,8 @@ public class CustomTabBottomBarDelegate
             int topControlsMinHeightOffset,
             int bottomOffset,
             int bottomControlsMinHeightOffset,
-            boolean needsAnimate) {
+            boolean needsAnimate,
+            boolean isVisibilityForced) {
         if (mBottomBarView != null) {
             int minHeight = mBrowserControlsSizer.getBottomControlsMinHeight();
             mBottomBarView.setTranslationY(bottomOffset - minHeight);

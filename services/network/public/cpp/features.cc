@@ -6,14 +6,36 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/system/sys_info.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/miracle_parameter/common/public/miracle_parameter.h"
 #include "net/base/mime_sniffer.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace network::features {
+
+// Enables the Accept-CH support disabler. If this feature is activated, Chrome
+// ignore Accept-CH response headers for a site that is specified in the
+// following kBlockAcceptClientHintsBlockedSite. This is used to compare Chrome
+// performance with a dedicated site.
+BASE_FEATURE(kBlockAcceptClientHints,
+             "BlockAcceptClientHints",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+const base::FeatureParam<std::string> kBlockAcceptClientHintsBlockedSite{
+    &kBlockAcceptClientHints, /*name=*/"BlockedSite", /*default_value=*/""};
+
+bool ShouldBlockAcceptClientHintsFor(const url::Origin& origin) {
+  // Check if the Accept-CH support is disabled for a specified site.
+  static const bool block_accept_ch =
+      base::FeatureList::IsEnabled(features::kBlockAcceptClientHints);
+  static const base::NoDestructor<url::Origin> blocked_site(url::Origin::Create(
+      GURL(features::kBlockAcceptClientHintsBlockedSite.Get())));
+  return block_accept_ch && blocked_site->IsSameOriginWith(origin);
+}
 
 BASE_FEATURE(kNetworkErrorLogging,
              "NetworkErrorLogging",
@@ -70,6 +92,13 @@ BASE_FEATURE(kCrossOriginOpenerPolicy,
 // https://github.com/mikewest/coop-by-default/
 BASE_FEATURE(kCrossOriginOpenerPolicyByDefault,
              "CrossOriginOpenerPolicyByDefault",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables the "noopener-allow-popups" COOP value, which lets a document to
+// severe its opener relationship with the document that opened it.
+// https://github.com/whatwg/html/pull/10394
+BASE_FEATURE(kCoopNoopenerAllowPopups,
+             "CoopNoopenerAllowPopups",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Introduce a new COOP value: restrict-properties. It restricts window
@@ -133,29 +162,11 @@ BASE_FEATURE(kMdnsResponderGeneratedNameListing,
              "MdnsResponderGeneratedNameListing",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables ORB blocked responses being treated as errors (according to the spec)
-// rather than the current, CORB-style handling of injecting an empty response.
-// This exempts fetches initiated by scripts. (Technically, fetches with an
-// empty destination.)
-// This is ORB v0.2.
-// Implementing ORB in Chromium is tracked in https://crbug.com/1178928
-BASE_FEATURE(kOpaqueResponseBlockingV02,
-             "OpaqueResponseBlockingV02",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Treat ORB blocked responses to script-initiated fetches as errors too.
 // Complements ORB v0.2, which exempts script-initiated fetches.
 // Implementing ORB in Chromium is tracked in https://crbug.com/1178928
 BASE_FEATURE(kOpaqueResponseBlockingErrorsForAllFetches,
              "OpaqueResponseBlockingErrorsForAllFetches",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables preprocessing the Attribution API's trigger registration ping
-// requests, potentially adding verification headers, and handling their
-// responses. (See
-// https://github.com/WICG/attribution-reporting-api/blob/main/report_verification.md)
-BASE_FEATURE(kAttributionReportingReportVerification,
-             "AttributionReportingReportVerification",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Gate access to Attribution Reporting cross app and web APIs that allow
@@ -306,10 +317,6 @@ BASE_FEATURE(kCorsNonWildcardRequestHeadersSupport,
              "CorsNonWildcardRequestHeadersSupport",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kNetworkServiceMemoryCache,
-             "NetworkServiceMemoryCache",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Do not send TLS client certificates in CORS preflight. Omit all client certs
 // and continue the handshake without sending one if requested.
 BASE_FEATURE(kOmitCorsClientCert,
@@ -339,15 +346,6 @@ const base::FeatureParam<base::TimeDelta> kReduceAcceptLanguageCacheDuration{
     &kReduceAcceptLanguage, "reduce-accept-language-cache-duration",
     base::Days(30)};
 
-// Gate access to ReduceAcceptLanguage origin trial major code. Currently, All
-// ReduceAcceptLanguage feature codes are guarded by the feature flag
-// kReduceAcceptLanguage. This feature flag is useful on control major code
-// which required to do origin trial. It allows Chrome developers to mitigate
-// issues when exposed codes cause impacts.
-BASE_FEATURE(kReduceAcceptLanguageOriginTrial,
-             "ReduceAcceptLanguageOriginTrial",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Reduce PNA preflight response waiting time to 200ms.
 // See: https://wicg.github.io/private-network-access/#cors-preflight
 BASE_FEATURE(kPrivateNetworkAccessPreflightShortTimeout,
@@ -369,13 +367,6 @@ BASE_FEATURE(kPrivateNetworkAccessPermissionPrompt,
 BASE_FEATURE(kAccessControlAllowMethodsInCORSPreflightSpecConformant,
              "AccessControlAllowMethodsInCORSPreflightSpecConformant",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kPrefetchNoVarySearch,
-             "PrefetchNoVarySearch",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-const base::FeatureParam<bool> kPrefetchNoVarySearchShippedByDefault{
-    &kPrefetchNoVarySearch, "shipped_by_default", true};
 
 // If enabled, then the network service will parse the Cookie-Indices header.
 // This does not currently control changing cache behavior according to the
@@ -411,23 +402,10 @@ BASE_FEATURE(kCompressionDictionaryTransport,
              "CompressionDictionaryTransport",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// When this feature is enabled, Chromium can use stored shared dictionaries
-// even when the connection is using HTTP/1 for non-localhost requests.
-BASE_FEATURE(kCompressionDictionaryTransportOverHttp1,
-             "CompressionDictionaryTransportOverHttp1",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// When this feature is enabled, Chromium can use stored shared dictionaries
-// even when the connection is using HTTP/2 for non-localhost requests.
-BASE_FEATURE(kCompressionDictionaryTransportOverHttp2,
-             "CompressionDictionaryTransportOverHttp2",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// When this feature is enabled, Chromium will use stored shared dictionaries
-// only if the request URL is a localhost URL or the transport layer is using a
-// certificate rooted at a standard CA root.
-BASE_FEATURE(kCompressionDictionaryTransportRequireKnownRootCert,
-             "CompressionDictionaryTransportRequireKnownRootCert",
+// When this feature is enabled, preloaded dictionaries will not be used for
+// network requests if the binary has not yet been preloaded.
+BASE_FEATURE(kPreloadedDictionaryConditionalUse,
+             "PreloadedDictionaryConditionalUse",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kVisibilityAwareResourceScheduler,
@@ -435,12 +413,6 @@ BASE_FEATURE(kVisibilityAwareResourceScheduler,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSharedZstd, "SharedZstd", base::FEATURE_ENABLED_BY_DEFAULT);
-
-// This feature will permits de-duplicating cookie access details that are sent
-// to observers via OnCookiesAccessed.
-BASE_FEATURE(kCookieAccessDetailsNotificationDeDuping,
-             "CookieAccessDetailsNotificationDeDuping",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // This feature will reduce TransferSizeUpdated IPC from the network service.
 // When enabled, the network service will send the IPC only when DevTools is
@@ -483,6 +455,24 @@ BASE_FEATURE(kAvoidResourceRequestCopies,
 // https://github.com/explainers-by-googlers/document-isolation-policy
 BASE_FEATURE(kDocumentIsolationPolicy,
              "DocumentIsolationPolicy",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// This feature enables the Prefetch() method on the NetworkContext, and the
+// PrefetchMatchingURLLoaderFactory.
+BASE_FEATURE(kNetworkContextPrefetch,
+             "NetworkContextPrefetch",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+// How many prefetches should be cached before old ones are evicted. This
+// provides rough control over the overall memory used by prefetches.
+const base::FeatureParam<int> kNetworkContextPrefetchMaxLoaders{
+    &kNetworkContextPrefetch,
+    /*name=*/"max_loaders", /*default_value=*/10};
+
+// This feature enables treating 0.0.0.0/8 as the public address space instead
+// of private or local. This is a killswitch for a tightening of a loophole in
+// Private Network Access. See https://crbug.com/40058874.
+BASE_FEATURE(kTreatNullIPAsPublicAddressSpace,
+             "TreatNullIPAsPublicAddressSpace",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace network::features

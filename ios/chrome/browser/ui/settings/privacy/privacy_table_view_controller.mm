@@ -13,6 +13,10 @@
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
 #import "components/content_settings/core/common/features.h"
+#import "components/feature_engagement/public/event_constants.h"
+#import "components/feature_engagement/public/feature_constants.h"
+#import "components/feature_engagement/public/feature_list.h"
+#import "components/feature_engagement/public/tracker.h"
 #import "components/handoff/pref_names_ios.h"
 #import "components/prefs/ios/pref_observer_bridge.h"
 #import "components/prefs/pref_change_registrar.h"
@@ -22,6 +26,8 @@
 #import "components/strings/grit/components_strings.h"
 #import "components/sync/service/sync_service.h"
 #import "ios/chrome/browser/browsing_data/model/browsing_data_features.h"
+#import "ios/chrome/browser/feature_engagement/model/tracker_factory.h"
+#import "ios/chrome/browser/incognito_interstitial/ui_bundled/incognito_interstitial_constants.h"
 #import "ios/chrome/browser/net/model/crurl.h"
 #import "ios/chrome/browser/policy/model/policy_util.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
@@ -44,7 +50,6 @@
 #import "ios/chrome/browser/supervised_user/model/supervised_user_capabilities.h"
 #import "ios/chrome/browser/sync/model/sync_observer_bridge.h"
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
-#import "ios/chrome/browser/ui/incognito_interstitial/incognito_interstitial_constants.h"
 #import "ios/chrome/browser/ui/settings/elements/enterprise_info_popover_view_controller.h"
 #import "ios/chrome/browser/ui/settings/elements/info_popover_view_controller.h"
 #import "ios/chrome/browser/ui/settings/elements/supervised_user_info_popover_view_controller.h"
@@ -363,8 +368,7 @@ const char kSyncSettingsURL[] = "settings://open_sync";
     privacyFooterText =
         l10n_util::GetNSString(IDS_IOS_PRIVACY_SYNC_AND_GOOGLE_SERVICES_FOOTER);
     [urls addObject:[[CrURL alloc] initWithGURL:GURL(kSyncSettingsURL)]];
-  } else if (base::FeatureList::IsEnabled(
-                 kLinkAccountSettingsToPrivacyFooter)) {
+  } else {
     if (!syncService->GetAccountInfo().IsEmpty()) {
       // Footer for signed in users.
       privacyFooterText = l10n_util::GetNSString(
@@ -375,11 +379,6 @@ const char kSyncSettingsURL[] = "settings://open_sync";
       privacyFooterText =
           l10n_util::GetNSString(IDS_IOS_PRIVACY_SIGNED_OUT_FOOTER);
     }
-  } else {
-    // Footer for signed in or signed out users. Should be deprecated once
-    // kLinkAccountSettingsToPrivacyFooter is enabled by default.
-    privacyFooterText =
-        l10n_util::GetNSString(IDS_IOS_PRIVACY_GOOGLE_SERVICES_FOOTER);
   }
   [urls
       addObject:[[CrURL alloc] initWithGURL:GURL(kGoogleServicesSettingsURL)]];
@@ -614,6 +613,8 @@ const char kSyncSettingsURL[] = "settings://open_sync";
   if (_settingsAreDismissed)
     return;
 
+  [self enhancedSafeBrowsingInlinePromoTriggerCriteriaMet];
+
   if (preferenceName == prefs::kIosHandoffToOtherDevices) {
     NSString* detailText = _browserState->GetPrefs()->GetBoolean(preferenceName)
                                ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
@@ -757,6 +758,7 @@ const char kSyncSettingsURL[] = "settings://open_sync";
 - (void)HTTPSOnlyModeTapped:(UISwitch*)switchView {
   BOOL isOn = switchView.isOn;
   [_HTTPSOnlyModePref setValue:isOn];
+  [self enhancedSafeBrowsingInlinePromoTriggerCriteriaMet];
 }
 
 // Called from the Incognito interstitial setting's UIControlEventTouchUpInside.
@@ -769,6 +771,7 @@ const char kSyncSettingsURL[] = "settings://open_sync";
       kIncognitoInterstitialSettingsActionsHistogram,
       switchView.on ? IncognitoInterstitialSettingsActions::kEnabled
                     : IncognitoInterstitialSettingsActions::kDisabled);
+  [self enhancedSafeBrowsingInlinePromoTriggerCriteriaMet];
 }
 
 // Called from the reauthentication setting's UIControlEventTouchUpInside.
@@ -799,6 +802,8 @@ const char kSyncSettingsURL[] = "settings://open_sync";
                                  }
                                  [switchView setOn:enabled animated:YES];
                                  weakSelf.incognitoReauthPref.value = enabled;
+                                 [weakSelf
+                                     enhancedSafeBrowsingInlinePromoTriggerCriteriaMet];
                                }];
 }
 
@@ -822,6 +827,17 @@ const char kSyncSettingsURL[] = "settings://open_sync";
   }
   return l10n_util::GetNSString(
       IDS_IOS_PRIVACY_SAFE_BROWSING_NO_PROTECTION_DETAIL_TITLE);
+}
+
+- (void)enhancedSafeBrowsingInlinePromoTriggerCriteriaMet {
+  if (!base::FeatureList::IsEnabled(
+          feature_engagement::kIPHiOSInlineEnhancedSafeBrowsingPromoFeature)) {
+    return;
+  }
+  feature_engagement::Tracker* tracker =
+      feature_engagement::TrackerFactory::GetForBrowserState(_browserState);
+  tracker->NotifyEvent(
+      feature_engagement::events::kEnhancedSafeBrowsingPromoCriterionMet);
 }
 
 @end

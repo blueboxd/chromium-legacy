@@ -6,7 +6,7 @@
 load("//lib/branches.star", "branches")
 load("//lib/builder_config.star", "builder_config")
 load("//lib/builder_health_indicators.star", "health_spec")
-load("//lib/builders.star", "os", "sheriff_rotations", "siso")
+load("//lib/builders.star", "gardener_rotations", "os", "siso")
 load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
 load("//lib/gn_args.star", "gn_args")
@@ -60,6 +60,7 @@ ci.builder(
             "fuchsia",
             "blink_symbol",
             "minimal_symbols",
+            "x64",
         ],
     ),
     targets = targets.bundle(
@@ -109,6 +110,8 @@ ci.builder(
             "release_builder_blink",
             "remoteexec",
             "dcheck_always_on",
+            "linux",
+            "x64",
         ],
     ),
     targets = targets.bundle(
@@ -138,7 +141,7 @@ ci.builder(
             ),
         },
     ),
-    sheriff_rotations = sheriff_rotations.CHROMIUM,
+    gardener_rotations = gardener_rotations.CHROMIUM,
     console_view_entry = consoles.console_view_entry(
         category = "rel",
         short_name = "x64",

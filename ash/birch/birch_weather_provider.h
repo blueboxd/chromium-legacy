@@ -6,9 +6,11 @@
 #define ASH_BIRCH_BIRCH_WEATHER_PROVIDER_H_
 
 #include <optional>
+#include <string>
 
 #include "ash/ash_export.h"
 #include "ash/birch/birch_data_provider.h"
+#include "ash/public/cpp/ambient/weather_info.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 
@@ -20,8 +22,6 @@ namespace ash {
 
 class BirchModel;
 
-struct WeatherInfo;
-
 class ASH_EXPORT BirchWeatherProvider : public BirchDataProvider {
  public:
   explicit BirchWeatherProvider(BirchModel* birch_model);
@@ -32,6 +32,8 @@ class ASH_EXPORT BirchWeatherProvider : public BirchDataProvider {
   // Called from birch model to request weather information to be displayed in
   // UI.
   void RequestBirchDataFetch() override;
+
+  void ResetCacheForTest();
 
  private:
   // Performs the weather fetch via the ambient controller.
@@ -47,17 +49,19 @@ class ASH_EXPORT BirchWeatherProvider : public BirchDataProvider {
       const std::string& condition_icon_url,
       const std::u16string& weather_description,
       float temp_f,
-      bool show_celsius,
       const gfx::ImageSkia& icon);
 
   // Adds the weather item to the birch model.
   void AddItemToBirchModel(const std::u16string& weather_description,
                            float temp_f,
-                           bool show_celsius,
-                           const gfx::ImageSkia& icon);
+                           const std::string& icon_url);
 
   const raw_ptr<BirchModel> birch_model_;
   bool is_fetching_ = false;
+
+  // Support for caching the last fetch.
+  base::Time last_fetch_time_;
+  std::optional<WeatherInfo> last_weather_info_;
 
   base::WeakPtrFactory<BirchWeatherProvider> weak_factory_{this};
 };

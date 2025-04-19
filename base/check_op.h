@@ -38,6 +38,11 @@
 // you use e.g. both CHECK_EQ and CHECK, including this header is enough. If you
 // only use CHECK however, please include the smaller check.h instead.
 
+namespace base {
+template <class Char>
+class basic_cstring_view;
+}
+
 namespace logging {
 
 // Functions for turning check operand values into NUL-terminated C strings.
@@ -59,6 +64,7 @@ BASE_EXPORT char* CheckOpValueStr(double v);
 // versions here too.
 BASE_EXPORT char* CheckOpValueStr(const std::string& v);
 BASE_EXPORT char* CheckOpValueStr(std::string_view v);
+BASE_EXPORT char* CheckOpValueStr(base::basic_cstring_view<char> v);
 
 // Convert a streamable value to string out-of-line to avoid <sstream>.
 BASE_EXPORT char* StreamValToStr(const void* v,
@@ -173,7 +179,7 @@ BASE_EXPORT char* CreateCheckOpLogMessageString(const char* expr_str,
     requires(!std::is_fundamental_v<T> || !std::is_fundamental_v<U>)    \
   constexpr char* Check##name##Impl(const T& v1, const U& v2,           \
                                     const char* expr_str) {             \
-    if (LIKELY(ANALYZER_ASSUME_TRUE(v1 op v2)))                         \
+    if (ANALYZER_ASSUME_TRUE(v1 op v2)) [[likely]]                      \
       return nullptr;                                                   \
     return CreateCheckOpLogMessageString(expr_str, CheckOpValueStr(v1), \
                                          CheckOpValueStr(v2));          \
@@ -181,7 +187,7 @@ BASE_EXPORT char* CreateCheckOpLogMessageString(const char* expr_str,
   template <typename T, typename U>                                     \
     requires(std::is_fundamental_v<T> && std::is_fundamental_v<U>)      \
   constexpr char* Check##name##Impl(T v1, U v2, const char* expr_str) { \
-    if (LIKELY(ANALYZER_ASSUME_TRUE(v1 op v2)))                         \
+    if (ANALYZER_ASSUME_TRUE(v1 op v2)) [[likely]]                      \
       return nullptr;                                                   \
     return CreateCheckOpLogMessageString(expr_str, CheckOpValueStr(v1), \
                                          CheckOpValueStr(v2));          \

@@ -54,6 +54,8 @@ class DiskSpaceHost;
 class DiskSpaceInstance;
 class EnterpriseReportingHost;
 class EnterpriseReportingInstance;
+class ErrorNotificationHost;
+class ErrorNotificationInstance;
 class FileSystemHost;
 class FileSystemInstance;
 class IioSensorHost;
@@ -68,8 +70,6 @@ class KeyboardShortcutHost;
 class KeyboardShortcutInstance;
 class KeymasterHost;
 class KeymasterInstance;
-class KioskHost;
-class KioskInstance;
 class MediaSessionInstance;
 class MemoryInstance;
 class MetricsHost;
@@ -229,6 +229,11 @@ class ArcBridgeService {
   enterprise_reporting() {
     return &enterprise_reporting_;
   }
+  ConnectionHolder<mojom::ErrorNotificationInstance,
+                   mojom::ErrorNotificationHost>*
+  error_notification() {
+    return &error_notification_;
+  }
   ConnectionHolder<mojom::FileSystemInstance, mojom::FileSystemHost>*
   file_system() {
     return &file_system_;
@@ -260,9 +265,6 @@ class ArcBridgeService {
                    mojom::keymint::KeyMintHost>*
   keymint() {
     return &keymint_;
-  }
-  ConnectionHolder<mojom::KioskInstance, mojom::KioskHost>* kiosk() {
-    return &kiosk_;
   }
   ConnectionHolder<mojom::MediaSessionInstance>* media_session() {
     return &media_session_;
@@ -379,6 +381,9 @@ class ArcBridgeService {
   ConnectionHolder<mojom::EnterpriseReportingInstance,
                    mojom::EnterpriseReportingHost>
       enterprise_reporting_;
+  ConnectionHolder<mojom::ErrorNotificationInstance,
+                   mojom::ErrorNotificationHost>
+      error_notification_;
   ConnectionHolder<mojom::FileSystemInstance, mojom::FileSystemHost>
       file_system_;
   ConnectionHolder<mojom::IioSensorInstance, mojom::IioSensorHost> iio_sensor_;
@@ -393,7 +398,6 @@ class ArcBridgeService {
   ConnectionHolder<mojom::KeymasterInstance, mojom::KeymasterHost> keymaster_;
   ConnectionHolder<mojom::keymint::KeyMintInstance, mojom::keymint::KeyMintHost>
       keymint_;
-  ConnectionHolder<mojom::KioskInstance, mojom::KioskHost> kiosk_;
   ConnectionHolder<mojom::MediaSessionInstance> media_session_;
   ConnectionHolder<mojom::MemoryInstance> memory_;
   ConnectionHolder<mojom::MetricsInstance, mojom::MetricsHost> metrics_;

@@ -21,8 +21,8 @@
 
 namespace {
 ui::MouseEvent GetDummyEvent() {
-  return ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::PointF(), gfx::PointF(),
-                        base::TimeTicks::Now(), 0, 0);
+  return ui::MouseEvent(ui::EventType::kMousePressed, gfx::PointF(),
+                        gfx::PointF(), base::TimeTicks::Now(), 0, 0);
 }
 }  // namespace
 
@@ -558,7 +558,13 @@ IN_PROC_BROWSER_TEST_F(TabStripBrowsertest, ShiftGroupLeft_Success) {
   EXPECT_EQ(expected, GetWebContentses());
 }
 
-IN_PROC_BROWSER_TEST_F(TabStripBrowsertest, ShiftGroupLeft_OtherGroup) {
+// TODO(crbug.com/353618704): Re-enable this test
+#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
+#define MAYBE_ShiftGroupLeft_OtherGroup DISABLED_ShiftGroupLeft_OtherGroup
+#else
+#define MAYBE_ShiftGroupLeft_OtherGroup ShiftGroupLeft_OtherGroup
+#endif
+IN_PROC_BROWSER_TEST_F(TabStripBrowsertest, MAYBE_ShiftGroupLeft_OtherGroup) {
   ASSERT_TRUE(tab_strip_model()->SupportsTabGroups());
 
   AppendTab();

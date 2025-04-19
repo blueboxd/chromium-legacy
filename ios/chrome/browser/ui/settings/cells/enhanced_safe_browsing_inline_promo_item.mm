@@ -88,7 +88,8 @@ UIButton* CreatePrimaryButton() {
           l10n_util::GetNSString(
               IDS_IOS_SAFE_BROWSING_ENHANCED_PROTECTION_INLINE_PROMO_BUTTON_TEXT)
           attributes:attributes];
-  buttonConfiguration.baseForegroundColor = [UIColor whiteColor];
+  buttonConfiguration.baseForegroundColor =
+      [UIColor colorNamed:kSolidWhiteColor];
   buttonConfiguration.background.backgroundColor =
       [UIColor colorNamed:kBlue600Color];
   primaryButton.configuration = buttonConfiguration;
@@ -116,7 +117,7 @@ UILabel* CreateLabel() {
   self = [super initWithType:type];
   if (self) {
     self.cellClass = [EnhancedSafeBrowsingInlinePromoCell class];
-    self.accessibilityTraits |= UIAccessibilityTraitButton;
+    self.accessibilityTraits |= UIAccessibilityTraitNone;
   }
   return self;
 }

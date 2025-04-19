@@ -2,12 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "storage/browser/file_system/obfuscated_file_util_memory_delegate.h"
 
 #include <algorithm>
 #include <utility>
 
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_constants.h"
 #include "base/files/file_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/numerics/checked_math.h"
@@ -17,6 +21,7 @@
 #include "build/build_config.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "partition_alloc/partition_alloc_constants.h"
 
 namespace {
 

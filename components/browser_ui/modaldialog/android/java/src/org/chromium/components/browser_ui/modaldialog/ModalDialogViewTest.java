@@ -53,6 +53,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.FakeTimeTestRule;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseActivityTestRule;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Batch;
@@ -60,20 +61,15 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.components.browser_ui.modaldialog.test.R;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modaldialog.ModalDialogProperties.ModalDialogButtonSpec;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.test.util.BlankUiTestActivity;
-import org.chromium.ui.test.util.DisableAnimationsTestRule;
 
 /** Tests for {@link ModalDialogView}. */
 @RunWith(BaseJUnit4ClassRunner.class)
 @Batch(Batch.PER_CLASS)
 public class ModalDialogViewTest {
-    @ClassRule
-    public static DisableAnimationsTestRule disableAnimationsRule = new DisableAnimationsTestRule();
-
     @ClassRule
     public static BaseActivityTestRule<BlankUiTestActivity> activityTestRule =
             new BaseActivityTestRule<>(BlankUiTestActivity.class);
@@ -93,7 +89,7 @@ public class ModalDialogViewTest {
     @BeforeClass
     public static void setupSuite() {
         activityTestRule.launchActivity(null);
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     sActivity = activityTestRule.getActivity();
                     sResources = sActivity.getResources();
@@ -104,7 +100,7 @@ public class ModalDialogViewTest {
 
     @Before
     public void setupTest() {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     sContentView.removeAllViews();
                     mModelBuilder = new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS);
@@ -175,14 +171,14 @@ public class ModalDialogViewTest {
         onView(withId(R.id.modal_dialog_title_scroll_view)).check(matches(not(isDisplayed())));
 
         // Set an empty title and verify that title is not shown.
-        TestThreadUtils.runOnUiThreadBlocking(() -> model.set(ModalDialogProperties.TITLE, ""));
+        ThreadUtils.runOnUiThreadBlocking(() -> model.set(ModalDialogProperties.TITLE, ""));
         onView(allOf(withId(R.id.title), withParent(withId(R.id.title_container))))
                 .check(matches(not(isDisplayed())));
         onView(withId(R.id.title_container)).check(matches(not(isDisplayed())));
         onView(withId(R.id.modal_dialog_title_scroll_view)).check(matches(not(isDisplayed())));
 
         // Set a String title and verify that title is displayed.
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> model.set(ModalDialogProperties.TITLE, "My Test Title"));
         onView(allOf(withId(R.id.title), withParent(withId(R.id.title_container))))
                 .check(matches(allOf(isDisplayed(), withText("My Test Title"))));
@@ -208,7 +204,7 @@ public class ModalDialogViewTest {
         onView(withId(R.id.message_paragraph_1)).check(matches(not(isDisplayed())));
 
         // Set title to not scrollable and verify that non-scrollable title is displayed.
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> model.set(ModalDialogProperties.TITLE_SCROLLABLE, false));
         onView(allOf(withId(R.id.title), withParent(withId(R.id.title_container))))
                 .check(matches(allOf(isDisplayed(), withText(R.string.title))));
@@ -237,8 +233,7 @@ public class ModalDialogViewTest {
         onView(withId(R.id.scrollable_title_container)).check(matches(not(isDisplayed())));
 
         // Set icon to null and verify that icon is not shown.
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> model.set(ModalDialogProperties.TITLE_ICON, null));
+        ThreadUtils.runOnUiThreadBlocking(() -> model.set(ModalDialogProperties.TITLE_ICON, null));
         onView(allOf(withId(R.id.title), withParent(withId(R.id.title_container))))
                 .check(matches(not(isDisplayed())));
         onView(allOf(withId(R.id.title_icon), withParent(withId(R.id.title_container))))
@@ -262,7 +257,7 @@ public class ModalDialogViewTest {
                 .check(matches(allOf(isDisplayed(), withText(R.string.more))));
 
         // Set an empty message_paragraph_1 and verify that message_paragraph_1 is not shown.
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> model.set(ModalDialogProperties.MESSAGE_PARAGRAPH_1, ""));
         onView(withId(R.id.title_container)).check(matches(not(isDisplayed())));
         onView(withId(R.id.scrollable_title_container)).check(matches(not(isDisplayed())));
@@ -272,7 +267,7 @@ public class ModalDialogViewTest {
         // Use CharSequence for the message_paragraph_1.
         SpannableStringBuilder sb = new SpannableStringBuilder(msg);
         sb.setSpan(new ForegroundColorSpan(0xffff0000), 0, 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> model.set(ModalDialogProperties.MESSAGE_PARAGRAPH_1, sb));
         onView(withId(R.id.title_container)).check(matches(not(isDisplayed())));
         onView(withId(R.id.scrollable_title_container)).check(matches(not(isDisplayed())));
@@ -297,7 +292,7 @@ public class ModalDialogViewTest {
                 .check(matches(allOf(isDisplayed(), withText(msg))));
 
         // Set an empty message_paragraph_2 and verify that it's not shown.
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> model.set(ModalDialogProperties.MESSAGE_PARAGRAPH_2, ""));
         onView(withId(R.id.title_container)).check(matches(not(isDisplayed())));
         onView(withId(R.id.scrollable_title_container)).check(matches(not(isDisplayed())));
@@ -317,7 +312,7 @@ public class ModalDialogViewTest {
                 .check(matches(allOf(isDisplayed(), withChild(withId(R.id.test_view_one)))));
 
         // Change custom view.
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> model.set(ModalDialogProperties.CUSTOM_VIEW, mCustomTextView2));
         onView(withId(R.id.custom_view_not_in_scrollable))
                 .check(
@@ -328,8 +323,7 @@ public class ModalDialogViewTest {
                                         withChild(withId(R.id.test_view_two)))));
 
         // Set custom view to null.
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> model.set(ModalDialogProperties.CUSTOM_VIEW, null));
+        ThreadUtils.runOnUiThreadBlocking(() -> model.set(ModalDialogProperties.CUSTOM_VIEW, null));
         onView(withId(R.id.custom_view_not_in_scrollable))
                 .check(
                         matches(
@@ -349,7 +343,7 @@ public class ModalDialogViewTest {
         linearLayout.setOrientation(LinearLayout.VERTICAL);
         createModel(mModelBuilder.with(ModalDialogProperties.CUSTOM_VIEW, scrollView));
         // Add content.
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     for (int i = 0; i < 100; i++) {
                         var textView = new TextView(activityTestRule.getActivity());
@@ -394,13 +388,13 @@ public class ModalDialogViewTest {
         onView(withId(R.id.negative_button)).check(matches(not(isDisplayed())));
 
         // Change custom button bar view.
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> model.set(ModalDialogProperties.CUSTOM_BUTTON_BAR_VIEW, mCustomButtonBar2));
         onView(withId(R.id.custom_button_bar))
                 .check(matches(allOf(isDisplayed(), withChild(withId(R.id.test_button_bar_two)))));
 
         // Set custom button bar view to null.
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> model.set(ModalDialogProperties.CUSTOM_BUTTON_BAR_VIEW, null));
         onView(withId(R.id.custom_button_bar)).check(matches(not(isDisplayed())));
 
@@ -433,7 +427,7 @@ public class ModalDialogViewTest {
                 .check(matches(allOf(isDisplayed(), isEnabled(), withText(R.string.cancel))));
 
         // Set positive button to be disabled state.
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> model.set(ModalDialogProperties.POSITIVE_BUTTON_DISABLED, true));
         onView(withId(R.id.button_bar)).check(matches(isDisplayed()));
         onView(withId(R.id.positive_button))
@@ -442,7 +436,7 @@ public class ModalDialogViewTest {
                 .check(matches(allOf(isDisplayed(), isEnabled(), withText(R.string.cancel))));
 
         // Set positive button text to empty.
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> model.set(ModalDialogProperties.POSITIVE_BUTTON_TEXT, ""));
         onView(withId(R.id.button_bar)).check(matches(isDisplayed()));
         onView(withId(R.id.positive_button)).check(matches(not(isDisplayed())));
@@ -450,7 +444,7 @@ public class ModalDialogViewTest {
                 .check(matches(allOf(isDisplayed(), isEnabled(), withText(R.string.cancel))));
 
         // Set negative button to be disabled state.
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> model.set(ModalDialogProperties.NEGATIVE_BUTTON_DISABLED, true));
         onView(withId(R.id.button_bar)).check(matches(isDisplayed()));
         onView(withId(R.id.positive_button)).check(matches(not(isDisplayed())));
@@ -458,7 +452,7 @@ public class ModalDialogViewTest {
                 .check(matches(allOf(isDisplayed(), not(isEnabled()), withText(R.string.cancel))));
 
         // Set negative button text to empty.
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> model.set(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, ""));
         onView(withId(R.id.button_bar)).check(matches(not(isDisplayed())));
         onView(withId(R.id.positive_button)).check(matches(not(isDisplayed())));
@@ -680,7 +674,7 @@ public class ModalDialogViewTest {
                 .check(matches(allOf(isDisplayed(), withText(R.string.more))));
 
         // Set an empty footer message and verify that footer message is not shown.
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> model.set(ModalDialogProperties.FOOTER_MESSAGE, ""));
         onView(withId(R.id.footer)).check(matches(not(isDisplayed())));
         onView(withId(R.id.footer_message)).check(matches(not(isDisplayed())));
@@ -688,7 +682,7 @@ public class ModalDialogViewTest {
         // Use CharSequence for the footer message.
         SpannableStringBuilder sb = new SpannableStringBuilder(msg);
         sb.setSpan(new ForegroundColorSpan(0xffff0000), 0, 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> model.set(ModalDialogProperties.FOOTER_MESSAGE, sb));
         onView(withId(R.id.footer)).check(matches(isDisplayed()));
         onView(withId(R.id.footer_message))

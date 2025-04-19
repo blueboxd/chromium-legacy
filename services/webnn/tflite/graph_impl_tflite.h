@@ -28,7 +28,9 @@ class ContextImplTflite;
 class GraphImplTflite final : public WebNNGraphImpl {
  public:
   static base::expected<std::unique_ptr<GraphImplTflite>, mojom::ErrorPtr>
-  CreateAndBuild(mojom::GraphInfoPtr graph_info, ContextImplTflite* context);
+  CreateAndBuild(mojom::GraphInfoPtr graph_info,
+                 ComputeResourceInfo compute_resource_info,
+                 ContextImplTflite* context);
 
   GraphImplTflite(const GraphImplTflite&) = delete;
   GraphImplTflite& operator=(const GraphImplTflite&) = delete;
@@ -60,9 +62,7 @@ class GraphImplTflite final : public WebNNGraphImpl {
       const base::flat_map<std::string_view, WebNNBufferImpl*>& named_outputs)
       override;
 
-  // This class is owned by the `UniqueAssociatedReceiverSet` in
-  // `ContextImplTflite`.
-  raw_ptr<ContextImplTflite> context_;
+  void OnDispatchComplete(std::unique_ptr<ComputeResources> compute_resources);
 
   scoped_refptr<GraphResources> graph_resources_;
   std::unique_ptr<ComputeResources> compute_resources_;

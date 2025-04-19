@@ -84,11 +84,17 @@ FakePictureLayerTilingClient::GetPaintWorkletRecords() const {
   return paint_worklet_records_;
 }
 
+std::vector<const DrawImage*>
+FakePictureLayerTilingClient::GetDiscardableImagesInRect(
+    const gfx::Rect& rect) const {
+  return {};
+}
+
 ScrollOffsetMap FakePictureLayerTilingClient::GetRasterInducingScrollOffsets()
     const {
   return ScrollOffsetMap();
 }
 
-void FakePictureLayerTilingClient::OnTilesAdded() {}
+void FakePictureLayerTilingClient::OnAllTilesDoneCleared() {}
 
 }  // namespace cc

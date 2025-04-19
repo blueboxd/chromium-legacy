@@ -17,6 +17,17 @@ struct FormSuggestionMetadata {
   bool is_single_username_form = false;
 };
 
+// Enum class used to determine the feature for in-product help for the
+// suggestion.
+enum class SuggestionFeatureForIPH {
+  // Default value
+  kUnknown = 0,
+  // Denoting IPH for the external account profile suggestion.
+  kAutofillExternalAccountProfile = 1,
+  // Denoting IPH for the plus address create suggestion.
+  kPlusAddressCreation = 2
+};
+
 // Represents a user-selectable suggestion for a single field within a form
 // on a web page.
 @interface FormSuggestion : NSObject
@@ -34,8 +45,8 @@ struct FormSuggestionMetadata {
 // otherwise.
 @property(copy, readonly, nonatomic) UIImage* icon;
 
-// Denotes the popup type.
-@property(assign, readonly, nonatomic) autofill::SuggestionType popupItemId;
+// Denotes the suggestion type.
+@property(assign, readonly, nonatomic) autofill::SuggestionType type;
 
 // Indicates if the user should re-authenticate with the device before applying
 // the suggestion.
@@ -45,7 +56,7 @@ struct FormSuggestionMetadata {
 @property(copy, readonly, nonatomic) NSString* acceptanceA11yAnnouncement;
 
 // If specified, shows in-product help for the suggestion.
-@property(copy, nonatomic) NSString* featureForIPH;
+@property(assign, nonatomic) SuggestionFeatureForIPH featureForIPH;
 
 // The `Suggestion::BackendId` associated with this suggestion. Would be GUID
 // for the addresses and credit cards where `identifier` > 0.
@@ -58,7 +69,7 @@ struct FormSuggestionMetadata {
 + (FormSuggestion*)suggestionWithValue:(NSString*)value
                     displayDescription:(NSString*)displayDescription
                                   icon:(UIImage*)icon
-                           popupItemId:(autofill::SuggestionType)popupItemId
+                                  type:(autofill::SuggestionType)type
                      backendIdentifier:(NSString*)backendIdentifier
                         requiresReauth:(BOOL)requiresReauth
             acceptanceA11yAnnouncement:(NSString*)acceptanceA11yAnnouncement
@@ -69,7 +80,7 @@ struct FormSuggestionMetadata {
                             minorValue:(NSString*)minorValue
                     displayDescription:(NSString*)displayDescription
                                   icon:(UIImage*)icon
-                           popupItemId:(autofill::SuggestionType)popupItemId
+                                  type:(autofill::SuggestionType)type
                      backendIdentifier:(NSString*)backendIdentifier
                         requiresReauth:(BOOL)requiresReauth
             acceptanceA11yAnnouncement:(NSString*)acceptanceA11yAnnouncement;
@@ -78,7 +89,7 @@ struct FormSuggestionMetadata {
 + (FormSuggestion*)suggestionWithValue:(NSString*)value
                     displayDescription:(NSString*)displayDescription
                                   icon:(UIImage*)icon
-                           popupItemId:(autofill::SuggestionType)popupItemId
+                                  type:(autofill::SuggestionType)type
                      backendIdentifier:(NSString*)backendIdentifier
                         requiresReauth:(BOOL)requiresReauth;
 

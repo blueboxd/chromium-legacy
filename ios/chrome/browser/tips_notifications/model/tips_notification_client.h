@@ -12,8 +12,10 @@
 #import "components/prefs/pref_change_registrar.h"
 #import "ios/chrome/browser/push_notification/model/push_notification_client.h"
 
-enum class TipsNotificationType;
+@class CommandDispatcher;
 class PrefRegistrySimple;
+enum class TipsNotificationType;
+enum class TipsNotificationUserType;
 
 // A notification client responsible for registering notification requests and
 // handling the receiving of user notifications that are user-ed "Tips".
@@ -78,17 +80,27 @@ class TipsNotificationClient : public PushNotificationClient {
   // Returns true if a WhatsNew notification should be sent.
   bool ShouldSendWhatsNew();
 
-  // returns true if a SetUpList continuation notification should be sent.
+  // Returns true if a SetUpList continuation notification should be sent.
   bool ShouldSendSetUpListContinuation();
+
+  // Returns true if a Docking promo notification should be sent.
+  bool ShouldSendDocking();
+
+  // Returns true if an Omnibox Position promo notification should be sent.
+  bool ShouldSendOmniboxPosition();
 
   // Returns `true` if there is foreground active browser.
   bool IsSceneLevelForegroundActive();
 
   // Helpers to handle notification interactions.
+  CommandDispatcher* Dispatcher();
+  void ShowUIForNotificationType(TipsNotificationType type);
   void ShowDefaultBrowserPromo();
   void ShowWhatsNew();
   void ShowSignin();
   void ShowSetUpListContinuation();
+  void ShowDocking();
+  void ShowOmniboxPosition();
 
   // Helpers to store state in local state prefs.
   void MarkNotificationTypeSent(TipsNotificationType type);
@@ -110,8 +122,14 @@ class TipsNotificationClient : public PushNotificationClient {
   // changes.
   void OnPermittedPrefChanged(const std::string& name);
 
+  // Classifies the user and sets the `user_type`, if possible.
+  void ClassifyUser();
+
   // Stores whether Tips notifications are permitted.
   bool permitted_ = false;
+
+  // Stores the user's classification.
+  TipsNotificationUserType user_type_;
 
   // When the user interacts with a Tips notification but there are no
   // foreground scenes, this will store the notification type so it can

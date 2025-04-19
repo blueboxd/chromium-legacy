@@ -7,6 +7,7 @@
 #include <optional>
 #include <ostream>
 
+#include "base/containers/to_value_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
@@ -20,6 +21,7 @@
 #include "base/types/expected_macros.h"
 #include "base/version.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_downloader.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_install_command_helper.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_prepare_and_store_update_command.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
 #include "chrome/browser/web_applications/isolated_web_apps/update_manifest/update_manifest.h"
@@ -163,50 +165,68 @@ void IsolatedWebAppUpdateDiscoveryTask::OnUpdateManifestFetched(
     return;
   }
 
-  base::Value::List available_versions;
-  for (const auto& version_entry : update_manifest.versions()) {
-    available_versions.Append(version_entry.version().GetString());
-  }
-  debug_log_.Set("available_versions", std::move(available_versions));
+  debug_log_.Set(
+      "available_versions",
+      base::ToValueList(update_manifest.versions(), [](const auto& entry) {
+        return entry.version().GetString();
+      }));
   debug_log_.Set(
       "latest_version",
       base::Value::Dict()
           .Set("version", latest_version_entry->version().GetString())
           .Set("src", latest_version_entry->src().spec()));
 
-  const WebApp* web_app = registrar_->GetAppById(url_info_.app_id());
-  if (!web_app) {
-    FailWith(Error::kIwaNotInstalled);
-    return;
-  }
-  std::optional<WebApp::IsolationData> isolation_data =
-      web_app->isolation_data();
-  if (!isolation_data) {
-    FailWith(Error::kIwaNotInstalled);
-    return;
-  }
-  base::Version currently_installed_version = isolation_data->version;
-
+  ASSIGN_OR_RETURN(
+      const WebApp& iwa, GetIsolatedWebAppById(*registrar_, url_info_.app_id()),
+      [&](const std::string&) { FailWith(Error::kIwaNotInstalled); });
+  const auto& isolation_data = *iwa.isolation_data();
+  base::Version currently_installed_version = isolation_data.version;
   debug_log_.Set("currently_installed_version",
                  currently_installed_version.GetString());
 
-  if (isolation_data->pending_update_info().has_value() &&
-      isolation_data->pending_update_info()->version ==
-          latest_version_entry->version()) {
-    // If we already have a pending update for this version, stop. However, we
-    // do allow overwriting a pending update with a different pending update
-    // version.
+  const auto& pending_update = isolation_data.pending_update_info();
+
+  bool same_version_update_allowed_by_key_rotation = false;
+  bool pending_info_overwrite_allowed_by_key_rotation = false;
+  switch (LookupRotatedKey(url_info_.web_bundle_id(), debug_log_)) {
+    case KeyRotationLookupResult::kNoKeyRotation:
+      break;
+    case KeyRotationLookupResult::kKeyFound: {
+      KeyRotationData data =
+          GetKeyRotationData(url_info_.web_bundle_id(), isolation_data);
+      if (!data.current_installation_has_rk) {
+        same_version_update_allowed_by_key_rotation = true;
+      }
+      if (!data.pending_update_has_rk) {
+        pending_info_overwrite_allowed_by_key_rotation = true;
+      }
+    } break;
+    case KeyRotationLookupResult::kKeyBlocked: {
+      FailWith(Error::kUpdateManifestNoApplicableVersion);
+      return;
+    }
+  }
+
+  if (pending_update &&
+      pending_update->version == latest_version_entry->version() &&
+      !pending_info_overwrite_allowed_by_key_rotation) {
+    // If we already have a pending update for this version, stop. However,
+    // we do allow overwriting a pending update with a different pending
+    // update version or if there's a chance that this will yield a bundle
+    // signed by a rotated key.
     SucceedWith(Success::kUpdateAlreadyPending);
     return;
   }
 
   // Since this task is not holding any `WebAppLock`s, there is no guarantee
-  // that the installed version of the IWA won't change in the time between now
-  // and when we schedule the `IsolatedWebAppUpdatePrepareAndStoreCommand`. This
-  // is not an issue, as `IsolatedWebAppUpdatePrepareAndStoreCommand` will
-  // re-check that the new version is indeed newer than the currently installed
-  // version.
-  if (currently_installed_version >= latest_version_entry->version()) {
+  // that the installed version of the IWA won't change in the time between
+  // now and when we schedule the
+  // `IsolatedWebAppUpdatePrepareAndStoreCommand`. This is not an issue, as
+  // `IsolatedWebAppUpdatePrepareAndStoreCommand` will re-check that the new
+  // version is indeed newer than the currently installed version.
+  if (currently_installed_version > latest_version_entry->version() ||
+      (currently_installed_version == latest_version_entry->version() &&
+       !same_version_update_allowed_by_key_rotation)) {
     // Never downgrade apps for now.
     SucceedWith(Success::kNoUpdateFound);
     return;

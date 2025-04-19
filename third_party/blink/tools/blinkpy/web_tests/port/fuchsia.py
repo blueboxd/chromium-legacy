@@ -33,6 +33,7 @@ import socket
 import subprocess
 import sys
 import threading
+import time
 
 from argparse import Namespace
 from blinkpy.common import exit_codes
@@ -60,6 +61,8 @@ def _import_fuchsia_runner():
     from compatible_utils import get_host_arch, get_ssh_prefix
     global ports_forward, port_forward
     from test_server import ports_forward, port_forward
+    global run_symbolizer
+    from ffx_integration import run_symbolizer
     # pylint: enable=import-error
     # pylint: enable=invalid-name
     # pylint: disable=redefined-outer-name
@@ -89,7 +92,7 @@ def _subprocess_log_thread(pipe, prefix):
             line = pipe.readline()
             if not line:
                 return
-            _log.error('%s: %s', prefix, line.decode('utf8'))
+            _log.error('%s: %s', prefix, line.decode('utf-8'))
     finally:
         pipe.close()
 
@@ -110,19 +113,13 @@ class SubprocessOutputLogger(object):
 
 
 class _TargetHost(object):
-    def __init__(self, ports_to_forward, target_id):
-        self._target_id = target_id
-        self._setup_target(ports_to_forward)
 
-    def _setup_target(self, ports_to_forward):
+    def __init__(self, ports, target_id):
+        self._target_id = target_id
         # Tell SSH to forward all server ports from the Fuchsia device to
         # the host.
-
         self._host_port_pair = get_ssh_address(self._target_id)
-        self._port_forward_list(ports_to_forward)
-
-    def _port_forward_list(self, ports):
-        """Reverse forward all ports listed in |ports| to the device."""
+        # Reverse forward all ports listed in |ports| to the device.
         forwarding_ports = []
         for port in ports:
             forwarding_ports.append((port, port))
@@ -177,30 +174,6 @@ class FuchsiaPort(base.Port):
         self._symbolizer = os.path.join(SDK_TOOLS_DIR, 'symbolizer')
         self._build_id_dir = os.path.join(SDK_ROOT, '.build-id')
 
-    # TODO(b/340288531): Should use ffx debug symbolize.
-    def run_symbolizer(self, input_fd, output_fd, ids_txt_paths):
-        """Starts a symbolizer process.
-
-        input_fd: Input file to be symbolized.
-        output_fd: Output file for symbolizer stdout and stderr.
-        ids_txt_paths: Path to the ids.txt files which map build IDs to
-                        unstripped binaries on the filesystem.
-        Returns a Popen object for the started process."""
-
-        symbolizer_cmd = [
-            self._symbolizer, '--omit-module-lines', '--build-id-dir',
-            self._build_id_dir
-        ]
-        for ids_txt in ids_txt_paths:
-            symbolizer_cmd.extend(['--ids-txt', ids_txt])
-
-        logging.debug('Running "%s".' % ' '.join(symbolizer_cmd))
-        return subprocess.Popen(symbolizer_cmd,
-                                stdin=input_fd,
-                                stdout=output_fd,
-                                stderr=subprocess.STDOUT,
-                                close_fds=True)
-
     def _driver_class(self):
         return ChromiumFuchsiaDriver
 
@@ -224,8 +197,10 @@ class FuchsiaPort(base.Port):
             self._target_host = _TargetHost(self.SERVER_PORTS, target_id)
 
             klog_proc = self._target_host.run_command(['dlog', '-f'])
-            symbolized_klog_proc = self.run_symbolizer(
-                klog_proc.stdout, subprocess.PIPE, [self.get_build_ids_path()])
+            symbolized_klog_proc = run_symbolizer([self.get_build_ids_path()],
+                                                  klog_proc.stdout,
+                                                  subprocess.PIPE,
+                                                  raw_bytes=True)
             self._zircon_logger = SubprocessOutputLogger(
                 symbolized_klog_proc, 'Zircon')
         except:
@@ -259,6 +234,14 @@ class FuchsiaPort(base.Port):
             self._path_from_chromium_base('third_party', 'blink')
         super(FuchsiaPort, self).start_http_server(additional_dirs,
                                                    number_of_drivers)
+        # Wait for the ssh proxy to be ready.
+        for _ in range(5):
+            if self.get_target_host().run_command(
+                ['curl', 'http://127.0.0.1:8000/']).wait() == 0:
+                break
+            time.sleep(1)
+        # But still continue the tests if it's not working.
+
 
     def operating_system(self):
         return self._operating_system
@@ -295,9 +278,13 @@ class ChromiumFuchsiaDriver(driver.Driver):
 
     def _base_cmd_line(self):
         return [
-            '--use-vulkan', '--enable-gpu-rasterization',
-            '--force-device-scale-factor=1', '--enable-features=Vulkan',
-            '--gpu-watchdog-timeout-seconds=60'
+            '--run-web-tests',
+            '--user-data-dir',
+            '--use-vulkan',
+            '--enable-gpu-rasterization',
+            '--force-device-scale-factor=1',
+            '--enable-features=Vulkan',
+            '--gpu-watchdog-timeout-seconds=60',
         ]
 
     def _command_from_driver_input(self, driver_input):
@@ -382,9 +369,11 @@ class FuchsiaServerProcess(server_process.ServerProcess):
         proc.stdout = stdout_pipe
 
         # Run symbolizer to filter the stderr stream.
-        self._symbolizer_proc = self._port.run_symbolizer(
-            merged_stdout_stderr, subprocess.PIPE,
-            [self._port.get_build_ids_path()])
+        self._symbolizer_proc = run_symbolizer(
+            [self._port.get_build_ids_path()],
+            merged_stdout_stderr,
+            subprocess.PIPE,
+            raw_bytes=True)
         proc.stderr = self._symbolizer_proc.stdout
 
         self._set_proc(proc)

@@ -183,6 +183,7 @@ fontKerning
 fontOpticalSizing
 fontPalette
 fontSize
+fontSizeAdjust
 fontStretch
 fontStyle
 fontSynthesis
@@ -238,6 +239,7 @@ insetBlockStart
 insetInline
 insetInlineEnd
 insetInlineStart
+interpolateSize
 isolation
 item
 justifyContent
@@ -350,8 +352,9 @@ placeSelf
 pointerEvents
 position
 positionAnchor
+positionArea
 positionTry
-positionTryOptions
+positionTryFallbacks
 positionTryOrder
 positionVisibility
 prefix
@@ -363,6 +366,7 @@ resize
 right
 rotate
 rowGap
+rubyAlign
 rubyPosition
 rx
 ry

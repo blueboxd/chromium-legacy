@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/342213636): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "content/browser/devtools/devtools_url_loader_interceptor.h"
 
 #include <memory>
@@ -215,10 +220,9 @@ class BodyReader : public mojo::DataPipeDrainer::Client {
   }
 
  private:
-  void OnDataAvailable(const void* data, size_t num_bytes) override {
+  void OnDataAvailable(base::span<const uint8_t> data) override {
     DCHECK(!data_complete_);
-    body_->as_string().append(
-        std::string(static_cast<const char*>(data), num_bytes));
+    body_->as_string().append(base::as_string_view(data));
   }
 
   void OnDataComplete() override;
@@ -1357,24 +1361,26 @@ void InterceptionJob::ProcessRedirectByClient(const GURL& redirect_url) {
 
 void InterceptionJob::SendResponse(scoped_refptr<base::RefCountedMemory> body,
                                    size_t offset) {
-  size_t body_size = body ? body->size() : 0;
-  CHECK_LE(offset, body_size);
-  body_size -= offset;
+  base::span<const uint8_t> bytes_to_write;
+  if (body) {
+    bytes_to_write = base::as_byte_span(*body).subspan(offset);
+  }
   // We shouldn't be able to transfer a string that big over the protocol,
   // but just in case...
-  CHECK_LE(body_size, UINT32_MAX)
+  CHECK_LE(bytes_to_write.size(), UINT32_MAX)
       << "Response bodies larger than " << UINT32_MAX << " are not supported";
   mojo::ScopedDataPipeConsumerHandle consumer_handle;
   mojo::ScopedDataPipeProducerHandle producer_handle;
-  CHECK_EQ(mojo::CreateDataPipe(body_size, producer_handle, consumer_handle),
+  CHECK_EQ(mojo::CreateDataPipe(bytes_to_write.size(), producer_handle,
+                                consumer_handle),
            MOJO_RESULT_OK);
 
   if (body) {
-    size_t num_bytes = body_size;
+    size_t actually_written_bytes = 0;
     MojoResult res = producer_handle->WriteData(
-        body->data() + offset, &num_bytes, MOJO_WRITE_DATA_FLAG_NONE);
+        bytes_to_write, MOJO_WRITE_DATA_FLAG_NONE, actually_written_bytes);
     DCHECK_EQ(0u, res);
-    DCHECK_EQ(num_bytes, body_size);
+    DCHECK_EQ(actually_written_bytes, bytes_to_write.size());
   }
   client_->OnReceiveResponse(std::move(response_metadata_->head),
                              std::move(consumer_handle),

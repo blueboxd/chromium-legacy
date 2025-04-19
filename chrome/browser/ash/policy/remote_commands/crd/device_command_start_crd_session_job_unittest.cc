@@ -8,6 +8,7 @@
 #include <optional>
 #include <utility>
 
+#include "base/check_deref.h"
 #include "base/json/json_writer.h"
 #include "base/memory/raw_ptr.h"
 #include "base/notreached.h"
@@ -19,6 +20,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/ash/app_mode/kiosk_chrome_app_manager.h"
 #include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_manager.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/policy/remote_commands/crd/crd_remote_command_utils.h"
 #include "chrome/browser/ash/policy/remote_commands/crd/fake_start_crd_session_job_delegate.h"
 #include "chrome/browser/ash/policy/remote_commands/fake_cros_network_config.h"
@@ -32,6 +34,7 @@
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_service.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "remoting/host/chromeos/features.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 
@@ -305,6 +308,18 @@ class DeviceCommandStartCrdSessionJobTest : public ash::DeviceSettingsTestBase {
                                      enabled);
   }
 
+  void SetDeviceAllowEnterpriseRemoteAccessPolicyValue(bool enabled) {
+    profile_manager_.local_state()->Get()->SetBoolean(
+        prefs::kDeviceAllowEnterpriseRemoteAccessConnections, enabled);
+  }
+
+  void SetRemoteAccessHostAllowEnterpriseRemoteSupportConnections(
+      bool enabled) {
+    profile_manager_.local_state()->Get()->SetBoolean(
+        prefs::kRemoteAccessHostAllowEnterpriseRemoteSupportConnections,
+        enabled);
+  }
+
   void RunJob(DeviceCommandStartCrdSessionJob& job,
               base::OnceClosure on_done_closure = base::OnceClosure()) {
     bool launched = job.Run(base::Time::Now(), base::TimeTicks::Now(),
@@ -320,6 +335,9 @@ class DeviceCommandStartCrdSessionJobTest : public ash::DeviceSettingsTestBase {
   ash::FakeChromeUserManager& user_manager() { return *user_manager_; }
 
  private:
+  user_manager::TypedScopedUserManager<ash::FakeChromeUserManager>
+      user_manager_{std::make_unique<ash::FakeChromeUserManager>()};
+
   std::unique_ptr<ash::WebKioskAppManager> web_kiosk_app_manager_;
   std::unique_ptr<ash::KioskChromeAppManager> kiosk_chrome_app_manager_;
 
@@ -388,6 +406,41 @@ TEST_F(DeviceCommandStartCrdSessionJobTest,
 
 TEST_P(DeviceCommandStartCrdSessionJobTestParameterized,
        TestRemoteSupportSessions) {
+  TestSessionType user_session_type = GetParam();
+  SCOPED_TRACE(base::StringPrintf("Testing session type %s",
+                                  SessionTypeToString(user_session_type)));
+
+  StartSessionOfType(user_session_type);
+  Result result = RunJobAndWaitForResult();
+
+  bool is_supported = [&]() {
+    switch (user_session_type) {
+      case TestSessionType::kManuallyLaunchedWebKioskSession:
+      case TestSessionType::kManuallyLaunchedKioskSession:
+      case TestSessionType::kAutoLaunchedWebKioskSession:
+      case TestSessionType::kAutoLaunchedKioskSession:
+      case TestSessionType::kManagedGuestSession:
+      case TestSessionType::kAffiliatedUserSession:
+        return true;
+
+      case TestSessionType::kGuestSession:
+      case TestSessionType::kUnaffiliatedUserSession:
+      case TestSessionType::kNoSession:
+        return false;
+    }
+  }();
+
+  if (is_supported) {
+    EXPECT_SUCCESS(result);
+  } else {
+    EXPECT_ERROR(result,
+                 StartCrdSessionResultCode::FAILURE_UNSUPPORTED_USER_TYPE);
+  }
+}
+
+TEST_P(DeviceCommandStartCrdSessionJobTestParameterized,
+       RemoteSupportSessionAvailabilityShouldBeUnaffectedByRemoteAccessPolicy) {
+  SetDeviceAllowEnterpriseRemoteAccessPolicyValue(false);
   TestSessionType user_session_type = GetParam();
   SCOPED_TRACE(base::StringPrintf("Testing session type %s",
                                   SessionTypeToString(user_session_type)));
@@ -896,6 +949,90 @@ TEST_P(DeviceCommandStartCrdSessionJobRemoteAccessTestParameterized,
     EXPECT_SUCCESS(result);
     // Ensure the session a remote access session (= curtained off).
     EXPECT_TRUE(delegate().session_parameters().curtain_local_user_session);
+  } else {
+    EXPECT_ERROR(result,
+                 StartCrdSessionResultCode::FAILURE_UNSUPPORTED_USER_TYPE);
+  }
+}
+
+TEST_P(DeviceCommandStartCrdSessionJobRemoteAccessTestParameterized,
+       ShouldAllowRemoteAccessConnectionsWhenPolicyIsNotSet) {
+  TestSessionType user_session_type = GetParam();
+  SCOPED_TRACE(base::StringPrintf("Testing session type %s",
+                                  SessionTypeToString(user_session_type)));
+  StartSessionOfType(user_session_type);
+  AddActiveManagedNetwork();
+
+  Result result = RunJobAndWaitForResult(
+      Payload().Set("crdSessionType", CrdSessionType::REMOTE_ACCESS_SESSION));
+
+  if (SupportsRemoteAccess(user_session_type)) {
+    EXPECT_SUCCESS(result);
+    // Ensure the session a remote access session (= curtained off).
+    EXPECT_TRUE(delegate().session_parameters().curtain_local_user_session);
+  } else {
+    EXPECT_ERROR(result,
+                 StartCrdSessionResultCode::FAILURE_UNSUPPORTED_USER_TYPE);
+  }
+}
+
+TEST_P(DeviceCommandStartCrdSessionJobRemoteAccessTestParameterized,
+       ShouldAllowRemoteAccessConnectionsWhenPolicyIsEnabled) {
+  SetDeviceAllowEnterpriseRemoteAccessPolicyValue(true);
+  SetRemoteAccessHostAllowEnterpriseRemoteSupportConnections(true);
+  TestSessionType user_session_type = GetParam();
+  SCOPED_TRACE(base::StringPrintf("Testing session type %s",
+                                  SessionTypeToString(user_session_type)));
+  StartSessionOfType(user_session_type);
+  AddActiveManagedNetwork();
+
+  Result result = RunJobAndWaitForResult(
+      Payload().Set("crdSessionType", CrdSessionType::REMOTE_ACCESS_SESSION));
+
+  if (SupportsRemoteAccess(user_session_type)) {
+    EXPECT_SUCCESS(result);
+    // Ensure the session a remote access session (= curtained off).
+    EXPECT_TRUE(delegate().session_parameters().curtain_local_user_session);
+  } else {
+    EXPECT_ERROR(result,
+                 StartCrdSessionResultCode::FAILURE_UNSUPPORTED_USER_TYPE);
+  }
+}
+
+TEST_P(DeviceCommandStartCrdSessionJobRemoteAccessTestParameterized,
+       ShouldNotAllowRemoteAccessConnectionsWhenDevicePolicyIsDisabled) {
+  SetDeviceAllowEnterpriseRemoteAccessPolicyValue(false);
+  TestSessionType user_session_type = GetParam();
+  SCOPED_TRACE(base::StringPrintf("Testing session type %s",
+                                  SessionTypeToString(user_session_type)));
+  StartSessionOfType(user_session_type);
+  AddActiveManagedNetwork();
+
+  Result result = RunJobAndWaitForResult(
+      Payload().Set("crdSessionType", CrdSessionType::REMOTE_ACCESS_SESSION));
+
+  if (SupportsRemoteAccess(user_session_type)) {
+    EXPECT_ERROR(result, StartCrdSessionResultCode::FAILURE_DISABLED_BY_POLICY);
+  } else {
+    EXPECT_ERROR(result,
+                 StartCrdSessionResultCode::FAILURE_UNSUPPORTED_USER_TYPE);
+  }
+}
+
+TEST_P(DeviceCommandStartCrdSessionJobRemoteAccessTestParameterized,
+       ShouldNotAllowRemoteAccessConnectionsWhenRemoteSupportPolicyIsDisabled) {
+  SetRemoteAccessHostAllowEnterpriseRemoteSupportConnections(false);
+  TestSessionType user_session_type = GetParam();
+  SCOPED_TRACE(base::StringPrintf("Testing session type %s",
+                                  SessionTypeToString(user_session_type)));
+  StartSessionOfType(user_session_type);
+  AddActiveManagedNetwork();
+
+  Result result = RunJobAndWaitForResult(
+      Payload().Set("crdSessionType", CrdSessionType::REMOTE_ACCESS_SESSION));
+
+  if (SupportsRemoteAccess(user_session_type)) {
+    EXPECT_ERROR(result, StartCrdSessionResultCode::FAILURE_DISABLED_BY_POLICY);
   } else {
     EXPECT_ERROR(result,
                  StartCrdSessionResultCode::FAILURE_UNSUPPORTED_USER_TYPE);

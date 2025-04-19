@@ -13,13 +13,14 @@
 #import "ios/chrome/browser/push_notification/model/push_notification_account_context_manager.h"
 #import "ios/chrome/browser/push_notification/model/push_notification_client_id.h"
 #import "ios/chrome/browser/push_notification/model/push_notification_client_manager.h"
+#import "ios/chrome/browser/push_notification/model/push_notification_configuration.h"
 #import "ios/chrome/browser/push_notification/model/push_notification_util.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 
 PushNotificationService::PushNotificationService()
     : client_manager_(std::make_unique<PushNotificationClientManager>()) {
-  ios::ChromeBrowserStateManager* manager =
+  ChromeBrowserStateManager* manager =
       GetApplicationContext()->GetChromeBrowserStateManager();
   context_manager_ = [[PushNotificationAccountContextManager alloc]
       initWithChromeBrowserStateManager:manager];
@@ -72,6 +73,12 @@ void PushNotificationService::UnregisterAccount(
   if ([context_manager_ removeAccount:base::SysNSStringToUTF8(account_id)]) {
     SetAccountsToDevice([context_manager_ accountIDs], completion_handler);
   }
+}
+
+// TODO(crbug.com/343495515): remove after downstream implementation is added.
+std::string PushNotificationService::GetRepresentativeTargetIdForGaiaId(
+    NSString* gaia_id) {
+  return "";
 }
 
 void PushNotificationService::RegisterBrowserStatePrefs(

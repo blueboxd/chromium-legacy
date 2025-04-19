@@ -50,6 +50,10 @@ namespace content {
 class WebContents;
 }  // namespace content
 
+namespace customize_chrome {
+class SidePanelController;
+}  // namespace customize_chrome
+
 namespace search_provider_logos {
 class LogoService;
 }  // namespace search_provider_logos
@@ -79,7 +83,9 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
       std::unique_ptr<NewTabPageFeaturePromoHelper>
           customize_chrome_feature_promo_helper,
       const base::Time& ntp_navigation_start_time,
-      const std::vector<std::pair<const std::string, int>>* module_id_names);
+      const std::vector<std::pair<const std::string, int>>* module_id_names,
+      customize_chrome::SidePanelController*
+          customize_chrome_side_panel_controller);
 
   NewTabPageHandler(const NewTabPageHandler&) = delete;
   NewTabPageHandler& operator=(const NewTabPageHandler&) = delete;
@@ -91,6 +97,9 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
   static const char kModuleRestoredHistogram[];
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+
+  // This method should be called before the tab is deleted.
+  void TabWillDelete();
 
   // new_tab_page::mojom::PageHandler:
   void SetMostVisitedSettings(bool custom_links_enabled, bool visible) override;
@@ -126,17 +135,13 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
   void GetModulesIdNames(GetModulesIdNamesCallback callback) override;
   void SetModulesOrder(const std::vector<std::string>& module_ids) override;
   void GetModulesOrder(GetModulesOrderCallback callback) override;
-  void IncrementModulesShownCount() override;
-  void SetModulesFreVisible(bool visible) override;
-  void UpdateModulesFreVisibility() override;
-  void LogModulesFreOptInStatus(
-      new_tab_page::mojom::OptInStatus opt_in_status) override;
   void SetCustomizeChromeSidePanelVisible(
       bool visible,
       new_tab_page::mojom::CustomizeChromeSection section) override;
   void IncrementCustomizeChromeButtonOpenCount() override;
   void MaybeShowFeaturePromo(
       new_tab_page::mojom::IphFeature iph_feature) override;
+  void IncrementWallpaperSearchButtonShownCount() override;
   void OnAppRendered(double time) override;
   void OnOneGoogleBarRendered(double time) override;
   void OnPromoRendered(double time,
@@ -178,10 +183,8 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
   void OnChangeInFeatureCurrentlyEnabledState(bool is_now_enabled) override;
 
   // SelectFileDialog::Listener:
-  void FileSelected(const ui::SelectedFileInfo& file,
-                    int index,
-                    void* params) override;
-  void FileSelectionCanceled(void* params) override;
+  void FileSelected(const ui::SelectedFileInfo& file, int index) override;
+  void FileSelectionCanceled() override;
 
   void OnLogoAvailable(
       GetDoodleCallback callback,
@@ -258,6 +261,8 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
       promo_service_observation_{this};
   std::optional<base::TimeTicks> promo_load_start_time_;
   base::Value::Dict interaction_module_id_trigger_dict_;
+  raw_ptr<customize_chrome::SidePanelController>
+      customize_chrome_side_panel_controller_;
 
   // These are located at the end of the list of member variables to ensure the
   // WebUI page is disconnected before other members are destroyed.

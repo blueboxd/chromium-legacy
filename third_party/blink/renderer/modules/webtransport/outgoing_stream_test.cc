@@ -77,9 +77,9 @@ class StreamCreator {
     mock_client_ = MakeGarbageCollected<StrictMock<MockClient>>();
     auto* outgoing_stream = MakeGarbageCollected<OutgoingStream>(
         script_state, mock_client_, std::move(data_pipe_producer));
-    ExceptionState exception_state(
-        scope.GetIsolate(), ExceptionContextType::kConstructorOperationInvoke,
-        "OutgoingStream");
+    ExceptionState exception_state(scope.GetIsolate(),
+                                   v8::ExceptionContext::kConstructor,
+                                   "OutgoingStream");
     outgoing_stream->Init(exception_state);
     CHECK(!exception_state.HadException());
     return outgoing_stream;
@@ -94,10 +94,9 @@ class StreamCreator {
   // Reads everything from |data_pipe_consumer_| and returns it in a vector.
   Vector<uint8_t> ReadAllPendingData() {
     Vector<uint8_t> data;
-    const void* buffer = nullptr;
-    size_t buffer_num_bytes = 0;
+    base::span<const uint8_t> buffer;
     MojoResult result = data_pipe_consumer_->BeginReadData(
-        &buffer, &buffer_num_bytes, MOJO_BEGIN_READ_DATA_FLAG_NONE);
+        MOJO_BEGIN_READ_DATA_FLAG_NONE, buffer);
 
     switch (result) {
       case MOJO_RESULT_OK:
@@ -111,8 +110,8 @@ class StreamCreator {
         return data;
     }
 
-    data.Append(static_cast<const uint8_t*>(buffer), buffer_num_bytes);
-    data_pipe_consumer_->EndReadData(buffer_num_bytes);
+    data.AppendRange(buffer.begin(), buffer.end());
+    data_pipe_consumer_->EndReadData(buffer.size());
     return data;
   }
 

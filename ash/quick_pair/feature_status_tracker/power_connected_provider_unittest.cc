@@ -6,6 +6,7 @@
 
 #include "ash/display/refresh_rate_controller.h"
 #include "ash/shell.h"
+#include "ash/system/power/battery_saver_controller.h"
 #include "ash/system/power/power_status.h"
 #include "ash/test/ash_test_base.h"
 
@@ -23,6 +24,10 @@ class PowerConnectedProviderTest : public AshTestBase {
     // pointer.
     ash::Shell::Get()
         ->refresh_rate_controller()
+        ->StopObservingPowerStatusForTest();
+    // And BatterySaverController.
+    ash::Shell::Get()
+        ->battery_saver_controller()
         ->StopObservingPowerStatusForTest();
   }
 

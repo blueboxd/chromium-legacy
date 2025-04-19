@@ -51,7 +51,7 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/ash/boot_times_recorder.h"
+#include "chrome/browser/ash/boot_times_recorder/boot_times_recorder.h"
 #include "chrome/browser/lifetime/application_lifetime_chromeos.h"
 #include "chrome/browser/lifetime/termination_notification.h"
 #endif
@@ -193,8 +193,6 @@ bool ShutdownPreThreadsStop() {
   g_browser_process->local_state()->CommitPendingWrite();
 
 #if BUILDFLAG(ENABLE_RLZ)
-  // Cleanup any statics created by RLZ. Must be done before NotificationService
-  // is destroyed.
   rlz::RLZTracker::CleanupRlz();
 #endif
 
@@ -267,7 +265,8 @@ void ShutdownPostThreadsStop(RestartMode restart_mode) {
   NukeDeletedProfilesFromDisk();
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  ash::BootTimesRecorder::Get()->AddLogoutTimeMarker("BrowserDeleted", true);
+  ash::BootTimesRecorder::Get()->AddLogoutTimeMarker("BrowserDeleted",
+                                                     /*send_to_uma=*/false);
 #endif
 
 #if BUILDFLAG(IS_WIN)

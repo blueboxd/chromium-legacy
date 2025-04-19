@@ -81,6 +81,25 @@ TEST_F(MahiCacheManagerTest, ReplacingExistingURLWithNewContent) {
   EXPECT_EQ(GetPageCache().at(GURL("http://url1.com")).previous_qa.size(), 1u);
 }
 
+TEST_F(MahiCacheManagerTest, ReplaceSummaryWithExistingUrl) {
+  EXPECT_EQ(GetPageCache().size(), 2u);
+  GetMahiCacheManager()->TryToUpdateSummaryForUrl("http://url1.com",
+                                                  u"new summary");
+  auto result = GetMahiCacheManager()->GetSummaryForUrl("http://url1.com");
+  EXPECT_TRUE(result.has_value());
+  EXPECT_EQ(result.value(), u"new summary");
+  EXPECT_EQ(GetPageCache().size(), 2u);
+}
+
+TEST_F(MahiCacheManagerTest, UpdateSummaryDoesNothingIfURLIsntInCache) {
+  EXPECT_EQ(GetPageCache().size(), 2u);
+  GetMahiCacheManager()->TryToUpdateSummaryForUrl("http://not-there.com",
+                                                  u"new summary");
+  auto result = GetMahiCacheManager()->GetSummaryForUrl("http://not-there.com");
+  EXPECT_FALSE(result.has_value());
+  EXPECT_EQ(GetPageCache().size(), 2u);
+}
+
 TEST_F(MahiCacheManagerTest, GetSummaryFromTheCacheSameURL) {
   auto result = GetMahiCacheManager()->GetSummaryForUrl("http://url1.com");
   EXPECT_TRUE(result.has_value());
@@ -154,6 +173,36 @@ TEST_F(MahiCacheManagerTest, GetCorrectPageContentFromURL) {
   // No url is found
   result = GetMahiCacheManager()->GetPageContentForUrl("http://notfound.com");
   EXPECT_EQ(result, u"");
+}
+
+TEST_F(MahiCacheManagerTest, DeleteExistingURL) {
+  // Current cache size.
+  EXPECT_EQ(GetPageCache().size(), 2u);
+
+  GetMahiCacheManager()->DeleteCacheForUrl("http://url1.com");
+  EXPECT_EQ(GetPageCache().size(), 1u);
+}
+
+TEST_F(MahiCacheManagerTest, DeleteURLNotInCache) {
+  // Current cache size.
+  EXPECT_EQ(GetPageCache().size(), 2u);
+
+  GetMahiCacheManager()->DeleteCacheForUrl("http://notthere.com");
+  EXPECT_EQ(GetPageCache().size(), 2u);
+}
+
+TEST_F(MahiCacheManagerTest, OnlyStoreHTTPOrHTTPS) {
+  EXPECT_EQ(GetPageCache().size(), 2u);
+
+  GetMahiCacheManager()->AddCacheForUrl("file:///file/path",
+                                        {"file:///file/path",
+                                         u"local file",
+                                         u"local content",
+                                         /* favicon_image = */ std::nullopt,
+                                         u"summary",
+                                         {{u"new question", u"new answer"}}});
+
+  EXPECT_EQ(GetPageCache().size(), 2u);
 }
 
 }  // namespace ash

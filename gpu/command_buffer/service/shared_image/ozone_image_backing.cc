@@ -12,6 +12,8 @@
 #include "base/containers/contains.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/not_fatal_until.h"
+#include "base/numerics/checked_math.h"
 #include "build/build_config.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -72,27 +74,6 @@ bool IsExoTexture(std::string_view label) {
 }
 
 }  // namespace
-
-class OzoneImageBacking::VaapiOzoneImageRepresentation
-    : public VaapiImageRepresentation {
- public:
-  VaapiOzoneImageRepresentation(SharedImageManager* manager,
-                                SharedImageBacking* backing,
-                                MemoryTypeTracker* tracker,
-                                VaapiDependencies* vaapi_dependency)
-      : VaapiImageRepresentation(manager, backing, tracker, vaapi_dependency) {}
-
- private:
-  OzoneImageBacking* ozone_backing() {
-    return static_cast<OzoneImageBacking*>(backing());
-  }
-  void EndAccess() override { ozone_backing()->has_pending_va_writes_ = true; }
-  void BeginAccess() override {
-    // TODO(andrescj): DCHECK that there are no fences to wait on (because the
-    // compositor should be completely done with a VideoFrame before returning
-    // it).
-  }
-};
 
 class OzoneImageBacking::OverlayOzoneImageRepresentation
     : public OverlayImageRepresentation {
@@ -238,8 +219,8 @@ OzoneImageBacking::RetainGLTexturePerContextCache() {
 
   // Case 0: caching is not possible.
   if (!current_context->default_surface()) {
-    return OzoneImageGLTexturesHolder::CreateAndInitTexturesHolder(
-        this, pixmap_, plane_);
+    return OzoneImageGLTexturesHolder::CreateAndInitTexturesHolder(this,
+                                                                   pixmap_);
   }
 
   // Case 1: if entry is found, reuse it.
@@ -271,8 +252,8 @@ OzoneImageBacking::RetainGLTexturePerContextCache() {
     CHECK(!new_holder->WasContextLost());
   } else {
     // Case 3. No entries found. Create a new holder.
-    new_holder = OzoneImageGLTexturesHolder::CreateAndInitTexturesHolder(
-        this, pixmap_, plane_);
+    new_holder =
+        OzoneImageGLTexturesHolder::CreateAndInitTexturesHolder(this, pixmap_);
   }
 
   if (!new_holder) {
@@ -347,53 +328,23 @@ OzoneImageBacking::ProduceSkiaGanesh(
         context_state->vk_context_provider()->GetVulkanImplementation();
 
     std::vector<std::unique_ptr<VulkanImage>> vulkan_images;
-    // TODO(crbug.com/40239769): Eliminate these branches once we migrate
-    // completely to MultiplanarSharedImage.
-    if (format().is_single_plane()) {
-      DCHECK(!format().IsLegacyMultiplanar() ||
-             plane_ == gfx::BufferPlane::DEFAULT);
-
-      // For single-planar formats, we can usually import the entire GMB.
-      //
-      // However, there is a special case for
-      // RenderableGpuMemoryBufferVideoFramePool which creates a separate
-      // single-planar SharedImage for each plane of the NV12 image but uses a
-      // multi-planar buffer in the backing pixmap. This leads to issues when
-      // importing the buffer into Vulkan (e.g. we tell Vulkan it's a linear
-      // R8 image, but we try to bind 2 planes of data). As a workaround, we
-      // choose the correct plane to pass based off the buffer plane param.
-      gfx::GpuMemoryBufferHandle gmb_handle;
-      if (plane_ == gfx::BufferPlane::Y || plane_ == gfx::BufferPlane::UV) {
-        DCHECK(!format().IsLegacyMultiplanar());
-        gmb_handle = GetSinglePlaneGpuMemoryBufferHandle(
-            plane_ == gfx::BufferPlane::Y ? 0 : 1);
-      } else {
-        gmb_handle = GetGpuMemoryBufferHandle();
-      }
-
-      auto vulkan_image = vulkan_implementation->CreateImageFromGpuMemoryHandle(
-          device_queue, std::move(gmb_handle), size(),
-          ToVkFormatSinglePlanar(format()), gfx::ColorSpace());
-      if (!vulkan_image) {
-        return nullptr;
-      }
-      vulkan_images.push_back(std::move(vulkan_image));
-    } else if (format().PrefersExternalSampler()) {
+    if (format().is_single_plane() || format().PrefersExternalSampler()) {
       // For multi-planar formats that are externally sampled, we import the
       // entire GMB.
-      DCHECK(plane_ == gfx::BufferPlane::DEFAULT);
       gfx::GpuMemoryBufferHandle gmb_handle = GetGpuMemoryBufferHandle();
+      auto vk_format = format().is_single_plane()
+                           ? ToVkFormat(format(), /*plane_index=*/0)
+                           : ToVkFormatExternalSampler(format());
       auto vulkan_image = vulkan_implementation->CreateImageFromGpuMemoryHandle(
-          device_queue, std::move(gmb_handle), size(),
-          ToVkFormatExternalSampler(format()), gfx::ColorSpace());
+          device_queue, std::move(gmb_handle), size(), vk_format,
+          gfx::ColorSpace());
       if (!vulkan_image) {
         return nullptr;
       }
       vulkan_images.push_back(std::move(vulkan_image));
     } else {
-      // For multi-planar SharedImages, we create a VkImage per plane. We also
-      // need to pass the correct plane when creating the VulkanImage.
-      DCHECK_EQ(plane_, gfx::BufferPlane::DEFAULT);
+      // For multi-planar SharedImages, we create a VkImage per plane. We
+      // also need to pass the correct plane when creating the VulkanImage.
       for (int i = 0; i < format().NumberOfPlanes(); i++) {
         gfx::GpuMemoryBufferHandle gmb_handle =
             GetSinglePlaneGpuMemoryBufferHandle(i);
@@ -432,12 +383,11 @@ std::unique_ptr<OverlayImageRepresentation> OzoneImageBacking::ProduceOverlay(
 OzoneImageBacking::OzoneImageBacking(
     const Mailbox& mailbox,
     viz::SharedImageFormat format,
-    gfx::BufferPlane plane,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     GrSurfaceOrigin surface_origin,
     SkAlphaType alpha_type,
-    uint32_t usage,
+    SharedImageUsageSet usage,
     std::string debug_label,
     scoped_refptr<SharedContextState> context_state,
     scoped_refptr<gfx::NativePixmap> pixmap,
@@ -454,21 +404,20 @@ OzoneImageBacking::OzoneImageBacking(
                                       GetPixmapSizeInBytes(*pixmap),
                                       false,
                                       std::move(buffer_usage)),
-      plane_(plane),
       pixmap_(std::move(pixmap)),
       context_state_(std::move(context_state)),
       workarounds_(workarounds),
       imported_from_exo_(IsExoTexture(this->debug_label())) {
-  bool used_by_skia = (usage & SHARED_IMAGE_USAGE_RASTER_READ) ||
-                      (usage & SHARED_IMAGE_USAGE_RASTER_WRITE) ||
-                      (usage & SHARED_IMAGE_USAGE_DISPLAY_READ);
+  bool used_by_skia = usage.HasAny(SHARED_IMAGE_USAGE_RASTER_READ |
+                                   SHARED_IMAGE_USAGE_RASTER_WRITE |
+                                   SHARED_IMAGE_USAGE_DISPLAY_READ);
   bool used_by_gl =
       (HasGLES2ReadOrWriteUsage(usage)) ||
       (used_by_skia && context_state_->gr_context_type() == GrContextType::kGL);
   bool used_by_vulkan = used_by_skia && context_state_->gr_context_type() ==
                                             GrContextType::kVulkan;
-  bool used_by_webgpu = usage & (SHARED_IMAGE_USAGE_WEBGPU_READ |
-                                 SHARED_IMAGE_USAGE_WEBGPU_WRITE);
+  bool used_by_webgpu = usage.HasAny(SHARED_IMAGE_USAGE_WEBGPU_READ |
+                                     SHARED_IMAGE_USAGE_WEBGPU_WRITE);
   write_streams_count_ = 0;
   if (used_by_gl)
     write_streams_count_++;  // gl can write
@@ -499,33 +448,51 @@ OzoneImageBacking::~OzoneImageBacking() {
   }
 }
 
-std::unique_ptr<VaapiImageRepresentation> OzoneImageBacking::ProduceVASurface(
-    SharedImageManager* manager,
-    MemoryTypeTracker* tracker,
-    VaapiDependenciesFactory* dep_factory) {
-  DCHECK(pixmap_);
-  if (!vaapi_deps_)
-    vaapi_deps_ = dep_factory->CreateVaapiDependencies(pixmap_);
-
-  if (!vaapi_deps_) {
-    LOG(ERROR) << "OzoneImageBacking::ProduceVASurface failed to create "
-                  "VaapiDependencies";
-    return nullptr;
-  }
-  return std::make_unique<OzoneImageBacking::VaapiOzoneImageRepresentation>(
-      manager, this, tracker, vaapi_deps_.get());
-}
-
 #if BUILDFLAG(ENABLE_VULKAN)
 std::unique_ptr<VulkanImageRepresentation> OzoneImageBacking::ProduceVulkan(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker,
     gpu::VulkanDeviceQueue* vulkan_device_queue,
-    gpu::VulkanImplementation& vulkan_impl) {
+    gpu::VulkanImplementation& vulkan_impl,
+    bool needs_detiling) {
+  viz::SharedImageFormat image_format = format();
+  gfx::Size image_size = size();
+  gfx::GpuMemoryBufferHandle gmb_handle = GetGpuMemoryBufferHandle();
+  if (needs_detiling && image_format == viz::MultiPlaneFormat::kP010) {
+    // This buffer is actually an MT2T buffer. MT2T is a 10-bit pixel format
+    // that only occupies 1.25 bytes per element. We plumb it as P010 since
+    // that's the closest existing pixel format, but import it into Vulkan as a
+    // "tall" NV12 image. The height adjustment is designed to make the plane
+    // size math work out, since NV12 is an 8-bit pixel format. This is how
+    // downstream detiling shaders expect the VkImage to be constructed.
+
+    CHECK(image_size.height() % 4 == 0);
+    constexpr int kMT2TBppNumerator = 5;
+    constexpr int kMT2TBppDenominator = 4;
+    image_format = viz::MultiPlaneFormat::kNV12;
+    image_format.SetPrefersExternalSampler();
+    image_size =
+        gfx::Size(image_size.width(), image_size.height() * kMT2TBppNumerator /
+                                          kMT2TBppDenominator);
+    base::CheckedNumeric<uint32_t> stride =
+        gmb_handle.native_pixmap_handle.planes[0].stride;
+    stride *= kMT2TBppDenominator;
+    stride /= kMT2TBppNumerator;
+    if (!stride.IsValid()) {
+      return nullptr;
+    }
+    gmb_handle.native_pixmap_handle.planes[0].stride = stride.ValueOrDie();
+    gmb_handle.native_pixmap_handle.planes[1].stride =
+        gmb_handle.native_pixmap_handle.planes[0].stride;
+    gmb_handle.native_pixmap_handle.planes[0].size = image_size.GetArea();
+    gmb_handle.native_pixmap_handle.planes[1].offset = image_size.GetArea();
+    gmb_handle.native_pixmap_handle.planes[1].size = image_size.GetArea() / 2;
+  }
   auto vulkan_image = vulkan_impl.CreateImageFromGpuMemoryHandle(
-      vulkan_device_queue, GetGpuMemoryBufferHandle(), size(),
-      format().PrefersExternalSampler() ? ToVkFormatExternalSampler(format())
-                                        : ToVkFormatSinglePlanar(format()),
+      vulkan_device_queue, std::move(gmb_handle), image_size,
+      image_format.PrefersExternalSampler()
+          ? ToVkFormatExternalSampler(image_format)
+          : ToVkFormatSinglePlanar(image_format),
       color_space());
 
   if (!vulkan_image) {
@@ -537,12 +504,6 @@ std::unique_ptr<VulkanImageRepresentation> OzoneImageBacking::ProduceVulkan(
       vulkan_impl);
 }
 #endif
-
-bool OzoneImageBacking::VaSync() {
-  if (has_pending_va_writes_)
-    has_pending_va_writes_ = !vaapi_deps_->SyncSurface();
-  return !has_pending_va_writes_;
-}
 
 bool OzoneImageBacking::UploadFromMemory(const std::vector<SkPixmap>& pixmaps) {
   if (context_state_->context_lost()) {
@@ -666,7 +627,7 @@ bool OzoneImageBacking::BeginAccess(bool readonly,
                                     std::vector<gfx::GpuFenceHandle>* fences,
                                     bool& need_end_fence) {
   // Track reads and writes if not being used for concurrent read/writes.
-  if (!(usage() & SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE)) {
+  if (!usage().Has(SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE)) {
     if (is_write_in_progress_) {
       DLOG(ERROR) << "Unable to begin read or write access because another "
                      "write access is in progress";
@@ -753,7 +714,7 @@ bool OzoneImageBacking::BeginAccess(bool readonly,
     // TODO(crbug.com/41495896): Implement vk fence optimization in the case of
     // raster delegation.
     const bool skip_fence_in_delegation =
-        (usage() & SHARED_IMAGE_USAGE_RASTER_DELEGATED_COMPOSITING) &&
+        usage().Has(SHARED_IMAGE_USAGE_RASTER_DELEGATED_COMPOSITING) &&
         context_state_->GrContextIsGL();
 
     need_end_fence = (write_streams_count_ > 1) || !skip_fence_in_delegation;
@@ -766,7 +727,7 @@ void OzoneImageBacking::EndAccess(bool readonly,
                                   AccessStream access_stream,
                                   gfx::GpuFenceHandle fence) {
   // Track reads and writes if not being used for concurrent read/writes.
-  if (!(usage() & SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE)) {
+  if (!usage().Has(SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE)) {
     if (readonly) {
       DCHECK_GT(reads_in_progress_, 0u);
       --reads_in_progress_;
@@ -798,7 +759,8 @@ void OzoneImageBacking::OnGLContextWillDestroy(gl::GLContext* context) {
 void OzoneImageBacking::OnGLContextLostOrDestroy(gl::GLContext* context,
                                                  bool mark_context_lost) {
   auto it = per_context_cached_textures_holders_.find(context);
-  DCHECK(it != per_context_cached_textures_holders_.end());
+  CHECK(it != per_context_cached_textures_holders_.end(),
+        base::NotFatalUntil::M130);
 
   // Given the TextureHolder can be used by N contexts (the contexts are
   // compatible with the original one that was used to create the holder), the

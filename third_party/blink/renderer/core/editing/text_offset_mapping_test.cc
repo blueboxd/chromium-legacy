@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
-
 #include "third_party/blink/renderer/core/editing/text_offset_mapping.h"
+
+#include <string>
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/renderer/core/editing/position.h"
@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
-#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -202,7 +201,7 @@ TEST_F(TextOffsetMappingTest, RangeOfBlockWithRubyAsBlock) {
   // We should not make <ruby> as |InlineContent| container because "XYZ" comes
   // before "abc" but in DOM tree, order is "abc" then "XYZ".
   // Layout tree:
-  //  LayoutNGBlockFlow {BODY} at (8,8) size 784x27
+  //  LayoutBlockFlow {BODY} at (8,8) size 784x27
   //   LayoutRubyAsBlock {RUBY} at (0,0) size 784x27
   //     LayoutRubyColumn (anonymous) at (0,7) size 22x20
   //       LayoutRubyText {RT} at (0,-10) size 22x12
@@ -459,7 +458,7 @@ TEST_F(TextOffsetMappingTest, RangeWithSelect1) {
       "<div aria-hidden=\"true\"></div>"
       "<slot id=\"select-options\"></slot>"
       "<slot id=\"select-button\">"
-      "<button pseudo=\"select-fallback-button\" type=\"popover\">"
+      "<button pseudo=\"select-fallback-button\">"
       "<span pseudo=\"select-fallback-button-text\"></span>"
       "<div pseudo=\"select-fallback-button-icon\">"
       "<svg fill=\"none\" viewBox=\"0 0 20 16\"><path d=\"M4 6 L10 12 L 16 6\"></path></svg>"
@@ -471,13 +470,16 @@ TEST_F(TextOffsetMappingTest, RangeWithSelect1) {
       "<slot id=\"select-datalist-options\"></slot>"
       "</datalist>"
       "</slot>"
+      "<div popover=\"manual\" pseudo=\"-internal-select-autofill-preview\">"
+      "<div pseudo=\"-internal-select-autofill-preview-text\"></div>"
+      "</div>"
       "</select>foo|";
   const auto& expected_inner =
       "<select>"
       "<div aria-hidden=\"true\">^|</div>"
       "<slot id=\"select-options\"></slot>"
       "<slot id=\"select-button\">"
-      "<button pseudo=\"select-fallback-button\" type=\"popover\">"
+      "<button pseudo=\"select-fallback-button\">"
       "<span pseudo=\"select-fallback-button-text\"></span>"
       "<div pseudo=\"select-fallback-button-icon\">"
       "<svg fill=\"none\" viewBox=\"0 0 20 16\"><path d=\"M4 6 L10 12 L 16 6\"></path></svg>"
@@ -489,6 +491,9 @@ TEST_F(TextOffsetMappingTest, RangeWithSelect1) {
       "<slot id=\"select-datalist-options\"></slot>"
       "</datalist>"
       "</slot>"
+      "<div popover=\"manual\" pseudo=\"-internal-select-autofill-preview\">"
+      "<div pseudo=\"-internal-select-autofill-preview-text\"></div>"
+      "</div>"
       "</select>foo";
   EXPECT_EQ(expected_outer, GetRange(PositionInFlatTree::BeforeNode(*select)));
   EXPECT_EQ(expected_inner, GetRange(PositionInFlatTree(select, 0)));
@@ -503,7 +508,7 @@ TEST_F(TextOffsetMappingTest, RangeWithSelect2) {
       "<div aria-hidden=\"true\"></div>"
       "<slot id=\"select-options\"></slot>"
       "<slot id=\"select-button\">"
-      "<button pseudo=\"select-fallback-button\" type=\"popover\">"
+      "<button pseudo=\"select-fallback-button\">"
       "<span pseudo=\"select-fallback-button-text\"></span>"
       "<div pseudo=\"select-fallback-button-icon\">"
       "<svg fill=\"none\" viewBox=\"0 0 20 16\"><path d=\"M4 6 L10 12 L 16 6\"></path></svg>"
@@ -515,13 +520,16 @@ TEST_F(TextOffsetMappingTest, RangeWithSelect2) {
       "<slot id=\"select-datalist-options\"></slot>"
       "</datalist>"
       "</slot>"
+      "<div popover=\"manual\" pseudo=\"-internal-select-autofill-preview\">"
+      "<div pseudo=\"-internal-select-autofill-preview-text\"></div>"
+      "</div>"
       "</select>foo|";
   const auto& expected_inner =
       "<select>"
       "<div aria-hidden=\"true\">^|</div>"
       "<slot id=\"select-options\"></slot>"
       "<slot id=\"select-button\">"
-      "<button pseudo=\"select-fallback-button\" type=\"popover\">"
+      "<button pseudo=\"select-fallback-button\">"
       "<span pseudo=\"select-fallback-button-text\"></span>"
       "<div pseudo=\"select-fallback-button-icon\">"
       "<svg fill=\"none\" viewBox=\"0 0 20 16\"><path d=\"M4 6 L10 12 L 16 6\"></path></svg>"
@@ -533,6 +541,9 @@ TEST_F(TextOffsetMappingTest, RangeWithSelect2) {
       "<slot id=\"select-datalist-options\"></slot>"
       "</datalist>"
       "</slot>"
+      "<div popover=\"manual\" pseudo=\"-internal-select-autofill-preview\">"
+      "<div pseudo=\"-internal-select-autofill-preview-text\"></div>"
+      "</div>"
       "</select>foo";
   EXPECT_EQ(expected_outer, GetRange(PositionInFlatTree::BeforeNode(*select)));
   EXPECT_EQ(expected_inner, GetRange(PositionInFlatTree(select, 0)));

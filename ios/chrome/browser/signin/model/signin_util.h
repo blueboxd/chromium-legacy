@@ -7,12 +7,16 @@
 
 #import <UIKit/UIKit.h>
 
+#include <map>
 #include <optional>
 #include <set>
 #include <string>
 
+#import "base/functional/callback.h"
 #import "components/signin/public/identity_manager/account_info.h"
-#include "ios/chrome/browser/signin/model/constants.h"
+#import "ios/chrome/browser/signin/model/capabilities_types.h"
+#import "ios/chrome/browser/signin/model/constants.h"
+#import "ios/chrome/browser/signin/model/system_identity.h"
 
 class PrefService;
 
@@ -52,5 +56,13 @@ std::optional<AccountInfo> GetPreRestoreIdentity(PrefService* local_state);
 
 // Returns whether history sync was enabled before the restore.
 bool GetPreRestoreHistorySyncEnabled(PrefService* local_state);
+
+// Returns the list of account capability service names supported in Chrome.
+// This is exposed to allow for prefetching capabilities on app startup.
+const std::vector<std::string>& GetAccountCapabilityNamesForPrefetch();
+
+// Pre-fetches system capabilities for the given identities so that they
+// can be cached for later usage.
+void RunSystemCapabilitiesPrefetch(NSArray<id<SystemIdentity>>* identities);
 
 #endif  // IOS_CHROME_BROWSER_SIGNIN_MODEL_SIGNIN_UTIL_H_

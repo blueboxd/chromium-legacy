@@ -150,7 +150,26 @@ BASE_FEATURE(kOzoneBubblesUsePlatformWidgets,
              base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 );
+
+// Controls whether support for Wayland's per-surface scaling is enabled.
+BASE_FEATURE(kWaylandPerSurfaceScale,
+             "WaylandPerSurfaceScale",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Controls whether Wayland text-input-v3 protocol support is enabled.
+BASE_FEATURE(kWaylandTextInputV3,
+             "WaylandTextInputV3",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_OZONE)
+
+#if BUILDFLAG(IS_LINUX)
+// If this feature is enabled, users not specify --ozone-platform-hint switch
+// will get --ozone-platform-hint=auto treatment. https://crbug.com/40250220.
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+BASE_FEATURE(kOverrideDefaultOzonePlatformHintToAuto,
+             "OverrideDefaultOzonePlatformHintToAuto",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif  // BUILDFLAG(IS_LINUX)
 
 // Update of the virtual keyboard settings UI as described in
 // https://crbug.com/876901.
@@ -254,6 +273,14 @@ BASE_FEATURE(kExperimentalFlingAnimation,
 #endif
 );
 
+#if BUILDFLAG(IS_ANDROID)
+BASE_FEATURE(kClipboardFiles,
+             "ClipboardFiles",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kDragDropFiles, "DragDropFiles", base::FEATURE_ENABLED_BY_DEFAULT);
+#endif  // BUILDFLAG(IS_ANDROID)
+
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_WIN)
 // Cached in Java as well, make sure defaults are updated together.
 BASE_FEATURE(kElasticOverscroll,
@@ -346,12 +373,8 @@ BASE_FEATURE(kEyeDropper,
 #endif
 );
 
-const char kEyeDropperNotSupported[] = "eye-dropper-not-supported";
-
 bool IsEyeDropperEnabled() {
-  return base::FeatureList::IsEnabled(features::kEyeDropper) &&
-         !base::CommandLine::ForCurrentProcess()->HasSwitch(
-             kEyeDropperNotSupported);
+  return base::FeatureList::IsEnabled(features::kEyeDropper);
 }
 
 // Used to enable keyboard accessible tooltips in in-page content
@@ -442,38 +465,22 @@ BASE_FEATURE(kVariableRefreshRateAvailable,
 BASE_FEATURE(kEnableVariableRefreshRate,
              "EnableVariableRefreshRate",
              base::FEATURE_DISABLED_BY_DEFAULT);
-BASE_FEATURE(kVariableRefreshRateDefaultEnabled,
-             "VariableRefreshRateDefaultEnabled",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-// This param indicates whether to ignore the VRR availability flag. It is set
-// to false by Finch for non-forced groups.
-const base::FeatureParam<bool> kVrrIgnoreAvailability{
-    &kEnableVariableRefreshRate, /*name=*/"ignore-availability",
-    /*default_value=*/true};
 bool IsVariableRefreshRateEnabled() {
   if (base::FeatureList::IsEnabled(kEnableVariableRefreshRateAlwaysOn)) {
     return true;
   }
 
-  // Special default case for devices with |kVariableRefreshRateDefaultEnabled|
-  // set. Requires |kVariableRefreshRateAvailable| to also be set. We also check
-  // if the FeatureList exists as it can be null during the ASSERT_DEATH
-  // handling.
-  // TODO(b/310666603): Remove after VRR is enabled-by-default for all hardware.
+  // Special default case for devices with inverted default behavior, indicated
+  // by |kVariableRefreshRateAvailable|. If |kEnableVariableRefreshRate| is not
+  // overridden, then VRR is enabled by default.
   if (!(base::FeatureList::GetInstance() &&
         base::FeatureList::GetInstance()->IsFeatureOverridden(
             kEnableVariableRefreshRate.name)) &&
-      base::FeatureList::IsEnabled(kVariableRefreshRateDefaultEnabled) &&
       base::FeatureList::IsEnabled(kVariableRefreshRateAvailable)) {
     return true;
   }
 
-  if (base::FeatureList::IsEnabled(kEnableVariableRefreshRate)) {
-    return kVrrIgnoreAvailability.Get() ||
-           base::FeatureList::IsEnabled(kVariableRefreshRateAvailable);
-  }
-
-  return false;
+  return base::FeatureList::IsEnabled(kEnableVariableRefreshRate);
 }
 BASE_FEATURE(kEnableVariableRefreshRateAlwaysOn,
              "EnableVariableRefreshRateAlwaysOn",
@@ -489,22 +496,6 @@ BASE_FEATURE(kLacrosColorManagement,
 
 bool IsLacrosColorManagementEnabled() {
   return base::FeatureList::IsEnabled(kLacrosColorManagement);
-}
-
-BASE_FEATURE(kChromeRefresh2023,
-             "ChromeRefresh2023",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kChromeRefreshSecondary2023,
-             "ChromeRefreshSecondary2023",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-bool IsChromeRefresh2023() {
-  return true;
-}
-
-bool IsChromeWebuiRefresh2023() {
-  return true;
 }
 
 BASE_FEATURE(kBubbleMetricsApi,
@@ -534,9 +525,26 @@ BASE_FEATURE(kCr2023MacFontSmoothing,
 BASE_FEATURE(kUseGammaContrastRegistrySettings,
              "UseGammaContrastRegistrySettings",
              base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kIncreaseWindowsTextContrast,
+             "IncreaseWindowsTextContrast",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_WIN)
 
 BASE_FEATURE(kBubbleFrameViewTitleIsHeading,
              "BubbleFrameViewTitleIsHeading",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kEnableGestureBeginEndTypes,
+             "EnableGestureBeginEndTypes",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kUseUtf8EncodingForSvgImage,
+             "UseUtf8EncodingForSvgImage",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// If enabled, fullscreen window state is updated asynchronously.
+BASE_FEATURE(kAsyncFullscreenWindowState,
+             "AsyncFullscreenWindowState",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 }  // namespace features

@@ -29,6 +29,7 @@ export enum I18nString {
   BARCODE_WIFI_CHIPTEXT = 'barcode_wifi_chiptext',
   CANCEL_REVIEW_BUTTON = 'cancel_review_button',
   CONFIRM_REVIEW_BUTTON = 'confirm_review_button',
+  COPIED_DETECTED_CONTENT = 'copied_detected_content',
   DELETE_PAGE_BUTTON = 'delete_page_button',
   DELETE_PAGE_MESSAGE = 'delete_page_message',
   DIALOG_OK_BUTTON = 'dialog_ok_button',
@@ -52,11 +53,6 @@ export enum I18nString {
       'expert_enable_full_sized_video_snapshot',
   EXPERT_ENABLE_PTZ_FOR_BUILTIN = 'expert_enable_ptz_for_builtin',
   EXPERT_MODE_BUTTON = 'expert_mode_button',
-  EXPERT_MULTISTREAM_RECORDING = 'expert_multistream_recording',
-  EXPERT_MULTISTREAM_RECORDING_CHROME = 'expert_multistream_recording_chrome',
-  EXPERT_MULTISTREAM_RECORDING_DISABLED =
-      'expert_multistream_recording_disabled',
-  EXPERT_MULTISTREAM_RECORDING_HAL = 'expert_multistream_recording_hal',
   EXPERT_PREVIEW_METADATA = 'expert_preview_metadata',
   EXPERT_PRINT_PERFORMANCE_LOGS = 'expert_print_performance_logs',
   EXPERT_SAVE_METADATA = 'expert_save_metadata',
@@ -73,6 +69,8 @@ export enum I18nString {
   LABEL_BARCODE_URL = 'label_barcode_url',
   LABEL_BARCODE_WIFI = 'label_barcode_wifi',
   LABEL_BARCODE_WIFI_CHIP = 'label_barcode_wifi_chip',
+  LABEL_COLLAPSE_DETECTED_CONTENT_BUTTON =
+      'label_collapse_detected_content_button',
   LABEL_CROP_DONE = 'label_crop_done',
   LABEL_CURRENT_AND_MAXIMAL_RECORD_TIME =
       'label_current_and_maximal_record_time',
@@ -80,6 +78,7 @@ export enum I18nString {
   LABEL_DOCUMENT_BOTTOM_RIGHT_CORNER = 'label_document_bottom_right_corner',
   LABEL_DOCUMENT_TOP_LEFT_CORNER = 'label_document_top_left_corner',
   LABEL_DOCUMENT_TOP_RIGHT_CORNER = 'label_document_top_right_corner',
+  LABEL_EXPAND_DETECTED_CONTENT_BUTTON = 'label_expand_detected_content_button',
   LABEL_EXTERNAL_CAMERA = 'label_external_camera',
   LABEL_FRONT_CAMERA = 'label_front_camera',
   LABEL_FULL_RESOLUTION = 'label_full_resolution',
@@ -137,6 +136,7 @@ export enum I18nString {
   // I18nString.NAME: Bypass the presubmit check for unused strings. Used here:
   // https://source.chromium.org/chromium/chromium/src/+/main:chrome/browser/ash/system_web_apps/apps/camera_app/camera_system_web_app_info.cc
   // NAME = 'name',
+  NEW_PREVIEW_OCR_TOAST = 'new_preview_ocr_toast',
   NEXT_PAGE_COUNT = 'next_page_count',
   NO_DOCUMENT_GUIDE_MSG = 'no_document_guide_msg',
   OPEN_GRID_PANEL_BUTTON = 'open_grid_panel_button',
@@ -148,6 +148,8 @@ export enum I18nString {
   PHOTO_ASPECT_RATIO_BUTTON = 'photo_aspect_ratio_button',
   PHOTO_RESOLUTION_BUTTON = 'photo_resolution_button',
   PHOTO_SETTINGS = 'photo_settings',
+  PREVIEW_OCR_OPTION = 'preview_ocr_option',
+  PREVIEW_OCR_OPTION_DESCRIPTION = 'preview_ocr_option_description',
   PTZ_RESET_ALL_BUTTON = 'ptz_reset_all_button',
   RECORD_GIF_VIDEO_OPTION = 'record_gif_video_option',
   RECORD_NORMAL_VIDEO_OPTION = 'record_normal_video_option',
@@ -185,6 +187,8 @@ export enum I18nString {
   TAKE_PHOTO_BUTTON = 'take_photo_button',
   TAKE_PHOTO_CANCEL_BUTTON = 'take_photo_cancel_button',
   TAKE_VIDEO_SNAPSHOT_BUTTON = 'take_video_snapshot_button',
+  TEXT_DETECTED_DESCRIPTION = 'text_detected_description',
+  TEXT_DETECTED_DESCRIPTION_EXPANDABLE = 'text_detected_description_expandable',
   TILT_DOWN_BUTTON = 'tilt_down_button',
   TILT_UP_BUTTON = 'tilt_up_button',
   TOGGLE_MIC_BUTTON = 'toggle_mic_button',

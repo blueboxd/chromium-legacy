@@ -10,6 +10,7 @@
 #ifndef BASE_METRICS_FIELD_TRIAL_PARAMS_H_
 #define BASE_METRICS_FIELD_TRIAL_PARAMS_H_
 
+#include <array>
 #include <map>
 #include <string>
 
@@ -164,8 +165,7 @@ struct FeatureParam<std::string> {
   // GetFieldTrialParamValueByFeature() for more details.
   BASE_EXPORT std::string Get() const;
 
-  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
-  // #global-scope, #constexpr-ctor-field-initializer
+  // RAW_PTR_EXCLUSION: #global-scope,
   RAW_PTR_EXCLUSION const Feature* const feature;
   const char* const name;
   const char* const default_value;
@@ -189,8 +189,7 @@ struct FeatureParam<double> {
   // GetFieldTrialParamValueByFeature() for more details.
   BASE_EXPORT double Get() const;
 
-  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
-  // #global-scope, #constexpr-ctor-field-initializer
+  // RAW_PTR_EXCLUSION: #global-scope
   RAW_PTR_EXCLUSION const Feature* const feature;
   const char* const name;
   const double default_value;
@@ -214,8 +213,7 @@ struct FeatureParam<int> {
   // GetFieldTrialParamValueByFeature() for more details.
   BASE_EXPORT int Get() const;
 
-  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
-  // #global-scope, #constexpr-ctor-field-initializer
+  // RAW_PTR_EXCLUSION: #global-scope
   RAW_PTR_EXCLUSION const Feature* const feature;
   const char* const name;
   const int default_value;
@@ -239,8 +237,7 @@ struct FeatureParam<bool> {
   // GetFieldTrialParamValueByFeature() for more details.
   BASE_EXPORT bool Get() const;
 
-  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
-  // #global-scope, #constexpr-ctor-field-initializer
+  // RAW_PTR_EXCLUSION: #global-scope
   RAW_PTR_EXCLUSION const Feature* const feature;
   const char* const name;
   const bool default_value;
@@ -265,8 +262,7 @@ struct FeatureParam<base::TimeDelta> {
   // GetFieldTrialParamValueByFeature() for more details.
   BASE_EXPORT base::TimeDelta Get() const;
 
-  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
-  // #global-scope, #constexpr-ctor-field-initializer
+  // RAW_PTR_EXCLUSION: #global-scope
   RAW_PTR_EXCLUSION const Feature* const feature;
   const char* const name;
   const base::TimeDelta default_value;
@@ -298,6 +294,19 @@ struct FeatureParam<Enum, true> {
     const Enum value;
     const char* const name;
   };
+
+  template <size_t option_count>
+  constexpr FeatureParam(const Feature* feature,
+                         const char* name,
+                         const Enum default_value,
+                         const std::array<Option, option_count>& options)
+      : feature(feature),
+        name(name),
+        default_value(default_value),
+        options(options.data()),
+        option_count(option_count) {
+    static_assert(option_count >= 1, "FeatureParam<enum> has no options");
+  }
 
   template <size_t option_count>
   constexpr FeatureParam(const Feature* feature,
@@ -336,13 +345,11 @@ struct FeatureParam<Enum, true> {
     return "";
   }
 
-  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
-  // #global-scope, #constexpr-ctor-field-initializer
+  // RAW_PTR_EXCLUSION: #global-scope
   RAW_PTR_EXCLUSION const base::Feature* const feature;
   const char* const name;
   const Enum default_value;
-  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
-  // #global-scope, #constexpr-ctor-field-initializer
+  // RAW_PTR_EXCLUSION: #global-scope
   RAW_PTR_EXCLUSION const Option* const options;
   const size_t option_count;
 };

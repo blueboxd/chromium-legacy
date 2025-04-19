@@ -14,6 +14,7 @@
 #include "components/autofill/core/browser/payments_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
+#include "components/autofill/core/common/credit_card_network_identifiers.h"
 #include "components/optimization_guide/core/optimization_guide_decider.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 
@@ -36,11 +37,14 @@ GetVcnMerchantOptOutOptimizationTypeForCard(const CreditCard& card) {
     return optimization_guide::proto::TYPE_UNSPECIFIED;
   }
 
-  // Now that we know this card is enrolled into VCN and is a network-level
-  // enrollment, if it is a network that we have an optimization type for then
+  // If there is an optimization type present for the card's network, then
   // return that optimization type.
   if (card.network() == kVisaCard) {
     return optimization_guide::proto::VCN_MERCHANT_OPT_OUT_VISA;
+  } else if (card.network() == kMasterCard) {
+    return optimization_guide::proto::VCN_MERCHANT_OPT_OUT_MASTERCARD;
+  } else if (card.network() == kDiscoverCard) {
+    return optimization_guide::proto::VCN_MERCHANT_OPT_OUT_DISCOVER;
   }
 
   // No conditions to return an optimization type were found, so return that we
@@ -51,18 +55,14 @@ GetVcnMerchantOptOutOptimizationTypeForCard(const CreditCard& card) {
 std::vector<optimization_guide::proto::OptimizationType>
 GetCardBenefitsOptimizationTypesForCard(const CreditCard& card) {
   std::vector<optimization_guide::proto::OptimizationType> optimization_types;
-  if (card.issuer_id() == kAmexCardIssuerId &&
-      base::FeatureList::IsEnabled(
-          features::kAutofillEnableCardBenefitsForAmericanExpress)) {
+  if (card.issuer_id() == kAmexCardIssuerId) {
     optimization_types.push_back(
         optimization_guide::proto::
             AMERICAN_EXPRESS_CREDIT_CARD_FLIGHT_BENEFITS);
     optimization_types.push_back(
         optimization_guide::proto::
             AMERICAN_EXPRESS_CREDIT_CARD_SUBSCRIPTION_BENEFITS);
-  } else if (card.issuer_id() == kCapitalOneCardIssuerId &&
-             base::FeatureList::IsEnabled(
-                 features::kAutofillEnableCardBenefitsForCapitalOne)) {
+  } else if (card.issuer_id() == kCapitalOneCardIssuerId) {
     optimization_types.push_back(
         optimization_guide::proto::CAPITAL_ONE_CREDIT_CARD_DINING_BENEFITS);
     optimization_types.push_back(
@@ -95,13 +95,33 @@ void AddCreditCardOptimizationTypes(
     // optimizations from supported issuers. Other benefit types are read
     // directly from the PersonalDataManager and don't require filter
     // optimizations.
-    auto benefits_optimization_types =
-        GetCardBenefitsOptimizationTypesForCard(*card);
-    if (!benefits_optimization_types.empty()) {
-      optimization_types.insert(benefits_optimization_types.begin(),
-                                benefits_optimization_types.end());
+    if (base::FeatureList::IsEnabled(
+            features::kAutofillEnableCardBenefitsSync)) {
+      auto benefits_optimization_types =
+          GetCardBenefitsOptimizationTypesForCard(*card);
+      if (!benefits_optimization_types.empty()) {
+        optimization_types.insert(benefits_optimization_types.begin(),
+                                  benefits_optimization_types.end());
+      }
     }
   }
+}
+
+void AddAblationOptimizationTypes(
+    base::flat_set<optimization_guide::proto::OptimizationType>&
+        optimization_types) {
+  optimization_types.insert(
+      optimization_guide::proto::AUTOFILL_ABLATION_SITES_LIST1);
+  optimization_types.insert(
+      optimization_guide::proto::AUTOFILL_ABLATION_SITES_LIST2);
+  optimization_types.insert(
+      optimization_guide::proto::AUTOFILL_ABLATION_SITES_LIST3);
+  optimization_types.insert(
+      optimization_guide::proto::AUTOFILL_ABLATION_SITES_LIST4);
+  optimization_types.insert(
+      optimization_guide::proto::AUTOFILL_ABLATION_SITES_LIST5);
+  optimization_types.insert(
+      optimization_guide::proto::AUTOFILL_ABLATION_SITES_LIST6);
 }
 
 // Maps the credit card category optimizations type to the
@@ -164,6 +184,24 @@ void AutofillOptimizationGuide::OnDidParseForm(
     if (has_credit_card_field) {
       AddCreditCardOptimizationTypes(personal_data_manager, optimization_types);
     }
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_CHROMEOS)
+    if (has_credit_card_field &&
+        !personal_data_manager->payments_data_manager()
+             .GetServerCreditCards()
+             .empty() &&
+        base::FeatureList::IsEnabled(
+            features::kAutofillEnableAmountExtractionDesktop)) {
+      optimization_types.insert(
+          optimization_guide::proto::AMOUNT_EXTRACTION_ALLOWLIST);
+    }
+#endif
+  }
+
+  if (base::FeatureList::IsEnabled(
+          ::autofill::features::kAutofillEnableAblationStudy)) {
+    AddAblationOptimizationTypes(optimization_types);
   }
 
   // If we do not have any optimization types to register, do not do anything.
@@ -217,7 +255,7 @@ AutofillOptimizationGuide::AttemptToGetEligibleCreditCardBenefitCategory(
 
 bool AutofillOptimizationGuide::ShouldBlockSingleFieldSuggestions(
     const GURL& url,
-    AutofillField* field) const {
+    const AutofillField* field) const {
   // If the field's storable type is `IBAN_VALUE`, check whether IBAN
   // suggestions should be blocked based on `url`.
   if (field->Type().GetStorableType() == IBAN_VALUE) {
@@ -264,6 +302,22 @@ bool AutofillOptimizationGuide::ShouldBlockFormFieldSuggestion(
   // No conditions to block displaying this virtual card suggestion were met,
   // so return that we should not block displaying this suggestion.
   return false;
+}
+
+bool AutofillOptimizationGuide::IsEligibleForAblation(
+    const GURL& url,
+    optimization_guide::proto::OptimizationType type) const {
+  CHECK(type == optimization_guide::proto::AUTOFILL_ABLATION_SITES_LIST1 ||
+        type == optimization_guide::proto::AUTOFILL_ABLATION_SITES_LIST2 ||
+        type == optimization_guide::proto::AUTOFILL_ABLATION_SITES_LIST3 ||
+        type == optimization_guide::proto::AUTOFILL_ABLATION_SITES_LIST4 ||
+        type == optimization_guide::proto::AUTOFILL_ABLATION_SITES_LIST5 ||
+        type == optimization_guide::proto::AUTOFILL_ABLATION_SITES_LIST6)
+      << type;
+  optimization_guide::OptimizationGuideDecision decision =
+      decider_->CanApplyOptimization(url, type,
+                                     /*optimization_metadata=*/nullptr);
+  return decision == optimization_guide::OptimizationGuideDecision::kTrue;
 }
 
 bool AutofillOptimizationGuide::ShouldBlockBenefitSuggestionLabelsForCardAndUrl(

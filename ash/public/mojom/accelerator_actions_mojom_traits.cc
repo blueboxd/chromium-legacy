@@ -208,6 +208,14 @@ EnumTraits<mojom_accelerator_action, ash::AcceleratorAction>::ToMojom(
       return mojom_accelerator_action::kTakeScreenshot;
     case ash::AcceleratorAction::kTakeWindowScreenshot:
       return mojom_accelerator_action::kTakeWindowScreenshot;
+    case ash::AcceleratorAction::kTilingWindowResizeDown:
+      return mojom_accelerator_action::kTilingWindowResizeDown;
+    case ash::AcceleratorAction::kTilingWindowResizeLeft:
+      return mojom_accelerator_action::kTilingWindowResizeLeft;
+    case ash::AcceleratorAction::kTilingWindowResizeRight:
+      return mojom_accelerator_action::kTilingWindowResizeRight;
+    case ash::AcceleratorAction::kTilingWindowResizeUp:
+      return mojom_accelerator_action::kTilingWindowResizeUp;
     case ash::AcceleratorAction::kToggleAppList:
       return mojom_accelerator_action::kToggleAppList;
     case ash::AcceleratorAction::kToggleCalendar:
@@ -234,6 +242,8 @@ EnumTraits<mojom_accelerator_action, ash::AcceleratorAction>::ToMojom(
       return mojom_accelerator_action::kToggleMessageCenterBubble;
     case ash::AcceleratorAction::kToggleMirrorMode:
       return mojom_accelerator_action::kToggleMirrorMode;
+    case ash::AcceleratorAction::kToggleMouseKeys:
+      return mojom_accelerator_action::kToggleMouseKeys;
     case ash::AcceleratorAction::kToggleMultitaskMenu:
       return mojom_accelerator_action::kToggleMultitaskMenu;
     case ash::AcceleratorAction::kToggleOverview:
@@ -242,8 +252,8 @@ EnumTraits<mojom_accelerator_action, ash::AcceleratorAction>::ToMojom(
       return mojom_accelerator_action::kToggleProjectorMarker;
     case ash::AcceleratorAction::kToggleResizeLockMenu:
       return mojom_accelerator_action::kToggleResizeLockMenu;
-    case ash::AcceleratorAction::kToggleSnapGroupWindowsGroupAndUngroup:
-      return mojom_accelerator_action::kToggleSnapGroupWindowsGroupAndUngroup;
+    case ash::AcceleratorAction::kCreateSnapGroup:
+      return mojom_accelerator_action::kCreateSnapGroup;
     case ash::AcceleratorAction::kToggleSnapGroupWindowsMinimizeAndRestore:
       return mojom_accelerator_action::
           kToggleSnapGroupWindowsMinimizeAndRestore;
@@ -299,6 +309,8 @@ EnumTraits<mojom_accelerator_action, ash::AcceleratorAction>::ToMojom(
       return mojom_accelerator_action::kDebugShowToast;
     case ash::AcceleratorAction::kDebugShowSystemNudge:
       return mojom_accelerator_action::kDebugShowSystemNudge;
+    case ash::AcceleratorAction::kDebugStartSunfishSession:
+      return mojom_accelerator_action::kDebugStartSunfishSession;
     case ash::AcceleratorAction::kDebugSystemUiStyleViewer:
       return mojom_accelerator_action::kDebugSystemUiStyleViewer;
     case ash::AcceleratorAction::kDebugToggleDarkMode:
@@ -635,6 +647,18 @@ bool EnumTraits<mojom_accelerator_action, ash::AcceleratorAction>::FromMojom(
     case mojom_accelerator_action::kTakeWindowScreenshot:
       *out = ash::AcceleratorAction::kTakeWindowScreenshot;
       return true;
+    case mojom_accelerator_action::kTilingWindowResizeDown:
+      *out = ash::AcceleratorAction::kTilingWindowResizeDown;
+      return true;
+    case mojom_accelerator_action::kTilingWindowResizeLeft:
+      *out = ash::AcceleratorAction::kTilingWindowResizeLeft;
+      return true;
+    case mojom_accelerator_action::kTilingWindowResizeRight:
+      *out = ash::AcceleratorAction::kTilingWindowResizeRight;
+      return true;
+    case mojom_accelerator_action::kTilingWindowResizeUp:
+      *out = ash::AcceleratorAction::kTilingWindowResizeUp;
+      return true;
     case mojom_accelerator_action::kToggleAppList:
       *out = ash::AcceleratorAction::kToggleAppList;
       return true;
@@ -674,6 +698,9 @@ bool EnumTraits<mojom_accelerator_action, ash::AcceleratorAction>::FromMojom(
     case mojom_accelerator_action::kToggleMirrorMode:
       *out = ash::AcceleratorAction::kToggleMirrorMode;
       return true;
+    case mojom_accelerator_action::kToggleMouseKeys:
+      *out = ash::AcceleratorAction::kToggleMouseKeys;
+      return true;
     case mojom_accelerator_action::kToggleMultitaskMenu:
       *out = ash::AcceleratorAction::kToggleMultitaskMenu;
       return true;
@@ -686,8 +713,8 @@ bool EnumTraits<mojom_accelerator_action, ash::AcceleratorAction>::FromMojom(
     case mojom_accelerator_action::kToggleResizeLockMenu:
       *out = ash::AcceleratorAction::kToggleResizeLockMenu;
       return true;
-    case mojom_accelerator_action::kToggleSnapGroupWindowsGroupAndUngroup:
-      *out = ash::AcceleratorAction::kToggleSnapGroupWindowsGroupAndUngroup;
+    case mojom_accelerator_action::kCreateSnapGroup:
+      *out = ash::AcceleratorAction::kCreateSnapGroup;
       return true;
     case mojom_accelerator_action::kToggleSnapGroupWindowsMinimizeAndRestore:
       *out = ash::AcceleratorAction::kToggleSnapGroupWindowsMinimizeAndRestore;
@@ -769,6 +796,9 @@ bool EnumTraits<mojom_accelerator_action, ash::AcceleratorAction>::FromMojom(
       return true;
     case mojom_accelerator_action::kDebugShowSystemNudge:
       *out = ash::AcceleratorAction::kDebugShowSystemNudge;
+      return true;
+    case mojom_accelerator_action::kDebugStartSunfishSession:
+      *out = ash::AcceleratorAction::kDebugStartSunfishSession;
       return true;
     case mojom_accelerator_action::kDebugSystemUiStyleViewer:
       *out = ash::AcceleratorAction::kDebugSystemUiStyleViewer;

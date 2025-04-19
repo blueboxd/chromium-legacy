@@ -1,5 +1,6 @@
 include_rules = [
   "-chrome",
+  "+chrome/android/features/tab_ui/java/src/org/chromium/chrome/browser/tasks/tab_management/TabGroupCreationDialogManager.java",
   "+chrome/android/features/tab_ui/java/src/org/chromium/chrome/browser/tasks/tab_management/TabUiFeatureUtilities.java",
   "+chrome/android/features/tab_ui/java/src/org/chromium/chrome/browser/tasks/tab_management/TabUiThemeProvider.java",
   "+chrome/android/features/tab_ui/java/src/org/chromium/chrome/browser/tasks/tab_management/PriceTrackingUtilities.java",
@@ -45,6 +46,7 @@ include_rules = [
   "+chrome/browser/incognito/android/java/src/org/chromium/chrome/browser/incognito/IncognitoUtils.java",
   "+chrome/browser/password_check/android/java/src/org/chromium/chrome/browser/password_check/PasswordCheckUkmRecorder.java",
   "+chrome/browser/profiles/android/java/src/org/chromium/chrome/browser/profiles/Profile.java",
+  "+chrome/browser/tab_group/java/src/org/chromium/chrome/browser/tasks/tab_groups/TabGroupModelFilter.java",
   "+chrome/browser/ui/messages/android/java/src/org/chromium/chrome/browser/ui/messages/snackbar/SnackbarManager.java",
   "+chrome/browser/ui/android/toolbar/java/src/org/chromium/chrome/browser/toolbar/TabObscuringHandler.java",
   "+chrome/browser/feature_engagement/java/src/org/chromium/chrome/browser/feature_engagement/TrackerFactory.java",
@@ -100,6 +102,7 @@ specific_include_rules = {
     "-components",
     "+components/android_autofill/browser/java/src/org/chromium/components/autofill",
     "+components/dom_distiller/core/android/java/src/org/chromium/components/dom_distiller/core/DomDistillerUrlUtils.java",
+    "+components/embedder_support/android/java/src/org/chromium/components/embedder_support/contextmenu",
     "+components/embedder_support/android/java/src/org/chromium/components/embedder_support/delegate",
     "+components/embedder_support/android/java/src/org/chromium/components/embedder_support/util",
     "+components/embedder_support/android/java/src/org/chromium/components/embedder_support/view",
@@ -125,6 +128,7 @@ specific_include_rules = {
   'TabArchiver\.java': [
     "+chrome/android/java/src/org/chromium/chrome/browser/app/tab_activity_glue/ReparentingTask.java",
     "+chrome/browser/tabmodel/android/java/src/org/chromium/chrome/browser/tabmodel/AsyncTabParamsManager.java",
+    "+chrome/browser/tabmodel/android/java/src/org/chromium/chrome/browser/tabmodel/TabClosureParams.java",
     "+chrome/browser/tabmodel/android/java/src/org/chromium/chrome/browser/tabmodel/TabCreator.java",
     "+chrome/browser/tabmodel/android/java/src/org/chromium/chrome/browser/tabmodel/TabModel.java",
     "+chrome/browser/tabmodel/android/java/src/org/chromium/chrome/browser/tabmodel/TabReparentingParams.java",
@@ -133,5 +137,9 @@ specific_include_rules = {
     "+chrome/browser/tabmodel/android/java/src/org/chromium/chrome/browser/tabmodel/TabModelSelector.java",
     "+chrome/browser/tabmodel/android/java/src/org/chromium/chrome/browser/tabmodel/TabModelUtils.java",
     "+chrome/browser/tabmodel/android/java/src/org/chromium/chrome/browser/tabmodel/TabWindowManager.java"
+  ],
+  'TabHelpers\.java': [
+    "+chrome/android/java/src/org/chromium/chrome/browser/display_cutout/DisplayCutoutTabHelper.java",
+    "+chrome/browser/ui/android/edge_to_edge/internal/java/src/org/chromium/chrome/browser/ui/edge_to_edge/EdgeToEdgeControllerFactory.java"
   ]
 }

@@ -8,7 +8,6 @@
 #include "ash/api/tasks/fake_tasks_client.h"
 #include "ash/api/tasks/tasks_types.h"
 #include "ash/constants/ash_features.h"
-#include "ash/constants/ash_switches.h"
 #include "ash/glanceables/classroom/fake_glanceables_classroom_client.h"
 #include "ash/glanceables/classroom/glanceables_classroom_item_view.h"
 #include "ash/glanceables/classroom/glanceables_classroom_student_view.h"
@@ -26,7 +25,6 @@
 #include "ash/system/unified/date_tray.h"
 #include "ash/system/unified/glanceable_tray_bubble.h"
 #include "ash/test/ash_test_util.h"
-#include "base/command_line.h"
 #include "base/test/gtest_tags.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/types/cxx23_to_underlying.h"
@@ -159,7 +157,7 @@ class GlanceablesBrowserTest : public InProcessBrowserTest {
 
   Combobox* GetTasksComboBoxView() const {
     return views::AsViewClass<Combobox>(GetTasksView()->GetViewByID(
-        base::to_underlying(GlanceablesViewId::kTasksBubbleComboBox)));
+        base::to_underlying(GlanceablesViewId::kTimeManagementBubbleComboBox)));
   }
 
   views::ScrollView* GetTasksScrollView() const {
@@ -168,13 +166,15 @@ class GlanceablesBrowserTest : public InProcessBrowserTest {
   }
 
   views::View* GetTasksItemContainerView() const {
-    return views::AsViewClass<views::View>(GetTasksView()->GetViewByID(
-        base::to_underlying(GlanceablesViewId::kTasksBubbleListContainer)));
+    return views::AsViewClass<views::View>(
+        GetTasksView()->GetViewByID(base::to_underlying(
+            GlanceablesViewId::kTimeManagementBubbleListContainer)));
   }
 
   CounterExpandButton* GetTasksExpandButtonView() const {
-    return views::AsViewClass<CounterExpandButton>(GetTasksView()->GetViewByID(
-        base::to_underlying(GlanceablesViewId::kTasksBubbleExpandButton)));
+    return views::AsViewClass<CounterExpandButton>(
+        GetTasksView()->GetViewByID(base::to_underlying(
+            GlanceablesViewId::kTimeManagementBubbleExpandButton)));
   }
 
   views::LabelButton* GetAddNewTaskButton() const {
@@ -196,24 +196,29 @@ class GlanceablesBrowserTest : public InProcessBrowserTest {
     return current_items;
   }
 
+  void SetStudentAssignmentsCount(size_t count) {
+    fake_glanceables_classroom_client_->SetAssignmentsCount(count);
+  }
+
   views::View* GetStudentView() const {
     return GetGlanceableTrayBubble()->GetClassroomStudentView();
   }
 
   views::View* GetStudentComboBoxView() const {
     return views::AsViewClass<views::View>(GetStudentView()->GetViewByID(
-        base::to_underlying(GlanceablesViewId::kClassroomBubbleComboBox)));
+        base::to_underlying(GlanceablesViewId::kTimeManagementBubbleComboBox)));
   }
 
   CounterExpandButton* GetStudentExpandButtonView() const {
     return views::AsViewClass<CounterExpandButton>(
         GetStudentView()->GetViewByID(base::to_underlying(
-            GlanceablesViewId::kClassroomBubbleExpandButton)));
+            GlanceablesViewId::kTimeManagementBubbleExpandButton)));
   }
 
   views::View* GetStudentItemContainerView() const {
-    return views::AsViewClass<views::View>(GetStudentView()->GetViewByID(
-        base::to_underlying(GlanceablesViewId::kClassroomBubbleListContainer)));
+    return views::AsViewClass<views::View>(
+        GetStudentView()->GetViewByID(base::to_underlying(
+            GlanceablesViewId::kTimeManagementBubbleListContainer)));
   }
 
   std::vector<std::string> GetCurrentStudentAssignmentCourseWorkTitles() const {
@@ -255,10 +260,9 @@ class GlanceablesMvpBrowserTest : public GlanceablesBrowserTest {
  public:
   GlanceablesMvpBrowserTest() {
     features_.InitWithFeatures(
-        /*enabled_features=*/{features::kGlanceablesV2},
+        /*enabled_features=*/
+        {features::kGlanceablesTimeManagementClassroomStudentView},
         /*disabled_features=*/{features::kGlanceablesTimeManagementTasksView});
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kGlanceablesIgnoreEnableMergeRequestBuildFlag);
   }
 
   void SetUpOnMainThread() override {
@@ -302,6 +306,7 @@ IN_PROC_BROWSER_TEST_F(GlanceablesMvpBrowserTest, OpenStudentCourseItemURL) {
 
 IN_PROC_BROWSER_TEST_F(GlanceablesMvpBrowserTest, ClickSeeAllStudentButton) {
   ASSERT_TRUE(glanceables_controller()->GetClassroomClient());
+  SetStudentAssignmentsCount(101);
 
   // Click the date tray to show the glanceable bubbles.
   ToggleDateTray();
@@ -313,14 +318,9 @@ IN_PROC_BROWSER_TEST_F(GlanceablesMvpBrowserTest, ClickSeeAllStudentButton) {
       Shell::Get()->GetPrimaryRootWindow()->GetBoundsInScreen().Contains(
           GetStudentView()->GetBoundsInScreen()));
 
-  // Check that the approaching course work items are shown.
-  EXPECT_EQ(GetCurrentStudentAssignmentCourseWorkTitles(),
-            std::vector<std::string>({"Approaching Course Work 0",
-                                      "Approaching Course Work 1",
-                                      "Approaching Course Work 2"}));
-
   // Click the "See All" button in the student glanceable footer, and check that
   // the correct URL is opened.
+  GetStudentFooterSeeAllButton()->ScrollViewToVisible();
   GetEventGenerator()->MoveMouseTo(
       GetStudentFooterSeeAllButton()->GetBoundsInScreen().CenterPoint());
   GetEventGenerator()->ClickLeftButton();

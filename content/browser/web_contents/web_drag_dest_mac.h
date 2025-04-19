@@ -112,10 +112,6 @@ CONTENT_EXPORT
 // drag has ended.
 - (void)endDrag;
 
-- (content::WebContentsViewDragSecurityInfo)dragSecurityInfo;
-- (void)setDragSecurityInfo:
-    (content::WebContentsViewDragSecurityInfo)dragSecurityInfo;
-
 @end
 
 // Public use only for unit tests.

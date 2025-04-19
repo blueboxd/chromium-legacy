@@ -11,6 +11,7 @@
 #include "components/viz/common/surfaces/surface_range.h"
 #include "components/viz/common/viz_common_export.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
 namespace viz {
@@ -45,16 +46,18 @@ class VIZ_COMMON_EXPORT OffsetTag {
 
   friend constexpr bool operator==(const OffsetTag& lhs,
                                    const OffsetTag& rhs) = default;
+  friend constexpr auto operator<=>(const OffsetTag& lhs,
+                                    const OffsetTag& rhs) = default;
 
  private:
   friend struct mojo::StructTraits<mojom::OffsetTagDataView, OffsetTag>;
 
-  // base::Token is used as a convenient representation of 128 bits of data. It
-  // has a built in empty state which avoid the extra memory overhead of
-  // requiring std::optional<OffsetTag>. 128bits allows randomly generated
-  // tokens to be used without risk of collision but it isn't intended to be
-  // unguessable. Security is achieved by having the embedder explicitly specify
-  // the viz client that will provide the OffsetTagValue.
+  // base::Token / a 128 bits token allow randomly generated tokens to be used
+  // without risk of collision but isn't intended to provide any security
+  // guarantees. Collision free allocation avoids having to coordinate
+  // allocation of tags. The embedder explicitly picks which viz client provides
+  // the OffsetTagValue so it's not possible for a malicious viz client to
+  // provide a different value.
   base::Token token_;
 };
 
@@ -75,7 +78,17 @@ struct VIZ_COMMON_EXPORT OffsetTagConstraints {
   OffsetTagConstraints(float min_x, float max_x, float min_y, float max_y);
 
   // Clamps `offset` so it satisfies constraints.
-  gfx::Vector2dF Clamp(const OffsetTagValue& offset) const;
+  gfx::Vector2dF Clamp(gfx::Vector2dF offset) const;
+
+  // This function takes a rect that contains visible parts of content with no
+  // offset, in the target render pass coordinate space that an offset will be
+  // applied in, and expands it based on max possible offsets in each direction.
+  //
+  // This expansion is "backwards" from what you might expect. For example if
+  // constraints allow shifting the content down, that outsets the visible_rect
+  // at the top, since content that was previously above the top of the visible
+  // rect is moved lower and becomes visible.
+  void ExpandVisibleRect(gfx::RectF& visible_rect_in_target) const;
 
   // Validates that constrains include 0,0 offset and that min is smaller max.
   bool IsValid() const;
@@ -93,6 +106,10 @@ struct VIZ_COMMON_EXPORT OffsetTagConstraints {
 // be clamped.
 struct VIZ_COMMON_EXPORT OffsetTagDefinition {
   OffsetTagDefinition();
+  OffsetTagDefinition(const OffsetTag& tag,
+                      const SurfaceRange& provider,
+                      const OffsetTagConstraints& constraints);
+
   OffsetTagDefinition(const OffsetTagDefinition& other);
   OffsetTagDefinition& operator=(const OffsetTagDefinition& other);
   ~OffsetTagDefinition();

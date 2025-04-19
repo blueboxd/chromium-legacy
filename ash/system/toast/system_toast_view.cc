@@ -6,8 +6,6 @@
 
 #include <string>
 
-#include "ash/accessibility/accessibility_controller.h"
-#include "ash/accessibility/scoped_a11y_override_window_setter.h"
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/public/cpp/style/color_provider.h"
 #include "ash/shell.h"
@@ -23,7 +21,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/highlight_border.h"
-#include "ui/views/layout/flex_layout_view.h"
+#include "ui/views/view_class_properties.h"
 
 namespace ash {
 
@@ -48,9 +46,7 @@ constexpr int kDismissButtonFocusRingHaloInset = 1;
 SystemToastView::SystemToastView(const std::u16string& text,
                                  const std::u16string& dismiss_text,
                                  base::RepeatingClosure dismiss_callback,
-                                 const gfx::VectorIcon* leading_icon)
-    : scoped_a11y_overrider_(
-          std::make_unique<ScopedA11yOverrideWindowSetter>()) {
+                                 const gfx::VectorIcon* leading_icon) {
   // Paint to layer so the background can be transparent.
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
@@ -104,18 +100,9 @@ SystemToastView::SystemToastView(const std::u16string& text,
             .SetFocusBehavior(views::View::FocusBehavior::ALWAYS)
             .Build());
 
-    // The button's focus ring predicate is overridden since it's not directly
-    // focus accessible by tab traversal. The `is_dismiss_button_highlighted_`
-    // member variable is set through `ToggleButtonA11yFocus`.
     auto* button_focus_ring = views::FocusRing::Get(dismiss_button_);
     button_focus_ring->SetHaloInset(kDismissButtonFocusRingHaloInset);
     button_focus_ring->SetOutsetFocusRingDisabled(true);
-    button_focus_ring->SetHasFocusPredicate(base::BindRepeating(
-        [](const SystemToastView* toast_view, const views::View* view) {
-          return toast_view->is_dismiss_button_highlighted_;
-        },
-        base::Unretained(this)));
-    button_focus_ring->SetVisible(false);
   }
 
   // Need to size label to get the required number of lines.
@@ -137,6 +124,8 @@ SystemToastView::SystemToastView(const std::u16string& text,
   shadow_ =
       SystemShadow::CreateShadowOnTextureLayer(SystemShadow::Type::kElevation4);
   shadow_->SetRoundedCornerRadius(rounded_corner_radius);
+
+  SetProperty(views::kElementIdentifierKey, kSystemToastViewElementId);
 }
 
 SystemToastView::~SystemToastView() = default;
@@ -145,23 +134,8 @@ void SystemToastView::SetText(const std::u16string& text) {
   label_->SetText(text);
 }
 
-void SystemToastView::ToggleButtonA11yFocus() {
-  if (!dismiss_button_) {
-    return;
-  }
-
-  // `is_dismiss_button_highlighted_` indicates the desired focus state.
-  is_dismiss_button_highlighted_ = !is_dismiss_button_highlighted_;
-  if (is_dismiss_button_highlighted_) {
-    scoped_a11y_overrider_->MaybeUpdateA11yOverrideWindow(
-        dismiss_button_->GetWidget()->GetNativeWindow());
-    dismiss_button_->NotifyAccessibilityEvent(ax::mojom::Event::kSelection,
-                                              true);
-  }
-
-  auto* button_focus_ring = views::FocusRing::Get(dismiss_button_);
-  button_focus_ring->SetVisible(is_dismiss_button_highlighted_);
-  button_focus_ring->SchedulePaint();
+const std::u16string& SystemToastView::GetText() const {
+  return label_->GetText();
 }
 
 void SystemToastView::AddedToWidget() {
@@ -178,6 +152,9 @@ void SystemToastView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   // `shadow_` should have the same bounds as the view's layer.
   shadow_->SetContentBounds(layer()->bounds());
 }
+
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(SystemToastView,
+                                      kSystemToastViewElementId);
 
 BEGIN_METADATA(SystemToastView)
 END_METADATA

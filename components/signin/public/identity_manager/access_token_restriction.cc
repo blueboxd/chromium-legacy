@@ -39,12 +39,6 @@ bool IsUnrestrictedOAuth2Scopes(const std::string& scope) {
 
       // Required by cloud policy.
       GaiaConstants::kDeviceManagementServiceOAuth,
-      // The "ChromeSync" scope is used by Sync-the-transport, which does
-      // not require consent. Instead, features built on top of it (e.g., tab
-      // sharing, account-scoped passwords, or Sync-the-feature) have their own
-      // in-feature consent.
-      GaiaConstants::kChromeSyncOAuth2Scope,
-
   });
   // clang-format on
 
@@ -71,6 +65,12 @@ bool IsUnconsentedSignedInOAuth2Scopes(const std::string& scope) {
 
       // Required by safe browsing.
       GaiaConstants::kChromeSafeBrowsingOAuth2Scope,
+
+      // The "ChromeSync" scope is used by Sync-the-transport, which does
+      // not require consent. Instead, features built on top of it (e.g., tab
+      // sharing, account-scoped passwords, or Sync-the-feature) have their own
+      // in-feature consent.
+      GaiaConstants::kChromeSyncOAuth2Scope,
 
       // Required by Permission Request Creator.
       GaiaConstants::kClassifyUrlKidPermissionOAuth2Scope,
@@ -118,11 +118,13 @@ bool IsUnconsentedSignedInOAuth2Scopes(const std::string& scope) {
       // identity system.
       GaiaConstants::kOAuth1LoginScope,
 
+      // Required by the Google Calendar NTP module and ChromeOS.
+      GaiaConstants::kCalendarReadOnlyOAuth2Scope,
+
     // Required by ChromeOS only.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
       GaiaConstants::kAssistantOAuth2Scope,
       GaiaConstants::kAuditRecordingOAuth2Scope,
-      GaiaConstants::kCalendarReadOnlyOAuth2Scope,
       GaiaConstants::kCastBackdropOAuth2Scope,
       GaiaConstants::kClearCutOAuth2Scope,
       GaiaConstants::kDriveOAuth2Scope,

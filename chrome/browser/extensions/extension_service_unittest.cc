@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/extensions/extension_service.h"
 
 #include <stddef.h>
@@ -1069,7 +1074,7 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectoryFail) {
   ExtensionServiceInitParams params;
   ASSERT_TRUE(
       params.ConfigureByTestDataDirectory(data_dir().AppendASCII("bad")));
-  InitializeExtensionService(params);
+  InitializeExtensionService(std::move(params));
 
   service()->Init();
 
@@ -1108,7 +1113,7 @@ TEST_F(ExtensionServiceTest, PendingImports) {
   ExtensionServiceInitParams params;
   ASSERT_TRUE(params.ConfigureByTestDataDirectory(
       data_dir().AppendASCII("pending_updates_with_imports")));
-  InitializeExtensionService(params);
+  InitializeExtensionService(std::move(params));
 
   // Verify there are no pending extensions initially.
   EXPECT_FALSE(service()->pending_extension_manager()->HasPendingExtensions());
@@ -1143,8 +1148,8 @@ TEST_F(ExtensionServiceTest, PendingImports) {
   // Make sure the import started for the extension with a dependency.
   EXPECT_TRUE(
       prefs->GetDelayedInstallInfo("behllobkkfkfnphdnhnkndlbkcpglgmj"));
-  EXPECT_EQ(ExtensionPrefs::DELAY_REASON_WAIT_FOR_IMPORTS,
-      prefs->GetDelayedInstallReason("behllobkkfkfnphdnhnkndlbkcpglgmj"));
+  EXPECT_EQ(ExtensionPrefs::DelayReason::kWaitForImports,
+            prefs->GetDelayedInstallReason("behllobkkfkfnphdnhnkndlbkcpglgmj"));
 
   EXPECT_FALSE(base::PathExists(extensions_install_dir().AppendASCII(
       "behllobkkfkfnphdnhnkndlbkcpglgmj/1.0.0.0")));
@@ -1214,7 +1219,7 @@ TEST_F(ExtensionServiceTest, ReloadExtensionWithPendingImports) {
 
   // Make sure the import started for the extension with a dependency.
   EXPECT_TRUE(prefs->GetDelayedInstallInfo(id));
-  EXPECT_EQ(ExtensionPrefs::DELAY_REASON_WAIT_FOR_IMPORTS,
+  EXPECT_EQ(ExtensionPrefs::DelayReason::kWaitForImports,
             prefs->GetDelayedInstallReason(id));
 
   const std::string pending_id(32, 'e');
@@ -1237,7 +1242,7 @@ TEST_F(ExtensionServiceTest, ReloadExtensionWithPendingImports) {
 
   // The update should remain delayed, with the import pending.
   EXPECT_TRUE(prefs->GetDelayedInstallInfo(id));
-  EXPECT_EQ(ExtensionPrefs::DELAY_REASON_WAIT_FOR_IMPORTS,
+  EXPECT_EQ(ExtensionPrefs::DelayReason::kWaitForImports,
             prefs->GetDelayedInstallReason(id));
 
   // Attempt delayed installed - similar to reloading the extension, the update
@@ -1247,7 +1252,7 @@ TEST_F(ExtensionServiceTest, ReloadExtensionWithPendingImports) {
   extension = registry()->GetInstalledExtension(id);
   ASSERT_TRUE(extension);
   EXPECT_EQ("1.0.0", extension->VersionString());
-  EXPECT_EQ(ExtensionPrefs::DELAY_REASON_WAIT_FOR_IMPORTS,
+  EXPECT_EQ(ExtensionPrefs::DelayReason::kWaitForImports,
             prefs->GetDelayedInstallReason(id));
   EXPECT_TRUE(service()->pending_extension_manager()->IsIdPending(pending_id));
 
@@ -1527,7 +1532,7 @@ TEST_F(ExtensionServiceTest, UninstallingNotLoadedExtension) {
   params.extensions_dir = test_data_dir.AppendASCII("Extensions");
   // Aforementioned extension will not be loaded if
   // there is no '--enable-experimental-extension-apis' command line flag.
-  InitializeExtensionService(params);
+  InitializeExtensionService(std::move(params));
 
   service()->Init();
 
@@ -6171,7 +6176,7 @@ TEST_F(ExtensionServiceTest, ExternalUninstall) {
   ASSERT_TRUE(params.SetPrefsContentFromFile(
       test_data_dir.AppendASCII("PreferencesExternal")));
   params.extensions_dir = test_data_dir.AppendASCII("Extensions");
-  InitializeExtensionService(params);
+  InitializeExtensionService(std::move(params));
   service()->Init();
 
   ASSERT_EQ(0u, GetErrors().size());
@@ -6632,7 +6637,7 @@ TEST_F(ExtensionServiceTest, LoadAndRelocalizeExtensions) {
   ASSERT_TRUE(params.SetPrefsContentFromFile(
       test_data_dir.Append(chrome::kPreferencesFilename)));
   params.extensions_dir = test_data_dir;
-  InitializeExtensionService(params);
+  InitializeExtensionService(std::move(params));
 
   service()->Init();
 
@@ -7577,7 +7582,7 @@ TEST_F(ExtensionServiceTest, MultipleExternalInstallBubbleErrors) {
   // post-first run.
   ExtensionServiceInitParams params;
   params.is_first_run = false;
-  InitializeExtensionService(params);
+  InitializeExtensionService(std::move(params));
 
   MockExternalProvider* provider =
       AddMockExternalProvider(ManifestLocation::kExternalPref);
@@ -7682,7 +7687,7 @@ TEST_F(ExtensionServiceTest, BubbleAlertDoesNotHideAnotherAlertFromMenu) {
   // post-first run.
   ExtensionServiceInitParams params;
   params.is_first_run = false;
-  InitializeExtensionService(params);
+  InitializeExtensionService(std::move(params));
 
   MockExternalProvider* provider =
       AddMockExternalProvider(ManifestLocation::kExternalPref);
@@ -7766,7 +7771,7 @@ TEST_F(ExtensionServiceTest, ExternalInstallUpdatesFromWebstoreOldProfile) {
   // post-first run.
   ExtensionServiceInitParams params;
   params.is_first_run = false;
-  InitializeExtensionService(params);
+  InitializeExtensionService(std::move(params));
 
   base::FilePath crx_path = temp_dir().GetPath().AppendASCII("webstore.crx");
   PackCRX(data_dir().AppendASCII("update_from_webstore"),
@@ -7817,7 +7822,7 @@ TEST_F(ExtensionServiceTest, ExternalInstallClickToRemove) {
 
   ExtensionServiceInitParams params;
   params.is_first_run = false;
-  InitializeExtensionService(params);
+  InitializeExtensionService(std::move(params));
 
   base::FilePath crx_path = temp_dir().GetPath().AppendASCII("webstore.crx");
   PackCRX(data_dir().AppendASCII("update_from_webstore"),
@@ -7856,7 +7861,7 @@ TEST_F(ExtensionServiceTest, ExternalInstallClickToKeep) {
 
   ExtensionServiceInitParams params;
   params.is_first_run = false;
-  InitializeExtensionService(params);
+  InitializeExtensionService(std::move(params));
 
   base::FilePath crx_path = temp_dir().GetPath().AppendASCII("webstore.crx");
   PackCRX(data_dir().AppendASCII("update_from_webstore"),
@@ -8440,7 +8445,7 @@ TEST_P(ExternalExtensionPriorityTest, PolicyForegroundFetch) {
   ExtensionUpdater::ScopedSkipScheduledCheckForTest skip_scheduled_checks;
   ExtensionServiceInitParams params;
   params.autoupdate_enabled = true;
-  InitializeExtensionService(params);
+  InitializeExtensionService(std::move(params));
 
   ExtensionDownloaderTestHelper helper;
   NullExtensionCache extension_cache;
@@ -8467,14 +8472,12 @@ TEST_P(ExternalExtensionPriorityTest, PolicyForegroundFetch) {
   EXPECT_EQ(helper.test_url_loader_factory().NumPending(), 1);
   network::TestURLLoaderFactory::PendingRequest* pending_request =
       helper.test_url_loader_factory().GetPendingRequest(0);
-  std::string header;
-  EXPECT_TRUE(pending_request->request.headers.GetHeader(
-      "X-Goog-Update-Interactivity", &header));
   bool is_high_priority =
       GetParam() == ManifestLocation::kExternalPolicyDownload ||
       GetParam() == ManifestLocation::kExternalComponent;
-  const char* expected_header = is_high_priority ? "fg" : "bg";
-  EXPECT_EQ(expected_header, header);
+  std::string expected_header = is_high_priority ? "fg" : "bg";
+  EXPECT_EQ(expected_header, pending_request->request.headers.GetHeader(
+                                 "X-Goog-Update-Interactivity"));
 
   // Destroy updater's downloader as it uses |helper|.
   service()->updater()->SetExtensionDownloaderForTesting(nullptr);

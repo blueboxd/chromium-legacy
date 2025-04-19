@@ -23,7 +23,7 @@ public interface TabGroupSyncService {
      */
     interface Observer {
         /**
-         * Called when the sync database (ModelTypeStore) has been initialized and fully loaded to
+         * Called when the sync database (DataTypeStore) has been initialized and fully loaded to
          * memory.
          */
         void onInitialized();
@@ -113,6 +113,14 @@ public interface TabGroupSyncService {
             LocalTabGroupId tabGroupId, @NonNull String title, @TabGroupColorId int color);
 
     /**
+     * Makes the saved tab group a shared group.
+     *
+     * @param tabGroupId The local group ID of the corresponding tab group.
+     * @param collaborationId Collaboration ID with which the group is associated.
+     */
+    void makeTabGroupShared(LocalTabGroupId tabGroupId, @NonNull String collaborationId);
+
+    /**
      * Adds a tab to a remote group. Should be called with response to a local tab addition to a tab
      * group. If position is -1, adds the tab to the end of the group.
      *
@@ -153,6 +161,14 @@ public interface TabGroupSyncService {
      * @param newIndexInGroup The new index of the tab in the group.
      */
     void moveTab(LocalTabGroupId tabGroupId, int tabId, int newIndexInGroup);
+
+    /**
+     * Called to notify the backend that a tab was selected in the UI. Metrics purposes only.
+     *
+     * @param tabGroupId The local group ID of the corresponding tab group.
+     * @param tabId The local ID of the corresponding tab.
+     */
+    void onTabSelected(LocalTabGroupId tabGroupId, int tabId);
 
     /**
      * Called to return all the remote tab group IDs currently existing in the system.
@@ -209,4 +225,20 @@ public interface TabGroupSyncService {
      * @param localTabId The local ID of the corresponding tab.
      */
     void updateLocalTabId(LocalTabGroupId localGroupId, String syncTabId, int localTabId);
+
+    /**
+     * Helper method to identify whether a given sync cache guid corresponds to a remote device.
+     *
+     * @param syncCacheGuid A sync cache guid. Typically obtained from a tab group or tab
+     *     attribution metadata.
+     */
+    boolean isRemoteDevice(String syncCacheGuid);
+
+    /**
+     * Called to explicitly record a tab group event. See native for full documentation.
+     *
+     * @param eventDetails The details about the event such as event type, source, and the
+     *     associated tab group info.
+     */
+    void recordTabGroupEvent(EventDetails eventDetails);
 }

@@ -30,11 +30,14 @@ class FakePageHandler implements PageHandlerInterface {
     'isEligibleForEsbPromo',
     'logEsbPromotionRowViewed',
     'openEsbSettings',
-    'recordCancelBypassWarningPrompt',
-    'recordOpenBypassWarningPrompt',
+    'recordCancelBypassWarningDialog',
+    'recordCancelBypassWarningInterstitial',
+    'recordOpenBypassWarningDialog',
+    'recordOpenBypassWarningInterstitial',
+    'recordOpenSurveyOnDangerousInterstitial',
     'remove',
-    'saveDangerousFromPromptRequiringGesture',
-    'saveDangerousRequiringGesture',
+    'saveDangerousFromDialogRequiringGesture',
+    'saveDangerousFromInterstitialNeedGesture',
     'saveSuspiciousRequiringGesture',
   ]);
 
@@ -46,12 +49,25 @@ class FakePageHandler implements PageHandlerInterface {
     return this.callTracker_.whenCalled(methodName);
   }
 
-  recordCancelBypassWarningPrompt(id: string) {
-    this.callTracker_.methodCalled('recordCancelBypassWarningPrompt', id);
+  recordCancelBypassWarningDialog(id: string) {
+    this.callTracker_.methodCalled('recordCancelBypassWarningDialog', id);
   }
 
-  recordOpenBypassWarningPrompt(id: string) {
-    this.callTracker_.methodCalled('recordOpenBypassWarningPrompt', id);
+  recordCancelBypassWarningInterstitial(id: string) {
+    this.callTracker_.methodCalled('recordCancelBypassWarningInterstitial', id);
+  }
+
+  recordOpenBypassWarningDialog(id: string) {
+    this.callTracker_.methodCalled('recordOpenBypassWarningDialog', id);
+  }
+
+  recordOpenBypassWarningInterstitial(id: string) {
+    this.callTracker_.methodCalled('recordOpenBypassWarningInterstitial', id);
+  }
+
+  recordOpenSurveyOnDangerousInterstitial(id: string) {
+    this.callTracker_.methodCalled(
+        'recordOpenSurveyOnDangerousInterstitial', id);
   }
 
   async remove(id: string) {
@@ -64,13 +80,14 @@ class FakePageHandler implements PageHandlerInterface {
     this.callTracker_.methodCalled('discardDangerous', id);
   }
 
-  saveDangerousFromPromptRequiringGesture(id: string) {
+  saveDangerousFromDialogRequiringGesture(id: string) {
     this.callTracker_.methodCalled(
-        'saveDangerousFromPromptRequiringGesture', id);
+        'saveDangerousFromDialogRequiringGesture', id);
   }
 
-  saveDangerousRequiringGesture(id: string) {
-    this.callTracker_.methodCalled('saveDangerousRequiringGesture', id);
+  saveDangerousFromInterstitialNeedGesture(id: string) {
+    this.callTracker_.methodCalled(
+        'saveDangerousFromInterstitialNeedGesture', id);
   }
 
   saveSuspiciousRequiringGesture(id: string) {
@@ -160,6 +177,8 @@ export function createDownload(config?: Partial<MojomData>): MojomData {
         total: -1,
         url: stringToMojoUrl('http://permission.site'),
         displayUrl: stringToMojoString16('http://permission.site'),
+        referrerUrl: stringToMojoUrl('http://permission.site'),
+        displayReferrerUrl: stringToMojoString16('http://permission.site'),
         safeBrowsingState: SafeBrowsingState.kStandardProtection,
         hasSafeBrowsingVerdict: true,
       },

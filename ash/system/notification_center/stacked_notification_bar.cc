@@ -27,6 +27,7 @@
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/vector_icons.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -48,6 +49,7 @@ class StackingBarLabelButton : public PillButton {
                    PillButton::Type::kFloatingWithoutIcon,
                    /*icon=*/nullptr,
                    kNotificationPillButtonHorizontalSpacing) {
+    SetEnabled(false);
     StyleUtil::SetUpInkDropForButton(this, gfx::Insets(),
                                      /*highlight_on_hover=*/true,
                                      /*highlight_on_focus=*/true);
@@ -280,8 +282,8 @@ bool StackedNotificationBar::Update(
       IDS_ASH_MESSAGE_CENTER_STACKING_BAR_CLEAR_ALL_BUTTON_TOOLTIP,
       unpinned_count);
   clear_all_button_->SetTooltipText(tooltip);
-  clear_all_button_->SetAccessibleName(tooltip);
-  clear_all_button_->SetEnabled(unpinned_count != 0);
+  clear_all_button_->GetViewAccessibility().SetName(tooltip);
+  clear_all_button_->SetEnabled(unpinned_count > 0);
 
   return true;
 }

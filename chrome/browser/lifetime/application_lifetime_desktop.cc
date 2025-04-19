@@ -35,10 +35,9 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/ash/boot_times_recorder.h"
+#include "chrome/browser/ash/boot_times_recorder/boot_times_recorder.h"
 #include "chrome/browser/lifetime/application_lifetime_chromeos.h"
 #else  // !BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ui/profiles/profile_picker.h"
@@ -197,8 +196,7 @@ void SessionEnding() {
   static bool already_ended = false;
   // We may get called in the middle of shutdown, e.g. https://crbug.com/70852
   // and https://crbug.com/1187418.  In this case, do nothing.
-  if (already_ended || !content::NotificationService::current() ||
-      !g_browser_process) {
+  if (already_ended || !g_browser_process) {
     return;
   }
   already_ended = true;
@@ -215,6 +213,7 @@ void SessionEnding() {
   if (base::HangWatcher::IsCrashReportingEnabled()) {
     // TODO(crbug.com/40840897): Migrate away from ShutdownWatcher and its old
     // timing.
+    base::HangWatcher::SetShuttingDown();
     constexpr base::TimeDelta kShutdownHangDelay{base::Seconds(30)};
     watch_hangs_scope.emplace(kShutdownHangDelay);
   } else {

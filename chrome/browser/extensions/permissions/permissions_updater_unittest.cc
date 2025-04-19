@@ -80,11 +80,10 @@ TEST_F(PermissionsUpdaterTest, GrantAndRevokeOptionalPermissions) {
   // Load the test extension.
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("permissions")
-          .AddPermissions({"management", "http://a.com/*"})
-          .SetManifestKey("optional_permissions",
-                          base::Value::List()
-                              .Append("http://*.c.com/*")
-                              .Append("notifications"))
+          .AddAPIPermission("management")
+          .AddHostPermission("http://a.com/*")
+          .AddOptionalAPIPermission("notifications")
+          .AddOptionalHostPermission("http://*.c.com/*")
           .Build();
 
   {
@@ -375,10 +374,7 @@ TEST_F(PermissionsUpdaterTest,
   InitializeEmptyExtensionService();
 
   scoped_refptr<const Extension> extension =
-      ExtensionBuilder("extension")
-          .SetManifestKey("optional_permissions",
-                          base::Value::List().Append("tabs"))
-          .Build();
+      ExtensionBuilder("extension").AddOptionalAPIPermission("tabs").Build();
 
   PermissionsUpdater updater(profile());
   updater.InitializePermissions(extension.get());
@@ -437,7 +433,7 @@ TEST_F(PermissionsUpdaterTest,
   InitializeEmptyExtensionService();
 
   scoped_refptr<const Extension> extension =
-      ExtensionBuilder("extension").AddPermission("*://*/*").Build();
+      ExtensionBuilder("extension").AddHostPermission("*://*/*").Build();
 
   PermissionsUpdater updater(profile());
   updater.InitializePermissions(extension.get());
@@ -557,9 +553,11 @@ TEST_F(PermissionsUpdaterTest, ChromeFaviconIsNotARevokableHost) {
                                     "chrome://favicon/");
 
   {
+    // This test exercises chrome://favicon, which is only available in MV2.
     scoped_refptr<const Extension> extension =
         ExtensionBuilder("favicon extension")
-            .AddPermissions({"https://example.com/*", "chrome://favicon/*"})
+            .SetManifestVersion(2)
+            .AddHostPermissions({"https://example.com/*", "chrome://favicon/*"})
             .Build();
     URLPattern example_com_pattern(Extension::kValidHostPermissionSchemes,
                                    "https://example.com/*");
@@ -599,9 +597,11 @@ TEST_F(PermissionsUpdaterTest, ChromeFaviconIsNotARevokableHost) {
                      .ContainsPattern(example_com_pattern));
   }
   {
+    // This test exercises chrome://favicon, which is only available in MV2.
     scoped_refptr<const Extension> extension =
         ExtensionBuilder("all urls extension")
-            .AddPermission("<all_urls>")
+            .SetManifestVersion(2)
+            .AddHostPermission("<all_urls>")
             .Build();
     URLPattern all_urls_pattern(
         Extension::kValidHostPermissionSchemes &
@@ -647,7 +647,7 @@ TEST_F(PermissionsUpdaterTest, GrantingBroadRuntimePermissions) {
 
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("extension")
-          .AddPermission("https://maps.google.com/*")
+          .AddHostPermission("https://maps.google.com/*")
           .Build();
 
   const URLPattern kMapsPattern(Extension::kValidHostPermissionSchemes,
@@ -958,7 +958,7 @@ TEST_F(PermissionsUpdaterTestWithEnhancedHostControls,
 
   // Install and initialize an extension that wants to run everywhere.
   scoped_refptr<const Extension> extension =
-      ExtensionBuilder("extension").AddPermission("<all_urls>").Build();
+      ExtensionBuilder("extension").AddHostPermission("<all_urls>").Build();
 
   {
     PermissionsUpdater updater(profile());

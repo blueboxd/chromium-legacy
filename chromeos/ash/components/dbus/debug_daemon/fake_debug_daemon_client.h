@@ -16,7 +16,7 @@
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
 #include "chromeos/ash/components/dbus/debug_daemon/debug_daemon_client.h"
-#include "chromeos/dbus/common/dbus_method_call_status.h"
+#include "chromeos/dbus/common/dbus_callback.h"
 
 namespace ash {
 
@@ -128,6 +128,9 @@ class COMPONENT_EXPORT(DEBUG_DAEMON) FakeDebugDaemonClient
   void PacketCaptureStartSignalReceived(dbus::Signal* signal) override;
   void PacketCaptureStopSignalReceived(dbus::Signal* signal) override;
   void StopPacketCapture(const std::string& handle) override;
+
+  void BluetoothStartBtsnoop(BluetoothBtsnoopCallback callback) override;
+  void BluetoothStopBtsnoop(int fd, BluetoothBtsnoopCallback callback) override;
 
   // Sets debugging features mask for testing.
   virtual void SetDebuggingFeaturesStatus(int features_mask);

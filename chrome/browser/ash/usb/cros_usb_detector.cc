@@ -26,6 +26,7 @@
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/guest_os/guest_id.h"
+#include "chrome/browser/ash/guest_os/guest_os_pref_names.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_features.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/notifications/system_notification_helper.h"
@@ -272,11 +273,7 @@ void ShowNotificationForDevice(const std::string& guid,
   rich_notification_data.small_image = gfx::Image(
       gfx::CreateVectorIcon(vector_icons::kUsbIcon, 64, gfx::kGoogleBlue800));
 
-  if (chromeos::features::IsJellyEnabled()) {
-    rich_notification_data.accent_color_id = cros_tokens::kCrosSysPrimary;
-  } else {
-    rich_notification_data.accent_color = ash::kSystemNotificationColorNormal;
-  }
+  rich_notification_data.accent_color_id = cros_tokens::kCrosSysPrimary;
 
   if (crostini::CrostiniFeatures::Get()->IsEnabled(profile())) {
     vm_name = l10n_util::GetStringUTF16(IDS_CROSTINI_LINUX);
@@ -523,7 +520,8 @@ void CrosUsbDetector::ConnectToDeviceManager() {
 
 bool CrosUsbDetector::ShouldShowNotification(const UsbDevice& device) {
   PrefService* prefs = profile()->GetPrefs();
-  if (!prefs->GetBoolean(ash::prefs::kUsbDetectorNotificationEnabled)) {
+  if (!prefs->GetBoolean(ash::prefs::kUsbDetectorNotificationEnabled) ||
+      !prefs->GetBoolean(guest_os::prefs::kGuestOsUSBNotificationEnabled)) {
     return false;
   }
 

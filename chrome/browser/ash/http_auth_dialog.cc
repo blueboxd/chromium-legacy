@@ -16,6 +16,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/mojom/ui_base_types.mojom-shared.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/layout/box_layout_view.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/layout/table_layout_view.h"
@@ -215,14 +217,14 @@ HttpAuthDialog::DialogView::DialogView(std::u16string_view authority,
           views::style::CONTEXT_LABEL, views::style::STYLE_PRIMARY));
   username_field_ =
       fields_container->AddChildView(std::make_unique<views::Textfield>());
-  username_field_->SetAccessibleName(username_label);
+  username_field_->GetViewAccessibility().SetName(*username_label);
   auto* password_label =
       fields_container->AddChildView(std::make_unique<views::Label>(
           l10n_util::GetStringUTF16(IDS_LOGIN_DIALOG_PASSWORD_FIELD),
           views::style::CONTEXT_LABEL, views::style::STYLE_PRIMARY));
   password_field_ =
       fields_container->AddChildView(std::make_unique<views::Textfield>());
-  password_field_->SetAccessibleName(password_label);
+  password_field_->GetViewAccessibility().SetName(*password_label);
   password_field_->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
 }
 
@@ -280,9 +282,10 @@ HttpAuthDialog::HttpAuthDialog(const net::AuthChallengeInfo& auth_info,
   // WindowClosing callback is guaranteed to be called regardless of whether the
   // dialog is closed by the user or the OS.
   dialog_delegate_.RegisterWindowClosingCallback(std::move(close_callback));
-  dialog_delegate_.SetWidgetOwnsNativeWidget();
+  dialog_delegate_.SetOwnershipOfNewWidget(
+      views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET);
 
-  dialog_delegate_.SetModalType(ui::MODAL_TYPE_CHILD);
+  dialog_delegate_.SetModalType(ui::mojom::ModalType::kChild);
   dialog_delegate_.SetShowCloseButton(false);
   dialog_delegate_.SetTitle(l10n_util::GetStringUTF16(IDS_LOGIN_DIALOG_TITLE));
 
@@ -295,7 +298,8 @@ HttpAuthDialog::HttpAuthDialog(const net::AuthChallengeInfo& auth_info,
       dialog_view_->GetInitiallyFocusedView());
 
   dialog_widget_ = constrained_window::ShowWebModalDialogViewsOwned(
-      &dialog_delegate_, web_contents);
+      &dialog_delegate_, web_contents,
+      views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET);
 
   NotifyShownAsync(web_contents_);
 }

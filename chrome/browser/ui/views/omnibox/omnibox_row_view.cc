@@ -7,6 +7,7 @@
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_header_view.h"
+#include "chrome/browser/ui/views/omnibox/omnibox_match_cell_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_view_views.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
 #include "components/omnibox/browser/omnibox_controller.h"
@@ -26,6 +27,10 @@ DEFINE_ENUM_CONVERTERS(OmniboxPopupSelection::LineState,
                        {OmniboxPopupSelection::KEYWORD_MODE, u"KEYWORD_MODE"},
                        {OmniboxPopupSelection::FOCUSED_BUTTON_ACTION,
                         u"FOCUSED_BUTTON_ACTION"},
+                       {OmniboxPopupSelection::FOCUSED_BUTTON_THUMBS_UP,
+                        u"FOCUSED_BUTTON_THUMBS_UP"},
+                       {OmniboxPopupSelection::FOCUSED_BUTTON_THUMBS_DOWN,
+                        u"FOCUSED_BUTTON_THUMBS_DOWN"},
                        {OmniboxPopupSelection::FOCUSED_BUTTON_REMOVE_SUGGESTION,
                         u"FOCUSED_BUTTON_REMOVE_SUGGESTION"})
 
@@ -112,9 +117,9 @@ views::View* OmniboxRowView::GetActiveAuxiliaryButtonForAccessibility() const {
 }
 
 gfx::Insets OmniboxRowView::GetInsets() const {
-  if (OmniboxFieldTrial::IsStarterPackIPHEnabled() &&
-      result_view_->GetThemeState() == OmniboxPartState::IPH) {
-    return gfx::Insets::TLBR(8, 8, 8, 16);
+  if (result_view_->GetThemeState() == OmniboxPartState::IPH) {
+    int LRInsets = OmniboxMatchCellView::kIPHLeftOffset;
+    return gfx::Insets::TLBR(8, LRInsets, 8, LRInsets);
   }
 
   return gfx::Insets::TLBR(0, 0, 0, 16);

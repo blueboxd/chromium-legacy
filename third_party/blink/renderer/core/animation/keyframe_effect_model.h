@@ -129,6 +129,7 @@ class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
   // EffectModel implementation.
   bool Sample(int iteration,
               double fraction,
+              TimingFunction::LimitDirection,
               AnimationTimeDelta iteration_duration,
               HeapVector<Member<Interpolation>>&) const override;
 
@@ -179,8 +180,8 @@ class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
 
   // Update properties used in resolving logical properties. Returns true if
   // one or more keyframes changed as a result of the update.
-  bool SetLogicalPropertyResolutionContext(TextDirection text_direction,
-                                           WritingMode writing_mode);
+  bool SetLogicalPropertyResolutionContext(
+      WritingDirectionMode writing_direction);
 
   virtual KeyframeEffectModelBase* Clone() = 0;
 

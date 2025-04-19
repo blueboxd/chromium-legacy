@@ -8,6 +8,7 @@
 #import <vector>
 
 #import "base/check.h"
+#import "base/check_deref.h"
 #import "base/functional/bind.h"
 #import "base/functional/callback.h"
 #import "base/memory/ptr_util.h"
@@ -16,6 +17,7 @@
 #import "components/autofill/core/browser/logging/log_router.h"
 #import "components/autofill/core/browser/ui/suggestion_type.h"
 #import "components/autofill/core/common/autofill_prefs.h"
+#import "components/autofill/ios/browser/autofill_driver_ios_factory.h"
 #import "components/autofill/ios/browser/autofill_util.h"
 #import "components/password_manager/core/common/password_manager_pref_names.h"
 #import "components/security_state/ios/security_state_utils.h"
@@ -92,6 +94,10 @@ WebViewAutofillClientIOS::GetURLLoaderFactory() {
       web_state_->GetBrowserState()->GetURLLoaderFactory());
 }
 
+AutofillDriverFactory& WebViewAutofillClientIOS::GetAutofillDriverFactory() {
+  return CHECK_DEREF(AutofillDriverIOSFactory::FromWebState(web_state_));
+}
+
 AutofillCrowdsourcingManager*
 WebViewAutofillClientIOS::GetCrowdsourcingManager() {
   if (!crowdsourcing_manager_) {
@@ -130,7 +136,7 @@ signin::IdentityManager* WebViewAutofillClientIOS::GetIdentityManager() {
 FormDataImporter* WebViewAutofillClientIOS::GetFormDataImporter() {
   if (!form_data_importer_) {
     form_data_importer_ = std::make_unique<FormDataImporter>(
-        this, personal_data_manager_,
+        this,
         /*history_service=*/nullptr,
         ios_web_view::ApplicationContext::GetInstance()
             ->GetApplicationLocale());
@@ -140,13 +146,7 @@ FormDataImporter* WebViewAutofillClientIOS::GetFormDataImporter() {
 
 payments::PaymentsAutofillClient*
 WebViewAutofillClientIOS::GetPaymentsAutofillClient() {
-  if (!payments_autofill_client_) {
-    payments_autofill_client_ =
-        std::make_unique<payments::IOSWebViewPaymentsAutofillClient>(
-            this, bridge_, web_state_->GetBrowserState());
-  }
-
-  return payments_autofill_client_.get();
+  return &payments_autofill_client_;
 }
 
 StrikeDatabase* WebViewAutofillClientIOS::GetStrikeDatabase() {
@@ -191,32 +191,15 @@ translate::TranslateDriver* WebViewAutofillClientIOS::GetTranslateDriver() {
 }
 
 void WebViewAutofillClientIOS::ShowAutofillSettings(
-    FillingProduct main_filling_product) {
+    SuggestionType suggestion_type) {
   NOTREACHED_IN_MIGRATION();
 }
-
-void WebViewAutofillClientIOS::ConfirmSaveCreditCardToCloud(
-    const CreditCard& card,
-    const LegalMessageLines& legal_message_lines,
-    SaveCreditCardOptions options,
-    UploadSaveCardPromptCallback callback) {
-  DCHECK(options.show_prompt);
-  [bridge_ confirmSaveCreditCardToCloud:card
-                      legalMessageLines:legal_message_lines
-                  saveCreditCardOptions:options
-                               callback:std::move(callback)];
-}
-
-void WebViewAutofillClientIOS::ConfirmCreditCardFillAssist(
-    const CreditCard& card,
-    base::OnceClosure callback) {}
 
 void WebViewAutofillClientIOS::ConfirmSaveAddressProfile(
     const AutofillProfile& profile,
     const AutofillProfile* original_profile,
-    SaveAddressProfilePromptOptions options,
+    bool is_migration_to_account,
     AddressProfileSavePromptCallback callback) {
-  // TODO(crbug.com/40164489): Respect SaveAddressProfilePromptOptions.
   [bridge_ confirmSaveAddressProfile:profile
                      originalProfile:original_profile
                             callback:std::move(callback)];
@@ -235,25 +218,6 @@ void WebViewAutofillClientIOS::ShowDeleteAddressProfileDialog(
     AddressProfileDeleteDialogCallback delete_dialog_callback) {
   // Please note: This method is only implemented on desktop and is therefore
   // unreachable here.
-  NOTREACHED_IN_MIGRATION();
-}
-
-bool WebViewAutofillClientIOS::HasCreditCardScanFeature() const {
-  return false;
-}
-
-void WebViewAutofillClientIOS::ScanCreditCard(CreditCardScanCallback callback) {
-  NOTREACHED_IN_MIGRATION();
-}
-
-bool WebViewAutofillClientIOS::ShowTouchToFillCreditCard(
-    base::WeakPtr<TouchToFillDelegate> delegate,
-    base::span<const autofill::CreditCard> cards_to_suggest) {
-  NOTREACHED_IN_MIGRATION();
-  return false;
-}
-
-void WebViewAutofillClientIOS::HideTouchToFillCreditCard() {
   NOTREACHED_IN_MIGRATION();
 }
 
@@ -298,19 +262,8 @@ void WebViewAutofillClientIOS::DidFillOrPreviewForm(
     AutofillTriggerSource trigger_source,
     bool is_refill) {}
 
-void WebViewAutofillClientIOS::DidFillOrPreviewField(
-    const std::u16string& autofilled_value,
-    const std::u16string& profile_full_name) {}
-
 bool WebViewAutofillClientIOS::IsContextSecure() const {
   return IsContextSecureForWebState(web_state_);
-}
-
-void WebViewAutofillClientIOS::OpenPromoCodeOfferDetailsURL(const GURL& url) {
-  web_state_->OpenURL(web::WebState::OpenURLParams(
-      url, web::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui::PageTransition::PAGE_TRANSITION_AUTO_TOPLEVEL,
-      /*is_renderer_initiated=*/false));
 }
 
 autofill::FormInteractionsFlowId
@@ -331,9 +284,7 @@ LogManager* WebViewAutofillClientIOS::GetLogManager() const {
 void WebViewAutofillClientIOS::set_bridge(
     id<CWVAutofillClientIOSBridge> bridge) {
   bridge_ = bridge;
-  if (payments_autofill_client_) {
-    payments_autofill_client_->set_bridge(bridge);
-  }
+  payments_autofill_client_.set_bridge(bridge);
 }
 
 }  // namespace autofill

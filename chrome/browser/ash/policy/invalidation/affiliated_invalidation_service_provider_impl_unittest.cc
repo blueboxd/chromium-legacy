@@ -24,7 +24,8 @@
 #include "components/invalidation/impl/fake_invalidation_handler.h"
 #include "components/invalidation/impl/fake_invalidation_service.h"
 #include "components/invalidation/impl/fcm_invalidation_service.h"
-#include "components/invalidation/impl/profile_invalidation_provider.h"
+#include "components/invalidation/invalidation_listener.h"
+#include "components/invalidation/profile_invalidation_provider.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/invalidation/public/invalidator_state.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -49,8 +50,9 @@ const char kAffiliatedUserID1[] = "test_1@example.com";
 const char kAffiliatedUserID2[] = "test_2@example.com";
 const char kUnaffiliatedUserID[] = "test@other_domain.test";
 
-std::unique_ptr<invalidation::InvalidationService>
-CreateInvalidationServiceForSenderId(const std::string& fcm_sender_id) {
+std::variant<std::unique_ptr<invalidation::InvalidationService>,
+             std::unique_ptr<invalidation::InvalidationListener>>
+CreateInvalidationServiceForSenderId(std::string, std::string, std::string) {
   std::unique_ptr<invalidation::FakeInvalidationService> invalidation_service(
       new invalidation::FakeInvalidationService);
   invalidation_service->SetInvalidatorState(
@@ -241,7 +243,8 @@ void AffiliatedInvalidationServiceProviderImplTest::TearDown() {
 
   invalidation::ProfileInvalidationProviderFactory::GetInstance()
       ->RegisterTestingFactory(
-          BrowserContextKeyedServiceFactory::TestingFactory());
+          invalidation::ProfileInvalidationProviderFactory::
+              GlobalTestingFactory());
   DeviceOAuth2TokenServiceFactory::Shutdown();
   ash::SystemSaltGetter::Shutdown();
   ash::CryptohomeMiscClient::Shutdown();
@@ -362,9 +365,14 @@ AffiliatedInvalidationServiceProviderImplTest::GetProfileInvalidationService(
               ->GetServiceForBrowserContext(profile, create));
   if (!invalidation_provider)
     return nullptr;
+  auto invalidation_service =
+      invalidation_provider->GetInvalidationServiceOrListener(
+          kPolicyFCMInvalidationSenderID,
+          invalidation::InvalidationListener::kProjectNumberEnterprise);
+  CHECK(std::holds_alternative<invalidation::InvalidationService*>(
+      invalidation_service));
   return static_cast<invalidation::FakeInvalidationService*>(
-      invalidation_provider->GetInvalidationServiceForCustomSender(
-          kPolicyFCMInvalidationSenderID));
+      std::get<invalidation::InvalidationService*>(invalidation_service));
 }
 
 // No consumers are registered with the

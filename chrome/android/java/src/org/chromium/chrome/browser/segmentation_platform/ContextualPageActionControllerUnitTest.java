@@ -17,7 +17,6 @@ import android.content.res.Resources;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -25,12 +24,9 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
-import org.chromium.base.FeatureList;
-import org.chromium.base.FeatureList.TestValues;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
@@ -59,7 +55,6 @@ public class ContextualPageActionControllerUnitTest {
     @Mock private ContextualPageActionController.Natives mMockControllerJni;
 
     @Rule public JniMocker mJniMocker = new JniMocker();
-    @Rule public TestRule mProcessor = new Features.JUnitProcessor();
 
     @Before
     public void setUp() {
@@ -90,6 +85,7 @@ public class ContextualPageActionControllerUnitTest {
                                     // Supply all signals and notify controller.
                                     signalAccumulator.setHasReaderMode(true);
                                     signalAccumulator.setHasPriceTracking(true);
+                                    signalAccumulator.setHasPriceInsights(true);
                                     signalAccumulator.notifySignalAvailable();
                                 });
                     }
@@ -138,23 +134,5 @@ public class ContextualPageActionControllerUnitTest {
 
         verify(mMockAdaptiveToolbarController)
                 .showDynamicAction(AdaptiveToolbarButtonVariant.UNKNOWN);
-    }
-
-    @Test
-    public void buttonNotShownWhenUiDisabled() {
-        mMockConfiguration.screenWidthDp = 450;
-        setMockSegmentationResult(AdaptiveToolbarButtonVariant.PRICE_TRACKING);
-        TestValues testValues = new TestValues();
-        testValues.addFeatureFlagOverride(ChromeFeatureList.CONTEXTUAL_PAGE_ACTIONS, true);
-        testValues.addFieldTrialParamOverride(
-                ChromeFeatureList.CONTEXTUAL_PAGE_ACTIONS, "enable_ui", "false");
-        FeatureList.setTestValues(testValues);
-
-        createContextualPageActionController();
-        mTabSupplier.set(mMockTab);
-
-        verify(mMockAdaptiveToolbarController, never()).showDynamicAction(anyInt());
-        // Even if the UI is disabled segmentation should be called.
-        verify(mMockControllerJni).computeContextualPageAction(any(), any(), any());
     }
 }

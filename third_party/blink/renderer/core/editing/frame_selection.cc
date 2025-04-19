@@ -145,8 +145,12 @@ const SelectionInDOMTree& FrameSelection::GetSelectionInDOMTree() const {
 }
 
 Element* FrameSelection::RootEditableElementOrDocumentElement() const {
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kSelection);
+
   Element* selection_root =
-      ComputeVisibleSelectionInDOMTreeDeprecated().RootEditableElement();
+      ComputeVisibleSelectionInDOMTree().RootEditableElement();
   // Note that RootEditableElementOrDocumentElement can return null if the
   // documentElement is null.
   return selection_root ? selection_root : GetDocument().documentElement();
@@ -364,14 +368,10 @@ void FrameSelection::DidSetSelectionDeprecated(
   if (RuntimeEnabledFeatures::DispatchSelectionchangeEventPerElementEnabled()) {
     TextControlElement* text_control =
         EnclosingTextControl(GetSelectionInDOMTree().Anchor());
-    if (text_control) {
-      text_control->EnqueueEvent(
-          *Event::CreateBubble(event_type_names::kSelectionchange),
-          TaskType::kMiscPlatformAPI);
+    if (text_control && !text_control->IsInShadowTree()) {
+      text_control->ScheduleSelectionchangeEvent();
     } else {
-      frame_->DomWindow()->EnqueueDocumentEvent(
-          *Event::Create(event_type_names::kSelectionchange),
-          TaskType::kMiscPlatformAPI);
+      GetDocument().ScheduleSelectionchangeEvent();
     }
   }
   // When DispatchSelectionchangeEventPerElement is disabled, fall back to old
@@ -537,8 +537,9 @@ bool FrameSelection::SelectionHasFocus() const {
   Element* const focused_element = GetDocument().FocusedElement()
                                        ? GetDocument().FocusedElement()
                                        : GetDocument().documentElement();
-  if (!focused_element)
+  if (!focused_element || focused_element->IsScrollMarkerPseudoElement()) {
     return false;
+  }
 
   if (focused_element->IsTextControl())
     return focused_element->ContainsIncludingHostElements(*current);
@@ -1015,13 +1016,16 @@ static bool IsFrameElement(const Node* n) {
 }
 
 void FrameSelection::SetFocusedNodeIfNeeded() {
-  if (ComputeVisibleSelectionInDOMTreeDeprecated().IsNone() ||
-      !FrameIsFocused()) {
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kSelection);
+
+  if (ComputeVisibleSelectionInDOMTree().IsNone() || !FrameIsFocused()) {
     return;
   }
 
   if (Element* target =
-          ComputeVisibleSelectionInDOMTreeDeprecated().RootEditableElement()) {
+          ComputeVisibleSelectionInDOMTree().RootEditableElement()) {
     // Walk up the DOM tree to search for a node to focus.
     GetDocument().UpdateStyleAndLayoutTree();
     while (target) {
@@ -1171,7 +1175,7 @@ void FrameSelection::RevealSelection(
 
   scroll_into_view_util::ScrollRectToVisible(
       *start.AnchorNode()->GetLayoutObject(), selection_rect,
-      ScrollAlignment::CreateScrollIntoViewParams(alignment, alignment));
+      scroll_into_view_util::CreateScrollIntoViewParams(alignment, alignment));
   UpdateAppearance();
 }
 
@@ -1179,10 +1183,15 @@ void FrameSelection::SetSelectionFromNone() {
   // Put a caret inside the body if the entire frame is editable (either the
   // entire WebView is editable or designMode is on for this document).
 
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kSelection);
+
   Document* document = frame_->GetDocument();
-  if (!ComputeVisibleSelectionInDOMTreeDeprecated().IsNone() ||
-      !(blink::IsEditable(*document)))
+  if (!ComputeVisibleSelectionInDOMTree().IsNone() ||
+      !(blink::IsEditable(*document))) {
     return;
+  }
 
   Element* document_element = document->documentElement();
   if (!document_element)
@@ -1199,7 +1208,11 @@ void FrameSelection::SetSelectionFromNone() {
 #if DCHECK_IS_ON()
 
 void FrameSelection::ShowTreeForThis() const {
-  ComputeVisibleSelectionInDOMTreeDeprecated().ShowTreeForThis();
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kSelection);
+
+  ComputeVisibleSelectionInDOMTree().ShowTreeForThis();
 }
 
 #endif

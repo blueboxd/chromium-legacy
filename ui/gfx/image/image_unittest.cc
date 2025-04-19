@@ -205,17 +205,16 @@ TEST_F(ImageTest, CreateExtractPNGBytes) {
 
   scoped_refptr<base::RefCountedMemory> bytes1x = gt::CreatePNGBytes(kSize1x);
   std::vector<gfx::ImagePNGRep> image_png_reps;
-  image_png_reps.push_back(gfx::ImagePNGRep(bytes1x, 1.0f));
-  image_png_reps.push_back(gfx::ImagePNGRep(
-      gt::CreatePNGBytes(kSize2x), 2.0f));
+  image_png_reps.emplace_back(bytes1x, 1.0f);
+  image_png_reps.emplace_back(gt::CreatePNGBytes(kSize2x), 2.0f);
 
   gfx::Image image(image_png_reps);
   EXPECT_FALSE(image.IsEmpty());
   EXPECT_EQ(25, image.Width());
   EXPECT_EQ(25, image.Height());
 
-  EXPECT_TRUE(std::equal(bytes1x->front(), bytes1x->front() + bytes1x->size(),
-                         image.As1xPNGBytes()->front()));
+  EXPECT_TRUE(std::ranges::equal(base::span(*bytes1x),
+                                 base::span(*image.As1xPNGBytes())));
 }
 
 TEST_F(ImageTest, MultiResolutionImageSkiaToPNG) {

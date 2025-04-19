@@ -100,8 +100,8 @@ class AddressDataManager : public AutofillWebDataServiceObserverOnUISequence,
   // Only intended to be called during shutdown of the parent `KeyedService`.
   void Shutdown();
 
-  virtual void AddObserver(Observer* obs);
-  virtual void RemoveObserver(Observer* obs);
+  void AddObserver(Observer* obs);
+  void RemoveObserver(Observer* obs);
 
   // Adds a callback which will be triggered on the next address data change,
   // at the same time `Observer::OnAddressDataChanged()` of `observers_` is
@@ -109,7 +109,7 @@ class AddressDataManager : public AutofillWebDataServiceObserverOnUISequence,
   void AddChangeCallback(base::OnceClosure callback);
 
   // AutofillWebDataServiceObserverOnUISequence:
-  void OnAutofillChangedBySync(syncer::ModelType model_type) override;
+  void OnAutofillChangedBySync(syncer::DataType data_type) override;
 
   // WebDataServiceConsumer:
   void OnWebDataServiceRequestDone(
@@ -396,6 +396,11 @@ class AddressDataManager : public AutofillWebDataServiceObserverOnUISequence,
   // has finished.
   void LogStoredDataMetrics() const;
 
+  // Called when `prefs::kAutofillProfileEnabled` changed.
+  void OnAutofillProfilePrefChanged();
+
+  base::ObserverList<Observer> observers_;
+
   std::unique_ptr<ContactInfoPreconditionChecker>
       contact_info_precondition_checker_;
 
@@ -467,8 +472,6 @@ class AddressDataManager : public AutofillWebDataServiceObserverOnUISequence,
   // deduplication, disused address removal) at browser startup or when the sync
   // starts.
   std::unique_ptr<AddressDataCleaner> address_data_cleaner_;
-
-  base::ObserverList<Observer> observers_;
 
   // The list of change callbacks. All of them are being triggered in
   // `NotifyObservers()` and then the list is cleared.

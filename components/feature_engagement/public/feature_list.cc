@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "components/feature_engagement/public/feature_list.h"
 
 #include "build/build_config.h"
@@ -16,6 +21,7 @@ namespace {
 const base::Feature* const kAllFeatures[] = {
     &kIPHDummyFeature,  // Ensures non-empty array for all platforms.
 #if BUILDFLAG(IS_ANDROID)
+    &kIPHAndroidTabDeclutter,
     &kIPHAdaptiveButtonInTopToolbarCustomizationNewTabFeature,
     &kIPHAdaptiveButtonInTopToolbarCustomizationShareFeature,
     &kIPHAdaptiveButtonInTopToolbarCustomizationVoiceSearchFeature,
@@ -65,11 +71,11 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHPriceDropNTPFeature,
     &kIPHQuietNotificationPromptsFeature,
     &kIPHReadAloudAppMenuFeature,
+    &kIPHReadAloudExpandedPlayerFeature,
     &kIPHReadLaterContextMenuFeature,
     &kIPHReadLaterAppMenuBookmarkThisPageFeature,
     &kIPHReadLaterAppMenuBookmarksFeature,
     &kIPHReadLaterBottomSheetFeature,
-    &kIPHRequestDesktopSiteAppMenuFeature,
     &kIPHRequestDesktopSiteDefaultOnFeature,
     &kIPHRequestDesktopSiteExceptionsGenericFeature,
     &kIPHRequestDesktopSiteWindowSettingFeature,
@@ -77,9 +83,15 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHShoppingListSaveFlowFeature,
     &kIPHTabGroupsQuicklyComparePagesFeature,
     &kIPHTabGroupsTapToSeeAnotherTabFeature,
+    &kIPHTabGroupCreationDialogSyncTextFeature,
+    &kIPHTabGroupSyncOnStripFeature,
     &kIPHTabGroupsYourTabsAreTogetherFeature,
     &kIPHTabGroupsDragAndDropFeature,
+    &kIPHTabGroupsRemoteGroupFeature,
+    &kIPHTabGroupsSurfaceFeature,
+    &kIPHTabGroupsSurfaceOnHideFeature,
     &kIPHTabSwitcherButtonFeature,
+    &kIPHTabSwitcherFloatingActionButtonFeature,
     &kIPHTranslateMenuButtonFeature,
     &kIPHVideoTutorialNTPChromeIntroFeature,
     &kIPHVideoTutorialNTPDownloadFeature,
@@ -100,11 +112,11 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHSharedHighlightingReceiverFeature,
     &kIPHSharingHubWebnotesStylizeFeature,
     &kIPHRestoreTabsOnFREFeature,
+    &kIPHRtlGestureNavigationFeature,
 #endif  // BUILDFLAG(IS_ANDROID)
 #if BUILDFLAG(IS_IOS)
     &kIPHBottomToolbarTipFeature,
     &kIPHLongPressToolbarTipFeature,
-    &kIPHNewIncognitoTabTipFeature,
     &kIPHBadgedReadingListFeature,
     &kIPHWhatsNewFeature,
     &kIPHWhatsNewUpdatedFeature,
@@ -116,14 +128,12 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHPriceNotificationsWhileBrowsingFeature,
     &kIPHiOSDefaultBrowserBadgeEligibilityFeature,
     &kIPHiOSDefaultBrowserOverflowMenuBadgeFeature,
-    &kIPHiOSDefaultBrowserSettingsBadgeFeature,
     &kIPHiOSLensKeyboardFeature,
     &kIPHiOSPromoAppStoreFeature,
     &kIPHiOSPromoWhatsNewFeature,
     &kIPHiOSPromoPostRestoreFeature,
     &kIPHiOSPromoCredentialProviderExtensionFeature,
     &kIPHiOSPromoDefaultBrowserReminderFeature,
-    &kIPHiOSPromoOmniboxPositionFeature,
     &kIPHiOSNewTabToolbarItemFeature,
     &kIPHiOSTabGridToolbarItemFeature,
     &kIPHiOSHistoryOnOverflowMenuFeature,
@@ -146,10 +156,15 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHiOSOverflowMenuCustomizationFeature,
     &kIPHiOSPageInfoRevampFeature,
     &kIPHiOSInlineEnhancedSafeBrowsingPromoFeature,
+    &kIPHiOSSavedTabGroupClosed,
+    &kIPHiOSContextualPanelSampleModelFeature,
+    &kIPHiOSContextualPanelPriceInsightsFeature,
 #endif  // BUILDFLAG(IS_IOS)
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     &kEsbDownloadRowPromoFeature,
+#endif
     &kIPHBatterySaverModeFeature,
     &kIPHCompanionSidePanelFeature,
     &kIPHCompanionSidePanelRegionSearchFeature,
@@ -163,6 +178,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHDownloadEsbPromoFeature,
     &kIPHExperimentalAIPromoFeature,
     &kIPHExplicitBrowserSigninPreferenceRememberedFeature,
+    &kIPHHistorySearchFeature,
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     &kIPHExtensionsMenuFeature,
     &kIPHExtensionsRequestAccessButtonFeature,
@@ -173,7 +189,6 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHMemorySaverModeFeature,
     &kIPHLiveCaptionFeature,
     &kIPHTabAudioMutingFeature,
-    &kIPHPasswordsAccountStorageFeature,
     &kIPHPasswordsManagementBubbleAfterSaveFeature,
     &kIPHPasswordsManagementBubbleDuringSigninFeature,
     &kIPHPasswordsWebAppProfileSwitchFeature,
@@ -196,11 +211,10 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHSideSearchAutoTriggeringFeature,
     &kIPHSideSearchPageActionLabelFeature,
     &kIPHSignoutWebInterceptFeature,
+    &kIPHTabGroupsSaveV2IntroFeature,
+    &kIPHTabGroupsSaveV2CloseGroupFeature,
     &kIPHTabOrganizationSuccessFeature,
     &kIPHTabSearchFeature,
-    &kIPHTrackingProtectionOffboardingFeature,
-    &kIPHTrackingProtectionOnboardingFeature,
-    &kIPHTrackingProtectionReminderFeature,
     &kIPHWebUITabStripFeature,
     &kIPHDesktopPwaInstallFeature,
     &kIPHProfileSwitchFeature,
@@ -219,6 +233,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHAutofillVirtualCardCVCSuggestionFeature,
     &kIPHAutofillVirtualCardSuggestionFeature,
     &kIPHCookieControlsFeature,
+    &kIPHPlusAddressCreateSuggestionFeature,
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) ||
         // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID) ||
         // BUILDFLAG(IS_FUCHSIA)
@@ -263,11 +278,13 @@ const base::Feature* const kAllFeatures[] = {
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
     &kIPHDesktopPWAsLinkCapturingLaunch,
+    &kIPHToolbarManagementButtonFeature,
 #endif  // BUILDFLAG(IS_WIN) ||  BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 
 #if !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
     &kIPHiOSPasswordPromoDesktopFeature,
     &kIPHiOSAddressPromoDesktopFeature,
+    &kIPHiOSPaymentPromoDesktopFeature
 #endif  // !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 };
 }  // namespace

@@ -104,7 +104,9 @@ class PartialTranslateBubbleViewTest : public ChromeViewsTestBase {
     ChromeViewsTestBase::SetUp();
 
     // The bubble needs the parent as an anchor.
-    anchor_widget_ = CreateTestWidget(views::Widget::InitParams::TYPE_WINDOW);
+    anchor_widget_ =
+        CreateTestWidget(views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
+                         views::Widget::InitParams::TYPE_WINDOW);
     anchor_widget_->Show();
 
     mock_model_ = new FakePartialTranslateBubbleModel(
@@ -122,7 +124,7 @@ class PartialTranslateBubbleViewTest : public ChromeViewsTestBase {
   void PressButton(PartialTranslateBubbleView::ButtonID id) {
     views::Button* button =
         static_cast<views::Button*>(bubble_->GetViewByID(id));
-    ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_RETURN,
+    ui::KeyEvent key_event(ui::EventType::kKeyPressed, ui::VKEY_RETURN,
                            ui::DomCode::ENTER, ui::EF_NONE);
     views::test::ButtonTestApi(button).NotifyClick(key_event);
   }

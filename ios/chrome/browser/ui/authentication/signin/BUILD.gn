@@ -22,10 +22,10 @@ source_set("signin_headers") {
     "//base",
     "//components/signin/public/base",
     "//components/signin/public/identity_manager",
+    "//ios/chrome/browser/first_run/ui_bundled:interruptible_chrome_coordinator",
     "//ios/chrome/browser/shared/coordinator/chrome_coordinator",
     "//ios/chrome/browser/shared/model/browser_state",
     "//ios/chrome/browser/signin/model:capabilities_types",
-    "//ios/chrome/browser/ui/first_run:interruptible_chrome_coordinator",
   ]
 }
 
@@ -54,6 +54,7 @@ source_set("signin_impl") {
     "//components/sync/base:features",
     "//components/sync/service",
     "//ios/chrome/app:tests_hook",
+    "//ios/chrome/browser/first_run/ui_bundled:interruptible_chrome_coordinator",
     "//ios/chrome/browser/shared/model/browser",
     "//ios/chrome/browser/shared/model/prefs:pref_names",
     "//ios/chrome/browser/shared/public/features",
@@ -70,7 +71,6 @@ source_set("signin_impl") {
     "//ios/chrome/browser/ui/authentication/signin/signin_history_sync",
     "//ios/chrome/browser/ui/authentication/signin/trusted_vault_reauthentication",
     "//ios/chrome/browser/ui/authentication/signin/two_screens_signin",
-    "//ios/chrome/browser/ui/first_run:interruptible_chrome_coordinator",
   ]
 }
 
@@ -84,7 +84,7 @@ source_set("signin_screen_provider") {
   deps = [
     "//base",
     "//components/sync/base:features",
-    "//ios/chrome/browser/ui/first_run:field_trial",
+    "//ios/chrome/browser/first_run/ui_bundled:field_trial",
     "//ios/chrome/browser/ui/screen:screen_provider",
     "//ios/chrome/browser/ui/screen:screen_provider_protected",
     "//ios/chrome/browser/ui/screen:screen_type",
@@ -148,7 +148,8 @@ source_set("eg2_tests") {
     "//components/sync/base",
     "//components/sync/base:features",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser/bookmarks/model:bookmark_model_type",
+    "//ios/chrome/browser/bookmarks/model:bookmark_storage_type",
+    "//ios/chrome/browser/bookmarks/ui_bundled:eg_test_support+eg2",
     "//ios/chrome/browser/metrics/model:eg_test_support+eg2",
     "//ios/chrome/browser/policy/model:eg_test_support+eg2",
     "//ios/chrome/browser/policy/model:policy_util",
@@ -161,7 +162,6 @@ source_set("eg2_tests") {
     "//ios/chrome/browser/signin/model:test_constants",
     "//ios/chrome/browser/ui/authentication:eg_test_support+eg2",
     "//ios/chrome/browser/ui/authentication/views:views_constants",
-    "//ios/chrome/browser/ui/bookmarks:eg_test_support+eg2",
     "//ios/chrome/browser/ui/ntp:constants",
     "//ios/chrome/browser/ui/recent_tabs:recent_tabs_ui_constants",
     "//ios/chrome/browser/ui/settings:constants",

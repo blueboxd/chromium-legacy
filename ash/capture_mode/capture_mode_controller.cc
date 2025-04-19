@@ -18,10 +18,10 @@
 #include "ash/capture_mode/capture_mode_types.h"
 #include "ash/capture_mode/capture_mode_util.h"
 #include "ash/capture_mode/null_capture_mode_session.h"
+#include "ash/capture_mode/search_results_panel.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/notifier_catalogs.h"
 #include "ash/game_dashboard/game_dashboard_controller.h"
-#include "ash/public/cpp/capture_mode/recording_overlay_view.h"
 #include "ash/public/cpp/holding_space/holding_space_client.h"
 #include "ash/public/cpp/holding_space/holding_space_controller.h"
 #include "ash/public/cpp/new_window_delegate.h"
@@ -661,6 +661,13 @@ void CaptureModeController::StartRecordingInstantlyForGameDashboard(
                 }));
 }
 
+void CaptureModeController::StartSunfishSession() {
+  DCHECK(features::IsSunfishFeatureEnabled());
+  StartInternal(SessionType::kReal, CaptureModeEntryType::kSunfish);
+  // TODO(b/357658506): Implement sunfish behavior. Currently this will start
+  // what looks like the default capture mode session.
+}
+
 void CaptureModeController::Stop() {
   CHECK(IsActive());
   capture_mode_session_->ReportSessionHistograms();
@@ -881,20 +888,6 @@ void CaptureModeController::RefreshContentProtection() {
   }
 }
 
-void CaptureModeController::ToggleRecordingOverlayEnabled() {
-  CHECK(is_recording_in_progress());
-  CHECK(video_recording_watcher_);
-  CHECK(video_recording_watcher_->active_behavior()
-            ->ShouldCreateRecordingOverlayController());
-
-  video_recording_watcher_->ToggleRecordingOverlayEnabled();
-}
-
-std::unique_ptr<RecordingOverlayView>
-CaptureModeController::CreateRecordingOverlayView() {
-  return delegate_->CreateRecordingOverlayView();
-}
-
 bool CaptureModeController::IsRootDriveFsPath(
     const base::FilePath& path) const {
   base::FilePath mounted_path;
@@ -917,6 +910,11 @@ bool CaptureModeController::IsLinuxFilesPath(const base::FilePath& path) const {
 bool CaptureModeController::IsRootOneDriveFilesPath(
     const base::FilePath& path) const {
   return path == delegate_->GetOneDriveMountPointPath();
+}
+
+std::unique_ptr<AshWebView> CaptureModeController::CreateSearchResultsView()
+    const {
+  return delegate_->CreateSearchResultsView();
 }
 
 aura::Window* CaptureModeController::GetOnCaptureSurfaceWidgetParentWindow()
@@ -1014,6 +1012,16 @@ void CaptureModeController::MaybeUpdateVcPanel() {
 void CaptureModeController::CheckScreenCaptureDlpRestrictions(
     OnCaptureModeDlpRestrictionChecked callback) {
   delegate_->CheckCaptureModeInitRestrictionByDlp(std::move(callback));
+}
+
+bool CaptureModeController::ShouldAllowAnnotating() const {
+  return is_recording_in_progress() && IsAnnotatingSupported();
+}
+
+bool CaptureModeController::IsAnnotatingSupported() const {
+  return video_recording_watcher_ &&
+         video_recording_watcher_->active_behavior()
+             ->ShouldCreateAnnotationsOverlayController();
 }
 
 void CaptureModeController::OnRecordingEnded(
@@ -1505,10 +1513,16 @@ void CaptureModeController::CaptureImage(const CaptureParams& capture_params,
   // which doesn't go through the capture mode UI, and doesn't change |type_|.
   CHECK(delegate_->IsCaptureAllowedByPolicy());
 
-  // Stop the capture session now, so as not to take a screenshot of the capture
-  // bar.
-  if (IsActive()) {
-    CHECK_EQ(capture_mode_session_->active_behavior(), behavior);
+  // A screenshot can be requested via the fullscreen screenshot keyboard
+  // shortcut (which uses the default `behavior`) even though an active capture
+  // mode session belongs to a different `behavior` kind (e.g. Projector or
+  // Game Dashboard). In this case, the assumption is that the user wants to
+  // take a screenshot of the screen in its current state (i.e. while keeping
+  // the session active). Therefore, we don't stop the session in this case.
+  // See http://b/353908198 for more details.
+  if (IsActive() && behavior == capture_mode_session_->active_behavior()) {
+    // Other than the above mentioned case, we stop the session now, so the
+    // capture UIs don't end up in the screenshot.
     Stop();
   }
 
@@ -1521,6 +1535,8 @@ void CaptureModeController::CaptureImage(const CaptureParams& capture_params,
     cursor_manager->LockCursor();
   }
 
+  // Attempt the capture image. Note the callback `OnImageCaptured()` will only
+  // be invoked if an image was successfully captured.©
   ui::GrabWindowSnapshotAsPNG(
       capture_params.window, capture_params.bounds,
       base::BindOnce(&CaptureModeController::OnImageCaptured,
@@ -1536,6 +1552,8 @@ void CaptureModeController::CaptureImage(const CaptureParams& capture_params,
   capture_mode_util::TriggerAccessibilityAlert(
       IDS_ASH_SCREEN_CAPTURE_ALERT_SCREENSHOT_CAPTURED);
 
+  // Notifies DLP that taking a screenshot was attempted so that it may report
+  // the event or show a warning if restricted content was captured.
   delegate_->OnCaptureImageAttempted(capture_params.window,
                                      capture_params.bounds);
 }
@@ -1577,7 +1595,7 @@ void CaptureModeController::OnImageCaptured(
   }
   blocking_task_runner_->PostTaskAndReplyWithResult(
       FROM_HERE,
-      base::BindOnce(&SaveFile, png_bytes, path,
+      base::BindOnce(&SaveFile, png_bytes, delegate_->RedirectFilePath(path),
                      GetFallbackFilePathFromFile(path)),
       base::BindOnce(&CaptureModeController::OnImageFileSaved,
                      weak_ptr_factory_.GetWeakPtr(), png_bytes, behavior));
@@ -1588,6 +1606,22 @@ void CaptureModeController::OnImageFileSaved(
     const CaptureModeBehavior* behavior,
     const base::FilePath& file_saved_path) {
   if (file_saved_path.empty()) {
+    OnImageFileFinalized(png_bytes, behavior, /*success=*/false,
+                         file_saved_path);
+    return;
+  }
+  delegate_->FinalizeSavedFile(
+      base::BindOnce(&CaptureModeController::OnImageFileFinalized,
+                     weak_ptr_factory_.GetWeakPtr(), png_bytes, behavior),
+      file_saved_path);
+}
+
+void CaptureModeController::OnImageFileFinalized(
+    scoped_refptr<base::RefCountedMemory> png_bytes,
+    const CaptureModeBehavior* behavior,
+    bool success,
+    const base::FilePath& file_saved_path) {
+  if (!success) {
     ShowFailureNotification();
     return;
   }
@@ -1611,10 +1645,10 @@ void CaptureModeController::OnImageFileSaved(
 }
 
 void CaptureModeController::OnVideoFileSaved(
-    const base::FilePath& saved_video_file_path,
     const gfx::ImageSkia& video_thumbnail,
+    const CaptureModeBehavior* behavior,
     bool success,
-    const CaptureModeBehavior* behavior) {
+    const base::FilePath& saved_video_file_path) {
   DCHECK(base::CurrentUIThread::IsSet());
 
   if (!success) {
@@ -1672,14 +1706,9 @@ void CaptureModeController::ShowPreviewNotification(
     const CaptureModeBehavior* behavior) {
   const bool for_video = type == CaptureModeType::kVideo;
   const int title_id = GetNotificationTitleIdForFile(screen_capture_path);
-  int message_id;
-  if (for_video && low_disk_space_threshold_reached_) {
-    message_id = IDS_ASH_SCREEN_CAPTURE_LOW_STORAGE_SPACE_MESSAGE;
-  } else {
-    message_id = base::FeatureList::IsEnabled(features::kFileNotificationRevamp)
-                     ? kNoMessage
-                     : IDS_ASH_SCREEN_CAPTURE_MESSAGE;
-  }
+  const int message_id = for_video && low_disk_space_threshold_reached_
+                             ? IDS_ASH_SCREEN_CAPTURE_LOW_STORAGE_SPACE_MESSAGE
+                             : kNoMessage;
 
   message_center::RichNotificationData optional_fields;
   optional_fields.buttons = behavior->GetNotificationButtonsInfo(for_video);
@@ -1704,15 +1733,9 @@ void CaptureModeController::HandleNotificationClicked(
     const BehaviorType behavior_type,
     std::optional<int> button_index) {
   if (!button_index.has_value()) {
-    if (base::FeatureList::IsEnabled(features::kFileNotificationRevamp)) {
-      // Open the item with the default handler.
-      delegate_->OpenScreenCaptureItem(screen_capture_path);
-      RecordScreenshotNotificationQuickAction(CaptureQuickAction::kOpenDefault);
-    } else {
-      // Show the item in the folder.
-      delegate_->ShowScreenCaptureItemInFolder(screen_capture_path);
-      RecordScreenshotNotificationQuickAction(CaptureQuickAction::kFiles);
-    }
+    // Open the item with the default handler.
+    delegate_->OpenScreenCaptureItem(screen_capture_path);
+    RecordScreenshotNotificationQuickAction(CaptureQuickAction::kOpenDefault);
   } else {
     const int button_index_value = button_index.value();
     if (type == CaptureModeType::kVideo) {
@@ -2093,7 +2116,8 @@ void CaptureModeController::OnDlpRestrictionCheckedAtCountDownFinished(
   if (!GetCurrentCaptureFolder().is_default_downloads_folder) {
     blocking_task_runner_->PostTaskAndReplyWithResult(
         FROM_HERE,
-        base::BindOnce(&SelectFilePathForCapturedFile, current_path,
+        base::BindOnce(&SelectFilePathForCapturedFile,
+                       delegate_->RedirectFilePath(current_path),
                        GetFallbackFilePathFromFile(current_path)),
         base::BindOnce(&CaptureModeController::BeginVideoRecording,
                        weak_ptr_factory_.GetWeakPtr(), *capture_params));
@@ -2142,6 +2166,9 @@ void CaptureModeController::OnDlpRestrictionCheckedAtSessionInit(
   } else if (entry_type == CaptureModeEntryType::kGameDashboard) {
     CHECK(features::IsGameDashboardEnabled());
     behavior_type = BehaviorType::kGameDashboard;
+  } else if (entry_type == CaptureModeEntryType::kSunfish) {
+    DCHECK(features::IsSunfishFeatureEnabled());
+    behavior_type = BehaviorType::kSunfish;
   }
 
   RecordCaptureModeEntryType(entry_type);
@@ -2180,10 +2207,28 @@ void CaptureModeController::OnDlpRestrictionCheckedAtVideoEnd(
 
     DeleteFileAsync(blocking_task_runner_, video_file_path,
                     std::move(on_file_deleted_callback_for_test_));
+    OnVideoFileFinalized(/*should_delete_file=*/true, video_thumbnail);
   } else {
-    OnVideoFileSaved(video_file_path, video_thumbnail, success, behavior);
+    if (!success) {
+      OnVideoFileSaved(video_thumbnail, behavior, success, video_file_path);
+      OnVideoFileFinalized(/*should_delete_file=*/false, video_thumbnail);
+      return;
+    }
+    delegate_->FinalizeSavedFile(
+        base::BindOnce(&CaptureModeController::OnVideoFileSaved,
+                       weak_ptr_factory_.GetWeakPtr(), video_thumbnail,
+                       behavior)
+            .Then(base::BindOnce(&CaptureModeController::OnVideoFileFinalized,
+                                 weak_ptr_factory_.GetWeakPtr(),
+                                 /*should_delete_file=*/false,
+                                 video_thumbnail)),
+        video_file_path);
   }
+}
 
+void CaptureModeController::OnVideoFileFinalized(
+    bool should_delete_file,
+    const gfx::ImageSkia& video_thumbnail) {
   low_disk_space_threshold_reached_ = false;
   recording_start_time_ = base::TimeTicks();
 
@@ -2224,8 +2269,8 @@ void CaptureModeController::OnDlpRestrictionCheckedAtCaptureScreenshot(
     return;
   }
 
-  // Due to fact that the DLP warning dialog may take a while, check the
-  // enterprise policy again even though we checked in
+  // Due to the fact that the DLP warning dialog may take a while, check the
+  // enterprise policy again even though we checked it in
   // `CaptureInstantScreenshot()`.
   if (!delegate_->IsCaptureAllowedByPolicy()) {
     ShowDisabledNotification(CaptureAllowance::kDisallowedByPolicy);

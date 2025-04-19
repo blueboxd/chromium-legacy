@@ -65,6 +65,7 @@ public class GestureListenerManagerImpl
     private ViewAndroidDelegate mViewDelegate;
     private InternalAccessDelegate mScrollDelegate;
     private final boolean mHidePastePopupOnGSB;
+    private final boolean mResetGestureDetectionOnLosingFocus;
 
     private long mNativeGestureListenerManager;
 
@@ -114,6 +115,8 @@ public class GestureListenerManagerImpl
                         .init(GestureListenerManagerImpl.this, mWebContents);
         mHidePastePopupOnGSB =
                 ContentFeatureMap.isEnabled(ContentFeatureList.HIDE_PASTE_POPUP_ON_GSB);
+        mResetGestureDetectionOnLosingFocus =
+                !ContentFeatureMap.isEnabled(ContentFeatureList.CONTINUE_GESTURE_ON_LOSING_FOCUS);
     }
 
     public void resetGestureDetection() {
@@ -230,7 +233,9 @@ public class GestureListenerManagerImpl
 
     @Override
     public void onWindowFocusChanged(boolean gainFocus) {
-        if (!gainFocus) resetGestureDetection();
+        if (mResetGestureDetectionOnLosingFocus) {
+            if (!gainFocus) resetGestureDetection();
+        }
         for (mIterator.rewind(); mIterator.hasNext(); ) {
             mIterator.next().onWindowFocusChanged(gainFocus);
         }
@@ -335,6 +340,16 @@ public class GestureListenerManagerImpl
                         .getContainerView()
                         .performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
                 break;
+            case EventType.GESTURE_BEGIN:
+                for (mIterator.rewind(); mIterator.hasNext(); ) {
+                    mIterator.next().onGestureBegin();
+                }
+                break;
+            case EventType.GESTURE_END:
+                for (mIterator.rewind(); mIterator.hasNext(); ) {
+                    mIterator.next().onGestureEnd();
+                }
+                break;
             default:
                 break;
         }
@@ -374,8 +389,9 @@ public class GestureListenerManagerImpl
             mSelectionPopupController =
                     SelectionPopupControllerImpl.fromWebContentsNoCreate(mWebContents);
         }
-        if (mSelectionPopupController != null) {
-            mSelectionPopupController.destroyPastePopup();
+        if (mSelectionPopupController != null
+                && mSelectionPopupController.isPasteActionModeValid()) {
+            mSelectionPopupController.destroyActionModeAndKeepSelection();
         }
     }
 

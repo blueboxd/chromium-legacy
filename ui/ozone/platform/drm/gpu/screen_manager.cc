@@ -14,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/not_fatal_until.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/common/trace_event_common.h"
@@ -162,7 +163,7 @@ std::string GenerateConfigurationLogForController(
     if (param.mode) {
       const std::string size = ModeSize(*(param.mode.get())).ToString();
       const std::string refresh_rate =
-          base::NumberToString(param.mode->vrefresh);
+          base::NumberToString(ModeRefreshRate(*param.mode));
       mode = base::StrCat({size, "@", refresh_rate});
     } else {
       mode = "Disabled";
@@ -309,7 +310,8 @@ bool ScreenManager::ConfigureDisplayControllers(
   for (const auto& configs_on_drm : displays_for_drm_devices) {
     const std::vector<ControllerConfigParams>& drm_controllers_params =
         configs_on_drm.second;
-    VLOG(1) << "DRM " << (commit_modeset ? "configuring: " : "testing: ")
+    VLOG(1) << "DRM " << (is_seamless_modeset ? "seamlessly " : "")
+            << (commit_modeset ? "configuring: " : "testing: ")
             << GenerateConfigurationLogForController(drm_controllers_params);
 
     if (modeset_flags.Has(display::ModesetFlag::kTestModeset)) {
@@ -358,7 +360,7 @@ bool ScreenManager::TestAndSetPreferredModifiers(
 
   for (const auto& params : controllers_params) {
     auto it = FindDisplayController(params.drm, params.crtc);
-    DCHECK(controllers_.end() != it);
+    CHECK(controllers_.end() != it, base::NotFatalUntil::M130);
     HardwareDisplayController* controller = it->get();
 
     if (params.mode) {
@@ -410,7 +412,7 @@ bool ScreenManager::TestAndSetLinearModifier(
 
   for (const auto& params : controllers_params) {
     auto it = FindDisplayController(params.drm, params.crtc);
-    DCHECK(controllers_.end() != it);
+    CHECK(controllers_.end() != it, base::NotFatalUntil::M130);
     HardwareDisplayController* controller = it->get();
 
     uint32_t fourcc_format = GetFourCCFormatForOpaqueFramebuffer(
@@ -487,7 +489,7 @@ bool ScreenManager::TestModesetWithOverlays(
   auto drm = controllers_params[0].drm;
   for (const auto& params : controllers_params) {
     auto it = FindDisplayController(params.drm, params.crtc);
-    DCHECK(controllers_.end() != it);
+    CHECK(controllers_.end() != it, base::NotFatalUntil::M130);
     HardwareDisplayController* controller = it->get();
 
     if (params.mode) {
@@ -534,7 +536,7 @@ bool ScreenManager::Modeset(
   for (const auto& params : controllers_params) {
     if (params.mode) {
       auto it = FindDisplayController(params.drm, params.crtc);
-      DCHECK(controllers_.end() != it);
+      CHECK(controllers_.end() != it, base::NotFatalUntil::M130);
       HardwareDisplayController* controller = it->get();
 
       uint32_t fourcc_format = GetFourCCFormatForOpaqueFramebuffer(
@@ -577,7 +579,7 @@ void ScreenManager::SetDisplayControllerForEnableAndGetProps(
     const DrmOverlayPlaneList& modeset_planes,
     bool enable_vrr) {
   HardwareDisplayControllers::iterator it = FindDisplayController(drm, crtc);
-  DCHECK(controllers_.end() != it)
+  CHECK(controllers_.end() != it, base::NotFatalUntil::M130)
       << "Display controller (crtc=" << crtc << ") doesn't exist.";
 
   HardwareDisplayController* controller = it->get();

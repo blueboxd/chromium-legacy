@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/platform/p2p/ipc_socket_factory.h"
 
 #include <stddef.h>
@@ -62,6 +67,9 @@ bool JingleSocketOptionToP2PSocketOption(rtc::Socket::Option option,
       break;
     case rtc::Socket::OPT_DSCP:
       *ipc_option = network::P2P_SOCKET_OPT_DSCP;
+      break;
+    case rtc::Socket::OPT_RECV_ECN:
+      *ipc_option = network::P2P_SOCKET_OPT_RECV_ECN;
       break;
     case rtc::Socket::OPT_DONTFRAGMENT:
     case rtc::Socket::OPT_NODELAY:

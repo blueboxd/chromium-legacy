@@ -92,7 +92,8 @@ class SessionControllerClientImpl
   PrefService* GetSigninScreenPrefService() override;
   PrefService* GetUserPrefService(const AccountId& account_id) override;
   base::FilePath GetProfilePath(const AccountId& account_id) override;
-  bool IsEligibleForSeaPen(const AccountId& account_id) override;
+  std::tuple<bool, bool> IsEligibleForSeaPen(
+      const AccountId& account_id) override;
   std::optional<int> GetExistingUsersCount() const override;
 
   // Returns true if a multi-profile user can be added to the session or if
@@ -111,6 +112,7 @@ class SessionControllerClientImpl
   // session_manager::SessionManagerObserver:
   void OnSessionStateChanged() override;
   void OnUserProfileLoaded(const AccountId& account_id) override;
+  void OnUserSessionStartUpTaskCompleted() override;
 
   // SupervisedUserServiceObserver:
   void OnCustodianInfoChanged() override;

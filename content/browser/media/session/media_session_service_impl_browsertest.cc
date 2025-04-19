@@ -61,6 +61,9 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
                         const std::string& raw_device_id) override {}
   void OnSetMute(int player_id, bool mute) override {}
   void OnRequestMediaRemoting(int player_id) override {}
+  void OnRequestVisibility(
+      int player_id,
+      RequestVisibilityCallback request_visibility_callback) override {}
 
   std::optional<media_session::MediaPosition> GetPosition(
       int player_id) const override {
@@ -126,7 +129,6 @@ const int kPlayerId = 0;
 class MediaSessionServiceImplBrowserTest : public ContentBrowserTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ContentBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
                                     "MediaSession");
   }

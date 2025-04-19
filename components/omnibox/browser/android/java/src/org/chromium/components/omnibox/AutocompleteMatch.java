@@ -19,6 +19,7 @@ import org.jni_zero.JniType;
 import org.jni_zero.NativeMethods;
 
 import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;
+import org.chromium.components.omnibox.AnswerTypeProto.AnswerType;
 import org.chromium.components.omnibox.GroupsProto.GroupId;
 import org.chromium.components.omnibox.RichAnswerTemplateProto.RichAnswerTemplate;
 import org.chromium.components.omnibox.action.OmniboxAction;
@@ -73,6 +74,7 @@ public class AutocompleteMatch {
     private List<MatchClassification> mDescriptionClassifications;
     private SuggestionAnswer mAnswer;
     private @Nullable RichAnswerTemplate mAnswerTemplate;
+    private final AnswerType mAnswerType;
     private final String mFillIntoEdit;
     private GURL mUrl;
     private final GURL mImageUrl;
@@ -103,6 +105,7 @@ public class AutocompleteMatch {
             List<MatchClassification> descriptionClassifications,
             SuggestionAnswer answer,
             byte[] serializedAnswerTemplate,
+            int answerType,
             String fillIntoEdit,
             GURL url,
             GURL imageUrl,
@@ -137,6 +140,7 @@ public class AutocompleteMatch {
                 // When parsing error occurs, leave template as null.
             }
         }
+        mAnswerType = AnswerType.forNumber(answerType);
         mFillIntoEdit = TextUtils.isEmpty(fillIntoEdit) ? displayText : fillIntoEdit;
         assert url != null;
         mUrl = url;
@@ -171,6 +175,7 @@ public class AutocompleteMatch {
             int[] descriptionClassificationStyles,
             SuggestionAnswer answer,
             byte[] serializedAnswerTemplate,
+            int answerType,
             String fillIntoEdit,
             GURL url,
             GURL imageUrl,
@@ -181,7 +186,7 @@ public class AutocompleteMatch {
             int groupId,
             byte[] clipboardImageData,
             boolean hasTabMatch,
-            @JniType("std::vector") Object[] actions,
+            @JniType("std::vector") List<OmniboxAction> actions,
             boolean allowedToBeDefaultMatch,
             String inlineAutocompletion,
             String additionalText) {
@@ -211,6 +216,7 @@ public class AutocompleteMatch {
                         new ArrayList<>(),
                         answer,
                         serializedAnswerTemplate,
+                        answerType,
                         fillIntoEdit,
                         url,
                         imageUrl,
@@ -221,7 +227,7 @@ public class AutocompleteMatch {
                         groupId,
                         clipboardImageData,
                         hasTabMatch,
-                        (List<OmniboxAction>) (List<?>) Arrays.asList(actions),
+                        actions,
                         allowedToBeDefaultMatch,
                         inlineAutocompletion,
                         additionalText);
@@ -336,6 +342,10 @@ public class AutocompleteMatch {
 
     public @Nullable RichAnswerTemplate getAnswerTemplate() {
         return mAnswerTemplate;
+    }
+
+    public AnswerType getAnswerType() {
+        return mAnswerType;
     }
 
     public @NonNull String getFillIntoEdit() {

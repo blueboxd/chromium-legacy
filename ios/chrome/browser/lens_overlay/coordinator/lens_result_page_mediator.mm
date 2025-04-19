@@ -1,0 +1,270 @@
+// Copyright 2024 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#import "ios/chrome/browser/lens_overlay/coordinator/lens_result_page_mediator.h"
+
+#import <memory>
+
+#import "base/functional/bind.h"
+#import "base/strings/string_util.h"
+#import "base/strings/sys_string_conversions.h"
+#import "ios/chrome/browser/lens_overlay/coordinator/lens_result_page_web_state_delegate.h"
+#import "ios/chrome/browser/lens_overlay/ui/lens_result_page_consumer.h"
+#import "ios/chrome/browser/shared/public/commands/application_commands.h"
+#import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/tabs/model/tab_helper_util.h"
+#import "ios/web/public/navigation/web_state_policy_decider.h"
+#import "ios/web/public/navigation/web_state_policy_decider_bridge.h"
+#import "ios/web/public/web_state.h"
+#import "ios/web/public/web_state_delegate.h"
+#import "ios/web/public/web_state_delegate_bridge.h"
+#import "ios/web/public/web_state_observer_bridge.h"
+#import "net/base/apple/url_conversions.h"
+#import "net/base/url_util.h"
+#import "url/gurl.h"
+
+namespace {
+
+/// Returns whether the navigation is allowed inside of the result page.
+BOOL IsValidURLToOpenInResultsPage(const GURL& URL) {
+  std::string_view host = URL.host_piece();
+  return base::EqualsCaseInsensitiveASCII(host, "google.com") ||
+         base::EqualsCaseInsensitiveASCII(host, "www.google.com");
+}
+
+}  // namespace
+
+@interface LensResultPageMediator () <CRWWebStateDelegate,
+                                      CRWWebStateObserver,
+                                      CRWWebStatePolicyDecider>
+
+@end
+
+@implementation LensResultPageMediator {
+  /// WebState for lens results.
+  std::unique_ptr<web::WebState> _webState;
+  /// WebState delegate from the browser.
+  web::WebStateDelegate* _browserWebStateDelegate;
+  /// Web state policy decider.
+  std::unique_ptr<web::WebStatePolicyDeciderBridge> _policyDeciderBridge;
+  /// Whether the browser is off the record.
+  BOOL _isIncognito;
+  /// Web state delegate.
+  std::unique_ptr<web::WebStateDelegateBridge> _webStateDelegateBridge;
+  /// Bridges C++ WebStateObserver methods to this mediator.
+  std::unique_ptr<web::WebStateObserverBridge> _webStateObserverBridge;
+}
+
+- (instancetype)
+     initWithWebStateParams:(const web::WebState::CreateParams&)params
+    browserWebStateDelegate:(web::WebStateDelegate*)browserWebStateDelegate
+                isIncognito:(BOOL)isIncognito {
+  self = [super init];
+  if (self) {
+    _browserWebStateDelegate = browserWebStateDelegate;
+    _webStateDelegateBridge =
+        std::make_unique<web::WebStateDelegateBridge>(self);
+    _webStateObserverBridge =
+        std::make_unique<web::WebStateObserverBridge>(self);
+    [self attachWebState:web::WebState::Create(params)];
+    _isIncognito = isIncognito;
+  }
+  return self;
+}
+
+- (void)setConsumer:(id<LensResultPageConsumer>)consumer {
+  _consumer = consumer;
+  CHECK(_webState, kLensOverlayNotFatalUntil);
+  _webState->SetWebUsageEnabled(true);
+  [self.consumer setWebView:_webState->GetView()];
+  [self updateBackgroundColor];
+}
+
+- (void)setWebStateDelegate:
+    (id<LensResultPageWebStateDelegate>)webStateDelegate {
+  _webStateDelegate = webStateDelegate;
+  if (_webState) {
+    [self.webStateDelegate
+        lensResultPageDidChangeActiveWebState:_webState.get()];
+  }
+}
+
+- (void)disconnect {
+  _policyDeciderBridge.reset();
+  _webState->RemoveObserver(_webStateObserverBridge.get());
+  _webState.reset();
+  _webStateObserverBridge.reset();
+  _webStateDelegateBridge.reset();
+}
+
+#pragma mark - LensOverlayResultConsumer
+
+- (void)loadResultsURL:(GURL)URL {
+  CHECK(_webState, kLensOverlayNotFatalUntil);
+
+  _webState->OpenURL(web::WebState::OpenURLParams(
+      URL, web::Referrer(), WindowOpenDisposition::CURRENT_TAB,
+      ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false));
+}
+
+#pragma mark - CRWWebStatePolicyDecider
+
+- (void)shouldAllowRequest:(NSURLRequest*)request
+               requestInfo:(web::WebStatePolicyDecider::RequestInfo)requestInfo
+           decisionHandler:(PolicyDecisionHandler)decisionHandler {
+  GURL URL = net::GURLWithNSURL(request.URL);
+  if (requestInfo.target_frame_is_main && !IsValidURLToOpenInResultsPage(URL)) {
+    decisionHandler(web::WebStatePolicyDecider::PolicyDecision::Cancel());
+    OpenNewTabCommand* command =
+        [[OpenNewTabCommand alloc] initWithURL:URL
+                                      referrer:web::Referrer()
+                                   inIncognito:_isIncognito
+                                  inBackground:NO
+                                      appendTo:OpenPosition::kCurrentTab];
+    [self.applicationHandler openURLInNewTab:command];
+  } else {
+    decisionHandler(web::WebStatePolicyDecider::PolicyDecision::Allow());
+  }
+}
+
+#pragma mark - CRWWebStateObserver
+
+- (void)webState:(web::WebState*)webState
+    didFinishNavigation:(web::NavigationContext*)navigationContext {
+  [self updateBackgroundColor];
+}
+
+- (void)webStateDidChangeUnderPageBackgroundColor:(web::WebState*)webState {
+  [self updateBackgroundColor];
+}
+
+#pragma mark - CRWWebStateDelegate
+
+- (void)webState:(web::WebState*)webState
+    contextMenuConfigurationForParams:(const web::ContextMenuParams&)params
+                    completionHandler:(void (^)(UIContextMenuConfiguration*))
+                                          completionHandler {
+  completionHandler(nil);
+  // TODO(crbug.com/349100642): Add context menu configuration.
+}
+
+- (void)webState:(web::WebState*)webState
+    contextMenuWillCommitWithAnimator:
+        (id<UIContextMenuInteractionCommitAnimating>)animator {
+}
+
+- (UIView*)webViewContainerForWebState:(web::WebState*)webState {
+  if (CGRectIsEmpty(self.webViewContainer.frame)) {
+    return nil;
+  }
+  return self.webViewContainer;
+}
+
+- (void)closeWebState:(web::WebState*)webState {
+  // This should not happen in the result page.
+  NOTREACHED(kLensOverlayNotFatalUntil);
+}
+
+#pragma mark CRWWebStateDelegate with _browserWebStateDelegate
+
+- (web::WebState*)webState:(web::WebState*)webState
+    createNewWebStateForURL:(const GURL&)URL
+                  openerURL:(const GURL&)openerURL
+            initiatedByUser:(BOOL)initiatedByUser {
+  return _browserWebStateDelegate->CreateNewWebState(webState, URL, openerURL,
+                                                     initiatedByUser);
+}
+
+- (web::WebState*)webState:(web::WebState*)webState
+         openURLWithParams:(const web::WebState::OpenURLParams&)params {
+  return _browserWebStateDelegate->OpenURLFromWebState(webState, params);
+}
+
+- (web::JavaScriptDialogPresenter*)javaScriptDialogPresenterForWebState:
+    (web::WebState*)webState {
+  return _browserWebStateDelegate->GetJavaScriptDialogPresenter(webState);
+}
+
+- (void)webState:(web::WebState*)webState
+    handlePermissions:(NSArray<NSNumber*>*)permissions
+      decisionHandler:(web::WebStatePermissionDecisionHandler)decisionHandler {
+  _browserWebStateDelegate->HandlePermissionsDecisionRequest(
+      webState, permissions, decisionHandler);
+}
+
+- (void)webState:(web::WebState*)webState
+    didRequestHTTPAuthForProtectionSpace:(NSURLProtectionSpace*)protectionSpace
+                      proposedCredential:(NSURLCredential*)proposedCredential
+                       completionHandler:(void (^)(NSString* username,
+                                                   NSString* password))handler {
+  _browserWebStateDelegate->OnAuthRequired(
+      webState, protectionSpace, proposedCredential, base::BindOnce(handler));
+}
+
+// This API can be used to show custom input views in the web view.
+- (id<CRWResponderInputView>)webStateInputViewProvider:
+    (web::WebState*)webState {
+  return _browserWebStateDelegate->GetResponderInputView(webState);
+}
+
+#pragma mark - LensWebProvider
+
+- (web::WebState*)webState {
+  if (!_webState) {
+    return nullptr;
+  }
+  return _webState.get();
+}
+
+#pragma mark - Private
+
+/// Detaches and returns the current web state.
+- (std::unique_ptr<web::WebState>)detachWebState {
+  CHECK(_webState, kLensOverlayNotFatalUntil);
+  _policyDeciderBridge.reset();
+  _webState->RemoveObserver(_webStateObserverBridge.get());
+  _webState->SetDelegate(nullptr);
+  return std::move(_webState);
+}
+
+/// Attaches `webState` to the mediator.
+- (void)attachWebState:(std::unique_ptr<web::WebState>)webState {
+  /// Detach the current web state before attaching a new one.
+  CHECK(!_webState, kLensOverlayNotFatalUntil);
+  CHECK(!_policyDeciderBridge, kLensOverlayNotFatalUntil);
+  _webState = std::move(webState);
+  _webState->SetDelegate(_webStateDelegateBridge.get());
+  _webState->AddObserver(_webStateObserverBridge.get());
+  _policyDeciderBridge =
+      std::make_unique<web::WebStatePolicyDeciderBridge>(_webState.get(), self);
+  AttachTabHelpers(_webState.get(), TabHelperFilter::kBottomSheet);
+
+  if (self.consumer) {
+    _webState->SetWebUsageEnabled(true);
+    [self.consumer setWebView:_webState->GetView()];
+  }
+  [self.webStateDelegate lensResultPageDidChangeActiveWebState:_webState.get()];
+}
+
+/// Updates the consumer's background color.
+- (void)updateBackgroundColor {
+  UIColor* backgroundColor = _webState->GetUnderPageBackgroundColor();
+  if (backgroundColor) {
+    [self.consumer setBackgroundColor:backgroundColor];
+  }
+}
+
+#pragma mark - CRWWebStateObserver
+
+- (void)webStateDestroyed:(web::WebState*)webState {
+  if (_webState) {
+    _webState->RemoveObserver(_webStateObserverBridge.get());
+    _webStateObserverBridge.reset();
+  }
+
+  [self.webStateDelegate lensResultPageWebStateDestroyed];
+}
+
+@end

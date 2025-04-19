@@ -17,7 +17,7 @@
 #include "base/observer_list.h"
 #include "components/prefs/persistent_pref_store.h"
 #include "components/prefs/value_map_pref_store.h"
-#include "components/sync/base/model_type.h"
+#include "components/sync/base/data_type.h"
 #include "components/sync/service/sync_service_observer.h"
 
 namespace syncer {
@@ -48,13 +48,13 @@ class DualLayerUserPrefStore : public PersistentPrefStore,
   DualLayerUserPrefStore(const DualLayerUserPrefStore&) = delete;
   DualLayerUserPrefStore& operator=(const DualLayerUserPrefStore&) = delete;
 
-  // Marks `model_type` as enabled for account storage. This should be called
+  // Marks `data_type` as enabled for account storage. This should be called
   // when a data type starts syncing.
-  void EnableType(syncer::ModelType model_type);
-  // Unmarks `model_type` as enabled for account storage and removes all
+  void EnableType(syncer::DataType data_type);
+  // Unmarks `data_type` as enabled for account storage and removes all
   // corresponding preference entries(belonging to this type) from account
   // storage. This should be called when a data type stops syncing.
-  void DisableTypeAndClearAccountStore(syncer::ModelType model_type);
+  void DisableTypeAndClearAccountStore(syncer::DataType data_type);
 
   // Sets value for preference `key` only in the account store. This is meant
   // for use by sync components (specifically PrefModelAssociator) to insert
@@ -64,7 +64,7 @@ class DualLayerUserPrefStore : public PersistentPrefStore,
   // pref `key` is syncable.
   // TODO(crbug.com/40277783): Implement a better way to handle this usage by
   // the sync components.
-  void SetValueInAccountStoreOnly(const std::string& key,
+  void SetValueInAccountStoreOnly(std::string_view key,
                                   base::Value value,
                                   uint32_t flags);
 
@@ -83,16 +83,16 @@ class DualLayerUserPrefStore : public PersistentPrefStore,
   base::Value::Dict GetValues() const override;
 
   // WriteablePrefStore implementation.
-  void SetValue(const std::string& key,
+  void SetValue(std::string_view key,
                 base::Value value,
                 uint32_t flags) override;
-  void RemoveValue(const std::string& key, uint32_t flags) override;
-  bool GetMutableValue(const std::string& key, base::Value** result) override;
-  void ReportValueChanged(const std::string& key, uint32_t flags) override;
-  void SetValueSilently(const std::string& key,
+  void RemoveValue(std::string_view key, uint32_t flags) override;
+  bool GetMutableValue(std::string_view key, base::Value** result) override;
+  void ReportValueChanged(std::string_view key, uint32_t flags) override;
+  void SetValueSilently(std::string_view key,
                         base::Value value,
                         uint32_t flags) override;
-  void RemoveValuesByPrefixSilently(const std::string& prefix) override;
+  void RemoveValuesByPrefixSilently(std::string_view prefix) override;
 
   // PersistentPrefStore implementation.
   bool ReadOnly() const override;
@@ -112,7 +112,7 @@ class DualLayerUserPrefStore : public PersistentPrefStore,
   void OnSyncShutdown(syncer::SyncService* sync_service) override;
 
   // Return the set of active pref types.
-  base::flat_set<syncer::ModelType> GetActiveTypesForTest() const;
+  base::flat_set<syncer::DataType> GetActiveTypesForTest() const;
 
   bool IsHistorySyncEnabledForTest() const;
   void SetIsHistorySyncEnabledForTest(bool is_history_sync_enabled);
@@ -133,7 +133,7 @@ class DualLayerUserPrefStore : public PersistentPrefStore,
         delete;
 
     // PrefStore::Observer implementation.
-    void OnPrefValueChanged(const std::string& key) override;
+    void OnPrefValueChanged(std::string_view key) override;
     void OnInitializationCompleted(bool succeeded) override;
 
     bool initialization_succeeded() const;
@@ -151,29 +151,29 @@ class DualLayerUserPrefStore : public PersistentPrefStore,
   // Returns whether the pref with the given `key` should be inserted into the
   // account pref store. Note that the account store keeps in sync with the
   // account.
-  bool ShouldSetValueInAccountStore(const std::string& key) const;
+  bool ShouldSetValueInAccountStore(std::string_view key) const;
   // Returns whether the pref with the given `key` should be queried from the
   // account pref store. Note that the account store keeps in sync with the
   // account.
-  bool ShouldGetValueFromAccountStore(const std::string& key) const;
+  bool ShouldGetValueFromAccountStore(std::string_view key) const;
 
   // Returns whether the pref with the given `key` is mergeable.
-  bool IsPrefKeyMergeable(const std::string& key) const;
+  bool IsPrefKeyMergeable(std::string_view key) const;
 
   // Produces a "merged" view of `account_value` and `local_value`. In case
   // `pref_name` is a mergeable pref, a new merged pref is returned, which is
   // owned by `merged_prefs_`. Else, it returns a pointer to the account value,
   // given that in this case the account value overrides the local value.
-  const base::Value* MaybeMerge(const std::string& pref_name,
+  const base::Value* MaybeMerge(std::string_view pref_name,
                                 const base::Value& local_value,
                                 const base::Value& account_value) const;
-  base::Value* MaybeMerge(const std::string& pref_name,
+  base::Value* MaybeMerge(std::string_view pref_name,
                           base::Value& local_value,
                           base::Value& account_value);
 
   // Unmerges `value` and returns the new local value and the account value (in
   // that order).
-  std::pair<base::Value, base::Value> UnmergeValue(const std::string& pref_name,
+  std::pair<base::Value, base::Value> UnmergeValue(std::string_view pref_name,
                                                    base::Value value,
                                                    uint32_t flags) const;
 
@@ -211,7 +211,7 @@ class DualLayerUserPrefStore : public PersistentPrefStore,
       read_error_delegate_;
 
   // List of preference types currently syncing.
-  base::flat_set<syncer::ModelType> active_types_;
+  base::flat_set<syncer::DataType> active_types_;
 
   // Set to true while this store is setting prefs in the underlying stores.
   // Used to avoid self-notifications.
@@ -219,7 +219,7 @@ class DualLayerUserPrefStore : public PersistentPrefStore,
 
   bool is_history_sync_enabled_ = false;
 
-  base::ObserverList<PrefStore::Observer, true>::Unchecked observers_;
+  base::ObserverList<PrefStore::Observer, true> observers_;
 
   const scoped_refptr<PrefModelAssociatorClient> pref_model_associator_client_;
 };

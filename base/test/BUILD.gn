@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
 import("//build/compiled_action.gni")
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/features.gni")
@@ -57,6 +58,8 @@ static_library("test_support") {
     "bind.h",
     "copy_only_int.cc",
     "copy_only_int.h",
+    "fuzztest_init_helper.cc",
+    "fuzztest_init_helper.h",
     "gmock_callback_support.h",
     "gmock_expected_support.h",
     "gmock_move_support.h",
@@ -76,6 +79,8 @@ static_library("test_support") {
     "launcher/test_result.h",
     "launcher/test_results_tracker.h",
     "launcher/unit_test_launcher.h",
+    "metrics/action_suffix_reader.cc",
+    "metrics/action_suffix_reader.h",
     "metrics/histogram_enum_reader.cc",
     "metrics/histogram_enum_reader.h",
     "metrics/histogram_tester.cc",
@@ -91,6 +96,7 @@ static_library("test_support") {
     "mock_entropy_provider.h",
     "mock_log.cc",
     "mock_log.h",
+    "move_only_int.cc",
     "move_only_int.h",
     "multiprocess_test.h",
     "null_task_runner.cc",
@@ -158,6 +164,8 @@ static_library("test_support") {
     "test_simple_task_runner.h",
     "test_suite.cc",
     "test_suite.h",
+    "test_suite_helper.cc",
+    "test_suite_helper.h",
     "test_waitable_event.cc",
     "test_waitable_event.h",
     "thread_test_helper.cc",
@@ -249,6 +257,8 @@ static_library("test_support") {
 
   if (is_android) {
     sources += [
+      "android/content_uri_test_utils.cc",
+      "android/content_uri_test_utils.h",
       "android/java_handler_thread_helpers.cc",
       "android/java_handler_thread_helpers.h",
       "android/url_utils.cc",
@@ -472,7 +482,11 @@ if (is_android) {
   android_library("test_support_java") {
     testonly = true
 
+    mergeable_android_manifests =
+        [ "android/java/AndroidManifest_file_provider.xml" ]
+
     deps = [
+      ":file_provider_resources",
       "//base:base_java",
       "//base:process_launcher_java",
       "//testing/android/native_test:native_main_runner_java",
@@ -510,6 +524,11 @@ if (is_android) {
       "android/java/src/org/chromium/base/ITestCallback.aidl",
       "android/java/src/org/chromium/base/ITestController.aidl",
     ]
+  }
+
+  android_resources("file_provider_resources") {
+    testonly = true
+    sources = [ "android/java/res/xml/file_paths_file_provider.xml" ]
   }
 }
 
@@ -647,20 +666,26 @@ if (is_android) {
       "android/javatests/src/org/chromium/base/test/transit/ActivityElement.java",
       "android/javatests/src/org/chromium/base/test/transit/BatchedPublicTransitRule.java",
       "android/javatests/src/org/chromium/base/test/transit/CallbackCondition.java",
+      "android/javatests/src/org/chromium/base/test/transit/CarryOn.java",
       "android/javatests/src/org/chromium/base/test/transit/Condition.java",
       "android/javatests/src/org/chromium/base/test/transit/ConditionChecker.java",
       "android/javatests/src/org/chromium/base/test/transit/ConditionStatus.java",
+      "android/javatests/src/org/chromium/base/test/transit/ConditionStatusWithResult.java",
       "android/javatests/src/org/chromium/base/test/transit/ConditionWaiter.java",
+      "android/javatests/src/org/chromium/base/test/transit/ConditionWithResult.java",
       "android/javatests/src/org/chromium/base/test/transit/ConditionalState.java",
-      "android/javatests/src/org/chromium/base/test/transit/ElementInState.java",
+      "android/javatests/src/org/chromium/base/test/transit/DisplayedPortion.java",
+      "android/javatests/src/org/chromium/base/test/transit/Element.java",
+      "android/javatests/src/org/chromium/base/test/transit/ElementFactory.java",
       "android/javatests/src/org/chromium/base/test/transit/Elements.java",
       "android/javatests/src/org/chromium/base/test/transit/EntryPointSentinelStation.java",
       "android/javatests/src/org/chromium/base/test/transit/Facility.java",
       "android/javatests/src/org/chromium/base/test/transit/FacilityCheckIn.java",
       "android/javatests/src/org/chromium/base/test/transit/FacilityCheckOut.java",
+      "android/javatests/src/org/chromium/base/test/transit/FacilitySwap.java",
       "android/javatests/src/org/chromium/base/test/transit/InstrumentationThreadCondition.java",
-      "android/javatests/src/org/chromium/base/test/transit/ItemOnScreenFacility.java",
       "android/javatests/src/org/chromium/base/test/transit/LogicalElement.java",
+      "android/javatests/src/org/chromium/base/test/transit/MoreViewConditions.java",
       "android/javatests/src/org/chromium/base/test/transit/PublicTransitConfig.java",
       "android/javatests/src/org/chromium/base/test/transit/ScrollableFacility.java",
       "android/javatests/src/org/chromium/base/test/transit/Station.java",
@@ -673,7 +698,21 @@ if (is_android) {
       "android/javatests/src/org/chromium/base/test/transit/UiThreadCondition.java",
       "android/javatests/src/org/chromium/base/test/transit/ViewConditions.java",
       "android/javatests/src/org/chromium/base/test/transit/ViewElement.java",
-      "android/javatests/src/org/chromium/base/test/transit/ViewElementInState.java",
+      "android/javatests/src/org/chromium/base/test/transit/ViewSpec.java",
+    ]
+  }
+
+  robolectric_library("public_transit_robolectric_tests_java") {
+    deps = [
+      ":public_transit_java",
+      "//base:base_java_test_support",
+      "//base:base_junit_test_support",
+      "//base:callback_java",
+      "//third_party/junit",
+    ]
+
+    sources = [
+      "android/javatests/src/org/chromium/base/test/transit/TripUnitTest.java",
     ]
   }
 }
@@ -684,5 +723,23 @@ source_set("fuzztest_support") {
   deps = [
     "//base",
     "//third_party/fuzztest:fuzztest_internal",
+  ]
+}
+
+buildflag_header("confirm_fuzztest_init_buildflags") {
+  header = "confirm_fuzztest_init_buildflags.h"
+  flags =
+      [ "REGISTER_FUZZTESTS_IN_TEST_SUITES=$register_fuzztests_in_test_suites" ]
+}
+
+# Contains a static initializer which will arrange for fuzztests to be
+# registered. Usually invoked from testing/test.gni
+source_set("confirm_fuzztest_init") {
+  sources = [ "confirm_fuzztest_init.cc" ]
+  testonly = true
+  deps = [
+    ":confirm_fuzztest_init_buildflags",
+    ":test_support",
+    "//third_party/fuzztest:init_fuzztest",
   ]
 }

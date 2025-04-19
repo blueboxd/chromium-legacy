@@ -36,8 +36,8 @@
 #include "base/unguessable_token.h"
 #include "net/cookies/site_for_cookies.h"
 #include "net/filter/source_stream.h"
+#include "net/storage_access_api/status.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "services/network/public/cpp/attribution_reporting_runtime_features.h"
 #include "services/network/public/mojom/attribution.mojom-blink.h"
 #include "services/network/public/mojom/chunked_data_pipe_getter.mojom-blink-forward.h"
 #include "services/network/public/mojom/cors.mojom-blink-forward.h"
@@ -529,7 +529,7 @@ class PLATFORM_EXPORT ResourceRequestHead {
 
   void SetFavicon(bool enabled) { is_favicon_ = enabled; }
 
-  bool PrefetchMaybeForTopLeveNavigation() const {
+  bool PrefetchMaybeForTopLevelNavigation() const {
     return prefetch_maybe_for_top_level_navigation_;
   }
   void SetPrefetchMaybeForTopLevelNavigation(
@@ -576,10 +576,12 @@ class PLATFORM_EXPORT ResourceRequestHead {
     return render_blocking_behavior_;
   }
 
-  void SetHasStorageAccess(bool has_storage_access) {
-    has_storage_access_ = has_storage_access;
+  void SetStorageAccessApiStatus(net::StorageAccessApiStatus status) {
+    storage_access_api_status_ = status;
   }
-  bool GetHasStorageAccess() const { return has_storage_access_; }
+  net::StorageAccessApiStatus GetStorageAccessApiStatus() const {
+    return storage_access_api_status_;
+  }
 
   network::mojom::AttributionSupport GetAttributionReportingSupport() const {
     return attribution_reporting_support_;
@@ -598,16 +600,6 @@ class PLATFORM_EXPORT ResourceRequestHead {
   void SetAttributionReportingEligibility(
       network::mojom::AttributionReportingEligibility eligibility) {
     attribution_reporting_eligibility_ = eligibility;
-  }
-
-  const network::AttributionReportingRuntimeFeatures&
-  GetAttributionReportingRuntimeFeatures() const {
-    return attribution_reporting_runtime_features_;
-  }
-
-  void SetAttributionReportingRuntimeFeatures(
-      network::AttributionReportingRuntimeFeatures runtime_features) {
-    attribution_reporting_runtime_features_ = runtime_features;
   }
 
   const std::optional<base::UnguessableToken>& GetAttributionSrcToken() const {
@@ -640,6 +632,16 @@ class PLATFORM_EXPORT ResourceRequestHead {
       return;
     }
     service_worker_race_network_request_token_ = token;
+  }
+
+  void SetKnownTransparentPlaceholderImageIndex(wtf_size_t index) {
+    known_transparent_placeholder_image_index_ = index;
+  }
+
+  // TODO(crbug.com/41496436): Make the optimizations referencing the index
+  // applicable to all static resource loads.
+  wtf_size_t GetKnownTransparentPlaceholderImageIndex() const {
+    return known_transparent_placeholder_image_index_;
   }
 
  private:
@@ -768,17 +770,15 @@ class PLATFORM_EXPORT ResourceRequestHead {
       base::RefCountedData<base::flat_set<net::SourceStream::SourceType>>>
       devtools_accepted_stream_types_;
 
-  bool has_storage_access_ = false;
+  net::StorageAccessApiStatus storage_access_api_status_ =
+      net::StorageAccessApiStatus::kNone;
 
   network::mojom::AttributionSupport attribution_reporting_support_ =
-      network::mojom::AttributionSupport::kWeb;
+      network::mojom::AttributionSupport::kUnset;
 
   network::mojom::AttributionReportingEligibility
       attribution_reporting_eligibility_ =
           network::mojom::AttributionReportingEligibility::kUnset;
-
-  network::AttributionReportingRuntimeFeatures
-      attribution_reporting_runtime_features_;
 
   std::optional<base::UnguessableToken> attribution_reporting_src_token_;
 
@@ -787,6 +787,12 @@ class PLATFORM_EXPORT ResourceRequestHead {
   // TODO(crbug.com/1413922): Remove this flag when we launch
   // CompressionDictionaryTransport feature.
   bool shared_dictionary_writer_enabled_ = false;
+
+  // The request is for a known transparent placeholder image, which enables us
+  // to bypass as much processing as possible.
+  // TODO(crbug.com/41496436): Make all the optimizations referencing the flag
+  // applicable to all static resource load.
+  wtf_size_t known_transparent_placeholder_image_index_ = kNotFound;
 
   std::optional<base::UnguessableToken>
       service_worker_race_network_request_token_;

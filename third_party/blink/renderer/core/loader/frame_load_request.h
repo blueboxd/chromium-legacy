@@ -78,11 +78,11 @@ struct CORE_EXPORT FrameLoadRequest {
     return resource_request_;
   }
 
-  void SetClientRedirectReason(ClientNavigationReason reason) {
+  void SetClientNavigationReason(ClientNavigationReason reason) {
     client_navigation_reason_ = reason;
   }
 
-  ClientNavigationReason ClientRedirectReason() const {
+  ClientNavigationReason GetClientNavigationReason() const {
     return client_navigation_reason_;
   }
 
@@ -172,6 +172,7 @@ struct CORE_EXPORT FrameLoadRequest {
   }
 
   void SetNoOpener() { window_features_.noopener = true; }
+  void SetExplicitOpener() { window_features_.explicit_opener = true; }
   void SetNoReferrer() {
     should_send_referrer_ = kNeverSendReferrer;
     resource_request_.SetReferrerString(Referrer::NoReferrer());
@@ -208,13 +209,6 @@ struct CORE_EXPORT FrameLoadRequest {
   }
   mojom::blink::ForceHistoryPush ForceHistoryPush() const {
     return force_history_push_;
-  }
-
-  bool IsFullscreenRequested() const {
-    // If the window was requested as fullscreen and a popup, then the loaded
-    // frame should enter fullscreen.
-    // See: https://chromestatus.com/feature/6002307972464640
-    return GetWindowFeatures().is_fullscreen && GetWindowFeatures().is_popup;
   }
 
   // This function is meant to be used in HTML/SVG attributes where dangling

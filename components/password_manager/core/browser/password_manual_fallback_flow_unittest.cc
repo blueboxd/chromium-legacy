@@ -6,21 +6,25 @@
 
 #include <vector>
 
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "components/affiliations/core/browser/fake_affiliation_service.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/ui/autofill_suggestion_delegate.h"
+#include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/browser/ui/suggestion_test_helpers.h"
 #include "components/autofill/core/common/autofill_test_utils.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
+#include "components/autofill/core/common/unique_ids.h"
 #include "components/device_reauth/mock_device_authenticator.h"
 #include "components/password_manager/core/browser/affiliation/mock_affiliated_match_helper.h"
 #include "components/password_manager/core/browser/form_parsing/form_data_parser.h"
 #include "components/password_manager/core/browser/mock_password_form_cache.h"
 #include "components/password_manager/core/browser/password_form_digest.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
+#include "components/password_manager/core/browser/password_manual_fallback_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_store/test_password_store.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
@@ -50,6 +54,7 @@ using testing::Field;
 using testing::NiceMock;
 using testing::Return;
 using testing::ReturnRef;
+using testing::Test;
 
 constexpr const char kUrl[] = "https://example.com/";
 constexpr const char kPSLExtension[] = "https://psl.example.com/";
@@ -57,6 +62,12 @@ constexpr const char kUrlWithNoExactMatches[] = "https://www.foo.com/";
 
 constexpr char kShowSuggestionLatency[] =
     "PasswordManager.ManualFallback.ShowSuggestions.Latency";
+
+Suggestion::PasswordSuggestionDetails CreateTestPasswordDetails() {
+  return Suggestion::PasswordSuggestionDetails(
+      u"username", u"password", "https://google.com/", u"google.com",
+      /*is_cross_domain=*/false);
+}
 
 class MockAutofillClient : public TestAutofillClient {
  public:
@@ -89,10 +100,7 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
               FillSuggestion,
               (const std::u16string&, const std::u16string&),
               (override));
-  MOCK_METHOD(void,
-              FillField,
-              (FieldRendererId, const std::u16string&),
-              (override));
+  MOCK_METHOD(void, FillField, (const std::u16string&), (override));
   MOCK_METHOD(const GURL&, GetLastCommittedURL, (), (const override));
 };
 
@@ -105,7 +113,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
               (ManagePasswordsReferrer),
               (override));
   MOCK_METHOD(bool,
-              CanUseBiometricAuthForFilling,
+              IsReauthBeforeFillingRequired,
               (device_reauth::DeviceAuthenticator*),
               (override));
   MOCK_METHOD(std::unique_ptr<device_reauth::DeviceAuthenticator>,
@@ -118,6 +126,10 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
               (const override));
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || \
     BUILDFLAG(IS_CHROMEOS)
+  MOCK_METHOD(void,
+              OpenPasswordDetailsBubble,
+              (const password_manager::PasswordForm& form),
+              (override));
   MOCK_METHOD(std::unique_ptr<PasswordCrossDomainConfirmationPopupController>,
               ShowCrossDomainConfirmationPopup,
               (const gfx::RectF& element_bounds,
@@ -140,7 +152,7 @@ class MockAffiliationService : public affiliations::FakeAffiliationService {
               (const override));
 };
 
-class PasswordManualFallbackFlowTest : public ::testing::Test {
+class PasswordManualFallbackFlowTest : public Test {
  public:
   PasswordManualFallbackFlowTest() {
     ON_CALL(password_manager_client(), GetProfilePasswordStore)
@@ -152,16 +164,25 @@ class PasswordManualFallbackFlowTest : public ::testing::Test {
     mock_affiliated_match_helper_ = profile_store_match_helper.get();
     profile_password_store().Init(/*prefs=*/nullptr,
                                   std::move(profile_store_match_helper));
-    // Add 1 password form to the password store.
-    PasswordForm form =
-        CreateEntry("username@example.com", "password", GURL(kUrl),
-                    PasswordForm::MatchType::kExact);
-    profile_password_store().AddLogin(form);
   }
 
   ~PasswordManualFallbackFlowTest() override {
     mock_affiliated_match_helper_ = nullptr;
     profile_password_store_->ShutdownOnUIThread();
+  }
+
+  void SetUp() override {
+    Test::SetUp();
+
+    // Add 1 password form to the password store.
+    profile_password_store().AddLogin(
+        CreateEntry("username@example.com", "password", GURL(kUrl),
+                    PasswordForm::MatchType::kExact));
+  }
+
+  void TearDown() override {
+    profile_password_store().Clear();
+    Test::TearDown();
   }
 
   PasswordManualFallbackFlow& flow() { return *flow_; }
@@ -207,16 +228,31 @@ class PasswordManualFallbackFlowTest : public ::testing::Test {
             &affiliation_service(), profile_password_store_,
             /*account_password_store_=*/nullptr);
 
+    manual_fallback_metrics_recorder_ =
+        std::make_unique<PasswordManualFallbackMetricsRecorder>();
+
     flow_ = std::make_unique<PasswordManualFallbackFlow>(
         &driver(), &autofill_client(), &password_manager_client(),
-        &password_form_cache(), std::move(passwords_presenter));
+        manual_fallback_metrics_recorder_.get(), &password_form_cache(),
+        std::move(passwords_presenter));
+  }
+
+  void ShowAndAcceptSuggestion(
+      const Suggestion& suggestion,
+      const autofill::AutofillSuggestionDelegate::SuggestionPosition&
+          position) {
+    // In production, suggestions cannot be accepted if not shown first.
+    // Simulating showing them in tests is mandatory, otherwise a `CHECK` error
+    // would occur while logging metrics.
+    flow().OnSuggestionsShown();
+    flow().DidAcceptSuggestion(suggestion, position);
   }
 
   // The test fixture relies on the fact that `TestPasswordStore` performs all
   // operation asynchronously.
   void ProcessPasswordStoreUpdates() { task_environment_.RunUntilIdle(); }
 
- private:
+ protected:
   base::test::SingleThreadTaskEnvironment task_environment_;
   AutofillUnitTestEnvironment autofill_test_environment_;
   std::unique_ptr<NiceMock<MockPasswordManagerDriver>> driver_ =
@@ -227,6 +263,8 @@ class PasswordManualFallbackFlowTest : public ::testing::Test {
       password_manager_client_ =
           std::make_unique<NiceMock<MockPasswordManagerClient>>();
   NiceMock<MockPasswordFormCache> password_form_cache_;
+  std::unique_ptr<PasswordManualFallbackMetricsRecorder>
+      manual_fallback_metrics_recorder_;
   std::unique_ptr<NiceMock<MockAffiliationService>> affiliation_service_ =
       std::make_unique<NiceMock<MockAffiliationService>>();
   raw_ptr<MockAffiliatedMatchHelper> mock_affiliated_match_helper_;
@@ -546,16 +584,15 @@ TEST_F(PasswordManualFallbackFlowTest, AcceptUsernameFieldByFieldSuggestion) {
   const FieldRendererId field_id = MakeFieldRendererId();
   flow().RunFlow(field_id, gfx::RectF{}, TextDirection::LEFT_TO_RIGHT);
 
-  EXPECT_CALL(driver(),
-              FillField(field_id, std::u16string(u"username@example.com")));
+  EXPECT_CALL(driver(), FillField(std::u16string(u"username@example.com")));
   EXPECT_CALL(
       autofill_client(),
       HideAutofillSuggestions(SuggestionHidingReason::kAcceptSuggestion));
-  flow().DidAcceptSuggestion(autofill::test::CreateAutofillSuggestion(
-                                 SuggestionType::kPasswordFieldByFieldFilling,
-                                 u"username@example.com"),
-                             AutofillSuggestionDelegate::SuggestionPosition{
-                                 .row = 0, .sub_popup_level = 1});
+  ShowAndAcceptSuggestion(autofill::test::CreateAutofillSuggestion(
+                              SuggestionType::kPasswordFieldByFieldFilling,
+                              u"username@example.com"),
+                          AutofillSuggestionDelegate::SuggestionPosition{
+                              .row = 0, .sub_popup_level = 1});
 }
 
 // Test that both username and password are previewed if the suggestion is
@@ -572,7 +609,7 @@ TEST_F(PasswordManualFallbackFlowTest,
                                           std::u16string(u"password")));
   Suggestion suggestion = autofill::test::CreateAutofillSuggestion(
       SuggestionType::kPasswordEntry, u"google.com",
-      Suggestion::PasswordSuggestionDetails(u"password"));
+      CreateTestPasswordDetails());
   suggestion.labels = {{Suggestion::Text(u"username")}};
   // `suggestion.is_acceptable` is `true` if the popup is triggered on a
   // password form.
@@ -594,7 +631,7 @@ TEST_F(PasswordManualFallbackFlowTest,
               PreviewSuggestion(std::u16string(), std::u16string(u"password")));
   Suggestion suggestion = autofill::test::CreateAutofillSuggestion(
       SuggestionType::kPasswordEntry, u"google.com",
-      Suggestion::PasswordSuggestionDetails(u"password"));
+      CreateTestPasswordDetails());
   suggestion.labels = {{Suggestion::Text(
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_EMPTY_LOGIN))}};
   // `suggestion.is_acceptable` is `true` if the popup is triggered on a
@@ -616,7 +653,7 @@ TEST_F(PasswordManualFallbackFlowTest,
   EXPECT_CALL(driver(), PreviewSuggestion).Times(0);
   Suggestion suggestion = autofill::test::CreateAutofillSuggestion(
       SuggestionType::kPasswordEntry, u"google.com",
-      Suggestion::PasswordSuggestionDetails(u"password"));
+      CreateTestPasswordDetails());
   suggestion.labels = {{Suggestion::Text(u"username")}};
   // `suggestion.is_acceptable` is `false` if the popup is triggered on a
   // different type of form or a standalone field.
@@ -635,20 +672,20 @@ TEST_F(PasswordManualFallbackFlowTest,
   flow().RunFlow(MakeFieldRendererId(), gfx::RectF{},
                  TextDirection::LEFT_TO_RIGHT);
 
-  EXPECT_CALL(password_manager_client(), CanUseBiometricAuthForFilling)
+  EXPECT_CALL(password_manager_client(), IsReauthBeforeFillingRequired)
       .WillOnce(Return(false));
   EXPECT_CALL(driver(), FillSuggestion(std::u16string(u"username"),
                                        std::u16string(u"password")));
   Suggestion suggestion = autofill::test::CreateAutofillSuggestion(
       SuggestionType::kPasswordEntry, u"google.com",
-      Suggestion::PasswordSuggestionDetails(u"password"));
+      CreateTestPasswordDetails());
   suggestion.labels = {{Suggestion::Text(u"username")}};
   // `suggestion.is_acceptable` is `true` if the popup is triggered on a
   // password form.
   suggestion.is_acceptable = true;
-  flow().DidAcceptSuggestion(suggestion,
-                             AutofillSuggestionDelegate::SuggestionPosition{
-                                 .row = 0, .sub_popup_level = 0});
+  ShowAndAcceptSuggestion(suggestion,
+                          AutofillSuggestionDelegate::SuggestionPosition{
+                              .row = 0, .sub_popup_level = 0});
 }
 
 // Tests that no credentials are filled if the authentication fails. The popup
@@ -666,7 +703,7 @@ TEST_F(PasswordManualFallbackFlowTest,
   EXPECT_CALL(*authenticator, AuthenticateWithMessage)
       .WillOnce(RunOnceCallback<1>(/*auth_succeeded=*/false));
 
-  EXPECT_CALL(password_manager_client(), CanUseBiometricAuthForFilling)
+  EXPECT_CALL(password_manager_client(), IsReauthBeforeFillingRequired)
       .WillOnce(Return(true));
   EXPECT_CALL(password_manager_client(), GetDeviceAuthenticator)
       .WillOnce(Return(testing::ByMove(std::move(authenticator))));
@@ -677,14 +714,14 @@ TEST_F(PasswordManualFallbackFlowTest,
   base::ScopedMockElapsedTimersForTest mock_elapsed_timers_;
   Suggestion suggestion = autofill::test::CreateAutofillSuggestion(
       SuggestionType::kPasswordEntry, u"google.com",
-      Suggestion::PasswordSuggestionDetails(u"password"));
+      CreateTestPasswordDetails());
   suggestion.labels = {{Suggestion::Text(u"username")}};
   // `suggestion.is_acceptable` is `true` if the popup is triggered on a
   // password form.
   suggestion.is_acceptable = true;
-  flow().DidAcceptSuggestion(suggestion,
-                             AutofillSuggestionDelegate::SuggestionPosition{
-                                 .row = 0, .sub_popup_level = 0});
+  ShowAndAcceptSuggestion(suggestion,
+                          AutofillSuggestionDelegate::SuggestionPosition{
+                              .row = 0, .sub_popup_level = 0});
   const int64_t kMockElapsedTime =
       base::ScopedMockElapsedTimersForTest::kMockElapsedTime.InMilliseconds();
   histograms.ExpectUniqueSample(
@@ -709,7 +746,7 @@ TEST_F(PasswordManualFallbackFlowTest,
   EXPECT_CALL(*authenticator, AuthenticateWithMessage)
       .WillOnce(RunOnceCallback<1>(/*auth_succeeded=*/true));
 
-  EXPECT_CALL(password_manager_client(), CanUseBiometricAuthForFilling)
+  EXPECT_CALL(password_manager_client(), IsReauthBeforeFillingRequired)
       .WillOnce(Return(true));
   EXPECT_CALL(password_manager_client(), GetDeviceAuthenticator)
       .WillOnce(Return(testing::ByMove(std::move(authenticator))));
@@ -721,14 +758,14 @@ TEST_F(PasswordManualFallbackFlowTest,
   base::ScopedMockElapsedTimersForTest mock_elapsed_timers_;
   Suggestion suggestion = autofill::test::CreateAutofillSuggestion(
       SuggestionType::kPasswordEntry, u"google.com",
-      Suggestion::PasswordSuggestionDetails(u"password"));
+      CreateTestPasswordDetails());
   suggestion.labels = {{Suggestion::Text(u"username")}};
   // `suggestion.is_acceptable` is `true` if the popup is triggered on a
   // password form.
   suggestion.is_acceptable = true;
-  flow().DidAcceptSuggestion(suggestion,
-                             AutofillSuggestionDelegate::SuggestionPosition{
-                                 .row = 0, .sub_popup_level = 0});
+  ShowAndAcceptSuggestion(suggestion,
+                          AutofillSuggestionDelegate::SuggestionPosition{
+                              .row = 0, .sub_popup_level = 0});
   const int64_t kMockElapsedTime =
       base::ScopedMockElapsedTimersForTest::kMockElapsedTime.InMilliseconds();
   histograms.ExpectUniqueSample(
@@ -752,15 +789,15 @@ TEST_F(PasswordManualFallbackFlowTest,
               FillSuggestion(std::u16string(), std::u16string(u"password")));
   Suggestion suggestion = autofill::test::CreateAutofillSuggestion(
       SuggestionType::kPasswordEntry, u"google.com",
-      Suggestion::PasswordSuggestionDetails(u"password"));
+      CreateTestPasswordDetails());
   suggestion.labels = {{Suggestion::Text(
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_EMPTY_LOGIN))}};
   // `suggestion.is_acceptable` is `true` if the popup is triggered on a
   // password form.
   suggestion.is_acceptable = true;
-  flow().DidAcceptSuggestion(suggestion,
-                             AutofillSuggestionDelegate::SuggestionPosition{
-                                 .row = 0, .sub_popup_level = 0});
+  ShowAndAcceptSuggestion(suggestion,
+                          AutofillSuggestionDelegate::SuggestionPosition{
+                              .row = 0, .sub_popup_level = 0});
 }
 
 // Test that the password suggestion is not filled if the popup is triggered
@@ -776,14 +813,14 @@ TEST_F(PasswordManualFallbackFlowTest,
   EXPECT_CALL(driver(), FillSuggestion).Times(0);
   Suggestion suggestion = autofill::test::CreateAutofillSuggestion(
       SuggestionType::kPasswordEntry, u"google.com",
-      Suggestion::PasswordSuggestionDetails(u"password"));
+      CreateTestPasswordDetails());
   suggestion.labels = {{Suggestion::Text(u"username")}};
   // `suggestion.is_acceptable` is `false` if the popup is triggered on a
   // different type of form or a standalone field.
   suggestion.is_acceptable = false;
-  flow().DidAcceptSuggestion(suggestion,
-                             AutofillSuggestionDelegate::SuggestionPosition{
-                                 .row = 0, .sub_popup_level = 0});
+  ShowAndAcceptSuggestion(suggestion,
+                          AutofillSuggestionDelegate::SuggestionPosition{
+                              .row = 0, .sub_popup_level = 0});
 }
 
 // Test that "Fill password" field-by-field suggestion is not previewed by the
@@ -799,7 +836,7 @@ TEST_F(PasswordManualFallbackFlowTest,
   EXPECT_CALL(driver(), PreviewField).Times(0);
   flow().DidSelectSuggestion(autofill::test::CreateAutofillSuggestion(
       SuggestionType::kFillPassword, u"Fill password",
-      Suggestion::PasswordSuggestionDetails(u"password")));
+      CreateTestPasswordDetails()));
 }
 
 // Tests that the password value is filled if the authentication is not
@@ -811,15 +848,14 @@ TEST_F(PasswordManualFallbackFlowTest, FillsPasswordIfAuthNotAvailable) {
   FieldRendererId field_id = MakeFieldRendererId();
   flow().RunFlow(field_id, gfx::RectF{}, TextDirection::LEFT_TO_RIGHT);
 
-  EXPECT_CALL(password_manager_client(), CanUseBiometricAuthForFilling)
+  EXPECT_CALL(password_manager_client(), IsReauthBeforeFillingRequired)
       .WillOnce(Return(false));
-  EXPECT_CALL(driver(), FillField(field_id, std::u16string(u"password")));
-  flow().DidAcceptSuggestion(
-      autofill::test::CreateAutofillSuggestion(
-          SuggestionType::kFillPassword, u"Fill password",
-          Suggestion::PasswordSuggestionDetails(u"password")),
-      AutofillSuggestionDelegate::SuggestionPosition{.row = 0,
-                                                     .sub_popup_level = 1});
+  EXPECT_CALL(driver(), FillField(std::u16string(u"password")));
+  ShowAndAcceptSuggestion(autofill::test::CreateAutofillSuggestion(
+                              SuggestionType::kFillPassword, u"Fill password",
+                              CreateTestPasswordDetails()),
+                          AutofillSuggestionDelegate::SuggestionPosition{
+                              .row = 0, .sub_popup_level = 1});
 }
 
 // Tests that password value if not filled if the authentication fails.
@@ -835,7 +871,7 @@ TEST_F(PasswordManualFallbackFlowTest, NoFillingIfAuthFails) {
   EXPECT_CALL(*authenticator, AuthenticateWithMessage)
       .WillOnce(RunOnceCallback<1>(/*auth_succeeded=*/false));
 
-  EXPECT_CALL(password_manager_client(), CanUseBiometricAuthForFilling)
+  EXPECT_CALL(password_manager_client(), IsReauthBeforeFillingRequired)
       .WillOnce(Return(true));
   EXPECT_CALL(password_manager_client(), GetDeviceAuthenticator)
       .WillOnce(Return(testing::ByMove(std::move(authenticator))));
@@ -843,12 +879,11 @@ TEST_F(PasswordManualFallbackFlowTest, NoFillingIfAuthFails) {
   EXPECT_CALL(driver(), FillField).Times(0);
   base::HistogramTester histograms;
   base::ScopedMockElapsedTimersForTest mock_elapsed_timers_;
-  flow().DidAcceptSuggestion(
-      autofill::test::CreateAutofillSuggestion(
-          SuggestionType::kFillPassword, u"Fill password",
-          Suggestion::PasswordSuggestionDetails(u"password")),
-      AutofillSuggestionDelegate::SuggestionPosition{.row = 0,
-                                                     .sub_popup_level = 1});
+  ShowAndAcceptSuggestion(autofill::test::CreateAutofillSuggestion(
+                              SuggestionType::kFillPassword, u"Fill password",
+                              CreateTestPasswordDetails()),
+                          AutofillSuggestionDelegate::SuggestionPosition{
+                              .row = 0, .sub_popup_level = 1});
   const int64_t kMockElapsedTime =
       base::ScopedMockElapsedTimersForTest::kMockElapsedTime.InMilliseconds();
   histograms.ExpectUniqueSample(
@@ -868,21 +903,23 @@ TEST_F(PasswordManualFallbackFlowTest, CrossDomainConfirmation) {
   const gfx::RectF element_bounds{10, 10, 100, 100};
   const auto text_direction = base::i18n::TextDirection::LEFT_TO_RIGHT;
   const GURL domain = driver().GetLastCommittedURL();
-  const std::u16string password_origin = u"password_origin";
+  const std::string password_origin = "password_origin";
 
   flow().RunFlow(MakeFieldRendererId(), element_bounds, text_direction);
 
-  EXPECT_CALL(password_manager_client(),
-              ShowCrossDomainConfirmationPopup(element_bounds, text_direction,
-                                               domain, password_origin, _));
+  EXPECT_CALL(
+      password_manager_client(),
+      ShowCrossDomainConfirmationPopup(element_bounds, text_direction, domain,
+                                       base::UTF8ToUTF16(password_origin), _));
   EXPECT_CALL(driver(), FillField).Times(0);
 
-  flow().DidAcceptSuggestion(
-      autofill::test::CreateAutofillSuggestion(
-          SuggestionType::kFillPassword, u"Fill password",
-          Suggestion::PasswordSuggestionDetails(u"password", password_origin,
-                                                /*is_cross_domain=*/true)),
-      AutofillSuggestionDelegate::SuggestionPosition{});
+  ShowAndAcceptSuggestion(autofill::test::CreateAutofillSuggestion(
+                              SuggestionType::kFillPassword, u"Fill password",
+                              Suggestion::PasswordSuggestionDetails(
+                                  u"username", u"password", password_origin,
+                                  base::UTF8ToUTF16(password_origin),
+                                  /*is_cross_domain=*/true)),
+                          AutofillSuggestionDelegate::SuggestionPosition{});
 }
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) ||
         // BUILDFLAG(IS_CHROMEOS)
@@ -900,20 +937,19 @@ TEST_F(PasswordManualFallbackFlowTest, FillsPasswordIfAuthSucceeds) {
   EXPECT_CALL(*authenticator, AuthenticateWithMessage)
       .WillOnce(RunOnceCallback<1>(/*auth_succeeded=*/true));
 
-  EXPECT_CALL(password_manager_client(), CanUseBiometricAuthForFilling)
+  EXPECT_CALL(password_manager_client(), IsReauthBeforeFillingRequired)
       .WillOnce(Return(true));
   EXPECT_CALL(password_manager_client(), GetDeviceAuthenticator)
       .WillOnce(Return(testing::ByMove(std::move(authenticator))));
 
-  EXPECT_CALL(driver(), FillField(field_id, std::u16string(u"password")));
+  EXPECT_CALL(driver(), FillField(std::u16string(u"password")));
   base::HistogramTester histograms;
   base::ScopedMockElapsedTimersForTest mock_elapsed_timers_;
-  flow().DidAcceptSuggestion(
-      autofill::test::CreateAutofillSuggestion(
-          SuggestionType::kFillPassword, u"Fill password",
-          Suggestion::PasswordSuggestionDetails(u"password")),
-      AutofillSuggestionDelegate::SuggestionPosition{.row = 0,
-                                                     .sub_popup_level = 1});
+  ShowAndAcceptSuggestion(autofill::test::CreateAutofillSuggestion(
+                              SuggestionType::kFillPassword, u"Fill password",
+                              CreateTestPasswordDetails()),
+                          AutofillSuggestionDelegate::SuggestionPosition{
+                              .row = 0, .sub_popup_level = 1});
   const int64_t kMockElapsedTime =
       base::ScopedMockElapsedTimersForTest::kMockElapsedTime.InMilliseconds();
   histograms.ExpectUniqueSample(
@@ -941,27 +977,25 @@ TEST_F(PasswordManualFallbackFlowTest, CancelsAuthIfPreviousNotFinished) {
       std::make_unique<device_reauth::MockDeviceAuthenticator>();
   EXPECT_CALL(*authenticator2, AuthenticateWithMessage);
 
-  EXPECT_CALL(password_manager_client(), CanUseBiometricAuthForFilling)
+  EXPECT_CALL(password_manager_client(), IsReauthBeforeFillingRequired)
       .Times(2)
       .WillRepeatedly(Return(true));
   EXPECT_CALL(password_manager_client(), GetDeviceAuthenticator)
       .Times(2)
       .WillOnce(Return(testing::ByMove(std::move(authenticator1))))
       .WillOnce(Return(testing::ByMove(std::move(authenticator2))));
-  flow().DidAcceptSuggestion(
-      autofill::test::CreateAutofillSuggestion(
-          SuggestionType::kFillPassword, u"Fill password",
-          Suggestion::PasswordSuggestionDetails(u"password")),
-      AutofillSuggestionDelegate::SuggestionPosition{.row = 0,
-                                                     .sub_popup_level = 1});
+  ShowAndAcceptSuggestion(autofill::test::CreateAutofillSuggestion(
+                              SuggestionType::kFillPassword, u"Fill password",
+                              CreateTestPasswordDetails()),
+                          AutofillSuggestionDelegate::SuggestionPosition{
+                              .row = 0, .sub_popup_level = 1});
 
   EXPECT_CALL(*authenticator1_ptr, Cancel);
-  flow().DidAcceptSuggestion(
-      autofill::test::CreateAutofillSuggestion(
-          SuggestionType::kFillPassword, u"Fill password",
-          Suggestion::PasswordSuggestionDetails(u"password")),
-      AutofillSuggestionDelegate::SuggestionPosition{.row = 0,
-                                                     .sub_popup_level = 1});
+  ShowAndAcceptSuggestion(autofill::test::CreateAutofillSuggestion(
+                              SuggestionType::kFillPassword, u"Fill password",
+                              CreateTestPasswordDetails()),
+                          AutofillSuggestionDelegate::SuggestionPosition{
+                              .row = 0, .sub_popup_level = 1});
 }
 
 // Test that unfinished authentication is cancelled if the flow object is
@@ -978,16 +1012,15 @@ TEST_F(PasswordManualFallbackFlowTest, CancelsAuthOnDestroy) {
   auto authenticator_ptr = authenticator.get();
   EXPECT_CALL(*authenticator, AuthenticateWithMessage);
 
-  EXPECT_CALL(password_manager_client(), CanUseBiometricAuthForFilling)
+  EXPECT_CALL(password_manager_client(), IsReauthBeforeFillingRequired)
       .WillOnce(Return(true));
   EXPECT_CALL(password_manager_client(), GetDeviceAuthenticator)
       .WillOnce(Return(testing::ByMove(std::move(authenticator))));
-  flow().DidAcceptSuggestion(
-      autofill::test::CreateAutofillSuggestion(
-          SuggestionType::kFillPassword, u"Fill password",
-          Suggestion::PasswordSuggestionDetails(u"password")),
-      AutofillSuggestionDelegate::SuggestionPosition{.row = 0,
-                                                     .sub_popup_level = 1});
+  ShowAndAcceptSuggestion(autofill::test::CreateAutofillSuggestion(
+                              SuggestionType::kFillPassword, u"Fill password",
+                              CreateTestPasswordDetails()),
+                          AutofillSuggestionDelegate::SuggestionPosition{
+                              .row = 0, .sub_popup_level = 1});
 
   EXPECT_CALL(*authenticator_ptr, Cancel);
 }
@@ -1023,7 +1056,7 @@ TEST_F(PasswordManualFallbackFlowTest, AcceptManagePasswordsEntry) {
               NavigateToManagePasswordsPage(
                   ManagePasswordsReferrer::kPasswordDropdown));
   base::HistogramTester histograms;
-  flow().DidAcceptSuggestion(
+  ShowAndAcceptSuggestion(
       autofill::test::CreateAutofillSuggestion(
           SuggestionType::kAllSavedPasswordsEntry, u"Manage passwords"),
       AutofillSuggestionDelegate::SuggestionPosition{.row = 1,
@@ -1032,5 +1065,114 @@ TEST_F(PasswordManualFallbackFlowTest, AcceptManagePasswordsEntry) {
       "PasswordManager.PasswordDropdownItemSelected",
       metrics_util::PasswordDropdownSelectedOption::kShowAll, 1);
 }
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || \
+    BUILDFLAG(IS_CHROMEOS)
+TEST_F(PasswordManualFallbackFlowTest, ShowPasswordDetails) {
+  PasswordForm form_com =
+      CreateEntry("username@google.com", "password",
+                  GURL("https://google.com/"), PasswordForm::MatchType::kExact);
+  PasswordForm form_de =
+      CreateEntry("username@google.com", "password", GURL("https://google.de/"),
+                  PasswordForm::MatchType::kExact);
+  profile_password_store().AddLogins({form_com, form_de});
+
+  InitializeFlow();
+  ProcessPasswordStoreUpdates();
+
+  flow().RunFlow(MakeFieldRendererId(), gfx::RectF{},
+                 TextDirection::LEFT_TO_RIGHT);
+
+  EXPECT_CALL(password_manager_client(), OpenPasswordDetailsBubble(form_de));
+  ShowAndAcceptSuggestion(
+      autofill::test::CreateAutofillSuggestion(
+          SuggestionType::kViewPasswordDetails, u"View details",
+          Suggestion::PasswordSuggestionDetails(
+              u"username@google.com", u"password", "https://google.de/",
+              u"google.de", false)),
+      AutofillSuggestionDelegate::SuggestionPosition{.row = 0,
+                                                     .sub_popup_level = 1});
+}
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) ||
+        // BUILDFLAG(IS_CHROMEOS)
+
+// This class tests that "FillAfterSuggestion" password metrics are recorded
+// correctly.
+// The first parameter determines whether the suggestion is accepted or not.
+// The second parameter determines whether the field is classified as target
+// filling password or not.
+class PasswordManualFallbackFlowFillAfterSuggestionMetricsTest
+    : public PasswordManualFallbackFlowTest,
+      public testing::WithParamInterface<std::tuple<bool, bool>> {
+ public:
+  // If true, the test will simulate both showing and accepting a suggestion. If
+  // false, the test will simulate only showing the suggestion.
+  bool SuggestionAccepted() const { return std::get<0>(GetParam()); }
+
+  bool IsClassifiedAsTargetFillingPassword() const {
+    return std::get<1>(GetParam());
+  }
+
+  // The metric name is dependent on whether the field is classified as target
+  // filling password or not.
+  std::string MetricName() const {
+    auto metric_name = [](std::string_view token) {
+      return base::StrCat(
+          {"Autofill.Funnel.", token, ".FillAfterSuggestion.Password"});
+    };
+    if (IsClassifiedAsTargetFillingPassword()) {
+      return metric_name("ClassifiedAsTargetFilling");
+    } else {
+      return metric_name("NotClassifiedAsTargetFilling");
+    }
+  }
+
+  void ResetFlowAndMetricsRecorder() {
+    // Reset `flow_` first since it hold a raw pointer to
+    // `manual_fallback_metrics_recorder_`. In production, `flow_` and
+    // `manual_fallback_metrics_recorder_` always die at the same time.
+    flow_.reset();
+    manual_fallback_metrics_recorder_.reset();
+  }
+};
+
+TEST_P(PasswordManualFallbackFlowFillAfterSuggestionMetricsTest,
+       MetricsAreRecorded) {
+  InitializeFlow();
+  ProcessPasswordStoreUpdates();
+
+  const FieldRendererId field_id = MakeFieldRendererId();
+  // Simulate that the field is/isn't classified as target filling password.
+  EXPECT_CALL(password_form_cache(), HasPasswordForm(_, field_id))
+      .WillRepeatedly(Return(IsClassifiedAsTargetFillingPassword()));
+
+  flow().RunFlow(field_id, gfx::RectF{}, TextDirection::LEFT_TO_RIGHT);
+
+  base::HistogramTester histograms;
+  if (SuggestionAccepted()) {
+    ShowAndAcceptSuggestion(
+        autofill::test::CreateAutofillSuggestion(
+            SuggestionType::kPasswordFieldByFieldFilling, u"password"),
+        AutofillSuggestionDelegate::SuggestionPosition{.row = 0,
+                                                       .sub_popup_level = 0});
+  } else {
+    flow().OnSuggestionsShown();
+  }
+  // The metric is recorded only in the destructor of the metrics recorder.
+  histograms.ExpectTotalCount(MetricName(), 0);
+  ResetFlowAndMetricsRecorder();
+  histograms.ExpectUniqueSample(MetricName(), SuggestionAccepted(), 1);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    PasswordManualFallbackFlowTest,
+    PasswordManualFallbackFlowFillAfterSuggestionMetricsTest,
+    ::testing::Combine(testing::Bool(), testing::Bool()),
+    [](const testing::TestParamInfo<std::tuple<bool, bool>>& info) {
+      return base::StrCat(
+          {std::get<0>(info.param) ? "SuggestionAccepted" : "SuggestionShown",
+           std::get<1>(info.param) ? "_ClassifiedAsTargetFilling"
+                                   : "_NotClassifiedAsTargetFilling"});
+    });
 
 }  // namespace password_manager

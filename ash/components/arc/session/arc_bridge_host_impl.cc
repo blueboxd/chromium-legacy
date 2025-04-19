@@ -24,6 +24,7 @@
 #include "ash/components/arc/mojom/digital_goods.mojom.h"
 #include "ash/components/arc/mojom/disk_space.mojom.h"
 #include "ash/components/arc/mojom/enterprise_reporting.mojom.h"
+#include "ash/components/arc/mojom/error_notification.mojom.h"
 #include "ash/components/arc/mojom/file_system.mojom.h"
 #include "ash/components/arc/mojom/iio_sensor.mojom.h"
 #include "ash/components/arc/mojom/ime.mojom.h"
@@ -32,7 +33,6 @@
 #include "ash/components/arc/mojom/keyboard_shortcut.mojom.h"
 #include "ash/components/arc/mojom/keymaster.mojom.h"
 #include "ash/components/arc/mojom/keymint.mojom.h"
-#include "ash/components/arc/mojom/kiosk.mojom.h"
 #include "ash/components/arc/mojom/media_session.mojom.h"
 #include "ash/components/arc/mojom/memory.mojom.h"
 #include "ash/components/arc/mojom/metrics.mojom.h"
@@ -215,6 +215,13 @@ void ArcBridgeHostImpl::OnEnterpriseReportingInstanceReady(
                   std::move(enterprise_reporting_remote));
 }
 
+void ArcBridgeHostImpl::OnErrorNotificationInstanceReady(
+    mojo::PendingRemote<mojom::ErrorNotificationInstance>
+        error_notification_remote) {
+  OnInstanceReady(arc_bridge_service_->error_notification(),
+                  std::move(error_notification_remote));
+}
+
 void ArcBridgeHostImpl::OnFileSystemInstanceReady(
     mojo::PendingRemote<mojom::FileSystemInstance> file_system_remote) {
   OnInstanceReady(arc_bridge_service_->file_system(),
@@ -261,11 +268,6 @@ void ArcBridgeHostImpl::OnKeymasterInstanceReady(
 void ArcBridgeHostImpl::OnKeyMintInstanceReady(
     mojo::PendingRemote<mojom::keymint::KeyMintInstance> keymint_remote) {
   OnInstanceReady(arc_bridge_service_->keymint(), std::move(keymint_remote));
-}
-
-void ArcBridgeHostImpl::OnKioskInstanceReady(
-    mojo::PendingRemote<mojom::KioskInstance> kiosk_remote) {
-  OnInstanceReady(arc_bridge_service_->kiosk(), std::move(kiosk_remote));
 }
 
 void ArcBridgeHostImpl::OnMediaSessionInstanceReady(
@@ -450,6 +452,7 @@ void ArcBridgeHostImpl::OnWebApkInstanceReady(
 }
 
 size_t ArcBridgeHostImpl::GetNumMojoChannelsForTesting() const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return mojo_channels_.size();
 }
 

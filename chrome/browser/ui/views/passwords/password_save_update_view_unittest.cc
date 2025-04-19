@@ -56,9 +56,6 @@ class PasswordSaveUpdateViewTest : public PasswordBubbleViewTestBase {
   }
 
   PasswordSaveUpdateView* view() { return view_; }
-  views::Combobox* account_picker() {
-    return view_->DestinationDropdownForTesting();
-  }
 
  protected:
   password_manager::PasswordForm pending_password_;
@@ -113,13 +110,6 @@ TEST_F(PasswordSaveUpdateViewTest, HasTitleAndTwoButtons) {
   EXPECT_TRUE(view()->GetCancelButton());
 }
 
-TEST_F(PasswordSaveUpdateViewTest, ShouldNotShowAccountPicker) {
-  ON_CALL(*feature_manager_mock(), ShouldShowAccountStorageBubbleUi)
-      .WillByDefault(Return(false));
-  CreateViewAndShow();
-  EXPECT_FALSE(account_picker());
-}
-
 TEST_F(PasswordSaveUpdateViewTest, ShouldSelectAccountStoreByDefault) {
   ON_CALL(*feature_manager_mock(), ShouldShowAccountStorageBubbleUi)
       .WillByDefault(Return(true));
@@ -152,7 +142,7 @@ TEST_F(PasswordSaveUpdateViewTest,
       kURL, web_contents()->GetPrimaryMainFrame());
 
   // Set the federation_origin to force a Federated Credentials bubble.
-  pending_password_.federation_origin = kOrigin;
+  pending_password_.federation_origin = url::SchemeHostPort(kURL);
   pending_password_.match_type =
       password_manager::PasswordForm::MatchType::kExact;
   CreateViewAndShow();

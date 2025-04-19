@@ -6,6 +6,7 @@
 #define IOS_CHROME_BROWSER_BROWSER_STATE_MODEL_CHROME_BROWSER_STATE_IMPL_H_
 
 #include <memory>
+#include <string_view>
 
 #include "base/task/sequenced_task_runner.h"
 #include "ios/chrome/browser/browser_state/model/chrome_browser_state_impl_io_data.h"
@@ -53,12 +54,14 @@ class ChromeBrowserStateImpl final : public ChromeBrowserState {
 
   // BrowserState:
   bool IsOffTheRecord() const override;
+  const std::string& GetWebKitStorageID() const override;
 
  private:
   friend class ChromeBrowserState;
 
   ChromeBrowserStateImpl(
       const base::FilePath& state_path,
+      std::string_view browser_state_name,
       scoped_refptr<base::SequencedTaskRunner> io_task_runner,
       CreationMode creation_mode,
       Delegate* delegate);
@@ -66,6 +69,12 @@ class ChromeBrowserStateImpl final : public ChromeBrowserState {
   // Sets the OffTheRecordChromeBrowserState.
   void SetOffTheRecordChromeBrowserState(
       std::unique_ptr<ChromeBrowserState> otr_state);
+
+  // Called when the PrefService is done loading (may be called synchronously
+  // if the creation is done with `CreationMode::kSynchronous`).
+  void OnPrefsLoaded(CreationMode creation_mode,
+                     bool is_new_browser_state,
+                     bool success);
 
   // The ChromeBrowserState::Delegate that will be notified of the progress
   // of the initialisation if not null.
@@ -97,6 +106,10 @@ class ChromeBrowserStateImpl final : public ChromeBrowserState {
   std::unique_ptr<ChromeBrowserStateImplIOData::Handle> io_data_;
 
   std::unique_ptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
+
+  // `storage_uuid_` can be empty if the profile already existed and no value is
+  // stored in PrefService. Use a default data store if it's empty.
+  std::string storage_uuid_;
 
   base::WeakPtrFactory<ChromeBrowserStateImpl> weak_ptr_factory_{this};
 

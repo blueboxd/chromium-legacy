@@ -15,7 +15,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/types/cxx23_to_underlying.h"
-#include "components/autofill/core/browser/data_model/autofill_metadata.h"
 #include "components/autofill/core/browser/data_model/autofill_offer_data.h"
 #include "components/autofill/core/browser/data_model/autofill_wallet_usage_data.h"
 #include "components/autofill/core/browser/data_model/bank_account.h"
@@ -23,6 +22,7 @@
 #include "components/autofill/core/browser/data_model/credit_card_benefit.h"
 #include "components/autofill/core/browser/data_model/credit_card_cloud_token_data.h"
 #include "components/autofill/core/browser/data_model/iban.h"
+#include "components/autofill/core/browser/data_model/payments_metadata.h"
 #include "components/autofill/core/browser/geo/autofill_country.h"
 #include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/webdata/addresses/address_autofill_table.h"
@@ -34,10 +34,8 @@
 #include "components/autofill/core/browser/webdata/payments/payments_autofill_table.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/form_field_data.h"
-#include "components/sync/base/model_type.h"
+#include "components/sync/base/data_type.h"
 #include "components/webdata/common/web_database_backend.h"
-
-using base::Time;
 
 namespace autofill {
 
@@ -135,7 +133,7 @@ AutofillWebDataBackendImpl::AutofillWebDataBackendImpl(
     scoped_refptr<WebDatabaseBackend> web_database_backend,
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
     scoped_refptr<base::SequencedTaskRunner> db_task_runner,
-    const base::RepeatingCallback<void(syncer::ModelType)>&
+    const base::RepeatingCallback<void(syncer::DataType)>&
         on_autofill_changed_by_sync_callback)
     : base::RefCountedDeleteOnSequence<AutofillWebDataBackendImpl>(
           std::move(db_task_runner)),
@@ -225,13 +223,13 @@ void AutofillWebDataBackendImpl::NotifyOfIbanChanged(const IbanChange& change) {
 }
 
 void AutofillWebDataBackendImpl::NotifyOnAutofillChangedBySync(
-    syncer::ModelType model_type) {
+    syncer::DataType data_type) {
   DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
 
   // UI sequence notification.
   ui_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(on_autofill_changed_by_sync_callback_, model_type));
+      base::BindOnce(on_autofill_changed_by_sync_callback_, data_type));
 }
 
 void AutofillWebDataBackendImpl::NotifyOnServerCvcChanged(
@@ -292,8 +290,8 @@ AutofillWebDataBackendImpl::GetFormValuesForElementName(
 }
 
 WebDatabase::State AutofillWebDataBackendImpl::RemoveFormElementsAddedBetween(
-    const base::Time& delete_begin,
-    const base::Time& delete_end,
+    base::Time delete_begin,
+    base::Time delete_end,
     WebDatabase* db) {
   DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
   AutocompleteChangeList changes;
@@ -445,17 +443,16 @@ std::unique_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetAutofillProfiles(
   DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
   std::vector<std::unique_ptr<AutofillProfile>> profiles;
   AddressAutofillTable::FromWebDatabase(db)->GetAutofillProfiles(profile_source,
-                                                                 &profiles);
+                                                                 profiles);
   return std::make_unique<
       WDResult<std::vector<std::unique_ptr<AutofillProfile>>>>(
       AUTOFILL_PROFILES_RESULT, std::move(profiles));
 }
 
 std::unique_ptr<WDTypedResult>
-AutofillWebDataBackendImpl::GetCountOfValuesContainedBetween(
-    const base::Time& begin,
-    const base::Time& end,
-    WebDatabase* db) {
+AutofillWebDataBackendImpl::GetCountOfValuesContainedBetween(base::Time begin,
+                                                             base::Time end,
+                                                             WebDatabase* db) {
   DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
   int value =
       AutocompleteTable::FromWebDatabase(db)->GetCountOfValuesContainedBetween(
@@ -830,11 +827,10 @@ std::unique_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetAutofillOffers(
 std::unique_ptr<WDTypedResult>
 AutofillWebDataBackendImpl::GetAutofillVirtualCardUsageData(WebDatabase* db) {
   DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
-  std::vector<std::unique_ptr<VirtualCardUsageData>> virtual_card_usage_data;
+  std::vector<VirtualCardUsageData> virtual_card_usage_data;
   PaymentsAutofillTable::FromWebDatabase(db)->GetAllVirtualCardUsageData(
-      &virtual_card_usage_data);
-  return std::make_unique<
-      WDResult<std::vector<std::unique_ptr<VirtualCardUsageData>>>>(
+      virtual_card_usage_data);
+  return std::make_unique<WDResult<std::vector<VirtualCardUsageData>>>(
       AUTOFILL_VIRTUAL_CARD_USAGE_DATA, std::move(virtual_card_usage_data));
 }
 
@@ -871,8 +867,8 @@ WebDatabase::State AutofillWebDataBackendImpl::ClearAllServerData(
 
 WebDatabase::State
 AutofillWebDataBackendImpl::RemoveAutofillDataModifiedBetween(
-    const base::Time& delete_begin,
-    const base::Time& delete_end,
+    base::Time delete_begin,
+    base::Time delete_end,
     WebDatabase* db) {
   DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
   std::vector<std::unique_ptr<AutofillProfile>> profiles;
@@ -880,7 +876,7 @@ AutofillWebDataBackendImpl::RemoveAutofillDataModifiedBetween(
   bool failures_observed = false;
   if (AddressAutofillTable::FromWebDatabase(db)
           ->RemoveAutofillDataModifiedBetween(delete_begin, delete_end,
-                                              &profiles)) {
+                                              profiles)) {
     for (const std::unique_ptr<AutofillProfile>& profile : profiles) {
       for (auto& db_observer : db_observer_list_) {
         db_observer.AutofillProfileChanged(AutofillProfileChange(
@@ -913,8 +909,8 @@ AutofillWebDataBackendImpl::RemoveAutofillDataModifiedBetween(
 }
 
 WebDatabase::State AutofillWebDataBackendImpl::RemoveOriginURLsModifiedBetween(
-    const base::Time& delete_begin,
-    const base::Time& delete_end,
+    base::Time delete_begin,
+    base::Time delete_end,
     WebDatabase* db) {
   DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
   if (!PaymentsAutofillTable::FromWebDatabase(db)

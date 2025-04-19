@@ -25,8 +25,10 @@
 #include "components/user_manager/user_manager.h"
 #include "device/udev_linux/fake_udev_loader.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/ash/mojom/meta_key.mojom-shared.h"
 #include "ui/events/ash/mojom/modifier_key.mojom-shared.h"
 #include "ui/events/ash/mojom/modifier_key.mojom.h"
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/device_data_manager_test_api.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
@@ -178,7 +180,6 @@ class FakeDeviceManager {
                        bool has_custom_top_row = false) {
     fake_keyboard_devices_.push_back(fake_keyboard);
 
-    DeviceDataManagerTestApi().SetKeyboardDevices({});
     DeviceDataManagerTestApi().SetKeyboardDevices(fake_keyboard_devices_);
     DeviceDataManagerTestApi().OnDeviceListsComplete();
 
@@ -199,6 +200,7 @@ class FakeDeviceManager {
   void RemoveAllDevices() {
     fake_udev_.Reset();
     fake_keyboard_devices_.clear();
+    DeviceDataManagerTestApi().SetKeyboardDevices({});
   }
 
  private:
@@ -253,8 +255,6 @@ class KeyboardCapabilityTestBase : public testing::Test {
   std::unique_ptr<FakeDeviceManager> fake_keyboard_manager_;
   std::unique_ptr<user_manager::FakeUserManager> user_manager_;
   std::vector<KeyboardDevice> fake_keyboard_devices_;
-  base::AutoReset<bool> modifier_split_reset_ =
-      ash::switches::SetIgnoreModifierSplitSecretKeyForTest();
 };
 
 class KeyboardCapabilityTest : public KeyboardCapabilityTestBase,
@@ -275,6 +275,8 @@ class KeyboardCapabilityTest : public KeyboardCapabilityTestBase,
 
  protected:
   std::unique_ptr<base::test::ScopedFeatureList> modifier_split_feature_list_;
+  base::AutoReset<bool> modifier_split_reset_ =
+      ash::switches::SetIgnoreModifierSplitSecretKeyForTest();
 };
 
 INSTANTIATE_TEST_SUITE_P(All, KeyboardCapabilityTest, testing::Bool());
@@ -390,6 +392,110 @@ TEST_P(KeyboardCapabilityTest, TestHasLauncherButton) {
   fake_keyboard3.sys_path = base::FilePath("path3");
   fake_keyboard_manager_->AddFakeKeyboard(fake_keyboard3, kKbdTopRowLayout1Tag);
   EXPECT_TRUE(keyboard_capability_->HasLauncherButtonOnAnyKeyboard());
+}
+
+TEST_P(KeyboardCapabilityTest, TestGetMetaKey) {
+  // Add a non-layout2 keyboard.
+  KeyboardDevice fake_keyboard1(
+      /*id=*/kDeviceId1, /*type=*/InputDeviceType::INPUT_DEVICE_INTERNAL,
+      /*name=*/"Keyboard1");
+  fake_keyboard1.sys_path = base::FilePath("path1");
+  fake_keyboard_manager_->AddFakeKeyboard(fake_keyboard1, kKbdTopRowLayout1Tag);
+
+  // Provide specific keyboard. Launcher button depends on if the keyboard is
+  // layout2 type.
+  EXPECT_EQ(mojom::MetaKey::kSearch,
+            keyboard_capability_->GetMetaKey(fake_keyboard1));
+  // Do not provide specific keyboard. Launcher button depends on if any one
+  // of the keyboards is layout2 type.
+  EXPECT_EQ(mojom::MetaKey::kSearch,
+            keyboard_capability_->GetMetaKeyToDisplay());
+
+  // Add a layout2 keyboard.
+  KeyboardDevice fake_keyboard2(
+      /*id=*/kDeviceId2, /*type=*/InputDeviceType::INPUT_DEVICE_INTERNAL,
+      /*name=*/"Keyboard2");
+  fake_keyboard1.sys_path = base::FilePath("path2");
+  fake_keyboard_manager_->AddFakeKeyboard(fake_keyboard2, kKbdTopRowLayout2Tag);
+
+  EXPECT_EQ(mojom::MetaKey::kSearch,
+            keyboard_capability_->GetMetaKey(fake_keyboard1));
+  EXPECT_EQ(mojom::MetaKey::kLauncher,
+            keyboard_capability_->GetMetaKey(fake_keyboard2));
+  EXPECT_EQ(mojom::MetaKey::kLauncher,
+            keyboard_capability_->GetMetaKeyToDisplay());
+}
+
+TEST_P(KeyboardCapabilityTest, TestGetMetaKey_ExternalChromeOS) {
+  KeyboardDevice fake_keyboard1(
+      /*id=*/kDeviceId1, /*type=*/InputDeviceType::INPUT_DEVICE_USB,
+      /*name=*/"Keyboard1");
+  fake_keyboard1.sys_path = base::FilePath("path1");
+  fake_keyboard_manager_->AddFakeKeyboard(fake_keyboard1, kKbdTopRowLayout1Tag);
+  EXPECT_EQ(mojom::MetaKey::kLauncher,
+            keyboard_capability_->GetMetaKey(fake_keyboard1));
+  EXPECT_EQ(mojom::MetaKey::kLauncher,
+            keyboard_capability_->GetMetaKeyToDisplay());
+
+  fake_keyboard_manager_->RemoveAllDevices();
+  fake_keyboard_manager_->AddFakeKeyboard(fake_keyboard1, kKbdTopRowLayout2Tag);
+  EXPECT_EQ(mojom::MetaKey::kLauncher,
+            keyboard_capability_->GetMetaKey(fake_keyboard1));
+  EXPECT_EQ(mojom::MetaKey::kLauncher,
+            keyboard_capability_->GetMetaKeyToDisplay());
+}
+
+TEST_P(KeyboardCapabilityTest, TestGetMetaKey_ExternalNonChromeOS) {
+  KeyboardDevice fake_keyboard1(
+      /*id=*/kDeviceId1, /*type=*/InputDeviceType::INPUT_DEVICE_USB,
+      /*name=*/"Keyboard1");
+  fake_keyboard1.sys_path = base::FilePath("path1");
+  fake_keyboard_manager_->AddFakeKeyboard(fake_keyboard1,
+                                          kKbdTopRowLayoutUnspecified);
+  EXPECT_EQ(mojom::MetaKey::kExternalMeta,
+            keyboard_capability_->GetMetaKey(fake_keyboard1));
+  EXPECT_EQ(ash::features::IsModifierSplitEnabled()
+                ? mojom::MetaKey::kLauncherRefresh
+                : mojom::MetaKey::kLauncher,
+            keyboard_capability_->GetMetaKeyToDisplay());
+
+  // When an internal keyboard is added, it overrides the meta key from the
+  // external keyboard.
+  KeyboardDevice internal_keyboard(
+      /*id=*/kDeviceId2, /*type=*/InputDeviceType::INPUT_DEVICE_INTERNAL,
+      /*name=*/"Keyboard2");
+  fake_keyboard1.sys_path = base::FilePath("path2");
+  fake_keyboard_manager_->AddFakeKeyboard(internal_keyboard,
+                                          kKbdTopRowLayout2Tag);
+  EXPECT_EQ(mojom::MetaKey::kLauncher,
+            keyboard_capability_->GetMetaKey(internal_keyboard));
+  EXPECT_EQ(mojom::MetaKey::kLauncher,
+            keyboard_capability_->GetMetaKeyToDisplay());
+}
+
+TEST_P(KeyboardCapabilityTest, TestGetMetaKey_SplitModifierKeyboard) {
+  if (!ash::features::IsModifierSplitEnabled()) {
+    GTEST_SKIP()
+        << "This test is only applicable with split modifier feature enabled.";
+  }
+
+  const KeyboardDevice split_modifier_keyboard =
+      AddFakeKeyboardInfoToKeyboardCapability(
+          kDeviceId1, kSplitModifierKeyboard,
+          KeyboardCapability::DeviceType::kDeviceInternalKeyboard,
+          KeyboardCapability::KeyboardTopRowLayout::kKbdTopRowLayoutCustom);
+  EXPECT_EQ(mojom::MetaKey::kLauncherRefresh,
+            keyboard_capability_->GetMetaKey(split_modifier_keyboard));
+  EXPECT_EQ(mojom::MetaKey::kLauncherRefresh,
+            keyboard_capability_->GetMetaKeyToDisplay());
+}
+
+TEST_P(KeyboardCapabilityTest, TestGetMetaKey_NoKeyboardsConnected) {
+  ASSERT_TRUE(DeviceDataManager::GetInstance()->GetKeyboardDevices().empty());
+  EXPECT_EQ(ash::features::IsModifierSplitEnabled()
+                ? mojom::MetaKey::kLauncherRefresh
+                : mojom::MetaKey::kLauncher,
+            keyboard_capability_->GetMetaKeyToDisplay());
 }
 
 TEST_P(KeyboardCapabilityTest, TestHasSixPackKey) {
@@ -623,7 +729,11 @@ class ModifierKeyTest : public KeyboardCapabilityTestBase,
                             std::tuple<DeviceCapabilities,
                                        KeyboardCapability::DeviceType,
                                        KeyboardCapability::KeyboardTopRowLayout,
-                                       std::vector<mojom::ModifierKey>>> {};
+                                       std::vector<mojom::ModifierKey>>> {
+ protected:
+  base::AutoReset<bool> modifier_split_reset_ =
+      ash::switches::SetIgnoreModifierSplitSecretKeyForTest();
+};
 
 // Tests that the given `DeviceCapabilities` and
 // `KeyboardCapability::DeviceType` combo generates the given set of
@@ -696,25 +806,31 @@ TEST_P(KeyboardCapabilityTest, TestGetModifierKeysForSplitModifierKeyboard) {
   EXPECT_EQ(expected_modifier_keys, modifier_keys);
 }
 
-// With the dogfood flag enabled AND no Google account logged in, the feature
-// should act as though its disabled.
-TEST_P(KeyboardCapabilityTest,
-       TestGetModifierKeysForSplitModifierKeyboardDogfood) {
-  if (!ash::features::IsModifierSplitEnabled()) {
-    GTEST_SKIP() << "Test is only valid with Modifier Split flag enabled.";
+class KeyboardCapabilityDogfoodTest : public KeyboardCapabilityTestBase {
+ public:
+  void SetUp() override {
+    modifier_split_feature_list_ =
+        std::make_unique<base::test::ScopedFeatureList>();
+    modifier_split_feature_list_->InitWithFeatures(
+        {ash::features::kModifierSplit, ash::features::kModifierSplitDogfood},
+        {});
+    KeyboardCapabilityTestBase::SetUp();
   }
 
+ protected:
+  std::unique_ptr<base::test::ScopedFeatureList> modifier_split_feature_list_;
+};
+
+// With the dogfood flag enabled AND no Google account logged in, the feature
+// should act as though its disabled.
+TEST_F(KeyboardCapabilityDogfoodTest,
+       TestGetModifierKeysForSplitModifierKeyboardDogfood) {
   AccountId non_google_account_id =
       AccountId::FromUserEmail("testaccount@gmail.com");
   AccountId google_account_id =
       AccountId::FromUserEmail("testaccount@google.com");
   user_manager_->AddUser(non_google_account_id);
   user_manager_->AddUser(google_account_id);
-
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(ash::features::kModifierSplitDogfood);
-
-  keyboard_capability_->ResetModifierSplitDogfoodControllerForTesting();
 
   // When a non-google account is signed in, keyboard capability should not
   // consider it a split modifier keyboard.
@@ -794,9 +910,9 @@ class KeyEventTest
   }
 
  protected:
+  std::unique_ptr<base::test::ScopedFeatureList> modifier_split_feature_list_;
   base::AutoReset<bool> modifier_split_reset_ =
       ash::switches::SetIgnoreModifierSplitSecretKeyForTest();
-  std::unique_ptr<base::test::ScopedFeatureList> modifier_split_feature_list_;
 };
 
 // Tests that given the keyboard connection type and layout type, check if this
@@ -1070,7 +1186,7 @@ TEST_P(KeyboardCapabilityTest, TopRowLayout1) {
   fake_keyboard_manager_->AddFakeKeyboard(input_device, kKbdTopRowLayout1Tag,
                                           /*has_custom_top_row=*/false);
 
-  for (TopRowActionKey action_key = TopRowActionKey::kMinValue;
+  for (TopRowActionKey action_key = TopRowActionKey::kNone;
        action_key <= TopRowActionKey::kMaxValue;
        action_key =
            static_cast<TopRowActionKey>(static_cast<int>(action_key) + 1)) {
@@ -1098,7 +1214,7 @@ TEST_P(KeyboardCapabilityTest, TopRowLayout2) {
   fake_keyboard_manager_->AddFakeKeyboard(input_device, kKbdTopRowLayout2Tag,
                                           /*has_custom_top_row=*/false);
 
-  for (TopRowActionKey action_key = TopRowActionKey::kMinValue;
+  for (TopRowActionKey action_key = TopRowActionKey::kNone;
        action_key <= TopRowActionKey::kMaxValue;
        action_key =
            static_cast<TopRowActionKey>(static_cast<int>(action_key) + 1)) {
@@ -1132,7 +1248,7 @@ TEST_P(KeyboardCapabilityTest, TopRowLayoutWilco) {
                                           kKbdTopRowLayoutDrallionTag,
                                           /*has_custom_top_row=*/false);
 
-  for (TopRowActionKey action_key = TopRowActionKey::kMinValue;
+  for (TopRowActionKey action_key = TopRowActionKey::kNone;
        action_key <= TopRowActionKey::kMaxValue;
        action_key =
            static_cast<TopRowActionKey>(static_cast<int>(action_key) + 1)) {
@@ -1248,6 +1364,8 @@ class TopRowLayoutCustomTest
  protected:
   std::vector<TopRowActionKey> top_row_action_keys_;
   std::string custom_layout_string_;
+  base::AutoReset<bool> modifier_split_reset_ =
+      ash::switches::SetIgnoreModifierSplitSecretKeyForTest();
 };
 
 INSTANTIATE_TEST_SUITE_P(
@@ -1309,7 +1427,7 @@ TEST_P(TopRowLayoutCustomTest, TopRowLayout) {
                           "Internal Keyboard");
   fake_keyboard_manager_->AddFakeKeyboard(keyboard, custom_layout_string_,
                                           /*has_custom_top_row=*/true);
-  for (TopRowActionKey action_key = TopRowActionKey::kMinValue;
+  for (TopRowActionKey action_key = TopRowActionKey::kNone;
        action_key <= TopRowActionKey::kMaxValue;
        action_key =
            static_cast<TopRowActionKey>(static_cast<int>(action_key) + 1)) {

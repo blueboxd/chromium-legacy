@@ -68,6 +68,9 @@ class FakeArcBridgeHost : public mojom::ArcBridgeHost {
   void OnEnterpriseReportingInstanceReady(
       mojo::PendingRemote<mojom::EnterpriseReportingInstance>
           enterprise_reporting_remote) override;
+  void OnErrorNotificationInstanceReady(
+      mojo::PendingRemote<mojom::ErrorNotificationInstance>
+          error_notification_remote) override;
   void OnFileSystemInstanceReady(mojo::PendingRemote<mojom::FileSystemInstance>
                                      file_system_remote) override;
   void OnIioSensorInstanceReady(
@@ -88,8 +91,6 @@ class FakeArcBridgeHost : public mojom::ArcBridgeHost {
   void OnKeyMintInstanceReady(
       mojo::PendingRemote<mojom::keymint::KeyMintInstance> keymint_remote)
       override;
-  void OnKioskInstanceReady(
-      mojo::PendingRemote<mojom::KioskInstance> kiosk_remote) override;
   void OnMediaSessionInstanceReady(
       mojo::PendingRemote<mojom::MediaSessionInstance> media_session_remote)
       override;

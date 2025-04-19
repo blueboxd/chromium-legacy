@@ -9,7 +9,7 @@
 
 #include "base/check.h"
 #include "base/notreached.h"
-#include "components/optimization_guide/core/optimization_guide_prefs.h"
+#include "components/optimization_guide/core/model_execution/model_execution_prefs.h"
 #include "components/optimization_guide/core/optimization_guide_util.h"
 #include "components/optimization_guide/proto/model_quality_service.pb.h"
 #include "components/optimization_guide/proto/on_device_model_execution_config.pb.h"
@@ -29,7 +29,7 @@ void SetExecutionRequestTemplate(
   // Request is set by the feature and should always be typed.
   auto typed_request =
       static_cast<const FeatureType::Request&>(request_metadata);
-  *(logging_data->mutable_request_data()) = typed_request;
+  *(logging_data->mutable_request()) = typed_request;
 }
 
 // Sets response data corresponding the feature's LogAiDataRequest.
@@ -50,8 +50,8 @@ void SetExecutionResponseTemplate(proto::LogAiDataRequest& log_ai_request,
   }
 
   // Set the response data to feature LoggingData if exists.
-  *(logging_data->mutable_response_data()) = std::move(*response_data);
-  CHECK(logging_data->has_response_data()) << "Response data is not set\n";
+  *(logging_data->mutable_response()) = std::move(*response_data);
+  CHECK(logging_data->has_response()) << "Response data is not set\n";
 }
 
 // Helper method matches feature to corresponding FeatureTypeMap to set
@@ -68,7 +68,7 @@ void SetExecutionResponse(ModelBasedCapabilityKey feature,
 
 // Returns the GenAILocalFoundationalModelEnterprisePolicySettings from the
 // `local_state`.
-prefs::GenAILocalFoundationalModelEnterprisePolicySettings
+model_execution::prefs::GenAILocalFoundationalModelEnterprisePolicySettings
 GetGenAILocalFoundationalModelEnterprisePolicySettings(
     PrefService* local_state);
 
@@ -78,6 +78,10 @@ OnDeviceModelLoadResult ConvertToOnDeviceModelLoadResult(
 // Returns the model execution config read from the `config_path`.
 std::unique_ptr<proto::OnDeviceModelExecutionConfig>
 ReadOnDeviceModelExecutionConfig(const base::FilePath& config_path);
+
+// Returns whether the `feature` was recently used.
+bool WasOnDeviceEligibleFeatureRecentlyUsed(ModelBasedCapabilityKey feature,
+                                            const PrefService& local_state);
 
 }  // namespace optimization_guide
 

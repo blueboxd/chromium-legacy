@@ -408,7 +408,6 @@ class AccountTrackerServiceTest : public testing::Test {
     if (network_enabled) {
       account_fetcher_->EnableNetworkFetchesForTest();
     }
-    account_fetcher_->EnableAccountCapabilitiesFetcherForTest(true);
   }
 
   void DeleteAccountTracker() {
@@ -715,29 +714,7 @@ TEST_F(AccountTrackerServiceTest,
 }
 
 TEST_F(AccountTrackerServiceTest,
-       TokenAvailable_AccountCapabilitiesFetcherDisabled) {
-  account_fetcher()->EnableAccountCapabilitiesFetcherForTest(false);
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      switches::kEnableFetchingAccountCapabilities);
-  SimulateTokenAvailable(kAccountKeyAlpha);
-  EXPECT_TRUE(account_fetcher()->AreAllAccountCapabilitiesFetched());
-  EXPECT_TRUE(CheckAccountTrackerEvents({}));
-  AccountInfo account_info = account_tracker()->GetAccountInfo(
-      AccountKeyToAccountId(kAccountKeyAlpha));
-  EXPECT_FALSE(account_info.capabilities.AreAllCapabilitiesKnown());
-}
-
-// iOS doesn't support the kEnableFetchingAccountCapabilities feature.
-// TODO(crbug.com/40217995): enable these tests on iOS once the feature
-// is supported.
-#if !BUILDFLAG(IS_IOS)
-TEST_F(AccountTrackerServiceTest,
        TokenAvailable_AccountCapabilitiesFetcherEnabled) {
-  account_fetcher()->EnableAccountCapabilitiesFetcherForTest(false);
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      switches::kEnableFetchingAccountCapabilities);
   SimulateTokenAvailable(kAccountKeyAlpha);
   EXPECT_FALSE(account_fetcher()->AreAllAccountCapabilitiesFetched());
 
@@ -747,7 +724,6 @@ TEST_F(AccountTrackerServiceTest,
   ReturnAccountCapabilitiesFetchSuccess(kAccountKeyAlpha);
   EXPECT_TRUE(account_fetcher()->AreAllAccountCapabilitiesFetched());
 }
-#endif  // !BUILDFLAG(IS_IOS)
 
 TEST_F(AccountTrackerServiceTest, TokenAvailableTwice_UserInfoOnce) {
   SimulateTokenAvailable(kAccountKeyAlpha);
@@ -1024,55 +1000,6 @@ TEST_F(AccountTrackerServiceTest, Persistence) {
   // that all in-use files are closed.
   ResetAccountTracker();
   ASSERT_TRUE(scoped_user_data_dir.Delete());
-}
-
-TEST_F(AccountTrackerServiceTest, ChildStatusMigration) {
-  base::ScopedTempDir scoped_user_data_dir;
-  ASSERT_TRUE(scoped_user_data_dir.CreateUniqueTempDir());
-
-  // Create a tracker and add an account. This should cause the account to be
-  // saved to persistence.
-  ResetAccountTrackerWithPersistence(scoped_user_data_dir.GetPath());
-  SimulateTokenAvailable(kAccountKeyAlpha);
-  ReturnAccountInfoFetchSuccess(kAccountKeyAlpha);
-
-  // The child status is unknown, and none of the child-related keys should be
-  // set.
-  EXPECT_EQ(signin::Tribool::kUnknown,
-            account_tracker()
-                ->GetAccountInfo(AccountKeyToAccountId(kAccountKeyAlpha))
-                .is_child_account);
-  ScopedListPrefUpdate update(prefs(), prefs::kAccountInfo);
-  ASSERT_FALSE(update->empty());
-  base::Value::Dict* dict = (*update)[0].GetIfDict();
-  ASSERT_TRUE(dict);
-  const char kDeprecatedChildKey[] = "is_child_account";
-  const char kNewChildKey[] = "is_supervised_child";
-  // The deprecated key is not set.
-  EXPECT_FALSE(dict->FindBool(kDeprecatedChildKey));
-
-  // Set the child status using the deprecated key, and reload the account.
-  dict->Set(kDeprecatedChildKey, true);
-  dict->Remove(kNewChildKey);
-  ClearAccountTrackerEvents();
-  ResetAccountTrackerWithPersistence(scoped_user_data_dir.GetPath());
-  EXPECT_TRUE(CheckAccountTrackerEvents(
-      {TrackingEvent(UPDATED, AccountKeyToAccountId(kAccountKeyAlpha),
-                     AccountKeyToGaiaId(kAccountKeyAlpha),
-                     AccountKeyToEmail(kAccountKeyAlpha))}));
-
-  // Check that the migration happened.
-  std::vector<AccountInfo> infos = account_tracker()->GetAccounts();
-  ASSERT_EQ(1u, infos.size());
-  CheckAccountDetails(kAccountKeyAlpha, infos[0]);
-  // The deprecated key has been read.
-  EXPECT_EQ(signin::Tribool::kTrue, infos[0].is_child_account);
-  // The deprecated key has been removed.
-  EXPECT_FALSE(dict->FindBool(kDeprecatedChildKey));
-  // The new key has been written.
-  std::optional<int> new_key = dict->FindInt(kNewChildKey);
-  ASSERT_TRUE(new_key.has_value());
-  EXPECT_EQ(static_cast<int>(signin::Tribool::kTrue), new_key.value());
 }
 
 TEST_F(AccountTrackerServiceTest, Persistence_DeleteEmpty) {

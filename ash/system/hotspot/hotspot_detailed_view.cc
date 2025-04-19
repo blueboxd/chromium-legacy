@@ -4,6 +4,7 @@
 
 #include "ash/system/hotspot/hotspot_detailed_view.h"
 
+#include "ash/ash_element_identifiers.h"
 #include "ash/bubble/bubble_utils.h"
 #include "ash/public/cpp/system_tray_client.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -31,6 +32,7 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/view_class_properties.h"
 
 namespace ash {
 
@@ -141,13 +143,15 @@ void HotspotDetailedView::CreateContainer() {
   entry_row_->text_label()->SetEnabledColorId(cros_tokens::kCrosSysOnSurface);
   TypographyProvider::Get()->StyleLabel(TypographyToken::kCrosButton1,
                                         *entry_row_->text_label());
-  entry_row_->SetAccessibleName(text_label);
+  entry_row_->GetViewAccessibility().SetName(text_label);
 
   auto toggle = std::make_unique<Switch>(base::BindRepeating(
       &HotspotDetailedView::OnToggleClicked, weak_factory_.GetWeakPtr()));
-  toggle->SetAccessibleName(l10n_util::GetStringUTF16(
+  toggle->GetViewAccessibility().SetName(l10n_util::GetStringUTF16(
       IDS_ASH_HOTSPOT_DETAILED_VIEW_TOGGLE_A11Y_TEXT));
   toggle->SetID(static_cast<int>(HotspotDetailedViewChildId::kToggle));
+  toggle->SetProperty(views::kElementIdentifierKey,
+                      kHotspotDetailedViewToggleElementId);
   toggle_ = toggle.get();
   entry_row_->AddRightView(toggle.release());
 
@@ -243,15 +247,10 @@ void HotspotDetailedView::UpdateSubText(const HotspotInfoPtr& hotspot_info) {
       return;
     }
     // Set color for the subtext that shows hotspot is connected.
-    if (chromeos::features::IsJellyEnabled()) {
-      entry_row_->sub_text_label()->SetEnabledColorId(
-          cros_tokens::kCrosSysPositive);
-      TypographyProvider::Get()->StyleLabel(TypographyToken::kCrosAnnotation1,
-                                            *entry_row_->sub_text_label());
-    } else {
-      entry_row_->sub_text_label()->SetEnabledColorId(
-          kColorAshTextColorPositive);
-    }
+    entry_row_->sub_text_label()->SetEnabledColorId(
+        cros_tokens::kCrosSysPositive);
+    TypographyProvider::Get()->StyleLabel(TypographyToken::kCrosAnnotation1,
+                                          *entry_row_->sub_text_label());
     return;
   }
   // If no subtext is set, previous subtext should be hidden.
@@ -283,7 +282,7 @@ void HotspotDetailedView::UpdateExtraIcon(
           : IDS_ASH_HOTSPOT_DETAILED_VIEW_INFO_TOOLTIP_MOBILE_DATA_NOT_SUPPORTED);
   extra_icon_->SetFocusBehavior(FocusBehavior::ALWAYS);
   extra_icon_->SetTooltipText(tooltip);
-  extra_icon_->SetAccessibleName(tooltip);
+  extra_icon_->GetViewAccessibility().SetName(tooltip);
 }
 
 BEGIN_METADATA(HotspotDetailedView)

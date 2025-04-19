@@ -42,6 +42,7 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_elider.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -66,7 +67,6 @@ constexpr int kJellyDropdownIconSizeDp = 20;
 
 // Width/height of the user view. Ensures proper centering.
 constexpr int kLargeUserViewWidthDp = 306;
-constexpr int kLargeUserViewHeightDp = 346;
 constexpr int kSmallUserViewWidthDp = 304;
 constexpr int kExtraSmallUserViewWidthDp = 282;
 
@@ -352,7 +352,11 @@ class LoginUserView::TapButton : public views::Button {
 
  public:
   TapButton(PressedCallback callback, LoginUserView* parent)
-      : views::Button(std::move(callback)), parent_(parent) {}
+      : views::Button(std::move(callback)), parent_(parent) {
+    // TODO(https://crbug.com/1065516): Define the button name.
+    GetViewAccessibility().SetName(
+        "", ax::mojom::NameFrom::kAttributeExplicitlyEmpty);
+  }
 
   TapButton(const TapButton&) = delete;
   TapButton& operator=(const TapButton&) = delete;
@@ -367,11 +371,6 @@ class LoginUserView::TapButton : public views::Button {
   void OnBlur() override {
     views::Button::OnBlur();
     parent_->UpdateOpacity();
-  }
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    // TODO(https://crbug.com/1065516): Define the button name.
-    node_data->SetNameExplicitlyEmpty();
-    Button::GetAccessibleNodeData(node_data);
   }
 
  private:
@@ -589,22 +588,22 @@ LoginButton* LoginUserView::GetDropdownButton() {
 
 gfx::Size LoginUserView::CalculatePreferredSize(
     const views::SizeBounds& available_size) const {
+  int preferred_width = 0;
   switch (display_style_) {
     case LoginDisplayStyle::kLarge:
-      return gfx::Size(kLargeUserViewWidthDp, kLargeUserViewHeightDp);
+      preferred_width = kLargeUserViewWidthDp;
+      break;
     case LoginDisplayStyle::kSmall:
-      return gfx::Size(kSmallUserViewWidthDp, kSmallUserImageSizeDp);
+      preferred_width = kSmallUserViewWidthDp;
+      break;
     case LoginDisplayStyle::kExtraSmall:
-      return gfx::Size(kExtraSmallUserViewWidthDp, kExtraSmallUserImageSizeDp);
+      preferred_width = kExtraSmallUserViewWidthDp;
+      break;
   }
-}
 
-int LoginUserView::GetHeightForWidth(int w) const {
-  // TODO(crbug.com/40232718): The behavior of GetHeightForWidth is inconsistent
-  // with the behavior of CalculatePreferredSize. This results in LoginUserView
-  // having different heights in different layouts. There is a conflict between
-  // multiple pixel tests.
-  return GetLayoutManager()->GetPreferredHeightForWidth(this, w);
+  return gfx::Size(
+      preferred_width,
+      GetLayoutManager()->GetPreferredHeightForWidth(this, preferred_width));
 }
 
 void LoginUserView::Layout(PassKey) {
@@ -653,7 +652,7 @@ void LoginUserView::UpdateCurrentUserState() {
   } else {
     accessible_name = email;
   }
-  tap_button_->SetAccessibleName(accessible_name);
+  tap_button_->GetViewAccessibility().SetName(accessible_name);
   if (dropdown_) {
     // The accessible name for the dropdown depends on whether it also contains
     // the remove user button for the user in question.
@@ -662,7 +661,7 @@ void LoginUserView::UpdateCurrentUserState() {
             ? IDS_ASH_LOGIN_POD_REMOVE_ACCOUNT_DIALOG_BUTTON_ACCESSIBLE_NAME
             : IDS_ASH_LOGIN_POD_ACCOUNT_DIALOG_BUTTON_ACCESSIBLE_NAME,
         email);
-    dropdown_->SetAccessibleName(accessible_name);
+    dropdown_->GetViewAccessibility().SetName(accessible_name);
   }
 
   user_image_->UpdateForUser(current_user_);

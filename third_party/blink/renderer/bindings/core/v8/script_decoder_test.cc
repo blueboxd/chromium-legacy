@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/bindings/core/v8/script_decoder.h"
 
 #include "base/notreached.h"
@@ -209,8 +214,8 @@ TEST_F(ScriptDecoderTest, Simple) {
                   base::RunLoop* run_loop, ScriptDecoder::Result result) {
                 CHECK(default_task_runner->RunsTasksInCurrentSequence());
 
-                ASSERT_EQ(result.raw_data.size(), 1u);
-                EXPECT_THAT(result.raw_data.front(),
+                ASSERT_FALSE(result.raw_data.empty());
+                EXPECT_THAT(*result.raw_data.begin(),
                             Vector<char>(base::make_span(kFooUTF8WithBOM)));
                 EXPECT_EQ(result.decoded_data, "foo");
                 EXPECT_THAT(result.digest,

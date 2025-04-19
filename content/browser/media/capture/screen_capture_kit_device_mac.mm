@@ -16,6 +16,7 @@
 #include "base/timer/timer.h"
 #include "content/browser/media/capture/io_surface_capture_device_base_mac.h"
 #include "content/browser/media/capture/screen_capture_kit_fullscreen_module.h"
+#include "content/public/common/content_features.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_types.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -134,6 +135,10 @@ namespace content {
 
 namespace {
 
+BASE_FEATURE(kScreenCaptureKitFullDesktopFallback,
+             "ScreenCaptureKitFullDesktopFallback",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 class API_AVAILABLE(macos(12.3)) ScreenCaptureKitDeviceMac
     : public IOSurfaceCaptureDeviceBase,
       public ScreenCaptureKitResetStreamInterface {
@@ -141,10 +146,12 @@ class API_AVAILABLE(macos(12.3)) ScreenCaptureKitDeviceMac
   explicit ScreenCaptureKitDeviceMac(const DesktopMediaID& source)
       : source_(source),
         device_task_runner_(base::SingleThreadTaskRunner::GetCurrentDefault()) {
-    SampleCallback sample_callback = base::BindRepeating(
-        &ScreenCaptureKitDeviceMac::OnStreamSample, weak_factory_.GetWeakPtr());
+    SampleCallback sample_callback = base::BindPostTask(
+        device_task_runner_,
+        base::BindRepeating(&ScreenCaptureKitDeviceMac::OnStreamSample,
+                            weak_factory_.GetWeakPtr()));
     ErrorCallback error_callback = base::BindPostTask(
-        base::SingleThreadTaskRunner::GetCurrentDefault(),
+        device_task_runner_,
         base::BindRepeating(&ScreenCaptureKitDeviceMac::OnStreamError,
                             weak_factory_.GetWeakPtr()));
     helper_ = [[ScreenCaptureKitDeviceHelper alloc]
@@ -170,7 +177,11 @@ class API_AVAILABLE(macos(12.3)) ScreenCaptureKitDeviceMac
     switch (source_.type) {
       case DesktopMediaID::TYPE_SCREEN:
         for (SCDisplay* display in content.displays) {
-          if (source_.id == display.displayID) {
+          // There's currently no support for stitching desktops together as
+          // requested by kFullDesktopScreenId. Capture the first display as a
+          // fallback. See https://crbug.com/325530044.
+          if (source_.id == display.displayID ||
+              source_.id == webrtc::kFullDesktopScreenId) {
             filter = [[SCContentFilter alloc] initWithDisplay:display
                                              excludingWindows:@[]];
             stream_config_content_size_ =
@@ -323,13 +334,18 @@ class API_AVAILABLE(macos(12.3)) ScreenCaptureKitDeviceMac
                                destRectInFrame:dest_rect_in_frame
                                      frameRate:requested_capture_format_->
                                                frame_rate];
+
+          __block base::OnceCallback<void()> on_update_configuration_error =
+              base::BindPostTask(
+                  device_task_runner_,
+                  base::BindOnce(
+                      &ScreenCaptureKitDeviceMac::OnUpdateConfigurationError,
+                      weak_factory_.GetWeakPtr()));
           [stream_
               updateConfiguration:config
                 completionHandler:^(NSError* _Nullable error) {
                   if (error) {
-                    client()->OnError(
-                        media::VideoCaptureError::kScreenCaptureKitStreamError,
-                        FROM_HERE, "Error on updateConfiguration");
+                    std::move(on_update_configuration_error).Run();
                   }
                 }];
         }
@@ -359,6 +375,21 @@ class API_AVAILABLE(macos(12.3)) ScreenCaptureKitDeviceMac
       client()->OnError(media::VideoCaptureError::kScreenCaptureKitStreamError,
                         FROM_HERE, "Stream delegate called didStopWithError");
     }
+  }
+  void OnUpdateContentFilterCompleted(NSError* _Nullable error) {
+    DCHECK(device_task_runner_->RunsTasksInCurrentSequence());
+    is_resetting_ = false;
+
+    if (error) {
+      client()->OnError(media::VideoCaptureError::kScreenCaptureKitStreamError,
+                        FROM_HERE,
+                        "Error on updateContentFilter (fullscreen window).");
+    }
+  }
+  void OnUpdateConfigurationError() {
+    DCHECK(device_task_runner_->RunsTasksInCurrentSequence());
+    client()->OnError(media::VideoCaptureError::kScreenCaptureKitStreamError,
+                      FROM_HERE, "Error on updateConfiguration");
   }
 
   // IOSurfaceCaptureDeviceBase:
@@ -416,15 +447,16 @@ class API_AVAILABLE(macos(12.3)) ScreenCaptureKitDeviceMac
     SCContentFilter* filter =
         [[SCContentFilter alloc] initWithDesktopIndependentWindow:window];
 
+    __block base::OnceCallback<void(NSError*)>
+        on_update_content_filter_completed = base::BindPostTask(
+            device_task_runner_,
+            base::BindOnce(
+                &ScreenCaptureKitDeviceMac::OnUpdateContentFilterCompleted,
+                weak_factory_.GetWeakPtr()));
+
     [stream_ updateContentFilter:filter
                completionHandler:^(NSError* _Nullable error) {
-                 is_resetting_ = false;
-                 if (error) {
-                   client()->OnError(
-                       media::VideoCaptureError::kScreenCaptureKitStreamError,
-                       FROM_HERE,
-                       "Error on updateContentFilter (fullscreen window).");
-                 }
+                 std::move(on_update_content_filter_completed).Run(error);
                }];
   }
 
@@ -467,8 +499,14 @@ std::unique_ptr<media::VideoCaptureDevice> CreateScreenCaptureKitDeviceMac(
     switch (source.type) {
       case DesktopMediaID::TYPE_SCREEN:
         // ScreenCaptureKitDeviceMac only supports a single display at a time.
-        // It will not stitch desktops together. https://crbug.com/1178360
-        if (source.id == webrtc::kFullDesktopScreenId ||
+        // It will not stitch desktops together. If
+        // kScreenCaptureKitFullDesktopFallback is enabled, we will fallback to
+        // capturing the first display in the list returned from
+        // getShareableContent. https://crbug.com/1178360 and
+        // https://crbug.com/325530044
+        if ((source.id == webrtc::kFullDesktopScreenId &&
+             !base::FeatureList::IsEnabled(
+                 kScreenCaptureKitFullDesktopFallback)) ||
             source.id == webrtc::kInvalidScreenId) {
           return nullptr;
         }

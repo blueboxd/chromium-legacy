@@ -39,9 +39,11 @@ class PasswordManagerClient;
 // Called to inform the delegate that it should prompt the user for a decision
 // on whether or not to use the |generatedPotentialPassword|.
 // |decisionHandler| takes a single BOOL indicating if the user accepted the
-// the suggested |generatedPotentialPassword|.
+// the suggested |generatedPotentialPassword|. The secondary action string is
+// set according to the value of |proactive|.
 - (void)sharedPasswordController:(SharedPasswordController*)controller
     showGeneratedPotentialPassword:(NSString*)generatedPotentialPassword
+                         proactive:(BOOL)proactive
                    decisionHandler:(void (^)(BOOL accept))decisionHandler;
 
 // Called when SharedPasswordController accepts a suggestion displayed to the
@@ -56,6 +58,15 @@ class PasswordManagerClient;
 - (void)attachListenersForBottomSheet:
             (const std::vector<autofill::FieldRendererId>&)rendererIds
                            forFrameId:(const std::string&)frameId;
+
+// Adds event listeners to the field that is associated with a proactive
+// password generation bottom sheet. When the focus event occurs on this
+// field, a bottom sheet will be shown instead of the keyboard, allowing the
+// user to fill the fields by tapping on the "Use Suggested Password" button.
+- (void)attachListenersForPasswordGenerationBottomSheet:
+            (const std::vector<autofill::FieldRendererId>&)rendererIds
+                                             forFrameId:
+                                                 (const std::string&)frameId;
 
 // Detach listeners to fields which are associated with a bottom sheet.
 // When there are no more credentials, we want to show the user the keyboard

@@ -26,17 +26,24 @@ namespace tab_groups {
 // tab_group_editor_bubble_view.
 class SavedTabGroup {
  public:
-  SavedTabGroup(const std::u16string& title,
-                const tab_groups::TabGroupColorId& color,
-                const std::vector<SavedTabGroupTab>& urls,
-                std::optional<size_t> position,
-                std::optional<base::Uuid> saved_guid = std::nullopt,
-                std::optional<LocalTabGroupID> local_group_id = std::nullopt,
-                std::optional<base::Time> creation_time_windows_epoch_micros =
-                    std::nullopt,
-                std::optional<base::Time> update_time_windows_epoch_micros =
-                    std::nullopt);
+  SavedTabGroup(
+      const std::u16string& title,
+      const tab_groups::TabGroupColorId& color,
+      const std::vector<SavedTabGroupTab>& urls,
+      std::optional<size_t> position,
+      std::optional<base::Uuid> saved_guid = std::nullopt,
+      std::optional<LocalTabGroupID> local_group_id = std::nullopt,
+      std::optional<std::string> creator_cache_guid = std::nullopt,
+      std::optional<std::string> last_updater_cache_guid = std::nullopt,
+      bool created_before_syncing_tab_groups = false,
+      std::optional<base::Time> creation_time_windows_epoch_micros =
+          std::nullopt,
+      std::optional<base::Time> update_time_windows_epoch_micros =
+          std::nullopt);
   SavedTabGroup(const SavedTabGroup& other);
+  SavedTabGroup& operator=(const SavedTabGroup& other);
+  SavedTabGroup(SavedTabGroup&& other);
+  SavedTabGroup& operator=(SavedTabGroup&& other);
   ~SavedTabGroup();
 
   // Metadata accessors.
@@ -50,14 +57,31 @@ class SavedTabGroup {
   const base::Time& update_time_windows_epoch_micros() const {
     return update_time_windows_epoch_micros_;
   }
+  const base::Time& last_user_interaction_time() const {
+    return last_user_interaction_time_;
+  }
+  const std::optional<std::string>& creator_cache_guid() const {
+    return creator_cache_guid_;
+  }
+  const std::optional<std::string>& last_updater_cache_guid() const {
+    return last_updater_cache_guid_;
+  }
+  bool created_before_syncing_tab_groups() const {
+    return created_before_syncing_tab_groups_;
+  }
+
   const std::u16string& title() const { return title_; }
   const tab_groups::TabGroupColorId& color() const { return color_; }
   const std::vector<SavedTabGroupTab>& saved_tabs() const {
     return saved_tabs_;
   }
   std::optional<size_t> position() const { return position_; }
+  const std::optional<std::string>& collaboration_id() const {
+    return collaboration_id_;
+  }
 
   bool is_pinned() const { return position_.has_value(); }
+  bool is_shared_tab_group() const { return collaboration_id_.has_value(); }
 
   std::vector<SavedTabGroupTab>& saved_tabs() { return saved_tabs_; }
 
@@ -83,10 +107,18 @@ class SavedTabGroup {
   SavedTabGroup& SetTitle(std::u16string title);
   SavedTabGroup& SetColor(tab_groups::TabGroupColorId color);
   SavedTabGroup& SetLocalGroupId(std::optional<LocalTabGroupID> tab_group_id);
+  SavedTabGroup& SetCreatorCacheGuid(std::optional<std::string> new_cache_guid);
+  SavedTabGroup& SetLastUpdaterCacheGuid(std::optional<std::string> cache_guid);
+  SavedTabGroup& SetCreatedBeforeSyncingTabGroups(
+      bool created_before_syncing_tab_groups);
   SavedTabGroup& SetUpdateTimeWindowsEpochMicros(
       base::Time update_time_windows_epoch_micros);
+  SavedTabGroup& SetLastUserInteractionTime(
+      base::Time last_user_interaction_time);
   SavedTabGroup& SetPosition(size_t position);
   SavedTabGroup& SetPinned(bool pinned);
+  SavedTabGroup& SetCollaborationId(
+      std::optional<std::string> collaboration_id);
 
   // Tab mutators.
   // Add `tab` into its position in `saved_tabs_` if it is set. Otherwise add it
@@ -122,13 +154,15 @@ class SavedTabGroup {
   SavedTabGroup& MoveTabFromSync(const base::Uuid& saved_tab_guid,
                                  size_t new_index);
 
-  // Merges this groups data with the `remote_group`. Side effect: updates the
-  // values of this group. `remote_group` should never contain tabs, only
-  // metadata is being merged.
-  void MergeRemoteGroupMetadata(const std::u16string& title,
-                                TabGroupColorId color,
-                                std::optional<size_t> position,
-                                base::Time update_time);
+  // Merges this groups data with the `remote_group` params. Side effect:
+  // updates the values of this group.
+  void MergeRemoteGroupMetadata(
+      const std::u16string& title,
+      TabGroupColorId color,
+      std::optional<size_t> position,
+      std::optional<std::string> creator_cache_guid,
+      std::optional<std::string> last_updater_cache_guid,
+      base::Time update_time);
 
   // Returns whether the remote group has more recent updates.
   bool RemoteGroupHasMoreRecentUpdates(base::Time remote_update_time) const;
@@ -176,12 +210,33 @@ class SavedTabGroup {
   // will be assigned one when it is added into the SavedTabGroupModel.
   std::optional<size_t> position_;
 
+  // A guid which refers to the device which created the tab group. If metadata
+  // is not being tracked when the saved tab group is being created, this value
+  // will be null. The value could also be null if the group was created before
+  // M127. Used for metrics purposes only.
+  std::optional<std::string> creator_cache_guid_;
+
+  // The cache guid of the device that last modified this tab group. Can be null
+  // if the group was just created. Used for metrics purposes only.
+  std::optional<std::string> last_updater_cache_guid_;
+
+  // Whether the tab group was created when sync was disabled.
+  bool created_before_syncing_tab_groups_;
+
   // Timestamp for when the tab was created using windows epoch microseconds.
   base::Time creation_time_windows_epoch_micros_;
 
   // Timestamp for when the tab was last updated using windows epoch
   // microseconds.
   base::Time update_time_windows_epoch_micros_;
+
+  // Timestamp of last explicit user interaction with the group, which currently
+  // refers to tab addition, tab removal and tab navigation only. Only for
+  // metrics.
+  base::Time last_user_interaction_time_;
+
+  // Collaboration ID in case if the group is shared.
+  std::optional<std::string> collaboration_id_;
 };
 
 }  // namespace tab_groups

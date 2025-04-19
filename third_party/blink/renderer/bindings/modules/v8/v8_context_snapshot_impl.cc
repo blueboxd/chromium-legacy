@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/bindings/modules/v8/v8_context_snapshot_impl.h"
 
 #include "third_party/blink/public/platform/platform.h"
@@ -209,8 +214,8 @@ v8::StartupData SerializeAPIWrapperCallback(v8::Local<v8::Object> holder,
   if (!wrappable) {
     return {nullptr, 0};
   }
-  CHECK_EQ(wrappable, ToScriptWrappable(holder->GetIsolate(), holder));
   const WrapperTypeInfo* wrapper_type_info = wrappable->GetWrapperTypeInfo();
+  CHECK_EQ(wrappable, ToAnyScriptWrappable(holder->GetIsolate(), holder));
   constexpr size_t kSize = 1;
   static_assert(sizeof (InternalFieldSerializedValue) == kSize);
   auto* serialized_value = new InternalFieldSerializedValue();

@@ -4,6 +4,7 @@
 
 #include "ui/views/examples/bubble_example.h"
 
+#include <array>
 #include <memory>
 #include <utility>
 
@@ -25,18 +26,19 @@ namespace views::examples {
 
 namespace {
 
-ExamplesColorIds colors[] = {ExamplesColorIds::kColorBubbleExampleBackground1,
-                             ExamplesColorIds::kColorBubbleExampleBackground2,
-                             ExamplesColorIds::kColorBubbleExampleBackground3,
-                             ExamplesColorIds::kColorBubbleExampleBackground4};
+constexpr auto colors = std::to_array<ExamplesColorIds>(
+    {ExamplesColorIds::kColorBubbleExampleBackground1,
+     ExamplesColorIds::kColorBubbleExampleBackground2,
+     ExamplesColorIds::kColorBubbleExampleBackground3,
+     ExamplesColorIds::kColorBubbleExampleBackground4});
 
-BubbleBorder::Arrow arrows[] = {
-    BubbleBorder::TOP_LEFT,     BubbleBorder::TOP_CENTER,
-    BubbleBorder::TOP_RIGHT,    BubbleBorder::RIGHT_TOP,
-    BubbleBorder::RIGHT_CENTER, BubbleBorder::RIGHT_BOTTOM,
-    BubbleBorder::BOTTOM_RIGHT, BubbleBorder::BOTTOM_CENTER,
-    BubbleBorder::BOTTOM_LEFT,  BubbleBorder::LEFT_BOTTOM,
-    BubbleBorder::LEFT_CENTER,  BubbleBorder::LEFT_TOP};
+constexpr auto arrows = std::to_array<BubbleBorder::Arrow>(
+    {BubbleBorder::TOP_LEFT, BubbleBorder::TOP_CENTER, BubbleBorder::TOP_RIGHT,
+     BubbleBorder::RIGHT_TOP, BubbleBorder::RIGHT_CENTER,
+     BubbleBorder::RIGHT_BOTTOM, BubbleBorder::BOTTOM_RIGHT,
+     BubbleBorder::BOTTOM_CENTER, BubbleBorder::BOTTOM_LEFT,
+     BubbleBorder::LEFT_BOTTOM, BubbleBorder::LEFT_CENTER,
+     BubbleBorder::LEFT_TOP});
 
 std::u16string GetArrowName(BubbleBorder::Arrow arrow) {
   switch (arrow) {
@@ -120,7 +122,7 @@ void BubbleExample::CreateExampleView(View* container) {
       u"Persistent"));
 }
 
-void BubbleExample::ShowBubble(Button** button,
+void BubbleExample::ShowBubble(raw_ptr<Button>* button,
                                BubbleBorder::Shadow shadow,
                                bool persistent,
                                const ui::Event& event) {

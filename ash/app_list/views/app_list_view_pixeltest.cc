@@ -428,7 +428,7 @@ TEST_P(AppListViewTabletPixelTest, BottomGradientZone) {
 TEST_P(AppListViewTabletPixelTest, SearchBoxViewActive) {
   raw_ptr<SearchBoxView> search_box_view =
       GetAppListTestHelper()->GetSearchBoxView();
-  search_box_view->SetSearchBoxActive(true, ui::EventType::ET_UNKNOWN);
+  search_box_view->SetSearchBoxActive(true, ui::EventType::kUnknown);
 
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "search_box_view_active", 7, search_box_view));
@@ -478,7 +478,7 @@ TEST_P(AppListViewAssistantZeroStateTest, Basic) {
       assistant_page_view->GetViewByID(AssistantViewID::kZeroStateView));
 
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
-      "app_list_view_assistant_zero_state", 8,
+      "app_list_view_assistant_zero_state", 9,
       assistant_page_view->GetViewByID(AssistantViewID::kZeroStateView)));
 }
 

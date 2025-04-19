@@ -570,7 +570,7 @@ TEST_F(AccessibilityNodeInfoDataWrapperTest, States) {
   EXPECT_TRUE(data.HasState(ax::mojom::State::kExpanded));
 }
 
-TEST_F(AccessibilityNodeInfoDataWrapperTest, SelectedState) {
+TEST_F(AccessibilityNodeInfoDataWrapperTest, GridRole) {
   AXNodeInfoData grid;
   grid.id = 1;
   SetProperty(grid, AXIntListProperty::CHILD_NODE_IDS,
@@ -582,7 +582,6 @@ TEST_F(AccessibilityNodeInfoDataWrapperTest, SelectedState) {
   AccessibilityNodeInfoDataWrapper grid_wrapper(tree_source(), &grid);
   SetIdToWrapper(&grid_wrapper);
 
-  // Make child of grid have cell role, which supports selected state.
   std::vector<AXNodeInfoData> cells(4);
   for (int i = 0; i < 4; i++) {
     AXNodeInfoData& node = cells[i];
@@ -595,34 +594,16 @@ TEST_F(AccessibilityNodeInfoDataWrapperTest, SelectedState) {
     SetParentId(node.id, grid.id);
   }
 
-  AccessibilityNodeInfoDataWrapper cell_wrapper(tree_source(), &cells[0]);
+  ui::AXNodeData data = CallSerialize(grid_wrapper);
+  ASSERT_EQ(ax::mojom::Role::kGrid, data.role);
 
-  ui::AXNodeData data = CallSerialize(cell_wrapper);
-  ASSERT_EQ(ax::mojom::Role::kCell, data.role);
-  ASSERT_EQ(0,
-            data.GetIntAttribute(ax::mojom::IntAttribute::kTableCellRowIndex));
-  ASSERT_EQ(
-      0, data.GetIntAttribute(ax::mojom::IntAttribute::kTableCellColumnIndex));
-  ASSERT_TRUE(data.GetBoolAttribute(ax::mojom::BoolAttribute::kSelected));
-  ASSERT_FALSE(
-      data.HasStringAttribute(ax::mojom::StringAttribute::kDescription));
-
-  // text_node is simple static text, which doesn't supports selected state in
-  // the web.
-  AXNodeInfoData text_node;
-  SetProperty(text_node, AXStringProperty::TEXT, "text.");
-  SetProperty(text_node, AXBooleanProperty::SELECTED, true);
-
-  AccessibilityNodeInfoDataWrapper text_wrapper(tree_source(), &text_node);
-
-  std::string description;
-  data = CallSerialize(text_wrapper);
-  ASSERT_EQ(ax::mojom::Role::kStaticText, data.role);
-  ASSERT_FALSE(data.GetBoolAttribute(ax::mojom::BoolAttribute::kSelected));
-  ASSERT_TRUE(data.GetStringAttribute(ax::mojom::StringAttribute::kDescription,
-                                      &description));
-  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_ARC_ACCESSIBILITY_SELECTED_STATUS),
-            description);
+  // Verify that the cells has role kGridCell
+  for (int i = 0; i < 4; i++) {
+    auto& cell = cells[i];
+    AccessibilityNodeInfoDataWrapper cell_wrapper(tree_source(), &cell);
+    ui::AXNodeData cell_data = CallSerialize(cell_wrapper);
+    ASSERT_EQ(ax::mojom::Role::kGridCell, cell_data.role);
+  }
 }
 
 TEST_F(AccessibilityNodeInfoDataWrapperTest, CellIndexes) {
@@ -654,7 +635,6 @@ TEST_F(AccessibilityNodeInfoDataWrapperTest, CellIndexes) {
     auto& cell = cells[i];
     AccessibilityNodeInfoDataWrapper cell_wrapper(tree_source(), &cell);
     ui::AXNodeData data = CallSerialize(cell_wrapper);
-    ASSERT_EQ(ax::mojom::Role::kCell, data.role);
     int expected_row_index = i % 2;
     int expected_col_index = i / 2;
     ASSERT_EQ(
@@ -668,6 +648,209 @@ TEST_F(AccessibilityNodeInfoDataWrapperTest, CellIndexes) {
     ASSERT_EQ(
         expected_col_index + 1,
         data.GetIntAttribute(ax::mojom::IntAttribute::kAriaCellColumnIndex));
+  }
+}
+
+TEST_F(AccessibilityNodeInfoDataWrapperTest, SelectedState) {
+  AXNodeInfoData grid;
+  grid.id = 1;
+  SetProperty(grid, AXIntListProperty::CHILD_NODE_IDS,
+              std::vector<int>({10, 11, 12, 13}));
+  grid.collection_info = AXCollectionInfoData::New();
+  grid.collection_info->row_count = 2;
+  grid.collection_info->column_count = 2;
+
+  AccessibilityNodeInfoDataWrapper grid_wrapper(tree_source(), &grid);
+  SetIdToWrapper(&grid_wrapper);
+
+  // Make child of grid have cell role, which supports selected state.
+  std::vector<AXNodeInfoData> cells(4);
+  for (int i = 0; i < 4; i++) {
+    AXNodeInfoData& node = cells[i];
+    node.id = 10 + i;
+    node.collection_item_info = AXCollectionItemInfoData::New();
+    node.collection_item_info->row_index = i % 2;
+    node.collection_item_info->column_index = i / 2;
+    SetProperty(node, AXBooleanProperty::SELECTED, true);
+
+    SetParentId(node.id, grid.id);
+  }
+
+  AccessibilityNodeInfoDataWrapper cell_wrapper(tree_source(), &cells[0]);
+
+  ui::AXNodeData data = CallSerialize(cell_wrapper);
+  ASSERT_EQ(ax::mojom::Role::kGridCell, data.role);
+  ASSERT_EQ(0,
+            data.GetIntAttribute(ax::mojom::IntAttribute::kTableCellRowIndex));
+  ASSERT_EQ(
+      0, data.GetIntAttribute(ax::mojom::IntAttribute::kTableCellColumnIndex));
+  ASSERT_TRUE(data.GetBoolAttribute(ax::mojom::BoolAttribute::kSelected));
+  ASSERT_FALSE(
+      data.HasStringAttribute(ax::mojom::StringAttribute::kDescription));
+
+  // text_node is simple static text, which doesn't supports selected state in
+  // the web.
+  AXNodeInfoData text_node;
+  SetProperty(text_node, AXStringProperty::TEXT, "text.");
+  SetProperty(text_node, AXBooleanProperty::SELECTED, true);
+
+  AccessibilityNodeInfoDataWrapper text_wrapper(tree_source(), &text_node);
+
+  std::string description;
+  data = CallSerialize(text_wrapper);
+  ASSERT_EQ(ax::mojom::Role::kStaticText, data.role);
+  ASSERT_FALSE(data.GetBoolAttribute(ax::mojom::BoolAttribute::kSelected));
+  ASSERT_TRUE(data.GetStringAttribute(ax::mojom::StringAttribute::kDescription,
+                                      &description));
+  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_ARC_ACCESSIBILITY_SELECTED_STATUS),
+            description);
+}
+
+TEST_F(AccessibilityNodeInfoDataWrapperTest, HorizontalList) {
+  AXNodeInfoData list;
+  list.id = 1;
+  SetProperty(list, AXIntListProperty::CHILD_NODE_IDS,
+              std::vector<int>({10, 11, 12, 13}));
+  list.collection_info = AXCollectionInfoData::New();
+  list.collection_info->row_count = 4;
+  list.collection_info->column_count = 1;
+
+  AccessibilityNodeInfoDataWrapper list_wrapper(tree_source(), &list);
+  SetIdToWrapper(&list_wrapper);
+
+  std::vector<AXNodeInfoData> items(4);
+  for (int i = 0; i < 4; i++) {
+    AXNodeInfoData& node = items[i];
+    node.id = 10 + i;
+    node.collection_item_info = AXCollectionItemInfoData::New();
+    node.collection_item_info->row_index = i;
+    node.collection_item_info->column_index = 0;
+    SetProperty(node, AXBooleanProperty::SELECTED, true);
+
+    SetParentId(node.id, list.id);
+  }
+
+  ui::AXNodeData data = CallSerialize(list_wrapper);
+  ASSERT_EQ(ax::mojom::Role::kList, data.role);
+  ASSERT_EQ(4, data.GetIntAttribute(ax::mojom::IntAttribute::kSetSize));
+
+  // Verify that the items has role kListItem and index
+  for (int i = 0; i < 4; i++) {
+    auto& item = items[i];
+    AccessibilityNodeInfoDataWrapper item_wrapper(tree_source(), &item);
+    ui::AXNodeData item_data = CallSerialize(item_wrapper);
+    ASSERT_EQ(ax::mojom::Role::kListItem, item_data.role);
+    ASSERT_EQ(i, item_data.GetIntAttribute(ax::mojom::IntAttribute::kPosInSet));
+  }
+}
+
+TEST_F(AccessibilityNodeInfoDataWrapperTest, VerticalList) {
+  AXNodeInfoData list;
+  list.id = 1;
+  SetProperty(list, AXIntListProperty::CHILD_NODE_IDS,
+              std::vector<int>({10, 11, 12, 13}));
+  list.collection_info = AXCollectionInfoData::New();
+  list.collection_info->row_count = 1;
+  list.collection_info->column_count = 4;
+
+  AccessibilityNodeInfoDataWrapper list_wrapper(tree_source(), &list);
+  SetIdToWrapper(&list_wrapper);
+
+  std::vector<AXNodeInfoData> items(4);
+  for (int i = 0; i < 4; i++) {
+    AXNodeInfoData& node = items[i];
+    node.id = 10 + i;
+    node.collection_item_info = AXCollectionItemInfoData::New();
+    node.collection_item_info->row_index = 0;
+    node.collection_item_info->column_index = i;
+    SetProperty(node, AXBooleanProperty::SELECTED, true);
+
+    SetParentId(node.id, list.id);
+  }
+
+  ui::AXNodeData data = CallSerialize(list_wrapper);
+  ASSERT_EQ(ax::mojom::Role::kList, data.role);
+  ASSERT_EQ(4, data.GetIntAttribute(ax::mojom::IntAttribute::kSetSize));
+
+  // Verify that the items has role kListItem and index
+  for (int i = 0; i < 4; i++) {
+    auto& item = items[i];
+    AccessibilityNodeInfoDataWrapper item_wrapper(tree_source(), &item);
+    ui::AXNodeData item_data = CallSerialize(item_wrapper);
+    ASSERT_EQ(ax::mojom::Role::kListItem, item_data.role);
+    ASSERT_EQ(i, item_data.GetIntAttribute(ax::mojom::IntAttribute::kPosInSet));
+  }
+}
+
+TEST_F(AccessibilityNodeInfoDataWrapperTest, ListWithOneItem) {
+  AXNodeInfoData list;
+  list.id = 1;
+  SetProperty(list, AXIntListProperty::CHILD_NODE_IDS, std::vector<int>({10}));
+  list.collection_info = AXCollectionInfoData::New();
+  list.collection_info->row_count = 1;
+  list.collection_info->column_count = 1;
+
+  AccessibilityNodeInfoDataWrapper list_wrapper(tree_source(), &list);
+  SetIdToWrapper(&list_wrapper);
+
+  AXNodeInfoData item;
+  item.id = 10;
+  item.collection_item_info = AXCollectionItemInfoData::New();
+  item.collection_item_info->row_index = 0;
+  item.collection_item_info->column_index = 0;
+  SetProperty(item, AXBooleanProperty::SELECTED, true);
+  SetParentId(item.id, list.id);
+
+  ui::AXNodeData data = CallSerialize(list_wrapper);
+  ASSERT_EQ(ax::mojom::Role::kList, data.role);
+  ASSERT_EQ(1, data.GetIntAttribute(ax::mojom::IntAttribute::kSetSize));
+
+  // Verify that the items has role kListItem and kPosInSet
+  AccessibilityNodeInfoDataWrapper item_wrapper(tree_source(), &item);
+  ui::AXNodeData item_data = CallSerialize(item_wrapper);
+  ASSERT_EQ(ax::mojom::Role::kListItem, item_data.role);
+  ASSERT_EQ(0, data.GetIntAttribute(ax::mojom::IntAttribute::kPosInSet));
+}
+
+TEST_F(AccessibilityNodeInfoDataWrapperTest, ListWithoutCount) {
+  AXNodeInfoData list;
+  list.id = 1;
+  SetProperty(list, AXIntListProperty::CHILD_NODE_IDS,
+              std::vector<int>({10, 11, 12, 13}));
+  list.collection_info = AXCollectionInfoData::New();
+  list.collection_info->row_count = -1;
+  list.collection_info->column_count = 1;
+
+  AccessibilityNodeInfoDataWrapper list_wrapper(tree_source(), &list);
+  SetIdToWrapper(&list_wrapper);
+
+  std::vector<AXNodeInfoData> items(4);
+  for (int i = 0; i < 4; i++) {
+    AXNodeInfoData& node = items[i];
+    node.id = 10 + i;
+    node.collection_item_info = AXCollectionItemInfoData::New();
+    node.collection_item_info->row_index = i;
+    node.collection_item_info->column_index = 1;
+    SetProperty(node, AXBooleanProperty::SELECTED, true);
+
+    SetParentId(node.id, list.id);
+  }
+
+  ui::AXNodeData data = CallSerialize(list_wrapper);
+  ASSERT_EQ(ax::mojom::Role::kList, data.role);
+  int setSize;
+  ASSERT_FALSE(
+      data.GetIntAttribute(ax::mojom::IntAttribute::kSetSize, &setSize));
+
+  // Verify that the items has role kListItem without index
+  for (int i = 0; i < 4; i++) {
+    auto& item = items[i];
+    AccessibilityNodeInfoDataWrapper item_wrapper(tree_source(), &item);
+    ui::AXNodeData item_data = CallSerialize(item_wrapper);
+    ASSERT_EQ(ax::mojom::Role::kListItem, item_data.role);
+    int pos;
+    ASSERT_FALSE(
+        data.GetIntAttribute(ax::mojom::IntAttribute::kPosInSet, &pos));
   }
 }
 

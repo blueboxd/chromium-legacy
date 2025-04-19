@@ -251,7 +251,7 @@ TEST_F(PasswordFormHelperTest, FindPasswordFormsInView) {
         }));
     if (data.expected_form_found) {
       ASSERT_EQ(1U, forms.size());
-      EXPECT_EQ(data.expected_number_of_fields, forms[0].fields.size());
+      EXPECT_EQ(data.expected_number_of_fields, forms[0].fields().size());
       EXPECT_EQ(data.expected_form_name, base::UTF16ToUTF8(forms[0].name()));
     } else {
       ASSERT_TRUE(forms.empty());
@@ -426,12 +426,13 @@ TEST_F(PasswordFormHelperTest, FillPasswordFormWithFillData_Success_NoFill) {
   id result = ExecuteJavaScript(kInputFieldValueVerificationScript);
   EXPECT_NSEQ(@"u1=test-username;p1=test-password;", result);
 
-  // Check that username and password fields were not updated as they were not
-  // filled.
+  // Check that username and password fields were still updated even if they
+  // were not filled. This odd behavior is kept to not skew metrics downstream
+  // (e.g. PasswordManager.FillingAssistance).
   autofill::FieldDataManager* fieldDataManager =
       autofill::FieldDataManagerFactoryIOS::FromWebFrame(GetMainFrame());
-  EXPECT_FALSE(fieldDataManager->WasAutofilledOnUserTrigger(username_field_id));
-  EXPECT_FALSE(fieldDataManager->WasAutofilledOnUserTrigger(password_field_id));
+  EXPECT_TRUE(fieldDataManager->WasAutofilledOnUserTrigger(username_field_id));
+  EXPECT_TRUE(fieldDataManager->WasAutofilledOnUserTrigger(password_field_id));
 
   // Verify that the fill operation was recorded as a success.
   histogram_tester.ExpectUniqueSample("PasswordManager.FillingSuccessIOS", true,
@@ -573,7 +574,7 @@ TEST_F(PasswordFormHelperTest,
   // FieldDataManager but not the username as it wasn't filled.
   autofill::FieldDataManager* fieldDataManager =
       autofill::FieldDataManagerFactoryIOS::FromWebFrame(GetMainFrame());
-  EXPECT_FALSE(fieldDataManager->WasAutofilledOnUserTrigger(username_field_id));
+  EXPECT_TRUE(fieldDataManager->WasAutofilledOnUserTrigger(username_field_id));
   EXPECT_TRUE(fieldDataManager->WasAutofilledOnUserTrigger(password_field_id));
 
   // Verify that the password was filled.

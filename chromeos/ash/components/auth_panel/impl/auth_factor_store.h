@@ -8,15 +8,17 @@
 #include <optional>
 #include <string>
 
-#include "ash/ime/ime_controller_impl.h"
-#include "ash/shell.h"
 #include "base/callback_list.h"
+#include "chromeos/ash/components/auth_panel/impl/auth_panel.h"
 #include "chromeos/ash/components/auth_panel/impl/auth_panel_event_dispatcher.h"
+#include "chromeos/ash/components/auth_panel/public/shared_types.h"
 #include "chromeos/ash/components/osauth/public/common_types.h"
 
 namespace ash {
 
 class AuthHubConnector;
+class AuthPanel;
+class ImeController;
 
 // This class encapsulates the UI state of `AuthPanel`.
 class AuthFactorStore {
@@ -29,7 +31,7 @@ class AuthFactorStore {
       kMaxValue = kAuthenticated,
     };
 
-    struct LoginTextfieldState {
+    struct AuthTextfieldState {
       bool is_password_visible_ = false;
       bool is_read_only = false;
       std::string password_;
@@ -39,9 +41,9 @@ class AuthFactorStore {
       bool is_display_password_button_visible_ = true;
       bool is_factor_enabled_ = true;
       bool is_capslock_on_ = false;
-      bool is_capslock_icon_highlighted_ = false;
+      bool is_password_textfield_focused_ = true;
       AuthFactorState factor_state_;
-      LoginTextfieldState login_textfield_state_;
+      AuthTextfieldState auth_textfield_state_;
 
       explicit PasswordViewState(bool is_capslock_on);
       ~PasswordViewState();
@@ -63,9 +65,10 @@ class AuthFactorStore {
   using OnStateUpdatedCallbackList =
       base::RepeatingCallbackList<void(const State& state)>;
 
-  AuthFactorStore(Shell* shell,
+  AuthFactorStore(ImeController* ime_controller,
                   AuthHubConnector* connector,
-                  std::optional<AshAuthFactor> password_type);
+                  std::optional<AshAuthFactor> password_type,
+                  AuthHub* auth_hub);
   ~AuthFactorStore();
 
   base::CallbackListSubscription Subscribe(OnStateUpdatedCallback callback);
@@ -74,8 +77,9 @@ class AuthFactorStore {
   void OnFactorStateChanged(AshAuthFactor factor, AuthFactorState state);
   void OnAuthVerdict(AshAuthFactor factor,
                      AuthPanelEventDispatcher::AuthVerdict verdict);
-
  private:
+  friend class AuthPanel::TestApi;
+
   void NotifyStateChanged();
 
   void SubmitPassword(const std::string& password);
@@ -87,16 +91,29 @@ class AuthFactorStore {
   std::optional<AshAuthFactor> password_type_;
 
   raw_ptr<AuthHubConnector> auth_hub_connector_;
+
+  auth_panel::SubmitPasswordCallback submit_password_callback_;
+
+  raw_ptr<AuthHub> auth_hub_;
 };
 
 class AuthFactorStoreFactory {
  public:
+  explicit AuthFactorStoreFactory(AuthHub* auth_hub) : auth_hub_(auth_hub) {}
+
   std::unique_ptr<AuthFactorStore> CreateAuthFactorStore(
-      Shell* shell,
+      ImeController* ime_controller,
       AuthHubConnector* connector,
       std::optional<AshAuthFactor> password_type) {
-    return std::make_unique<AuthFactorStore>(shell, connector, password_type);
+    return std::make_unique<AuthFactorStore>(ime_controller, connector,
+                                             password_type, auth_hub_);
   }
+
+ private:
+  // AuthHub is a long-lived, singleton object. It's created early in Ash's
+  // lifecycle and destroyed late, after message loop stops. It is therefore
+  // guaranteed to outlive `AuthFactorStoreFactory` and `AuthFactorStore`.
+  raw_ptr<AuthHub> auth_hub_;
 };
 
 }  // namespace ash

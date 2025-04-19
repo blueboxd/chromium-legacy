@@ -26,7 +26,7 @@
 #include "content/browser/loader/navigation_url_loader.h"
 #include "content/browser/loader/response_head_update_params.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
-#include "content/browser/service_worker/service_worker_container_host.h"
+#include "content/browser/service_worker/service_worker_client.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_loader_helpers.h"
@@ -431,24 +431,13 @@ void ServiceWorkerMainResourceLoader::MaybeDispatchPreload(
       }
       break;
     case RaceNetworkRequestMode::kDefault:
-      if (base::GetFieldTrialParamByFeatureAsBool(
-              features::kServiceWorkerAutoPreload, "respect_navigation_preload",
-              /*default_value=*/true)) {
-        // Prioritize NavigationPreload than AutoPreload if the
-        // respect_navigation_preload feature param is true.
-        if (MaybeStartNavigationPreload(context_wrapper)) {
-          return;
-        }
-        if (MaybeStartAutoPreload(context_wrapper, version)) {
-          return;
-        }
-      } else {
-        if (MaybeStartAutoPreload(context_wrapper, version)) {
-          return;
-        }
-        if (MaybeStartNavigationPreload(context_wrapper)) {
-          return;
-        }
+      // Prioritize NavigationPreload than AutoPreload.
+      // https://github.com/explainers-by-googlers/service-worker-auto-preload#how-is-it-different-from-the-navigation-preload-api
+      if (MaybeStartNavigationPreload(context_wrapper)) {
+        return;
+      }
+      if (MaybeStartAutoPreload(context_wrapper, version)) {
+        return;
       }
       break;
     case RaceNetworkRequestMode::kSkipped:
@@ -502,6 +491,7 @@ bool ServiceWorkerMainResourceLoader::MaybeStartAutoPreload(
 
   bool result = StartRaceNetworkRequest(context, version);
   if (result) {
+    version->CountFeature(blink::mojom::WebFeature::kServiceWorkerAutoPreload);
     SetDispatchedPreloadType(DispatchedPreloadType::kAutoPreload);
     // When the AutoPreload is triggered, set the commit responsibility
     // because the response is always committed by the fetch handler

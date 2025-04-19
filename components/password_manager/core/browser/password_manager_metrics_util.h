@@ -18,6 +18,7 @@
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/device_reauth/device_reauth_metrics_util.h"
 #include "components/password_manager/core/browser/features/password_manager_features_util.h"
+#include "components/password_manager/core/browser/password_store/password_store_interface.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
@@ -49,6 +50,9 @@ enum UIDisplayDisposition {
   MANUAL_ADD_USERNAME_BUBBLE = 18,
   AUTOMATIC_RELAUNCH_CHROME_BUBBLE = 19,
   AUTOMATIC_DEFAULT_STORE_CHANGED_BUBBLE = 20,
+  AUTOMATIC_PASSKEY_SAVED_CONFIRMATION = 21,
+  AUTOMATIC_PASSKEY_DELETED_CONFIRMATION = 22,
+  MANUAL_PASSKEY_DELETED_CONFIRMATION = 23,
   NUM_DISPLAY_DISPOSITIONS,
 };
 
@@ -72,6 +76,7 @@ enum UIDismissalReason {
   CLICKED_BRAND_NAME_OBSOLETE = 11,         // obsolete.
   CLICKED_PASSWORDS_DASHBOARD = 12,
   CLICKED_MANAGE_PASSWORD = 13,
+  CLICKED_GOT_IT = 14,
   NUM_UI_RESPONSES,
 };
 
@@ -416,6 +421,18 @@ enum class PasswordCheckInteraction {
   kMaxValue = kChangePasswordAutomatically,
 };
 
+#if BUILDFLAG(IS_ANDROID)
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+// Should be kept in sync with SaveFlowStep in enums.xml.
+enum class SaveFlowStep {
+  // The form was submitted. Does not strictly require a successful submission.
+  kFormSubmitted = 0,
+  kSavePromptShown = 1,
+  kMaxValue = kSavePromptShown,
+};
+#endif
+
 // Represents different user interactions related to adding credential from the
 // setting. These values are persisted to logs. Entries should not be renumbered
 // and numeric values should never be reused. Always keep this enum in sync with
@@ -692,6 +709,18 @@ enum class TouchToFillPasswordGenerationTriggerOutcome {
 };
 #endif
 
+// Enum to track the reasons of password loss.
+//
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class PasswordManagerCredentialRemovalReason {
+  // TODO(crbug.com/342519805): Add reasons.
+  kSettings = 0,           // Stored as (1<<0) in the bit vector.
+  kClearBrowsingData = 1,  // Stored as (1<<1) in the bit vector.
+  kSync = 2,               // Stored as (1<<2) in the bit vector.
+  kMaxValue = kSync,
+};
+
 std::string GetPasswordAccountStorageUsageLevelHistogramSuffix(
     password_manager::features_util::PasswordAccountStorageUsageLevel
         usage_level);
@@ -922,7 +951,15 @@ base::OnceCallback<R(Args...)> TimeCallbackMediumTimes(
 #if BUILDFLAG(IS_ANDROID)
 void LogTouchToFillPasswordGenerationTriggerOutcome(
     TouchToFillPasswordGenerationTriggerOutcome outcome);
+void LogFormSubmissionsVsSavePromptsHistogram(SaveFlowStep save_flow_step);
 #endif
+
+// Record that password deletion from Chrome settings happened.
+// This will be used in case of suspecting a possible password loss.
+void AddPasswordRemovalReason(
+    PrefService* prefs,
+    IsAccountStore is_account_store,
+    PasswordManagerCredentialRemovalReason removal_reason);
 
 }  // namespace password_manager::metrics_util
 

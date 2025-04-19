@@ -4,7 +4,7 @@
 // META: script=./resources/utils.js
 // META: timeout=long
 
-// https://webmachinelearning.github.io/webnn/
+// https://www.w3.org/TR/webnn/
 
 'use strict';
 
@@ -19,26 +19,22 @@ idl_test(
     }
 
     idl_array.add_objects({
-      NavigatorML: ['navigator'],
       ML: ['navigator.ml'],
       MLContext: ['context'],
-      MLOperand: ['input', 'filter', 'output'],
-      MLActivation: ['relu'],
+      MLOperand: ['input', 'constant', 'output'],
       MLGraphBuilder: ['builder'],
       MLGraph: ['graph']
     });
 
     self.context = await navigator.ml.createContext();
-
     self.builder = new MLGraphBuilder(self.context);
     self.input =
-        builder.input('input', {dataType: 'float32', dimensions: [1, 1, 5, 5]});
-    self.filter = builder.constant(
-        {dataType: 'float32', dimensions: [1, 1, 3, 3]},
-        new Float32Array(9).fill(1));
-    self.relu = builder.relu();
-    self.output =
-        builder.conv2d(input, filter, {activation: relu, inputLayout: "nchw"});
+        builder.input('input', {dataType: 'float32', dimensions: [2, 3]});
+    self.constant = builder.constant(
+        {dataType: 'float32', dimensions: [2, 3]},
+        new Float32Array(2 * 3).fill(1));
+
+    self.output = builder.add(input, constant);
 
     self.graph = await builder.build({output});
   }

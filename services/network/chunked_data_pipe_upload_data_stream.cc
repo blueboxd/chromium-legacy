@@ -2,9 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "services/network/chunked_data_pipe_upload_data_stream.h"
 
 #include "base/check_op.h"
+#include "base/containers/span.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/location.h"
@@ -117,8 +123,8 @@ int ChunkedDataPipeUploadDataStream::ReadInternal(net::IOBuffer* buf,
   size_t num_bytes = base::checked_cast<size_t>(buf_len);
   if (size_ && num_bytes > *size_ - bytes_read_)
     num_bytes = *size_ - bytes_read_;
-  MojoResult rv =
-      data_pipe_->ReadData(buf->data(), &num_bytes, MOJO_READ_DATA_FLAG_NONE);
+  MojoResult rv = data_pipe_->ReadData(MOJO_READ_DATA_FLAG_NONE,
+                                       buf->span().first(num_bytes), num_bytes);
   if (rv == MOJO_RESULT_OK) {
     bytes_read_ += num_bytes;
     // Not needed for correctness, but this allows the consumer to send the
@@ -207,6 +213,9 @@ void ChunkedDataPipeUploadDataStream::OnSizeReceived(int32_t status,
     buf_len_ = 0;
     chunked_data_pipe_getter_.reset();
 
+    if (status_ < net::ERR_IO_PENDING) {
+      LOG(ERROR) << "OnSizeReceived failed with Error: " << status_;
+    }
     OnReadCompleted(status_);
 
     // |this| may have been deleted at this point.
@@ -224,8 +233,12 @@ void ChunkedDataPipeUploadDataStream::OnHandleReadable(MojoResult result) {
 
   int rv = ReadInternal(buf.get(), buf_len);
 
-  if (rv != net::ERR_IO_PENDING)
+  if (rv != net::ERR_IO_PENDING) {
+    if (rv < net::ERR_IO_PENDING) {
+      LOG(ERROR) << "OnHandleReadable failed with Error: " << rv;
+    }
     OnReadCompleted(rv);
+  }
 
   // |this| may have been deleted at this point.
 }

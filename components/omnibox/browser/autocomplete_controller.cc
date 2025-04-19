@@ -38,10 +38,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
+#include "base/timer/elapsed_timer.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
-#include "components/history_clusters/core/config.h"
 #include "components/omnibox/browser/actions/omnibox_action_in_suggest.h"
+#include "components/omnibox/browser/actions/omnibox_answer_action.h"
 #include "components/omnibox/browser/actions/omnibox_pedal_provider.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
@@ -69,6 +70,7 @@
 #include "components/omnibox/browser/page_classification_functions.h"
 #include "components/omnibox/browser/query_tile_provider.h"
 #include "components/omnibox/browser/search_provider.h"
+#include "components/omnibox/browser/search_scoring_signals_annotator.h"
 #include "components/omnibox/browser/shortcuts_provider.h"
 #include "components/omnibox/browser/url_scoring_signals_annotator.h"
 #include "components/omnibox/browser/voice_suggest_provider.h"
@@ -84,8 +86,8 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
 #include "net/http/http_util.h"
-#include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "third_party/metrics_proto/omnibox_focus_type.pb.h"
+#include "third_party/metrics_proto/omnibox_scoring_signals.pb.h"
 #include "third_party/omnibox_proto/chrome_searchbox_stats.pb.h"
 #include "third_party/omnibox_proto/types.pb.h"
 #include "ui/base/device_form_factor.h"
@@ -98,6 +100,7 @@
 #endif
 
 #if !BUILDFLAG(IS_IOS)
+#include "components/history_clusters/core/config.h"  // nogncheck
 #include "components/history_embeddings/history_embeddings_features.h"  //nogncheck
 #include "components/omnibox/browser/actions/history_clusters_action.h"
 #include "components/omnibox/browser/history_cluster_provider.h"
@@ -113,7 +116,7 @@ constexpr bool kIsDesktop = !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS);
 
 namespace {
 
-using ScoringSignals = ::metrics::OmniboxEventProto::Suggestion::ScoringSignals;
+using ScoringSignals = ::metrics::OmniboxScoringSignals;
 using ProviderType = AutocompleteProvider::Type;
 
 constexpr bool is_android = !!BUILDFLAG(IS_ANDROID);
@@ -134,13 +137,15 @@ void RecordScoringSignalCoverageForProvider(
     const AutocompleteProvider* provider) {
   // Keep consistent:
   // - omnibox_event.proto `ScoringSignals`
+  // - omnibox_scoring_signals.proto `OmniboxScoringSignals`
   // - autocomplete_scoring_model_handler.cc
   //   `AutocompleteScoringModelHandler::ExtractInputFromScoringSignals()`
   // - autocomplete_match.cc `AutocompleteMatch::MergeScoringSignals()`
   // - autocomplete_controller.cc `RecordScoringSignalCoverageForProvider()`
+  // - omnibox_metrics_provider.cc `GetScoringSignalsForLogging()`
   // - omnibox.mojom `struct Signals`
-  // - omnibox_page_handler.cc `TypeConverter<AutocompleteMatch::ScoringSignals,
-  //   mojom::SignalsPtr>`
+  // - omnibox_page_handler.cc
+  //   `TypeConverter<AutocompleteMatch::ScoringSignals, mojom::SignalsPtr>`
   // - omnibox_page_handler.cc `TypeConverter<mojom::SignalsPtr,
   //   AutocompleteMatch::ScoringSignals>`
   // - omnibox_util.ts `signalNames`
@@ -195,6 +200,13 @@ void RecordScoringSignalCoverageForProvider(
        scoring_signals.has_allowed_to_be_default_match()},
       {"search_suggest_relevance",
        scoring_signals.has_search_suggest_relevance()},
+      {"is_search_suggest_entity",
+       scoring_signals.has_is_search_suggest_entity()},
+      {"is_verbatim", scoring_signals.has_is_verbatim()},
+      {"is_navsuggest", scoring_signals.has_is_navsuggest()},
+      {"is_search_suggest_tail", scoring_signals.has_is_search_suggest_tail()},
+      {"is_answer_suggest", scoring_signals.has_is_answer_suggest()},
+      {"is_calculator_suggest", scoring_signals.has_is_calculator_suggest()},
   };
 
   const std::string provider_type = provider->GetName();
@@ -205,6 +217,17 @@ void RecordScoringSignalCoverageForProvider(
             provider_type + "." + pair.first,
         pair.second);
   }
+}
+
+void RecordMlScoringElapsedTime(base::TimeDelta elapsed) {
+  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+      "Omnibox.URLScoringModelExecuted.ElapsedTime", elapsed,
+      base::Microseconds(1), base::Milliseconds(3), 100);
+}
+
+void RecordTotalMatchesScored(size_t num_scored) {
+  base::UmaHistogramCounts1000("Omnibox.URLScoringModelExecuted.Matches",
+                               num_scored);
 }
 
 // Appends available autocompletion of the given type, subtype, and number to
@@ -477,6 +500,25 @@ void AutocompleteController::ExtendMatchSubtypes(
   }
 }
 
+// static
+int AutocompleteController::ApplyPiecewiseScoringTransform(
+    double ml_score,
+    std::vector<std::pair<double, int>> break_points) {
+  // Start and end points for the line segment whose domain contains `ml_score`.
+  std::pair<double, int> start;
+  std::pair<double, int> end;
+  for (size_t i = 0; i < break_points.size() - 1; i++) {
+    start = break_points[i];
+    end = break_points[i + 1];
+    if (ml_score <= end.first) {
+      double m = (end.second - start.second) / (end.first - start.first);
+      double b = end.second - m * end.first;
+      return m * ml_score + b;
+    }
+  }
+  return 0;
+}
+
 AutocompleteController::AutocompleteController(
     std::unique_ptr<AutocompleteProviderClient> provider_client,
     int provider_types,
@@ -542,6 +584,8 @@ AutocompleteController::AutocompleteController(
             provider_client_.get()));
     url_scoring_signals_annotators_.push_back(
         std::make_unique<UrlScoringSignalsAnnotator>());
+    url_scoring_signals_annotators_.push_back(
+        std::make_unique<SearchScoringSignalsAnnotator>());
   }
 
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
@@ -874,6 +918,14 @@ void AutocompleteController::
     return;
   }
 
+  UpdateSearchTermsArgsWithAdditionalSearchboxStats(query_formulation_time,
+                                                    *match->search_terms_args);
+  SetMatchDestinationURL(match);
+}
+
+void AutocompleteController::UpdateSearchTermsArgsWithAdditionalSearchboxStats(
+    base::TimeDelta query_formulation_time,
+    TemplateURLRef::SearchTermsArgs& search_terms_args) const {
   // Append the query formulation time (time from when the user first typed a
   // character into the omnibox to when the user selected a query), whether
   // a field trial has triggered, and the current page classification to the
@@ -891,8 +943,7 @@ void AutocompleteController::
   // field. Eventually Chrome should start logging the substitute fields and
   // the downstream consumers should migrate to using those fields before we
   // can stop logging this deprecated field.
-  match->search_terms_args->searchbox_stats.set_experiment_stats(
-      experiment_stats);
+  search_terms_args.searchbox_stats.set_experiment_stats(experiment_stats);
 
   // Append the ExperimentStatsV2 to the searchbox stats parameter to be logged
   // in searchbox_stats.proto's experiment_stats_v2 field.
@@ -905,7 +956,7 @@ void AutocompleteController::
       std::string value = experiment_stat_v2.string_value();
       std::replace(value.begin(), value.end(), ':', ',');
       auto* reported_experiment_stats_v2 =
-          match->search_terms_args->searchbox_stats.add_experiment_stats_v2();
+          search_terms_args.searchbox_stats.add_experiment_stats_v2();
       reported_experiment_stats_v2->set_type_int(experiment_stat_v2.type_int());
       reported_experiment_stats_v2->set_string_value(value);
     }
@@ -916,15 +967,13 @@ void AutocompleteController::
       metrics::OmniboxEventProto::UNKNOWN_POSITION) {
     const auto omnibox_position_stat = GetOmniboxPositionExperimentStatsV2();
     auto* reported_experiment_stats_v2 =
-        match->search_terms_args->searchbox_stats.add_experiment_stats_v2();
+        search_terms_args.searchbox_stats.add_experiment_stats_v2();
     reported_experiment_stats_v2->set_type_int(
         omnibox_position_stat.type_int());
     reported_experiment_stats_v2->set_int_value(
         omnibox_position_stat.int_value());
   }
 #endif
-
-  SetMatchDestinationURL(match);
 }
 
 void AutocompleteController::SetMatchDestinationURL(
@@ -955,25 +1004,6 @@ void AutocompleteController::SetMatchDestinationURL(
 #endif
 }
 
-GURL AutocompleteController::ComputeURLFromSearchTermsArgs(
-    const TemplateURL* template_url,
-    const TemplateURLRef::SearchTermsArgs& search_terms_args) const {
-  if (!template_url) {
-    return GURL();
-  }
-
-  // Skip search term replacement when in the @gemini scope.
-  // TODO(crbug.com/41494524): Replace this logic with a proper fix to support
-  // keywords that do not do search term replacement in omnibox.
-  if (template_url->starter_pack_id() ==
-      TemplateURLStarterPackData::kAskGoogle) {
-    return GURL(OmniboxFieldTrial::kGeminiUrlOverride.Get());
-  }
-
-  return GURL(template_url->url_ref().ReplaceSearchTerms(
-      search_terms_args, template_url_service_->search_terms_data()));
-}
-
 void AutocompleteController::GroupSuggestionsBySearchVsURL(size_t begin,
                                                            size_t end) {
   if (begin == end)
@@ -991,6 +1021,129 @@ void AutocompleteController::GroupSuggestionsBySearchVsURL(size_t begin,
 
   AutocompleteResult::GroupSuggestionsBySearchVsURL(
       std::next(result.begin(), begin), std::next(result.begin(), end));
+}
+
+bool AutocompleteController::ShouldRunProvider(
+    AutocompleteProvider* provider) const {
+  if (!provider) {
+    return false;
+  }
+
+  // Only a subset of providers are run for the Lens searchboxes.
+  if (omnibox::IsLensSearchbox(input_.current_page_classification())) {
+    return provider->type() == AutocompleteProvider::TYPE_SEARCH ||
+           provider->type() == AutocompleteProvider::TYPE_ZERO_SUGGEST;
+  }
+
+  if (input_.InKeywordMode()) {
+    // Only a subset of providers are run when we're in a starter pack keyword
+    // mode. Try to grab the TemplateURL to determine if we're in starter pack
+    // mode and whether this provider should be run.
+    AutocompleteInput keyword_input = input_;
+    const TemplateURL* keyword_turl =
+        KeywordProvider::GetSubstitutingTemplateURLForInput(
+            template_url_service_, &keyword_input);
+
+    if (keyword_turl && keyword_turl->starter_pack_id() > 0) {
+      switch (provider->type()) {
+        // Search provider and keyword provider are still run because we would
+        // lose the suggestion the keyword chip is attached to otherwise. Search
+        // provider suggestions are curbed for starter pack scopes in
+        // `SearchProvider::ShouldCurbDefaultSuggestions()`.
+        case AutocompleteProvider::TYPE_SEARCH:
+          return true;
+        case AutocompleteProvider::TYPE_KEYWORD:
+          return true;
+
+        // @Bookmarks starter pack scope - run only the bookmarks provider.
+        case AutocompleteProvider::TYPE_BOOKMARK:
+          return (keyword_turl->starter_pack_id() ==
+                  TemplateURLStarterPackData::kBookmarks);
+
+        // @History starter pack scope - run the history providers & featured
+        // search for embeddings IPH suggestions.
+        case AutocompleteProvider::TYPE_HISTORY_QUICK:
+        case AutocompleteProvider::TYPE_HISTORY_URL:
+        case AutocompleteProvider::TYPE_HISTORY_EMBEDDINGS:
+        case AutocompleteProvider::TYPE_FEATURED_SEARCH:
+          return (keyword_turl->starter_pack_id() ==
+                  TemplateURLStarterPackData::kHistory);
+
+        // @Tabs starter pack scope - run the open tab provider.
+        case AutocompleteProvider::TYPE_OPEN_TAB:
+          return (keyword_turl->starter_pack_id() ==
+                  TemplateURLStarterPackData::kTabs);
+
+        // No other providers should run when in a starter pack scope.
+        default:
+          return false;
+      }
+    }
+
+    // Outside of the starter pack scopes, keyword mode should still restrict
+    // certain providers (when LimitKeywordModeSuggestions is enabled).
+    if (omnibox_feature_configs::LimitKeywordModeSuggestions::Get().enabled) {
+      switch (provider->type()) {
+        // Don't run history cluster provider.
+        case AutocompleteProvider::TYPE_HISTORY_CLUSTER_PROVIDER:
+          return !(omnibox_feature_configs::LimitKeywordModeSuggestions::Get()
+                       .limit_history_cluster_suggestions);
+
+        // Don't run document provider, except for Google Drive.
+        case AutocompleteProvider::TYPE_DOCUMENT:
+          return !(omnibox_feature_configs::LimitKeywordModeSuggestions::Get()
+                       .limit_document_suggestions) ||
+                 (keyword_turl &&
+                  base::StartsWith(keyword_turl->url(),
+                                   "https://drive.google.com",
+                                   base::CompareCase::INSENSITIVE_ASCII));
+
+        // Don't run on device head provider.
+        case AutocompleteProvider::TYPE_ON_DEVICE_HEAD:
+          return !(omnibox_feature_configs::LimitKeywordModeSuggestions::Get()
+                       .limit_on_device_head_suggestions);
+
+        // Treat all other providers as usual.
+        default:
+          break;
+      }
+    }
+  }
+
+  // Some providers should only run in starter pack mode or in the CrOS
+  // launcher. If we reach here, we're not in starter pack mode.
+  switch (provider->type()) {
+    case AutocompleteProvider::TYPE_OPEN_TAB:
+      return is_cros_launcher_;
+#if !BUILDFLAG(IS_IOS)
+    case AutocompleteProvider::TYPE_HISTORY_EMBEDDINGS:
+      return history_embeddings::kOmniboxUnscoped.Get();
+#endif
+    default:
+      break;
+  }
+
+  // Otherwise, run all providers.
+  return true;
+}
+
+GURL AutocompleteController::ComputeURLFromSearchTermsArgs(
+    const TemplateURL* template_url,
+    const TemplateURLRef::SearchTermsArgs& search_terms_args) const {
+  if (!template_url) {
+    return GURL();
+  }
+
+  // Skip search term replacement when in the @gemini scope.
+  // TODO(crbug.com/41494524): Replace this logic with a proper fix to support
+  // keywords that do not do search term replacement in omnibox.
+  if (template_url->starter_pack_id() ==
+      TemplateURLStarterPackData::kAskGoogle) {
+    return GURL(OmniboxFieldTrial::kGeminiUrlOverride.Get());
+  }
+
+  return GURL(template_url->url_ref().ReplaceSearchTerms(
+      search_terms_args, template_url_service_->search_terms_data()));
 }
 
 void AutocompleteController::InitializeAsyncProviders(int provider_types) {
@@ -1030,7 +1183,8 @@ void AutocompleteController::InitializeAsyncProviders(int provider_types) {
   }
 #if !BUILDFLAG(IS_IOS)
   if (provider_types & AutocompleteProvider::TYPE_HISTORY_EMBEDDINGS) {
-    providers_.push_back(new HistoryEmbeddingsProvider(provider_client_.get()));
+    providers_.push_back(
+        new HistoryEmbeddingsProvider(provider_client_.get(), this));
   }
 #endif
 }
@@ -1284,10 +1438,10 @@ void AutocompleteController::MlRerank(OldResult& old_result) {
     return;
 
 #if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
-  if (OmniboxFieldTrial::GetMLConfig().mapped_search_blending) {
+  if (OmniboxFieldTrial::GetMLConfig().piecewise_mapped_search_blending) {
+    RunBatchUrlScoringModelPiecewiseMappedSearchBlending(old_result);
+  } else if (OmniboxFieldTrial::GetMLConfig().mapped_search_blending) {
     RunBatchUrlScoringModelMappedSearchBlending(old_result);
-  } else if (OmniboxFieldTrial::GetMLConfig().stable_search_blending) {
-    RunBatchUrlScoringModelWithStableSearches(old_result);
   } else {
     RunBatchUrlScoringModel(old_result);
   }
@@ -1368,7 +1522,10 @@ void AutocompleteController::AttachActions() {
       internal_result_.ConvertOpenTabMatches(provider_client_.get(), &input_);
     }
 
-    internal_result_.AttachPedalsToMatches(input_, *provider_client_);
+    // Do not attach pedals to matches in the Lens Searchbox.
+    if (!omnibox::IsLensSearchbox(input_.current_page_classification())) {
+      internal_result_.AttachPedalsToMatches(input_, *provider_client_);
+    }
 
 #if !BUILDFLAG(IS_IOS)
     // HistoryClusters is not enabled on iOS.
@@ -1428,6 +1585,7 @@ void AutocompleteController::UpdateAssociatedKeywords(
       // to a typical search.
       match.answer.reset();
       match.answer_template.reset();
+      match.answer_type = omnibox::ANSWER_TYPE_UNSPECIFIED;
       match.associated_keyword = std::make_unique<AutocompleteMatch>(
           keyword_provider_->CreateVerbatimMatch(exact_keyword, exact_keyword,
                                                  input_));
@@ -1660,21 +1818,30 @@ void AutocompleteController::UpdateSearchboxStats(AutocompleteResult* result) {
     for (auto& scoped_action : match->actions) {
       auto* action_in_suggest =
           OmniboxActionInSuggest::FromAction(scoped_action.get());
+      auto* answer_action =
+          OmniboxAnswerAction::FromAction(scoped_action.get());
 
+      TemplateURLRef::SearchTermsArgs* search_terms_args;
       if (action_in_suggest == nullptr ||
           !action_in_suggest->search_terms_args.has_value()) {
-        continue;
+        if (answer_action == nullptr) {
+          continue;
+        }
+        search_terms_args = &answer_action->search_terms_args;
+      } else {
+        search_terms_args = &action_in_suggest->search_terms_args.value();
       }
-      auto& search_terms_args = action_in_suggest->search_terms_args.value();
-      search_terms_args.searchbox_stats.mutable_assisted_query_info()
-          ->MergeFrom(
-              match->search_terms_args->searchbox_stats.assisted_query_info());
 
-      action_in_suggest->action_info.set_action_uri(
-          ComputeURLFromSearchTermsArgs(
-              match->GetTemplateURL(template_url_service_, false),
-              search_terms_args)
-              .spec());
+      search_terms_args->searchbox_stats.MergeFrom(
+          match->search_terms_args->searchbox_stats);
+
+      if (action_in_suggest != nullptr) {
+        action_in_suggest->action_info.set_action_uri(
+            ComputeURLFromSearchTermsArgs(
+                match->GetTemplateURL(template_url_service_, false),
+                *search_terms_args)
+                .spec());
+      }
     }
   }
 }
@@ -1832,108 +1999,6 @@ AutocompleteController::GetOmniboxPositionExperimentStatsV2() const {
   return experiment_stats_v2;
 }
 
-bool AutocompleteController::ShouldRunProvider(
-    AutocompleteProvider* provider) const {
-  if (!provider) {
-    return false;
-  }
-
-  // Only a subset of providers are run for the Lens searchboxes.
-  if (omnibox::IsLensSearchbox(input_.current_page_classification())) {
-    return provider->type() == AutocompleteProvider::TYPE_SEARCH ||
-           provider->type() == AutocompleteProvider::TYPE_ZERO_SUGGEST;
-  }
-
-  if (input_.InKeywordMode()) {
-    // Only a subset of providers are run when we're in a starter pack keyword
-    // mode. Try to grab the TemplateURL to determine if we're in starter pack
-    // mode and whether this provider should be run.
-    AutocompleteInput keyword_input = input_;
-    const TemplateURL* keyword_turl =
-        KeywordProvider::GetSubstitutingTemplateURLForInput(
-            template_url_service_, &keyword_input);
-
-    if (keyword_turl && keyword_turl->starter_pack_id() > 0) {
-      switch (provider->type()) {
-        // Search provider and keyword provider are still run because we would
-        // lose the suggestion the keyword chip is attached to otherwise. Search
-        // provider suggestions are curbed for starter pack scopes in
-        // `SearchProvider::ShouldCurbDefaultSuggestions()`.
-        case AutocompleteProvider::TYPE_SEARCH:
-        case AutocompleteProvider::TYPE_KEYWORD:
-          return true;
-
-        // @Bookmarks starter pack scope - run only the bookmarks provider.
-        case AutocompleteProvider::TYPE_BOOKMARK:
-          return (keyword_turl->starter_pack_id() ==
-                  TemplateURLStarterPackData::kBookmarks);
-
-        // @History starter pack scope - run history quick and history url
-        // providers.
-        case AutocompleteProvider::TYPE_HISTORY_QUICK:
-        case AutocompleteProvider::TYPE_HISTORY_URL:
-        case AutocompleteProvider::TYPE_HISTORY_EMBEDDINGS:
-          return (keyword_turl->starter_pack_id() ==
-                  TemplateURLStarterPackData::kHistory);
-
-        // @Tabs starter pack scope - run the open tab provider.
-        case AutocompleteProvider::TYPE_OPEN_TAB:
-          return (keyword_turl->starter_pack_id() ==
-                  TemplateURLStarterPackData::kTabs);
-
-        // No other providers should run when in a starter pack scope.
-        default:
-          return false;
-      }
-    }
-
-    // Outside of the starter pack scopes, keyword mode should still restrict
-    // certain providers (when LimitKeywordModeSuggestions is enabled).
-    if (omnibox_feature_configs::LimitKeywordModeSuggestions::Get().enabled) {
-      switch (provider->type()) {
-        // Don't run history cluster provider.
-        case AutocompleteProvider::TYPE_HISTORY_CLUSTER_PROVIDER:
-          return !(omnibox_feature_configs::LimitKeywordModeSuggestions::Get()
-                       .limit_history_cluster_suggestions);
-
-        // Don't run document provider, except for Google Drive.
-        case AutocompleteProvider::TYPE_DOCUMENT:
-          return !(omnibox_feature_configs::LimitKeywordModeSuggestions::Get()
-                       .limit_document_suggestions) ||
-                 (keyword_turl &&
-                  base::StartsWith(keyword_turl->url(),
-                                   "https://drive.google.com",
-                                   base::CompareCase::INSENSITIVE_ASCII));
-
-        // Don't run on device head provider.
-        case AutocompleteProvider::TYPE_ON_DEVICE_HEAD:
-          return !(omnibox_feature_configs::LimitKeywordModeSuggestions::Get()
-                       .limit_on_device_head_suggestions);
-
-        // Treat all other providers as usual.
-        default:
-          break;
-      }
-    }
-  }
-
-  // Some providers should only run in starter pack mode or in the CrOS
-  // launcher. If we reach here, we're not in starter pack mode.
-  switch (provider->type()) {
-    case AutocompleteProvider::TYPE_OPEN_TAB:
-      return is_cros_launcher_;
-#if !BUILDFLAG(IS_IOS)
-    case AutocompleteProvider::TYPE_HISTORY_EMBEDDINGS:
-      return history_embeddings::kOmniboxUnscoped.Get();
-#endif
-    default:
-      break;
-  }
-
-  // Otherwise, run all providers.
-  return true;
-}
-
 #if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
 void AutocompleteController::RunBatchUrlScoringModel(OldResult& old_result) {
   TRACE_EVENT0("omnibox", "AutocompleteController::RunBatchUrlScoringModel");
@@ -1944,7 +2009,7 @@ void AutocompleteController::RunBatchUrlScoringModel(OldResult& old_result) {
 
   size_t eligible_matches_count = base::ranges::count_if(
       internal_result_.matches_,
-      [](const auto& match) { return match.IsUrlScoringEligible(); });
+      [](const auto& match) { return match.IsMlScoringEligible(); });
 
   if (eligible_matches_count == 0)
     return;
@@ -1956,36 +2021,39 @@ void AutocompleteController::RunBatchUrlScoringModel(OldResult& old_result) {
   std::vector<ACMatches::iterator> eligible_match_itrs;
   for (auto match_itr = internal_result_.begin();
        match_itr != internal_result_.end(); ++match_itr) {
-    if (!match_itr->IsUrlScoringEligible()) {
+    if (!match_itr->IsMlScoringEligible()) {
       continue;
     }
 
     RecordScoringSignalCoverageForProvider(match_itr->scoring_signals.value(),
                                            match_itr->provider.get());
 
-    // Verify the eligible match or one of its duplicates has an expected type.
-    DCHECK(match_itr->MatchOrDuplicateMeets([](const auto& match) {
-      return AutocompleteScoringSignalsAnnotator::IsEligibleMatch(match);
-    })) << "Ineligible "
-        << AutocompleteMatchType::ToString(match_itr->type)
-        << " match receiving model scoring.";
-
     batch_scoring_signals.push_back(&match_itr->scoring_signals.value());
     eligible_match_itrs.push_back(match_itr);
   }
 
   auto elapsed_timer = base::ElapsedTimer();
-  const auto results = provider_client_->GetAutocompleteScoringModelService()
-                           ->BatchScoreAutocompleteUrlMatchesSync(
-                               std::move(batch_scoring_signals));
-  if (results.empty()) {
+  const auto ml_scores = provider_client_->GetAutocompleteScoringModelService()
+                             ->BatchScoreAutocompleteUrlMatchesSync(
+                                 std::move(batch_scoring_signals));
+  if (ml_scores.empty()) {
     return;
   }
 
-  if (results.size() != eligible_match_itrs.size()) {
+  if (ml_scores.size() != eligible_match_itrs.size()) {
     NOTREACHED_IN_MIGRATION();
     return;
   }
+
+  // Record how many eligible matches the model was executed for.
+  RecordTotalMatchesScored(ml_scores.size());
+
+  // Record how long it took to execute the model for all eligible matches.
+  RecordMlScoringElapsedTime(elapsed_timer.Elapsed());
+
+  // Record whether the model was executed for at least one eligible match.
+  provider_client_->GetOmniboxTriggeredFeatureService()->FeatureTriggered(
+      metrics::OmniboxEventProto_Feature_ML_URL_SCORING);
 
   // The goal is to redistribute the existing relevance scores among the
   // eligible matches according to the model prediction scores.
@@ -2001,8 +2069,8 @@ void AutocompleteController::RunBatchUrlScoringModel(OldResult& old_result) {
   // Likewise, keep the same number of shortcut boosted suggestions but reassign
   // them to the highest scoring suggestions.
   size_t boosted_shortcut_count = 0;
-  for (size_t index = 0; index < results.size(); index++) {
-    const auto& prediction = results[index];
+  for (size_t index = 0; index < ml_scores.size(); index++) {
+    const auto& prediction = ml_scores[index];
     if (!prediction.has_value()) {
       continue;
     }
@@ -2018,22 +2086,7 @@ void AutocompleteController::RunBatchUrlScoringModel(OldResult& old_result) {
 
   // Record the percentage of matches that were assigned non-null scores by
   // the ML scoring model.
-  RecordMlScoreCoverage(score_coverage_count, results.size());
-
-  if (!relevance_heap.empty()) {
-    // Record whether the model was executed for at least one eligible match.
-    provider_client_->GetOmniboxTriggeredFeatureService()->FeatureTriggered(
-        metrics::OmniboxEventProto_Feature_ML_URL_SCORING);
-
-    // Record how many eligible matches the model was executed for.
-    base::UmaHistogramCounts1000("Omnibox.URLScoringModelExecuted.Matches",
-                                 relevance_heap.size());
-
-    // Record how long it took to execute the model for all eligible matches.
-    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-        "Omnibox.URLScoringModelExecuted.ElapsedTime", elapsed_timer.Elapsed(),
-        base::Microseconds(1), base::Milliseconds(3), 100);
-  }
+  RecordMlScoreCoverage(score_coverage_count, ml_scores.size());
 
   while (!relevance_heap.empty()) {
     // If not in the counterfactual treatment, assign the highest relevance
@@ -2061,120 +2114,6 @@ void AutocompleteController::RunBatchUrlScoringModel(OldResult& old_result) {
     obs.OnMlScored(this, internal_result_);
 }
 
-// TODO(crbug.com/40062540): Remove this variant which has fallen out of sync
-//   with the other versions of ML scoring.
-void AutocompleteController::RunBatchUrlScoringModelWithStableSearches(
-    OldResult& old_result) {
-  TRACE_EVENT0(
-      "omnibox",
-      "AutocompleteController::RunBatchUrlScoringModelWithStableSearches");
-
-  // Sort according to traditional scores. This is needed to determine the
-  // traditional default and # of shortcut boosted suggestions.
-  internal_result_.Sort(input_, template_url_service_,
-                        old_result.default_match_to_preserve);
-
-  // Run the model for the eligible matches. Keep a reference to those matches
-  // to later redistribute their relevance scores based on the model output.
-  std::vector<const ScoringSignals*> batch_scoring_signals;
-  std::vector<size_t> scored_positions;
-  // Redistribute shortcut boosting but preserve the # of URLs above searches.
-  // Don't count boosted shortcuts that were traditionally the default, because
-  // their position is already preserved when assuring the default suggestion
-  // remains a search or URL. Otherwise, if ML ranking picks a
-  // non-boosted-shortcut as the default, there would be an extra URL above
-  // searches.
-  size_t num_boosted_shortcuts_below_default = 0;
-  std::vector<int> scores_pool;
-  for (size_t i = 0; i < internal_result_.size(); ++i) {
-    const auto& match = internal_result_.matches_[i];
-    if (!match.IsUrlScoringEligible())
-      continue;
-    if (i > 0 && match.shortcut_boosted)
-      num_boosted_shortcuts_below_default++;
-    batch_scoring_signals.push_back(&match.scoring_signals.value());
-    scored_positions.push_back(i);
-    scores_pool.push_back(match.relevance);
-  }
-  base::ranges::sort(scores_pool, std::greater<>());
-
-  if (batch_scoring_signals.empty())
-    return;
-
-  auto elapsed_timer = base::ElapsedTimer();
-  const auto results = provider_client_->GetAutocompleteScoringModelService()
-                           ->BatchScoreAutocompleteUrlMatchesSync(
-                               std::move(batch_scoring_signals));
-  if (results.empty())
-    return;
-
-  // Record how many eligible matches the model was executed for.
-  base::UmaHistogramCounts1000("Omnibox.URLScoringModelExecuted.Matches",
-                               results.size());
-
-  // Record how long it took to execute the model for all eligible matches.
-  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-      "Omnibox.URLScoringModelExecuted.ElapsedTime", elapsed_timer.Elapsed(),
-      base::Microseconds(1), base::Milliseconds(3), 100);
-
-  // Record whether the model was executed for at least one eligible match.
-  provider_client_->GetOmniboxTriggeredFeatureService()->FeatureTriggered(
-      metrics::OmniboxEventProto_Feature_ML_URL_SCORING);
-
-  if (OmniboxFieldTrial::IsMlUrlScoringCounterfactual())
-    return;
-
-  std::vector<std::pair<float, size_t>> prediction_and_position_heap;
-  for (size_t i = 0; i < results.size(); ++i) {
-    auto& match = internal_result_.matches_[scored_positions[i]];
-    match.RecordAdditionalInfo("ml legacy relevance", match.relevance);
-    match.RecordAdditionalInfo("ml model output", *results[i]);
-    prediction_and_position_heap.push_back({*results[i], scored_positions[i]});
-  }
-  base::ranges::stable_sort(prediction_and_position_heap, std::greater<>(),
-                            [](const auto& pair) { return pair.first; });
-
-  if (internal_result_.matches_[0].IsUrlScoringEligible()) {
-    const auto& new_default = base::ranges::find_if(
-        prediction_and_position_heap, [&](const auto& tuple) {
-          return internal_result_.matches_[tuple.second]
-              .allowed_to_be_default_match;
-        });
-    // `new_default` can be null If there are no `allowed_to_be_default_match`
-    // matches.
-    if (new_default != prediction_and_position_heap.end()) {
-      internal_result_.matches_[new_default->second].relevance = scores_pool[0];
-      scores_pool.erase(scores_pool.begin());
-      prediction_and_position_heap.erase(new_default);
-    }
-  }
-
-  // Avoid duplicate scores, especially for matches with unique ML scores. Also
-  // avoid an ML URL default replacing a traditional search default.
-  int max_score = internal_result_.matches_[0].IsUrlScoringEligible()
-                      ? INT_MAX
-                      : internal_result_.matches_[0].relevance;
-  for (auto& score : scores_pool) {
-    score = std::min(score, max_score - 1);
-    max_score = score;
-  }
-
-  // Redistribute scores and shortcut boosting.
-  for (size_t i = 0; i < prediction_and_position_heap.size(); ++i) {
-    auto& match =
-        internal_result_.matches_[prediction_and_position_heap[i].second];
-    match.relevance = scores_pool[i];
-    if (num_boosted_shortcuts_below_default > 0) {
-      match.shortcut_boosted = true;
-      num_boosted_shortcuts_below_default--;
-    } else
-      match.shortcut_boosted = false;
-  }
-
-  for (Observer& obs : observers_)
-    obs.OnMlScored(this, internal_result_);
-}
-
 void AutocompleteController::RunBatchUrlScoringModelMappedSearchBlending(
     OldResult& old_result) {
   TRACE_EVENT0(
@@ -2185,8 +2124,6 @@ void AutocompleteController::RunBatchUrlScoringModelMappedSearchBlending(
   // This is needed in order to ensure that the relevance score assignment logic
   // can properly break ties when two (or more) URL suggestions have the same ML
   // score.
-  // TODO(crbug.com/40062540): Replace `Sort` with `DeduplicateMatches` for
-  //   better stability of matches.
   internal_result_.Sort(input_, template_url_service_,
                         old_result.default_match_to_preserve);
 
@@ -2195,12 +2132,7 @@ void AutocompleteController::RunBatchUrlScoringModelMappedSearchBlending(
   std::vector<size_t> scored_positions;
   for (size_t i = 0; i < internal_result_.size(); ++i) {
     const auto& match = internal_result_.matches_[i];
-    // Do not attempt to score matches that are generally ineligible for ML
-    // scoring nor any stale suggestions sourced from the DocumentProvider
-    // cache.
-    if (!match.IsUrlScoringEligible() ||
-        (match.type == AutocompleteMatchType::DOCUMENT_SUGGESTION &&
-         match.relevance == 0)) {
+    if (!match.IsMlScoringEligible()) {
       continue;
     }
 
@@ -2211,40 +2143,45 @@ void AutocompleteController::RunBatchUrlScoringModelMappedSearchBlending(
     scored_positions.push_back(i);
   }
 
-  if (batch_scoring_signals.empty())
+  if (batch_scoring_signals.empty()) {
     return;
+  }
 
   auto elapsed_timer = base::ElapsedTimer();
-  const auto results = provider_client_->GetAutocompleteScoringModelService()
-                           ->BatchScoreAutocompleteUrlMatchesSync(
-                               std::move(batch_scoring_signals));
-  if (results.empty())
+  const auto ml_scores = provider_client_->GetAutocompleteScoringModelService()
+                             ->BatchScoreAutocompleteUrlMatchesSync(
+                                 std::move(batch_scoring_signals));
+  if (ml_scores.empty()) {
     return;
+  }
+
+  if (ml_scores.size() != scored_positions.size()) {
+    NOTREACHED_IN_MIGRATION();
+    return;
+  }
 
   // Record how many eligible matches the model was executed for.
-  base::UmaHistogramCounts1000("Omnibox.URLScoringModelExecuted.Matches",
-                               results.size());
+  RecordTotalMatchesScored(ml_scores.size());
 
   // Record how long it took to execute the model for all eligible matches.
-  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-      "Omnibox.URLScoringModelExecuted.ElapsedTime", elapsed_timer.Elapsed(),
-      base::Microseconds(1), base::Milliseconds(3), 100);
+  RecordMlScoringElapsedTime(elapsed_timer.Elapsed());
 
   // Record whether the model was executed for at least one eligible match.
   provider_client_->GetOmniboxTriggeredFeatureService()->FeatureTriggered(
       metrics::OmniboxEventProto_Feature_ML_URL_SCORING);
 
-  if (OmniboxFieldTrial::IsMlUrlScoringCounterfactual())
+  if (OmniboxFieldTrial::IsMlUrlScoringCounterfactual()) {
     return;
+  }
 
   const int min = OmniboxFieldTrial::GetMLConfig().mapped_search_blending_min;
   const int max = OmniboxFieldTrial::GetMLConfig().mapped_search_blending_max;
   const int grouping_threshold = OmniboxFieldTrial::GetMLConfig()
                                      .mapped_search_blending_grouping_threshold;
 
-  int score_coverage_count = 0;
-  for (size_t i = 0; i < results.size(); ++i) {
-    const auto& prediction = results[i];
+  size_t score_coverage_count = 0;
+  for (size_t i = 0; i < ml_scores.size(); ++i) {
+    const auto& prediction = ml_scores[i];
     float p_value = prediction.value_or(0);
     if (prediction.has_value()) {
       score_coverage_count++;
@@ -2258,7 +2195,7 @@ void AutocompleteController::RunBatchUrlScoringModelMappedSearchBlending(
 
   // Record the percentage of matches that were assigned non-null scores by
   // the ML scoring model.
-  RecordMlScoreCoverage(score_coverage_count, results.size());
+  RecordMlScoreCoverage(score_coverage_count, ml_scores.size());
 
   // Following the initial relevance assignment, build a sorted list of
   // values which will contain the finalized set of relevance scores for URL
@@ -2266,9 +2203,7 @@ void AutocompleteController::RunBatchUrlScoringModelMappedSearchBlending(
   std::vector<int> scores_pool;
   for (size_t i = 0; i < internal_result_.size(); ++i) {
     const auto& match = internal_result_.matches_[i];
-    if (!match.IsUrlScoringEligible() ||
-        (match.type == AutocompleteMatchType::DOCUMENT_SUGGESTION &&
-         match.relevance == 0)) {
+    if (!match.IsMlScoringEligible()) {
       continue;
     }
     scores_pool.push_back(match.relevance);
@@ -2284,8 +2219,162 @@ void AutocompleteController::RunBatchUrlScoringModelMappedSearchBlending(
   }
 
   std::vector<std::pair<float, size_t>> prediction_and_position_heap;
-  for (size_t i = 0; i < results.size(); ++i) {
-    const auto& prediction = results[i];
+  for (size_t i = 0; i < ml_scores.size(); ++i) {
+    const auto& prediction = ml_scores[i];
+    prediction_and_position_heap.push_back(
+        {prediction.value_or(0), scored_positions[i]});
+  }
+  base::ranges::stable_sort(prediction_and_position_heap, std::greater<>(),
+                            [](const auto& pair) { return pair.first; });
+
+  // Assign the finalized relevance scores to each URL suggestion in order of
+  // priority (i.e. ML score).
+  for (size_t i = 0; i < prediction_and_position_heap.size(); ++i) {
+    auto& match =
+        internal_result_.matches_[prediction_and_position_heap[i].second];
+    match.relevance = scores_pool[i];
+  }
+
+  for (Observer& obs : observers_) {
+    obs.OnMlScored(this, internal_result_);
+  }
+}
+
+void AutocompleteController::
+    RunBatchUrlScoringModelPiecewiseMappedSearchBlending(
+        OldResult& old_result) {
+  TRACE_EVENT0("omnibox",
+               "AutocompleteController::"
+               "RunBatchUrlScoringModelPiecewiseMappedSearchBlending");
+
+  using PiecewiseMappingVariant = OmniboxFieldTrial::PiecewiseMappingVariant;
+
+  const auto break_points = OmniboxFieldTrial::GetPiecewiseMappingBreakPoints();
+  if (break_points.empty()) {
+    return;
+  }
+
+  const auto break_points_verbatim_url =
+      OmniboxFieldTrial::GetPiecewiseMappingBreakPoints(
+          PiecewiseMappingVariant::kVerbatimUrl);
+  const auto break_points_search =
+      OmniboxFieldTrial::GetPiecewiseMappingBreakPoints(
+          PiecewiseMappingVariant::kSearch);
+
+  // Sort according to traditional scores.
+  // This is needed in order to ensure that the relevance score assignment logic
+  // can properly break ties when two (or more) URL suggestions have the same ML
+  // score.
+  internal_result_.Sort(input_, template_url_service_,
+                        old_result.default_match_to_preserve);
+
+  // Run the model for the eligible matches.
+  std::vector<const ScoringSignals*> batch_scoring_signals;
+  std::vector<size_t> scored_positions;
+  for (size_t i = 0; i < internal_result_.size(); ++i) {
+    const auto& match = internal_result_.matches_[i];
+    if (!match.IsMlScoringEligible()) {
+      continue;
+    }
+
+    RecordScoringSignalCoverageForProvider(match.scoring_signals.value(),
+                                           match.provider.get());
+
+    batch_scoring_signals.push_back(&match.scoring_signals.value());
+    scored_positions.push_back(i);
+  }
+
+  if (batch_scoring_signals.empty()) {
+    return;
+  }
+
+  auto elapsed_timer = base::ElapsedTimer();
+  const auto ml_scores = provider_client_->GetAutocompleteScoringModelService()
+                             ->BatchScoreAutocompleteUrlMatchesSync(
+                                 std::move(batch_scoring_signals));
+  if (ml_scores.empty()) {
+    return;
+  }
+
+  if (ml_scores.size() != scored_positions.size()) {
+    NOTREACHED_IN_MIGRATION();
+    return;
+  }
+
+  // Record how many eligible matches the model was executed for.
+  RecordTotalMatchesScored(ml_scores.size());
+
+  // Record how long it took to execute the model for all eligible matches.
+  RecordMlScoringElapsedTime(elapsed_timer.Elapsed());
+
+  // Record whether the model was executed for at least one eligible match.
+  provider_client_->GetOmniboxTriggeredFeatureService()->FeatureTriggered(
+      metrics::OmniboxEventProto_Feature_ML_URL_SCORING);
+
+  if (OmniboxFieldTrial::IsMlUrlScoringCounterfactual()) {
+    return;
+  }
+
+  const int grouping_threshold =
+      OmniboxFieldTrial::GetMLConfig()
+          .piecewise_mapped_search_blending_grouping_threshold;
+  const int relevance_bias =
+      OmniboxFieldTrial::GetMLConfig()
+          .piecewise_mapped_search_blending_relevance_bias;
+
+  size_t score_coverage_count = 0;
+  for (size_t i = 0; i < ml_scores.size(); ++i) {
+    const auto& prediction = ml_scores[i];
+    float p_value = prediction.value_or(0);
+    if (prediction.has_value()) {
+      score_coverage_count++;
+    }
+    auto& match = internal_result_.matches_[scored_positions[i]];
+    match.RecordAdditionalInfo("ml legacy relevance", match.relevance);
+    match.RecordAdditionalInfo("ml model output", p_value);
+
+    const auto* break_points_for_transform = &break_points;
+    if (match.IsVerbatimUrlSuggestion() && !break_points_verbatim_url.empty()) {
+      break_points_for_transform = &break_points_verbatim_url;
+    } else if (AutocompleteMatch::IsSearchType(match.type) &&
+               !break_points_search.empty()) {
+      break_points_for_transform = &break_points_search;
+    }
+    match.relevance =
+        ApplyPiecewiseScoringTransform(p_value, *break_points_for_transform) +
+        relevance_bias;
+
+    match.shortcut_boosted = match.relevance > grouping_threshold;
+  }
+
+  // Record the percentage of matches that were assigned non-null scores by
+  // the ML scoring model.
+  RecordMlScoreCoverage(score_coverage_count, ml_scores.size());
+
+  // Following the initial relevance assignment, build a sorted list of
+  // values which will contain the finalized set of relevance scores for URL
+  // suggestions.
+  std::vector<int> scores_pool;
+  for (size_t i = 0; i < internal_result_.size(); ++i) {
+    const auto& match = internal_result_.matches_[i];
+    if (!match.IsMlScoringEligible()) {
+      continue;
+    }
+    scores_pool.push_back(match.relevance);
+  }
+  base::ranges::sort(scores_pool, std::greater<>());
+
+  // Avoid duplicate scores by ensuring that no two URL suggestions are assigned
+  // the same score.
+  int max_score = INT_MAX;
+  for (auto& score : scores_pool) {
+    score = std::min(score, max_score - 1);
+    max_score = score;
+  }
+
+  std::vector<std::pair<float, size_t>> prediction_and_position_heap;
+  for (size_t i = 0; i < ml_scores.size(); ++i) {
+    const auto& prediction = ml_scores[i];
     prediction_and_position_heap.push_back(
         {prediction.value_or(0), scored_positions[i]});
   }
@@ -2307,53 +2396,39 @@ void AutocompleteController::RunBatchUrlScoringModelMappedSearchBlending(
 
 void AutocompleteController::MaybeRemoveCompanyEntityImages(
     AutocompleteResult* result) {
-  if (result->size() == 0 ||
-      !base::FeatureList::IsEnabled(omnibox::kCompanyEntityIconAdjustment)) {
+  if (result->size() == 0) {
     return;
   }
-  // Least aggressive and moderate group will only have one iteration as the
-  // first match must be of history type.
-  size_t max_iterations =
-      OmniboxFieldTrial::kCompanyEntityIconAdjustmentGroup.Get() ==
-              omnibox::CompanyEntityIconAdjustmentGroup::kMostAggressive
-          ? result->size()
-          : 1;
+  std::u16string history_domain;
+  // First match must be of history URL type to ablate entity image.
+  if (result->match_at(0)->type == AutocompleteMatchType::HISTORY_URL) {
+    history_domain = GetDomain(*result->match_at(0));
+  }
 
-  std::unordered_set<std::u16string> history_domains;
-  // Find all history type matches.
-  for (size_t i = 0; i < max_iterations; i++) {
-    if (result->match_at(i)->type == AutocompleteMatchType::HISTORY_URL) {
-      history_domains.insert(GetDomain(*result->match_at(i)));
-    }
-  }
-  if (history_domains.size() == 0) {
+  auto iter = base::ranges::find_if(result->matches_, [](const auto& match) {
+    return match.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY;
+  });
+  if (iter == result->matches_.end()) {
     return;
   }
-  for (size_t i = 0; i < result->size(); i++) {
-    // Do not attempt to change image to search loupe if not an entity
-    // suggestion.
-    if (result->match_at(i)->type !=
-        AutocompleteMatchType::SEARCH_SUGGEST_ENTITY) {
-      continue;
-    }
-    if (OmniboxFieldTrial::kCompanyEntityIconAdjustmentGroup.Get() ==
-            omnibox::CompanyEntityIconAdjustmentGroup::kLeastAggressive &&
-        i > 1) {
-      break;
-    }
-    // Check that entity domain has a matching history domain.
-    if (history_domains.contains(GetDomain(*result->match_at(i))) &&
-        (!result->match_at(i)->image_url.is_empty() ||
-         !result->match_at(i)->image_dominant_color.empty())) {
-      provider_client_->GetOmniboxTriggeredFeatureService()->FeatureTriggered(
-          metrics::OmniboxEventProto_Feature_COMPANY_ENTITY_ADJUSTMENT);
-      if (!OmniboxFieldTrial::kCompanyEntityIconAdjustmentCounterfactual
-               .Get()) {
-        result->match_at(i)->image_url = GURL();
-        result->match_at(i)->image_dominant_color.clear();
+
+  bool image_ablated = false;
+  if (!history_domain.empty()) {
+    for (auto it = iter; it != result->matches_.end(); it++) {
+      // Do not attempt to change image to search loupe if not an entity
+      // suggestion.
+      if (it->type != AutocompleteMatchType::SEARCH_SUGGEST_ENTITY) {
+        continue;
+      }
+      // Check that the entity domain matches the history domain.
+      if (history_domain == GetDomain(*it)) {
+        it->image_url = GURL();
+        it->image_dominant_color.clear();
+        image_ablated = true;
       }
     }
   }
+  base::UmaHistogramBoolean("Omnibox.CompanyEntityImageAblated", image_ablated);
 }
 
 void AutocompleteController::MaybeCleanSuggestionsForKeywordMode(

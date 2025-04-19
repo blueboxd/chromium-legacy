@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/scroll/scrollbar.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
 #include "third_party/blink/renderer/platform/graphics/scrollbar_theme_settings.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ui {
@@ -60,11 +61,6 @@ class CORE_EXPORT ScrollbarTheme {
 
   virtual void UpdateEnabledState(const Scrollbar&) {}
 
-  // |context|'s current space is the space of the scrollbar's FrameRect().
-  void Paint(const Scrollbar&,
-             GraphicsContext& context,
-             const gfx::Vector2d& paint_offset);
-
   ScrollbarPart HitTestRootFramePosition(const Scrollbar&,
                                          const gfx::Point&) const;
 
@@ -78,11 +74,8 @@ class CORE_EXPORT ScrollbarTheme {
   }
 
   virtual bool IsSolidColor() const { return false; }
-  virtual SkColor4f GetSolidColor(
-      const std::optional<Color>& css_thumb_color) const {
-    NOTREACHED_NORETURN();
-  }
   virtual bool UsesOverlayScrollbars() const { return false; }
+  virtual bool UsesFluentScrollbars() const { return false; }
   virtual bool UsesFluentOverlayScrollbars() const { return false; }
   virtual gfx::Rect ShrinkMainThreadedMinimalModeThumbRect(
       const Scrollbar&,
@@ -125,6 +118,9 @@ class CORE_EXPORT ScrollbarTheme {
   virtual void PaintTickmarks(GraphicsContext&,
                               const Scrollbar&,
                               const gfx::Rect&);
+  virtual SkColor4f ThumbColor(const Scrollbar&) const {
+    NOTREACHED_NORETURN();
+  }
 
   virtual bool ShouldCenterOnThumb(const Scrollbar&,
                                    const WebMouseEvent&) const {
@@ -157,8 +153,7 @@ class CORE_EXPORT ScrollbarTheme {
   virtual int TrackPosition(const Scrollbar&) const;
   // The length of the track along the axis of the scrollbar.
   virtual int TrackLength(const Scrollbar&) const;
-  // The opacity to be applied to the scrollbar. A theme overriding Opacity()
-  // should also override PaintThumbWithOpacity().
+  // The opacity to be applied to the scrollbar.
   virtual float Opacity(const Scrollbar&) const { return 1.0f; }
 
   // Whether the native theme of the OS has scrollbar buttons.
@@ -190,11 +185,10 @@ class CORE_EXPORT ScrollbarTheme {
                           const Scrollbar&,
                           const gfx::Rect&) {}
 
-  // |offset| is from the space of the scrollbar's FrameRect() to |context|'s
-  // current space.
-  void PaintTrackButtonsTickmarks(GraphicsContext& context,
-                                  const Scrollbar&,
-                                  const gfx::Vector2d& offset);
+  // Paints the track (including tickmarks if present) and the buttons.
+  void PaintTrackAndButtons(GraphicsContext&,
+                            const Scrollbar&,
+                            const gfx::Rect&);
 
   virtual int MaxOverlapBetweenPages() const {
     return std::numeric_limits<int>::max();
@@ -214,6 +208,11 @@ class CORE_EXPORT ScrollbarTheme {
   virtual bool IsMockTheme() const { return false; }
 
   virtual bool UsesNinePatchThumbResource() const { return false; }
+  virtual bool UsesSolidColorThumb() const { return false; }
+  virtual gfx::Insets SolidColorThumbInsets(const Scrollbar& scrollbar) const {
+    NOTREACHED_NORETURN();
+  }
+  virtual bool UsesNinePatchTrackAndButtonsResource() const { return false; }
 
   // For a nine-patch scrollbar, this defines the painting canvas size which the
   // painting code will use to paint the scrollbar into. The actual scrollbar
@@ -231,6 +230,20 @@ class CORE_EXPORT ScrollbarTheme {
     return gfx::Rect();
   }
 
+  // For a nine-patch scrollbar, this defines the painting canvas size which the
+  // painting code will use to paint the scrollbar into. The actual scrollbar
+  // dimensions will be ignored for purposes of painting since the resource can
+  // be then resized without a repaint.
+  virtual gfx::Size NinePatchTrackAndButtonsCanvasSize(const Scrollbar&) const {
+    NOTREACHED_NORETURN();
+  }
+
+  // For a nine-patch resource, the aperture defines the center patch that will
+  // be stretched out.
+  virtual gfx::Rect NinePatchTrackAndButtonsAperture(const Scrollbar&) const {
+    NOTREACHED_NORETURN();
+  }
+
   virtual bool AllowsHitTest() const { return true; }
 
  protected:
@@ -238,29 +251,18 @@ class CORE_EXPORT ScrollbarTheme {
   virtual ScrollbarPart HitTest(const Scrollbar&, const gfx::Point&) const;
 
   virtual int TickmarkBorderWidth() const { return 0; }
-  virtual void PaintTrack(GraphicsContext&,
-                          const Scrollbar&,
-                          const gfx::Rect&) {}
+  // Paints the background of the track, not including tickmarks.
+  virtual void PaintTrackBackground(GraphicsContext&,
+                                    const Scrollbar&,
+                                    const gfx::Rect&) {}
   virtual void PaintButton(GraphicsContext&,
                            const Scrollbar&,
                            const gfx::Rect&,
                            ScrollbarPart) {}
 
-  // |offset| is the offset of the |context|'s current space to the space of
-  // scrollbar's FrameRect().
-  virtual void PaintTrackAndButtons(GraphicsContext& context,
-                                    const Scrollbar&,
-                                    const gfx::Vector2d& offset);
-
-  // Paint the thumb with Opacity() applied.
-  virtual void PaintThumbWithOpacity(GraphicsContext& context,
-                                     const Scrollbar& scrollbar,
-                                     const gfx::Rect& rect) {
-    // By default this method just calls PaintThumb(). A theme with custom
-    // Opacity() should override this method to apply the opacity.
-    DCHECK_EQ(1.0f, Opacity(scrollbar));
-    PaintThumb(context, scrollbar, rect);
-  }
+  virtual void PaintTrackBackgroundAndButtons(GraphicsContext& context,
+                                              const Scrollbar&,
+                                              const gfx::Rect&);
 
  protected:
   // For GetTheme().

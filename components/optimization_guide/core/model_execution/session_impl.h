@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "components/optimization_guide/core/model_execution/feature_keys.h"
+#include "components/optimization_guide/core/model_execution/on_device_model_feature_adapter.h"
 #include "components/optimization_guide/core/model_execution/optimization_guide_model_execution_error.h"
 #include "components/optimization_guide/core/model_execution/safety_config.h"
 #include "components/optimization_guide/core/model_execution/substitution.h"
@@ -39,7 +40,7 @@ using ExecuteRemoteFn = base::RepeatingCallback<void(
 // Session implementation that uses either the on device model or the server
 // model.
 class SessionImpl : public OptimizationGuideModelExecutor::Session,
-                        public on_device_model::mojom::StreamingResponder {
+                    public on_device_model::mojom::StreamingResponder {
  public:
   class OnDeviceModelClient {
    public:
@@ -84,8 +85,8 @@ class SessionImpl : public OptimizationGuideModelExecutor::Session,
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
   enum class ExecuteModelResult {
-    // The server was used.
-    kUsedServer = 0,
+    // On-device was not used.
+    kOnDeviceNotUsed = 0,
     // On-device was used, and it completed successfully.
     kUsedOnDevice = 1,
     // Failed constructing message, and used server.
@@ -143,9 +144,14 @@ class SessionImpl : public OptimizationGuideModelExecutor::Session,
   // optimization_guide::OptimizationGuideModelExecutor::Session:
   void AddContext(
       const google::protobuf::MessageLite& request_metadata) override;
+  void Score(const std::string& text,
+             OptimizationGuideModelScoreCallback callback) override;
   void ExecuteModel(
       const google::protobuf::MessageLite& request_metadata,
       OptimizationGuideModelExecutionResultStreamingCallback callback) override;
+  void GetSizeInTokens(
+      const std::string& text,
+      OptimizationGuideModelSizeInTokenCallback callback) override;
 
   // on_device_model::mojom::StreamingResponder:
   void OnResponse(on_device_model::mojom::ResponseChunkPtr chunk) override;
@@ -181,7 +187,7 @@ class SessionImpl : public OptimizationGuideModelExecutor::Session,
 
    private:
     const ModelBasedCapabilityKey feature_;
-    ExecuteModelResult result_ = ExecuteModelResult::kUsedServer;
+    ExecuteModelResult result_ = ExecuteModelResult::kOnDeviceNotUsed;
   };
 
   // Captures all state used for the on device model.
@@ -288,11 +294,10 @@ class SessionImpl : public OptimizationGuideModelExecutor::Session,
       int request_check_idx);
 
   // Callback invoked with RequestSafetyCheck result.
-  void OnRequestSafetyResult(
-      on_device_model::mojom::InputOptionsPtr options,
-      int request_check_idx,
-      std::string check_input_text,
-      on_device_model::mojom::SafetyInfoPtr safety_info);
+  void OnRequestSafetyResult(on_device_model::mojom::InputOptionsPtr options,
+                             int request_check_idx,
+                             std::string check_input_text,
+                             on_device_model::mojom::SafetyInfoPtr safety_info);
   void OnRequestDetectLanguageResult(
       on_device_model::mojom::InputOptionsPtr options,
       int request_check_idx,
@@ -319,6 +324,11 @@ class SessionImpl : public OptimizationGuideModelExecutor::Session,
       proto::Any success_response_metadata,
       OptimizationGuideModelExecutionResult result,
       std::unique_ptr<ModelQualityLogEntry> remote_log_entry);
+
+  // Called when a response has finished parsing.
+  void OnParsedResponse(
+      bool is_complete,
+      base::expected<proto::Any, ResponseParsingError> output);
 
   // Returns a new message created by merging `request` into `context_`. This
   // is a bit tricky since we don't know the type of MessageLite.

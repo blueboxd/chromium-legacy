@@ -18,6 +18,7 @@
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/models/menu_separator_types.h"
+#include "ui/color/color_id.h"
 #include "ui/color/color_provider_key.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/rect.h"
@@ -32,6 +33,7 @@ class PaintCanvas;
 }
 
 namespace gfx {
+class Insets;
 class Rect;
 class Size;
 }
@@ -218,6 +220,7 @@ class NATIVE_THEME_EXPORT NativeTheme {
 
   struct MenuSeparatorExtraParams {
     raw_ptr<const gfx::Rect> paint_rect = nullptr;
+    ui::ColorId color_id = ui::kColorMenuSeparator;
     MenuSeparatorType type = MenuSeparatorType::NORMAL_SEPARATOR;
   };
 
@@ -382,6 +385,14 @@ class NATIVE_THEME_EXPORT NativeTheme {
                                 const ExtraParams& extra) const = 0;
   virtual int GetPaintedScrollbarTrackInset() const;
 
+  virtual gfx::Insets GetScrollbarSolidColorThumbInsets(Part part) const;
+
+  // Called if the theme uses solid color for scrollbar thumb.
+  virtual SkColor4f GetScrollbarThumbColor(
+      const ui::ColorProvider& color_provider,
+      State state,
+      const ScrollbarThumbExtraParams& extra_params) const;
+
   virtual float GetBorderRadiusForPart(Part part,
                                        float width,
                                        float height) const;
@@ -509,6 +520,12 @@ class NATIVE_THEME_EXPORT NativeTheme {
   virtual std::optional<CaptionStyle> GetSystemCaptionStyle() const;
 
   virtual ColorScheme GetDefaultSystemColorScheme() const;
+
+  // Updates contrast-related theme states such as `forced_colors_`,
+  // `page_colors_`, `preferred_contrast_` and `prefers_reduced_transparency_`
+  // based on the `observed_theme`. Returns true if there's an update to any of
+  // these states.
+  bool UpdateContrastRelatedStates(const NativeTheme& observed_theme);
 
   virtual const std::map<SystemThemeColor, SkColor>& GetSystemColors() const;
 

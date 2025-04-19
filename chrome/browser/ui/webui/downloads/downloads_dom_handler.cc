@@ -84,9 +84,7 @@ enum DownloadsDOMEvent {
   DOWNLOADS_DOM_EVENT_GET_DOWNLOADS = 0,
   DOWNLOADS_DOM_EVENT_OPEN_FILE = 1,
   DOWNLOADS_DOM_EVENT_DRAG = 2,
-  // This is obsoleted by ImprovedDownloadPageWarnings.
-  // TODO(chlily): Clean up the value.
-  DOWNLOADS_DOM_EVENT_SAVE_DANGEROUS = 3,
+  // Obsolete: DOWNLOADS_DOM_EVENT_SAVE_DANGEROUS = 3,
   DOWNLOADS_DOM_EVENT_DISCARD_DANGEROUS = 4,
   DOWNLOADS_DOM_EVENT_SHOW = 5,
   DOWNLOADS_DOM_EVENT_PAUSE = 6,
@@ -104,12 +102,46 @@ enum DownloadsDOMEvent {
   DOWNLOADS_DOM_EVENT_OPEN_BYPASS_WARNING_PROMPT = 18,
   DOWNLOADS_DOM_EVENT_SAVE_DANGEROUS_FROM_PROMPT = 19,
   DOWNLOADS_DOM_EVENT_CANCEL_BYPASS_WARNING_PROMPT = 20,
+  DOWNLOADS_DOM_EVENT_OPEN_SURVEY_ON_DANGEROUS_INTERSTITIAL = 21,
   DOWNLOADS_DOM_EVENT_MAX
 };
 
 void CountDownloadsDOMEvents(DownloadsDOMEvent event) {
   UMA_HISTOGRAM_ENUMERATION("Download.DOMEvent", event,
                             DOWNLOADS_DOM_EVENT_MAX);
+}
+
+bool CanLogWarningMetrics(download::DownloadItem* file) {
+  return file && file->IsDangerous() && !file->IsDone();
+}
+
+std::string InteractionTypeToString(
+    DangerousDownloadInterstitialInteraction interaction_type) {
+  switch (interaction_type) {
+    case DangerousDownloadInterstitialInteraction::kCancelInterstitial:
+      return "CancelInterstitial";
+    case DangerousDownloadInterstitialInteraction::kOpenSurvey:
+      return "OpenSurvey";
+    case DangerousDownloadInterstitialInteraction::kCompleteSurvey:
+      return "CompleteSurvey";
+    case DangerousDownloadInterstitialInteraction::kSaveDangerous:
+      return "SaveDangerous";
+  }
+}
+
+void RecordDangerousDownloadInterstitialActionHistogram(
+    DangerousDownloadInterstitialAction action) {
+  base::UmaHistogramEnumeration("Download.DangerousDownloadInterstitial.Action",
+                                action);
+}
+
+void RecordDangerousDownloadInterstitialInteractionHistogram(
+    DangerousDownloadInterstitialInteraction interaction_type,
+    const base::TimeDelta elapsed_time) {
+  const std::string histogram_name =
+      "Download.DangerousDownloadInterstitial.InteractionTime." +
+      InteractionTypeToString(interaction_type);
+  base::UmaHistogramMediumTimes(histogram_name, elapsed_time);
 }
 
 void PromptForScanningInBubble(content::WebContents* web_contents,
@@ -275,7 +307,7 @@ void DownloadsDOMHandler::Drag(const std::string& id) {
   gfx::NativeView view = web_contents->GetNativeView();
   gfx::Image* icon = g_browser_process->icon_manager()->LookupIconFromFilepath(
       file->GetTargetFilePath(), IconLoader::NORMAL,
-      screen->GetDisplayNearestView(view).device_scale_factor());
+      screen->GetPreferredScaleFactorForView(view).value_or(1.0f));
   {
     // Enable nested tasks during DnD, while |DragDownload()| blocks.
     base::CurrentThread::ScopedAllowApplicationTasksInNativeNestedLoop allow;
@@ -283,29 +315,10 @@ void DownloadsDOMHandler::Drag(const std::string& id) {
   }
 }
 
-void DownloadsDOMHandler::SaveDangerousRequiringGesture(const std::string& id) {
-  if (!GetWebUIWebContents()->HasRecentInteraction()) {
-    LOG(ERROR) << "SaveDangerousRequiringGesture received without recent "
-                  "user interaction";
-    return;
-  }
-
-  CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_SAVE_DANGEROUS);
-  download::DownloadItem* file = GetDownloadByStringId(id);
-  if (file) {
-    DownloadItemWarningData::AddWarningActionEvent(
-        file, DownloadItemWarningData::WarningSurface::DOWNLOADS_PAGE,
-        DownloadItemWarningData::WarningAction::KEEP);
-    ShowDangerPrompt(file);
-  }
-}
-
 // "Suspicious" in this context applies to insecure as well as dangerous
 // downloads of certain danger types.
 void DownloadsDOMHandler::SaveSuspiciousRequiringGesture(
     const std::string& id) {
-  CHECK(base::FeatureList::IsEnabled(
-      safe_browsing::kImprovedDownloadPageWarnings));
   if (!GetWebUIWebContents()->HasRecentInteraction()) {
     LOG(ERROR) << "SaveSuspiciousRequiringGesture received without recent "
                   "user interaction";
@@ -342,13 +355,10 @@ void DownloadsDOMHandler::SaveSuspiciousRequiringGesture(
   }
 }
 
-void DownloadsDOMHandler::RecordOpenBypassWarningPrompt(const std::string& id) {
-  CHECK(base::FeatureList::IsEnabled(
-      safe_browsing::kImprovedDownloadPageWarnings));
-
+void DownloadsDOMHandler::RecordOpenBypassWarningDialog(const std::string& id) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_OPEN_BYPASS_WARNING_PROMPT);
   download::DownloadItem* file = GetDownloadByStringId(id);
-  if (!file || !file->IsDangerous() || file->IsDone()) {
+  if (!CanLogWarningMetrics(file)) {
     return;
   }
 
@@ -358,19 +368,61 @@ void DownloadsDOMHandler::RecordOpenBypassWarningPrompt(const std::string& id) {
                           WarningAction::KEEP);
 }
 
-void DownloadsDOMHandler::SaveDangerousFromPromptRequiringGesture(
+void DownloadsDOMHandler::RecordOpenBypassWarningInterstitial(
     const std::string& id) {
   CHECK(base::FeatureList::IsEnabled(
-      safe_browsing::kImprovedDownloadPageWarnings));
+      safe_browsing::kDangerousDownloadInterstitial));
+  CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_OPEN_BYPASS_WARNING_PROMPT);
+  download::DownloadItem* file = GetDownloadByStringId(id);
+  if (!CanLogWarningMetrics(file)) {
+    return;
+  }
+
+  interstitial_open_time_ = base::TimeTicks::Now();
+
+  RecordDangerousDownloadInterstitialActionHistogram(
+      DangerousDownloadInterstitialAction::kOpenInterstitial);
+
+  RecordDownloadDangerPromptHistogram("Shown", *file);
+
+  MaybeReportBypassAction(file, WarningSurface::DOWNLOADS_PAGE,
+                          WarningAction::KEEP);
+}
+
+void DownloadsDOMHandler::RecordOpenSurveyOnDangerousInterstitial(
+    const std::string& id) {
+  CHECK(base::FeatureList::IsEnabled(
+      safe_browsing::kDangerousDownloadInterstitial));
+  CountDownloadsDOMEvents(
+      DOWNLOADS_DOM_EVENT_OPEN_SURVEY_ON_DANGEROUS_INTERSTITIAL);
+  download::DownloadItem* file = GetDownloadByStringId(id);
+  if (!CanLogWarningMetrics(file)) {
+    return;
+  }
+
+  DCHECK(interstitial_open_time_.has_value())
+      << "Dangerous download interstitial survey should only open after the "
+         "download interstitial is opened.";
+  interstitial_survey_open_time_ = base::TimeTicks::Now();
+
+  RecordDangerousDownloadInterstitialInteractionHistogram(
+      DangerousDownloadInterstitialInteraction::kOpenSurvey,
+      (*interstitial_survey_open_time_) - (*interstitial_open_time_));
+  RecordDangerousDownloadInterstitialActionHistogram(
+      DangerousDownloadInterstitialAction::kOpenSurvey);
+}
+
+void DownloadsDOMHandler::SaveDangerousFromDialogRequiringGesture(
+    const std::string& id) {
   if (!GetWebUIWebContents()->HasRecentInteraction()) {
-    LOG(ERROR) << "SaveDangerousFromPromptRequiringGesture received without "
+    LOG(ERROR) << "SaveDangerousFromDialogRequiringGesture received without "
                   "recent user interaction";
     return;
   }
 
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_SAVE_DANGEROUS_FROM_PROMPT);
   download::DownloadItem* file = GetDownloadByStringId(id);
-  if (!file || !file->IsDangerous() || file->IsDone()) {
+  if (!CanLogWarningMetrics(file)) {
     return;
   }
 
@@ -389,16 +441,91 @@ void DownloadsDOMHandler::SaveDangerousFromPromptRequiringGesture(
   file->ValidateDangerousDownload();
 }
 
-void DownloadsDOMHandler::RecordCancelBypassWarningPrompt(
-    const std::string& id) {
+void DownloadsDOMHandler::SaveDangerousFromInterstitialNeedGesture(
+    const std::string& id,
+    downloads::mojom::DangerousDownloadInterstitialSurveyOptions response) {
   CHECK(base::FeatureList::IsEnabled(
-      safe_browsing::kImprovedDownloadPageWarnings));
-
-  CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_CANCEL_BYPASS_WARNING_PROMPT);
-  download::DownloadItem* file = GetDownloadByStringId(id);
-  if (!file || !file->IsDangerous() || file->IsDone()) {
+      safe_browsing::kDangerousDownloadInterstitial));
+  if (!GetWebUIWebContents()->HasRecentInteraction()) {
+    LOG(ERROR) << "SaveDangerousFromInterstitialNeedGesture received without "
+                  "recent user interaction";
     return;
   }
+
+  CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_SAVE_DANGEROUS_FROM_PROMPT);
+  download::DownloadItem* file = GetDownloadByStringId(id);
+  if (!CanLogWarningMetrics(file)) {
+    return;
+  }
+
+  DCHECK(interstitial_open_time_.has_value())
+      << "Saving from the dangerous download interstitial should only happen "
+         "if the interstitial is opened.";
+  DCHECK(interstitial_survey_open_time_.has_value())
+      << "Saving from the dangerous download interstitial should only happen "
+         "after the interstitial survey is opened.";
+
+  base::TimeTicks save_time = base::TimeTicks::Now();
+  RecordDangerousDownloadInterstitialInteractionHistogram(
+      DangerousDownloadInterstitialInteraction::kCompleteSurvey,
+      save_time - (*interstitial_survey_open_time_));
+  RecordDangerousDownloadInterstitialInteractionHistogram(
+      DangerousDownloadInterstitialInteraction::kSaveDangerous,
+      save_time - (*interstitial_open_time_));
+
+  RecordDangerousDownloadInterstitialActionHistogram(
+      DangerousDownloadInterstitialAction::kSaveDangerous);
+
+  base::UmaHistogramEnumeration(
+      "Download.DangerousDownloadInterstitial.SurveyResponse", response);
+
+  RecordDownloadDangerPromptHistogram("Proceed", *file);
+
+  MaybeReportBypassAction(file, WarningSurface::DOWNLOAD_PROMPT,
+                          WarningAction::PROCEED);
+  MaybeTriggerDownloadWarningHatsSurvey(
+      file, DownloadWarningHatsType::kDownloadsPageBypass);
+  MaybeTriggerTrustSafetySurvey(file, WarningSurface::DOWNLOAD_PROMPT,
+                                WarningAction::PROCEED);
+
+  RecordDownloadsPageValidatedHistogram(file);
+
+  // `file` is potentially deleted.
+  file->ValidateDangerousDownload();
+}
+
+void DownloadsDOMHandler::RecordCancelBypassWarningDialog(
+    const std::string& id) {
+  CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_CANCEL_BYPASS_WARNING_PROMPT);
+  download::DownloadItem* file = GetDownloadByStringId(id);
+  if (!CanLogWarningMetrics(file)) {
+    return;
+  }
+
+  MaybeReportBypassAction(file, WarningSurface::DOWNLOAD_PROMPT,
+                          WarningAction::CANCEL);
+}
+
+void DownloadsDOMHandler::RecordCancelBypassWarningInterstitial(
+    const std::string& id) {
+  CHECK(base::FeatureList::IsEnabled(
+      safe_browsing::kDangerousDownloadInterstitial));
+  CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_CANCEL_BYPASS_WARNING_PROMPT);
+  download::DownloadItem* file = GetDownloadByStringId(id);
+  if (!CanLogWarningMetrics(file)) {
+    return;
+  }
+
+  DCHECK(interstitial_open_time_.has_value())
+      << "Dangerous download interstitial should only be cancelled after the "
+         "download interstitial is opened.";
+
+  RecordDangerousDownloadInterstitialInteractionHistogram(
+      DangerousDownloadInterstitialInteraction::kCancelInterstitial,
+      base::TimeTicks::Now() - (*interstitial_open_time_));
+
+  RecordDangerousDownloadInterstitialActionHistogram(
+      DangerousDownloadInterstitialAction::kCancelInterstitial);
 
   MaybeReportBypassAction(file, WarningSurface::DOWNLOAD_PROMPT,
                           WarningAction::CANCEL);
@@ -642,6 +769,9 @@ void DownloadsDOMHandler::DeepScan(const std::string& id) {
 
   LogDeepScanEvent(download,
                    safe_browsing::DeepScanEvent::kPromptAcceptedFromWebUI);
+  DownloadItemWarningData::AddWarningActionEvent(
+      download, DownloadItemWarningData::WarningSurface::DOWNLOADS_PAGE,
+      DownloadItemWarningData::WarningAction::ACCEPT_DEEP_SCAN);
   DownloadItemModel model(download);
   DownloadCommands commands(model.GetWeakPtr());
   commands.ExecuteCommand(DownloadCommands::DEEP_SCAN);
@@ -664,14 +794,9 @@ void DownloadsDOMHandler::BypassDeepScanRequiringGesture(
     }
     DownloadItemModel model(download);
     DownloadCommands commands(model.GetWeakPtr());
-    // Under ImprovedDownloadPageWarnings, the button says "Download suspicious
-    // file" which does not imply opening the file. In the old behavior, the
-    // button says "Open anyway" so we should open the file.
-    commands.ExecuteCommand(
-        base::FeatureList::IsEnabled(
-            safe_browsing::kImprovedDownloadPageWarnings)
-            ? DownloadCommands::BYPASS_DEEP_SCANNING
-            : DownloadCommands::BYPASS_DEEP_SCANNING_AND_OPEN);
+    // The button says "Download suspicious file" which does not imply opening
+    // the file.
+    commands.ExecuteCommand(DownloadCommands::BYPASS_DEEP_SCANNING);
   }
 }
 
@@ -690,6 +815,7 @@ void DownloadsDOMHandler::ReviewDangerousRequiringGesture(
   }
 }
 
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 // This function will be called when a user clicks on the ESB
 // (Enhanced Safe Browsing) download row promo. It will notify
 // the feature engagement backend to record the event that the
@@ -729,7 +855,6 @@ void DownloadsDOMHandler::IsEligibleForEsbPromo(
     std::move(callback).Run(false);
     return;
   }
-
   bool should_show_esb_promo = false;
   if (feature_engagement::Tracker* tracker =
           feature_engagement::TrackerFactory::GetForBrowserContext(
@@ -756,6 +881,23 @@ void DownloadsDOMHandler::LogEsbPromotionRowViewed() {
   base::UmaHistogramEnumeration("SafeBrowsing.EsbDownloadRowPromo.Outcome",
                                 SafeBrowsingEsbDownloadRowPromoOutcome::kShown);
 }
+#else
+// These next three functions are empty implementations for the non-branded
+// chromium build since the ESB download row promo only runs on branded
+// google chrome.
+void DownloadsDOMHandler::OpenEsbSettings() {
+  return;
+}
+
+void DownloadsDOMHandler::IsEligibleForEsbPromo(
+    IsEligibleForEsbPromoCallback callback) {
+  std::move(callback).Run(false);
+}
+
+void DownloadsDOMHandler::LogEsbPromotionRowViewed() {
+  return;
+}
+#endif
 
 // DownloadsDOMHandler, private: --------------------------------------------
 
@@ -780,54 +922,6 @@ void DownloadsDOMHandler::FinalizeRemovals() {
       }
     }
   }
-}
-
-// TODO(chlily): This is obsoleted by ImprovedDownloadPageWarnings. Clean this
-// up.
-void DownloadsDOMHandler::ShowDangerPrompt(
-    download::DownloadItem* dangerous_item) {
-  DownloadDangerPrompt* danger_prompt = DownloadDangerPrompt::Create(
-      dangerous_item, GetWebUIWebContents(), false,
-      base::BindOnce(&DownloadsDOMHandler::DangerPromptDone,
-                     weak_ptr_factory_.GetWeakPtr(), dangerous_item->GetId()));
-  // danger_prompt will delete itself.
-  DCHECK(danger_prompt);
-}
-
-// TODO(chlily): This is obsoleted by ImprovedDownloadPageWarnings. Clean this
-// up.
-void DownloadsDOMHandler::DangerPromptDone(
-    int download_id,
-    DownloadDangerPrompt::Action action) {
-  if (action != DownloadDangerPrompt::ACCEPT) {
-    return;
-  }
-  download::DownloadItem* item = nullptr;
-  if (GetMainNotifierManager()) {
-    item = GetMainNotifierManager()->GetDownload(download_id);
-  }
-  if (!item && GetOriginalNotifierManager()) {
-    item = GetOriginalNotifierManager()->GetDownload(download_id);
-  }
-  if (!item || item->IsDone()) {
-    return;
-  }
-  CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_SAVE_DANGEROUS);
-
-  // If a download is insecure, validate that first. Is most cases, insecure
-  // download warnings will occur first, but in the worst case scenario, we show
-  // a dangerous warning twice. That's better than showing an insecure download
-  // warning, then dismissing the dangerous download warning. Since insecure
-  // downloads triggering the UI are temporary and rare to begin with, this
-  // should very rarely occur.
-  if (item->IsInsecure()) {
-    item->ValidateInsecureDownload();
-    return;
-  }
-
-  RecordDownloadsPageValidatedHistogram(item);
-
-  item->ValidateDangerousDownload();
 }
 
 void DownloadsDOMHandler::MaybeTriggerDownloadWarningHatsSurvey(

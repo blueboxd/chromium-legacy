@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/raw_ptr.h"
-#include "chrome/browser/ash/extensions/autotest_private/autotest_private_api.h"
-
 #include <memory>
 
 #include "ash/ambient/ambient_ui_settings.h"
@@ -21,6 +18,7 @@
 #include "ash/components/arc/test/fake_arc_session.h"
 #include "ash/components/arc/test/fake_process_instance.h"
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/ambient/ambient_prefs.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/holding_space/holding_space_prefs.h"
@@ -28,8 +26,10 @@
 #include "ash/public/cpp/test/app_list_test_api.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "base/json/json_writer.h"
+#include "base/memory/raw_ptr.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
+#include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -43,6 +43,7 @@
 #include "chrome/browser/ash/arc/tracing/arc_app_performance_tracing.h"
 #include "chrome/browser/ash/arc/tracing/arc_app_performance_tracing_session.h"
 #include "chrome/browser/ash/arc/tracing/test/arc_app_performance_tracing_test_helper.h"
+#include "chrome/browser/ash/extensions/autotest_private/autotest_private_api.h"
 #include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/ash/system_web_apps/test_support/test_system_web_app_installation.h"
 #include "chrome/browser/browser_process.h"
@@ -64,6 +65,7 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
+#include "services/viz/privileged/mojom/compositing/features.mojom-features.h"
 #include "ui/aura/window.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
@@ -116,13 +118,14 @@ class TestSearchProvider : public app_list::SearchProvider {
 
 class AutotestPrivateApiTest : public ExtensionApiTest {
  public:
-  AutotestPrivateApiTest() = default;
+  AutotestPrivateApiTest() {
+    feature_list_.InitAndEnableFeature(viz::mojom::EnableVizTestApis);
+  }
 
   AutotestPrivateApiTest(const AutotestPrivateApiTest&) = delete;
   AutotestPrivateApiTest& operator=(const AutotestPrivateApiTest&) = delete;
 
   ~AutotestPrivateApiTest() override = default;
-
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     // Make ARC enabled for tests.
@@ -160,12 +163,13 @@ class AutotestPrivateApiTest : public ExtensionApiTest {
   }
 
   ash::ScopedTestingCrosSettings scoped_testing_cros_settings_;
+  base::test::ScopedFeatureList feature_list_;
 };
 
-// TODO(crbug.com/41491890): Flaky on ASan/LSan, deflake and re-enable the test.
-#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
-#define MAYBE_AutotestPrivate DISABLED_AutotestPrivate
-#elif BUILDFLAG(IS_CHROMEOS)
+// TODO(crbug.com/356369542): Fix flakiness on sanitizer bots.
+
+#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER) ||  \
+    BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 #define MAYBE_AutotestPrivate DISABLED_AutotestPrivate
 #else
 #define MAYBE_AutotestPrivate AutotestPrivate
@@ -274,15 +278,6 @@ IN_PROC_BROWSER_TEST_F(AutotestPrivateApiTest, IsFeatureEnabled) {
 class AutotestPrivateHoldingSpaceApiTest
     : public AutotestPrivateApiTest,
       public ::testing::WithParamInterface<bool /* mark_time_of_first_add */> {
- public:
-  AutotestPrivateHoldingSpaceApiTest() {
-    // TODO(crbug.com/1382945): Parameterize.
-    scoped_feature_list_.InitAndDisableFeature(
-        ash::features::kHoldingSpacePredictability);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 INSTANTIATE_TEST_SUITE_P(All,
@@ -379,7 +374,7 @@ IN_PROC_BROWSER_TEST_F(AutotestPrivateApiOverviewTest, Drag) {
 
   ui::GestureEvent long_press(
       start_point.x(), start_point.y(), 0, ui::EventTimeForNow(),
-      ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
+      ui::GestureEventDetails(ui::EventType::kGestureLongPress));
   generator.Dispatch(&long_press);
 
   // 50 is arbitrary number of dip to move a bit to ensure the item is being
@@ -406,7 +401,7 @@ IN_PROC_BROWSER_TEST_F(AutotestPrivateApiOverviewTest, PrimarySnapped) {
 
   ui::GestureEvent long_press(
       start_point.x(), start_point.y(), 0, ui::EventTimeForNow(),
-      ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
+      ui::GestureEventDetails(ui::EventType::kGestureLongPress));
   generator.Dispatch(&long_press);
 
   generator.MoveTouch(end_point);
@@ -542,11 +537,16 @@ class AutotestPrivateLacrosTest : public AutotestPrivateApiTest {
 
  protected:
   AutotestPrivateLacrosTest() {
+    auto enabled_features = ash::standalone_browser::GetFeatureRefs();
+    enabled_features.push_back(viz::mojom::EnableVizTestApis);
     feature_list_.InitWithFeatures(
-        ash::standalone_browser::GetFeatureRefs(),
+        enabled_features,
         // Disable ash extension keeplist so that the test extension will not
         // be blocked in Ash.
         {ash::features::kEnforceAshExtensionKeeplist});
+    scoped_command_line_.GetProcessCommandLine()->AppendSwitch(
+        ash::switches::kEnableLacrosForTesting);
+
     crosapi::BrowserManager::DisableForTesting();
   }
   ~AutotestPrivateLacrosTest() override {
@@ -564,6 +564,7 @@ class AutotestPrivateLacrosTest : public AutotestPrivateApiTest {
 
  private:
   base::test::ScopedFeatureList feature_list_;
+  base::test::ScopedCommandLine scoped_command_line_;
 };
 
 IN_PROC_BROWSER_TEST_F(AutotestPrivateLacrosTest, Lacros) {

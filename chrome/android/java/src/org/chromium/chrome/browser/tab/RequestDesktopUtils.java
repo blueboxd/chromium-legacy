@@ -43,18 +43,11 @@ import org.chromium.components.messages.MessageDispatcher;
 import org.chromium.components.messages.MessageIdentifier;
 import org.chromium.components.messages.PrimaryActionClickBehavior;
 import org.chromium.components.prefs.PrefService;
-import org.chromium.components.profile_metrics.BrowserProfileType;
 import org.chromium.components.ukm.UkmRecorder;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.display.DisplayAndroidManager;
 import org.chromium.ui.display.DisplayUtil;
-import org.chromium.ui.modaldialog.DialogDismissalCause;
-import org.chromium.ui.modaldialog.ModalDialogManager;
-import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
-import org.chromium.ui.modaldialog.ModalDialogProperties;
-import org.chromium.ui.modaldialog.ModalDialogProperties.ButtonType;
-import org.chromium.ui.modaldialog.ModalDialogProperties.Controller;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.url.GURL;
 
@@ -100,7 +93,7 @@ public class RequestDesktopUtils {
         RecordHistogram.recordBooleanHistogram(
                 "Android.RequestDesktopSite.UserSwitchToDesktop", isDesktop);
 
-        if (tab == null || tab.isIncognito() || tab.getWebContents() == null) return;
+        if (tab == null || tab.isOffTheRecord() || tab.getWebContents() == null) return;
 
         new UkmRecorder.Bridge()
                 .recordEventWithIntegerMetric(
@@ -114,11 +107,12 @@ public class RequestDesktopUtils {
 
     /**
      * Records the ukms associated with changing screen orientation.
+     *
      * @param isLandscape True if the orientation is landscape.
      * @param tab The current activity {@link Tab}.
      */
     public static void recordScreenOrientationChangedUkm(boolean isLandscape, @Nullable Tab tab) {
-        if (tab == null || tab.isIncognito() || tab.getWebContents() == null) return;
+        if (tab == null || tab.isOffTheRecord() || tab.getWebContents() == null) return;
 
         new UkmRecorder.Bridge()
                 .recordEventWithIntegerMetric(
@@ -131,14 +125,14 @@ public class RequestDesktopUtils {
     /**
      * Set or remove a domain level exception with URL for {@link
      * ContentSettingsType.REQUEST_DESKTOP_SITE}. Clear the subdomain level exception if any.
+     *
      * @param profile Target profile whose content settings needs to be updated.
-     * @param url  {@link GURL} for the site that changes in desktop user agent.
+     * @param url {@link GURL} for the site that changes in desktop user agent.
      * @param useDesktopUserAgent True if the input |url| needs to use desktop user agent.
      */
     public static void setRequestDesktopSiteContentSettingsForUrl(
             Profile profile, GURL url, boolean useDesktopUserAgent) {
-        boolean isIncognito =
-                Profile.getBrowserProfileTypeFromProfile(profile) == BrowserProfileType.INCOGNITO;
+        boolean isOffTheRecord = profile.isOffTheRecord();
         String domainWildcardPattern =
                 WebsitePreferenceBridge.toDomainWildcardPattern(url.getSpec());
         // Clear subdomain level exception if any.
@@ -162,7 +156,7 @@ public class RequestDesktopUtils {
         // For normal profile, remove domain level setting if it matches the global setting.
         // For incognito profile, keep the domain level setting to override the settings from normal
         // profile.
-        if (!isIncognito && useDesktopUserAgent == rdsGlobalSetting) {
+        if (!isOffTheRecord && useDesktopUserAgent == rdsGlobalSetting) {
             // Keep the domain settings when the window setting preference is ON.
             PrefService prefService = UserPrefs.get(profile);
             if (!prefService.getBoolean(DESKTOP_SITE_WINDOW_SETTING_ENABLED)) {
@@ -367,62 +361,6 @@ public class RequestDesktopUtils {
                         .build();
 
         messageDispatcher.enqueueWindowScopedMessage(message, false);
-        return true;
-    }
-
-    /**
-     * Show a prompt to educate the user about the update in the behavior of the desktop site app
-     * menu setting from a tab-level setting to a site-level setting.
-     * @param profile The current {@link Profile}.
-     * @param context The current context.
-     * @param modalDialogManager The {@link ModalDialogManager} that will manage the dialog.
-     * @return Whether the prompt was shown.
-     */
-    public static boolean maybeShowUserEducationPromptForAppMenuSelection(
-            Profile profile, Context context, ModalDialogManager modalDialogManager) {
-        // Avoid presenting the prompt in case of an incognito profile.
-        if (Profile.getBrowserProfileTypeFromProfile(profile) == BrowserProfileType.INCOGNITO) {
-            return false;
-        }
-
-        Tracker tracker = TrackerFactory.getTrackerForProfile(profile);
-        if (!tracker.shouldTriggerHelpUI(FeatureConstants.REQUEST_DESKTOP_SITE_APP_MENU_FEATURE)) {
-            return false;
-        }
-
-        Resources resources = context.getResources();
-        Controller modalDialogController =
-                new ModalDialogProperties.Controller() {
-                    @Override
-                    public void onClick(PropertyModel model, int buttonType) {
-                        if (buttonType == ButtonType.POSITIVE) {
-                            modalDialogManager.dismissDialog(
-                                    model, DialogDismissalCause.POSITIVE_BUTTON_CLICKED);
-                        }
-                    }
-
-                    @Override
-                    public void onDismiss(PropertyModel model, int dismissalCause) {
-                        tracker.dismissed(FeatureConstants.REQUEST_DESKTOP_SITE_APP_MENU_FEATURE);
-                    }
-                };
-        PropertyModel dialog =
-                new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
-                        .with(ModalDialogProperties.CONTROLLER, modalDialogController)
-                        .with(
-                                ModalDialogProperties.TITLE,
-                                resources.getString(
-                                        R.string.rds_app_menu_user_education_dialog_title))
-                        .with(
-                                ModalDialogProperties.MESSAGE_PARAGRAPH_1,
-                                resources.getString(
-                                        R.string.rds_app_menu_user_education_dialog_message))
-                        .with(
-                                ModalDialogProperties.POSITIVE_BUTTON_TEXT,
-                                resources.getString(R.string.got_it))
-                        .with(ModalDialogProperties.CANCEL_ON_TOUCH_OUTSIDE, true)
-                        .build();
-        modalDialogManager.showDialog(dialog, ModalDialogType.APP, true);
         return true;
     }
 

@@ -37,7 +37,7 @@ class TabUrlProviderImplTest : public PlatformTest {
 
   void SetUp() override {
     TestChromeBrowserState::Builder builder;
-    browser_state_ = builder.Build();
+    browser_state_ = std::move(builder).Build();
     browser_ = std::make_unique<TestBrowser>(browser_state_.get());
     other_browser_ = std::make_unique<TestBrowser>(browser_state_.get());
     incognito_browser_ = std::make_unique<TestBrowser>(
@@ -46,7 +46,7 @@ class TabUrlProviderImplTest : public PlatformTest {
         BrowserListFactory::GetForBrowserState(browser_state_.get());
     browser_list_->AddBrowser(browser_.get());
     browser_list_->AddBrowser(other_browser_.get());
-    browser_list_->AddIncognitoBrowser(incognito_browser_.get());
+    browser_list_->AddBrowser(incognito_browser_.get());
 
     tab_url_provider_ =
         std::make_unique<TabUrlProviderImpl>(browser_list_, &clock_);

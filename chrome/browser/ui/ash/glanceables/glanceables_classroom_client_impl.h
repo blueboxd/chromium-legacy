@@ -23,6 +23,8 @@
 #include "google_apis/common/api_error_codes.h"
 #include "google_apis/common/request_sender.h"
 
+class Profile;
+
 namespace base {
 class Clock;
 class Time;
@@ -55,6 +57,7 @@ class GlanceablesClassroomClientImpl : public GlanceablesClassroomClient {
       const GlanceablesClassroomCourseWorkItem* rhs)>;
 
   GlanceablesClassroomClientImpl(
+      Profile* profile,
       base::Clock* clock,
       const CreateRequestSenderCallback& create_request_sender_callback);
   GlanceablesClassroomClientImpl(const GlanceablesClassroomClientImpl&) =
@@ -64,6 +67,7 @@ class GlanceablesClassroomClientImpl : public GlanceablesClassroomClient {
   ~GlanceablesClassroomClientImpl() override;
 
   // GlanceablesClassroomClient:
+  bool IsDisabledByAdmin() const override;
   void IsStudentRoleActive(IsRoleEnabledCallback callback) override;
   void GetCompletedStudentAssignments(GetAssignmentsCallback callback) override;
   void GetStudentAssignmentsWithApproachingDueDate(
@@ -130,7 +134,7 @@ class GlanceablesClassroomClientImpl : public GlanceablesClassroomClient {
   // the list of callbacks waiting for the list to be fetched.
   class CourseListState {
    public:
-    CourseListState();
+    explicit CourseListState(base::Clock* clock);
     CourseListState(const CourseListState&) = delete;
     CourseListState& operator=(const CourseListState&) = delete;
     ~CourseListState();
@@ -150,10 +154,6 @@ class GlanceablesClassroomClientImpl : public GlanceablesClassroomClient {
     // list fetch request failed.
     void FinalizeFetch(std::unique_ptr<CourseList> fetched_courses);
 
-    // Updates fetch status to indicate it can be refetched when course list is
-    // requested next time. Called when the glanceables bubble gets closed.
-    void InvalidateFetchStatus();
-
     const CourseList& courses() const { return courses_; }
 
    private:
@@ -163,6 +163,8 @@ class GlanceablesClassroomClientImpl : public GlanceablesClassroomClient {
 
     CourseList courses_;
     FetchStatus fetch_status_ = FetchStatus::kNotFetched;
+    const raw_ptr<base::Clock> clock_;
+    base::Time last_successful_fetch_time_;
     std::vector<FetchCoursesCallback> callbacks_;
   };
 
@@ -387,6 +389,9 @@ class GlanceablesClassroomClientImpl : public GlanceablesClassroomClient {
 
   // Returns lazily initialized `request_sender_`.
   google_apis::RequestSender* GetRequestSender();
+
+  // The profile for which this instance was created.
+  const raw_ptr<Profile> profile_;
 
   // Clock to be used to retrieve current time - expected to be default clock in
   // production.

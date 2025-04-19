@@ -587,8 +587,9 @@ bool PrePaintTreeWalk::CollectMissableChildren(
     const PhysicalBoxFragment& parent) {
   bool has_missable_children = false;
   for (const PhysicalFragmentLink& child : parent.Children()) {
-    if (UNLIKELY(child->IsLayoutObjectDestroyedOrMoved()))
+    if (child->IsLayoutObjectDestroyedOrMoved()) [[unlikely]] {
       continue;
+    }
     if (child->IsOutOfFlowPositioned() &&
         (context.current_container.fragment || child->IsFixedPositioned())) {
       // Add all out-of-flow positioned fragments inside a fragmentation
@@ -744,8 +745,9 @@ void PrePaintTreeWalk::WalkMissedChildren(
   }
 
   for (const PhysicalFragmentLink& child : fragment.Children()) {
-    if (UNLIKELY(child->IsLayoutObjectDestroyedOrMoved()))
+    if (child->IsLayoutObjectDestroyedOrMoved()) [[unlikely]] {
       continue;
+    }
     if (!child->IsOutOfFlowPositioned()) {
       continue;
     }
@@ -813,8 +815,9 @@ void PrePaintTreeWalk::WalkFragmentationContextRootChildren(
 
   for (PhysicalFragmentLink child : fragment.Children()) {
     const auto* box_fragment = To<PhysicalBoxFragment>(child.fragment.Get());
-    if (UNLIKELY(box_fragment->IsLayoutObjectDestroyedOrMoved()))
+    if (box_fragment->IsLayoutObjectDestroyedOrMoved()) [[unlikely]] {
       continue;
+    }
 
     if (box_fragment->GetLayoutObject()) {
       // OOFs contained by a multicol container will be visited during object
@@ -892,6 +895,18 @@ void PrePaintTreeWalk::WalkPageContainer(
       StitchedPageContentRect(page_container).offset;
 
   for (const PhysicalFragmentLink& grandchild : page_container.Children()) {
+    if (grandchild->GetBoxType() == PhysicalFragment::kPageMargin) {
+      // This is one of 16 possible page margin boxes, e.g. used to display page
+      // headers or footers.
+      PrePaintTreeWalkContext margin_box_context(
+          parent_context, parent_context.NeedsTreeBuilderContext());
+      PrePaintInfo margin_pre_paint_info =
+          CreatePrePaintInfo(grandchild, margin_box_context);
+      Walk(*grandchild->GetLayoutObject(), margin_box_context,
+           &margin_pre_paint_info);
+      continue;
+    }
+
     DCHECK_EQ(grandchild->GetBoxType(), PhysicalFragment::kPageBorderBox);
 
     // This is a page border box, which contains the page contents area fragment

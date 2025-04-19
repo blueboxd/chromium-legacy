@@ -72,6 +72,15 @@ MahiMediaAppClient::MahiMediaAppClient(
 }
 
 MahiMediaAppClient::~MahiMediaAppClient() {
+  // If `media_app_window_` is null, it means the media app window is closed and
+  // `OnWindowDestroying` is already called, the following part is done at that
+  // time.
+  if (media_app_window_ == nullptr) {
+    return;
+  }
+  // Broadcasts the PDF closed event.
+  chromeos::MahiMediaAppEventsProxy::Get()->OnPdfClosed(client_id_);
+
   // Manually calls `RemoveClient()` when disconnecting.
   chromeos::MahiMediaAppContentManager::Get()->RemoveClient(client_id_);
 }
@@ -90,6 +99,17 @@ void MahiMediaAppClient::OnPdfLoaded() {
 
   // Checks the current focused window.
   OnWindowFocused(focus_client->GetFocusedWindow(), nullptr);
+}
+
+void MahiMediaAppClient::OnPdfFileNameUpdated(const std::string& new_name) {
+  if (file_name_ == new_name) {
+    return;
+  }
+  file_name_ = new_name;
+  CHECK(focus_observation_.IsObserving());
+
+  // Notifies this change if the media app window has focus.
+  OnWindowFocused(focus_observation_.GetSource()->GetFocusedWindow(), nullptr);
 }
 
 void MahiMediaAppClient::OnPdfContextMenuShow(const ::gfx::RectF& anchor) {
@@ -161,6 +181,10 @@ void MahiMediaAppClient::OnWindowBoundsChanged(
 
 void MahiMediaAppClient::OnWindowDestroying(aura::Window* window) {
   if (window == media_app_window_) {
+    // Broadcasts the PDF closed event.
+    chromeos::MahiMediaAppEventsProxy::Get()->OnPdfClosed(client_id_);
+    // Manually calls `RemoveClient()` when window destories.
+    chromeos::MahiMediaAppContentManager::Get()->RemoveClient(client_id_);
     media_app_window_ = nullptr;
     window_observation_.Reset();
   }

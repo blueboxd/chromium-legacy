@@ -224,6 +224,12 @@ class CertVerifyProcTrustStore {
       const bssl::ParsedCertificate* cert) const {
     return system_trust_store_->GetChromeRootConstraints(cert);
   }
+
+  bool IsNonChromeRootStoreTrustAnchor(
+      const bssl::ParsedCertificate* trust_anchor) const {
+    return IsAdditionalTrustAnchor(trust_anchor) ||
+           system_trust_store_->IsLocallyTrustedRoot(trust_anchor);
+  }
 #endif
 
   bool IsAdditionalTrustAnchor(
@@ -482,6 +488,13 @@ class PathBuilderDelegateImpl : public bssl::SimplePathBuilderDelegate {
   }
 
   void CheckChromeRootConstraints(bssl::CertPathBuilderResultPath* path) {
+    // If the root is trusted locally, do not enforce CRS constraints, even if
+    // some exist.
+    if (trust_store_->IsNonChromeRootStoreTrustAnchor(
+            path->certs.back().get())) {
+      return;
+    }
+
     if (base::span<const ChromeRootCertConstraints> constraints =
             trust_store_->GetChromeRootConstraints(path->certs.back().get());
         !constraints.empty()) {
@@ -531,10 +544,8 @@ class PathBuilderDelegateImpl : public bssl::SimplePathBuilderDelegate {
 
       if (!cert_with_constraints.permitted_cidrs.empty()) {
         for (const auto& cidr : cert_with_constraints.permitted_cidrs) {
-          bssl::der::Input ip(cidr.ip.bytes().data(), cidr.ip.bytes().size());
-          bssl::der::Input mask(cidr.mask.bytes().data(),
-                                cidr.mask.bytes().size());
-          permitted_names.ip_address_ranges.emplace_back(ip, mask);
+          permitted_names.ip_address_ranges.emplace_back(cidr.ip.bytes(),
+                                                         cidr.mask.bytes());
         }
         permitted_names.present_name_types |=
             bssl::GeneralNameTypes::GENERAL_NAME_IP_ADDRESS;
@@ -715,7 +726,7 @@ CertVerifyProcBuiltin::CertVerifyProcBuiltin(
 
   for (const auto& spki : instance_params.additional_distrusted_spkis) {
     additional_trust_store_.AddDistrustedCertificateBySPKI(
-        std::string(spki.begin(), spki.end()));
+        std::string(base::as_string_view(spki)));
     net_log.AddEvent(NetLogEventType::CERT_VERIFY_PROC_ADDITIONAL_CERT, [&] {
       base::Value::Dict results;
       results.Set("spki", NetLogBinaryValue(base::make_span(spki)));

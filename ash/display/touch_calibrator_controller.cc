@@ -15,7 +15,7 @@
 #include "base/ranges/algorithm.h"
 #include "base/task/single_thread_task_runner.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/display/manager/touch_device_manager.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/event.h"
@@ -86,7 +86,7 @@ TouchCalibratorController::~TouchCalibratorController() {
   StopCalibrationAndResetParams();
 }
 
-void TouchCalibratorController::OnDisplayConfigurationChanged() {
+void TouchCalibratorController::OnDidApplyDisplayChanges() {
   touch_calibrator_widgets_.clear();
   StopCalibrationAndResetParams();
 }
@@ -116,7 +116,7 @@ void TouchCalibratorController::StartCalibration(
 
   // If this is a native touch calibration, then initialize the UX for it.
   if (state_ == CalibrationState::kNativeCalibration) {
-    Shell::Get()->window_tree_host_manager()->AddObserver(this);
+    Shell::Get()->display_manager()->AddDisplayManagerObserver(this);
 
     // Reset the calibration data.
     touch_point_quad_.fill(std::make_pair(gfx::Point(0, 0), gfx::Point(0, 0)));
@@ -140,7 +140,7 @@ void TouchCalibratorController::StartCalibration(
 void TouchCalibratorController::StopCalibrationAndResetParams() {
   if (!IsCalibrating())
     return;
-  Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
+  Shell::Get()->display_manager()->RemoveDisplayManagerObserver(this);
 
   Shell::Get()->touch_transformer_controller()->SetForCalibration(false);
 
@@ -206,8 +206,10 @@ void TouchCalibratorController::OnKeyEvent(ui::KeyEvent* key) {
   if (state_ != CalibrationState::kNativeCalibration)
     return;
   // Detect ESC key press.
-  if (key->type() == ui::ET_KEY_PRESSED && key->key_code() == ui::VKEY_ESCAPE)
+  if (key->type() == ui::EventType::kKeyPressed &&
+      key->key_code() == ui::VKEY_ESCAPE) {
     StopCalibrationAndResetParams();
+  }
 
   key->StopPropagation();
 }
@@ -215,8 +217,9 @@ void TouchCalibratorController::OnKeyEvent(ui::KeyEvent* key) {
 void TouchCalibratorController::OnTouchEvent(ui::TouchEvent* touch) {
   if (!IsCalibrating())
     return;
-  if (touch->type() != ui::ET_TOUCH_RELEASED)
+  if (touch->type() != ui::EventType::kTouchReleased) {
     return;
+  }
   if (base::Time::Now() - last_touch_timestamp_ < kTouchIntervalThreshold)
     return;
   last_touch_timestamp_ = base::Time::Now();

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "media/gpu/vaapi/vaapi_dmabuf_video_frame_mapper.h"
 
 #include <sys/mman.h>
@@ -96,7 +101,7 @@ scoped_refptr<VideoFrame> CreateMappedVideoFrame(
 }
 
 bool IsFormatSupported(VideoPixelFormat format) {
-  return format == PIXEL_FORMAT_NV12 || format == PIXEL_FORMAT_P016LE;
+  return format == PIXEL_FORMAT_NV12 || format == PIXEL_FORMAT_P010LE;
 }
 
 }  // namespace
@@ -192,7 +197,7 @@ scoped_refptr<VideoFrame> VaapiDmaBufVideoFrameMapper::MapFrame(
   }
 
   // Map tiled NV12 or P010 buffer by CreateVaImage so that mapped buffers can
-  // be accessed as non-tiled NV12 or P016LE buffer.
+  // be accessed as non-tiled NV12 or P010LE buffer.
   const VAImageFormat va_image_format =
       video_frame->format() == PIXEL_FORMAT_NV12 ? kImageFormatNV12
                                                  : kImageFormatP010;

@@ -6,26 +6,31 @@ import 'chrome-untrusted://read-anything-side-panel.top-chrome/read_anything.js'
 import {BrowserProxy} from '//resources/cr_components/color_change_listener/browser_proxy.js';
 import type {CrIconButtonElement} from '//resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import {flush} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {PLAY_PAUSE_EVENT} from 'chrome-untrusted://read-anything-side-panel.top-chrome/read_anything.js';
+import {MetricsBrowserProxyImpl, ReadAnythingLogger, ToolbarEvent} from 'chrome-untrusted://read-anything-side-panel.top-chrome/read_anything.js';
 import type {ReadAnythingToolbarElement} from 'chrome-untrusted://read-anything-side-panel.top-chrome/read_anything.js';
 import {assertEquals, assertFalse, assertStringContains, assertTrue} from 'chrome-untrusted://webui-test/chai_assert.js';
+import {isVisible} from 'chrome-untrusted://webui-test/test_util.js';
 
 import {suppressInnocuousErrors} from './common.js';
 import {FakeReadingMode} from './fake_reading_mode.js';
 import {TestColorUpdaterBrowserProxy} from './test_color_updater_browser_proxy.js';
+import {TestMetricsBrowserProxy} from './test_metrics_browser_proxy.js';
+
 
 suite('PlayPause', () => {
   let toolbar: ReadAnythingToolbarElement;
-  let testBrowserProxy: TestColorUpdaterBrowserProxy;
+  let metrics: TestMetricsBrowserProxy;
   let playPauseButton: CrIconButtonElement;
   let granularityContainer: HTMLElement;
   let clickEmitted: boolean;
 
   setup(() => {
     suppressInnocuousErrors();
-    testBrowserProxy = new TestColorUpdaterBrowserProxy();
-    BrowserProxy.setInstance(testBrowserProxy);
+    BrowserProxy.setInstance(new TestColorUpdaterBrowserProxy());
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
+    metrics = new TestMetricsBrowserProxy();
+    MetricsBrowserProxyImpl.setInstance(metrics);
+    ReadAnythingLogger.setInstance(new ReadAnythingLogger());
     const readingMode = new FakeReadingMode();
     chrome.readingMode = readingMode as unknown as typeof chrome.readingMode;
     chrome.readingMode.isReadAloudEnabled = true;
@@ -39,55 +44,59 @@ suite('PlayPause', () => {
     granularityContainer = toolbar.shadowRoot!.querySelector<HTMLElement>(
         '#granularity-container')!;
     clickEmitted = false;
-    document.addEventListener(PLAY_PAUSE_EVENT, () => clickEmitted = true);
+    document.addEventListener(
+        ToolbarEvent.PLAY_PAUSE, () => clickEmitted = true);
   });
 
-  function toolbarPaused(paused: boolean) {
-    // Bypass Typescript compiler to allow us to get a private property
-    // @ts-ignore
-    toolbar.paused = paused;
-  }
+  test('on click emits click event', () => {
+    playPauseButton.click();
+    assertTrue(clickEmitted);
 
-  suite('on click', () => {
-    test('emits play event', () => {
-      playPauseButton.click();
-      assertTrue(clickEmitted);
-
-      clickEmitted = false;
-      playPauseButton.click();
-      assertTrue(clickEmitted);
-    });
+    clickEmitted = false;
+    playPauseButton.click();
+    assertTrue(clickEmitted);
   });
 
-  suite('when playing', () => {
-    setup(() => {
-      toolbarPaused(false);
-    });
+  test('on click logs click event', async () => {
+    toolbar.isSpeechActive = false;
+    playPauseButton.click();
+    assertEquals(
+        'Accessibility.ReadAnything.ReadAloudPlaySessionCount',
+        await metrics.whenCalled('incrementMetricCount'));
 
-    test('button indicates speech is playing', () => {
-      assertEquals(playPauseButton.ironIcon, 'read-anything-20:pause');
-      assertStringContains(playPauseButton.title.toLowerCase(), 'pause');
-      assertStringContains(playPauseButton.ariaLabel!.toLowerCase(), 'pause');
-    });
-
-    test('granularity menu buttons show', () => {
-      assertFalse(granularityContainer.hidden);
-    });
+    metrics.reset();
+    toolbar.isSpeechActive = true;
+    playPauseButton.click();
+    assertEquals(
+        'Accessibility.ReadAnything.ReadAloudPauseSessionCount',
+        await metrics.whenCalled('incrementMetricCount'));
   });
 
-  suite('when paused', () => {
-    setup(() => {
-      toolbarPaused(true);
-    });
+  test('when playing', () => {
+    toolbar.isSpeechActive = true;
 
-    test('button indicates speech is paused', () => {
-      assertEquals(playPauseButton.ironIcon, 'read-anything-20:play');
-      assertStringContains(playPauseButton.title.toLowerCase(), 'play');
-      assertStringContains(playPauseButton.ariaLabel!.toLowerCase(), 'play');
-    });
+    // Test that button indicates speech is playing
+    assertEquals('read-anything-20:pause', playPauseButton.ironIcon);
+    assertStringContains('pause (k)', playPauseButton.title.toLowerCase());
+    assertStringContains(
+        'play / pause, keyboard shortcut k',
+        playPauseButton.ariaLabel!.toLowerCase());
 
-    test('granularity menu buttons hidden', () => {
-      assertTrue(granularityContainer.hidden);
-    });
+    // Test that granularity menu buttons show
+    assertTrue(isVisible(granularityContainer));
+  });
+
+  test('when paused', () => {
+    toolbar.isSpeechActive = false;
+
+    // Test that button indicates speech is paused
+    assertEquals('read-anything-20:play', playPauseButton.ironIcon);
+    assertStringContains('play (k)', playPauseButton.title.toLowerCase());
+    assertStringContains(
+        'play / pause, keyboard shortcut k',
+        playPauseButton.ariaLabel!.toLowerCase());
+
+    // Test that granularity menu buttons hidden
+    assertFalse(isVisible(granularityContainer));
   });
 });

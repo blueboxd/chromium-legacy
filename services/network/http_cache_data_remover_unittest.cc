@@ -10,7 +10,6 @@
 #include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/raw_ptr_exclusion.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
@@ -26,6 +25,7 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_manager.h"
 #include "net/http/http_transaction_factory.h"
+#include "net/http/mock_http_cache.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "services/network/network_context.h"
@@ -90,9 +90,12 @@ class HttpCacheDataRemoverTest : public testing::Test {
                  ->GetCache();
     ASSERT_TRUE(cache_);
     {
-      net::TestCompletionCallback callback;
-      int rv = cache_->GetBackend(&backend_, callback.callback());
-      ASSERT_EQ(net::OK, callback.GetResult(rv));
+      net::TestGetBackendCompletionCallback callback;
+      net::HttpCache::GetBackendResult result =
+          cache_->GetBackend(callback.callback());
+      result = callback.GetResult(result);
+      ASSERT_EQ(net::OK, result.first);
+      backend_ = result.second;
       ASSERT_TRUE(backend_);
     }
 
@@ -158,6 +161,7 @@ class HttpCacheDataRemoverTest : public testing::Test {
 
  protected:
   void InitNetworkContext() {
+    backend_ = nullptr;
     cache_ = nullptr;
     mojom::NetworkContextParamsPtr context_params = CreateContextParams();
     context_params->http_cache_enabled = true;
@@ -175,9 +179,7 @@ class HttpCacheDataRemoverTest : public testing::Test {
   // Stores the mojo::Remote<NetworkContext> of the most recently created
   // NetworkContext.
   mojo::Remote<mojom::NetworkContext> network_context_remote_;
-  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
-  // #addr-of
-  RAW_PTR_EXCLUSION disk_cache::Backend* backend_ = nullptr;
+  raw_ptr<disk_cache::Backend> backend_ = nullptr;
 
  private:
   raw_ptr<net::HttpCache> cache_;

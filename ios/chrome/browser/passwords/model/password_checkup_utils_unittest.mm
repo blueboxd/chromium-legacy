@@ -105,7 +105,7 @@ class PasswordCheckupUtilsTest : public PlatformTest {
           return std::unique_ptr<KeyedService>(
               std::make_unique<affiliations::FakeAffiliationService>());
         })));
-    browser_state_ = builder.Build();
+    browser_state_ = std::move(builder).Build();
     store_ =
         base::WrapRefCounted(static_cast<password_manager::TestPasswordStore*>(
             IOSChromeProfilePasswordStoreFactory::GetForBrowserState(
@@ -253,8 +253,8 @@ TEST_F(PasswordCheckupUtilsTest, CheckPasswordCountForWarningType) {
 
 // Tests that the correct string is returned with the right timestamp.
 TEST_F(PasswordCheckupUtilsTest, ElapsedTimeSinceLastCheck) {
-  EXPECT_NSEQ(@"Check never run.", FormatElapsedTimeSinceLastCheck(
-                                       manager().GetLastPasswordCheckTime()));
+  EXPECT_NSEQ(@"Check never run", FormatElapsedTimeSinceLastCheck(
+                                      manager().GetLastPasswordCheckTime()));
 
   base::Time expected1 = base::Time::Now() - base::Seconds(10);
   browser_state()->GetPrefs()->SetDouble(

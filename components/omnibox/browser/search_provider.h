@@ -59,10 +59,6 @@ class SearchProvider : public BaseSearchProvider,
   SearchProvider(const SearchProvider&) = delete;
   SearchProvider& operator=(const SearchProvider&) = delete;
 
-  // Extracts the suggest response metadata which SearchProvider previously
-  // stored for |match|.
-  static std::string GetSuggestMetadata(const AutocompleteMatch& match);
-
   // Answers prefetch handling - register displayed answers. Takes the top
   // match for Autocomplete and registers the contained answer data, if any.
   void RegisterDisplayedAnswers(const AutocompleteResult& result);
@@ -107,6 +103,8 @@ class SearchProvider : public BaseSearchProvider,
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, SuggestQueryUsesToken);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, AnswersCache);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, RemoveExtraAnswers);
+  FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, DuplicateCardAnswer);
+  FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, CopyAnswerToVerbatim);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, DoesNotProvideOnFocus);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, SendsWarmUpRequestOnFocus);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, DoTrimHttpScheme);
@@ -297,6 +295,11 @@ class SearchProvider : public BaseSearchProvider,
   // that appears.
   static void RemoveExtraAnswers(ACMatches* matches);
 
+  // Add a copy of an answer suggestion presented as a rich card, sans answer
+  // data. This gives an "escape hatch" if, e.g. the user wants the verbatim
+  // query associated with the answer suggestion.
+  static void DuplicateCardAnswer(ACMatches* matches);
+
   // Checks if suggested relevances violate an expected constraint.
   // See UpdateMatches() for the use and explanation of this constraint
   // and other constraints enforced without the use of helper functions.
@@ -337,10 +340,9 @@ class SearchProvider : public BaseSearchProvider,
       bool is_keyword,
       SearchSuggestionParser::SuggestResults* scored_results);
 
-  // Adds matches for |results| to |map|.
+  // Adds matches for `results` to `map`.
   void AddSuggestResultsToMap(
       const SearchSuggestionParser::SuggestResults& results,
-      const std::string& metadata,
       MatchMap* map);
 
   // Gets the relevance score for the verbatim result.  This value may be

@@ -4,7 +4,6 @@
 
 #include "ash/wm/gestures/wm_gesture_handler.h"
 
-#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/input_device_settings_controller.h"
 #include "ash/public/cpp/test/mock_input_device_settings_controller.h"
@@ -18,10 +17,10 @@
 #include "ash/wm/desks/desk_preview_view.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_test_util.h"
-#include "ash/wm/desks/legacy_desk_bar_view.h"
+#include "ash/wm/desks/overview_desk_bar_view.h"
 #include "ash/wm/overview/overview_controller.h"
-#include "ash/wm/overview/overview_focus_cycler_old.h"
 #include "ash/wm/overview/overview_grid.h"
+#include "ash/wm/overview/overview_item_view.h"
 #include "ash/wm/overview/overview_test_util.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/window_cycle/window_cycle_controller.h"
@@ -40,6 +39,7 @@
 #include "ui/events/devices/touchpad_device.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/views/view_utils.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/capture_controller.h"
 
@@ -55,7 +55,14 @@ bool InOverviewSession() {
 }
 
 const aura::Window* GetFocusedWindow() {
-  return InOverviewSession() ? GetOverviewFocusedWindow() : nullptr;
+  if (!InOverviewSession()) {
+    return nullptr;
+  }
+
+  views::View* focused_view = GetFocusedView();
+  return views::IsViewClass<OverviewItemView>(focused_view)
+             ? focused_view->GetWidget()->GetNativeWindow()
+             : nullptr;
 }
 
 class TestInputDeviceSettingsController
@@ -246,7 +253,7 @@ TEST_F(WmGestureHandlerTest, EnterOverviewOnScrollEnd) {
   base::TimeTicks timestamp = base::TimeTicks::Now();
   const int num_fingers = 3;
   base::TimeDelta step_delay(base::Milliseconds(5));
-  ui::ScrollEvent fling_cancel(ui::ET_SCROLL_FLING_CANCEL, gfx::Point(),
+  ui::ScrollEvent fling_cancel(ui::EventType::kScrollFlingCancel, gfx::Point(),
                                timestamp, 0, 0, 0, 0, 0, num_fingers);
   GetEventGenerator()->Dispatch(&fling_cancel);
 
@@ -254,14 +261,14 @@ TEST_F(WmGestureHandlerTest, EnterOverviewOnScrollEnd) {
   // still ongoing.
   for (int i = 0; i < 100; ++i) {
     timestamp += step_delay;
-    ui::ScrollEvent move(ui::ET_SCROLL, gfx::Point(), timestamp, 0, 0,
+    ui::ScrollEvent move(ui::EventType::kScroll, gfx::Point(), timestamp, 0, 0,
                          GetOffsetY(10), 0, GetOffsetY(10), num_fingers);
     GetEventGenerator()->Dispatch(&move);
   }
   ASSERT_FALSE(InOverviewSession());
 
   timestamp += step_delay;
-  ui::ScrollEvent fling_start(ui::ET_SCROLL_FLING_START, gfx::Point(),
+  ui::ScrollEvent fling_start(ui::EventType::kScrollFlingStart, gfx::Point(),
                               timestamp, 0, 0, GetOffsetY(-10), 0,
                               GetOffsetY(-10), num_fingers);
   GetEventGenerator()->Dispatch(&fling_start);
@@ -280,21 +287,21 @@ TEST_F(WmGestureHandlerTest, EnterOverviewWithNormalCaptureWindow) {
       CreateTestWindow(gfx::Rect(100, 100));
   normal_window->SetCapture();
 
-  ui::ScrollEvent fling_cancel(ui::ET_SCROLL_FLING_CANCEL, gfx::Point(),
+  ui::ScrollEvent fling_cancel(ui::EventType::kScrollFlingCancel, gfx::Point(),
                                timestamp, 0, 0, 0, 0, 0, num_fingers);
   GetEventGenerator()->Dispatch(&fling_cancel);
 
-  // Send ET_SCROLL events to initializae ScrollData.
+  // Send EventType::kScroll events to initializae ScrollData.
   for (int i = 0; i < 100; ++i) {
     timestamp += step_delay;
-    ui::ScrollEvent move(ui::ET_SCROLL, gfx::Point(), timestamp, 0, 0,
+    ui::ScrollEvent move(ui::EventType::kScroll, gfx::Point(), timestamp, 0, 0,
                          GetOffsetY(10), 0, GetOffsetY(10), num_fingers);
     GetEventGenerator()->Dispatch(&move);
   }
 
   timestamp += step_delay;
 
-  ui::ScrollEvent fling_start(ui::ET_SCROLL_FLING_START, gfx::Point(),
+  ui::ScrollEvent fling_start(ui::EventType::kScrollFlingStart, gfx::Point(),
                               timestamp, 0, 0, GetOffsetY(-10), 0,
                               GetOffsetY(-10), num_fingers);
   GetEventGenerator()->Dispatch(&fling_start);
@@ -319,21 +326,21 @@ TEST_F(WmGestureHandlerTest, EnterOverviewWithPopupCaptureWindow) {
           normal_window.get(), /*show_on_creation=*/true));
   popup_window->SetCapture();
 
-  ui::ScrollEvent fling_cancel(ui::ET_SCROLL_FLING_CANCEL, gfx::Point(),
+  ui::ScrollEvent fling_cancel(ui::EventType::kScrollFlingCancel, gfx::Point(),
                                timestamp, 0, 0, 0, 0, 0, num_fingers);
   GetEventGenerator()->Dispatch(&fling_cancel);
 
-  // Send ET_SCROLL events to initializae ScrollData.
+  // Send EventType::kScroll events to initializae ScrollData.
   for (int i = 0; i < 100; ++i) {
     timestamp += step_delay;
-    ui::ScrollEvent move(ui::ET_SCROLL, gfx::Point(), timestamp, 0, 0,
+    ui::ScrollEvent move(ui::EventType::kScroll, gfx::Point(), timestamp, 0, 0,
                          GetOffsetY(10), 0, GetOffsetY(10), num_fingers);
     GetEventGenerator()->Dispatch(&move);
   }
 
   timestamp += step_delay;
 
-  ui::ScrollEvent fling_start(ui::ET_SCROLL_FLING_START, gfx::Point(),
+  ui::ScrollEvent fling_start(ui::EventType::kScrollFlingStart, gfx::Point(),
                               timestamp, 0, 0, GetOffsetY(-10), 0,
                               GetOffsetY(-10), num_fingers);
   GetEventGenerator()->Dispatch(&fling_start);
@@ -451,10 +458,7 @@ TEST_F(WmGestureHandlerTest, ActivateFocusedDeskWithVerticalScroll) {
       overview_session->GetGridWithRootWindow(Shell::GetPrimaryRootWindow())
           ->desks_bar_view()
           ->mini_views()[1];
-
-  overview_session->focus_cycler_old()->MoveFocusToView(
-      mini_view_1->desk_preview());
-  EXPECT_TRUE(mini_view_1->desk_preview()->is_focused());
+  mini_view_1->desk_preview()->RequestFocus();
 
   // Exit overview with 3-fingers downward swipes.
   DeskSwitchAnimationWaiter waiter;

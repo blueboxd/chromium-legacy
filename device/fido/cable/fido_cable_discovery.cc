@@ -20,10 +20,12 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/device_event_log/device_event_log.h"
+#include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "device/bluetooth/public/cpp/bluetooth_uuid.h"
+#include "device/fido/cable/fido_ble_connection.h"
 #include "device/fido/cable/fido_ble_uuids.h"
 #include "device/fido/cable/fido_cable_device.h"
 #include "device/fido/cable/fido_cable_handshake_handler.h"
@@ -219,17 +221,11 @@ void FidoCableDiscovery::OnGetAdapter(scoped_refptr<BluetoothAdapter> adapter) {
   DCHECK(!adapter_);
   adapter_ = std::move(adapter);
   DCHECK(adapter_);
-  FIDO_LOG(DEBUG) << "BLE adapter address " << adapter_->GetAddress();
 
   adapter_->AddObserver(this);
-  if (adapter_->IsPowered()) {
-    OnSetPowered();
-  }
-
+  BluetoothAdapter::PermissionStatus bluetooth_permission =
+      BluetoothAdapter::PermissionStatus::kAllowed;
 #if BUILDFLAG(IS_MAC)
-  // TODO(crbug.com/40221398): turn this into a user-visible UI if we believe
-  // that it's a good signal.
-
   switch (fido::mac::ProcessIsSigned()) {
     case fido::mac::CodeSigningState::kUnknown:
       FIDO_LOG(DEBUG) << "Cannot determine whether build is signed. Assuming "
@@ -237,12 +233,9 @@ void FidoCableDiscovery::OnGetAdapter(scoped_refptr<BluetoothAdapter> adapter) {
       break;
 
     case fido::mac::CodeSigningState::kSigned:
+      bluetooth_permission = adapter_->GetOsPermissionStatus();
       FIDO_LOG(DEBUG) << "Bluetooth authorized: "
-                      << static_cast<int>(adapter_->GetOsPermissionStatus());
-      if (adapter_->GetOsPermissionStatus() ==
-          BluetoothAdapter::PermissionStatus::kDenied) {
-        observer()->BleDenied();
-      }
+                      << static_cast<int>(bluetooth_permission);
       break;
 
     case fido::mac::CodeSigningState::kNotSigned:
@@ -251,6 +244,13 @@ void FidoCableDiscovery::OnGetAdapter(scoped_refptr<BluetoothAdapter> adapter) {
       break;
   }
 #endif
+
+  if (bluetooth_permission == BluetoothAdapter::PermissionStatus::kAllowed) {
+    FIDO_LOG(DEBUG) << "BLE adapter address " << adapter_->GetAddress();
+    if (adapter_->IsPowered()) {
+      OnSetPowered();
+    }
+  }
 
   // FidoCableDiscovery blocks its transport availability callback on the
   // DiscoveryStarted() calls of all instantiated discoveries. Hence, this call

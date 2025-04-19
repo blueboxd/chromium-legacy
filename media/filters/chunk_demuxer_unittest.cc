@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "media/filters/chunk_demuxer.h"
 
 #include <stddef.h>
@@ -641,7 +646,7 @@ class ChunkDemuxerTest : public ::testing::Test {
                   base::span<const uint8_t> data) {
     EXPECT_CALL(host_, OnBufferedTimeRangesChanged(_)).Times(AnyNumber());
 
-    if (!demuxer_->AppendToParseBuffer(source_id, data.data(), data.size())) {
+    if (!demuxer_->AppendToParseBuffer(source_id, data)) {
       return false;
     }
 
@@ -1598,8 +1603,7 @@ TEST_F(ChunkDemuxerTest, AppendToParseBufferBeforeInit) {
   // CHECK added to fail if called before Init(), this test case will need to be
   // changed. For now, the demuxer silently allows the append to succeed, but
   // any RunSegmentParserLoop() will fail if it's still before Init().
-  ASSERT_TRUE(demuxer_->AppendToParseBuffer(kSourceId, info_tracks.data(),
-                                            info_tracks.size()));
+  ASSERT_TRUE(demuxer_->AppendToParseBuffer(kSourceId, info_tracks));
 
   ASSERT_EQ(StreamParser::ParseStatus::kFailed,
             demuxer_->RunSegmentParserLoop(kSourceId,
@@ -2253,7 +2257,7 @@ TEST_F(ChunkDemuxerTest, ParseErrorDuringInit) {
 
   EXPECT_MEDIA_LOG(StreamParsingFailed());
   uint8_t tmp = 0;
-  ASSERT_FALSE(AppendData(base::make_span(&tmp, 1u)));
+  ASSERT_FALSE(AppendData(base::span_from_ref(tmp)));
 }
 
 TEST_F(ChunkDemuxerTest, AVHeadersWithAudioOnlyType) {

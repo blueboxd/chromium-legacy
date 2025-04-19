@@ -62,7 +62,10 @@ public class TabProperties {
     public static final WritableIntPropertyKey TAB_ID = new WritableIntPropertyKey();
 
     public static final WritableObjectPropertyKey<TabListMediator.TabActionListener>
-            TAB_SELECTED_LISTENER = new WritableObjectPropertyKey<>();
+            TAB_CLICK_LISTENER = new WritableObjectPropertyKey<>();
+
+    public static final WritableObjectPropertyKey<TabListMediator.TabActionListener>
+            TAB_LONG_CLICK_LISTENER = new WritableObjectPropertyKey<>();
 
     public static final WritableObjectPropertyKey<TabListMediator.TabActionListener>
             TAB_ACTION_BUTTON_LISTENER = new WritableObjectPropertyKey<>();
@@ -95,9 +98,6 @@ public class TabProperties {
             new WritableObjectPropertyKey<>();
 
     public static final WritableIntPropertyKey CARD_ANIMATION_STATUS = new WritableIntPropertyKey();
-
-    public static final PropertyModel.WritableObjectPropertyKey<TabListMediator.TabActionListener>
-            SELECTABLE_TAB_CLICKED_LISTENER = new PropertyModel.WritableObjectPropertyKey<>();
 
     public static final WritableObjectPropertyKey<SelectionDelegate<Integer>>
             TAB_SELECTION_DELEGATE = new WritableObjectPropertyKey<>();
@@ -139,19 +139,23 @@ public class TabProperties {
     public static final WritableIntPropertyKey QUICK_DELETE_ANIMATION_STATUS =
             new WritableIntPropertyKey();
 
+    public static final WritableIntPropertyKey VISIBILITY = new WritableIntPropertyKey();
+
+    public static final WritableBooleanPropertyKey USE_SHRINK_CLOSE_ANIMATION =
+            new WritableBooleanPropertyKey();
+
     /** The {@link TabGroupColorId} for a tab group representation's color in TabListMode only. */
     public static final WritableIntPropertyKey TAB_GROUP_COLOR_ID = new WritableIntPropertyKey();
 
     public static final WritableObjectPropertyKey<TabListMediator.TabGroupInfo> TAB_GROUP_INFO =
             new WritableObjectPropertyKey<>();
-    public static final WritableObjectPropertyKey<TabListGroupMenuCoordinator.OnItemClickedCallback>
-            ON_MENU_ITEM_CLICKED_CALLBACK = new WritableObjectPropertyKey<>();
 
     public static final PropertyKey[] ALL_KEYS_TAB_GRID =
             new PropertyKey[] {
                 TAB_ACTION_STATE,
                 TAB_ID,
-                TAB_SELECTED_LISTENER,
+                TAB_CLICK_LISTENER,
+                TAB_LONG_CLICK_LISTENER,
                 TAB_ACTION_BUTTON_LISTENER,
                 FAVICON_FETCHED,
                 FAVICON_FETCHER,
@@ -164,7 +168,6 @@ public class TabProperties {
                 CHECKED_DRAWABLE_STATE_LIST,
                 CARD_ALPHA,
                 CARD_ANIMATION_STATUS,
-                SELECTABLE_TAB_CLICKED_LISTENER,
                 TAB_SELECTION_DELEGATE,
                 SELECTED_TAB_BACKGROUND_DRAWABLE_ID,
                 TABSTRIP_FAVICON_BACKGROUND_COLOR_ID,
@@ -180,13 +183,14 @@ public class TabProperties {
                 QUICK_DELETE_ANIMATION_STATUS,
                 TAB_GROUP_COLOR_ID,
                 TAB_GROUP_INFO,
-                ON_MENU_ITEM_CLICKED_CALLBACK
+                VISIBILITY,
+                USE_SHRINK_CLOSE_ANIMATION,
             };
 
     public static final PropertyKey[] ALL_KEYS_TAB_STRIP =
             new PropertyKey[] {
                 TAB_ID,
-                TAB_SELECTED_LISTENER,
+                TAB_CLICK_LISTENER,
                 TAB_ACTION_BUTTON_LISTENER,
                 FAVICON_FETCHED,
                 FAVICON_FETCHER,
@@ -194,5 +198,25 @@ public class TabProperties {
                 TITLE,
                 TABSTRIP_FAVICON_BACKGROUND_COLOR_ID,
                 IS_INCOGNITO
+            };
+
+    public static final PropertyKey[] TAB_GRID_SELECTABLE_KEYS =
+            new PropertyKey[] {
+                TAB_ACTION_BUTTON_LISTENER,
+                TAB_CLICK_LISTENER,
+                TAB_LONG_CLICK_LISTENER,
+                CHECKED_DRAWABLE_STATE_LIST,
+                SELECTABLE_TAB_ACTION_BUTTON_BACKGROUND,
+                IS_SELECTED
+            };
+
+    public static final PropertyKey[] TAB_GRID_CLOSABLE_KEYS =
+            new PropertyKey[] {
+                TAB_ACTION_BUTTON_LISTENER,
+                TAB_CLICK_LISTENER,
+                TAB_LONG_CLICK_LISTENER,
+                CONTENT_DESCRIPTION_STRING,
+                ACTION_BUTTON_DESCRIPTION_STRING,
+                IS_SELECTED
             };
 }

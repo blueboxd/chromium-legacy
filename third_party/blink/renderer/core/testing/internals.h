@@ -365,9 +365,7 @@ class Internals final : public ScriptWrappable {
   String layerTreeAsText(Document*, unsigned flags, ExceptionState&) const;
   String layerTreeAsText(Document*, ExceptionState&) const;
 
-  String scrollingStateTreeAsText(Document*) const;
   String mainThreadScrollingReasons(Document*, ExceptionState&) const;
-  DOMRectList* nonFastScrollableRects(Document*, ExceptionState&) const;
 
   void evictAllResources() const;
 
@@ -394,7 +392,7 @@ class Internals final : public ScriptWrappable {
                                 float max_scale_factor,
                                 ExceptionState&);
 
-  float pageZoomFactor(ExceptionState&);
+  float layoutZoomFactor(ExceptionState&);
 
   void setIsCursorVisible(Document*, bool, ExceptionState&);
   void setMaxNumberOfFramesToTen(bool);

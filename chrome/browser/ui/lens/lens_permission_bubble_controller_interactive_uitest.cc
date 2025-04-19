@@ -5,10 +5,10 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
-#include "chrome/browser/ui/lens/lens_overlay_permission_utils.h"
 #include "chrome/browser/ui/lens/lens_permission_bubble_controller.h"
 #include "chrome/test/interaction/interactive_browser_test.h"
 #include "components/lens/lens_features.h"
+#include "components/lens/lens_overlay_permission_utils.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,7 +29,7 @@ class LensPermissionBubbleInteractiveUiTest : public InteractiveBrowserTest {
   void SetUpOnMainThread() override {
     InteractiveBrowserTest::SetUpOnMainThread();
     controller_ = std::make_unique<lens::LensPermissionBubbleController>(
-        browser(), GetPrefService());
+        browser(), GetPrefService(), "AppMenu");
     request_permission_callback_called_ = false;
   }
 
@@ -51,8 +51,15 @@ class LensPermissionBubbleInteractiveUiTest : public InteractiveBrowserTest {
           "Lens.Overlay.PermissionBubble.UserAction",
           LensPermissionBubbleController::UserAction::kCancelButtonPressed,
           /*expected_count=*/1);
+      histogram_tester.ExpectBucketCount(
+          "Lens.Overlay.PermissionBubble.ByInvocationSource.AppMenu.UserAction",
+          LensPermissionBubbleController::UserAction::kCancelButtonPressed,
+          /*expected_count=*/1);
       histogram_tester.ExpectTotalCount(
           "Lens.Overlay.PermissionBubble.UserAction", 1);
+      histogram_tester.ExpectTotalCount(
+          "Lens.Overlay.PermissionBubble.ByInvocationSource.AppMenu.UserAction",
+          1);
       EXPECT_FALSE(!!GetDialog());
       EXPECT_FALSE(CanSharePageScreenshotWithLensOverlay(GetPrefService()));
     }));
@@ -64,8 +71,15 @@ class LensPermissionBubbleInteractiveUiTest : public InteractiveBrowserTest {
           "Lens.Overlay.PermissionBubble.UserAction",
           LensPermissionBubbleController::UserAction::kAcceptButtonPressed,
           /*expected_count=*/1);
+      histogram_tester.ExpectBucketCount(
+          "Lens.Overlay.PermissionBubble.ByInvocationSource.AppMenu.UserAction",
+          LensPermissionBubbleController::UserAction::kAcceptButtonPressed,
+          /*expected_count=*/1);
       histogram_tester.ExpectTotalCount(
           "Lens.Overlay.PermissionBubble.UserAction", 1);
+      histogram_tester.ExpectTotalCount(
+          "Lens.Overlay.PermissionBubble.ByInvocationSource.AppMenu.UserAction",
+          1);
       EXPECT_TRUE(request_permission_callback_called_);
       EXPECT_FALSE(!!GetDialog());
       EXPECT_TRUE(CanSharePageScreenshotWithLensOverlay(GetPrefService()));
@@ -94,6 +108,11 @@ IN_PROC_BROWSER_TEST_F(LensPermissionBubbleInteractiveUiTest,
         histogram_tester.ExpectTotalCount("Lens.Overlay.PermissionBubble.Shown",
                                           /*expected_count=*/1);
       })),
+      Do(base::BindLambdaForTesting([&]() {
+        histogram_tester.ExpectTotalCount(
+            "Lens.Overlay.PermissionBubble.ByInvocationSource.AppMenu.Shown",
+            /*expected_count=*/1);
+      })),
       FlushEvents(), PressButton(kLensPermissionDialogCancelButtonElementId),
       CheckCancelButtonResults());
 }
@@ -105,6 +124,11 @@ IN_PROC_BROWSER_TEST_F(LensPermissionBubbleInteractiveUiTest,
       RequestPermission(), Do(base::BindLambdaForTesting([&]() {
         histogram_tester.ExpectTotalCount("Lens.Overlay.PermissionBubble.Shown",
                                           /*expected_count=*/1);
+      })),
+      Do(base::BindLambdaForTesting([&]() {
+        histogram_tester.ExpectTotalCount(
+            "Lens.Overlay.PermissionBubble.ByInvocationSource.AppMenu.Shown",
+            /*expected_count=*/1);
       })),
       FlushEvents(), PressButton(kLensPermissionDialogOkButtonElementId),
       CheckContinueButtonResults());
@@ -121,6 +145,11 @@ IN_PROC_BROWSER_TEST_F(LensPermissionBubbleInteractiveUiTest,
       RequestPermission(), Do(base::BindLambdaForTesting([&]() {
         histogram_tester.ExpectTotalCount("Lens.Overlay.PermissionBubble.Shown",
                                           /*expected_count=*/2);
+      })),
+      Do(base::BindLambdaForTesting([&]() {
+        histogram_tester.ExpectTotalCount(
+            "Lens.Overlay.PermissionBubble.ByInvocationSource.AppMenu.Shown",
+            /*expected_count=*/2);
       })));
 }
 }  // namespace lens

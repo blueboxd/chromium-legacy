@@ -12,15 +12,16 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "components/optimization_guide/core/model_execution/model_execution_features.h"
+#include "components/optimization_guide/core/model_execution/model_execution_prefs.h"
 #include "components/optimization_guide/core/model_execution/on_device_model_access_controller.h"
 #include "components/optimization_guide/core/model_execution/on_device_model_service_controller.h"
-#include "components/optimization_guide/core/model_execution/on_device_model_test_utils.h"
-#include "components/optimization_guide/core/model_execution/test_on_device_model_component.h"
+#include "components/optimization_guide/core/model_execution/test/fake_on_device_model_service_controller.h"
+#include "components/optimization_guide/core/model_execution/test/test_on_device_model_component_state_manager.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/optimization_guide/core/optimization_guide_logger.h"
-#include "components/optimization_guide/core/optimization_guide_prefs.h"
 #include "components/prefs/testing_pref_service.h"
 #include "services/on_device_model/public/cpp/model_assets.h"
+#include "services/on_device_model/public/cpp/test_support/fake_service.h"
 #include "services/on_device_model/public/cpp/test_support/test_response_holder.h"
 #include "services/on_device_model/public/mojom/on_device_model.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -46,14 +47,15 @@ class OnDeviceModelServiceAdaptationControllerTest : public testing::Test {
          {features::internal::kModelAdaptationCompose, {{}}}},
         {});
 
-    prefs::RegisterLocalStatePrefs(pref_service_.registry());
+    model_execution::prefs::RegisterLocalStatePrefs(pref_service_.registry());
 
     // Fake the requirements to install the model.
     pref_service_.SetInteger(
-        prefs::localstate::kOnDevicePerformanceClass,
+        model_execution::prefs::localstate::kOnDevicePerformanceClass,
         base::to_underlying(OnDeviceModelPerformanceClass::kLow));
     pref_service_.SetTime(
-        prefs::localstate::kLastTimeOnDeviceEligibleFeatureWasUsed,
+        model_execution::prefs::GetOnDeviceFeatureRecentlyUsedPref(
+            ModelBasedCapabilityKey::kCompose),
         base::Time::Now());
   }
 
@@ -99,7 +101,7 @@ class OnDeviceModelServiceAdaptationControllerTest : public testing::Test {
  protected:
   base::test::TaskEnvironment task_environment_;
   TestingPrefServiceSimple pref_service_;
-  FakeOnDeviceServiceSettings fake_settings_;
+  on_device_model::FakeOnDeviceServiceSettings fake_settings_;
   // Owned by FakeOnDeviceModelServiceController.
   raw_ptr<OnDeviceModelAccessController> access_controller_ = nullptr;
   TestOnDeviceModelComponentStateManager on_device_component_state_manager_{

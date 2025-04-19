@@ -12,14 +12,21 @@
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/browser/ui/suggestion_type.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/dense_set.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/compose/core/browser/compose_features.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+
+#if !BUILDFLAG(IS_ANDROID)
+// UserEducationService is not implemented on Android.
+#include "chrome/browser/user_education/user_education_service.h"
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 namespace autofill {
 
@@ -34,11 +41,12 @@ bool IsAcceptableSuggestionType(SuggestionType id) {
 bool IsFooterSuggestionType(SuggestionType type) {
   switch (type) {
     case SuggestionType::kAllSavedPasswordsEntry:
-    case SuggestionType::kAutofillOptions:
-    case SuggestionType::kClearForm:
+    case SuggestionType::kManageAddress:
+    case SuggestionType::kManageCreditCard:
+    case SuggestionType::kManageIban:
+    case SuggestionType::kManagePlusAddress:
     case SuggestionType::kDeleteAddressProfile:
     case SuggestionType::kEditAddressProfile:
-    case SuggestionType::kFillEverythingFromAddressProfile:
     case SuggestionType::kPasswordAccountStorageEmpty:
     case SuggestionType::kPasswordAccountStorageOptIn:
     case SuggestionType::kPasswordAccountStorageOptInAndGenerate:
@@ -46,8 +54,13 @@ bool IsFooterSuggestionType(SuggestionType type) {
     case SuggestionType::kScanCreditCard:
     case SuggestionType::kSeePromoCodeDetails:
     case SuggestionType::kShowAccountCards:
+    case SuggestionType::kUndoOrClear:
     case SuggestionType::kViewPasswordDetails:
       return true;
+    case SuggestionType::kFillEverythingFromAddressProfile:
+      return features::
+          kAutofillGranularFillingAvailableWithFillEverythingAtTheBottomParam
+              .Get();
     case SuggestionType::kAccountStoragePasswordEntry:
     case SuggestionType::kAddressEntry:
     case SuggestionType::kAddressFieldByFieldFilling:
@@ -62,6 +75,7 @@ bool IsFooterSuggestionType(SuggestionType type) {
     case SuggestionType::kCreditCardEntry:
     case SuggestionType::kCreditCardFieldByFieldFilling:
     case SuggestionType::kDatalistEntry:
+    case SuggestionType::kDevtoolsTestAddressByCountry:
     case SuggestionType::kDevtoolsTestAddressEntry:
     case SuggestionType::kDevtoolsTestAddresses:
     case SuggestionType::kFillExistingPlusAddress:
@@ -138,23 +152,45 @@ bool IsPointerLocked(content::WebContents* web_contents) {
          (rwhv = rfh->GetView()) && rwhv->IsPointerLocked();
 }
 
-void NotifyIphAboutAcceptedSuggestion(content::BrowserContext* browser_context,
-                                      const Suggestion& suggestion) {
-  if (suggestion.type == SuggestionType::kVirtualCreditCardEntry) {
-    feature_engagement::TrackerFactory::GetForBrowserContext(browser_context)
-        ->NotifyEvent(suggestion.feature_for_iph ==
-                              &feature_engagement::
-                                  kIPHAutofillVirtualCardCVCSuggestionFeature
-                          ? "autofill_virtual_card_cvc_suggestion_accepted"
-                          : "autofill_virtual_card_suggestion_accepted");
+void NotifyUserEducationAboutAcceptedSuggestion(
+    content::BrowserContext* browser_context,
+    const Suggestion& suggestion) {
+  if (suggestion.feature_for_iph) {
+    using IphEventPair = std::pair<const base::Feature*, const char*>;
+    static const auto kIphFeatures = std::to_array<IphEventPair>(
+        {IphEventPair{&feature_engagement::kIPHAutofillCreditCardBenefitFeature,
+                      "autofill_credit_card_benefit_iph_accepted"},
+         IphEventPair{&feature_engagement::
+                          kIPHAutofillExternalAccountProfileSuggestionFeature,
+                      "autofill_external_account_profile_suggestion_accepted"},
+         IphEventPair{
+             &feature_engagement::kIPHAutofillVirtualCardSuggestionFeature,
+             "autofill_virtual_card_suggestion_accepted"},
+         IphEventPair{
+             &feature_engagement::kIPHAutofillVirtualCardCVCSuggestionFeature,
+             "autofill_virtual_card_cvc_suggestion_accepted"}});
+    if (auto it = base::ranges::find(kIphFeatures, suggestion.feature_for_iph,
+                                     &IphEventPair::first);
+        it != kIphFeatures.end()) {
+      feature_engagement::TrackerFactory::GetForBrowserContext(browser_context)
+          ->NotifyEvent(it->second);
+    } else {
+#if !BUILDFLAG(IS_ANDROID)
+      // Otherwise, notify the new API for the user education service.
+      UserEducationService::MaybeNotifyPromoFeatureUsed(
+          browser_context, *suggestion.feature_for_iph);
+#endif
+    }
   }
 
-  if (suggestion.feature_for_iph ==
-      &feature_engagement::
-          kIPHAutofillExternalAccountProfileSuggestionFeature) {
-    feature_engagement::TrackerFactory::GetForBrowserContext(browser_context)
-        ->NotifyEvent("autofill_external_account_profile_suggestion_accepted");
+#if !BUILDFLAG(IS_ANDROID)
+  // Notifications for the new badge system.
+  if (suggestion.feature_for_new_badge &&
+      suggestion.feature_for_new_badge != suggestion.feature_for_iph) {
+    UserEducationService::MaybeNotifyPromoFeatureUsed(
+        browser_context, *suggestion.feature_for_new_badge);
   }
+#endif  // !BUILDFLAG(IS_ANDROID)
 }
 
 std::vector<Suggestion> UpdateSuggestionsFromDataList(
@@ -188,7 +224,7 @@ std::vector<Suggestion> UpdateSuggestionsFromDataList(
   for (size_t i = 0; i < options.size(); i++) {
     suggestions[i].main_text =
         Suggestion::Text(options[i].value, Suggestion::Text::IsPrimary(true));
-    suggestions[i].labels = {{Suggestion::Text(options[i].content)}};
+    suggestions[i].labels = {{Suggestion::Text(options[i].text)}};
     suggestions[i].type = SuggestionType::kDatalistEntry;
   }
   return suggestions;

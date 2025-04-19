@@ -9,7 +9,7 @@
  * both enabled and disabled.
  */
 
-import {OsSettingsRoutes, Router, routes, SearchAndAssistantSettingsCardElement, settingMojom, SettingsToggleButtonElement} from 'chrome://os-settings/os_settings.js';
+import {IronCollapseElement, OsSettingsRoutes, Router, routes, SearchAndAssistantSettingsCardElement, settingMojom, SettingsToggleButtonElement} from 'chrome://os-settings/os_settings.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {getDeepActiveElement} from 'chrome://resources/js/util.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -140,6 +140,129 @@ suite('<search-and-assistant-settings-card>', () => {
           deepLinkElement,
           searchAndAssistantSettingsCard.shadowRoot!.activeElement,
           `Element should be focused for settingId=${setting}.'`);
+    });
+  });
+
+  suite('Magic Boost setting toggle', () => {
+    test('should appear if is isMagicBoostFeatureEnabled flag is true', () => {
+      loadTimeData.overrideValues({
+        isMagicBoostFeatureEnabled: true,
+      });
+      createSearchAndAssistantCard();
+      assertTrue(
+          isVisible(searchAndAssistantSettingsCard.shadowRoot!.querySelector(
+              '#magicBoostToggle')));
+    });
+
+    test(
+        'should be hidden if isMagicBoostFeatureEnabled flag is false.', () => {
+          loadTimeData.overrideValues({
+            isMagicBoostFeatureEnabled: false,
+          });
+          createSearchAndAssistantCard();
+          assertNull(searchAndAssistantSettingsCard.shadowRoot!.querySelector(
+              '#magicBoostToggle'));
+        });
+
+    test('reflects pref value and collapse the sub items', () => {
+      loadTimeData.overrideValues({
+        isMagicBoostFeatureEnabled: true,
+      });
+      createSearchAndAssistantCard();
+      const fakePrefs = {
+        settings: {
+          magic_boost_enabled: {
+            value: true,
+          },
+        },
+      };
+      searchAndAssistantSettingsCard.prefs = fakePrefs;
+      flush();
+
+      const magicBoostToggle =
+          searchAndAssistantSettingsCard.shadowRoot!
+              .querySelector<SettingsToggleButtonElement>('#magicBoostToggle');
+
+      assertTrue(!!magicBoostToggle);
+      assertTrue(magicBoostToggle.checked);
+      assertTrue(searchAndAssistantSettingsCard.get(
+          'prefs.settings.magic_boost_enabled.value'));
+
+      const magicBoostCollapse =
+          searchAndAssistantSettingsCard.shadowRoot!
+              .querySelector<IronCollapseElement>('#magicBoostCollapse');
+      assertTrue(!!magicBoostCollapse);
+      assertTrue(magicBoostCollapse.opened);
+
+      // Click the toggle change the value of the pref, and fold the collapse.
+      magicBoostToggle.click();
+      assertFalse(magicBoostToggle.checked);
+      assertFalse(searchAndAssistantSettingsCard.get(
+          'prefs.settings.magic_boost_enabled.value'));
+      assertFalse(magicBoostCollapse.opened);
+    });
+
+    test('Magic Boost toggle is deep-linkable', async () => {
+      loadTimeData.overrideValues({
+        isMagicBoostFeatureEnabled: true,
+      });
+      createSearchAndAssistantCard();
+
+      const setting = settingMojom.Setting.kMagicBoostOnOff;
+      const params = new URLSearchParams();
+      params.append('settingId', setting.toString());
+      Router.getInstance().navigateTo(defaultRoute, params);
+
+      const deepLinkElement =
+          searchAndAssistantSettingsCard.shadowRoot!.querySelector<HTMLElement>(
+              '#magicBoostToggle');
+      assertTrue(!!deepLinkElement);
+
+      await waitAfterNextRender(deepLinkElement);
+      assertEquals(
+          deepLinkElement,
+          searchAndAssistantSettingsCard.shadowRoot!.activeElement,
+          `Element should be focused for settingId=${setting}.'`);
+    });
+
+    test('sub items are deep-linkable', async () => {
+      // Set `isMahiEnabled` false to hide the to-be-obsolete Mahi toggle that
+      // uses the same deeplink as the HelpMeRead toggle under Magic boost.
+      loadTimeData.overrideValues({
+        isMahiEnabled: false,
+        isMagicBoostFeatureEnabled: true,
+      });
+      createSearchAndAssistantCard();
+      const fakePrefs = {
+        settings: {
+          magic_boost_enabled: {
+            value: true,
+          },
+        },
+      };
+      searchAndAssistantSettingsCard.prefs = fakePrefs;
+      flush();
+
+      const subItems = new Map<settingMojom.Setting, string>([
+        [settingMojom.Setting.kMahiOnOff, '#helpMeReadToggle'],
+        [settingMojom.Setting.kShowOrca, '#helpMeWriteToggle'],
+      ]);
+
+      for (const [setting, element] of subItems) {
+        const params = new URLSearchParams();
+        params.append('settingId', setting.toString());
+        Router.getInstance().navigateTo(defaultRoute, params);
+
+        const deepLinkElement = searchAndAssistantSettingsCard.shadowRoot!
+                                    .querySelector<HTMLElement>(element);
+        assertTrue(!!deepLinkElement);
+
+        await waitAfterNextRender(deepLinkElement);
+        assertEquals(
+            deepLinkElement,
+            searchAndAssistantSettingsCard.shadowRoot!.activeElement,
+            `Element should be focused for settingId=${setting}.'`);
+      }
     });
   });
 

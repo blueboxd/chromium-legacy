@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "gpu/command_buffer/client/webgpu_implementation.h"
 
 #include <dawn/wire/client/webgpu.h>
@@ -409,7 +414,8 @@ void WebGPUImplementation::AssociateMailbox(
     GLuint device_generation,
     GLuint texture_id,
     GLuint texture_generation,
-    GLuint usage,
+    uint64_t usage,
+    uint64_t internal_usage,
     const WGPUTextureFormat* view_formats,
     GLuint view_format_count,
     MailboxFlags flags,
@@ -439,7 +445,7 @@ void WebGPUImplementation::AssociateMailbox(
 
   helper_->AssociateMailboxImmediate(
       device_id, device_generation, texture_id, texture_generation, usage,
-      flags, view_format_count, num_entries,
+      internal_usage, flags, view_format_count, num_entries,
       reinterpret_cast<GLuint*>(immediate_data.data()));
 #endif
 }

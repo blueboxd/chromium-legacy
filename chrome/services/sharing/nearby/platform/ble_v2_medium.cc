@@ -1,6 +1,11 @@
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
 #include "chrome/services/sharing/nearby/platform/ble_v2_medium.h"
 
 #include "base/containers/flat_set.h"
@@ -98,6 +103,14 @@ std::string_view ConnectResultToString(bluetooth::mojom::ConnectResult result) {
       return "Invalid Args";
     case bluetooth::mojom::ConnectResult::NON_AUTH_TIMEOUT:
       return "Non Auth Timeout";
+    case bluetooth::mojom::ConnectResult::NO_MEMORY:
+      return "No Memory";
+    case bluetooth::mojom::ConnectResult::JNI_ENVIRONMENT:
+      return "JNI Environment";
+    case bluetooth::mojom::ConnectResult::JNI_THREAD_ATTACH:
+      return "JNI Thread Attach";
+    case bluetooth::mojom::ConnectResult::WAKELOCK:
+      return "Wakelock";
   }
 
   NOTREACHED_NORETURN();
@@ -159,6 +172,13 @@ bool BleV2Medium::StartAdvertising(
           << __func__
           << ": failed register GATT Services before starting advertising; "
              "stopping advertising";
+      metrics::RecordStartAdvertisingResult(
+          /*success=*/false,
+          /*is_extended_advertisement=*/false);
+      metrics::RecordStartAdvertisingFailureReason(
+          /*reason=*/metrics::StartAdvertisingFailureReason::
+              kFailedToRegisterGattServices,
+          /*is_extended_advertisement=*/false);
       return false;
     }
   }
@@ -501,8 +521,11 @@ std::unique_ptr<api::ble_v2::GattClient> BleV2Medium::ConnectToGattServer(
 
   if (!device) {
     LOG(WARNING) << __func__ << ": could not connect to the GATT server";
+    metrics::RecordConnectToRemoteGattServerResult(/*success=*/false);
     return nullptr;
   }
+
+  metrics::RecordConnectToRemoteGattServerResult(/*success=*/true);
 
   // `tx_power_level` has no equivalent parameter in the Bluetooth Adapter
   // layer, so it is ignored.
@@ -749,12 +772,14 @@ void BleV2Medium::DoConnectToGattServer(
       connect_to_gatt_server_waitable_event);
   CHECK(adapter_.is_bound());
   adapter_->ConnectToDevice(
-      address, base::BindOnce(&BleV2Medium::OnConnectToGattServer,
-                              base::Unretained(this), device,
-                              connect_to_gatt_server_waitable_event));
+      address, base::BindOnce(
+                   &BleV2Medium::OnConnectToGattServer, base::Unretained(this),
+                   /*gatt_connection_start_time*/ base::TimeTicks::Now(),
+                   device, connect_to_gatt_server_waitable_event));
 }
 
 void BleV2Medium::OnConnectToGattServer(
+    base::TimeTicks gatt_connection_start_time,
     mojo::PendingRemote<bluetooth::mojom::Device>* out_device,
     base::WaitableEvent* connect_to_gatt_server_waitable_event,
     bluetooth::mojom::ConnectResult result,
@@ -770,6 +795,14 @@ void BleV2Medium::OnConnectToGattServer(
 
   VLOG(1) << __func__
           << ": ConnectToDevice() result = " << ConnectResultToString(result);
+
+  if (result != bluetooth::mojom::ConnectResult::SUCCESS) {
+    CHECK(!in_device);
+    metrics::RecordConnectToRemoteGattServerFailureReason(result);
+  } else {
+    metrics::RecordConnectToRemoteGattServerDuration(
+        /*duration=*/base::TimeTicks::Now() - gatt_connection_start_time);
+  }
 
   if (!connect_to_gatt_server_waitable_event->IsSignaled()) {
     connect_to_gatt_server_waitable_event->Signal();

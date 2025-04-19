@@ -14,14 +14,15 @@
 #include "base/functional/callback_forward.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "chrome/browser/ui/side_panel/side_panel_entry_id.h"
-#include "chrome/browser/ui/side_panel/side_panel_entry_key.h"
+#include "chrome/browser/ui/views/side_panel/side_panel_entry_id.h"
+#include "chrome/browser/ui/views/side_panel/side_panel_entry_key.h"
 #include "extensions/common/extension_id.h"
 #include "ui/base/class_property.h"
 #include "ui/base/models/image_model.h"
 #include "ui/views/view.h"
 
 class SidePanelEntryObserver;
+enum class SidePanelEntryHideReason;
 
 // This class represents an entry inside the side panel. These are owned by
 // a SidePanelRegistry (either a per-tab or a per-window registry).
@@ -34,8 +35,6 @@ class SidePanelEntry final : public ui::PropertyHandler {
   // must also add a relevant entry in actions.xml because a user action is
   // logged on button click.
   SidePanelEntry(Id id,
-                 std::u16string name,
-                 ui::ImageModel icon,
                  base::RepeatingCallback<std::unique_ptr<views::View>()>
                      create_content_callback,
                  base::RepeatingCallback<GURL()> open_in_new_tab_url_callback =
@@ -43,8 +42,6 @@ class SidePanelEntry final : public ui::PropertyHandler {
   // Constructor used for extensions. Extensions don't have 'Open in New Tab'
   // functionality.
   SidePanelEntry(Key key,
-                 std::u16string name,
-                 ui::ImageModel icon,
                  base::RepeatingCallback<std::unique_ptr<views::View>()>
                      create_content_callback);
   SidePanelEntry(const SidePanelEntry&) = delete;
@@ -60,15 +57,12 @@ class SidePanelEntry final : public ui::PropertyHandler {
     return content_view_ ? content_view_.get() : nullptr;
   }
 
-  void ResetIcon(ui::ImageModel icon);
-
   // Called when the entry has been shown/hidden in the side panel.
   void OnEntryShown();
+  void OnEntryWillHide(SidePanelEntryHideReason reason);
   void OnEntryHidden();
 
   const Key& key() const { return key_; }
-  const std::u16string& name() const { return name_; }
-  const ui::ImageModel& icon() const { return icon_; }
 
   void AddObserver(SidePanelEntryObserver* observer);
   void RemoveObserver(SidePanelEntryObserver* observer);
@@ -91,8 +85,6 @@ class SidePanelEntry final : public ui::PropertyHandler {
 
  private:
   const Key key_;
-  const std::u16string name_;
-  ui::ImageModel icon_;
   std::unique_ptr<views::View> content_view_;
 
   base::RepeatingCallback<std::unique_ptr<views::View>()>

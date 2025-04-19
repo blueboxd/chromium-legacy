@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "components/input/web_input_event_builders_ios.h"
 
 #import <UIKit/UIKit.h>
@@ -11,7 +16,7 @@
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event_utils.h"
 
-namespace content {
+namespace input {
 
 namespace {
 
@@ -231,4 +236,4 @@ blink::WebTouchEvent WebTouchEventBuilder::Build(
   return result;
 }
 
-}  // namespace content
+}  // namespace input

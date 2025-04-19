@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ash/accelerators/ash_accelerator_configuration.h"
 
 #include <vector>
@@ -104,7 +109,8 @@ AcceleratorModificationData ValueToAcceleratorModificationData(
 
 void SetLookupMaps(base::span<const ash::AcceleratorData> accelerators,
                    ash::ActionIdToAcceleratorsMap& id_to_accelerator,
-                   AcceleratorActionMap& accelerator_to_id) {
+                   AcceleratorActionMap& accelerator_to_id,
+                   base::flat_set<ui::Accelerator>& locked_accelerator_set) {
   for (const auto& acceleratorData : accelerators) {
     ui::Accelerator accelerator(acceleratorData.keycode,
                                 acceleratorData.modifiers);
@@ -115,6 +121,9 @@ void SetLookupMaps(base::span<const ash::AcceleratorData> accelerators,
         std::make_pair(accelerator, acceleratorData.action));
     id_to_accelerator[static_cast<uint32_t>(acceleratorData.action)].push_back(
         accelerator);
+    if (acceleratorData.accelerator_locked) {
+      locked_accelerator_set.insert(accelerator);
+    }
   }
 }
 
@@ -160,6 +169,13 @@ std::vector<ash::AcceleratorData> GetDefaultAccelerators() {
     AppendAcceleratorData(
         accelerators, base::make_span(ash::kTogglePickerAcceleratorData,
                                       ash::kTogglePickerAcceleratorDataLength));
+  }
+
+  if (ash::features::IsTilingWindowResizeEnabled()) {
+    AppendAcceleratorData(
+        accelerators,
+        base::make_span(ash::kTilingWindowResizeAcceleratorData,
+                        ash::kTilingWindowResizeAcceleratorDataLength));
   }
 
   // Debug accelerators.
@@ -246,6 +262,11 @@ bool AshAcceleratorConfiguration::IsMutable() const {
 bool AshAcceleratorConfiguration::IsDeprecated(
     const ui::Accelerator& accelerator) const {
   return deprecated_accelerators_to_id_.Find(accelerator);
+}
+
+bool AshAcceleratorConfiguration::IsAcceleratorLocked(
+    const ui::Accelerator& accelerator) const {
+  return locked_accelerator_set_.contains(accelerator);
 }
 
 const AcceleratorAction* AshAcceleratorConfiguration::FindAcceleratorAction(
@@ -408,7 +429,7 @@ void AshAcceleratorConfiguration::Initialize(
 
   // Cache these accelerators as the default.
   SetLookupMaps(accelerators, default_id_to_accelerators_cache_,
-                default_accelerators_to_id_cache_);
+                default_accelerators_to_id_cache_, locked_accelerator_set_);
 
   // TODO(jimmyxgong): Before adding the accelerators to the mappings, apply
   // pref remaps.
@@ -459,7 +480,8 @@ void AshAcceleratorConfiguration::InitializeDeprecatedAccelerators(
 
 void AshAcceleratorConfiguration::AddAccelerators(
     base::span<const AcceleratorData> accelerators) {
-  SetLookupMaps(accelerators, id_to_accelerators_, accelerator_to_id_);
+  SetLookupMaps(accelerators, id_to_accelerators_, accelerator_to_id_,
+                locked_accelerator_set_);
   UpdateAndNotifyAccelerators();
 }
 

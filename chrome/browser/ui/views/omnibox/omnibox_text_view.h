@@ -14,6 +14,7 @@
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/suggestion_answer.h"
 #include "third_party/omnibox_proto/answer_data.pb.h"
+#include "third_party/omnibox_proto/answer_type.pb.h"
 #include "third_party/omnibox_proto/rich_answer_template.pb.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/gfx/font_list.h"
@@ -40,7 +41,6 @@ class OmniboxTextView : public views::View {
   gfx::Size CalculatePreferredSize(
       const views::SizeBounds& available_size) const override;
   bool GetCanProcessEventsWithinSubtree() const override;
-  int GetHeightForWidth(int width) const override;
   void OnPaint(gfx::Canvas* canvas) override;
 
   // Applies given theme color to underlying render text. This is called Apply*
@@ -63,14 +63,12 @@ class OmniboxTextView : public views::View {
                           bool deemphasize);
   // Sets the styling for FormattedString's FormattedStringFragments.
   // |fragment_index| specifies where to start appending and styling text from.
-  void SetTextWithStyling(
-      const omnibox::FormattedString& formatted_string,
-      size_t fragment_index,
-      const omnibox::RichAnswerTemplate::AnswerType& answer_type);
+  void SetTextWithStyling(const omnibox::FormattedString& formatted_string,
+                          size_t fragment_index,
+                          const omnibox::AnswerType& answer_type);
   // Sets |render_text_| to be multiline whenever necessary.
-  void SetMultilineText(
-      const omnibox::FormattedString& formatted_string,
-      const omnibox::RichAnswerTemplate::AnswerType& answer_type);
+  void SetMultilineText(const omnibox::FormattedString& formatted_string,
+                        const omnibox::AnswerType& answer_type);
 
   // Adds the "additional" and "status" text from |line|, if any.
   void AppendExtraText(const SuggestionAnswer::ImageLine& line);
@@ -105,10 +103,13 @@ class OmniboxTextView : public views::View {
 
   // Whether to apply deemphasized font instead of primary omnibox font.
   // TODO(orinj): Use a more general ChromeTextContext for flexibility, or
-  // otherwise clean up & unify the different ways of selecting fonts & styles.
+  //   otherwise clean up & unify the different ways of selecting fonts &
+  //   styles.
+  // TODO(manukh): Confirm this is always false and remove.
   bool use_deemphasized_font_ = false;
 
   // Whether to wrap lines if the width is too narrow for the whole string.
+  // TODO(manukh): Confirm this is always false and remove.
   bool wrap_text_lines_ = false;
 
   // The primary data for this class.

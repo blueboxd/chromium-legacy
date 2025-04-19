@@ -27,7 +27,7 @@
 #include "chrome/browser/ui/views/permissions/chip/permission_dashboard_controller.h"
 #include "components/permissions/permission_prompt.h"
 #include "components/security_state/core/security_state.h"
-#include "services/device/public/cpp/geolocation/geolocation_system_permission_manager.h"
+#include "services/device/public/cpp/geolocation/buildflags.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/gfx/animation/slide_animation.h"
@@ -41,6 +41,10 @@
 #if BUILDFLAG(IS_MAC)
 #include "components/webapps/common/web_app_id.h"
 #endif
+
+#if BUILDFLAG(OS_LEVEL_GEOLOCATION_PERMISSION_SUPPORTED)
+#include "services/device/public/cpp/geolocation/geolocation_system_permission_manager.h"
+#endif  // BUILDFLAG(OS_LEVEL_GEOLOCATION_PERMISSION_SUPPORTED)
 
 class CommandUpdater;
 class ContentSettingBubbleModelDelegate;
@@ -67,19 +71,23 @@ class Label;
 //   The LocationBarView class is a View subclass that paints the background
 //   of the URL bar strip and contains its content.
 //
+//   This class can be used outside the context of a normal browser window. See
+//   PresentationReceiverWindowView and https://crbug.com/41351409 for details.
+//
 /////////////////////////////////////////////////////////////////////////////
 class LocationBarView
     : public LocationBar,
       public LocationBarTesting,
       public views::View,
+      public views::FocusChangeListener,
       public views::DragController,
       public views::AnimationDelegateViews,
       public IconLabelBubbleView::Delegate,
       public LocationIconView::Delegate,
       public ContentSettingImageView::Delegate,
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(OS_LEVEL_GEOLOCATION_PERMISSION_SUPPORTED)
       public device::GeolocationSystemPermissionManager::PermissionObserver,
-#endif
+#endif  // BUILDFLAG(OS_LEVEL_GEOLOCATION_PERMISSION_SUPPORTED)
       public PageActionIconView::Delegate {
   METADATA_HEADER(LocationBarView, views::View)
 
@@ -164,6 +172,10 @@ class LocationBarView
 
   OmniboxViewViews* omnibox_view() { return omnibox_view_; }
 
+  // Returns true if the location bar's current security state does not match
+  // the currently visible state.
+  bool HasSecurityStateChanged();
+
   // Updates the controller, and, if |contents| is non-null, restores saved
   // state that the tab holds.
   void Update(content::WebContents* contents);
@@ -194,14 +206,19 @@ class LocationBarView
   content::WebContents* GetWebContents() override;
 
   // views::View:
+  void AddedToWidget() override;
+  void RemovedFromWidget() override;
   bool HasFocus() const override;
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   gfx::Size GetMinimumSize() const override;
   gfx::Size CalculatePreferredSize(
       const views::SizeBounds& available_size) const override;
   void Layout(PassKey) override;
   void OnThemeChanged() override;
   void ChildPreferredSizeChanged(views::View* child) override;
+
+  // views::FocusChangeListener:
+  void OnWillChangeFocus(views::View* before, views::View* now) override;
+  void OnDidChangeFocus(views::View* before, views::View* now) override;
 
   // IconLabelBubbleView::Delegate:
   SkColor GetIconLabelBubbleSurroundingForegroundColor() const override;
@@ -214,11 +231,11 @@ class LocationBarView
   ContentSettingBubbleModelDelegate* GetContentSettingBubbleModelDelegate()
       override;
 
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(OS_LEVEL_GEOLOCATION_PERMISSION_SUPPORTED)
   // GeolocationSystemPermissionManager::PermissionObserver:
   void OnSystemPermissionUpdated(
       device::LocationSystemPermissionStatus new_status) override;
-#endif
+#endif  // BUILDFLAG(OS_LEVEL_GEOLOCATION_PERMISSION_SUPPORTED)
 
   static bool IsVirtualKeyboardVisible(views::Widget* widget);
 
@@ -318,7 +335,6 @@ class LocationBarView
   void FocusSearch() override;
   void UpdateContentSettingsIcons() override;
   void SaveStateToContents(content::WebContents* contents) override;
-  const OmniboxView* GetOmniboxView() const override;
   LocationBarTesting* GetLocationBarForTesting() override;
   void OnChanged() override;
   void OnPopupVisibilityChanged() override;
@@ -356,6 +372,7 @@ class LocationBarView
   // PageActionIconView::Delegate:
   content::WebContents* GetWebContentsForPageActionIconView() override;
   bool ShouldHidePageActionIcons() const override;
+  bool ShouldHidePageActionIcon(PageActionIconView* icon_view) const override;
 
   // views::AnimationDelegateViews:
   void AnimationProgressed(const gfx::Animation* animation) override;
@@ -394,17 +411,19 @@ class LocationBarView
   // Called when app shims change.
   void OnAppShimChanged(const webapps::AppId& app_id);
 
+  // Manage a subscription to AppShimRegistry; used to monitor for changes
+  // to system level notification permissions.
+  base::CallbackListSubscription app_shim_observation_;
+#endif
+
+#if BUILDFLAG(OS_LEVEL_GEOLOCATION_PERMISSION_SUPPORTED)
   // Manage a subscription to GeolocationSystemPermissionManager, which may
   // outlive this object.
   base::ScopedObservation<
       device::GeolocationSystemPermissionManager,
       device::GeolocationSystemPermissionManager::PermissionObserver>
       geolocation_permission_observation_{this};
-
-  // Manage a subscription to AppShimRegistry; used to monitor for changes
-  // to system level notification permissions.
-  base::CallbackListSubscription app_shim_observation_;
-#endif
+#endif  // BUILDFLAG(OS_LEVEL_GEOLOCATION_PERMISSION_SUPPORTED)
 
   // The Browser this LocationBarView is in.  Note that at least
   // ash::SimpleWebViewDialog uses a LocationBarView outside any browser
@@ -480,6 +499,10 @@ class LocationBarView
 
   // Used for metrics collection.
   base::TimeTicks confirmation_chip_collapsed_time_ = base::TimeTicks();
+
+  // The focus manager associated with this view. The focus manager is expected
+  // to outlive this view.
+  raw_ptr<views::FocusManager> focus_manager_ = nullptr;
 
   base::CallbackListSubscription subscription_ =
       ui::TouchUiController::Get()->RegisterCallback(

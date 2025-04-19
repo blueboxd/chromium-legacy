@@ -15,6 +15,7 @@
 #import "components/autofill/core/browser/browser_autofill_manager.h"
 #import "components/autofill/core/browser/form_structure.h"
 #import "components/autofill/core/browser/payments/legal_message_line.h"
+#import "components/autofill/core/browser/payments/payments_autofill_client.h"
 #import "components/autofill/core/browser/ui/suggestion_type.h"
 #import "components/autofill/ios/browser/autofill_agent.h"
 #import "components/autofill/ios/browser/autofill_driver_ios.h"
@@ -337,9 +338,9 @@ using UserDecision = autofill::AutofillClient::AddressPromptUserDecision;
     confirmSaveCreditCardToCloud:(const autofill::CreditCard&)creditCard
                legalMessageLines:(autofill::LegalMessageLines)legalMessageLines
            saveCreditCardOptions:
-               (autofill::AutofillClient::SaveCreditCardOptions)
-                   saveCreditCardOptions
-                        callback:(autofill::AutofillClient::
+               (autofill::payments::PaymentsAutofillClient::
+                    SaveCreditCardOptions)saveCreditCardOptions
+                        callback:(autofill::payments::PaymentsAutofillClient::
                                       UploadSaveCardPromptCallback)callback {
   if (![_delegate respondsToSelector:@selector(autofillController:
                                           saveCreditCardWithSaver:)]) {
@@ -382,7 +383,7 @@ using UserDecision = autofill::AutofillClient::AddressPromptUserDecision;
 }
 
 - (void)didReceiveUnmaskVerificationResult:
-    (autofill::AutofillClient::PaymentsRpcResult)result {
+    (autofill::payments::PaymentsAutofillClient::PaymentsRpcResult)result {
   [_verifier didReceiveUnmaskVerificationResult:result];
 }
 
@@ -706,6 +707,7 @@ using UserDecision = autofill::AutofillClient::AddressPromptUserDecision;
 
 - (void)sharedPasswordController:(SharedPasswordController*)controller
     showGeneratedPotentialPassword:(NSString*)generatedPotentialPassword
+                         proactive:(BOOL)proactive
                    decisionHandler:(void (^)(BOOL accept))decisionHandler {
   if ([self.delegate
           respondsToSelector:@selector(autofillController:
@@ -722,6 +724,13 @@ using UserDecision = autofill::AutofillClient::AddressPromptUserDecision;
 - (void)attachListenersForBottomSheet:
             (const std::vector<autofill::FieldRendererId>&)rendererIds
                            forFrameId:(const std::string&)frameId {
+  // No op.
+}
+
+- (void)attachListenersForPasswordGenerationBottomSheet:
+            (const std::vector<autofill::FieldRendererId>&)rendererIds
+                                             forFrameId:
+                                                 (const std::string&)frameId {
   // No op.
 }
 

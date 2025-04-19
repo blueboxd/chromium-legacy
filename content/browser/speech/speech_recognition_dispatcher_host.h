@@ -50,6 +50,10 @@ class SpeechRecognitionDispatcherHost : public media::mojom::SpeechRecognizer {
   // media::mojom::SpeechRecognizer implementation
   void Start(
       media::mojom::StartSpeechRecognitionRequestParamsPtr params) override;
+  void OnDeviceWebSpeechAvailable(
+      const std::string& language,
+      SpeechRecognitionDispatcherHost::OnDeviceWebSpeechAvailableCallback
+          callback) override;
 
  private:
   static void StartRequestOnUI(
@@ -63,7 +67,6 @@ class SpeechRecognitionDispatcherHost : public media::mojom::SpeechRecognizer {
       int embedder_render_process_id,
       int embedder_render_frame_id,
       const url::Origin& origin,
-      bool filter_profanities,
       std::unique_ptr<network::PendingSharedURLLoaderFactory>
           pending_shared_url_loader_factory,
       const std::string& accept_language);

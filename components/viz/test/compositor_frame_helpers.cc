@@ -107,6 +107,12 @@ RenderPassBuilder& RenderPassBuilder::AddBackdropFilter(
   return *this;
 }
 
+RenderPassBuilder& RenderPassBuilder::SetTransformToRootTarget(
+    const gfx::Transform& transform) {
+  pass_->transform_to_root_target = transform;
+  return *this;
+}
+
 RenderPassBuilder& RenderPassBuilder::AddStubCopyOutputRequest(
     base::WeakPtr<CopyOutputRequest>* request_out) {
   auto request = std::make_unique<StubCopyOutputRequest>();
@@ -282,6 +288,12 @@ RenderPassBuilder& RenderPassBuilder::SetQuadLayerId(uint32_t layer_id) {
   return *this;
 }
 
+RenderPassBuilder& RenderPassBuilder::SetQuadOffsetTag(const OffsetTag& tag) {
+  auto* sqs = GetLastQuadSharedQuadState();
+  sqs->offset_tag = tag;
+  return *this;
+}
+
 SharedQuadState* RenderPassBuilder::AppendDefaultSharedQuadState(
     const gfx::Rect rect,
     const gfx::Rect visible_rect) {
@@ -444,10 +456,22 @@ CompositorFrameBuilder& CompositorFrameBuilder::SetSendFrameTokenToEmbedder(
   return *this;
 }
 
+CompositorFrameBuilder& CompositorFrameBuilder::SetIsHandlingInteraction(
+    bool is_handling_interaction) {
+  frame_->metadata.is_handling_interaction = is_handling_interaction;
+  return *this;
+}
+
 CompositorFrameBuilder& CompositorFrameBuilder::AddDelegatedInkMetadata(
     const gfx::DelegatedInkMetadata& metadata) {
   frame_->metadata.delegated_ink_metadata =
       std::make_unique<gfx::DelegatedInkMetadata>(metadata);
+  return *this;
+}
+
+CompositorFrameBuilder& CompositorFrameBuilder::AddOffsetTagDefinition(
+    const OffsetTagDefinition& definition) {
+  frame_->metadata.offset_tag_definitions.push_back(definition);
   return *this;
 }
 
@@ -500,6 +524,14 @@ AggregatedFrame MakeDefaultAggregatedFrame(size_t num_render_passes) {
                                           kDefaultDamageRect, gfx::Transform());
   }
   return frame;
+}
+
+CompositorFrame MakeDefaultInteractiveCompositorFrame(uint64_t source_id) {
+  return CompositorFrameBuilder()
+      .AddDefaultRenderPass()
+      .SetBeginFrameSourceId(source_id)
+      .SetIsHandlingInteraction(true)
+      .Build();
 }
 
 CompositorFrame MakeEmptyCompositorFrame() {

@@ -89,10 +89,19 @@ class CONTENT_EXPORT IndexedDBContextImpl
       const storage::BucketLocator& bucket_locator,
       mojo::PendingRemote<storage::mojom::IndexedDBClientStateChecker>
           client_state_checker_remote,
+      const base::UnguessableToken& client_token,
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) override;
   void ForceClose(storage::BucketId bucket_id,
                   storage::mojom::ForceCloseReason reason,
                   base::OnceClosure callback) override;
+  void StartMetadataRecording(storage::BucketId bucket_id,
+                              StartMetadataRecordingCallback callback) override;
+  void StopMetadataRecording(storage::BucketId bucket_id,
+                             StopMetadataRecordingCallback callback) override;
+  void GetDevToolsTokenForClient(
+      storage::BucketId bucket_id,
+      const base::UnguessableToken& client_token,
+      GetDevToolsTokenForClientCallback callback) override;
   void DownloadBucketData(storage::BucketId bucket_id,
                           DownloadBucketDataCallback callback) override;
   void GetAllBucketsDetails(GetAllBucketsDetailsCallback callback) override;
@@ -154,10 +163,8 @@ class CONTENT_EXPORT IndexedDBContextImpl
   // unit tests.
   void ForceSingleThreadForTesting() { force_single_thread_ = true; }
   const base::FilePath GetFirstPartyDataPathForTesting() const;
-  IndexedDBBucketContext* GetBucketContextForTesting(
+  base::SequenceBound<IndexedDBBucketContext>* GetBucketContextForTesting(
       const storage::BucketId& id);
-  base::SequenceBound<IndexedDBBucketContext>*
-  GetShardedBucketContextForTesting(const storage::BucketId& id);
 
  private:
   friend class IndexedDBTest;
@@ -180,6 +187,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
   void BindIndexedDBImpl(
       mojo::PendingRemote<storage::mojom::IndexedDBClientStateChecker>
           client_state_checker_remote,
+      const base::UnguessableToken& client_token,
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver,
       storage::QuotaErrorOr<storage::BucketInfo> bucket_info);
   void ForceCloseImpl(
@@ -357,16 +365,17 @@ class CONTENT_EXPORT IndexedDBContextImpl
   mojo::PendingReceiver<storage::mojom::MockFailureInjector>
       pending_failure_injector_;
 
-  // Only one of these two maps should be non-empty.
-  std::map<storage::BucketId, std::unique_ptr<IndexedDBBucketContext>>
-      bucket_contexts_;
   std::map<storage::BucketId, base::SequenceBound<IndexedDBBucketContext>>
-      bucket_contexts_sharded_;
+      bucket_contexts_;
 
   IndexedDBBucketContext::InstanceClosure for_each_bucket_context_;
 
   bool force_single_thread_ = false;
 
+  // If recording begins on a bucket ID that doesn't currently have a context,
+  // add it to a pending set and actually begin once the context is created.
+  std::set<storage::BucketId> pending_bucket_recording_;
+  std::vector<storage::mojom::IdbBucketMetadataPtr> metadata_record_buffer_;
   // When `Shutdown()` was called, or null if it's not been called. Used for
   // UMA.
   base::TimeTicks shutdown_start_time_;

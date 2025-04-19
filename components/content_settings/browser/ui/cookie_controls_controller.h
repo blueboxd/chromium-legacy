@@ -67,6 +67,9 @@ class CookieControlsController final
   // Returns whether first-party cookies are blocked.
   bool FirstPartyCookiesBlocked();
 
+  // Returns whether any ACT features should be shown.
+  bool ShowActFeatures();
+
   // Returns whether the cookie blocking setting for the current site was
   // changed by the user via user bypass.
   bool HasUserChangedCookieBlockingForSite();
@@ -159,20 +162,26 @@ class CookieControlsController final
 
   std::vector<TrackingProtectionFeature> CreateTrackingProtectionFeatureList(
       CookieControlsEnforcement enforcement,
-      bool are_3pcs_allowed);
+      bool cookies_allowed,
+      bool protections_on);
 
   CookieControlsEnforcement GetEnforcementForThirdPartyCookieBlocking(
       CookieBlocking3pcdStatus status,
       const GURL url,
       SettingInfo info,
-      bool is_allowed);
+      bool cookies_allowed);
+
+  bool ShowIpProtection() const;
+  bool ShowFingerprintingProtection() const;
 
   bool HasOriginSandboxedTopLevelDocument() const;
 
   // Updates user bypass visibility and/or highlighting.
   void UpdateUserBypass();
 
-  void OnPageReloadDetected(int recent_reloads_count);
+  void UpdateLastVisitedSitesMap();
+
+  void UpdatePageReloadStatus(int recent_reloads_count);
 
   void OnPageFinishedLoading();
 
@@ -197,8 +206,10 @@ class CookieControlsController final
                         int third_party_blocked_sites);
 
   bool ShouldHighlightUserBypass();
-  bool ShouldUserBypassIconBeVisible(bool protections_on,
-                                     bool controls_visible);
+  bool ShouldUserBypassIconBeVisible(
+      std::vector<TrackingProtectionFeature> features,
+      bool protections_on,
+      bool controls_visible);
   content::WebContents* GetWebContents() const;
 
   std::unique_ptr<TabObserver> tab_observer_;

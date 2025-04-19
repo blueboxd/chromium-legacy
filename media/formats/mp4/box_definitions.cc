@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "media/formats/mp4/box_definitions.h"
 
 #include <bitset>
@@ -29,7 +34,7 @@
 
 #include "media/formats/mp4/avc.h"
 #include "media/formats/mp4/dolby_vision.h"
-#include "media/video/h264_parser.h"  // nogncheck
+#include "media/parsers/h264_parser.h"
 
 #if BUILDFLAG(ENABLE_PLATFORM_HEVC)
 #include "media/formats/mp4/hevc.h"
@@ -1699,7 +1704,7 @@ bool IamfSpecificBox::Parse(BoxReader* reader) {
 
   BufferReader config_reader(ia_descriptors.data(), ia_descriptors.size());
 
-  while (config_reader.pos() < config_reader.buffer_size()) {
+  while (config_reader.pos() < config_reader.buffer().size()) {
     RCHECK(ReadOBU(&config_reader));
   }
 
@@ -1871,10 +1876,10 @@ bool AudioSampleEntry::Parse(BoxReader* reader) {
 #endif  // BUILDFLAG(ENABLE_PLATFORM_AC4_AUDIO)
 
 #if BUILDFLAG(ENABLE_PLATFORM_IAMF_AUDIO)
-  if (format == FOURCC_IAMF) {
-    RCHECK_MEDIA_LOGGED(iacb.Parse(reader), reader->media_log(),
+  if (format == FOURCC_IAMF ||
+      (format == FOURCC_ENCA && sinf.format.format == FOURCC_IAMF)) {
+    RCHECK_MEDIA_LOGGED(reader->ReadChild(&iacb), reader->media_log(),
                         "Failure parsing IamfSpecificBox (iacb)");
-    return true;
   }
 #endif  // BUILDFLAG(ENABLE_PLATFORM_IAMF_AUDIO)
 

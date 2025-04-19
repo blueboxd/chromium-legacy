@@ -65,8 +65,6 @@ void SoftwareOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
         ui::INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT, swap_time);
   }
 
-  stored_latency_info_.emplace(std::move(frame.latency_info));
-
   TRACE_EVENT(
       "viz,benchmark,graphics.pipeline", "Graphics.Pipeline",
       perfetto::Flow::Global(frame.data.swap_trace_id),
@@ -92,10 +90,6 @@ void SoftwareOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
   }
 }
 
-bool SoftwareOutputSurface::IsDisplayedAsOverlayPlane() const {
-  return false;
-}
-
 void SoftwareOutputSurface::SwapBuffersCallback(base::TimeTicks swap_time,
                                                 int64_t swap_trace_id,
                                                 const gfx::Size& pixel_size) {
@@ -109,9 +103,6 @@ void SoftwareOutputSurface::SwapBuffersCallback(base::TimeTicks swap_time,
         data->set_display_trace_id(swap_trace_id);
       });
 
-  latency_tracker_.OnGpuSwapBuffersCompleted(
-      std::move(stored_latency_info_.front()));
-  stored_latency_info_.pop();
   gpu::SwapBuffersCompleteParams params;
   params.swap_response.timings = {swap_time, swap_time};
   params.swap_response.result = gfx::SwapResult::SWAP_ACK;

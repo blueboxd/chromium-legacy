@@ -198,8 +198,7 @@ LayoutObject* FirstInFlowInlineDescendantForFirstLetter(LayoutObject& parent) {
       // first formatted line.
       return nullptr;
     }
-    if (RuntimeEnabledFeatures::LayoutBlockButtonEnabled() &&
-        first_inline->IsButtonOrInputButton()) {
+    if (first_inline->IsButtonOrInputButton()) {
       // Buttons do not accept the first-letter.
       return nullptr;
     }
@@ -306,7 +305,7 @@ LayoutText* FirstLetterPseudoElement::FirstLetterTextLayoutObject(
           return nullptr;
         }
       } else if (inline_child->IsAtomicInlineLevel() ||
-                 inline_child->IsButton() || inline_child->IsMenuList()) {
+                 inline_child->IsMenuList()) {
         return nullptr;
       }
       inline_child = inline_child->NextInPreOrder(stay_inside);
@@ -427,7 +426,7 @@ void FirstLetterPseudoElement::DetachLayoutTree(bool performing_reattach) {
 
 LayoutObject* FirstLetterPseudoElement::CreateLayoutObject(
     const ComputedStyle& style) {
-  if (UNLIKELY(!style.InitialLetter().IsNormal())) {
+  if (!style.InitialLetter().IsNormal()) [[unlikely]] {
     return LayoutObject::CreateBlockFlowOrListItem(this, style);
   }
 
@@ -489,7 +488,7 @@ void FirstLetterPseudoElement::AttachFirstLetterTextLayoutObjects(
                                    old_text.Impl(), length, remaining_length);
   } else {
     remaining_text = LayoutTextFragment::CreateAnonymous(
-        *this, old_text.Impl(), length, remaining_length);
+        GetDocument(), old_text.Impl(), length, remaining_length);
   }
 
   remaining_text->SetFirstLetterPseudoElement(this);
@@ -506,10 +505,10 @@ void FirstLetterPseudoElement::AttachFirstLetterTextLayoutObjects(
 
   // Construct text fragment for the first letter.
   const ComputedStyle* const letter_style = GetComputedStyle();
-  LayoutTextFragment* letter =
-      LayoutTextFragment::CreateAnonymous(*this, old_text.Impl(), 0, length);
+  LayoutTextFragment* letter = LayoutTextFragment::CreateAnonymous(
+      GetDocument(), old_text.Impl(), 0, length);
   letter->SetFirstLetterPseudoElement(this);
-  if (UNLIKELY(GetLayoutObject()->IsInitialLetterBox())) {
+  if (GetLayoutObject()->IsInitialLetterBox()) [[unlikely]] {
     const LayoutBlock& paragraph = *GetLayoutObject()->ContainingBlock();
     // TODO(crbug.com/1393280): Once we can store used font somewhere, we should
     // compute initial-letter font during layout to take proper effective style.
@@ -534,7 +533,7 @@ void FirstLetterPseudoElement::AttachFirstLetterTextLayoutObjects(
   first_letter_text->Destroy();
 }
 
-Node* FirstLetterPseudoElement::InnerNodeForHitTesting() const {
+Node* FirstLetterPseudoElement::InnerNodeForHitTesting() {
   // When we hit a first letter during hit testing, hover state and events
   // should be triggered on the parent of the real text node where the first
   // letter is taken from. The first letter may not come from a real node - for

@@ -13,11 +13,6 @@
 #include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
-#define CHECK_SKIPPED_UPDATE_ON_SCROLL() DCHECK_IS_ON()
-#if CHECK_SKIPPED_UPDATE_ON_SCROLL()
-#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-#endif
-
 namespace blink {
 
 class Element;
@@ -69,8 +64,11 @@ class CORE_EXPORT IntersectionGeometry {
 
     float zoom = 1.0f;
     // The root object's content rect in the root object's own coordinate system
+    gfx::RectF pre_margin_local_root_rect;
     gfx::RectF local_root_rect;
     gfx::Transform root_to_view_transform;
+
+    void UpdateMargin(const Vector<Length>& margin);
   };
 
   struct CachedRects {
@@ -91,25 +89,6 @@ class CORE_EXPORT IntersectionGeometry {
     bool pre_margin_target_rect_is_empty = false;
     // Invalidation flag
     bool valid = false;
-
-#if CHECK_SKIPPED_UPDATE_ON_SCROLL()
-    // These are here just for debugging crbug.com/1519303.
-    gfx::Vector2dF computed_min_scroll_delta_to_update;
-    gfx::RectF local_root_rect;
-    gfx::RectF root_rect;
-    gfx::RectF target_rect;
-    gfx::RectF intersection_rect;
-    gfx::RectF unclipped_intersection_rect;
-    gfx::Transform target_to_view_transform;
-    gfx::Transform root_to_view_transform;
-    int relationship = 0;
-    bool root_scrolls_target = false;
-    String clip_tree;
-    String transform_tree;
-    String scroll_tree;
-
-    String ToString() const;
-#endif
   };
 
   static const LayoutObject* GetTargetLayoutObject(

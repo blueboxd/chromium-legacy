@@ -41,6 +41,9 @@ AccountId GetAccountId(const Profile* profile);
 // profiles can, but kiosk and guest cannot.
 bool CanSeeWallpaperOrPersonalizationApp(const Profile* profile);
 
+// Verifies if the current language settings in English.
+bool IsSystemInEnglishLanguage();
+
 // Controls whether the profile can see and open SeaPen UI.
 bool IsEligibleForSeaPen(Profile* profile);
 
@@ -49,6 +52,10 @@ bool IsManagedSeaPenWallpaperEnabled(Profile* profile);
 
 // Controls whether SeaPen VC Background is enabled for managed profiles.
 bool IsManagedSeaPenVcBackgroundEnabled(Profile* profile);
+
+// Controls whether users are eligible for SeaPen text input. The age
+// requirements are stricter than for SeaPen.
+bool IsEligibleForSeaPenTextInput(Profile* profile);
 
 // Return a base64 encoded data url version of `encoded_jpg_data`. The result
 // can be displayed directly in a ChromeOS WebUI via img src attribute.

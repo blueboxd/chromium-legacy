@@ -2,10 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ash/system/video_conference/bubble/set_camera_background_view.h"
 
 #include "ash/public/cpp/image_util.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/camera/camera_effects_controller.h"
@@ -95,6 +101,12 @@ CameraEffectsController* GetCameraEffectsController() {
   return Shell::Get()->camera_effects_controller();
 }
 
+bool IsVcBackgroundAllowedByEnterprise() {
+  auto* controller = Shell::Get()->session_controller();
+  return std::get<1>(
+      controller->IsEligibleForSeaPen(controller->GetActiveAccountId()));
+}
+
 // Returns a gradient lottie animation defined in the resource file for the
 // `Create with AI` button.
 std::unique_ptr<lottie::Animation> GetGradientAnimation(
@@ -181,7 +193,7 @@ class RecentlyUsedImageButton : public views::ImageButton {
   // Called when decoding metadata complete.
   void SetAccessibilityLabelFromRecentSeaPenImageInfo(
       personalization_app::mojom::RecentSeaPenImageInfoPtr info) {
-    SetAccessibleRole(ax::mojom::Role::kListItem);
+    GetViewAccessibility().SetRole(ax::mojom::Role::kListItem);
     GetViewAccessibility().SetDescription(l10n_util::GetStringUTF16(
         IDS_ASH_VIDEO_CONFERENCE_BUBBLE_BACKGROUND_BLUR_IMAGE_LIST_ITEM_DESCRIPTION));
 
@@ -190,7 +202,7 @@ class RecentlyUsedImageButton : public views::ImageButton {
     if (text.empty() || !base::UTF8ToUTF16(text.c_str(), text.size(), &query)) {
       query.clear();
     }
-    SetAccessibleName(
+    GetViewAccessibility().SetName(
         query, query.empty() ? ax::mojom::NameFrom::kAttributeExplicitlyEmpty
                              : ax::mojom::NameFrom::kAttribute);
   }
@@ -326,7 +338,7 @@ class CreateImageButton : public views::Button {
                                           base::Unretained(this))),
         controller_(controller) {
     SetID(BubbleViewID::kCreateWithAiButton);
-    SetAccessibleName(
+    GetViewAccessibility().SetName(
         l10n_util::GetStringUTF16(IDS_ASH_VIDEO_CONFERENCE_CREAT_WITH_AI_NAME));
     SetLayoutManager(std::make_unique<views::FillLayout>());
     SetBackground(views::CreateThemedRoundedRectBackground(
@@ -449,7 +461,9 @@ SetCameraBackgroundView::SetCameraBackgroundView(
     VideoConferenceTrayController* controller)
     : controller_(controller) {
   SetID(BubbleViewID::kSetCameraBackgroundView);
-  SetVisible(false);
+  SetVisible(
+      GetCameraEffectsController()->GetCameraEffects()->replace_enabled &&
+      IsVcBackgroundAllowedByEnterprise());
 
   // `SetCameraBackgroundView` has 2+ children, we want to stack them
   // vertically.

@@ -46,7 +46,7 @@ suite('AppParentalControlsSubpage', () => {
   test('App list is in alphabetical order', async () => {
     const appTitle1 = 'Files';
     const appTitle2 = 'Chrome';
-    handler.addAppForTesting(createApp('file-id', appTitle1, false));
+    handler.addAppForTesting(createApp('file-id', appTitle1, true));
     handler.addAppForTesting(createApp('chrome-id', appTitle2, false));
 
     await createPage();
@@ -63,6 +63,13 @@ suite('AppParentalControlsSubpage', () => {
     const title2 = apps[1].shadowRoot!.querySelector<HTMLElement>('.app-title');
     assertTrue(!!title2);
     assertEquals(title2.innerText, appTitle1);
+
+    await flushTasks();
+
+    const blockedAppsCount =
+        page.shadowRoot!.querySelector<HTMLElement>('#blockedAppsCount');
+    assertTrue(!!blockedAppsCount);
+    assertEquals(blockedAppsCount.innerText, '1 of 2 apps blocked');
   });
 
   test('Click toggle updates app blocked state', async () => {
@@ -102,6 +109,119 @@ suite('AppParentalControlsSubpage', () => {
     assertFalse(app.isBlocked);
   });
 
+  test('Installing and uninstalling app updates app list', async () => {
+    const filesAppId = 'files-id';
+    const filesAppTitle = 'Files';
+    const app = createApp(filesAppId, filesAppTitle, false);
+    handler.addAppForTesting(app);
+
+    await createPage();
+
+    const observer = handler.getObserverRemote();
+    assertTrue(!!observer);
+
+    assertEquals(1, getApps().length);
+
+    const chromeAppId = 'chrome-id';
+    const chromeAppTitle = 'Chrome';
+    observer.onAppInstalledOrUpdated({
+      id: chromeAppId,
+      title: chromeAppTitle,
+      isBlocked: false,
+    });
+    await flushTasks();
+
+    let appsList = getApps();
+    assertEquals(2, appsList.length);
+    assertTrue(!!appsList[0]);
+    assertTrue(!!appsList[1]);
+
+    let title1 =
+        appsList[0].shadowRoot!.querySelector<HTMLElement>('.app-title');
+    assertTrue(!!title1);
+    assertEquals(title1.innerText, chromeAppTitle);
+
+    const title2 =
+        appsList[1].shadowRoot!.querySelector<HTMLElement>('.app-title');
+    assertTrue(!!title2);
+    assertEquals(title2.innerText, filesAppTitle);
+
+    observer.onAppUninstalled({
+      id: chromeAppId,
+      title: chromeAppTitle,
+      isBlocked: false,
+    });
+    await flushTasks();
+
+    appsList = getApps();
+    assertEquals(1, getApps().length);
+    assertTrue(!!appsList[0]);
+
+    title1 = appsList[0].shadowRoot!.querySelector<HTMLElement>('.app-title');
+    assertTrue(!!title1);
+    assertEquals(title1.innerText, filesAppTitle);
+  });
+
+  test('Clicking app row updates app blocked state', async () => {
+    const app = createApp('file-id', 'Files', false);
+    handler.addAppForTesting(app);
+
+    await createPage();
+
+    const apps = getApps();
+    assertEquals(1, apps.length);
+
+    const appElement = apps[0];
+    assertTrue(!!appElement);
+    appElement.click();
+
+    assertEquals(handler.getCallCount('updateApp'), 1);
+    const args1 = handler.getArgs('updateApp')[0];
+    assertEquals(2, args1.length);
+    assertEquals(app.id, args1[0]);
+    assertTrue(/*isBlocked*/ args1[1]);
+    assertTrue(app.isBlocked);
+
+    appElement.click();
+
+    assertEquals(handler.getCallCount('updateApp'), 2);
+    const args2 = handler.getArgs('updateApp')[1];
+    assertEquals(2, args2.length);
+    assertEquals(app.id, args2[0]);
+    assertFalse(/*isBlocked*/ args2[1]);
+    assertFalse(app.isBlocked);
+  });
+
+  test('Remote app changes update toggle state', async () => {
+    const app = createApp('file-id', 'Files', false);
+    handler.addAppForTesting(app);
+
+    await createPage();
+
+    const apps = getApps();
+    assertEquals(1, apps.length);
+
+    const appElement = apps[0];
+    assertTrue(!!appElement);
+    const appToggle =
+        appElement.shadowRoot!.querySelector<CrToggleElement>('.app-toggle');
+    assertTrue(!!appToggle);
+    assertTrue(appToggle.checked);
+
+    const observer = handler.getObserverRemote();
+    assertTrue(!!observer);
+
+    // Dispatch readiness changed event with block state changed.
+    observer.onAppInstalledOrUpdated({
+      id: app.id,
+      title: app.title,
+      isBlocked: !app.isBlocked,
+    });
+    await flushTasks();
+
+    assertFalse(appToggle.checked);
+  });
+
   test(
       'Readiness events without block state changes do not update list',
       async () => {
@@ -124,10 +244,17 @@ suite('AppParentalControlsSubpage', () => {
         assertTrue(appToggle.checked);
 
         // Dispatch readiness changed event without any changes to block state.
-        observer.onReadinessChanged(app);
+        observer.onAppInstalledOrUpdated(app);
 
         assertTrue(appToggle.checked);
         assertFalse(app.isBlocked);
+
+        await flushTasks();
+
+        const blockedAppsCount =
+            page.shadowRoot!.querySelector<HTMLElement>('#blockedAppsCount');
+        assertTrue(!!blockedAppsCount);
+        assertEquals(blockedAppsCount.innerText, '0 of 1 apps blocked');
       });
 
   test('Unverified page redirects to Apps', async () => {
@@ -138,6 +265,15 @@ suite('AppParentalControlsSubpage', () => {
     await flushTasks();
 
     assertEquals(Router.getInstance().currentRoute, routes.APPS);
+  });
+
+  test('Blocked apps string is not shown when there are no apps', async () => {
+    await createPage();
+    await flushTasks();
+
+    const blockedAppsCount =
+        page.shadowRoot!.querySelector<HTMLElement>('#blockedAppsCount');
+    assertFalse(isVisible(blockedAppsCount));
   });
 });
 
@@ -237,5 +373,22 @@ suite('AppParentalControlsSubpage search', () => {
         page.shadowRoot!.querySelector<HTMLElement>('#noAppsLabel');
     assertTrue(!!emptyAppList);
     assertTrue(isVisible(emptyAppList));
+  });
+
+
+  test('Blocked apps string is not shown when search string is not empty', async () => {
+    handler.addAppForTesting(createApp('file-id', 'Files', false));
+    handler.addAppForTesting(createApp('chrome-id', 'Chrome', false));
+
+    await createPage();
+
+    assertEquals(2, getApps().length);
+
+    page.searchTerm = 'f';
+    await flushTasks();
+
+    const blockedAppsCount =
+    page.shadowRoot!.querySelector<HTMLElement>('#blockedAppsCount');
+    assertFalse(isVisible(blockedAppsCount));
   });
 });

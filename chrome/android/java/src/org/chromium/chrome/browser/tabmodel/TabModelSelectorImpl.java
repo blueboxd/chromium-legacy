@@ -126,7 +126,7 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
                         mAsyncTabParamsManager,
                         this,
                         mIsUndoSupported,
-                        /* trackInNativeModelList= */ true);
+                        /* isArchivedTabModel= */ false);
         regularTabCreator.setTabModel(normalModel, mOrderController);
 
         IncognitoTabModel incognitoModel =
@@ -158,7 +158,7 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
                     @Override
                     public void onNewTabCreated(Tab tab, @TabCreationState int creationState) {
                         // Only invalidate if the tab exists in the currently selected model.
-                        if (TabModelUtils.getTabById(getCurrentModel(), tab.getId()) != null) {
+                        if (getCurrentModel().getTabById(tab.getId()) != null) {
                             mTabContentManager.invalidateIfChanged(tab.getId(), tab.getUrl());
                         }
                     }
@@ -236,7 +236,7 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
         super.selectModel(incognito);
         TabModel newModel = getCurrentModel();
         if (oldModel != newModel) {
-            TabModelUtils.setIndex(newModel, newModel.index(), false);
+            TabModelUtils.setIndex(newModel, newModel.index());
 
             // Make the call to notifyDataSetChanged() after any delayed events
             // have had a chance to fire. Otherwise, this may result in some

@@ -9,9 +9,9 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/task/single_thread_task_runner.h"
-#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/cache_storage/cache_storage_utils.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-blink.h"
+#include "third_party/blink/public/platform/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_request_usvstring.h"
@@ -190,8 +190,8 @@ void CacheStorage::OpenImpl(const String& cache_name,
               // See https://bit.ly/2S0zRAS for task types.
               resolver->Resolve(MakeGarbageCollected<Cache>(
                   fetcher, blob_client_list, std::move(result->get_cache()),
-                  resolver->GetExecutionContext()->GetTaskRunner(
-                      blink::TaskType::kMiscPlatformAPI)));
+                  resolver->GetExecutionContext(),
+                  blink::TaskType::kMiscPlatformAPI));
             }
           },
           WrapPersistent(scoped_fetcher_.Get()),

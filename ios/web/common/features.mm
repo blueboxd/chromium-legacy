@@ -87,9 +87,13 @@ BASE_FEATURE(kRemoveOldWebStateRestoration,
              "RemoveOldWebStateRestoration",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kDetectDestroyedNavigationContexts,
+             "DetectDestroyedNavigationContexts",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 BASE_FEATURE(kEnableViewportIntents,
              "EnableViewportIntents",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kEnableNewParcelTrackingNumberDetection,
              "EnableNewParcelTrackingNumberDetection",
@@ -104,6 +108,14 @@ bool IsWebInspectorSupportEnabled() {
 
 BASE_FEATURE(kDisableRaccoon,
              "DisableRaccoon",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kUserAgentBugFixVersion,
+             "UserAgentBugFixVersion",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kLogJavaScriptErrors,
+             "LogJavaScriptErrors",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace features

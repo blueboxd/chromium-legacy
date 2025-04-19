@@ -4,6 +4,7 @@
 
 #include "content/browser/preloading/prefetch/prefetch_test_util_internal.h"
 
+#include "base/containers/span.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "content/browser/preloading/prefetch/prefetch_container.h"
@@ -82,7 +83,7 @@ void MakeServableStreamingURLLoaderForTest(
                              network::mojom::URLResponseHeadPtr response_head) {
         NOTREACHED_IN_MIGRATION();
       }),
-      base::BindOnce(&PrefetchContainer::OnReceivedHead,
+      base::BindOnce(&PrefetchContainer::OnDeterminedHead,
                      prefetch_container->GetWeakPtr()),
       weak_response_reader);
 
@@ -125,7 +126,7 @@ MakeManuallyServableStreamingURLLoaderForTest(
                              network::mojom::URLResponseHeadPtr response_head) {
         NOTREACHED_IN_MIGRATION();
       }),
-      base::BindOnce(&PrefetchContainer::OnReceivedHead,
+      base::BindOnce(&PrefetchContainer::OnDeterminedHead,
                      prefetch_container->GetWeakPtr()),
       prefetch_container->GetResponseReaderForCurrentPrefetch());
 
@@ -189,7 +190,7 @@ void MakeServableStreamingURLLoaderWithRedirectForTest(
           &on_response_complete_loop),
       CreatePrefetchRedirectCallbackForTest(&on_receive_redirect_loop,
                                             &redirect_info, &redirect_head),
-      base::BindOnce(&PrefetchContainer::OnReceivedHead,
+      base::BindOnce(&PrefetchContainer::OnDeterminedHead,
                      prefetch_container->GetWeakPtr()),
       weak_first_response_reader);
 
@@ -263,7 +264,7 @@ void MakeServableStreamingURLLoadersWithNetworkTransitionRedirectForTest(
           }),
       CreatePrefetchRedirectCallbackForTest(&on_receive_redirect_loop,
                                             &redirect_info, &redirect_head),
-      base::BindOnce(&PrefetchContainer::OnReceivedHead,
+      base::BindOnce(&PrefetchContainer::OnDeterminedHead,
                      prefetch_container->GetWeakPtr()),
       prefetch_container->GetResponseReaderForCurrentPrefetch());
 
@@ -324,7 +325,7 @@ void MakeServableStreamingURLLoadersWithNetworkTransitionRedirectForTest(
                  network::mojom::URLResponseHeadPtr response_head) {
                 NOTREACHED_IN_MIGRATION();
               }),
-          base::BindOnce(&PrefetchContainer::OnReceivedHead,
+          base::BindOnce(&PrefetchContainer::OnDeterminedHead,
                          prefetch_container->GetWeakPtr()),
           weak_second_response_reader);
 
@@ -415,10 +416,10 @@ void PrefetchTestURLLoaderClient::OnComplete(
   completion_status_ = status;
 }
 
-void PrefetchTestURLLoaderClient::OnDataAvailable(const void* data,
-                                                  size_t num_bytes) {
-  body_content_.append(std::string(static_cast<const char*>(data), num_bytes));
-  total_bytes_read_ += num_bytes;
+void PrefetchTestURLLoaderClient::OnDataAvailable(
+    base::span<const uint8_t> data) {
+  body_content_.append(base::as_string_view(data));
+  total_bytes_read_ += data.size();
 }
 
 void PrefetchTestURLLoaderClient::OnDataComplete() {

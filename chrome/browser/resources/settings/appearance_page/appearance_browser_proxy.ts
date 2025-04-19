@@ -15,8 +15,10 @@ export interface AppearanceBrowserProxy {
   /** @return Whether the current profile is a child account. */
   isChildAccount(): boolean;
 
+  openCustomizeChrome(): void;
+  openCustomizeChromeToolbarSection(): void;
   recordHoverCardImagesEnabledChanged(enabled: boolean): void;
-
+  resetPinnedToolbarActions(): void;
   useDefaultTheme(): void;
 
   // <if expr="is_linux">
@@ -25,6 +27,7 @@ export interface AppearanceBrowserProxy {
   // </if>
 
   validateStartupPage(url: string): Promise<boolean>;
+  pinnedToolbarActionsAreDefault(): Promise<boolean>;
 }
 
 export class AppearanceBrowserProxyImpl implements AppearanceBrowserProxy {
@@ -40,9 +43,21 @@ export class AppearanceBrowserProxyImpl implements AppearanceBrowserProxy {
     return loadTimeData.getBoolean('isChildAccount');
   }
 
+  openCustomizeChrome() {
+    chrome.send('openCustomizeChrome');
+  }
+
+  openCustomizeChromeToolbarSection() {
+    chrome.send('openCustomizeChromeToolbarSection');
+  }
+
   recordHoverCardImagesEnabledChanged(enabled: boolean) {
     chrome.metricsPrivate.recordBoolean(
         'Settings.HoverCards.ImagePreview.Enabled', enabled);
+  }
+
+  resetPinnedToolbarActions() {
+    chrome.send('resetPinnedToolbarActions');
   }
 
   useDefaultTheme() {
@@ -61,6 +76,10 @@ export class AppearanceBrowserProxyImpl implements AppearanceBrowserProxy {
 
   validateStartupPage(url: string) {
     return sendWithPromise('validateStartupPage', url);
+  }
+
+  pinnedToolbarActionsAreDefault() {
+    return sendWithPromise('pinnedToolbarActionsAreDefault');
   }
 
   static getInstance(): AppearanceBrowserProxy {

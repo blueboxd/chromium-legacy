@@ -7,6 +7,7 @@
 
 #include <list>
 #include <memory>
+#include <optional>
 #include <vector>
 
 #include "base/memory/raw_ptr.h"
@@ -87,6 +88,8 @@ class ManagePasswordsUIController
       bool has_generated_password,
       bool is_update) override;
   void OnHideManualFallbackForSaving() override;
+  void OnOpenPasswordDetailsBubble(
+      const password_manager::PasswordForm& form) override;
   bool OnChooseCredentials(
       std::vector<std::unique_ptr<password_manager::PasswordForm>>
           local_credentials,
@@ -119,6 +122,9 @@ class ManagePasswordsUIController
       const std::u16string& username,
       const password_manager::PasswordForm& form_to_update) override;
   void OnKeychainError() override;
+  void OnPasskeySaved(const std::u16string& username,
+                      bool gpm_pin_created) override;
+  void OnPasskeyDeleted() override;
 
   virtual void NotifyUnsyncedCredentialsWillBeDeleted(
       std::vector<password_manager::PasswordForm> unsynced_credentials);
@@ -158,11 +164,15 @@ class ManagePasswordsUIController
       const override;
   const std::vector<std::unique_ptr<password_manager::PasswordForm>>&
   GetCurrentForms() const override;
+  const std::optional<password_manager::PasswordForm>&
+  GetManagePasswordsSingleCredentialDetailsModeCredential() const override;
   const password_manager::InteractionsStats* GetCurrentInteractionStats()
       const override;
   size_t GetTotalNumberCompromisedPasswords() const override;
   bool DidAuthForAccountStoreOptInFail() const override;
   bool BubbleIsManualFallbackForSaving() const override;
+  bool GpmPinCreatedDuringRecentPasskeyCreation() const override;
+  std::u16string GetRecentlySavedPasskeyUsername() const override;
   void OnBubbleShown() override;
   void OnBubbleHidden() override;
   void OnNoInteraction() override;

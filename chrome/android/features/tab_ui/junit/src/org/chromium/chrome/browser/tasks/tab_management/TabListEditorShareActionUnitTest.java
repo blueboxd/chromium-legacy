@@ -21,7 +21,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -30,12 +29,10 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_management.TabListEditorAction.ActionDelegate;
 import org.chromium.chrome.browser.tasks.tab_management.TabListEditorAction.ActionObserver;
@@ -62,7 +59,6 @@ import java.util.Set;
 @Config(manifest = Config.NONE)
 public class TabListEditorShareActionUnitTest {
     @Rule public JniMocker mJniMocker = new JniMocker();
-    @Rule public TestRule mProcessor = new Features.JUnitProcessor();
 
     @Mock private TabGroupModelFilter mTabModelFilter;
     @Mock private SelectionDelegate<Integer> mSelectionDelegate;
@@ -113,7 +109,7 @@ public class TabListEditorShareActionUnitTest {
         doAnswer(
                         invocation -> {
                             return Collections.singletonList(
-                                    TabModelUtils.getTabById(mTabModel, invocation.getArgument(0)));
+                                    mTabModel.getTabById(invocation.getArgument(0)));
                         })
                 .when(mTabModelFilter)
                 .getRelatedTabList(anyInt());
@@ -217,7 +213,7 @@ public class TabListEditorShareActionUnitTest {
 
         Assert.assertTrue(mAction.perform());
 
-        helper.waitForFirst();
+        helper.waitForOnly();
         mAction.removeActionObserver(observer);
 
         Assert.assertTrue(mAction.perform());
@@ -281,7 +277,7 @@ public class TabListEditorShareActionUnitTest {
 
         Assert.assertTrue(mAction.perform());
 
-        helper.waitForFirst();
+        helper.waitForOnly();
         mAction.removeActionObserver(observer);
 
         Assert.assertTrue(mAction.perform());

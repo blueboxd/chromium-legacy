@@ -21,12 +21,12 @@
 #include "base/functional/callback_helpers.h"
 #include "base/notreached.h"
 #include "base/task/single_thread_task_runner.h"
+#include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_types.h"
-#include "chrome/browser/ash/app_mode/kiosk_chrome_app_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_controller.h"
 #include "chrome/browser/ash/app_mode/kiosk_launch_state.h"
 #include "chrome/browser/ash/attestation/attestation_ca_client.h"
-#include "chrome/browser/ash/language_preferences.h"
+#include "chrome/browser/ash/auth/cryptohome_pin_engine.h"
 #include "chrome/browser/ash/login/choobe_flow_controller.h"
 #include "chrome/browser/ash/login/existing_user_controller.h"
 #include "chrome/browser/ash/login/lock_screen_utils.h"
@@ -57,7 +57,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
-#include "chrome/browser/ui/ash/auth/cryptohome_pin_engine.h"
 #include "chrome/browser/ui/ash/system_tray_client_impl.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/ash/diagnostics_dialog.h"
@@ -77,6 +76,7 @@
 #include "chromeos/ash/components/attestation/attestation_flow_adaptive.h"
 #include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
 #include "chromeos/ash/components/install_attributes/install_attributes.h"
+#include "chromeos/ash/components/language_preferences/language_preferences.h"
 #include "chromeos/ash/components/login/auth/auth_performer.h"
 #include "chromeos/ash/components/osauth/public/auth_session_storage.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
@@ -385,13 +385,6 @@ void LoginDisplayHostCommon::StartKiosk(const KioskAppId& kiosk_app_id,
           : extensions::mojom::FeatureSessionType::kKiosk);
 
   KioskController::Get().StartSession(kiosk_app_id, is_auto_launch, this);
-}
-
-void LoginDisplayHostCommon::AttemptShowEnableConsumerKioskScreen() {
-  if (!ash::InstallAttributes::Get()->IsEnterpriseManaged() &&
-      KioskChromeAppManager::IsConsumerKioskEnabled()) {
-    ShowEnableConsumerKioskScreen();
-  }
 }
 
 void LoginDisplayHostCommon::CompleteLogin(const UserContext& user_context) {

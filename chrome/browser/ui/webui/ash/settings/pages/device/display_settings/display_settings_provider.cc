@@ -63,6 +63,35 @@ const std::string GetUserOverrideDefaultSettingsHistogramName(
   return histogram_name;
 }
 
+void RecordUserInitiatedDisplayAmbientLightSensorDisabledCause(
+    const power_manager::AmbientLightSensorChange_Cause& cause) {
+  using DisplayALSDisabledCause = DisplaySettingsProvider::
+      UserInitiatedDisplayAmbientLightSensorDisabledCause;
+  DisplayALSDisabledCause disabled_cause;
+
+  switch (cause) {
+    case power_manager::
+        AmbientLightSensorChange_Cause_USER_REQUEST_SETTINGS_APP:
+      disabled_cause = DisplayALSDisabledCause::kUserRequestSettingsApp;
+      break;
+    case power_manager::AmbientLightSensorChange_Cause_BRIGHTNESS_USER_REQUEST:
+      disabled_cause = DisplayALSDisabledCause::kBrightnessUserRequest;
+      break;
+    case power_manager::
+        AmbientLightSensorChange_Cause_BRIGHTNESS_USER_REQUEST_SETTINGS_APP:
+      disabled_cause =
+          DisplayALSDisabledCause::kBrightnessUserRequestSettingsApp;
+      break;
+    default:
+      return;  // Exit function if none of the specified cases match
+  }
+
+  base::UmaHistogramEnumeration(
+      base::StrCat({DisplaySettingsProvider::kDisplaySettingsHistogramName,
+                    ".Internal.UserInitiated.AmbientLightSensorDisabledCause"}),
+      disabled_cause);
+}
+
 }  // namespace
 
 DisplaySettingsProvider::DisplaySettingsProvider()
@@ -86,10 +115,8 @@ DisplaySettingsProvider::DisplaySettingsProvider()
     TabletMode::Get()->AddObserver(this);
   }
   if (Shell::HasInstance() && Shell::Get()->display_manager()) {
-    Shell::Get()->display_manager()->AddObserver(
-        static_cast<display::DisplayManagerObserver*>(this));
-    Shell::Get()->display_manager()->AddObserver(
-        static_cast<display::DisplayObserver*>(this));
+    Shell::Get()->display_manager()->AddDisplayManagerObserver(this);
+    Shell::Get()->display_manager()->AddDisplayObserver(this);
   }
   if (features::IsBrightnessControlInSettingsEnabled()) {
     chromeos::PowerManagerClient* power_manager_client =
@@ -105,10 +132,8 @@ DisplaySettingsProvider::~DisplaySettingsProvider() {
     TabletMode::Get()->RemoveObserver(this);
   }
   if (Shell::HasInstance() && Shell::Get()->display_manager()) {
-    Shell::Get()->display_manager()->RemoveObserver(
-        static_cast<display::DisplayManagerObserver*>(this));
-    Shell::Get()->display_manager()->RemoveObserver(
-        static_cast<display::DisplayObserver*>(this));
+    Shell::Get()->display_manager()->RemoveDisplayManagerObserver(this);
+    Shell::Get()->display_manager()->RemoveDisplayObserver(this);
   }
   if (features::IsBrightnessControlInSettingsEnabled()) {
     chromeos::PowerManagerClient* power_manager_client =
@@ -353,6 +378,10 @@ void DisplaySettingsProvider::AmbientLightSensorEnabledChanged(
   for (auto& observer : ambient_light_sensor_observers_) {
     observer->OnAmbientLightSensorEnabledChanged(change.sensor_enabled());
   }
+
+  if (!change.sensor_enabled()) {
+    RecordUserInitiatedDisplayAmbientLightSensorDisabledCause(change.cause());
+  }
 }
 
 void DisplaySettingsProvider::SetInternalDisplayScreenBrightness(
@@ -390,7 +419,9 @@ void DisplaySettingsProvider::SetInternalDisplayAmbientLightSensorEnabled(
     return;
   }
 
-  brightness_control_delegate_->SetAmbientLightSensorEnabled(enabled);
+  brightness_control_delegate_->SetAmbientLightSensorEnabled(
+      enabled, BrightnessControlDelegate::
+                   AmbientLightSensorEnabledChangeSource::kSettingsApp);
 
   // Record the auto-brightness toggle event.
   std::string histogram_name(base::StrCat(

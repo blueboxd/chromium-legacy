@@ -7,11 +7,9 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/sync/sync_service_factory.h"
-#include "chrome/browser/sync/sync_ui_util.h"
 #include "components/sync/service/sync_service.h"
-#include "components/sync/service/sync_service_utils.h"
-#include "components/sync/service/sync_user_settings.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/webui/web_ui_util.h"
 
@@ -22,12 +20,8 @@ TabSearchSyncHandler::~TabSearchSyncHandler() = default;
 
 void TabSearchSyncHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "GetAccountInfo",
-      base::BindRepeating(&TabSearchSyncHandler::HandleGetAccountInfo,
-                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "GetSyncInfo",
-      base::BindRepeating(&TabSearchSyncHandler::HandleGetSyncInfo,
+      "GetSignInState",
+      base::BindRepeating(&TabSearchSyncHandler::HandleGetSignInState,
                           base::Unretained(this)));
 }
 
@@ -49,66 +43,26 @@ void TabSearchSyncHandler::OnJavascriptDisallowed() {
   identity_manager_observation_.Reset();
 }
 
-base::Value::Dict TabSearchSyncHandler::GetSyncInfo() const {
-  base::Value::Dict dict;
-  bool syncing = false;
-  bool syncingHistory = false;
-  bool paused = true;
-
-  const syncer::SyncService* const sync_service = GetSyncService();
-  // sync_service might be nullptr if SyncServiceFactory::IsSyncAllowed is
-  // false.
-  if (sync_service) {
-    syncing = sync_service->IsSyncFeatureEnabled();
-    paused = !sync_service->IsSyncFeatureActive();
-    syncer::UserSelectableTypeSet types =
-        sync_service->GetUserSettings()->GetSelectedTypes();
-    syncingHistory = sync_service->IsSyncFeatureEnabled() &&
-                     types.Has(syncer::UserSelectableType::kHistory);
-  }
-
-  dict.Set("syncing", syncing);
-  dict.Set("paused", paused);
-  dict.Set("syncingHistory", syncingHistory);
-
-  return dict;
-}
-
-void TabSearchSyncHandler::HandleGetSyncInfo(const base::Value::List& args) {
-  AllowJavascript();
-
-  CHECK_EQ(1U, args.size());
-  const base::Value& callback_id = args[0];
-
-  ResolveJavascriptCallback(callback_id, GetSyncInfo());
-}
-
-base::Value::Dict TabSearchSyncHandler::GetAccountInfo() const {
+bool TabSearchSyncHandler::GetSignInState() const {
   const signin::IdentityManager* const identity_manager(
       IdentityManagerFactory::GetInstance()->GetForProfile(profile_));
   const auto stored_account = identity_manager->FindExtendedAccountInfo(
       identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin));
-
-  base::Value::Dict dict;
-  dict.Set("name", stored_account.full_name);
-  dict.Set("email", stored_account.email);
-  const auto& avatar_image = stored_account.account_image;
-  if (!avatar_image.IsEmpty()) {
-    dict.Set("avatarImage", webui::GetBitmapDataUrl(avatar_image.AsBitmap()));
-  }
-  return dict;
+  const bool has_sign_in_error =
+      SigninErrorControllerFactory::GetForProfile(profile_)->HasError();
+  return stored_account.IsValid() && !has_sign_in_error;
 }
 
-void TabSearchSyncHandler::HandleGetAccountInfo(const base::Value::List& args) {
+void TabSearchSyncHandler::HandleGetSignInState(const base::Value::List& args) {
   AllowJavascript();
   CHECK_EQ(1U, args.size());
   const base::Value& callback_id = args[0];
 
-  ResolveJavascriptCallback(callback_id, GetAccountInfo());
+  ResolveJavascriptCallback(callback_id, GetSignInState());
 }
 
 void TabSearchSyncHandler::OnStateChanged(syncer::SyncService* sync_service) {
-  FireWebUIListener("sync-info-changed", GetSyncInfo());
+  FireWebUIListener("account-info-changed", GetSignInState());
 }
 
 void TabSearchSyncHandler::OnSyncShutdown(syncer::SyncService* sync_service) {
@@ -117,12 +71,12 @@ void TabSearchSyncHandler::OnSyncShutdown(syncer::SyncService* sync_service) {
 
 void TabSearchSyncHandler::OnExtendedAccountInfoUpdated(
     const AccountInfo& info) {
-  FireWebUIListener("account-info-changed", GetAccountInfo());
+  FireWebUIListener("account-info-changed", GetSignInState());
 }
 
 void TabSearchSyncHandler::OnExtendedAccountInfoRemoved(
     const AccountInfo& info) {
-  FireWebUIListener("account-info-changed", GetAccountInfo());
+  FireWebUIListener("account-info-changed", GetSignInState());
 }
 
 syncer::SyncService* TabSearchSyncHandler::GetSyncService() const {

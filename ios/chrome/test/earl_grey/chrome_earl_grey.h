@@ -11,7 +11,7 @@
 
 #include "base/time/time.h"
 #import "components/content_settings/core/common/content_settings.h"
-#include "components/sync/base/model_type.h"
+#include "components/sync/base/data_type.h"
 #import "ios/testing/earl_grey/app_launch_configuration.h"
 #import "ios/testing/earl_grey/base_eg_test_helper_impl.h"
 #include "third_party/metrics_proto/user_demographics.pb.h"
@@ -90,6 +90,9 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 
 // Returns whether the current layout is showing the bottom omnibox.
 - (BOOL)isCurrentLayoutBottomOmnibox;
+
+// Returns whether the Enhanced Safe Browsing Infobar Promo feature is enabled.
+- (BOOL)isEnhancedSafeBrowsingInfobarEnabled;
 
 #pragma mark - History Utilities (EG2)
 
@@ -220,9 +223,6 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 // Forces every request to fail in a way that simulates a network failure.
 - (void)disconnectFakeSyncServerNetwork;
 
-// Signs in with `identity` without sync consent.
-- (void)signInWithoutSyncWithIdentity:(FakeSystemIdentity*)identity;
-
 // Injects user demographics into the fake sync server. `rawBirthYear` is the
 // true birth year, pre-noise, and the gender corresponds to the proto enum
 // UserDemographicsProto::Gender.
@@ -262,7 +262,7 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 - (void)flushFakeSyncServerToDisk;
 
 // Gets the number of entities of the given `type`.
-- (int)numberOfSyncEntitiesWithType:(syncer::ModelType)type [[nodiscard]];
+- (int)numberOfSyncEntitiesWithType:(syncer::DataType)type [[nodiscard]];
 
 // Adds typed URL into HistoryService.
 - (void)addHistoryServiceTypedURL:(const GURL&)URL;
@@ -290,7 +290,7 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
                lastUpdatedTimestamp:(base::Time)lastUpdatedTimestamp;
 
 // Triggers a sync cycle for a `type`.
-- (void)triggerSyncCycleForType:(syncer::ModelType)type;
+- (void)triggerSyncCycleForType:(syncer::DataType)type;
 
 // Deletes an autofill profile from the fake sync server with `GUID`, if it
 // exists. If it doesn't exist, nothing is done.
@@ -306,7 +306,7 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 // Waits until sync server contains `count` entities of the given `type` and
 // `name`. Folders are not included in this count.
 // If the condition is not met within a timeout a GREYAssert is induced.
-- (void)waitForSyncServerEntitiesWithType:(syncer::ModelType)type
+- (void)waitForSyncServerEntitiesWithType:(syncer::DataType)type
                                      name:(const std::string&)UTF8Name
                                     count:(size_t)count
                                   timeout:(base::TimeDelta)timeout;
@@ -531,21 +531,6 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 // Signs the user out, clears the known accounts & browsing data, and wait for
 // the completion of those steps. Induces a GREYAssert if the operation fails or
 // timeouts.
-// TODO(crbug.com/40065405): When the browser data cleaning will always have an
-// acceptable delay, this method should be merged with
-// `signOutAndClearIdentities` and the whole sign-out operation completion
-// should always be ensured before executing next steps.
-- (void)signOutAndClearIdentitiesAndWaitForCompletion;
-
-// Signs the user out, clears the known accounts entirely and checks whether the
-// accounts were correctly removed from the keychain. Induces a GREYAssert if
-// the operation fails. This will block the UI with a spinner until all
-// identities are cleared. In order to interact with the UI again call
-// `WaitForActivityOverlayToDisappear()`.
-// TODO(crbug.com/40065405): When the browser data cleaning will always have an
-// acceptable delay, this method should be merged with
-// `signOutAndClearIdentitiesAndWaitForCompletion` and the whole sign-out
-// operation completion should always be ensured before executing next steps.
 - (void)signOutAndClearIdentities;
 
 #pragma mark - Sync Utilities (EG2)
@@ -572,8 +557,12 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 - (std::string)syncCacheGUID;
 
 // Adds a bookmark with a sync passphrase. The sync server will need the sync
-// passphrase to start.
+// passphrase to start. In order to work, this need to be called before the
+// primary user is signed-in.
 - (void)addBookmarkWithSyncPassphrase:(NSString*)syncPassphrase;
+
+// Add a sync passphrase requirement to start the sync server.
+- (void)addSyncPassphrase:(NSString*)syncPassphrase;
 
 #pragma mark - WebState Utilities (EG2)
 
@@ -792,6 +781,12 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 - (void)simulatePhysicalKeyboardEvent:(NSString*)input
                                 flags:(UIKeyModifierFlags)flags;
 
+// Waits for the keyboard to appear;
+- (void)waitForKeyboardToAppear;
+
+// Waits for the keyboard to disappear;
+- (void)waitForKeyboardToDisappear;
+
 #pragma mark - Default Utilities (EG2)
 
 // Stores a value for the provided key in NSUserDefaults.
@@ -825,6 +820,10 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 - (void)setTimeValue:(base::Time)value
     forLocalStatePref:(const std::string&)prefName;
 
+// Sets the time value for the user pref in the original browser state.
+- (void)setTimeValue:(base::Time)value
+         forUserPref:(const std::string&)UTF8PrefName;
+
 // Sets the string value for the local state pref with `prefName`. `value` Local
 // State contains the preferences that are shared between all browser states.
 - (void)setStringValue:(const std::string&)value
@@ -845,8 +844,8 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 - (void)setBoolValue:(BOOL)value forUserPref:(const std::string&)UTF8PrefName;
 - (void)setIntegerValue:(int)value forUserPref:(const std::string&)UTF8PrefName;
 
-// Returns true if the Preference is currently using its default value,
-// and has not been set by any higher-priority source (even with the same
+// Returns true if the LocaState Preference is currently using its default
+// value, and has not been set by any higher-priority source (even with the same
 // value).
 - (bool)prefWithNameIsDefaultValue:(const std::string&)prefName;
 

@@ -4,6 +4,7 @@
 
 // This file contains business logic for power bookmarks side panel content.
 
+import type {BookmarkProductInfo} from '//resources/cr_components/commerce/shopping_service.mojom-webui.js';
 import {PageImageServiceBrowserProxy} from '//resources/cr_components/page_image_service/browser_proxy.js';
 import {ClientId as PageImageServiceClientId} from '//resources/cr_components/page_image_service/page_image_service.mojom-webui.js';
 import {loadTimeData} from '//resources/js/load_time_data.js';
@@ -37,7 +38,9 @@ interface PowerBookmarksDelegate {
       oldParent: chrome.bookmarks.BookmarkTreeNode,
       newParent: chrome.bookmarks.BookmarkTreeNode): void;
   onBookmarkRemoved(bookmark: chrome.bookmarks.BookmarkTreeNode): void;
-  isPriceTracked(bookmark: chrome.bookmarks.BookmarkTreeNode): boolean;
+  getTrackedProductInfos(): {[key: string]: BookmarkProductInfo};
+  getAvailableProductInfos(): Map<string, BookmarkProductInfo>;
+  getSelectedBookmarks(): {[key: string]: boolean};
   getProductImageUrl(bookmark: chrome.bookmarks.BookmarkTreeNode): string;
 }
 
@@ -355,6 +358,27 @@ export class PowerBookmarksService {
     this.maxImageServiceRequests_ = max;
   }
 
+  getPriceTrackedInfo(bookmark: chrome.bookmarks.BookmarkTreeNode):
+      BookmarkProductInfo|undefined {
+    const trackedProductInfos = this.delegate_.getTrackedProductInfos();
+    const priceTrackValue = Object.entries(trackedProductInfos)
+                                .find(([key, _val]) => key === bookmark.id)
+                                ?.[1];
+    return priceTrackValue;
+  }
+
+  getAvailableProductInfo(bookmark: chrome.bookmarks.BookmarkTreeNode):
+      BookmarkProductInfo|undefined {
+    const availableProductInfos = this.delegate_.getAvailableProductInfos();
+    return availableProductInfos.get(bookmark.id);
+  }
+
+  bookmarkIsSelected(bookmark: chrome.bookmarks.BookmarkTreeNode): boolean {
+    const selectedBookmarks = this.delegate_.getSelectedBookmarks();
+    return Object.entries(selectedBookmarks)
+               .find(([key, _val]) => key === bookmark.id)?.[1] ?? false;
+  }
+
 
   private applySearchQueryAndLabels_(
       labels: Label[], searchQuery: string|undefined,
@@ -378,8 +402,8 @@ export class PowerBookmarksService {
   private nodeMatchesContentFilters_(
       bookmark: chrome.bookmarks.BookmarkTreeNode, labels: Label[]): boolean {
     // Price tracking label
-    if (labels[0] && labels[0]!.active &&
-        !this.delegate_.isPriceTracked(bookmark)) {
+    const isPriceTracked = !!this.getPriceTrackedInfo(bookmark);
+    if (labels[0] && labels[0]!.active && !isPriceTracked) {
       return false;
     }
     return true;
@@ -393,7 +417,17 @@ export class PowerBookmarksService {
   private onChanged_(id: string, changedInfo: chrome.bookmarks.ChangeInfo) {
     const bookmark = this.findBookmarkWithId(id)!;
     Object.assign(bookmark, changedInfo);
-    this.findBookmarkImageUrls_(bookmark, false, true);
+    // Deep copy is necessary to ensure that the original bookmark object is
+    // not directly mutated. This helps LitElement's change detection recognize
+    // the changes since the reference to the object will change.
+    const deepCopyBookmark = structuredClone(bookmark);
+    const parent = this.findBookmarkWithId(bookmark.parentId);
+    if (parent) {
+      const index =
+          parent.children!.findIndex(child => child.id === bookmark.id);
+      parent.children![index] = deepCopyBookmark;
+    }
+    this.findBookmarkImageUrls_(deepCopyBookmark, false, true);
     this.delegate_.onBookmarkChanged(id, changedInfo);
   }
 

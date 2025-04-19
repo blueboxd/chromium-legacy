@@ -42,6 +42,9 @@ class ASH_EXPORT VirtualKeyboardController
   // handwriting or voice. Works even in laptop mode.
   void ForceShowKeyboardWithKeyset(input_method::ImeKeyset keyset);
 
+  // Force enable the keyboard and show it, even in laptop mode.
+  void ForceShowKeyboard();
+
   // TabletModeObserver:
   void OnTabletModeEventsBlockingChanged() override;
 
@@ -53,7 +56,6 @@ class ASH_EXPORT VirtualKeyboardController
   void ToggleIgnoreExternalKeyboard();
 
   // KeyboardControllerObserver:
-  void OnKeyboardEnabledChanged(bool is_enabled) override;
   void OnKeyboardHidden(bool is_temporary_hide) override;
 
   // SessionObserver:
@@ -77,9 +79,6 @@ class ASH_EXPORT VirtualKeyboardController
 
   // Updates the keyboard state.
   void UpdateKeyboardEnabled();
-
-  // Force enable the keyboard and show it, even in laptop mode.
-  void ForceShowKeyboard();
 
   // Callback function of |bluetooth_devices_observer_|. Called when the
   // bluetooth adapter or |device| changes.

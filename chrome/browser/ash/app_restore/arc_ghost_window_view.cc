@@ -26,6 +26,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_throbber.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -93,7 +94,7 @@ class Throbber : public views::View {
         FROM_HERE, base::Milliseconds(30),
         base::BindRepeating(&Throbber::SchedulePaint, base::Unretained(this)));
     SchedulePaint();  // paint right away
-    SetAccessibilityProperties(
+    GetViewAccessibility().SetProperties(
         ax::mojom::Role::kProgressIndicator,
         l10n_util::GetStringUTF16(IDS_ARC_GHOST_WINDOW_APP_LAUNCHING_THROBBER));
   }
@@ -174,7 +175,7 @@ void ArcGhostWindowView::SetGhostWindowViewType(arc::GhostWindowType type) {
         color_utils::GetColorWithMaxContrast(theme_color_)));
     throbber->SetPreferredSize(gfx::Size(kThrobberDiameterOriginalStyle,
                                          kThrobberDiameterOriginalStyle));
-    throbber->SetAccessibleRole(ax::mojom::Role::kImage);
+    throbber->GetViewAccessibility().SetRole(ax::mojom::Role::kImage);
     throbber->SetID(ContentID::ID_THROBBER);
     // TODO(sstan): Set window title and accessible name from saved data.
   } else {

@@ -97,6 +97,10 @@ password_manager::PasswordStoreChangeList GetChangesForAddedForms(
   return changes;
 }
 
+bool MergeDeleteAllResultsFromPasswordStores(std::vector<bool> results) {
+  return base::ranges::all_of(results, [](bool result) { return result; });
+}
+
 }  // namespace
 
 namespace password_manager {
@@ -116,7 +120,9 @@ SavedPasswordsPresenter::SavedPasswordsPresenter(
 
 SavedPasswordsPresenter::~SavedPasswordsPresenter() = default;
 
-void SavedPasswordsPresenter::Init() {
+void SavedPasswordsPresenter::Init(base::OnceClosure completion_callback) {
+  init_completion_callback_ = std::move(completion_callback);
+
   // Clear old cache.
   sort_key_to_password_forms_.clear();
   passwords_grouper_->ClearCache();
@@ -173,6 +179,28 @@ bool SavedPasswordsPresenter::RemoveCredential(
   }
   undo_helper_->EndGroupingActions();
   return !forms_to_delete.empty();
+}
+
+void SavedPasswordsPresenter::DeleteAllData(
+    base::OnceCallback<void(bool)> success_callback) {
+  // Synchronosly remove all passkeys if they are available.
+  if (passkey_store_) {
+    passkey_store_->DeleteAllPasskeys();
+  }
+
+  const auto completion_barrier = base::BarrierCallback<bool>(
+      2 - !profile_store_ - !account_store_,
+      base::BindOnce(&MergeDeleteAllResultsFromPasswordStores)
+          .Then(std::move(success_callback)));
+
+  if (account_store_) {
+    account_store_->RemoveLoginsCreatedBetween(
+        FROM_HERE, base::Time(), base::Time::Max(), completion_barrier);
+  }
+  if (profile_store_) {
+    profile_store_->RemoveLoginsCreatedBetween(
+        FROM_HERE, base::Time(), base::Time::Max(), completion_barrier);
+  }
 }
 
 void SavedPasswordsPresenter::UndoLastRemoval() {
@@ -381,7 +409,7 @@ std::vector<CredentialUIEntry> SavedPasswordsPresenter::GetSavedPasswords()
   auto credentials = GetSavedCredentials();
   std::erase_if(credentials, [](const auto& credential) {
     return !credential.passkey_credential_id.empty() ||
-           credential.blocked_by_user || !credential.federation_origin.opaque();
+           credential.blocked_by_user || credential.federation_origin.IsValid();
   });
   return credentials;
 }
@@ -428,6 +456,10 @@ void SavedPasswordsPresenter::NotifySavedPasswordsChanged(
   }
   for (auto& observer : observers_) {
     observer.OnSavedPasswordsChanged(changes);
+  }
+
+  if (init_completion_callback_) {
+    std::move(init_completion_callback_).Run();
   }
 }
 

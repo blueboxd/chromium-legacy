@@ -51,10 +51,16 @@ std::unique_ptr<DeviceInfo> CreateDeviceInfo(
       kLocalDeviceFormFactor, "device_id", "manufacturer_name", "model_name",
       "full_hardware_class", last_updated,
       syncer::DeviceInfoUtil::GetPulseInterval(),
-      /*send_tab_to_self_receiving_enabled=*/false, std::nullopt,
+      /*send_tab_to_self_receiving_enabled=*/
+      false,
+      /*send_tab_to_self_receiving_type=*/
+      sync_pb::
+          SyncEnums_SendTabReceivingType_SEND_TAB_RECEIVING_TYPE_CHROME_OR_UNSPECIFIED,
+      std::nullopt,
       /*paask_info=*/std::nullopt,
       /*fcm_registration_token=*/std::string(),
-      /*interested_data_types=*/syncer::ModelTypeSet());
+      /*interested_data_types=*/syncer::DataTypeSet(),
+      /*floating_workspace_last_signin_timestamp=*/std::nullopt);
 }
 
 class MockFieldTrialRegister : public FieldTrialRegister {
@@ -107,7 +113,8 @@ class DeviceSwitcherResultDispatcherTest : public testing::Test {
   }
 
  protected:
-  base::test::TaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   NiceMock<MockSegmentationPlatformService> segmentation_platform_service_;
   std::unique_ptr<TestingPrefServiceSimple> prefs_;
   NiceMock<MockFieldTrialRegister> field_trial_register_;
@@ -132,9 +139,11 @@ TEST_F(DeviceSwitcherResultDispatcherTest, SegmentationFailed) {
       &field_trial_register_);
 
   base::RunLoop loop;
-  device_switcher_result_dispatcher.WaitForClassificationResult(base::BindOnce(
-      &DeviceSwitcherResultDispatcherTest::OnGetClassificationResult,
-      base::Unretained(this), loop.QuitClosure(), result));
+  device_switcher_result_dispatcher.WaitForClassificationResult(
+      base::Seconds(5),
+      base::BindOnce(
+          &DeviceSwitcherResultDispatcherTest::OnGetClassificationResult,
+          base::Unretained(this), loop.QuitClosure(), result));
   loop.Run();
 }
 
@@ -159,9 +168,11 @@ TEST_F(DeviceSwitcherResultDispatcherTest, TestWaitForClassificationResult) {
       &field_trial_register_);
 
   base::RunLoop loop;
-  device_switcher_result_dispatcher.WaitForClassificationResult(base::BindOnce(
-      &DeviceSwitcherResultDispatcherTest::OnGetClassificationResult,
-      base::Unretained(this), loop.QuitClosure(), result));
+  device_switcher_result_dispatcher.WaitForClassificationResult(
+      base::Seconds(5),
+      base::BindOnce(
+          &DeviceSwitcherResultDispatcherTest::OnGetClassificationResult,
+          base::Unretained(this), loop.QuitClosure(), result));
   loop.Run();
 }
 
@@ -196,9 +207,11 @@ TEST_F(DeviceSwitcherResultDispatcherTest, ResultRefreshedOnSyncConsent) {
   base::RunLoop().RunUntilIdle();
 
   base::RunLoop loop;
-  device_switcher_result_dispatcher.WaitForClassificationResult(base::BindOnce(
-      &DeviceSwitcherResultDispatcherTest::OnGetClassificationResult,
-      base::Unretained(this), loop.QuitClosure(), result2));
+  device_switcher_result_dispatcher.WaitForClassificationResult(
+      base::Seconds(5),
+      base::BindOnce(
+          &DeviceSwitcherResultDispatcherTest::OnGetClassificationResult,
+          base::Unretained(this), loop.QuitClosure(), result2));
   loop.Run();
 }
 
@@ -255,12 +268,42 @@ TEST_F(DeviceSwitcherResultDispatcherTest,
       &field_trial_register_);
 
   base::RunLoop loop;
-  device_switcher_result_dispatcher.WaitForClassificationResult(base::BindOnce(
-      &DeviceSwitcherResultDispatcherTest::OnGetClassificationResult,
-      base::Unretained(this), loop.QuitClosure(), result));
+  device_switcher_result_dispatcher.WaitForClassificationResult(
+      base::Seconds(5),
+      base::BindOnce(
+          &DeviceSwitcherResultDispatcherTest::OnGetClassificationResult,
+          base::Unretained(this), loop.QuitClosure(), result));
 
   MakeDeviceInfoAvailable();
   std::move(callback).Run(result);
+  loop.Run();
+}
+
+TEST_F(DeviceSwitcherResultDispatcherTest,
+       TestGetClassificationResultWaitTimeout) {
+  // Create a classification result.
+  ClassificationResult result(PredictionStatus::kNotReady);
+
+  // Save the callback to simulate a delayed result.
+  ClassificationResultCallback callback;
+  EXPECT_CALL(segmentation_platform_service_,
+              GetClassificationResult(_, _, _, _))
+      .WillRepeatedly(MoveArg<3>(&callback));
+
+  // The DeviceSwitcherResultDispatcher will wait for the result returned by the
+  // segmentation platform service.
+  DeviceSwitcherResultDispatcher device_switcher_result_dispatcher(
+      &segmentation_platform_service_, device_info_tracker_.get(), prefs_.get(),
+      &field_trial_register_);
+
+  base::RunLoop loop;
+  device_switcher_result_dispatcher.WaitForClassificationResult(
+      base::Seconds(5),
+      base::BindOnce(
+          &DeviceSwitcherResultDispatcherTest::OnGetClassificationResult,
+          base::Unretained(this), loop.QuitClosure(), result));
+
+  task_environment_.FastForwardBy(base::Seconds(5));
   loop.Run();
 }
 

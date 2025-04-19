@@ -31,13 +31,6 @@ class WebIdTestContentBrowserClient
   std::unique_ptr<IdentityRequestDialogController>
   CreateIdentityRequestDialogController(WebContents* web_contents) override;
 
-  DigitalIdentityInterstitialAbortCallback
-  ShowDigitalIdentityInterstitialIfNeeded(
-      content::WebContents& web_contents,
-      const url::Origin& origin,
-      bool is_only_requesting_age,
-      DigitalIdentityInterstitialCallback callback) override;
-
   std::unique_ptr<DigitalIdentityProvider> CreateDigitalIdentityProvider()
       override;
 

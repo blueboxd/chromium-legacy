@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 """Definitions of builders in the chromium.swangle builder group."""
 
-load("//lib/builders.star", "sheriff_rotations", "siso")
+load("//lib/builders.star", "gardener_rotations", "siso")
 load("//lib/builder_config.star", "builder_config")
 load("//lib/builder_health_indicators.star", "health_spec")
 load("//lib/ci.star", "ci")
@@ -14,7 +14,7 @@ ci.defaults.set(
     executable = "recipe:angle_chromium",
     builder_group = "chromium.swangle",
     pool = ci.gpu.POOL,
-    sheriff_rotations = sheriff_rotations.CHROMIUM_GPU,
+    gardener_rotations = gardener_rotations.CHROMIUM_GPU,
     contact_team_email = "chrome-gpu-infra@google.com",
     execution_timeout = ci.DEFAULT_EXECUTION_TIMEOUT,
     health_spec = health_spec.DEFAULT,
@@ -70,6 +70,8 @@ ci.gpu.linux_builder(
             "release_try_builder",
             "minimal_symbols",
             "remoteexec",
+            "linux",
+            "x64",
         ],
     ),
     console_view_entry = consoles.console_view_entry(
@@ -108,6 +110,8 @@ ci.gpu.linux_builder(
             "release_try_builder",
             "minimal_symbols",
             "remoteexec",
+            "linux",
+            "x64",
         ],
     ),
     # Uncomment this entry when this experimental tester is actually in use.
@@ -148,6 +152,8 @@ ci.gpu.linux_builder(
             "remoteexec",
             "minimal_symbols",
             "dcheck_always_on",
+            "linux",
+            "x64",
         ],
     ),
     console_view_entry = consoles.console_view_entry(
@@ -184,6 +190,8 @@ ci.gpu.linux_builder(
             "remoteexec",
             "minimal_symbols",
             "dcheck_always_on",
+            "linux",
+            "x64",
         ],
     ),
     console_view_entry = consoles.console_view_entry(
@@ -220,6 +228,8 @@ ci.gpu.linux_builder(
             "remoteexec",
             "minimal_symbols",
             "dcheck_always_on",
+            "linux",
+            "x64",
         ],
     ),
     # Uncomment this entry when this experimental tester is actually in use.
@@ -260,6 +270,8 @@ ci.gpu.mac_builder(
             "release_try_builder",
             "minimal_symbols",
             "remoteexec",
+            "mac",
+            "x64",
         ],
     ),
     console_view_entry = consoles.console_view_entry(
@@ -299,6 +311,7 @@ ci.gpu.windows_builder(
             "remoteexec",
             "x86",
             "resource_allowlisting",
+            "win",
         ],
     ),
     console_view_entry = consoles.console_view_entry(
@@ -337,6 +350,8 @@ ci.gpu.windows_builder(
             "remoteexec",
             "minimal_symbols",
             "dcheck_always_on",
+            "win",
+            "x64",
         ],
     ),
     console_view_entry = consoles.console_view_entry(
@@ -375,6 +390,7 @@ ci.gpu.windows_builder(
             "remoteexec",
             "minimal_symbols",
             "dcheck_always_on",
+            "win",
             "x86",
         ],
     ),
@@ -412,6 +428,8 @@ ci.gpu.windows_builder(
             "remoteexec",
             "minimal_symbols",
             "dcheck_always_on",
+            "win",
+            "x64",
         ],
     ),
     console_view_entry = consoles.console_view_entry(
@@ -448,6 +466,7 @@ ci.gpu.windows_builder(
             "remoteexec",
             "minimal_symbols",
             "dcheck_always_on",
+            "win",
             "x86",
         ],
     ),

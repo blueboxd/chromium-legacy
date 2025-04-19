@@ -44,6 +44,7 @@ android_library("java") {
     "java/src/org/chromium/components/webauthn/GetAssertionResponseCallback.java",
     "java/src/org/chromium/components/webauthn/GetMatchingCredentialIdsResponseCallback.java",
     "java/src/org/chromium/components/webauthn/GmsCoreUtils.java",
+    "java/src/org/chromium/components/webauthn/GpmBrowserOptionsHelper.java",
     "java/src/org/chromium/components/webauthn/InternalAuthenticator.java",
     "java/src/org/chromium/components/webauthn/IsUvpaaResponseCallback.java",
     "java/src/org/chromium/components/webauthn/MakeCredentialResponseCallback.java",
@@ -90,6 +91,20 @@ android_library("java") {
   ]
 
   resources_package = "org.chromium.components.webauthn"
+}
+
+static_library("test_support") {
+  testonly = true
+  sources = [
+    "mock_webauthn_cred_man_delegate.cc",
+    "mock_webauthn_cred_man_delegate.h",
+    "webauthn_cred_man_delegate_factory_test_api.h",
+  ]
+  deps = [
+    ":android",
+    "//base:base",
+    "//testing/gmock",
+  ]
 }
 
 android_library("test_support_java") {

@@ -14,6 +14,7 @@
 #include "base/functional/callback.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
+#include "chrome/browser/web_applications/proto/web_app_install_state.pb.h"
 #include "components/webapps/browser/install_result_code.h"
 #include "components/webapps/common/web_app_id.h"
 #include "url/gurl.h"
@@ -69,14 +70,11 @@ struct WebAppInstallParams {
   // App name to be used if manifest is unavailable.
   std::optional<std::u16string> fallback_app_name;
 
-  bool locally_installed = true;
+  proto::InstallState install_state =
+      proto::InstallState::INSTALLED_WITH_OS_INTEGRATION;
 
-  // If true, OsIntegrationManager::InstallOsHooks won't be called at all,
-  // meaning that all other OS Hooks related parameters will be ignored.
-  bool bypass_os_hooks = false;
-
-  // These OS shortcut fields can't be true if |locally_installed| is false.
-  // They only have an effect when |bypass_os_hooks| is false.
+  // These are required to be false if `install_state` is not
+  // proto::INSTALLED_WITH_OS_INTEGRATION.
   bool add_to_applications_menu = true;
   bool add_to_desktop = true;
   bool add_to_quick_launch_bar = true;
@@ -91,6 +89,9 @@ struct WebAppInstallParams {
 
   // Used only by ExternallyManagedInstallCommand.
   // Has the same meaning as WebAppInstallFlow::kCreateShortcut
+  // TODO(crbug.com/339718933): This is a deprecated feature. To install a site
+  // as an app, install it as a 'diy' app instead, or use
+  // shortcuts::CreateShortcutForWebContents().
   bool install_as_shortcut = false;
 
   std::vector<std::string> additional_search_terms;
@@ -118,6 +119,9 @@ enum class WebAppInstallFlow {
   // to this enum.
   kUnknown,
   // The 'Create Shortcut' flow for adding the current page as a shortcut app.
+  // TODO(crbug.com/339718933): This is a deprecated feature. To install a site
+  // as an app, install it as a 'diy' app instead (currently by using
+  // kInstallSite). Or use shortcuts::CreateShortcutForWebContents().
   kCreateShortcut,
   // The 'Install Site' flow for installing the current site with an app
   // experience determined by the site.

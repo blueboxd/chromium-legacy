@@ -65,6 +65,11 @@ std::unique_ptr<VizCompositorThreadType> CreateAndStartCompositorThread() {
 #if BUILDFLAG(IS_FUCHSIA)
   // An IO message pump is needed to use FIDL.
   thread_options.message_pump_type = base::MessagePumpType::IO;
+#elif BUILDFLAG(IS_MAC)
+  // The feature kCADisplayLink needs the thread type NS_RUNLOOP to run on the
+  // current thread' runloop.
+  // See [ca_display_link addToRunLoop:NSRunLoop.currentRunLoop].
+  thread_options.message_pump_type = base::MessagePumpType::NS_RUNLOOP;
 #endif
 
   thread_options.thread_type = thread_type;
@@ -177,7 +182,8 @@ void VizCompositorThreadRunnerImpl::CreateFrameSinkManagerOnCompositorThread(
     // manager to create GMB-backed video frames.
     gmb_video_frame_pool_context_provider_ =
         std::make_unique<GmbVideoFramePoolContextProviderImpl>(
-            gpu_service, gpu_memory_buffer_manager_.get());
+            gpu_service, gpu_memory_buffer_manager_.get(),
+            gpu_service->gpu_memory_buffer_factory());
   } else {
     // Create OutputSurfaceProvider usable for software compositing only.
     output_surface_provider_ =

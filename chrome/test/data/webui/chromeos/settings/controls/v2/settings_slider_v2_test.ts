@@ -97,6 +97,7 @@ suite(SettingsSliderV2Element.is, () => {
     setup(async () => {
       clearBody();
       slider = document.createElement(SettingsSliderV2Element.is);
+      slider.value = 16;
       document.body.appendChild(slider);
       internalSlider = slider.shadowRoot!.querySelector('cr-slider')!;
       await flushTasks();
@@ -112,6 +113,30 @@ suite(SettingsSliderV2Element.is, () => {
       flush();
       assertTrue(slider.disabled);
       assertEquals('true', internalSlider.ariaDisabled);
+    });
+
+    test('markers are shown by default when ticks is set', async () => {
+      slider.ticks = ticks;
+      flush();
+
+      assertEquals(ticks.length, internalSlider.markerCount);
+    });
+
+    test('markers are hidden if number of ticks is greater than 10', () => {
+      const longTicks: number[] =
+          [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048];
+      slider.ticks = longTicks;
+
+      flush();
+      assertEquals(0, internalSlider.markerCount);
+    });
+
+    test('explicitly set hideMarkers to true will hide markers', () => {
+      slider.hideMarkers = true;
+      slider.ticks = ticks;
+
+      flush();
+      assertEquals(0, internalSlider.markerCount);
     });
 
     [true, false].forEach(hideLabel => {
@@ -134,14 +159,41 @@ suite(SettingsSliderV2Element.is, () => {
           internalSlider, slider.shadowRoot!.activeElement);
     });
 
-    test('A11y role description includes minLabel and maxLabel', () => {
-      slider.minLabel = 'Low';
-      slider.maxLabel = 'High';
-      assertEquals('Slider: Low to High', internalSlider.ariaRoleDescription);
-    });
+    suite('for a11y', () => {
+      test('ariaLabel property should apply to internal select', () => {
+        const ariaLabel = 'A11y label';
+        slider.ariaLabel = ariaLabel;
+        assertEquals(ariaLabel, internalSlider.getAttribute('aria-label'));
+      });
 
-    test('A11y role description is blank if no minLabel and maxLabel', () => {
-      assertNull(internalSlider.ariaRoleDescription);
+      test('ariaLabel property does not reflect to attribute', () => {
+        const ariaLabel = 'A11y label';
+        slider.ariaLabel = ariaLabel;
+        assertFalse(slider.hasAttribute('aria-label'));
+      });
+
+      test('ariaDescription property should apply to internal select', () => {
+        const ariaDescription = 'A11y description';
+        slider.ariaDescription = ariaDescription;
+        assertEquals(
+            ariaDescription, internalSlider.getAttribute('aria-description'));
+      });
+
+      test('ariaDescription property does not reflect to attribute', () => {
+        const ariaDescription = 'A11y description';
+        slider.ariaDescription = ariaDescription;
+        assertFalse(slider.hasAttribute('aria-description'));
+      });
+
+      test('A11y role description includes minLabel and maxLabel', () => {
+        slider.minLabel = 'Low';
+        slider.maxLabel = 'High';
+        assertEquals('Slider: Low to High', internalSlider.ariaRoleDescription);
+      });
+
+      test('A11y role description is blank if no minLabel and maxLabel', () => {
+        assertNull(internalSlider.ariaRoleDescription);
+      });
     });
   });
 
@@ -300,6 +352,8 @@ suite(SettingsSliderV2Element.is, () => {
 
         const event = await changeEventPromise;
         assertEquals(newValue, event.detail);
+        // Event should not pass the shadow DOM boundary.
+        assertFalse(event.composed);
       });
 
       suite('with ticks', () => {

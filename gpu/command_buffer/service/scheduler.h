@@ -23,6 +23,7 @@
 #include "gpu/command_buffer/common/scheduling_priority.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/sequence_id.h"
+#include "gpu/command_buffer/service/task_graph.h"
 #include "gpu/gpu_export.h"
 #include "third_party/perfetto/include/perfetto/tracing/traced_value_forward.h"
 
@@ -32,7 +33,6 @@ class SingleThreadTaskRunner;
 
 namespace gpu {
 class SyncPointManager;
-struct GpuPreferences;
 
 // Forward-decl of the new DFS-based Scheduler.
 class SchedulerDfs;
@@ -48,7 +48,16 @@ class GPU_EXPORT Scheduler {
     Task(SequenceId sequence_id,
          base::OnceClosure closure,
          std::vector<SyncToken> sync_token_fences,
+         const SyncToken& release,
          ReportingCallback report_callback = ReportingCallback());
+
+    // TODO(b/324276400): Remove this constructor after converting callsites to
+    // explicitly specify `release`.
+    Task(SequenceId sequence_id,
+         base::OnceClosure closure,
+         std::vector<SyncToken> sync_token_fences,
+         ReportingCallback report_callback = ReportingCallback());
+
     Task(Task&& other);
     ~Task();
     Task& operator=(Task&& other);
@@ -56,10 +65,15 @@ class GPU_EXPORT Scheduler {
     SequenceId sequence_id;
     base::OnceClosure closure;
     std::vector<SyncToken> sync_token_fences;
+
+    // The release that is expected to be reached after execution of this task.
+    // Used when graph-based sync point validation is enabled.
+    SyncToken release;
+
     ReportingCallback report_callback;
   };
 
-  struct ScopedAddWaitingPriority {
+  struct GPU_EXPORT ScopedAddWaitingPriority {
    public:
     ScopedAddWaitingPriority(Scheduler* scheduler,
                              SequenceId sequence_id,
@@ -72,8 +86,7 @@ class GPU_EXPORT Scheduler {
     const SchedulingPriority priority_;
   };
 
-  Scheduler(SyncPointManager* sync_point_manager,
-            const GpuPreferences& gpu_preferences);
+  explicit Scheduler(SyncPointManager* sync_point_manager);
 
   Scheduler(const Scheduler&) = delete;
   Scheduler& operator=(const Scheduler&) = delete;
@@ -130,6 +143,8 @@ class GPU_EXPORT Scheduler {
   // kUseGpuSchedulerDfs is enabled. Otherwise returns null. Used in unit test
   // to directly test methods that exist only in SchedulerDfs.
   SchedulerDfs* GetSchedulerDfsForTesting() { return scheduler_dfs_.get(); }
+
+  TaskGraph* task_graph() { return &task_graph_; }
 
  private:
   struct SchedulingState {
@@ -416,6 +431,9 @@ class GPU_EXPORT Scheduler {
   };
   base::flat_map<base::SingleThreadTaskRunner*, PerThreadState>
       per_thread_state_map_ GUARDED_BY(lock_);
+
+  // Must outlive `scheduler_dfs_`.
+  TaskGraph task_graph_;
 
   // A pointer to a SchedulerDfs instance. If set, all public SchedulerDfs
   // methods are forwarded to this SchedulerDfs instance. |scheduler_dfs_| is

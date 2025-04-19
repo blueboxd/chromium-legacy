@@ -13,6 +13,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -87,7 +88,7 @@ class WindowStateTest : public AshTestBase {
  public:
   WindowStateTest() {
     scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{features::kFasterSplitScreenSetup,
+        /*enabled_features=*/{features::kSnapGroup,
                               features::kOsSettingsRevampWayfinding},
         /*disabled_features=*/{});
   }
@@ -290,12 +291,14 @@ TEST_F(WindowStateTest, CanTransitionToPipWindow) {
 TEST_F(WindowStateTest, PipWindowIsSetBeforeWidgetDeactivate) {
   // Make `background_widget` to trigger shelf visibility change after
   // entering PIP.
-  auto background_widget = CreateTestWidget();
+  auto background_widget =
+      CreateTestWidget(views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET);
   auto* window_state = WindowState::Get(background_widget->GetNativeWindow());
   const WMEvent enter_fullscreen(WM_EVENT_FULLSCREEN);
   window_state->OnWMEvent(&enter_fullscreen);
 
-  auto pip_widget = CreateTestWidget();
+  auto pip_widget =
+      CreateTestWidget(views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET);
   auto* pip_window_state = WindowState::Get(pip_widget->GetNativeWindow());
   const WMEvent enter_pip(WM_EVENT_PIP);
 
@@ -593,14 +596,14 @@ TEST_F(WindowStateTest, SnapSnappedWindow) {
 
   // Snap window to primary position (left).
   EXPECT_EQ(WindowStateType::kPrimarySnapped, window_state->GetStateType());
-  gfx::Rect expected =
+  const gfx::Rect expected_snapped_bounds =
       gfx::Rect(kWorkAreaBounds.x(), kWorkAreaBounds.y(),
                 kWorkAreaBounds.width() / 2, kWorkAreaBounds.height());
   // Wait for the snapped animation to complete and test that the window bound
   // is primary-snapped and the snap width ratio is updated.
   window->layer()->GetAnimator()->Step(base::TimeTicks::Now() +
                                        base::Seconds(1));
-  EXPECT_EQ(expected, window->GetBoundsInScreen());
+  EXPECT_EQ(expected_snapped_bounds, window->GetBoundsInScreen());
   EXPECT_EQ(chromeos::kDefaultSnapRatio, *window_state->snap_ratio());
 
   // Drag the window to unsnap but do not release.
@@ -610,10 +613,15 @@ TEST_F(WindowStateTest, SnapSnappedWindow) {
   generator->MoveMouseBy(5, 0);
   // While dragged, the window size should restore to its normal bound.
   EXPECT_EQ(window_normal_size, window->bounds().size());
-  EXPECT_EQ(1.0f, *window_state->snap_ratio());
+  // Note at this point the window will still have snapped state but appear
+  // visually unsnapped so it will still have the previous snap ratio.
+  EXPECT_NE(expected_snapped_bounds.size(), window_normal_size);
+  EXPECT_EQ(WindowStateType::kPrimarySnapped, window_state->GetStateType());
+  EXPECT_EQ(0.5f, *window_state->snap_ratio());
 
   // Continue dragging the window and snap it back to the same position.
   generator->MoveMouseBy(-405, 0);
+  EXPECT_EQ(WindowStateType::kPrimarySnapped, window_state->GetStateType());
   generator->ReleaseLeftButton();
 
   // The snapped ratio should be correct regardless of whether the animation
@@ -1165,13 +1173,16 @@ TEST_F(WindowStateTest, MouseDragWindowInMultiDisplays) {
   EXPECT_EQ(initial_bounds, window_state->GetRestoreBoundsInScreen());
   EXPECT_EQ(restore_stack[1], WindowStateType::kPrimarySnapped);
 
-  // Mouse drag the window to the 2nd display. Both the restore bounds property
-  // and resotore bounds inside the history stack should be updated to bounds
-  // inside the 2nd display.
-  ui::test::EventGenerator event_generator(window->GetRootWindow(),
-                                           window.get());
+  // Mouse drag the window to snap on the 2nd display. Both the restore bounds
+  // property and resotore bounds inside the history stack should be updated to
+  // bounds inside the 2nd display. Note since `display2_bounds` are in screen,
+  // the event generator coordinates should also be in screen.
+  auto* event_generator = GetEventGenerator();
   const gfx::Rect display2_bounds = displays[1].bounds();
-  event_generator.DragMouseTo(display2_bounds.CenterPoint());
+  event_generator->PressLeftButton();
+  event_generator->MoveMouseTo(display2_bounds.left_center());
+  ASSERT_TRUE(window_state->is_dragged());
+  event_generator->ReleaseLeftButton();
   EXPECT_EQ(displays[1].id(),
             screen->GetDisplayNearestWindow(window.get()).id());
   EXPECT_TRUE(window_state->IsSnapped());

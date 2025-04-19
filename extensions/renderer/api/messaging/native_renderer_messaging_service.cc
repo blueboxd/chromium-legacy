@@ -323,17 +323,17 @@ gin::Handle<GinPort> NativeRendererMessagingService::Connect(
   MessagePortScope* scope =
       GetMessagePortScope(script_context->GetRenderFrame());
   bool is_opener = true;
-  gin::Handle<GinPort> port =
-      CreatePort(script_context, channel_name,
-                 PortId(script_context->context_id(), data->next_port_id++,
-                        is_opener, format));
   mojo::PendingAssociatedRemote<mojom::MessagePort> messsage_port;
   mojo::PendingAssociatedReceiver<mojom::MessagePortHost> messsage_port_host;
-  scope->BindNewMessagePort(port->port_id(), messsage_port, messsage_port_host);
-
   mojom::ChannelType channel_type = target.type == MessageTarget::NATIVE_APP
                                         ? mojom::ChannelType::kNative
                                         : mojom::ChannelType::kConnect;
+  gin::Handle<GinPort> port =
+      CreatePort(script_context, channel_name, channel_type,
+                 PortId(script_context->context_id(), data->next_port_id++,
+                        is_opener, format));
+  scope->BindNewMessagePort(port->port_id(), messsage_port, messsage_port_host);
+
   bindings_system_->GetIPCMessageSender()->SendOpenMessageChannel(
       script_context, port->port_id(), target, channel_type, channel_name,
       std::move(messsage_port), std::move(messsage_port_host));
@@ -419,13 +419,14 @@ void NativeRendererMessagingService::ClosePort(v8::Local<v8::Context> context,
 gin::Handle<GinPort> NativeRendererMessagingService::CreatePortForTesting(
     ScriptContext* script_context,
     const std::string& channel_name,
+    const mojom::ChannelType channel_type,
     const PortId& port_id,
     mojo::PendingAssociatedRemote<mojom::MessagePort>& message_port_remote,
     mojo::PendingAssociatedReceiver<mojom::MessagePortHost>&
         message_port_host_receiver) {
   BindPortForTesting(script_context, port_id, message_port_remote,  // IN-TEST
                      message_port_host_receiver);
-  return CreatePort(script_context, channel_name, port_id);
+  return CreatePort(script_context, channel_name, channel_type, port_id);
 }
 
 gin::Handle<GinPort> NativeRendererMessagingService::GetPortForTesting(
@@ -544,7 +545,20 @@ void NativeRendererMessagingService::DeliverMessageToBackgroundPage(
           UserActivationNotificationType::kExtensionMessagingNeitherPrivileged;
     }
 
-    script_context->web_frame()->NotifyUserActivation(notification_type);
+    blink::WebLocalFrame* frame = script_context->web_frame();
+    bool has_unrestricted_user_activation =
+        frame->HasTransientUserActivation() &&
+        !frame->LastActivationWasRestricted();
+    // IMPORTANT: Only notify the web frame of a user activation if there isn't
+    // already an unrestricted user activation. Otherwise, this will override
+    // the currently-active, more-privileged activation. See
+    // https://crbug.com/355266358.
+    // TODO(https://crbug.com/356418716): Ideally, this would be unnecessary,
+    // and the blink API would properly track these activations independently.
+    // Remove this if-check when that happens.
+    if (!has_unrestricted_user_activation) {
+      script_context->web_frame()->NotifyUserActivation(notification_type);
+    }
 
     blink::WebDocument document = script_context->web_frame()->GetDocument();
     allow_window_focus =
@@ -643,7 +657,7 @@ void NativeRendererMessagingService::DispatchOnConnectToListeners(
     CHECK(channel_type == mojom::ChannelType::kConnect ||
           channel_type == mojom::ChannelType::kNative);
     gin::Handle<GinPort> port =
-        CreatePort(script_context, channel_name, target_port_id);
+        CreatePort(script_context, channel_name, channel_type, target_port_id);
     port->SetSender(v8_context, sender);
     v8::LocalVector<v8::Value> args(isolate, {port.ToV8()});
     bindings_system_->api_system()->event_handler()->FireEventInContext(
@@ -737,6 +751,7 @@ void NativeRendererMessagingService::DispatchOnDisconnectToListeners(
 gin::Handle<GinPort> NativeRendererMessagingService::CreatePort(
     ScriptContext* script_context,
     const std::string& channel_name,
+    const mojom::ChannelType channel_type,
     const PortId& port_id) {
   // Note: no HandleScope because it would invalidate the gin::Handle::wrapper_.
   v8::Isolate* isolate = script_context->isolate();
@@ -760,7 +775,7 @@ gin::Handle<GinPort> NativeRendererMessagingService::CreatePort(
 
   gin::Handle<GinPort> port_handle = gin::CreateHandle(
       isolate,
-      new GinPort(context, port_id, channel_name,
+      new GinPort(context, port_id, channel_name, channel_type,
                   bindings_system_->api_system()->event_handler(), this));
 
   v8::Local<v8::Object> port_object = port_handle.ToV8().As<v8::Object>();
@@ -817,6 +832,9 @@ mojom::MessagePortHost*
 NativeRendererMessagingService::GetMessagePortHostIfExists(
     ScriptContext* script_context,
     const PortId& port_id) {
+  if (!script_context) {
+    return nullptr;
+  }
   return GetMessagePortScope(script_context->GetRenderFrame())
       ->GetMessagePortHostIfExists(port_id);
 }

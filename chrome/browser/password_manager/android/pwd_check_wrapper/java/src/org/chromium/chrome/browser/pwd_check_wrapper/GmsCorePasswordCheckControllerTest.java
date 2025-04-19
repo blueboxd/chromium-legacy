@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.pwd_check_wrapper;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -31,6 +30,7 @@ import org.chromium.chrome.browser.password_manager.PasswordCheckupClientHelper.
 import org.chromium.chrome.browser.password_manager.PasswordCheckupClientHelperFactory;
 import org.chromium.chrome.browser.password_manager.PasswordManagerBackendSupportHelper;
 import org.chromium.chrome.browser.password_manager.PasswordManagerHelper;
+import org.chromium.chrome.browser.password_manager.PasswordManagerHelperJni;
 import org.chromium.chrome.browser.password_manager.PasswordManagerUtilBridge;
 import org.chromium.chrome.browser.password_manager.PasswordManagerUtilBridgeJni;
 import org.chromium.chrome.browser.password_manager.PasswordStoreBridge;
@@ -63,6 +63,7 @@ public class GmsCorePasswordCheckControllerTest {
     @Mock private UserPrefs.Natives mUserPrefsJniMock;
     @Mock private PrefService mPrefService;
     @Mock private PasswordManagerUtilBridge.Natives mPasswordManagerUtilBridgeNativeMock;
+    @Mock private PasswordManagerHelper.Natives mPasswordManagerHelperNativeMock;
     FakePasswordCheckupClientHelper mPasswordCheckupClientHelper;
 
     private GmsCorePasswordCheckController mController;
@@ -86,7 +87,8 @@ public class GmsCorePasswordCheckControllerTest {
     private void configurePasswordManagerBackendSupport() {
         mJniMocker.mock(
                 PasswordManagerUtilBridgeJni.TEST_HOOKS, mPasswordManagerUtilBridgeNativeMock);
-        when(mPasswordManagerUtilBridgeNativeMock.shouldUseUpmWiring(true, mPrefService))
+        mJniMocker.mock(PasswordManagerHelperJni.TEST_HOOKS, mPasswordManagerHelperNativeMock);
+        when(mPasswordManagerUtilBridgeNativeMock.shouldUseUpmWiring(mSyncService, mPrefService))
                 .thenReturn(true);
         when(mPasswordManagerUtilBridgeNativeMock.usesSplitStoresAndUPMForLocal(mPrefService))
                 .thenReturn(false);
@@ -105,6 +107,8 @@ public class GmsCorePasswordCheckControllerTest {
                 .thenReturn(CollectionUtil.newHashSet(UserSelectableType.PASSWORDS));
         when(mSyncService.getAccountInfo())
                 .thenReturn(CoreAccountInfo.createFromEmailAndGaiaId(TEST_EMAIL_ADDRESS, "0"));
+        when(mPasswordManagerHelperNativeMock.hasChosenToSyncPasswords(mSyncService))
+                .thenReturn(true);
     }
 
     private void setFakePasswordCheckupClientHelper() {
@@ -213,7 +217,7 @@ public class GmsCorePasswordCheckControllerTest {
     @Test
     public void getBreachedCredentialsCountReturnsBackendVersionNotSupportedError()
             throws ExecutionException, InterruptedException {
-        when(mPasswordManagerUtilBridgeNativeMock.isGmsCoreUpdateRequired(any(), anyBoolean()))
+        when(mPasswordManagerUtilBridgeNativeMock.isGmsCoreUpdateRequired(any(), any()))
                 .thenReturn(true);
 
         PasswordCheckResult passwordCheckResultLocal =

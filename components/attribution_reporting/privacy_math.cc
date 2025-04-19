@@ -24,37 +24,29 @@
 #include "base/rand_util.h"
 #include "base/ranges/algorithm.h"
 #include "base/types/expected.h"
+#include "base/types/expected_macros.h"
 #include "components/attribution_reporting/event_report_windows.h"
 #include "components/attribution_reporting/max_event_level_reports.h"
 #include "components/attribution_reporting/trigger_config.h"
 #include "components/attribution_reporting/trigger_data_matching.mojom.h"
-#include "third_party/abseil-cpp/absl/numeric/int128.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 
 namespace attribution_reporting {
 
+// Controls the max number of report states allowed for a given source
+// registration.
+uint32_t g_max_trigger_state_cardinality = std::numeric_limits<uint32_t>::max();
+
 namespace {
 
-// Since base/numerics does not support checked math for 128 bit types,
-// implement it ourselves. This copies the relevant check from CheckedMulImpl.
-absl::uint128 CheckMul(absl::uint128 x, absl::uint128 y) {
-  // Note this is safe even with division with a remainder.
-  CHECK(y == 0 || x <= absl::Uint128Max() / y);
-  return x * y;
-}
-
-// The max possible number of state combinations given a valid input.
-// This comes from 20 maximum total reports, 20 reports per type, 5 windows per
-// type, and 32 distinct trigger data values.
-constexpr absl::uint128 kMaxNumCombinations =
-    absl::MakeUint128(/*high=*/9494472u, /*low=*/10758590974061625903u);
-
-absl::uint128 RandGenerator(absl::uint128 range) {
-  DCHECK_GT(range, 0u);
-  uint64_t high = absl::Uint128High64(range);
-  return absl::MakeUint128(
-      /*high=*/high == 0u ? 0u : base::RandGenerator(high),
-      /*low=*/base::RandGenerator(absl::Uint128Low64(range)));
-}
+// Although the theoretical maximum number of trigger states exceeds 32 bits,
+// we've chosen to only support a maximal trigger state cardinality of
+// `UINT32_MAX` due to the randomized response generation rate being close
+// enough to 1 for that number of states to not warrant the extra cost in
+// resources for larger ints. The arithmetic in this file mostly adheres to that
+// by way of overflow checking, with only certain exceptions applying. If the
+// max trigger state cardinality is ever increased, the typings in this file
+// must be changed to support that.
 
 // Let B be the trigger data cardinality.
 // For every trigger data i, there are wi windows and ci maximum reports.
@@ -78,11 +70,11 @@ absl::uint128 RandGenerator(absl::uint128 range) {
 // number of reports (up to the max) for the current trigger data type under
 // consideration. Given that each choice produces a distinct output, we sum
 // these up.
-absl::uint128 GetNumStatesRecursive(TriggerSpecs::Iterator it,
-                                    int max_reports,
-                                    int window_val,
-                                    int max_reports_per_type,
-                                    internal::StateMap& map) {
+base::CheckedNumeric<uint32_t> GetNumStatesRecursive(TriggerSpecs::Iterator it,
+                                                     int max_reports,
+                                                     int window_val,
+                                                     int max_reports_per_type,
+                                                     internal::StateMap& map) {
   // Case 1: "B = 0" there is nothing left to assign for the last data index.
   // Also consider the trivial Case 2 -> Case 1 case without touching the cache
   // or recursive calls.
@@ -99,8 +91,8 @@ absl::uint128 GetNumStatesRecursive(TriggerSpecs::Iterator it,
       base::checked_cast<uint8_t>(max_reports_per_type),  //
   };
 
-  absl::uint128& cached = map[base::numerics::U32FromNativeEndian(key)];
-  if (cached != 0) {
+  base::CheckedNumeric<uint32_t>& cached = map[base::U32FromNativeEndian(key)];
+  if (!cached.IsValid() || cached.ValueOrDie() != 0) {
     return cached;
   }
 
@@ -126,18 +118,19 @@ absl::uint128 GetNumStatesRecursive(TriggerSpecs::Iterator it,
 
 // A variant of the above algorithm which samples a report given an index.
 // This follows a similarly structured algorithm.
-void GetReportsFromIndexRecursive(TriggerSpecs::Iterator it,
-                                  int max_reports,
-                                  int window_val,
-                                  int max_reports_per_type,
-                                  absl::uint128 index,
-                                  std::vector<FakeEventLevelReport>& reports,
-                                  internal::StateMap& map) {
+base::expected<void, RandomizedResponseError> GetReportsFromIndexRecursive(
+    TriggerSpecs::Iterator it,
+    int max_reports,
+    int window_val,
+    int max_reports_per_type,
+    uint32_t index,
+    std::vector<FakeEventLevelReport>& reports,
+    internal::StateMap& map) {
   // Case 1 and Case 2 -> 1. There are no more valid trigger data value, so
   // generate nothing.
   auto cur = it++;
   if (!cur || (window_val == 0 && !it)) {
-    return;
+    return base::ok();
   }
   // Case 2: there are no more windows to consider for the current trigger data,
   // so generate based on the remaining trigger data types.
@@ -147,10 +140,9 @@ void GetReportsFromIndexRecursive(TriggerSpecs::Iterator it,
   // `max_reports` for every type, but in the future it will be specified on the
   // `TriggerSpec` as part of the `summary_buckets` field.
   if (window_val == 0) {
-    GetReportsFromIndexRecursive(
+    return GetReportsFromIndexRecursive(
         it, max_reports, (*it).second.event_report_windows().end_times().size(),
         max_reports, index, reports, map);
-    return;
   }
 
   // Case 3: For the current window and trigger data under consideration, we
@@ -171,34 +163,42 @@ void GetReportsFromIndexRecursive(TriggerSpecs::Iterator it,
   // figure out what other reports we need to emit (if any). We consider a new
   // index which just looks at the "dashes" before `index`, i.e. index' = index
   // - prev_sum.
-  absl::uint128 prev_sum = 0;
+  uint32_t prev_sum = 0;
   for (int i = 0; i <= std::min(max_reports_per_type, max_reports); i++) {
-    absl::uint128 num_states = GetNumStatesRecursive(
+    base::CheckedNumeric<uint32_t> num_states = GetNumStatesRecursive(
         cur, max_reports - i, window_val - 1, max_reports_per_type - i, map);
 
+    base::CheckedNumeric<uint32_t> current_sum =
+        base::CheckAdd(prev_sum, num_states);
+    if (!current_sum.IsValid()) {
+      return base::unexpected(
+          RandomizedResponseError::kExceedsTriggerStateCardinalityLimit);
+    }
+
     // The index is associated with emitting `i` reports
-    if (num_states + prev_sum > index) {
+    if (current_sum.ValueOrDie() > index) {
       for (int k = 0; k < i; k++) {
         reports.push_back(FakeEventLevelReport{.trigger_data = (*cur).first,
                                                .window_index = window_val - 1});
       }
-      DCHECK_GE(index - prev_sum, 0);
+      DCHECK_GE(index, prev_sum);
 
       // Zoom into all other outputs that are associated with picking `i`
       // reports for this config.
-      GetReportsFromIndexRecursive(cur, max_reports - i, window_val - 1,
-                                   max_reports_per_type - i, index - prev_sum,
-                                   reports, map);
-      return;
+      RETURN_IF_ERROR(GetReportsFromIndexRecursive(
+          cur, max_reports - i, window_val - 1, max_reports_per_type - i,
+          index - prev_sum, reports, map));
+      return base::ok();
     }
-    prev_sum += num_states;
+    CHECK(current_sum.AssignIfValid(&prev_sum));
   }
-  NOTREACHED_IN_MIGRATION();
+  NOTREACHED_NORETURN();
 }
 
-absl::uint128 GetNumStatesCached(const TriggerSpecs& specs,
-                                 int max_reports,
-                                 internal::StateMap& map) {
+base::expected<uint32_t, RandomizedResponseError> GetNumStatesCached(
+    const TriggerSpecs& specs,
+    internal::StateMap& map) {
+  const int max_reports = specs.max_event_level_reports();
   if (specs.empty() || max_reports == 0) {
     return 1;
   }
@@ -208,11 +208,27 @@ absl::uint128 GetNumStatesCached(const TriggerSpecs& specs,
 
   // Optimized fast-path.
   if (specs.SingleSharedSpec()) {
-    return internal::GetNumberOfStarsAndBarsSequences(
-        /*num_stars=*/max_reports,
-        /*num_bars=*/specs.size() * num_windows);
+    if (const base::CheckedNumeric<uint32_t> num_sequences =
+            internal::GetNumberOfStarsAndBarsSequences(
+                /*num_stars=*/max_reports,
+                /*num_bars=*/specs.size() * num_windows);
+        num_sequences.IsValid() &&
+        num_sequences.ValueOrDie() <= g_max_trigger_state_cardinality) {
+      return num_sequences.ValueOrDie();
+    } else {
+      return base::unexpected(
+          RandomizedResponseError::kExceedsTriggerStateCardinalityLimit);
+    }
   }
-  return GetNumStatesRecursive(it, max_reports, num_windows, max_reports, map);
+
+  base::CheckedNumeric<uint32_t> num_states =
+      GetNumStatesRecursive(it, max_reports, num_windows, max_reports, map);
+  if (!num_states.IsValid() ||
+      num_states.ValueOrDie() > g_max_trigger_state_cardinality) {
+    return base::unexpected(
+        RandomizedResponseError::kExceedsTriggerStateCardinalityLimit);
+  }
+  return num_states.ValueOrDie();
 }
 
 }  // namespace
@@ -239,46 +255,46 @@ RandomizedResponseData::RandomizedResponseData(RandomizedResponseData&&) =
 RandomizedResponseData& RandomizedResponseData::operator=(
     RandomizedResponseData&&) = default;
 
+uint32_t MaxTriggerStateCardinality() {
+  return g_max_trigger_state_cardinality;
+}
+
 bool GenerateWithRate(double r) {
   DCHECK_GE(r, 0);
   DCHECK_LE(r, 1);
   return r > 0 && (r == 1 || base::RandDouble() < r);
 }
 
-double GetRandomizedResponseRate(absl::uint128 num_states, double epsilon) {
-  DCHECK_GT(num_states, 0);
+double GetRandomizedResponseRate(uint32_t num_states, double epsilon) {
+  DCHECK_GT(num_states, 0u);
 
   double num_states_double = static_cast<double>(num_states);
   return num_states_double / (num_states_double - 1 + std::exp(epsilon));
 }
 
-absl::uint128 GetNumStates(const TriggerSpecs& specs,
-                           MaxEventLevelReports max_reports) {
+base::expected<uint32_t, RandomizedResponseError> GetNumStates(
+    const TriggerSpecs& specs) {
   internal::StateMap map;
-  return GetNumStatesCached(specs, max_reports, map);
+  return GetNumStatesCached(specs, map);
 }
 
 base::expected<RandomizedResponseData, RandomizedResponseError>
-DoRandomizedResponse(const TriggerSpecs& specs,
-                     MaxEventLevelReports max_reports,
-                     double epsilon,
-                     absl::uint128 max_trigger_state_cardinality,
-                     double max_channel_capacity) {
+DoRandomizedResponse(
+    const TriggerSpecs& specs,
+    double epsilon,
+    double max_channel_capacity) {
   internal::StateMap map;
-  return internal::DoRandomizedResponseWithCache(
-      specs, max_reports, epsilon, map, max_trigger_state_cardinality,
-      max_channel_capacity);
+  return internal::DoRandomizedResponseWithCache(specs, epsilon, map,
+                                                 max_channel_capacity);
 }
 
-bool IsValid(const RandomizedResponse& response,
-             const TriggerSpecs& specs,
-             const MaxEventLevelReports max_reports) {
+bool IsValid(const RandomizedResponse& response, const TriggerSpecs& specs) {
   if (!response.has_value()) {
     return true;
   }
 
   return base::MakeStrictNum(response->size()) <=
-             static_cast<int>(max_reports) &&
+             static_cast<int>(specs.max_event_level_reports()) &&
          base::ranges::all_of(*response, [&](const FakeEventLevelReport&
                                                  report) {
            const auto spec = specs.find(report.trigger_data,
@@ -291,9 +307,9 @@ bool IsValid(const RandomizedResponse& response,
 
 namespace internal {
 
-absl::uint128 BinomialCoefficient(int n, int k) {
-  DCHECK_GE(n, 0);
-  DCHECK_GE(k, 0);
+base::CheckedNumeric<uint32_t> BinomialCoefficient(int n, int k) {
+  CHECK_GE(n, 0);
+  CHECK_GE(k, 0);
 
   if (k > n) {
     return 0;
@@ -318,14 +334,14 @@ absl::uint128 BinomialCoefficient(int n, int k) {
   // true for a very simple reason. Imagine a value of `i` causes division with
   // remainder in the below algorithm. This immediately implies that
   // (n choose i) is fractional, which we know is not the case.
-  absl::uint128 result = 1;
+  base::CheckedNumeric<uint64_t> result = 1;
   for (int i = 1; i <= k; i++) {
-    absl::uint128 term = n + 1 - i;
-    result = CheckMul(result, term);
-    DCHECK_EQ(0, result % i);
-    result = result / i;
+    uint32_t term = n - i + 1;
+    base::CheckedNumeric<uint64_t> temp_result = result * term;
+    DCHECK(!temp_result.IsValid() || (temp_result % i).ValueOrDie() == 0);
+    result = temp_result / i;
   }
-  return result;
+  return result.Cast<uint32_t>();
 }
 
 // Computes the `combination_index`-th lexicographically smallest k-combination.
@@ -345,9 +361,9 @@ absl::uint128 BinomialCoefficient(int n, int k) {
 //
 // We find this set via a simple greedy algorithm.
 // http://math0.wvstateu.edu/~baker/cs405/code/Combinadics.html
-std::vector<int> GetKCombinationAtIndex(absl::uint128 combination_index,
-                                        int k) {
-  DCHECK_GE(combination_index, 0);
+std::vector<int> GetKCombinationAtIndex(
+    base::StrictNumeric<uint32_t> combination_index,
+    int k) {
   DCHECK_GE(k, 0);
   // `k` can be no more than max number of event level reports per source (20).
   DCHECK_LE(k, 20);
@@ -362,20 +378,29 @@ std::vector<int> GetKCombinationAtIndex(absl::uint128 combination_index,
   // maximum a such that (a choose k) <= `combination_index`. Let a_k = a. Use
   // the previous binomial coefficient to compute the next one. Note: possible
   // to speed this up via something other than incremental search.
-  absl::uint128 target = combination_index;
-  int candidate = k - 1;
+  uint32_t target = combination_index;
+
+  uint32_t candidate = k - 1;
 
   // BinomialCoefficient(candidate, k)
-  absl::uint128 binomial_coefficient = 0;
+  uint64_t binomial_coefficient = 0;
   // BinomialCoefficient(candidate+1, k)
-  absl::uint128 next_binomial_coefficient = 1;
+  uint64_t next_binomial_coefficient = 1;
   while (next_binomial_coefficient <= target) {
+    DCHECK(candidate < std::numeric_limits<uint32_t>::max());
     candidate++;
     binomial_coefficient = next_binomial_coefficient;
-    DCHECK_EQ(binomial_coefficient, BinomialCoefficient(candidate, k));
+
+    // If the returned value from `BinomialCoefficient` is invalid, the DCHECK
+    // would fail anyways, so it is safe to not validate.
+    DCHECK(binomial_coefficient ==
+           BinomialCoefficient(candidate, k).ValueOrDie());
 
     // (n + 1 choose k) = (n choose k) * (n + 1) / (n + 1 - k)
-    next_binomial_coefficient = CheckMul(binomial_coefficient, candidate + 1);
+    // Safe because candidate <= binomial_coefficient <= UINT32_MAX.
+    // Therefore binomial_coefficient * (candidate + 1) <= UINT32_MAX *
+    // (UINT32_MAX + 1) <= UINT64_MAX.
+    next_binomial_coefficient = binomial_coefficient * (candidate + 1);
     next_binomial_coefficient /= candidate + 1 - k;
   }
   // We know from the k-combination definition, all subsequent values will be
@@ -384,57 +409,73 @@ std::vector<int> GetKCombinationAtIndex(absl::uint128 combination_index,
   int current_k = k;
   while (true) {
     // The optimized code below maintains this loop invariant.
-    DCHECK_EQ(binomial_coefficient, BinomialCoefficient(candidate, current_k));
+    DCHECK(binomial_coefficient ==
+           BinomialCoefficient(candidate, current_k).ValueOrDie());
+
     if (binomial_coefficient <= target) {
       output_k_combination.push_back(candidate);
-      target -= binomial_coefficient;
-      if (static_cast<int>(output_k_combination.size()) == k) {
-        DCHECK_EQ(target, 0);
+      bool valid =
+          base::CheckSub(target, binomial_coefficient).AssignIfValid(&target);
+      DCHECK(valid);
+
+      if (output_k_combination.size() == static_cast<size_t>(k)) {
+        DCHECK_EQ(target, 0u);
         return output_k_combination;
       }
       // (n - 1 choose k - 1) = (n choose k) * k / n
-      binomial_coefficient =
-          CheckMul(binomial_coefficient, current_k) / candidate;
+      // Safe because binomial_coefficient * current_k <= combination_index * k
+      // <= UINT32_MAX * UINT32_MAX < UINT64_MAX.
+      binomial_coefficient = binomial_coefficient * current_k / candidate;
 
       current_k--;
       candidate--;
     } else {
       // (n - 1 choose k) = (n choose k) * (n - k) / n
+      // Safe because binomial_coefficient * (candidate - current_k) <=
+      // combination_index * k <= UINT32_MAX * UINT32_MAX < UINT64_MAX.
       binomial_coefficient =
-          CheckMul(binomial_coefficient, candidate - current_k) / candidate;
+          binomial_coefficient * (candidate - current_k) / candidate;
 
       candidate--;
     }
+    DCHECK(base::IsValueInRangeForNumericType<uint32_t>(binomial_coefficient));
   }
 }
 
-std::vector<FakeEventLevelReport> GetFakeReportsForSequenceIndex(
-    const TriggerSpecs& specs,
-    int max_reports,
-    absl::uint128 index,
-    StateMap& map) {
+base::expected<std::vector<FakeEventLevelReport>, RandomizedResponseError>
+GetFakeReportsForSequenceIndex(const TriggerSpecs& specs,
+                               base::StrictNumeric<uint32_t> index,
+                               StateMap& map) {
   std::vector<FakeEventLevelReport> reports;
 
+  const int max_reports = specs.max_event_level_reports();
   if (specs.empty() || max_reports == 0) {
     return reports;
   }
 
   auto it = specs.begin();
-  GetReportsFromIndexRecursive(
+  RETURN_IF_ERROR(GetReportsFromIndexRecursive(
       it, max_reports, (*it).second.event_report_windows().end_times().size(),
-      max_reports, index, reports, map);
+      max_reports, index, reports, map));
   return reports;
 }
 
-absl::uint128 GetNumberOfStarsAndBarsSequences(int num_stars, int num_bars) {
+base::CheckedNumeric<uint32_t> GetNumberOfStarsAndBarsSequences(int num_stars,
+                                                                int num_bars) {
   return BinomialCoefficient(num_stars + num_bars, num_stars);
 }
 
-std::vector<int> GetStarIndices(int num_stars,
-                                int num_bars,
-                                absl::uint128 sequence_index) {
-  DCHECK_LT(sequence_index,
-            GetNumberOfStarsAndBarsSequences(num_stars, num_bars));
+base::expected<std::vector<int>, absl::monostate> GetStarIndices(
+    int num_stars,
+    int num_bars,
+    base::StrictNumeric<uint32_t> sequence_index) {
+  const base::CheckedNumeric<uint32_t> num_sequences =
+      GetNumberOfStarsAndBarsSequences(num_stars, num_bars);
+  if (!num_sequences.IsValid()) {
+    return base::unexpected(absl::monostate());
+  }
+
+  DCHECK(sequence_index < num_sequences.ValueOrDie());
   return GetKCombinationAtIndex(sequence_index, num_stars);
 }
 
@@ -459,8 +500,9 @@ double BinaryEntropy(double p) {
   return -p * log2(p) - (1 - p) * log2(1 - p);
 }
 
-double ComputeChannelCapacity(absl::uint128 num_states,
+double ComputeChannelCapacity(base::StrictNumeric<uint32_t> num_states_strict,
                               double randomized_response_rate) {
+  uint32_t num_states = num_states_strict;
   DCHECK_GT(num_states, 0u);
   DCHECK_GE(randomized_response_rate, 0);
   DCHECK_LE(randomized_response_rate, 1);
@@ -478,21 +520,29 @@ double ComputeChannelCapacity(absl::uint128 num_states,
          p * log2(num_states_double - 1);
 }
 
-std::vector<FakeEventLevelReport> GetFakeReportsForSequenceIndex(
+base::expected<std::vector<FakeEventLevelReport>, RandomizedResponseError>
+GetFakeReportsForSequenceIndex(
     const TriggerSpecs& specs,
-    int max_reports,
-    absl::uint128 random_stars_and_bars_sequence_index) {
+    base::StrictNumeric<uint32_t> random_stars_and_bars_sequence_index) {
   const TriggerSpec* single_spec = specs.SingleSharedSpec();
   CHECK(single_spec);
 
   const int trigger_data_cardinality = specs.size();
+  const int max_reports = specs.max_event_level_reports();
 
-  const std::vector<int> bars_preceding_each_star =
-      GetBarsPrecedingEachStar(GetStarIndices(
+  ASSIGN_OR_RETURN(
+      const std::vector<int> stars,
+      GetStarIndices(
           /*num_stars=*/max_reports,
           /*num_bars=*/trigger_data_cardinality *
               single_spec->event_report_windows().end_times().size(),
-          /*sequence_index=*/random_stars_and_bars_sequence_index));
+          /*sequence_index=*/random_stars_and_bars_sequence_index),
+      [](absl::monostate) {
+        return RandomizedResponseError::kExceedsTriggerStateCardinalityLimit;
+      });
+
+  const std::vector<int> bars_preceding_each_star =
+      GetBarsPrecedingEachStar(stars);
 
   std::vector<FakeEventLevelReport> fake_reports;
 
@@ -524,14 +574,13 @@ std::vector<FakeEventLevelReport> GetFakeReportsForSequenceIndex(
 }
 
 base::expected<RandomizedResponseData, RandomizedResponseError>
-DoRandomizedResponseWithCache(const TriggerSpecs& specs,
-                              int max_reports,
-                              double epsilon,
-                              StateMap& map,
-                              absl::uint128 max_trigger_state_cardinality,
-                              double max_channel_capacity) {
-  const absl::uint128 num_states = GetNumStatesCached(specs, max_reports, map);
-  if (num_states > max_trigger_state_cardinality) {
+DoRandomizedResponseWithCache(
+    const TriggerSpecs& specs,
+    double epsilon,
+    StateMap& map,
+    double max_channel_capacity) {
+  ASSIGN_OR_RETURN(uint32_t num_states, GetNumStatesCached(specs, map));
+  if (num_states > g_max_trigger_state_cardinality) {
     return base::unexpected(
         RandomizedResponseError::kExceedsTriggerStateCardinalityLimit);
   }
@@ -552,18 +601,31 @@ DoRandomizedResponseWithCache(const TriggerSpecs& specs,
     // spec if all of the specs have the same # of windows and reports. We can
     // consider further optimizing if it's useful. The existing code will cover
     // the default specs for navigation / event sources.
-    const absl::uint128 sequence_index = RandGenerator(num_states);
-    DCHECK_GE(sequence_index, 0);
-    DCHECK_LT(sequence_index, kMaxNumCombinations);
-    fake_reports = specs.SingleSharedSpec()
-                       ? internal::GetFakeReportsForSequenceIndex(
-                             specs, max_reports, sequence_index)
-                       : internal::GetFakeReportsForSequenceIndex(
-                             specs, max_reports, sequence_index, map);
+    uint32_t sequence_index = base::RandGenerator(num_states);
+    if (specs.SingleSharedSpec()) {
+      ASSIGN_OR_RETURN(fake_reports, internal::GetFakeReportsForSequenceIndex(
+                                         specs, sequence_index));
+    } else {
+      ASSIGN_OR_RETURN(fake_reports, internal::GetFakeReportsForSequenceIndex(
+                                         specs, sequence_index, map));
+    }
   }
   return RandomizedResponseData(rate, std::move(fake_reports));
 }
 
 }  // namespace internal
+
+ScopedMaxTriggerStateCardinalityForTesting::
+    ScopedMaxTriggerStateCardinalityForTesting(
+        uint32_t max_trigger_state_cardinality)
+    : previous_(g_max_trigger_state_cardinality) {
+  CHECK_GT(max_trigger_state_cardinality, 0u);
+  g_max_trigger_state_cardinality = max_trigger_state_cardinality;
+}
+
+ScopedMaxTriggerStateCardinalityForTesting::
+    ~ScopedMaxTriggerStateCardinalityForTesting() {
+  g_max_trigger_state_cardinality = previous_;
+}
 
 }  // namespace attribution_reporting

@@ -7,13 +7,13 @@
 #include <memory>
 
 #include "base/check.h"
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/values.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise/connectors/analysis/content_analysis_features.h"
-#include "chrome/browser/enterprise/connectors/reporting/browser_crash_event_router.h"
-#include "chrome/browser/enterprise/connectors/reporting/extension_install_event_router.h"
-#include "chrome/browser/enterprise/connectors/reporting/extension_telemetry_event_router.h"
+#include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -29,38 +29,46 @@
 
 namespace enterprise_connectors {
 
-#if BUILDFLAG(ENTERPRISE_LOCAL_CONTENT_ANALYSIS)
 namespace {
 
+#if BUILDFLAG(ENTERPRISE_LOCAL_CONTENT_ANALYSIS)
 static constexpr enterprise_connectors::AnalysisConnector
     kLocalAnalysisConnectors[] = {
         AnalysisConnector::BULK_DATA_ENTRY,
         AnalysisConnector::FILE_ATTACHED,
         AnalysisConnector::PRINT,
 };
-
-}  // namespace
 #endif  // BUILDFLAG(ENTERPRISE_LOCAL_CONTENT_ANALYSIS)
 
-ConnectorsManager::ConnectorsManager(
-    std::unique_ptr<BrowserCrashEventRouter> browser_crash_event_router,
-    std::unique_ptr<ExtensionInstallEventRouter> extension_install_event_router,
-    std::unique_ptr<ExtensionTelemetryEventRouter>
-        extension_telemetry_event_router,
-    PrefService* pref_service,
-    const ServiceProviderConfig* config,
-    bool observe_prefs)
-    : service_provider_config_(config),
-      browser_crash_event_router_(std::move(browser_crash_event_router)),
-      extension_install_event_router_(
-          std::move(extension_install_event_router)),
-      extension_telemetry_event_router_(
-          std::move(extension_telemetry_event_router)) {
-  DCHECK(browser_crash_event_router_) << "Crash event router is null";
-  DCHECK(extension_install_event_router_) << "Extension event router is null";
-  DCHECK(extension_telemetry_event_router_)
-      << "Extension telemetry event router is null";
+constexpr char kReportingConnectorUrlFlag[] = "reporting-connector-url";
 
+std::optional<GURL> GetReportingConnectorUrlOverride() {
+  // Ignore this flag on Stable and Beta to avoid abuse.
+  if (!g_browser_process || !g_browser_process->browser_policy_connector()
+                                 ->IsCommandLineSwitchSupported()) {
+    return std::nullopt;
+  }
+
+  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
+  if (cmd->HasSwitch(kReportingConnectorUrlFlag)) {
+    GURL url = GURL(cmd->GetSwitchValueASCII(kReportingConnectorUrlFlag));
+    if (url.is_valid()) {
+      return url;
+    } else {
+      VLOG(1) << "--" << kReportingConnectorUrlFlag
+              << " is set to an invalid URL";
+    }
+  }
+
+  return std::nullopt;
+}
+
+}  // namespace
+
+ConnectorsManager::ConnectorsManager(PrefService* pref_service,
+                                     const ServiceProviderConfig* config,
+                                     bool observe_prefs)
+    : service_provider_config_(config) {
 #if BUILDFLAG(ENTERPRISE_LOCAL_CONTENT_ANALYSIS)
   // Start observing tab strip models for all browsers.
   BrowserList* browser_list = BrowserList::GetInstance();
@@ -76,8 +84,6 @@ ConnectorsManager::ConnectorsManager(
     MaybeCloseLocalContentAnalysisAgentConnection();
 #endif
   }
-  extension_install_event_router_->StartObserving();
-  extension_telemetry_event_router_->StartObserving();
 }
 
 #if BUILDFLAG(ENTERPRISE_LOCAL_CONTENT_ANALYSIS)
@@ -134,7 +140,15 @@ std::optional<ReportingSettings> ConnectorsManager::GetReportingSettings(
 
   // While multiple services can be set by the connector policies, only the
   // first one is considered for now.
-  return reporting_connector_settings_[connector][0].GetReportingSettings();
+  auto reporting_settings =
+      reporting_connector_settings_[connector][0].GetReportingSettings();
+
+  std::optional<GURL> url_override = GetReportingConnectorUrlOverride();
+  if (reporting_settings && url_override) {
+    reporting_settings->reporting_url = std::move(*url_override);
+  }
+
+  return reporting_settings;
 }
 
 std::optional<AnalysisSettings> ConnectorsManager::GetAnalysisSettings(
@@ -213,24 +227,6 @@ void ConnectorsManager::OnTabStripModelChanged(
 }
 #endif  // BUILDFLAG(ENTERPRISE_LOCAL_CONTENT_ANALYSIS)
 
-std::optional<AnalysisSettings>
-ConnectorsManager::GetAnalysisSettingsFromConnectorPolicy(
-    const GURL& url,
-    AnalysisConnector connector) {
-  if (analysis_connector_settings_.count(connector) == 0)
-    CacheAnalysisConnectorPolicy(connector);
-
-  // If the connector is still not in memory, it means the pref is set to an
-  // empty list or that it is not a list.
-  if (analysis_connector_settings_.count(connector) == 0)
-    return std::nullopt;
-
-  // While multiple services can be set by the connector policies, only the
-  // first one is considered for now.
-  return analysis_connector_settings_[connector][0].GetAnalysisSettings(
-      url, GetDataRegion());
-}
-
 void ConnectorsManager::CacheAnalysisConnectorPolicy(
     AnalysisConnector connector) const {
   analysis_connector_settings_.erase(connector);
@@ -259,11 +255,23 @@ void ConnectorsManager::MaybeCloseLocalContentAnalysisAgentConnection() {
 }
 #endif  // BUILDFLAG(ENTERPRISE_LOCAL_CONTENT_ANALYSIS)
 
+void ConnectorsManager::SetTelemetryObserverCallback(
+    base::RepeatingCallback<void()> callback) {
+  telemetry_observer_callback_ = callback;
+}
+
 void ConnectorsManager::OnPrefChanged(AnalysisConnector connector) {
   CacheAnalysisConnectorPolicy(connector);
 #if BUILDFLAG(ENTERPRISE_LOCAL_CONTENT_ANALYSIS)
   MaybeCloseLocalContentAnalysisAgentConnection();
 #endif
+}
+
+void ConnectorsManager::OnPrefChanged(ReportingConnector connector) {
+  CacheReportingConnectorPolicy(connector);
+  if (!telemetry_observer_callback_.is_null()) {
+    telemetry_observer_callback_.Run();
+  }
 }
 
 void ConnectorsManager::CacheReportingConnectorPolicy(
@@ -275,9 +283,10 @@ void ConnectorsManager::CacheReportingConnectorPolicy(
   DCHECK(pref);
 
   const base::Value::List& policy_value = prefs()->GetList(pref);
-  for (const base::Value& service_settings : policy_value)
+  for (const base::Value& service_settings : policy_value) {
     reporting_connector_settings_[connector].emplace_back(
         service_settings, *service_provider_config_);
+  }
 }
 
 bool ConnectorsManager::DelayUntilVerdict(AnalysisConnector connector) {
@@ -403,14 +412,13 @@ std::vector<const AnalysisConfig*> ConnectorsManager::GetAnalysisServiceConfigs(
   return {};
 }
 
-safe_browsing::DataRegion ConnectorsManager::GetDataRegion() const {
+DataRegion ConnectorsManager::GetDataRegion() const {
   bool apply_data_region =
       prefs()->HasPrefPath(prefs::kChromeDataRegionSetting) &&
       base::FeatureList::IsEnabled(safe_browsing::kDlpRegionalizedEndpoints);
-  return apply_data_region
-             ? safe_browsing::ChromeDataRegionSettingToEnum(
-                   prefs()->GetInteger(prefs::kChromeDataRegionSetting))
-             : safe_browsing::DataRegion::NO_PREFERENCE;
+  return apply_data_region ? ChromeDataRegionSettingToEnum(prefs()->GetInteger(
+                                 prefs::kChromeDataRegionSetting))
+                           : DataRegion::NO_PREFERENCE;
 }
 
 void ConnectorsManager::StartObservingPrefs(PrefService* pref_service) {
@@ -430,8 +438,10 @@ void ConnectorsManager::StartObservingPref(AnalysisConnector connector) {
   DCHECK(pref);
   if (!pref_change_registrar_.IsObserved(pref)) {
     pref_change_registrar_.Add(
-        pref, base::BindRepeating(&ConnectorsManager::OnPrefChanged,
-                                  base::Unretained(this), connector));
+        pref, base::BindRepeating(
+                  static_cast<void (ConnectorsManager::*)(AnalysisConnector)>(
+                      &ConnectorsManager::OnPrefChanged),
+                  base::Unretained(this), connector));
   }
 }
 
@@ -440,9 +450,10 @@ void ConnectorsManager::StartObservingPref(ReportingConnector connector) {
   DCHECK(pref);
   if (!pref_change_registrar_.IsObserved(pref)) {
     pref_change_registrar_.Add(
-        pref,
-        base::BindRepeating(&ConnectorsManager::CacheReportingConnectorPolicy,
-                            base::Unretained(this), connector));
+        pref, base::BindRepeating(
+                  static_cast<void (ConnectorsManager::*)(ReportingConnector)>(
+                      &ConnectorsManager::OnPrefChanged),
+                  base::Unretained(this), connector));
   }
 }
 
@@ -454,6 +465,11 @@ ConnectorsManager::GetAnalysisConnectorsSettingsForTesting() const {
 const ConnectorsManager::ReportingConnectorsSettings&
 ConnectorsManager::GetReportingConnectorsSettingsForTesting() const {
   return reporting_connector_settings_;
+}
+
+const base::RepeatingCallback<void()>
+ConnectorsManager::GetTelemetryObserverCallbackForTesting() const {
+  return telemetry_observer_callback_;
 }
 
 }  // namespace enterprise_connectors

@@ -120,7 +120,7 @@ std::optional<int> GetZoomLevel(content::WebContents* capturer,
     return std::nullopt;
   }
 
-  double zoom_level = blink::PageZoomLevelToZoomFactor(
+  double zoom_level = blink::ZoomLevelToZoomFactor(
       content::HostZoomMap::GetZoomLevel(captured_wc));
   return std::round(100 * zoom_level);
 }
@@ -274,7 +274,9 @@ std::unique_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
       DeviceName(web_contents, request.video_type, media_id));
   device.display_media_info = DesktopMediaIDToDisplayMediaInformation(
       web_contents, url::Origin::Create(request.security_origin), media_id);
-  out_devices.video_device = device;
+  if (request.video_type != blink::mojom::MediaStreamType::NO_SERVICE) {
+    out_devices.video_device = device;
+  }
 
   if (capture_audio) {
     DCHECK_NE(request.audio_type, blink::mojom::MediaStreamType::NO_SERVICE);

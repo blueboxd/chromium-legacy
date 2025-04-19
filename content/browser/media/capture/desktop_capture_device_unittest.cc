@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/342213636): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "content/browser/media/capture/desktop_capture_device.h"
 
 #include <stddef.h>
@@ -310,14 +315,9 @@ class DesktopCaptureDeviceTest : public testing::Test {
   std::unique_ptr<webrtc::DesktopFrame> output_frame_;
 };
 
-#if BUILDFLAG(IS_FUCHSIA)
-// TODO(crbug.com/40260627) The test is currently broken on Fuchsia.
-#define MAYBE_Capture DISABLED_Capture
-#else
-#define MAYBE_Capture Capture
-#endif
-
-TEST_F(DesktopCaptureDeviceTest, MAYBE_Capture) {
+// Capturer implementation for Fuchsia is not fully functional.
+#if !BUILDFLAG(IS_FUCHSIA)
+TEST_F(DesktopCaptureDeviceTest, Capture) {
   std::unique_ptr<webrtc::DesktopCapturer> capturer(
       webrtc::DesktopCapturer::CreateScreenCapturer(
           webrtc::DesktopCaptureOptions::CreateDefault()));
@@ -364,6 +364,7 @@ TEST_F(DesktopCaptureDeviceTest, MAYBE_Capture) {
 
   EXPECT_EQ(format.frame_size.GetArea() * 4, frame_size);
 }
+#endif  // !BUILDFLAG(IS_FUCHSIA)
 
 // Test that screen capturer behaves correctly if the source frame size changes
 // but the caller cannot cope with variable resolution output.

@@ -17,7 +17,7 @@
 
 #include "partition_alloc/shim/allocator_interception_apple.h"
 
-#include "partition_alloc/partition_alloc_buildflags.h"
+#include "partition_alloc/buildflags.h"
 
 #if PA_BUILDFLAG(USE_ALLOCATOR_SHIM)
 #include <CoreFoundation/CoreFoundation.h>
@@ -26,7 +26,6 @@
 #import <objc/runtime.h>
 
 #include <algorithm>
-#include <bit>
 #include <cerrno>
 #include <cstddef>
 #include <new>
@@ -34,13 +33,14 @@
 #include "partition_alloc/build_config.h"
 #include "partition_alloc/oom.h"
 #include "partition_alloc/partition_alloc_base/apple/mach_logging.h"
+#include "partition_alloc/partition_alloc_base/bits.h"
 #include "partition_alloc/partition_alloc_base/compiler_specific.h"
 #include "partition_alloc/partition_alloc_base/logging.h"
 #include "partition_alloc/partition_alloc_check.h"
 #include "partition_alloc/shim/malloc_zone_functions_apple.h"
 #include "partition_alloc/third_party/apple_apsl/CFBase.h"
 
-#if BUILDFLAG(IS_IOS)
+#if PA_BUILDFLAG(IS_IOS)
 #include "partition_alloc/partition_alloc_base/ios/ios_util.h"
 #else
 #include "partition_alloc/partition_alloc_base/mac/mac_util.h"
@@ -183,7 +183,7 @@ void* oom_killer_memalign(struct _malloc_zone_t* zone,
   // other reasons why null might be returned. See posix_memalign() in 10.15's
   // https://opensource.apple.com/source/libmalloc/libmalloc-283/src/malloc.c .
   if (!result && size && alignment >= sizeof(void*) &&
-      std::has_single_bit(alignment)) {
+      partition_alloc::internal::base::bits::HasSingleBit(alignment)) {
     partition_alloc::TerminateBecauseOutOfMemory(size);
   }
   return result;
@@ -239,7 +239,7 @@ void* oom_killer_memalign_purgeable(struct _malloc_zone_t* zone,
   // other reasons why null might be returned. See posix_memalign() in 10.15's
   // https://opensource.apple.com/source/libmalloc/libmalloc-283/src/malloc.c .
   if (!result && size && alignment >= sizeof(void*) &&
-      std::has_single_bit(alignment)) {
+      partition_alloc::internal::base::bits::HasSingleBit(alignment)) {
     partition_alloc::TerminateBecauseOutOfMemory(size);
   }
   return result;
@@ -252,7 +252,7 @@ void* oom_killer_memalign_purgeable(struct _malloc_zone_t* zone,
 // === Core Foundation CFAllocators ===
 
 bool CanGetContextForCFAllocator() {
-#if BUILDFLAG(IS_IOS)
+#if PA_BUILDFLAG(IS_IOS)
   return !partition_alloc::internal::base::ios::IsRunningOnOrLater(17, 0, 0);
 #else
   // As of macOS 14, the allocators are in read-only memory and can no longer be

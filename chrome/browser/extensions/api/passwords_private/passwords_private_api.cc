@@ -621,8 +621,19 @@ PasswordsPrivateSwitchBiometricAuthBeforeFillingStateFunction::Run() {
   }
 
   GetDelegate(browser_context())
-      ->SwitchBiometricAuthBeforeFillingState(GetSenderWebContents());
-  return RespondNow(NoArguments());
+      ->SwitchBiometricAuthBeforeFillingState(
+          GetSenderWebContents(),
+          base::BindOnce(
+              &PasswordsPrivateSwitchBiometricAuthBeforeFillingStateFunction::
+                  OnAuthenticationComplete,
+              this));
+
+  return did_respond() ? AlreadyResponded() : RespondLater();
+}
+
+void PasswordsPrivateSwitchBiometricAuthBeforeFillingStateFunction::
+    OnAuthenticationComplete(bool result) {
+  Respond(WithArguments(result));
 }
 
 // PasswordsPrivateShowExportedFileInShellFunction
@@ -669,13 +680,23 @@ void PasswordsPrivateChangePasswordManagerPinFunction::OnPinChangeCompleted(
   Respond(WithArguments(success));
 }
 
+// PasswordsPrivateIsPasswordManagerPinAvailableFunction
 ResponseAction PasswordsPrivateIsPasswordManagerPinAvailableFunction::Run() {
   if (auto delegate = GetDelegate(browser_context())) {
-    return RespondNow(WithArguments(
-        delegate->IsPasswordManagerPinAvailable(GetSenderWebContents())));
+    delegate->IsPasswordManagerPinAvailable(
+        GetSenderWebContents(),
+        base::BindOnce(&PasswordsPrivateIsPasswordManagerPinAvailableFunction::
+                           OnPasswordManagerPinAvailabilityReceived,
+                       this));
+    return did_respond() ? AlreadyResponded() : RespondLater();
   }
 
   return RespondNow(Error(kNoDelegateError));
+}
+
+void PasswordsPrivateIsPasswordManagerPinAvailableFunction::
+    OnPasswordManagerPinAvailabilityReceived(bool is_available) {
+  Respond(WithArguments(is_available));
 }
 
 // PasswordsPrivateDisconnectCloudAuthenticatorFunction
@@ -705,6 +726,25 @@ ResponseAction PasswordsPrivateIsConnectedToCloudAuthenticatorFunction::Run() {
   }
 
   return RespondNow(Error(kNoDelegateError));
+}
+
+// PasswordsPrivateDeleteAllPasswordManagerDataFunction
+ResponseAction PasswordsPrivateDeleteAllPasswordManagerDataFunction::Run() {
+  if (auto delegate = GetDelegate(browser_context())) {
+    delegate->DeleteAllPasswordManagerData(
+        GetSenderWebContents(),
+        base::BindOnce(&PasswordsPrivateDeleteAllPasswordManagerDataFunction::
+                           OnDeletionCompleted,
+                       this));
+    return did_respond() ? AlreadyResponded() : RespondLater();
+  }
+
+  return RespondNow(Error(kNoDelegateError));
+}
+
+void PasswordsPrivateDeleteAllPasswordManagerDataFunction::OnDeletionCompleted(
+    bool success) {
+  Respond(WithArguments(success));
 }
 
 }  // namespace extensions

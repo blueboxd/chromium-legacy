@@ -8,6 +8,7 @@
 #include <optional>
 #include <string>
 
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/tabs/tab_types.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_types.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -122,6 +123,9 @@ class TabSlotController {
   // Returns true if any tab or one of its children has focus.
   virtual bool IsFocusInTabs() const = 0;
 
+  // Returns true if The tab should have a compacted leading edge.
+  virtual bool ShouldCompactLeadingEdge() const = 0;
+
   // Potentially starts a drag for the specified Tab.
   virtual void MaybeStartDrag(
       TabSlotView* source,
@@ -230,6 +234,19 @@ class TabSlotController {
   virtual void ShiftGroupRight(const tab_groups::TabGroupId& group) = 0;
 
   virtual const Browser* GetBrowser() const = 0;
+
+  // Returns the current width of inactive tabs. An individual inactive tab may
+  // differ from this width slightly due to rounding.
+  virtual int GetInactiveTabWidth() const = 0;
+
+  // See BrowserNonClientFrameView::IsFrameCondensed().
+  virtual bool IsFrameCondensed() const = 0;
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Returns whether the current app instance is locked for OnTask. Only
+  // relevant for non-web browser scenarios.
+  virtual bool IsLockedForOnTask() = 0;
+#endif
 
  protected:
   virtual ~TabSlotController() = default;

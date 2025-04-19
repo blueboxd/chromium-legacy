@@ -10,7 +10,6 @@ import android.content.res.AssetFileDescriptor;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
-import android.os.ParcelFileDescriptor;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.text.TextUtils;
@@ -72,15 +71,18 @@ public abstract class ContentUriUtils {
     }
 
     /**
-     * Opens the content URI for reading, and returns the file descriptor to
-     * the caller. The caller is responsible for closing the file descriptor.
+     * Opens the content URI for the specified mode, and returns the file descriptor to the caller.
+     * The caller is responsible for closing the file descriptor.
      *
      * @param uriString the content URI to open
+     * @param mode the mode to open. Allows all values from ParcelFileDescriptor#parseMode(): ("r",
+     *     "w", "wt", "wa", "rw" or "rwt"), but disallows "w" which has been the source of android
+     *     security issues.
      * @return file descriptor upon success, or -1 otherwise.
      */
     @CalledByNative
-    public static int openContentUriForRead(String uriString) {
-        AssetFileDescriptor afd = getAssetFileDescriptor(uriString);
+    public static int openContentUri(String uriString, String mode) {
+        AssetFileDescriptor afd = getAssetFileDescriptor(uriString, mode);
         if (afd != null) {
             return afd.getParcelFileDescriptor().detachFd();
         }
@@ -97,7 +99,7 @@ public abstract class ContentUriUtils {
     public static boolean contentUriExists(String uriString) {
         AssetFileDescriptor asf = null;
         try {
-            asf = getAssetFileDescriptor(uriString);
+            asf = getAssetFileDescriptor(uriString, "r");
             return asf != null;
         } finally {
             // Do not use StreamUtil.closeQuietly here, as AssetFileDescriptor
@@ -110,6 +112,23 @@ public abstract class ContentUriUtils {
                 }
             }
         }
+    }
+
+    /**
+     * Get the file size of a content URI.
+     *
+     * @param uriString the content URI to look up.
+     * @return File size or -1 if the file does not exist.
+     */
+    @CalledByNative
+    public static long getContentUriFileSize(String uriString) {
+        long size = -1;
+        AssetFileDescriptor afd = getAssetFileDescriptor(uriString, "r");
+        if (afd != null) {
+            size = afd.getLength();
+        }
+        StreamUtil.closeQuietly(afd);
+        return size;
     }
 
     /**
@@ -133,36 +152,35 @@ public abstract class ContentUriUtils {
      * Helper method to open a content URI and returns the ParcelFileDescriptor.
      *
      * @param uriString the content URI to open.
+     * @param mode the mode to open. Allows all values from ParcelFileDescriptor#parseMode(): ("r",
+     *     "w", "wt", "wa", "rw" or "rwt"), but disallows "w" which has been the source of android
+     *     security issues.
      * @return AssetFileDescriptor of the content URI, or NULL if the file does not exist.
      */
-    private static AssetFileDescriptor getAssetFileDescriptor(String uriString) {
+    private static AssetFileDescriptor getAssetFileDescriptor(String uriString, String mode) {
+        if ("w".equals(mode)) {
+            Log.e(TAG, "Cannot open files with mode 'w'");
+            return null;
+        }
+
         ContentResolver resolver = ContextUtils.getApplicationContext().getContentResolver();
         Uri uri = Uri.parse(uriString);
 
         try {
+            AssetFileDescriptor afd = null;
             if (isVirtualDocument(uri)) {
                 String[] streamTypes = resolver.getStreamTypes(uri, "*/*");
                 if (streamTypes != null && streamTypes.length > 0) {
-                    AssetFileDescriptor afd =
-                            resolver.openTypedAssetFileDescriptor(uri, streamTypes[0], null);
-                    if (afd != null && afd.getStartOffset() != 0) {
-                        // Do not use StreamUtil.closeQuietly here, as AssetFileDescriptor
-                        // does not implement Closeable until KitKat.
-                        try {
-                            afd.close();
-                        } catch (IOException e) {
-                            // Closing quietly.
-                        }
-                        throw new SecurityException("Cannot open files with non-zero offset type.");
-                    }
-                    return afd;
+                    afd = resolver.openTypedAssetFileDescriptor(uri, streamTypes[0], null);
                 }
             } else {
-                ParcelFileDescriptor pfd = resolver.openFileDescriptor(uri, "r");
-                if (pfd != null) {
-                    return new AssetFileDescriptor(pfd, 0, AssetFileDescriptor.UNKNOWN_LENGTH);
-                }
+                afd = resolver.openAssetFileDescriptor(uri, mode);
             }
+            if (afd != null && afd.getStartOffset() != 0) {
+                StreamUtil.closeQuietly(afd);
+                throw new SecurityException("Cannot open files with non-zero offset type.");
+            }
+            return afd;
         } catch (Exception e) {
             Log.w(TAG, "Cannot open content uri: %s", uriString, e);
         }
@@ -302,25 +320,5 @@ public abstract class ContentUriUtils {
         Uri parsedUri = Uri.parse(uriString);
         ContentResolver resolver = ContextUtils.getApplicationContext().getContentResolver();
         return resolver.delete(parsedUri, null, null) > 0;
-    }
-
-    /**
-     * Retrieve the content URI from the file path.
-     *
-     * @param filePathString the file path.
-     * @return content URI or null if the input params are invalid.
-     */
-    @CalledByNative
-    public static String getContentUriFromFilePath(String filePathString) {
-        try {
-            Uri contentUri = getContentUriFromFile(new File(filePathString));
-            if (contentUri != null) {
-                return contentUri.toString();
-            }
-        } catch (IllegalArgumentException e) {
-            // This happens when the given File is outside the paths supported by the provider.
-            Log.e(TAG, "Cannot retrieve content uri from file: %s", filePathString, e);
-        }
-        return null;
     }
 }

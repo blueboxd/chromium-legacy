@@ -28,8 +28,6 @@ public class UrlImageProvider {
 
     /** Factory methods for image creation objects, abstracted to enable testing. */
     public interface UrlImageSource {
-        LargeIconBridge createLargeIconBridge();
-
         ThumbnailProvider createThumbnailProvider();
 
         RoundedIconGenerator createIconGenerator();
@@ -37,13 +35,13 @@ public class UrlImageProvider {
 
     protected final int mMinIconSizePx;
     protected final int mDesiredIconSizePx;
-    protected final LargeIconBridge mLargeIconBridge;
     protected final ThumbnailProvider mThumbnailProvider;
     protected final RoundedIconGenerator mIconGenerator;
 
     private final boolean mUseSalientImage;
 
     @Nullable private ImageServiceBridge mImageServiceBridge;
+    private LargeIconBridge mLargeIconBridge;
 
     private int mSalientImageSizeBigPx;
 
@@ -52,16 +50,17 @@ public class UrlImageProvider {
     UrlImageProvider(
             Context context,
             UrlImageSource source,
-            @Nullable ImageServiceBridge imageServiceBridge) {
+            @Nullable ImageServiceBridge imageServiceBridge,
+            LargeIconBridge largeIconBridge) {
         Resources res = context.getResources();
         mMinIconSizePx = res.getDimensionPixelSize(R.dimen.default_favicon_min_size);
         mDesiredIconSizePx =
                 res.getDimensionPixelSize(R.dimen.tab_resumption_module_icon_source_size);
-        mLargeIconBridge = source.createLargeIconBridge();
         mThumbnailProvider = source.createThumbnailProvider();
         mIconGenerator = source.createIconGenerator();
 
         mImageServiceBridge = imageServiceBridge;
+        mLargeIconBridge = largeIconBridge;
         mUseSalientImage = TabResumptionModuleUtils.TAB_RESUMPTION_USE_SALIENT_IMAGE.getValue();
         if (mUseSalientImage) {
             mSalientImageSizeBigPx =
@@ -74,10 +73,11 @@ public class UrlImageProvider {
      * Clean up the C++ side of this class. After the call, this class instance shouldn't be used.
      */
     public void destroy() {
-        mLargeIconBridge.destroy();
-
-        // The ImageServiceBridge is owned by the TabResumptionModuleBuilder, and will be destroyed
-        // by TabResumptionModuleBuilder.
+        // The ImageServiceBridge and mLargeIconBridge are owned by the TabResumptionModuleBuilder,
+        // and will be destroyed by TabResumptionModuleBuilder.
+        if (mLargeIconBridge != null) {
+            mLargeIconBridge = null;
+        }
         if (mImageServiceBridge != null) {
             mImageServiceBridge = null;
         }
@@ -91,6 +91,7 @@ public class UrlImageProvider {
      * @param callback Destination to pass resulting Bitmap.
      */
     public void fetchImageForUrl(GURL pageUrl, UrlImageCallback callback) {
+        assert mLargeIconBridge != null;
         mLargeIconBridge.getLargeIconForUrl(
                 pageUrl,
                 mMinIconSizePx,
@@ -126,8 +127,19 @@ public class UrlImageProvider {
                 tabId,
                 thumbnailSize,
                 /* finalCallback= */ tabThumbnailCallback,
-                /* forceUpdate= */ true,
-                /* writeToCache= */ true,
                 /* isSelected= */ false);
+    }
+
+    /** Returns whether this UrlImageProvider instance has been destroyed. */
+    public boolean isDestroyed() {
+        return mLargeIconBridge == null;
+    }
+
+    LargeIconBridge getLargeIconBridgeForTesting() {
+        return mLargeIconBridge;
+    }
+
+    ImageServiceBridge getImageServiceBridgeForTesting() {
+        return mImageServiceBridge;
     }
 }

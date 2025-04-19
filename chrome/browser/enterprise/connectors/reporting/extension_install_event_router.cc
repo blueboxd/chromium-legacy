@@ -7,10 +7,14 @@
 #include <optional>
 
 #include "base/feature_list.h"
+#include "base/memory/singleton.h"
 #include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/enterprise/connectors/reporting/realtime_reporting_client_factory.h"
-#include "chrome/browser/enterprise/connectors/reporting/reporting_service_settings.h"
+#include "chrome/browser/extensions/chrome_content_browser_client_extensions_part.h"
+#include "components/enterprise/connectors/core/reporting_service_settings.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_registry_factory.h"
 
 namespace enterprise_connectors {
 
@@ -41,19 +45,17 @@ ExtensionInstallEventRouter::ExtensionInstallEventRouter(
     content::BrowserContext* context) {
   extension_registry_ = extensions::ExtensionRegistry::Get(context);
   reporting_client_ = RealtimeReportingClientFactory::GetForProfile(context);
+
+  DLOG_IF(ERROR, !extension_registry_)
+      << "extension_registry_ is null. Observer not added.";
+  if (extension_registry_ && reporting_client_) {
+    extension_registry_->AddObserver(this);
+  }
 }
 
 ExtensionInstallEventRouter::~ExtensionInstallEventRouter() {
   if (extension_registry_ && reporting_client_) {
     extension_registry_->RemoveObserver(this);
-  }
-}
-
-void ExtensionInstallEventRouter::StartObserving() {
-  DLOG_IF(ERROR, !extension_registry_)
-      << "extension_registry_ is null. Observer not added.";
-  if (extension_registry_ && reporting_client_) {
-    extension_registry_->AddObserver(this);
   }
 }
 
@@ -63,8 +65,7 @@ void ExtensionInstallEventRouter::ReportExtensionInstallEvent(
   std::optional<ReportingSettings> settings =
       reporting_client_->GetReportingSettings();
   if (!settings.has_value() ||
-      settings->enabled_event_names.count(
-          ReportingServiceSettings::kExtensionInstallEvent) == 0) {
+      settings->enabled_event_names.count(kExtensionInstallEvent) == 0) {
     return;
   }
 
@@ -78,8 +79,7 @@ void ExtensionInstallEventRouter::ReportExtensionInstallEvent(
                                                    : kExternalSource);
 
   reporting_client_->ReportRealtimeEvent(
-      ReportingServiceSettings::kExtensionInstallEvent,
-      std::move(settings.value()), std::move(event));
+      kExtensionInstallEvent, std::move(settings.value()), std::move(event));
 }
 
 void ExtensionInstallEventRouter::OnExtensionInstalled(
@@ -95,6 +95,53 @@ void ExtensionInstallEventRouter::OnExtensionUninstalled(
     const extensions::Extension* extension,
     extensions::UninstallReason reason) {
   ReportExtensionInstallEvent(extension, kUninstallAction);
+}
+
+// static
+ExtensionInstallEventRouterFactory*
+ExtensionInstallEventRouterFactory::GetInstance() {
+  return base::Singleton<ExtensionInstallEventRouterFactory>::get();
+}
+
+ExtensionInstallEventRouter*
+ExtensionInstallEventRouterFactory::GetForBrowserContext(
+    content::BrowserContext* context) {
+  return static_cast<ExtensionInstallEventRouter*>(
+      GetInstance()->GetServiceForBrowserContext(context, true));
+}
+
+ExtensionInstallEventRouterFactory::ExtensionInstallEventRouterFactory()
+    : BrowserContextKeyedServiceFactory(
+          "ExtensionInstallEventRouter",
+          BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(extensions::ExtensionRegistryFactory::GetInstance());
+  DependsOn(RealtimeReportingClientFactory::GetInstance());
+}
+
+ExtensionInstallEventRouterFactory::~ExtensionInstallEventRouterFactory() =
+    default;
+
+bool ExtensionInstallEventRouterFactory::ServiceIsCreatedWithBrowserContext()
+    const {
+  return true;
+}
+
+KeyedService* ExtensionInstallEventRouterFactory::BuildServiceInstanceFor(
+    content::BrowserContext* context) const {
+  return new ExtensionInstallEventRouter(context);
+}
+
+content::BrowserContext*
+ExtensionInstallEventRouterFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  // Do not construct the router if extensions are disabled for the given
+  // context.
+  if (extensions::ChromeContentBrowserClientExtensionsPart::
+          AreExtensionsDisabledForProfile(context)) {
+    return nullptr;
+  }
+
+  return context;
 }
 
 }  // namespace enterprise_connectors

@@ -12,7 +12,6 @@
 #include "base/functional/callback_helpers.h"
 #include "base/functional/overloaded.h"
 #include "base/notreached.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/account_transfer_client_data.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/fido_assertion_info.h"
@@ -89,7 +88,12 @@ TargetDeviceBootstrapController::GetAsWeakPtrForClient() {
 }
 
 void TargetDeviceBootstrapController::StartAdvertisingAndMaybeGetQRCode() {
-  CHECK_EQ(status_.step, Step::NONE);
+  // Status may be SETUP_COMPLETE here if a user "completed" Quick Start upon
+  // selecting an unsupported account type (edu, enterprise, or unicorn), but
+  // then goes back and attempts to setup with Quick Start again.
+  constexpr Step kPossibleSteps[] = {Step::NONE, Step::SETUP_COMPLETE};
+  CHECK(base::Contains(kPossibleSteps, status_.step))
+      << "Unexpected status step: " << status_.step;
   session_context_.FillOrResetSession();
 
   bool use_pin_authentication =
@@ -198,12 +202,6 @@ void TargetDeviceBootstrapController::OnConnectionClosed(
 
   authenticated_connection_.reset();
   CleanupIfNeeded();
-}
-
-std::string TargetDeviceBootstrapController::GetDiscoverableName() {
-  std::string device_type = base::UTF16ToUTF8(ui::GetChromeOSDeviceName());
-  std::string code = connection_broker_->GetAdvertisingIdDisplayCode();
-  return device_type + " (" + code + ")";
 }
 
 void TargetDeviceBootstrapController::UpdateStatus(Step step, Payload payload) {
@@ -472,7 +470,6 @@ void TargetDeviceBootstrapController::OnAuthCodeReceived(
             UpdateStatus(/*step=*/Step::TRANSFERRED_GOOGLE_ACCOUNT_DETAILS,
                          /*payload=*/gaia_creds);
             is_error = false;
-            session_context_.SetDidSetUpGaia(true);
           },
           [&](SecondDeviceAuthBroker::
                   AuthCodeAdditionalChallengesOnTargetResponse res) {

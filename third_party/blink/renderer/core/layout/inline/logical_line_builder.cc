@@ -74,7 +74,7 @@ void LogicalLineBuilder::CreateLine(LineInfo* line_info,
 
   box_states_->OnEndPlaceItems(constraint_space_, line_box, baseline_type_);
 
-  if (UNLIKELY(node_.IsBidiEnabled())) {
+  if (node_.IsBidiEnabled()) [[unlikely]] {
     box_states_->PrepareForReorder(line_box);
     BidiReorder(line_info->BaseDirection(), line_box,
                 box_states_->RubyColumnList());
@@ -85,10 +85,10 @@ void LogicalLineBuilder::CreateLine(LineInfo* line_info,
 
   for (auto& logical_column : box_states_->RubyColumnList()) {
     std::pair<LayoutUnit, LayoutUnit>& insets = logical_column->base_insets;
-    LogicalLineItems::iterator start =
-        line_box->begin() + logical_column->start_index;
-    ApplyLeftAndRightExpansion(insets.first, insets.second, start,
-                               start + logical_column->size);
+    ApplyLeftAndRightExpansion(
+        insets.first, insets.second,
+        base::span(*line_box).subspan(logical_column->start_index,
+                                      logical_column->size));
   }
 }
 
@@ -106,7 +106,7 @@ InlineBoxState* LogicalLineBuilder::HandleItemResults(
       DCHECK(item.GetLayoutObject()->IsText() ||
              item.GetLayoutObject()->IsLayoutListItem());
 
-      if (UNLIKELY(!item_result.Length())) {
+      if (!item_result.Length()) [[unlikely]] {
         // Empty or fully collapsed text isn't needed for layout, but needs
         // `ClearNeedsLayout`. See `LineBreaker::HandleEmptyText`.
         LayoutObject* layout_object = item.GetLayoutObject();
@@ -117,7 +117,7 @@ InlineBoxState* LogicalLineBuilder::HandleItemResults(
       }
       DCHECK(item_result.shape_result);
 
-      if (UNLIKELY(quirks_mode_)) {
+      if (quirks_mode_) [[unlikely]] {
         box->EnsureTextMetrics(*item.Style(), *box->font, baseline_type_);
       }
 
@@ -128,7 +128,7 @@ InlineBoxState* LogicalLineBuilder::HandleItemResults(
 
       DCHECK(item.TextType() == TextItemType::kNormal ||
              item.TextType() == TextItemType::kSymbolMarker);
-      if (UNLIKELY(item_result.is_hyphenated)) {
+      if (item_result.is_hyphenated) [[unlikely]] {
         DCHECK(item_result.hyphen);
         LayoutUnit hyphen_inline_size = item_result.hyphen.InlineSize();
         line_box->AddChild(item, item_result, item_result.TextOffset(),
@@ -136,7 +136,7 @@ InlineBoxState* LogicalLineBuilder::HandleItemResults(
                            item_result.inline_size - hyphen_inline_size,
                            box->text_height, item.BidiLevel());
         PlaceHyphen(item_result, hyphen_inline_size, line_box, box);
-      } else if (UNLIKELY(node_.IsTextCombine())) {
+      } else if (node_.IsTextCombine()) [[unlikely]] {
         // We make combined text at block offset 0 with 1em height.
         // Painter paints text at block offset + |font.internal_leading / 2|.
         const auto one_em = item.Style()->ComputedFontSizeAsFixed();
@@ -223,7 +223,7 @@ InlineBoxState* LogicalLineBuilder::HandleItemResults(
           item.Style()->GetPosition() == EPosition::kRelative;
     } else if (item.Type() == InlineItem::kBidiControl) {
       line_box->AddChild(item.BidiLevel());
-    } else if (UNLIKELY(item.Type() == InlineItem::kInitialLetterBox)) {
+    } else if (item.Type() == InlineItem::kInitialLetterBox) [[unlikely]] {
       // The initial letter does not increase the logical height of the line
       // box in which it participates[1]. So, we should not changes
       // `InlineBoxState::metrics`, or not call ` ComputeTextMetrics()` to
@@ -268,7 +268,7 @@ InlineBoxState* LogicalLineBuilder::HandleCloseTag(
     const InlineItemResult& item_result,
     LogicalLineItems* line_box,
     InlineBoxState* box) {
-  if (UNLIKELY(quirks_mode_ && !item.IsEmptyItem())) {
+  if (quirks_mode_ && !item.IsEmptyItem()) [[unlikely]] {
     box->EnsureTextMetrics(*item.Style(), *box->font, baseline_type_);
   }
   box =
@@ -297,7 +297,7 @@ void LogicalLineBuilder::PlaceControlItem(const InlineItem& item,
 
   // Don't generate fragments if this is a generated (not in DOM) break
   // opportunity during the white space collapsing in InlineItemBuilder.
-  if (UNLIKELY(item.IsGeneratedForLineBreak())) {
+  if (item.IsGeneratedForLineBreak()) [[unlikely]] {
     return;
   }
 
@@ -307,13 +307,13 @@ void LogicalLineBuilder::PlaceControlItem(const InlineItem& item,
     item.GetLayoutObject()->ClearNeedsLayoutWithFullPaintInvalidation();
   }
 
-  if (UNLIKELY(!item_result->Length())) {
+  if (!item_result->Length()) [[unlikely]] {
     // Empty or fully collapsed text isn't needed for layout, but needs
     // `ClearNeedsLayout`. See `LineBreaker::HandleEmptyText`.
     return;
   }
 
-  if (UNLIKELY(quirks_mode_ && !box->HasMetrics())) {
+  if (quirks_mode_ && !box->HasMetrics()) [[unlikely]] {
     box->EnsureTextMetrics(*item.Style(), *box->font, baseline_type_);
   }
 
@@ -354,9 +354,9 @@ InlineBoxState* LogicalLineBuilder::PlaceAtomicInline(
   InlineBoxState* box = box_states_->OnOpenTag(
       constraint_space_, item, *item_result, baseline_type_, *line_box);
 
-  if (LIKELY(!IsA<LayoutTextCombine>(layout_object))) {
+  if (!IsA<LayoutTextCombine>(layout_object)) [[likely]] {
     PlaceLayoutResult(item_result, line_box, box,
-                      box->margin_inline_start + item_result->spacing_before);
+                      box->margins.inline_start + item_result->spacing_before);
   } else {
     // The metrics should be as text instead of atomic inline box.
     const auto& style = layout_object->Parent()->StyleRef();
@@ -365,7 +365,7 @@ InlineBoxState* LogicalLineBuilder::PlaceAtomicInline(
     // is |LayoutTextCombine| and after CJK character.
     // See "text-combine-justify.html".
     const LayoutUnit inline_offset =
-        box->margin_inline_start + item_result->spacing_before;
+        box->margins.inline_start + item_result->spacing_before;
     line_box->AddChild(std::move(item_result->layout_result),
                        LogicalOffset{inline_offset, box->text_top},
                        item_result->inline_size, /* children_count */ 0,
@@ -428,18 +428,37 @@ InlineBoxState* LogicalLineBuilder::PlaceRubyColumn(
   InlineItemResultRubyColumn& ruby_column = *item_result.ruby_column;
   bool on_start_edge = false;
   bool on_end_edge = false;
-  if (RuntimeEnabledFeatures::RubyLineEdgeAlignmentEnabled() &&
-      !node_.IsBidiEnabled()) {
-    on_start_edge =
-        ruby_column.base_line.StartOffset() == line_info.StartOffset() ||
-        item_result.StartOffset() == line_info.StartOffset();
-    wtf_size_t end_text_offset = ruby_column.base_line.EndTextOffset();
-    wtf_size_t inflow_end = line_info.InflowEndOffsetWithoutForcedBreak();
-    on_end_edge = end_text_offset == inflow_end;
+  std::optional<LayoutUnit> line_available_size;
+  if (!node_.IsBidiEnabled() && !line_info.IsRubyBase() &&
+      !line_info.IsRubyText() &&
+      (line_info.TextAlign() == ETextAlign::kJustify ||
+       (line_info.IsLastLine() &&
+        line_info.LineStyle().GetTextAlign(/* is_last_line */ false) ==
+            ETextAlign::kJustify))) {
+    on_start_edge = ruby_column.base_line.InflowStartOffset() ==
+                    line_info.InflowStartOffset();
+    if (line_info.TextAlign() == ETextAlign::kJustify) {
+      wtf_size_t end_text_offset = ruby_column.base_line.EndTextOffset();
+      wtf_size_t inflow_end = line_info.InflowEndOffsetWithoutForcedBreak();
+      on_end_edge = end_text_offset == inflow_end;
+
+      // If this is the only item in the line and is a base-shorter ruby and
+      // the line has text-align:justify, ApplyJustification() did nothing
+      // because this item is represented as an OBJECT REPLACEMENT CHARACTER.
+      // We expand the item by ruby-align processing.
+      if (on_start_edge && on_end_edge &&
+          item_result.inline_size > ruby_column.base_line.Width()) {
+        line_available_size = line_info.AvailableWidth();
+      }
+    }
+    if (!RuntimeEnabledFeatures::RubyLineEdgeAlignmentEnabled()) {
+      on_start_edge = false;
+      on_end_edge = false;
+    }
   }
   std::pair<LayoutUnit, LayoutUnit> base_insets =
-      ApplyRubyAlign(item_result.inline_size, on_start_edge, on_end_edge,
-                     ruby_column.base_line);
+      ApplyRubyAlign(line_available_size.value_or(item_result.inline_size),
+                     on_start_edge, on_end_edge, ruby_column.base_line);
 
   // Set up LogicalRubyColumns. This should be done before consuming the base
   // InlineItemResults because it might contain ruby columns, and annotation
@@ -478,8 +497,8 @@ InlineBoxState* LogicalLineBuilder::PlaceRubyColumn(
       logical_column.base_insets = base_insets;
     }
     logical_column.size = column_base_size;
-    PlaceRubyAnnotation(item_result, i, ruby_column.annotation_line_list[i],
-                        logical_column);
+    PlaceRubyAnnotation(item_result, line_available_size, i,
+                        ruby_column.annotation_line_list[i], logical_column);
   }
 
   return box;
@@ -487,11 +506,15 @@ InlineBoxState* LogicalLineBuilder::PlaceRubyColumn(
 
 void LogicalLineBuilder::PlaceRubyAnnotation(
     InlineItemResult& item_result,
+    std::optional<LayoutUnit> line_available_size,
     wtf_size_t index,
     LineInfo& annotation_line,
     LogicalRubyColumn& logical_column) {
   std::pair<LayoutUnit, LayoutUnit> insets =
-      ApplyRubyAlign(item_result.inline_size, /* on_start_edge */ false,
+      ApplyRubyAlign(line_available_size.value_or(
+                         item_result.inline_size -
+                         item_result.ruby_column->last_base_glyph_spacing),
+                     /* on_start_edge */ false,
                      /* on_end_edge */ false, annotation_line);
 
   auto* line_items = MakeGarbageCollected<LogicalLineItems>();
@@ -507,8 +530,8 @@ void LogicalLineBuilder::PlaceRubyAnnotation(
   }
   annotation_builder.CreateLine(&annotation_line, line_items,
                                 /* main_line_helper */ nullptr);
-  ApplyLeftAndRightExpansion(insets.first, insets.second, line_items->begin(),
-                             line_items->end());
+  ApplyLeftAndRightExpansion(insets.first, insets.second,
+                             base::span(*line_items));
 
   logical_column.state_stack.ComputeInlinePositions(
       line_items, LayoutUnit(), /* ignore_box_margin_border_padding */ false);
@@ -519,7 +542,7 @@ void LogicalLineBuilder::PlaceRubyAnnotation(
 // Place a list marker.
 void LogicalLineBuilder::PlaceListMarker(const InlineItem& item,
                                          InlineItemResult* item_result) {
-  if (UNLIKELY(quirks_mode_)) {
+  if (quirks_mode_) [[unlikely]] {
     box_states_->LineBoxState().EnsureTextMetrics(
         *item.Style(), item.Style()->GetFont(), baseline_type_);
   }
@@ -610,11 +633,11 @@ void LogicalLineBuilder::BidiReorder(
       // Base items in a ruby column are placed consecutively even after the
       // reorder because they are isolated.
       //
-      // std::min_element() below doesn't return the end iterator because we
+      // min_element() below doesn't return the end iterator because we
       // ensure there is at least one item in the range.
-      auto begin = logical_to_visual.begin();
-      column->start_index = *std::min_element(begin + column->start_index,
-                                              begin + column->EndIndex());
+      column->start_index = *base::ranges::min_element(
+          base::span(logical_to_visual)
+              .subspan(column->start_index, column->size));
     }
     // The order is important for RubyBlockPositionCalculator::HandleRubyLine().
     std::stable_sort(

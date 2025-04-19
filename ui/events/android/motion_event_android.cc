@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ui/events/android/motion_event_android.h"
 
 #include <android/input.h>
@@ -16,6 +21,8 @@
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
+
+// Must come after all headers that specialize FromJniType() / ToJniType().
 #include "ui/events/motionevent_jni_headers/MotionEvent_jni.h"
 
 using base::android::AttachCurrentThread;

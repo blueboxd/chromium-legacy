@@ -26,12 +26,17 @@ enum class DevToolsGenAiEnterprisePolicyValue {
 
 class AidaClient {
  public:
+  using ScopedOverride = std::unique_ptr<base::ScopedClosureRunner>;
+
   explicit AidaClient(Profile* profile);
   ~AidaClient();
 
   void PrepareRequestOrFail(
       base::OnceCallback<
           void(absl::variant<network::ResourceRequest, std::string>)> callback);
+
+  // Needed because VariationsService is not available for unit tests.
+  static ScopedOverride OverrideCountryForTesting(std::string country_code);
 
   void OverrideAidaEndpointAndScopeForTesting(const std::string& aida_endpoint,
                                               const std::string& aida_scope);
@@ -41,17 +46,17 @@ class AidaClient {
   static constexpr std::string_view kRegisterClientEventUrlPath =
       "/v1:registerClientEvent";
 
-  struct BlockedReason {
-    bool blocked = false;
-    bool blocked_by_age = false;
-    bool blocked_by_enterprise_policy = false;
-    bool blocked_by_feature_flag = false;
-    bool blocked_by_geo = false;
+  struct Availability {
+    bool available = false;
+    bool blocked = true;
+    bool blocked_by_age = true;
+    bool blocked_by_enterprise_policy = true;
+    bool blocked_by_geo = true;
     bool blocked_by_rollout = false;
-    bool disallow_logging = false;
+    bool disallow_logging = true;
   };
 
-  static BlockedReason CanUseAida(Profile* profile);
+  static Availability CanUseAida(Profile* profile);
 
  private:
   void PrepareAidaRequest(

@@ -11,7 +11,9 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
 #include "base/time/time.h"
+#include "base/types/optional_ref.h"
 #include "cc/cc_export.h"
+#include "cc/input/browser_controls_offset_tags_info.h"
 #include "cc/input/browser_controls_state.h"
 #include "cc/input/compositor_input_interfaces.h"
 #include "cc/input/event_listener_properties.h"
@@ -128,6 +130,13 @@ class CC_EXPORT InputHandlerClient {
     // while we are scrolling. We will generate a new prediction, and then
     // dispatch a synthetic `GestureScrollUpdate` using the prediction.
     kUseScrollPredictorForEmptyQueue,
+
+    // Will perform as `kDispatchScrollEventsImmediately` until the deadline.
+    // Instead of immediately resuming frame production, we will first attempt
+    // to generate a new prediction to dispatch. As in
+    // `kUseScrollPredictorForEmptyQueue`. After which we will resume frame
+    // production and enqueuing input.
+    kUseScrollPredictorForDeadline,
   };
 
   InputHandlerClient(const InputHandlerClient&) = delete;
@@ -148,6 +157,7 @@ class CC_EXPORT InputHandlerClient {
       float max_page_scale_factor) = 0;
   virtual void DeliverInputForBeginFrame(const viz::BeginFrameArgs& args) = 0;
   virtual void DeliverInputForHighLatencyMode() = 0;
+  virtual void DeliverInputForDeadline() = 0;
   virtual void DidFinishImplFrame() = 0;
   virtual bool HasQueuedInput() const = 0;
   virtual void SetScrollEventDispatchMode(ScrollEventDispatchMode mode) = 0;
@@ -430,9 +440,11 @@ class CC_EXPORT InputHandler : public InputDelegateForCompositor {
   // compositor thread has had a chance to update the scroll offset.
   virtual void SetDeferBeginMainFrame(bool defer_begin_main_frame) const;
 
-  virtual void UpdateBrowserControlsState(BrowserControlsState constraints,
-                                          BrowserControlsState current,
-                                          bool animate);
+  virtual void UpdateBrowserControlsState(
+      BrowserControlsState constraints,
+      BrowserControlsState current,
+      bool animate,
+      base::optional_ref<const BrowserControlsOffsetTagsInfo> offset_tags_info);
 
   virtual void SetIsHandlingTouchSequence(bool is_handling_touch_sequence);
 
@@ -503,6 +515,7 @@ class CC_EXPORT InputHandler : public InputDelegateForCompositor {
   void DidCommit() override;
   void DidActivatePendingTree() override;
   void DidFinishImplFrame() override;
+  void OnBeginImplFrameDeadline() override;
   void RootLayerStateMayHaveChanged() override;
   void DidRegisterScrollbar(ElementId scroll_element_id,
                             ScrollbarOrientation orientation) override;

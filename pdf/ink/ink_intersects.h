@@ -7,14 +7,12 @@
 
 namespace chrome_pdf {
 
-class InkModeledShape;
+class InkModeledShapeView;
 struct InkAffineTransform;
+struct InkRect;
 
-bool InkIntersectsRectWithShape(float rect_x,
-                                float rect_y,
-                                float rect_width,
-                                float rect_height,
-                                const InkModeledShape& shape,
+bool InkIntersectsRectWithShape(const InkRect& rect,
+                                const InkModeledShapeView& shape,
                                 const InkAffineTransform& transform);
 
 }  // namespace chrome_pdf

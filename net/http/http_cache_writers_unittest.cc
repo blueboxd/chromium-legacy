@@ -490,12 +490,12 @@ class WritersTest : public TestWithTaskEnvironment {
 
     auto read_buffer = base::MakeRefCounted<IOBufferWithSize>(io_buf_len);
     int rv = disk_entry_->ReadData(kResponseInfoIndex, 0, read_buffer.get(),
-                                   io_buf_len, callback.callback());
+                                   read_buffer->size(), callback.callback());
     rv = callback.GetResult(rv);
     HttpResponseInfo response_info;
     bool truncated;
-    HttpCache::ParseResponseInfo(read_buffer->data(), io_buf_len,
-                                 &response_info, &truncated);
+    HttpCache::ParseResponseInfo(read_buffer->span(), &response_info,
+                                 &truncated);
     return truncated;
   }
 

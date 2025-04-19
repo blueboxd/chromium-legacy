@@ -20,7 +20,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
-#include "components/autofill/core/browser/suggestions_context.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/webdata/autocomplete/autocomplete_entry.h"
@@ -107,8 +106,8 @@ class AutocompleteHistoryManagerTest : public testing::Test {
   AutocompleteEntry GetAutocompleteEntry(
       const std::u16string& name,
       const std::u16string& value,
-      const base::Time& date_created = AutofillClock::Now(),
-      const base::Time& date_last_used = AutofillClock::Now()) {
+      base::Time date_created = AutofillClock::Now(),
+      base::Time date_last_used = AutofillClock::Now()) {
     return AutocompleteEntry(AutocompleteKey(name, value), date_created,
                              date_last_used);
   }
@@ -138,11 +137,11 @@ TEST_F(AutocompleteHistoryManagerTest, CreditCardNumberValue) {
   valid_cc.set_value(u"4012888888881881");
   valid_cc.set_properties_mask(valid_cc.properties_mask() | kUserTyped);
   valid_cc.set_form_control_type(FormControlType::kInputText);
-  form.fields.push_back(valid_cc);
+  form.set_fields({valid_cc});
 
   EXPECT_CALL(*(web_data_service_.get()), AddFormFields(_)).Times(0);
   autocomplete_manager_->OnWillSubmitFormWithFields(
-      form.fields,
+      form.fields(),
       /*is_autocomplete_enabled=*/true);
 }
 
@@ -162,11 +161,11 @@ TEST_F(AutocompleteHistoryManagerTest, NonCreditCardNumberValue) {
   invalid_cc.set_value(u"4580123456789012");
   invalid_cc.set_properties_mask(invalid_cc.properties_mask() | kUserTyped);
   invalid_cc.set_form_control_type(FormControlType::kInputText);
-  form.fields.push_back(invalid_cc);
+  form.set_fields({invalid_cc});
 
   EXPECT_CALL(*(web_data_service_.get()), AddFormFields(_));
   autocomplete_manager_->OnWillSubmitFormWithFields(
-      form.fields,
+      form.fields(),
       /*is_autocomplete_enabled=*/true);
 }
 
@@ -183,11 +182,11 @@ TEST_F(AutocompleteHistoryManagerTest, SSNValue) {
   ssn.set_value(u"078-05-1120");
   ssn.set_properties_mask(ssn.properties_mask() | kUserTyped);
   ssn.set_form_control_type(FormControlType::kInputText);
-  form.fields.push_back(ssn);
+  form.set_fields({ssn});
 
   EXPECT_CALL(*web_data_service_, AddFormFields(_)).Times(0);
   autocomplete_manager_->OnWillSubmitFormWithFields(
-      form.fields,
+      form.fields(),
       /*is_autocomplete_enabled=*/true);
 }
 
@@ -205,11 +204,11 @@ TEST_F(AutocompleteHistoryManagerTest, SearchField) {
   search_field.set_value(u"my favorite query");
   search_field.set_properties_mask(search_field.properties_mask() | kUserTyped);
   search_field.set_form_control_type(FormControlType::kInputSearch);
-  form.fields.push_back(search_field);
+  form.set_fields({search_field});
 
   EXPECT_CALL(*(web_data_service_.get()), AddFormFields(_));
   autocomplete_manager_->OnWillSubmitFormWithFields(
-      form.fields,
+      form.fields(),
       /*is_autocomplete_enabled=*/true);
 }
 
@@ -226,11 +225,11 @@ TEST_F(AutocompleteHistoryManagerTest, AutocompleteFeatureOff) {
   search_field.set_value(u"my favorite query");
   search_field.set_properties_mask(search_field.properties_mask() | kUserTyped);
   search_field.set_form_control_type(FormControlType::kInputSearch);
-  form.fields.push_back(search_field);
+  form.set_fields({search_field});
 
   EXPECT_CALL(*(web_data_service_.get()), AddFormFields(_)).Times(0);
   autocomplete_manager_->OnWillSubmitFormWithFields(
-      form.fields,
+      form.fields(),
       /*is_autocomplete_enabled=*/false);
 }
 
@@ -241,36 +240,24 @@ TEST_F(AutocompleteHistoryManagerTest, InvalidValues) {
   form.set_url(GURL("http://myform.com/form.html"));
   form.set_action(GURL("http://myform.com/submit.html"));
 
-  // Search field.
-  FormFieldData search_field;
+  auto make_field = [](std::u16string label, std::u16string name,
+                       std::u16string value) {
+    FormFieldData f;
+    f.set_label(label);
+    f.set_name(name);
+    f.set_value(value);
+    f.set_properties_mask(kUserTyped);
+    f.set_form_control_type(FormControlType::kInputSearch);
+    return f;
+  };
 
-  // Empty value.
-  search_field.set_label(u"Search");
-  search_field.set_name(u"search");
-  search_field.set_value(u"");
-  search_field.set_properties_mask(search_field.properties_mask() | kUserTyped);
-  search_field.set_form_control_type(FormControlType::kInputSearch);
-  form.fields.push_back(search_field);
-
-  // Single whitespace.
-  search_field.set_label(u"Search2");
-  search_field.set_name(u"other search");
-  search_field.set_value(u" ");
-  search_field.set_properties_mask(search_field.properties_mask() | kUserTyped);
-  search_field.set_form_control_type(FormControlType::kInputSearch);
-  form.fields.push_back(search_field);
-
-  // Multiple whitespaces.
-  search_field.set_label(u"Search3");
-  search_field.set_name(u"other search");
-  search_field.set_value(u"      ");
-  search_field.set_properties_mask(search_field.properties_mask() | kUserTyped);
-  search_field.set_form_control_type(FormControlType::kInputSearch);
-  form.fields.push_back(search_field);
+  form.set_fields({make_field(u"Search", u"search", u""),
+                   make_field(u"Search2", u"other search", u" "),
+                   make_field(u"Search3", u"other search", u"      ")});
 
   EXPECT_CALL(*(web_data_service_.get()), AddFormFields(_)).Times(0);
   autocomplete_manager_->OnWillSubmitFormWithFields(
-      form.fields,
+      form.fields(),
       /*is_autocomplete_enabled=*/true);
 }
 
@@ -292,11 +279,11 @@ TEST_F(AutocompleteHistoryManagerTest, FieldWithAutocompleteOff) {
   field.set_properties_mask(field.properties_mask() | kUserTyped);
   field.set_form_control_type(FormControlType::kInputText);
   field.set_should_autocomplete(false);
-  form.fields.push_back(field);
+  form.set_fields({field});
 
   EXPECT_CALL(*web_data_service_, AddFormFields(_)).Times(0);
   autocomplete_manager_->OnWillSubmitFormWithFields(
-      form.fields,
+      form.fields(),
       /*is_autocomplete_enabled=*/true);
 }
 
@@ -316,11 +303,11 @@ TEST_F(AutocompleteHistoryManagerTest, Incognito) {
   search_field.set_value(u"my favorite query");
   search_field.set_properties_mask(search_field.properties_mask() | kUserTyped);
   search_field.set_form_control_type(FormControlType::kInputSearch);
-  form.fields.push_back(search_field);
+  form.set_fields({search_field});
 
   EXPECT_CALL(*web_data_service_, AddFormFields(_)).Times(0);
   autocomplete_manager_->OnWillSubmitFormWithFields(
-      form.fields,
+      form.fields(),
       /*is_autocomplete_enabled=*/true);
 }
 
@@ -342,11 +329,11 @@ TEST_F(AutocompleteHistoryManagerTest, UserInputNotFocusable) {
   search_field.set_form_control_type(FormControlType::kInputSearch);
   search_field.set_properties_mask(search_field.properties_mask() | kUserTyped);
   search_field.set_is_focusable(false);
-  form.fields.push_back(search_field);
+  form.set_fields({search_field});
 
   EXPECT_CALL(*(web_data_service_.get()), AddFormFields(_));
   autocomplete_manager_->OnWillSubmitFormWithFields(
-      form.fields,
+      form.fields(),
       /*is_autocomplete_enabled=*/true);
 }
 #endif
@@ -367,11 +354,11 @@ TEST_F(AutocompleteHistoryManagerTest, PresentationField) {
   field.set_properties_mask(field.properties_mask() | kUserTyped);
   field.set_form_control_type(FormControlType::kInputText);
   field.set_role(FormFieldData::RoleAttribute::kPresentation);
-  form.fields.push_back(field);
+  form.set_fields({field});
 
   EXPECT_CALL(*web_data_service_, AddFormFields(_)).Times(0);
   autocomplete_manager_->OnWillSubmitFormWithFields(
-      form.fields,
+      form.fields(),
       /*is_autocomplete_enabled=*/true);
 }
 
@@ -446,8 +433,8 @@ TEST_F(AutocompleteHistoryManagerTest,
 
   // Simulate request for suggestions.
   EXPECT_FALSE(autocomplete_manager_->OnGetSingleFieldSuggestions(
-      test_field_, autofill_client_, mock_callback.Get(),
-      SuggestionsContext()));
+      /*form_structure=*/nullptr, test_field_, /*autofill_field=*/nullptr,
+      autofill_client_, mock_callback.Get()));
 }
 
 // Make sure our handler is called at the right time.
@@ -468,8 +455,8 @@ TEST_F(AutocompleteHistoryManagerTest,
   // Simulate request for suggestions.
   MockSuggestionsReturnedCallback mock_callback;
   EXPECT_TRUE(autocomplete_manager_->OnGetSingleFieldSuggestions(
-      test_field_, autofill_client_, mock_callback.Get(),
-      SuggestionsContext()));
+      /*form_structure=*/nullptr, test_field_, /*autofill_field=*/nullptr,
+      autofill_client_, mock_callback.Get()));
 
   // Setting up mock to verify that DB response triggers a call to the handler's
   // OnSuggestionsReturned
@@ -498,8 +485,8 @@ TEST_F(AutocompleteHistoryManagerTest,
   // Simulate request for suggestions.
   MockSuggestionsReturnedCallback mock_callback;
   EXPECT_TRUE(autocomplete_manager_->OnGetSingleFieldSuggestions(
-      test_field_, autofill_client_, mock_callback.Get(),
-      SuggestionsContext()));
+      /*form_structure=*/nullptr, test_field_, /*autofill_field=*/nullptr,
+      autofill_client_, mock_callback.Get()));
 
   // Setting up mock to verify that DB response does not trigger a call to the
   // handler's OnSuggestionsReturned.
@@ -522,8 +509,8 @@ TEST_F(AutocompleteHistoryManagerTest,
   // Simulate request for suggestions.
   MockSuggestionsReturnedCallback mock_callback;
   EXPECT_TRUE(autocomplete_manager_->OnGetSingleFieldSuggestions(
-      test_field_, autofill_client_, mock_callback.Get(),
-      SuggestionsContext()));
+      /*form_structure=*/nullptr, test_field_, /*autofill_field=*/nullptr,
+      autofill_client_, mock_callback.Get()));
 
   // Setting up mock to verify that DB response does not trigger a call to the
   // handler's OnSuggestionsReturned.
@@ -552,8 +539,8 @@ TEST_F(AutocompleteHistoryManagerTest,
   // Simulate request for suggestions.
   MockSuggestionsReturnedCallback mock_callback;
   EXPECT_TRUE(autocomplete_manager_->OnGetSingleFieldSuggestions(
-      test_field_, autofill_client_, mock_callback.Get(),
-      SuggestionsContext()));
+      /*form_structure=*/nullptr, test_field_, /*autofill_field=*/nullptr,
+      autofill_client_, mock_callback.Get()));
 
   // Setting up mock to verify that DB response triggers a call to the handler's
   EXPECT_CALL(mock_callback, Run(test_field_.global_id(), _));
@@ -583,8 +570,8 @@ TEST_F(AutocompleteHistoryManagerTest,
   // Simulate request for suggestions.
   MockSuggestionsReturnedCallback mock_callback;
   EXPECT_TRUE(autocomplete_manager_->OnGetSingleFieldSuggestions(
-      test_field_, autofill_client_, mock_callback.Get(),
-      SuggestionsContext()));
+      /*form_structure=*/nullptr, test_field_, /*autofill_field=*/nullptr,
+      autofill_client_, mock_callback.Get()));
 
   // Setting up mock to verify that DB response triggers a call to the handler's
   EXPECT_CALL(mock_callback, Run(test_field_.global_id(), _));
@@ -612,8 +599,8 @@ TEST_F(AutocompleteHistoryManagerTest,
   // Simulate request for suggestions.
   MockSuggestionsReturnedCallback mock_callback;
   EXPECT_TRUE(autocomplete_manager_->OnGetSingleFieldSuggestions(
-      test_field_, autofill_client_, mock_callback.Get(),
-      SuggestionsContext()));
+      /*form_structure=*/nullptr, test_field_, /*autofill_field=*/nullptr,
+      autofill_client_, mock_callback.Get()));
 
   // Setting up mock to verify that DB response triggers a call to the handler's
   EXPECT_CALL(mock_callback,
@@ -648,8 +635,8 @@ TEST_F(AutocompleteHistoryManagerTest,
   // Simulate request for suggestions.
   MockSuggestionsReturnedCallback mock_callback;
   EXPECT_TRUE(autocomplete_manager_->OnGetSingleFieldSuggestions(
-      test_field_, autofill_client_, mock_callback.Get(),
-      SuggestionsContext()));
+      /*form_structure=*/nullptr, test_field_, /*autofill_field=*/nullptr,
+      autofill_client_, mock_callback.Get()));
 
   // Setting up mock to verify that DB response triggers a call to the handler's
   EXPECT_CALL(mock_callback,
@@ -681,8 +668,8 @@ TEST_F(AutocompleteHistoryManagerTest,
   // Simulate request for suggestions.
   MockSuggestionsReturnedCallback mock_callback;
   EXPECT_TRUE(autocomplete_manager_->OnGetSingleFieldSuggestions(
-      test_field_, autofill_client_, mock_callback.Get(),
-      SuggestionsContext()));
+      /*form_structure=*/nullptr, test_field_, /*autofill_field=*/nullptr,
+      autofill_client_, mock_callback.Get()));
 
   // Setting up mock to verify that DB response triggers a call to the handler's
   EXPECT_CALL(mock_callback,
@@ -729,8 +716,8 @@ TEST_F(AutocompleteHistoryManagerTest,
 
   // Simulate request for suggestions.
   EXPECT_TRUE(autocomplete_manager_->OnGetSingleFieldSuggestions(
-      test_field_, autofill_client_, mock_callback.Get(),
-      SuggestionsContext()));
+      /*form_structure=*/nullptr, test_field_, /*autofill_field=*/nullptr,
+      autofill_client_, mock_callback.Get()));
 
   // Simulate response from DB.
   autocomplete_manager_->OnWebDataServiceRequestDone(mocked_db_query_id,
@@ -740,8 +727,8 @@ TEST_F(AutocompleteHistoryManagerTest,
 
   // Now simulate one autocomplete entry being selected, and expect a metric
   // being logged for that value alone.
-  autocomplete_manager_->OnSingleFieldSuggestionSelected(
-      test_value, SuggestionType::kAutocompleteEntry);
+  Suggestion suggestion(test_value, SuggestionType::kAutocompleteEntry);
+  autocomplete_manager_->OnSingleFieldSuggestionSelected(suggestion);
 
   histogram_tester.ExpectBucketCount("Autocomplete.DaysSinceLastUse",
                                      days_since_last_use, 1);
@@ -773,16 +760,16 @@ TEST_F(AutocompleteHistoryManagerTest,
   // Simulate request for the first suggestions.
   MockSuggestionsReturnedCallback mock_callback;
   EXPECT_TRUE(autocomplete_manager_->OnGetSingleFieldSuggestions(
-      test_field_, autofill_client_, mock_callback.Get(),
-      SuggestionsContext()));
+      /*form_structure=*/nullptr, test_field_, /*autofill_field=*/nullptr,
+      autofill_client_, mock_callback.Get()));
 
   // Simulate request for the second suggestions (this will cancel the first
   // one).
   EXPECT_CALL(*web_data_service_, CancelRequest(mocked_db_query_id_first))
       .Times(1);
   EXPECT_TRUE(autocomplete_manager_->OnGetSingleFieldSuggestions(
-      test_field_, autofill_client_, mock_callback.Get(),
-      SuggestionsContext()));
+      /*form_structure=*/nullptr, test_field_, /*autofill_field=*/nullptr,
+      autofill_client_, mock_callback.Get()));
 
   // Setting up mock to verify that we can get the second response first.
   EXPECT_CALL(mock_callback,
@@ -821,8 +808,8 @@ TEST_F(AutocompleteHistoryManagerTest,
 
   MockSuggestionsReturnedCallback mock_callback;
   EXPECT_TRUE(autocomplete_manager_->OnGetSingleFieldSuggestions(
-      test_field_, autofill_client_, mock_callback.Get(),
-      SuggestionsContext()));
+      /*form_structure=*/nullptr, test_field_, /*autofill_field=*/nullptr,
+      autofill_client_, mock_callback.Get()));
 
   // Simulate cancelling the request.
   EXPECT_CALL(*web_data_service_, CancelRequest(mocked_db_query_id));
@@ -850,7 +837,8 @@ TEST_F(AutocompleteHistoryManagerTest, NoAutocompleteSuggestionsForTextarea) {
                   testing::Truly(IsEmptySuggestionVector)));
 
   EXPECT_TRUE(autocomplete_manager_->OnGetSingleFieldSuggestions(
-      field, autofill_client_, mock_callback.Get(), SuggestionsContext()));
+      /*form_structure=*/nullptr, field, /*autofill_field=*/nullptr,
+      autofill_client_, mock_callback.Get()));
 }
 
 TEST_F(AutocompleteHistoryManagerTest, DestructorCancelsRequests) {
@@ -863,7 +851,8 @@ TEST_F(AutocompleteHistoryManagerTest, DestructorCancelsRequests) {
 
   // Simulate request for suggestions.
   EXPECT_TRUE(autocomplete_manager_->OnGetSingleFieldSuggestions(
-      test_field_, autofill_client_, base::DoNothing(), SuggestionsContext()));
+      /*form_structure=*/nullptr, test_field_, /*autofill_field=*/nullptr,
+      autofill_client_, base::DoNothing()));
 
   // Expect a cancel call.
   EXPECT_CALL(*web_data_service_, CancelRequest(mocked_db_query_id));

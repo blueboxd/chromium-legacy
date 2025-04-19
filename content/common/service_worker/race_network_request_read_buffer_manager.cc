@@ -2,11 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/342213636): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "content/common/service_worker/race_network_request_read_buffer_manager.h"
 
 #include "base/check_op.h"
-#include "base/debug/crash_logging.h"
-#include "base/debug/dump_without_crashing.h"
+#include "base/containers/span.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/field_trial_params.h"
 #include "content/common/features.h"
@@ -49,8 +53,8 @@ RaceNetworkRequestReadBufferManager::ReadData() {
   bool is_query_data_size_mode = base::GetFieldTrialParamByFeatureAsBool(
       features::kServiceWorkerAutoPreload, "query_data_size", false);
   if (is_query_data_size_mode) {
-    result = consumer_handle_->ReadData(nullptr, &num_bytes,
-                                        MOJO_READ_DATA_FLAG_QUERY);
+    result = consumer_handle_->ReadData(MOJO_READ_DATA_FLAG_QUERY,
+                                        base::span<uint8_t>(), num_bytes);
     CHECK_EQ(result, MOJO_RESULT_OK);
     // Sometimes queried |num_bytes| is zero. So explicitly set >=1 byte size
     // here to avoid receiving |MOJO_RESULT_INVALID_ARGUMENT| from
@@ -67,33 +71,16 @@ RaceNetworkRequestReadBufferManager::ReadData() {
   }
   scoped_refptr<net::IOBuffer> buffer =
       base::MakeRefCounted<net::IOBufferWithSize>(num_bytes);
-  result = consumer_handle_->ReadData(buffer->data(), &num_bytes,
-                                      MOJO_READ_DATA_FLAG_NONE);
+  result = consumer_handle_->ReadData(MOJO_READ_DATA_FLAG_NONE, buffer->span(),
+                                      num_bytes);
 
   if (result == MOJO_RESULT_OK) {
     buffer_ = base::MakeRefCounted<net::DrainableIOBuffer>(std::move(buffer),
                                                            num_bytes);
-    SCOPED_CRASH_KEY_NUMBER("SWRace", "num_bytes_read_buffer", num_bytes);
-    volatile const char* buffer_v =
-        static_cast<volatile const char*>(buffer_->data());
-    for (size_t i = 0; i < num_bytes; ++i) {
-      // Updates the crash key per 50KB to reduce the number of calls.
-      // Also adds the key when |i| is 1 to know whether the entire buffer is
-      // not available to access, or at least the first byte can be accessible.
-      // In addition to it, checks when |i| is |num_bytes| -1 or -2 to capture
-      // off-by-one errors.
-      if (i % (1024 * 50) == 0 || i == 1 || i == num_bytes - 2 ||
-          i == num_bytes - 1) {
-        SCOPED_CRASH_KEY_NUMBER("SWRace", "throttled_read_buffer_index", i);
-        buffer_v[i];
-      } else {
-        buffer_v[i];
-      }
-    }
   }
 
-  return std::make_pair(result,
-                        buffer_ ? buffer_->span() : base::span<const char>());
+  return std::make_pair(result, buffer_ ? base::as_chars(buffer_->span())
+                                        : base::span<const char>());
 }
 
 void RaceNetworkRequestReadBufferManager::ConsumeData(size_t num_bytes_read) {
@@ -112,6 +99,6 @@ base::span<const char> RaceNetworkRequestReadBufferManager::RemainingBuffer()
   // base::span with the actual data size. IOBuffer::span() returns the span
   // with the size of the whole buffer, even if data is partially consumed. So
   // subspan it with the remaining data size.
-  return buffer_->span().subspan(0, buffer_->BytesRemaining());
+  return base::as_chars(buffer_->span()).subspan(0, buffer_->BytesRemaining());
 }
 }  // namespace content

@@ -53,20 +53,18 @@ void TabContentsSyncedTabDelegate::ResetCachedLastActiveTime() {
 }
 
 base::Time TabContentsSyncedTabDelegate::GetLastActiveTime() {
-  // Use the TimeDelta common ground between the two units to make the
-  // conversion.
-  const base::TimeDelta delta_since_epoch =
-      web_contents_->GetLastActiveTime() - base::TimeTicks::UnixEpoch();
-  const base::Time converted_time = base::Time::UnixEpoch() + delta_since_epoch;
+  const base::Time last_active_time = web_contents_->GetLastActiveTime();
   if (base::FeatureList::IsEnabled(syncer::kSyncSessionOnVisibilityChanged)) {
+    const base::TimeTicks last_active_time_ticks =
+        web_contents_->GetLastActiveTimeTicks();
     if (cached_last_active_time_.has_value() &&
-        converted_time - cached_last_active_time_.value() <
+        last_active_time_ticks - cached_last_active_time_.value().first <
             syncer::kSyncSessionOnVisibilityChangedTimeThreshold.Get()) {
-      return cached_last_active_time_.value();
+      return cached_last_active_time_.value().second;
     }
-    cached_last_active_time_ = converted_time;
+    cached_last_active_time_ = {last_active_time_ticks, last_active_time};
   }
-  return converted_time;
+  return last_active_time;
 }
 
 bool TabContentsSyncedTabDelegate::IsBeingDestroyed() const {
@@ -127,7 +125,7 @@ TabContentsSyncedTabDelegate::GetBlockedNavigations() const {
 #if BUILDFLAG(IS_ANDROID)
   // TabHelpers::AttachTabHelpers() will not be called for a placeholder tab's
   // WebContents that is temporarily created from a serialized state in
-  // SyncedTabDelegateAndroid::CreatePlaceholderTabSyncedTabDelegate(). When
+  // SyncedTabDelegateAndroid::ReadPlaceholderTabSnapshotIfItShouldSync(). When
   // this occurs, early-out and return a nullptr.
   if (!navigation_observer) {
     return nullptr;
@@ -172,12 +170,7 @@ bool TabContentsSyncedTabDelegate::ShouldSync(
 
   int entry_count = GetEntryCount();
   for (int i = 0; i < entry_count; ++i) {
-    const GURL& virtual_url = GetVirtualURLAtIndex(i);
-    if (!virtual_url.is_valid()) {
-      continue;
-    }
-
-    if (sessions_client->ShouldSyncURL(virtual_url)) {
+    if (sessions_client->ShouldSyncURL(GetVirtualURLAtIndex(i))) {
       return true;
     }
   }

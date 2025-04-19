@@ -5,6 +5,7 @@
 #include "chrome/browser/media/router/media_router_feature.h"
 
 #include <stdint.h>
+
 #include <string>
 #include <utility>
 
@@ -51,6 +52,12 @@ BASE_FEATURE(kAllowAllSitesToInitiateMirroring,
 BASE_FEATURE(kDialMediaRouteProvider,
              "DialMediaRouteProvider",
              base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kDelayMediaSinkDiscovery,
+             "DelayMediaSinkDiscovery",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kShowCastPermissionRejectedError,
+             "ShowCastPermissionRejectedError",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // TODO(crbug.com/1486680): Remove once stopping mirroring routes in the global
 // media controls is implemented on ChromeOS.
@@ -64,9 +71,9 @@ BASE_FEATURE(kFallbackToAudioTabMirroring,
 
 BASE_FEATURE(kCastMirroringPlayoutDelay,
              "CastMirroringPlayoutDelay",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 const base::FeatureParam<int> kCastMirroringPlayoutDelayMs{
-    &kCastMirroringPlayoutDelay, "cast_mirroring_playout_delay_ms", -1};
+    &kCastMirroringPlayoutDelay, "cast_mirroring_playout_delay_ms", 200};
 
 // TODO(b/202294946): Remove when enabled by default after a few milestones.
 BASE_FEATURE(kGlobalMediaControlsCastStartStop,
@@ -78,6 +85,12 @@ BASE_FEATURE(kCastSilentlyRemoveVcOnNavigation,
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 #endif  // !BUILDFLAG(IS_ANDROID)
+
+#if BUILDFLAG(IS_MAC)
+BASE_FEATURE(kUseNetworkFrameworkForLocalDiscovery,
+             "UseNetworkFrameworkForLocalDiscovery",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
 
 namespace {
 const PrefService::Preference* GetMediaRouterPref(

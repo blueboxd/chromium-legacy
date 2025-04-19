@@ -165,6 +165,7 @@ chromium-metrics-reviews@google.com.
   <int value="6" label="Duplicate prefetch request"/>
   <int value="7" label="Too many recent prefetches"/>
   <int value="8" label="Throttle prevented the prefetch"/>
+  <int value="9" label="SlowNetwork suppressed the prefetch"/>
 </enum>
 
 <enum name="SearchPrefetchResponseDataReaderStatus">
@@ -182,12 +183,13 @@ chromium-metrics-reviews@google.com.
   <int value="3" label="Navigation URL was not a default search URL"/>
   <int value="4" label="No prefetch issued for the search terms"/>
   <int value="5" label="Prefetch was for a different origin"/>
-  <int value="6" label="Prefetch request was cancelled"/>
+  <int value="6" label="Prefetch request was cancelled (Obsolete)"/>
   <int value="7" label="Prefetch request failed"/>
   <int value="8" label="Another reason (unexpected)"/>
   <int value="9" label="POST, reload, form, link, or other non-cache loads."/>
   <int value="10"
-      label="A prerender navigation request has taken this response away."/>
+      label="A prerender navigation request has taken this response away
+             (Obsolete)."/>
 </enum>
 
 <enum name="SearchPrefetchStatus">
@@ -196,16 +198,16 @@ chromium-metrics-reviews@google.com.
   <int value="2" label="Headers received (for streaming responses)"/>
   <int value="3"
       label="Headers received and user navigated to search terms (for
-             streaming responses)"/>
+             streaming responses) (Obsolete)"/>
   <int value="4" label="Completed the prefetch"/>
   <int value="5" label="Request failed"/>
-  <int value="6" label="Request cancelled"/>
+  <int value="6" label="Request cancelled (Obsolete)"/>
   <int value="7" label="Prefetch request served for real navigation"/>
-  <int value="8" label="Was served to prerender navigation stack"/>
+  <int value="8" label="Was served to prerender navigation stack (Obsolete)"/>
   <int value="9"
       label="Serving to prerender navigation stack and user navigated to
-             search terms"/>
-  <int value="10" label="Upgraded to prerender and succeeded"/>
+             search terms (Obsolete)"/>
+  <int value="10" label="Upgraded to prerender and succeeded (Obsolete)"/>
 </enum>
 
 <enum name="SearchPreloadForwardingResult">
@@ -260,16 +262,6 @@ chromium-metrics-reviews@google.com.
   <int value="10" label="Currency"/>
   <int value="11" label="Local time"/>
   <int value="12" label="Play install"/>
-</enum>
-
-<enum name="SuggestionGroupId">
-  <summary>
-    Suggestion group IDs toggled visible or hidden in the omnibox result list.
-    Based on the SuggestionGroupIds enum in suggestion_config.proto, contains
-    values currently known to Chrome.
-  </summary>
-  <int value="40001" label="Onboarding"/>
-  <int value="40009" label="Proactive zero-suggest"/>
 </enum>
 
 <enum name="SuggestionPedalType">
@@ -346,24 +338,6 @@ chromium-metrics-reviews@google.com.
   <int value="3" label="Generally ineligible in current context">
     Zero-prefix suggestions are not eligible in the given context. E.g., due to
     the page classification, focus type, input type, or an invalid page URL.
-  </int>
-</enum>
-
-<enum name="ZeroSuggestEligibleOnFocus">
-  <obsolete>
-    Obsolete as of M106.
-  </obsolete>
-  <int value="0" label="Eligible">
-    URL can be currently sent to the suggest server.
-  </int>
-  <int value="1"
-      label="Generally eligible in current context but particular URL
-             ineligible">
-    URL cannot be sent to the suggest server but another URL would be eligible
-    at this time.
-  </int>
-  <int value="2" label="Generally ineligible in current context">
-    No URL can be sent to the suggest server at this time.
   </int>
 </enum>
 

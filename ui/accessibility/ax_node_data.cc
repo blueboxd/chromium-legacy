@@ -483,9 +483,11 @@ bool AXNodeData::GetHtmlAttribute(const char* attribute,
 }
 
 void AXNodeData::AddChildTreeId(const AXTreeID& tree_id) {
-  DCHECK(!HasChildTreeID());
+  if (HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId)) {
+    RemoveStringAttribute(ax::mojom::StringAttribute::kChildTreeId);
+  }
   if (tree_id.type() == ax::mojom::AXTreeIDType::kUnknown) {
-    DUMP_WILL_BE_NOTREACHED_NORETURN();
+    DUMP_WILL_BE_NOTREACHED();
     return;
   }
   std::string tree_id_str = tree_id.ToString();
@@ -1693,6 +1695,12 @@ std::string AXNodeData::ToString(bool verbose) const {
     switch (string_attribute.first) {
       case ax::mojom::StringAttribute::kAccessKey:
         result += " access_key=" + value;
+        break;
+      case ax::mojom::StringAttribute::kAriaCellColumnIndexText:
+        result += " aria_cell_column_index_text=" + value;
+        break;
+      case ax::mojom::StringAttribute::kAriaCellRowIndexText:
+        result += " aria_cell_row_index_text=" + value;
         break;
       case ax::mojom::StringAttribute::kAriaInvalidValueDeprecated:
         result += " aria_invalid_value=" + value;

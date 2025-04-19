@@ -10,6 +10,7 @@
 
 #include "base/atomic_ref_count.h"
 #include "base/logging.h"
+#include "base/trace_event/trace_event.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "ui/gl/gl_angle_util_win.h"
 
@@ -40,6 +41,13 @@ Microsoft::WRL::ComPtr<ID3D11Texture2D> OpenSharedHandleTexture(
   return d3d11_texture;
 }
 
+bool HasKeyedMutex(Microsoft::WRL::ComPtr<ID3D11Texture2D> d3d11_texture) {
+  CHECK(d3d11_texture);
+  D3D11_TEXTURE2D_DESC desc;
+  d3d11_texture->GetDesc(&desc);
+  return desc.MiscFlags & D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX;
+}
+
 }  // namespace
 
 DXGISharedHandleState::D3D11TextureState::D3D11TextureState(
@@ -66,14 +74,14 @@ DXGISharedHandleState::DXGISharedHandleState(
           base::subtle::GetRefCountPreference<DXGISharedHandleState>()),
       manager_(std::move(manager)),
       token_(std::move(token)),
-      shared_handle_(std::move(shared_handle)) {
+      shared_handle_(std::move(shared_handle)),
+      has_keyed_mutex_(HasKeyedMutex(d3d11_texture)) {
   CHECK(d3d11_texture);
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device;
   d3d11_texture->GetDevice(&d3d11_device);
   CHECK(d3d11_device);
 
   D3D11TextureState texture_state(std::move(d3d11_texture));
-  has_keyed_mutex_ = !!texture_state.dxgi_keyed_mutex;
   d3d11_texture_state_map_.emplace(d3d11_device, std::move(texture_state));
 }
 
@@ -105,6 +113,7 @@ void DXGISharedHandleState::Release() const {
 Microsoft::WRL::ComPtr<ID3D11Texture2D>
 DXGISharedHandleState::GetOrCreateD3D11Texture(
     Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device) {
+  base::AutoLock auto_lock(lock_);
   auto it = d3d11_texture_state_map_.find(d3d11_device);
   if (it == d3d11_texture_state_map_.end()) {
     auto d3d11_texture =
@@ -126,6 +135,8 @@ bool DXGISharedHandleState::AcquireKeyedMutex(
   if (!has_keyed_mutex_) {
     return true;
   }
+  TRACE_EVENT0("gpu", "DXGISharedHandleState::AcquireKeyedMutex");
+  base::AutoLock auto_lock(lock_);
   auto& d3d11_state = d3d11_texture_state_map_.at(d3d11_device);
   CHECK(d3d11_state.dxgi_keyed_mutex);
   CHECK_GE(d3d11_state.keyed_mutex_acquired_count, 0);
@@ -158,6 +169,7 @@ void DXGISharedHandleState::ReleaseKeyedMutex(
   if (!has_keyed_mutex_) {
     return;
   }
+  base::AutoLock auto_lock(lock_);
   CHECK(keyed_mutex_acquired_);
 
   auto& d3d11_state = d3d11_texture_state_map_.at(d3d11_device);
@@ -176,14 +188,31 @@ void DXGISharedHandleState::ReleaseKeyedMutex(
   }
 }
 
-wgpu::SharedTextureMemory& DXGISharedHandleState::GetDawnSharedTextureMemory(
-    WGPUDevice device) {
-  return dawn_shared_texture_memory_cache_[device];
+wgpu::SharedTextureMemory DXGISharedHandleState::GetSharedTextureMemory(
+    const wgpu::Device& device) {
+  base::AutoLock auto_lock(lock_);
+  auto iter = dawn_shared_texture_memory_cache_.find(device.Get());
+  if (iter == dawn_shared_texture_memory_cache_.end()) {
+    return nullptr;
+  }
+  return iter->second;
 }
 
-void DXGISharedHandleState::EraseDawnSharedTextureMemory(WGPUDevice device) {
-  DCHECK(dawn_shared_texture_memory_cache_.at(device).IsDeviceLost());
-  dawn_shared_texture_memory_cache_.erase(device);
+void DXGISharedHandleState::MaybeCacheSharedTextureMemory(
+    const wgpu::Device& device,
+    wgpu::SharedTextureMemory memory) {
+  base::AutoLock auto_lock(lock_);
+  CHECK(memory);
+  auto [iter, _] =
+      dawn_shared_texture_memory_cache_.try_emplace(device.Get(), memory);
+  CHECK_EQ(memory.Get(), iter->second.Get());
+}
+
+void DXGISharedHandleState::EraseDawnSharedTextureMemory(
+    const wgpu::Device& device) {
+  base::AutoLock auto_lock(lock_);
+  CHECK(dawn_shared_texture_memory_cache_.at(device.Get()).IsDeviceLost());
+  dawn_shared_texture_memory_cache_.erase(device.Get());
 }
 
 DXGISharedHandleManager::DXGISharedHandleManager() = default;

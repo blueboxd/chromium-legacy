@@ -38,10 +38,9 @@ class TestSafeBrowsingDatabaseManager : public SafeBrowsingDatabaseManager {
                         Client* client) override;
   bool CheckExtensionIDs(const std::set<std::string>& extension_ids,
                          Client* client) override;
-  bool CheckResourceUrl(const GURL& url, Client* client) override;
-  void CheckUrlForHighConfidenceAllowlist(
+  std::optional<HighConfidenceAllowlistCheckLoggingDetails>
+  CheckUrlForHighConfidenceAllowlist(
       const GURL& url,
-      const std::string& metric_variation,
       base::OnceCallback<void(bool)> callback) override;
   bool CheckUrlForSubresourceFilter(const GURL& url, Client* client) override;
   void MatchDownloadAllowlistUrl(
@@ -50,7 +49,6 @@ class TestSafeBrowsingDatabaseManager : public SafeBrowsingDatabaseManager {
   safe_browsing::ThreatSource GetBrowseUrlThreatSource(
       CheckBrowseUrlType check_type) const override;
   safe_browsing::ThreatSource GetNonBrowseUrlThreatSource() const override;
-  bool IsDownloadProtectionEnabled() const override;
   void StartOnSBThread(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const V4ProtocolConfig& config) override;

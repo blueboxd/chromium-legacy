@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/modules/eventsource/event_source_parser.h"
 
 #include "third_party/blink/renderer/core/event_type_names.h"
@@ -95,7 +100,8 @@ void EventSourceParser::ParseLine() {
     return;
   }
   if (field_name == "data") {
-    data_.Append(line_.data() + field_value_start, field_value_size);
+    data_.AppendSpan(
+        base::span(line_).subspan(field_value_start, field_value_size));
     data_.push_back('\n');
     return;
   }

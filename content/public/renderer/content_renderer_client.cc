@@ -60,6 +60,10 @@ bool ContentRendererClient::IsPluginHandledExternally(
   return false;
 }
 
+bool ContentRendererClient::IsDomStorageDisabled() const {
+  return false;
+}
+
 v8::Local<v8::Object> ContentRendererClient::GetScriptableObject(
     const blink::WebElement& plugin_element,
     v8::Isolate* isolate) {
@@ -109,6 +113,11 @@ ContentRendererClient::CreateWebSocketHandshakeThrottleProvider() {
   return nullptr;
 }
 
+bool ContentRendererClient::ShouldUseCodeCacheWithHashing(
+    const blink::WebURL& request_url) const {
+  return true;
+}
+
 void ContentRendererClient::PostIOThreadCreated(
     base::SingleThreadTaskRunner* io_thread_task_runner) {}
 
@@ -149,7 +158,8 @@ bool ContentRendererClient::HandleNavigation(
 void ContentRendererClient::WillSendRequest(
     blink::WebLocalFrame* frame,
     ui::PageTransition transition_type,
-    const blink::WebURL& url,
+    const blink::WebURL& upstream_url,
+    const blink::WebURL& target_url,
     const net::SiteForCookies& site_for_cookies,
     const url::Origin* initiator_origin,
     GURL* new_url) {}
@@ -163,9 +173,21 @@ uint64_t ContentRendererClient::VisitedLinkHash(
   return 0;
 }
 
+uint64_t ContentRendererClient::PartitionedVisitedLinkFingerprint(
+    std::string_view canonical_link_url,
+    const net::SchemefulSite& top_level_site,
+    const url::Origin& frame_origin) {
+  // Return the null-fingerprint value.
+  return 0;
+}
+
 bool ContentRendererClient::IsLinkVisited(uint64_t link_hash) {
   return false;
 }
+
+void ContentRendererClient::AddOrUpdateVisitedLinkSalt(
+    const url::Origin& origin,
+    uint64_t salt) {}
 
 std::unique_ptr<blink::WebPrescientNetworking>
 ContentRendererClient::CreatePrescientNetworking(RenderFrame* render_frame) {

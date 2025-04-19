@@ -19,15 +19,19 @@ namespace content {
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
     const ui::AXTreeUpdate& initial_tree,
+    ui::AXNodeIdDelegate& node_id_delegate,
     ui::AXPlatformTreeManagerDelegate* delegate) {
-  return new BrowserAccessibilityManagerAuraLinux(initial_tree, delegate);
+  return new BrowserAccessibilityManagerAuraLinux(initial_tree,
+                                                  node_id_delegate, delegate);
 }
 
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
+    ui::AXNodeIdDelegate& node_id_delegate,
     ui::AXPlatformTreeManagerDelegate* delegate) {
   return new BrowserAccessibilityManagerAuraLinux(
-      BrowserAccessibilityManagerAuraLinux::GetEmptyDocument(), delegate);
+      BrowserAccessibilityManagerAuraLinux::GetEmptyDocument(),
+      node_id_delegate, delegate);
 }
 
 BrowserAccessibilityManagerAuraLinux*
@@ -37,8 +41,9 @@ BrowserAccessibilityManager::ToBrowserAccessibilityManagerAuraLinux() {
 
 BrowserAccessibilityManagerAuraLinux::BrowserAccessibilityManagerAuraLinux(
     const ui::AXTreeUpdate& initial_tree,
+    ui::AXNodeIdDelegate& node_id_delegate,
     ui::AXPlatformTreeManagerDelegate* delegate)
-    : BrowserAccessibilityManager(delegate) {
+    : BrowserAccessibilityManager(node_id_delegate, delegate) {
   Initialize(initial_tree);
 }
 
@@ -380,7 +385,6 @@ void BrowserAccessibilityManagerAuraLinux::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::OBJECT_ATTRIBUTE_CHANGED:
     case ui::AXEventGenerator::Event::ORIENTATION_CHANGED:
     case ui::AXEventGenerator::Event::PLACEHOLDER_CHANGED:
-    case ui::AXEventGenerator::Event::PORTAL_ACTIVATED:
     case ui::AXEventGenerator::Event::POSITION_IN_SET_CHANGED:
     case ui::AXEventGenerator::Event::RANGE_VALUE_MAX_CHANGED:
     case ui::AXEventGenerator::Event::RANGE_VALUE_MIN_CHANGED:

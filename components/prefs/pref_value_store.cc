@@ -39,8 +39,7 @@ void PrefValueStore::PrefStoreKeeper::Initialize(
     pref_store_->AddObserver(this);
 }
 
-void PrefValueStore::PrefStoreKeeper::OnPrefValueChanged(
-    const std::string& key) {
+void PrefValueStore::PrefStoreKeeper::OnPrefValueChanged(std::string_view key) {
   pref_value_store_->OnPrefValueChanged(type_, key);
 }
 
@@ -137,7 +136,7 @@ bool PrefValueStore::GetRecommendedValue(const std::string& name,
 }
 
 void PrefValueStore::NotifyPrefChanged(
-    const std::string& path,
+    std::string_view path,
     PrefValueStore::PrefStoreType new_store) {
   DCHECK(new_store != INVALID_STORE);
   // A notification is sent when the pref value in any store changes. If this
@@ -279,7 +278,7 @@ bool PrefValueStore::GetValueFromStoreWithType(
 }
 
 void PrefValueStore::OnPrefValueChanged(PrefValueStore::PrefStoreType type,
-                                        const std::string& key) {
+                                        std::string_view key) {
   NotifyPrefChanged(key, type);
 }
 

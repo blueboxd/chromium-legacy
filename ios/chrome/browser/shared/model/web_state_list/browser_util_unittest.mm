@@ -7,13 +7,13 @@
 #import <memory>
 
 #import "base/memory/raw_ptr.h"
-#import "ios/chrome/browser/sessions/fake_tab_restore_service.h"
-#import "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
+#import "components/tab_groups/tab_group_id.h"
+#import "ios/chrome/browser/sessions/model/fake_tab_restore_service.h"
+#import "ios/chrome/browser/sessions/model/ios_chrome_tab_restore_service_factory.h"
 #import "ios/chrome/browser/shared/model/browser/browser_list.h"
 #import "ios/chrome/browser/shared/model/browser/browser_list_factory.h"
 #import "ios/chrome/browser/shared/model/browser/test/test_browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
-#import "ios/chrome/browser/shared/model/web_state_list/tab_group.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_opener.h"
 #import "ios/chrome/browser/snapshots/model/snapshot_browser_agent.h"
@@ -26,7 +26,6 @@
 #import "testing/platform_test.h"
 #import "ui/base/test/ios/ui_image_test_utils.h"
 
-using tab_groups::TabGroupVisualData;
 using ui::test::uiimage_utils::UIImagesAreEqual;
 using ui::test::uiimage_utils::UIImageWithSizeAndSolidColor;
 
@@ -47,7 +46,7 @@ class BrowserUtilTest : public PlatformTest {
         IOSChromeTabRestoreServiceFactory::GetInstance(),
         FakeTabRestoreService::GetTestingFactory());
 
-    chrome_browser_state_ = test_browser_state_builder.Build();
+    chrome_browser_state_ = std::move(test_browser_state_builder).Build();
 
     browser_ = std::make_unique<TestBrowser>(chrome_browser_state_.get());
     other_browser_ = std::make_unique<TestBrowser>(chrome_browser_state_.get());
@@ -60,8 +59,8 @@ class BrowserUtilTest : public PlatformTest {
         BrowserListFactory::GetForBrowserState(chrome_browser_state_.get());
     browser_list_->AddBrowser(browser_.get());
     browser_list_->AddBrowser(other_browser_.get());
-    browser_list_->AddIncognitoBrowser(incognito_browser_.get());
-    browser_list_->AddIncognitoBrowser(other_incognito_browser_.get());
+    browser_list_->AddBrowser(incognito_browser_.get());
+    browser_list_->AddBrowser(other_incognito_browser_.get());
 
     SnapshotBrowserAgent::CreateForBrowser(browser_.get());
     SnapshotBrowserAgent::CreateForBrowser(other_browser_.get());
@@ -130,8 +129,9 @@ TEST_F(BrowserUtilTest, TestMoveTabAcrossIncognitoBrowsers) {
   ASSERT_TRUE(tab_restore_service_->entries().empty());
   web::WebStateID tab_id = GetTabIDForWebStateAt(0, incognito_browser_.get());
 
-  BrowserAndIndex tab_info =
-      FindBrowserAndIndex(tab_id, browser_list_->AllIncognitoBrowsers());
+  BrowserAndIndex tab_info = FindBrowserAndIndex(
+      tab_id,
+      browser_list_->BrowsersOfType(BrowserList::BrowserType::kIncognito));
   ASSERT_EQ(tab_info.tab_index, 0);
   ASSERT_EQ(tab_info.browser, incognito_browser_.get());
 
@@ -150,8 +150,9 @@ TEST_F(BrowserUtilTest, TestMoveTabAcrossRegularBrowsers) {
   ASSERT_TRUE(tab_restore_service_->entries().empty());
   web::WebStateID tab_id = GetTabIDForWebStateAt(1, browser_.get());
 
-  BrowserAndIndex tab_info =
-      FindBrowserAndIndex(tab_id, browser_list_->AllRegularBrowsers());
+  BrowserAndIndex tab_info = FindBrowserAndIndex(
+      tab_id, browser_list_->BrowsersOfType(
+                  BrowserList::BrowserType::kRegularAndInactive));
   ASSERT_EQ(tab_info.tab_index, 1);
   ASSERT_EQ(tab_info.browser, browser_.get());
 
@@ -167,12 +168,15 @@ TEST_F(BrowserUtilTest, TestMoveTabAcrossRegularBrowsers) {
 TEST_F(BrowserUtilTest, TestFindBrowserAndIndexWithUnknownId) {
   web::WebStateID tab_id = web::WebStateID::NewUnique();
 
-  BrowserAndIndex tab_info =
-      FindBrowserAndIndex(tab_id, browser_list_->AllRegularBrowsers());
+  BrowserAndIndex tab_info = FindBrowserAndIndex(
+      tab_id, browser_list_->BrowsersOfType(
+                  BrowserList::BrowserType::kRegularAndInactive));
   ASSERT_EQ(tab_info.tab_index, WebStateList::kInvalidIndex);
   EXPECT_NE(tab_info.browser, browser_.get());
 
-  tab_info = FindBrowserAndIndex(tab_id, browser_list_->AllIncognitoBrowsers());
+  tab_info = FindBrowserAndIndex(
+      tab_id,
+      browser_list_->BrowsersOfType(BrowserList::BrowserType::kIncognito));
   ASSERT_EQ(tab_info.tab_index, WebStateList::kInvalidIndex);
   EXPECT_NE(tab_info.browser, incognito_browser_.get());
 }
@@ -183,8 +187,9 @@ TEST_F(BrowserUtilTest, TestReorderTabWithinSameBrowser) {
   ASSERT_TRUE(tab_restore_service_->entries().empty());
   web::WebStateID tab_id = GetTabIDForWebStateAt(0, browser_.get());
 
-  BrowserAndIndex tab_info =
-      FindBrowserAndIndex(tab_id, browser_list_->AllRegularBrowsers());
+  BrowserAndIndex tab_info = FindBrowserAndIndex(
+      tab_id, browser_list_->BrowsersOfType(
+                  BrowserList::BrowserType::kRegularAndInactive));
   ASSERT_EQ(tab_info.tab_index, 0);
   ASSERT_EQ(tab_info.browser, browser_.get());
 
@@ -230,184 +235,4 @@ TEST_F(BrowserUtilTest, TestMovedSnapshot) {
   EXPECT_EQ(nil, GetSnapshot(snapshot_storage, snapshot_id));
   EXPECT_TRUE(UIImagesAreEqual(
       snapshot, GetSnapshot(other_snapshot_storage, snapshot_id)));
-}
-
-// Tests that a tab group with one tab is moved from one regular browser to
-// another browser.
-TEST_F(BrowserUtilTest, TestMoveTabGroupOneTabAcrossRegularBrowsers) {
-  WebStateList* web_state_list = browser_->GetWebStateList();
-  WebStateList* other_web_state_list = other_browser_->GetWebStateList();
-
-  // Create a group of two tabs.
-  TabGroupVisualData visual_data =
-      TabGroupVisualData(u"Group", tab_groups::TabGroupColorId::kGrey);
-  const TabGroup* tab_group =
-      web_state_list->CreateGroup({2}, TabGroupVisualData(visual_data));
-
-  web::WebStateID tab_id = GetTabIDForWebStateAt(2, browser_.get());
-  ASSERT_EQ(3, web_state_list->count());
-  ASSERT_EQ(tab_group, web_state_list->GetGroupOfWebStateAt(2));
-
-  // Move the group.
-  MoveTabGroupToBrowser(tab_group, other_browser_.get(), 0);
-
-  const TabGroup* other_group = other_web_state_list->GetGroupOfWebStateAt(0);
-  ASSERT_TRUE(other_group);
-  EXPECT_EQ(1, other_group->range().count());
-  EXPECT_EQ(visual_data, other_group->visual_data());
-  EXPECT_EQ(2, web_state_list->count());
-  EXPECT_EQ(1, other_web_state_list->count());
-  EXPECT_NE(tab_id, GetTabIDForWebStateAt(1, browser_.get()));
-  EXPECT_EQ(tab_id, GetTabIDForWebStateAt(0, other_browser_.get()));
-}
-
-// Tests that a tab group with multiple tabs is moved from one regular browser
-// to another browser.
-TEST_F(BrowserUtilTest, TestMoveTabGroupMutipleTabsAcrossRegularBrowsers) {
-  WebStateList* web_state_list = browser_->GetWebStateList();
-  WebStateList* other_web_state_list = other_browser_->GetWebStateList();
-
-  // Create a group of two tabs.
-  TabGroupVisualData visual_data =
-      TabGroupVisualData(u"Group", tab_groups::TabGroupColorId::kGrey);
-  const TabGroup* tab_group =
-      web_state_list->CreateGroup({0, 1}, TabGroupVisualData(visual_data));
-  web::WebStateID tab_id_0 = GetTabIDForWebStateAt(0, browser_.get());
-  web::WebStateID tab_id_1 = GetTabIDForWebStateAt(1, browser_.get());
-  ASSERT_EQ(3, web_state_list->count());
-  ASSERT_EQ(tab_group, web_state_list->GetGroupOfWebStateAt(0));
-
-  // Move the group.
-  MoveTabGroupToBrowser(tab_group, other_browser_.get(), 0);
-
-  const TabGroup* other_group = other_web_state_list->GetGroupOfWebStateAt(0);
-  ASSERT_TRUE(other_group);
-  EXPECT_EQ(2, other_group->range().count());
-  EXPECT_EQ(visual_data, other_group->visual_data());
-  EXPECT_EQ(1, web_state_list->count());
-  EXPECT_EQ(2, other_web_state_list->count());
-  EXPECT_EQ(tab_id_0, GetTabIDForWebStateAt(0, other_browser_.get()));
-  EXPECT_EQ(tab_id_1, GetTabIDForWebStateAt(1, other_browser_.get()));
-}
-
-// Tests that a tab group with multiple tabs is moved from one regular browser
-// to another browser.
-TEST_F(BrowserUtilTest, TestMoveTabGroupsAcrossRegularBrowsers) {
-  WebStateList* web_state_list = browser_->GetWebStateList();
-  WebStateList* other_web_state_list = other_browser_->GetWebStateList();
-
-  // Create 2 groups.
-  TabGroupVisualData visual_data =
-      TabGroupVisualData(u"Group", tab_groups::TabGroupColorId::kGrey);
-  const TabGroup* tab_group_0 =
-      web_state_list->CreateGroup({0}, TabGroupVisualData(visual_data));
-  const TabGroup* tab_group_1 =
-      web_state_list->CreateGroup({1}, TabGroupVisualData(visual_data));
-  web::WebStateID tab_id_0 = GetTabIDForWebStateAt(0, browser_.get());
-  web::WebStateID tab_id_1 = GetTabIDForWebStateAt(1, browser_.get());
-  ASSERT_EQ(3, web_state_list->count());
-  ASSERT_EQ(tab_group_0, web_state_list->GetGroupOfWebStateAt(0));
-  ASSERT_EQ(tab_group_1, web_state_list->GetGroupOfWebStateAt(1));
-
-  // Move groups.
-  MoveTabGroupToBrowser(tab_group_0, other_browser_.get(), 0);
-  MoveTabGroupToBrowser(tab_group_1, other_browser_.get(), 1);
-
-  const TabGroup* other_group_0 = other_web_state_list->GetGroupOfWebStateAt(0);
-  const TabGroup* other_group_1 = other_web_state_list->GetGroupOfWebStateAt(1);
-  ASSERT_TRUE(other_group_0);
-  ASSERT_TRUE(other_group_1);
-  EXPECT_EQ(1, other_group_0->range().count());
-  EXPECT_EQ(1, other_group_1->range().count());
-  EXPECT_EQ(visual_data, other_group_0->visual_data());
-  EXPECT_EQ(visual_data, other_group_1->visual_data());
-  EXPECT_EQ(1, web_state_list->count());
-  EXPECT_EQ(2, other_web_state_list->count());
-  EXPECT_EQ(tab_id_0, GetTabIDForWebStateAt(0, other_browser_.get()));
-  EXPECT_EQ(tab_id_1, GetTabIDForWebStateAt(1, other_browser_.get()));
-}
-
-// Tests that moving a tab group to its owning browser with the same destination
-// index is a no-op.
-TEST_F(BrowserUtilTest, MoveTabGroupToItsOwningBrowser_SameIndex) {
-  WebStateList* web_state_list = browser_->GetWebStateList();
-
-  // Create a group of two tabs.
-  TabGroupVisualData visual_data =
-      TabGroupVisualData(u"Group", tab_groups::TabGroupColorId::kGrey);
-  const TabGroup* tab_group =
-      web_state_list->CreateGroup({0, 1}, TabGroupVisualData(visual_data));
-  web::WebStateID tab_id_0 = GetTabIDForWebStateAt(0, browser_.get());
-  web::WebStateID tab_id_1 = GetTabIDForWebStateAt(1, browser_.get());
-  ASSERT_EQ(3, web_state_list->count());
-  ASSERT_EQ(tab_group, web_state_list->GetGroupOfWebStateAt(0));
-
-  // Move the group.
-  MoveTabGroupToBrowser(tab_group, browser_.get(), 0);
-
-  EXPECT_EQ(tab_group, web_state_list->GetGroupOfWebStateAt(0));
-  EXPECT_EQ(tab_group, web_state_list->GetGroupOfWebStateAt(1));
-  EXPECT_EQ(nullptr, web_state_list->GetGroupOfWebStateAt(2));
-  EXPECT_EQ(2, tab_group->range().count());
-  EXPECT_EQ(visual_data, tab_group->visual_data());
-  EXPECT_EQ(3, web_state_list->count());
-  EXPECT_EQ(tab_id_0, GetTabIDForWebStateAt(0, browser_.get()));
-  EXPECT_EQ(tab_id_1, GetTabIDForWebStateAt(1, browser_.get()));
-}
-
-// Tests that moving a tab group to its owning browser to a position on its
-// right moves the group accordingly.
-TEST_F(BrowserUtilTest, MoveTabGroupToItsOwningBrowser_MovingRight) {
-  WebStateList* web_state_list = browser_->GetWebStateList();
-
-  // Create a group of two tabs.
-  TabGroupVisualData visual_data =
-      TabGroupVisualData(u"Group", tab_groups::TabGroupColorId::kGrey);
-  const TabGroup* tab_group =
-      web_state_list->CreateGroup({0, 1}, TabGroupVisualData(visual_data));
-  web::WebStateID tab_id_0 = GetTabIDForWebStateAt(0, browser_.get());
-  web::WebStateID tab_id_1 = GetTabIDForWebStateAt(1, browser_.get());
-  ASSERT_EQ(3, web_state_list->count());
-  ASSERT_EQ(tab_group, web_state_list->GetGroupOfWebStateAt(0));
-
-  // Move the group.
-  MoveTabGroupToBrowser(tab_group, browser_.get(), 3);
-
-  EXPECT_EQ(nullptr, web_state_list->GetGroupOfWebStateAt(0));
-  EXPECT_EQ(tab_group, web_state_list->GetGroupOfWebStateAt(1));
-  EXPECT_EQ(tab_group, web_state_list->GetGroupOfWebStateAt(2));
-  EXPECT_EQ(2, tab_group->range().count());
-  EXPECT_EQ(visual_data, tab_group->visual_data());
-  EXPECT_EQ(3, web_state_list->count());
-  EXPECT_EQ(tab_id_0, GetTabIDForWebStateAt(1, browser_.get()));
-  EXPECT_EQ(tab_id_1, GetTabIDForWebStateAt(2, browser_.get()));
-}
-
-// Tests that moving a tab group to its owning browser to a position on its left
-// moves the group accordingly.
-TEST_F(BrowserUtilTest, MoveTabGroupToItsOwningBrowser_MovingLeft) {
-  WebStateList* web_state_list = browser_->GetWebStateList();
-
-  // Create a group of two tabs.
-  TabGroupVisualData visual_data =
-      TabGroupVisualData(u"Group", tab_groups::TabGroupColorId::kGrey);
-  const TabGroup* tab_group =
-      web_state_list->CreateGroup({1, 2}, TabGroupVisualData(visual_data));
-  web::WebStateID tab_id_1 = GetTabIDForWebStateAt(1, browser_.get());
-  web::WebStateID tab_id_2 = GetTabIDForWebStateAt(2, browser_.get());
-  ASSERT_EQ(3, web_state_list->count());
-  ASSERT_EQ(nullptr, web_state_list->GetGroupOfWebStateAt(0));
-  ASSERT_EQ(tab_group, web_state_list->GetGroupOfWebStateAt(1));
-  ASSERT_EQ(tab_group, web_state_list->GetGroupOfWebStateAt(2));
-
-  // Move the group to the left.
-  MoveTabGroupToBrowser(tab_group, browser_.get(), 0);
-
-  EXPECT_EQ(tab_group, web_state_list->GetGroupOfWebStateAt(0));
-  EXPECT_EQ(tab_group, web_state_list->GetGroupOfWebStateAt(1));
-  EXPECT_EQ(2, tab_group->range().count());
-  EXPECT_EQ(visual_data, tab_group->visual_data());
-  EXPECT_EQ(3, web_state_list->count());
-  EXPECT_EQ(tab_id_1, GetTabIDForWebStateAt(0, browser_.get()));
-  EXPECT_EQ(tab_id_2, GetTabIDForWebStateAt(1, browser_.get()));
 }

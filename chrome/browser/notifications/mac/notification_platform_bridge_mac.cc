@@ -18,7 +18,8 @@
 #include "chrome/browser/notifications/notification_display_service_impl.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/app_shim_registry_mac.h"
+#include "chrome/browser/web_applications/os_integration/mac/app_shim_registry.h"
+#include "chrome/browser/web_applications/proto/web_app_install_state.pb.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/chrome_features.h"
@@ -179,7 +180,8 @@ void NotificationPlatformBridgeMac::GetDisplayedForOrigin(
       web_app::WebAppRegistrar& registrar =
           web_app_provider->registrar_unsafe();
       for (const webapps::AppId& app_id : registrar.GetAppIds()) {
-        if (!registrar.IsLocallyInstalled(app_id)) {
+        if (!registrar.IsInstallState(
+                app_id, {web_app::proto::INSTALLED_WITH_OS_INTEGRATION})) {
           continue;
         }
         if (!url::IsSameOriginWith(registrar.GetAppScope(app_id), origin)) {
@@ -240,6 +242,15 @@ void NotificationPlatformBridgeMac::DisplayServiceShutDown(Profile* profile) {
   // without a profile (Type::TRANSIENT) on macOS, so nothing to do here.
   if (profile)
     CloseAllNotificationsForProfile(profile);
+}
+
+void NotificationPlatformBridgeMac::AppShimWillTerminate(
+    const webapps::AppId& web_app_id) {
+  auto it = app_specific_dispatchers_.find(web_app_id);
+  if (it == app_specific_dispatchers_.end()) {
+    return;
+  }
+  it->second->UserInitiatedShutdown();
 }
 
 void NotificationPlatformBridgeMac::CloseAllNotificationsForProfile(

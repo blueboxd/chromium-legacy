@@ -122,14 +122,14 @@ FormStructure::FormStructure(const FormData& form)
       full_source_url_(form.full_url()),
       target_url_(form.action()),
       main_frame_origin_(form.main_frame_origin()),
-      all_fields_are_passwords_(!form.fields.empty()),
+      all_fields_are_passwords_(!form.fields().empty()),
       form_parsed_timestamp_(base::TimeTicks::Now()),
       host_frame_(form.host_frame()),
       version_(form.version()),
       renderer_id_(form.renderer_id()),
       child_frames_(form.child_frames()) {
   // Copy the form fields.
-  for (const FormFieldData& field : form.fields) {
+  for (const FormFieldData& field : form.fields()) {
     if (!IsCheckable(field.check_status())) {
       ++active_field_count_;
     }
@@ -260,7 +260,8 @@ void FormStructure::DetermineNonActiveHeuristicTypes(
     } else {
       // Run heuristics.
       context.pattern_source = *pattern_source;
-      ParseFieldTypesWithPatterns(context);
+      AssignBestFieldTypes(ParseFieldTypesWithPatterns(context),
+                           *pattern_source);
     }
   }
 }
@@ -546,6 +547,7 @@ void FormStructure::RetrieveFromCache(const FormStructure& cached_form,
         cached_field->may_use_prefilled_placeholder());
     field->set_previously_autofilled(cached_field->previously_autofilled());
     field->set_did_trigger_suggestions(cached_field->did_trigger_suggestions());
+    field->set_was_focused(cached_field->was_focused());
 
     // During form parsing, we don't care for heuristic field classifications
     // and information derived from the autocomplete attribute as those are
@@ -574,9 +576,12 @@ void FormStructure::RetrieveFromCache(const FormStructure& cached_form,
 
   UpdateAutofillCount();
 
-  // Update form parsed timestamp
+  // Preserve timestamp from the cache as a new form from the renderer does not
+  // know the parsing/filling history, as this information is computed in the
+  // browser.
   form_parsed_timestamp_ =
       std::min(form_parsed_timestamp_, cached_form.form_parsed_timestamp_);
+  last_filling_timestamp_ = cached_form.last_filling_timestamp_;
 
   // The form signature should match between query and upload requests to the
   // server. On many websites, form elements are dynamically added, removed, or
@@ -656,16 +661,25 @@ FieldCandidatesMap FormStructure::ParseFieldTypesWithPatterns(
     FormFieldParser::ParseFormFields(context, fields_, is_form_element(),
                                      field_type_map);
   } else if (ShouldRunHeuristicsForSingleFieldForms()) {
-    FormFieldParser::ParseSingleFieldForms(context, fields_, is_form_element(),
-                                           field_type_map);
+    FormFieldParser::ParseSingleFieldForms(context, fields_, field_type_map);
     FormFieldParser::ParseStandaloneCVCFields(context, fields_, field_type_map);
 
-    // For standalone email fields inside a form tag, allow heuristics even
-    // when the minimum number of fields is not met. See similar comments
-    // in `FormFieldParser::ClearCandidatesIfHeuristicsDidNotFindEnoughFields`.
-    if (is_form_element() &&
+    // For standalone email fields, allow heuristics even when the minimum
+    // number of fields is not met. See similar comments in
+    // `FormFieldParser::ClearCandidatesIfHeuristicsDidNotFindEnoughFields`.
+    // Note that `kAutofillEnableEmailHeuristicOnlyAddressForms` only supports
+    // email fields inside a form tag. Once
+    // `kAutofillEnableEmailHeuristicOnlyAddressForms` launches, dropping this
+    // requirement will be launched via
+    // `kAutofillEnableEmailHeuristicOutsideForms`.
+    const bool parse_standalone_email_fields =
+        (is_form_element() ||
+         base::FeatureList::IsEnabled(
+             features::kAutofillEnableEmailHeuristicOutsideForms)) &&
         base::FeatureList::IsEnabled(
-            features::kAutofillEnableEmailHeuristicOnlyAddressForms)) {
+            features::kAutofillEnableEmailHeuristicOnlyAddressForms);
+
+    if (parse_standalone_email_fields) {
       FormFieldParser::ParseStandaloneEmailFields(context, fields_,
                                                   field_type_map);
     }
@@ -758,11 +772,12 @@ FormData FormStructure::ToFormData() const {
   data.set_host_frame(host_frame_);
   data.set_version(version_);
   data.set_child_frames(child_frames_);
-
+  std::vector<FormFieldData> fields;
+  fields.reserve(fields_.size());
   for (const auto& field : fields_) {
-    data.fields.push_back(*field);
+    fields.push_back(*field);
   }
-
+  data.set_fields(std::move(fields));
   return data;
 }
 

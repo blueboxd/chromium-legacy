@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/ash/crosapi/crosapi_util.h"
 
 #include <sys/mman.h>
@@ -123,7 +128,9 @@
 #include "chromeos/crosapi/mojom/login.mojom.h"
 #include "chromeos/crosapi/mojom/login_screen_storage.mojom.h"
 #include "chromeos/crosapi/mojom/login_state.mojom.h"
+#include "chromeos/crosapi/mojom/magic_boost.mojom.h"
 #include "chromeos/crosapi/mojom/mahi.mojom.h"
+#include "chromeos/crosapi/mojom/media_app.mojom.h"
 #include "chromeos/crosapi/mojom/media_ui.mojom.h"
 #include "chromeos/crosapi/mojom/message_center.mojom.h"
 #include "chromeos/crosapi/mojom/metrics.mojom.h"
@@ -427,7 +434,7 @@ constexpr InterfaceVersionEntry MakeInterfaceVersionEntry() {
   return {T::Uuid_, T::Version_};
 }
 
-static_assert(crosapi::mojom::Crosapi::Version_ == 141,
+static_assert(crosapi::mojom::Crosapi::Version_ == 144,
               "If you add a new crosapi, please add it to "
               "kInterfaceVersionEntries below.");
 
@@ -512,7 +519,9 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::LoginState>(),
     MakeInterfaceVersionEntry<
         chromeos::machine_learning::mojom::MachineLearningService>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::MagicBoostController>(),
     MakeInterfaceVersionEntry<crosapi::mojom::MahiBrowserDelegate>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::MediaApp>(),
     MakeInterfaceVersionEntry<crosapi::mojom::MediaUI>(),
     MakeInterfaceVersionEntry<crosapi::mojom::MessageCenter>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Metrics>(),
@@ -557,6 +566,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::TestController>(),
     MakeInterfaceVersionEntry<crosapi::mojom::TimeZoneService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::TrustedVaultBackend>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::TrustedVaultBackendService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Tts>(),
     MakeInterfaceVersionEntry<crosapi::mojom::UrlHandler>(),
     MakeInterfaceVersionEntry<crosapi::mojom::VideoCaptureDeviceFactory>(),
@@ -670,7 +680,7 @@ mojom::DeviceMode GetDeviceMode() {
       return mojom::DeviceMode::kEnterprise;
     case policy::DEPRECATED_DEVICE_MODE_LEGACY_RETAIL_MODE:
       return mojom::DeviceMode::kLegacyRetailMode;
-    case policy::DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH:
+    case policy::DEPRECATED_DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH:
       return mojom::DeviceMode::kConsumerKioskAutolaunch;
     case policy::DEVICE_MODE_DEMO:
       return mojom::DeviceMode::kDemo;
@@ -778,7 +788,7 @@ void InjectBrowserInitParams(
   // Lacros.
   // TODO(crbug.com/40948861): Remove after completing the trial.
   variations::LimitedEntropySyntheticTrial limited_entropy_synthetic_trial(
-      local_state);
+      local_state, ash::GetChannel());
   params->limited_entropy_synthetic_trial_seed =
       limited_entropy_synthetic_trial.GetRandomizationSeed(local_state);
 
@@ -790,17 +800,12 @@ void InjectBrowserInitParams(
       params->metrics_service_client_id = client_id;
     }
 
-    std::string_view limited_entropy_randomization_source;
-    if (variations::IsLimitedEntropyModeEnabled(ash::GetChannel()) &&
-        limited_entropy_synthetic_trial.IsEnabled()) {
-      limited_entropy_randomization_source =
-          metrics_service->GetLimitedEntropyRandomizationSource();
-    }
+    // TODO(crbug.com/352689349): Remove sync'ing of entropy values.
     params->entropy_source = crosapi::mojom::EntropySource::New(
         metrics_service->GetLowEntropySource(),
         metrics_service->GetOldLowEntropySource(),
         metrics_service->GetPseudoLowEntropySource(),
-        std::string(limited_entropy_randomization_source));
+        /*limited_entropy_randomization_source=*/std::string());
   }
 
   if (auto* metrics_services_manager =
@@ -919,23 +924,22 @@ void InjectBrowserInitParams(
   params->is_drivefs_bulk_pinning_available =
       drive::util::IsDriveFsBulkPinningAvailable();
 
-  params->is_sys_ui_downloads_integration_v2_enabled =
-      ash::features::IsSysUiDownloadsIntegrationV2Enabled();
+  params->is_sys_ui_downloads_integration_v2_enabled = true;
 
   params->is_cros_battery_saver_available =
       ash::features::IsBatterySaverAvailable();
 
-  params->is_app_install_service_uri_enabled =
-      chromeos::features::IsAppInstallServiceUriEnabled();
+  // TODO(b/346683858): Remove in M130.
+  params->is_app_install_service_uri_enabled = true;
 
   params->is_desk_profiles_enabled =
       chromeos::features::IsDeskProfilesEnabled();
 
-  params->is_cros_web_app_shortcut_ui_update_enabled =
-      chromeos::features::IsCrosWebAppShortcutUiUpdateEnabled();
+  // TODO(b/352513798): Remove in M131.
+  params->is_cros_web_app_shortcut_ui_update_enabled = false;
 
-  params->is_cros_shortstand_enabled =
-      chromeos::features::IsCrosShortstandEnabled();
+  // TODO(b/352513798): Remove in M131.
+  params->is_cros_shortstand_enabled = false;
 
   params->should_disable_chrome_compose_on_chromeos =
       chromeos::features::ShouldDisableChromeComposeOnChromeOS();
@@ -946,8 +950,8 @@ void InjectBrowserInitParams(
   params->is_file_system_provider_cloud_file_system_enabled =
       chromeos::features::IsFileSystemProviderCloudFileSystemEnabled();
 
-  params->is_cros_web_app_install_dialog_enabled =
-      chromeos::features::IsCrosWebAppInstallDialogEnabled();
+  // TODO(b/346683858): Remove in M130.
+  params->is_cros_web_app_install_dialog_enabled = true;
 
   params->is_orca_enabled = chromeos::features::IsOrcaEnabled();
 
@@ -957,9 +961,8 @@ void InjectBrowserInitParams(
   params->is_orca_internationalize_enabled =
       chromeos::features::IsOrcaInternationalizeEnabled();
 
-  params->is_cros_mall_enabled = chromeos::features::IsCrosMallEnabled();
-
-  params->is_magic_boost_enabled = chromeos::features::IsMagicBoostEnabled();
+  params->is_cros_mall_web_app_enabled =
+      chromeos::features::IsCrosMallWebAppEnabled();
 
   params->is_mahi_enabled = chromeos::features::IsMahiEnabled();
 
@@ -1004,9 +1007,6 @@ void InjectBrowserPostLoginParams(BrowserParams* params,
   params->is_current_user_ephemeral = IsCurrentUserEphemeral();
   params->enable_lacros_tts_support =
       tts_crosapi_util::ShouldEnableLacrosTtsSupport();
-
-  params->is_mahi_supported_with_correct_feature_key =
-      chromeos::MahiManager::IsSupportedWithCorrectFeatureKey();
 }
 
 mojom::BrowserInitParamsPtr GetBrowserInitParams(

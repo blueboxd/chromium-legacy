@@ -35,9 +35,10 @@ class TestLayoutManagerBase : public LayoutManagerBase {
  public:
   std::vector<const View*> GetIncludedChildViews() const {
     std::vector<const View*> included;
-    base::ranges::copy_if(
-        host_view()->children(), std::back_inserter(included),
-        [=](const View* child) { return IsChildIncludedInLayout(child); });
+    base::ranges::copy_if(host_view()->children(), std::back_inserter(included),
+                          [=, this](const View* child) {
+                            return IsChildIncludedInLayout(child);
+                          });
     return included;
   }
 
@@ -669,9 +670,7 @@ TEST_F(LayoutManagerBaseManagerTest, DecorativeView) {
 }
 
 TEST(LayoutManagerBase_ProposedLayoutTest, Equality) {
-  View* ptr0 = nullptr;
-  View* ptr1 = ptr0 + 1;
-  View* ptr2 = ptr0 + 2;
+  std::array<View, 3> views;
   ProposedLayout a;
   ProposedLayout b;
   EXPECT_TRUE(a == b);
@@ -679,7 +678,7 @@ TEST(LayoutManagerBase_ProposedLayoutTest, Equality) {
   EXPECT_FALSE(a == b);
   b.host_size = {1, 2};
   EXPECT_TRUE(a == b);
-  a.child_layouts.push_back({ptr0, true, {1, 1, 2, 2}});
+  a.child_layouts.push_back({&views[0], true, {1, 1, 2, 2}});
   EXPECT_FALSE(a == b);
   b.child_layouts.push_back(a.child_layouts[0]);
   EXPECT_TRUE(a == b);
@@ -695,10 +694,10 @@ TEST(LayoutManagerBase_ProposedLayoutTest, Equality) {
   EXPECT_FALSE(a == b);
   a.child_layouts[0].visible = false;
   b.child_layouts[0].visible = false;
-  a.child_layouts.push_back({ptr1, true, {1, 2, 3, 4}});
-  b.child_layouts.push_back({ptr2, true, {1, 2, 3, 4}});
+  a.child_layouts.push_back({&views[1], true, {1, 2, 3, 4}});
+  b.child_layouts.push_back({&views[2], true, {1, 2, 3, 4}});
   EXPECT_FALSE(a == b);
-  b.child_layouts[1].child_view = ptr1;
+  b.child_layouts[1].child_view = &views[1];
   EXPECT_TRUE(a == b);
 }
 

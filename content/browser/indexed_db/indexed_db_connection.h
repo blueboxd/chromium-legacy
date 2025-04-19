@@ -56,7 +56,7 @@ class CONTENT_EXPORT IndexedDBConnection : public blink::mojom::IDBDatabase {
                       std::unique_ptr<IndexedDBDatabaseCallbacks> callbacks,
                       mojo::Remote<storage::mojom::IndexedDBClientStateChecker>
                           client_state_checker,
-                      uint64_t client_id);
+                      base::UnguessableToken client_token);
 
   IndexedDBConnection(const IndexedDBConnection&) = delete;
   IndexedDBConnection& operator=(const IndexedDBConnection&) = delete;
@@ -69,13 +69,21 @@ class CONTENT_EXPORT IndexedDBConnection : public blink::mojom::IDBDatabase {
 
   base::WeakPtr<IndexedDBDatabase> database() const { return database_; }
   IndexedDBDatabaseCallbacks* callbacks() const { return callbacks_.get(); }
-  uint64_t client_id() const { return client_id_; }
+  const base::UnguessableToken& client_token() const { return client_token_; }
   const std::map<int64_t, std::unique_ptr<IndexedDBTransaction>>& transactions()
       const {
     return transactions_;
   }
 
+  // Unfortunately, for historical reasons, this version of `IsConnected()` is
+  // not the same as whether `this` is connected via Mojo.
   bool IsConnected() const;
+
+  // Since `this` is a self-owned mojo receiver (see
+  // `MakeSelfOwnedReceiverAndBindRemote()`, this accessor is required to
+  // determine whether the mojo connection is inactive, which is synonymous with
+  // whether `this` is being destroyed.
+  bool is_shutting_down() const { return is_shutting_down_; }
 
   IndexedDBTransaction* CreateVersionChangeTransaction(
       int64_t id,
@@ -231,15 +239,16 @@ class CONTENT_EXPORT IndexedDBConnection : public blink::mojom::IDBDatabase {
   mojo::RemoteSet<storage::mojom::IndexedDBClientKeepActive>
       client_keep_active_remotes_;
 
-  // Uniquely identifies the RenderFrameHost or WorkerHost that owns the other
-  // side of this connection, i.e. the "client" of `client_state_checker_`, only
-  // within the IDB bucket that this connection belongs to. Since multiple
+  // Uniquely identifies the RFH that owns the other side of this connection,
+  // i.e. the "client" of `client_state_checker_`. Since multiple
   // transactions/connections associated with a single client should never cause
-  // that client to be ineligible for BFCache, this ID is used to avoid
+  // that client to be ineligible for BFCache, this token is used to avoid
   // unnecessary calls to `DisallowInactiveClient()`.
-  uint64_t client_id_;
+  base::UnguessableToken client_token_;
 
   SEQUENCE_CHECKER(sequence_checker_);
+
+  bool is_shutting_down_ = false;
 
   base::WeakPtrFactory<IndexedDBConnection> weak_factory_{this};
 };

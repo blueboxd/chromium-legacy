@@ -20,7 +20,6 @@ import android.view.ViewOutlineProvider;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
-import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -67,6 +66,7 @@ public class OmniboxSuggestionsDropdown extends RecyclerView {
     private @Nullable Callback<OmniboxAlignment> mOmniboxAlignmentObserver =
             this::onOmniboxAlignmentChanged;
     private float mChildVerticalTranslation;
+    private float mChildAlpha = 1.0f;
 
     /**
      * Interface that will receive notifications when the user is interacting with an item on the
@@ -239,6 +239,7 @@ public class OmniboxSuggestionsDropdown extends RecyclerView {
 
         // By default RecyclerViews come with item animators.
         setItemAnimator(null);
+        addItemDecoration(new SuggestionHorizontalDivider(context));
 
         mLayoutScrollListener = new SuggestionLayoutScrollListener(context);
         setLayoutManager(mLayoutScrollListener);
@@ -250,7 +251,7 @@ public class OmniboxSuggestionsDropdown extends RecyclerView {
                 resources.getDimensionPixelOffset(R.dimen.omnibox_suggestion_list_padding_bottom);
         int paddingTop =
                 resources.getDimensionPixelOffset(R.dimen.omnibox_suggestion_list_padding_top);
-        ViewCompat.setPaddingRelative(this, 0, paddingTop, 0, paddingBottom);
+        this.setPaddingRelative(0, paddingTop, 0, paddingBottom);
 
         if (OmniboxFeatures.sAsyncViewInflation.isEnabled()) {
             setRecycledViewPool(new PreWarmingRecycledViewPool(mAdapter, context));
@@ -331,15 +332,31 @@ public class OmniboxSuggestionsDropdown extends RecyclerView {
         invalidateItemDecorations();
     }
 
+    /**
+     * Sets the alpha of all child views. This alpha is applied to newly-added added children as
+     * well.
+     */
+    public void setChildAlpha(float alpha) {
+        mChildAlpha = alpha;
+        final int childCount = getChildCount();
+        for (int i = 0; i < childCount; i++) {
+            getChildAt(i).setAlpha(alpha);
+        }
+        invalidateItemDecorations();
+    }
+
     @Override
     public void onChildAttachedToWindow(@NonNull View child) {
-        if (mChildVerticalTranslation == 0.0f) return;
-        child.setTranslationY(mChildVerticalTranslation);
+        child.setAlpha(mChildAlpha);
+        if (mChildVerticalTranslation != 0.0f) {
+            child.setTranslationY(mChildVerticalTranslation);
+        }
     }
 
     @Override
     public void onChildDetachedFromWindow(@NonNull View child) {
         child.setTranslationY(0.0f);
+        child.setAlpha(1.0f);
     }
 
     /** Resests the tracked keyboard shown state to properly respond to scroll events. */
@@ -469,6 +486,15 @@ public class OmniboxSuggestionsDropdown extends RecyclerView {
         View selectedView = mSelectionController.getSelectedView();
         if (selectedView != null && selectedView.onKeyDown(keyCode, event)) {
             return true;
+        }
+
+        if (keyCode == KeyEvent.KEYCODE_TAB) {
+            boolean maybeProcessed = super.onKeyDown(keyCode, event);
+            if (maybeProcessed) return true;
+            if (event.isShiftPressed()) {
+                return mSelectionController.selectPreviousItem();
+            }
+            return mSelectionController.selectNextItem();
         }
 
         if (KeyNavigationUtil.isGoDown(event)) {

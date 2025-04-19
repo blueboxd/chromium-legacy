@@ -37,6 +37,9 @@ AccountAppsAvailabilityFactory::AccountAppsAvailabilityFactory()
               // TODO(crbug.com/40257657): Check if this service is needed in
               // Guest mode.
               .WithGuest(ProfileSelection::kOriginalOnly)
+              // TODO(crbug.com/41488885): Check if this service is needed for
+              // Ash Internals.
+              .WithAshInternals(ProfileSelection::kOriginalOnly)
               .Build()) {
   DependsOn(IdentityManagerFactory::GetInstance());
 }
@@ -51,8 +54,10 @@ AccountAppsAvailabilityFactory::BuildServiceInstanceForBrowserContext(
   if (!IsAccountManagerAvailable(profile))
     return nullptr;
 
-  if (!AccountAppsAvailability::IsArcAccountRestrictionsEnabled())
+  if (!AccountAppsAvailability::IsArcAccountRestrictionsEnabled() &&
+      !AccountAppsAvailability::IsArcManagedAccountRestrictionEnabled()) {
     return nullptr;
+  }
 
   return std::make_unique<AccountAppsAvailability>(
       ::GetAccountManagerFacade(profile->GetPath().value()),

@@ -956,7 +956,7 @@ policies:
   955: WebHidAllowDevicesWithHidUsagesForUrls
   956: SecondaryGoogleAccountUsage
   957: DeviceEncryptedReportingPipelineEnabled
-  958: IsolatedAppsDeveloperModeAllowed
+  958: ''
   959: FloatingWorkspaceEnabled
   960: WindowPlacementAllowedForUrls
   961: WindowPlacementBlockedForUrls
@@ -1236,7 +1236,7 @@ policies:
   1235: PrivacySandboxIpProtectionEnabled
   1236: OrcaEnabled
   1237: EnterpriseLogoUrl
-  1238: CustomProfileLabel
+  1238: EnterpriseCustomLabel
   1239: ProfileLabel
   1240: PrivacySandboxFingerprintingProtectionEnabled
   1241: MultiScreenCaptureAllowedForUrls
@@ -1247,7 +1247,7 @@ policies:
   1246: ApplicationBoundEncryptionEnabled
   1247: DeviceAuthenticationFlowAutoReloadInterval
   1248: ShowAiIntroScreenEnabled
-  1249: ShowTunaScreenEnabled
+  1249: ''
   1250: EnterpriseBadgingTemporarySetting
   1251: GenAILocalFoundationalModelSettings
   1252: DeviceExtensionsSystemLogEnabled
@@ -1266,6 +1266,31 @@ policies:
   1265: DynamicCodeSettings
   1266: LensOverlaySettings
   1267: ThirdPartyPasswordManagersAllowed
+  1268: DeviceAllowEnterpriseRemoteAccessConnections
+  1269: ''
+  1270: FocusModeSoundsEnabled
+  1271: ExtensionDeveloperModeSettings
+  1272: LocalUserFilesMigrationDestination
+  1273: KioskBrowserPermissionsAllowedForOrigins
+  1274: LensOnGalleryEnabled
+  1275: HistorySearchSettings
+  1276: DevicePostQuantumKeyAgreementEnabled
+  1277: DefaultJavaScriptOptimizerSetting
+  1278: JavaScriptOptimizerAllowedForSites
+  1279: JavaScriptOptimizerBlockedForSites
+  1280: PromotionsEnabled
+  1281: QRCodeGeneratorEnabled
+  1282: DnsOverHttpsExcludedDomains
+  1283: DnsOverHttpsIncludedDomains
+  1284: SystemShortcutBehavior
+  1285: DeletingUndecryptablePasswordsEnabled
+  1286: StandardizedBrowserZoomEnabled
+  1287: ReportingEndpoints
+  1288: PrintingLPACSandboxEnabled
+  1289: ShowGeminiIntroScreenEnabled
+  1290: DeviceRestrictionSchedule
+  1291: TabCompareSettings
+
 atomic_groups:
   1: Homepage
   2: RemoteAccess
@@ -1319,3 +1344,5 @@ atomic_groups:
   50: FloatingSso
   51: WebPrintingSettings
   52: DirectSocketsSettings
+  53: SkyVaultSettings
+  54: BrowserEventReporting

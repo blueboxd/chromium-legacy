@@ -161,6 +161,18 @@ bool RealTimeUrlLookupService::CanSendRTSampleRequest() const {
           base::RandDouble() <= kProbabilityForSendingSampledRequests);
 }
 
+std::string RealTimeUrlLookupService::GetUserEmail() const {
+  return "";
+}
+
+std::string RealTimeUrlLookupService::GetBrowserDMTokenString() const {
+  return "";
+}
+
+std::string RealTimeUrlLookupService::GetProfileDMTokenString() const {
+  return "";
+}
+
 void RealTimeUrlLookupService::Shutdown() {
   shutting_down_ = true;
 

@@ -50,8 +50,6 @@
 #include "components/permissions/request_type.h"
 #include "components/privacy_sandbox/privacy_sandbox_features.h"
 #include "components/safe_browsing/buildflags.h"
-#include "components/safe_browsing/content/browser/password_protection/password_protection_service.h"
-#include "components/safe_browsing/core/browser/password_protection/metrics_util.h"
 #include "components/safe_browsing/core/common/proto/csd.pb.h"
 #include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
 #include "components/ssl_errors/error_info.h"
@@ -82,6 +80,11 @@
 #else
 #include "third_party/blink/public/common/features.h"
 #endif  // BUILDFLAG(IS_ANDROID)
+
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+#include "components/safe_browsing/content/browser/password_protection/password_protection_service.h"
+#include "components/safe_browsing/core/browser/password_protection/metrics_util.h"
+#endif  // BUILDFLAG(FULL_SAFE_BROWSING)
 
 using base::ASCIIToUTF16;
 using base::UTF16ToUTF8;
@@ -138,6 +141,10 @@ ContentSettingsType kPermissionType[] = {
     ContentSettingsType::CAPTURED_SURFACE_CONTROL,
 #endif  // !BUILDFLAG(IS_ANDROID)
     ContentSettingsType::AUTOMATIC_FULLSCREEN,
+#if !BUILDFLAG(IS_ANDROID)
+    ContentSettingsType::KEYBOARD_LOCK,
+    ContentSettingsType::POINTER_LOCK,
+#endif  // !BUILDFLAG(IS_ANDROID)
 };
 
 // The list of setting types which request permission for a pair of requesting
@@ -349,11 +356,12 @@ void PageInfo::OnStatusChanged(
   if (controls_visible_ != controls_visible ||
       protections_on_ != protections_on || enforcement != enforcement_ ||
       blocking_status != blocking_status_ ||
-      expiration != cookie_exception_expiration_) {
+      expiration != cookie_exception_expiration_ || features_ != features) {
     controls_visible_ = controls_visible;
     protections_on_ = protections_on;
     enforcement_ = enforcement;
     blocking_status_ = blocking_status;
+    features_ = features;
     cookie_exception_expiration_ = expiration;
     PresentSiteData(base::DoNothing());
   }
@@ -1466,6 +1474,7 @@ void PageInfo::PresentSiteDataInternal(base::OnceClosure done) {
   cookies_info.protections_on = protections_on_;
   cookies_info.enforcement = enforcement_;
   cookies_info.blocking_status = blocking_status_;
+  cookies_info.features = features_;
   cookies_info.expiration = cookie_exception_expiration_;
   cookies_info.is_otr = web_contents_->GetBrowserContext()->IsOffTheRecord();
   ui_->SetCookieInfo(cookies_info);

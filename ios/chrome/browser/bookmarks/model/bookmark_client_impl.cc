@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/check_is_test.h"
 #include "base/feature_list.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/bookmarks/browser/bookmark_node.h"
@@ -42,6 +43,10 @@ BookmarkClientImpl::BookmarkClientImpl(
 
 BookmarkClientImpl::~BookmarkClientImpl() {}
 
+void BookmarkClientImpl::SetIsSyncFeatureEnabledIncludingBookmarksForTest() {
+  is_sync_feature_enabled_including_bookmarks_for_test_ = true;
+}
+
 void BookmarkClientImpl::Init(bookmarks::BookmarkModel* model) {
   if (managed_bookmark_service_) {
     managed_bookmark_service_->BookmarkModelCreated(model);
@@ -52,16 +57,6 @@ void BookmarkClientImpl::Init(bookmarks::BookmarkModel* model) {
 void BookmarkClientImpl::RequiredRecoveryToLoad(
     const std::multimap<int64_t, int64_t>&
         local_or_syncable_reassigned_ids_per_old_id) {
-  if (!account_bookmark_sync_service_) {
-    // `account_bookmark_sync_service_` being null means `this` does NOT deal
-    // with two BookmarkSyncService instances. This implies there must be two
-    // BookmarkClientImpl instances (one per BookmarkSyncService) and therefore
-    // two BookmarkModel instances too. Do nothing in that case, as the
-    // migration in this function is primarily about the case where this client
-    // transitioned from having two BookmarkModel instances to having one.
-    return;
-  }
-
   if (browser_state_->GetPrefs()) {
     MigrateLastUsedBookmarkFolderUponLocalIdsReassigned(
         browser_state_->GetPrefs(),
@@ -115,6 +110,11 @@ BookmarkClientImpl::GetLoadManagedNodeCallback() {
 }
 
 bool BookmarkClientImpl::IsSyncFeatureEnabledIncludingBookmarks() {
+  if (is_sync_feature_enabled_including_bookmarks_for_test_) {
+    CHECK_IS_TEST();
+    return true;
+  }
+
   // `kMigrateSyncingUserToSignedIn` is only used as an extra safeguard to avoid
   // behavioral changes. If this feature is enabled, sync-the-feature can be
   // safely considered disabled, as the remaining cases where
@@ -144,18 +144,6 @@ std::string BookmarkClientImpl::EncodeLocalOrSyncableBookmarkSyncMetadata() {
 }
 
 std::string BookmarkClientImpl::EncodeAccountBookmarkSyncMetadata() {
-  if (!account_bookmark_sync_service_) {
-    CHECK(!base::FeatureList::IsEnabled(
-        syncer::kEnableBookmarkFoldersForAccountStorage));
-
-    // On iOS, for historic reasons and before rolling out
-    // `syncer::kEnableBookmarkFoldersForAccountStorage`, a dedicated
-    // BookmarkModel is used for account bookmarks and, counter-intuitively, the
-    // local-or-syncable nodes within are used to represent account data. The
-    // same is true for sync metadata, so account sync metadata remains unused.
-    return std::string();
-  }
-
   return account_bookmark_sync_service_->EncodeBookmarkSyncMetadata();
 }
 
@@ -171,19 +159,16 @@ void BookmarkClientImpl::DecodeLocalOrSyncableBookmarkSyncMetadata(
 void BookmarkClientImpl::DecodeAccountBookmarkSyncMetadata(
     const std::string& metadata_str,
     const base::RepeatingClosure& schedule_save_closure) {
-  if (account_bookmark_sync_service_) {
-    account_bookmark_sync_service_->DecodeBookmarkSyncMetadata(
-        metadata_str, schedule_save_closure,
-        std::make_unique<sync_bookmarks::BookmarkModelViewUsingAccountNodes>(
-            model_));
-  }
+  account_bookmark_sync_service_->DecodeBookmarkSyncMetadata(
+      metadata_str, schedule_save_closure,
+      std::make_unique<sync_bookmarks::BookmarkModelViewUsingAccountNodes>(
+          model_));
 }
 
 void BookmarkClientImpl::OnBookmarkNodeRemovedUndoable(
-    bookmarks::BookmarkModel* model,
     const bookmarks::BookmarkNode* parent,
     size_t index,
     std::unique_ptr<bookmarks::BookmarkNode> node) {
-  bookmark_undo_service_->AddUndoEntryForRemovedNode(model, parent, index,
+  bookmark_undo_service_->AddUndoEntryForRemovedNode(parent, index,
                                                      std::move(node));
 }

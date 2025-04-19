@@ -7,11 +7,12 @@
 
 #include "base/test/gmock_expected_support.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/controlled_frame/controlled_frame_test_base.h"
 #include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/extensions/service_worker_apitest.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/web_applications/test/isolated_web_app_test_utils.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
 #include "chrome/browser/web_applications/isolated_web_apps/test/isolated_web_app_builder.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/render_frame_host.h"
@@ -30,7 +31,6 @@
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/features.h"
 
 namespace controlled_frame {
 
@@ -184,78 +184,28 @@ const content::EvalJsResult VerifyBackgroundColorIsRed(
   )");
 }
 
-[[nodiscard]] bool IsControlledFramePresent(
-    content::RenderFrameHost* app_frame) {
-  return ExecJs(app_frame, R"(
-      new Promise((resolve, reject) => {
-        const controlledframe = document.createElement('controlledframe');
-        if (('src' in controlledframe)) {
-          // Tag is defined.
-          resolve('SUCCESS');
-        } else {
-          reject('FAIL');
-        }
-      });
-  )");
-}
-
 // TODO(odejesush): Add tests for the rest of the Promise API methods.
 const char* kControlledFramePromiseApiMethods[]{"back", "forward", "go"};
 
 }  // namespace
 
-class ControlledFrameApiTest
-    : public web_app::IsolatedWebAppBrowserTestHarness {
+class ControlledFrameApiTest : public ControlledFrameTestBase {
+ protected:
+  ControlledFrameApiTest()
+      : ControlledFrameTestBase(
+            /*channel=*/version_info::Channel::STABLE,
+            /*feature_setting=*/FeatureSetting::ENABLED,
+            /*flag_setting=*/FlagSetting::CONTROLLED_FRAME) {}
+
+  ControlledFrameApiTest(const version_info::Channel& channel,
+                         const FeatureSetting& feature_setting,
+                         const FlagSetting& flag_setting)
+      : ControlledFrameTestBase(channel, feature_setting, flag_setting) {}
+
  public:
   void SetUpOnMainThread() override {
-    web_app::IsolatedWebAppBrowserTestHarness::SetUpOnMainThread();
-    embedded_https_test_server().ServeFilesFromSourceDirectory(
-        GetChromeTestDataDir().AppendASCII("web_apps/simple_isolated_app"));
-    ASSERT_TRUE(embedded_https_test_server().Start());
-  }
-
-  web_app::IsolatedWebAppUrlInfo CreateAndInstallEmptyApp(
-      const web_app::ManifestBuilder& manifest_builder) {
-    app_ = web_app::IsolatedWebAppBuilder(manifest_builder).BuildBundle();
-    app_->TrustSigningKey();
-    base::expected<web_app::IsolatedWebAppUrlInfo, std::string> url_info =
-        app_->Install(profile());
-    CHECK(url_info.has_value()) << url_info.error();
-    return url_info.value();
-  }
-
-  [[nodiscard]] bool CreateControlledFrame(content::RenderFrameHost* frame,
-                                           const GURL& src) {
-    static std::string kCreateControlledFrame = R"(
-        new Promise((resolve, reject) => {
-          const controlledframe = document.createElement('controlledframe');
-          if (!('src' in controlledframe)) {
-            // Tag is undefined or generates a malformed response.
-            reject('FAIL');
-            return;
-          }
-          controlledframe.setAttribute('src', $1);
-          controlledframe.addEventListener('loadstop', resolve);
-          controlledframe.addEventListener('loadabort', reject);
-          document.body.appendChild(controlledframe);
-        });
-    )";
-    return ExecJs(frame, content::JsReplace(kCreateControlledFrame, src));
-  }
-
-  extensions::WebViewGuest* GetWebViewGuest(
-      content::RenderFrameHost* embedder_frame) {
-    extensions::WebViewGuest* web_view_guest = nullptr;
-    embedder_frame->ForEachRenderFrameHostWithAction(
-        [&web_view_guest](content::RenderFrameHost* rfh) {
-          if (auto* web_view =
-                  extensions::WebViewGuest::FromRenderFrameHost(rfh)) {
-            web_view_guest = web_view;
-            return content::RenderFrameHost::FrameIterationAction::kStop;
-          }
-          return content::RenderFrameHost::FrameIterationAction::kContinue;
-        });
-    return web_view_guest;
+    ControlledFrameTestBase::SetUpOnMainThread();
+    StartContentServer("web_apps/simple_isolated_app");
   }
 
   void ExpectMenuItemWithIdAndTitle(
@@ -269,11 +219,6 @@ class ControlledFrameApiTest
     ASSERT_TRUE(menu_item);
     EXPECT_EQ(expected_title, menu_item->title());
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_{
-      blink::features::kIsolateSandboxedIframes};
-  std::unique_ptr<web_app::ScopedBundledIsolatedWebApp> app_;
 };
 
 IN_PROC_BROWSER_TEST_F(ControlledFrameApiTest, ContextMenusCreate) {
@@ -905,344 +850,6 @@ IN_PROC_BROWSER_TEST_F(ControlledFrameWebTransportApiTest,
                            webtransport_server().server_address().port())));
 }
 
-namespace {
-constexpr char kPermissionAllowedHost[] = "permission-allowed.com";
-constexpr char kPermissionDisallowedHost[] = "permission-disllowed.com";
-}  // namespace
-
-class ControlledFramePermissionsPolicyTest : public ControlledFrameApiTest {
- public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ControlledFrameApiTest::SetUpCommandLine(command_line);
-    command_line->AppendArg("--use-fake-device-for-media-stream");
-  }
-
-  void SetUpPermissionRequestEventListener(content::RenderFrameHost* app_frame,
-                                           bool allow_permission) {
-    const std::string& handle_request_str = allow_permission ? "allow" : "deny";
-    EXPECT_EQ("SUCCESS", content::EvalJs(app_frame, content::JsReplace(
-                                                        R"(
-      (function() {
-        const frame = document.getElementsByTagName('controlledframe')[0];
-        if (!frame) {
-          return 'FAIL: Could not find a controlledframe element.';
-        }
-        frame.addEventListener('permissionrequest', (e) => {
-          e.request[$1]();
-        });
-        return 'SUCCESS'
-      })();
-    )",
-                                                        handle_request_str)));
-  }
-
-  void RequestMediaPermissionFromControlledFrame(
-      content::RenderFrameHost* app_frame,
-      bool request_audio,
-      bool request_video,
-      bool expect_audio_permission_allowed,
-      bool expect_video_permission_allowed) {
-    extensions::WebViewGuest* web_view_guest = GetWebViewGuest(app_frame);
-    EXPECT_EQ("SUCCESS", content::EvalJs(web_view_guest->GetGuestMainFrame(),
-                                         content::JsReplace(
-                                             R"(
-    (async function() {
-      const constraints = { audio: $1, video: $2 };
-      const expectAudioPermissionAllowed = $3;
-      const expectVideoPermissionAllowed = $4;
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-
-        const checkPermissionType =
-            function(type, tracks, expectPermissionAllowed) {
-          const hasTracks = tracks.length;
-          if (expectPermissionAllowed != hasTracks) {
-            const expectedPermissionStr =
-                expectPermissionAllowed ? 'has' : 'does not have';
-            const hasTrackStr = hasTracks ? 'has' : 'does not have';
-            return 'FAIL: getUserMedia() ' + expectedPermissionStr + ' ' +
-                type + ' stream permission, but ' + hasTrackStr + ' ' +
-                type + ' tracks';
-          }
-          return 'SUCCESS';
-        }
-
-        let audioPermissionCheckResult = checkPermissionType(
-            'audio', stream.getAudioTracks(), expectAudioPermissionAllowed);
-        if (audioPermissionCheckResult != 'SUCCESS') {
-          return audioPermissionCheckResult;
-        }
-
-        let videoPermissionCheckResult = checkPermissionType(
-            'video', stream.getVideoTracks(), expectVideoPermissionAllowed);
-        if (videoPermissionCheckResult != 'SUCCESS') {
-          return videoPermissionCheckResult;
-        }
-
-        return 'SUCCESS';
-      } catch (err) {
-        if (!expectAudioPermissionAllowed && !expectVideoPermissionAllowed) {
-          return 'SUCCESS';
-        }
-        return 'FAIL: ' + err.name + ': ' + err.message;
-      }
-    })();
-  )",
-                                             request_audio, request_video,
-                                             expect_audio_permission_allowed,
-                                             expect_video_permission_allowed)));
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(ControlledFramePermissionsPolicyTest,
-                       CameraPermissionAllowed) {
-  web_app::IsolatedWebAppUrlInfo url_info =
-      CreateAndInstallEmptyApp(web_app::ManifestBuilder().AddPermissionsPolicy(
-          blink::mojom::PermissionsPolicyFeature::kCamera, /*self=*/true,
-          {embedded_https_test_server().GetOrigin(kPermissionAllowedHost)}));
-  content::RenderFrameHost* app_frame = OpenApp(url_info.app_id());
-
-  ASSERT_TRUE(CreateControlledFrame(
-      app_frame, embedded_https_test_server().GetURL(kPermissionAllowedHost,
-                                                     "/index.html")));
-
-  SetUpPermissionRequestEventListener(app_frame, /*allow_permission=*/true);
-  RequestMediaPermissionFromControlledFrame(
-      app_frame,
-      /*request_audio=*/false,
-      /*request_video=*/true,
-      /*expect_audio_permission_allowed=*/false,
-      /*expect_video_permission_allowed=*/true);
-}
-
-IN_PROC_BROWSER_TEST_F(ControlledFramePermissionsPolicyTest,
-                       OnlyCameraPermissionAllowed) {
-  web_app::IsolatedWebAppUrlInfo url_info =
-      CreateAndInstallEmptyApp(web_app::ManifestBuilder().AddPermissionsPolicy(
-          blink::mojom::PermissionsPolicyFeature::kCamera, /*self=*/true,
-          {embedded_https_test_server().GetOrigin(kPermissionAllowedHost)}));
-  content::RenderFrameHost* app_frame = OpenApp(url_info.app_id());
-
-  ASSERT_TRUE(CreateControlledFrame(
-      app_frame, embedded_https_test_server().GetURL(kPermissionAllowedHost,
-                                                     "/index.html")));
-
-  SetUpPermissionRequestEventListener(app_frame, /*allow_permission=*/true);
-  RequestMediaPermissionFromControlledFrame(
-      app_frame,
-      /*request_audio=*/true,
-      /*request_video=*/true,
-      /*expect_audio_permission_allowed=*/false,
-      /*expect_video_permission_allowed=*/true);
-}
-
-IN_PROC_BROWSER_TEST_F(ControlledFramePermissionsPolicyTest,
-                       CameraPermissionDenied) {
-  web_app::IsolatedWebAppUrlInfo url_info =
-      CreateAndInstallEmptyApp(web_app::ManifestBuilder().AddPermissionsPolicy(
-          blink::mojom::PermissionsPolicyFeature::kCamera, /*self=*/true,
-          {embedded_https_test_server().GetOrigin(kPermissionAllowedHost)}));
-  content::RenderFrameHost* app_frame = OpenApp(url_info.app_id());
-
-  ASSERT_TRUE(CreateControlledFrame(
-      app_frame, embedded_https_test_server().GetURL(kPermissionAllowedHost,
-                                                     "/index.html")));
-
-  SetUpPermissionRequestEventListener(app_frame, /*allow_permission=*/false);
-  RequestMediaPermissionFromControlledFrame(
-      app_frame,
-      /*request_audio=*/false,
-      /*request_video=*/true,
-      /*expect_audio_permission_allowed=*/false,
-      /*expect_video_permission_allowed=*/false);
-}
-
-IN_PROC_BROWSER_TEST_F(ControlledFramePermissionsPolicyTest,
-                       CameraPermissionDisallowed) {
-  web_app::IsolatedWebAppUrlInfo url_info =
-      CreateAndInstallEmptyApp(web_app::ManifestBuilder().AddPermissionsPolicy(
-          blink::mojom::PermissionsPolicyFeature::kCamera, /*self=*/true,
-          {embedded_https_test_server().GetOrigin(kPermissionAllowedHost)}));
-  content::RenderFrameHost* app_frame = OpenApp(url_info.app_id());
-
-  ASSERT_TRUE(CreateControlledFrame(
-      app_frame, embedded_https_test_server().GetURL(kPermissionDisallowedHost,
-                                                     "/index.html")));
-
-  SetUpPermissionRequestEventListener(app_frame, /*allow_permission=*/true);
-  RequestMediaPermissionFromControlledFrame(
-      app_frame,
-      /*request_audio=*/false,
-      /*request_video=*/true,
-      /*expect_audio_permission_allowed=*/false,
-      /*expect_video_permission_allowed=*/false);
-}
-
-IN_PROC_BROWSER_TEST_F(ControlledFramePermissionsPolicyTest,
-                       MicrophonePermissionAllowed) {
-  web_app::IsolatedWebAppUrlInfo url_info =
-      CreateAndInstallEmptyApp(web_app::ManifestBuilder().AddPermissionsPolicy(
-          blink::mojom::PermissionsPolicyFeature::kMicrophone, /*self=*/true,
-          {embedded_https_test_server().GetOrigin(kPermissionAllowedHost)}));
-  content::RenderFrameHost* app_frame = OpenApp(url_info.app_id());
-
-  ASSERT_TRUE(CreateControlledFrame(
-      app_frame, embedded_https_test_server().GetURL(kPermissionAllowedHost,
-                                                     "/index.html")));
-
-  SetUpPermissionRequestEventListener(app_frame, /*allow_permission=*/true);
-  RequestMediaPermissionFromControlledFrame(
-      app_frame,
-      /*request_audio=*/true,
-      /*request_video=*/false,
-      /*expect_audio_permission_allowed=*/true,
-      /*expect_video_permission_allowed=*/false);
-}
-
-IN_PROC_BROWSER_TEST_F(ControlledFramePermissionsPolicyTest,
-                       OnlyMicrophonePermissionAllowed) {
-  web_app::IsolatedWebAppUrlInfo url_info =
-      CreateAndInstallEmptyApp(web_app::ManifestBuilder().AddPermissionsPolicy(
-          blink::mojom::PermissionsPolicyFeature::kMicrophone, /*self=*/true,
-          {embedded_https_test_server().GetOrigin(kPermissionAllowedHost)}));
-  content::RenderFrameHost* app_frame = OpenApp(url_info.app_id());
-
-  ASSERT_TRUE(CreateControlledFrame(
-      app_frame, embedded_https_test_server().GetURL(kPermissionAllowedHost,
-                                                     "/index.html")));
-
-  SetUpPermissionRequestEventListener(app_frame, /*allow_permission=*/true);
-  RequestMediaPermissionFromControlledFrame(
-      app_frame,
-      /*request_audio=*/true,
-      /*request_video=*/true,
-      /*expect_audio_permission_allowed=*/true,
-      /*expect_video_permission_allowed=*/false);
-}
-
-IN_PROC_BROWSER_TEST_F(ControlledFramePermissionsPolicyTest,
-                       MicrophonePermissionDenied) {
-  web_app::IsolatedWebAppUrlInfo url_info =
-      CreateAndInstallEmptyApp(web_app::ManifestBuilder().AddPermissionsPolicy(
-          blink::mojom::PermissionsPolicyFeature::kMicrophone, /*self=*/true,
-          {embedded_https_test_server().GetOrigin(kPermissionAllowedHost)}));
-  content::RenderFrameHost* app_frame = OpenApp(url_info.app_id());
-
-  ASSERT_TRUE(CreateControlledFrame(
-      app_frame, embedded_https_test_server().GetURL(kPermissionAllowedHost,
-                                                     "/index.html")));
-
-  SetUpPermissionRequestEventListener(app_frame, /*allow_permission=*/false);
-  RequestMediaPermissionFromControlledFrame(
-      app_frame,
-      /*request_audio=*/true,
-      /*request_video=*/false,
-      /*expect_audio_permission_allowed=*/false,
-      /*expect_video_permission_allowed=*/false);
-}
-
-IN_PROC_BROWSER_TEST_F(ControlledFramePermissionsPolicyTest,
-                       MicrophonePermissionDisallowed) {
-  web_app::IsolatedWebAppUrlInfo url_info =
-      CreateAndInstallEmptyApp(web_app::ManifestBuilder().AddPermissionsPolicy(
-          blink::mojom::PermissionsPolicyFeature::kMicrophone, /*self=*/true,
-          {embedded_https_test_server().GetOrigin(kPermissionAllowedHost)}));
-  content::RenderFrameHost* app_frame = OpenApp(url_info.app_id());
-
-  ASSERT_TRUE(CreateControlledFrame(
-      app_frame, embedded_https_test_server().GetURL(kPermissionDisallowedHost,
-                                                     "/index.html")));
-
-  SetUpPermissionRequestEventListener(app_frame, /*allow_permission=*/true);
-  RequestMediaPermissionFromControlledFrame(
-      app_frame,
-      /*request_audio=*/true,
-      /*request_video=*/false,
-      /*expect_audio_permission_allowed=*/false,
-      /*expect_video_permission_allowed=*/false);
-}
-
-IN_PROC_BROWSER_TEST_F(ControlledFramePermissionsPolicyTest,
-                       CameraAndMicrophonePermissionAllowed) {
-  web_app::IsolatedWebAppUrlInfo url_info = CreateAndInstallEmptyApp(
-      web_app::ManifestBuilder()
-          .AddPermissionsPolicy(
-              blink::mojom::PermissionsPolicyFeature::kCamera, /*self=*/true,
-              {embedded_https_test_server().GetOrigin(kPermissionAllowedHost)})
-          .AddPermissionsPolicy(
-              blink::mojom::PermissionsPolicyFeature::kMicrophone,
-              /*self=*/true,
-              {embedded_https_test_server().GetOrigin(
-                  kPermissionAllowedHost)}));
-  content::RenderFrameHost* app_frame = OpenApp(url_info.app_id());
-
-  ASSERT_TRUE(CreateControlledFrame(
-      app_frame, embedded_https_test_server().GetURL(kPermissionAllowedHost,
-                                                     "/index.html")));
-
-  SetUpPermissionRequestEventListener(app_frame, /*allow_permission=*/true);
-  RequestMediaPermissionFromControlledFrame(
-      app_frame,
-      /*request_audio=*/true,
-      /*request_video=*/true,
-      /*expect_audio_permission_allowed=*/true,
-      /*expect_video_permission_allowed=*/true);
-}
-
-IN_PROC_BROWSER_TEST_F(ControlledFramePermissionsPolicyTest,
-                       CameraAndMicrophonePermissionDenied) {
-  web_app::IsolatedWebAppUrlInfo url_info = CreateAndInstallEmptyApp(
-      web_app::ManifestBuilder()
-          .AddPermissionsPolicy(
-              blink::mojom::PermissionsPolicyFeature::kCamera, /*self=*/true,
-              {embedded_https_test_server().GetOrigin(kPermissionAllowedHost)})
-          .AddPermissionsPolicy(
-              blink::mojom::PermissionsPolicyFeature::kMicrophone,
-              /*self=*/true,
-              {embedded_https_test_server().GetOrigin(
-                  kPermissionAllowedHost)}));
-  content::RenderFrameHost* app_frame = OpenApp(url_info.app_id());
-
-  ASSERT_TRUE(CreateControlledFrame(
-      app_frame, embedded_https_test_server().GetURL(kPermissionAllowedHost,
-                                                     "/index.html")));
-
-  SetUpPermissionRequestEventListener(app_frame, /*allow_permission=*/false);
-  RequestMediaPermissionFromControlledFrame(
-      app_frame,
-      /*request_audio=*/true,
-      /*request_video=*/true,
-      /*expect_audio_permission_allowed=*/false,
-      /*expect_video_permission_allowed=*/false);
-}
-
-IN_PROC_BROWSER_TEST_F(ControlledFramePermissionsPolicyTest,
-                       CameraAndMicrophonePermissionDisallowed) {
-  web_app::IsolatedWebAppUrlInfo url_info = CreateAndInstallEmptyApp(
-      web_app::ManifestBuilder()
-          .AddPermissionsPolicy(
-              blink::mojom::PermissionsPolicyFeature::kCamera, /*self=*/true,
-              {embedded_https_test_server().GetOrigin(kPermissionAllowedHost)})
-          .AddPermissionsPolicy(
-              blink::mojom::PermissionsPolicyFeature::kMicrophone,
-              /*self=*/true,
-              {embedded_https_test_server().GetOrigin(
-                  kPermissionAllowedHost)}));
-  content::RenderFrameHost* app_frame = OpenApp(url_info.app_id());
-
-  ASSERT_TRUE(CreateControlledFrame(
-      app_frame, embedded_https_test_server().GetURL(kPermissionDisallowedHost,
-                                                     "/index.html")));
-
-  SetUpPermissionRequestEventListener(app_frame, /*allow_permission=*/true);
-  RequestMediaPermissionFromControlledFrame(
-      app_frame,
-      /*request_audio=*/true,
-      /*request_video=*/true,
-      /*expect_audio_permission_allowed=*/false,
-      /*expect_video_permission_allowed=*/false);
-}
-
 class ControlledFramePromiseApiTest
     : public ControlledFrameApiTest,
       public testing::WithParamInterface<const char*> {};
@@ -1288,12 +895,7 @@ class ControlledFrameServiceWorkerTest
   }
 
  protected:
-  ControlledFrameServiceWorkerTest() {
-    feature_list.InitWithFeatures(
-        /*enabled_features=*/{features::kIsolatedWebApps,
-                              features::kIsolatedWebAppDevMode},
-        /*disabled_features=*/{});
-  }
+  ControlledFrameServiceWorkerTest() {}
 
   ~ControlledFrameServiceWorkerTest() override = default;
 
@@ -1342,44 +944,15 @@ IN_PROC_BROWSER_TEST_F(ControlledFrameServiceWorkerTest, Basic) {
   EXPECT_TRUE(newtab_listener.WaitUntilSatisfied());
 }
 
-class ControlledFrameAvailableChannelTest
-    : public ControlledFrameApiTest,
-      public testing::WithParamInterface<version_info::Channel> {
- protected:
-  ControlledFrameAvailableChannelTest() : channel_(GetParam()) {}
-
- private:
-  extensions::ScopedCurrentChannel channel_;
-};
-
-INSTANTIATE_TEST_SUITE_P(ControlledFrameAvailableChannels,
-                         ControlledFrameAvailableChannelTest,
-                         testing::Values(version_info::Channel::STABLE,
-                                         version_info::Channel::BETA,
-                                         version_info::Channel::DEV,
-                                         version_info::Channel::CANARY,
-                                         version_info::Channel::DEFAULT));
-
-IN_PROC_BROWSER_TEST_P(ControlledFrameAvailableChannelTest, Test) {
-  web_app::IsolatedWebAppUrlInfo url_info =
-      CreateAndInstallEmptyApp(web_app::ManifestBuilder());
-  content::RenderFrameHost* app_frame = OpenApp(url_info.app_id());
-
-  ASSERT_TRUE(CreateControlledFrame(
-      app_frame, embedded_https_test_server().GetURL("/index.html")));
-
-  // Test if Controlled Frame is available.
-  EXPECT_EQ(kEvalSuccessStr, ExecuteScriptRedBackgroundFile(app_frame));
-}
-
 class ControlledFrameNotAvailableChannelTest
     : public ControlledFrameApiTest,
       public testing::WithParamInterface<version_info::Channel> {
  protected:
-  ControlledFrameNotAvailableChannelTest() : channel_(GetParam()) {}
-
- private:
-  extensions::ScopedCurrentChannel channel_;
+  ControlledFrameNotAvailableChannelTest()
+      : ControlledFrameApiTest(/*channel=*/GetParam(),
+                               /*feature_setting=*/FeatureSetting::ENABLED,
+                               /*flag_setting=*/FlagSetting::CONTROLLED_FRAME) {
+  }
 };
 
 INSTANTIATE_TEST_SUITE_P(ControlledFrameNotAvailableChannels,
@@ -1397,29 +970,103 @@ IN_PROC_BROWSER_TEST_P(ControlledFrameNotAvailableChannelTest, Test) {
   content::WebContents* app_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  ASSERT_FALSE(IsControlledFramePresent(app_contents->GetPrimaryMainFrame()));
+  ASSERT_FALSE(CreateControlledFrame(
+      app_contents->GetPrimaryMainFrame(),
+      embedded_https_test_server().GetURL("/index.html")));
 }
 
-class ControlledFrameDisabledTest : public ControlledFrameApiTest {
+class ControlledFrameAvailabilityTest
+    : public ControlledFrameApiTest,
+      public testing::WithParamInterface<
+          ::std::tuple<version_info::Channel, FeatureSetting, FlagSetting>> {
  protected:
-  ControlledFrameDisabledTest() {
-    feature_list.InitWithFeatures(
-        /*enabled_features=*/{},
-        /*disabled_features=*/{features::kControlledFrame});
+  ControlledFrameAvailabilityTest()
+      : ControlledFrameApiTest(
+            /*channel=*/std::get<0>(GetParam()),
+            /*feature_setting=*/std::get<1>(GetParam()),
+            /*flag_setting=*/std::get<2>(GetParam())) {}
+
+  ~ControlledFrameAvailabilityTest() override = default;
+
+  // |DetermineExpectedState| derives the expected enabling status based on
+  // the channel, feature, and flag inputs.
+  //
+  // Ideally, when we set a feature to enabled or disabled in the test setup,
+  // we would be altering that feature's default setting for the purposes of
+  // the test. However, ScopedFeatureList doesn't enable or disable a feature
+  // via defaults but instead by overrides. As a result, any feature that's
+  // enabled or disabled by ScopedFeatureList will appear as an override.
+  bool DetermineExpectedState() {
+    if (feature_setting() == FeatureSetting::DISABLED) {
+      return false;
+    }
+
+    if (feature_setting() == FeatureSetting::NONE &&
+        flag_setting() == FlagSetting::NONE) {
+      return false;
+    }
+
+    if (feature_setting() == FeatureSetting::ENABLED &&
+        (flag_setting() == FlagSetting::EXPERIMENTAL ||
+         flag_setting() == FlagSetting::CONTROLLED_FRAME)) {
+      return true;
+    }
+
+    // In Blink's runtime flags, if the base::Feature is overridden and that
+    // feature is enabled via the override, then the corresponding Blink
+    // runtime flag is also enabled.
+    if (feature_setting() == FeatureSetting::ENABLED &&
+        flag_setting() == FlagSetting::NONE) {
+      return true;
+    }
+
+    return false;
   }
-
-  ~ControlledFrameDisabledTest() override = default;
-
- private:
-  base::test::ScopedFeatureList feature_list;
 };
 
-IN_PROC_BROWSER_TEST_F(ControlledFrameDisabledTest, MissingFeature) {
+INSTANTIATE_TEST_SUITE_P(
+    /* */,
+    ControlledFrameAvailabilityTest,
+    /* Per-channel tests examine the extensions-based availability system. */
+    testing::Combine(
+        /*channel=*/testing::Values(version_info::Channel::STABLE,
+                                    version_info::Channel::BETA,
+                                    version_info::Channel::DEV,
+                                    version_info::Channel::CANARY),
+        /*feature=*/
+        testing::Values(FeatureSetting::NONE,
+                        FeatureSetting::DISABLED,
+                        FeatureSetting::ENABLED),
+        /*flag=*/
+        testing::Values(FlagSetting::NONE,
+                        FlagSetting::EXPERIMENTAL,
+                        FlagSetting::CONTROLLED_FRAME)));
+
+IN_PROC_BROWSER_TEST_P(ControlledFrameAvailabilityTest, Verify) {
+  const bool expected_enabled = DetermineExpectedState();
+  EXPECT_EQ(expected_enabled,
+            base::FeatureList::IsEnabled(blink::features::kControlledFrame));
+
   web_app::IsolatedWebAppUrlInfo url_info =
       CreateAndInstallEmptyApp(web_app::ManifestBuilder());
   content::RenderFrameHost* app_frame = OpenApp(url_info.app_id());
 
-  ASSERT_FALSE(IsControlledFramePresent(app_frame));
+  const bool actual_enabled = CreateControlledFrame(
+      app_frame, embedded_https_test_server().GetURL("/index.html"));
+  EXPECT_EQ(expected_enabled, actual_enabled)
+      << "Test failure for case: " << ConfigToString();
+
+  // Uncomment for debugging information:
+  // DLOG(ERROR) << ConfigToString();
+  // DLOG(ERROR) << "expected_enabled=" << expected_enabled
+  //             << "; actual_enabled=" << actual_enabled;
+
+  if (expected_enabled && actual_enabled) {
+    auto* web_view_guest = GetWebViewGuest(app_frame);
+    EXPECT_EQ(kEvalSuccessStr, SetBackgroundColorToWhite(web_view_guest));
+    EXPECT_EQ(kEvalSuccessStr, ExecuteScriptRedBackgroundCode(app_frame));
+    EXPECT_EQ(kEvalSuccessStr, VerifyBackgroundColorIsRed(web_view_guest));
+  }
 }
 
 }  // namespace controlled_frame

@@ -22,6 +22,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/widget/tooltip_manager.h"
 
 // These values are persisted to logs. Entries should not be renumbered and
@@ -84,8 +85,8 @@ views::View* BookmarkButtonBase::GetTooltipHandlerForPoint(
 }
 
 bool BookmarkButtonBase::IsTriggerableEvent(const ui::Event& e) {
-  return e.type() == ui::ET_GESTURE_TAP ||
-         e.type() == ui::ET_GESTURE_TAP_DOWN ||
+  return e.type() == ui::EventType::kGestureTap ||
+         e.type() == ui::EventType::kGestureTapDown ||
          event_utils::IsPossibleDispositionEvent(e);
 }
 
@@ -137,15 +138,19 @@ std::u16string BookmarkButton::GetTooltipText(const gfx::Point& p) const {
 
 void BookmarkButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   BookmarkButtonBase::GetAccessibleNodeData(node_data);
-  const std::u16string name = GetAccessibleName();
-  node_data->SetNameChecked(
-      name.empty()
-          ? l10n_util::GetStringFUTF16(
-                IDS_UNNAMED_BOOKMARK_BUTTON_ACCESSIBLE_NAME,
-                url_formatter::FormatUrl(
-                    url_.get(), url_formatter::kFormatUrlOmitDefaults,
-                    base::UnescapeRule::NORMAL, nullptr, nullptr, nullptr))
-          : name);
+  const std::u16string name = GetViewAccessibility().GetCachedName();
+}
+
+void BookmarkButton::AdjustAccessibleName(std::u16string& new_name,
+                                          ax::mojom::NameFrom& name_from) {
+  if (new_name.empty()) {
+    new_name = l10n_util::GetStringFUTF16(
+        IDS_UNNAMED_BOOKMARK_BUTTON_ACCESSIBLE_NAME,
+        url_formatter::FormatUrl(
+            url_.get(), url_formatter::kFormatUrlOmitDefaults,
+            base::UnescapeRule::NORMAL, nullptr, nullptr, nullptr));
+    name_from = ax::mojom::NameFrom::kContents;
+  }
 }
 
 void BookmarkButton::SetText(const std::u16string& text) {
@@ -234,7 +239,8 @@ void BookmarkButton::StartPreconnecting(GURL url) {
         predictors::LoadingPredictorFactory::GetForProfile(browser_->profile());
     if (loading_predictor) {
       loading_predictor->PrepareForPageLoad(
-          url, predictors::HintOrigin::BOOKMARK_BAR, true);
+          /*initiator_origin=*/std::nullopt, url,
+          predictors::HintOrigin::BOOKMARK_BAR, true);
     }
 
     preloading_timer_.Start(

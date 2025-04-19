@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "testing/libfuzzer/fuzzers/command_buffer_lpm_fuzzer/webgpu_support.h"
+
+#include <dawn/webgpu_cpp_print.h>
+
 #include "testing/libfuzzer/fuzzers/command_buffer_lpm_fuzzer/cmd_buf_lpm_fuzz.h"
 
 namespace gpu::cmdbuf::fuzzing {
@@ -53,6 +56,19 @@ void CmdBufFuzz::WebGPURequestDevice() {
   DVLOG(3) << "Requesting WebGPU device...";
   bool done = false;
   wgpu::DeviceDescriptor device_desc = {};
+  device_desc.SetDeviceLostCallback(
+      wgpu::CallbackMode::AllowSpontaneous,
+      [](const wgpu::Device&, wgpu::DeviceLostReason reason,
+         const char* message) {
+        if (message) {
+          DVLOG(3) << "***** Device lost: " << message << " *****";
+        }
+        if (reason == wgpu::DeviceLostReason::Destroyed) {
+          return;
+        }
+        LOG(FATAL) << "Unexpected device lost (" << reason << "): " << message;
+      });
+
   DCHECK(webgpu_adapter_);
   webgpu_adapter_.RequestDevice(&device_desc,
                                 wgpu::CallbackMode::AllowSpontaneous,
@@ -68,25 +84,13 @@ void CmdBufFuzz::WebGPURequestDevice() {
     RunPendingTasks();
     base::PlatformThread::Sleep(kTinyTimeout);
   }
-
-  webgpu_device_.SetDeviceLostCallback(
-      [](WGPUDeviceLostReason reason, const char* message, void*) {
-        if (message) {
-          DVLOG(3) << "***** Device lost: " << message << " *****";
-        }
-        if (reason == WGPUDeviceLostReason_Destroyed) {
-          return;
-        }
-        LOG(FATAL) << "Unexpected device lost (" << reason << "): " << message;
-      },
-      nullptr);
 }
 
 void CmdBufFuzz::WebGPUDestroyDevice() {
   DVLOG(3) << "Destroying device";
   webgpu_device_.Destroy();
   webgpu()->FlushCommands();
-  WaitForCompletion(webgpu_device_);
+  WaitForCompletion(webgpu_instance_, webgpu_device_);
   DVLOG(3) << "Device destroyed? (see DeviceLostCallback log)";
 }
 
@@ -97,7 +101,7 @@ void CmdBufFuzz::WebGPUCreateBuffer() {
   buffer_desc.usage = wgpu::BufferUsage::MapRead | wgpu::BufferUsage::CopyDst;
   wgpu::Buffer buff = webgpu_device_.CreateBuffer(&buffer_desc);
   webgpu()->FlushCommands();
-  WaitForCompletion(webgpu_device_);
+  WaitForCompletion(webgpu_instance_, webgpu_device_);
   wgpu_buffers_.push_back(std::move(buff));
   DVLOG(3) << "Created WebGPU buffer";
 }

@@ -26,7 +26,6 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -36,12 +35,12 @@ import org.mockito.junit.MockitoRule;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
@@ -54,7 +53,6 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.BookmarkTestUtil;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkItem;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.url.GURL;
 
 import java.util.List;
@@ -70,8 +68,6 @@ public class BookmarkFolderPickerActivityTest {
     @ClassRule
     public static ChromeTabbedActivityTestRule sActivityTestRule =
             new ChromeTabbedActivityTestRule();
-
-    @ClassRule public static TestRule sFeaturesProcessorRule = new Features.JUnitProcessor();
 
     @Rule public MockitoRule mMockitoRule = MockitoJUnit.rule();
 
@@ -89,7 +85,7 @@ public class BookmarkFolderPickerActivityTest {
     public static void setUpBeforeClass() throws TimeoutException {
         sActivityTestRule.startMainActivityOnBlankPage();
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     sBookmarkModel =
                             BookmarkModel.getForProfile(ProfileManager.getLastUsedRegularProfile());
@@ -97,7 +93,7 @@ public class BookmarkFolderPickerActivityTest {
                 });
 
         BookmarkTestUtil.waitForBookmarkModelLoaded();
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     sMobileFolderId = sBookmarkModel.getMobileFolderId();
                     sOtherFolderId = sBookmarkModel.getOtherFolderId();
@@ -108,7 +104,7 @@ public class BookmarkFolderPickerActivityTest {
 
     @After
     public void tearDown() {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     sBookmarkModel.removeAllUserBookmarks();
                 });
@@ -123,8 +119,7 @@ public class BookmarkFolderPickerActivityTest {
         BookmarkId folder = addFolder(sMobileFolderId, 1, "folder");
         startFolderPickerActivity(bookmark);
 
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> sBookmarkModel.addObserver(mBookmarkModelObserver));
+        ThreadUtils.runOnUiThreadBlocking(() -> sBookmarkModel.addObserver(mBookmarkModelObserver));
 
         onView(withText("Mobile bookmarks")).perform(click());
         onView(withText("folder")).perform(click());
@@ -149,8 +144,7 @@ public class BookmarkFolderPickerActivityTest {
         BookmarkId bookmark = addBookmark(sMobileFolderId, 0, title, url);
         startFolderPickerActivity(bookmark);
 
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> sBookmarkModel.addObserver(mBookmarkModelObserver));
+        ThreadUtils.runOnUiThreadBlocking(() -> sBookmarkModel.addObserver(mBookmarkModelObserver));
 
         onView(withId(R.id.folder_recycler_view))
                 .perform(RecyclerViewActions.scrollTo(hasDescendant(withText("Reading list"))));
@@ -180,19 +174,18 @@ public class BookmarkFolderPickerActivityTest {
     }
 
     private BookmarkItem getBookmarkItem(BookmarkId bookmarkId) throws ExecutionException {
-        return TestThreadUtils.runOnUiThreadBlocking(
-                () -> sBookmarkModel.getBookmarkById(bookmarkId));
+        return ThreadUtils.runOnUiThreadBlocking(() -> sBookmarkModel.getBookmarkById(bookmarkId));
     }
 
     private BookmarkId addFolder(BookmarkId parent, int index, String title)
             throws ExecutionException {
-        return TestThreadUtils.runOnUiThreadBlocking(
+        return ThreadUtils.runOnUiThreadBlocking(
                 () -> sBookmarkModel.addFolder(parent, index, title));
     }
 
     private BookmarkId addBookmark(BookmarkId parent, int index, String title, GURL url)
             throws ExecutionException {
-        return TestThreadUtils.runOnUiThreadBlocking(
+        return ThreadUtils.runOnUiThreadBlocking(
                 () -> sBookmarkModel.addBookmark(parent, index, title, url));
     }
 

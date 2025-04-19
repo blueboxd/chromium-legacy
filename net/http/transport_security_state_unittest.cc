@@ -26,7 +26,6 @@
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_entropy_provider.h"
@@ -34,7 +33,6 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "crypto/openssl_util.h"
 #include "crypto/sha2.h"
 #include "net/base/features.h"
 #include "net/base/hash_value.h"
@@ -140,8 +138,6 @@ class TransportSecurityStateTest : public ::testing::Test,
   ~TransportSecurityStateTest() override {
     SetTransportSecurityStateSourceForTesting(nullptr);
   }
-
-  void SetUp() override { crypto::EnsureOpenSSLInit(); }
 
   static void DisableStaticPins(TransportSecurityState* state) {
     state->enable_static_pins_ = false;
@@ -487,6 +483,44 @@ TEST_F(TransportSecurityStateTest, DynamicDomainState) {
   EXPECT_EQ(expiry2, pkp_state.expiry);
   EXPECT_EQ("example.com", sts_state.domain);
   EXPECT_EQ("foo.example.com", pkp_state.domain);
+}
+
+// Tests that GetSSLUpgradeDecision() matches the result of ShouldUpgradeToSSL()
+// and correctly identifies the source of the decision.
+TEST_F(TransportSecurityStateTest, StaticOrDynamicSource) {
+  TransportSecurityState state;
+  SetTransportSecurityStateSourceForTesting(&test1::kHSTSSource);
+
+  // Check preconditions of preloaded states.
+  TransportSecurityState::STSState sts_state;
+  ASSERT_TRUE(state.GetStaticSTSState("hsts.example.com", &sts_state));
+  ASSERT_EQ(sts_state.upgrade_mode,
+            TransportSecurityState::STSState::MODE_FORCE_HTTPS);
+  ASSERT_TRUE(sts_state.include_subdomains);
+  ASSERT_FALSE(state.GetStaticSTSState("dynamic.example.com", &sts_state));
+
+  const base::Time current_time(base::Time::Now());
+  const base::Time expiry = current_time + base::Seconds(1000);
+
+  EXPECT_EQ(state.GetSSLUpgradeDecision("dynamic.example.com"),
+            SSLUpgradeDecision::kNoUpgrade);
+  EXPECT_FALSE(state.ShouldUpgradeToSSL("dynamic.example.com"));
+
+  EXPECT_EQ(state.GetSSLUpgradeDecision("hsts.example.com"),
+            SSLUpgradeDecision::kStaticUpgrade);
+  EXPECT_TRUE(state.ShouldUpgradeToSSL("hsts.example.com"));
+
+  state.AddHSTS("dynamic.example.com", expiry, false);
+  EXPECT_EQ(state.GetSSLUpgradeDecision("dynamic.example.com"),
+            SSLUpgradeDecision::kDynamicUpgrade);
+  EXPECT_TRUE(state.ShouldUpgradeToSSL("dynamic.example.com"));
+
+  // Dynamic state for a host that already has static state doesn't change the
+  // decision.
+  state.AddHSTS("subdomain.hsts.example.com", expiry, false);
+  EXPECT_EQ(state.GetSSLUpgradeDecision("subdomain.hsts.example.com"),
+            SSLUpgradeDecision::kStaticUpgrade);
+  EXPECT_TRUE(state.ShouldUpgradeToSSL("subdomain.hsts.example.com"));
 }
 
 // Tests that new pins always override previous pins. This should be true for
@@ -1244,8 +1278,6 @@ TEST_F(TransportSecurityStateStaticTest, Preloaded) {
   EXPECT_TRUE(StaticShouldRedirect("epoxate.com"));
   EXPECT_FALSE(HasStaticState("foo.epoxate.com"));
 
-  EXPECT_FALSE(HasStaticState("foo.torproject.org"));
-
   EXPECT_TRUE(StaticShouldRedirect("www.moneybookers.com"));
   EXPECT_FALSE(HasStaticState("moneybookers.com"));
 
@@ -1326,21 +1358,6 @@ TEST_F(TransportSecurityStateStaticTest, PreloadedPins) {
   EXPECT_TRUE(OnlyPinningInStaticState("googlesyndication.com"));
   EXPECT_TRUE(OnlyPinningInStaticState("doubleclick.net"));
   EXPECT_TRUE(OnlyPinningInStaticState("googlegroups.com"));
-
-  EXPECT_TRUE(HasStaticPublicKeyPins("torproject.org"));
-  EXPECT_TRUE(HasStaticPublicKeyPins("www.torproject.org"));
-  EXPECT_TRUE(HasStaticPublicKeyPins("check.torproject.org"));
-  EXPECT_TRUE(HasStaticPublicKeyPins("blog.torproject.org"));
-  EXPECT_FALSE(HasStaticState("foo.torproject.org"));
-
-  EXPECT_TRUE(state.GetStaticPKPState("torproject.org", &pkp_state));
-  EXPECT_FALSE(pkp_state.spki_hashes.empty());
-  EXPECT_TRUE(state.GetStaticPKPState("www.torproject.org", &pkp_state));
-  EXPECT_FALSE(pkp_state.spki_hashes.empty());
-  EXPECT_TRUE(state.GetStaticPKPState("check.torproject.org", &pkp_state));
-  EXPECT_FALSE(pkp_state.spki_hashes.empty());
-  EXPECT_TRUE(state.GetStaticPKPState("blog.torproject.org", &pkp_state));
-  EXPECT_FALSE(pkp_state.spki_hashes.empty());
 
   // Facebook has pinning and hsts on facebook.com, but only pinning on
   // subdomains.

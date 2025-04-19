@@ -30,11 +30,16 @@ class SavedTabGroupTab {
       std::optional<size_t> position,
       std::optional<base::Uuid> saved_tab_guid = std::nullopt,
       std::optional<LocalTabID> local_tab_id = std::nullopt,
+      std::optional<std::string> creator_cache_guid = std::nullopt,
+      std::optional<std::string> last_updater_cache_guid = std::nullopt,
       std::optional<base::Time> creation_time_windows_epoch_micros =
           std::nullopt,
       std::optional<base::Time> update_time_windows_epoch_micros = std::nullopt,
       std::optional<gfx::Image> favicon = std::nullopt);
   SavedTabGroupTab(const SavedTabGroupTab& other);
+  SavedTabGroupTab& operator=(const SavedTabGroupTab& other);
+  SavedTabGroupTab(SavedTabGroupTab&& other);
+  SavedTabGroupTab& operator=(SavedTabGroupTab&& other);
   ~SavedTabGroupTab();
 
   // Accessors.
@@ -51,31 +56,46 @@ class SavedTabGroupTab {
   const base::Time& update_time_windows_epoch_micros() const {
     return update_time_windows_epoch_micros_;
   }
+  const std::optional<std::string>& creator_cache_guid() const {
+    return creator_cache_guid_;
+  }
+  const std::optional<std::string>& last_updater_cache_guid() const {
+    return last_updater_cache_guid_;
+  }
 
   // Mutators.
   SavedTabGroupTab& SetURL(GURL url) {
-    url_ = url;
+    url_ = std::move(url);
     SetUpdateTimeWindowsEpochMicros(base::Time::Now());
     return *this;
   }
   SavedTabGroupTab& SetTitle(std::u16string title) {
-    title_ = title;
+    title_ = std::move(title);
     SetUpdateTimeWindowsEpochMicros(base::Time::Now());
     return *this;
   }
   SavedTabGroupTab& SetFavicon(std::optional<gfx::Image> favicon) {
-    favicon_ = favicon;
+    favicon_ = std::move(favicon);
     SetUpdateTimeWindowsEpochMicros(base::Time::Now());
     return *this;
   }
   SavedTabGroupTab& SetLocalTabID(std::optional<LocalTabID> local_tab_id) {
-    local_tab_id_ = local_tab_id;
-    SetUpdateTimeWindowsEpochMicros(base::Time::Now());
+    local_tab_id_ = std::move(local_tab_id);
     return *this;
   }
   SavedTabGroupTab& SetPosition(size_t position) {
     position_ = position;
     SetUpdateTimeWindowsEpochMicros(base::Time::Now());
+    return *this;
+  }
+  SavedTabGroupTab& SetCreatorCacheGuid(
+      std::optional<std::string> new_cache_guid) {
+    creator_cache_guid_ = std::move(new_cache_guid);
+    return *this;
+  }
+  SavedTabGroupTab& SetLastUpdaterCacheGuid(
+      std::optional<std::string> cache_guid) {
+    last_updater_cache_guid_ = std::move(cache_guid);
     return *this;
   }
   SavedTabGroupTab& SetUpdateTimeWindowsEpochMicros(
@@ -117,6 +137,16 @@ class SavedTabGroupTab {
 
   // The favicon of the website this SavedTabGroupTab represents.
   std::optional<gfx::Image> favicon_;
+
+  // A guid which refers to the device which created the tab group. If metadata
+  // is not being tracked when the saved tab group is being created, this value
+  // will be null. The value could also be null if the group was created before
+  // M127. Used for metrics purposes only.
+  std::optional<std::string> creator_cache_guid_;
+
+  // The cache guid of the device that last modified this tab group. Can be null
+  // if the group was just created. Used for metrics purposes only.
+  std::optional<std::string> last_updater_cache_guid_;
 
   // Timestamp for when the tab was created using windows epoch microseconds.
   base::Time creation_time_windows_epoch_micros_;

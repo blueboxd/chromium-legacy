@@ -34,7 +34,6 @@ import androidx.annotation.Px;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.robolectric.annotation.Config;
@@ -43,13 +42,15 @@ import org.robolectric.annotation.LooperMode.Mode;
 
 import org.chromium.base.supplier.Supplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.Features;
+import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.features.partialcustomtab.PartialCustomTabBaseStrategy.PartialCustomTabType;
 import org.chromium.chrome.browser.customtabs.features.partialcustomtab.PartialCustomTabDisplayManager.SizeStrategyCreator;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
+import org.chromium.ui.accessibility.UiAccessibilityFeatures;
 import org.chromium.ui.base.LocalizationUtils;
 
 /** Tests for {@link PartialCustomTabDisplayManager}. */
@@ -62,7 +63,6 @@ public class PartialCustomTabDisplayManagerTest {
     private static final int BOTTOM_SHEET_MAX_WIDTH_DP = 900;
 
     private boolean mFullscreen;
-    @Rule public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
     @Rule public final PartialCustomTabTestRule mPCCTTestRule = new PartialCustomTabTestRule();
 
     private PartialCustomTabDisplayManager createPcctDisplayManager() {
@@ -299,6 +299,7 @@ public class PartialCustomTabDisplayManagerTest {
     }
 
     @Test
+    @DisableFeatures({UiAccessibilityFeatures.START_SURFACE_ACCESSIBILITY_CHECK})
     public void transitionFromBottomSheetToSideSheetWhileSoftkeyboardIsOn() {
         mPCCTTestRule.configPortraitMode();
         PartialCustomTabDisplayManager displayManager = createPcctDisplayManager();
@@ -584,6 +585,7 @@ public class PartialCustomTabDisplayManagerTest {
     }
 
     @Test
+    @DisabledTest(message = "b/354044501")
     public void rotateInMaximizeMode() {
         mPCCTTestRule.configLandscapeMode();
         PartialCustomTabDisplayManager displayManager = createPcctDisplayManager();

@@ -11,18 +11,16 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/view.h"
 
-const std::u16string kTopFrameETLDPlusOne = u"top-frame-example.com";
-const std::u16string kIframeETLDPlusOne = u"iframe-example.com";
+const std::u16string kRpETLDPlusOne = u"rp-example.com";
 const std::u16string kIdpETLDPlusOne = u"idp-example.com";
 const std::u16string kSecondIdpETLDPlusOne = u"idp2.com";
 const std::u16string kTitleSignIn =
-    u"Sign in to top-frame-example.com with idp-example.com";
-const std::u16string kTitleSignInWithoutIdp =
-    u"Sign in to top-frame-example.com";
+    u"Sign in to rp-example.com with idp-example.com";
+const std::u16string kTitleSignInWithoutIdp = u"Sign in to rp-example.com";
 const std::u16string kTitleSigningIn = u"Verifying…";
 const std::u16string kTitleSigningInWithAutoReauthn = u"Signing you in…";
 const std::u16string kTitleRequestPermission =
-    u"Confirm you want to sign in to top-frame-example.com with "
+    u"Confirm you want to sign in to rp-example.com with "
     u"idp-example.com";
 const std::u16string kBodySignIn = u"Choose an account to continue";
 
@@ -65,11 +63,17 @@ class AccountSelectionViewTestBase {
 
   content::IdentityRequestAccount CreateTestIdentityRequestAccount(
       const std::string& account_suffix,
-      content::IdentityRequestAccount::LoginState login_state);
+      content::IdentityRequestAccount::LoginState login_state,
+      std::optional<base::Time> last_used_timestamp = std::nullopt);
+  // Creates a vector of accounts. When `login_states` are not passed, sets the
+  // accounts' login states to LoginState::kSignUp. When `last_used_timestamps`
+  // are not passed, sets accounts' last used timestamp to std::nullopt.
   std::vector<content::IdentityRequestAccount>
   CreateTestIdentityRequestAccounts(
       const std::vector<std::string>& account_suffixes,
-      content::IdentityRequestAccount::LoginState login_state);
+      const std::vector<content::IdentityRequestAccount::LoginState>&
+          login_states = {},
+      const std::vector<std::optional<base::Time>>& last_used_timestamps = {});
   content::ClientMetadata CreateTestClientMetadata(
       const std::string& terms_of_service_url);
 

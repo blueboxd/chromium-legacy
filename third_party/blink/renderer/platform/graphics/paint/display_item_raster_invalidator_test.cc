@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_raster_invalidator.h"
 
 #include "base/functional/callback_helpers.h"
@@ -680,11 +685,11 @@ TEST_P(DisplayItemRasterInvalidatorTest, SwapOrderCrossingChunks) {
       *MakeGarbageCollected<FakeDisplayItemClient>("content2");
   GraphicsContext context(GetPaintController());
 
-  auto container1_effect = CreateOpacityEffect(e0(), 0.5);
+  auto* container1_effect = CreateOpacityEffect(e0(), 0.5);
   auto container1_properties = DefaultPaintChunkProperties();
   container1_properties.SetEffect(*container1_effect);
 
-  auto container2_effect = CreateOpacityEffect(e0(), 0.5);
+  auto* container2_effect = CreateOpacityEffect(e0(), 0.5);
   auto container2_properties = DefaultPaintChunkProperties();
   container2_properties.SetEffect(*container2_effect);
 

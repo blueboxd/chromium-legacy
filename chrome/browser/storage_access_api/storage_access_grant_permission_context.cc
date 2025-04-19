@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
+#include "base/time/time.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/dips/dips_service.h"
@@ -61,19 +62,19 @@ static int implicit_grant_limit = 0;
 constexpr base::TimeDelta kStorageAccessAPITopLevelUserInteractionBound =
     base::Days(30);
 
-// Returns true if the request wasn't answered by the user explicitly. Note that
+// Returns true if the request was answered by the user explicitly. Note that
 // this is only called when persisting a permission grant.
-bool IsImplicitOutcome(RequestOutcome outcome) {
+bool IsUserDecidedPersistableOutcome(RequestOutcome outcome) {
   switch (outcome) {
     case RequestOutcome::kGrantedByFirstPartySet:
     case RequestOutcome::kGrantedByAllowance:
     case RequestOutcome::kDismissedByUser:
     case RequestOutcome::kReusedPreviousDecision:
     case RequestOutcome::kReusedImplicitGrant:
-      return true;
+      return false;
     case RequestOutcome::kGrantedByUser:
     case RequestOutcome::kDeniedByUser:
-      return false;
+      return true;
 
     case RequestOutcome::kDeniedByPrerequisites:
     case RequestOutcome::kDeniedByTopLevelInteractionHeuristic:
@@ -134,8 +135,9 @@ void RecordOutcomeSample(RequestOutcome outcome) {
 }
 
 content_settings::ContentSettingConstraints ComputeConstraints(
-    RequestOutcome outcome) {
-  content_settings::ContentSettingConstraints constraints;
+    RequestOutcome outcome,
+    base::Time now) {
+  content_settings::ContentSettingConstraints constraints(now);
   switch (outcome) {
     case RequestOutcome::kGrantedByFirstPartySet:
       constraints.set_lifetime(
@@ -173,23 +175,16 @@ content_settings::ContentSettingConstraints ComputeConstraints(
   }
 }
 
-bool ShouldPersistSetting(bool permission_allowed,
-                          RequestOutcome outcome,
-                          bool persist) {
-  // Regardless of how the result was obtained, the permissions code determined
-  // the result should not be persisted; respect that determination.
-  if (!persist) {
-    return false;
-  }
-  // Explicit responses to a prompt should be persisted to avoid user annoyance
-  // or prompt spam.
-  if (!IsImplicitOutcome(outcome)) {
+bool ShouldPersistSetting(bool permission_allowed, RequestOutcome outcome) {
+  // User responses to a prompt should be persisted to avoid user annoyance or
+  // prompt spam.
+  if (IsUserDecidedPersistableOutcome(outcome)) {
     return true;
   }
-  // Implicit denials are not persisted, since they can be re-derived easily and
-  // don't have any user-facing concerns, so persistence just adds complexity.
-  // Grants, however, should be persisted to ensure the associated behavioral
-  // changes stick.
+  // UA-generated denials are not persisted, since they can be re-derived easily
+  // and don't have any user-facing concerns, so persistence just adds
+  // complexity. UA-generated grants, however, should be persisted to ensure the
+  // associated behavioral changes stick.
   return permission_allowed;
 }
 
@@ -579,9 +574,11 @@ void StorageAccessGrantPermissionContext::NotifyPermissionSet(
         break;
     }
   }
-  NotifyPermissionSetInternal(id, requesting_origin, embedding_origin,
-                              std::move(callback), persist, content_setting,
-                              outcome);
+  NotifyPermissionSetInternal(
+      id, requesting_origin, embedding_origin, std::move(callback),
+      persist && ShouldPersistSetting(content_setting == CONTENT_SETTING_ALLOW,
+                                      outcome),
+      content_setting, outcome);
 }
 
 void StorageAccessGrantPermissionContext::NotifyPermissionSetInternal(
@@ -610,7 +607,7 @@ void StorageAccessGrantPermissionContext::NotifyPermissionSetInternal(
     }
   }
 
-  if (!ShouldPersistSetting(permission_allowed, outcome, persist)) {
+  if (!persist) {
     if (content_setting == CONTENT_SETTING_DEFAULT) {
       content_setting = CONTENT_SETTING_ASK;
     }
@@ -623,10 +620,10 @@ void StorageAccessGrantPermissionContext::NotifyPermissionSetInternal(
   // `Permissions.Action.StorageAccess` histogram. Because implicitly denied
   // results return early, in practice this means that an implicit result at
   // this point means a grant was generated.
-  CHECK(!IsImplicitOutcome(outcome) || permission_allowed);
+  CHECK(IsUserDecidedPersistableOutcome(outcome) || permission_allowed);
   if (permission_allowed) {
     base::UmaHistogramBoolean("API.StorageAccess.GrantIsImplicit",
-                              IsImplicitOutcome(outcome));
+                              !IsUserDecidedPersistableOutcome(outcome));
   }
   HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(browser_context());
@@ -635,7 +632,7 @@ void StorageAccessGrantPermissionContext::NotifyPermissionSetInternal(
 
   settings_map->SetContentSettingDefaultScope(
       requesting_origin, embedding_origin, ContentSettingsType::STORAGE_ACCESS,
-      content_setting, ComputeConstraints(outcome));
+      content_setting, ComputeConstraints(outcome, settings_map->Now()));
 
   ContentSettingsForOneType grants =
       settings_map->GetSettingsForOneType(ContentSettingsType::STORAGE_ACCESS);

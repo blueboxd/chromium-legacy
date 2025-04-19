@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "gpu/command_buffer/client/gl_helper_scaling.h"
 
 #include <stddef.h>
@@ -13,6 +18,7 @@
 #include <vector>
 
 #include "base/containers/circular_deque.h"
+#include "base/containers/heap_array.h"
 #include "base/functional/bind.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -1197,10 +1203,11 @@ GLuint CompileShaderFromSource(GLES2Interface* gl,
     GLint log_length = 0;
     gl->GetShaderiv(shader, GL_INFO_LOG_LENGTH, &log_length);
     if (log_length) {
-      std::unique_ptr<GLchar[]> log(new GLchar[log_length]);
+      auto log = base::HeapArray<GLchar>::Uninit(log_length);
       GLsizei returned_log_length = 0;
-      gl->GetShaderInfoLog(shader, log_length, &returned_log_length, log.get());
-      LOG(ERROR) << std::string(log.get(), returned_log_length);
+      gl->GetShaderInfoLog(shader, log_length, &returned_log_length,
+                           log.data());
+      LOG(ERROR) << std::string(log.begin(), log.begin() + returned_log_length);
     }
     gl->DeleteShader(shader);
     return 0;

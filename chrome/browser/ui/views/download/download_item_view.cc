@@ -230,10 +230,10 @@ bool has_warning_label(download::DownloadItemMode mode) {
 }
 
 float GetDPIScaleForView(views::View* view) {
-  const display::Screen* const screen = display::Screen::GetScreen();
-  DCHECK(screen);
-  return screen->GetDisplayNearestView(view->GetWidget()->GetNativeView())
-      .device_scale_factor();
+  DCHECK(display::Screen::GetScreen());
+  return display::Screen::GetScreen()
+      ->GetPreferredScaleFactorForView(view->GetWidget()->GetNativeView())
+      .value_or(1.0f);
 }
 }  // namespace
 
@@ -247,7 +247,7 @@ class DownloadItemView::ContextMenuButton : public views::ImageButton {
                                 base::Unretained(owner))),
         owner_(owner) {
     views::ConfigureVectorImageButton(this);
-    SetAccessibleName(l10n_util::GetStringUTF16(
+    GetViewAccessibility().SetName(l10n_util::GetStringUTF16(
         IDS_DOWNLOAD_ITEM_DROPDOWN_BUTTON_ACCESSIBLE_TEXT));
     SetBorder(views::CreateEmptyBorder(10));
     SetHasInkDropActionOnClick(false);
@@ -361,6 +361,10 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr model,
 
   // Further configure default state, e.g. child visibility.
   OnDownloadUpdated();
+
+  // Set the description to the empty string, otherwise the tooltip will be
+  // used, which is redundant with the accessible name.
+  GetViewAccessibility().ClearDescriptionAndDescriptionFrom();
 }
 
 DownloadItemView::~DownloadItemView() = default;
@@ -411,8 +415,9 @@ void DownloadItemView::Layout(PassKey) {
     gfx::Rect button_bounds(gfx::Point(label->bounds().right() + kLabelPadding,
                                        CenterY(button_size.height())),
                             button_size);
-    for (auto* button : {save_button_, discard_button_, scan_button_,
-                         open_now_button_, review_button_}) {
+    for (const raw_ptr<views::MdTextButton>& button :
+         {save_button_, discard_button_, scan_button_, open_now_button_,
+          review_button_}) {
       button->SetBoundsRect(button_bounds);
       if (button->GetVisible())
         button_bounds.set_x(button_bounds.right() + kSaveDiscardButtonPadding);
@@ -464,10 +469,6 @@ std::u16string DownloadItemView::GetTooltipText(const gfx::Point& p) const {
 void DownloadItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kGroup;
   node_data->SetNameChecked(accessible_name_);
-
-  // Set the description to the empty string, otherwise the tooltip will be
-  // used, which is redundant with the accessible name.
-  node_data->SetDescriptionExplicitlyEmpty();
 }
 
 void DownloadItemView::ShowContextMenuForViewImpl(
@@ -722,7 +723,7 @@ void DownloadItemView::SetMode(download::DownloadItemMode mode) {
       has_warning_label(mode_)
           ? warning_label_->GetText()
           : (status_label_->GetText() + u' ' + unelided_filename);
-  open_button_->SetAccessibleName(accessible_name_);
+  open_button_->GetViewAccessibility().SetName(accessible_name_);
   // Do not fire text changed notifications. Screen readers are notified of
   // status changes via the accessible alert notifications, and text change
   // notifications would be redundant.

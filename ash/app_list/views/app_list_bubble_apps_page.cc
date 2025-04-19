@@ -137,7 +137,7 @@ class ClickableView : public views::View {
 
   void OnGestureEvent(ui::GestureEvent* event) override {
     views::View::OnGestureEvent(event);
-    if (event->type() == ui::ET_GESTURE_TAP) {
+    if (event->type() == ui::EventType::kGestureTap) {
       event->SetHandled();
       click_callback_.Run();
     }
@@ -238,11 +238,7 @@ AppListBubbleAppsPage::AppListBubbleAppsPage(
   separator_ =
       scroll_contents->AddChildView(std::make_unique<views::Separator>());
   separator_->SetBorder(views::CreateEmptyBorder(kSeparatorInsets));
-  if (chromeos::features::IsJellyEnabled()) {
-    separator_->SetColorId(cros_tokens::kCrosSysSeparator);
-  } else {
-    separator_->SetColorId(ui::kColorAshSystemUIMenuSeparator);
-  }
+  separator_->SetColorId(cros_tokens::kCrosSysSeparator);
 
   // Add a empty container view. A toast view should be added to
   // `toast_container_` when the app list starts temporary sorting.
@@ -717,11 +713,8 @@ void AppListBubbleAppsPage::InitContinueLabelContainer(
   continue_label_ =
       continue_label_container_->AddChildView(std::make_unique<views::Label>(
           l10n_util::GetStringUTF16(IDS_ASH_LAUNCHER_CONTINUE_SECTION_LABEL)));
-  bubble_utils::ApplyStyle(
-      continue_label_, TypographyToken::kCrosAnnotation1,
-      chromeos::features::IsJellyEnabled()
-          ? static_cast<ui::ColorId>(cros_tokens::kCrosSysOnSurfaceVariant)
-          : kColorAshTextColorSecondary);
+  bubble_utils::ApplyStyle(continue_label_, TypographyToken::kCrosAnnotation1,
+                           cros_tokens::kCrosSysOnSurfaceVariant);
   continue_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   // Button should be right aligned, so flex label to fill empty space.

@@ -23,6 +23,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/bindings/core/v8/v8_initializer.h"
 
 #include <algorithm>
@@ -74,6 +79,7 @@
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
+#include "third_party/blink/renderer/core/shadow_realm/shadow_realm_global_scope.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
@@ -115,16 +121,14 @@ bool FilterETWSessionByURLCallback(v8::Local<v8::Context> context,
                                    const std::string& json_payload);
 #endif  // BUILDFLAG(IS_WIN)
 
-static String ExtractMessageForConsole(v8::Isolate* isolate,
-                                       v8::Local<v8::Value> data) {
+namespace {
+
+String ExtractMessageForConsole(v8::Isolate* isolate,
+                                v8::Local<v8::Value> data) {
   DOMException* exception = V8DOMException::ToWrappable(isolate, data);
-  if (exception && !exception->MessageForConsole().empty()) {
-    return exception->ToStringForConsole();
-  }
-  return g_empty_string;
+  return exception ? exception->ToStringForConsole() : String();
 }
 
-namespace {
 mojom::ConsoleMessageLevel MessageLevelFromNonFatalErrorLevel(int error_level) {
   mojom::ConsoleMessageLevel level = mojom::ConsoleMessageLevel::kError;
   switch (error_level) {
@@ -171,10 +175,9 @@ void V8Initializer::MessageHandlerInMainThread(v8::Local<v8::Message> message,
 
   UseCounter::Count(context, WebFeature::kUnhandledExceptionCountInMainThread);
   base::UmaHistogramBoolean("V8.UnhandledExceptionCountInMainThread", true);
-  ukm::builders::ThirdPartyCookies_BreakageIndicator_UncaughtJSError(
-      context->UkmSourceID())
-      .SetHasOccurred(1)
-      .Record(context->UkmRecorder());
+  // TODO(b/338241225): Reenable the
+  // ThirdPartyCookies.BreakageIndicator.UncaughtJSError event with logic that
+  // caps the number of times the event can be sent per client.
 
   std::unique_ptr<SourceLocation> location =
       CaptureSourceLocation(isolate, message, context);
@@ -198,7 +201,7 @@ void V8Initializer::MessageHandlerInMainThread(v8::Local<v8::Message> message,
 
   String message_for_console = ExtractMessageForConsole(isolate, data);
   if (!message_for_console.empty())
-    event->SetUnsanitizedMessage("Uncaught " + message_for_console);
+    event->SetUnsanitizedMessage(message_for_console);
 
   context->DispatchErrorEvent(event, sanitize_script_errors);
 }
@@ -296,8 +299,9 @@ static void PromiseRejectHandler(v8::PromiseRejectMessage data,
 
   String message_for_console =
       ExtractMessageForConsole(isolate, data.GetValue());
-  if (!message_for_console.empty())
-    error_message = "Uncaught " + message_for_console;
+  if (!message_for_console.empty()) {
+    error_message = std::move(message_for_console);
+  }
 
   rejected_promises.RejectedWithNoHandler(script_state, data, error_message,
                                           std::move(location),
@@ -342,10 +346,15 @@ static void PromiseRejectHandlerInWorker(v8::PromiseRejectMessage data) {
   if (!execution_context)
     return;
 
+  ExecutionContext* root_worker_context =
+      execution_context->IsShadowRealmGlobalScope()
+          ? To<ShadowRealmGlobalScope>(execution_context)
+                ->GetRootInitiatorExecutionContext()
+          : execution_context;
+  DCHECK(root_worker_context->IsWorkerOrWorkletGlobalScope());
+
   auto* script_controller =
-      execution_context->IsWorkerGlobalScope()
-          ? To<WorkerGlobalScope>(execution_context)->ScriptController()
-          : To<WorkletGlobalScope>(execution_context)->ScriptController();
+      To<WorkerOrWorkletGlobalScope>(root_worker_context)->ScriptController();
   DCHECK(script_controller);
 
   PromiseRejectHandler(data, *script_controller->GetRejectedPromises(),
@@ -361,7 +370,7 @@ void V8Initializer::FailedAccessCheckCallbackInMainThread(
   // V8 to pass in more contextual information, so that we can build a full
   // ExceptionState.
   ExceptionState exception_state(
-      holder->GetIsolate(), ExceptionContextType::kUnknown, nullptr, nullptr);
+      holder->GetIsolate(), v8::ExceptionContext::kUnknown, nullptr, nullptr);
   BindingSecurity::FailedAccessCheckFor(holder->GetIsolate(),
                                         WrapperTypeInfo::Unwrap(data), holder,
                                         exception_state);
@@ -399,8 +408,8 @@ TrustedTypesCodeGenerationCheck(v8::Local<v8::Context> context,
                                 v8::Local<v8::Value> source,
                                 bool is_code_like) {
   v8::Isolate* isolate = context->GetIsolate();
-  ExceptionState exception_state(
-      isolate, ExceptionContextType::kOperationInvoke, "eval", "");
+  ExceptionState exception_state(isolate, v8::ExceptionContext::kOperation,
+                                 "eval", "");
 
   // If the input is not a string or TrustedScript, pass it through.
   if (!source->IsString() && !is_code_like &&
@@ -614,16 +623,6 @@ bool WasmJSPromiseIntegrationEnabledCallback(v8::Local<v8::Context> context) {
       execution_context);
 }
 
-bool JavaScriptCompileHintsMagicEnabledCallback(
-    v8::Local<v8::Context> context) {
-  ExecutionContext* execution_context = ToExecutionContext(context);
-  if (!execution_context) {
-    return false;
-  }
-  return RuntimeEnabledFeatures::JavaScriptCompileHintsMagicRuntimeEnabled(
-      execution_context);
-}
-
 v8::MaybeLocal<v8::Promise> HostImportModuleDynamically(
     v8::Local<v8::Context> context,
     v8::Local<v8::Data> v8_host_defined_options,
@@ -683,7 +682,7 @@ v8::MaybeLocal<v8::Promise> HostImportModuleDynamically(
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver<IDLAny>>(
       script_state,
-      ExceptionContext(ExceptionContextType::kUnknown, "", "import"));
+      ExceptionContext(v8::ExceptionContext::kUnknown, "", "import"));
 
   String invalid_attribute_key;
   if (module_request.HasInvalidImportAttributeKey(&invalid_attribute_key)) {
@@ -767,8 +766,6 @@ void V8Initializer::InitializeV8Common(v8::Isolate* isolate) {
   isolate->SetWasmJSPIEnabledCallback(WasmJSPromiseIntegrationEnabledCallback);
   isolate->SetSharedArrayBufferConstructorEnabledCallback(
       SharedArrayBufferConstructorEnabledCallback);
-  isolate->SetJavaScriptCompileHintsMagicEnabledCallback(
-      JavaScriptCompileHintsMagicEnabledCallback);
   isolate->SetHostImportModuleDynamicallyCallback(HostImportModuleDynamically);
   isolate->SetHostInitializeImportMetaObjectCallback(
       HostGetImportMetaProperties);
@@ -947,7 +944,7 @@ v8::Isolate* V8Initializer::InitializeMainThread() {
   if (Platform::Current()->IsolateStartsInBackground()) {
     // If we do not track widget visibility, then assume conservatively that
     // the isolate is in background. This reduces memory usage.
-    isolate->IsolateInBackgroundNotification();
+    isolate->SetPriority(v8::Isolate::Priority::kBestEffort);
   }
 
   return isolate;

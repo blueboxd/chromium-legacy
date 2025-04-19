@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "cc/paint/paint_op_buffer.h"
 
 #include <algorithm>
@@ -20,6 +25,7 @@
 #include "cc/paint/scoped_raster_flags.h"
 #include "cc/paint/skottie_serialization_history.h"
 #include "third_party/skia/include/gpu/GrRecordingContext.h"
+#include "third_party/skia/include/gpu/graphite/Recorder.h"
 
 namespace cc {
 
@@ -88,13 +94,14 @@ PaintOpBuffer& PaintOpBuffer::operator=(PaintOpBuffer&& other) {
   subrecord_bytes_used_ = other.subrecord_bytes_used_;
   subrecord_op_count_ = other.subrecord_op_count_;
   has_non_aa_paint_ = other.has_non_aa_paint_;
-  has_discardable_images_ = other.has_discardable_images_;
   has_draw_ops_ = other.has_draw_ops_;
   has_draw_text_ops_ = other.has_draw_text_ops_;
   has_save_layer_ops_ = other.has_save_layer_ops_;
   has_save_layer_alpha_ops_ = other.has_save_layer_alpha_ops_;
   has_effects_preventing_lcd_text_for_save_layer_alpha_ =
       other.has_effects_preventing_lcd_text_for_save_layer_alpha_;
+  has_discardable_images_ = other.has_discardable_images_;
+  content_color_usage_ = other.content_color_usage_;
 
   // Make sure the other pob can destruct safely or is ready for reuse.
   other.reserved_ = 0;
@@ -128,12 +135,13 @@ void PaintOpBuffer::ResetRetainingBuffer() {
   has_non_aa_paint_ = false;
   subrecord_bytes_used_ = 0;
   subrecord_op_count_ = 0;
-  has_discardable_images_ = false;
   has_draw_ops_ = false;
   has_draw_text_ops_ = false;
   has_save_layer_ops_ = false;
   has_save_layer_alpha_ops_ = false;
   has_effects_preventing_lcd_text_for_save_layer_alpha_ = false;
+  has_discardable_images_ = false;
+  content_color_usage_ = gfx::ContentColorUsage::kSRGB;
 }
 
 void PaintOpBuffer::Playback(SkCanvas* canvas) const {
@@ -216,11 +224,20 @@ void PaintOpBuffer::Playback(SkCanvas* canvas,
       continue;
 
     if (op->IsPaintOpWithFlags()) {
+      int max_texture_size;
+      if (auto* context = canvas->recordingContext()) {
+        max_texture_size = context->maxTextureSize();
+      } else if (auto* recorder = canvas->recorder()) {
+        max_texture_size = recorder->maxTextureSize();
+      } else {
+        // This can happen in tests.
+        max_texture_size = 0;
+      }
+
       const auto& flags_op = static_cast<const PaintOpWithFlags&>(*op);
-      auto* context = canvas->recordingContext();
       const ScopedRasterFlags scoped_flags(
           &flags_op.flags, new_params.image_provider, canvas->getTotalMatrix(),
-          context ? context->maxTextureSize() : 0, iter.alpha());
+          max_texture_size, iter.alpha());
       if (const auto* raster_flags = scoped_flags.flags())
         flags_op.RasterWithFlags(canvas, raster_flags, new_params);
     } else {
@@ -414,6 +431,16 @@ PaintOpBuffer::Iterator PaintOpBuffer::begin() const {
 
 PaintOpBuffer::Iterator PaintOpBuffer::end() const {
   return Iterator(*this).end();
+}
+
+const PaintOp& PaintOpBuffer::GetOpAtForTesting(size_t index) const {
+  for (const auto& op : *this) {
+    if (!index) {
+      return op;
+    }
+    --index;
+  }
+  NOTREACHED_NORETURN();
 }
 
 }  // namespace cc

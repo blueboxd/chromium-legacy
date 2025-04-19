@@ -113,13 +113,22 @@ found in the LICENSE file.
     The background is translucent since the parent activity content should be
     visible when the bottom sheet or the non-full-screen history sync opt-in
     dialog is shown on tablet. -->
-    <style name="Theme.Chromium.SigninAndHistoryOptInActivity"
+    <style name="Base.Theme.Chromium.SigninAndHistorySyncActivity"
         parent="Theme.Chromium.Activity.Fullscreen">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowIsTranslucent">true</item>
-        <item name="android:windowEnterAnimation">@null</item>
-        <item name="android:windowExitAnimation">@null</item>
-        <item name="android:windowAnimationStyle">@null</item>
+        <item name="android:navigationBarColor">@macro/bottom_system_nav_color</item>
+        <item name="android:windowAnimationStyle">@style/SigninAndHistorySyncActivityAnimation</item>
+    </style>
+    <style name="Theme.Chromium.SigninAndHistorySyncActivity"
+        parent="Base.Theme.Chromium.SigninAndHistorySyncActivity" />
+
+    <!-- TODO(crbug.com/345176436): This animation style is used to set the
+         enter animation for the history sync dialog. This animation should be
+         configured using ModalDialogProperties instead. -->
+    <style name="SigninAndHistorySyncActivityAnimation" parent="@android:style/Animation.Dialog">
+      <item name="android:windowExitAnimation">@null</item>
+      <item name="android:windowEnterAnimation">@anim/slide_in_up</item>
     </style>
 
     <!-- Trusted Web Activities -->
@@ -317,6 +326,11 @@ found in the LICENSE file.
         <item name="android:textSize">@dimen/text_size_medium</item>
     </style>
 
+    <!-- Autofill IBAN -->
+    <style name="ShapeAppearance.App.MediumComponent" parent="ShapeAppearance.MaterialComponents.MediumComponent">
+        <item name="cornerSize">@dimen/card_rounded_corner_radius</item>
+    </style>
+
     <!-- Tab Layout -->
     <style name="TabLayoutStyle" parent="Widget.MaterialComponents.TabLayout">
         <item name="android:background">@android:color/transparent</item>
@@ -359,7 +373,7 @@ found in the LICENSE file.
     </style>
 
     <!-- Misc text appearance styles -->
-    <style name="TextAppearance.SearchEngineRecentTitle" parent="TextAppearance.RobotoMediumStyle">
+    <style name="TextAppearance.SearchEngineRecentTitle" parent="TextAppearance.MediumStyle">
         <item name="android:textColor">@macro/default_text_color_link</item>
     </style>
     <!-- TODO(crbug.com/40691622): Replace with a standard text appearance. -->
@@ -376,13 +390,10 @@ found in the LICENSE file.
         <item name="android:textSize">@dimen/location_bar_url_text_size</item>
     </style>
 
-    <style name="TextAppearance.SearchBoxText.NewTabPage">
-        <item name="android:textSize">@dimen/location_bar_url_text_size</item>
-        <item name="android:textColorHint">@macro/search_box_hint</item>
-    </style>
-    <style name="TextAppearance_SearchBoxText_NewTabPage_SurfacePolish">
-        <item name="android:textSize">@dimen/location_bar_url_text_size_polish</item>
-        <item name="android:textColorHint">@macro/search_box_hint_polish</item>
+
+    <style name="TextAppearance.FakeSearchBoxText">
+        <item name="android:textSize">@dimen/ntp_fake_search_box_text_size</item>
+        <item name="android:textColorHint">@macro/ntp_search_box_hint</item>
     </style>
 
     <!-- Launcher widgets can't use theme attributes, so this should use the baseline colors for

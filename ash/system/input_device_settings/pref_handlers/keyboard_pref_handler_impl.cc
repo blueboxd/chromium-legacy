@@ -26,6 +26,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/known_user.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/events/ash/keyboard_capability.h"
 #include "ui/events/ash/mojom/extended_fkeys_modifier.mojom-shared.h"
 #include "ui/events/ash/mojom/extended_fkeys_modifier.mojom.h"
 #include "ui/events/ash/mojom/modifier_key.mojom-shared.h"
@@ -62,12 +63,12 @@ static constexpr auto kKeyboardModifierMappings =
           ::prefs::kLanguageRemapCapsLockKeyTo}});
 
 static constexpr auto kMetaKeyMapping =
-    base::MakeFixedFlatMap<mojom::MetaKey, const char*>(
-        {{mojom::MetaKey::kSearch, ::prefs::kLanguageRemapSearchKeyTo},
-         {mojom::MetaKey::kLauncher, ::prefs::kLanguageRemapSearchKeyTo},
-         {mojom::MetaKey::kExternalMeta,
+    base::MakeFixedFlatMap<ui::mojom::MetaKey, const char*>(
+        {{ui::mojom::MetaKey::kSearch, ::prefs::kLanguageRemapSearchKeyTo},
+         {ui::mojom::MetaKey::kLauncher, ::prefs::kLanguageRemapSearchKeyTo},
+         {ui::mojom::MetaKey::kExternalMeta,
           ::prefs::kLanguageRemapExternalMetaKeyTo},
-         {mojom::MetaKey::kCommand,
+         {ui::mojom::MetaKey::kCommand,
           ::prefs::kLanguageRemapExternalCommandKeyTo}});
 
 bool GetDefaultTopRowAreFKeysValue(
@@ -366,7 +367,7 @@ RetrieveModifierRemappings(const mojom::Keyboard& keyboard,
     modifier_remappings[from_key] = to_key;
   }
 
-  if (keyboard.meta_key == mojom::MetaKey::kCommand) {
+  if (keyboard.meta_key == ui::mojom::MetaKey::kCommand) {
     if (!modifier_remappings_dict.contains(base::NumberToString(
             static_cast<int>(ui::mojom::ModifierKey::kMeta)))) {
       modifier_remappings[ui::mojom::ModifierKey::kMeta] =
@@ -440,8 +441,19 @@ mojom::KeyboardSettingsPtr GetDefaultKeyboardSettings(
                                     default_settings_dict);
   }
 
+  base::Value::Dict settings_dict;
+  if (Shell::Get()->keyboard_capability()->HasRightAltKeyForOobe(keyboard.id)) {
+    base::Value::Dict modifier_remappings_dict;
+    modifier_remappings_dict.Set(
+        base::NumberToString(
+            static_cast<int>(ui::mojom::ModifierKey::kAssistant)),
+        static_cast<int>(ui::mojom::ModifierKey::kCapsLock));
+    settings_dict.Set(prefs::kKeyboardSettingModifierRemappings,
+                      std::move(modifier_remappings_dict));
+  }
+
   return RetrieveKeyboardSettings(pref_service, keyboard_policies, keyboard,
-                                  /*settings_dict=*/{});
+                                  std::move(settings_dict));
 }
 
 base::Value::Dict ConvertModifierRemappingsToDict(
@@ -452,7 +464,7 @@ base::Value::Dict ConvertModifierRemappingsToDict(
   base::Value::Dict modifier_remappings;
   for (const auto& [from, to] : keyboard.settings->modifier_remappings) {
     // Avoid saving modifier remappings that are default for apple keyboards.
-    if (keyboard.meta_key == mojom::MetaKey::kCommand &&
+    if (keyboard.meta_key == ui::mojom::MetaKey::kCommand &&
         IsAppleKeyboardDefaultModifierRemapping(from, to)) {
       continue;
     }
@@ -464,7 +476,7 @@ base::Value::Dict ConvertModifierRemappingsToDict(
   // Since Apple keyboards default remaps Meta -> Control and Control -> Meta,
   // this must be taken in to account when saving prefs so we store them when
   // they are non-default.
-  if (keyboard.meta_key == mojom::MetaKey::kCommand) {
+  if (keyboard.meta_key == ui::mojom::MetaKey::kCommand) {
     if (!keyboard.settings->modifier_remappings.contains(
             ui::mojom::ModifierKey::kMeta)) {
       modifier_remappings.Set(
@@ -678,15 +690,11 @@ void InitializeSettingsUpdateMetricInfo(
                         std::move(updated_metric_info));
 }
 
-}  // namespace
-
-KeyboardPrefHandlerImpl::KeyboardPrefHandlerImpl() = default;
-KeyboardPrefHandlerImpl::~KeyboardPrefHandlerImpl() = default;
-
-void KeyboardPrefHandlerImpl::InitializeKeyboardSettings(
+void InitializeKeyboardSettingsImpl(
     PrefService* pref_service,
     const mojom::KeyboardPolicies& keyboard_policies,
-    mojom::Keyboard* keyboard) {
+    mojom::Keyboard* keyboard,
+    bool force_initialize_to_default_settings) {
   if (!pref_service) {
     keyboard->settings =
         GetDefaultKeyboardSettings(pref_service, keyboard_policies, *keyboard);
@@ -703,6 +711,12 @@ void KeyboardPrefHandlerImpl::InitializeKeyboardSettings(
     const auto& devices_dict =
         pref_service->GetDict(prefs::kKeyboardDeviceSettingsDictPref);
     settings_dict = devices_dict.FindDict(keyboard->device_key);
+  }
+
+  // Do not lookup settings dict if we are force refreshing back to default
+  // settings.
+  if (force_initialize_to_default_settings) {
+    settings_dict = nullptr;
   }
 
   ForceKeyboardSettingPersistence force_persistence;
@@ -792,6 +806,20 @@ void KeyboardPrefHandlerImpl::InitializeKeyboardSettings(
     keyboard->settings->six_pack_key_remappings->insert =
         keyboard_policies.insert_key_policy->value;
   }
+}
+
+}  // namespace
+
+KeyboardPrefHandlerImpl::KeyboardPrefHandlerImpl() = default;
+KeyboardPrefHandlerImpl::~KeyboardPrefHandlerImpl() = default;
+
+void KeyboardPrefHandlerImpl::InitializeKeyboardSettings(
+    PrefService* pref_service,
+    const mojom::KeyboardPolicies& keyboard_policies,
+    mojom::Keyboard* keyboard) {
+  InitializeKeyboardSettingsImpl(
+      pref_service, keyboard_policies, keyboard,
+      /*force_initialize_to_default_settings=*/false);
 }
 
 void KeyboardPrefHandlerImpl::InitializeLoginScreenKeyboardSettings(
@@ -893,6 +921,14 @@ void KeyboardPrefHandlerImpl::UpdateDefaultSplitModifierKeyboardSettings(
       /*existing_settings_dict=*/nullptr);
   pref_service->SetDict(prefs::kKeyboardDefaultSplitModifierSettings,
                         std::move(settings_dict));
+}
+
+void KeyboardPrefHandlerImpl::ForceInitializeWithDefaultSettings(
+    PrefService* pref_service,
+    const mojom::KeyboardPolicies& keyboard_policies,
+    mojom::Keyboard* keyboard) {
+  InitializeKeyboardSettingsImpl(pref_service, keyboard_policies, keyboard,
+                                 /*force_initialize_to_default_settings=*/true);
 }
 
 }  // namespace ash

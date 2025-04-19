@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "mojo/public/cpp/system/wait_set.h"
 
 #include <algorithm>
@@ -14,6 +19,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/not_fatal_until.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "mojo/public/cpp/system/trap.h"
@@ -170,7 +176,7 @@ class WaitSet::State : public base::RefCountedThreadSafe<State> {
           for (size_t i = 0; i < num_blocking_events; ++i) {
             const auto& event = blocking_events[i];
             auto it = contexts_.find(event.trigger_context);
-            DCHECK(it != contexts_.end());
+            CHECK(it != contexts_.end(), base::NotFatalUntil::M130);
             ready_handles_[it->second->handle()] = {event.result,
                                                     event.signals_state};
           }
@@ -203,7 +209,7 @@ class WaitSet::State : public base::RefCountedThreadSafe<State> {
       events[dest_index] = e;
     }
 
-    size_t index = base::WaitableEvent::WaitMany(events.data(), events.size());
+    size_t index = base::WaitableEvent::WaitMany(events);
     base::AutoLock lock(lock_);
 
     // Pop as many handles as we can out of the ready set and return them. Note

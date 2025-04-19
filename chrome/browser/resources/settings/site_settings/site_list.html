@@ -5,11 +5,12 @@
     </style>
     <div id="category">
       <div class="cr-row first">
-        <h2 class="flex secondary">
+        <h2 id="listHeader" class="flex secondary" tabIndex="-1">
           [[categoryHeader]]
         </h2>
         <cr-button id="addSite" class="header-aligned-button"
-            hidden$="[[!showAddSiteButton_]]" on-click="onAddSiteClick_">
+            hidden$="[[!showAddSiteButton_]]" on-click="onAddSiteClick_"
+            aria-label$="[[getAddButtonLabel_()]]">
           $i18n{add}
         </cr-button>
       </div>
@@ -55,6 +56,7 @@
                 first$="[[!index]]" iron-list-tab-index="[[tabIndex]]"
                 last-focused="{{lastFocused_}}" list-blurred="{{listBlurred_}}"
                 on-show-tooltip="onShowTooltip_" focus-row-index="[[index]]"
+                on-site-list-entry-reset-click="onResetEntry_"
                 cookies-exception-type="[[cookiesExceptionType]]">
             </site-list-entry>
           </template>

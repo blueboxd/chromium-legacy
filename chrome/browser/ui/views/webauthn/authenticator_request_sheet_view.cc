@@ -5,8 +5,14 @@
 #include "chrome/browser/ui/views/webauthn/authenticator_request_sheet_view.h"
 
 #include <memory>
+#include <optional>
+#include <string>
+#include <tuple>
 #include <utility>
+#include <vector>
 
+#include "base/check.h"
+#include "base/memory/scoped_refptr.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "cc/paint/skottie_wrapper.h"
@@ -20,21 +26,26 @@
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/lottie/animation.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/animated_image_view.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/progress_bar.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/layout_provider.h"
+#include "ui/views/style/typography.h"
+#include "ui/views/view_class_properties.h"
 
 namespace {
 
@@ -50,14 +61,6 @@ void ConfigureHeaderIllustration(T* illustration, gfx::Size header_size) {
   illustration->SetVerticalAlignment(views::ImageView::Alignment::kLeading);
 }
 
-const gfx::VectorIcon& GooglePasswordManagerIcon() {
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  return vector_icons::kGooglePasswordManagerIcon;
-#else
-  return kKeyIcon;
-#endif
-}
-
 }  // namespace
 
 using views::BoxLayout;
@@ -71,6 +74,23 @@ AuthenticatorRequestSheetView::~AuthenticatorRequestSheetView() = default;
 void AuthenticatorRequestSheetView::ReInitChildViews() {
   child_views_ = ChildViews();
   RemoveAllChildViews();
+
+  if (model()->IsActivityIndicatorVisible()) {
+    constexpr int kActivityIndicatorHeight = 4;
+    auto activity_indicator = std::make_unique<views::ProgressBar>();
+    activity_indicator->SetPreferredHeight(kActivityIndicatorHeight);
+    activity_indicator->SetPreferredCornerRadii(std::nullopt);
+    activity_indicator->SetValue(-1 /* infinite animation */);
+    activity_indicator->SetBackgroundColor(SK_ColorTRANSPARENT);
+    activity_indicator->SetPreferredSize(
+        gfx::Size(ChromeLayoutProvider::Get()->GetDistanceMetric(
+                      views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH),
+                  kActivityIndicatorHeight));
+    activity_indicator->SizeToPreferredSize();
+    // The indicator is positioned absolutely at the top of the dialog.
+    activity_indicator->SetProperty(views::kViewIgnoredByLayoutKey, true);
+    AddChildView(activity_indicator.release());
+  }
 
   // No need to add further spacing between the upper and lower half. The image
   // is designed to fill the dialog's top half without any border/margins, and
@@ -95,6 +115,11 @@ views::View* AuthenticatorRequestSheetView::GetInitiallyFocusedView() {
     // announce the title when the sheet changes.
     return child_views_.title_label_;
   }
+  return nullptr;
+}
+
+std::unique_ptr<views::View>
+AuthenticatorRequestSheetView::BuildStepSpecificHeader() {
   return nullptr;
 }
 
@@ -141,19 +166,6 @@ AuthenticatorRequestSheetView::CreateIllustrationWithOverlays() {
   header_view->SetPreferredSize(header_size);
   header_view->AddChildView(illustration);
 
-  if (model()->IsActivityIndicatorVisible()) {
-    constexpr int kActivityIndicatorHeight = 4;
-    auto activity_indicator = std::make_unique<views::ProgressBar>();
-    activity_indicator->SetPreferredHeight(kActivityIndicatorHeight);
-    activity_indicator->SetPreferredCornerRadii(std::nullopt);
-    activity_indicator->SetValue(-1 /* infinite animation */);
-    activity_indicator->SetBackgroundColor(SK_ColorTRANSPARENT);
-    activity_indicator->SetPreferredSize(
-        gfx::Size(dialog_width, kActivityIndicatorHeight));
-    activity_indicator->SizeToPreferredSize();
-    header_view->AddChildView(activity_indicator.release());
-  }
-
   if (GetWidget()) {
     UpdateIconImageFromModel();
   }
@@ -164,16 +176,27 @@ AuthenticatorRequestSheetView::CreateIllustrationWithOverlays() {
 std::unique_ptr<views::View>
 AuthenticatorRequestSheetView::CreateContentsBelowIllustration() {
   auto contents = std::make_unique<views::View>();
-  BoxLayout* contents_layout =
-      contents->SetLayoutManager(std::make_unique<BoxLayout>(
-          BoxLayout::Orientation::kVertical, gfx::Insets(),
-          views::LayoutProvider::Get()->GetDistanceMetric(
-              views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
+  contents->SetLayoutManager(std::make_unique<BoxLayout>(
+      BoxLayout::Orientation::kVertical, gfx::Insets(),
+      views::LayoutProvider::Get()->GetDistanceMetric(
+          views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
 
   contents->SetBorder(views::CreateEmptyBorder(
       views::LayoutProvider::Get()->GetDialogInsetsForContentType(
           views::DialogContentType::kControl,
           views::DialogContentType::kControl)));
+
+  std::unique_ptr<views::View> step_specific_header = BuildStepSpecificHeader();
+  if (step_specific_header) {
+    child_views_.step_specific_header_ =
+        contents->AddChildView(step_specific_header.release());
+
+    if (model()->lottie_illustrations() || model()->vector_illustrations()) {
+      auto insets = contents->GetBorder()->GetInsets();
+      insets.set_top(0);
+      contents->SetBorder(views::CreateEmptyBorder(insets));
+    }
+  }
 
   auto label_container = std::make_unique<views::View>();
   label_container->SetLayoutManager(std::make_unique<BoxLayout>(
@@ -181,50 +204,23 @@ AuthenticatorRequestSheetView::CreateContentsBelowIllustration() {
       views::LayoutProvider::Get()->GetDistanceMetric(
           views::DISTANCE_RELATED_CONTROL_VERTICAL)));
 
-  if (model()->has_gpm_banner()) {
-    auto container = std::make_unique<views::View>();
-    container->SetBorder(views::CreateEmptyBorder(
-        gfx::Insets::TLBR(0, 0,
-                          views::LayoutProvider::Get()->GetDistanceMetric(
-                              views::DISTANCE_RELATED_CONTROL_VERTICAL),
-                          0)));
-    container->SetLayoutManager(std::make_unique<BoxLayout>(
-        BoxLayout::Orientation::kHorizontal, gfx::Insets(),
-        views::LayoutProvider::Get()->GetDistanceMetric(
-            views::DISTANCE_RELATED_CONTROL_VERTICAL)));
-
-    auto image_view = std::make_unique<NonAccessibleImageView>();
-    constexpr int kIconSize = 18;
-    // The icon is vertically centered within this size. The addition of
-    // `kIconSize / 8` adds enough margin at the top so that the icon is better
-    // centered with the text.
-    image_view->SetPreferredSize(
-        gfx::Size(kIconSize, kIconSize + kIconSize / 8));
-    image_view->SetImage(ui::ImageModel::FromVectorIcon(
-        GooglePasswordManagerIcon(), gfx::kPlaceholderColor, kIconSize));
-    container->AddChildView(image_view.release());
-
-    auto gpm_label = std::make_unique<views::Label>(
-        l10n_util::GetStringUTF16(IDS_WEBAUTHN_SOURCE_GOOGLE_PASSWORD_MANAGER),
-        views::style::CONTEXT_DIALOG_BODY_TEXT);
-    gpm_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    gpm_label->SetVerticalAlignment(gfx::ALIGN_TOP);
-    container->AddChildView(gpm_label.release());
-
-    label_container->AddChildView(container.release());
-  }
+  std::unique_ptr<views::View> step_specific_content;
+  // Compute `should_focus_step_specific_content_` before setting `title_label`
+  // so that the focus behavior of the `title_label` is set correctly.
+  std::tie(step_specific_content, should_focus_step_specific_content_) =
+      BuildStepSpecificContent();
+  DCHECK(should_focus_step_specific_content_ == AutoFocus::kNo ||
+         step_specific_content);
 
   const std::u16string title = model()->GetStepTitle();
   if (!title.empty()) {
     auto title_label = std::make_unique<views::Label>(
-        title, views::style::CONTEXT_DIALOG_TITLE, views::style::STYLE_PRIMARY);
+        title, views::style::CONTEXT_DIALOG_TITLE,
+        views::style::STYLE_HEADLINE_4);
     title_label->SetMultiLine(true);
     title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    title_label->SetAccessibleRole(ax::mojom::Role::kHeading);
+    title_label->GetViewAccessibility().SetRole(ax::mojom::Role::kHeading);
     title_label->SetAllowCharacterBreak(true);
-    if (features::IsChromeRefresh2023()) {
-      title_label->SetTextStyle(views::style::STYLE_HEADLINE_4);
-    }
     if (accessibility_state_utils::IsScreenReaderEnabled() &&
         should_focus_step_specific_content_ == AutoFocus::kNo) {
       title_label->SetFocusBehavior(FocusBehavior::ALWAYS);
@@ -256,15 +252,19 @@ AuthenticatorRequestSheetView::CreateContentsBelowIllustration() {
 
   contents->AddChildView(label_container.release());
 
-  std::unique_ptr<views::View> step_specific_content;
-  std::tie(step_specific_content, should_focus_step_specific_content_) =
-      BuildStepSpecificContent();
-  DCHECK(should_focus_step_specific_content_ == AutoFocus::kNo ||
-         step_specific_content);
+  auto content_error_and_hint_view = std::make_unique<views::View>();
+  BoxLayout* content_error_and_hint_layout =
+      content_error_and_hint_view->SetLayoutManager(std::make_unique<BoxLayout>(
+          BoxLayout::Orientation::kVertical, gfx::Insets(),
+          views::LayoutProvider::Get()->GetDistanceMetric(
+              views::DISTANCE_RELATED_CONTROL_VERTICAL)));
+
   if (step_specific_content) {
-    child_views_.step_specific_content_ = step_specific_content.get();
-    contents->AddChildView(step_specific_content.release());
-    contents_layout->SetFlexForView(child_views_.step_specific_content_, 1);
+    child_views_.step_specific_content_ =
+        content_error_and_hint_view->AddChildView(
+            step_specific_content.release());
+    content_error_and_hint_layout->SetFlexForView(
+        child_views_.step_specific_content_, 1);
   }
 
   std::u16string error = model()->GetError();
@@ -273,9 +273,20 @@ AuthenticatorRequestSheetView::CreateContentsBelowIllustration() {
         std::move(error), views::style::CONTEXT_LABEL, STYLE_RED);
     error_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     error_label->SetMultiLine(true);
-    child_views_.error_label_ = contents->AddChildView(std::move(error_label));
+    child_views_.error_label_ =
+        content_error_and_hint_view->AddChildView(std::move(error_label));
   }
 
+  std::u16string hint = model()->GetHint();
+  if (!hint.empty()) {
+    auto hint_label = std::make_unique<views::Label>(
+        std::move(hint), views::style::CONTEXT_LABEL, views::style::STYLE_HINT);
+    hint_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    child_views_.hint_label_ =
+        content_error_and_hint_view->AddChildView(std::move(hint_label));
+  }
+
+  contents->AddChildView(content_error_and_hint_view.release());
   return contents;
 }
 

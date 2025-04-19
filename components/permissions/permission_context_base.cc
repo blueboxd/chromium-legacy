@@ -13,6 +13,7 @@
 #include "base/functional/callback.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/not_fatal_until.h"
 #include "base/observer_list.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
@@ -72,14 +73,14 @@ const char kPermissionBlockedRepeatedIgnoresMessage[] =
 const char kPermissionBlockedRepeatedDismissalsMessage[] =
     "%s permission has been blocked as the user has dismissed the permission "
     "prompt several times. This can be reset in Page Info which can be "
-    "accessed by clicking the lock icon next to the URL. See "
+    "accessed by clicking the tune icon next to the URL. See "
     "https://www.chromestatus.com/feature/6443143280984064 for more "
     "information.";
 
 const char kPermissionBlockedRepeatedIgnoresMessage[] =
     "%s permission has been blocked as the user has ignored the permission "
     "prompt several times. This can be reset in Page Info which can be "
-    "accessed by clicking the lock icon next to the URL. See "
+    "accessed by clicking the tune icon next to the URL. See "
     "https://www.chromestatus.com/feature/6443143280984064 for more "
     "information.";
 #endif
@@ -475,8 +476,9 @@ void PermissionContextBase::DecidePermission(
       &PermissionContextBase::PermissionDecided, weak_factory_.GetWeakPtr(),
       request_data.id, request_data.requesting_origin,
       request_data.embedding_origin);
-  auto cleanup_cb = base::BindOnce(&PermissionContextBase::CleanUpRequest,
-                                   weak_factory_.GetWeakPtr(), request_data.id);
+  auto cleanup_cb = base::BindOnce(
+      &PermissionContextBase::CleanUpRequest, weak_factory_.GetWeakPtr(),
+      request_data.id, request_data.embedded_permission_element_initiated);
   PermissionRequestID permission_request_id = request_data.id;
 
   std::unique_ptr<PermissionRequest> request_ptr =
@@ -510,7 +512,7 @@ void PermissionContextBase::PermissionDecided(const PermissionRequestID& id,
   bool persist = content_setting != CONTENT_SETTING_DEFAULT;
 
   auto request = pending_requests_.find(id.ToString());
-  DCHECK(request != pending_requests_.end());
+  CHECK(request != pending_requests_.end(), base::NotFatalUntil::M130);
   // Check if `request` has `BrowserPermissionCallback`. The call back might be
   // missing if a permission prompt was preignored and we already notified an
   // origin about it.
@@ -560,7 +562,10 @@ void PermissionContextBase::RemoveObserver(
 
 void PermissionContextBase::MaybeUpdatePermissionStatusWithDeviceStatus() {
   const bool has_device_permission =
-      PermissionsClient::Get()->HasDevicePermission(content_settings_type());
+      has_device_permission_for_test_.has_value()
+          ? has_device_permission_for_test_.value()
+          : PermissionsClient::Get()->HasDevicePermission(
+                content_settings_type());
   const bool should_notify_observers =
       last_has_device_permission_result_.has_value() &&
       has_device_permission != last_has_device_permission_result_;
@@ -611,8 +616,18 @@ void PermissionContextBase::NotifyPermissionSet(
   std::move(callback).Run(content_setting);
 }
 
-void PermissionContextBase::CleanUpRequest(const PermissionRequestID& id) {
+void PermissionContextBase::CleanUpRequest(
+    const PermissionRequestID& id,
+    bool embedded_permission_element_initiated) {
   size_t success = pending_requests_.erase(id.ToString());
+  // A request from an embedded permission element requires a notification
+  // `OnPermissionChanged` when changing the device status, which is currently
+  // unavailable. We compare the device status with the cached status and notify
+  // `OnPermissionChanged` here. We should remove this line once the device
+  // status change observer is implemented.
+  if (embedded_permission_element_initiated) {
+    MaybeUpdatePermissionStatusWithDeviceStatus();
+  }
   DCHECK(success == 1) << "Missing request " << id.ToString();
 }
 

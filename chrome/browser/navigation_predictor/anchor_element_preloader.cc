@@ -45,14 +45,14 @@ AnchorElementPreloader::AnchorElementPreloader(
           content::WebContents::FromRenderFrameHost(&*render_frame_host_));
   preloading_data->SetIsNavigationInDomainCallback(
       chrome_preloading_predictor::kPointerDownOnAnchor,
-      base::BindRepeating(
-          [](content::NavigationHandle* navigation_handle) -> bool {
-            return ui::PageTransitionCoreTypeIs(
-                       navigation_handle->GetPageTransition(),
-                       ui::PageTransition::PAGE_TRANSITION_LINK) &&
-                   ui::PageTransitionIsNewNavigation(
-                       navigation_handle->GetPageTransition());
-          }));
+      base::BindRepeating([](content::NavigationHandle* navigation_handle)
+                              -> bool {
+        auto page_transition = navigation_handle->GetPageTransition();
+        return ui::PageTransitionCoreTypeIs(
+                   page_transition, ui::PageTransition::PAGE_TRANSITION_LINK) &&
+               (page_transition & ui::PAGE_TRANSITION_CLIENT_REDIRECT) == 0 &&
+               ui::PageTransitionIsNewNavigation(page_transition);
+      }));
 }
 
 void AnchorElementPreloader::MaybePreconnect(const GURL& target) {
@@ -75,6 +75,7 @@ void AnchorElementPreloader::MaybePreconnect(const GURL& target) {
   content::PreloadingAttempt* attempt = preloading_data->AddPreloadingAttempt(
       chrome_preloading_predictor::kPointerDownOnAnchor,
       content::PreloadingType::kPreconnect, match_callback,
+      /*planned_max_preloading_type=*/std::nullopt,
       triggered_primary_page_source_id);
 
   if (content::PreloadingEligibility eligibility =

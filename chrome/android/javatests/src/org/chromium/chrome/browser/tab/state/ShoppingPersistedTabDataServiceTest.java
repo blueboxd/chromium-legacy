@@ -18,11 +18,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.shared_preferences.SharedPreferencesManager;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
@@ -43,7 +43,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.components.optimization_guide.OptimizationGuideDecision;
 import org.chromium.components.optimization_guide.proto.HintsProto.OptimizationType;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.url.GURL;
 
 import java.util.Arrays;
@@ -60,8 +59,6 @@ public class ShoppingPersistedTabDataServiceTest {
     @Rule public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
 
     @Rule public JniMocker mMocker = new JniMocker();
-
-    @Rule public TestRule mProcessor = new Features.InstrumentationProcessor();
 
     @Mock protected OptimizationGuideBridgeFactory.Natives mOptimizationGuideBridgeFactoryJniMock;
     @Mock protected OptimizationGuideBridge mOptimizationGuideBridgeMock;
@@ -89,7 +86,7 @@ public class ShoppingPersistedTabDataServiceTest {
                 OptimizationType.SHOPPING_PAGE_PREDICTOR,
                 OptimizationGuideDecision.TRUE,
                 null);
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     PersistedTabDataConfiguration.setUseTestConfig(true);
                 });
@@ -213,8 +210,7 @@ public class ShoppingPersistedTabDataServiceTest {
     @SmallTest
     @Features.EnableFeatures({ChromeFeatureList.PRICE_CHANGE_MODULE})
     @CommandLineFlags.Add({
-        "force-fieldtrial-params=Study.Group:price_tracking_with_optimization_guide/true/"
-                + "return_empty_price_drops_until_init/false"
+        "force-fieldtrial-params=Study.Group:return_empty_price_drops_until_init/false"
     })
     public void testGetAllShoppingPersistedTabDataWithPriceDrop() throws TimeoutException {
         // tab1 is not eligible as there is no price drop.
@@ -258,7 +254,7 @@ public class ShoppingPersistedTabDataServiceTest {
         tab3.setTimestampMillis(currentTimeStamp - HALF_SECOND);
 
         CallbackHelper widened = new CallbackHelper();
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     mService.initialize(new HashSet<>(Arrays.asList(tab1, tab2, tab3)));
                     ShoppingPersistedTabData.onDeferredStartup();
@@ -309,6 +305,6 @@ public class ShoppingPersistedTabDataServiceTest {
                                 widened.notifyCalled();
                             });
                 });
-        widened.waitForFirst();
+        widened.waitForOnly();
     }
 }

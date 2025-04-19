@@ -126,7 +126,9 @@ class StructuredLogAdapter(logging.Handler):
         log = getattr(self._logger, record.levelname.lower(),
                       self._logger.debug)
         try:
-            log(record.getMessage(), component=record.name)
+            log(record.getMessage(),
+                component=record.name,
+                exc_info=record.exc_info)
         except mozlog.structuredlog.LoggerShutdownError:
             self._fallback_handler.emit(record)
 
@@ -134,7 +136,6 @@ class StructuredLogAdapter(logging.Handler):
 class WPTAdapter:
     PORT_NAME_BY_PRODUCT = {
         'android_webview': 'webview',
-        'chrome': 'chrome',
         'chrome_android': 'android',
     }
 
@@ -151,6 +152,7 @@ class WPTAdapter:
             self.port,
             artifacts_dir=self.port.artifacts_directory(),
             reset_results=self.options.reset_results,
+            repeat_each=self.options.repeat_each,
             processes=product.processes)
         self._expectations = TestExpectations(self.port)
 
@@ -161,23 +163,20 @@ class WPTAdapter:
                   port_name: Optional[str] = None):
         options, tests = parse_arguments(args)
         cls._ensure_value(options, 'wpt_only', True)
-        # only run virtual tests for content shell
-        cls._ensure_value(options, 'no_virtual_tests',
-                          options.product != 'content_shell')
+        # only run virtual tests for headless shell
+        cls._ensure_value(options, 'no_virtual_tests', options.product
+                          != 'headless_shell')
 
         if options.product in cls.PORT_NAME_BY_PRODUCT:
-            port = host.port_factory.get(
-                cls.PORT_NAME_BY_PRODUCT[options.product], options)
-        else:
-            port = host.port_factory.get(port_name, options)
-
-        if options.product in ['chrome', 'headless_shell']:
-            port.set_option_default('driver_name', port.CHROME_NAME)
+            port_name = cls.PORT_NAME_BY_PRODUCT[options.product]
+        port = host.port_factory.get(port_name, options)
         product = make_product(port, options)
         return WPTAdapter(product, port, options, tests)
 
     def set_up_derived_options(self):
-        if not self.paths and not self.options.test_list and self.options.smoke is None:
+        explicit_tests = self.paths or self.options.test_list
+        if (not explicit_tests and self.options.smoke is None
+                and not self.using_upstream_wpt):
             self.options.smoke = self.port.default_smoke_test_only()
         if self.options.smoke:
             if not self.paths and not self.options.test_list and self.options.num_retries is None:
@@ -234,8 +233,7 @@ class WPTAdapter:
                 mozlog.commandline.log_formatters[name][1],
             )
 
-        product_name = 'chrome' if self.product.name == 'headless_shell' else self.product.name
-        runner_options = parser.parse_args(['--product', product_name])
+        runner_options = parser.parse_args(['--product', self.product.name])
         runner_options.include = []
         runner_options.exclude = []
 
@@ -256,12 +254,7 @@ class WPTAdapter:
             self._set_up_runner_ssl_options(runner_options)
         self._set_up_runner_debugging_options(runner_options)
         self._set_up_runner_tests(runner_options, tmp_dir)
-
-        for name, value in self.product.product_specific_options().items():
-            self._ensure_value(runner_options, name, value)
-
-        runner_options.webdriver_args.extend(
-            self.product.additional_webdriver_args())
+        self.product.update_runner_options(runner_options)
         return runner_options
 
     @classmethod
@@ -328,15 +321,6 @@ class WPTAdapter:
             'MAP *.test 127.0.0.1, MAP *.test. 127.0.0.1',
             *self.port.additional_driver_flags(),
         ])
-        if self.options.product == 'headless_shell':
-            runner_options.binary_args.extend([
-                '--headless=old',
-                '--enable-bfcache',
-                '--enable-field-trial-config',
-                # `headless_shell` doesn't send the `Accept-Language` header by
-                # default, so set an arbitrary one that some tests expect.
-                '--accept-lang=en-US,en',
-            ])
 
         # Implicitly pass `--enable-blink-features=MojoJS,MojoJSTest` to Chrome.
         runner_options.mojojs_path = self.port.generated_sources_directory()
@@ -351,9 +335,6 @@ class WPTAdapter:
         if self.options.run_wpt_internal:
             runner_options.config = self.finder.path_from_web_tests(
                 'wptrunner.blink.ini')
-
-        if self.options.enable_leak_detection:
-            runner_options.binary_args.append('--enable-leak-detection')
 
         if (self.options.enable_sanitizer
                 or self.options.configuration == 'Debug'):
@@ -417,6 +398,7 @@ class WPTAdapter:
             self.paths, all_test_names, _ = finder.find_tests(
                 self.paths,
                 test_lists=self.options.test_list,
+                exclude_test_lists=self.options.exclude_test_lists,
                 filter_files=self.options.isolated_script_test_filter_file,
                 fastest_percentile=None,
                 filters=self.options.isolated_script_test_filter)
@@ -477,6 +459,8 @@ class WPTAdapter:
                 'config': {
                     'binary_args': subsuite_args,
                 },
+                # The Blink implementation of `TestLoader` needs the
+                # `virtual_suite` property to derive virtual test names.
                 'run_info': {
                     'virtual_suite': subsuite_name,
                 },
@@ -548,6 +532,8 @@ class WPTAdapter:
                 tests_root = self.tools_root
             else:
                 tests_root = self.finder.path_from_wpt_tests()
+                TestLoader.install(self.port, self._expectations,
+                                   runner_options.include)
             runner_options.tests_root = tests_root
             runner_options.metadata_root = tests_root
             logger.debug('Using WPT tests (external) from %s', tests_root)
@@ -556,7 +542,6 @@ class WPTAdapter:
             runner_options.run_info = tmp_dir
             self._initialize_tmp_dir(tmp_dir, tests_root)
 
-            TestLoader.install(self.port, self._expectations)
             stack.enter_context(
                 self.process_and_upload_results(runner_options))
             self.port.setup_test_run()  # Start Xvfb, if necessary.
@@ -585,17 +570,20 @@ class WPTAdapter:
             self.tools_root) != self.fs.realpath(vended_wpt)
 
     def run_tests(self) -> int:
-        with self.test_env() as runner_options:
-            run = _load_entry_point()
-            exit_code = run(**vars(runner_options))
-            # Reopen the `web-platform-tests` logger so that `update-metadata`
-            # can use it.
-            #
-            # TODO(crbug.com/1480061): Find a better way to handle logger
-            # lifecycles.
-            from wptrunner.metadata import logger
-            logger._state.has_shutdown = False
-            return 1 if exit_code or self._processor.num_regressions > 0 else 0
+        exit_code = 0
+        try:
+            with self.test_env() as runner_options:
+                run = _load_entry_point()
+                exit_code = 1 if run(**vars(runner_options)) else 0
+        except KeyboardInterrupt:
+            logger.critical('Harness exited after signal interrupt')
+            exit_code = exit_codes.INTERRUPTED_EXIT_STATUS
+        # Write the partial results for an interrupted run. This also ensures
+        # the results directory is rotated next time.
+        self._processor.copy_results_viewer()
+        results_json = self._processor.process_results_json(
+            self.port.get_option('json_test_results'))
+        return exit_code or int(results_json['num_regressions'] > 0)
 
     def _initialize_tmp_dir(self, tmp_dir: str, tests_root: str):
         assert self.fs.isdir(tmp_dir), tmp_dir
@@ -634,17 +622,12 @@ class WPTAdapter:
 
     @contextlib.contextmanager
     def process_and_upload_results(self, runner_options: argparse.Namespace):
-        with self._processor.stream_results() as events:
-            runner_options.log.add_handler(events.put)
-            try:
+        if self.using_upstream_wpt:
+            yield
+        else:
+            with self._processor.stream_results() as events:
+                runner_options.log.add_handler(events.put)
                 yield
-            finally:
-                # Always copy `results.html` into `layout-test-results/` so that
-                # the partial results can be viewed, and the directory is
-                # archived next run. See crbug.com/1475556.
-                self._processor.copy_results_viewer()
-                self._processor.process_results_json(
-                    self.port.get_option('json_test_results'))
         if runner_options.log_wptreport:
             self._processor.process_wpt_report(
                 runner_options.log_wptreport[0].name)
@@ -794,12 +777,6 @@ def main(argv) -> int:
     exit_code = exit_codes.UNEXPECTED_ERROR_EXIT_STATUS
     try:
         adapter = WPTAdapter.from_args(host, argv)
-        if adapter.product.name == 'chrome' and not host.platform.is_linux():
-            logger.error(
-                '`run_wpt_tests.py --product=chrome` does not yet support '
-                'non-Linux platforms; follow https://crbug.com/1512219 for '
-                'status.')
-            return exit_code
         if (adapter.product.name == 'chrome_ios'
                 and adapter.options.xcode_build_version):
             _install_xcode(adapter.options.xcode_build_version)
@@ -809,7 +786,7 @@ def main(argv) -> int:
             adapter.set_up_derived_options()
             exit_code = adapter.run_tests()
     except KeyboardInterrupt:
-        logger.critical('Harness exited after signal interrupt')
+        # This clause catches interrupts outside `WPTAdapter.run_tests()`.
         exit_code = exit_codes.INTERRUPTED_EXIT_STATUS
     except Exception as error:
         logger.exception(error)

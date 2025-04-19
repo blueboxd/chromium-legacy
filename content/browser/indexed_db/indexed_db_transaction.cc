@@ -142,12 +142,10 @@ IndexedDBTransaction::IndexedDBTransaction(
 
   locks_receiver_.SetUserData(
       IndexedDBLockRequestData::kKey,
-      std::make_unique<IndexedDBLockRequestData>(connection->client_id()));
+      std::make_unique<IndexedDBLockRequestData>(connection->client_token()));
 
   database_ = connection_->database();
   if (database_) {
-    database_->TransactionCreated();
-
     if (mode_ == blink::mojom::IDBTransactionMode::VersionChange) {
       lock_ids_.insert(GetDatabaseLockId(database_->name()));
     } else {
@@ -161,6 +159,7 @@ IndexedDBTransaction::IndexedDBTransaction(
   diagnostics_.tasks_scheduled = 0;
   diagnostics_.tasks_completed = 0;
   diagnostics_.creation_time = base::Time::Now();
+  NotifyOfIdbInternalsRelevantChange();
 }
 
 IndexedDBTransaction::~IndexedDBTransaction() {
@@ -203,6 +202,7 @@ void IndexedDBTransaction::ScheduleTask(blink::mojom::IDBTaskType type,
   if (type == blink::mojom::IDBTaskType::Normal) {
     task_queue_.push(std::move(task));
     ++diagnostics_.tasks_scheduled;
+    NotifyOfIdbInternalsRelevantChange();
   } else {
     preemptive_task_queue_.push(std::move(task));
   }
@@ -228,7 +228,7 @@ leveldb::Status IndexedDBTransaction::Abort(
   aborted_ = true;
   ResetTimeoutTimer();
 
-  state_ = FINISHED;
+  SetState(FINISHED);
 
   if (backing_store_transaction_begun_) {
     backing_store_transaction_->Rollback();
@@ -259,8 +259,6 @@ leveldb::Status IndexedDBTransaction::Abort(
 
   callbacks()->OnAbort(*this, error);
 
-  if (database_)
-    database_->TransactionFinished(mode_, false);
   bucket_context_->QueueRunTasks();
   bucket_context_.Release();
   return leveldb::Status::OK();
@@ -309,8 +307,8 @@ bool IndexedDBTransaction::IsTransactionBlockingOtherClients() const {
                       if (!lock_request_data) {
                         return true;
                       }
-                      return lock_request_data->client_id !=
-                             connection_->client_id();
+                      return lock_request_data->client_token !=
+                             connection_->client_token();
                     })) {
       return true;
     }
@@ -327,7 +325,7 @@ void IndexedDBTransaction::Start() {
     return;
   }
   DCHECK_EQ(CREATED, state_);
-  state_ = STARTED;
+  SetState(STARTED);
   DCHECK(!locks_receiver_.locks.empty());
   diagnostics_.start_time = base::Time::Now();
 
@@ -437,12 +435,7 @@ void IndexedDBTransaction::Put(
       std::make_unique<IndexedDBDatabase::PutOperationParams>());
   IndexedDBValue& output_value = params->value;
 
-  // TODO(crbug.com/41424769): Use mojom traits to map directly to
-  // std::string.
-  output_value.bits =
-      std::string(input_value->bits.begin(), input_value->bits.end());
-  // Release value->bits std::vector.
-  input_value->bits.clear();
+  output_value.bits = std::move(input_value->bits);
   swap(output_value.external_objects, external_objects);
 
   blink::mojom::IDBTransaction::PutCallback aborting_callback =
@@ -600,7 +593,7 @@ leveldb::Status IndexedDBTransaction::DoPendingCommit() {
         IndexedDBDatabaseError(blink::mojom::IDBException::kUnknownError));
   }
 
-  state_ = COMMITTING;
+  SetState(COMMITTING);
 
   leveldb::Status s;
   if (!used_) {
@@ -629,7 +622,7 @@ leveldb::Status IndexedDBTransaction::CommitPhaseTwo() {
 
   DCHECK_EQ(state_, COMMITTING);
 
-  state_ = FINISHED;
+  SetState(FINISHED);
 
   leveldb::Status s;
   bool committed;
@@ -715,28 +708,23 @@ leveldb::Status IndexedDBTransaction::CommitPhaseTwo() {
               blink::mojom::IDBTransactionDurability::Strict;
       bucket_context_->delegate().on_files_written.Run(did_sync);
     }
-
-    if (database_) {
-      database_->TransactionFinished(mode_, true);
-    }
     return s;
-  } else {
-    while (!abort_task_stack_.empty())
-      abort_task_stack_.pop().Run();
-
-    IndexedDBDatabaseError error;
-    if (leveldb_env::IndicatesDiskFull(s)) {
-      error = IndexedDBDatabaseError(
-          blink::mojom::IDBException::kQuotaError,
-          "Encountered disk full while committing transaction.");
-    } else {
-      error = IndexedDBDatabaseError(blink::mojom::IDBException::kUnknownError,
-                                     "Internal error committing transaction.");
-    }
-    callbacks()->OnAbort(*this, error);
-    if (database_)
-      database_->TransactionFinished(mode_, false);
   }
+
+  while (!abort_task_stack_.empty()) {
+    abort_task_stack_.pop().Run();
+  }
+
+  IndexedDBDatabaseError error;
+  if (leveldb_env::IndicatesDiskFull(s)) {
+    error = IndexedDBDatabaseError(
+        blink::mojom::IDBException::kQuotaError,
+        "Encountered disk full while committing transaction.");
+  } else {
+    error = IndexedDBDatabaseError(blink::mojom::IDBException::kUnknownError,
+                                   "Internal error committing transaction.");
+  }
+  callbacks()->OnAbort(*this, error);
   return s;
 }
 
@@ -770,6 +758,7 @@ IndexedDBTransaction::RunTasks() {
     if (!run_preemptive_queue) {
       DCHECK(diagnostics_.tasks_completed < diagnostics_.tasks_scheduled);
       ++diagnostics_.tasks_completed;
+      NotifyOfIdbInternalsRelevantChange();
     }
     if (!result.ok()) {
       processing_event_queue_ = false;
@@ -816,6 +805,56 @@ IndexedDBTransaction::RunTasks() {
   return {RunTasksResult::kNotFinished, leveldb::Status::OK()};
 }
 
+storage::mojom::IdbTransactionMetadataPtr
+IndexedDBTransaction::GetIdbInternalsMetadata() const {
+  storage::mojom::IdbTransactionMetadataPtr info =
+      storage::mojom::IdbTransactionMetadata::New();
+  info->mode = static_cast<storage::mojom::IdbTransactionMode>(mode());
+  switch (state()) {
+    case IndexedDBTransaction::CREATED:
+      info->status = storage::mojom::IdbTransactionState::kBlocked;
+      break;
+    case IndexedDBTransaction::STARTED:
+      info->status = diagnostics().tasks_scheduled > 0
+                         ? storage::mojom::IdbTransactionState::kRunning
+                         : storage::mojom::IdbTransactionState::kStarted;
+      break;
+    case IndexedDBTransaction::COMMITTING:
+      info->status = storage::mojom::IdbTransactionState::kCommitting;
+      break;
+    case IndexedDBTransaction::FINISHED:
+      info->status = storage::mojom::IdbTransactionState::kFinished;
+      break;
+  }
+
+  info->tid = id();
+  info->client_token = connection()->client_token().ToString();
+  info->age =
+      (base::Time::Now() - diagnostics().creation_time).InMillisecondsF();
+ if (diagnostics().start_time.InMillisecondsSinceUnixEpoch() > 0) {
+    info->runtime =
+        (base::Time::Now() - diagnostics().start_time).InMillisecondsF();
+  }
+  info->tasks_scheduled = diagnostics().tasks_scheduled;
+  info->tasks_completed = diagnostics().tasks_completed;
+
+  for (int64_t id : scope()) {
+    auto stores_it = database_->metadata().object_stores.find(id);
+    if (stores_it != database_->metadata().object_stores.end()) {
+      info->scope.emplace_back(stores_it->second.name);
+    }
+  }
+
+  return info;
+}
+
+void IndexedDBTransaction::NotifyOfIdbInternalsRelevantChange() {
+  // This metadata is included in the databases metadata, so call up the chain.
+  if (database_) {
+    database_->NotifyOfIdbInternalsRelevantChange();
+  }
+}
+
 void IndexedDBTransaction::TimeoutFired() {
   if (!IsTransactionBlockingOtherClients()) {
     return;
@@ -835,6 +874,11 @@ void IndexedDBTransaction::TimeoutFired() {
 void IndexedDBTransaction::ResetTimeoutTimer() {
   timeout_timer_.Stop();
   timeout_strikes_ = 0;
+}
+
+void IndexedDBTransaction::SetState(State state) {
+  state_ = state;
+  NotifyOfIdbInternalsRelevantChange();
 }
 
 void IndexedDBTransaction::CloseOpenCursors() {

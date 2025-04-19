@@ -22,6 +22,7 @@ namespace payments::facilitated {
 
 class FacilitatedPaymentsNetworkInterface;
 
+// TODO: b/350661525 - Make all methods pure virtual.
 // A cross-platform client interface for showing UI for non-form based FOPs.
 class FacilitatedPaymentsClient : public autofill::RiskDataLoader {
  public:
@@ -50,6 +51,17 @@ class FacilitatedPaymentsClient : public autofill::RiskDataLoader {
   virtual bool ShowPixPaymentPrompt(
       base::span<autofill::BankAccount> bank_account_suggestions,
       base::OnceCallback<void(bool, int64_t)> on_user_decision_callback);
+
+  // Shows a progress bar while users wait for server response after selecting a
+  // payment account.
+  virtual void ShowProgressScreen();
+
+  // Shows an error message if Chrome isn't able to complete transaction after
+  // the user has selected a payment account.
+  virtual void ShowErrorScreen();
+
+  // Closes the bottom sheet.
+  virtual void DismissPrompt();
 };
 
 }  // namespace payments::facilitated

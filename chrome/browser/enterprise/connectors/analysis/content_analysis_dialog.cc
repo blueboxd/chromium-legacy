@@ -24,6 +24,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/color/color_id.h"
@@ -220,14 +221,13 @@ base::TimeDelta ContentAnalysisDialog::ShowDialogDelay() {
 ContentAnalysisDialog::ContentAnalysisDialog(
     std::unique_ptr<ContentAnalysisDelegateBase> delegate,
     bool is_cloud,
-    content::WebContents* web_contents,
+    content::WebContents* contents,
     safe_browsing::DeepScanAccessPoint access_point,
     int files_count,
     FinalContentAnalysisResult final_result,
     download::DownloadItem* download_item)
-    : content::WebContentsObserver(web_contents),
+    : content::WebContentsObserver(contents),
       delegate_(std::move(delegate)),
-      web_contents_(web_contents),
       final_result_(final_result),
       access_point_(std::move(access_point)),
       files_count_(files_count),
@@ -254,7 +254,7 @@ ContentAnalysisDialog::ContentAnalysisDialog(
   // interaction with the tab until it is visible.  To block interaction as of
   // now, ignore input events manually.
   top_level_contents_ =
-      constrained_window::GetTopLevelWebContents(web_contents_)->GetWeakPtr();
+      constrained_window::GetTopLevelWebContents(web_contents())->GetWeakPtr();
   top_level_contents_->StoreFocus();
   scoped_ignore_input_events_ =
       top_level_contents_->IgnoreInputEvents(std::nullopt);
@@ -285,10 +285,10 @@ void ContentAnalysisDialog::ShowDialogNow() {
 
   // If the web contents is still valid when the delay timer goes off and the
   // dialog has not yet been shown, show it now.
-  if (web_contents_ && !contents_view_) {
+  if (web_contents() && !contents_view_) {
     DVLOG(1) << __func__ << ": first time";
     first_shown_timestamp_ = base::TimeTicks::Now();
-    constrained_window::ShowWebModalDialogViews(this, web_contents_);
+    constrained_window::ShowWebModalDialogViews(this, web_contents());
     if (observer_for_testing)
       observer_for_testing->ViewsFirstShown(this, first_shown_timestamp_);
   }
@@ -317,7 +317,7 @@ void ContentAnalysisDialog::CancelButtonCallback() {
 void ContentAnalysisDialog::LearnMoreLinkClickedCallback(
     const ui::Event& event) {
   DCHECK(has_learn_more_url());
-  web_contents_->OpenURL(
+  web_contents()->OpenURL(
       content::OpenURLParams((*delegate_->GetCustomLearnMoreUrl()),
                              content::Referrer(),
                              WindowOpenDisposition::NEW_FOREGROUND_TAB,
@@ -327,14 +327,14 @@ void ContentAnalysisDialog::LearnMoreLinkClickedCallback(
 
 void ContentAnalysisDialog::SuccessCallback() {
 #if defined(USE_AURA)
-  if (web_contents_) {
+  if (web_contents()) {
     // It's possible focus has been lost and gained back incorrectly if the user
     // clicked on the page between the time the scan started and the time the
     // dialog closes. This results in the behaviour detailed in
     // crbug.com/1139050. The fix is to preemptively take back focus when this
     // dialog closes on its own.
     scoped_ignore_input_events_.reset();
-    web_contents_->Focus();
+    web_contents()->Focus();
   }
 #endif
 }
@@ -444,15 +444,14 @@ const views::Widget* ContentAnalysisDialog::GetWidget() const {
   return contents_view_->GetWidget();
 }
 
-ui::ModalType ContentAnalysisDialog::GetModalType() const {
-  return ui::MODAL_TYPE_CHILD;
+ui::mojom::ModalType ContentAnalysisDialog::GetModalType() const {
+  return ui::mojom::ModalType::kChild;
 }
 
 void ContentAnalysisDialog::WebContentsDestroyed() {
-  // If |web_contents_| is destroyed, then the scan results don't matter so the
+  // If WebContents are destroyed, then the scan results don't matter so the
   // delegate can be destroyed as well.
   CancelDialogWithoutCallback();
-  web_contents_ = nullptr;
 }
 
 void ContentAnalysisDialog::PrimaryPageChanged(content::Page& page) {
@@ -951,7 +950,8 @@ void ContentAnalysisDialog::AddJustificationTextAreaToDialog() {
 
   bypass_justification_ =
       contents_layout_->AddChildView(std::make_unique<views::Textarea>());
-  bypass_justification_->SetAccessibleName(justification_text_label_);
+  bypass_justification_->GetViewAccessibility().SetName(
+      *justification_text_label_);
   bypass_justification_->SetController(this);
 }
 
@@ -1014,7 +1014,7 @@ void ContentAnalysisDialog::AddLinksToDialogMessage() {
                       /*is_renderer_initiated=*/false),
                   /*navigation_handle_callback=*/{});
             },
-            web_contents_->GetWeakPtr(), range.second)));
+            web_contents()->GetWeakPtr(), range.second)));
   }
 }
 
@@ -1024,6 +1024,9 @@ void ContentAnalysisDialog::UpdateDialogMessage(std::u16string new_message) {
     message_->SetText(new_message);
     AddLinksToDialogMessage();
     message_->GetViewAccessibility().AnnounceText(std::move(new_message));
+    if (has_learn_more_url()) {
+      AddLearnMoreLinkToDialog();
+    }
   } else {
     message_->SetText(new_message);
     message_->GetViewAccessibility().AnnounceText(std::move(new_message));

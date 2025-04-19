@@ -11,6 +11,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/view.h"
 
 SystemAppAccessibleName::SystemAppAccessibleName(const std::u16string& app_name)
@@ -22,15 +23,11 @@ SystemAppAccessibleName::SystemAppAccessibleName(const std::u16string& app_name)
       app_name_(app_name) {
   SetEnabledColor(SK_ColorTRANSPARENT);
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
-  SetAccessibilityProperties(ax::mojom::Role::kApplication, app_name_);
+  GetViewAccessibility().SetProperties(ax::mojom::Role::kApplication,
+                                       app_name_);
 }
 
 SystemAppAccessibleName::~SystemAppAccessibleName() = default;
-
-void SystemAppAccessibleName::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ax::mojom::Role::kApplication;
-  node_data->SetNameChecked(app_name_);
-}
 
 BEGIN_METADATA(SystemAppAccessibleName)
 END_METADATA

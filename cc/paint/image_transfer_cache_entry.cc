@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "cc/paint/image_transfer_cache_entry.h"
 
 #include <algorithm>
@@ -263,8 +268,7 @@ sk_sp<SkImage> ReadImage(
   if (gr_context) {
     max_size = gr_context->maxTextureSize();
   } else if (graphite_recorder) {
-    // TODO(b/279234024): Retrieve correct max texture size for graphite.
-    max_size = 8192;
+    max_size = graphite_recorder->maxTextureSize();
   } else {
     // Allow a nullptr context for testing using the software renderer.
     max_size = 0;
@@ -667,7 +671,7 @@ sk_sp<SkImage> ServiceImageTransferCacheEntry::GetImageWithToneMapApplied(
     } else {
       CHECK(graphite_recorder_);
       SkImage::RequiredProperties props{.fMipmapped = true};
-      image = SkImages::TextureFromImage(graphite_recorder_, image_, props);
+      image = SkImages::TextureFromImage(graphite_recorder_, image, props);
     }
     if (!image) {
       DLOG(ERROR) << "Failed to generate mipmaps after tone mapping";

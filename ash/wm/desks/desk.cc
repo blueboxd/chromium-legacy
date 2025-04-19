@@ -78,18 +78,18 @@ void UpdateBackdropController(aura::Window* desk_container) {
 }
 
 bool IsOverviewUiWindow(aura::Window* window) {
-  return window->GetProperty(kOverviewUiKey);
+  return window->GetProperty(kOverviewUiKey) &&
+         !window->GetProperty(kIsOverviewItemKey);
 }
 
-// Returns true if |window| can be managed by the desk, and therefore can be
+// Returns true if `window` can be managed by the desk, and therefore can be
 // moved out of the desk when the desk is removed.
 bool CanMoveWindowOutOfDeskContainer(aura::Window* window) {
-  // The desks bar widget is an activatable window placed in the active desk's
-  // container, therefore it should be allowed to move outside of its desk when
-  // its desk is removed. The save desk as template widget is not activatable
-  // but should also be moved to the next active desk.
-  if (IsOverviewUiWindow(window))
+  // Overview Ui windows such as the desks bar and saved desk library should be
+  // moved outside the desk when the desk is removed.
+  if (IsOverviewUiWindow(window)) {
     return true;
+  }
 
   // We never move transient descendants directly, this is taken care of by
   // `wm::TransientWindowManager::OnWindowHierarchyChanged()`.
@@ -549,22 +549,20 @@ void Desk::Activate(bool update_window_activation) {
   // last active root window, then we'll find it first and activate it. We use
   // the MRU list here so that in the case that there are multiple roots that
   // each have a topmost adw window, we'll activate the one most recently used.
-  if (features::IsPerDeskZOrderEnabled()) {
-    for (aura::Window* window : mru_window_list) {
-      aura::Window* root = window->GetRootWindow();
+  for (aura::Window* window : mru_window_list) {
+    aura::Window* root = window->GetRootWindow();
 
-      if (last_active_root_ != nullptr && last_active_root_ != root) {
-        continue;
-      }
+    if (last_active_root_ != nullptr && last_active_root_ != root) {
+      continue;
+    }
 
-      auto& adw_data = all_desk_window_stacking_[root];
+    auto& adw_data = all_desk_window_stacking_[root];
 
-      if (!adw_data.empty() && adw_data.front().window == window &&
-          adw_data.front().order == 0 &&
-          !WindowState::Get(window)->IsMinimized()) {
-        wm::ActivateWindow(window);
-        return;
-      }
+    if (!adw_data.empty() && adw_data.front().window == window &&
+        adw_data.front().order == 0 &&
+        !WindowState::Get(window)->IsMinimized()) {
+      wm::ActivateWindow(window);
+      return;
     }
   }
 
@@ -582,8 +580,7 @@ void Desk::Activate(bool update_window_activation) {
     if (window_state->IsMinimized())
       continue;
 
-    if (features::IsPerDeskZOrderEnabled() &&
-        desks_util::IsWindowVisibleOnAllWorkspaces(window)) {
+    if (desks_util::IsWindowVisibleOnAllWorkspaces(window)) {
       // Ignore an adw window that is not topmost.
       continue;
     }
@@ -862,9 +859,6 @@ Desk::GetAllAssociatedWindows() const {
 }
 
 void Desk::BuildAllDeskStackingData() {
-  // This function should not be invoked when this feature isn't enabled.
-  DCHECK(features::IsPerDeskZOrderEnabled());
-
   auto* active_window = window_util::GetActiveWindow();
   last_active_root_ = active_window ? active_window->GetRootWindow() : nullptr;
 
@@ -887,9 +881,6 @@ void Desk::BuildAllDeskStackingData() {
 }
 
 void Desk::RestackAllDeskWindows() {
-  // This function should not be invoked when this feature isn't enabled.
-  DCHECK(features::IsPerDeskZOrderEnabled());
-
   for (aura::Window* root : Shell::GetAllRootWindows()) {
     auto& adw_data = all_desk_window_stacking_[root];
     if (adw_data.empty()) {
@@ -1058,7 +1049,7 @@ void Desk::MoveWindowToDeskInternal(aura::Window* window,
 }
 
 bool Desk::ShouldUpdateAllDeskStackingData() {
-  return features::IsPerDeskZOrderEnabled() && !is_active_;
+  return !is_active_;
 }
 
 bool Desk::MaybeResetContainersOpacities() {
@@ -1095,8 +1086,7 @@ void Desk::ResumeContentUpdateNotification(bool notify_when_fully_resumed) {
 }
 
 bool Desk::HasAllDeskWindowDataOnOtherRoot(aura::Window* window) const {
-  if (!desks_util::IsWindowVisibleOnAllWorkspaces(window) ||
-      !features::IsPerDeskZOrderEnabled()) {
+  if (!desks_util::IsWindowVisibleOnAllWorkspaces(window)) {
     return false;
   }
 

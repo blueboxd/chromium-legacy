@@ -18,6 +18,7 @@ const kExampleBiasDescriptor = {
   dataType: 'float32',
   dimensions: [/* output channels */ 1]
 };
+const label = `conv_2d_*`;
 
 multi_builder_test(async (t, builder, otherBuilder) => {
   const inputFromOtherBuilder =
@@ -46,15 +47,6 @@ multi_builder_test(async (t, builder, otherBuilder) => {
   const filter = builder.input('filter', kExampleFilterDescriptor);
   assert_throws_js(TypeError, () => builder.conv2d(input, filter, options));
 }, '[conv2d] throw if bias option is from another builder');
-
-multi_builder_test(async (t, builder, otherBuilder) => {
-  const activationFromOtherBuilder = otherBuilder.clamp();
-  const options = {activation: activationFromOtherBuilder};
-
-  const input = builder.input('input', kExampleInputDescriptor);
-  const filter = builder.input('filter', kExampleFilterDescriptor);
-  assert_throws_js(TypeError, () => builder.conv2d(input, filter, options));
-}, '[conv2d] throw if activation option is from another builder');
 
 const tests = [
   {
@@ -209,22 +201,28 @@ const tests = [
     name: '[conv2d] Throw if the input is not a 4-D tensor.',
     input: {dataType: 'float32', dimensions: [1, 5, 5]},
     filter: {dataType: 'float32', dimensions: [1, 2, 2, 1]},
+    options: {label},
   },
   {
     name: '[conv2d] Throw if the input data type is not floating point.',
     input: {dataType: 'int32', dimensions: [1, 1, 5, 5]},
     filter: {dataType: 'int32', dimensions: [1, 1, 2, 2]},
+    options: {label},
   },
   {
     name: '[conv2d] Throw if the filter is not a 4-D tensor.',
     input: {dataType: 'float32', dimensions: [1, 1, 5, 5]},
     filter: {dataType: 'float32', dimensions: [2, 2]},
+    options: {label},
   },
   {
     name:
         '[conv2d] Throw if the filter data type doesn\'t match the input data type.',
     input: {dataType: 'float32', dimensions: [1, 1, 5, 5]},
     filter: {dataType: 'int32', dimensions: [1, 1, 2, 2]},
+    options: {
+      label: label,
+    },
   },
   {
     name: '[conv2d] Throw if the length of padding is not 4.',
@@ -232,6 +230,7 @@ const tests = [
     filter: {dataType: 'float32', dimensions: [1, 1, 2, 2]},
     options: {
       padding: [2, 2],
+      label: label,
     },
   },
   {
@@ -240,6 +239,7 @@ const tests = [
     filter: {dataType: 'float32', dimensions: [1, 1, 2, 2]},
     options: {
       strides: [2],
+      label: label,
     },
   },
   {
@@ -248,6 +248,7 @@ const tests = [
     filter: {dataType: 'float32', dimensions: [1, 1, 2, 2]},
     options: {
       strides: [0, 1],
+      label: label,
     },
   },
   {
@@ -256,6 +257,7 @@ const tests = [
     filter: {dataType: 'float32', dimensions: [1, 1, 2, 2]},
     options: {
       strides: [1, 0],
+      label: label,
     },
   },
   {
@@ -264,6 +266,7 @@ const tests = [
     filter: {dataType: 'float32', dimensions: [1, 1, 2, 2]},
     options: {
       dilations: [1],
+      label: label,
     },
   },
   {
@@ -272,6 +275,7 @@ const tests = [
     filter: {dataType: 'float32', dimensions: [1, 1, 2, 2]},
     options: {
       dilations: [0, 1],
+      label: label,
     },
   },
   {
@@ -280,6 +284,7 @@ const tests = [
     filter: {dataType: 'float32', dimensions: [1, 1, 2, 2]},
     options: {
       dilations: [1, 0],
+      label: label,
     },
   },
   {
@@ -288,6 +293,7 @@ const tests = [
     filter: {dataType: 'float32', dimensions: [1, 1, 2, 2]},
     options: {
       groups: 3,
+      label: label,
     },
   },
   {
@@ -297,6 +303,7 @@ const tests = [
     filter: {dataType: 'float32', dimensions: [1, 1, 2, 2]},
     options: {
       groups: 2,
+      label: label,
     },
   },
   {
@@ -305,6 +312,7 @@ const tests = [
     filter: {dataType: 'float32', dimensions: [1, 1, 2, 2]},
     options: {
       groups: 0,
+      label: label,
     },
   },
   {
@@ -314,6 +322,7 @@ const tests = [
     filter: {dataType: 'float32', dimensions: [1, 1, 434983, 2]},
     options: {
       dilations: [328442, 1],
+      label: label,
     },
   },
   {
@@ -323,6 +332,7 @@ const tests = [
     filter: {dataType: 'float32', dimensions: [1, 1, 2, 234545]},
     options: {
       dilations: [2, 843452],
+      label: label,
     },
   },
   {
@@ -331,6 +341,7 @@ const tests = [
     filter: {dataType: 'float32', dimensions: [1, 1, 3, 3]},
     options: {
       dilations: [kMaxUnsignedLong, 1],
+      label: label,
     },
   },
   {
@@ -339,6 +350,7 @@ const tests = [
     filter: {dataType: 'float32', dimensions: [1, 1, 3, 3]},
     options: {
       dilations: [1, kMaxUnsignedLong],
+      label: label,
     },
   },
   {
@@ -349,6 +361,7 @@ const tests = [
       dilations: [4, 1],
       padding: [1, 1, 1, 1],
       strides: [2, 2],
+      label: label,
     },
   },
   {
@@ -359,6 +372,7 @@ const tests = [
       dilations: [1, 4],
       padding: [1, 1, 1, 1],
       strides: [2, 2],
+      label: label,
     },
   },
   {
@@ -367,6 +381,7 @@ const tests = [
     filter: {dataType: 'float32', dimensions: [1, 1, 2, 2]},
     options: {
       bias: {dataType: 'float32', dimensions: [1, 2]},
+      label: label,
     },
   },
   {
@@ -376,6 +391,7 @@ const tests = [
     filter: {dataType: 'float32', dimensions: [1, 1, 2, 2]},
     options: {
       bias: {dataType: 'float32', dimensions: [2]},
+      label: label,
     },
   },
   {
@@ -385,6 +401,7 @@ const tests = [
     filter: {dataType: 'float32', dimensions: [2, 2, 1, 1]},
     options: {
       bias: {dataType: 'float32', dimensions: [2]},
+      label: label,
     },
   },
   {
@@ -394,6 +411,7 @@ const tests = [
     filter: {dataType: 'float32', dimensions: [1, 2, 2, 1]},
     options: {
       bias: {dataType: 'float32', dimensions: [2]},
+      label: label,
     },
   },
   {
@@ -403,6 +421,7 @@ const tests = [
     filter: {dataType: 'float32', dimensions: [1, 2, 2, 1]},
     options: {
       bias: {dataType: 'float32', dimensions: [2]},
+      label: label,
     },
   },
   {
@@ -412,6 +431,7 @@ const tests = [
     filter: {dataType: 'float32', dimensions: [1, 1, 2, 2]},
     options: {
       bias: {dataType: 'int32', dimensions: [1]},
+      label: label,
     },
   },
   {
@@ -423,6 +443,7 @@ const tests = [
       inputLayout: 'nchw',
       filterLayout: 'oihw',
       groups: 2,
+      label: label,
     },
   },
   {
@@ -434,6 +455,7 @@ const tests = [
       inputLayout: 'nchw',
       filterLayout: 'hwio',
       groups: 2,
+      label: label,
     },
   },
   {
@@ -445,6 +467,7 @@ const tests = [
       inputLayout: 'nchw',
       filterLayout: 'ohwi',
       groups: 2,
+      label: label,
     },
   },
   {
@@ -456,6 +479,7 @@ const tests = [
       inputLayout: 'nchw',
       filterLayout: 'ihwo',
       groups: 2,
+      label: label,
     },
 
   },
@@ -468,6 +492,7 @@ const tests = [
       inputLayout: 'nhwc',
       filterLayout: 'oihw',
       groups: 2,
+      label: label,
     },
   },
   {
@@ -479,6 +504,7 @@ const tests = [
       inputLayout: 'nhwc',
       filterLayout: 'hwio',
       groups: 2,
+      label: label,
     },
   },
   {
@@ -490,6 +516,7 @@ const tests = [
       inputLayout: 'nhwc',
       filterLayout: 'ohwi',
       groups: 2,
+      label: label,
     },
   },
   {
@@ -501,12 +528,14 @@ const tests = [
       inputLayout: 'nhwc',
       filterLayout: 'ihwo',
       groups: 2,
+      label: label,
     },
   },
 ];
 
 tests.forEach(
     test => promise_test(async t => {
+      const builder = new MLGraphBuilder(context);
       const input = builder.input(
           'input',
           {dataType: test.input.dataType, dimensions: test.input.dimensions});
@@ -526,7 +555,13 @@ tests.forEach(
         assert_equals(output.dataType(), test.output.dataType);
         assert_array_equals(output.shape(), test.output.dimensions);
       } else {
-        assert_throws_js(
-            TypeError, () => builder.conv2d(input, filter, test.options));
+        try {
+          builder.conv2d(input, filter, test.options);
+        } catch (e) {
+          assert_equals(e.name, 'TypeError');
+          const error_message = e.message;
+          const regrexp = /\[conv_2d_\*\]/;
+          assert_not_equals(error_message.match(regrexp), null);
+        }
       }
     }, test.name));

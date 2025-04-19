@@ -27,6 +27,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/core/dom/document.h"
 
 #include <memory>
@@ -60,7 +65,6 @@
 #include "services/network/public/cpp/web_sandbox_flags.h"
 #include "services/network/public/mojom/trust_tokens.mojom-blink.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
-#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/permissions_policy/document_policy_features.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_sample_collector.h"
@@ -73,6 +77,7 @@
 #include "third_party/blink/public/mojom/page_state/page_state.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-blink-forward.h"
+#include "third_party/blink/public/platform/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
@@ -84,6 +89,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_aria_notification_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_caret_position_from_point_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_element_creation_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_element_registration_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_observable_array_css_style_sheet.h"
@@ -165,7 +171,6 @@
 #include "third_party/blink/renderer/core/dom/part_root.h"
 #include "third_party/blink/renderer/core/dom/processing_instruction.h"
 #include "third_party/blink/renderer/core/dom/scripted_animation_controller.h"
-#include "third_party/blink/renderer/core/dom/scripted_idle_task_controller.h"
 #include "third_party/blink/renderer/core/dom/shadow_including_tree_order_traversal.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/slot_assignment.h"
@@ -180,6 +185,7 @@
 #include "third_party/blink/renderer/core/dom/xml_document.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/ime/edit_context.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/editing/serializers/serialization.h"
@@ -214,6 +220,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/viewport_data.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/html/anchor_element_metrics_sender.h"
 #include "third_party/blink/renderer/core/html/anchor_element_observer_for_service_worker.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_font_cache.h"
 #include "third_party/blink/renderer/core/html/collection_type.h"
@@ -446,6 +453,9 @@ bool DefaultFaviconAllowedByCSP(const Document* document, const IconURL& icon) {
       ContentSecurityPolicy::CheckHeaderType::kCheckAll);
 }
 
+// The sampling rate for UKM.
+constexpr double kUkmSamplingRate = 0.001;
+
 }  // namespace
 
 static const unsigned kCMaxWriteRecursionDepth = 21;
@@ -586,7 +596,7 @@ static bool IsValidElementNamePerHTMLParser(const String& name) {
 static bool IsValidElementName(Document* document, const String& name) {
   bool is_valid_dom_name = Document::IsValidName(name);
   bool is_valid_html_name = IsValidElementNamePerHTMLParser(name);
-  if (UNLIKELY(is_valid_html_name != is_valid_dom_name)) {
+  if (is_valid_html_name != is_valid_dom_name) [[unlikely]] {
     // This is inaccurate because it will not report activity in
     // detached documents. However retrieving the frame from the
     // bindings is too slow.
@@ -641,21 +651,11 @@ const ListedElement::List& Document::UnassociatedListedElementsList::Get(
     const Node& root = owner.GetTreeScope().RootNode();
     DCHECK(list_.empty());
 
-    if (base::FeatureList::IsEnabled(
-            features::kAutofillIncludeShadowDomInUnassociatedListedElements)) {
-      for (Node& current :
-           ShadowIncludingTreeOrderTraversal::DescendantsOf(root)) {
-        if (HTMLElement* element = DynamicTo<HTMLElement>(current)) {
-          if (ListedElement* listed_element = ListedElement::From(*element);
-              listed_element && !listed_element->Form()) {
-            list_.push_back(listed_element);
-          }
-        }
-      }
-    } else {
-      for (HTMLElement& element : Traversal<HTMLElement>::StartsAfter(root)) {
-        ListedElement* listed_element = ListedElement::From(element);
-        if (listed_element && !listed_element->Form()) {
+    for (Node& current :
+         ShadowIncludingTreeOrderTraversal::DescendantsOf(root)) {
+      if (HTMLElement* element = DynamicTo<HTMLElement>(current)) {
+        if (ListedElement* listed_element = ListedElement::From(*element);
+            listed_element && !listed_element->Form()) {
           list_.push_back(listed_element);
         }
       }
@@ -829,7 +829,6 @@ Document::Document(const DocumentInit& initializer,
       // web-observable.
       ready_state_(dom_window_ ? kLoading : kComplete),
       parsing_state_(kFinishedParsing),
-      contains_plugins_(false),
       ignore_destructive_write_count_(0),
       throw_on_dynamic_markup_insertion_count_(0),
       ignore_opens_during_unload_count_(0),
@@ -1755,7 +1754,7 @@ Range* Document::caretRangeFromPoint(int x, int y) {
 CaretPosition* Document::caretPositionFromPoint(
     float x,
     float y,
-    const HeapVector<Member<ShadowRoot>>& shadow_roots) {
+    const CaretPositionFromPointOptions* options) {
   if (!GetLayoutView()) {
     return nullptr;
   }
@@ -1772,7 +1771,8 @@ CaretPosition* Document::caretPositionFromPoint(
   }
   bool adjust_position = false;
   while (anchor_node->IsInShadowTree() &&
-         !shadow_roots.Contains(anchor_node->GetTreeScope())) {
+         !(options->hasShadowRoots() &&
+           options->shadowRoots().Contains(anchor_node->GetTreeScope()))) {
     anchor_node = anchor_node->OwnerShadowHost();
     adjust_position = true;
   }
@@ -1810,6 +1810,12 @@ Element* Document::ScrollingElementNoLayout() {
 bool Document::KeyboardFocusableScrollersEnabled() {
   return RuntimeEnabledFeatures::KeyboardFocusableScrollersEnabled() &&
          !RuntimeEnabledFeatures::KeyboardFocusableScrollersOptOutEnabled(
+             GetExecutionContext());
+}
+
+bool Document::StandardizedBrowserZoomEnabled() const {
+  return RuntimeEnabledFeatures::StandardizedBrowserZoomEnabled() &&
+         !RuntimeEnabledFeatures::StandardizedBrowserZoomOptOutEnabled(
              GetExecutionContext());
 }
 
@@ -2241,7 +2247,9 @@ static void AssertLayoutTreeUpdatedForPseudoElements(const Element& element) {
                                       kPseudoIdMarker,
                                       kPseudoIdBackdrop,
                                       kPseudoIdScrollMarkerGroupBefore,
-                                      kPseudoIdScrollMarkerGroupAfter};
+                                      kPseudoIdScrollMarkerGroupAfter,
+                                      kPseudoIdScrollNextButton,
+                                      kPseudoIdScrollPrevButton};
   for (auto pseudo_id : pseudo_ids) {
     if (auto* pseudo_element = element.GetPseudoElement(pseudo_id))
       AssertNodeClean(*pseudo_element);
@@ -2845,14 +2853,9 @@ void Document::LayoutUpdated() {
   // Plugins can run script inside layout which can detach the page.
   // TODO(dcheng): Does it make sense to do any of this work if detached?
   if (auto* frame = GetFrame()) {
-    if (frame->IsMainFrame())
+    if (frame->IsMainFrame()) {
       frame->GetPage()->GetChromeClient().MainFrameLayoutUpdated();
-
-    // We do attach here, during lifecycle update, because until then we
-    // don't have a good place that has access to its local root's FrameWidget.
-    // TODO(dcheng): If we create FrameWidget before Frame then we could move
-    // this to Document::Initialize().
-    AttachCompositorTimeline(Timeline().CompositorTimeline());
+    }
   }
 
   Markers().InvalidateRectsForAllTextMatchMarkers();
@@ -2863,12 +2866,13 @@ void Document::AttachCompositorTimeline(cc::AnimationTimeline* timeline) const {
       !GetSettings()->GetAcceleratedCompositingEnabled())
     return;
 
-  if (timeline->IsScrollTimeline() && timeline->animation_host())
-    return;
-
   if (cc::AnimationHost* host =
           GetPage()->GetChromeClient().GetCompositorAnimationHost(
               *GetFrame())) {
+    if (timeline->animation_host()) {
+      DCHECK_EQ(timeline->animation_host(), host);
+      return;
+    }
     host->AddAnimationTimeline(timeline);
   }
 }
@@ -3029,19 +3033,6 @@ void Document::Shutdown() {
   if (num_canvases_ > 0)
     UMA_HISTOGRAM_COUNTS_100("Blink.Canvas.NumCanvasesPerPage", num_canvases_);
 
-  if (!data_->already_sent_automatic_lazy_load_frame_ukm_) {
-    data_->already_sent_automatic_lazy_load_frame_ukm_ = true;
-    if (data_->lazy_ads_frame_count_ > 0 ||
-        data_->lazy_embeds_frame_count_ > 0) {
-      ukm::builders::Blink_AutomaticLazyLoadFrame(UkmSourceID())
-          .SetLazyAdsFrameCount(ukm::GetExponentialBucketMinForCounts1000(
-              data_->lazy_ads_frame_count_))
-          .SetLazyEmbedsFrameCount(ukm::GetExponentialBucketMinForCounts1000(
-              data_->lazy_embeds_frame_count_))
-          .Record(UkmRecorder());
-    }
-  }
-
   if (font_matching_metrics_) {
     font_matching_metrics_->PublishAllMetrics();
   }
@@ -3074,7 +3065,10 @@ void Document::Shutdown() {
 
   probe::DocumentDetached(this);
 
-  scripted_idle_task_controller_.Clear();
+  if (AnchorElementMetricsSender* sender =
+          AnchorElementMetricsSender::GetForFrame(GetFrame())) {
+    sender->DocumentDetached(*this);
+  }
 
   if (SvgExtensions())
     AccessSVGExtensions().PauseAnimations();
@@ -3278,7 +3272,7 @@ void Document::AXContextModeChanged() {
 }
 
 void Document::RemoveAXContext(AXContext* context) {
-  auto** iter = base::ranges::find(ax_contexts_, context);
+  auto iter = base::ranges::find(ax_contexts_, context);
   if (iter != ax_contexts_.end())
     ax_contexts_.erase(iter);
   if (ax_contexts_.size() == 0) {
@@ -3380,14 +3374,16 @@ bool Document::WillPrintSoon() {
 bool Document::InitiateStyleOrLayoutDependentLoadForPrint() {
   if (auto* view = View()) {
     view->AdjustMediaTypeForPrinting(true);
+    GetStyleEngine().UpdateViewportSize();
     UpdateStyleAndLayout(DocumentUpdateReason::kPrinting);
-
+    GetStyleResolver().LoadPaginationResources();
     view->FlushAnyPendingPostLayoutTasks();
 
     view->AdjustMediaTypeForPrinting(false);
+    GetStyleEngine().UpdateViewportSize();
     UpdateStyleAndLayout(DocumentUpdateReason::kPrinting);
 
-    return !ShouldComplete();
+    return fetcher_->BlockingRequestCount() > 0;
   }
 
   return false;
@@ -4139,16 +4135,6 @@ bool Document::CheckCompletedInternal() {
       lcpp->OnOutermostMainFrameDocumentLoad();
       fetcher_->MaybeRecordLCPPSubresourceMetrics(Url());
     }
-    if (!data_->accumulated_shape_text_elapsed_time_.is_zero()) {
-      base::UmaHistogramMicrosecondsTimes(
-          "Blink.Layout.InlineNode::ShapeText.TotalTime.InOutermostMainFrame",
-          data_->accumulated_shape_text_elapsed_time_);
-    }
-    if (!data_->max_shape_text_elapsed_time_.is_zero()) {
-      base::UmaHistogramMicrosecondsTimes(
-          "Blink.Layout.InlineNode::ShapeText.MaxTime.InOutermostMainFrame",
-          data_->max_shape_text_elapsed_time_);
-    }
   }
 
   return true;
@@ -4634,6 +4620,11 @@ void Document::UpdateBaseURL() {
       anchor.InvalidateCachedVisitedLinkHash();
   }
 
+  for (Element* element : *scripts()) {
+    auto* script = To<HTMLScriptElement>(element);
+    script->Loader()->DocumentBaseURLChanged();
+  }
+
   if (auto* document_rules = DocumentSpeculationRules::FromIfExists(*this)) {
     document_rules->DocumentBaseURLChanged();
   }
@@ -4762,13 +4753,25 @@ void Document::ProcessBaseElement() {
     }
   }
 
-  if (base_element_url != base_element_url_ &&
-      !base_element_url.ProtocolIsData() &&
-      !base_element_url.ProtocolIsJavaScript() && GetExecutionContext() &&
-      GetExecutionContext()->GetContentSecurityPolicy()->AllowBaseURI(
-          base_element_url)) {
-    base_element_url_ = base_element_url;
-    UpdateBaseURL();
+  if (base_element_url != base_element_url_) {
+    // https://html.spec.whatwg.org/multipage/semantics.html#the-base-element
+    // > If any of the following are true:
+    // > - urlRecord is failure;
+    // > - urlRecord's scheme is "data" or "javascript"; or
+    // > - running Is base allowed for Document? on urlRecord and document
+    // >   returns "Blocked"
+    // > then set element's frozen base URL to document's fallback base URL and
+    // > return.
+    if (!base_element_url.ProtocolIsData() &&
+        !base_element_url.ProtocolIsJavaScript() && GetExecutionContext() &&
+        GetExecutionContext()->GetContentSecurityPolicy()->AllowBaseURI(
+            base_element_url)) {
+      base_element_url_ = base_element_url;
+      UpdateBaseURL();
+    } else if (RuntimeEnabledFeatures::BaseElementUrlUseFallbackEnabled()) {
+      base_element_url_ = FallbackBaseURL();
+      UpdateBaseURL();
+    }
   }
 
   AtomicString old_base_target = base_target_;
@@ -5111,14 +5114,16 @@ Node* Document::Clone(Document& factory,
   if (!execution_context_)
     return nullptr;
   Document* clone = CloneDocumentWithoutChildren();
+  clone->CloneDataFromDocument(*this);
   DocumentPartRoot* part_root = nullptr;
+  DCHECK(!data.Has(CloneOption::kPreserveDOMPartsMinimalAPI) || !HasNodePart());
   if (data.Has(CloneOption::kPreserveDOMParts)) {
     DCHECK(RuntimeEnabledFeatures::DOMPartsAPIEnabled());
+    DCHECK(!RuntimeEnabledFeatures::DOMPartsAPIMinimalEnabled());
     part_root = &clone->getPartRoot();
     data.PushPartRoot(*part_root);
+    PartRoot::CloneParts(*this, *clone, data);
   }
-  clone->CloneDataFromDocument(*this);
-  PartRoot::CloneParts(*this, *clone, data);
   if (data.Has(CloneOption::kIncludeDescendants)) {
     clone->CloneChildNodesFrom(*this, data);
   }
@@ -5216,6 +5221,9 @@ void Document::EvaluateMediaQueryList() {
 }
 
 void Document::LayoutViewportWasResized() {
+  if (!IsActive()) {
+    return;
+  }
   MediaQueryAffectingValueChanged(MediaValueChange::kSize);
   if (media_query_matcher_)
     media_query_matcher_->ViewportChanged();
@@ -5544,6 +5552,21 @@ bool Document::SetFocusedElement(Element* new_focused_element,
   UpdateStyleAndLayoutTree();
   if (LocalFrame* frame = GetFrame())
     frame->Selection().DidChangeFocus();
+
+  // EditContext's activation is synced with the associated element being
+  // focused or not. If an element loses focus, its associated EditContext
+  // is deactivated. If getting focus, the EditContext is activated.
+  if (old_focused_element) {
+    if (auto* old_edit_context = old_focused_element->editContext()) {
+      old_edit_context->Blur();
+    }
+  }
+  if (new_focused_element) {
+    if (auto* edit_context = new_focused_element->editContext()) {
+      edit_context->Focus();
+    }
+  }
+
   return !focus_change_blocked;
 }
 
@@ -5828,10 +5851,13 @@ void Document::NodeWillBeRemoved(Node& n) {
   for (NodeIterator* ni : node_iterators_)
     ni->NodeWillBeRemoved(n);
 
-  for (Range* range : ranges_) {
-    range->NodeWillBeRemoved(n);
-    if (range == sequential_focus_navigation_starting_point_)
-      range->FixupRemovedNodeAcrossShadowBoundary(n);
+  if (!StatePreservingAtomicMoveInProgress()) {
+    for (Range* range : ranges_) {
+      range->NodeWillBeRemoved(n);
+      if (range == sequential_focus_navigation_starting_point_) {
+        range->FixupRemovedNodeAcrossShadowBoundary(n);
+      }
+    }
   }
 
   synchronous_mutation_observer_set_.ForEachObserver(
@@ -6167,6 +6193,17 @@ void Document::AddListenerTypeIfNeeded(const AtomicString& event_type,
     if (event_target.HasCapturingEventListeners(event_type))
       AddListenerType(kLoadListenerAtCapturePhaseOrAtStyleElement);
   }
+}
+
+void Document::DidAddEventListeners(uint32_t count) {
+  DCHECK(count);
+  event_listener_counts_ += count;
+}
+
+void Document::DidRemoveEventListeners(uint32_t count) {
+  DCHECK(count);
+  DCHECK_GE(event_listener_counts_, count);
+  event_listener_counts_ -= count;
 }
 
 HTMLFrameOwnerElement* Document::LocalOwner() const {
@@ -7274,14 +7311,6 @@ HTMLCollection* Document::DocumentAllNamedItems(const AtomicString& name) {
       kDocumentAllNamedItems, name);
 }
 
-void Document::IncrementLazyAdsFrameCount() {
-  data_->lazy_ads_frame_count_++;
-}
-
-void Document::IncrementLazyEmbedsFrameCount() {
-  data_->lazy_embeds_frame_count_++;
-}
-
 void Document::IncrementImmediateChildFrameCreationCount() {
   data_->immediate_child_frame_creation_count_++;
 }
@@ -7483,6 +7512,40 @@ void Document::FinishedParsing() {
 
   // Parser should have picked up all preloads by now
   fetcher_->ClearPreloads(ResourceFetcher::kClearSpeculativeMarkupPreloads);
+
+  if (IsInOutermostMainFrame() && !IsInitialEmptyDocument() &&
+      Url().ProtocolIsInHTTPFamily()) {
+    // Record histograms of ShapeText.
+    base::UmaHistogramMicrosecondsTimes(
+        "Blink.Layout.InlineNode.ShapeText.TotalTime.InOutermostMainFrame3",
+        data_->accumulated_shape_text_elapsed_time_);
+    base::UmaHistogramMicrosecondsTimes(
+        "Blink.Layout.InlineNode.ShapeText.MaxTime.InOutermostMainFrame3",
+        data_->max_shape_text_elapsed_time_);
+
+    // Record histograms of SVGImage.
+    base::UmaHistogramCounts100(
+        "Blink.Layout.SVGImage.Count.InOutermostMainFrame",
+        data_->svg_image_processed_count_);
+    base::UmaHistogramMicrosecondsTimes(
+        "Blink.Layout.SVGImage.TotalTime.InOutermostMainFrame",
+        data_->accumulated_svg_image_elapsed_time_);
+
+    // UKM data is sampled at a frequency of `kUkmSamplingRate`.
+    if (base::RandDouble() < kUkmSamplingRate) {
+      ukm::builders::Blink_ShapeText(UkmSourceID())
+          .SetTotalTime(
+              data_->accumulated_shape_text_elapsed_time_.InMicroseconds())
+          .SetMaxTime(data_->max_shape_text_elapsed_time_.InMicroseconds())
+          .Record(UkmRecorder());
+      ukm::builders::Blink_SVGImage(UkmSourceID())
+          .SetCount(ukm::GetExponentialBucketMinForCounts1000(
+              data_->svg_image_processed_count_))
+          .SetTotalTime(
+              data_->accumulated_svg_image_elapsed_time_.InMicroseconds())
+          .Record(UkmRecorder());
+    }
+  }
 }
 
 void Document::ElementDataCacheClearTimerFired(TimerBase*) {
@@ -7755,13 +7818,16 @@ FontMatchingMetrics* Document::GetFontMatchingMetrics() {
 }
 
 void Document::MaybeRecordShapeTextElapsedTime(base::TimeDelta elapsed_time) {
-  if (!IsInOutermostMainFrame() || IsLoadCompleted() ||
-      IsInitialEmptyDocument() || !Url().ProtocolIsInHTTPFamily()) {
-    return;
-  }
-  data_->accumulated_shape_text_elapsed_time_ += elapsed_time;
-  data_->max_shape_text_elapsed_time_ =
-      std::max(data_->max_shape_text_elapsed_time_, elapsed_time);
+    data_->accumulated_shape_text_elapsed_time_ += elapsed_time;
+    data_->max_shape_text_elapsed_time_ =
+        std::max(data_->max_shape_text_elapsed_time_, elapsed_time);
+}
+
+void Document::MaybeRecordSvgImageProcessingTime(
+    int data_change_count,
+    base::TimeDelta data_change_elapsed_time) const {
+  data_->svg_image_processed_count_ += data_change_count;
+  data_->accumulated_svg_image_elapsed_time_ += data_change_elapsed_time;
 }
 
 bool Document::AllowInlineEventHandler(Node* node,
@@ -8105,31 +8171,6 @@ int Document::RequestAnimationFrame(FrameCallback* callback) {
 
 void Document::CancelAnimationFrame(int id) {
   scripted_animation_controller_->CancelFrameCallback(id);
-}
-
-ScriptedIdleTaskController& Document::EnsureScriptedIdleTaskController() {
-  if (!scripted_idle_task_controller_) {
-    scripted_idle_task_controller_ =
-        ScriptedIdleTaskController::Create(domWindow());
-    // We need to make sure that we don't start up if we're detached.
-    if (!domWindow() || domWindow()->IsContextDestroyed()) {
-      scripted_idle_task_controller_->ContextLifecycleStateChanged(
-          mojom::FrameLifecycleState::kFrozen);
-    }
-  }
-  return *scripted_idle_task_controller_;
-}
-
-int Document::RequestIdleCallback(IdleTask* idle_task,
-                                  const IdleRequestOptions* options) {
-  return EnsureScriptedIdleTaskController().RegisterCallback(idle_task,
-                                                             options);
-}
-
-void Document::CancelIdleCallback(int id) {
-  if (!scripted_idle_task_controller_)
-    return;
-  scripted_idle_task_controller_->CancelCallback(id);
 }
 
 DocumentLoader* Document::Loader() const {
@@ -8791,7 +8832,6 @@ void Document::Trace(Visitor* visitor) const {
   visitor->Trace(document_timing_);
   visitor->Trace(media_query_matcher_);
   visitor->Trace(scripted_animation_controller_);
-  visitor->Trace(scripted_idle_task_controller_);
   visitor->Trace(text_autosizer_);
   visitor->Trace(element_data_cache_clear_timer_);
   visitor->Trace(element_data_cache_);
@@ -8834,6 +8874,9 @@ void Document::Trace(Visitor* visitor) const {
   visitor->Trace(focused_element_change_observers_);
   visitor->Trace(pending_link_header_preloads_);
   visitor->Trace(elements_needing_shadow_tree_);
+#if BUILDFLAG(IS_ANDROID)
+  visitor->Trace(payment_link_handler_);
+#endif  // BUILDFLAG(IS_ANDROID)
   Supplementable<Document>::Trace(visitor);
   TreeScope::Trace(visitor);
   ContainerNode::Trace(visitor);
@@ -9306,6 +9349,24 @@ void Document::UnscheduleShadowTreeCreation(HTMLInputElement& element) {
   elements_needing_shadow_tree_.erase(&element);
 }
 
+#if BUILDFLAG(IS_ANDROID)
+void Document::HandlePaymentLink(const KURL& href) {
+  // Only the first payment link is expected to be handled in a page.
+  if (payment_link_handled_) {
+    return;
+  }
+  // TODO(crbug.com/344997566): Validate the href before triggering the IPC
+  // call.
+  if (!payment_link_handler_.is_bound()) {
+    GetFrame()->GetBrowserInterfaceBroker().GetInterface(
+        payment_link_handler_.BindNewPipeAndPassReceiver(
+            GetExecutionContext()->GetTaskRunner(TaskType::kDOMManipulation)));
+  }
+  payment_link_handled_ = true;
+  payment_link_handler_->HandlePaymentLink(href);
+}
+#endif  // BUILDFLAG(IS_ANDROID)
+
 void Document::ProcessScheduledShadowTreeCreationsNow() {
   if (elements_needing_shadow_tree_.empty()) {
     return;
@@ -9314,6 +9375,19 @@ void Document::ProcessScheduledShadowTreeCreationsNow() {
   std::swap(elements_needing_shadow_tree, elements_needing_shadow_tree_);
   for (auto& element : elements_needing_shadow_tree) {
     element->EnsureShadowSubtree();
+  }
+}
+
+void Document::ScheduleSelectionchangeEvent() {
+  if (RuntimeEnabledFeatures::CoalesceSelectionchangeEventEnabled()) {
+    if (has_scheduled_selectionchange_event_on_document_)
+      return;
+    has_scheduled_selectionchange_event_on_document_ = true;
+    EnqueueEvent(*Event::Create(event_type_names::kSelectionchange),
+                 TaskType::kMiscPlatformAPI);
+  } else {
+    EnqueueEvent(*Event::Create(event_type_names::kSelectionchange),
+                 TaskType::kMiscPlatformAPI);
   }
 }
 

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/modules/webcodecs/background_readback.h"
 
 #include "base/feature_list.h"
@@ -219,7 +224,7 @@ void BackgroundReadback::ReadbackRGBTextureBackedFrameToMemory(
       texture_size, src_point, info, base::saturated_cast<GLuint>(rgba_stide),
       dst_pixels,
       WTF::BindOnce(&BackgroundReadback::OnARGBPixelsFrameReadCompleted,
-                    MakeUnwrappingCrossThreadHandle(this), std::move(result_cb),
+                    WrapWeakPersistent(this), std::move(result_cb),
                     std::move(txt_frame), std::move(result)));
 }
 
@@ -244,7 +249,7 @@ void BackgroundReadback::OnARGBPixelsFrameReadCompleted(
 
   result_frame->set_color_space(txt_frame->ColorSpace());
   result_frame->metadata().MergeMetadataFrom(txt_frame->metadata());
-  result_frame->metadata().ClearTextureFrameMedatada();
+  result_frame->metadata().ClearTextureFrameMetadata();
   std::move(result_cb).Run(success ? std::move(result_frame) : nullptr);
 }
 
@@ -300,8 +305,8 @@ void BackgroundReadback::ReadbackRGBTextureBackedFrameToBuffer(
       texture_size, src_point, info, base::saturated_cast<GLuint>(stride),
       dst_pixels,
       WTF::BindOnce(&BackgroundReadback::OnARGBPixelsBufferReadCompleted,
-                    MakeUnwrappingCrossThreadHandle(this), std::move(txt_frame),
-                    src_rect, dest_layout, dest_buffer, std::move(done_cb)));
+                    WrapWeakPersistent(this), std::move(txt_frame), src_rect,
+                    dest_layout, dest_buffer, std::move(done_cb)));
 }
 
 void BackgroundReadback::OnARGBPixelsBufferReadCompleted(

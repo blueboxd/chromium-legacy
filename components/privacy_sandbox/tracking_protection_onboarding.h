@@ -34,9 +34,7 @@ class TrackingProtectionOnboarding : public KeyedService {
     kIneligible = 0,
     kEligible = 1,
     kOnboarded = 2,
-    kOffboarded = 3,
-    kOnboardingRequested = 4,
-    kMaxValue = kOnboardingRequested,
+    kMaxValue = kOnboarded,
   };
 
   // Enum value interfacing with the TrackingProtectionOnboarding service
@@ -66,12 +64,18 @@ class TrackingProtectionOnboarding : public KeyedService {
   // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.privacy_sandbox
   enum class NoticeType {
     kNone,
-    // The notice in question is an Onboarding Notice.
-    kOnboarding,
-    // The notice in question is an offboarding/rollback notice.
-    kOffboarding,
-    // The notice in question is a silent onboarding notice.
-    kSilentOnboarding,
+    // The notice in question is a Mode B Onboarding Notice.
+    kModeBOnboarding,
+    // The notice in question is a silent Mode B Onboarding Notice.
+    kModeBSilentOnboarding,
+  };
+
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.privacy_sandbox
+  enum class SurfaceType {
+    kDesktop = 0,
+    kBrApp = 1,
+    kAGACCT = 2,
+    kMaxValue = kAGACCT,
   };
 
   // These values are persisted to logs. Entries should not be renumbered and
@@ -139,23 +143,23 @@ class TrackingProtectionOnboarding : public KeyedService {
 
   // To be called by the Mode B experiment service to indicate that the profile
   // is eligible for onboarding.
-  void MaybeMarkEligible();
+  void MaybeMarkModeBEligible();
 
   // To be called by the Mode B experiment service to indicate that the profile
   // is no longer eligible for onboarding.
-  void MaybeMarkIneligible();
+  void MaybeMarkModeBIneligible();
 
   // To be called by the experiment service to indicate that the profile is
   // eligible for silent onboarding.
-  void MaybeMarkSilentEligible();
+  void MaybeMarkModeBSilentEligible();
 
   // To be called by the experiment service to indicate that the profile is no
   // longer eligible for silent onboarding.
-  void MaybeMarkSilentIneligible();
+  void MaybeMarkModeBSilentIneligible();
 
   // To be called by the Mode B experiment service in BETA, DEV and CANARY only
   // to reset the user's prefs for testing.
-  void MaybeResetOnboardingPrefs();
+  void MaybeResetModeBOnboardingPrefs();
 
   // Indicates the onboarding status for the user. Return value is the enum
   // defined above.
@@ -165,44 +169,32 @@ class TrackingProtectionOnboarding : public KeyedService {
   // enum defined above.
   SilentOnboardingStatus GetSilentOnboardingStatus() const;
 
-  // Returns whether the profile has been offboarded.
-  bool IsOffboarded() const;
-
-  // To be called by UI code when we've requested the onboarding notice.
-  void OnboardingNoticeRequested();
-
-  // To be called by UI code when we've requested the notice.
-  void NoticeRequested(NoticeType notice_type);
-
   // To be Called by UI code when the user has been shown the notice.
-  void NoticeShown(NoticeType notice_type);
+  void NoticeShown(SurfaceType surface, NoticeType notice_type);
 
   // To be called by UI code when the user has taken action on the notice.
-  void NoticeActionTaken(NoticeType notice_type, NoticeAction action);
+  void NoticeActionTaken(SurfaceType surface,
+                         NoticeType notice_type,
+                         NoticeAction action);
 
   // Called by UI code to determine what type of notice is required.
-  NoticeType GetRequiredNotice();
+  NoticeType GetRequiredNotice(SurfaceType surface);
 
-  // To be called by UI code when the user has taken action on the onboarding
-  // notice.
-  void OnboardingNoticeActionTaken(NoticeAction action);
-
-  // To be Called by UI code when the user has been shown the onboarding notice.
-  void OnboardingNoticeShown();
-
-  // To be Called by UI code when the user has been "shown" the silent
-  // onboarding notice.
-  void SilentOnboardingNoticeShown();
-
-  // Called by UI code to determine if we should show the onboarding notice to
-  // the user.
-  bool ShouldShowOnboardingNotice();
+  // Called by UI code to determine if we should run the 3PCD UI logic.
+  bool ShouldRunUILogic(SurfaceType surface);
 
   // Returns the time delta from Onboarded to Acknowledged.
   std::optional<base::TimeDelta> OnboardedToAcknowledged();
 
+  // Returns the timestamp for when the profile was onboarded.
+  std::optional<base::Time> GetOnboardingTimestamp();
+
+  // Returns the timestamp for when the profile was silently onboarded.
+  std::optional<base::Time> GetSilentOnboardingTimestamp();
+
  private:
   friend class tpcd::experiment::EligibilityServiceTest;
+
   FRIEND_TEST(TrackingProtectionOnboardingNoticeBrowserTest,
               TreatsAsShownIfPreviouslyDismissed);
 
@@ -210,8 +202,6 @@ class TrackingProtectionOnboarding : public KeyedService {
   virtual void OnOnboardingPrefChanged() const;
   // Called when the notice has been acked.
   virtual void OnOnboardingAckedChanged() const;
-  // Called when the underlying offboarding pref is changed.
-  virtual void OnOffboardingPrefChanged() const;
   // Called when the underlying silent onboarding pref is changed.
   virtual void OnSilentOnboardingPrefChanged() const;
 

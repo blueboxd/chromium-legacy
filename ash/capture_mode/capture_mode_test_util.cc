@@ -56,7 +56,8 @@ void DispatchVKEvent(ui::test::EventGenerator* event_generator,
                      ui::KeyboardCode key_code,
                      int flags,
                      int source_device_id) {
-  ui::EventType type = is_press ? ui::ET_KEY_PRESSED : ui::ET_KEY_RELEASED;
+  ui::EventType type =
+      is_press ? ui::EventType::kKeyPressed : ui::EventType::kKeyReleased;
   ui::KeyEvent keyev(type, key_code, flags);
 
   keyev.SetProperties({{
@@ -386,6 +387,28 @@ void RemoveDefaultCamera() {
   RemoveFakeCamera(kDefaultCameraDeviceId);
 }
 
+size_t WaitForCameraAvailabilityWithTimeout(base::TimeDelta time_out) {
+  CaptureModeTestApi test_api;
+  int available_camera_num = test_api.GetNumberOfAvailableCameras();
+  if (available_camera_num) {
+    return available_camera_num;
+  }
+  base::RunLoop run_loop;
+  const base::Time start_time = base::Time::Now();
+  base::RepeatingTimer polling_timer;
+  polling_timer.Start(
+      FROM_HERE, base::Milliseconds(100), base::BindLambdaForTesting([&]() {
+        available_camera_num = test_api.GetNumberOfAvailableCameras();
+        base::TimeDelta time_difference = base::Time::Now() - start_time;
+        if (available_camera_num > 0 || time_difference > time_out) {
+          polling_timer.Stop();
+          run_loop.Quit();
+        }
+      }));
+  run_loop.Run();
+  return available_camera_num;
+}
+
 // -----------------------------------------------------------------------------
 // ProjectorCaptureModeIntegrationHelper:
 
@@ -393,6 +416,7 @@ ProjectorCaptureModeIntegrationHelper::ProjectorCaptureModeIntegrationHelper() =
     default;
 
 void ProjectorCaptureModeIntegrationHelper::SetUp() {
+  annotator_helper_.SetUp();
   auto* projector_controller = ProjectorController::Get();
   projector_controller->SetClient(&projector_client_);
   ON_CALL(projector_client_, StopSpeechRecognition)

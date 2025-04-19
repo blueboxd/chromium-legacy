@@ -22,12 +22,15 @@
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/types/expected.h"
+#include "base/types/optional_util.h"
+#include "base/version_info/channel.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/supervised_user/core/browser/fetcher_config.h"
 #include "components/supervised_user/core/browser/proto/kidsmanagement_messages.pb.h"
 #include "components/supervised_user/core/browser/proto/test.pb.h"
 #include "components/supervised_user/core/common/supervised_user_constants.h"
+#include "google_apis/common/api_key_request_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_status_code.h"
@@ -94,9 +97,10 @@ GURL CreateRequestUrl(const FetcherConfig& config,
 }
 
 std::unique_ptr<network::SimpleURLLoader> InitializeSimpleUrlLoader(
-    const signin::AccessTokenInfo access_token_info,
+    const std::optional<signin::AccessTokenInfo> access_token_info,
     const FetcherConfig& fetcher_config,
     const FetcherConfig::PathArgs& args,
+    std::optional<version_info::Channel> channel,
     const std::optional<std::string>& payload) {
   std::unique_ptr<network::ResourceRequest> resource_request =
       std::make_unique<network::ResourceRequest>();
@@ -104,9 +108,16 @@ std::unique_ptr<network::SimpleURLLoader> InitializeSimpleUrlLoader(
   resource_request->method = fetcher_config.GetHttpMethod();
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   resource_request->priority = fetcher_config.request_priority;
-  resource_request->headers.SetHeader(
-      net::HttpRequestHeaders::kAuthorization,
-      CreateAuthorizationHeader(access_token_info));
+
+  if (access_token_info) {
+    resource_request->headers.SetHeader(
+        net::HttpRequestHeaders::kAuthorization,
+        CreateAuthorizationHeader(access_token_info.value()));
+  } else {
+    CHECK(channel);
+    google_apis::AddDefaultAPIKeyToRequest(*resource_request, *channel);
+  }
+
   std::unique_ptr<network::SimpleURLLoader> simple_url_loader =
       network::SimpleURLLoader::Create(std::move(resource_request),
                                        fetcher_config.traffic_annotation());
@@ -268,11 +279,9 @@ void Metrics::RecordStatusLatency(const ProtoFetcherStatus& status) const {
                           stopwatch_.Elapsed());
 }
 
-void Metrics::RecordAuthError(const ProtoFetcherStatus& status) const {
-  CHECK_EQ(status.state(),
-           ProtoFetcherStatus::State::GOOGLE_SERVICE_AUTH_ERROR);
+void Metrics::RecordAuthError(const GoogleServiceAuthError& auth_error) const {
   base::UmaHistogramEnumeration(GetFullHistogramName(MetricType::kAuthError),
-                                status.google_service_auth_error().state(),
+                                auth_error.state(),
                                 GoogleServiceAuthError::NUM_STATES);
 }
 
@@ -394,10 +403,12 @@ AbstractProtoFetcher::AbstractProtoFetcher(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     std::string_view payload,
     const FetcherConfig& fetcher_config,
-    const FetcherConfig::PathArgs& args)
+    const FetcherConfig::PathArgs& args,
+    std::optional<version_info::Channel> channel)
     : payload_(payload),
       config_(fetcher_config),
       args_(args),
+      channel_(channel),
       metrics_(Metrics::FromConfig(fetcher_config)),
       fetcher_(identity_manager,
                fetcher_config.access_token_config,
@@ -419,21 +430,12 @@ void AbstractProtoFetcher::RecordMetrics(const ProtoFetcherStatus& status) {
   metrics_->RecordLatency();
   metrics_->RecordStatusLatency(status);
 
-  // Record additional status-specific metrics.
-  switch (status.state()) {
-    case ProtoFetcherStatus::State::GOOGLE_SERVICE_AUTH_ERROR:
-      metrics_->RecordAuthError(status);
-      break;
+  if (access_token_auth_error_) {
+    metrics_->RecordAuthError(access_token_auth_error_.value());
+  }
 
-    case ProtoFetcherStatus::State::HTTP_STATUS_OR_NET_ERROR:
-      metrics_->RecordHttpStatusOrNetError(status);
-      break;
-
-    case ProtoFetcherStatus::State::OK:
-    case ProtoFetcherStatus::State::INVALID_RESPONSE:
-    case ProtoFetcherStatus::State::DATA_ERROR:
-      // No additional metrics to record.
-      break;
+  if (status.state() == ProtoFetcherStatus::State::HTTP_STATUS_OR_NET_ERROR) {
+    metrics_->RecordHttpStatusOrNetError(status);
   }
 }
 
@@ -442,16 +444,21 @@ void AbstractProtoFetcher::OnAccessTokenFetchComplete(
     base::expected<signin::AccessTokenInfo, GoogleServiceAuthError>
         access_token) {
   if (!access_token.has_value()) {
-    OnError(ProtoFetcherStatus::GoogleServiceAuthError(access_token.error()));
-    return;
+    access_token_auth_error_ = access_token.error();
+    if (config_.access_token_config.credentials_requirement ==
+        AccessTokenConfig::CredentialsRequirement::kStrict) {
+      OnError(ProtoFetcherStatus::GoogleServiceAuthError(access_token.error()));
+      return;
+    }
   }
 
   if (IsMetricsRecordingEnabled()) {
     metrics_->RecordAccessTokenLatency(GoogleServiceAuthError::State::NONE);
   }
 
-  simple_url_loader_ = InitializeSimpleUrlLoader(access_token.value(), config_,
-                                                 args_, GetRequestPayload());
+  simple_url_loader_ =
+      InitializeSimpleUrlLoader(base::OptionalFromExpected(access_token),
+                                config_, args_, channel_, GetRequestPayload());
   simple_url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       url_loader_factory.get(),
       base::BindOnce(
@@ -489,12 +496,14 @@ StatusFetcher::StatusFetcher(
     std::string_view payload,
     const FetcherConfig& fetcher_config,
     const FetcherConfig::PathArgs& args,
+    std::optional<version_info::Channel> channel,
     Callback callback)
     : AbstractProtoFetcher(identity_manager,
                            url_loader_factory,
                            payload,
                            fetcher_config,
-                           args),
+                           args,
+                           channel),
       callback_(std::move(callback)) {}
 StatusFetcher::~StatusFetcher() = default;
 
@@ -513,9 +522,11 @@ std::unique_ptr<ClassifyUrlFetcher> CreateClassifyURLFetcher(
     signin::IdentityManager& identity_manager,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const kidsmanagement::ClassifyUrlRequest& request,
-    const FetcherConfig& config) {
+    const FetcherConfig& config,
+    version_info::Channel channel) {
   return CreateFetcher<kidsmanagement::ClassifyUrlResponse>(
-      identity_manager, url_loader_factory, request, config);
+      identity_manager, url_loader_factory, request, config, /*args=*/{},
+      channel);
 }
 
 std::unique_ptr<ListFamilyMembersFetcher> FetchListFamilyMembers(
@@ -523,10 +534,13 @@ std::unique_ptr<ListFamilyMembersFetcher> FetchListFamilyMembers(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     ListFamilyMembersFetcher::Callback callback,
     const FetcherConfig& config) {
+  kidsmanagement::ListMembersRequest request;
+  // If there is no associated Family Group with the account return an empty
+  // response instead of NOT_FOUND.
+  request.set_allow_empty_family(true);
   std::unique_ptr<ListFamilyMembersFetcher> fetcher =
       CreateFetcher<kidsmanagement::ListMembersResponse>(
-          identity_manager, url_loader_factory,
-          kidsmanagement::ListMembersRequest(), config);
+          identity_manager, url_loader_factory, request, config);
   fetcher->Start(std::move(callback));
   return fetcher;
 }
@@ -546,7 +560,8 @@ std::unique_ptr<ProtoFetcher<Response>> CreateTestFetcher(
     const Request& request,
     const FetcherConfig& config) {
   return CreateFetcher<Response>(identity_manager, url_loader_factory, request,
-                                 config);
+                                 config, /*args=*/{},
+                                 version_info::Channel::UNKNOWN);
 }
 
 }  // namespace supervised_user

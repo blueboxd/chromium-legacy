@@ -36,12 +36,20 @@ EmojiSearchProxy::EmojiSearchProxy(
   search_ = std::make_unique<emoji::EmojiSearch>();
 }
 
+void EmojiSearchProxy::LoadEmojiLanguages(
+    const std::vector<std::string>& language_codes) {
+  CHECK(search_);
+  search_->LoadEmojiLanguages(language_codes);
+}
+
 EmojiSearchProxy::~EmojiSearchProxy() {}
 
-void EmojiSearchProxy::SearchEmoji(const std::string& query,
-                                   SearchEmojiCallback callback) {
+void EmojiSearchProxy::SearchEmoji(
+    const std::string& query,
+    const std::vector<std::string>& language_codes,
+    SearchEmojiCallback callback) {
   CHECK(search_);
-  emoji::EmojiSearchResult result = search_->SearchEmoji(query);
+  emoji::EmojiSearchResult result = search_->SearchEmoji(query, language_codes);
   std::move(callback).Run(
       SearchResultsFromEmojiSearchEntries(std::move(result.emojis)),
       SearchResultsFromEmojiSearchEntries(std::move(result.symbols)),

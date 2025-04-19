@@ -11,14 +11,13 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/safe_ref.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/ui/side_panel/read_anything/read_anything_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/side_panel/read_anything/read_anything_coordinator.h"
-#include "chrome/browser/ui/views/side_panel/read_anything/read_anything_model.h"
 #include "chrome/browser/ui/views/side_panel/read_anything/read_anything_side_panel_controller.h"
 #include "chrome/browser/ui/webui/side_panel/read_anything/read_anything_snapshotter.h"
 #include "chrome/common/accessibility/read_anything.mojom.h"
+#include "chrome/common/accessibility/read_anything_constants.h"
 #include "components/translate/core/browser/translate_client.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -86,11 +85,9 @@ class ReadAnythingUntrustedPageHandler :
 #endif
     public ui::AXActionHandlerObserver,
     public read_anything::mojom::UntrustedPageHandler,
-    public ReadAnythingModel::Observer,
     public ReadAnythingCoordinator::Observer,
     public ReadAnythingSidePanelController::Observer,
-    public translate::TranslateDriver::LanguageDetectionObserver,
-    public TabStripModelObserver {
+    public translate::TranslateDriver::LanguageDetectionObserver {
  public:
   ReadAnythingUntrustedPageHandler(
       mojo::PendingRemote<read_anything::mojom::UntrustedPage> page,
@@ -139,6 +136,7 @@ class ReadAnythingUntrustedPageHandler :
   void OnFontChange(const std::string& font) override;
   void OnFontSizeChange(double font_size) override;
   void OnLinksEnabledChanged(bool enabled) override;
+  void OnImagesEnabledChanged(bool enabled) override;
   void OnColorChange(read_anything::mojom::Colors color) override;
   void OnSpeechRateChange(double rate) override;
   void OnHighlightGranularityChanged(
@@ -147,6 +145,15 @@ class ReadAnythingUntrustedPageHandler :
                      ui::AXNodeID target_node_id) override;
   void OnImageDataRequested(const ui::AXTreeID& target_tree_id,
                             ui::AXNodeID target_node_id) override;
+  void OnImageDataDownloaded(const ui::AXTreeID& target_tree_id,
+                             ui::AXNodeID,
+                             int id,
+                             int http_status_code,
+                             const GURL& image_url,
+                             const std::vector<SkBitmap>& bitmaps,
+                             const std::vector<gfx::Size>& sizes);
+  void ScrollToTargetNode(const ui::AXTreeID& target_tree_id,
+                          ui::AXNodeID target_node_id) override;
   void OnSelectionChange(const ui::AXTreeID& target_tree_id,
                          ui::AXNodeID anchor_node_id,
                          int anchor_offset,
@@ -155,24 +162,10 @@ class ReadAnythingUntrustedPageHandler :
   void OnCollapseSelection() override;
   void OnSnapshotRequested() override;
 
-  // ReadAnythingModel::Observer:
-  void OnReadAnythingThemeChanged(
-      const std::string& font_name,
-      double font_scale,
-      bool links_enabled,
-      ui::ColorId foreground_color_id,
-      ui::ColorId background_color_id,
-      ui::ColorId separator_color_id,
-      ui::ColorId dropdown_color_id,
-      ui::ColorId selected_dropdown_color_id,
-      ui::ColorId focus_ring_color_id,
-      read_anything::mojom::LineSpacing line_spacing,
-      read_anything::mojom::LetterSpacing letter_spacing) override;
-
   // ReadAnythingCoordinator::Observer:
   void Activate(bool active) override;
-  void OnCoordinatorDestroyed() override;
-  void SetDefaultLanguageCode(const std::string& code) override;
+
+  void SetDefaultLanguageCode(const std::string& code);
 
   // Sends the language code of the new page, or the default if a language can't
   // be determined.
@@ -180,22 +173,6 @@ class ReadAnythingUntrustedPageHandler :
 
   // ReadAnythingSidePanelController::Observer:
   void OnSidePanelControllerDestroyed() override;
-
-  // TabStripModelObserver:
-  void OnTabStripModelChanged(
-      TabStripModel* tab_strip_model,
-      const TabStripModelChange& change,
-      const TabStripSelectionChange& selection) override;
-  void OnTabStripModelDestroyed(TabStripModel* tab_strip_model) override;
-
-  // When the active web contents changes (or the UI becomes active):
-  // 1. Begins observing the web contents of the active tab and enables web
-  //    contents-only accessibility on that web contents. This causes
-  //    AXTreeSerializer to reset and send accessibility events of the AXTree
-  //    when it is re-serialized. The WebUI receives these events and stores a
-  //    copy of the web contents' AXTree.
-  // 2. Notifies the model that the AXTreeID has changed.
-  void OnActiveWebContentsChanged();
 
   void SetUpPdfObserver();
 
@@ -205,26 +182,14 @@ class ReadAnythingUntrustedPageHandler :
   void LogTextStyle();
 
   // Adds this as an observer of the ReadAnythingSidePanelController tied to a
-  // WebContents.
-  void ObserveWebContentsSidePanelController(
-      content::WebContents* web_contents);
+  // tab.
+  void ObserveWebContentsSidePanelController(tabs::TabInterface* tab);
 
-  void PerformActionInTargetTree(const ui::AXTreeID& target_tree_id,
-                                 const ui::AXActionData& data);
+  void PerformActionInTargetTree(const ui::AXActionData& data);
 
-  raw_ptr<ReadAnythingCoordinator> coordinator_;
-  raw_ptr<ReadAnythingTabHelper> tab_helper_;
-  const base::WeakPtr<Browser> browser_;
+  raw_ptr<ReadAnythingSidePanelController> side_panel_controller_;
+  const raw_ptr<Profile> profile_;
   const raw_ptr<content::WebUI> web_ui_;
-  const std::map<std::string, ReadAnythingFont> font_map_ = {
-      {"Poppins", ReadAnythingFont::kPoppins},
-      {"Sans-serif", ReadAnythingFont::kSansSerif},
-      {"Serif", ReadAnythingFont::kSerif},
-      {"Comic Neue", ReadAnythingFont::kComicNeue},
-      {"Lexend Deca", ReadAnythingFont::kLexendDeca},
-      {"EB Garamond", ReadAnythingFont::kEbGaramond},
-      {"STIX Two Text", ReadAnythingFont::kStixTwoText},
-  };
 
   std::unique_ptr<ReadAnythingWebContentsObserver> main_observer_;
 
@@ -244,8 +209,6 @@ class ReadAnythingUntrustedPageHandler :
   // active when it is currently shown in the Side Panel.
   bool active_ = true;
 
-  // The default language code to use if the page language isn't determined.
-  std::string default_language_code_ = "en-US";
   // The current language being used in the app.
   std::string current_language_code_ = "en-US";
 

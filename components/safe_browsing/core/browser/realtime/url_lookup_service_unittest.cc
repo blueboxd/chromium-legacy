@@ -744,15 +744,16 @@ TEST_F(RealTimeUrlLookupServiceTest,
         RTLookupRequest request_proto;
         ASSERT_TRUE(GetRequestProto(request, &request_proto));
         EXPECT_FALSE(request_proto.has_dm_token());
+        EXPECT_FALSE(request_proto.has_email());
+        EXPECT_FALSE(request_proto.has_browser_dm_token());
+        EXPECT_FALSE(request_proto.has_profile_dm_token());
 
         // Cookies should be removed when token is set.
         EXPECT_EQ(request.credentials_mode,
                   network::mojom::CredentialsMode::kOmit);
-        std::string header_value;
-        bool found_header = request.headers.GetHeader(
-            net::HttpRequestHeaders::kAuthorization, &header_value);
-        EXPECT_TRUE(found_header);
-        EXPECT_EQ(header_value, "Bearer access_token_string");
+        EXPECT_THAT(
+            request.headers.GetHeader(net::HttpRequestHeaders::kAuthorization),
+            testing::Optional(std::string("Bearer access_token_string")));
       }));
   test_url_loader_factory_.SetInterceptor(interceptor.GetCallback());
 
@@ -795,6 +796,9 @@ TEST_F(RealTimeUrlLookupServiceTest,
         RTLookupRequest request_proto;
         ASSERT_TRUE(GetRequestProto(request, &request_proto));
         EXPECT_FALSE(request_proto.has_dm_token());
+        EXPECT_FALSE(request_proto.has_email());
+        EXPECT_FALSE(request_proto.has_browser_dm_token());
+        EXPECT_FALSE(request_proto.has_profile_dm_token());
 
         EXPECT_FALSE(
             request.headers.HasHeader(net::HttpRequestHeaders::kAuthorization));

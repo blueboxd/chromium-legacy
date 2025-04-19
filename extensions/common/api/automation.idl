@@ -95,7 +95,6 @@
     orientationChanged,
     parentChanged,
     placeholderChanged,
-    portalActivated,
     positionInSetChanged,
     rangeValueChanged,
     rangeValueMaxChanged,
@@ -242,6 +241,7 @@
     // End ARIA Graphics module roles.
     // --------------------------------------------------------------
     grid,
+    gridCell,
     group,
     header,
     headerAsNonLandmark,
@@ -309,7 +309,7 @@
     pdfRoot,
     pluginObject,
     popUpButton,
-    portal,
+    portalDeprecated,
     preDeprecated,
     progressIndicator,
     radioButton,
@@ -477,6 +477,7 @@
     contents,
     placeholder,
     popoverAttribute,
+    prohibited,
     relatedElement,
     title,
     value
@@ -487,6 +488,7 @@
     attributeExplicitlyEmpty,
     buttonLabel,
     popoverAttribute,
+    prohibitedNameRepair,
     relatedElement,
     rubyAnnotation,
     summary,

@@ -63,6 +63,14 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularNetworkMetricsLogger
     kMaxValue = kHermesFailed,
   };
 
+  // These values are not persisted to logs and are used as helper values for
+  // identifying the trigger of an SM-DS scan.
+  enum class SmdsScanMethod {
+    kViaPolicy = 0,
+    kViaUser = 1,
+    kMaxValue = kViaUser,
+  };
+
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
   enum class ESimUserInstallMethod {
@@ -157,8 +165,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularNetworkMetricsLogger
   static constexpr char kCustomApnsManagedMigrationTypeHistogram[] =
       "Network.Ash.Cellular.Apn.Managed.MigrationType";
 
-  static constexpr char kSmdsScanProfileCount[] =
-      "Network.Ash.Cellular.ESim.SmdsScan.ProfileCount";
+  static constexpr char kSmdsScanViaPolicyProfileCount[] =
+      "Network.Ash.Cellular.ESim.SmdsScan.ViaPolicy.ProfileCount";
+  static constexpr char kSmdsScanViaUserProfileCount[] =
+      "Network.Ash.Cellular.ESim.SmdsScan.ViaUser.ProfileCount";
   static constexpr char kSmdsScanOtherDurationSuccess[] =
       "Network.Ash.Cellular.ESim.SmdsScanDuration2.Other.OnSuccess";
   static constexpr char kSmdsScanOtherDurationFailure[] =
@@ -175,6 +185,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularNetworkMetricsLogger
       "Network.Ash.Cellular.ESim.UserInstall.Method";
   static constexpr char kESimPolicyInstallMethod[] =
       "Network.Ash.Cellular.ESim.PolicyInstall.Method";
+  static constexpr char kESimPolicyInstallNoAvailableProfiles[] =
+      "Network.Ash.Cellular.ESim.PolicyInstall.NoAvailableProfiles";
   static constexpr char kESimPolicyInstallUserErrorsFilteredAll[] =
       "Network.Ash.Cellular.ESim.PolicyInstall.UserErrorsFiltered.All";
   static constexpr char kESimPolicyInstallUserErrorsFilteredViaSmdpInitial[] =
@@ -291,13 +303,15 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularNetworkMetricsLogger
   static void LogManagedCustomApnMigrationType(ManagedApnMigrationType type);
 
   // Logs results from attempting operations related to eSIM.
-  static void LogSmdsScanProfileCount(size_t count);
+  static void LogSmdsScanProfileCount(size_t count, SmdsScanMethod method);
   static void LogSmdsScanDuration(const base::TimeDelta& duration,
                                   bool success,
                                   const std::string& smds_activation_code);
 
   static void LogESimUserInstallMethod(ESimUserInstallMethod method);
   static void LogESimPolicyInstallMethod(ESimPolicyInstallMethod method);
+  static void LogESimPolicyInstallNoAvailableProfiles(
+      ESimPolicyInstallMethod method);
   // The |is_user_error| parameter is used to indicate that |result| was caused
   // by something outside the control of ChromeOS, e.g. an invalid activation
   // code, and is not actionable. We do not include this category of errors in

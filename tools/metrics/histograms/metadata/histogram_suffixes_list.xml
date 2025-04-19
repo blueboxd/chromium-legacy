@@ -1472,14 +1472,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Net.QuicSession.PacketWriteTime"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="IPv6_Probe" separator="_">
-  <suffix name="IPv6_probe_done"
-      label="with IPv6 probed for and possibly disabled"/>
-  <suffix name="IPv6_probe_skipped"
-      label="with IPv6 not probed, and default OS settings used"/>
-  <affected-histogram name="DNS.PrefetchResolution"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="LeakDetectionDialogType" separator=".">
   <suffix name="Change" label="The user is asked to change their password"/>
   <suffix name="ChangeAutomatically"
@@ -1908,7 +1900,6 @@ chromium-metrics-reviews@google.com.
   <suffix name="Priority4" label="MEDIUM"/>
   <suffix name="Priority5" label="HIGHEST or MAXIMUM_PRIORITY"/>
   <affected-histogram name="Net.HttpJob.TotalTimeSuccess"/>
-  <affected-histogram name="ResourceScheduler.PeakObservedQueueingDelay"/>
   <affected-histogram name="ResourceScheduler.RequestQueuingDuration"/>
 </histogram_suffixes>
 
@@ -2073,10 +2064,9 @@ chromium-metrics-reviews@google.com.
   <suffix name="dummy2" label="Module ID for another dummy module"/>
   <suffix name="history_clusters"
       label="Module ID for History Clusters module"/>
-  <suffix name="photos" label="Module ID for Google Photos module"/>
-  <suffix name="recipe_tasks" label="Module ID for Recipe Tasks"/>
   <suffix name="shopping_tasks" label="Module ID for Shopping Tasks"/>
   <suffix name="tab_resumption" label="Module ID for Tab Resumption"/>
+  <suffix name="google_calendar" label="Module ID for Google Calendar"/>
   <affected-histogram name="NewTabPage.Modules.Dismissed"/>
   <affected-histogram name="NewTabPage.Modules.EnabledOnNTPLoad"/>
   <affected-histogram name="NewTabPage.Modules.Impression"/>
@@ -2127,10 +2117,8 @@ chromium-metrics-reviews@google.com.
   <suffix name="ReadingList" label=""/>
   <suffix name="Unknown" label=""/>
   <suffix name="WebUI" label=""/>
-  <affected-histogram name="Notifications.Scheduler.IhnrActionButtonEvent"/>
   <affected-histogram
       name="Notifications.Scheduler.NotificationLifeCycleEvent"/>
-  <affected-histogram name="Notifications.Scheduler.UserAction"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="OfflinePagesNamespace" separator=".">
@@ -2944,6 +2932,8 @@ chromium-metrics-reviews@google.com.
       label="Fragmentation of Blink GC's main thread heap."/>
   <suffix name="CommandBuffer"
       label="Only counting memory used by GL command buffers."/>
+  <suffix name="DawnSharedContext"
+      label="Only counting memory used by the Graphite Dawn shared context."/>
   <suffix name="Discardable"
       label="Only counting memory used by Discardable manager."/>
   <suffix name="ExtensionFunctions"
@@ -3215,6 +3205,9 @@ chromium-metrics-reviews@google.com.
   <suffix name="SiteStorage.BlobStorage"
       label="Only counting memory used by in-memory blob files."/>
   <suffix name="Skia" label="Only counting memory used by Skia caches."/>
+  <suffix name="Skia.PurgeableSize"
+      label="Only counting memory used by Skia caches which Skia considers
+             purgeable."/>
   <suffix name="Skia.SkGlyphCache"
       label="Only counting memory used by Skia glyph cache."/>
   <suffix name="Skia.SkResourceCache"
@@ -3556,19 +3549,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Platform.Memory.VMs"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="ProfilePictureDownload" separator=".">
-  <suffix name="Default.LoggedIn" label="default picture, after login"/>
-  <suffix name="Default.OOBE" label="default picture, in OOBE"/>
-  <suffix name="Default.Preferences" label="default picture, in Prefs"/>
-  <suffix name="Failure.LoggedIn" label="download has failed, after login"/>
-  <suffix name="Failure.OOBE" label="download has failed, in OOBE"/>
-  <suffix name="Failure.Preferences" label="download has failed, in Prefs"/>
-  <suffix name="Success.LoggedIn" label="download was successful, after login"/>
-  <suffix name="Success.OOBE" label="download was successful, in OOBE"/>
-  <suffix name="Success.Preferences" label="download was successful, in Prefs"/>
-  <affected-histogram name="UserImage.ProfileDownloadTime"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="ProfileStateGroup" separator="_">
   <suffix name="ActiveMultiProfile"
       label="Recorded only for users with &gt;=2 active profiles; recorded
@@ -3589,7 +3569,6 @@ chromium-metrics-reviews@google.com.
              active; recorded only for the non-active profiles."/>
   <suffix name="SingleProfile" label="Recorded only for single-profile users."/>
   <suffix name="UponDeletion" label="Recorded for a profile upon its deletion"/>
-  <affected-histogram name="Profile.State.Avatar"/>
   <affected-histogram name="Profile.State.LastUsed"/>
   <affected-histogram name="Profile.State.SyncEnabled"/>
   <affected-histogram name="Profile.State.UnconsentedPrimaryAccountType"/>
@@ -3804,7 +3783,6 @@ chromium-metrics-reviews@google.com.
   <suffix name="CertCsdDownloadAllowlist" label=""/>
   <suffix name="CertCsdDownloadWhitelist" label=""/>
   <suffix name="ChromeExtMalware" label=""/>
-  <suffix name="ChromeUrlClientIncident" label=""/>
   <suffix name="IpMalware" label=""/>
   <suffix name="UrlBilling" label=""/>
   <suffix name="UrlCsdAllowlist" label=""/>
@@ -3927,21 +3905,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Security.PageInfo.TimeOpen.NoAction"/>
   <affected-histogram name="Security.SiteEngagement"/>
   <affected-histogram name="Security.TimeOnPage2"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="SendTabToSelfEntryPoint" separator="."
-    ordering="prefix">
-  <owner>jeffreycohen@chromium.org</owner>
-  <owner>tgupta@chromium.org</owner>
-  <owner>chrome-sharing-core@google.com</owner>
-  <suffix name="ContentMenu" label="Option shown in the content context menu"/>
-  <suffix name="LinkMenu" label="Option shown in the link context menu"/>
-  <suffix name="OmniboxIcon" label="Icon shown in the omnibox"/>
-  <suffix name="OmniboxMenu" label="Option shown in the omnibox context menu"/>
-  <suffix name="ShareMenu" label="Option shown in the share sheet menu"/>
-  <suffix name="ShareSheet" label="Option to show in the android share sheet"/>
-  <suffix name="TabMenu" label="Option shown in the tab context menu"/>
-  <affected-histogram name="SendTabToSelf.ClickResult"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ServiceWorker_EventType" separator="_">
@@ -4165,35 +4128,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Signin.SigninStartedAccessPoint"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="SigninInterceptEnterpriseStatus" separator=".">
-  <suffix name="NewIsEnterprise" label="The new account is enterprise."/>
-  <suffix name="PrimaryIsEnterprise"
-      label="The primary account is enterprise."/>
-  <affected-histogram name="Signin.InterceptResult.Enterprise"/>
-  <affected-histogram name="Signin.InterceptResult.EnterpriseForced"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="SigninInterceptState" separator=".">
-  <suffix name="NoSync" label="User has not opted in to Sync."/>
-  <suffix name="SigninPending" label="User is in Signin Pending state."/>
-  <suffix name="Sync" label="User has opted in to Sync."/>
-  <affected-histogram name="Signin.InterceptResult.Enterprise"/>
-  <affected-histogram name="Signin.InterceptResult.EnterpriseForced"/>
-  <affected-histogram name="Signin.InterceptResult.EnterpriseOIDC"/>
-  <affected-histogram name="Signin.InterceptResult.MultiUser"/>
-  <affected-histogram name="Signin.InterceptResult.Switch"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="SigninInterceptType" separator=".">
-  <suffix name="ChromeSignin" label="ChromeSignin bubble."/>
-  <suffix name="Enterprise" label="Enterprise bubble."/>
-  <suffix name="EnterpriseForced" label="Enterprise dialog."/>
-  <suffix name="EnterpriseOIDC" label="Enterprise dialog for OIDC signin."/>
-  <suffix name="MultiUser" label="MultiUser bubble."/>
-  <suffix name="Switch" label="Profile-switch bubble."/>
-  <affected-histogram name="Signin.InterceptResult"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="SigninSSOIdentityListRequestCacheRequestState"
     separator=".">
   <suffix name="BackgroundRequest" label="Request fetched in background."/>
@@ -4324,7 +4258,6 @@ chromium-metrics-reviews@google.com.
       name="Apps.PaginationTransition.DragScroll.PresentationTime"/>
   <affected-histogram
       name="Apps.PaginationTransition.DragScroll.PresentationTime.MaxLatency"/>
-  <affected-histogram name="Ash.LoginAnimation.Duration"/>
   <affected-histogram name="Ash.LoginAnimation.Jank"/>
   <affected-histogram name="Ash.LoginAnimation.Smoothness"/>
   <affected-histogram name="Ash.Overview.AnimationSmoothness.Close"/>
@@ -4484,28 +4417,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Media.Video.Roughness"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="WebAppContainerEngagementType" separator=".">
-  <suffix name="InTab" label="Happened in app running as a tab"/>
-  <suffix name="InWindow" label="Happened in app running as a window"/>
-  <affected-histogram name="WebApp.Engagement"/>
-  <affected-histogram name="WebApp.Engagement.DefaultInstalled"/>
-  <affected-histogram name="WebApp.Engagement.UserInstalled"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="WebAppEngagementType" separator=".">
-  <suffix base="true" name="DefaultInstalled" label="Happened in default app"/>
-  <suffix name="MoreThanThreeUserInstalledApps"
-      label="Happenned in web site for user with 4 or more user-installed
-             apps"/>
-  <suffix name="NoUserInstalledApps"
-      label="Happenned in web site for user without user-installed apps"/>
-  <suffix name="UpToThreeUserInstalledApps"
-      label="Happenned in web site for user with [1-3] user-installed apps"/>
-  <suffix base="true" name="UserInstalled"
-      label="Happened in user-installed app"/>
-  <affected-histogram name="WebApp.Engagement"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="WebAppSystemAppInternalName" separator=".">
   <suffix name="Boca" label="Boca"/>
   <suffix name="Camera" label="Camera"/>
@@ -4527,6 +4438,7 @@ chromium-metrics-reviews@google.com.
   <suffix name="PrintManagement" label="PrintManagement"/>
   <suffix name="PrintPreviewCrOS" label="Print Preview CrOS"/>
   <suffix name="Projector" label="Projector"/>
+  <suffix name="Recorder" label="Recorder"/>
   <suffix name="Sample" label="Sample"/>
   <suffix name="Sanitize" label="Sanitize"/>
   <suffix name="Scanning" label="Scanning"/>
@@ -4572,19 +4484,6 @@ chromium-metrics-reviews@google.com.
   <suffix name="21_" label="21 or more tabs"/>
   <affected-histogram name="WebUITabStrip.TabCreation"/>
   <affected-histogram name="WebUITabStrip.TabDataReceived"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="WelcomeWin10Variant" separator="_">
-  <owner>tmartino@chromium.org</owner>
-  <suffix name="InlineCombined" label="Inline layout style, combined promo"/>
-  <suffix name="InlineDefault"
-      label="Inline layout style, default browser promo only"/>
-  <suffix name="SectionedCombined"
-      label="Sectioned layout style, combined promo"/>
-  <suffix name="SectionedDefault"
-      label="Sectioned layout style, default browser promo only"/>
-  <affected-histogram name="Welcome.Win10.DefaultPromptResult"/>
-  <affected-histogram name="Welcome.Win10.PinnedPromptResult"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="WindowsImageCaptureOutcomeCategories" separator=".">

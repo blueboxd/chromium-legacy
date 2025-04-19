@@ -318,8 +318,8 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
       backing->shared_image_interface = sii;
       backing->overlay_candidate = raster_caps.tile_overlay_candidate;
 
-      uint32_t flags = gpu::SHARED_IMAGE_USAGE_DISPLAY_READ |
-                       gpu::SHARED_IMAGE_USAGE_RASTER_WRITE;
+      gpu::SharedImageUsageSet flags = gpu::SHARED_IMAGE_USAGE_DISPLAY_READ |
+                                       gpu::SHARED_IMAGE_USAGE_RASTER_WRITE;
       if (raster_caps.use_gpu_rasterization) {
         flags |= gpu::SHARED_IMAGE_USAGE_OOP_RASTERIZATION;
       }
@@ -440,8 +440,7 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
       SkPixmap pixmap;
       staging_surface_->peekPixels(&pixmap);
 
-      uint32_t texture_target =
-          backing->shared_image->GetTextureTarget(gfx::BufferUsage::SCANOUT);
+      uint32_t texture_target = backing->shared_image->GetTextureTarget();
       ri->WritePixels(backing->shared_image->mailbox(), /*dst_x_offset=*/0,
                       /*dst_y_offset=*/0, texture_target, pixmap);
     }
@@ -457,11 +456,14 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
 
     SkImageInfo info = SkImageInfo::MakeN32Premul(
         pool_resource.size().width(), pool_resource.size().height());
+    SkSurfaceProps props = skia::LegacyDisplayGlobals::GetSkSurfaceProps();
+    const size_t row_bytes = info.minRowBytes();
     auto* backing =
         static_cast<HudSoftwareBacking*>(pool_resource.software_backing());
-    SkSurfaceProps props = skia::LegacyDisplayGlobals::GetSkSurfaceProps();
-    sk_sp<SkSurface> surface = SkSurfaces::WrapPixels(
-        info, backing->shared_mapping.memory(), info.minRowBytes(), &props);
+    base::span<uint8_t> mem(backing->shared_mapping);
+    CHECK_GE(mem.size(), info.computeByteSize(row_bytes));
+    sk_sp<SkSurface> surface =
+        SkSurfaces::WrapPixels(info, mem.data(), row_bytes, &props);
 
     SkiaPaintCanvas canvas(surface->getCanvas());
     DrawHudContents(&canvas);
@@ -621,7 +623,7 @@ void HeadsUpDisplayLayerImpl::DrawHudContents(PaintCanvas* canvas) {
   if (debug_state.ShowDebugRects()) {
     DrawDebugRects(canvas, layer_tree_impl()->debug_rect_history());
     if (IsAnimatingHUDContents()) {
-      layer_tree_impl()->SetNeedsRedraw();
+      layer_tree_impl()->SetNeedsRedraw(RedrawReason::kUntracked);
     }
   }
 
@@ -1047,61 +1049,61 @@ void HeadsUpDisplayLayerImpl::DrawDebugRects(
     std::string label_text;
 
     switch (debug_rects[i].type) {
-      case LAYOUT_SHIFT_RECT_TYPE:
+      case DebugRectType::kLayoutShift:
         new_layout_shift_rects.push_back(debug_rects[i]);
         continue;
-      case PAINT_RECT_TYPE:
+      case DebugRectType::kPaint:
         new_paint_rects.push_back(debug_rects[i]);
         continue;
-      case PROPERTY_CHANGED_RECT_TYPE:
+      case DebugRectType::kPropertyChanged:
         stroke_color = DebugColors::PropertyChangedRectBorderColor();
         fill_color = DebugColors::PropertyChangedRectFillColor();
         stroke_width = DebugColors::PropertyChangedRectBorderWidth();
         break;
-      case SURFACE_DAMAGE_RECT_TYPE:
+      case DebugRectType::kSurfaceDamage:
         stroke_color = DebugColors::SurfaceDamageRectBorderColor();
         fill_color = DebugColors::SurfaceDamageRectFillColor();
         stroke_width = DebugColors::SurfaceDamageRectBorderWidth();
         break;
-      case SCREEN_SPACE_RECT_TYPE:
+      case DebugRectType::kScreenSpace:
         stroke_color = DebugColors::ScreenSpaceLayerRectBorderColor();
         fill_color = DebugColors::ScreenSpaceLayerRectFillColor();
         stroke_width = DebugColors::ScreenSpaceLayerRectBorderWidth();
         break;
-      case TOUCH_EVENT_HANDLER_RECT_TYPE:
+      case DebugRectType::kTouchEventHandler:
         stroke_color = DebugColors::TouchEventHandlerRectBorderColor();
         fill_color = DebugColors::TouchEventHandlerRectFillColor();
         stroke_width = DebugColors::TouchEventHandlerRectBorderWidth();
         label_text = "touch event listener: ";
         label_text.append(TouchActionToString(debug_rects[i].touch_action));
         break;
-      case WHEEL_EVENT_HANDLER_RECT_TYPE:
+      case DebugRectType::kWheelEventHandler:
         stroke_color = DebugColors::WheelEventHandlerRectBorderColor();
         fill_color = DebugColors::WheelEventHandlerRectFillColor();
         stroke_width = DebugColors::WheelEventHandlerRectBorderWidth();
         label_text = "mousewheel event listener";
         break;
-      case SCROLL_EVENT_HANDLER_RECT_TYPE:
+      case DebugRectType::kScrollEventHandler:
         stroke_color = DebugColors::ScrollEventHandlerRectBorderColor();
         fill_color = DebugColors::ScrollEventHandlerRectFillColor();
         stroke_width = DebugColors::ScrollEventHandlerRectBorderWidth();
         label_text = "scroll event listener";
         break;
-      case NON_FAST_SCROLLABLE_RECT_TYPE:
-        stroke_color = DebugColors::NonFastScrollableRectBorderColor();
-        fill_color = DebugColors::NonFastScrollableRectFillColor();
-        stroke_width = DebugColors::NonFastScrollableRectBorderWidth();
-        label_text = "repaints on scroll";
+      case DebugRectType::kMainThreadScrollHitTest:
+        stroke_color = DebugColors::MainThreadScrollHitTestRectBorderColor();
+        fill_color = DebugColors::MainThreadScrollHitTestRectFillColor();
+        stroke_width = DebugColors::MainThreadScrollHitTestRectBorderWidth();
+        label_text = "main thread scroll hit test";
         break;
-      case MAIN_THREAD_SCROLLING_REASON_RECT_TYPE:
-        stroke_color = DebugColors::MainThreadScrollingReasonRectBorderColor();
-        fill_color = DebugColors::MainThreadScrollingReasonRectFillColor();
-        stroke_width = DebugColors::MainThreadScrollingReasonRectBorderWidth();
-        label_text = "main thread scrolling: ";
+      case DebugRectType::kMainThreadScrollRepaint:
+        stroke_color = DebugColors::MainThreadScrollRepaintRectBorderColor();
+        fill_color = DebugColors::MainThreadScrollRepaintRectFillColor();
+        stroke_width = DebugColors::MainThreadScrollRepaintRectBorderWidth();
+        label_text = "main thread scroll repaint: ";
         label_text.append(base::ToLowerASCII(MainThreadScrollingReason::AsText(
-            debug_rects[i].main_thread_scrolling_reasons)));
+            debug_rects[i].main_thread_scroll_repaint_reasons)));
         break;
-      case ANIMATION_BOUNDS_RECT_TYPE:
+      case DebugRectType::kAnimationBounds:
         stroke_color = DebugColors::LayerAnimationBoundsBorderColor();
         fill_color = DebugColors::LayerAnimationBoundsFillColor();
         stroke_width = DebugColors::LayerAnimationBoundsBorderWidth();

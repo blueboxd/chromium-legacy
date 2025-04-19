@@ -28,7 +28,7 @@ bool IsValidGURL(const GURL& url) {
 }
 
 bool IsValidOption(const SelectOption& option) {
-  return IsValidString16(option.content) && IsValidString16(option.value);
+  return IsValidString16(option.text) && IsValidString16(option.value);
 }
 
 bool IsValidFormFieldData(const FormFieldData& field) {
@@ -44,8 +44,8 @@ bool IsValidFormFieldData(const FormFieldData& field) {
 
 bool IsValidFormData(const FormData& form) {
   return IsValidString16(form.name()) && IsValidGURL(form.url()) &&
-         IsValidGURL(form.action()) && form.fields.size() <= kMaxListSize &&
-         base::ranges::all_of(form.fields, &IsValidFormFieldData);
+         IsValidGURL(form.action()) && form.fields().size() <= kMaxListSize &&
+         base::ranges::all_of(form.fields(), &IsValidFormFieldData);
 }
 
 bool IsValidPasswordFormFillData(const PasswordFormFillData& form) {

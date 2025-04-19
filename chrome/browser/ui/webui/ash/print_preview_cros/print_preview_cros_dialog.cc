@@ -42,7 +42,9 @@ PrintPreviewCrosDialog* PrintPreviewCrosDialog::ShowDialog(
 PrintPreviewCrosDialog::PrintPreviewCrosDialog(base::UnguessableToken token)
     : SystemWebDialogDelegate(GURL(ash::kChromeUIPrintPreviewCrosURL),
                               kDialogTitle),
-      dialog_id_(token) {}
+      dialog_id_(token) {
+  set_dialog_args(token.ToString());
+}
 
 PrintPreviewCrosDialog::~PrintPreviewCrosDialog() = default;
 
@@ -65,6 +67,8 @@ void PrintPreviewCrosDialog::OnDialogClosed(const std::string& json_retval) {
   for (auto& observer : observer_list_) {
     observer.OnDialogClosed(dialog_id_);
   }
+
+  SystemWebDialogDelegate::OnDialogClosed(json_retval);
 }
 
 gfx::NativeWindow PrintPreviewCrosDialog::GetDialogWindowForTesting() {

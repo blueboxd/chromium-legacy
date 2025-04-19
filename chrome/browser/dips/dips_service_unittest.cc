@@ -10,7 +10,6 @@
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
-#include "base/strings/string_piece.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -63,43 +62,23 @@ TEST_F(DIPSServiceTest, CreateServiceIfFeatureEnabled) {
   ScopedInitDIPSFeature init_dips(true);
 
   TestingProfile profile;
-  EXPECT_NE(DIPSService::Get(&profile), nullptr);
+  EXPECT_NE(DIPSServiceImpl::Get(&profile), nullptr);
 }
 
 TEST_F(DIPSServiceTest, DontCreateServiceIfFeatureDisabled) {
   ScopedInitDIPSFeature init_dips(false);
 
   TestingProfile profile;
-  EXPECT_EQ(DIPSService::Get(&profile), nullptr);
+  EXPECT_EQ(DIPSServiceImpl::Get(&profile), nullptr);
 }
 
-TEST_F(DIPSServiceTest, EnablePrepopulation) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(kDipsPrepopulation);
-
+TEST_F(DIPSServiceTest, NoPrepopulation) {
   const GURL url("http://example.com/");
   TestingProfile profile;
   site_engagement::SiteEngagementService::Get(&profile)->AddPointsForTesting(
       url, 42);
 
-  auto* dips_service = DIPSService::Get(&profile);
-  dips_service->WaitForInitCompleteForTesting(PassKey());
-  // Because there was engagement on example.com, prepopulation should have
-  // created a DIPS DB record for it:
-  ASSERT_TRUE(GetDIPSState(dips_service, url).has_value());
-}
-
-TEST_F(DIPSServiceTest, DisablePrepopulation) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(kDipsPrepopulation);
-
-  const GURL url("http://example.com/");
-  TestingProfile profile;
-  site_engagement::SiteEngagementService::Get(&profile)->AddPointsForTesting(
-      url, 42);
-
-  auto* dips_service = DIPSService::Get(&profile);
-  dips_service->WaitForInitCompleteForTesting(PassKey());
+  auto* dips_service = DIPSServiceImpl::Get(&profile);
   // There was engagement on example.com, but database prepopulation was
   // disabled, so there should NOT be a DIPS DB record for it:
   ASSERT_FALSE(GetDIPSState(dips_service, url).has_value());
@@ -110,7 +89,7 @@ TEST_F(DIPSServiceTest, DisablePrepopulation) {
 // associated BrowserContext.
 TEST_F(DIPSServiceTest, DeleteDbFilesIfPersistenceDisabled) {
   base::FilePath data_path = base::CreateUniqueTempDirectoryScopedToTest();
-  DIPSService* service;
+  DIPSServiceImpl* service;
   std::unique_ptr<TestingProfile> profile;
 
   // Ensure the DIPS feature is enabled and the database is set to be persisted.
@@ -119,7 +98,7 @@ TEST_F(DIPSServiceTest, DeleteDbFilesIfPersistenceDisabled) {
       features::kDIPS, {{"persist_database", "true"}});
 
   profile = TestingProfile::Builder().SetPath(data_path).Build();
-  service = DIPSService::Get(profile.get());
+  service = DIPSServiceImpl::Get(profile.get());
   ASSERT_NE(service, nullptr);
 
   // Ensure the database files have been created and are NOT deleted since the
@@ -138,7 +117,7 @@ TEST_F(DIPSServiceTest, DeleteDbFilesIfPersistenceDisabled) {
   profile.reset();
   profile = TestingProfile::Builder().SetPath(data_path).Build();
 
-  service = DIPSService::Get(profile.get());
+  service = DIPSServiceImpl::Get(profile.get());
   ASSERT_NE(service, nullptr);
 
   // Ensure the database files ARE deleted since the DIPS feature is disabled.
@@ -160,7 +139,7 @@ TEST_F(DIPSServiceTest, PreserveRegularProfileDbFiles) {
   // Build a regular profile.
   std::unique_ptr<TestingProfile> profile =
       TestingProfile::Builder().SetPath(data_path).Build();
-  DIPSService* service = DIPSService::Get(profile.get());
+  DIPSServiceImpl* service = DIPSServiceImpl::Get(profile.get());
   ASSERT_NE(service, nullptr);
 
   // Ensure the regular profile's database files have been created since the
@@ -173,7 +152,7 @@ TEST_F(DIPSServiceTest, PreserveRegularProfileDbFiles) {
   TestingProfile* otr_profile =
       TestingProfile::Builder().SetPath(data_path).BuildIncognito(
           profile.get());
-  DIPSService* otr_service = DIPSService::Get(otr_profile);
+  DIPSServiceImpl* otr_service = DIPSServiceImpl::Get(otr_profile);
   ASSERT_NE(otr_service, nullptr);
 
   // Ensure the OTR profile's database has been initialized and any file
@@ -189,7 +168,7 @@ TEST_F(DIPSServiceTest, EmptySiteEventsIgnored) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kDIPS);
   std::unique_ptr<TestingProfile> profile = std::make_unique<TestingProfile>();
-  DIPSService* service = DIPSService::Get(profile.get());
+  DIPSServiceImpl* service = DIPSServiceImpl::Get(profile.get());
 
   // Record a bounce for an empty URL.
   GURL url;
@@ -213,7 +192,7 @@ class DIPSServiceStateRemovalTest : public testing::Test {
  public:
   DIPSServiceStateRemovalTest()
       : profile_(std::make_unique<TestingProfile>()),
-        service_(DIPSService::Get(GetProfile())),
+        service_(DIPSServiceImpl::Get(GetProfile())),
         cookie_settings_(
             CookieSettingsFactory::GetForProfile(GetProfile()).get()) {}
 
@@ -230,7 +209,7 @@ class DIPSServiceStateRemovalTest : public testing::Test {
   }
 
   Profile* GetProfile() { return profile_.get(); }
-  DIPSService* GetService() { return service_; }
+  DIPSServiceImpl* GetService() { return service_; }
   content_settings::CookieSettings* GetCookieSettings() {
     return cookie_settings_;
   }
@@ -298,23 +277,23 @@ class DIPSServiceStateRemovalTest : public testing::Test {
                                       ContentSettingsType::COOKIES,
                                       ContentSetting::CONTENT_SETTING_ALLOW);
 
-    EXPECT_EQ(
-        CONTENT_SETTING_BLOCK,
-        GetCookieSettings()->GetCookieSetting(
-            first_party_url.value_or(GURL()), third_party_url.value_or(GURL()),
-            net::CookieSettingOverrides(), nullptr));
-    EXPECT_EQ(
-        CONTENT_SETTING_ALLOW,
-        GetCookieSettings()->GetCookieSetting(
-            third_party_url.value_or(GURL()), first_party_url.value_or(GURL()),
-            net::CookieSettingOverrides(), nullptr));
+    EXPECT_EQ(CONTENT_SETTING_BLOCK,
+              GetCookieSettings()->GetCookieSetting(
+                  first_party_url.value_or(GURL()), net::SiteForCookies(),
+                  third_party_url.value_or(GURL()),
+                  net::CookieSettingOverrides(), nullptr));
+    EXPECT_EQ(CONTENT_SETTING_ALLOW,
+              GetCookieSettings()->GetCookieSetting(
+                  third_party_url.value_or(GURL()), net::SiteForCookies(),
+                  first_party_url.value_or(GURL()),
+                  net::CookieSettingOverrides(), nullptr));
   }
 
  private:
   base::SimpleTestClock clock_;
 
   std::unique_ptr<TestingProfile> profile_;
-  raw_ptr<DIPSService, DanglingUntriaged> service_ = nullptr;
+  raw_ptr<DIPSServiceImpl, DanglingUntriaged> service_ = nullptr;
   raw_ptr<content_settings::CookieSettings, DanglingUntriaged>
       cookie_settings_ = nullptr;
 };
@@ -1047,7 +1026,7 @@ using DIPSServiceUkmTest = DIPSServiceTest;
 TEST_F(DIPSServiceUkmTest, BothChainBeginAndChainEnd) {
   ukm::TestAutoSetUkmRecorder ukm_recorder;
   TestingProfile profile;
-  DIPSService* service = DIPSService::Get(&profile);
+  DIPSServiceImpl* service = DIPSServiceImpl::Get(&profile);
 
   UrlAndSourceId initial_url = MakeUrlAndId("http://a.test/");
   UrlAndSourceId redirect_url1 = MakeUrlAndId("http://b.test/");
@@ -1103,7 +1082,7 @@ TEST_F(DIPSServiceUkmTest, BothChainBeginAndChainEnd) {
 TEST_F(DIPSServiceUkmTest, InitialAndFinalSitesSame_True) {
   ukm::TestAutoSetUkmRecorder ukm_recorder;
   TestingProfile profile;
-  DIPSService* service = DIPSService::Get(&profile);
+  DIPSServiceImpl* service = DIPSServiceImpl::Get(&profile);
 
   UrlAndSourceId initial_url = MakeUrlAndId("http://a.test/");
   UrlAndSourceId redirect_url = MakeUrlAndId("http://b.test/");
@@ -1145,7 +1124,7 @@ TEST_F(DIPSServiceUkmTest, InitialAndFinalSitesSame_True) {
 TEST_F(DIPSServiceUkmTest, DontReportEmptyChainsAtAll) {
   ukm::TestAutoSetUkmRecorder ukm_recorder;
   TestingProfile profile;
-  DIPSService* service = DIPSService::Get(&profile);
+  DIPSServiceImpl* service = DIPSServiceImpl::Get(&profile);
 
   UrlAndSourceId initial_url = MakeUrlAndId("http://a.test/");
   UrlAndSourceId final_url = MakeUrlAndId("http://b.test/");
@@ -1165,7 +1144,7 @@ TEST_F(DIPSServiceUkmTest, DontReportEmptyChainsAtAll) {
 TEST_F(DIPSServiceUkmTest, DontReportChainBeginIfInvalidSourceId) {
   ukm::TestAutoSetUkmRecorder ukm_recorder;
   TestingProfile profile;
-  DIPSService* service = DIPSService::Get(&profile);
+  DIPSServiceImpl* service = DIPSServiceImpl::Get(&profile);
 
   UrlAndSourceId redirect_url = MakeUrlAndId("http://b.test/");
   UrlAndSourceId final_url = MakeUrlAndId("http://c.test/");
@@ -1196,7 +1175,7 @@ TEST_F(DIPSServiceUkmTest, DontReportChainBeginIfInvalidSourceId) {
 TEST_F(DIPSServiceUkmTest, DontReportChainEndIfInvalidSourceId) {
   ukm::TestAutoSetUkmRecorder ukm_recorder;
   TestingProfile profile;
-  DIPSService* service = DIPSService::Get(&profile);
+  DIPSServiceImpl* service = DIPSServiceImpl::Get(&profile);
 
   UrlAndSourceId initial_url = MakeUrlAndId("http://a.test/");
   UrlAndSourceId redirect_url = MakeUrlAndId("http://b.test/");

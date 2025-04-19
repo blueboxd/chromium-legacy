@@ -67,7 +67,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_recorder.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
-#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_loader_mock_factory.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
@@ -80,8 +79,15 @@ class WebPluginContainerTest : public PageTestBase {
  public:
   WebPluginContainerTest() : base_url_("http://www.test.com/") {}
 
+  void SetUp() override {
+    PageTestBase::SetUp();
+    mock_clipboard_host_provider_.Install(
+        GetFrame().GetBrowserInterfaceBroker());
+  }
+
   void TearDown() override {
     url_test_helpers::UnregisterAllURLsAndClearMemoryCache();
+    PageTestBase::TearDown();
   }
 
   void CalculateGeometry(WebPluginContainerImpl* plugin_container_impl,
@@ -110,6 +116,9 @@ class WebPluginContainerTest : public PageTestBase {
  protected:
   ScopedFakePluginRegistry fake_plugins_;
   std::string base_url_;
+
+ private:
+  PageTestBase::MockClipboardHostProvider mock_clipboard_host_provider_;
 };
 
 namespace {
@@ -223,9 +232,7 @@ class TestPluginWebFrameClient : public frame_test_helpers::TestWebFrameClient {
   }
 
  public:
-  TestPluginWebFrameClient() {
-    mock_clipboard_host_provider_.Install(*GetBrowserInterfaceBroker());
-  }
+  TestPluginWebFrameClient() = default;
 
   void OnPrintPage() { printed_page_ = true; }
   bool PrintedAtLeastOnePage() const { return printed_page_; }
@@ -239,7 +246,6 @@ class TestPluginWebFrameClient : public frame_test_helpers::TestWebFrameClient {
   bool printed_page_ = false;
   bool has_editable_text_ = false;
   bool can_copy_ = true;
-  PageTestBase::MockClipboardHostProvider mock_clipboard_host_provider_;
 };
 
 bool TestPlugin::CanCopy() const {

@@ -57,6 +57,7 @@ bool DeviceLocalAccountManagementPolicyProvider::UserMayLoad(
       break;
     case policy::DeviceLocalAccountType::kKioskApp:
     case policy::DeviceLocalAccountType::kWebKioskApp:
+    case policy::DeviceLocalAccountType::kKioskIsolatedWebApp:
       // For single-app kiosk sessions, allow platform apps, extensions and
       // shared modules.
       if (extension->GetType() == extensions::Manifest::TYPE_PLATFORM_APP ||
@@ -64,9 +65,6 @@ bool DeviceLocalAccountManagementPolicyProvider::UserMayLoad(
           extension->GetType() == extensions::Manifest::TYPE_EXTENSION) {
         return true;
       }
-      break;
-    case policy::DeviceLocalAccountType::kArcKioskApp:
-      // Unexpected case.
       break;
   }
 

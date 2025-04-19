@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <utility>
-
 #include "components/safe_browsing/content/browser/base_ui_manager.h"
+
+#include <utility>
 
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
@@ -16,6 +16,7 @@
 #include "components/safe_browsing/content/browser/base_blocking_page.h"
 #include "components/safe_browsing/content/browser/unsafe_resource_util.h"
 #include "components/safe_browsing/core/common/features.h"
+#include "components/safe_browsing/core/common/scheme_logger.h"
 #include "components/security_interstitials/content/security_interstitial_page.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
@@ -37,48 +38,88 @@ namespace {
 
 using safe_browsing::ThreatSeverity;
 
-// A AllowlistUrlSet holds the set of URLs that have been allowlisted
+// Returns the URL host that should be used in a AllowlistUrlSet.
+std::string GetCanonicalizedHost(const GURL& url) {
+  if (url.HostIsIPAddress()) {
+    return url.host();
+  } else {
+    std::string canon_host;
+    safe_browsing::V4ProtocolManagerUtil::CanonicalizeUrl(url, &canon_host,
+                                                          nullptr, nullptr);
+    return canon_host;
+  }
+}
+
+// A AllowlistUrlSet holds the set of URL hosts that have been allowlisted
 // for a specific WebContents, along with pending entries that are still
-// undecided. Each URL is associated with the first SBThreatType that
-// was seen for that URL. The URLs in this set should come from
-// GetAllowlistUrl() or GetMainFrameAllowlistUrlForResource() (in
-// SafeBrowsingUIManager)
+// undecided. Each host is associated with the first SBThreatType that was seen
+// for that host. The hosts in this set should be from the actual URL that was
+// flagged by Safe Browsing, not the final URL in the redirect chain.
 class AllowlistUrlSet : public content::WebContentsUserData<AllowlistUrlSet> {
  public:
   ~AllowlistUrlSet() override = default;
   AllowlistUrlSet(const AllowlistUrlSet&) = delete;
   AllowlistUrlSet& operator=(const AllowlistUrlSet&) = delete;
 
-  bool Contains(const GURL& url, SBThreatType* threat_type) {
-    auto found = map_.find(url);
-    if (found == map_.end())
+  bool ContainsHost(const std::string& canonicalized_host,
+                    SBThreatType* threat_type) {
+    if (canonicalized_host.empty()) {
       return false;
+    }
+    auto found = allowlisted_url_hosts_.find(canonicalized_host);
+    if (found == allowlisted_url_hosts_.end()) {
+      return false;
+    }
     if (threat_type)
       *threat_type = found->second;
     return true;
   }
+  bool Contains(const GURL& url, SBThreatType* threat_type) {
+    std::string canonicalized_host = GetCanonicalizedHost(url);
+    return ContainsHost(canonicalized_host, threat_type);
+  }
   void RemovePending(const GURL& url,
                      const std::optional<int64_t> navigation_id) {
+    std::string canonicalized_host = GetCanonicalizedHost(url);
+    if (canonicalized_host.empty()) {
+      return;
+    }
     if (navigation_id.has_value()) {
       pending_navigation_ids_.erase(navigation_id.value());
     }
-    DCHECK(pending_.end() != pending_.find(url));
-    if (--pending_[url].second < 1) {
-      pending_.erase(url);
+    DCHECK(pending_allowlisted_url_hosts_.end() !=
+           pending_allowlisted_url_hosts_.find(canonicalized_host));
+    if (--pending_allowlisted_url_hosts_[canonicalized_host].second < 1) {
+      pending_allowlisted_url_hosts_.erase(canonicalized_host);
     }
   }
-  void Remove(const GURL& url) { map_.erase(url); }
+  void Remove(const GURL& url) {
+    std::string canonicalized_host = GetCanonicalizedHost(url);
+    if (canonicalized_host.empty()) {
+      return;
+    }
+    allowlisted_url_hosts_.erase(canonicalized_host);
+  }
   void Insert(const GURL& url,
               const std::optional<int64_t> navigation_id,
               SBThreatType threat_type) {
-    if (Contains(url, nullptr))
+    std::string canonicalized_host = GetCanonicalizedHost(url);
+    if (canonicalized_host.empty()) {
       return;
-    map_[url] = threat_type;
-    RemoveAllPending(url, navigation_id);
+    }
+    if (ContainsHost(canonicalized_host, nullptr)) {
+      return;
+    }
+    allowlisted_url_hosts_[canonicalized_host] = threat_type;
+    RemoveAllPending(canonicalized_host, navigation_id);
   }
   bool ContainsPending(const GURL& url, SBThreatType* threat_type) {
-    auto found = pending_.find(url);
-    if (found == pending_.end()) {
+    std::string canonicalized_host = GetCanonicalizedHost(url);
+    if (canonicalized_host.empty()) {
+      return false;
+    }
+    auto found = pending_allowlisted_url_hosts_.find(canonicalized_host);
+    if (found == pending_allowlisted_url_hosts_.end()) {
       return false;
     }
     if (threat_type) {
@@ -89,22 +130,27 @@ class AllowlistUrlSet : public content::WebContentsUserData<AllowlistUrlSet> {
   void InsertPending(const GURL url,
                      const std::optional<int64_t> navigation_id,
                      SBThreatType threat_type) {
+    std::string canonicalized_host = GetCanonicalizedHost(url);
+    if (canonicalized_host.empty()) {
+      return;
+    }
     if (navigation_id.has_value()) {
       if (base::Contains(pending_navigation_ids_, navigation_id.value())) {
-        // Do not add URL for the same navigation id in |pending_| more than
-        // once. Otherwise, the security indicator may not be cleared properly
-        // when navigating away.
+        // Do not add URL host for the same navigation id in
+        // |pending_allowlisted_url_hosts_| more than once. Otherwise, the
+        // security indicator may not be cleared properly when navigating away.
         return;
       } else {
         pending_navigation_ids_.insert(navigation_id.value());
       }
     }
-    if (pending_.find(url) != pending_.end()) {
-      pending_[url].first = threat_type;
-      pending_[url].second++;
+    if (pending_allowlisted_url_hosts_.find(canonicalized_host) !=
+        pending_allowlisted_url_hosts_.end()) {
+      pending_allowlisted_url_hosts_[canonicalized_host].first = threat_type;
+      pending_allowlisted_url_hosts_[canonicalized_host].second++;
       return;
     }
-    pending_[url] = {threat_type, 1};
+    pending_allowlisted_url_hosts_[canonicalized_host] = {threat_type, 1};
   }
 
  private:
@@ -114,40 +160,32 @@ class AllowlistUrlSet : public content::WebContentsUserData<AllowlistUrlSet> {
   explicit AllowlistUrlSet(content::WebContents* web_contents)
       : content::WebContentsUserData<AllowlistUrlSet>(*web_contents) {}
 
-  // Method to remove all the instances of a website in the pending list
-  // disregarding the count. Used when adding a site to the permanent list.
-  void RemoveAllPending(const GURL& url,
+  // Method to remove all the instances of a website in
+  // `pending_allowlisted_url_hosts_` disregarding the count. Used when adding a
+  // site to `allowlisted_url_hosts_`.
+  void RemoveAllPending(const std::string& url_host,
                         const std::optional<int64_t> navigation_id) {
     if (navigation_id.has_value()) {
       pending_navigation_ids_.erase(navigation_id.value());
     }
-    pending_.erase(url);
+    pending_allowlisted_url_hosts_.erase(url_host);
   }
 
-  std::map<GURL, SBThreatType> map_;
-  // Keep a count of how many times a site has been added to the pending list
-  // in order to solve a problem where upon reloading an interstitial, a site
-  // would be re-added to and removed from the allowlist in the wrong order.
-  std::map<GURL, std::pair<SBThreatType, int>> pending_;
-  // Ensure that URL for the same navigation id is added to |pending_| at most
-  // once.
+  // Hosts of URLs that have been allowlisted (i.e. bypassed by the user).
+  std::map<std::string, SBThreatType> allowlisted_url_hosts_;
+  // Hosts of URLs that are pending to be allowlisted (i.e. actively showing
+  // interstitials). Keep a count of how many times a site has been added to the
+  // pending list in order to solve a problem where upon reloading an
+  // interstitial, a site would be re-added to and removed from the allowlist in
+  // the wrong order.
+  std::map<std::string, std::pair<SBThreatType, int>>
+      pending_allowlisted_url_hosts_;
+  // Ensure that the URL host for the same navigation id is added to
+  // |pending_allowlisted_url_hosts_| at most once.
   std::set<int64_t> pending_navigation_ids_;
 };
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(AllowlistUrlSet);
-
-// Returns the URL that should be used in a AllowlistUrlSet for the
-// resource loaded from |url| on a navigation |entry|.
-GURL GetAllowlistUrl(const GURL& url,
-                     bool is_subresource,
-                     NavigationEntry* entry) {
-  if (is_subresource) {
-    if (!entry)
-      return GURL();
-    return entry->GetURL().GetWithEmptyPath();
-  }
-  return url.GetWithEmptyPath();
-}
 
 // Returns the corresponding ThreatSeverity to a SBThreatType
 // Keep the same as v4_local_database_manager GetThreatSeverity()
@@ -196,28 +234,25 @@ BaseUIManager::BaseUIManager() = default;
 BaseUIManager::~BaseUIManager() = default;
 
 bool BaseUIManager::IsAllowlisted(const UnsafeResource& resource) {
-  NavigationEntry* entry = nullptr;
-  if (resource.is_subresource) {
-    entry = unsafe_resource_util::GetNavigationEntryForResource(resource);
-  }
+  NavigationEntry* entry =
+      unsafe_resource_util::GetNavigationEntryForResource(resource);
 
   content::WebContents* web_contents =
       unsafe_resource_util::GetWebContentsForResource(resource);
   // |web_contents| can be null after RenderFrameHost is destroyed.
-  if (!web_contents)
+  if (!web_contents) {
     return false;
+  }
 
   SBThreatType unused_threat_type;
   return IsUrlAllowlistedOrPendingForWebContents(
-      resource.url, resource.is_subresource, entry, web_contents, true,
-      &unused_threat_type);
+      resource.url, entry, web_contents, true, &unused_threat_type);
 }
 
 // Check if the user has already seen and/or ignored a SB warning for this
 // WebContents and top-level domain.
 bool BaseUIManager::IsUrlAllowlistedOrPendingForWebContents(
     const GURL& url,
-    bool is_subresource,
     NavigationEntry* entry,
     WebContents* web_contents,
     bool allowlist_only,
@@ -236,17 +271,16 @@ bool BaseUIManager::IsUrlAllowlistedOrPendingForWebContents(
   for (const auto& redirect : entry && !entry->GetRedirectChain().empty()
                                   ? entry->GetRedirectChain()
                                   : std::vector<GURL>{url}) {
-    GURL lookup_url = GetAllowlistUrl(redirect, is_subresource, entry);
-    if (lookup_url.is_empty()) {
+    if (redirect.is_empty()) {
       continue;
     }
 
     SBThreatType url_threat_type = SBThreatType::SB_THREAT_TYPE_SAFE;
-    bool allowlisted = site_list->Contains(lookup_url, &url_threat_type);
+    bool allowlisted = site_list->Contains(redirect, &url_threat_type);
     // We only check if the url is in the non-pending allowlist if
     // allowlist_only is true.
     if (!allowlist_only) {
-      allowlisted |= site_list->ContainsPending(lookup_url, &url_threat_type);
+      allowlisted |= site_list->ContainsPending(redirect, &url_threat_type);
     }
     if (allowlisted) {
       any_allowlisted = true;
@@ -275,48 +309,21 @@ void BaseUIManager::OnBlockingPageDone(
     resource.DispatchCallback(FROM_HERE, proceed, showed_interstitial,
                               false /* has_post_commit_interstitial_skipped */);
 
-    GURL allowlist_url = GetAllowlistUrl(
-        main_frame_url, false /* is subresource */,
-        nullptr /* no navigation entry needed for main resource */);
     if (proceed) {
-      AddToAllowlistUrlSet(allowlist_url, resource.navigation_id, web_contents,
+      AddToAllowlistUrlSet(main_frame_url, resource.navigation_id, web_contents,
                            false /* Pending -> permanent */,
                            resource.threat_type);
     } else if (web_contents) {
       // |web_contents| doesn't exist if the tab has been closed.
-      RemoveAllowlistUrlSet(allowlist_url, resource.navigation_id, web_contents,
-                            true /* from_pending_only */);
+      RemoveAllowlistUrlSet(main_frame_url, resource.navigation_id,
+                            web_contents, true /* from_pending_only */);
     }
   }
 }
 
 void BaseUIManager::DisplayBlockingPage(const UnsafeResource& resource) {
   using enum SBThreatType;
-
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  bool is_frame = resource.is_subframe ||
-                  resource.request_destination ==
-                      network::mojom::RequestDestination::kEmbed ||
-                  resource.request_destination ==
-                      network::mojom::RequestDestination::kObject;
-  if (resource.is_subresource && !is_frame) {
-    // Sites tagged as serving Unwanted Software should only show a warning for
-    // main-frame or frame-like (subframe, embed, object) resource. Similar
-    // warning restrictions should be applied to malware sites tagged as
-    // "landing sites" (see "Types of Malware sites" under
-    // https://developers.google.com/safe-browsing/v4/metadata#malware-sites).
-    // This is to avoid false positives on benign sites that load resources
-    // from landing sites.
-    if (resource.threat_type == SB_THREAT_TYPE_URL_UNWANTED ||
-        (resource.threat_type == SB_THREAT_TYPE_URL_MALWARE &&
-         resource.threat_metadata.threat_pattern_type ==
-             ThreatPatternType::MALWARE_LANDING)) {
-      resource.DispatchCallback(
-          FROM_HERE, true /* proceed */, false /* showed_interstitial */,
-          false /* has_post_commit_interstitial_skipped */);
-      return;
-    }
-  }
 
   // The tab might have been closed. If it was closed, just act as if "Don't
   // Proceed" had been chosen.
@@ -324,8 +331,7 @@ void BaseUIManager::DisplayBlockingPage(const UnsafeResource& resource) {
       unsafe_resource_util::GetWebContentsForResource(resource);
   if (!web_contents) {
     OnBlockingPageDone(std::vector<UnsafeResource>{resource},
-                       false /* proceed */, web_contents,
-                       GetMainFrameAllowlistUrlForResource(resource),
+                       false /* proceed */, web_contents, resource.url,
                        false /* showed_interstitial */);
     return;
   }
@@ -366,19 +372,11 @@ void BaseUIManager::DisplayBlockingPage(const UnsafeResource& resource) {
     }
   }
 
-  AddToAllowlistUrlSet(
-      GetMainFrameAllowlistUrlForResource(resource), resource.navigation_id,
-      web_contents, true /* A decision is now pending */, resource.threat_type);
-
-  // |entry| can be null if we are on a brand new tab, and a resource is added
-  // via javascript without a navigation.
-  content::NavigationEntry* entry =
-      unsafe_resource_util::GetNavigationEntryForResource(resource);
+  AddToAllowlistUrlSet(resource.url, resource.navigation_id, web_contents,
+                       true /* A decision is now pending */,
+                       resource.threat_type);
 
   GURL unsafe_url = resource.url;
-  if (entry && !AsyncCheckTracker::IsMainPageLoadPending(resource)) {
-    unsafe_url = entry->GetURL();
-  }
 
   // If the top-level navigation is still pending, we just mark the resource
   // unsafe and cancel the load from here, the actual interstitial will be shown
@@ -533,6 +531,8 @@ void BaseUIManager::AddToAllowlistUrlSet(
   if (allowlist_url.is_empty())
     return;
 
+  safe_browsing::scheme_logger::LogScheme(
+      allowlist_url, "SafeBrowsing.WarningBypassAllowlist.SchemeOnWrite");
   if (pending) {
     site_list->InsertPending(allowlist_url, navigation_id, threat_type);
   } else {
@@ -665,16 +665,6 @@ void BaseUIManager::RemoveAllowlistUrlSet(
 
   // Notify security UI that security state has changed.
   web_contents->DidChangeVisibleSecurityState();
-}
-
-// static
-GURL BaseUIManager::GetMainFrameAllowlistUrlForResource(
-    const security_interstitials::UnsafeResource& resource) {
-  return GetAllowlistUrl(
-      resource.url, resource.is_subresource,
-      resource.is_subresource
-          ? unsafe_resource_util::GetNavigationEntryForResource(resource)
-          : nullptr);
 }
 
 }  // namespace safe_browsing

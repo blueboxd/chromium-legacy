@@ -9,6 +9,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
+#include "services/webnn/public/cpp/webnn_errors.h"
 #include "services/webnn/public/mojom/webnn_graph.mojom.h"
 
 namespace webnn {
@@ -248,27 +249,6 @@ std::string OpKindToString(mojom::Reduce::Kind kind) {
   }
 }
 
-std::string DataTypeToString(mojom::Operand::DataType type) {
-  switch (type) {
-    case mojom::Operand::DataType::kFloat32:
-      return "float32";
-    case mojom::Operand::DataType::kFloat16:
-      return "float16";
-    case mojom::Operand::DataType::kInt32:
-      return "int32";
-    case mojom::Operand::DataType::kUint32:
-      return "uint32";
-    case mojom::Operand::DataType::kInt8:
-      return "int8";
-    case mojom::Operand::DataType::kUint8:
-      return "uint8";
-    case mojom::Operand::DataType::kInt64:
-      return "int64";
-    case mojom::Operand::DataType::kUint64:
-      return "uint64";
-  }
-}
-
 std::string GetOpName(const mojom::Operation& op) {
   const mojom::Operation::Tag& tag = op.which();
   switch (tag) {
@@ -299,31 +279,20 @@ std::string NotSupportedOperatorError(const mojom::ElementWiseUnary& op) {
 
 std::string NotSupportedArgumentTypeError(std::string_view op_name,
                                           std::string_view argument_name,
-                                          mojom::Operand::DataType type) {
+                                          OperandDataType type) {
   return base::StrCat({"Unsupported data type ", DataTypeToString(type),
                        " for ", op_name, " argument ", argument_name, "."});
 }
 
-std::string NotSupportedConstantTypeError(mojom::Operand::DataType type) {
-  return base::StrCat(
-      {"Unsupported data type ", DataTypeToString(type), " for constant."});
-}
-
 std::string NotSupportedInputArgumentTypeError(std::string_view op_name,
-                                               mojom::Operand::DataType type) {
+                                               OperandDataType type) {
   return base::StrCat({"Unsupported data type ", DataTypeToString(type),
                        " for ", op_name, " argument input."});
 }
 
-std::string NotSupportedInputTypeError(std::string_view input_name,
-                                       mojom::Operand::DataType type) {
-  return base::StrCat({"Unsupported data type ", DataTypeToString(type),
-                       " for input operand ", input_name});
-}
-
 std::string NotSupportedOptionTypeError(std::string_view op_name,
                                         std::string_view option_name,
-                                        mojom::Operand::DataType type) {
+                                        OperandDataType type) {
   return base::StrCat({"Unsupported data type ", DataTypeToString(type),
                        " for ", op_name, " option ", option_name});
 }
@@ -340,6 +309,14 @@ std::vector<uint32_t> PermuteArray(base::span<const uint32_t> array,
   }
 
   return permuted_array;
+}
+
+bool IsLogicalElementWiseBinary(mojom::ElementWiseBinary::Kind kind) {
+  return kind == mojom::ElementWiseBinary::Kind::kEqual ||
+         kind == mojom::ElementWiseBinary::Kind::kGreater ||
+         kind == mojom::ElementWiseBinary::Kind::kGreaterOrEqual ||
+         kind == mojom::ElementWiseBinary::Kind::kLesser ||
+         kind == mojom::ElementWiseBinary::Kind::kLesserOrEqual;
 }
 
 }  // namespace webnn

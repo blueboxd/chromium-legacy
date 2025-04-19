@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/media/webrtc/display_media_access_handler.h"
 
 #include <memory>
@@ -15,18 +20,15 @@
 #include "base/test/mock_callback.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/webrtc/fake_desktop_media_picker_factory.h"
-#include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/desktop_media_id.h"
-#include "content/public/browser/document_picture_in_picture_window_controller.h"
 #include "content/public/browser/media_stream_request.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/navigation_simulator.h"
-#include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
@@ -37,42 +39,13 @@
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if !BUILDFLAG(IS_ANDROID)
+#include "base/test/gmock_expected_support.h"
 #include "chrome/browser/ui/web_applications/test/isolated_web_app_test_utils.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
+#include "chrome/browser/web_applications/isolated_web_apps/test/isolated_web_app_builder.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
-#include "chrome/browser/web_applications/test/web_app_test_utils.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #endif  // !BUILDFLAG(IS_ANDROID)
-
-namespace {
-
-class TestPictureInPictureWindowController
-    : public content::DocumentPictureInPictureWindowController {
- public:
-  void Show() override {}
-  void FocusInitiator() override {}
-  void Close(bool) override {}
-  void CloseAndFocusInitiator() override {}
-  void OnWindowDestroyed(bool) override {}
-  content::WebContents* GetWebContents() override { return opener_contents_; }
-  content::WebContents* GetChildWebContents() override {
-    return child_contents_;
-  }
-  std::optional<url::Origin> GetOrigin() override { return std::nullopt; }
-  void SetChildWebContents(content::WebContents* child_contents) override {
-    child_contents_ = child_contents;
-  }
-
-  std::optional<gfx::Rect> GetWindowBounds() override { return {}; }
-
-  void SetOpenerWebContents(content::WebContents* opener_contents) {
-    opener_contents_ = opener_contents;
-  }
-
- private:
-  raw_ptr<content::WebContents> opener_contents_ = nullptr;
-  raw_ptr<content::WebContents> child_contents_ = nullptr;
-};
-
-}  // namespace
 
 class DisplayMediaAccessHandlerTest : public ChromeRenderViewHostTestHarness {
  public:
@@ -542,13 +515,23 @@ TEST_F(DisplayMediaAccessHandlerTest, CorrectHostAsksForPermissionsNormalURLs) {
 #if !BUILDFLAG(IS_ANDROID)
 
 TEST_F(DisplayMediaAccessHandlerTest, IsolatedWebAppNameAsksForPermissions) {
-  const GURL app_url(
-      "isolated-app://"
-      "berugqztij5biqquuk3mfwpsaibuegaqcitgfchwuosuofdjabzqaaic");
-  const std::string app_name("Test IWA Name");
-
+  data_decoder::test::InProcessDataDecoder in_process_data_decoder;
   web_app::test::AwaitStartWebAppProviderAndSubsystems(profile());
-  web_app::AddDummyIsolatedAppToRegistry(profile(), app_url, app_name);
+
+  const std::string app_name("Test IWA Name");
+  std::unique_ptr<web_app::ScopedBundledIsolatedWebApp> iwa =
+      web_app::IsolatedWebAppBuilder(
+          web_app::ManifestBuilder()
+              .SetName(app_name)
+              .AddPermissionsPolicyWildcard(
+                  blink::mojom::PermissionsPolicyFeature::kDisplayCapture))
+          .BuildBundle();
+  iwa->TrustSigningKey();
+  iwa->FakeInstallPageState(profile());
+  ASSERT_OK_AND_ASSIGN(web_app::IsolatedWebAppUrlInfo url_info,
+                       iwa->Install(profile()));
+  web_app::SimulateIsolatedWebAppNavigation(web_contents(),
+                                            url_info.origin().GetURL());
 
   const int render_process_id =
       web_contents()->GetPrimaryMainFrame()->GetProcess()->GetID();
@@ -571,13 +554,8 @@ TEST_F(DisplayMediaAccessHandlerTest, IsolatedWebAppNameAsksForPermissions) {
       /*disable_local_echo=*/false, /*request_pan_tilt_zoom_permission=*/false,
       /*captured_surface_control_active=*/false);
   content::MediaResponseCallback callback;
-  content::WebContents* test_web_contents = web_contents();
-  std::unique_ptr<content::NavigationSimulator> navigation =
-      content::NavigationSimulator::CreateBrowserInitiated(app_url,
-                                                           test_web_contents);
-  navigation->Commit();
-  access_handler_->HandleRequest(test_web_contents, request,
-                                 std::move(callback), nullptr /* extension */);
+  access_handler_->HandleRequest(web_contents(), request, std::move(callback),
+                                 nullptr /* extension */);
   DesktopMediaPicker::Params params = GetParams();
   access_handler_->UpdateMediaRequestState(
       render_process_id, render_frame_id, page_request_id, video_stream_type,
@@ -921,114 +899,4 @@ TEST_P(DisplayMediaAccessHandlerTestWithMonitorTypeSurfaces,
       MakeExcludeMonitorTypeSurfacesRequest(exclude_monitor_type_surfaces_),
       &wait_loop, &result, devices);
   wait_loop.Run();
-}
-
-class DisplayMediaAccessHandlerTestWithDocumentPip
-    : public DisplayMediaAccessHandlerTest,
-      public testing::WithParamInterface<bool> {
- public:
-  DisplayMediaAccessHandlerTestWithDocumentPip()
-      : focus_pip_window_(GetParam()) {}
-
-  ~DisplayMediaAccessHandlerTestWithDocumentPip() override = default;
-
-  void SetUp() override {
-    DisplayMediaAccessHandlerTest::SetUp();
-
-    SetTestFlags({{/*expect_screens_=*/true, /*expect_windows=*/true,
-                   /*expect_tabs=*/true, /*expect_current_tab=*/false,
-                   /*expect_audio=*/false, content::DesktopMediaID(),
-                   /*cancelled=*/true}});
-
-    // Set up the fake document pip window.  Note that `web_contents()` is not
-    // necessarily set up to be the opener.
-    child_contents_ = CreateTestWebContents();
-    window_controller_.SetChildWebContents(child_contents_.get());
-    PictureInPictureWindowManager::GetInstance()
-        ->set_window_controller_for_testing(&window_controller_);
-
-    // Focus / unfocus the windows to match the test parameter.
-    content::WebContentsTester::For(web_contents())
-        ->SetRenderWidgetHostViewHasFocus(!focus_pip_window_);
-    content::WebContentsTester::For(child_contents_.get())
-        ->SetRenderWidgetHostViewHasFocus(focus_pip_window_);
-  }
-
-  void TearDown() override {
-    // Destroy the opener WebContents to cancel the request, since it may
-    // reference the pip window that we're about to delete.
-    NotifyWebContentsDestroyed();
-
-    // Make a request from the opener window.
-    // Don't leave our local window controller attached.
-    PictureInPictureWindowManager::GetInstance()
-        ->set_window_controller_for_testing(nullptr);
-
-    window_controller_.SetOpenerWebContents(nullptr);
-    window_controller_.SetChildWebContents(nullptr);
-    child_contents_.reset();
-
-    DisplayMediaAccessHandlerTest::TearDown();
-  }
-
-  TestPictureInPictureWindowController& window_controller() {
-    return window_controller_;
-  }
-
-  content::WebContents* child_contents() { return child_contents_.get(); }
-
- protected:
-  const bool focus_pip_window_;
-
-  // Pip window's WebContents.
-  std::unique_ptr<content::WebContents> child_contents_;
-
-  // Pip window controller that we've installed with the window manager.
-  TestPictureInPictureWindowController window_controller_;
-};
-
-INSTANTIATE_TEST_SUITE_P(,
-                         DisplayMediaAccessHandlerTestWithDocumentPip,
-                         ::testing::Bool());
-
-TEST_P(DisplayMediaAccessHandlerTestWithDocumentPip,
-       PickerShowsInFocusedWindow) {
-  // If the opener of a Document PiP window requests media access, verify that
-  // the picker shows in the pip window if that has the focus.  If not, it
-  // should show up in the opener / requestor.
-
-  // Make `web_contents()` the opener: it should believe that it has a document
-  // pip window, and the window controller should agree.
-  content::WebContentsTester::For(web_contents())
-      ->SetHasPictureInPictureDocument(true);
-  window_controller().SetOpenerWebContents(web_contents());
-
-  // Make a request from the opener window.
-  content::MediaResponseCallback callback;
-  access_handler_->HandleRequest(web_contents(),
-                                 MakeRequest(/*request_audio=*/false),
-                                 std::move(callback), /*extension=*/nullptr);
-
-  // See if the fake picker is attached to the focused webcontents.
-  EXPECT_EQ(GetParams().web_contents,
-            focus_pip_window_ ? child_contents() : web_contents());
-}
-
-TEST_P(DisplayMediaAccessHandlerTestWithDocumentPip,
-       PickerShowsInOpenerWindow) {
-  // Verify that the picker shows in the requesting window, even if there is a
-  // focused pip window, if the requesting window isn't the pip window's opener.
-
-  // The requesting WebContents must not have a document pip window, else the
-  // test is not set up correctly.
-  ASSERT_FALSE(web_contents()->HasPictureInPictureDocument());
-
-  // Make a request from the opener window.
-  content::MediaResponseCallback callback;
-  access_handler_->HandleRequest(web_contents(),
-                                 MakeRequest(/*request_audio=*/false),
-                                 std::move(callback), /*extension=*/nullptr);
-
-  // Picker should be attached to `web_contents()` all the time.
-  EXPECT_EQ(GetParams().web_contents, web_contents());
 }

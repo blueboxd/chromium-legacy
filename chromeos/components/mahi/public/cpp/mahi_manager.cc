@@ -41,29 +41,6 @@ MahiManager* MahiManager::Get() {
   return g_instance;
 }
 
-// static
-bool MahiManager::IsSupportedWithCorrectFeatureKey() {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (!chromeos::features::IsMahiEnabled()) {
-    return false;
-  }
-
-  // Allow Google accounts to bypass the secret key check.
-  if (user_manager::UserManager::IsInitialized() &&
-      gaia::IsGoogleInternalAccountEmail(user_manager::UserManager::Get()
-                                             ->GetActiveUser()
-                                             ->GetAccountId()
-                                             .GetUserEmail())) {
-    return true;
-  }
-
-  return ash::switches::IsMahiSecretKeyMatched();
-#else
-  return chromeos::BrowserParamsProxy::Get()
-      ->IsMahiSupportedWithCorrectFeatureKey();
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-}
-
 MahiManager::MahiManager() {
   DCHECK(!g_instance);
   g_instance = this;
@@ -72,6 +49,11 @@ MahiManager::MahiManager() {
 MahiManager::~MahiManager() {
   DCHECK_EQ(this, g_instance);
   g_instance = nullptr;
+}
+
+std::optional<base::UnguessableToken> MahiManager::GetMediaAppPDFClientId()
+    const {
+  return std::nullopt;
 }
 
 // static

@@ -7,6 +7,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/sync/sync_service_factory.h"
+#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/test/test_browser_ui.h"
@@ -50,6 +52,7 @@ enum class SigninStatusPixelTestParam {
   kSignedOut,
   kWebSignedIn,
   kSignedInNoSync,
+  kSignInPendingNoSync,
   kSignedInWithSync,
   kSignedInSyncPaused,
   kSignedInSyncNotWorking
@@ -65,6 +68,9 @@ struct ProfileMenuViewPixelTestParam {
   // enabled by default. Also remove duplicated tests (with "_WithoutUnoDesign"
   // appended to their name) that test the old design without the feature.
   bool profile_menu_uno_redesign = true;
+  bool use_multiple_profiles = false;
+  // param to be removed when `kOutlineSilhouetteIcon` is enabled by default.
+  bool outline_silhouette_icon = false;
 };
 
 // To be passed as 4th argument to `INSTANTIATE_TEST_SUITE_P()`, allows the test
@@ -99,41 +105,6 @@ const ProfileMenuViewPixelTestParam kPixelTestParams[] = {
     {.pixel_test_param = {.test_suffix = "RTL",
                           .use_right_to_left_language = true}},
 
-    // CR2023 design
-    {.pixel_test_param = {.test_suffix = "CR2023_WithoutUnoDesign",
-                          .use_chrome_refresh_2023_style = true},
-     .profile_menu_uno_redesign = false},
-    {.pixel_test_param = {.test_suffix = "CR2023",
-                          .use_chrome_refresh_2023_style = true}},
-    {.pixel_test_param = {.test_suffix = "CR2023_Guest",
-                          .use_chrome_refresh_2023_style = true},
-     .profile_type_param = ProfileTypePixelTestParam::kGuest},
-    {.pixel_test_param = {.test_suffix = "CR2023_DarkTheme_Guest",
-                          .use_dark_theme = true,
-                          .use_chrome_refresh_2023_style = true},
-     .profile_type_param = ProfileTypePixelTestParam::kGuest},
-    {.pixel_test_param = {.test_suffix = "CR2023_Incognito",
-                          .use_chrome_refresh_2023_style = true},
-     .profile_type_param = ProfileTypePixelTestParam::kIncognito},
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-    {.pixel_test_param = {.test_suffix = "CR2023_LacrosDeviceGuestSession",
-                          .use_chrome_refresh_2023_style = true},
-     .profile_type_param = ProfileTypePixelTestParam::kDeviceGuestSession},
-#endif
-    {.pixel_test_param = {.test_suffix = "CR2023_DarkTheme_WithoutUnoDesign",
-                          .use_dark_theme = true,
-                          .use_chrome_refresh_2023_style = true},
-     .profile_menu_uno_redesign = false},
-    {.pixel_test_param = {.test_suffix = "CR2023_DarkTheme",
-                          .use_dark_theme = true,
-                          .use_chrome_refresh_2023_style = true}},
-    {.pixel_test_param = {.test_suffix = "CR2023_RTL_WithoutUnoDesign",
-                          .use_right_to_left_language = true,
-                          .use_chrome_refresh_2023_style = true},
-     .profile_menu_uno_redesign = false},
-    {.pixel_test_param = {.test_suffix = "CR2023_RTL",
-                          .use_right_to_left_language = true,
-                          .use_chrome_refresh_2023_style = true}},
     // Signed in tests
     {.pixel_test_param = {.test_suffix = "SignedIn_Sync_WithoutUnoDesign"},
      .signin_status = SigninStatusPixelTestParam::kSignedInWithSync,
@@ -177,6 +148,29 @@ const ProfileMenuViewPixelTestParam kPixelTestParams[] = {
      .signin_status = SigninStatusPixelTestParam::kSignedInSyncNotWorking},
     {.pixel_test_param = {.test_suffix = "WebSignedIn_Chrome"},
      .signin_status = SigninStatusPixelTestParam::kWebSignedIn},
+    {.pixel_test_param = {.test_suffix = "SignedOut_MultipleProfiles"},
+     .use_multiple_profiles = true},
+    {.pixel_test_param = {.test_suffix =
+                              "SignedOut_MultipleProfiles_OutlineSilhouette"},
+     .use_multiple_profiles = true,
+     .outline_silhouette_icon = true},
+    {.pixel_test_param = {.test_suffix = "SignedOut_MultipleProfiles_DarkTheme",
+                          .use_dark_theme = true},
+     .use_multiple_profiles = true},
+    {.pixel_test_param =
+         {.test_suffix =
+              "SignedOut_MultipleProfiles_DarkTheme_OutlineSilhouette",
+          .use_dark_theme = true},
+     .use_multiple_profiles = true,
+     .outline_silhouette_icon = true},
+    {.pixel_test_param = {.test_suffix = "SignInPending_Nosync"},
+     .signin_status = SigninStatusPixelTestParam::kSignInPendingNoSync},
+    {.pixel_test_param = {.test_suffix = "SignInPending_Nosync_RTL",
+                          .use_right_to_left_language = true},
+     .signin_status = SigninStatusPixelTestParam::kSignInPendingNoSync},
+    {.pixel_test_param = {.test_suffix = "SignInPending_Nosync_DarkTheme",
+                          .use_dark_theme = true},
+     .signin_status = SigninStatusPixelTestParam::kSignInPendingNoSync},
 };
 
 }  // namespace
@@ -189,10 +183,13 @@ class ProfileMenuViewPixelTest
       : ProfilesPixelTestBaseT<DialogBrowserTest>(GetParam().pixel_test_param) {
     bool should_enable_uno =
         GetParam().signin_status == SigninStatusPixelTestParam::kWebSignedIn ||
+        GetParam().signin_status ==
+            SigninStatusPixelTestParam::kSignInPendingNoSync ||
         GetParam().profile_menu_uno_redesign;
 
-    feature_list_.InitWithFeatureState(
-        switches::kExplicitBrowserSigninUIOnDesktop, should_enable_uno);
+    feature_list_.InitWithFeatureStates(
+        {{switches::kExplicitBrowserSigninUIOnDesktop, should_enable_uno},
+         {kOutlineSilhouetteIcon, GetParam().outline_silhouette_icon}});
 
     // The Profile menu view seems not to be resizied properly on changes which
     // causes the view to go out of bounds. This should not happen and needs to
@@ -213,6 +210,31 @@ class ProfileMenuViewPixelTest
 
   SigninStatusPixelTestParam GetSigninStatus() const {
     return GetParam().signin_status;
+  }
+
+  bool ShouldUseMultipleProfiles() const {
+    return GetParam().use_multiple_profiles;
+  }
+
+  void SetColorTheme(Profile& profile,
+                     SkColor color = SK_ColorTRANSPARENT,
+                     bool dark_mode = false) {
+    ThemeService* service = ThemeServiceFactory::GetForProfile(&profile);
+    service->UseDeviceTheme(false);
+
+    if (color != SK_ColorTRANSPARENT) {
+      service->SetUserColorAndBrowserColorVariant(
+          color, ui::mojom::BrowserColorVariant::kTonalSpot);
+    }
+    if (dark_mode) {
+      service->SetBrowserColorScheme(ThemeService::BrowserColorScheme::kDark);
+    } else {
+      service->SetBrowserColorScheme(ThemeService::BrowserColorScheme::kLight);
+    }
+
+    // Open browser to make changes effective.
+    Browser* tmp_browser = CreateBrowser(&profile);
+    CloseBrowserAsynchronously(tmp_browser);
   }
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -286,6 +308,11 @@ class ProfileMenuViewPixelTest
         AccountInfo no_sync_info = SignInWithAccount();
         break;
       }
+      case SigninStatusPixelTestParam::kSignInPendingNoSync: {
+        AccountInfo no_sync_info = SignInWithAccount();
+        identity_test_env()->SetInvalidRefreshTokenForPrimaryAccount();
+        break;
+      }
       case SigninStatusPixelTestParam::kSignedInWithSync: {
         AccountInfo sync_info = SignInWithAccount(
             AccountManagementStatus::kNonManaged, signin::ConsentLevel::kSync);
@@ -317,6 +344,29 @@ class ProfileMenuViewPixelTest
             AccountManagementStatus::kNonManaged, signin::ConsentLevel::kSync);
         break;
       }
+    }
+
+    if (ShouldUseMultipleProfiles()) {
+      ProfileManager* profile_manager = g_browser_process->profile_manager();
+
+      // Default theme, light mode.
+      profiles::testing::CreateProfileSync(
+          profile_manager, profile_manager->GenerateNextProfileDirectoryPath());
+
+      // Default theme, dark mode.
+      Profile& dark_profile = profiles::testing::CreateProfileSync(
+          profile_manager, profile_manager->GenerateNextProfileDirectoryPath());
+      SetColorTheme(dark_profile, SK_ColorTRANSPARENT, /*dark_mode=*/true);
+
+      // Set theme, light mode.
+      Profile& theme_profile = profiles::testing::CreateProfileSync(
+          profile_manager, profile_manager->GenerateNextProfileDirectoryPath());
+      SetColorTheme(theme_profile, SK_ColorMAGENTA);
+
+      // Set theme, dark mode.
+      Profile& theme_dark_profile = profiles::testing::CreateProfileSync(
+          profile_manager, profile_manager->GenerateNextProfileDirectoryPath());
+      SetColorTheme(theme_dark_profile, SK_ColorGREEN, /*dark_mode=*/true);
     }
   }
 
@@ -370,11 +420,11 @@ class ProfileMenuViewPixelTest
     // Simulate a mouse click. Note: Buttons are either fired when pressed or
     // when released, so the corresponding methods need to be called.
     clickable_view->OnMousePressed(
-        ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+        ui::MouseEvent(ui::EventType::kMousePressed, gfx::Point(), gfx::Point(),
                        ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0));
-    clickable_view->OnMouseReleased(
-        ui::MouseEvent(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(),
-                       ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0));
+    clickable_view->OnMouseReleased(ui::MouseEvent(
+        ui::EventType::kMouseReleased, gfx::Point(), gfx::Point(),
+        ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0));
   }
 
   ProfileMenuViewBase* profile_menu_view() {

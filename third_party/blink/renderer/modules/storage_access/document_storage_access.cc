@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/storage_access/document_storage_access.h"
 
 #include "base/metrics/histogram_functions.h"
+#include "net/storage_access_api/status.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
@@ -52,35 +53,6 @@ void FireRequestStorageAccessForHistogram(RequestStorageResult result) {
   base::UmaHistogramEnumeration(
       "API.TopLevelStorageAccess.RequestStorageAccessFor2", result);
 }
-
-class RequestExtendedStorageAccess final : public ScriptFunction::Callable {
- public:
-  RequestExtendedStorageAccess(
-      LocalDOMWindow& window,
-      const StorageAccessTypes* storage_access_types,
-      ScriptPromiseResolver<StorageAccessHandle>* resolver)
-      : window_(&window),
-        storage_access_types_(storage_access_types),
-        resolver_(resolver) {}
-
-  ScriptValue Call(ScriptState* script_state, ScriptValue) override {
-    resolver_->Resolve(MakeGarbageCollected<StorageAccessHandle>(
-        *window_, storage_access_types_));
-    return ScriptValue();
-  }
-
-  void Trace(Visitor* visitor) const override {
-    visitor->Trace(window_);
-    visitor->Trace(storage_access_types_);
-    visitor->Trace(resolver_);
-    ScriptFunction::Callable::Trace(visitor);
-  }
-
- private:
-  Member<LocalDOMWindow> window_;
-  Member<const StorageAccessTypes> storage_access_types_;
-  Member<ScriptPromiseResolver<StorageAccessHandle>> resolver_;
-};
 
 }  // namespace
 
@@ -203,8 +175,13 @@ ScriptPromise<IDLUndefined> DocumentStorageAccess::requestStorageAccess(
     ScriptState* script_state) {
   // Requesting storage access via `requestStorageAccess()` idl always requests
   // unpartitioned cookie access.
-  return RequestStorageAccessImpl(script_state,
-                                  /*request_unpartitioned_cookie_access=*/true);
+  return RequestStorageAccessImpl(
+      script_state,
+      /*request_unpartitioned_cookie_access=*/true,
+      WTF::BindOnce([](ScriptPromiseResolver<IDLUndefined>* resolver) {
+        DCHECK(resolver);
+        resolver->Resolve();
+      }));
 }
 
 ScriptPromise<StorageAccessHandle> DocumentStorageAccess::requestStorageAccess(
@@ -226,17 +203,24 @@ ScriptPromise<StorageAccessHandle> DocumentStorageAccess::requestStorageAccess(
                           DOMExceptionCode::kSecurityError,
                           DocumentStorageAccess::kNoAccessRequested));
   }
-  auto* resolver =
-      MakeGarbageCollected<ScriptPromiseResolver<StorageAccessHandle>>(
-          script_state);
-  auto promise = resolver->Promise();
-  RequestStorageAccessImpl(script_state, storage_access_types->all() ||
-                                             storage_access_types->cookies())
-      .Then(MakeGarbageCollected<ScriptFunction>(
-          script_state, MakeGarbageCollected<RequestExtendedStorageAccess>(
-                            *GetSupplementable()->domWindow(),
-                            storage_access_types, resolver)));
-  return promise;
+  return RequestStorageAccessImpl(
+      script_state,
+      /*request_unpartitioned_cookie_access=*/storage_access_types->all() ||
+          storage_access_types->cookies(),
+      WTF::BindOnce(
+          [](LocalDOMWindow* window,
+             const StorageAccessTypes* storage_access_types,
+             ScriptPromiseResolver<StorageAccessHandle>* resolver) {
+            if (!window) {
+                return;
+            }
+            DCHECK(storage_access_types);
+            DCHECK(resolver);
+            resolver->Resolve(MakeGarbageCollected<StorageAccessHandle>(
+                *window, storage_access_types));
+          },
+          WrapWeakPersistent(GetSupplementable()->domWindow()),
+          WrapPersistent(storage_access_types)));
 }
 
 ScriptPromise<IDLBoolean> DocumentStorageAccess::hasUnpartitionedCookieAccess(
@@ -244,14 +228,16 @@ ScriptPromise<IDLBoolean> DocumentStorageAccess::hasUnpartitionedCookieAccess(
   return hasStorageAccess(script_state);
 }
 
-ScriptPromise<IDLUndefined> DocumentStorageAccess::RequestStorageAccessImpl(
+template <typename T>
+ScriptPromise<T> DocumentStorageAccess::RequestStorageAccessImpl(
     ScriptState* script_state,
-    bool request_unpartitioned_cookie_access) {
+    bool request_unpartitioned_cookie_access,
+    base::OnceCallback<void(ScriptPromiseResolver<T>*)> on_resolve) {
   if (!GetSupplementable()->GetFrame()) {
     FireRequestStorageAccessHistogram(RequestStorageResult::REJECTED_NO_ORIGIN);
 
     // Note that in detached frames, resolvers are not able to return a promise.
-    return ScriptPromise<IDLUndefined>::RejectWithDOMException(
+    return ScriptPromise<T>::RejectWithDOMException(
         script_state, MakeGarbageCollected<DOMException>(
                           DOMExceptionCode::kInvalidStateError,
                           "requestStorageAccess: Cannot be used unless the "
@@ -265,8 +251,7 @@ ScriptPromise<IDLUndefined> DocumentStorageAccess::RequestStorageAccessImpl(
     GetSupplementable()->cookie_jar_->InvalidateCache();
   }
 
-  auto* resolver =
-      MakeGarbageCollected<ScriptPromiseResolver<IDLUndefined>>(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver<T>>(script_state);
 
   // Access the promise first to ensure it is created so that the proper state
   // can be changed when it is resolved or rejected.
@@ -361,16 +346,18 @@ ScriptPromise<IDLUndefined> DocumentStorageAccess::RequestStorageAccessImpl(
           LocalFrame::HasTransientUserActivation(
               GetSupplementable()->GetFrame()),
           WTF::BindOnce(
-              &DocumentStorageAccess::ProcessStorageAccessPermissionState,
+              &DocumentStorageAccess::ProcessStorageAccessPermissionState<T>,
               WrapPersistent(this), WrapPersistent(resolver),
-              request_unpartitioned_cookie_access));
+              request_unpartitioned_cookie_access, std::move(on_resolve)));
 
   return promise;
 }
 
+template <typename T>
 void DocumentStorageAccess::ProcessStorageAccessPermissionState(
-    ScriptPromiseResolver<IDLUndefined>* resolver,
+    ScriptPromiseResolver<T>* resolver,
     bool request_unpartitioned_cookie_access,
+    base::OnceCallback<void(ScriptPromiseResolver<T>*)> on_resolve,
     mojom::blink::PermissionStatus status) {
   DCHECK(resolver);
 
@@ -390,9 +377,10 @@ void DocumentStorageAccess::ProcessStorageAccessPermissionState(
     FireRequestStorageAccessHistogram(
         RequestStorageResult::APPROVED_NEW_OR_EXISTING_GRANT);
     if (request_unpartitioned_cookie_access) {
-      GetSupplementable()->dom_window_->SetHasStorageAccess();
+      GetSupplementable()->dom_window_->SetStorageAccessApiStatus(
+          net::StorageAccessApiStatus::kAccessViaAPI);
     }
-    resolver->Resolve();
+    std::move(on_resolve).Run(resolver);
   } else {
     LocalFrame::ConsumeTransientUserActivation(GetSupplementable()->GetFrame());
     FireRequestStorageAccessHistogram(

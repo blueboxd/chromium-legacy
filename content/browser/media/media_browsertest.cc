@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "content/public/browser/gpu_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -25,11 +26,12 @@
 #include "media/base/supported_types.h"
 #include "media/base/test_data_util.h"
 #include "media/media_buildflags.h"
+#include "media/mojo/services/gpu_mojo_media_client_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/url_util.h"
 
 // Proprietary codecs require acceleration on Android.
-#if BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_ANDROID) && !BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
 #define REQUIRE_ACCELERATION_ON_ANDROID() \
   if (!is_accelerated())                  \
   return
@@ -51,6 +53,8 @@ void MediaBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
   command_line->AppendSwitch(switches::kExposeInternalsForTesting);
 
   std::vector<base::test::FeatureRef> enabled_features = {
+    media::kBuiltInH264Decoder,
+
 #if BUILDFLAG(IS_ANDROID)
     features::kLogJsConsoleMessages,
 #endif
@@ -134,6 +138,11 @@ void MediaBrowserTest::AddTitlesToAwait(content::TitleWatcher* title_watcher) {
   title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(media::kErrorTitle));
   title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(media::kErrorEventTitle));
   title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(media::kFailedTitle));
+}
+
+void MediaBrowserTest::PreRunTestOnMainThread() {
+  ContentBrowserTest::PreRunTestOnMainThread();
+  media::AddSupplementalCodecsForTesting(GetGpuPreferencesFromCommandLine());
 }
 
 // Tests playback and seeking of an audio or video file. Test starts with
@@ -380,16 +389,19 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearMp4Hevc10bit) {
 }
 #endif  // BUILDFLAG(ENABLE_HEVC_PARSER_AND_HW_DECODER)
 
-#if !BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
+
 // Android devices usually only support baseline, main and high.
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearHighBitDepthMp4) {
   PlayVideo("bear-320x180-hi10p.mp4");
 }
 
+#endif
+
 // Android can't reliably load lots of videos on a page.
 // See http://crbug.com/749265
 // TODO(crbug.com/40774322): Flaky on Mac.
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_ANDROID)
 #define MAYBE_LoadManyVideos DISABLED_LoadManyVideos
 #else
 #define MAYBE_LoadManyVideos LoadManyVideos
@@ -402,8 +414,6 @@ IN_PROC_BROWSER_TEST_P(MediaTest, MAYBE_LoadManyVideos) {
   RunMediaTestPage("load_many_videos.html", query_params, media::kEndedTitle,
                    true);
 }
-#endif  // !BUILDFLAG(IS_ANDROID)
-
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
 IN_PROC_BROWSER_TEST_P(MediaTest, AudioBearFlac) {
@@ -436,6 +446,10 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearWavPcm192kHz) {
 
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoTulipWebm) {
   PlayVideo("tulip2.webm");
+}
+
+IN_PROC_BROWSER_TEST_P(MediaTest, VideoEbu3213Primary) {
+  PlayVideo("ebu-3213-e-vp9.mp4");
 }
 
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoErrorMissingResource) {

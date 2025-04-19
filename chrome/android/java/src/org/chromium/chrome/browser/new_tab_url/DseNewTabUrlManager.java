@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.search_engines.TemplateUrl;
 import org.chromium.components.search_engines.TemplateUrlService;
+import org.chromium.components.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
 import org.chromium.url.GURL;
 
 /**
@@ -29,27 +30,12 @@ public class DseNewTabUrlManager {
     private ObservableSupplier<Profile> mProfileSupplier;
     private Callback<Profile> mProfileCallback;
     private TemplateUrlService mTemplateUrlService;
+    private TemplateUrlServiceObserver mTemplateUrlServiceObserver;
 
     private static final String SWAP_OUT_NTP_PARAM = "swap_out_ntp";
     public static final BooleanCachedFieldTrialParameter SWAP_OUT_NTP =
             ChromeFeatureList.newBooleanCachedFieldTrialParameter(
                     ChromeFeatureList.NEW_TAB_SEARCH_ENGINE_URL_ANDROID, SWAP_OUT_NTP_PARAM, false);
-
-    // A parameter of whether to enable the feature for users in EEA countries only.
-    private static final String EEA_COUNTRY_ONLY_PARAM = "eea_country_only";
-    public static final BooleanCachedFieldTrialParameter EEA_COUNTRY_ONLY =
-            ChromeFeatureList.newBooleanCachedFieldTrialParameter(
-                    ChromeFeatureList.NEW_TAB_SEARCH_ENGINE_URL_ANDROID,
-                    EEA_COUNTRY_ONLY_PARAM,
-                    true);
-
-    // A parameter of whether to skip the check for users in EEA countries only.
-    private static final String SKIP_EEA_COUNTRY_CHECK_PARAM = "skip_eea_country_check";
-    public static final BooleanCachedFieldTrialParameter SKIP_EEA_COUNTRY_CHECK =
-            ChromeFeatureList.newBooleanCachedFieldTrialParameter(
-                    ChromeFeatureList.NEW_TAB_SEARCH_ENGINE_URL_ANDROID,
-                    SKIP_EEA_COUNTRY_CHECK_PARAM,
-                    false);
 
     public DseNewTabUrlManager(ObservableSupplier<Profile> profileSupplier) {
         mProfileSupplier = profileSupplier;
@@ -74,12 +60,6 @@ public class DseNewTabUrlManager {
         return newTabUrl != null ? new GURL(newTabUrl) : gurl;
     }
 
-    /** Returns the new Tab URL of the default search engine. */
-    @Nullable
-    public String getDSENewTabUrl() {
-        return getDSENewTabUrl(mTemplateUrlService);
-    }
-
     public void destroy() {
         if (mProfileSupplier != null && mProfileCallback != null) {
             mProfileSupplier.removeObserver(mProfileCallback);
@@ -87,7 +67,8 @@ public class DseNewTabUrlManager {
             mProfileSupplier = null;
         }
         if (mTemplateUrlService != null) {
-            mTemplateUrlService.removeObserver(this::onTemplateURLServiceChanged);
+            mTemplateUrlService.removeObserver(mTemplateUrlServiceObserver);
+            mTemplateUrlServiceObserver = null;
             mTemplateUrlService = null;
         }
     }
@@ -115,13 +96,8 @@ public class DseNewTabUrlManager {
 
     /** Returns whether the feature NewTabSearchEngineUrlAndroid is enabled. */
     public static boolean isNewTabSearchEngineUrlAndroidEnabled() {
-        return ChromeFeatureList.sNewTabSearchEngineUrlAndroid.isEnabled()
-                && (SKIP_EEA_COUNTRY_CHECK.getValue()
-                        || (EEA_COUNTRY_ONLY.getValue()
-                                && ChromeSharedPreferences.getInstance()
-                                        .readBoolean(
-                                                ChromePreferenceKeys.IS_EEA_CHOICE_COUNTRY,
-                                                false)));
+        return ChromeSharedPreferences.getInstance()
+                .readBoolean(ChromePreferenceKeys.IS_EEA_CHOICE_COUNTRY, false);
     }
 
     /**
@@ -129,7 +105,7 @@ public class DseNewTabUrlManager {
      * isNewTabSearchEngineUrlAndroidEnabled(), i.e., it doesn't check country code.
      */
     public static boolean isSwapOutNtpFlagEnabled() {
-        return ChromeFeatureList.sTabResumptionModuleAndroid.isEnabled() && SWAP_OUT_NTP.getValue();
+        return SWAP_OUT_NTP.getValue();
     }
 
     /**
@@ -172,7 +148,10 @@ public class DseNewTabUrlManager {
     @VisibleForTesting
     void onProfileAvailable(Profile profile) {
         mTemplateUrlService = TemplateUrlServiceFactory.getForProfile(profile);
-        mTemplateUrlService.addObserver(this::onTemplateURLServiceChanged);
+        if (mTemplateUrlServiceObserver == null) {
+            mTemplateUrlServiceObserver = this::onTemplateURLServiceChanged;
+            mTemplateUrlService.addObserver(mTemplateUrlServiceObserver);
+        }
         onTemplateURLServiceChanged();
         mProfileSupplier.removeObserver(mProfileCallback);
         mProfileCallback = null;

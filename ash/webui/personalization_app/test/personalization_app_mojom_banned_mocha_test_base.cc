@@ -114,7 +114,12 @@ class MockSeaPenProvider
                   ::ash::personalization_app::mojom::SeaPenProvider> receiver),
               (override));
   bool IsEligibleForSeaPen() override { return true; }
+  bool IsEligibleForSeaPenTextInput() override { return true; }
   // ::ash::personalization_app::mojom::SeaPenProvider:
+  MOCK_METHOD(void,
+              SetSeaPenObserver,
+              (mojo::PendingRemote<mojom::SeaPenObserver>),
+              (override));
   MOCK_METHOD(void,
               GetSeaPenThumbnails,
               (const mojom::SeaPenQueryPtr,
@@ -122,11 +127,11 @@ class MockSeaPenProvider
               (override));
   MOCK_METHOD(void,
               SelectSeaPenThumbnail,
-              (uint32_t, SelectSeaPenThumbnailCallback),
+              (uint32_t, bool preview_mode, SelectSeaPenThumbnailCallback),
               (override));
   MOCK_METHOD(void,
               SelectRecentSeaPenImage,
-              (uint32_t id, SelectRecentSeaPenImageCallback),
+              (uint32_t id, bool preview_mode, SelectRecentSeaPenImageCallback),
               (override));
   MOCK_METHOD(void,
               GetRecentSeaPenImageIds,
@@ -149,6 +154,11 @@ class MockSeaPenProvider
               (ShouldShowSeaPenIntroductionDialogCallback callback),
               (override));
   MOCK_METHOD(void, HandleSeaPenIntroductionDialogClosed, (), (override));
+  MOCK_METHOD(void,
+              IsInTabletMode,
+              (IsInTabletModeCallback callback),
+              (override));
+  MOCK_METHOD(void, MakeTransparent, (), (override));
 };
 
 class MockPersonalizationAppThemeProvider

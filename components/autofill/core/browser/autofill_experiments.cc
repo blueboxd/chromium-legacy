@@ -66,7 +66,7 @@ void LogCardUploadEnabled(LogManager* log_manager) {
 }  // namespace
 
 // The list of countries for which the credit card upload save feature is fully
-// launched. Last updated M118.
+// launched. Last updated M129.
 const char* const kAutofillUpstreamLaunchedCountries[] = {
     "AD", "AE", "AF", "AG", "AI", "AL", "AO", "AR", "AS", "AT", "AU", "AW",
     "AZ", "BA", "BB", "BE", "BF", "BG", "BH", "BJ", "BM", "BN", "BR", "BS",
@@ -80,14 +80,13 @@ const char* const kAutofillUpstreamLaunchedCountries[] = {
     "MK", "ML", "MN", "MO", "MP", "MQ", "MR", "MS", "MT", "MU", "MW", "MX",
     "MY", "MZ", "NA", "NC", "NE", "NF", "NG", "NI", "NL", "NO", "NR", "NZ",
     "OM", "PA", "PE", "PF", "PG", "PH", "PL", "PM", "PR", "PT", "PW", "PY",
-    "QA", "RE", "RO", "RU", "SB", "SC", "SE", "SG", "SI", "SJ", "SK", "SL",
-    "SM", "SN", "SR", "ST", "SV", "SZ", "TC", "TD", "TG", "TH", "TL", "TM",
-    "TO", "TR", "TT", "TV", "TW", "TZ", "UA", "UG", "US", "UY", "VC", "VE",
-    "VG", "VI", "VN", "VU", "WS", "YT", "ZA", "ZM", "ZW"};
+    "QA", "RE", "RO", "SB", "SC", "SE", "SG", "SI", "SJ", "SK", "SL", "SM",
+    "SN", "SR", "ST", "SV", "SZ", "TC", "TD", "TG", "TH", "TL", "TM", "TO",
+    "TR", "TT", "TV", "TW", "TZ", "UA", "UG", "US", "UY", "VC", "VE", "VG",
+    "VI", "VN", "VU", "WS", "YT", "ZA", "ZM", "ZW"};
 
 bool IsCreditCardUploadEnabled(
     const syncer::SyncService* sync_service,
-    const std::string& user_email,
     const std::string& user_country,
     AutofillMetrics::PaymentsSigninState signin_state_for_metrics,
     LogManager* log_manager) {
@@ -166,15 +165,6 @@ bool IsCreditCardUploadEnabled(
     return false;
   }
 
-  // Check that the user's account email address is known.
-  if (user_email.empty()) {
-    autofill_metrics::LogCardUploadEnabledMetric(
-        autofill_metrics::CardUploadEnabled::kEmailEmpty,
-        signin_state_for_metrics);
-    LogCardUploadDisabled(log_manager, "USER_EMAIL_EMPTY");
-    return false;
-  }
-
   if (base::FeatureList::IsEnabled(features::kAutofillUpstream)) {
     // Feature flag is enabled, so continue regardless of the country. This is
     // required for the ability to continue to launch to more countries as
@@ -217,7 +207,6 @@ bool IsCreditCardMigrationEnabled(PersonalDataManager* personal_data_manager,
   if (!is_test_mode &&
       !IsCreditCardUploadEnabled(
           sync_service,
-          payments_data_manager.GetAccountInfoForPaymentsServer().email,
           payments_data_manager.GetCountryCodeForExperimentGroup(),
           payments_data_manager.GetPaymentsSigninStateForMetrics(),
           log_manager)) {

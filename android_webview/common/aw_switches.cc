@@ -99,7 +99,12 @@ const char kWebViewForceCrashNative[] = "webview-force-crash-native";
 const char kWebViewUseSeparateResourceContext[] =
     "webview-use-separate-resource-context";
 
-// Override and enable features useful for blindauth testing/debugging.
-const char kDebugBlindauth[] = "debug-blindauth";
+// Override and enable features useful for BSA library testing/debugging.
+const char kDebugBsa[] = "debug-bsa";
+
+// When enabled, the cookie header will be included in the request headers
+// for shouldInterceptRequest.
+const char kWebViewInterceptedCookieHeader[] =
+    "webview-intercepted-cookie-header";
 
 }  // namespace switches

@@ -260,8 +260,7 @@ bool GetCommandDictAndOutputPaths(base::Value::Dict* commands,
 }
 
 bool WriteFileTask(base::FilePath file_path, std::string file_data) {
-  auto file_span = base::make_span(
-      reinterpret_cast<const uint8_t*>(file_data.data()), file_data.size());
+  auto file_span = base::as_byte_span(file_data);
   if (!base::WriteFile(file_path, file_span)) {
     PLOG(ERROR) << "Failed to write file " << file_path;
     return false;

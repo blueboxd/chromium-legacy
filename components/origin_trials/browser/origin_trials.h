@@ -16,9 +16,12 @@
 #include "base/time/time.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/origin_trials/common/origin_trials_persistence_provider.h"
+#include "content/public/browser/origin_trial_status_change_details.h"
 #include "content/public/browser/origin_trials_controller_delegate.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/public/mojom/origin_trial_feature/origin_trial_feature.mojom-shared.h"
+
+using content::OriginTrialStatusChangeDetails;
 
 namespace url {
 class Origin;
@@ -58,13 +61,15 @@ class OriginTrials : public KeyedService,
       const url::Origin& origin,
       const url::Origin& partition_origin,
       const base::span<const std::string> header_tokens,
-      const base::Time current_time) override;
+      const base::Time current_time,
+      std::optional<ukm::SourceId> source_id) override;
   void PersistAdditionalTrialsFromTokens(
       const url::Origin& origin,
       const url::Origin& partition_origin,
       base::span<const url::Origin> script_origins,
       const base::span<const std::string> header_tokens,
-      const base::Time current_time) override;
+      const base::Time current_time,
+      std::optional<ukm::SourceId> source_id) override;
   bool IsFeaturePersistedForOrigin(const url::Origin& origin,
                                    const url::Origin& partition_origin,
                                    blink::mojom::OriginTrialFeature feature,
@@ -81,11 +86,8 @@ class OriginTrials : public KeyedService,
   std::unique_ptr<blink::TrialTokenValidator> trial_token_validator_;
   ObserverMap observer_map_;
 
-  void NotifyStatusChange(const url::Origin& origin,
-                          const std::string& partition_site,
-                          bool match_subdomains,
-                          const std::string& trial,
-                          bool enabled);
+  void NotifyStatusChange(const std::string& trial,
+                          const OriginTrialStatusChangeDetails& details);
   void NotifyPersistedTokensCleared();
 
   // Returns true if `origin` can use a token made for `token_origin`. For
@@ -107,6 +109,7 @@ class OriginTrials : public KeyedService,
                              base::span<const url::Origin> script_origins,
                              const base::span<const std::string> header_tokens,
                              const base::Time current_time,
+                             std::optional<ukm::SourceId> source_id,
                              bool append_only);
 
   // Helper to return the still-valid persisted trials, with an optional
@@ -131,6 +134,7 @@ class OriginTrials : public KeyedService,
                                const url::Origin& token_origin,
                                base::span<const blink::TrialToken> new_tokens,
                                const std::string& partition_site,
+                               std::optional<ukm::SourceId> source_id,
                                bool append_only);
 
   // Get the 'site' used as the partitioning key for trial tokens.

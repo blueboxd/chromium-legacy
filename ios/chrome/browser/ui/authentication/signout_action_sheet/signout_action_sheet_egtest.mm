@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "base/strings/strcat.h"
 #import "base/strings/sys_string_conversions.h"
+#import "components/policy/core/common/policy_loader_ios_constants.h"
+#import "ios/chrome/browser/metrics/model/metrics_app_interface.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/signin/model/fake_system_identity.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
@@ -16,6 +19,7 @@
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/testing/earl_grey/app_launch_configuration.h"
+#import "ios/testing/earl_grey/app_launch_manager.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
@@ -72,6 +76,14 @@ void ClickSignOutInAccountSettings() {
   return config;
 }
 
+- (AppLaunchConfiguration)managedAppConfigurationForTestCase {
+  AppLaunchConfiguration config = self.appConfigurationForTestCase;
+  config.additional_args.push_back(base::StrCat(
+      {"-", base::SysNSStringToUTF8(kPolicyLoaderIOSConfigurationKey)}));
+  config.additional_args.push_back(std::string("<dict></dict>"));
+  return config;
+}
+
 // Tests the sign-out flow from the accounts table view. This test
 // also makes sure the settings are not blocked after the sign-out.
 // Related to crbug.com/1471942.
@@ -109,7 +121,7 @@ void ClickSignOutInAccountSettings() {
 
   // Verify the "manage accounts" view is popped.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kSettingsAccountsTableViewId)]
+                                          kSettingsLegacyAccountsTableViewId)]
       assertWithMatcher:grey_notVisible()];
 
   // Verify the "manage sync" view is popped.
@@ -135,6 +147,9 @@ void ClickSignOutInAccountSettings() {
 // signout. A dialog should be displayed, and clicking on the `Sign Out` button
 // should sign the user out.
 - (void)testSignoutConfirmationForManagedIdentity {
+  GREYAssertNil([MetricsAppInterface setupHistogramTester],
+                @"Cannot setup histogram tester.");
+  [MetricsAppInterface overrideMetricsAndCrashReportingForTesting];
   // Sign in with managed account.
   FakeSystemIdentity* fakeManagedIdentity =
       [FakeSystemIdentity fakeManagedIdentity];
@@ -151,12 +166,30 @@ void ClickSignOutInAccountSettings() {
                      grey_sufficientlyVisible(), nil)]
       performAction:grey_tap()];
   [SigninEarlGrey verifySignedOut];
+
+  // Verify histogram metric for confirming signout is recorded.
+  GREYAssertNil(
+      [MetricsAppInterface
+           expectCount:1
+             forBucket:1
+          forHistogram:@"Signin.SignoutAndClearDataFromManagedAccount"],
+      @"Signin.SignoutAndClearDataFromManagedAccount metric was not recorded "
+      @"when managed clicked cancel in the data clearing dialog shown on "
+      @"signout.");
+
+  [MetricsAppInterface stopOverridingMetricsAndCrashReportingForTesting];
+  GREYAssertNil([MetricsAppInterface releaseHistogramTester],
+                @"Cannot reset histogram tester.");
 }
 
 // Tests the signout flow for managed users that require clearing data on
 // signout. A dialog should be displayed, and clicking on the `Cancel` button
 // should keep the user signed in.
 - (void)testCancelSignoutForManagedIdentity {
+  GREYAssertNil([MetricsAppInterface setupHistogramTester],
+                @"Cannot setup histogram tester.");
+  [MetricsAppInterface overrideMetricsAndCrashReportingForTesting];
+
   // Sign in with managed account.
   FakeSystemIdentity* fakeManagedIdentity =
       [FakeSystemIdentity fakeManagedIdentity];
@@ -169,6 +202,38 @@ void ClickSignOutInAccountSettings() {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::CancelButton()]
       performAction:grey_tap()];
   [SigninEarlGrey verifySignedInWithFakeIdentity:fakeManagedIdentity];
+
+  // Verify histogram metric for cancelling signout is recorded.
+  GREYAssertNil(
+      [MetricsAppInterface
+           expectCount:1
+             forBucket:0
+          forHistogram:@"Signin.SignoutAndClearDataFromManagedAccount"],
+      @"Signin.SignoutAndClearDataFromManagedAccount metric was not recorded "
+      @"when managed clicked cancel in the data clearing dialog shown on "
+      @"signout.");
+
+  [MetricsAppInterface stopOverridingMetricsAndCrashReportingForTesting];
+  GREYAssertNil([MetricsAppInterface releaseHistogramTester],
+                @"Cannot reset histogram tester.");
+}
+
+// Tests the signout flow for managed users in a managed browser does not show
+// the dialog for clearing data on sign-out.
+- (void)testNoSignoutConfirmationForManagedIdentityInManagedBrowser {
+  // Relaunch the app with managed config to take the configuration into
+  // account.
+  [[AppLaunchManager sharedManager]
+      ensureAppLaunchedWithConfiguration:
+          [self managedAppConfigurationForTestCase]];
+  // Sign in with managed account.
+  FakeSystemIdentity* fakeManagedIdentity =
+      [FakeSystemIdentity fakeManagedIdentity];
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeManagedIdentity];
+
+  // The sign out button should directly sign out the user.
+  ClickSignOutInAccountSettings();
+  [SigninEarlGrey verifySignedOut];
 }
 
 @end

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "extensions/browser/api/declarative_net_request/indexed_rule.h"
 
 #include <memory>
@@ -15,12 +20,14 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/values_test_util.h"
+#include "components/version_info/channel.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/test_utils.h"
 #include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_features.h"
+#include "extensions/common/features/feature_channel.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -1085,7 +1092,11 @@ class IndexedResponseHeaderRuleTest : public IndexedRuleTest {
   }
 
  private:
+  // TODO(crbug.com/40727004): Once feature is launched to stable and feature
+  // flag can be removed, replace usages of this test class with just
+  // DeclarativeNetRequestBrowserTest.
   base::test::ScopedFeatureList scoped_feature_list_;
+  ScopedCurrentChannel current_channel_override_{version_info::Channel::DEV};
 };
 
 // Test the validation of rules that specify response header matching
@@ -1128,6 +1139,10 @@ TEST_F(IndexedResponseHeaderRuleTest, MatchingResponseHeaders) {
        HeaderInfoList({RawHeaderInfo("excluded-header")}),
        ParseResult::SUCCESS},
 
+      // An empty response header value should parse successfully.
+      {HeaderInfoList({{"header", HeaderValues({""}), std::nullopt}}),
+       std::nullopt, ParseResult::SUCCESS},
+
       // An empty matching response header list should trigger an error.
       {HeaderInfoList(), std::nullopt,
        ParseResult::ERROR_EMPTY_RESPONSE_HEADER_MATCHING_LIST},
@@ -1139,18 +1154,13 @@ TEST_F(IndexedResponseHeaderRuleTest, MatchingResponseHeaders) {
 
       // Test that a rule with an empty or invalid response header name will
       // return an error.
-      {HeaderInfoList({{"", std::nullopt, std::nullopt}}), std::nullopt,
+      {HeaderInfoList({RawHeaderInfo("")}), std::nullopt,
        ParseResult::ERROR_INVALID_MATCHING_RESPONSE_HEADER_NAME},
 
       {std::nullopt, HeaderInfoList({RawHeaderInfo("<<invalid_header>>")}),
        ParseResult::ERROR_INVALID_MATCHING_EXCLUDED_RESPONSE_HEADER_NAME},
 
-      // Test that a rule with an empty or invalid response header value will
-      // return an error.
-      {HeaderInfoList({{"header", HeaderValues({""}), std::nullopt}}),
-       std::nullopt, ParseResult::ERROR_INVALID_MATCHING_RESPONSE_HEADER_VALUE},
-
-      // Test that a rule with an empty response header value will return an
+      // Test that a rule with an invalid response header value will return an
       // error.
       {std::nullopt,
        HeaderInfoList({{"invalid-header-value",

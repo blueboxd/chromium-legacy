@@ -124,7 +124,14 @@ export class NetworkSummaryItemElement extends NetworkSummaryItemElementBase {
       return this.i18n('internetDeviceBusy');
     }
 
+    if (OncMojo.deviceIsFlashing(this.deviceState)) {
+      return this.i18n('internetDeviceFlashing');
+    }
+
     if (this.isPortalState_(this.activeNetworkState!.portalState)) {
+      if (this.deviceState && this.deviceState.type === NetworkType.kCellular) {
+        return this.i18n('networkListItemCellularSignIn');
+      }
       return this.i18n('networkListItemSignIn');
     }
 
@@ -235,6 +242,9 @@ export class NetworkSummaryItemElement extends NetworkSummaryItemElementBase {
     if (deviceState.deviceState === DeviceStateType.kEnabled) {
       return true;
     }
+    if (OncMojo.deviceIsFlashing(deviceState)) {
+      return false;
+    }
 
     return OncMojo.deviceIsInhibited(deviceState);
   }
@@ -277,7 +287,8 @@ export class NetworkSummaryItemElement extends NetworkSummaryItemElementBase {
     return this.enableToggleIsVisible_(deviceState) &&
         deviceState!.deviceState !== DeviceStateType.kProhibited &&
         !OncMojo.deviceIsInhibited(deviceState) &&
-        !OncMojo.deviceStateIsIntermediate(deviceState!.deviceState);
+        !OncMojo.deviceStateIsIntermediate(deviceState!.deviceState) &&
+        !OncMojo.deviceIsFlashing(deviceState);
   }
 
   private getToggleA11yString_(deviceState: OncMojo.DeviceStateProperties|

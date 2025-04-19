@@ -22,11 +22,13 @@
 #include "chrome/browser/ash/system_web_apps/apps/personalization_app/personalization_app_user_provider_impl.h"
 #include "chrome/browser/ash/system_web_apps/apps/personalization_app/personalization_app_wallpaper_provider_impl.h"
 #include "chrome/browser/ash/wallpaper_handlers/wallpaper_fetcher_delegate.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/manta/manta_service_factory.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/ash/components/browser_context_helper/browser_context_helper.h"
 #include "components/account_id/account_id.h"
+#include "components/language/core/common/locale_util.h"
 #include "components/manta/manta_service.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
@@ -35,6 +37,19 @@
 #include "url/gurl.h"
 
 namespace ash::personalization_app {
+
+namespace {
+bool CanAccessMantaFeaturesWithoutMinorRestrictions(Profile* profile) {
+  // Only users who can access manta features without minor restrictions will
+  // have SeaPen enabled.
+  auto* manta_service = manta::MantaServiceFactory::GetForProfile(profile);
+  const bool canAccessMantaFeaturesWithoutMinorRestrictions =
+      manta_service &&
+      manta_service->CanAccessMantaFeaturesWithoutMinorRestrictions() ==
+          manta::FeatureSupportStatus::kSupported;
+  return canAccessMantaFeaturesWithoutMinorRestrictions;
+}
+}  // namespace
 
 std::unique_ptr<content::WebUIController> CreatePersonalizationAppUI(
     content::WebUI* web_ui,
@@ -105,14 +120,13 @@ bool IsManagedUserEligibleForSeaPen(Profile* profile) {
     DVLOG(1) << __func__ << " managed profile";
     return false;
   }
-  // Only users who can access manta features without minor restrictions will
-  // have SeaPen enabled.
-  auto* manta_service = manta::MantaServiceFactory::GetForProfile(profile);
-  const bool canAccessMantaFeaturesWithoutMinorRestrictions =
-      manta_service &&
-      manta_service->CanAccessMantaFeaturesWithoutMinorRestrictions() ==
-          manta::FeatureSupportStatus::kSupported;
-  return canAccessMantaFeaturesWithoutMinorRestrictions;
+  return CanAccessMantaFeaturesWithoutMinorRestrictions(profile);
+}
+
+bool IsSystemInEnglishLanguage() {
+  return g_browser_process != nullptr &&
+         language::ExtractBaseLanguage(
+             g_browser_process->GetApplicationLocale()) == "en";
 }
 
 bool IsEligibleForSeaPen(Profile* profile) {
@@ -163,29 +177,32 @@ bool IsEligibleForSeaPen(Profile* profile) {
 }
 
 bool IsManagedSeaPenWallpaperEnabled(Profile* profile) {
-  // Skip policy check for Googlers.
-  // TODO(b/343219964): remove this bypass codes for Googlers till the policy is
-  // rolled out and Google corp admins have enabled for Googlers.
-  if (gaia::IsGoogleInternalAccountEmail(profile->GetProfileUserName())) {
-    DVLOG(1) << __func__ << " Google internal account";
-    return true;
-  }
-
   return profile->GetPrefs()->GetInteger(ash::prefs::kGenAIWallpaperSettings) ==
          1;
 }
 
 bool IsManagedSeaPenVcBackgroundEnabled(Profile* profile) {
-  // Skip policy check for Googlers.
-  // TODO(b/343219964): remove this bypass codes for Googlers till the policy is
-  // rolled out and Google corp admins have enabled for Googlers.
-  if (gaia::IsGoogleInternalAccountEmail(profile->GetProfileUserName())) {
-    DVLOG(1) << __func__ << " Google internal account";
-    return true;
-  }
-
   return profile->GetPrefs()->GetInteger(
              ash::prefs::kGenAIVcBackgroundSettings) == 1;
+}
+
+bool IsEligibleForSeaPenTextInput(Profile* profile) {
+  if (!profile) {
+    LOG(ERROR) << __func__ << " no profile";
+    return false;
+  }
+  if (!features::IsSeaPenTextInputEnabled()) {
+    // Without the experiment, users are not allowed to use SeaPenTextInput.
+    DVLOG(1) << __func__ << " SeaPenTextInput disabled";
+    return false;
+  }
+  if (!IsSystemInEnglishLanguage()) {
+    // The feature only supports English users.
+    DVLOG(1) << __func__ << " system not in English language";
+    return false;
+  }
+  return IsEligibleForSeaPen(profile) &&
+         CanAccessMantaFeaturesWithoutMinorRestrictions(profile);
 }
 
 GURL GetJpegDataUrl(const std::string_view encoded_jpg_data) {

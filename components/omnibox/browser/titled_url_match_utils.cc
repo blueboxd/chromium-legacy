@@ -20,12 +20,12 @@
 #include "components/omnibox/browser/url_prefix.h"
 #include "components/query_parser/snippet.h"
 #include "components/url_formatter/url_formatter.h"
-#include "third_party/metrics_proto/omnibox_event.pb.h"
+#include "third_party/metrics_proto/omnibox_scoring_signals.pb.h"
 
 namespace bookmarks {
 namespace {
 
-using ScoringSignals = ::metrics::OmniboxEventProto::Suggestion::ScoringSignals;
+using ScoringSignals = ::metrics::OmniboxScoringSignals;
 
 // Concatenates |ancestors| in reverse order and using '/' as the delimiter.
 std::u16string ConcatAncestorsTitles(
@@ -149,7 +149,7 @@ AutocompleteMatch TitledUrlMatchToAutocompleteMatch(
   }
 
   if (OmniboxFieldTrial::IsPopulatingUrlScoringSignalsEnabled() &&
-      AutocompleteScoringSignalsAnnotator::IsEligibleMatch(match)) {
+      match.IsMlSignalLoggingEligible()) {
     match.scoring_signals = std::make_optional<ScoringSignals>();
     // Populate ACMatches with signals for ML model scoring and training.
     if (!titled_url_match.title_match_positions.empty())

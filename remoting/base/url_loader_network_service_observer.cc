@@ -111,7 +111,7 @@ void UrlLoaderNetworkServiceObserver::OnCertificateRequested(
 
 void UrlLoaderNetworkServiceObserver::OnAuthRequired(
     const std::optional<base::UnguessableToken>& window_id,
-    uint32_t request_id,
+    int32_t request_id,
     const GURL& url,
     bool first_auth_attempt,
     const net::AuthChallengeInfo& auth_info,
@@ -203,6 +203,11 @@ void UrlLoaderNetworkServiceObserver::ContinueWithCertificate(
 
   mojo::Remote<network::mojom::ClientCertificateResponder> responder(
       std::move(client_cert_responder));
+
+  if (!client_cert || !private_key) {
+    responder->ContinueWithoutCertificate();
+    return;
+  }
 
   mojo::PendingRemote<network::mojom::SSLPrivateKey> ssl_private_key;
   mojo::MakeSelfOwnedReceiver(

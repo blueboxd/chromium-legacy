@@ -26,7 +26,6 @@ build_webui("build") {
     icons_html_files = [
       "icons.html",
       "icons_lit.html",
-      "mwb_shared_icons.html",
     ]
 
     non_web_component_files += [
@@ -84,6 +83,7 @@ build_webui("build") {
       "cr_input/cr_input.html.ts",
       "cr_input/cr_input.ts",
       "cr_lazy_render/cr_lazy_render.ts",
+      "cr_lazy_render/cr_lazy_render_lit.ts",
       "cr_link_row/cr_link_row.ts",
       "cr_link_row/cr_link_row.html.ts",
       "cr_loading_gradient/cr_loading_gradient.ts",
@@ -140,6 +140,7 @@ build_webui("build") {
 
     css_files = [
       "action_link.css",
+      "action_link_lit.css",
       "cr_actionable_row_style.css",
       "cr_actionable_row_style_lit.css",
       "cr_hidden_style.css",
@@ -163,6 +164,7 @@ build_webui("build") {
       "mwb_element_shared_style.css",
       "mwb_element_shared_style_lit.css",
       "mwb_shared_style.css",
+      "mwb_shared_style_lit.css",
       "mwb_shared_vars.css",
       "search_highlight_style.css",
       "cr_action_menu/cr_action_menu.css",

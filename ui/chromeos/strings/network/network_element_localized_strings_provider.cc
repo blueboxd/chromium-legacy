@@ -47,6 +47,8 @@ constexpr webui::LocalizedString kElementLocalizedStrings[] = {
      IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED_NO_CONNECTIVITY},
     {"networkListItemConnecting", IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING},
     {"networkListItemSignIn", IDS_STATUSBAR_NETWORK_DEVICE_SIGNIN},
+    {"networkListItemCellularSignIn",
+     IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR_SIGNIN},
     {"networkListItemConnectingTo", IDS_NETWORK_LIST_CONNECTING_TO},
     {"networkListItemInitializing", IDS_NETWORK_LIST_INITIALIZING},
     {"networkListItemTitle", IDS_NETWORK_LIST_ITEM_TITLE},
@@ -482,6 +484,8 @@ void AddDetailsLocalizedStrings(content::WebUIDataSource* html_source) {
       {"networkSimLockedTitle", IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_TITLE},
       {"networkSimLockPolicyAdminSubtitle",
        IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCK_POLICY_ADMIN_SUBTITLE},
+      {"networkSimLockedPinSubtitle",
+       IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_PIN_SUBTITLE},
       {"networkSimPukDialogSubtitle",
        IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_PUK_SUBTITLE},
       {"networkSimPukDialogManagedSubtitle",
@@ -549,10 +553,9 @@ void AddDetailsLocalizedStrings(content::WebUIDataSource* html_source) {
 
   html_source->AddBoolean("isApnRevampEnabled",
                           ash::features::IsApnRevampEnabled());
-  html_source->AddBoolean("isCellularCarrierLockEnabled",
-                          ash::features::IsCellularCarrierLockEnabled());
-  html_source->AddBoolean("isApnRevampAndPoliciesEnabled",
-                          ash::features::IsApnRevampAndPoliciesEnabled());
+  html_source->AddBoolean(
+      "isApnRevampAndAllowApnModificationPolicyEnabled",
+      ash::features::IsApnRevampAndAllowApnModificationPolicyEnabled());
 
   html_source->AddString("apnSettingsDescriptionWithLink",
                          l10n_util::GetStringFUTF16(

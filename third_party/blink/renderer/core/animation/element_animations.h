@@ -116,7 +116,7 @@ class CORE_EXPORT ElementAnimations final
   bool UpdateBoxSizeAndCheckTransformAxisAlignment(const gfx::SizeF& box_size);
   bool IsIdentityOrTranslation() const;
 
-  void InvalidatePaintForCompositedAnimationsIfNecessary(Element* element);
+  void RecalcCompositedStatus(Element* element, const CSSProperty& property);
 
   // TODO(crbug.com/1301961): Consider converting to an array or flat map of
   // fields for paint properties that can be composited.
@@ -125,15 +125,13 @@ class CORE_EXPORT ElementAnimations final
         composited_background_color_status_);
   }
 
-  void SetCompositedBackgroundColorStatus(CompositedPaintStatus status);
+  bool SetCompositedBackgroundColorStatus(CompositedPaintStatus status);
 
   CompositedPaintStatus CompositedClipPathStatus() {
     return static_cast<CompositedPaintStatus>(composited_clip_path_status_);
   }
 
-  void SetCompositedClipPathStatus(CompositedPaintStatus status) {
-    composited_clip_path_status_ = static_cast<unsigned>(status);
-  }
+  bool SetCompositedClipPathStatus(CompositedPaintStatus status);
 
   void Trace(Visitor*) const override;
 

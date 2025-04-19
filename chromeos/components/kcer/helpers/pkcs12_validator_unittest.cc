@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chromeos/components/kcer/helpers/pkcs12_validator.h"
 
 #include "chromeos/components/kcer/kcer_nss/test_utils.h"
@@ -154,8 +159,7 @@ TEST_F(KcerPkcs12ValidatorTest, CertExists) {
   std::vector<CertData> certs_data;
   Pkcs12ReaderStatusCode prepare_certs_status = ValidateAndPrepareCertData(
       cert_cache_, pkcs12_reader_, std::move(certs), key_data, certs_data);
-  EXPECT_EQ(prepare_certs_status,
-            Pkcs12ReaderStatusCode::kPkcs12NoValidCertificatesFound);
+  EXPECT_EQ(prepare_certs_status, Pkcs12ReaderStatusCode::kAlreadyExists);
 }
 
 // Test that ValidateAndPrepareCertData() takes the nickname from an existing

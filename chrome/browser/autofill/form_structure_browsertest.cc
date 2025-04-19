@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/autofill/core/browser/form_structure.h"
+
 #include <algorithm>
 #include <vector>
 
@@ -30,7 +32,7 @@
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/browser_autofill_manager.h"
-#include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/browser/heuristic_source.h"
 #include "components/autofill/core/browser/test_autofill_manager_waiter.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
@@ -208,8 +210,6 @@ FormStructureBrowserTest::FormStructureBrowserTest()
       {
           // TODO(crbug.com/40160818) Remove once launched.
           features::kAutofillEnableDependentLocalityParsing,
-          // TODO(crbug.com/40158074) Remove once launched.
-          features::kAutofillParsingPatternProvider,
           features::kAutofillPageLanguageDetection,
           // TODO(crbug.com/40741721): Remove once shared labels are launched.
           features::kAutofillEnableSupportForParsingWithSharedLabels,
@@ -222,10 +222,6 @@ FormStructureBrowserTest::FormStructureBrowserTest()
           features::kAutofillEnableExpirationDateImprovements,
           // TODO(crbug.com/40279279): Clean up when launched.
           features::kAutofillDefaultToCityAndNumber,
-          // TODO(b/40204601): Clean up when launched.
-          blink::features::kAutofillIncludeFormElementsInShadowDom,
-          blink::features::
-              kAutofillIncludeShadowDomInUnassociatedListedElements,
       },
       // Disabled
       {// TODO(crbug.com/40220393): Remove once launched.
@@ -250,6 +246,11 @@ void FormStructureBrowserTest::SetUpCommandLine(
   command_line->AppendSwitchASCII(switches::kLoggingLevel, "2");
   command_line->AppendSwitchASCII(
       variations::switches::kVariationsOverrideCountry, "us");
+  // SelectParserRelaxation affects the results from the test data because the
+  // test data has unclosed <select> tags. Since SelectParserRelaxation is not
+  // enabled by default, we are disabling it for this test.
+  command_line->AppendSwitchASCII("disable-blink-features",
+                                  "SelectParserRelaxation");
 }
 
 void FormStructureBrowserTest::SetUpOnMainThread() {
@@ -295,12 +296,16 @@ std::unique_ptr<HttpResponse> FormStructureBrowserTest::HandleRequest(
 }
 
 // TODO(https://crbug.com/41493195): Re-enable this test
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_WIN)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
 #define MAYBE_DataDrivenHeuristics DISABLED_DataDrivenHeuristics
 #else
 #define MAYBE_DataDrivenHeuristics DataDrivenHeuristics
 #endif
 IN_PROC_BROWSER_TEST_P(FormStructureBrowserTest, MAYBE_DataDrivenHeuristics) {
+  if (GetActiveHeuristicSource() != HeuristicSource::kLegacy) {
+    GTEST_SKIP() << "DataDrivenHeuristics tests are only supported with legacy "
+                    "parsing patterns";
+  }
   // Prints the path of the test to be executed.
   LOG(INFO) << GetParam().MaybeAsASCII();
   bool is_expected_to_pass =

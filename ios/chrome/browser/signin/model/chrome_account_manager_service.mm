@@ -12,15 +12,16 @@
 #import "components/prefs/pref_service.h"
 #import "components/signin/public/base/signin_pref_names.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
+#import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state_manager.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/signin/model/account_profile_mapper.h"
 #import "ios/chrome/browser/signin/model/resized_avatar_cache.h"
-#import "ios/chrome/browser/signin/model/system_identity_manager.h"
 #import "ios/public/provider/chrome/browser/signin/signin_identity_api.h"
 #import "ios/public/provider/chrome/browser/signin/signin_resources_api.h"
 
 namespace {
 
-using IteratorResult = SystemIdentityManager::IteratorResult;
+using IteratorResult = AccountProfileMapper::IteratorResult;
 
 // Filter class skipping restricted account.
 class SkipRestricted {
@@ -124,9 +125,9 @@ class Iterator {
   Iterator(T t, F f) : t_(t), f_(f) {}
 
   IteratorResult Run(id<SystemIdentity> identity) {
-    if (f_.ShouldFilter(identity))
+    if (f_.ShouldFilter(identity)) {
       return IteratorResult::kContinueIteration;
-
+    }
     return t_.ForEach(identity);
   }
 
@@ -139,11 +140,12 @@ class Iterator {
 
 // Helper function to iterator over ChromeIdentityService identities.
 template <typename T, typename F>
-typename T::ResultType IterateOverIdentities(T t, F f) {
+typename T::ResultType IterateOverIdentities(T t, F f, size_t profile_index) {
   using Iter = Iterator<T, F>;
   Iter iterator(std::move(t), std::move(f));
-  GetApplicationContext()->GetSystemIdentityManager()->IterateOverIdentities(
-      base::BindRepeating(&Iter::Run, base::Unretained(&iterator)));
+  GetApplicationContext()->GetAccountProfileMapper()->IterateOverIdentities(
+      base::BindRepeating(&Iter::Run, base::Unretained(&iterator)),
+      profile_index);
   return iterator.Result();
 }
 
@@ -158,8 +160,9 @@ PatternAccountRestriction PatternAccountRestrictionFromPreference(
 }  // anonymous namespace.
 
 ChromeAccountManagerService::ChromeAccountManagerService(
-    PrefService* pref_service)
-    : pref_service_(pref_service) {
+    PrefService* pref_service,
+    size_t profile_index)
+    : pref_service_(pref_service), profile_index_(profile_index) {
   // pref_service is null in test environment. In prod environment pref_service
   // comes from GetApplicationContext()->GetLocalState() and couldn't be null.
   if (pref_service_) {
@@ -172,21 +175,25 @@ ChromeAccountManagerService::ChromeAccountManagerService(
     // Force initialisation of `restriction_`.
     UpdateRestriction();
   }
-
-  system_identity_manager_observation_.Observe(
-      GetApplicationContext()->GetSystemIdentityManager());
+  GetApplicationContext()->GetAccountProfileMapper()->AddObserver(
+      this, profile_index_);
 }
 
-ChromeAccountManagerService::~ChromeAccountManagerService() {}
+ChromeAccountManagerService::~ChromeAccountManagerService() {
+  GetApplicationContext()->GetAccountProfileMapper()->RemoveObserver(
+      this, profile_index_);
+}
 
 bool ChromeAccountManagerService::HasIdentities() const {
   return IterateOverIdentities(FindFirstIdentity{},
-                               SkipRestricted{restriction_}) != nil;
+                               SkipRestricted{restriction_},
+                               profile_index_) != nil;
 }
 
 bool ChromeAccountManagerService::HasRestrictedIdentities() const {
   return IterateOverIdentities(FindFirstIdentity{},
-                               KeepRestricted{restriction_}) != nil;
+                               KeepRestricted{restriction_},
+                               profile_index_) != nil;
 }
 
 bool ChromeAccountManagerService::IsValidIdentity(
@@ -207,7 +214,8 @@ id<SystemIdentity> ChromeAccountManagerService::GetIdentityWithGaiaID(
 
   return IterateOverIdentities(
       FindFirstIdentity{},
-      CombineOr{SkipRestricted{restriction_}, KeepGaiaID{gaia_id}});
+      CombineOr{SkipRestricted{restriction_}, KeepGaiaID{gaia_id}},
+      profile_index_);
 }
 
 id<SystemIdentity> ChromeAccountManagerService::GetIdentityWithGaiaID(
@@ -224,12 +232,12 @@ id<SystemIdentity> ChromeAccountManagerService::GetIdentityWithGaiaID(
 NSArray<id<SystemIdentity>>* ChromeAccountManagerService::GetAllIdentities()
     const {
   return IterateOverIdentities(CollectIdentities{},
-                               SkipRestricted{restriction_});
+                               SkipRestricted{restriction_}, profile_index_);
 }
 
 id<SystemIdentity> ChromeAccountManagerService::GetDefaultIdentity() const {
   return IterateOverIdentities(FindFirstIdentity{},
-                               SkipRestricted{restriction_});
+                               SkipRestricted{restriction_}, profile_index_);
 }
 
 UIImage* ChromeAccountManagerService::GetIdentityAvatarWithIdentity(
@@ -243,7 +251,7 @@ UIImage* ChromeAccountManagerService::GetIdentityAvatarWithIdentity(
 
 bool ChromeAccountManagerService::IsServiceSupported() const {
   return GetApplicationContext()
-      ->GetSystemIdentityManager()
+      ->GetAccountProfileMapper()
       ->IsSigninSupported();
 }
 
@@ -266,21 +274,30 @@ void ChromeAccountManagerService::RemoveObserver(Observer* observer) {
 }
 
 void ChromeAccountManagerService::OnIdentityListChanged(bool notify_user) {
-  for (auto& observer : observer_list_)
+  for (auto& observer : observer_list_) {
     observer.OnIdentityListChanged(notify_user);
+  }
 }
 
 void ChromeAccountManagerService::OnIdentityUpdated(
     id<SystemIdentity> identity) {
-  for (auto& observer : observer_list_)
+  if (!this->IsValidIdentity(identity)) {
+    return;
+  }
+  for (auto& observer : observer_list_) {
     observer.OnIdentityUpdated(identity);
+  }
 }
 
 void ChromeAccountManagerService::OnIdentityAccessTokenRefreshFailed(
     id<SystemIdentity> identity,
     id<RefreshAccessTokenError> error) {
-  for (auto& observer : observer_list_)
+  if (!this->IsValidIdentity(identity)) {
+    return;
+  }
+  for (auto& observer : observer_list_) {
     observer.OnAccessTokenRefreshFailed(identity, error);
+  }
 }
 
 void ChromeAccountManagerService::UpdateRestriction() {

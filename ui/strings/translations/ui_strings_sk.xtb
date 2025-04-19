@@ -49,6 +49,7 @@
 <translation id="2295140143284145483">Prieskum</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="2353636109065292463">Kontroluje sa internetové pripojenie</translation>
+<translation id="2359808026110333948">Pokračovať</translation>
 <translation id="2388990488038464401">Chcete zavolať na toto číslo z telefónu?</translation>
 <translation id="2435457462613246316">Zobraziť heslo</translation>
 <translation id="24452542372838207">Rozbaliť upozornenie</translation>
@@ -129,6 +130,7 @@
 <translation id="5574202486608032840">Systém <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">Šípka doľava</translation>
+<translation id="5633029987065897167">Prázdne</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}few{# min}many{# min}other{# min}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Aktívne dnes}=1{Aktívne včera}few{Aktívne pred # dňami}many{Aktívne pred # dňa}other{Aktívne pred # dňami}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 deň a }few{# dni a }many{# dňa a }other{# dní a }}</translation>

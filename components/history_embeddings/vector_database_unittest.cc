@@ -30,6 +30,17 @@ Embedding RandomEmbedding() {
   return embedding;
 }
 
+Embedding DeterministicEmbedding(float value) {
+  constexpr size_t kSize = 768u;
+  std::vector<float> vector(kSize, 0.0f);
+  vector[0] = 1;
+  vector[1] = value;
+  Embedding embedding(std::move(vector));
+  embedding.Normalize();
+  embedding.SetPassageWordCount(10);
+  return embedding;
+}
+
 }  // namespace
 
 TEST(HistoryEmbeddingsVectorDatabaseTest, Constructs) {
@@ -45,17 +56,69 @@ TEST(HistoryEmbeddingsVectorDatabaseTest, EmbeddingOperations) {
 
   Embedding b({2, 2, 2});
   b.Normalize();
-  EXPECT_FLOAT_EQ(a.ScoreWith(b), 1.0f);
+  SearchInfo search_info;
+  EXPECT_FLOAT_EQ(a.ScoreWith(search_info, "", b), 1.0f);
+  EXPECT_FLOAT_EQ(a.ScoreWith(search_info, "this is an ASCII string", b), 1.0f);
+  EXPECT_EQ(search_info.skipped_nonascii_passage_count, 0u);
+  EXPECT_FLOAT_EQ(
+      a.ScoreWith(search_info, "this is non-ASCII string and scores ∅", b),
+      0.0f);
+  EXPECT_EQ(search_info.skipped_nonascii_passage_count, 1u);
+
+  // Verify more similar embeddings have higher scores.
+  EXPECT_GT(DeterministicEmbedding(5).ScoreWith(search_info, "",
+                                                DeterministicEmbedding(4)),
+            DeterministicEmbedding(5).ScoreWith(search_info, "",
+                                                DeterministicEmbedding(3)));
+
+  EXPECT_GT(DeterministicEmbedding(5).ScoreWith(search_info, "",
+                                                DeterministicEmbedding(6)),
+            DeterministicEmbedding(5).ScoreWith(search_info, "",
+                                                DeterministicEmbedding(7)));
+}
+
+TEST(HistoryEmbeddingsVectorDatabaseTest, FindNearest) {
+  VectorDatabaseInMemory database;
+  for (size_t i = 0; i < 10; i++) {
+    UrlPassagesEmbeddings url_data(i + 1, i + 1, base::Time::Now());
+    url_data.url_passages.passages.add_passages("some deterministic passage");
+    url_data.url_embeddings.embeddings.push_back(DeterministicEmbedding(i));
+    database.AddUrlData(url_data);
+  }
+  {
+    std::vector<ScoredUrl> scored_urls =
+        database
+            .FindNearest({}, 3, DeterministicEmbedding(0),
+                         base::BindRepeating([]() { return false; }))
+            .scored_urls;
+    EXPECT_THAT(scored_urls,
+                testing::ElementsAre(testing::Field(&ScoredUrl::url_id, 1),
+                                     testing::Field(&ScoredUrl::url_id, 2),
+                                     testing::Field(&ScoredUrl::url_id, 3)));
+  }
+
+  {
+    std::vector<ScoredUrl> scored_urls =
+        database
+            .FindNearest({}, 3, DeterministicEmbedding(20),
+                         base::BindRepeating([]() { return false; }))
+            .scored_urls;
+    EXPECT_THAT(scored_urls,
+                testing::ElementsAre(testing::Field(&ScoredUrl::url_id, 10),
+                                     testing::Field(&ScoredUrl::url_id, 9),
+                                     testing::Field(&ScoredUrl::url_id, 8)));
+  }
 }
 
 TEST(HistoryEmbeddingsVectorDatabaseTest, SearchCanBeHaltedEarly) {
   VectorDatabaseInMemory database;
   for (size_t i = 0; i < 3; i++) {
-    UrlEmbeddings url_embeddings(i + 1, i + 1, base::Time::Now());
+    UrlPassagesEmbeddings url_data(i + 1, i + 1, base::Time::Now());
     for (size_t j = 0; j < 3; j++) {
-      url_embeddings.embeddings.push_back(RandomEmbedding());
+      url_data.url_passages.passages.add_passages("a random passage");
+      url_data.url_embeddings.embeddings.push_back(RandomEmbedding());
     }
-    database.AddUrlEmbeddings(std::move(url_embeddings));
+    database.AddUrlData(url_data);
   }
   Embedding query = RandomEmbedding();
 
@@ -66,7 +129,7 @@ TEST(HistoryEmbeddingsVectorDatabaseTest, SearchCanBeHaltedEarly) {
             .FindNearest({}, 3, query,
                          base::BindRepeating([]() { return false; }))
             .scored_urls;
-    CHECK_EQ(scored_urls.size(), 3u);
+    EXPECT_EQ(scored_urls.size(), 3u);
   }
 
   // A halted search with fewer results:
@@ -83,7 +146,7 @@ TEST(HistoryEmbeddingsVectorDatabaseTest, SearchCanBeHaltedEarly) {
                              },
                              weak_factory.GetWeakPtr()))
             .scored_urls;
-    CHECK_EQ(scored_urls.size(), 2u);
+    EXPECT_EQ(scored_urls.size(), 2u);
   }
 }
 
@@ -91,11 +154,12 @@ TEST(HistoryEmbeddingsVectorDatabaseTest, TimeRangeNarrowsSearchResult) {
   const base::Time now = base::Time::Now();
   VectorDatabaseInMemory database;
   for (size_t i = 0; i < 3; i++) {
-    UrlEmbeddings url_embeddings(i + 1, i + 1, now + base::Minutes(i));
+    UrlPassagesEmbeddings url_data(i + 1, i + 1, now + base::Minutes(i));
     for (size_t j = 0; j < 3; j++) {
-      url_embeddings.embeddings.push_back(RandomEmbedding());
+      url_data.url_passages.passages.add_passages("some random passage");
+      url_data.url_embeddings.embeddings.push_back(RandomEmbedding());
     }
-    database.AddUrlEmbeddings(std::move(url_embeddings));
+    database.AddUrlData(url_data);
   }
   Embedding query = RandomEmbedding();
 
@@ -106,7 +170,7 @@ TEST(HistoryEmbeddingsVectorDatabaseTest, TimeRangeNarrowsSearchResult) {
             .FindNearest({}, 3, query,
                          base::BindRepeating([]() { return false; }))
             .scored_urls;
-    CHECK_EQ(scored_urls.size(), 3u);
+    EXPECT_EQ(scored_urls.size(), 3u);
   }
 
   // Narrowed searches with time range.
@@ -116,7 +180,7 @@ TEST(HistoryEmbeddingsVectorDatabaseTest, TimeRangeNarrowsSearchResult) {
             .FindNearest(now, 3, query,
                          base::BindRepeating([]() { return false; }))
             .scored_urls;
-    CHECK_EQ(scored_urls.size(), 3u);
+    EXPECT_EQ(scored_urls.size(), 3u);
   }
   {
     std::vector<ScoredUrl> scored_urls =
@@ -124,7 +188,7 @@ TEST(HistoryEmbeddingsVectorDatabaseTest, TimeRangeNarrowsSearchResult) {
             .FindNearest(now + base::Seconds(30), 3, query,
                          base::BindRepeating([]() { return false; }))
             .scored_urls;
-    CHECK_EQ(scored_urls.size(), 2u);
+    EXPECT_EQ(scored_urls.size(), 2u);
   }
   {
     std::vector<ScoredUrl> scored_urls =
@@ -132,7 +196,7 @@ TEST(HistoryEmbeddingsVectorDatabaseTest, TimeRangeNarrowsSearchResult) {
             .FindNearest(now + base::Seconds(90), 3, query,
                          base::BindRepeating([]() { return false; }))
             .scored_urls;
-    CHECK_EQ(scored_urls.size(), 1u);
+    EXPECT_EQ(scored_urls.size(), 1u);
   }
   {
     std::vector<ScoredUrl> scored_urls =
@@ -140,7 +204,7 @@ TEST(HistoryEmbeddingsVectorDatabaseTest, TimeRangeNarrowsSearchResult) {
             .FindNearest(now + base::Minutes(2), 3, query,
                          base::BindRepeating([]() { return false; }))
             .scored_urls;
-    CHECK_EQ(scored_urls.size(), 1u);
+    EXPECT_EQ(scored_urls.size(), 1u);
   }
   {
     std::vector<ScoredUrl> scored_urls =
@@ -148,7 +212,7 @@ TEST(HistoryEmbeddingsVectorDatabaseTest, TimeRangeNarrowsSearchResult) {
             .FindNearest(now + base::Seconds(121), 3, query,
                          base::BindRepeating([]() { return false; }))
             .scored_urls;
-    CHECK_EQ(scored_urls.size(), 0u);
+    EXPECT_EQ(scored_urls.size(), 0u);
   }
 }
 
@@ -158,13 +222,14 @@ TEST(HistoryEmbeddingsVectorDatabaseTest, DISABLED_ManyVectorsAreFastEnough) {
   size_t count = 0;
   // Estimate for expected URL count...
   for (size_t i = 0; i < 15000; i++) {
-    UrlEmbeddings url_embeddings(i + 1, i + 1, base::Time::Now());
+    UrlPassagesEmbeddings url_data(i + 1, i + 1, base::Time::Now());
     // Times 3 embeddings each, on average.
     for (size_t j = 0; j < 3; j++) {
-      url_embeddings.embeddings.push_back(RandomEmbedding());
+      url_data.url_passages.passages.add_passages("one of many passages");
+      url_data.url_embeddings.embeddings.push_back(RandomEmbedding());
       count++;
     }
-    database.AddUrlEmbeddings(std::move(url_embeddings));
+    database.AddUrlData(url_data);
   }
   Embedding query = RandomEmbedding();
   base::ElapsedTimer timer;

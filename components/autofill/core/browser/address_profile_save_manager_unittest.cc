@@ -29,7 +29,7 @@ namespace autofill {
 namespace {
 
 using UkmAddressProfileImportType =
-    ukm::builders::Autofill_AddressProfileImport;
+    ukm::builders::Autofill2_AddressProfileImport;
 using UserDecision = AutofillClient::AddressPromptUserDecision;
 using autofill_metrics::SettingsVisibleFieldTypeForMetrics;
 
@@ -38,6 +38,8 @@ constexpr char kProfileImportTypeHistogram[] =
     "Autofill.ProfileImport.ProfileImportType";
 constexpr char kSilentUpdatesProfileImportTypeHistogram[] =
     "Autofill.ProfileImport.SilentUpdatesProfileImportType";
+constexpr char kNewProfileStorageHistogram[] =
+    "Autofill.ProfileImport.StorageNewAddressIsSavedTo";
 constexpr char kNewProfileEditsHistogram[] =
     "Autofill.ProfileImport.NewProfileEditedType";
 constexpr char kProfileUpdateEditsHistogram[] =
@@ -47,9 +49,9 @@ constexpr char kProfileMigrationEditsHistogram[] =
 constexpr char kProfileUpdateAffectedTypesHistogram[] =
     "Autofill.ProfileImport.UpdateProfileAffectedType";
 constexpr char kNewProfileDecisionHistogram[] =
-    "Autofill.ProfileImport.NewProfileDecision";
+    "Autofill.ProfileImport.NewProfileDecision2.Aggregate";
 constexpr char kProfileUpdateDecisionHistogram[] =
-    "Autofill.ProfileImport.UpdateProfileDecision";
+    "Autofill.ProfileImport.UpdateProfileDecision2.Aggregate";
 constexpr char kProfileMigrationDecisionHistogram[] =
     "Autofill.ProfileImport.MigrateProfileDecision";
 constexpr char kProfileUpdateNumberOfAffectedTypesHistogram[] =
@@ -66,9 +68,7 @@ MATCHER(CompareWithSource, "") {
 // for testing purposes and mocks the UI request.
 class TestAddressProfileSaveManager : public AddressProfileSaveManager {
  public:
-  // The parameters should outlive the AddressProfileSaveManager.
-  TestAddressProfileSaveManager(AutofillClient* client,
-                                PersonalDataManager* personal_data_manager);
+  using AddressProfileSaveManager::AddressProfileSaveManager;
 
   // Mocks the function that initiates the UI prompt for testing purposes.
   MOCK_METHOD(void,
@@ -85,7 +85,7 @@ class TestAddressProfileSaveManager : public AddressProfileSaveManager {
       UserDecision decision,
       AutofillProfile edited_profile) {
     if (profile_added_while_waiting_for_user_response_) {
-      personal_data_manager()->address_data_manager().AddProfile(
+      address_data_manager().AddProfile(
           profile_added_while_waiting_for_user_response_.value());
     }
 
@@ -109,11 +109,6 @@ class TestAddressProfileSaveManager : public AddressProfileSaveManager {
   // while the response from the user is pending.
   std::optional<AutofillProfile> profile_added_while_waiting_for_user_response_;
 };
-
-TestAddressProfileSaveManager::TestAddressProfileSaveManager(
-    AutofillClient* client,
-    PersonalDataManager* personal_data_manager)
-    : AddressProfileSaveManager(client, personal_data_manager) {}
 
 void TestAddressProfileSaveManager::ClearPendingImport(
     std::unique_ptr<ProfileImportProcess> import_process) {
@@ -146,6 +141,7 @@ struct ImportScenarioTestCase {
   std::vector<std::string> blocked_guids_for_updates;
   std::optional<AutofillProfile> profile_to_be_added_while_waiting;
   bool allow_only_silent_updates = false;
+  int duplication_rank;
 };
 
 bool IsNewProfile(const ImportScenarioTestCase& test_scenario) {
@@ -185,11 +181,8 @@ class AddressProfileSaveManagerTest
   }
 
   void BlockProfileForUpdates(const std::string& guid) {
-    while (
-        !personal_data_manager_.address_data_manager().IsProfileUpdateBlocked(
-            guid)) {
-      personal_data_manager_.address_data_manager()
-          .AddStrikeToBlockProfileUpdate(guid);
+    while (!address_data_manager().IsProfileUpdateBlocked(guid)) {
+      address_data_manager().AddStrikeToBlockProfileUpdate(guid);
     }
   }
 
@@ -205,7 +198,7 @@ class AddressProfileSaveManagerTest
   }
 
  protected:
-  void VerifyFinalProfiles(const ImportScenarioTestCase& test_scenario) const;
+  void VerifyFinalProfiles(const ImportScenarioTestCase& test_scenario);
 
   void VerifyUMAMetricsCollection(
       const ImportScenarioTestCase& test_scenario,
@@ -217,15 +210,19 @@ class AddressProfileSaveManagerTest
 
   void VerifyStrikeCounts(const ImportScenarioTestCase& test_scenario,
                           const ProfileImportProcess& last_import,
-                          int initial_strikes_for_domain) const;
+                          int initial_strikes_for_domain);
 
   void VerifyUkmForAddressImport(
       const ukm::TestUkmRecorder* ukm_recorder,
       const ImportScenarioTestCase& test_scenario) const;
 
+  TestAddressDataManager& address_data_manager() {
+    return autofill_client_.GetPersonalDataManager()
+        ->test_address_data_manager();
+  }
+
   base::test::TaskEnvironment task_environment_;
   TestAutofillClient autofill_client_;
-  TestPersonalDataManager personal_data_manager_;
   ProfileImportMetadata import_metadata_;
 };
 
@@ -241,11 +238,9 @@ void AddressProfileSaveManagerTest::TestImportScenario(
     ImportScenarioTestCase& test_scenario) {
   // Assert that there is not a single profile stored in the personal data
   // manager.
-  ASSERT_TRUE(
-      personal_data_manager_.address_data_manager().GetProfiles().empty());
+  ASSERT_TRUE(address_data_manager().GetProfiles().empty());
 
-  TestAddressProfileSaveManager save_manager(&autofill_client_,
-                                             &personal_data_manager_);
+  TestAddressProfileSaveManager save_manager(&autofill_client_);
   base::HistogramTester histogram_tester;
 
   if (test_scenario.profile_to_be_added_while_waiting) {
@@ -257,23 +252,20 @@ void AddressProfileSaveManagerTest::TestImportScenario(
   // initial strikes. Otherwise, use 1.
   int initial_strikes_for_domain =
       test_scenario.new_profiles_suppresssed_for_domain
-          ? personal_data_manager_.test_address_data_manager()
+          ? address_data_manager()
                 .GetProfileSaveStrikeDatabase()
                 ->GetMaxStrikesLimit()
           : 1;
-  personal_data_manager_.test_address_data_manager()
-      .GetProfileSaveStrikeDatabase()
-      ->AddStrikes(initial_strikes_for_domain, form_url().host());
-  ASSERT_EQ(personal_data_manager_.address_data_manager()
-                .IsNewProfileImportBlockedForDomain(form_url()),
-            test_scenario.new_profiles_suppresssed_for_domain);
+  address_data_manager().GetProfileSaveStrikeDatabase()->AddStrikes(
+      initial_strikes_for_domain, form_url().host());
+  ASSERT_EQ(
+      address_data_manager().IsNewProfileImportBlockedForDomain(form_url()),
+      test_scenario.new_profiles_suppresssed_for_domain);
   // Add one strike for each existing profile and the maximum number of strikes
   // for blocked profiles.
   for (const AutofillProfile& profile : test_scenario.existing_profiles) {
-    personal_data_manager_.address_data_manager().AddStrikeToBlockProfileUpdate(
-        profile.guid());
-    personal_data_manager_.address_data_manager()
-        .AddStrikeToBlockProfileMigration(profile.guid());
+    address_data_manager().AddStrikeToBlockProfileUpdate(profile.guid());
+    address_data_manager().AddStrikeToBlockProfileMigration(profile.guid());
   }
   for (const std::string& guid : test_scenario.blocked_guids_for_updates) {
     BlockProfileForUpdates(guid);
@@ -294,10 +286,9 @@ void AddressProfileSaveManagerTest::TestImportScenario(
   }
 
   // Add the existing profiles to the personal data manager.
-  ASSERT_TRUE(
-      personal_data_manager_.address_data_manager().GetProfiles().empty());
+  ASSERT_TRUE(address_data_manager().GetProfiles().empty());
   for (const AutofillProfile& profile : test_scenario.existing_profiles) {
-    personal_data_manager_.address_data_manager().AddProfile(profile);
+    address_data_manager().AddProfile(profile);
   }
 
   // Initiate the profile import.
@@ -325,13 +316,12 @@ void AddressProfileSaveManagerTest::TestImportScenario(
 }
 
 void AddressProfileSaveManagerTest::VerifyFinalProfiles(
-    const ImportScenarioTestCase& test_scenario) const {
+    const ImportScenarioTestCase& test_scenario) {
   // Make a copy of the final profiles in the personal data manager for
   // comparison.
   std::vector<AutofillProfile> final_profiles;
   final_profiles.reserve(test_scenario.expected_final_profiles.size());
-  for (const AutofillProfile* profile :
-       personal_data_manager_.address_data_manager().GetProfiles()) {
+  for (const AutofillProfile* profile : address_data_manager().GetProfiles()) {
     final_profiles.push_back(*profile);
   }
 
@@ -356,6 +346,16 @@ void AddressProfileSaveManagerTest::VerifyUMAMetricsCollection(
           ? kSilentUpdatesProfileImportTypeHistogram
           : kProfileImportTypeHistogram,
       test_scenario.expected_import_type, 1);
+
+  // Only record the profile's storage for new profiles.
+  const bool accepted_and_is_new_profile =
+      (test_scenario.user_decision ==
+           AutofillClient::AddressPromptUserDecision::kAccepted ||
+       test_scenario.user_decision ==
+           AutofillClient::AddressPromptUserDecision::kEditAccepted) &&
+      IsNewProfile(test_scenario);
+  histogram_tester.ExpectTotalCount(kNewProfileStorageHistogram,
+                                    accepted_and_is_new_profile ? 1 : 0);
 
   // When the user is prompted, three histograms are recorded:
   // - The user `decision`.
@@ -459,13 +459,12 @@ void AddressProfileSaveManagerTest::VerifyUpdateAffectedTypesHistogram(
 void AddressProfileSaveManagerTest::VerifyStrikeCounts(
     const ImportScenarioTestCase& test_scenario,
     const ProfileImportProcess& last_import,
-    int initial_strikes_for_domain) const {
+    int initial_strikes_for_domain) {
   // Check that the strike count was incremented if the import of a new
   // profile was declined.
   const int profile_save_strikes =
-      personal_data_manager_.test_address_data_manager()
-          .GetProfileSaveStrikeDatabase()
-          ->GetStrikes(form_url().host());
+      address_data_manager().GetProfileSaveStrikeDatabase()->GetStrikes(
+          form_url().host());
   if (IsNewProfile(test_scenario) && last_import.UserDeclined()) {
     EXPECT_EQ(initial_strikes_for_domain + 1, profile_save_strikes);
   } else if (IsNewProfile(test_scenario) && last_import.UserAccepted()) {
@@ -480,8 +479,7 @@ void AddressProfileSaveManagerTest::VerifyStrikeCounts(
   // Check that the strike count for profile updates is reset if a profile was
   // updated.
   const StrikeDatabaseIntegratorBase* db =
-      personal_data_manager_.test_address_data_manager()
-          .GetProfileUpdateStrikeDatabase();
+      address_data_manager().GetProfileUpdateStrikeDatabase();
   if (IsConfirmableMerge(test_scenario) && last_import.UserAccepted()) {
     EXPECT_EQ(0, db->GetStrikes(test_scenario.merge_candidate->guid()));
   } else if (IsConfirmableMerge(test_scenario) && last_import.UserDeclined()) {
@@ -497,8 +495,7 @@ void AddressProfileSaveManagerTest::VerifyStrikeCounts(
   // should nevertheless be reset.
   // If the user declined, the strikes should get increased. Otherwise they
   // should be unaltered.
-  db = personal_data_manager_.test_address_data_manager()
-           .GetProfileMigrationStrikeDatabase();
+  db = address_data_manager().GetProfileMigrationStrikeDatabase();
   if (IsMigration(test_scenario) && last_import.UserAccepted()) {
     EXPECT_EQ(0, db->GetStrikes(test_scenario.import_candidate->guid()));
   } else if (IsMigration(test_scenario) && last_import.UserDeclined()) {
@@ -542,7 +539,7 @@ void AddressProfileSaveManagerTest::VerifyUkmForAddressImport(
   ASSERT_EQ(entries.size(), is_ukm_logged ? 1u : 0u);
 
   if (is_ukm_logged) {
-    ASSERT_EQ(5u, entries[0]->metrics.size());
+    ASSERT_GE(entries[0]->metrics.size(), 6u);
     ukm_recorder->ExpectEntryMetric(
         entries[0],
         UkmAddressProfileImportType::kAutocompleteUnrecognizedImportName,
@@ -559,6 +556,22 @@ void AddressProfileSaveManagerTest::VerifyUkmForAddressImport(
     ukm_recorder->ExpectEntryMetric(
         entries[0], UkmAddressProfileImportType::kUserDecisionName,
         static_cast<int64_t>(test_scenario.user_decision));
+    ukm_recorder->ExpectEntryMetric(
+        entries[0], UkmAddressProfileImportType::kUserHasExistingProfileName,
+        static_cast<int64_t>(!test_scenario.existing_profiles.empty() ||
+                             test_scenario.profile_to_be_added_while_waiting));
+    if (test_scenario.expected_import_type ==
+            AutofillProfileImportType::kNewProfile &&
+        test_scenario.import_candidate &&
+        (!test_scenario.existing_profiles.empty() ||
+         test_scenario.profile_to_be_added_while_waiting)) {
+      ukm_recorder->ExpectEntryMetric(
+          entries[0], UkmAddressProfileImportType::kDuplicationRankName,
+          test_scenario.duplication_rank);
+    } else {
+      EXPECT_FALSE(ukm_recorder->EntryHasMetric(
+          entries[0], UkmAddressProfileImportType::kDuplicationRankName));
+    }
   }
 }
 
@@ -599,7 +612,8 @@ TEST_P(AddressProfileSaveManagerTest, SaveNewProfile_ProfileAddedWhileWaiting) {
       .import_candidate = observed_profile,
       .expected_final_profiles = {observed_profile,
                                   profile_added_while_waiting},
-      .profile_to_be_added_while_waiting = profile_added_while_waiting};
+      .profile_to_be_added_while_waiting = profile_added_while_waiting,
+      .duplication_rank = 4};
 
   TestImportScenario(test_scenario);
 }
@@ -1386,8 +1400,7 @@ TEST_P(AddressProfileSaveManagerTest,
 // `kLocalOrSyncable` profiles.
 TEST_P(AddressProfileSaveManagerTest, Migration_Accept) {
   const AutofillProfile standard_profile = test::StandardProfile();
-  personal_data_manager_.test_address_data_manager()
-      .SetIsEligibleForAddressAccountStorage(true);
+  address_data_manager().SetIsEligibleForAddressAccountStorage(true);
   ImportScenarioTestCase test_scenario{
       .existing_profiles = {standard_profile},
       .observed_profile = standard_profile,
@@ -1404,8 +1417,7 @@ TEST_P(AddressProfileSaveManagerTest, Migration_Accept) {
 // Tests declining a migration. The strike count should be increased.
 TEST_P(AddressProfileSaveManagerTest, Migration_Decline) {
   const AutofillProfile standard_profile = test::StandardProfile();
-  personal_data_manager_.test_address_data_manager()
-      .SetIsEligibleForAddressAccountStorage(true);
+  address_data_manager().SetIsEligibleForAddressAccountStorage(true);
   ImportScenarioTestCase test_scenario{
       .existing_profiles = {standard_profile},
       .observed_profile = standard_profile,
@@ -1423,8 +1435,7 @@ TEST_P(AddressProfileSaveManagerTest, Migration_Decline) {
 // strike count is incremented up to the strike limit.
 TEST_P(AddressProfileSaveManagerTest, Migration_Never) {
   const AutofillProfile standard_profile = test::StandardProfile();
-  personal_data_manager_.test_address_data_manager()
-      .SetIsEligibleForAddressAccountStorage(true);
+  address_data_manager().SetIsEligibleForAddressAccountStorage(true);
   ImportScenarioTestCase test_scenario{
       .existing_profiles = {standard_profile},
       .observed_profile = standard_profile,

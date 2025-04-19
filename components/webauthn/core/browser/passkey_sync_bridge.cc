@@ -20,14 +20,14 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "components/sync/base/data_type.h"
 #include "components/sync/base/deletion_origin.h"
 #include "components/sync/base/features.h"
-#include "components/sync/base/model_type.h"
-#include "components/sync/model/client_tag_based_model_type_processor.h"
+#include "components/sync/model/client_tag_based_data_type_processor.h"
+#include "components/sync/model/data_type_controller_delegate.h"
+#include "components/sync/model/data_type_store.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/metadata_change_list.h"
-#include "components/sync/model/model_type_controller_delegate.h"
-#include "components/sync/model/model_type_store.h"
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/protocol/webauthn_credential_specifics.pb.h"
 #include "components/webauthn/core/browser/passkey_model.h"
@@ -100,9 +100,9 @@ PasskeyModelChange::ChangeType ToPasskeyModelChangeType(
 }  // namespace
 
 PasskeySyncBridge::PasskeySyncBridge(
-    syncer::OnceModelTypeStoreFactory store_factory)
-    : syncer::ModelTypeSyncBridge(
-          std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
+    syncer::OnceDataTypeStoreFactory store_factory)
+    : syncer::DataTypeSyncBridge(
+          std::make_unique<syncer::ClientTagBasedDataTypeProcessor>(
               syncer::WEBAUTHN_CREDENTIAL,
               /*dump_stack=*/base::DoNothing())) {
   DCHECK(base::FeatureList::IsEnabled(syncer::kSyncWebauthnCredentials));
@@ -128,7 +128,7 @@ void PasskeySyncBridge::RemoveObserver(Observer* observer) {
 
 std::unique_ptr<syncer::MetadataChangeList>
 PasskeySyncBridge::CreateMetadataChangeList() {
-  return syncer::ModelTypeStore::WriteBatch::CreateMetadataChangeList();
+  return syncer::DataTypeStore::WriteBatch::CreateMetadataChangeList();
 }
 
 std::optional<syncer::ModelError> PasskeySyncBridge::MergeFullSyncData(
@@ -163,7 +163,7 @@ std::optional<syncer::ModelError>
 PasskeySyncBridge::ApplyIncrementalSyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_changes) {
-  std::unique_ptr<syncer::ModelTypeStore::WriteBatch> write_batch =
+  std::unique_ptr<syncer::DataTypeStore::WriteBatch> write_batch =
       store_->CreateWriteBatch();
 
   std::vector<PasskeyModelChange> changes;
@@ -207,23 +207,23 @@ PasskeySyncBridge::ApplyIncrementalSyncChanges(
   return std::nullopt;
 }
 
-void PasskeySyncBridge::GetDataForCommit(StorageKeyList storage_keys,
-                                         DataCallback callback) {
+std::unique_ptr<syncer::DataBatch> PasskeySyncBridge::GetDataForCommit(
+    StorageKeyList storage_keys) {
   auto batch = std::make_unique<syncer::MutableDataBatch>();
   for (const std::string& sync_id : storage_keys) {
     if (auto it = data_.find(sync_id); it != data_.end()) {
       batch->Put(sync_id, CreateEntityData(it->second));
     }
   }
-  std::move(callback).Run(std::move(batch));
+  return batch;
 }
 
-void PasskeySyncBridge::GetAllDataForDebugging(DataCallback callback) {
+std::unique_ptr<syncer::DataBatch> PasskeySyncBridge::GetAllDataForDebugging() {
   auto batch = std::make_unique<syncer::MutableDataBatch>();
   for (const auto& [sync_id, specifics] : data_) {
     batch->Put(sync_id, CreateEntityData(specifics));
   }
-  std::move(callback).Run(std::move(batch));
+  return batch;
 }
 
 bool PasskeySyncBridge::IsEntityDataValid(
@@ -256,13 +256,17 @@ void PasskeySyncBridge::ApplyDisableSyncChanges(
   NotifyPasskeysChanged(std::move(changes));
 }
 
-base::WeakPtr<syncer::ModelTypeControllerDelegate>
-PasskeySyncBridge::GetModelTypeControllerDelegate() {
+base::WeakPtr<syncer::DataTypeControllerDelegate>
+PasskeySyncBridge::GetDataTypeControllerDelegate() {
   return change_processor()->GetControllerDelegate();
 }
 
 bool PasskeySyncBridge::IsReady() const {
   return ready_;
+}
+
+bool PasskeySyncBridge::IsEmpty() const {
+  return data_.empty();
 }
 
 base::flat_set<std::string> PasskeySyncBridge::GetAllSyncIds() const {
@@ -351,7 +355,7 @@ bool PasskeySyncBridge::DeletePasskey(const std::string& credential_id,
     // Remove only the passed credential.
     sync_ids_to_delete.emplace(passkey_it->first);
   }
-  std::unique_ptr<syncer::ModelTypeStore::WriteBatch> write_batch =
+  std::unique_ptr<syncer::DataTypeStore::WriteBatch> write_batch =
       store_->CreateWriteBatch();
   std::vector<PasskeyModelChange> changes;
   for (const std::string& sync_id : sync_ids_to_delete) {
@@ -371,6 +375,37 @@ bool PasskeySyncBridge::DeletePasskey(const std::string& credential_id,
   return true;
 }
 
+// The following implementation is more efficient than the simple one which
+// would iterate over all passkeys and delete them one by one.
+// Deleting all passkeys individually would also send out a notification to
+// the observers for each individual deletion. This implementation only sends
+// out a single notification for all deletions.
+// Shadow chains are not handled separately since all passkeys are deleted
+// anyway.
+void PasskeySyncBridge::DeleteAllPasskeys() {
+  CHECK(IsReady());
+
+  std::unique_ptr<syncer::DataTypeStore::WriteBatch> write_batch =
+      store_->CreateWriteBatch();
+  std::vector<PasskeyModelChange> changes;
+  for (const auto& [sync_id, passkey] : data_) {
+    changes.emplace_back(PasskeyModelChange::ChangeType::REMOVE,
+                         std::move(passkey));
+    change_processor()->Delete(sync_id,
+                               syncer::DeletionOrigin::FromLocation(FROM_HERE),
+                               write_batch->GetMetadataChangeList());
+    write_batch->DeleteData(sync_id);
+  }
+  data_.clear();
+  store_->CommitWriteBatch(
+      std::move(write_batch),
+      base::BindOnce(&PasskeySyncBridge::OnStoreCommitWriteBatch,
+                     weak_ptr_factory_.GetWeakPtr()));
+
+  // Sends out only a single notification for all deleted passkeys.
+  NotifyPasskeysChanged(std::move(changes));
+}
+
 bool PasskeySyncBridge::UpdatePasskey(const std::string& credential_id,
                                       PasskeyUpdate change) {
   // Find the credential with the given |credential_id|.
@@ -384,7 +419,7 @@ bool PasskeySyncBridge::UpdatePasskey(const std::string& credential_id,
   }
   passkey_it->second.set_user_name(std::move(change.user_name));
   passkey_it->second.set_user_display_name(std::move(change.user_display_name));
-  std::unique_ptr<syncer::ModelTypeStore::WriteBatch> write_batch =
+  std::unique_ptr<syncer::DataTypeStore::WriteBatch> write_batch =
       store_->CreateWriteBatch();
   change_processor()->Put(passkey_it->second.sync_id(),
                           CreateEntityData(passkey_it->second),
@@ -406,6 +441,8 @@ sync_pb::WebauthnCredentialSpecifics PasskeySyncBridge::CreatePasskey(
     base::span<const uint8_t> trusted_vault_key,
     int32_t trusted_vault_key_version,
     std::vector<uint8_t>* public_key_spki_der_out) {
+  CHECK(IsReady());
+
   auto [specifics, public_key_spki_der] =
       webauthn::passkey_model_utils::GeneratePasskeyAndEncryptSecrets(
           rp_id, user_entity, trusted_vault_key, trusted_vault_key_version);
@@ -422,6 +459,11 @@ sync_pb::WebauthnCredentialSpecifics PasskeySyncBridge::CreatePasskey(
 
 void PasskeySyncBridge::CreatePasskey(
     sync_pb::WebauthnCredentialSpecifics& passkey) {
+  // TODO(crbug.com/349547003): make it sure that all the callers check for
+  // that. If not, it's still safer to crash in this case to avoid losing the
+  // passkey.
+  CHECK(IsReady());
+
   CHECK(WebauthnCredentialSpecificsValid(passkey));
 
   std::string sync_id = passkey.sync_id();
@@ -441,11 +483,13 @@ std::string PasskeySyncBridge::AddNewPasskeyForTesting(
 void PasskeySyncBridge::AddPasskeyInternal(
     sync_pb::WebauthnCredentialSpecifics specifics) {
   CHECK(WebauthnCredentialSpecificsValid(specifics));
+  CHECK(IsReady());
+  CHECK(store_);
 
   std::string sync_id = specifics.sync_id();
   CHECK(!base::Contains(data_, sync_id));
 
-  std::unique_ptr<syncer::ModelTypeStore::WriteBatch> write_batch =
+  std::unique_ptr<syncer::DataTypeStore::WriteBatch> write_batch =
       store_->CreateWriteBatch();
   change_processor()->Put(sync_id, CreateEntityData(specifics),
                           write_batch->GetMetadataChangeList());
@@ -461,41 +505,30 @@ void PasskeySyncBridge::AddPasskeyInternal(
 
 void PasskeySyncBridge::OnCreateStore(
     const std::optional<syncer::ModelError>& error,
-    std::unique_ptr<syncer::ModelTypeStore> store) {
+    std::unique_ptr<syncer::DataTypeStore> store) {
   if (error) {
     change_processor()->ReportError(*error);
     return;
   }
   DCHECK(store);
   store_ = std::move(store);
-  store_->ReadAllData(base::BindOnce(&PasskeySyncBridge::OnStoreReadAllData,
-                                     weak_ptr_factory_.GetWeakPtr()));
+  store_->ReadAllDataAndMetadata(
+      base::BindOnce(&PasskeySyncBridge::OnStoreReadAllDataAndMetadata,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
-void PasskeySyncBridge::OnStoreReadAllData(
+void PasskeySyncBridge::OnStoreReadAllDataAndMetadata(
     const std::optional<syncer::ModelError>& error,
-    std::unique_ptr<syncer::ModelTypeStore::RecordList> entries) {
-  if (error) {
-    change_processor()->ReportError(*error);
-    return;
-  }
-  store_->ReadAllMetadata(
-      base::BindOnce(&PasskeySyncBridge::OnStoreReadAllMetadata,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(entries)));
-}
-
-void PasskeySyncBridge::OnStoreReadAllMetadata(
-    std::unique_ptr<syncer::ModelTypeStore::RecordList> entries,
-    const std::optional<syncer::ModelError>& error,
+    std::unique_ptr<syncer::DataTypeStore::RecordList> entries,
     std::unique_ptr<syncer::MetadataBatch> metadata_batch) {
-  TRACE_EVENT0("sync", "PasskeySyncBridge::OnStoreReadAllMetadata");
+  TRACE_EVENT0("sync", "PasskeySyncBridge::OnStoreReadAllDataAndMetadata");
   if (error) {
     change_processor()->ReportError(*error);
     return;
   }
 
   std::vector<PasskeyModelChange> changes;
-  for (const syncer::ModelTypeStore::Record& r : *entries) {
+  for (const syncer::DataTypeStore::Record& r : *entries) {
     sync_pb::WebauthnCredentialSpecifics specifics;
     if (!specifics.ParseFromString(r.value) || !specifics.has_sync_id()) {
       DVLOG(1) << "Invalid stored record: " << r.value;

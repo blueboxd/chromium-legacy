@@ -34,6 +34,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseActivityTestRule;
 import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterizedRunner;
@@ -41,6 +42,9 @@ import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Features.DisableFeatures;
+import org.chromium.base.test.util.Features.EnableFeatures;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.night_mode.ChromeNightModeTestUtils;
 import org.chromium.chrome.browser.ui.signin.R;
@@ -48,7 +52,6 @@ import org.chromium.chrome.browser.ui.signin.fullscreen_signin.UMADialogCoordina
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
 import org.chromium.ui.test.util.BlankUiTestActivity;
@@ -72,7 +75,7 @@ public class UMADialogTest {
     public final ChromeRenderTestRule mRenderTestRule =
             ChromeRenderTestRule.Builder.withPublicCorpus()
                     .setBugComponent(ChromeRenderTestRule.Component.UI_BROWSER_FIRST_RUN)
-                    .setRevision(1)
+                    .setRevision(2)
                     .build();
 
     @Mock private Listener mListenerMock;
@@ -81,7 +84,7 @@ public class UMADialogTest {
 
     @ParameterAnnotations.UseMethodParameterBefore(NightModeTestUtils.NightModeParams.class)
     public void setupNightMode(boolean nightModeEnabled) {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     ChromeNightModeTestUtils.setUpNightModeForChromeActivity(nightModeEnabled);
                 });
@@ -105,11 +108,76 @@ public class UMADialogTest {
 
     @After
     public void tearDown() {
-        TestThreadUtils.runOnUiThreadBlocking(mCoordinator::dismissDialogForTesting);
+        ThreadUtils.runOnUiThreadBlocking(mCoordinator::dismissDialogForTesting);
     }
 
     @Test
     @MediumTest
+    @DisableFeatures(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
+    public void
+            testTurningOnAllowCrashUploadWhenCrashUploadByNotAllowedDefault_replaceSyncBySigninDisabled() {
+        showFreUMADialog(/* allowMetricsAndCrashUploading= */ false);
+
+        onView(withId(R.id.fre_uma_dialog_switch))
+                .inRoot(isDialog())
+                .check(matches(not(isChecked())))
+                .perform(click());
+        onView(withText(R.string.done)).inRoot(isDialog()).perform(click());
+
+        onView(withText(R.string.signin_fre_uma_dialog_title)).check(doesNotExist());
+        verify(mListenerMock).onAllowMetricsAndCrashUploadingChecked(true);
+    }
+
+    @Test
+    @MediumTest
+    @DisableFeatures(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
+    public void
+            testTurningOffAllowCrashUploadWhenCrashUploadAllowedByDefault_replaceSyncBySigninDisabled() {
+        showFreUMADialog(/* allowMetricsAndCrashUploading= */ true);
+
+        onView(withId(R.id.fre_uma_dialog_switch)).inRoot(isDialog()).perform(click());
+
+        onView(withText(R.string.done)).perform(click());
+        onView(withText(R.string.signin_fre_uma_dialog_title)).check(doesNotExist());
+        verify(mListenerMock).onAllowMetricsAndCrashUploadingChecked(false);
+    }
+
+    @Test
+    @MediumTest
+    @DisableFeatures(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
+    public void testLeavingAllowCrashUploadOn_replaceSyncBySigninDisabled() {
+        showFreUMADialog(/* allowMetricsAndCrashUploading= */ true);
+        onView(withId(R.id.fre_uma_dialog_switch)).inRoot(isDialog()).check(matches(isChecked()));
+
+        onView(withText(R.string.done)).perform(click());
+
+        onView(withText(R.string.signin_fre_uma_dialog_title)).check(doesNotExist());
+        verify(mListenerMock, never()).onAllowMetricsAndCrashUploadingChecked(anyBoolean());
+    }
+
+    @Test
+    @LargeTest
+    @Feature("RenderTest")
+    @DisableFeatures(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
+    @ParameterAnnotations.UseMethodParameter(NightModeTestUtils.NightModeParams.class)
+    public void testFreUMADialogView_replaceSyncBySigninDisabled(boolean nightModeEnabled)
+            throws IOException {
+        showFreUMADialog(/* allowMetricsAndCrashUploading= */ true);
+
+        CriteriaHelper.pollUiThread(
+                () -> {
+                    return mCoordinator
+                            .getDialogViewForTesting()
+                            .findViewById(R.id.fre_uma_dialog_dismiss_button)
+                            .isShown();
+                });
+        mRenderTestRule.render(
+                mCoordinator.getDialogViewForTesting(), "fre_uma_dialog_uno_disabled");
+    }
+
+    @Test
+    @MediumTest
+    @EnableFeatures(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
     public void testTurningOnAllowCrashUploadWhenCrashUploadByNotAllowedDefault() {
         showFreUMADialog(/* allowMetricsAndCrashUploading= */ false);
 
@@ -125,6 +193,7 @@ public class UMADialogTest {
 
     @Test
     @MediumTest
+    @EnableFeatures(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
     public void testTurningOffAllowCrashUploadWhenCrashUploadAllowedByDefault() {
         showFreUMADialog(/* allowMetricsAndCrashUploading= */ true);
 
@@ -137,6 +206,7 @@ public class UMADialogTest {
 
     @Test
     @MediumTest
+    @EnableFeatures(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
     public void testLeavingAllowCrashUploadOn() {
         showFreUMADialog(/* allowMetricsAndCrashUploading= */ true);
         onView(withId(R.id.fre_uma_dialog_switch)).inRoot(isDialog()).check(matches(isChecked()));
@@ -150,6 +220,7 @@ public class UMADialogTest {
     @Test
     @LargeTest
     @Feature("RenderTest")
+    @EnableFeatures(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
     @ParameterAnnotations.UseMethodParameter(NightModeTestUtils.NightModeParams.class)
     public void testFreUMADialogView(boolean nightModeEnabled) throws IOException {
         showFreUMADialog(/* allowMetricsAndCrashUploading= */ true);
@@ -165,7 +236,7 @@ public class UMADialogTest {
     }
 
     private void showFreUMADialog(boolean allowMetricsAndCrashUploading) {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     final Activity activity = activityTestRule.getActivity();
                     mCoordinator =

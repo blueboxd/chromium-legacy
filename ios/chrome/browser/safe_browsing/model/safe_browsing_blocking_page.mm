@@ -8,7 +8,9 @@
 #import "base/memory/ptr_util.h"
 #import "base/strings/string_number_conversions.h"
 #import "base/time/time.h"
+#import "components/feature_engagement/public/event_constants.h"
 #import "components/feature_engagement/public/feature_list.h"
+#import "components/feature_engagement/public/tracker.h"
 #import "components/prefs/pref_service.h"
 #import "components/safe_browsing/core/browser/safe_browsing_metrics_collector.h"
 #import "components/safe_browsing/core/common/features.h"
@@ -18,6 +20,7 @@
 #import "components/security_interstitials/core/base_safe_browsing_error_ui.h"
 #import "components/security_interstitials/core/metrics_helper.h"
 #import "components/security_interstitials/core/safe_browsing_loud_error_ui.h"
+#import "ios/chrome/browser/feature_engagement/model/tracker_factory.h"
 #import "ios/chrome/browser/safe_browsing/model/safe_browsing_metrics_collector_factory.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
@@ -59,7 +62,7 @@ BaseSafeBrowsingErrorUI::SBErrorDisplayOptions GetDefaultDisplayOptions(
             SECURITY_SENSITIVE_SAFE_BROWSING_INTERSTITIAL);
   }
   return BaseSafeBrowsingErrorUI::SBErrorDisplayOptions(
-      resource.IsMainPageLoadPendingWithSyncCheck(), resource.is_subresource,
+      resource.IsMainPageLoadPendingWithSyncCheck(),
       /*is_extended_reporting_opt_in_allowed=*/false,
       /*is_off_the_record=*/false,
       /*is_extended_reporting=*/false,
@@ -95,7 +98,6 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
       is_main_page_load_blocked_(resource.IsMainPageLoadPendingWithSyncCheck()),
       error_ui_(std::make_unique<SafeBrowsingLoudErrorUI>(
           resource.url,
-          GetMainFrameUrl(resource),
           GetUnsafeResourceInterstitialReason(resource),
           GetDefaultDisplayOptions(resource),
           client->GetApplicationLocale(),
@@ -144,6 +146,13 @@ void SafeBrowsingBlockingPage::PopulateInterstitialStrings(
 }
 
 void SafeBrowsingBlockingPage::ShowInfobar() {
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(web_state()->GetBrowserState());
+  feature_engagement::Tracker* tracker =
+      feature_engagement::TrackerFactory::GetForBrowserState(browser_state);
+  tracker->NotifyEvent(
+      feature_engagement::events::kEnhancedSafeBrowsingPromoCriterionMet);
+
   if (!base::FeatureList::IsEnabled(
           safe_browsing::kEnhancedSafeBrowsingPromo)) {
     return;
@@ -217,7 +226,10 @@ void SafeBrowsingBlockingPage::SafeBrowsingControllerClient::
   const PrefService* prefs = browser_state->GetPrefs();
   bool is_enterprise_managed =
       safe_browsing::IsSafeBrowsingPolicyManaged(*prefs);
-  if (web_state() && !is_enterprise_managed) {
+  bool is_standard_safe_browsing_user =
+      safe_browsing::GetSafeBrowsingState(*prefs) ==
+      safe_browsing::SafeBrowsingState::STANDARD_PROTECTION;
+  if (web_state() && !is_enterprise_managed && is_standard_safe_browsing_user) {
     SafeBrowsingTabHelper::FromWebState(web_state())
         ->ShowEnhancedSafeBrowsingInfobar();
   }

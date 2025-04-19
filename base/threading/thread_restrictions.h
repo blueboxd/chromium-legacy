@@ -158,9 +158,10 @@ StartupProfilePathInfo GetStartupProfilePath(
     const base::CommandLine& command_line,
     bool ignore_profile_picker);
 
-bool EnsureBrowserStateDirectoriesCreated(const base::FilePath&,
-                                          const base::FilePath&,
-                                          const base::FilePath&);
+#if BUILDFLAG(IS_IOS)
+class BrowserStateDirectoryBuilder;
+#endif
+
 Profile* GetLastProfileMac();
 bool HasWaylandDisplay(base::Environment* env);
 
@@ -318,6 +319,7 @@ class BleV2GattClient;
 class BleV2Medium;
 class ScheduledExecutor;
 class SubmittableExecutor;
+class WifiDirectSocket;
 }  // namespace nearby::chrome
 namespace media {
 class AudioInputDevice;
@@ -672,11 +674,11 @@ class BASE_EXPORT [[maybe_unused, nodiscard]] ScopedAllowBlocking {
   friend class base::win::OSInfo;
   friend class content::WebContentsImpl;  // http://crbug.com/1262162
 #endif
+#if BUILDFLAG(IS_IOS)
+  friend class ::BrowserStateDirectoryBuilder;
+#endif
 
   // Sorted by function name (with namespace), ignoring the return type.
-  friend bool ::EnsureBrowserStateDirectoriesCreated(const base::FilePath&,
-                                                     const base::FilePath&,
-                                                     const base::FilePath&);
   friend Profile* ::GetLastProfileMac();  // http://crbug.com/1176734
   // Note: This function return syntax is required so the "::" doesn't get
   // mis-parsed. See https://godbolt.org/z/KGhnPxfc8 for the issue.
@@ -790,6 +792,7 @@ class BASE_EXPORT [[maybe_unused, nodiscard]] ScopedAllowBaseSyncPrimitives {
   friend class nearby::chrome::SubmittableExecutor;
   friend class nearby::chrome::BleV2GattClient;
   friend class nearby::chrome::BleV2Medium;
+  friend class nearby::chrome::WifiDirectSocket;
   friend class media::AudioOutputDevice;
   friend class media::BlockingUrlProtocol;
   template <class WorkerInterface,

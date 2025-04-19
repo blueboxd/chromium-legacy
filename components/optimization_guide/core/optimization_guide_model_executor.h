@@ -7,6 +7,7 @@
 
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
+#include "base/observer_list_types.h"
 #include "base/types/expected.h"
 #include "components/optimization_guide/core/model_execution/feature_keys.h"
 #include "components/optimization_guide/core/model_execution/optimization_guide_model_execution_error.h"
@@ -58,11 +59,20 @@ using OptimizationGuideModelExecutionResultCallback =
     base::OnceCallback<void(OptimizationGuideModelExecutionResult,
                             std::unique_ptr<ModelQualityLogEntry>)>;
 
+// A callback for receiving a score from the model, or nullopt if the model
+// is not running.
+using OptimizationGuideModelScoreCallback =
+    base::OnceCallback<void(std::optional<float>)>;
+
 // The callback for receiving streamed output from the model. The log entry will
 // be null until `StreamingResponse.is_complete` is true.
 using OptimizationGuideModelExecutionResultStreamingCallback =
     base::RepeatingCallback<void(
         OptimizationGuideModelStreamingExecutionResult)>;
+
+// The callback for receiving the token size of the given input.
+using OptimizationGuideModelSizeInTokenCallback =
+    base::OnceCallback<void(uint32_t)>;
 
 // Params used to control sampling output tokens for the on-device model.
 struct SamplingParams {
@@ -113,12 +123,34 @@ enum class OnDeviceModelEligibilityReason {
   kFeatureExecutionNotEnabled = 11,
   // On-device model adaptation was required but not available.
   kModelAdaptationNotAvailable = 12,
+  // Validation has not completed for the model yet.
+  kValidationPending = 13,
+  // Validation failed for the model.
+  kValidationFailed = 14,
+  // There was no on-device model available, but it may be downloaded and
+  // installed later.
+  kModelToBeInstalled = 15,
 
   // This must be kept in sync with
   // OptimizationGuideOnDeviceModelEligibilityReason in optimization/enums.xml.
 
   // Insert new values before this line.
-  kMaxValue = kModelAdaptationNotAvailable,
+  kMaxValue = kModelToBeInstalled,
+};
+
+// Observer that is notified when the on-device model availability changes for
+// the on-device eligible features.
+class OnDeviceModelAvailabilityObserver : public base::CheckedObserver {
+ public:
+  // Notifies the consumers whenever the on-device model availability for the
+  // `feature` changes. `reason` indicates the current availability of the
+  // model. This could be invoked without the model availability state toggling.
+  // This is not called automatically when the observer is added initially.
+  // Consumers should call `OnDeviceModelServiceController::CanCreateSession` to
+  // check the initial (or current) model availability state.
+  virtual void OnDeviceModelAvailablityChanged(
+      ModelBasedCapabilityKey feature,
+      OnDeviceModelEligibilityReason reason) = 0;
 };
 
 // Interface for model execution.
@@ -139,6 +171,12 @@ class OptimizationGuideModelExecutor {
     virtual void AddContext(
         const google::protobuf::MessageLite& request_metadata) = 0;
 
+    // Gets the probability score of the first token in `text` on top of the
+    // current context. Returns nullopt if there is no on-device session (such
+    // as due to a disconnect).
+    virtual void Score(const std::string& text,
+                       OptimizationGuideModelScoreCallback callback) = 0;
+
     // Execute the model with `request_metadata` and streams the result to
     // `callback`. The execute call will include context from the last
     // AddContext() call. Data provided to the last AddContext() call does not
@@ -148,6 +186,12 @@ class OptimizationGuideModelExecutor {
     virtual void ExecuteModel(
         const google::protobuf::MessageLite& request_metadata,
         OptimizationGuideModelExecutionResultStreamingCallback callback) = 0;
+
+    // Call `GetSizeInTokens()` from the model to get the size of the given text
+    // in tokens. The result will be passed back through the callback.
+    virtual void GetSizeInTokens(
+        const std::string& text,
+        OptimizationGuideModelSizeInTokenCallback callback) = 0;
   };
 
   // Whether an on-device session can be created for `feature`. An optional
@@ -170,6 +214,14 @@ class OptimizationGuideModelExecutor {
       ModelBasedCapabilityKey feature,
       const google::protobuf::MessageLite& request_metadata,
       OptimizationGuideModelExecutionResultCallback callback) = 0;
+
+  // Observer for on-device model availability changes.
+  virtual void AddOnDeviceModelAvailabilityChangeObserver(
+      optimization_guide::ModelBasedCapabilityKey feature,
+      OnDeviceModelAvailabilityObserver* observer) {}
+  virtual void RemoveOnDeviceModelAvailabilityChangeObserver(
+      optimization_guide::ModelBasedCapabilityKey feature,
+      OnDeviceModelAvailabilityObserver* observer) {}
 };
 
 }  // namespace optimization_guide

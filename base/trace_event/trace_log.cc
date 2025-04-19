@@ -27,13 +27,15 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/raw_ptr_exclusion.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/memory/stack_allocated.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/process/process.h"
 #include "base/process/process_metrics.h"
 #include "base/ranges/algorithm.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
@@ -43,6 +45,7 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_id_name_manager.h"
 #include "base/time/time.h"
@@ -53,12 +56,8 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_buffer.h"
 #include "base/trace_event/trace_event.h"
-#include "build/build_config.h"
-
-#include "base/numerics/safe_conversions.h"
-#include "base/run_loop.h"
-#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/tracing/perfetto_platform.h"
+#include "build/build_config.h"
 #include "third_party/perfetto/include/perfetto/ext/trace_processor/export_json.h"  // nogncheck
 #include "third_party/perfetto/include/perfetto/trace_processor/trace_processor_storage.h"  // nogncheck
 #include "third_party/perfetto/include/perfetto/tracing/console_interceptor.h"
@@ -258,19 +257,24 @@ void OnAddLegacyTraceEvent(TraceEvent* trace_event,
   perfetto::DynamicCategory category(
       TraceLog::GetInstance()->GetCategoryGroupName(
           trace_event->category_group_enabled()));
-  auto write_args = [trace_event](perfetto::EventContext ctx) {
+
+  auto phase = trace_event->phase();
+  if (phase == TRACE_EVENT_PHASE_COMPLETE) {
+    phase = TRACE_EVENT_PHASE_BEGIN;
+  }
+
+  auto write_args = [trace_event, phase](perfetto::EventContext ctx) {
     WriteDebugAnnotations(trace_event, ctx.event());
     uint32_t id_flags = trace_event->flags() & (TRACE_EVENT_FLAG_HAS_ID |
                                                 TRACE_EVENT_FLAG_HAS_LOCAL_ID |
                                                 TRACE_EVENT_FLAG_HAS_GLOBAL_ID);
     if (!id_flags &&
-        perfetto::internal::TrackEventLegacy::PhaseToType(
-            trace_event->phase()) !=
+        perfetto::internal::TrackEventLegacy::PhaseToType(phase) !=
             perfetto::protos::pbzero::TrackEvent::TYPE_UNSPECIFIED) {
       return;
     }
     auto* legacy_event = ctx.event()->set_legacy_event();
-    legacy_event->set_phase(trace_event->phase());
+    legacy_event->set_phase(phase);
     switch (id_flags) {
       case TRACE_EVENT_FLAG_HAS_ID:
         legacy_event->set_unscoped_id(trace_event->id());
@@ -286,14 +290,11 @@ void OnAddLegacyTraceEvent(TraceEvent* trace_event,
     }
   };
 
-  auto phase = trace_event->phase();
   auto flags = trace_event->flags();
   base::TimeTicks timestamp = trace_event->timestamp().is_null()
                                   ? TRACE_TIME_TICKS_NOW()
                                   : trace_event->timestamp();
-  if (phase == TRACE_EVENT_PHASE_COMPLETE) {
-    phase = TRACE_EVENT_PHASE_BEGIN;
-  } else if (phase == TRACE_EVENT_PHASE_INSTANT) {
+  if (phase == TRACE_EVENT_PHASE_INSTANT) {
     auto scope = flags & TRACE_EVENT_FLAG_SCOPE_MASK;
     switch (scope) {
       case TRACE_EVENT_SCOPE_GLOBAL:
@@ -427,6 +428,8 @@ class JsonStringOutputWriter
 // A helper class that allows the lock to be acquired in the middle of the scope
 // and unlocks at the end of scope if locked.
 class TraceLog::OptionalAutoLock {
+  STACK_ALLOCATED();
+
  public:
   explicit OptionalAutoLock(Lock* lock) : lock_(lock) {}
 
@@ -448,8 +451,7 @@ class TraceLog::OptionalAutoLock {
   }
 
  private:
-  // This field is not a raw_ptr<> because it is needed for lock annotations.
-  RAW_PTR_EXCLUSION Lock* lock_;
+  Lock* lock_;
   bool locked_ = false;
 };
 
@@ -831,6 +833,12 @@ void TraceLog::SetEnabled(const TraceConfig& trace_config,
   SetEnabledImpl(trace_config, perfetto_config);
 }
 
+std::vector<TraceLog::TrackEventSession> TraceLog::GetTrackEventSessions()
+    const {
+  AutoLock lock(track_event_lock_);
+  return track_event_sessions_;
+}
+
 perfetto::DataSourceConfig TraceLog::GetCurrentTrackEventDataSourceConfig()
     const {
   AutoLock lock(track_event_lock_);
@@ -1190,9 +1198,11 @@ void TraceLog::OnTraceData(const char* data, size_t size, bool has_more) {
   }
   if (has_more)
     return;
-  trace_processor_->NotifyEndOfFile();
 
-  auto status = perfetto::trace_processor::json::ExportJson(
+  auto status = trace_processor_->NotifyEndOfFile();
+  DCHECK(status.ok()) << status.message();
+
+  status = perfetto::trace_processor::json::ExportJson(
       trace_processor_.get(), json_output_writer_.get());
   DCHECK(status.ok()) << status.message();
   trace_processor_.reset();

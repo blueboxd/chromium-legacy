@@ -81,6 +81,9 @@ suite('with isRevampWayfindingEnabled set to true', () => {
       bookmarksManaged: false,
       bookmarksRegistered: false,
       bookmarksSynced: false,
+      cookiesManaged: false,
+      cookiesRegistered: false,
+      cookiesSynced: false,
       encryptAllData: false,
       extensionsManaged: false,
       extensionsRegistered: false,
@@ -94,6 +97,9 @@ suite('with isRevampWayfindingEnabled set to true', () => {
       preferencesManaged: false,
       preferencesRegistered: false,
       preferencesSynced: false,
+      productComparisonManaged: false,
+      productComparisonRegistered: false,
+      productComparisonSynced: false,
       readingListManaged: false,
       readingListRegistered: false,
       readingListSynced: false,
@@ -375,8 +381,12 @@ suite('<os-settings-privacy-page>', () => {
   test('Lock screen row is focused when returning from subpage', async () => {
     Router.getInstance().navigateTo(routes.OS_PRIVACY);
 
+    const tokenLabel = loadTimeData.getBoolean('isAuthPanelEnabled') ?
+        'authTokenReply_' :
+        'authTokenInfo_';
+
     const quickUnlockPrivateApi = new FakeQuickUnlockPrivate();
-    privacyPage.set('authTokenInfo_', quickUnlockPrivateApi.getFakeToken());
+    privacyPage.set(tokenLabel, quickUnlockPrivateApi.getFakeToken());
 
     const triggerSelector = '#lockScreenRow';
     const subpageTrigger =
@@ -403,13 +413,17 @@ suite('<os-settings-privacy-page>', () => {
       fingerprintUnlockEnabled: true,
     });
 
+    const tokenLabel = loadTimeData.getBoolean('isAuthPanelEnabled') ?
+        'authTokenReply_' :
+        'authTokenInfo_';
+
     privacyPage = document.createElement('os-settings-privacy-page');
     document.body.appendChild(privacyPage);
 
     await waitAfterNextRender(privacyPage);
 
     const quickUnlockPrivateApi = new FakeQuickUnlockPrivate();
-    privacyPage['authTokenInfo_'] = quickUnlockPrivateApi.getFakeToken();
+    privacyPage[tokenLabel] = quickUnlockPrivateApi.getFakeToken();
 
     Router.getInstance().navigateTo(routes.LOCK_SCREEN);
     flush();
@@ -447,13 +461,16 @@ suite('<os-settings-privacy-page>', () => {
     fingerprintTrigger.click();
 
     // Invalidate the auth token by firing an event.
-    assertNotEquals(undefined, privacyPage.get('authTokenInfo_'));
+    assertNotEquals(undefined, privacyPage.get(tokenLabel));
     const event = new CustomEvent('invalidate-auth-token-requested');
     lockScreenPage.dispatchEvent(event);
-    assertEquals(undefined, privacyPage.get('authTokenInfo_'));
+    assertEquals(undefined, privacyPage.get(tokenLabel));
 
     assertEquals(routes.FINGERPRINT, Router.getInstance().currentRoute);
-    assertTrue(privacyPage.get('showPasswordPromptDialog_'));
+
+    if (!loadTimeData.getBoolean('isAuthPanelEnabled')) {
+      assertTrue(privacyPage.get('showPasswordPromptDialog_'));
+    }
   });
 
   test('Smart privacy hidden when both features disabled', async () => {

@@ -13,7 +13,6 @@
 #include "chrome/browser/accessibility/media_app/ax_media_app.h"
 #include "chrome/browser/accessibility/media_app/ax_media_app_untrusted_handler.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "services/screen_ai/buildflags/buildflags.h"
 #include "ui/accessibility/ax_tree_manager.h"
 
 namespace content {
@@ -65,8 +64,8 @@ class TestAXMediaAppUntrustedHandler : public AXMediaAppUntrustedHandler {
     return pages_;
   }
 
-  const std::vector<const ui::AXTreeUpdate>&
-  GetPendingSerializedUpdatesForTesting() const {
+  const std::vector<ui::AXTreeUpdate>& GetPendingSerializedUpdatesForTesting()
+      const {
     return *pending_serialized_updates_for_testing_;
   }
 
@@ -88,10 +87,8 @@ class TestAXMediaAppUntrustedHandler : public AXMediaAppUntrustedHandler {
 
   void DisablePostamblePageForTesting() { has_postamble_page_ = false; }
 
-#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
   void CreateFakeOpticalCharacterRecognizerForTesting(bool return_empty);
   void FlushForTesting();
-#endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
   void PushDirtyPageForTesting(const std::string& dirty_page_id);
   std::string PopDirtyPageForTesting();

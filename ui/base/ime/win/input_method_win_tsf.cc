@@ -8,7 +8,6 @@
 #include "ui/base/ime/virtual_keyboard_controller.h"
 #include "ui/base/ime/win/tsf_bridge.h"
 #include "ui/base/ime/win/tsf_event_router.h"
-#include "ui/base/ime/win/tsf_input_scope.h"
 
 namespace ui {
 
@@ -57,7 +56,8 @@ InputMethodWinTSF::~InputMethodWinTSF() {
   //
   // See crbug.com/41488962
   if (ui::TSFBridge::GetInstance()) {
-    ui::TSFBridge::GetInstance()->RemoveImeKeyEventDispatcher();
+    ui::TSFBridge::GetInstance()->RemoveImeKeyEventDispatcher(
+        InputMethodBase::ime_key_event_dispatcher());
   }
 }
 
@@ -80,7 +80,8 @@ void InputMethodWinTSF::OnBlur() {
     return;
   }
   tsf_event_router_->SetManager(nullptr);
-  ui::TSFBridge::GetInstance()->RemoveImeKeyEventDispatcher();
+  ui::TSFBridge::GetInstance()->RemoveImeKeyEventDispatcher(
+      InputMethodBase::ime_key_event_dispatcher());
 }
 
 bool InputMethodWinTSF::OnUntranslatedIMEMessage(

@@ -16,7 +16,6 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 
 import androidx.annotation.Nullable;
 
@@ -24,7 +23,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
@@ -35,8 +33,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Token;
 import org.chromium.base.supplier.LazyOneshotSupplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.Features;
-import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -55,21 +51,11 @@ import java.util.Set;
 
 /** Unit tests for {@link HistoricalTabModelObserver}. */
 @RunWith(BaseRobolectricTestRunner.class)
-@EnableFeatures({
-    ChromeFeatureList.ANDROID_TAB_GROUP_STABLE_IDS,
-    ChromeFeatureList.TAB_GROUP_PARITY_ANDROID
-})
+@EnableFeatures({ChromeFeatureList.TAB_GROUP_PARITY_ANDROID})
 public class HistoricalTabModelObserverUnitTest {
-    private static final String TAB_GROUP_TITLES_FILE_NAME = "tab_group_titles";
-    private static final String TAB_GROUP_COLORS_FILE_NAME = "tab_group_colors";
-    private static final int INVALID_COLOR_ID = -1;
-
     @Rule public MockitoRule mMockitoRule = MockitoJUnit.rule();
-    @Rule public TestRule mFeatureProcessor = new Features.JUnitProcessor();
 
     private Context mContext;
-    @Mock private SharedPreferences mSharedPreferencesTitle;
-    @Mock private SharedPreferences mSharedPreferencesColor;
     @Mock private TabGroupModelFilter mTabGroupModelFilter;
     @Mock private TabModel mTabModel;
     @Mock private Profile mProfile;
@@ -89,10 +75,6 @@ public class HistoricalTabModelObserverUnitTest {
         verify(mTabGroupModelFilter).addObserver(mObserver);
 
         mContext = spy(ContextUtils.getApplicationContext());
-        when(mContext.getSharedPreferences(TAB_GROUP_TITLES_FILE_NAME, Context.MODE_PRIVATE))
-                .thenReturn(mSharedPreferencesTitle);
-        when(mContext.getSharedPreferences(TAB_GROUP_COLORS_FILE_NAME, Context.MODE_PRIVATE))
-                .thenReturn(mSharedPreferencesColor);
         ContextUtils.initApplicationContextForTests(mContext);
     }
 
@@ -104,7 +86,7 @@ public class HistoricalTabModelObserverUnitTest {
 
     @Test
     public void testEmpty() {
-        mObserver.onFinishingMultipleTabClosure(new ArrayList<Tab>(), /* canRestore= */ true);
+        mObserver.onFinishingMultipleTabClosure(new ArrayList<>(), /* canRestore= */ true);
 
         verifyNoMoreInteractions(mHistoricalTabSaver);
     }
@@ -157,22 +139,6 @@ public class HistoricalTabModelObserverUnitTest {
     }
 
     @Test
-    @DisableFeatures(ChromeFeatureList.ANDROID_TAB_GROUP_STABLE_IDS)
-    public void testTabGroupWithSingleTab_NotSupported_NotUndoable() {
-        int rootId = 123;
-        MockTab mockTab = createMockTab(rootId);
-        String title = "bar";
-        @TabGroupColorId int color = TabGroupColorId.GREY;
-        createGroup(null, title, color, new MockTab[] {mockTab});
-        when(mTabGroupModelFilter.isTabInTabGroup(mockTab)).thenReturn(false);
-
-        mObserver.onFinishingMultipleTabClosure(
-                Collections.singletonList(mockTab), /* canRestore= */ true);
-
-        verify(mHistoricalTabSaver).createHistoricalTab(eq(mockTab));
-    }
-
-    @Test
     public void testTabGroupWithSingleTab_Undoable() {
         int rootId = 123;
         MockTab mockTab = createMockTab(rootId);
@@ -200,24 +166,6 @@ public class HistoricalTabModelObserverUnitTest {
         assertEquals(title, group.getGroupTitle());
         assertEquals(color, group.getGroupColor());
         assertEquals(mockTab, group.getTabs().get(0));
-    }
-
-    @Test
-    @DisableFeatures(ChromeFeatureList.ANDROID_TAB_GROUP_STABLE_IDS)
-    public void testTabGroupWithSingleTab_NotSupported_Undoable() {
-        int rootId = 123;
-        MockTab mockTab = createMockTab(rootId);
-        String title = "bar";
-        @TabGroupColorId int color = TabGroupColorId.GREY;
-        createGroup(null, title, color, new MockTab[] {mockTab});
-        when(mTabGroupModelFilter.getRelatedTabCountForRootId(rootId)).thenReturn(1);
-        when(mTabGroupModelFilter.tabGroupExistsForRootId(rootId)).thenReturn(false);
-        when(mTabGroupModelFilter.isTabInTabGroup(mockTab)).thenReturn(false);
-
-        mObserver.onFinishingMultipleTabClosure(
-                Collections.singletonList(mockTab), /* canRestore= */ true);
-
-        verify(mHistoricalTabSaver).createHistoricalTab(eq(mockTab));
     }
 
     @Test
@@ -341,7 +289,7 @@ public class HistoricalTabModelObserverUnitTest {
         createGroup(tabGroupId, title, color, new MockTab[] {mockTab0});
         when(mTabGroupModelFilter.isTabGroupHiding(tabGroupId)).thenReturn(true);
         when(mTabGroupModelFilter.getLazyAllTabGroupIdsInComprehensiveModel(any()))
-                .thenReturn(LazyOneshotSupplier.fromValue(new HashSet<Token>()));
+                .thenReturn(LazyOneshotSupplier.fromValue(new HashSet<>()));
 
         MockTab[] tabList = new MockTab[] {mockTab0};
         mObserver.onFinishingMultipleTabClosure(Arrays.asList(tabList), /* canRestore= */ true);
@@ -379,7 +327,7 @@ public class HistoricalTabModelObserverUnitTest {
         tabList = new MockTab[] {mockTab1};
         createGroup(tabGroupId, title, color, tabList);
         when(mTabGroupModelFilter.getLazyAllTabGroupIdsInComprehensiveModel(any()))
-                .thenReturn(LazyOneshotSupplier.fromValue(new HashSet<Token>()));
+                .thenReturn(LazyOneshotSupplier.fromValue(new HashSet<>()));
         mObserver.onFinishingMultipleTabClosure(Arrays.asList(tabList), true);
 
         ArgumentCaptor<List<HistoricalEntry>> arg = ArgumentCaptor.forClass((Class) List.class);
@@ -414,7 +362,7 @@ public class HistoricalTabModelObserverUnitTest {
         tabList = new MockTab[] {mockTab1, mockTab2};
         createGroup(tabGroupId, title, color, new MockTab[] {mockTab1, mockTab2});
         when(mTabGroupModelFilter.getLazyAllTabGroupIdsInComprehensiveModel(any()))
-                .thenReturn(LazyOneshotSupplier.fromValue(new HashSet<Token>()));
+                .thenReturn(LazyOneshotSupplier.fromValue(new HashSet<>()));
         mObserver.onFinishingMultipleTabClosure(Arrays.asList(tabList), true);
 
         ArgumentCaptor<List<HistoricalEntry>> arg = ArgumentCaptor.forClass((Class) List.class);
@@ -510,9 +458,8 @@ public class HistoricalTabModelObserverUnitTest {
         assert tabList.length != 0;
 
         final int rootId = tabList[0].getId();
-        when(mSharedPreferencesTitle.getString(String.valueOf(rootId), null)).thenReturn(title);
-        when(mSharedPreferencesColor.getInt(String.valueOf(rootId), INVALID_COLOR_ID))
-                .thenReturn(color);
+        when(mTabGroupModelFilter.getTabGroupTitle(rootId)).thenReturn(title);
+        when(mTabGroupModelFilter.getTabGroupColorWithFallback(rootId)).thenReturn(color);
         when(mTabGroupModelFilter.getRelatedTabCountForRootId(rootId)).thenReturn(tabList.length);
         when(mTabGroupModelFilter.tabGroupExistsForRootId(rootId)).thenReturn(true);
         for (MockTab tab : tabList) {

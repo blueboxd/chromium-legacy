@@ -47,11 +47,14 @@ source_set("browser") {
     "//components/autofill/ios/form_util:child_frame_registrar",
     "//components/autofill/ios/form_util:form_handler_feature",
     "//components/autofill/ios/form_util:form_util_feature",
+    "//components/feature_engagement/public",
+    "//components/plus_addresses",
     "//components/prefs:prefs",
     "//components/prefs/ios",
     "//components/resources:components_resources_grit",
     "//components/ukm/ios:ukm_url_recorder",
     "//google_apis",
+    "//ios/chrome/browser/shared/public/features",
     "//ios/web/common",
     "//ios/web/public",
     "//ios/web/public/deprecated",
@@ -106,6 +109,7 @@ optimize_ts("suggestion_controller_js") {
 source_set("test_support") {
   testonly = true
   sources = [
+    "autofill_driver_ios_test_api.h",
     "credit_card_save_manager_test_observer_bridge.h",
     "credit_card_save_manager_test_observer_bridge.mm",
     "fake_autofill_agent.h",
@@ -120,6 +124,7 @@ source_set("test_support") {
     "//base",
     "//base/test:test_support",
     "//components/autofill/core/browser",
+    "//components/autofill/core/browser:test_support",
     "//components/leveldb_proto:leveldb_proto",
     "//ios/web/public",
     "//ios/web/public/js_messaging",
@@ -131,6 +136,7 @@ source_set("unit_tests") {
   sources = [
     "autofill_across_iframes_unittest.mm",
     "autofill_agent_unittests.mm",
+    "autofill_driver_ios_factory_unittest.mm",
     "autofill_util_unittests.mm",
     "autofill_xhr_sumission_detection_unittest.mm",
     "form_suggestion_provider_query_unittests.mm",
@@ -144,6 +150,7 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/autofill/core/browser:test_support",
     "//components/autofill/core/common",
+    "//components/autofill/core/common:test_support",
     "//components/autofill/ios/common",
     "//components/autofill/ios/form_util",
     "//components/autofill/ios/form_util:child_frame_registrar",

@@ -6,15 +6,21 @@
 
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
+#include "ash/frame/snap_controller_impl.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_util.h"
+#include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_utils.h"
+#include "ash/wm/snap_group/snap_group_controller.h"
 #include "ash/wm/splitview/split_view_constants.h"
+#include "ash/wm/splitview/split_view_test_util.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
+#include "ash/wm/workspace/phantom_window_controller.h"
 #include "base/check_op.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/raw_ptr.h"
@@ -24,6 +30,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/frame/caption_buttons/frame_caption_button_container_view.h"
+#include "chromeos/ui/frame/caption_buttons/snap_controller.h"
 #include "chromeos/ui/frame/default_frame_header.h"
 #include "chromeos/ui/frame/multitask_menu/multitask_button.h"
 #include "chromeos/ui/frame/multitask_menu/multitask_menu.h"
@@ -45,6 +52,7 @@
 #include "ui/views/window/caption_button_layout_constants.h"
 #include "ui/views/window/frame_caption_button.h"
 #include "ui/views/window/vector_icons/vector_icons.h"
+#include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace ash {
@@ -129,7 +137,7 @@ class FrameSizeButtonTest : public AshTestBase {
  public:
   FrameSizeButtonTest() {
     scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{features::kFasterSplitScreenSetup,
+        /*enabled_features=*/{features::kSnapGroup,
                               features::kOsSettingsRevampWayfinding},
         /*disabled_features=*/{});
   }
@@ -855,6 +863,44 @@ TEST_F(MultitaskMenuTest, TestMultitaskMenuPartialSplit) {
       chromeos::MultitaskMenuActionType::kPartialSplitButton, 2);
 }
 
+// Verify that selecting the 2/3 partial split option from the window layout
+// menu correctly updates the snap ratio to 2/3 and snaps the target window to
+// occupy two-thirds of the available space. Regression test for
+// http://b/356537586.
+TEST_F(MultitaskMenuTest, PartialSplitInNonPrimaryDisplay) {
+  // Update display to be in non-primary landscape mode.
+  UpdateDisplay("800x600/u");
+
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  const auto& displays = display_manager->active_display_list();
+  ASSERT_EQ(1U, displays.size());
+  ASSERT_EQ(chromeos::OrientationType::kLandscapeSecondary,
+            chromeos::GetDisplayCurrentOrientation(displays[0]));
+
+  ShowMultitaskMenu(MultitaskMenuEntryType::kAccel);
+
+  const gfx::Point two_thirds_partial_button_center =
+      GetMultitaskMenu()
+          ->multitask_menu_view()
+          ->partial_button()
+          ->GetLeftTopButton()
+          ->GetBoundsInScreen()
+          .CenterPoint();
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseToInHost(two_thirds_partial_button_center);
+
+  // Verify that the target window snaps at expected snap position with the
+  // correct snap ratio applied.
+  event_generator->ClickLeftButton();
+  EXPECT_EQ(WindowStateType::kSecondarySnapped, window_state()->GetStateType());
+  EXPECT_THAT(window_state()->snap_ratio(),
+              testing::Optional(chromeos::kTwoThirdSnapRatio));
+  const gfx::Rect work_area_bounds_in_screen =
+      display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
+  EXPECT_NEAR(work_area_bounds_in_screen.width() * chromeos::kTwoThirdSnapRatio,
+              window_state()->window()->bounds().width(), 1);
+}
+
 // Test Full Button Functionality.
 TEST_F(MultitaskMenuTest, TestMultitaskMenuFullFunctionality) {
   base::HistogramTester histogram_tester;
@@ -1269,6 +1315,139 @@ TEST_F(MultitaskMenuTest, AdjustedMenuBounds) {
   ShowMultitaskMenu();
   EXPECT_TRUE(work_area_bounds_in_screen.Contains(
       GetMultitaskMenu()->GetBoundsInScreen()));
+}
+
+class SnapGroupFrameSizeButtonTest : public MultitaskMenuTest {
+ public:
+  SnapGroupFrameSizeButtonTest() : scoped_feature_list_(features::kSnapGroup) {}
+  SnapGroupFrameSizeButtonTest(const SnapGroupFrameSizeButtonTest&) = delete;
+  SnapGroupFrameSizeButtonTest& operator=(const SnapGroupFrameSizeButtonTest&) =
+      delete;
+  ~SnapGroupFrameSizeButtonTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Tests that long press caption button to show snap phantom bounds are updated.
+TEST_F(SnapGroupFrameSizeButtonTest, SnapCaptionButton) {
+  EXPECT_EQ(views::Button::STATE_NORMAL, size_button()->GetState());
+
+  // Create an opposite snapped window with non-default snap ratio.
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  const WindowSnapWMEvent snap_primary(
+      WM_EVENT_SNAP_PRIMARY, chromeos::kTwoThirdSnapRatio,
+      WindowSnapActionSource::kSnapByWindowLayoutMenu);
+  WindowState::Get(w1.get())->OnWMEvent(&snap_primary);
+
+  // Press on the size button and drag toward the close button to show the snap
+  // phantom bounds.
+  wm::ActivateWindow(GetWidget()->GetNativeWindow());
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(CenterPointInScreen(size_button()));
+  generator->PressLeftButton();
+  generator->MoveMouseTo(CenterPointInScreen(close_button()));
+  ASSERT_EQ(views::Button::STATE_PRESSED, size_button()->GetState());
+  ASSERT_TRUE(
+      static_cast<FrameSizeButton*>(size_button())->in_snap_mode_for_testing());
+  auto* snap_controller =
+      static_cast<SnapControllerImpl*>(chromeos::SnapController::Get());
+  ASSERT_TRUE(snap_controller);
+
+  // Test the phantom bounds reflect the opposite snapped `w1`.
+  const gfx::Rect work_area =
+      display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
+  gfx::Rect expected_bounds(work_area);
+  expected_bounds.Subtract(w1->GetBoundsInScreen());
+  EXPECT_TRUE(expected_bounds.ApproximatelyEqual(
+      snap_controller->phantom_window_controller_for_testing()
+          ->GetTargetWindowBounds(),
+      /*tolerance=*/kSplitviewDividerShortSideLength / 2));
+}
+
+// Tests that when a snap group with a partially occluding window is re-snapped
+// via the layout menu, we do not start partial overview. See http://b/348068768
+// for context.
+TEST_F(SnapGroupFrameSizeButtonTest, ReSnapViaWindowLayoutMenu) {
+  UpdateDisplay("800x600");
+
+  // Create a snap group with `window`, whose frame contains the multitask menu,
+  // and an `opposite` snapped window.
+  aura::Window* window = window_state()->window();
+  std::unique_ptr<aura::Window> opposite(CreateAppWindow());
+  const WindowSnapWMEvent snap_primary(
+      WM_EVENT_SNAP_PRIMARY, chromeos::kDefaultSnapRatio,
+      WindowSnapActionSource::kSnapByWindowLayoutMenu);
+  window_state()->OnWMEvent(&snap_primary);
+
+  const WindowSnapWMEvent snap_secondary(
+      WM_EVENT_SNAP_SECONDARY, chromeos::kDefaultSnapRatio,
+      WindowSnapActionSource::kSnapByWindowLayoutMenu);
+  WindowState::Get(opposite.get())->OnWMEvent(&snap_secondary);
+  auto* snap_group_controller = SnapGroupController::Get();
+  ASSERT_TRUE(
+      snap_group_controller->AreWindowsInSnapGroup(window, opposite.get()));
+
+  // Create a partially occluding window on top of `opposite`.
+  std::unique_ptr<aura::Window> occlude(
+      CreateAppWindow(gfx::Rect(410, 10, 200, 200)));
+  ASSERT_TRUE(
+      opposite->GetBoundsInScreen().Contains(occlude->GetBoundsInScreen()));
+
+  // Hover to show the multitask menu on `window`.
+  ShowMultitaskMenu();
+  MultitaskMenu* multitask_menu = GetMultitaskMenu();
+  views::Button* left_half_button =
+      MultitaskMenuViewTestApi(multitask_menu->multitask_menu_view())
+          .GetHalfButton()
+          ->GetLeftTopButton();
+
+  // Click on the snap button to re-snap `window`. Test we don't start overview
+  // and recall the windows to the front.
+  LeftClickOn(left_half_button);
+  ASSERT_FALSE(IsInOverviewSession());
+  EXPECT_TRUE(SnapGroupController::Get()->AreWindowsInSnapGroup(
+      window, opposite.get()));
+  EXPECT_TRUE(window_util::IsStackedBelow(occlude.get(), window));
+  EXPECT_TRUE(window_util::IsStackedBelow(occlude.get(), opposite.get()));
+}
+
+// Tests that re-snapping to the opposite side via the window layout menu starts
+// partial overview. Regression test for http://b/349892870.
+TEST_F(SnapGroupFrameSizeButtonTest, ReSnapToOppositeSide) {
+  UpdateDisplay("800x600");
+
+  // Create a snap group with `window`, whose frame contains the multitask menu,
+  // and `window2`.
+  aura::Window* window = window_state()->window();
+  SnapOneTestWindow(window, chromeos::WindowStateType::kPrimarySnapped,
+                    chromeos::kTwoThirdSnapRatio);
+  std::unique_ptr<aura::Window> window2(CreateAppWindow());
+  SnapOneTestWindow(window2.get(), chromeos::WindowStateType::kSecondarySnapped,
+                    chromeos::kOneThirdSnapRatio);
+  auto* snap_group_controller = SnapGroupController::Get();
+  ASSERT_TRUE(
+      snap_group_controller->AreWindowsInSnapGroup(window, window2.get()));
+
+  // Snap `window` to the right via the layout menu.
+  ShowMultitaskMenu();
+  views::Button* right_half_button =
+      MultitaskMenuViewTestApi(GetMultitaskMenu()->multitask_menu_view())
+          .GetHalfButton()
+          ->GetRightBottomButton();
+  LeftClickOn(right_half_button);
+  VerifySplitViewOverviewSession(window);
+  EXPECT_TRUE(GetOverviewSession()->IsWindowInOverview(window2.get()));
+
+  // Snap `window` to the left via the layout menu.
+  ShowMultitaskMenu();
+  views::Button* left_half_button =
+      MultitaskMenuViewTestApi(GetMultitaskMenu()->multitask_menu_view())
+          .GetHalfButton()
+          ->GetLeftTopButton();
+  LeftClickOn(left_half_button);
+  VerifySplitViewOverviewSession(window);
+  EXPECT_TRUE(GetOverviewSession()->IsWindowInOverview(window2.get()));
 }
 
 }  // namespace ash

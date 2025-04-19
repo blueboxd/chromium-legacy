@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "media/capture/video/fake_video_capture_device.h"
 
 #include <stddef.h>
@@ -366,6 +371,16 @@ TEST_F(FakeVideoCaptureDeviceTest, GetAndSetCapabilities) {
   EXPECT_EQ(1, base::ranges::count(*state->supported_background_blur_modes,
                                    mojom::BackgroundBlurMode::BLUR));
   EXPECT_EQ(mojom::BackgroundBlurMode::OFF, state->background_blur_mode);
+
+  ASSERT_TRUE(state->supported_background_segmentation_mask_states);
+  EXPECT_EQ(2u, state->supported_background_segmentation_mask_states->size());
+  EXPECT_EQ(1,
+            base::ranges::count(
+                *state->supported_background_segmentation_mask_states, false));
+  EXPECT_EQ(1,
+            base::ranges::count(
+                *state->supported_background_segmentation_mask_states, true));
+  EXPECT_FALSE(state->current_background_segmentation_mask_state);
 
   ASSERT_TRUE(state->supported_eye_gaze_correction_modes);
   EXPECT_EQ(2u, state->supported_eye_gaze_correction_modes->size());

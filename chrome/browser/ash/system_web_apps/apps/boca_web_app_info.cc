@@ -5,22 +5,25 @@
 #include "chrome/browser/ash/system_web_apps/apps/boca_web_app_info.h"
 
 #include "ash/constants/ash_features.h"
+#include "ash/webui/boca_ui/boca_ui.h"
 #include "ash/webui/boca_ui/url_constants.h"
 #include "ash/webui/grit/ash_boca_ui_resources.h"
 #include "chrome/browser/ash/system_web_apps/apps/system_web_app_install_utils.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "url/gurl.h"
 
 std::unique_ptr<web_app::WebAppInstallInfo> CreateWebAppInfoForBocaApp() {
-  GURL start_url = GURL(ash::kChromeBocaAppIndexURL);
+  GURL start_url = GURL(ash::kChromeBocaAppUntrustedIndexURL);
   auto info =
       web_app::CreateSystemWebAppInstallInfoWithStartUrlAsIdentity(start_url);
-  info->scope = GURL(ash::kChromeBocaAppIndexURL);
+  info->scope = GURL(ash::kChromeBocaAppUntrustedIndexURL);
   // TODO(aprilzhou): Convert the title to a localized string
   info->title = u"BOCA";
   web_app::CreateIconInfoForSystemWebApp(
-      info->start_url,
+      info->start_url(),
       {{"app_icon_120.png", 120, IDR_ASH_BOCA_UI_APP_ICON_120_PNG}}, *info);
   info->theme_color =
       web_app::GetDefaultBackgroundColor(/*use_dark_mode=*/false);
@@ -33,10 +36,17 @@ std::unique_ptr<web_app::WebAppInstallInfo> CreateWebAppInfoForBocaApp() {
   return info;
 }
 
+// Returns whether the user is able to consume Boca sessions. Primarily used by
+// the delegate to tailor SWA UX.
+// TODO(b/352675698): Identify Boca consumer profile without feature flags.
+bool IsConsumerProfile(Profile* profile) {
+  return ash::features::IsBocaConsumerEnabled();
+}
+
 BocaSystemAppDelegate::BocaSystemAppDelegate(Profile* profile)
     : ash::SystemWebAppDelegate(ash::SystemWebAppType::BOCA,
                                 "Boca",
-                                GURL(ash::kChromeBocaAppURL),
+                                GURL(ash::kChromeBocaAppUntrustedURL),
                                 profile) {}
 
 std::unique_ptr<web_app::WebAppInstallInfo>
@@ -46,6 +56,29 @@ BocaSystemAppDelegate::GetWebAppInfo() const {
 
 bool BocaSystemAppDelegate::ShouldCaptureNavigations() const {
   return true;
+}
+
+bool BocaSystemAppDelegate::ShouldAllowResize() const {
+  return !IsConsumerProfile(profile());
+}
+
+bool BocaSystemAppDelegate::ShouldAllowMaximize() const {
+  return !IsConsumerProfile(profile());
+}
+
+bool BocaSystemAppDelegate::ShouldHaveTabStrip() const {
+  return IsConsumerProfile(profile());
+}
+
+bool BocaSystemAppDelegate::IsUrlInSystemAppScope(const GURL& url) const {
+  // Consumer SWA will also host 3P content, so we override app scope checks to
+  // prevent navigation outside the app.
+  return IsConsumerProfile(profile());
+}
+
+bool BocaSystemAppDelegate::ShouldPinTab(GURL url) const {
+  return ShouldHaveTabStrip() &&
+         url == GURL(ash::kChromeBocaAppUntrustedIndexURL);
 }
 
 bool BocaSystemAppDelegate::IsAppEnabled() const {

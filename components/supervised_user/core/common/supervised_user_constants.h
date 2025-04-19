@@ -34,6 +34,10 @@ enum class WebFilterType {
   kMaxValue = kMixed,
 };
 
+// Returns the string equivalent of a Web Filter type. This is a user-visible
+// string included in the user feedback log.
+std::string WebFilterTypeToDisplayString(WebFilterType web_filter_type);
+
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 //
@@ -125,6 +129,9 @@ extern const char kFamilyLinkUserLogSegmentHistogramName[];
 // This filter only applies to supervised user accounts.
 extern const char kFamilyLinkUserLogSegmentWebFilterHistogramName[];
 
+// Histogram name to log Family Link site permissions toggle state.
+extern const char kSitesMayRequestCameraMicLocationHistogramName[];
+
 // Histogram name to log Family Link extensions permissions toggle state.
 extern const char kSkipParentApprovalToInstallExtensionsHistogramName[];
 
@@ -138,8 +145,15 @@ extern const char kSupervisedUserTopLevelURLFilteringResultHistogramName[];
 // The URL which the "Managed by your parent" UI links to.
 extern const char kManagedByParentUiMoreInfoUrl[];
 
+// The string used to denote an account that does not have a family member role.
+extern const char kDefaultEmptyFamilyMemberRole[];
+
 // Feedback source name for family member role in Family Link.
 extern const char kFamilyMemberRoleFeedbackTag[];
+
+// Histogram name for the ::ClassifyUrlLoaderThrottle
+extern const char kClassifiedEarlierThanContentResponseHistogramName[];
+extern const char kClassifiedLaterThanContentResponseHistogramName[];
 
 }  // namespace supervised_user
 

@@ -32,7 +32,7 @@ DualLayerUserPrefStore::UnderlyingPrefStoreObserver::
 }
 
 void DualLayerUserPrefStore::UnderlyingPrefStoreObserver::OnPrefValueChanged(
-    const std::string& key) {
+    std::string_view key) {
   // Ignore this notification if it originated from the outer store - in that
   // case, `DualLayerUserPrefStore` itself will send notifications as
   // appropriate. This avoids dual notifications even though there are dual
@@ -180,7 +180,7 @@ base::Value::Dict DualLayerUserPrefStore::GetValues() const {
   return values;
 }
 
-void DualLayerUserPrefStore::SetValue(const std::string& key,
+void DualLayerUserPrefStore::SetValue(std::string_view key,
                                       base::Value value,
                                       uint32_t flags) {
   const base::Value* initial_value = nullptr;
@@ -213,8 +213,7 @@ void DualLayerUserPrefStore::SetValue(const std::string& key,
   }
 }
 
-void DualLayerUserPrefStore::RemoveValue(const std::string& key,
-                                         uint32_t flags) {
+void DualLayerUserPrefStore::RemoveValue(std::string_view key, uint32_t flags) {
   // Only proceed if the pref exists.
   if (!GetValue(key, nullptr)) {
     return;
@@ -236,7 +235,7 @@ void DualLayerUserPrefStore::RemoveValue(const std::string& key,
   }
 }
 
-bool DualLayerUserPrefStore::GetMutableValue(const std::string& key,
+bool DualLayerUserPrefStore::GetMutableValue(std::string_view key,
                                              base::Value** result) {
   if (!ShouldGetValueFromAccountStore(key)) {
     return local_pref_store_->GetMutableValue(key, result);
@@ -270,7 +269,7 @@ bool DualLayerUserPrefStore::GetMutableValue(const std::string& key,
   return true;
 }
 
-void DualLayerUserPrefStore::ReportValueChanged(const std::string& key,
+void DualLayerUserPrefStore::ReportValueChanged(std::string_view key,
                                                 uint32_t flags) {
   {
     base::AutoReset<bool> setting_prefs(&is_setting_prefs_, true);
@@ -306,7 +305,7 @@ void DualLayerUserPrefStore::ReportValueChanged(const std::string& key,
   }
 }
 
-void DualLayerUserPrefStore::SetValueSilently(const std::string& key,
+void DualLayerUserPrefStore::SetValueSilently(std::string_view key,
                                               base::Value value,
                                               uint32_t flags) {
   if (ShouldSetValueInAccountStore(key)) {
@@ -327,7 +326,7 @@ void DualLayerUserPrefStore::SetValueSilently(const std::string& key,
 }
 
 void DualLayerUserPrefStore::RemoveValuesByPrefixSilently(
-    const std::string& prefix) {
+    std::string_view prefix) {
   local_pref_store_->RemoveValuesByPrefixSilently(prefix);
 
   // RemoveValuesByPrefixSilently() is not used for the account store since it
@@ -421,7 +420,7 @@ void DualLayerUserPrefStore::OnStoreDeletionFromDisk() {
 }
 
 bool DualLayerUserPrefStore::ShouldSetValueInAccountStore(
-    const std::string& key) const {
+    std::string_view key) const {
   // A preference `key` is added to account store only if it is syncable,  the
   // corresponding pref type is active, and falls under the current user
   // consent, i.e. "privacy-sensitive" prefs require history opt-in.
@@ -433,7 +432,7 @@ bool DualLayerUserPrefStore::ShouldSetValueInAccountStore(
   auto metadata = pref_model_associator_client_->GetSyncablePrefsDatabase()
                       .GetSyncablePrefMetadata(key);
   // Checks if the pref type is active.
-  if (!active_types_.count(metadata->model_type()) &&
+  if (!active_types_.contains(metadata->data_type()) &&
       // Checks if the pref already exists in the account store.
       // This is to handle cases where a pref might pre-exist before sync is
       // initialized and the type is marked as active.
@@ -444,7 +443,7 @@ bool DualLayerUserPrefStore::ShouldSetValueInAccountStore(
 }
 
 bool DualLayerUserPrefStore::ShouldGetValueFromAccountStore(
-    const std::string& key) const {
+    std::string_view key) const {
   // A preference `key` is queried from account store only if it is syncable and
   // falls under the current user consent, i.e. "privacy-sensitive" prefs
   // require history opt-in.
@@ -469,27 +468,27 @@ bool DualLayerUserPrefStore::ShouldGetValueFromAccountStore(
   return true;
 }
 
-void DualLayerUserPrefStore::EnableType(syncer::ModelType model_type) {
-  CHECK(model_type == syncer::PREFERENCES ||
-        model_type == syncer::PRIORITY_PREFERENCES
+void DualLayerUserPrefStore::EnableType(syncer::DataType data_type) {
+  CHECK(data_type == syncer::PREFERENCES ||
+        data_type == syncer::PRIORITY_PREFERENCES
 #if BUILDFLAG(IS_CHROMEOS)
-        || model_type == syncer::OS_PREFERENCES ||
-        model_type == syncer::OS_PRIORITY_PREFERENCES
+        || data_type == syncer::OS_PREFERENCES ||
+        data_type == syncer::OS_PRIORITY_PREFERENCES
 #endif
   );
-  active_types_.insert(model_type);
+  active_types_.insert(data_type);
 }
 
 void DualLayerUserPrefStore::DisableTypeAndClearAccountStore(
-    syncer::ModelType model_type) {
-  CHECK(model_type == syncer::PREFERENCES ||
-        model_type == syncer::PRIORITY_PREFERENCES
+    syncer::DataType data_type) {
+  CHECK(data_type == syncer::PREFERENCES ||
+        data_type == syncer::PRIORITY_PREFERENCES
 #if BUILDFLAG(IS_CHROMEOS)
-        || model_type == syncer::OS_PREFERENCES ||
-        model_type == syncer::OS_PRIORITY_PREFERENCES
+        || data_type == syncer::OS_PREFERENCES ||
+        data_type == syncer::OS_PRIORITY_PREFERENCES
 #endif
   );
-  active_types_.erase(model_type);
+  active_types_.erase(data_type);
 
   if (!pref_model_associator_client_) {
     // No pref is treated as syncable in this case. No need to clear the account
@@ -503,7 +502,7 @@ void DualLayerUserPrefStore::DisableTypeAndClearAccountStore(
         pref_model_associator_client_->GetSyncablePrefsDatabase()
             .GetSyncablePrefMetadata(pref_name);
     CHECK(metadata.has_value());
-    if (metadata->model_type() != model_type) {
+    if (metadata->data_type() != data_type) {
       continue;
     }
     const base::Value* value = nullptr;
@@ -550,7 +549,7 @@ void DualLayerUserPrefStore::DisableTypeAndClearAccountStore(
   }
 }
 
-bool DualLayerUserPrefStore::IsPrefKeyMergeable(const std::string& key) const {
+bool DualLayerUserPrefStore::IsPrefKeyMergeable(std::string_view key) const {
   if (!pref_model_associator_client_) {
     return false;
   }
@@ -561,7 +560,7 @@ bool DualLayerUserPrefStore::IsPrefKeyMergeable(const std::string& key) const {
 }
 
 const base::Value* DualLayerUserPrefStore::MaybeMerge(
-    const std::string& pref_name,
+    std::string_view pref_name,
     const base::Value& local_value,
     const base::Value& account_value) const {
   // Return the account value if `pref_name` is not mergeable.
@@ -596,7 +595,7 @@ const base::Value* DualLayerUserPrefStore::MaybeMerge(
   return merged_pref;
 }
 
-base::Value* DualLayerUserPrefStore::MaybeMerge(const std::string& pref_name,
+base::Value* DualLayerUserPrefStore::MaybeMerge(std::string_view pref_name,
                                                 base::Value& local_value,
                                                 base::Value& account_value) {
   // Doing const_cast should be safe as ultimately the value being pointed to is
@@ -606,7 +605,7 @@ base::Value* DualLayerUserPrefStore::MaybeMerge(const std::string& pref_name,
 }
 
 std::pair<base::Value, base::Value> DualLayerUserPrefStore::UnmergeValue(
-    const std::string& pref_name,
+    std::string_view pref_name,
     base::Value value,
     uint32_t flags) const {
   CHECK(ShouldSetValueInAccountStore(pref_name));
@@ -679,7 +678,7 @@ std::vector<std::string> DualLayerUserPrefStore::GetPrefNamesInAccountStore()
                                 auto& recurse_and_insert_ref) -> void {
     // Checks if `key` is a pref name using syncable pref database. This is
     // different from ShouldSetValueInAccountStore() which checks whether or not
-    // a pref should synced right now based on enabled ModelTypes.
+    // a pref should synced right now based on enabled DataTypes.
     if (pref_model_associator_client_->GetSyncablePrefsDatabase()
             .IsPreferenceSyncable(key)) {
       keys.push_back(key);
@@ -697,8 +696,8 @@ std::vector<std::string> DualLayerUserPrefStore::GetPrefNamesInAccountStore()
   return keys;
 }
 
-base::flat_set<syncer::ModelType>
-DualLayerUserPrefStore::GetActiveTypesForTest() const {
+base::flat_set<syncer::DataType> DualLayerUserPrefStore::GetActiveTypesForTest()
+    const {
   return active_types_;
 }
 
@@ -780,7 +779,7 @@ void DualLayerUserPrefStore::OnSyncShutdown(syncer::SyncService* sync_service) {
   sync_service->RemoveObserver(this);
 }
 
-void DualLayerUserPrefStore::SetValueInAccountStoreOnly(const std::string& key,
+void DualLayerUserPrefStore::SetValueInAccountStoreOnly(std::string_view key,
                                                         base::Value value,
                                                         uint32_t flags) {
   const base::Value* initial_value = nullptr;

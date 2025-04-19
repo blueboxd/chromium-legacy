@@ -6,15 +6,18 @@
 
 #include <string>
 
-#include "build/branding_buildflags.h"
-#include "chrome/browser/chromeos/mahi/mahi_prefs_controller.h"
+#include "chrome/browser/ui/chromeos/magic_boost/magic_boost_card_controller.h"
 #include "chrome/browser/ui/chromeos/magic_boost/magic_boost_constants.h"
-#include "chrome/browser/ui/chromeos/magic_boost/magic_boost_controller.h"
+#include "chrome/browser/ui/chromeos/magic_boost/magic_boost_metrics.h"
 #include "chrome/browser/ui/views/editor_menu/utils/utils.h"
+#include "chromeos/components/magic_boost/public/cpp/magic_boost_state.h"
+#include "chromeos/crosapi/mojom/magic_boost.mojom.h"
+#include "chromeos/strings/grit/chromeos_strings.h"
 #include "chromeos/ui/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/layer.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/insets.h"
@@ -28,10 +31,7 @@
 #include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/widget/unique_widget_ptr.h"
-
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-#include "chromeos/ash/resources/internal/strings/grit/ash_internal_strings.h"
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#include "ui/views/widget/widget.h"
 
 namespace chromeos {
 
@@ -62,18 +62,6 @@ constexpr int kBetweenImageAndTextSpacing = 16;
 constexpr int kBetweenContentsAndButtonsSpacing = 16;
 constexpr int kBetweenLabelsSpacing = 4;
 
-// Placeholder strings
-#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
-const std::u16string kPlaceholderTitleText = u"Title text";
-const std::u16string kPlaceholderBodyText =
-    u"Body text that is multi-line which means it can span from one line to up "
-    u"to three lines for this case";
-#endif  // !BUILDFLAG(GOOGLE_CHROME_BRANDING)
-
-// Content strings
-const std::u16string kSecondaryButtonText = u"No thanks";
-const std::u16string kPrimaryButtonText = u"Try it";
-
 // Font lists
 const gfx::FontList kBodyTextFontList =
     gfx::FontList({"Google Sans", "Roboto"},
@@ -90,7 +78,10 @@ const gfx::FontList kTitleTextFontList =
 
 // MagicBoostOptInCard --------------------------------------------------------
 
-MagicBoostOptInCard::MagicBoostOptInCard(const bool include_orca) {
+MagicBoostOptInCard::MagicBoostOptInCard(MagicBoostCardController* controller)
+    : chromeos::editor_menu::PreTargetHandlerView(
+          /*card_type=*/editor_menu::CardType::kMagicBoostOptInCard),
+      controller_(controller) {
   SetLayoutManager(std::make_unique<views::FlexLayout>())
       ->SetOrientation(views::LayoutOrientation::kVertical)
       .SetInteriorMargin(kInteriorMargin)
@@ -143,6 +134,8 @@ MagicBoostOptInCard::MagicBoostOptInCard(const bool include_orca) {
           .Build());
 
   // Create text container that holds title and body text.
+  bool include_orca =
+      controller_->GetOptInFeatures() == OptInFeatures::kOrcaAndHmr;
   image_and_text_container->AddChildView(
       views::Builder<views::FlexLayoutView>()
           .SetOrientation(views::LayoutOrientation::kVertical)
@@ -161,38 +154,44 @@ MagicBoostOptInCard::MagicBoostOptInCard(const bool include_orca) {
                                        /*adjust_height_for_width=*/true))
           .AddChildren(
               views::Builder<views::Label>()
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+                  .CopyAddressTo(&title_label_)
+                  .SetID(magic_boost::ViewId::OptInCardTitleLabel)
                   .SetText(l10n_util::GetStringUTF16(
-                      include_orca ? IDS_MAGIC_BOOST_OPT_IN_CARD_TITLE
-                                   : IDS_MAGIC_BOOST_OPT_IN_CARD_NO_ORCA_TITLE))
-#else
-                  .SetText(kPlaceholderTitleText)
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+                      IDS_ASH_MAGIC_BOOST_OPT_IN_CARD_TITLE))
                   .SetHorizontalAlignment(gfx::ALIGN_LEFT)
                   .SetEnabledColorId(ui::kColorSysOnSurface)
                   .SetAutoColorReadabilityEnabled(false)
                   .SetSubpixelRenderingEnabled(false)
+                  .SetText(l10n_util::GetStringUTF16(
+                      include_orca
+                          ? IDS_ASH_MAGIC_BOOST_OPT_IN_CARD_TITLE
+                          : IDS_ASH_MAGIC_BOOST_OPT_IN_CARD_NO_ORCA_TITLE))
                   .SetFontList(kTitleTextFontList)
                   .SetMultiLine(true)
                   .SetMaxLines(kTitleLabelMaxLines),
               views::Builder<views::Label>()
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+                  .CopyAddressTo(&body_label_)
+                  .SetID(magic_boost::ViewId::OptInCardBodyLabel)
                   .SetText(l10n_util::GetStringUTF16(
-                      include_orca ? IDS_MAGIC_BOOST_OPT_IN_CARD_BODY
-                                   : IDS_MAGIC_BOOST_OPT_IN_CARD_NO_ORCA_BODY))
-#else
-                  .SetText(kPlaceholderBodyText)
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+                      IDS_ASH_MAGIC_BOOST_OPT_IN_CARD_BODY))
                   .SetHorizontalAlignment(gfx::ALIGN_LEFT)
                   .SetEnabledColorId(ui::kColorSysOnSurface)
                   .SetAutoColorReadabilityEnabled(false)
                   .SetSubpixelRenderingEnabled(false)
+                  .SetText(l10n_util::GetStringUTF16(
+                      include_orca
+                          ? IDS_ASH_MAGIC_BOOST_OPT_IN_CARD_BODY
+                          : IDS_ASH_MAGIC_BOOST_OPT_IN_CARD_NO_ORCA_BODY))
                   .SetFontList(kBodyTextFontList)
                   .SetMultiLine(true)
                   .SetMaxLines(kBodyLabelMaxLines))
           .Build());
 
   // Create buttons container that holds two buttons.
+  std::u16string decline_button_text =
+      l10n_util::GetStringUTF16(IDS_ASH_MAGIC_BOOST_OPT_IN_CARD_DECLINE_BUTTON);
+  std::u16string accept_button_text =
+      l10n_util::GetStringUTF16(IDS_ASH_MAGIC_BOOST_OPT_IN_CARD_ACCEPT_BUTTON);
   AddChildView(
       views::Builder<views::BoxLayoutView>()
           .SetMainAxisAlignment(views::LayoutAlignment::kEnd)
@@ -204,16 +203,16 @@ MagicBoostOptInCard::MagicBoostOptInCard(const bool include_orca) {
           .AddChildren(views::Builder<views::MdTextButton>()
                            .CopyAddressTo(&secondary_button_)
                            .SetID(magic_boost::ViewId::OptInCardSecondaryButton)
-                           .SetText(kSecondaryButtonText)
-                           .SetAccessibleName(kSecondaryButtonText)
+                           .SetText(decline_button_text)
+                           .SetAccessibleName(decline_button_text)
                            .SetStyle(ui::ButtonStyle::kText)
                            .SetCallback(base::BindRepeating(
                                &MagicBoostOptInCard::OnSecondaryButtonPressed,
                                weak_ptr_factory_.GetWeakPtr())),
                        views::Builder<views::MdTextButton>()
                            .SetID(magic_boost::ViewId::OptInCardPrimaryButton)
-                           .SetText(kPrimaryButtonText)
-                           .SetAccessibleName(kPrimaryButtonText)
+                           .SetText(accept_button_text)
+                           .SetAccessibleName(accept_button_text)
                            .SetStyle(ui::ButtonStyle::kProminent)
                            .SetCallback(base::BindRepeating(
                                &MagicBoostOptInCard::OnPrimaryButtonPressed,
@@ -225,8 +224,8 @@ MagicBoostOptInCard::~MagicBoostOptInCard() = default;
 
 // static
 views::UniqueWidgetPtr MagicBoostOptInCard::CreateWidget(
-    const gfx::Rect& anchor_view_bounds,
-    const bool include_orca) {
+    MagicBoostCardController* controller,
+    const gfx::Rect& anchor_view_bounds) {
   views::Widget::InitParams params(
       views::Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET,
       views::Widget::InitParams::TYPE_POPUP);
@@ -240,7 +239,7 @@ views::UniqueWidgetPtr MagicBoostOptInCard::CreateWidget(
   views::UniqueWidgetPtr widget =
       std::make_unique<views::Widget>(std::move(params));
   MagicBoostOptInCard* magic_boost_opt_in_card = widget->SetContentsView(
-      std::make_unique<MagicBoostOptInCard>(include_orca));
+      std::make_unique<MagicBoostOptInCard>(controller));
   magic_boost_opt_in_card->UpdateWidgetBounds(anchor_view_bounds);
 
   return widget;
@@ -263,19 +262,47 @@ void MagicBoostOptInCard::RequestFocus() {
   secondary_button_->RequestFocus();
 }
 
+// static
+const char* MagicBoostOptInCard::GetWidgetNameForTest() {
+  return kWidgetName;
+}
+
 void MagicBoostOptInCard::OnPrimaryButtonPressed() {
-  auto* controller = MagicBoostController::Get();
-  controller->CloseOptInUi();
-  controller->ShowDisclaimerUi();
+  magic_boost::RecordOptInCardActionMetrics(
+      controller_->GetOptInFeatures(),
+      magic_boost::OptInCardAction::kAcceptButtonPressed);
+
+  controller_->CloseOptInUi();
+
+  controller_->ShowDisclaimerUi(/*display_id=*/
+                                display::Screen::GetScreen()
+                                    ->GetDisplayNearestWindow(
+                                        GetWidget()->GetNativeWindow())
+                                    .id());
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  auto* magic_boost_state = chromeos::MagicBoostState::Get();
+  magic_boost_state->AsyncWriteConsentStatus(
+      chromeos::HMRConsentStatus::kPendingDisclaimer);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 void MagicBoostOptInCard::OnSecondaryButtonPressed() {
-  auto* controller = MagicBoostController::Get();
-  controller->CloseOptInUi();
-  // TODO(b/341158134): Disable opt-in card from showing again when "No thanks"
-  // is pressed. We should also use `MagicBoostState::Get()` here instead when
-  // it is available.
-  mahi::MahiPrefsController::Get()->SetMahiEnabled(false);
+  magic_boost::RecordOptInCardActionMetrics(
+      controller_->GetOptInFeatures(),
+      magic_boost::OptInCardAction::kDeclineButtonPressed);
+
+  controller_->CloseOptInUi();
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  auto* magic_boost_state = chromeos::MagicBoostState::Get();
+  if (controller_->GetOptInFeatures() == OptInFeatures::kOrcaAndHmr) {
+    magic_boost_state->DisableOrcaFeature();
+  }
+  magic_boost_state->AsyncWriteConsentStatus(
+      chromeos::HMRConsentStatus::kDeclined);
+  magic_boost_state->AsyncWriteHMREnabled(/*enabled=*/false);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 BEGIN_METADATA(MagicBoostOptInCard)

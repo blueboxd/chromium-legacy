@@ -49,6 +49,7 @@
 <translation id="2295140143284145483">問卷</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/秒</translation>
 <translation id="2353636109065292463">檢查互聯網連線</translation>
+<translation id="2359808026110333948">繼續</translation>
 <translation id="2388990488038464401">要從手機撥打此號碼嗎？</translation>
 <translation id="2435457462613246316">顯示密碼</translation>
 <translation id="24452542372838207">展開通知</translation>
@@ -129,6 +130,7 @@
 <translation id="5574202486608032840"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">向左鍵</translation>
+<translation id="5633029987065897167">沒有項目</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 分鐘}other{# 分鐘}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{上次使用時間：今天}=1{上次使用時間：1 天前}other{上次使用時間：# 天前}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 天和}other{# 天和}}</translation>

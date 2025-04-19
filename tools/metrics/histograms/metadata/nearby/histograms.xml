@@ -30,6 +30,197 @@ chromium-metrics-reviews@google.com.
   <variant name=".WifiLan" summary="Wi-Fi LAN"/>
 </variants>
 
+<histogram name="Nearby.BluetoothAdapter.AdvertisingSupport"
+    enum="NearbyBluetoothAdapterAdvertisingSupport" expires_after="2025-04-30">
+  <owner>julietlevesque@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records the advertising support for the local Bluetooth Adapter. Emitted
+    when the Nearby utility process is started and the Bluetooth Adapter is
+    getting ready to be passed as a dependency; only emitted if Bluetooth is
+    supported.
+  </summary>
+</histogram>
+
+<histogram name="Nearby.Connections.BleV2.ConnectToGattServer.Duration"
+    units="ms" expires_after="2025-04-30">
+  <owner>julietlevesque@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records the duration of successfully connecting to a remote GATT server.
+    Emitted when the local ChromeOS device is in the GATT client role, and has
+    discovered a remote device via scanning to connect to; this occurs during
+    the BLE V2 scanning flow. No metric is emitted on failures.
+  </summary>
+</histogram>
+
+<histogram name="Nearby.Connections.BleV2.ConnectToGattServer.FailureReason"
+    enum="NearbyConnectionsConnectResult" expires_after="2025-04-30">
+  <owner>julietlevesque@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records the error code of a failure connecting to a remote GATT server.
+    Emitted when the local ChromeOS device is in the GATT client role, and has
+    discovered a remote device via scanning to connect to; this occurs during
+    the BLE V2 scanning flow. Note: because this metric is solely about failure
+    reason, there are no metrics expected to be emitted to the Success bucket.
+  </summary>
+</histogram>
+
+<histogram name="Nearby.Connections.BleV2.ConnectToGattServer.Result"
+    enum="BooleanSuccess" expires_after="2025-04-30">
+  <owner>julietlevesque@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records the success or failure of connecting to a remote GATT server.
+    Emitted when the local ChromeOS device is in the GATT client role, and has
+    discovered a remote device via scanning to connect to; this occurs during
+    the BLE V2 scanning flow.
+  </summary>
+</histogram>
+
+<histogram
+    name="Nearby.Connections.BleV2.GattClient.ReadCharacteristic.Duration"
+    units="ms" expires_after="2025-04-30">
+  <owner>julietlevesque@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records the success or failure of reading a GATT characteristic from a
+    remote GATT server once a GATT connection has been established. Emitted when
+    the local ChromeOS device has established a GATT connection with the remote
+    device during the BLE V2 scanning flow and is attempting to read data from
+    the remote device's GATT server. Records the duration of successfully
+    reading a GATT characteristic from a remote GATT server once a GATT
+    connection has been established. No metric is emitted on failures.
+  </summary>
+</histogram>
+
+<histogram
+    name="Nearby.Connections.BleV2.GattClient.ReadCharacteristic.FailureReason"
+    enum="NearbyConnectionsGattResult" expires_after="2025-04-30">
+  <owner>julietlevesque@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records the error code of a failure of reading a GATT characteristic from a
+    remote GATT server once a GATT connection has been established. Emitted when
+    the local ChromeOS device has established a GATT connection with the remote
+    device during the BLE V2 scanning flow and is attempting to read data from
+    the remote device's GATT server. This metrics tracks the failure reason of
+    the Bluetooth layer read attempt, and does not capture other failure reasons
+    like if the characteristic or service uuid is not already known to the GATT
+    client. Note: because this metric is solely about failure reason, there are
+    no metrics expected to be emitted to the Success bucket.
+  </summary>
+</histogram>
+
+<histogram name="Nearby.Connections.BleV2.GattClient.ReadCharacteristic.Result"
+    enum="BooleanSuccess" expires_after="2025-04-30">
+  <owner>julietlevesque@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records the success or failure of reading a GATT characteristic from a
+    remote GATT server once a GATT connection has been established. Emitted when
+    the local ChromeOS device has established a GATT connection with the remote
+    device during the BLE V2 scanning flow and is attempting to read data from
+    the remote device's GATT server.
+  </summary>
+</histogram>
+
+<histogram
+    name="Nearby.Connections.BleV2.GattServer.CreateCharacteristic.Result"
+    enum="BooleanSuccess" expires_after="2025-04-30">
+  <owner>julietlevesque@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records the success or failure of creating a local GATT characteristic once
+    a GATT service hosting the characteristic is already successfully created.
+    Emitted on calls by Nearby Connections to create a GATT characteristic
+    before advertising begins; the GATT server first creates a GATT service if
+    one doesn't exist already before creating the characteristic, and this
+    metric captures the success/failure of creating the GATT characteristic.
+    Note that this metric is only about the creating of a characteristic, and
+    does not include any metrics about if the method CreateCharacteristic() is
+    called and the characteristic is already created.
+  </summary>
+</histogram>
+
+<histogram
+    name="Nearby.Connections.BleV2.GattServer.CreateLocalGattService.Result"
+    enum="BooleanSuccess" expires_after="2025-04-30">
+  <owner>julietlevesque@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records the success or failure of creating a local GATT service. Emitted on
+    calls by Nearby Connections to create a GATT characteristic before
+    advertising begins; the GATT server first creates a GATT service if one
+    doesn't exist already before creating the characteristic, and this metric
+    captures the success/failure of creating the GATT service.
+  </summary>
+</histogram>
+
+<histogram
+    name="Nearby.Connections.BleV2.GattServer.OnLocalCharacteristicRead.Result"
+    enum="BooleanSuccess" expires_after="2025-04-30">
+  <owner>julietlevesque@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records the success or failure of a read requested by a remote GATT client
+    on the GATT server. Emitted during the advertising flow of BLE V2 after the
+    GATT service and characteristic have been set up, the characteristic value
+    has been set, and after an advertisement has been sent; a remote GATT client
+    sees the advertisement, connects to the GATT server, and attempts to read
+    the value.
+  </summary>
+</histogram>
+
+<histogram
+    name="Nearby.Connections.BleV2.GattServer.RegisterGattService.FailureReason"
+    enum="BluetoothGattServiceGattErrorCode" expires_after="2025-04-30">
+  <owner>julietlevesque@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records the failure reason for registering a single GATT service. Emitted
+    when registration of the GATT services is triggered by BLE V2 Medium when
+    advertising is requested; BLE V2 Medium attempts to register the GATT
+    services before advertising.
+  </summary>
+</histogram>
+
+<histogram
+    name="Nearby.Connections.BleV2.GattServer.RegisterGattServices.Result"
+    enum="BooleanSuccess" expires_after="2025-04-30">
+  <owner>julietlevesque@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records the success or failure of registering all of the GATT Services that
+    are part of the BLE V2 GATT Server. Success is indicating by the success of
+    registering all of the GATT services with the local Bluetooth Adapter, which
+    makes all the service data and characteristics available. Failure is
+    indicated by any one GATT service failing to be registered - see metric
+    &quot;Nearby.Connections.BleV2.GattServer.RegisterGattService.ErrorReason&quot;
+    for insights on the failure reasons. Emitted when registration of the GATT
+    services is triggered by BLE V2 Medium when advertising is requested; BLE V2
+    Medium attempts to register the GATT services before advertising, and only
+    begins advertising on success.
+  </summary>
+</histogram>
+
+<histogram
+    name="Nearby.Connections.BleV2.GattServer.UpdateCharacteristic.Result"
+    enum="BooleanSuccess" expires_after="2025-04-30">
+  <owner>julietlevesque@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records the success or failure of updating the value of a local GATT
+    characteristic, which entails storing the value of the characteristic for
+    future read requests. Emitted during the BLE V2 advertising flow after a
+    GATT service and GATT characteristic are created successfully, and before
+    advertising is started by Nearby Connections. Possible failure reasons are
+    that the requested GATT service or GATT characteristic called on the API do
+    not exist at the time of the call unexpectedly.
+  </summary>
+</histogram>
+
 <histogram name="Nearby.Connections.BleV2.ScatternetDualRoleSupported"
     enum="Boolean" expires_after="2025-04-30">
   <owner>julietlevesque@google.com</owner>
@@ -200,7 +391,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Nearby.Connections.InstantMessaging.TachyonIceConfigFetcher.CacheHit"
     enum="BooleanCacheHit" expires_after="2025-04-30">
-  <owner>cclem@chromium.org</owner>
+  <owner>crisrael@google.com</owner>
   <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records whether the cache was used to satisfy the GetIceServers request.
@@ -211,7 +402,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Nearby.Connections.InstantMessaging.TachyonIceConfigFetcher.FailureReason"
     enum="CombinedHttpResponseAndNetErrorCode" expires_after="2025-04-30">
-  <owner>cclem@chromium.org</owner>
+  <owner>crisrael@google.com</owner>
   <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records the HTTP response code or net error code of the GetIceServers API
@@ -222,7 +413,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Nearby.Connections.InstantMessaging.TachyonIceConfigFetcher.OAuthTokenFetchResult"
     enum="BooleanSuccess" expires_after="2025-04-30">
-  <owner>cclem@chromium.org</owner>
+  <owner>crisrael@google.com</owner>
   <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records whether the Tachyon OAuth token was successfully fetched. Emitted
@@ -233,7 +424,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Nearby.Connections.InstantMessaging.TachyonIceConfigFetcher.Result"
     enum="BooleanSuccess" expires_after="2025-04-30">
-  <owner>cclem@chromium.org</owner>
+  <owner>crisrael@google.com</owner>
   <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records the result of the GetIceServers API call to the Tachyon server.
@@ -345,6 +536,165 @@ chromium-metrics-reviews@google.com.
     Records the data-transfer medium that the Nearby Connections library
     successfully switches to for V3 connections. Emitted when the Nearby
     Connections library notifies of a bandwidth upgrade.
+  </summary>
+</histogram>
+
+<histogram name="Nearby.Connections.WifiDirect.AssociateSocket.Result"
+    enum="BooleanSuccess" expires_after="2025-04-30">
+  <owner>jackshira@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
+  <summary>
+    Records if the socket was able to be associated with the WiFi Direct
+    interface. Emitted when both connecting and listening for Nearby
+    Connections.
+  </summary>
+</histogram>
+
+<histogram name="Nearby.Connections.WifiDirect.ConnectToService.Error"
+    enum="NearbyConnectionsWifiDirectServiceError" expires_after="2025-04-30">
+  <owner>jackshira@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
+  <summary>
+    Records the error that occured attempting to connect to the Nearby
+    Connections endpoint via the connected WiFi Direct interface. Emitted when
+    Nearby Connections encounters an error initiating the TCP connection.
+  </summary>
+</histogram>
+
+<histogram name="Nearby.Connections.WifiDirect.ConnectToService.Result"
+    enum="BooleanSuccess" expires_after="2025-04-30">
+  <owner>jackshira@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
+  <summary>
+    Records the result of attempting to connect to the Nearby onnections
+    endpoint via the connected WiFi Direct interface. Emitted when Nearby
+    Connections returns the result from connect to service call.
+  </summary>
+</histogram>
+
+<histogram name="Nearby.Connections.WifiDirect.ConnectToWifiDirectGroup.Error"
+    enum="NearbyConnectionsWifiDirectResult" expires_after="2025-04-30">
+  <owner>jackshira@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
+  <summary>
+    Records the error that occured when a connection to an external WiFi Direct
+    group was attempted. Emitted when Nearby Connections returns the result from
+    the mojo call to connect the GC.
+  </summary>
+</histogram>
+
+<histogram name="Nearby.Connections.WifiDirect.ConnectToWifiDirectGroup.Result"
+    enum="BooleanSuccess" expires_after="2025-04-30">
+  <owner>jackshira@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
+  <summary>
+    Records if the WiFi Direct group was able to be connected to. Emitted when
+    Nearby Connections returns the result from the mojo call to connect the GC.
+  </summary>
+</histogram>
+
+<histogram name="Nearby.Connections.WifiDirect.CreateWifiDirectGroup.Error"
+    enum="NearbyConnectionsWifiDirectResult" expires_after="2025-04-30">
+  <owner>jackshira@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
+  <summary>
+    Records the error that occured when the WiFi Direct group creation was
+    attempted. Emitted when Nearby Connections returns the result from the mojo
+    call to create the GO.
+  </summary>
+</histogram>
+
+<histogram name="Nearby.Connections.WifiDirect.CreateWifiDirectGroup.Result"
+    enum="BooleanSuccess" expires_after="2025-04-30">
+  <owner>jackshira@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
+  <summary>
+    Records if the WiFi Direct group was able to be created. Emitted when Nearby
+    Connections returns the result from the mojo call to create the GO.
+  </summary>
+</histogram>
+
+<histogram name="Nearby.Connections.WifiDirect.IsP2pSupported" enum="Boolean"
+    expires_after="2025-04-30">
+  <owner>jackshira@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
+  <summary>
+    Records if the WiFi Direct interface currently supports P2P. If P2P support
+    is true, it indicates that the interface is valid and ready to use. Emitted
+    when Nearby Connections initiates a bandwidth upgrade and checks for
+    available transfer mediums.
+  </summary>
+</histogram>
+
+<histogram name="Nearby.Connections.WifiDirect.ListenForService.Error"
+    enum="NearbyConnectionsWifiDirectServiceError" expires_after="2025-04-30">
+  <owner>jackshira@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
+  <summary>
+    Records the error that occured attempting to listen for new Nearby
+    Connections via the connected WiFi Direct interface. Emitted when Nearby
+    Connections encounters an error setting up the the TCP server socket.
+  </summary>
+</histogram>
+
+<histogram name="Nearby.Connections.WifiDirect.ListenForService.Result"
+    enum="BooleanSuccess" expires_after="2025-04-30">
+  <owner>jackshira@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
+  <summary>
+    Records the result of attempting to listen for new Nearby Connections via
+    the connected WiFi Direct interface. Emitted when Nearby Connections returns
+    the result from listen for service call.
+  </summary>
+</histogram>
+
+<histogram name="Nearby.Connections.WifiDirect.ServerSocket.Accept.Error"
+    enum="NearbyConnectionsWifiDirectSocketError" expires_after="2025-04-30">
+  <owner>jackshira@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
+  <summary>
+    Records the error that occured attempting to accept a new Nearby Connection
+    via TCP socket on the connected WiFi Direct interface. Emitted when Nearby
+    Connections encounters an error accepting a connection on the TCP server
+    socket. Cancellations and socket closures do not emit errors because they
+    are expected final states.
+  </summary>
+</histogram>
+
+<histogram name="Nearby.Connections.WifiDirect.ServerSocket.Accept.Result"
+    enum="BooleanSuccess" expires_after="2025-04-30">
+  <owner>jackshira@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
+  <summary>
+    Records the result of attempting to accept a new Nearby Connection via TCP
+    socket on the connected WiFi Direct interface. Accept is called once during
+    the initial upgrade process, and again after each incoming connection has
+    been handled. Additionally, a negative value is logged for cancellations and
+    socket closure. This means that each successful WiFi Direct transfer will
+    have both a successful accept result and a failure due to the closing down
+    of the socket when the medium is destructed.
+  </summary>
+</histogram>
+
+<histogram name="Nearby.Connections.WifiDirect.Socket.Read.Result"
+    enum="BooleanSuccess" expires_after="2025-04-30">
+  <owner>jackshira@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
+  <summary>
+    Records the result of attempting to read bytes from a connected TCP socket
+    on a connected WiFi Direct medium. Read is called repeatedly during the
+    duration of a connection.
+  </summary>
+</histogram>
+
+<histogram name="Nearby.Connections.WifiDirect.Socket.Write.Result"
+    enum="BooleanSuccess" expires_after="2025-04-30">
+  <owner>jackshira@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
+  <summary>
+    Records the result of attempting to write bytes to a connected TCP socket on
+    a connected WiFi Direct medium. Write is called repeatedly during the
+    duration of a connection.
   </summary>
 </histogram>
 
@@ -837,6 +1187,29 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Nearby.Presence.Process.Shutdown.Reason"
+    enum="NearbyConnectionsUtilityProcessShutdownReason"
+    expires_after="2025-05-01">
+  <owner>crisrael@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records why the Nearby Presence utility process was shutdown, including
+    normal, expected shutdowns. Emitted when the utility process is stopped.
+  </summary>
+</histogram>
+
+<histogram name="Nearby.Presence.ScanRequest.Result"
+    enum="NearbyPresenceScanRequestResult" expires_after="2025-05-01">
+  <owner>crisrael@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records the result of starting a scan via Nearby Presence. Emitted when the
+    scan request result is received for most cases. A special case occurs if the
+    utility process reference is unable to be started; that particular enum is
+    instead emitted as soon as the failure to start occurs.
+  </summary>
+</histogram>
+
 <histogram
     name="Nearby.Share.BackgroundScanning.DeviceNearbySharing.Notification.Flow"
     enum="NearbyShareBackgroundScanningDeviceNearbySharingNotificationFlowEvent"
@@ -946,7 +1319,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Nearby.Share.Certificates.Manager.DownloadPublicCertificatesCount"
     units="certificates" expires_after="2025-04-30">
-  <owner>cclem@chromium.org</owner>
+  <owner>crisrael@google.com</owner>
   <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     If the Nearby Share certificate manager successfully downloads public
@@ -958,7 +1331,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Nearby.Share.Certificates.Manager.DownloadPublicCertificatesFailuePageCount"
     units="pages" expires_after="2025-04-30">
-  <owner>cclem@chromium.org</owner>
+  <owner>crisrael@google.com</owner>
   <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     If the Nearby Share certificate manager fails to download public
@@ -970,7 +1343,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Nearby.Share.Certificates.Manager.DownloadPublicCertificatesHttpResult"
     enum="NearbyHttpResult" expires_after="2025-04-30">
-  <owner>cclem@chromium.org</owner>
+  <owner>crisrael@google.com</owner>
   <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records the result of the async ListPublicCertificates API call to the
@@ -983,7 +1356,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Nearby.Share.Certificates.Manager.DownloadPublicCertificatesSuccessPageCount"
     units="pages" expires_after="2025-04-30">
-  <owner>cclem@chromium.org</owner>
+  <owner>crisrael@google.com</owner>
   <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     If the Nearby Share certificate manager successfully downloads public
@@ -994,7 +1367,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Nearby.Share.Certificates.Manager.DownloadPublicCertificatesSuccessRate"
     enum="BooleanSuccess" expires_after="2025-04-30">
-  <owner>cclem@chromium.org</owner>
+  <owner>crisrael@google.com</owner>
   <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records whether the Nearby Share certificate manager successfully downloaded
@@ -1006,7 +1379,7 @@ chromium-metrics-reviews@google.com.
     name="Nearby.Share.Certificates.Manager.GetDecryptedPublicCertificateResult"
     enum="NearbyShareCertificateManagerGetDecryptedPublicCertificateResult"
     expires_after="2025-04-30">
-  <owner>cclem@chromium.org</owner>
+  <owner>crisrael@google.com</owner>
   <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records the result of the async GetDecryptedPublicCertificate call in
@@ -1016,7 +1389,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Nearby.Share.Certificates.Storage.InitializeAttemptCount"
     units="attempts" expires_after="2025-04-30">
-  <owner>cclem@chromium.org</owner>
+  <owner>crisrael@google.com</owner>
   <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     If the Nearby Share certificate storage successfully initializes the public
@@ -1027,7 +1400,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Nearby.Share.Certificates.Storage.InitializeAttemptResult"
     enum="NearbyShareCertificateStorageInitializationResult"
     expires_after="2025-04-30">
-  <owner>cclem@chromium.org</owner>
+  <owner>crisrael@google.com</owner>
   <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     For individual initialization attempts of the Nearby Share certificate
@@ -1049,7 +1422,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Nearby.Share.Certificates.Storage.{Operation}SuccessRate"
     enum="BooleanSuccess" expires_after="2025-04-30">
-  <owner>cclem@chromium.org</owner>
+  <owner>crisrael@google.com</owner>
   <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Record success rate of Nearby Share storage operation {Operation}.
@@ -1086,6 +1459,20 @@ chromium-metrics-reviews@google.com.
     to send a payload to but before the payload begins its transfer. Because the
     sending device initiates the connection--via the Nearby Connections
     library--this metric is only emitted for outgoing transfers.
+  </summary>
+</histogram>
+
+<histogram name="Nearby.Share.Connection.InitialMedium"
+    enum="NearbyShareUpgradedMedium" expires_after="2025-04-30">
+  <owner>dclasson@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
+  <summary>
+    Records what the initial medium is when connection is established, which
+    will either be Bluetooth (true in most cases) or Wifi LAN (true only when
+    ChromeOS is sending and discovery happens using mDNS). Note that this metric
+    is not emitted for receiving Nearby Shares, and Wifi LAN is only supported
+    as an initial medium for sending Nearby Shares (as mDNS discovery is
+    supported, but advertising isn't).
   </summary>
 </histogram>
 
@@ -1344,7 +1731,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Nearby.Share.Error" enum="NearbyShareError"
     expires_after="2025-04-30">
-  <owner>cclem@google.com</owner>
+  <owner>crisrael@google.com</owner>
   <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records a unique error code for every site in the code where an error
@@ -1376,7 +1763,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Nearby.Share.LocalDeviceData.DeviceDataUpdater.HttpResult"
     enum="NearbyHttpResult" expires_after="2025-04-30">
-  <owner>cclem@chromium.org</owner>
+  <owner>crisrael@google.com</owner>
   <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records the result of the async UpdateDevice API call to the Nearby Sharing
@@ -1486,7 +1873,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Nearby.Share.PairedKeyVerificationError"
     enum="NearbySharePairedKeyVerificationError" expires_after="2025-04-30">
-  <owner>cclem@google.com</owner>
+  <owner>crisrael@google.com</owner>
   <owner>nearby-share-chromeos-eng@google.com</owner>
   <summary>
     Records the reason why paired key verification failed. Emitted whenever the

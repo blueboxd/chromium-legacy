@@ -10,7 +10,6 @@
 #include <optional>
 
 #include "components/attribution_reporting/registration_eligibility.mojom-blink-forward.h"
-#include "services/network/public/cpp/attribution_reporting_runtime_features.h"
 #include "services/network/public/mojom/attribution.mojom-forward.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
@@ -19,10 +18,6 @@
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-
-namespace network {
-class TriggerVerification;
-}  // namespace network
 
 namespace attribution_reporting {
 class SuitableOrigin;
@@ -44,6 +39,11 @@ class WebVector;
 
 struct Impression;
 
+// Handles source and trigger registration from blink.
+// See
+// https://github.com/WICG/attribution-reporting-api/blob/main/EVENT.md#registering-attribution-sources
+// and
+// https://github.com/WICG/attribution-reporting-api/blob/main/EVENT.md#triggering-attribution.
 class CORE_EXPORT AttributionSrcLoader
     : public GarbageCollected<AttributionSrcLoader> {
  public:
@@ -107,8 +107,6 @@ class CORE_EXPORT AttributionSrcLoader
 
   network::mojom::AttributionSupport GetSupport() const;
 
-  network::AttributionReportingRuntimeFeatures GetRuntimeFeatures() const;
-
   // Records whether the permission policy allows for Attribution support to
   // 'Conversions.AllowedByPermissionPolicy'.
   static void RecordAttributionFeatureAllowed(bool enabled);
@@ -151,7 +149,6 @@ class CORE_EXPORT AttributionSrcLoader
       network::mojom::AttributionSupport,
       attribution_reporting::SuitableOrigin reporting_origin,
       const AttributionHeaders&,
-      const Vector<network::TriggerVerification>&,
       const attribution_reporting::RegistrationInfo&,
       bool was_fetched_via_service_worker);
 

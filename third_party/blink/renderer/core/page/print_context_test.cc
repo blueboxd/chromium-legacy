@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/core/page/print_context.h"
 
 #include <memory>
@@ -530,7 +535,7 @@ TEST_P(PrintContextTest, LinkedTarget) {
   );
   PrintSinglePage(canvas);
 
-  const Vector<MockPageContextCanvas::Operation>& operations =
+  Vector<MockPageContextCanvas::Operation> operations =
       canvas.RecordedOperations();
   ASSERT_EQ(8u, operations.size());
   // The DrawRect operations come from a stable iterator.
@@ -544,14 +549,20 @@ TEST_P(PrintContextTest, LinkedTarget) {
   EXPECT_SKRECT_EQ(50, 460, 10, 10, operations[3].rect);
 
   // The DrawPoint operations come from an unstable iterator.
+  std::sort(operations.begin() + 4, operations.begin() + 8,
+            [](const MockPageContextCanvas::Operation& a,
+               const MockPageContextCanvas::Operation& b) {
+              return std::pair(a.rect.x(), a.rect.y()) <
+                     std::pair(b.rect.x(), b.rect.y());
+            });
   EXPECT_EQ(MockPageContextCanvas::kDrawPoint, operations[4].type);
-  EXPECT_SKRECT_EQ(450, 260, 0, 0, operations[4].rect);
+  EXPECT_SKRECT_EQ(0, 0, 0, 0, operations[4].rect);
   EXPECT_EQ(MockPageContextCanvas::kDrawPoint, operations[5].type);
   EXPECT_SKRECT_EQ(0, 0, 0, 0, operations[5].rect);
   EXPECT_EQ(MockPageContextCanvas::kDrawPoint, operations[6].type);
   EXPECT_SKRECT_EQ(450, 60, 0, 0, operations[6].rect);
   EXPECT_EQ(MockPageContextCanvas::kDrawPoint, operations[7].type);
-  EXPECT_SKRECT_EQ(0, 0, 0, 0, operations[7].rect);
+  EXPECT_SKRECT_EQ(450, 260, 0, 0, operations[7].rect);
 }
 
 TEST_P(PrintContextTest, EmptyLinkedTarget) {
@@ -633,6 +644,31 @@ TEST_P(PrintContextTest, LinkInFragmentedContainer) {
   EXPECT_EQ(page2_link2.type, MockPageContextCanvas::kDrawRect);
   EXPECT_GE(page2_link2.rect.y(), page_rect.y() + 50);
   EXPECT_LE(page2_link2.rect.bottom(), page_rect.y() + 100);
+}
+
+TEST_P(PrintContextTest, LinkedTargetSecondPage) {
+  SetBodyInnerHTML(R"HTML(
+    <a style="display:block; width:33px; height:33px;" href="#nextpage"></a>
+    <div style="break-before:page;"></div>
+    <div id="nextpage" style="margin-top:50px; width:100px; height:100px;"></div>
+  )HTML");
+
+  // The link is on the first page.
+  testing::NiceMock<MockPageContextCanvas> first_canvas;
+  PrintSinglePage(first_canvas, 0);
+  const Vector<MockPageContextCanvas::Operation>* operations =
+      &first_canvas.RecordedOperations();
+  ASSERT_EQ(1u, operations->size());
+  EXPECT_EQ(MockPageContextCanvas::kDrawRect, (*operations)[0].type);
+  EXPECT_SKRECT_EQ(0, 0, 33, 33, (*operations)[0].rect);
+
+  // The destination is on the second page.
+  testing::NiceMock<MockPageContextCanvas> second_canvas;
+  PrintSinglePage(second_canvas, 1);
+  operations = &second_canvas.RecordedOperations();
+  ASSERT_EQ(1u, operations->size());
+  EXPECT_EQ(MockPageContextCanvas::kDrawPoint, (*operations)[0].type);
+  EXPECT_SKRECT_EQ(0, 50, 0, 0, (*operations)[0].rect);
 }
 
 // Here are a few tests to check that shrink to fit doesn't mess up page count.
@@ -975,7 +1011,7 @@ class PrintContextAcceleratedCanvasTest : public PrintContextTest {
     // destroyed before the TestContextProvider.
     PrintContextTest::TearDown();
 
-    SharedGpuContext::ResetForTesting();
+    SharedGpuContext::Reset();
     test_context_provider_ = nullptr;
     accelerated_canvas_scope_ = nullptr;
   }
@@ -1050,7 +1086,7 @@ class PrintContextOOPRCanvasTest : public PrintContextTest {
     // destroyed before the TestContextProvider.
     accelerated_compositing_scope_ = nullptr;
     test_context_provider_ = nullptr;
-    SharedGpuContext::ResetForTesting();
+    SharedGpuContext::Reset();
     PrintContextTest::TearDown();
     accelerated_canvas_scope_ = nullptr;
   }

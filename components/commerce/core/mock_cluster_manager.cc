@@ -5,6 +5,7 @@
 #include "components/commerce/core/mock_cluster_manager.h"
 
 #include "base/task/sequenced_task_runner.h"
+#include "components/commerce/core/compare/cluster_server_proxy.h"
 
 namespace commerce {
 
@@ -12,6 +13,7 @@ MockClusterManager::MockClusterManager(
     ProductSpecificationsService* product_specifications_service)
     : ClusterManager(
           product_specifications_service,
+          nullptr,
           base::RepeatingCallback<void(const GURL&, ProductInfoCallback)>(),
           base::RepeatingCallback<const std::vector<UrlInfo>()>()) {}
 
@@ -45,5 +47,17 @@ void MockClusterManager::SetResponseForGetProductGroupForCandidateProduct(
     std::optional<ProductGroup> product_group) {
   ON_CALL(*this, GetProductGroupForCandidateProduct)
       .WillByDefault(testing::Return(product_group));
+}
+
+void MockClusterManager::SetResponseForGetComparableProducts(
+    std::optional<EntryPointInfo> entry_point_info) {
+  ON_CALL(*this, GetComparableProducts)
+      .WillByDefault([entry_point_info = std::move(entry_point_info)](
+                         const EntryPointInfo& info,
+                         ClusterManager::GetEntryPointInfoCallback callback) {
+        base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+            FROM_HERE,
+            base::BindOnce(std::move(callback), std::move(entry_point_info)));
+      });
 }
 }  // namespace commerce

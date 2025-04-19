@@ -170,11 +170,20 @@ OmniboxPopupViewViews::OmniboxPopupViewViews(OmniboxViewViews* omnibox_view,
       location_bar_view_(location_bar_view) {
   model()->set_popup_view(this);
 
+  if (omnibox_view_) {
+    GetViewAccessibility().SetPopupForId(
+        omnibox_view_->GetViewAccessibility().GetUniqueId());
+  }
+
   // The contents is owned by the LocationBarView.
   set_owned_by_client();
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
+
+  GetViewAccessibility().SetRole(ax::mojom::Role::kListBox);
+  UpdateExpandedCollapsedAccessibleState();
+  UpdateAccessibleActiveDescendantForInvokingView();
 }
 
 OmniboxPopupViewViews::~OmniboxPopupViewViews() {
@@ -238,6 +247,7 @@ void OmniboxPopupViewViews::OnSelectionChanged(
   if (new_selection.line != OmniboxPopupSelection::kNoMatch) {
     InvalidateLine(new_selection.line);
   }
+  UpdateAccessibleActiveDescendantForInvokingView();
 }
 
 void OmniboxPopupViewViews::UpdatePopupAppearance() {
@@ -254,8 +264,9 @@ void OmniboxPopupViewViews::UpdatePopupAppearance() {
       }
       popup_->CloseAnimated();  // This will eventually delete the popup.
       popup_.reset();
-      NotifyAccessibilityEvent(ax::mojom::Event::kExpandedChanged, true);
+      UpdateExpandedCollapsedAccessibleState();
       // The active descendant should be cleared when the popup closes.
+      UpdateAccessibleActiveDescendantForInvokingView();
       FireAXEventsForNewActiveDescendant(nullptr);
     }
     return;
@@ -327,6 +338,7 @@ void OmniboxPopupViewViews::UpdatePopupAppearance() {
     result_view->SetMatch(match);
     // Set visibility of the result view based on whether the group is hidden.
     result_view->SetVisible(!group_hidden && !row_hidden);
+    result_view->UpdateAccessibilityProperties();
 
     const SkBitmap* bitmap = model()->GetPopupRichSuggestionBitmap(i);
     if (bitmap) {
@@ -345,7 +357,8 @@ void OmniboxPopupViewViews::UpdatePopupAppearance() {
     popup_->ShowAnimated();
 
     // Popup is now expanded and first item will be selected.
-    NotifyAccessibilityEvent(ax::mojom::Event::kExpandedChanged, true);
+    UpdateExpandedCollapsedAccessibleState();
+    UpdateAccessibleActiveDescendantForInvokingView();
     OmniboxResultView* result_view = result_view_at(0);
     if (result_view) {
       FireAXEventsForNewActiveDescendant(result_view);
@@ -380,7 +393,7 @@ void OmniboxPopupViewViews::OnDragCanceled() {
 
 void OmniboxPopupViewViews::GetPopupAccessibleNodeData(
     ui::AXNodeData* node_data) {
-  return GetAccessibleNodeData(node_data);
+  return GetViewAccessibility().GetAccessibleNodeData(node_data);
 }
 
 void OmniboxPopupViewViews::AddPopupAccessibleNodeData(
@@ -390,17 +403,9 @@ void OmniboxPopupViewViews::AddPopupAccessibleNodeData(
   // between the omnibox and the list of suggestions, and determine which
   // suggestion is currently selected, even though focus remains here on
   // the omnibox.
-  int32_t popup_view_id = GetViewAccessibility().GetUniqueId().Get();
+  int32_t popup_view_id = GetViewAccessibility().GetUniqueId();
   node_data->AddIntListAttribute(ax::mojom::IntListAttribute::kControlsIds,
                                  {popup_view_id});
-  size_t selected_line = GetSelection().line;
-  if (selected_line != OmniboxPopupSelection::kNoMatch) {
-    if (OmniboxResultView* result_view = result_view_at(selected_line)) {
-      node_data->AddIntAttribute(
-          ax::mojom::IntAttribute::kActivedescendantId,
-          result_view->GetViewAccessibility().GetUniqueId().Get());
-    }
-  }
 }
 
 std::u16string OmniboxPopupViewViews::GetAccessibleButtonTextForResult(
@@ -438,13 +443,13 @@ void OmniboxPopupViewViews::OnGestureEvent(ui::GestureEvent* event) {
   }
 
   switch (event->type()) {
-    case ui::ET_GESTURE_TAP_DOWN:
-    case ui::ET_GESTURE_SCROLL_BEGIN:
-    case ui::ET_GESTURE_SCROLL_UPDATE:
+    case ui::EventType::kGestureTapDown:
+    case ui::EventType::kGestureScrollBegin:
+    case ui::EventType::kGestureScrollUpdate:
       SetSelectedIndex(index);
       break;
-    case ui::ET_GESTURE_TAP:
-    case ui::ET_GESTURE_SCROLL_END: {
+    case ui::EventType::kGestureTap:
+    case ui::EventType::kGestureScrollEnd: {
       DCHECK(HasMatchAt(index));
       model()->OpenSelection(OmniboxPopupSelection(index), event->time_stamp());
       break;
@@ -463,9 +468,6 @@ void OmniboxPopupViewViews::FireAXEventsForNewActiveDescendant(
   }
   // Selected children changed is fired on the popup.
   NotifyAccessibilityEvent(ax::mojom::Event::kSelectedChildrenChanged, true);
-  // Active descendant changed is fired on the focused text field.
-  omnibox_view_->NotifyAccessibilityEvent(
-      ax::mojom::Event::kActiveDescendantChanged, true);
 }
 
 void OmniboxPopupViewViews::OnWidgetBoundsChanged(views::Widget* widget,
@@ -611,17 +613,32 @@ void OmniboxPopupViewViews::SetSuggestionGroupVisibility(
 }
 
 void OmniboxPopupViewViews::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ax::mojom::Role::kListBox;
-  if (IsOpen()) {
-    node_data->AddState(ax::mojom::State::kExpanded);
-  } else {
-    node_data->AddState(ax::mojom::State::kCollapsed);
+  if (!IsOpen()) {
     node_data->AddState(ax::mojom::State::kInvisible);
   }
+}
 
-  if (omnibox_view_) {
-    int32_t view_id = omnibox_view_->GetViewAccessibility().GetUniqueId().Get();
-    node_data->AddIntAttribute(ax::mojom::IntAttribute::kPopupForId, view_id);
+void OmniboxPopupViewViews::UpdateExpandedCollapsedAccessibleState() const {
+  if (IsOpen()) {
+    GetViewAccessibility().SetIsExpanded();
+  } else {
+    GetViewAccessibility().SetIsCollapsed();
+  }
+}
+
+void OmniboxPopupViewViews::UpdateAccessibleActiveDescendantForInvokingView() {
+  if (!omnibox_view_) {
+    return;
+  }
+  size_t selected_line = GetSelection().line;
+  if (IsOpen() && selected_line != OmniboxPopupSelection::kNoMatch) {
+    if (OmniboxResultView* result_view = result_view_at(selected_line)) {
+      omnibox_view_->GetViewAccessibility().SetActiveDescendant(*result_view);
+    } else {
+      omnibox_view_->GetViewAccessibility().ClearActiveDescendant();
+    }
+  } else {
+    omnibox_view_->GetViewAccessibility().ClearActiveDescendant();
   }
 }
 

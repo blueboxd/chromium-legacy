@@ -29,8 +29,6 @@
  */
 
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/public/common/features.h"
-#include "third_party/blink/renderer/core/page/page_animator.h"
 
 #include <algorithm>
 #include <memory>
@@ -41,10 +39,11 @@
 #include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/permissions_policy/document_policy_features.h"
 #include "third_party/blink/public/common/privacy_budget/identifiable_surface.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-blink.h"
+#include "third_party/blink/public/platform/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/web/web_print_page_description.h"
 #include "third_party/blink/renderer/bindings/core/v8/isolated_world_csp.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_tester.h"
@@ -80,6 +79,7 @@
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/page_animator.h"
 #include "third_party/blink/renderer/core/page/validation_message_client.h"
 #include "third_party/blink/renderer/core/testing/color_scheme_helper.h"
 #include "third_party/blink/renderer/core/testing/mock_policy_container_host.h"
@@ -101,6 +101,7 @@ namespace blink {
 
 using network::mojom::ContentSecurityPolicySource;
 using network::mojom::ContentSecurityPolicyType;
+using ::testing::_;
 using ::testing::ElementsAre;
 using ::testing::IsEmpty;
 
@@ -174,8 +175,7 @@ class DocumentTest : public PageTestBase {
   }
 
   void NavigateWithSandbox(const KURL& url) {
-    auto params = WebNavigationParams::CreateWithHTMLStringForTesting(
-        /*html=*/"", url);
+    auto params = WebNavigationParams::CreateWithEmptyHTMLForTesting(url);
     MockPolicyContainerHost mock_policy_container_host;
     params->policy_container = std::make_unique<blink::WebPolicyContainer>(
         blink::WebPolicyContainerPolicies(),
@@ -1117,7 +1117,7 @@ TEST_F(DocumentTest, ElementFromPointWithPageZoom) {
   EXPECT_EQ(GetDocument().ElementFromPoint(1, 12), GetDocument().body());
 
   // Zoom the page by 2x,
-  GetDocument().GetFrame()->SetPageZoomFactor(2);
+  GetDocument().GetFrame()->SetLayoutZoomFactor(2);
 
   // A hit test on the content div should hit it.
   EXPECT_EQ(GetDocument().ElementFromPoint(1, 8), content);
@@ -1244,7 +1244,7 @@ TEST_F(DocumentTest, FindInPageUkmInFrame) {
 }
 
 TEST_F(DocumentTest, AtPageMarginWithDeviceScaleFactor) {
-  GetDocument().GetFrame()->SetPageZoomFactor(2);
+  GetDocument().GetFrame()->SetLayoutZoomFactor(2);
   SetBodyInnerHTML("<style>@page { margin: 50px; size: 400px 10in; }</style>");
 
   constexpr gfx::SizeF initial_page_size(800, 600);
@@ -1288,8 +1288,8 @@ TEST_F(DocumentTest, RejectsHasPrivateTokenCallFromNonHttpNonHttpsDocument) {
   Document& document = scope.GetDocument();
   ScriptState* script_state = scope.GetScriptState();
   ExceptionState exception_state(script_state->GetIsolate(),
-                                 ExceptionContextType::kOperationInvoke,
-                                 "Document", "hasPrivateToken");
+                                 v8::ExceptionContext::kOperation, "Document",
+                                 "hasPrivateToken");
 
   auto promise = document.hasPrivateToken(
       script_state, "https://issuer.example", exception_state);
@@ -1401,8 +1401,8 @@ TEST_F(DocumentTest, HasPrivateTokenSuccess) {
 
   ScriptState* script_state = scope.GetScriptState();
   ExceptionState exception_state(script_state->GetIsolate(),
-                                 ExceptionContextType::kOperationInvoke,
-                                 "Document", "hasPrivateToken");
+                                 v8::ExceptionContext::kOperation, "Document",
+                                 "hasPrivateToken");
 
   auto promise = document.hasPrivateToken(
       script_state, "https://issuer.example", exception_state);
@@ -1429,8 +1429,8 @@ TEST_F(DocumentTest, HasPrivateTokenSuccessWithFalseValue) {
 
   ScriptState* script_state = scope.GetScriptState();
   ExceptionState exception_state(script_state->GetIsolate(),
-                                 ExceptionContextType::kOperationInvoke,
-                                 "Document", "hasPrivateToken");
+                                 v8::ExceptionContext::kOperation, "Document",
+                                 "hasPrivateToken");
 
   auto promise = document.hasPrivateToken(
       script_state, "https://issuer.example", exception_state);
@@ -1457,8 +1457,8 @@ TEST_F(DocumentTest, HasPrivateTokenOperationError) {
 
   ScriptState* script_state = scope.GetScriptState();
   ExceptionState exception_state(script_state->GetIsolate(),
-                                 ExceptionContextType::kOperationInvoke,
-                                 "Document", "hasPrivateToken");
+                                 v8::ExceptionContext::kOperation, "Document",
+                                 "hasPrivateToken");
 
   auto promise = document.hasPrivateToken(
       script_state, "https://issuer.example", exception_state);
@@ -1487,8 +1487,8 @@ TEST_F(DocumentTest, HasPrivateTokenInvalidArgument) {
 
   ScriptState* script_state = scope.GetScriptState();
   ExceptionState exception_state(script_state->GetIsolate(),
-                                 ExceptionContextType::kOperationInvoke,
-                                 "Document", "hasPrivateToken");
+                                 v8::ExceptionContext::kOperation, "Document",
+                                 "hasPrivateToken");
 
   auto promise = document.hasPrivateToken(
       script_state, "https://issuer.example", exception_state);
@@ -1517,8 +1517,8 @@ TEST_F(DocumentTest, HasPrivateTokenResourceExhausted) {
 
   ScriptState* script_state = scope.GetScriptState();
   ExceptionState exception_state(script_state->GetIsolate(),
-                                 ExceptionContextType::kOperationInvoke,
-                                 "Document", "hasPrivateToken");
+                                 v8::ExceptionContext::kOperation, "Document",
+                                 "hasPrivateToken");
 
   auto promise = document.hasPrivateToken(
       script_state, "https://issuer.example", exception_state);
@@ -1546,8 +1546,8 @@ TEST_F(DocumentTest, HasRedemptionRecordSuccess) {
 
   ScriptState* script_state = scope.GetScriptState();
   ExceptionState exception_state(script_state->GetIsolate(),
-                                 ExceptionContextType::kOperationInvoke,
-                                 "Document", "hasRedemptionRecord");
+                                 v8::ExceptionContext::kOperation, "Document",
+                                 "hasRedemptionRecord");
 
   auto promise = document.hasRedemptionRecord(
       script_state, "https://issuer.example", exception_state);
@@ -1574,8 +1574,8 @@ TEST_F(DocumentTest, HasRedemptionRecordSuccessWithFalseValue) {
 
   ScriptState* script_state = scope.GetScriptState();
   ExceptionState exception_state(script_state->GetIsolate(),
-                                 ExceptionContextType::kOperationInvoke,
-                                 "Document", "hasRedemptionRecord");
+                                 v8::ExceptionContext::kOperation, "Document",
+                                 "hasRedemptionRecord");
 
   auto promise = document.hasRedemptionRecord(
       script_state, "https://issuer.example", exception_state);
@@ -1602,8 +1602,8 @@ TEST_F(DocumentTest, HasRedemptionRecordOperationError) {
 
   ScriptState* script_state = scope.GetScriptState();
   ExceptionState exception_state(script_state->GetIsolate(),
-                                 ExceptionContextType::kOperationInvoke,
-                                 "Document", "hasRedemptionRecord");
+                                 v8::ExceptionContext::kOperation, "Document",
+                                 "hasRedemptionRecord");
 
   auto promise = document.hasRedemptionRecord(
       script_state, "https://issuer.example", exception_state);
@@ -1632,8 +1632,8 @@ TEST_F(DocumentTest, HasRedemptionRecordInvalidArgument) {
 
   ScriptState* script_state = scope.GetScriptState();
   ExceptionState exception_state(script_state->GetIsolate(),
-                                 ExceptionContextType::kOperationInvoke,
-                                 "Document", "hasRedemptionRecord");
+                                 v8::ExceptionContext::kOperation, "Document",
+                                 "hasRedemptionRecord");
 
   auto promise = document.hasRedemptionRecord(
       script_state, "https://issuer.example", exception_state);
@@ -1676,8 +1676,8 @@ TEST_F(DocumentTest,
   Document& document = scope.GetDocument();
   ScriptState* script_state = scope.GetScriptState();
   ExceptionState exception_state(script_state->GetIsolate(),
-                                 ExceptionContextType::kOperationInvoke,
-                                 "Document", "hasRedemptionRecord");
+                                 v8::ExceptionContext::kOperation, "Document",
+                                 "hasRedemptionRecord");
 
   auto promise = document.hasRedemptionRecord(
       script_state, "https://issuer.example", exception_state);
@@ -1890,30 +1890,24 @@ TEST_F(UnassociatedListedElementTest, GetUnassociatedListedElements) {
   ASSERT_TRUE(
       GetDocument().getElementById(AtomicString("associated_custom_element")));
 
-  ListedElement::List expected_elements;
-  expected_elements.push_back(GetElement("unassociated_button"));
-  expected_elements.push_back(GetElement("unassociated_fieldset"));
-  expected_elements.push_back(GetElement("unassociated_input"));
-  expected_elements.push_back(GetElement("unassociated_textarea"));
-  expected_elements.push_back(GetElement("unassociated_output"));
-  expected_elements.push_back(GetElement("unassociated_select"));
-  expected_elements.push_back(GetElement("unassociated_object"));
-  expected_elements.push_back(GetElement("unassociated_custom_element"));
-
-  ListedElement::List listed_elements =
-      GetDocument().UnassociatedListedElements();
-  EXPECT_TRUE(std::equal(listed_elements.begin(), listed_elements.end(),
-                         expected_elements.begin(), expected_elements.end()));
+  auto expected_elements = [&] {
+    return ElementsAre(
+        GetElement("unassociated_button"), GetElement("unassociated_fieldset"),
+        GetElement("unassociated_input"), GetElement("unassociated_textarea"),
+        GetElement("unassociated_output"), GetElement("unassociated_select"),
+        /*Button inside <select> Shadow DOM*/ _,
+        GetElement("unassociated_object"),
+        /*Button inside <object> Shadow DOM*/ _,
+        GetElement("unassociated_custom_element"));
+  };
+  EXPECT_THAT(GetDocument().UnassociatedListedElements(), expected_elements());
 
   // Try getting the cached unassociated listed elements again (calling
   // UnassociatedListedElements() again will not re-extract them).
-  listed_elements = GetDocument().UnassociatedListedElements();
-  EXPECT_TRUE(std::equal(listed_elements.begin(), listed_elements.end(),
-                         expected_elements.begin(), expected_elements.end()));
+  EXPECT_THAT(GetDocument().UnassociatedListedElements(), expected_elements());
 }
 
-// We extract unassociated listed element in a shadow DOM iff
-// `kAutofillIncludeShadowDomInUnassociatedListedElements` is enabled.
+// We extract unassociated listed element in a shadow DOM.
 TEST_F(UnassociatedListedElementTest,
        GetUnassociatedListedElementsFromShadowTree) {
   ShadowRoot& shadow_root =
@@ -1924,16 +1918,9 @@ TEST_F(UnassociatedListedElementTest,
   shadow_root.AppendChild(input);
   ListedElement::List listed_elements =
       GetDocument().UnassociatedListedElements();
-
-  if (base::FeatureList::IsEnabled(
-          blink::features::
-              kAutofillIncludeShadowDomInUnassociatedListedElements)) {
-    EXPECT_THAT(listed_elements,
-                ElementsAre(ListedElement::From(*shadow_root.getElementById(
-                    AtomicString("unassociated_input")))));
-  } else {
-    EXPECT_THAT(listed_elements, IsEmpty());
-  }
+  EXPECT_THAT(listed_elements,
+              ElementsAre(ListedElement::From(*shadow_root.getElementById(
+                  AtomicString("unassociated_input")))));
 }
 
 // Check if the dynamically added unassociated listed element is properly
@@ -2388,5 +2375,99 @@ TEST_F(DocumentTest, LifecycleState_DirtyStyle_NoBody) {
   EXPECT_EQ(GetDocument().Lifecycle().GetState(),
             DocumentLifecycle::kVisualUpdatePending);
 }
+
+class TestPaymentLinkHandler
+    : public payments::facilitated::mojom::blink::PaymentLinkHandler {
+ public:
+  void HandlePaymentLink(const KURL& url) override {
+    ++payment_link_handled_counter_;
+    handled_url_ = url;
+    std::move(on_link_handled_callback_).Run();
+  }
+
+  int get_payment_link_handled_counter() const {
+    return payment_link_handled_counter_;
+  }
+
+  const KURL& get_handled_url() const { return handled_url_; }
+
+  void Bind(mojo::ScopedMessagePipeHandle handle) {
+    receiver_.Bind(mojo::PendingReceiver<
+                   payments::facilitated::mojom::blink::PaymentLinkHandler>(
+        std::move(handle)));
+  }
+
+  void set_on_link_handled_callback(
+      base::OnceClosure on_link_handled_callback) {
+    on_link_handled_callback_ = std::move(on_link_handled_callback);
+  }
+
+ private:
+  int payment_link_handled_counter_ = 0;
+  KURL handled_url_;
+  mojo::Receiver<payments::facilitated::mojom::blink::PaymentLinkHandler>
+      receiver_{this};
+  base::OnceClosure on_link_handled_callback_;
+};
+
+#if BUILDFLAG(IS_ANDROID)
+TEST_F(DocumentTest, PaymentLinkHandling_SinglePaymentLink) {
+  TestPaymentLinkHandler test_payment_link_handler;
+  base::RunLoop run_loop;
+  test_payment_link_handler.set_on_link_handled_callback(
+      run_loop.QuitClosure());
+
+  GetDocument().GetFrame()->GetBrowserInterfaceBroker().SetBinderForTesting(
+      payments::facilitated::mojom::blink::PaymentLinkHandler::Name_,
+      base::BindRepeating(&TestPaymentLinkHandler::Bind,
+                          base::Unretained(&test_payment_link_handler)));
+
+  ScopedPaymentLinkDetectionForTest payment_link_detection(true);
+
+  SetHtmlInnerHTML(R"HTML(
+    <head>
+      <link rel="payment" href="upi://payment_link_1">
+    </head>
+  )HTML");
+
+  // Run the message loop to ensure Mojo messages are dispatched.
+  run_loop.Run();
+
+  // Check if the correct payment link was handled.
+  EXPECT_EQ(test_payment_link_handler.get_payment_link_handled_counter(), 1);
+  EXPECT_EQ(test_payment_link_handler.get_handled_url(),
+            KURL("upi://payment_link_1"));
+}
+
+TEST_F(DocumentTest, PaymentLinkHandling_MultiplePaymentLink) {
+  TestPaymentLinkHandler test_payment_link_handler;
+  base::RunLoop run_loop;
+  test_payment_link_handler.set_on_link_handled_callback(
+      run_loop.QuitClosure());
+
+  GetDocument().GetFrame()->GetBrowserInterfaceBroker().SetBinderForTesting(
+      payments::facilitated::mojom::blink::PaymentLinkHandler::Name_,
+      base::BindRepeating(&TestPaymentLinkHandler::Bind,
+                          base::Unretained(&test_payment_link_handler)));
+
+  ScopedPaymentLinkDetectionForTest payment_link_detection(true);
+
+  SetHtmlInnerHTML(R"HTML(
+    <head>
+      <link rel="payment" href="upi://payment_link_1">
+      <link rel="payment" href="upi://payment_link_2">
+    </head>
+  )HTML");
+
+  // Run the message loop to ensure Mojo messages are dispatched.
+  run_loop.Run();
+
+  // Check if the correct payment link was handled and the payment link handling
+  // was invoked only once.
+  EXPECT_EQ(test_payment_link_handler.get_payment_link_handled_counter(), 1);
+  EXPECT_EQ(test_payment_link_handler.get_handled_url(),
+            KURL("upi://payment_link_1"));
+}
+#endif  // BUILDFLAG(IS_ANDROID)
 
 }  // namespace blink

@@ -32,7 +32,7 @@ extern const base::FeatureParam<base::TimeDelta>
 
 BASE_FEATURE(kPwaUniversalInstallUi,
              "PwaUniversalInstallUi",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables WebAPK Install Failure Notification.
 BASE_FEATURE(kWebApkInstallFailureNotification,
@@ -54,9 +54,16 @@ extern const base::FeatureParam<int> kBannerParamsDaysAfterBannerDismissedKey{
 extern const base::FeatureParam<int> kBannerParamsDaysAfterBannerIgnoredKey{
     &kAppBannerTriggering, "days_after_ignore", kMinimumDaysBetweenBannerShows};
 
+// Do not remove this feature flag, since it serves as a kill-switch for the ML
+// promotion model. Kill switches are required for all ML model-backed features.
 BASE_FEATURE(kWebAppsEnableMLModelForPromotion,
              "WebAppsEnableMLModelForPromotion",
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_ANDROID)
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#else
              base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
 extern const base::FeatureParam<double> kWebAppsMLGuardrailResultReportProb(
     &kWebAppsEnableMLModelForPromotion,
     "guardrail_report_prob",
@@ -70,32 +77,15 @@ extern const base::FeatureParam<int> kMaxDaysForMLPromotionGuardrailStorage(
     "max_days_to_store_guardrails",
     kTotalDaysToStoreMLGuardrails);
 
-// Allows installing a web app with fallback manifest values.
-BASE_FEATURE(kUniversalInstallManifest,
-             "UniversalInstallManifest",
-#if BUILDFLAG(IS_ANDROID)
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#else
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#endif
-
 // Allows installing a web app with fallback manifest values on root scope pages
 // without manifest.
 BASE_FEATURE(kUniversalInstallRootScopeNoManifest,
              "UniversalInstallRootScopeNoManifest",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Allows installing a web app when no icon provided by the manifest.
-BASE_FEATURE(kUniversalInstallIcon,
-             "UniversalInstallIcon",
 #if BUILDFLAG(IS_ANDROID)
              base::FEATURE_ENABLED_BY_DEFAULT);
 #else
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
-
-extern const base::FeatureParam<int> kMinimumFaviconSize{&kUniversalInstallIcon,
-                                                         "size", 48};
 
 // Allow using default manifest URL.
 BASE_FEATURE(kUniversalInstallDefaultUrl,

@@ -21,6 +21,7 @@
 #include "base/test/test_future.h"
 #include "base/test/values_test_util.h"
 #include "base/time/time.h"
+#include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
@@ -54,6 +55,7 @@
 #if !BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/permissions/one_time_permissions_tracker_observer.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
+#include "chrome/browser/web_applications/test/os_integration_test_override_impl.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
@@ -100,6 +102,18 @@ using ContentAnalysisResponse = enterprise_connectors::ContentAnalysisResponse;
 #if BUILDFLAG(ENTERPRISE_CLOUD_CONTENT_ANALYSIS)
 namespace {
 
+enum class CreateSymbolicLinkResult {
+  // The symbolic link creation failed because the platform does not support it.
+  // On Windows, that may be due to the lack of the required privilege.
+  kUnsupported = -1,
+
+  // The symbolic link creation failed.
+  kFailed,
+
+  // The symbolic link was created successfully.
+  kSucceeded,
+};
+
 constexpr char kDummyDmToken[] = "dm_token";
 
 void EnableEnterpriseAnalysis(Profile* profile) {
@@ -123,6 +137,54 @@ void EnableEnterpriseAnalysis(Profile* profile) {
 
 bool CreateNonEmptyFile(const base::FilePath& path) {
   return base::WriteFile(path, "data");
+}
+
+#if BUILDFLAG(IS_WIN)
+CreateSymbolicLinkResult CreateWinSymbolicLink(const base::FilePath& target,
+                                               const base::FilePath& symlink,
+                                               bool is_directory) {
+  // Creating symbolic links on Windows requires Administrator privileges.
+  // However, recent versions of Windows introduced the
+  // SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE flag, which allows the
+  // creation of symbolic links by processes with lower privileges, provided
+  // that Developer Mode is enabled.
+  //
+  // On older versions of Windows where the
+  // SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE flag does not exist, the OS
+  // will return the error code ERROR_INVALID_PARAMETER when attempting to
+  // create a symbolic link without sufficient privileges.
+  if (base::win::GetVersion() < base::win::Version::WIN10_RS3) {
+    return CreateSymbolicLinkResult::kUnsupported;
+  }
+
+  DWORD flags = is_directory ? SYMBOLIC_LINK_FLAG_DIRECTORY : 0;
+
+  if (!::CreateSymbolicLink(
+          symlink.value().c_str(), target.value().c_str(),
+          flags | SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE)) {
+    // SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE works only if Developer Mode
+    // is enabled.
+    if (::GetLastError() == ERROR_PRIVILEGE_NOT_HELD) {
+      return CreateSymbolicLinkResult::kUnsupported;
+    }
+    return CreateSymbolicLinkResult::kFailed;
+  }
+
+  return CreateSymbolicLinkResult::kSucceeded;
+}
+#endif  // BUILDFLAG(IS_WIN)
+
+CreateSymbolicLinkResult CreateSymbolicLinkForTesting(
+    const base::FilePath& target,
+    const base::FilePath& symlink) {
+#if BUILDFLAG(IS_WIN)
+  return CreateWinSymbolicLink(target, symlink, /*is_directory=*/true);
+#else
+  if (!base::CreateSymbolicLink(target, symlink)) {
+    return CreateSymbolicLinkResult::kFailed;
+  }
+  return CreateSymbolicLinkResult::kSucceeded;
+#endif  // BUILDFLAG(IS_WIN)
 }
 
 }  // namespace
@@ -690,9 +752,6 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
 }
 #endif
 
-#if BUILDFLAG(IS_POSIX)
-// Test enabled on POSIX, as `base::CreateSymbolicLink()` is currently only
-// supported on POSIX. This should be enabled on Windows once supported.
 TEST_F(ChromeFileSystemAccessPermissionContextTest,
        ConfirmSensitiveEntryAccess_ResolveSymbolicLink) {
   if (!base::FeatureList::IsEnabled(
@@ -701,23 +760,40 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
   }
 
   base::FilePath symlink1 = temp_dir_.GetPath().AppendASCII("symlink1");
+
   base::FilePath app_dir = temp_dir_.GetPath().AppendASCII("app");
+  ASSERT_TRUE(base::CreateDirectory(app_dir));
+
   base::ScopedPathOverride app_override(base::DIR_EXE, app_dir, true, true);
-  ASSERT_TRUE(base::CreateSymbolicLink(app_dir, symlink1));
+
+  CreateSymbolicLinkResult result =
+      CreateSymbolicLinkForTesting(app_dir, symlink1);
+  if (result == CreateSymbolicLinkResult::kUnsupported) {
+    GTEST_SKIP();
+  }
+  ASSERT_EQ(result, CreateSymbolicLinkResult::kSucceeded);
+
   EXPECT_EQ(ConfirmSensitiveEntryAccessSync(
                 permission_context(), PathType::kLocal, symlink1,
                 HandleType::kFile, UserAction::kOpen),
             SensitiveDirectoryResult::kAbort);
 
   base::FilePath symlink2 = temp_dir_.GetPath().AppendASCII("symlink2");
+
   base::FilePath allowed_file = temp_dir_.GetPath().AppendASCII("foo");
-  ASSERT_TRUE(base::CreateSymbolicLink(allowed_file, symlink2));
+  ASSERT_TRUE(base::CreateDirectory(allowed_file));
+
+  result = CreateSymbolicLinkForTesting(allowed_file, symlink2);
+  if (result == CreateSymbolicLinkResult::kUnsupported) {
+    GTEST_SKIP();
+  }
+  ASSERT_EQ(result, CreateSymbolicLinkResult::kSucceeded);
+
   EXPECT_EQ(ConfirmSensitiveEntryAccessSync(
                 permission_context(), PathType::kLocal, symlink2,
                 HandleType::kFile, UserAction::kOpen),
             SensitiveDirectoryResult::kAllowed);
 }
-#endif
 
 TEST_F(ChromeFileSystemAccessPermissionContextTest,
        ConfirmSensitiveEntryAccess_DangerousFile) {
@@ -1694,7 +1770,14 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
   EXPECT_TRUE(origin_is_embargoed_after_rejection_limit);
 }
 
-TEST_F(ChromeFileSystemAccessPermissionContextTest, OnWebAppInstalled) {
+class ChromeFileSystemAccessPermissionContextTestWithWebApp
+    : public ChromeFileSystemAccessPermissionContextTest {
+ private:
+  web_app::OsIntegrationTestOverrideBlockingRegistration fake_os_integration_;
+};
+
+TEST_F(ChromeFileSystemAccessPermissionContextTestWithWebApp,
+       OnWebAppInstalled) {
   // Create a persisted grant for `kTestOrigin`.
   auto read_grant = permission_context()->GetReadPermissionGrant(
       kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
@@ -1716,7 +1799,7 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest, OnWebAppInstalled) {
       PersistedGrantStatus::kCurrent);
 }
 
-TEST_F(ChromeFileSystemAccessPermissionContextTest,
+TEST_F(ChromeFileSystemAccessPermissionContextTestWithWebApp,
        OnWebAppInstalled_WithCurrentGrants) {
   // Create current, persisted grants by triggering the restore prompt and
   // accepting it.
@@ -1734,6 +1817,97 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
   // the grant status is current, the persisted grants are not revoked.
   ASSERT_THAT(permission_context()->GetGrantedObjects(kTestOrigin),
               testing::SizeIs(2));
+}
+
+TEST_F(ChromeFileSystemAccessPermissionContextTestWithWebApp,
+       OnWebAppInstalled_ExtendedPermissionsEnabled) {
+  // Enable extended permissions.
+  permission_context()->SetOriginHasExtendedPermissionForTesting(kTestOrigin);
+
+  // Create a persisted grant for `kTestOrigin`.
+  auto read_grant = permission_context()->GetReadPermissionGrant(
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
+  auto write_grant = permission_context()->GetWritePermissionGrant(
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
+  ASSERT_THAT(permission_context()->GetGrantedObjects(kTestOrigin),
+              testing::SizeIs(1));
+
+  // Install a web app for `kTestOrigin`.
+  const GURL kTestOriginUrl = GURL("https://example.com");
+  web_app::test::InstallDummyWebApp(profile(), "Test App", kTestOriginUrl);
+
+  // When extended permissions is enabled, the persisted grants are not
+  // revoked and the persisted grant type remains 'extended'.
+  ASSERT_THAT(permission_context()->GetGrantedObjects(kTestOrigin),
+              testing::SizeIs(1));
+  EXPECT_EQ(permission_context()->GetPersistedGrantTypeForTesting(kTestOrigin),
+            PersistedGrantType::kExtended);
+}
+
+TEST_F(ChromeFileSystemAccessPermissionContextTestWithWebApp,
+       OnWebAppUninstalled_WithPeristentAndActiveGrants) {
+  const base::FilePath kTestPath2 = base::FilePath(FILE_PATH_LITERAL("/a/b"));
+  // Install a web app for `kTestOrigin`.
+  const GURL kTestOriginUrl = GURL("https://example.com");
+  const webapps::AppId app_id =
+      web_app::test::InstallDummyWebApp(profile(), "Test App", kTestOriginUrl);
+
+  // Create a grant, then revoke its active permissions.
+  auto read_grant = permission_context()->GetReadPermissionGrant(
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
+  auto write_grant = permission_context()->GetWritePermissionGrant(
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
+
+  permission_context()->RevokeActiveGrantsForTesting(kTestOrigin);
+
+  // Create another grant, with granted active permissions.
+  auto read_grant2 = permission_context()->GetReadPermissionGrant(
+      kTestOrigin, kTestPath2, HandleType::kFile, UserAction::kSave);
+  auto write_grant2 = permission_context()->GetWritePermissionGrant(
+      kTestOrigin, kTestPath2, HandleType::kFile, UserAction::kSave);
+  ASSERT_THAT(permission_context()->GetGrantedObjects(kTestOrigin),
+              testing::SizeIs(2));
+
+  // Uninstall the web app for `kTestOrigin`.
+  web_app::test::UninstallWebApp(profile(), app_id);
+
+  // After the web app is uninstalled, persistent grants are cleared and
+  // re-created off of the granted active grants set.
+  ASSERT_THAT(permission_context()->GetGrantedObjects(kTestOrigin),
+              testing::SizeIs(1));
+}
+
+TEST_F(ChromeFileSystemAccessPermissionContextTestWithWebApp,
+       OnWebAppUninstalled_NoGrantedActiveGrants) {
+  // Install a web app for `kTestOrigin`.
+  const GURL kTestOriginUrl = GURL("https://example.com");
+  const webapps::AppId app_id =
+      web_app::test::InstallDummyWebApp(profile(), "Test App", kTestOriginUrl);
+
+  // Create a persistent grant, and revoke its active permissions.
+  auto read_grant = permission_context()->GetReadPermissionGrant(
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
+  auto write_grant = permission_context()->GetWritePermissionGrant(
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
+  permission_context()->RevokeActiveGrantsForTesting(kTestOrigin);
+  ASSERT_THAT(permission_context()->GetGrantedObjects(kTestOrigin),
+              testing::SizeIs(1));
+  EXPECT_EQ(
+      permission_context()->GetPersistedGrantStatusForTesting(kTestOrigin),
+      PersistedGrantStatus::kLoaded);
+
+  // Uninstall the web app for `kTestOrigin`, while there are persistent grants
+  // and no granted active grants.
+  web_app::test::UninstallWebApp(profile(), app_id);
+
+  // The grant status is set to current, and the persistent grants are revoked.
+  // The persisted grants are not re-created because there were no granted
+  // active grants at the time the web app was uninstalled.
+  ASSERT_THAT(permission_context()->GetGrantedObjects(kTestOrigin),
+              testing::IsEmpty());
+  EXPECT_EQ(
+      permission_context()->GetPersistedGrantStatusForTesting(kTestOrigin),
+      PersistedGrantStatus::kCurrent);
 }
 
 TEST_F(ChromeFileSystemAccessPermissionContextTest,
@@ -1779,97 +1953,6 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
   EXPECT_EQ(
       PersistedGrantStatus::kCurrent,
       permission_context()->GetPersistedGrantStatusForTesting(kTestOrigin));
-}
-
-TEST_F(ChromeFileSystemAccessPermissionContextTest,
-       OnWebAppInstalled_ExtendedPermissionsEnabled) {
-  // Enable extended permissions.
-  permission_context()->SetOriginHasExtendedPermissionForTesting(kTestOrigin);
-
-  // Create a persisted grant for `kTestOrigin`.
-  auto read_grant = permission_context()->GetReadPermissionGrant(
-      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
-  auto write_grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
-  ASSERT_THAT(permission_context()->GetGrantedObjects(kTestOrigin),
-              testing::SizeIs(1));
-
-  // Install a web app for `kTestOrigin`.
-  const GURL kTestOriginUrl = GURL("https://example.com");
-  web_app::test::InstallDummyWebApp(profile(), "Test App", kTestOriginUrl);
-
-  // When extended permissions is enabled, the persisted grants are not
-  // revoked and the persisted grant type remains 'extended'.
-  ASSERT_THAT(permission_context()->GetGrantedObjects(kTestOrigin),
-              testing::SizeIs(1));
-  EXPECT_EQ(permission_context()->GetPersistedGrantTypeForTesting(kTestOrigin),
-            PersistedGrantType::kExtended);
-}
-
-TEST_F(ChromeFileSystemAccessPermissionContextTest,
-       OnWebAppUninstalled_WithPeristentAndActiveGrants) {
-  const base::FilePath kTestPath2 = base::FilePath(FILE_PATH_LITERAL("/a/b"));
-  // Install a web app for `kTestOrigin`.
-  const GURL kTestOriginUrl = GURL("https://example.com");
-  const webapps::AppId app_id =
-      web_app::test::InstallDummyWebApp(profile(), "Test App", kTestOriginUrl);
-
-  // Create a grant, then revoke its active permissions.
-  auto read_grant = permission_context()->GetReadPermissionGrant(
-      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
-  auto write_grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
-
-  permission_context()->RevokeActiveGrantsForTesting(kTestOrigin);
-
-  // Create another grant, with granted active permissions.
-  auto read_grant2 = permission_context()->GetReadPermissionGrant(
-      kTestOrigin, kTestPath2, HandleType::kFile, UserAction::kSave);
-  auto write_grant2 = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath2, HandleType::kFile, UserAction::kSave);
-  ASSERT_THAT(permission_context()->GetGrantedObjects(kTestOrigin),
-              testing::SizeIs(2));
-
-  // Uninstall the web app for `kTestOrigin`.
-  web_app::test::UninstallWebApp(profile(), app_id);
-
-  // After the web app is uninstalled, persistent grants are cleared and
-  // re-created off of the granted active grants set.
-  ASSERT_THAT(permission_context()->GetGrantedObjects(kTestOrigin),
-              testing::SizeIs(1));
-}
-
-TEST_F(ChromeFileSystemAccessPermissionContextTest,
-       OnWebAppUninstalled_NoGrantedActiveGrants) {
-  // Install a web app for `kTestOrigin`.
-  const GURL kTestOriginUrl = GURL("https://example.com");
-  const webapps::AppId app_id =
-      web_app::test::InstallDummyWebApp(profile(), "Test App", kTestOriginUrl);
-
-  // Create a persistent grant, and revoke its active permissions.
-  auto read_grant = permission_context()->GetReadPermissionGrant(
-      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
-  auto write_grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
-  permission_context()->RevokeActiveGrantsForTesting(kTestOrigin);
-  ASSERT_THAT(permission_context()->GetGrantedObjects(kTestOrigin),
-              testing::SizeIs(1));
-  EXPECT_EQ(
-      permission_context()->GetPersistedGrantStatusForTesting(kTestOrigin),
-      PersistedGrantStatus::kLoaded);
-
-  // Uninstall the web app for `kTestOrigin`, while there are persistent grants
-  // and no granted active grants.
-  web_app::test::UninstallWebApp(profile(), app_id);
-
-  // The grant status is set to current, and the persistent grants are revoked.
-  // The persisted grants are not re-created because there were no granted
-  // active grants at the time the web app was uninstalled.
-  ASSERT_THAT(permission_context()->GetGrantedObjects(kTestOrigin),
-              testing::IsEmpty());
-  EXPECT_EQ(
-      permission_context()->GetPersistedGrantStatusForTesting(kTestOrigin),
-      PersistedGrantStatus::kCurrent);
 }
 
 TEST_F(ChromeFileSystemAccessPermissionContextTest,

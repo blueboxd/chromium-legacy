@@ -5,7 +5,6 @@
 <translation id="1036348656032585052">Poista käytöstä</translation>
 <translation id="1044891598689252897">Sivustot toimivat normaalisti</translation>
 <translation id="1073417869336441572">Auta meitä parantamaan Chromea kertomalla, miksi sallit kolmannen osapuolen evästeet. <ph name="BEGIN_LINK" />Lähetä palautetta<ph name="END_LINK" /></translation>
-<translation id="1113435009358629918">Piilota hinnanlaskukortti</translation>
 <translation id="1178581264944972037">Tauko</translation>
 <translation id="1181037720776840403">Poista</translation>
 <translation id="1192844206376121885">Tämä poistaa kaiken datan ja kaikki evästeet, jotka <ph name="ORIGIN" /> on tallentanut.</translation>
@@ -24,6 +23,7 @@
 <translation id="1415402041810619267">URL näkyy lyhennettynä</translation>
 <translation id="1448064542941920355">Vähennä zoomausta</translation>
 <translation id="146867109637325312">{COUNT,plural, =1{<ph name="SITE_COUNT" /> sivusto}other{<ph name="SITE_COUNT" /> sivustoa}}</translation>
+<translation id="1500473259453106018">Piilota "Hinnanalennukset avoimilla välilehdillä" ‑kortti</translation>
 <translation id="1510341833810331442">Sivustot eivät saa tallentaa dataa laitteellesi</translation>
 <translation id="1547123415014299762">Kolmannen osapuolen evästeet on sallittu</translation>
 <translation id="1568470248891039841">Avaamasi sivustot voivat upottaa muiden sivustojen sisältöä, esimerkiksi kuvia, mainoksia ja tekstiä. Nämä muut sivustot voivat pyytää lupaa käyttää sinusta tallentamiaan tietoja, kun selaat sivustoa. <ph name="BEGIN_LINK" />Lue lisää upotetusta sisällöstä<ph name="END_LINK" /></translation>
@@ -91,13 +91,11 @@
 <translation id="2498359688066513246">Ohjeet ja palaute</translation>
 <translation id="2501278716633472235">Takaisin</translation>
 <translation id="2546283357679194313">Evästeet ja sivustotiedot</translation>
-<translation id="2550801787432930915">Hinnanlaskukortti</translation>
 <translation id="2570922361219980984">Sijainti on poissa käytöstä myös tällä laitteella. Voit ottaa sen käyttöön <ph name="BEGIN_LINK" />Android-asetuksista<ph name="END_LINK" />.</translation>
 <translation id="257931822824936280">Laajennettu – tiivistä klikkaamalla.</translation>
 <translation id="2586657967955657006">Leikepöytä</translation>
 <translation id="2597457036804169544">Älä käytä tummaa teemaa sivustoilla</translation>
 <translation id="2606760465469169465">Vahvista automaattisesti</translation>
-<translation id="2613007545732217283"><ph name="HOST_NAME" /> <ph name="SEPARATOR" /> <ph name="RECENCY" /></translation>
 <translation id="2621115761605608342">Salli JavaScript tietyllä sivustolla.</translation>
 <translation id="2653659639078652383">Lähetä</translation>
 <translation id="2677748264148917807">Poistu</translation>
@@ -114,6 +112,7 @@
 <translation id="2891975107962658722">Estä sivustoa tallentamasta dataa laitteellesi</translation>
 <translation id="2903493209154104877">Osoitteet</translation>
 <translation id="2910701580606108292">Kysy, saavatko sivustot toistaa suojattua sisältöä</translation>
+<translation id="2918484639460781603">Avaa asetukset</translation>
 <translation id="2932883381142163287">Ilmoita väärinkäytöstä</translation>
 <translation id="2939338015096024043">Kun tämä on päällä, sivustot voivat pyytää lupaa seurata kameran sijaintia ja saada tietoa ympäristöstäsi. Kun tämä on pois päältä, sivustot eivät voi seurata kameran sijaintia tai saada tietoa ympäristöstäsi.</translation>
 <translation id="2968755619301702150">Varmennetiedot</translation>
@@ -134,6 +133,7 @@
 <translation id="3227137524299004712">Mikrofoni</translation>
 <translation id="3232293466644486101">Poista selausdata…</translation>
 <translation id="3242646949159196181">Kun tämä on päällä, sivustot voivat toistaa ääntä. Kun tämä on pois päältä, sivustot eivät voi toistaa ääntä.</translation>
+<translation id="3273479183583863618">Hinnanalennukset avoimilla välilehdillä</translation>
 <translation id="3277252321222022663">Anna sivustojen käyttää tunnistimia (suositus)</translation>
 <translation id="3285500645985761267">Salli toisiinsa liittyvien sivustojen nähdä toimintasi ryhmässä</translation>
 <translation id="3295019059349372795">Luku 11: Ozin ihastuttava smaragdikaupunki</translation>
@@ -162,6 +162,7 @@
 <translation id="3721953990244350188">Hylkää ja näytä seuraava saatavilla oleva toiminto</translation>
 <translation id="3744111561329211289">Taustasynkronointi</translation>
 <translation id="3763247130972274048">Ohita 10 sekuntia kaksoisnapauttamalla videota vasemmalle tai oikealle</translation>
+<translation id="3779154269823594982">Vaihda salasanoja</translation>
 <translation id="3797520601150691162">Älä käytä tummaa teemaa tietyllä sivustolla</translation>
 <translation id="3803367742635802571">Avaamasi sivustot voivat lakata toimimasta suunnitellusti</translation>
 <translation id="3804247818991980532"><ph name="TYPE_1" />. <ph name="TYPE_2" />.</translation>
@@ -172,7 +173,9 @@
 <translation id="385051799172605136">Takaisin</translation>
 <translation id="3859306556332390985">Kelaa eteenpäin</translation>
 <translation id="3895926599014793903">Ota zoomaus käyttöön</translation>
+<translation id="3905475044299942653">Estä useat ilmoitukset</translation>
 <translation id="3908288065506437185">Estä kolmannen osapuolen evästeet incognito-tilassa</translation>
+<translation id="3913461097001554748"><ph name="DOMAIN_URL" /> <ph name="SEPARATOR1" /> <ph name="DEVICE_NAME" /></translation>
 <translation id="3918378745482005425">Kaikki ominaisuudet eivät välttämättä toimi. Aiheeseen liittyvät sivustot voivat edelleen käyttää kolmannen osapuolen evästeitä.</translation>
 <translation id="3933121352599513978">Tiivistä ei-toivotut pyynnöt (suositus)</translation>
 <translation id="3955193568934677022">Salli sivustojen toistaa suojattua sisältöä (suositus)</translation>
@@ -190,7 +193,6 @@
 <translation id="4169549551965910670">Yhdistetty USB-laitteeseen</translation>
 <translation id="4194328954146351878">Kysy, saavatko sivustot nähdä ja muuttaa NFC-laitteiden tietoja (suositeltu)</translation>
 <translation id="4200726100658658164">Avaa sijaintiasetukset</translation>
-<translation id="4206661981211220935"><ph name="RECENCY" /> <ph name="SEPARATOR" />, laite: <ph name="FROM_DEVICE" /></translation>
 <translation id="4226663524361240545">Laite voi väristä ilmoitusten yhteydessä.</translation>
 <translation id="4259722352634471385">Kohde on estetty: <ph name="URL" /></translation>
 <translation id="4278390842282768270">Sallittu</translation>
@@ -198,7 +200,6 @@
 <translation id="42981349822642051">Laajenna</translation>
 <translation id="4336219115486912529">{COUNT,plural, =1{Vanhenee huomenna}other{Vanhenee # päivän kuluttua}}</translation>
 <translation id="4336566011000459927">Chrome rajoittaa evästeet uudelleen tänään</translation>
-<translation id="4336836404251800362">Viimeisin välilehti: <ph name="RECENCY" /> <ph name="SEPARATOR" /></translation>
 <translation id="4338831206024587507">Kaikki sivustot, jotka kuuluvat verkkotunnukseen <ph name="DOMAIN" /></translation>
 <translation id="4402755511846832236">Estä sivustoja tietämästä, kun käytät tätä laitetta aktiivisesti</translation>
 <translation id="4412992751769744546">Salli kolmannen osapuolen evästeet</translation>
@@ -220,6 +221,7 @@
 <translation id="4751476147751820511">Liike- tai valotunnistimet</translation>
 <translation id="4755971844837804407">Kun tämä on päällä, sivustot voivat näyttää sinulle mitä tahansa mainoksia. Kun tämä on pois päältä, sivustoilla ei voi näkyä häiritseviä tai harhaanjohtavia mainoksia.</translation>
 <translation id="4779083564647765204">Lähennä</translation>
+<translation id="4807122856660838973">Laita Selaussuoja päälle</translation>
 <translation id="4811450222531576619">Lisätietoa lähteestä ja aiheesta</translation>
 <translation id="4836046166855586901">Kysy aina, kun sivusto pyytää lupaa nähdä, käytätkö tätä laitetta aktiivisesti</translation>
 <translation id="483914009762354899">Lisää kaikki tämän verkkotunnuksen sivustot</translation>
@@ -233,6 +235,7 @@
 <translation id="4994033804516042629">Kontakteja ei löytynyt</translation>
 <translation id="4996978546172906250">Jaa palvelussa:</translation>
 <translation id="5001526427543320409">Kolmannen osapuolen evästeet</translation>
+<translation id="5007392906805964215">Tarkista</translation>
 <translation id="5039804452771397117">Salli</translation>
 <translation id="5048398596102334565">Anna sivustojen käyttää liiketunnistimien lukemia (suositus)</translation>
 <translation id="5050380848339752099">Tämä sivusto aikoo jakaa tietoja sovellukselle incognito-tilan ulkopuolella.</translation>
@@ -304,7 +307,6 @@
 <translation id="6015775454662021376">Valitse, mitä tämä sivusto saa tehdä laitteellasi</translation>
 <translation id="6040143037577758943">Sulje</translation>
 <translation id="6042308850641462728">Lisää</translation>
-<translation id="6060464773477604108"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> Viimeisin välilehti</translation>
 <translation id="6064125863973209585">Valmiit lataukset</translation>
 <translation id="6071501408666570960">Sinut voidaan kirjata ulos tältä sivustolta</translation>
 <translation id="6120483543004435978">Kun tämä on päällä, sivustot voivat pyytää lupaa nähdä, milloin käytät laitetta aktiivisesti. Kun tämä on pois päältä, sivustot eivät saa tietää, milloin käytät laitetta aktiivisesti.</translation>
@@ -349,7 +351,6 @@
 <translation id="6612358246767739896">Suojattu sisältö</translation>
 <translation id="662080504995468778">Jää</translation>
 <translation id="6653342741369270081">Poistu koko näytön tilasta Takaisin-painikkeella.</translation>
-<translation id="6670377348676659110">{TILE_COUNT,plural, =1{Piilota "Jatka tällä välilehdellä"}other{Piilota "Jatka näillä välilehdillä"}}</translation>
 <translation id="6689172468748959065">Profiilikuvat</translation>
 <translation id="6697925417670533197">Aktiiviset lataukset</translation>
 <translation id="6722828510648505498">Estä henkilöllisyyspalveluiden sisäänkirjautumiskehotteet.</translation>
@@ -359,12 +360,14 @@
 <translation id="6787751205395685251">Valitse vaihtoehto sivustolle <ph name="SITE_NAME" /></translation>
 <translation id="6790428901817661496">Toista</translation>
 <translation id="6818926723028410516">Valitse kohteet</translation>
+<translation id="6840760312327750441">Kun haluat ryhmitellä välilehtiä, kosketa yhtä pitkään. Vedä se sitten toisen välilehden päälle.</translation>
 <translation id="6864395892908308021">Tämä laite ei lue NFC-dataa</translation>
-<translation id="6867014948848323204">Lähde: <ph name="FROM_DEVICE" /></translation>
+<translation id="6870169401250095575">Piilota turvatarkistuskortti</translation>
 <translation id="6912998170423641340">Estä sivustoja lukemasta tekstiä ja kuvia leikepöydältä</translation>
 <translation id="6945221475159498467">Valitse</translation>
 <translation id="6950072572526089586">Avaamasi sivusto voi tallentaa tietoja toiminnastasi, jotta se toimii odotetulla tavalla – esimerkiksi pitääksesi sinut kirjautuneena sivustolle tai tallentaaksesi tuotteita ostoskoriin. Sivustot tallentavat usein nämä tiedot väliaikaisesti laitteellesi.</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="6980861169612950611">Poistetaanko sivustodata? <ph name="SITE_NAME" /></translation>
 <translation id="6981982820502123353">Saavutettavuus</translation>
 <translation id="6992289844737586249">Pyydä lupaa, kun sivustot yrittävät käyttää mikrofonia (suositus).</translation>
 <translation id="7000754031042624318">Poistettu käytöstä Android-asetuksissa</translation>
@@ -392,6 +395,7 @@
 <translation id="7366415735885268578">Lisää sivusto</translation>
 <translation id="7368695150573390554">Kaikki offline-data poistetaan</translation>
 <translation id="7383715096023715447">Asetukset: <ph name="DOMAIN" /></translation>
+<translation id="7399802613464275309">Turvatarkistus</translation>
 <translation id="7406113532070524618">Tämä asetus toimii niin, että sinua ei tunnisteta eivätkä sivustot näe selaushistoriaasi, mutta sivustot voivat jakaa pienen määrän tietoja osana todennusta</translation>
 <translation id="7423098979219808738">Kysy ensin</translation>
 <translation id="7423538860840206698">Leikepöydältä lukeminen estetty</translation>
@@ -426,7 +430,7 @@
 <translation id="7986741934819883144">Valitse yhteystieto</translation>
 <translation id="7990211076305263060">Kun tämä on päällä, sivustot voivat pyytää lupaa mikrofonin käyttöön. Kun tämä on pois päältä, sivustot eivät voi käyttää mikrofonia.</translation>
 <translation id="8007176423574883786">Ei käytössä tällä laitteella</translation>
-<translation id="8009579582995973057"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> Lähteestä <ph name="FROM_DEVICE" /></translation>
+<translation id="8010630645305864042">{TILE_COUNT,plural, =1{Piilota "Jatka tällä välilehdellä" ‐kortti}other{Piilota "Jatka näillä välilehdillä" ‐kortti}}</translation>
 <translation id="802154636333426148">Lataus epäonnistui.</translation>
 <translation id="8042586301629853791">Lajitteluperuste:</translation>
 <translation id="8067883171444229417">Toista video</translation>
@@ -461,6 +465,7 @@
 <translation id="8441146129660941386">Kelaa taaksepäin</translation>
 <translation id="8444433999583714703">Ota sijaintitiedot käyttöön myös <ph name="BEGIN_LINK" />Androidin asetuksista<ph name="END_LINK" />, jotta <ph name="APP_NAME" /> saa pääsyn sijaintiisi.</translation>
 <translation id="8447861592752582886">Peru laitteen käyttöoikeus</translation>
+<translation id="8473055640493819707"><ph name="APP_NAME" /> on vanhentunut. Asenna sovellus uudelleen.</translation>
 <translation id="8487700953926739672">Käytettävissä offline-tilassa</translation>
 <translation id="848952951823693243">Pyydä aina mobiilisivustoa</translation>
 <translation id="8499083585497694743">Poista mikrofonin mykistys</translation>
@@ -477,6 +482,7 @@
 <translation id="8681886425883659911">Mainokset estetään sivustoilla, joiden tiedetään näyttävän häiritseviä tai harhaanjohtavia mainoksia</translation>
 <translation id="868929229000858085">Hae yhteystiedoistasi</translation>
 <translation id="8712637175834984815">Ymmärretty</translation>
+<translation id="8715862698998036666">Poistu koko näytön tilasta vetämällä näytön yläreunasta ja pyyhkäisemällä vasemmasta tai oikeasta reunasta.</translation>
 <translation id="8719283222052720129">Laita lupa (<ph name="APP_NAME" />) päälle <ph name="BEGIN_LINK" />Androidin asetuksista<ph name="END_LINK" />.</translation>
 <translation id="8721719390026067591">Kun tämä on päällä, sivustot voivat pyytää lupaa etsiä Bluetooth-laitteita. Kun tämä on pois päältä, sivustot eivät voi etsiä Bluetooth-laitteita.</translation>
 <translation id="8725066075913043281">Yritä uudelleen</translation>
@@ -513,5 +519,6 @@
 <translation id="9162462602695099906">Tämä sivu on vaarallinen</translation>
 <translation id="930525582205581608">Unohdetaanko tämä sivusto?</translation>
 <translation id="947156494302904893">Avaamasi sivustot voivat vahvistaa, että olet oikea ihminen etkä botti</translation>
+<translation id="959682366969460160">Järjestä</translation>
 <translation id="967624055006145463">Tallennettu data</translation>
 </translationbundle>

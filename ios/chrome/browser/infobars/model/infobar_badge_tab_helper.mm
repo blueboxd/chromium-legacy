@@ -7,6 +7,7 @@
 #import "base/containers/contains.h"
 #import "base/ranges/algorithm.h"
 #import "ios/chrome/browser/infobars/model/infobar_badge_tab_helper_delegate.h"
+#import "ios/chrome/browser/infobars/model/infobar_badge_tab_helper_observer.h"
 #import "ios/chrome/browser/infobars/model/infobar_manager_impl.h"
 
 namespace {
@@ -28,6 +29,16 @@ InfobarBadgeTabHelper::InfobarBadgeTabHelper(web::WebState* web_state)
 InfobarBadgeTabHelper::~InfobarBadgeTabHelper() = default;
 
 #pragma mark Public
+
+void InfobarBadgeTabHelper::AddObserver(
+    InfobarBadgeTabHelperObserver* observer) {
+  badge_updates_observers_.AddObserver(observer);
+}
+
+void InfobarBadgeTabHelper::RemoveObserver(
+    InfobarBadgeTabHelperObserver* observer) {
+  badge_updates_observers_.RemoveObserver(observer);
+}
 
 void InfobarBadgeTabHelper::SetDelegate(
     id<InfobarBadgeTabHelperDelegate> delegate) {
@@ -85,6 +96,10 @@ std::map<InfobarType, BadgeState> InfobarBadgeTabHelper::GetInfobarBadgeStates()
   return infobar_badge_states_;
 }
 
+size_t InfobarBadgeTabHelper::GetInfobarBadgesCount() {
+  return infobar_badge_states_.size();
+}
+
 #pragma mark Private
 
 void InfobarBadgeTabHelper::RegisterInfobar(infobars::InfoBar* infobar) {
@@ -123,7 +138,7 @@ void InfobarBadgeTabHelper::UnregisterInfobar(infobars::InfoBar* infobar) {
     if (infobar_accept_observations.IsObservingSource(infobar_ios)) {
       infobar_accept_observations.RemoveObservation(infobar_ios);
     } else {
-      DUMP_WILL_BE_NOTREACHED_NORETURN()
+      DUMP_WILL_BE_NOTREACHED()
           << "cannot find observed infobar with type: "
           << static_cast<int>(infobar_ios->infobar_type());
     }
@@ -146,6 +161,11 @@ void InfobarBadgeTabHelper::OnInfobarAcceptanceStateChanged(
 
 void InfobarBadgeTabHelper::UpdateBadgesShown() {
   [delegate_ updateBadgesShownForWebState:web_state_];
+
+  // Notify all badge update observers.
+  for (auto& observer : badge_updates_observers_) {
+    observer.InfobarBadgesUpdated(this);
+  }
 }
 
 #pragma mark - InfobarBadgeTabHelper::InfobarAcceptanceObserver
@@ -173,9 +193,8 @@ void InfobarBadgeTabHelper::InfobarAcceptanceObserver::InfobarDestroyed(
   if (scoped_observations_.IsObservingSource(infobar_ios)) {
     scoped_observations_.RemoveObservation(infobar_ios);
   } else {
-    DUMP_WILL_BE_NOTREACHED_NORETURN()
-        << "cannot find observed infobar with type: "
-        << static_cast<int>(infobar_ios->infobar_type());
+    DUMP_WILL_BE_NOTREACHED() << "cannot find observed infobar with type: "
+                              << static_cast<int>(infobar_ios->infobar_type());
   }
 }
 
@@ -225,7 +244,7 @@ void InfobarBadgeTabHelper::InfobarManagerObserver::OnInfoBarReplaced(
     if (infobar_accept_observations.IsObservingSource(old_infobar_ios)) {
       infobar_accept_observations.RemoveObservation(old_infobar_ios);
     } else {
-      DUMP_WILL_BE_NOTREACHED_NORETURN();
+      DUMP_WILL_BE_NOTREACHED();
     }
     infobar_accept_observations.AddObservation(
         static_cast<InfoBarIOS*>(new_infobar));

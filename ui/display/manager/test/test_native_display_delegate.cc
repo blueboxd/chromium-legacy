@@ -161,9 +161,10 @@ void TestNativeDisplayDelegate::Configure(
 
   if (run_async_) {
     base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), config_success));
+        FROM_HERE,
+        base::BindOnce(std::move(callback), config_requests, config_success));
   } else {
-    std::move(callback).Run(config_success);
+    std::move(callback).Run(config_requests, config_success);
   }
 }
 
@@ -257,21 +258,6 @@ void TestNativeDisplayDelegate::SetGammaAdjustment(
     int64_t display_id,
     const GammaAdjustment& gamma) {
   log_->AppendAction(SetGammaAdjustmentAction(display_id, gamma));
-}
-
-bool TestNativeDisplayDelegate::SetColorMatrix(
-    int64_t display_id,
-    const std::vector<float>& color_matrix) {
-  log_->AppendAction(SetColorMatrixAction(display_id, color_matrix));
-  return true;
-}
-
-bool TestNativeDisplayDelegate::SetGammaCorrection(
-    int64_t display_id,
-    const display::GammaCurve& degamma,
-    const display::GammaCurve& gamma) {
-  log_->AppendAction(SetGammaCorrectionAction(display_id, degamma, gamma));
-  return true;
 }
 
 void TestNativeDisplayDelegate::SetPrivacyScreen(

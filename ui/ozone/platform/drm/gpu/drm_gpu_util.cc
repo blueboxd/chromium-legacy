@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ui/ozone/platform/drm/gpu/drm_gpu_util.h"
 
 #include <fcntl.h>
@@ -14,6 +19,7 @@
 #include "ui/display/types/display_color_management.h"
 #include "ui/display/types/gamma_ramp_rgb_entry.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
+#include "ui/ozone/platform/drm/common/hardware_display_controller_info.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager.h"
 
@@ -281,8 +287,8 @@ ScopedDrmModeRectPtr CreateDCBlob(const gfx::Rect& rect) {
   return dmg_rect;
 }
 
-HardwareDisplayControllerInfoList GetDisplayInfosAndUpdateCrtcs(
-    DrmWrapper& drm) {
+std::vector<std::unique_ptr<HardwareDisplayControllerInfo>>
+GetDisplayInfosAndUpdateCrtcs(DrmWrapper& drm) {
   auto [displays, invalid_crtcs] = GetDisplayInfosAndInvalidCrtcs(drm);
   // Disable invalid CRTCs to allow the preferred CRTCs to be enabled later
   // instead.

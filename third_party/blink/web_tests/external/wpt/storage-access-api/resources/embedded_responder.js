@@ -58,8 +58,9 @@ window.addEventListener("message", async (event) => {
     case "observe_permission_change":
       const status = await navigator.permissions.query({name: "storage-access"});
       status.addEventListener("change", (event) => {
-        reply(event.target.state)
+        parent.postMessage(event.target.state, '*');
       }, { once: true });
+      reply('permission_change_observer_installed');
       break;
     case "reload":
       window.location.reload();
@@ -95,3 +96,9 @@ window.addEventListener("message", async (event) => {
     default:
   }
 });
+
+// The document that loads this script will define `should_ack_load` based on
+// the query parameters it received from the test.
+if (should_ack_load) {
+  parent.postMessage('loaded', '*');
+}

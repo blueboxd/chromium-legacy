@@ -16,6 +16,7 @@
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/shared_image_capabilities.h"
+#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "media/base/simple_sync_token_client.h"
 #include "media/base/video_frame.h"
 #include "media/renderers/video_frame_rgba_to_yuva_converter.h"
@@ -23,8 +24,10 @@
 #include "media/video/renderable_gpu_memory_buffer_video_frame_pool.h"
 #include "perfetto/tracing/track_event_args.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/web_graphics_context_3d_provider_wrapper.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/wtf.h"
 #include "third_party/perfetto/include/perfetto/tracing/track.h"
 
 namespace blink {
@@ -60,7 +63,7 @@ class Context : public media::RenderableGpuMemoryBufferVideoFramePool::Context {
       const gfx::ColorSpace& color_space,
       GrSurfaceOrigin surface_origin,
       SkAlphaType alpha_type,
-      uint32_t usage,
+      gpu::SharedImageUsageSet usage,
       gpu::SyncToken& sync_token) override {
     auto* sii = SharedImageInterface();
     if (!sii) {
@@ -76,32 +79,44 @@ class Context : public media::RenderableGpuMemoryBufferVideoFramePool::Context {
   }
 
   scoped_refptr<gpu::ClientSharedImage> CreateSharedImage(
-      gfx::GpuMemoryBuffer* gpu_memory_buffer,
-      gfx::BufferPlane plane,
+      const gfx::Size& size,
+      gfx::BufferUsage buffer_usage,
+      const viz::SharedImageFormat& si_format,
       const gfx::ColorSpace& color_space,
       GrSurfaceOrigin surface_origin,
       SkAlphaType alpha_type,
-      uint32_t usage,
+      gpu::SharedImageUsageSet usage,
       gpu::SyncToken& sync_token) override {
     auto* sii = SharedImageInterface();
-    if (!sii || !gmb_manager_)
+    if (!sii) {
       return nullptr;
-    auto client_shared_image =
-        sii->CreateSharedImage(gpu_memory_buffer, gmb_manager_, plane,
-                               {color_space, surface_origin, alpha_type, usage,
-                                "WebGraphicsContext2DVideoFramePool"});
-    CHECK(client_shared_image);
+    }
+    auto client_shared_image = sii->CreateSharedImage(
+        {si_format, size, color_space, surface_origin, alpha_type, usage,
+         "WebGraphicsContext3DVideoFramePool"},
+        gpu::kNullSurfaceHandle, buffer_usage);
+    if (!client_shared_image) {
+      return nullptr;
+    }
+#if BUILDFLAG(IS_MAC)
+    client_shared_image->SetColorSpaceOnNativeBuffer(color_space);
+#endif
     sync_token = sii->GenVerifiedSyncToken();
     return client_shared_image;
   }
 
-  void DestroySharedImage(
-      const gpu::SyncToken& sync_token,
-      scoped_refptr<gpu::ClientSharedImage> shared_image) override {
+  void DestroySharedImage(const gpu::SyncToken& sync_token,
+                          scoped_refptr<gpu::ClientSharedImage> shared_image,
+                          const bool is_mappable_si_enabled) override {
     auto* sii = SharedImageInterface();
     if (!sii)
       return;
-    sii->DestroySharedImage(sync_token, std::move(shared_image));
+    CHECK(shared_image);
+    if (is_mappable_si_enabled) {
+      shared_image->UpdateDestructionSyncToken(sync_token);
+    } else {
+      sii->DestroySharedImage(sync_token, std::move(shared_image));
+    }
   }
 
  private:
@@ -126,7 +141,7 @@ WebGraphicsContext3DVideoFramePool::WebGraphicsContext3DVideoFramePool(
         weak_context_provider)
     : WebGraphicsContext3DVideoFramePool(
           std::move(weak_context_provider),
-          Platform::Current()->GetGpuMemoryBufferManager()) {}
+          SharedGpuContext::GetGpuMemoryBufferManager()) {}
 
 WebGraphicsContext3DVideoFramePool::WebGraphicsContext3DVideoFramePool(
     base::WeakPtr<blink::WebGraphicsContext3DProviderWrapper>
@@ -196,9 +211,8 @@ void CopyToGpuMemoryBuffer(
     base::WeakPtr<blink::WebGraphicsContext3DProviderWrapper> ctx_wrapper,
     media::VideoFrame* dst_frame,
     base::OnceClosure callback) {
-  DCHECK(dst_frame->HasGpuMemoryBuffer());
-  DCHECK_EQ(dst_frame->GetGpuMemoryBuffer()->GetType(),
-            gfx::SHARED_MEMORY_BUFFER);
+  CHECK(dst_frame->HasMappableGpuBuffer());
+  CHECK(!dst_frame->HasNativeGpuMemoryBuffer());
 
   DCHECK(ctx_wrapper);
   auto* context_provider = ctx_wrapper->ContextProvider();
@@ -214,7 +228,15 @@ void CopyToGpuMemoryBuffer(
   auto* sii = context_provider->SharedImageInterface();
   DCHECK(sii);
 
+  // Async version of SII::CopyToGpuMemoryBufferAsync() can't be safely used
+  // in a worker's context. The worker can be terminated at any time
+  // and in such cases `dst_frame` destructor might be call on mojo IO-thread
+  // instead of the worker's thread. It breaks threading rules for using GPU
+  // objects. Ideally we'd like to delay the worker's thread destruction
+  // until SII::CopyToGpuMemoryBufferAsync's callback is done, but I haven't
+  // found a reasonable way to do it yet.
   bool use_async_copy =
+      IsMainThread() &&
       base::FeatureList::IsEnabled(kUseCopyToGpuMemoryBufferAsync) &&
       dst_frame->shared_image_format_type() ==
           media::SharedImageFormatType::kSharedImageFormat;

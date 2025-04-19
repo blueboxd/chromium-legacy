@@ -160,6 +160,14 @@ class RemoteTest:
       f.write('\n'.join(script_contents) + '\n')
     return tmp_path
 
+  def write_runtime_files_to_disk(self, runtime_files):
+    logging.info('Writing runtime files to disk.')
+    fd, tmp_path = tempfile.mkstemp(suffix='.txt', dir=self._path_to_outdir)
+    os.fchmod(fd, 0o755)
+    with os.fdopen(fd, 'w') as f:
+      f.write('\n'.join(runtime_files) + '\n')
+    return tmp_path
+
   def run_test(self):
     # Traps SIGTERM and kills all child processes of cros_run_test when it's
     # caught. This will allow us to capture logs from the device if a test hangs
@@ -497,6 +505,7 @@ class GTestTest(RemoteTest):
     self._on_device_script = None
     self._env_vars = args.env_var
     self._stop_ui = args.stop_ui
+    self._as_root = args.as_root
     self._trace_dir = args.trace_dir
     self._run_test_sudo_helper = args.run_test_sudo_helper
     self._set_selinux_label = args.set_selinux_label
@@ -640,7 +649,7 @@ class GTestTest(RemoteTest):
       # And we'll need to chown everything since cros_run_test's "--as-chronos"
       # option normally does that for us.
       device_test_script_contents.append('chown -R chronos: ../..')
-    else:
+    elif not self._as_root:
       self._test_cmd += [
           # Some tests fail as root, so run as the less privileged user
           # 'chronos'.
@@ -683,7 +692,7 @@ class GTestTest(RemoteTest):
     runtime_files = [os.path.relpath(self._on_device_script)]
     runtime_files += self._read_runtime_files()
     if self._vpython_dir:
-      # --vpython-dir is relative to the out dir, but --files expects paths
+      # --vpython-dir is relative to the out dir, but --files-from expects paths
       # relative to src dir, so fix the path up a bit.
       runtime_files.append(
           os.path.relpath(
@@ -691,8 +700,9 @@ class GTestTest(RemoteTest):
                   os.path.join(self._path_to_outdir, self._vpython_dir)),
               CHROMIUM_SRC_PATH))
 
-    for f in runtime_files:
-      self._test_cmd.extend(['--files', f])
+    self._test_cmd.extend(
+        ['--files-from',
+         self.write_runtime_files_to_disk(runtime_files)])
 
     self._test_cmd += [
         '--',
@@ -988,6 +998,12 @@ def main():
       help='Will stop the UI service in the device before running the test. '
       'Also start the UI service after all tests are done.')
   gtest_parser.add_argument(
+      '--as-root',
+      action='store_true',
+      help='Will run the test as root on the device. Runs as user=chronos '
+      'otherwise. This is mutually exclusive with "--stop-ui" above due to '
+      'setup issues.')
+  gtest_parser.add_argument(
       '--trace-dir',
       type=str,
       help='When set, will pass down to the test to generate the trace and '
@@ -1081,6 +1097,10 @@ def main():
 
   add_common_args(gtest_parser, tast_test_parser, host_cmd_parser)
   args, unknown_args = parser.parse_known_args()
+
+  if args.test_type == 'gtest' and args.stop_ui and args.as_root:
+    parser.error('Unable to run gtests with both --stop-ui and --as-root')
+
   # Re-add N-1 -v/--verbose flags to the args we'll pass to whatever we are
   # running. The assumption is that only one verbosity incrase would be meant
   # for this script since it's a boolean value instead of increasing verbosity

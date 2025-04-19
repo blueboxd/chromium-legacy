@@ -45,14 +45,13 @@ class MockUrlCheckerDelegate : public UrlCheckerDelegate {
 
   MOCK_METHOD1(MaybeDestroyNoStatePrefetchContents,
                void(base::OnceCallback<content::WebContents*()>));
-  MOCK_METHOD5(StartDisplayingBlockingPageHelper,
+  MOCK_METHOD4(StartDisplayingBlockingPageHelper,
                void(const security_interstitials::UnsafeResource&,
                     const std::string&,
                     const net::HttpRequestHeaders&,
-                    bool,
                     bool));
-  MOCK_METHOD2(StartObservingInteractionsForDelayedBlockingPageHelper,
-               void(const security_interstitials::UnsafeResource&, bool));
+  MOCK_METHOD1(StartObservingInteractionsForDelayedBlockingPageHelper,
+               void(const security_interstitials::UnsafeResource&));
   MOCK_METHOD1(NotifySuspiciousSiteDetected,
                void(const base::RepeatingCallback<content::WebContents*()>&));
   MOCK_METHOD0(GetUIManager, BaseUIManager*());
@@ -181,7 +180,6 @@ class MockSafeBrowsingUrlChecker : public SafeBrowsingUrlCheckerImpl {
       callback_info.callback = std::move(callback);
     } else {
       std::move(callback).Run(
-          /*slow_check_notifier=*/nullptr,
           /*proceed=*/callback_info.should_proceed,
           /*show_interstitial=*/
           callback_info.should_show_interstitial,
@@ -194,8 +192,7 @@ class MockSafeBrowsingUrlChecker : public SafeBrowsingUrlCheckerImpl {
     ASSERT_GT(callback_infos_.size(), index);
     ASSERT_TRUE(callback_infos_[index].should_delay_callback);
     std::move(callback_infos_[index].callback)
-        .Run(/*slow_check_notifier=*/nullptr,
-             /*proceed=*/callback_infos_[index].should_proceed,
+        .Run(/*proceed=*/callback_infos_[index].should_proceed,
              /*show_interstitial=*/
              callback_infos_[index].should_show_interstitial,
              /*has_post_commit_interstitial_skipped=*/false,

@@ -15,7 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
-#include "partition_alloc/partition_alloc_buildflags.h"
+#include "partition_alloc/buildflags.h"
 #include "partition_alloc/shim/allocator_shim.h"
 
 #if !PA_BUILDFLAG(USE_ALLOCATOR_SHIM) && \
@@ -84,8 +84,7 @@ bool AdjustOOMScoreHelper::AdjustOOMScore(ProcessId process, int score) {
     std::string score_str = NumberToString(score);
     DVLOG(1) << "Adjusting oom_score_adj of " << process << " to "
              << score_str;
-    int score_len = static_cast<int>(score_str.length());
-    return (score_len == WriteFile(oom_file, score_str.c_str(), score_len));
+    return WriteFile(oom_file, as_byte_span(score_str));
   }
 
   // If the oom_score_adj file doesn't exist, then we write the old
@@ -99,8 +98,7 @@ bool AdjustOOMScoreHelper::AdjustOOMScore(ProcessId process, int score) {
     int converted_score = score * kMaxOldOomScore / kMaxOomScore;
     std::string score_str = NumberToString(converted_score);
     DVLOG(1) << "Adjusting oom_adj of " << process << " to " << score_str;
-    int score_len = static_cast<int>(score_str.length());
-    return (score_len == WriteFile(oom_file, score_str.c_str(), score_len));
+    return WriteFile(oom_file, as_byte_span(score_str));
   }
 
   return false;

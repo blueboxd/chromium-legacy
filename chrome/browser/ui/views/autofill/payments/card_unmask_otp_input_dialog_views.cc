@@ -17,7 +17,9 @@
 #include "components/autofill/core/browser/ui/payments/card_unmask_otp_input_dialog_controller.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/color/color_id.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/link.h"
@@ -39,7 +41,7 @@ CardUnmaskOtpInputDialogViews::CardUnmaskOtpInputDialogViews(
   SetButtonEnabled(ui::DIALOG_BUTTON_OK, false);
   SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
                  GetDialogButtonLabel(ui::DIALOG_BUTTON_CANCEL));
-  SetModalType(ui::MODAL_TYPE_CHILD);
+  SetModalType(ui::mojom::ModalType::kChild);
   SetShowCloseButton(false);
   set_fixed_width(ChromeLayoutProvider::Get()->GetDistanceMetric(
       views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH));
@@ -74,7 +76,8 @@ void CardUnmaskOtpInputDialogViews::ShowInvalidState(
   otp_input_textfield_invalid_label_->SetVisible(true);
   otp_input_textfield_invalid_label_->SetText(invalid_label_text);
   otp_input_textfield_invalid_label_padding_->SetVisible(false);
-  otp_input_textfield_->SetAccessibleName(otp_input_textfield_invalid_label_);
+  otp_input_textfield_->GetViewAccessibility().SetName(
+      *otp_input_textfield_invalid_label_);
 }
 
 void CardUnmaskOtpInputDialogViews::Dismiss(
@@ -252,7 +255,8 @@ void CardUnmaskOtpInputDialogViews::HideInvalidState() {
   otp_input_textfield_->SetInvalid(false);
   otp_input_textfield_invalid_label_->SetText(std::u16string());
   otp_input_textfield_invalid_label_->SetVisible(false);
-  otp_input_textfield_->SetAccessibleName(otp_input_textfield_invalid_label_);
+  otp_input_textfield_->GetViewAccessibility().SetName(
+      *otp_input_textfield_invalid_label_);
   otp_input_textfield_invalid_label_padding_->SetVisible(true);
 }
 

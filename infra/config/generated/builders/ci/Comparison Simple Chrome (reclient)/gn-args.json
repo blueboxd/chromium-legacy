@@ -7,6 +7,8 @@
         "dcheck_always_on": false,
         "is_chromeos_device": true,
         "ozone_platform_headless": true,
+        "target_cpu": "x64",
+        "target_os": "chromeos",
         "use_real_dbus_clients": false,
         "use_remoteexec": true,
         "use_siso": true
@@ -19,6 +21,8 @@
         "dcheck_always_on": false,
         "is_chromeos_device": true,
         "ozone_platform_headless": true,
+        "target_cpu": "x64",
+        "target_os": "chromeos",
         "use_real_dbus_clients": false,
         "use_remoteexec": true,
         "use_siso": true

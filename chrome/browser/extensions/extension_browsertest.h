@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/install_verifier.h"
+#include "chrome/browser/extensions/scoped_test_mv2_enabler.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/web_contents.h"
@@ -157,6 +158,10 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
   // about install verification.
   virtual bool ShouldEnableInstallVerification();
 
+  // Whether MV2 extensions should be allowed. Defaults to true for testing
+  // (since many tests are parameterized to exercise both MV2 + MV3 logic).
+  virtual bool ShouldAllowMV2Extensions();
+
   // Returns the path of the directory from which to serve resources when they
   // are prefixed with "_test_resources/".
   // The default is chrome/test/data/extensions/.
@@ -222,7 +227,7 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
   // you expect a failed upgrade.
   const Extension* InstallExtension(const base::FilePath& path,
                                     std::optional<int> expected_change) {
-    return InstallOrUpdateExtension(std::string(), path, INSTALL_UI_TYPE_NONE,
+    return InstallOrUpdateExtension(std::string(), path, InstallUIType::kNone,
                                     std::move(expected_change));
   }
 
@@ -231,7 +236,7 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
   const Extension* InstallExtension(const base::FilePath& path,
                                     std::optional<int> expected_change,
                                     mojom::ManifestLocation install_source) {
-    return InstallOrUpdateExtension(std::string(), path, INSTALL_UI_TYPE_NONE,
+    return InstallOrUpdateExtension(std::string(), path, InstallUIType::kNone,
                                     std::move(expected_change), install_source);
   }
 
@@ -242,7 +247,7 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
       const base::FilePath& file_path,
       std::optional<int> expected_change) {
     return InstallOrUpdateExtension(
-        std::string(), file_path, INSTALL_UI_TYPE_NONE,
+        std::string(), file_path, InstallUIType::kNone,
         std::move(expected_change), mojom::ManifestLocation::kInternal,
         browser(), Extension::NO_FLAGS, false, true);
   }
@@ -257,7 +262,7 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
   const Extension* UpdateExtension(const extensions::ExtensionId& id,
                                    const base::FilePath& path,
                                    std::optional<int> expected_change) {
-    return InstallOrUpdateExtension(id, path, INSTALL_UI_TYPE_NONE,
+    return InstallOrUpdateExtension(id, path, InstallUIType::kNone,
                                     std::move(expected_change));
   }
 
@@ -272,7 +277,7 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
       std::optional<int> expected_change,
       Browser* browser) {
     return InstallOrUpdateExtension(
-        std::string(), path, INSTALL_UI_TYPE_AUTO_CONFIRM,
+        std::string(), path, InstallUIType::kAutoConfirm,
         std::move(expected_change), browser, Extension::NO_FLAGS);
   }
 
@@ -281,15 +286,15 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
       std::optional<int> expected_change,
       mojom::ManifestLocation install_source,
       Extension::InitFromValueFlags creation_flags) {
-    return InstallOrUpdateExtension(std::string(), path, INSTALL_UI_TYPE_NONE,
+    return InstallOrUpdateExtension(std::string(), path, InstallUIType::kNone,
                                     std::move(expected_change), install_source,
                                     browser(), creation_flags, false, false);
   }
 
   // Begins install process but simulates a user cancel.
   const Extension* StartInstallButCancel(const base::FilePath& path) {
-    return InstallOrUpdateExtension(
-        std::string(), path, INSTALL_UI_TYPE_CANCEL, 0);
+    return InstallOrUpdateExtension(std::string(), path, InstallUIType::kCancel,
+                                    0);
   }
 
   void ReloadExtension(const extensions::ExtensionId& extension_id);
@@ -400,11 +405,11 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
 
   // Specifies the type of UI (if any) to show during installation and what
   // user action to simulate.
-  enum InstallUIType {
-    INSTALL_UI_TYPE_NONE,
-    INSTALL_UI_TYPE_CANCEL,
-    INSTALL_UI_TYPE_NORMAL,
-    INSTALL_UI_TYPE_AUTO_CONFIRM,
+  enum class InstallUIType {
+    kNone,
+    kCancel,
+    kNormal,
+    kAutoConfirm,
   };
 
   const Extension* InstallOrUpdateExtension(const extensions::ExtensionId& id,
@@ -479,6 +484,9 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
       verifier_format_override_;
 
   ExtensionUpdater::ScopedSkipScheduledCheckForTest skip_scheduled_check_;
+
+  // Allows MV2 extensions to be loaded.
+  std::optional<ScopedTestMV2Enabler> mv2_enabler_;
 
   // Listens to extension loaded notifications.
   base::ScopedObservation<ExtensionRegistry, ExtensionRegistryObserver>

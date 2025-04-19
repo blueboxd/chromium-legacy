@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chromeos/ash/components/dbus/debug_daemon/debug_daemon_client.h"
 
 #include <fcntl.h>
@@ -682,6 +687,28 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  void BluetoothStartBtsnoop(BluetoothBtsnoopCallback callback) override {
+    dbus::MethodCall method_call(debugd::kDebugdInterface,
+                                 debugd::kBluetoothStartBtsnoop);
+    debugdaemon_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&DebugDaemonClientImpl::OnBluetoothStartBtsnoop,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void BluetoothStopBtsnoop(int fd,
+                            BluetoothBtsnoopCallback callback) override {
+    dbus::MethodCall method_call(debugd::kDebugdInterface,
+                                 debugd::kBluetoothStopBtsnoop);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendFileDescriptor(fd);
+
+    debugdaemon_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&DebugDaemonClientImpl::OnBluetoothStopBtsnoop,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
   void StopPacketCapture(const std::string& handle) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kPacketCaptureStop);
@@ -1076,6 +1103,22 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     }
 
     std::move(callback).Run(std::move(flags));
+  }
+
+  void OnBluetoothStartBtsnoop(BluetoothBtsnoopCallback callback,
+                               dbus::Response* response) {
+    if (!response) {
+      LOG(ERROR) << "Failed to read debugd response";
+    }
+    std::move(callback).Run(response != nullptr);
+  }
+
+  void OnBluetoothStopBtsnoop(BluetoothBtsnoopCallback callback,
+                              dbus::Response* response) {
+    if (!response) {
+      LOG(ERROR) << "Failed to read debugd response";
+    }
+    std::move(callback).Run(response != nullptr);
   }
 
   // Called when a D-Bus signal is initially connected.

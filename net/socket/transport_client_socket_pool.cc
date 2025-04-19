@@ -18,6 +18,7 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/not_fatal_until.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
@@ -484,10 +485,10 @@ int TransportClientSocketPool::RequestSocketInternal(
       handle->SetAdditionalErrorState(connect_job.get());
     std::unique_ptr<StreamSocket> socket = connect_job->PassSocket();
     if (socket) {
-      HandOutSocket(std::move(socket), ClientSocketHandle::UNUSED,
+      HandOutSocket(std::move(socket),
+                    StreamSocketHandle::SocketReuseType::kUnused,
                     connect_job->connect_timing(), handle,
-                    base::TimeDelta() /* idle_time */, group,
-                    request.net_log());
+                    /*time_idle=*/base::TimeDelta(), group, request.net_log());
     }
   }
   if (group->IsEmpty())
@@ -544,8 +545,9 @@ bool TransportClientSocketPool::AssignIdleSocketToRequest(
     // treating as UNUSED rather than UNUSED_IDLE. This will avoid
     // HttpNetworkTransaction retrying on some errors.
     ClientSocketHandle::SocketReuseType reuse_type =
-        socket->WasEverUsed() ? ClientSocketHandle::REUSED_IDLE
-                              : ClientSocketHandle::UNUSED_IDLE;
+        socket->WasEverUsed()
+            ? StreamSocketHandle::SocketReuseType::kReusedIdle
+            : StreamSocketHandle::SocketReuseType::kUnusedIdle;
 
     HandOutSocket(std::move(socket), reuse_type,
                   LoadTimingInfo::ConnectTiming(), request.handle(), idle_time,
@@ -1057,8 +1059,8 @@ void TransportClientSocketPool::CheckForStalledSocketGroups() {
   // Loop until there's nothing more to do.
   while (true) {
     // If we have idle sockets, see if we can give one to the top-stalled group.
-    GroupId top_group_id;
     Group* top_group = nullptr;
+    GroupId top_group_id;
     if (!FindTopStalledGroup(&top_group, &top_group_id))
       return;
 
@@ -1083,7 +1085,8 @@ void TransportClientSocketPool::CheckForStalledSocketGroups() {
 // insertion order).
 bool TransportClientSocketPool::FindTopStalledGroup(Group** group,
                                                     GroupId* group_id) const {
-  CHECK((group && group_id) || (!group && !group_id));
+  CHECK(group);
+  CHECK(group_id);
   Group* top_group = nullptr;
   const GroupId* top_group_id = nullptr;
   bool has_stalled_group = false;
@@ -1092,8 +1095,6 @@ bool TransportClientSocketPool::FindTopStalledGroup(Group** group,
     if (!curr_group->has_unbound_requests())
       continue;
     if (curr_group->CanUseAdditionalSocketSlot(max_sockets_per_group_)) {
-      if (!group)
-        return true;
       has_stalled_group = true;
       bool has_higher_priority =
           !top_group ||
@@ -1106,7 +1107,6 @@ bool TransportClientSocketPool::FindTopStalledGroup(Group** group,
   }
 
   if (top_group) {
-    CHECK(group);
     *group = top_group;
     *group_id = *top_group_id;
   } else {
@@ -1194,7 +1194,7 @@ void TransportClientSocketPool::HandOutSocket(
   handle->set_group_generation(group->generation());
   handle->set_connect_timing(connect_timing);
 
-  if (reuse_type == ClientSocketHandle::REUSED_IDLE) {
+  if (reuse_type == StreamSocketHandle::SocketReuseType::kReusedIdle) {
     net_log.AddEventWithIntParams(
         NetLogEventType::SOCKET_POOL_REUSED_AN_EXISTING_SOCKET, "idle_ms",
         static_cast<int>(idle_time.InMilliseconds()));
@@ -1365,7 +1365,8 @@ void TransportClientSocketPool::OnConnectJobComplete(Group* group,
   if (result != OK)
     request->handle()->SetAdditionalErrorState(job);
   if (job->socket()) {
-    HandOutSocket(job->PassSocket(), ClientSocketHandle::UNUSED,
+    HandOutSocket(job->PassSocket(),
+                  StreamSocketHandle::SocketReuseType::kUnused,
                   job->connect_timing(), request->handle(), base::TimeDelta(),
                   group, request->net_log());
   }
@@ -1544,7 +1545,7 @@ std::unique_ptr<ConnectJob> TransportClientSocketPool::Group::RemoveUnboundJob(
 
   // Check that |job| is in the list.
   auto it = base::ranges::find(jobs_, job, &std::unique_ptr<ConnectJob>::get);
-  DCHECK(it != jobs_.end());
+  CHECK(it != jobs_.end(), base::NotFatalUntil::M130);
 
   // Check if |job| is in the unassigned jobs list. If so, remove it.
   auto it2 = base::ranges::find(unassigned_jobs_, job);

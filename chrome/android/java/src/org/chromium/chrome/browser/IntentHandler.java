@@ -261,6 +261,7 @@ public class IntentHandler {
     private static final String PACKAGE_PLUS = "com.google.android.apps.plus";
     private static final String PACKAGE_HANGOUTS = "com.google.android.talk";
     private static final String PACKAGE_MESSENGER = "com.google.android.apps.messaging";
+    private static final String PACKAGE_YOUTUBE = "com.google.android.youtube";
     private static final String PACKAGE_LINE = "jp.naver.line.android";
     private static final String PACKAGE_WHATSAPP = "com.whatsapp";
     private static final String PACKAGE_YAHOO_MAIL = "com.yahoo.mobile.client.android.mail";
@@ -360,9 +361,9 @@ public class IntentHandler {
     public static final String EXTRA_OPEN_NEW_INCOGNITO_TAB =
             "com.google.android.apps.chrome.EXTRA_OPEN_NEW_INCOGNITO_TAB";
 
-    /** Intent extra to open an ephemeral custom tab without incognito branding. */
-    public static final String EXTRA_OPEN_NEW_EPHEMERAL_TAB =
-            "com.google.android.apps.chrome.EXTRA_OPEN_NEW_EPHEMERAL_TAB";
+    /** Intent extra to enable ephemeral browsing within the Custom Tab. */
+    public static final String EXTRA_ENABLE_EPHEMERAL_BROWSING =
+            "androidx.browser.customtabs.extra.ENABLE_EPHEMERAL_BROWSING";
 
     /** Scheme used by web pages to start up Chrome without an explicit Intent. */
     public static final String GOOGLECHROME_SCHEME = "googlechrome";
@@ -475,6 +476,8 @@ public class IntentHandler {
             return ExternalAppId.HANGOUTS;
         } else if (packageName.equals(PACKAGE_MESSENGER)) {
             return ExternalAppId.MESSENGER;
+        } else if (packageName.equals(PACKAGE_YOUTUBE)) {
+            return ExternalAppId.YOUTUBE;
         } else if (packageName.equals(PACKAGE_LINE)) {
             return ExternalAppId.LINE;
         } else if (packageName.equals(PACKAGE_WHATSAPP)) {
@@ -1484,7 +1487,7 @@ public class IntentHandler {
                 || IntentUtils.safeGetBoolean(extras, EXTRA_OPEN_NEW_INCOGNITO_TAB, false)
                 || IntentUtils.safeGetBoolean(
                         extras, EXTRA_INVOKED_FROM_LAUNCH_NEW_INCOGNITO_TAB, false)
-                || IntentUtils.safeGetBoolean(extras, EXTRA_OPEN_NEW_EPHEMERAL_TAB, false);
+                || IntentUtils.safeGetBoolean(extras, EXTRA_ENABLE_EPHEMERAL_BROWSING, false);
     }
 
     @NativeMethods

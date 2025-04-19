@@ -70,10 +70,10 @@ enum class WebappInstallSource {
   // Extensions management API (not reported).
   MANAGEMENT_API = 7,
 
-  // PWA ambient badge in an Android Custom Tab.
+  // PWA ambient badge in Android browser Tab.
   AMBIENT_BADGE_BROWSER_TAB = 8,
 
-  // PWA ambient badge in browser Tab.
+  // PWA ambient badge in an Android Custom Tab.
   AMBIENT_BADGE_CUSTOM_TAB = 9,
 
   // Installation via ARC on Chrome OS.
@@ -305,8 +305,10 @@ class InstallableMetrics {
   // Records |source| in the Webapp.Install.UninstallEvent histogram.
   static void TrackUninstallEvent(WebappUninstallSource source);
 
-  // Records the result for WebApp.Install.Result histogram.
-  static void TrackInstallResult(bool result);
+  // Records the result for WebApp.Install.Result,
+  // WebApp.Install.Source.Success and WebApp.Install.Source.Failure
+  // histograms.
+  static void TrackInstallResult(bool result, WebappInstallSource source);
 };
 
 }  // namespace webapps

@@ -16,21 +16,13 @@ enum class ASH_PUBLIC_EXPORT PickerCategory {
   kEditorRewrite,
   // General categories:
   kLinks,
-  kExpressions,
+  kEmojisGifs,
   kClipboard,
   kDriveFiles,
   kLocalFiles,
   // Calculation categories:
   kDatesTimes,
   kUnitsMaths,
-  // Case transformation categories:
-  kUpperCase,
-  kLowerCase,
-  kSentenceCase,
-  kTitleCase,
-  // Formatting categories:
-  kCapsOn,
-  kCapsOff,
 };
 
 }  // namespace ash

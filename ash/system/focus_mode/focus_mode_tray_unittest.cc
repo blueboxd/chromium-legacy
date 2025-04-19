@@ -30,6 +30,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/image_button.h"
 #include "url/gurl.h"
 
@@ -199,8 +200,7 @@ TEST_F(FocusModeTrayTest, MarkTaskAsCompleted) {
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
   FocusModeTask task;
-  task.task_list_id = "default";
-  task.task_id = "task1";
+  task.task_id = {.list_id = "default", .id = "task1"};
   task.title = "make a travel plan";
   task.updated = base::Time::Now();
 
@@ -221,7 +221,7 @@ TEST_F(FocusModeTrayTest, MarkTaskAsCompleted) {
   // Click the radio button to mark the selected task as completed.
   LeftClickOn(radio_button);
 
-  task_environment()->FastForwardBy(kStartAnimationDelay);
+  AdvanceClock(kStartAnimationDelay);
 
   auto* bubble_view = GetBubbleView();
   ui::Layer* bubble_view_layer = bubble_view->layer();
@@ -308,8 +308,7 @@ TEST_F(FocusModeTrayTest, BubbleTabbingAndAccessibility) {
   controller->SetInactiveSessionDuration(session_duration);
 
   FocusModeTask task;
-  task.task_list_id = "default";
-  task.task_id = "task1";
+  task.task_id = {.list_id = "default", .id = "task1"};
   task.title = task_name;
   task.updated = base::Time::Now();
 
@@ -328,19 +327,22 @@ TEST_F(FocusModeTrayTest, BubbleTabbingAndAccessibility) {
   EXPECT_EQ(
       l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_FOCUS_MODE_TOGGLE_END_BUTTON_ACCESSIBLE_NAME),
-      focus_manager->GetFocusedView()->GetAccessibleName());
+      focus_manager->GetFocusedView()->GetViewAccessibility().GetCachedName());
 
   PressAndReleaseKey(ui::VKEY_TAB, ui::EF_NONE);
   EXPECT_EQ(
       l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_FOCUS_MODE_INCREASE_TEN_MINUTES_BUTTON_ACCESSIBLE_NAME),
-      focus_manager->GetFocusedView()->GetAccessibleName());
+      focus_manager->GetFocusedView()->GetViewAccessibility().GetCachedName());
 
   PressAndReleaseKey(ui::VKEY_TAB, ui::EF_NONE);
-  EXPECT_EQ(l10n_util::GetStringFUTF16(
-                IDS_ASH_STATUS_TRAY_FOCUS_MODE_TRAY_RADIO_BUTTON,
-                base::UTF8ToUTF16(task_name)),
-            focus_manager->GetFocusedView()->GetAccessibleName());
+  views::ViewAccessibility& focused_view_a11y =
+      focus_manager->GetFocusedView()->GetViewAccessibility();
+  EXPECT_EQ(l10n_util::GetStringUTF16(
+                IDS_ASH_STATUS_TRAY_FOCUS_MODE_TASK_VIEW_RADIO_BUTTON),
+            focused_view_a11y.GetCachedName());
+  EXPECT_EQ(base::UTF8ToUTF16(task_name),
+            focused_view_a11y.GetCachedDescription());
 }
 
 // Tests basic ending moment functionality. If the time expires for the ending

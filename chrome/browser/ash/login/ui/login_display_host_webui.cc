@@ -18,6 +18,7 @@
 #include "ash/public/cpp/login_screen_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
+#include "base/check.h"
 #include "base/check_is_test.h"
 #include "base/command_line.h"
 #include "base/functional/bind.h"
@@ -25,6 +26,8 @@
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/notimplemented.h"
+#include "base/notreached.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -33,9 +36,8 @@
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_types.h"
 #include "chrome/browser/ash/base/locale_util.h"
-#include "chrome/browser/ash/boot_times_recorder.h"
+#include "chrome/browser/ash/boot_times_recorder/boot_times_recorder.h"
 #include "chrome/browser/ash/first_run/first_run.h"
-#include "chrome/browser/ash/language_preferences.h"
 #include "chrome/browser/ash/login/existing_user_controller.h"
 #include "chrome/browser/ash/login/helper.h"
 #include "chrome/browser/ash/login/login_pref_names.h"
@@ -80,6 +82,7 @@
 #include "chromeos/ash/components/audio/sounds.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/ash/components/install_attributes/install_attributes.h"
+#include "chromeos/ash/components/language_preferences/language_preferences.h"
 #include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/ash/components/settings/cros_settings.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
@@ -87,6 +90,7 @@
 #include "chromeos/ash/components/settings/timezone_settings.h"
 #include "chromeos/ash/components/timezone/timezone_resolver.h"
 #include "components/account_id/account_id.h"
+#include "components/keep_alive_registry/keep_alive_registry.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/language/core/common/locale_util.h"
 #include "components/prefs/pref_service.h"
@@ -235,12 +239,18 @@ void MaybeShutdownLoginDisplayHostWebUI() {
 
 // ShowLoginWizard is split into two parts. This function is sometimes called
 // from TriggerShowLoginWizardFinish() directly, and sometimes from
-// OnLanguageSwitchedCallback()
-// (if locale was updated).
+// OnLanguageSwitchedCallback() (if locale was updated).
 void ShowLoginWizardFinish(
     OobeScreenId first_screen,
     const StartupCustomizationDocument* startup_manifest) {
   TRACE_EVENT0("chromeos", "ShowLoginWizard::ShowLoginWizardFinish");
+  // `ShowLoginWizardFinish` can be called as a result of
+  // `OnLanguageSwitchedCallback` and it can happen that the browser started to
+  // shut down. Return early if this is the case.
+  if (browser_shutdown::IsTryingToQuit() ||
+      KeepAliveRegistry::GetInstance()->IsShuttingDown()) {
+    return;
+  }
 
   if (ShouldShowSigninScreen(first_screen)) {
     // Shutdown WebUI host to replace with the Mojo one.
@@ -1033,7 +1043,7 @@ void LoginDisplayHostWebUI::ShowRemoteActivityNotificationScreen() {
 }
 
 void LoginDisplayHostWebUI::HideOobeDialog(bool saml_page_closed) {
-  DUMP_WILL_BE_NOTREACHED_NORETURN();
+  DUMP_WILL_BE_NOTREACHED();
 }
 
 void LoginDisplayHostWebUI::SetShelfButtonsEnabled(bool enabled) {
@@ -1052,12 +1062,6 @@ void LoginDisplayHostWebUI::HandleDisplayCaptivePortal() {
 }
 
 void LoginDisplayHostWebUI::OnCancelPasswordChangedFlow() {}
-
-void LoginDisplayHostWebUI::ShowEnableConsumerKioskScreen() {
-  if (GetExistingUserController()) {
-    GetExistingUserController()->OnStartKioskEnableScreen();
-  }
-}
 
 void LoginDisplayHostWebUI::UpdateAddUserButtonStatus() {
   NOTREACHED_IN_MIGRATION();
@@ -1078,7 +1082,7 @@ void LoginDisplayHostWebUI::StartUserRecovery(const AccountId& account_id) {
 void LoginDisplayHostWebUI::UseAlternativeAuthentication(
     std::unique_ptr<UserContext> user_context,
     bool online_password_mismatch) {
-  DUMP_WILL_BE_NOTREACHED_NORETURN();
+  DUMP_WILL_BE_NOTREACHED();
 }
 
 void LoginDisplayHostWebUI::RunLocalAuthentication(

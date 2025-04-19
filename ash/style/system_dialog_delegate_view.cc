@@ -20,6 +20,7 @@
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
@@ -249,6 +250,7 @@ SystemDialogDelegateView::SystemDialogDelegateView() {
   title_->SetAutoColorReadabilityEnabled(false);
   title_->SetEnabledColorId(kTitleColorId);
   title_->SetVisible(false);
+  title_->GetViewAccessibility().SetRole(ax::mojom::Role::kHeading);
   title_->SetProperty(views::kElementIdentifierKey, kTitleTextIdForTesting);
 
   description_ = AddChildView(std::make_unique<views::Label>());
@@ -306,7 +308,7 @@ void SystemDialogDelegateView::SetDescription(
 
 void SystemDialogDelegateView::SetDescriptionAccessibleName(
     const std::u16string& accessible_name) {
-  description_->SetAccessibleName(accessible_name);
+  description_->GetViewAccessibility().SetName(accessible_name);
 }
 
 void SystemDialogDelegateView::SetAcceptButtonVisible(bool visible) {

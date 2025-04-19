@@ -9,7 +9,6 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -34,7 +33,7 @@ import java.util.List;
  * no-op for us).
  */
 @SuppressLint("ClickableViewAccessibility")
-public class PwaRestoreBottomSheetView implements View.OnTouchListener {
+public class PwaRestoreBottomSheetView {
     private static final int APP_ICON_SIZE_DP = 40;
     private static final int APP_ICON_CORNER_RADIUS_DP = 20;
     private static final int APP_ICON_TEXT_SIZE_DP = 24;
@@ -42,10 +41,7 @@ public class PwaRestoreBottomSheetView implements View.OnTouchListener {
     // The current context.
     private final Context mContext;
 
-    // The peek state for the bottom sheet.
-    private View mPreviewView;
-
-    // The details of the bottom sheet.
+    // The main view for the bottom sheet (preview and contents).
     private View mContentView;
 
     // The listener to notify when the Back button is clicked.
@@ -54,46 +50,37 @@ public class PwaRestoreBottomSheetView implements View.OnTouchListener {
     // The listener to notify when an app checkbox is toggled in the app list.
     private OnClickListener mSelectionToggleButtonListener;
 
-    // The back button arrow in the top bar of the content view.
-    private Drawable mBackArrow;
-
     public PwaRestoreBottomSheetView(Context context) {
         mContext = context;
     }
 
     public void initialize(int backArrowId) {
-        mPreviewView =
-                LayoutInflater.from(mContext)
-                        .inflate(R.layout.pwa_restore_bottom_sheet_preview, /* root= */ null);
         mContentView =
                 LayoutInflater.from(mContext)
-                        .inflate(R.layout.pwa_restore_bottom_sheet_content, /* root= */ null);
+                        .inflate(R.layout.pwa_restore_bottom_sheet_dialog, /* root= */ null);
 
         int backgroundId = R.drawable.pwa_restore_icon;
-        mPreviewView.findViewById(R.id.icon).setBackgroundResource(backgroundId);
-        mPreviewView.findViewById(R.id.icon).setTag(backgroundId);
-        mBackArrow =
+        mContentView.findViewById(R.id.icon).setBackgroundResource(backgroundId);
+        mContentView.findViewById(R.id.icon).setTag(backgroundId);
+        Drawable backArrow =
                 backArrowId != 0
                         ? ResourcesCompat.getDrawable(
                                 mContext.getResources(), backArrowId, mContext.getTheme())
                         : null;
-        TextView contentViewTitle = (TextView) mContentView.findViewById(R.id.title);
-        contentViewTitle.setCompoundDrawablesRelativeWithIntrinsicBounds(
-                mBackArrow, null, null, null);
-        contentViewTitle.setOnTouchListener(this::onTouch);
+        ImageView backArrowView = (ImageView) mContentView.findViewById(R.id.back);
+        backArrowView.setImageDrawable(backArrow);
+        backArrowView.setOnClickListener(this::onClickBack);
     }
 
     public View getContentView() {
         return mContentView;
     }
 
-    public View getPreviewView() {
-        return mPreviewView;
-    }
-
     public void setDisplayedView(@ViewState int viewState) {
-        mPreviewView.setVisibility(viewState == ViewState.VIEW_PWA_LIST ? View.GONE : View.VISIBLE);
-        mContentView.setVisibility(viewState == ViewState.PREVIEW ? View.GONE : View.VISIBLE);
+        ViewGroup previewView = mContentView.findViewById(R.id.preview_container);
+        ViewGroup contentView = mContentView.findViewById(R.id.content_container);
+        previewView.setVisibility(viewState == ViewState.VIEW_PWA_LIST ? View.GONE : View.VISIBLE);
+        contentView.setVisibility(viewState == ViewState.PREVIEW ? View.GONE : View.VISIBLE);
     }
 
     protected void setAppList(List<PwaRestoreProperties.AppInfo> appList, String appLabel) {
@@ -161,6 +148,10 @@ public class PwaRestoreBottomSheetView implements View.OnTouchListener {
         }
     }
 
+    public void onClickBack(View view) {
+        mBackButtonListener.onClick(view);
+    }
+
     public void onClick(View view) {
         CheckBox checkBox = null;
         if (view instanceof CheckBox) {
@@ -182,28 +173,5 @@ public class PwaRestoreBottomSheetView implements View.OnTouchListener {
 
     protected void setSelectionToggleButtonListener(OnClickListener listener) {
         mSelectionToggleButtonListener = listener;
-    }
-
-    // Called through the {@link PwaRestoreBottomSheetViewBinder} bindings when the property model
-    // updates:
-
-    int getPeekHeight() {
-        return mPreviewView.getHeight();
-    }
-
-    @Override
-    public boolean onTouch(View view, MotionEvent event) {
-        if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            // We get onTouch events for the whole contentViewTitle, but we're not interested in
-            // clicks on the whole label, only the Back arrow (which is the left-most part of it).
-            if (event.getX() <= mBackArrow.getIntrinsicWidth()) {
-                // Let the OS know we're interested in updates for this event.
-                return true;
-            }
-        } else if (event.getAction() == MotionEvent.ACTION_UP) {
-            mBackButtonListener.onClick(view);
-            return true;
-        }
-        return false;
     }
 }

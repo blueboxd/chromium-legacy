@@ -60,6 +60,15 @@ enum RpMode {
   kWidget
 };
 
+// The result of a call to IdentityProvider.register().
+enum RegisterIdpStatus {
+  kSuccess,
+  kErrorFeatureDisabled,
+  kErrorCrossOriginConfig,
+  kErrorNoTransientActivation,
+  kErrorDeclined
+};
+
 // The details of a federated identity provider.
 struct IdentityProviderConfig {
   // Explicitly references a specific provider by a Config URL.
@@ -68,6 +77,9 @@ struct IdentityProviderConfig {
   // Indirectly references providers that have been registered in the past
   // rather than directly.
   bool use_registered_config_urls;
+
+  // When using registered IDPs, this contains the type of IDP requested.
+  string? type;
 
   // Can be an empty string to be omitted in the request sent to the provider.
   string client_id;
@@ -178,7 +190,7 @@ interface FederatedAuthRequest {
   SetIdpSigninStatus(url.mojom.Origin origin, IdpSigninStatus status);
 
   // Registers the url as an IdP's configURL of the user's preference.
-  RegisterIdP(url.mojom.Url url) => (bool accepted);
+  RegisterIdP(url.mojom.Url url) => (RegisterIdpStatus status);
 
   // Unregisters the url as an IdP's configURL of the user's preference.
   UnregisterIdP(url.mojom.Url url) => (bool success);

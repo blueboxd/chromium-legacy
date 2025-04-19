@@ -13,6 +13,7 @@
 #include "device/fido/aoa/android_accessory_discovery.h"
 #include "device/fido/cable/fido_cable_discovery.h"
 #include "device/fido/cable/v2_discovery.h"
+#include "device/fido/enclave/enclave_discovery.h"
 #include "device/fido/features.h"
 #include "device/fido/fido_discovery_base.h"
 #include "device/fido/hid/fido_hid_discovery.h"
@@ -37,10 +38,6 @@
 #if BUILDFLAG(IS_CHROMEOS)
 #include "device/fido/cros/discovery.h"
 #endif  // BUILDFLAG(IS_CHROMEOS)
-
-#if !BUILDFLAG(IS_CHROMEOS)
-#include "device/fido/enclave/enclave_discovery.h"
-#endif
 
 namespace device {
 
@@ -94,7 +91,7 @@ std::vector<std::unique_ptr<FidoDiscoveryBase>> FidoDiscoveryFactory::Create(
               cable_data_.value_or(std::vector<CableDiscoveryData>()),
               std::move(cable_pairing_callback_),
               std::move(cable_invalidated_pairing_callback_),
-              std::move(cable_event_callback_)));
+              std::move(cable_event_callback_), cable_must_support_ctap_));
         }
 
         ret.emplace_back(std::move(v1_discovery));
@@ -127,16 +124,12 @@ std::vector<std::unique_ptr<FidoDiscoveryBase>> FidoDiscoveryFactory::Create(
 
 std::optional<std::unique_ptr<FidoDiscoveryBase>>
 FidoDiscoveryFactory::MaybeCreateEnclaveDiscovery() {
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
   if (!base::FeatureList::IsEnabled(kWebAuthnEnclaveAuthenticator) ||
       !enclave_ui_request_stream_ || !network_context_factory_) {
     return std::nullopt;
   }
   return std::make_unique<enclave::EnclaveAuthenticatorDiscovery>(
       std::move(enclave_ui_request_stream_), network_context_factory_);
-#else
-  return std::nullopt;
-#endif
 }
 
 bool FidoDiscoveryFactory::IsTestOverride() {

@@ -68,6 +68,10 @@ class Point;
 class Rect;
 }
 
+namespace input {
+class CursorManager;
+}  // namespace input
+
 namespace ui {
 enum class DomCode : uint32_t;
 class InputMethod;
@@ -84,7 +88,6 @@ class LegacyRenderWidgetHostHWND;
 class DirectManipulationBrowserTestBase;
 #endif
 
-class CursorManager;
 class DelegatedFrameHost;
 class DelegatedFrameHostClient;
 class MouseWheelPhaseHandler;
@@ -142,7 +145,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void Focus() override;
   void UpdateCursor(const ui::Cursor& cursor) override;
   void DisplayCursor(const ui::Cursor& cursor) override;
-  CursorManager* GetCursorManager() override;
+  input::CursorManager* GetCursorManager() override;
   void SetIsLoading(bool is_loading) override;
   void RenderProcessGone() override;
   void ShowWithVisibility(PageVisibilityState page_visibility) final;
@@ -164,10 +167,11 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void WheelEventAck(const blink::WebMouseWheelEvent& event,
                      blink::mojom::InputEventResultState ack_result) override;
   void GestureEventAck(const blink::WebGestureEvent& event,
+                       blink::mojom::InputEventResultSource ack_source,
                        blink::mojom::InputEventResultState ack_result) override;
   void DidOverscroll(const ui::DidOverscrollParams& params) override;
   void ProcessAckedTouchEvent(
-      const TouchEventWithLatencyInfo& touch,
+      const input::TouchEventWithLatencyInfo& touch,
       blink::mojom::InputEventResultState ack_result) override;
   std::unique_ptr<SyntheticGestureTarget> CreateSyntheticGestureTarget()
       override;
@@ -210,16 +214,13 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void DidNavigate() override;
   void TakeFallbackContentFrom(RenderWidgetHostView* view) override;
   bool CanSynchronizeVisualProperties() override;
-  std::vector<std::unique_ptr<ui::TouchEvent>> ExtractAndCancelActiveTouches()
-      override;
-  void TransferTouches(
-      const std::vector<std::unique_ptr<ui::TouchEvent>>& touches) override;
   // TODO(lanwei): Use TestApi interface to write functions that are used in
   // tests and remove FRIEND_TEST_ALL_PREFIXES.
   void SetLastPointerType(ui::EventPointerType last_pointer_type) override;
   viz::SurfaceId GetFallbackSurfaceIdForTesting() const override;
 
   // Overridden from ui::TextInputClient:
+  base::WeakPtr<ui::TextInputClient> AsWeakPtr() override;
   void SetCompositionText(const ui::CompositionText& composition) override;
   size_t ConfirmCompositionText(bool keep_selection) override;
   void ClearCompositionText() override;
@@ -399,9 +400,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   // RenderWidgetHostViewEventHandler::Delegate:
   gfx::Rect ConvertRectToScreen(const gfx::Rect& rect) const override;
-  void ForwardKeyboardEventWithLatencyInfo(const NativeWebKeyboardEvent& event,
-                                           const ui::LatencyInfo& latency,
-                                           bool* update_event) override;
+  void ForwardKeyboardEventWithLatencyInfo(
+      const input::NativeWebKeyboardEvent& event,
+      const ui::LatencyInfo& latency,
+      bool* update_event) override;
   RenderFrameHostImpl* GetFocusedFrame() const;
   bool NeedsMouseCapture() override;
   void SetTooltipsEnabled(bool enable) override;
@@ -783,7 +785,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // equals to the FrameSinkId of that widget.
   const viz::FrameSinkId frame_sink_id_;
 
-  std::unique_ptr<CursorManager> cursor_manager_;
+  std::unique_ptr<input::CursorManager> cursor_manager_;
 
   // Latest capture sequence number which is incremented when the caller
   // requests surfaces be synchronized via

@@ -10,6 +10,7 @@
 #include <optional>
 
 #include "base/memory/raw_ptr.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
@@ -44,12 +45,6 @@
 
 #if BUILDFLAG(IS_MAC)
 #include "sandbox/mac/seatbelt_exec.h"
-
-#if BUILDFLAG(ENABLE_PPAPI)
-#include <vector>
-
-#include "content/public/common/webplugininfo.h"
-#endif  // BUILDFLAG(ENABLE_PPAPI)
 #endif  // BUILDFLAG(IS_MAC)
 
 #if BUILDFLAG(IS_FUCHSIA)
@@ -138,7 +133,8 @@ class ChildProcessLauncherHelper
       mojo::OutgoingInvitation mojo_invitation,
       const mojo::ProcessErrorCallback& process_error_callback,
       std::unique_ptr<ChildProcessLauncherFileData> file_data,
-      base::UnsafeSharedMemoryRegion histogram_memory_region);
+      base::UnsafeSharedMemoryRegion histogram_memory_region,
+      base::ReadOnlySharedMemoryRegion tracing_config_memory_region);
 
   // The methods below are defined in the order they are called.
 
@@ -324,10 +320,6 @@ class ChildProcessLauncherHelper
 #if BUILDFLAG(IS_MAC)
   std::unique_ptr<sandbox::SeatbeltExecClient> seatbelt_exec_client_;
   sandbox::mac::SandboxPolicy policy_;
-
-#if BUILDFLAG(ENABLE_PPAPI)
-  std::vector<content::WebPluginInfo> plugins_;
-#endif  // BUILDFLAG(ENABLE_PPAPI)
 #endif  // BUILDFLAG(IS_MAC)
 
 #if BUILDFLAG(IS_IOS)
@@ -353,6 +345,13 @@ class ChildProcessLauncherHelper
 
   // Histogram shared memory region metadata.
   base::UnsafeSharedMemoryRegion histogram_memory_region_;
+
+  // Startup tracing config shared memory region.
+  base::ReadOnlySharedMemoryRegion tracing_config_memory_region_;
+
+  // Creation time of the helper, used for metrics.
+  // TODO(crbug.com/40287847): Remove when parallel launching is finished.
+  base::TimeTicks init_start_time_;
 };
 
 }  // namespace internal

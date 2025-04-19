@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "media/gpu/vaapi/h264_vaapi_video_encoder_delegate.h"
 
 #include <memory>
@@ -9,7 +14,6 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "media/base/video_bitrate_allocation.h"
-#include "media/gpu/vaapi/va_surface.h"
 #include "media/gpu/vaapi/vaapi_common.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -162,10 +166,9 @@ class H264VaapiVideoEncoderDelegateTest
 
 std::unique_ptr<VaapiVideoEncoderDelegate::EncodeJob>
 H264VaapiVideoEncoderDelegateTest::CreateEncodeJob(bool keyframe) {
-  auto va_surface = base::MakeRefCounted<VASurface>(
-      next_surface_id_++, DefaultVEAConfig().input_visible_size,
-      VA_RT_FORMAT_YUV420, base::DoNothing());
-  scoped_refptr<H264Picture> picture(new VaapiH264Picture(va_surface));
+  scoped_refptr<H264Picture> picture(
+      new VaapiH264Picture(std::make_unique<VASurfaceHandle>(
+          next_surface_id_++, base::DoNothing())));
 
   constexpr VABufferID kDummyVABufferID = 12;
   auto scoped_va_buffer = ScopedVABuffer::CreateForTesting(

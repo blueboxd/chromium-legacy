@@ -132,7 +132,6 @@ void FetchInstallInfoFromInstallUrlCommand::OnGetWebAppInstallInfo(
     return;
   }
 
-  install_info->start_url = install_url_;
   install_info->install_url = install_url_;
   install_info->parent_app_manifest_id = parent_manifest_id_;
 
@@ -146,7 +145,6 @@ void FetchInstallInfoFromInstallUrlCommand::OnGetWebAppInstallInfo(
 void FetchInstallInfoFromInstallUrlCommand::OnManifestRetrieved(
     std::unique_ptr<WebAppInstallInfo> web_app_info,
     blink::mojom::ManifestPtr opt_manifest,
-    const GURL& manifest_url,
     bool valid_manifest_for_web_app,
     webapps::InstallableStatusCode error_code) {
   CHECK(web_app_info);
@@ -159,17 +157,16 @@ void FetchInstallInfoFromInstallUrlCommand::OnManifestRetrieved(
   }
 
   if (opt_manifest) {
-    UpdateWebAppInfoFromManifest(*opt_manifest, manifest_url,
-                                 web_app_info.get());
+    UpdateWebAppInfoFromManifest(*opt_manifest, web_app_info.get());
   }
 
   webapps::AppId app_id = GenerateAppIdFromManifestId(
-      web_app_info->manifest_id, web_app_info->parent_app_manifest_id);
+      web_app_info->manifest_id(), web_app_info->parent_app_manifest_id);
   const webapps::AppId expected_app_id = GenerateAppIdFromManifestId(
       manifest_id_, web_app_info->parent_app_manifest_id);
   if (app_id != expected_app_id) {
     install_error_log_entry_.LogExpectedAppIdError(
-        "OnManifestRetrieved", web_app_info->start_url.spec(), app_id,
+        "OnManifestRetrieved", web_app_info->start_url().spec(), app_id,
         expected_app_id);
     CompleteCommandAndSelfDestruct(FetchInstallInfoResult::kWrongManifestId,
                                    /*install_info=*/nullptr);

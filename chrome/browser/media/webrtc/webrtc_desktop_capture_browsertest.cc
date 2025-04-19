@@ -50,7 +50,7 @@ content::WebContents* GetWebContents(Browser* browser, int tab) {
 
 content::DesktopMediaID GetDesktopMediaIDForScreen() {
   return content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN,
-                                 content::DesktopMediaID::kNullId);
+                                 content::DesktopMediaID::kFakeId);
 }
 
 content::DesktopMediaID GetDesktopMediaIDForTab(Browser* browser, int tab) {
@@ -232,11 +232,12 @@ class WebRtcDesktopCaptureBrowserTest : public WebRtcTestBase {
     command_line->AppendSwitchASCII(switches::kAutoSelectDesktopCaptureSource,
                                     "Entire screen");
     command_line->AppendSwitch(switches::kEnableUserMediaScreenCapturing);
+    // MSan and GL do not get along so avoid using the GPU with MSan.
     // TODO(crbug.com/40260482): Remove this after fixing feature
     // detection in 0c tab capture path as it'll no longer be needed.
-    if constexpr (!BUILDFLAG(IS_CHROMEOS)) {
-      command_line->AppendSwitch(switches::kUseGpuInTests);
-    }
+#if !BUILDFLAG(IS_CHROMEOS) && !defined(MEMORY_SANITIZER)
+    command_line->AppendSwitch(switches::kUseGpuInTests);
+#endif
   }
 
  protected:
@@ -400,17 +401,21 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_LE(frame_counter, 3);
 }
 
-// TODO(crbug.com/40555763): Enable on Mac when thread check crash is fixed.
-// TODO(sprang): Figure out why test times out on Win 10 and ChromeOS.
-// TODO(crbug.com/40118868): Revisit the macro expression once build flag switch
-// of lacros-chrome is complete.
-// TODO(crbug.com/40776079): Test is flaky on Linux.
+// Flaky on ASan bots. See https://crbug.com/40270173.
+// Crashes on some Macs. See https://crbug.com/351095634.
+#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || BUILDFLAG(IS_MAC)
+#define MAYBE_RunP2PScreenshareWhileSharingScreen \
+  DISABLED_RunP2PScreenshareWhileSharingScreen
+#else
+#define MAYBE_RunP2PScreenshareWhileSharingScreen \
+  RunP2PScreenshareWhileSharingScreen
+#endif
 IN_PROC_BROWSER_TEST_F(WebRtcDesktopCaptureBrowserTest,
-                       DISABLED_RunP2PScreenshareWhileSharingScreen) {
+                       MAYBE_RunP2PScreenshareWhileSharingScreen) {
   RunP2PScreenshareWhileSharing(base::BindOnce(GetDesktopMediaIDForScreen));
 }
 
-// TODO(crbug.com/40270173) flaky on ASan bots
+// Flaky on ASan bots. See https://crbug.com/40270173.
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
 #define MAYBE_RunP2PScreenshareWhileSharingTab \
   DISABLED_RunP2PScreenshareWhileSharingTab

@@ -39,6 +39,7 @@
 #include "ui/gfx/font_list.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/vector_icons.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/background.h"
@@ -256,10 +257,7 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
 
   contents_view_->SetPaintToLayer();  // Needed for opacity animation.
   contents_view_->layer()->SetFillsBoundsOpaquely(false);
-  ui::ColorId background_color_id =
-      chromeos::features::IsJellyEnabled()
-          ? static_cast<ui::ColorId>(cros_tokens::kCrosSysScrim2)
-          : kColorAshShieldAndBase80;
+  ui::ColorId background_color_id = cros_tokens::kCrosSysScrim2;
   contents_view_->SetBackground(views::CreateThemedRoundedRectBackground(
       background_color_id, kMediaControlsCornerRadius));
 
@@ -468,8 +466,8 @@ void LockScreenMediaControlsView::GetAccessibleNodeData(
       l10n_util::GetStringUTF8(
           IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACCESSIBLE_NAME));
 
-  if (!GetAccessibleName().empty()) {
-    node_data->SetName(GetAccessibleName());
+  if (!GetViewAccessibility().GetCachedName().empty()) {
+    node_data->SetName(GetViewAccessibility().GetCachedName());
   }
 }
 
@@ -548,7 +546,7 @@ void LockScreenMediaControlsView::MediaSessionMetadataChanged(
   title_label_->SetText(session_metadata.title);
   artist_label_->SetText(session_metadata.artist);
 
-  SetAccessibleName(
+  GetViewAccessibility().SetName(
       media_message_center::GetAccessibleNameFromMetadata(session_metadata));
 }
 
@@ -667,8 +665,8 @@ void LockScreenMediaControlsView::OnGestureEvent(ui::GestureEvent* event) {
   ConvertPointToScreen(this, &point_in_screen);
 
   switch (event->type()) {
-    case ui::ET_SCROLL_FLING_START:
-    case ui::ET_GESTURE_SCROLL_BEGIN: {
+    case ui::EventType::kScrollFlingStart:
+    case ui::EventType::kGestureScrollBegin: {
       if (is_in_drag_) {
         break;
       }
@@ -678,13 +676,13 @@ void LockScreenMediaControlsView::OnGestureEvent(ui::GestureEvent* event) {
       event->SetHandled();
       break;
     }
-    case ui::ET_GESTURE_SCROLL_UPDATE: {
+    case ui::EventType::kGestureScrollUpdate: {
       last_fling_velocity_ = event->details().scroll_x();
       UpdateDrag(point_in_screen);
       event->SetHandled();
       break;
     }
-    case ui::ET_GESTURE_END: {
+    case ui::EventType::kGestureEnd: {
       if (!is_in_drag_) {
         break;
       }

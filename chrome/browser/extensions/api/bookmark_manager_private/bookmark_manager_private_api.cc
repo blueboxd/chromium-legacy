@@ -753,12 +753,12 @@ void BookmarkManagerPrivateIOFunction::ShowSelectFileDialog(
   // |web_contents| can be nullptr (for background pages), which is fine. In
   // such a case if file-selection dialogs are forbidden by policy, we will not
   // show an InfoBar, which is better than letting one appear out of the blue.
-  select_file_dialog_->SelectFile(
-      type, std::u16string(), default_path, &file_type_info, 0,
-      base::FilePath::StringType(), owning_window, nullptr);
+  select_file_dialog_->SelectFile(type, std::u16string(), default_path,
+                                  &file_type_info, 0,
+                                  base::FilePath::StringType(), owning_window);
 }
 
-void BookmarkManagerPrivateIOFunction::FileSelectionCanceled(void* params) {
+void BookmarkManagerPrivateIOFunction::FileSelectionCanceled() {
   select_file_dialog_.reset();
   Release();  // Balanced in BookmarkManagerPrivateIOFunction::SelectFile()
 }
@@ -778,8 +778,7 @@ BookmarkManagerPrivateImportFunction::RunOnReady() {
 
 void BookmarkManagerPrivateImportFunction::FileSelected(
     const ui::SelectedFileInfo& file,
-    int index,
-    void* params) {
+    int index) {
   // Deletes itself.
   ExternalProcessImporterHost* importer_host = new ExternalProcessImporterHost;
   importer::SourceProfile source_profile;
@@ -818,8 +817,7 @@ BookmarkManagerPrivateExportFunction::RunOnReady() {
 
 void BookmarkManagerPrivateExportFunction::FileSelected(
     const ui::SelectedFileInfo& file,
-    int index,
-    void* params) {
+    int index) {
   bookmark_html_writer::WriteBookmarks(GetProfile(), file.path(), nullptr);
   select_file_dialog_.reset();
   Release();  // Balanced in BookmarkManagerPrivateIOFunction::SelectFile()

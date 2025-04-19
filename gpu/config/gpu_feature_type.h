@@ -27,6 +27,9 @@ enum GpuFeatureType {
   NUMBER_OF_GPU_FEATURE_TYPES,
   GPU_FEATURE_TYPE_GPU_RASTERIZATION = GPU_FEATURE_TYPE_GPU_TILE_RASTERIZATION,
 };
+static_assert(GpuFeatureType::NUMBER_OF_GPU_FEATURE_TYPES == 13,
+              "Please update the mojo definition of the length of "
+              "GpuFeatureInfo.status_values");
 
 }  // namespace gpu
 

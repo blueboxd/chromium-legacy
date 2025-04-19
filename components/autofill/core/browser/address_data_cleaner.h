@@ -15,7 +15,7 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/geo/alternative_state_name_map_updater.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
-#include "components/sync/base/model_type.h"
+#include "components/sync/base/data_type.h"
 #include "components/sync/service/sync_service_observer.h"
 
 class PrefService;
@@ -62,6 +62,10 @@ class AddressDataCleaner : public AddressDataManager::Observer,
   static std::vector<FieldTypeSet> CalculateMinimalIncompatibleTypeSets(
       const AutofillProfile& profile,
       base::span<const AutofillProfile> other_profiles,
+      const AutofillProfileComparator& comparator);
+  static std::vector<FieldTypeSet> CalculateMinimalIncompatibleTypeSets(
+      const AutofillProfile& import_candidate,
+      base::span<const AutofillProfile* const> existing_profiles,
       const AutofillProfileComparator& comparator);
 
   // Decides whether the `ProfileTokenQuality` stored for the `profile` and

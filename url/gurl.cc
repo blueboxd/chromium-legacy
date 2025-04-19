@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/350788890): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "url/gurl.h"
 
 #include <stddef.h>
@@ -161,8 +166,7 @@ const std::string& GURL::spec() const {
 
   // TODO(crbug.com/40580068): Make sure this no longer hits before making
   // NOTREACHED_NORETURN();
-  DUMP_WILL_BE_NOTREACHED_NORETURN()
-      << "Trying to get the spec of an invalid URL!";
+  DUMP_WILL_BE_NOTREACHED() << "Trying to get the spec of an invalid URL!";
   return base::EmptyString();
 }
 

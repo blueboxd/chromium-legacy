@@ -220,6 +220,7 @@
 <translation id="2490721194269245365">Rosy Brown</translation>
 <translation id="249330843868392562">Buka setelan text-to-speech</translation>
 <translation id="2497706219848005458">Green Yellow</translation>
+<translation id="2512979179176933762">tampilkan jendela</translation>
 <translation id="2523609930580546572">Tutorial ChromeVox</translation>
 <translation id="2525706221823668172">Pintasan keyboard Chromebook</translation>
 <translation id="2553108862507765288">kesalahan tata bahasa</translation>
@@ -264,7 +265,6 @@
 <translation id="2783001728278437613">{COUNT,plural, =1{+#}other{+#}}</translation>
 <translation id="2792200646155001340">Anda juga dapat menggeser dari kanan ke kiri dengan satu jari untuk berpindah ke item sebelumnya. Coba sekarang.</translation>
 <translation id="280499067616661124">ChromeVox ditemukan pada halaman</translation>
-<translation id="2811019999044652585">Untuk melompat ke bagian lain pada layar, seperti toolbar atau area notifikasi, tekan Control+Forward. Di Chromebook, tombol Forward berada tepat di atas tombol nomor 2.</translation>
 <translation id="2811204574343810641">Baris</translation>
 <translation id="2816868829355607410">Area praktik: Perintah lewati</translation>
 <translation id="2841013758207633010">Waktu</translation>
@@ -520,6 +520,7 @@
 <translation id="4432457053224379116">Indian Red</translation>
 <translation id="4432896207833262240">Konten yang ditandai</translation>
 <translation id="4437615272777527928">Ketik untuk menelusuri di menu. Gunakan panah atas dan bawah untuk menjelajahi hasil. Gunakan panah kiri dan kanan untuk menyesuaikan kursor teks, dan untuk berpindah antar-menu.</translation>
+<translation id="4453530046591759283">Untuk menuju ke bagian lain pada layar, seperti toolbar atau area notifikasi, tekan Control+F1. F1 adalah tombol pertama di sebelah kanan tombol escape.</translation>
 <translation id="4457472090507035117">Pilih suara saat ini:</translation>
 <translation id="4476183483923481720">baris baru</translation>
 <translation id="4479068155583208887">Fire Brick</translation>
@@ -880,6 +881,7 @@
 <translation id="7091296112653361280">Navajo White</translation>
 <translation id="7095834689119144465">Edit teks numerik saja</translation>
 <translation id="7096001299300236431">Media sebelumnya</translation>
+<translation id="7096668131290451939">Tekan escape lagi untuk keluar dari Mode Belajar</translation>
 <translation id="7116595520562830928">multln</translation>
 <translation id="712735679809149106">pengulangan kata</translation>
 <translation id="7137397390322864165">Salmon</translation>
@@ -1071,7 +1073,6 @@
 <translation id="847040613207937740">Tidak ada kotak centang berikutnya</translation>
 <translation id="8473540203671727883">Ucapkan teks di bawah kursor</translation>
 <translation id="8476408756881832830">Jeda pemutaran saat ChromeVox sedang berbicara</translation>
-<translation id="8476508772960940536">ringkasan jendela</translation>
 <translation id="8480873377842220259">Anda sekarang akan mempelajari beberapa navigasi dasar. Anda dapat menahan tombol Penelusuran dan menekan tombol panah untuk berpindah-pindah di layar. Untuk melanjutkan, tekan Penelusuran + Panah kanan.</translation>
 <translation id="8503360654911991865">Menurunkan granularitas navigasi</translation>
 <translation id="8520472399088452386">Tombol putar</translation>

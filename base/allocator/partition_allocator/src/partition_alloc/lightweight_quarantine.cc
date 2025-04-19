@@ -64,8 +64,9 @@ LightweightQuarantineBranch::~LightweightQuarantineBranch() {
 
 bool LightweightQuarantineBranch::Quarantine(void* object,
                                              SlotSpanMetadata* slot_span,
-                                             uintptr_t slot_start) {
-  const auto usable_size = root_.allocator_root_.GetSlotUsableSize(slot_span);
+                                             uintptr_t slot_start,
+                                             size_t usable_size) {
+  PA_DCHECK(usable_size == root_.allocator_root_.GetSlotUsableSize(slot_span));
 
   const size_t capacity_in_bytes =
       branch_capacity_in_bytes_.load(std::memory_order_relaxed);
@@ -86,7 +87,7 @@ bool LightweightQuarantineBranch::Quarantine(void* object,
 
     // Put the entry onto the list.
     branch_size_in_bytes_ += usable_size;
-    slots_.emplace_back(slot_start, usable_size);
+    slots_.push_back({slot_start, usable_size});
 
     // Swap randomly so that the quarantine list remain shuffled.
     // This is not uniformly random, but sufficiently random.
@@ -105,7 +106,8 @@ bool LightweightQuarantineBranch::Quarantine(void* object,
 
 bool LightweightQuarantineBranch::IsQuarantinedForTesting(void* object) {
   ConditionalScopedGuard guard(lock_required_, lock_);
-  uintptr_t slot_start = root_.allocator_root_.ObjectToSlotStart(object);
+  uintptr_t slot_start =
+      root_.allocator_root_.ObjectToSlotStartUnchecked(object);
   for (const auto& slot : slots_) {
     if (slot.slot_start == slot_start) {
       return true;

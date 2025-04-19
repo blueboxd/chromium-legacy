@@ -26,9 +26,10 @@
 #include "third_party/blink/renderer/modules/speech/speech_recognition_controller.h"
 
 #include <memory>
+#include <optional>
 
 #include "media/mojo/mojom/speech_recognizer.mojom-blink.h"
-#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/platform/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/modules/speech/speech_grammar_list.h"
@@ -67,7 +68,12 @@ void SpeechRecognitionController::Start(
     const String& lang,
     bool continuous,
     bool interim_results,
-    uint32_t max_alternatives) {
+    uint32_t max_alternatives,
+    bool on_device,
+    bool allow_cloud_fallback,
+    mojo::PendingReceiver<media::mojom::blink::SpeechRecognitionAudioForwarder>
+        audio_forwarder,
+    std::optional<media::AudioParameters> audio_parameters) {
   media::mojom::blink::StartSpeechRecognitionRequestParamsPtr msg_params =
       media::mojom::blink::StartSpeechRecognitionRequestParams::New();
   for (unsigned i = 0; i < grammars.length(); i++) {
@@ -80,10 +86,25 @@ void SpeechRecognitionController::Start(
   msg_params->max_hypotheses = max_alternatives;
   msg_params->continuous = continuous;
   msg_params->interim_results = interim_results;
+  msg_params->on_device = on_device;
+  msg_params->allow_cloud_fallback = allow_cloud_fallback;
   msg_params->client = std::move(session_client);
   msg_params->session_receiver = std::move(session_receiver);
 
+  if (audio_forwarder.is_valid()) {
+    msg_params->audio_forwarder = std::move(audio_forwarder);
+    msg_params->channel_count = audio_parameters.value().channels();
+    msg_params->sample_rate = audio_parameters.value().sample_rate();
+  }
+
   GetSpeechRecognizer()->Start(std::move(msg_params));
+}
+
+void SpeechRecognitionController::OnDeviceWebSpeechAvailable(
+    String language,
+    base::OnceCallback<void(bool)> callback) {
+  GetSpeechRecognizer()->OnDeviceWebSpeechAvailable(language,
+                                                    std::move(callback));
 }
 
 void SpeechRecognitionController::Trace(Visitor* visitor) const {

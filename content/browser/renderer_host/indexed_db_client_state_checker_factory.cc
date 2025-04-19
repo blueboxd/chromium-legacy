@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "components/services/storage/privileged/mojom/indexed_db_client_state_checker.mojom-shared.h"
+#include "content/browser/buckets/bucket_context.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/public/browser/disallow_activation_reason.h"
 #include "content/public/browser/document_user_data.h"
@@ -42,11 +43,13 @@ DisallowActivationReasonId ConvertToDisallowActivationReasonId(
 // The class will only provide the default result and the client will be
 // considered active. It should be used when the client doesn't have an
 // associated RenderFrameHost, as is the case for shared worker or service
-// worker.
+// worker. Also stores the DevTools token corresponding to the worker.
 class NoDocumentIndexedDBClientStateChecker
     : public storage::mojom::IndexedDBClientStateChecker {
  public:
-  NoDocumentIndexedDBClientStateChecker() = default;
+  explicit NoDocumentIndexedDBClientStateChecker(
+      base::UnguessableToken dev_tools_token)
+      : dev_tools_token_(dev_tools_token) {}
   ~NoDocumentIndexedDBClientStateChecker() override = default;
   NoDocumentIndexedDBClientStateChecker(
       const NoDocumentIndexedDBClientStateChecker&) = delete;
@@ -63,6 +66,9 @@ class NoDocumentIndexedDBClientStateChecker
       DisallowInactiveClientCallback callback) override {
     std::move(callback).Run(/*was_active=*/true);
   }
+  void GetDevToolsToken(GetDevToolsTokenCallback callback) override {
+    std::move(callback).Run(dev_tools_token_);
+  }
   void MakeClone(
       mojo::PendingReceiver<storage::mojom::IndexedDBClientStateChecker>
           receiver) override {
@@ -70,6 +76,7 @@ class NoDocumentIndexedDBClientStateChecker
   }
 
  private:
+  base::UnguessableToken dev_tools_token_;
   mojo::ReceiverSet<storage::mojom::IndexedDBClientStateChecker> receivers_;
 };
 
@@ -142,11 +149,19 @@ class DocumentIndexedDBClientStateChecker final
     std::move(callback).Run(was_active);
   }
 
+  void GetDevToolsToken(GetDevToolsTokenCallback callback) override {
+    std::move(callback).Run(
+        static_cast<RenderFrameHostImpl&>(render_frame_host())
+            .GetDevToolsToken());
+  }
+
   void MakeClone(
       mojo::PendingReceiver<storage::mojom::IndexedDBClientStateChecker>
           receiver) override {
     Bind(std::move(receiver));
   }
+
+  const base::UnguessableToken token() { return token_; }
 
  private:
   // Keep the association between the receiver and the feature handle it
@@ -167,10 +182,15 @@ class DocumentIndexedDBClientStateChecker final
   };
 
   explicit DocumentIndexedDBClientStateChecker(RenderFrameHost* rfh)
-      : DocumentUserData(rfh) {}
+      : DocumentUserData(rfh), token_(base::UnguessableToken::Create()) {}
 
   friend DocumentUserData;
   DOCUMENT_USER_DATA_KEY_DECL();
+
+  // This token uniquely identifies `this`/the "client" to the other side of the
+  // Mojo connection. It's used to prevent IDB code from over-zealously
+  // disallowing BFCache for a render frame based on its own activity.
+  base::UnguessableToken token_;
 
   mojo::ReceiverSet<storage::mojom::IndexedDBClientStateChecker> receivers_;
   mojo::ReceiverSet<storage::mojom::IndexedDBClientKeepActive,
@@ -183,25 +203,38 @@ class DocumentIndexedDBClientStateChecker final
 DOCUMENT_USER_DATA_KEY_IMPL(DocumentIndexedDBClientStateChecker);
 
 // static
-mojo::PendingRemote<storage::mojom::IndexedDBClientStateChecker>
+std::tuple<mojo::PendingRemote<storage::mojom::IndexedDBClientStateChecker>,
+           base::UnguessableToken>
 IndexedDBClientStateCheckerFactory::InitializePendingRemote(
-    const GlobalRenderFrameHostId& rfh_id) {
+    BucketContext& bucket_context) {
   mojo::PendingRemote<storage::mojom::IndexedDBClientStateChecker>
       client_state_checker_remote;
-  if (RenderFrameHost* rfh = RenderFrameHost::FromID(rfh_id)) {
-    DocumentIndexedDBClientStateChecker::GetOrCreateForCurrentDocument(rfh)
-        ->Bind(client_state_checker_remote.InitWithNewPipeAndPassReceiver());
-  } else {
-    // If the `rfh` is null, it means there is actually no valid
-    // `RenderFrameHost` associated with the client. We should use a default
-    // checker instance for it.
-    // See comments from `NoDocumentIndexedDBClientStateChecker`.
-    mojo::MakeSelfOwnedReceiver(
-        std::make_unique<NoDocumentIndexedDBClientStateChecker>(),
-        client_state_checker_remote.InitWithNewPipeAndPassReceiver());
+  if (GlobalRenderFrameHostId rfh_id =
+          bucket_context.GetAssociatedRenderFrameHostId()) {
+    RenderFrameHost* rfh = RenderFrameHost::FromID(rfh_id);
+    if (!rfh) {
+      // The rare case of the `RenderFrameHost` being null for a valid ID can
+      // happen when the client is a dedicated worker and it has outlived the
+      // parent RFH. See code comment on `DedicatedWorkerHost`.
+      // Don't bind the remote in this case.
+      return {std::move(client_state_checker_remote),
+              base::UnguessableToken::Null()};
+    }
+    auto* checker =
+        DocumentIndexedDBClientStateChecker::GetOrCreateForCurrentDocument(rfh);
+    checker->Bind(client_state_checker_remote.InitWithNewPipeAndPassReceiver());
+    return {std::move(client_state_checker_remote), checker->token()};
   }
 
-  return client_state_checker_remote;
+  // If there is no `RenderFrameHost` associated with the client, use a default
+  // checker instance for it.
+  // See comments from `NoDocumentIndexedDBClientStateChecker`.
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<NoDocumentIndexedDBClientStateChecker>(
+          bucket_context.GetDevToolsToken()),
+      client_state_checker_remote.InitWithNewPipeAndPassReceiver());
+  return {std::move(client_state_checker_remote),
+          base::UnguessableToken::Create()};
 }
 
 // static

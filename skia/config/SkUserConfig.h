@@ -225,27 +225,19 @@ SK_API void SkDebugf_FileLine(const char* file,
 
 #define SK_USE_LEGACY_MIPMAP_BUILDER
 
-#define SK_USE_LEGACY_DEFERRED_BLIT
-
 #define SK_SUPPORT_LEGACY_CONIC_CHOP
-
-#define SK_ENABLE_SKSL_IN_RASTER_PIPELINE
 
 #define SK_USE_PADDED_BLUR_UPSCALE
 
 #define SK_LEGACY_INITWITHPREV_LAYER_SIZING
 
-#define SK_DONT_PAD_LAYER_IMAGES
+#define SK_USE_LEGACY_BLUR_RASTER
 
-#define SK_DISABLE_MAD_IN_RASTER_PIPELINE
+#define SK_USE_LEGACY_BLUR_GANESH
 
-#define GRAPHITE_USE_APPROX_FIT_FOR_FILTERS
+#define SK_USE_LEGACY_BLUR_GRAPHITE
 
-/* When --disable-skia-runtime-opts is set in Chrome (or when SkGraphics::Init
-   is not called), Skia will prefer precision over performance when computing
-   reciprocals and inverse-square roots.
-*/
-#define SK_IMPROVE_RASTER_PIPELINE_PRECISION
+#define SK_USE_SRCOVER_FOR_FILTERS
 
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
 

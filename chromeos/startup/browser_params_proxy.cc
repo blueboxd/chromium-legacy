@@ -343,18 +343,6 @@ bool BrowserParamsProxy::IsDeskProfilesEnabled() const {
   return BrowserInitParams::Get()->is_desk_profiles_enabled;
 }
 
-bool BrowserParamsProxy::IsCrosWebAppInstallDialogEnabled() const {
-  return BrowserInitParams::Get()->is_cros_web_app_install_dialog_enabled;
-}
-
-bool BrowserParamsProxy::IsCrosWebAppShortcutUiUpdateEnabled() const {
-  return BrowserInitParams::Get()->is_cros_web_app_shortcut_ui_update_enabled;
-}
-
-bool BrowserParamsProxy::IsCrosShortstandEnabled() const {
-  return BrowserInitParams::Get()->is_cros_shortstand_enabled;
-}
-
 bool BrowserParamsProxy::ShouldDisableChromeComposeOnChromeOS() const {
   return BrowserInitParams::Get()->should_disable_chrome_compose_on_chromeos;
 }
@@ -377,12 +365,8 @@ bool BrowserParamsProxy::IsOrcaEnabled() const {
   return BrowserInitParams::Get()->is_orca_enabled;
 }
 
-bool BrowserParamsProxy::IsCrosMallEnabled() const {
-  return BrowserInitParams::Get()->is_cros_mall_enabled;
-}
-
-bool BrowserParamsProxy::IsMagicBoostEnabled() const {
-  return BrowserInitParams::Get()->is_magic_boost_enabled;
+bool BrowserParamsProxy::IsCrosMallWebAppEnabled() const {
+  return BrowserInitParams::Get()->is_cros_mall_web_app_enabled;
 }
 
 bool BrowserParamsProxy::IsMahiEnabled() const {
@@ -395,14 +379,6 @@ bool BrowserParamsProxy::IsContainerAppPreinstallEnabled() const {
 
 bool BrowserParamsProxy::IsOrcaUseL10nStringsEnabled() const {
   return BrowserInitParams::Get()->is_orca_use_l10n_strings_enabled;
-}
-
-bool BrowserParamsProxy::IsMahiSupportedWithCorrectFeatureKey() const {
-  if (IsLaunchedWithPostLoginParams()) {
-    return BrowserPostLoginParams::Get()
-        ->is_mahi_supported_with_correct_feature_key;
-  }
-  return BrowserInitParams::Get()->is_mahi_supported_with_correct_feature_key;
 }
 
 bool BrowserParamsProxy::IsOrcaInternationalizeEnabled() const {

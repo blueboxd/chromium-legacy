@@ -31,6 +31,7 @@ _DISABLED_ALWAYS = [
     "LintBaselineFixed",  # We dont care if baseline.xml has unused entries.
     "MissingInflatedId",  # False positives https://crbug.com/1394222
     "MissingApplicationIcon",  # False positive for non-production targets.
+    "MissingVersion",  # We set versions via aapt2, which runs after lint.
     "NetworkSecurityConfig",  # Breaks on library certificates b/269783280.
     "ObsoleteLintCustomCheck",  # We have no control over custom lint checks.
     "OldTargetApi",  # We sometimes need targetSdkVersion to not be latest.
@@ -40,28 +41,6 @@ _DISABLED_ALWAYS = [
     "VisibleForTests",  # Does not recognize "ForTesting" methods.
     "UniqueConstants",  # Chromium enums allow aliases.
     "UnusedAttribute",  # Chromium apks have various minSdkVersion values.
-]
-
-# These checks are not useful for test targets and adds an unnecessary burden
-# to suppress them.
-_DISABLED_FOR_TESTS = [
-    # We should not require test strings.xml files to explicitly add
-    # translatable=false since they are not translated and not used in
-    # production.
-    "MissingTranslation",
-    # Test strings.xml files often have simple names and are not translatable,
-    # so it may conflict with a production string and cause this error.
-    "Untranslatable",
-    # Test targets often use the same strings target and resources target as the
-    # production targets but may not use all of them.
-    "UnusedResources",
-    # TODO(wnwen): Turn this back on since to crash it would require running on
-    #     a device with all the various minSdkVersions.
-    # Real NewApi violations crash the app, so the only ones that lint catches
-    # but tests still succeed are false positives.
-    "NewApi",
-    # Tests should be allowed to access these methods/classes.
-    "VisibleForTests",
 ]
 
 _RES_ZIP_DIR = 'RESZIPS'
@@ -220,7 +199,6 @@ def _RunLint(custom_lint_jar_path,
              android_sdk_root,
              lint_gen_dir,
              baseline,
-             testonly_target=False,
              warnings_as_errors=False):
   logging.info('Lint starting')
   if not cache_dir:
@@ -270,9 +248,6 @@ def _RunLint(custom_lint_jar_path,
       '--disable',
       ','.join(_DISABLED_ALWAYS),
   ]
-
-  if testonly_target:
-    cmd.extend(['--disable', ','.join(_DISABLED_FOR_TESTS)])
 
   if not manifest_path:
     manifest_path = os.path.join(build_utils.DIR_SOURCE_ROOT, 'build',
@@ -352,8 +327,14 @@ def _RunLint(custom_lint_jar_path,
   cmd += ['--project', project_xml_path]
 
   # This filter is necessary for JDK11.
-  stderr_filter = build_utils.FilterReflectiveAccessJavaWarnings
   stdout_filter = lambda x: build_utils.FilterLines(x, 'No issues found')
+
+  def stderr_filter(output):
+    output = build_utils.FilterReflectiveAccessJavaWarnings(output)
+    # Presumably a side-effect of our manual manifest merging, but does not
+    # seem to actually break anything:
+    # "Manifest merger failed with multiple errors, see logs"
+    return build_utils.FilterLines(output, 'Manifest merger failed')
 
   start = time.time()
   logging.debug('Lint command %s', ' '.join(cmd))
@@ -437,11 +418,6 @@ def _ParseArgs(argv):
   parser.add_argument('--android-sdk-root',
                       required=True,
                       help='Lint needs an explicit path to the android sdk.')
-  parser.add_argument('--testonly',
-                      action='store_true',
-                      help='If set, some checks like UnusedResources will be '
-                      'disabled since they are not helpful for test '
-                      'targets.')
   parser.add_argument('--create-cache',
                       action='store_true',
                       help='Whether this invocation is just warming the cache.')
@@ -498,17 +474,6 @@ def main():
   build_utils.InitLogging('LINT_DEBUG')
   args = _ParseArgs(sys.argv[1:])
 
-  # TODO(wnwen): Consider removing lint cache now that there are only two lint
-  #              invocations.
-  # Avoid parallelizing cache creation since lint runs without the cache defeat
-  # the purpose of creating the cache in the first place.
-  if (not args.create_cache and not args.skip_build_server
-      and server_utils.MaybeRunCommand(name=args.target_name,
-                                       argv=sys.argv,
-                                       stamp_file=args.stamp,
-                                       force=args.use_build_server)):
-    return
-
   sources = []
   for sources_file in args.sources:
     sources.extend(build_utils.ReadSourcesList(sources_file))
@@ -522,6 +487,21 @@ def main():
                                args.manifest_path,
                            ])
   depfile_deps = [p for p in possible_depfile_deps if p]
+
+  if args.depfile:
+    action_helpers.write_depfile(args.depfile, args.stamp, depfile_deps)
+
+  # TODO(wnwen): Consider removing lint cache now that there are only two lint
+  #              invocations.
+  # Avoid parallelizing cache creation since lint runs without the cache defeat
+  # the purpose of creating the cache in the first place. Forward the command
+  # after the depfile has been written as siso requires it.
+  if (not args.create_cache and not args.skip_build_server
+      and server_utils.MaybeRunCommand(name=args.target_name,
+                                       argv=sys.argv,
+                                       stamp_file=args.stamp,
+                                       force=args.use_build_server)):
+    return
 
   _RunLint(args.custom_lint_jar_path,
            args.lint_jar_path,
@@ -541,13 +521,9 @@ def main():
            args.android_sdk_root,
            args.lint_gen_dir,
            args.baseline,
-           testonly_target=args.testonly,
            warnings_as_errors=args.warnings_as_errors)
   logging.info('Creating stamp file')
   build_utils.Touch(args.stamp)
-
-  if args.depfile:
-    action_helpers.write_depfile(args.depfile, args.stamp, depfile_deps)
 
 
 if __name__ == '__main__':

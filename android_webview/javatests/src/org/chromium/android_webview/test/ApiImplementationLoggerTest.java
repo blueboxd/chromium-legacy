@@ -21,14 +21,12 @@ import com.android.webview.chromium.ApiImplementationLogger.WebChromeClientMetho
 import com.android.webview.chromium.ApiImplementationLogger.WebViewClientMethod;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
-import org.chromium.android_webview.AwContents;
 import org.chromium.base.Log;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.HistogramWatcher;
@@ -50,24 +48,8 @@ public class ApiImplementationLoggerTest extends AwParameterizedTest {
     private static final String TAG = "ApiImplTest";
     @Rule public AwActivityTestRule mActivityTestRule;
 
-    /**
-     * Keeping this field around to make sure WebView has been properly instantiated and UMA logging
-     * is running.
-     *
-     * @noinspection FieldCanBeLocal
-     */
-    private AwContents mAwContents;
-
     public ApiImplementationLoggerTest(@NonNull AwSettingsMutation param) {
         mActivityTestRule = new AwActivityTestRule(param.getMutation());
-    }
-
-    @Before
-    public void setUp() {
-
-        final AwTestContainerView testContainerView =
-                mActivityTestRule.createAwTestContainerViewOnMainSync(new TestAwContentsClient());
-        mAwContents = testContainerView.getAwContents();
     }
 
     @NonNull
@@ -232,6 +214,53 @@ public class ApiImplementationLoggerTest extends AwParameterizedTest {
                                 WebChromeClientMethod
                                         .ONGEOLOCATIONPERMISSIONSSHOWPROMPT_STRING_CALLBACK,
                                 WebChromeClientMethod.ONPERMISSIONREQUEST_PERMISSIONREQUEST)
+                        .build()) {
+
+            ApiImplementationLogger.logWebChromeClientImplementation(client);
+            watcher.assertExpected();
+        }
+    }
+
+    @Test
+    @SmallTest
+    public void testWebViewClientNonApiMethodsNotRecorded() {
+        WebViewClient client =
+                new WebViewClient() {
+                    public void onUnhandledInputEvent(WebView view, android.view.InputEvent event) {
+                        // This method is removed in the API, but still exists in the base class.
+                    }
+                };
+
+        try (var watcher =
+                HistogramWatcher.newBuilder()
+                        .expectIntRecord(
+                                "Android.WebView.ApiCall.Overridden.WebViewClient.Count", 0)
+                        .expectNoRecords("Android.WebView.ApiCall.Overridden.WebViewClient")
+                        .build()) {
+
+            ApiImplementationLogger.logWebViewClientImplementation(client);
+            watcher.assertExpected();
+        }
+    }
+
+    @Test
+    @SmallTest
+    public void testWebChromeClientNonApiMethodsNotRecorded() {
+        WebChromeClient client =
+                new WebChromeClient() {
+                    public void onReachedMaxAppCacheSize(
+                            long requiredStorage,
+                            long quota,
+                            android.webkit.WebStorage.QuotaUpdater quotaUpdater) {
+                        // This method is removed in the API, but still exists in the base class.
+                    }
+                };
+
+        try (var watcher =
+                HistogramWatcher.newBuilder()
+                        .expectIntRecord(
+                                "Android.WebView.ApiCall.Overridden.WebChromeClient.Count", 0)
+                        .expectNoRecords("Android.WebView.ApiCall.Overridden.WebChromeClient")
                         .build()) {
 
             ApiImplementationLogger.logWebChromeClientImplementation(client);

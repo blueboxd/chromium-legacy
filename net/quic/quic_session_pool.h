@@ -48,6 +48,8 @@
 #include "net/quic/quic_context.h"
 #include "net/quic/quic_crypto_client_config_handle.h"
 #include "net/quic/quic_proxy_datagram_client_socket.h"
+#include "net/quic/quic_session_alias_key.h"
+#include "net/quic/quic_session_attempt.h"
 #include "net/quic/quic_session_key.h"
 #include "net/socket/client_socket_pool.h"
 #include "net/ssl/ssl_config_service.h"
@@ -203,7 +205,9 @@ class NET_EXPORT_PRIVATE QuicSessionRequest {
   // `ExpectOnHostResolution()` was called. This is called after the Job can
   // make no further progress, and includes the result of that progress, perhaps
   // `ERR_IO_PENDING`.
-  void OnHostResolutionComplete(int rv);
+  void OnHostResolutionComplete(int rv,
+                                base::TimeTicks dns_resolution_start_time,
+                                base::TimeTicks dns_resolution_end_time);
 
   // Tells QuicSessionRequest that `QuicSessionPool::Job` will call
   // `OnQuicSessionCreationComplete()` in the future. Must be called before
@@ -242,6 +246,13 @@ class NET_EXPORT_PRIVATE QuicSessionRequest {
 
   const NetLogWithSource& net_log() const { return net_log_; }
 
+  base::TimeTicks dns_resolution_start_time() const {
+    return dns_resolution_start_time_;
+  }
+  base::TimeTicks dns_resolution_end_time() const {
+    return dns_resolution_end_time_;
+  }
+
  private:
   raw_ptr<QuicSessionPool> pool_;
   QuicSessionKey session_key_;
@@ -250,6 +261,9 @@ class NET_EXPORT_PRIVATE QuicSessionRequest {
   CompletionOnceCallback failed_on_default_network_callback_;
   raw_ptr<NetErrorDetails> net_error_details_;  // Unowned.
   std::unique_ptr<QuicChromiumClientSession::Handle> session_;
+
+  base::TimeTicks dns_resolution_start_time_;
+  base::TimeTicks dns_resolution_end_time_;
 
   // Set in Request(). If true, then OnHostResolutionComplete() is expected to
   // be called in the future.
@@ -262,6 +276,19 @@ class NET_EXPORT_PRIVATE QuicSessionRequest {
   CompletionOnceCallback create_session_callback_;
 };
 
+// Represents a single QUIC endpoint and the information necessary to attempt
+// a QUIC session.
+struct NET_EXPORT_PRIVATE QuicEndpoint {
+  QuicEndpoint(quic::ParsedQuicVersion quic_version,
+               IPEndPoint ip_endpoint,
+               ConnectionEndpointMetadata metadata);
+  ~QuicEndpoint();
+
+  quic::ParsedQuicVersion quic_version = quic::ParsedQuicVersion::Unsupported();
+  IPEndPoint ip_endpoint;
+  ConnectionEndpointMetadata metadata;
+};
+
 // Manages a pool of QuicChromiumClientSessions.
 class NET_EXPORT_PRIVATE QuicSessionPool
     : public NetworkChangeNotifier::IPAddressObserver,
@@ -269,34 +296,6 @@ class NET_EXPORT_PRIVATE QuicSessionPool
       public CertDatabase::Observer,
       public CertVerifier::Observer {
  public:
-  // This class encompasses |destination| and |server_id|.
-  // |destination| is a HostPortPair which is resolved
-  // and a quic::QuicConnection is made to the resulting IP address.
-  // |server_id| identifies the origin of the request,
-  // the crypto handshake advertises |server_id.host()| to the server,
-  // and the certificate is also matched against |server_id.host()|.
-  class NET_EXPORT_PRIVATE QuicSessionAliasKey {
-   public:
-    QuicSessionAliasKey() = default;
-    QuicSessionAliasKey(url::SchemeHostPort destination,
-                        QuicSessionKey session_key);
-    ~QuicSessionAliasKey() = default;
-
-    // Needed to be an element of std::set.
-    bool operator<(const QuicSessionAliasKey& other) const;
-    bool operator==(const QuicSessionAliasKey& other) const;
-
-    const url::SchemeHostPort& destination() const { return destination_; }
-    const quic::QuicServerId& server_id() const {
-      return session_key_.server_id();
-    }
-    const QuicSessionKey& session_key() const { return session_key_; }
-
-   private:
-    url::SchemeHostPort destination_;
-    QuicSessionKey session_key_;
-  };
-
   QuicSessionPool(
       NetLog* net_log,
       HostResolver* host_resolver,
@@ -322,6 +321,20 @@ class NET_EXPORT_PRIVATE QuicSessionPool
   bool CanUseExistingSession(const QuicSessionKey& session_key,
                              const url::SchemeHostPort& destination) const;
 
+  // Returns a session for `session_key` or if the request can be pooled to an
+  // existing session to the IP address of `destination`.
+  QuicChromiumClientSession* FindExistingSession(
+      const QuicSessionKey& session_key,
+      const url::SchemeHostPort& destination) const;
+
+  // Returns true when an existing session can be used for `destination` that
+  // is resolved with `service_endpoint`.
+  bool HasMatchingIpSessionForServiceEndpoint(
+      const QuicSessionAliasKey& session_alias_key,
+      const ServiceEndpoint& service_endpoint,
+      const std::set<std::string>& dns_aliases,
+      bool use_dns_aliases);
+
   // Requests a QuicChromiumClientSession to |host_port_pair|, a handle for
   // which will be owned by |request|.
   // If a matching session already exists, this method will return OK.  If no
@@ -345,6 +358,21 @@ class NET_EXPORT_PRIVATE QuicSessionPool
       const GURL& url,
       const NetLogWithSource& net_log,
       QuicSessionRequest* request);
+
+  // Creates a session attempt for `session_key` with `quic_endpoint`. There
+  // should be no matching session for `session_key`. This doesn't support
+  // proxies.
+  // *NOTE*: This method must not be used simultaneously with
+  //         QuicSessionRequest for the same `session_key`.
+  std::unique_ptr<QuicSessionAttempt> CreateSessionAttempt(
+      QuicSessionAttempt::Delegate* delegate,
+      const QuicSessionKey& session_key,
+      QuicEndpoint quic_endpoint,
+      int cert_verify_flags,
+      base::TimeTicks dns_resolution_start_time,
+      base::TimeTicks dns_resolution_end_time,
+      bool use_dns_aliases,
+      std::set<std::string> dns_aliases);
 
   // Called by a session when it is going away and no more streams should be
   // created on it.
@@ -478,6 +506,14 @@ class NET_EXPORT_PRIVATE QuicSessionPool
   const std::set<std::string>& GetDnsAliasesForSessionKey(
       const QuicSessionKey& key) const;
 
+  int CountActiveSessions() { return active_sessions_.size(); }
+
+  // Inject a QUIC session for testing various edge cases.
+  void ActivateSessionForTesting(const url::SchemeHostPort& destination,
+                                 QuicChromiumClientSession* session);
+
+  void DeactivateSessionForTesting(QuicChromiumClientSession* session);
+
   // Returns the QUIC version that would be used with an endpoint associated
   // with `metadata`, or `quic::ParsedQuicVersion::Unsupported()` if the
   // endpoint cannot be used with QUIC.
@@ -492,7 +528,7 @@ class NET_EXPORT_PRIVATE QuicSessionPool
   class ProxyJob;
   class QuicCryptoClientConfigOwner;
   class CryptoClientConfigHandle;
-  class SessionAttempt;
+  friend class QuicSessionAttempt;
   friend class MockQuicSessionPool;
   friend class test::QuicSessionPoolPeer;
 
@@ -516,10 +552,6 @@ class NET_EXPORT_PRIVATE QuicSessionPool
   // during connection.
   static void LogConnectionIpPooling(bool pooled);
 
-  QuicChromiumClientSession* FindExistingSession(
-      const QuicSessionKey& session_key,
-      const url::SchemeHostPort& destination) const;
-
   bool HasMatchingIpSession(const QuicSessionAliasKey& key,
                             const std::vector<IPEndPoint>& ip_endpoints,
                             const std::set<std::string>& aliases,
@@ -527,7 +559,7 @@ class NET_EXPORT_PRIVATE QuicSessionPool
   void OnJobComplete(Job* job, int rv);
   bool HasActiveSession(const QuicSessionKey& session_key) const;
   bool HasActiveJob(const QuicSessionKey& session_key) const;
-  int CreateSessionSync(const QuicSessionAliasKey& key,
+  int CreateSessionSync(QuicSessionAliasKey key,
                         quic::ParsedQuicVersion quic_version,
                         int cert_verify_flags,
                         bool require_confirmation,
@@ -539,7 +571,7 @@ class NET_EXPORT_PRIVATE QuicSessionPool
                         raw_ptr<QuicChromiumClientSession>* session,
                         handles::NetworkHandle* network);
   int CreateSessionAsync(CompletionOnceCallback callback,
-                         const QuicSessionAliasKey& key,
+                         QuicSessionAliasKey key,
                          quic::ParsedQuicVersion quic_version,
                          int cert_verify_flags,
                          bool require_confirmation,
@@ -552,7 +584,7 @@ class NET_EXPORT_PRIVATE QuicSessionPool
                          handles::NetworkHandle* network);
   int CreateSessionOnProxyStream(
       CompletionOnceCallback callback,
-      const QuicSessionAliasKey& key,
+      QuicSessionAliasKey key,
       quic::ParsedQuicVersion quic_version,
       int cert_verify_flags,
       bool require_confirmation,
@@ -561,9 +593,10 @@ class NET_EXPORT_PRIVATE QuicSessionPool
       std::unique_ptr<QuicChromiumClientStream::Handle> proxy_stream,
       std::string user_agent,
       const NetLogWithSource& net_log,
-      raw_ptr<QuicChromiumClientSession>* session);
+      raw_ptr<QuicChromiumClientSession>* session,
+      handles::NetworkHandle* network);
   void FinishCreateSession(CompletionOnceCallback callback,
-                           const QuicSessionAliasKey& key,
+                           QuicSessionAliasKey key,
                            quic::ParsedQuicVersion quic_version,
                            int cert_verify_flags,
                            bool require_confirmation,
@@ -577,7 +610,7 @@ class NET_EXPORT_PRIVATE QuicSessionPool
                            handles::NetworkHandle* network,
                            std::unique_ptr<DatagramClientSocket> socket,
                            int rv);
-  bool CreateSessionHelper(const QuicSessionAliasKey& key,
+  bool CreateSessionHelper(QuicSessionAliasKey key,
                            quic::ParsedQuicVersion quic_version,
                            int cert_verify_flags,
                            bool require_confirmation,
@@ -642,12 +675,13 @@ class NET_EXPORT_PRIVATE QuicSessionPool
                                const quic::QuicServerId& server_id,
                                bool was_session_active);
 
-  // Insert the given alias `key` in the AliasSet for the given `session` in
-  // the map `session_aliases_`, and add the given `dns_aliases` for
-  // `key.session_key()` in `dns_aliases_by_session_key_`.
-  void MapSessionToAliasKey(QuicChromiumClientSession* session,
-                            const QuicSessionAliasKey& key,
-                            std::set<std::string> dns_aliases);
+  // Insert the session to `active_sessions_`, and insert the given alias `key`
+  // in the AliasSet for the given `session` in the map `session_aliases_`, and
+  // add the given `dns_aliases` for `key.session_key()` in
+  // `dns_aliases_by_session_key_`.
+  void ActivateAndMapSessionToAliasKey(QuicChromiumClientSession* session,
+                                       QuicSessionAliasKey key,
+                                       std::set<std::string> dns_aliases);
 
   // For all alias keys for `session` in `session_aliases_`, erase the
   // corresponding DNS aliases in `dns_aliases_by_session_key_`. Then erase
@@ -784,9 +818,12 @@ class NET_EXPORT_PRIVATE QuicSessionPool
 
   QuicConnectivityMonitor connectivity_monitor_;
 
-  raw_ptr<const base::TickClock, DanglingUntriaged> tick_clock_ = nullptr;
-
   scoped_refptr<base::SequencedTaskRunner> task_runner_ = nullptr;
+
+  // This needs to be below `task_runner_`, since in some tests, it often points
+  // to a TickClock owned by the TestMockTimeTaskRunner that `task_runner_`
+  // owners a reference to.
+  raw_ptr<const base::TickClock> tick_clock_ = nullptr;
 
   const raw_ptr<SSLConfigService> ssl_config_service_;
 
@@ -803,6 +840,10 @@ class NET_EXPORT_PRIVATE QuicSessionPool
   // If true, sessions created by this pool will read ECN marks from QUIC
   // sockets and send them to the peer.
   const bool report_ecn_;
+
+  // If true, skip DNS resolution for a hostname if the ORIGIN frame received on
+  // an active session encompasses that hostname.
+  const bool skip_dns_with_origin_frame_;
 
   quic::DeterministicConnectionIdGenerator connection_id_generator_{
       quic::kQuicDefaultConnectionIdLength};

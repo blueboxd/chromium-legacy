@@ -309,9 +309,10 @@ class BASE_EXPORT SequenceManagerImpl
     std::optional<base::MetricsSubSampler> metrics_subsampler;
 
     internal::TaskQueueSelector selector;
-    ObserverList<TaskObserver>::UncheckedAndDanglingUntriaged task_observers;
-    ObserverList<TaskTimeObserver>::UncheckedAndDanglingUntriaged
-        task_time_observers;
+    // RAW_PTR_EXCLUSION: Performance reasons(based on analysis of
+    // speedometer3).
+    ObserverList<TaskObserver>::UncheckedAndRawPtrExcluded task_observers;
+    ObserverList<TaskTimeObserver> task_time_observers;
     const raw_ptr<const base::TickClock> default_clock;
     raw_ptr<TimeDomain> time_domain = nullptr;
 

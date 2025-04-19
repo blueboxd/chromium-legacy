@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_bar_host_unittest_util.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/views/toolbar/pinned_toolbar_actions_container.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/find_result_waiter.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -42,6 +43,7 @@
 #include "net/base/filename_util.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/views/layout/animating_layout_manager_test_util.h"
 
 #if BUILDFLAG(IS_WIN)
 #include "ui/aura/window.h"
@@ -88,6 +90,13 @@ class FindInPageControllerTest : public InProcessBrowserTest {
   }
 
  protected:
+  void SetUpOnMainThread() override {
+    views::test::WaitForAnimatingLayoutManager(
+        BrowserView::GetBrowserViewForBrowser(browser())
+            ->toolbar()
+            ->pinned_toolbar_actions_container());
+  }
+
   bool GetFindBarWindowInfoForBrowser(
       Browser* browser, gfx::Point* position, bool* fully_visible) {
     const FindBarTesting* find_bar =
@@ -1054,12 +1063,19 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindMovesWhenObscuring) {
   bool fully_visible = false;
   int ordinal = 0;
 
-  // Make sure it is open.
-  EXPECT_TRUE(GetFindBarWindowInfo(&start_position, &fully_visible));
-  EXPECT_TRUE(fully_visible);
-
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Make a query so the Lens entrypoint disappears. If not, the start position,
+  // will be off since the Lens entrypoint will disappear on the first query,
+  // and the start_position vs position will be comparing the position of the
+  // find bar with vs without the Lens entrypoint.
+  // Make sure it is open.
+  FindInPageASCII(web_contents, "a", kFwd, kIgnoreCase, &ordinal);
+
+  // Make sure it is open and store starting position.
+  EXPECT_TRUE(GetFindBarWindowInfo(&start_position, &fully_visible));
+  EXPECT_TRUE(fully_visible);
 
   int moved_x_coord = FindInPageTillBoxMoves(web_contents, start_position.x(),
                                              "Chromium", kMoveIterations);

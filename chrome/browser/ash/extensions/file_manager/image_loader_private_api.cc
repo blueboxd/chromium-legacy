@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/ash/extensions/file_manager/image_loader_private_api.h"
 
 #include <utility>
@@ -245,7 +250,7 @@ void ImageLoaderPrivateGetPdfThumbnailFunction::FetchThumbnail(
     Respond(Error("Failed allocate memory for PDF file"));
     return;
   }
-  memcpy(pdf_region.mapping.memory(), content.data(), content.size());
+  base::as_writable_chars(base::span(pdf_region.mapping)).copy_from(content);
   DCHECK(!pdf_thumbnailer_.is_bound());
   GetPdfService()->BindPdfThumbnailer(
       pdf_thumbnailer_.BindNewPipeAndPassReceiver());

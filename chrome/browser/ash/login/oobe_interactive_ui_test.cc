@@ -48,6 +48,7 @@
 #include "chrome/browser/ash/login/test/test_predicate_waiter.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
+#include "chrome/browser/ash/policy/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/ash/policy/enrollment/auto_enrollment_type_checker.h"
 #include "chrome/browser/ash/policy/enrollment/psm/rlwe_test_support.h"
 #include "chrome/browser/ash/policy/test_support/embedded_policy_test_server_mixin.h"
@@ -64,6 +65,7 @@
 #include "chrome/browser/ui/webui/ash/login/display_size_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/gaia_info_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/gaia_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/gemini_intro_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/gesture_navigation_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/marketing_opt_in_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/password_selection_screen_handler.h"
@@ -73,12 +75,12 @@
 #include "chrome/browser/ui/webui/ash/login/theme_selection_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/touchpad_scroll_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/tpm_error_screen_handler.h"
-#include "chrome/browser/ui/webui/ash/login/tuna_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/user_creation_screen_handler.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/fake_gaia_mixin.h"
 #include "chromeos/ash/components/assistant/buildflags.h"
 #include "chromeos/ash/components/attestation/stub_attestation_features.h"
+#include "chromeos/ash/components/dbus/attestation/attestation_client.h"
 #include "chromeos/ash/components/dbus/constants/attestation_constants.h"
 #include "chromeos/ash/components/dbus/update_engine/update_engine_client.h"
 #include "chromeos/ash/components/system/fake_statistics_provider.h"
@@ -298,15 +300,16 @@ void HandleAiIntroScreen() {
   LOG(INFO) << "OobeInteractiveUITest: 'ai-intro' screen done.";
 }
 
-// Waits for TunaScreen to be shown and clicks next to go to the next screen.
-void HandleTunaScreen() {
-  OobeScreenWaiter(TunaScreenView::kScreenId).Wait();
-  LOG(INFO) << "OobeInteractiveUITest: Switched to 'tuna' screen.";
+// Waits for GeminiIntroScreen to be shown and clicks next to go to the next
+// screen.
+void HandleGeminiIntroScreen() {
+  OobeScreenWaiter(GeminiIntroScreenView::kScreenId).Wait();
+  LOG(INFO) << "OobeInteractiveUITest: Switched to 'gemini-intro' screen.";
 
-  test::OobeJS().TapOnPathAsync({"tuna", "nextButton"});
+  test::OobeJS().TapOnPathAsync({"gemini-intro", "nextButton"});
 
-  OobeScreenExitWaiter(TunaScreenView::kScreenId).Wait();
-  LOG(INFO) << "OobeInteractiveUITest: 'tuna' screen done.";
+  OobeScreenExitWaiter(GeminiIntroScreenView::kScreenId).Wait();
+  LOG(INFO) << "OobeInteractiveUITest: 'gemini-intro' screen done.";
 }
 
 // Waits for AssistantOptInFlowScreen to be shown, skips the opt-in, and waits
@@ -598,7 +601,7 @@ class OobeEndToEndTestSetupMixin : public InProcessBrowserTestMixin {
         parameters;
     std::vector<base::test::FeatureRef> enabled_features = {
         ash::features::kFeatureManagementOobeAiIntro,
-        ash::features::kFeatureManagementOobeTuna,
+        ash::features::kFeatureManagementOobeGeminiIntro,
     };
     std::vector<base::test::FeatureRef> disabled_features;
     if (params_.hide_shelf_controls_in_tablet_mode) {
@@ -807,9 +810,7 @@ void OobeInteractiveUITest::PerformSessionSignInSteps() {
   RunSyncConsentScreenChecks();
   test::ExitScreenSyncConsent();
 
-  if (ash::features::AreLocalPasswordsEnabledForConsumers()) {
-    HandlePasswordSelectionScreen();
-  }
+  HandlePasswordSelectionScreen();
 
   if (test_setup()->is_quick_unlock_enabled()) {
     test::WaitForFingerprintScreen();
@@ -832,8 +833,8 @@ void OobeInteractiveUITest::PerformSessionSignInSteps() {
     HandleAiIntroScreen();
   }
 
-  if (ash::features::IsOobeTunaEnabled()) {
-    HandleTunaScreen();
+  if (ash::features::IsOobeGeminiIntroEnabled()) {
+    HandleGeminiIntroScreen();
   }
 
   if (!features::IsOobeSkipAssistantEnabled()) {
@@ -1134,6 +1135,11 @@ class EphemeralUserOobeTest : public OobeBaseTest,
     OobeBaseTest::SetUpInProcessBrowserTestFixture();
   }
 
+  void SetUpOnMainThread() override {
+    OobeBaseTest::SetUpOnMainThread();
+    fake_gaia_.SetupFakeGaiaForLoginWithDefaults();
+  }
+
   void WaitForActiveSession() { login_manager_.WaitForActiveSession(); }
 
   const OobeEndToEndTestSetupMixin* test_setup() const { return &setup_; }
@@ -1153,10 +1159,9 @@ class EphemeralUserOobeTest : public OobeBaseTest,
       &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
 };
 
-// TODO(crbug.com/40882667): Flaky. Re-enable this test.
 // In this test we login as a regular user, which means it is not affilated
 // with the domain of the device. Thus we still need a consent from user.
-IN_PROC_BROWSER_TEST_P(EphemeralUserOobeTest, DISABLED_RegularEphemeralUser) {
+IN_PROC_BROWSER_TEST_P(EphemeralUserOobeTest, RegularEphemeralUser) {
   LoginDisplayHost::default_host()->GetWizardContext()->is_branded_build = true;
 
   WaitForGaiaSignInScreen();
@@ -1179,8 +1184,8 @@ IN_PROC_BROWSER_TEST_P(EphemeralUserOobeTest, DISABLED_RegularEphemeralUser) {
     HandleAiIntroScreen();
   }
 
-  if (ash::features::IsOobeTunaEnabled()) {
-    HandleTunaScreen();
+  if (ash::features::IsOobeGeminiIntroEnabled()) {
+    HandleGeminiIntroScreen();
   }
 
   HandleThemeSelectionScreen();

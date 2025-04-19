@@ -26,6 +26,15 @@ class GURL;
 // otherwise.
 + (instancetype)actionWithOmniboxAction:(OmniboxAction*)action;
 
+// Returns an image icon for the given action.
++ (UIImage*)imageIconForAction:(SuggestAction*)action size:(CGFloat)size;
+
+// Returns the accessibility identifier for an action based on its type and
+// highlighting state.
++ (NSString*)accessibilityIdentifierWithType:
+                 (omnibox::ActionInfo::ActionType)type
+                                 highlighted:(BOOL)highlighted;
+
 // The suggestion action uri.
 @property(nonatomic, assign, readonly) GURL actionURI;
 // The suggestion action title.

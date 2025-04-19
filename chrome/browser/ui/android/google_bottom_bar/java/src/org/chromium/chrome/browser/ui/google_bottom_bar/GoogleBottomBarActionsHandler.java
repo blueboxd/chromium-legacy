@@ -4,44 +4,63 @@
 
 package org.chromium.chrome.browser.ui.google_bottom_bar;
 
+import static org.chromium.chrome.browser.gsa.GSAState.GOOGLE_APP_CLASS_NAME;
+import static org.chromium.chrome.browser.gsa.GSAState.PACKAGE_NAME;
+import static org.chromium.chrome.browser.gsa.GSAState.VOICE_SEARCH_INTENT_ACTION;
+import static org.chromium.chrome.browser.ui.google_bottom_bar.GoogleBottomBarLogger.GoogleBottomBarButtonEvent.SEARCHBOX_HOME;
+import static org.chromium.chrome.browser.ui.google_bottom_bar.GoogleBottomBarLogger.GoogleBottomBarButtonEvent.SEARCHBOX_LENS;
+import static org.chromium.chrome.browser.ui.google_bottom_bar.GoogleBottomBarLogger.GoogleBottomBarButtonEvent.SEARCHBOX_SEARCH;
+import static org.chromium.chrome.browser.ui.google_bottom_bar.GoogleBottomBarLogger.GoogleBottomBarButtonEvent.SEARCHBOX_VOICE_SEARCH;
+
 import android.app.Activity;
 import android.app.ActivityOptions;
 import android.app.PendingIntent;
+import android.app.SearchManager;
 import android.content.Intent;
 import android.net.Uri;
 import android.view.View;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
+import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.Supplier;
-import org.chromium.chrome.browser.page_insights.PageInsightsCoordinator;
+import org.chromium.chrome.browser.lens.LensController;
+import org.chromium.chrome.browser.lens.LensEntryPoint;
+import org.chromium.chrome.browser.lens.LensIntentParams;
+import org.chromium.chrome.browser.lens.LensQueryParams;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.ui.google_bottom_bar.BottomBarConfig.ButtonConfig;
-import org.chromium.chrome.browser.ui.google_bottom_bar.BottomBarConfigCreator.ButtonId;
+import org.chromium.chrome.browser.ui.google_bottom_bar.BottomBarConfig.ButtonId;
 import org.chromium.chrome.browser.ui.google_bottom_bar.GoogleBottomBarLogger.GoogleBottomBarButtonEvent;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
+import org.chromium.ui.base.DeviceFormFactor;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.widget.ViewRectProvider;
 
 /** A handler class for actions triggered by buttons in a GoogleBottomBar. */
 class GoogleBottomBarActionsHandler {
     private static final String TAG = "GBBActionHandler";
+
+    @VisibleForTesting
+    static final String EXTRA_IS_LAUNCHED_FROM_CHROME_SEARCH_ENTRYPOINT =
+            "launched_from_chrome_search_entrypoint";
+
     private final Activity mActivity;
     private final Supplier<Tab> mTabProvider;
     private final Supplier<ShareDelegate> mShareDelegateSupplier;
-    private final Supplier<PageInsightsCoordinator> mPageInsightsCoordinatorSupplier;
 
     GoogleBottomBarActionsHandler(
             Activity activity,
             Supplier<Tab> tabProvider,
-            Supplier<ShareDelegate> shareDelegateSupplier,
-            Supplier<PageInsightsCoordinator> pageInsightsCoordinatorSupplier) {
+            Supplier<ShareDelegate> shareDelegateSupplier) {
         mActivity = activity;
         mTabProvider = tabProvider;
         mShareDelegateSupplier = shareDelegateSupplier;
-        mPageInsightsCoordinatorSupplier = pageInsightsCoordinatorSupplier;
     }
 
     View.OnClickListener getClickListener(ButtonConfig buttonConfig) {
@@ -52,11 +71,17 @@ class GoogleBottomBarActionsHandler {
             case ButtonId.SHARE -> {
                 return v -> onShareButtonClick(buttonConfig);
             }
-            case ButtonId.PIH_BASIC, ButtonId.PIH_EXPANDED, ButtonId.PIH_COLORED -> {
-                return v -> onPageInsightsButtonClick(buttonConfig);
+            case ButtonId.SEARCH -> {
+                return v -> onSearchButtonClick(buttonConfig);
             }
-            case ButtonId.CUSTOM -> {
-                return v -> onCustomButtonClick(buttonConfig);
+            case ButtonId.HOME -> {
+                return v -> onHomeButtonClick(buttonConfig);
+            }
+            case ButtonId.PIH_BASIC,
+                    ButtonId.PIH_EXPANDED,
+                    ButtonId.PIH_COLORED,
+                    ButtonId.CUSTOM -> {
+                return v -> startPendingIntentIfPresentOrThrowError(buttonConfig);
             }
             case ButtonId.ADD_NOTES, ButtonId.REFRESH -> {
                 Log.e(TAG, "Unsupported action: %s", buttonConfig.getId());
@@ -66,28 +91,123 @@ class GoogleBottomBarActionsHandler {
         return null;
     }
 
-    private void onCustomButtonClick(ButtonConfig buttonConfig) {
-        PendingIntent pendingIntent = buttonConfig.getPendingIntent();
-        if (pendingIntent != null) {
-            sendPendingIntentWithUrl(pendingIntent);
-            GoogleBottomBarLogger.logButtonClicked(GoogleBottomBarButtonEvent.CUSTOM_EMBEDDER);
+    void onSearchboxHomeTap() {
+        GoogleBottomBarLogger.logButtonClicked(SEARCHBOX_HOME);
+        openGoogleAppHome();
+    }
+
+    void onSearchboxHintTextTap() {
+        GoogleBottomBarLogger.logButtonClicked(SEARCHBOX_SEARCH);
+        openGoogleAppSearch();
+    }
+
+    void onSearchboxMicTap() {
+        GoogleBottomBarLogger.logButtonClicked(SEARCHBOX_VOICE_SEARCH);
+        Intent intent = new Intent(VOICE_SEARCH_INTENT_ACTION);
+        intent.setPackage(PACKAGE_NAME);
+
+        startGoogleAppActivityForResult(intent, "openGoogleAppVoiceSearch");
+    }
+
+    void onSearchboxLensTap(View buttonView) {
+        GoogleBottomBarLogger.logButtonClicked(SEARCHBOX_LENS);
+        Tab tab = mTabProvider.get();
+        if (tab == null) {
+            Log.e(TAG, "Can't open Lens as tab is not available.");
+            return;
+        }
+        WindowAndroid window = tab.getWindowAndroid();
+
+        if (window == null) {
+            Log.e(TAG, "Can't open Lens as window is not available.");
+            return;
+        }
+
+        boolean isIncognito = tab.isIncognito();
+        LensController lensController = LensController.getInstance();
+        LensQueryParams lensQueryParams =
+                new LensQueryParams.Builder(
+                                LensEntryPoint.GOOGLE_BOTTOM_BAR,
+                                isIncognito,
+                                DeviceFormFactor.isWindowOnTablet(window))
+                        .build();
+
+        if (lensController.isLensEnabled(lensQueryParams)) {
+            LensIntentParams lensIntentParams =
+                    new LensIntentParams.Builder(LensEntryPoint.GOOGLE_BOTTOM_BAR, isIncognito)
+                            .build();
+            lensController.startLens(window, lensIntentParams);
         } else {
-            Log.e(TAG, "Can't perform custom action as pending intent is null.");
+            showTooltip(
+                    buttonView,
+                    R.string.google_bottom_bar_searchbox_lens_not_enabled_tooltip_message);
         }
     }
 
-    private void onPageInsightsButtonClick(ButtonConfig buttonConfig) {
-        if (mPageInsightsCoordinatorSupplier.get() != null) {
-            mPageInsightsCoordinatorSupplier.get().launch();
-            GoogleBottomBarLogger.logButtonClicked(GoogleBottomBarButtonEvent.PIH_CHROME);
+    private void openGoogleAppSearch() {
+        Intent intent = new Intent(SearchManager.INTENT_ACTION_GLOBAL_SEARCH);
+        intent.setPackage(PACKAGE_NAME);
+
+        startGoogleAppActivityForResult(intent, "openGoogleAppSearch");
+    }
+
+    private void openGoogleAppHome() {
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_INFO);
+        intent.setClassName(PACKAGE_NAME, GOOGLE_APP_CLASS_NAME);
+
+        startGoogleAppActivityForResult(intent, "openGoogleAppHome");
+    }
+
+    private void startGoogleAppActivityForResult(Intent intent, String actionName) {
+        intent.putExtra(EXTRA_IS_LAUNCHED_FROM_CHROME_SEARCH_ENTRYPOINT, true);
+
+        if (PackageManagerUtils.canResolveActivity(intent)) {
+            Log.w(TAG, "Starts action: %s.", actionName);
+            // startActivityForResult is added so that Google App can verify that the calling
+            // activity is Chrome
+            // Request code will not be checked in onActivityResult
+            mActivity.startActivityForResult(intent, /* requestCode= */ 0);
         } else {
-            PendingIntent pendingIntent = buttonConfig.getPendingIntent();
-            if (pendingIntent != null) {
-                sendPendingIntentWithUrl(pendingIntent);
-                GoogleBottomBarLogger.logButtonClicked(GoogleBottomBarButtonEvent.PIH_EMBEDDER);
-            } else {
-                Log.e(TAG, "Can't perform page insights action as pending intent is null.");
-            }
+            String message = String.format("Can't resolve activity for action: %s", actionName);
+            Log.e(TAG, message);
+            throw new IllegalStateException(message);
+        }
+    }
+
+    private void onSearchButtonClick(ButtonConfig buttonConfig) {
+        PendingIntent pendingIntent = buttonConfig.getPendingIntent();
+        if (pendingIntent != null) {
+            GoogleBottomBarLogger.logButtonClicked(GoogleBottomBarButtonEvent.SEARCH_EMBEDDER);
+            sendPendingIntentWithUrl(pendingIntent);
+        } else {
+            GoogleBottomBarLogger.logButtonClicked(GoogleBottomBarButtonEvent.SEARCH_CHROME);
+            openGoogleAppSearch();
+        }
+    }
+
+    private void onHomeButtonClick(ButtonConfig buttonConfig) {
+        PendingIntent pendingIntent = buttonConfig.getPendingIntent();
+        if (pendingIntent != null) {
+            GoogleBottomBarLogger.logButtonClicked(GoogleBottomBarButtonEvent.HOME_EMBEDDER);
+            sendPendingIntentWithUrl(pendingIntent);
+        } else {
+            GoogleBottomBarLogger.logButtonClicked(GoogleBottomBarButtonEvent.HOME_CHROME);
+            openGoogleAppHome();
+        }
+    }
+
+    private void startPendingIntentIfPresentOrThrowError(ButtonConfig buttonConfig) {
+        PendingIntent pendingIntent = buttonConfig.getPendingIntent();
+        if (pendingIntent != null) {
+            sendPendingIntentWithUrl(pendingIntent);
+            GoogleBottomBarLogger.logButtonClicked(
+                    GoogleBottomBarLogger.getGoogleBottomBarButtonEvent(buttonConfig));
+        } else {
+            Log.e(
+                    TAG,
+                    "Can't perform action with id: %s as pending intent is null.",
+                    buttonConfig.getId());
         }
     }
 
@@ -96,9 +216,10 @@ class GoogleBottomBarActionsHandler {
         RecordUserAction.record("CustomTabsCustomActionButtonClick");
         PendingIntent pendingIntent = buttonConfig.getPendingIntent();
         if (pendingIntent != null) {
-            sendPendingIntentWithUrl(pendingIntent);
             GoogleBottomBarLogger.logButtonClicked(GoogleBottomBarButtonEvent.SHARE_EMBEDDER);
+            sendPendingIntentWithUrl(pendingIntent);
         } else {
+            GoogleBottomBarLogger.logButtonClicked(GoogleBottomBarButtonEvent.SHARE_CHROME);
             initiateShareForCurrentTab();
         }
     }
@@ -117,7 +238,6 @@ class GoogleBottomBarActionsHandler {
         }
         shareDelegate.share(
                 tab, /* shareDirectly= */ false, ShareDelegate.ShareOrigin.GOOGLE_BOTTOM_BAR);
-        GoogleBottomBarLogger.logButtonClicked(GoogleBottomBarButtonEvent.SHARE_CHROME);
     }
 
     private void onSaveButtonClick(ButtonConfig buttonConfig, View view) {
@@ -125,11 +245,12 @@ class GoogleBottomBarActionsHandler {
         RecordUserAction.record("CustomTabsCustomActionButtonClick");
         PendingIntent pendingIntent = buttonConfig.getPendingIntent();
         if (pendingIntent != null) {
-            sendPendingIntentWithUrl(pendingIntent);
             GoogleBottomBarLogger.logButtonClicked(GoogleBottomBarButtonEvent.SAVE_EMBEDDER);
+            sendPendingIntentWithUrl(pendingIntent);
+
         } else {
-            showTooltip(view, R.string.google_bottom_bar_save_disabled_tooltip_message);
             GoogleBottomBarLogger.logButtonClicked(GoogleBottomBarButtonEvent.SAVE_DISABLED);
+            showTooltip(view, R.string.google_bottom_bar_save_disabled_tooltip_message);
         }
     }
 

@@ -4,6 +4,8 @@
 
 #include "components/search/ntp_features.h"
 
+#include <string>
+
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_number_conversions.h"
@@ -37,6 +39,7 @@ BASE_FEATURE(kCustomizeChromeSidePanelExtensionsCard,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, shows wallpaper search within the Customize Chrome Side Panel.
+// This is a kill switch. Keep indefinitely.
 BASE_FEATURE(kCustomizeChromeWallpaperSearch,
              "CustomizeChromeWallpaperSearch",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -52,17 +55,6 @@ BASE_FEATURE(kCustomizeChromeWallpaperSearchButton,
 BASE_FEATURE(kCustomizeChromeWallpaperSearchInspirationCard,
              "CustomizeChromeWallpaperSearchInspirationCard",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Forces a dark Google logo for a specific subset of Chrome Web Store themes
-// (see crbug.com/1329552). This is enabled by default to allow finch to disable
-// this NTP treatment in the case of unexpected regressions.
-BASE_FEATURE(kCwsDarkLogo, "CwsDarkLogo", base::FEATURE_ENABLED_BY_DEFAULT);
-
-// If enabled, "middle slot" promos on the bottom of the NTP will show a dismiss
-// UI that allows users to close them and not see them again.
-BASE_FEATURE(kDismissPromos,
-             "DismissNtpPromos",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, all NTP "realbox" Chrome Refresh features will be enabled
 BASE_FEATURE(kRealboxCr23All,
@@ -105,17 +97,6 @@ BASE_FEATURE(kRealboxMatchSearchboxTheme,
              "NtpRealboxMatchSearchboxTheme",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Determines the behavior of the width of the realbox in relation to the width
-// for secondary column.
-BASE_FEATURE(kRealboxWidthBehavior,
-             "NtpRealboxWidthBehavior",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// If enabled, the realbox will be taller.
-BASE_FEATURE(kRealboxIsTall,
-             "NtpRealboxIsTall",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // If enabled, the real search box ("realbox") on the New Tab page will show a
 // Google (g) icon instead of the typical magnifying glass (aka loupe).
 BASE_FEATURE(kRealboxUseGoogleGIcon,
@@ -123,6 +104,7 @@ BASE_FEATURE(kRealboxUseGoogleGIcon,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, alpha NTP backgrounds will show in Customize Chrome.
+// This is a development switch. Keep indefinitely.
 BASE_FEATURE(kNtpAlphaBackgroundCollections,
              "NtpAlphaBackgroundCollections",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -145,12 +127,14 @@ BASE_FEATURE(kNtpChromeCartModule,
 
 #if !defined(OFFICIAL_BUILD)
 // If enabled, dummy modules will be shown.
+// This is a development switch. Keep indefinitely.
 BASE_FEATURE(kNtpDummyModules,
              "NtpDummyModules",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
 // If enabled, Google Drive module will be shown.
+// This is a kill switch. Keep indefinitely.
 BASE_FEATURE(kNtpDriveModule,
              "NtpDriveModule",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -176,14 +160,11 @@ BASE_FEATURE(kNtpHandleMostVisitedNavigationExplicitly,
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, logo will be shown.
+// This is a kill switch. Keep indefinitely.
 BASE_FEATURE(kNtpLogo, "NtpLogo", base::FEATURE_ENABLED_BY_DEFAULT);
 
-// If enabled, logo will fill up less vertical space.
-BASE_FEATURE(kNtpReducedLogoSpace,
-             "NtpReducedLogoSpace",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // If enabled, middle slot promo will be shown.
+// This is a kill switch. Keep indefinitely.
 BASE_FEATURE(kNtpMiddleSlotPromo,
              "NtpMiddleSlotPromo",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -195,6 +176,7 @@ BASE_FEATURE(kNtpMiddleSlotPromoDismissal,
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Dummy feature to set param "NtpModulesLoadTimeoutMillisecondsParam".
+// This is used for an emergency Finch param. Keep indefinitely.
 BASE_FEATURE(kNtpModulesLoadTimeoutMilliseconds,
              "NtpModulesLoadTimeoutMilliseconds",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -205,16 +187,19 @@ BASE_FEATURE(kNtpWideModules,
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Dummy feature to set param "NtpModulesOrderParam".
+// This is used for an emergency Finch param. Keep indefinitely.
 BASE_FEATURE(kNtpModulesOrder,
              "NtpModulesOrder",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Dummy feature to set param "NtpModulesMaxColumnCountParam".
+// This is used for an emergency Finch param. Keep indefinitely.
 BASE_FEATURE(kNtpModulesMaxColumnCount,
              "NtpModulesMaxColumnCount",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Dummy feature to set param "NtpModulesLoadedWithOtherModulesMaxInstanceCount"
+// This is used for an emergency Finch param. Keep indefinitely.
 BASE_FEATURE(kNtpModulesLoadedWithOtherModulesMaxInstanceCount,
              "NtpModulesLoadedWithOtherModulesMaxInstanceCount",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -229,11 +214,6 @@ BASE_FEATURE(kNtpModulesDragAndDrop,
              "NtpModulesDragAndDrop",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// If enabled, the first run experience for Modular NTP Desktop v1 will show.
-BASE_FEATURE(kNtpModulesFirstRunExperience,
-             "NtpModulesFirstRunExperience",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // If enabled, modules will be loaded but not shown. This is useful to determine
 // if a user would have seen modules in order to counterfactually log or
 // trigger.
@@ -241,17 +221,13 @@ BASE_FEATURE(kNtpModulesLoad,
              "NtpModulesLoad",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// If enabled, redesigned modules will be shown.
+// If enabled, redesigned NTP launchpad + modules will be shown.
 BASE_FEATURE(kNtpModulesRedesigned,
              "NtpModulesRedesigned",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// If enabled, MostVisited tiles will reflow when overflowing.
-BASE_FEATURE(kNtpMostVisitedReflowOnOverflow,
-             "NtpMostVisitedReflowOnOverflow",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, OneGoogleBar will be shown.
+// This is a kill switch. Keep indefinitely.
 BASE_FEATURE(kNtpOneGoogleBar,
              "NtpOneGoogleBar",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -298,11 +274,6 @@ BASE_FEATURE(kNtpLensDirectUpload,
              "NtpLensDirectUpload",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// If enabled, recipe tasks module will be shown.
-BASE_FEATURE(kNtpRecipeTasksModule,
-             "NtpRecipeTasksModule",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // If enabled, SafeBrowsing module will be shown to a target user.
 BASE_FEATURE(kNtpSafeBrowsingModule,
              "NtpSafeBrowsingModule",
@@ -314,21 +285,12 @@ BASE_FEATURE(kNtpSharepointModule,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, shortcuts will be shown.
+// This is a kill switch. Keep indefinitely.
 BASE_FEATURE(kNtpShortcuts, "NtpShortcuts", base::FEATURE_ENABLED_BY_DEFAULT);
-
-// If enabled, shortcuts will be shown in a wide single row.
-BASE_FEATURE(kNtpSingleRowShortcuts,
-             "NtpSingleRowShortcuts",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, the History clusters module will be shown.
 BASE_FEATURE(kNtpHistoryClustersModule,
              "NtpHistoryClustersModule",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Dummy feature to set kNtpHistoryClustersModuleBeginTimeDurationHoursParam.
-BASE_FEATURE(kNtpHistoryClustersModuleBeginTimeDuration,
-             "NtpHistoryClustersModuleBeginTimeDuration",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Dummy feature to set kNtpHistoryClustersModuleMinimumVisitsRequiredParam.
@@ -448,6 +410,12 @@ BASE_FEATURE(kNtpWallpaperSearchButtonAnimation,
              "NtpWallpaperSearchButtonAnimation",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Dummy feature to set param "NtpWallpaperSearchButtonAnimationShownThreshold".
+// This is used for an emergency Finch param. Keep indefinitely.
+BASE_FEATURE(kNtpWallpaperSearchButtonAnimationShownThreshold,
+             "NtpWallpaperSearchButtonAnimationShownThreshold",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 const char kNtpModuleIgnoredCriteriaThreshold[] =
     "NtpModuleIgnoredCriteriaThreshold";
 const char kNtpModuleIgnoredHaTSDelayTimeParam[] =
@@ -478,10 +446,6 @@ const char kNtpDriveModuleCacheMaxAgeSParam[] =
     "NtpDriveModuleCacheMaxAgeSParam";
 const char kNtpDriveModuleExperimentGroupParam[] =
     "NtpDriveModuleExperimentGroupParam";
-const char kNtpHistoryClustersModuleDataParam[] =
-    "NtpHistoryClustersModuleDataParam";
-const char kNtpChromeCartInHistoryClustersModuleDataParam[] =
-    "NtpChromeCartInHistoryClustersModuleDataParam";
 const char kNtpMiddleSlotPromoDismissalParam[] =
     "NtpMiddleSlotPromoDismissalParam";
 const char kNtpPhotosModuleDataParam[] = "NtpPhotosModuleDataParam";
@@ -492,11 +456,6 @@ const char kNtpSafeBrowsingModuleCooldownPeriodDaysParam[] =
     "NtpSafeBrowsingModuleCooldownPeriodDaysParam";
 const char kNtpSafeBrowsingModuleCountMaxParam[] =
     "NtpSafeBrowsingModuleCountMaxParam";
-const char kNtpRecipeTasksModuleDataParam[] = "NtpRecipeTasksModuleDataParam";
-const char kNtpRecipeTasksModuleCacheMaxAgeSParam[] =
-    "NtpRecipeTasksModuleCacheMaxAgeSParam";
-const char kNtpRecipeTasksModuleExperimentGroupParam[] =
-    "NtpRecipeTasksModuleExperimentGroupParam";
 const char kNtpHistoryClustersModuleBeginTimeDurationHoursParam[] =
     "NtpHistoryClustersModuleBeginTimeDurationHoursParam";
 const char kNtpHistoryClustersModuleMinimumVisitsRequiredParam[] =
@@ -519,19 +478,39 @@ const char kNtpHistoryClustersModuleRankingMetricsQueryDaysParam[] =
     "NtpHistoryClustersModuleRankingMetricsQueryDaysParam";
 const char kNtpHistoryClustersModuleScoreThresholdParam[] =
     "NtpHistoryClustersModuleScoreThresholdParam";
-const char kNtpRealboxWidthBehaviorParam[] = "NtpRealboxWidthBehaviorParam";
 const char kNtpTabResumptionModuleCategoriesBlocklistParam[] =
     "NtpTabResumptionModuleCategoriesBlocklistParam";
 const char kNtpMostRelevantTabResumptionModuleDataParam[] =
     "NtpMostRelevantTabResumptionModuleDataParam";
 const char kNtpTabResumptionModuleDataParam[] =
     "NtpTabResumptionModuleDataParam";
+const char kNtpTabResumptionModuleResultTypesParam[] =
+    "NtpTabResumptionModuleResultTypesParam";
 const char kNtpTabResumptionModuleTimeLimitParam[] =
     "NtpTabResumptionModuleTimeLimitParam";
 const char kNtpTabResumptionModuleVisibilityThresholdDataParam[] =
     "NtpTabResumptionModuleVisibilityThresholdDataParam";
+const char kNtpWallpaperSearchButtonAnimationShownThresholdParam[] =
+    "NtpWallpaperSearchButtonAnimationShownThresholdParam";
 const char kWallpaperSearchHatsDelayParam[] = "WallpaperSearchHatsDelayParam";
 
+const base::FeatureParam<std::string> kNtpCalendarModuleExperimentParam(
+    &ntp_features::kNtpCalendarModule,
+    "NtpCalendarModuleMaxExperimentParam",
+    "ntp-calendar");
+const base::FeatureParam<int> kNtpCalendarModuleMaxEventsParam(
+    &ntp_features::kNtpCalendarModule,
+    "NtpCalendarModuleMaxEventsParam",
+    6);
+const base::FeatureParam<base::TimeDelta> kNtpCalendarModuleWindowEndDeltaParam(
+    &ntp_features::kNtpCalendarModule,
+    "NtpCalendarModuleWindowEndDeltaParam",
+    base::Hours(12));
+const base::FeatureParam<base::TimeDelta>
+    kNtpCalendarModuleWindowStartDeltaParam(
+        &ntp_features::kNtpCalendarModule,
+        "NtpCalendarModuleWindowStartDeltaParam",
+        base::Minutes(-15));
 const base::FeatureParam<bool> kNtpRealboxCr23ExpandedStateBgMatchesOmnibox(
     &ntp_features::kRealboxCr23Theming,
     "kNtpRealboxCr23ExpandedStateBgMatchesOmnibox",
@@ -572,4 +551,9 @@ std::vector<std::string> GetModulesOrder() {
                            base::SplitResult::SPLIT_WANT_NONEMPTY);
 }
 
+int GetWallpaperSearchButtonAnimationShownThreshold() {
+  return base::GetFieldTrialParamByFeatureAsInt(
+      kNtpWallpaperSearchButtonAnimationShownThreshold,
+      kNtpWallpaperSearchButtonAnimationShownThresholdParam, 15);
+}
 }  // namespace ntp_features

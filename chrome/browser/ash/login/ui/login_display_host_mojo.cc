@@ -33,6 +33,7 @@
 #include "base/notreached.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ash/login/challenge_response_auth_keys_loader.h"
 #include "chrome/browser/ash/login/existing_user_controller.h"
 #include "chrome/browser/ash/login/helper.h"
@@ -60,7 +61,6 @@
 #include "chrome/browser/ui/webui/ash/login/enable_debugging_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/guest_tos_screen_handler.h"
-#include "chrome/browser/ui/webui/ash/login/kiosk_autolaunch_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/lacros_data_migration_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/os_install_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/remote_activity_notification_screen_handler.h"
@@ -192,6 +192,7 @@ LoginDisplayHostMojo::AuthState::~AuthState() = default;
 LoginDisplayHostMojo::LoginDisplayHostMojo(DisplayedScreen displayed_screen)
     : user_selection_screen_(
           std::make_unique<ChromeUserSelectionScreen>(displayed_screen)),
+      auth_performer_(UserDataAuthClient::Get()),
       system_info_updater_(std::make_unique<MojoSystemInfoDispatcher>()) {
   CHECK(!g_login_display_host_mojo);
   g_login_display_host_mojo = this;
@@ -268,12 +269,18 @@ void LoginDisplayHostMojo::SetUsers(const user_manager::UserList& users) {
   user_selection_screen_->SetUsersLoaded(true /*loaded*/);
 
   if (user_manager::UserManager::IsInitialized()) {
-    // Enable pin and challenge-response authentication for any users who can
-    // use them.
+    // Update auth factors (password, pin and challenge-response authentication)
+    // availability for any users who can use them.
     for (const user_manager::User* user : users) {
       if (!user->IsDeviceLocalAccount()) {
-        UpdatePinAuthAvailability(user->GetAccountId());
-        UpdateChallengeResponseAuthAvailability(user->GetAccountId());
+        if (features::IsAllowPasswordlessSetupEnabled()) {
+          // Pref-based PIN is irrelvent on the Login screen, so it is ok to
+          // check only Cryptohome PIN here.
+          UpdateAuthFactorsAvailability(user);
+        } else {
+          UpdatePinAuthAvailability(user->GetAccountId());
+          UpdateChallengeResponseAuthAvailability(user->GetAccountId());
+        }
       }
     }
   }
@@ -312,10 +319,6 @@ void LoginDisplayHostMojo::SetUsers(const user_manager::UserList& users) {
     StartWizard(EnableDebuggingScreenView::kScreenId);
   } else if (local_state->GetBoolean(::prefs::kEnableAdbSideloadingRequested)) {
     StartWizard(EnableAdbSideloadingScreenView::kScreenId);
-  } else if (!KioskChromeAppManager::Get()->GetAutoLaunchApp().empty() &&
-             KioskChromeAppManager::Get()->IsAutoLaunchRequested()) {
-    VLOG(0) << "Showing auto-launch warning";
-    StartWizard(KioskAutolaunchScreenView::kScreenId);
   }
 }
 
@@ -697,10 +700,6 @@ void LoginDisplayHostMojo::OnCancelPasswordChangedFlow() {
   HideOobeDialog();
 }
 
-void LoginDisplayHostMojo::ShowEnableConsumerKioskScreen() {
-  NOTREACHED_IN_MIGRATION();
-}
-
 bool LoginDisplayHostMojo::GetKeyboardRemappedPrefValue(
     const std::string& pref_name,
     int* value) const {
@@ -1045,6 +1044,38 @@ void LoginDisplayHostMojo::OnDeviceSettingsChanged() {
 
   // Reload Gaia.
   GetWizardController()->GetScreen<GaiaScreen>()->LoadOnlineGaia();
+}
+
+void LoginDisplayHostMojo::UpdateAuthFactorsAvailability(
+    const user_manager::User* user) {
+  auto user_context = std::make_unique<UserContext>(*user);
+  const bool ephemeral =
+      user_manager::UserManager::Get()->IsUserCryptohomeDataEphemeral(
+          user->GetAccountId());
+  auth_performer_.StartAuthSession(
+      std::move(user_context), ephemeral, ash::AuthSessionIntent::kDecrypt,
+      base::BindOnce([](bool user_exists,
+                        std::unique_ptr<UserContext> user_context,
+                        std::optional<AuthenticationError> error) {
+        if (error.has_value()) {
+          LOG(ERROR) << "Failed to start auth session, code "
+                     << error->get_cryptohome_error();
+          return;
+        }
+        const auto& factors_data = user_context->GetAuthFactorsData();
+        cryptohome::AuthFactorsSet available_factors;
+        if (factors_data.FindAnyPasswordFactor()) {
+          available_factors.Put(cryptohome::AuthFactorType::kPassword);
+        }
+        if (factors_data.FindPinFactor()) {
+          available_factors.Put(cryptohome::AuthFactorType::kPin);
+        }
+        if (factors_data.FindSmartCardFactor()) {
+          available_factors.Put(cryptohome::AuthFactorType::kSmartCard);
+        }
+        LoginScreen::Get()->GetModel()->SetAuthFactorsForUser(
+            user_context->GetAccountId(), available_factors);
+      }));
 }
 
 }  // namespace ash

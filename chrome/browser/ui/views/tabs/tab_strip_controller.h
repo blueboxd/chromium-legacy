@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_types.h"
@@ -77,10 +78,11 @@ class TabStripController {
   virtual void AddSelectionFromAnchorTo(int index) = 0;
 
   // Prepares to close a tab. If closing the tab might require (for example) a
-  // user prompt, triggers that prompt and returns false, indicating that the
-  // current close operation should not proceed. If this method returns true,
-  // closing can proceed.
-  virtual bool BeforeCloseTab(int index, CloseTabSource source) = 0;
+  // user prompt, triggers that prompt passing in the callback ownership to it.
+  // Otherwise it runs the callback.
+  virtual void OnCloseTab(int index,
+                          CloseTabSource source,
+                          base::OnceCallback<void()> callback) = 0;
 
   // Closes the tab at the specified index in the model.
   virtual void CloseTab(int index) = 0;
@@ -203,6 +205,8 @@ class TabStripController {
   // be drawn if necessary.
   virtual bool CanDrawStrokes() const = 0;
 
+  virtual bool IsFrameButtonsRightAligned() const = 0;
+
   // Returns the color of the browser frame for the given window activation
   // state.
   virtual SkColor GetFrameColor(BrowserFrameActiveState active_state) const = 0;
@@ -219,6 +223,12 @@ class TabStripController {
   virtual Profile* GetProfile() const = 0;
 
   virtual const Browser* GetBrowser() const = 0;
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Returns whether the current app instance is locked for OnTask. Only
+  // relevant for non-web browser scenarios.
+  virtual bool IsLockedForOnTask() = 0;
+#endif
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_CONTROLLER_H_

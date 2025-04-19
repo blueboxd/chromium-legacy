@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/mouse_keys/mouse_keys_controller.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/events/test_event_capturer.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/run_loop.h"
@@ -19,6 +21,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/events/types/event_type.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
@@ -43,7 +46,7 @@ class TestTextInputView : public views::WidgetDelegateView {
   TestTextInputView() : text_field_(new views::Textfield) {
     text_field_->SetTextInputType(ui::TEXT_INPUT_TYPE_TEXT);
     std::string name = "Hello, world";
-    text_field_->SetAccessibleName(base::UTF8ToUTF16(name));
+    text_field_->GetViewAccessibility().SetName(base::UTF8ToUTF16(name));
     AddChildView(text_field_.get());
     SetLayoutManager(std::make_unique<views::FillLayout>());
   }
@@ -136,7 +139,7 @@ class MouseKeysTest : public AshTestBase {
 
     // There should be 8 mouse movements.
     for (int i = 0; i < 8; ++i) {
-      EXPECT_EQ(ui::ET_MOUSE_MOVED, mouse_events[i].type());
+      EXPECT_EQ(ui::EventType::kMouseMoved, mouse_events[i].type());
     }
 
     // The pointer should move in a circular pattern.
@@ -179,10 +182,10 @@ class MouseKeysTest : public AshTestBase {
                    int buttons,
                    bool is_double_click,
                    const gfx::Point& position) {
-    EXPECT_EQ(ui::ET_MOUSE_PRESSED, mouse_event0.type());
+    EXPECT_EQ(ui::EventType::kMousePressed, mouse_event0.type());
     EXPECT_TRUE(buttons & mouse_event0.flags());
     EXPECT_EQ(mouse_event0.location(), position);
-    EXPECT_EQ(ui::ET_MOUSE_RELEASED, mouse_event1.type());
+    EXPECT_EQ(ui::EventType::kMouseReleased, mouse_event1.type());
     EXPECT_TRUE(buttons & mouse_event1.flags());
     EXPECT_EQ(mouse_event1.location(), position);
     if (is_double_click) {
@@ -265,12 +268,14 @@ class MouseKeysTest : public AshTestBase {
   }
 
   void PressColemakKey(ui::KeyboardCode key_code) {
-    ui::KeyEvent key_event(ColemakKeyEvent(ui::ET_KEY_PRESSED, key_code));
+    ui::KeyEvent key_event(
+        ColemakKeyEvent(ui::EventType::kKeyPressed, key_code));
     GetEventGenerator()->Dispatch(&key_event);
   }
 
   void ReleaseColemakKey(ui::KeyboardCode key_code) {
-    ui::KeyEvent key_event(ColemakKeyEvent(ui::ET_KEY_RELEASED, key_code));
+    ui::KeyEvent key_event(
+        ColemakKeyEvent(ui::EventType::kKeyReleased, key_code));
     GetEventGenerator()->Dispatch(&key_event);
   }
 
@@ -537,7 +542,7 @@ TEST_F(MouseKeysTest, IgnoreKeyRepeat) {
   auto mouse_events = CheckForMouseEvents();
   ASSERT_EQ(1u, mouse_events.size());
   EXPECT_EQ(0u, CheckForKeyEvents().size());
-  EXPECT_EQ(ui::ET_MOUSE_PRESSED, mouse_events[0].type());
+  EXPECT_EQ(ui::EventType::kMousePressed, mouse_events[0].type());
   EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & mouse_events[0].flags());
   EXPECT_EQ(mouse_events[0].location(), kDefaultPosition);
 
@@ -553,7 +558,7 @@ TEST_F(MouseKeysTest, IgnoreKeyRepeat) {
   mouse_events = CheckForMouseEvents();
   EXPECT_EQ(0u, CheckForKeyEvents().size());
   ASSERT_EQ(1u, mouse_events.size());
-  EXPECT_EQ(ui::ET_MOUSE_RELEASED, mouse_events[0].type());
+  EXPECT_EQ(ui::EventType::kMouseReleased, mouse_events[0].type());
   EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & mouse_events[0].flags());
   EXPECT_EQ(mouse_events[0].location(), kDefaultPosition);
 }
@@ -682,7 +687,7 @@ TEST_F(MouseKeysTest, MaxSpeed) {
   auto position = kDefaultPosition;
   for (size_t i = 0; i < mouse_events.size(); ++i) {
     position += move_delta;
-    EXPECT_EQ(ui::ET_MOUSE_MOVED, mouse_events[i].type());
+    EXPECT_EQ(ui::EventType::kMouseMoved, mouse_events[i].type());
     EXPECT_EQ(mouse_events[i].location(), position);
   }
 
@@ -699,7 +704,7 @@ TEST_F(MouseKeysTest, MaxSpeed) {
       gfx::Vector2d(-kMoveDeltaDIP * kMaxSpeed, kMoveDeltaDIP * kMaxSpeed);
   for (size_t i = 0; i < mouse_events.size(); ++i) {
     position += move_delta;
-    EXPECT_EQ(ui::ET_MOUSE_MOVED, mouse_events[i].type());
+    EXPECT_EQ(ui::EventType::kMouseMoved, mouse_events[i].type());
     EXPECT_EQ(mouse_events[i].location(), position);
   }
 }
@@ -735,7 +740,7 @@ TEST_F(MouseKeysTest, Acceleration) {
   auto position = kDefaultPosition;
   for (size_t i = 0; i < mouse_events.size(); ++i) {
     position += gfx::Vector2d(0, move_delta);
-    EXPECT_EQ(ui::ET_MOUSE_MOVED, mouse_events[i].type());
+    EXPECT_EQ(ui::EventType::kMouseMoved, mouse_events[i].type());
     EXPECT_EQ(mouse_events[i].location(), position);
     move_delta += kAccelerationDelta;
   }
@@ -752,7 +757,7 @@ TEST_F(MouseKeysTest, Acceleration) {
   move_delta = kMoveDeltaDIP;
   for (size_t i = 0; i < mouse_events.size(); ++i) {
     position += gfx::Vector2d(move_delta, -move_delta);
-    EXPECT_EQ(ui::ET_MOUSE_MOVED, mouse_events[i].type());
+    EXPECT_EQ(ui::EventType::kMouseMoved, mouse_events[i].type());
     EXPECT_EQ(mouse_events[i].location(), position);
     move_delta += kAccelerationDelta;
   }
@@ -793,7 +798,7 @@ TEST_F(MouseKeysTest, AccelerationAndMaxSpeed) {
   auto position = kDefaultPosition;
   for (size_t i = 0; i < mouse_events.size(); ++i) {
     position += gfx::Vector2d(move_delta, 0);
-    EXPECT_EQ(ui::ET_MOUSE_MOVED, mouse_events[i].type());
+    EXPECT_EQ(ui::EventType::kMouseMoved, mouse_events[i].type());
     EXPECT_EQ(mouse_events[i].location(), position);
     move_delta += kAccelerationDelta;
     move_delta = std::clamp(move_delta, 0.0, kMaxSpeed);
@@ -953,7 +958,7 @@ TEST_F(MouseKeysTest, Dragging) {
   auto mouse_events = CheckForMouseEvents();
   EXPECT_EQ(0u, CheckForKeyEvents().size());
   ASSERT_EQ(1u, mouse_events.size());
-  EXPECT_EQ(ui::ET_MOUSE_PRESSED, mouse_events[0].type());
+  EXPECT_EQ(ui::EventType::kMousePressed, mouse_events[0].type());
   EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & mouse_events[0].flags());
   EXPECT_EQ(mouse_events[0].location(), kDefaultPosition);
 
@@ -969,7 +974,7 @@ TEST_F(MouseKeysTest, Dragging) {
   auto position = kDefaultPosition;
   for (size_t i = 0; i < mouse_events.size(); ++i) {
     position += move_delta;
-    EXPECT_EQ(ui::ET_MOUSE_DRAGGED, mouse_events[i].type());
+    EXPECT_EQ(ui::EventType::kMouseDragged, mouse_events[i].type());
     EXPECT_EQ(mouse_events[i].location(), position);
   }
 
@@ -979,7 +984,7 @@ TEST_F(MouseKeysTest, Dragging) {
   mouse_events = CheckForMouseEvents();
   EXPECT_EQ(0u, CheckForKeyEvents().size());
   ASSERT_EQ(1u, mouse_events.size());
-  EXPECT_EQ(ui::ET_MOUSE_RELEASED, mouse_events[0].type());
+  EXPECT_EQ(ui::EventType::kMouseReleased, mouse_events[0].type());
   EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & mouse_events[0].flags());
   EXPECT_EQ(mouse_events[0].location(), position);
 }
@@ -1002,7 +1007,7 @@ TEST_F(MouseKeysTest, DragWithClick) {
   auto mouse_events = CheckForMouseEvents();
   EXPECT_EQ(0u, CheckForKeyEvents().size());
   ASSERT_EQ(1u, mouse_events.size());
-  EXPECT_EQ(ui::ET_MOUSE_PRESSED, mouse_events[0].type());
+  EXPECT_EQ(ui::EventType::kMousePressed, mouse_events[0].type());
   EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & mouse_events[0].flags());
   EXPECT_EQ(mouse_events[0].location(), kDefaultPosition);
 
@@ -1018,7 +1023,7 @@ TEST_F(MouseKeysTest, DragWithClick) {
   auto position = kDefaultPosition;
   for (size_t i = 0; i < mouse_events.size(); ++i) {
     position += move_delta;
-    EXPECT_EQ(ui::ET_MOUSE_DRAGGED, mouse_events[i].type());
+    EXPECT_EQ(ui::EventType::kMouseDragged, mouse_events[i].type());
     EXPECT_EQ(mouse_events[i].location(), position);
   }
 
@@ -1028,7 +1033,7 @@ TEST_F(MouseKeysTest, DragWithClick) {
   mouse_events = CheckForMouseEvents();
   EXPECT_EQ(0u, CheckForKeyEvents().size());
   ASSERT_EQ(1u, mouse_events.size());
-  EXPECT_EQ(ui::ET_MOUSE_RELEASED, mouse_events[0].type());
+  EXPECT_EQ(ui::EventType::kMouseReleased, mouse_events[0].type());
   EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & mouse_events[0].flags());
   EXPECT_EQ(mouse_events[0].location(), position);
 }
@@ -1051,7 +1056,7 @@ TEST_F(MouseKeysTest, DragWithMixed) {
   auto mouse_events = CheckForMouseEvents();
   EXPECT_EQ(0u, CheckForKeyEvents().size());
   ASSERT_EQ(1u, mouse_events.size());
-  EXPECT_EQ(ui::ET_MOUSE_PRESSED, mouse_events[0].type());
+  EXPECT_EQ(ui::EventType::kMousePressed, mouse_events[0].type());
   EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & mouse_events[0].flags());
   EXPECT_EQ(mouse_events[0].location(), kDefaultPosition);
 
@@ -1067,7 +1072,7 @@ TEST_F(MouseKeysTest, DragWithMixed) {
   auto position = kDefaultPosition;
   for (size_t i = 0; i < mouse_events.size(); ++i) {
     position += move_delta;
-    EXPECT_EQ(ui::ET_MOUSE_DRAGGED, mouse_events[i].type());
+    EXPECT_EQ(ui::EventType::kMouseDragged, mouse_events[i].type());
     EXPECT_EQ(mouse_events[i].location(), position);
   }
 
@@ -1077,9 +1082,41 @@ TEST_F(MouseKeysTest, DragWithMixed) {
   mouse_events = CheckForMouseEvents();
   EXPECT_EQ(0u, CheckForKeyEvents().size());
   ASSERT_EQ(1u, mouse_events.size());
-  EXPECT_EQ(ui::ET_MOUSE_RELEASED, mouse_events[0].type());
+  EXPECT_EQ(ui::EventType::kMouseReleased, mouse_events[0].type());
   EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & mouse_events[0].flags());
   EXPECT_EQ(mouse_events[0].location(), position);
+}
+
+TEST_F(MouseKeysTest, Accelerator) {
+  SetEnabled(true);
+  auto* accelerator_controller = Shell::Get()->accelerator_controller();
+  GetEventGenerator()->MoveMouseToWithNative(kDefaultPosition,
+                                             kDefaultPosition);
+
+  // Enable Mouse Keys, and we should be able to click by pressing i.
+  ClearEvents();
+  PressAndReleaseKey(ui::VKEY_I);
+  EXPECT_EQ(0u, CheckForKeyEvents().size());
+  ExpectClick(CheckForMouseEvents(), ui::EF_LEFT_MOUSE_BUTTON,
+              kDefaultPosition);
+
+  // Toggle Mouse Keys off, and we should see no mouse events.
+  accelerator_controller->PerformActionIfEnabled(
+      AcceleratorAction::kToggleMouseKeys, {});
+
+  ClearEvents();
+  PressAndReleaseKey(ui::VKEY_I);
+  EXPECT_EQ(0u, CheckForMouseEvents().size());
+
+  // Toggle Mouse Keys on, and we should see the original behaviour.
+  accelerator_controller->PerformActionIfEnabled(
+      AcceleratorAction::kToggleMouseKeys, {});
+
+  ClearEvents();
+  PressAndReleaseKey(ui::VKEY_I);
+  EXPECT_EQ(0u, CheckForKeyEvents().size());
+  ExpectClick(CheckForMouseEvents(), ui::EF_LEFT_MOUSE_BUTTON,
+              kDefaultPosition);
 }
 
 }  // namespace ash

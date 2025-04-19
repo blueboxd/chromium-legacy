@@ -398,6 +398,16 @@ void HTMLVideoElement::RequestMediaRemoting() {
   GetWebMediaPlayer()->RequestMediaRemoting();
 }
 
+void HTMLVideoElement::RequestVisibility(
+    RequestVisibilityCallback request_visibility_cb) {
+  if (!visibility_tracker_) {
+    std::move(request_visibility_cb).Run(false);
+    return;
+  }
+
+  visibility_tracker_->RequestVisibility(std::move(request_visibility_cb));
+}
+
 void HTMLVideoElement::PaintCurrentFrame(cc::PaintCanvas* canvas,
                                          const gfx::Rect& dest_rect,
                                          const cc::PaintFlags* flags) const {
@@ -810,6 +820,15 @@ void HTMLVideoElement::OnWebMediaPlayerCleared() {
     vfc_requester->OnWebMediaPlayerCleared();
 
   UpdateVideoVisibilityTracker();
+}
+
+void HTMLVideoElement::RecordVideoOcclusionState(
+    std::string_view occlusion_state) const {
+  if (!GetWebMediaPlayer()) {
+    return;
+  }
+
+  GetWebMediaPlayer()->RecordVideoOcclusionState(occlusion_state);
 }
 
 void HTMLVideoElement::AttributeChanged(

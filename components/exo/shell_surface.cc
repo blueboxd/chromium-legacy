@@ -14,9 +14,9 @@
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
 #include "base/containers/adapters.h"
+#include "base/debug/crash_logging.h"
 #include "base/functional/bind.h"
 #include "base/logging.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/layers/deadline_policy.h"
@@ -239,7 +239,6 @@ void ShellSurface::AcknowledgeConfigure(uint32_t serial) {
 void ShellSurface::SetParent(ShellSurface* parent) {
   TRACE_EVENT1("exo", "ShellSurface::SetParent", "parent",
                parent ? base::UTF16ToASCII(parent->GetWindowTitle()) : "null");
-
   SetParentWindow(parent ? parent->GetWidget()->GetNativeWindow() : nullptr);
 }
 
@@ -849,7 +848,7 @@ gfx::Rect ShellSurface::ComputeAdjustedBounds(const gfx::Rect& bounds) const {
   gfx::Size size = bounds.size();
   // use `minimum_size_` as the GetMinimumSize always return min size
   // bigger or equal to 1x1.
-  if (!minimum_size_.IsEmpty() && !min_size.IsEmpty()) {
+  if (!requested_minimum_size_.IsEmpty() && !min_size.IsEmpty()) {
     size.SetToMax(min_size);
   }
   if (!max_size.IsEmpty()) {
@@ -963,22 +962,37 @@ void ShellSurface::OnLayerRecreated(ui::Layer* old_layer) {
   } else {
     old_layer->SetName(old_layer->name() + "-old-no-surface");
   }
+  CHECK(old_layer->parent());
+  CHECK(host_window()->layer()->parent());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // ShellSurface, private:
 
 void ShellSurface::SetParentWindow(aura::Window* new_parent) {
-  if (new_parent && GetWidget() &&
-      new_parent == GetWidget()->GetNativeWindow()) {
-    // Some apps e.g. crbug/1210235 try to be their own parent. Ignore them to
-    // prevent chrome from locking up/crashing.
-    auto* app_id = GetShellApplicationId(host_window());
-    LOG(WARNING)
-        << "Client attempts to add itself as a transient parent: app_id="
-        << app_id;
-    return;
+  if (new_parent && widget_) {
+    const aura::Window* window = widget_->GetNativeWindow();
+    const aura::Window* ancestor = new_parent;
+    while (ancestor) {
+      if (ancestor == window) {
+        // Some apps try to be their own parent, e.g. crbug/1210235, or parent
+        // to its ancestors, e.g., b/342265753. Ignore them to prevent chrome
+        // from locking up/crashing.
+        auto* app_id = GetShellApplicationId(host_window());
+        LOG(WARNING) << "Client attempts to parent to itself or its transient "
+                        "ancestors: app_id="
+                     << app_id;
+        return;
+      }
+
+      auto* transient_window_manager =
+          wm::TransientWindowManager::GetIfExists(ancestor);
+      ancestor = transient_window_manager
+                     ? transient_window_manager->transient_parent()
+                     : nullptr;
+    }
   }
+
   if (parent()) {
     parent()->RemoveObserver(this);
     if (widget_) {
@@ -1083,7 +1097,8 @@ void ShellSurface::Configure(bool ends_drag) {
 bool ShellSurface::GetCanResizeFromSizeConstraints() const {
   // Both the default min and max sizes are empty and windows must be resizable
   // in that case.
-  return (minimum_size_.IsEmpty() || minimum_size_ != maximum_size_);
+  return (requested_minimum_size_.IsEmpty() ||
+          requested_minimum_size_ != requested_maximum_size_);
 }
 
 bool ShellSurface::AttemptToStartDrag(int component) {

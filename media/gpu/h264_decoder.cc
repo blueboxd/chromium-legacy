@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "media/gpu/h264_decoder.h"
 
 #include <limits>
@@ -15,7 +20,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/ranges/algorithm.h"
 #include "media/base/media_switches.h"
-#include "media/video/h264_level_limits.h"
+#include "media/parsers/h264_level_limits.h"
 
 namespace media {
 namespace {

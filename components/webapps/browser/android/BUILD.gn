@@ -124,6 +124,7 @@ android_resources("java_resources") {
     "java/res/layout/image_zoom_view.xml",
     "java/res/layout/pwa_install_bottom_sheet_content.xml",
     "java/res/layout/pwa_restore_bottom_sheet_content.xml",
+    "java/res/layout/pwa_restore_bottom_sheet_dialog.xml",
     "java/res/layout/pwa_restore_bottom_sheet_preview.xml",
     "java/res/layout/pwa_restore_list_item_app.xml",
     "java/res/layout/pwa_restore_list_item_label.xml",
@@ -209,6 +210,7 @@ robolectric_library("junit") {
     ":java_resources",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
+    "//base:tasks_java",
     "//base/test:test_support_java",
     "//chrome/browser/profiles/android:java",
     "//chrome/test/android:chrome_java_unit_test_support",
@@ -237,6 +239,7 @@ android_library("unit_device_javatests") {
   deps = [
     ":java",
     "//base:base_java_test_support",
+    "//base:tasks_java",
     "//chrome/android:chrome_java",
     "//chrome/test/android:chrome_java_integration_test_support",
     "//components/browser_ui/bottomsheet/android:java",

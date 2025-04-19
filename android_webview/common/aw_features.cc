@@ -12,6 +12,12 @@ namespace features {
 
 // Alphabetical:
 
+// Enable auto granting storage access API requests. This will be done
+// if a relationship is detected between the app and the website.
+BASE_FEATURE(kWebViewAutoSAA,
+             "WebViewAutoSAA",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enable back/forward cache support in WebView. Note that this will only take
 // effect iff both this feature flag and the content/public kBackForwardCache
 // flag is enabled.
@@ -36,6 +42,11 @@ BASE_FEATURE(kWebViewClearFunctorInBackground,
 // Kill switch for adding CHECKs to loading pak files.
 BASE_FEATURE(kWebViewCheckPakFileDescriptors,
              "WebViewCheckPakFileDescriptors",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Allows JS DataTransfer Files from content URIs in drag-drop.
+BASE_FEATURE(kWebViewDragDropFiles,
+             "WebViewDragDropFiles",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Cache origins which have camera/mic permissions approved to allow subsequent
@@ -73,17 +84,11 @@ BASE_FEATURE(kWebViewDisplayCutout,
              "WebViewDisplayCutout",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enable the WebView Media Integrity API.
-// This feature requires `kWebViewInjectPlatformJsApis` to be enabled as well.
-BASE_FEATURE(kWebViewMediaIntegrityApi,
-             "WebViewMediaIntegrityApi",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enable the WebView Media Integrity API as a Blink extension.
 // This feature requires `kWebViewMediaIntegrityApi` to be disabled.
 BASE_FEATURE(kWebViewMediaIntegrityApiBlinkExtension,
              "WebViewMediaIntegrityApiBlinkExtension",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, passive mixed content (Audio/Video/Image subresources loaded
 // over HTTP on HTTPS sites) will be autoupgraded to HTTPS, and the load will be
@@ -194,16 +199,16 @@ BASE_FEATURE(kWebViewImageDrag,
              "WebViewImageDrag",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enables injection of platform-specific JavaScript APIs.
-BASE_FEATURE(kWebViewInjectPlatformJsApis,
-             "WebViewInjectPlatformJsApis",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // If enabled zoom picker is invoked on every kGestureScrollUpdate consumed ack,
 // otherwise the zoom picker is persistently shown from scroll start to scroll
 // end plus the usual delay in hiding.
 BASE_FEATURE(kWebViewInvokeZoomPickerOnGSU,
              "WebViewInvokeZoomPickerOnGSU",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Whether to use WebView's own Context for resource related lookups.
+BASE_FEATURE(kWebViewSeparateResourceContext,
+             "WebViewSeparateResourceContext",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Whether to use initial network state during initialization to speed up
@@ -246,6 +251,11 @@ BASE_FEATURE(kWebViewPreloadClasses,
 BASE_FEATURE(kWebViewDoNotSendAccessibilityEventsOnGSU,
              "WebViewDoNotSendAccessibilityEventsOnGSU",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// This enables WebView's hyperlink context menu.
+BASE_FEATURE(kWebViewHyperlinkContextMenu,
+             "WebViewHyperlinkContextMenu",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Creates a spare renderer on browser context creation.
 BASE_FEATURE(kCreateSpareRendererOnBrowserContextCreation,

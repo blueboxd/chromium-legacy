@@ -505,6 +505,190 @@ bool To60(sql::Database& db) {
   return true;
 }
 
+bool To61(sql::Database& db) {
+  static constexpr char kNewSourcesTableSql[] =
+      "CREATE TABLE new_sources("
+      "source_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
+      "source_event_id INTEGER NOT NULL,"
+      "source_origin TEXT NOT NULL,"
+      "reporting_origin TEXT NOT NULL,"
+      "source_time INTEGER NOT NULL,"
+      "expiry_time INTEGER NOT NULL,"
+      "aggregatable_report_window_time INTEGER NOT NULL,"
+      "num_attributions INTEGER NOT NULL,"
+      "event_level_active INTEGER NOT NULL,"
+      "aggregatable_active INTEGER NOT NULL,"
+      "source_type INTEGER NOT NULL,"
+      "attribution_logic INTEGER NOT NULL,"
+      "priority INTEGER NOT NULL,"
+      "source_site TEXT NOT NULL,"
+      "debug_key INTEGER,"
+      "remaining_aggregatable_attribution_budget INTEGER NOT NULL,"
+      "num_aggregatable_attribution_reports INTEGER NOT NULL,"
+      "aggregatable_source BLOB NOT NULL,"
+      "filter_data BLOB NOT NULL,"
+      "read_only_source_data BLOB NOT NULL,"
+      "remaining_aggregatable_debug_budget INTEGER NOT NULL,"
+      "num_aggregatable_debug_reports INTEGER NOT NULL)";
+  if (!db.Execute(kNewSourcesTableSql)) {
+    return false;
+  }
+
+  static constexpr char kPopulateNewSourcesTableSql[] =
+      "INSERT INTO new_sources SELECT "
+      "source_id,source_event_id,source_origin,"
+      "reporting_origin,source_time,expiry_time,"
+      "aggregatable_report_window_time,"
+      "num_attributions,event_level_active,aggregatable_active,"
+      "source_type,attribution_logic,priority,source_site,debug_key,"
+      "remaining_aggregatable_attribution_budget,"
+      "num_aggregatable_attribution_reports,aggregatable_source,"
+      "filter_data,read_only_source_data,0,0 FROM sources";
+  if (!db.Execute(kPopulateNewSourcesTableSql)) {
+    return false;
+  }
+
+  if (!db.Execute("DROP TABLE sources")) {
+    return false;
+  }
+
+  if (!db.Execute("ALTER TABLE new_sources RENAME TO sources")) {
+    return false;
+  }
+
+  // Create the sources table indices on the new table.
+  static constexpr char kSourcesByActiveReportingOriginIndexSql[] =
+      "CREATE INDEX sources_by_active_reporting_origin "
+      "ON sources(event_level_active,"
+      "aggregatable_active,reporting_origin)";
+  if (!db.Execute(kSourcesByActiveReportingOriginIndexSql)) {
+    return false;
+  }
+
+  static constexpr char kImpressionExpiryIndexSql[] =
+      "CREATE INDEX sources_by_expiry_time "
+      "ON sources(expiry_time)";
+  if (!db.Execute(kImpressionExpiryIndexSql)) {
+    return false;
+  }
+
+  static constexpr char kImpressionOriginIndexSql[] =
+      "CREATE INDEX active_sources_by_source_origin "
+      "ON sources(source_origin)"
+      "WHERE event_level_active=1 OR aggregatable_active=1";
+  if (!db.Execute(kImpressionOriginIndexSql)) {
+    return false;
+  }
+
+  static constexpr char kSourcesSourceTimeIndexSql[] =
+      "CREATE INDEX sources_by_source_time "
+      "ON sources(source_time)";
+  if (!db.Execute(kSourcesSourceTimeIndexSql)) {
+    return false;
+  }
+
+  return true;
+}
+
+bool To62(sql::Database& db) {
+  static constexpr char kAggregatableDebugRateLimitsTableSql[] =
+      "CREATE TABLE aggregatable_debug_rate_limits("
+      "id INTEGER PRIMARY KEY NOT NULL,"
+      "context_site TEXT NOT NULL,"
+      "reporting_origin TEXT NOT NULL,"
+      "reporting_site TEXT NOT NULL,"
+      "time INTEGER NOT NULL,"
+      "consumed_budget INTEGER NOT NULL)";
+  if (!db.Execute(kAggregatableDebugRateLimitsTableSql)) {
+    return false;
+  }
+
+  static constexpr char kAggregatableDebugRateLimitsContextSiteIndex[] =
+      "CREATE INDEX aggregatable_debug_rate_limits_context_site_idx "
+      "ON aggregatable_debug_rate_limits(context_site)";
+  if (!db.Execute(kAggregatableDebugRateLimitsContextSiteIndex)) {
+    return false;
+  }
+
+  static constexpr char kAggregatableDebugRateLimitsTimeIndex[] =
+      "CREATE INDEX aggregatable_debug_rate_limits_time_idx "
+      "ON aggregatable_debug_rate_limits(time)";
+  if (!db.Execute(kAggregatableDebugRateLimitsTimeIndex)) {
+    return false;
+  }
+
+  return true;
+}
+
+bool To63(sql::Database& db) {
+  static constexpr char kRateLimitTableSql[] =
+      "CREATE TABLE new_rate_limits("
+      "id INTEGER PRIMARY KEY NOT NULL,"
+      "scope INTEGER NOT NULL,"
+      "source_id INTEGER NOT NULL,"
+      "source_site TEXT NOT NULL,"
+      "destination_site TEXT NOT NULL,"
+      "context_origin TEXT NOT NULL,"
+      "reporting_origin TEXT NOT NULL,"
+      "reporting_site TEXT NOT NULL,"
+      "time INTEGER NOT NULL,"
+      "source_expiry_or_attribution_time INTEGER NOT NULL,"
+      "report_id INTEGER NOT NULL,"
+      "deactivated_for_source_destination_limit INTEGER NOT NULL,"
+      "destination_limit_priority INTEGER NOT NULL)";
+  if (!db.Execute(kRateLimitTableSql)) {
+    return false;
+  }
+
+  static constexpr char kPopulateExistingRecordsSql[] =
+      "INSERT INTO new_rate_limits SELECT "
+      "id,scope,source_id,source_site,destination_site,context_origin,"
+      "reporting_origin,reporting_site,time,source_expiry_or_attribution_time,"
+      "report_id,0,0 "
+      "FROM rate_limits";
+  if (!db.Execute(kPopulateExistingRecordsSql)) {
+    return false;
+  }
+
+  if (!db.Execute("DROP TABLE rate_limits")) {
+    return false;
+  }
+
+  if (!db.Execute("ALTER TABLE new_rate_limits RENAME TO rate_limits")) {
+    return false;
+  }
+
+  static constexpr char kRateLimitReportingOriginIndexSql[] =
+      "CREATE INDEX rate_limit_reporting_origin_idx "
+      "ON rate_limits(scope,source_site,destination_site)";
+  if (!db.Execute(kRateLimitReportingOriginIndexSql)) {
+    return false;
+  }
+
+  static constexpr char kRateLimitTimeIndexSql[] =
+      "CREATE INDEX rate_limit_time_idx ON rate_limits(time)";
+  if (!db.Execute(kRateLimitTimeIndexSql)) {
+    return false;
+  }
+
+  static constexpr char kRateLimitImpressionIdIndexSql[] =
+      "CREATE INDEX rate_limit_source_id_idx "
+      "ON rate_limits(source_id)";
+  if (!db.Execute(kRateLimitImpressionIdIndexSql)) {
+    return false;
+  }
+
+  static constexpr char kRateLimitReportIdIndexSql[] =
+      "CREATE INDEX rate_limit_report_id_idx "
+      "ON rate_limits(scope,report_id)"
+      "WHERE (scope=1 OR scope=2) AND report_id!=-1";
+  if (!db.Execute(kRateLimitReportIdIndexSql)) {
+    return false;
+  }
+
+  return true;
+}
+
 }  // namespace
 
 bool UpgradeAttributionStorageSqlSchema(AttributionStorageSql& storage,
@@ -525,14 +709,17 @@ bool UpgradeAttributionStorageSqlSchema(AttributionStorageSql& storage,
             MaybeMigrate(db, meta_table, 56, &To57) &&
             MaybeMigrate(db, meta_table, 57, &To58) &&
             MaybeMigrate(db, meta_table, 58, &To59) &&
-            MaybeMigrate(db, meta_table, 59, &To60);
+            MaybeMigrate(db, meta_table, 59, &To60) &&
+            MaybeMigrate(db, meta_table, 60, &To61) &&
+            MaybeMigrate(db, meta_table, 61, &To62) &&
+            MaybeMigrate(db, meta_table, 62, &To63);
   if (!ok) {
     return false;
   }
 
   DeleteCorruptedReports(storage);
 
-  static_assert(AttributionStorageSql::kCurrentVersionNumber == 60,
+  static_assert(AttributionStorageSql::kCurrentVersionNumber == 63,
                 "Add migration(s) above.");
 
   if (base::ThreadTicks::IsSupported()) {

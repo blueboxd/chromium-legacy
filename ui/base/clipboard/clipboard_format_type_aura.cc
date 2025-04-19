@@ -129,8 +129,9 @@ const ClipboardFormatType& ClipboardFormatType::WebKitSmartPasteType() {
 }
 
 // static
-const ClipboardFormatType& ClipboardFormatType::WebCustomDataType() {
-  static base::NoDestructor<ClipboardFormatType> type(kMimeTypeWebCustomData);
+const ClipboardFormatType& ClipboardFormatType::DataTransferCustomType() {
+  static base::NoDestructor<ClipboardFormatType> type(
+      kMimeTypeDataTransferCustomData);
   return *type;
 }
 

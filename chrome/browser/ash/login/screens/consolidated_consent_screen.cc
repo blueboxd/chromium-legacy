@@ -191,7 +191,7 @@ bool ConsolidatedConsentScreen::MaybeSkip(WizardContext& context) {
   // Skip the screen if the user is affiliated.
   Profile* profile = ProfileManager::GetActiveUserProfile();
   CHECK(profile);
-  if (chrome::enterprise_util::IsProfileAffiliated(profile)) {
+  if (enterprise_util::IsProfileAffiliated(profile)) {
     exit_callback_.Run(Result::NOT_APPLICABLE);
     return true;
   }
@@ -228,8 +228,7 @@ void ConsolidatedConsentScreen::ShowImpl() {
   data.Set("isChildAccount", is_child_account_);
   // If the user is affiliated with the device management domain, ToS should be
   // hidden.
-  data.Set("isTosHidden",
-           chrome::enterprise_util::IsProfileAffiliated(profile));
+  data.Set("isTosHidden", enterprise_util::IsProfileAffiliated(profile));
 
   // ToS URLs.
   data.Set("googleEulaUrl", GetTosHost(ToS::GOOGLE_EULA));
@@ -247,11 +246,9 @@ void ConsolidatedConsentScreen::ShowImpl() {
 
   view_->Show(std::move(data));
 
-  if (ash::features::AreLocalPasswordsEnabledForConsumers()) {
-    if (context()->extra_factors_token) {
-      session_refresher_ = AuthSessionStorage::Get()->KeepAlive(
-          context()->extra_factors_token.value());
-    }
+  if (context()->extra_factors_token) {
+    session_refresher_ = AuthSessionStorage::Get()->KeepAlive(
+        context()->extra_factors_token.value());
   }
 }
 
@@ -440,24 +437,30 @@ void ConsolidatedConsentScreen::RecordConsents(
   }
 
   if (params.record_location_consent) {
-    // TODO(b/327350824): Stop sending ARC controls to consent auditor.
-    if (!features::IsCrosPrivacyHubLocationEnabled()) {
-      ArcGoogleLocationServiceConsent location_service_consent;
-      location_service_consent.set_confirmation_grd_id(
-          IDS_CONSOLIDATED_CONSENT_ACCEPT_AND_CONTINUE);
+    ArcGoogleLocationServiceConsent location_service_consent;
+    location_service_consent.set_confirmation_grd_id(
+        IDS_CONSOLIDATED_CONSENT_ACCEPT_AND_CONTINUE);
 
+    if (features::IsCrosPrivacyHubLocationEnabled()) {
+      location_service_consent.add_description_grd_ids(
+          IDS_CONSOLIDATED_CONSENT_CROS_LOCATION_OPT_IN_TITLE);
+      location_service_consent.add_description_grd_ids(
+          is_child_account_
+              ? IDS_CONSOLIDATED_CONSENT_CROS_LOCATION_OPT_IN_CHILD
+              : IDS_CONSOLIDATED_CONSENT_CROS_LOCATION_OPT_IN);
+    } else {
       location_service_consent.add_description_grd_ids(
           IDS_CONSOLIDATED_CONSENT_ARC_LOCATION_OPT_IN_TITLE);
       location_service_consent.add_description_grd_ids(
           is_child_account_ ? IDS_CONSOLIDATED_CONSENT_ARC_LOCATION_OPT_IN_CHILD
                             : IDS_CONSOLIDATED_CONSENT_ARC_LOCATION_OPT_IN);
-      location_service_consent.set_status(params.location_accepted
-                                              ? UserConsentTypes::GIVEN
-                                              : UserConsentTypes::NOT_GIVEN);
-
-      consent_auditor->RecordArcGoogleLocationServiceConsent(
-          account_id, location_service_consent);
     }
+
+    location_service_consent.set_status(params.location_accepted
+                                            ? UserConsentTypes::GIVEN
+                                            : UserConsentTypes::NOT_GIVEN);
+    consent_auditor->RecordArcGoogleLocationServiceConsent(
+        account_id, location_service_consent);
   }
 }
 
@@ -512,8 +515,7 @@ void ConsolidatedConsentScreen::OnAccept(bool enable_stats_usage,
   Profile* profile = ProfileManager::GetActiveUserProfile();
   CHECK(profile);
   consents.record_arc_tos_consent =
-      !chrome::enterprise_util::IsProfileAffiliated(profile) &&
-      !tos_content.empty();
+      !enterprise_util::IsProfileAffiliated(profile) && !tos_content.empty();
   consents.record_backup_consent = !backup_restore_managed_;
   consents.backup_accepted = enable_backup_restore;
   consents.record_location_consent = !location_services_managed_;

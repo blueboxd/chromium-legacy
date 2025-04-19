@@ -115,8 +115,15 @@ enum class ProfileSignout {
   // Signout as part of the profile deletion procedure, to avoid that deletion
   // of data propagates via sync.
   kSignoutDuringProfileDeletion = 34,
+  // Signout, in the account menu, as part of switching to a new primary
+  // account.
+  kChangeAccountInAccountMenu = 35,
+  // User clicked to signout from the account menu view.
+  kUserClickedSignoutInAccountMenu = 36,
+  // User disabled allow chrome sign-in from google settings page.
+  kUserDisabledAllowChromeSignIn = 37,
   // Keep this as the last enum.
-  kMaxValue = kSignoutDuringProfileDeletion
+  kMaxValue = kUserDisabledAllowChromeSignIn
 };
 
 // Enum values which enumerates all access points where sign in could be
@@ -225,6 +232,13 @@ enum class AccessPoint : int {
   // reauthentication is necessary to sign in with or save a passkey from the
   // Google Password Manager.
   ACCESS_POINT_WEBAUTHN_MODAL_DIALOG = 65,
+  // Signin button from the profile menu that is labelled as a "Signin" button,
+  // but is followed by a Sync confirmation screen as a promo.
+  ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN_WITH_SYNC_PROMO = 66,
+  // Signin using the account menu.
+  ACCESS_POINT_ACCOUNT_MENU = 67,
+  // Signin via Product Specifications.
+  ACCESS_POINT_PRODUCT_SPECIFICATIONS = 68,
 
   // Add values above this line with a corresponding label to the
   // "SigninAccessPoint" enum in
@@ -493,22 +507,31 @@ enum class FetchAccountCapabilitiesFromSystemLibraryResult {
 };
 
 // Tracks type of the button that was presented to the user.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.signin.metrics
 enum class SyncButtonsType : int {
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
   kSyncEqualWeighted = 0,
   kSyncNotEqualWeighted = 1,
-  kHistorySyncEqualWeighted = 2,
+
+  // kHistorySyncEqualWeighted = 2,  // no longer used, split into
+  // `kHistorySyncEqualWeightedFromDeadline` and
+  // `kHistorySyncEqualWeightedFromCapability`
+
   kHistorySyncNotEqualWeighted = 3,
 
   // Either use one of the two or kSyncEqualWeighted.
   kSyncEqualWeightedFromDeadline = 4,
   kSyncEqualWeightedFromCapability = 5,
 
-  kMaxValue = kSyncEqualWeightedFromCapability,
+  kHistorySyncEqualWeightedFromDeadline = 6,
+  kHistorySyncEqualWeightedFromCapability = 7,
+
+  kMaxValue = kHistorySyncEqualWeightedFromCapability,
 };
 
 // Tracks type of the button that was clicked by the user.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.signin.metrics
 enum class SyncButtonClicked : int {
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
@@ -525,6 +548,16 @@ enum class SyncButtonClicked : int {
   kSyncSettingsUnknownWeighted = 10,
   kMaxValue = kSyncSettingsUnknownWeighted,
 };
+
+#if BUILDFLAG(IS_IOS)
+// The reason an alert dialog is shown when the user is about to sign out.
+enum class SignoutDataLossAlertReason : int {
+  // The user has unsynced data that will be lost on signout.
+  kSignoutWithUnsyncedData = 0,
+  // A managed user is signing out and the data will be cleared from the device.
+  kSignoutWithClearDataForManagedUser = 1,
+};
+#endif  // BUILDFLAG(IS_IOS)
 
 // -----------------------------------------------------------------------------
 // Histograms
@@ -616,6 +649,16 @@ void RecordRefreshTokenUpdatedFromSource(bool refresh_token_is_valid,
 
 // Records the source that revoked a refresh token.
 void RecordRefreshTokenRevokedFromSource(SourceForRefreshTokenOperation source);
+
+#if BUILDFLAG(IS_IOS)
+// Records whether the user choose to "Sign Out" or "Cancel" when an alert for
+// data loss is displayed.
+void RecordSignoutConfirmationFromDataLossAlert(
+    SignoutDataLossAlertReason reason,
+    bool signout_confirmed);
+// Records whether the user chooses to "Clear Data" or "Keep Data" on signout.
+void RecordSignoutForceClearDataChoice(bool force_clear_data);
+#endif  // BUILDFLAG(IS_IOS)
 
 // -----------------------------------------------------------------------------
 // User actions

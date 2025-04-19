@@ -867,13 +867,6 @@ void TargetHandler::SetAttachedTargetsOfType(
     const base::flat_set<scoped_refptr<DevToolsAgentHost>>& new_hosts,
     const std::string& type) {
   DCHECK(!type.empty());
-  // Ignore page targets coming from frame auto-attachers when client has
-  // opted into supporting the tab targets. These are portals and are now
-  // reported via the tab target.
-  if (!auto_attach_portals_ && type == DevToolsAgentHost::kTypePage) {
-    DCHECK(source == auto_attacher_);
-    return;
-  }
   auto old_sessions = auto_attached_sessions_;
   for (auto& entry : old_sessions) {
     scoped_refptr<DevToolsAgentHost> host(entry.first);
@@ -934,11 +927,6 @@ bool TargetHandler::ShouldThrottlePopups() const {
 
 void TargetHandler::DisableAutoAttachOfServiceWorkers() {
   auto_attach_service_workers_ = false;
-}
-
-void TargetHandler::DisableAutoAttachOfPortals() {
-  DCHECK(access_mode_ != AccessMode::kBrowser);
-  auto_attach_portals_ = false;
 }
 
 Response TargetHandler::FindSession(Maybe<std::string> session_id,
@@ -1009,7 +997,7 @@ void TargetHandler::SetAutoAttach(
   }
   if (!auto_attach && filter && !filter->empty()) {
     callback->sendFailure(Response::InvalidParams(
-        "Target filter should be empty whien disabling auto-attach"));
+        "Target filter should be empty when disabling auto-attach"));
     return;
   }
   auto_attach_target_filter_ =
@@ -1442,12 +1430,21 @@ void TargetHandler::DisposeBrowserContext(
 void TargetHandler::ApplyNetworkContextParamsOverrides(
     BrowserContext* browser_context,
     network::mojom::NetworkContextParams* context_params) {
-  // Under certain conditions, storage partition is created synchronously for
+  //   Note #1: below we clear the proxy config client receiver,
+  // and effectively disable proxy updates based on the OS settings.
+  // This way our "initial proxy config" is not overridden by any
+  // OS settings and stays the same.
+  //   This relies on ApplyNetworkContextParamsOverrides() being called
+  // after the client receiver was setup for the network context.
+  //
+  //   Note #2: Under certain conditions, storage partition is created
+  // synchronously for
   // the browser context. Account for this use case.
   if (pending_proxy_config_) {
     context_params->initial_proxy_config =
         net::ProxyConfigWithAnnotation(std::move(*pending_proxy_config_),
                                        kSettingsProxyConfigTrafficAnnotation);
+    context_params->proxy_config_client_receiver = mojo::NullReceiver();
     pending_proxy_config_.reset();
     return;
   }
@@ -1455,6 +1452,7 @@ void TargetHandler::ApplyNetworkContextParamsOverrides(
   if (it != contexts_with_overridden_proxy_.end()) {
     context_params->initial_proxy_config = net::ProxyConfigWithAnnotation(
         std::move(it->second), kSettingsProxyConfigTrafficAnnotation);
+    context_params->proxy_config_client_receiver = mojo::NullReceiver();
     contexts_with_overridden_proxy_.erase(browser_context->UniqueId());
   }
 }

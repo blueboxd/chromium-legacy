@@ -74,6 +74,8 @@ static_library("router") {
     "presentation/chrome_local_presentation_manager_factory.h",
   ]
   public_deps = [
+    "//chrome/browser:browser_public_dependencies",
+    "//chrome/browser/media/webrtc",
     "//components/media_router/browser",
     "//components/media_router/common",
     "//components/media_router/common/mojom:media_router",
@@ -251,8 +253,6 @@ if (!is_android) {
       "test/mock_dns_sd_registry.h",
       "test/mock_mojo_media_router.cc",
       "test/mock_mojo_media_router.h",
-      "test/noop_dual_media_sink_service.cc",
-      "test/noop_dual_media_sink_service.h",
       "test/provider_test_helpers.cc",
       "test/provider_test_helpers.h",
     ]

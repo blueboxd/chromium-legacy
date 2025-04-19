@@ -28,6 +28,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/core/css/element_rule_collector.h"
 
 #include "base/containers/span.h"
@@ -512,7 +517,7 @@ bool ElementRuleCollector::CollectMatchingRulesForListInternal(
     }
 
     const auto& selector = rule_data.Selector();
-    if (UNLIKELY(part_request && part_request->for_shadow_pseudo)) {
+    if (part_request && part_request->for_shadow_pseudo) [[unlikely]] {
       if (!selector.IsAllowedAfterPart()) {
         DCHECK_EQ(selector.GetPseudoType(), CSSSelector::kPseudoPart);
         continue;
@@ -593,7 +598,8 @@ bool ElementRuleCollector::CollectMatchingRulesForListInternal(
         if (!style_container_candidate) {
           if (pseudo_style_request_.pseudo_id == kPseudoIdNone) {
             style_container_candidate =
-                context_.GetElement().ParentOrShadowHostElement();
+                ContainerQueryEvaluator::ParentContainerCandidateElement(
+                    context_.GetElement());
           } else {
             style_container_candidate = &context_.GetElement();
           }
@@ -898,7 +904,8 @@ DISABLE_CFI_PERF bool ElementRuleCollector::CollectMatchingRulesInternal(
       }
     }
   }
-  if (SelectorChecker::MatchesFocusPseudoClass(element)) {
+  if (SelectorChecker::MatchesFocusPseudoClass(
+          element, /*has_scroll_marker_pseudo=*/false)) {
     for (const auto bundle : match_request.AllRuleSets()) {
       if (CollectMatchingRulesForList<stop_at_first_match>(
               bundle.rule_set->FocusPseudoClassRules(), match_request,

@@ -7,6 +7,8 @@
 
 #include "ash/accelerators/keyboard_code_util.h"
 #include "ash/accessibility/magnifier/docked_magnifier_controller.h"
+#include "ash/annotator/annotations_overlay_controller.h"
+#include "ash/annotator/annotator_controller.h"
 #include "ash/capture_mode/capture_mode_bar_view.h"
 #include "ash/capture_mode/capture_mode_constants.h"
 #include "ash/capture_mode/capture_mode_controller.h"
@@ -23,11 +25,9 @@
 #include "ash/capture_mode/capture_mode_util.h"
 #include "ash/capture_mode/key_combo_view.h"
 #include "ash/capture_mode/pointer_highlight_layer.h"
-#include "ash/capture_mode/recording_overlay_controller.h"
 #include "ash/capture_mode/video_recording_watcher.h"
 #include "ash/constants/ash_features.h"
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/projector/projector_controller_impl.h"
 #include "ash/public/cpp/capture_mode/capture_mode_test_api.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -901,7 +901,7 @@ TEST_F(CaptureModeDemoToolsTest, DragAndDropIconOnShelfTest) {
   ASSERT_TRUE(button->FireDragTimerForTest());
   button->FireRippleActivationTimerForTest();
 
-  ui::GestureEventDetails event_details(ui::ET_GESTURE_LONG_PRESS);
+  ui::GestureEventDetails event_details(ui::EventType::kGestureLongPress);
   ui::GestureEvent long_press(button_center_point.x(), button_center_point.y(),
                               0, ui::EventTimeForNow(), event_details);
   event_generator->Dispatch(&long_press);
@@ -1403,18 +1403,18 @@ TEST_F(ProjectorCaptureModeDemoToolsTest,
   };
 
   CaptureModeTestApi test_api;
-  RecordingOverlayController* recording_overlay_controller =
-      test_api.GetRecordingOverlayController();
+  AnnotationsOverlayController* annotations_overlay_controller =
+      test_api.GetAnnotationsOverlayController();
 
-  auto* projector_controller = ProjectorControllerImpl::Get();
-  projector_controller->EnableAnnotatorTool();
-  EXPECT_TRUE(recording_overlay_controller->is_enabled());
+  auto* annotator_controller = Shell::Get()->annotator_controller();
+  annotator_controller->EnableAnnotatorTool();
+  EXPECT_TRUE(annotations_overlay_controller->is_enabled());
   mouse_highlight_test(/*annotating=*/true);
   touch_highlight_test(/*annotating=*/true);
 
-  projector_controller->ResetTools();
+  annotator_controller->ResetTools();
   EXPECT_TRUE(capture_mode_controller->is_recording_in_progress());
-  EXPECT_FALSE(recording_overlay_controller->is_enabled());
+  EXPECT_FALSE(annotations_overlay_controller->is_enabled());
   mouse_highlight_test(/*annotating=*/false);
   touch_highlight_test(/*annotating=*/false);
 }

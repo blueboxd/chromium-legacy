@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/raw_ptr.h"
-#include "base/memory/raw_ptr_exclusion.h"
+#include "base/memory/stack_allocated.h"
 #include "base/strings/string_util.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
@@ -87,12 +86,13 @@ class WebAppTabStripBrowserTest : public WebAppBrowserTestBase {
   }
 
   struct App {
+    STACK_ALLOCATED();
+
+   public:
     webapps::AppId id;
-    raw_ptr<Browser> browser;
-    raw_ptr<BrowserView> browser_view;
-    // This field is not a raw_ptr<> because of missing |.get()| in
-    // not-rewritten platform specific code.
-    RAW_PTR_EXCLUSION content::WebContents* web_contents;
+    Browser* browser;
+    BrowserView* browser_view;
+    content::WebContents* web_contents;
   };
 
   App InstallAndLaunch() {
@@ -199,6 +199,7 @@ IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest, PopOutTabOnInstall) {
   NavigateViaLinkClickToURLAndWait(browser(), start_url);
 
   // Install the site with the user display mode set to kTabbed.
+  Browser* app_browser;
   webapps::AppId app_id;
   {
     ui_test_utils::BrowserChangeObserver app_browser_observer(
@@ -227,13 +228,14 @@ IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest, PopOutTabOnInstall) {
             }),
         FallbackBehavior::kAllowFallbackDataAlways);
     run_loop.Run();
-    ui_test_utils::WaitForBrowserSetLastActive(app_browser_observer.Wait());
+    app_browser = app_browser_observer.Wait();
+    ASSERT_TRUE(app_browser);
+    EXPECT_NE(app_browser, browser());
+    ui_test_utils::WaitUntilBrowserBecomeActive(app_browser);
   }
 
   // After installing a tabbed display mode app the install page should pop out
   // to a standalone app window.
-  Browser* app_browser = BrowserList::GetInstance()->GetLastActive();
-  EXPECT_NE(app_browser, browser());
   EXPECT_TRUE(AppBrowserController::IsForWebApp(app_browser, app_id));
   EXPECT_EQ(
       browser()->tab_strip_model()->GetActiveWebContents()->GetVisibleURL(),
@@ -654,7 +656,7 @@ IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest, MoveTabsToNewWindow) {
       embedded_test_server()->GetURL("/web_apps/tab_strip_customizations.html");
   webapps::AppId app_id = InstallTestWebApp(start_url);
   Browser* app_browser = LaunchWebAppBrowser(app_id);
-  ui_test_utils::WaitForBrowserSetLastActive(app_browser);
+  ui_test_utils::WaitUntilBrowserBecomeActive(app_browser);
 
   chrome::NewTab(app_browser);
 
@@ -663,12 +665,13 @@ IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest, MoveTabsToNewWindow) {
   ui_test_utils::BrowserChangeObserver new_browser_observer(
       nullptr, ui_test_utils::BrowserChangeObserver::ChangeType::kAdded);
   chrome::MoveTabsToNewWindow(app_browser, {1});
-  ui_test_utils::WaitForBrowserSetLastActive(new_browser_observer.Wait());
+  Browser* new_browser = new_browser_observer.Wait();
+  ASSERT_TRUE(new_browser);
+  ui_test_utils::WaitUntilBrowserBecomeActive(new_browser);
 
   EXPECT_EQ(initial_browser_count + 1, BrowserList::GetInstance()->size());
 
   // Check that the tab made it to a new window.
-  Browser* new_browser = BrowserList::GetInstance()->GetLastActive();
   EXPECT_NE(app_browser, new_browser);
   EXPECT_TRUE(AppBrowserController::IsForWebApp(new_browser, app_id));
   EXPECT_EQ(app_browser->tab_strip_model()->count(), 1);
@@ -687,15 +690,16 @@ IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest, MoveTabsToExistingWindow) {
       embedded_test_server()->GetURL("/web_apps/tab_strip_customizations.html");
   webapps::AppId app_id = InstallTestWebApp(start_url);
   Browser* app_browser = LaunchWebAppBrowser(app_id);
-  ui_test_utils::WaitForBrowserSetLastActive(app_browser);
+  ui_test_utils::WaitUntilBrowserBecomeActive(app_browser);
   chrome::NewTab(app_browser);
 
   // Open a second app browser window.
   ui_test_utils::BrowserChangeObserver app_browser_observer(
       nullptr, ui_test_utils::BrowserChangeObserver::ChangeType::kAdded);
   chrome::MoveTabsToNewWindow(app_browser, {1});
-  ui_test_utils::WaitForBrowserSetLastActive(app_browser_observer.Wait());
-  Browser* app_browser2 = BrowserList::GetInstance()->GetLastActive();
+  Browser* app_browser2 = app_browser_observer.Wait();
+  ASSERT_TRUE(app_browser2);
+  ui_test_utils::WaitUntilBrowserBecomeActive(app_browser2);
 
   EXPECT_EQ(app_browser->tab_strip_model()->count(), 1);
   EXPECT_EQ(app_browser2->tab_strip_model()->count(), 2);
@@ -971,11 +975,6 @@ IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest,
   EXPECT_EQ(tab_strip_model->active_index(), 0);
 
   BrowserView* view = BrowserView::GetBrowserViewForBrowser(app_browser);
-  TabStripController* controller = view->tabstrip()->controller();
-
-  // The home tab is the only tab open so it can be closed.
-  EXPECT_TRUE(
-      controller->BeforeCloseTab(0, CloseTabSource::CLOSE_TAB_FROM_MOUSE));
 
   // Open another tab.
   OpenUrlAndWait(app_browser,
@@ -983,11 +982,19 @@ IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest,
   EXPECT_EQ(tab_strip_model->count(), 2);
 
   // Home tab should not be closable.
-  EXPECT_FALSE(
-      controller->BeforeCloseTab(0, CloseTabSource::CLOSE_TAB_FROM_MOUSE));
+  view->tabstrip()->CloseTab(view->tabstrip()->tab_at(0),
+                             CloseTabSource::CLOSE_TAB_FROM_MOUSE);
+  EXPECT_EQ(tab_strip_model->count(), 2);
+
   // Non home tab should be closable.
-  EXPECT_TRUE(
-      controller->BeforeCloseTab(1, CloseTabSource::CLOSE_TAB_FROM_MOUSE));
+  view->tabstrip()->CloseTab(view->tabstrip()->tab_at(1),
+                             CloseTabSource::CLOSE_TAB_FROM_MOUSE);
+  EXPECT_EQ(tab_strip_model->count(), 1);
+
+  // The home tab is the only tab open so it can be closed.
+  view->tabstrip()->CloseTab(view->tabstrip()->tab_at(0),
+                             CloseTabSource::CLOSE_TAB_FROM_MOUSE);
+  EXPECT_EQ(tab_strip_model->count(), 0);
 }
 
 // Tests that the home tab is not closable unless it is the only tab left in the

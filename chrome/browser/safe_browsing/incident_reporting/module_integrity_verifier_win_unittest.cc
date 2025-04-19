@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/356368033): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/safe_browsing/incident_reporting/module_integrity_verifier_win.h"
 
 #include <stddef.h>
@@ -18,6 +23,7 @@
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_span.h"
 #include "base/native_library.h"
 #include "base/ranges/algorithm.h"
 #include "base/scoped_native_library.h"
@@ -68,7 +74,7 @@ class ScopedModuleModifier {
   }
 
  private:
-  base::span<uint8_t> modification_region_;
+  base::raw_span<uint8_t> modification_region_;
 };
 
 }  // namespace

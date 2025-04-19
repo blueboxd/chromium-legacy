@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "components/viz/service/frame_sinks/video_capture/video_capture_overlay.h"
 
 #include <array>
@@ -65,7 +70,7 @@ class VideoCaptureOverlayTest : public testing::Test {
   VideoCaptureOverlayTest(const VideoCaptureOverlayTest&) = delete;
   VideoCaptureOverlayTest& operator=(const VideoCaptureOverlayTest&) = delete;
 
-  NiceMock<MockFrameSource>* frame_source() { return &frame_source_; }
+  NiceMock<MockFrameSource>& frame_source() { return frame_source_; }
 
   std::unique_ptr<VideoCaptureOverlay> CreateOverlay() {
     mojo::Remote<mojom::FrameSinkVideoCaptureOverlay> overlay_remote;
@@ -144,7 +149,7 @@ TEST_F(VideoCaptureOverlayTest, ReportsLostMojoConnection) {
   ASSERT_TRUE(overlay_remote);
   RunUntilIdle();  // Propagate mojo tasks.
 
-  EXPECT_CALL(*frame_source(), OnOverlayConnectionLost(&overlay));
+  EXPECT_CALL(frame_source(), OnOverlayConnectionLost(&overlay));
   overlay_remote.reset();
   RunUntilIdle();  // Propagate mojo tasks.
 }
@@ -233,7 +238,7 @@ TEST_F(VideoCaptureOverlayTest, CalculateBlendInformation_GoldenCase) {
 // set the image.
 TEST_F(VideoCaptureOverlayTest, DoesNotRenderWithoutImage) {
   constexpr gfx::Size kSize = gfx::Size(100, 75);
-  EXPECT_CALL(*frame_source(), GetSourceSize()).WillRepeatedly(Return(kSize));
+  EXPECT_CALL(frame_source(), GetSourceSize()).WillRepeatedly(Return(kSize));
   std::unique_ptr<VideoCaptureOverlay> overlay = CreateOverlay();
 
   // The overlay does not have an image yet, so the renderer should be null.
@@ -265,7 +270,7 @@ TEST_F(VideoCaptureOverlayTest, DoesNotRenderWithoutImage) {
 // to something outside the frame's content region.
 TEST_F(VideoCaptureOverlayTest, DoesNotRenderIfCompletelyOutOfBounds) {
   constexpr gfx::Size kSize = gfx::Size(100, 75);
-  EXPECT_CALL(*frame_source(), GetSourceSize()).WillRepeatedly(Return(kSize));
+  EXPECT_CALL(frame_source(), GetSourceSize()).WillRepeatedly(Return(kSize));
   std::unique_ptr<VideoCaptureOverlay> overlay = CreateOverlay();
 
   // The overlay does not have an image yet, so the renderer should be null.
@@ -327,7 +332,7 @@ TEST_F(VideoCaptureOverlayTest, DoesNotRenderIfCompletelyOutOfBounds) {
 TEST_F(VideoCaptureOverlayTest, DoesNotRenderIfEmptyBlitRect) {
   constexpr gfx::Size kSize = gfx::Size(100, 200);
   constexpr gfx::Rect kFrameRect = gfx::Rect(kSize);
-  EXPECT_CALL(*frame_source(), GetSourceSize()).WillRepeatedly(Return(kSize));
+  EXPECT_CALL(frame_source(), GetSourceSize()).WillRepeatedly(Return(kSize));
   std::unique_ptr<VideoCaptureOverlay> overlay = CreateOverlay();
 
   overlay->SetImageAndBounds(MakeTestBitmap(0), gfx::RectF(1, 1, 1, 1));
@@ -347,7 +352,7 @@ TEST_F(VideoCaptureOverlayTest, DoesNotRenderIfEmptyBlitRect) {
 TEST_F(VideoCaptureOverlayTest,
        DoesNotDoCombinedRenderIfNoOverlaysWouldRender) {
   constexpr gfx::Size kSize = gfx::Size(100, 75);
-  EXPECT_CALL(*frame_source(), GetSourceSize()).WillRepeatedly(Return(kSize));
+  EXPECT_CALL(frame_source(), GetSourceSize()).WillRepeatedly(Return(kSize));
   const std::unique_ptr<VideoCaptureOverlay> overlay0 = CreateOverlay();
   const std::unique_ptr<VideoCaptureOverlay> overlay1 = CreateOverlay();
   const std::vector<VideoCaptureOverlay*> overlays{overlay0.get(),
@@ -613,7 +618,7 @@ constexpr gfx::Size VideoCaptureOverlayRenderTest::kSourceSize;
 TEST_P(VideoCaptureOverlayRenderTest, FullCover_NoScaling) {
   StrictMock<MockFrameSource> frame_source;
   mojo::Remote<mojom::FrameSinkVideoCaptureOverlay> overlay_remote;
-  VideoCaptureOverlay overlay(&frame_source,
+  VideoCaptureOverlay overlay(frame_source,
                               overlay_remote.BindNewPipeAndPassReceiver());
 
   EXPECT_CALL(frame_source, GetSourceSize())
@@ -646,7 +651,7 @@ TEST_P(VideoCaptureOverlayRenderTest, FullCover_NoScaling) {
 TEST_P(VideoCaptureOverlayRenderTest, FullCover_WithScaling) {
   StrictMock<MockFrameSource> frame_source;
   mojo::Remote<mojom::FrameSinkVideoCaptureOverlay> overlay_remote;
-  VideoCaptureOverlay overlay(&frame_source,
+  VideoCaptureOverlay overlay(frame_source,
                               overlay_remote.BindNewPipeAndPassReceiver());
 
   EXPECT_CALL(frame_source, GetSourceSize())
@@ -682,7 +687,7 @@ TEST_P(VideoCaptureOverlayRenderTest, MovesAround) {
   EXPECT_CALL(frame_source, GetSourceSize())
       .WillRepeatedly(Return(kSourceSize));
   mojo::Remote<mojom::FrameSinkVideoCaptureOverlay> overlay_remote;
-  VideoCaptureOverlay overlay(&frame_source,
+  VideoCaptureOverlay overlay(frame_source,
                               overlay_remote.BindNewPipeAndPassReceiver());
 
   const SkBitmap test_bitmap = MakeTestBitmap(0);
@@ -750,7 +755,7 @@ TEST_P(VideoCaptureOverlayRenderTest, ClipsToContentBounds) {
   EXPECT_CALL(frame_source, GetSourceSize())
       .WillRepeatedly(Return(kSourceSize));
   mojo::Remote<mojom::FrameSinkVideoCaptureOverlay> overlay_remote;
-  VideoCaptureOverlay overlay(&frame_source,
+  VideoCaptureOverlay overlay(frame_source,
                               overlay_remote.BindNewPipeAndPassReceiver());
 
   const SkBitmap test_bitmap = MakeTestBitmap(0);
@@ -801,7 +806,7 @@ TEST_P(VideoCaptureOverlayRenderTest, HandlesEmptySubRegion) {
   EXPECT_CALL(frame_source, GetSourceSize())
       .WillRepeatedly(Return(kSourceSize));
   mojo::Remote<mojom::FrameSinkVideoCaptureOverlay> overlay_remote;
-  VideoCaptureOverlay overlay(&frame_source,
+  VideoCaptureOverlay overlay(frame_source,
                               overlay_remote.BindNewPipeAndPassReceiver());
 
   const SkBitmap test_bitmap = MakeTestBitmap(0);
@@ -829,7 +834,7 @@ TEST_P(VideoCaptureOverlayRenderTest, ClipsToSubregionBounds) {
   EXPECT_CALL(frame_source, GetSourceSize())
       .WillRepeatedly(Return(kSourceSize));
   mojo::Remote<mojom::FrameSinkVideoCaptureOverlay> overlay_remote;
-  VideoCaptureOverlay overlay(&frame_source,
+  VideoCaptureOverlay overlay(frame_source,
                               overlay_remote.BindNewPipeAndPassReceiver());
 
   const SkBitmap test_bitmap = MakeTestBitmap(0);
@@ -878,7 +883,7 @@ TEST_P(VideoCaptureOverlayRenderTest, ScalesToContentRegion) {
   EXPECT_CALL(frame_source, GetSourceSize())
       .WillRepeatedly(Return(kSourceSize));
   mojo::Remote<mojom::FrameSinkVideoCaptureOverlay> overlay_remote;
-  VideoCaptureOverlay overlay(&frame_source,
+  VideoCaptureOverlay overlay(frame_source,
                               overlay_remote.BindNewPipeAndPassReceiver());
 
   const SkBitmap test_bitmap = MakeTestBitmap(0);

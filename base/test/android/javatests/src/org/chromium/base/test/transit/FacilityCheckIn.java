@@ -6,14 +6,12 @@ package org.chromium.base.test.transit;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.base.test.transit.ConditionWaiter.ConditionWait;
-
 import java.util.Collections;
 import java.util.List;
 
 /** A {@link Transition} into a {@link Facility}. */
 class FacilityCheckIn extends Transition {
-    private final Facility mFacility;
+    private final Facility<?> mFacility;
 
     /**
      * Constructor. FacilityCheckIn is instantiated to enter a {@link Facility}.
@@ -23,7 +21,7 @@ class FacilityCheckIn extends Transition {
      * @param trigger the action that triggers the transition into the facility. e.g. clicking a
      *     View.
      */
-    FacilityCheckIn(Facility facility, TransitionOptions options, @Nullable Trigger trigger) {
+    FacilityCheckIn(Facility<?> facility, TransitionOptions options, @Nullable Trigger trigger) {
         super(options, Collections.EMPTY_LIST, List.of(facility), trigger);
         mFacility = facility;
     }
@@ -31,11 +29,5 @@ class FacilityCheckIn extends Transition {
     @Override
     public String toDebugString() {
         return String.format("FacilityCheckIn %d (enter %s)", mId, mFacility);
-    }
-
-    @Override
-    protected List<ConditionWait> createWaits() {
-        return calculateConditionWaits(
-                Elements.EMPTY, mFacility.getElements(), getTransitionConditions());
     }
 }

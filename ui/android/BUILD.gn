@@ -32,6 +32,7 @@ component("android") {
     "overscroll_refresh.h",
     "overscroll_refresh_handler.cc",
     "overscroll_refresh_handler.h",
+    "progress_bar_config.h",
     "resources/nine_patch_resource.cc",
     "resources/nine_patch_resource.h",
     "resources/resource.cc",
@@ -40,6 +41,7 @@ component("android") {
     "resources/resource_manager.h",
     "resources/resource_manager_impl.cc",
     "resources/resource_manager_impl.h",
+    "resources/ui_resource_provider.cc",
     "resources/ui_resource_provider.h",
     "screen_android.h",
     "ui_android_export.h",
@@ -67,6 +69,7 @@ component("android") {
     "//components/viz/host",
     "//services/viz/public/mojom",
     "//skia",
+    "//third_party/android_opengl/etc1",
     "//third_party/blink/public:blink_headers",
     "//ui/base",
     "//ui/base/cursor",
@@ -254,6 +257,7 @@ java_group("ui_java") {
 # unused JNI functions.
 android_library("ui_utils_java") {
   sources = [
+    "java/src/org/chromium/ui/KeyboardUtils.java",
     "java/src/org/chromium/ui/KeyboardVisibilityDelegate.java",
     "java/src/org/chromium/ui/MotionEventUtils.java",
     "java/src/org/chromium/ui/UiUtils.java",
@@ -280,6 +284,8 @@ android_library("ui_no_recycler_view_java") {
     "java/src/org/chromium/ui/DropdownPopupWindowInterface.java",
     "java/src/org/chromium/ui/ElidedUrlTextView.java",
     "java/src/org/chromium/ui/HorizontalListDividerDrawable.java",
+    "java/src/org/chromium/ui/InsetObserver.java",
+    "java/src/org/chromium/ui/InsetsRectProvider.java",
     "java/src/org/chromium/ui/LayoutInflaterUtils.java",
     "java/src/org/chromium/ui/OverscrollRefreshHandler.java",
     "java/src/org/chromium/ui/UiSwitches.java",
@@ -404,12 +410,14 @@ android_library("ui_no_recycler_view_java") {
     "java/src/org/chromium/ui/resources/statics/StaticResource.java",
     "java/src/org/chromium/ui/resources/statics/StaticResourceLoader.java",
     "java/src/org/chromium/ui/resources/system/SystemResourceLoader.java",
+    "java/src/org/chromium/ui/text/DownloadableFontTextAppearanceSpan.java",
     "java/src/org/chromium/ui/text/EmptyTextWatcher.java",
     "java/src/org/chromium/ui/text/NoUnderlineClickableSpan.java",
     "java/src/org/chromium/ui/text/SpanApplier.java",
     "java/src/org/chromium/ui/util/AccessibilityUtil.java",
     "java/src/org/chromium/ui/util/AttrUtils.java",
     "java/src/org/chromium/ui/util/ColorUtils.java",
+    "java/src/org/chromium/ui/util/StyleUtils.java",
     "java/src/org/chromium/ui/util/TokenHolder.java",
     "java/src/org/chromium/ui/util/ValueUtils.java",
     "java/src/org/chromium/ui/util/WindowInsetsUtils.java",
@@ -508,10 +516,11 @@ robolectric_library("ui_junit_test_support") {
 android_library("ui_java_test_support") {
   testonly = true
   sources = [
+    "javatests/src/org/chromium/ui/test/transit/SoftKeyboardCondition.java",
+    "javatests/src/org/chromium/ui/test/transit/SoftKeyboardElement.java",
     "javatests/src/org/chromium/ui/test/util/BlankUiTestActivity.java",
     "javatests/src/org/chromium/ui/test/util/BlankUiTestActivityTestCase.java",
     "javatests/src/org/chromium/ui/test/util/DeviceRestriction.java",
-    "javatests/src/org/chromium/ui/test/util/DisableAnimationsTestRule.java",
     "javatests/src/org/chromium/ui/test/util/GmsCoreVersionRestriction.java",
     "javatests/src/org/chromium/ui/test/util/MockitoHelper.java",
     "javatests/src/org/chromium/ui/test/util/NightModeTestUtils.java",
@@ -528,6 +537,7 @@ android_library("ui_java_test_support") {
     ":ui_java",
     "//base:base_java",
     "//base:base_java_test_support",
+    "//base/test:public_transit_java",
     "//components/browser_ui/modaldialog/android:java",
     "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
 
@@ -550,10 +560,12 @@ android_library("ui_java_test_support") {
 android_resources("ui_junit_resources") {
   testonly = true
   sources = [
+    "junit/res/font/custom_font.xml",
     "junit/res/layout/inflated_view.xml",
     "junit/res/layout/layout_view_builder_test.xml",
     "junit/res/layout/main_view.xml",
     "junit/res/values/strings.xml",
+    "junit/res/values/styles.xml",
   ]
   android_manifest = "junit/AndroidManifest.xml"
 }
@@ -562,9 +574,13 @@ robolectric_library("ui_android_junit_tests") {
   testonly = true
   resources_package = "org.chromium.ui"
   sources = [
+    "java/src/org/chromium/ui/text/DownloadableFontTextAppearanceSpanTest.java",
     "junit/src/org/chromium/ui/AsyncViewProviderTest.java",
     "junit/src/org/chromium/ui/AsyncViewStubTest.java",
+    "junit/src/org/chromium/ui/InsetObserverTest.java",
+    "junit/src/org/chromium/ui/InsetsRectProviderTest.java",
     "junit/src/org/chromium/ui/animation/AnimationPerformanceTrackerUnitTest.java",
+    "junit/src/org/chromium/ui/base/ActivityKeyboardVisibilityDelegateUnitTest.java",
     "junit/src/org/chromium/ui/base/ApplicationViewportInsetSupplierTest.java",
     "junit/src/org/chromium/ui/base/ClipboardTest.java",
     "junit/src/org/chromium/ui/base/EventForwarderTest.java",
@@ -597,6 +613,7 @@ robolectric_library("ui_android_junit_tests") {
     "junit/src/org/chromium/ui/shadows/ShadowAppCompatResourcesTest.java",
     "junit/src/org/chromium/ui/text/SpanApplierTest.java",
     "junit/src/org/chromium/ui/util/ColorUtilsTest.java",
+    "junit/src/org/chromium/ui/util/StyleUtilsTest.java",
     "junit/src/org/chromium/ui/util/TokenHolderTest.java",
     "junit/src/org/chromium/ui/util/WindowInsetsUtilsUnitTest.java",
     "junit/src/org/chromium/ui/widget/AnchoredPopupWindowTest.java",
@@ -723,11 +740,13 @@ android_library("ui_unit_device_javatests") {
     "//components/browser_ui/widget/android:java_resources",
     "//content/public/test/android:content_java_test_support",
     "//third_party/androidx:androidx_annotation_annotation_java",
+    "//third_party/androidx:androidx_core_core_java",
     "//third_party/androidx:androidx_test_core_java",
     "//third_party/androidx:androidx_test_runner_java",
     "//third_party/hamcrest:hamcrest_java",
     "//third_party/hamcrest:hamcrest_library_java",
     "//third_party/junit",
+    "//third_party/mockito:mockito_java",
   ]
 }
 

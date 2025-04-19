@@ -23,6 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_RENDERING_CONTEXT_BASE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_RENDERING_CONTEXT_BASE_H_
 
@@ -46,8 +51,6 @@
 #include "third_party/blink/renderer/core/layout/content_change_type.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
-#include "third_party/blink/renderer/core/typed_arrays/nadc_typed_array_view.h"
-#include "third_party/blink/renderer/core/typed_arrays/typed_flexible_array_buffer_view.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_extension_name.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_texture.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_uniform_location.h"
@@ -203,10 +206,9 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   void bufferData(GLenum target,
                   MaybeShared<DOMArrayBufferView> data,
                   GLenum usage);
-  void bufferSubData(GLenum target, int64_t offset, DOMArrayBufferBase* data);
   void bufferSubData(GLenum target,
                      int64_t offset,
-                     const FlexibleArrayBufferView& data);
+                     base::span<const uint8_t> data);
 
   GLenum checkFramebufferStatus(GLenum target);
   void clear(GLbitfield mask);
@@ -496,71 +498,50 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                      ExceptionState&);
 
   void uniform1f(const WebGLUniformLocation*, GLfloat x);
-  void uniform1fv(const WebGLUniformLocation*, NADCTypedArrayView<GLfloat>);
-  void uniform1fv(const WebGLUniformLocation*, Vector<GLfloat>&);
+  void uniform1fv(const WebGLUniformLocation*, base::span<const GLfloat>);
   void uniform1i(const WebGLUniformLocation*, GLint x);
-  void uniform1iv(const WebGLUniformLocation*, NADCTypedArrayView<GLint>);
-  void uniform1iv(const WebGLUniformLocation*, Vector<GLint>&);
+  void uniform1iv(const WebGLUniformLocation*, base::span<const GLint>);
   void uniform2f(const WebGLUniformLocation*, GLfloat x, GLfloat y);
-  void uniform2fv(const WebGLUniformLocation*, NADCTypedArrayView<GLfloat>);
-  void uniform2fv(const WebGLUniformLocation*, Vector<GLfloat>&);
+  void uniform2fv(const WebGLUniformLocation*, base::span<const GLfloat>);
   void uniform2i(const WebGLUniformLocation*, GLint x, GLint y);
-  void uniform2iv(const WebGLUniformLocation*, NADCTypedArrayView<GLint>);
-  void uniform2iv(const WebGLUniformLocation*, Vector<GLint>&);
+  void uniform2iv(const WebGLUniformLocation*, base::span<const GLint>);
   void uniform3f(const WebGLUniformLocation*, GLfloat x, GLfloat y, GLfloat z);
-  void uniform3fv(const WebGLUniformLocation*, NADCTypedArrayView<GLfloat>);
-  void uniform3fv(const WebGLUniformLocation*, Vector<GLfloat>&);
+  void uniform3fv(const WebGLUniformLocation*, base::span<const GLfloat>);
   void uniform3i(const WebGLUniformLocation*, GLint x, GLint y, GLint z);
-  void uniform3iv(const WebGLUniformLocation*, NADCTypedArrayView<GLint>);
-  void uniform3iv(const WebGLUniformLocation*, Vector<GLint>&);
+  void uniform3iv(const WebGLUniformLocation*, base::span<const GLint>);
   void uniform4f(const WebGLUniformLocation*,
                  GLfloat x,
                  GLfloat y,
                  GLfloat z,
                  GLfloat w);
-  void uniform4fv(const WebGLUniformLocation*, NADCTypedArrayView<GLfloat>);
-  void uniform4fv(const WebGLUniformLocation*, Vector<GLfloat>&);
+  void uniform4fv(const WebGLUniformLocation*, base::span<const GLfloat>);
   void uniform4i(const WebGLUniformLocation*,
                  GLint x,
                  GLint y,
                  GLint z,
                  GLint w);
-  void uniform4iv(const WebGLUniformLocation*, NADCTypedArrayView<GLint>);
-  void uniform4iv(const WebGLUniformLocation*, Vector<GLint>&);
+  void uniform4iv(const WebGLUniformLocation*, base::span<const GLint>);
   void uniformMatrix2fv(const WebGLUniformLocation*,
                         GLboolean transpose,
-                        NADCTypedArrayView<GLfloat> value);
-  void uniformMatrix2fv(const WebGLUniformLocation*,
-                        GLboolean transpose,
-                        Vector<GLfloat>& value);
+                        base::span<const GLfloat> value);
   void uniformMatrix3fv(const WebGLUniformLocation*,
                         GLboolean transpose,
-                        NADCTypedArrayView<GLfloat> value);
-  void uniformMatrix3fv(const WebGLUniformLocation*,
-                        GLboolean transpose,
-                        Vector<GLfloat>& value);
+                        base::span<const GLfloat> value);
   void uniformMatrix4fv(const WebGLUniformLocation*,
                         GLboolean transpose,
-                        NADCTypedArrayView<GLfloat> value);
-  void uniformMatrix4fv(const WebGLUniformLocation*,
-                        GLboolean transpose,
-                        Vector<GLfloat>& value);
+                        base::span<const GLfloat> value);
 
   virtual void useProgram(WebGLProgram*);
   void validateProgram(WebGLProgram*);
 
   void vertexAttrib1f(GLuint index, GLfloat x);
-  void vertexAttrib1fv(GLuint index, NADCTypedArrayView<const GLfloat> values);
-  void vertexAttrib1fv(GLuint index, const Vector<GLfloat>& values);
+  void vertexAttrib1fv(GLuint index, base::span<const GLfloat> values);
   void vertexAttrib2f(GLuint index, GLfloat x, GLfloat y);
-  void vertexAttrib2fv(GLuint index, NADCTypedArrayView<const GLfloat> values);
-  void vertexAttrib2fv(GLuint index, const Vector<GLfloat>& values);
+  void vertexAttrib2fv(GLuint index, base::span<const GLfloat> values);
   void vertexAttrib3f(GLuint index, GLfloat x, GLfloat y, GLfloat z);
-  void vertexAttrib3fv(GLuint index, NADCTypedArrayView<const GLfloat> values);
-  void vertexAttrib3fv(GLuint index, const Vector<GLfloat>& values);
+  void vertexAttrib3fv(GLuint index, base::span<const GLfloat> values);
   void vertexAttrib4f(GLuint index, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
-  void vertexAttrib4fv(GLuint index, NADCTypedArrayView<const GLfloat> values);
-  void vertexAttrib4fv(GLuint index, const Vector<GLfloat>& values);
+  void vertexAttrib4fv(GLuint index, base::span<const GLfloat> values);
   void vertexAttribPointer(GLuint index,
                            GLint size,
                            GLenum type,
@@ -1624,33 +1605,18 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   // Helper function to validate input parameters for uniform functions.
   template <typename T>
-  bool ValidateUniformParameters(const char* function_name,
-                                 const WebGLUniformLocation* location,
-                                 T* v,
-                                 GLsizei size,
-                                 GLsizei required_min_size,
-                                 GLuint src_offset,
-                                 GLuint src_length,
-                                 T** out_data,
-                                 GLuint* out_length) {
-    return ValidateUniformMatrixParameters(function_name, location, false, v,
-                                           size, required_min_size, src_offset,
-                                           src_length, out_data, out_length);
-  }
-
-  template <typename T>
   bool ValidateUniformMatrixParameters(const char* function_name,
                                        const WebGLUniformLocation* location,
                                        GLboolean transpose,
-                                       const NADCTypedArrayView<GLfloat>& v,
+                                       base::span<const GLfloat> v,
                                        GLsizei required_min_size,
                                        GLuint src_offset,
                                        size_t src_length,
-                                       T** out_data,
+                                       const T** out_data,
                                        GLuint* out_length) {
     *out_data = nullptr;
     *out_length = 0;
-    if (v.IsEmpty()) {
+    if (v.empty()) {
       SynthesizeGLError(GL_INVALID_VALUE, function_name, "no array");
       return false;
     }
@@ -1660,7 +1626,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
       return false;
     }
     return ValidateUniformMatrixParameters(
-        function_name, location, transpose, v.Data(), v.Size(),
+        function_name, location, transpose, v.data(), v.size(),
         required_min_size, src_offset, static_cast<GLuint>(src_length),
         out_data, out_length);
   }
@@ -1669,12 +1635,12 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   bool ValidateUniformMatrixParameters(const char* function_name,
                                        const WebGLUniformLocation* location,
                                        GLboolean transpose,
-                                       T* v,
+                                       const T* v,
                                        size_t size,
                                        GLsizei required_min_size,
                                        GLuint src_offset,
                                        GLuint src_length,
-                                       T** out_data,
+                                       const T** out_data,
                                        GLuint* out_length) {
     *out_data = nullptr;
     *out_length = 0;
@@ -1741,11 +1707,11 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   template <typename T>
   bool ValidateUniformParameters(const char* function_name,
                                  const WebGLUniformLocation* location,
-                                 const NADCTypedArrayView<T>& v,
+                                 base::span<const T> v,
                                  GLsizei required_min_size,
                                  GLuint src_offset,
                                  size_t src_length,
-                                 T** out_data,
+                                 const T** out_data,
                                  GLuint* out_length) {
     GLuint length;
     if (!base::CheckedNumeric<GLuint>(src_length).AssignIfValid(&length)) {
@@ -1754,16 +1720,16 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
       return false;
     }
     GLuint array_length;
-    if (!base::CheckedNumeric<GLuint>(v.Size()).AssignIfValid(&array_length)) {
+    if (!base::CheckedNumeric<GLuint>(v.size()).AssignIfValid(&array_length)) {
       SynthesizeGLError(GL_INVALID_VALUE, function_name, "array is too big");
       return false;
     }
-    if (v.IsEmpty()) {
+    if (v.empty()) {
       SynthesizeGLError(GL_INVALID_VALUE, function_name, "no array");
       return false;
     }
     return ValidateUniformMatrixParameters(
-        function_name, location, false, v.Data(), array_length,
+        function_name, location, false, v.data(), array_length,
         required_min_size, src_offset, length, out_data, out_length);
   }
 

@@ -33,8 +33,10 @@
     "contexts": ["privileged_extension"]
   },
   "action.openPopup": [{
-    // TODO(crbug.com/40057101): Upgrade to stable channel.
-    "channel": "dev"
+    "channel": "stable",
+    // TODO(https://crbug.com/40057101): Remove this guard after the feature
+    // has been in stable for a milestone or two.
+    "feature_flag": "ApiActionOpenPopup"
   }, {
     "channel": "stable",
     "location": "policy"
@@ -288,6 +290,7 @@
     "channel": "stable",
     "contexts": ["webui_untrusted"],
     "matches": [
+      "chrome-untrusted://boca-app/*",
       "chrome-untrusted://camera-app/*",
       "chrome-untrusted://help-app/*",
       "chrome-untrusted://media-app/*",
@@ -295,13 +298,6 @@
       "chrome-untrusted://projector-annotator/*"
     ]
   }],
-  "dashboardPrivate": {
-    "channel": "stable",
-    "contexts": ["privileged_extension"],
-    "allowlist": [
-      "B44D08FD98F1523ED5837D78D0A606EA9D6206E5"  // Web Store
-    ]
-  },
   "debugger": {
     "dependencies": ["permission:debugger"],
     "contexts": ["privileged_extension"]
@@ -599,7 +595,8 @@
   },
   "input.ime": {
     "dependencies": ["permission:input"],
-    "contexts": ["privileged_extension"]
+    "contexts": ["privileged_extension"],
+    "platforms": ["chromeos"]
   },
   "inputMethodPrivate": [{
     "dependencies": ["permission:inputMethodPrivate"],
@@ -629,6 +626,15 @@
       // chrome://os-settings as appropriate
       "chrome://os-settings/*",
       "chrome://settings/*"
+    ]
+  },
+  {
+    "channel": "stable",
+    "contexts": [
+      "webui_untrusted"
+    ],
+    "matches": [
+      "chrome-untrusted://lens/*"
     ]
   }],
   "login": [{
@@ -732,6 +738,14 @@
     ],
     "contexts": ["privileged_extension"]
   },
+  "permissions.addSiteAccessRequest": {
+    "min_manifest_version": 3,
+    "feature_flag": "ApiPermissionsSiteAccessRequests"
+  },
+  "permissions.removeSiteAccessRequest": {
+    "min_manifest_version": 3,
+    "feature_flag": "ApiPermissionsSiteAccessRequests"
+  },
   "platformKeys": {
     "dependencies": ["permission:platformKeys"],
     "contexts": ["privileged_extension"]
@@ -788,8 +802,7 @@
   },
   "readingList": {
     "dependencies": ["permission:readingList"],
-    "contexts": ["privileged_extension"],
-    "feature_flag": "ApiReadingList"
+    "contexts": ["privileged_extension"]
   },
   "resourcesPrivate": [{
     "dependencies": ["permission:resourcesPrivate"],
@@ -1034,8 +1047,14 @@
   }, {
     "channel": "stable",
     "contexts": ["web_page"],
-    "matches": ["https://chromewebstore.google.com/*"],
-    "feature_flag": "NewWebstoreDomain"
+    "matches": ["https://chromewebstore.google.com/*"]
+  }, {
+    // Used for webstore testing. See comment in
+    // chrome/common/extensions/webstore_override.cc
+    "channel": "stable",
+    "contexts": ["web_page"],
+    "requires_delegated_availability_check": true,
+    "matches": ["<all_urls>"]
   }],
   "webviewTag": {
     "internal": true,

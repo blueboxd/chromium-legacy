@@ -17,12 +17,13 @@
 #import "components/strings/grit/components_strings.h"
 #import "components/sync/service/sync_service.h"
 #import "ios/chrome/browser/autofill/model/personal_data_manager_factory.h"
+#import "ios/chrome/browser/autofill/ui_bundled/autofill_credit_card_util.h"
+#import "ios/chrome/browser/keyboard/ui_bundled/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/browser_commands.h"
-#import "ios/chrome/browser/shared/public/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/quick_delete_commands.h"
 #import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
@@ -32,9 +33,9 @@
 #import "ios/chrome/browser/sync/model/enterprise_utils.h"
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/tabs/model/inactive_tabs/features.h"
-#import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_credit_card_edit_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_credit_card_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/autofill/autofill_profile_edit_coordinator.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_profile_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_coordinator.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_table_view_controller.h"
@@ -44,7 +45,6 @@
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_coordinator.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_accounts/accounts_coordinator.h"
-#import "ios/chrome/browser/ui/settings/google_services/manage_accounts/accounts_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_coordinator.h"
 #import "ios/chrome/browser/ui/settings/notifications/notifications_coordinator.h"
@@ -71,9 +71,6 @@
 
 namespace {
 
-// Sets a custom radius for the half sheet presentation.
-CGFloat const kHalfSheetCornerRadius = 20;
-
 // Helper function to configure handlers for child view controllers.
 
 void ConfigureHandlers(id<SettingsRootViewControlling> controller,
@@ -81,8 +78,6 @@ void ConfigureHandlers(id<SettingsRootViewControlling> controller,
   controller.applicationHandler =
       HandlerForProtocol(dispatcher, ApplicationCommands);
   controller.browserHandler = HandlerForProtocol(dispatcher, BrowserCommands);
-  controller.browsingDataHandler =
-      HandlerForProtocol(dispatcher, BrowsingDataCommands);
   controller.settingsHandler = HandlerForProtocol(dispatcher, SettingsCommands);
   controller.snackbarHandler = HandlerForProtocol(dispatcher, SnackbarCommands);
 }
@@ -92,6 +87,7 @@ void ConfigureHandlers(id<SettingsRootViewControlling> controller,
 NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 
 @interface SettingsNavigationController () <
+    AutofillProfileEditCoordinatorDelegate,
     ClearBrowsingDataCoordinatorDelegate,
     GoogleServicesSettingsCoordinatorDelegate,
     ManageSyncSettingsCoordinatorDelegate,
@@ -121,6 +117,10 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 // Password details coordinator.
 @property(nonatomic, strong)
     PasswordDetailsCoordinator* passwordDetailsCoordinator;
+
+// Autofill profile edit coordinator.
+@property(nonatomic, strong)
+    AutofillProfileEditCoordinator* autofillProfileEditCoordinator;
 
 // TODO(crbug.com/335387869): Delete this coordinator when Quick Delete is fully
 // launched. The coordinator for the clear browsing data screen.
@@ -171,9 +171,11 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 + (instancetype)
     mainSettingsControllerForBrowser:(Browser*)browser
                             delegate:(id<SettingsNavigationControllerDelegate>)
-                                         delegate {
-  SettingsTableViewController* controller =
-      [[SettingsTableViewController alloc] initWithBrowser:browser];
+                                         delegate
+            hasDefaultBrowserBlueDot:(BOOL)hasDefaultBrowserBlueDot {
+  SettingsTableViewController* controller = [[SettingsTableViewController alloc]
+               initWithBrowser:browser
+      hasDefaultBrowserBlueDot:hasDefaultBrowserBlueDot];
   SettingsNavigationController* navigationController =
       [[SettingsNavigationController alloc]
           initWithRootViewController:controller
@@ -239,7 +241,6 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
     safetyCheckControllerForBrowser:(Browser*)browser
                            delegate:(id<SettingsNavigationControllerDelegate>)
                                         delegate
-                 displayAsHalfSheet:(BOOL)displayAsHalfSheet
                            referrer:(password_manager::PasswordCheckReferrer)
                                         referrer {
   SettingsNavigationController* navigationController =
@@ -247,22 +248,6 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
           initWithRootViewController:nil
                              browser:browser
                             delegate:delegate];
-
-  if (displayAsHalfSheet) {
-    navigationController.modalPresentationStyle = UIModalPresentationPageSheet;
-
-    UISheetPresentationController* presentationController =
-        navigationController.sheetPresentationController;
-
-    presentationController.prefersEdgeAttachedInCompactHeight = YES;
-
-    presentationController.detents = @[
-      UISheetPresentationControllerDetent.mediumDetent,
-      UISheetPresentationControllerDetent.largeDetent,
-    ];
-
-    presentationController.preferredCornerRadius = kHalfSheetCornerRadius;
-  }
 
   [navigationController showSafetyCheckAndStartSafetyCheck:referrer];
 
@@ -403,6 +388,25 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 }
 
 + (instancetype)
+    addressDetailsControllerForBrowser:(Browser*)browser
+                              delegate:
+                                  (id<SettingsNavigationControllerDelegate>)
+                                      delegate
+                               address:(const autofill::AutofillProfile*)address
+                            inEditMode:(BOOL)editMode
+                 offerMigrateToAccount:(BOOL)offerMigrateToAccount {
+  SettingsNavigationController* navigationController =
+      [[SettingsNavigationController alloc]
+          initWithRootViewController:nil
+                             browser:browser
+                            delegate:delegate];
+  [navigationController showAddressDetails:address
+                                inEditMode:editMode
+                     offerMigrateToAccount:offerMigrateToAccount];
+  return navigationController;
+}
+
++ (instancetype)
     autofillProfileControllerForBrowser:(Browser*)browser
                                delegate:
                                    (id<SettingsNavigationControllerDelegate>)
@@ -449,8 +453,9 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
                                       delegate:
                                           (id<SettingsNavigationControllerDelegate>)
                                               delegate
-                                    creditCard:(const autofill::CreditCard*)
-                                                   creditCard {
+                                    creditCard:
+                                        (const autofill::CreditCard*)creditCard
+                                    inEditMode:(BOOL)editMode {
   ChromeBrowserState* browserState =
       browser->GetBrowserState()->GetOriginalChromeBrowserState();
   autofill::PersonalDataManager* personalDataManager =
@@ -461,6 +466,14 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
       [[AutofillCreditCardEditTableViewController alloc]
            initWithCreditCard:*creditCard
           personalDataManager:personalDataManager];
+  if (editMode) {
+    // If `creditCard` needs to be edited from the Payments web page, then a
+    // command to open the Payments URL in a new tab should be dispatched. A
+    // SettingsNavigationController shouldn't be created in this case.
+    CHECK(
+        ![AutofillCreditCardUtil shouldEditCardFromPaymentsWebPage:creditCard]);
+    [controller editButtonPressed];
+  }
 
   SettingsNavigationController* navigationController =
       [[SettingsNavigationController alloc]
@@ -624,6 +637,14 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 
 #pragma mark - Public
 
+- (UIBarButtonItem*)cancelButton {
+  UIBarButtonItem* item = [[UIBarButtonItem alloc]
+      initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
+                           target:self
+                           action:@selector(closeSettings)];
+  return item;
+}
+
 - (UIBarButtonItem*)doneButton {
   if (self.presentingViewController == nil) {
     // This can be called while being dismissed. In that case, return nil. See
@@ -660,6 +681,7 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   [self stopPrivacySettingsCoordinator];
   [self stopInactiveTabSettingsCoordinator];
   [self stopPasswordDetailsCoordinator];
+  [self stopAutofillProfileEditCoordinator];
   [self stopNotificationsCoordinator];
 
   // Reset the delegate to prevent any queued transitions from attempting to
@@ -693,16 +715,6 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 }
 
 #pragma mark - Private
-
-// Creates an autoreleased "Cancel" button that cancels the settings when
-// tapped.
-- (UIBarButtonItem*)cancelButton {
-  UIBarButtonItem* cancelButton = [[UIBarButtonItem alloc]
-      initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
-                           target:self
-                           action:@selector(closeSettings)];
-  return cancelButton;
-}
 
 // Pushes a GoogleServicesSettingsViewController on this settings navigation
 // controller. Does nothing id the top view controller is already of type
@@ -891,6 +903,13 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   self.passwordDetailsCoordinator = nil;
 }
 
+// Stops the underlying AutofillProfileEditCoordinator.
+- (void)stopAutofillProfileEditCoordinator {
+  [self.autofillProfileEditCoordinator stop];
+  self.autofillProfileEditCoordinator.delegate = nil;
+  self.autofillProfileEditCoordinator = nil;
+}
+
 // Stops the underlying NotificationsCoordinator.
 - (void)stopNotificationsCoordinator {
   [self.notificationsCoordinator stop];
@@ -952,6 +971,14 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 
 - (void)passwordDetailsCancelButtonWasTapped {
   [self closeSettings];
+}
+
+#pragma mark - AutofillProfileEditCoordinatorDelegate
+
+- (void)autofillProfileEditCoordinatorTableViewControllerDidFinish:
+    (AutofillProfileEditCoordinator*)coordinator {
+  DCHECK_EQ(self.autofillProfileEditCoordinator, coordinator);
+  [self stopAutofillProfileEditCoordinator];
 }
 
 #pragma mark - ClearBrowsingDataCoordinatorDelegate
@@ -1124,6 +1151,19 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   [self showSavedPasswordsAndShowCancelButton:showCancelButton];
 }
 
+- (void)showAddressDetails:(const autofill::AutofillProfile*)address
+                inEditMode:(BOOL)editMode
+     offerMigrateToAccount:(BOOL)offerMigrateToAccount {
+  self.autofillProfileEditCoordinator = [[AutofillProfileEditCoordinator alloc]
+      initWithBaseNavigationController:self
+                               browser:self.browser
+                               profile:*address
+                migrateToAccountButton:offerMigrateToAccount];
+  self.autofillProfileEditCoordinator.delegate = self;
+  self.autofillProfileEditCoordinator.openInEditMode = editMode;
+  [self.autofillProfileEditCoordinator start];
+}
+
 // TODO(crbug.com/41352590) : Do not pass `baseViewController` through
 // dispatcher.
 - (void)showProfileSettingsFromViewController:
@@ -1142,7 +1182,8 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   [self pushViewController:controller animated:YES];
 }
 
-- (void)showCreditCardDetails:(const autofill::CreditCard*)creditCard {
+- (void)showCreditCardDetails:(const autofill::CreditCard*)creditCard
+                   inEditMode:(BOOL)editMode {
   ChromeBrowserState* browserState =
       self.browser->GetBrowserState()->GetOriginalChromeBrowserState();
   autofill::PersonalDataManager* personalDataManager =
@@ -1152,6 +1193,13 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
       [[AutofillCreditCardEditTableViewController alloc]
            initWithCreditCard:*creditCard
           personalDataManager:personalDataManager];
+  if (editMode) {
+    // If `creditCard` needs to be edited from the Payments web page, then a
+    // command to open the Payments URL in a new tab should be dispatched.
+    CHECK(
+        ![AutofillCreditCardUtil shouldEditCardFromPaymentsWebPage:creditCard]);
+    [controller editButtonPressed];
+  }
   ConfigureHandlers(controller, _browser->GetCommandDispatcher());
   [self pushViewController:controller animated:YES];
 }
@@ -1180,17 +1228,18 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 }
 
 // Shows the Safety Check page and starts the Safety Check for `referrer`.
-// `showHalfSheet` determines whether the Safety Check will be displayed as a
-// half-sheet, or full-page modal.
-- (void)showAndStartSafetyCheckInHalfSheet:(BOOL)displayAsHalfSheet
-                                  referrer:
-                                      (password_manager::PasswordCheckReferrer)
-                                          referrer {
+- (void)showAndStartSafetyCheckForReferrer:
+    (password_manager::PasswordCheckReferrer)referrer {
   [self showSafetyCheckAndStartSafetyCheck:referrer];
 }
 
 - (void)showSafeBrowsingSettings {
   [self showSafeBrowsing];
+}
+
+- (void)showSafeBrowsingSettingsFromPromoInteraction {
+  [self showSafeBrowsing];
+  self.privacySafeBrowsingCoordinator.openedFromPromoInteraction = YES;
 }
 
 - (void)showPasswordSearchPage {

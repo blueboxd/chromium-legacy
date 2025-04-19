@@ -26,7 +26,7 @@ CreateWebAppInfoForOSSettingsSystemWebApp() {
   info->scope = GURL(chrome::kChromeUIOSSettingsURL);
   info->title = l10n_util::GetStringUTF16(IDS_SETTINGS_SETTINGS);
   web_app::CreateIconInfoForSystemWebApp(
-      info->start_url,
+      info->start_url(),
       {
           {"icon-192.png", 192, IDR_SETTINGS_LOGO_192},
 
@@ -65,10 +65,6 @@ gfx::Size OSSettingsSystemAppDelegate::GetMinimumWindowSize() const {
 std::vector<std::string>
 OSSettingsSystemAppDelegate::GetAppIdsToUninstallAndReplace() const {
   return {web_app::kSettingsAppId, ash::kInternalAppIdSettings};
-}
-
-bool OSSettingsSystemAppDelegate::PreferManifestBackgroundColor() const {
-  return true;
 }
 
 bool OSSettingsSystemAppDelegate::ShouldAnimateThemeChanges() const {

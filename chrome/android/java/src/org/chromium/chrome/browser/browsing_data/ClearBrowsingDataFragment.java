@@ -41,10 +41,8 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataCounterBridge.BrowsingDataCounterCallback;
 import org.chromium.chrome.browser.browsing_data.TimePeriodUtils.TimePeriodSpinnerOption;
-import org.chromium.chrome.browser.feedback.FragmentHelpAndFeedbackLauncher;
-import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncher;
+import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncherFactory;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.historyreport.AppIndexingReporter;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -75,9 +73,8 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Settings screen that allows the user to clear browsing data.
- * The user can choose which types of data to clear (history, cookies, etc), and the time range
- * from which to clear data.
+ * Settings screen that allows the user to clear browsing data. The user can choose which types of
+ * data to clear (history, cookies, etc), and the time range from which to clear data.
  */
 public abstract class ClearBrowsingDataFragment extends PreferenceFragmentCompat
         implements BrowsingDataBridge.OnClearBrowsingDataListener,
@@ -85,8 +82,7 @@ public abstract class ClearBrowsingDataFragment extends PreferenceFragmentCompat
                 Preference.OnPreferenceChangeListener,
                 SigninManager.SignInStateObserver,
                 CustomDividerFragment,
-                ProfileDependentSetting,
-                FragmentHelpAndFeedbackLauncher {
+                ProfileDependentSetting {
     static final String FETCHER_SUPPLIED_FROM_OUTSIDE =
             "ClearBrowsingDataFetcherSuppliedFromOutside";
 
@@ -243,12 +239,10 @@ public abstract class ClearBrowsingDataFragment extends PreferenceFragmentCompat
 
     private Profile mProfile;
     private SigninManager mSigninManager;
-    private SnackbarManager mSnackbarManager;
 
     private ProgressDialog mProgressDialog;
     private Item[] mItems;
     private ClearBrowsingDataFetcher mFetcher;
-    private HelpAndFeedbackLauncher mHelpAndFeedbackLauncher;
 
     // This is the dialog we show to the user that lets them 'uncheck' (or exclude) the above
     // important domains from being cleared.
@@ -323,7 +317,7 @@ public abstract class ClearBrowsingDataFragment extends PreferenceFragmentCompat
             case DialogOption.CLEAR_HISTORY:
                 return R.drawable.ic_watch_later_24dp;
             case DialogOption.CLEAR_PASSWORDS:
-                return R.drawable.ic_vpn_key_grey;
+                return R.drawable.ic_password_manager_key;
             case DialogOption.CLEAR_SITE_SETTINGS:
                 return R.drawable.ic_tv_options_input_settings_rotated_grey;
             case DialogOption.CLEAR_TABS:
@@ -443,9 +437,6 @@ public abstract class ClearBrowsingDataFragment extends PreferenceFragmentCompat
             BrowsingDataBridge.getForProfile(mProfile)
                     .clearBrowsingData(this, dataTypesArray, mLastSelectedTimePeriod);
         }
-
-        // Clear all reported entities.
-        AppIndexingReporter.getInstance().clearHistory();
     }
 
     private void dismissProgressDialog() {
@@ -788,10 +779,6 @@ public abstract class ClearBrowsingDataFragment extends PreferenceFragmentCompat
                                 requireContext(), createSignOutOfChromeCallback())));
     }
 
-    public void setSnackbarManager(SnackbarManager snackbarManager) {
-        mSnackbarManager = snackbarManager;
-    }
-
     private Callback<View> createSignOutOfChromeCallback() {
         return view ->
                 SignOutCoordinator.startSignOutFlow(
@@ -799,8 +786,9 @@ public abstract class ClearBrowsingDataFragment extends PreferenceFragmentCompat
                         mProfile,
                         getFragmentManager(),
                         ((ModalDialogManagerHolder) getActivity()).getModalDialogManager(),
-                        mSnackbarManager,
+                        ((SnackbarManager.SnackbarManageable) getActivity()).getSnackbarManager(),
                         SignoutReason.USER_CLICKED_SIGNOUT_FROM_CLEAR_BROWSING_DATA_PAGE,
+                        /* showConfirmDialog= */ true,
                         () -> {});
     }
 
@@ -902,16 +890,14 @@ public abstract class ClearBrowsingDataFragment extends PreferenceFragmentCompat
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menu_id_targeted_help) {
-            mHelpAndFeedbackLauncher.show(
-                    getActivity(), getString(R.string.help_context_clear_browsing_data), null);
+            HelpAndFeedbackLauncherFactory.getForProfile(mProfile)
+                    .show(
+                            getActivity(),
+                            getString(R.string.help_context_clear_browsing_data),
+                            null);
             return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void setHelpAndFeedbackLauncher(HelpAndFeedbackLauncher helpAndFeedbackLauncher) {
-        mHelpAndFeedbackLauncher = helpAndFeedbackLauncher;
     }
 
     /** Get the last focused activity that has not been destroyed. */
@@ -925,7 +911,6 @@ public abstract class ClearBrowsingDataFragment extends PreferenceFragmentCompat
 
     /** A method to show the post-delete snack-bar confirmation. */
     private void showSnackbar() {
-        // This snack bar is not shown from SettingsActivity. So we can't use mSnackbarManager.
         SnackbarManager snackbarManager = null;
         Activity activity = getLastFocusedActivity();
         if (activity instanceof SnackbarManager.SnackbarManageable) {

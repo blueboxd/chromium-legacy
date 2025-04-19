@@ -10,9 +10,11 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/notreached.h"
+#include "base/rand_util.h"
 #include "base/strings/string_util.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
@@ -150,16 +152,49 @@ void CloudFileSystem::OnContentCacheInitialized(
     content_cache_->AddObserver(this);
     for (const base::FilePath& file_path :
          content_cache_->GetCachedFilePaths()) {
-      // Notifications are received though Notify() so no notification_callback
-      // is needed.
-      AddWatcher(GetContentCacheURL(), file_path,
-                 /*recursive=*/false, /*persistent=*/false,
-                 base::BindOnce([](base::File::Error result) {
-                   VLOG(1) << "Re-added file watcher on file: " << result;
-                 }),
-                 base::DoNothing());
+      AddWatcherOnCachedFile(file_path);
     }
   }
+}
+
+void CloudFileSystem::AddWatcherOnCachedFile(const base::FilePath& file_path) {
+  AddWatcherOnCachedFileImpl(file_path, /*attempts=*/0,
+                             /*result=*/base::File::FILE_ERROR_SECURITY);
+}
+
+void CloudFileSystem::AddWatcherOnCachedFileImpl(
+    const base::FilePath& file_path,
+    int attempts,
+    base::File::Error result) {
+  if (result == base::File::FILE_OK) {
+    VLOG(1) << "Re-added file watcher on file '" << file_path << "'";
+    return;
+  }
+  if (result != base::File::FILE_ERROR_SECURITY || attempts > 6) {
+    LOG(ERROR) << "Failed to add file watcher on file with result: " << result
+               << " after " << attempts << " attempts";
+    VLOG(2) << "Failed to add file watcher on file '" << file_path
+            << "' with result: " << result << " after " << attempts
+            << " attempts";
+    return;
+  }
+  // Set a random delay in the interval attempts*[0,2] seconds to stagger
+  // AddWatcher requests.
+  base::TimeDelta delay = attempts * base::Milliseconds(base::RandInt(1, 2000));
+  // Notifications are received though Notify() so no notification_callback
+  // is needed. Call this function recursively to continuously retry upon
+  // FILE_ERROR_SECURITY errors until the max number of attempts have been made.
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(
+          IgnoreResult(&CloudFileSystem::AddWatcher),
+          weak_ptr_factory_.GetWeakPtr(), GetContentCacheURL(), file_path,
+          /*recursive=*/false, /*persistent=*/false,
+          base::BindOnce(&CloudFileSystem::AddWatcherOnCachedFileImpl,
+                         weak_ptr_factory_.GetWeakPtr(), file_path,
+                         attempts + 1),
+          base::DoNothing()),
+      delay);
 }
 
 AbortCallback CloudFileSystem::RequestUnmount(
@@ -579,10 +614,12 @@ void CloudFileSystem::OnOpenFileCompleted(
           << "', metadata = " << metadata.get() << "}";
 
   if (result == base::File::FILE_OK) {
-    opened_files_.try_emplace(file_handle,
-                              OpenedCloudFile(file_path, mode, file_handle,
-                                              GetVersionTag(metadata.get()),
-                                              GetCloudSize(metadata.get())));
+    const std::string version_tag = GetVersionTag(metadata.get());
+    opened_files_.try_emplace(
+        file_handle, OpenedCloudFile(file_path, mode, file_handle, version_tag,
+                                     GetCloudSize(metadata.get())));
+    // Notify the cache with the observed version tag.
+    content_cache_->ObservedVersionTag(file_path, version_tag);
   } else if (content_cache_ && result == base::File::FILE_ERROR_NOT_FOUND) {
     // The file doesn't exist on the FSP, evict it from the cache.
     content_cache_->Evict(file_path);
@@ -617,9 +654,15 @@ void CloudFileSystem::OnGetMetadataCompleted(
           << ", entry_path = '" << entry_path << "', result = '" << result
           << "', metadata = " << entry_metadata.get() << "}";
 
-  if (content_cache_ && result == base::File::FILE_ERROR_NOT_FOUND) {
-    // The file doesn't exist on the FSP, evict it from the cache.
-    content_cache_->Evict(entry_path);
+  if (content_cache_) {
+    if (result == base::File::FILE_ERROR_NOT_FOUND) {
+      // The file doesn't exist on the FSP, evict it from the cache.
+      content_cache_->Evict(entry_path);
+    } else if (result == base::File::FILE_OK) {
+      // Notify the cache with the observed version tag.
+      content_cache_->ObservedVersionTag(entry_path,
+                                         GetVersionTag(entry_metadata.get()));
+    }
   }
   std::move(callback).Run(std::move(entry_metadata), result);
 }

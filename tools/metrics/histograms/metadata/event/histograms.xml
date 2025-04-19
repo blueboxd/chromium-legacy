@@ -72,7 +72,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Event.DownEventCount.PerInputFormFactorDestinationCombination2"
     enum="DownEventInputFormFactorDestinationCombination2"
-    expires_after="2024-11-03">
+    expires_after="2025-01-05">
   <owner>tbuckley@chromium.org</owner>
   <summary>
     The number of down events received per destination, input and form factor
@@ -87,8 +87,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Event.EscKeyPressedDownWithModifier" enum="Boolean"
+    expires_after="2024-07-15">
+  <owner>muyaoxu@google.com</owner>
+  <owner>openscreen-eng@google.com</owner>
+  <summary>
+    Records whether the Esc key is pressed down with another modifier key.
+    Recorded when a Esc Key press event is prehandled by the browser, regardless
+    of whether keyboard/pointer/fullscreen is enabled.
+  </summary>
+</histogram>
+
 <histogram name="Event.GestureCreated" enum="UIEventType"
-    expires_after="2024-10-06">
+    expires_after="2024-12-08">
   <owner>kuscher@google.com</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -112,7 +123,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.InputEventPrediction.Scroll.Frame{ScoreType}"
-    units="pixels" expires_after="2024-10-28">
+    units="pixels" expires_after="2024-12-30">
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -133,35 +144,36 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.InputEventPrediction.Scroll.PredictionJitter"
-    units="pixels" expires_after="2024-03-13">
+    units="pixels" expires_after="2025-03-13">
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
-    NOTE: this metric was expired from M97 to 2023-03-14. Euclidean distance in
-    pixels between two successive variations of touch scroll deltas which are
-    the difference between a predicted scroll position and its corresponding
-    interpolated real position that occurred at prediction time.
+    NOTE: this metric was expired from M97 to 2023-03-14 and from 2024-03-13 to
+    2024-06-28. Euclidean distance in pixels between two successive variations
+    of touch scroll deltas which are the difference between a predicted scroll
+    position and its corresponding interpolated real position that occurred at
+    prediction time.
 
     Team: input-dev@chromium.org.
   </summary>
 </histogram>
 
 <histogram name="Event.InputEventPrediction.Scroll.VisualJitter" units="pixels"
-    expires_after="2024-03-13">
+    expires_after="2025-03-13">
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
-    NOTE: this metric was expired from M97 to 2023-03-14. Euclidean distance in
-    pixels between two successive variations of touch scroll deltas which are
-    the difference between a predicted scroll position and the interpolated real
-    position that occurred at frame time.
+    NOTE: this metric was expired from M97 to 2023-03-14 and from 2024-03-13 to
+    2024-06-28. Euclidean distance in pixels between two successive variations
+    of touch scroll deltas which are the difference between a predicted scroll
+    position and the interpolated real position that occurred at frame time.
 
     Team: input-dev@chromium.org.
   </summary>
 </histogram>
 
 <histogram name="Event.InputEventPrediction.Scroll.{ScoreType}" units="pixels"
-    expires_after="2024-11-17">
+    expires_after="2025-01-26">
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -179,8 +191,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Jank.PredictorJankyFramePercentage2" units="%"
-    expires_after="2024-09-29">
-  <owner>mekk@google.com</owner>
+    expires_after="2025-02-02">
+  <owner>jonross@chromium.org</owner>
   <owner>woa-performance@google.com</owner>
   <summary>
     A frame is deemed janky if an irregular jump in screen displacement occured
@@ -200,8 +212,8 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Event.Jank.ScrollUpdate.{ScrollSpeed}.{VsyncStatus}.FrameAboveJankyThreshold2"
-    units="ratio * 100" expires_after="2024-09-22">
-  <owner>mekk@google.com</owner>
+    units="ratio * 100" expires_after="2024-12-08">
+  <owner>jonross@chromium.org</owner>
   <owner>woa-performance@google.com</owner>
   <summary>
     This metric is the ratio between a larger screen displacement divided by a
@@ -228,45 +240,8 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
-<histogram name="Event.Latency.HitTest" units="microseconds"
-    expires_after="2023-10-22">
-  <owner>pdr@chromium.org</owner>
-  <owner>paint-dev@chromium.org</owner>
-  <summary>
-    Duration of a non-resurive hitTest operation. The hit test is non-recursive
-    when the AllowChildFrameContent flag is clear. See also
-    Event.Latency.HitTestRecusrive.
-
-    Team: paint-dev@chromium.org.
-
-    Warning: This metric may include reports from clients with low-resolution
-    clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
-    will cause this metric to have an abnormal distribution. When considering
-    revising this histogram, see UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES for the
-    solution.
-  </summary>
-</histogram>
-
-<histogram name="Event.Latency.HitTestRecursive" units="microseconds"
-    expires_after="2023-10-22">
-  <owner>pdr@chromium.org</owner>
-  <owner>paint-dev@chromium.org</owner>
-  <summary>
-    Duration of a recursive hitTest operation. The hit test is recursive when
-    the AllowChildFrameContent flag is set. See also Event.Latency.HitTest.
-
-    Team: paint-dev@chromium.org.
-
-    Warning: This metric may include reports from clients with low-resolution
-    clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
-    will cause this metric to have an abnormal distribution. When considering
-    revising this histogram, see UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES for the
-    solution.
-  </summary>
-</histogram>
-
 <histogram name="Event.Latency.OS2.{EventType}" units="ms"
-    expires_after="2024-10-13">
+    expires_after="2024-12-15">
   <owner>flackr@chromium.org</owner>
   <owner>joenotcharles@google.com</owner>
   <owner>input-dev@chromium.org</owner>
@@ -280,6 +255,10 @@ chromium-metrics-reviews@google.com.
     TimeTicks::IsHighResolution returns true. The exception is touch events
     which usually come from the high-resolution clock when
     TimeTicks::IsHighResolution returns true.
+
+    Note: As of May 29 2024 (M127), the calculation has been updated to be
+    optimistic about the low-frequency clock on Windows (0ms if &lt;= 1x 16ms
+    tick), hence a -16ms shift is expected in the distribution.
   </summary>
   <token key="EventType">
     <variant name="KEY_PRESSED"/>
@@ -292,7 +271,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.ScrollBegin.Touch.AverageLagPresentation"
-    units="pixels" expires_after="2024-10-06">
+    units="pixels" expires_after="2024-12-08">
   <owner>flackr@chromium.org</owner>
   <owner>sahir.vellani@microsoft.com</owner>
   <owner>input-dev@chromium.org</owner>
@@ -314,7 +293,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Event.Latency.ScrollBegin.Touch.AverageLagPresentation.NoPrediction"
-    units="pixels" expires_after="2024-10-06">
+    units="pixels" expires_after="2024-12-08">
   <owner>flackr@chromium.org</owner>
   <owner>sahir.vellani@microsoft.com</owner>
   <owner>input-dev@chromium.org</owner>
@@ -336,7 +315,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.ScrollUpdate.Touch.AverageLagPresentation"
-    units="pixels" expires_after="2024-10-28">
+    units="pixels" expires_after="2024-12-30">
   <owner>flackr@chromium.org</owner>
   <owner>sahir.vellani@microsoft.com</owner>
   <owner>input-dev@chromium.org</owner>
@@ -356,7 +335,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Event.Latency.ScrollUpdate.Touch.AverageLagPresentation.NoPrediction"
-    units="pixels" expires_after="2024-10-28">
+    units="pixels" expires_after="2024-12-30">
   <owner>flackr@chromium.org</owner>
   <owner>sahir.vellani@microsoft.com</owner>
   <owner>input-dev@chromium.org</owner>
@@ -377,7 +356,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Event.Latency.ScrollUpdate.Touch.AverageLagPresentation.RemainingLagPercentage"
-    units="%" expires_after="2024-10-28">
+    units="%" expires_after="2024-12-30">
   <owner>flackr@chromium.org</owner>
   <owner>sahir.vellani@microsoft.com</owner>
   <owner>input-dev@chromium.org</owner>
@@ -409,7 +388,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Event.Latency.ScrollUpdate.Touch.AverageLagPresentation.{PredictionImpact}"
-    units="pixels" expires_after="2024-10-28">
+    units="pixels" expires_after="2024-12-30">
   <owner>flackr@chromium.org</owner>
   <owner>sahir.vellani@microsoft.com</owner>
   <owner>input-dev@chromium.org</owner>
@@ -467,7 +446,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.PassiveListeners" enum="EventResultType"
-    expires_after="2024-09-22">
+    expires_after="2024-12-08">
   <owner>dtapuska@chromium.org</owner>
   <summary>
     The result of handling of MouseWheel, TouchStart, TouchMove, TouchEnd events
@@ -478,10 +457,13 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.ScrollJank.DelayedFramesPercentage.FixedWindow"
-    units="%" expires_after="2025-05-19">
+    units="%" expires_after="never">
+<!-- expires-never: guiding metric (internal: go/chrome-browser-guiding-metrics) -->
+
   <owner>kartarsingh@google.com</owner>
-  <owner>mekk@google.com</owner>
+  <owner>jonross@chromium.org</owner>
   <owner>woa-performance-team@google.com</owner>
+  <owner>chrome-analysis-team@google.com</owner>
   <summary>
     The percentage of frames not presented during a scroll or a fling[1],
     meaning frame production took longer than expected and the frame was
@@ -501,15 +483,19 @@ chromium-metrics-reviews@google.com.
     For more details about this metric, please check
     http://doc/1Y0u0Tq5eUZff75nYUzQVw6JxmbZAW9m64pJidmnGWsY
 
+    This histogram is of special interest to the chrome-analysis-team@.
+
+    Do not change its semantics or retire it without talking to them first.
+
     [1]Fling is a finger boosted scroll, meaning the screen is moving after the
     user has accelerated their finger on the screen and removed it.
   </summary>
 </histogram>
 
 <histogram name="Event.ScrollJank.DelayedFramesPercentage.PerScroll{Length}"
-    units="%" expires_after="2024-09-22">
+    units="%" expires_after="2024-12-08">
   <owner>kartarsingh@google.com</owner>
-  <owner>mekk@google.com</owner>
+  <owner>jonross@chromium.org</owner>
   <owner>woa-performance-team@google.com</owner>
   <summary>
     A frame is deemed janky during a scroll if there was no presented frame in
@@ -528,9 +514,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.ScrollJank.MissedVsyncs.PerFrame" units="counts"
-    expires_after="2024-09-22">
+    expires_after="2024-12-08">
   <owner>kartarsingh@google.com</owner>
-  <owner>mekk@google.com</owner>
+  <owner>jonross@chromium.org</owner>
   <owner>woa-performance-team@google.com</owner>
   <summary>
     A frame is deemed janky during a scroll if there was no presented frame in
@@ -552,8 +538,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.ScrollJank.MissedVsyncsPercentage.FixedWindow" units="%"
-    expires_after="2024-11-24">
-  <owner>mekk@google.com</owner>
+    expires_after="2025-01-26">
+  <owner>jonross@chromium.org</owner>
   <owner>woa-performance-team@google.com</owner>
   <summary>
     NOTE: This metric is experimental, for performance analysis, please use
@@ -574,9 +560,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.ScrollJank.MissedVsyncsPercentage.PerScroll{Length}"
-    units="%" expires_after="2024-11-24">
+    units="%" expires_after="2025-01-26">
   <owner>kartarsingh@google.com</owner>
-  <owner>mekk@google.com</owner>
+  <owner>jonross@chromium.org</owner>
   <owner>woa-performance-team@google.com</owner>
   <summary>
     A vsync is deemed janky during a scroll if there was no presented frame in
@@ -599,9 +585,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.ScrollJank.MissedVsyncs{Operator}.FixedWindow"
-    units="counts" expires_after="2024-11-24">
+    units="counts" expires_after="2025-01-26">
   <owner>kartarsingh@google.com</owner>
-  <owner>mekk@google.com</owner>
+  <owner>jonross@chromium.org</owner>
   <owner>woa-performance-team@google.com</owner>
   <summary>
     A frame is deemed janky during a scroll if there was no presented frame in
@@ -624,8 +610,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.ScrollJank.MissedVsyncs{Operator}.FixedWindow2"
-    units="counts" expires_after="2024-09-22">
-  <owner>mekk@google.com</owner>
+    units="counts" expires_after="2024-12-08">
+  <owner>jonross@chromium.org</owner>
   <owner>woa-performance-team@google.com</owner>
   <summary>
     NOTE: This metric is experimental, for performance analysis, please use
@@ -648,9 +634,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.ScrollJank.MissedVsyncs{Operator}.PerScroll{Length}"
-    units="counts" expires_after="2024-11-24">
+    units="counts" expires_after="2025-01-26">
   <owner>kartarsingh@google.com</owner>
-  <owner>mekk@google.com</owner>
+  <owner>jonross@chromium.org</owner>
   <owner>woa-performance-team@google.com</owner>
   <summary>
     A frame is deemed janky during a scroll if there was no presented frame in
@@ -745,7 +731,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="EventLatency.GestureScrollUpdate.Touchscreen.TotalLatency2"
-    units="microseconds" expires_after="2024-11-24">
+    units="microseconds" expires_after="2025-01-26">
   <owner>jonross@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -767,7 +753,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="EventLatency.GestureScrollUpdate.{NonTouchscreenScrollInputType}.TotalLatency2"
-    units="microseconds" expires_after="2024-11-24">
+    units="microseconds" expires_after="2025-01-26">
   <owner>jonross@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -788,7 +774,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="EventLatency.TotalLatency" units="microseconds"
-    expires_after="2024-09-22">
+    expires_after="2024-12-08">
   <owner>jonross@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -802,7 +788,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="EventLatency.{NonGsuScrollEventType}.{ScrollInputType}.TotalLatency2"
-    units="microseconds" expires_after="2024-09-22">
+    units="microseconds" expires_after="2024-12-08">
   <owner>jonross@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -838,7 +824,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="EventLatency.{NonScrollPinchEventType}.TotalLatency"
-    units="microseconds" expires_after="2024-11-24">
+    units="microseconds" expires_after="2025-01-26">
   <owner>jonross@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -874,7 +860,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="EventLatency.{PinchEventType}.{PinchInputType}.TotalLatency"
-    units="microseconds" expires_after="2024-09-22">
+    units="microseconds" expires_after="2024-12-08">
   <owner>jonross@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -898,7 +884,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="EventLatency.{ScrollEventType}.GenerationToBrowserMain"
-    units="microseconds" expires_after="2024-10-26">
+    units="microseconds" expires_after="2024-12-30">
   <owner>jonross@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -912,7 +898,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="EventLatency.{ScrollEventType}.TotalLatency2"
-    units="microseconds" expires_after="2024-11-24">
+    units="microseconds" expires_after="2025-01-26">
   <owner>jonross@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -926,7 +912,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="EventLatency.{ScrollEventType}.{DispatchStage}.{RatioType}"
-    units="%" expires_after="2024-10-01">
+    units="%" expires_after="2024-12-08">
   <owner>jonross@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -948,7 +934,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="EventLatency.{ScrollEventType}.{TopControls}"
-    units="microseconds" expires_after="2024-09-22">
+    units="microseconds" expires_after="2024-12-24">
   <owner>jonross@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>

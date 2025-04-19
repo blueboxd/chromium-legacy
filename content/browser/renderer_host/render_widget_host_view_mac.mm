@@ -25,7 +25,9 @@
 #import "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "components/device_event_log/device_event_log.h"
+#include "components/input/cursor_manager.h"
 #include "components/input/native_web_keyboard_event.h"
+#include "components/input/render_widget_host_input_event_router.h"
 #include "components/input/web_input_event_builders_mac.h"
 #include "components/remote_cocoa/browser/ns_view_ids.h"
 #include "components/remote_cocoa/common/application.mojom.h"
@@ -36,13 +38,11 @@
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
 #import "content/browser/accessibility/browser_accessibility_mac.h"
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
-#include "content/browser/renderer_host/cursor_manager.h"
 #include "content/browser/renderer_host/input/motion_event_web.h"
 #import "content/browser/renderer_host/input/synthetic_gesture_target_mac.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
-#include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #import "content/browser/renderer_host/text_input_client_mac.h"
 #include "content/browser/renderer_host/visible_time_request_trigger.h"
 #import "content/common/input/events_helper.h"
@@ -240,7 +240,7 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
     std::ignore = owner_delegate->GetWebkitPreferencesForWidget();
   }
 
-  cursor_manager_ = std::make_unique<CursorManager>(this);
+  cursor_manager_ = std::make_unique<input::CursorManager>(this);
   // Start observing changes to the system's cursor accessibility scale factor.
   __block auto render_widget_host_view_mac = this;
   cursor_scale_observer_ =
@@ -616,7 +616,7 @@ void RenderWidgetHostViewMac::DisplayCursor(const ui::Cursor& cursor) {
   ns_view_->DisplayCursor(cursor);
 }
 
-CursorManager* RenderWidgetHostViewMac::GetCursorManager() {
+input::CursorManager* RenderWidgetHostViewMac::GetCursorManager() {
   return cursor_manager_.get();
 }
 
@@ -776,14 +776,15 @@ void RenderWidgetHostViewMac::OnGestureEvent(
   blink::WebGestureEvent web_gesture =
       ui::CreateWebGestureEventFromGestureEventData(gesture);
 
-  ui::LatencyInfo latency_info(ui::SourceEventType::TOUCH);
+  ui::LatencyInfo latency_info;
 
   if (ShouldRouteEvents()) {
     blink::WebGestureEvent gesture_event(web_gesture);
     host()->delegate()->GetInputEventRouter()->RouteGestureEvent(
         this, &gesture_event, latency_info);
   } else {
-    host()->ForwardGestureEventWithLatencyInfo(web_gesture, latency_info);
+    host()->GetRenderInputRouter()->ForwardGestureEventWithLatencyInfo(
+        web_gesture, latency_info);
   }
 }
 
@@ -995,7 +996,7 @@ void RenderWidgetHostViewMac::GetPageTextForSpeech(SpeechCallback callback) {
       base::BindOnce(CombineTextNodesAndMakeCallback, std::move(callback)),
       ui::AXMode::kWebContents,
       /* max_nodes= */ 5000,
-      /* timeout= */ {});
+      /* timeout= */ {}, WebContents::AXTreeSnapshotPolicy::kAll);
 }
 
 void RenderWidgetHostViewMac::SpeakSelection() {
@@ -1334,10 +1335,6 @@ blink::mojom::PointerLockResult RenderWidgetHostViewMac::LockPointer(
     return blink::mojom::PointerLockResult::kSuccess;
   }
 
-  if (request_unadjusted_movement && !IsUnadjustedMouseMovementSupported()) {
-    return blink::mojom::PointerLockResult::kUnsupportedOptions;
-  }
-
   pointer_locked_ = true;
   pointer_lock_unadjusted_movement_ = request_unadjusted_movement;
 
@@ -1353,10 +1350,6 @@ blink::mojom::PointerLockResult RenderWidgetHostViewMac::LockPointer(
 
 blink::mojom::PointerLockResult RenderWidgetHostViewMac::ChangePointerLock(
     bool request_unadjusted_movement) {
-  if (request_unadjusted_movement && !IsUnadjustedMouseMovementSupported()) {
-    return blink::mojom::PointerLockResult::kUnsupportedOptions;
-  }
-
   pointer_lock_unadjusted_movement_ = request_unadjusted_movement;
   ns_view_->SetCursorLockedUnacceleratedMovement(request_unadjusted_movement);
   return blink::mojom::PointerLockResult::kSuccess;
@@ -1377,19 +1370,6 @@ void RenderWidgetHostViewMac::UnlockPointer() {
 
 bool RenderWidgetHostViewMac::GetIsPointerLockedUnadjustedMovementForTesting() {
   return pointer_locked_ && pointer_lock_unadjusted_movement_;
-}
-
-bool RenderWidgetHostViewMac::IsUnadjustedMouseMovementSupported() {
-  // kCGEventUnacceleratedPointerMovementX/Y were first added as CGEventField
-  // enum values in the 10.15.1 SDK.
-  //
-  // While they do seem to work at runtime back to 10.14, the safest approach is
-  // to limit their use to 10.15.1 and newer to avoid relying on private or
-  // undocumented APIs on earlier OSes.
-  if (@available(macOS 10.15.1, *)) {
-    return true;
-  }
-  return false;
 }
 
 bool RenderWidgetHostViewMac::CanBePointerLocked() {
@@ -1432,6 +1412,7 @@ RenderWidgetHostViewMac::GetKeyboardLayoutMap() {
 
 void RenderWidgetHostViewMac::GestureEventAck(
     const WebGestureEvent& event,
+    blink::mojom::InputEventResultSource ack_source,
     blink::mojom::InputEventResultState ack_result) {
   ForwardTouchpadZoomEventIfNecessary(event, ack_result);
 
@@ -1458,7 +1439,7 @@ void RenderWidgetHostViewMac::GestureEventAck(
 }
 
 void RenderWidgetHostViewMac::ProcessAckedTouchEvent(
-    const TouchEventWithLatencyInfo& touch,
+    const input::TouchEventWithLatencyInfo& touch,
     blink::mojom::InputEventResultState ack_result) {
   const bool event_consumed =
       ack_result == blink::mojom::InputEventResultState::kConsumed;
@@ -1524,7 +1505,7 @@ void RenderWidgetHostViewMac::SendTouchpadZoomEvent(
   DCHECK(event->IsTouchpadZoomEvent());
   if (ShouldRouteEvents()) {
     host()->delegate()->GetInputEventRouter()->RouteGestureEvent(
-        this, event, ui::LatencyInfo(ui::SourceEventType::TOUCHPAD));
+        this, event, ui::LatencyInfo());
     return;
   }
   host()->ForwardGestureEvent(*event);
@@ -1543,7 +1524,8 @@ void RenderWidgetHostViewMac::InjectTouchEvent(
     host()->delegate()->GetInputEventRouter()->RouteTouchEvent(
         this, &touch_event, latency_info);
   } else {
-    host()->ForwardTouchEventWithLatencyInfo(event, latency_info);
+    host()->GetRenderInputRouter()->ForwardTouchEventWithLatencyInfo(
+        event, latency_info);
   }
 }
 
@@ -1817,7 +1799,7 @@ void RenderWidgetHostViewMac::EndKeyboardEvent() {
 }
 
 void RenderWidgetHostViewMac::ForwardKeyboardEvent(
-    const NativeWebKeyboardEvent& key_event,
+    const input::NativeWebKeyboardEvent& key_event,
     const ui::LatencyInfo& latency_info) {
   if (auto* widget_host = GetWidgetForKeyboardEvent()) {
     widget_host->ForwardKeyboardEventWithLatencyInfo(key_event, latency_info);
@@ -1825,7 +1807,7 @@ void RenderWidgetHostViewMac::ForwardKeyboardEvent(
 }
 
 void RenderWidgetHostViewMac::ForwardKeyboardEventWithCommands(
-    const NativeWebKeyboardEvent& key_event,
+    const input::NativeWebKeyboardEvent& key_event,
     const ui::LatencyInfo& latency_info,
     std::vector<blink::mojom::EditCommandPtr> commands) {
   if (auto* widget_host = GetWidgetForKeyboardEvent()) {
@@ -1837,7 +1819,7 @@ void RenderWidgetHostViewMac::ForwardKeyboardEventWithCommands(
 void RenderWidgetHostViewMac::RouteOrProcessMouseEvent(
     const blink::WebMouseEvent& const_web_event) {
   blink::WebMouseEvent web_event = const_web_event;
-  ui::LatencyInfo latency_info(ui::SourceEventType::OTHER);
+  ui::LatencyInfo latency_info;
   latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT);
   if (ShouldRouteEvents()) {
     host()->delegate()->GetInputEventRouter()->RouteMouseEvent(this, &web_event,
@@ -1855,7 +1837,7 @@ void RenderWidgetHostViewMac::RouteOrProcessTouchEvent(
   if (!result.succeeded)
     return;
 
-  ui::LatencyInfo latency_info(ui::SourceEventType::OTHER);
+  ui::LatencyInfo latency_info;
   latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT);
   if (ShouldRouteEvents()) {
     host()->delegate()->GetInputEventRouter()->RouteTouchEvent(this, &web_event,
@@ -1868,7 +1850,7 @@ void RenderWidgetHostViewMac::RouteOrProcessTouchEvent(
 void RenderWidgetHostViewMac::RouteOrProcessWheelEvent(
     const blink::WebMouseWheelEvent& const_web_event) {
   blink::WebMouseWheelEvent web_event = const_web_event;
-  ui::LatencyInfo latency_info(ui::SourceEventType::WHEEL);
+  ui::LatencyInfo latency_info;
   latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT);
   mouse_wheel_phase_handler_.AddPhaseIfNeededAndScheduleEndEvent(
       web_event, ShouldRouteEvents());
@@ -2262,7 +2244,7 @@ void RenderWidgetHostViewMac::ForwardKeyboardEventWithCommands(
   }
   const blink::WebKeyboardEvent& keyboard_event =
       static_cast<const blink::WebKeyboardEvent&>(input_event->Event());
-  NativeWebKeyboardEvent native_event(keyboard_event, nil);
+  input::NativeWebKeyboardEvent native_event(keyboard_event, nil);
   native_event.skip_if_unhandled = skip_if_unhandled;
   // The NSEvent constructed from the InputEvent sent over mojo is not even
   // close to the original NSEvent, resulting in all sorts of bugs. Use the

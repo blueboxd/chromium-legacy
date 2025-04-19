@@ -144,12 +144,29 @@ IN_PROC_BROWSER_TEST_F(WebAppIntegration, AppLaunchedInTab) {
   helper_.CheckAppLoadedInTab(Site::kStandalone);
 }
 
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_PreinstalledWebAppCreateShortcutFlow \
+  DISABLED_PreinstalledWebAppCreateShortcutFlow
+#else
+#define MAYBE_PreinstalledWebAppCreateShortcutFlow \
+  PreinstalledWebAppCreateShortcutFlow
+#endif
 IN_PROC_BROWSER_TEST_F(WebAppIntegration,
-                       PreinstalledWebAppCreateShortcutFlow) {
+                       MAYBE_PreinstalledWebAppCreateShortcutFlow) {
   helper_.InstallPreinstalledApp(Site::kStandalone);
   helper_.CheckAppInListWindowed(Site::kStandalone);
   helper_.CheckPlatformShortcutNotExists(Site::kStandalone);
   helper_.CreateShortcutsFromList(Site::kStandalone);
+  helper_.CheckPlatformShortcutAndIcon(Site::kStandalone);
+  helper_.UninstallFromList(Site::kStandalone);
+  helper_.CheckPlatformShortcutNotExists(Site::kStandalone);
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppIntegration, PreinstalledWebAppInstallAfterFlow) {
+  helper_.InstallPreinstalledApp(Site::kStandalone);
+  helper_.CheckAppInListWindowed(Site::kStandalone);
+  helper_.CheckPlatformShortcutNotExists(Site::kStandalone);
+  helper_.InstallOmniboxIcon(InstallableSite::kStandalone);
   helper_.CheckPlatformShortcutAndIcon(Site::kStandalone);
   helper_.UninstallFromList(Site::kStandalone);
   helper_.CheckPlatformShortcutNotExists(Site::kStandalone);

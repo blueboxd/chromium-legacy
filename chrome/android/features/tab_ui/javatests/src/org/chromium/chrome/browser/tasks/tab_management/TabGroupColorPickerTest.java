@@ -8,6 +8,7 @@ import static org.chromium.chrome.browser.tasks.tab_management.ColorPickerItemVi
 
 import android.app.Activity;
 import android.graphics.drawable.LayerDrawable;
+import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -23,6 +24,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.MockitoAnnotations;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseActivityTestRule;
 import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterSet;
@@ -35,7 +37,6 @@ import org.chromium.chrome.browser.tasks.tab_management.ColorPickerCoordinator.C
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.base.ViewUtils;
 import org.chromium.ui.test.util.BlankUiTestActivity;
 import org.chromium.ui.test.util.NightModeTestUtils;
@@ -58,7 +59,7 @@ public class TabGroupColorPickerTest {
     public final ChromeRenderTestRule mRenderTestRule =
             ChromeRenderTestRule.Builder.withPublicCorpus()
                     .setBugComponent(RenderTestRule.Component.UI_BROWSER_MOBILE_TAB_GROUPS)
-                    .setRevision(1)
+                    .setRevision(2)
                     .build();
 
     @Rule
@@ -80,7 +81,7 @@ public class TabGroupColorPickerTest {
         MockitoAnnotations.initMocks(this);
         mActivityTestRule.launchActivity(null);
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     int selectedIndex = 1;
                     int totalColorCount = 9;
@@ -95,7 +96,10 @@ public class TabGroupColorPickerTest {
                             new ColorPickerCoordinator(
                                     mActivityTestRule.getActivity(),
                                     colors,
-                                    R.layout.tab_group_color_picker_container,
+                                    LayoutInflater.from(mActivityTestRule.getActivity())
+                                            .inflate(
+                                                    R.layout.tab_group_color_picker_container,
+                                                    /* root= */ null),
                                     ColorPickerType.TAB_GROUP,
                                     false,
                                     ColorPickerLayoutType.DYNAMIC,
@@ -112,14 +116,14 @@ public class TabGroupColorPickerTest {
     @Test
     @MediumTest
     public void testColorPicker_forceSingleRow() {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     mContainerView.setColorPickerLayoutType(ColorPickerLayoutType.SINGLE_ROW);
                     mRootView.addView(mContainerView);
                 });
 
         // Change the width of the parent view to restrict for a double row
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     LinearLayout firstRow =
                             mContainerView.findViewById(R.id.color_picker_first_row);
@@ -149,7 +153,7 @@ public class TabGroupColorPickerTest {
                 });
 
         // Validate that a row split was not performed
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     LinearLayout firstRow =
                             mContainerView.findViewById(R.id.color_picker_first_row);
@@ -157,7 +161,7 @@ public class TabGroupColorPickerTest {
                     Assert.assertEquals(mColorList.size(), firstRow.getChildCount());
                 });
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     mContainerView.setColorPickerLayoutType(ColorPickerLayoutType.DYNAMIC);
                 });
@@ -166,14 +170,14 @@ public class TabGroupColorPickerTest {
     @Test
     @MediumTest
     public void testColorPicker_forceDoubleRow() {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     mContainerView.setColorPickerLayoutType(ColorPickerLayoutType.DOUBLE_ROW);
                     mRootView.addView(mContainerView);
                 });
 
         // Change the width of the parent view to allow for a single row
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     LinearLayout firstRow =
                             mContainerView.findViewById(R.id.color_picker_first_row);
@@ -203,7 +207,7 @@ public class TabGroupColorPickerTest {
                 });
 
         // Validate that a row split was performed
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     LinearLayout firstRow =
                             mContainerView.findViewById(R.id.color_picker_first_row);
@@ -214,7 +218,7 @@ public class TabGroupColorPickerTest {
                     Assert.assertEquals(mColorList.size() / 2, secondRow.getChildCount());
                 });
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     mContainerView.setColorPickerLayoutType(ColorPickerLayoutType.DYNAMIC);
                 });
@@ -223,12 +227,12 @@ public class TabGroupColorPickerTest {
     @Test
     @MediumTest
     public void testColorPicker_dynamicSingleRow() {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     mRootView.addView(mContainerView);
                 });
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     int selectedIndex = 1;
                     LinearLayout firstRow =
@@ -255,12 +259,12 @@ public class TabGroupColorPickerTest {
     @Test
     @MediumTest
     public void testColorPicker_dynamicAlternateSelection() {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     mRootView.addView(mContainerView);
                 });
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     int selectedIndex = 0;
                     LinearLayout firstRow =
@@ -289,13 +293,13 @@ public class TabGroupColorPickerTest {
     @Test
     @MediumTest
     public void testColorPicker_dynamicDoubleRow() {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     mRootView.addView(mContainerView);
                 });
 
         // Change the width of the parent view to enact a row split on the colors
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     LinearLayout firstRow =
                             mContainerView.findViewById(R.id.color_picker_first_row);
@@ -324,7 +328,7 @@ public class TabGroupColorPickerTest {
                 });
 
         // Validate that a row split was performed
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     LinearLayout firstRow =
                             mContainerView.findViewById(R.id.color_picker_first_row);
@@ -336,7 +340,7 @@ public class TabGroupColorPickerTest {
                 });
 
         // Change the width of the parent view to enact a single row on the colors
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     LinearLayout firstRow =
                             mContainerView.findViewById(R.id.color_picker_first_row);
@@ -365,7 +369,7 @@ public class TabGroupColorPickerTest {
                 });
 
         // Validate that a single row was returned to
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     LinearLayout firstRow =
                             mContainerView.findViewById(R.id.color_picker_first_row);
@@ -378,7 +382,7 @@ public class TabGroupColorPickerTest {
     @MediumTest
     @Feature("RenderTest")
     public void testColorPicker_singleRowRender() throws IOException {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     mRootView.addView(mContainerView);
                 });
@@ -390,13 +394,13 @@ public class TabGroupColorPickerTest {
     @MediumTest
     @Feature("RenderTest")
     public void testColorPicker_doubleRowRender() throws IOException {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     mRootView.addView(mContainerView);
                 });
 
         // Change the width of the parent view to enact a row split on the colors
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     LinearLayout firstRow =
                             mContainerView.findViewById(R.id.color_picker_first_row);
@@ -427,7 +431,7 @@ public class TabGroupColorPickerTest {
         mRenderTestRule.render(mRootView, "tab_group_color_picker_double_row");
 
         // Change the width of the parent view to enact a single row on the colors
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     LinearLayout firstRow =
                             mContainerView.findViewById(R.id.color_picker_first_row);

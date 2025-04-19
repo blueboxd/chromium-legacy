@@ -45,7 +45,16 @@ enum class AccessibilityAlert {
   SAVED_DESKS_MODE_ENTERED,
 
   // When the user enters faster split screen setup session.
-  FASTER_SPLIT_SCREEN_SETUP
+  FASTER_SPLIT_SCREEN_SETUP,
+
+  // When the user resizes a snap group via arrow keys.
+  SNAP_GROUP_RESIZE_LEFT,
+  SNAP_GROUP_RESIZE_RIGHT,
+  SNAP_GROUP_RESIZE_UP,
+  SNAP_GROUP_RESIZE_DOWN,
+
+  // When the user creates a snap group.
+  SNAP_GROUP_CREATION,
 };
 
 enum class AccessibilityPanelState {
@@ -235,6 +244,12 @@ enum class DictationNotificationType {
   kNoDlcsDownloaded,
   kOnlySodaDownloaded,
   kOnlyPumpkinDownloaded,
+};
+
+// The types of notifications that can be shown by FaceGaze.
+enum class FaceGazeNotificationType {
+  kDlcFailed,
+  kDlcSucceeded,
 };
 
 // The types of accessibility-related toasts. This enum should be kept in sync

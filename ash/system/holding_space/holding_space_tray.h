@@ -74,7 +74,7 @@ class ASH_EXPORT HoldingSpaceTray : public TrayBackgroundView,
   void HideBubbleWithView(const TrayBubbleView* bubble_view) override;
   void AnchorUpdated() override;
   void UpdateAfterLoginStatusChange() override;
-  void CloseBubble() override;
+  void CloseBubbleInternal() override;
   void ShowBubble() override;
   TrayBubbleView* GetBubbleView() override;
   views::Widget* GetBubbleWidget() const override;
@@ -122,7 +122,6 @@ class ASH_EXPORT HoldingSpaceTray : public TrayBackgroundView,
   // HoldingSpaceControllerObserver:
   void OnHoldingSpaceModelAttached(HoldingSpaceModel* model) override;
   void OnHoldingSpaceModelDetached(HoldingSpaceModel* model) override;
-  void OnHoldingSpaceForceShowInShelfChanged() override;
 
   // HoldingSpaceModelObserver:
   void OnHoldingSpaceItemsAdded(

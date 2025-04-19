@@ -74,11 +74,6 @@ struct GPU_EXPORT
     return input.driver_version;
   }
 
-  static int cuda_compute_capability_major(
-      const gpu::GPUInfo::GPUDevice& input) {
-    return input.cuda_compute_capability_major;
-  }
-
   static gl::GpuPreference gpu_preference(
       const gpu::GPUInfo::GPUDevice& input) {
     return input.gpu_preference;
@@ -261,6 +256,11 @@ struct GPU_EXPORT
       const gpu::OverlayInfo& input) {
     return input.rgb10a2_overlay_support;
   }
+
+  static gpu::OverlaySupport p010_overlay_support(
+      const gpu::OverlayInfo& input) {
+    return input.p010_overlay_support;
+  }
 };
 
 #endif
@@ -286,6 +286,11 @@ struct GPU_EXPORT StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo> {
   static const std::vector<gpu::GPUInfo::GPUDevice>& secondary_gpus(
       const gpu::GPUInfo& input) {
     return input.secondary_gpus;
+  }
+
+  static const std::vector<gpu::GPUInfo::GPUDevice>& npus(
+      const gpu::GPUInfo& input) {
+    return input.npus;
   }
 
   static const std::string& pixel_shader_version(const gpu::GPUInfo& input) {
@@ -367,12 +372,6 @@ struct GPU_EXPORT StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo> {
   static bool can_support_threaded_texture_mailbox(const gpu::GPUInfo& input) {
     return input.can_support_threaded_texture_mailbox;
   }
-
-#if BUILDFLAG(IS_MAC)
-  static uint32_t macos_specific_texture_target(const gpu::GPUInfo& input) {
-    return input.macos_specific_texture_target;
-  }
-#endif  // BUILDFLAG(IS_MAC)
 
 #if BUILDFLAG(IS_WIN)
   static uint32_t directml_feature_level(const gpu::GPUInfo& input) {

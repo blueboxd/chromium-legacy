@@ -10,6 +10,7 @@
 #import "components/autofill/core/browser/autofill_manager.h"
 #import "components/autofill/core/browser/field_types.h"
 #import "components/autofill/core/common/unique_ids.h"
+#import "components/password_manager/ios/password_generation_provider.h"
 #import "components/plus_addresses/plus_address_types.h"
 #import "ios/chrome/browser/autofill/model/bottom_sheet/virtual_card_enrollment_callbacks.h"
 #include "ios/web/public/js_messaging/web_frames_manager.h"
@@ -21,7 +22,7 @@ namespace autofill {
 class AutofillBottomSheetObserver;
 class CardUnmaskAuthenticationSelectionDialogControllerImpl;
 struct FormActivityParams;
-struct VirtualCardEnrollUiModel;
+class VirtualCardEnrollUiModel;
 }  // namespace autofill
 
 namespace web {
@@ -50,6 +51,10 @@ class AutofillBottomSheetTabHelper
   // dismissed before it gets disabled.
   static constexpr int kPasswordBottomSheetMaxDismissCount = 3;
 
+  // Maximum number of times the password generation bottom sheet can be
+  // dismissed before it gets disabled.
+  static constexpr int kPasswordGenerationBottomSheetMaxDismissCount = 3;
+
   AutofillBottomSheetTabHelper(const AutofillBottomSheetTabHelper&) = delete;
   AutofillBottomSheetTabHelper& operator=(const AutofillBottomSheetTabHelper&) =
       delete;
@@ -76,7 +81,7 @@ class AutofillBottomSheetTabHelper
 
   // Send a command to show the VCN enrollment Bottom Sheet.
   void ShowVirtualCardEnrollmentBottomSheet(
-      autofill::VirtualCardEnrollUiModel model,
+      std::unique_ptr<autofill::VirtualCardEnrollUiModel> model,
       autofill::VirtualCardEnrollmentCallbacks callbacks);
 
   // Send a command to show the bottom sheet to edit an address.
@@ -90,8 +95,19 @@ class AutofillBottomSheetTabHelper
   // Sets the bottom sheet CommandDispatcher.
   void SetAutofillBottomSheetHandler(id<AutofillCommands> commands_handler);
 
+  // Sets the password generation provider used for proactive password
+  // generation.
+  void SetPasswordGenerationProvider(
+      id<PasswordGenerationProvider> generation_provider);
+
   // Prepare bottom sheet using data from the password form prediction.
   void AttachPasswordListeners(
+      const std::vector<autofill::FieldRendererId>& renderer_ids,
+      const std::string& frame_id);
+
+  // Prepare proactive password generation bottom sheet using data from the
+  // password form prediction.
+  void AttachPasswordGenerationListeners(
       const std::vector<autofill::FieldRendererId>& renderer_ids,
       const std::string& frame_id);
 
@@ -102,6 +118,10 @@ class AutofillBottomSheetTabHelper
   // Detach the password listeners, which will deactivate the password bottom
   // sheet on all frames.
   void DetachPasswordListenersForAllFrames();
+
+  // Detach the password generation listeners, which will deactivate the
+  // proactive password generation bottom sheet on all frames.
+  void DetachPasswordGenerationListenersForAllFrames();
 
   // Detach the payments listeners, which will deactivate the payments bottom
   // sheet on the provided frame.
@@ -121,7 +141,10 @@ class AutofillBottomSheetTabHelper
                                web::WebFrame* web_frame) override;
 
   // autofill::AutofillManager::Observer:
-  void OnAutofillManagerDestroyed(autofill::AutofillManager& manager) override;
+  void OnAutofillManagerStateChanged(
+      autofill::AutofillManager& manager,
+      autofill::AutofillManager::LifecycleState old_state,
+      autofill::AutofillManager::LifecycleState new_state) override;
   void OnFieldTypesDetermined(autofill::AutofillManager& manager,
                               autofill::FormGlobalId form_id,
                               FieldTypeSource source) override;
@@ -148,7 +171,11 @@ class AutofillBottomSheetTabHelper
 
   // Check whether the password bottom sheet has been dismissed too many times
   // by the user.
-  bool HasReachedDismissLimit();
+  bool HasReachedPasswordSuggestionDismissLimit();
+
+  // Check whether the password generation bottom sheet has been dismissed
+  // too many times by the user.
+  bool HasReachedPasswordGenerationDismissLimit();
 
   // Prepare bottom sheet using data from the form prediction.
   void AttachListeners(
@@ -168,6 +195,13 @@ class AutofillBottomSheetTabHelper
 
   // Send command to show the Payments Bottom Sheet.
   void ShowPaymentsBottomSheet(const autofill::FormActivityParams params);
+
+  // Shows the password generation suggestion view controller.
+  void ShowProactivePasswordGenerationBottomSheet(
+      const autofill::FormActivityParams& params);
+
+  // Password generation provider used to trigger proactive password generation
+  id<PasswordGenerationProvider> generation_provider_;
 
   // Handler used to request showing the password bottom sheet.
   __weak id<AutofillCommands> commands_handler_;
@@ -193,6 +227,12 @@ class AutofillBottomSheetTabHelper
   // TODO(crbug.com/40266699): Migrate to FieldGlobalIds.
   std::map<std::string, std::set<autofill::FieldRendererId>>
       registered_payments_renderer_ids_;
+
+  // Set of proactive password generation bottom sheet related renderer ids,
+  // mapped to their frame id.
+  // TODO(crbug.com/40266699): Migrate to FieldGlobalIds.
+  std::map<std::string, std::set<autofill::FieldRendererId>>
+      registered_password_generation_renderer_ids_;
 
   base::ObserverList<autofill::AutofillBottomSheetObserver>::Unchecked
       observers_;

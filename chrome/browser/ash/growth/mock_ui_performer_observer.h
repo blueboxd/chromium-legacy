@@ -14,11 +14,20 @@ class MockUiPerformerObserver : public UiActionPerformer::Observer {
   ~MockUiPerformerObserver() override;
 
   // UiActionPerformer::Observer:
-  MOCK_METHOD(void, OnReadyToLogImpression, (int), (override));
+  MOCK_METHOD(void,
+              OnReadyToLogImpression,
+              (int, std::optional<int>, bool),
+              (override));
 
-  MOCK_METHOD(void, OnDismissed, (int), (override));
+  MOCK_METHOD(void,
+              OnDismissed,
+              (int, std::optional<int>, bool, bool),
+              (override));
 
-  MOCK_METHOD(void, OnButtonPressed, (int, CampaignButtonId, bool), (override));
+  MOCK_METHOD(void,
+              OnButtonPressed,
+              (int, std::optional<int>, CampaignButtonId, bool, bool),
+              (override));
 };
 
 #endif  // CHROME_BROWSER_ASH_GROWTH_MOCK_UI_PERFORMER_OBSERVER_H_

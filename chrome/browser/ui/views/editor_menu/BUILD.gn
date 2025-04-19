@@ -50,6 +50,7 @@ source_set("editor_menu") {
     "//ash/webui/settings/public/constants:mojom",
     "//base",
     "//chrome/browser/profiles:profile",
+    "//chrome/browser/ui/chromeos/read_write_cards",
     "//chromeos/components/editor_menu/public/cpp",
     "//chromeos/crosapi/mojom",
     "//content/public/browser:browser",
@@ -63,7 +64,10 @@ source_set("editor_menu") {
       "editor_manager_ash.h",
     ]
 
-    deps += [ "//chrome/browser/ash" ]
+    deps += [
+      "//chrome/browser/ash",
+      "//chrome/browser/ash/input_method",
+    ]
   }
 
   if (is_chromeos_lacros) {

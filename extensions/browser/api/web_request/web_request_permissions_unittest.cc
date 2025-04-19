@@ -389,7 +389,7 @@ TEST_F(ExtensionWebRequestPermissionsTest,
        CanExtensionAccessURLWithWithheldPermissions) {
   ExtensionsAPIClient api_client;
   scoped_refptr<const Extension> extension =
-      ExtensionBuilder("ext").AddPermission("<all_urls>").Build();
+      ExtensionBuilder("ext").AddHostPermission("<all_urls>").Build();
   URLPatternSet all_urls(
       {URLPattern(Extension::kValidHostPermissionSchemes, "<all_urls>")});
   // Simulate withholding the <all_urls> permission.
@@ -490,7 +490,9 @@ TEST_F(ExtensionWebRequestPermissionsTest,
   // Set up the extension to have access to kGoogleCom and withheld access to
   // kExampleCom.
   scoped_refptr<const Extension> extension =
-      ExtensionBuilder("ext").AddPermissions({kGoogleCom, kExampleCom}).Build();
+      ExtensionBuilder("ext")
+          .AddHostPermissions({kGoogleCom, kExampleCom})
+          .Build();
 
   URLPatternSet kActivePatternSet(
       {URLPattern(Extension::kValidHostPermissionSchemes, kGoogleCom)});

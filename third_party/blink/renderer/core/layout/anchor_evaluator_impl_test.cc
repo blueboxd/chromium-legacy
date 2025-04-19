@@ -9,14 +9,14 @@
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/physical_box_fragment.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 namespace {
 
-class AnchorEvaluatorImplTest : public RenderingTest,
-                                private ScopedCSSAnchorPositioningForTest {
+class AnchorEvaluatorImplTest : public RenderingTest {
  public:
-  AnchorEvaluatorImplTest() : ScopedCSSAnchorPositioningForTest(true) {}
+  AnchorEvaluatorImplTest() = default;
 
   const PhysicalAnchorQuery* AnchorQuery(const Element& element) const {
     const LayoutBlockFlow* container =

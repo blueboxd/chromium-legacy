@@ -4,6 +4,7 @@
 
 import './strings.m.js';
 import './bypass_warning_confirmation_dialog.js';
+import './bypass_warning_confirmation_interstitial.js';
 import './item.js';
 import './toolbar.js';
 import 'chrome://resources/cr_components/managed_footnote/managed_footnote.js';
@@ -20,11 +21,13 @@ import {FindShortcutMixin} from 'chrome://resources/cr_elements/find_shortcut_mi
 import {assert} from 'chrome://resources/js/assert.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
+import {mojoString16ToString} from 'chrome://resources/js/mojo_type_util.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.js';
 import type {IronListElement} from 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import {Debouncer, PolymerElement, timeOut} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BrowserProxy} from './browser_proxy.js';
+import type {DownloadsDangerousDownloadInterstitialElement as DangerousInterstitialElement} from './bypass_warning_confirmation_interstitial.js';
 import type {MojomData} from './data.js';
 import type {PageCallbackRouter, PageHandlerInterface} from './downloads.mojom-webui.js';
 import {State} from './downloads.mojom-webui.js';
@@ -85,10 +88,9 @@ export class DownloadsManagerElement extends DownloadsManagerElementBase {
 
       spinnerActive_: {
         type: Boolean,
-        notify: true,
       },
 
-      bypassDialogItemId_: {
+      bypassPromptItemId_: {
         type: String,
         value: '',
       },
@@ -113,6 +115,11 @@ export class DownloadsManagerElement extends DownloadsManagerElementBase {
       lastFocused_: Object,
 
       listBlurred_: Boolean,
+
+      dangerousDownloadInterstitial_: {
+        type: Boolean,
+        value: () => loadTimeData.getBoolean('dangerousDownloadInterstitial'),
+      },
     };
   }
 
@@ -125,12 +132,13 @@ export class DownloadsManagerElement extends DownloadsManagerElementBase {
   private hasShadow_: boolean;
   private inSearchMode_: boolean;
   private spinnerActive_: boolean;
-  private bypassDialogItemId_: string;
+  private bypassPromptItemId_: string;
   // <if expr="_google_chrome">
   private firstDangerousItemId_: string;
   private esbDownloadRowPromo_: boolean;
   private isEligibleForEsbPromo_: boolean;
   // </if>
+  private dangerousDownloadInterstitial_: boolean;
 
   private announcerDebouncer_: Debouncer|null = null;
   private mojoHandler_: PageHandlerInterface;
@@ -210,9 +218,16 @@ export class DownloadsManagerElement extends DownloadsManagerElementBase {
   private onSaveDangerousClick_(e: SaveDangerousClickEvent) {
     const bypassItem = this.items_.find(item => item.id === e.detail.id);
     if (bypassItem) {
-      this.bypassDialogItemId_ = bypassItem.id;
+      this.bypassPromptItemId_ = bypassItem.id;
       assert(!!this.mojoHandler_);
-      this.mojoHandler_.recordOpenBypassWarningPrompt(this.bypassDialogItemId_);
+
+      if (this.dangerousDownloadInterstitial_) {
+        this.mojoHandler_.recordOpenBypassWarningInterstitial(
+            this.bypassPromptItemId_);
+      } else {
+        this.mojoHandler_.recordOpenBypassWarningDialog(
+            this.bypassPromptItemId_);
+      }
     }
   }
 
@@ -239,8 +254,9 @@ export class DownloadsManagerElement extends DownloadsManagerElementBase {
     // scrolls the download into view.
     if (this.items_.slice(0, 5).some(download => download.id === item.id)) {
       this.logEsbPromotionRowViewed();
+      return true;
     }
-    return true;
+    return false;
   }
 
   private logEsbPromotionRowViewed() {
@@ -249,36 +265,96 @@ export class DownloadsManagerElement extends DownloadsManagerElementBase {
   }
   // </if>
 
-  private shouldShowBypassWarningDialog_(): boolean {
-    return this.bypassDialogItemId_ !== '';
+  private shouldShowBypassWarningPrompt_(): boolean {
+    return this.bypassPromptItemId_ !== '';
   }
 
   private computeBypassWarningDialogFileName_(): string {
     const bypassItem =
-        this.items_.find(item => item.id === this.bypassDialogItemId_);
+        this.items_.find(item => item.id === this.bypassPromptItemId_);
     return bypassItem?.fileName || '';
   }
 
-  private hideBypassWarningDialog_() {
-    this.bypassDialogItemId_ = '';
+  private computeDangerousInterstitialTrustSiteLine_(): string {
+    const bypassItem =
+        this.items_.find(item => item.id === this.bypassPromptItemId_);
+    if (!bypassItem) {
+      return '';
+    }
+
+    const url = mojoString16ToString(bypassItem.displayReferrerUrl);
+    if (url === '') {
+      return loadTimeData.getString(
+          'warningBypassInterstitialSurveyTrustSiteWithoutUrl');
+    }
+    return loadTimeData.getStringF(
+        'warningBypassInterstitialSurveyTrustSiteWithUrl', url);
+  }
+
+  private computeDangerInterstitialTrustSiteAccessible_(): string {
+    const bypassItem =
+        this.items_.find(item => item.id === this.bypassPromptItemId_);
+    if (!bypassItem) {
+      return '';
+    }
+
+    const url = mojoString16ToString(bypassItem.displayReferrerUrl);
+    if (url === '') {
+      return loadTimeData.getString(
+          'warningBypassInterstitialSurveyTrustSiteWithoutUrlAccessible');
+    }
+    return loadTimeData.getStringF(
+        'warningBypassInterstitialSurveyTrustSiteWithUrlAccessible', url);
+  }
+
+  private hideBypassWarningPrompt_() {
+    this.bypassPromptItemId_ = '';
   }
 
   private onBypassWarningConfirmationDialogClose_() {
     const dialog = this.shadowRoot!.querySelector(
         'download-bypass-warning-confirmation-dialog');
     assert(dialog);
-    assert(this.bypassDialogItemId_ !== '');
+    assert(this.bypassPromptItemId_ !== '');
     assert(!!this.mojoHandler_);
     if (dialog.wasConfirmed()) {
-      this.mojoHandler_.saveDangerousFromPromptRequiringGesture(
-          this.bypassDialogItemId_);
+      this.mojoHandler_.saveDangerousFromDialogRequiringGesture(
+          this.bypassPromptItemId_);
     } else {
       // Closing the dialog by clicking cancel is treated the same as closing
       // the dialog by pressing Esc. Both are treated as CANCEL, not CLOSE.
-      this.mojoHandler_.recordCancelBypassWarningPrompt(
-          this.bypassDialogItemId_);
+      this.mojoHandler_.recordCancelBypassWarningDialog(
+          this.bypassPromptItemId_);
     }
-    this.hideBypassWarningDialog_();
+    this.hideBypassWarningPrompt_();
+  }
+
+  private getDangerInterstitial_(): DangerousInterstitialElement|null {
+    return this.shadowRoot!.querySelector(
+        'downloads-dangerous-download-interstitial');
+  }
+
+  private validateInterstitial_() {
+    const interstitial = this.getDangerInterstitial_();
+    assert(interstitial);
+    assert(this.bypassPromptItemId_ !== '');
+    assert(!!this.mojoHandler_);
+  }
+
+  private onDangerousDownloadInterstitialClose_() {
+    this.validateInterstitial_();
+    const interstitial = this.getDangerInterstitial_();
+    assert(interstitial);
+    this.mojoHandler_.saveDangerousFromInterstitialNeedGesture(
+        this.bypassPromptItemId_, interstitial.getSurveyResponse());
+    this.hideBypassWarningPrompt_();
+  }
+
+  private onDangerousDownloadInterstitialCancel_() {
+    this.validateInterstitial_();
+    this.mojoHandler_.recordCancelBypassWarningInterstitial(
+        this.bypassPromptItemId_);
+    this.hideBypassWarningPrompt_();
   }
 
   private clearAll_() {
@@ -421,11 +497,15 @@ export class DownloadsManagerElement extends DownloadsManagerElementBase {
     this.inSearchMode_ = this.searchService_.isSearching();
   }
 
+  private onSpinnerActiveChanged_(event: CustomEvent<{value: boolean}>) {
+    this.spinnerActive_ = event.detail.value;
+  }
+
   private removeItem_(index: number) {
     const removed = this.items_.splice(index, 1);
     this.updateHideDates_(index, index);
-    if (removed.some(item => item.id === this.bypassDialogItemId_)) {
-      this.hideBypassWarningDialog_();
+    if (removed.some(item => item.id === this.bypassPromptItemId_)) {
+      this.hideBypassWarningPrompt_();
     }
     this.notifySplices('items_', [{
                          index: index,

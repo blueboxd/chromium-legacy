@@ -1744,6 +1744,8 @@ IN_PROC_BROWSER_TEST_P(
       "\r\n"
       "\r\n");
   original_response2.Done();
+  EXPECT_TRUE(first_reload.WaitForRequestRedirected());
+  first_reload.ResumeNavigation();
   second_redirect_response.WaitForRequest();
   second_redirect_response.Send(
       "HTTP/1.1 200 OK\r\n"
@@ -3675,9 +3677,10 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest, LastCommittedOrigin) {
 
   // Start a navigation to a b.com URL, and don't wait for commit.
   GURL url_b(embedded_test_server()->GetURL("b.com", "/title2.html"));
-  TestFrameNavigationObserver commit_observer(root);
+  TestNavigationManager navigation_manager(web_contents, url_b);
   RenderFrameDeletedObserver deleted_observer(rfh_a);
   shell()->LoadURL(url_b);
+  navigation_manager.WaitForSpeculativeRenderFrameHostCreation();
 
   // The speculative RFH shouln't have a last committed origin (the default
   // value is a unique origin). The current RFH shouldn't change its last
@@ -3688,7 +3691,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest, LastCommittedOrigin) {
 
   // Verify that the last committed origin is set for the b.com RHF once it
   // commits.
-  commit_observer.WaitForCommit();
+  ASSERT_TRUE(navigation_manager.WaitForNavigationFinished());
   EXPECT_EQ(url::Origin::Create(url_b), rfh_b->GetLastCommittedOrigin());
   EXPECT_EQ(rfh_b, web_contents->GetPrimaryMainFrame());
 
@@ -3979,7 +3982,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
 
   TestNavigationManager cross_site_navigation(shell()->web_contents(), site2);
   shell()->LoadURL(site2);
-  EXPECT_TRUE(cross_site_navigation.WaitForRequestStart());
+  cross_site_navigation.WaitForSpeculativeRenderFrameHostCreation();
 
   RenderFrameHostImpl* speculative_rfh =
       static_cast<WebContentsImpl*>(shell()->web_contents())
@@ -3992,7 +3995,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
       GURL("javascript:(0)"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       std::string());
 
-  cross_site_navigation.ResumeNavigation();
+  ASSERT_TRUE(cross_site_navigation.WaitForNavigationFinished());
   // No crash means everything worked!
 }
 
@@ -6022,6 +6025,7 @@ IN_PROC_BROWSER_TEST_P(
   content::TestNavigationManager navigation_manager(web_contents, url);
 
   shell()->LoadURL(url);
+  navigation_manager.WaitForSpeculativeRenderFrameHostCreation();
   RenderProcessHost* speculative_rph = web_contents->GetPrimaryFrameTree()
                                            .root()
                                            ->render_manager()
@@ -6034,7 +6038,8 @@ IN_PROC_BROWSER_TEST_P(
   // TODO(gab, nasko): On Android IsProcessBackgrounded is currently giving
   // incorrect value at this stage of the process lifetime. This should be
   // fixed in follow up cleanup work. See https://crbug.com/560446.
-  EXPECT_FALSE(speculative_rph->IsProcessBackgrounded());
+  EXPECT_NE(speculative_rph->GetPriority(),
+            base::Process::Priority::kBestEffort);
 #endif
 
   // Wait for the underlying OS process to have launched and be ready to
@@ -6073,8 +6078,16 @@ IN_PROC_BROWSER_TEST_P(
       static_cast<WebContentsImpl*>(shell()->web_contents());
 
   // Start off navigating to a.com and capture the process used to commit.
+  SpareRenderProcessObserver render_process_observer;
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
+  // The AndroidWarmUpSpareRendererWithTimeout feature will create a spare
+  // renderer after the navigation finishes or with a delay so we need to
+  // explicitly wait.
+  if (base::FeatureList::IsEnabled(
+          features::kAndroidWarmUpSpareRendererWithTimeout)) {
+    render_process_observer.WaitForSpareRenderProcessCreation();
+  }
   RenderProcessHost* start_rph =
       web_contents->GetPrimaryMainFrame()->GetProcess();
 
@@ -6083,7 +6096,7 @@ IN_PROC_BROWSER_TEST_P(
   RenderProcessHost* spare_rph =
       RenderProcessHostImpl::GetSpareRenderProcessHostForTesting();
   EXPECT_TRUE(spare_rph);
-  EXPECT_TRUE(spare_rph->IsProcessBackgrounded());
+  EXPECT_EQ(spare_rph->GetPriority(), base::Process::Priority::kBestEffort);
 
   // Start a navigation to b.com to ensure a cross-process navigation is
   // in progress and ensure the process for the speculative host is
@@ -6092,6 +6105,7 @@ IN_PROC_BROWSER_TEST_P(
   content::TestNavigationManager navigation_manager(web_contents, url);
 
   shell()->LoadURL(url);
+  navigation_manager.WaitForSpeculativeRenderFrameHostCreation();
   RenderProcessHost* speculative_rph = web_contents->GetPrimaryFrameTree()
                                            .root()
                                            ->render_manager()
@@ -6116,7 +6130,7 @@ IN_PROC_BROWSER_TEST_P(
   // The creation of the speculative RenderFrameHost should change the
   // RenderProcessHost's copy of the priority of the spare process from
   // background to foreground.
-  EXPECT_FALSE(spare_rph->IsProcessBackgrounded());
+  EXPECT_NE(spare_rph->GetPriority(), base::Process::Priority::kBestEffort);
 
   // The OS process itself is updated on the process launcher thread, so it
   // cannot be observed immediately here. Perform a thread hop to and back to

@@ -8,11 +8,14 @@
 #import "base/test/ios/wait_util.h"
 #import "base/time/time.h"
 #import "components/policy/policy_constants.h"
+#import "components/signin/internal/identity_manager/account_capabilities_constants.h"
 #import "components/signin/public/base/signin_metrics.h"
 #import "components/signin/public/base/signin_switches.h"
 #import "components/strings/grit/components_strings.h"
 #import "components/sync/base/user_selectable_type.h"
-#import "ios/chrome/browser/bookmarks/model/bookmark_model_type.h"
+#import "ios/chrome/browser/bookmarks/model/bookmark_storage_type.h"
+#import "ios/chrome/browser/bookmarks/ui_bundled/bookmark_earl_grey.h"
+#import "ios/chrome/browser/bookmarks/ui_bundled/bookmark_earl_grey_ui.h"
 #import "ios/chrome/browser/metrics/model/metrics_app_interface.h"
 #import "ios/chrome/browser/policy/model/policy_earl_grey_utils.h"
 #import "ios/chrome/browser/policy/model/policy_util.h"
@@ -27,8 +30,6 @@
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/authentication/signin_matchers.h"
 #import "ios/chrome/browser/ui/authentication/views/views_constants.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_constants.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_constants.h"
@@ -88,11 +89,14 @@ NSString* const kPassphrase = @"hello";
 constexpr base::TimeDelta kSyncOperationTimeout = base::Seconds(5);
 
 // Sets parental control capability for the given identity.
-void SetParentalControlsCapabilityForIdentity(FakeSystemIdentity* identity) {
+void SetParentalControlsCapabilityForIdentity(
+    FakeSystemIdentity* fakeIdentity) {
   // The identity must exist in the test storage to be able to set capabilities
   // through the fake identity service.
-  [SigninEarlGrey addFakeIdentity:identity];
-  [SigninEarlGrey setIsSubjectToParentalControls:YES forIdentity:identity];
+  [SigninEarlGrey addFakeIdentity:fakeIdentity
+                 withCapabilities:@{
+                   @(kIsSubjectToParentalControlsCapabilityName) : @YES,
+                 }];
 }
 
 void ExpectSigninConsentHistogram(SigninAccountType signinAccountType) {
@@ -126,7 +130,7 @@ void SetSigninEnterprisePolicyValue(BrowserSigninMode signinMode) {
   // Remove closed tab history to make sure the sign-in promo is always visible
   // in recent tabs.
   [ChromeEarlGrey clearBrowsingHistory];
-  [BookmarkEarlGrey waitForBookmarkModelsLoaded];
+  [BookmarkEarlGrey waitForBookmarkModelLoaded];
   [BookmarkEarlGrey clearBookmarks];
   GREYAssertNil([MetricsAppInterface setupHistogramTester],
                 @"Failed to set up histogram tester.");
@@ -137,6 +141,20 @@ void SetSigninEnterprisePolicyValue(BrowserSigninMode signinMode) {
   [BookmarkEarlGrey clearBookmarksPositionCache];
   GREYAssertNil([MetricsAppInterface releaseHistogramTester],
                 @"Cannot reset histogram tester.");
+}
+
+- (AppLaunchConfiguration)appConfigurationForTestCase {
+  AppLaunchConfiguration config = [super appConfigurationForTestCase];
+
+  if ([self isRunningTest:@selector
+            (testSignInDisconnectFromChromeManaged_ClearDataFeatureDisabled)]) {
+    config.features_disabled.push_back(
+        kClearDeviceDataOnSignOutForManagedUsers);
+  } else {
+    config.features_enabled.push_back(kClearDeviceDataOnSignOutForManagedUsers);
+  }
+
+  return config;
 }
 
 // Tests that opening the sign-in screen from the Settings and signing in works
@@ -181,9 +199,9 @@ void SetSigninEnterprisePolicyValue(BrowserSigninMode signinMode) {
   // Add a bookmark after sync is initialized.
   [ChromeEarlGrey waitForSyncEngineInitialized:YES
                                    syncTimeout:kSyncOperationTimeout];
-  [BookmarkEarlGrey waitForBookmarkModelsLoaded];
+  [BookmarkEarlGrey waitForBookmarkModelLoaded];
   [BookmarkEarlGrey
-      setupStandardBookmarksInStorage:BookmarkModelType::kLocalOrSyncable];
+      setupStandardBookmarksInStorage:BookmarkStorageType::kLocalOrSyncable];
 
   [SigninEarlGreyUI signOut];
 
@@ -217,9 +235,9 @@ void SetSigninEnterprisePolicyValue(BrowserSigninMode signinMode) {
   // Add a bookmark after sync is initialized.
   [ChromeEarlGrey waitForSyncEngineInitialized:YES
                                    syncTimeout:kSyncOperationTimeout];
-  [BookmarkEarlGrey waitForBookmarkModelsLoaded];
+  [BookmarkEarlGrey waitForBookmarkModelLoaded];
   [BookmarkEarlGrey
-      setupStandardBookmarksInStorage:BookmarkModelType::kLocalOrSyncable];
+      setupStandardBookmarksInStorage:BookmarkStorageType::kLocalOrSyncable];
 
   // Sign out from the supervised account.
   [SigninEarlGreyUI signOut];
@@ -240,9 +258,9 @@ void SetSigninEnterprisePolicyValue(BrowserSigninMode signinMode) {
   // Add a bookmark after sync is initialized.
   [ChromeEarlGrey waitForSyncEngineInitialized:YES
                                    syncTimeout:kSyncOperationTimeout];
-  [BookmarkEarlGrey waitForBookmarkModelsLoaded];
+  [BookmarkEarlGrey waitForBookmarkModelLoaded];
   [BookmarkEarlGrey
-      setupStandardBookmarksInStorage:BookmarkModelType::kAccount];
+      setupStandardBookmarksInStorage:BookmarkStorageType::kAccount];
   [ChromeEarlGreyUI waitForAppToIdle];
 
   // Sign out from the supervised account.
@@ -264,21 +282,61 @@ void SetSigninEnterprisePolicyValue(BrowserSigninMode signinMode) {
 
 // Tests that signing out of a managed account from the Settings works
 // correctly.
-// TODO(crbug.com/331182048): Test failing on iPad simulator.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testSignInDisconnectFromChromeManaged \
-  FLAKY_testSignInDisconnectFromChromeManaged
-#else
-#define MAYBE_testSignInDisconnectFromChromeManaged \
-  testSignInDisconnectFromChromeManaged
-#endif
-- (void)MAYBE_testSignInDisconnectFromChromeManaged {
+- (void)testSignInDisconnectFromChromeManaged_ClearDataFeatureDisabled {
   // Sign-in with a managed account.
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeManagedIdentity];
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
   ExpectSigninConsentHistogram(SigninAccountType::kManaged);
 
   [SigninEarlGreyUI signOut];
+}
+
+- (void)testSignInDisconnectFromChromeManaged_ClearDataFeatureEnabled {
+  // Sign-in with a managed account.
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeManagedIdentity];
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
+  ExpectSigninConsentHistogram(SigninAccountType::kManaged);
+
+  [ChromeEarlGreyUI openSettingsMenu];
+
+  // Open the "Account Settings" view.
+  [ChromeEarlGreyUI
+      tapSettingsMenuButton:chrome_test_util::SettingsAccountButton()];
+
+  // We're now in the "manage sync" view, and the signout button is at the very
+  // bottom. Scroll there.
+  id<GREYMatcher> scrollViewMatcher =
+      grey_accessibilityID(kManageSyncTableViewAccessibilityIdentifier);
+  [[EarlGrey selectElementWithMatcher:scrollViewMatcher]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
+
+  // Tap the "Sign out" button.
+  [[EarlGrey selectElementWithMatcher:
+                 grey_text(l10n_util::GetNSString(
+                     IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_SIGN_OUT_ITEM))]
+      performAction:grey_tap()];
+
+  // Click on signout in the dialog.
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_allOf(chrome_test_util::AlertAction(l10n_util::GetNSString(
+                         IDS_IOS_SIGNOUT_DIALOG_SIGN_OUT_BUTTON)),
+                     grey_sufficientlyVisible(), nil)]
+      performAction:grey_tap()];
+
+  // Close the snackbar, so that it can't obstruct other UI items.
+  [SigninEarlGreyUI dismissSignoutSnackbar];
+
+  // Wait until the user is signed out. Use a longer timeout for cases where
+  // sign out also triggers a clear browsing data.
+  [ChromeEarlGrey
+      waitForUIElementToAppearWithMatcher:SettingsDoneButton()
+                                  timeout:base::test::ios::
+                                              kWaitForClearBrowsingDataTimeout];
+
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
+      performAction:grey_tap()];
+  [SigninEarlGrey verifySignedOut];
 }
 
 // Opens the sign in screen and then cancel it by opening a new tab. Ensures
@@ -627,11 +685,8 @@ void SetSigninEnterprisePolicyValue(BrowserSigninMode signinMode) {
 // available yet.
 // TODO(crbug.com/331928746): Test flaky.
 - (void)FLAKY_testAccessiblityStringForSignedInUserWithoutName {
-  NSString* email = @"test@test.com";
-  NSString* gaiaID = @"gaiaID";
   // Sign in to Chrome.
-  FakeSystemIdentity* fakeIdentity =
-      [FakeSystemIdentity identityWithEmail:email gaiaID:gaiaID name:nil];
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
 
   // Select the identity disc particle with the correct accessibility string.
@@ -935,7 +990,7 @@ void SetSigninEnterprisePolicyValue(BrowserSigninMode signinMode) {
 // Tests that Sync is on when introducing passphrase from settings, after
 // logging in.
 - (void)testSyncOnWhenPassphraseIntroducedAfterSignIn {
-  [ChromeEarlGrey addBookmarkWithSyncPassphrase:kPassphrase];
+  [ChromeEarlGrey addSyncPassphrase:kPassphrase];
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
 

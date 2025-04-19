@@ -9,9 +9,10 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/observer_list.h"
+#include "base/strings/stringprintf.h"
 #include "base/task/single_thread_task_runner.h"
+#include "content/browser/service_worker/service_worker_client.h"
 #include "content/browser/service_worker/service_worker_consts.h"
-#include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_info.h"
@@ -313,8 +314,10 @@ void ServiceWorkerRegistration::ClaimClients() {
   const bool include_reserved_clients = false;
   // Include clients in BackForwardCache in order to evict them if needed.
   const bool include_back_forward_cached_clients = true;
-  for (auto it = context_->GetServiceWorkerClients(
-           key_, include_reserved_clients, include_back_forward_cached_clients);
+  for (auto it =
+           context_->service_worker_client_owner().GetServiceWorkerClients(
+               key_, include_reserved_clients,
+               include_back_forward_cached_clients);
        !it.IsAtEnd(); ++it) {
     // "1. If client’s execution ready flag is unset or client’s discarded flag
     //     is set, continue."

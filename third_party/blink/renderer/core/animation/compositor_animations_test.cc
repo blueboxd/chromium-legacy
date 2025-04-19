@@ -543,8 +543,8 @@ class AnimationCompositorAnimationsTest : public PaintTestConfigurations,
 
   void SimulateFrame(double time) {
     GetAnimationClock().UpdateTime(base::TimeTicks() + base::Seconds(time));
-    GetPendingAnimations().Update(nullptr, false);
     timeline_->ServiceAnimations(kTimingUpdateForAnimationFrame);
+    GetPendingAnimations().Update(nullptr, false);
   }
 
   std::unique_ptr<cc::KeyframeModel> ConvertToCompositorAnimation(
@@ -2873,6 +2873,39 @@ TEST_P(AnimationCompositorAnimationsTest, EmptyKeyframes) {
               animation->CheckCanStartAnimationOnCompositor(
                   GetDocument().View()->GetPaintArtifactCompositor()));
   EXPECT_FALSE(IsUseCounted(WebFeature::kStaticPropertyInAnimation));
+}
+
+TEST_P(AnimationCompositorAnimationsTest,
+       WebKitPrefixedPlusUnprefixedProperty) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      @keyframes test {
+        from {
+          -webkit-filter: saturate(0.25);
+          filter: saturate(0.25);
+        }
+        to {
+          -webkit-filter: saturate(0.75);
+          filter: saturate(0.75);
+        }
+      }
+      #target {
+        animation: test 1e3s;
+        height: 100px;
+        width: 100px;
+        background: green;
+      }
+    </style>
+    <div id="target"></div>
+  )HTML");
+  Element* target = GetDocument().getElementById(AtomicString("target"));
+  Animation* animation =
+      target->GetElementAnimations()->Animations().begin()->key;
+  EXPECT_EQ(CompositorAnimations::kNoFailure,
+            animation->CheckCanStartAnimationOnCompositor(
+                GetDocument().View()->GetPaintArtifactCompositor()));
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_TRUE(animation->HasActiveAnimationsOnCompositor());
 }
 
 }  // namespace blink

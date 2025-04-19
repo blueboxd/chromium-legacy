@@ -9,10 +9,10 @@
 #include "base/json/json_reader.h"
 #include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_future.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/enterprise/connectors/connectors_manager.h"
-#include "chrome/browser/enterprise/connectors/reporting/browser_crash_event_router.h"
 #include "chrome/browser/enterprise/connectors/test/deep_scanning_test_utils.h"
 #include "chrome/browser/policy/dm_token_utils.h"
 #include "chrome/browser/profiles/profile_testing_helper.h"
@@ -20,9 +20,10 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/enterprise/browser/controller/fake_browser_dm_token_storage.h"
 #include "components/enterprise/common/proto/connectors.pb.h"
-#include "components/enterprise/connectors/service_provider_config.h"
+#include "components/enterprise/connectors/core/common.h"
+#include "components/enterprise/connectors/core/connectors_prefs.h"
+#include "components/enterprise/connectors/core/service_provider_config.h"
 #include "components/policy/core/common/policy_types.h"
-#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "content/public/test/browser_task_environment.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -200,6 +201,8 @@ class ConnectorsServiceReportingFeatureTest
     return nullptr;
   }
 
+  PrefService* pref_service() const { return profile_->GetPrefs(); }
+
   bool reporting_enabled() const { return policy_value() == 1; }
 
   void ValidateSettings(const ReportingSettings& settings) {
@@ -271,6 +274,38 @@ TEST_P(ConnectorsServiceReportingFeatureTest,
 }
 #endif
 
+TEST_P(ConnectorsServiceReportingFeatureTest, CheckTelemetryPolicyObserver) {
+  ConnectorsService* connectors_service =
+      ConnectorsServiceFactory::GetForBrowserContext(profile_);
+  ConnectorsManager* connectors_manager =
+      connectors_service->ConnectorsManagerForTesting();
+
+  base::test::TestFuture<void> future;
+  connectors_service->ObserveTelemetryReporting(future.GetRepeatingCallback());
+
+  ASSERT_FALSE(
+      connectors_manager->GetTelemetryObserverCallbackForTesting().is_null());
+  // Cache initially empty
+  ASSERT_TRUE(
+      connectors_manager->GetReportingConnectorsSettingsForTesting().empty());
+
+  // Enable browser crash event
+  test::SetOnSecurityEventReporting(pref_service(), true, {kBrowserCrashEvent},
+                                    {});
+  EXPECT_TRUE(future.WaitAndClear());
+
+  // Clear enabled events (not cached when cleared)
+  test::SetOnSecurityEventReporting(pref_service(), false, {}, {});
+  ASSERT_TRUE(
+      connectors_manager->GetReportingConnectorsSettingsForTesting().empty());
+  EXPECT_TRUE(future.WaitAndClear());
+
+  // Enable telemetry event
+  test::SetOnSecurityEventReporting(pref_service(), true,
+                                    {kExtensionTelemetryEvent}, {});
+  EXPECT_TRUE(future.WaitAndClear());
+}
+
 INSTANTIATE_TEST_SUITE_P(
     ,
     ConnectorsServiceReportingFeatureTest,
@@ -279,11 +314,10 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST_F(ConnectorsServiceTest, RealtimeURLCheck) {
   profile_->GetPrefs()->SetInteger(
-      prefs::kSafeBrowsingEnterpriseRealTimeUrlCheckMode,
-      safe_browsing::REAL_TIME_CHECK_FOR_MAINFRAME_ENABLED);
-  profile_->GetPrefs()->SetInteger(
-      prefs::kSafeBrowsingEnterpriseRealTimeUrlCheckScope,
-      policy::POLICY_SCOPE_MACHINE);
+      kEnterpriseRealTimeUrlCheckMode,
+      enterprise_connectors::REAL_TIME_CHECK_FOR_MAINFRAME_ENABLED);
+  profile_->GetPrefs()->SetInteger(kEnterpriseRealTimeUrlCheckScope,
+                                   policy::POLICY_SCOPE_MACHINE);
 
   auto maybe_dm_token = ConnectorsServiceFactory::GetForBrowserContext(profile_)
                             ->GetDMTokenForRealTimeUrlCheck();
@@ -446,9 +480,6 @@ class ConnectorsServiceProfileTypeBrowserTest : public testing::Test {
 
   std::unique_ptr<ConnectorsService> CreateService(Profile* profile) {
     auto manager = std::make_unique<ConnectorsManager>(
-        std::make_unique<BrowserCrashEventRouter>(profile),
-        std::make_unique<ExtensionInstallEventRouter>(profile),
-        std::make_unique<ExtensionTelemetryEventRouter>(profile),
         profile->GetPrefs(), GetServiceProviderConfig(), false);
 
     return std::make_unique<ConnectorsService>(profile, std::move(manager));

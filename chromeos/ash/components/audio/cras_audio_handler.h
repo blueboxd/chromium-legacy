@@ -130,6 +130,10 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
 
   static constexpr int32_t kSystemAecGroupIdNotAvailable = -1;
 
+  // Grace period for removing notification.
+  static constexpr base::TimeDelta kRemoveNotificationDelay =
+      base::Milliseconds(5000);
+
   enum class InputMuteChangeMethod {
     kKeyboardButton,
     kPhysicalShutter,
@@ -183,6 +187,9 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
 
     // Called when the state of input mute hw switch state changes.
     virtual void OnInputMutedByMicrophoneMuteSwitchChanged(bool muted);
+
+    // Called when the state of input mute by security curtain changes.
+    virtual void OnInputMutedBySecurityCurtainChanged(bool muted);
 
     // Called when audio nodes changed.
     virtual void OnAudioNodesChanged();
@@ -566,6 +573,28 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
   // Enables or disables the speak-on-mute detection.
   void SetSpeakOnMuteDetection(bool som_on);
 
+  // Enable or disable sidetone;
+  void SetSidetoneEnabled(bool enabled);
+
+  // Enable or disable input stream ewma power report.
+  void SetEwmaPowerReportEnabled(bool enabled);
+
+  // Returns the last reported ewma power.
+  double GetEwmaPower();
+
+  // Get whether the sidetone is enabled or not
+  bool GetSidetoneEnabled() const;
+
+  // Based on the output device, get whether sidetone is available or not.
+  bool IsSidetoneSupported() const;
+
+  // Request to CRAS to check whether the current device support sidetone or
+  // not.
+  void UpdateSidetoneSupportedState();
+
+  // Handles dbus callback for GetNodes.
+  void HandleGetSidetoneSupported(std::optional<bool> available);
+
   // Changes the active nodes to the nodes specified by |new_active_ids|.
   // The caller can pass in the "complete" active node list of either input
   // nodes, or output nodes, or both. If only input nodes are passed in,
@@ -718,9 +747,11 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
   void SurveyTriggered(const base::flat_map<std::string, std::string>&
                            survey_specific_data) override;
   void SpeakOnMuteDetected() override;
+  void EwmaPowerReported(double power) override;
   void NumberOfNonChromeOutputStreamsChanged() override;
   void NumStreamIgnoreUiGains(int32_t num) override;
   void NumberOfArcStreamsChanged() override;
+  void SidetoneSupportedChanged(bool supported) override;
 
   // AudioPrefObserver overrides.
   void OnAudioPolicyPrefChanged() override;
@@ -759,6 +790,7 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
   AudioDevice ConvertAudioNodeWithModifiedPriority(const AudioNode& node);
 
   const AudioDevice* GetDeviceFromStableDeviceId(
+      bool is_input,
       uint64_t stable_device_id) const;
 
   const AudioDevice* GetKeyboardMic() const;
@@ -1008,6 +1040,9 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
   // set.
   void HandleHotPlugDeviceWithNotification(const AudioDevice& hotplug_device);
 
+  // Handles the audio selection notification being removed.
+  void HandleRemoveNotification(bool is_input);
+
   // Handles the system boots or restarts case.
   // - If the device boots with only one device, activate it automatically.
   // - If the device set was seen before, activate the preferred one.
@@ -1021,9 +1056,6 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
   // brand new chromebox), activate the highest priority device based on the
   // pre-determined priority list and show notification.
   void HandleSystemBoots(bool is_input, const AudioDeviceList& devices);
-
-  // Adds a device to most recently activated device list.
-  void AddDeviceToMostRecentActivatedList(const AudioDevice& device);
 
   // Activates the most recently active device. Return false if no device in the
   // most recently active device list is currently connected, otherwise
@@ -1052,6 +1084,10 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
 
   // Handles creation and display of audio selection notification.
   AudioSelectionNotificationHandler audio_selection_notification_handler_;
+
+  // Timer for remove notification.
+  base::OneShotTimer remove_notification_timer_for_input_;
+  base::OneShotTimer remove_notification_timer_for_output_;
 
   // Audio data and state.
   AudioDeviceMap audio_devices_;
@@ -1118,11 +1154,17 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
   // Whether the speak-on-mute detection is enabled in CRAS.
   bool speak_on_mute_detection_on_ = false;
 
-  // Stores a list of most recently activated devices' stable id. Most recent
-  // device on the end.
-  // TODO(zhangwenyu): To be replaced by real interaction with Pref service.
-  std::vector<std::string> most_recent_activated_input_device_ids_;
-  std::vector<std::string> most_recent_activated_output_device_ids_;
+  // Whether the sidetone is enabled in CRAS.
+  bool sidetone_enabled_ = false;
+
+  // Whether the current has sidetone available or not.
+  bool sidetone_supported_ = false;
+
+  // Whether the ewma power report is enabled in CRAS.
+  bool ewma_power_report_enabled_ = false;
+
+  // The last reported ewma power.
+  double ewma_power_ = 0;
 
   // Indicates whether the audio selection notification should be displayed.
   bool should_show_notification_ = false;

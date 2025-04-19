@@ -361,7 +361,7 @@ display::Display WaylandScreen::GetDisplayForAcceleratedWidget(
 
   if (display_id_map_.find(entered_output_id.value()) ==
       display_id_map_.end()) {
-    DUMP_WILL_BE_NOTREACHED_NORETURN();
+    DUMP_WILL_BE_NOTREACHED();
     return GetPrimaryDisplay();
   }
 
@@ -548,6 +548,14 @@ base::Value::List WaylandScreen::GetGpuExtraInfo(
                                  base::JoinString(protocols, " ")));
   StorePlatformNameIntoListOfValues(values, "wayland");
   return values;
+}
+
+std::optional<float> WaylandScreen::GetPreferredScaleFactorForAcceleratedWidget(
+    gfx::AcceleratedWidget widget) const {
+  if (auto* window = connection_->window_manager()->GetWindow(widget)) {
+    return window->GetPreferredScaleFactor();
+  }
+  return std::nullopt;
 }
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)

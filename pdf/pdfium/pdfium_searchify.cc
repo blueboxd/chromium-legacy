@@ -4,14 +4,23 @@
 
 #include "pdf/pdfium/pdfium_searchify.h"
 
+#include <math.h>
+#include <stdint.h>
+
 #include <algorithm>
-#include <numbers>
+#include <array>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "base/check.h"
 #include "base/check_op.h"
+#include "base/compiler_specific.h"
+#include "base/containers/span.h"
 #include "base/functional/callback.h"
+#include "base/numerics/angle_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "pdf/pdfium/pdfium_engine.h"
 #include "pdf/pdfium/pdfium_mem_buffer_file_write.h"
 #include "pdf/pdfium/pdfium_ocr.h"
 #include "pdf/pdfium/pdfium_searchify_font.h"
@@ -23,6 +32,11 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkPixmap.h"
+#include "ui/gfx/codec/jpeg_codec.h"
+#include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/size_f.h"
 
 namespace chrome_pdf {
 
@@ -38,160 +52,197 @@ std::vector<uint32_t> Utf8ToCharcodes(const std::string& string) {
   return charcodes;
 }
 
-struct BoundingBoxOrigin {
-  double x;
-  double y;
-  double theta;
-};
-
 // The coordinate systems between OCR and PDF are different. OCR's origin is at
 // top-left, so we need to convert them to PDF's bottom-left.
-BoundingBoxOrigin ConvertToPdfOrigin(int x,
-                                     int y,
-                                     int width,
-                                     int height,
-                                     double angle,
-                                     double coordinate_system_height) {
-  double theta = angle * std::numbers::pi / 180;
-  return {.x = x - (sin(theta) * height),
-          .y = coordinate_system_height - (y + cos(theta) * height),
-          .theta = -theta};
+SearchifyBoundingBoxOrigin ConvertToPdfOrigin(const gfx::Rect& rect,
+                                              float angle,
+                                              float coordinate_system_height) {
+  const float theta = base::DegToRad(angle);
+  const float x = rect.x() - (sinf(theta) * rect.height());
+  const float y =
+      coordinate_system_height - (rect.y() + cosf(theta) * rect.height());
+  return {.point = {x, y}, .theta = -theta};
 }
 
 // Project the text object's origin to the baseline's origin.
-BoundingBoxOrigin ProjectToBaseline(const BoundingBoxOrigin& origin,
-                                    const BoundingBoxOrigin& baseline_origin) {
+SearchifyBoundingBoxOrigin ProjectToBaseline(
+    const gfx::PointF& origin_point,
+    const SearchifyBoundingBoxOrigin& baseline_origin) {
+  const float sin_theta = sinf(baseline_origin.theta);
+  const float cos_theta = cosf(baseline_origin.theta);
   // The length between `origin` and `baseline_origin`.
-  double length = (origin.x - baseline_origin.x) * cos(baseline_origin.theta) +
-                  (origin.y - baseline_origin.y) * sin(baseline_origin.theta);
-  return {.x = baseline_origin.x + length * cos(baseline_origin.theta),
-          .y = baseline_origin.y + length * sin(baseline_origin.theta),
+  const float length =
+      (origin_point.x() - baseline_origin.point.x()) * cos_theta +
+      (origin_point.y() - baseline_origin.point.y()) * sin_theta;
+  return {.point = {baseline_origin.point.x() + length * cos_theta,
+                    baseline_origin.point.y() + length * sin_theta},
           .theta = baseline_origin.theta};
+}
+
+gfx::SizeF GetRenderedImageSize(FPDF_PAGEOBJECT image) {
+  FS_QUADPOINTSF quadpoints;
+  if (!FPDFPageObj_GetRotatedBounds(image, &quadpoints)) {
+    return gfx::SizeF();
+  }
+
+  return gfx::SizeF(
+      hypotf(quadpoints.x1 - quadpoints.x2, quadpoints.y1 - quadpoints.y2),
+      hypotf(quadpoints.x2 - quadpoints.x3, quadpoints.y2 - quadpoints.y3));
+}
+
+bool CalculateImageWithoutScalingMatrix(FPDF_PAGEOBJECT image,
+                                        const gfx::SizeF& rendered_size,
+                                        FS_MATRIX& image_matrix) {
+  if (!FPDFPageObj_GetMatrix(image, &image_matrix)) {
+    return false;
+  }
+  image_matrix.a /= rendered_size.width();
+  image_matrix.b /= rendered_size.width();
+  image_matrix.c /= rendered_size.height();
+  image_matrix.d /= rendered_size.height();
+  return true;
+}
+
+// Returns the transformation matrix needed to move a word to where it is
+// positioned on the image.
+FS_MATRIX CalculateWordMoveMatrix(const SearchifyBoundingBoxOrigin& word_origin,
+                                  int word_bounding_box_width,
+                                  bool word_is_rtl) {
+  const float sin_theta = sinf(word_origin.theta);
+  const float cos_theta = cosf(word_origin.theta);
+  FS_MATRIX move_matrix(cos_theta, sin_theta, -sin_theta, cos_theta,
+                        word_origin.point.x(), word_origin.point.y());
+  if (word_is_rtl) {
+    move_matrix.a = -move_matrix.a;
+    move_matrix.b = -move_matrix.b;
+    move_matrix.e += cos_theta * word_bounding_box_width;
+    move_matrix.f += sin_theta * word_bounding_box_width;
+  }
+  return move_matrix;
+}
+
+void AddWordOnImage(FPDF_DOCUMENT document,
+                    FPDF_PAGE page,
+                    FPDF_FONT font,
+                    const screen_ai::mojom::WordBoxPtr& word,
+                    base::span<const FS_MATRIX> transform_matrices) {
+  ScopedFPDFPageObject text(
+      FPDFPageObj_CreateTextObj(document, font, word->bounding_box.height()));
+  CHECK(text);
+
+  std::string word_string = word->word;
+  // TODO(crbug.com/41487613): A more accurate width would be the distance
+  // from current word's origin to next word's origin.
+  if (word->has_space_after) {
+    word_string.push_back(' ');
+  }
+
+  if (word_string.empty()) {
+    DLOG(ERROR) << "Got empty word";
+    return;
+  }
+
+  std::vector<uint32_t> charcodes = Utf8ToCharcodes(word_string);
+  if (!FPDFText_SetCharcodes(text.get(), charcodes.data(), charcodes.size())) {
+    DLOG(ERROR) << "Failed to set charcodes";
+    return;
+  }
+
+  // Make text invisible
+  if (!FPDFTextObj_SetTextRenderMode(text.get(),
+                                     FPDF_TEXTRENDERMODE_INVISIBLE)) {
+    DLOG(ERROR) << "Failed to make text invisible";
+    return;
+  }
+
+  const gfx::SizeF text_object_size = GetImageSize(text.get());
+  CHECK_GT(text_object_size.width(), 0);
+  CHECK_GT(text_object_size.height(), 0);
+  const FS_MATRIX text_scale_matrix(
+      word->bounding_box.width() / text_object_size.width(), 0, 0,
+      word->bounding_box.height() / text_object_size.height(), 0, 0);
+  CHECK(FPDFPageObj_TransformF(text.get(), &text_scale_matrix));
+
+  for (const auto& matrix : transform_matrices) {
+    FPDFPageObj_TransformF(text.get(), &matrix);
+  }
+
+  FPDFPage_InsertObject(page, text.release());
 }
 
 void AddTextOnImage(FPDF_DOCUMENT document,
                     FPDF_PAGE page,
                     FPDF_FONT font,
                     FPDF_PAGEOBJECT image,
-                    screen_ai::mojom::VisualAnnotationPtr annotation) {
-  FS_QUADPOINTSF quadpoints;
-  if (!FPDFPageObj_GetRotatedBounds(image, &quadpoints)) {
+                    screen_ai::mojom::VisualAnnotationPtr annotation,
+                    const gfx::Size& image_pixel_size) {
+  const gfx::SizeF image_rendered_size = GetRenderedImageSize(image);
+  if (image_rendered_size.IsEmpty()) {
     DLOG(ERROR) << "Failed to get image rendered dimensions";
     return;
   }
-  double image_rendered_width = sqrt(pow(quadpoints.x1 - quadpoints.x2, 2) +
-                                     pow(quadpoints.y1 - quadpoints.y2, 2));
-  double image_rendered_height = sqrt(pow(quadpoints.x2 - quadpoints.x3, 2) +
-                                      pow(quadpoints.y2 - quadpoints.y3, 2));
-  unsigned int image_pixel_width;
-  unsigned int image_pixel_height;
-  if (!FPDFImageObj_GetImagePixelSize(image, &image_pixel_width,
-                                      &image_pixel_height)) {
-    DLOG(ERROR) << "Failed to get image dimensions";
-    return;
-  }
-  FS_MATRIX image_matrix;
-  if (!FPDFPageObj_GetMatrix(image, &image_matrix)) {
+
+  // The transformation matrices is applied as follows:
+  std::array<FS_MATRIX, 3> transform_matrices;
+  // Move text object to the corresponding text position on the full image.
+  FS_MATRIX& move_matrix = transform_matrices[0];
+  // Scale from full image size to rendered image size on the PDF.
+  FS_MATRIX& image_scale_matrix = transform_matrices[1];
+  // Apply the image's transformation matrix on the PDF page without the
+  // scaling matrix.
+  FS_MATRIX& image_without_scaling_matrix = transform_matrices[2];
+
+  image_scale_matrix = {
+      image_rendered_size.width() / image_pixel_size.width(),   0, 0,
+      image_rendered_size.height() / image_pixel_size.height(), 0, 0};
+  if (!CalculateImageWithoutScalingMatrix(image, image_rendered_size,
+                                          image_without_scaling_matrix)) {
     DLOG(ERROR) << "Failed to get image matrix";
     return;
   }
 
   for (const auto& line : annotation->lines) {
-    BoundingBoxOrigin baseline_origin = ConvertToPdfOrigin(
-        line->baseline_box.x(), line->baseline_box.y(),
-        line->baseline_box.width(), line->baseline_box.height(),
-        line->baseline_box_angle, image_rendered_height);
+    SearchifyBoundingBoxOrigin baseline_origin =
+        ConvertToPdfOrigin(line->baseline_box, line->baseline_box_angle,
+                           image_pixel_size.height());
 
     for (const auto& word : line->words) {
-      double width = word->bounding_box.width();
-      double height = word->bounding_box.height();
-
-      if (width == 0 || height == 0) {
+      if (word->bounding_box.IsEmpty()) {
         continue;
       }
 
-      ScopedFPDFPageObject text(
-          FPDFPageObj_CreateTextObj(document, font, height));
-      CHECK(text);
-
-      std::string word_string = word->word;
-      // TODO(crbug.com/41487613): A more accurate width would be the distance
-      // from current word's origin to next word's origin.
-      if (word->has_space_after) {
-        word_string.push_back(' ');
-      }
-
-      if (word_string.empty()) {
-        DLOG(ERROR) << "Got empty word";
-        continue;
-      }
-
-      std::vector<uint32_t> charcodes = Utf8ToCharcodes(word_string);
-      if (!FPDFText_SetCharcodes(text.get(), charcodes.data(),
-                                 charcodes.size())) {
-        DLOG(ERROR) << "Failed to set charcodes";
-        continue;
-      }
-
-      // Make text invisible
-      if (!FPDFTextObj_SetTextRenderMode(text.get(),
-                                         FPDF_TEXTRENDERMODE_INVISIBLE)) {
-        DLOG(ERROR) << "Failed to make text invisible";
-        continue;
-      }
-
-      float left;
-      float bottom;
-      float right;
-      float top;
-      if (!FPDFPageObj_GetBounds(text.get(), &left, &bottom, &right, &top)) {
-        DLOG(ERROR) << "Failed to get the bounding box of original text object";
-        continue;
-      }
-      double original_text_object_width = right - left;
-      double original_text_object_height = top - bottom;
-      CHECK_GT(original_text_object_width, 0);
-      CHECK_GT(original_text_object_height, 0);
-      double width_scale = width / original_text_object_width;
-      double height_scale = height / original_text_object_height;
-      FPDFPageObj_Transform(text.get(), width_scale, 0, 0, height_scale, 0, 0);
-
-      // Move text object to the corresponding text position on the full image.
-      BoundingBoxOrigin origin = ConvertToPdfOrigin(
-          word->bounding_box.x(), word->bounding_box.y(), width, height,
-          word->bounding_box_angle, image_rendered_height);
-      origin = ProjectToBaseline(origin, baseline_origin);
-      double a = cos(origin.theta);
-      double b = sin(origin.theta);
-      double c = -sin(origin.theta);
-      double d = cos(origin.theta);
-      double e = origin.x;
-      double f = origin.y;
-      if (word->direction ==
-          screen_ai::mojom::Direction::DIRECTION_RIGHT_TO_LEFT) {
-        a = -a;
-        b = -b;
-        e += cos(origin.theta) * width;
-        f += sin(origin.theta) * width;
-      }
-      FPDFPageObj_Transform(text.get(), a, b, c, d, e, f);
-
-      // Scale from full image size to rendered image size on the PDF.
-      FPDFPageObj_Transform(text.get(),
-                            image_rendered_width / image_pixel_width, 0, 0,
-                            image_rendered_height / image_pixel_height, 0, 0);
-
-      // Apply the image's transformation matrix on the PDF page without the
-      // scaling matrix.
-      FPDFPageObj_Transform(text.get(), image_matrix.a / image_rendered_width,
-                            image_matrix.b / image_rendered_width,
-                            image_matrix.c / image_rendered_height,
-                            image_matrix.d / image_rendered_height,
-                            image_matrix.e, image_matrix.f);
-
-      FPDFPage_InsertObject(page, text.release());
+      SearchifyBoundingBoxOrigin origin =
+          ConvertToPdfOrigin(word->bounding_box, word->bounding_box_angle,
+                             image_pixel_size.height());
+      move_matrix = CalculateWordMoveMatrix(
+          ProjectToBaseline(origin.point, baseline_origin),
+          word->bounding_box.width(),
+          word->direction ==
+              screen_ai::mojom::Direction::DIRECTION_RIGHT_TO_LEFT);
+      AddWordOnImage(document, page, font, word, transform_matrices);
     }
   }
+}
+
+ScopedFPDFFont CreateFont(FPDF_DOCUMENT document) {
+  std::vector<uint8_t> cid_to_gid_map(CreateCidToGidMap());
+  return ScopedFPDFFont(
+      FPDFText_LoadCidType2Font(document, kPdfTtf, kPdfTtfSize, kToUnicodeCMap,
+                                cid_to_gid_map.data(), cid_to_gid_map.size()));
+}
+
+int GetBlockForJpeg(void* param,
+                    unsigned long pos,
+                    unsigned char* buf,
+                    unsigned long size) {
+  auto data_vector = *static_cast<base::span<const uint8_t>*>(param);
+  if (pos + size < pos || pos + size > data_vector.size()) {
+    return 0;
+  }
+  // TODO(tsepez): spanify arguments to remove the error.
+  base::span<uint8_t> UNSAFE_BUFFERS(buf_span(buf, size));
+  buf_span.copy_from(data_vector.subspan(pos, size));
+  return 1;
 }
 
 }  // namespace
@@ -211,10 +262,7 @@ std::vector<uint8_t> PDFiumSearchify(
     DLOG(ERROR) << "Got zero page count";
     return {};
   }
-  std::vector<uint8_t> cid_to_gid_map(CreateCidToGidMap());
-  ScopedFPDFFont font(FPDFText_LoadCidType2Font(
-      document.get(), kPdfTtf, kPdfTtfSize, kToUnicodeCMap,
-      cid_to_gid_map.data(), cid_to_gid_map.size()));
+  ScopedFPDFFont font = CreateFont(document.get());
   CHECK(font);
   for (int page_index = 0; page_index < page_count; page_index++) {
     ScopedFPDFPage page(FPDF_LoadPage(document.get(), page_index));
@@ -224,15 +272,11 @@ std::vector<uint8_t> PDFiumSearchify(
     }
     int object_count = FPDFPage_CountObjects(page.get());
     for (int object_index = 0; object_index < object_count; object_index++) {
-      SkBitmap bitmap =
-          GetImageForOcr(document.get(), page.get(), object_index);
+      // GetImageForOcr() checks for null `image`.
+      FPDF_PAGEOBJECT image = FPDFPage_GetObject(page.get(), object_index);
+      SkBitmap bitmap = GetImageForOcr(document.get(), page.get(), image);
       // The object is not an image or failed to get the bitmap from the image.
       if (bitmap.empty()) {
-        continue;
-      }
-      FPDF_PAGEOBJECT image = FPDFPage_GetObject(page.get(), object_index);
-      if (!image) {
-        DLOG(ERROR) << "Failed to get image object";
         continue;
       }
       auto annotation = perform_ocr_callback.Run(bitmap);
@@ -241,7 +285,8 @@ std::vector<uint8_t> PDFiumSearchify(
         return {};
       }
       AddTextOnImage(document.get(), page.get(), font.get(), image,
-                     std::move(annotation));
+                     std::move(annotation),
+                     gfx::Size(bitmap.width(), bitmap.height()));
     }
     if (!FPDFPage_GenerateContent(page.get())) {
       DLOG(ERROR) << "Failed to generate content";
@@ -253,6 +298,75 @@ std::vector<uint8_t> PDFiumSearchify(
     DLOG(ERROR) << "Failed to save the document";
     return {};
   }
+  return output_file_write.TakeBuffer();
+}
+
+SearchifyBoundingBoxOrigin ConvertToPdfOriginForTesting(
+    const gfx::Rect& rect,
+    float angle,
+    float coordinate_system_height) {
+  return ConvertToPdfOrigin(rect, angle, coordinate_system_height);
+}
+
+FS_MATRIX CalculateWordMoveMatrixForTesting(
+    const SearchifyBoundingBoxOrigin& origin,
+    int word_bounding_box_width,
+    bool word_is_rtl) {
+  return CalculateWordMoveMatrix(origin, word_bounding_box_width, word_is_rtl);
+}
+
+PdfiumProgressiveSearchifier::ScopedSdkInitializer::ScopedSdkInitializer() {
+  // TODO(thestig): Check the default value of `use_skia`.
+  InitializeSDK(false, false, FontMappingMode::kNoMapping);
+}
+
+PdfiumProgressiveSearchifier::ScopedSdkInitializer::~ScopedSdkInitializer() {
+  ShutdownSDK();
+}
+
+PdfiumProgressiveSearchifier::PdfiumProgressiveSearchifier()
+    : doc_(FPDF_CreateNewDocument()), font_(CreateFont(doc_.get())) {
+  CHECK(doc_);
+  CHECK(font_);
+}
+
+PdfiumProgressiveSearchifier::~PdfiumProgressiveSearchifier() = default;
+
+// TODO(chuhsuan): Return bool instead of crashing on error.
+void PdfiumProgressiveSearchifier::AddPage(
+    const SkBitmap& bitmap,
+    uint32_t page_index,
+    screen_ai::mojom::VisualAnnotationPtr annotation) {
+  CHECK(annotation);
+  // Replace the page if it already exists.
+  DeletePage(page_index);
+  int width = bitmap.width();
+  int height = bitmap.height();
+  ScopedFPDFPage page(FPDFPage_New(doc_.get(), page_index, width, height));
+  CHECK(page);
+  ScopedFPDFPageObject image(FPDFPageObj_NewImageObj(doc_.get()));
+  CHECK(image);
+  std::vector<uint8_t> encoded;
+  CHECK(gfx::JPEGCodec::Encode(bitmap, 100, &encoded));
+  FPDF_FILEACCESS file_access{
+      .m_FileLen = static_cast<unsigned long>(encoded.size()),
+      .m_GetBlock = &GetBlockForJpeg,
+      .m_Param = &encoded};
+  CHECK(FPDFImageObj_LoadJpegFileInline(nullptr, 0, image.get(), &file_access));
+  CHECK(FPDFImageObj_SetMatrix(image.get(), width, 0, 0, height, 0, 0));
+  AddTextOnImage(doc_.get(), page.get(), font_.get(), image.get(),
+                 std::move(annotation), gfx::Size(width, height));
+  FPDFPage_InsertObject(page.get(), image.release());
+  CHECK(FPDFPage_GenerateContent(page.get()));
+}
+
+void PdfiumProgressiveSearchifier::DeletePage(uint32_t page_index) {
+  FPDFPage_Delete(doc_.get(), page_index);
+}
+
+std::vector<uint8_t> PdfiumProgressiveSearchifier::Save() {
+  PDFiumMemBufferFileWrite output_file_write;
+  CHECK(FPDF_SaveAsCopy(doc_.get(), &output_file_write, 0));
   return output_file_write.TakeBuffer();
 }
 

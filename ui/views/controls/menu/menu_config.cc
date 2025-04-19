@@ -4,6 +4,7 @@
 
 #include "ui/views/controls/menu/menu_config.h"
 
+#include "base/debug/dump_without_crashing.h"
 #include "base/no_destructor.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/views/controls/menu/menu_controller.h"
@@ -11,6 +12,10 @@
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/style/typography_provider.h"
+
+#if BUILDFLAG(IS_OZONE)
+#include "ui/ozone/public/ozone_platform.h"
+#endif
 
 namespace views {
 
@@ -22,6 +27,11 @@ MenuConfig::MenuConfig() {
 MenuConfig::~MenuConfig() = default;
 
 int MenuConfig::CornerRadiusForMenu(const MenuController* controller) const {
+#if BUILDFLAG(IS_OZONE)
+  if (!ui::OzonePlatform::GetInstance()->IsWindowCompositingSupported()) {
+    return 0;
+  }
+#endif
   if (controller && controller->use_ash_system_ui_layout()) {
     return controller->rounded_corners().has_value() ? 0
                                                      : touchable_corner_radius;
@@ -36,11 +46,19 @@ int MenuConfig::CornerRadiusForMenu(const MenuController* controller) const {
 
 bool MenuConfig::ShouldShowAcceleratorText(const MenuItemView* item,
                                            std::u16string* text) const {
-  if (!show_accelerators || !item->GetDelegate() || !item->GetCommand())
+  if (!show_accelerators || !item->GetDelegate() || !item->GetCommand()) {
     return false;
+  }
+  if (item->GetDelegate()->IsTearingDown()) {
+    // The delegate should not be used once teardown has begun. Remove this once
+    // crash root cause has been determined (crbug.com/1283454).
+    base::debug::DumpWithoutCrashing();
+    return false;
+  }
   ui::Accelerator accelerator;
-  if (!item->GetDelegate()->GetAccelerator(item->GetCommand(), &accelerator))
+  if (!item->GetDelegate()->GetAccelerator(item->GetCommand(), &accelerator)) {
     return false;
+  }
   if (item->GetMenuController() && item->GetMenuController()->IsContextMenu() &&
       !show_context_menu_accelerators) {
     return false;

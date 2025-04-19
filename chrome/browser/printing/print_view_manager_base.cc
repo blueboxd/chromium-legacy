@@ -126,6 +126,10 @@ void OnDidScriptedPrint(
 
   if (printer_query->last_status() != mojom::ResultCode::kSuccess ||
       !printer_query->settings().dpi()) {
+    // Notify user of the error, unless it was explicitly canceled.
+    if (printer_query->last_status() != mojom::ResultCode::kCanceled) {
+      ShowPrintErrorDialogForGenericError();
+    }
     std::move(callback).Run(nullptr);
     return;
   }
@@ -408,6 +412,7 @@ void PrintViewManagerBase::OnPrintSettingsDone(
       UnregisterSystemPrintClient();
     }
 #endif
+    ShowPrintErrorDialogForGenericError();
     std::move(callback).Run(base::Value("Update settings failed"));
     return;
   }

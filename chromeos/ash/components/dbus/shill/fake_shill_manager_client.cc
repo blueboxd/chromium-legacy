@@ -380,6 +380,9 @@ void FakeShillManagerClient::ConfigureService(
     case FakeShillSimulatedResult::kTimeout:
       // No callbacks get executed and the caller should eventually timeout.
       return;
+    case FakeShillSimulatedResult::kInProgress:
+      // No callbacks get executed in this case.
+      return;
   }
 
   ShillServiceClient::TestInterface* service_client =
@@ -514,11 +517,30 @@ void FakeShillManagerClient::SetTetheringEnabled(bool enabled,
                                                  StringCallback callback,
                                                  ErrorCallback error_callback) {
   switch (simulate_tethering_enable_result_) {
-    case FakeShillSimulatedResult::kSuccess:
+    case FakeShillSimulatedResult::kSuccess: {
+      // Set additional Hotspot properties when the result is a success.
+      if (simulate_enable_tethering_result_string_ ==
+          shill::kTetheringEnableResultSuccess) {
+        base::Value::Dict tethering_state;
+        if (enabled) {
+          tethering_state.Set(shill::kTetheringStatusStateProperty,
+                              shill::kTetheringStateActive);
+          tethering_state.Set(shill::kTetheringStatusClientsProperty,
+                              base::Value::List());
+        } else {
+          tethering_state.Set(shill::kTetheringStatusStateProperty,
+                              shill::kTetheringStateIdle);
+          tethering_state.Set(shill::kTetheringStatusIdleReasonProperty,
+                              shill::kTetheringIdleReasonUserExit);
+        }
+        SetManagerProperty(shill::kTetheringStatusProperty,
+                           base::Value(std::move(tethering_state)));
+      }
       base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE, base::BindOnce(std::move(callback),
                                     simulate_enable_tethering_result_string_));
       return;
+    }
     case FakeShillSimulatedResult::kFailure:
       base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE, base::BindOnce(std::move(error_callback), "Error",
@@ -527,7 +549,31 @@ void FakeShillManagerClient::SetTetheringEnabled(bool enabled,
     case FakeShillSimulatedResult::kTimeout:
       // No callbacks get executed and the caller should eventually timeout.
       return;
+    case FakeShillSimulatedResult::kInProgress: {
+      base::Value::Dict tethering_state;
+      tethering_state.Set(shill::kTetheringStatusStateProperty,
+                          shill::kTetheringStateStarting);
+      SetManagerProperty(shill::kTetheringStatusProperty,
+                         base::Value(std::move(tethering_state)));
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), "In progress"));
+      return;
+    }
   }
+}
+
+void FakeShillManagerClient::EnableTethering(
+    const shill::WiFiInterfacePriority& priority,
+    StringCallback callback,
+    ErrorCallback error_callback) {
+  SetTetheringEnabled(/*enabled=*/true, std::move(callback),
+                      std::move(error_callback));
+}
+
+void FakeShillManagerClient::DisableTethering(StringCallback callback,
+                                              ErrorCallback error_callback) {
+  SetTetheringEnabled(/*enabled=*/false, std::move(callback),
+                      std::move(error_callback));
 }
 
 void FakeShillManagerClient::CheckTetheringReadiness(
@@ -546,6 +592,9 @@ void FakeShillManagerClient::CheckTetheringReadiness(
       return;
     case FakeShillSimulatedResult::kTimeout:
       // No callbacks get executed and the caller should eventually timeout.
+      return;
+    case FakeShillSimulatedResult::kInProgress:
+      // No callbacks get executed in this case.
       return;
   }
 }
@@ -607,6 +656,9 @@ void FakeShillManagerClient::CreateP2PGroup(
     case FakeShillSimulatedResult::kTimeout:
       // No callbacks get executed and the caller should eventually timeout.
       return;
+    case FakeShillSimulatedResult::kInProgress:
+      // No callbacks get executed in this case.
+      return;
   }
 }
 
@@ -658,6 +710,9 @@ void FakeShillManagerClient::ConnectToP2PGroup(
     case FakeShillSimulatedResult::kTimeout:
       // No callbacks get executed and the caller should eventually timeout.
       return;
+    case FakeShillSimulatedResult::kInProgress:
+      // No callbacks get executed in this case.
+      return;
   }
 }
 
@@ -682,6 +737,9 @@ void FakeShillManagerClient::DestroyP2PGroup(
       return;
     case FakeShillSimulatedResult::kTimeout:
       // No callbacks get executed and the caller should eventually timeout.
+      return;
+    case FakeShillSimulatedResult::kInProgress:
+      // No callbacks get executed in this case.
       return;
   }
 }
@@ -711,6 +769,9 @@ void FakeShillManagerClient::DisconnectFromP2PGroup(
       return;
     case FakeShillSimulatedResult::kTimeout:
       // No callbacks get executed and the caller should eventually timeout.
+      return;
+    case FakeShillSimulatedResult::kInProgress:
+      // No callbacks get executed in this case.
       return;
   }
 }

@@ -4,23 +4,20 @@
 
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_notice_confirmation.h"
 
-#include "base/containers/fixed_flat_set.h"
 #include "base/metrics/histogram_functions.h"
-#include "chrome/browser/browser_process.h"
+#include "base/no_destructor.h"
+#include "chrome/browser/privacy_sandbox/privacy_sandbox_countries.h"
+#include "chrome/browser/privacy_sandbox/privacy_sandbox_countries_impl.h"
 #include "components/privacy_sandbox/privacy_sandbox_features.h"
-#include "components/variations/service/variations_service.h"
 
 namespace privacy_sandbox {
 
 namespace {
 
-constexpr auto kConsentCountries = base::MakeFixedFlatSet<std::string_view>({
-    "gb", "at", "ax", "be", "bg", "bl", "ch", "cy", "cz", "de", "dk",
-    "ee", "es", "fi", "fr", "gf", "gg", "gi", "gp", "gr", "hr", "hu",
-    "ie", "is", "it", "je", "ke", "li", "lt", "lu", "lv", "mf", "mt",
-    "mq", "nc", "nl", "no", "pf", "pl", "pm", "pt", "qa", "re", "ro",
-    "se", "si", "sk", "sj", "tf", "va", "wf", "yt",
-});
+PrivacySandboxCountries& GetPrivacySandboxCountries() {
+  static base::NoDestructor<PrivacySandboxCountriesImpl> instance;
+  return *instance;
+}
 
 enum class ConfirmationType { Notice, Consent, RestrictedNotice };
 
@@ -63,7 +60,10 @@ bool IsConfirmationRequired(ConfirmationType confirmation_type,
         IsFeatureParamEnabled(confirmation_type);
     EmitHistogram(confirmation_type, is_confirmation_required !=
                                          is_confirmation_required_override);
-    return is_confirmation_required_override;
+    if (!base::FeatureList::IsEnabled(
+            privacy_sandbox::kPrivacySandboxLocalNoticeConfirmation)) {
+      return is_confirmation_required_override;
+    }
   }
   return is_confirmation_required;
 }
@@ -71,23 +71,14 @@ bool IsConfirmationRequired(ConfirmationType confirmation_type,
 }  // namespace
 
 bool IsConsentRequired() {
-  CHECK(g_browser_process);
   return IsConfirmationRequired(ConfirmationType::Consent, []() {
-    return g_browser_process->variations_service() &&
-           kConsentCountries.contains(g_browser_process->variations_service()
-                                          ->GetStoredPermanentCountry());
+    return GetPrivacySandboxCountries().IsConsentCountry();
   });
 }
 
 bool IsNoticeRequired() {
-  CHECK(g_browser_process);
   return IsConfirmationRequired(ConfirmationType::Notice, []() {
-    return g_browser_process->variations_service() &&
-           !g_browser_process->variations_service()
-                ->GetStoredPermanentCountry()
-                .empty() &&
-           !kConsentCountries.contains(g_browser_process->variations_service()
-                                           ->GetStoredPermanentCountry());
+    return GetPrivacySandboxCountries().IsRestOfWorldCountry();
   });
 }
 

@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/input/input_device_capabilities.h"
 #include "third_party/blink/renderer/core/input/keyboard_shortcut_recorder.h"
 #include "third_party/blink/renderer/core/input/scroll_manager.h"
+#include "third_party/blink/renderer/core/keywords.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/focusgroup_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -192,7 +193,7 @@ bool KeyboardEventManager::HandleAccessKey(const WebKeyboardEvent& evt) {
   if ((evt.GetModifiers() & (WebKeyboardEvent::kKeyModifiers &
                              ~WebInputEvent::kShiftKey)) != kAccessKeyModifiers)
     return false;
-  String key = String(evt.unmodified_text);
+  String key = String(evt.unmodified_text.data());
   Element* elem =
       frame_->GetDocument()->GetElementByAccessKey(key.DeprecatedLower());
   if (!elem)
@@ -387,7 +388,7 @@ WebInputEventResult KeyboardEventManager::KeyEvent(
       WebKeyboardEvent char_event = initial_key_event;
       char_event.SetType(WebInputEvent::Type::kChar);
 
-      KeyboardEvent *event = KeyboardEvent::Create(
+      KeyboardEvent* event = KeyboardEvent::Create(
           char_event, frame_->GetDocument()->domWindow(), event_cancellable);
       event->SetTarget(node);
       event->SetStopPropagation(!send_key_event);
@@ -431,11 +432,12 @@ void KeyboardEventManager::DefaultKeyboardEventHandler(
     if (event->keyCode() == kVKeyProcessKey)
       return;
 
-    if (event->key() == "Tab") {
+    const AtomicString key(event->key());
+    if (key == keywords::kTab) {
       DefaultTabEventHandler(event);
-    } else if (event->key() == "Escape") {
+    } else if (key == keywords::kEscape) {
       DefaultEscapeEventHandler(event);
-    } else if (event->key() == "Enter") {
+    } else if (key == keywords::kCapitalEnter) {
       DefaultEnterEventHandler(event);
     } else if (event->KeyEvent() &&
                static_cast<int>(event->KeyEvent()->dom_key) == 0x00200310) {
@@ -450,7 +452,7 @@ void KeyboardEventManager::DefaultKeyboardEventHandler(
     frame_->GetEditor().HandleKeyboardEvent(event);
     if (event->DefaultHandled())
       return;
-    if (event->key() == "Enter") {
+    if (event->key() == keywords::kCapitalEnter) {
       DefaultEnterEventHandler(event);
     } else if (event->charCode() == ' ') {
       DefaultSpaceEventHandler(event, possible_focused_node);
@@ -458,7 +460,7 @@ void KeyboardEventManager::DefaultKeyboardEventHandler(
   } else if (event->type() == event_type_names::kKeyup) {
     if (event->DefaultHandled())
       return;
-    if (event->key() == "Enter") {
+    if (event->key() == keywords::kCapitalEnter) {
       DefaultEnterEventHandler(event);
     }
     if (event->keyCode() == last_scrolling_keycode_) {

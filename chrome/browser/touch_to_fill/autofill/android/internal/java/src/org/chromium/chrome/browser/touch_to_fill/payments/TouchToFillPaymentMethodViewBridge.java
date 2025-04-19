@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManagerFactory;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.touch_to_fill.common.BottomSheetFocusHelper;
+import org.chromium.components.autofill.AutofillSuggestion;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvider;
 import org.chromium.ui.base.WindowAndroid;
@@ -60,23 +61,38 @@ class TouchToFillPaymentMethodViewBridge {
                 PersonalDataManagerFactory.getForProfile(profile),
                 bottomSheetController,
                 windowAndroid);
-   }
+    }
 
     @CalledByNative
     private void showSheet(
-            @JniType("std::vector") Object[] cards, boolean shouldShowScanCreditCard) {
+            @JniType("std::vector") Object[] cards,
+            @JniType("std::vector") Object[] suggestions,
+            boolean shouldShowScanCreditCard) {
         mComponent.showSheet(
                 (List<PersonalDataManager.CreditCard>) (List<?>) Arrays.asList(cards),
+                (List<AutofillSuggestion>) (List<?>) Arrays.asList(suggestions),
                 shouldShowScanCreditCard);
     }
 
     @CalledByNative
-    private void showSheet(@JniType("std::vector") Object[] ibans) {
-        mComponent.showSheet((List<PersonalDataManager.Iban>) (List<?>) Arrays.asList(ibans));
+    private void showSheet(@JniType("std::vector") List<PersonalDataManager.Iban> ibans) {
+        mComponent.showSheet(ibans);
     }
 
     @CalledByNative
     private void hideSheet() {
         mComponent.hideSheet();
+    }
+
+    @CalledByNative
+    private static AutofillSuggestion createAutofillSuggestion(
+            @JniType("std::u16string") String label,
+            @JniType("std::u16string") String subLabel,
+            boolean applyDeactivatedStyle) {
+        return new AutofillSuggestion.Builder()
+                .setLabel(label)
+                .setSubLabel(subLabel)
+                .setApplyDeactivatedStyle(applyDeactivatedStyle)
+                .build();
     }
 }

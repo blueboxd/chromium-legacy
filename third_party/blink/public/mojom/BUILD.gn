@@ -29,6 +29,7 @@ mojom("mojom_platform") {
     "aggregation_service/aggregatable_report.mojom",
     "ai/ai_manager.mojom",
     "ai/ai_text_session.mojom",
+    "ai/model_streaming_responder.mojom",
     "annotation/annotation.mojom",
     "app_banner/app_banner.mojom",
     "array_buffer/array_buffer_contents.mojom",
@@ -49,11 +50,12 @@ mojom("mojom_platform") {
     "clipboard/clipboard.mojom",
     "close_watcher/close_listener.mojom",
     "commit_result/commit_result.mojom",
+    "compute_pressure/web_pressure_manager.mojom",
+    "compute_pressure/web_pressure_manager_automation.mojom",
     "content_extraction/inner_html.mojom",
     "content_extraction/inner_text.mojom",
     "content_index/content_index.mojom",
     "context_menu/context_menu.mojom",
-    "conversions/attribution_data_host.mojom",
     "conversions/conversions.mojom",
     "cookie_manager/cookie_manager_automation.mojom",
     "cookie_store/cookie_store.mojom",
@@ -286,9 +288,8 @@ mojom("mojom_platform") {
     ":script_type_mojo_bindings",
     ":web_feature_mojo_bindings",
     "//cc/mojom",
+    "//components/attribution_reporting:data_host_mojom",
     "//components/attribution_reporting:mojom",
-    "//components/attribution_reporting:registration_header_error_mojom",
-    "//components/attribution_reporting:registration_mojom",
     "//components/payments/mojom",
     "//components/schema_org/common:mojom",
     "//components/services/filesystem/public/mojom",
@@ -337,6 +338,7 @@ mojom("mojom_platform") {
       "//services/network/public/mojom:mojom_attribution",
       "//services/network/public/mojom:mojom_network_param",
       "//services/network/public/mojom:mojom_schemeful_site",
+      "//services/network/public/mojom:mojom_storage_access_api",
       "//ui/accessibility:ax_enums_mojo",
       "//ui/latency/mojom",
     ]
@@ -1083,7 +1085,7 @@ mojom("mojom_platform") {
             [ "//chrome/browser/printing/web_api/web_printing_mojom_traits.h" ]
         traits_sources =
             [ "//chrome/browser/printing/web_api/web_printing_mojom_traits.cc" ]
-        traits_public_deps = [ "//printing" ]
+        traits_public_deps = [ "//printing:settings" ]
         traits_deps = [
           "//printing/backend",
           "//printing/mojom",
@@ -1164,6 +1166,7 @@ mojom("android_mojo_bindings") {
     "contacts/contacts_manager.mojom",
     "digital_goods/digital_goods.mojom",
     "document_metadata/document_metadata.mojom",
+    "facilitated_payments/payment_link_handler.mojom",
     "font_unique_name_lookup/font_unique_name_lookup.mojom",
     "handwriting/handwriting.mojom",
     "input/input_host.mojom",
@@ -1339,6 +1342,7 @@ mojom("mojom_core") {
     "page/draggable_region.mojom",
     "page/page.mojom",
     "page/page_visibility_state.mojom",
+    "page/prerender_page_param.mojom",
     "page/widget.mojom",
     "page_state/page_state.mojom",
 
@@ -1417,6 +1421,7 @@ mojom("mojom_core") {
     public_deps += [
       "//services/network/public/mojom:cookies_mojom",
       "//services/network/public/mojom:mojom_attribution",
+      "//services/network/public/mojom:mojom_storage_access_api",
       "//services/network/public/mojom:url_loader_base",
       "//third_party/blink/public/mojom/tokens",
       "//ui/base/ime/mojom",

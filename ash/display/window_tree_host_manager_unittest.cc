@@ -45,6 +45,7 @@
 #include "ui/display/display_switches.h"
 #include "ui/display/manager/display_layout_store.h"
 #include "ui/display/manager/display_manager.h"
+#include "ui/display/manager/display_manager_observer.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
@@ -96,13 +97,13 @@ display::ManagedDisplayInfo CreateDisplayInfo(int64_t id,
   return info;
 }
 
-class TestObserver : public WindowTreeHostManager::Observer,
+class TestObserver : public display::DisplayManagerObserver,
                      public display::DisplayObserver,
                      public aura::client::FocusChangeObserver,
                      public ::wm::ActivationChangeObserver {
  public:
   TestObserver() {
-    Shell::Get()->window_tree_host_manager()->AddObserver(this);
+    Shell::Get()->display_manager()->AddDisplayManagerObserver(this);
     aura::client::GetFocusClient(Shell::GetPrimaryRootWindow())
         ->AddObserver(this);
     ::wm::GetActivationClient(Shell::GetPrimaryRootWindow())->AddObserver(this);
@@ -112,7 +113,7 @@ class TestObserver : public WindowTreeHostManager::Observer,
   TestObserver& operator=(const TestObserver&) = delete;
 
   ~TestObserver() override {
-    Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
+    Shell::Get()->display_manager()->RemoveDisplayManagerObserver(this);
     aura::client::GetFocusClient(Shell::GetPrimaryRootWindow())
         ->RemoveObserver(this);
     ::wm::GetActivationClient(Shell::GetPrimaryRootWindow())
@@ -120,8 +121,8 @@ class TestObserver : public WindowTreeHostManager::Observer,
   }
 
   // Overridden from WindowTreeHostManager::Observer
-  void OnDisplayConfigurationChanging() override { ++changing_count_; }
-  void OnDisplayConfigurationChanged() override { ++changed_count_; }
+  void OnWillApplyDisplayChanges() override { ++changing_count_; }
+  void OnDidApplyDisplayChanges() override { ++changed_count_; }
 
   // Overrideen from display::DisplayObserver
   void OnDisplayMetricsChanged(const display::Display& display,
@@ -308,8 +309,8 @@ class TestEventHandler : public ui::EventHandler {
 
   void OnMouseEvent(ui::MouseEvent* event) override {
     if (event->flags() & ui::EF_IS_SYNTHESIZED &&
-        event->type() != ui::ET_MOUSE_EXITED &&
-        event->type() != ui::ET_MOUSE_ENTERED) {
+        event->type() != ui::EventType::kMouseExited &&
+        event->type() != ui::EventType::kMouseEntered) {
       return;
     }
     aura::Window* target = static_cast<aura::Window*>(event->target());
@@ -336,7 +337,7 @@ class TestEventHandler : public ui::EventHandler {
     if (target->GetName() != kWallpaperView)
       return;
 
-    if (event->type() == ui::ET_SCROLL) {
+    if (event->type() == ui::EventType::kScroll) {
       scroll_x_offset_ = event->x_offset();
       scroll_y_offset_ = event->y_offset();
       scroll_x_offset_ordinal_ = event->x_offset_ordinal();
@@ -2150,17 +2151,17 @@ TEST_F(WindowTreeHostManagerTest,
   widget->Show();
 
   TestMouseWatcherListener listener;
-  views::MouseWatcher watcher(
+  auto watcher = std::make_unique<views::MouseWatcher>(
       std::make_unique<views::MouseWatcherViewHost>(view, gfx::Insets()),
       &listener);
-  watcher.Start(root2);
+  watcher->Start(root2);
 
   ui::test::EventGenerator event_generator(
       widget->GetNativeWindow()->GetRootWindow());
   event_generator.MoveMouseToCenterOf(widget->GetNativeWindow());
 
   UpdateDisplay("400x300");
-  watcher.Stop();
+  watcher.reset();
 
   widget->CloseNow();
 }
@@ -2226,7 +2227,7 @@ TEST_F(WindowTreeHostManagerTest, GetActiveDisplayWhenReplacingPrimaryDisplay) {
 
 TEST_F(WindowTreeHostManagerTest, KeyEventFromSecondaryDisplay) {
   UpdateDisplay("400x300,300x200");
-  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, 0);
+  ui::KeyEvent key_event(ui::EventType::kKeyPressed, ui::VKEY_RETURN, 0);
   ui::Event::DispatcherApi dispatcher_api(&key_event);
   // Set the target to the second display. WindowTreeHostManager will end up
   // targeting the primary display.

@@ -10,6 +10,8 @@
 
 #include "ash/picker/views/picker_image_item_view.h"
 #include "ash/picker/views/picker_item_view.h"
+#include "ash/picker/views/picker_traversable_item_container.h"
+#include "base/notimplemented.h"
 #include "base/ranges/algorithm.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/geometry/insets.h"
@@ -150,8 +152,14 @@ views::View* PickerImageItemGridView::GetItemRightOf(views::View* item) {
   return ItemInColumnWithIndexClosestTo(right_column, item_index);
 }
 
+bool PickerImageItemGridView::ContainsItem(views::View* item) {
+  return Contains(item);
+}
+
 PickerImageItemView* PickerImageItemGridView::AddImageItem(
     std::unique_ptr<PickerImageItemView> image_item) {
+  // TODO: b/338142316 - Wrap the image item in a View and give it a correct
+  // accessible role.
   image_item->SetImageSizeFromWidth(GetImageGridColumnWidth(grid_width_));
   views::View* shortest_column =
       base::ranges::min(children(),

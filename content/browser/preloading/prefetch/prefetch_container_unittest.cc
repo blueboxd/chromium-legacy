@@ -7,6 +7,9 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "components/variations/net/variations_http_headers.h"
+#include "components/variations/scoped_variations_ids_provider.h"
+#include "components/variations/variations_ids_provider.h"
 #include "content/browser/preloading/prefetch/prefetch_document_manager.h"
 #include "content/browser/preloading/prefetch/prefetch_features.h"
 #include "content/browser/preloading/prefetch/prefetch_probe_result.h"
@@ -20,6 +23,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/navigation_simulator.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_renderer_host.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/string_data_source.h"
@@ -154,21 +158,124 @@ class PrefetchContainerTest
       public ::testing::WithParamInterface<PrefetchReusableForTests> {
  private:
   void SetUp() override {
-    // Enable `kPrefetchRedirects` here as `PrefetchContainerTest` contains
-    // several redirect-related tests.
-    switch (GetParam()) {
-      case PrefetchReusableForTests::kDisabled:
-        scoped_feature_list_.InitWithFeatures({features::kPrefetchRedirects},
-                                              {features::kPrefetchReusable});
-        break;
-      case PrefetchReusableForTests::kEnabled:
-        scoped_feature_list_.InitWithFeatures(
-            {features::kPrefetchRedirects, features::kPrefetchReusable}, {});
-        break;
-    }
+    scoped_feature_list_.InitWithFeatureState(
+        features::kPrefetchReusable,
+        GetParam() == PrefetchReusableForTests::kEnabled);
     PrefetchContainerTestBase::SetUp();
   }
+
+  variations::ScopedVariationsIdsProvider scoped_variations_ids_provider_{
+      variations::VariationsIdsProvider::Mode::kIgnoreSignedInState};
 };
+
+class PrefetchContainerXClientDataHeaderTest
+    : public PrefetchContainerTestBase,
+      // In incognito or not, is X-Client-Header prefetch support enabled or
+      // not.
+      public ::testing::WithParamInterface<std::tuple<bool, bool>> {
+ private:
+  void SetUp() override {
+    scoped_feature_list_.InitWithFeatureState(
+        features::kPrefetchXClientDataHeader, get<1>(GetParam()));
+    PrefetchContainerTestBase::SetUp();
+  }
+
+  variations::ScopedVariationsIdsProvider scoped_variations_ids_provider_{
+      variations::VariationsIdsProvider::Mode::kIgnoreSignedInState};
+
+ protected:
+  std::unique_ptr<BrowserContext> CreateBrowserContext() override {
+    auto browser_context = std::make_unique<TestBrowserContext>();
+    auto is_incognito = get<0>(GetParam());
+    browser_context->set_is_off_the_record(is_incognito);
+    return browser_context;
+  }
+};
+
+TEST_P(PrefetchContainerXClientDataHeaderTest,
+       AddHeaderForEligibleUrlOnlyWhenNotInIncognito) {
+  const GURL kTestEligibleUrl = GURL("https://google.com");
+
+  auto prefetch_container =
+      CreateSpeculationRulesPrefetchContainer(kTestEligibleUrl);
+  variations::VariationsIdsProvider::GetInstance()->ForceVariationIds({"1"},
+                                                                      {"2"});
+
+  prefetch_container->MakeResourceRequest({});
+  auto* request = prefetch_container->GetResourceRequest();
+  bool is_incognito, is_x_client_data_header_enabled;
+  std::tie(is_incognito, is_x_client_data_header_enabled) = GetParam();
+  // Don't add the header when in incognito mode.
+  EXPECT_EQ(
+      request->cors_exempt_headers.HasHeader(variations::kClientDataHeader),
+      !is_incognito && is_x_client_data_header_enabled);
+}
+
+TEST_P(PrefetchContainerXClientDataHeaderTest,
+       NeverAddHeaderForNonEligibleUrl) {
+  const GURL kTestNonEligibleUrl = GURL("https://non-eligible.com");
+
+  auto prefetch_container =
+      CreateSpeculationRulesPrefetchContainer(kTestNonEligibleUrl);
+  variations::VariationsIdsProvider::GetInstance()->ForceVariationIds({"1"},
+                                                                      {"2"});
+
+  prefetch_container->MakeResourceRequest({});
+  auto* request = prefetch_container->GetResourceRequest();
+  // Don't ever add the header.
+  EXPECT_FALSE(
+      request->cors_exempt_headers.HasHeader(variations::kClientDataHeader));
+}
+
+TEST_P(PrefetchContainerXClientDataHeaderTest,
+       AddHeaderForEligibleRedirectUrlOnlyWhenNotInIncognito) {
+  const GURL kTestNonEligibleUrl = GURL("https://non-eligible.com");
+  const GURL kTestEligibleUrl = GURL("https://google.com");
+
+  auto prefetch_container =
+      CreateSpeculationRulesPrefetchContainer(kTestNonEligibleUrl);
+  variations::VariationsIdsProvider::GetInstance()->ForceVariationIds({"1"},
+                                                                      {"2"});
+
+  prefetch_container->MakeResourceRequest({});
+  auto* request = prefetch_container->GetResourceRequest();
+  // Don't ever add the header.
+  EXPECT_FALSE(
+      request->cors_exempt_headers.HasHeader(variations::kClientDataHeader));
+
+  AddRedirectHop(prefetch_container.get(), kTestEligibleUrl);
+  bool is_incognito, is_x_client_data_header_enabled;
+  std::tie(is_incognito, is_x_client_data_header_enabled) = GetParam();
+  EXPECT_EQ(
+      request->cors_exempt_headers.HasHeader(variations::kClientDataHeader),
+      !is_incognito && is_x_client_data_header_enabled);
+}
+
+TEST_P(PrefetchContainerXClientDataHeaderTest,
+       NeverAddHeaderForNonEligibleRedirectUrl) {
+  const GURL kTestNonEligibleUrl1 = GURL("https://non-eligible1.com");
+  const GURL kTestNonEligibleUrl2 = GURL("https://non-eligible2.com");
+
+  auto prefetch_container =
+      CreateSpeculationRulesPrefetchContainer(kTestNonEligibleUrl1);
+  variations::VariationsIdsProvider::GetInstance()->ForceVariationIds({"1"},
+                                                                      {"2"});
+
+  prefetch_container->MakeResourceRequest({});
+  auto* request = prefetch_container->GetResourceRequest();
+  // Don't ever add the header.
+  EXPECT_FALSE(
+      request->cors_exempt_headers.HasHeader(variations::kClientDataHeader));
+
+  AddRedirectHop(prefetch_container.get(), kTestNonEligibleUrl2);
+  EXPECT_FALSE(
+      request->cors_exempt_headers.HasHeader(variations::kClientDataHeader));
+}
+
+INSTANTIATE_TEST_SUITE_P(PrefetchContainerXClientDataTests,
+                         PrefetchContainerXClientDataHeaderTest,
+                         ::testing::Combine(::testing::Bool(),
+                                            ::testing::Bool()));
 
 TEST_P(PrefetchContainerTest, CreatePrefetchContainer) {
   blink::DocumentToken document_token;
@@ -193,7 +300,7 @@ TEST_P(PrefetchContainerTest, CreatePrefetchContainer) {
 
   EXPECT_EQ(prefetch_container.GetPrefetchContainerKey(),
             PrefetchContainer::Key(document_token, GURL("https://test.com")));
-  EXPECT_FALSE(prefetch_container.GetHead());
+  EXPECT_FALSE(prefetch_container.GetNonRedirectHead());
 }
 
 TEST_P(PrefetchContainerTest, CreatePrefetchContainer_Embedder) {
@@ -217,7 +324,7 @@ TEST_P(PrefetchContainerTest, CreatePrefetchContainer_Embedder) {
 
   EXPECT_EQ(prefetch_container.GetPrefetchContainerKey(),
             PrefetchContainer::Key(std::nullopt, GURL("https://test.com")));
-  EXPECT_FALSE(prefetch_container.GetHead());
+  EXPECT_FALSE(prefetch_container.GetNonRedirectHead());
 }
 
 TEST_P(PrefetchContainerTest, PrefetchStatus) {
@@ -257,7 +364,7 @@ TEST_P(PrefetchContainerTest, Servable) {
             PrefetchContainer::ServableState::kServable);
   EXPECT_EQ(prefetch_container->GetServableState(base::Minutes(3)),
             PrefetchContainer::ServableState::kServable);
-  EXPECT_TRUE(prefetch_container->GetHead());
+  EXPECT_TRUE(prefetch_container->GetNonRedirectHead());
 }
 
 TEST_P(PrefetchContainerTest, CookieListener) {
@@ -944,13 +1051,13 @@ TEST_P(PrefetchContainerTest, MultipleStreamingURLLoaders) {
 
   EXPECT_NE(prefetch_container->GetServableState(base::TimeDelta::Max()),
             PrefetchContainer::ServableState::kServable);
-  EXPECT_FALSE(prefetch_container->GetHead());
+  EXPECT_FALSE(prefetch_container->GetNonRedirectHead());
 
   MakeServableStreamingURLLoadersWithNetworkTransitionRedirectForTest(
       prefetch_container.get(), kTestUrl1, kTestUrl2);
   EXPECT_EQ(prefetch_container->GetServableState(base::TimeDelta::Max()),
             PrefetchContainer::ServableState::kServable);
-  EXPECT_TRUE(prefetch_container->GetHead());
+  EXPECT_TRUE(prefetch_container->GetNonRedirectHead());
 
   // As the prefetch is already completed, the streaming loader is deleted
   // asynchronously.
@@ -973,7 +1080,7 @@ TEST_P(PrefetchContainerTest, MultipleStreamingURLLoaders) {
   // non-servable.
   EXPECT_EQ(prefetch_container->GetServableState(base::TimeDelta::Max()),
             PrefetchContainer::ServableState::kServable);
-  EXPECT_TRUE(prefetch_container->GetHead());
+  EXPECT_TRUE(prefetch_container->GetNonRedirectHead());
 
   std::unique_ptr<PrefetchTestURLLoaderClient> first_serving_url_loader_client =
       std::make_unique<PrefetchTestURLLoaderClient>();
@@ -1198,7 +1305,7 @@ TEST_P(PrefetchContainerLifetimeTest, Lifetime) {
 
   EXPECT_NE(prefetch_container->GetServableState(base::TimeDelta::Max()),
             PrefetchContainer::ServableState::kServable);
-  EXPECT_FALSE(prefetch_container->GetHead());
+  EXPECT_FALSE(prefetch_container->GetNonRedirectHead());
 
   pending_request.client->OnReceiveResponse(
       network::mojom::URLResponseHead::New(), std::move(consumer_handle),
@@ -1207,7 +1314,7 @@ TEST_P(PrefetchContainerLifetimeTest, Lifetime) {
 
   EXPECT_EQ(prefetch_container->GetServableState(base::TimeDelta::Max()),
             PrefetchContainer::ServableState::kServable);
-  EXPECT_TRUE(prefetch_container->GetHead());
+  EXPECT_TRUE(prefetch_container->GetNonRedirectHead());
 
   PrefetchContainer::Reader reader = prefetch_container->CreateReader();
 

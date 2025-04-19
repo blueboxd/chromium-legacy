@@ -2,6 +2,7 @@ from .. import (
     any_bool,
     any_dict,
     any_int,
+    any_number,
     any_int_or_null,
     any_list,
     any_string,
@@ -27,19 +28,19 @@ def assert_headers(event_headers, expected_headers):
 def assert_timing_info(timing_info):
     recursive_compare(
         {
-            "timeOrigin": any_int,
-            "requestTime": any_int,
-            "redirectStart": any_int,
-            "redirectEnd": any_int,
-            "fetchStart": any_int,
-            "dnsStart": any_int,
-            "dnsEnd": any_int,
-            "connectStart": any_int,
-            "connectEnd": any_int,
-            "tlsStart": any_int,
-            "requestStart": any_int,
-            "responseStart": any_int,
-            "responseEnd": any_int,
+            "timeOrigin": any_number,
+            "requestTime": any_number,
+            "redirectStart": any_number,
+            "redirectEnd": any_number,
+            "fetchStart": any_number,
+            "dnsStart": any_number,
+            "dnsEnd": any_number,
+            "connectStart": any_number,
+            "connectEnd": any_number,
+            "tlsStart": any_number,
+            "requestStart": any_number,
+            "responseStart": any_number,
+            "responseEnd": any_number,
         },
         timing_info,
     )
@@ -318,6 +319,8 @@ HTTP_STATUS_AND_STATUS_TEXT = [
     (505, "HTTP Version Not Supported"),
 ]
 
+PAGE_DATA_URL_HTML = "data:text/html,<div>foo</div>"
+PAGE_DATA_URL_IMAGE = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEX/TQBcNTh/AAAAAXRSTlPM0jRW/QAAAApJREFUeJxjYgAAAAYAAzY3fKgAAAAASUVORK5CYII="
 PAGE_EMPTY_HTML = "/webdriver/tests/bidi/network/support/empty.html"
 PAGE_EMPTY_IMAGE = "/webdriver/tests/bidi/network/support/empty.png"
 PAGE_EMPTY_SCRIPT = "/webdriver/tests/bidi/network/support/empty.js"
@@ -325,10 +328,14 @@ PAGE_EMPTY_SVG = "/webdriver/tests/bidi/network/support/empty.svg"
 PAGE_EMPTY_TEXT = "/webdriver/tests/bidi/network/support/empty.txt"
 PAGE_INVALID_URL = "https://not_a_valid_url.test/"
 PAGE_OTHER_TEXT = "/webdriver/tests/bidi/network/support/other.txt"
+PAGE_PROVIDE_RESPONSE_HTML = "/webdriver/tests/bidi/network/support/provide_response.html"
+PAGE_PROVIDE_RESPONSE_SCRIPT = "/webdriver/tests/bidi/network/support/provide_response.js"
+PAGE_PROVIDE_RESPONSE_STYLESHEET = "/webdriver/tests/bidi/network/support/provide_response.css"
 PAGE_REDIRECT_HTTP_EQUIV = (
     "/webdriver/tests/bidi/network/support/redirect_http_equiv.html"
 )
 PAGE_REDIRECTED_HTML = "/webdriver/tests/bidi/network/support/redirected.html"
+PAGE_SERVICEWORKER_HTML = "/webdriver/tests/bidi/network/support/serviceworker.html"
 
 AUTH_REQUIRED_EVENT = "network.authRequired"
 BEFORE_REQUEST_SENT_EVENT = "network.beforeRequestSent"

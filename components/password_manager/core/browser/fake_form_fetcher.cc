@@ -4,11 +4,11 @@
 
 #include "components/password_manager/core/browser/fake_form_fetcher.h"
 
+#include <algorithm>
 #include <memory>
 
 #include "base/containers/contains.h"
 #include "base/containers/span.h"
-#include "base/memory/raw_ptr.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 
@@ -84,8 +84,7 @@ bool FakeFormFetcher::IsMovingBlocked(const signin::GaiaIdHash& destination,
   return false;
 }
 
-const std::vector<raw_ptr<const PasswordForm, VectorExperimental>>&
-FakeFormFetcher::GetAllRelevantMatches() const {
+base::span<const PasswordForm> FakeFormFetcher::GetAllRelevantMatches() const {
   return non_federated_same_scheme_;
 }
 
@@ -100,17 +99,33 @@ const PasswordForm* FakeFormFetcher::GetPreferredMatch() const {
   return &best_matches_[0];
 }
 
+std::optional<PasswordFormMetricsRecorder::MatchedFormType>
+FakeFormFetcher::GetPreferredOrPotentialMatchedFormType() const {
+  return preferred_or_potential_matched_form_type_;
+}
+
 std::unique_ptr<FormFetcher> FakeFormFetcher::Clone() {
   return std::make_unique<FakeFormFetcher>();
 }
 
 void FakeFormFetcher::SetNonFederated(
     const std::vector<PasswordForm>& non_federated) {
-  non_federated_ = non_federated;
-  best_matches_ = password_manager_util::FindBestMatches(
-      non_federated_, scheme_, &non_federated_same_scheme_);
+  CHECK(base::ranges::all_of(
+      non_federated, [this](auto& form) { return form.scheme == scheme_; }));
+  SetNonFederated(non_federated, non_federated);
 }
 
+void FakeFormFetcher::SetNonFederated(
+    const std::vector<PasswordForm>& non_federated,
+    const std::vector<PasswordForm>& non_federated_same_scheme) {
+  non_federated_ = non_federated;
+  non_federated_same_scheme_ = non_federated_same_scheme;
+}
+
+void FakeFormFetcher::SetBestMatches(
+    const std::vector<PasswordForm>& best_matches) {
+  best_matches_ = best_matches;
+}
 void FakeFormFetcher::SetBlocklisted(bool is_blocklisted) {
   is_blocklisted_ = is_blocklisted;
 }
@@ -130,10 +145,6 @@ FakeFormFetcher::GetProfileStoreBackendError() const {
 std::optional<PasswordStoreBackendError>
 FakeFormFetcher::GetAccountStoreBackendError() const {
   return account_store_backend_error_;
-}
-
-bool FakeFormFetcher::WereGroupedCredentialsAvailable() const {
-  return false;
 }
 
 void FakeFormFetcher::SetProfileStoreBackendError(

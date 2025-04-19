@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "components/sessions/content/session_tab_helper.h"
+#include "components/visited_url_ranking/public/fetcher_config.h"
 #include "components/visited_url_ranking/public/url_visit.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -35,14 +36,15 @@ class DesktopTabModelURLVisitDataFetcherTest
     FetchResult result = FetchResult(FetchResult::Status::kError, {});
     base::RunLoop wait_loop;
     desktop_tab_model_url_visit_data_fetcher_->FetchURLVisitData(
-        options, base::BindOnce(
-                     [](base::OnceClosure stop_waiting, FetchResult* result,
-                        FetchResult result_arg) {
-                       result->status = result_arg.status;
-                       result->data = std::move(result_arg.data);
-                       std::move(stop_waiting).Run();
-                     },
-                     wait_loop.QuitClosure(), &result));
+        options, FetcherConfig(),
+        base::BindOnce(
+            [](base::OnceClosure stop_waiting, FetchResult* result,
+               FetchResult result_arg) {
+              result->status = result_arg.status;
+              result->data = std::move(result_arg.data);
+              std::move(stop_waiting).Run();
+            },
+            wait_loop.QuitClosure(), &result));
     wait_loop.Run();
     return result;
   }
@@ -69,8 +71,15 @@ TEST_F(DesktopTabModelURLVisitDataFetcherTest, FetchURLVisitData) {
                     base::NumberToString(kSampleTabCount));
   }
 
-  auto options = FetchOptions({{Fetcher::kTabModel, {Source::kLocal}}},
-                              base::Time::Now() - base::Days(1));
+  auto options = FetchOptions(
+      {
+          {FetchOptions::URLType::kActiveLocalTab,
+           {.age_limit = base::Days(1)}},
+      },
+      {
+          {Fetcher::kTabModel, FetchOptions::FetchSources({Source::kLocal})},
+      },
+      base::Time::Now() - base::Days(1));
   auto result = FetchAndGetResult(options);
   EXPECT_EQ(result.status, FetchResult::Status::kSuccess);
   EXPECT_EQ(result.data.size(), 3u);
@@ -82,22 +91,35 @@ TEST_F(DesktopTabModelURLVisitDataFetcherTest, FetchURLVisitData) {
 
 TEST_F(DesktopTabModelURLVisitDataFetcherTest,
        FetchURLVisitData_AggregateValues) {
+  constexpr size_t kNumTabs = 3;
   // Create tab entries to be aggregated.
-  for (int i = 0; i < 2; i++) {
+  for (size_t i = 0; i < kNumTabs; i++) {
     AddTabWithTitle(browser(), GURL("https://www.google.com?q=1"), "1");
   }
 
-  auto options = FetchOptions({{Fetcher::kTabModel, {Source::kLocal}}},
-                              base::Time::Now() - base::Days(1));
+  // Change the order of the tabs so that the most recent one is last in the tab
+  // strip. By doing so, we can validate the fetcher is retaining the last
+  // active tab regardless of position.
+  TabStripModel* tab_strip_model = browser()->tab_strip_model();
+  tab_strip_model->MoveWebContentsAt(0, kNumTabs - 1, true);
+
+  auto options = FetchOptions(
+      {
+          {FetchOptions::URLType::kActiveLocalTab,
+           {.age_limit = base::Days(1)}},
+      },
+      {
+          {Fetcher::kTabModel, FetchOptions::FetchSources({Source::kLocal})},
+      },
+      base::Time::Now() - base::Days(1));
   auto result = FetchAndGetResult(options);
   EXPECT_EQ(result.status, FetchResult::Status::kSuccess);
   EXPECT_EQ(result.data.size(), 1u);
   const auto* tab_data =
       std::get_if<URLVisitAggregate::TabData>(&result.data.begin()->second);
   EXPECT_EQ(tab_data->last_active_tab.visit.source, Source::kLocal);
-  EXPECT_EQ(tab_data->tab_count, 2u);
+  EXPECT_EQ(tab_data->tab_count, kNumTabs);
 
-  TabStripModel* tab_strip_model = browser()->tab_strip_model();
   auto id = sessions::SessionTabHelper::IdForTab(
                 tab_strip_model->GetActiveWebContents())
                 .id();

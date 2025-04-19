@@ -38,7 +38,6 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/common/features.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
@@ -1045,10 +1044,14 @@ IN_PROC_BROWSER_TEST_P(AttributionsBrowserTest,
   EXPECT_TRUE(ExecJs(web_contents(), "simulateClick('link');"));
 
   register_response->WaitForRequest();
-  EXPECT_FALSE(base::Contains(register_response->http_request()->headers,
-                              "Attribution-Reporting-Eligible"));
-  EXPECT_FALSE(base::Contains(register_response->http_request()->headers,
-                              "Attribution-Reporting-Support"));
+  ExpectEmptyAttributionReportingEligibleHeader(
+      register_response->http_request()->headers.at(
+          "Attribution-Reporting-Eligible"));
+  ExpectValidAttributionReportingSupportHeader(
+      register_response->http_request()->headers.at(
+          "Attribution-Reporting-Support"),
+      /*web_expected=*/false,
+      /*os_expected=*/false);
 }
 
 class AttributionsPrerenderBrowserTest : public AttributionsBrowserTest {
@@ -1193,85 +1196,13 @@ ATTRIBUTION_PRERENDER_BROWSER_TEST(ConversionsRegisteredOnActivatedPrerender) {
   }
 }
 
-// Tests to verify that cross app web is not enabled when base::Feature is
-// enabled but runtime feature is disabled (without
-// `features::kPrivacySandboxAdsAPIsOverride` override).
-class AttributionsCrossAppWebRuntimeDisabledBrowserTest
-    : public AttributionsBrowserTest {
- public:
-  AttributionsCrossAppWebRuntimeDisabledBrowserTest()
-      : AttributionsBrowserTest(
-            /*enabled_features=*/{network::features::
-                                      kAttributionReportingCrossAppWeb},
-            /*disabled_features=*/{
-                features::kAttributionReportingCrossAppWebOverride}) {}
-};
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         AttributionsCrossAppWebRuntimeDisabledBrowserTest,
-                         ::testing::Bool());
-
-// Verify that the Attribution-Reporting-Support header setting is gated by the
-// runtime feature.
-IN_PROC_BROWSER_TEST_P(AttributionsCrossAppWebRuntimeDisabledBrowserTest,
-                       AttributionEligibleNavigation_SupportHeaderNotSet) {
-  auto register_response1 =
-      std::make_unique<net::test_server::ControllableHttpResponse>(
-          https_server(), "/register_source_redirect");
-  auto register_response2 =
-      std::make_unique<net::test_server::ControllableHttpResponse>(
-          https_server(), "/register_source_redirect2");
-  ASSERT_TRUE(https_server()->Start());
-
-  GURL impression_url = https_server()->GetURL(
-      "a.test", "/attribution_reporting/page_with_impression_creator.html");
-  EXPECT_TRUE(NavigateToURL(web_contents(), impression_url));
-
-  GURL register_source_url =
-      https_server()->GetURL("d.test", "/register_source_redirect");
-
-  // Don't use `CreateAndClickSource()` as we need to observe navigation
-  // redirects prior to the navigation finishing.
-  EXPECT_TRUE(ExecJs(web_contents(), JsReplace(R"(
-    createAttributionSrcAnchor({id: 'link',
-                        url: $1,
-                        attributionsrc: '',
-                        target: $2});)",
-                                               register_source_url, "_top")));
-  EXPECT_TRUE(ExecJs(web_contents(), "simulateClick('link');"));
-
-  // Verify the navigation redirects contain the eligibility header.
-  register_response1->WaitForRequest();
-  ExpectValidAttributionReportingEligibleHeaderForNavigation(
-      register_response1->http_request()->headers.at(
-          "Attribution-Reporting-Eligible"));
-  ASSERT_FALSE(base::Contains(register_response1->http_request()->headers,
-                              "Attribution-Reporting-Support"));
-
-  auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
-  http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
-  http_response->AddCustomHeader("Location", "/register_source_redirect2");
-  register_response1->Send(http_response->ToResponseString());
-  register_response1->Done();
-
-  // Ensure that redirect requests also don't contain the
-  // Attribution-Reporting-Support header.
-  register_response2->WaitForRequest();
-  ExpectValidAttributionReportingEligibleHeaderForNavigation(
-      register_response2->http_request()->headers.at(
-          "Attribution-Reporting-Eligible"));
-  EXPECT_FALSE(base::Contains(register_response2->http_request()->headers,
-                              "Attribution-Reporting-Support"));
-}
-
 class AttributionsCrossAppWebEnabledBrowserTest
     : public AttributionsBrowserTest {
  public:
   AttributionsCrossAppWebEnabledBrowserTest()
       : AttributionsBrowserTest(
             /*enabled_features=*/{
-                network::features::kAttributionReportingCrossAppWeb,
-                features::kPrivacySandboxAdsAPIsOverride}) {}
+                network::features::kAttributionReportingCrossAppWeb}) {}
 };
 
 INSTANTIATE_TEST_SUITE_P(All,
@@ -1385,11 +1316,11 @@ IN_PROC_BROWSER_TEST_P(
 class AttributionsFencedFrameBrowserTest : public AttributionsBrowserTest {
  public:
   AttributionsFencedFrameBrowserTest()
-      : AttributionsBrowserTest(/*enabled_features=*/{
-            blink::features::kFencedFrames,
-            features::kPrivacySandboxAdsAPIsOverride,
-            blink::features::kFencedFramesAPIChanges,
-            blink::features::kFencedFramesDefaultMode}) {}
+      : AttributionsBrowserTest(
+            /*enabled_features=*/{blink::features::kFencedFrames,
+                                  features::kPrivacySandboxAdsAPIsOverride,
+                                  blink::features::kFencedFramesAPIChanges,
+                                  blink::features::kFencedFramesDefaultMode}) {}
 
   FrameTreeNode* AddFencedFrame(
       FrameTreeNode* root,
@@ -1763,6 +1694,81 @@ IN_PROC_BROWSER_TEST_F(AttributionsBrowserTestWithKeepAliveMigration,
                                                register_trigger_url)));
 
   expected_report.WaitForReport();
+}
+
+void TestServiceWorker(const char* registration_js,
+                       WebContents* web_contents,
+                       ServiceWorkerContextWrapper* sw_wrapper,
+                       net::EmbeddedTestServer* https_server) {
+  auto register_response =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          https_server, "/attribution_reporting/register_source");
+  ASSERT_TRUE(https_server->Start());
+
+  GURL page_url = https_server->GetURL(
+      "a.test", "/attribution_reporting/page_with_impression_creator.html");
+
+  // Setup our service worker.
+  WorkerStateObserver sw_observer(sw_wrapper, ServiceWorkerVersion::ACTIVATED);
+  blink::mojom::ServiceWorkerRegistrationOptions options(
+      page_url, blink::mojom::ScriptType::kClassic,
+      blink::mojom::ServiceWorkerUpdateViaCache::kImports);
+  const blink::StorageKey key =
+      blink::StorageKey::CreateFirstParty(url::Origin::Create(options.scope));
+  sw_wrapper->RegisterServiceWorker(
+      https_server->GetURL("a.test",
+                           "/attribution_reporting/service_worker.js"),
+      key, options,
+      base::BindOnce(&ExpectRegisterResultAndRun,
+                     blink::ServiceWorkerStatusCode::kOk, base::DoNothing()));
+  sw_observer.Wait();
+
+  EXPECT_TRUE(NavigateToURL(web_contents, page_url));
+
+  EXPECT_TRUE(ExecJs(
+      web_contents,
+      JsReplace(registration_js,
+                https_server->GetURL(
+                    "a.test", "/attribution_reporting/register_source"))));
+
+  register_response->WaitForRequest();
+  EXPECT_TRUE(base::Contains(register_response->http_request()->headers,
+                             "Attribution-Reporting-Eligible"));
+  EXPECT_TRUE(base::Contains(register_response->http_request()->headers,
+                             "Attribution-Reporting-Support"));
+}
+
+IN_PROC_BROWSER_TEST_P(
+    AttributionsBrowserTest,
+    ServiceWorkerPerformsAttributionSrcRegistration_SupportHeaderSet_createAttributionEligibleImgSrc) {
+  TestServiceWorker("createAttributionEligibleImgSrc($1);", web_contents(),
+                    wrapper(), https_server());
+}
+IN_PROC_BROWSER_TEST_P(
+    AttributionsBrowserTest,
+    ServiceWorkerPerformsAttributionSrcRegistration_SupportHeaderSet_createAttributionSrcScript) {
+  TestServiceWorker("createAttributionSrcScript($1);", web_contents(),
+                    wrapper(), https_server());
+}
+IN_PROC_BROWSER_TEST_P(
+    AttributionsBrowserTest,
+    ServiceWorkerPerformsAttributionSrcRegistration_SupportHeaderSet_doAttributionEligibleFetch) {
+  TestServiceWorker("doAttributionEligibleFetch($1);", web_contents(),
+                    wrapper(), https_server());
+}
+
+IN_PROC_BROWSER_TEST_P(
+    AttributionsBrowserTest,
+    ServiceWorkerPerformsAttributionSrcRegistration_SupportHeaderSet_doAttributionEligibleXHR) {
+  TestServiceWorker("doAttributionEligibleXHR($1);", web_contents(), wrapper(),
+                    https_server());
+}
+
+IN_PROC_BROWSER_TEST_P(
+    AttributionsBrowserTest,
+    ServiceWorkerPerformsAttributionSrcRegistration_SupportHeaderSet_createAttributionEligibleScriptSrc) {
+  TestServiceWorker("createAttributionEligibleScriptSrc($1);", web_contents(),
+                    wrapper(), https_server());
 }
 
 }  // namespace content

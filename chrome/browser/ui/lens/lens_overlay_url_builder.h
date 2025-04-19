@@ -27,7 +27,8 @@ void AppendTranslateParamsToMap(std::map<std::string, std::string>& params,
                                 const std::string& query,
                                 const std::string& content_language);
 
-GURL AppendCommonSearchParametersToURL(const GURL& url_to_modify);
+GURL AppendCommonSearchParametersToURL(const GURL& url_to_modify,
+                                       bool use_dark_mode);
 
 GURL AppendSearchContextParamToURL(const GURL& url_to_modify,
                                    std::optional<GURL> page_url,
@@ -50,6 +51,8 @@ GURL BuildTextOnlySearchURL(
 
 GURL BuildLensSearchURL(
     std::optional<std::string> text_query,
+    std::optional<GURL> page_url,
+    std::optional<std::string> page_title,
     std::unique_ptr<lens::LensOverlayRequestId> request_id,
     lens::LensOverlayClusterInfo cluster_info,
     std::map<std::string, std::string> additional_search_query_params,
@@ -79,10 +82,12 @@ bool IsValidSearchResultsUrl(const GURL& url);
 // a finch configured flag.
 GURL GetSearchResultsUrlFromRedirectUrl(const GURL& url);
 
-// Removes the viewport width (biw) and viewport height (bih) params from the
-// search url. This allows us to compare search url's accurately in
-// AddQueryToHistory when the side panel is resized.
-GURL RemoveUrlViewportParams(const GURL& url);
+// Removes parameters that frequently change on the SRP URL due to redirects or
+// client changes without changing the actual results. This allows us to compare
+// search url's accurately in AddQueryToHistory when the side panel is resized
+// or when the SRP redirects to append parameters unrelated to the search
+// results.
+GURL RemoveIgnoredSearchURLParameters(const GURL& url);
 
 }  // namespace lens
 

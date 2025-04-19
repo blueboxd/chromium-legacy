@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "components/visitedlink/browser/visitedlink_writer.h"
 
 #include <stdio.h>
@@ -124,14 +129,18 @@ void AsyncTruncate(base::ScopedFILE* file) {
 }
 
 // These values are logged to UMA. Entries should not be renumbered and
-// numeric values should never be reused. Please keep in sync with
-// "AddFingerprint" in tools/metrics/histograms/enums.xml.
+// numeric values should never be reused. NOTE: Please also keep in line with
+// components/visitedlink/browser/partitioned_visitedlink_writer.cc:
+// AddFingerprint.
+//
+// LINT.IfChange(AddFingerprint)
 enum class AddFingerprint {
   kNewVisit = 0,
   kAlreadyVisited = 1,
   kTableError = 2,
   kMaxValue = kTableError,
 };
+// LINT.ThenChange(//tools/metrics/histograms/metadata/history/enums.xml:AddFingerprint)
 
 }  // namespace
 

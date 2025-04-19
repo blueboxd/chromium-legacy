@@ -10,6 +10,7 @@ import {OncMojo} from 'chrome://resources/ash/common/network/onc_mojo.js';
 import {CrosNetworkConfigRemote} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-webui.js';
 import {DeviceStateType, NetworkType} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/network_types.mojom-webui.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {FakeNetworkConfig} from 'chrome://webui-test/chromeos/fake_network_config_mojom.js';
 
 suite('NetworkSimLockDialogsTest', function() {
@@ -83,7 +84,6 @@ suite('NetworkSimLockDialogsTest', function() {
   });
 
   test('Unlock dialog not displayed when carrier locked', async function() {
-    loadTimeData.overrideValues({'isCellularCarrierLockEnabled': true});
     const deviceState = {
       simLockStatus:
           {lockEnabled: true, lockType: 'network-pin', retriesLeft: 3},
@@ -130,7 +130,7 @@ suite('NetworkSimLockDialogsTest', function() {
     await flushAsync();
     assertEquals(
         simLockDialog.i18n('networkSimErrorInvalidPinPlural', 3),
-        unlockPinDialog.querySelector('.pinEntrySubtext').textContent.trim());
+        unlockPinDialog.querySelector('.dialogSubtext').textContent.trim());
 
     // Set SIM to PIN locked state with single retry left.
     simLockDialog.deviceState = {
@@ -142,7 +142,7 @@ suite('NetworkSimLockDialogsTest', function() {
     await flushAsync();
     assertEquals(
         simLockDialog.i18n('networkSimErrorInvalidPin', 1),
-        unlockPinDialog.querySelector('.pinEntrySubtext').textContent.trim());
+        unlockPinDialog.querySelector('.dialogSubtext').textContent.trim());
   });
 
   test(
@@ -339,7 +339,7 @@ suite('NetworkSimLockDialogsTest', function() {
 
     await flushAsync();
     let error =
-        enterPinDialog.querySelector('.pinEntrySubtext').textContent.trim();
+        enterPinDialog.querySelector('.dialogSubtext').textContent.trim();
     assertEquals(
         error, simLockDialog.i18n('networkSimErrorIncorrectPinPlural', 2));
 
@@ -350,7 +350,7 @@ suite('NetworkSimLockDialogsTest', function() {
     simLockDialog.deviceState = {...deviceState};
     await flushAsync();
 
-    error = enterPinDialog.querySelector('.pinEntrySubtext').textContent.trim();
+    error = enterPinDialog.querySelector('.dialogSubtext').textContent.trim();
     assertEquals(error, simLockDialog.i18n('networkSimEnterPinSubtext'));
   });
 });

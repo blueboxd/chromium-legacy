@@ -5,27 +5,35 @@
 import './strings.m.js';
 
 import {assert, assertInstanceof} from '//resources/js/assert.js';
+import {EventTracker} from '//resources/js/event_tracker.js';
 import {loadTimeData} from '//resources/js/load_time_data.js';
 import {PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import type {DomRepeat} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BrowserProxyImpl} from './browser_proxy.js';
+import type {BrowserProxy} from './browser_proxy.js';
+import {getFallbackTheme, skColorToRgbaWithCustomAlpha} from './color_utils.js';
 import {type CursorTooltipData, CursorTooltipType} from './cursor_tooltip.js';
 import {CenterRotatedBox_CoordinateType} from './geometry.mojom-webui.js';
 import type {CenterRotatedBox} from './geometry.mojom-webui.js';
-import type {LensPageCallbackRouter} from './lens.mojom-webui.js';
+import type {LensPageCallbackRouter, OverlayTheme} from './lens.mojom-webui.js';
+import {UserAction} from './lens.mojom-webui.js';
+import {INVOCATION_SOURCE} from './lens_overlay_app.js';
+import {recordLensOverlayInteraction} from './metrics_utils.js';
 import {getTemplate} from './object_layer.html.js';
 import type {OverlayObject} from './overlay_object.mojom-webui.js';
-import {focusShimmerOnRegion, ShimmerControlRequester, unfocusShimmer} from './overlay_shimmer.js';
 import {Polygon_CoordinateType} from './polygon.mojom-webui.js';
+import type {Vertex} from './polygon.mojom-webui.js';
 import type {PostSelectionBoundingBox} from './post_selection_renderer.js';
 import type {CursorData} from './selection_overlay.js';
-import {CursorType, type GestureEvent} from './selection_utils.js';
+import {CursorType, focusShimmerOnRegion, type GestureEvent, ShimmerControlRequester, unfocusShimmer} from './selection_utils.js';
 import {toPercent} from './values_converter.js';
 
 // The percent of the selection layer width and height the object needs to take
 // up to be considered full page.
 const FULLSCREEN_OBJECT_THRESHOLD_PERCENT = 0.95;
+// The transition duration for the fade out animation into the cursor state.
+const CURSOR_FADE_OUT_TRANSITION_DURATION = 150;
 
 // Returns true if the object has a valid bounding box and is renderable by the
 // ObjectLayer.
@@ -52,7 +60,14 @@ function isObjectRenderable(object: OverlayObject): boolean {
       CenterRotatedBox_CoordinateType.kImage;
 }
 
-// Orders objects with larger areas before objects with smaller areas.
+// Returns true if the object has a segmentation mask.
+function hasSegmentationMask(object: OverlayObject): boolean {
+  assert(object.geometry);
+  return object.geometry.segmentationPolygon.length > 0;
+}
+
+// Comparator to order objects with larger areas before objects with smaller
+// areas.
 function compareArea(object1: OverlayObject, object2: OverlayObject): number {
   assert(object1.geometry);
   assert(object2.geometry);
@@ -62,9 +77,81 @@ function compareArea(object1: OverlayObject, object2: OverlayObject): number {
       object1.geometry.boundingBox.box.height;
 }
 
+// Comparator to order objects with segmentation masks with larger areas before
+// objects with segmentation masks with smaller areas.
+function compareSegmentationMaskArea(
+    object1: OverlayObject, object2: OverlayObject): number {
+  assert(object1.geometry);
+  assert(object2.geometry);
+  return getSegmentationMaskArea(object2) - getSegmentationMaskArea(object1);
+}
+
+// Calculates the area of the segmentation mask of the object using the
+// shoelace formula. Uses signed area so that counter-clockwise polygons
+// (holes) are subtracted.
+function getSegmentationMaskArea(object: OverlayObject): number {
+  let area = 0;
+  for (const polygon of object.geometry.segmentationPolygon) {
+    const vertices = polygon.vertex;
+    for (let i = 0; i < vertices.length; i++) {
+      if (i < vertices.length - 1) {
+        area += vertices[i].x * vertices[i + 1].y -
+            vertices[i + 1].x * vertices[i].y;
+      } else {
+        area += vertices[i].x * vertices[0].y - vertices[0].x * vertices[i].y;
+      }
+    }
+  }
+  return 0.5 * area;
+}
+
+// Returns a clip path value for the object corresponding to its segmentation
+// mask. If there is no segmentation mask, returns the value 'none'.
+function toCssClipPath(object: OverlayObject): string {
+  const polygons = object.geometry.segmentationPolygon;
+  if (!polygons) {
+    return 'none';
+  }
+
+  const points: string[] = [];
+  for (const polygon of polygons) {
+    // TODO(b/330183480): Currently, we are assuming that polygon
+    // coordinates are normalized. We should still implement
+    // rendering in case this assumption is ever violated.
+    if (polygon.coordinateType !== Polygon_CoordinateType.kNormalized) {
+      continue;
+    }
+
+    for (const vertex of polygon.vertex) {
+      points.push(toCssPolygonVertex(object, vertex));
+    }
+    // Add first vertex again to close the path.
+    points.push(toCssPolygonVertex(object, polygon.vertex[0]));
+  }
+  if (points.length === 0) {
+    return 'none';
+  }
+  return 'polygon(evenodd, ' + points.join(', ') + ')';
+}
+
+// Converts the vertex to a string containing a pair of length-percentage values
+// relative to the object bounding box, to be used in the CSS polygon()
+// function.
+function toCssPolygonVertex(object: OverlayObject, vertex: Vertex): string {
+  const objectBoundingBox = object.geometry!.boundingBox;
+  return toPercent(
+             0.5 +
+             (vertex.x - objectBoundingBox.box.x) /
+                 objectBoundingBox.box.width) +
+      ' ' +
+      toPercent(
+             0.5 +
+             (vertex.y - objectBoundingBox.box.y) /
+                 objectBoundingBox.box.height);
+}
+
 export interface ObjectLayerElement {
   $: {
-    hiddenCanvas: HTMLCanvasElement,
     highlightImg: HTMLImageElement,
     objectsContainer: DomRepeat,
     objectSelectionCanvas: HTMLCanvasElement,
@@ -98,46 +185,52 @@ export class ObjectLayerElement extends PolymerElement {
         value: () => loadTimeData.getBoolean('enableDebuggingMode'),
         reflectToAttribute: true,
       },
-      preciseHighlight: {
-        type: Boolean,
-        value: () => loadTimeData.getBoolean('enablePreciseHighlight'),
-        reflectToAttribute: true,
+      theme: {
+        type: Object,
+        value: getFallbackTheme,
       },
       screenshotDataUri: String,
     };
   }
 
+  private eventTracker_: EventTracker = new EventTracker();
   private canvasHeight: number;
   private canvasWidth: number;
   private canvasPhysicalHeight: number;
   private canvasPhysicalWidth: number;
-  // Whether canvas is currently blank.
-  private canvasIsBlank: boolean = true;
   private context: CanvasRenderingContext2D;
-  private hiddenContext?: CanvasRenderingContext2D;
   // The data URI of the current overlay screenshot.
   private screenshotDataUri: string;
   // The objects rendered in this layer.
   private renderedObjects: OverlayObject[];
-  // Whether precise object highlighting is enabled.
-  private preciseHighlight: boolean;
+  // The last post selection made. Updated by events from the post selection
+  // layer.
+  private lastPostSelection: PostSelectionBoundingBox|null = null;
+  // The overlay theme.
+  private theme: OverlayTheme;
+  private fadeOutAnimations: Animation[] = [];
+  private fadeOutTimeoutIds: number[] = [];
+  private postSelectionComparisonThreshold: number =
+      loadTimeData.getValue('postSelectionComparisonThreshold');
 
   private readonly router: LensPageCallbackRouter =
       BrowserProxyImpl.getInstance().callbackRouter;
   private objectsReceivedListenerId: number|null = null;
+  private browserProxy: BrowserProxy = BrowserProxyImpl.getInstance();
 
   override ready() {
     super.ready();
 
     this.context = this.$.objectSelectionCanvas.getContext('2d')!;
-    if (this.preciseHighlight) {
-      this.hiddenContext = this.$.hiddenCanvas.getContext('2d')!;
-    }
   }
 
   override connectedCallback() {
     super.connectedCallback();
-
+    this.eventTracker_.add(
+        document, 'post-selection-updated',
+        (e: CustomEvent<PostSelectionBoundingBox>) => {
+          this.lastPostSelection = e.detail;
+        });
     // Set up listener to receive objects from C++.
     this.objectsReceivedListenerId = this.router.objectsReceived.addListener(
         this.onObjectsReceived.bind(this));
@@ -159,11 +252,12 @@ export class ObjectLayerElement extends PolymerElement {
       return false;
     }
 
-    const selectionRegion =
-        this.renderedObjects[objectIndex].geometry!.boundingBox;
+    const object = this.renderedObjects[objectIndex];
+    const selectionRegion = object.geometry!.boundingBox;
 
-    // Issue the query
-    BrowserProxyImpl.getInstance().handler.issueLensRequest(selectionRegion);
+    // Issue the query.
+    this.browserProxy.handler.issueLensObjectRequest(
+        selectionRegion, hasSegmentationMask(object));
 
     // Send the region to be rendered on the page.
     this.dispatchEvent(new CustomEvent('render-post-selection', {
@@ -172,10 +266,29 @@ export class ObjectLayerElement extends PolymerElement {
       detail: this.getPostSelectionRegion(selectionRegion),
     }));
 
+    // Since the selection is made and rendering is being done by the post
+    // selection layer, act as the cursor left so the segmentation is no longer
+    // highlighted.
+    this.handlePointerLeave();
+
+    recordLensOverlayInteraction(INVOCATION_SOURCE, UserAction.kObjectClick);
+
     return true;
   }
 
-  private onSegmentationHovered(object: OverlayObject) {
+  private handlePointerEnter(event: PointerEvent) {
+    assertInstanceof(event.target, HTMLElement);
+
+    // Only continue if we have an object that has a segmentation mask and is
+    // not already selected.
+    const object = this.$.objectsContainer.itemForElement(event.target);
+    if (object === null || !hasSegmentationMask(object) ||
+        this.isRegionAlreadySelected(
+            this.getPostSelectionRegion(object.geometry!.boundingBox))) {
+      return;
+    }
+
+    this.clearAndCancelAnimation();
     this.drawObject(this.context, object);
     this.focusShimmer(object);
     this.dispatchEvent(new CustomEvent<CursorData>('set-cursor', {
@@ -193,10 +306,33 @@ export class ObjectLayerElement extends PolymerElement {
       bubbles: true,
       composed: true,
     }));
+    this.style.cursor = 'pointer';
   }
 
-  private onSegmentationUnhovered() {
-    this.clearCanvas(this.context);
+  private isRegionAlreadySelected(boundingBox: PostSelectionBoundingBox):
+      boolean {
+    if (this.lastPostSelection === null) {
+      return false;
+    }
+    return Math.abs(boundingBox.top - this.lastPostSelection.top) <=
+        this.postSelectionComparisonThreshold &&
+        Math.abs(boundingBox.left - this.lastPostSelection.left) <=
+        this.postSelectionComparisonThreshold &&
+        Math.abs(boundingBox.width - this.lastPostSelection.width) <=
+        this.postSelectionComparisonThreshold &&
+        Math.abs(boundingBox.height - this.lastPostSelection.height) <=
+        this.postSelectionComparisonThreshold;
+  }
+
+  private handlePointerLeave() {
+    this.fadeOutAnimations.push(
+        this.$.objectSelectionCanvas.animate({opacity: 0}, {
+          duration: CURSOR_FADE_OUT_TRANSITION_DURATION,
+          fill: 'forwards',
+        }));
+    this.fadeOutTimeoutIds.push(setTimeout(() => {
+      this.clearCanvas(this.context);
+    }, CURSOR_FADE_OUT_TRANSITION_DURATION));
     unfocusShimmer(this, ShimmerControlRequester.SEGMENTATION);
     this.dispatchEvent(new CustomEvent<CursorData>('set-cursor', {
       bubbles: true,
@@ -213,54 +349,7 @@ export class ObjectLayerElement extends PolymerElement {
       bubbles: true,
       composed: true,
     }));
-  }
-
-  private handlePointerEnter(event: PointerEvent) {
-    assertInstanceof(event.target, HTMLElement);
-    const object = this.$.objectsContainer.itemForElement(event.target);
-    if (this.preciseHighlight) {
-      // Draw the object in the hidden canvas which is used to highlight the
-      // object in the visible canvas when the pointer is inside the object.
-      this.drawObject(this.hiddenContext!, object);
-    } else {
-      this.onSegmentationHovered(object);
-    }
-  }
-
-  private handlePointerLeave() {
-    if (this.preciseHighlight) {
-      // Clear the hidden canvas and reset state.
-      this.clearCanvas(this.hiddenContext!);
-      this.canvasIsBlank = true;
-    }
-    this.onSegmentationUnhovered();
-  }
-
-  private handlePointerMove(event: MouseEvent) {
-    if (!this.preciseHighlight) {
-      return;
-    }
-
-    assertInstanceof(event.target, HTMLElement);
-    if (this.hiddenContext!.isPointInPath(
-            event.clientX * window.devicePixelRatio,
-            event.clientY * window.devicePixelRatio)) {
-      // Ensure the object is drawn only once.
-      if (!this.canvasIsBlank) {
-        return;
-      }
-      this.canvasIsBlank = false;
-      const object = this.$.objectsContainer.itemForElement(event.target);
-      this.onSegmentationHovered(object);
-
-    } else {
-      // Ensure the canvas is cleared only once.
-      if (this.canvasIsBlank) {
-        return;
-      }
-      this.canvasIsBlank = true;
-      this.onSegmentationUnhovered();
-    }
+    this.style.cursor = 'unset';
   }
 
   setCanvasSizeTo(width: number, height: number) {
@@ -271,10 +360,6 @@ export class ObjectLayerElement extends PolymerElement {
     this.canvasPhysicalHeight = height * window.devicePixelRatio;
     this.context.setTransform(
         window.devicePixelRatio, 0, 0, window.devicePixelRatio, 0, 0);
-    if (this.preciseHighlight) {
-      this.hiddenContext!.setTransform(
-          window.devicePixelRatio, 0, 0, window.devicePixelRatio, 0, 0);
-    }
   }
 
   private drawObject(context: CanvasRenderingContext2D, object: OverlayObject) {
@@ -284,6 +369,8 @@ export class ObjectLayerElement extends PolymerElement {
     }
 
     context.beginPath();
+    const cornerRadius =
+        loadTimeData.getInteger('segmentationMaskCornerRadius');
     for (const polygon of polygons) {
       // TODO(b/330183480): Currently, we are assuming that polygon
       // coordinates are normalized. We should still implement
@@ -295,9 +382,41 @@ export class ObjectLayerElement extends PolymerElement {
       const firstVertex = polygon.vertex[0];
       context.moveTo(
           firstVertex.x * this.canvasWidth, firstVertex.y * this.canvasHeight);
-      for (const vertex of polygon.vertex.slice(1)) {
+      // Draw the segmentation mask, rounding each corner by the configured
+      // radius.
+      for (let i = 1; i < polygon.vertex.length; i++) {
+        const currentVertex = polygon.vertex[i];
+        const previousVertex = polygon.vertex[i - 1];
+
+        // Calculate the distance between the current and previous vertices.
+        const dx = currentVertex.x - previousVertex.x;
+        const dy = currentVertex.y - previousVertex.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        // The control point distance should be the desired relative corner
+        // radius or the radius of the arc between the two points. Whichever is
+        // smaller.
+        const controlPointDistance =
+            Math.min(distance / 2, cornerRadius / this.canvasWidth);
+
+        // Use linear interpolation to find the control points.
+        const controlPoint1x =
+            previousVertex.x + (dx * controlPointDistance) / distance;
+        const controlPoint1y =
+            previousVertex.y + (dy * controlPointDistance) / distance;
+        const controlPoint2x =
+            currentVertex.x - (dx * controlPointDistance) / distance;
+        const controlPoint2y =
+            currentVertex.y - (dy * controlPointDistance) / distance;
+
         context.lineTo(
-            vertex.x * this.canvasWidth, vertex.y * this.canvasHeight);
+            controlPoint1x * this.canvasWidth,
+            controlPoint1y * this.canvasHeight);
+        context.arcTo(
+            controlPoint1x * this.canvasWidth,
+            controlPoint1y * this.canvasHeight,
+            controlPoint2x * this.canvasWidth,
+            controlPoint2y * this.canvasHeight, cornerRadius);
       }
     }
     context.closePath();
@@ -331,16 +450,20 @@ export class ObjectLayerElement extends PolymerElement {
         right,
         bottom,
     );
-    gradient.addColorStop(
-        0, 'rgba(255,255,255, 0.65)');  // white with 65% opacity
-    gradient.addColorStop(
-        1, 'rgba(255,255,255, 0.65)');  // white with 65% opacity
+    const segmentationColor =
+        skColorToRgbaWithCustomAlpha(this.theme.selectionElement, 0.65);
+    gradient.addColorStop(0, segmentationColor);
+    gradient.addColorStop(1, segmentationColor);
     context.strokeStyle = gradient;
     context.stroke();
   }
 
   private clearCanvas(context: CanvasRenderingContext2D) {
     context.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
+
+    // Create a new blank path so isPointInPath returns false.
+    context.beginPath();
+    context.closePath();
   }
 
   private focusShimmer(object: OverlayObject) {
@@ -349,10 +472,12 @@ export class ObjectLayerElement extends PolymerElement {
       return;
     }
 
-    let leftMostPoint = 0;
-    let rightMostPoint = 0;
-    let topMostPoint = 0;
-    let bottomMostPoint = 0;
+    const firstVertex = polygons[0].vertex[0];
+    let topMostPoint = firstVertex.y;
+    let bottomMostPoint = firstVertex.y;
+    let leftMostPoint = firstVertex.x;
+    let rightMostPoint = firstVertex.x;
+
     for (const polygon of polygons) {
       // TODO(b/330183480): Currently, we are assuming that polygon
       // coordinates are normalized. We should still implement
@@ -360,12 +485,6 @@ export class ObjectLayerElement extends PolymerElement {
       if (polygon.coordinateType !== Polygon_CoordinateType.kNormalized) {
         continue;
       }
-
-      const firstVertex = polygon.vertex[0];
-      topMostPoint = firstVertex.y;
-      bottomMostPoint = firstVertex.y;
-      leftMostPoint = firstVertex.x;
-      rightMostPoint = firstVertex.x;
 
       for (const vertex of polygon.vertex.slice(1)) {
         topMostPoint = Math.min(topMostPoint, vertex.y);
@@ -382,10 +501,23 @@ export class ObjectLayerElement extends PolymerElement {
   }
 
   private onObjectsReceived(objects: OverlayObject[]) {
-    // Sort objects by descending bounding box areas so that smaller objects
-    // are rendered over, and take priority over, larger objects.
-    this.renderedObjects =
-        objects.filter(o => isObjectRenderable(o)).sort(compareArea);
+    // Sort objects with segmentation masks after objects without
+    // segmentation masks. Then sort by descending segmentation mask or
+    // bounding box area so that smaller objects are rendered over, and take
+    // priority over, larger objects.
+    const renderableObjects = objects.filter(o => isObjectRenderable(o));
+    const objectsWithMask: OverlayObject[] = [];
+    const objectsWithoutMask: OverlayObject[] = [];
+    for (const object of renderableObjects) {
+      if (hasSegmentationMask(object)) {
+        objectsWithMask.push(object);
+      } else {
+        objectsWithoutMask.push(object);
+      }
+    }
+    objectsWithMask.sort(compareSegmentationMaskArea);
+    objectsWithoutMask.sort(compareArea);
+    this.renderedObjects = objectsWithoutMask.concat(objectsWithMask);
   }
 
   /** @return The CSS styles string for the given object. */
@@ -417,6 +549,7 @@ export class ObjectLayerElement extends PolymerElement {
           toPercent(
               objectBoundingBox.box.x - (objectBoundingBox.box.width / 2))}`,
       `transform: rotate(${objectBoundingBox.rotation}rad)`,
+      `clip-path: ${toCssClipPath(object)}`,
     ];
     return styles.join(';');
   }
@@ -453,6 +586,21 @@ export class ObjectLayerElement extends PolymerElement {
       }
     }
     return null;
+  }
+
+  // Clears any animation state currently present on the canvas.
+  private clearAndCancelAnimation() {
+    // Clear and cancel any animations.
+    for (let i = 0; i < this.fadeOutAnimations.length; i++) {
+      this.fadeOutAnimations[i].cancel();
+    }
+    this.fadeOutAnimations = [];
+
+    this.clearCanvas(this.context);
+    for (let i = 0; i < this.fadeOutTimeoutIds.length; i++) {
+      clearTimeout(this.fadeOutTimeoutIds[i]);
+    }
+    this.fadeOutTimeoutIds = [];
   }
 
   // Testing method to get the objects on the page.

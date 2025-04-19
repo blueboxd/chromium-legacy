@@ -9,6 +9,7 @@
 #include <optional>
 
 #include "base/component_export.h"
+#include "base/features.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chromeos/ash/components/growth/action_performer.h"
@@ -37,7 +38,8 @@ enum class Slot {
   kDemoModeFreePlayApps = 1,
   kNudge = 2,
   kNotification = 3,
-  kMaxValue = kNotification
+  kOobePerkDiscovery = 4,
+  kMaxValue = kOobePerkDiscovery
 };
 
 // These values are deserialized from Growth Campaign, so entries should not
@@ -51,7 +53,9 @@ enum class BuiltInImage {
   kG1 = 1,
   kSparkRebuy = 2,
   kSpark1PApp = 3,
-  kMaxValue = kSpark1PApp
+  kSparkV2 = 4,
+  kG1Notification = 5,
+  kMaxValue = kG1Notification
 };
 
 // Supported window anchor element.
@@ -59,6 +63,8 @@ enum class BuiltInImage {
 // be renumbered and numeric values should never be reused.
 enum class WindowAnchorType {
   kCaptionButtonContainer = 0,
+  kWindowBounds = 1,
+  kMaxValue = kWindowBounds
 };
 
 // These values are deserialized from Growth Campaign, so entries should not
@@ -121,6 +127,9 @@ const Payload* GetPayloadBySlot(const Campaign* campaign, Slot slot);
 
 COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_GROWTH)
 std::optional<int> GetCampaignId(const Campaign* campaign);
+
+COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_GROWTH)
+std::optional<int> GetCampaignGroupId(const Campaign* campaign);
 
 COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_GROWTH)
 std::optional<int> GetStudyId(const Campaign* campaign);
@@ -263,6 +272,8 @@ class DeviceTargeting : public TargetingBase {
 
   const base::Value::List* GetLocales() const;
   const base::Value::List* GetUserLocales() const;
+  const base::Value::List* GetIncludedCountries() const;
+  const base::Value::List* GetExcludedCountries() const;
   const std::optional<int> GetMinMilestone() const;
   const std::optional<int> GetMaxMilestone() const;
   const std::optional<base::Version> GetMinVersion() const;
@@ -287,6 +298,7 @@ class SessionTargeting : public TargetingBase {
   SessionTargeting& operator=(const SessionTargeting) = delete;
   ~SessionTargeting();
 
+  std::optional<const base::Feature*> GetFeature() const;
   const base::Value::List* GetExperimentTags() const;
 
   std::optional<bool> GetMinorUser() const;
@@ -342,6 +354,8 @@ class EventsTargeting {
 
   int GetImpressionCap() const;
   int GetDismissalCap() const;
+  std::optional<int> GetGroupImpressionCap() const;
+  std::optional<int> GetGroupDismissalCap() const;
   const base::Value::List* GetEventsConditions() const;
 
  private:
@@ -398,6 +412,8 @@ class RuntimeTargeting : public TargetingBase {
 
   // Returns a list of triggers against the current trigger, e.g. `kAppOpened`.
   const std::vector<std::unique_ptr<TriggerTargeting>> GetTriggers() const;
+
+  const base::Value::List* GetUserPrefTargetings() const;
 };
 
 // Wrapper around the action dictionary for performing an action, including

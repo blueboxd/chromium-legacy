@@ -44,8 +44,8 @@ class DelegatedInkPointRendererGpuTest : public testing::Test {
   }
 
   void SendDelegatedInkPointBasedOnPrevious(uint32_t pointer_id) {
-    DCHECK(stored_points_.find(pointer_id) != stored_points_.end());
-    DCHECK(!stored_points_[pointer_id].empty());
+    EXPECT_TRUE(stored_points_.find(pointer_id) != stored_points_.end());
+    EXPECT_TRUE(!stored_points_[pointer_id].empty());
 
     auto last_point = stored_points_[pointer_id].back();
     SendDelegatedInkPoint(gfx::DelegatedInkPoint(
@@ -56,7 +56,7 @@ class DelegatedInkPointRendererGpuTest : public testing::Test {
   }
 
   void SendDelegatedInkPointBasedOnPrevious() {
-    DCHECK_EQ(stored_points_.size(), 1u);
+    EXPECT_EQ(stored_points_.size(), 1u);
     SendDelegatedInkPointBasedOnPrevious(stored_points_.begin()->first);
   }
 
@@ -65,10 +65,31 @@ class DelegatedInkPointRendererGpuTest : public testing::Test {
         std::make_unique<gfx::DelegatedInkMetadata>(metadata));
   }
 
+  // Sends a DelegatedInkMetadata that starts a new trail. this assumes that
+  // there is only one `stored_points_` pointer id and that the points are
+  // stored ordered by their timestamp.
+  void SendNewTrailMetadata() {
+    EXPECT_EQ(stored_points_.size(), 1u);
+    auto points_it = stored_points_.find(stored_points_.begin()->first);
+    EXPECT_TRUE(points_it != stored_points_.end());
+    auto points_vec = points_it->second;
+    EXPECT_GT(points_vec.size(), 0u);
+    auto& last_point = points_vec.back();
+    gfx::DelegatedInkMetadata metadata(
+        last_point.point() + gfx::Vector2dF(5, 5), /*diameter=*/3,
+        SK_ColorBLACK,
+        last_point.timestamp() +
+            base::Microseconds(kMicrosecondsBetweenEachPoint),
+        gfx::RectF(0, 0, 100, 100), /*hovering=*/false);
+
+    ink_renderer()->SetDelegatedInkTrailStartPoint(
+        std::make_unique<gfx::DelegatedInkMetadata>(metadata));
+  }
+
   gfx::DelegatedInkMetadata SendMetadataBasedOnStoredPoint(int32_t pointer_id,
                                                            uint64_t point) {
-    DCHECK(stored_points_.find(pointer_id) != stored_points_.end());
-    DCHECK_GE(stored_points_[pointer_id].size(), point);
+    EXPECT_TRUE(stored_points_.find(pointer_id) != stored_points_.end());
+    EXPECT_GE(stored_points_[pointer_id].size(), point);
 
     const gfx::DelegatedInkPoint& ink_point = stored_points_[pointer_id][point];
     gfx::DelegatedInkMetadata metadata(
@@ -79,7 +100,7 @@ class DelegatedInkPointRendererGpuTest : public testing::Test {
   }
 
   gfx::DelegatedInkMetadata SendMetadataBasedOnStoredPoint(uint64_t point) {
-    DCHECK_EQ(stored_points_.size(), 1u);
+    EXPECT_EQ(stored_points_.size(), 1u);
     return SendMetadataBasedOnStoredPoint(stored_points_.begin()->first, point);
   }
 
@@ -169,10 +190,6 @@ class DelegatedInkPointRendererGpuTest : public testing::Test {
 // Test to confirm that points and tokens are stored and removed correctly based
 // on when the metadata and points arrive.
 TEST_F(DelegatedInkPointRendererGpuTest, StoreAndRemovePointsAndTokens) {
-  if (!presenter() || !presenter()->SupportsDelegatedInk()) {
-    return;
-  }
-
   // Send some points and make sure they are all stored even with no metadata.
   const int32_t kPointerId = 1;
   SendDelegatedInkPoint(gfx::DelegatedInkPoint(
@@ -228,10 +245,6 @@ TEST_F(DelegatedInkPointRendererGpuTest, StoreAndRemovePointsAndTokens) {
 // Basic test to confirm that points are drawn as they arrive if they are in the
 // presentation area and after the metadata's timestamp.
 TEST_F(DelegatedInkPointRendererGpuTest, DrawPointsAsTheyArrive) {
-  if (!presenter() || !presenter()->SupportsDelegatedInk()) {
-    return;
-  }
-
   gfx::DelegatedInkMetadata metadata(
       gfx::PointF(12, 12), /*diameter=*/3, SK_ColorBLACK,
       base::TimeTicks::Now(), gfx::RectF(10, 10, 90, 90), /*hovering=*/false);
@@ -282,10 +295,6 @@ TEST_F(DelegatedInkPointRendererGpuTest, DrawPointsAsTheyArrive) {
 
 // Confirm that points with different pointer ids are handled correctly.
 TEST_F(DelegatedInkPointRendererGpuTest, MultiplePointerIds) {
-  if (!presenter() || !presenter()->SupportsDelegatedInk()) {
-    return;
-  }
-
   const int32_t kPointerId1 = 1;
   const int32_t kPointerId2 = 2;
 
@@ -379,10 +388,6 @@ TEST_F(DelegatedInkPointRendererGpuTest, MultiplePointerIds) {
 // Make sure that the DelegatedInkPoint with the earliest timestamp is removed
 // if we have reached the maximum number of pointer ids.
 TEST_F(DelegatedInkPointRendererGpuTest, MaximumPointerIds) {
-  if (!presenter() || !presenter()->SupportsDelegatedInk()) {
-    return;
-  }
-
   // First add DelegatedInkPoints with unique pointer ids up to the limit and
   // make sure they are all correctly added separately.
   const base::TimeTicks kEarliestTimestamp =
@@ -438,9 +443,6 @@ TEST_F(DelegatedInkPointRendererGpuTest, MaximumPointerIds) {
 // added to the API's trail, and that the TimeToDrawPointsMillis histogram is
 // reported correctly on draw.
 TEST_F(DelegatedInkPointRendererGpuTest, ReportTimeToDraw) {
-  if (!presenter() || !presenter()->SupportsDelegatedInk()) {
-    return;
-  }
   const std::string kHistogramName =
       "Renderer.DelegatedInkTrail.OS.TimeToDrawPointsMillis";
   const base::HistogramTester histogram_tester;
@@ -459,13 +461,14 @@ TEST_F(DelegatedInkPointRendererGpuTest, ReportTimeToDraw) {
   // `DrawDelegatedInkPoint` should've added the point's timestamp to
   // `points_to_be_drawn_`.
   EXPECT_EQ(ink_renderer()->PointstoBeDrawnForTesting().size(), 1u);
-  EXPECT_EQ(ink_renderer()->PointstoBeDrawnForTesting()[0], timestamp);
+  EXPECT_EQ(ink_renderer()->PointstoBeDrawnForTesting()[0].timestamp(),
+            timestamp);
 
   // Send another point and expect that the new point's timestamp is added to
   // `points_to_be_drawn_`.
   SendDelegatedInkPointBasedOnPrevious(kPointerId);
   EXPECT_EQ(ink_renderer()->PointstoBeDrawnForTesting().size(), 2u);
-  EXPECT_EQ(ink_renderer()->PointstoBeDrawnForTesting()[1],
+  EXPECT_EQ(ink_renderer()->PointstoBeDrawnForTesting()[1].timestamp(),
             timestamp + base::Microseconds(kMicrosecondsBetweenEachPoint));
 
   ink_renderer()->ReportPointsDrawn();
@@ -474,6 +477,158 @@ TEST_F(DelegatedInkPointRendererGpuTest, ReportTimeToDraw) {
   // been cleared.
   histogram_tester.ExpectTotalCount(kHistogramName, 2);
   EXPECT_TRUE(ink_renderer()->PointstoBeDrawnForTesting().empty());
+}
+// Test that stale points get removed from `points_to_be_drawn_` when a newer
+// metadata is added.
+TEST_F(DelegatedInkPointRendererGpuTest,
+       PointsToBeDrawnIsClearedWithNewMetadata) {
+  constexpr int32_t kPointerId = 1u;
+  const base::TimeTicks timestamp = base::TimeTicks::Now();
+  SendDelegatedInkPoint(
+      gfx::DelegatedInkPoint(gfx::PointF(20, 20), timestamp, kPointerId));
+  SendMetadataBasedOnStoredPoint(0);
+  EXPECT_EQ(ink_renderer()->PointstoBeDrawnForTesting().size(), 1u);
+  // Test that sending a metadata with a timestamp larger than some points will
+  // remove those points from the points to be drawn vector.
+  SendDelegatedInkPointBasedOnPrevious();
+  SendDelegatedInkPointBasedOnPrevious();
+  SendDelegatedInkPointBasedOnPrevious();
+  SendMetadataBasedOnStoredPoint(3);
+  // The new metadata should cause all points but the last one to be deleted.
+  EXPECT_EQ(ink_renderer()->PointstoBeDrawnForTesting().size(), 1u);
+
+  // A metadata that starts a new trail should clear all the points in the
+  // vector.
+  SendNewTrailMetadata();
+  EXPECT_EQ(ink_renderer()->PointstoBeDrawnForTesting().size(), 0u);
+}
+
+TEST_F(DelegatedInkPointRendererGpuTest, ReportLatencyImprovement) {
+  const std::string kHistogramName =
+      "Renderer.DelegatedInkTrail.LatencyImprovement.OS.WithoutPrediction";
+  const base::HistogramTester histogram_tester;
+  constexpr int32_t kPointerId = 1u;
+
+  ink_renderer()->ReportPointsDrawn();
+  // No histogram should be fired if `points_to_be_drawn_` is empty.
+  EXPECT_TRUE(ink_renderer()->PointstoBeDrawnForTesting().empty());
+  histogram_tester.ExpectTotalCount(kHistogramName, 0);
+
+  // Create three points, `kMicrosecondsBetweenEachPoint` milliseconds apart
+  // from each other (the histogram is measured in ms, microseconds would be
+  // too small of a difference).
+  gfx::DelegatedInkPoint point_1(gfx::PointF(20, 20), base::TimeTicks::Now(),
+                                 kPointerId);
+  gfx::DelegatedInkPoint point_2(
+      point_1.point() + gfx::Vector2dF(5, 5),
+      point_1.timestamp() + base::Milliseconds(kMicrosecondsBetweenEachPoint),
+      kPointerId);
+  gfx::DelegatedInkPoint point_3(
+      point_2.point() + gfx::Vector2dF(5, 5),
+      point_2.timestamp() + base::Milliseconds(kMicrosecondsBetweenEachPoint),
+      kPointerId);
+  SendDelegatedInkPoint(point_1);
+  SendDelegatedInkPoint(point_2);
+  SendDelegatedInkPoint(point_3);
+  SendMetadataBasedOnStoredPoint(0);
+  ink_renderer()->ReportPointsDrawn();
+
+  // One histogram should've been fired with the delta between the metadata's
+  // creation times and the `point_3`'s timestamp, in milliseconds.
+  histogram_tester.ExpectUniqueSample(kHistogramName,
+                                      kMicrosecondsBetweenEachPoint * 2, 1);
+  EXPECT_TRUE(ink_renderer()->PointstoBeDrawnForTesting().empty());
+}
+
+TEST_F(DelegatedInkPointRendererGpuTest, ReportOutstandingPointsToDraw) {
+  const std::string kHistogramName =
+      "Renderer.DelegatedInkTrail.OS.OutstandingPointsToDraw";
+  const base::HistogramTester histogram_tester;
+  constexpr int32_t kPointerId = 1u;
+
+  // No histogram should be fired when `metadata_paint_time_` is not set.
+  histogram_tester.ExpectTotalCount(kHistogramName, 0);
+
+  SendDelegatedInkPoint(gfx::DelegatedInkPoint(
+      gfx::PointF(10, 10), base::TimeTicks::Now(), kPointerId));
+  ink_renderer()->ReportPointsDrawn();
+  SendMetadataBasedOnStoredPoint(0);
+  ink_renderer()->ReportPointsDrawn();
+  histogram_tester.ExpectUniqueSample(kHistogramName, 1, 1);
+  SendDelegatedInkPointBasedOnPrevious();
+  SendDelegatedInkPointBasedOnPrevious();
+  ink_renderer()->ReportPointsDrawn();
+  histogram_tester.ExpectBucketCount(kHistogramName, 2, 1);
+  histogram_tester.ExpectBucketCount(kHistogramName, 1, 1);
+  SendDelegatedInkPointBasedOnPrevious();
+  SendDelegatedInkPointBasedOnPrevious();
+  SendDelegatedInkPointBasedOnPrevious();
+  ink_renderer()->ReportPointsDrawn();
+  histogram_tester.ExpectBucketCount(kHistogramName, 3, 1);
+  histogram_tester.ExpectBucketCount(kHistogramName, 2, 1);
+  histogram_tester.ExpectBucketCount(kHistogramName, 1, 1);
+}
+
+// Test that the histogram `TimeFromDelegatedInkToApiPaint` is fired when a
+// point is painted via the Delegated Ink API and then found to match a metadata
+// point.
+TEST_F(DelegatedInkPointRendererGpuTest, TestTimeFromDelegatedInkToApiPaint) {
+  const std::string kHistogramName =
+      "Renderer.DelegatedInkTrail.OS.TimeFromDelegatedInkToApiPaint";
+  const base::HistogramTester histogram_tester;
+  constexpr int32_t kPointerId = 1u;
+
+  ink_renderer()->ReportPointsDrawn();
+  // No histogram should be fired when `metadata_paint_time_` is not set.
+  histogram_tester.ExpectTotalCount(kHistogramName, 0);
+
+  SendDelegatedInkPoint(gfx::DelegatedInkPoint(
+      gfx::PointF(10, 10), base::TimeTicks::Now(), kPointerId));
+  // This metadata starts the trail and calls `DrawSavedTrailPoints`.
+  SendMetadataBasedOnStoredPoint(0);
+  // The `painted_time` timestamp should be set for the point with the
+  // value of `base::TimeTicks::Now()`.
+  ink_renderer()->ReportPointsDrawn();
+  gfx::DelegatedInkPoint last_point =
+      ink_renderer()->DelegatedInkPointsForTesting(kPointerId).rbegin()->first;
+  EXPECT_TRUE(last_point.paint_timestamp().has_value());
+  // `metadata_paint_time_` is not set yet, so the histogram should not have
+  // been fired.
+  histogram_tester.ExpectTotalCount(kHistogramName, 0);
+
+  // Simulate receiving another point and painting it.
+  SendDelegatedInkPointBasedOnPrevious();
+  ink_renderer()->ReportPointsDrawn();
+  // A new metadata is received that matches a Delegated Ink point with a
+  // `painted_time` timestamp, so a histogram should be fired on next paint.
+  SendMetadataBasedOnStoredPoint(1);
+  ink_renderer()->ReportPointsDrawn();
+  histogram_tester.ExpectTotalCount(kHistogramName, 1);
+
+  // Adding a new point without updating the metadata should not fire a new
+  // histogram.
+  SendDelegatedInkPointBasedOnPrevious();
+  ink_renderer()->ReportPointsDrawn();
+  histogram_tester.ExpectTotalCount(kHistogramName, 1);
+
+  // Send the metadata that matches the previous point and verify that a
+  // histogram was fired.
+  SendMetadataBasedOnStoredPoint(2);
+  ink_renderer()->ReportPointsDrawn();
+  histogram_tester.ExpectTotalCount(kHistogramName, 2);
+
+  // Add a new point, then send a metadata that does not match it. Then verify
+  // that a histogram wasn't fired.
+  SendDelegatedInkPointBasedOnPrevious();
+  ink_renderer()->ReportPointsDrawn();
+  last_point =
+      ink_renderer()->DelegatedInkPointsForTesting(kPointerId).rbegin()->first;
+  SendMetadata(gfx::DelegatedInkMetadata(
+      last_point.point() + gfx::Vector2dF(2, 2), /*diameter=*/3, SK_ColorBLACK,
+      last_point.timestamp() + base::Microseconds(20),
+      gfx::RectF(0, 0, 100, 100), /*hovering=*/false));
+  ink_renderer()->ReportPointsDrawn();
+  histogram_tester.ExpectTotalCount(kHistogramName, 2);
 }
 
 }  // namespace

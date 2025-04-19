@@ -9,16 +9,17 @@
 #include "base/auto_reset.h"
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
+#include "cc/input/browser_controls_offset_tags_info.h"
 #include "cc/input/browser_controls_state.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/common/url_constants.h"
 #include "components/permissions/permission_request_manager.h"
+#include "components/security_state/content/security_state_tab_helper.h"
 #include "content/public/browser/focused_node_details.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -592,7 +593,7 @@ void TopControlsSlideControllerChromeOS::UpdateBrowserControlsStateShown(
   const cc::BrowserControlsState current_state =
       cc::BrowserControlsState::kShown;
   web_contents->UpdateBrowserControlsState(constraints_state, current_state,
-                                           animate);
+                                           animate, std::nullopt);
 }
 
 bool TopControlsSlideControllerChromeOS::CanEnable(

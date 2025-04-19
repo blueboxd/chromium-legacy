@@ -24,12 +24,6 @@ BASE_FEATURE(kAllowRecentSessionTracking,
              "AllowRecentSessionTracking",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-const char kSidePanelCustomizeChromeTutorialId[] =
-    "Side Panel Customize Chrome Tutorial";
-const char kTabGroupTutorialId[] = "Tab Group Tutorial";
-const char kSavedTabGroupTutorialId[] = "Saved Tab Group Tutorial";
-const char kPasswordManagerTutorialId[] = "Password Manager Tutorial";
-
 UserEducationService::UserEducationService(
     std::unique_ptr<BrowserFeaturePromoStorageService> storage_service,
     bool allows_promos)
@@ -62,13 +56,13 @@ UserEducationService::UserEducationService(
 }
 
 // static
-ui::IsNewFeatureAtValue UserEducationService::MaybeShowNewBadge(
+user_education::DisplayNewBadge UserEducationService::MaybeShowNewBadge(
     content::BrowserContext* context,
     const base::Feature& feature) {
   auto* const service =
       UserEducationServiceFactory::GetForBrowserContext(context);
   if (!service || !service->new_badge_controller()) {
-    return ui::IsNewFeatureAtValue();
+    return user_education::DisplayNewBadge();
   }
 
   // For some tests, browser initialization is never done so there are no
@@ -77,7 +71,7 @@ ui::IsNewFeatureAtValue UserEducationService::MaybeShowNewBadge(
           user_education::features::kNewBadgeTestFeature)) {
     // Verify that this is actually a testing situation, and then fail.
     CHECK(Profile::FromBrowserContext(context)->AsTestingProfile());
-    return ui::IsNewFeatureAtValue();
+    return user_education::DisplayNewBadge();
   }
 
   return service->new_badge_controller()->MaybeShowNewBadge(feature);

@@ -12,9 +12,9 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chrome/browser/sync/sync_invalidations_service_factory.h"
+#include "components/sharing_message/sharing_sync_preference.h"
 #include "components/sync/invalidations/sync_invalidations_service.h"
 #include "components/sync/service/sync_prefs.h"
 
@@ -66,6 +66,13 @@ bool DeviceInfoSyncClientImpl::GetSendTabToSelfReceivingEnabled() const {
 }
 
 // syncer::DeviceInfoSyncClient:
+sync_pb::SyncEnums_SendTabReceivingType
+DeviceInfoSyncClientImpl::GetSendTabToSelfReceivingType() const {
+  return sync_pb::
+      SyncEnums_SendTabReceivingType_SEND_TAB_RECEIVING_TYPE_CHROME_OR_UNSPECIFIED;
+}
+
+// syncer::DeviceInfoSyncClient:
 std::optional<syncer::DeviceInfo::SharingInfo>
 DeviceInfoSyncClientImpl::GetLocalSharingInfo() const {
   return SharingSyncPreference::GetLocalSharingInfoForSync(
@@ -80,7 +87,7 @@ std::optional<std::string> DeviceInfoSyncClientImpl::GetFCMRegistrationToken()
 }
 
 // syncer::DeviceInfoSyncClient:
-std::optional<syncer::ModelTypeSet>
+std::optional<syncer::DataTypeSet>
 DeviceInfoSyncClientImpl::GetInterestedDataTypes() const {
   return SyncInvalidationsServiceFactory::GetForProfile(profile_)
       ->GetInterestedDataTypes();

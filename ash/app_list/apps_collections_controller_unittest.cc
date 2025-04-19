@@ -4,6 +4,7 @@
 
 #include "ash/app_list/apps_collections_controller.h"
 
+#include <memory>
 #include <optional>
 #include <string>
 #include <tuple>
@@ -18,6 +19,7 @@
 #include "ash/app_list/views/search_result_page_anchored_dialog.h"
 #include "ash/app_menu/app_menu_model_adapter.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/ash_prefs.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -164,7 +166,7 @@ TEST_F(AppsCollectionsControllerTest,
   ui::test::EventGenerator* generator = GetEventGenerator();
   ui::GestureEvent long_press(
       empty_space.x(), empty_space.y(), 0, base::TimeTicks(),
-      ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
+      ui::GestureEventDetails(ui::EventType::kGestureLongPress));
   generator->Dispatch(&long_press);
   GetAppListTestHelper()->WaitUntilIdle();
 
@@ -200,6 +202,24 @@ TEST_F(AppsCollectionsControllerTest,
   // Apps collections page is visible.
   EXPECT_FALSE(helper->GetBubbleAppsCollectionsPage()->GetVisible());
   EXPECT_TRUE(helper->GetBubbleAppsPage()->GetVisible());
+}
+
+// Verifies that the apps collections is not shown after the user logs back in
+// again.
+TEST_F(AppsCollectionsControllerTest, AppsCollectionsDismissedAfterRestart) {
+  auto* helper = GetAppListTestHelper();
+  helper->ShowAppList();
+
+  EXPECT_TRUE(helper->GetBubbleAppsCollectionsPage()->GetVisible());
+
+  // Logout and simulate that the user logs back in again.
+  helper->Dismiss();
+  ClearLogin();
+  SimulateUserLogin("primary@test");
+
+  // The bubble should not be shown.
+  helper->ShowAppList();
+  EXPECT_FALSE(helper->GetBubbleAppsCollectionsPage()->GetVisible());
 }
 
 // Class for tests of the `AppsCollectionsController` which are
@@ -315,6 +335,103 @@ TEST_P(AppsCollectionsControllerUserElegibilityTest, SecondaryUserNotElegible) {
 
   auto* apps_collections_page = helper->GetBubbleAppsCollectionsPage();
   EXPECT_FALSE(apps_collections_page->GetVisible());
+}
+
+// Class for tests of the `AppsCollectionsController` which are
+// concerned with the experiment prefs.
+class AppsCollectionsControllerPrefTest
+    : public NoSessionAshTestBase,
+      public ::testing::WithParamInterface<std::tuple<
+          /*is_apps_collections_active=*/bool,
+          /*is_counterfactual=*/bool,
+          /*is_modified_order=*/bool>> {
+ public:
+  AppsCollectionsControllerPrefTest() {
+    if (IsAppsCollectionsEnabled()) {
+      scoped_feature_list_.InitAndEnableFeatureWithParameters(
+          app_list_features::kAppsCollections,
+          {{"is-counterfactual",
+            IsAppsCollectionsEnabledCounterfactually() ? "true" : "false"},
+           {"is-modified-order",
+            IsAppsCollectionsEnabledWithModifiedOrder() ? "true" : "false"}});
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          app_list_features::kAppsCollections);
+    }
+  }
+
+  // NoSessionAshTestBase:
+  void SetUp() override {
+    NoSessionAshTestBase::SetUp();
+
+    GetTestAppListClient()->set_is_new_user(true);
+    TestSessionControllerClient* session_controller =
+        GetSessionControllerClient();
+    session_controller->Reset();
+
+    const AccountId& account_id = AccountId::FromUserEmail("primary@test");
+
+    auto user_prefs = std::make_unique<TestingPrefServiceSimple>();
+    RegisterUserProfilePrefs(user_prefs->registry(), /*country=*/"",
+                             /*for_test=*/true);
+    session_controller->AddUserSession("primary@test",
+                                       user_manager::UserType::kRegular,
+                                       /*provide_pref_service=*/false,
+                                       /*is_new_profile=*/true);
+    GetSessionControllerClient()->SetUserPrefService(account_id,
+                                                     std::move(user_prefs));
+    session_controller->SwitchActiveUser(account_id);
+    session_controller->SetSessionState(session_manager::SessionState::ACTIVE);
+  }
+
+  // Returns whether apps collectionns feature is enabled.
+  bool IsAppsCollectionsEnabled() const { return std::get<0>(GetParam()); }
+
+  // Returns whether apps collections feature is enabled counterfactrually.
+  bool IsAppsCollectionsEnabledCounterfactually() const {
+    return IsAppsCollectionsEnabled() && std::get<1>(GetParam());
+  }
+  // Returns whether apps collections feature is enabled counterfactrually.
+  bool IsAppsCollectionsEnabledWithModifiedOrder() const {
+    return IsAppsCollectionsEnabled() && std::get<2>(GetParam());
+  }
+
+  AppsCollectionsController::ExperimentalArm GetExpectedExperimentalArm() {
+    if (!IsAppsCollectionsEnabled()) {
+      return AppsCollectionsController::ExperimentalArm::kControl;
+    }
+
+    if (IsAppsCollectionsEnabledCounterfactually()) {
+      return AppsCollectionsController::ExperimentalArm::kCounterfactual;
+    }
+
+    return IsAppsCollectionsEnabledWithModifiedOrder()
+               ? AppsCollectionsController::ExperimentalArm::kModifiedOrder
+               : AppsCollectionsController::ExperimentalArm::kEnabled;
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         AppsCollectionsControllerPrefTest,
+                         ::testing::Combine(
+                             /*is_apps_collections_active=*/::testing::Bool(),
+                             /*is_counterfactual=*/::testing::Bool(),
+                             /*is_modified_order=*/::testing::Bool()));
+
+// Verifies that the experimental arm for the user is calculated and stored
+// correctly.
+TEST_P(AppsCollectionsControllerPrefTest, GetExperimentalArm) {
+  EXPECT_EQ(AppsCollectionsController::Get()->GetUserExperimentalArm(),
+            AppsCollectionsController::ExperimentalArm::kDefaultValue);
+
+  auto* helper = GetAppListTestHelper();
+  helper->ShowAppList();
+
+  EXPECT_EQ(AppsCollectionsController::Get()->GetUserExperimentalArm(),
+            GetExpectedExperimentalArm());
 }
 
 }  // namespace

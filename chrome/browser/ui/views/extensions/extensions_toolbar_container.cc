@@ -11,6 +11,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/no_destructor.h"
+#include "base/not_fatal_until.h"
 #include "base/ranges/algorithm.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -18,9 +19,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
+#include "chrome/browser/ui/browser_window/public/browser_window_features.h"
 #include "chrome/browser/ui/extensions/extension_action_view_controller.h"
 #include "chrome/browser/ui/layout_constants.h"
-#include "chrome/browser/ui/side_panel/side_panel_ui.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_hover_card_types.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -33,6 +34,7 @@
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_container_view_controller.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
+#include "chrome/browser/ui/views/side_panel/side_panel_ui.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_action_hover_card_controller.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_actions_bar_bubble_views.h"
 #include "chrome/common/pref_names.h"
@@ -124,25 +126,23 @@ ExtensionsToolbarContainer::ExtensionsToolbarContainer(Browser* browser,
   }
 
   // Create close side panel button.
-  if (features::IsSidePanelPinningEnabled()) {
-    std::unique_ptr<ToolbarButton> close_side_panel_button =
-        std::make_unique<ToolbarButton>(base::BindRepeating(
-            &ExtensionsToolbarContainer::CloseSidePanelButtonPressed,
-            base::Unretained(this)));
-    close_side_panel_button->SetTooltipText(l10n_util::GetStringUTF16(
-        IDS_EXTENSIONS_SUBMENU_CLOSE_SIDE_PANEL_ITEM));
-    close_side_panel_button->SetVisible(false);
-    close_side_panel_button->SetProperty(views::kFlexBehaviorKey,
-                                         views::FlexSpecification());
-    close_side_panel_button_ = AddChildView(std::move(close_side_panel_button));
-    UpdateCloseSidePanelButtonIcon();
-    pref_change_registrar_.Init(browser_->profile()->GetPrefs());
-    pref_change_registrar_.Add(
-        prefs::kSidePanelHorizontalAlignment,
-        base::BindRepeating(
-            &ExtensionsToolbarContainer::UpdateCloseSidePanelButtonIcon,
-            base::Unretained(this)));
-  }
+  std::unique_ptr<ToolbarButton> close_side_panel_button =
+      std::make_unique<ToolbarButton>(base::BindRepeating(
+          &ExtensionsToolbarContainer::CloseSidePanelButtonPressed,
+          base::Unretained(this)));
+  close_side_panel_button->SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_SUBMENU_CLOSE_SIDE_PANEL_ITEM));
+  close_side_panel_button->SetVisible(false);
+  close_side_panel_button->SetProperty(views::kFlexBehaviorKey,
+                                       views::FlexSpecification());
+  close_side_panel_button_ = AddChildView(std::move(close_side_panel_button));
+  UpdateCloseSidePanelButtonIcon();
+  pref_change_registrar_.Init(browser_->profile()->GetPrefs());
+  pref_change_registrar_.Add(
+      prefs::kSidePanelHorizontalAlignment,
+      base::BindRepeating(
+          &ExtensionsToolbarContainer::UpdateCloseSidePanelButtonIcon,
+          base::Unretained(this)));
 
   // Layout.
   const views::FlexSpecification hide_icon_flex_specification =
@@ -258,7 +258,7 @@ void ExtensionsToolbarContainer::RemoveAction(
 
   auto iter = base::ranges::find(actions_, action_id,
                                  &ToolbarActionViewController::GetId);
-  DCHECK(iter != actions_.end());
+  CHECK(iter != actions_.end(), base::NotFatalUntil::M130);
   // Ensure the action outlives the UI element to perform any cleanup.
   std::unique_ptr<ToolbarActionViewController> controller = std::move(*iter);
   actions_.erase(iter);
@@ -867,7 +867,7 @@ views::View::DropCallback ExtensionsToolbarContainer::GetDropCallback(
 void ExtensionsToolbarContainer::OnWidgetDestroying(views::Widget* widget) {
   auto iter =
       base::ranges::find(anchored_widgets_, widget, &AnchoredWidget::widget);
-  DCHECK(iter != anchored_widgets_.end());
+  CHECK(iter != anchored_widgets_.end(), base::NotFatalUntil::M130);
   iter->widget->RemoveObserver(this);
   const std::string extension_id = std::move(iter->extension_id);
   anchored_widgets_.erase(iter);
@@ -977,10 +977,10 @@ void ExtensionsToolbarContainer::OnMenuClosed() {
 void ExtensionsToolbarContainer::UpdateSidePanelState(bool is_active) {
   close_side_panel_button_->SetVisible(is_active);
   if (is_active) {
-    close_side_panel_button_anchor_higlight_ =
+    close_side_panel_button_anchor_highlight_ =
         close_side_panel_button_->AddAnchorHighlight();
   } else {
-    close_side_panel_button_anchor_higlight_.reset();
+    close_side_panel_button_anchor_highlight_.reset();
   }
 }
 
@@ -1028,7 +1028,7 @@ void ExtensionsToolbarContainer::UpdateControlsVisibility() {
 }
 
 void ExtensionsToolbarContainer::CloseSidePanelButtonPressed() {
-  SidePanelUI::GetSidePanelUIForBrowser(browser_)->Close();
+  browser_->GetFeatures().side_panel_ui()->Close();
 }
 
 void ExtensionsToolbarContainer::UpdateToolbarActionHoverCard(

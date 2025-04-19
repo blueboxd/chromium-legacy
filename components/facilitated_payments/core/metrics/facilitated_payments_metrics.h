@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_FACILITATED_PAYMENTS_CORE_METRICS_FACILITATED_PAYMENTS_METRICS_H_
 #define COMPONENTS_FACILITATED_PAYMENTS_CORE_METRICS_FACILITATED_PAYMENTS_METRICS_H_
 
+#include "services/metrics/public/cpp/ukm_source_id.h"
+
 namespace base {
 class TimeDelta;
 }
@@ -20,6 +22,22 @@ enum class PaymentNotOfferedReason {
   kCodeValidatorFailed = 2,
   kInvalidCode = 3,
   kMaxValue = kInvalidCode
+};
+
+// Result of the transaction from the time payment was offered to the user.
+enum class TransactionResult {
+  kFailed = 0,
+  kSuccess = 1,
+  kAbandoned = 2,
+  kMaxValue = kAbandoned
+};
+
+// The trigger source for the facilitated payments transaction.
+enum class TriggerSource {
+  kUnknown = 0,
+  kDOMSearch = 1,
+  kCopyEvent = 2,
+  kMaxValue = kCopyEvent
 };
 
 // Log the result of whether the facilitated payments is available or not.
@@ -39,6 +57,17 @@ void LogInitiatePaymentResult(bool result, base::TimeDelta duration);
 // Log the result and latency for the InitiatePurchaseAction call made to the
 // payments platform (client).
 void LogInitiatePurchaseActionResult(bool result, base::TimeDelta duration);
+
+// Log whether the request to show the FOP(form of payment) selector is
+// successful or not.
+void LogFopSelectorShown(bool shown);
+
+// Log the overall transaction result. The transactions is considered to have
+// started from the time payment was offered to the user.
+void LogTransactionResult(TransactionResult result,
+                          TriggerSource trigger_source,
+                          base::TimeDelta duration,
+                          ukm::SourceId ukm_source_id);
 
 }  // namespace payments::facilitated
 

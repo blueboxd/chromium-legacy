@@ -78,8 +78,9 @@ class NativePixmapFrameResource : public FrameResource {
   // GetSharedMemoryId(). Doing this helps with identification of original
   // FrameResource from a VideoFrame produced by CreateVideoFrame().
   gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferHandle() const override;
-  // GetGpuMemoryBuffer() returns nullptr.
-  gfx::GpuMemoryBuffer* GetGpuMemoryBuffer() const override;
+  // Always returns nullptr.
+  std::unique_ptr<VideoFrame::ScopedMapping> MapGMBOrSharedImage()
+      const override;
   gfx::GenericSharedMemoryId GetSharedMemoryId() const override;
   const VideoFrameLayout& layout() const override;
   VideoPixelFormat format() const override;
@@ -104,6 +105,9 @@ class NativePixmapFrameResource : public FrameResource {
       const gfx::Rect& visible_rect,
       const gfx::Size& natural_size) override;
   std::string AsHumanReadableString() const override;
+  // Always returns empty handle.
+  gfx::GpuMemoryBufferHandle GetGpuMemoryBufferHandleForTesting()
+      const override;
 
   // CreateVideoFrame() is used to create a VideoFrame from the underlying
   // NativePixmap. The DMABuf FDs are duplicated and a VideoFrame with storage

@@ -4,9 +4,11 @@
 
 package org.chromium.chrome.browser.incognito.reauth;
 
+import android.app.Activity;
 import android.os.Build;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ResettersForTesting;
 import org.chromium.chrome.browser.device_reauth.DeviceAuthSource;
@@ -37,10 +39,11 @@ public class IncognitoReauthManager {
         void onIncognitoReauthFailure();
     }
 
-    public IncognitoReauthManager() {
-        this(ReauthenticatorBridge.create(DeviceAuthSource.INCOGNITO));
+    public IncognitoReauthManager(Activity activity, Profile profile) {
+        this(ReauthenticatorBridge.create(activity, profile, DeviceAuthSource.INCOGNITO));
     }
 
+    @VisibleForTesting
     public IncognitoReauthManager(ReauthenticatorBridge reauthenticatorBridge) {
         mReauthenticatorBridge = reauthenticatorBridge;
     }
@@ -68,6 +71,14 @@ public class IncognitoReauthManager {
                         incognitoReauthCallback.onIncognitoReauthFailure();
                     }
                 });
+    }
+
+    /**
+     * Cleans up C++ objects owned by this class. Typically, called when the Activity is being
+     * destroyed.
+     */
+    public void destroy() {
+        mReauthenticatorBridge.destroy();
     }
 
     /**

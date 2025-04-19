@@ -17,6 +17,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/profile_waiter.h"
+#include "components/enterprise/buildflags/buildflags.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/dependency_graph.h"
 #include "components/keyed_service/core/keyed_service_base_factory.h"
@@ -30,14 +31,10 @@
 #include "net/base/features.h"
 #include "pdf/buildflags.h"
 #include "printing/buildflags/buildflags.h"
-#include "services/screen_ai/buildflags/buildflags.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "third_party/blink/public/common/features.h"
-#include "ui/base/ui_base_features.h"
-
-#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 #include "ui/accessibility/accessibility_features.h"
-#endif
+#include "ui/base/ui_base_features.h"
 
 #if !BUILDFLAG(IS_ANDROID)
 #include "chrome/common/companion/visual_query/features.h"
@@ -180,21 +177,18 @@ class ProfileKeyedServiceBrowserTest : public InProcessBrowserTest {
     // clang-format off
     feature_list_.InitWithFeatures(
         {
-#if !BUILDFLAG(IS_ANDROID)
           features::kTrustSafetySentimentSurvey,
           companion::visual_query::features::kVisualQuerySuggestions,
-#endif  // !BUILDFLAG(IS_ANDROID)
 #if BUILDFLAG(IS_WIN)
           switches::kEnableBoundSessionCredentials,
 #endif  // BUILDFLAG(IS_WIN)
           blink::features::kBrowsingTopics,
+          blink::features::kEnableBuiltInAIAPI,
+          net::features::kTopLevelTpcdOriginTrial,
           net::features::kTpcdTrialSettings,
           net::features::kTopLevelTpcdTrialSettings,
-#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
           features::kPdfOcr,
-#endif
           features::kPersistentOriginTrials,
-          features::kSidePanelPinning,
 #if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
           omnibox::kOnDeviceTailModel,
           omnibox::kOnDeviceHeadProviderNonIncognito,
@@ -243,6 +237,7 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "LiveCaptionController",
     "LiveTranslateController",
 #endif // BUILDFLAG(IS_CHROMEOS_LACROS)
+    "AIManagerKeyedService",
     "AlarmManager",
     "BackgroundContentsService",
     "BackgroundSyncService",
@@ -256,6 +251,9 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
 #if BUILDFLAG(IS_WIN)
     "BoundSessionCookieRefreshService",
 #endif  // BUILDFLAG(IS_WIN)
+#if BUILDFLAG(ENTERPRISE_CONTENT_ANALYSIS)
+    "ExtensionInstallEventRouter",
+#endif  // BUILDFLAG(ENTERPRISE_CONTENT_ANALYSIS)
     "ExtensionSystem",
     "ExtensionURLLoaderFactory::BrowserContextShutdownNotifierFactory",
     "FederatedIdentityPermissionContext",
@@ -280,9 +278,6 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
 #endif  // BUILDFLAG(BUILD_WITH_TFLITE_LIB)
     "OneTimePermissionsTrackerKeyedService",
     "OptimizationGuideKeyedService",
-#if BUILDFLAG(ENABLE_PDF)
-    "PdfViewerPrivateEventRouter",
-#endif  // BUILDFLAG(ENABLE_PDF)
     "PermissionDecisionAutoBlocker",
     "PinnedToolbarActionsModel",
     "PlatformNotificationService",
@@ -349,7 +344,6 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "SystemIndicatorManager",
     "WebAppProvider",
 #endif
-    "AboutThisSiteServiceFactory",
     "AccountReconcilor",
     "ActivityLog",
     "ActivityLogPrivateAPI",
@@ -401,11 +395,15 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "ChildAccountService",
     "ChromeSigninClient",
     "CommandService",
+#if BUILDFLAG(ENTERPRISE_CONTENT_ANALYSIS)
+    "ConnectorsService",
+#endif  // BUILDFLAG(ENTERPRISE_CONTENT_ANALYSIS)
     "ContentIndexProvider",
     "ContentSettingsService",
     "CookieSettings",
     "CookiesAPI",
     "CWSInfoService",
+    "DataTypeStoreService",
     "DeveloperPrivateAPI",
     "DeviceInfoSyncService",
     "DownloadCoreService",
@@ -419,6 +417,9 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "ExtensionGCMAppHandler",
     "ExtensionGarbageCollector",
     "ExtensionHostRegistry",
+#if BUILDFLAG(ENTERPRISE_CONTENT_ANALYSIS)
+    "ExtensionInstallEventRouter",
+#endif  // BUILDFLAG(ENTERPRISE_CONTENT_ANALYSIS)
     "ExtensionManagement",
     "ExtensionPrefValueMap",
     "ExtensionPrefs",
@@ -470,11 +471,13 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "ManagedBookmarkService",
     "ManagedConfigurationAPI",
     "ManagementAPI",
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    "ManifestV2ExperimentManager",
+#endif
     "MediaGalleriesAPI",
     "MediaRouter",
     "MediaRouterUIService",
     "MenuManager",
-    "ModelTypeStoreService",
     "NavigationPredictorKeyedService",
     "NetworkingPrivateEventRouter",
     "NotificationDisplayService",
@@ -490,11 +493,9 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "OneTimePermissionsTrackerKeyedService",
     "OperationManager",
     "OptimizationGuideKeyedService",
+    "OriginTrialService",
     "PageContentAnnotationsService",
     "PasswordsPrivateEventRouter",
-#if BUILDFLAG(ENABLE_PDF)
-    "PdfViewerPrivateEventRouter",
-#endif  // BUILDFLAG(ENABLE_PDF)
     "PermissionDecisionAutoBlocker",
     "PermissionHelper",
     "PermissionsManager",
@@ -570,6 +571,7 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "UsbDeviceManager",
     "UsbDeviceResourceManager",
     "UserCloudPolicyInvalidator",
+    "UserFmRegistrationTokenUploader",
     "UserPolicySigninService",
 #if !BUILDFLAG(IS_ANDROID)
     "VisualQuerySuggestionsService",
@@ -614,8 +616,8 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     // default, however their creation is still possible.
     "AutocompleteControllerEmitter",
     "AutofillInternalsService",
-    "CanMakePaymentQuery",
     "DataControlsRulesService",
+    "HasEnrolledInstrumentQuery",
     "LocalPresentationManager",
     "OmniboxInputWatcher",
     "OmniboxSuggestionsWatcher",
@@ -634,7 +636,6 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "PermissionsUpdaterShutdownFactory",
     "PluginInfoHostImpl",
     "TurnSyncOnHelperShutdownNotifier",
-    "WebUIContentsPreloadManager",
   };
   // clang-format on
 
@@ -659,8 +660,8 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     // components/. These services are not created for the System Profile by
     // default, however their creation is still possible.
     "AutocompleteControllerEmitter",
-    "CanMakePaymentQuery",
     "DataControlsRulesService",
+    "HasEnrolledInstrumentQuery",
     "OmniboxInputWatcher",
     "OmniboxSuggestionsWatcher",
     "PolicyBlocklist",
@@ -675,7 +676,11 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "PermissionsUpdaterShutdownFactory",
     "PluginInfoHostImpl",
     "TurnSyncOnHelperShutdownNotifier",
-    "WebUIContentsPreloadManager",
+
+    // Those services are needed to be able to display IPHs in the Profile
+    // Picker.
+    "feature_engagement::Tracker",
+    "UserEducationService",
   };
   // clang-format on
 

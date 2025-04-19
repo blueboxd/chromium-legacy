@@ -153,6 +153,10 @@ bool GetValue(const base::Value& value, ClickEvent* event) {
   if (mouse_button) {
     event->mouse_button = *mouse_button;
   }
+  std::optional<int> double_click = value.GetDict().FindInt("doubleClick");
+  if (double_click) {
+    event->double_click = *double_click;
+  }
   std::optional<int> context = value.GetDict().FindInt("context");
   if (context) {
     event->context = *context;
@@ -228,10 +232,9 @@ bool GetValue(const base::Value& value, KeyDownEvent* event) {
   }
 
   std::optional<int> veid = value.GetDict().FindInt("veid");
-  if (!veid) {
-    return false;
+  if (veid) {
+    event->veid = *veid;
   }
-  event->veid = *veid;
 
   std::optional<int> context = value.GetDict().FindInt("context");
   if (context) {
@@ -440,6 +443,8 @@ DevToolsEmbedderMessageDispatcher::CreateForDevToolsFrontend(
                      &Delegate::ClearPreferences, delegate);
   d->RegisterHandlerWithCallback("getSyncInformation",
                                  &Delegate::GetSyncInformation, delegate);
+  d->RegisterHandlerWithCallback("getHostConfig", &Delegate::GetHostConfig,
+                                 delegate);
   d->RegisterHandlerWithCallback("reattach",
                                  &Delegate::Reattach, delegate);
   d->RegisterHandler("readyForTest",
@@ -452,13 +457,12 @@ DevToolsEmbedderMessageDispatcher::CreateForDevToolsFrontend(
   d->RegisterHandlerWithCallback("showSurvey", &Delegate::ShowSurvey, delegate);
   d->RegisterHandlerWithCallback("canShowSurvey", &Delegate::CanShowSurvey,
                                  delegate);
-  if (base::FeatureList::IsEnabled(::features::kDevToolsConsoleInsights) ||
-      base::FeatureList::IsEnabled(
-          ::features::kDevToolsConsoleInsightsDogfood)) {
+  if (base::FeatureList::IsEnabled(::features::kDevToolsConsoleInsights)) {
     d->RegisterHandlerWithCallback("doAidaConversation",
                                    &Delegate::DoAidaConversation, delegate);
-    d->RegisterHandler("registerAidaClientEvent",
-                       &Delegate::RegisterAidaClientEvent, delegate);
+    d->RegisterHandlerWithCallback("registerAidaClientEvent",
+                                   &Delegate::RegisterAidaClientEvent,
+                                   delegate);
   }
   return d;
 }

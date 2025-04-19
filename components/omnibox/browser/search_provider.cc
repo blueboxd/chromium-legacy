@@ -40,6 +40,7 @@
 #include "components/omnibox/browser/omnibox_triggered_feature_service.h"
 #include "components/omnibox/browser/page_classification_functions.h"
 #include "components/omnibox/browser/remote_suggestions_service.h"
+#include "components/omnibox/browser/search_scoring_signals_annotator.h"
 #include "components/omnibox/browser/suggestion_answer.h"
 #include "components/omnibox/browser/url_prefix.h"
 #include "components/omnibox/common/omnibox_features.h"
@@ -139,11 +140,6 @@ SearchProvider::SearchProvider(AutocompleteProviderClient* client,
     observation_.Observe(template_url_service);
 }
 
-// static
-std::string SearchProvider::GetSuggestMetadata(const AutocompleteMatch& match) {
-  return match.GetAdditionalInfo(kSuggestMetadataKey);
-}
-
 void SearchProvider::RegisterDisplayedAnswers(
     const AutocompleteResult& result) {
   if (result.empty())
@@ -153,14 +149,18 @@ void SearchProvider::RegisterDisplayedAnswers(
   // only be in the second slot if AutocompleteController ranked a local search
   // history or a verbatim item higher than the answer.
   auto match = result.begin();
-  if (!match->answer && result.size() > 1)
+  if (match->answer_type == omnibox::ANSWER_TYPE_UNSPECIFIED &&
+      result.size() > 1) {
     ++match;
-  if (!match->answer || match->fill_into_edit.empty())
+  }
+
+  if (match->answer_type == omnibox::ANSWER_TYPE_UNSPECIFIED ||
+      match->fill_into_edit.empty()) {
     return;
+  }
 
   // Valid answer encountered, cache it for further queries.
-  answers_cache_.UpdateRecentAnswers(match->fill_into_edit,
-                                     match->answer->type());
+  answers_cache_.UpdateRecentAnswers(match->fill_into_edit, match->answer_type);
 }
 
 // static
@@ -975,15 +975,13 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
     // Verbatim results don't get suggestions and hence, answers.
     // Scan previous matches if the last answer-bearing suggestion matches
     // verbatim, and if so, copy over answer contents.
-    SuggestionAnswer answer;
-    bool has_answer = false;
+    AutocompleteMatch* match_with_answer = nullptr;
     std::u16string trimmed_verbatim_lower =
         base::i18n::ToLower(trimmed_verbatim);
     for (auto it = matches_.begin(); it != matches_.end(); ++it) {
-      if (it->answer &&
+      if (it->answer_type != omnibox::ANSWER_TYPE_UNSPECIFIED &&
           base::i18n::ToLower(it->fill_into_edit) == trimmed_verbatim_lower) {
-        answer = *it->answer;
-        has_answer = true;
+        match_with_answer = &(*it);
         break;
       }
     }
@@ -996,9 +994,16 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
         /*navigational_intent=*/omnibox::NAV_INTENT_NONE, verbatim_relevance,
         relevance_from_server,
         /*input_text=*/trimmed_verbatim);
-    if (has_answer)
-      verbatim.SetAnswer(answer);
-    AddMatchToMap(verbatim, std::string(), GetInput(verbatim.from_keyword()),
+    if (match_with_answer) {
+      verbatim.SetAnswerType(match_with_answer->answer_type);
+      if (match_with_answer->answer) {
+        verbatim.SetAnswer(*match_with_answer->answer);
+      }
+      if (match_with_answer->answer_template) {
+        verbatim.SetRichAnswerTemplate(*match_with_answer->answer_template);
+      }
+    }
+    AddMatchToMap(verbatim, GetInput(verbatim.from_keyword()),
                   GetTemplateURL(verbatim.from_keyword()),
                   client()->GetTemplateURLService()->search_terms_data(),
                   did_not_accept_default_suggestion, false,
@@ -1032,8 +1037,7 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
             /*navigational_intent=*/omnibox::NAV_INTENT_NONE,
             keyword_verbatim_relevance, keyword_relevance_from_server,
             /*input_text=*/trimmed_verbatim);
-        AddMatchToMap(verbatim, std::string(),
-                      GetInput(verbatim.from_keyword()),
+        AddMatchToMap(verbatim, GetInput(verbatim.from_keyword()),
                       GetTemplateURL(verbatim.from_keyword()),
                       client()->GetTemplateURLService()->search_terms_data(),
                       did_not_accept_keyword_suggestion, false, true, &map);
@@ -1043,11 +1047,9 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
   AddRawHistoryResultsToMap(true, did_not_accept_keyword_suggestion, &map);
   if (!should_curb_default_suggestions)
     AddRawHistoryResultsToMap(false, did_not_accept_default_suggestion, &map);
-  AddSuggestResultsToMap(keyword_results_.suggest_results,
-                         keyword_results_.metadata, &map);
+  AddSuggestResultsToMap(keyword_results_.suggest_results, &map);
   if (!should_curb_default_suggestions) {
-    AddSuggestResultsToMap(default_results_.suggest_results,
-                           default_results_.metadata, &map);
+    AddSuggestResultsToMap(default_results_.suggest_results, &map);
   }
   ACMatches matches;
   for (MatchMap::const_iterator i(map.begin()); i != map.end(); ++i)
@@ -1059,6 +1061,9 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
                                   &matches);
   }
 
+  if (OmniboxFieldTrial::kAnswerActionsShowAboveKeyboard.Get()) {
+    DuplicateCardAnswer(&matches);
+  }
   // Now add the most relevant matches to |matches_|.  We take up to
   // provider_max_matches_ suggest/navsuggest matches, regardless of origin.  We
   // always include in that set a legal default match if possible. If we have
@@ -1101,8 +1106,11 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
         (i->type != AutocompleteMatchType::SEARCH_OTHER_ENGINE)) {
       // If we've already hit the limit on non-server-scored suggestions, and
       // this isn't a server-scored suggestion we can add, skip it.
+      // TODO (manukh): `GetAdditionalInfoForDebugging()` shouldn't be used for
+      //   non-debugging purposes.
       if ((num_suggestions >= provider_max_matches_) &&
-          (i->GetAdditionalInfo(kRelevanceFromServerKey) != kTrue)) {
+          (i->GetAdditionalInfoForDebugging(kRelevanceFromServerKey) !=
+           kTrue)) {
         continue;
       }
 
@@ -1116,14 +1124,35 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
 void SearchProvider::RemoveExtraAnswers(ACMatches* matches) {
   bool answer_seen = false;
   for (auto it = matches->begin(); it != matches->end(); ++it) {
-    if (it->answer) {
+    if (it->answer_type != omnibox::ANSWER_TYPE_UNSPECIFIED) {
       if (!answer_seen) {
         answer_seen = true;
       } else {
+        it->answer_type = omnibox::ANSWER_TYPE_UNSPECIFIED;
         it->answer.reset();
+        it->answer_template.reset();
       }
     }
   }
+}
+
+void SearchProvider::DuplicateCardAnswer(ACMatches* matches) {
+  auto iter = base::ranges::find_if(*matches, [](const auto& match) {
+    return match.answer_template.has_value();
+  });
+
+  if (iter == matches->end()) {
+    return;
+  }
+
+  bool orig_allowed_to_be_default_match = iter->allowed_to_be_default_match;
+  iter->allowed_to_be_default_match = false;
+
+  auto& copy = matches->emplace_back(*iter);
+  copy.answer_template.reset();
+  copy.actions.clear();
+  copy.allowed_to_be_default_match = orig_allowed_to_be_default_match;
+  copy.suggestion_group_id = omnibox::GROUP_SEARCH;
 }
 
 bool SearchProvider::IsTopMatchSearchWithURLInput() const {
@@ -1163,10 +1192,9 @@ void SearchProvider::AddTransformedHistoryResultsToMap(
     const SearchSuggestionParser::SuggestResults& transformed_results,
     int did_not_accept_suggestion,
     MatchMap* map) {
-  for (auto i(transformed_results.begin()); i != transformed_results.end();
-       ++i) {
-    AddMatchToMap(*i, std::string(), GetInput(i->from_keyword()),
-                  GetTemplateURL(i->from_keyword()),
+  for (const auto& result : transformed_results) {
+    AddMatchToMap(result, GetInput(result.from_keyword()),
+                  GetTemplateURL(result.from_keyword()),
                   client()->GetTemplateURLService()->search_terms_data(),
                   did_not_accept_suggestion, true,
                   providers_.GetKeywordProviderURL() != nullptr, map);
@@ -1323,10 +1351,9 @@ void SearchProvider::ScoreHistoryResults(
 
 void SearchProvider::AddSuggestResultsToMap(
     const SearchSuggestionParser::SuggestResults& results,
-    const std::string& metadata,
     MatchMap* map) {
   for (size_t i = 0; i < results.size(); ++i) {
-    AddMatchToMap(results[i], metadata, GetInput(results[i].from_keyword()),
+    AddMatchToMap(results[i], GetInput(results[i].from_keyword()),
                   GetTemplateURL(results[i].from_keyword()),
                   client()->GetTemplateURLService()->search_terms_data(), i,
                   false, providers_.GetKeywordProviderURL() != nullptr, map);
@@ -1523,6 +1550,20 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
 
   match.from_keyword = navigation.from_keyword();
 
+  // Only set scoring signals for eligible matches.
+  if (match.IsMlSignalLoggingEligible()) {
+    // Initialize the ML scoring signals for this suggestion if needed.
+    if (!match.scoring_signals) {
+      match.scoring_signals = std::make_optional<ScoringSignals>();
+    }
+
+    if (navigation.relevance_from_server()) {
+      match.scoring_signals->set_search_suggest_relevance(
+          navigation.relevance());
+    }
+    SearchScoringSignalsAnnotator::UpdateMatchTypeScoringSignals(match, input);
+  }
+
   return match;
 }
 
@@ -1567,12 +1608,20 @@ void SearchProvider::PrefetchImages(SearchSuggestionParser::Results* results) {
        ++i) {
     auto suggestion = results->suggest_results[i];
 
-    GURL image_url = GURL(suggestion.entity_info().image_url());
-    if (!image_url.is_empty())
-      prefetch_image_urls.push_back(std::move(image_url));
+    GURL entity_image_url = GURL(suggestion.entity_info().image_url());
+    if (entity_image_url.is_valid()) {
+      prefetch_image_urls.push_back(std::move(entity_image_url));
+    }
 
-    if (suggestion.answer())
-      suggestion.answer()->AddImageURLsTo(&prefetch_image_urls);
+    GURL answer_image_url =
+        omnibox_feature_configs::SuggestionAnswerMigration::Get().enabled &&
+                suggestion.answer_template()
+            ? GURL(suggestion.answer_template()->answers(0).image().url())
+            : ((suggestion.answer() ? suggestion.answer()->image_url()
+                                    : GURL()));
+    if (answer_image_url.is_valid()) {
+      prefetch_image_urls.push_back(std::move(answer_image_url));
+    }
   }
 
   for (const GURL& url : prefetch_image_urls)

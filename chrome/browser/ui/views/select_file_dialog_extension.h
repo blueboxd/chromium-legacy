@@ -111,7 +111,6 @@ class SelectFileDialogExtension : public ui::SelectFileDialog {
                                        const base::FilePath& default_path,
                                        const FileTypeInfo* file_types,
                                        int file_type_index,
-                                       void* params,
                                        const Owner& owner,
                                        const std::string& search_query,
                                        bool show_android_picker_apps,
@@ -126,7 +125,6 @@ class SelectFileDialogExtension : public ui::SelectFileDialog {
                       int file_type_index,
                       const base::FilePath::StringType& default_extension,
                       gfx::NativeWindow owning_window,
-                      void* params,
                       const GURL* caller) override;
   bool HasMultipleFileTypeChoicesImpl() override;
 
@@ -202,7 +200,6 @@ class SelectFileDialogExtension : public ui::SelectFileDialog {
   std::vector<ui::SelectedFileInfo> selection_files_;
   int selection_index_ = 0;
   bool can_resize_ = true;
-  raw_ptr<void, LeakedDanglingUntriaged> params_ = nullptr;
   base::WeakPtrFactory<SelectFileDialogExtension> weak_factory_{this};
 };
 

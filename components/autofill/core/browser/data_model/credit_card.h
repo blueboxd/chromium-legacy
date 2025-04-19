@@ -17,10 +17,6 @@
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "url/gurl.h"
 
-// TODO(b/281812289): Remove this include when all dependencies switch to
-// including this file directly instead of relying on credit_card.h.
-#include "components/autofill/core/common/credit_card_network_identifiers.h"
-
 namespace autofill {
 
 // Unicode characters used in card number obfuscation:
@@ -30,7 +26,7 @@ namespace autofill {
 inline constexpr char16_t kMidlineEllipsisDot[] = u"\u2022\u2060\u2006\u2060";
 inline constexpr char16_t kMidlineEllipsisPlainDot = u'\u2022';
 
-struct AutofillMetadata;
+struct PaymentsMetadata;
 
 namespace internal {
 
@@ -148,11 +144,6 @@ class CreditCard : public AutofillDataModel {
   std::string origin() const { return origin_; }
   void set_origin(const std::string& origin) { origin_ = origin; }
 
-  // TODO(b/281812289): Remove this static method when all dependencies switch
-  // to using credit_card_number_validation.h instead of relying on
-  // credit_card.h.
-  static const std::u16string StripSeparators(const std::u16string& number);
-
   // The user-visible issuer network of the card, e.g. 'Mastercard'.
   static std::u16string NetworkForDisplay(const std::string& network);
 
@@ -161,11 +152,6 @@ class CreditCard : public AutofillDataModel {
 
   // Converts icon_str to Suggestion::Icon and calls the method above.
   static int IconResourceId(std::string_view icon_str);
-
-  // TODO(b/281812289): Remove this static method when all dependencies switch
-  // to using credit_card_number_validation.h instead of relying on
-  // credit_card.h.
-  static const char* GetCardNetwork(const std::u16string& number);
 
   // Returns whether the nickname is valid. Note that empty nicknames are valid
   // because they are not required.
@@ -183,13 +169,12 @@ class CreditCard : public AutofillDataModel {
   // kVisaCard.
   void SetNetworkForMaskedCard(std::string_view network);
 
-  // AutofillDataModel:
-  AutofillMetadata GetMetadata() const override;
-  double GetRankingScore(base::Time current_time) const override;
-  bool SetMetadata(const AutofillMetadata& metadata) override;
+  PaymentsMetadata GetMetadata() const;
+  bool SetMetadata(const PaymentsMetadata& metadata);
+
   // Returns whether the card is deletable: if it is expired and has not been
-  // used for longer than |kDisusedCreditCardDeletionTimeDelta|.
-  bool IsDeletable() const override;
+  // used for longer than `kDisusedDataModelDeletionTimeDelta`.
+  bool IsDeletable() const;
 
   // FormGroup:
   void GetMatchingTypes(const std::u16string& text,
@@ -274,6 +259,17 @@ class CreditCard : public AutofillDataModel {
   // Returns true if expiration date for `this` card is the same as `other`.
   [[nodiscard]] bool HasSameExpirationDateAs(const CreditCard& other) const;
 
+  // Calculates the ranking score used for ranking the card suggestion. If
+  // `use_frecency` is true we use the new ranking algorithm.
+  double GetRankingScore(base::Time current_time,
+                         bool use_frecency = false) const;
+
+  // Compares two credit cards and returns if the current card has a greater
+  // ranking score than `other`.
+  bool HasGreaterRankingThan(const CreditCard& other,
+                             base::Time comparison_time,
+                             bool use_frecency = false) const;
+
   // Equality operators compare GUIDs, origins, and the contents.
   // Usage metadata (use count, use date, modification date) are NOT compared.
   bool operator==(const CreditCard& credit_card) const;
@@ -313,7 +309,7 @@ class CreditCard : public AutofillDataModel {
   void RecordAndLogUse();
 
   // Returns whether the card is expired based on |current_time|.
-  bool IsExpired(const base::Time& current_time) const;
+  bool IsExpired(base::Time current_time) const;
 
   // Returns whether the card is a masked card. Such cards will only have
   // the last 4 digits of the card number.

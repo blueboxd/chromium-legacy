@@ -7,14 +7,9 @@
 #include <functional>
 #include <type_traits>
 
-// TODO(crbug.com/41455655): including logging.h is required because of the
-// raw_ptr_traits definition that actually requires all types pointed with
-// raw_ptr to be defined.
-#include "base/logging.h"
-#include "base/memory/raw_ptr.h"
 #include "base/test/gtest_util.h"
-#include "partition_alloc/partition_alloc_base/debug/debugging_buildflags.h"
-#include "partition_alloc/partition_alloc_buildflags.h"
+#include "partition_alloc/buildflags.h"
+#include "partition_alloc/pointers/raw_ptr.h"
 #include "partition_alloc/pointers/raw_ptr_counting_impl_for_test.h"
 #include "partition_alloc/pointers/raw_ptr_test_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -557,12 +552,12 @@ TEST(RawRef, GreaterThanOrEqual) {
 }
 
 // Death Tests: If we're only using the no-op version of `raw_ptr` and
-// have `!PA_BUILDFLAG(PA_DCHECK_IS_ON)`, the `PA_RAW_PTR_CHECK()`s used in
+// have `!PA_BUILDFLAG(DCHECKS_ARE_ON)`, the `PA_RAW_PTR_CHECK()`s used in
 // `raw_ref` evaluate to nothing. Therefore, death tests relying on
 // these CHECKs firing are disabled in their absence.
 
 #if PA_BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) || \
-    PA_BUILDFLAG(USE_ASAN_BACKUP_REF_PTR) || PA_BUILDFLAG(PA_DCHECK_IS_ON)
+    PA_BUILDFLAG(USE_ASAN_BACKUP_REF_PTR) || PA_BUILDFLAG(DCHECKS_ARE_ON)
 
 TEST(RawRefDeathTest, CopyConstructAfterMove) {
   int i = 1;
@@ -804,7 +799,7 @@ TEST(RawRefDeathTest, GreaterThanOrEqualAfterMove) {
 
 #endif  // PA_BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) ||
         // PA_BUILDFLAG(USE_ASAN_BACKUP_REF_PTR) ||
-        // PA_BUILDFLAG(PA_DCHECK_IS_ON)
+        // PA_BUILDFLAG(DCHECKS_ARE_ON)
 
 TEST(RawRef, CTAD) {
   int i = 1;

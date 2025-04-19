@@ -63,6 +63,79 @@ Specific features of `CrLitElement` include:
    in Polymer - i.e. property `fooBar` will be mapped to attribute `foo-bar`,
    not the Lit default of `foobar`
 
+## Lit Data Bindings and handling `-changed` events
+As noted above, `CrLitElement` forces an initial synchronous render in
+`connectedCallback()`. This means child elements may initialize properties
+with `notify: true` and then fire `-changed` events for these properties in
+`updated()` as soon as they are connected, which may occur before the parent
+element has finished its first update.
+
+One consequence of this is that `-changed` event handlers cannot assume that
+the element has completed its first update when the `-changed` event is
+received, and should not make any changes to the element's DOM until after
+waiting for the element's `updateComplete` promise. This means such handlers
+must either (1) be async and `await this.updateComplete;` before running any
+code that updates the element's DOM, or (2) only update properties on the
+parent in response to the child's property change, and perform resulting UI
+updates in the `updated()` lifecycle method instead.
+
+Note that if the parent property being updated is protected or private, a cast
+will be necessary to check for changes to the property in `changedProperties`.
+This is also demonstrated in the example below.
+
+Suppose the Lit child has a property with `notify: true` as follows:
+```
+static override get properties() {
+  return {
+    foo: {
+      type: Boolean,
+      notify: true,
+    },
+ };
+}
+```
+
+This property is also bound to a parent element that listens for the
+`-changed` event as follows:
+```
+<foo-child ?foo="${this.foo_}" on-foo-changed="${this.onFooChanged_}">
+</foo-child>
+<demo-child id="demo"></demo-child>
+```
+
+The parent TypeScript code could look like this:
+```
+static override get properties() {
+  return {
+    foo_: {type: Boolean},
+ };
+}
+
+protected foo_: boolean = true;
+
+onFooChanged_(e: CustomEvent<{value: boolean}>) {
+  // Updates the parent's property that is bound to the child.
+  this.foo_ = e.detail.value;
+}
+
+override updated(changedProperties: PropertyValues<this>) {
+  super.updated(changedProperties);
+
+  // Cast necessary to check for changes to protected/private properties.
+  const changedPrivateProperties =
+      changedProperties as Map<PropertyKey, unknown>;
+
+  // Updates the DOM when |foo_| changes.
+  if (changedPrivateProperties.has('foo_')) {
+    if (this.foo_) {
+      this.$.demo.show();
+    } else {
+      this.$.demo.hide();
+    }
+  }
+}
+```
+
 ## Lit and Polymer Data Bindings Compatibility
 Two-way bindings are not natively supported in Lit. As mentioned above,
 basic compatibility is provided by the `CrLitElement` base class’s
@@ -122,7 +195,7 @@ Note: `iron-` and `paper-` elements are
 
 |POLYMER LIBRARY ELEMENT|RECOMMENDED APPROACH|
 |-----------------------|--------------------|
-|`iron-list`|Consider using a simple `items.map(...)` pattern. If you have a very large number of elements and need `iron-list` for its re-use of nodes, currently you will need to use `iron-list` itself (and consequently pull in Polymer, ~90kb).|
+|`iron-list`|Consider using a simple `items.map(...)` pattern. If you have a very large number of elements and need `iron-list` for its re-use of nodes, currently you will need to use `iron-list` itself (and consequently pull in Polymer, ~90kb). See also later section on migrating `iron-list` clients.|
 |`iron-icon`|Use `cr-icon`.|
 |`iron-collapse`|Use `cr-collapse`.|
 |`paper-spinner`|Style `throbber.svg` with CSS as needed.|
@@ -313,6 +386,13 @@ folder.
 Most of the basic boilerplate migration steps can be automated using the
 migration script.
 ***
+
+Prior to running the script, [jscodeshift](https://github.com/facebook/jscodeshift#readme)
+needs to be downloaded and installed as follows:
+
+```
+npm install --prefix ui/webui/resources/tools/codemods jscodeshift
+```
 
 The script can be invoked to begin migrating an element from Polymer to Lit as
 follows (replace the `most_visited.ts` file path with the file being migrated):
@@ -700,6 +780,58 @@ protected shouldShowImageUrl_(_url: string, index: number): boolean {
 
 protected shouldShowFolderImages_(): boolean {
   return this.size !== CrUrlListItemSize.COMPACT;
+}
+```
+
+### Migrating iron-list clients
+Currently, there is no Lit alternative for the `iron-list` element. For cases
+where `iron-list` is used that do not require a virtual list (i.e., number of
+list items is not very large), `iron-list` may be replaced with a `map()`
+pattern, as described above for `dom-repeat`.
+
+For cases that need a virtual list, note the following:
+
+1. `iron-list`'s parent element *must* be a Polymer element, because
+   `iron-list` accepts a `<template>`. Lit data bindings do not work inside
+   `<template>`s.
+2. Elements that are used as children in an `iron-list` may be migrated to Lit,
+   but due to differences in rendering timing between Polymer and Lit, it is
+   important to manually fire an `iron-resize` event from the child's
+   `updated()` lifecycle callback whenever any property that impacts the height
+   of the child element has changed. See example below:
+
+From the `list_parent.html` template (must be Polymer)
+```
+<iron-list id="list" items="[[listItems_]]" as="item">
+  <template>
+    <custom-item description="[[item.description]]" name="[[item.name]]"
+        on-click="onListItemClick_">
+    </custom-item>
+  </template>
+</iron-list>
+```
+
+From the child `custom_item.html.ts` template:
+```
+<div class="name">${this.name}</div>
+<div class="description" ?hidden="${!this.description}">
+  ${this.description}
+</div>
+```
+
+In this case, the value of `description` impacts the height of the child
+item. If `iron-list` is not notified of when the child is done with rendering
+a change to this property, it may compute the child's height incorrectly, and
+display gaps or overlap in the list. To prevent this, the child item should
+fire `iron-resize` in `updated()` if its `description` property changes.
+
+From `custom_item.ts`:
+```
+override updated(changedProperties: PropertyValues<this>) {
+  super.updated(changedProperties);
+  if (changedProperties.has('description')) {
+    this.fire('iron-resize');
+  }
 }
 ```
 

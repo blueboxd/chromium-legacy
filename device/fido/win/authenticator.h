@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "device/fido/fido_authenticator.h"
+#include "device/fido/fido_constants.h"
 
 namespace device {
 
@@ -99,11 +100,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) WinWebAuthnApiAuthenticator
 
   void MakeCredentialDone(
       MakeCredentialCallback callback,
-      std::pair<CtapDeviceResponseCode,
+      std::pair<MakeCredentialStatus,
                 std::optional<AuthenticatorMakeCredentialResponse>> result);
   void GetAssertionDone(
       GetAssertionCallback callback,
-      std::pair<CtapDeviceResponseCode,
+      std::pair<GetAssertionStatus,
                 std::optional<AuthenticatorGetAssertionResponse>> result);
 
   // options_ is per-instance because the capabilities of `win_api_` can

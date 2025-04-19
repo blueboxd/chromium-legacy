@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_VISITED_URL_RANKING_PUBLIC_URL_VISIT_H_
 #define COMPONENTS_VISITED_URL_RANKING_PUBLIC_URL_VISIT_H_
 
+#include <map>
 #include <memory>
 #include <optional>
 #include <set>
@@ -16,6 +17,7 @@
 #include "base/time/time.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/url_row.h"
+#include "components/segmentation_platform/public/trigger.h"
 #include "components/sync_device_info/device_info.h"
 #include "url/gurl.h"
 
@@ -127,17 +129,44 @@ struct URLVisitAggregate {
     // The number of history visits associated with the URL visit aggregate in a
     // time period.
     size_t visit_count = 1;
+
+    // The number of history visits that took place on the same time group as
+    // the current visit. See `url_visit_util.h|cc` for details on the
+    // definition of a time group.
+    size_t same_time_group_visit_count = 0;
+
+    // The number of history visits that took place on the same day group as the
+    // current visit. See `url_visit_util.h|cc` for details on the definition of
+    // a day group.
+    size_t same_day_group_visit_count = 0;
   };
 
-  URLVisitAggregate();
+  explicit URLVisitAggregate(std::string key_arg);
   URLVisitAggregate(const URLVisitAggregate&) = delete;
   URLVisitAggregate(URLVisitAggregate&& other);
   URLVisitAggregate& operator=(URLVisitAggregate&& other);
   ~URLVisitAggregate();
 
+  // A unique identifier that maps to a collection of associated URL visits.
+  // Computed via a merging and deduplication strategy and used to record events
+  // associated with the URL visit aggregate.
+  std::string url_key;
+
+  // An ID used to collect metrics associated with the aggregate visit for model
+  // training purposes. See `VisitedURLRankingService::RecordAction` for more
+  // details.
+  segmentation_platform::TrainingRequestId request_id;
+
+  // Returns a set of associated URL titles present in the data provided by the
+  // various fetchers that participated in constructing the aggregate object.
+  std::set<std::u16string_view> GetAssociatedTitles() const;
+
   // Returns a set of associated visit URLs present in the data provided by the
   // various fetchers that participated in constructing the aggregate object.
   std::set<const GURL*> GetAssociatedURLs() const;
+
+  // Utility to fetch timestamp that the URL was last opened on a tab.
+  base::Time GetLastVisitTime() const;
 
   // A map of aggregate tab related characteristics associated with the visit as
   // provided by a given source.
@@ -151,6 +180,9 @@ struct URLVisitAggregate {
   // The number of times the visits associated with the aggregate where on the
   // foreground.
   size_t num_times_active = 0;
+
+  // A map of additional metrics signals intended only for ML use.
+  std::map<std::string, float> metrics_signals;
 
   // A score associated with the aggregate, if any.
   std::optional<float> score = std::nullopt;

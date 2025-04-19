@@ -9,13 +9,14 @@
 #include <optional>
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/cart/chrome_cart.mojom.h"
 #include "chrome/browser/image_fetcher/image_decoder_impl.h"
 #include "chrome/browser/ui/webui/side_panel/customize_chrome/customize_chrome.mojom.h"
 #include "chrome/browser/ui/webui/side_panel/customize_chrome/customize_chrome_section.h"
 #include "chrome/browser/ui/webui/side_panel/customize_chrome/customize_toolbar/customize_toolbar.mojom.h"
 #include "chrome/browser/ui/webui/side_panel/customize_chrome/wallpaper_search/wallpaper_search.mojom.h"
 #include "chrome/browser/ui/webui/top_chrome/top_chrome_web_ui_controller.h"
+#include "chrome/browser/ui/webui/top_chrome/top_chrome_webui_config.h"
+#include "chrome/common/webui_url_constants.h"
 #include "components/user_education/webui/help_bubble_handler.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -31,17 +32,27 @@ class WebContents;
 }  // namespace content
 
 class CustomizeChromePageHandler;
-class CartHandler;
-class Profile;
+class CustomizeChromeUI;
 class CustomizeColorSchemeModeHandler;
+class CustomizeToolbarHandler;
+class Profile;
 class ThemeColorPickerHandler;
 class WallpaperSearchBackgroundManager;
 class WallpaperSearchHandler;
-class CustomizeToolbarHandler;
+class WallpaperSearchStringMap;
 
 namespace ui {
 class ColorChangeHandler;
 }
+
+class CustomizeChromeUIConfig
+    : public DefaultTopChromeWebUIConfig<CustomizeChromeUI> {
+ public:
+  CustomizeChromeUIConfig()
+      : DefaultTopChromeWebUIConfig(
+            content::kChromeUIScheme,
+            chrome::kChromeUICustomizeChromeSidePanelHost) {}
+};
 
 // WebUI controller for chrome://customize-chrome-side-panel.top-chrome
 class CustomizeChromeUI
@@ -67,7 +78,11 @@ class CustomizeChromeUI
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kChromeThemeCollectionElementId);
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kChromeThemeElementId);
 
+  // Passthrough that calls the CustomizeChromePage's ScrollToSection.
   void ScrollToSection(CustomizeChromeSection section);
+
+  // Passthrough that calls the CustomizeChromePage's AttachedTabStateUpdated.
+  void AttachedTabStateUpdated(bool is_source_tab_first_party_ntp);
 
   // Gets a weak pointer to this object.
   base::WeakPtr<CustomizeChromeUI> GetWeakPtr();
@@ -78,11 +93,6 @@ class CustomizeChromeUI
   void BindInterface(
       mojo::PendingReceiver<
           side_panel::mojom::CustomizeChromePageHandlerFactory> receiver);
-
-  // Instantiates the implementor of the chrome_cart::mojom::CartHandler
-  // mojo interface passing the pending receiver that will be internally bound.
-  void BindInterface(
-      mojo::PendingReceiver<chrome_cart::mojom::CartHandler> pending_receiver);
 
   void BindInterface(
       mojo::PendingReceiver<help_bubble::mojom::HelpBubbleHandlerFactory>
@@ -165,7 +175,6 @@ class CustomizeChromeUI
   // image_decoder_ object is deleted.
   std::unique_ptr<ImageDecoderImpl> image_decoder_;
   std::unique_ptr<CustomizeChromePageHandler> customize_chrome_page_handler_;
-  std::unique_ptr<CartHandler> cart_handler_;
   raw_ptr<Profile> profile_;
   raw_ptr<content::WebContents> web_contents_;
   const std::vector<std::pair<const std::string, int>> module_id_names_;
@@ -174,6 +183,7 @@ class CustomizeChromeUI
   // Caches a request to scroll to a section in case the request happens before
   // the front-end is ready to receive the request.
   std::optional<CustomizeChromeSection> section_;
+  std::optional<bool> is_source_tab_first_party_ntp_;
 
   std::unique_ptr<user_education::HelpBubbleHandler> help_bubble_handler_;
   mojo::Receiver<help_bubble::mojom::HelpBubbleHandlerFactory>
@@ -189,6 +199,7 @@ class CustomizeChromeUI
       theme_color_picker_handler_factory_receiver_{this};
   std::unique_ptr<WallpaperSearchBackgroundManager>
       wallpaper_search_background_manager_;
+  std::unique_ptr<WallpaperSearchStringMap> wallpaper_search_string_map_;
   std::unique_ptr<WallpaperSearchHandler> wallpaper_search_handler_;
   mojo::Receiver<
       side_panel::customize_chrome::mojom::WallpaperSearchHandlerFactory>

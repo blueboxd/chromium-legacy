@@ -62,7 +62,7 @@ const WebString& GetWebString() {
 void MaybeAppendLabelWithoutControlDevtoolsIssue(
     WebLabelElement label,
     std::vector<FormIssue>& form_issues) {
-  if (!label.CorrespondingControl().IsNull()) {
+  if (label.CorrespondingControl()) {
     return;
   }
 
@@ -84,7 +84,7 @@ void MaybeAppendAriaLabelledByDevtoolsIssue(
                                  base::kWhitespaceUTF16, base::KEEP_WHITESPACE,
                                  base::SPLIT_WANT_NONEMPTY),
           [&](const auto& id) {
-            return element.GetDocument().GetElementById(WebString(id)).IsNull();
+            return !element.GetDocument().GetElementById(WebString(id));
           })) {
     form_issues.emplace_back(
         GenericIssueErrorType::kFormAriaLabelledByToNonExistingId,
@@ -106,7 +106,7 @@ void MaybeAppendInputWithEmptyIdAndNameDevtoolsIssue(
 
 int GetShadowHostDOMNodeId(const WebFormControlElement& element) {
   WebElement host = element.OwnerShadowHost();
-  if (host.IsNull()) {
+  if (!host) {
     return /*blink::kInvalidDOMNodeId*/ 0;
   }
   return host.GetDomNodeId();
@@ -230,10 +230,9 @@ void AppendFormIssuesInternal(const WebVector<WebFormControlElement>& elements,
   const WebString& label_attr = GetWebString<kLabel>();
   WebElementCollection labels =
       elements[0].GetDocument().GetElementsByHTMLTagName(label_attr);
-  CHECK(!labels.IsNull());
+  CHECK(labels);
 
-  for (WebElement item = labels.FirstItem(); !item.IsNull();
-       item = labels.NextItem()) {
+  for (WebElement item = labels.FirstItem(); item; item = labels.NextItem()) {
     WebLabelElement label = item.To<WebLabelElement>();
     MaybeAppendLabelWithoutControlDevtoolsIssue(label, form_issues);
   }
@@ -280,11 +279,9 @@ std::vector<FormIssue> CheckForLabelsWithIncorrectForAttribute(
   }
 
   WebElementCollection labels = document.GetElementsByHTMLTagName(label_attr);
-  for (WebElement item = labels.FirstItem(); !item.IsNull();
-       item = labels.NextItem()) {
+  for (WebElement item = labels.FirstItem(); item; item = labels.NextItem()) {
     WebLabelElement label = item.To<WebLabelElement>();
-    if (!label.CorrespondingControl().IsNull() ||
-        !label.HasAttribute(for_attr)) {
+    if (label.CorrespondingControl() || !label.HasAttribute(for_attr)) {
       continue;
     }
 
@@ -318,23 +315,19 @@ void MaybeEmitFormIssuesToDevtools(blink::WebLocalFrame& web_local_frame,
   WebDocument document = web_local_frame.GetDocument();
   std::vector<FormIssue> form_issues;
   // Get issues from forms input elements.
-  for (const WebFormElement& form_element :
-       base::FeatureList::IsEnabled(
-           blink::features::kAutofillIncludeFormElementsInShadowDom)
-           ? document.GetTopLevelForms()
-           : document.Forms()) {
+  for (const WebFormElement& form_element : document.GetTopLevelForms()) {
     form_issues = form_issues::GetFormIssues(
         form_element.GetFormControlElements(), std::move(form_issues));
   }
   // Get issues from input elements that belong to no form.
   form_issues = form_issues::GetFormIssues(
-      form_util::GetAutofillableFormControlElements(document, WebFormElement()),
+      form_util::GetOwnedAutofillableFormControls(document, WebFormElement()),
       std::move(form_issues));
   // Look for fields that after parsed were found to have labels incorrectly
   // used.
   for (const FormData& form : forms) {
     form_issues = form_issues::CheckForLabelsWithIncorrectForAttribute(
-        document, form.fields, std::move(form_issues));
+        document, form.fields(), std::move(form_issues));
   }
   if (form_issues.size() > kMaxNumberOfDevtoolsIssuesEmitted) {
     form_issues.erase(form_issues.begin() + kMaxNumberOfDevtoolsIssuesEmitted,

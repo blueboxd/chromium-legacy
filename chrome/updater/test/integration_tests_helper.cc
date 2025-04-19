@@ -309,6 +309,9 @@ void AppTestHelper::FirstTaskRun() {
           {"expect_app_tag",
            WithSwitch("tag", WithSwitch("app_id",
                                         WithSystemScope(Wrap(&ExpectAppTag))))},
+          {"set_app_tag",
+           WithSwitch("tag",
+                      WithSwitch("app_id", WithSystemScope(Wrap(&SetAppTag))))},
           {"expect_app_version",
            WithSwitch(
                "app_version",
@@ -363,18 +366,21 @@ void AppTestHelper::FirstTaskRun() {
           {"install", WithSwitch("switches", WithSystemScope(Wrap(&Install)))},
           {"install_updater_and_app",
            WithSwitch(
-               "verify_app_logo_loaded",
+               "expect_success",
                WithSwitch(
-                   "always_launch_cmd",
+                   "verify_app_logo_loaded",
                    WithSwitch(
-                       "child_window_text_to_find",
+                       "always_launch_cmd",
                        WithSwitch(
-                           "tag",
+                           "child_window_text_to_find",
                            WithSwitch(
-                               "is_silent_install",
-                               WithSwitch("app_id",
-                                          WithSystemScope(Wrap(
-                                              &InstallUpdaterAndApp))))))))},
+                               "tag",
+                               WithSwitch(
+                                   "is_silent_install",
+                                   WithSwitch(
+                                       "app_id",
+                                       WithSystemScope(
+                                           Wrap(&InstallUpdaterAndApp)))))))))},
           {"print_log", WithSystemScope(Wrap(&PrintLog))},
           {"run_wake",
            WithSwitch("exit_code", WithSystemScope(Wrap(&RunWake)))},
@@ -388,6 +394,9 @@ void AppTestHelper::FirstTaskRun() {
           {"update",
            WithSwitch("install_data_index",
                       (WithSwitch("app_id", WithSystemScope(Wrap(&Update)))))},
+          {"register_app",
+           WithSwitch("registration",
+                      WithSystemScope(Wrap(&RegisterAppByValue)))},
           {"check_for_update",
            (WithSwitch("app_id", WithSystemScope(Wrap(&CheckForUpdate))))},
           {"update_all", WithSystemScope(Wrap(&UpdateAll))},

@@ -26,7 +26,7 @@ void GraphicsDelegateAndroid::Initialize(base::OnceClosure on_initialized) {
   // We can only share native GL resources with the runtimes, and they don't
   // support ANGLE, so disable it.
   // TODO(crbug.com/40744597): support ANGLE?
-  gl::init::DisableANGLE();
+  gl::DisableANGLE();
 
   gl::GLDisplay* display = nullptr;
   if (gl::GetGLImplementation() == gl::kGLImplementationNone) {
@@ -159,7 +159,7 @@ bool GraphicsDelegateAndroid::EnsureMemoryBuffer() {
 
   static constexpr gfx::BufferFormat format = gfx::BufferFormat::RGBA_8888;
   static constexpr gfx::BufferUsage usage = gfx::BufferUsage::SCANOUT;
-  uint32_t shared_image_usage =
+  gpu::SharedImageUsageSet shared_image_usage =
       gpu::SHARED_IMAGE_USAGE_SCANOUT | gpu::SHARED_IMAGE_USAGE_DISPLAY_READ |
       gpu::SHARED_IMAGE_USAGE_GLES2_READ | gpu::SHARED_IMAGE_USAGE_GLES2_WRITE;
 

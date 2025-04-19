@@ -41,7 +41,7 @@ class AndroidAutofillManager : public AutofillManager,
 
   bool ShouldClearPreviewedForm() override;
 
-  void OnFocusOnNonFormFieldImpl(bool had_interacted_form) override;
+  void OnFocusOnNonFormFieldImpl() override;
 
   void OnDidFillAutofillFormDataImpl(const FormData& form,
                                      const base::TimeTicks timestamp) override;
@@ -50,8 +50,6 @@ class AndroidAutofillManager : public AutofillManager,
   void OnHidePopupImpl() override;
   void OnSelectOrSelectListFieldOptionsDidChangeImpl(
       const FormData& form) override {}
-
-  void Reset() override;
 
   void ReportAutofillWebOTPMetrics(bool used_web_otp) override {}
 
@@ -73,35 +71,37 @@ class AndroidAutofillManager : public AutofillManager,
                          const url::Origin& triggered_origin);
 
  protected:
+  void Reset() override;
+
   void OnFormSubmittedImpl(const FormData& form,
                            bool known_success,
                            mojom::SubmissionSource source) override;
 
   void OnCaretMovedInFormFieldImpl(const FormData& form,
-                                   const FormFieldData& field,
+                                   const FieldGlobalId& field_id,
                                    const gfx::Rect& caret_bounds) override {}
 
   void OnTextFieldDidChangeImpl(const FormData& form,
-                                const FormFieldData& field,
+                                const FieldGlobalId& field_id,
                                 const base::TimeTicks timestamp) override;
 
   void OnTextFieldDidScrollImpl(const FormData& form,
-                                const FormFieldData& field) override;
+                                const FieldGlobalId& field_id) override;
 
   void OnAskForValuesToFillImpl(
       const FormData& form,
-      const FormFieldData& field,
+      const FieldGlobalId& field_id,
       const gfx::Rect& caret_bounds,
       AutofillSuggestionTriggerSource trigger_source) override;
 
   void OnFocusOnFormFieldImpl(const FormData& form,
-                              const FormFieldData& field) override;
+                              const FieldGlobalId& field_id) override;
 
   void OnSelectControlDidChangeImpl(const FormData& form,
-                                    const FormFieldData& field) override;
+                                    const FieldGlobalId& field_id) override;
 
   void OnJavaScriptChangedAutofilledValueImpl(const FormData& form,
-                                              const FormFieldData& field,
+                                              const FieldGlobalId& field_id,
                                               const std::u16string& old_value,
                                               bool formatting_only) override {}
 

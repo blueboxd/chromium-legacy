@@ -6,10 +6,12 @@
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "content/common/features.h"
-#include "content/public/android/content_jni_headers/ContentFeatureMap_jni.h"
 #include "content/public/common/content_features.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/accessibility/accessibility_features.h"
+
+// Must come after all headers that specialize FromJniType() / ToJniType().
+#include "content/public/android/content_jni_headers/ContentFeatureMap_jni.h"
 
 namespace content::android {
 
@@ -36,6 +38,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &features::kOptimizeImmHideCalls,
     &features::kProcessSharingWithStrictSiteInstances,
     &features::kReduceGpuPriorityOnBackground,
+    &features::kContinueGestureOnLosingFocus,
     &features::kSelectionMenuItemModification,
     &features::kSmartZoom,
     &features::kTouchDragAndContextMenu,

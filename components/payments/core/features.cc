@@ -4,7 +4,12 @@
 
 #include "components/payments/core/features.h"
 
+#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+
+#if BUILDFLAG(USE_BLINK)
+#include "third_party/blink/public/common/features_generated.h"
+#endif
 
 namespace payments {
 namespace features {
@@ -70,6 +75,32 @@ BASE_FEATURE(kPaymentHandlerAlwaysRefreshIcon,
 BASE_FEATURE(kPaymentHandlerRequireLinkHeader,
              "PaymentHandlerRequireLinkHeader",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+#if BUILDFLAG(USE_BLINK)
+const base::FeatureParam<std::string>
+    kSecurePaymentConfirmationNetworkAndIssuerIconsOptions(
+        &blink::features::kSecurePaymentConfirmationNetworkAndIssuerIcons,
+        /*name=*/"spc_network_and_issuer_icons_option",
+        /*default_value=*/"rows");
+
+SecurePaymentConfirmationNetworkAndIssuerIconsTreatment
+GetNetworkAndIssuerIconsTreatment() {
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kSecurePaymentConfirmationNetworkAndIssuerIcons)) {
+    return SecurePaymentConfirmationNetworkAndIssuerIconsTreatment::kNone;
+  }
+
+  std::string option =
+      kSecurePaymentConfirmationNetworkAndIssuerIconsOptions.Get();
+  if (option == "inline") {
+    return SecurePaymentConfirmationNetworkAndIssuerIconsTreatment::kInline;
+  } else if (option == "rows") {
+    return SecurePaymentConfirmationNetworkAndIssuerIconsTreatment::kRows;
+  }
+
+  NOTREACHED_NORETURN();
+}
+#endif
 
 }  // namespace features
 }  // namespace payments

@@ -11,7 +11,7 @@
 #include <optional>
 #include <utility>
 
-#include "base/containers/contains.h"
+#include "base/containers/fixed_flat_set.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
@@ -38,8 +38,7 @@
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
-#include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_keyed_service.h"
-#include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_service_factory.h"
+#include "chrome/browser/ui/tabs/saved_tab_groups/tab_group_service_wrapper.h"
 #include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
@@ -516,9 +515,10 @@ api::tabs::Tab ExtensionTabUtil::CreateTabObject(
     tab_object.fav_icon_url = visible_entry->GetFavicon().url.spec();
   }
   if (tab_strip) {
-    WebContents* opener = tab_strip->GetOpenerOfWebContentsAt(tab_index);
+    tabs::TabModel* opener = tab_strip->GetOpenerOfTabAt(tab_index);
     if (opener) {
-      tab_object.opener_tab_id = GetTabIdForExtensions(opener);
+      CHECK(opener->contents());
+      tab_object.opener_tab_id = GetTabIdForExtensions(opener->contents());
     }
   }
 
@@ -906,13 +906,16 @@ bool ExtensionTabUtil::IsKillURL(const GURL& url) {
   }
 
   // Also disallow a few more hosts which are not covered by the check above.
-  static const char* const kKillHosts[] = {
-      chrome::kChromeUIDelayedHangUIHost, chrome::kChromeUIHangUIHost,
-      chrome::kChromeUIQuitHost,          chrome::kChromeUIRestartHost,
-      content::kChromeUIBrowserCrashHost, content::kChromeUIMemoryExhaustHost,
-  };
+  constexpr auto kKillHosts = base::MakeFixedFlatSet<std::string_view>({
+      chrome::kChromeUIDelayedHangUIHost,
+      chrome::kChromeUIHangUIHost,
+      chrome::kChromeUIQuitHost,
+      chrome::kChromeUIRestartHost,
+      content::kChromeUIBrowserCrashHost,
+      content::kChromeUIMemoryExhaustHost,
+  });
 
-  return base::Contains(kKillHosts, url.host_piece());
+  return kKillHosts.contains(url.host_piece());
 }
 
 base::expected<GURL, std::string> ExtensionTabUtil::PrepareURLForNavigation(
@@ -1160,12 +1163,12 @@ bool ExtensionTabUtil::TabIsInSavedTabGroup(content::WebContents* contents,
     tab_strip_model = browser->tab_strip_model();
   }
 
-  tab_groups::SavedTabGroupKeyedService* saved_tab_group_service =
-      tab_groups::SavedTabGroupServiceFactory::GetForProfile(
+  const auto wrapper_service =
+      tab_groups::TabGroupServiceWrapper::GetForProfile(
           tab_strip_model->profile());
 
   // If the service failed to start, then there are no saved tab groups.
-  if (!saved_tab_group_service) {
+  if (!wrapper_service) {
     return false;
   }
 
@@ -1177,7 +1180,7 @@ bool ExtensionTabUtil::TabIsInSavedTabGroup(content::WebContents* contents,
     return false;
   }
 
-  return saved_tab_group_service->model()->Contains(tab_group_id.value());
+  return wrapper_service->GetGroup(tab_group_id.value()).has_value();
 }
 
 }  // namespace extensions

@@ -17,17 +17,15 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise/connectors/analysis/content_analysis_features.h"
-#include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/enterprise/connectors/connectors_service.h"
-#include "chrome/browser/enterprise/connectors/reporting/browser_crash_event_router.h"
-#include "chrome/browser/enterprise/connectors/reporting/extension_install_event_router.h"
-#include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
+#include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/enterprise/buildflags/buildflags.h"
-#include "components/enterprise/connectors/connectors_prefs.h"
+#include "components/enterprise/connectors/core/common.h"
+#include "components/enterprise/connectors/core/connectors_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/safe_browsing/core/common/features.h"
@@ -36,6 +34,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/enterprise/connectors/analysis/source_destination_test_util.h"
 #endif
 
@@ -98,6 +97,16 @@ constexpr char kDlpAndMalwareUrl[] = "https://foo.com";
 constexpr char kOnlyDlpUrl[] = "https://no.malware.com";
 constexpr char kOnlyMalwareUrl[] = "https://no.dlp.com";
 constexpr char kNoTagsUrl[] = "https://no.dlp.or.malware.ca";
+
+constexpr char kNoProviderReportingSettings[] = "[{}]";
+
+constexpr char kNormalReportingSettingsWithoutEvents[] =
+    R"([{ "service_provider": "google" }])";
+
+constexpr char kNormalReportingSettingsWithEvents[] =
+    R"([{ "service_provider": "google",
+         "enabled_event_names" : ["event 1", "event 2", "event 3"]
+       }])";
 
 }  // namespace
 
@@ -166,6 +175,25 @@ class ConnectorsManagerTest : public testing::Test {
     const char* pref_;
   };
 
+  void SetUpTestCommandLine() {
+    base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
+    cmd->AppendSwitchASCII("reporting-connector-url",
+                           "https://test.com/reports");
+    policy::ChromeBrowserPolicyConnector::EnableCommandLineSupportForTesting();
+  }
+
+  std::optional<ReportingSettings> GetReportingSettings(
+      const char* settings_value) {
+    auto settings = base::JSONReader::Read(settings_value,
+                                           base::JSON_ALLOW_TRAILING_COMMAS);
+    EXPECT_TRUE(settings.has_value());
+
+    ReportingServiceSettings service_settings(settings.value(),
+                                              *GetServiceProviderConfig());
+
+    return service_settings.GetReportingSettings();
+  }
+
  protected:
   content::BrowserTaskEnvironment task_environment_;
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -179,6 +207,13 @@ class ConnectorsManagerTest : public testing::Test {
   bool expected_block_large_files_ = false;
 
   std::set<std::string> expected_mime_types_;
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // This is necessary so the URL flag code works on CrOS. If it's absent, a
+  // CrOS DCHECK fails when trying to access the
+  // BrowserPolicyConnectorAsh as it is not completely initialized.
+  ash::ScopedCrosSettingsTestHelper cros_settings_;
+#endif
 };
 
 // Platform policies should only act as a kill switch.
@@ -197,11 +232,7 @@ TEST_P(ConnectorsManagerLocalAnalysisPolicyTest, Test) {
                          kNormalLocalAnalysisSettingsPref)
                    : nullptr;
 
-  ConnectorsManager manager(
-      std::make_unique<BrowserCrashEventRouter>(profile_),
-      std::make_unique<ExtensionInstallEventRouter>(profile_),
-      std::make_unique<ExtensionTelemetryEventRouter>(profile_), pref_service(),
-      GetServiceProviderConfig());
+  ConnectorsManager manager(pref_service(), GetServiceProviderConfig());
   EXPECT_EQ(set_policy(), manager.IsConnectorEnabled(connector()));
 }
 
@@ -272,11 +303,7 @@ class ConnectorsManagerConnectorPoliciesTest
 };
 
 TEST_P(ConnectorsManagerConnectorPoliciesTest, NormalPref) {
-  ConnectorsManager manager(
-      std::make_unique<BrowserCrashEventRouter>(profile_),
-      std::make_unique<ExtensionInstallEventRouter>(profile_),
-      std::make_unique<ExtensionTelemetryEventRouter>(profile_), pref_service(),
-      GetServiceProviderConfig());
+  ConnectorsManager manager(pref_service(), GetServiceProviderConfig());
   ASSERT_TRUE(manager.GetAnalysisConnectorsSettingsForTesting().empty());
   ScopedConnectorPref scoped_pref(pref_service(), pref(), pref_value());
   SetUpExpectedAnalysisSettings(pref_value());
@@ -298,19 +325,14 @@ TEST_P(ConnectorsManagerConnectorPoliciesTest, NormalPref) {
   auto settings_from_cache =
       cached_settings.at(connector())
           .at(0)
-          .GetAnalysisSettings(GURL(url()),
-                               safe_browsing::DataRegion::NO_PREFERENCE);
+          .GetAnalysisSettings(GURL(url()), DataRegion::NO_PREFERENCE);
   ASSERT_EQ(expect_settings_, settings_from_cache.has_value());
   if (settings_from_cache.has_value())
     ValidateSettings(settings_from_cache.value());
 }
 
 TEST_P(ConnectorsManagerConnectorPoliciesTest, EmptyPref) {
-  ConnectorsManager manager(
-      std::make_unique<BrowserCrashEventRouter>(profile_),
-      std::make_unique<ExtensionInstallEventRouter>(profile_),
-      std::make_unique<ExtensionTelemetryEventRouter>(profile_), pref_service(),
-      GetServiceProviderConfig());
+  ConnectorsManager manager(pref_service(), GetServiceProviderConfig());
   // If the connector's settings list is empty, no analysis settings are ever
   // returned.
   ASSERT_TRUE(manager.GetAnalysisConnectorsSettingsForTesting().empty());
@@ -616,11 +638,7 @@ class ConnectorsManagerConnectorPoliciesSourceDestinationTest
 };
 
 TEST_P(ConnectorsManagerConnectorPoliciesSourceDestinationTest, NormalPref) {
-  ConnectorsManager manager(
-      std::make_unique<BrowserCrashEventRouter>(profile_),
-      std::make_unique<ExtensionInstallEventRouter>(profile_),
-      std::make_unique<ExtensionTelemetryEventRouter>(profile_), pref_service(),
-      GetServiceProviderConfig());
+  ConnectorsManager manager(pref_service(), GetServiceProviderConfig());
   ASSERT_TRUE(manager.GetAnalysisConnectorsSettingsForTesting().empty());
   ScopedConnectorPref scoped_pref(pref_service(), pref(), pref_value());
   SetUpExpectedAnalysisSettings(pref_value());
@@ -644,18 +662,14 @@ TEST_P(ConnectorsManagerConnectorPoliciesSourceDestinationTest, NormalPref) {
           .at(0)
           .GetAnalysisSettings(profile_, source_volume_url(),
                                destination_volume_url(),
-                               safe_browsing::DataRegion::NO_PREFERENCE);
+                               DataRegion::NO_PREFERENCE);
   ASSERT_EQ(expect_settings_, settings_from_cache.has_value());
   if (settings_from_cache.has_value())
     ValidateSettings(settings_from_cache.value());
 }
 
 TEST_P(ConnectorsManagerConnectorPoliciesSourceDestinationTest, EmptyPref) {
-  ConnectorsManager manager(
-      std::make_unique<BrowserCrashEventRouter>(profile_),
-      std::make_unique<ExtensionInstallEventRouter>(profile_),
-      std::make_unique<ExtensionTelemetryEventRouter>(profile_), pref_service(),
-      GetServiceProviderConfig());
+  ConnectorsManager manager(pref_service(), GetServiceProviderConfig());
   // If the connector's settings list is empty, no analysis settings are ever
   // returned.
   ASSERT_TRUE(manager.GetAnalysisConnectorsSettingsForTesting().empty());
@@ -700,11 +714,7 @@ class ConnectorsManagerAnalysisConnectorsTest
 };
 
 TEST_P(ConnectorsManagerAnalysisConnectorsTest, DynamicPolicies) {
-  ConnectorsManager manager(
-      std::make_unique<BrowserCrashEventRouter>(profile_),
-      std::make_unique<ExtensionInstallEventRouter>(profile_),
-      std::make_unique<ExtensionTelemetryEventRouter>(profile_), pref_service(),
-      GetServiceProviderConfig());
+  ConnectorsManager manager(pref_service(), GetServiceProviderConfig());
   // The cache is initially empty.
   ASSERT_TRUE(manager.GetAnalysisConnectorsSettingsForTesting().empty());
 
@@ -719,11 +729,10 @@ TEST_P(ConnectorsManagerAnalysisConnectorsTest, DynamicPolicies) {
     ASSERT_EQ(1u, cached_settings.count(connector()));
     ASSERT_EQ(1u, cached_settings.at(connector()).size());
 
-    auto settings =
-        cached_settings.at(connector())
-            .at(0)
-            .GetAnalysisSettings(GURL(kDlpAndMalwareUrl),
-                                 safe_browsing::DataRegion::NO_PREFERENCE);
+    auto settings = cached_settings.at(connector())
+                        .at(0)
+                        .GetAnalysisSettings(GURL(kDlpAndMalwareUrl),
+                                             DataRegion::NO_PREFERENCE);
     ASSERT_TRUE(settings.has_value());
     expected_block_until_verdict_ = BlockUntilVerdict::kBlock;
     expected_block_password_protected_files_ = true;
@@ -744,11 +753,7 @@ TEST_P(ConnectorsManagerAnalysisConnectorsTest, DynamicPolicies) {
 }
 
 TEST_P(ConnectorsManagerAnalysisConnectorsTest, NamesAndConfigs) {
-  ConnectorsManager manager(
-      std::make_unique<BrowserCrashEventRouter>(profile_),
-      std::make_unique<ExtensionInstallEventRouter>(profile_),
-      std::make_unique<ExtensionTelemetryEventRouter>(profile_), pref_service(),
-      GetServiceProviderConfig());
+  ConnectorsManager manager(pref_service(), GetServiceProviderConfig());
   ScopedConnectorPref scoped_pref(pref_service(), pref(), pref_value());
 
   auto names = manager.GetAnalysisServiceProviderNames(connector());
@@ -818,11 +823,7 @@ class ConnectorsManagerAnalysisConnectorsSourceDestinationTest
 
 TEST_P(ConnectorsManagerAnalysisConnectorsSourceDestinationTest,
        DynamicPolicies) {
-  ConnectorsManager manager(
-      std::make_unique<BrowserCrashEventRouter>(profile_),
-      std::make_unique<ExtensionInstallEventRouter>(profile_),
-      std::make_unique<ExtensionTelemetryEventRouter>(profile_), pref_service(),
-      GetServiceProviderConfig());
+  ConnectorsManager manager(pref_service(), GetServiceProviderConfig());
   // The cache is initially empty.
   ASSERT_TRUE(manager.GetAnalysisConnectorsSettingsForTesting().empty());
 
@@ -837,12 +838,11 @@ TEST_P(ConnectorsManagerAnalysisConnectorsSourceDestinationTest,
     ASSERT_EQ(1u, cached_settings.count(connector()));
     ASSERT_EQ(1u, cached_settings.at(connector()).size());
 
-    auto settings =
-        cached_settings.at(connector())
-            .at(0)
-            .GetAnalysisSettings(profile_, source_volume_url(),
-                                 destination_volume_url(),
-                                 safe_browsing::DataRegion::NO_PREFERENCE);
+    auto settings = cached_settings.at(connector())
+                        .at(0)
+                        .GetAnalysisSettings(profile_, source_volume_url(),
+                                             destination_volume_url(),
+                                             DataRegion::NO_PREFERENCE);
     ASSERT_TRUE(settings.has_value());
     expected_block_until_verdict_ = BlockUntilVerdict::kBlock;
     expected_block_password_protected_files_ = true;
@@ -882,11 +882,7 @@ class ConnectorsManagerReportingTest
 };
 
 TEST_P(ConnectorsManagerReportingTest, DynamicPolicies) {
-  ConnectorsManager manager(
-      std::make_unique<BrowserCrashEventRouter>(profile_),
-      std::make_unique<ExtensionInstallEventRouter>(profile_),
-      std::make_unique<ExtensionTelemetryEventRouter>(profile_), pref_service(),
-      GetServiceProviderConfig());
+  ConnectorsManager manager(pref_service(), GetServiceProviderConfig());
   // The cache is initially empty.
   ASSERT_TRUE(manager.GetReportingConnectorsSettingsForTesting().empty());
 
@@ -927,11 +923,7 @@ class ConnectorsManagerLocalAnalysisConnectorTest
 };
 
 TEST_P(ConnectorsManagerLocalAnalysisConnectorTest, DynamicPolicies) {
-  ConnectorsManager manager(
-      std::make_unique<BrowserCrashEventRouter>(profile_),
-      std::make_unique<ExtensionInstallEventRouter>(profile_),
-      std::make_unique<ExtensionTelemetryEventRouter>(profile_), pref_service(),
-      GetServiceProviderConfig());
+  ConnectorsManager manager(pref_service(), GetServiceProviderConfig());
   FakeContentAnalysisSdkManager content_analysis_sdk_manager;
 
   // The cache is initially empty.
@@ -956,11 +948,10 @@ TEST_P(ConnectorsManagerLocalAnalysisConnectorTest, DynamicPolicies) {
     // Connection should be established.
     ASSERT_FALSE(content_analysis_sdk_manager.NoConnectionEstablished());
 
-    auto settings =
-        cached_settings.at(connector())
-            .at(0)
-            .GetAnalysisSettings(GURL(kDlpAndMalwareUrl),
-                                 safe_browsing::DataRegion::NO_PREFERENCE);
+    auto settings = cached_settings.at(connector())
+                        .at(0)
+                        .GetAnalysisSettings(GURL(kDlpAndMalwareUrl),
+                                             DataRegion::NO_PREFERENCE);
     ASSERT_TRUE(settings.has_value());
     expected_block_until_verdict_ = BlockUntilVerdict::kBlock;
     expected_block_password_protected_files_ = true;
@@ -984,11 +975,10 @@ TEST_P(ConnectorsManagerLocalAnalysisConnectorTest, DynamicPolicies) {
     // Connection should be deleted.
     ASSERT_TRUE(content_analysis_sdk_manager.NoConnectionEstablished());
 
-    settings =
-        cached_settings.at(connector())
-            .at(0)
-            .GetAnalysisSettings(GURL(kDlpAndMalwareUrl),
-                                 safe_browsing::DataRegion::NO_PREFERENCE);
+    settings = cached_settings.at(connector())
+                   .at(0)
+                   .GetAnalysisSettings(GURL(kDlpAndMalwareUrl),
+                                        DataRegion::NO_PREFERENCE);
     ASSERT_TRUE(settings.has_value());
     expected_block_until_verdict_ = BlockUntilVerdict::kBlock;
     expected_block_password_protected_files_ = true;
@@ -1011,7 +1001,7 @@ INSTANTIATE_TEST_SUITE_P(ConnectorsManagerLocalAnalysisConnectorTest,
 class ConnectorsManagerDataRegionTest
     : public ConnectorsManagerTest,
       public testing::WithParamInterface<
-          std::tuple<AnalysisConnector, safe_browsing::DataRegion>> {
+          std::tuple<AnalysisConnector, DataRegion>> {
  public:
   ConnectorsManagerDataRegionTest() {
     scoped_feature_list_.InitAndEnableFeature(
@@ -1019,9 +1009,7 @@ class ConnectorsManagerDataRegionTest
   }
   AnalysisConnector connector() const { return std::get<0>(GetParam()); }
 
-  safe_browsing::DataRegion data_region() const {
-    return std::get<1>(GetParam());
-  }
+  DataRegion data_region() const { return std::get<1>(GetParam()); }
 
   const char* pref() const { return ConnectorPref(connector()); }
 
@@ -1032,11 +1020,7 @@ class ConnectorsManagerDataRegionTest
 TEST_P(ConnectorsManagerDataRegionTest, RegionalizedEndpoint) {
   pref_service()->SetInteger(prefs::kChromeDataRegionSetting,
                              static_cast<int>(data_region()));
-  ConnectorsManager manager(
-      std::make_unique<BrowserCrashEventRouter>(profile_),
-      std::make_unique<ExtensionInstallEventRouter>(profile_),
-      std::make_unique<ExtensionTelemetryEventRouter>(profile_), pref_service(),
-      GetServiceProviderConfig());
+  ConnectorsManager manager(pref_service(), GetServiceProviderConfig());
   ScopedConnectorPref scoped_pref(pref_service(), pref(),
                                   kNormalCloudAnalysisSettingsPref);
 
@@ -1059,8 +1043,49 @@ INSTANTIATE_TEST_SUITE_P(
     ConnectorsManagerDataRegionTest,
     ConnectorsManagerDataRegionTest,
     testing::Combine(testing::ValuesIn(kAllAnalysisConnectors),
-                     testing::Values(safe_browsing::DataRegion::NO_PREFERENCE,
-                                     safe_browsing::DataRegion::UNITED_STATES,
-                                     safe_browsing::DataRegion::EUROPE)));
+                     testing::Values(DataRegion::NO_PREFERENCE,
+                                     DataRegion::UNITED_STATES,
+                                     DataRegion::EUROPE)));
+
+TEST_F(ConnectorsManagerTest, ReportingUrlFlagOverrideNoProviderSettings) {
+  ScopedConnectorPref scoped_pref(
+      pref_service(), ConnectorPref(ReportingConnector::SECURITY_EVENT),
+      kNoProviderReportingSettings);
+  SetUpTestCommandLine();
+  ConnectorsManager manager(pref_service(), GetServiceProviderConfig());
+  std::optional<ReportingSettings> reporting_settings =
+      manager.GetReportingSettings(ReportingConnector::SECURITY_EVENT);
+  ASSERT_FALSE(reporting_settings.has_value());
+}
+
+TEST_F(ConnectorsManagerTest,
+       ReportingUrlFlagOverrideNormalSettingsWithoutEvents) {
+  ScopedConnectorPref scoped_pref(
+      pref_service(), ConnectorPref(ReportingConnector::SECURITY_EVENT),
+      kNormalReportingSettingsWithoutEvents);
+  SetUpTestCommandLine();
+  ConnectorsManager manager(pref_service(), GetServiceProviderConfig());
+  std::optional<ReportingSettings> reporting_settings =
+      manager.GetReportingSettings(ReportingConnector::SECURITY_EVENT);
+  ASSERT_TRUE(reporting_settings.has_value());
+
+  ASSERT_TRUE(reporting_settings->reporting_url.is_valid());
+  ASSERT_EQ(reporting_settings->reporting_url, "https://test.com/reports");
+}
+
+TEST_F(ConnectorsManagerTest,
+       ReportingUrlFlagOverrideNormalSettingsWithEvents) {
+  ScopedConnectorPref scoped_pref(
+      pref_service(), ConnectorPref(ReportingConnector::SECURITY_EVENT),
+      kNormalReportingSettingsWithEvents);
+  SetUpTestCommandLine();
+  ConnectorsManager manager(pref_service(), GetServiceProviderConfig());
+  std::optional<ReportingSettings> reporting_settings =
+      manager.GetReportingSettings(ReportingConnector::SECURITY_EVENT);
+  ASSERT_TRUE(reporting_settings.has_value());
+
+  ASSERT_TRUE(reporting_settings->reporting_url.is_valid());
+  ASSERT_EQ(reporting_settings->reporting_url, "https://test.com/reports");
+}
 
 }  // namespace enterprise_connectors

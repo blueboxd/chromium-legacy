@@ -9,6 +9,7 @@
 #include "third_party/blink/public/platform/web_theme_engine.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/theme/web_theme_engine_helper.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
 #include "ui/gfx/geometry/rect.h"
@@ -117,6 +118,10 @@ bool ScrollbarThemeFluent::UsesOverlayScrollbars() const {
   return is_fluent_overlay_scrollbar_enabled_;
 }
 
+bool ScrollbarThemeFluent::UsesFluentScrollbars() const {
+  return true;
+}
+
 bool ScrollbarThemeFluent::UsesFluentOverlayScrollbars() const {
   return UsesOverlayScrollbars();
 }
@@ -150,13 +155,13 @@ int ScrollbarThemeFluent::ThumbThickness(
   return thumb_thickness - ((scrollbar_thickness - thumb_thickness) % 2);
 }
 
-void ScrollbarThemeFluent::PaintTrack(GraphicsContext& context,
-                                      const Scrollbar& scrollbar,
-                                      const gfx::Rect& rect) {
+void ScrollbarThemeFluent::PaintTrackBackground(GraphicsContext& context,
+                                                const Scrollbar& scrollbar,
+                                                const gfx::Rect& rect) {
   if (rect.IsEmpty()) {
     return;
   }
-  ScrollbarThemeAura::PaintTrack(
+  ScrollbarThemeAura::PaintTrackBackground(
       context, scrollbar,
       UsesOverlayScrollbars() ? InsetTrackRect(scrollbar, rect) : rect);
 }
@@ -172,7 +177,7 @@ void ScrollbarThemeFluent::PaintButton(GraphicsContext& context,
 }
 WebThemeEngine::ScrollbarThumbExtraParams
 ScrollbarThemeFluent::BuildScrollbarThumbExtraParams(
-    const Scrollbar& scrollbar) {
+    const Scrollbar& scrollbar) const {
   WebThemeEngine::ScrollbarThumbExtraParams scrollbar_thumb;
   if (scrollbar.ScrollbarThumbColor().has_value()) {
     scrollbar_thumb.thumb_color =
@@ -241,6 +246,10 @@ gfx::Rect ScrollbarThemeFluent::ShrinkMainThreadedMinimalModeThumbRect(
     thumb_rect.set_width(rect.width() * idle_thickness_scale);
   }
   return gfx::ToEnclosingRect(thumb_rect);
+}
+
+bool ScrollbarThemeFluent::UsesNinePatchTrackAndButtonsResource() const {
+  return RuntimeEnabledFeatures::FluentScrollbarUsesNinePatchTrackEnabled();
 }
 
 }  // namespace blink

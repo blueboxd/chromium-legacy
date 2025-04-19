@@ -16,23 +16,23 @@ namespace features {
 // alongside the definition of their values in the .cc file.
 
 // Alphabetical:
+BASE_DECLARE_FEATURE(kWebViewAutoSAA);
 BASE_DECLARE_FEATURE(kWebViewBackForwardCache);
 BASE_DECLARE_FEATURE(kWebViewBrotliSupport);
 BASE_DECLARE_FEATURE(kWebViewCheckPakFileDescriptors);
 BASE_DECLARE_FEATURE(kWebViewClearFunctorInBackground);
 BASE_DECLARE_FEATURE(kWebViewDisplayCutout);
+BASE_DECLARE_FEATURE(kWebViewDragDropFiles);
 BASE_DECLARE_FEATURE(kWebViewEnumerateDevicesCache);
 BASE_DECLARE_FEATURE(kWebViewExitReasonMetric);
 BASE_DECLARE_FEATURE(kWebViewExtraHeadersSameOriginOnly);
 BASE_DECLARE_FEATURE(kWebViewForceDarkModeMatchTheme);
 BASE_DECLARE_FEATURE(kWebViewHitTestInBlinkOnTouchStart);
 BASE_DECLARE_FEATURE(kWebViewImageDrag);
-BASE_DECLARE_FEATURE(kWebViewInjectPlatformJsApis);
 BASE_DECLARE_FEATURE(kWebViewInvokeZoomPickerOnGSU);
 // Feature parameter for `network::features::kMaskedDomainList` which is
 // defined in //services/network.
 extern const base::FeatureParam<int> kWebViewIpProtectionExclusionCriteria;
-BASE_DECLARE_FEATURE(kWebViewMediaIntegrityApi);
 BASE_DECLARE_FEATURE(kWebViewMediaIntegrityApiBlinkExtension);
 BASE_DECLARE_FEATURE(kWebViewMixedContentAutoupgrades);
 BASE_DECLARE_FEATURE(kWebViewMuteAudio);
@@ -55,7 +55,9 @@ BASE_DECLARE_FEATURE(kWebViewReduceUAAndroidVersionDeviceModel);
 BASE_DECLARE_FEATURE(kWebViewEnableCrash);
 BASE_DECLARE_FEATURE(kWebViewAsyncDns);
 BASE_DECLARE_FEATURE(kWebViewPreloadClasses);
+BASE_DECLARE_FEATURE(kWebViewSeparateResourceContext);
 BASE_DECLARE_FEATURE(kWebViewDoNotSendAccessibilityEventsOnGSU);
+BASE_DECLARE_FEATURE(kWebViewHyperlinkContextMenu);
 BASE_DECLARE_FEATURE(kCreateSpareRendererOnBrowserContextCreation);
 
 }  // namespace features

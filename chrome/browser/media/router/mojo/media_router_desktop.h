@@ -181,6 +181,8 @@ class MediaRouterDesktop : public MediaRouterBase, public mojom::MediaRouter {
                              const std::optional<std::string>& error_text,
                              mojom::RouteRequestResultCode result_code);
 
+  void OnLocalDiscoveryPermissionRejected();
+
   // Callback called by MRP's BindMediaController().
   void OnMediaControllerBound(const MediaRoute::Id& route_id, bool success);
 
@@ -249,10 +251,8 @@ class MediaRouterDesktop : public MediaRouterBase, public mojom::MediaRouter {
   // if not found.
   const MediaRoute* GetRoute(const MediaRoute::Id& route_id) const;
 
-  // Notifies `observer` of any existing cached routes, if it is still
-  // registered.
-  void NotifyOfExistingRoutes(
-      base::WeakPtr<MediaRoutesObserver> observer) const;
+  // Notifies any new observers of any existing cached routes.
+  void NotifyNewObserversOfExistingRoutes();
 
   // Used by RecordPresentationRequestUrlBySink to record the possible ways a
   // Presentation URL can be used to start a presentation, both by the kind of
@@ -296,6 +296,7 @@ class MediaRouterDesktop : public MediaRouterBase, public mojom::MediaRouter {
   friend class MediaRouterNativeIntegrationBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(MediaRouterDesktopTest, JoinRouteTimedOutFails);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterDesktopTest, HandleIssue);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterDesktopTest, HandlePermissionIssue);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterDesktopTest,
                            PresentationConnectionStateChangedCallback);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterDesktopTest,
@@ -396,6 +397,7 @@ class MediaRouterDesktop : public MediaRouterBase, public mojom::MediaRouter {
     void NotifyObservers();
     bool HasObserver(MediaRoutesObserver* observer) const;
     bool HasObservers() const;
+    void NotifyNewObserversOfExistingRoutes();
 
     const std::optional<std::vector<MediaRoute>>& cached_route_list() const {
       return cached_route_list_;
@@ -416,6 +418,9 @@ class MediaRouterDesktop : public MediaRouterBase, public mojom::MediaRouter {
         providers_to_routes_;
 
     base::ObserverList<MediaRoutesObserver> observers_;
+
+    // Set of new observers that need to be notified of existing routes.
+    std::vector<raw_ptr<MediaRoutesObserver>> new_observers_;
   };
 
   // A MediaRoutesObserver that maintains state about the current set of media

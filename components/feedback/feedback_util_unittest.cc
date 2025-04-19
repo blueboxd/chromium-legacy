@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "components/feedback/feedback_util.h"
 
 #include <string>
@@ -30,7 +35,7 @@ class FeedbackUtilTest : public ::testing::Test {
 TEST_F(FeedbackUtilTest, ReadEndOfFileEmpty) {
   base::FilePath file_path = temp_dir_.GetPath().Append("test_empty.txt");
 
-  WriteFile(file_path, "", 0);
+  EXPECT_TRUE(WriteFile(file_path, ""));
 
   EXPECT_THAT(feedback_util::ReadEndOfFile(file_path, 10),
               testing::Optional(std::string()));
@@ -40,7 +45,7 @@ TEST_F(FeedbackUtilTest, ReadEndOfFileSmall) {
   const char kTestData[] = "0123456789";  // Length of 10
   base::FilePath file_path = temp_dir_.GetPath().Append("test_small.txt");
 
-  WriteFile(file_path, kTestData, strlen(kTestData));
+  EXPECT_TRUE(WriteFile(file_path, kTestData));
 
   EXPECT_THAT(feedback_util::ReadEndOfFile(file_path, 15),
               testing::Optional(std::string(kTestData)));
@@ -64,7 +69,7 @@ TEST_F(FeedbackUtilTest, ReadEndOfFileWithZeros) {
 
   base::FilePath file_path = temp_dir_.GetPath().Append("test_zero.txt");
 
-  WriteFile(file_path, test_data.data(), test_size);
+  EXPECT_TRUE(WriteFile(file_path, test_data));
 
   EXPECT_THAT(feedback_util::ReadEndOfFile(file_path, 15),
               testing::Optional(test_data));
@@ -89,7 +94,7 @@ TEST_F(FeedbackUtilTest, ReadEndOfFileMedium) {
 
   base::FilePath file_path = temp_dir_.GetPath().Append("test_med.txt");
 
-  WriteFile(file_path, test_data.data(), test_size);
+  EXPECT_TRUE(WriteFile(file_path, test_data));
 
   EXPECT_THAT(feedback_util::ReadEndOfFile(file_path, 15000),
               testing::Optional(test_data));

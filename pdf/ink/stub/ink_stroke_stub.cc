@@ -4,19 +4,28 @@
 
 #include "pdf/ink/stub/ink_stroke_stub.h"
 
-#include <memory>
-
-#include "pdf/ink/stub/ink_modeled_shape_stub.h"
+#include "pdf/ink/stub/ink_modeled_shape_view_stub.h"
+#include "pdf/ink/stub/ink_stroke_input_batch_stub.h"
+#include "pdf/ink/stub/ink_stroke_input_batch_view_stub.h"
 
 namespace chrome_pdf {
 
-InkStrokeStub::InkStrokeStub()
-    : shape_(std::make_unique<InkModeledShapeStub>()) {}
+InkStrokeStub::InkStrokeStub(SkColor brush_color,
+                             const InkStrokeInputBatchStub& inputs)
+    : brush_color_(brush_color), inputs_(inputs), inputs_view_(inputs_) {}
 
 InkStrokeStub::~InkStrokeStub() = default;
 
-const InkModeledShape* InkStrokeStub::GetShape() const {
-  return shape_.get();
+SkColor InkStrokeStub::GetBrushColor() const {
+  return brush_color_;
+}
+
+const InkStrokeInputBatchView& InkStrokeStub::GetInputs() const {
+  return inputs_view_;
+}
+
+const InkModeledShapeView& InkStrokeStub::GetShape() const {
+  return shape_;
 }
 
 }  // namespace chrome_pdf

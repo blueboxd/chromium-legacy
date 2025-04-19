@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "media/capture/video/video_capture_device_client.h"
 
 #include <memory>
@@ -498,8 +503,8 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
       capture_begin_timestamp, gfx::Rect(dimensions), VideoFrameMetadata());
 }
 
-void VideoCaptureDeviceClient::OnIncomingCapturedGfxBuffer(
-    gfx::GpuMemoryBuffer* buffer,
+void VideoCaptureDeviceClient::OnIncomingCapturedImage(
+    scoped_refptr<gpu::ClientSharedImage> shared_image,
     const VideoCaptureFormat& frame_format,
     int clockwise_rotation,
     base::TimeTicks reference_time,
@@ -521,8 +526,8 @@ void VideoCaptureDeviceClient::OnIncomingCapturedGfxBuffer(
     return;
   }
 
-  int destination_width = buffer->GetSize().width();
-  int destination_height = buffer->GetSize().height();
+  int destination_width = shared_image->size().width();
+  int destination_height = shared_image->size().height();
   if (clockwise_rotation == 90 || clockwise_rotation == 270)
     std::swap(destination_width, destination_height);
 
@@ -548,23 +553,25 @@ void VideoCaptureDeviceClient::OnIncomingCapturedGfxBuffer(
   GetI420BufferAccess(output_buffer, dimensions, &y_plane_data, &u_plane_data,
                       &v_plane_data, &y_plane_stride, &uv_plane_stride);
 
-  if (!buffer->Map()) {
-    LOG(ERROR) << "Failed to map GPU memory buffer";
+  auto scoped_mapping = shared_image->Map();
+  if (!scoped_mapping) {
+    LOG(ERROR) << "Failed to map shared image.";
     receiver_->OnFrameDropped(
         VideoCaptureFrameDropReason::kGpuMemoryBufferMapFailed);
     return;
   }
-  absl::Cleanup scoped_unmap = [buffer] { buffer->Unmap(); };
 
   int ret = -EINVAL;
   switch (frame_format.pixel_format) {
     case PIXEL_FORMAT_NV12:
       ret = libyuv::NV12ToI420Rotate(
-          reinterpret_cast<uint8_t*>(buffer->memory(0)), buffer->stride(0),
-          reinterpret_cast<uint8_t*>(buffer->memory(1)), buffer->stride(1),
-          y_plane_data, y_plane_stride, u_plane_data, uv_plane_stride,
-          v_plane_data, uv_plane_stride, buffer->GetSize().width(),
-          buffer->GetSize().height(), rotation_mode);
+          reinterpret_cast<uint8_t*>(scoped_mapping->Memory(0)),
+          scoped_mapping->Stride(0),
+          reinterpret_cast<uint8_t*>(scoped_mapping->Memory(1)),
+          scoped_mapping->Stride(1), y_plane_data, y_plane_stride, u_plane_data,
+          uv_plane_stride, v_plane_data, uv_plane_stride,
+          scoped_mapping->Size().width(), scoped_mapping->Size().height(),
+          rotation_mode);
       break;
 
     default:
@@ -830,6 +837,10 @@ void VideoCaptureDeviceClient::OnIncomingCapturedBufferExt(
       // The buffers were reserved but has not yet been reported as ready to the
       // `receiver_`. Once the post-processor has completed, we will call
       // `OnPostProcessDone()` & thus notify the receiver from there.
+
+      // TODO(https://crbug.com/345688428): drop the frame if we're already
+      // waiting for processing to finish for too many. Maybe if pool
+      // utilization is approaching 70%?
       effects_processor_->PostProcessBuffer(
           std::move(buffer), std::move(info), in_buffer_type,
           std::move(out_buffer), format, out_buffer_type,

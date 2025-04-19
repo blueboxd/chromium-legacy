@@ -28,11 +28,13 @@ class FakeSystemGeolocationSource : public SystemGeolocationSource {
 
   void AddPositionUpdateObserver(PositionObserver* observer) override;
   void RemovePositionUpdateObserver(PositionObserver* observer) override;
-
-  void RequestPermission() override {}
-
   void FakePositionUpdatedForTesting(const mojom::Geoposition& position);
+  void FakePositionErrorForTesting(const mojom::GeopositionError& error);
 #endif  // BUILDFLAG(IS_APPLE)
+
+#if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_WIN)
+  void RequestPermission() override {}
+#endif  // BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_WIN)
 
  private:
   LocationSystemPermissionStatus status_ =

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ui/gl/test/gl_test_support.h"
 
 #include <vector>
@@ -52,7 +57,7 @@ GLDisplay* GLTestSupport::InitializeGL(
   DCHECK(impl.IsAllowed(allowed_impls));
 
   GLDisplay* display =
-      GLSurfaceTestSupport::InitializeOneOffImplementation(impl, true);
+      GLSurfaceTestSupport::InitializeOneOffImplementation(impl);
 #if BUILDFLAG(IS_OZONE)
   // Make sure all the tasks posted to the current task runner by the
   // initialization functions are run before running the tests.

@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.firstrun.FirstRunUtils;
 import org.chromium.chrome.browser.firstrun.MobileFreProgress;
 import org.chromium.chrome.browser.firstrun.SkipTosDialogPolicyListener;
 import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImpl;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileProvider;
 import org.chromium.chrome.browser.ui.device_lock.DeviceLockCoordinator;
 import org.chromium.chrome.browser.ui.signin.SigninUtils;
@@ -41,6 +42,7 @@ import org.chromium.chrome.browser.ui.signin.fullscreen_signin.FullscreenSigninC
 import org.chromium.chrome.browser.ui.signin.fullscreen_signin.FullscreenSigninView;
 import org.chromium.components.browser_ui.device_lock.DeviceLockActivityLauncher;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
+import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogManagerHolder;
 
@@ -72,7 +74,8 @@ public class SigninFirstRunFragment extends Fragment
                         requireContext(),
                         mModalDialogManager,
                         this,
-                        PrivacyPreferencesManagerImpl.getInstance());
+                        PrivacyPreferencesManagerImpl.getInstance(),
+                        SigninAccessPoint.START_PAGE);
 
         if (getPageDelegate().isLaunchedFromCct()) {
             mSkipTosDialogPolicyListener =
@@ -287,9 +290,14 @@ public class SigninFirstRunFragment extends Fragment
     /** Implements {@link FullscreenSigninCoordinator.Delegate}. */
     @Override
     public void displayDeviceLockPage(Account selectedAccount) {
+        Profile profile = ProfileProvider.getOrCreateProfile(getProfileSupplier().get(), false);
         mDeviceLockCoordinator =
                 new DeviceLockCoordinator(
-                        this, getPageDelegate().getWindowAndroid(), getActivity(), selectedAccount);
+                        this,
+                        getPageDelegate().getWindowAndroid(),
+                        profile,
+                        getActivity(),
+                        selectedAccount);
     }
 
     /** Implements {@link DeviceLockCoordinator.Delegate}. */

@@ -10,6 +10,7 @@
 #include "build/buildflag.h"
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
+#include "base/message_loop/message_pump_epoll.h"
 #include "base/message_loop/message_pump_libevent.h"
 #endif
 
@@ -39,18 +40,21 @@ BASE_FEATURE(kEnforceNoExecutableFileHandles,
              "EnforceNoExecutableFileHandles",
              FEATURE_ENABLED_BY_DEFAULT);
 
-// TODO(crbug.com/40580068): Roll out this to 100% before replacing existing
-// NOTREACHED_IN_MIGRATION()s with NOTREACHED() as part of [[noreturn]]
-// migration. Note that a prerequisite for rolling out this experiment is that
-// existing NOTREACHED() reports are at a very low rate. Once this rolls out we
-// should monitor that crash rates for the experiment population is within a
-// 1-5% or lower than the control group.
-BASE_FEATURE(kNotReachedIsFatal,
-             "NotReachedIsFatal",
+// Use non default low memory device threshold.
+// Value should be given via |LowMemoryDeviceThresholdMB|.
+#if BUILDFLAG(IS_IOS)
+// For M99, 45% of devices have 2GB of RAM, and 55% have more.
+#define LOW_MEMORY_DEVICE_THRESHOLD_MB 1024
+#else
+// Updated Desktop default threshold to match the Android 2021 definition.
+#define LOW_MEMORY_DEVICE_THRESHOLD_MB 2048
+#endif
+BASE_FEATURE(kLowEndMemoryExperiment,
+             "LowEndMemoryExperiment",
              FEATURE_DISABLED_BY_DEFAULT);
-
-// Optimizes parsing and loading of data: URLs.
-BASE_FEATURE(kOptimizeDataUrls, "OptimizeDataUrls", FEATURE_ENABLED_BY_DEFAULT);
+const base::FeatureParam<int> kLowMemoryDeviceThresholdMB{
+    &kLowEndMemoryExperiment, "LowMemoryDeviceThresholdMB",
+    LOW_MEMORY_DEVICE_THRESHOLD_MB};
 
 BASE_FEATURE(kUseRustJsonParser,
              "UseRustJsonParser",
@@ -87,6 +91,16 @@ BASE_FEATURE(kPartialLowEndModeOnMidRangeDevices,
 BASE_FEATURE(kCollectAndroidFrameTimelineMetrics,
              "CollectAndroidFrameTimelineMetrics",
              FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, post registering PowerMonitor broadcast receiver to a background
+// thread,
+BASE_FEATURE(kPostPowerMonitorBroadcastReceiverInitToBackground,
+             "PostPowerMonitorBroadcastReceiverInitToBackground",
+             FEATURE_DISABLED_BY_DEFAULT);
+// If enabled, getMyMemoryState IPC will be posted to background.
+BASE_FEATURE(kPostGetMyMemoryStateToBackground,
+             "PostGetMyMemoryStateToBackground",
+             FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_ANDROID)
 
 void Init(EmitThreadControllerProfilerMetadata
@@ -98,6 +112,7 @@ void Init(EmitThreadControllerProfilerMetadata
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
   MessagePumpLibevent::InitializeFeatures();
+  MessagePumpEpoll::InitializeFeatures();
 #endif
 
 #if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_CHROMEOS)

@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/quick_answers/ui/user_consent_view.h"
 #include "chrome/test/base/chrome_test_utils.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chromeos/components/magic_boost/public/cpp/magic_boost_state.h"
 #include "chromeos/components/quick_answers/public/cpp/controller/quick_answers_controller.h"
 #include "chromeos/components/quick_answers/public/cpp/quick_answers_prefs.h"
 #include "chromeos/components/quick_answers/public/cpp/quick_answers_state.h"
@@ -42,6 +43,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/widget/any_widget_observer.h"
 #include "ui/views/widget/widget.h"
@@ -275,10 +277,18 @@ std::unique_ptr<QuickAnswersSession> CreateQuickAnswerUnitConversionResponse() {
 
 class QuickAnswersBrowserTest : public QuickAnswersBrowserTestBase {
  protected:
-  // This simulates a behavior where a user enables QuickAnswers from Settings.
   void SetQuickAnswersEnabled(bool enabled) {
-    chrome_test_utils::GetProfile(this)->GetPrefs()->SetBoolean(
-        prefs::kQuickAnswersEnabled, enabled);
+    if (IsMagicBoostEnabled()) {
+      // Approve HMRConsentStatus to bypass opt-in flow.
+      chromeos::MagicBoostState::Get()->AsyncWriteConsentStatus(
+          chromeos::HMRConsentStatus::kApproved);
+      chromeos::MagicBoostState::Get()->AsyncWriteHMREnabled(true);
+    } else {
+      // This simulates a behavior where a user enables QuickAnswers from
+      // Settings.
+      chrome_test_utils::GetProfile(this)->GetPrefs()->SetBoolean(
+          prefs::kQuickAnswersEnabled, enabled);
+    }
   }
 
   void SendTestImageNotification() {
@@ -349,7 +359,7 @@ class QuickAnswersBrowserTest : public QuickAnswersBrowserTestBase {
   base::TimeTicks fake_time_tick_;
 };
 
-IN_PROC_BROWSER_TEST_F(QuickAnswersBrowserTest,
+IN_PROC_BROWSER_TEST_P(QuickAnswersBrowserTest,
                        QuickAnswersViewAboveNotification) {
   SetQuickAnswersEnabled(true);
 
@@ -381,8 +391,12 @@ IN_PROC_BROWSER_TEST_F(QuickAnswersBrowserTest,
       quick_answers_view_widget->GetNativeView()));
 }
 
-IN_PROC_BROWSER_TEST_F(QuickAnswersBrowserTest,
+IN_PROC_BROWSER_TEST_P(QuickAnswersBrowserTest,
                        UserConsentViewAboveNotification) {
+  if (IsMagicBoostEnabled()) {
+    GTEST_SKIP() << "This test only applies when Magic Boost is disabled.";
+  }
+
   // User consent view is stored within the `ReadWriteCardsUiController`'s
   // widget.
   views::NamedWidgetShownWaiter user_consent_view_widget_waiter(
@@ -424,7 +438,11 @@ IN_PROC_BROWSER_TEST_F(QuickAnswersBrowserTest,
       user_consent_view_widget->GetNativeView()));
 }
 
-IN_PROC_BROWSER_TEST_F(QuickAnswersBrowserTest, UserConsentViewImpressionCap) {
+IN_PROC_BROWSER_TEST_P(QuickAnswersBrowserTest, UserConsentViewImpressionCap) {
+  if (IsMagicBoostEnabled()) {
+    GTEST_SKIP() << "This test only applies when Magic Boost is disabled.";
+  }
+
   FakeControllerTimeTick();
 
   for (int i = 0; i < kConsentImpressionCap; ++i) {
@@ -455,7 +473,11 @@ IN_PROC_BROWSER_TEST_F(QuickAnswersBrowserTest, UserConsentViewImpressionCap) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(QuickAnswersBrowserTest, ClickAllowOnUserConsentView) {
+IN_PROC_BROWSER_TEST_P(QuickAnswersBrowserTest, ClickAllowOnUserConsentView) {
+  if (IsMagicBoostEnabled()) {
+    GTEST_SKIP() << "This test only applies when Magic Boost is disabled.";
+  }
+
   // User consent view is stored within the `ReadWriteCardsUiController`'s
   // widget.
   views::NamedWidgetShownWaiter user_consent_view_widget_waiter(
@@ -492,8 +514,12 @@ IN_PROC_BROWSER_TEST_F(QuickAnswersBrowserTest, ClickAllowOnUserConsentView) {
             controller()->GetQuickAnswersVisibility());
 }
 
-IN_PROC_BROWSER_TEST_F(QuickAnswersBrowserTest,
+IN_PROC_BROWSER_TEST_P(QuickAnswersBrowserTest,
                        ClickNoThanksOnUserConsentView) {
+  if (IsMagicBoostEnabled()) {
+    GTEST_SKIP() << "This test only applies when Magic Boost is disabled.";
+  }
+
   // User consent view is stored within the `ReadWriteCardsUiController`'s
   // widget.
   views::NamedWidgetShownWaiter user_consent_view_widget_waiter(
@@ -527,6 +553,11 @@ IN_PROC_BROWSER_TEST_F(QuickAnswersBrowserTest,
             controller()->GetQuickAnswersVisibility());
 }
 
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    QuickAnswersBrowserTest,
+    ::testing::Bool());
+
 class RichAnswersBrowserTest : public QuickAnswersBrowserTest {
  protected:
   void SetUpOnMainThread() override {
@@ -559,7 +590,7 @@ class RichAnswersBrowserTest : public QuickAnswersBrowserTest {
       chromeos::features::kQuickAnswersRichCard};
 };
 
-IN_PROC_BROWSER_TEST_F(RichAnswersBrowserTest,
+IN_PROC_BROWSER_TEST_P(RichAnswersBrowserTest,
                        RichAnswersNotTriggeredOnInvalidResult) {
   views::Widget* quick_answers_view_widget = ShowQuickAnswersWidget();
 
@@ -577,7 +608,7 @@ IN_PROC_BROWSER_TEST_F(RichAnswersBrowserTest,
               QuickAnswersVisibility::kClosed);
 }
 
-IN_PROC_BROWSER_TEST_F(RichAnswersBrowserTest,
+IN_PROC_BROWSER_TEST_P(RichAnswersBrowserTest,
                        RichAnswersTriggeredAndDismissedOnValidResult) {
   views::Widget* quick_answers_view_widget = ShowQuickAnswersWidget();
 
@@ -607,7 +638,7 @@ IN_PROC_BROWSER_TEST_F(RichAnswersBrowserTest,
               QuickAnswersVisibility::kClosed);
 }
 
-IN_PROC_BROWSER_TEST_F(RichAnswersBrowserTest,
+IN_PROC_BROWSER_TEST_P(RichAnswersBrowserTest,
                        DefinitionResultCardContentsCorrectlyShown) {
   views::Widget* quick_answers_view_widget = ShowQuickAnswersWidget();
 
@@ -620,8 +651,6 @@ IN_PROC_BROWSER_TEST_F(RichAnswersBrowserTest,
   ui::ImageModel expected_image_model = ui::ImageModel::FromVectorIcon(
       omnibox::kAnswerDictionaryIcon, ui::kColorSysBaseContainerElevated,
       /*icon_size=*/kQuickAnswersResultTypeIconSizeDip);
-  EXPECT_TRUE(GetQuickAnswersView()->GetIconImageModelForTesting() ==
-              expected_image_model);
 
   views::Widget* rich_answers_view_widget =
       ShowRichAnswersWidget(quick_answers_view_widget);
@@ -639,7 +668,7 @@ IN_PROC_BROWSER_TEST_F(RichAnswersBrowserTest,
   // TODO(b/326370198): Add checks for other card contents.
 }
 
-IN_PROC_BROWSER_TEST_F(RichAnswersBrowserTest,
+IN_PROC_BROWSER_TEST_P(RichAnswersBrowserTest,
                        TranslationResultCardContentsCorrectlyShown) {
   views::Widget* quick_answers_view_widget = ShowQuickAnswersWidget();
 
@@ -652,8 +681,6 @@ IN_PROC_BROWSER_TEST_F(RichAnswersBrowserTest,
   ui::ImageModel expected_image_model = ui::ImageModel::FromVectorIcon(
       omnibox::kAnswerTranslationIcon, ui::kColorSysBaseContainerElevated,
       /*icon_size=*/kQuickAnswersResultTypeIconSizeDip);
-  EXPECT_TRUE(GetQuickAnswersView()->GetIconImageModelForTesting() ==
-              expected_image_model);
 
   views::Widget* rich_answers_view_widget =
       ShowRichAnswersWidget(quick_answers_view_widget);
@@ -671,7 +698,7 @@ IN_PROC_BROWSER_TEST_F(RichAnswersBrowserTest,
   // TODO(b/326370198): Add checks for other card contents.
 }
 
-IN_PROC_BROWSER_TEST_F(RichAnswersBrowserTest,
+IN_PROC_BROWSER_TEST_P(RichAnswersBrowserTest,
                        UnitConversionResultCardContentsCorrectlyShown) {
   views::Widget* quick_answers_view_widget = ShowQuickAnswersWidget();
 
@@ -684,8 +711,6 @@ IN_PROC_BROWSER_TEST_F(RichAnswersBrowserTest,
   ui::ImageModel expected_image_model = ui::ImageModel::FromVectorIcon(
       omnibox::kAnswerCalculatorIcon, ui::kColorSysBaseContainerElevated,
       /*icon_size=*/kQuickAnswersResultTypeIconSizeDip);
-  EXPECT_TRUE(GetQuickAnswersView()->GetIconImageModelForTesting() ==
-              expected_image_model);
 
   views::Widget* rich_answers_view_widget =
       ShowRichAnswersWidget(quick_answers_view_widget);
@@ -702,5 +727,25 @@ IN_PROC_BROWSER_TEST_F(RichAnswersBrowserTest,
 
   // TODO(b/326370198): Add checks for other card contents.
 }
+
+IN_PROC_BROWSER_TEST_P(RichAnswersBrowserTest, AccessibleProperties) {
+  views::Widget* quick_answers_view_widget = ShowQuickAnswersWidget();
+  controller()->GetQuickAnswersDelegate()->OnQuickAnswerReceived(
+      CreateQuickAnswerUnitConversionResponse());
+  RichAnswersView* rich_answers_view = static_cast<RichAnswersView*>(
+      ShowRichAnswersWidget(quick_answers_view_widget)->GetContentsView());
+  ui::AXNodeData data;
+
+  ASSERT_TRUE(rich_answers_view);
+  rich_answers_view->GetViewAccessibility().GetAccessibleNodeData(&data);
+  EXPECT_EQ(data.role, ax::mojom::Role::kDialog);
+  EXPECT_EQ(data.GetStringAttribute(ax::mojom::StringAttribute::kName),
+            l10n_util::GetStringUTF8(IDS_RICH_ANSWERS_VIEW_A11Y_NAME_TEXT));
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    RichAnswersBrowserTest,
+    ::testing::Bool());
 
 }  // namespace quick_answers

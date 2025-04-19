@@ -68,7 +68,6 @@ class FrameTreeNode;
 class NavigationHandle;
 class NavigationRequest;
 class NavigationThrottle;
-class Portal;
 class RenderFrameHostImpl;
 class RenderProcessHost;
 class SharedWorkerHost;
@@ -134,7 +133,8 @@ class WillCreateURLLoaderFactoryParams final {
 
   static WillCreateURLLoaderFactoryParams ForWorkerMainScript(
       DevToolsAgentHostImpl* agent_host,
-      const base::UnguessableToken& worker_token);
+      const base::UnguessableToken& worker_token,
+      RenderFrameHostImpl& ancestor_render_frame_host);
 
   // Calls devtools hooks so that they can add interceptors.
   bool Run(bool is_navigation,
@@ -268,6 +268,8 @@ void DidActivatePrerender(const NavigationRequest& nav_request,
                           const std::optional<base::UnguessableToken>&
                               initiator_devtools_navigation_token);
 
+void DidUpdatePolicyContainerHost(FrameTreeNode* ftn);
+
 void DidUpdatePrefetchStatus(
     FrameTreeNode* ftn,
     const base::UnguessableToken& initiator_devtools_navigation_token,
@@ -360,12 +362,6 @@ bool HandleCertificateError(WebContents* web_contents,
                             int cert_error,
                             const GURL& request_url,
                             CertErrorCallback callback);
-
-void PortalAttached(RenderFrameHostImpl* render_frame_host_impl);
-void PortalDetached(RenderFrameHostImpl* render_frame_host_impl);
-// This receives the _old_ portal being activated just before actual
-// tab contents is swapped by the embedder.
-void PortalActivated(Portal& portal);
 
 void FencedFrameCreated(
     base::SafeRef<RenderFrameHostImpl> owner_render_frame_host,

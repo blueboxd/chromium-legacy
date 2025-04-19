@@ -18,7 +18,7 @@
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/navigation_subresource_loader_params.h"
-#include "content/browser/service_worker/service_worker_container_host.h"
+#include "content/browser/service_worker/service_worker_client.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_loader_helpers.h"
@@ -333,8 +333,15 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithRegistration(
     return;
   }
 
-  const bool need_to_update =
-      !force_update_started_ && context_->force_update_on_page_load();
+  // Some registrations can't update like a web service worker (e.g. extension
+  // service workers are updated separately through the extensions system, along
+  // with the rest of the extension).
+  const bool can_update =
+      GetContentClient()->browser()->ShouldTryToUpdateServiceWorkerRegistration(
+          registration->scope(), context_->wrapper()->browser_context());
+  const bool need_to_update = !force_update_started_ &&
+                              context_->force_update_on_page_load() &&
+                              can_update;
   if (need_to_update) {
     force_update_started_ = true;
     context_->UpdateServiceWorker(
@@ -505,8 +512,9 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithActivatedVersion(
           FROM_HERE,
           base::BindOnce(
               &ServiceWorkerControlleeRequestHandler::MaybeStartServiceWorker,
-              weak_factory_.GetWeakPtr(), std::move(active_version),
-              ServiceWorkerMetrics::EventType::SKIP_EMPTY_FETCH_HANDLER),
+              std::move(active_version),
+              ServiceWorkerMetrics::EventType::SKIP_EMPTY_FETCH_HANDLER,
+              reinterpret_cast<uintptr_t>(this)),
           base::Milliseconds(GetServiceWorkerForEmptyFetchHandlerDurationMs()));
       return;
     }
@@ -540,15 +548,15 @@ void ServiceWorkerControlleeRequestHandler::CreateLoaderAndStartRequest(
           base::MakeRefCounted<network::SingleRequestURLLoaderFactory>(
               base::BindOnce(&ServiceWorkerMainResourceLoader::StartRequest,
                              loader_wrapper_->get()->AsWeakPtr())),
-          ServiceWorkerClient::MaybeCreateSubresourceLoaderParams(
-              service_worker_client_)));
+          SubresourceLoaderParams()));
 }
 
 void ServiceWorkerControlleeRequestHandler::DidStartWorker(
+    uintptr_t trace_id,
     blink::ServiceWorkerStatusCode status) {
   TRACE_EVENT_WITH_FLOW1(
       "ServiceWorker", "ServiceWorkerControlleeRequestHandler::DidStartWorker",
-      TRACE_ID_LOCAL(this),
+      TRACE_ID_LOCAL(trace_id),
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "Status",
       blink::ServiceWorkerStatusToString(status));
 }
@@ -654,7 +662,8 @@ void ServiceWorkerControlleeRequestHandler::CompleteWithoutLoader() {
 
 void ServiceWorkerControlleeRequestHandler::MaybeStartServiceWorker(
     scoped_refptr<ServiceWorkerVersion> active_version,
-    ServiceWorkerMetrics::EventType event_type) {
+    ServiceWorkerMetrics::EventType event_type,
+    uintptr_t trace_id) {
   // Start service worker if it is not running so that we run the code
   // written in the top level.
   if (active_version->running_status() ==
@@ -664,7 +673,7 @@ void ServiceWorkerControlleeRequestHandler::MaybeStartServiceWorker(
   active_version->StartWorker(
       event_type,
       base::BindOnce(&ServiceWorkerControlleeRequestHandler::DidStartWorker,
-                     weak_factory_.GetWeakPtr()));
+                     trace_id));
 }
 
 int ServiceWorkerControlleeRequestHandler::

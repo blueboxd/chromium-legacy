@@ -10,18 +10,17 @@
 #include <vector>
 
 #include "ash/constants/ash_features.h"
-#include "ash/constants/ash_switches.h"
 #include "ash/glanceables/classroom/glanceables_classroom_client.h"
 #include "ash/glanceables/classroom/glanceables_classroom_types.h"
 #include "ash/glanceables/common/glanceables_list_footer_view.h"
 #include "ash/glanceables/common/glanceables_view_id.h"
 #include "ash/glanceables/common/test/glanceables_test_new_window_delegate.h"
 #include "ash/glanceables/glanceables_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/style/combobox.h"
 #include "ash/style/counter_expand_button.h"
 #include "ash/test/ash_test_base.h"
-#include "base/command_line.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -47,6 +46,8 @@ using ::testing::_;
 
 class TestClient : public GlanceablesClassroomClient {
  public:
+  bool IsDisabledByAdmin() const override { return false; }
+
   MOCK_METHOD(void,
               IsStudentRoleActive,
               (GlanceablesClassroomClient::IsRoleEnabledCallback),
@@ -91,10 +92,9 @@ class GlanceablesClassroomStudentViewTest : public AshTestBase {
  public:
   GlanceablesClassroomStudentViewTest() {
     feature_list_.InitWithFeatures(
-        /*enabled_features=*/{features::kGlanceablesV2},
+        /*enabled_features=*/
+        {features::kGlanceablesTimeManagementClassroomStudentView},
         /*disabled_features=*/{});
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kGlanceablesIgnoreEnableMergeRequestBuildFlag);
   }
 
   void SetUp() override {
@@ -121,23 +121,26 @@ class GlanceablesClassroomStudentViewTest : public AshTestBase {
   }
 
   const views::View* GetHeaderIcon() const {
-    return views::AsViewClass<views::View>(view_->GetViewByID(
-        base::to_underlying(GlanceablesViewId::kClassroomBubbleHeaderIcon)));
+    return views::AsViewClass<views::View>(
+        view_->GetViewByID(base::to_underlying(
+            GlanceablesViewId::kTimeManagementBubbleHeaderIcon)));
   }
 
   Combobox* GetComboBoxView() {
     return views::AsViewClass<Combobox>(view_->GetViewByID(
-        base::to_underlying(GlanceablesViewId::kClassroomBubbleComboBox)));
+        base::to_underlying(GlanceablesViewId::kTimeManagementBubbleComboBox)));
   }
 
   const CounterExpandButton* GetCounterExpandButton() const {
-    return views::AsViewClass<CounterExpandButton>(view_->GetViewByID(
-        base::to_underlying(GlanceablesViewId::kClassroomBubbleExpandButton)));
+    return views::AsViewClass<CounterExpandButton>(
+        view_->GetViewByID(base::to_underlying(
+            GlanceablesViewId::kTimeManagementBubbleExpandButton)));
   }
 
   const views::View* GetListContainerView() const {
-    return views::AsViewClass<views::View>(view_->GetViewByID(
-        base::to_underlying(GlanceablesViewId::kClassroomBubbleListContainer)));
+    return views::AsViewClass<views::View>(
+        view_->GetViewByID(base::to_underlying(
+            GlanceablesViewId::kTimeManagementBubbleListContainer)));
   }
 
   const views::View* GetEmptyListLabel() const {
@@ -146,18 +149,19 @@ class GlanceablesClassroomStudentViewTest : public AshTestBase {
             GlanceablesViewId::kClassroomBubbleEmptyListLabel)));
   }
 
-  const views::Label* GetListFooterItemsCountLabel() const {
-    return views::AsViewClass<views::Label>(view_->GetViewByID(
-        base::to_underlying(GlanceablesViewId::kListFooterItemsCountLabel)));
+  views::View* GetListFooter() const {
+    return views::AsViewClass<views::View>(
+        view_->GetViewByID(base::to_underlying(
+            GlanceablesViewId::kTimeManagementBubbleListFooter)));
   }
 
-  const views::View* GetListFooter() const {
-    return views::AsViewClass<views::View>(view_->GetViewByID(
-        base::to_underlying(GlanceablesViewId::kClassroomBubbleListFooter)));
+  const views::Label* GetListFooterLabel() const {
+    return views::AsViewClass<views::Label>(GetListFooter()->GetViewByID(
+        base::to_underlying(GlanceablesViewId::kListFooterTitleLabel)));
   }
 
-  views::LabelButton* GetListFooterSeeAllButton() const {
-    return views::AsViewClass<views::LabelButton>(view_->GetViewByID(
+  const views::LabelButton* GetListFooterSeeAllButton() const {
+    return views::AsViewClass<views::LabelButton>(GetListFooter()->GetViewByID(
         base::to_underlying(GlanceablesViewId::kListFooterSeeAllButton)));
   }
 
@@ -203,8 +207,8 @@ TEST_F(GlanceablesClassroomStudentViewTest, Basics) {
 
   // Check that the expand button is not visible when
   // `GlanceablesClassroomStudentView` is created alone.
-  auto* expand_button = view_->GetViewByID(
-      base::to_underlying(GlanceablesViewId::kClassroomBubbleExpandButton));
+  auto* expand_button = view_->GetViewByID(base::to_underlying(
+      GlanceablesViewId::kTimeManagementBubbleExpandButton));
   EXPECT_TRUE(expand_button);
   EXPECT_FALSE(expand_button->GetVisible());
 }
@@ -299,14 +303,13 @@ TEST_F(GlanceablesClassroomStudentViewTest,
   base::HistogramTester histogram_tester;
   ASSERT_TRUE(GetComboBoxView());
   ASSERT_TRUE(GetListFooterSeeAllButton());
-  EXPECT_TRUE(GetListFooter()->GetVisible());
   histogram_tester.ExpectUniqueSample(
       "Ash.Glanceables.Classroom.Student.ListSelected", 0,
       /*expected_bucket_count=*/0);
 
   EXPECT_CALL(classroom_client_, GetStudentAssignmentsWithoutDueDate(_))
       .WillOnce([](GlanceablesClassroomClient::GetAssignmentsCallback cb) {
-        std::move(cb).Run(/*success=*/true, CreateAssignments(3));
+        std::move(cb).Run(/*success=*/true, CreateAssignments(101));
       });
 
   GetComboBoxView()->SelectMenuItemForTest(1);
@@ -316,13 +319,14 @@ TEST_F(GlanceablesClassroomStudentViewTest,
       "Ash.Glanceables.Classroom.Student.ListSelected", 1,
       /*expected_count=*/1);
   EXPECT_TRUE(GetListFooter()->GetVisible());
+  GetListFooter()->ScrollViewToVisible();
   LeftClickOn(GetListFooterSeeAllButton());
   EXPECT_EQ(new_window_delegate_.GetLastOpenedUrl(),
             "https://classroom.google.com/u/0/a/not-turned-in/all");
 
   EXPECT_CALL(classroom_client_, GetStudentAssignmentsWithMissedDueDate(_))
       .WillOnce([](GlanceablesClassroomClient::GetAssignmentsCallback cb) {
-        std::move(cb).Run(/*success=*/true, CreateAssignments(3));
+        std::move(cb).Run(/*success=*/true, CreateAssignments(101));
       });
   GetComboBoxView()->SelectMenuItemForTest(2);
   // Trigger layout after receiving new items.
@@ -330,13 +334,14 @@ TEST_F(GlanceablesClassroomStudentViewTest,
   histogram_tester.ExpectBucketCount(
       "Ash.Glanceables.Classroom.Student.ListSelected", 2,
       /*expected_count=*/1);
+  GetListFooter()->ScrollViewToVisible();
   LeftClickOn(GetListFooterSeeAllButton());
   EXPECT_EQ(new_window_delegate_.GetLastOpenedUrl(),
             "https://classroom.google.com/u/0/a/missing/all");
 
   EXPECT_CALL(classroom_client_, GetCompletedStudentAssignments(_))
       .WillOnce([](GlanceablesClassroomClient::GetAssignmentsCallback cb) {
-        std::move(cb).Run(/*success=*/true, CreateAssignments(3));
+        std::move(cb).Run(/*success=*/true, CreateAssignments(101));
       });
   GetComboBoxView()->SelectMenuItemForTest(3);
   histogram_tester.ExpectBucketCount(
@@ -344,7 +349,7 @@ TEST_F(GlanceablesClassroomStudentViewTest,
       /*expected_count=*/1);
   // Trigger layout after receiving new items.
   widget_->LayoutRootViewIfNecessary();
-
+  GetListFooter()->ScrollViewToVisible();
   LeftClickOn(GetListFooterSeeAllButton());
   EXPECT_EQ(new_window_delegate_.GetLastOpenedUrl(),
             "https://classroom.google.com/u/0/a/turned-in/all");
@@ -382,28 +387,28 @@ TEST_F(GlanceablesClassroomStudentViewTest,
 TEST_F(GlanceablesClassroomStudentViewTest, RendersListItems) {
   EXPECT_CALL(classroom_client_, GetCompletedStudentAssignments(_))
       .WillOnce([](GlanceablesClassroomClient::GetAssignmentsCallback cb) {
-        std::move(cb).Run(/*success=*/true, CreateAssignments(5));
+        std::move(cb).Run(/*success=*/true, CreateAssignments(101));
       });
   ASSERT_TRUE(GetComboBoxView());
   ASSERT_TRUE(GetListContainerView());
-  EXPECT_TRUE(GetListFooter()->GetVisible());
 
   GetComboBoxView()->SelectMenuItemForTest(3);
-  EXPECT_EQ(GetCounterExpandButton()->counter_for_test(), 3u);
-  EXPECT_EQ(GetListContainerView()->children().size(), 3u);  // No more than 3.
+  EXPECT_EQ(GetCounterExpandButton()->counter_for_test(), 100u);
+  EXPECT_EQ(GetListContainerView()->children().size(), 100u);
 
   EXPECT_TRUE(GetListFooter()->GetVisible());
-  ASSERT_TRUE(GetListFooterItemsCountLabel());
-  EXPECT_EQ(GetListFooterItemsCountLabel()->GetText(), u"Showing 3 out of 5");
+  GetListFooter()->ScrollViewToVisible();
+  ASSERT_TRUE(GetListFooterLabel());
+  EXPECT_EQ(GetListFooterLabel()->GetText(),
+            u"See all assignments in Google Classroom");
 }
 
 TEST_F(GlanceablesClassroomStudentViewTest, RendersEmptyListLabel) {
   ASSERT_TRUE(GetComboBoxView());
   ASSERT_TRUE(GetListContainerView());
   EXPECT_FALSE(GetEmptyListLabel()->GetVisible());
-  EXPECT_TRUE(GetListFooter()->GetVisible());
+  EXPECT_FALSE(GetListFooter()->GetVisible());
   EXPECT_EQ(GetCounterExpandButton()->counter_for_test(), 1u);
-  EXPECT_EQ(GetListFooterItemsCountLabel()->GetText(), u"Showing 1 out of 1");
   EXPECT_EQ(GetListContainerView()->children().size(), 1u);
 
   EXPECT_CALL(classroom_client_, GetStudentAssignmentsWithoutDueDate(_))

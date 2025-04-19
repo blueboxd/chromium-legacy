@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/platform/media/resource_multi_buffer_data_provider.h"
 
 #include <stddef.h>
@@ -395,7 +400,8 @@ void ResourceMultiBufferDataProvider::DidReceiveData(const char* data,
 
   while (data_length) {
     if (fifo_.empty() || fifo_.back()->data_size() == block_size()) {
-      fifo_.push_back(new media::DataBuffer(static_cast<int>(block_size())));
+      fifo_.push_back(base::MakeRefCounted<media::DataBuffer>(
+          static_cast<int>(block_size())));
       fifo_.back()->set_data_size(0);
     }
     int last_block_size = fifo_.back()->data_size();

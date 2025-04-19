@@ -8,6 +8,10 @@
 
 BASE_FEATURE(kRevampPageInfoIos,
              "RevampPageInfoIos",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kPageInfoLastVisitedIOS,
+             "kPageInfoLastVisitedIOS",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 bool IsRevampPageInfoIosEnabled() {
@@ -18,4 +22,8 @@ bool IsAboutThisSiteFeatureEnabled() {
   return IsRevampPageInfoIosEnabled() &&
          page_info::IsAboutThisSiteFeatureEnabled(
              GetApplicationContext()->GetApplicationLocale());
+}
+
+bool IsPageInfoLastVisitedIOSEnabled() {
+  return base::FeatureList::IsEnabled(kPageInfoLastVisitedIOS);
 }

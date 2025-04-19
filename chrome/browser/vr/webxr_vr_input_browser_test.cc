@@ -2,15 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include <atomic>
 
 #include "base/containers/contains.h"
 #include "base/no_destructor.h"
+#include "base/not_fatal_until.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/vr/test/mock_xr_device_hook_base.h"
 #include "chrome/browser/vr/test/multi_class_browser_test.h"
 #include "chrome/browser/vr/test/webxr_vr_browser_test.h"
+#include "device/vr/public/cpp/features.h"
 #include "device/vr/public/mojom/browser_test_interfaces.mojom.h"
 #include "device/vr/public/mojom/openxr_interaction_profile_type.mojom.h"
 
@@ -250,7 +257,7 @@ class WebXrControllerInputMock : public MockXRDeviceHookBase {
 
   device::ControllerFrameData GetCurrentControllerData(unsigned int index) {
     auto iter = controller_data_map_.find(index);
-    DCHECK(iter != controller_data_map_.end());
+    CHECK(iter != controller_data_map_.end(), base::NotFatalUntil::M130);
     return iter->second;
   }
 
@@ -648,14 +655,57 @@ constexpr device::mojom::OpenXrInteractionProfileType
     kSkippedInteractionProfiles[] = {
         // The "Invalid" entry is not a real profile.
         device::mojom::OpenXrInteractionProfileType::kInvalid,
-        // kAndroidHandGestures is a "synthetic" interaction profile type which
-        // is synthesized via it's own set of extension methods and needs to
-        // use a different mechanism to send button clicks rather than the rest
-        // of the methods.
-        device::mojom::OpenXrInteractionProfileType::kAndroidHandGestures,
-        // kMetaHandAim is also a "synthetic" interaction profile type
+        // kMetaHandAim is a "synthetic" interaction profile type which is
+        // synthesized via it's own set of extension methods and needs to use a
+        // different mechanism to send button clicks rather than the rest of the
+        // methods.
         device::mojom::OpenXrInteractionProfileType::kMetaHandAim,
 };
+
+void TestHandProfiles(WebXrVrBrowserTestBase* t, bool joint_support) {
+  WebXrControllerInputMock my_mock;
+  my_mock.UpdateInteractionProfile(
+      device::mojom::OpenXrInteractionProfileType::kExtHand);
+  auto controller_data = my_mock.CreateValidController(
+      device::ControllerRole::kControllerRoleRight);
+  my_mock.ConnectController(controller_data);
+
+  t->LoadFileAndAwaitInitialization("test_webxr_profiles");
+  if (joint_support) {
+    t->RunJavaScriptOrFail("setupImmersiveSessionToRequestHands()");
+  }
+
+  t->EnterSessionWithUserGestureOrFail();
+
+  // We should only have seen the first change indicating we have input sources.
+  t->PollJavaScriptBooleanOrFail("inputChangeEvents === 1",
+                                 WebXrVrBrowserTestBase::kPollTimeoutShort);
+
+  std::string expected_string =
+      joint_support ? "generic-hand" : "generic-fixed-hand";
+  std::string unexpected_string =
+      joint_support ? "generic-fixed-hand" : "generic-hand";
+
+  t->RunJavaScriptOrFail("validateAllInputSourcesContainProfile('" +
+                         expected_string + "')");
+  t->RunJavaScriptOrFail("validateNoInputSourcesContainProfile('" +
+                         unexpected_string + "')");
+}
+
+class WebXrVrOpenXrHandBrowserTest : public WebXrVrOpenXrBrowserTest {
+ public:
+  WebXrVrOpenXrHandBrowserTest() {
+    enable_features_.push_back(device::features::kWebXrHandInput);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(WebXrVrOpenXrHandBrowserTest, TestProfilesHandJoint) {
+  TestHandProfiles(this, true);
+}
+
+IN_PROC_BROWSER_TEST_F(WebXrVrOpenXrBrowserTest, TestProfilesFixedHand) {
+  TestHandProfiles(this, false);
+}
 
 // Ensure that OpenXR can change between all known Interaction Profile types.
 // If you're adding a new interaction profile, you may need to validate that

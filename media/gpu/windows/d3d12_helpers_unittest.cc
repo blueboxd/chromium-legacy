@@ -2,14 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/windows/d3d12_helpers.h"
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
 
-#include <d3d11.h>
+#include "media/gpu/windows/d3d12_helpers.h"
 
 #include <numeric>
 #include <vector>
 
 #include "base/rand_util.h"
+#include "media/base/video_codecs.h"
 #include "media/base/win/d3d12_mocks.h"
 #include "media/gpu/windows/format_utils.h"
 #include "media/gpu/windows/supported_profile_helpers.h"
@@ -45,9 +49,9 @@ class D3D12Helpers : public ::testing::Test {
         }));
   }
 
-  Microsoft::WRL::ComPtr<ID3D12Resource> CreateD3D12Resource() {
+  ComD3D12Resource CreateD3D12Resource() {
     // D3D12DeviceMock can open an empty handle
-    Microsoft::WRL::ComPtr<ID3D12Resource> d3d12_resource;
+    ComD3D12Resource d3d12_resource;
     HRESULT hr =
         device_->OpenSharedHandle(nullptr, IID_PPV_ARGS(&d3d12_resource));
     EXPECT_EQ(hr, S_OK);
@@ -74,7 +78,7 @@ TEST_F(D3D12Helpers, D3D12ReferenceFrameList) {
   std::iota(indices.begin(), indices.end(), 0);
   base::RandomShuffle(indices.begin() + 1, indices.end());
   for (size_t index : indices) {
-    Microsoft::WRL::ComPtr<ID3D12Resource> resource = CreateD3D12Resource();
+    ComD3D12Resource resource = CreateD3D12Resource();
     reference_frame_list.emplace(index, resource.Get(), 0);
     D3D12_VIDEO_DECODE_REFERENCE_FRAMES reference_frames;
     reference_frame_list.WriteTo(&reference_frames);
@@ -84,7 +88,7 @@ TEST_F(D3D12Helpers, D3D12ReferenceFrameList) {
 }
 
 TEST_F(D3D12Helpers, CreateD3D12TransitionBarriersForAllPlanes) {
-  Microsoft::WRL::ComPtr<ID3D12Resource> resource = CreateD3D12Resource();
+  ComD3D12Resource resource = CreateD3D12Resource();
   const size_t num_planes = GetFormatPlaneCount(format_);
   auto barriers = CreateD3D12TransitionBarriersForAllPlanes(
       resource.Get(), 0, D3D12_RESOURCE_STATE_COMMON,
@@ -121,6 +125,9 @@ TEST_F(D3D12Helpers, GetD3D12VideoDecodeGUID) {
   EXPECT_EQ(GetD3D12VideoDecodeGUID(HEVCPROFILE_MAIN10, 10,
                                     VideoChromaSampling::k420),
             D3D12_VIDEO_DECODE_PROFILE_HEVC_MAIN10);
+  EXPECT_EQ(GetD3D12VideoDecodeGUID(HEVCPROFILE_MAIN_STILL_PICTURE, 8,
+                                    VideoChromaSampling::k420),
+            D3D12_VIDEO_DECODE_PROFILE_HEVC_MAIN);
   EXPECT_EQ(
       GetD3D12VideoDecodeGUID(HEVCPROFILE_REXT, 8, VideoChromaSampling::k422),
       DXVA_ModeHEVC_VLD_Main422_10_Intel);

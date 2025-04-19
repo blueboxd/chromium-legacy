@@ -17,16 +17,11 @@ export {ActivityLogStreamItemElement, ARG_URL_PLACEHOLDER, StreamItem} from './a
 export {ExtensionsCodeSectionElement} from './code_section.js';
 export {ExtensionsDetailViewElement} from './detail_view.js';
 export {ErrorPageDelegate, ExtensionsErrorPageElement} from './error_page.js';
-export {ExtensionsHatsBrowserProxy, ExtensionsHatsBrowserProxyImpl} from './extension_hats_browser_proxy.js';
 export {ExtensionsHostPermissionsToggleListElement} from './host_permissions_toggle_list.js';
 export {ExtensionsItemElement, ItemDelegate} from './item.js';
 export {ExtensionsItemListElement} from './item_list.js';
 export {UserAction} from './item_util.js';
 export {ExtensionsKeyboardShortcutsElement} from './keyboard_shortcuts.js';
-// <if expr="chromeos_ash">
-export {KioskApp, KioskAppSettings, KioskBrowserProxy, KioskBrowserProxyImpl, KioskSettings} from './kiosk_browser_proxy.js';
-export {ExtensionsKioskDialogElement} from './kiosk_dialog.js';
-// </if>
 export {ExtensionsLoadErrorElement} from './load_error.js';
 export {ExtensionsManagerElement} from './manager.js';
 export {ExtensionsMv2DeprecationPanelElement} from './mv2_deprecation_panel.js';

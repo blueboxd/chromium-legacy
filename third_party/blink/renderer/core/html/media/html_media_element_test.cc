@@ -15,6 +15,7 @@
 #include "third_party/blink/public/mojom/autoplay/autoplay.mojom-blink.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_media_player_source.h"
+#include "third_party/blink/renderer/core/css/css_default_style_sheets.h"
 #include "third_party/blink/renderer/core/dom/dom_implementation.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -137,6 +138,39 @@ class FullscreenMockChromeClient : public EmptyChromeClient {
   void ExitFullscreen(LocalFrame& frame) override {
     Fullscreen::DidExitFullscreen(*frame.GetDocument());
   }
+};
+
+// Helper class to mock `RequestVisibility` callbacks.
+class RequestVisibilityWaiter {
+ public:
+  RequestVisibilityWaiter() : run_loop_(std::make_unique<base::RunLoop>()) {}
+
+  RequestVisibilityWaiter(const RequestVisibilityWaiter&) = delete;
+  RequestVisibilityWaiter(RequestVisibilityWaiter&&) = delete;
+  RequestVisibilityWaiter& operator=(const RequestVisibilityWaiter&) = delete;
+
+  HTMLMediaElement::RequestVisibilityCallback VisibilityCallback() {
+    // base::Unretained() is safe since no further tasks can run after
+    // RunLoop::Run() returns.
+    return base::BindOnce(&RequestVisibilityWaiter::RequestVisibility,
+                          base::Unretained(this));
+  }
+
+  void WaitUntilDone() {
+    run_loop_->Run();
+    run_loop_ = std::make_unique<base::RunLoop>();
+  }
+
+  bool MeetsVisibility() { return meets_visibility_; }
+
+ private:
+  void RequestVisibility(bool meets_visibility) {
+    meets_visibility_ = meets_visibility;
+    run_loop_->Quit();
+  }
+
+  std::unique_ptr<base::RunLoop> run_loop_;
+  bool meets_visibility_ = false;
 };
 
 // Helper class that provides an implementation of the MediaPlayerObserver mojo
@@ -326,6 +360,12 @@ class HTMLMediaElementTest : public testing::TestWithParam<MediaTestParam> {
 
     media_->SetMediaPlayerHostForTesting(
         media_player_host_receiver_.BindNewEndpointAndPassDedicatedRemote());
+
+    UpdateLifecyclePhases();
+  }
+
+  void UpdateLifecyclePhases() {
+    dummy_page_holder_->GetFrameView().UpdateAllLifecyclePhasesForTest();
   }
 
   void WaitForPlayer() {
@@ -407,6 +447,11 @@ class HTMLMediaElementTest : public testing::TestWithParam<MediaTestParam> {
   VideoVisibilityTrackerAttachedToDocument(HTMLVideoElement* video) const {
     DCHECK(video->visibility_tracker_for_tests());
     return video->visibility_tracker_for_tests()->tracker_attached_to_document_;
+  }
+
+  void RequestVisibility(HTMLMediaElement::RequestVisibilityCallback
+                             request_visibility_callback) const {
+    Media()->RequestVisibility(std::move(request_visibility_callback));
   }
 
   void ClearMediaPlayer() { Media()->ClearMediaPlayer(); }
@@ -603,6 +648,7 @@ class HTMLMediaElementTest : public testing::TestWithParam<MediaTestParam> {
       Fullscreen::RequestFullscreen(*element);
     }
     test::RunPendingTasks();
+    UpdateLifecyclePhases();
 
     if (auto* video = DynamicTo<HTMLVideoElement>(element); video) {
       video->DidEnterFullscreen();
@@ -630,6 +676,7 @@ class HTMLMediaElementTest : public testing::TestWithParam<MediaTestParam> {
   }
 
   test::TaskEnvironment task_environment_;
+  CSSDefaultStyleSheets::TestingScope ua_style_sheets_scope_;
   std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 
  private:
@@ -1476,7 +1523,8 @@ TEST_P(
     HTMLMediaElementTest,
     DoNotDestroyMediaPlayerWhenSwitchingSameOriginDocumentsIfReuseIsEnabled) {
   // Ensure that the WebMediaPlayer is re-used when moving to a same-origin
-  // document, if `kDocumentPictureInPictureAPI` is enabled.
+  // document, if `kDocumentPictureInPictureAPI` is enabled.  Note that this
+  // also tests moving from pip back to the opener, which should be retained.
   ScopedDocumentPictureInPictureAPIForTest scoped_feature(true);
   MoveElementAndTestPlayerDestruction(
       "https://a.com", "https://a.com",
@@ -1505,14 +1553,20 @@ TEST_P(
 
 TEST_P(
     HTMLMediaElementTest,
-    DoNotDestroyMediaPlayerWhenSwitchingSameOriginDocumentsIfOldDocumentIsInPictureInPicture) {
-  // Ensure that the WebMediaPlayer is not destroyed when moving to a
-  // same-origin document when the old document is in picture-in-picture window,
-  // if 'kDocumentPictureInPictureAPI' is enabled.
+    DestroyMediaPlayerWhenSwitchingSameOriginDocumentsIfFirstDocumentIsInPictureInPicture) {
+  // Ensure that the WebMediaPlayer is destroyed when moving to a same-origin
+  // document when the old document is in picture-in-picture window on the first
+  // move, if `kDocumentPictureInPictureAPI` is enabled.  Note that, on
+  // subsequent moves, we'd expect it to be retained.  For the special case
+  // where the element is never added to the opener, it should be destroyed.
+  // See `HTMLMediaElement::ShouldReusePlayer()` for more information.  Note
+  // that the 'retained' case is tested elsewhere, since `MoveElement...` tests
+  // moving to the new document and also back to the old one: see
+  // `DoNotDestroyMediaPlayerWhenSwitchingSameOriginDocumentsIfReuseIsEnabled`.
   ScopedDocumentPictureInPictureAPIForTest scoped_feature(true);
   MoveElementAndTestPlayerDestruction(
       "https://a.com", "https://a.com",
-      /*should_destroy=*/false,
+      /*should_destroy=*/true,
       /*is_new_document_picture_in_picture=*/false,
       /*is_old_document_picture_in_picture=*/true,
       /*is_new_document_opener=*/true,
@@ -2193,6 +2247,62 @@ TEST_P(HTMLMediaElementTest,
   EXPECT_FALSE(HasEventListenerRegistered(
       video->GetDocument(), event_type_names::kFullscreenchange,
       video->visibility_tracker_for_tests()));
+}
+
+TEST_P(HTMLMediaElementTest,
+       RequestVisibilityReturnsFalseWhenTrackerDoesNotExist) {
+  if (GetParam() != MediaTestParam::kVideo) {
+    return;
+  }
+
+  auto* video = To<HTMLVideoElement>(Media());
+  video->GetDocument().body()->AppendChild(video);
+  video->SetSrc(SrcSchemeToURL(TestURLScheme::kHttp));
+  test::RunPendingTasks();
+  ASSERT_EQ(VideoVisibilityTracker(), nullptr);
+
+  SetReadyState(HTMLMediaElement::kHaveEnoughData);
+  test::RunPendingTasks();
+
+  // Request visibility and verify that the returned visibility is false.
+  RequestVisibilityWaiter request_visibility_waiter;
+  ASSERT_EQ(VideoVisibilityTracker(), nullptr);
+  RequestVisibility(request_visibility_waiter.VisibilityCallback());
+  request_visibility_waiter.WaitUntilDone();
+  EXPECT_FALSE(request_visibility_waiter.MeetsVisibility());
+}
+
+TEST_P(HTMLMediaElementTest,
+       RequestVisibilityReturnsFalseWhenTrackerIsNotAttached) {
+  if (GetParam() != MediaTestParam::kVideo) {
+    return;
+  }
+
+  auto* video = To<HTMLVideoElement>(Media());
+  video->GetDocument().body()->AppendChild(video);
+  video->SetSrc(SrcSchemeToURL(TestURLScheme::kHttp));
+  test::RunPendingTasks();
+  ASSERT_EQ(VideoVisibilityTracker(), nullptr);
+
+  SetReadyState(HTMLMediaElement::kHaveEnoughData);
+  test::RunPendingTasks();
+  video->Play();
+  EXPECT_TRUE(video->GetWebMediaPlayer());
+  ASSERT_NE(VideoVisibilityTracker(), nullptr);
+  EXPECT_NE(VideoVisibilityTrackerAttachedToDocument(video), nullptr);
+
+  // Clear media player, to cause the visibility tracker to detach.
+  ClearMediaPlayer();
+  EXPECT_FALSE(Media()->GetWebMediaPlayer());
+  EXPECT_TRUE(MediaIsPlaying());
+  ASSERT_NE(VideoVisibilityTracker(), nullptr);
+  EXPECT_EQ(VideoVisibilityTrackerAttachedToDocument(video), nullptr);
+
+  // Request visibility and verify that the returned visibility is false.
+  RequestVisibilityWaiter request_visibility_waiter;
+  RequestVisibility(request_visibility_waiter.VisibilityCallback());
+  request_visibility_waiter.WaitUntilDone();
+  EXPECT_FALSE(request_visibility_waiter.MeetsVisibility());
 }
 
 }  // namespace blink

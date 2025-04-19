@@ -13,7 +13,6 @@
 #import "components/password_manager/core/browser/password_manager_client.h"
 #import "components/password_manager/core/browser/ui/affiliated_group.h"
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
-#import "components/password_manager/core/common/password_manager_features.h"
 #import "components/prefs/pref_service.h"
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/passwords/model/metrics/ios_password_manager_metrics.h"
@@ -30,15 +29,13 @@
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
-#import "ios/chrome/browser/shared/public/features/features.h"
-#import "ios/chrome/browser/ui/settings/password/password_details/password_details.h"
+#import "ios/chrome/browser/ui/settings/password/password_details/credential_details.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_consumer.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_handler.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_mediator.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_mediator_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_table_view_controller.h"
-#import "ios/chrome/browser/ui/settings/password/password_manager_ui_features.h"
 #import "ios/chrome/browser/ui/settings/password/password_sharing/password_sharing_coordinator.h"
 #import "ios/chrome/browser/ui/settings/password/password_sharing/password_sharing_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/password_sharing/password_sharing_first_run_coordinator.h"
@@ -50,8 +47,6 @@
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/web_state.h"
 #import "ui/base/l10n/l10n_util.h"
-
-using password_manager::features::IsAuthOnEntryV2Enabled;
 
 @interface PasswordDetailsCoordinator () <
     PasswordDetailsHandler,
@@ -201,9 +196,7 @@ using password_manager::features::IsAuthOnEntryV2Enabled;
     [_visitsRecorder maybeRecordVisitMetric];
   }
 
-  if (IsAuthOnEntryV2Enabled()) {
-    [self startReauthCoordinator];
-  }
+  [self startReauthCoordinator];
 }
 
 - (void)stop {
@@ -261,15 +254,16 @@ using password_manager::features::IsAuthOnEntryV2Enabled;
   [self.actionSheetCoordinator start];
 }
 
-- (void)showPasswordDeleteDialogWithPasswordDetails:(PasswordDetails*)password
-                                         anchorView:(UIView*)anchorView {
+- (void)showCredentialDeleteDialogWithCredentialDetails:
+            (CredentialDetails*)credential
+                                             anchorView:(UIView*)anchorView {
   NSString* title;
   NSString* message;
   // Blocked websites have empty `password` and no title or message.
-  if ([password.password length]) {
+  if ([credential.password length]) {
     std::tie(title, message) =
         password_manager::GetPasswordAlertTitleAndMessageForOrigins(
-            password.origins);
+            credential.origins);
   }
   NSString* buttonText = l10n_util::GetNSString(IDS_IOS_DELETE_ACTION_TITLE);
 
@@ -293,7 +287,7 @@ using password_manager::features::IsAuthOnEntryV2Enabled;
   [self.actionSheetCoordinator
       addItemWithTitle:buttonText
                 action:^{
-                  [weakMediator removeCredential:password];
+                  [weakMediator removeCredential:credential];
                   [weakSelf dismissActionSheetCoordinator];
                 }
                  style:UIAlertActionStyleDestructive];
@@ -306,11 +300,11 @@ using password_manager::features::IsAuthOnEntryV2Enabled;
   [self.actionSheetCoordinator start];
 }
 
-- (void)moveCredentialToAccountStore:(PasswordDetails*)password
+- (void)moveCredentialToAccountStore:(CredentialDetails*)credential
                           anchorView:(UIView*)anchorView
                      movedCompletion:(void (^)())movedCompletion {
-  if (![self.mediator hasPasswordConflictInAccount:password]) {
-    [self.mediator moveCredentialToAccountStore:password];
+  if (![self.mediator hasPasswordConflictInAccount:credential]) {
+    [self.mediator moveCredentialToAccountStore:credential];
     movedCompletion();
     return;
   }
@@ -331,7 +325,7 @@ using password_manager::features::IsAuthOnEntryV2Enabled;
       addItemWithTitle:l10n_util::GetNSString(IDS_IOS_KEEP_RECENT_PASSWORD)
                 action:^{
                   [weakSelf.mediator
-                      moveCredentialToAccountStoreWithConflict:password];
+                      moveCredentialToAccountStoreWithConflict:credential];
                   movedCompletion();
                   [weakSelf dismissActionSheetCoordinator];
                 }
@@ -353,11 +347,11 @@ using password_manager::features::IsAuthOnEntryV2Enabled;
 - (void)onAllPasswordsDeleted {
   DCHECK_EQ(self.baseNavigationController.topViewController,
             self.viewController);
-  // For password details opened outside of the settings context.
+  // For credential details opened outside of the settings context.
   if (_context == DetailsContext::kOutsideSettings) {
     [self dismissPasswordDetailsTableViewController];
   } else {
-    // For password details opened from the Password Manager in the settings.
+    // For credential details opened from the Password Manager in the settings.
     [self.baseNavigationController popViewControllerAnimated:YES];
   }
 }
@@ -382,7 +376,8 @@ using password_manager::features::IsAuthOnEntryV2Enabled;
 
 #pragma mark - PasswordDetailsMediatorDelegate
 
-- (void)showDismissWarningDialogWithPasswordDetails:(PasswordDetails*)password {
+- (void)showDismissWarningDialogWithCredentialDetails:
+    (CredentialDetails*)credential {
   NSString* title =
       l10n_util::GetNSString(IDS_IOS_DISMISS_WARNING_DIALOG_TITLE);
   NSString* message =
@@ -407,7 +402,8 @@ using password_manager::features::IsAuthOnEntryV2Enabled;
   [self.alertCoordinator
       addItemWithTitle:dismissButtonText
                 action:^{
-                  [weakMediator didConfirmWarningDismissalForPassword:password];
+                  [weakMediator
+                      didConfirmWarningDismissalForPassword:credential];
                   [weakSelf dismissAlertCoordinator];
                 }
                  style:UIAlertActionStyleDefault
@@ -421,11 +417,8 @@ using password_manager::features::IsAuthOnEntryV2Enabled;
   BrowserList* browserList =
       BrowserListFactory::GetForBrowserState(browserState);
 
-  for (Browser* browser : browserList->AllRegularBrowsers()) {
-    [self updateFormManagersForBrowser:browser];
-  }
-
-  for (Browser* browser : browserList->AllIncognitoBrowsers()) {
+  for (Browser* browser :
+       browserList->BrowsersOfType(BrowserList::BrowserType::kAll)) {
     [self updateFormManagersForBrowser:browser];
   }
 }
@@ -541,10 +534,6 @@ using password_manager::features::IsAuthOnEntryV2Enabled;
 // Whether Local Authentication should be required before displaying the
 // contents of Password Details.
 - (BOOL)shouldRequireAuthOnStart {
-  if (!IsAuthOnEntryV2Enabled()) {
-    return NO;
-  }
-
   // Authentication required only if opening Password Details from outside the
   // Password Manager.
   switch (_context) {

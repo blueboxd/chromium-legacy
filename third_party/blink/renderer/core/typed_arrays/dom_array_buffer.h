@@ -7,9 +7,9 @@
 
 #include <algorithm>
 
-#include "base/allocator/partition_allocator/src/partition_alloc/oom.h"
 #include "base/compiler_specific.h"
 #include "base/containers/span.h"
+#include "partition_alloc/oom.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer/array_buffer_contents.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_base.h"
@@ -31,7 +31,7 @@ class CORE_EXPORT DOMArrayBuffer : public DOMArrayBufferBase {
     ArrayBufferContents contents(num_elements, element_byte_size,
                                  ArrayBufferContents::kNotShared,
                                  ArrayBufferContents::kZeroInitialize);
-    if (UNLIKELY(!contents.Data())) {
+    if (!contents.Data()) [[unlikely]] {
       OOM_CRASH(num_elements * element_byte_size);
     }
     return Create(std::move(contents));
@@ -40,7 +40,7 @@ class CORE_EXPORT DOMArrayBuffer : public DOMArrayBufferBase {
     ArrayBufferContents contents(source.size(), 1,
                                  ArrayBufferContents::kNotShared,
                                  ArrayBufferContents::kDontInitialize);
-    if (UNLIKELY(!contents.Data())) {
+    if (!contents.Data()) [[unlikely]] {
       OOM_CRASH(source.size());
     }
     contents.ByteSpan().copy_from(source);

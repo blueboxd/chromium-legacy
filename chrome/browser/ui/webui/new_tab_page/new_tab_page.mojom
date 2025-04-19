@@ -170,6 +170,7 @@ enum CustomizeChromeSection {
   kShortcuts,
   kModules,
   kWallpaperSearch,
+  kToolbar,
 };
 
 struct PromoImagePart {
@@ -301,23 +302,17 @@ interface PageHandler {
   // Returns the order of modules or an empty array if the user has not
   // reordered them before.
   GetModulesOrder() => (array<string> module_ids);
-  // Increment the number of times the user has seen modules.
-  IncrementModulesShownCount();
-  // If |visible| Modular NTP Desktop v1 First Run Experience will be shown.
-  SetModulesFreVisible(bool visible);
-  // Triggers a call to |SetModulesFreVisibility|.
-  UpdateModulesFreVisibility();
-  // Log user's FRE |optInStatus|.
-  LogModulesFreOptInStatus(OptInStatus opt_in_status);
   // Shows or hides the customize chrome in unified side panel.
   SetCustomizeChromeSidePanelVisible(bool visible,
                                      CustomizeChromeSection section);
   // Increment the number of times the user has opened the side panel
   // with the customize chrome button.
   IncrementCustomizeChromeButtonOpenCount();
-
   // Attempts to trigger the specified in product help promo.
   MaybeShowFeaturePromo(IphFeature iph_feature);
+  // Increment the number of times the user has seen the wallpaper search
+  // button.
+  IncrementWallpaperSearchButtonShownCount();
 
   // ======= METRICS =======
   // Logs that the One Google Bar was added to the DOM / loaded in an iframe at
@@ -362,8 +357,6 @@ interface Page {
   // Disables the modules in |ids|. If |all|, disables all modules and passes an
   // empty list for |ids|.
   SetDisabledModules(bool all, array<string> ids);
-  // Sets Modular NTP Desktop v1 First Run Experience's visibility to |visible|.
-  SetModulesFreVisibility(bool visible);
   // Sets NTP homepage promo.
   SetPromo(Promo? promo);
   // Shows a toast with information about Chrome Webstore themes.

@@ -9,7 +9,6 @@
 #include <memory>
 #include <vector>
 
-#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/commerce/core/compare/product_group.h"
 #include "components/commerce/core/shopping_service.h"
 #include "components/commerce/core/subscriptions/commerce_subscription.h"
@@ -49,6 +48,11 @@ class MockShoppingService : public commerce::ShoppingService {
               GetUrlInfosForActiveWebWrappers,
               (),
               (override));
+  MOCK_METHOD(
+      void,
+      GetUrlInfosForWebWrappersWithProducts,
+      (base::OnceCallback<void(const std::vector<commerce::UrlInfo>)> callback),
+      (override));
   MOCK_METHOD(const std::vector<commerce::UrlInfo>,
               GetUrlInfosForRecentlyViewedWebWrappers,
               (),
@@ -119,10 +123,6 @@ class MockShoppingService : public commerce::ShoppingService {
               GetDiscountInfoForUrls,
               (const std::vector<GURL>& urls, DiscountInfoCallback callback),
               (override));
-  MOCK_METHOD(bookmarks::BookmarkModel*,
-              GetBookmarkModelUsedForSync,
-              (),
-              (override));
   MOCK_METHOD(void,
               GetAllParcelStatuses,
               (GetParcelStatusCallback callback),
@@ -131,6 +131,10 @@ class MockShoppingService : public commerce::ShoppingService {
               StopTrackingParcel,
               (const std::string& tracking_id,
                base::OnceCallback<void(bool)> callback),
+              (override));
+  MOCK_METHOD(void,
+              StopTrackingAllParcels,
+              (base::OnceCallback<void(bool)> callback),
               (override));
   MOCK_METHOD(void,
               GetProductSpecificationsForUrls,
@@ -174,7 +178,6 @@ class MockShoppingService : public commerce::ShoppingService {
   void SetIsPriceInsightsEligible(bool is_eligible);
   void SetIsDiscountEligibleToShowOnNavigation(bool is_eligible);
   void SetResponseForGetDiscountInfoForUrls(const DiscountsMap& discounts_map);
-  void SetBookmarkModelUsedForSync(bookmarks::BookmarkModel* bookmark_model);
   void SetIsParcelTrackingEligible(bool is_eligible);
   void SetGetAllParcelStatusesCallbackValue(
       std::vector<ParcelTrackingStatus> parcels);

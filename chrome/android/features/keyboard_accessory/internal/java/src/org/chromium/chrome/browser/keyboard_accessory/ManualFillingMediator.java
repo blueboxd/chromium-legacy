@@ -35,7 +35,6 @@ import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.back_press.BackPressManager;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
-import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.keyboard_accessory.ManualFillingProperties.KeyboardExtensionState;
@@ -81,6 +80,7 @@ import org.chromium.ui.mojom.VirtualKeyboardMode;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 
 /**
  * This part of the manual filling component manages the state of the manual filling flow depending
@@ -112,9 +112,12 @@ class ManualFillingMediator
     private ConfirmationDialogHelper mConfirmationHelper;
     private BackPressManager mBackPressManager;
     private Supplier<EdgeToEdgeController> mEdgeToEdgeControllerSupplier = () -> null;
+    private BooleanSupplier mIsContextualSearchOpened;
     private final Callback<ViewportInsets> mViewportInsetsObserver = this::onViewportInsetChanged;
     private final ObservableSupplierImpl<Boolean> mBackPressChangedSupplier =
             new ObservableSupplierImpl<>();
+    private final ObservableSupplierImpl<AccessorySheetVisualStateProvider>
+            mAccessorySheetVisualStateSupplier = new ObservableSupplierImpl<>();
 
     private final TabObserver mTabObserver =
             new EmptyTabObserver() {
@@ -179,6 +182,7 @@ class ManualFillingMediator
             AccessorySheetCoordinator accessorySheet,
             WindowAndroid windowAndroid,
             BottomSheetController sheetController,
+            BooleanSupplier isContextualSearchOpened,
             BackPressManager backPressManager,
             Supplier<EdgeToEdgeController> edgeToEdgeControllerSupplier,
             ManualFillingComponent.SoftKeyboardDelegate keyboardDelegate,
@@ -188,11 +192,13 @@ class ManualFillingMediator
         mWindowAndroid = windowAndroid;
         mKeyboardAccessory = keyboardAccessory;
         mBottomSheetController = sheetController;
+        mIsContextualSearchOpened = isContextualSearchOpened;
         mSoftKeyboardDelegate = keyboardDelegate;
         mConfirmationHelper = confirmationHelper;
         mModel.set(PORTRAIT_ORIENTATION, hasPortraitOrientation());
         mModel.addObserver(this::onPropertyChanged);
         mAccessorySheet = accessorySheet;
+        mAccessorySheetVisualStateSupplier.set(mAccessorySheet);
         mAccessorySheet.setOnPageChangeListener(mKeyboardAccessory.getOnPageChangeListener());
         mAccessorySheet.setHeight(getIdealSheetHeight());
         mApplicationViewportInsetSupplier = mWindowAndroid.getApplicationBottomInsetSupplier();
@@ -615,11 +621,7 @@ class ManualFillingMediator
         if (!mModel.get(SHOW_WHEN_VISIBLE)) return false;
 
         // Don't open the accessory inside the contextual search panel.
-        ObservableSupplier<ContextualSearchManager> contextualSearchSupplier =
-                mActivity.getContextualSearchManagerSupplier();
-        if (contextualSearchSupplier != null
-                && contextualSearchSupplier.hasValue()
-                && contextualSearchSupplier.get().isSearchPanelOpened()) {
+        if (mIsContextualSearchOpened.getAsBoolean()) {
             return false;
         }
 
@@ -652,7 +654,9 @@ class ManualFillingMediator
 
     @Override
     public void onBarFadeInAnimationEnd() {
-        mActivity.getCurrentWebContents().scrollFocusedEditableNodeIntoView();
+        if (mActivity != null && mActivity.getCurrentWebContents() != null) {
+            mActivity.getCurrentWebContents().scrollFocusedEditableNodeIntoView();
+        }
     }
 
     /** Returns the amount that the keyboard will be extended by the accessory bar. */
@@ -682,9 +686,7 @@ class ManualFillingMediator
         int newControlsHeight = 0;
         int newControlsOffset = 0;
         if (requiresVisibleBar(extensionState)) {
-            boolean isEdgeToEdgeActive =
-                    mEdgeToEdgeControllerSupplier.get() != null
-                            && mEdgeToEdgeControllerSupplier.get().isEdgeToEdgeActive();
+            boolean isEdgeToEdgeActive = mEdgeToEdgeControllerSupplier.get() != null;
             // TODO(crbug.com/41483806): Treat VirtualKeyboardMode.OVERLAYS_CONTENT like fullscreen?
             if (mModel.get(IS_FULLSCREEN) // Hides UI and lets keyboard overlay webContents.
                     // No need to set the controls height to 0 in edge-to-edge since the content
@@ -891,7 +893,7 @@ class ManualFillingMediator
                         mActivity, profile, mAccessorySheet.getScrollListener());
             case AccessoryTabType.ADDRESSES:
                 return new AddressAccessorySheetCoordinator(
-                        mActivity, mAccessorySheet.getScrollListener());
+                        mActivity, profile, mAccessorySheet.getScrollListener());
             case AccessoryTabType.PASSWORDS:
                 return new PasswordAccessorySheetCoordinator(
                         mActivity, profile, mAccessorySheet.getScrollListener());
@@ -973,6 +975,14 @@ class ManualFillingMediator
                                 .getDimensionPixelSize(
                                         R.dimen.keyboard_accessory_suggestion_height);
         return idealHeight + getHeaderHeight();
+    }
+
+    /**
+     * Returns a supplier for {@link AccessorySheetVisualStateProvider} that can be observed to be
+     * notified of changes to the visual state of the accessory sheet.
+     */
+    ObservableSupplier<AccessorySheetVisualStateProvider> getAccessorySheetVisualStateProvider() {
+        return mAccessorySheetVisualStateSupplier;
     }
 
     TabModelObserver getTabModelObserverForTesting() {

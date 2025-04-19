@@ -10,11 +10,11 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
+import static org.chromium.base.ThreadUtils.runOnUiThreadBlocking;
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
 import static org.chromium.chrome.browser.autofill.editors.AddressEditorCoordinator.UserFlow.MIGRATE_EXISTING_ADDRESS_PROFILE;
 import static org.chromium.chrome.browser.autofill.editors.AddressEditorCoordinator.UserFlow.SAVE_NEW_ADDRESS_PROFILE;
 import static org.chromium.chrome.browser.autofill.editors.AddressEditorCoordinator.UserFlow.UPDATE_EXISTING_ADDRESS_PROFILE;
-import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
 import static org.chromium.ui.test.util.UiRestriction.RESTRICTION_TYPE_PHONE;
 
 import android.view.View;
@@ -25,7 +25,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -35,7 +34,6 @@ import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.base.test.util.Restriction;
@@ -132,7 +130,6 @@ public class AddressEditorRenderTest extends BlankUiTestActivityTestCase {
                     .setBugComponent(Component.UI_BROWSER_AUTOFILL)
                     .build();
 
-    @Rule public TestRule mProcessor = new Features.JUnitProcessor();
     @Rule public JniMocker mJniMocker = new JniMocker();
 
     @Mock private AutofillProfileBridge.Natives mAutofillProfileBridgeJni;
@@ -260,7 +257,6 @@ public class AddressEditorRenderTest extends BlankUiTestActivityTestCase {
                             mAddressEditor =
                                     new AddressEditorCoordinator(
                                             getActivity(),
-                                            mLauncher,
                                             mDelegate,
                                             mProfile,
                                             /* saveToDisk= */ false);
@@ -284,7 +280,6 @@ public class AddressEditorRenderTest extends BlankUiTestActivityTestCase {
                             mAddressEditor =
                                     new AddressEditorCoordinator(
                                             getActivity(),
-                                            mLauncher,
                                             mDelegate,
                                             mProfile,
                                             /* saveToDisk= */ false);
@@ -308,7 +303,6 @@ public class AddressEditorRenderTest extends BlankUiTestActivityTestCase {
                             mAddressEditor =
                                     new AddressEditorCoordinator(
                                             getActivity(),
-                                            mLauncher,
                                             mDelegate,
                                             mProfile,
                                             new AutofillAddress(
@@ -337,7 +331,6 @@ public class AddressEditorRenderTest extends BlankUiTestActivityTestCase {
                             mAddressEditor =
                                     new AddressEditorCoordinator(
                                             getActivity(),
-                                            mLauncher,
                                             mDelegate,
                                             mProfile,
                                             new AutofillAddress(
@@ -366,7 +359,6 @@ public class AddressEditorRenderTest extends BlankUiTestActivityTestCase {
                             mAddressEditor =
                                     new AddressEditorCoordinator(
                                             getActivity(),
-                                            mLauncher,
                                             mDelegate,
                                             mProfile,
                                             new AutofillAddress(

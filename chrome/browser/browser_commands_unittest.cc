@@ -45,8 +45,9 @@ class BrowserCommandsTest : public BrowserWithTestWindowTest {
 
   // BrowserWithTestWindowTest overrides.
   TestingProfile::TestingFactories GetTestingFactories() override {
-    return {{BookmarkModelFactory::GetInstance(),
-             BookmarkModelFactory::GetDefaultFactory()}};
+    return {TestingProfile::TestingFactory{
+        BookmarkModelFactory::GetInstance(),
+        BookmarkModelFactory::GetDefaultFactory()}};
   }
 };
 
@@ -430,7 +431,7 @@ TEST_F(BrowserCommandsTest, OnDefaultZoomLevelChanged) {
 
   // Set the default zoom level to 125.
   profile()->GetZoomLevelPrefs()->SetDefaultZoomLevelPref(
-      blink::PageZoomFactorToZoomLevel(1.25));
+      blink::ZoomFactorToZoomLevel(1.25));
   EXPECT_FLOAT_EQ(125.0f, zoom_controller->GetZoomPercent());
 
   // Actual Size from context menu should be disabled now.

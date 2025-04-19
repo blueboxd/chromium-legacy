@@ -117,7 +117,7 @@ TouchAction AdjustTouchActionForElement(TouchAction touch_action,
                                         Element* element) {
   Element* document_element = element->GetDocument().documentElement();
   bool scrolls_overflow = builder.ScrollsOverflow();
-  if (element && element == element->GetDocument().FirstBodyElement()) {
+  if (element == element->GetDocument().FirstBodyElement()) {
     // Body scrolls overflow if html root overflow is not visible or the
     // propagation of overflow is stopped by containment.
     if (parent_style.IsOverflowVisibleAlongBothAxes()) {
@@ -127,8 +127,8 @@ TouchAction AdjustTouchActionForElement(TouchAction touch_action,
       }
     }
   }
-  bool is_child_document = element && element == document_element &&
-                           element->GetDocument().LocalOwner();
+  bool is_child_document =
+      element == document_element && element->GetDocument().LocalOwner();
   if (scrolls_overflow || is_child_document) {
     return touch_action | TouchAction::kPan |
            TouchAction::kInternalPanXScrolls |
@@ -193,6 +193,7 @@ static EDisplay EquivalentBlockDisplay(EDisplay display) {
     case EDisplay::kListItem:
     case EDisplay::kFlowRoot:
     case EDisplay::kLayoutCustom:
+    case EDisplay::kMasonry:
       return display;
     case EDisplay::kInlineTable:
       return EDisplay::kTable;
@@ -212,6 +213,8 @@ static EDisplay EquivalentBlockDisplay(EDisplay display) {
       return EDisplay::kListItem;
     case EDisplay::kInlineFlowRootListItem:
       return EDisplay::kFlowRootListItem;
+    case EDisplay::kInlineMasonry:
+      return EDisplay::kMasonry;
 
     case EDisplay::kContents:
     case EDisplay::kInline:
@@ -250,6 +253,8 @@ static EDisplay EquivalentInlineDisplay(EDisplay display) {
       return EDisplay::kInlineFlex;
     case EDisplay::kGrid:
       return EDisplay::kInlineGrid;
+    case EDisplay::kMasonry:
+      return EDisplay::kInlineMasonry;
     case EDisplay::kBlockMath:
       return EDisplay::kMath;
     case EDisplay::kBlockRuby:
@@ -264,6 +269,7 @@ static EDisplay EquivalentInlineDisplay(EDisplay display) {
     case EDisplay::kInlineGrid:
     case EDisplay::kInlineLayoutCustom:
     case EDisplay::kInlineListItem:
+    case EDisplay::kInlineMasonry:
     case EDisplay::kInlineTable:
     case EDisplay::kMath:
     case EDisplay::kRuby:
@@ -411,7 +417,8 @@ static void AdjustStyleForMarker(ComputedStyleBuilder& builder,
     return;
   }
 
-  if (parent_style.MarkerShouldBeInside(parent_element)) {
+  if (parent_style.MarkerShouldBeInside(parent_element,
+                                        builder.GetDisplayStyle())) {
     Document& document = parent_element.GetDocument();
     auto margins =
         ListMarker::InlineMarginsForInside(document, builder, parent_style);
@@ -662,6 +669,12 @@ static void AdjustStyleForDisplay(ComputedStyleBuilder& builder,
     }
   }
 
+  // TODO(332396355): Remove temporary blockifing of ::scroll-marker pseudo
+  // elements.
+  if (builder.StyleType() == kPseudoIdScrollMarker) {
+    builder.SetDisplay(EquivalentBlockDisplay(builder.Display()));
+  }
+
   if (builder.Display() == EDisplay::kBlock) {
     return;
   }
@@ -734,7 +747,12 @@ void StyleAdjuster::AdjustEffectiveTouchAction(
     bool is_svg_root) {
   TouchAction inherited_action = parent_style.EffectiveTouchAction();
 
-  bool is_replaced_canvas = element && IsA<HTMLCanvasElement>(element) &&
+  if (!element) {
+    builder.SetEffectiveTouchAction(TouchAction::kAuto & inherited_action);
+    return;
+  }
+
+  bool is_replaced_canvas = IsA<HTMLCanvasElement>(element) &&
                             element->GetExecutionContext() &&
                             element->GetExecutionContext()->CanExecuteScripts(
                                 kNotAboutToExecuteScript);
@@ -744,7 +762,7 @@ void StyleAdjuster::AdjustEffectiveTouchAction(
         IsA<HTMLImageElement>(element) || is_replaced_canvas);
   bool is_table_row_or_column = builder.IsDisplayTableRowOrColumnType();
   bool is_layout_object_needed =
-      element && element->LayoutObjectIsNeeded(builder.GetDisplayStyle());
+      element->LayoutObjectIsNeeded(builder.GetDisplayStyle());
 
   TouchAction element_touch_action = TouchAction::kAuto;
   // Touch actions are only supported by elements that support both the CSS
@@ -766,11 +784,6 @@ void StyleAdjuster::AdjustEffectiveTouchAction(
     if ((element_touch_action & TouchAction::kPan) != TouchAction::kNone) {
       element_touch_action |= TouchAction::kInternalNotWritable;
     }
-  }
-
-  if (!element) {
-    builder.SetEffectiveTouchAction(element_touch_action & inherited_action);
-    return;
   }
 
   bool is_child_document = element == element->GetDocument().documentElement();

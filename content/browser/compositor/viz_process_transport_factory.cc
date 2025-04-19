@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/342213636): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "content/browser/compositor/viz_process_transport_factory.h"
 
 #include <utility>
@@ -121,6 +126,12 @@ class HostDisplayClient : public viz::HostDisplayClient {
     gpu_process_host->gpu_host()->AddChildWindow(widget(), child_window);
   }
 #endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  void SetPreferredRefreshRate(float refresh_rate) override {
+    NOTIMPLEMENTED();
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
  private:
   [[maybe_unused]] const raw_ptr<ui::Compositor> compositor_;
@@ -410,9 +421,6 @@ void VizProcessTransportFactory::OnEstablishedGpuChannel(
     root_params->disable_frame_rate_limit = true;
 
 #if BUILDFLAG(IS_WIN)
-  root_params->set_present_duration_allowed =
-      features::ShouldUseSetPresentDuration();
-
   const bool using_direct_composition = GpuDataManagerImpl::GetInstance()
                                             ->GetGPUInfo()
                                             .overlay_info.direct_composition;

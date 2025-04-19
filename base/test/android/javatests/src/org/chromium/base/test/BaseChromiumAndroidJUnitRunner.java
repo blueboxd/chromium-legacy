@@ -12,7 +12,6 @@ import android.content.ContextWrapper;
 import android.os.Build.VERSION;
 import android.os.Bundle;
 import android.os.Looper;
-import android.system.Os;
 
 import androidx.core.content.ContextCompat;
 import androidx.test.InstrumentationRegistry;
@@ -33,12 +32,14 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ResettersForTesting;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.InMemorySharedPreferencesContext;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.ScalableTimeout;
+import org.chromium.base.test.util.TestAnimations;
 import org.chromium.build.BuildConfig;
 import org.chromium.testing.TestListInstrumentationRunListener;
 
@@ -65,20 +66,12 @@ import java.util.concurrent.TimeoutException;
  */
 public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
     private static final String IS_UNIT_TEST_FLAG = "BaseChromiumAndroidJUnitRunner.IsUnitTest";
-    private static final String EXTRA_CLANG_COVERAGE_DEVICE_FILE =
-            "BaseChromiumAndroidJUnitRunner.ClangCoverageDeviceFile";
     private static final String EXTRA_TIMEOUT_SCALE = "BaseChromiumAndroidJUnitRunner.TimeoutScale";
     private static final String EXTRA_TRACE_FILE = "BaseChromiumAndroidJUnitRunner.TraceFile";
 
     private static final String ARGUMENT_LOG_ONLY = "log";
 
     private static final String TAG = "BaseJUnitRunner";
-
-    private static final int STATUS_CODE_BATCH_FAILURE = 1338;
-
-    // The ID of the bundle value Instrumentation uses to report the crash stack, if the test
-    // crashed.
-    private static final String BUNDLE_STACK_ID = "stack";
 
     private static final long WAIT_FOR_IDLE_TIMEOUT_MS = 10000L;
 
@@ -87,10 +80,6 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
     static InMemorySharedPreferencesContext sInMemorySharedPreferencesContext;
     private static boolean sTestListMode;
 
-    static {
-        CommandLineInitUtil.setFilenameOverrideForTesting(CommandLineFlags.getTestCmdLineFile());
-    }
-
     public BaseChromiumAndroidJUnitRunner() {
         sInstance = this;
     }
@@ -98,6 +87,10 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
     @Override
     public Application newApplication(ClassLoader cl, String className, Context context)
             throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+        // Must come before super.newApplication(), because Chrome's Application.attachBaseContext()
+        // initializes command-line.
+        CommandLineInitUtil.setFilenameOverrideForTesting(CommandLineFlags.getTestCmdLineFile());
+
         // Wrap |context| here so that calls to getSharedPreferences() from within
         // attachBaseContext() will hit our InMemorySharedPreferencesContext.
         sInMemorySharedPreferencesContext = new InMemorySharedPreferencesContext(context);
@@ -128,8 +121,16 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
         return sInMemorySharedPreferencesContext;
     }
 
+    private static boolean isDefaultProcess() {
+        return !ContextUtils.getProcessName().contains(":");
+    }
+
     @Override
     public void onCreate(Bundle arguments) {
+        if (!isDefaultProcess()) {
+            super.onCreate(arguments);
+            return;
+        }
         if (arguments == null) {
             arguments = new Bundle();
         }
@@ -138,6 +139,10 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
         // an activity in @BeforeClass and have it live until @AfterClass.
         arguments.putString("waitForActivitiesToComplete", "false");
         super.onCreate(arguments);
+        if (!sTestListMode) {
+            // Initialize before Application.onCreate() to ensure settings take effect.
+            initTestRunner(arguments);
+        }
     }
 
     /**
@@ -149,6 +154,9 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
      */
     @Override
     public void onStart() {
+        if (!isDefaultProcess()) {
+            throw new IllegalStateException();
+        }
         Bundle arguments = InstrumentationRegistry.getArguments();
         if (sTestListMode) {
             Log.w(
@@ -159,18 +167,20 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
                             arguments.toString()));
             listTests(); // Intentionally not calling super.onStart() to avoid additional work.
         } else {
-            initTestRunner(arguments);
+            ThreadUtils.recordInstrumentationThreadForTesting();
+            // Full name required because the super class has a nested class of the same name.
+            org.chromium.base.test.ActivityFinisher.finishAll();
             super.onStart();
         }
     }
 
+    // Called on the UI thread.
     private void initTestRunner(Bundle arguments) {
         String timeoutScale = arguments.getString(EXTRA_TIMEOUT_SCALE);
         if (timeoutScale != null) {
             ScalableTimeout.setScale(Float.valueOf(timeoutScale));
         }
-        // Full name required because the super class has a nested class of the same name.
-        org.chromium.base.test.ActivityFinisher.finishAll();
+        CommandLineFlags.ensureInitialized();
         BaseJUnit4ClassRunner.clearJobSchedulerJobs();
         clearDataDirectory(sInMemorySharedPreferencesContext);
         setInTouchMode(true);
@@ -182,7 +192,6 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
                 sInMemorySharedPreferencesContext.getCacheDir().getPath());
         // Reduce the time Espresso waits before failing to be less than the Python test timeout.
         IdlingPolicies.setMasterPolicyTimeout(20, TimeUnit.SECONDS);
-        setClangCoverageEnvIfEnabled();
         if (arguments.getString(IS_UNIT_TEST_FLAG) != null) {
             LibraryLoader.setBrowserProcessStartupBlockedForTesting();
         }
@@ -220,7 +229,7 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
                 });
 
         try {
-            idleCallback.waitForFirst((int) WAIT_FOR_IDLE_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+            idleCallback.waitForOnly((int) WAIT_FOR_IDLE_TIMEOUT_MS, TimeUnit.MILLISECONDS);
         } catch (TimeoutException ex) {
             Log.w(TAG, "Timeout while waiting for idle main thread.");
         }
@@ -480,15 +489,8 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
             return;
         }
 
-        try {
-            writeClangCoverageProfileIfEnabled();
-        } catch (Exception e) {
-            // It's not possible (as far as I know) to update already reported test results, so we
-            // send another status update have the instrumentation test instance parse it.
-            Bundle b = new Bundle();
-            b.putString(BUNDLE_STACK_ID, Log.getStackTraceString(e));
-            InstrumentationRegistry.getInstrumentation().sendStatus(STATUS_CODE_BATCH_FAILURE, b);
-        }
+        // Leave animations in the default state.
+        TestAnimations.setEnabled(true);
 
         // This will end up force stopping the package, so code after this line will not run.
         super.finish(resultCode, results);
@@ -529,29 +531,6 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
             } else if (!FileUtils.recursivelyDeleteFile(file, FileUtils.DELETE_ALL)) {
                 throw new RuntimeException("Could not delete file: " + file.getAbsolutePath());
             }
-        }
-    }
-
-    /** Configure the required environment variable if Clang coverage argument exists. */
-    private void setClangCoverageEnvIfEnabled() {
-        String clangProfileFile =
-                InstrumentationRegistry.getArguments().getString(EXTRA_CLANG_COVERAGE_DEVICE_FILE);
-        if (clangProfileFile != null) {
-            try {
-                Os.setenv("LLVM_PROFILE_FILE", clangProfileFile, /* override= */ true);
-            } catch (Exception e) {
-                Log.w(TAG, "failed to set LLVM_PROFILE_FILE", e);
-            }
-        }
-    }
-
-    /**
-     * Invoke __llvm_profile_dump() to write raw clang coverage profile to device.
-     * Noop if the required build flag is not set.
-     */
-    private void writeClangCoverageProfileIfEnabled() {
-        if (BuildConfig.WRITE_CLANG_PROFILING_DATA && LibraryLoader.getInstance().isInitialized()) {
-            ClangProfiler.writeClangProfilingProfile();
         }
     }
 }

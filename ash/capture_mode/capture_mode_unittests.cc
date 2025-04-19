@@ -9,6 +9,9 @@
 
 #include "ash/accessibility/magnifier/docked_magnifier_controller.h"
 #include "ash/accessibility/magnifier/magnifier_glass.h"
+#include "ash/annotator/annotation_tray.h"
+#include "ash/annotator/annotations_overlay_controller.h"
+#include "ash/annotator/annotator_controller.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/capture_mode/capture_mode_bar_view.h"
 #include "ash/capture_mode/capture_mode_behavior.h"
@@ -28,7 +31,6 @@
 #include "ash/capture_mode/capture_mode_types.h"
 #include "ash/capture_mode/capture_mode_util.h"
 #include "ash/capture_mode/fake_folder_selection_dialog_factory.h"
-#include "ash/capture_mode/recording_overlay_controller.h"
 #include "ash/capture_mode/stop_recording_button_tray.h"
 #include "ash/capture_mode/test_capture_mode_delegate.h"
 #include "ash/capture_mode/user_nudge_controller.h"
@@ -38,7 +40,6 @@
 #include "ash/display/output_protection_delegate.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/projector/projector_annotation_tray.h"
 #include "ash/projector/projector_controller_impl.h"
 #include "ash/projector/projector_metrics.h"
 #include "ash/public/cpp/capture_mode/capture_mode_test_api.h"
@@ -101,6 +102,7 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_factory.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
+#include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -351,9 +353,23 @@ class CaptureModeTest : public AshTestBase {
     wm::AddTransientChild(transient_parent, child.get());
     child->Show();
 
-    child->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
+    child->SetProperty(aura::client::kModalKey, ui::mojom::ModalType::kWindow);
     wm::SetModalParent(child.get(), transient_parent);
     return child;
+  }
+
+  void VerifyOverlayWindow(aura::Window* overlay_window,
+                           CaptureModeSource source,
+                           const gfx::Rect user_region) {
+    VerifyOverlayWindowForCaptureMode(overlay_window, GetWindowBeingRecorded(),
+                                      source, user_region);
+  }
+
+  aura::Window* GetWindowBeingRecorded() const {
+    auto* controller = CaptureModeController::Get();
+    DCHECK(controller->is_recording_in_progress());
+    return controller->video_recording_watcher_for_testing()
+        ->window_being_recorded();
   }
 };
 
@@ -471,6 +487,20 @@ TEST_F(CaptureModeTest, StartWithMostRecentTypeAndSource) {
 
   ClickOnView(GetCloseButton(), GetEventGenerator());
   EXPECT_FALSE(controller->IsActive());
+}
+
+TEST_F(CaptureModeTest, AccessibleCheckedState) {
+  auto* controller = CaptureModeController::Get();
+  controller->Start(CaptureModeEntryType::kQuickSettings);
+  ui::AXNodeData data;
+  GetImageToggleButton()->SetSelected(true);
+  GetImageToggleButton()->GetViewAccessibility().GetAccessibleNodeData(&data);
+  EXPECT_EQ(data.GetCheckedState(), ax::mojom::CheckedState::kTrue);
+
+  data = ui::AXNodeData();
+  GetImageToggleButton()->SetSelected(false);
+  GetImageToggleButton()->GetViewAccessibility().GetAccessibleNodeData(&data);
+  EXPECT_EQ(data.GetCheckedState(), ax::mojom::CheckedState::kFalse);
 }
 
 TEST_F(CaptureModeTest, ChangeTypeAndSourceFromUI) {
@@ -1120,22 +1150,27 @@ TEST_F(CaptureModeTest, MultiDisplayCaptureBarInitialLocation) {
 
 // Tests behavior of a capture mode session if the active display is removed.
 TEST_F(CaptureModeTest, DisplayRemoval) {
-  UpdateDisplay("800x700,801+0-800x700");
+  UpdateDisplay("1200x700,1201+0-800x700");
 
   // Start capture mode on the secondary display.
-  GetEventGenerator()->MoveMouseTo(gfx::Point(1000, 500));
+  GetEventGenerator()->MoveMouseTo(gfx::Point(1300, 500));
   auto* controller = StartImageRegionCapture();
   auto* session = controller->capture_mode_session();
-  EXPECT_TRUE(gfx::Rect(801, 0, 800, 800)
+  EXPECT_TRUE(gfx::Rect(1201, 0, 800, 700)
                   .Contains(GetCaptureModeBarView()->GetBoundsInScreen()));
   ASSERT_EQ(Shell::GetAllRootWindows()[1], session->current_root());
 
   RemoveSecondaryDisplay();
 
   // Tests that the capture mode bar is now on the primary display.
-  EXPECT_TRUE(gfx::Rect(800, 800).Contains(
-      GetCaptureModeBarView()->GetBoundsInScreen()));
+  const gfx::Rect bar_bounds_in_screen =
+      GetCaptureModeBarView()->GetBoundsInScreen();
+  EXPECT_TRUE(gfx::Rect(1200, 700).Contains(bar_bounds_in_screen));
   ASSERT_EQ(Shell::GetAllRootWindows()[0], session->current_root());
+
+  // Tests that the capture mode bar is centered on the primary display.
+  // Regression test for http://b/303094552.
+  EXPECT_EQ(600, bar_bounds_in_screen.CenterPoint().x());
 }
 
 // Tests behavior of a capture mode session if the active display is removed
@@ -4857,7 +4892,7 @@ TEST_F(CaptureModeTest, CaptureModeDefaultBehavior) {
     EXPECT_TRUE(active_behavior->ShouldGifBeSupported());
     EXPECT_TRUE(active_behavior->ShouldShowPreviewNotification());
     EXPECT_FALSE(active_behavior->ShouldSkipVideoRecordingCountDown());
-    EXPECT_FALSE(active_behavior->ShouldCreateRecordingOverlayController());
+    EXPECT_FALSE(active_behavior->ShouldCreateAnnotationsOverlayController());
     EXPECT_TRUE(active_behavior->ShouldShowUserNudge());
     EXPECT_FALSE(active_behavior->ShouldAutoSelectFirstCamera());
   };
@@ -5394,64 +5429,6 @@ class ProjectorCaptureModeIntegrationTests
     EXPECT_TRUE(controller->is_recording_in_progress());
   }
 
-  void VerifyOverlayEnabledState(aura::Window* overlay_window,
-                                 bool overlay_enabled_state) {
-    if (overlay_enabled_state) {
-      EXPECT_TRUE(overlay_window->IsVisible());
-      EXPECT_EQ(overlay_window->event_targeting_policy(),
-                aura::EventTargetingPolicy::kTargetAndDescendants);
-    } else {
-      EXPECT_FALSE(overlay_window->IsVisible());
-      EXPECT_EQ(overlay_window->event_targeting_policy(),
-                aura::EventTargetingPolicy::kNone);
-    }
-  }
-
-  void VerifyOverlayStacking(aura::Window* overlay_window,
-                             aura::Window* window_being_recorded,
-                             CaptureModeSource source) {
-    auto* parent = overlay_window->parent();
-
-    if (source == CaptureModeSource::kWindow) {
-      // The overlay window should always be the top-most child of the window
-      // being recorded when in window mode.
-      ASSERT_EQ(parent, window_being_recorded);
-      EXPECT_EQ(window_being_recorded->children().back(), overlay_window);
-    } else {
-      auto* menu_container =
-          window_being_recorded->GetRootWindow()->GetChildById(
-              kShellWindowId_MenuContainer);
-      ASSERT_EQ(parent, menu_container);
-      EXPECT_EQ(menu_container->children().front(), overlay_window);
-    }
-  }
-
-  void VerifyOverlayWindow(aura::Window* overlay_window,
-                           CaptureModeSource source) {
-    auto* window_being_recorded = GetWindowBeingRecorded();
-
-    VerifyOverlayStacking(overlay_window, window_being_recorded, source);
-
-    switch (source) {
-      case CaptureModeSource::kFullscreen:
-      case CaptureModeSource::kWindow:
-        EXPECT_EQ(overlay_window->bounds(),
-                  gfx::Rect(window_being_recorded->bounds().size()));
-        break;
-
-      case CaptureModeSource::kRegion:
-        EXPECT_EQ(overlay_window->bounds(), kUserRegion);
-        break;
-    }
-  }
-
-  aura::Window* GetWindowBeingRecorded() const {
-    auto* controller = CaptureModeController::Get();
-    DCHECK(controller->is_recording_in_progress());
-    return controller->video_recording_watcher_for_testing()
-        ->window_being_recorded();
-  }
-
  protected:
   ProjectorCaptureModeIntegrationHelper projector_helper_;
   std::unique_ptr<aura::Window> window_;
@@ -5486,6 +5463,20 @@ TEST_F(ProjectorCaptureModeIntegrationTests, EntryPoint) {
       "Ash.CaptureModeController.EntryPoint.ClamshellMode";
   histogram_tester_.ExpectBucketCount(kEntryPointHistogram,
                                       CaptureModeEntryType::kProjector, 1);
+}
+
+// Tests that a fullscreen screenshot can be taken via the keyboard shortcut
+// while a Projector-initiated session is active without ending the session.
+TEST_P(ProjectorCaptureModeIntegrationTests, FullscreenScreenshotKeyCombo) {
+  StartProjectorModeSession();
+  PressAndReleaseKey(ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_CONTROL_DOWN);
+  WaitForCaptureFileToBeSaved();
+  auto* controller = CaptureModeController::Get();
+  ASSERT_TRUE(controller->IsActive());
+  CaptureModeBehavior* active_behavior =
+      controller->capture_mode_session()->active_behavior();
+  ASSERT_TRUE(active_behavior);
+  EXPECT_EQ(active_behavior->behavior_type(), BehaviorType::kProjector);
 }
 
 // Tests that the settings view is simplified in projector mode.
@@ -5622,7 +5613,7 @@ TEST_F(ProjectorCaptureModeIntegrationTests, StartEndRecording) {
   const CaptureModeBehavior* active_behavior =
       controller->video_recording_watcher_for_testing()->active_behavior();
   ASSERT_TRUE(active_behavior);
-  EXPECT_TRUE(active_behavior->ShouldCreateRecordingOverlayController());
+  EXPECT_TRUE(active_behavior->ShouldCreateAnnotationsOverlayController());
 
   EXPECT_CALL(*projector_client(), StopSpeechRecognition());
   controller->EndVideoRecording(EndRecordingReason::kStopRecordingButton);
@@ -5843,7 +5834,7 @@ TEST_F(ProjectorCaptureModeIntegrationTests,
                                      /*expected_count=*/9);
 }
 
-TEST_F(ProjectorCaptureModeIntegrationTests, RecordingOverlayWidget) {
+TEST_F(ProjectorCaptureModeIntegrationTests, AnnotationsOverlayWidget) {
   auto* controller = CaptureModeController::Get();
   controller->SetSource(CaptureModeSource::kFullscreen);
   StartProjectorModeSession();
@@ -5852,23 +5843,24 @@ TEST_F(ProjectorCaptureModeIntegrationTests, RecordingOverlayWidget) {
   PressAndReleaseKey(ui::VKEY_RETURN);
   WaitForRecordingToStart();
   CaptureModeTestApi test_api;
-  RecordingOverlayController* overlay_controller =
-      test_api.GetRecordingOverlayController();
+  AnnotationsOverlayController* overlay_controller =
+      test_api.GetAnnotationsOverlayController();
   EXPECT_FALSE(overlay_controller->is_enabled());
   auto* overlay_window = overlay_controller->GetOverlayNativeWindow();
   VerifyOverlayEnabledState(overlay_window, /*overlay_enabled_state=*/false);
 
-  auto* projector_controller = ProjectorControllerImpl::Get();
-  projector_controller->EnableAnnotatorTool();
+  auto* annotator_controller = Shell::Get()->annotator_controller();
+  annotator_controller->EnableAnnotatorTool();
   EXPECT_TRUE(overlay_controller->is_enabled());
   VerifyOverlayEnabledState(overlay_window, /*overlay_enabled_state=*/true);
 
-  projector_controller->ResetTools();
+  annotator_controller->ResetTools();
   EXPECT_FALSE(overlay_controller->is_enabled());
   VerifyOverlayEnabledState(overlay_window, /*overlay_enabled_state=*/false);
 }
 
-TEST_F(ProjectorCaptureModeIntegrationTests, RecordingOverlayDockedMagnifier) {
+TEST_F(ProjectorCaptureModeIntegrationTests,
+       AnnotationsOverlayDockedMagnifier) {
   auto* controller = CaptureModeController::Get();
   controller->SetSource(CaptureModeSource::kFullscreen);
   StartProjectorModeSession();
@@ -5877,11 +5869,11 @@ TEST_F(ProjectorCaptureModeIntegrationTests, RecordingOverlayDockedMagnifier) {
   PressAndReleaseKey(ui::VKEY_RETURN);
   WaitForRecordingToStart();
   CaptureModeTestApi test_api;
-  RecordingOverlayController* overlay_controller =
-      test_api.GetRecordingOverlayController();
+  AnnotationsOverlayController* overlay_controller =
+      test_api.GetAnnotationsOverlayController();
 
-  auto* projector_controller = ProjectorControllerImpl::Get();
-  projector_controller->EnableAnnotatorTool();
+  auto* annotator_controller = Shell::Get()->annotator_controller();
+  annotator_controller->EnableAnnotatorTool();
   EXPECT_TRUE(overlay_controller->is_enabled());
   auto* overlay_window = overlay_controller->GetOverlayNativeWindow();
 
@@ -5905,20 +5897,20 @@ TEST_F(ProjectorCaptureModeIntegrationTests, RecordingOverlayDockedMagnifier) {
   EXPECT_EQ(root_window_bounds, overlay_window->GetBoundsInRootWindow());
 }
 
-TEST_P(ProjectorCaptureModeIntegrationTests, RecordingOverlayWidgetBounds) {
+TEST_P(ProjectorCaptureModeIntegrationTests, AnnotationsOverlayWidgetBounds) {
   const auto capture_source = GetParam();
   StartRecordingForProjectorFromSource(capture_source);
   CaptureModeTestApi test_api;
-  RecordingOverlayController* overlay_controller =
-      test_api.GetRecordingOverlayController();
+  AnnotationsOverlayController* overlay_controller =
+      test_api.GetAnnotationsOverlayController();
   EXPECT_FALSE(overlay_controller->is_enabled());
   auto* overlay_window = overlay_controller->GetOverlayNativeWindow();
-  VerifyOverlayWindow(overlay_window, capture_source);
+  VerifyOverlayWindow(overlay_window, capture_source, kUserRegion);
 }
 
 // Regression test for https://crbug.com/1322655.
 TEST_P(ProjectorCaptureModeIntegrationTests,
-       RecordingOverlayWidgetBoundsSecondDisplay) {
+       AnnotationsOverlayWidgetBoundsSecondDisplay) {
   UpdateDisplay("800x700,801+0-800x700");
   const gfx::Point point_in_second_display = gfx::Point(1000, 500);
   auto* event_generator = GetEventGenerator();
@@ -5934,11 +5926,11 @@ TEST_P(ProjectorCaptureModeIntegrationTests,
   EXPECT_EQ(roots[1], GetWindowBeingRecorded()->GetRootWindow());
 
   CaptureModeTestApi test_api;
-  RecordingOverlayController* overlay_controller =
-      test_api.GetRecordingOverlayController();
+  AnnotationsOverlayController* overlay_controller =
+      test_api.GetAnnotationsOverlayController();
   EXPECT_FALSE(overlay_controller->is_enabled());
   auto* overlay_window = overlay_controller->GetOverlayNativeWindow();
-  VerifyOverlayWindow(overlay_window, capture_source);
+  VerifyOverlayWindow(overlay_window, capture_source, kUserRegion);
 }
 
 // Tests the projector behavior in the projector-initiated capture mode session
@@ -5980,7 +5972,7 @@ TEST_P(ProjectorCaptureModeIntegrationTests, ProjectorBehavior) {
     EXPECT_FALSE(
         projector_active_behavior->ShouldSkipVideoRecordingCountDown());
     EXPECT_TRUE(
-        projector_active_behavior->ShouldCreateRecordingOverlayController());
+        projector_active_behavior->ShouldCreateAnnotationsOverlayController());
     EXPECT_FALSE(projector_active_behavior->ShouldShowUserNudge());
     EXPECT_TRUE(projector_active_behavior->ShouldAutoSelectFirstCamera());
   };
@@ -5998,170 +5990,12 @@ TEST_P(ProjectorCaptureModeIntegrationTests, ProjectorBehavior) {
   EXPECT_TRUE(GetSettingsButton());
   EXPECT_TRUE(GetCloseButton());
 
-  ProjectorControllerImpl* projector_controller =
-      ProjectorControllerImpl::Get();
-  projector_controller->EnableAnnotatorTool();
+  auto* annotator_controller = Shell::Get()->annotator_controller();
+  annotator_controller->EnableAnnotatorTool();
   PressAndReleaseKey(ui::VKEY_RETURN);
   WaitForRecordingToStart();
   expected_behavior();
   CaptureModeTestApi().StopVideoRecording();
-}
-
-namespace {
-
-// Defines a class that intercepts the events at the post-target handling phase
-// and caches the last event target to which the event was routed.
-class EventTargetCatcher : public ui::EventHandler {
- public:
-  EventTargetCatcher() {
-    Shell::GetPrimaryRootWindow()->AddPostTargetHandler(this);
-  }
-  EventTargetCatcher(const EventTargetCatcher&) = delete;
-  EventTargetCatcher& operator=(const EventTargetCatcher&) = delete;
-  ~EventTargetCatcher() override {
-    Shell::GetPrimaryRootWindow()->RemovePostTargetHandler(this);
-  }
-
-  ui::EventTarget* last_event_target() { return last_event_target_; }
-
-  // ui::EventHandler:
-  void OnEvent(ui::Event* event) override {
-    ui::EventHandler::OnEvent(event);
-    last_event_target_ = event->target();
-  }
-
- private:
-  raw_ptr<ui::EventTarget> last_event_target_ = nullptr;
-};
-
-}  // namespace
-
-TEST_F(ProjectorCaptureModeIntegrationTests, RecordingOverlayWidgetTargeting) {
-  auto* controller = CaptureModeController::Get();
-  controller->SetSource(CaptureModeSource::kFullscreen);
-  StartProjectorModeSession();
-  EXPECT_TRUE(controller->IsActive());
-
-  PressAndReleaseKey(ui::VKEY_RETURN);
-  WaitForRecordingToStart();
-  CaptureModeTestApi test_api;
-  RecordingOverlayController* overlay_controller =
-      test_api.GetRecordingOverlayController();
-
-  auto* projector_controller = ProjectorControllerImpl::Get();
-  projector_controller->EnableAnnotatorTool();
-  EXPECT_TRUE(overlay_controller->is_enabled());
-  auto* overlay_window = overlay_controller->GetOverlayNativeWindow();
-  VerifyOverlayEnabledState(overlay_window, /*overlay_enabled_state=*/true);
-
-  // Open the annotation tray bubble.
-  auto* root_window = Shell::GetPrimaryRootWindow();
-  auto* status_area_widget =
-      RootWindowController::ForWindow(root_window)->GetStatusAreaWidget();
-  ProjectorAnnotationTray* annotations_tray =
-      status_area_widget->projector_annotation_tray();
-  annotations_tray->ShowBubble();
-  EXPECT_TRUE(annotations_tray->GetBubbleView());
-
-  // Clicking anywhere outside the projector shelf pod should be targeted to the
-  // overlay widget window and close the annotation tray bubble.
-  EventTargetCatcher event_target_catcher;
-  auto* event_generator = GetEventGenerator();
-  event_generator->set_current_screen_location(gfx::Point(10, 10));
-  event_generator->ClickLeftButton();
-  EXPECT_EQ(overlay_window, event_target_catcher.last_event_target());
-  EXPECT_FALSE(annotations_tray->GetBubbleView());
-
-  // Now move the mouse over the projector shelf pod, the overlay should not
-  // consume the event, and it should instead go through to that pod.
-  EXPECT_TRUE(annotations_tray->visible_preferred());
-  event_generator->MoveMouseTo(
-      annotations_tray->GetBoundsInScreen().CenterPoint());
-  EXPECT_EQ(annotations_tray->GetWidget()->GetNativeWindow(),
-            event_target_catcher.last_event_target());
-
-  // The overlay status hasn't changed.
-  VerifyOverlayEnabledState(overlay_window, /*overlay_enabled_state=*/true);
-
-  // Now move the mouse and then click on the stop recording button, the overlay
-  // should not consume the event. The video recording should be ended.
-  StopRecordingButtonTray* stop_recording_button =
-      status_area_widget->stop_recording_button_tray();
-  const gfx::Point stop_button_center_point =
-      stop_recording_button->GetBoundsInScreen().CenterPoint();
-  event_generator->MoveMouseTo(stop_button_center_point);
-  event_generator->ClickLeftButton();
-  EXPECT_FALSE(controller->is_recording_in_progress());
-}
-
-// Tests that auto hidden shelf can be brought back if user moves mouse to the
-// shelf activation area even while annotation is active.
-TEST_F(ProjectorCaptureModeIntegrationTests,
-       BringBackAutoHiddenShelfWhileAnnotationIsOn) {
-  auto* root_window = Shell::GetPrimaryRootWindow();
-  // Set `shelf` to always auto-hidden.
-  Shelf* shelf = RootWindowController::ForWindow(root_window)->shelf();
-  shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
-
-  auto* controller = CaptureModeController::Get();
-  controller->SetSource(CaptureModeSource::kFullscreen);
-  StartProjectorModeSession();
-  EXPECT_TRUE(controller->IsActive());
-
-  PressAndReleaseKey(ui::VKEY_RETURN);
-  WaitForRecordingToStart();
-
-  auto* event_generator = GetEventGenerator();
-  auto* projector_controller = ProjectorControllerImpl::Get();
-
-  const gfx::Rect root_window_bounds_in_screen =
-      root_window->GetBoundsInScreen();
-  const int display_width = root_window_bounds_in_screen.width();
-  const int display_height = root_window_bounds_in_screen.height();
-  const gfx::Point display_center = root_window_bounds_in_screen.CenterPoint();
-
-  struct {
-    const std::string scope_trace;
-    const ShelfAlignment shelf_alignment;
-  } kAlignmentTestCases[] = {
-      {"Shelf has botton alignment", ShelfAlignment::kBottom},
-      {"Shelf has left alignment", ShelfAlignment::kLeft},
-      {"Shelf has right alignment", ShelfAlignment::kRight},
-  };
-
-  for (const auto& test_case : kAlignmentTestCases) {
-    SCOPED_TRACE(test_case.scope_trace);
-    // Enable annotation.
-    projector_controller->EnableAnnotatorTool();
-
-    // Verify shelf is invisible right now.
-    EXPECT_FALSE(shelf->IsVisible());
-
-    shelf->SetAlignment(test_case.shelf_alignment);
-    switch (test_case.shelf_alignment) {
-      case ShelfAlignment::kBottom:
-      case ShelfAlignment::kBottomLocked:
-        event_generator->MoveMouseTo(0, display_height);
-        break;
-      case ShelfAlignment::kLeft:
-        event_generator->MoveMouseTo(0, display_height);
-        break;
-      case ShelfAlignment::kRight:
-        event_generator->MoveMouseTo(display_width, display_height);
-        break;
-    }
-    // Verify after mouse is moved on top of the shelf activation area, shelf is
-    // brought back and visible once the animation to show shelf is finished.
-    ShellTestApi().WaitForWindowFinishAnimating(shelf->GetWindow());
-    EXPECT_TRUE(shelf->IsVisible());
-
-    // Disable annotation.
-    projector_controller->ResetTools();
-    // Move mouse to the outside of the shelf activation area, and wait for the
-    // animation to hide shelf to finish.
-    event_generator->MoveMouseTo(display_center);
-    ShellTestApi().WaitForWindowFinishAnimating(shelf->GetWindow());
-  }
 }
 
 // Tests that neither preview notification nor recording in tote is shown if in
@@ -6322,6 +6156,307 @@ TEST_F(ProjectorCaptureModeIntegrationTests,
 
 INSTANTIATE_TEST_SUITE_P(All,
                          ProjectorCaptureModeIntegrationTests,
+                         testing::Values(CaptureModeSource::kFullscreen,
+                                         CaptureModeSource::kRegion,
+                                         CaptureModeSource::kWindow));
+
+class AnnotatorCaptureModeIntegrationTests
+    : public CaptureModeTest,
+      public ::testing::WithParamInterface<CaptureModeSource> {
+ public:
+  AnnotatorCaptureModeIntegrationTests() = default;
+  ~AnnotatorCaptureModeIntegrationTests() override = default;
+
+  static constexpr gfx::Rect kUserRegion{20, 50, 60, 70};
+
+  aura::Window* window() const { return window_.get(); }
+
+  // CaptureModeTest:
+  void SetUp() override {
+    CaptureModeTest::SetUp();
+    annotator_helper_.SetUp();
+    window_ = CreateTestWindow(gfx::Rect(20, 30, 200, 200));
+    CaptureModeController::Get()->SetUserCaptureRegion(kUserRegion,
+                                                       /*by_user=*/true);
+  }
+
+  void TearDown() override {
+    window_.reset();
+    CaptureModeTest::TearDown();
+  }
+
+  void StartRecordingFromSource(CaptureModeSource source) {
+    ash::CaptureModeTestApi test_api;
+
+    switch (source) {
+      case CaptureModeSource::kFullscreen:
+        test_api.StartForFullscreen(/*for_video=*/true);
+        break;
+      case CaptureModeSource::kRegion:
+        test_api.StartForRegion(/*for_video=*/true);
+        break;
+      case CaptureModeSource::kWindow:
+        test_api.StartForWindow(/*for_video=*/true);
+        auto* generator = GetEventGenerator();
+        generator->MoveMouseTo(window_->GetBoundsInScreen().CenterPoint());
+        break;
+    }
+    CaptureModeTestApi().PerformCapture();
+    WaitForRecordingToStart();
+    EXPECT_TRUE(CaptureModeController::Get()->is_recording_in_progress());
+  }
+
+ protected:
+  AnnotatorIntegrationHelper annotator_helper_;
+  std::unique_ptr<aura::Window> window_;
+  base::HistogramTester histogram_tester_;
+};
+
+TEST_F(AnnotatorCaptureModeIntegrationTests, AnnotationsOverlayWidget) {
+  StartRecordingFromSource(CaptureModeSource::kFullscreen);
+
+  PressAndReleaseKey(ui::VKEY_RETURN);
+  WaitForRecordingToStart();
+  CaptureModeTestApi test_api;
+  AnnotationsOverlayController* overlay_controller =
+      test_api.GetAnnotationsOverlayController();
+  EXPECT_FALSE(overlay_controller->is_enabled());
+  auto* overlay_window = overlay_controller->GetOverlayNativeWindow();
+  VerifyOverlayEnabledState(overlay_window, /*overlay_enabled_state=*/false);
+
+  auto* annotator_controller = Shell::Get()->annotator_controller();
+  annotator_controller->EnableAnnotatorTool();
+  EXPECT_TRUE(overlay_controller->is_enabled());
+  VerifyOverlayEnabledState(overlay_window, /*overlay_enabled_state=*/true);
+
+  annotator_controller->ResetTools();
+  EXPECT_FALSE(overlay_controller->is_enabled());
+  VerifyOverlayEnabledState(overlay_window, /*overlay_enabled_state=*/false);
+}
+
+TEST_F(AnnotatorCaptureModeIntegrationTests,
+       AnnotationsOverlayDockedMagnifier) {
+  StartRecordingFromSource(CaptureModeSource::kFullscreen);
+
+  PressAndReleaseKey(ui::VKEY_RETURN);
+  WaitForRecordingToStart();
+  CaptureModeTestApi test_api;
+  AnnotationsOverlayController* overlay_controller =
+      test_api.GetAnnotationsOverlayController();
+
+  auto* annotator_controller = Shell::Get()->annotator_controller();
+  annotator_controller->EnableAnnotatorTool();
+  EXPECT_TRUE(overlay_controller->is_enabled());
+  auto* overlay_window = overlay_controller->GetOverlayNativeWindow();
+
+  // Before the docked magnifier gets enabled, the overlay's bounds should match
+  // the root window's bounds.
+  auto* root_window = overlay_window->GetRootWindow();
+  const gfx::Rect root_window_bounds = root_window->bounds();
+  EXPECT_EQ(root_window_bounds, overlay_window->GetBoundsInRootWindow());
+
+  // Once the magnifier is enabled, the overlay should be pushed down so that
+  // it doesn't cover the magnifier viewport.
+  auto* docked_magnifier = Shell::Get()->docked_magnifier_controller();
+  docked_magnifier->SetEnabled(true);
+  const gfx::Rect expected_bounds = gfx::SubtractRects(
+      root_window_bounds,
+      docked_magnifier->GetTotalMagnifierBoundsForRoot(root_window));
+  EXPECT_EQ(expected_bounds, overlay_window->GetBoundsInRootWindow());
+
+  // It should go back to original bounds once the magnifier is disabled.
+  docked_magnifier->SetEnabled(false);
+  EXPECT_EQ(root_window_bounds, overlay_window->GetBoundsInRootWindow());
+}
+
+namespace {
+
+// Defines a class that intercepts the events at the post-target handling phase
+// and caches the last event target to which the event was routed.
+class EventTargetCatcher : public ui::EventHandler {
+ public:
+  EventTargetCatcher() {
+    Shell::GetPrimaryRootWindow()->AddPostTargetHandler(this);
+  }
+  EventTargetCatcher(const EventTargetCatcher&) = delete;
+  EventTargetCatcher& operator=(const EventTargetCatcher&) = delete;
+  ~EventTargetCatcher() override {
+    Shell::GetPrimaryRootWindow()->RemovePostTargetHandler(this);
+  }
+
+  ui::EventTarget* last_event_target() { return last_event_target_; }
+
+  // ui::EventHandler:
+  void OnEvent(ui::Event* event) override {
+    ui::EventHandler::OnEvent(event);
+    last_event_target_ = event->target();
+  }
+
+ private:
+  raw_ptr<ui::EventTarget> last_event_target_ = nullptr;
+};
+
+}  // namespace
+
+TEST_F(AnnotatorCaptureModeIntegrationTests,
+       AnnotationsOverlayWidgetTargeting) {
+  StartRecordingFromSource(CaptureModeSource::kFullscreen);
+
+  PressAndReleaseKey(ui::VKEY_RETURN);
+  WaitForRecordingToStart();
+  CaptureModeTestApi test_api;
+  AnnotationsOverlayController* overlay_controller =
+      test_api.GetAnnotationsOverlayController();
+
+  auto* annotator_controller = Shell::Get()->annotator_controller();
+  annotator_controller->EnableAnnotatorTool();
+  EXPECT_TRUE(overlay_controller->is_enabled());
+  auto* overlay_window = overlay_controller->GetOverlayNativeWindow();
+  VerifyOverlayEnabledState(overlay_window, /*overlay_enabled_state=*/true);
+
+  // Open the annotation tray bubble.
+  auto* root_window = Shell::GetPrimaryRootWindow();
+  auto* status_area_widget =
+      RootWindowController::ForWindow(root_window)->GetStatusAreaWidget();
+  AnnotationTray* annotations_tray = status_area_widget->annotation_tray();
+  annotations_tray->ShowBubble();
+  EXPECT_TRUE(annotations_tray->GetBubbleView());
+
+  // Clicking anywhere outside the projector shelf pod should be targeted to the
+  // overlay widget window and close the annotation tray bubble.
+  EventTargetCatcher event_target_catcher;
+  auto* event_generator = GetEventGenerator();
+  event_generator->set_current_screen_location(gfx::Point(10, 10));
+  event_generator->ClickLeftButton();
+  EXPECT_EQ(overlay_window, event_target_catcher.last_event_target());
+  EXPECT_FALSE(annotations_tray->GetBubbleView());
+
+  // Now move the mouse over the projector shelf pod, the overlay should not
+  // consume the event, and it should instead go through to that pod.
+  EXPECT_TRUE(annotations_tray->visible_preferred());
+  event_generator->MoveMouseTo(
+      annotations_tray->GetBoundsInScreen().CenterPoint());
+  EXPECT_EQ(annotations_tray->GetWidget()->GetNativeWindow(),
+            event_target_catcher.last_event_target());
+
+  // The overlay status hasn't changed.
+  VerifyOverlayEnabledState(overlay_window, /*overlay_enabled_state=*/true);
+
+  // Now move the mouse and then click on the stop recording button, the overlay
+  // should not consume the event. The video recording should be ended.
+  StopRecordingButtonTray* stop_recording_button =
+      status_area_widget->stop_recording_button_tray();
+  const gfx::Point stop_button_center_point =
+      stop_recording_button->GetBoundsInScreen().CenterPoint();
+  event_generator->MoveMouseTo(stop_button_center_point);
+  event_generator->ClickLeftButton();
+  EXPECT_FALSE(CaptureModeController::Get()->is_recording_in_progress());
+}
+
+// Tests that auto hidden shelf can be brought back if user moves mouse to the
+// shelf activation area even while annotation is active.
+TEST_F(AnnotatorCaptureModeIntegrationTests,
+       BringBackAutoHiddenShelfWhileAnnotationIsOn) {
+  auto* root_window = Shell::GetPrimaryRootWindow();
+  // Set `shelf` to always auto-hidden.
+  Shelf* shelf = RootWindowController::ForWindow(root_window)->shelf();
+  shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
+
+  StartRecordingFromSource(CaptureModeSource::kFullscreen);
+
+  PressAndReleaseKey(ui::VKEY_RETURN);
+  WaitForRecordingToStart();
+
+  auto* event_generator = GetEventGenerator();
+  auto* annotator_controller = Shell::Get()->annotator_controller();
+
+  const gfx::Rect root_window_bounds_in_screen =
+      root_window->GetBoundsInScreen();
+  const int display_width = root_window_bounds_in_screen.width();
+  const int display_height = root_window_bounds_in_screen.height();
+  const gfx::Point display_center = root_window_bounds_in_screen.CenterPoint();
+
+  struct {
+    const std::string scope_trace;
+    const ShelfAlignment shelf_alignment;
+  } kAlignmentTestCases[] = {
+      {"Shelf has botton alignment", ShelfAlignment::kBottom},
+      {"Shelf has left alignment", ShelfAlignment::kLeft},
+      {"Shelf has right alignment", ShelfAlignment::kRight},
+  };
+
+  for (const auto& test_case : kAlignmentTestCases) {
+    SCOPED_TRACE(test_case.scope_trace);
+    // Enable annotation.
+    annotator_controller->EnableAnnotatorTool();
+
+    // Verify shelf is invisible right now.
+    EXPECT_FALSE(shelf->IsVisible());
+
+    shelf->SetAlignment(test_case.shelf_alignment);
+    switch (test_case.shelf_alignment) {
+      case ShelfAlignment::kBottom:
+      case ShelfAlignment::kBottomLocked:
+        event_generator->MoveMouseTo(0, display_height);
+        break;
+      case ShelfAlignment::kLeft:
+        event_generator->MoveMouseTo(0, display_height);
+        break;
+      case ShelfAlignment::kRight:
+        event_generator->MoveMouseTo(display_width, display_height);
+        break;
+    }
+    // Verify after mouse is moved on top of the shelf activation area, shelf is
+    // brought back and visible once the animation to show shelf is finished.
+    ShellTestApi().WaitForWindowFinishAnimating(shelf->GetWindow());
+    EXPECT_TRUE(shelf->IsVisible());
+
+    // Disable annotation.
+    annotator_controller->ResetTools();
+    // Move mouse to the outside of the shelf activation area, and wait for the
+    // animation to hide shelf to finish.
+    event_generator->MoveMouseTo(display_center);
+    ShellTestApi().WaitForWindowFinishAnimating(shelf->GetWindow());
+  }
+}
+
+TEST_P(AnnotatorCaptureModeIntegrationTests, AnnotationsOverlayWidgetBounds) {
+  const auto capture_source = GetParam();
+  StartRecordingFromSource(capture_source);
+  CaptureModeTestApi test_api;
+  AnnotationsOverlayController* overlay_controller =
+      test_api.GetAnnotationsOverlayController();
+  EXPECT_FALSE(overlay_controller->is_enabled());
+  auto* overlay_window = overlay_controller->GetOverlayNativeWindow();
+  VerifyOverlayWindow(overlay_window, capture_source, kUserRegion);
+}
+
+TEST_P(AnnotatorCaptureModeIntegrationTests,
+       AnnotationsOverlayWidgetBoundsSecondDisplay) {
+  UpdateDisplay("800x700,801+0-800x700");
+  const gfx::Point point_in_second_display = gfx::Point(1000, 500);
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(point_in_second_display);
+  window()->SetBoundsInScreen(
+      gfx::Rect(900, 0, 600, 500),
+      display::Screen::GetScreen()->GetDisplayNearestWindow(
+          Shell::GetAllRootWindows()[1]));
+
+  const auto capture_source = GetParam();
+  StartRecordingFromSource(capture_source);
+  const auto roots = Shell::GetAllRootWindows();
+  EXPECT_EQ(roots[1], GetWindowBeingRecorded()->GetRootWindow());
+
+  CaptureModeTestApi test_api;
+  AnnotationsOverlayController* overlay_controller =
+      test_api.GetAnnotationsOverlayController();
+  EXPECT_FALSE(overlay_controller->is_enabled());
+  auto* overlay_window = overlay_controller->GetOverlayNativeWindow();
+  VerifyOverlayWindow(overlay_window, capture_source, kUserRegion);
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         AnnotatorCaptureModeIntegrationTests,
                          testing::Values(CaptureModeSource::kFullscreen,
                                          CaptureModeSource::kRegion,
                                          CaptureModeSource::kWindow));
@@ -6837,6 +6972,35 @@ TEST_F(CaptureModeSettingsTest, DeleteCustomFolderFromDialog) {
   EXPECT_FALSE(save_to_menu_group->IsOptionChecked(kCustomFolder));
   EXPECT_FALSE(custom_folder_view->GetEnabled());
   EXPECT_TRUE(save_to_menu_group->IsOptionChecked(kDownloadsFolder));
+}
+
+TEST_F(CaptureModeSettingsTest, AccessibleCheckedStateChange) {
+  // Start a new session with a pre-configured custom folder.
+  ui::AXNodeData data;
+  auto* controller = CaptureModeController::Get();
+  const base::FilePath custom_folder(
+      CreateCustomFolderInUserDownloadsPath("test"));
+  controller->SetCustomCaptureFolder(custom_folder);
+  StartImageRegionCapture();
+  auto* event_generator = GetEventGenerator();
+  ClickOnView(GetSettingsButton(), event_generator);
+  WaitForSettingsMenuToBeRefreshed();
+
+  CaptureModeSettingsTestApi test_api;
+  CaptureModeMenuGroup* save_to_menu_group = test_api.GetSaveToMenuGroup();
+
+  auto* checked_custom_folder_view =
+      save_to_menu_group->SetOptionCheckedForTesting(kCustomFolder, true);
+  checked_custom_folder_view->GetViewAccessibility().GetAccessibleNodeData(
+      &data);
+  EXPECT_EQ(data.GetCheckedState(), ax::mojom::CheckedState::kTrue);
+
+  data = ui::AXNodeData();
+  auto* unchecked_custom_folder_view =
+      save_to_menu_group->SetOptionCheckedForTesting(kCustomFolder, false);
+  unchecked_custom_folder_view->GetViewAccessibility().GetAccessibleNodeData(
+      &data);
+  EXPECT_EQ(data.GetCheckedState(), ax::mojom::CheckedState::kFalse);
 }
 
 TEST_F(CaptureModeSettingsTest, AcceptDefaultDownloadsFolderFromDialog) {

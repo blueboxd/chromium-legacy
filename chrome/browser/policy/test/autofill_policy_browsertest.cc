@@ -62,7 +62,7 @@ class AutofillPolicyTest : public PolicyTest {
   }
 
   autofill::PersonalDataManager* personal_data_manager() {
-    return autofill::PersonalDataManagerFactory::GetForProfile(
+    return autofill::PersonalDataManagerFactory::GetForBrowserContext(
         browser()->profile());
   }
 
@@ -123,13 +123,13 @@ class AutofillPolicyTest : public PolicyTest {
     // policy.
     void OnAskForValuesToFill(
         const autofill::FormData& form,
-        const autofill::FormFieldData& field,
+        const autofill::FieldGlobalId& field_id,
         const gfx::Rect& caret_bounds,
         autofill::AutofillSuggestionTriggerSource trigger_source) override {
       autofill::TestAutofillManagerWaiter waiter(
           *this, {autofill::AutofillManagerEvent::kAskForValuesToFill});
-      autofill::AutofillManager::OnAskForValuesToFill(form, field, caret_bounds,
-                                                      trigger_source);
+      autofill::AutofillManager::OnAskForValuesToFill(
+          form, field_id, caret_bounds, trigger_source);
       ASSERT_TRUE(waiter.Wait());
       if (run_loop_) {
         run_loop_->Quit();

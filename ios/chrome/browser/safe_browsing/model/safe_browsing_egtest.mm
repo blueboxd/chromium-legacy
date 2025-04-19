@@ -7,12 +7,15 @@
 #import "base/strings/string_util.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#import "components/safe_browsing/core/common/features.h"
 #import "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #import "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/bookmarks/model/bookmark_model_type.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey_ui.h"
+#import "ios/chrome/browser/bookmarks/model/bookmark_storage_type.h"
+#import "ios/chrome/browser/bookmarks/ui_bundled/bookmark_earl_grey.h"
+#import "ios/chrome/browser/bookmarks/ui_bundled/bookmark_earl_grey_ui.h"
+#import "ios/chrome/browser/ui/infobars/banners/infobar_banner_constants.h"
 #import "ios/chrome/browser/ui/settings/privacy/privacy_constants.h"
+#import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
@@ -55,6 +58,15 @@ std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
   http_response->set_content_type("text/html");
   return http_response;
 }
+
+// Earl Grey matcher for the Enhanced Safe Browsing Infobar.
+id<GREYMatcher> EnhancedSafeBrowsingInfobarButtonMatcher() {
+  NSString* buttonLabel = l10n_util::GetNSString(
+      IDS_IOS_SAFE_BROWSING_ENHANCED_PROTECTION_INFOBAR_BUTTON_TEXT);
+  return grey_allOf(grey_accessibilityID(kInfobarBannerAcceptButtonIdentifier),
+                    grey_accessibilityLabel(buttonLabel), nil);
+}
+
 }  // namespace
 
 // Tests Safe Browsing URL blocking.
@@ -439,6 +451,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
 // Tests enabling Enhanced Protection from a Standard Protection state (Default
 // state) from the interstitial blocking page.
 - (void)testDisableAndEnableEnhancedSafeBrowsing {
+  BOOL isInfobarEnabled = [ChromeEarlGrey isEnhancedSafeBrowsingInfobarEnabled];
   // Disable Enhanced Safe Browsing and verify that a dark red box prompting to
   // turn on Enhanced Protection is visible.
   [ChromeEarlGrey setBoolValue:NO forUserPref:prefs::kSafeBrowsingEnhanced];
@@ -448,7 +461,12 @@ std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
   [ChromeEarlGrey loadURL:_safeURL1];
   [ChromeEarlGrey waitForWebStateContainingText:_safeContent1];
   [ChromeEarlGrey loadURL:_phishingURL];
-  [ChromeEarlGrey waitForWebStateContainingElement:enhancedSafeBrowsingMessage];
+  if (isInfobarEnabled) {
+    [ChromeEarlGrey waitForMatcher:EnhancedSafeBrowsingInfobarButtonMatcher()];
+  } else {
+    [ChromeEarlGrey
+        waitForWebStateContainingElement:enhancedSafeBrowsingMessage];
+  }
 
   // Re-enable Enhanced Safe Browsing and verify that a dark red box prompting
   // to turn on Enhanced Protection is not visible.
@@ -458,11 +476,17 @@ std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
   [ChromeEarlGrey loadURL:_realTimePhishingURL];
   [ChromeEarlGrey waitForWebStateContainingText:l10n_util::GetStringUTF8(
                                                     IDS_SAFEBROWSING_HEADING)];
-  [ChromeEarlGrey
-      waitForWebStateNotContainingElement:enhancedSafeBrowsingMessage];
+  if (isInfobarEnabled) {
+    [ChromeEarlGrey waitForUIElementToDisappearWithMatcher:
+                        EnhancedSafeBrowsingInfobarButtonMatcher()];
+  } else {
+    [ChromeEarlGrey
+        waitForWebStateNotContainingElement:enhancedSafeBrowsingMessage];
+  }
 }
 
 - (void)testEnhancedSafeBrowsingLink {
+  BOOL isInfobarEnabled = [ChromeEarlGrey isEnhancedSafeBrowsingInfobarEnabled];
   // Disable Enhanced Safe Browsing and verify that a dark red box prompting to
   // turn on Enhanced Protection is visible.
   [ChromeEarlGrey setBoolValue:NO forUserPref:prefs::kSafeBrowsingEnhanced];
@@ -472,8 +496,15 @@ std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
   [ChromeEarlGrey loadURL:_safeURL1];
   [ChromeEarlGrey waitForWebStateContainingText:_safeContent1];
   [ChromeEarlGrey loadURL:_phishingURL];
-  [ChromeEarlGrey waitForWebStateContainingElement:enhancedSafeBrowsingMessage];
-  [ChromeEarlGrey tapWebStateElementWithID:@"enhanced-protection-link"];
+  if (isInfobarEnabled) {
+    [[EarlGrey
+        selectElementWithMatcher:EnhancedSafeBrowsingInfobarButtonMatcher()]
+        performAction:grey_tap()];
+  } else {
+    [ChromeEarlGrey
+        waitForWebStateContainingElement:enhancedSafeBrowsingMessage];
+    [ChromeEarlGrey tapWebStateElementWithID:@"enhanced-protection-link"];
+  }
 
   [[EarlGrey
       selectElementWithMatcher:
@@ -489,8 +520,13 @@ std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
   [ChromeEarlGrey loadURL:_phishingURL];
   [ChromeEarlGrey waitForWebStateContainingText:l10n_util::GetStringUTF8(
                                                     IDS_SAFEBROWSING_HEADING)];
-  [ChromeEarlGrey
-      waitForWebStateNotContainingElement:enhancedSafeBrowsingMessage];
+  if (isInfobarEnabled) {
+    [ChromeEarlGrey waitForUIElementToDisappearWithMatcher:
+                        EnhancedSafeBrowsingInfobarButtonMatcher()];
+  } else {
+    [ChromeEarlGrey
+        waitForWebStateNotContainingElement:enhancedSafeBrowsingMessage];
+  }
 }
 
 // Tests displaying a warning for an unsafe page in incognito mode, and
@@ -709,30 +745,6 @@ std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
   [ChromeEarlGrey waitForWebStateContainingText:_realTimePhishingContent];
 }
 
-// Tests that a page identified as unsafe by real-time Safe Browsing is blocked
-// when loaded as part of session restoration.
-// TODO(crbug.com/41489568):  Test is flaky. Re-enable the test.
-- (void)DISABLED_testRestoreRealTimeWarning {
-  // Opt-in to real-time checks.
-  [ChromeEarlGrey setURLKeyedAnonymizedDataCollectionEnabled:YES];
-
-  // Visit two safe pages, followed by an unsafe page.
-  [ChromeEarlGrey loadURL:_safeURL1];
-  [ChromeEarlGrey waitForWebStateContainingText:_safeContent1];
-  [ChromeEarlGrey loadURL:_safeURL2];
-  [ChromeEarlGrey waitForWebStateContainingText:_safeContent2];
-  [ChromeEarlGrey loadURL:_realTimePhishingURL];
-
-  // Verify that a warning is shown for the unsafe page.
-  [ChromeEarlGrey waitForWebStateContainingText:l10n_util::GetStringUTF8(
-                                                    IDS_SAFEBROWSING_HEADING)];
-
-  // Perform session restoration, and verify that a warning is still shown.
-  [self triggerRestoreByRestartingApplication];
-  [ChromeEarlGrey waitForWebStateContainingText:l10n_util::GetStringUTF8(
-                                                    IDS_SAFEBROWSING_HEADING)];
-}
-
 // Tests that when a page identified as unsafe by real-time Safe Browsing is
 // loaded using a bookmark, a warning is shown.
 - (void)testRealTimeWarningForBookmark {
@@ -740,7 +752,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
   [BookmarkEarlGrey
       addBookmarkWithTitle:phishingTitle
                        URL:base::SysUTF8ToNSString(_realTimePhishingURL.spec())
-                 inStorage:BookmarkModelType::kLocalOrSyncable];
+                 inStorage:BookmarkStorageType::kLocalOrSyncable];
   // Opt-in to real-time checks.
   [ChromeEarlGrey setURLKeyedAnonymizedDataCollectionEnabled:YES];
 

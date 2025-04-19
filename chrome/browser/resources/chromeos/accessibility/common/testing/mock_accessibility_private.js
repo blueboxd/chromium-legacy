@@ -115,6 +115,9 @@ class MockAccessibilityPrivate {
     /** @private {?FaceGazeAssets} */
     this.faceGazeAssets_ = null;
 
+    /** @private {function<boolean>} */
+    this.faceGazeGestureInfoToggleListener_ = null;
+
     /**
      * @private {function(!chrome.accessibilityPrivate.SelectToSpeakPanelAction,
      *     number=)}
@@ -206,6 +209,11 @@ class MockAccessibilityPrivate {
       removeListener: listener => {},
     };
 
+    this.onChromeVoxFocusChanged = {
+      addListener: listener => {},
+      removeListener: listener => {},
+    };
+
     this.onSelectToSpeakFocusChanged = {
       addListener: listener => {},
       removeListener: listener => {},
@@ -249,6 +257,26 @@ class MockAccessibilityPrivate {
        */
       addListener: listener => {
         this.selectToSpeakStateChangeListener_ = listener;
+      },
+    };
+
+    this.onToggleGestureInfoForSettings = {
+      /**
+       * Adds a listener to onToggleGestureInfoForSettings.
+       * @param {function<boolean>} listener
+       */
+      addListener: listener => {
+        this.faceGazeGestureInfoToggleListener_ = listener;
+      },
+
+      /**
+       * Removes the listener.
+       * @param {function<boolean>} listener
+       */
+      removeListener: listener => {
+        if (this.faceGazeGestureInfoToggleListener_ === listener) {
+          this.faceGazeGestureInfoToggleListener_ = null;
+        }
       },
     };
   }
@@ -351,6 +379,11 @@ class MockAccessibilityPrivate {
   /** @return {?FaceGazeAssets} */
   installFaceGazeAssets(callback) {
     callback(this.faceGazeAssets_);
+  }
+
+  /** Called in order to toggle FaceGaze gesture info for settings. */
+  toggleGestureInfoForSettings(enabled) {
+    this.callOnToggleGestureInfoForSettings(enabled);
   }
 
   /** @param {!chrome.accessibilityPrivate.ScreenPoint} point */
@@ -511,6 +544,18 @@ class MockAccessibilityPrivate {
     return this.dictationBubbleProps_;
   }
 
+  /**
+   * Simulates toggling gesture info for FaceGaze Settings from
+   * AccessibilityManager, which occurs when the user activates or deactivates
+   * the page for FaceGaze gesture configuration settings.
+   * @param {boolean} activated
+   */
+  callOnToggleGestureInfoForSettings(enabled) {
+    if (this.faceGazeGestureInfoToggleListener_) {
+      this.faceGazeGestureInfoToggleListener_(enabled);
+    }
+  }
+
   /** Simulates silencing ChromeVox */
   silenceSpokenFeedback() {
     this.spokenFeedbackSilenceCount_++;
@@ -643,4 +688,12 @@ class MockAccessibilityPrivate {
         await getFileBytes(`${mediapipeDir}/vision_wasm_internal.wasm`);
     this.faceGazeAssets_ = assets;
   }
+
+  /**
+   * @param {string} title
+   * @param {string} description
+   * @param {?string|undefined} cancelName
+   * @param {function(boolean): void} callback
+   */
+  showConfirmationDialog(title, description, cancelName, callback) {}
 }

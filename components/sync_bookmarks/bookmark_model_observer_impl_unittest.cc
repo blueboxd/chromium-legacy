@@ -2,9 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "components/sync_bookmarks/bookmark_model_observer_impl.h"
 
 #include <algorithm>
+#include <array>
 #include <list>
 #include <map>
 #include <memory>
@@ -23,9 +29,9 @@
 #include "components/sync/base/time.h"
 #include "components/sync/base/unique_position.h"
 #include "components/sync/protocol/bookmark_specifics.pb.h"
+#include "components/sync/protocol/data_type_state.pb.h"
 #include "components/sync/protocol/entity_metadata.pb.h"
 #include "components/sync/protocol/entity_specifics.pb.h"
-#include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync_bookmarks/bookmark_model_view.h"
 #include "components/sync_bookmarks/bookmark_specifics_conversions.h"
 #include "components/sync_bookmarks/synced_bookmark_tracker.h"
@@ -102,12 +108,10 @@ class TestBookmarkClientWithUndo : public bookmarks::TestBookmarkClient {
 
   // BookmarkClient overrides.
   void OnBookmarkNodeRemovedUndoable(
-      bookmarks::BookmarkModel* model,
       const bookmarks::BookmarkNode* parent,
       size_t index,
       std::unique_ptr<bookmarks::BookmarkNode> node) override {
-    undo_service_->AddUndoEntryForRemovedNode(model, parent, index,
-                                              std::move(node));
+    undo_service_->AddUndoEntryForRemovedNode(parent, index, std::move(node));
   }
 
  private:
@@ -119,7 +123,7 @@ class BookmarkModelObserverImplTest
  public:
   BookmarkModelObserverImplTest()
       : bookmark_tracker_(
-            SyncedBookmarkTracker::CreateEmpty(sync_pb::ModelTypeState())),
+            SyncedBookmarkTracker::CreateEmpty(sync_pb::DataTypeState())),
         bookmark_model_(
             GetParam(),
             std::make_unique<TestBookmarkClientWithUndo>(&undo_service_)),
@@ -199,7 +203,7 @@ class BookmarkModelObserverImplTest
 
  private:
   base::test::ScopedFeatureList features_{
-      syncer::kEnableBookmarkFoldersForAccountStorage};
+      syncer::kSyncEnableBookmarksInTransportMode};
   NiceMock<base::MockCallback<base::RepeatingClosure>>
       nudge_for_commit_closure_;
   std::unique_ptr<SyncedBookmarkTracker> bookmark_tracker_;
@@ -335,7 +339,7 @@ TEST_P(BookmarkModelObserverImplTest,
 
   // Build a tracker that already tracks all nodes.
   std::unique_ptr<SyncedBookmarkTracker> bookmark_tracker =
-      SyncedBookmarkTracker::CreateEmpty(sync_pb::ModelTypeState());
+      SyncedBookmarkTracker::CreateEmpty(sync_pb::DataTypeState());
   AddPermanentFoldersToTracker(&model, bookmark_tracker.get());
   bookmark_tracker->Add(
       /*bookmark_node=*/folder_node,
@@ -396,7 +400,7 @@ TEST_P(BookmarkModelObserverImplTest,
 
   // Build a tracker that already tracks all nodes.
   std::unique_ptr<SyncedBookmarkTracker> bookmark_tracker =
-      SyncedBookmarkTracker::CreateEmpty(sync_pb::ModelTypeState());
+      SyncedBookmarkTracker::CreateEmpty(sync_pb::DataTypeState());
   AddPermanentFoldersToTracker(&model, bookmark_tracker.get());
 
   BookmarkModelObserverImpl observer(
@@ -464,7 +468,7 @@ TEST_P(BookmarkModelObserverImplTest,
   // Build a tracker that already tracks all syncable nodes (i.e. permanent
   // nodes only).
   std::unique_ptr<SyncedBookmarkTracker> bookmark_tracker =
-      SyncedBookmarkTracker::CreateEmpty(sync_pb::ModelTypeState());
+      SyncedBookmarkTracker::CreateEmpty(sync_pb::DataTypeState());
   AddPermanentFoldersToTracker(&model, bookmark_tracker.get());
 
   BookmarkModelObserverImpl observer(
@@ -892,7 +896,7 @@ TEST_P(BookmarkModelObserverImplTest, ShouldNotSyncUnsyncableBookmarks) {
   model.EnsurePermanentNodesExist();
 
   std::unique_ptr<SyncedBookmarkTracker> bookmark_tracker =
-      SyncedBookmarkTracker::CreateEmpty(sync_pb::ModelTypeState());
+      SyncedBookmarkTracker::CreateEmpty(sync_pb::DataTypeState());
   AddPermanentFoldersToTracker(&model, bookmark_tracker.get());
 
   BookmarkModelObserverImpl observer(
@@ -929,7 +933,7 @@ TEST_P(BookmarkModelObserverImplTest, ShouldNotSyncUnsyncableBookmarks) {
 
 TEST_P(BookmarkModelObserverImplTest, ShouldAddChildrenInArbitraryOrder) {
   std::unique_ptr<SyncedBookmarkTracker> bookmark_tracker =
-      SyncedBookmarkTracker::CreateEmpty(sync_pb::ModelTypeState());
+      SyncedBookmarkTracker::CreateEmpty(sync_pb::DataTypeState());
   AddPermanentFoldersToTracker(bookmark_model(), bookmark_tracker.get());
 
   BookmarkModelObserverImpl observer(
@@ -950,7 +954,7 @@ TEST_P(BookmarkModelObserverImplTest, ShouldAddChildrenInArbitraryOrder) {
   //  |- folder3
   //  |- folder4
 
-  const bookmarks::BookmarkNode* nodes[5];
+  std::array<const bookmarks::BookmarkNode*, 5> nodes;
   for (size_t i = 0; i < 5; i++) {
     nodes[i] = bookmark_model()->AddFolder(
         /*parent=*/bookmark_bar_node, /*index=*/i,
@@ -977,7 +981,7 @@ TEST_P(BookmarkModelObserverImplTest, ShouldAddChildrenInArbitraryOrder) {
 TEST_P(BookmarkModelObserverImplTest,
        ShouldCallOnBookmarkModelBeingDeletedClosure) {
   std::unique_ptr<SyncedBookmarkTracker> bookmark_tracker =
-      SyncedBookmarkTracker::CreateEmpty(sync_pb::ModelTypeState());
+      SyncedBookmarkTracker::CreateEmpty(sync_pb::DataTypeState());
 
   NiceMock<base::MockCallback<base::OnceClosure>>
       on_bookmark_model_being_deleted_closure_mock;

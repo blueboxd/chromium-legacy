@@ -30,6 +30,7 @@
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets_f.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/layout/table_layout.h"
@@ -66,7 +67,7 @@ constexpr float kEventsPresentRoundedRadius = 1.f;
 // The gap padding between the date and the indicator.
 constexpr int kGapBetweenDateAndIndicator = 1;
 
-// For GlanceablesV2: the insets within the date cell.
+// The insets within the date cell.
 constexpr int kDateCellVerticalPaddingGlanceables = 10;
 constexpr auto kDateCellInsetsGlanceables =
     gfx::Insets::VH(kDateCellVerticalPaddingGlanceables, 16);
@@ -115,9 +116,10 @@ CalendarDateCellView::CalendarDateCellView(
       time_difference_(time_difference),
       calendar_view_controller_(calendar_view_controller) {
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
-  SetBorder(views::CreateEmptyBorder(calendar_utils::IsForGlanceablesV2()
-                                         ? kDateCellInsetsGlanceables
-                                         : calendar_utils::kDateCellInsets));
+  SetBorder(views::CreateEmptyBorder(
+      features::AreAnyGlanceablesTimeManagementViewsEnabled()
+          ? kDateCellInsetsGlanceables
+          : calendar_utils::kDateCellInsets));
   label()->SetElideBehavior(gfx::NO_ELIDE);
   label()->SetSubpixelRenderingEnabled(false);
   if (is_today_) {
@@ -172,7 +174,8 @@ void CalendarDateCellView::OnPaintBackground(gfx::Canvas* canvas) {
   highlight_border.setStyle(cc::PaintFlags::kStroke_Style);
   highlight_border.setStrokeWidth(kBorderLineThickness);
 
-  const bool is_for_glanceables = calendar_utils::IsForGlanceablesV2();
+  const bool is_for_glanceables =
+      features::AreAnyGlanceablesTimeManagementViewsEnabled();
   if (is_today_) {
     gfx::RectF background_rect(local_bounds);
 
@@ -237,7 +240,7 @@ void CalendarDateCellView::OnSelectedDateUpdated() {
     is_selected_ = is_selected;
     SchedulePaint();
     if (!is_selected_) {
-      SetAccessibleName(tool_tip_);
+      GetViewAccessibility().SetName(tool_tip_);
       return;
     }
     // Sets accessible label. E.g. Calendar, week of July 16th 2021, [selected
@@ -248,7 +251,7 @@ void CalendarDateCellView::OnSelectedDateUpdated() {
     base::Time first_day_of_week =
         date_ - base::Days(date_exploded.day_of_week);
 
-    SetAccessibleName(l10n_util::GetStringFUTF16(
+    GetViewAccessibility().SetName(l10n_util::GetStringFUTF16(
         IDS_ASH_CALENDAR_SELECTED_DATE_CELL_ACCESSIBLE_DESCRIPTION,
         calendar_utils::GetMonthDayYear(first_day_of_week),
         calendar_utils::GetDayOfMonth(date_)));
@@ -294,7 +297,7 @@ void CalendarDateCellView::SetTooltipAndAccessibleName() {
     }
   }
   SetTooltipText(tool_tip_);
-  SetAccessibleName(tool_tip_);
+  GetViewAccessibility().SetName(tool_tip_);
 }
 
 void CalendarDateCellView::UpdateFetchStatus(bool is_fetched) {
@@ -336,7 +339,7 @@ void CalendarDateCellView::UpdateFetchStatus(bool is_fetched) {
 }
 
 void CalendarDateCellView::SetFirstOnFocusedAccessibilityLabel() {
-  SetAccessibleName(l10n_util::GetStringFUTF16(
+  GetViewAccessibility().SetName(l10n_util::GetStringFUTF16(
       IDS_ASH_CALENDAR_DATE_CELL_ON_FOCUS_ACCESSIBLE_DESCRIPTION, tool_tip_));
 }
 
@@ -369,9 +372,10 @@ void CalendarDateCellView::OnDateCellActivated(const ui::Event& event) {
 gfx::Point CalendarDateCellView::GetEventsPresentIndicatorCenterPosition() {
   const gfx::Rect content = GetContentsBounds();
   const int horizontal_padding = calendar_utils::kDateHorizontalPadding;
-  const int vertical_padding = calendar_utils::IsForGlanceablesV2()
-                                   ? kDateCellVerticalPaddingGlanceables
-                                   : calendar_utils::kDateVerticalPadding;
+  const int vertical_padding =
+      features::AreAnyGlanceablesTimeManagementViewsEnabled()
+          ? kDateCellVerticalPaddingGlanceables
+          : calendar_utils::kDateVerticalPadding;
   return gfx::Point(
       (content.width() + horizontal_padding * 2) / 2,
       content.height() + vertical_padding + kGapBetweenDateAndIndicator);
@@ -471,7 +475,7 @@ CalendarMonthView::CalendarMonthView(
                   current_date_exploded);
     ++safe_index;
     if (safe_index == calendar_utils::kDateInOneWeek) {
-      DUMP_WILL_BE_NOTREACHED_NORETURN()
+      DUMP_WILL_BE_NOTREACHED()
           << "Should not render more than 7 days as the grayed out cells.";
       break;
     }

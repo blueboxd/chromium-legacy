@@ -28,6 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection.h"
 
 #include <algorithm>
@@ -40,6 +45,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
@@ -132,6 +138,7 @@
 #include "third_party/webrtc/api/dtls_transport_interface.h"
 #include "third_party/webrtc/api/jsep.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
+#include "third_party/webrtc/api/priority.h"
 #include "third_party/webrtc/rtc_base/ssl_identity.h"
 
 namespace blink {
@@ -581,8 +588,25 @@ RTCPeerConnection::RTCPeerConnection(
       peer_handler_unregistered_(true),
       closed_(true),
       suppress_events_(true),
-      encoded_insertable_streams_(encoded_insertable_streams) {
+      encoded_insertable_streams_(encoded_insertable_streams),
+      rtp_transport_(RuntimeEnabledFeatures::RTCRtpTransportEnabled(context)
+                         ? MakeGarbageCollected<RTCRtpTransport>(context)
+                         : nullptr) {
   LocalDOMWindow* window = To<LocalDOMWindow>(context);
+
+  // WebRTC peer connections are not allowed in fenced frames.
+  // Given the complex scaffolding for setting up fenced frames testing, this
+  // is tested in the following locations:
+  // * third_party/blink/web_tests/external/wpt/fenced-frame/webrtc-peer-connection.https.html
+  // * content/browser/fenced_frame/fenced_frame_browsertest.cc
+  if (RuntimeEnabledFeatures::
+          FencedFramesLocalUnpartitionedDataAccessEnabled() &&
+      window->GetFrame()->IsInFencedFrameTree()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotAllowedError,
+        "RTCPeerConnection is not allowed in fenced frames.");
+    return;
+  }
 
   InstanceCounters::IncrementCounter(
       InstanceCounters::kRTCPeerConnectionCounter);
@@ -617,7 +641,7 @@ RTCPeerConnection::RTCPeerConnection(
   auto* web_frame =
       static_cast<WebLocalFrame*>(WebFrame::FromCoreFrame(window->GetFrame()));
   if (!peer_handler_->Initialize(context, configuration, web_frame,
-                                 exception_state)) {
+                                 exception_state, rtp_transport_)) {
     DCHECK(exception_state.HadException());
     return;
   }
@@ -1815,7 +1839,7 @@ void RTCPeerConnection::removeTrack(RTCRtpSender* sender,
   DCHECK(sender);
   if (ThrowExceptionIfSignalingStateClosed(signaling_state_, &exception_state))
     return;
-  auto* it = FindSender(*sender->web_sender());
+  auto it = FindSender(*sender->web_sender());
   if (it == rtp_senders_.end()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidAccessError,
@@ -1869,6 +1893,23 @@ RTCDataChannel* RTCPeerConnection::createDataChannel(
   init.negotiated = data_channel_dict->negotiated();
   if (data_channel_dict->hasId())
     init.id = data_channel_dict->id();
+  if (data_channel_dict->hasPriority()) {
+    init.priority = [&] {
+      if (data_channel_dict->priority() == "very-low") {
+        return webrtc::PriorityValue(webrtc::Priority::kVeryLow);
+      }
+      if (data_channel_dict->priority() == "low") {
+        return webrtc::PriorityValue(webrtc::Priority::kLow);
+      }
+      if (data_channel_dict->priority() == "medium") {
+        return webrtc::PriorityValue(webrtc::Priority::kMedium);
+      }
+      if (data_channel_dict->priority() == "high") {
+        return webrtc::PriorityValue(webrtc::Priority::kHigh);
+      }
+      NOTREACHED_NORETURN();
+    }();
+  }
   // Checks from WebRTC specification section 6.1
   // If [[DataChannelLabel]] is longer than 65535 bytes, throw a
   // TypeError.
@@ -1912,7 +1953,7 @@ RTCDataChannel* RTCPeerConnection::createDataChannel(
     return nullptr;
   }
   auto* channel = MakeGarbageCollected<RTCDataChannel>(
-      GetExecutionContext(), std::move(webrtc_channel), peer_handler_.get());
+      GetExecutionContext(), std::move(webrtc_channel));
 
   return channel;
 }
@@ -1942,30 +1983,25 @@ RTCRtpSender* RTCPeerConnection::FindSenderForTrackAndStream(
 
 HeapVector<Member<RTCRtpSender>>::iterator RTCPeerConnection::FindSender(
     const RTCRtpSenderPlatform& web_sender) {
-  for (auto* it = rtp_senders_.begin(); it != rtp_senders_.end(); ++it) {
-    if ((*it)->web_sender()->Id() == web_sender.Id())
-      return it;
-  }
-  return rtp_senders_.end();
+  return base::ranges::find_if(rtp_senders_, [&](const auto& sender) {
+    return sender->web_sender()->Id() == web_sender.Id();
+  });
 }
 
 HeapVector<Member<RTCRtpReceiver>>::iterator RTCPeerConnection::FindReceiver(
     const RTCRtpReceiverPlatform& platform_receiver) {
-  for (auto* it = rtp_receivers_.begin(); it != rtp_receivers_.end(); ++it) {
-    if ((*it)->platform_receiver()->Id() == platform_receiver.Id())
-      return it;
-  }
-  return rtp_receivers_.end();
+  return base::ranges::find_if(rtp_receivers_, [&](const auto& receiver) {
+    return receiver->platform_receiver()->Id() == platform_receiver.Id();
+  });
 }
 
 HeapVector<Member<RTCRtpTransceiver>>::iterator
 RTCPeerConnection::FindTransceiver(
     const RTCRtpTransceiverPlatform& platform_transceiver) {
-  for (auto* it = transceivers_.begin(); it != transceivers_.end(); ++it) {
-    if ((*it)->platform_transceiver()->Id() == platform_transceiver.Id())
-      return it;
-  }
-  return transceivers_.end();
+  return base::ranges::find_if(transceivers_, [&](const auto& transceiver) {
+    return transceiver->platform_transceiver()->Id() ==
+           platform_transceiver.Id();
+  });
 }
 
 RTCRtpSender* RTCPeerConnection::CreateOrUpdateSender(
@@ -1982,7 +2018,7 @@ RTCRtpSender* RTCPeerConnection::CreateOrUpdateSender(
 
   // Create or update sender. If the web sender has stream IDs the sender's
   // streams need to be set separately outside of this method.
-  auto* sender_it = FindSender(*rtp_sender_platform);
+  auto sender_it = FindSender(*rtp_sender_platform);
   RTCRtpSender* sender;
   if (sender_it == rtp_senders_.end()) {
     // Create new sender (with empty stream set).
@@ -2005,7 +2041,7 @@ RTCRtpSender* RTCPeerConnection::CreateOrUpdateSender(
 
 RTCRtpReceiver* RTCPeerConnection::CreateOrUpdateReceiver(
     std::unique_ptr<RTCRtpReceiverPlatform> platform_receiver) {
-  auto* receiver_it = FindReceiver(*platform_receiver);
+  auto receiver_it = FindReceiver(*platform_receiver);
   // Create track.
   MediaStreamTrack* track;
   if (receiver_it == rtp_receivers_.end()) {
@@ -2057,7 +2093,7 @@ RTCRtpTransceiver* RTCPeerConnection::CreateOrUpdateTransceiver(
       CreateOrUpdateReceiver(platform_transceiver->Receiver());
 
   RTCRtpTransceiver* transceiver;
-  auto* transceiver_it = FindTransceiver(*platform_transceiver);
+  auto transceiver_it = FindTransceiver(*platform_transceiver);
   if (transceiver_it == transceivers_.end()) {
     // Create new tranceiver.
     transceiver = MakeGarbageCollected<RTCRtpTransceiver>(
@@ -2279,7 +2315,7 @@ void RTCPeerConnection::DidModifyTransceivers(
   // Remove transceivers and update their states to reflect that they are
   // necessarily stopped.
   for (auto id : removed_transceiver_ids) {
-    for (auto* it = transceivers_.begin(); it != transceivers_.end(); ++it) {
+    for (auto it = transceivers_.begin(); it != transceivers_.end(); ++it) {
       if ((*it)->platform_transceiver()->Id() == id) {
         // All streams are removed on stop, update `remove_list` if necessary.
         auto* track = (*it)->receiver()->track();
@@ -2295,7 +2331,7 @@ void RTCPeerConnection::DidModifyTransceivers(
     }
   }
   for (auto& platform_transceiver : platform_transceivers) {
-    auto* it = FindTransceiver(*platform_transceiver);
+    auto it = FindTransceiver(*platform_transceiver);
     bool previously_had_recv =
         (it != transceivers_.end()) ? (*it)->FiredDirectionHasRecv() : false;
     RTCRtpTransceiver* transceiver =
@@ -2464,7 +2500,7 @@ void RTCPeerConnection::DidAddRemoteDataChannel(
     return;
 
   auto* blink_channel = MakeGarbageCollected<RTCDataChannel>(
-      GetExecutionContext(), std::move(channel), peer_handler_.get());
+      GetExecutionContext(), std::move(channel));
   blink_channel->SetStateToOpenWithoutEvent();
   MaybeDispatchEvent(MakeGarbageCollected<RTCDataChannelEvent>(
       event_type_names::kDatachannel, blink_channel));
@@ -2794,6 +2830,7 @@ void RTCPeerConnection::Trace(Visitor* visitor) const {
   visitor->Trace(dtls_transports_by_native_transport_);
   visitor->Trace(ice_transports_by_native_transport_);
   visitor->Trace(sctp_transport_);
+  visitor->Trace(rtp_transport_);
   EventTarget::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);
   MediaStreamObserver::Trace(visitor);

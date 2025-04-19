@@ -433,7 +433,7 @@ class OmniboxEditModel {
   // has to be read at the end of the last suggestion.  Returns the label for
   // the IPH row if the current selection is the one right before the IPH row.
   // Otherwise, returns an empty string.
-  std::u16string GetPopupAccessibilityLabelForIPHSuggestion();
+  std::u16string MaybeGetPopupAccessibilityLabelForIPHSuggestion();
 
   // Invoked any time the result set of the controller changes.
   // TODO(orinj): This method seems like a good candidate for removal; it is
@@ -542,6 +542,11 @@ class OmniboxEditModel {
                  const GURL& alternate_nav_url,
                  const std::u16string& pasted_text,
                  base::TimeTicks match_selection_timestamp = base::TimeTicks());
+
+  // Updates the feedback type on the match at the given index and schedules a
+  // repaint to update the suggestion view. On negative feedback, also shows the
+  // feedback form.
+  void UpdateFeedbackOnMatch(size_t match_index, FeedbackType feedback_type);
 
   // An internal method to set the user text. Notably, this differs from
   // SetUserText because it does not change the user-input-in-progress state.
@@ -654,12 +659,6 @@ class OmniboxEditModel {
 
   // We keep track of when the user last focused on the omnibox.
   base::TimeTicks last_omnibox_focus_;
-
-  // Whether any user input has occurred since focusing on the omnibox. This is
-  // used along with |last_omnibox_focus_| to calculate the time between a user
-  // focusing on the omnibox and editing. It is initialized to true since
-  // there was no focus event.
-  bool user_input_since_focus_;
 
   // Indicates whether the current interaction with the Omnibox resulted in
   // navigation (true), or user leaving the omnibox without taking any action

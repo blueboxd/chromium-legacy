@@ -126,16 +126,15 @@ void ReadData(
       &options, pipe_producer_handle, pipe_consumer_handle);
   CHECK_EQ(create_result, MOJO_RESULT_OK);
 
-  void* buffer = nullptr;
-  size_t num_bytes = output_size;
+  base::span<uint8_t> buffer;
   MojoResult result = pipe_producer_handle->BeginWriteData(
-      &buffer, &num_bytes, MOJO_WRITE_DATA_FLAG_NONE);
+      output_size, MOJO_WRITE_DATA_FLAG_NONE, buffer);
   CHECK_EQ(result, MOJO_RESULT_OK);
-  CHECK_GE(num_bytes, output_size);
+  CHECK_GE(buffer.size(), output_size);
   CHECK_LE(output_offset + output_size, bytes->size());
 
-  base::ranges::copy(base::span(*bytes).subspan(output_offset, output_size),
-                     static_cast<char*>(buffer));
+  buffer.first(output_size)
+      .copy_from(base::span(*bytes).subspan(output_offset, output_size));
   result = pipe_producer_handle->EndWriteData(output_size);
   CHECK_EQ(result, MOJO_RESULT_OK);
 
@@ -213,13 +212,13 @@ void StartURLLoader(
 
   // Load everything by default, but respect the Range header if present.
   std::optional<net::HttpByteRange> range;
-  std::string range_header;
-  if (request.headers.GetHeader(net::HttpRequestHeaders::kRange,
-                                &range_header)) {
+  if (std::optional<std::string> range_header =
+          request.headers.GetHeader(net::HttpRequestHeaders::kRange);
+      range_header) {
     std::vector<net::HttpByteRange> ranges;
     // For simplicity, only allow a single range. This is expected to be
     // sufficient for WebUI content.
-    if (!net::HttpUtil::ParseRangeHeader(range_header, &ranges) ||
+    if (!net::HttpUtil::ParseRangeHeader(*range_header, &ranges) ||
         ranges.size() > 1u || !ranges[0].IsValid()) {
       CallOnError(std::move(client_remote),
                   net::ERR_REQUEST_RANGE_NOT_SATISFIABLE);
@@ -229,8 +228,9 @@ void StartURLLoader(
   }
 
   std::string path = URLDataSource::URLToRequestPath(request.url);
-  std::string origin_header;
-  request.headers.GetHeader(net::HttpRequestHeaders::kOrigin, &origin_header);
+  std::string origin_header =
+      request.headers.GetHeader(net::HttpRequestHeaders::kOrigin)
+          .value_or(std::string());
 
   scoped_refptr<net::HttpResponseHeaders> headers =
       URLDataManagerBackend::GetHeaders(source, request.url, origin_header);

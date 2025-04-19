@@ -73,7 +73,6 @@ constexpr char kHatsSurveyTriggerRedWarning[] = "red-warning";
 constexpr char kHatsSurveyTriggerSettings[] = "settings";
 constexpr char kHatsSurveyTriggerSettingsPrivacy[] = "settings-privacy";
 constexpr char kHatsSurveyTriggerSettingsSecurity[] = "settings-security";
-constexpr char kHatsSurveyTriggerExtensions[] = "extensions";
 constexpr char kHatsSurveyTriggerSuggestedPasswordsExperiment[] =
     "suggested-passwords-experiment";
 constexpr char kHatsSurveyTriggerTrustSafetyPrivacySandbox4ConsentAccept[] =
@@ -90,6 +89,7 @@ constexpr char kHatsSurveyTriggerTrustSafetyTrustedSurface[] =
     "ts-trusted-surface";
 constexpr char kHatsSurveyTriggerTrustSafetyTransactions[] = "ts-transactions";
 constexpr char kHatsSurveyTriggerWhatsNew[] = "whats-new";
+constexpr char kHatsSurveyTriggerWhatsNewV2[] = "whats-new-v2";
 constexpr char kHatsSurveyTriggerTrustSafetyV2BrowsingData[] =
     "ts-v2-browsing-data";
 constexpr char kHatsSurveyTriggerTrustSafetyV2ControlGroup[] =
@@ -102,6 +102,10 @@ constexpr char kHatsSurveyTriggerTrustSafetyV2PasswordProtectionUI[] =
     "ts-v2-password-protection-ui";
 constexpr char kHatsSurveyTriggerTrustSafetyV2SafetyCheck[] =
     "ts-v2-safety-check";
+constexpr char kHatsSurveyTriggerTrustSafetyV2SafetyHubNotification[] =
+    "ts-v2-safety-hub-notification";
+constexpr char kHatsSurveyTriggerTrustSafetyV2SafetyHubInteraction[] =
+    "ts-v2-safety-hub-interaction";
 constexpr char kHatsSurveyTriggerTrustSafetyV2TrustedSurface[] =
     "ts-v2-trusted-surface";
 constexpr char kHatsSurveyTriggerTrustSafetyV2PrivacyGuide[] =
@@ -119,6 +123,7 @@ constexpr char kHatsSurveyTriggerTrustSafetyV2SafeBrowsingInterstitial[] =
 constexpr char kHatsSurveyTriggerWallpaperSearch[] = "wallpaper-search";
 #else   // BUILDFLAG(IS_ANDROID)
 constexpr char kHatsSurveyTriggerAndroidStartupSurvey[] = "startup_survey";
+constexpr char kHatsSurveyTriggerQuickDelete[] = "quick_delete_survey";
 #endif  // #if !BUILDFLAG(IS_ANDROID)
 
 constexpr char kHatsSurveyTriggerTesting[] = "testing";
@@ -165,7 +170,9 @@ std::vector<hats::SurveyConfig> GetAllSurveyConfigs() {
           permissions::kPermissionsPromptSurveyReleaseChannelKey,
           permissions::kPermissionsPromptSurveyDisplayTimeKey,
           permissions::kPermissionPromptSurveyOneTimePromptsDecidedBucketKey,
-          permissions::kPermissionPromptSurveyUrlKey});
+          permissions::kPermissionPromptSurveyUrlKey,
+          permissions::kPermissionPromptSurveyPepcPromptPositionKey,
+          permissions::kPermissionPromptSurveyInitialPermissionStatusKey});
 
 #if !BUILDFLAG(IS_ANDROID)
   // Dev tools surveys.
@@ -324,6 +331,31 @@ std::vector<hats::SurveyConfig> GetAllSurveyConfigs() {
       &features::kTrustSafetySentimentSurveyV2,
       kHatsSurveyTriggerTrustSafetyV2SafetyCheck,
       features::kTrustSafetySentimentSurveyV2SafetyCheckTriggerId.Get());
+  std::vector<std::string> sh_psd_fields{
+      "User visited Safety Hub page",
+      "User clicked Safety Hub notification",
+      "User interacted with Safety Hub",
+      "Is notification module extensions",
+      "Is notification module notification permissions",
+      "Is notification module passwords",
+      "Is notification module revoked permissions",
+      "Is notification module safe browsing",
+      "Global state is safe",
+      "Global state is info",
+      "Global state is warning",
+      "Global state is weak"};
+  survey_configs.emplace_back(
+      &features::kTrustSafetySentimentSurveyV2,
+      kHatsSurveyTriggerTrustSafetyV2SafetyHubInteraction,
+      features::kTrustSafetySentimentSurveyV2SafetyHubInteractionTriggerId
+          .Get(),
+      sh_psd_fields);
+  survey_configs.emplace_back(
+      &features::kTrustSafetySentimentSurveyV2,
+      kHatsSurveyTriggerTrustSafetyV2SafetyHubNotification,
+      features::kTrustSafetySentimentSurveyV2SafetyHubNotificationTriggerId
+          .Get(),
+      sh_psd_fields);
   survey_configs.emplace_back(
       &features::kTrustSafetySentimentSurveyV2,
       kHatsSurveyTriggerTrustSafetyV2TrustedSurface,
@@ -365,18 +397,6 @@ std::vector<hats::SurveyConfig> GetAllSurveyConfigs() {
           "User proceeded past interstitial", "Enhanced protection enabled",
           "Threat is phishing", "Threat is malware",
           "Threat is unwanted software", "Threat is billing"});
-  survey_configs.emplace_back(
-      &features::kHappinessTrackingSurveysExtensionsSafetyHub,
-      kHatsSurveyTriggerExtensions,
-      features::kHappinessTrackingSurveysExtensionsSafetyHubTriggerId.Get(),
-      std::vector<std::string>{},
-      std::vector<std::string>{
-          "Average extension age in days", "Age of profile in days",
-          "Time since last extension was installed in days",
-          "Number of extensions installed", "Time on extension page in seconds",
-          "Extension review panel shown", "Number of extensions removed",
-          "Number of extensions kept",
-          "Number of non-trigger extensions removed", "Client Channel"});
 
   // Autofill surveys.
   survey_configs.emplace_back(
@@ -424,7 +444,11 @@ std::vector<hats::SurveyConfig> GetAllSurveyConfigs() {
   // What's New survey.
   survey_configs.emplace_back(
       &features::kHappinessTrackingSurveysForDesktopWhatsNew,
-      kHatsSurveyTriggerWhatsNew);
+      kHatsSurveyTriggerWhatsNew, "SYLcvnoRH0ugnJ3q1cK0RAHYFycs");
+  // What's New survey for v2
+  survey_configs.emplace_back(
+      &features::kHappinessTrackingSurveysForDesktopWhatsNewV2,
+      kHatsSurveyTriggerWhatsNewV2);
 
   // Performance Controls surveys.
   survey_configs.emplace_back(
@@ -519,6 +543,11 @@ std::vector<hats::SurveyConfig> GetAllSurveyConfigs() {
 #else
   survey_configs.emplace_back(&chrome::android::kChromeSurveyNextAndroid,
                               kHatsSurveyTriggerAndroidStartupSurvey);
+
+  survey_configs.emplace_back(
+      &chrome::android::kQuickDeleteAndroidSurvey,
+      kHatsSurveyTriggerQuickDelete,
+      chrome::android::kQuickDeleteAndroidSurveyTriggerId.Get());
 
 #endif  // #if !BUILDFLAG(IS_ANDROID)
 

@@ -6,29 +6,35 @@ import 'chrome://os-print/js/data/print_ticket_manager.js';
 
 import {PDF_DESTINATION} from 'chrome://os-print/js/data/destination_constants.js';
 import {DESTINATION_MANAGER_ACTIVE_DESTINATION_CHANGED, DestinationManager} from 'chrome://os-print/js/data/destination_manager.js';
-import {PRINT_REQUEST_FINISHED_EVENT, PRINT_REQUEST_STARTED_EVENT, PRINT_TICKET_MANAGER_SESSION_INITIALIZED, PrintTicketManager} from 'chrome://os-print/js/data/print_ticket_manager.js';
+import {DestinationProviderComposite} from 'chrome://os-print/js/data/destination_provider_composite.js';
+import type {PrintPreviewPageHandlerComposite} from 'chrome://os-print/js/data/print_preview_page_handler_composite.js';
+import {PRINT_REQUEST_FINISHED_EVENT, PRINT_REQUEST_STARTED_EVENT, PRINT_TICKET_MANAGER_SESSION_INITIALIZED, PRINT_TICKET_MANAGER_TICKET_CHANGED, PrintTicketManager} from 'chrome://os-print/js/data/print_ticket_manager.js';
 import {DEFAULT_PARTIAL_PRINT_TICKET} from 'chrome://os-print/js/data/ticket_constants.js';
-import {FAKE_PRINT_SESSION_CONTEXT_SUCCESSFUL, FakePrintPreviewPageHandler} from 'chrome://os-print/js/fakes/fake_print_preview_page_handler.js';
+import {FakeDestinationProvider} from 'chrome://os-print/js/fakes/fake_destination_provider.js';
+import {FAKE_PRINT_SESSION_CONTEXT_SUCCESSFUL, type FakePrintPreviewPageHandler} from 'chrome://os-print/js/fakes/fake_print_preview_page_handler.js';
 import {createCustomEvent} from 'chrome://os-print/js/utils/event_utils.js';
-import {getPrintPreviewPageHandler} from 'chrome://os-print/js/utils/mojo_data_providers.js';
+import {getDestinationProvider, getPrintPreviewPageHandler} from 'chrome://os-print/js/utils/mojo_data_providers.js';
 import {PrinterStatusReason, PrintTicket} from 'chrome://os-print/js/utils/print_preview_cros_app_types.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertNotEquals, assertTrue} from 'chrome://webui-test/chromeos/chai_assert.js';
 import {MockController} from 'chrome://webui-test/chromeos/mock_controller.m.js';
 import {MockTimer} from 'chrome://webui-test/mock_timer.js';
 import {eventToPromise} from 'chrome://webui-test/test_util.js';
 
-import {resetDataManagersAndProviders} from './test_utils.js';
+import {createTestDestination, resetDataManagersAndProviders} from './test_utils.js';
 
 suite('PrintTicketManager', () => {
   let printPreviewPageHandler: FakePrintPreviewPageHandler;
+  let destinationProvider: FakeDestinationProvider;
   let mockTimer: MockTimer;
   let mockController: MockController;
 
   const partialTicket: Partial<PrintTicket> = {
     ...DEFAULT_PARTIAL_PRINT_TICKET,
-    destination: '',
+    destinationId: '',
     previewModifiable: true,  // Default to HTML document.
     shouldPrintSelectionOnly: false,
+    printerManuallySelected: false,
   };
 
   setup(() => {
@@ -39,7 +45,11 @@ suite('PrintTicketManager', () => {
     mockTimer = new MockTimer();
     mockTimer.install();
     printPreviewPageHandler =
-        getPrintPreviewPageHandler() as FakePrintPreviewPageHandler;
+        (getPrintPreviewPageHandler() as PrintPreviewPageHandlerComposite)
+            .fakePageHandler;
+    destinationProvider =
+        (getDestinationProvider() as DestinationProviderComposite)
+            .fakeDestinationProvider;
   });
 
   teardown(() => {
@@ -47,6 +57,28 @@ suite('PrintTicketManager', () => {
     mockTimer.uninstall();
     resetDataManagersAndProviders();
   });
+
+  async function waitForInitialDestinationReady(): Promise<void> {
+    const delay = 1;
+    destinationProvider.setTestDelay(delay);
+    // Wait for active destination set to have non-empty value in ticket.
+    const destinationManager = DestinationManager.getInstance();
+    const activeDestEvent = eventToPromise(
+        DESTINATION_MANAGER_ACTIVE_DESTINATION_CHANGED, destinationManager);
+    destinationManager.initializeSession(FAKE_PRINT_SESSION_CONTEXT_SUCCESSFUL);
+    mockTimer.tick(delay);
+    await activeDestEvent;
+    assert(destinationManager.getActiveDestination());
+  }
+
+  async function waitForPrintTicketManagerInitialized(): Promise<void> {
+    // Ensure ticket manager is configured.
+    const ticketManager = PrintTicketManager.getInstance();
+    const initEvent =
+        eventToPromise(PRINT_TICKET_MANAGER_SESSION_INITIALIZED, ticketManager);
+    ticketManager.initializeSession(FAKE_PRINT_SESSION_CONTEXT_SUCCESSFUL);
+    await initEvent;
+  }
 
   test('is a singleton', () => {
     const instance1 = PrintTicketManager.getInstance();
@@ -222,17 +254,18 @@ suite('PrintTicketManager', () => {
       'initializeSession creates print ticket based on session context', () => {
         const instance = PrintTicketManager.getInstance();
         let expectedTicket: PrintTicket|null = null;
-        assertEquals(expectedTicket, instance.getPrintTicketForTesting());
+        assertEquals(expectedTicket, instance.getPrintTicket());
 
         instance.initializeSession(FAKE_PRINT_SESSION_CONTEXT_SUCCESSFUL);
 
         expectedTicket = {
           ...partialTicket,
-          printPreviewId: FAKE_PRINT_SESSION_CONTEXT_SUCCESSFUL.printPreviewId,
+          printPreviewId:
+              FAKE_PRINT_SESSION_CONTEXT_SUCCESSFUL.printPreviewToken,
           shouldPrintSelectionOnly:
               FAKE_PRINT_SESSION_CONTEXT_SUCCESSFUL.hasSelection,
         } as PrintTicket;
-        const ticket = instance.getPrintTicketForTesting() as PrintTicket;
+        const ticket = instance.getPrintTicket() as PrintTicket;
         assertDeepEquals(expectedTicket, ticket);
       });
 
@@ -242,7 +275,7 @@ suite('PrintTicketManager', () => {
         const delay = 1;
         printPreviewPageHandler.setTestDelay(delay);
         const instance = PrintTicketManager.getInstance();
-        assertEquals(null, instance.getPrintTicketForTesting());
+        assertEquals(null, instance.getPrintTicket());
 
         // Attempt sending while ticket is null to verify print is not called.
         instance.sendPrintRequest();
@@ -274,23 +307,19 @@ suite('PrintTicketManager', () => {
         const getActiveDestinationFn = mockController.createFunctionMock(
             destinationManager, 'getActiveDestination');
         getActiveDestinationFn.returnValue = PDF_DESTINATION;
-        assertEquals(null, ticketManager.getPrintTicketForTesting());
+        assertEquals(null, ticketManager.getPrintTicket());
 
         ticketManager.initializeSession(FAKE_PRINT_SESSION_CONTEXT_SUCCESSFUL);
 
-        const ticket = ticketManager.getPrintTicketForTesting();
+        const ticket = ticketManager.getPrintTicket();
         assertNotEquals(null, ticket, 'Ticket configured');
         assertEquals(
-            PDF_DESTINATION.id, ticket!.destination,
+            PDF_DESTINATION.id, ticket!.destinationId,
             'destination set from DestinationManager active destination');
         assertEquals(
             PDF_DESTINATION.printerType, ticket!.printerType,
             'printerType set from DestinationManager active destination');
-        assertEquals(
-            PDF_DESTINATION.printerManuallySelected,
-            ticket!.printerManuallySelected,
-            'printerManuallySelected set from DestinationManager active' +
-                ' destination');
+        assertFalse(ticket!.printerManuallySelected, 'not manually selected');
         assertEquals(
             PrinterStatusReason.UNKNOWN_REASON, ticket!.printerStatusReason,
             'printerStatusReason fallback to UNKNOWN_REASON if null');
@@ -307,13 +336,13 @@ suite('PrintTicketManager', () => {
         const getActiveDestinationFn = mockController.createFunctionMock(
             destinationManager, 'getActiveDestination');
         getActiveDestinationFn.returnValue = null;
-        assertEquals(null, ticketManager.getPrintTicketForTesting());
+        assertEquals(null, ticketManager.getPrintTicket());
 
         ticketManager.initializeSession(FAKE_PRINT_SESSION_CONTEXT_SUCCESSFUL);
 
-        const ticket = ticketManager.getPrintTicketForTesting();
+        const ticket = ticketManager.getPrintTicket();
         assertNotEquals(null, ticket, 'Ticket configured');
-        assertEquals('', ticket!.destination, 'destination should be empty');
+        assertEquals('', ticket!.destinationId, 'destination should be empty');
       });
 
   // Verify default setting for previewModifiable is based on session context.
@@ -323,7 +352,7 @@ suite('PrintTicketManager', () => {
     const getActiveDestinationFn = mockController.createFunctionMock(
         destinationManager, 'getActiveDestination');
     getActiveDestinationFn.returnValue = null;
-    assertEquals(null, ticketManager.getPrintTicketForTesting());
+    assertEquals(null, ticketManager.getPrintTicket());
 
     // Force isModifiable to false, isModifiable true is tested in prior
     // test.
@@ -333,7 +362,7 @@ suite('PrintTicketManager', () => {
     };
     ticketManager.initializeSession(sessionContextNotModifiable);
 
-    const ticket = ticketManager.getPrintTicketForTesting();
+    const ticket = ticketManager.getPrintTicket();
     assertNotEquals(null, ticket, 'Ticket configured');
     assertEquals(
         sessionContextNotModifiable.isModifiable, ticket!.previewModifiable,
@@ -350,7 +379,7 @@ suite('PrintTicketManager', () => {
         const getActiveDestinationFn = mockController.createFunctionMock(
             destinationManager, 'getActiveDestination');
         getActiveDestinationFn.returnValue = null;
-        assertEquals(null, ticketManager.getPrintTicketForTesting());
+        assertEquals(null, ticketManager.getPrintTicket());
         // Force hasSelection to false, hasSelection true is tested in prior
         // test.
         const sessionContextNoSelection = {
@@ -359,7 +388,7 @@ suite('PrintTicketManager', () => {
         };
         ticketManager.initializeSession(sessionContextNoSelection);
 
-        const ticket = ticketManager.getPrintTicketForTesting();
+        const ticket = ticketManager.getPrintTicket();
         assertNotEquals(null, ticket, 'Ticket configured');
         assertEquals(
             sessionContextNoSelection.hasSelection,
@@ -379,11 +408,11 @@ suite('PrintTicketManager', () => {
         const getActiveDestinationFn = mockController.createFunctionMock(
             destinationManager, 'getActiveDestination');
         getActiveDestinationFn.returnValue = null;
-        assertEquals(null, ticketManager.getPrintTicketForTesting());
+        assertEquals(null, ticketManager.getPrintTicket());
         ticketManager.initializeSession(FAKE_PRINT_SESSION_CONTEXT_SUCCESSFUL);
 
-        const ticket = ticketManager.getPrintTicketForTesting();
-        assertEquals('', ticket!.destination, 'destination should be empty');
+        const ticket = ticketManager.getPrintTicket();
+        assertEquals('', ticket!.destinationId, 'destination should be empty');
 
         getActiveDestinationFn.returnValue = PDF_DESTINATION;
         const changeEvent1 = eventToPromise(
@@ -393,16 +422,12 @@ suite('PrintTicketManager', () => {
         await changeEvent1;
 
         assertEquals(
-            PDF_DESTINATION.id, ticket!.destination,
+            PDF_DESTINATION.id, ticket!.destinationId,
             `destination should be ${PDF_DESTINATION.id}`);
         assertEquals(
             PDF_DESTINATION.printerType, ticket!.printerType,
             `printerType should be ${PDF_DESTINATION.printerType}`);
-        assertEquals(
-            PDF_DESTINATION.printerManuallySelected,
-            ticket!.printerManuallySelected,
-            `printerManuallySelected should be ${
-                PDF_DESTINATION.printerManuallySelected}`);
+        assertFalse(ticket!.printerManuallySelected, 'not manually selected');
         assertEquals(
             PrinterStatusReason.UNKNOWN_REASON, ticket!.printerStatusReason,
             `printerStatusReason should fall back to UNKNOWN_REASON when null`);
@@ -416,7 +441,7 @@ suite('PrintTicketManager', () => {
             createCustomEvent(DESTINATION_MANAGER_ACTIVE_DESTINATION_CHANGED));
         await changeEvent2;
         assertEquals(
-            PDF_DESTINATION.id, ticket!.destination,
+            PDF_DESTINATION.id, ticket!.destinationId,
             `destination should remain ${PDF_DESTINATION.id}`);
       });
 
@@ -428,17 +453,18 @@ suite('PrintTicketManager', () => {
       () => {
         const instance = PrintTicketManager.getInstance();
         let expectedTicket: PrintTicket|null = null;
-        assertEquals(expectedTicket, instance.getPrintTicketForTesting());
+        assertEquals(expectedTicket, instance.getPrintTicket());
 
         instance.initializeSession(FAKE_PRINT_SESSION_CONTEXT_SUCCESSFUL);
 
         expectedTicket = {
           ...partialTicket,
-          printPreviewId: FAKE_PRINT_SESSION_CONTEXT_SUCCESSFUL.printPreviewId,
+          printPreviewId:
+              FAKE_PRINT_SESSION_CONTEXT_SUCCESSFUL.printPreviewToken,
           shouldPrintSelectionOnly:
               FAKE_PRINT_SESSION_CONTEXT_SUCCESSFUL.hasSelection,
         } as PrintTicket;
-        const ticket = instance.getPrintTicketForTesting() as PrintTicket;
+        const ticket = instance.getPrintTicket() as PrintTicket;
         assertEquals(
             undefined, ticket.advancedSettings,
             'Ticket advancedSettings optional property should not be set');
@@ -517,11 +543,9 @@ suite('PrintTicketManager', () => {
         assertEquals(
             DEFAULT_PARTIAL_PRINT_TICKET.printerType, ticket.printerType,
             'Ticket printerType should match DEFAULT_PARTIAL_PRINT_TICKET');
-        assertEquals(
-            DEFAULT_PARTIAL_PRINT_TICKET.printerManuallySelected,
+        assertFalse(
             ticket.printerManuallySelected,
-            'Ticket printerManuallySelected should match ' +
-                'DEFAULT_PARTIAL_PRINT_TICKET');
+            'Ticket printerManuallySelected not manually selected');
         assertEquals(
             DEFAULT_PARTIAL_PRINT_TICKET.rasterizePDF, ticket.rasterizePDF,
             'Ticket rasterizePDF should match DEFAULT_PARTIAL_PRINT_TICKET');
@@ -536,5 +560,43 @@ suite('PrintTicketManager', () => {
             ticket.shouldPrintBackgrounds,
             'Ticket shouldPrintBackgrounds should match ' +
                 'DEFAULT_PARTIAL_PRINT_TICKET');
+      });
+
+  // Verify setPrintTicketDestination validates the provided ID, updates
+  // the ticket, and dispatches an event.
+  test(
+      'setPrintTicketDestination validates destination id before ' +
+          'updating ticket and triggering event',
+      async () => {
+        await waitForInitialDestinationReady();
+        await waitForPrintTicketManagerInitialized();
+        const testDestination = createTestDestination();
+        const destinationManager = DestinationManager.getInstance();
+        destinationManager.setDestinationForTesting(testDestination);
+        const ticketManager = PrintTicketManager.getInstance();
+
+        // Simulate request to invalid destinations returns false.
+        assertFalse(
+            ticketManager.setPrintTicketDestination(PDF_DESTINATION.id));
+        assertFalse(
+            ticketManager.setPrintTicketDestination('unknownDestinationId'));
+
+        // Simulate request to valid destination returns true.
+        const ticketChanged =
+            eventToPromise(PRINT_TICKET_MANAGER_TICKET_CHANGED, ticketManager);
+        assertTrue(ticketManager.setPrintTicketDestination(testDestination.id));
+
+        // Verify event triggered and expected fields updated.
+        await ticketChanged;
+        const ticket = ticketManager.getPrintTicket();
+        assertEquals(
+            testDestination.id, ticket!.destinationId,
+            'ticket destination should be updated');
+        assertEquals(
+            testDestination.printerType, ticket!.printerType,
+            'ticket printerType should be updated');
+        assertEquals(
+            testDestination.printerStatusReason, ticket!.printerStatusReason,
+            'ticket printerStatusReason should be updated');
       });
 });

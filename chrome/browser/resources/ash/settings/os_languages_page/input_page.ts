@@ -27,7 +27,7 @@ import 'chrome://resources/ash/common/shortcut_input_ui/shortcut_input_key.js';
 import {PrefsMixin} from '/shared/settings/prefs/prefs_mixin.js';
 import {CrButtonElement} from 'chrome://resources/ash/common/cr_elements/cr_button/cr_button.js';
 import {I18nMixin} from 'chrome://resources/ash/common/cr_elements/i18n_mixin.js';
-import {ShortcutLabelProperties} from 'chrome://resources/ash/common/shortcut_input_ui/shortcut_utils.js';
+import {MetaKey, ShortcutLabelProperties} from 'chrome://resources/ash/common/shortcut_input_ui/shortcut_utils.js';
 import {assert} from 'chrome://resources/js/assert.js';
 import {focusWithoutInk} from 'chrome://resources/js/focus_without_ink.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
@@ -154,6 +154,8 @@ export class OsSettingsInputPageElement extends OsSettingsInputPageElementBase {
       lastUsedImeAccelerator_: Object,
 
       nextImeAccelerator_: Object,
+
+      metaKey_: Object,
     };
   }
 
@@ -192,6 +194,7 @@ export class OsSettingsInputPageElement extends OsSettingsInputPageElementBase {
   private nextImeAccelerator_?: StandardAcceleratorProperties;
   private acceleratorFetcherObserverReceiver_:
       AcceleratorFetcherObserverReceiver;
+  private metaKey_ = MetaKey.kSearch;
 
   // loadTimeData flags.
   private onDeviceGrammarCheckEnabled_: boolean;
@@ -219,6 +222,10 @@ export class OsSettingsInputPageElement extends OsSettingsInputPageElementBase {
       assert(this.acceleratorFetcher);
       this.acceleratorFetcherObserverReceiver_ =
           new AcceleratorFetcherObserverReceiver(this);
+
+      this.acceleratorFetcher.getMetaKeyToDisplay().then(({metaKey}) => {
+        this.metaKey_ = metaKey;
+      });
 
       this.acceleratorFetcher!.observeAcceleratorChanges(
           [
@@ -268,6 +275,7 @@ export class OsSettingsInputPageElement extends OsSettingsInputPageElementBase {
         ...this.lastUsedImeAccelerator_,
         shortcutLabelText:
             this.i18nAdvanced('imeCustomizedShortcutReminderLastUsed'),
+        metaKey: this.metaKey_,
       });
     }
 
@@ -276,6 +284,7 @@ export class OsSettingsInputPageElement extends OsSettingsInputPageElementBase {
         ...this.nextImeAccelerator_,
         shortcutLabelText:
             this.i18nAdvanced('imeCustomizedShortcutReminderNext'),
+        metaKey: this.metaKey_,
       });
     }
 

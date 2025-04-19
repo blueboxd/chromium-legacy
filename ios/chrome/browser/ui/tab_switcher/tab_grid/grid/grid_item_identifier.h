@@ -21,9 +21,10 @@ class WebState;
 
 // Different types of items identified by an ItemIdentifier.
 enum class GridItemType : NSUInteger {
-  Tab,
-  Group,
-  SuggestedActions,
+  kInactiveTabsButton,
+  kTab,
+  kGroup,
+  kSuggestedActions,
 };
 
 // Represents grid items in a diffable data source. GridItemIdentifier equality
@@ -46,6 +47,7 @@ enum class GridItemType : NSUInteger {
 
 // Convenience factory methods to create identifier and its sub-item based on
 // the raw data.
++ (instancetype)inactiveTabsButtonIdentifier;
 #ifdef __cplusplus
 + (instancetype)tabIdentifier:(web::WebState*)webState;
 + (instancetype)groupIdentifier:(const TabGroup*)group
@@ -53,6 +55,7 @@ enum class GridItemType : NSUInteger {
 #endif
 + (instancetype)suggestedActionsIdentifier;
 
+- (instancetype)initForInactiveTabsButton NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithTabItem:(TabSwitcherItem*)item
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithGroupItem:(TabGroupItem*)item NS_DESIGNATED_INITIALIZER;

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "media/video/video_encode_accelerator_adapter.h"
 
 #include <memory>
@@ -34,7 +39,7 @@
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 #include "media/filters/h264_to_annex_b_bitstream_converter.h"
 #include "media/formats/mp4/box_definitions.h"
-#include "media/video/h264_parser.h"
+#include "media/parsers/h264_parser.h"
 #endif
 
 #if BUILDFLAG(ENABLE_OPENH264)
@@ -525,7 +530,7 @@ TEST_P(SoftwareVideoEncoderTest, EncodeAndDecode) {
   VideoEncoder::OutputCB encoder_output_cb = base::BindLambdaForTesting(
       [&, this](VideoEncoderOutput output,
                 std::optional<VideoEncoder::CodecDescription> desc) {
-        auto buffer = DecoderBuffer::CopyFrom(output.data.first(output.size));
+        auto buffer = DecoderBuffer::FromArray(std::move(output.data));
         buffer->set_timestamp(output.timestamp);
         buffer->set_is_key_frame(output.key_frame);
         decoder_->Decode(std::move(buffer), DecoderStatusCB());
@@ -599,13 +604,13 @@ TEST_P(SoftwareVideoEncoderTest, EncodeAndDecodeWithEnablingDrop) {
   VideoEncoder::OutputCB encoder_output_cb = base::BindLambdaForTesting(
       [&, this](VideoEncoderOutput output,
                 std::optional<VideoEncoder::CodecDescription> desc) {
-        if (output.size == 0) {
+        if (output.data.empty()) {
           dropped_frames_count++;
           dropped_frame_timestamps.push_back(output.timestamp);
           return;
         }
 
-        auto buffer = DecoderBuffer::CopyFrom(output.data.first(output.size));
+        auto buffer = DecoderBuffer::FromArray(std::move(output.data));
         buffer->set_timestamp(output.timestamp);
         buffer->set_is_key_frame(output.key_frame);
         decoder_->Decode(std::move(buffer), DecoderStatusCB());
@@ -737,7 +742,7 @@ TEST_P(SVCVideoEncoderTest, EncodeClipTemporalSvc) {
 
     for (auto& chunk : chunks) {
       if (chunk.temporal_id <= max_layer && !chunk.data.empty()) {
-        auto buffer = DecoderBuffer::CopyFrom(chunk.data.first(chunk.size));
+        auto buffer = DecoderBuffer::CopyFrom(chunk.data);
         buffer->set_timestamp(chunk.timestamp);
         buffer->set_is_key_frame(chunk.key_frame);
         DecodeAndWaitForStatus(std::move(buffer));
@@ -783,7 +788,7 @@ TEST_P(SVCVideoEncoderTest, EncodeClipTemporalSvcWithEnablingDrop) {
   VideoEncoder::OutputCB encoder_output_cb = base::BindLambdaForTesting(
       [&](VideoEncoderOutput output,
           std::optional<VideoEncoder::CodecDescription> desc) {
-        if (output.size == 0) {
+        if (output.data.empty()) {
           dropped_frame_indices.push_back(chunks.size() +
                                           dropped_frame_indices.size());
           return;
@@ -857,7 +862,7 @@ TEST_P(SVCVideoEncoderTest, EncodeClipTemporalSvcWithEnablingDrop) {
     for (auto& chunk : chunks) {
       if (chunk.temporal_id <= max_layer) {
         num_chunks += 1;
-        auto buffer = DecoderBuffer::CopyFrom(chunk.data.first(chunk.size));
+        auto buffer = DecoderBuffer::CopyFrom(chunk.data);
         buffer->set_timestamp(chunk.timestamp);
         buffer->set_is_key_frame(chunk.key_frame);
         DecodeAndWaitForStatus(std::move(buffer));
@@ -1024,7 +1029,7 @@ TEST_P(H264VideoEncoderTest, ReconfigureWithResize) {
   VideoEncoder::OutputCB encoder_output_cb = base::BindLambdaForTesting(
       [&](VideoEncoderOutput output,
           std::optional<VideoEncoder::CodecDescription> desc) {
-        auto buffer = DecoderBuffer::CopyFrom(output.data.first(output.size));
+        auto buffer = DecoderBuffer::FromArray(std::move(output.data));
         buffer->set_timestamp(output.timestamp);
         buffer->set_is_key_frame(output.key_frame);
         decoder_->Decode(std::move(buffer), DecoderStatusCB());
@@ -1246,7 +1251,7 @@ TEST_P(H264VideoEncoderTest, EncodeAndDecodeWithConfig) {
                      chunk.desc.value());
     }
     auto& output = chunk.output;
-    auto buffer = DecoderBuffer::CopyFrom(output.data.first(output.size));
+    auto buffer = DecoderBuffer::FromArray(std::move(output.data));
     buffer->set_timestamp(output.timestamp);
     buffer->set_is_key_frame(output.key_frame);
     DecodeAndWaitForStatus(std::move(buffer));
@@ -1274,7 +1279,7 @@ std::string PrintTestParams(
   return result;
 }
 
-#if BUILDFLAG(ENABLE_OPENH264)
+#if BUILDFLAG(ENABLE_OPENH264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
 SwVideoTestParams kH264Params[] = {
     {VideoCodec::kH264, H264PROFILE_BASELINE, PIXEL_FORMAT_I420},
     {VideoCodec::kH264, H264PROFILE_BASELINE, PIXEL_FORMAT_XRGB},
@@ -1309,7 +1314,7 @@ INSTANTIATE_TEST_SUITE_P(H264TemporalSvc,
                          SVCVideoEncoderTest,
                          ::testing::ValuesIn(kH264SVCParams),
                          PrintTestParams);
-#endif  // ENABLE_OPENH264
+#endif  // BUILDFLAG(ENABLE_OPENH264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
 
 #if BUILDFLAG(ENABLE_LIBVPX)
 SwVideoTestParams kVpxParams[] = {

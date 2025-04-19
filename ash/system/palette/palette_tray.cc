@@ -275,7 +275,7 @@ PaletteTray::PaletteTray(Shelf* shelf)
   icon_ = tray_container()->AddChildView(std::move(icon));
 
   Shell::Get()->AddShellObserver(this);
-  Shell::Get()->window_tree_host_manager()->AddObserver(this);
+  Shell::Get()->display_manager()->AddDisplayManagerObserver(this);
 
   shelf->AddObserver(this);
 }
@@ -286,7 +286,7 @@ PaletteTray::~PaletteTray() {
 
   ui::DeviceDataManager::GetInstance()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
-  Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
+  Shell::Get()->display_manager()->RemoveDisplayManagerObserver(this);
   shelf()->RemoveObserver(this);
 }
 
@@ -446,7 +446,7 @@ void PaletteTray::OnShellDestroying() {
   projector_session_observation_.Reset();
 }
 
-void PaletteTray::OnDisplayConfigurationChanged() {
+void PaletteTray::OnDidApplyDisplayChanges() {
   UpdateIconVisibility();
 }
 
@@ -459,7 +459,6 @@ void PaletteTray::ClickedOutsideBubble(const ui::LocatedEvent& event) {
 }
 
 void PaletteTray::UpdateTrayItemColor(bool is_active) {
-  DCHECK(chromeos::features::IsJellyEnabled());
   UpdateTrayIcon();
 }
 
@@ -630,7 +629,7 @@ void PaletteTray::Initialize() {
   InitializeWithLocalState();
 }
 
-void PaletteTray::CloseBubble() {
+void PaletteTray::CloseBubbleInternal() {
   HidePalette();
 }
 
@@ -714,14 +713,9 @@ void PaletteTray::InitializeWithLocalState() {
 
 void PaletteTray::UpdateTrayIcon() {
   SkColor color;
-  if (chromeos::features::IsJellyEnabled()) {
-    color = GetColorProvider()->GetColor(
-        is_active() ? cros_tokens::kCrosSysSystemOnPrimaryContainer
-                    : cros_tokens::kCrosSysOnSurface);
-  } else {
-    color = AshColorProvider::Get()->GetContentLayerColor(
-        AshColorProvider::ContentLayerType::kIconColorPrimary);
-  }
+  color = GetColorProvider()->GetColor(
+      is_active() ? cros_tokens::kCrosSysSystemOnPrimaryContainer
+                  : cros_tokens::kCrosSysOnSurface);
   icon_->SetImage(CreateVectorIcon(
       palette_tool_manager_->GetActiveTrayIcon(
           palette_tool_manager_->GetActiveTool(PaletteGroup::MODE)),

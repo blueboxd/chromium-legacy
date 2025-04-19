@@ -34,7 +34,7 @@
                   "checkout_lacros_sdk",
                   "chromeos"
                 ],
-                "config": "chromium_no_telemetry_dependencies"
+                "config": "chromium"
               },
               "skylab_upload_location": {
                 "gs_bucket": "chromium-ci-skylab"
@@ -69,7 +69,7 @@
                   "checkout_lacros_sdk",
                   "chromeos"
                 ],
-                "config": "chromium_no_telemetry_dependencies"
+                "config": "chromium"
               },
               "parent": {
                 "bucket": "ci",
@@ -109,7 +109,7 @@
                   "checkout_lacros_sdk",
                   "chromeos"
                 ],
-                "config": "chromium_no_telemetry_dependencies"
+                "config": "chromium"
               },
               "parent": {
                 "bucket": "ci",
@@ -178,6 +178,9 @@
     ]
   },
   "builder_group": "chromium.chromiumos",
+  "gardener_rotations": [
+    "chromium"
+  ],
   "recipe": "chromium",
   "sheriff_rotations": [
     "chromium"

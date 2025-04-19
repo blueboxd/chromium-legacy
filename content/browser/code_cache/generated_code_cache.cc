@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/342213636): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "content/browser/code_cache/generated_code_cache.h"
 
 #include <iostream>
@@ -13,11 +18,15 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/not_fatal_until.h"
 #include "base/numerics/byte_conversions.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "components/services/storage/public/cpp/big_io_buffer.h"
 #include "content/common/features.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
 #include "crypto/sha2.h"
 #include "net/base/completion_once_callback.h"
@@ -156,23 +165,22 @@ constexpr size_t kDedicatedDataLimit = 16384;
 void WriteCommonDataHeader(net::IOBufferWithSize* buffer,
                            const base::Time& response_time,
                            uint32_t data_size) {
-  auto header =
-      base::as_writable_bytes(buffer->span()).first<kHeaderSizeInBytes>();
+  auto header = buffer->span().first<kHeaderSizeInBytes>();
   auto [header_time, header_size] = header.split_at<kResponseTimeSizeInBytes>();
-  header_time.copy_from(base::numerics::I64ToLittleEndian(
+  header_time.copy_from(base::I64ToLittleEndian(
       response_time.ToDeltaSinceWindowsEpoch().InMicroseconds()));
-  header_size.copy_from(base::numerics::U32ToLittleEndian(data_size));
+  header_size.copy_from(base::U32ToLittleEndian(data_size));
 }
 
 void ReadCommonDataHeader(net::IOBufferWithSize* buffer,
                           base::Time* response_time,
                           uint32_t* data_size) {
-  auto header = base::as_bytes(buffer->span().first<kHeaderSizeInBytes>());
+  auto header = buffer->span().first<kHeaderSizeInBytes>();
   auto [header_time, header_size] = header.split_at<kResponseTimeSizeInBytes>();
-  int64_t raw_response_time = base::numerics::I64FromLittleEndian(header_time);
+  int64_t raw_response_time = base::I64FromLittleEndian(header_time);
   *response_time = base::Time::FromDeltaSinceWindowsEpoch(
       base::Microseconds(raw_response_time));
-  *data_size = base::numerics::U32FromLittleEndian(header_size);
+  *data_size = base::U32FromLittleEndian(header_size);
 }
 
 static_assert(mojo_base::BigBuffer::kMaxInlineBytes <=
@@ -190,6 +198,33 @@ net::CacheType CodeCacheTypeToNetCacheType(
       return net::GENERATED_WEBUI_BYTE_CODE_CACHE;
   }
   NOTREACHED_IN_MIGRATION();
+}
+
+void CollectStatisticsForEmbedderWebUIPages(
+    const GURL& resource_url,
+    const GURL& origin_lock,
+    GeneratedCodeCache::CacheEntryStatus entry_status) {
+  const content::ContentBrowserClient* browser_client =
+      GetContentClient()->browser();
+  CHECK(browser_client);
+  const std::string resource_hostname =
+      browser_client->GetWebUIHostnameForCodeCacheMetrics(resource_url);
+  const std::string origin_hostname =
+      browser_client->GetWebUIHostnameForCodeCacheMetrics(origin_lock);
+
+  if (!resource_hostname.empty()) {
+    base::UmaHistogramEnumeration(
+        base::StrCat({"SiteIsolatedCodeCache.JS.WebUI.",
+                      std::move(resource_hostname), ".Resource.Behaviour"}),
+        entry_status);
+  }
+
+  if (!origin_hostname.empty()) {
+    base::UmaHistogramEnumeration(
+        base::StrCat({"SiteIsolatedCodeCache.JS.WebUI.",
+                      std::move(origin_hostname), ".Origin.Behaviour"}),
+        entry_status);
+  }
 }
 
 }  // namespace
@@ -237,6 +272,8 @@ std::string GeneratedCodeCache::GetResourceURLFromKey(const std::string& key) {
 }
 
 void GeneratedCodeCache::CollectStatistics(
+    const GURL& resource_url,
+    const GURL& origin_lock,
     GeneratedCodeCache::CacheEntryStatus status) {
   switch (cache_type_) {
     case GeneratedCodeCache::CodeCacheType::kJavaScript:
@@ -246,6 +283,7 @@ void GeneratedCodeCache::CollectStatistics(
       UMA_HISTOGRAM_ENUMERATION("SiteIsolatedCodeCache.JS.Behaviour", status);
       UMA_HISTOGRAM_ENUMERATION("SiteIsolatedCodeCache.JS.WebUI.Behaviour",
                                 status);
+      CollectStatisticsForEmbedderWebUIPages(resource_url, origin_lock, status);
       break;
     case GeneratedCodeCache::CodeCacheType::kWebAssembly:
       UMA_HISTOGRAM_ENUMERATION("SiteIsolatedCodeCache.WASM.Behaviour", status);
@@ -258,10 +296,14 @@ void GeneratedCodeCache::CollectStatistics(
 class GeneratedCodeCache::PendingOperation {
  public:
   PendingOperation(Operation op,
+                   const GURL& resource_url,
+                   const GURL& origin_lock,
                    const std::string& key,
                    scoped_refptr<net::IOBufferWithSize> small_buffer,
                    scoped_refptr<BigIOBuffer> large_buffer)
       : op_(op),
+        resource_url_(resource_url),
+        origin_lock_(origin_lock),
         key_(key),
         small_buffer_(small_buffer),
         large_buffer_(large_buffer) {
@@ -269,13 +311,21 @@ class GeneratedCodeCache::PendingOperation {
   }
 
   PendingOperation(Operation op,
+                   const GURL& resource_url,
+                   const GURL& origin_lock,
                    const std::string& key,
                    ReadDataCallback read_callback)
-      : op_(op), key_(key), read_callback_(std::move(read_callback)) {
+      : op_(op),
+        resource_url_(resource_url),
+        origin_lock_(origin_lock),
+        key_(key),
+        read_callback_(std::move(read_callback)) {
     DCHECK_EQ(Operation::kFetch, op_);
   }
 
   PendingOperation(Operation op,
+                   const GURL& resource_url,
+                   const GURL& origin_lock,
                    const std::string& key,
                    const base::Time& response_time,
                    const base::TimeTicks start_time,
@@ -283,6 +333,8 @@ class GeneratedCodeCache::PendingOperation {
                    scoped_refptr<BigIOBuffer> large_buffer,
                    ReadDataCallback read_callback)
       : op_(op),
+        resource_url_(resource_url),
+        origin_lock_(origin_lock),
         key_(key),
         response_time_(response_time),
         start_time_(start_time),
@@ -292,7 +344,14 @@ class GeneratedCodeCache::PendingOperation {
     DCHECK_EQ(Operation::kFetchWithSHAKey, op_);
   }
 
-  PendingOperation(Operation op, const std::string& key) : op_(op), key_(key) {
+  PendingOperation(Operation op,
+                   const GURL& resource_url,
+                   const GURL& origin_lock,
+                   const std::string& key)
+      : op_(op),
+        resource_url_(resource_url),
+        origin_lock_(origin_lock),
+        key_(key) {
     DCHECK_EQ(Operation::kDelete, op_);
   }
 
@@ -305,6 +364,8 @@ class GeneratedCodeCache::PendingOperation {
 
   Operation operation() const { return op_; }
   const std::string& key() const { return key_; }
+  const GURL& resource_url() const { return resource_url_; }
+  const GURL& origin_lock() const { return origin_lock_; }
   scoped_refptr<net::IOBufferWithSize> small_buffer() { return small_buffer_; }
   scoped_refptr<BigIOBuffer> large_buffer() { return large_buffer_; }
   ReadDataCallback TakeReadCallback() { return std::move(read_callback_); }
@@ -371,6 +432,8 @@ class GeneratedCodeCache::PendingOperation {
 
  private:
   const Operation op_;
+  const GURL resource_url_;
+  const GURL origin_lock_;
   const std::string key_;
   const base::Time response_time_;
   const base::TimeTicks start_time_ = base::TimeTicks::Now();
@@ -427,7 +490,7 @@ void GeneratedCodeCache::WriteEntry(const GURL& url,
                                     mojo_base::BigBuffer data) {
   if (backend_state_ == kFailed) {
     // Silently fail the request.
-    CollectStatistics(CacheEntryStatus::kError);
+    CollectStatistics(url, origin_lock, CacheEntryStatus::kError);
     return;
   }
 
@@ -451,9 +514,7 @@ void GeneratedCodeCache::WriteEntry(const GURL& url,
     small_buffer = base::MakeRefCounted<net::IOBufferWithSize>(
         kHeaderSizeInBytes + data.size());
     // Copy |data| into the small buffer.
-    base::as_writable_bytes(small_buffer->span())
-        .subspan(kHeaderSizeInBytes)
-        .copy_from(data);
+    small_buffer->span().subspan(kHeaderSizeInBytes).copy_from(data);
     // Write 0 bytes and truncate stream 1 to clear any stale data.
     large_buffer = base::MakeRefCounted<BigIOBuffer>(mojo_base::BigBuffer());
   } else if (!ShouldDeduplicateEntry(data_size)) {
@@ -487,7 +548,9 @@ void GeneratedCodeCache::WriteEntry(const GURL& url,
     small_buffer = base::MakeRefCounted<net::IOBufferWithSize>(
         kHeaderSizeInBytes + checksum_key.length());
     // Copy |checksum_key| into the small buffer.
-    small_buffer->span().subspan(kHeaderSizeInBytes).copy_from(checksum_key);
+    small_buffer->span()
+        .subspan(kHeaderSizeInBytes)
+        .copy_from(base::as_byte_span(checksum_key));
     // Write 0 bytes and truncate stream 1 to clear any stale data.
     large_buffer = base::MakeRefCounted<BigIOBuffer>(mojo_base::BigBuffer());
 
@@ -495,16 +558,16 @@ void GeneratedCodeCache::WriteEntry(const GURL& url,
     // and nothing in the header.
     auto small_buffer2 = base::MakeRefCounted<net::IOBufferWithSize>(0);
     auto large_buffer2 = base::MakeRefCounted<BigIOBuffer>(std::move(copy));
-    auto op2 = std::make_unique<PendingOperation>(Operation::kWriteWithSHAKey,
-                                                  checksum_key, small_buffer2,
-                                                  large_buffer2);
+    auto op2 = std::make_unique<PendingOperation>(
+        Operation::kWriteWithSHAKey, url, origin_lock, checksum_key,
+        small_buffer2, large_buffer2);
     EnqueueOperation(std::move(op2));
   }
   WriteCommonDataHeader(small_buffer.get(), response_time, data_size);
 
   // Create the write operation.
-  auto op = std::make_unique<PendingOperation>(Operation::kWrite, key,
-                                               small_buffer, large_buffer);
+  auto op = std::make_unique<PendingOperation>(
+      Operation::kWrite, url, origin_lock, key, small_buffer, large_buffer);
   EnqueueOperation(std::move(op));
 }
 
@@ -513,15 +576,15 @@ void GeneratedCodeCache::FetchEntry(const GURL& url,
                                     const net::NetworkIsolationKey& nik,
                                     ReadDataCallback read_data_callback) {
   if (backend_state_ == kFailed) {
-    CollectStatistics(CacheEntryStatus::kError);
+    CollectStatistics(url, origin_lock, CacheEntryStatus::kError);
     // Fail the request.
     std::move(read_data_callback).Run(base::Time(), mojo_base::BigBuffer());
     return;
   }
 
   std::string key = GetCacheKey(url, origin_lock, nik, cache_type_);
-  auto op = std::make_unique<PendingOperation>(Operation::kFetch, key,
-                                               std::move(read_data_callback));
+  auto op = std::make_unique<PendingOperation>(
+      Operation::kFetch, url, origin_lock, key, std::move(read_data_callback));
   EnqueueOperation(std::move(op));
 }
 
@@ -530,12 +593,13 @@ void GeneratedCodeCache::DeleteEntry(const GURL& url,
                                      const net::NetworkIsolationKey& nik) {
   if (backend_state_ == kFailed) {
     // Silently fail.
-    CollectStatistics(CacheEntryStatus::kError);
+    CollectStatistics(url, origin_lock, CacheEntryStatus::kError);
     return;
   }
 
   std::string key = GetCacheKey(url, origin_lock, nik, cache_type_);
-  auto op = std::make_unique<PendingOperation>(Operation::kDelete, key);
+  auto op = std::make_unique<PendingOperation>(Operation::kDelete, url,
+                                               origin_lock, key);
   EnqueueOperation(std::move(op));
 
   lru_cache_.Delete(key);
@@ -639,15 +703,18 @@ void GeneratedCodeCache::OpenCompleteForWrite(
   DCHECK(Operation::kWrite == op->operation() ||
          Operation::kWriteWithSHAKey == op->operation());
   if (entry_result.net_error() != net::OK) {
-    CollectStatistics(CacheEntryStatus::kError);
+    CollectStatistics(op->resource_url(), op->origin_lock(),
+                      CacheEntryStatus::kError);
     CloseOperationAndIssueNext(op);
     return;
   }
 
   if (entry_result.opened()) {
-    CollectStatistics(CacheEntryStatus::kUpdate);
+    CollectStatistics(op->resource_url(), op->origin_lock(),
+                      CacheEntryStatus::kUpdate);
   } else {
-    CollectStatistics(CacheEntryStatus::kCreate);
+    CollectStatistics(op->resource_url(), op->origin_lock(),
+                      CacheEntryStatus::kCreate);
   }
 
   disk_cache::ScopedEntryPtr entry(entry_result.ReleaseEntry());
@@ -716,7 +783,8 @@ void GeneratedCodeCache::WriteComplete(PendingOperation* op) {
          Operation::kWriteWithSHAKey == op->operation());
   if (!op->succeeded()) {
     // The write failed; record the failure and doom the entry here.
-    CollectStatistics(CacheEntryStatus::kWriteFailed);
+    CollectStatistics(op->resource_url(), op->origin_lock(),
+                      CacheEntryStatus::kWriteFailed);
     DoomEntry(op);
   }
   CloseOperationAndIssueNext(op);
@@ -755,7 +823,8 @@ void GeneratedCodeCache::OpenCompleteForRead(
   DCHECK(Operation::kFetch == op->operation() ||
          Operation::kFetchWithSHAKey == op->operation());
   if (entry_result.net_error() != net::OK) {
-    CollectStatistics(CacheEntryStatus::kMiss);
+    CollectStatistics(op->resource_url(), op->origin_lock(),
+                      CacheEntryStatus::kMiss);
     op->RunReadCallback(this, base::Time(), mojo_base::BigBuffer());
     CloseOperationAndIssueNext(op);
     return;
@@ -811,8 +880,9 @@ void GeneratedCodeCache::ReadSmallBufferComplete(PendingOperation* op, int rv) {
   bool no_header = op->operation() == Operation::kFetchWithSHAKey;
   bool succeeded = (rv == op->small_buffer()->size() &&
                     (no_header || IsValidHeader(op->small_buffer())));
-  CollectStatistics(succeeded ? CacheEntryStatus::kHit
-                              : CacheEntryStatus::kMiss);
+  CollectStatistics(
+      op->resource_url(), op->origin_lock(),
+      succeeded ? CacheEntryStatus::kHit : CacheEntryStatus::kMiss);
 
   if (op->AddBufferCompletion(succeeded))
     ReadComplete(op);
@@ -845,8 +915,8 @@ void GeneratedCodeCache::ReadComplete(PendingOperation* op) {
       if (data_size <= kInlineDataLimit) {
         // Small data. Copy the data from the small buffer.
         DCHECK_EQ(0, op->large_buffer()->size());
-        mojo_base::BigBuffer data(base::as_bytes(op->small_buffer()->span())
-                                      .subspan(kHeaderSizeInBytes, data_size));
+        mojo_base::BigBuffer data(
+            op->small_buffer()->span().subspan(kHeaderSizeInBytes, data_size));
         op->RunReadCallback(this, response_time, std::move(data));
       } else if (!ShouldDeduplicateEntry(data_size)) {
         // Large data below the merging threshold, or deduplication is disabled.
@@ -863,9 +933,9 @@ void GeneratedCodeCache::ReadComplete(PendingOperation* op) {
         auto small_buffer = base::MakeRefCounted<net::IOBufferWithSize>(0);
         auto large_buffer = base::MakeRefCounted<BigIOBuffer>(data_size);
         auto op2 = std::make_unique<PendingOperation>(
-            Operation::kFetchWithSHAKey, checksum_key, response_time,
-            op->start_time(), small_buffer, large_buffer,
-            op->TakeReadCallback());
+            Operation::kFetchWithSHAKey, op->resource_url(), op->origin_lock(),
+            checksum_key, response_time, op->start_time(), small_buffer,
+            large_buffer, op->TakeReadCallback());
         EnqueueOperation(std::move(op2));
       }
     } else {
@@ -888,7 +958,8 @@ void GeneratedCodeCache::DoomEntry(PendingOperation* op) {
   DCHECK_NE(Operation::kGetBackend, op->operation());
   // Entries shouldn't be doomed if the backend hasn't been initialized.
   DCHECK_EQ(kInitialized, backend_state_);
-  CollectStatistics(CacheEntryStatus::kClear);
+  CollectStatistics(op->resource_url(), op->origin_lock(),
+                    CacheEntryStatus::kClear);
   backend_->DoomEntry(op->key(), net::LOWEST, net::CompletionOnceCallback());
 }
 
@@ -926,7 +997,7 @@ void GeneratedCodeCache::EnqueueOperationAndIssueIfNext(
 std::unique_ptr<GeneratedCodeCache::PendingOperation>
 GeneratedCodeCache::DequeueOperation(PendingOperation* op) {
   auto it = active_entries_map_.find(op->key());
-  DCHECK(it != active_entries_map_.end());
+  CHECK(it != active_entries_map_.end(), base::NotFatalUntil::M130);
   DCHECK(!it->second.empty());
   std::unique_ptr<PendingOperation> result = std::move(it->second.front());
   // |op| should be at the front.
@@ -1002,6 +1073,13 @@ void GeneratedCodeCache::OpenCompleteForSetLastUsedForTest(
     disk_entry->SetLastUsedTimeForTest(time);
   }
   std::move(callback).Run();
+}
+
+void GeneratedCodeCache::CollectStatisticsForTest(
+    const GURL& resource_url,
+    const GURL& origin_lock,
+    GeneratedCodeCache::CacheEntryStatus status) {
+  CollectStatistics(resource_url, origin_lock, status);
 }
 
 }  // namespace content

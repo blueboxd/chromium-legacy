@@ -12,7 +12,7 @@
 #include "third_party/blink/renderer/platform/heap/thread_state_storage.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
-#include "v8/include/cppgc/common.h"
+#include "v8/include/cppgc/common.h"  // IWYU pragma: export (for ThreadState::StackState alias)
 #include "v8/include/cppgc/heap-consistency.h"
 #include "v8/include/v8-callbacks.h"
 #include "v8/include/v8-cppgc.h"
@@ -103,6 +103,12 @@ class PLATFORM_EXPORT ThreadState final {
   //
   // Writing to a file requires a disabled sandbox.
   void TakeHeapSnapshotForTesting(const char* filename) const;
+
+  bool IsTakingHeapSnapshot() const;
+
+  // Copies a string into the V8 heap profiler, and returns a pointer to the
+  // copy. Only valid while taking a heap snapshot.
+  const char* CopyNameForHeapSnapshot(const char* name) const;
 
  private:
   explicit ThreadState(v8::Platform*);

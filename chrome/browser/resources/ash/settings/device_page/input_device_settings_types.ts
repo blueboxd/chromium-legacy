@@ -7,6 +7,7 @@ import * as AcceleratorKeysTypes from '../mojom-webui/accelerator_keys.mojom-web
 import * as ExtendedFkeysModifierTypes from '../mojom-webui/extended_fkeys_modifier.mojom-webui.js';
 import * as InputDeviceSettingsTypes from '../mojom-webui/input_device_settings.mojom-webui.js';
 import * as InputDeviceSettingsProviderTypes from '../mojom-webui/input_device_settings_provider.mojom-webui.js';
+import * as MetaKeyTypes from '../mojom-webui/meta_key.mojom-webui.js';
 import * as ModifierKeyTypes from '../mojom-webui/modifier_key.mojom-webui.js';
 import * as ShortcutInputProviderTypes from '../mojom-webui/shortcut_input_provider.mojom-webui.js';
 import * as SimulateRightClickModifierTypes from '../mojom-webui/simulate_right_click_modifier.mojom-webui.js';
@@ -17,8 +18,8 @@ import * as SixPackShortcutModifierTypes from '../mojom-webui/six_pack_shortcut_
  * Type alias for the add input device settings API.
  */
 
-export type MetaKey = InputDeviceSettingsTypes.MetaKey;
-export const MetaKey = InputDeviceSettingsTypes.MetaKey;
+export type MetaKey = MetaKeyTypes.MetaKey;
+export const MetaKey = MetaKeyTypes.MetaKey;
 export type ModifierKey = ModifierKeyTypes.ModifierKey;
 export const ModifierKey = ModifierKeyTypes.ModifierKey;
 
@@ -65,6 +66,10 @@ export type Keyboard = InputDeviceSettingsTypes.Keyboard;
 export type Touchpad = InputDeviceSettingsTypes.Touchpad;
 export type Mouse = InputDeviceSettingsTypes.Mouse;
 export type PointingStick = InputDeviceSettingsTypes.PointingStick;
+export type GraphicsTablet = InputDeviceSettingsTypes.GraphicsTablet;
+
+export type BatteryInfo = InputDeviceSettingsTypes.BatteryInfo;
+export type CompanionAppInfo = InputDeviceSettingsTypes.CompanionAppInfo;
 
 export interface Stylus {
   // Unique per device based on this VID/PID pair as follows: "<vid>:<pid>"
@@ -74,15 +79,6 @@ export interface Stylus {
   name: string;
   // TODO(yyhyyh@): Add Stylus settings with buttonRemapping: ButtonRemapping[]
   // setting.
-}
-
-export interface GraphicsTablet {
-  // Unique per device based on this VID/PID pair as follows: "<vid>:<pid>"
-  // where VID/PID are represented in lowercase hex
-  deviceKey: string;
-  id: number;
-  name: string;
-  settings: GraphicsTabletSettings;
 }
 
 export interface GraphicsTabletSettings {
@@ -156,6 +152,14 @@ export const CustomizationRestriction =
 export type MouseButtonConfig = InputDeviceSettingsTypes.MouseButtonConfig;
 export const MouseButtonConfig = InputDeviceSettingsTypes.MouseButtonConfig;
 
+export type GraphicsTabletButtonConfig =
+    InputDeviceSettingsTypes.GraphicsTabletButtonConfig;
+export const GraphicsTabletButtonConfig =
+    InputDeviceSettingsTypes.GraphicsTabletButtonConfig;
+
+export type CompanionAppState = InputDeviceSettingsTypes.CompanionAppState;
+export const CompanionAppState = InputDeviceSettingsTypes.CompanionAppState;
+
 export interface KeyboardObserverInterface {
   // Fired when the keyboard list is updated.
   onKeyboardListUpdated(keyboards: Keyboard[]): void;
@@ -195,6 +199,11 @@ export interface KeyboardAmbientLightSensorObserverInterface {
   // Fired when the keyboard ambient light sensor is changed.
   onKeyboardAmbientLightSensorEnabledChanged(keyboardAmbientLightSensorEnabled:
                                                  boolean): void;
+}
+
+export interface LidStateObserverInterface {
+  // Fired when the lid state is changed.
+  onLidStateChanged(isLidOpen: boolean): void;
 }
 
 export type ButtonPressObserverInterface =

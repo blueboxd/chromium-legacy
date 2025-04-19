@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/focused_node_details.h"
 #include "content/public/browser/host_zoom_map.h"
+#include "content/public/browser/media_session.h"
 #include "content/public/browser/page.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -95,6 +96,11 @@ views::View* AshWebViewImpl::GetInitiallyFocusedView() {
 
 void AshWebViewImpl::SetCornerRadii(const gfx::RoundedCornersF& corner_radii) {
   web_view_->holder()->SetCornerRadii(corner_radii);
+}
+
+const base::UnguessableToken& AshWebViewImpl::GetMediaSessionRequestId() {
+  return content::MediaSession::GetRequestIdFromWebContents(
+      web_contents_.get());
 }
 
 void AshWebViewImpl::AddedToWidget() {
@@ -186,6 +192,15 @@ bool AshWebViewImpl::CheckMediaAccessPermission(
   }
   return MediaCaptureDevicesDispatcher::GetInstance()
       ->CheckMediaAccessPermission(render_frame_host, security_origin, type);
+}
+
+std::string AshWebViewImpl::GetTitleForMediaControls(
+    content::WebContents* web_contents) {
+  if (!params_.source_title.empty()) {
+    return params_.source_title;
+  }
+
+  return content::WebContentsDelegate::GetTitleForMediaControls(web_contents);
 }
 
 void AshWebViewImpl::DidStopLoading() {

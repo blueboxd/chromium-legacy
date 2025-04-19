@@ -14,6 +14,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -64,9 +65,20 @@ BASE_FEATURE(kForceDawnInitializeFailure,
              "ForceDawnInitializeFailure",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Sets crash key in thread safe manner. This should be used for any crash keys
+// set from dawn error or device lost callbacks that may run on multiple
+// threads.
+template <uint32_t KeySize>
+void SetCrashKeyThreadSafe(crash_reporter::CrashKeyString<KeySize>& crash_key,
+                           std::string_view message) {
+  static base::NoDestructor<base::Lock> lock;
+  base::AutoLock auto_lock(*lock.get());
+  crash_key.Set(message);
+}
+
 void SetDawnErrorCrashKey(std::string_view message) {
   static crash_reporter::CrashKeyString<1024> error_key("dawn-error");
-  error_key.Set(message);
+  SetCrashKeyThreadSafe(error_key, message);
 }
 
 class Platform : public webgpu::DawnPlatform {
@@ -260,28 +272,9 @@ class DawnSharedState : public base::RefCountedThreadSafe<DawnSharedState>,
     }
   }
 
-  // Provided to wgpu::Device as error callback.
-  static void LogError(WGPUErrorType type,
-                       char const* message,
-                       void* userdata) {
-    if (type != WGPUErrorType_NoError) {
-      static_cast<DawnSharedState*>(userdata)->OnError(type, message);
-    }
-  }
-
-  // Provided to wgpu::Device as device lost callback.
-  static void LogDeviceLost(WGPUDeviceLostReason reason,
-                            char const* message,
-                            void* userdata) {
-    if (reason != WGPUDeviceLostReason_Destroyed) {
-      static_cast<DawnSharedState*>(userdata)->OnError(WGPUErrorType_DeviceLost,
-                                                       message);
-    }
-  }
-
   ~DawnSharedState() override;
 
-  void OnError(WGPUErrorType error_type, const char* message);
+  void OnError(wgpu::ErrorType error_type, const char* message);
 
   // base::trace_event::MemoryDumpProvider implementation:
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
@@ -290,7 +283,8 @@ class DawnSharedState : public base::RefCountedThreadSafe<DawnSharedState>,
   std::unique_ptr<webgpu::DawnCachingInterface> caching_interface_;
 
   Platform platform_{/*dawn_caching_interface=*/nullptr,
-                     /*uma_prefix=*/"GPU.GraphiteDawn."};
+                     /*uma_prefix=*/"GPU.GraphiteDawn.",
+                     /*record_cache_count_uma=*/true};
   std::unique_ptr<webgpu::DawnInstance> instance_;
   wgpu::Adapter adapter_;
   wgpu::Device device_;
@@ -309,9 +303,10 @@ DawnSharedState::~DawnSharedState() {
       base::trace_event::MemoryDumpManager::GetInstance()
           ->UnregisterDumpProvider(this);
     }
-    device_.SetUncapturedErrorCallback(nullptr, nullptr);
-    device_.SetDeviceLostCallback(nullptr, nullptr);
     device_.SetLoggingCallback(nullptr, nullptr);
+    // Destroy the device now so that the lost callback, which references this
+    // class, is fired now before we clean up the rest of this class.
+    device_.Destroy();
   }
   if (instance_) {
     instance_->DisconnectDawnPlatform();
@@ -351,15 +346,17 @@ bool DawnSharedState::Initialize(
   if (features::kSkiaGraphiteDawnSkipValidation.Get()) {
     enabled_toggles.push_back("skip_validation");
   }
-  enabled_toggles.push_back("disable_robustness");
 #endif
+  enabled_toggles.push_back("disable_robustness");
   enabled_toggles.push_back("disable_lazy_clear_for_mapped_at_creation_buffer");
 
 #if BUILDFLAG(IS_WIN)
-  // ClearRenderTargetView() is buggy with some GPUs, so use draw instead.
-  // TODO(crbug.com/329702368): only enable color_clear_with_draw for GPUs with
-  // the issue.
   if (backend_type == wgpu::BackendType::D3D11) {
+    // Use packed D24_UNORM_S8_UINT DXGI format for Depth24PlusStencil8 format.
+    enabled_toggles.push_back("use_packed_depth24_unorm_stencil8_format");
+    // ClearRenderTargetView() is buggy with some GPUs, so use draw instead.
+    // TODO(crbug.com/329702368): only enable color_clear_with_draw for GPUs
+    // with the issue.
     enabled_toggles.push_back("clear_color_with_draw");
   }
 #endif
@@ -387,6 +384,23 @@ bool DawnSharedState::Initialize(
   cache_desc.nextInChain = &toggles_desc;
 
   wgpu::DeviceDescriptor descriptor;
+  descriptor.SetUncapturedErrorCallback(
+      [](const wgpu::Device&, wgpu::ErrorType type, const char* message,
+         DawnSharedState* state) {
+        if (type != wgpu::ErrorType::NoError) {
+          state->OnError(type, message);
+        }
+      },
+      this);
+  descriptor.SetDeviceLostCallback(
+      wgpu::CallbackMode::AllowSpontaneous,
+      [](const wgpu::Device&, wgpu::DeviceLostReason reason,
+         const char* message, DawnSharedState* state) {
+        if (reason != wgpu::DeviceLostReason::Destroyed) {
+          state->OnError(wgpu::ErrorType::DeviceLost, message);
+        }
+      },
+      this);
   descriptor.nextInChain = &cache_desc;
 
   std::vector<wgpu::FeatureName> features = {
@@ -512,6 +526,7 @@ bool DawnSharedState::Initialize(
       wgpu::FeatureName::TransientAttachments,
 
       wgpu::FeatureName::DawnLoadResolveTexture,
+      wgpu::FeatureName::DawnPartialLoadResolveTexture,
   };
 
   wgpu::Adapter adapter(adapters[0].Get());
@@ -534,7 +549,7 @@ bool DawnSharedState::Initialize(
 
   // Use best limits for the device.
   wgpu::SupportedLimits supportedLimits = {};
-  if (!adapter.GetLimits(&supportedLimits)) {
+  if (adapter.GetLimits(&supportedLimits) != wgpu::Status::Success) {
     LOG(ERROR) << "Failed to call adapter.GetLimits().";
     return false;
   }
@@ -580,10 +595,6 @@ bool DawnSharedState::Initialize(
     return false;
   }
 
-  device.SetUncapturedErrorCallback(&DawnSharedState::LogError,
-                                    static_cast<void*>(this));
-  device.SetDeviceLostCallback(&DawnSharedState::LogDeviceLost,
-                               static_cast<void*>(this));
   device.SetLoggingCallback(&DawnSharedState::LogInfo, nullptr);
 
   adapter_ = std::move(adapter);
@@ -604,7 +615,7 @@ bool DawnSharedState::Initialize(
 
   if (base::SingleThreadTaskRunner::HasCurrentDefault()) {
     base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-        this, "DawnSharedState",
+        this, "DawnSharedContext",
         base::SingleThreadTaskRunner::GetCurrentDefault());
     registered_memory_dump_provider_ = true;
   }
@@ -624,7 +635,7 @@ std::optional<error::ContextLostReason> DawnSharedState::GetResetStatus()
   return context_lost_reason_;
 }
 
-void DawnSharedState::OnError(WGPUErrorType error_type, const char* message) {
+void DawnSharedState::OnError(wgpu::ErrorType error_type, const char* message) {
   LOG(ERROR) << message;
   SetDawnErrorCrashKey(message);
 
@@ -636,11 +647,11 @@ void DawnSharedState::OnError(WGPUErrorType error_type, const char* message) {
 
     if (const char* result_string = HRESULTToString(result)) {
       LOG(ERROR) << "Device removed reason: " << result_string;
-      reason_message_key.Set(result_string);
+      SetCrashKeyThreadSafe(reason_message_key, result_string);
     } else {
       auto unknown_error = base::StringPrintf("Unknown error(0x%08lX)", result);
       LOG(ERROR) << "Device removed reason: " << unknown_error;
-      reason_message_key.Set(unknown_error.c_str());
+      SetCrashKeyThreadSafe(reason_message_key, unknown_error.c_str());
     }
   }
 #endif
@@ -652,16 +663,22 @@ void DawnSharedState::OnError(WGPUErrorType error_type, const char* message) {
     return;
   }
 
-  if (error_type == WGPUErrorType_OutOfMemory) {
-    context_lost_reason_ = error::kOutOfMemory;
-  } else if (error_type == WGPUErrorType_Validation) {
-    context_lost_reason_ = error::kGuilty;
-  } else {
-    context_lost_reason_ = error::kUnknown;
+  switch (error_type) {
+    case wgpu::ErrorType::OutOfMemory:
+      context_lost_reason_ = error::kOutOfMemory;
+      break;
+    case wgpu::ErrorType::Validation:
+      context_lost_reason_ = error::kGuilty;
+      break;
+    default:
+      context_lost_reason_ = error::kUnknown;
+      break;
   }
 }
 
 namespace {
+static constexpr char kDawnMemoryDumpPrefix[] = "gpu/dawn";
+
 class DawnMemoryDump : public dawn::native::MemoryDump {
  public:
   explicit DawnMemoryDump(base::trace_event::ProcessMemoryDump* pmd)
@@ -675,20 +692,20 @@ class DawnMemoryDump : public dawn::native::MemoryDump {
                  const char* key,
                  const char* units,
                  uint64_t value) override {
-    pmd_->GetOrCreateAllocatorDump(base::JoinString({kPrefix, name}, ""))
+    pmd_->GetOrCreateAllocatorDump(
+            base::JoinString({kDawnMemoryDumpPrefix, name}, "/"))
         ->AddScalar(key, units, value);
   }
 
   void AddString(const char* name,
                  const char* key,
                  const std::string& value) override {
-    pmd_->GetOrCreateAllocatorDump(base::JoinString({kPrefix, name}, ""))
+    pmd_->GetOrCreateAllocatorDump(
+            base::JoinString({kDawnMemoryDumpPrefix, name}, "/"))
         ->AddString(key, "", value);
   }
 
  private:
-  static constexpr char kPrefix[] = "gpu/dawn/";
-
   const raw_ptr<base::trace_event::ProcessMemoryDump> pmd_;
 };
 }  // namespace
@@ -696,10 +713,14 @@ class DawnMemoryDump : public dawn::native::MemoryDump {
 bool DawnSharedState::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
-  // TODO(https://crbug.com/330806170): Implement background level of
-  // detail support for emitting to UMA GPU memory histograms.
-  if (args.level_of_detail !=
+  if (args.level_of_detail ==
       base::trace_event::MemoryDumpLevelOfDetail::kBackground) {
+    using base::trace_event::MemoryAllocatorDump;
+    pmd->GetOrCreateAllocatorDump(kDawnMemoryDumpPrefix)
+        ->AddScalar(MemoryAllocatorDump::kNameSize,
+                    MemoryAllocatorDump::kUnitsBytes,
+                    dawn::native::ComputeEstimatedMemoryUsage(device_.Get()));
+  } else {
     DawnMemoryDump dump(pmd);
     dawn::native::DumpMemoryStatistics(device_.Get(), &dump);
   }

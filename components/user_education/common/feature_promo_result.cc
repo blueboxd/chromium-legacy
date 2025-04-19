@@ -67,6 +67,12 @@ std::ostream& operator<<(std::ostream& os,
     case FeaturePromoResult::kExceededMaxShowCount:
       os << "kExceededMaxShowCount";
       break;
+    case FeaturePromoResult::kBlockedByNewProfile:
+      os << "kBlockedByNewProfile";
+      break;
+    case FeaturePromoResult::kBlockedByReshowDelay:
+      os << "kBlockedByReshowDelay";
+      break;
   }
   return os;
 }

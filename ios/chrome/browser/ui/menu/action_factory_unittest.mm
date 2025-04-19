@@ -8,6 +8,7 @@
 #import "base/test/metrics/histogram_tester.h"
 #import "base/test/scoped_feature_list.h"
 #import "base/test/task_environment.h"
+#import "components/tab_groups/tab_group_id.h"
 #import "components/tab_groups/tab_group_visual_data.h"
 #import "ios/chrome/browser/net/model/crurl.h"
 #import "ios/chrome/browser/shared/model/web_state_list/tab_group.h"
@@ -26,6 +27,8 @@
 #import "ui/base/l10n/l10n_util_mac.h"
 #import "ui/base/test/ios/ui_image_test_utils.h"
 #import "url/gurl.h"
+
+using tab_groups::TabGroupId;
 
 namespace {
 const MenuScenarioHistogram kTestMenuScenario =
@@ -365,7 +368,10 @@ TEST_F(ActionFactoryTest, CloseAllTabsAction) {
   UIImage* expectedImage =
       DefaultSymbolWithPointSize(kXMarkSymbol, kSymbolActionPointSize);
   NSString* expectedTitle =
-      l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_CLOSEALLTABS);
+      IsTabGroupSyncEnabled()
+          ? l10n_util::GetNSString(
+                IDS_IOS_CONTENT_CONTEXT_CLOSEALLTABSANDGROUPS)
+          : l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_CLOSEALLTABS);
 
   UIAction* action = [factory actionToCloseAllTabsWithBlock:^{
   }];
@@ -443,10 +449,12 @@ TEST_F(ActionFactoryTest, AddTabsToGroupSeveralGroups) {
   ActionFactory* factory =
       [[ActionFactory alloc] initWithScenario:kTestMenuScenario];
 
-  TabGroup group1(tab_groups::TabGroupVisualData(
-      u"First", tab_groups::TabGroupColorId::kGrey));
-  TabGroup group2(tab_groups::TabGroupVisualData(
-      u"Second", tab_groups::TabGroupColorId::kGrey));
+  TabGroup group1(TabGroupId::GenerateNew(),
+                  tab_groups::TabGroupVisualData(
+                      u"First", tab_groups::TabGroupColorId::kGrey));
+  TabGroup group2(TabGroupId::GenerateNew(),
+                  tab_groups::TabGroupVisualData(
+                      u"Second", tab_groups::TabGroupColorId::kGrey));
   std::set<const TabGroup*> groups{&group1, &group2};
 
   UIMenuElement* menu_element =
@@ -515,14 +523,16 @@ TEST_F(ActionFactoryTest, AddTabsToGroupNoGroups) {
 // Tests the different sub elements of the menu when moving a tab to a group.
 TEST_F(ActionFactoryTest, MoveTabFromGroup) {
   feature_list_.InitWithFeatures(
-      {kTabGroupsInGrid, kTabGroupsIPad, kModernTabStrip}, {});
+      {kTabGroupsInGrid, kTabGroupsIPad, kModernTabStrip, kTabGroupSync}, {});
   ActionFactory* factory =
       [[ActionFactory alloc] initWithScenario:kTestMenuScenario];
 
-  TabGroup group1(tab_groups::TabGroupVisualData(
-      u"First", tab_groups::TabGroupColorId::kGrey));
-  TabGroup group2(tab_groups::TabGroupVisualData(
-      u"Second", tab_groups::TabGroupColorId::kGrey));
+  TabGroup group1(TabGroupId::GenerateNew(),
+                  tab_groups::TabGroupVisualData(
+                      u"First", tab_groups::TabGroupColorId::kGrey));
+  TabGroup group2(TabGroupId::GenerateNew(),
+                  tab_groups::TabGroupVisualData(
+                      u"Second", tab_groups::TabGroupColorId::kGrey));
   std::set<const TabGroup*> groups{&group1, &group2};
 
   UIMenuElement* menu_element =
@@ -560,4 +570,63 @@ TEST_F(ActionFactoryTest, MoveTabFromGroup) {
   EXPECT_EQ(2u, titles.count);
   EXPECT_TRUE([titles containsObject:@"First"]);
   EXPECT_TRUE([titles containsObject:@"Second"]);
+}
+
+// Tests that the ungroup tab group action has the right title and image.
+TEST_F(ActionFactoryTest, UngroupTabGroup) {
+  feature_list_.InitWithFeatures(
+      {kTabGroupsInGrid, kTabGroupsIPad, kModernTabStrip, kTabGroupSync}, {});
+  ActionFactory* factory =
+      [[ActionFactory alloc] initWithScenario:kTestMenuScenario];
+
+  UIImage* expectedImage = DefaultSymbolWithPointSize(kUngroupTabGroupSymbol,
+                                                      kSymbolActionPointSize);
+  NSString* expectedTitle =
+      l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_UNGROUP);
+
+  UIAction* action = [factory actionToUngroupTabGroupWithBlock:^{
+  }];
+
+  EXPECT_TRUE([expectedTitle isEqualToString:action.title]);
+  EXPECT_EQ(expectedImage, action.image);
+}
+
+// Tests that the delete tab group action has the right title and image.
+TEST_F(ActionFactoryTest, DeleteTabGroup) {
+  feature_list_.InitWithFeatures(
+      {kTabGroupsInGrid, kTabGroupsIPad, kModernTabStrip, kTabGroupSync}, {});
+  ActionFactory* factory =
+      [[ActionFactory alloc] initWithScenario:kTestMenuScenario];
+
+  UIImage* expectedImage =
+      DefaultSymbolWithPointSize(kDeleteActionSymbol, kSymbolActionPointSize);
+  NSString* expectedTitle =
+      l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_DELETEGROUP);
+
+  UIAction* action = [factory actionToDeleteTabGroupWithBlock:^{
+  }];
+
+  EXPECT_TRUE([expectedTitle isEqualToString:action.title]);
+  EXPECT_EQ(expectedImage, action.image);
+  EXPECT_EQ(UIMenuElementAttributesDestructive, action.attributes);
+}
+
+// Tests that the close tab group action has the right title and image.
+TEST_F(ActionFactoryTest, CloseTabGroup) {
+  feature_list_.InitWithFeatures(
+      {kTabGroupsInGrid, kTabGroupsIPad, kModernTabStrip, kTabGroupSync}, {});
+  ActionFactory* factory =
+      [[ActionFactory alloc] initWithScenario:kTestMenuScenario];
+
+  UIImage* expectedImage =
+      DefaultSymbolWithPointSize(kXMarkSymbol, kSymbolActionPointSize);
+  NSString* expectedTitle =
+      l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_CLOSEGROUP);
+
+  UIAction* action = [factory actionToCloseTabGroupWithBlock:^{
+  }];
+
+  EXPECT_TRUE([expectedTitle isEqualToString:action.title]);
+  EXPECT_EQ(expectedImage, action.image);
+  EXPECT_EQ(UIMenuElementAttributesDestructive, action.attributes);
 }

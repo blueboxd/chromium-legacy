@@ -71,7 +71,7 @@ class AdaptiveToolbarMediatorTest : public PlatformTest {
         ios::TemplateURLServiceFactory::GetInstance(),
         ios::TemplateURLServiceFactory::GetDefaultFactory());
 
-    chrome_browser_state_ = test_cbs_builder.Build();
+    chrome_browser_state_ = std::move(test_cbs_builder).Build();
     test_browser_ = std::make_unique<TestBrowser>(chrome_browser_state_.get());
     WebNavigationBrowserAgent::CreateForBrowser(test_browser_.get());
 
@@ -136,6 +136,8 @@ class AdaptiveToolbarMediatorTest : public PlatformTest {
   // observers when web_state_list_ gets dealloc.
   ~AdaptiveToolbarMediatorTest() override {
     ios::provider::test::SetVoiceSearchEnabled(false);
+
+    ClipboardRecentContent::SetInstance(nullptr);
 
     [mediator_ disconnect];
   }

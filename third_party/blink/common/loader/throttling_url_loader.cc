@@ -31,19 +31,10 @@ namespace blink {
 
 namespace {
 
-// Removing headers won't work if we intend to remove the headers for the new
-// requests because all previous headers will be merge into the new header if
-// there is no overrides in the new header.
-// Remove Accept-Language header from `modified_headers` before we merge
-// incoming new headers. This helps us avoid inheriting headers which need to be
-// removed in the new requests.
 void RemoveModifiedHeadersBeforeMerge(
     net::HttpRequestHeaders* modified_headers) {
-  if (base::FeatureList::IsEnabled(
-          network::features::kReduceAcceptLanguageOriginTrial)) {
-    DCHECK(modified_headers);
-    modified_headers->RemoveHeader(net::HttpRequestHeaders::kAcceptLanguage);
-  }
+  DCHECK(modified_headers);
+  modified_headers->RemoveHeader(net::HttpRequestHeaders::kAcceptLanguage);
 }
 
 // Merges |removed_headers_B| into |removed_headers_A|.
@@ -661,8 +652,12 @@ void ThrottlingURLLoader::OnReceiveResponse(
     for (auto& entry : throttles_) {
       auto* throttle = entry.throttle.get();
       base::Time start = base::Time::Now();
+      auto weak_ptr = weak_factory_.GetWeakPtr();
       throttle->BeforeWillProcessResponse(response_url_, *response_head,
                                           &has_pending_restart);
+      if (!weak_ptr) {
+        return;
+      }
       RecordExecutionTimeHistogram("BeforeWillProcessResponse", start);
       if (!HandleThrottleResult(throttle)) {
         return;
@@ -682,8 +677,12 @@ void ThrottlingURLLoader::OnReceiveResponse(
       auto* throttle = entry.throttle.get();
       bool throttle_deferred = false;
       base::Time start = base::Time::Now();
+      auto weak_ptr = weak_factory_.GetWeakPtr();
       throttle->WillProcessResponse(response_url_, response_head.get(),
                                     &throttle_deferred);
+      if (!weak_ptr) {
+        return;
+      }
       RecordExecutionTimeHistogram(GetStageNameForHistogram(DEFERRED_RESPONSE),
                                    start);
       if (!HandleThrottleResult(throttle, throttle_deferred, &deferred))
@@ -853,7 +852,11 @@ void ThrottlingURLLoader::OnComplete(
     for (auto& entry : throttles_) {
       auto* throttle = entry.throttle.get();
       base::Time start = base::Time::Now();
+      auto weak_ptr = weak_factory_.GetWeakPtr();
       throttle->WillOnCompleteWithError(status);
+      if (!weak_ptr) {
+        return;
+      }
       RecordExecutionTimeHistogram("WillOnCompleteWithError", start);
       if (!HandleThrottleResult(throttle)) {
         return;

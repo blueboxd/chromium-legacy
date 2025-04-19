@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "components/url_formatter/url_formatter.h"
 
 #include <algorithm>
@@ -490,8 +495,8 @@ ComponentResult IDNToUnicodeOneComponent(
     // be safely displayed to the user.
     out->resize(original_length + output_length);
     result.spoof_check_result = SpoofCheckIDNComponent(
-        std::u16string_view(out->data() + original_length,
-                            base::checked_cast<size_t>(output_length)),
+        std::u16string_view(*out).substr(
+            original_length, base::checked_cast<size_t>(output_length)),
         top_level_domain, top_level_domain_unicode);
     DCHECK_NE(IDNSpoofChecker::Result::kNone, result.spoof_check_result);
     if (ignore_spoof_check_results ||

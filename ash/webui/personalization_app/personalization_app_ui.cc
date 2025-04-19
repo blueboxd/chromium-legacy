@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ash/webui/personalization_app/personalization_app_ui.h"
 
 #include <memory>
@@ -157,14 +162,22 @@ void AddStrings(content::WebUIDataSource* source) {
       {"ariaLabelEnableAutoColorMode",
        IDS_PERSONALIZATION_APP_ARIA_LABEL_ENABLE_AUTO_COLOR_MODE},
       {"tooltipAutoColorMode", IDS_PERSONALIZATION_APP_TOOLTIP_AUTO_COLOR_MODE},
-      {"geolocationWarningTextForWallpaper",
-       IDS_PERSONALIZATION_APP_THEME_GEOLOCATION_WARNING_TEXT_FOR_WALLPAPER},
+      {"errorTooltipAutoColorMode",
+       IDS_PERSONALIZATION_APP_ERROR_TOOLTIP_AUTO_COLOR_MODE},
       {"geolocationWarningTextForWeather",
        IDS_PERSONALIZATION_APP_THEME_GEOLOCATION_WARNING_TEXT_FOR_WEATHER},
+      {"autoModeGeolocationDialogText",
+       IDS_PERSONALIZATION_APP_THEME_GEOLOCATION_DIALOG_BODY},
+      {"autoModeGeolocationDialogConfirmButton",
+       IDS_PERSONALIZATION_APP_THEME_GEOLOCATION_DIALOG_CONFIRM_BUTTON},
+      {"autoModeGeolocationDialogCancelButton",
+       IDS_PERSONALIZATION_APP_THEME_GEOLOCATION_DIALOG_CANCEL_BUTTON},
       {"systemGeolocationDialogTitle",
        IDS_PERSONALIZATION_APP_GEOLOCATION_DIALOG_TITLE},
-      {"systemGeolocationDialogBody",
-       IDS_PERSONALIZATION_APP_GEOLOCATION_DIALOG_BODY},
+      {"systemGeolocationDialogBodyParagraph1",
+       IDS_PERSONALIZATION_APP_GEOLOCATION_DIALOG_BODY_PARAGRAPH1},
+      {"systemGeolocationDialogBodyParagraph2",
+       IDS_PERSONALIZATION_APP_GEOLOCATION_DIALOG_BODY_PARAGRAPH2},
       {"systemGeolocationDialogConfirmButton",
        IDS_PERSONALIZATION_APP_GEOLOCATION_DIALOG_CONFIRM_BUTTON},
       {"systemGeolocationDialogCancelButton",
@@ -375,8 +388,8 @@ void AddStrings(content::WebUIDataSource* source) {
   source->AddString("timeOfDayBannerImageUrl",
                     GetAmbientBackendController()->GetPromoBannerUrl());
 
-  source->AddString("systemGeolocationDialogLearnMoreUrl",
-                    kPrivacyHubGeolocationLearnMoreUrl);
+  source->AddString("geolocationAccuracyLearnMoreUrl",
+                    kPrivacyHubGeolocationAccuracyLearnMoreURL);
 
   // Product name does not need to be translated.
   auto product_name =
@@ -505,7 +518,6 @@ void PersonalizationAppUI::BindInterface(
 
 void PersonalizationAppUI::BindInterface(
     mojo::PendingReceiver<color_change_listener::mojom::PageHandler> receiver) {
-  DCHECK(chromeos::features::IsJellyEnabled());
   color_provider_handler_ = std::make_unique<ui::ColorChangeHandler>(
       web_ui()->GetWebContents(), std::move(receiver));
 }
@@ -526,9 +538,6 @@ void PersonalizationAppUI::AddBooleans(content::WebUIDataSource* source) {
       "isRgbKeyboardSupported",
       Shell::Get()->rgb_keyboard_manager()->IsRgbKeyboardSupported());
 
-  source->AddBoolean("isPersonalizationJellyEnabled",
-                     features::IsPersonalizationJellyEnabled());
-
   source->AddBoolean("isUserAvatarCustomizationSelectorsEnabled",
                      user_provider_->IsCustomizationSelectorsPrefEnabled());
 
@@ -542,29 +551,24 @@ void PersonalizationAppUI::AddBooleans(content::WebUIDataSource* source) {
                      features::IsCrosPrivacyHubLocationEnabled());
 
   const bool common_sea_pen_requirements =
-      sea_pen_provider_->IsEligibleForSeaPen();
+      sea_pen_provider_->IsEligibleForSeaPen() &&
+      manta::features::IsMantaServiceEnabled();
   source->AddBoolean("isSeaPenEnabled",
                      ::ash::features::IsSeaPenEnabled() &&
-                         manta::features::IsMantaServiceEnabled() &&
                          common_sea_pen_requirements);
   source->AddBoolean("isSeaPenTextInputEnabled",
-                     ::ash::features::IsSeaPenTextInputEnabled() &&
-                         manta::features::IsMantaServiceEnabled() &&
-                         common_sea_pen_requirements);
-  source->AddBoolean("isSeaPenUINextEnabled",
-                     ::ash::features::IsSeaPenUINextEnabled() &&
-                         manta::features::IsMantaServiceEnabled() &&
-                         common_sea_pen_requirements);
+                     common_sea_pen_requirements &&
+                         ::ash::features::IsSeaPenTextInputEnabled() &&
+                         sea_pen_provider_->IsEligibleForSeaPenTextInput());
   source->AddBoolean("isSeaPenUseExptTemplateEnabled",
-                     ::ash::features::IsSeaPenUseExptTemplateEnabled() &&
-                         manta::features::IsMantaServiceEnabled() &&
-                         common_sea_pen_requirements);
+                     common_sea_pen_requirements &&
+                         ::ash::features::IsSeaPenUseExptTemplateEnabled());
   source->AddBoolean("isSeaPenEnterpriseEnabled",
-                     ::ash::features::IsSeaPenEnterpriseEnabled() &&
-                         manta::features::IsMantaServiceEnabled() &&
-                         common_sea_pen_requirements);
+                     common_sea_pen_requirements &&
+                         ::ash::features::IsSeaPenEnterpriseEnabled());
   source->AddBoolean("isLacrosEnabled",
                      ::crosapi::lacros_startup_state::IsLacrosEnabled());
+  source->AddBoolean("isVcResizeThumbnailEnabled", false);
 }
 
 void PersonalizationAppUI::AddIntegers(content::WebUIDataSource* source) {

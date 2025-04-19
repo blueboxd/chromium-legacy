@@ -112,6 +112,7 @@ group("gn_all") {
       "//third_party/distributed_point_functions/shim:distributed_point_functions_shim_unittests",
       "//third_party/flatbuffers:flatbuffers_unittests",
       "//third_party/liburlpattern:liburlpattern_unittests",
+      "//third_party/rapidhash:rapidhash_fuzztests",
       "//tools/binary_size:binary_size_trybot_py",
       "//tools/ipc_fuzzer:ipc_fuzzer_all",
       "//tools/metrics:metrics_metadata",
@@ -148,8 +149,6 @@ group("gn_all") {
       deps += [
         "//components/subresource_filter/tools:subresource_filter_tools",
         "//components/zucchini:zucchini",
-        "//gpu/gles2_conform_support:gles2_conform_test",
-        "//gpu/khronos_glcts_support:khronos_glcts_test",
         "//net:hpack_example_generator",
         "//third_party/spirv-tools/src:SPIRV-Tools",
         "//tools/aggregation_service:aggregation_service_tool",
@@ -311,15 +310,12 @@ group("gn_all") {
 
     if (toolkit_views) {
       deps += [
+        "//chrome/browser/enterprise/watermark:watermark_app",
         "//ui/views:views_unittests",
         "//ui/views/examples:views_examples",
         "//ui/views/examples:views_examples_unittests",
         "//ui/views/examples:views_examples_with_content",
       ]
-    }
-
-    if (enterprise_watermark) {
-      deps += [ "//chrome/browser/enterprise/watermark:watermark_app" ]
     }
 
     if (use_aura) {
@@ -384,7 +380,6 @@ group("gn_all") {
         "//chrome/android/webapk/shell_apk/prepare_upload_dir:prepare_webapk_shell_upload_dir",
         "//chrome/test:android_browsertests",
         "//components:components_junit_tests",
-        "//components/ip_protection/android_auth_client_lib/javatests:ip_protection_auth_test_apk",
         "//content/public/android:content_junit_tests",
         "//content/shell/android:content_shell_apk",
         "//device:device_junit_tests",
@@ -414,7 +409,7 @@ group("gn_all") {
         deps += [
           "//android_webview:empty_group",
           "//android_webview/test",
-          "//android_webview/tools/automated_ui_tests:webview_ui_test_app",
+          "//android_webview/tools/automated_ui_tests:webview_ui_test_app_test_apk",
           "//android_webview/tools/captured_sites_tests:captured_sites_test_app",
           "//android_webview/tools/sdk_sandbox",
           "//android_webview/tools/system_webview_shell",
@@ -449,9 +444,9 @@ group("gn_all") {
         "//ash/components:ash_components_unittests",
         "//ash/keyboard/ui:keyboard_unittests",
         "//ash/webui:ash_webui_unittests",
+        "//chrome/browser/ash/child_accounts/time_limit_consistency_test:usage_time_limit_unittests",
         "//chrome/browser/metrics/perf:profile_provider_unittest",
         "//chrome/test:ash_crosapi_tests",
-        "//chrome/test:usage_time_limit_unittests",
         "//chromeos/ash/components/proximity_auth:proximity_auth_unittests",
         "//chromeos/components:chromeos_components_unittests",
         "//components/exo/wayland:wayland_client_compatibility_tests",
@@ -605,16 +600,15 @@ group("gn_all") {
         "//mojo:mojo_perftests",
         "//services/service_manager/public/cpp",
         "//testing/gmock:gmock_main",
-        "//third_party/breakpad:dump_syms($host_toolchain)",
-        "//third_party/breakpad:microdump_stackwalk($host_toolchain)",
-        "//third_party/breakpad:minidump_dump($host_toolchain)",
-        "//third_party/breakpad:minidump_stackwalk($host_toolchain)",
+        "//third_party/breakpad:dump_syms($host_system_allocator_toolchain)",
+        "//third_party/breakpad:microdump_stackwalk($host_system_allocator_toolchain)",
+        "//third_party/breakpad:minidump_dump($host_system_allocator_toolchain)",
+        "//third_party/breakpad:minidump_stackwalk($host_system_allocator_toolchain)",
       ]
     }
 
     if (is_linux || is_chromeos_lacros) {
       deps += [
-        "//gpu/khronos_glcts_support:khronos_glcts_test",
         "//skia:filter_fuzz_stub",
         "//skia:image_operations_bench",
         "//ui/snapshot:snapshot_unittests",
@@ -631,7 +625,7 @@ group("gn_all") {
 
     if (is_mac) {
       deps += [
-        "//third_party/breakpad:dump_syms",
+        "//third_party/breakpad:dump_syms($host_system_allocator_toolchain)",
 
         # The following are accessibility API tools.
         "//tools/accessibility/inspect:ax_dump_events",
@@ -675,7 +669,29 @@ group("gn_all") {
           host_os == "win") {
         deps += [ "//chrome/test/mini_installer:mini_installer_tests" ]
       }
-    } else if (!is_android && !is_ios && !is_fuchsia) {
+    }
+
+    if (!is_fuchsia) {
+      # The official builders use this binary from the default toolchain's
+      # output directory after building in order to upload the symbols of that
+      # binary. They build the binary like `ninja symupload` which requires the
+      # target to be a dependency in the default_toolchain from `gn_all` for the
+      # name to resolve.
+      deps += [ "//third_party/breakpad:symupload" ]
+    }
+    if (is_mac && host_cpu == "arm64") {
+      # TODO(crbug.com/349268750): This alias exists because the official Mac
+      # arm64 builders (which cross-build the x64 binaries) use the hardcoded
+      # path of the `$host_toolchain/symupload` to build and run the symupload
+      # binary. And the same recipes are used on all branches!! So we would break
+      # the stable branch builders by changing the recipe to build and run the
+      # binary from the root_build_dir.
+      #
+      # Once this code is in stable, we can land the following CLs to change how
+      # symupload is built and run on Mac arm64 official builders, and then this
+      # alias can be removed.
+      # Build: https://chrome-internal-review.googlesource.com/c/chrome/src-internal/+/7430844
+      # Run: https://chrome-internal-review.googlesource.com/c/chrome/tools/release/scripts/+/7430843
       deps += [ "//third_party/breakpad:symupload($host_toolchain)" ]
     }
 
@@ -888,6 +904,9 @@ if (enable_remoting && ((is_linux && ozone_platform_x11) ||
       "//remoting/host:host",
       "//tools/traffic_annotation:annotations_xml",
     ]
+    if (enable_enterprise_companion) {
+      deps += [ "//chrome/enterprise_companion" ]
+    }
   }
 }
 
@@ -959,6 +978,11 @@ if (is_win) {
     if (is_chrome_branded) {
       deps += [ "//remoting/host:remoting_host_installation" ]
     }
+    if (enable_platform_experience) {
+      deps += [
+        "//chrome/browser/platform_experience/win:platform_experience_helper",
+      ]
+    }
   }
 
   group("chrome_official_builder") {
@@ -976,7 +1000,7 @@ if (is_win) {
       "//net:net_unittests",
       "//printing:printing_unittests",
       "//sql:sql_unittests",
-      "//third_party/breakpad:symupload($host_toolchain)",
+      "//third_party/breakpad:symupload",
       "//ui/base:ui_base_unittests",
       "//ui/gfx:gfx_unittests",
       "//ui/touch_selection:ui_touch_selection_unittests",
@@ -1004,7 +1028,8 @@ if (is_chromeos_ash) {
       "//media/capture:capture_unittests",
       "//sandbox/linux:chrome_sandbox",
       "//sandbox/linux:sandbox_linux_unittests",
-      "//third_party/breakpad:minidump_stackwalk($host_toolchain)",
+      "//services/screen_ai:screen_ai_ocr_perf_test",
+      "//third_party/breakpad:minidump_stackwalk($host_system_allocator_toolchain)",
       "//third_party/dawn/src/dawn/tests:dawn_end2end_tests",
       "//third_party/dawn/src/dawn/tests:dawn_unittests",
       "//ui/ozone:ozone_integration_tests",
@@ -1065,7 +1090,8 @@ if (use_blink && !is_cronet_build) {
       deps = [
         "//chrome/test/chromedriver:chromedriver_server",
         "//chrome/test/chromedriver:chromedriver_unittests",
-        "//chrome/test/chromedriver:generate_chromedriver_license",
+        "//chrome/test/chromedriver:copy_license",
+        "//chrome/test/chromedriver:generate_chromedriver_notices",
       ]
     }
   }
@@ -1096,9 +1122,12 @@ if (use_blink && !is_cronet_build) {
   }
 
   if (!is_chromeos_ash && !is_ios && !is_fuchsia && !is_android && !is_castos) {
+    out_dir = get_path_info(root_build_dir, "name")
     script_test("chrome_wpt_tests") {
       script = "//third_party/blink/tools/run_wpt_tests.py"
       args = [
+        "--target",
+        out_dir,
         "--product=chrome",
         "--no-show-results",
         "--zero-tests-executed-ok",
@@ -1108,10 +1137,6 @@ if (use_blink && !is_cronet_build) {
       } else {
         args += [ "--timeout-multiplier=1" ]
       }
-      data = [
-        "//third_party/blink/web_tests/platform/linux-chrome/",
-        "//third_party/blink/web_tests/ChromeTestExpectations",
-      ]
       data_deps = [
         ":blink_web_tests_expectations",
         ":blink_web_tests_support_data",
@@ -1123,8 +1148,9 @@ if (use_blink && !is_cronet_build) {
     script_test("headless_shell_wpt") {
       script = "//third_party/blink/tools/run_wpt_tests.py"
       args = [
+        "--target",
+        out_dir,
         "--product=headless_shell",
-        "--no-virtual-tests",
         "--no-wpt-internal",
         "--no-show-results",
         "--zero-tests-executed-ok",
@@ -1132,10 +1158,13 @@ if (use_blink && !is_cronet_build) {
       data_deps = [
         ":blink_web_tests_expectations",
         ":blink_web_tests_support_data",
-        "//chrome:chrome",
         "//chrome/test/chromedriver:chromedriver_server",
+        "//headless:headless_shell",
         "//third_party/blink/tools:wpt_tests_isolate",
       ]
+      if (is_mac || is_linux) {
+        data_deps += [ "//third_party/hyphenation-patterns:bundle_hyphen_data" ]
+      }
     }
   }
 
@@ -1161,13 +1190,13 @@ if (use_blink && !is_cronet_build) {
       "//services/shape_detection/public/mojom:mojom_js_data_deps",
       "//skia/public/mojom:mojom_js_data_deps",
       "//testing/buildbot/filters:blink_web_tests_filter",
+      "//third_party/angle:includes",
       "//third_party/blink/public:blink_devtools_frontend_resources_files",
       "//third_party/blink/public:blink_devtools_inspector_resources",
       "//third_party/blink/public/mojom:mojom_platform_js_data_deps",
       "//third_party/blink/renderer/core:gen_files_for_web_tests",
       "//third_party/catapult/third_party/typ",
       "//third_party/hyphenation-patterns:test_data",
-      "//third_party/mesa_headers",
       "//tools/imagediff",
       "//ui/base:goldctl",
     ]
@@ -1175,28 +1204,40 @@ if (use_blink && !is_cronet_build) {
     if (is_android) {
       data_deps += [
         "//third_party/breakpad:breakpad_unittests",
+        "//tools/android/forwarder2",
+
+        # Using the target toolchain for this tool, as it's run during tests not
+        # during the build. This places a symlink in the root_build_dir for
+        # scrips to use.
         "//third_party/breakpad:dump_syms",
         "//third_party/breakpad:microdump_stackwalk",
         "//third_party/breakpad:minidump_dump",
         "//third_party/breakpad:minidump_stackwalk",
         "//third_party/breakpad:symupload",
-        "//tools/android/forwarder2",
       ]
     } else {
       data_deps += [ "//content/web_test:web_test_common_mojom_js_data_deps" ]
     }
 
     if (!is_win && !is_android) {
-      data_deps +=
-          [ "//third_party/breakpad:minidump_stackwalk($host_toolchain)" ]
+      # Using the default toolchain for this tool, as it's run during tests not
+      # during the build. This places a symlink in the root_build_dir for scrips
+      # to use.
+      data_deps += [ "//third_party/breakpad:minidump_stackwalk" ]
     }
 
     if (is_mac) {
-      data_deps += [ "//third_party/breakpad:dump_syms($host_toolchain)" ]
+      # Using the default toolchain for this tool, as it's run during tests not
+      # during the build, and on Mac we support cross-building from a different
+      # architecture.
+      data_deps += [ "//third_party/breakpad:dump_syms" ]
     }
 
     if (is_linux || is_chromeos) {
-      data_deps += [ "//third_party/breakpad:dump_syms($host_toolchain)" ]
+      # Using the default toolchain for this tool, as it's run during tests not
+      # during the build. This places a symlink in the root_build_dir for scrips
+      # to use.
+      data_deps += [ "//third_party/breakpad:dump_syms" ]
     }
 
     if (is_fuchsia) {
@@ -1279,8 +1320,12 @@ if (use_blink && !is_cronet_build) {
     _common_web_test_args += [ "--release" ]
     if (dcheck_always_on) {
       _common_web_test_args += [ "--timeout-ms=12000" ]
+    } else if (v8_enable_debugging_features) {
+      # In a pure release build with a debug V8, tests run slower.
+      _common_web_test_args += [ "--timeout-ms=30000" ]
     }
   }
+
   if (is_chrome_branded) {
     _common_web_test_args += [ "--chrome-branded" ]
   }
@@ -1384,7 +1429,6 @@ if (use_blink && !is_cronet_build) {
       "//third_party/blink/web_tests/rootscroller/",
       "//third_party/blink/web_tests/screen_orientation/",
       "//third_party/blink/web_tests/scrollbars/",
-      "//third_party/blink/web_tests/scrollingcoordinator/",
       "//third_party/blink/web_tests/security/",
       "//third_party/blink/web_tests/handwriting/",
       "//third_party/blink/web_tests/shadow-dom/",
@@ -1449,14 +1493,15 @@ if (use_blink && !is_cronet_build) {
     } else if (is_mac) {
       data += [
         "//third_party/blink/web_tests/platform/mac/",
-        "//third_party/blink/web_tests/platform/mac-mac10.15/",
         "//third_party/blink/web_tests/platform/mac-mac11/",
         "//third_party/blink/web_tests/platform/mac-mac11-arm64/",
         "//third_party/blink/web_tests/platform/mac-mac12/",
         "//third_party/blink/web_tests/platform/mac-mac12-arm64/",
         "//third_party/blink/web_tests/platform/mac-mac13/",
         "//third_party/blink/web_tests/platform/mac-mac13-arm64/",
+        "//third_party/blink/web_tests/platform/mac-mac14/",
         "//third_party/blink/web_tests/platform/mac-mac14-arm64/",
+        "//third_party/blink/web_tests/platform/mac-mac15-arm64/",
       ]
     }
 
@@ -1656,8 +1701,7 @@ group("chromium_builder_perf") {
     }
 
     if (!is_win) {
-      data_deps +=
-          [ "//third_party/breakpad:minidump_stackwalk($host_toolchain)" ]
+      data_deps += [ "//third_party/breakpad:minidump_stackwalk($host_system_allocator_toolchain)" ]
     }
   }
 

@@ -26,6 +26,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/platform/audio/audio_bus.h"
 
 #include <assert.h>
@@ -724,10 +729,10 @@ scoped_refptr<AudioBus> AudioBus::GetDataResource(int resource_id,
   // it's reasonable to (potentially) pay a one-time flat access cost.
   // If this becomes problematic, we'll have the refactor DecodeAudioFileData
   // to take WebData and use segmented access.
-  SharedBuffer::DeprecatedFlatData flat_data(
-      resource.operator scoped_refptr<SharedBuffer>());
+  SegmentedBuffer::DeprecatedFlatData flat_data(
+      resource.operator scoped_refptr<SharedBuffer>().get());
   scoped_refptr<AudioBus> audio_bus =
-      DecodeAudioFileData(flat_data.Data(), flat_data.size());
+      DecodeAudioFileData(flat_data.data(), flat_data.size());
 
   if (!audio_bus.get()) {
     return nullptr;

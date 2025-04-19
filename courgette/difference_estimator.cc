@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 // We want to measure the similarity of two sequences of bytes as a surrogate
 // for measuring how well a second sequence will compress differentially to the
 // first sequence.
@@ -81,26 +86,19 @@ class DifferenceEstimator::Subject {
 };
 
 DifferenceEstimator::DifferenceEstimator() = default;
-
-DifferenceEstimator::~DifferenceEstimator() {
-  for (size_t i = 0;  i < owned_bases_.size();  ++i)
-    delete owned_bases_[i];
-  for (size_t i = 0;  i < owned_subjects_.size();  ++i)
-    delete owned_subjects_[i];
-}
+DifferenceEstimator::~DifferenceEstimator() = default;
 
 DifferenceEstimator::Base* DifferenceEstimator::MakeBase(const Region& region) {
-  Base* base = new Base(region);
+  auto base = std::make_unique<Base>(region);
   base->Init();
-  owned_bases_.push_back(base);
-  return base;
+  owned_bases_.push_back(std::move(base));
+  return owned_bases_.back().get();
 }
 
 DifferenceEstimator::Subject* DifferenceEstimator::MakeSubject(
     const Region& region) {
-  Subject* subject = new Subject(region);
-  owned_subjects_.push_back(subject);
-  return subject;
+  owned_subjects_.push_back(std::make_unique<Subject>(region));
+  return owned_subjects_.back().get();
 }
 
 size_t DifferenceEstimator::Measure(Base* base, Subject* subject) {

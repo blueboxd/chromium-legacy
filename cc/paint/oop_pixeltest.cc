@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include <cmath>
 #include <memory>
 #include <tuple>
@@ -195,9 +200,9 @@ class OopPixelTest : public testing::Test,
     // raster interface).
     auto* ri = raster_context_provider_->RasterInterface();
     auto* sii = raster_context_provider_->SharedImageInterface();
-    uint32_t flags = gpu::SHARED_IMAGE_USAGE_RASTER_READ |
-                     gpu::SHARED_IMAGE_USAGE_RASTER_WRITE |
-                     gpu::SHARED_IMAGE_USAGE_OOP_RASTERIZATION;
+    gpu::SharedImageUsageSet flags = gpu::SHARED_IMAGE_USAGE_RASTER_READ |
+                                     gpu::SHARED_IMAGE_USAGE_RASTER_WRITE |
+                                     gpu::SHARED_IMAGE_USAGE_OOP_RASTERIZATION;
     auto client_shared_image = sii->CreateSharedImage(
         {viz::SinglePlaneFormat::kRGBA_8888, gfx::Size(width, height),
          options.target_color_params.color_space, flags, "TestLabel"},
@@ -282,9 +287,9 @@ class OopPixelTest : public testing::Test,
       std::optional<gfx::ColorSpace> color_space = std::nullopt) {
     // These SharedImages serve as both the source of reads and destination of
     // writes via the raster interface in these tests.
-    uint32_t flags = gpu::SHARED_IMAGE_USAGE_RASTER_READ |
-                     gpu::SHARED_IMAGE_USAGE_RASTER_WRITE |
-                     gpu::SHARED_IMAGE_USAGE_OOP_RASTERIZATION;
+    gpu::SharedImageUsageSet flags = gpu::SHARED_IMAGE_USAGE_RASTER_READ |
+                                     gpu::SHARED_IMAGE_USAGE_RASTER_WRITE |
+                                     gpu::SHARED_IMAGE_USAGE_OOP_RASTERIZATION;
     auto client_shared_image = sii->CreateSharedImage(
         {image_format, options.resource_size,
          color_space.value_or(options.target_color_params.color_space), flags,
@@ -754,6 +759,102 @@ TEST_F(OopPixelTest, DrawGainmapImage) {
     EXPECT_NEAR(out_color.fR, std::pow(0.5f / kDestScale, kGamma), kEps);
     EXPECT_NEAR(out_color.fG, std::pow(1.0f / kDestScale, kGamma), kEps);
     EXPECT_NEAR(out_color.fB, std::pow(2.0f / kDestScale, kGamma), kEps);
+  }
+}
+
+TEST_F(OopPixelTest, DrawGainmapImageFiltering) {
+  constexpr gfx::Size kSize(4, 4);
+  constexpr gfx::Rect kRect(kSize);
+  constexpr gfx::Size kGainSize(2, 2);
+
+  // The base image is (0.25, 0.25, 0.25) in linear space
+  float kValueBase = 0.25f;
+  auto base_info = SkImageInfo::MakeN32Premul(kSize.width(), kSize.height(),
+                                              SkColorSpace::MakeSRGB());
+  auto base_image_generator = sk_make_sp<FakePaintImageGenerator>(base_info);
+  {
+    SkBitmap bitmap;
+    bitmap.installPixels(base_image_generator->GetPixmap());
+    SkCanvas canvas(bitmap, SkSurfaceProps{});
+    SkPaint paint;
+
+    paint.setColor({kValueBase, kValueBase, kValueBase, 1.f},
+                   SkColorSpace::MakeSRGBLinear().get());
+    canvas.drawRect(SkRect(0, 0, 4, 4), paint);
+  }
+
+  // The gainmap is fully applied at headroom 2, and has a maximum scale of 4.
+  const float kRatioMax = 4.f;
+  auto gain_info = SkImageInfo::MakeN32Premul(
+      kGainSize.width(), kGainSize.height(), SkColorSpace::MakeSRGBLinear());
+  auto gain_image_generator = sk_make_sp<FakePaintImageGenerator>(gain_info);
+  SkGainmapInfo gainmap_info = {
+      {1.f, 1.f, 1.f, 1.f},
+      {kRatioMax, kRatioMax, kRatioMax, 1.f},
+      {1.f, 1.f, 1.f, 1.f},
+      {0.f, 0.f, 0.f, 1.f},
+      {0.f, 0.f, 0.f, 1.f},
+      1.f,
+      kRatioMax,
+      SkGainmapInfo::BaseImageType::kSDR,
+      SkGainmapInfo::Type::kDefault,
+      nullptr,
+  };
+
+  // The gainmap scales by 2 on the left and 3 on the right.
+  float kGainValue0 = std::log(2.f) / std::log(kRatioMax);
+  float kGainValue1 = std::log(3.f) / std::log(kRatioMax);
+  {
+    SkBitmap bitmap;
+    bitmap.installPixels(gain_image_generator->GetPixmap());
+    SkCanvas canvas(bitmap, SkSurfaceProps{});
+
+    SkPaint paint;
+
+    paint.setColor({kGainValue0, kGainValue0, kGainValue0, 1.f});
+    canvas.drawRect(SkRect::MakeXYWH(0, 0, 1, 2), paint);
+
+    paint.setColor({kGainValue1, kGainValue1, kGainValue1, 1.f});
+    canvas.drawRect(SkRect::MakeXYWH(1, 0, 1, 2), paint);
+  }
+
+  static int counter = 0;
+  const PaintImage::Id kSomeId = 32 + counter++;
+  auto paint_image =
+      PaintImageBuilder::WithDefault()
+          .set_id(kSomeId)
+          .set_paint_image_generator(base_image_generator)
+          .set_gainmap_paint_image_generator(gain_image_generator, gainmap_info)
+          .TakePaintImage();
+
+  // Draw with nearest-neighbour sampling.
+  auto display_item_list = base::MakeRefCounted<DisplayItemList>();
+  {
+    display_item_list->StartPaint();
+    display_item_list->push<DrawImageOp>(
+        paint_image, 0.f, 0.f, SkSamplingOptions(SkFilterMode::kNearest),
+        nullptr);
+    display_item_list->EndPaintOfUnpaired(kRect);
+    display_item_list->Finalize();
+  }
+
+  RasterOptions options(kSize);
+  {
+    auto dest_color_space = SkColorSpace::MakeSRGBLinear();
+    options.target_color_params.color_space =
+        gfx::ColorSpace(*dest_color_space);
+    options.target_color_params.hdr_max_luminance_relative = kRatioMax;
+  }
+  auto result = Raster(display_item_list, options);
+
+  for (int i = 0; i < 4; ++i) {
+    // Ensure that the gainmap values are interpolated.
+    float gain_value = ((3.f - i) * kGainValue0 + i * kGainValue1) / 3.f;
+    float expected = kValueBase * std::exp(gain_value * std::log(kRatioMax));
+    float actual = result.getColor4f(i, 0).fR;
+
+    float kEpsilon = 16.f / 255.f;
+    EXPECT_NEAR(expected, actual, kEpsilon);
   }
 }
 

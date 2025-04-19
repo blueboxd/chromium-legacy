@@ -88,7 +88,7 @@ struct PrefetchResponseSizes {
 // This is done either in (see the indirect call sites of
 // `PrefetchStreamingURLLoader::SetResponseReader()`):
 // - `PrefetchService::StartSinglePrefetch()` [initial request] or
-// - `PrefetchService::OnGotEligibilityResultForRedirect()` [redirect].
+// - `PrefetchService::OnGotEligibilityForRedirect()` [redirect].
 // A new `PrefetchStreamingURLLoader` is also created if needed in
 // `PrefetchService::MakePrefetchRequest()`.
 class CONTENT_EXPORT PrefetchContainer {
@@ -331,9 +331,12 @@ class CONTENT_EXPORT PrefetchContainer {
 
   bool IsStreamingURLLoaderDeletionScheduledForTesting() const;
 
-  // Returns the PrefetchResponseReader corresponding to the last non-redirect
-  // response, if already received its head, or otherwise nullptr.
+  // Returns the PrefetchResponseReader of the prefetched non-redirect response
+  // if already received its head. Ruturns nullptr otherwise.
   const PrefetchResponseReader* GetNonRedirectResponseReader() const;
+  // Returns the head of the prefetched non-redirect response if already
+  // received. Ruturns nullptr otherwise.
+  const network::mojom::URLResponseHead* GetNonRedirectHead() const;
 
   // Clears |streaming_loader_| and cancels its loading, if any of its
   // corresponding `PrefetchResponseReader` does NOT start serving. Currently
@@ -366,13 +369,6 @@ class CONTENT_EXPORT PrefetchContainer {
   void OnPrefetchComplete(
       const network::URLLoaderCompletionStatus& completion_status);
 
-  // Allows for a timer to be used to limit the maximum amount of time that a
-  // navigation can be blocked waiting for the head of this prefetch to be
-  // received.
-  void TakeBlockUntilHeadTimer(
-      std::unique_ptr<base::OneShotTimer> block_until_head_timer);
-  void ResetBlockUntilHeadTimer();
-
   enum class ServableState {
     // Not servable nor should block until head received.
     kNotServable,
@@ -390,19 +386,30 @@ class CONTENT_EXPORT PrefetchContainer {
   // `PrefetchResponseReader::CreateRequestHandler()`.
   ServableState GetServableState(base::TimeDelta cacheable_duration) const;
 
-  // Called once it is determined whether or not the prefetch is servable, i.e.
-  // either when non-redirect response head is received, or when determined not
-  // servable.
-  void OnReceivedHead();
-  void SetOnReceivedHeadCallback(base::OnceClosure on_received_head_callback);
-  base::OnceClosure ReleaseOnReceivedHeadCallback();
+  // Starts blocking `PrefetchMatchResolver` until non-redirect response header
+  // is determined or timeouted. `on_maybe_determined_head_callback` will be
+  // called when
+  //
+  // - `PrefetchStreamingURLLoader` succeeded/failed to fetch non-redirect
+  //   response header.
+  // - The argument `timeout` is positive and timeouted.
+  // - `PrefetchContainer` dtor if `kPrefetchUnblockOnCancel` enabled.
+  void StartBlockUntilHead(base::OnceCallback<void(PrefetchContainer&)>
+                               on_maybe_determined_head_callback,
+                           base::TimeDelta timeout);
+  // Called when non-redirect response header is determined, i.e.
+  // `GetNonRedirectHead()` becomes immutable.
+  //
+  // This method must be called at most once in the lifecycle of
+  // `PrefetchContainer`.
+  void OnDeterminedHead();
+  // Unblocks waiting `PrefetchMatchResolver`.
+  //
+  // This method can be called multiple times.
+  void UnblockPrefetchMatchResolver();
 
   void StartTimeoutTimer(base::TimeDelta timeout,
                          base::OnceClosure on_timeout_callback);
-
-  // Returns the head of the prefetched response. If there is no valid response,
-  // then returns null.
-  const network::mojom::URLResponseHead* GetHead();
 
   // Returns the time between the prefetch request was sent and the time the
   // response headers were received. Not set if the prefetch request hasn't been
@@ -455,7 +462,7 @@ class CONTENT_EXPORT PrefetchContainer {
   // Sets `no_vary_search_data_` from `GetHead()`. Exposed for tests.
   // RenderFrameHost is being used on no_vary_search::ProcessHead() to put
   // message to DevTools console and can be null.
-  void SetNoVarySearchData(RenderFrameHost* rfh);
+  void MaybeSetNoVarySearchData(RenderFrameHost* rfh);
 
   // Called when cookies changes are detected via
   // `HaveDefaultContextCookiesChanged()`, either for `this` or other
@@ -554,6 +561,13 @@ class CONTENT_EXPORT PrefetchContainer {
     // See the comment for `PrefetchResponseReader::CreateRequestHandler()`.
     PrefetchRequestHandler CreateRequestHandler();
 
+    // See the corresponding functions on `PrefetchResponseReader`.
+    // These apply to the current `SinglePrefetch` (and so, may change as the
+    // prefetch advances through a redirect change).
+    bool VariesOnCookieIndices() const;
+    bool MatchesCookieIndices(
+        base::span<const std::pair<std::string, std::string>> cookies) const;
+
    private:
     base::WeakPtr<PrefetchContainer> prefetch_container_;
 
@@ -563,6 +577,8 @@ class CONTENT_EXPORT PrefetchContainer {
   };
 
   Reader CreateReader();
+
+  bool is_in_dtor() const { return is_in_dtor_; }
 
  protected:
   friend class PrefetchContainerTestBase;
@@ -597,6 +613,8 @@ class CONTENT_EXPORT PrefetchContainer {
   // Add client hints headers to a request bound for |origin|.
   void AddClientHintsHeaders(const url::Origin& origin,
                              net::HttpRequestHeaders* request_headers);
+  // Add X-Client-Data request header to a request.
+  void AddXClientDataHeader(network::ResourceRequest& request);
 
   // Returns the `SinglePrefetch` to be prefetched next. This is the last
   // element in `redirect_chain_`, because, during prefetching from the network,
@@ -608,6 +626,9 @@ class CONTENT_EXPORT PrefetchContainer {
   // `GetCurrentSinglePrefetchToPrefetch()`. This must be called only if `this`
   // has redirect(s).
   const SinglePrefetch& GetPreviousSinglePrefetchToPrefetch() const;
+
+  // Returns "Sec-Purpose" header value for a prefetch request to `request_url`.
+  const char* GetSecPurposeHeaderValue(const GURL& request_url) const;
 
   // The ID of the RenderFrameHost/Document that triggered the prefetch.
   // This will be empty when browser-initiated prefetch.
@@ -691,10 +712,6 @@ class CONTENT_EXPORT PrefetchContainer {
   // `PrefetchStreamingURLLoader` is set here.
   base::WeakPtr<PrefetchStreamingURLLoader> streaming_loader_;
 
-  // The time at which |prefetched_response_| was received. This is used to
-  // determine whether or not |prefetched_response_| is stale.
-  std::optional<base::TimeTicks> prefetch_received_time_;
-
   ukm::SourceId ukm_source_id_;
 
   // The sizes information of the prefetched response.
@@ -749,8 +766,11 @@ class CONTENT_EXPORT PrefetchContainer {
   // blocked waiting for the head of this prefetch to be received.
   std::unique_ptr<base::OneShotTimer> block_until_head_timer_;
 
-  // Called when `OnReceivedHead()` is called.
-  base::OnceClosure on_received_head_callback_;
+  // Callback for non-blocking call `StartBlockUntilHead()`.
+  //
+  // TODO(https://crbug.com/353490734): Remove it.
+  base::OnceCallback<void(PrefetchContainer&)>
+      on_maybe_determined_head_callback_;
 
   std::unique_ptr<base::OneShotTimer> timeout_timer_;
 
@@ -759,6 +779,9 @@ class CONTENT_EXPORT PrefetchContainer {
   // handled later, according to
   // |ClientHintsControllerDelegate::IsJavaScriptAllowed|.
   bool is_javascript_enabled_ = false;
+
+  // True iff the destructor was called.
+  bool is_in_dtor_ = false;
 
   base::WeakPtrFactory<PrefetchContainer> weak_method_factory_{this};
 };
@@ -775,6 +798,9 @@ CONTENT_EXPORT std::ostream& operator<<(
 CONTENT_EXPORT std::ostream& operator<<(
     std::ostream& ostream,
     PrefetchContainer::ServableState servable_state);
+
+CONTENT_EXPORT std::ostream& operator<<(std::ostream& ostream,
+                                        PrefetchContainer::LoadState state);
 
 }  // namespace content
 

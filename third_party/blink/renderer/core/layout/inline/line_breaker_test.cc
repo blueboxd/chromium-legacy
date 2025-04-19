@@ -13,7 +13,7 @@
 #include "third_party/blink/renderer/core/layout/inline/inline_item_result_ruby_column.h"
 #include "third_party/blink/renderer/core/layout/inline/inline_node.h"
 #include "third_party/blink/renderer/core/layout/inline/line_info.h"
-#include "third_party/blink/renderer/core/layout/layout_ng_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/positioned_float.h"
 #include "third_party/blink/renderer/core/layout/unpositioned_float.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
@@ -1222,6 +1222,15 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 </div>)HTML");
   ComputeMinMaxSizes(node);
   // Pass if no division-by-zero.
+}
+
+// crbug.com/350122891
+TEST_F(LineBreakerTest, MinMaxWithEmptyRubyBase) {
+  InlineNode node = CreateInlineNode(R"HTML(
+<div id="container" style="display:inline-block;">
+<ruby><rt><wbr>++P}A[X9e+52FuYyMsuADbOcYXMu73ci73uDMfYQsD</ruby></div>)HTML");
+  ComputeMinMaxSizes(node);
+  // Pass if no CHECK failure.
 }
 
 struct CanBreakInsideTestData {

@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "base/memory/raw_ptr.h"
+#include "components/input/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
-#include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/browser/renderer_host/visible_time_request_trigger.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
@@ -21,7 +21,7 @@ class RenderWidgetHostImpl;
 
 class MockRenderWidgetHostDelegate
     : public RenderWidgetHostDelegate,
-      public RenderWidgetHostInputEventRouter::Delegate {
+      public input::RenderWidgetHostInputEventRouter::Delegate {
  public:
   MockRenderWidgetHostDelegate();
 
@@ -31,7 +31,9 @@ class MockRenderWidgetHostDelegate
 
   ~MockRenderWidgetHostDelegate() override;
 
-  const NativeWebKeyboardEvent* last_event() const { return last_event_.get(); }
+  const input::NativeWebKeyboardEvent* last_event() const {
+    return last_event_.get();
+  }
   void set_widget_host(RenderWidgetHostImpl* rwh) { rwh_ = rwh; }
   void set_is_fullscreen(bool is_fullscreen) { is_fullscreen_ = is_fullscreen; }
   void set_focused_widget(RenderWidgetHostImpl* focused_widget) {
@@ -49,7 +51,7 @@ class MockRenderWidgetHostDelegate
   void ResizeDueToAutoResize(RenderWidgetHostImpl* render_widget_host,
                              const gfx::Size& new_size) override;
   KeyboardEventProcessingResult PreHandleKeyboardEvent(
-      const NativeWebKeyboardEvent& event) override;
+      const input::NativeWebKeyboardEvent& event) override;
   void ExecuteEditCommand(const std::string& command,
                           const std::optional<std::u16string>& value) override;
   void Undo() override;
@@ -59,7 +61,7 @@ class MockRenderWidgetHostDelegate
   void Paste() override;
   void PasteAndMatchStyle() override;
   void SelectAll() override;
-  RenderWidgetHostInputEventRouter* GetInputEventRouter() override;
+  input::RenderWidgetHostInputEventRouter* GetInputEventRouter() override;
   RenderWidgetHostImpl* GetFocusedRenderWidgetHost(
       RenderWidgetHostImpl* widget_host) override;
   void SendScreenRects() override;
@@ -71,12 +73,13 @@ class MockRenderWidgetHostDelegate
       ui::Compositor* compositor) override;
 
   //  RenderWidgetHostInputEventRouter::Delegate
-  TouchEmulator* GetTouchEmulator(bool create_if_necessary) override;
+  input::TouchEmulator* GetTouchEmulator(bool create_if_necessary) override;
 
  private:
-  std::unique_ptr<NativeWebKeyboardEvent> last_event_;
+  std::unique_ptr<input::NativeWebKeyboardEvent> last_event_;
   raw_ptr<RenderWidgetHostImpl, DanglingUntriaged> rwh_ = nullptr;
-  std::unique_ptr<RenderWidgetHostInputEventRouter> rwh_input_event_router_;
+  std::unique_ptr<input::RenderWidgetHostInputEventRouter>
+      rwh_input_event_router_;
   mojo::Remote<gfx::mojom::DelegatedInkPointRenderer>
       delegated_ink_point_renderer_;
   bool is_fullscreen_ = false;

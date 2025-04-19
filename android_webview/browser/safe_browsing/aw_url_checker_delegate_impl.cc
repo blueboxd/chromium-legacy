@@ -16,8 +16,6 @@
 #include "android_webview/browser/network_service/aw_web_resource_request.h"
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_allowlist_manager.h"
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_ui_manager.h"
-#include "android_webview/browser_jni_headers/AwSafeBrowsingConfigHelper_jni.h"
-#include "android_webview/browser_jni_headers/AwSafeBrowsingSafeModeAction_jni.h"
 #include "base/android/jni_android.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
@@ -36,6 +34,10 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "ui/base/page_transition_types.h"
+
+// Must come after all headers that specialize FromJniType() / ToJniType().
+#include "android_webview/browser_jni_headers/AwSafeBrowsingConfigHelper_jni.h"
+#include "android_webview/browser_jni_headers/AwSafeBrowsingSafeModeAction_jni.h"
 
 namespace android_webview {
 
@@ -80,11 +82,10 @@ void AwUrlCheckerDelegateImpl::StartDisplayingBlockingPageHelper(
     const security_interstitials::UnsafeResource& resource,
     const std::string& method,
     const net::HttpRequestHeaders& headers,
-    bool is_outermost_main_frame,
     bool has_user_gesture) {
   AwWebResourceRequest request(resource.url.spec(), method,
-                               is_outermost_main_frame, has_user_gesture,
-                               headers);
+                               /*in_is_outermost_main_frame=*/true,
+                               has_user_gesture, headers);
 
   content::GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE,
@@ -94,8 +95,7 @@ void AwUrlCheckerDelegateImpl::StartDisplayingBlockingPageHelper(
 
 void AwUrlCheckerDelegateImpl::
     StartObservingInteractionsForDelayedBlockingPageHelper(
-        const security_interstitials::UnsafeResource& resource,
-        bool is_main_frame) {
+        const security_interstitials::UnsafeResource& resource) {
   NOTREACHED_IN_MIGRATION() << "Delayed warnings not implemented for WebView";
 }
 
@@ -283,17 +283,6 @@ void AwUrlCheckerDelegateImpl::DoApplicationResponse(
     // blocking page is created in this case, we manually call it here.
     CallOnReceivedError(AwContentsClientBridge::FromWebContents(web_contents),
                         request, entry);
-  }
-
-  // Navigate back for back-to-safety on subresources
-  if (!proceed && resource.is_subframe) {
-    if (web_contents->GetController().CanGoBack()) {
-      web_contents->GetController().GoBack();
-    } else {
-      web_contents->GetController().LoadURL(
-          ui_manager->default_safe_page(), content::Referrer(),
-          ui::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
-    }
   }
 
   GURL main_frame_url = entry ? entry->GetURL() : GURL();

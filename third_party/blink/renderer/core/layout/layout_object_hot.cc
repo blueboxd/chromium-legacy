@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/layout/layout_object.h"
-
 #include "third_party/blink/renderer/core/css/resolver/style_adjuster.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_custom_scrollbar_part.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
-#include "third_party/blink/renderer/core/layout/layout_ng_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_object_inl.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_text_combine.h"
@@ -26,59 +24,6 @@ void LayoutObject::Trace(Visitor* visitor) const {
   visitor->Trace(fragment_);
   ImageResourceObserver::Trace(visitor);
   DisplayItemClient::Trace(visitor);
-}
-
-LayoutObject* LayoutObject::Container(AncestorSkipInfo* skip_info) const {
-  NOT_DESTROYED();
-
-#if DCHECK_IS_ON()
-  if (skip_info)
-    skip_info->AssertClean();
-#endif
-
-  if (IsTextOrSVGChild())
-    return Parent();
-
-  EPosition pos = style_->GetPosition();
-  if (pos == EPosition::kFixed)
-    return ContainerForFixedPosition(skip_info);
-
-  if (pos == EPosition::kAbsolute) {
-    return ContainerForAbsolutePosition(skip_info);
-  }
-
-  if (IsColumnSpanAll()) {
-    LayoutObject* multicol_container = SpannerPlaceholder()->Container();
-    if (skip_info) {
-      // We jumped directly from the spanner to the multicol container. Need to
-      // check if we skipped |ancestor| or filter/reflection on the way.
-      for (LayoutObject* walker = Parent();
-           walker && walker != multicol_container; walker = walker->Parent())
-        skip_info->Update(*walker);
-    }
-    return multicol_container;
-  }
-
-  if (IsFloating() && !IsInLayoutNGInlineFormattingContext()) {
-    // TODO(crbug.com/1229581): Remove this when removing support for legacy
-    // layout.
-    //
-    // In the legacy engine, floats inside non-atomic inlines belong to their
-    // nearest containing block, not the parent non-atomic inline (if any). Skip
-    // past all non-atomic inlines. Note that the reason for not simply using
-    // ContainingBlock() here is that we want to stop at any kind of LayoutBox,
-    // such as LayoutVideo. Otherwise we won't mark the container chain
-    // correctly when marking for re-layout.
-    LayoutObject* walker = Parent();
-    while (walker && walker->IsLayoutInline()) {
-      if (skip_info)
-        skip_info->Update(*walker);
-      walker = walker->Parent();
-    }
-    return walker;
-  }
-
-  return Parent();
 }
 
 LayoutBox* LayoutObject::DeprecatedEnclosingScrollableBox() const {
@@ -101,11 +46,11 @@ LayoutBox* LayoutObject::DeprecatedEnclosingScrollableBox() const {
 void LayoutObject::SetNeedsOverflowRecalc(
     OverflowRecalcType overflow_recalc_type) {
   NOT_DESTROYED();
-  if (UNLIKELY(IsLayoutFlowThread())) {
+  if (IsLayoutFlowThread()) [[unlikely]] {
     // If we're a flow thread inside an NG multicol container, just redirect to
     // the multicol container, since the overflow recalculation walks down the
     // NG fragment tree, and the flow thread isn't represented there.
-    if (auto* multicol_container = DynamicTo<LayoutNGBlockFlow>(Parent())) {
+    if (auto* multicol_container = DynamicTo<LayoutBlockFlow>(Parent())) {
       multicol_container->SetNeedsOverflowRecalc(overflow_recalc_type);
       return;
     }
@@ -154,7 +99,7 @@ void LayoutObject::PropagateStyleToAnonymousChildren() {
         GetDocument().GetStyleResolver().CreateAnonymousStyleBuilderWithDisplay(
             StyleRef(), child->StyleRef().Display());
 
-    if (UNLIKELY(IsA<LayoutTextCombine>(child))) {
+    if (IsA<LayoutTextCombine>(child)) [[unlikely]] {
       if (blink::IsHorizontalWritingMode(new_style_builder.GetWritingMode())) {
         // |LayoutTextCombine| will be removed when recalculating style for
         // <br> or <wbr>.
@@ -201,7 +146,7 @@ void LayoutObject::PropagateStyleToAnonymousChildren() {
       continue;
     }
     if (child->IsText() || child->IsQuote() || child->IsImage())
-      child->SetPseudoElementStyle(Style());
+      child->SetPseudoElementStyle(*this);
     child = child->NextInPreOrder(this);
   }
 }

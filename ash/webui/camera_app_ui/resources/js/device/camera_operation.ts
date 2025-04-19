@@ -10,14 +10,15 @@ import {
 import {AsyncJobQueue} from '../async_job_queue.js';
 import * as error from '../error.js';
 import * as expert from '../expert.js';
-import * as loadTimeData from '../models/load_time_data.js';
 import {DeviceOperator} from '../mojo/device_operator.js';
 import * as state from '../state.js';
 import {
+  CameraSuspendError,
   ErrorLevel,
   ErrorType,
   Facing,
   Mode,
+  NoCameraError,
   Resolution,
 } from '../type.js';
 import * as util from '../util.js';
@@ -29,10 +30,10 @@ import {
   FakeCameraCaptureCandidate,
 } from './capture_candidate.js';
 import {CaptureCandidatePreferrer} from './capture_candidate_preferrer.js';
+import {DeviceMonitor} from './device_monitor.js';
 import {Modes, Video} from './mode/index.js';
 import {Preview} from './preview.js';
 import {StreamConstraints} from './stream_constraints.js';
-import {StreamManager} from './stream_manager.js';
 import {
   CameraConfig,
   CameraConfigCandidate,
@@ -74,6 +75,8 @@ class Reconfigurer {
   readonly capturePreferrer = new CaptureCandidatePreferrer();
 
   private readonly failedDevices = new Set<string>();
+
+  private failedBySWPrivacySwitch = false;
 
   constructor(
       private readonly preview: Preview,
@@ -230,25 +233,33 @@ class Reconfigurer {
     state.set(state.State.ENABLE_PTZ, enablePTZ);
   }
 
-  async start(cameraInfo: CameraInfo): Promise<boolean> {
+  async start(cameraInfo: CameraInfo): Promise<void> {
     await this.stopStreams();
-    return this.startConfigure(cameraInfo);
+    await this.startConfigure(cameraInfo);
   }
 
   /**
-   * Reset the failed devices list so the next reconfiguration
-   * will try to open those devices.
+   * Clears the list of devices that previously failed to open and allows retry
+   * to open devices even when the sw privacy switch is on.
+   *
    */
-  resetFailedDevices(): void {
+
+  resetConfigurationFailure(): void {
+    this.failedBySWPrivacySwitch = false;
     this.failedDevices.clear();
   }
 
-  /**
-   * @return If the configuration finished successfully.
-   */
-  async startConfigure(cameraInfo: CameraInfo): Promise<boolean> {
+  async startConfigure(cameraInfo: CameraInfo): Promise<void> {
     if (this.shouldSuspend) {
-      return false;
+      throw new CameraSuspendError();
+    }
+    // CCA should attempt to open device at least once, even if the SW privacy
+    // switch is on, to ensure the user receives a notification about the SW
+    // privacy setting.
+    if (this.failedBySWPrivacySwitch && util.isSWPrivacySwitchOn()) {
+      // If a previous configuration failed due to the SW privacy switch being
+      // on, and the switch is still on, skip this configuration attempt.
+      throw new NoCameraError();
     }
 
     const deviceOperator = DeviceOperator.getInstance();
@@ -256,7 +267,7 @@ class Reconfigurer {
 
     for await (const c of this.getConfigurationCandidates(cameraInfo)) {
       if (this.shouldSuspend) {
-        return false;
+        throw new CameraSuspendError();
       }
       if (this.failedDevices.has(c.deviceId)) {
         // Check if the devices is released from other apps. If not,
@@ -317,7 +328,7 @@ class Reconfigurer {
         this.capturePreferrer.onUpdateConfig(this.config);
         await this.listener.onUpdateConfig(this.config);
 
-        return true;
+        return;
       } catch (e) {
         await this.stopStreams();
 
@@ -339,6 +350,10 @@ class Reconfigurer {
           if (e.name === 'NotReadableError') {
             // TODO(b/187879603): Remove this hacked once we understand more
             // about such error.
+            if (util.isSWPrivacySwitchOn()) {
+              this.failedBySWPrivacySwitch = true;
+              break;
+            }
             let facing: Facing|null = null;
             let errorMessage: string = e.message;
             const deviceOperator = DeviceOperator.getInstance();
@@ -367,7 +382,7 @@ class Reconfigurer {
             ErrorType.START_CAMERA_FAILURE, ErrorLevel.ERROR, errorToReport);
       }
     }
-    return false;
+    throw new NoCameraError();
   }
 
   /**
@@ -425,9 +440,18 @@ export class OperationScheduler {
 
   private ongoingOperationType: OperationType|null = null;
 
-  private pendingReconfigureWaiters: Array<CancelableEvent<boolean>> = [];
+  private pendingReconfigureWaiters: Array<CancelableEvent<void>> = [];
 
   private readonly togglePausedEventQueue = new AsyncJobQueue('drop');
+
+  private readonly deviceMonitor = new DeviceMonitor((devices) => {
+    const info = new CameraInfo(devices);
+    if (this.ongoingOperationType !== null) {
+      this.pendingUpdateInfo = info;
+      return;
+    }
+    this.doUpdate(info);
+  });
 
   constructor(
       private readonly listener: EventListener,
@@ -443,22 +467,12 @@ export class OperationScheduler {
         defaultFacing,
     );
     this.capturer = new Capturer(this.modes);
-    StreamManager.getInstance().addRealDeviceChangeListener((devices) => {
-      const info = new CameraInfo(devices);
-      if (this.ongoingOperationType !== null) {
-        this.pendingUpdateInfo = info;
-        return;
-      }
-      this.doUpdate(info);
-    });
   }
 
   async initialize(cameraViewUI: CameraViewUI): Promise<void> {
     this.modes.initialize(cameraViewUI);
-    await StreamManager.getInstance().deviceUpdate();
-    if (!loadTimeData.isVideoCaptureDisallowed()) {
-      await this.firstInfoUpdate.wait();
-    }
+    await this.deviceMonitor.deviceUpdate();
+    await this.firstInfoUpdate.wait();
   }
 
   private doUpdate(cameraInfo: CameraInfo) {
@@ -474,17 +488,17 @@ export class OperationScheduler {
     }
   }
 
-  async reconfigure(): Promise<boolean> {
+  async reconfigure(): Promise<void> {
     // If |startReconfigure| is invoked before the first update of camera info,
     // it will hit the assertion in |startReconfigure| and cause CCA hang.
     await this.firstInfoUpdate.wait();
     if (this.ongoingOperationType !== null) {
-      const event = new CancelableEvent<boolean>();
+      const event = new CancelableEvent<void>();
       this.pendingReconfigureWaiters.push(event);
       await this.stopCapture();
-      return event.wait();
+      await event.wait();
     }
-    return this.startReconfigure();
+    await this.startReconfigure();
   }
 
   takeVideoSnapshot(): void {
@@ -508,7 +522,7 @@ export class OperationScheduler {
 
   private clearPendingReconfigureWaiters() {
     for (const waiter of this.pendingReconfigureWaiters) {
-      waiter.signal(false);
+      waiter.signal();
     }
     this.pendingReconfigureWaiters = [];
   }
@@ -522,9 +536,9 @@ export class OperationScheduler {
       this.pendingUpdateInfo = null;
     }
     if (this.pendingReconfigureWaiters.length !== 0) {
-      const succeed = this.startReconfigure();
+      const promise = this.startReconfigure();
       for (const waiter of this.pendingReconfigureWaiters) {
-        waiter.signalAs(succeed);
+        waiter.signalAs(promise);
       }
       this.pendingReconfigureWaiters = [];
     }
@@ -551,7 +565,7 @@ export class OperationScheduler {
     await this.capturer.stop();
   }
 
-  private startReconfigure(): Promise<boolean> {
+  private async startReconfigure(): Promise<void> {
     assert(this.ongoingOperationType === null);
     this.ongoingOperationType = OperationType.RECONFIGURE;
 
@@ -560,10 +574,7 @@ export class OperationScheduler {
     // This is for processing after the current reconfigure is done.
     void (async () => {
       try {
-        const succeed = await startPromise;
-        if (!succeed) {
-          this.clearPendingReconfigureWaiters();
-        }
+        await startPromise;
       } catch (e) {
         this.clearPendingReconfigureWaiters();
       } finally {
@@ -572,6 +583,6 @@ export class OperationScheduler {
     })();
     // Only returns the "start" part, so the returned promise is resolved
     // before all the waiters are resolved to keep the order correct.
-    return startPromise;
+    await startPromise;
   }
 }

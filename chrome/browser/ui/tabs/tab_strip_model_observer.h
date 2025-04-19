@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/memory/raw_ptr.h"
-#include "base/memory/raw_ptr_exclusion.h"
 #include "chrome/browser/ui/tabs/tab_change_type.h"
 #include "components/sessions/core/session_id.h"
 #include "components/tab_groups/tab_group_id.h"
@@ -78,9 +77,7 @@ class TabStripModelChange {
 
     void WriteIntoTrace(perfetto::TracedValue context) const;
 
-    // This field is not a raw_ptr<> because of incompatibilities with tracing
-    // in not-rewritten platform specific code.
-    RAW_PTR_EXCLUSION content::WebContents* contents;
+    raw_ptr<content::WebContents, DanglingUntriaged> contents;
     int index;
     RemoveReason remove_reason;
     std::optional<SessionID> session_id;
@@ -359,6 +356,12 @@ class TabStripModelObserver {
   // changes may cause repainting of some Tab Group UI. They are
   // independent of the tabstrip model and do not affect any tab state.
   virtual void OnTabGroupChanged(const TabGroupChange& change);
+
+  // Notfies us when a Tab Group is added to the Tab Group Model.
+  virtual void OnTabGroupAdded(const tab_groups::TabGroupId& group_id);
+
+  // Notfies us when a Tab Group will be removed from the Tab Group Model.
+  virtual void OnTabGroupWillBeRemoved(const tab_groups::TabGroupId& group_id);
 
   // The specified WebContents at |index| changed in some way. |contents|
   // may be an entirely different object and the old value is no longer

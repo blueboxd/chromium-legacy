@@ -7,6 +7,10 @@
 
 #include <string>
 
+#include "url/gurl.h"
+
+class PrefService;
+
 namespace chrome {
 
 // Returns true if the given browser command is allowed in app mode.
@@ -22,6 +26,10 @@ bool IsRunningInForcedAppMode();
 // Returns true if browser process is run in forced app mode for Chrome app
 // with the provided id.
 bool IsRunningInForcedAppModeForApp(const std::string& app_id);
+
+// Returns true when the given `origin` can access browser permissions available
+// to the web kiosk app.
+bool IsWebKioskOriginAllowed(const PrefService* prefs, const GURL& origin);
 
 }  // namespace chrome
 

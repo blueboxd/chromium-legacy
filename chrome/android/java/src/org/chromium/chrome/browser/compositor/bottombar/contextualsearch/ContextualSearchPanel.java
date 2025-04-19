@@ -30,7 +30,6 @@ import org.chromium.chrome.browser.compositor.scene_layer.ContextualSearchSceneL
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchUma;
 import org.chromium.chrome.browser.contextualsearch.ResolvedSearchTerm.CardTag;
-import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.layouts.scene_layer.SceneOverlayLayer;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
@@ -90,11 +89,11 @@ public class ContextualSearchPanel extends OverlayPanel {
     /** Used to query toolbar state. */
     private final ToolbarManager mToolbarManager;
 
-    /** The {@link ActivityType} for the current activity. */
-    private final @ActivityType int mActivityType;
-
     /** The distance of the divider from the end of the bar, in dp. */
     private final float mEndButtonWidthDp;
+
+    /** Whether the contextual search panel can be promoted to a new tab. */
+    private final boolean mCanPromoteToNewTab;
 
     /** Supplies a {@link EdgeToEdgeController} that adjusts for more screen-bottom space. */
     private Supplier<EdgeToEdgeController> mEdgeToEdgeControllerSupplier;
@@ -140,8 +139,9 @@ public class ContextualSearchPanel extends OverlayPanel {
      * @param compositorViewHolder The {@link CompositorViewHolder} for the current activity.
      * @param toolbarHeightDp The height of the toolbar in dp.
      * @param toolbarManager The {@link ToolbarManager}, used to query for colors.
-     * @param activityType The {@link ActivityType} for the current activity.
+     * @param canPromoteToNewTab Whether the panel can be promoted to a new tab.
      * @param currentTabSupplier Supplies the current activity tab.
+     * @param edgeToEdgeControllerSupplier Controller for edge-to-edge drawing.
      */
     public ContextualSearchPanel(
             @NonNull Context context,
@@ -153,7 +153,7 @@ public class ContextualSearchPanel extends OverlayPanel {
             @NonNull CompositorViewHolder compositorViewHolder,
             float toolbarHeightDp,
             @NonNull ToolbarManager toolbarManager,
-            @ActivityType int activityType,
+            boolean canPromoteToNewTab,
             @NonNull Supplier<Tab> currentTabSupplier,
             @NonNull Supplier<EdgeToEdgeController> edgeToEdgeControllerSupplier) {
         super(
@@ -169,7 +169,7 @@ public class ContextualSearchPanel extends OverlayPanel {
         mSceneLayer = createNewContextualSearchSceneLayer();
         mPanelMetrics = new ContextualSearchPanelMetrics();
         mToolbarManager = toolbarManager;
-        mActivityType = activityType;
+        mCanPromoteToNewTab = canPromoteToNewTab;
         mEdgeToEdgeControllerSupplier = edgeToEdgeControllerSupplier;
 
         mEndButtonWidthDp =
@@ -182,7 +182,7 @@ public class ContextualSearchPanel extends OverlayPanel {
     @Override
     public OverlayPanelContent createNewOverlayPanelContent() {
         return new OverlayPanelContent(
-                mManagementDelegate.getOverlayContentDelegate(),
+                mManagementDelegate.getOverlayPanelContentDelegate(),
                 new PanelProgressObserver(),
                 mActivity,
                 getProfile(),
@@ -454,6 +454,16 @@ public class ContextualSearchPanel extends OverlayPanel {
     protected float getMaximizedHeight() {
         // Max height does not cover the entire content screen.
         return getTabHeight() * MAXIMIZED_HEIGHT_FRACTION;
+    }
+
+    @Override
+    public float getBarMarginBottomPx() {
+        // When Edge To Edge is enabled and drawing to the bottom edge, pass in the bottom inset
+        // to pad the search bar (specifically, the caption's bottom padding). Use 0 otherwise.
+        // TODO(crbug.com/332543636) Remove padding when it's no longer needed in EXPANDED and
+        //  MAXIMIZED states
+        @Nullable EdgeToEdgeController edgeToEdgeController = mEdgeToEdgeControllerSupplier.get();
+        return edgeToEdgeController != null ? edgeToEdgeController.getBottomInsetPx() : 0;
     }
 
     @Override
@@ -871,7 +881,7 @@ public class ContextualSearchPanel extends OverlayPanel {
         if (scrimFraction > 0.f) {
             toolbarColor = getScrimmedColor(mActivity, toolbarColor, scrimFraction);
         }
-        ToolbarLayout toolbarLayout = (ToolbarLayout) mActivity.findViewById(R.id.toolbar);
+        ToolbarLayout toolbarLayout = mActivity.findViewById(R.id.toolbar);
         ColorDrawable toolbarBackground = (ColorDrawable) toolbarLayout.getBackground();
         toolbarBackground.setColor(toolbarColor);
 
@@ -880,7 +890,7 @@ public class ContextualSearchPanel extends OverlayPanel {
     }
 
     private void scrimImage(int viewId, int colorId, float scrimFraction) {
-        ImageView view = (ImageView) mActivity.findViewById(viewId);
+        ImageView view = mActivity.findViewById(viewId);
         if (view == null) return;
         int baseColor = mActivity.getColor(colorId);
         if (scrimFraction > 0.f) {
@@ -938,28 +948,9 @@ public class ContextualSearchPanel extends OverlayPanel {
      * they won't actually be displayed on the screen (their snapshots will be displayed instead).
      */
     public ContextualSearchBarControl getSearchBarControl() {
-        // When Edge To Edge is enabled and drawing to the bottom edge, pass in the bottom inset
-        // to pad the search bar (specifically, the caption's bottom padding). Use 0 otherwise.
-        // TODO(crbug.com/332543636) Remove padding when it's no longer needed in EXPANDED and
-        //  MAXIMIZED states
-        @Nullable EdgeToEdgeController edgeToEdgeController = mEdgeToEdgeControllerSupplier.get();
-        int bottomEdgeToEdgePaddingDp =
-                edgeToEdgeController != null ? edgeToEdgeController.getBottomInset() : 0;
-
         if (mSearchBarControl == null) {
             mSearchBarControl =
-                    new ContextualSearchBarControl(
-                            this,
-                            mContext,
-                            mContainerView,
-                            mResourceLoader,
-                            bottomEdgeToEdgePaddingDp);
-        } else {
-            // mSearchBarControl is often created pre-emptively after the previous assignment is
-            // cleaned up. It should be updated with the current edge-to-edge bottom inset, in case
-            // it was created with a different inset on another tab with a different edge-to-edge
-            // status.
-            mSearchBarControl.overrideEdgeToEdgePadding(bottomEdgeToEdgePaddingDp);
+                    new ContextualSearchBarControl(this, mContext, mContainerView, mResourceLoader);
         }
         return mSearchBarControl;
     }
@@ -1182,7 +1173,7 @@ public class ContextualSearchPanel extends OverlayPanel {
      * @return Whether the panel content can be displayed in a new tab.
      */
     public boolean canPromoteToNewTab() {
-        return mActivityType == ActivityType.TABBED;
+        return mCanPromoteToNewTab;
     }
 
     // ============================================================================================

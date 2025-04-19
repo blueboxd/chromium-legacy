@@ -109,10 +109,9 @@ scoped_refptr<WebGPUMailboxTexture> WebGPUMailboxTexture::FromCanvasResource(
       recyclable_canvas_resource->resource_provider()->ProduceCanvasResource(
           FlushReason::kWebGPUTexture);
   DCHECK(canvas_resource->IsValid());
-  DCHECK(canvas_resource->IsAccelerated());
 
   const gpu::Mailbox& mailbox =
-      canvas_resource->GetOrCreateGpuMailbox(kUnverifiedSyncToken);
+      canvas_resource->GetClientSharedImage()->mailbox();
   gpu::SyncToken sync_token = canvas_resource->GetSyncToken();
   gfx::Size size = canvas_resource->Size();
 
@@ -124,7 +123,7 @@ scoped_refptr<WebGPUMailboxTexture> WebGPUMailboxTexture::FromCanvasResource(
   };
   return base::AdoptRef(new WebGPUMailboxTexture(
       std::move(dawn_control_client), device, tex_desc, mailbox, sync_token,
-      gpu::webgpu::WEBGPU_MAILBOX_NONE,
+      gpu::webgpu::WEBGPU_MAILBOX_NONE, wgpu::TextureUsage::None,
       base::OnceCallback<void(const gpu::SyncToken&)>(),
       std::move(recyclable_canvas_resource)));
 }
@@ -137,12 +136,14 @@ scoped_refptr<WebGPUMailboxTexture> WebGPUMailboxTexture::FromExistingMailbox(
     const gpu::Mailbox& mailbox,
     const gpu::SyncToken& sync_token,
     gpu::webgpu::MailboxFlags mailbox_flags,
+    wgpu::TextureUsage additional_internal_usage,
     base::OnceCallback<void(const gpu::SyncToken&)> finished_access_callback) {
   DCHECK(dawn_control_client->GetContextProviderWeakPtr());
 
   return base::AdoptRef(new WebGPUMailboxTexture(
       std::move(dawn_control_client), device, desc, mailbox, sync_token,
-      mailbox_flags, std::move(finished_access_callback), nullptr));
+      mailbox_flags, additional_internal_usage,
+      std::move(finished_access_callback), nullptr));
 }
 
 //  static
@@ -172,12 +173,12 @@ scoped_refptr<WebGPUMailboxTexture> WebGPUMailboxTexture::FromVideoFrame(
   wgpu::TextureDescriptor desc = {
       .usage = wgpu::TextureUsage::TextureBinding,
   };
-  return base::AdoptRef(
-      new WebGPUMailboxTexture(std::move(dawn_control_client), device, desc,
-                               video_frame->mailbox_holder(0).mailbox,
-                               video_frame->mailbox_holder(0).sync_token,
-                               gpu::webgpu::WEBGPU_MAILBOX_NONE,
-                               std::move(finished_access_callback), nullptr));
+  return base::AdoptRef(new WebGPUMailboxTexture(
+      std::move(dawn_control_client), device, desc,
+      video_frame->mailbox_holder(0).mailbox,
+      video_frame->mailbox_holder(0).sync_token,
+      gpu::webgpu::WEBGPU_MAILBOX_NONE, wgpu::TextureUsage::None,
+      std::move(finished_access_callback), nullptr));
 }
 
 WebGPUMailboxTexture::WebGPUMailboxTexture(
@@ -187,6 +188,7 @@ WebGPUMailboxTexture::WebGPUMailboxTexture(
     const gpu::Mailbox& mailbox,
     const gpu::SyncToken& sync_token,
     gpu::webgpu::MailboxFlags mailbox_flags,
+    wgpu::TextureUsage additional_internal_usage,
     base::OnceCallback<void(const gpu::SyncToken&)> finished_access_callback,
     std::unique_ptr<RecyclableCanvasResource> recyclable_canvas_resource)
     : dawn_control_client_(std::move(dawn_control_client)),
@@ -206,7 +208,7 @@ WebGPUMailboxTexture::WebGPUMailboxTexture(
 
   // Produce and inject image to WebGPU texture
   gpu::webgpu::ReservedTexture reservation = webgpu->ReserveTexture(
-      device_.Get(), reinterpret_cast<const WGPUTextureDescriptor*>(&desc));
+      device_.Get(), &static_cast<const WGPUTextureDescriptor&>(desc));
   DCHECK(reservation.texture);
 
   wire_device_id_ = reservation.deviceId;
@@ -215,11 +217,25 @@ WebGPUMailboxTexture::WebGPUMailboxTexture(
   wire_texture_generation_ = reservation.generation;
   texture_ = wgpu::Texture::Acquire(reservation.texture);
 
+  const wgpu::DawnTextureInternalUsageDescriptor* internal_usage_desc = nullptr;
+  if (const wgpu::ChainedStruct* next_in_chain = desc.nextInChain) {
+    // The internal usage descriptor is the only valid struct to chain.
+    CHECK_EQ(next_in_chain->sType,
+             wgpu::SType::DawnTextureInternalUsageDescriptor);
+    internal_usage_desc =
+        static_cast<const wgpu::DawnTextureInternalUsageDescriptor*>(
+            next_in_chain);
+  }
+  auto internal_usage = internal_usage_desc ? internal_usage_desc->internalUsage
+                                            : wgpu::TextureUsage::None;
+  internal_usage |= additional_internal_usage;
+
   // This may fail because gl_backing resource cannot produce dawn
   // representation.
   webgpu->AssociateMailbox(
       wire_device_id_, wire_device_generation_, wire_texture_id_,
-      wire_texture_generation_, static_cast<GLuint>(desc.usage),
+      wire_texture_generation_, static_cast<uint64_t>(desc.usage),
+      static_cast<uint64_t>(internal_usage),
       reinterpret_cast<const WGPUTextureFormat*>(desc.viewFormats),
       base::checked_cast<GLuint>(desc.viewFormatCount), mailbox_flags, mailbox);
 }

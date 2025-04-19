@@ -193,6 +193,7 @@ bool StructTraits<blink::mojom::WebPreferencesDataView,
   out->scroll_top_left_interop_enabled = data.scroll_top_left_interop_enabled();
   out->disable_accelerated_small_canvases =
       data.disable_accelerated_small_canvases();
+  out->long_press_link_select_text = data.long_press_link_select_text();
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA)
@@ -214,9 +215,8 @@ bool StructTraits<blink::mojom::WebPreferencesDataView,
       data.require_transient_activation_for_get_display_media();
   out->require_transient_activation_for_show_file_or_directory_picker =
       data.require_transient_activation_for_show_file_or_directory_picker();
-  out->require_transient_activation_for_html_fullscreen =
-      data.require_transient_activation_for_html_fullscreen();
   out->in_forced_colors = data.in_forced_colors();
+  out->is_forced_colors_disabled = data.is_forced_colors_disabled();
   out->preferred_root_scrollbar_color_scheme =
       data.preferred_root_scrollbar_color_scheme();
   out->preferred_color_scheme = data.preferred_color_scheme();

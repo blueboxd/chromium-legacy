@@ -19,9 +19,12 @@ namespace {
 
 EditorMode ToEditorMode(ash::input_method::EditorMode mode) {
   switch (mode) {
-    case ash::input_method::EditorMode::kBlocked:
+    case ash::input_method::EditorMode::kHardBlocked:
+      return EditorMode::kHardBlocked;
+    case ash::input_method::EditorMode::kSoftBlocked:
+      return EditorMode::kSoftBlocked;
     case ash::input_method::EditorMode::kConsentNeeded:
-      return EditorMode::kBlocked;
+      return EditorMode::kPromoCard;
     case ash::input_method::EditorMode::kRewrite:
       return EditorMode::kRewrite;
     case ash::input_method::EditorMode::kWrite:
@@ -44,7 +47,7 @@ EditorManagerAsh::~EditorManagerAsh() {
 }
 
 void EditorManagerAsh::GetEditorPanelContext(
-    base::OnceCallback<void(EditorContext)> callback) {
+    base::OnceCallback<void(const EditorContext&)> callback) {
   panel_manager_->GetEditorPanelContext(
       base::BindOnce(&EditorManagerAsh::OnEditorPanelContextResult,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
@@ -93,8 +96,12 @@ void EditorManagerAsh::NotifyEditorModeChanged(const EditorMode& mode) {
   }
 }
 
+void EditorManagerAsh::RequestCacheContext() {
+  panel_manager_->RequestCacheContext();
+}
+
 void EditorManagerAsh::OnEditorPanelContextResult(
-    base::OnceCallback<void(EditorContext)> callback,
+    base::OnceCallback<void(const EditorContext&)> callback,
     crosapi::mojom::EditorPanelContextPtr panel_context) {
   std::move(callback).Run(FromMojoEditorContext(std::move(panel_context)));
 }

@@ -24,7 +24,6 @@
 #include "media/base/media_util.h"
 #include "media/base/video_decoder.h"
 #include "media/gpu/gpu_video_accelerator_util.h"
-#include "media/gpu/gpu_video_decode_accelerator_factory.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/ipc/service/media_gpu_channel_manager.h"
 #include "media/mojo/mojom/video_decoder.mojom.h"
@@ -62,19 +61,6 @@ gpu::CommandBufferStub* GetCommandBufferStub(
 #endif
 
   return stub;
-}
-
-SupportedVideoDecoderConfigs GetVDAVideoDecoderConfigs(
-    const gpu::GpuPreferences& gpu_preferences,
-    const gpu::GpuDriverBugWorkarounds& gpu_workarounds) {
-  VideoDecodeAccelerator::Capabilities capabilities =
-      GpuVideoAcceleratorUtil::ConvertGpuToMediaDecodeCapabilities(
-          GpuVideoDecodeAcceleratorFactory::GetDecoderCapabilities(
-              gpu_preferences, gpu_workarounds));
-  return ConvertFromSupportedProfiles(
-      capabilities.supported_profiles,
-      capabilities.flags &
-          VideoDecodeAccelerator::Capabilities::SUPPORTS_ENCRYPTED_STREAMS);
 }
 
 }  // namespace
@@ -120,8 +106,8 @@ GpuMojoMediaClientTraits::GpuMojoMediaClientTraits(
 
 std::unique_ptr<GpuMojoMediaClient> GpuMojoMediaClient::Create(
     GpuMojoMediaClientTraits& traits) {
-  DCHECK(traits.gpu_task_runner->BelongsToCurrentThread());
-  DCHECK(traits.media_gpu_channel_manager);
+  DCHECK(!traits.gpu_task_runner ||
+         traits.gpu_task_runner->BelongsToCurrentThread());
 
   auto client = CreateGpuMediaService(traits);
   DCHECK(client);
@@ -159,6 +145,12 @@ VideoDecoderType GpuMojoMediaClient::GetDecoderImplementationType() {
   return GetPlatformDecoderImplementationType();
 }
 
+SupportedAudioDecoderConfigs
+GpuMojoMediaClient::GetSupportedAudioDecoderConfigs() {
+  return GetPlatformSupportedAudioDecoderConfigs().value_or(
+      SupportedAudioDecoderConfigs{});
+}
+
 SupportedVideoDecoderConfigs
 GpuMojoMediaClient::GetSupportedVideoDecoderConfigs() {
   if (!supported_config_cache_) {
@@ -170,9 +162,7 @@ GpuMojoMediaClient::GetSupportedVideoDecoderConfigs() {
          gpu::kGpuFeatureStatusEnabled)) {
       supported_config_cache_ = SupportedVideoDecoderConfigs();
     } else {
-      supported_config_cache_ =
-          GetPlatformSupportedVideoDecoderConfigs(base::BindOnce(
-              &GetVDAVideoDecoderConfigs, gpu_preferences_, gpu_workarounds_));
+      supported_config_cache_ = GetPlatformSupportedVideoDecoderConfigs();
     }
 
     // Once per GPU process record accelerator information. Profile support is
@@ -288,6 +278,12 @@ std::unique_ptr<CdmFactory> GpuMojoMediaClient::CreatePlatformCdmFactory(
     mojom::FrameInterfaceFactory* frame_interfaces) {
   NOTIMPLEMENTED();
   return nullptr;
+}
+
+std::optional<SupportedAudioDecoderConfigs>
+GpuMojoMediaClient::GetPlatformSupportedAudioDecoderConfigs() {
+  NOTIMPLEMENTED();
+  return std::nullopt;
 }
 
 }  // namespace media

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <UIKit/UIKit.h>
-
 #import "ios/chrome/browser/ui/ntp/new_tab_page_view_controller.h"
+
+#import <UIKit/UIKit.h>
 
 #import <algorithm>
 
@@ -12,9 +12,10 @@
 #import "base/feature_list.h"
 #import "base/ios/block_types.h"
 #import "base/task/sequenced_task_runner.h"
+#import "ios/chrome/browser/overscroll_actions/ui_bundled/overscroll_actions_controller.h"
+#import "ios/chrome/browser/shared/public/commands/help_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/ui/bubble/bubble_presenter.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_cells_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
@@ -32,7 +33,6 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_mutator.h"
-#import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
 #import "ios/chrome/common/material_timing.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -49,16 +49,7 @@ const CGFloat kFeedContainerMinimumHeight = 1000;
 // Added height to the feed container so that it doesn't end abruptly on
 // overscroll.
 const CGFloat kFeedContainerExtraHeight = 500;
-
-// Constants that define the sizing of NTP modules when feed containment is not
-// enabeld.
-const CGFloat kModuleMaxWidth = 390;
-const CGFloat kModuleMinMargin = 16;
 }  // namespace
-
-BASE_FEATURE(kMagicStackRemoveGradientView,
-             "MagicStackRemoveGradientView",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 @interface NewTabPageViewController () <UICollectionViewDelegate,
                                         UIGestureRecognizerDelegate>
@@ -180,6 +171,10 @@ BASE_FEATURE(kMagicStackRemoveGradientView,
   NSLayoutConstraint* _moduleWidth;
 }
 
+// Properties synthesized from NewTabPageConsumer.
+@synthesize mostVisitedVisible = _mostVisitedVisible;
+@synthesize magicStackVisible = _magicStackVisible;
+
 - (instancetype)init {
   self = [super initWithNibName:nil bundle:nil];
   if (self) {
@@ -203,7 +198,6 @@ BASE_FEATURE(kMagicStackRemoveGradientView,
   [super viewDidLoad];
 
   DCHECK(self.feedWrapperViewController);
-  DCHECK(self.contentSuggestionsViewController);
 
   self.view.accessibilityIdentifier = kNTPViewIdentifier;
 
@@ -222,14 +216,12 @@ BASE_FEATURE(kMagicStackRemoveGradientView,
               action:@selector(handleSingleTapInView:)];
   singleTapRecognizer.delegate = self;
   [self.view addGestureRecognizer:singleTapRecognizer];
-  if (!base::FeatureList::IsEnabled(kMagicStackRemoveGradientView)) {
     _backgroundGradientView = [[GradientView alloc]
         initWithTopColor:[UIColor colorNamed:kSecondaryBackgroundColor]
              bottomColor:[UIColor colorNamed:kPrimaryBackgroundColor]];
     _backgroundGradientView.translatesAutoresizingMaskIntoConstraints = NO;
     [self.view addSubview:_backgroundGradientView];
     AddSameConstraints(_backgroundGradientView, self.view);
-  }
   [self updateModularHomeBackgroundColorForUserInterfaceStyle:
             self.traitCollection.userInterfaceStyle];
   self.view.backgroundColor = [UIColor colorNamed:@"ntp_background_color"];
@@ -290,13 +282,14 @@ BASE_FEATURE(kMagicStackRemoveGradientView,
   // back to the NTP.
   [self updateFakeOmniboxForScrollPosition];
 
-  if (self.isFeedVisible) {
+  if (self.feedVisible) {
     [self updateFeedInsetsForMinimumHeight];
   } else {
     [self setMinimumHeight];
   }
 
-  [self.bubblePresenter presentDiscoverFeedHeaderTipBubble];
+  [self.helpHandler
+      presentInProductHelpWithType:InProductHelpType::kDiscoverFeedMenu];
 
   // Scrolls NTP into feed initially if `shouldScrollIntoFeed`.
   if (self.shouldScrollIntoFeed) {
@@ -372,7 +365,7 @@ BASE_FEATURE(kMagicStackRemoveGradientView,
     if (weakSelf.omniboxFocused && [weakSelf scrollPosition] < pinnedOffsetY) {
       weakSelf.collectionView.contentOffset = CGPointMake(0, pinnedOffsetY);
     }
-    if (!weakSelf.isFeedVisible) {
+    if (!weakSelf.feedVisible) {
       [weakSelf setMinimumHeight];
     }
   };
@@ -381,7 +374,7 @@ BASE_FEATURE(kMagicStackRemoveGradientView,
                       completion:^(
                           id<UIViewControllerTransitionCoordinatorContext>) {
                         [self updateNTPLayout];
-                        if (self.isFeedVisible) {
+                        if (self.feedVisible) {
                           [self updateFeedInsetsForMinimumHeight];
                         }
                         [self updateFeedContainerHeight];
@@ -446,7 +439,7 @@ BASE_FEATURE(kMagicStackRemoveGradientView,
   // action) needs to wait until it is ready. viewDidAppear: currently serves as
   // this proxy as there is no specific signal given from the feed that its
   // contents have loaded.
-  if (self.isFeedVisible && _appearing) {
+  if (self.feedVisible && _appearing) {
     self.shouldFocusFakebox = YES;
   } else {
     [self shiftTilesUpToFocusOmnibox];
@@ -455,14 +448,14 @@ BASE_FEATURE(kMagicStackRemoveGradientView,
 
 - (void)layoutContentInParentCollectionView {
   DCHECK(self.feedWrapperViewController);
-  DCHECK(self.contentSuggestionsViewController);
 
   // Ensure the view is loaded so we can set the accessibility identifier.
   [self.feedWrapperViewController loadViewIfNeeded];
   self.collectionView.accessibilityIdentifier = kNTPCollectionViewIdentifier;
 
-  if (self.isFeedVisible && IsFeedContainmentEnabled()) {
+  if (self.feedVisible) {
     _feedContainer = [[UIView alloc] initWithFrame:CGRectZero];
+    _feedContainer.userInteractionEnabled = YES;
     _feedContainer.translatesAutoresizingMaskIntoConstraints = NO;
     _feedContainer.backgroundColor = [UIColor colorNamed:kBackgroundColor];
 
@@ -508,17 +501,26 @@ BASE_FEATURE(kMagicStackRemoveGradientView,
     [self addViewControllerAboveFeed:self.feedHeaderViewController];
   }
 
-  if (IsIOSMagicStackCollectionViewEnabled()) {
+  if (!IsHomeCustomizationEnabled() || self.magicStackVisible) {
     [self addViewControllerAboveFeed:self.magicStackCollectionView];
   }
 
-  [self addViewControllerAboveFeed:self.contentSuggestionsViewController];
+  if (!ShouldPutMostVisitedSitesInMagicStack() &&
+      (!IsHomeCustomizationEnabled() || self.mostVisitedVisible)) {
+    [self addViewControllerAboveFeed:self.contentSuggestionsViewController];
+  }
 
   [self addViewControllerAboveFeed:self.headerViewController];
 
   DCHECK(
       [self.headerViewController.view isDescendantOfView:self.containerView]);
   self.headerViewController.view.translatesAutoresizingMaskIntoConstraints = NO;
+
+  // The view controllers have to be added in reverse order, so the array is
+  // then reversed to reflect the visible order.
+  self.viewControllersAboveFeed =
+      [[[self.viewControllersAboveFeed reverseObjectEnumerator] allObjects]
+          mutableCopy];
 
   // TODO(crbug.com/40165977): The contentCollectionView width might be
   // narrower than the ContentSuggestions view. This causes elements to be
@@ -528,13 +530,9 @@ BASE_FEATURE(kMagicStackRemoveGradientView,
 
   [self.overscrollActionsController invalidate];
 
-  if (!base::FeatureList::IsEnabled(kEnableStartupImprovements)) {
+  // Only re-configure `overscrollActionsController`.
+  if (self.overscrollActionsController) {
     [self configureOverscrollActionsController];
-  } else {
-    // Only re-configure `overscrollActionsController`.
-    if (self.overscrollActionsController) {
-      [self configureOverscrollActionsController];
-    }
   }
 
   // Update NTP collection view constraints to ensure the layout adapts to
@@ -548,7 +546,7 @@ BASE_FEATURE(kMagicStackRemoveGradientView,
 
   // If the feed is not visible, we control the delegate ourself (since it is
   // otherwise controlled by the feed service).
-  if (!self.isFeedVisible) {
+  if (!self.feedVisible) {
     self.feedWrapperViewController.contentCollectionView.delegate = self;
     [self setMinimumHeight];
   }
@@ -594,14 +592,15 @@ BASE_FEATURE(kMagicStackRemoveGradientView,
 
 - (void)resetViewHierarchy {
   if (_feedContainer) {
-    CHECK(IsFeedContainmentEnabled());
     [_feedContainer removeFromSuperview];
     _feedContainer = nil;
   }
 
   [self removeFromViewHierarchy:self.feedWrapperViewController];
   [self removeFromViewHierarchy:self.magicStackCollectionView];
-  [self removeFromViewHierarchy:self.contentSuggestionsViewController];
+  if (!ShouldPutMostVisitedSitesInMagicStack()) {
+    [self removeFromViewHierarchy:self.contentSuggestionsViewController];
+  }
 
   for (UIViewController* viewController in self.viewControllersAboveFeed) {
     [self removeFromViewHierarchy:viewController];
@@ -649,9 +648,21 @@ BASE_FEATURE(kMagicStackRemoveGradientView,
   CGFloat heightAboveFeed = 0;
   for (UIViewController* viewController in self.viewControllersAboveFeed) {
     heightAboveFeed += viewController.view.frame.size.height;
+
+    // If the current view controller represents a module, account for the
+    // vertical spacing between modules.
+    if (IsHomeCustomizationEnabled() &&
+        (viewController == self.magicStackCollectionView ||
+         viewController == self.contentSuggestionsViewController ||
+         viewController == self.feedHeaderViewController)) {
+      heightAboveFeed += kSpaceBetweenModules;
+    }
   }
-  if (IsIOSMagicStackCollectionViewEnabled()) {
+  if (!IsHomeCustomizationEnabled()) {
     heightAboveFeed += kBottomMagicStackPadding;
+    if (!self.contentSuggestionsViewController) {
+      heightAboveFeed += content_suggestions::HeaderBottomPadding();
+    }
   }
   return heightAboveFeed;
 }
@@ -665,7 +676,7 @@ BASE_FEATURE(kMagicStackRemoveGradientView,
 }
 
 - (void)updateFeedInsetsForMinimumHeight {
-  DCHECK(self.isFeedVisible);
+  DCHECK(self.feedVisible);
   CGFloat minimumNTPHeight = self.collectionView.bounds.size.height;
   minimumNTPHeight -= [self feedHeaderHeight];
   if ([self shouldPinFakeOmnibox]) {
@@ -690,7 +701,7 @@ BASE_FEATURE(kMagicStackRemoveGradientView,
   }
 }
 
-- (void)feedLayoutDidEndUpdates {
+- (void)feedLayoutDidEndUpdatesWithType:(FeedLayoutUpdateType)type {
   if (_feedContainer) {
     // Feed content gets added to the top of the subview array, so after content
     // loads the feed container needs to be sent to the back so that it isn't
@@ -731,7 +742,6 @@ BASE_FEATURE(kMagicStackRemoveGradientView,
     _moduleLayoutGuide = [[UILayoutGuide alloc] init];
     UIView* view = self.view;
     [view addLayoutGuide:_moduleLayoutGuide];
-    [self updateModuleWidth];
     [NSLayoutConstraint activateConstraints:@[
       [_moduleLayoutGuide.centerXAnchor
           constraintEqualToAnchor:view.centerXAnchor],
@@ -795,7 +805,7 @@ BASE_FEATURE(kMagicStackRemoveGradientView,
   // Do not trigger defocus animation if the user is already navigating away
   // from the NTP.
   if (self.NTPVisible) {
-    self.headerViewController.view.alpha = 1;
+    [self.headerViewController omniboxDidResignFirstResponder];
     [self shiftTilesDownForOmniboxDefocus];
   }
 }
@@ -830,9 +840,8 @@ BASE_FEATURE(kMagicStackRemoveGradientView,
 
   // The feed model callbacks don't always reliably tell us that the content has
   // paginated, so check if the container should be extended.
-  if (IsFeedContainmentEnabled() &&
-      self.collectionView.contentSize.height >
-          self.feedContainerHeightConstraint.constant) {
+  if (self.collectionView.contentSize.height >
+      self.feedContainerHeightConstraint.constant) {
     [self updateFeedContainerHeight];
   }
 }
@@ -844,10 +853,8 @@ BASE_FEATURE(kMagicStackRemoveGradientView,
     return;
   }
 
-  if (base::FeatureList::IsEnabled(kEnableStartupImprovements)) {
-    if (!self.overscrollActionsController) {
-      [self configureOverscrollActionsController];
-    }
+  if (!self.overscrollActionsController) {
+    [self configureOverscrollActionsController];
   }
 
   // User has interacted with the surface, so it is safe to assume that a saved
@@ -880,7 +887,7 @@ BASE_FEATURE(kMagicStackRemoveGradientView,
   }
   [self.overscrollActionsController scrollViewDidEndDragging:scrollView
                                               willDecelerate:decelerate];
-  if (self.isFeedVisible) {
+  if (self.feedVisible) {
     [self.feedMetricsRecorder recordFeedScrolled:scrollView.contentOffset.y -
                                                  self.scrollStartPosition];
   }
@@ -1230,10 +1237,42 @@ BASE_FEATURE(kMagicStackRemoveGradientView,
 // the width animation.
 - (void)setInitialFakeOmniboxConstraints {
   [NSLayoutConstraint deactivateConstraints:self.fakeOmniboxConstraints];
-  self.fakeOmniboxConstraints = @[
-    [self.contentSuggestionsViewController.view.topAnchor
-        constraintEqualToAnchor:self.headerViewController.view.bottomAnchor],
-  ];
+
+  if (IsHomeCustomizationEnabled()) {
+    // If all modules are disabled, the fake omnibox doesn't need additional
+    // constraints.
+    if ([self.viewControllersAboveFeed lastObject] ==
+        self.headerViewController) {
+      self.fakeOmniboxConstraints = @[];
+    } else {
+      // Otherwise, anchor the header to the module below it.
+      NSInteger headerIndex = [self.viewControllersAboveFeed
+          indexOfObject:self.headerViewController];
+      UIView* viewBelowHeader =
+          [self.viewControllersAboveFeed objectAtIndex:(headerIndex + 1)].view;
+      self.fakeOmniboxConstraints = @[
+        [viewBelowHeader.topAnchor
+            constraintEqualToAnchor:self.headerViewController.view.bottomAnchor
+                           constant:kSpaceBetweenModules],
+      ];
+    }
+  } else {
+    if (self.contentSuggestionsViewController) {
+      self.fakeOmniboxConstraints = @[
+        [self.contentSuggestionsViewController.view.topAnchor
+            constraintEqualToAnchor:self.headerViewController.view
+                                        .bottomAnchor],
+      ];
+    } else {
+      // If `contentSuggestionsViewController` is nil, that means MVTs are in
+      // the Magic Stack.
+      self.fakeOmniboxConstraints = @[
+        [self.magicStackCollectionView.view.topAnchor
+            constraintEqualToAnchor:self.headerViewController.view.bottomAnchor
+                           constant:content_suggestions::HeaderBottomPadding()],
+      ];
+    }
+  }
   [NSLayoutConstraint activateConstraints:self.fakeOmniboxConstraints];
 }
 
@@ -1288,19 +1327,11 @@ BASE_FEATURE(kMagicStackRemoveGradientView,
   [NSLayoutConstraint deactivateConstraints:self.feedHeaderConstraints];
 
   NSMutableArray* constraints = [NSMutableArray array];
-  if (IsIOSMagicStackCollectionViewEnabled()) {
-    [constraints
-        addObject:[self.collectionView.topAnchor
-                      constraintEqualToAnchor:self.magicStackCollectionView.view
-                                                  .bottomAnchor
-                                     constant:kBottomMagicStackPadding]];
-
-  } else {
-    [constraints addObject:[self.collectionView.topAnchor
-                               constraintEqualToAnchor:
-                                   self.contentSuggestionsViewController.view
-                                       .bottomAnchor]];
-  }
+  [constraints
+      addObject:[self.collectionView.topAnchor
+                    constraintEqualToAnchor:self.magicStackCollectionView.view
+                                                .bottomAnchor
+                                   constant:kBottomMagicStackPadding]];
 
   // If the fake omnibox is pinned to the top, we pin the feed header below it.
   // Otherwise, the feed header gets pinned to the top.
@@ -1342,15 +1373,10 @@ BASE_FEATURE(kMagicStackRemoveGradientView,
     bottomView = self.feedTopSectionViewController.view;
   }
 
-  NSLayoutConstraint* feedHeaderTopAnchor =
-      [self.feedHeaderViewController.view.topAnchor
-          constraintEqualToAnchor:self.contentSuggestionsViewController.view
-                                      .bottomAnchor];
-  if (IsIOSMagicStackCollectionViewEnabled()) {
-    feedHeaderTopAnchor = [self.feedHeaderViewController.view.topAnchor
-        constraintEqualToAnchor:self.magicStackCollectionView.view.bottomAnchor
-                       constant:kBottomMagicStackPadding];
-  }
+  NSLayoutConstraint* feedHeaderTopAnchor;
+  feedHeaderTopAnchor = [self.feedHeaderViewController.view.topAnchor
+      constraintEqualToAnchor:self.magicStackCollectionView.view.bottomAnchor
+                     constant:kBottomMagicStackPadding];
   self.feedHeaderConstraints = @[
     feedHeaderTopAnchor,
     [bottomView.topAnchor constraintEqualToAnchor:self.feedHeaderViewController
@@ -1408,6 +1434,19 @@ BASE_FEATURE(kMagicStackRemoveGradientView,
         sendActionsForControlEvents:UIControlEventTouchUpInside];
   } else {
     [self unfocusOmnibox];
+  }
+
+  if (IsHomeCustomizationEnabled()) {
+    CGRect customizationMenuBounds =
+        [[self.headerViewController customizationMenuButton]
+            convertRect:[self.headerViewController customizationMenuButton]
+                            .bounds
+                 toView:self.view];
+
+    if (CGRectContainsPoint(customizationMenuBounds, location)) {
+      [[self.headerViewController customizationMenuButton]
+          sendActionsForControlEvents:UIControlEventTouchUpInside];
+    }
   }
 }
 
@@ -1468,7 +1507,7 @@ BASE_FEATURE(kMagicStackRemoveGradientView,
 
 // Handles device rotation.
 - (void)deviceOrientationDidChange {
-  if (self.viewDidAppear && self.isFeedVisible) {
+  if (self.viewDidAppear && self.feedVisible) {
     [self.feedMetricsRecorder
         recordDeviceOrientationChanged:[[UIDevice currentDevice] orientation]];
   }
@@ -1494,27 +1533,19 @@ BASE_FEATURE(kMagicStackRemoveGradientView,
 - (void)applyCollectionViewConstraints {
   UIView* contentSuggestionsView = self.contentSuggestionsViewController.view;
   contentSuggestionsView.translatesAutoresizingMaskIntoConstraints = NO;
-  if (IsIOSMagicStackCollectionViewEnabled()) {
-    self.magicStackCollectionView.view
-        .translatesAutoresizingMaskIntoConstraints = NO;
-  }
+  self.magicStackCollectionView.view.translatesAutoresizingMaskIntoConstraints =
+      NO;
 
   if (self.feedHeaderViewController) {
     [self cleanUpCollectionViewConstraints];
 
-    if (IsFeedContainmentEnabled()) {
-      // When the feed is turned off, do not constrain the width of the empty
-      // collection view, in order to allow vertical scrolling gestures to
-      // happen on the side margins. The width of the feed header is controlled
-      // by the collectionView's contentLayoutGuide.
-      if (self.feedWrapperViewController.feedViewController) {
-        [self.collectionView.widthAnchor
-            constraintEqualToAnchor:self.moduleLayoutGuide.widthAnchor]
-            .active = YES;
-      }
-    } else {
+    // When the feed is turned off, do not constrain the width of the empty
+    // collection view, in order to allow vertical scrolling gestures to
+    // happen on the side margins. The width of the feed header is controlled
+    // by the collectionView's contentLayoutGuide.
+    if (self.feedWrapperViewController.feedViewController) {
       [self.collectionView.widthAnchor
-          constraintLessThanOrEqualToConstant:kDiscoverFeedContentMaxWidth]
+          constraintEqualToAnchor:self.moduleLayoutGuide.widthAnchor]
           .active = YES;
     }
 
@@ -1530,8 +1561,9 @@ BASE_FEATURE(kMagicStackRemoveGradientView,
       [self.feedHeaderViewController.view.widthAnchor
           constraintEqualToAnchor:self.moduleLayoutGuide.widthAnchor],
     ]];
-
-    [self setInitialFeedHeaderConstraints];
+    if (!IsHomeCustomizationEnabled()) {
+      [self setInitialFeedHeaderConstraints];
+    }
     if (self.feedTopSectionViewController) {
       [NSLayoutConstraint activateConstraints:@[
         [self.feedTopSectionViewController.view.centerXAnchor
@@ -1547,22 +1579,23 @@ BASE_FEATURE(kMagicStackRemoveGradientView,
       ]];
     }
   } else {
-    if (IsIOSMagicStackCollectionViewEnabled()) {
+    if (!IsHomeCustomizationEnabled()) {
       [NSLayoutConstraint activateConstraints:@[
         [self.collectionView.topAnchor
             constraintEqualToAnchor:self.magicStackCollectionView.view
                                         .bottomAnchor],
       ]];
-    } else {
-      [NSLayoutConstraint activateConstraints:@[
-        [self.collectionView.topAnchor
-            constraintEqualToAnchor:contentSuggestionsView.bottomAnchor],
-      ]];
     }
+  }
+  if (IsHomeCustomizationEnabled()) {
+    UIView* lastView = [self.viewControllersAboveFeed lastObject].view;
+    [NSLayoutConstraint activateConstraints:@[
+      [self.collectionView.topAnchor
+          constraintEqualToAnchor:lastView.bottomAnchor],
+    ]];
   }
 
   if (_feedContainer) {
-    CHECK(IsFeedContainmentEnabled());
     [NSLayoutConstraint activateConstraints:@[
       [_feedContainer.widthAnchor
           constraintEqualToAnchor:self.moduleLayoutGuide.widthAnchor],
@@ -1579,21 +1612,60 @@ BASE_FEATURE(kMagicStackRemoveGradientView,
         constraintEqualToAnchor:self.headerViewController.view.leadingAnchor],
     [[self containerView].safeAreaLayoutGuide.trailingAnchor
         constraintEqualToAnchor:self.headerViewController.view.trailingAnchor],
-    [contentSuggestionsView.leadingAnchor
-        constraintEqualToAnchor:self.moduleLayoutGuide.leadingAnchor],
-    [contentSuggestionsView.trailingAnchor
-        constraintEqualToAnchor:self.moduleLayoutGuide.trailingAnchor],
   ]];
-  if (IsIOSMagicStackCollectionViewEnabled()) {
+  if (self.contentSuggestionsViewController &&
+      (!IsHomeCustomizationEnabled() || self.mostVisitedVisible)) {
+    [NSLayoutConstraint activateConstraints:@[
+      [self.contentSuggestionsViewController.view.leadingAnchor
+          constraintEqualToAnchor:self.moduleLayoutGuide.leadingAnchor],
+      [self.contentSuggestionsViewController.view.trailingAnchor
+          constraintEqualToAnchor:self.moduleLayoutGuide.trailingAnchor],
+    ]];
+  }
+  if (!IsHomeCustomizationEnabled() || self.magicStackVisible) {
     [NSLayoutConstraint activateConstraints:@[
       [self.magicStackCollectionView.view.leadingAnchor
           constraintEqualToAnchor:self.moduleLayoutGuide.leadingAnchor],
       [self.magicStackCollectionView.view.trailingAnchor
           constraintEqualToAnchor:self.moduleLayoutGuide.trailingAnchor],
-      [self.magicStackCollectionView.view.topAnchor
-          constraintEqualToAnchor:contentSuggestionsView.bottomAnchor],
     ]];
   }
+  if (!ShouldPutMostVisitedSitesInMagicStack()) {
+    if (!IsHomeCustomizationEnabled()) {
+      [NSLayoutConstraint activateConstraints:@[
+        [self.magicStackCollectionView.view.topAnchor
+            constraintEqualToAnchor:self.contentSuggestionsViewController.view
+                                        .bottomAnchor],
+      ]];
+    }
+  }
+
+  // Anchor each module except the one directly below the header, since it will
+  // dynamically update its top anchor when the fake omnibox is pinned.
+  if (IsHomeCustomizationEnabled() &&
+      [self.viewControllersAboveFeed lastObject] != self.headerViewController) {
+    // Start with the bottom module's index, which is either the feed header if
+    // enabled, or the last object of the module array if not.
+    NSUInteger startIndex =
+        self.feedHeaderViewController
+            ? [self.viewControllersAboveFeed
+                  indexOfObject:self.feedHeaderViewController]
+            : self.viewControllersAboveFeed.count - 1;
+
+    // While the current module's index is not the view directly below the
+    // header, anchor to the module above it.
+    NSUInteger headerIndex =
+        [self.viewControllersAboveFeed indexOfObject:self.headerViewController];
+    for (NSUInteger index = startIndex; index > headerIndex + 1; --index) {
+      UIView* view = self.viewControllersAboveFeed[index].view;
+      UIView* viewAbove = self.viewControllersAboveFeed[index - 1].view;
+      [NSLayoutConstraint activateConstraints:@[
+        [view.topAnchor constraintEqualToAnchor:viewAbove.bottomAnchor
+                                       constant:kSpaceBetweenModules],
+      ]];
+    }
+  }
+
   [self setInitialFakeOmniboxConstraints];
 }
 
@@ -1631,9 +1703,7 @@ BASE_FEATURE(kMagicStackRemoveGradientView,
 // background color to this view's otherwise.
 - (void)updateModularHomeBackgroundColorForUserInterfaceStyle:
     (UIUserInterfaceStyle)style {
-  if (!base::FeatureList::IsEnabled(kMagicStackRemoveGradientView)) {
-    _backgroundGradientView.hidden = style == UIUserInterfaceStyleLight;
-  }
+  _backgroundGradientView.hidden = style == UIUserInterfaceStyleLight;
 }
 
 // Signal to the ViewController that the height above the feed needs to be
@@ -1657,11 +1727,7 @@ BASE_FEATURE(kMagicStackRemoveGradientView,
 // include non-feed items in its `accessibilityElements` so they are added here.
 - (void)updateAccessibilityElements {
   NSMutableArray* elements = [[NSMutableArray alloc] init];
-  // viewControllersAboveFeed elements are added from bottom to top, so we
-  // iterate in reverse to get the correct order.
-  NSEnumerator<UIViewController*>* enumerator =
-      [self.viewControllersAboveFeed reverseObjectEnumerator];
-  for (UIViewController* viewController in enumerator) {
+  for (UIViewController* viewController in self.viewControllersAboveFeed) {
     [elements addObject:viewController.view];
   }
   [elements addObject:self.collectionView];
@@ -1684,7 +1750,6 @@ BASE_FEATURE(kMagicStackRemoveGradientView,
   if (!_feedContainer) {
     return;
   }
-  CHECK(IsFeedContainmentEnabled());
   self.feedContainerHeightConstraint.active = NO;
   // Container either takes the actual height of all feed components, or a
   // minimum value of `kFeedContainerMinimumHeight` if the content hasn't
@@ -1702,15 +1767,9 @@ BASE_FEATURE(kMagicStackRemoveGradientView,
 // Updates the width constraint of `moduleLayoutGuide`.
 - (void)updateModuleWidth {
   CGFloat oldWidth = _moduleWidth.constant;
-  CGFloat width;
-  if (IsFeedContainmentEnabled()) {
-    CGFloat widthMultiplier = (100 - HomeModuleMinimumPadding()) / 100;
-    width = MIN(self.view.frame.size.width * widthMultiplier,
-                kDiscoverFeedContentMaxWidth);
-  } else {
-    width =
-        MIN(kModuleMaxWidth, self.view.frame.size.width - 2 * kModuleMinMargin);
-  }
+  CGFloat widthMultiplier = (100 - kHomeModuleMinimumPadding) / 100;
+  CGFloat width = MIN(self.view.frame.size.width * widthMultiplier,
+                      kDiscoverFeedContentMaxWidth);
 
   BOOL existingConstraintUpdated = NO;
   if (!_moduleWidth) {
@@ -1723,12 +1782,8 @@ BASE_FEATURE(kMagicStackRemoveGradientView,
   }
   if (width != oldWidth) {
     [self.view layoutIfNeeded];
-  }
-  if (existingConstraintUpdated) {
-    if (IsIOSMagicStackCollectionViewEnabled()) {
+    if (existingConstraintUpdated) {
       [self.magicStackCollectionView moduleWidthDidUpdate];
-    } else {
-      [self.contentSuggestionsViewController moduleWidthDidUpdate];
     }
   }
 }
@@ -1813,28 +1868,34 @@ BASE_FEATURE(kMagicStackRemoveGradientView,
   // self.feedWrapperViewController.view ->
   // self.feedWrapperViewController.feedViewController.view ->
   // self.collectionView -> self.contentSuggestionsViewController.view.
-  if (![self.collectionView.subviews
-          containsObject:self.contentSuggestionsViewController.view]) {
-    // Remove child VC from old parent.
-    [self.contentSuggestionsViewController willMoveToParentViewController:nil];
-    [self.contentSuggestionsViewController removeFromParentViewController];
-    [self.contentSuggestionsViewController.view removeFromSuperview];
-    [self.contentSuggestionsViewController didMoveToParentViewController:nil];
+  if (self.contentSuggestionsViewController) {
+    if (![self.collectionView.subviews
+            containsObject:self.contentSuggestionsViewController.view]) {
+      // Remove child VC from old parent.
+      [self.contentSuggestionsViewController
+          willMoveToParentViewController:nil];
+      [self.contentSuggestionsViewController removeFromParentViewController];
+      [self.contentSuggestionsViewController.view removeFromSuperview];
+      [self.contentSuggestionsViewController didMoveToParentViewController:nil];
 
-    // Add child VC to new parent.
-    [self.contentSuggestionsViewController
-        willMoveToParentViewController:self.feedWrapperViewController
-                                           .feedViewController];
-    [self.feedWrapperViewController.feedViewController
-        addChildViewController:self.contentSuggestionsViewController];
-    [self.collectionView addSubview:self.contentSuggestionsViewController.view];
-    [self.contentSuggestionsViewController
-        didMoveToParentViewController:self.feedWrapperViewController
-                                          .feedViewController];
+      if (!IsHomeCustomizationEnabled() || self.mostVisitedVisible) {
+        // Add child VC to new parent.
+        [self.contentSuggestionsViewController
+            willMoveToParentViewController:self.feedWrapperViewController
+                                               .feedViewController];
+        [self.feedWrapperViewController.feedViewController
+            addChildViewController:self.contentSuggestionsViewController];
+        [self.collectionView
+            addSubview:self.contentSuggestionsViewController.view];
+        [self.contentSuggestionsViewController
+            didMoveToParentViewController:self.feedWrapperViewController
+                                              .feedViewController];
 
-    [self.feedMetricsRecorder
-        recordBrokenNTPHierarchy:BrokenNTPHierarchyRelationship::
-                                     kContentSuggestionsParent];
+        [self.feedMetricsRecorder
+            recordBrokenNTPHierarchy:BrokenNTPHierarchyRelationship::
+                                         kContentSuggestionsParent];
+      }
+    }
   }
 
   [self ensureView:self.headerViewController.view
@@ -1886,8 +1947,8 @@ BASE_FEATURE(kMagicStackRemoveGradientView,
 - (void)addViewControllerAboveFeed:(UIViewController*)viewController {
   // Gets the current parent view controller based on feed visibility.
   UIViewController* parentViewController =
-      self.isFeedVisible ? self.feedWrapperViewController.feedViewController
-                         : self.feedWrapperViewController;
+      self.feedVisible ? self.feedWrapperViewController.feedViewController
+                       : self.feedWrapperViewController;
 
   // Adds view controller and its view as children of the parent view
   // controller.
@@ -1920,7 +1981,7 @@ BASE_FEATURE(kMagicStackRemoveGradientView,
 // Returns the container view of the NTP content, depending on prefs and flags.
 - (UIView*)containerView {
   UIView* containerView;
-  if (self.isFeedVisible) {
+  if (self.feedVisible) {
     // TODO(crbug.com/40799579): Remove this when the bug is fixed.
     if (IsNTPViewHierarchyRepairEnabled()) {
       [self verifyNTPViewHierarchy];

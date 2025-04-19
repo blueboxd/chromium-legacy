@@ -26,6 +26,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop_painted_layer_delegates.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
@@ -204,7 +205,7 @@ class NoteActionLaunchButton::ActionButton : public views::ImageButton {
                                                base::Unretained(this))),
         background_(background),
         event_targeter_delegate_(kLargeBubbleRadiusDp, kSmallBubbleRadiusDp) {
-    SetAccessibleName(
+    GetViewAccessibility().SetName(
         l10n_util::GetStringUTF16(IDS_ASH_STYLUS_TOOLS_CREATE_NOTE_ACTION));
     SetImageModel(
         views::Button::STATE_NORMAL,
@@ -257,7 +258,7 @@ class NoteActionLaunchButton::ActionButton : public views::ImageButton {
   }
   void OnGestureEvent(ui::GestureEvent* event) override {
     switch (event->type()) {
-      case ui::ET_GESTURE_SCROLL_BEGIN:
+      case ui::EventType::kGestureScrollBegin:
         // Mark scroll begin handled, so the view starts receiving scroll
         // events (in particular) fling/swipe.
         // Ignore multi-finger gestures - the note action requests are
@@ -267,7 +268,7 @@ class NoteActionLaunchButton::ActionButton : public views::ImageButton {
           event->SetHandled();
         }
         break;
-      case ui::ET_GESTURE_SCROLL_UPDATE:
+      case ui::EventType::kGestureScrollUpdate:
         // If the user has added fingers to the gesture, cancel the fling
         // detection - the note action requests are restricted to single finger
         // gestures.
@@ -275,12 +276,12 @@ class NoteActionLaunchButton::ActionButton : public views::ImageButton {
           SetTrackingPotentialActivationGesture(false);
         }
         break;
-      case ui::ET_GESTURE_END:
-      case ui::ET_GESTURE_SCROLL_END:
-      case ui::ET_SCROLL_FLING_CANCEL:
+      case ui::EventType::kGestureEnd:
+      case ui::EventType::kGestureScrollEnd:
+      case ui::EventType::kScrollFlingCancel:
         SetTrackingPotentialActivationGesture(false);
         break;
-      case ui::ET_SCROLL_FLING_START:
+      case ui::EventType::kScrollFlingStart:
         MaybeActivateActionOnFling(event);
         SetTrackingPotentialActivationGesture(false);
         event->StopPropagation();

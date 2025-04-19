@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/functional/bind.h"
+#include "base/not_fatal_until.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -141,6 +142,32 @@ policy::DeveloperToolsPolicyHandler::Availability GetDevToolsAvailability(
 
 ChromeDevToolsManagerDelegate* g_instance;
 
+bool IsIsolatedWebApp(content::WebContents* web_contents) {
+  const webapps::AppId* app_id =
+      web_app::WebAppTabHelper::GetAppId(web_contents);
+
+  if (!app_id) {
+    return false;
+  }
+
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+
+  const web_app::WebAppProvider* provider =
+      web_app::WebAppProvider::GetForWebApps(profile);
+  if (!provider) {
+    return false;
+  }
+
+  // In this case we will not modify any data and reading stale data is
+  // fine, since the app will already be installed and open in the case
+  // it needs to be checked in DevTools.
+  const web_app::WebAppRegistrar& registrar = provider->registrar_unsafe();
+
+  const web_app::WebApp* web_app = registrar.GetAppById(*app_id);
+  return web_app && web_app->isolation_data().has_value();
+}
+
 }  // namespace
 
 // static
@@ -234,6 +261,10 @@ void ChromeDevToolsManagerDelegate::HandleCommand(
 
 std::string ChromeDevToolsManagerDelegate::GetTargetType(
     content::WebContents* web_contents) {
+  if (IsIsolatedWebApp(web_contents)) {
+    return ChromeDevToolsManagerDelegate::kTypeApp;
+  }
+
   if (base::Contains(AllTabContentses(), web_contents))
     return DevToolsAgentHost::kTypePage;
 
@@ -461,7 +492,7 @@ void ChromeDevToolsManagerDelegate::UpdateDeviceDiscovery() {
     auto it1 = remote_locations.begin();
     auto it2 = remote_locations_.begin();
     while (it1 != remote_locations.end()) {
-      DCHECK(it2 != remote_locations_.end());
+      CHECK(it2 != remote_locations_.end(), base::NotFatalUntil::M130);
       if (!(*it1).Equals(*it2))
         equals = false;
       ++it1;

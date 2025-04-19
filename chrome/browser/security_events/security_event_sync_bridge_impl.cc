@@ -5,6 +5,7 @@
 #include "chrome/browser/security_events/security_event_sync_bridge_impl.h"
 
 #include <array>
+#include <memory>
 #include <set>
 #include <utility>
 #include <vector>
@@ -33,7 +34,7 @@ std::string GetStorageKeyFromSpecifics(
   // TODO(markusheintz): Until we force |event_time_usec| to never conflict,
   // this has the potential for errors.
   std::array<uint8_t, 8> key;
-  base::span(key).copy_from(base::numerics::U64ToBigEndian(
+  base::span(key).copy_from(base::U64ToBigEndian(
       base::checked_cast<uint64_t>(specifics.event_time_usec())));
   return std::string(key.begin(), key.end());
 }
@@ -49,13 +50,13 @@ std::unique_ptr<syncer::EntityData> ToEntityData(
 }  // namespace
 
 SecurityEventSyncBridgeImpl::SecurityEventSyncBridgeImpl(
-    syncer::OnceModelTypeStoreFactory store_factory,
-    std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor)
-    : syncer::ModelTypeSyncBridge(std::move(change_processor)) {
-  std::move(store_factory)
-      .Run(syncer::SECURITY_EVENTS,
-           base::BindOnce(&SecurityEventSyncBridgeImpl::OnStoreCreated,
-                          weak_ptr_factory_.GetWeakPtr()));
+    syncer::OnceDataTypeStoreFactory store_factory,
+    std::unique_ptr<syncer::DataTypeLocalChangeProcessor> change_processor)
+    : syncer::DataTypeSyncBridge(std::move(change_processor)) {
+  StoreWithCache::CreateAndLoad(
+      std::move(store_factory), syncer::SECURITY_EVENTS,
+      base::BindOnce(&SecurityEventSyncBridgeImpl::OnStoreLoaded,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 SecurityEventSyncBridgeImpl::~SecurityEventSyncBridgeImpl() {}
@@ -71,27 +72,27 @@ void SecurityEventSyncBridgeImpl::RecordSecurityEvent(
 
   std::string storage_key = GetStorageKeyFromSpecifics(specifics);
 
-  std::unique_ptr<syncer::ModelTypeStore::WriteBatch> write_batch =
+  std::unique_ptr<StoreWithCache::WriteBatch> write_batch =
       store_->CreateWriteBatch();
-  write_batch->WriteData(storage_key, specifics.SerializeAsString());
+  write_batch->WriteData(storage_key, specifics);
 
   change_processor()->Put(storage_key, ToEntityData(std::move(specifics)),
                           write_batch->GetMetadataChangeList());
 
   store_->CommitWriteBatch(
       std::move(write_batch),
-      base::BindOnce(&SecurityEventSyncBridgeImpl::OnCommit,
+      base::BindOnce(&SecurityEventSyncBridgeImpl::OnStoreCommit,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-base::WeakPtr<syncer::ModelTypeControllerDelegate>
+base::WeakPtr<syncer::DataTypeControllerDelegate>
 SecurityEventSyncBridgeImpl::GetControllerDelegate() {
   return change_processor()->GetControllerDelegate();
 }
 
 std::unique_ptr<syncer::MetadataChangeList>
 SecurityEventSyncBridgeImpl::CreateMetadataChangeList() {
-  return syncer::ModelTypeStore::WriteBatch::CreateMetadataChangeList();
+  return syncer::DataTypeStore::WriteBatch::CreateMetadataChangeList();
 }
 
 std::optional<syncer::ModelError>
@@ -109,7 +110,7 @@ std::optional<syncer::ModelError>
 SecurityEventSyncBridgeImpl::ApplyIncrementalSyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_changes) {
-  std::unique_ptr<syncer::ModelTypeStore::WriteBatch> write_batch =
+  std::unique_ptr<StoreWithCache::WriteBatch> write_batch =
       store_->CreateWriteBatch();
   for (const std::unique_ptr<syncer::EntityChange>& change : entity_changes) {
     DCHECK_EQ(syncer::EntityChange::ACTION_DELETE, change->type());
@@ -119,24 +120,32 @@ SecurityEventSyncBridgeImpl::ApplyIncrementalSyncChanges(
   write_batch->TakeMetadataChangesFrom(std::move(metadata_change_list));
   store_->CommitWriteBatch(
       std::move(write_batch),
-      base::BindOnce(&SecurityEventSyncBridgeImpl::OnCommit,
+      base::BindOnce(&SecurityEventSyncBridgeImpl::OnStoreCommit,
                      weak_ptr_factory_.GetWeakPtr()));
   return {};
 }
 
-void SecurityEventSyncBridgeImpl::GetDataForCommit(StorageKeyList storage_keys,
-                                                   DataCallback callback) {
-  store_->ReadData(
-      storage_keys,
-      base::BindOnce(&SecurityEventSyncBridgeImpl::OnReadData,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+std::unique_ptr<syncer::DataBatch>
+SecurityEventSyncBridgeImpl::GetDataForCommit(StorageKeyList storage_keys) {
+  auto batch = std::make_unique<syncer::MutableDataBatch>();
+  const std::map<std::string, sync_pb::SecurityEventSpecifics>& in_memory_data =
+      store_->in_memory_data();
+  for (const std::string& storage_key : storage_keys) {
+    auto it = in_memory_data.find(storage_key);
+    if (it != in_memory_data.end()) {
+      batch->Put(it->first, ToEntityData(it->second));
+    }
+  }
+  return batch;
 }
 
-void SecurityEventSyncBridgeImpl::GetAllDataForDebugging(
-    DataCallback callback) {
-  store_->ReadAllData(
-      base::BindOnce(&SecurityEventSyncBridgeImpl::OnReadAllData,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+std::unique_ptr<syncer::DataBatch>
+SecurityEventSyncBridgeImpl::GetAllDataForDebugging() {
+  auto batch = std::make_unique<syncer::MutableDataBatch>();
+  for (const auto& [storage_key, specifics] : store_->in_memory_data()) {
+    batch->Put(storage_key, ToEntityData(specifics));
+  }
+  return batch;
 }
 
 std::string SecurityEventSyncBridgeImpl::GetClientTag(
@@ -151,69 +160,28 @@ std::string SecurityEventSyncBridgeImpl::GetStorageKey(
 
 void SecurityEventSyncBridgeImpl::ApplyDisableSyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> delete_metadata_change_list) {
-  store_->DeleteAllDataAndMetadata(base::BindOnce(
-      &SecurityEventSyncBridgeImpl::OnCommit, weak_ptr_factory_.GetWeakPtr()));
+  store_->DeleteAllDataAndMetadata(
+      base::BindOnce(&SecurityEventSyncBridgeImpl::OnStoreCommit,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
-void SecurityEventSyncBridgeImpl::OnStoreCreated(
+void SecurityEventSyncBridgeImpl::OnStoreLoaded(
     const std::optional<syncer::ModelError>& error,
-    std::unique_ptr<syncer::ModelTypeStore> store) {
+    std::unique_ptr<StoreWithCache> store,
+    std::unique_ptr<syncer::MetadataBatch> metadata_batch) {
+  TRACE_EVENT0("sync", "syncer::SecurityEventSyncBridgeImpl::OnStoreLoaded");
+
   if (error) {
     change_processor()->ReportError(*error);
     return;
   }
 
   store_ = std::move(store);
-  store_->ReadAllMetadata(
-      base::BindOnce(&SecurityEventSyncBridgeImpl::OnReadAllMetadata,
-                     weak_ptr_factory_.GetWeakPtr()));
+
+  change_processor()->ModelReadyToSync(std::move(metadata_batch));
 }
 
-void SecurityEventSyncBridgeImpl::OnReadData(
-    DataCallback callback,
-    const std::optional<syncer::ModelError>& error,
-    std::unique_ptr<syncer::ModelTypeStore::RecordList> data_records,
-    std::unique_ptr<syncer::ModelTypeStore::IdList> missing_id_list) {
-  OnReadAllData(std::move(callback), error, std::move(data_records));
-}
-
-void SecurityEventSyncBridgeImpl::OnReadAllData(
-    DataCallback callback,
-    const std::optional<syncer::ModelError>& error,
-    std::unique_ptr<syncer::ModelTypeStore::RecordList> data_records) {
-  if (error) {
-    change_processor()->ReportError(*error);
-    return;
-  }
-
-  auto batch = std::make_unique<syncer::MutableDataBatch>();
-  for (const syncer::ModelTypeStore::Record& r : *data_records) {
-    sync_pb::SecurityEventSpecifics specifics;
-
-    if (specifics.ParseFromString(r.value)) {
-      DCHECK_EQ(r.id, GetStorageKeyFromSpecifics(specifics));
-      batch->Put(r.id, ToEntityData(std::move(specifics)));
-    } else {
-      change_processor()->ReportError(
-          {FROM_HERE, "Failed deserializing security events."});
-      return;
-    }
-  }
-  std::move(callback).Run(std::move(batch));
-}
-
-void SecurityEventSyncBridgeImpl::OnReadAllMetadata(
-    const std::optional<syncer::ModelError>& error,
-    std::unique_ptr<syncer::MetadataBatch> metadata_batch) {
-  TRACE_EVENT0("ui", "SecurityEventSyncBridgeImpl::OnReadAllMetadata");
-  if (error) {
-    change_processor()->ReportError(*error);
-  } else {
-    change_processor()->ModelReadyToSync(std::move(metadata_batch));
-  }
-}
-
-void SecurityEventSyncBridgeImpl::OnCommit(
+void SecurityEventSyncBridgeImpl::OnStoreCommit(
     const std::optional<syncer::ModelError>& error) {
   if (error) {
     change_processor()->ReportError(*error);

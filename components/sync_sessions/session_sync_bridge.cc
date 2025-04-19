@@ -54,7 +54,7 @@ class LocalSessionWriteBatch : public LocalSessionEventHandlerImpl::WriteBatch {
  public:
   LocalSessionWriteBatch(const SessionStore::SessionInfo& session_info,
                          std::unique_ptr<SessionStore::WriteBatch> batch,
-                         syncer::ModelTypeChangeProcessor* processor)
+                         syncer::DataTypeLocalChangeProcessor* processor)
       : session_info_(session_info),
         batch_(std::move(batch)),
         processor_(processor) {
@@ -92,7 +92,7 @@ class LocalSessionWriteBatch : public LocalSessionEventHandlerImpl::WriteBatch {
  private:
   const SessionStore::SessionInfo session_info_;
   std::unique_ptr<SessionStore::WriteBatch> batch_;
-  const raw_ptr<syncer::ModelTypeChangeProcessor> processor_;
+  const raw_ptr<syncer::DataTypeLocalChangeProcessor> processor_;
 };
 
 }  // namespace
@@ -100,8 +100,8 @@ class LocalSessionWriteBatch : public LocalSessionEventHandlerImpl::WriteBatch {
 SessionSyncBridge::SessionSyncBridge(
     const base::RepeatingClosure& notify_foreign_session_updated_cb,
     SyncSessionsClient* sessions_client,
-    std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor)
-    : ModelTypeSyncBridge(std::move(change_processor)),
+    std::unique_ptr<syncer::DataTypeLocalChangeProcessor> change_processor)
+    : DataTypeSyncBridge(std::move(change_processor)),
       notify_foreign_session_updated_cb_(notify_foreign_session_updated_cb),
       sessions_client_(sessions_client),
       local_session_event_router_(
@@ -266,17 +266,15 @@ SessionSyncBridge::ApplyIncrementalSyncChanges(
   return std::nullopt;
 }
 
-void SessionSyncBridge::GetDataForCommit(StorageKeyList storage_keys,
-                                         DataCallback callback) {
+std::unique_ptr<syncer::DataBatch> SessionSyncBridge::GetDataForCommit(
+    StorageKeyList storage_keys) {
   DCHECK(syncing_);
-  // TODO(crbug.com/341920243): verify that |storage_keys| corresponds to the
-  // local session.
-  std::move(callback).Run(store_->GetSessionDataForKeys(storage_keys));
+  return store_->GetSessionDataForKeys(storage_keys);
 }
 
-void SessionSyncBridge::GetAllDataForDebugging(DataCallback callback) {
+std::unique_ptr<syncer::DataBatch> SessionSyncBridge::GetAllDataForDebugging() {
   DCHECK(syncing_);
-  std::move(callback).Run(store_->GetAllSessionData());
+  return store_->GetAllSessionData();
 }
 
 std::string SessionSyncBridge::GetClientTag(

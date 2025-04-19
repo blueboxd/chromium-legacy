@@ -58,7 +58,7 @@ class ImageViewTest : public ViewsTestBase,
     ViewsTestBase::SetUp();
 
     Widget::InitParams params =
-        CreateParams(Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
+        CreateParams(Widget::InitParams::CLIENT_OWNS_WIDGET,
                      Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     params.bounds = gfx::Rect(200, 200);
     widget_.Init(std::move(params));
@@ -156,9 +156,10 @@ TEST_P(ImageViewTest, SetAccessibleNameNotifiesAccessibilityEvent) {
   std::u16string test_tooltip_text = u"Test Tooltip Text";
   test::AXEventCounter counter(views::AXEventManager::Get());
   EXPECT_EQ(0, counter.GetCount(ax::mojom::Event::kTextChanged));
-  image_view()->SetAccessibleName(test_tooltip_text);
+  image_view()->GetViewAccessibility().SetName(test_tooltip_text);
   EXPECT_EQ(1, counter.GetCount(ax::mojom::Event::kTextChanged));
-  EXPECT_EQ(test_tooltip_text, image_view()->GetAccessibleName());
+  EXPECT_EQ(test_tooltip_text,
+            image_view()->GetViewAccessibility().GetCachedName());
   ui::AXNodeData data;
   image_view()->GetViewAccessibility().GetAccessibleNodeData(&data);
   const std::string& name =
@@ -174,7 +175,8 @@ TEST_P(ImageViewTest, AccessibleNameFromTooltipText) {
   image_view()->GetViewAccessibility().GetAccessibleNodeData(&data);
   EXPECT_EQ(data.GetString16Attribute(ax::mojom::StringAttribute::kName),
             std::u16string());
-  EXPECT_EQ(image_view()->GetAccessibleName(), std::u16string());
+  EXPECT_EQ(image_view()->GetViewAccessibility().GetCachedName(),
+            std::u16string());
   EXPECT_EQ(image_view()->GetTooltipText(), std::u16string());
   EXPECT_EQ(data.role, ax::mojom::Role::kImage);
   EXPECT_TRUE(image_view()->GetViewAccessibility().GetIsIgnored());
@@ -188,7 +190,7 @@ TEST_P(ImageViewTest, AccessibleNameFromTooltipText) {
   image_view()->GetViewAccessibility().GetAccessibleNodeData(&data);
   EXPECT_EQ(data.GetString16Attribute(ax::mojom::StringAttribute::kName),
             tooltip_text);
-  EXPECT_EQ(image_view()->GetAccessibleName(), tooltip_text);
+  EXPECT_EQ(image_view()->GetViewAccessibility().GetCachedName(), tooltip_text);
   EXPECT_EQ(image_view()->GetTooltipText(), tooltip_text);
   EXPECT_EQ(data.role, ax::mojom::Role::kImage);
   EXPECT_FALSE(image_view()->GetViewAccessibility().GetIsIgnored());
@@ -197,11 +199,12 @@ TEST_P(ImageViewTest, AccessibleNameFromTooltipText) {
   // from the tooltip text.
   data = ui::AXNodeData();
   std::u16string accessible_name = u"Accessible Name";
-  image_view()->SetAccessibleName(accessible_name);
+  image_view()->GetViewAccessibility().SetName(accessible_name);
   image_view()->GetViewAccessibility().GetAccessibleNodeData(&data);
   EXPECT_EQ(data.GetString16Attribute(ax::mojom::StringAttribute::kName),
             accessible_name);
-  EXPECT_EQ(image_view()->GetAccessibleName(), accessible_name);
+  EXPECT_EQ(image_view()->GetViewAccessibility().GetCachedName(),
+            accessible_name);
   EXPECT_EQ(image_view()->GetTooltipText(), tooltip_text);
   EXPECT_EQ(data.role, ax::mojom::Role::kImage);
   EXPECT_FALSE(image_view()->GetViewAccessibility().GetIsIgnored());
@@ -209,11 +212,11 @@ TEST_P(ImageViewTest, AccessibleNameFromTooltipText) {
   // Setting the accessible name to an empty string should cause the tooltip
   // text to be used as the name.
   data = ui::AXNodeData();
-  image_view()->SetAccessibleName(std::u16string());
+  image_view()->GetViewAccessibility().SetName(std::u16string());
   image_view()->GetViewAccessibility().GetAccessibleNodeData(&data);
   EXPECT_EQ(data.GetString16Attribute(ax::mojom::StringAttribute::kName),
             tooltip_text);
-  EXPECT_EQ(image_view()->GetAccessibleName(), tooltip_text);
+  EXPECT_EQ(image_view()->GetViewAccessibility().GetCachedName(), tooltip_text);
   EXPECT_EQ(image_view()->GetTooltipText(), tooltip_text);
   EXPECT_EQ(data.role, ax::mojom::Role::kImage);
   EXPECT_FALSE(image_view()->GetViewAccessibility().GetIsIgnored());
@@ -225,7 +228,8 @@ TEST_P(ImageViewTest, AccessibleNameFromTooltipText) {
   image_view()->GetViewAccessibility().GetAccessibleNodeData(&data);
   EXPECT_EQ(data.GetString16Attribute(ax::mojom::StringAttribute::kName),
             std::u16string());
-  EXPECT_EQ(image_view()->GetAccessibleName(), std::u16string());
+  EXPECT_EQ(image_view()->GetViewAccessibility().GetCachedName(),
+            std::u16string());
   EXPECT_EQ(image_view()->GetTooltipText(), std::u16string());
   EXPECT_EQ(data.role, ax::mojom::Role::kImage);
   EXPECT_TRUE(image_view()->GetViewAccessibility().GetIsIgnored());

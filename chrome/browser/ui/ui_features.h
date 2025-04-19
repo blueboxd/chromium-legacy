@@ -27,11 +27,6 @@ BASE_DECLARE_FEATURE(kAllowWindowDragUsingSystemDragDrop);
 
 BASE_DECLARE_FEATURE(kAllowEyeDropperWGCScreenCapture);
 
-#if !defined(ANDROID)
-BASE_DECLARE_FEATURE(kCastAppMenuExperiment);
-extern const base::FeatureParam<bool> kCastListedFirst;
-#endif
-
 BASE_DECLARE_FEATURE(kWebAppIconInTitlebar);
 
 BASE_DECLARE_FEATURE(kChromeLabs);
@@ -83,7 +78,9 @@ bool IsExtensionMenuInRootAppMenu();
 BASE_DECLARE_FEATURE(kAccessCodeCastUI);
 #endif
 
-BASE_DECLARE_FEATURE(kEvDetailsInPageInfo);
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+BASE_DECLARE_FEATURE(kFewerUpdateConfirmations);
+#endif
 
 #if !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 BASE_DECLARE_FEATURE(kGetTheMostOutOfChrome);
@@ -101,6 +98,8 @@ enum class IOSPromoBookmarkBubbleActivation {
 };
 extern const base::FeatureParam<IOSPromoBookmarkBubbleActivation>
     kIOSPromoBookmarkBubbleActivationParam;
+
+BASE_DECLARE_FEATURE(kIOSPromoPaymentBubble);
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -127,6 +126,11 @@ extern const char kPreloadTopChromeWebUIModePreloadOnWarmupName[];
 extern const char kPreloadTopChromeWebUIModePreloadOnMakeContentsName[];
 extern const base::FeatureParam<PreloadTopChromeWebUIMode>
     kPreloadTopChromeWebUIMode;
+extern const char kPreloadTopChromeWebUISmartPreloadName[];
+// If smart preload is enabled, the preload WebUI is determined by historical
+// engagement scores and whether a WebUI is currently being shown.
+// If disabled, always preload Tab Search.
+extern const base::FeatureParam<bool> kPreloadTopChromeWebUISmartPreload;
 
 #if !BUILDFLAG(IS_ANDROID)
 BASE_DECLARE_FEATURE(kPressAndHoldEscToExitBrowserFullscreen);
@@ -134,32 +138,17 @@ BASE_DECLARE_FEATURE(kPressAndHoldEscToExitBrowserFullscreen);
 
 BASE_DECLARE_FEATURE(kResponsiveToolbar);
 
-BASE_DECLARE_FEATURE(kScrollableTabStrip);
-extern const char kMinimumTabWidthFeatureParameterName[];
-
-BASE_DECLARE_FEATURE(kScrollableTabStripWithDragging);
-extern const char kTabScrollingWithDraggingModeName[];
-
-BASE_DECLARE_FEATURE(kSplitTabStrip);
-BASE_DECLARE_FEATURE(kTabStripCollectionStorage);
-
 BASE_DECLARE_FEATURE(kTabScrollingButtonPosition);
 extern const char kTabScrollingButtonPositionParameterName[];
-
-BASE_DECLARE_FEATURE(kScrollableTabStripOverflow);
-extern const char kScrollableTabStripOverflowModeName[];
 
 BASE_DECLARE_FEATURE(kSidePanelWebView);
 
 #if !defined(ANDROID)
 BASE_DECLARE_FEATURE(kSidePanelCompanionDefaultPinned);
-
-BASE_DECLARE_FEATURE(kSidePanelPinning);
-
-bool IsSidePanelPinningEnabled();
 #endif
 
 BASE_DECLARE_FEATURE(kSidePanelJourneysQueryless);
+BASE_DECLARE_FEATURE(kSidePanelResizing);
 BASE_DECLARE_FEATURE(kSidePanelSearchCompanion);
 
 BASE_DECLARE_FEATURE(kSideSearch);
@@ -198,6 +187,9 @@ extern const char kTabHoverCardAdditionalMaxWidthDelay[];
 BASE_DECLARE_FEATURE(kTabOrganization);
 bool IsTabOrganization();
 
+BASE_DECLARE_FEATURE(kTabstripDeclutter);
+bool IsTabstripDeclutter();
+
 BASE_DECLARE_FEATURE(kMultiTabOrganization);
 
 BASE_DECLARE_FEATURE(kTabOrganizationAppMenuItem);
@@ -228,46 +220,6 @@ BASE_DECLARE_FEATURE(kTabSearchChevronIcon);
 
 BASE_DECLARE_FEATURE(kTabSearchFeedback);
 
-BASE_DECLARE_FEATURE(kTabSearchFuzzySearch);
-
-extern const char kTabSearchSearchThresholdName[];
-
-// Setting this to true will ignore the distance parameter when finding matches.
-// This means that it will not matter where in the string the pattern occurs.
-extern const base::FeatureParam<bool> kTabSearchSearchIgnoreLocation;
-
-extern const char kTabSearchAlsoShowMediaTabsinOpenTabsSectionParameterName[];
-
-// Determines how close the match must be to the beginning of the string. Eg a
-// distance of 100 and threshold of 0.8 would require a perfect match to be
-// within 80 characters of the beginning of the string.
-extern const base::FeatureParam<int> kTabSearchSearchDistance;
-
-// This determines how strong the match should be for the item to be included in
-// the result set. Eg a threshold of 0.0 requires a perfect match, 1.0 would
-// match anything. Permissible values are [0.0, 1.0].
-extern const base::FeatureParam<double> kTabSearchSearchThreshold;
-
-// These are the hardcoded minimum and maximum search threshold values for
-// |kTabSearchSearchThreshold|.
-constexpr double kTabSearchSearchThresholdMin = 0.0;
-constexpr double kTabSearchSearchThresholdMax = 1.0;
-
-// Controls the weight associated with a tab's title for filtering and ordering
-// list items.
-extern const base::FeatureParam<double> kTabSearchTitleWeight;
-
-// Controls the weight associated with a tab's hostname when filering and
-// odering list items.
-extern const base::FeatureParam<double> kTabSearchHostnameWeight;
-
-// Controls the weight associated with a tab's group title filering and
-// odering list items
-extern const base::FeatureParam<double> kTabSearchGroupTitleWeight;
-
-// Whether to move the active tab to the bottom of the list.
-extern const base::FeatureParam<bool> kTabSearchMoveActiveTabToBottom;
-
 BASE_DECLARE_FEATURE(kTabSearchRecentlyClosed);
 
 // Default number of recently closed entries to display by default when no
@@ -296,6 +248,8 @@ extern const base::FeatureParam<int> kUpdateTextOptionNumber;
 BASE_DECLARE_FEATURE(kEnterpriseProfileBadging);
 BASE_DECLARE_FEATURE(kEnterpriseUpdatedProfileCreationScreen);
 
+BASE_DECLARE_FEATURE(kManagementToolbarButton);
+
 BASE_DECLARE_FEATURE(kWebUIBubblePerProfilePersistence);
 
 BASE_DECLARE_FEATURE(kWebUITabStrip);
@@ -306,18 +260,20 @@ BASE_DECLARE_FEATURE(kWebUITabStripContextMenuAfterTap);
 
 // Cocoa to views migration.
 #if BUILDFLAG(IS_MAC)
-BASE_DECLARE_FEATURE(kLocationPermissionsExperiment);
-
 BASE_DECLARE_FEATURE(kViewsFirstRunDialog);
-BASE_DECLARE_FEATURE(kViewsTaskManager);
 BASE_DECLARE_FEATURE(kViewsJSAppModalDialog);
-
-int GetLocationPermissionsExperimentBubblePromptLimit();
-int GetLocationPermissionsExperimentLabelPromptLimit();
 #endif
 
 BASE_DECLARE_FEATURE(kStopLoadingAnimationForHiddenWindow);
 
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+BASE_DECLARE_FEATURE(kUsePortalAccentColor);
+#endif
+
+// This feature introduces a toggle that allows users to switch between the
+// standard UI and a compact version of the UI by right clicking the empty area
+// in the Tabstrip.
+BASE_DECLARE_FEATURE(kCompactMode);
 }  // namespace features
 
 #endif  // CHROME_BROWSER_UI_UI_FEATURES_H_

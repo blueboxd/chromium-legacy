@@ -18,7 +18,6 @@
 #include "content/browser/android/additional_navigation_params_utils.h"
 #include "content/browser/renderer_host/navigation_controller_impl.h"
 #include "content/browser/renderer_host/navigation_entry_impl.h"
-#include "content/public/android/content_jni_headers/NavigationControllerImpl_jni.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -32,6 +31,9 @@
 #include "url/android/gurl_android.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+
+// Must come after all headers that specialize FromJniType() / ToJniType().
+#include "content/public/android/content_jni_headers/NavigationControllerImpl_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF16;
@@ -247,7 +249,7 @@ base::android::ScopedJavaLocalRef<jobject> NavigationControllerAndroid::LoadUrl(
     const JavaParamRef<jstring>& extra_headers,
     const JavaParamRef<jobject>& j_post_data,
     const JavaParamRef<jstring>& base_url_for_data_url,
-    const JavaParamRef<jstring>& virtual_url_for_data_url,
+    const JavaParamRef<jstring>& virtual_url_for_special_cases,
     const JavaParamRef<jstring>& data_url_as_string,
     jboolean can_load_local_resources,
     jboolean is_renderer_initiated,
@@ -296,9 +298,6 @@ base::android::ScopedJavaLocalRef<jobject> NavigationControllerAndroid::LoadUrl(
           GetAttributionSrcTokenFromJavaAdditionalNavigationParams(
               env, j_additional_navigation_params)
               .value();
-      impression.runtime_features =
-          GetAttributionRuntimeFeaturesFromJavaAdditionalNavigationParams(
-              env, j_additional_navigation_params);
       params.impression = impression;
     }
   }
@@ -313,9 +312,9 @@ base::android::ScopedJavaLocalRef<jobject> NavigationControllerAndroid::LoadUrl(
         GURL(ConvertJavaStringToUTF8(env, base_url_for_data_url));
   }
 
-  if (virtual_url_for_data_url) {
-    params.virtual_url_for_data_url =
-        GURL(ConvertJavaStringToUTF8(env, virtual_url_for_data_url));
+  if (virtual_url_for_special_cases) {
+    params.virtual_url_for_special_cases =
+        GURL(ConvertJavaStringToUTF8(env, virtual_url_for_special_cases));
   }
 
   if (data_url_as_string) {

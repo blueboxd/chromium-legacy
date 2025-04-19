@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {sanitizeInnerHtml} from 'chrome://resources/js/parse_html_subset.js';
+
 import type {VolumeInfo} from '../../background/js/volume_info.js';
 import {queryRequiredElement} from '../../common/js/dom_utils.js';
 import {getODFSMetadataQueryEntry, isInteractiveVolume, isOneDrive, isOneDrivePlaceholderKey, isRecentRootType} from '../../common/js/entry_utils.js';
@@ -15,7 +17,7 @@ import type {FileKey, State, Volume, VolumeId} from '../../state/state.js';
 import {getStore} from '../../state/store.js';
 import type {Store} from '../../state/store.js';
 
-import {FSP_ACTION_HIDDEN_ONEDRIVE_REAUTHENTICATION_REQUIRED, ODFS_EXTENSION_ID} from './constants.js';
+import {FSP_ACTION_HIDDEN_ONEDRIVE_ACCOUNT_STATE, FSP_ACTION_HIDDEN_ONEDRIVE_REAUTHENTICATION_REQUIRED, FSP_ACTION_HIDDEN_ONEDRIVE_USER_EMAIL, ODFS_EXTENSION_ID} from './constants.js';
 import type {DirectoryModel} from './directory_model.js';
 import type {ProvidersModel} from './providers_model.js';
 
@@ -43,6 +45,30 @@ const TRASH_EMPTY_FOLDER =
  */
 const ODFS_REAUTHENTICATION_REQUIRED = 'foreground/images/files/ui/' +
     'odfs_reauthentication_required.svg#odfs_reauthentication_required';
+
+/**
+ * The frozen account image for ODFS. There are no files when the account
+ * is frozen (scan fails).
+ */
+const ODFS_FROZEN_ACCOUNT = 'foreground/images/files/ui/' +
+    'odfs_frozen_account.svg#odfs_frozen_account';
+
+/**
+ * The state of the user's OneDrive account. Matches the enum in ODFS.
+ */
+enum OdfsAccountState {
+  NORMAL = 'NORMAL',
+  REAUTHENTICATION_REQUIRED = 'REAUTHENTICATION_REQUIRED',
+  FROZEN_ACCOUNT = 'FROZEN_ACCOUNT',
+}
+
+interface OdfsMetadata {
+  userEmail?: string;
+  // TODO(b/330786891): Remove reauthenticationRequired once no longer needed
+  // for backwards compatibility with ODFS.
+  reauthenticationRequired?: boolean;
+  accountState?: OdfsAccountState;
+}
 
 export type ScanFailedEvent = CustomEvent<{error: DOMError}>;
 
@@ -121,43 +147,64 @@ export class EmptyFolderController {
   }
 
   /**
-   * Return true if reauthentication to OneDrive is required. Request the ODFS
-   * volume metadata through the special root actions request to determine if re
-   * authentication is required.
+   * Queries ODFS for the ODFS metadata using the special root actions request.
    */
-  private async checkIfReauthenticationRequired_(odfsVolumeInfo: VolumeInfo):
-      Promise<boolean> {
+  private async getOdfsMetadata_(odfsVolumeInfo: VolumeInfo):
+      Promise<OdfsMetadata> {
     // Request ODFS root actions to get ODFS metadata.
     return new Promise((fulfill) => {
       chrome.fileManagerPrivate.getCustomActions(
           [getODFSMetadataQueryEntry(odfsVolumeInfo) as DirectoryEntry],
           (customActions:
                chrome.fileManagerPrivate.FileSystemProviderAction[]) => {
+            const metadata = {} as OdfsMetadata;
             if (chrome.runtime.lastError) {
               console.error(
                   'Unexpectedly failed to fetch custom actions for ODFS ' +
                   'root because of: ' + chrome.runtime.lastError.message);
-              fulfill(false);
+              fulfill(metadata);
               return;
             }
             // Find the reauthentication required action.
             for (const action of customActions) {
-              if (action.id ===
-                      FSP_ACTION_HIDDEN_ONEDRIVE_REAUTHENTICATION_REQUIRED &&
-                  action.title === 'true') {
-                fulfill(true);
-                return;
+              switch (action.id) {
+                case FSP_ACTION_HIDDEN_ONEDRIVE_USER_EMAIL:
+                  metadata.userEmail = action.title;
+                  continue;
+                case FSP_ACTION_HIDDEN_ONEDRIVE_REAUTHENTICATION_REQUIRED:
+                  metadata.reauthenticationRequired = action.title === 'true';
+                  continue;
+                case FSP_ACTION_HIDDEN_ONEDRIVE_ACCOUNT_STATE:
+                  if (!action.title) {
+                    continue;
+                  }
+                  switch (action.title) {
+                    case OdfsAccountState.NORMAL:
+                      metadata.accountState = OdfsAccountState.NORMAL;
+                      continue;
+                    case OdfsAccountState.REAUTHENTICATION_REQUIRED:
+                      metadata.accountState =
+                          OdfsAccountState.REAUTHENTICATION_REQUIRED;
+                      continue;
+                    case OdfsAccountState.FROZEN_ACCOUNT:
+                      metadata.accountState = OdfsAccountState.FROZEN_ACCOUNT;
+                      continue;
+                    default:
+                      continue;
+                  }
+                default:
+                  continue;
               }
             }
-            fulfill(false);
+            fulfill(metadata);
           });
     });
   }
 
   /**
    * Handles scan fail. If the scan failed for the ODFS volume due to
-   * reauthenticaton being required, set the state of the volume as not
-   * interactive.
+   * reauthenticaton being required or the user having a frozen account, set the
+   * state of the volume as not interactive and set the correct svg to display.
    */
   protected onScanFailed_(event: ScanFailedEvent) {
     this.isScanning_ = false;
@@ -171,31 +218,42 @@ export class EmptyFolderController {
       this.updateUi_();
       return;
     }
-    // If the error is not NO_MODIFICATION_ALLOWED_ERR, return. This is
-    // equivalent to the ACCESS_DENIED error thrown by ODFS.
+    // If the error is not NO_MODIFICATION_ALLOWED_ERR or QUOTA_EXCEEDED_ERR,
+    // return. This is equivalent to the ACCESS_DENIED and NO_SPACE error
+    // respectively thrown by ODFS.
     if (event.detail.error.name !==
-        FileErrorToDomError.NO_MODIFICATION_ALLOWED_ERR) {
+            FileErrorToDomError.NO_MODIFICATION_ALLOWED_ERR &&
+        event.detail.error.name !== FileErrorToDomError.QUOTA_EXCEEDED_ERR) {
       this.updateUi_();
       return;
     }
-    // If ODFS is already non-interactive, return.
-    if (!isInteractiveVolume(currentVolumeInfo)) {
-      this.updateUi_();
-      return;
-    }
-    // Only set ODFS to non-interactive if the ACCESS_DENIED was due to
-    // reauthentication being required rather than some other access error.
-    this.checkIfReauthenticationRequired_(currentVolumeInfo).then(required => {
-      if (required) {
-        // Set |isInteractive| to false for ODFS when reauthentication is
-        // required.
-        getStore().dispatch(updateIsInteractiveVolume({
-          volumeId: currentVolumeInfo.volumeId,
-          isInteractive: false,
-        }));
-      }
-      this.updateUi_();
-    });
+    // Set the svg and set ODFS to non-interactive if the ACCESS_DENIED was due
+    // to reauthentication being required rather than some other access error.
+    this.getOdfsMetadata_(currentVolumeInfo)
+        .then((odfsMetadata: OdfsMetadata) => {
+          let svgRef = null;
+          // TODO(b/330786891): Remove odfsMetadata.reauthenticationRequired
+          // once no longer needed for backwards compatibility with ODFS.
+          if ((odfsMetadata.reauthenticationRequired ||
+               odfsMetadata.accountState ===
+                   OdfsAccountState.REAUTHENTICATION_REQUIRED) &&
+              event.detail.error.name ===
+                  FileErrorToDomError.NO_MODIFICATION_ALLOWED_ERR) {
+            svgRef = ODFS_REAUTHENTICATION_REQUIRED;
+          } else if (
+              odfsMetadata.accountState === OdfsAccountState.FROZEN_ACCOUNT &&
+              event.detail.error.name ===
+                  FileErrorToDomError.QUOTA_EXCEEDED_ERR) {
+            svgRef = ODFS_FROZEN_ACCOUNT;
+          }
+          if (svgRef !== null && isInteractiveVolume(currentVolumeInfo)) {
+            getStore().dispatch(updateIsInteractiveVolume({
+              volumeId: currentVolumeInfo.volumeId,
+              isInteractive: false,
+            }));
+          }
+          this.updateUi_(svgRef);
+        });
   }
 
   /**
@@ -237,8 +295,8 @@ export class EmptyFolderController {
   }
 
   /**
-   * Shows the ODFS reauthentication required message. Include the "Sign in"
-   * and "Settings" links and set the handlers.
+   * Shows the ODFS reauthentication required message. Includes the "Sign in"
+   * link and sets the handler.
    */
   private showOdfsReauthenticationMessage_() {
     const titleSpan = document.createElement('span');
@@ -258,6 +316,24 @@ export class EmptyFolderController {
     descSpan.appendChild(text);
     descSpan.appendChild(document.createElement('br'));
     descSpan.appendChild(signInLink);
+
+    this.label_.appendChild(titleSpan);
+    this.label_.appendChild(document.createElement('br'));
+    this.label_.appendChild(descSpan);
+  }
+
+  /**
+   * Shows the ODFS frozen account message.
+   */
+  private showOdfsFrozenAccountMessage_() {
+    const titleSpan = document.createElement('span');
+    titleSpan.id = 'empty-folder-title';
+    titleSpan.innerText = str('ONEDRIVE_FROZEN_ACCOUNT_TITLE');
+
+    const descSpan = document.createElement('span');
+    descSpan.id = 'empty-folder-desc';
+    descSpan.innerHTML =
+        sanitizeInnerHtml(str('ONEDRIVE_FROZEN_ACCOUNT_SUBTITLE'));
 
     this.label_.appendChild(titleSpan);
     this.label_.appendChild(document.createElement('br'));
@@ -292,9 +368,7 @@ export class EmptyFolderController {
 
     this.image_.hidden = true;
     this.emptyFolder_.hidden = false;
-    // TODO(b/334511998): Use proper strings.
-    this.showMessage_(
-        'File system has been disabled. Please contact your administrator.');
+    this.showMessage_(str('SKYVAULT_MISCONFIGURED_POLICY_MESSAGE'));
     this.label_.classList.add('no-image');
 
     this.hasFilesystemError_ = true;
@@ -320,24 +394,16 @@ export class EmptyFolderController {
   /**
    * Updates visibility of empty folder UI.
    */
-  protected updateUi_() {
+  protected updateUi_(svgRef: string|null = null) {
     if (this.hasFilesystemError_) {
       return;
     }
     const currentRootType = this.directoryModel_.getCurrentRootType();
-    const currentVolumeInfo = this.directoryModel_.getCurrentVolumeInfo();
 
-    let svgRef = null;
     if (isRecentRootType(currentRootType)) {
       svgRef = RECENTS_EMPTY_FOLDER;
     } else if (currentRootType === RootType.TRASH) {
       svgRef = TRASH_EMPTY_FOLDER;
-    } else if (
-        currentVolumeInfo && isOneDrive(currentVolumeInfo) &&
-        !isInteractiveVolume(currentVolumeInfo)) {
-      // Show ODFS reauthentication required empty state if is it
-      // non-interactive.
-      svgRef = ODFS_REAUTHENTICATION_REQUIRED;
     } else if (isOneDrivePlaceholderKey(
                    this.directoryModel_.getCurrentFileKey())) {
       svgRef = ODFS_REAUTHENTICATION_REQUIRED;
@@ -370,6 +436,11 @@ export class EmptyFolderController {
 
     if (svgRef === ODFS_REAUTHENTICATION_REQUIRED) {
       this.showOdfsReauthenticationMessage_();
+      return;
+    }
+
+    if (svgRef === ODFS_FROZEN_ACCOUNT) {
+      this.showOdfsFrozenAccountMessage_();
       return;
     }
 

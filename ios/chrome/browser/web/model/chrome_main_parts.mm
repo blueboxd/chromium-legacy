@@ -16,6 +16,7 @@
 #import "base/metrics/histogram_functions.h"
 #import "base/metrics/user_metrics.h"
 #import "base/path_service.h"
+#import "base/profiler/process_type.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/task/sequenced_task_runner.h"
 #import "base/task/single_thread_task_runner.h"
@@ -27,13 +28,13 @@
 #import "components/crash/core/common/crash_key.h"
 #import "components/crash/core/common/reporter_running_ios.h"
 #import "components/flags_ui/pref_service_flags_storage.h"
+#import "components/keyed_service/ios/browser_state_dependency_manager.h"
 #import "components/language/core/browser/language_usage_metrics.h"
 #import "components/language/core/browser/pref_names.h"
 #import "components/memory_system/initializer.h"
 #import "components/memory_system/parameters.h"
 #import "components/metrics/call_stacks/call_stack_profile_builder.h"
 #import "components/metrics/call_stacks/call_stack_profile_metrics_provider.h"
-#import "components/metrics/call_stacks/call_stack_profile_params.h"
 #import "components/metrics/clean_exit_beacon.h"
 #import "components/metrics/expired_histogram_util.h"
 #import "components/metrics/metrics_service.h"
@@ -66,9 +67,9 @@
 #import "ios/chrome/browser/safe_browsing/model/safe_browsing_metrics_collector_factory.h"
 #import "ios/chrome/browser/segmentation_platform/model/ukm_database_client.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state_manager.h"
 #import "ios/chrome/browser/shared/model/paths/paths.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
+#import "ios/chrome/browser/shared/model/profile/profile_manager_ios.h"
 #import "ios/chrome/browser/signin/model/signin_util.h"
 #import "ios/chrome/browser/translate/model/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/translate/model/translate_service_ios.h"
@@ -255,8 +256,8 @@ void IOSChromeMainParts::PreCreateThreads() {
   // consistency with other main delegates where the browser process is denoted
   // this way.
   memory_system::Initializer()
-      .SetProfilingClientParameters(
-          channel, metrics::CallStackProfileParams::Process::kBrowser)
+      .SetProfilingClientParameters(channel,
+                                    base::ProfilerProcessType::kBrowser)
       .SetDispatcherParameters(memory_system::DispatcherParameters::
                                    PoissonAllocationSamplerInclusion::kDynamic,
                                memory_system::DispatcherParameters::
@@ -310,9 +311,14 @@ void IOSChromeMainParts::PreMainMessageLoopRun() {
       .PreProfileInit(
           /*in_memory_database=*/false);
 
-  // Ensure that the browser state is initialized.
+  // Ensure that the KeyedService factories are registered.
   EnsureBrowserStateKeyedServiceFactoriesBuilt();
-  ios::ChromeBrowserStateManager* browser_state_manager =
+  BrowserStateDependencyManager::GetInstance()
+      ->DisallowKeyedServiceFactoryRegistration(
+          "EnsureBrowserStateKeyedServiceFactoriesBuilt()");
+
+  // Ensure the ChromeBrowserState is loaded and initialized.
+  ChromeBrowserStateManager* browser_state_manager =
       application_context_->GetChromeBrowserStateManager();
 
   // Load all BrowserStates.

@@ -14,6 +14,7 @@
 #include "components/data_sharing/public/data_sharing_network_loader.h"
 #include "components/data_sharing/public/data_sharing_service.h"
 #include "components/data_sharing/public/group_data.h"
+#include "components/data_sharing/test_support/mock_data_sharing_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -24,16 +25,18 @@ namespace {
 const char kGroup1Id[] = "g1";
 const char kGroup1Name[] = "group1";
 const char kMemberName[] = "John Doe";
+const char kAccessToken[] = "Access Token";
 const data_sharing::MemberRole kMemberRole = data_sharing::MemberRole::kOwner;
 
 data_sharing::GroupData GetTestGroupData() {
   data_sharing::GroupData data;
-  data.group_id = kGroup1Id;
+  data.group_token.group_id = data_sharing::GroupId(kGroup1Id);
   data.display_name = kGroup1Name;
   data_sharing::GroupMember member;
   member.display_name = kMemberName;
   member.role = kMemberRole;
   data.members.emplace_back(member);
+  data.group_token.access_token = kAccessToken;
   return data;
 }
 
@@ -56,67 +59,6 @@ class MockPage : public data_sharing_internals::mojom::Page {
   mojo::Receiver<data_sharing_internals::mojom::Page> receiver_{this};
 };
 
-class MockDataSharingService : public data_sharing::DataSharingService {
- public:
-  MockDataSharingService() = default;
-  ~MockDataSharingService() override = default;
-
-  // Disallow copy/assign.
-  MockDataSharingService(const MockDataSharingService&) = delete;
-  MockDataSharingService& operator=(const MockDataSharingService&) = delete;
-
-  // DataSharingNetworkLoader Impl.
-  MOCK_METHOD(bool, IsEmptyService, (), (override));
-  MOCK_METHOD(void, AddObserver, (Observer*), (override));
-  MOCK_METHOD(void, RemoveObserver, (Observer*), (override));
-  MOCK_METHOD(data_sharing::DataSharingNetworkLoader*,
-              GetDataSharingNetworkLoader,
-              (),
-              (override));
-  MOCK_METHOD(base::WeakPtr<syncer::ModelTypeControllerDelegate>,
-              GetCollaborationGroupControllerDelegate,
-              (),
-              (override));
-  MOCK_METHOD(void,
-              ReadAllGroups,
-              (base::OnceCallback<void(const GroupsDataSetOrFailureOutcome&)>),
-              (override));
-  MOCK_METHOD(void,
-              ReadGroup,
-              (const std::string&,
-               base::OnceCallback<void(const GroupDataOrFailureOutcome&)>),
-              (override));
-  MOCK_METHOD(void,
-              CreateGroup,
-              (const std::string&,
-               base::OnceCallback<void(const GroupDataOrFailureOutcome&)>),
-              (override));
-  MOCK_METHOD(void,
-              DeleteGroup,
-              (const std::string&,
-               base::OnceCallback<void(PeopleGroupActionOutcome)>),
-              (override));
-  MOCK_METHOD(void,
-              InviteMember,
-              (const std::string&,
-               const std::string&,
-               base::OnceCallback<void(PeopleGroupActionOutcome)>),
-              (override));
-  MOCK_METHOD(void,
-              RemoveMember,
-              (const std::string&,
-               const std::string&,
-               base::OnceCallback<void(PeopleGroupActionOutcome)>),
-              (override));
-  MOCK_METHOD(bool,
-              ShouldInterceptNavigationForShareURL,
-              (const GURL&),
-              (override));
-  MOCK_METHOD(void,
-              HandleShareURLNavigationIntercepted,
-              (const GURL&),
-              (override));
-};
 }  // namespace
 
 class DataSharingInternalsPageHandlerImplTest : public testing::Test {
@@ -130,7 +72,7 @@ class DataSharingInternalsPageHandlerImplTest : public testing::Test {
 
  protected:
   base::test::TaskEnvironment task_environment_;
-  MockDataSharingService data_sharing_service_;
+  data_sharing::MockDataSharingService data_sharing_service_;
   testing::NiceMock<MockPage> mock_client_;
   std::unique_ptr<DataSharingInternalsPageHandlerImpl> handler_;
 };
@@ -173,7 +115,7 @@ TEST_F(DataSharingInternalsPageHandlerImplTest, GetAllGroupsWithError) {
   base::RunLoop run_loop;
   handler_->GetAllGroups(base::BindOnce(
       [](base::RunLoop* run_loop, bool success,
-         std::vector<data_sharing_internals::mojom::GroupDataPtr> result) {
+         std::vector<data_sharing::mojom::GroupDataPtr> result) {
         ASSERT_FALSE(success);
         run_loop->Quit();
       },
@@ -191,15 +133,16 @@ TEST_F(DataSharingInternalsPageHandlerImplTest, GetAllGroups) {
   base::RunLoop run_loop;
   handler_->GetAllGroups(base::BindOnce(
       [](base::RunLoop* run_loop, bool success,
-         std::vector<data_sharing_internals::mojom::GroupDataPtr> result) {
+         std::vector<data_sharing::mojom::GroupDataPtr> result) {
         ASSERT_TRUE(success);
         ASSERT_EQ(result.size(), 1u);
         ASSERT_EQ(result[0]->group_id, kGroup1Id);
-        ASSERT_EQ(result[0]->name, kGroup1Name);
+        ASSERT_EQ(result[0]->display_name, kGroup1Name);
         ASSERT_EQ(result[0]->members.size(), 1u);
         ASSERT_EQ(result[0]->members[0]->display_name, kMemberName);
         ASSERT_EQ(result[0]->members[0]->role,
-                  data_sharing_internals::mojom::RoleType::OWNER);
+                  data_sharing::mojom::MemberRole::kOwner);
+        ASSERT_EQ(result[0]->access_token, kAccessToken);
         run_loop->Quit();
       },
       &run_loop));

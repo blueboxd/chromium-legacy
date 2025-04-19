@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.readaloud.player;
 
+import static org.chromium.chrome.modules.readaloud.PlaybackListener.State.BUFFERING;
+import static org.chromium.chrome.modules.readaloud.PlaybackListener.State.ERROR;
 import static org.chromium.chrome.modules.readaloud.PlaybackListener.State.PAUSED;
 import static org.chromium.chrome.modules.readaloud.PlaybackListener.State.PLAYING;
 import static org.chromium.chrome.modules.readaloud.PlaybackListener.State.STOPPED;
@@ -13,6 +15,7 @@ import android.widget.SeekBar.OnSeekBarChangeListener;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.base.Callback;
 import org.chromium.chrome.browser.readaloud.ReadAloudMetrics;
 import org.chromium.chrome.browser.readaloud.ReadAloudPrefs;
 import org.chromium.chrome.modules.readaloud.Playback;
@@ -23,6 +26,7 @@ import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /** Mediator class in charge of updating player UI property model. */
 class PlayerMediator implements InteractionHandler {
@@ -43,6 +47,8 @@ class PlayerMediator implements InteractionHandler {
     private @PlaybackListener.State int mLastState;
     private long mLastStartTimeMillis;
     private long mTotalTimeMillis;
+
+    private long mSeekbarStartTimeNanos;
 
     // members to record total duration listened to playback with the screen locked
     private boolean mScreenLocked;
@@ -103,11 +109,22 @@ class PlayerMediator implements InteractionHandler {
                 public void onStartTrackingTouch(SeekBar seekBar) {
                     mPrevState = mModel.get(PlayerProperties.PLAYBACK_STATE);
                     setPlaybackState(PlaybackListener.State.PAUSED);
+                    mSeekbarStartTimeNanos = mModel.get(PlayerProperties.ELAPSED_NANOS);
                 }
 
                 @Override
                 public void onStopTrackingTouch(SeekBar seekBar) {
                     setPlaybackState(mPrevState);
+                    long seekbarDurationMillis =
+                            TimeUnit.NANOSECONDS.toMillis(
+                                    mModel.get(PlayerProperties.ELAPSED_NANOS)
+                                            - mSeekbarStartTimeNanos);
+                    if (seekbarDurationMillis < 0) {
+                        ReadAloudMetrics.recordDurationScrubbingBackwards(
+                                Math.abs(seekbarDurationMillis));
+                    } else {
+                        ReadAloudMetrics.recordDurationScrubbingForwards(seekbarDurationMillis);
+                    }
                 }
             };
     private final PlaybackListener mPreviewPlaybackListener =
@@ -123,6 +140,9 @@ class PlayerMediator implements InteractionHandler {
                 }
             };
 
+    private final Callback<List<PlaybackVoice>> mVoiceListObserver = this::setVoices;
+    private final Callback<String> mVoiceIdObserver = this::setVoice;
+
     private Playback mPlayback;
     @Nullable Playback mVoicePreviewPlayback;
 
@@ -135,8 +155,8 @@ class PlayerMediator implements InteractionHandler {
         mModel = model;
         mModel.set(PlayerProperties.INTERACTION_HANDLER, this);
 
-        mDelegate.getCurrentLanguageVoicesSupplier().addObserver(this::setVoices);
-        mDelegate.getVoiceIdSupplier().addObserver(this::setVoice);
+        mDelegate.getCurrentLanguageVoicesSupplier().addObserver(mVoiceListObserver);
+        mDelegate.getVoiceIdSupplier().addObserver(mVoiceIdObserver);
     }
 
     void destroy() {
@@ -144,8 +164,8 @@ class PlayerMediator implements InteractionHandler {
             mPlayback.removeListener(mPlaybackListener);
         }
 
-        mDelegate.getVoiceIdSupplier().removeObserver(this::setVoice);
-        mDelegate.getCurrentLanguageVoicesSupplier().removeObserver(this::setVoices);
+        mDelegate.getVoiceIdSupplier().removeObserver(mVoiceIdObserver);
+        mDelegate.getCurrentLanguageVoicesSupplier().removeObserver(mVoiceListObserver);
     }
 
     void setPlayback(@Nullable Playback playback) {
@@ -227,11 +247,13 @@ class PlayerMediator implements InteractionHandler {
 
     @Override
     public void onSeekBackClick() {
+        ReadAloudMetrics.recordSeekBackwardTapped();
         maybeSeekRelative(SEEK_BACK_NANOS);
     }
 
     @Override
     public void onSeekForwardClick() {
+        ReadAloudMetrics.recordSeekForwardTapped();
         maybeSeekRelative(SEEK_FORWARD_NANOS);
     }
 
@@ -321,15 +343,18 @@ class PlayerMediator implements InteractionHandler {
 
     @Override
     public void onShouldHideMiniPlayer() {
+        // TODO(b/352563278): All player UI should be made to work without a playback.
         if (mPlayback != null) {
-        mCoordinator.hideMiniPlayer();
+            mCoordinator.hideMiniPlayer();
         }
     }
 
     @Override
     public void onShouldRestoreMiniPlayer() {
-        if (mPlayback != null) {
-        mCoordinator.restoreMiniPlayer();
+        @PlaybackListener.State int state = mModel.get(PlayerProperties.PLAYBACK_STATE);
+        // TODO(b/352563278): All player UI should be made to work without a playback.
+        if (mPlayback != null || state == ERROR || state == BUFFERING) {
+            mCoordinator.restoreMiniPlayer();
         }
     }
 

@@ -104,9 +104,9 @@ void FlexCodeInput::Backspace() {
 
   // views::Textfield::OnKeyPressed is private, so we call it via views::View.
   auto* view = static_cast<views::View*>(code_field_);
-  view->OnKeyPressed(ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_BACK,
+  view->OnKeyPressed(ui::KeyEvent(ui::EventType::kKeyPressed, ui::VKEY_BACK,
                                   ui::DomCode::BACKSPACE, ui::EF_NONE));
-  view->OnKeyPressed(ui::KeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_BACK,
+  view->OnKeyPressed(ui::KeyEvent(ui::EventType::kKeyReleased, ui::VKEY_BACK,
                                   ui::DomCode::BACKSPACE, ui::EF_NONE));
   // This triggers ContentsChanged(), which calls |on_input_change_|.
 }
@@ -146,7 +146,7 @@ void FlexCodeInput::RequestFocus() {
 }
 
 void FlexCodeInput::SetAccessibleNameOnTextfield(const std::u16string& name) {
-  code_field_->SetAccessibleName(name);
+  code_field_->GetViewAccessibility().SetName(name);
 }
 
 void FlexCodeInput::ContentsChanged(views::Textfield* sender,
@@ -158,7 +158,7 @@ void FlexCodeInput::ContentsChanged(views::Textfield* sender,
 bool FlexCodeInput::HandleKeyEvent(views::Textfield* sender,
                                    const ui::KeyEvent& key_event) {
   // Only handle keys.
-  if (key_event.type() != ui::ET_KEY_PRESSED) {
+  if (key_event.type() != ui::EventType::kKeyPressed) {
     return false;
   }
 
@@ -206,7 +206,7 @@ views::View* AccessibleInputField::GetSelectedViewForGroup(int group) {
 }
 
 void AccessibleInputField::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() == ui::ET_GESTURE_TAP) {
+  if (event->type() == ui::EventType::kGestureTap) {
     RequestFocusWithPointer(event->details().primary_pointer_type());
     return;
   }
@@ -284,6 +284,9 @@ FixedLengthCodeInput::FixedLengthCodeInput(int length,
     layout->SetFlexForView(field, 1);
   }
   text_value_for_a11y_ = std::u16string(length, ' ');
+  GetViewAccessibility().SetIsProtected(is_obscure_pin_);
+  GetViewAccessibility().SetValue(text_value_for_a11y_);
+  OnTextSelectionChanged();
 }
 
 FixedLengthCodeInput::~FixedLengthCodeInput() = default;
@@ -364,6 +367,7 @@ views::View* FixedLengthCodeInput::GetSelectedViewForGroup(int group) {
 
 void FixedLengthCodeInput::RequestFocus() {
   ActiveField()->RequestFocus();
+  OnTextSelectionChanged();
 }
 
 void FixedLengthCodeInput::ResetTextValueForA11y() {
@@ -378,6 +382,8 @@ void FixedLengthCodeInput::ResetTextValueForA11y() {
   }
 
   text_value_for_a11y_ = result;
+  GetViewAccessibility().SetValue(text_value_for_a11y_);
+  OnTextSelectionChanged();
 }
 
 gfx::Range FixedLengthCodeInput::GetSelectedRangeOfTextValueForA11y() {
@@ -387,28 +393,26 @@ gfx::Range FixedLengthCodeInput::GetSelectedRangeOfTextValueForA11y() {
   return gfx::Range(text_sel_start, text_sel_end);
 }
 
+void FixedLengthCodeInput::OnTextSelectionChanged() {
+  const gfx::Range& range = GetSelectedRangeOfTextValueForA11y();
+  GetViewAccessibility().SetTextSelStart(range.start());
+  GetViewAccessibility().SetTextSelEnd(range.end());
+}
+
 void FixedLengthCodeInput::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kTextField;
   node_data->AddState(ax::mojom::State::kEditable);
 
-  node_data->SetValue(text_value_for_a11y_);
   node_data->html_attributes.push_back(std::make_pair("type", "tel"));
   node_data->AddStringAttribute(
       ax::mojom::StringAttribute::kName,
       l10n_util::GetStringUTF8(
           IDS_ASH_LOGIN_PARENT_ACCESS_GENERIC_DESCRIPTION));
-  const gfx::Range& range = GetSelectedRangeOfTextValueForA11y();
-  node_data->AddIntAttribute(ax::mojom::IntAttribute::kTextSelStart,
-                             range.start());
-  if (is_obscure_pin_) {
-    node_data->AddState(ax::mojom::State::kProtected);
-  }
-  node_data->AddIntAttribute(ax::mojom::IntAttribute::kTextSelEnd, range.end());
 }
 
 bool FixedLengthCodeInput::HandleKeyEvent(views::Textfield* sender,
                                           const ui::KeyEvent& key_event) {
-  if (key_event.type() != ui::ET_KEY_PRESSED) {
+  if (key_event.type() != ui::EventType::kKeyPressed) {
     return false;
   }
 
@@ -510,7 +514,7 @@ bool FixedLengthCodeInput::HandleMouseEvent(views::Textfield* sender,
 bool FixedLengthCodeInput::HandleGestureEvent(
     views::Textfield* sender,
     const ui::GestureEvent& gesture_event) {
-  if (gesture_event.details().type() != ui::EventType::ET_GESTURE_TAP) {
+  if (gesture_event.details().type() != ui::EventType::kGestureTap) {
     return false;
   }
 
@@ -565,7 +569,8 @@ void FixedLengthCodeInput::ClearInput() {
   }
   active_input_index_ = 0;
   text_value_for_a11y_.clear();
-  ActiveField()->RequestFocus();
+  GetViewAccessibility().RemoveValue();
+  RequestFocus();
 }
 
 bool FixedLengthCodeInput::IsEmpty() const {
@@ -587,7 +592,7 @@ void FixedLengthCodeInput::FocusPreviousField() {
   }
 
   --active_input_index_;
-  ActiveField()->RequestFocus();
+  RequestFocus();
 }
 
 void FixedLengthCodeInput::FocusNextField() {
@@ -596,7 +601,7 @@ void FixedLengthCodeInput::FocusNextField() {
   }
 
   ++active_input_index_;
-  ActiveField()->RequestFocus();
+  RequestFocus();
 }
 
 bool FixedLengthCodeInput::IsLastFieldActive() const {

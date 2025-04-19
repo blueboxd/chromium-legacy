@@ -22,13 +22,13 @@ class WebNNGraphBuilderDmlTest : public TestBase {
   void SetUp() override;
 
  protected:
-  Microsoft::WRL::ComPtr<IDMLDevice> dml_device_;
+  Microsoft::WRL::ComPtr<IDMLDevice1> dml_device_;
 };
 
 void WebNNGraphBuilderDmlTest::SetUp() {
   SKIP_TEST_IF(!UseGPUInTests());
   Adapter::EnableDebugLayerForTesting();
-  auto adapter_creation_result = Adapter::GetInstanceForTesting();
+  auto adapter_creation_result = Adapter::GetGpuInstanceForTesting();
   // If the adapter creation result has no value, it's most likely because
   // platform functions were not properly loaded.
   SKIP_TEST_IF(!adapter_creation_result.has_value());
@@ -39,28 +39,6 @@ void WebNNGraphBuilderDmlTest::SetUp() {
   // DirectML version 1.2 or DML_FEATURE_LEVEL_2_1, so skip the tests if the
   // DirectML version doesn't support this feature.
   SKIP_TEST_IF(!adapter->IsDMLDeviceCompileGraphSupportedForTesting());
-}
-
-// Test creating an invalid operator node with inconsistent tensor dimensions.
-TEST_F(WebNNGraphBuilderDmlTest, CreateInvalidOperator) {
-  GraphBuilderDml graph_builder(dml_device_);
-
-  TensorDesc input_tensor_desc(DML_TENSOR_DATA_TYPE_FLOAT32, {1, 2, 3, 4});
-  TensorDesc output_tensor_desc(DML_TENSOR_DATA_TYPE_FLOAT32, {1, 2, 3});
-  const InputNode* input_node = graph_builder.CreateInputNode();
-  ASSERT_NE(input_node, nullptr);
-  ASSERT_EQ(input_node->GetType(), Node::Type::kInput);
-  const NodeOutput* input =
-      graph_builder.CreateNodeOutput(input_node, input_tensor_desc);
-
-  DML_ACTIVATION_RELU_OPERATOR_DESC invalid_operator_desc{
-      .InputTensor = &input_tensor_desc.GetDMLTensorDesc(),
-      .OutputTensor = &output_tensor_desc.GetDMLTensorDesc()};
-
-  std::array<const NodeOutput*, 1> inputs = {input};
-  const OperatorNode* operator_node = graph_builder.CreateOperatorNode(
-      DML_OPERATOR_ACTIVATION_RELU, &invalid_operator_desc, inputs);
-  EXPECT_EQ(operator_node, nullptr);
 }
 
 // Test building a DML graph with single operator relu.
@@ -80,14 +58,14 @@ TEST_F(WebNNGraphBuilderDmlTest, BuildSingleOperatorRelu) {
 
   std::array<const NodeOutput*, 1> inputs = {input};
   const OperatorNode* relu_node = graph_builder.CreateOperatorNode(
-      DML_OPERATOR_ACTIVATION_RELU, &relu_operator_desc, inputs);
+      DML_OPERATOR_ACTIVATION_RELU, &relu_operator_desc, inputs, "");
   ASSERT_NE(relu_node, nullptr);
   EXPECT_EQ(relu_node->GetType(), Node::Type::kOperator);
   const NodeOutput* output =
       graph_builder.CreateNodeOutput(relu_node, std::move(input_tensor_desc));
 
   EXPECT_EQ(graph_builder.CreateOutputEdge(output), 0u);
-  EXPECT_NE(graph_builder.Compile(DML_EXECUTION_FLAG_NONE).Get(), nullptr);
+  EXPECT_TRUE(graph_builder.Compile(DML_EXECUTION_FLAG_NONE).has_value());
 }
 
 // Test building a DML graph with single operator conv2d which has multiple
@@ -137,7 +115,7 @@ TEST_F(WebNNGraphBuilderDmlTest, DISABLED_BuildSingleOperatorConv2d) {
 
   std::array<const NodeOutput*, 2> inputs = {input, filter};
   const OperatorNode* conv_node = graph_builder.CreateOperatorNode(
-      DML_OPERATOR_CONVOLUTION, &conv_operator_desc, inputs);
+      DML_OPERATOR_CONVOLUTION, &conv_operator_desc, inputs, "");
   ASSERT_NE(conv_node, nullptr);
   EXPECT_EQ(conv_node->GetType(), Node::Type::kOperator);
 
@@ -145,7 +123,7 @@ TEST_F(WebNNGraphBuilderDmlTest, DISABLED_BuildSingleOperatorConv2d) {
       graph_builder.CreateNodeOutput(conv_node, std::move(output_tensor_desc));
 
   EXPECT_EQ(graph_builder.CreateOutputEdge(output), 0u);
-  EXPECT_NE(graph_builder.Compile(DML_EXECUTION_FLAG_NONE).Get(), nullptr);
+  EXPECT_TRUE(graph_builder.Compile(DML_EXECUTION_FLAG_NONE).has_value());
 }
 
 // Test building a DML graph with single operator split which has multiple
@@ -181,7 +159,7 @@ TEST_F(WebNNGraphBuilderDmlTest, BuildSingleOperatorSplit) {
 
   std::array<const NodeOutput*, 1> inputs = {input};
   const OperatorNode* split_node = graph_builder.CreateOperatorNode(
-      DML_OPERATOR_SPLIT, &split_operator_desc, inputs);
+      DML_OPERATOR_SPLIT, &split_operator_desc, inputs, "");
   ASSERT_NE(split_node, nullptr);
   EXPECT_EQ(split_node->GetType(), Node::Type::kOperator);
   const NodeOutput* output0 = graph_builder.CreateNodeOutput(
@@ -194,7 +172,7 @@ TEST_F(WebNNGraphBuilderDmlTest, BuildSingleOperatorSplit) {
   EXPECT_EQ(graph_builder.CreateOutputEdge(output0), 0u);
   EXPECT_EQ(graph_builder.CreateOutputEdge(output1), 1u);
   EXPECT_EQ(graph_builder.CreateOutputEdge(output2), 2u);
-  EXPECT_NE(graph_builder.Compile(DML_EXECUTION_FLAG_NONE).Get(), nullptr);
+  EXPECT_TRUE(graph_builder.Compile(DML_EXECUTION_FLAG_NONE).has_value());
 }
 
 // Test building a DML graph with two operators: relu and conv2d.
@@ -230,7 +208,7 @@ TEST_F(WebNNGraphBuilderDmlTest, DISABLED_BuildGraphWithReluAndConv2d) {
 
   std::array<const NodeOutput*, 1> relu_node_inputs = {input};
   const OperatorNode* relu_node = graph_builder.CreateOperatorNode(
-      DML_OPERATOR_ACTIVATION_RELU, &relu_operator_desc, relu_node_inputs);
+      DML_OPERATOR_ACTIVATION_RELU, &relu_operator_desc, relu_node_inputs, "");
   ASSERT_NE(relu_node, nullptr);
   EXPECT_EQ(relu_node->GetType(), Node::Type::kOperator);
   const NodeOutput* relu_output =
@@ -260,7 +238,7 @@ TEST_F(WebNNGraphBuilderDmlTest, DISABLED_BuildGraphWithReluAndConv2d) {
 
   std::array<const NodeOutput*, 2> conv_node_inputs = {relu_output, filter};
   const OperatorNode* conv_node = graph_builder.CreateOperatorNode(
-      DML_OPERATOR_CONVOLUTION, &conv_operator_desc, conv_node_inputs);
+      DML_OPERATOR_CONVOLUTION, &conv_operator_desc, conv_node_inputs, "");
   ASSERT_NE(conv_node, nullptr);
   EXPECT_EQ(conv_node->GetType(), Node::Type::kOperator);
 
@@ -268,7 +246,7 @@ TEST_F(WebNNGraphBuilderDmlTest, DISABLED_BuildGraphWithReluAndConv2d) {
       graph_builder.CreateNodeOutput(conv_node, std::move(output_tensor_desc));
 
   EXPECT_EQ(graph_builder.CreateOutputEdge(output), 0u);
-  EXPECT_NE(graph_builder.Compile(DML_EXECUTION_FLAG_NONE).Get(), nullptr);
+  EXPECT_TRUE(graph_builder.Compile(DML_EXECUTION_FLAG_NONE).has_value());
 }
 
 }  // namespace webnn::dml

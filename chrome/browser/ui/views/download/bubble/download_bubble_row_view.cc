@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/functional/callback.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/not_fatal_until.h"
 #include "base/time/time.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -39,7 +40,6 @@
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/text/bytes_formatting.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/color/color_id.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/screen.h"
@@ -91,8 +91,7 @@ gfx::Image GetDefaultIconImage(const ui::ColorProvider* color_provider) {
 }
 
 constexpr int kDownloadButtonHeight = 24;
-constexpr int kDownloadSubpageIconMargin = 8;
-constexpr int kDownloadSubpageIconMarginCR2023 = 2;
+constexpr int kDownloadSubpageIconMargin = 2;
 // Padding between elements in the row (except icon and label).
 constexpr gfx::Insets kRowInterElementPadding = gfx::Insets::TLBR(0, 8, 0, 0);
 constexpr int kProgressBarHeight = 3;
@@ -168,10 +167,8 @@ class DownloadBubbleDeepScanNotice : public views::View {
         // Download name label (primary_label_)
         .AddPaddingColumn(views::TableLayout::kFixedSize, icon_label_spacing)
         .AddColumn(views::LayoutAlignment::kStart,
-                   features::IsChromeRefresh2023()
-                       ? views::LayoutAlignment::kCenter
-                       : views::LayoutAlignment::kStart,
-                   1.0f, views::TableLayout::ColumnSize::kFixed, 0, 0)
+                   views::LayoutAlignment::kCenter, 1.0f,
+                   views::TableLayout::ColumnSize::kFixed, 0, 0)
         // Right inset
         .AddPaddingColumn(views::TableLayout::kFixedSize, insets.right())
         .AddPaddingRow(1.0, vertical_spacing)
@@ -190,9 +187,7 @@ class DownloadBubbleDeepScanNotice : public views::View {
     auto* label = AddChildView(std::make_unique<views::StyledLabel>());
     label->SetText(notice_text);
     label->SetTextContext(views::style::CONTEXT_DIALOG_BODY_TEXT);
-    label->SetDefaultTextStyle(features::IsChromeRefresh2023()
-                                   ? views::style::STYLE_BODY_5
-                                   : views::style::STYLE_SECONDARY);
+    label->SetDefaultTextStyle(views::style::STYLE_BODY_5);
     views::StyledLabel::RangeStyleInfo link_style =
         views::StyledLabel::RangeStyleInfo::CreateForLink(base::BindRepeating(
             [](base::WeakPtr<Browser> browser) {
@@ -202,9 +197,7 @@ class DownloadBubbleDeepScanNotice : public views::View {
               chrome::ShowSafeBrowsingEnhancedProtection(browser.get());
             },
             browser));
-    link_style.text_style = features::IsChromeRefresh2023()
-                                ? views::style::STYLE_LINK_5
-                                : views::style::STYLE_LINK;
+    link_style.text_style = views::style::STYLE_LINK_5;
     label->AddStyleRange(
         gfx::Range{link_offset, link_offset + link_text.length()}, link_style);
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -244,9 +237,7 @@ class DownloadBubbleDeepScanNotice : public views::View {
 
   void OnThemeChanged() override {
     views::View::OnThemeChanged();
-    const gfx::VectorIcon& vector_icon = features::IsChromeRefresh2023()
-                                             ? views::kInfoChromeRefreshIcon
-                                             : views::kInfoIcon;
+    const gfx::VectorIcon& vector_icon = views::kInfoChromeRefreshIcon;
     icon_->SetImage(ui::ImageModel::FromVectorIcon(
         vector_icon, ui::kColorSecondaryForeground,
         GetLayoutConstant(DOWNLOAD_ICON_SIZE)));
@@ -276,9 +267,10 @@ void DownloadBubbleRowView::UpdateRow(bool initial_setup) {
 }
 
 void DownloadBubbleRowView::AddedToWidget() {
-  const display::Screen* const screen = display::Screen::GetScreen();
-  current_scale_ = screen->GetDisplayNearestView(GetWidget()->GetNativeView())
-                       .device_scale_factor();
+  current_scale_ =
+      display::Screen::GetScreen()
+          ->GetPreferredScaleFactorForView(GetWidget()->GetNativeView())
+          .value_or(1.0);
   SetIcon();
   auto* focus_manager = GetFocusManager();
   if (focus_manager) {
@@ -325,10 +317,9 @@ bool DownloadBubbleRowView::StartLoadFileIcon() {
     return true;
   }
 
-  const IconLoader::IconSize icon_loader_size =
-      features::IsChromeRefresh2023() ? IconLoader::NORMAL : IconLoader::SMALL;
-  // IconLoader::SMALL returns 16x16 icon and IconLoader::NORMAL returns 32x32
-  // icon. CR2023 resizes NORMAL-sized icons to 20x20.
+  const IconLoader::IconSize icon_loader_size = IconLoader::NORMAL;
+  // IconLoader::SMALL returns 16x16 icon and IconLoader::NORMAL returns 20x20
+  // icon.
   IconManager* const im = g_browser_process->icon_manager();
   // Can be null in tests.
   if (!im) {
@@ -482,14 +473,8 @@ DownloadBubbleRowView::DownloadBubbleRowView(
   views::InkDrop::UseInkDropForFloodFillRipple(views::InkDrop::Get(this),
                                                /*highlight_on_hover=*/true,
                                                /*highlight_on_focus=*/true);
-  if (features::IsChromeRefresh2023()) {
-    views::InkDrop::Get(this)->SetBaseColorId(kColorDownloadBubbleRowHover);
-    views::InkDrop::Get(this)->SetHighlightOpacity(1.0f);
-  } else {
-    views::InkDrop::Get(this)->SetBaseColorId(
-        views::TypographyProvider::Get().GetColorId(
-            views::style::CONTEXT_BUTTON, views::style::STYLE_SECONDARY));
-  }
+  views::InkDrop::Get(this)->SetBaseColorId(kColorDownloadBubbleRowHover);
+  views::InkDrop::Get(this)->SetHighlightOpacity(1.0f);
 
   const int icon_label_spacing = ChromeLayoutProvider::Get()->GetDistanceMetric(
       views::DISTANCE_RELATED_LABEL_HORIZONTAL);
@@ -507,10 +492,8 @@ DownloadBubbleRowView::DownloadBubbleRowView(
       // Download name label (primary_label_)
       .AddPaddingColumn(views::TableLayout::kFixedSize, icon_label_spacing)
       .AddColumn(views::LayoutAlignment::kStart,
-                 features::IsChromeRefresh2023()
-                     ? views::LayoutAlignment::kCenter
-                     : views::LayoutAlignment::kStart,
-                 1.0f, views::TableLayout::ColumnSize::kUsePreferred, 0, 0)
+                 views::LayoutAlignment::kCenter, 1.0f,
+                 views::TableLayout::ColumnSize::kUsePreferred, 0, 0)
       // Download Buttons: Cancel, Discard, Scan, Open Now, only one may be
       // active
       .AddColumn(views::LayoutAlignment::kCenter,
@@ -555,10 +538,8 @@ DownloadBubbleRowView::DownloadBubbleRowView(
   icon_->SetPaintToLayer();
   icon_->layer()->SetFillsBoundsOpaquely(false);
   icon_->SetProperty(views::kTableColAndRowSpanKey, gfx::Size(1, 2));
-  if (features::IsChromeRefresh2023()) {
-    const int icon_size = GetLayoutConstant(DOWNLOAD_ICON_SIZE);
-    icon_->SetImageSize({icon_size, icon_size});
-  }
+  const int icon_size = GetLayoutConstant(DOWNLOAD_ICON_SIZE);
+  icon_->SetImageSize({icon_size, icon_size});
 
   primary_label_ = AddChildView(std::make_unique<views::Label>(
       info_->model()->GetFileNameToReportUser().LossyDisplayName(),
@@ -567,9 +548,7 @@ DownloadBubbleRowView::DownloadBubbleRowView(
   primary_label_->SetCanProcessEventsWithinSubtree(false);
   primary_label_->SetMultiLine(true);
   primary_label_->SetAllowCharacterBreak(true);
-  if (features::IsChromeRefresh2023()) {
-    primary_label_->SetTextStyle(views::style::STYLE_BODY_3_MEDIUM);
-  }
+  primary_label_->SetTextStyle(views::style::STYLE_BODY_3_MEDIUM);
 
   main_button_holder_ = AddChildView(std::make_unique<views::FlexLayoutView>());
   AddMainPageButton(DownloadCommands::CANCEL,
@@ -615,17 +594,13 @@ DownloadBubbleRowView::DownloadBubbleRowView(
       subpage_icon_holder_->AddChildView(std::make_unique<views::ImageView>());
   subpage_icon_->SetImage(ui::ImageModel::FromVectorIcon(
       vector_icons::kSubmenuArrowIcon, ui::kColorIcon));
-  subpage_icon_->SetProperty(views::kMarginsKey,
-                             gfx::Insets(features::IsChromeRefresh2023()
-                                             ? kDownloadSubpageIconMarginCR2023
-                                             : kDownloadSubpageIconMargin) +
-                                 kRowInterElementPadding);
+  subpage_icon_->SetProperty(
+      views::kMarginsKey,
+      gfx::Insets(kDownloadSubpageIconMargin) + kRowInterElementPadding);
   subpage_icon_->SetVisible(false);
-  if (features::IsChromeRefresh2023()) {
-    subpage_icon_->SetImage(ui::ImageModel::FromVectorIcon(
-        kChevronRightChromeRefreshIcon, ui::kColorIcon,
-        GetLayoutConstant(DOWNLOAD_ICON_SIZE)));
-  }
+  subpage_icon_->SetImage(ui::ImageModel::FromVectorIcon(
+      kChevronRightChromeRefreshIcon, ui::kColorIcon,
+      GetLayoutConstant(DOWNLOAD_ICON_SIZE)));
 
   // Right inset, first row.
   AddChildView(std::make_unique<views::View>());
@@ -643,9 +618,7 @@ DownloadBubbleRowView::DownloadBubbleRowView(
   secondary_label_->SetCanProcessEventsWithinSubtree(false);
   secondary_label_->SetMultiLine(true);
   secondary_label_->SetAllowCharacterBreak(true);
-  if (features::IsChromeRefresh2023()) {
-    secondary_label_->SetTextStyle(views::style::STYLE_BODY_5);
-  }
+  secondary_label_->SetTextStyle(views::style::STYLE_BODY_5);
 
   // Right inset, second row.
   AddChildView(std::make_unique<views::View>());
@@ -705,7 +678,7 @@ views::View::Views DownloadBubbleRowView::GetChildrenInZOrder() {
   auto children = views::View::GetChildrenInZOrder();
   const auto move_child_to_top = [&](View* child) {
     auto it = base::ranges::find(children, child);
-    DCHECK(it != children.end());
+    CHECK(it != children.end(), base::NotFatalUntil::M130);
     std::rotate(it, it + 1, children.end());
   };
   move_child_to_top(transparent_button_);
@@ -737,14 +710,17 @@ bool DownloadBubbleRowView::OnMouseDragged(const ui::MouseEvent& event) {
     if (file_icon_.IsEmpty()) {
       file_icon_ = GetDefaultIconImage(GetColorProvider());
     }
-    if (!download_dragging_pin_ && navigation_handler_) {
-      download_dragging_pin_ =
+    // Make this a local to avoid UAF if `this` is deleted during dragging.
+    std::unique_ptr<DownloadBubbleNavigationHandler::CloseOnDeactivatePin>
+        download_dragging_pin;
+    if (navigation_handler_) {
+      download_dragging_pin =
           navigation_handler_->PreventDialogCloseOnDeactivate();
     }
     DragDownloadItem(info_->model()->GetDownloadItem(), &file_icon_,
                      widget ? widget->GetNativeView() : nullptr);
     // DragDownloadItem returns when the drag is over.
-    download_dragging_pin_.reset();
+    // `this` may be deleted by now!
   }
   return true;
 }
@@ -893,7 +869,7 @@ void DownloadBubbleRowView::UpdateButtons() {
         views::Button::STATE_NORMAL,
         ui::ImageModel::FromVectorIcon(*(action.icon), ui::kColorIcon,
                                        GetLayoutConstant(DOWNLOAD_ICON_SIZE)));
-    action_button->SetAccessibleName(
+    action_button->GetViewAccessibility().SetName(
         GetAccessibleNameForQuickAction(action.command));
     action_button->SetTooltipText(action.hover_text);
     action_button->SetVisible(true);
@@ -906,8 +882,9 @@ void DownloadBubbleRowView::UpdateButtons() {
   if (info_->primary_button_command()) {
     views::MdTextButton* main_button =
         main_page_buttons_[*info_->primary_button_command()];
-    main_button->SetAccessibleName(GetAccessibleNameForMainPageButton(
-        info_->primary_button_command().value()));
+    main_button->GetViewAccessibility().SetName(
+        GetAccessibleNameForMainPageButton(
+            info_->primary_button_command().value()));
     main_button->SetVisible(true);
   }
 
@@ -939,11 +916,12 @@ void DownloadBubbleRowView::UpdateLabels() {
   UpdateStatusText();
 
   if (info_->has_subpage()) {
-    transparent_button_->SetAccessibleName(l10n_util::GetStringFUTF16(
-        IDS_DOWNLOAD_BUBBLE_MAIN_BUTTON_SUBPAGE, primary_label_->GetText(),
-        secondary_label_->GetText()));
+    transparent_button_->GetViewAccessibility().SetName(
+        l10n_util::GetStringFUTF16(IDS_DOWNLOAD_BUBBLE_MAIN_BUTTON_SUBPAGE,
+                                   primary_label_->GetText(),
+                                   secondary_label_->GetText()));
   } else {
-    transparent_button_->SetAccessibleName(base::JoinString(
+    transparent_button_->GetViewAccessibility().SetName(base::JoinString(
         {primary_label_->GetText(), secondary_label_->GetText()}, u" "));
   }
 
@@ -997,9 +975,7 @@ void DownloadBubbleRowView::AddMainPageButton(
   button->SetMaxSize(gfx::Size(0, kDownloadButtonHeight));
   button->SetProperty(views::kMarginsKey, kRowInterElementPadding);
   button->SetVisible(false);
-  if (features::IsChromeRefresh2023()) {
-    button->SetStyle(ui::ButtonStyle::kText);
-  }
+  button->SetStyle(ui::ButtonStyle::kText);
 
   main_page_buttons_[command] = button;
 }

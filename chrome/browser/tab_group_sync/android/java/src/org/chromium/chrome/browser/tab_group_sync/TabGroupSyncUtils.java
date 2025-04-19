@@ -7,14 +7,22 @@ package org.chromium.chrome.browser.tab_group_sync;
 import android.text.TextUtils;
 import android.util.Pair;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Token;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilities;
+import org.chromium.components.tab_group_sync.ClosingSource;
+import org.chromium.components.tab_group_sync.EventDetails;
 import org.chromium.components.tab_group_sync.LocalTabGroupId;
+import org.chromium.components.tab_group_sync.SavedTabGroup;
+import org.chromium.components.tab_group_sync.TabGroupEvent;
+import org.chromium.components.tab_group_sync.TabGroupSyncService;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.url.GURL;
 
@@ -23,6 +31,8 @@ public final class TabGroupSyncUtils {
     // The URL written to sync when the local URL isn't in a syncable format, i.e. HTTP or HTTPS.
     public static final GURL UNSAVEABLE_URL_OVERRIDE = new GURL(UrlConstants.NTP_NON_NATIVE_URL);
     public static final String UNSAVEABLE_TAB_TITLE = "Unsavable tab";
+    public static final GURL NTP_URL = new GURL(UrlConstants.NTP_NON_NATIVE_URL);
+    public static final String NEW_TAB_TITLE = "New tab";
 
     /**
      * Whether the given {@param localId} corresponds to a tab group in the current window
@@ -59,6 +69,8 @@ public final class TabGroupSyncUtils {
         assert url != null;
         if (isSavableUrl(url)) {
             return new Pair<>(url, title);
+        } else if (isNtpOrAboutBlankUrl(url)) {
+            return new Pair<>(NTP_URL, NEW_TAB_TITLE);
         } else {
             return new Pair<>(UNSAVEABLE_URL_OVERRIDE, UNSAVEABLE_TAB_TITLE);
         }
@@ -66,15 +78,77 @@ public final class TabGroupSyncUtils {
 
     /** Utility method to determine if a URL can be synced or not. */
     public static boolean isSavableUrl(GURL url) {
-        return UrlUtilities.isHttpOrHttps(url) || isNtpOrAboutBlankUrl(url.getValidSpecOrEmpty());
+        return UrlUtilities.isHttpOrHttps(url);
     }
 
     @VisibleForTesting
-    static boolean isNtpOrAboutBlankUrl(String url) {
-        return TextUtils.equals(url, UrlConstants.NTP_URL)
-                || TextUtils.equals(url, UrlConstants.NTP_NON_NATIVE_URL)
-                || TextUtils.equals(url, UrlConstants.NTP_ABOUT_URL)
-                || TextUtils.equals(url, ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL)
-                || TextUtils.equals(url, ContentUrlConstants.ABOUT_BLANK_URL);
+    static boolean isNtpOrAboutBlankUrl(GURL url) {
+        String urlString = url.getValidSpecOrEmpty();
+        return UrlUtilities.isNtpUrl(url)
+                || TextUtils.equals(urlString, ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL)
+                || TextUtils.equals(urlString, ContentUrlConstants.ABOUT_BLANK_URL);
+    }
+
+    /**
+     * Removes all tab groups mappings found in the {@link TabGroupSyncService} that don't have
+     * corresponding local IDs in the {@link TabGroupModelFilter}.
+     *
+     * @param tabGroupSyncService The {@link TabGroupSyncService} to remove tabs from.
+     * @param filter The {@link TabGroupModelFilter} to check for tab groups.
+     */
+    public static void unmapLocalIdsNotInTabGroupModelFilter(
+            TabGroupSyncService tabGroupSyncService, TabGroupModelFilter filter) {
+        assert !filter.isIncognito();
+
+        for (String syncGroupId : tabGroupSyncService.getAllGroupIds()) {
+            SavedTabGroup savedTabGroup = tabGroupSyncService.getGroup(syncGroupId);
+            // If there is no local ID the group is already hidden so this is a no-op.
+            if (savedTabGroup.localId == null) continue;
+
+            if (!isInCurrentWindow(filter, savedTabGroup.localId)) {
+                tabGroupSyncService.removeLocalTabGroupMapping(savedTabGroup.localId);
+                recordTabGroupOpenCloseMetrics(
+                        tabGroupSyncService,
+                        /* open= */ false,
+                        ClosingSource.CLEANED_UP_ON_LAST_INSTANCE_CLOSURE,
+                        savedTabGroup.localId);
+            }
+        }
+    }
+
+    /** Helper method to record open close metrics. */
+    public static void recordTabGroupOpenCloseMetrics(
+            TabGroupSyncService tabGroupSyncService,
+            boolean open,
+            int source,
+            LocalTabGroupId localTabGroupId) {
+        int eventType = open ? TabGroupEvent.TAB_GROUP_OPENED : TabGroupEvent.TAB_GROUP_CLOSED;
+        EventDetails eventDetails = new EventDetails(eventType);
+        eventDetails.localGroupId = localTabGroupId;
+        if (open) {
+            eventDetails.openingSource = source;
+        } else {
+            eventDetails.closingSource = source;
+        }
+        tabGroupSyncService.recordTabGroupEvent(eventDetails);
+    }
+
+    /**
+     * Tries to get the saved group for a given tab id, returning null if anything goes wrong, such
+     * as the tab not being in a group.
+     *
+     * @param tabId The id of the tab.
+     * @param tabModel The tab model to look up the tab in.
+     * @param tabGroupSyncService The sync service to get tab group data form.
+     * @return The group data object.
+     */
+    public static SavedTabGroup getSavedTabGroupFromTabId(
+            int tabId,
+            @NonNull TabModel tabModel,
+            @NonNull TabGroupSyncService tabGroupSyncService) {
+        @Nullable Tab tab = tabModel.getTabById(tabId);
+        if (tab == null || tab.getTabGroupId() == null) return null;
+        LocalTabGroupId localTabGroupId = new LocalTabGroupId(tab.getTabGroupId());
+        return tabGroupSyncService.getGroup(localTabGroupId);
     }
 }

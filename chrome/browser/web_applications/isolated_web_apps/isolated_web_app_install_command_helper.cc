@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/base64.h"
 #include "base/check_op.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_features.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_install_source.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_integrity_block_data.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_response_reader_factory.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_source.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_storage_location.h"
@@ -33,10 +35,12 @@
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_validator.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_version.h"
+#include "chrome/browser/web_applications/isolated_web_apps/key_distribution/iwa_key_distribution_info_provider.h"
 #include "chrome/browser/web_applications/isolated_web_apps/pending_install_info.h"
 #include "chrome/browser/web_applications/web_app_icon_operations.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/browser/web_applications/web_contents/web_app_data_retriever.h"
 #include "components/base32/base32.h"
@@ -136,6 +140,14 @@ bool IsUrlLoadingResultSuccess(webapps::WebAppUrlLoaderResult result) {
   return result == webapps::WebAppUrlLoaderResult::kUrlLoaded;
 }
 
+bool IntegrityBlockDataHasRotatedKey(
+    base::optional_ref<const IsolatedWebAppIntegrityBlockData>
+        integrity_block_data,
+    base::span<const uint8_t> rotated_key) {
+  return integrity_block_data &&
+         integrity_block_data->HasPublicKey(rotated_key);
+}
+
 }  // namespace
 
 void CleanupLocationIfOwned(const base::FilePath& profile_dir,
@@ -208,6 +220,72 @@ void UpdateBundlePathAndCreateStorageLocation(
       source.variant());
 }
 
+base::expected<std::reference_wrapper<const WebApp>, std::string>
+GetIsolatedWebAppById(const WebAppRegistrar& registrar,
+                      const webapps::AppId& iwa_id) {
+  auto* iwa = registrar.GetAppById(iwa_id);
+  if (!iwa) {
+    return base::unexpected("App is no longer installed.");
+  }
+  if (!iwa->isolation_data()) {
+    return base::unexpected("Installed app is not an Isolated Web App.");
+  }
+  return *iwa;
+}
+
+KeyRotationLookupResult LookupRotatedKey(
+    const web_package::SignedWebBundleId& web_bundle_id,
+    base::optional_ref<base::Value::Dict> debug_log) {
+  auto log_rotated_key = [&](const std::string& value) {
+    if (debug_log) {
+      debug_log->Set("rotated_key", value);
+    }
+  };
+
+  const auto* kr_info =
+      IwaKeyDistributionInfoProvider::GetInstance()->GetKeyRotationInfo(
+          web_bundle_id.id());
+  if (!kr_info) {
+    return KeyRotationLookupResult::kNoKeyRotation;
+  }
+
+  if (!kr_info->public_key) {
+    log_rotated_key("<disabled>");
+    return KeyRotationLookupResult::kKeyBlocked;
+  }
+  log_rotated_key(base::Base64Encode(*kr_info->public_key));
+  return KeyRotationLookupResult::kKeyFound;
+}
+
+KeyRotationData GetKeyRotationData(
+    const web_package::SignedWebBundleId& web_bundle_id,
+    const WebApp::IsolationData& isolation_data) {
+  const auto* kr_info =
+      IwaKeyDistributionInfoProvider::GetInstance()->GetKeyRotationInfo(
+          web_bundle_id.id());
+  CHECK(kr_info && kr_info->public_key)
+      << "`GetKeyRotationData()` must only be called if `LookupRotatedKey()` "
+         "has previously reported `KeyRotationLookupResult::kKeyFound`.";
+
+  const auto& rotated_key = *kr_info->public_key;
+
+  // Checks whether `rotated_key` is contained in
+  // `isolation_data.integrity_block_data`.
+  const bool current_installation_has_rk = IntegrityBlockDataHasRotatedKey(
+      isolation_data.integrity_block_data, rotated_key);
+  const auto& pending_update = isolation_data.pending_update_info();
+
+  // Checks whether `rotated_key` is contained in
+  // `isolation_data.pending_update_info.integrity_block_data`.
+  const bool pending_update_has_rk =
+      pending_update && IntegrityBlockDataHasRotatedKey(
+                            pending_update->integrity_block_data, rotated_key);
+
+  return {.rotated_key = raw_ref(rotated_key),
+          .current_installation_has_rk = current_installation_has_rk,
+          .pending_update_has_rk = pending_update_has_rk};
+}
+
 // static
 std::unique_ptr<content::WebContents>
 IsolatedWebAppInstallCommandHelper::CreateIsolatedWebAppWebContents(
@@ -246,7 +324,10 @@ IsolatedWebAppInstallCommandHelper::~IsolatedWebAppInstallCommandHelper() =
 void IsolatedWebAppInstallCommandHelper::CheckTrustAndSignatures(
     const IwaSourceWithMode& location,
     Profile* profile,
-    base::OnceCallback<void(base::expected<void, std::string>)> callback) {
+    base::OnceCallback<
+        void(base::expected<
+             std::optional<web_package::SignedWebBundleIntegrityBlock>,
+             std::string>)> callback) {
   absl::visit(
       base::Overloaded{
           [&](const IwaSourceBundleWithMode& location) {
@@ -268,15 +349,33 @@ void IsolatedWebAppInstallCommandHelper::CheckTrustAndSignatures(
             }
             // Dev mode proxy mode does not use Web Bundles, hence there is no
             // bundle to validate / trust and no signatures to check.
-            std::move(callback).Run(base::ok());
+            std::move(callback).Run(base::ok(std::nullopt));
           }},
       location.variant());
+}
+
+void IsolatedWebAppInstallCommandHelper::CheckTrustAndSignatures(
+    const IwaSourceWithMode& location,
+    Profile* profile,
+    base::OnceCallback<void(base::expected<void, std::string>)> callback) {
+  CheckTrustAndSignatures(
+      location, profile,
+      base::BindOnce(
+          [](base::expected<
+              std::optional<web_package::SignedWebBundleIntegrityBlock>,
+              std::string> result) {
+            return result.transform([](const auto&) -> void {});
+          })
+          .Then(std::move(callback)));
 }
 
 void IsolatedWebAppInstallCommandHelper::CheckTrustAndSignaturesOfBundle(
     const base::FilePath& path,
     bool dev_mode,
-    base::OnceCallback<void(base::expected<void, std::string>)> callback) {
+    base::OnceCallback<
+        void(base::expected<
+             std::optional<web_package::SignedWebBundleIntegrityBlock>,
+             std::string>)> callback) {
   // To check whether the bundle is valid and trusted, we attempt to create a
   // `IsolatedWebAppResponseReader`. If a response reader is created
   // successfully, then this means that the Signed Web Bundle...
@@ -297,36 +396,24 @@ void IsolatedWebAppInstallCommandHelper::CheckTrustAndSignaturesOfBundle(
 }
 
 void IsolatedWebAppInstallCommandHelper::OnTrustAndSignaturesOfBundleChecked(
-    base::OnceCallback<void(base::expected<void, std::string>)> callback,
+    base::OnceCallback<
+        void(base::expected<
+             std::optional<web_package::SignedWebBundleIntegrityBlock>,
+             std::string>)> callback,
     base::expected<std::unique_ptr<IsolatedWebAppResponseReader>,
                    UnusableSwbnFileError> result) {
-  auto status =
-      result
-          .transform(
-              [](const std::unique_ptr<IsolatedWebAppResponseReader>& reader)
-                  -> void {})
-          .transform_error([](const UnusableSwbnFileError& error) {
-            return IsolatedWebAppResponseReaderFactory::ErrorToString(error);
-          });
-  std::unique_ptr<IsolatedWebAppResponseReader> reader;
-  IsolatedWebAppResponseReader* raw_reader = nullptr;
-  if (result.has_value()) {
-    reader = std::move(result.value());
-    raw_reader = reader.get();
-  }
+  ASSIGN_OR_RETURN(
+      auto reader, std::move(result), [&](const UnusableSwbnFileError& error) {
+        std::move(callback).Run(base::unexpected(
+            IsolatedWebAppResponseReaderFactory::ErrorToString(error)));
+      });
 
-  base::OnceClosure run_result_callback = base::BindOnce(
-      [](base::OnceCallback<void(base::expected<void, std::string>)> cb,
-         base::expected<void, std::string> status,
-         std::unique_ptr<IsolatedWebAppResponseReader>) {
-        std::move(cb).Run(std::move(status));
-      },
-      std::move(callback), std::move(status), std::move(reader));
-  if (raw_reader) {
-    raw_reader->Close(std::move(run_result_callback));
-  } else {
-    std::move(run_result_callback).Run();
-  }
+  auto* reader_ptr = reader.get();
+  base::OnceClosure reader_keep_alive =
+      base::DoNothingWithBoundArgs(std::move(reader));
+  reader_ptr->Close(std::move(reader_keep_alive)
+                        .Then(base::BindOnce(std::move(callback),
+                                             reader_ptr->GetIntegrityBlock())));
 }
 
 void IsolatedWebAppInstallCommandHelper::CreateStoragePartitionIfNotPresent(
@@ -384,8 +471,8 @@ void IsolatedWebAppInstallCommandHelper::OnLoadInstallUrl(
 
 void IsolatedWebAppInstallCommandHelper::CheckInstallabilityAndRetrieveManifest(
     content::WebContents& web_contents,
-    base::OnceCallback<void(base::expected<ManifestAndUrl, std::string>)>
-        callback) {
+    base::OnceCallback<void(
+        base::expected<blink::mojom::ManifestPtr, std::string>)> callback) {
   data_retriever_->CheckInstallabilityAndRetrieveManifest(
       &web_contents,
       base::BindOnce(&IsolatedWebAppInstallCommandHelper::
@@ -395,10 +482,9 @@ void IsolatedWebAppInstallCommandHelper::CheckInstallabilityAndRetrieveManifest(
 
 void IsolatedWebAppInstallCommandHelper::
     OnCheckInstallabilityAndRetrieveManifest(
-        base::OnceCallback<void(base::expected<ManifestAndUrl, std::string>)>
-            callback,
+        base::OnceCallback<void(
+            base::expected<blink::mojom::ManifestPtr, std::string>)> callback,
         blink::mojom::ManifestPtr opt_manifest,
-        const GURL& manifest_url,
         bool valid_manifest_for_web_app,
         webapps::InstallableStatusCode error_code) {
   if (error_code != webapps::InstallableStatusCode::NO_ERROR_DETECTED) {
@@ -418,35 +504,31 @@ void IsolatedWebAppInstallCommandHelper::
     return;
   }
 
+  if (opt_manifest->manifest_url.is_empty()) {
+    std::move(callback).Run(
+        base::unexpected("Manifest is the default manifest."));
+    return;
+  }
+
   // See |WebAppDataRetriever::CheckInstallabilityCallback| documentation for
   // details.
   DCHECK(!blink::IsEmptyManifest(opt_manifest))
       << "must not be empty when manifest is present.";
 
-  // See |WebAppDataRetriever::CheckInstallabilityCallback| documentation for
-  // details.
-  DCHECK(!manifest_url.is_empty())
-      << "must not be empty if manifest is not empty.";
-
-  std::move(callback).Run(
-      ManifestAndUrl(std::move(opt_manifest), manifest_url));
+  std::move(callback).Run(std::move(opt_manifest));
 }
 
 base::expected<WebAppInstallInfo, std::string>
 IsolatedWebAppInstallCommandHelper::ValidateManifestAndCreateInstallInfo(
     const std::optional<base::Version>& expected_version,
-    const ManifestAndUrl& manifest_and_url) {
-  const blink::mojom::Manifest& manifest = *manifest_and_url.manifest;
-  const GURL& manifest_url = manifest_and_url.url;
+    const blink::mojom::Manifest& manifest) {
+  const GURL& manifest_url = manifest.manifest_url;
 
-  if (!manifest.id.is_valid()) {
-    return base::unexpected(
-        "Manifest `id` is not present or invalid. manifest_url: " +
-        manifest_url.possibly_invalid_spec());
-  }
+  ASSIGN_OR_RETURN(
+      auto info,
+      WebAppInstallInfo::Create(manifest_url, manifest.id, manifest.start_url));
 
-  WebAppInstallInfo info(manifest.id);
-  UpdateWebAppInfoFromManifest(manifest, manifest_url, &info);
+  UpdateWebAppInfoFromManifest(manifest, &info);
 
   if (!manifest.version.has_value()) {
     return base::unexpected(
@@ -552,15 +634,4 @@ void IsolatedWebAppInstallCommandHelper::OnRetrieveIcons(
   std::move(callback).Run(std::move(install_info));
 }
 
-IsolatedWebAppInstallCommandHelper::ManifestAndUrl::ManifestAndUrl(
-    blink::mojom::ManifestPtr manifest,
-    GURL url)
-    : manifest(std::move(manifest)), url(std::move(url)) {}
-IsolatedWebAppInstallCommandHelper::ManifestAndUrl::~ManifestAndUrl() = default;
-
-IsolatedWebAppInstallCommandHelper::ManifestAndUrl::ManifestAndUrl(
-    ManifestAndUrl&&) = default;
-IsolatedWebAppInstallCommandHelper::ManifestAndUrl&
-IsolatedWebAppInstallCommandHelper::ManifestAndUrl::operator=(
-    ManifestAndUrl&&) = default;
 }  // namespace web_app

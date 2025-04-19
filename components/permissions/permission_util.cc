@@ -5,6 +5,7 @@
 #include "components/permissions/permission_util.h"
 
 #include "base/check.h"
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
@@ -205,6 +206,9 @@ bool PermissionUtil::GetPermissionType(ContentSettingsType type,
     case ContentSettingsType::POINTER_LOCK:
       *out = PermissionType::POINTER_LOCK;
       break;
+    case ContentSettingsType::AUTOMATIC_FULLSCREEN:
+      *out = PermissionType::AUTOMATIC_FULLSCREEN;
+      break;
     default:
       return false;
   }
@@ -237,19 +241,13 @@ bool PermissionUtil::IsGuardContentSetting(ContentSettingsType type) {
   }
 }
 
-bool PermissionUtil::CanPermissionBeAllowedOnce(ContentSettingsType type) {
-  switch (type) {
-#if !BUILDFLAG(IS_ANDROID)
-    case ContentSettingsType::CAMERA_PAN_TILT_ZOOM:
-#endif
-    case ContentSettingsType::GEOLOCATION:
-    case ContentSettingsType::MEDIASTREAM_MIC:
-    case ContentSettingsType::MEDIASTREAM_CAMERA:
-    case ContentSettingsType::SMART_CARD_DATA:
-      return true;
-    default:
-      return false;
-  }
+bool PermissionUtil::DoesSupportTemporaryGrants(ContentSettingsType type) {
+  return base::Contains(content_settings::GetTypesWithTemporaryGrants(), type);
+}
+
+bool PermissionUtil::DoesStoreTemporaryGrantsInHcsm(ContentSettingsType type) {
+  return base::Contains(content_settings::GetTypesWithTemporaryGrantsInHcsm(),
+                        type);
 }
 
 // Due to dependency issues, this method is duplicated in
@@ -258,9 +256,9 @@ GURL PermissionUtil::GetLastCommittedOriginAsURL(
     content::RenderFrameHost* render_frame_host) {
   DCHECK(render_frame_host);
 
-#if BUILDFLAG(IS_ANDROID)
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
+#if BUILDFLAG(IS_ANDROID)
   // If `allow_universal_access_from_file_urls` flag is enabled, a file:/// can
   // change its url via history.pushState/replaceState to any other url,
   // including about:blank. To avoid user confusion we should always use a
@@ -275,6 +273,11 @@ GURL PermissionUtil::GetLastCommittedOriginAsURL(
   }
 #endif
 
+  if (render_frame_host->GetLastCommittedOrigin().GetURL().is_empty()) {
+    if (!web_contents->GetVisibleURL().is_empty()) {
+      return web_contents->GetVisibleURL();
+    }
+  }
   return render_frame_host->GetLastCommittedOrigin().GetURL();
 }
 
@@ -354,6 +357,8 @@ ContentSettingsType PermissionUtil::PermissionTypeToContentSettingTypeSafe(
       return ContentSettingsType::KEYBOARD_LOCK;
     case PermissionType::POINTER_LOCK:
       return ContentSettingsType::POINTER_LOCK;
+    case PermissionType::AUTOMATIC_FULLSCREEN:
+      return ContentSettingsType::AUTOMATIC_FULLSCREEN;
     case PermissionType::NUM:
       break;
   }

@@ -5,14 +5,19 @@
 #include <memory>
 #include <type_traits>
 
+#include "absl/base/attributes.h"
+#include "absl/base/const_init.h"
+#include "absl/base/no_destructor.h"
+#include "absl/synchronization/mutex.h"
 #include "mediapipe/framework/calculator.pb.h"
 #include "mediapipe/framework/port/any_proto.h"
-#include "mediapipe/framework/port/status.h"
 #include "mediapipe/framework/tool/type_util.h"
 
 namespace mediapipe {
 
 namespace tool {
+
+static absl::NoDestructor<absl::Mutex> option_extension_lock(absl::kConstInit);
 
 // A compile-time detector for the constant |T::ext|.
 template <typename T>
@@ -43,6 +48,7 @@ bool HasExtension(const CalculatorOptions& options) {
 template <class T,
           typename std::enable_if<IsExtension<T>::value, int>::type = 0>
 T* GetExtension(CalculatorOptions& options) {
+  absl::MutexLock lock(option_extension_lock.get());
   if (options.HasExtension(T::ext)) {
     return options.MutableExtension(T::ext);
   }

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/ntp/new_tab_page_coordinator.h"
-#import "ios/chrome/browser/ui/ntp/new_tab_page_coordinator+Testing.h"
 
 #import "base/memory/raw_ptr.h"
 #import "base/test/metrics/histogram_tester.h"
@@ -16,6 +15,7 @@
 #import "ios/chrome/browser/commerce/model/shopping_service_factory.h"
 #import "ios/chrome/browser/favicon/model/ios_chrome_large_icon_service_factory.h"
 #import "ios/chrome/browser/ntp/model/new_tab_page_tab_helper.h"
+#import "ios/chrome/browser/safety_check/model/ios_chrome_safety_check_manager_factory.h"
 #import "ios/chrome/browser/search_engines/model/template_url_service_factory.h"
 #import "ios/chrome/browser/segmentation_platform/model/segmentation_platform_service_factory.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
@@ -25,14 +25,17 @@
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_opener.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
+#import "ios/chrome/browser/shared/public/commands/help_commands.h"
 #import "ios/chrome/browser/shared/public/commands/omnibox_commands.h"
 #import "ios/chrome/browser/shared/public/commands/parcel_tracking_opt_in_commands.h"
 #import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/signin/model/authentication_service.h"
 #import "ios/chrome/browser/signin/model/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/model/fake_authentication_service_delegate.h"
 #import "ios/chrome/browser/signin/model/fake_system_identity.h"
 #import "ios/chrome/browser/signin/model/fake_system_identity_manager.h"
+#import "ios/chrome/browser/start_surface/ui_bundled/start_surface_recent_tab_browser_agent.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_action_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_coordinator.h"
@@ -45,16 +48,16 @@
 #import "ios/chrome/browser/ui/ntp/metrics/new_tab_page_metrics_recorder.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_component_factory.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller_delegate.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_coordinator+Testing.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_mediator.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_metrics_delegate.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_view_controller.h"
-#import "ios/chrome/browser/ui/start_surface/start_surface_recent_tab_browser_agent.h"
 #import "ios/chrome/browser/ui/toolbar/public/fakebox_focuser.h"
 #import "ios/chrome/browser/url_loading/model/fake_url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/model/url_loading_notifier_browser_agent.h"
-#import "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
+#import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #import "ios/chrome/test/testing_application_context.h"
 #import "ios/testing/scoped_block_swizzler.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
@@ -146,9 +149,7 @@ class ScopedVariationsService {
 class NewTabPageCoordinatorTest : public PlatformTest {
  protected:
   NewTabPageCoordinatorTest()
-      : scoped_browser_state_manager_(
-            std::make_unique<TestChromeBrowserStateManager>(base::FilePath())),
-        base_view_controller_([[UIViewController alloc] init]) {
+      : base_view_controller_([[UIViewController alloc] init]) {
     TestChromeBrowserState::Builder test_cbs_builder;
     test_cbs_builder.AddTestingFactory(
         ios::TemplateURLServiceFactory::GetInstance(),
@@ -168,12 +169,17 @@ class NewTabPageCoordinatorTest : public PlatformTest {
     test_cbs_builder.AddTestingFactory(
         segmentation_platform::SegmentationPlatformServiceFactory::
             GetInstance(),
-        base::BindRepeating(
-            segmentation_platform::SegmentationPlatformServiceFactory::
-                GetDefaultFactory()));
-    browser_state_ = test_cbs_builder.Build();
+        segmentation_platform::SegmentationPlatformServiceFactory::
+            GetDefaultFactory());
+    test_cbs_builder.AddTestingFactory(
+        IOSChromeSafetyCheckManagerFactory::GetInstance(),
+        IOSChromeSafetyCheckManagerFactory::GetDefaultFactory());
+
+    browser_state_ = browser_state_manager_.AddBrowserStateWithBuilder(
+        std::move(test_cbs_builder));
+
     AuthenticationServiceFactory::CreateAndInitializeForBrowserState(
-        browser_state_.get(),
+        GetBrowserState(),
         std::make_unique<FakeAuthenticationServiceDelegate>());
     toolbar_delegate_ =
         OCMProtocolMock(@protocol(NewTabPageControllerDelegate));
@@ -181,13 +187,16 @@ class NewTabPageCoordinatorTest : public PlatformTest {
 
     std::vector<base::test::FeatureRef> enabled;
     enabled.push_back(kEnableDiscoverFeedTopSyncPromo);
+    enabled.push_back(kEnableWebChannels);
     std::vector<base::test::FeatureRef> disabled;
     scoped_feature_list_.InitWithFeatures(enabled, disabled);
   }
 
+  ChromeBrowserState* GetBrowserState() { return browser_state_.get(); }
+
   std::unique_ptr<web::FakeWebState> CreateWebState(const char* url) {
     auto test_web_state = std::make_unique<web::FakeWebState>();
-    test_web_state->SetBrowserState(browser_state_.get());
+    test_web_state->SetBrowserState(GetBrowserState());
     NewTabPageTabHelper::CreateForWebState(test_web_state.get());
     test_web_state->SetCurrentURL(GURL(url));
     test_web_state->SetNavigationManager(
@@ -198,10 +207,10 @@ class NewTabPageCoordinatorTest : public PlatformTest {
   void CreateCoordinator(bool off_the_record) {
     if (off_the_record) {
       ChromeBrowserState* otr_state =
-          browser_state_->GetOffTheRecordChromeBrowserState();
+          GetBrowserState()->GetOffTheRecordChromeBrowserState();
       browser_ = std::make_unique<TestBrowser>(otr_state);
     } else {
-      browser_ = std::make_unique<TestBrowser>(browser_state_.get());
+      browser_ = std::make_unique<TestBrowser>(GetBrowserState());
       StartSurfaceRecentTabBrowserAgent::CreateForBrowser(browser_.get());
       // Create non-NTP WebState
       browser_.get()->GetWebStateList()->InsertWebState(
@@ -264,7 +273,7 @@ class NewTabPageCoordinatorTest : public PlatformTest {
   std::unique_ptr<web::WebState> CreateWebStateWithURL(const GURL& url) {
     std::unique_ptr<web::FakeWebState> web_state =
         std::make_unique<web::FakeWebState>();
-    web_state->SetBrowserState(browser_state_.get());
+    web_state->SetBrowserState(GetBrowserState());
     NewTabPageTabHelper::CreateForWebState(web_state.get());
     web_state->SetVisibleURL(url);
     auto navigation_manager = std::make_unique<web::FakeNavigationManager>();
@@ -290,12 +299,16 @@ class NewTabPageCoordinatorTest : public PlatformTest {
   }
 
   void SetupCommandHandlerMocks() {
+    help_commands_handler_mock = OCMProtocolMock(@protocol(HelpCommands));
     omnibox_commands_handler_mock = OCMProtocolMock(@protocol(OmniboxCommands));
     snackbar_commands_handler_mock =
         OCMProtocolMock(@protocol(SnackbarCommands));
     fakebox_focuser_handler_mock = OCMProtocolMock(@protocol(FakeboxFocuser));
     parcel_tracking_commands_handler_mock_ =
         OCMProtocolMock(@protocol(ParcelTrackingOptInCommands));
+    [browser_.get()->GetCommandDispatcher()
+        startDispatchingToTarget:help_commands_handler_mock
+                     forProtocol:@protocol(HelpCommands)];
     [browser_.get()->GetCommandDispatcher()
         startDispatchingToTarget:omnibox_commands_handler_mock
                      forProtocol:@protocol(OmniboxCommands)];
@@ -350,23 +363,25 @@ class NewTabPageCoordinatorTest : public PlatformTest {
         FakeSystemIdentityManager::FromSystemIdentityManager(
             GetApplicationContext()->GetSystemIdentityManager());
     system_identity_manager->AddIdentity(fake_identity);
-    AuthenticationServiceFactory::GetForBrowserState(browser_state_.get())
+    AuthenticationServiceFactory::GetForBrowserState(GetBrowserState())
         ->SignIn(fake_identity,
                  signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN);
   }
 
   web::WebTaskEnvironment task_environment_;
+  IOSChromeScopedTestingLocalState scoped_testing_local_state_;
+  TestChromeBrowserStateManager browser_state_manager_;
+  raw_ptr<ChromeBrowserState> browser_state_;
   raw_ptr<web::WebState> web_state_;
   id toolbar_delegate_;
   id delegate_;
-  IOSChromeScopedTestingChromeBrowserStateManager scoped_browser_state_manager_;
-  std::unique_ptr<TestChromeBrowserState> browser_state_;
   std::unique_ptr<Browser> browser_;
   UIViewController* fake_feed_view_controller_;
   NewTabPageCoordinator* coordinator_;
   NewTabPageMetricsRecorder* NTPMetricsRecorder_;
   id component_factory_mock_;
   UIViewController* base_view_controller_;
+  id help_commands_handler_mock;
   id omnibox_commands_handler_mock;
   id snackbar_commands_handler_mock;
   id fakebox_focuser_handler_mock;

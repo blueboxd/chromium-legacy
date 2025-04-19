@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
+import 'chrome://resources/cr_elements/cr_collapse/cr_collapse.js';
 import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/cr_shared_style.css.js';
 import 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 import 'chrome://resources/cr_elements/cr_tooltip/cr_tooltip.js';
 import 'chrome://resources/cr_elements/policy/cr_tooltip_icon.js';
-import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import '../settings_shared.css.js';
 import '../site_favicon.js';
@@ -25,6 +25,7 @@ import {isUndoKeyboardEvent} from 'chrome://resources/js/util.js';
 import type {DomRepeatEvent} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {loadTimeData} from '../i18n_setup.js';
 import type {MetricsBrowserProxy} from '../metrics_browser_proxy.js';
 import {MetricsBrowserProxyImpl, SafetyCheckUnusedSitePermissionsModuleInteractions} from '../metrics_browser_proxy.js';
 import {routes} from '../route.js';
@@ -118,6 +119,14 @@ export class SettingsUnusedSitePermissionsElement extends
         computed: 'computeShouldShowCompletionInfo_(sites_.*)',
       },
 
+      // Indicates whether the abusive notification revocation feature
+      // is enabled.
+      safetyHubAbusiveNotificationRevocationEnabled_: {
+        type: Boolean,
+        value: () => loadTimeData.getBoolean(
+            'safetyHubAbusiveNotificationRevocationEnabled'),
+      },
+
       /** Text below primary header label. */
       subtitleString_: String,
 
@@ -144,6 +153,7 @@ export class SettingsUnusedSitePermissionsElement extends
   private modelUpdateDelayMsForTesting_: number|null = null;
   private sites_: UnusedSitePermissionsDisplay[]|null;
   private shouldShowCompletionInfo_: boolean;
+  private safetyHubAbusiveNotificationRevocationEnabled_: boolean;
   private subtitleString_: string;
   private toastText_: string|null;
   private unusedSitePermissionsReviewListExpanded_: boolean;
@@ -318,9 +328,12 @@ export class SettingsUnusedSitePermissionsElement extends
     this.headerString_ =
         await PluralStringProxyImpl.getInstance().getPluralString(
             'safetyCheckUnusedSitePermissionsPrimaryLabel', this.sites_.length);
+    // TODO(crbug/342210522): Add test for this.
     this.subtitleString_ =
         await PluralStringProxyImpl.getInstance().getPluralString(
-            'safetyCheckUnusedSitePermissionsSecondaryLabel',
+            this.safetyHubAbusiveNotificationRevocationEnabled_ ?
+                'safetyHubRevokedPermissionsSecondaryLabel' :
+                'safetyCheckUnusedSitePermissionsSecondaryLabel',
             this.sites_.length);
     // Focus on the expand button after the undo button is clicked and sites are
     // loaded again.

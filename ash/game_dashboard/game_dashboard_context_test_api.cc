@@ -17,6 +17,7 @@
 #include "ash/style/icon_button.h"
 #include "ash/style/pill_button.h"
 #include "ash/style/switch.h"
+#include "ash/system/time/time_view.h"
 #include "ash/system/toast/anchored_nudge.h"
 #include "ash/system/unified/feature_tile.h"
 #include "base/timer/timer.h"
@@ -111,6 +112,16 @@ FeatureTile* GameDashboardContextTestApi::GetMainMenuScreenshotTile() {
       GetMainMenuViewById(VIEW_ID_GD_SCREENSHOT_TILE));
 }
 
+const std::u16string&
+GameDashboardContextTestApi::GetMainMenuScreenSizeSubtitle() {
+  auto* main_menu_view = GetMainMenuView();
+  CHECK(main_menu_view);
+  const views::Label* subtitle_label =
+      main_menu_view->GetScreenSizeRowSubtitle();
+  CHECK(subtitle_label);
+  return subtitle_label->GetText();
+}
+
 views::Button*
 GameDashboardContextTestApi::GetMainMenuScreenSizeSettingsButton() {
   return views::AsViewClass<views::Button>(
@@ -127,6 +138,12 @@ PillButton* GameDashboardContextTestApi::GetMainMenuGameControlsSetupButton() {
   auto* main_menu_view = GetMainMenuView();
   CHECK(main_menu_view);
   return main_menu_view->GetGameControlsSetupButton();
+}
+
+TimeView* GameDashboardContextTestApi::GetMainMenuClockView() {
+  auto* main_menu_view = GetMainMenuView();
+  CHECK(main_menu_view);
+  return main_menu_view->clock_view_;
 }
 
 Switch* GameDashboardContextTestApi::GetMainMenuGameControlsFeatureSwitch() {

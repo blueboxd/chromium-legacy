@@ -4,14 +4,12 @@
 
 package org.chromium.chrome.test;
 
-import org.junit.rules.TestRule;
 import org.junit.runners.model.InitializationError;
 
-import org.chromium.base.test.util.Batch;
-import org.chromium.base.test.util.Features;
+import org.chromium.chrome.browser.omaha.OmahaBase;
+import org.chromium.chrome.browser.omaha.VersionNumberGetter;
 import org.chromium.components.policy.test.annotations.Policies;
 import org.chromium.content_public.browser.test.ContentJUnit4ClassRunner;
-import org.chromium.ui.test.util.DisableAnimationsTestRule;
 
 import java.util.List;
 
@@ -27,19 +25,15 @@ public class ChromeJUnit4ClassRunner extends ContentJUnit4ClassRunner {
     }
 
     @Override
-    protected List<TestHook> getPreTestHooks() {
-        return addToList(super.getPreTestHooks(), Policies.getRegistrationHook());
+    protected void onBeforeTestClass() {
+        super.onBeforeTestClass();
+        // Disable Omaha related activities.
+        OmahaBase.setIsDisabledForTesting(true);
+        VersionNumberGetter.setEnableUpdateDetectionForTesting(false);
     }
 
     @Override
-    protected List<TestRule> getDefaultTestRules() {
-        List<TestRule> rules = super.getDefaultTestRules();
-        Class<?> clazz = getTestClass().getJavaClass();
-        if (!clazz.isAnnotationPresent(Batch.class)
-                || !clazz.getAnnotation(Batch.class).value().equals(Batch.UNIT_TESTS)) {
-            rules = addToList(rules, new Features.InstrumentationProcessor());
-        }
-
-        return addToList(rules, new DisableAnimationsTestRule());
+    protected List<TestHook> getPreTestHooks() {
+        return addToList(super.getPreTestHooks(), Policies.getRegistrationHook());
     }
 }

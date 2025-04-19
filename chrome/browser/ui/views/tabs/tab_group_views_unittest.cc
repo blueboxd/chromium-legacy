@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/tabs/tab_group_views.h"
+
 #include <memory>
 
 #include "base/feature_list.h"
@@ -14,7 +15,7 @@
 #include "chrome/browser/ui/views/tabs/tab_group_highlight.h"
 #include "chrome/browser/ui/views/tabs/tab_group_underline.h"
 #include "chrome/test/views/chrome_views_test_base.h"
-#include "ui/base/ui_base_features.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/widget/widget.h"
 
 class TabGroupViewsTest : public ChromeViewsTestBase {
@@ -27,7 +28,8 @@ class TabGroupViewsTest : public ChromeViewsTestBase {
   void SetUp() override {
     ChromeViewsTestBase::SetUp();
 
-    widget_ = CreateTestWidget();
+    widget_ =
+        CreateTestWidget(views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET);
     tab_container_ = widget_->SetContentsView(std::make_unique<views::View>());
     tab_container_->SetBounds(0, 0, 1000, 100);
     drag_context_ =
@@ -76,6 +78,17 @@ TEST_F(TabGroupViewsTest, GroupViewsCreated) {
   EXPECT_EQ(tab_container_.get(), group_views_->underline()->parent());
   EXPECT_EQ(drag_context_.get(), group_views_->drag_underline()->parent());
   EXPECT_EQ(drag_context_.get(), group_views_->highlight()->parent());
+}
+
+TEST_F(TabGroupViewsTest, HeaderInitialAccessibilityProperties) {
+  TabGroupHeader* header = group_views_->header();
+  ui::AXNodeData node_data;
+
+  header->GetViewAccessibility().GetAccessibleNodeData(&node_data);
+  EXPECT_TRUE(node_data.HasState(ax::mojom::State::kEditable));
+  EXPECT_EQ(node_data.role, ax::mojom::Role::kTabList);
+  EXPECT_TRUE(node_data.HasState(ax::mojom::State::kExpanded));
+  EXPECT_FALSE(node_data.HasState(ax::mojom::State::kCollapsed));
 }
 
 // Underline should actually underline the group.
@@ -127,18 +140,8 @@ TEST_F(TabGroupViewsTest, UnderlineBoundsWhenTabsAreNotVisible) {
   tab_2->SetVisible(false);
   group_views_->UpdateBounds();
 
-  if (features::IsChromeRefresh2023()) {
-    EXPECT_FALSE(group_views_->underline()->GetVisible());
-    EXPECT_GT(group_views_->underline()->width(), 0);
-  } else {
-    EXPECT_TRUE(group_views_->underline()->GetVisible());
-    const gfx::Rect underline_bounds = group_views_->underline()->bounds();
-    // Underline should begin from the header.
-    EXPECT_GT(underline_bounds.x(), header->bounds().x());
-    // Underline should end within the last tab.
-    EXPECT_LT(underline_bounds.right(), tab_2->bounds().right());
-    EXPECT_FALSE(group_views_->drag_underline()->GetVisible());
-  }
+  EXPECT_FALSE(group_views_->underline()->GetVisible());
+  EXPECT_GT(group_views_->underline()->width(), 0);
 }
 
 // Drag_underline should underline the group when the group is being dragged,

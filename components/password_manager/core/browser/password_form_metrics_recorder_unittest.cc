@@ -17,6 +17,7 @@
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/form_data_test_api.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
@@ -164,6 +165,15 @@ TEST_F(PasswordFormMetricsRecorderTest, Generation) {
                             PasswordFormMetricsRecorder::SubmitResult::kFailed),
                         expected_login_failed);
 
+    int expected_login_failed_after_generation =
+        test.has_generated_password && expected_login_failed ? 1 : 0;
+    ExpectUkmValueCount(
+        &test_ukm_recorder,
+        UkmEntry::kSubmission_SubmissionResult_GeneratedPasswordName,
+        static_cast<int64_t>(
+            PasswordFormMetricsRecorder::SubmitResult::kFailed),
+        expected_login_failed_after_generation);
+
     int expected_login_passed =
         test.submission == PasswordFormMetricsRecorder::SubmitResult::kPassed
             ? 1
@@ -175,6 +185,15 @@ TEST_F(PasswordFormMetricsRecorderTest, Generation) {
                         static_cast<int64_t>(
                             PasswordFormMetricsRecorder::SubmitResult::kPassed),
                         expected_login_passed);
+
+    int expected_login_passed_after_generation =
+        test.has_generated_password && expected_login_passed ? 1 : 0;
+    ExpectUkmValueCount(
+        &test_ukm_recorder,
+        UkmEntry::kSubmission_SubmissionResult_GeneratedPasswordName,
+        static_cast<int64_t>(
+            PasswordFormMetricsRecorder::SubmitResult::kPassed),
+        expected_login_passed_after_generation);
 
     if (test.has_generated_password) {
       switch (test.submission) {
@@ -632,7 +651,7 @@ PasswordForm ConvertToPasswordForm(
       password_form.username_value = value;
     }
 
-    password_form.form_data.fields.push_back(form_field);
+    test_api(password_form.form_data).Append(form_field);
   }
   return password_form;
 }
@@ -2056,6 +2075,37 @@ TEST_F(PasswordFormMetricsRecorderTest, FormParsingDifferencePassword) {
       entries[0], UkmEntry::kParsingDiffFillingAndSavingName,
       static_cast<int>(
           PasswordFormMetricsRecorder::ParsingDifference::kPasswordDiff));
+}
+
+TEST_F(PasswordFormMetricsRecorderTest, AutomationRate) {
+  const std::vector<TestCaseFieldInfo> form_fields = {
+      // Placeholder field should be ignored, as it had not user interaction.
+      {.value = "placeholder"},
+      {.value = "username", .user_typed = true},
+      {.value = "OTP", .user_typed = true},
+      // The only autofilled field is password field.
+      {.value = "strong_password",
+       .manually_filled = true,
+       .is_password = true}};
+  PasswordForm password_form_data = ConvertToPasswordForm(form_fields);
+
+  {
+    auto recorder = CreatePasswordFormMetricsRecorder(
+        /*is_main_frame_secure=*/true, &pref_service_);
+    recorder->CalculateFillingAssistanceMetric(
+        password_form_data, /*saved_usernames=*/{}, /*saved_passwords=*/{},
+        /*is_blocklisted=*/false,
+        /*interactions_stats=*/{},
+        PasswordAccountStorageUsageLevel::kUsingAccountStorage);
+    recorder->LogSubmitPassed();
+  }
+
+  int expected_rate =
+      100 * form_fields[3].value.size() /
+      (form_fields[1].value.size() + form_fields[2].value.size() +
+       form_fields[3].value.size());
+  histogram_tester_.ExpectUniqueSample("PasswordManager.FillingAutomationRate",
+                                       expected_rate, 1);
 }
 
 }  // namespace password_manager

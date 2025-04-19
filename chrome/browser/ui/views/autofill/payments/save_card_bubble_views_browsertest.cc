@@ -370,7 +370,7 @@ class SaveCardBubbleViewsFullFormBrowserTest
     signin::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForProfile(GetProfile(0));
     CoreAccountInfo core_info =
-        PersonalDataManagerFactory::GetForProfile(GetProfile(0))
+        PersonalDataManagerFactory::GetForBrowserContext(GetProfile(0))
             ->payments_data_manager()
             .GetAccountInfoForPaymentsServer();
 
@@ -627,20 +627,20 @@ class SaveCardBubbleViewsFullFormBrowserTest
 
   void ClickOnView(views::View* view) {
     CHECK(view);
-    ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-                           ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
-                           ui::EF_LEFT_MOUSE_BUTTON);
+    ui::MouseEvent pressed(ui::EventType::kMousePressed, gfx::Point(),
+                           gfx::Point(), ui::EventTimeForNow(),
+                           ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
     view->OnMousePressed(pressed);
     ui::MouseEvent released_event =
-        ui::MouseEvent(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(),
-                       ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
-                       ui::EF_LEFT_MOUSE_BUTTON);
+        ui::MouseEvent(ui::EventType::kMouseReleased, gfx::Point(),
+                       gfx::Point(), ui::EventTimeForNow(),
+                       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
     view->OnMouseReleased(released_event);
   }
 
   void ClickSavePaymentIconView(SavePaymentIconView* icon_view) {
     CHECK(icon_view);
-    ui::MouseEvent e(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+    ui::MouseEvent e(ui::EventType::kMousePressed, gfx::Point(), gfx::Point(),
                      ui::EventTimeForNow(), 0, 0);
     views::test::ButtonTestApi test_api(icon_view);
     test_api.NotifyClick(e);
@@ -1526,7 +1526,7 @@ IN_PROC_BROWSER_TEST_F(
   // zipcode than the one to be filled in the form below.
   AutofillProfile address_profile = test::GetFullProfile();
   address_profile.SetRawInfo(ADDRESS_HOME_ZIP, u"91111");
-  PersonalDataManagerFactory::GetForProfile(GetProfile(0))
+  PersonalDataManagerFactory::GetForBrowserContext(GetProfile(0))
       ->address_data_manager()
       .AddProfile(address_profile);
 
@@ -2329,7 +2329,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        IconViewAccessibleName) {
-  EXPECT_EQ(GetSaveCardIconView()->GetAccessibleName(),
+  EXPECT_EQ(GetSaveCardIconView()->GetViewAccessibility().GetCachedName(),
             l10n_util::GetStringUTF16(IDS_TOOLTIP_SAVE_CREDIT_CARD));
   EXPECT_EQ(GetSaveCardIconView()->GetTextForTooltipAndAccessibleName(),
             l10n_util::GetStringUTF16(IDS_TOOLTIP_SAVE_CREDIT_CARD));

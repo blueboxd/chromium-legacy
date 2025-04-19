@@ -14,7 +14,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
-#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/ipc/client/client_shared_image_interface.h"
 #include "gpu/ipc/common/command_buffer_id.h"
@@ -49,7 +48,9 @@ GpuChannelHost::GpuChannelHost(
       image_decode_accelerator_proxy_(
           this,
           static_cast<int32_t>(
-              GpuChannelReservedRoutes::kImageDecodeAccelerator)) {
+              GpuChannelReservedRoutes::kImageDecodeAccelerator)),
+      sync_point_graph_validation_enabled_(
+          features::IsSyncPointGraphValidationEnabled()) {
   mojo::PendingAssociatedRemote<mojom::GpuChannel> channel;
   listener_->Initialize(std::move(handle),
                         channel.InitWithNewEndpointAndPassReceiver(),
@@ -65,10 +66,6 @@ GpuChannelHost::GpuChannelHost(
   for (int32_t i = 0;
        i <= static_cast<int32_t>(GpuChannelReservedRoutes::kMaxValue); ++i)
     next_route_id_.GetNext();
-
-#if BUILDFLAG(IS_MAC)
-  gpu::SetMacOSSpecificTextureTarget(gpu_info.macos_specific_texture_target);
-#endif  // BUILDFLAG(IS_MAC)
 }
 
 mojom::GpuChannel& GpuChannelHost::GetGpuChannel() {
@@ -135,6 +132,12 @@ void GpuChannelHost::VerifyFlush(uint32_t deferred_message_id) {
   AutoLock lock(context_lock_);
 
   InternalFlush(deferred_message_id);
+
+  if (sync_point_graph_validation_enabled_) {
+    // No need to do synchronous flush when graph validation of sync points is
+    // enabled.
+    return;
+  }
 
   bool ipc_needed = false;
   const bool skip_flush_if_possible =

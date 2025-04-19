@@ -23,7 +23,6 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_unittest_util.h"
 
-namespace {
 AccountInfo FillAccountInfo(
     const CoreAccountInfo& core_info,
     AccountManagementStatus management_status,
@@ -56,7 +55,6 @@ AccountInfo FillAccountInfo(
 
   return account_info;
 }
-}  // namespace
 
 AccountInfo SignInWithAccount(
     signin::IdentityTestEnvironment& identity_test_env,
@@ -114,10 +112,6 @@ void InitPixelTestFeatures(const PixelTestParam& params,
                            base::test::ScopedFeatureList& feature_list) {
   std::vector<base::test::FeatureRef> enabled_features;
   std::vector<base::test::FeatureRef> disabled_features;
-
-  if (params.use_chrome_refresh_2023_style) {
-    enabled_features.push_back(features::kChromeRefresh2023);
-  }
 
   feature_list.InitWithFeatures(enabled_features, disabled_features);
 }

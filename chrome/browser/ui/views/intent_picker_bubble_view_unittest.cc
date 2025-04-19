@@ -491,10 +491,10 @@ TEST_P(IntentPickerBubbleViewLayoutTest, DoubleClickToAccept) {
 
   views::test::ButtonTestApi button(GetButtonAtIndex(0));
 
-  button.NotifyClick(ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::PointF(),
+  button.NotifyClick(ui::MouseEvent(ui::EventType::kMousePressed, gfx::PointF(),
                                     gfx::PointF(), ui::EventTimeForNow(),
                                     ui::EF_NONE, ui::EF_NONE));
-  button.NotifyClick(ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::PointF(),
+  button.NotifyClick(ui::MouseEvent(ui::EventType::kMousePressed, gfx::PointF(),
                                     gfx::PointF(), ui::EventTimeForNow(),
                                     ui::EF_IS_DOUBLE_CLICK, ui::EF_NONE));
 
@@ -525,6 +525,29 @@ TEST_F(IntentPickerBubbleViewGridLayoutTest, DefaultSelectionOneApp) {
                    /*initiating_origin=*/std::nullopt);
 
   ASSERT_EQ(bubble_->GetSelectedIndex(), 0u);
+}
+
+TEST_F(IntentPickerBubbleViewGridLayoutTest, AccessibilityCheckedStateChange) {
+  ui::AXNodeData data;
+  AddApp(apps::PickerEntryType::kWeb, "web_app_id", "Web App");
+  CreateBubbleView(/*use_icons=*/false, /*show_stay_in_chrome=*/false,
+                   BubbleType::kLinkCapturing,
+                   /*initiating_origin=*/std::nullopt);
+  // In case of 1 app, 1st view will be selected
+  bubble_->SelectDefaultItem();
+  auto* view = GetButtonAtIndex(0);
+  view->GetViewAccessibility().GetAccessibleNodeData(&data);
+  EXPECT_EQ(data.GetCheckedState(), ax::mojom::CheckedState::kTrue);
+
+  AddApp(apps::PickerEntryType::kWeb, "web_app_id", "Web App");
+  CreateBubbleView(/*use_icons=*/false, /*show_stay_in_chrome=*/false,
+                   BubbleType::kLinkCapturing,
+                   /*initiating_origin=*/std::nullopt);
+
+  data = ui::AXNodeData();
+  view = GetButtonAtIndex(1);
+  view->GetViewAccessibility().GetAccessibleNodeData(&data);
+  EXPECT_EQ(data.GetCheckedState(), ax::mojom::CheckedState::kFalse);
 }
 
 TEST_F(IntentPickerBubbleViewGridLayoutTest, DefaultSelectionTwoApps) {

@@ -58,6 +58,7 @@ PrivacySandboxService* PrivacySandboxServiceFactory::GetForProfile(
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
+// LINT.IfChange(PrivacySandboxService)
 PrivacySandboxServiceFactory::PrivacySandboxServiceFactory()
     : ProfileKeyedServiceFactory(
           "PrivacySandboxService",
@@ -68,6 +69,9 @@ PrivacySandboxServiceFactory::PrivacySandboxServiceFactory()
               // TODO(crbug.com/40257657): Check if this service is needed in
               // Guest mode.
               .WithGuest(ProfileSelection::kOwnInstance)
+              // TODO(crbug.com/41488885): Check if this service is needed for
+              // Ash Internals.
+              .WithAshInternals(ProfileSelection::kOwnInstance)
               .Build()) {
   DependsOn(PrivacySandboxSettingsFactory::GetInstance());
   DependsOn(CookieSettingsFactory::GetInstance());
@@ -85,6 +89,7 @@ PrivacySandboxServiceFactory::PrivacySandboxServiceFactory()
   // eligibility.
   DependsOn(tpcd::experiment::EligibilityServiceFactory::GetInstance());
 }
+// LINT.ThenChange(/chrome/browser/privacy_sandbox/privacy_sandbox_notice_service_factory.cc:PrivacySandboxNoticeService)
 
 std::unique_ptr<KeyedService>
 PrivacySandboxServiceFactory::BuildServiceInstanceForBrowserContext(

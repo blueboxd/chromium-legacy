@@ -20,16 +20,15 @@ namespace content {
 // Defines the different types of preloading speedup techniques. Preloading is a
 // holistic term to define all the speculative operations the browser does for
 // loading content before a page navigates to make navigation faster.
-
+//
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
+//
+// LINT.IfChange
 enum class PreloadingType {
   // No PreloadingType is present. This may include other preloading operations
   // which will be added later to PreloadingType as we expand.
   kUnspecified = 0,
-
-  // TODO(crbug.com/40219645): Add preloading type 1 as we integrate
-  // Preloading logging with preresolve.
 
   // Establishes a connection (including potential TLS handshake) with an
   // origin.
@@ -59,6 +58,7 @@ enum class PreloadingType {
   // but might be reused in the future.
   kLinkPreview = 6,
 };
+// LINT.ThenChange()
 
 // Defines various triggering mechanisms which triggers different preloading
 // operations mentioned in preloading.h. The integer portion is used for UKM
@@ -108,6 +108,8 @@ class CONTENT_EXPORT PreloadingPredictor {
 //
 // The embedder `PreloadingPredictor` definitions should start at 100 (see
 // `chrome/browser/preloading/chrome_preloading.h` for example).
+//
+// LINT.IfChange
 namespace preloading_predictor {
 // No PreloadingTrigger is present. This may include the small percentage of
 // usages of browser triggers, link-rel, OptimizationGuideService e.t.c which
@@ -138,16 +140,16 @@ static constexpr PreloadingPredictor kBackGestureNavigation(
 static constexpr PreloadingPredictor kPreloadingHeuristicsMLModel(
     5,
     "PreloadingHeuristicsMLModel");
-
-// TODO(crbug.com/40219645): Add more predictors as we integrate Preloading
-// logging.
 }  // namespace preloading_predictor
+// LINT.ThenChange()
 
 // Defines if a preloading operation is eligible for a given preloading
 // trigger.
-
+//
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
+//
+// LINT.IfChange
 enum class PreloadingEligibility {
   // Preloading operation is not defined for a particular preloading trigger
   // prediction.
@@ -227,6 +229,9 @@ enum class PreloadingEligibility {
   // Preloading was ineligible for non-http(s).
   kHttpOrHttpsOnly = 19,
 
+  // Preloading was ineligible because the network is too slow.
+  kSlowNetwork = 20,
+
   // See corresponding values in PrefetchStatus for documentation.
   kUserHasCookies = 55,
   kUserHasServiceWorker = 56,
@@ -239,12 +244,9 @@ enum class PreloadingEligibility {
   kPrefetchProxyNotAvailable = 78,
   kHostIsNonUnique = 86,
   kExistingProxy = 88,
-  kBrowserContextOffTheRecord = 89,
+  //  OBSOLETE: kBrowserContextOffTheRecord = 89,
   kSameSiteCrossOriginPrefetchRequiredProxy = 96,
 
-  // TODO(crbug.com/40219645): Add more specific ineligibility reasons subject
-  // to
-  // each preloading operation
   // This constant is used to define the value beyond which embedders can add
   // more enums.
   kPreloadingEligibilityContentEnd = 100,
@@ -255,15 +257,18 @@ enum class PreloadingEligibility {
   kPreloadingEligibilityContentStart2 = 200,
   kPreloadingEligibilityContentEnd2 = 250,
 };
+// LINT.ThenChange()
 
 // The outcome of the holdback check. This is not part of eligibility status to
 // clarify that this check needs to happen after we are done verifying the
 // eligibility of a preloading attempt. In general, eligibility checks can be
 // reordered, but the holdback check always needs to come after verifying that
 // the preloading attempt was eligible.
-
+//
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
+//
+// LINT.IfChange
 enum class PreloadingHoldbackStatus {
   // The preloading holdback status has not been set yet. This should only
   // happen when the preloading attempt was not eligible.
@@ -277,14 +282,17 @@ enum class PreloadingHoldbackStatus {
   // trial holdback. This is useful for measuring the impact of preloading.
   kHoldback = 2,
 };
+// LINT.ThenChange()
 
 // Defines the post-triggering outcome once the preloading operation is
 // triggered.
-
+//
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused. Please update
 // "PreloadingTriggeringOutcome" in `tools/metrics/histograms/enums.xml` when
 // new enums are added.
+//
+// LINT.IfChange
 enum class PreloadingTriggeringOutcome {
   // The outcome is kUnspecified for attempts that were not triggered due to
   // various ineligibility reasons or due to a field trial holdback.
@@ -334,9 +342,12 @@ enum class PreloadingTriggeringOutcome {
   // Required by UMA histogram macro.
   kMaxValue = kNoOp,
 };
+// LINT.ThenChange()
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
+//
+// LINT.IfChange
 enum class PreloadingFailureReason {
   // The failure reason is unspecified if the triggering outcome is not
   // kFailure.
@@ -360,6 +371,15 @@ enum class PreloadingFailureReason {
   // "limit exceeded" for preconnect but "cancelled" for prerender).
   kPreloadingFailureReasonContentEnd = 1000,
 };
+// LINT.ThenChange()
+
+// Types of URL match:
+// Exact match: the URLs are matching exactly.
+// NoVarySearch match: No-Vary-Search header allows for inexact match by
+// ignoring some query parameters, or the order of query parameters present
+// in URLs.
+// Custom match: custom URL matching provided by a url matching predicate.
+enum class UrlMatchType { kExact, kNoVarySearch, kURLPredicateMatch };
 
 }  // namespace content
 

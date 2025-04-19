@@ -10,12 +10,13 @@ import org.chromium.base.ResettersForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.invalidation.SessionsInvalidationManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.recent_tabs.ForeignSessionHelper;
 import org.chromium.chrome.browser.recent_tabs.ForeignSessionHelper.ForeignSession;
 import org.chromium.chrome.browser.recent_tabs.ForeignSessionHelper.ForeignSessionTab;
-import org.chromium.chrome.browser.signin.SigninAndHistoryOptInActivityLauncherImpl;
+import org.chromium.chrome.browser.signin.SigninAndHistorySyncActivityLauncherImpl;
 import org.chromium.chrome.browser.signin.SyncConsentActivityLauncherImpl;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.ProfileDataCache;
@@ -128,7 +129,7 @@ public class RecentTabsManager
                         bottomSheetStrings,
                         SigninAccessPoint.RECENT_TABS,
                         SyncConsentActivityLauncherImpl.get(),
-                        SigninAndHistoryOptInActivityLauncherImpl.get());
+                        SigninAndHistorySyncActivityLauncherImpl.get());
         mSyncService = SyncServiceFactory.getForProfile(mProfile);
 
         mRecentlyClosedTabManager.setEntriesUpdatedRunnable(this::updateRecentlyClosedEntries);
@@ -259,7 +260,7 @@ public class RecentTabsManager
             ForeignSession session, ForeignSessionTab tab, int windowDisposition) {
         if (mIsDestroyed) return;
         RecordUserAction.record("MobileRecentTabManagerTabFromOtherDeviceOpened");
-        RecordUserAction.record("MobileCrossDeviceTabOpenedOrSent");
+        RecordUserAction.record("MobileCrossDeviceTabJourney");
         mForeignSessionHelper.openForeignSessionTab(mActiveTab, session, tab, windowDisposition);
     }
 
@@ -435,6 +436,17 @@ public class RecentTabsManager
     }
 
     private @SyncPromoState int calculatePromoState() {
+        if (ChromeFeatureList.isEnabled(
+                ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)) {
+            // If ReplaceSyncPromosWithSignInPromos is enabled, there's only one promo type.
+            //
+            // TODO(crbug.com/343908771): Revise SyncPromoState after launching
+            //     ReplaceSyncPromosWithSignInPromos.
+            if (!mSyncPromoController.canShowSyncPromo()) {
+                return SyncPromoState.NO_PROMO;
+            }
+            return SyncPromoState.PROMO_FOR_SIGNED_OUT_STATE;
+        }
         if (!mSignInManager.getIdentityManager().hasPrimaryAccount(ConsentLevel.SYNC)) {
             if (!mSyncPromoController.canShowSyncPromo()) {
                 return SyncPromoState.NO_PROMO;

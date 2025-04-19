@@ -113,6 +113,8 @@ class CORE_EXPORT HTMLElement : public Element {
     return HasLocalName(name.LocalName());
   }
 
+  const char* NameInHeapSnapshot() const override;
+
   String title() const final;
 
   void setInnerText(const String&);
@@ -188,6 +190,7 @@ class CORE_EXPORT HTMLElement : public Element {
   virtual bool IsLabelable() const;
   // |labels| IDL attribute implementation for IsLabelable()==true elements.
   LabelsNodeList* labels();
+  bool HasActiveLabel() const;
 
   // https://html.spec.whatwg.org/C/#interactive-content
   virtual bool IsInteractiveContent() const;
@@ -293,27 +296,28 @@ class CORE_EXPORT HTMLElement : public Element {
   void MaybeQueuePopoverHideEvent();
   static void HoveredElementChanged(Element* old_element, Element* new_element);
 
-  void SetPopoverOwnerSelectListElement(HTMLSelectListElement* element);
-  HTMLSelectListElement* popoverOwnerSelectListElement() const;
+  void SetInternalImplicitAnchor(HTMLElement* element);
+  HTMLElement* internalImplicitAnchor() const;
 
   bool DispatchFocusEvent(
       Element* old_focused_element,
       mojom::blink::FocusType,
       InputDeviceCapabilities* source_capabilities) override;
 
-  // This allows customization of how Invokes are handled, per element.
-  // The default HTMLElement behavior handles popovers, and specific
+  // This allows customization of how Invoker Commands are handled, per
+  // element. The default HTMLElement behavior handles popovers, and specific
   // element subclasses - such as HTMLDialogElement - can handle
-  // other invocation actions such as showModal. Implementations should return
+  // other commands such as showModal. Implementations should return
   // `true` if they have handled, so that overrides can exit early.
   // Additionally, override implementations should not execute their own
-  // behavior before calling `HTMLElement::HandleInvokeInternal` as that
+  // behavior before calling `HTMLElement::HandleCommandInternal` as that
   // override governs the logic for global attributes such as `popover`;
   // for example a `<dialog popover>` should run `popover` invocation steps
   // before `<dialog>` invocation steps.
   // See: crbug.com/1490919, https://open-ui.org/components/invokers.explainer/
-  bool IsValidInvokeAction(HTMLElement& invoker, InvokeAction action) override;
-  bool HandleInvokeInternal(HTMLElement& invoker, InvokeAction action) override;
+  bool IsValidCommand(HTMLElement& invoker, CommandEventType command) override;
+  bool HandleCommandInternal(HTMLElement& invoker,
+                             CommandEventType command) override;
 
   // This allows developers to enable or disable browser-provided writing
   // suggestions. If the attribute is not explicitly set on an element, it

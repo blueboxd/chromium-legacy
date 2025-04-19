@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/342213636): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "content/browser/gpu/gpu_internals_ui.h"
 
 #include <stddef.h>
@@ -118,7 +123,6 @@ std::string GPUDeviceToString(const gpu::GPUInfo::GPUDevice& gpu) {
 base::Value::List GetBasicGpuInfo(const gpu::GPUInfo& gpu_info,
                                   const gpu::GpuFeatureInfo& gpu_feature_info,
                                   const gfx::GpuExtraInfo& gpu_extra_info) {
-  const gpu::GPUInfo::GPUDevice& active_gpu = gpu_info.active_gpu();
   base::Value::List basic_info;
   basic_info.Append(display::BuildGpuInfoEntry(
       "Initialization time",
@@ -136,6 +140,11 @@ base::Value::List GetBasicGpuInfo(const gpu::GPUInfo& gpu_info,
     basic_info.Append(display::BuildGpuInfoEntry(
         base::StringPrintf("GPU%d", static_cast<int>(i + 1)),
         GPUDeviceToString(gpu_info.secondary_gpus[i])));
+  }
+  for (size_t i = 0; i < gpu_info.npus.size(); ++i) {
+    basic_info.Append(display::BuildGpuInfoEntry(
+        base::StringPrintf("NPU%d", static_cast<int>(i)),
+        GPUDeviceToString(gpu_info.npus[i])));
   }
   basic_info.Append(
       display::BuildGpuInfoEntry("Optimus", base::Value(gpu_info.optimus)));
@@ -165,6 +174,9 @@ base::Value::List GetBasicGpuInfo(const gpu::GPUInfo& gpu_info,
       "RGB10A2 overlay support",
       gpu::OverlaySupportToString(
           gpu_info.overlay_info.rgb10a2_overlay_support)));
+  basic_info.Append(display::BuildGpuInfoEntry(
+      "P010 overlay support",
+      gpu::OverlaySupportToString(gpu_info.overlay_info.p010_overlay_support)));
 
   std::vector<gfx::PhysicalDisplaySize> display_sizes =
       gfx::GetPhysicalSizeForDisplays();
@@ -194,9 +206,6 @@ base::Value::List GetBasicGpuInfo(const gpu::GPUInfo& gpu_info,
       gpu::VulkanVersionToString(gpu_info.vulkan_version)));
 #endif
 
-  basic_info.Append(display::BuildGpuInfoEntry(
-      "GPU CUDA compute capability major version",
-      base::Value(active_gpu.cuda_compute_capability_major)));
   basic_info.Append(display::BuildGpuInfoEntry("Pixel shader version",
                                                gpu_info.pixel_shader_version));
   basic_info.Append(display::BuildGpuInfoEntry("Vertex shader version",

@@ -13,6 +13,7 @@
 #include "base/check_op.h"
 #include "base/notreached.h"
 #include "base/rand_util.h"
+#include "content/services/auction_worklet/public/cpp/real_time_reporting.h"
 #include "content/services/auction_worklet/public/mojom/real_time_reporting.mojom.h"
 #include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
@@ -92,9 +93,11 @@ CalculateRealTimeReportingHistograms(
     // through the noising mechanism to satisfy the privacy requirements.
     histograms.emplace(
         origin,
-        Rappor(maybe_bucket,
-               blink::features::kFledgeRealTimeReportingEpsilon.Get(),
-               blink::features::kFledgeRealTimeReportingNumBuckets.Get()));
+        Rappor(
+            maybe_bucket,
+            blink::features::kFledgeRealTimeReportingEpsilon.Get(),
+            blink::features::kFledgeRealTimeReportingNumBuckets.Get() +
+                auction_worklet::RealTimeReportingPlatformError::kNumValues));
   }
   return histograms;
 }
@@ -108,7 +111,8 @@ bool HasValidRealTimeBucket(
         contribution) {
   return contribution->bucket >= 0 &&
          contribution->bucket <
-             blink::features::kFledgeRealTimeReportingNumBuckets.Get();
+             blink::features::kFledgeRealTimeReportingNumBuckets.Get() +
+                 auction_worklet::RealTimeReportingPlatformError::kNumValues;
 }
 
 bool HasValidRealTimePriorityWeight(
@@ -118,6 +122,24 @@ bool HasValidRealTimePriorityWeight(
   // NaN or infinite. But a compromised worklet can still send these values.
   return contribution->priority_weight > 0 &&
          std::isfinite(contribution->priority_weight);
+}
+
+std::vector<uint8_t> BitPacking(std::vector<uint8_t> data) {
+  std::vector<uint8_t> packed;
+  packed.reserve((data.size() + 7) / 8);
+  uint8_t current_byte = 0;
+
+  for (size_t i = 0; i < data.size(); i++) {
+    current_byte = (current_byte << 1) | data[i];
+    if ((i + 1) % 8 == 0) {
+      packed.push_back(current_byte);
+      current_byte = 0;
+    } else if (i == data.size() - 1) {
+      current_byte <<= 8 - (i + 1) % 8;
+      packed.push_back(current_byte);
+    }
+  }
+  return packed;
 }
 
 }  // namespace content

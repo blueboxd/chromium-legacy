@@ -790,6 +790,21 @@ Called by update_protocol_commands_enum.py.-->
       label="Animations panel - Scroll driven animation group selected"/>
   <int value="144"
       label="Animations panel - Scroll driven animation group scrubbed"/>
+  <int value="145" label="Freestyler panel - Opened through Elements panel"/>
+  <int value="146" label="Freestyler panel - Opened through Styles tab"/>
+  <int value="147" label="Console panel - Used context: filter"/>
+  <int value="148" label="Console panel - Used source: filter"/>
+  <int value="149" label="Console panel - Used url: filter"/>
+  <int value="150" label="Console insight consent reminder shown"/>
+  <int value="151" label="Console insight consent reminder canceled"/>
+  <int value="152" label="Console insight consent reminder confirmed"/>
+  <int value="153" label="Console insight onboarding shown"/>
+  <int value="154" label="Console insight onboarding canceled on page 1"/>
+  <int value="155" label="Console insight onboarding canceled on page 2"/>
+  <int value="156" label="Console insight onboarding confirmed"/>
+  <int value="157" label="Console insight onboarding moving to next page"/>
+  <int value="158" label="Console insight onboarding moving to previous page"/>
+  <int value="159" label="Console insight onboarding disabling feature"/>
 </enum>
 
 <enum name="DevToolsAnimationPlaybackRateChanged">
@@ -805,21 +820,6 @@ Called by update_protocol_commands_enum.py.-->
   <int value="2" label="Animation start point is moved"/>
   <int value="3" label="Animation finish point is moved"/>
   <int value="4" label="Other"/>
-</enum>
-
-<enum name="DevToolsBreakpointEditDialogRevealedFrom">
-  <int value="0" label="Breakpoint sidebar context menu"/>
-  <int value="1" label="Breakpoint sidebar edit button"/>
-  <int value="2" label="Breakpoint marker context menu"/>
-  <int value="3" label="Line gutter context menu"/>
-  <int value="4" label="Keyboard Shortcut"/>
-  <int value="5" label="Linkifier"/>
-  <int value="6" label="Mouse click"/>
-</enum>
-
-<enum name="DevToolsColorConvertedFrom">
-  <int value="0" label="Color Swatch (Shift + Click menu)"/>
-  <int value="1" label="Color Picker"/>
 </enum>
 
 <enum name="DevToolsColorPickerOpenedFrom">
@@ -966,6 +966,7 @@ Called by update_protocol_commands_enum.py.-->
   <int value="94" label="timelineAnnotations"/>
   <int value="95" label="timeline-rpp-sidebar"/>
   <int value="96" label="timelineObservations"/>
+  <int value="97" label="genAISettingsPanel"/>
 </enum>
 
 <enum name="DevToolsIssueCreated">
@@ -1325,15 +1326,15 @@ Called by update_protocol_commands_enum.py.-->
 
 <enum name="DevToolsLegacyResourceTypeFilterItemSelected">
   <int value="0" label="All"/>
-  <int value="1" label="Documents"/>
-  <int value="2" label="Scripts"/>
-  <int value="3" label="XHR and Fetch"/>
-  <int value="4" label="Stylesheets"/>
-  <int value="5" label="Fonts"/>
-  <int value="6" label="Images"/>
+  <int value="1" label="Document"/>
+  <int value="2" label="JavaScript"/>
+  <int value="3" label="Fetch and XHR"/>
+  <int value="4" label="CSS"/>
+  <int value="5" label="Font"/>
+  <int value="6" label="Image"/>
   <int value="7" label="Media"/>
   <int value="8" label="Manifest"/>
-  <int value="9" label="WebSockets"/>
+  <int value="9" label="WebSocket"/>
   <int value="10" label="WebAssembly"/>
   <int value="11" label="Other"/>
 </enum>
@@ -1415,6 +1416,8 @@ Called by update_protocol_commands_enum.py.-->
   <int value="33" label="text/javascript+sourcemapped"/>
   <int value="34" label="text/x.angular"/>
   <int value="35" label="text/x.vue"/>
+  <int value="36" label="text/javascript+snippet"/>
+  <int value="37" label="text/javascript+eval"/>
 </enum>
 
 <enum name="DevToolsNetworkPanelMoreFiltersItemSelected">
@@ -1722,15 +1725,15 @@ Called by update_protocol_commands_enum.py.-->
 
 <enum name="DevToolsResourceTypeFilterItemSelected">
   <int value="0" label="All"/>
-  <int value="1" label="Documents"/>
-  <int value="2" label="Scripts"/>
-  <int value="3" label="XHR and Fetch"/>
-  <int value="4" label="Stylesheets"/>
-  <int value="5" label="Fonts"/>
-  <int value="6" label="Images"/>
+  <int value="1" label="Document"/>
+  <int value="2" label="JavaScript"/>
+  <int value="3" label="Fetch and XHR"/>
+  <int value="4" label="CSS"/>
+  <int value="5" label="Font"/>
+  <int value="6" label="Image"/>
   <int value="7" label="Media"/>
   <int value="8" label="Manifest"/>
-  <int value="9" label="WebSockets"/>
+  <int value="9" label="WebSocket"/>
   <int value="10" label="WebAssembly"/>
   <int value="11" label="Other"/>
 </enum>

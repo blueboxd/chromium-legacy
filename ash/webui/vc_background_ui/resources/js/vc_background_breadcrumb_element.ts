@@ -22,12 +22,12 @@ import {assert} from 'chrome://resources/ash/common/assert.js';
 import {AnchorAlignment, CrActionMenuElement} from 'chrome://resources/ash/common/cr_elements/cr_action_menu/cr_action_menu.js';
 import {I18nMixin} from 'chrome://resources/ash/common/cr_elements/i18n_mixin.js';
 import {getSeaPenTemplates, SeaPenTemplate} from 'chrome://resources/ash/common/sea_pen/constants.js';
-import {cleanUpSwitchingTemplate} from 'chrome://resources/ash/common/sea_pen/sea_pen_controller.js';
+import {cleanUpSeaPenQueryStates} from 'chrome://resources/ash/common/sea_pen/sea_pen_controller.js';
 import {SeaPenTemplateId} from 'chrome://resources/ash/common/sea_pen/sea_pen_generated.mojom-webui.js';
 import {logSeaPenTemplateSelect} from 'chrome://resources/ash/common/sea_pen/sea_pen_metrics_logger.js';
 import {SeaPenPaths, SeaPenRouterElement} from 'chrome://resources/ash/common/sea_pen/sea_pen_router_element.js';
 import {getSeaPenStore} from 'chrome://resources/ash/common/sea_pen/sea_pen_store.js';
-import {isNonEmptyArray} from 'chrome://resources/ash/common/sea_pen/sea_pen_utils.js';
+import {getTemplateIdFromString, isNonEmptyArray} from 'chrome://resources/ash/common/sea_pen/sea_pen_utils.js';
 import {getTransitionEnabled, setTransitionsEnabled} from 'chrome://resources/ash/common/sea_pen/transition.js';
 import {IronA11yKeysElement} from 'chrome://resources/polymer/v3_0/iron-a11y-keys/iron-a11y-keys.js';
 import {IronSelectorElement} from 'chrome://resources/polymer/v3_0/iron-selector/iron-selector.js';
@@ -166,10 +166,17 @@ export class VcBackgroundBreadcrumbElement extends
   }
 
   private computeBreadcrumbs_(): string[] {
-    const breadcrumbs = [this.i18n('vcBackgroundLabel')];
+    const breadcrumbs = [];
+    // Normalize the relative path for vc background matched with wallpaper as
+    // 'chrome://vc-background/' has an extra single slash at the end.
+    const relativePath = this.path === '/' ? '' : this.path;
 
-    switch (this.path) {
+    switch (relativePath) {
+      case SeaPenPaths.TEMPLATES:
+        breadcrumbs.push(this.i18n('vcBackgroundLabel'));
+        break;
       case SeaPenPaths.RESULTS:
+        breadcrumbs.push(this.i18n('vcBackgroundLabel'));
         if (this.seaPenTemplateId && isNonEmptyArray(this.seaPenTemplates_)) {
           const template = this.seaPenTemplates_.find(
               template => template.id.toString() === this.seaPenTemplateId);
@@ -177,6 +184,10 @@ export class VcBackgroundBreadcrumbElement extends
             breadcrumbs.push(template.title);
           }
         }
+        break;
+      case SeaPenPaths.FREEFORM:
+        // TODO(b/345856242): update the final string.
+        breadcrumbs.push('AI Prompting');
         break;
     }
     return breadcrumbs;
@@ -231,16 +242,18 @@ export class VcBackgroundBreadcrumbElement extends
     // thumbnail loading status and Sea Pen query when
     // switching template; otherwise, states from the last query search will
     // remain in sea-pen-images element.
-    cleanUpSwitchingTemplate(getSeaPenStore());
+    cleanUpSeaPenQueryStates(getSeaPenStore());
     const transitionsEnabled = getTransitionEnabled();
     // disables the page transition when switching templates from the drop down.
     // Then resets it back to the original value after routing is done to not
     // interfere with other page transitions.
     setTransitionsEnabled(false);
+
     // log metrics for the selected template.
-    if (templateId && templateId in SeaPenTemplateId) {
-      logSeaPenTemplateSelect(parseInt(templateId) as SeaPenTemplateId);
+    if (templateId) {
+      logSeaPenTemplateSelect(getTemplateIdFromString(templateId));
     }
+
     SeaPenRouterElement.instance()
         .goToRoute(SeaPenPaths.RESULTS, {seaPenTemplateId: templateId})
         ?.finally(() => {

@@ -58,8 +58,7 @@ void PictureLayer::PushPropertiesTo(
   layer_impl->SetIsBackdropFilterMask(is_backdrop_filter_mask());
 
   layer_impl->UpdateRasterSource(CreateRasterSource(),
-                                 &last_updated_invalidation_.Write(*this),
-                                 nullptr, nullptr);
+                                 &last_updated_invalidation_.Write(*this));
   DCHECK(last_updated_invalidation_.Read(*this).IsEmpty());
 }
 
@@ -88,11 +87,8 @@ void PictureLayer::SetNeedsDisplayRect(const gfx::Rect& layer_rect) {
 }
 
 bool PictureLayer::RequiresSetNeedsDisplayOnHdrHeadroomChange() const {
-  const DisplayItemList* display_list = GetDisplayItemList();
-  if (display_list &&
-      display_list->discardable_image_map().content_color_usage() ==
-          gfx::ContentColorUsage::kHDR) {
-    return true;
+  if (const DisplayItemList* display_list = GetDisplayItemList()) {
+    return display_list->content_color_usage() == gfx::ContentColorUsage::kHDR;
   }
   return false;
 }
@@ -106,7 +102,8 @@ bool PictureLayer::Update() {
   recording_source.SetBackgroundColor(SafeOpaqueBackgroundColor());
   recording_source.SetRequiresClear(!contents_opaque() &&
                                     !client_->FillsBoundsCompletely());
-  recording_source.SetCanUseRecordedBounds(CanUseRecordedBoundsForTiling());
+  recording_source.SetCanUseRecordedBounds(
+      layer_tree_host()->GetSettings().enable_hit_test_opaqueness);
 
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"), "PictureLayer::Update",
                "source_frame_number", layer_tree_host()->SourceFrameNumber());
@@ -132,12 +129,6 @@ bool PictureLayer::Update() {
   return true;
 }
 
-bool PictureLayer::CanUseRecordedBoundsForTiling() const {
-  // For now the feature is for blink (using layer list mode) only.
-  return IsUsingLayerLists() &&
-         base::FeatureList::IsEnabled(features::kUseRecordedBoundsForTiling);
-}
-
 sk_sp<const SkPicture> PictureLayer::GetPicture() const {
   if (!draws_content() || bounds().IsEmpty())
     return nullptr;
@@ -148,7 +139,15 @@ sk_sp<const SkPicture> PictureLayer::GetPicture() const {
   SkCanvas* canvas =
       recorder.beginRecording(bounds().width(), bounds().height());
   canvas->clear(SK_ColorTRANSPARENT);
-  display_list->Raster(canvas);
+  ScrollOffsetMap raster_inducing_scroll_offsets;
+  const ScrollTree& scroll_tree =
+      layer_tree_host()->property_trees()->scroll_tree();
+  for (auto [element_id, _] : display_list->raster_inducing_scrolls()) {
+    raster_inducing_scroll_offsets[element_id] =
+        scroll_tree.current_scroll_offset(element_id);
+  }
+  display_list->Raster(canvas, /*image_provider=*/nullptr,
+                       &raster_inducing_scroll_offsets);
   return recorder.finishRecordingAsPicture();
 }
 

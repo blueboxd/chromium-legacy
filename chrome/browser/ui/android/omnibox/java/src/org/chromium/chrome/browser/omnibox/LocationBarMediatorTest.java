@@ -42,7 +42,6 @@ import androidx.test.core.app.ApplicationProvider;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatcher;
@@ -59,7 +58,6 @@ import org.robolectric.shadows.ShadowLooper;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.JniMocker;
@@ -172,10 +170,8 @@ public class LocationBarMediatorTest {
     private static int sGeoHeaderStopCount;
 
     @Rule public MockitoRule mMockitoRule = MockitoJUnit.rule();
-    @Rule public TestRule mProcessor = new Features.JUnitProcessor();
     @Rule public JniMocker mJniMocker = new JniMocker();
     @Rule public AccountManagerTestRule mAccountManagerTestRule = new AccountManagerTestRule();
-    @Rule public TestRule mFeatureProcessor = new Features.JUnitProcessor();
 
     @Mock private LocationBarLayout mLocationBarLayout;
     @Mock private LocationBarTablet mLocationBarTablet;
@@ -545,10 +541,10 @@ public class LocationBarMediatorTest {
 
     @Test
     public void testAllowKeyboardLearning() {
-        doReturn(false).when(mLocationBarDataProvider).isIncognito();
+        doReturn(false).when(mLocationBarDataProvider).isOffTheRecord();
         assertTrue(mMediator.allowKeyboardLearning());
 
-        doReturn(true).when(mLocationBarDataProvider).isIncognito();
+        doReturn(true).when(mLocationBarDataProvider).isOffTheRecord();
         assertFalse(mMediator.allowKeyboardLearning());
     }
 
@@ -771,16 +767,13 @@ public class LocationBarMediatorTest {
     }
 
     @Test
-    public void testOnKey_triggersFocusAnimation() {
+    public void testHandleTypingStarted_triggersFocusAnimation() {
         mMediator.addUrlFocusChangeListener(mUrlCoordinator);
-        doReturn(KeyEvent.ACTION_DOWN).when(mKeyEvent).getAction();
-        doReturn(true).when(mAutocompleteCoordinator).handleKeyEvent(KeyEvent.KEYCODE_9, mKeyEvent);
-        doReturn(true).when(mKeyEvent).isPrintingKey();
-        doReturn(true).when(mKeyEvent).hasNoModifiers();
         mMediator.onUrlFocusChange(true);
         mMediator.setIsUrlBarFocusedWithoutAnimationsForTesting(true);
-        assertTrue(mMediator.onKey(mView, KeyEvent.KEYCODE_9, mKeyEvent));
-        verify(mAutocompleteCoordinator).handleKeyEvent(KeyEvent.KEYCODE_9, mKeyEvent);
+
+        mMediator.completeUrlFocusAnimationAndEnableSuggestions();
+
         verify(mUrlCoordinator, times(2)).onUrlFocusChange(true);
     }
 
@@ -816,7 +809,7 @@ public class LocationBarMediatorTest {
     public void testUpdateColors_incognito() {
         final int primaryColor = ChromeColors.getDefaultThemeColor(mContext, true);
         doReturn(primaryColor).when(mLocationBarDataProvider).getPrimaryColor();
-        doReturn(true).when(mLocationBarDataProvider).isIncognito();
+        doReturn(true).when(mLocationBarDataProvider).isIncognitoBranded();
 
         mMediator.updateBrandedColorScheme();
 

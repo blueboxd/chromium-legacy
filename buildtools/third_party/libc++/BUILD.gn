@@ -61,6 +61,13 @@ target(_libcxx_target_type, "libc++") {
     visibility +=
         [ "//remoting/host/linux:remoting_me2me_host_copy_user_session" ]
   }
+  if (build_with_chromium && is_win && is_component_build) {
+    # PartitionAlloc uses no_default_deps=true when is_win && is_component_build
+    # but it depends on libc++. So need to add an explicit dependency on
+    # libc++.
+    visibility +=
+        [ "//base/allocator/partition_allocator/src/partition_alloc:*" ]
+  }
   if (libcxx_is_shared) {
     no_default_deps = true
   }
@@ -168,6 +175,9 @@ target(_libcxx_target_type, "libc++") {
     "//build/config/compiler:no_rtti",
     "//build/config/coverage:default_coverage",
   ]
+  if (use_libcxx_modules) {
+    configs -= [ "//build/config/compiler:libcxx_module" ]
+  }
   if ((is_android || is_apple) && libcxx_is_shared) {
     # Use libc++_chrome to avoid conflicting with system libc++
     output_name = "libc++_chrome"

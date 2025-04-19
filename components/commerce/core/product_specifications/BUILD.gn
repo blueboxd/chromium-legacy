@@ -12,6 +12,9 @@ source_set("product_specifications") {
     "product_specifications_sync_bridge.h",
   ]
   deps = [
+    "//base",
+    "//components/commerce/core:commerce_types",
+    "//components/commerce/core:feature_list",
     "//components/keyed_service/core",
     "//components/sync",
     "//components/sync/model",
@@ -29,6 +32,7 @@ source_set("unit_tests") {
     ":product_specifications",
     "//base/test:test_support",
     "//components/commerce/core:commerce_types",
+    "//components/commerce/core:feature_list",
     "//components/sync:test_support",
   ]
 }

@@ -5,8 +5,11 @@
 #ifndef COMPONENTS_OPTIMIZATION_GUIDE_CORE_MODEL_QUALITY_FEATURE_TYPE_MAP_H_
 #define COMPONENTS_OPTIMIZATION_GUIDE_CORE_MODEL_QUALITY_FEATURE_TYPE_MAP_H_
 
+#include <string_view>
+
 #include "components/optimization_guide/proto/features/compose.pb.h"
 #include "components/optimization_guide/proto/features/default.pb.h"
+#include "components/optimization_guide/proto/features/history_answer.pb.h"
 #include "components/optimization_guide/proto/features/history_query.pb.h"
 #include "components/optimization_guide/proto/features/tab_organization.pb.h"
 #include "components/optimization_guide/proto/features/wallpaper_search.pb.h"
@@ -83,6 +86,32 @@ class HistoryQueryFeatureTypeMap {
   }
 
   static std::string_view ToString() { return "HistoryQuery"; }
+};
+
+class HistoryAnswerFeatureTypeMap {
+ public:
+  using LoggingData = proto::HistoryAnswerLoggingData;
+  using Request = proto::HistoryAnswerRequest;
+  using Response = proto::HistoryAnswerResponse;
+  using Quality = proto::HistoryAnswerQuality;
+
+  static LoggingData* GetLoggingData(proto::LogAiDataRequest& ai_data_request) {
+    return ai_data_request.mutable_history_answer();
+  }
+
+  static std::string_view ToString() { return "HistoryAnswer"; }
+};
+
+class ProductSpecificationsFeatureTypeMap {
+ public:
+  using LoggingData = proto::ProductSpecificationsLoggingData;
+  using Quality = proto::ProductSpecificationsQuality;
+
+  static LoggingData* GetLoggingData(proto::LogAiDataRequest& ai_data_request) {
+    return ai_data_request.mutable_product_specifications();
+  }
+
+  static std::string_view ToString() { return "ProductSpecifications"; }
 };
 
 }  // namespace optimization_guide

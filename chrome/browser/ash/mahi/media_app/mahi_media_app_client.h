@@ -39,6 +39,7 @@ class MahiMediaAppClient : public media_app_ui::mojom::MahiUntrustedPageHandler,
 
   // media_app_ui::mojom::MahiUntrustedPageHandler:
   void OnPdfLoaded() override;
+  void OnPdfFileNameUpdated(const std::string& new_name) override;
   void OnPdfContextMenuShow(const ::gfx::RectF& anchor) override;
   void OnPdfContextMenuHide() override;
 
@@ -66,7 +67,7 @@ class MahiMediaAppClient : public media_app_ui::mojom::MahiUntrustedPageHandler,
   void OnWindowDestroying(aura::Window* window) override;
 
   const std::string& file_name() const { return file_name_; }
-  const aura::Window* media_app_window() const { return media_app_window_; }
+  aura::Window* media_app_window() const { return media_app_window_; }
 
  private:
   // Unique id associated with this client. It is used by the

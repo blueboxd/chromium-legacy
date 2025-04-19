@@ -574,6 +574,8 @@ void CollectAncestorRoles(
       // a list as of 10.12.6, so following WebKit and using table role:
       // crbug.com/753925
       return NSAccessibilityTableRole;
+    case ax::mojom::Role::kGridCell:
+      return @"AXCell";
     case ax::mojom::Role::kHeading:
       return @"AXHeading";
     case ax::mojom::Role::kImage:
@@ -618,8 +620,6 @@ void CollectAncestorRoles(
       return NSAccessibilityButtonRole;
     case ax::mojom::Role::kPopUpButton:
       return NSAccessibilityPopUpButtonRole;
-    case ax::mojom::Role::kPortal:
-      return NSAccessibilityButtonRole;
     case ax::mojom::Role::kProgressIndicator:
       return NSAccessibilityProgressIndicatorRole;
     case ax::mojom::Role::kRadioButton:
@@ -684,6 +684,7 @@ void CollectAncestorRoles(
     case ax::mojom::Role::kDescriptionListDetailDeprecated:
     case ax::mojom::Role::kDirectoryDeprecated:
     case ax::mojom::Role::kPreDeprecated:
+    case ax::mojom::Role::kPortalDeprecated:
       NOTREACHED_NORETURN();
   }
 }
@@ -2640,23 +2641,21 @@ void CollectAncestorRoles(
 //
 
 - (NSArray*)accessibilityCustomContent {
-  if (![self instanceActive])
+  if (![self instanceActive]) {
     return nil;
-
-  if (@available(macOS 11.0, *)) {
-    NSString* description = [self descriptionIfFromAriaDescription];
-    if ([description length]) {
-      AXCustomContent* contentItem =
-          [AXCustomContent customContentWithLabel:@"description"
-                                            value:description];
-      // A custom content importance of high causes it to be spoken
-      // automatically, rather than "More content available".
-      [contentItem setImportance:AXCustomContentImportanceHigh];
-      return @[ contentItem ];
-    }
   }
 
-  return nil;
+  NSString* description = [self descriptionIfFromAriaDescription];
+  if (!description.length) {
+    return nil;
+  }
+
+  AXCustomContent* contentItem =
+      [AXCustomContent customContentWithLabel:@"description" value:description];
+  // A custom content importance of high causes it to be spoken
+  // automatically, rather than "More content available".
+  contentItem.importance = AXCustomContentImportanceHigh;
+  return @[ contentItem ];
 }
 
 // MathML attributes.

@@ -46,7 +46,8 @@ FakeSystemIdentityManager::FakeSystemIdentityManager()
 
 FakeSystemIdentityManager::FakeSystemIdentityManager(
     NSArray<id<SystemIdentity>>* identities)
-    : storage_([[FakeSystemIdentityManagerStorage alloc] init]) {
+    : storage_([[FakeSystemIdentityManagerStorage alloc] init]),
+      gaia_ids_removed_by_user_([NSMutableSet set]) {
   DCHECK(!gFakeSystemIdentityManager);
   gFakeSystemIdentityManager = this;
 
@@ -70,6 +71,8 @@ FakeSystemIdentityManager* FakeSystemIdentityManager::FromSystemIdentityManager(
 
 void FakeSystemIdentityManager::AddIdentity(id<SystemIdentity> identity) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(![storage_ containsIdentity:identity]);
+  [gaia_ids_removed_by_user_ removeObject:identity.gaiaID];
   [storage_ addIdentity:identity];
   FireIdentityListChanged(/*notify_user*/ false);
 
@@ -77,7 +80,8 @@ void FakeSystemIdentityManager::AddIdentity(id<SystemIdentity> identity) {
   // opt-in screen for testing.
   // TODO(b/327221052): verify if this should be replaced by a handler for
   // default capabilities.
-  AccountCapabilitiesTestMutator* mutator = GetCapabilitiesMutator(identity);
+  AccountCapabilitiesTestMutator* mutator =
+      GetPendingCapabilitiesMutator(identity);
   mutator->set_can_show_history_sync_opt_ins_without_minor_mode_restrictions(
       true);
 }
@@ -85,25 +89,27 @@ void FakeSystemIdentityManager::AddIdentity(id<SystemIdentity> identity) {
 void FakeSystemIdentityManager::AddIdentityWithUnknownCapabilities(
     id<SystemIdentity> identity) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(![storage_ containsIdentity:identity]);
+  [gaia_ids_removed_by_user_ removeObject:identity.gaiaID];
   [storage_ addIdentity:identity];
   FireIdentityListChanged(/*notify_user*/ false);
 }
 
-void FakeSystemIdentityManager::AddIdentities(NSArray<NSString*>* names) {
+void FakeSystemIdentityManager::AddIdentityWithCapabilities(
+    id<SystemIdentity> identity,
+    NSDictionary<NSString*, NSNumber*>* capabilities) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (NSString* name in names) {
-    [storage_ addIdentity:[FakeSystemIdentity identityWithName:name
-                                                        domain:@"gmail.com"]];
+  DCHECK(![storage_ containsIdentity:identity]);
+  [gaia_ids_removed_by_user_ removeObject:identity.gaiaID];
+  [storage_ addIdentity:identity];
+  AccountCapabilitiesTestMutator* mutator =
+      GetPendingCapabilitiesMutator(identity);
+  for (NSString* name in capabilities) {
+    std::string stdString = base::SysNSStringToUTF8(name);
+    bool value = capabilities[name].boolValue;
+    mutator->SetCapability(stdString, value);
   }
-}
-
-void FakeSystemIdentityManager::AddManagedIdentities(
-    NSArray<NSString*>* names) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (NSString* name in names) {
-    [storage_ addIdentity:[FakeSystemIdentity identityWithName:name
-                                                        domain:@"google.com"]];
-  }
+  FireIdentityListChanged(/*notify_user*/ false);
 }
 
 void FakeSystemIdentityManager::ForgetIdentityFromOtherApplication(
@@ -112,15 +118,25 @@ void FakeSystemIdentityManager::ForgetIdentityFromOtherApplication(
   if (![storage_ containsIdentity:identity])
     return;
 
-  ForgetIdentityAsync(identity, base::DoNothing(), /*notify_user*/ true);
+  ForgetIdentityAsync(identity, base::DoNothing(), /*notify_user=*/true,
+                      /*removed_by_user=*/false);
 }
 
 AccountCapabilitiesTestMutator*
-FakeSystemIdentityManager::GetCapabilitiesMutator(id<SystemIdentity> identity) {
+FakeSystemIdentityManager::GetPendingCapabilitiesMutator(
+    id<SystemIdentity> identity) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK([storage_ containsIdentity:identity]);
   FakeSystemIdentityDetails* details = [storage_ detailsForIdentity:identity];
-  return details.capabilitiesMutator;
+  return details.pendingCapabilitiesMutator;
+}
+
+AccountCapabilities FakeSystemIdentityManager::GetVisibleCapabilities(
+    id<SystemIdentity> identity) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK([storage_ containsIdentity:identity]);
+  FakeSystemIdentityDetails* details = [storage_ detailsForIdentity:identity];
+  return details.visibleCapabilities;
 }
 
 void FakeSystemIdentityManager::FireSystemIdentityReloaded() {
@@ -143,6 +159,10 @@ void FakeSystemIdentityManager::WaitForServiceCallbacksToComplete() {
     resume_closure_ = run_loop.QuitClosure();
     run_loop.Run();
   }
+}
+
+bool FakeSystemIdentityManager::ContainsIdentity(id<SystemIdentity> identity) {
+  return [storage_ containsIdentity:identity];
 }
 
 id<RefreshAccessTokenError>
@@ -184,22 +204,21 @@ void FakeSystemIdentityManager::DismissDialogs() {
 FakeSystemIdentityManager::DismissViewCallback
 FakeSystemIdentityManager::PresentAccountDetailsController(
     PresentDialogConfiguration configuration) {
-  UIViewController* account_details_view_controller =
-      [[FakeAccountDetailsViewController alloc]
-          initWithIdentity:configuration.identity];
-  [configuration.view_controller
-      presentViewController:account_details_view_controller
-                   animated:configuration.animated
-                 completion:nil];
   ProceduralBlock dismissalCompletion = nil;
   if (configuration.dismissal_completion) {
     dismissalCompletion =
         base::CallbackToBlock(std::move(configuration.dismissal_completion));
   }
+  FakeAccountDetailsViewController* account_details_view_controller =
+      [[FakeAccountDetailsViewController alloc]
+             initWithIdentity:configuration.identity
+          dismissalCompletion:dismissalCompletion];
+  [configuration.view_controller
+      presentViewController:account_details_view_controller
+                   animated:configuration.animated
+                 completion:nil];
   return base::BindOnce(^(BOOL dismiss_animated) {
-    [account_details_view_controller
-        dismissViewControllerAnimated:dismiss_animated
-                           completion:dismissalCompletion];
+    [account_details_view_controller dismissAnimated:dismiss_animated];
   });
 }
 
@@ -237,12 +256,17 @@ void FakeSystemIdentityManager::ForgetIdentity(
     id<SystemIdentity> identity,
     ForgetIdentityCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK([storage_ containsIdentity:identity]);
   // Forgetting an identity is an asynchronous operation (as it requires some
   // network calls).
   PostClosure(FROM_HERE,
               base::BindOnce(&FakeSystemIdentityManager::ForgetIdentityAsync,
                              GetWeakPtr(), identity, std::move(callback),
-                             /*notify_user*/ false));
+                             /*notify_user=*/false, /*removed_by_user=*/true));
+}
+
+bool FakeSystemIdentityManager::IdentityRemovedByUser(NSString* gaia_id) {
+  return [gaia_ids_removed_by_user_ containsObject:gaia_id];
 }
 
 void FakeSystemIdentityManager::GetAccessToken(
@@ -259,6 +283,7 @@ void FakeSystemIdentityManager::GetAccessToken(
     const std::set<std::string>& scopes,
     AccessTokenCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK([storage_ containsIdentity:identity]);
   // Fetching the access token is an asynchronous operation (as it requires
   // some network calls).
   PostClosure(FROM_HERE,
@@ -271,6 +296,7 @@ void FakeSystemIdentityManager::FetchAvatarForIdentity(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Fetching the avatar is an asynchronous operation (as it requires some
   // network calls).
+  DCHECK([storage_ containsIdentity:identity]);
   PostClosure(
       FROM_HERE,
       base::BindOnce(&FakeSystemIdentityManager::FetchAvatarForIdentityAsync,
@@ -288,6 +314,7 @@ UIImage* FakeSystemIdentityManager::GetCachedAvatarForIdentity(
 void FakeSystemIdentityManager::GetHostedDomain(id<SystemIdentity> identity,
                                                 HostedDomainCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK([storage_ containsIdentity:identity]);
   // Fetching the hosted domain is an asynchronous operation (as it requires
   // some network calls).
   PostClosure(FROM_HERE,
@@ -307,6 +334,7 @@ void FakeSystemIdentityManager::FetchCapabilities(
     const std::set<std::string>& names,
     FetchCapabilitiesCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK([storage_ containsIdentity:identity]);
   // Fetching the hosted domain is an asynchronous operation (as it requires
   // some network calls).
   PostClosure(
@@ -349,9 +377,17 @@ FakeSystemIdentityManager::GetWeakPtr() {
 void FakeSystemIdentityManager::ForgetIdentityAsync(
     id<SystemIdentity> identity,
     ForgetIdentityCallback callback,
-    bool notify_user) {
+    bool notify_user,
+    bool removed_by_user) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK([storage_ containsIdentity:identity]);
+  if (![storage_ containsIdentity:identity]) {
+    // The identity was removed before async method was called. There is
+    // nothing to do.
+    return;
+  }
+  if (removed_by_user) {
+    [gaia_ids_removed_by_user_ addObject:identity.gaiaID];
+  }
   [storage_ removeIdentity:identity];
 
   FireIdentityListChanged(notify_user);
@@ -363,7 +399,11 @@ void FakeSystemIdentityManager::GetAccessTokenAsync(
     id<SystemIdentity> identity,
     AccessTokenCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK([storage_ containsIdentity:identity]);
+  if (![storage_ containsIdentity:identity]) {
+    // The identity was removed before async method was called. There is
+    // nothing to do.
+    return;
+  }
   FakeSystemIdentityDetails* details = [storage_ detailsForIdentity:identity];
   if (details.error) {
     NSError* error = [NSError errorWithDomain:@"com.google.HTTPStatus"
@@ -382,7 +422,11 @@ void FakeSystemIdentityManager::GetAccessTokenAsync(
 void FakeSystemIdentityManager::FetchAvatarForIdentityAsync(
     id<SystemIdentity> identity) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK([storage_ containsIdentity:identity]);
+  if (![storage_ containsIdentity:identity]) {
+    // The identity was removed before async method was called. There is
+    // nothing to do.
+    return;
+  }
   FakeSystemIdentityDetails* details = [storage_ detailsForIdentity:identity];
   if (!details.cachedAvatar) {
     details.cachedAvatar = ios::provider::GetSigninDefaultAvatar();
@@ -395,6 +439,11 @@ void FakeSystemIdentityManager::GetHostedDomainAsync(
     id<SystemIdentity> identity,
     HostedDomainCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (![storage_ containsIdentity:identity]) {
+    // The identity was removed before async method was called. There is
+    // nothing to do.
+    return;
+  }
   std::move(callback).Run(FakeGetHostedDomainForIdentity(identity), nil);
 }
 
@@ -403,9 +452,18 @@ void FakeSystemIdentityManager::FetchCapabilitiesAsync(
     const std::set<std::string>& names,
     FetchCapabilitiesCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK([storage_ containsIdentity:identity]);
+  if (![storage_ containsIdentity:identity]) {
+    // The identity was removed before async method was called. There is
+    // nothing to do.
+    return;
+  }
   FakeSystemIdentityDetails* details = [storage_ detailsForIdentity:identity];
-  const FakeSystemIdentityCapabilitiesMap& capabilities = details.capabilities;
+
+  // Simulates the action to refresh the internal capability state with
+  // the pending changes fetched from the server.
+  [details updateVisibleCapabilities];
+  const FakeSystemIdentityCapabilitiesMap& capabilities =
+      details.visibleCapabilities;
 
   std::map<std::string, CapabilityResult> result;
   for (const std::string& name : names) {

@@ -10,6 +10,7 @@
 #include <optional>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -28,9 +29,9 @@
 namespace tab_groups {
 namespace {
 
-void RecordGroupDeletedMetric(const SavedTabGroup* removed_group) {
+void RecordGroupDeletedMetric(const SavedTabGroup& removed_group) {
   const base::TimeDelta duration_saved =
-      base::Time::Now() - removed_group->creation_time_windows_epoch_micros();
+      base::Time::Now() - removed_group.creation_time_windows_epoch_micros();
 
   base::UmaHistogramCounts1M("TabGroups.SavedTabGroupLifespan",
                              duration_saved.InMinutes());
@@ -69,6 +70,28 @@ bool ShouldPlaceBefore(const SavedTabGroup& group1,
 
 SavedTabGroupModel::SavedTabGroupModel() = default;
 SavedTabGroupModel::~SavedTabGroupModel() = default;
+
+std::vector<const SavedTabGroup*> SavedTabGroupModel::GetSavedTabGroupsOnly()
+    const {
+  std::vector<const SavedTabGroup*> saved_tab_groups;
+  for (const SavedTabGroup& group : saved_tab_groups_) {
+    if (!group.is_shared_tab_group()) {
+      saved_tab_groups.push_back(&group);
+    }
+  }
+  return saved_tab_groups;
+}
+
+std::vector<const SavedTabGroup*> SavedTabGroupModel::GetSharedTabGroupsOnly()
+    const {
+  std::vector<const SavedTabGroup*> shared_tab_groups;
+  for (const SavedTabGroup& group : saved_tab_groups_) {
+    if (group.is_shared_tab_group()) {
+      shared_tab_groups.push_back(&group);
+    }
+  }
+  return shared_tab_groups;
+}
 
 std::optional<int> SavedTabGroupModel::GetIndexOf(
     LocalTabGroupID tab_group_id) const {
@@ -141,15 +164,14 @@ void SavedTabGroupModel::Remove(const LocalTabGroupID tab_group_id) {
     return;
 
   const int index = GetIndexOf(tab_group_id).value();
-  base::Uuid removed_guid = Get(tab_group_id)->saved_guid();
-  std::unique_ptr<SavedTabGroup> removed_group = RemoveImpl(index);
+  SavedTabGroup removed_group = RemoveImpl(index);
 
   UpdateGroupPositionsImpl();
   for (auto& observer : observers_) {
-    observer.SavedTabGroupRemovedLocally(removed_group.get());
+    observer.SavedTabGroupRemovedLocally(removed_group);
   }
 
-  RecordGroupDeletedMetric(removed_group.get());
+  RecordGroupDeletedMetric(removed_group);
 }
 
 void SavedTabGroupModel::Remove(const base::Uuid& id) {
@@ -157,15 +179,14 @@ void SavedTabGroupModel::Remove(const base::Uuid& id) {
     return;
 
   const int index = GetIndexOf(id).value();
-  base::Uuid removed_guid = Get(id)->saved_guid();
-  std::unique_ptr<SavedTabGroup> removed_group = RemoveImpl(index);
+  SavedTabGroup removed_group = RemoveImpl(index);
 
   UpdateGroupPositionsImpl();
   for (auto& observer : observers_) {
-    observer.SavedTabGroupRemovedLocally(removed_group.get());
+    observer.SavedTabGroupRemovedLocally(removed_group);
   }
 
-  RecordGroupDeletedMetric(removed_group.get());
+  RecordGroupDeletedMetric(removed_group);
 }
 
 void SavedTabGroupModel::UpdateVisualData(
@@ -178,20 +199,22 @@ void SavedTabGroupModel::UpdateVisualData(
   UpdateVisualDataImpl(index.value(), visual_data);
   base::Uuid updated_guid = Get(tab_group_id)->saved_guid();
   for (auto& observer : observers_) {
-    observer.SavedTabGroupUpdatedLocally(updated_guid);
+    observer.SavedTabGroupUpdatedLocally(updated_guid,
+                                         /*tab_guid=*/std::nullopt);
   }
 }
 
-void SavedTabGroupModel::UpdateVisualData(
-    const base::Uuid& id,
-    const tab_groups::TabGroupVisualData* visual_data) {
-  if (!Contains(id))
-    return;
+void SavedTabGroupModel::MakeTabGroupShared(
+    const LocalTabGroupID& local_group_id,
+    std::string collaboration_id) {
+  SavedTabGroup* group = GetMutableGroup(local_group_id);
+  CHECK(group);
+  CHECK(!group->is_shared_tab_group());
 
-  const std::optional<int> index = GetIndexOf(id);
-  UpdateVisualDataImpl(index.value(), visual_data);
-  for (auto& observer : observers_) {
-    observer.SavedTabGroupUpdatedLocally(id);
+  group->SetCollaborationId(std::move(collaboration_id));
+
+  for (SavedTabGroupModelObserver& observer : observers_) {
+    observer.SavedTabGroupSharedStateUpdatedLocally(group->saved_guid());
   }
 }
 
@@ -212,10 +235,9 @@ void SavedTabGroupModel::RemovedFromSync(const LocalTabGroupID tab_group_id) {
     return;
 
   const std::optional<int> index = GetIndexOf(tab_group_id);
-  base::Uuid removed_guid = Get(tab_group_id)->saved_guid();
-  std::unique_ptr<SavedTabGroup> removed_group = RemoveImpl(index.value());
+  SavedTabGroup removed_group = RemoveImpl(index.value());
   for (auto& observer : observers_) {
-    observer.SavedTabGroupRemovedFromSync(removed_group.get());
+    observer.SavedTabGroupRemovedFromSync(removed_group);
   }
 }
 
@@ -224,10 +246,9 @@ void SavedTabGroupModel::RemovedFromSync(const base::Uuid& id) {
     return;
 
   const std::optional<int> index = GetIndexOf(id);
-  base::Uuid removed_guid = Get(id)->saved_guid();
-  std::unique_ptr<SavedTabGroup> removed_group = RemoveImpl(index.value());
+  SavedTabGroup removed_group = RemoveImpl(index.value());
   for (auto& observer : observers_) {
-    observer.SavedTabGroupRemovedFromSync(removed_group.get());
+    observer.SavedTabGroupRemovedFromSync(removed_group);
   }
 }
 
@@ -241,7 +262,8 @@ void SavedTabGroupModel::UpdatedVisualDataFromSync(
   UpdateVisualDataImpl(index.value(), visual_data);
   base::Uuid updated_guid = Get(tab_group_id)->saved_guid();
   for (auto& observer : observers_) {
-    observer.SavedTabGroupUpdatedFromSync(updated_guid);
+    observer.SavedTabGroupUpdatedFromSync(updated_guid,
+                                          /*tab_guid=*/std::nullopt);
   }
 }
 
@@ -254,12 +276,12 @@ void SavedTabGroupModel::UpdatedVisualDataFromSync(
   const std::optional<int> index = GetIndexOf(id);
   UpdateVisualDataImpl(index.value(), visual_data);
   for (auto& observer : observers_) {
-    observer.SavedTabGroupUpdatedFromSync(id);
+    observer.SavedTabGroupUpdatedFromSync(id, /*tab_guid=*/std::nullopt);
   }
 }
 
-SavedTabGroup* SavedTabGroupModel::GetGroupContainingTab(
-    const base::Uuid& saved_tab_guid) {
+const SavedTabGroup* SavedTabGroupModel::GetGroupContainingTab(
+    const base::Uuid& saved_tab_guid) const {
   for (auto& saved_group : saved_tab_groups_) {
     if (saved_group.ContainsTab(saved_tab_guid))
       return &saved_group;
@@ -268,8 +290,8 @@ SavedTabGroup* SavedTabGroupModel::GetGroupContainingTab(
   return nullptr;
 }
 
-SavedTabGroup* SavedTabGroupModel::GetGroupContainingTab(
-    const LocalTabID& local_tab_id) {
+const SavedTabGroup* SavedTabGroupModel::GetGroupContainingTab(
+    const LocalTabID& local_tab_id) const {
   for (auto& saved_group : saved_tab_groups_) {
     if (saved_group.ContainsTab(local_tab_id))
       return &saved_group;
@@ -319,21 +341,20 @@ void SavedTabGroupModel::AddTabToGroupFromSync(const base::Uuid& group_id,
 
 void SavedTabGroupModel::UpdateTabInGroup(const base::Uuid& group_id,
                                           SavedTabGroupTab tab) {
-  std::optional<int> group_index = GetIndexOf(group_id);
-  CHECK(group_index.has_value());
+  SavedTabGroup* group = GetMutableGroup(group_id);
+  CHECK(group);
 
-  const SavedTabGroupTab* const old_tab =
-      saved_tab_groups_[group_index.value()].GetTab(tab.saved_tab_guid());
-
-  if (old_tab->url() != tab.url()) {
+  if (group->GetTab(tab.saved_tab_guid())->url() != tab.url()) {
     base::RecordAction(
         base::UserMetricsAction("TabGroups_SavedTabGroups_TabNavigated"));
   }
 
-  saved_tab_groups_[group_index.value()].UpdateTab(tab);
+  // Make a copy before moving the `tab`.
+  const base::Uuid tab_guid_copy = tab.saved_tab_guid();
+  group->UpdateTab(std::move(tab));
 
   for (auto& observer : observers_) {
-    observer.SavedTabGroupUpdatedLocally(group_id, tab.saved_tab_guid());
+    observer.SavedTabGroupUpdatedLocally(group_id, tab_guid_copy);
   }
 }
 
@@ -353,7 +374,7 @@ void SavedTabGroupModel::RemoveTabFromGroupLocally(const base::Uuid& group_id,
   }
 
   std::optional<int> index = GetIndexOf(group_id);
-  SavedTabGroup group = saved_tab_groups_[index.value()];
+  const SavedTabGroup& group = saved_tab_groups_[index.value()];
 
   if (!group.ContainsTab(tab_id)) {
     return;
@@ -387,7 +408,7 @@ void SavedTabGroupModel::RemoveTabFromGroupFromSync(const base::Uuid& group_id,
   }
 
   std::optional<int> index = GetIndexOf(group_id);
-  SavedTabGroup group = saved_tab_groups_[index.value()];
+  const SavedTabGroup& group = saved_tab_groups_[index.value()];
 
   if (!group.ContainsTab(tab_id)) {
     return;
@@ -427,11 +448,52 @@ void SavedTabGroupModel::MoveTabInGroupTo(const base::Uuid& group_id,
   }
 }
 
+void SavedTabGroupModel::UpdateLastUserInteractionTimeLocally(
+    const LocalTabGroupID& local_group_id) {
+  SavedTabGroup* group = GetMutableGroup(local_group_id);
+  CHECK(group);
+
+  group->SetLastUserInteractionTime(base::Time::Now());
+
+  if (!base::FeatureList::IsEnabled(
+          kSavedTabGroupNotifyOnInteractionTimeChanged)) {
+    return;
+  }
+
+  for (SavedTabGroupModelObserver& observer : observers_) {
+    observer.SavedTabGroupLastUserInteractionTimeUpdated(group->saved_guid());
+  }
+}
+
+void SavedTabGroupModel::UpdateLastUpdaterCacheGuidForGroup(
+    const std::optional<std::string>& cache_guid,
+    const LocalTabGroupID& group_id,
+    const std::optional<LocalTabID>& tab_id) {
+  const std::optional<int> index = GetIndexOf(group_id);
+  if (!index.has_value()) {
+    return;
+  }
+
+  SavedTabGroup& group = saved_tab_groups_[index.value()];
+  group.SetLastUpdaterCacheGuid(cache_guid);
+
+  if (!tab_id.has_value()) {
+    return;
+  }
+
+  auto* tab = group.GetTab(tab_id.value());
+  if (tab) {
+    tab->SetLastUpdaterCacheGuid(cache_guid);
+  }
+}
+
 const SavedTabGroup* SavedTabGroupModel::MergeRemoteGroupMetadata(
     const base::Uuid& guid,
     const std::u16string& title,
     TabGroupColorId color,
     std::optional<size_t> position,
+    std::optional<std::string> creator_cache_guid,
+    std::optional<std::string> last_updater_cache_guid,
     base::Time update_time) {
   CHECK(Contains(guid));
 
@@ -443,8 +505,9 @@ const SavedTabGroup* SavedTabGroupModel::MergeRemoteGroupMetadata(
                                            : std::nullopt;
 
   // Merge group and get `preferred_pinned_index`.
-  saved_tab_groups_[index].MergeRemoteGroupMetadata(title, color, position,
-                                                    update_time);
+  saved_tab_groups_[index].MergeRemoteGroupMetadata(
+      title, color, position, creator_cache_guid, last_updater_cache_guid,
+      update_time);
   std::optional<size_t> preferred_pinned_index =
       saved_tab_groups_[index].position();
 
@@ -467,7 +530,7 @@ const SavedTabGroup* SavedTabGroupModel::MergeRemoteGroupMetadata(
   }
 
   for (SavedTabGroupModelObserver& observer : observers_) {
-    observer.SavedTabGroupUpdatedFromSync(guid);
+    observer.SavedTabGroupUpdatedFromSync(guid, /*tab_guid=*/std::nullopt);
   }
 
   // Note that `index` can't be used anymore because groups could be re-ordered.
@@ -478,7 +541,7 @@ const SavedTabGroupTab* SavedTabGroupModel::MergeRemoteTab(
     const SavedTabGroupTab& remote_tab) {
   const base::Uuid& group_guid = remote_tab.saved_group_guid();
   const base::Uuid& tab_guid = remote_tab.saved_tab_guid();
-  SavedTabGroup* const group = GetGroupContainingTab(tab_guid);
+  SavedTabGroup* const group = MutableGroupContainingTab(tab_guid);
   CHECK(group);
   // TODO(crbug.com/319521964): check whether group has the same group GUID.
 
@@ -520,13 +583,45 @@ void SavedTabGroupModel::ReorderGroupFromSync(const base::Uuid& id,
   }
 }
 
+std::pair<std::set<base::Uuid>, std::set<base::Uuid>>
+SavedTabGroupModel::UpdateLocalCacheGuid(
+    std::optional<std::string> old_cache_guid,
+    std::optional<std::string> new_cache_guid) {
+  std::set<base::Uuid> updated_group_ids;
+  std::set<base::Uuid> updated_tab_ids;
+  // Update the group cache guids.
+  for (auto& saved_group : saved_tab_groups_) {
+    if (saved_group.creator_cache_guid() != old_cache_guid) {
+      continue;
+    }
+
+    saved_group.SetCreatorCacheGuid(new_cache_guid);
+    updated_group_ids.insert(saved_group.saved_guid());
+  }
+
+  for (auto& saved_group : saved_tab_groups_) {
+    // Update the tabs in the group with the new cache guid.
+    for (auto& saved_tab : saved_group.saved_tabs()) {
+      if (saved_tab.creator_cache_guid() != old_cache_guid) {
+        continue;
+      }
+
+      saved_tab.SetCreatorCacheGuid(new_cache_guid);
+      updated_tab_ids.insert(saved_tab.saved_tab_guid());
+    }
+  }
+
+  return std::make_pair(std::move(updated_group_ids),
+                        std::move(updated_tab_ids));
+}
+
 void SavedTabGroupModel::LoadStoredEntries(std::vector<SavedTabGroup> groups,
                                            std::vector<SavedTabGroupTab> tabs) {
   // `entries` is not ordered such that groups are guaranteed to be
   // at the front of the vector. As such, we can run into the case where we
   // try to add a tab to a group that does not exist for us yet.
   for (SavedTabGroup& group : groups) {
-    Add(group);
+    Add(std::move(group));
   }
   UpdateGroupPositionsImpl();
 
@@ -538,6 +633,7 @@ void SavedTabGroupModel::LoadStoredEntries(std::vector<SavedTabGroup> groups,
   }
 
   is_loaded_ = true;
+
   for (auto& observer : observers_) {
     observer.SavedTabGroupModelLoaded();
   }
@@ -596,20 +692,35 @@ void SavedTabGroupModel::MigrateTabGroupSavesUIUpdate() {
        i < std::min(saved_tab_groups_.size(), kMaxNumberOfGroupToPin); ++i) {
     saved_tab_groups_[i].SetPosition(i);
     for (auto& observer : observers_) {
-      observer.SavedTabGroupUpdatedLocally(saved_tab_groups_[i].saved_guid());
+      observer.SavedTabGroupUpdatedLocally(saved_tab_groups_[i].saved_guid(),
+                                           /*tab_guid=*/std::nullopt);
     }
   }
 }
 
+SavedTabGroup* SavedTabGroupModel::MutableGroupContainingTab(
+    const base::Uuid& saved_tab_guid) {
+  return const_cast<SavedTabGroup*>(GetGroupContainingTab(saved_tab_guid));
+}
+
+SavedTabGroup* SavedTabGroupModel::GetMutableGroup(
+    const LocalTabGroupID& local_group_id) {
+  return const_cast<SavedTabGroup*>(Get(local_group_id));
+}
+
+SavedTabGroup* SavedTabGroupModel::GetMutableGroup(const base::Uuid& id) {
+  return const_cast<SavedTabGroup*>(Get(id));
+}
+
 void SavedTabGroupModel::ReorderGroupImpl(const base::Uuid& id, int new_index) {
-  DCHECK_GE(new_index, 0);
-  DCHECK_LT(new_index, Count());
+  CHECK_GE(new_index, 0);
+  CHECK_LT(new_index, Count());
 
   std::optional<int> index = GetIndexOf(id);
   CHECK(index.has_value());
   CHECK_GE(index.value(), 0);
 
-  SavedTabGroup group = saved_tab_groups_[index.value()];
+  SavedTabGroup group = std::move(saved_tab_groups_[index.value()]);
 
   saved_tab_groups_.erase(saved_tab_groups_.begin() + index.value());
   saved_tab_groups_.emplace(saved_tab_groups_.begin() + new_index,
@@ -625,7 +736,7 @@ void SavedTabGroupModel::UpdateGroupPositionsImpl() {
   }
 }
 
-void SavedTabGroupModel::InsertGroupImpl(const SavedTabGroup& group) {
+void SavedTabGroupModel::InsertGroupImpl(SavedTabGroup group) {
   size_t index;
   for (index = 0; index < saved_tab_groups_.size(); ++index) {
     const SavedTabGroup& curr_group = saved_tab_groups_[index];
@@ -637,10 +748,9 @@ void SavedTabGroupModel::InsertGroupImpl(const SavedTabGroup& group) {
   saved_tab_groups_.insert(saved_tab_groups_.begin() + index, std::move(group));
 }
 
-std::unique_ptr<SavedTabGroup> SavedTabGroupModel::RemoveImpl(int index) {
-  CHECK_GE(index, 0);
-  std::unique_ptr<SavedTabGroup> removed_group =
-      std::make_unique<SavedTabGroup>(std::move(saved_tab_groups_[index]));
+SavedTabGroup SavedTabGroupModel::RemoveImpl(size_t index) {
+  CHECK_LT(index, saved_tab_groups_.size());
+  SavedTabGroup removed_group = std::move(saved_tab_groups_[index]);
   saved_tab_groups_.erase(saved_tab_groups_.begin() + index);
   return removed_group;
 }
@@ -663,12 +773,12 @@ void SavedTabGroupModel::TogglePinState(base::Uuid id) {
     return;
   }
   const int index = GetIndexOf(id).value();
-  std::unique_ptr<SavedTabGroup> saved_group = RemoveImpl(index);
-  bool was_pinned = saved_group->is_pinned();
-  saved_group->SetPinned(!saved_group->is_pinned());
-  InsertGroupImpl(*saved_group);
+  SavedTabGroup saved_group = RemoveImpl(index);
+  bool was_pinned = saved_group.is_pinned();
+  saved_group.SetPinned(!saved_group.is_pinned());
+  InsertGroupImpl(std::move(saved_group));
   for (auto& observer : observers_) {
-    observer.SavedTabGroupUpdatedLocally(id);
+    observer.SavedTabGroupUpdatedLocally(id, /*tab_guid=*/std::nullopt);
   }
 
   if (was_pinned) {

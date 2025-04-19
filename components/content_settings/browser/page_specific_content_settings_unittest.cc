@@ -27,8 +27,9 @@
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_access_result.h"
 #include "net/cookies/cookie_options.h"
-#include "net/extras/shared_dictionary/shared_dictionary_isolation_key.h"
+#include "net/shared_dictionary/shared_dictionary_isolation_key.h"
 #include "services/network/public/mojom/shared_dictionary_access_observer.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -159,8 +160,7 @@ TEST_F(PageSpecificContentSettingsTest, BlockedContent) {
                                  {content::CookieAccessDetails::Type::kChange,
                                   origin,
                                   origin,
-                                  {*cookie1},
-                                  1u,
+                                  {{*cookie1}},
                                   false});
   content_settings = PageSpecificContentSettings::GetForFrame(
       web_contents()->GetPrimaryMainFrame());
@@ -195,8 +195,7 @@ TEST_F(PageSpecificContentSettingsTest, BlockedContent) {
                                  {content::CookieAccessDetails::Type::kChange,
                                   origin,
                                   origin,
-                                  {*cookie1},
-                                  1u,
+                                  {{*cookie1}},
                                   false});
 
   // Block a cookie.
@@ -207,8 +206,7 @@ TEST_F(PageSpecificContentSettingsTest, BlockedContent) {
                                  {content::CookieAccessDetails::Type::kChange,
                                   origin,
                                   origin,
-                                  {*cookie2},
-                                  1u,
+                                  {{*cookie2}},
                                   true});
   EXPECT_TRUE(content_settings->IsContentBlocked(ContentSettingsType::COOKIES));
 
@@ -299,8 +297,7 @@ TEST_F(PageSpecificContentSettingsTest, AllowedContent) {
                                  {content::CookieAccessDetails::Type::kChange,
                                   origin,
                                   origin,
-                                  {*cookie1},
-                                  1u,
+                                  {{*cookie1}},
                                   false});
   ASSERT_TRUE(content_settings->IsContentAllowed(ContentSettingsType::COOKIES));
   ASSERT_FALSE(
@@ -314,8 +311,7 @@ TEST_F(PageSpecificContentSettingsTest, AllowedContent) {
                                  {content::CookieAccessDetails::Type::kChange,
                                   origin,
                                   origin,
-                                  {*cookie2},
-                                  1u,
+                                  {{*cookie2}},
                                   true});
   ASSERT_TRUE(content_settings->IsContentAllowed(ContentSettingsType::COOKIES));
   ASSERT_TRUE(content_settings->IsContentBlocked(ContentSettingsType::COOKIES));
@@ -328,8 +324,7 @@ TEST_F(PageSpecificContentSettingsTest, AllowlistJavaScript) {
 
   // PageSpecificContentSettingsDelegate::IsFrameAllowlistedForJavaScript() is
   // called once per navigation.
-  EXPECT_CALL(*mock_delegate, IsFrameAllowlistedForJavaScript(
-                                  web_contents()->GetPrimaryMainFrame()))
+  EXPECT_CALL(*mock_delegate, IsFrameAllowlistedForJavaScript(::testing::_))
       .Times(2)
       .WillOnce(testing::Return(false))
       .WillOnce(testing::Return(true));
@@ -436,7 +431,7 @@ TEST_F(PageSpecificContentSettingsTest, EmptyCookieList) {
   GetHandle()->OnCookiesAccessed(
       web_contents()->GetPrimaryMainFrame(),
       {content::CookieAccessDetails::Type::kRead, GURL("http://google.com"),
-       GURL("http://google.com"), net::CookieList(), 1u, true});
+       GURL("http://google.com"), net::CookieAccessResultList(), true});
   ASSERT_FALSE(
       content_settings->IsContentAllowed(ContentSettingsType::COOKIES));
   ASSERT_FALSE(
@@ -459,8 +454,7 @@ TEST_F(PageSpecificContentSettingsTest, BlockedThirdPartyCookie) {
       {content::CookieAccessDetails::Type::kRead,
        /*url=*/GURL("https://google.com"),
        /*first_party_url=*/GURL("https://google.com"),
-       {*cookie},
-       /*count=*/1u,
+       {{*cookie}},
        /*blocked_by_policy=*/true,
        /*is_ad_tagged=*/false,
        net::CookieSettingOverrides(),
@@ -481,8 +475,7 @@ TEST_F(PageSpecificContentSettingsTest, BlockedThirdPartyCookie) {
       {content::CookieAccessDetails::Type::kRead,
        /*url=*/GURL("https://google.com"),
        /*first_party_url=*/GURL("https://google.com"),
-       {*cookie},
-       /*count=*/1u,
+       {{*cookie}},
        /*blocked_by_policy=*/true,
        /*is_ad_tagged=*/false,
        net::CookieSettingOverrides(),
@@ -507,8 +500,7 @@ TEST_F(PageSpecificContentSettingsTest, BlockedThirdPartyCookie) {
       {content::CookieAccessDetails::Type::kRead,
        /*url=*/GURL("https://google.com"),
        /*first_party_url=*/GURL("https://example.com"),
-       {*third_party_cookie},
-       /*count=*/1u,
+       {{*third_party_cookie}},
        /*blocked_by_policy=*/true,
        /*is_ad_tagged=*/false,
        net::CookieSettingOverrides(),
@@ -538,22 +530,21 @@ TEST_F(PageSpecificContentSettingsTest, SiteDataObserver) {
                                  {content::CookieAccessDetails::Type::kChange,
                                   origin,
                                   origin,
-                                  {*cookie},
-                                  1u,
+                                  {{*cookie}},
                                   blocked_by_policy});
 
-  net::CookieList cookie_list;
+  net::CookieAccessResultList cookie_list;
   std::unique_ptr<net::CanonicalCookie> other_cookie(
       net::CanonicalCookie::CreateForTesting(GURL("http://google.com"),
                                              "CookieName=CookieValue",
                                              base::Time::Now()));
   ASSERT_TRUE(other_cookie);
 
-  cookie_list.push_back(*other_cookie);
+  cookie_list.emplace_back(*other_cookie);
   GetHandle()->OnCookiesAccessed(
       rfh,
       {content::CookieAccessDetails::Type::kRead, GURL("http://google.com"),
-       GURL("http://google.com"), cookie_list, 1u, blocked_by_policy});
+       GURL("http://google.com"), cookie_list, blocked_by_policy});
 
   auto google_storage_key = rfh->GetStorageKey();
   PageSpecificContentSettings::StorageAccessed(
@@ -814,15 +805,13 @@ TEST_F(PageSpecificContentSettingsTest, AllowedSitesCountedFromBothModels) {
                                  {content::CookieAccessDetails::Type::kRead,
                                   googleURL,
                                   googleURL,
-                                  {*cookie1},
-                                  1u,
+                                  {{*cookie1}},
                                   blocked_by_policy});
   GetHandle()->OnCookiesAccessed(web_contents()->GetPrimaryMainFrame(),
                                  {content::CookieAccessDetails::Type::kRead,
                                   exampleURL,
                                   exampleURL,
-                                  {*cookie2},
-                                  1u,
+                                  {{*cookie2}},
                                   blocked_by_policy});
 
   PageSpecificContentSettings* pscs = PageSpecificContentSettings::GetForFrame(
@@ -908,8 +897,7 @@ TEST_F(PageSpecificContentSettingsWithPrerenderTest, SiteDataAccessed) {
     pscs->OnCookiesAccessed({content::CookieAccessDetails::Type::kChange,
                              origin,
                              origin,
-                             {*cookie1},
-                             1u,
+                             {{*cookie1}},
                              false});
   }
   // Activate prerendering page.
@@ -949,8 +937,7 @@ TEST_F(PageSpecificContentSettingsWithPrerenderTest,
   pscs->OnCookiesAccessed({content::CookieAccessDetails::Type::kRead,
                            url,
                            url,
-                           {*cookie},
-                           1u,
+                           {{*cookie}},
                            /*blocked_by_policy=*/false});
   PageSpecificContentSettings::StorageAccessed(StorageType::INDEXED_DB,
                                                prerender_frame->GetGlobalId(),
@@ -1095,8 +1082,7 @@ TEST_F(PageSpecificContentSettingsWithFencedFrameTest, SiteDataAccessed) {
     ff_pscs->OnCookiesAccessed({content::CookieAccessDetails::Type::kChange,
                                 origin,
                                 origin,
-                                {*cookie1},
-                                1u,
+                                {{*cookie1}},
                                 false});
   }
 }
@@ -1125,8 +1111,7 @@ TEST_F(PageSpecificContentSettingsWithFencedFrameTest, DelegateUpdatesSent) {
   ff_pscs->OnCookiesAccessed({content::CookieAccessDetails::Type::kRead,
                               ff_url,
                               ff_url,
-                              {*cookie},
-                              1u,
+                              {{*cookie}},
                               /*blocked_by_policy=*/false});
   PageSpecificContentSettings::StorageAccessed(
       StorageType::INDEXED_DB, fenced_frame_root->GetGlobalId(),
@@ -1394,8 +1379,9 @@ TEST_F(PageSpecificContentSettingsTest, GetLastUsedReturnCorrectTimeTest) {
 // Tests that a permission blocked indicator is visible only for 60 seconds.
 TEST_F(PageSpecificContentSettingsTest, MediaBlockedIndicatorsDismissDelay) {
   base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeature(
-      content_settings::features::kImprovedSemanticsActivityIndicators);
+  scoped_feature_list_.InitWithFeatures(
+      {content_settings::features::kImprovedSemanticsActivityIndicators},
+      {content_settings::features::kLeftHandSideActivityIndicators});
 
   NavigateAndCommit(GURL("http://google.com"));
 

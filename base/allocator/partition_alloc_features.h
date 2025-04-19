@@ -9,11 +9,10 @@
 #include "base/compiler_specific.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "partition_alloc/buildflags.h"
 #include "partition_alloc/partition_alloc_base/time/time.h"
-#include "partition_alloc/partition_alloc_buildflags.h"
 #include "partition_alloc/partition_root.h"
 
 namespace base {
@@ -59,13 +58,7 @@ enum class DanglingPtrType {
 extern const BASE_EXPORT base::FeatureParam<DanglingPtrType>
     kDanglingPtrTypeParam;
 
-#if PA_BUILDFLAG(USE_STARSCAN)
-BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocPCScan);
-#endif
 #if PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
-BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocPCScanBrowserOnly);
-BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocPCScanRendererOnly);
-
 BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocLargeThreadCacheSize);
 BASE_EXPORT int GetPartitionAllocLargeThreadCacheSizeValue();
 BASE_EXPORT int GetPartitionAllocLargeThreadCacheSizeValueForLowRAMAndroid();
@@ -107,6 +100,14 @@ enum class MemtagMode {
   kAsync,
 };
 
+enum class RetagMode {
+  // Allocations are retagged by incrementing the current tag.
+  kIncrement,
+
+  // Allocations are retagged with a random tag.
+  kRandom,
+};
+
 enum class MemoryTaggingEnabledProcesses {
   // Memory tagging enabled only in the browser process.
   kBrowserOnly,
@@ -146,6 +147,7 @@ extern const BASE_EXPORT base::FeatureParam<BackupRefPtrMode>
     kBackupRefPtrModeParam;
 BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocMemoryTagging);
 extern const BASE_EXPORT base::FeatureParam<MemtagMode> kMemtagModeParam;
+extern const BASE_EXPORT base::FeatureParam<RetagMode> kRetagModeParam;
 extern const BASE_EXPORT base::FeatureParam<MemoryTaggingEnabledProcesses>
     kMemoryTaggingEnabledProcessesParam;
 // Kill switch for memory tagging. Skips any code related to memory tagging when
@@ -162,11 +164,6 @@ extern const BASE_EXPORT base::FeatureParam<BucketDistributionMode>
     kPartitionAllocBucketDistributionParam;
 
 BASE_EXPORT BASE_DECLARE_FEATURE(kLowerPAMemoryLimitForNonMainRenderers);
-BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocPCScanMUAwareScheduler);
-BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocPCScanStackScanning);
-BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocDCScan);
-BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocPCScanImmediateFreeing);
-BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocPCScanEagerClearing);
 BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocUseDenserDistribution);
 
 BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocMemoryReclaimer);

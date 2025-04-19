@@ -134,10 +134,9 @@ void ApplyTextStyleFromColorType(
 }
 
 // Dictionary and translation answers have a max number of lines > 1.
-bool AnswerHasDefinedMaxLines(
-    omnibox::RichAnswerTemplate::AnswerType answer_type) {
-  return answer_type == omnibox::RichAnswerTemplate::DICTIONARY ||
-         answer_type == omnibox::RichAnswerTemplate::TRANSLATION;
+bool AnswerHasDefinedMaxLines(omnibox::AnswerType answer_type) {
+  return answer_type == omnibox::ANSWER_TYPE_DICTIONARY ||
+         answer_type == omnibox::ANSWER_TYPE_TRANSLATION;
 }
 
 }  // namespace
@@ -149,22 +148,28 @@ OmniboxTextView::~OmniboxTextView() = default;
 
 gfx::Size OmniboxTextView::CalculatePreferredSize(
     const views::SizeBounds& available_size) const {
-  return render_text_ ? render_text_->GetStringSize() : gfx::Size();
+  if (!render_text_) {
+    return gfx::Size();
+  }
+
+  if (!available_size.width().is_bounded()) {
+    render_text_->SetDisplayRect(gfx::Rect(gfx::Size(INT_MAX, 0)));
+    return render_text_->GetStringSize();
+  }
+
+  int width = available_size.width().value();
+  if (!wrap_text_lines_) {
+    return gfx::Size(width, GetLineHeight());
+  }
+
+  render_text_->SetDisplayRect(gfx::Rect(width, 0));
+  gfx::Size string_size = render_text_->GetStringSize();
+  string_size.Enlarge(0, kVerticalPadding);
+  return string_size;
 }
 
 bool OmniboxTextView::GetCanProcessEventsWithinSubtree() const {
   return false;
-}
-
-int OmniboxTextView::GetHeightForWidth(int width) const {
-  if (!render_text_)
-    return 0;
-  // If text wrapping is not called for we can simply return the font height.
-  if (!wrap_text_lines_)
-    return GetLineHeight();
-  render_text_->SetDisplayRect(gfx::Rect(width, 0));
-  gfx::Size string_size = render_text_->GetStringSize();
-  return string_size.height() + kVerticalPadding;
 }
 
 void OmniboxTextView::OnPaint(gfx::Canvas* canvas) {
@@ -251,14 +256,16 @@ void OmniboxTextView::SetTextWithStyling(
 void OmniboxTextView::SetTextWithStyling(
     const omnibox::FormattedString& formatted_string,
     size_t fragment_index,
-    const omnibox::RichAnswerTemplate::AnswerType& answer_type) {
+    const omnibox::AnswerType& answer_type) {
   use_deemphasized_font_ = false;
   cached_classifications_.reset();
   wrap_text_lines_ = AnswerHasDefinedMaxLines(answer_type);
   for (size_t i = fragment_index;
        i < static_cast<size_t>(formatted_string.fragments_size()); i++) {
+    const std::u16string space_separator = i == 0u ? u"" : u" ";
     const std::u16string append_text =
-        u" " + base::UTF8ToUTF16(formatted_string.fragments(i).text());
+        space_separator +
+        base::UTF8ToUTF16(formatted_string.fragments(i).text());
     size_t offset = render_text_ ? render_text_->text().length() : 0u;
     gfx::Range range(offset, offset + append_text.length());
     render_text_->AppendText(append_text);
@@ -270,7 +277,7 @@ void OmniboxTextView::SetTextWithStyling(
 
 void OmniboxTextView::SetMultilineText(
     const omnibox::FormattedString& formatted_string,
-    const omnibox::RichAnswerTemplate::AnswerType& answer_type) {
+    const omnibox::AnswerType& answer_type) {
   render_text_ = CreateRenderText(u"");
   if (formatted_string.fragments_size() > 0 &&
       AnswerHasDefinedMaxLines(answer_type)) {
@@ -378,9 +385,7 @@ void OmniboxTextView::OnStyleChanged() {
   font_height_ = std::max(height_normal, height_bold);
   font_height_ += kVerticalPadding;
 
-  render_text_->SetElideBehavior(gfx::NO_ELIDE);
   SetPreferredSize(CalculatePreferredSize({}));
-  render_text_->SetElideBehavior(gfx::ELIDE_TAIL);
   SchedulePaint();
 }
 

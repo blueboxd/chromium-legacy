@@ -80,7 +80,7 @@ void UserImageFileSelector::SelectFile(
       ui::SelectFileDialog::SELECT_OPEN_FILE,
       l10n_util::GetStringUTF16(IDS_FILE_BROWSER_DOWNLOADS_DIRECTORY_LABEL),
       downloads_path, &file_type_info, 0, FILE_PATH_LITERAL(""),
-      GetBrowserWindow(), nullptr);
+      GetBrowserWindow());
 }
 
 gfx::NativeWindow UserImageFileSelector::GetBrowserWindow() {
@@ -89,13 +89,12 @@ gfx::NativeWindow UserImageFileSelector::GetBrowserWindow() {
 }
 
 void UserImageFileSelector::FileSelected(const ui::SelectedFileInfo& file,
-                                         int index,
-                                         void* params) {
+                                         int index) {
   std::move(selected_cb_).Run(file.path());
   select_file_dialog_.reset();
 }
 
-void UserImageFileSelector::FileSelectionCanceled(void* params) {
+void UserImageFileSelector::FileSelectionCanceled() {
   if (!canceled_cb_.is_null()) {
     std::move(canceled_cb_).Run();
   }

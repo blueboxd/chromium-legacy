@@ -8,13 +8,16 @@
 
 #import "base/check.h"
 #import "components/browsing_data/core/browsing_data_utils.h"
+#import "ios/chrome/browser/net/model/crurl.h"
+#import "ios/chrome/browser/shared/model/url/chrome_url_constants.h"
 #import "ios/chrome/browser/shared/ui/bottom_sheet/table_view_bottom_sheet_view_controller+subclassing.h"
 #import "ios/chrome/browser/shared/ui/list_model/list_model.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_detail_text_item.h"
+#import "ios/chrome/browser/shared/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_utils.h"
 #import "ios/chrome/browser/ui/settings/cells/clear_browsing_data_constants.h"
-#import "ios/chrome/browser/ui/settings/clear_browsing_data/browsing_data_mutator.h"
+#import "ios/chrome/browser/ui/settings/clear_browsing_data/quick_delete_mutator.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/quick_delete_presentation_commands.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/table_view_pop_up_cell.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -25,6 +28,10 @@
 
 namespace {
 
+// Delay to observe when dismissing the UI after showing the confirmation
+// indicator that the deletion has concluded.
+constexpr NSTimeInterval kDismissDelay = 1;
+
 // Trash icon view size.
 constexpr CGFloat kTrashIconContainerViewSize = 64;
 
@@ -34,11 +41,11 @@ constexpr CGFloat kTrashIconContainerViewCornerRadius = 15;
 // Trash icon size that sits inside the entire view.
 constexpr CGFloat kTrashIconSize = 32;
 
-// Bottom padding for the trash icon view.
-constexpr CGFloat kTrashIconContainerViewBottomPadding = 18;
-
 // Top padding for the trash icon view.
 constexpr CGFloat kTrashIconContainerViewTopPadding = 33;
+
+// Vertical padding for the title.
+constexpr CGFloat kTitleVerticalPadding = 22;
 
 // TableView's header and footer section heights.
 constexpr CGFloat kSectionHeaderHeight = 10;
@@ -51,6 +58,7 @@ constexpr CGFloat kTableViewCornerRadius = 10;
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierTimeRange = kSectionIdentifierEnumZero,
   SectionIdentifierBrowsingData,
+  SectionIdentifierFooter,
 };
 
 // Item identifiers in Quick Delete's table view.
@@ -61,12 +69,15 @@ typedef NS_ENUM(NSInteger, ItemIdentifier) {
 
 }  // namespace
 
-@interface QuickDeleteViewController () <ConfirmationAlertActionHandler,
-                                         UITableViewDelegate> {
+@interface QuickDeleteViewController () <
+    ConfirmationAlertActionHandler,
+    UITableViewDelegate,
+    TableViewLinkHeaderFooterItemDelegate> {
   UITableViewDiffableDataSource<NSNumber*, NSNumber*>* _dataSource;
   UITableView* _tableView;
   browsing_data::TimePeriod _timeRange;
   NSString* _browsingDataSummary;
+  BOOL _shouldShowFooter;
   NSLayoutConstraint* _tableViewHeightConstraint;
 }
 @end
@@ -92,7 +103,9 @@ typedef NS_ENUM(NSInteger, ItemIdentifier) {
   self.aboveTitleView = [self trashIconView];
   self.titleTextStyle = UIFontTextStyleTitle2;
   self.titleString = l10n_util::GetNSString(IDS_IOS_CLEAR_BROWSING_DATA_TITLE);
-  self.primaryActionString = l10n_util::GetNSString(IDS_IOS_CLEAR_BUTTON);
+  self.customSpacing = kTitleVerticalPadding;
+  self.primaryActionString =
+      l10n_util::GetNSString(IDS_IOS_DELETE_BROWSING_DATA_BUTTON);
   self.secondaryActionString =
       l10n_util::GetNSString(IDS_IOS_DELETE_BROWSING_DATA_CANCEL);
 
@@ -115,6 +128,8 @@ typedef NS_ENUM(NSInteger, ItemIdentifier) {
   buttonConfiguration.background.backgroundColor =
       [UIColor colorNamed:kRedColor];
   self.primaryActionButton.configuration = buttonConfiguration;
+  self.confirmationCheckmarkColor = [UIColor colorNamed:kRed600Color];
+  self.confirmationButtonColor = [UIColor colorNamed:kRed100Color];
 
   // Assign the table view's anchors now that it is in the same hierarchy as the
   // top view and that the content has been loaded.
@@ -131,31 +146,29 @@ typedef NS_ENUM(NSInteger, ItemIdentifier) {
 - (void)viewWillLayoutSubviews {
   [super viewWillLayoutSubviews];
 
-  // Update the table view height since the browsing data row with the detail
+  // Update the bottom sheet height since the browsing data row with the detail
   // text is bigger then the standard row height.
-  _tableViewHeightConstraint.constant = _tableView.contentSize.height;
+  [self updateBottomSheetHeight];
+}
 
-  // Update the height of the bottom sheet since we might have a different
-  // height for the table view after all the rows have been loaded.
-  [self setUpBottomSheetDetents];
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+  // Update the bottomsheet height when trait collection changed (for example
+  // when the user uses large font).
+  if (self.traitCollection.preferredContentSizeCategory !=
+      previousTraitCollection.preferredContentSizeCategory) {
+    [self updateBottomSheetHeight];
+  }
 }
 
 #pragma mark - ConfirmationAlertActionHandler
 
 - (void)confirmationAlertPrimaryAction {
-  // TODO(crbug.com/335387869): Trigger deletion.
+  [_mutator triggerDeletion];
 }
 
 - (void)confirmationAlertSecondaryAction {
-  CHECK(self.presentationHandler);
-  [self.presentationHandler dismissQuickDelete];
-}
-
-#pragma mark - UIAdaptivePresentationControllerDelegate
-
-- (void)presentationControllerDidDismiss:
-    (UIPresentationController*)presentationController {
-  [self.presentationHandler dismissQuickDelete];
+  [self dismissQuickDelete];
 }
 
 #pragma mark - UITableViewDelegate
@@ -163,21 +176,200 @@ typedef NS_ENUM(NSInteger, ItemIdentifier) {
 - (void)tableView:(UITableView*)tableView
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
   [_tableView deselectRowAtIndexPath:indexPath animated:NO];
-
-  // TODO(crbug.com/335387869): Deal with tap on Browing Data row.
+  ItemIdentifier itemType = static_cast<ItemIdentifier>(
+      [_dataSource itemIdentifierForIndexPath:indexPath].integerValue);
+  CHECK(itemType == ItemIdentifierBrowsingData) << itemType;
+  [self.presentationHandler showBrowsingDataPage];
 }
 
-#pragma mark - BrowsingDataConsumer
+- (UIView*)tableView:(UITableView*)tableView
+    viewForFooterInSection:(NSInteger)section {
+  SectionIdentifier sectionIdentifier = static_cast<SectionIdentifier>(
+      [_dataSource sectionIdentifierForIndex:section].integerValue);
+  switch (sectionIdentifier) {
+    case SectionIdentifierFooter: {
+      if (!_shouldShowFooter) {
+        return nil;
+      }
+      TableViewLinkHeaderFooterView* footer =
+          DequeueTableViewHeaderFooter<TableViewLinkHeaderFooterView>(
+              _tableView);
+      footer.accessibilityIdentifier = kQuickDeleteFooterIdentifier;
+      footer.delegate = self;
+      footer.urls = @[
+        [[CrURL alloc]
+            initWithGURL:GURL(kClearBrowsingDataDSESearchUrlInFooterURL)],
+        [[CrURL alloc]
+            initWithGURL:GURL(kClearBrowsingDataDSEMyActivityUrlInFooterURL)]
+      ];
+      [footer setText:l10n_util::GetNSString(
+                          IDS_IOS_DELETE_BROWSING_DATA_BOTTOM_SHEET_FOOTER)
+            withColor:[UIColor colorNamed:kTextSecondaryColor]];
+      return footer;
+    }
+    case SectionIdentifierTimeRange:
+    case SectionIdentifierBrowsingData: {
+      return nil;
+    }
+  }
+  NOTREACHED_NORETURN();
+}
+
+- (CGFloat)tableView:(UITableView*)tableView
+    heightForFooterInSection:(NSInteger)section {
+  SectionIdentifier sectionIdentifier = static_cast<SectionIdentifier>(
+      [_dataSource sectionIdentifierForIndex:section].integerValue);
+  if (sectionIdentifier == SectionIdentifierFooter && _shouldShowFooter) {
+    return UITableViewAutomaticDimension;
+  }
+  return kSectionFooterHeight;
+}
+
+#pragma mark - TableViewLinkHeaderFooterItemDelegate
+
+- (void)view:(TableViewLinkHeaderFooterView*)view didTapLinkURL:(CrURL*)url {
+  DCHECK(url.gurl == kClearBrowsingDataDSESearchUrlInFooterURL ||
+         url.gurl == kClearBrowsingDataDSEMyActivityUrlInFooterURL);
+  [self.presentationHandler openMyActivityURL:url.gurl];
+}
+
+#pragma mark - QuickDeleteConsumer
 
 - (void)setTimeRange:(browsing_data::TimePeriod)timeRange {
+  if (_timeRange == timeRange) {
+    return;
+  }
   _timeRange = timeRange;
+
+  // Reload the time range row with the new value.
+  NSDiffableDataSourceSnapshot<NSNumber*, NSNumber*>* snapshot =
+      [_dataSource snapshot];
+  [snapshot reconfigureItemsWithIdentifiers:@[ @(ItemIdentifierTimeRange) ]];
+  [_dataSource applySnapshot:snapshot animatingDifferences:NO completion:nil];
 }
 
 - (void)setBrowsingDataSummary:(NSString*)summary {
+  if ([_browsingDataSummary isEqualToString:summary]) {
+    return;
+  }
   _browsingDataSummary = summary;
+
+  // Reload the browsing data row with the new summary.
+  __weak __typeof(self) weakSelf = self;
+  NSDiffableDataSourceSnapshot<NSNumber*, NSNumber*>* snapshot =
+      [_dataSource snapshot];
+  [snapshot reconfigureItemsWithIdentifiers:@[ @(ItemIdentifierBrowsingData) ]];
+  [_dataSource applySnapshot:snapshot
+        animatingDifferences:NO
+                  completion:^{
+                    // Update the bottom sheet height since the browsing data
+                    // row can change height depending on the length of summary.
+                    [weakSelf updateBottomSheetHeight];
+                  }];
+}
+
+- (void)setShouldShowFooter:(BOOL)shouldShowFooter {
+  if (_shouldShowFooter == shouldShowFooter) {
+    return;
+  }
+  _shouldShowFooter = shouldShowFooter;
+  // Reload the footer section.
+  __weak __typeof(self) weakSelf = self;
+  NSDiffableDataSourceSnapshot<NSNumber*, NSNumber*>* snapshot =
+      [_dataSource snapshot];
+  [snapshot reloadSectionsWithIdentifiers:@[ @(SectionIdentifierFooter) ]];
+  [_dataSource applySnapshot:snapshot
+        animatingDifferences:NO
+                  completion:^{
+                    // Update the bottom sheet height in case the footer is
+                    // added or removed.
+                    [weakSelf updateBottomSheetHeight];
+                  }];
+}
+
+- (void)updateHistoryWithResult:
+    (const browsing_data::BrowsingDataCounter::Result&)result {
+  // TODO(crbug.com/353211728): Refactor summary using this result.
+}
+
+- (void)updateTabsWithResult:
+    (const browsing_data::BrowsingDataCounter::Result&)result {
+  // TODO(crbug.com/353211728): Refactor summary using this result.
+}
+
+- (void)updateCacheWithResult:
+    (const browsing_data::BrowsingDataCounter::Result&)result {
+  // TODO(crbug.com/353211728): Refactor summary using this result.
+}
+
+- (void)updatePasswordsWithResult:
+    (const browsing_data::BrowsingDataCounter::Result&)result {
+  // TODO(crbug.com/353211728): Refactor summary using this result.
+}
+
+- (void)updateAutofillWithResult:
+    (const browsing_data::BrowsingDataCounter::Result&)result {
+  // TODO(crbug.com/353211728): Refactor summary using this result.
+}
+
+- (void)setHistorySelection:(BOOL)selected {
+  // TODO(crbug.com/353211728): Refactor summary using this type selection.
+}
+
+- (void)setTabsSelection:(BOOL)selected {
+  // TODO(crbug.com/353211728): Refactor summary using this type selection.
+}
+
+- (void)setSiteDataSelection:(BOOL)selected {
+  // TODO(crbug.com/353211728): Refactor summary using this type selection.
+}
+
+- (void)setCacheSelection:(BOOL)selected {
+  // TODO(crbug.com/353211728): Refactor summary using this type selection.
+}
+
+- (void)setPasswordsSelection:(BOOL)selected {
+  // TODO(crbug.com/353211728): Refactor summary using this type selection.
+}
+
+- (void)setAutofillSelection:(BOOL)selected {
+  // TODO(crbug.com/353211728): Refactor summary using this type selection.
+}
+
+- (void)deletionInProgress {
+  self.view.userInteractionEnabled = NO;
+  self.isLoading = YES;
+  self.isConfirmed = NO;
+}
+
+- (void)deletionFinished {
+  self.isLoading = NO;
+  self.isConfirmed = YES;
+
+  // Add an artificial delay for dimissing the UI, so the user is able to see
+  // the confirmation state.
+  [self performSelector:@selector(dismissQuickDelete)
+             withObject:nil
+             afterDelay:kDismissDelay];
 }
 
 #pragma mark - Private
+
+// Triggers the dismission of the Quick Delete UI.
+- (void)dismissQuickDelete {
+  [self.presentationHandler dismissQuickDelete];
+}
+
+// Updates the bottom sheet height by also updating the table view height. The
+// table view might have a different height after the browsing data summary is
+// updated.
+- (void)updateBottomSheetHeight {
+  // Trigger any pending layout updates.
+  [self.view layoutIfNeeded];
+
+  _tableViewHeightConstraint.constant = _tableView.contentSize.height;
+  [self setUpBottomSheetDetents];
+}
 
 // Returns `_tableView` used to show the time range and browsing data rows.
 - (UITableView*)createTableView {
@@ -228,11 +420,13 @@ typedef NS_ENUM(NSInteger, ItemIdentifier) {
 
   RegisterTableViewCell<TableViewPopUpCell>(_tableView);
   RegisterTableViewCell<TableViewDetailTextCell>(_tableView);
+  RegisterTableViewHeaderFooter<TableViewLinkHeaderFooterView>(_tableView);
 
   NSDiffableDataSourceSnapshot* snapshot =
       [[NSDiffableDataSourceSnapshot alloc] init];
   [snapshot appendSectionsWithIdentifiers:@[
-    @(SectionIdentifierTimeRange), @(SectionIdentifierBrowsingData)
+    @(SectionIdentifierTimeRange), @(SectionIdentifierBrowsingData),
+    @(SectionIdentifierFooter)
   ]];
   [snapshot appendItemsWithIdentifiers:@[ @(ItemIdentifierTimeRange) ]
              intoSectionWithIdentifier:@(SectionIdentifierTimeRange)];
@@ -274,6 +468,8 @@ typedef NS_ENUM(NSInteger, ItemIdentifier) {
       browsingDataCell.userInteractionEnabled = YES;
       browsingDataCell.backgroundColor =
           [UIColor colorNamed:kSecondaryBackgroundColor];
+      browsingDataCell.accessibilityIdentifier =
+          kQuickDeleteBrowsingDataButtonIdentifier;
       return browsingDataCell;
     }
   }
@@ -288,6 +484,7 @@ typedef NS_ENUM(NSInteger, ItemIdentifier) {
          identifier:nil
             options:UIMenuOptionsSingleSelection
            children:@[
+             [self timeRangeAction:browsing_data::TimePeriod::LAST_15_MINUTES],
              [self timeRangeAction:browsing_data::TimePeriod::LAST_HOUR],
              [self timeRangeAction:browsing_data::TimePeriod::LAST_DAY],
              [self timeRangeAction:browsing_data::TimePeriod::LAST_WEEK],
@@ -322,6 +519,9 @@ typedef NS_ENUM(NSInteger, ItemIdentifier) {
 // Returns the title string based on the `timeRange`.
 - (NSString*)titleForTimeRange:(browsing_data::TimePeriod)timeRange {
   switch (timeRange) {
+    case browsing_data::TimePeriod::LAST_15_MINUTES:
+      return l10n_util::GetNSString(
+          IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_OPTION_LAST_15_MINUTES);
     case browsing_data::TimePeriod::LAST_HOUR:
       return l10n_util::GetNSString(
           IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_OPTION_PAST_HOUR);
@@ -338,9 +538,7 @@ typedef NS_ENUM(NSInteger, ItemIdentifier) {
       return l10n_util::GetNSString(
           IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_OPTION_BEGINNING_OF_TIME);
     case browsing_data::TimePeriod::OLDER_THAN_30_DAYS:
-    case browsing_data::TimePeriod::LAST_15_MINUTES:
-      // Those values should not be reached since they're not a part of the
-      // menu.
+      // This value should not be reached since it's not a part of the menu.
       break;
   }
   NOTREACHED_NORETURN();
@@ -377,8 +575,7 @@ typedef NS_ENUM(NSInteger, ItemIdentifier) {
   AddSameCenterXConstraint(outerView, iconContainerView);
   AddSameConstraintsToSidesWithInsets(
       iconContainerView, outerView, LayoutSides::kTop | LayoutSides::kBottom,
-      NSDirectionalEdgeInsetsMake(kTrashIconContainerViewTopPadding, 0,
-                                  kTrashIconContainerViewBottomPadding, 0));
+      NSDirectionalEdgeInsetsMake(kTrashIconContainerViewTopPadding, 0, 0, 0));
 
   return outerView;
 }

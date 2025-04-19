@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/modules/webcodecs/image_decoder_external.h"
 
 #include "base/logging.h"
@@ -531,7 +536,7 @@ void ImageDecoderExternal::MaybeSatisfyPendingDecodes() {
                                       decode_weak_factory_.GetWeakCell())));
   }
 
-  auto* new_end = std::stable_partition(
+  auto new_end = std::stable_partition(
       pending_decodes_.begin(), pending_decodes_.end(),
       [](const auto& request) { return !request->IsFinal(); });
 

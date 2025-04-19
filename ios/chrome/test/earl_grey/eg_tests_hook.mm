@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/app/tests_hook.h"
+#import <MaterialComponents/MaterialSnackbar.h>
 
 #import "base/command_line.h"
 #import "base/logging.h"
@@ -12,6 +12,7 @@
 #import "components/signin/internal/identity_manager/fake_profile_oauth2_token_service.h"
 #import "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
 #import "components/signin/internal/identity_manager/profile_oauth2_token_service_delegate.h"
+#import "ios/chrome/app/tests_hook.h"
 #import "ios/chrome/browser/drive/model/test_drive_service.h"
 #import "ios/chrome/browser/flags/chrome_switches.h"
 #import "ios/chrome/browser/policy/model/test_platform_policy_provider.h"
@@ -20,6 +21,7 @@
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/signin_test_util.h"
 #import "ios/chrome/test/earl_grey/test_switches.h"
+#import "ios/chrome/test/providers/signin/fake_trusted_vault_client_backend.h"
 
 namespace tests_hook {
 
@@ -142,6 +144,16 @@ std::unique_ptr<SystemIdentityManager> CreateSystemIdentityManager() {
   return system_identity_manager;
 }
 
+std::unique_ptr<TrustedVaultClientBackend> CreateTrustedVaultClientBackend() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(test_switches::kForceRealSystemIdentityManager)) {
+    // By returning nullptr, we force ApplicationContext to use the provider to
+    // create the FakeTrustedVaultClientBackend.
+    return nullptr;
+  }
+  return std::make_unique<FakeTrustedVaultClientBackend>();
+}
+
 std::unique_ptr<password_manager::BulkLeakCheckServiceInterface>
 GetOverriddenBulkLeakCheckService() {
   return std::make_unique<password_manager::FakeBulkLeakCheckService>();
@@ -181,6 +193,12 @@ void SignalAppLaunched() {
 base::TimeDelta PasswordCheckMinimumDuration() {
   // No delays for eg tests.
   return base::Seconds(0);
+}
+
+base::TimeDelta GetOverriddenSnackbarDuration() {
+  // Increase the snackbar duration for EGTests for test to catch it more
+  // easily.
+  return base::Seconds(MDCSnackbarMessageDurationMax);
 }
 
 std::unique_ptr<drive::DriveService> GetOverriddenDriveService() {

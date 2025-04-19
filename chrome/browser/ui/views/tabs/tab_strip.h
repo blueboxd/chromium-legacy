@@ -14,8 +14,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
-#include "base/observer_list.h"
-#include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/tabs/tab_enums.h"
@@ -91,9 +89,8 @@ class TabStrip : public views::View,
   static int GetSizeNeededForViews(
       const std::vector<raw_ptr<TabSlotView, VectorExperimental>>& views);
 
-  // Add and remove observers to changes within this TabStrip.
-  void AddObserver(TabStripObserver* observer);
-  void RemoveObserver(TabStripObserver* observer);
+  // Sets the observer to be notified of changes within this TabStrip.
+  void SetTabStripObserver(TabStripObserver* observer);
 
   // Sets |background_offset_| and schedules a paint.
   void SetBackgroundOffset(int background_offset);
@@ -276,6 +273,8 @@ class TabStrip : public views::View,
   bool IsTabPinned(const Tab* tab) const override;
   bool IsTabFirst(const Tab* tab) const override;
   bool IsFocusInTabs() const override;
+  bool ShouldCompactLeadingEdge() const override;
+
   void MaybeStartDrag(
       TabSlotView* source,
       const ui::LocatedEvent& event,
@@ -311,6 +310,11 @@ class TabStrip : public views::View,
   void ShiftGroupLeft(const tab_groups::TabGroupId& group) override;
   void ShiftGroupRight(const tab_groups::TabGroupId& group) override;
   const Browser* GetBrowser() const override;
+  int GetInactiveTabWidth() const override;
+  bool IsFrameCondensed() const override;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  bool IsLockedForOnTask() override;
+#endif
 
   // views::View:
   views::SizeBounds GetAvailableSize(const View* child) const override;
@@ -369,10 +373,6 @@ class TabStrip : public views::View,
   // Returns the current width of the active tab.
   int GetActiveTabWidth() const;
 
-  // Returns the current width of inactive tabs. An individual inactive tab may
-  // differ from this width slightly due to rounding.
-  int GetInactiveTabWidth() const;
-
   // Returns the last tab in the strip that's actually visible.  This will be
   // the actual last tab unless the strip is in the overflow node_data.
   const Tab* GetLastVisibleTab() const;
@@ -420,7 +420,7 @@ class TabStrip : public views::View,
 
   // -- Member Variables ------------------------------------------------------
 
-  base::ObserverList<TabStripObserver>::Unchecked observers_;
+  raw_ptr<TabStripObserver> observer_;
 
   std::unique_ptr<TabStripController> controller_;
 

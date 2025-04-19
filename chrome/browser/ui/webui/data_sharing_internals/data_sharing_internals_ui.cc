@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/ui/webui/data_sharing_internals/data_sharing_internals_ui.h"
 
 #include "chrome/browser/data_sharing/data_sharing_service_factory.h"
@@ -14,17 +19,11 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
 
-DataSharingUIConfig::DataSharingUIConfig()
-    : WebUIConfig(content::kChromeUIScheme,
-                  chrome::kChromeUIDataSharingInternalsHost) {}
+DataSharingInternalsUIConfig::DataSharingInternalsUIConfig()
+    : DefaultWebUIConfig(content::kChromeUIScheme,
+                         chrome::kChromeUIDataSharingInternalsHost) {}
 
-DataSharingUIConfig::~DataSharingUIConfig() = default;
-
-std::unique_ptr<content::WebUIController>
-DataSharingUIConfig::CreateWebUIController(content::WebUI* web_ui,
-                                                  const GURL& url) {
-  return std::make_unique<DataSharingInternalsUI>(web_ui);
-}
+DataSharingInternalsUIConfig::~DataSharingInternalsUIConfig() = default;
 
 DataSharingInternalsUI::DataSharingInternalsUI(content::WebUI* web_ui)
     : ui::MojoWebUIController(web_ui, /*enable_chrome_send=*/true) {

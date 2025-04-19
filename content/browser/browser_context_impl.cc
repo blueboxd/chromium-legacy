@@ -13,10 +13,12 @@
 #include "content/browser/background_sync/background_sync_scheduler.h"
 #include "content/browser/browsing_data/browsing_data_remover_impl.h"
 #include "content/browser/download/download_manager_impl.h"
+#include "content/browser/in_memory_federated_permission_context.h"
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/browser/preloading/prefetch/prefetch_service.h"
 #include "content/browser/renderer_host/navigation_transitions/navigation_entry_screenshot_cache.h"
 #include "content/browser/renderer_host/navigation_transitions/navigation_entry_screenshot_manager.h"
+#include "content/browser/renderer_host/navigation_transitions/navigation_transition_config.h"
 #include "content/browser/speech/tts_controller_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/storage_partition_impl_map.h"
@@ -93,7 +95,7 @@ BrowserContextImpl::~BrowserContextImpl() {
   if (!rph_crash_key_value.empty()) {
     SCOPED_CRASH_KEY_STRING256("BrowserContext", "dangling_rph",
                                rph_crash_key_value);
-    DUMP_WILL_BE_NOTREACHED_NORETURN()
+    DUMP_WILL_BE_NOTREACHED()
         << "rph_with_bc_reference : " << rph_crash_key_value;
   }
 
@@ -297,6 +299,19 @@ PrefetchService* BrowserContextImpl::GetPrefetchService() {
   return prefetch_service_.get();
 }
 
+InMemoryFederatedPermissionContext*
+BrowserContextImpl::GetFederatedPermissionContext() {
+  if (!federated_permission_context_) {
+    federated_permission_context_ =
+        std::make_unique<InMemoryFederatedPermissionContext>();
+  }
+  return federated_permission_context_.get();
+}
+
+void BrowserContextImpl::ResetFederatedPermissionContext() {
+  federated_permission_context_.reset();
+}
+
 void BrowserContextImpl::SetPrefetchServiceForTesting(
     std::unique_ptr<PrefetchService> prefetch_service) {
   prefetch_service_ = std::move(prefetch_service);
@@ -304,7 +319,8 @@ void BrowserContextImpl::SetPrefetchServiceForTesting(
 
 NavigationEntryScreenshotManager*
 BrowserContextImpl::GetNavigationEntryScreenshotManager() {
-  if (!nav_entry_screenshot_manager_ && AreBackForwardTransitionsEnabled()) {
+  if (!nav_entry_screenshot_manager_ &&
+      NavigationTransitionConfig::AreBackForwardTransitionsEnabled()) {
     nav_entry_screenshot_manager_ =
         std::make_unique<NavigationEntryScreenshotManager>();
   }

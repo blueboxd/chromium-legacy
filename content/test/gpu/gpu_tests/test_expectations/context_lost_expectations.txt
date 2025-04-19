@@ -36,8 +36,8 @@
 #         google google-0xffff google-0xc0de
 #         intel intel-gen-9 intel-gen-12 intel-0xa2e intel-0xd26 intel-0xa011
 #             intel-0x3e92 intel-0x3e9b intel-0x4680 intel-0x5912 intel-0x9bc5
-#         nvidia nvidia-0xfe9 nvidia-0x1cb3 nvidia-0x2184
-#         qualcomm qualcomm-0x41333430 ]
+#         nvidia nvidia-0xfe9 nvidia-0x1cb3 nvidia-0x2184 nvidia-0x2783
+#         qualcomm qualcomm-0x41333430 qualcomm-0x36333630 qualcomm-0x36334330 ]
 # Architecture
 # tags: [ mac-arm64 mac-x86_64 ]
 # Decoder
@@ -59,7 +59,8 @@
 # tags: [ mesa_lt_19.1
 #         mesa_ge_21.0
 #         mesa_ge_23.2
-#         nvidia_ge_31.0.15.4601 nvidia_lt_31.0.15.4601 ]
+#         nvidia_ge_31.0.15.4601 nvidia_lt_31.0.15.4601
+#         nvidia_ge_535.183.01 nvidia_lt_535.183.01 ]
 # ASan
 # tags: [ asan no-asan ]
 # Display Server
@@ -70,8 +71,6 @@
 # tags: [ dawn-backend-validation dawn-no-backend-validation ]
 # WebGPU Adapter
 # tags: [ webgpu-adapter-default webgpu-adapter-swiftshader ]
-# WebGPU Compat Mode
-# tags: [ webgpu-compat webgpu-not-compat ]
 # WebGPU DXC
 # tags: [ webgpu-dxc-enabled webgpu-dxc-disabled ]
 # WebGPU worker usage
@@ -175,11 +174,6 @@ crbug.com/1416920 [ win debug ] GpuCrash_InfoForHardwareGpu [ Failure ]
 # since Windows 8 is no longer tested.
 crbug.com/524808 [ win8 nvidia ] ContextLost_WebGLContextLostFromSelectElement [ Skip ]
 
-# Too difficult to make this test work on Mac and Android for now. Disabling
-# GLES3 support at the GL bindings level doesn't work there yet.
-crbug.com/923134 [ mac ] ContextLost_WebGL2Blocked [ Skip ]
-crbug.com/923134 [ android ] ContextLost_WebGL2Blocked [ Skip ]
-
 ###################
 # Failures/Flakes #
 ###################
@@ -203,6 +197,14 @@ crbug.com/329145623 [ linux angle-vulkan graphite-disabled nvidia-0x2184 passthr
 # Flaky failure to restore context
 crbug.com/338071088 [ amd-0x67ef angle-opengl graphite-disabled no-asan passthrough release sonoma ] ContextLost_WebGL2UnpackImageHeight [ Failure ]
 
+# Flaky timeout on Android
+crbug.com/353650054 [ android ] ContextLost_WorkerWebGLRAFAfterGPUCrash [ Failure ]
+
+# Flaky failure on Mac AMD ASAN - 3 GPU process crashes instead of 4
+crbug.com/354748640 [ mac amd asan release ] GpuCrash_InfoForDualHardwareGpus [ RetryOnFailure ]
+
+# Flaky failure on Mac release NVIDIA - 3 GPU process crashes instead of 4
+crbug.com/355923591 [ mac release nvidia ] GpuCrash_InfoForDualHardwareGpus [ RetryOnFailure ]
 
 #######################################################################
 # Automated Entries After This Point - Do Not Manually Add Below Here #

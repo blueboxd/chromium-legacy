@@ -89,6 +89,17 @@ TEST(TelemetryExtensionDiagnosticRoutineConvertersTest,
   EXPECT_TRUE(result.check_led_lit_up_state.has_value());
 }
 
+TEST(TelemetryExtensionDiagnosticRoutineConvertersTest,
+     RoutineInquiryCheckKeyboardBacklightState) {
+  auto result = ConvertPtr(
+      crosapi::TelemetryDiagnosticRoutineInquiry::
+          NewCheckKeyboardBacklightState(
+              crosapi::TelemetryDiagnosticCheckKeyboardBacklightStateInquiry::
+                  New()));
+
+  EXPECT_TRUE(result.check_keyboard_backlight_state.has_value());
+}
+
 TEST(TelemetryExtensionDiagnosticRoutineConvertersTest, RoutineWaitingInfo) {
   constexpr char kMsg[] = "TEST";
   constexpr uint32_t kPercentage = 50;
@@ -388,6 +399,44 @@ TEST(TelemetryExtensionDiagnosticRoutineConvertersTest,
   EXPECT_EQ(result.detail->network_bandwidth->upload_speed_kbps, 456.0);
 }
 
+TEST(TelemetryExtensionDiagnosticRoutineConvertersTest,
+     RoutineFinishedInfoWithCameraFrameAnalysisDetail) {
+  constexpr bool kHasPassed = true;
+  const base::Uuid kUuid = base::Uuid::GenerateRandomV4();
+
+  auto detail =
+      crosapi::TelemetryDiagnosticCameraFrameAnalysisRoutineDetail::New();
+  detail->issue = crosapi::TelemetryDiagnosticCameraFrameAnalysisRoutineDetail::
+      Issue::kNone;
+  detail->privacy_shutter_open_test =
+      crosapi::TelemetryDiagnosticCameraSubtestResult::kPassed;
+  detail->lens_not_dirty_test =
+      crosapi::TelemetryDiagnosticCameraSubtestResult::kFailed;
+
+  auto input = crosapi::TelemetryDiagnosticRoutineStateFinished::New();
+  input->detail =
+      crosapi::TelemetryDiagnosticRoutineDetail::NewCameraFrameAnalysis(
+          std::move(detail));
+
+  auto result = ConvertPtr(std::move(input), kUuid, kHasPassed);
+
+  ASSERT_TRUE(result.uuid.has_value());
+  EXPECT_EQ(*result.uuid, kUuid.AsLowercaseString());
+
+  ASSERT_TRUE(result.has_passed.has_value());
+  EXPECT_EQ(*result.has_passed, kHasPassed);
+
+  ASSERT_TRUE(result.detail.has_value());
+  ASSERT_TRUE(result.detail->camera_frame_analysis.has_value());
+
+  EXPECT_EQ(result.detail->camera_frame_analysis->issue,
+            cx_diag::CameraFrameAnalysisIssue::kNoIssue);
+  EXPECT_EQ(result.detail->camera_frame_analysis->privacy_shutter_open_test,
+            cx_diag::CameraSubtestResult::kPassed);
+  EXPECT_EQ(result.detail->camera_frame_analysis->lens_not_dirty_test,
+            cx_diag::CameraSubtestResult::kFailed);
+}
+
 TEST(TelemetryExtensionDiagnosticRoutineConvertersTest, ExceptionReason) {
   EXPECT_EQ(
       Convert(crosapi::TelemetryExtensionException::Reason::kUnmappedEnumField),
@@ -399,6 +448,9 @@ TEST(TelemetryExtensionDiagnosticRoutineConvertersTest, ExceptionReason) {
             cx_diag::ExceptionReason::kUnexpected);
   EXPECT_EQ(Convert(crosapi::TelemetryExtensionException::Reason::kUnsupported),
             cx_diag::ExceptionReason::kUnsupported);
+  EXPECT_EQ(Convert(crosapi::TelemetryExtensionException::Reason::
+                        kCameraFrontendNotOpened),
+            cx_diag::ExceptionReason::kCameraFrontendNotOpened);
 }
 
 TEST(TelemetryExtensionDiagnosticRoutineConvertersTest, RoutineWaitingReason) {
@@ -480,6 +532,43 @@ TEST(TelemetryExtensionDiagnosticRoutineConvertersTest, MemtesterTestItemEnum) {
       Convert(
           crosapi::TelemetryDiagnosticMemtesterTestItemEnum::kSixteenBitWrites),
       cx_diag::MemtesterTestItemEnum::kSixteenBitWrites);
+}
+
+TEST(TelemetryExtensionDiagnosticRoutineConvertersTest,
+     CameraFrameAnalysisRoutineDetailIssue) {
+  EXPECT_EQ(
+      Convert(crosapi::TelemetryDiagnosticCameraFrameAnalysisRoutineDetail::
+                  Issue::kUnmappedEnumField),
+      cx_diag::CameraFrameAnalysisIssue::kNone);
+  EXPECT_EQ(
+      Convert(crosapi::TelemetryDiagnosticCameraFrameAnalysisRoutineDetail::
+                  Issue::kNone),
+      cx_diag::CameraFrameAnalysisIssue::kNoIssue);
+  EXPECT_EQ(
+      Convert(crosapi::TelemetryDiagnosticCameraFrameAnalysisRoutineDetail::
+                  Issue::kCameraServiceNotAvailable),
+      cx_diag::CameraFrameAnalysisIssue::kCameraServiceNotAvailable);
+  EXPECT_EQ(
+      Convert(crosapi::TelemetryDiagnosticCameraFrameAnalysisRoutineDetail::
+                  Issue::kBlockedByPrivacyShutter),
+      cx_diag::CameraFrameAnalysisIssue::kBlockedByPrivacyShutter);
+  EXPECT_EQ(
+      Convert(crosapi::TelemetryDiagnosticCameraFrameAnalysisRoutineDetail::
+                  Issue::kLensAreDirty),
+      cx_diag::CameraFrameAnalysisIssue::kLensAreDirty);
+}
+
+TEST(TelemetryExtensionDiagnosticRoutineConvertersTest, CameraSubtestResult) {
+  EXPECT_EQ(
+      Convert(
+          crosapi::TelemetryDiagnosticCameraSubtestResult::kUnmappedEnumField),
+      cx_diag::CameraSubtestResult::kNone);
+  EXPECT_EQ(Convert(crosapi::TelemetryDiagnosticCameraSubtestResult::kNotRun),
+            cx_diag::CameraSubtestResult::kNotRun);
+  EXPECT_EQ(Convert(crosapi::TelemetryDiagnosticCameraSubtestResult::kPassed),
+            cx_diag::CameraSubtestResult::kPassed);
+  EXPECT_EQ(Convert(crosapi::TelemetryDiagnosticCameraSubtestResult::kFailed),
+            cx_diag::CameraSubtestResult::kFailed);
 }
 
 }  // namespace chromeos::converters::routines

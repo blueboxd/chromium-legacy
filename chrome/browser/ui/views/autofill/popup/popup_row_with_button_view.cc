@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_row_content_view.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_row_view.h"
+#include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "components/input/native_web_keyboard_event.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -73,7 +74,6 @@ class ButtonPlaceholder : public views::View, public views::ViewObserver {
 
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
-  int GetHeightForWidth(int width) const override;
 
   // views::ViewObserver:
   void OnViewBoundsChanged(views::View* observed_view) override;
@@ -131,19 +131,6 @@ void ButtonPlaceholder::OnViewBoundsChanged(View* observed_view) {
   }
 }
 
-int ButtonPlaceholder::GetHeightForWidth(int width) const {
-  // The parent for this view (the row's content view) and the placeholder
-  // button uses a `BoxLayout` for its `LayoutManager`. Internally `BoxLayout`
-  // uses `GetHeightForWidth` on each child to define their height when the
-  // orientation is not `kVertical`. Finally these children uses
-  // `BoxLayout::GetPreferredSizeForChildWidth` to tell their parent their
-  // height, however they only return a non 0 value if they have visible
-  // children. This is not the case here because the button is at first no
-  // visible. Therefore we override GetHeightForWidth to return the preferred
-  // height regardless of children being visible or not.
-  return GetPreferredSize(views::SizeBounds(width, {})).height();
-}
-
 BEGIN_METADATA(ButtonPlaceholder)
 END_METADATA
 
@@ -177,8 +164,12 @@ PopupRowWithButtonView::PopupRowWithButtonView(
       std::make_unique<views::Button::DefaultButtonControllerDelegate>(
           button_.get())));
 
-  static_cast<views::BoxLayout*>(GetContentView().GetLayoutManager())
-      ->SetFlexForView(button_placeholder_, 0);
+  auto* content_layout =
+      static_cast<views::BoxLayout*>(GetContentView().GetLayoutManager());
+  content_layout->set_between_child_spacing(
+      ChromeLayoutProvider::Get()->GetDistanceMetric(
+          DISTANCE_RELATED_LABEL_HORIZONTAL_LIST));
+  content_layout->SetFlexForView(button_placeholder_, 0);
 }
 
 PopupRowWithButtonView::~PopupRowWithButtonView() = default;
@@ -204,7 +195,7 @@ void PopupRowWithButtonView::HandleKeyPressEventFocusOnContent() {
 }
 
 bool PopupRowWithButtonView::HandleKeyPressEvent(
-    const content::NativeWebKeyboardEvent& event) {
+    const input::NativeWebKeyboardEvent& event) {
   switch (event.windows_key_code) {
     // When pressing left arrow key (LTR):
     // 1. Set button as not focused.

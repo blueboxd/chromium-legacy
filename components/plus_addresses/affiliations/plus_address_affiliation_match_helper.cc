@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/barrier_callback.h"
+#include "base/check_deref.h"
 #include "components/affiliations/core/browser/affiliation_service.h"
 #include "components/affiliations/core/browser/affiliation_utils.h"
 #include "components/plus_addresses/features.h"
@@ -22,8 +23,8 @@ using affiliations::FacetURI;
 PlusAddressAffiliationMatchHelper::PlusAddressAffiliationMatchHelper(
     PlusAddressService* plus_address_service,
     affiliations::AffiliationService* affiliation_service)
-    : plus_address_service_(*plus_address_service),
-      affiliation_service_(affiliation_service) {}
+    : plus_address_service_(CHECK_DEREF(plus_address_service)),
+      affiliation_service_(CHECK_DEREF(affiliation_service)) {}
 
 PlusAddressAffiliationMatchHelper::~PlusAddressAffiliationMatchHelper() =
     default;
@@ -56,7 +57,6 @@ void PlusAddressAffiliationMatchHelper::GetAffiliatedPlusProfiles(
       &PlusAddressAffiliationMatchHelper::ProcessExactAndPSLMatches,
       weak_factory_.GetWeakPtr(), barrier_callback, facet_uri));
 
-  CHECK(affiliation_service_);
   affiliation_service_->GetGroupingInfo(
       {facet_uri},
       base::BindOnce(&PlusAddressAffiliationMatchHelper::OnGroupingInfoReceived,
@@ -99,7 +99,8 @@ void PlusAddressAffiliationMatchHelper::ProcessExactAndPSLMatches(
     const FacetURI& facet,
     const base::flat_set<std::string>& psl_extensions) {
   std::vector<PlusProfile> matches;
-  for (PlusProfile& stored_profile : plus_address_service_->GetPlusProfiles()) {
+  for (const PlusProfile& stored_profile :
+       plus_address_service_->GetPlusProfiles()) {
     FacetURI stored_profile_facet = absl::get<FacetURI>(stored_profile.facet);
     // Note that exact matches are also PSL matches.
     if (affiliations::IsExtendedPublicSuffixDomainMatch(

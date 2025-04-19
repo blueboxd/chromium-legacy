@@ -42,8 +42,13 @@ class CORE_EXPORT BoxFragmentBuilder final : public FragmentBuilder {
   BoxFragmentBuilder(LayoutInputNode node,
                      const ComputedStyle* style,
                      const ConstraintSpace& space,
-                     WritingDirectionMode writing_direction)
-      : FragmentBuilder(node, style, space, writing_direction),
+                     WritingDirectionMode writing_direction,
+                     const BlockBreakToken* previous_break_token)
+      : FragmentBuilder(node,
+                        style,
+                        space,
+                        writing_direction,
+                        previous_break_token),
         is_inline_formatting_context_(node.IsInline()) {}
 
   // Build a fragment for LayoutObject without LayoutInputNode. LayoutInline
@@ -52,10 +57,11 @@ class CORE_EXPORT BoxFragmentBuilder final : public FragmentBuilder {
                      const ComputedStyle* style,
                      const ConstraintSpace& space,
                      WritingDirectionMode writing_direction)
-      : FragmentBuilder(/* node */ nullptr,
+      : FragmentBuilder(/*node=*/nullptr,
                         std::move(style),
                         space,
-                        writing_direction),
+                        writing_direction,
+                        /*previous_break_token=*/nullptr),
         is_inline_formatting_context_(true) {
     layout_object_ = layout_object;
   }
@@ -69,27 +75,28 @@ class CORE_EXPORT BoxFragmentBuilder final : public FragmentBuilder {
     border_padding_ =
         initial_fragment_geometry.border + initial_fragment_geometry.padding;
     border_scrollbar_padding_ =
-        border_padding_ + initial_fragment_geometry.scrollbar;
+        initial_fragment_geometry.border + initial_fragment_geometry.scrollbar;
+    // Padding doesn't take up layout space in fieldset containers (that's done
+    // inside the anonymous child wrapper).
+    if (!node_ || !node_.IsFieldsetContainer()) {
+      border_scrollbar_padding_ += initial_fragment_geometry.padding;
+    }
     original_border_scrollbar_padding_block_start_ =
         border_scrollbar_padding_.block_start;
     if (node_) {
       child_available_size_ = CalculateChildAvailableSize(
-          space_, To<BlockNode>(node_), size_, border_scrollbar_padding_);
+          space_, To<BlockNode>(node_), size_,
+          border_padding_ + initial_fragment_geometry.scrollbar);
     }
-  }
-
-  void AdjustBorderScrollbarPaddingForFragmentation(
-      const BlockBreakToken* break_token) {
-    if (LIKELY(!break_token))
-      return;
-    if (break_token->IsBreakBefore())
-      return;
-    border_scrollbar_padding_.block_start = LayoutUnit();
   }
 
   const FragmentGeometry& InitialFragmentGeometry() const {
     DCHECK(initial_fragment_geometry_);
     return *initial_fragment_geometry_;
+  }
+
+  const BlockBreakToken* PreviousBreakToken() const {
+    return To<BlockBreakToken>(previous_break_token_);
   }
 
   // Use the block-size setters/getters further down instead of the inherited
@@ -162,17 +169,69 @@ class CORE_EXPORT BoxFragmentBuilder final : public FragmentBuilder {
     DCHECK(initial_fragment_geometry_);
     return initial_fragment_geometry_->border_box_size;
   }
+
+  BoxStrut ExcludedSidesTruncated(const BoxStrut& strut) const {
+    // Note that this only truncates along the block axis for now. When it comes
+    // to the inline axis, BoxStrut has inline_start/inline_end, whereas
+    // LogicalBoxSides has line_left/line_right, so it's a bit more work.
+    return BoxStrut(
+        strut.inline_start, strut.inline_end,
+        sides_to_include_.block_start ? strut.block_start : LayoutUnit(),
+        sides_to_include_.block_end ? strut.block_end : LayoutUnit());
+  }
+
+  BoxStrut ApplicableBorders() const {
+    DCHECK(initial_fragment_geometry_);
+    return ExcludedSidesTruncated(initial_fragment_geometry_->border);
+  }
+  BoxStrut ApplicableScrollbar() const {
+    DCHECK(initial_fragment_geometry_);
+    return ExcludedSidesTruncated(initial_fragment_geometry_->scrollbar);
+  }
+  BoxStrut ApplicablePadding() const {
+    DCHECK(initial_fragment_geometry_);
+    return ExcludedSidesTruncated(initial_fragment_geometry_->padding);
+  }
+
+  // Get border+padding for each box side.
+  //
+  // This value is node-specific (not for an individual fragment), and is used
+  // to resolve the final box size, but is not used to position descendants.
+  // This distinction matters for block fragmentation. Resolving the final box
+  // size means the "stitched" box size (sum of the block-size of all
+  // fragments). If box decorations are to be cloned, it must be reflected in
+  // this value, meaning that computed border+padding is multiplied by the
+  // number of fragments (so that e.g. a <div style="padding:20px;
+  // height:100px;"> split into two fragments get a stitched border-box size of
+  // 180px).
   const BoxStrut& BorderPadding() const {
     DCHECK(initial_fragment_geometry_);
     return border_padding_;
   }
+
+  // Get border+padding+scrollbar for each box side.
+  //
+  // This value is fragment-specific, and is used to position descendants and to
+  // calculate the intrinsic block-size, but not to resolve the final box
+  // size. This distinction matters for block fragmentation. When box
+  // decorations are to be sliced (i.e. not cloned), the block-start
+  // border+padding size is truncated to 0 after fragmentation breaks, and this
+  // will be reflected here, so that we don't make room for block-start
+  // border+padding at the beginning of each fragment (only the first).
   const BoxStrut& BorderScrollbarPadding() const {
     DCHECK(initial_fragment_geometry_);
     return border_scrollbar_padding_;
   }
+
   LayoutUnit OriginalBorderScrollbarPaddingBlockStart() const {
     return original_border_scrollbar_padding_block_start_;
   }
+
+  void ClearBorderScrollbarPaddingBlockStart() {
+    border_scrollbar_padding_.block_start = LayoutUnit();
+  }
+  void UpdateBorderPaddingForClonedBoxDecorations();
+
   // The child available-size is subtly different from the content-box size of
   // an element. For an anonymous-block the child available-size is equal to
   // its non-anonymous parent (similar to percentages).
@@ -180,7 +239,7 @@ class CORE_EXPORT BoxFragmentBuilder final : public FragmentBuilder {
     DCHECK(initial_fragment_geometry_);
     return child_available_size_;
   }
-  const BlockNode& Node() {
+  const BlockNode& Node() const {
     DCHECK(node_);
     return To<BlockNode>(node_);
   }
@@ -268,6 +327,13 @@ class CORE_EXPORT BoxFragmentBuilder final : public FragmentBuilder {
 
   // Specify whether this will be the first fragment generated for the node.
   void SetIsFirstForNode(bool is_first) { is_first_for_node_ = is_first; }
+
+  bool ShouldCloneBoxEndDecorations() const {
+    return should_clone_box_end_decorations_;
+  }
+  void SetShouldCloneBoxEndDecorations(bool b) {
+    should_clone_box_end_decorations_ = b;
+  }
 
   void SetIsMonolithic(bool b) { is_monolithic_ = b; }
 
@@ -540,6 +606,9 @@ class CORE_EXPORT BoxFragmentBuilder final : public FragmentBuilder {
   void TransferFrameSetLayoutData(std::unique_ptr<FrameSetLayoutData> data) {
     frame_set_layout_data_ = std::move(data);
   }
+  void SetReadingFlowElements(HeapVector<Member<Element>>&& elements) {
+    reading_flow_elements_ = std::move(elements);
+  }
 
   const GridLayoutData& GetGridLayoutData() const {
     DCHECK(grid_layout_data_);
@@ -605,6 +674,11 @@ class CORE_EXPORT BoxFragmentBuilder final : public FragmentBuilder {
            (!node_.IsPaginatedRoot() || IsFragmentainerBoxType());
   }
 
+  // Handle (lay out / propagate) out-of-flow positioned descendants and other
+  // special descendants. This function is to be called when an algorithm is
+  // done with regular in-flow descendants and has set up its final size.
+  void HandleOofsAndSpecialDescendants();
+
  private:
   // Propagate fragmentation details. This includes checking whether we have
   // fragmented in this flow, break appeal, column spanner detection, and column
@@ -632,6 +706,7 @@ class CORE_EXPORT BoxFragmentBuilder final : public FragmentBuilder {
   bool is_block_size_for_fragmentation_clamped_ = false;
   bool is_monolithic_ = true;
   bool is_first_for_node_ = true;
+  bool should_clone_box_end_decorations_ = false;
   bool did_break_self_ = false;
   bool has_inflow_child_break_inside_ = false;
   bool has_forced_break_ = false;
@@ -642,6 +717,7 @@ class CORE_EXPORT BoxFragmentBuilder final : public FragmentBuilder {
   bool is_at_block_end_ = false;
   bool is_truncated_by_fragmentation_line = false;
   bool use_last_baseline_for_inline_baseline_ = false;
+  bool has_moved_children_in_block_direction_ = false;
   LayoutUnit block_offset_for_additional_columns_;
 
   LayoutUnit block_size_for_fragmentation_;
@@ -679,6 +755,8 @@ class CORE_EXPORT BoxFragmentBuilder final : public FragmentBuilder {
 
   std::unique_ptr<DevtoolsFlexInfo> flex_layout_data_;
   std::unique_ptr<FrameSetLayoutData> frame_set_layout_data_;
+
+  HeapVector<Member<Element>> reading_flow_elements_;
 
   LogicalBoxSides sides_to_include_;
 

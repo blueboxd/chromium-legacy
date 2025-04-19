@@ -51,6 +51,7 @@
 #include "third_party/boringssl/src/include/openssl/curve25519.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+#include "url/url_constants.h"
 
 namespace content {
 
@@ -270,9 +271,7 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
     base::UmaHistogramBoolean(
         "Ads.InterestGroup.EnumNaming.Update.WorkletExecutionMode",
         *maybe_execution_mode == "groupByOrigin");
-  } else if (base::FeatureList::IsEnabled(
-                 features::kEnableUpdatingExecutionModeToFrozenContext) &&
-             *maybe_execution_mode == "frozen-context") {
+  } else if (*maybe_execution_mode == "frozen-context") {
     interest_group_update.execution_mode =
         blink::InterestGroup::ExecutionMode::kFrozenContext;
   } else {
@@ -377,6 +376,52 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
   return true;
 }
 
+// Copies the trustedBiddingSignalsCoordinator JSON field into
+// `trusted_bidding_signals_coordinator`.
+[[nodiscard]] bool TryToCopyTrustedBiddingSignalsCoordinator(
+    const base::Value::Dict& dict,
+    InterestGroupUpdate& interest_group_update) {
+  const base::Value* maybe_trusted_bidding_signals_coordinator =
+      dict.Find("trustedBiddingSignalsCoordinator");
+
+  // No `trustedBiddingSignalsCoordinator` field in the update JSON.
+  if (!maybe_trusted_bidding_signals_coordinator) {
+    return true;
+  }
+
+  // `trustedBiddingSignalsCoordinator` field is `null` in the update JSON.
+  if (maybe_trusted_bidding_signals_coordinator->is_none()) {
+    interest_group_update.trusted_bidding_signals_coordinator.emplace(
+        std::nullopt);
+    return true;
+  }
+
+  // If `trusted_bidding_signals_coordinator` is present and not null, it must
+  // be a valid URL origin string.
+  if (!maybe_trusted_bidding_signals_coordinator->is_string()) {
+    return false;
+  }
+
+  GURL trusted_bidding_signals_coordinator_url =
+      GURL(maybe_trusted_bidding_signals_coordinator->GetString());
+
+  if (!trusted_bidding_signals_coordinator_url.is_valid()) {
+    return false;
+  }
+
+  url::Origin trusted_bidding_signals_coordinator_url_origin =
+      url::Origin::Create(trusted_bidding_signals_coordinator_url);
+
+  if (trusted_bidding_signals_coordinator_url_origin.scheme() !=
+      url::kHttpsScheme) {
+    return false;
+  }
+
+  interest_group_update.trusted_bidding_signals_coordinator =
+      std::move(trusted_bidding_signals_coordinator_url_origin);
+  return true;
+}
+
 // Helper for TryToCopyAds() and TryToCopyAdComponents().
 [[nodiscard]] std::optional<std::vector<blink::InterestGroup::Ad>> ExtractAds(
     const base::Value::List& ads_list,
@@ -421,6 +466,19 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
           ads_dict->FindString("buyerAndSellerReportingId");
       if (maybe_buyer_and_seller_reporting_id) {
         ad.buyer_and_seller_reporting_id = *maybe_buyer_and_seller_reporting_id;
+      }
+      const base::Value::List* maybe_selectable_buyer_and_seller_reporting_ids =
+          ads_dict->FindList("selectableBuyerAndSellerReportingIds");
+      if (maybe_selectable_buyer_and_seller_reporting_ids &&
+          base::FeatureList::IsEnabled(
+              blink::features::kFledgeAuctionDealSupport)) {
+        std::vector<std::string> selectable_buyer_and_seller_reporting_ids;
+        for (const auto& id :
+             *maybe_selectable_buyer_and_seller_reporting_ids) {
+          selectable_buyer_and_seller_reporting_ids.push_back(id.GetString());
+        }
+        ad.selectable_buyer_and_seller_reporting_ids =
+            std::move(selectable_buyer_and_seller_reporting_ids);
       }
       const base::Value::List* maybe_allowed_reporting_origins =
           ads_dict->FindList("allowedReportingOrigins");
@@ -710,11 +768,12 @@ std::optional<InterestGroupUpdate> ParseUpdateJson(
   if (!TryToCopyTrustedBiddingSignalsKeys(*dict, interest_group_update)) {
     return std::nullopt;
   }
-  if (base::FeatureList::IsEnabled(
-          features::kEnableUpdatingUserBiddingSignals)) {
-    if (!TryToCopyUserBiddingSignals(*dict, interest_group_update)) {
-      return std::nullopt;
-    }
+  if (!TryToCopyTrustedBiddingSignalsCoordinator(*dict,
+                                                 interest_group_update)) {
+    return std::nullopt;
+  }
+  if (!TryToCopyUserBiddingSignals(*dict, interest_group_update)) {
+    return std::nullopt;
   }
   if (!TryToCopyAds(*dict, interest_group_update)) {
     return std::nullopt;
@@ -923,7 +982,6 @@ void InterestGroupUpdateManager::UpdateInterestGroupByBatch(
 
   for (auto& [interest_group_key, update_url, joining_origin] :
        update_parameters) {
-    manager_->QueueKAnonymityUpdateForInterestGroup(interest_group_key);
     ++num_in_flight_updates_;
     base::UmaHistogramCounts100000(
         "Ads.InterestGroup.Net.RequestUrlSizeBytes.Update",

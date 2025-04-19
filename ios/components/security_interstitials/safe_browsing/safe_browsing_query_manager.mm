@@ -164,45 +164,69 @@ void SafeBrowsingQueryManager::UrlCheckFinished(
     bool show_error_page,
     safe_browsing::SafeBrowsingUrlCheckerImpl::PerformedCheck performed_check) {
   auto query_result_pair = results_.find(query);
-
-  // TODO(crbug.com/337243708): Remove when observer check is implemented.
-  if (base::FeatureList::IsEnabled(
-          safe_browsing::kSafeBrowsingAsyncRealTimeCheck)) {
-    // If one of the checks (sync/async) successfully finishes, early return if
-    // the query was already checked and erased from the map.
-    if (query_result_pair == results_.end()) {
-      return;
-    }
-  } else {
-    DCHECK(query_result_pair != results_.end());
-  }
+  DCHECK(query_result_pair != results_.end());
 
   // Store the query result.
   Result& result = query_result_pair->second;
-  result.proceed = proceed;
-  result.show_error_page = show_error_page;
-
-  // If an error page is requested, an UnsafeResource must be stored before the
-  // execution of its completion block.
+  if (base::FeatureList::IsEnabled(
+          safe_browsing::kSafeBrowsingAsyncRealTimeCheck)) {
+    if (result.sync_check_complete || result.async_check_complete) {
+      // If one result has already been received, combine results.
+      result.proceed = result.proceed && proceed;
+      result.show_error_page = result.show_error_page || show_error_page;
+    } else {
+      result.proceed = proceed;
+      result.show_error_page = show_error_page;
+    }
+  } else {
+    result.proceed = proceed;
+    result.show_error_page = show_error_page;
+  }
+  // If an error page is requested, an UnsafeResource must be stored before
+  // the execution of its completion block.
   DCHECK(!show_error_page || result.resource);
 
   // Notify observers of the completed URL check. `this` might get destroyed
   // when an observer is notified.
   auto weak_this = weak_factory_.GetWeakPtr();
-  for (auto& observer : observers_) {
-    if (base::FeatureList::IsEnabled(
-            safe_browsing::kSafeBrowsingAsyncRealTimeCheck)) {
-      observer.SafeBrowsingSyncQueryFinished(this, query, result,
-                                             performed_check);
-    } else {
-      observer.SafeBrowsingQueryFinished(this, query, result, performed_check);
-    }
-    if (!weak_this)
-      return;
-  }
 
-  // Clear out the state since the query is finished.
-  results_.erase(query_result_pair);
+  if (base::FeatureList::IsEnabled(
+          safe_browsing::kSafeBrowsingAsyncRealTimeCheck)) {
+    if (is_async_check) {
+      result.async_check_complete = true;
+    } else {
+      result.sync_check_complete = true;
+    }
+
+    for (auto& observer : observers_) {
+      const QueryData& query_data =
+          QueryData(this, query, result, performed_check);
+      if (is_async_check) {
+        observer.SafeBrowsingAsyncQueryFinished(query_data);
+      } else {
+        observer.SafeBrowsingSyncQueryFinished(query_data);
+      }
+
+      if (!weak_this) {
+        return;
+      }
+    }
+
+    // Clear out the state since the query is finished.
+    if (result.sync_check_complete && result.async_check_complete) {
+      results_.erase(query_result_pair);
+    }
+  } else {
+    for (auto& observer : observers_) {
+      observer.SafeBrowsingQueryFinished(this, query, result, performed_check);
+      if (!weak_this) {
+        return;
+      }
+    }
+
+    // Clear out the state since the query is finished.
+    results_.erase(query_result_pair);
+  }
 }
 
 #pragma mark - SafeBrowsingQueryManager::Query
@@ -229,6 +253,22 @@ SafeBrowsingQueryManager::Result& SafeBrowsingQueryManager::Result::operator=(
     const Result&) = default;
 
 SafeBrowsingQueryManager::Result::~Result() = default;
+
+#pragma mark - SafeBrowsingQueryManager::QueryData
+
+SafeBrowsingQueryManager::QueryData::QueryData(
+    SafeBrowsingQueryManager* manager,
+    const SafeBrowsingQueryManager::Query& query,
+    const SafeBrowsingQueryManager::Result& result,
+    safe_browsing::SafeBrowsingUrlCheckerImpl::PerformedCheck performed_check)
+    : manager(manager),
+      query(query),
+      result(result),
+      performed_check(performed_check) {}
+
+SafeBrowsingQueryManager::QueryData::QueryData(const QueryData&) = default;
+
+SafeBrowsingQueryManager::QueryData::~QueryData() = default;
 
 #pragma mark - SafeBrowsingQueryManager::UrlCheckerClient
 
@@ -262,29 +302,6 @@ void SafeBrowsingQueryManager::UrlCheckerClient::CheckUrl(
 }
 
 void SafeBrowsingQueryManager::UrlCheckerClient::OnCheckUrlResult(
-    safe_browsing::SafeBrowsingUrlCheckerImpl* url_checker,
-    safe_browsing::SafeBrowsingUrlCheckerImpl::NativeUrlCheckNotifier*
-        slow_check_notifier,
-    bool proceed,
-    bool showed_interstitial,
-    bool has_post_commit_interstitial_skipped,
-    safe_browsing::SafeBrowsingUrlCheckerImpl::PerformedCheck performed_check) {
-  DCHECK_CURRENTLY_ON(
-      base::FeatureList::IsEnabled(safe_browsing::kSafeBrowsingOnUIThread)
-          ? web::WebThread::UI
-          : web::WebThread::IO);
-  DCHECK(url_checker);
-  if (slow_check_notifier) {
-    *slow_check_notifier = base::BindOnce(&UrlCheckerClient::OnCheckComplete,
-                                          AsWeakPtr(), url_checker);
-    return;
-  }
-
-  OnCheckComplete(url_checker, proceed, showed_interstitial,
-                  has_post_commit_interstitial_skipped, performed_check);
-}
-
-void SafeBrowsingQueryManager::UrlCheckerClient::OnCheckComplete(
     safe_browsing::SafeBrowsingUrlCheckerImpl* url_checker,
     bool proceed,
     bool showed_interstitial,

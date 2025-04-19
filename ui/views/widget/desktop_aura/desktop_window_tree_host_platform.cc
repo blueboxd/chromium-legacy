@@ -114,7 +114,6 @@ ui::PlatformWindowType GetPlatformWindowType(
     default:
       return ui::PlatformWindowType::kPopup;
   }
-  NOTREACHED_NORETURN();
 }
 
 ui::PlatformWindowShadowType GetPlatformWindowShadowType(
@@ -188,8 +187,9 @@ ui::PlatformWindowInitProperties ConvertWidgetInitParamsToInitProperties(
 }
 
 SkPath GetWindowMask(const Widget* widget) {
-  if (!widget->non_client_view())
+  if (!widget || !widget->non_client_view()) {
     return SkPath();
+  }
 
   SkPath window_mask;
   // Some frame views define a custom (non-rectanguar) window mask.
@@ -763,14 +763,17 @@ void DesktopWindowTreeHostPlatform::SetFullscreen(bool fullscreen,
   if (!weak_ptr)
     return;
 
-  // The state must change synchronously to let media react on fullscreen
-  // changes.
-  DCHECK_EQ(fullscreen, IsFullscreen());
+  if (!base::FeatureList::IsEnabled(features::kAsyncFullscreenWindowState)) {
+    // The state must change synchronously to let media react on fullscreen
+    // changes.
+    DCHECK_EQ(fullscreen, IsFullscreen());
 
-  if (IsFullscreen() == fullscreen)
-    ScheduleRelayout();
-  // Else: the widget will be relaid out either when the window bounds change
-  // or when |platform_window|'s fullscreen state changes.
+    if (IsFullscreen() == fullscreen) {
+      ScheduleRelayout();
+    }
+    // Else: the widget will be relaid out either when the window bounds change
+    // or when |platform_window|'s fullscreen state changes.
+  }
 }
 
 bool DesktopWindowTreeHostPlatform::IsFullscreen() const {
@@ -799,7 +802,8 @@ void DesktopWindowTreeHostPlatform::SetWindowIcons(
   platform_window()->SetWindowIcons(window_icon, app_icon);
 }
 
-void DesktopWindowTreeHostPlatform::InitModalType(ui::ModalType modal_type) {
+void DesktopWindowTreeHostPlatform::InitModalType(
+    ui::mojom::ModalType modal_type) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
@@ -845,20 +849,38 @@ void DesktopWindowTreeHostPlatform::SetBoundsInDIP(const gfx::Rect& bounds) {
   platform_window()->SetBoundsInDIP(bounds);
 }
 
+void DesktopWindowTreeHostPlatform::SetAllowScreenshots(bool allow) {
+  NOTIMPLEMENTED();
+}
+
+bool DesktopWindowTreeHostPlatform::AreScreenshotsAllowed() {
+  NOTIMPLEMENTED();
+  return true;
+}
+
 gfx::Transform DesktopWindowTreeHostPlatform::GetRootTransform() const {
   // TODO(crbug.com/40218466): This can use wrong scale during initialization.
   // Revisit this as a part of 'use dip' work.
 
-  display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
   // This might be called before the |platform_window| is created. Thus,
   // explicitly check if that exists before trying to access its visibility and
   // the display where it is shown.
-  if (platform_window())
-    display = GetDisplayNearestRootWindow();
-  else if (window_parent_)
-    display = window_parent_->GetDisplayNearestRootWindow();
+  const aura::Window* root_window = nullptr;
+  if (platform_window()) {
+    root_window = window();
+  } else if (window_parent_) {
+    root_window = window_parent_->window();
+  }
+
+  auto* const screen = display::Screen::GetScreen();
+  const float scale = root_window
+                          ? screen
+                                ->GetPreferredScaleFactorForWindow(
+                                    const_cast<aura::Window*>(root_window))
+                                .value_or(1.0f)
+                          : screen->GetPrimaryDisplay().device_scale_factor();
+
   gfx::Transform transform;
-  float scale = display.device_scale_factor();
   transform.Scale(scale, scale);
   return transform;
 }
@@ -1043,6 +1065,12 @@ gfx::PointF DesktopWindowTreeHostPlatform::ConvertScreenPointToLocalDIP(
 #endif
 }
 
+gfx::Insets DesktopWindowTreeHostPlatform::ConvertInsetsToPixels(
+    const gfx::Insets& insets_dip) const {
+  auto scale = GetRootTransform().To2dScale();
+  return gfx::ScaleToCeiledInsets(insets_dip, scale.x(), scale.y());
+}
+
 void DesktopWindowTreeHostPlatform::OnWorkspaceChanged() {
   OnHostWorkspaceChanged();
 }
@@ -1066,11 +1094,13 @@ gfx::Rect DesktopWindowTreeHostPlatform::ToPixelRect(
 }
 
 Widget* DesktopWindowTreeHostPlatform::GetWidget() {
-  return native_widget_delegate_->AsWidget();
+  return native_widget_delegate_ ? native_widget_delegate_->AsWidget()
+                                 : nullptr;
 }
 
 const Widget* DesktopWindowTreeHostPlatform::GetWidget() const {
-  return native_widget_delegate_->AsWidget();
+  return native_widget_delegate_ ? native_widget_delegate_->AsWidget()
+                                 : nullptr;
 }
 
 views::corewm::TooltipController*
@@ -1079,6 +1109,9 @@ DesktopWindowTreeHostPlatform::tooltip_controller() {
 }
 
 void DesktopWindowTreeHostPlatform::ScheduleRelayout() {
+  if (!native_widget_delegate_) {
+    return;
+  }
   Widget* widget = native_widget_delegate_->AsWidget();
   NonClientView* non_client_view = widget->non_client_view();
   // non_client_view may be NULL, especially during creation.

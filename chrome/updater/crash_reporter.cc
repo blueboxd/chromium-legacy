@@ -49,6 +49,10 @@ std::vector<std::string> MakeCrashHandlerArgs(UpdaterScope updater_scope) {
   }
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(kMonitorSelfSwitch)) {
     command_line.AppendSwitch(kMonitorSelfSwitch);
+    if (updater_scope == UpdaterScope::kSystem) {
+      command_line.AppendSwitchASCII(kMonitorSelfSwitchArgument,
+                                     base::StrCat({"--", kSystemSwitch}));
+    }
   }
 
   // The first element in the command line arguments is the program name,
@@ -120,10 +124,6 @@ void StartCrashReporter(UpdaterScope updater_scope,
 int CrashReporterMain() {
   base::CommandLine command_line = *base::CommandLine::ForCurrentProcess();
   CHECK(command_line.HasSwitch(kCrashHandlerSwitch));
-
-  // Disable rate-limiting until this is fixed:
-  //   https://bugs.chromium.org/p/crashpad/issues/detail?id=23
-  command_line.AppendSwitch(kNoRateLimitSwitch);
 
   // Because of https://bugs.chromium.org/p/crashpad/issues/detail?id=82,
   // Crashpad fails on the presence of flags it doesn't handle.

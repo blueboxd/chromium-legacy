@@ -39,6 +39,7 @@ class GameDashboardMainMenuView;
 class GameDashboardToolbarView;
 class IconButton;
 class PillButton;
+class TimeView;
 class Switch;
 
 // Wrapper for `GameDashboardContext` that exposes its internals to test
@@ -71,9 +72,11 @@ class GameDashboardContextTestApi {
   FeatureTile* GetMainMenuToolbarTile();
   FeatureTile* GetMainMenuRecordGameTile();
   FeatureTile* GetMainMenuScreenshotTile();
+  const std::u16string& GetMainMenuScreenSizeSubtitle();
   views::Button* GetMainMenuScreenSizeSettingsButton();
   views::Button* GetMainMenuGameControlsDetailsButton();
   PillButton* GetMainMenuGameControlsSetupButton();
+  TimeView* GetMainMenuClockView();
   Switch* GetMainMenuGameControlsFeatureSwitch();
   views::LabelButton* GetMainMenuFeedbackButton();
   IconButton* GetMainMenuHelpButton();

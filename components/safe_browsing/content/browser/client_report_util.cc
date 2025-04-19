@@ -63,7 +63,6 @@ CSBRR::ReportType GetReportTypeFromSBThreatType(SBThreatType threat_type) {
     case SB_THREAT_TYPE_SAFE:
     case SB_THREAT_TYPE_URL_BINARY_MALWARE:
     case SB_THREAT_TYPE_EXTENSION:
-    case SB_THREAT_TYPE_BLOCKLISTED_RESOURCE:
     case SB_THREAT_TYPE_API_ABUSE:
     case SB_THREAT_TYPE_SUBRESOURCE_FILTER:
     case SB_THREAT_TYPE_CSD_ALLOWLIST:
@@ -107,7 +106,6 @@ CSBRR::WarningShownInfo::WarningUXType GetWarningUXTypeFromSBThreatType(
     case SB_THREAT_TYPE_SAFE:
     case SB_THREAT_TYPE_URL_BINARY_MALWARE:
     case SB_THREAT_TYPE_EXTENSION:
-    case SB_THREAT_TYPE_BLOCKLISTED_RESOURCE:
     case SB_THREAT_TYPE_API_ABUSE:
     case SB_THREAT_TYPE_SUBRESOURCE_FILTER:
     case SB_THREAT_TYPE_CSD_ALLOWLIST:
@@ -119,69 +117,6 @@ CSBRR::WarningShownInfo::WarningUXType GetWarningUXTypeFromSBThreatType(
       NOTREACHED_IN_MIGRATION() << "We should not send report for threat type: "
                                 << static_cast<int>(threat_type);
       return CSBRR::WarningShownInfo::UNKNOWN;
-  }
-}
-
-CSBRR::UrlRequestDestination
-GetUrlRequestDestinationFromMojomRequestDestination(
-    network::mojom::RequestDestination request_destination) {
-  switch (request_destination) {
-    case network::mojom::RequestDestination::kEmpty:
-      return CSBRR::EMPTY;
-    case network::mojom::RequestDestination::kAudio:
-      return CSBRR::AUDIO;
-    case network::mojom::RequestDestination::kAudioWorklet:
-      return CSBRR::AUDIO_WORKLET;
-    case network::mojom::RequestDestination::kDocument:
-      return CSBRR::DOCUMENT;
-    case network::mojom::RequestDestination::kEmbed:
-      return CSBRR::EMBED;
-    case network::mojom::RequestDestination::kFont:
-      return CSBRR::FONT;
-    case network::mojom::RequestDestination::kFrame:
-      return CSBRR::FRAME;
-    case network::mojom::RequestDestination::kIframe:
-      return CSBRR::IFRAME;
-    case network::mojom::RequestDestination::kImage:
-      return CSBRR::IMAGE;
-    case network::mojom::RequestDestination::kJson:
-      return CSBRR::JSON;
-    case network::mojom::RequestDestination::kManifest:
-      return CSBRR::MANIFEST;
-    case network::mojom::RequestDestination::kObject:
-      return CSBRR::OBJECT;
-    case network::mojom::RequestDestination::kPaintWorklet:
-      return CSBRR::PAINT_WORKLET;
-    case network::mojom::RequestDestination::kReport:
-      return CSBRR::REPORT;
-    case network::mojom::RequestDestination::kScript:
-      return CSBRR::SCRIPT;
-    case network::mojom::RequestDestination::kServiceWorker:
-      return CSBRR::SERVICE_WORKER;
-    case network::mojom::RequestDestination::kSharedWorker:
-      return CSBRR::SHARED_WORKER;
-    case network::mojom::RequestDestination::kSharedStorageWorklet:
-      return CSBRR::SHARED_STORAGE_WORKLET;
-    case network::mojom::RequestDestination::kStyle:
-      return CSBRR::STYLE;
-    case network::mojom::RequestDestination::kTrack:
-      return CSBRR::TRACK;
-    case network::mojom::RequestDestination::kVideo:
-      return CSBRR::VIDEO;
-    case network::mojom::RequestDestination::kWebBundle:
-      return CSBRR::WEB_BUNDLE;
-    case network::mojom::RequestDestination::kWorker:
-      return CSBRR::WORKER;
-    case network::mojom::RequestDestination::kXslt:
-      return CSBRR::XSLT;
-    case network::mojom::RequestDestination::kFencedframe:
-      return CSBRR::FENCED_FRAME;
-    case network::mojom::RequestDestination::kWebIdentity:
-      return CSBRR::WEB_IDENTITY;
-    case network::mojom::RequestDestination::kDictionary:
-      return CSBRR::DICTIONARY;
-    case network::mojom::RequestDestination::kSpeculationRules:
-      return CSBRR::SPECULATION_RULES;
   }
 }
 
@@ -276,9 +211,7 @@ void FillReportBasicResourceDetails(
   if (IsReportableUrl(resource.url)) {
     report->set_url(resource.url.spec());
     report->set_type(GetReportTypeFromSBThreatType(resource.threat_type));
-    report->set_url_request_destination(
-        GetUrlRequestDestinationFromMojomRequestDestination(
-            resource.request_destination));
+    report->set_url_request_destination(CSBRR::DOCUMENT);
   }
 
   // With committed interstitials, the information is pre-filled into the

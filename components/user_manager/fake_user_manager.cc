@@ -166,6 +166,12 @@ void FakeUserManager::SetUserNonCryptohomeDataEphemeral(
   }
 }
 
+void FakeUserManager::SetUserCryptohomeDataEphemeral(
+    const AccountId& account_id,
+    bool is_ephemeral) {
+  accounts_with_ephemeral_cryptohome_data_.insert({account_id, is_ephemeral});
+}
+
 void FakeUserManager::UserLoggedIn(const AccountId& account_id,
                                    const std::string& username_hash,
                                    bool browser_restart,
@@ -305,10 +311,6 @@ bool FakeUserManager::IsLoggedInAsKioskApp() const {
   return active_user ? active_user->GetType() == UserType::kKioskApp : false;
 }
 
-bool FakeUserManager::IsLoggedInAsArcKioskApp() const {
-  return false;
-}
-
 bool FakeUserManager::IsLoggedInAsWebKioskApp() const {
   const User* active_user = GetActiveUser();
   return active_user ? active_user->GetType() == UserType::kWebKioskApp : false;
@@ -329,6 +331,19 @@ bool FakeUserManager::IsUserNonCryptohomeDataEphemeral(
                         account_id);
 }
 
+bool FakeUserManager::IsUserCryptohomeDataEphemeral(
+    const AccountId& account_id) const {
+  auto is_ephemeral_overriden =
+      base::Contains(accounts_with_ephemeral_cryptohome_data_, account_id);
+
+  if (!is_ephemeral_overriden) {
+    // Otherwise fall back to default behavior.
+    return UserManagerBase::IsUserCryptohomeDataEphemeral(account_id);
+  }
+
+  return accounts_with_ephemeral_cryptohome_data_.at(account_id);
+}
+
 bool FakeUserManager::IsGuestSessionAllowed() const {
   return true;
 }
@@ -341,32 +356,13 @@ bool FakeUserManager::IsUserAllowed(const User& user) const {
   return true;
 }
 
-void FakeUserManager::SetEphemeralModeConfig(
-    EphemeralModeConfig ephemeral_mode_config) {
-  UserManagerBase::SetEphemeralModeConfig(std::move(ephemeral_mode_config));
-}
-
-bool FakeUserManager::IsEphemeralAccountIdByPolicy(
-    const AccountId& account_id) const {
-  return GetEphemeralModeConfig().IsAccountIdIncluded(account_id);
-}
-
 bool FakeUserManager::IsDeviceLocalAccountMarkedForRemoval(
     const AccountId& account_id) const {
   return false;
 }
 
-void FakeUserManager::AsyncRemoveCryptohome(const AccountId& account_id) const {
-  NOTIMPLEMENTED();
-}
-
 bool FakeUserManager::IsDeprecatedSupervisedAccountId(
     const AccountId& account_id) const {
-  return false;
-}
-
-bool FakeUserManager::IsValidDefaultUserImageId(int image_index) const {
-  NOTIMPLEMENTED();
   return false;
 }
 

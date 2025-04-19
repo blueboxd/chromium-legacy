@@ -19,11 +19,13 @@ import org.chromium.components.browser_ui.site_settings.WebsitePermissionsFetche
 import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge;
 import org.chromium.components.browsing_data.DeleteBrowsingDataAction;
 import org.chromium.components.content_settings.CookieControlsBridge;
+import org.chromium.components.content_settings.CookieControlsBridge.TrackingProtectionFeature;
 import org.chromium.components.content_settings.CookieControlsObserver;
 import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.components.user_prefs.UserPrefs;
 
 import java.util.Collection;
+import java.util.List;
 
 /** Class for controlling the page info tracking protection section for 3PCD 100% launch. */
 public class PageInfoTrackingProtectionLaunchController extends PageInfoPreferenceSubpageController
@@ -36,8 +38,8 @@ public class PageInfoTrackingProtectionLaunchController extends PageInfoPreferen
     private PageInfoTrackingProtectionLaunchSettings mSubPage;
 
     private boolean mCookieControlsVisible;
-    private boolean mThirdPartyCookiesBlocked;
-    private int mEnforcement;
+    private boolean mProtectionsOn;
+    private List<TrackingProtectionFeature> mFeatures;
     private boolean mIsEnforced;
     private long mExpiration;
     private boolean mShouldDisplaySiteBreakageString;
@@ -111,14 +113,14 @@ public class PageInfoTrackingProtectionLaunchController extends PageInfoPreferen
         params.isIncognito = mIsIncognito;
         params.fixedExpirationForTesting = mFixedExpirationForTesting;
         mSubPage.setParams(params);
-        mSubPage.setCookieStatus(
-                mCookieControlsVisible, mThirdPartyCookiesBlocked, mEnforcement, mExpiration);
+        mSubPage.setTrackingProtectionStatus(
+                mCookieControlsVisible, mProtectionsOn, mExpiration, mFeatures);
 
         SiteSettingsCategory storageCategory =
                 SiteSettingsCategory.createFromType(
                         mMainController.getBrowserContext(), SiteSettingsCategory.Type.USE_STORAGE);
         new WebsitePermissionsFetcher(getDelegate().getSiteSettingsDelegate())
-                .fetchPreferencesForCategoryAndPopulateFpsInfo(
+                .fetchPreferencesForCategoryAndPopulateRwsInfo(
                         storageCategory, this::onStorageFetched);
 
         return view;
@@ -134,11 +136,11 @@ public class PageInfoTrackingProtectionLaunchController extends PageInfoPreferen
         if (mSubPage != null) {
             mSubPage.setStorageUsage(mWebsite.getTotalUsage());
 
-            boolean isFPSInfoShown =
-                    mSubPage.maybeShowFPSInfo(
-                            mWebsite.getFPSCookieInfo(), mWebsite.getAddress().getOrigin());
+            boolean isRWSInfoShown =
+                    mSubPage.maybeShowRWSInfo(
+                            mWebsite.getRWSCookieInfo(), mWebsite.getAddress().getOrigin());
             RecordHistogram.recordBooleanHistogram(
-                    "Security.PageInfo.Cookies.HasFPSInfo", isFPSInfoShown);
+                    "Security.PageInfo.Cookies.HasFPSInfo", isRWSInfoShown);
         }
     }
 
@@ -181,22 +183,21 @@ public class PageInfoTrackingProtectionLaunchController extends PageInfoPreferen
     }
 
     @Override
-    public void onStatusChanged(
+    public void onTrackingProtectionStatusChanged(
             boolean controlsVisible,
             boolean protectionsOn,
-            int enforcement,
-            int blockingStatus,
-            long expiration) {
+            long expiration,
+            List<TrackingProtectionFeature> features) {
         mCookieControlsVisible = controlsVisible;
-        mThirdPartyCookiesBlocked = protectionsOn;
-        mEnforcement = enforcement;
+        mProtectionsOn = protectionsOn;
         mExpiration = expiration;
+        mFeatures = features;
 
         updateRowViewSubtitle();
 
         if (mSubPage != null) {
-            mSubPage.setCookieStatus(
-                    mCookieControlsVisible, mThirdPartyCookiesBlocked, mEnforcement, expiration);
+            mSubPage.setTrackingProtectionStatus(
+                    controlsVisible, protectionsOn, expiration, features);
         }
     }
 
@@ -213,7 +214,7 @@ public class PageInfoTrackingProtectionLaunchController extends PageInfoPreferen
 
     private void updateRowViewSubtitle() {
         if (!mCookieControlsVisible) return;
-        if (!mThirdPartyCookiesBlocked) {
+        if (!mProtectionsOn) {
             mRowView.updateSubtitle(
                     mRowView.getContext().getString(R.string.page_info_cookies_subtitle_allowed));
             return;

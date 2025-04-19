@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/342213636): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 
 #include <stddef.h>
@@ -236,7 +241,7 @@ TEST(IndexedDBLevelDBCodingTest, DecodeInt) {
 
     // Verify decoding at an offset, to detect unaligned memory access.
     v.insert(v.begin(), 1u, static_cast<char>(0));
-    slice = std::string_view(&*v.begin() + 1, v.size() - 1);
+    slice = std::string_view(v).substr(1u);
     EXPECT_TRUE(DecodeInt(&slice, &value));
     EXPECT_EQ(n, value);
     EXPECT_TRUE(slice.empty());
@@ -288,7 +293,7 @@ TEST(IndexedDBLevelDBCodingTest, DecodeString) {
 
     // Verify decoding at an offset, to detect unaligned memory access.
     v.insert(v.begin(), 1u, static_cast<char>(0));
-    slice = std::string_view(&*v.begin() + 1, v.size() - 1);
+    slice = std::string_view(v).substr(1u);
     EXPECT_TRUE(DecodeString(&slice, &result));
     EXPECT_EQ(test_case, result);
     EXPECT_TRUE(slice.empty());
@@ -348,7 +353,7 @@ TEST(IndexedDBLevelDBCodingTest, DecodeStringWithLength) {
 
     // Verify decoding at an offset, to detect unaligned memory access.
     v.insert(v.begin(), 1u, static_cast<char>(0));
-    slice = std::string_view(&*v.begin() + 1, v.size() - 1);
+    slice = std::string_view(v).substr(1u);
     EXPECT_TRUE(DecodeStringWithLength(&slice, &res));
     EXPECT_EQ(s, res);
     EXPECT_TRUE(slice.empty());
@@ -457,7 +462,7 @@ TEST(IndexedDBLevelDBCodingTest, DecodeBinary) {
 
     // Verify decoding at an offset, to detect unaligned memory access.
     v.insert(v.begin(), 1u, static_cast<char>(0));
-    slice = std::string_view(&*v.begin() + 1, v.size() - 1);
+    slice = std::string_view(v).substr(1u);
     EXPECT_TRUE(DecodeBinary(&slice, &result));
     EXPECT_EQ(value, result);
     EXPECT_TRUE(slice.empty());
@@ -496,7 +501,7 @@ TEST(IndexedDBLevelDBCodingTest, DecodeDouble) {
 
     // Verify decoding at an offset, to detect unaligned memory access.
     v.insert(v.begin(), 1u, static_cast<char>(0));
-    slice = std::string_view(&*v.begin() + 1, v.size() - 1);
+    slice = std::string_view(v).substr(1u);
     EXPECT_TRUE(DecodeDouble(&slice, &result));
     EXPECT_EQ(value, result);
     EXPECT_TRUE(slice.empty());

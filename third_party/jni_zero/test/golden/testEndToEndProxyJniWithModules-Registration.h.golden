@@ -14,15 +14,61 @@
 
 // Forward declarations (methods).
 
-JNI_BOUNDARY_EXPORT jboolean Java_J_module_1N_MejItBT4(
+JNI_POSSIBLE_BOUNDARY_EXPORT jboolean Java_J_module_1N_MejItBT4(
     JNIEnv* env,
     jclass jcaller,
-    jint a);
-JNI_BOUNDARY_EXPORT void Java_J_module_1N_MqDgXQiH(
+    jboolean a);
+JNI_POSSIBLE_BOUNDARY_EXPORT void Java_J_module_1N_MqDgXQiH(
     JNIEnv* env,
     jclass jcaller);
 
 
+// Method declarations.
+
+
+static const JNINativeMethod kMethods_J_module_1N[] = {
+    { "MejItBT4", "(Z)Z", reinterpret_cast<void*>(Java_J_module_1N_MejItBT4) },
+    { "MqDgXQiH", "()V", reinterpret_cast<void*>(Java_J_module_1N_MqDgXQiH) },
+
+};
+
+namespace {
+
+JNI_ZERO_COMPONENT_BUILD_EXPORT bool RegisterNative_J_module_1N(JNIEnv* env) {
+  const int number_of_methods = std::size(kMethods_J_module_1N);
+
+  jni_zero::ScopedJavaLocalRef<jclass> native_clazz =
+      jni_zero::GetClass(env, "J/module_N");
+  if (env->RegisterNatives(
+      native_clazz.obj(),
+      kMethods_J_module_1N,
+      number_of_methods) < 0) {
+
+    jni_zero::internal::HandleRegistrationError(env, native_clazz.obj(), __FILE__);
+    return false;
+  }
+
+  return true;
+}
+
+}  // namespace
+
+
+// Registration function.
+
+namespace  {
+
+bool RegisterNatives(JNIEnv* env) {
+  // Register natives in a proxy.
+  if (!RegisterNative_J_module_1N(env)) {
+    return false;
+  }
+
+
+  return true;
+}
+
+}  // namespace 
 
 
 #endif  // TEMP_DIR_HEADER_

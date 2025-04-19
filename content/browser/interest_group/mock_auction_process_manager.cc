@@ -20,6 +20,7 @@
 #include "base/time/time.h"
 #include "content/browser/interest_group/auction_process_manager.h"
 #include "content/public/browser/site_instance.h"
+#include "content/services/auction_worklet/public/mojom/auction_worklet_service.mojom-forward.h"
 #include "content/services/auction_worklet/public/mojom/auction_worklet_service.mojom.h"
 #include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom.h"
 #include "content/services/auction_worklet/public/mojom/private_aggregation_request.mojom.h"
@@ -43,8 +44,10 @@ namespace content {
 MockBidderWorklet::MockBidderWorklet(
     mojo::PendingReceiver<auction_worklet::mojom::BidderWorklet>
         pending_receiver,
-    const std::map<std::string, base::TimeDelta>& expected_per_buyer_timeouts)
-    : expected_per_buyer_timeouts_(expected_per_buyer_timeouts),
+    const std::map<std::string, base::TimeDelta>& expected_per_buyer_timeouts,
+    bool skip_generate_bid)
+    : skip_generate_bid_(skip_generate_bid),
+      expected_per_buyer_timeouts_(expected_per_buyer_timeouts),
       receiver_(this, std::move(pending_receiver)) {
   receiver_.set_disconnect_handler(
       base::BindOnce(&MockBidderWorklet::OnPipeClosed, base::Unretained(this)));
@@ -87,6 +90,10 @@ void MockBidderWorklet::BeginGenerateBid(
         generate_bid_client,
     mojo::PendingAssociatedReceiver<
         auction_worklet::mojom::GenerateBidFinalizer> bid_finalizer) {
+  if (skip_generate_bid_) {
+    return;
+  }
+
   generate_bid_called_ = true;
   // While the real BidderWorklet implementation supports multiple pending
   // callbacks, this class does not.
@@ -120,8 +127,10 @@ void MockBidderWorklet::SendPendingSignalsRequests() {
 
 void MockBidderWorklet::ReportWin(
     bool is_for_additional_bid,
-    auction_worklet::mojom::ReportingIdField reporting_id_field,
-    const std::string& reporting_id,
+    const std::optional<std::string>& interest_group_name_reporting_id,
+    const std::optional<std::string>& buyer_reporting_id,
+    const std::optional<std::string>& buyer_and_seller_reporting_id,
+    const std::optional<std::string>& selected_buyer_and_seller_reporting_id,
     const std::optional<std::string>& auction_signals_json,
     const std::optional<std::string>& per_buyer_signals_json,
     const std::optional<GURL>& direct_from_seller_per_buyer_signals,
@@ -160,7 +169,8 @@ void MockBidderWorklet::ReportWin(
 }
 
 void MockBidderWorklet::ConnectDevToolsAgent(
-    mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> agent) {
+    mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> agent,
+    uint32_t thread_index) {
   ADD_FAILURE()
       << "ConnectDevToolsAgent should not be called on MockBidderWorklet";
 }
@@ -242,7 +252,10 @@ void MockBidderWorklet::InvokeGenerateBidCallback(
             /*code_ready_latency=*/std::nullopt,
             /*config_promises_latency=*/std::nullopt,
             /*direct_from_seller_signals_latency=*/std::nullopt,
-            /*trusted_bidding_signals_latency=*/std::nullopt);
+            /*trusted_bidding_signals_latency=*/std::nullopt,
+            /*deps_wait_start_time=*/base::TimeTicks::Now(),
+            /*generate_bid_start_time=*/base::TimeTicks::Now(),
+            /*generate_bid_finish_time=*/base::TimeTicks::Now());
   }
 
   std::vector<auction_worklet::mojom::BidderWorkletBidPtr> bids;
@@ -417,6 +430,8 @@ void MockSellerWorklet::ReportResult(
     const url::Origin& browser_signal_interest_group_owner,
     const std::optional<std::string>&
         browser_signal_buyer_and_seller_reporting_id,
+    const std::optional<std::string>&
+        browser_signal_selected_buyer_and_seller_reporting_id,
     const GURL& browser_signal_render_url,
     double browser_signal_bid,
     const std::optional<blink::AdCurrency>& browser_signal_bid_currency,
@@ -529,8 +544,9 @@ bool MockAuctionProcessManager::TryUseSharedProcess(
 void MockAuctionProcessManager::LoadBidderWorklet(
     mojo::PendingReceiver<auction_worklet::mojom::BidderWorklet>
         bidder_worklet_receiver,
-    mojo::PendingRemote<auction_worklet::mojom::AuctionSharedStorageHost>
-        shared_storage_host_remote,
+    std::vector<
+        mojo::PendingRemote<auction_worklet::mojom::AuctionSharedStorageHost>>
+        shared_storage_hosts,
     bool pause_for_debugger_on_start,
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         pending_url_loader_factory,
@@ -543,7 +559,11 @@ void MockAuctionProcessManager::LoadBidderWorklet(
     const url::Origin& top_window_origin,
     auction_worklet::mojom::AuctionWorkletPermissionsPolicyStatePtr
         permissions_policy_state,
-    std::optional<uint16_t> experiment_group_id) {
+    std::optional<uint16_t> experiment_group_id,
+    auction_worklet::mojom::TrustedSignalsPublicKeyPtr public_key) {
+  load_bidder_worklet_count_++;
+  last_load_bidder_worklet_threads_count_ = shared_storage_hosts.size();
+
   // Make sure this request came over the right pipe.
   url::Origin owner = url::Origin::Create(script_source_url);
   EXPECT_EQ(receiver_display_name_map_[receiver_set_.current_receiver()],
@@ -552,9 +572,9 @@ void MockAuctionProcessManager::LoadBidderWorklet(
 
   EXPECT_EQ(0u, bidder_worklets_.count(script_source_url));
   bidder_worklets_.emplace(
-      script_source_url,
-      std::make_unique<MockBidderWorklet>(std::move(bidder_worklet_receiver),
-                                          expected_per_buyer_timeouts_));
+      script_source_url, std::make_unique<MockBidderWorklet>(
+                             std::move(bidder_worklet_receiver),
+                             expected_per_buyer_timeouts_, skip_generate_bid_));
   MaybeQuitWaitForWorkletsRunLoop();
 }
 

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/bindings/core/v8/script_streamer.h"
 
 #include <memory>
@@ -155,9 +160,7 @@ class NoopLoaderFactory final : public ResourceFetcher::LoaderFactory {
 
 void AppendDataToDataPipe(std::string_view data,
                           mojo::ScopedDataPipeProducerHandle& producer_handle) {
-  size_t data_len = data.size();
-  MojoResult result = producer_handle->WriteData(
-      data.data(), &data_len, MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
+  MojoResult result = producer_handle->WriteAllData(base::as_byte_span(data));
   EXPECT_EQ(result, MOJO_RESULT_OK);
 
   // In case the mojo datapipe is being read on the main thread, we need to
@@ -186,7 +189,7 @@ class ScriptStreamingTest : public testing::Test {
       : url_(String("http://streaming-test.example.com/foo" +
                     base::NumberToString(url_counter_++))) {}
 
-  void Init(v8::Isolate* isolate) {
+  void Init(v8::Isolate* isolate, bool use_response_http_scheme = true) {
     auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
     FetchContext* context = MakeGarbageCollected<MockFetchContext>();
     scoped_refptr<base::SingleThreadTaskRunner> task_runner =
@@ -211,14 +214,19 @@ class ScriptStreamingTest : public testing::Test {
         kNoCompileHintsProducer = nullptr;
     constexpr v8_compile_hints::V8CrowdsourcedCompileHintsConsumer*
         kNoCompileHintsConsumer = nullptr;
-    resource_ =
-        ScriptResource::Fetch(params, fetcher, resource_client_, isolate,
-                              ScriptResource::kAllowStreaming,
-                              kNoCompileHintsProducer, kNoCompileHintsConsumer);
+    constexpr bool kNoV8CompileHintsMagicCommentRuntimeEnabled = false;
+    resource_ = ScriptResource::Fetch(
+        params, fetcher, resource_client_, isolate,
+        ScriptResource::kAllowStreaming, kNoCompileHintsProducer,
+        kNoCompileHintsConsumer, kNoV8CompileHintsMagicCommentRuntimeEnabled);
     resource_->AddClient(resource_client_, task_runner.get());
 
     ResourceResponse response(url_);
     response.SetHttpStatusCode(200);
+
+    if (!use_response_http_scheme) {
+      response.SetCurrentRequestUrl(KURL("file:///something"));
+    }
     resource_->SetResponse(response);
 
     resource_->Loader()->DidReceiveResponse(WrappedResourceResponse(response),
@@ -724,6 +732,25 @@ TEST_F(ScriptStreamingTest, ProduceLocalCompileHintsForStreamedScript) {
   EXPECT_EQ(1UL, compile_hints.size());
 }
 
+TEST_F(ScriptStreamingTest, NullCacheHandler) {
+  V8TestingScope scope;
+  // Use setting the responses URL to something else than HTTP(S) to trigger the
+  // "streaming but no cache handler" corner case.
+  Init(scope.GetIsolate(), /*use_response_http_scheme=*/false);
+  EXPECT_FALSE(resource_->CacheHandler());
+
+  AppendData("/*this doesn't matter*/");
+  Finish();
+  RunUntilResourceLoaded();
+  EXPECT_TRUE(resource_client_->Finished());
+
+  ScriptStreamer* script_streamer = std::get<0>(
+      ScriptStreamer::TakeFrom(resource_, mojom::blink::ScriptType::kClassic));
+  ResourceScriptStreamer* resource_script_streamer =
+      reinterpret_cast<ResourceScriptStreamer*>(script_streamer);
+  EXPECT_TRUE(resource_script_streamer);
+}
+
 INSTANTIATE_TEST_SUITE_P(
     All,
     InlineScriptStreamingTest,
@@ -867,12 +894,9 @@ class DummyBackgroundResponseProcessorClient
       base::span<const char> expected_body,
       std::optional<base::span<const uint8_t>> expected_cached_metadata) {
     EXPECT_TRUE(head_);
-    if (absl::holds_alternative<Deque<Vector<char>>>(body_)) {
-      Deque<Vector<char>> raw_body = absl::get<Deque<Vector<char>>>(body_);
-      Vector<char> concatenated_body;
-      for (const auto& chunk : raw_body) {
-        concatenated_body.AppendVector(chunk);
-      }
+    if (absl::holds_alternative<SegmentedBuffer>(body_)) {
+      const SegmentedBuffer& raw_body = absl::get<SegmentedBuffer>(body_);
+      const Vector<char> concatenated_body = raw_body.CopyAs<Vector<char>>();
       EXPECT_THAT(concatenated_body, testing::ElementsAreArray(expected_body));
     } else {
       CHECK(absl::holds_alternative<mojo::ScopedDataPipeConsumerHandle>(body_));
@@ -948,12 +972,15 @@ network::mojom::URLResponseHeadPtr CreateURLResponseHead(
 
 class BackgroundResourceScriptStreamerTest : public testing::Test {
  public:
-  BackgroundResourceScriptStreamerTest()
+  explicit BackgroundResourceScriptStreamerTest(
+      bool enable_background_code_cache_decode_start = false)
       : url_(String("http://streaming-test.example.com/foo" +
                     base::NumberToString(url_counter_++))) {
     feature_list_.InitWithFeaturesAndParameters(
         {{features::kBackgroundResourceFetch,
-          {{"background-script-response-processor", "true"}}}},
+          {{"background-script-response-processor", "true"},
+           {"background-code-cache-decoder-start",
+            enable_background_code_cache_decode_start ? "true" : "false"}}}},
         {});
   }
   ~BackgroundResourceScriptStreamerTest() override = default;
@@ -999,10 +1026,11 @@ class BackgroundResourceScriptStreamerTest : public testing::Test {
     }
     constexpr v8_compile_hints::V8CrowdsourcedCompileHintsProducer*
         kNoCompileHintsProducer = nullptr;
-    resource_ = ScriptResource::Fetch(params, fetcher, resource_client_,
-                                      isolate, ScriptResource::kAllowStreaming,
-                                      kNoCompileHintsProducer,
-                                      v8_compile_hints_consumer);
+    constexpr bool kNoV8CompileHintsMagicCommentRuntimeEnabled = false;
+    resource_ = ScriptResource::Fetch(
+        params, fetcher, resource_client_, isolate,
+        ScriptResource::kAllowStreaming, kNoCompileHintsProducer,
+        v8_compile_hints_consumer, kNoV8CompileHintsMagicCommentRuntimeEnabled);
     resource_->AddClient(resource_client_, main_thread_task_runner.get());
 
     CHECK(dummy_loader_factory->load_started());
@@ -1138,6 +1166,53 @@ TEST_F(BackgroundResourceScriptStreamerTest, HasCodeCache) {
     EXPECT_THAT(*cached_metadata,
                 testing::ElementsAreArray(code_cache_data_copy));
   }));
+  Finish();
+  RunUntilResourceLoaded();
+  // When there is a code cache, we should not stream the script.
+  CheckNotStreamingReason(
+      ScriptStreamer::NotStreamingReason::kHasCodeCacheBackground);
+}
+
+class BackgroundResourceScriptStreamerCodeCacheDecodeStartTest
+    : public BackgroundResourceScriptStreamerTest {
+ public:
+  BackgroundResourceScriptStreamerCodeCacheDecodeStartTest()
+      : BackgroundResourceScriptStreamerTest(
+            /*enable_background_code_cache_decode_start=*/true) {}
+  ~BackgroundResourceScriptStreamerCodeCacheDecodeStartTest() override =
+      default;
+};
+
+TEST_F(BackgroundResourceScriptStreamerCodeCacheDecodeStartTest, HasCodeCache) {
+  V8TestingScope scope;
+  Init(scope.GetIsolate());
+  mojo_base::BigBuffer code_cache_data = CreateDummyCodeCacheData();
+  const std::vector<uint8_t> code_cache_data_copy(
+      code_cache_data.data(), code_cache_data.data() + code_cache_data.size());
+  RunInBackgroundThred(base::BindLambdaForTesting([&]() {
+    network::mojom::URLResponseHeadPtr head = CreateURLResponseHead();
+    // Set charset to make the code cache valid.
+    head->charset = "utf-8";
+    // Set a dummy code cache data.
+    std::optional<mojo_base::BigBuffer> cached_metadata =
+        std::move(code_cache_data);
+    EXPECT_TRUE(background_response_processor_->MaybeStartProcessingResponse(
+        head, consumer_handle_, cached_metadata,
+        background_resource_fetch_task_runner_,
+        &background_response_processor_client_));
+    EXPECT_FALSE(head);
+    EXPECT_FALSE(consumer_handle_);
+    ASSERT_TRUE(cached_metadata);
+    EXPECT_EQ(cached_metadata->size(), 0u);
+  }));
+  AppendData(kLargeEnoughScript);
+  producer_handle_.reset();
+  background_response_processor_client_.WaitUntilFinished();
+  // Checking that the code cache data is passed to the finish callback.
+  background_response_processor_client_.CheckResultOfFinishCallback(
+      /*expected_body=*/base::make_span(kLargeEnoughScript,
+                                        sizeof(kLargeEnoughScript) - 1),
+      /*expected_cached_metadata=*/code_cache_data_copy);
   Finish();
   RunUntilResourceLoaded();
   // When there is a code cache, we should not stream the script.
@@ -1771,9 +1846,8 @@ TEST_F(BackgroundResourceScriptStreamerTest,
     const std::string function_line = base::StrCat(
         {kFunctionScript,
          std::string(kDataPipeSize - kFunctionScript.size(), '/')});
-    size_t data_len = function_line.size();
-    MojoResult result = producer_handle_->WriteData(
-        function_line.data(), &data_len, MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
+    MojoResult result =
+        producer_handle_->WriteAllData(base::as_byte_span(function_line));
     EXPECT_EQ(result, MOJO_RESULT_OK);
     // Busyloop until the parser thread reads the `function_line` form the data
     // pipe.

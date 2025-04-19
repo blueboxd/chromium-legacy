@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/installer/setup/install.h"
 
 #include <stddef.h>
@@ -358,6 +363,26 @@ TEST_P(CreateVisualElementsManifestTest, VisualElementsManifestCreated) {
 
   ASSERT_STREQ(expected_manifest_, read_manifest.c_str());
 }
+
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+TEST(OsUpdateHandlerCmdTest, OsUpdated) {
+  constexpr wchar_t kInstalledVersion[] = L"128.0.0.0";
+  constexpr wchar_t kLastWindowsVersion[] = L"1.1.1.1";
+  constexpr wchar_t kCurWindowsVersion[] = L"1.1.1.2";
+  base::CommandLine setup_command_line(base::CommandLine::NO_PROGRAM);
+  base::FilePath path(L"c:\\tmp");
+  setup_command_line.ParseFromString(base::StrCat(
+      {L"c:\\tmp\\setup.exe ", kLastWindowsVersion, L"-", kCurWindowsVersion}));
+  const auto cmd_line = installer::GetOsUpdateHandlerCommand(
+      path, kInstalledVersion, setup_command_line);
+  EXPECT_TRUE(cmd_line.has_value());
+  std::wstring expected_cmd_line =
+      base::StrCat({L"\"", path.value(), L"\\", kInstalledVersion, L"\\",
+                    installer::kOsUpdateHandlerExe, L"\" ", kLastWindowsVersion,
+                    L"-", kCurWindowsVersion});
+  EXPECT_EQ(expected_cmd_line, cmd_line->GetCommandLineString());
+}
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 TEST_F(InstallShortcutTest, CreateAllShortcuts) {
   installer::CreateOrUpdateShortcuts(chrome_exe_, *prefs_,

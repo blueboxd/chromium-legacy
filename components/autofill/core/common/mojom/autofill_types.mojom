@@ -237,6 +237,10 @@ enum SubmissionReadinessState {
   // tap, i.e. TTF should submit both single username and single password
   // forms.
   kNoPasswordField = 8,
+
+  // A child frame which is likely to be CAPTCHA was detected within the
+  // password form. Do not trigger submission in this case.
+  kLikelyHasCaptcha = 9,
 };
 
 // autofill::FrameToken (components/autofill/core/common/unique_ids.h)
@@ -267,7 +271,7 @@ struct FieldRendererId {
 // autofill::SelectOption (components/autofill/core/common/form_field_data.h)
 struct SelectOption {
   mojo_base.mojom.String16 value;
-  mojo_base.mojom.String16 content;
+  mojo_base.mojom.String16 text;
 };
 
 // autofill::Section::Autocomplete
@@ -304,6 +308,7 @@ struct AutocompleteParsingResult {
   string section;
   HtmlFieldMode mode;
   HtmlFieldType field_type;
+  bool webauthn;
 };
 
 // autofill::FormFieldData (components/autofill/core/common/form_field_data.h)
@@ -420,6 +425,7 @@ struct FormData {
   array<FormFieldData> fields;
   array<FieldRendererId> username_predictions;
   bool is_gaia_with_skip_save_password_form;
+  bool likely_contains_captcha;
 };
 
 // autofill::FormFieldDataPredictions
@@ -470,6 +476,7 @@ struct PasswordFormFillData {
   PasswordAndMetadata preferred_login;
   array<PasswordAndMetadata> additional_logins;
   bool wait_for_username;
+  array<FieldRendererId> suggestion_banned_fields;
 };
 
 // autofill::PasswordFormGenerationData
@@ -628,4 +635,6 @@ enum AutofillSuggestionTriggerSource {
   // Password manager renderer received password suggestions from the browser
   // after the field was focused (likely due to autofocus on the page load).
   kPasswordManagerProcessedFocusedField,
+  // Prediction improvements was invoked.
+  kPredictionImprovements,
 };

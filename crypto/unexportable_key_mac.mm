@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "crypto/unexportable_key.h"
 
 #import <CoreFoundation/CoreFoundation.h>
@@ -156,6 +161,8 @@ class UnexportableSigningKeyMac : public UnexportableSigningKey {
     return CFDataToVec(signature.get());
   }
 
+  bool IsHardwareBacked() const override { return true; }
+
   SecKeyRef GetSecKeyRef() const override { return key_.get(); }
 
  private:
@@ -218,11 +225,19 @@ UnexportableKeyProviderMac::GenerateSigningKeySlowly(
   SecAccessControlCreateFlags control_flags = kSecAccessControlPrivateKeyUsage;
   switch (access_control_) {
     case UnexportableKeyProvider::Config::AccessControl::kUserPresence:
+      // kSecAccessControlUserPresence is documented[1] (at the time of
+      // writing) to be "equivalent to specifying kSecAccessControlBiometryAny,
+      // kSecAccessControlOr, and kSecAccessControlDevicePasscode". This is
+      // incorrect because includingkSecAccessControlBiometryAny causes key
+      // creation to fail if biometrics are supported but not enrolled. It also
+      // appears to support Apple Watch confirmation, but this isn't documented
+      // (and kSecAccessControlWatch is deprecated as of macOS 15).
+      //
+      // Reported as FB14040169.
+      //
+      // [1] https://developer.apple.com/documentation/security/
+      //     secaccesscontrolcreateflags/ksecaccesscontroluserpresence
       control_flags |= kSecAccessControlUserPresence;
-      break;
-    case UnexportableKeyProvider::Config::AccessControl::kUserPresenceOrWatch:
-      control_flags |= kSecAccessControlOr | kSecAccessControlBiometryAny |
-                       kSecAccessControlDevicePasscode | kSecAccessControlWatch;
       break;
     case UnexportableKeyProvider::Config::AccessControl::kNone:
       // No additional flag.
@@ -345,9 +360,6 @@ std::unique_ptr<UnexportableKeyProviderMac> GetUnexportableKeyProviderMac(
 #if !BUILDFLAG(IS_IOS)
   if (!ExecutableHasKeychainAccessGroupEntitlement(
           config.keychain_access_group)) {
-    LOG(ERROR) << "Unexportable keys unavailable because keychain-access-group "
-                  "entitlement missing or incorrect. Expected value: "
-               << config.keychain_access_group;
     return nullptr;
   }
 #endif  // !BUILDFLAG(IS_IOS)

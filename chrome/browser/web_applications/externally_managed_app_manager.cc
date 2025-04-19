@@ -14,6 +14,7 @@
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/functional/callback_helpers.h"
+#include "base/not_fatal_until.h"
 #include "base/ranges/algorithm.h"
 #include "base/stl_util.h"
 #include "base/strings/to_string.h"
@@ -163,7 +164,7 @@ void ExternallyManagedAppManager::UninstallApps(
         base::BindOnce(
             [](const UninstallCallback& callback, const GURL& app_url,
                webapps::UninstallResultCode code) {
-              callback.Run(app_url, UninstallSucceeded(code));
+              callback.Run(app_url, code);
             },
             callback, url));
   }
@@ -298,6 +299,7 @@ void ExternallyManagedAppManager::MaybeStartNextOnLockAcquired(
     const ExternalInstallOptions& install_options =
         front->task->install_options();
 
+    CHECK(install_options.install_url.is_valid(), base::NotFatalUntil::M130);
     std::optional<webapps::AppId> app_id =
         lock.registrar().LookupExternalAppId(install_options.install_url);
     debug_value.Set("app_id_from_install_url", app_id.value_or("<none>"));
@@ -555,7 +557,7 @@ void ExternallyManagedAppManager::SynchronizeInstalledAppsOnLockAcquired(
     base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback), std::map<GURL, InstallResult>(),
-                       std::map<GURL, bool>()));
+                       std::map<GURL, webapps::UninstallResultCode>()));
     return;
   }
 
@@ -603,7 +605,8 @@ void ExternallyManagedAppManager::InstallForSynchronizeCallback(
   }
 
   auto source_and_request = synchronize_requests_.find(source);
-  DCHECK(source_and_request != synchronize_requests_.end());
+  CHECK(source_and_request != synchronize_requests_.end(),
+        base::NotFatalUntil::M130);
   SynchronizeRequest& request = source_and_request->second;
   request.install_results[install_url] = std::move(result);
   --request.remaining_install_requests;
@@ -615,11 +618,12 @@ void ExternallyManagedAppManager::InstallForSynchronizeCallback(
 void ExternallyManagedAppManager::UninstallForSynchronizeCallback(
     ExternalInstallSource source,
     const GURL& install_url,
-    bool succeeded) {
+    webapps::UninstallResultCode code) {
   auto source_and_request = synchronize_requests_.find(source);
-  DCHECK(source_and_request != synchronize_requests_.end());
+  CHECK(source_and_request != synchronize_requests_.end(),
+        base::NotFatalUntil::M130);
   SynchronizeRequest& request = source_and_request->second;
-  request.uninstall_results[install_url] = succeeded;
+  request.uninstall_results[install_url] = code;
   --request.remaining_uninstall_requests;
   DCHECK_GE(request.remaining_uninstall_requests, 0);
 
@@ -629,7 +633,8 @@ void ExternallyManagedAppManager::UninstallForSynchronizeCallback(
 void ExternallyManagedAppManager::ContinueSynchronization(
     ExternalInstallSource source) {
   auto source_and_request = synchronize_requests_.find(source);
-  DCHECK(source_and_request != synchronize_requests_.end());
+  CHECK(source_and_request != synchronize_requests_.end(),
+        base::NotFatalUntil::M130);
 
   SynchronizeRequest& request = source_and_request->second;
 
@@ -653,19 +658,16 @@ void ExternallyManagedAppManager::ContinueSynchronization(
     return;
   }
 
-  if (base::FeatureList::IsEnabled(features::kWebAppDedupeInstallUrls)) {
-    provider_->scheduler().ScheduleDedupeInstallUrls(
-        base::BindOnce(&ExternallyManagedAppManager::CompleteSynchronization,
-                       weak_ptr_factory_.GetWeakPtr(), source));
-  } else {
-    CompleteSynchronization(source);
-  }
+  provider_->scheduler().ScheduleDedupeInstallUrls(
+      base::BindOnce(&ExternallyManagedAppManager::CompleteSynchronization,
+                     weak_ptr_factory_.GetWeakPtr(), source));
 }
 
 void ExternallyManagedAppManager::CompleteSynchronization(
     ExternalInstallSource source) {
   auto source_and_request = synchronize_requests_.find(source);
-  DCHECK(source_and_request != synchronize_requests_.end());
+  CHECK(source_and_request != synchronize_requests_.end(),
+        base::NotFatalUntil::M130);
 
   SynchronizeRequest& request = source_and_request->second;
   CHECK(request.callback);

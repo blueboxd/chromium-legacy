@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <memory>
 
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/tray_background_view_catalog.h"
 #include "ash/focus_cycler.h"
@@ -16,6 +17,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/login_shelf_view.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_focus_cycler.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_navigation_widget.h"
@@ -29,7 +31,6 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/tray/tray_event_filter.h"
-#include "ash/user_education/user_education_class_properties.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
@@ -279,14 +280,6 @@ TrayBackgroundView::TrayBackgroundView(
       std::make_unique<TrayButtonControllerDelegate>(this, catalog_name)));
   SetNotifyEnterExitOnChild(true);
 
-  // Override the settings of inkdrop ripple only since others like Highlight
-  // has been set up in the base class ActionableView.
-  if (!chromeos::features::IsJellyEnabled()) {
-    StyleUtil::SetRippleParams(this, GetBackgroundInsets());
-    views::InkDrop::Get(this)->SetMode(
-        views::InkDropHost::InkDropMode::ON_NO_GESTURE_HANDLER);
-  }
-
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetInstallFocusRingOnFocus(true);
 
@@ -381,12 +374,6 @@ void TrayBackgroundView::SetRoundedCornerBehavior(
     RoundedCornerBehavior corner_behavior) {
   corner_behavior_ = corner_behavior;
   UpdateBackground();
-
-  // The ink drop doesn't automatically pick up on rounded corner changes, so
-  // we need to manually notify it here.
-  if (!chromeos::features::IsJellyEnabled()) {
-    views::InkDrop::Get(this)->GetInkDrop()->HostSizeChanged(size());
-  }
 }
 
 gfx::RoundedCornersF TrayBackgroundView::GetRoundedCorners() {
@@ -604,7 +591,10 @@ void TrayBackgroundView::AboutToRequestFocusFromTabTraversal(bool reverse) {
 
 void TrayBackgroundView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   views::Button::GetAccessibleNodeData(node_data);
-  node_data->SetName(GetAccessibleNameForTray());
+  // Override the name set in `LabelButton::SetText`.
+  // TODO(crbug.com/325137417): Remove this once the accessible name is set in
+  // the cache as soon as the name is updated.
+  GetViewAccessibility().SetName(GetAccessibleNameForTray());
 
   if (LockScreen::HasInstance()) {
     GetViewAccessibility().SetNextFocus(LockScreen::Get()->widget());
@@ -632,11 +622,6 @@ std::unique_ptr<ui::Layer> TrayBackgroundView::RecreateLayer() {
 void TrayBackgroundView::OnThemeChanged() {
   views::Button::OnThemeChanged();
   UpdateBackground();
-  if (!chromeos::features::IsJellyEnabled()) {
-    StyleUtil::ConfigureInkDropAttributes(
-        this, StyleUtil::kBaseColor | StyleUtil::kInkDropOpacity |
-                  StyleUtil::kHighlightOpacity);
-  }
 }
 
 void TrayBackgroundView::OnVirtualKeyboardVisibilityChanged() {
@@ -686,12 +671,6 @@ void TrayBackgroundView::UpdateBackground() {
     layer()->SetColor(ShelfConfig::Get()->GetShelfControlButtonColor(widget));
   }
   UpdateBackgroundColor(is_active_);
-
-  // Update ping insets when background insets change so that ping animations
-  // emanate from user perceived bounds instead of actual bounds.
-  if (features::IsUserEducationEnabled()) {
-    SetProperty(kPingInsetsKey, GetBackgroundInsets());
-  }
 }
 
 void TrayBackgroundView::OnHideAnimationStarted() {
@@ -809,13 +788,17 @@ void TrayBackgroundView::SetIsActive(bool is_active) {
   }
   is_active_ = is_active;
   UpdateBackgroundColor(is_active);
-  if (chromeos::features::IsJellyEnabled()) {
-    UpdateTrayItemColor(is_active);
-  } else {
-    views::InkDrop::Get(this)->AnimateToState(
-        is_active_ ? views::InkDropState::ACTIVATED
-                   : views::InkDropState::DEACTIVATED,
-        nullptr);
+  UpdateTrayItemColor(is_active);
+}
+
+void TrayBackgroundView::CloseBubble() {
+  CloseBubbleInternal();
+
+  // If ChromeVox is enabled, focus on the this tray when the bubble is closed.
+  if (Shell::Get()->accessibility_controller() &&
+      Shell::Get()->accessibility_controller()->spoken_feedback().enabled()) {
+    shelf_->shelf_focus_cycler()->FocusStatusArea(false);
+    RequestFocus();
   }
 }
 
@@ -1058,9 +1041,6 @@ bool TrayBackgroundView::CacheBubbleViewForHide() const {
 }
 
 void TrayBackgroundView::UpdateBackgroundColor(bool active) {
-  if (!chromeos::features::IsJellyEnabled()) {
-    return;
-  }
   auto* widget = GetWidget();
   if (!widget) {
     return;
@@ -1081,10 +1061,8 @@ void TrayBackgroundView::UpdateBackgroundColor(bool active) {
 
 void TrayBackgroundView::AddRippleLayer() {
   ripple_layer_ = std::make_unique<ui::Layer>(ui::LAYER_SOLID_COLOR);
-  ripple_layer_->SetColor(GetColorProvider()->GetColor(
-      chromeos::features::IsJellyEnabled()
-          ? static_cast<ui::ColorId>(cros_tokens::kCrosSysOnPrimaryContainer)
-          : ui::kColorIcon));
+  ripple_layer_->SetColor(
+      GetColorProvider()->GetColor(cros_tokens::kCrosSysOnPrimaryContainer));
   layer()->parent()->Add(ripple_layer_.get());
 }
 

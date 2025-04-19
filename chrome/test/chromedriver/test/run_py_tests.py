@@ -102,6 +102,8 @@ _NEGATIVE_FILTER = [
     'ChromeDriverSiteIsolation.testClickNavigateRemoteToLocal',
     # crbug.com/chromedriver/4513
     'ChromeDriverSiteIsolation.testClickNavigateRemoteToSameRemote',
+    # crbug.com/350916212
+    'BidiTest.testFocusInFirstTab',
 ]
 
 
@@ -152,14 +154,6 @@ _OS_SPECIFIC_FILTER['mac'] = [
     'ChromeDriverTest.testFindChildElementsStaleElement2',
     # Flaky: https://crbug.com/1486520
     'ChromeDriverTest.testClickStaleElement',
-        # Failing on macOS 14 due to https://crbug.com/40233722
-    'ChromeDriverSecureContextTest.testAddVirtualAuthenticator',
-    'ChromeDriverSecureContextTest.testAddVirtualAuthDefaultBackupSettings',
-    'ChromeDriverSecureContextTest.testAddVirtualAuthenticatorDefaultParams',
-    'ChromeDriverSecureContextTest.testGetCredentials',
-    'ChromeDriverSecureContextTest.testRemoveAllCredentials',
-    'ChromeDriverSecureContextTest.testRemoveCredential',
-    'ChromeDriverSecureContextTest.testSetUserVerified'
 ]
 
 _BROWSER_SPECIFIC_FILTER = {}
@@ -223,12 +217,14 @@ _BROWSER_AND_PLATFORM_SPECIFIC_FILTER['chrome-headless-shell']['mac'] = [
     # https://crbug.com/chromedriver/4632
     # chrome-headless-shell ignores the selected range while inserting the text
     'ChromeDriverW3cTest.testSendKeysToElementDoesNotAppend',
-    # https://crbug.com/chromedriver/4629
-    # The following four tests fail on Mac Arm64
+    # https://issues.chromium.org/issues/42323658
+    # The following tests fail on Mac due to focus issues
     'ChromeDriverSecureContextTest.testCreateVirtualSensorWithMaximumFrequency',
     'ChromeDriverSecureContextTest.testCreateVirtualSensorWithMinimumFrequency',
     'ChromeDriverSecureContextTest.testGetVirtualSensorInformation',
     'ChromeDriverSecureContextTest.testUpdateVirtualSensor',
+    'ComputePressureSpecificTest.testUpdateVirtualPressure',
+    'ComputePressureSpecificTest.testRemoveVirtualPressureSourceWhileInUse',
 ]
 _BROWSER_AND_PLATFORM_SPECIFIC_FILTER['chrome-headless-shell']['win'] = [
     # https://bugs.chromium.org/p/chromium/issues/detail?id=1196363
@@ -483,8 +479,8 @@ def _InferBrowserPath(browser_name,
     path_list = _GetHeadlessShellPathList(driver_path, platform)
   for path in path_list:
     if path_exists(path):
-      return path
-  return None
+      return (path, path_list)
+  return (None, path_list)
 
 class RunnerSelfTest(unittest.TestCase):
   def testPathListsForKnownPlatforms(self):
@@ -520,14 +516,30 @@ class RunnerSelfTest(unittest.TestCase):
     is_not_headless_shell = lambda path: 'chrome-headless-shell' not in path
     driver_path = os.path.dirname(_CHROMEDRIVER_BINARY)
     for platform in ['linux', 'mac', 'win']:
-      self.assertGreater(len(_InferBrowserPath('chrome',
+      # Successful inference
+      self.assertIsNotNone(_InferBrowserPath('chrome',
                                 driver_path,
                                 platform,
-                                is_not_headless_shell)), 0)
-      self.assertGreater(len(_InferBrowserPath('chrome-headless-shell',
+                                             is_not_headless_shell)[0],
+                           'platform=%s' % platform)
+      self.assertIsNotNone(_InferBrowserPath('chrome-headless-shell',
                                                driver_path,
                                                platform,
-                                               is_headless_shell)), 0)
+                                             is_headless_shell)[0],
+                           'platform=%s' % platform)
+      # Failed inference
+      (path, path_list) = _InferBrowserPath('chrome',
+                                            driver_path,
+                                            platform,
+                                            lambda _: False)
+      self.assertIsNone(path, 'platform=%s' % platform)
+      self.assertGreater(len(path_list), 0, 'platform=%s' % platform)
+      (path, path_list) = _InferBrowserPath('chrome-headless-shell',
+                                            driver_path,
+                                            platform,
+                                            lambda _: False)
+      self.assertIsNone(path, 'platform=%s' % platform)
+      self.assertGreater(len(path_list), 0, 'platform=%s' % platform)
 
 
 class ChromeDriverBaseTest(unittest.TestCase):
@@ -895,6 +907,12 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
                                const obj = {};
                                obj['buzz'] = copyMe;
                                return obj;""")
+
+  def testFocusInFirstTab(self):
+    # According to the standard the WebDriver implementation should prefer a
+    # top-level browsing context (window / tab) that has system focus.
+    # S/A: https://w3c.github.io/webdriver/#dfn-new-sessions
+    self.assertTrue(self._driver.ExecuteScript("return document.hasFocus()"))
 
   def _newWindowDoesNotFocus(self, window_type='window'):
     current_handles = self._driver.GetWindowHandles()
@@ -4091,7 +4109,6 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
       except chromedriver.NoSuchElement:
         pass
 
-
 class ChromeDriverBackgroundTest(ChromeDriverBaseTestWithWebServer):
   def setUp(self):
     self._driver1 = self.CreateDriver()
@@ -5005,6 +5022,25 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTestWithWebServer):
         self.WaitForCondition(lambda: self._driver.ExecuteScript(
             'return postures.length === 1')))
 
+  def testCreateVirtualPressureSourceNotConnected(self):
+    script = """
+      const done = arguments[0];
+      const observer = new PressureObserver(() => {
+        throw Error("The observer callback should not be called");
+      });
+      observer.observe("cpu").then(() => {
+        throw new Error('Observation did not fail as expected');
+      }, e => {
+        done(e.name);
+      });
+    """
+    self._driver.CreateVirtualPressureSource('cpu', {'supported': False})
+    self._driver.Load(
+        self.GetHttpsUrlForFile('/chromedriver/compute_pressure_test.html'))
+    self.assertEqual('NotSupportedError',
+                     self._driver.ExecuteAsyncScript(script))
+
+
 # Tests in the following class are expected to be moved to ChromeDriverTest
 # class when we no longer support the legacy mode.
 class ChromeDriverW3cTest(ChromeDriverBaseTestWithWebServer):
@@ -5347,6 +5383,13 @@ class ChromeDriverFencedFrame(ChromeDriverBaseTestWithWebServer):
     self._https_server.SetCallbackForPath('/fencedframe.html',
                                           respondWithFencedFrameContents)
 
+    self._driver = self.CreateDriver(
+        accept_insecure_certs = True,
+        chrome_switches=['--site-per-process',
+          '--enable-features=FencedFrames,PrivacySandboxAdsAPIsOverride,'
+          'FencedFramesAPIChanges,FencedFramesDefaultMode,'
+          'FencedFramesEnforceFocus'])
+
   @staticmethod
   def GetHttpsUrlForFile(file_path):
     return ChromeDriverFencedFrame._https_server.GetUrl() + file_path
@@ -5357,16 +5400,7 @@ class ChromeDriverFencedFrame(ChromeDriverBaseTestWithWebServer):
     self._https_server.SetDataForPath('/nesting.html', None)
     self._https_server.SetCallbackForPath('/fencedframe.html', None)
 
-  def _initDriver(self):
-    self._driver = self.CreateDriver(
-        accept_insecure_certs = True,
-        chrome_switches=['--site-per-process',
-          '--enable-features=FencedFrames,PrivacySandboxAdsAPIsOverride,'
-          'FencedFramesAPIChanges,FencedFramesDefaultMode,'
-          'FencedFramesEnforceFocus'])
-
   def testCanSwitchToFencedFrame(self):
-    self._initDriver()
     self._driver.Load(self.GetHttpsUrlForFile('/main.html'))
     self._driver.SetTimeouts({'implicit': 2000})
     fencedframe = self._driver.FindElement('tag name', 'fencedframe')
@@ -5375,7 +5409,6 @@ class ChromeDriverFencedFrame(ChromeDriverBaseTestWithWebServer):
     self.assertIsNotNone(button)
 
   def testAppendEmptyFencedFrame(self):
-    self._initDriver()
     self._driver.Load(self.GetHttpsUrlForFile('/chromedriver/empty.html'))
     self._driver.ExecuteScript(
         'document.body.appendChild(document.createElement("fencedframe"));')
@@ -5384,12 +5417,28 @@ class ChromeDriverFencedFrame(ChromeDriverBaseTestWithWebServer):
     self._driver.SwitchToFrame(fencedframe)
 
   def testFencedFrameInsideIframe(self):
-    self._initDriver()
     self._driver.Load(self.GetHttpsUrlForFile('/nesting.html'))
     self._driver.SwitchToFrameByIndex(0)
     fencedframe = self._driver.FindElement('tag name', 'fencedframe')
     self.assertIsNotNone(fencedframe)
     self._driver.SwitchToFrame(fencedframe)
+
+  def testSharedStorageWorkletTarget(self):
+    self._http_server.SetDataForPath('/simple_module.js', bytes('''
+       class Simple {
+          async run(urls, data) {
+            return 0;
+          }
+       }
+       register('simple', Simple);
+    ''', 'utf-8'))
+
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    self._driver.ExecuteScript('''
+       window.sharedStorage.worklet.addModule(
+                               "/shared-storage/resources/simple-module.js")''')
+    window_handles = self._driver.GetWindowHandles()
+    self.assertEqual(len(window_handles), 1)
 
 class ChromeDriverSiteIsolation(ChromeDriverBaseTestWithWebServer):
   """Tests for ChromeDriver with the new Site Isolation Chrome feature.
@@ -5663,7 +5712,6 @@ class ChromeDriverSiteIsolation(ChromeDriverBaseTestWithWebServer):
     self.assertTrue(self.WaitForCondition(
         lambda: len(self._driver.GetWindowHandles()) <= 1,
         timeout=10))
-
 
 
 class ChromeDriverPageLoadTimeoutTest(ChromeDriverBaseTestWithWebServer):
@@ -6075,9 +6123,15 @@ class ChromeExtensionsCapabilityTest(ChromeDriverBaseTestWithWebServer):
 
   def testCanInspectBackgroundPage(self):
     crx = os.path.join(_TEST_DATA_DIR, 'ext_bg_page.crx')
+    # This test exercises inspection of an extension background page, which
+    # is only valid for manifest V2 extensions. Explicitly disable the
+    # experiment that disallows MV2 extensions.
+    # This test can be removed entirely when support for MV2 extensions is
+    # removed.
     driver = self.CreateDriver(
         chrome_extensions=[self._PackExtension(crx)],
-        experimental_options={'windowTypes': ['background_page']})
+        experimental_options={'windowTypes': ['background_page']},
+        chrome_switches=['disable-features=ExtensionManifestV2Disabled'])
     handles = driver.GetWindowHandles()
     for handle in handles:
       driver.SwitchToWindow(handle)
@@ -6747,7 +6801,6 @@ class RemoteBrowserTest(ChromeDriverBaseTest):
       raise exception
 
 
-
 class LaunchDesktopTest(ChromeDriverBaseTest):
   """Tests that launching desktop Chrome works."""
 
@@ -7255,7 +7308,7 @@ class PureBidiTest(ChromeDriverBaseTestWithWebServer):
   def testCloseWithUserPromptOpened(self):
     connection = self.createWebSocketConnection()
     connection.SetTimeout(60)  # 1 min as the test is likely to timeout
-    response = connection.SendCommand(self.createSessionNewCommand())
+    connection.SendCommand(self.createSessionNewCommand())
     context1 = connection.SendCommand({
         'method': 'browsingContext.create',
         'params': {
@@ -7301,6 +7354,31 @@ class PureBidiTest(ChromeDriverBaseTestWithWebServer):
           'params': {
           }
       })
+
+  def testFocusInFirstTab(self):
+    connection = self.createWebSocketConnection()
+    connection.SendCommand(self.createSessionNewCommand())
+    response = connection.SendCommand({
+      'method': 'browsingContext.getTree',
+      'params': {
+      }
+    })
+    context = response['contexts'][0]['context']
+    result = connection.SendCommand({
+      'method': 'script.evaluate',
+      'params': {
+          'expression': 'document.hasFocus()',
+          'target': {
+              'context': context
+          },
+          'awaitPromise': True,
+      }
+    })
+    # According to the standard the WebDriver implementation should prefer a
+    # top-level browsing context (window / tab) that has system focus.
+    # S/A: https://w3c.github.io/webdriver/#dfn-new-sessions
+    self.assertEqual('boolean', result['result']['type'])
+    self.assertTrue(result['result']['value'])
 
 
 class BidiTest(ChromeDriverBaseTestWithWebServer):
@@ -7873,6 +7951,12 @@ class BidiTest(ChromeDriverBaseTestWithWebServer):
     title = driver.GetTitle()
     self.assertEqual(title, page_name)
 
+  def testFocusInFirstTab(self):
+    # According to the standard the WebDriver implementation should prefer a
+    # top-level browsing context (window / tab) that has system focus.
+    # S/A: https://w3c.github.io/webdriver/#dfn-new-sessions
+    self.assertTrue(self._driver.ExecuteScript("return document.hasFocus()"))
+
 
 class CustomBidiMapperTest(ChromeDriverBaseTest):
   """Base class for testing chromedriver with a custom bidi mapper path."""
@@ -7929,7 +8013,6 @@ class ClassicTest(ChromeDriverBaseTestWithWebServer):
     handles = driver.GetWindowHandles()
     self.assertEqual(1, len(handles))
     driver.CloseWindow()
-
 
 
 class SupportIPv4AndIPv6(ChromeDriverBaseTest):
@@ -8259,7 +8342,6 @@ class FedCmSpecificTest(ChromeDriverBaseTestWithWebServer):
     self.assertEqual(2, len(accounts))
 
     self._driver.SelectAccount(0)
-    self.assertRaises(chromedriver.NoSuchAlert, self._driver.GetAccounts)
 
     self.assertTrue(self.WaitForCondition(self.FedCmDialogCondition))
     self.assertEqual("Error", self._driver.GetDialogType())
@@ -8293,7 +8375,6 @@ class FedCmSpecificTest(ChromeDriverBaseTestWithWebServer):
     self.assertEqual(2, len(accounts))
 
     self._driver.SelectAccount(0)
-    self.assertRaises(chromedriver.NoSuchAlert, self._driver.GetAccounts)
 
     self.assertTrue(self.WaitForCondition(self.FedCmDialogCondition))
     self.assertEqual("Error", self._driver.GetDialogType())
@@ -8329,6 +8410,177 @@ class FedCmSpecificTest(ChromeDriverBaseTestWithWebServer):
     self.assertTrue(self.WaitForCondition(self.FedCmPopupWindowCondition))
 
     self._driver.CancelFedCmDialog()
+
+
+class ComputePressureSpecificTest(ChromeDriverBaseTestWithWebServer):
+  """
+  Tests for https://w3c.github.io/compute-pressure/#automation
+  """
+
+  def setUp(self):
+    self._driver = self.CreateDriver(accept_insecure_certs=True)
+
+    script_content = bytes(
+        """
+      <!DOCTYPE html>
+      <script>
+      let observer;
+      const states = [];
+
+      function pressureChangeCallback(records, observer) {
+        for (const record of records) {
+          states.push(record.state);
+        }
+      }
+
+      async function addPressureObserver() {
+        observer = new PressureObserver(pressureChangeCallback);
+        await observer.observe("cpu");
+      }
+      </script>
+      """, 'utf-8')
+    self._https_server.SetDataForPath('/compute-pressure.html', script_content)
+
+  def testCreateVirtualPressureSourceWithNonStringType(self):
+    self.assertRaisesRegex(
+        chromedriver.InvalidArgument,
+        "invalid argument: 'type' must be a string",
+        self._driver.CreateVirtualPressureSource,
+        42,
+    )
+
+  def testCreateVirtualPressureSourceWithInvalidType(self):
+    self.assertRaisesRegex(
+        chromedriver.InvalidArgument,
+        "invalid argument: Invalid pressure source: invalid_type",
+        self._driver.CreateVirtualPressureSource,
+        'invalid_type',
+    )
+
+  def testCreateVirtualPressureSourceWithInvalidMetadata(self):
+    self.assertRaisesRegex(
+        chromedriver.InvalidArgument,
+        "invalid argument: 'supported' must be a boolean",
+        self._driver.CreateVirtualPressureSource,
+        'cpu',
+        {'supported': 'foo'},
+    )
+
+  def testUpdateVirtualPressureSourceWithInvalidType(self):
+    self.assertRaisesRegex(
+        chromedriver.InvalidArgument,
+        'invalid argument: Invalid pressure source: invalid_type',
+        self._driver.UpdateVirtualPressureSource,
+        'invalid_type',
+        'nominal',
+    )
+
+  def testUpdateVirtualPressureSourceWithInvalidSample(self):
+    self.assertRaisesRegex(
+        chromedriver.InvalidArgument,
+        'invalid argument: Invalid pressure state: invalid_sample',
+        self._driver.UpdateVirtualPressureSource,
+        'cpu',
+        'invalid_sample',
+    )
+
+  def testUpdateVirtualPressureSourceWithoutSample(self):
+    self.assertRaisesRegex(
+        Exception,
+        "UpdateVirtualPressureSource\(\) missing 1 required " +
+        "positional argument: 'sample'",
+        self._driver.UpdateVirtualPressureSource,
+        'cpu',
+    )
+
+  def testUpdateVirtualPressureSourceWithNonStringSample(self):
+    self.assertRaisesRegex(
+        chromedriver.InvalidArgument,
+        "invalid argument: 'sample' must be a string",
+        self._driver.UpdateVirtualPressureSource,
+        "cpu",
+        42,
+    )
+
+  def testUpdateVirtualPressureSourceWithoutOverriding(self):
+    self.assertRaisesRegex(
+        Exception,
+        'invalid argument: The specified pressure source is not being '
+        'overridden',
+        self._driver.UpdateVirtualPressureSource, 'cpu', 'nominal')
+
+  def testRemoveVirtualPressureSourceWithInvalidType(self):
+    self.assertRaisesRegex(
+        chromedriver.InvalidArgument,
+        'invalid argument: Invalid pressure source: invalid_type',
+        self._driver.RemoveVirtualPressureSource,
+        'invalid_type',
+    )
+
+  def testRemoveVirtualPressureSourceWithoutType(self):
+    self.assertRaisesRegex(
+        Exception,
+        "RemoveVirtualPressureSource\(\) missing 1 required " +
+        "positional argument: 'type'",
+        self._driver.RemoveVirtualPressureSource,
+    )
+
+  def testCreateVirtualPressureSourceNotConnected(self):
+    script = """
+      const done = arguments[0];
+      const observer = new PressureObserver(() => {
+        throw Error("The observer callback should not be called");
+      });
+      observer.observe("cpu").then(() => {
+        throw new Error('Observation did not fail as expected');
+      }, e => {
+        done(e.name);
+      });
+    """
+    self._driver.CreateVirtualPressureSource('cpu', {'supported': False})
+    self._driver.Load(self._https_server.GetUrl() + '/compute-pressure.html')
+    self.assertEqual('NotSupportedError',
+                     self._driver.ExecuteAsyncScript(script))
+
+  def testUpdateVirtualPressure(self):
+    source = 'cpu'
+    self._driver.CreateVirtualPressureSource(source)
+    self._driver.Load(self._https_server.GetUrl() + '/compute-pressure.html')
+
+    self._driver.ExecuteAsyncScript(
+        'const done = arguments[0]; addPressureObserver().then(done)')
+    pressure_states = ["nominal", "fair", "serious", "critical"]
+    states_length = 1
+
+    for state in pressure_states:
+      self._driver.UpdateVirtualPressureSource(source, state)
+      self.assertTrue(
+          self.WaitForCondition(lambda: self._driver.ExecuteScript(
+              'return states.length === arguments[0]', states_length)))
+      received_state = self._driver.ExecuteScript('return states.at(-1)')
+      self.assertEqual(state, received_state)
+      states_length = states_length + 1
+
+    self._driver.RemoveVirtualPressureSource(source)
+
+  def testRemoveVirtualPressureSourceWhileInUse(self):
+    source = 'cpu'
+    self._driver.CreateVirtualPressureSource(source)
+    self._driver.Load(self._https_server.GetUrl() + '/compute-pressure.html')
+    self._driver.ExecuteAsyncScript(
+        'const done = arguments[0]; addPressureObserver().then(done)')
+
+    self._driver.UpdateVirtualPressureSource(source, 'serious')
+    self.assertTrue(
+        self.WaitForCondition(lambda: self._driver.ExecuteScript(
+            'return states.at(-1) === "serious"')))
+    self._driver.RemoveVirtualPressureSource(source)
+    self.assertRaisesRegex(
+        Exception,
+        'invalid argument: The specified pressure source is not being '
+        'overridden',
+        self._driver.UpdateVirtualPressureSource, source, 'nominal')
+
 
 class NavTrackingMitigationSpecificTest(ChromeDriverBaseTestWithWebServer):
 
@@ -8560,12 +8812,19 @@ if __name__ == '__main__':
 
     if browser_name is None:
       browser_name = 'chrome'
-    _CHROME_BINARY = _InferBrowserPath(browser_name,
+    (_CHROME_BINARY, path_list) = _InferBrowserPath(browser_name,
                                        driver_path,
                                        util.GetPlatformName())
     if _CHROME_BINARY is None:
-      print(('Failed to find the browser "%s". ' % browser_name) +
-            'Delegating this task to ChromeDriver')
+      joined_path_list = '  * ' + '\n  * '.join(path_list)
+      if len(path_list) == 0:
+        joined_path_list = '    <empty list>'
+
+      print('''Failed to find the browser "%s".
+Attempted paths:
+%s
+Delegating this task to ChromeDriver'''
+            % (browser_name, joined_path_list))
 
   # If the browser lookup mechanism of the tests fails then this task is
   # delegated to ChromeDriver. The later needs to know which browser to search.

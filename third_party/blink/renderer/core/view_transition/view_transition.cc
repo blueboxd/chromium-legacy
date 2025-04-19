@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
+#include "third_party/blink/renderer/core/frame/browser_controls.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -28,6 +29,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/view_transition/dom_view_transition.h"
+#include "third_party/blink/renderer/core/view_transition/view_transition_pseudo_element_base.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/graphics/paint/clip_paint_property_node.h"
@@ -440,6 +442,10 @@ void ViewTransition::ProcessCurrentState() {
         // performing the capture.
         bool snap_browser_controls =
             document_->GetFrame()->IsOutermostMainFrame() &&
+            (!RuntimeEnabledFeatures::
+                 ViewTransitionDisableSnapBrowserControlsOnHiddenEnabled() ||
+             document_->GetPage()->GetBrowserControls().PermittedState() !=
+                 cc::BrowserControlsState::kHidden) &&
             creation_type_ == CreationType::kForSnapshot;
         if (!style_tracker_->Capture(snap_browser_controls)) {
           SkipTransition(PromiseResponse::kRejectInvalidState);
@@ -882,6 +888,7 @@ void ViewTransition::PauseRendering() {
 
   if (rendering_paused_scope_->ShouldThrottleRendering() && document_->View()) {
     document_->View()->SetThrottledForViewTransition(true);
+    style_tracker_->DidThrottleLocalSubframeRendering();
   }
 
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("blink", "ViewTransition::PauseRendering",
@@ -963,6 +970,11 @@ bool ViewTransition::MaybeCrossFrameSink() const {
   // content::ViewTransitionCommitDeferringCondition, the browser process
   // doesn't issue a snapshot request for such navigations.
   return document_->GetFrame()->IsLocalRoot();
+}
+
+bool ViewTransition::IsGeneratingPseudo(
+    const ViewTransitionPseudoElementBase& pseudo_element) const {
+  return pseudo_element.IsBoundTo(style_tracker_.Get());
 }
 
 }  // namespace blink

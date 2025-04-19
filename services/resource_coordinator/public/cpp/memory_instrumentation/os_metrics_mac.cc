@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/os_metrics.h"
 
 #include <mach/mach.h>
@@ -371,6 +376,21 @@ bool GetMemoryBytes(size_t* private_bytes,
 // static
 bool OSMetrics::FillOSMemoryDump(base::ProcessId pid,
                                  mojom::RawOSMemDump* dump) {
+  if (pid != base::kNullProcessId && pid != base::GetCurrentProcId()) {
+    return false;
+  }
+  return FillOSMemoryDumpFromTaskPort(mach_task_self(), dump);
+}
+
+// static
+bool OSMetrics::FillOSMemoryDumpFromTaskPort(mach_port_t task_port,
+                                             mojom::RawOSMemDump* dump) {
+  task_vm_info info;
+  mach_msg_type_number_t count = ChromeTaskVMInfoCount;
+  kern_return_t result = task_info(
+      task_port, TASK_VM_INFO, reinterpret_cast<task_info_t>(&info), &count);
+  if (result != KERN_SUCCESS)
+    return false;
 
   if(__builtin_available(macOS 10.9,*)) {
     task_vm_info info;

@@ -24,19 +24,20 @@ fuzzer_test("string_compare_fuzzer") {
   additional_configs = [ "//testing/libfuzzer:no_clusterfuzz" ]
 }
 
+fuzzer_test("string_compare_proto_fuzzer") {
+  sources = [ "string_compare_proto_fuzzer.cc" ]
+  deps = [
+    "//testing/libfuzzer/proto:string_compare_proto",
+    "//third_party/libprotobuf-mutator",
+  ]
+  additional_configs = [ "//testing/libfuzzer:no_clusterfuzz" ]
+}
+
 fuzzer_test("courgette_fuzzer") {
   sources = [ "courgette_fuzzer.cc" ]
   deps = [
     "//base",
     "//courgette:courgette_lib",
-  ]
-}
-
-fuzzer_test("language_detection_fuzzer") {
-  sources = [ "language_detection_fuzzer.cc" ]
-  deps = [
-    "//base",
-    "//components/translate/core/language_detection:language_detection",
   ]
 }
 
@@ -204,22 +205,6 @@ if (v8_enable_webassembly) {
     max_len = 500
   }
 
-  v8_fuzzer("wasm_compile_all_fuzzer") {
-    max_len = 500
-  }
-
-  v8_fuzzer("wasm_compile_fuzzer") {
-    max_len = 500
-  }
-
-  v8_fuzzer("wasm_compile_simd_fuzzer") {
-    max_len = 500
-  }
-
-  v8_fuzzer("wasm_compile_wasmgc_fuzzer") {
-    max_len = 500
-  }
-
   v8_fuzzer("wasm_fuzzer") {
     max_len = 500
     seed_corpus = "//testing/libfuzzer/fuzzers/wasm_corpus/"
@@ -235,8 +220,33 @@ if (v8_enable_webassembly) {
     seed_corpus = "//testing/libfuzzer/fuzzers/wasm_corpus/"
   }
 
-  v8_fuzzer("wasm_init_expr_fuzzer") {
-    max_len = 500
+  # These fuzzers are not supported in official builds as they depend on
+  # functionality in the v8 library that is skipped in official builds for
+  # binary size reasons.
+  if (!is_official_build) {
+    v8_fuzzer("wasm_compile_all_fuzzer") {
+      max_len = 500
+    }
+
+    v8_fuzzer("wasm_compile_fuzzer") {
+      max_len = 500
+    }
+
+    v8_fuzzer("wasm_compile_simd_fuzzer") {
+      max_len = 500
+    }
+
+    v8_fuzzer("wasm_compile_wasmgc_fuzzer") {
+      max_len = 500
+    }
+
+    v8_fuzzer("wasm_init_expr_fuzzer") {
+      max_len = 500
+    }
+
+    v8_fuzzer("wasm_deopt_fuzzer") {
+      max_len = 500
+    }
   }
 }
 
@@ -431,6 +441,18 @@ test("libyuv_scale_fuzztest") {
   deps = [
     ":libyuv_scale_fuzzer_common",
     "//third_party/fuzztest:fuzztest_gtest_main",
+  ]
+}
+
+test("paint_vector_icon_fuzztest") {
+  sources = [ "paint_vector_icon_fuzztest.cc" ]
+  fuzztests = [ "PaintVectorIconFuzzTest.PaintVectorIcon" ]
+
+  deps = [
+    "//base",
+    "//skia:skia_switches",
+    "//third_party/fuzztest:fuzztest_gtest_main",
+    "//ui/gfx:gfx",
   ]
 }
 

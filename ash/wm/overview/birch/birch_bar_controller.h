@@ -70,6 +70,12 @@ class ASH_EXPORT BirchBarController : public BirchModel::Observer,
   // Gets if the user allows to show the given type of suggestions.
   bool GetShowSuggestionType(BirchSuggestionType type) const;
 
+  // Gets if the suggestion data loading is in progress.
+  bool IsDataLoading() const;
+
+  // Toggles temperature units for weather chip between F and C.
+  void ToggleTemperatureUnits();
+
   // ui::SimpleMenuModel::Delegate:
   void ExecuteCommand(int command_id, int event_flags) override;
 
@@ -113,8 +119,8 @@ class ASH_EXPORT BirchBarController : public BirchModel::Observer,
   // Indicates if the data fetching is in progress.
   bool data_fetch_in_progress_ = false;
 
-  // True if the overview session was triggered by the pine service.
-  const bool from_pine_service_;
+  // True if the overview session is an informed restore session.
+  const bool is_informed_restore_;
 
   // Show/hide suggestions pref change registrar.
   PrefChangeRegistrar show_suggestions_pref_registrar_;

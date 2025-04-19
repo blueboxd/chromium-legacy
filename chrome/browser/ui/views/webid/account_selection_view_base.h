@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/i18n/case_conversion.h"
+#include "chrome/browser/picture_in_picture/picture_in_picture_occlusion_observer.h"
+#include "chrome/browser/picture_in_picture/scoped_picture_in_picture_occlusion_observation.h"
 #include "chrome/browser/ui/monogram_utils.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/webid/identity_provider_display_data.h"
@@ -81,70 +83,6 @@ inline constexpr int kArrowIconSize = 8;
 
 inline constexpr char kImageFetcherUmaClient[] = "FedCMAccountChooser";
 
-class LetterCircleCroppedImageSkiaSource : public gfx::CanvasImageSource {
- public:
-  LetterCircleCroppedImageSkiaSource(const std::u16string& letter, int size)
-      : gfx::CanvasImageSource(gfx::Size(size, size)), letter_(letter) {}
-
-  LetterCircleCroppedImageSkiaSource(
-      const LetterCircleCroppedImageSkiaSource&) = delete;
-  LetterCircleCroppedImageSkiaSource& operator=(
-      const LetterCircleCroppedImageSkiaSource&) = delete;
-  ~LetterCircleCroppedImageSkiaSource() override = default;
-
-  void Draw(gfx::Canvas* canvas) override;
-
- private:
-  const std::u16string letter_;
-};
-
-// A CanvasImageSource that:
-// 1) Applies an optional square center-crop.
-// 2) Resizes the cropped image (while maintaining the image's aspect ratio) to
-//    fit into the target canvas. If no center-crop was applied and the source
-//    image is rectangular, the image is resized so that
-//    `avatar` small edge size == `canvas_edge_size`.
-// 3) Circle center-crops the resized image.
-class CircleCroppedImageSkiaSource : public gfx::CanvasImageSource {
- public:
-  CircleCroppedImageSkiaSource(gfx::ImageSkia avatar,
-                               std::optional<int> pre_resize_avatar_crop_size,
-                               int canvas_edge_size)
-      : gfx::CanvasImageSource(gfx::Size(canvas_edge_size, canvas_edge_size)) {
-    int scaled_width = canvas_edge_size;
-    int scaled_height = canvas_edge_size;
-    if (pre_resize_avatar_crop_size) {
-      const float avatar_scale =
-          (canvas_edge_size / (float)*pre_resize_avatar_crop_size);
-      scaled_width = floor(avatar.width() * avatar_scale);
-      scaled_height = floor(avatar.height() * avatar_scale);
-    } else {
-      // Resize `avatar` so that it completely fills the canvas.
-      const float height_ratio =
-          ((float)avatar.height() / (float)avatar.width());
-      if (height_ratio >= 1.0f) {
-        scaled_height = floor(canvas_edge_size * height_ratio);
-      } else {
-        scaled_width = floor(canvas_edge_size / height_ratio);
-      }
-    }
-    avatar_ = gfx::ImageSkiaOperations::CreateResizedImage(
-        avatar, skia::ImageOperations::RESIZE_BEST,
-        gfx::Size(scaled_width, scaled_height));
-  }
-
-  CircleCroppedImageSkiaSource(const CircleCroppedImageSkiaSource&) = delete;
-  CircleCroppedImageSkiaSource& operator=(const CircleCroppedImageSkiaSource&) =
-      delete;
-  ~CircleCroppedImageSkiaSource() override = default;
-
-  // CanvasImageSource:
-  void Draw(gfx::Canvas* canvas) override;
-
- private:
-  gfx::ImageSkia avatar_;
-};
-
 class BrandIconImageView : public views::ImageView {
   METADATA_HEADER(BrandIconImageView, views::ImageView)
 
@@ -164,6 +102,13 @@ class BrandIconImageView : public views::ImageView {
 
   void CropAndSetImage(const gfx::ImageSkia& original_image);
 
+  // If this image uses a background circle, updates its color.
+  void OnBackgroundColorUpdated(const SkColor& background_color);
+
+  std::optional<SkColor> background_color_for_testing() const {
+    return background_color_;
+  }
+
  private:
   void OnImageFetched(const GURL& image_url,
                       const gfx::Image& image,
@@ -176,12 +121,13 @@ class BrandIconImageView : public views::ImageView {
   // when this object is used as a badge for an account icon. When set, this
   // should be the background color of the dialog.
   std::optional<SkColor> background_color_;
+  gfx::ImageSkia cropped_idp_image_;
 
   base::WeakPtrFactory<BrandIconImageView> weak_ptr_factory_{this};
 };
 
 // Base class for interacting with FedCM account selection dialog.
-class AccountSelectionViewBase {
+class AccountSelectionViewBase : public PictureInPictureOcclusionObserver {
  public:
   // Used to observe changes to the account selection dialog.
   class Observer {
@@ -224,29 +170,34 @@ class AccountSelectionViewBase {
     // Called when the accounts UI is displayed.
     virtual void OnAccountsDisplayed() = 0;
 
-    // Called when IdentityProvider.close() is called from the renderer.
-    virtual void CloseModalDialog() = 0;
-
     // Called when the user clicks on the 'Choose an account' button
-    virtual void OnChooseAnAccount() = 0;
+    virtual void OnChooseAnAccountClicked() = 0;
   };
 
   AccountSelectionViewBase(
       content::WebContents* web_contents,
       AccountSelectionViewBase::Observer* observer,
       views::WidgetObserver* widget_observer,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      std::u16string rp_for_display);
   AccountSelectionViewBase();
-  virtual ~AccountSelectionViewBase();
+  ~AccountSelectionViewBase() override;
+
+  // PictureInPictureOcclusionObserver:
+  void OnOcclusionStateChanged(bool occluded) override;
 
   // Creates and sets the appropriate dialog widget, depending on whether the
   // dialog is bubble or modal.
   virtual void InitDialogWidget() = 0;
 
   // Updates the FedCM dialog to show the "account picker" sheet.
+  // `is_choose_an_account` is true if the dialog must change its title to
+  // 'Choose an account'. This is currently only used on widget mode, when
+  // clicking on the 'Choose an account' button.
   virtual void ShowMultiAccountPicker(
       const std::vector<IdentityProviderDisplayData>& idp_data_list,
-      bool show_back_button) = 0;
+      bool show_back_button,
+      bool is_choose_an_account) = 0;
 
   // Updates the FedCM dialog to show the "verifying" sheet.
   virtual void ShowVerifyingSheet(
@@ -254,33 +205,27 @@ class AccountSelectionViewBase {
       const IdentityProviderDisplayData& idp_data,
       const std::u16string& title) = 0;
 
-  // Updates to show single account plus a confirm dialog. Used when showing the
+  // Updates to show a single account. On widget mode, used when showing the
   // account confirmation dialog after the user picks one of multiple accounts.
+  // On button mode, used for the user to pick the single account.
   virtual void ShowSingleAccountConfirmDialog(
-      const std::u16string& top_frame_for_display,
-      const std::optional<std::u16string>& iframe_for_display,
       const content::IdentityRequestAccount& account,
       const IdentityProviderDisplayData& idp_data,
       bool show_back_button) = 0;
 
   // Updates the FedCM dialog to show the "failure" sheet.
   virtual void ShowFailureDialog(
-      const std::u16string& top_frame_for_display,
-      const std::optional<std::u16string>& iframe_for_display,
       const std::u16string& idp_for_display,
       const content::IdentityProviderMetadata& idp_metadata) = 0;
 
   // Updates the FedCM dialog to show the "error" sheet.
   virtual void ShowErrorDialog(
-      const std::u16string& top_frame_for_display,
-      const std::optional<std::u16string>& iframe_for_display,
       const std::u16string& idp_for_display,
       const content::IdentityProviderMetadata& idp_metadata,
       const std::optional<TokenError>& error) = 0;
 
   // Updates the FedCM dialog to show the "request permission" sheet.
   virtual void ShowRequestPermissionDialog(
-      const std::u16string& top_frame_for_display,
       const content::IdentityRequestAccount& account,
       const IdentityProviderDisplayData& idp_display_data) = 0;
 
@@ -298,9 +243,6 @@ class AccountSelectionViewBase {
 
   // Gets the title of the dialog.
   virtual std::string GetDialogTitle() const = 0;
-
-  // Gets the subtitle of the dialog, if available.
-  virtual std::optional<std::string> GetDialogSubtitle() const = 0;
 
   // Retrieves the dialog widget used to control the dialog, if available. This
   // method is virtual for testing purposes.
@@ -321,20 +263,24 @@ class AccountSelectionViewBase {
   // Virtual for testing purposes.
   virtual bool CanFitInWebContents();
 
+  bool IsOccluded() const { return is_occluded_; }
+
  protected:
   void SetLabelProperties(views::Label* label);
 
   // Returns a View containing information about an account: the picture for
   // the account on the left, and information about the account on the right.
-  // |should_hover| determines whether the account row is a HoverButton or
-  // not.
+  // |clickable_position| contains an int if and only if the account is a
+  // HoverButton, and in that case the number is the 0-based position of that
+  // account in the overall dialog.
   std::unique_ptr<views::View> CreateAccountRow(
       const content::IdentityRequestAccount& account,
       const IdentityProviderDisplayData& idp_display_data,
-      bool should_hover,
+      std::optional<int> clickable_position,
       bool should_include_idp,
       bool is_modal_dialog = false,
-      int additional_vertical_padding = 0);
+      int additional_vertical_padding = 0,
+      std::optional<std::u16string> last_used_string = std::nullopt);
 
   // Returns a StyledLabel containing a disclosure label. The label links to
   // privacy policy and terms of service URLs, if available.
@@ -366,6 +312,14 @@ class AccountSelectionViewBase {
   // Observes events on AccountSelectionBubbleView.
   // Dangling when running Chromedriver's run_py_tests.py test suite.
   raw_ptr<Observer, DanglingUntriaged> observer_{nullptr};
+
+  // The description of the RP to be used in the dialog.
+  std::u16string rp_for_display_;
+
+  // Whether the widget is occluded (and therefore we should ignore inputs.
+  bool is_occluded_{false};
+
+  ScopedPictureInPictureOcclusionObservation occlusion_observation_{this};
 
   // Used to ensure that callbacks are not run if the AccountSelectionViewBase
   // is destroyed.

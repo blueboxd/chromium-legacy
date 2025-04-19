@@ -16,4 +16,10 @@ bool FacilitatedPaymentsClient::ShowPixPaymentPrompt(
   return false;
 }
 
+void FacilitatedPaymentsClient::ShowProgressScreen() {}
+
+void FacilitatedPaymentsClient::ShowErrorScreen() {}
+
+void FacilitatedPaymentsClient::DismissPrompt() {}
+
 }  // namespace payments::facilitated

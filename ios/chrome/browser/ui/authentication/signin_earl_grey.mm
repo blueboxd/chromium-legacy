@@ -29,6 +29,12 @@ using base::test::ios::WaitUntilConditionOrTimeout;
                       withUnknownCapabilities:usingUnknownCapabilities];
 }
 
+- (void)addFakeIdentity:(FakeSystemIdentity*)fakeIdentity
+       withCapabilities:(NSDictionary<NSString*, NSNumber*>*)capabilities {
+  [SigninEarlGreyAppInterface addFakeIdentity:fakeIdentity
+                             withCapabilities:capabilities];
+}
+
 - (void)addFakeIdentityForSSOAuthAddAccountFlow:
     (FakeSystemIdentity*)fakeIdentity {
   [self addFakeIdentityForSSOAuthAddAccountFlow:fakeIdentity
@@ -43,29 +49,12 @@ using base::test::ios::WaitUntilConditionOrTimeout;
                       withUnknownCapabilities:usingUnknownCapabilities];
 }
 
-- (void)setIsSubjectToParentalControls:(BOOL)value
-                           forIdentity:(FakeSystemIdentity*)fakeIdentity {
-  [SigninEarlGreyAppInterface setIsSubjectToParentalControls:value
-                                                 forIdentity:fakeIdentity];
-}
-
-- (void)setCanHaveEmailAddressDisplayed:(BOOL)value
-                            forIdentity:(FakeSystemIdentity*)fakeIdentity {
-  [SigninEarlGreyAppInterface setCanHaveEmailAddressDisplayed:value
-                                                  forIdentity:fakeIdentity];
-}
-
-- (void)setCanShowHistorySyncOptInsWithoutMinorModeRestrictions:(BOOL)value
-                                                    forIdentity:
-                                                        (FakeSystemIdentity*)
-                                                            fakeIdentity {
-  [SigninEarlGreyAppInterface
-      setCanShowHistorySyncOptInsWithoutMinorModeRestrictions:value
-                                                  forIdentity:fakeIdentity];
-}
-
 - (void)forgetFakeIdentity:(FakeSystemIdentity*)fakeIdentity {
   [SigninEarlGreyAppInterface forgetFakeIdentity:fakeIdentity];
+}
+
+- (BOOL)isIdentityAdded:(FakeSystemIdentity*)fakeIdentity {
+  return [SigninEarlGreyAppInterface isIdentityAdded:fakeIdentity];
 }
 
 - (NSString*)primaryAccountGaiaID {
@@ -90,6 +79,11 @@ using base::test::ios::WaitUntilConditionOrTimeout;
   [SigninEarlGreyAppInterface signinAndEnableLegacySyncFeature:identity];
   [self verifyPrimaryAccountWithEmail:identity.userEmail
                               consent:signin::ConsentLevel::kSync];
+}
+
+- (void)signInWithoutHistorySyncWithFakeIdentity:(FakeSystemIdentity*)identity {
+  [SigninEarlGreyAppInterface
+      signInWithoutHistorySyncWithFakeIdentity:identity];
 }
 
 - (void)triggerReauthDialogWithFakeIdentity:(FakeSystemIdentity*)identity {

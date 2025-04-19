@@ -31,7 +31,6 @@
 #include "base/types/pass_key.h"
 #include "third_party/blink/public/common/input/pointer_id.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
-#include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_typedefs.h"
 #include "third_party/blink/renderer/core/animation/animatable.h"
@@ -189,15 +188,13 @@ enum class NamedItemType {
   kNameOrIdWithName,
 };
 
-enum class InvokeAction {
+enum class CommandEventType {
   // Action is neither custom, nor built-in (effectively invalid)
   kNone,
 
   // Custom actions include a `-`.
   kCustom,
 
-  // The "auto" state (empty string or missing)
-  kAuto,
   // Popover
   kTogglePopover,
   kHidePopover,
@@ -300,6 +297,13 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void SetElementAttribute(const QualifiedName&, Element*);
   HeapVector<Member<Element>>* GetAttrAssociatedElements(
       const QualifiedName& name);
+
+  // If treescope_element is connected, then we will search treescope_element's
+  // TreeScope for an element with the id. If treescope_element is disconnected,
+  // then we will use its TreeRoot() to search for an element with the id
+  // instead.
+  Element* getElementByIdIncludingDisconnected(const Element& treescope_element,
+                                               const AtomicString& id) const;
 
   FrozenArray<Element>* ariaControlsElements();
   void setAriaControlsElements(HeapVector<Member<Element>>* given_elements);
@@ -440,6 +444,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   int ClientTopNoLayout() const;
   int clientWidth();
   int clientHeight();
+  double currentCSSZoom();
   double scrollLeft();
   double scrollTop();
   void setScrollLeft(double);
@@ -793,7 +798,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   // Returns true if the attachment was successful.
   bool AttachDeclarativeShadowRoot(HTMLTemplateElement&,
-                                   ShadowRootMode,
+                                   String,
                                    FocusDelegation,
                                    SlotAssignmentMode,
                                    bool serializable,
@@ -979,13 +984,15 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
       Element* new_focused_element,
       InputDeviceCapabilities* source_capabilities = nullptr);
 
-  // This allows customization of how Invokes are handled, per element.
+  // This allows customization of how Invoker Commands are handled, per element.
   // See: crbug.com/1490919, https://open-ui.org/components/invokers.explainer/
-  virtual bool IsValidInvokeAction(HTMLElement& invoker, InvokeAction action) {
-    return action == InvokeAction::kAuto;
+  virtual bool IsValidCommand(HTMLElement& invoker, CommandEventType command) {
+    return false;
   }
-  virtual bool HandleInvokeInternal(HTMLElement& invoker, InvokeAction action) {
-    CHECK(action != InvokeAction::kCustom && action != InvokeAction::kNone);
+  virtual bool HandleCommandInternal(HTMLElement& invoker,
+                                     CommandEventType command) {
+    CHECK(command != CommandEventType::kCustom &&
+          command != CommandEventType::kNone);
     return false;
   }
 
@@ -1066,7 +1073,10 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
       const AtomicString& view_transition_name = g_null_atom) const;
   LayoutObject* PseudoElementLayoutObject(PseudoId) const;
 
+  bool PseudoElementStylesAffectCounters() const;
+
   bool PseudoElementStylesDependOnFontMetrics() const;
+  bool PseudoElementStylesDependOnAttr() const;
 
   // Retrieve the ComputedStyle (if any) corresponding to the provided
   // PseudoId from cache, calculating the ComputedStyle on-demand if it's
@@ -1270,8 +1280,9 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   EnsureResizeObserverData();
 
   DisplayLockContext* GetDisplayLockContext() const {
-    if (LIKELY(!HasDisplayLockContext()))
+    if (!HasDisplayLockContext()) [[likely]] {
       return nullptr;
+    }
     return GetDisplayLockContextFromRareData();
   }
   DisplayLockContext& EnsureDisplayLockContext();
@@ -1312,6 +1323,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   // For font-related style invalidation.
   void SetScrollbarPseudoElementStylesDependOnFontMetrics(bool);
+
+  void SetPseudoElementStylesChangeCounters(bool value);
 
   // True if a scroller has not been explicitly scrolled by a user or by a
   // programmatic scroll. Indicates that we should use the CSS scroll-start
@@ -1424,13 +1437,6 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // This function clears the "nonce" attribute whenever conditions (1) and (2)
   // are met.
   void HideNonce();
-
-  // This method calls Document::AddConsoleMessage but also attaches this
-  // element to the console message so developers can see the relevant element
-  // in DevTools.
-  void AddConsoleMessage(mojom::blink::ConsoleMessageSource source,
-                         mojom::blink::ConsoleMessageLevel level,
-                         const String& message);
 
   // These update every scroll container that is an ancestor of
   // of this element, letting them know which snap area of theirs, if any,
@@ -1548,6 +1554,9 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   friend class AXObject;
   struct AffectedByPseudoStateChange;
 
+  template <typename Functor>
+  bool PseudoElementStylesDependOnFunc(Functor& func) const;
+
   void ScrollLayoutBoxBy(const ScrollToOptions*);
   void ScrollLayoutBoxTo(const ScrollToOptions*);
   void ScrollFrameBy(const ScrollToOptions*);
@@ -1557,6 +1566,10 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void SetElementFlag(ElementFlags, bool value = true);
   void ClearElementFlag(ElementFlags);
 
+  void ClearPseudoElement(
+      PseudoId,
+      const AtomicString& view_transition_name = g_null_atom);
+
   bool IsElementNode() const =
       delete;  // This will catch anyone doing an unnecessary check.
   bool IsDocumentFragment() const =
@@ -1565,7 +1578,9 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
       delete;  // This will catch anyone doing an unnecessary check.
 
   bool CanAttachShadowRoot() const;
-  const char* ErrorMessageForAttachShadow(bool for_declarative) const;
+  const char* ErrorMessageForAttachShadow(String mode_string,
+                                          bool for_declarative,
+                                          ShadowRootMode& mode_out) const;
 
   void StyleAttributeChanged(const AtomicString& new_style_string,
                              AttributeModificationReason);
@@ -1672,20 +1687,21 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void DetachPseudoElement(PseudoId, bool performing_reattach);
 
   void AttachPrecedingPseudoElements(AttachContext& context) {
-    AttachPseudoElement(kPseudoIdScrollMarkerGroupBefore, context);
+    AttachPseudoElement(kPseudoIdScrollPrevButton, context);
     AttachPseudoElement(kPseudoIdMarker, context);
     AttachPseudoElement(kPseudoIdBefore, context);
   }
 
   void AttachSucceedingPseudoElements(AttachContext& context) {
     AttachPseudoElement(kPseudoIdAfter, context);
-    AttachPseudoElement(kPseudoIdScrollMarkerGroupAfter, context);
     AttachPseudoElement(kPseudoIdBackdrop, context);
     UpdateFirstLetterPseudoElement(StyleUpdatePhase::kAttachLayoutTree);
     AttachPseudoElement(kPseudoIdFirstLetter, context);
+    AttachPseudoElement(kPseudoIdScrollNextButton, context);
   }
 
   void DetachPrecedingPseudoElements(bool performing_reattach) {
+    DetachPseudoElement(kPseudoIdScrollPrevButton, performing_reattach);
     DetachPseudoElement(kPseudoIdScrollMarkerGroupBefore, performing_reattach);
     DetachPseudoElement(kPseudoIdMarker, performing_reattach);
     DetachPseudoElement(kPseudoIdBefore, performing_reattach);
@@ -1694,6 +1710,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void DetachSucceedingPseudoElements(bool performing_reattach) {
     DetachPseudoElement(kPseudoIdAfter, performing_reattach);
     DetachPseudoElement(kPseudoIdScrollMarkerGroupAfter, performing_reattach);
+    DetachPseudoElement(kPseudoIdScrollNextButton, performing_reattach);
     DetachPseudoElement(kPseudoIdBackdrop, performing_reattach);
     DetachPseudoElement(kPseudoIdFirstLetter, performing_reattach);
   }

@@ -36,6 +36,8 @@ enum MenuScenarioHistogram {
   kMenuScenarioHistogramAutofillManualFallbackAllPasswordsEntry = 23,
   kMenuScenarioHistogramAutofillManualFallbackPasswordEntry = 24,
   kMenuScenarioHistogramAutofillManualFallbackPaymentEntry = 25,
+  kMenuScenarioHistogramAutofillManualFallbackAddressEntry = 26,
+  kMenuScenarioHistogramTabGroupsPanelEntry = 27,
   kMenuScenarioHistogramCount,
 };
 // LINT.ThenChange(/tools/metrics/histograms/metadata/mobile/enums.xml)

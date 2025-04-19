@@ -52,11 +52,10 @@ v8::Local<v8::Module> ModuleRecord::Compile(
     const ModuleScriptCreationParams& params,
     const ScriptFetchOptions& options,
     const TextPosition& text_position,
-    ExceptionState& exception_state,
+    TryRethrowScope& rethrow_scope,
     mojom::blink::V8CacheOptions v8_cache_options,
     ModuleRecordProduceCacheData** out_produce_cache_data) {
   v8::Isolate* isolate = script_state->GetIsolate();
-  v8::TryCatch try_catch(isolate);
   v8::Local<v8::Module> module;
 
   // Module scripts currently don't support |kEagerCompile| which can be
@@ -78,21 +77,24 @@ v8::Local<v8::Module> ModuleRecord::Compile(
   }
   // TODO(chromium:1406506): Add a compile hints solution for module records.
   constexpr bool kMightGenerateCompileHints = false;
+  const bool v8_compile_hints_magic_comment_runtime_enabled =
+      RuntimeEnabledFeatures::JavaScriptCompileHintsMagicRuntimeEnabled(
+          execution_context);
   std::tie(compile_options, produce_cache_options, no_cache_reason) =
       V8CodeCache::GetCompileOptions(
           v8_cache_options, params.CacheHandler(),
           params.GetSourceText().length(), params.SourceLocationType(),
-          params.BaseURL(), kMightGenerateCompileHints);
+          params.BaseURL(), kMightGenerateCompileHints,
+          v8_compile_hints_magic_comment_runtime_enabled);
 
   if (!V8ScriptRunner::CompileModule(
            isolate, params, text_position, compile_options, no_cache_reason,
            ReferrerScriptInfo(params.BaseURL(), options))
            .ToLocal(&module)) {
-    DCHECK(try_catch.HasCaught());
-    exception_state.RethrowV8Exception(try_catch.Exception());
+    DCHECK(rethrow_scope.HasCaught());
     return v8::Local<v8::Module>();
   }
-  DCHECK(!try_catch.HasCaught());
+  DCHECK(!rethrow_scope.HasCaught());
 
   if (out_produce_cache_data) {
     *out_produce_cache_data =
@@ -208,8 +210,7 @@ v8::MaybeLocal<v8::Module> ModuleRecord::ResolveModuleCallback(
           context, referrer, import_attributes,
           /*v8_import_attributes_has_positions=*/true));
 
-  ExceptionState exception_state(isolate,
-                                 ExceptionContextType::kOperationInvoke,
+  ExceptionState exception_state(isolate, v8::ExceptionContext::kOperation,
                                  "ModuleRecord", "resolveModuleCallback");
   v8::Local<v8::Module> resolved =
       modulator->GetModuleRecordResolver()->Resolve(module_request, referrer,

@@ -483,15 +483,15 @@ const FindBuffer::BufferNodeMapping* FindBuffer::MappingForIndex(
     unsigned index) const {
   // Get the first entry that starts at a position higher than offset, and
   // move back one entry.
-  auto* it = std::upper_bound(
+  auto it = std::upper_bound(
       buffer_node_mappings_.begin(), buffer_node_mappings_.end(), index,
       [](const unsigned offset, const BufferNodeMapping& entry) {
         return offset < entry.offset_in_buffer;
       });
   if (it == buffer_node_mappings_.begin())
     return nullptr;
-  auto* entry = std::prev(it);
-  return entry;
+  auto entry = std::prev(it);
+  return &*entry;
 }
 
 PositionInFlatTree FindBuffer::PositionAtStartOfCharacterAtIndex(
@@ -522,7 +522,7 @@ void FindBuffer::AddTextToBuffer(const Text& text_node,
   if (!offset_mapping_) {
     offset_mapping_ = InlineNode::GetOffsetMapping(&block_flow);
 
-    if (UNLIKELY(!offset_mapping_)) {
+    if (!offset_mapping_) [[unlikely]] {
       // TODO(crbug.com/955678): There are certain cases where we fail to
       // compute the |OffsetMapping| due to failures in layout. As the root
       // cause is hard to fix at the moment, we just work around it here.

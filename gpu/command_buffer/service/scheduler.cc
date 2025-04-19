@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "gpu/command_buffer/service/scheduler.h"
 
 #include <algorithm>
@@ -41,11 +46,24 @@ uint64_t GetTaskFlowId(uint32_t sequence_id, uint32_t order_num) {
 Scheduler::Task::Task(SequenceId sequence_id,
                       base::OnceClosure closure,
                       std::vector<SyncToken> sync_token_fences,
+                      const SyncToken& release,
                       ReportingCallback report_callback)
     : sequence_id(sequence_id),
       closure(std::move(closure)),
       sync_token_fences(std::move(sync_token_fences)),
+      release(release),
       report_callback(std::move(report_callback)) {}
+
+Scheduler::Task::Task(SequenceId sequence_id,
+                      base::OnceClosure closure,
+                      std::vector<SyncToken> sync_token_fences,
+                      ReportingCallback report_callback)
+    : Task(sequence_id,
+           std::move(closure),
+           std::move(sync_token_fences),
+           /*release=*/{},
+           std::move(report_callback)) {}
+
 Scheduler::Task::Task(Task&& other) = default;
 Scheduler::Task::~Task() = default;
 Scheduler::Task& Scheduler::Task::operator=(Task&& other) = default;
@@ -401,12 +419,10 @@ void Scheduler::Sequence::RemoveClientWait(CommandBufferId command_buffer_id) {
   UpdateSchedulingPriority();
 }
 
-Scheduler::Scheduler(SyncPointManager* sync_point_manager,
-                     const GpuPreferences& gpu_preferences)
-    : sync_point_manager_(sync_point_manager) {
+Scheduler::Scheduler(SyncPointManager* sync_point_manager)
+    : sync_point_manager_(sync_point_manager), task_graph_(sync_point_manager) {
   if (base::FeatureList::IsEnabled(features::kUseGpuSchedulerDfs)) {
-    scheduler_dfs_ =
-        std::make_unique<SchedulerDfs>(sync_point_manager, gpu_preferences);
+    scheduler_dfs_ = std::make_unique<SchedulerDfs>(&task_graph_);
   }
 }
 

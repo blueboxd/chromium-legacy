@@ -8,16 +8,18 @@ import android.content.Context;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.MetricAffectingSpan;
-import android.text.style.TextAppearanceSpan;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.StyleRes;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.components.omnibox.AnswerDataProto.FormattedString;
 import org.chromium.components.omnibox.AnswerDataProto.FormattedString.ColorType;
 import org.chromium.components.omnibox.AnswerDataProto.FormattedString.FormattedStringFragment;
-import org.chromium.components.omnibox.AnswerType;
+import org.chromium.components.omnibox.AnswerTypeProto.AnswerType;
+import org.chromium.components.omnibox.OmniboxFeatures;
 import org.chromium.components.omnibox.RichAnswerTemplateProto.RichAnswerTemplate;
+import org.chromium.ui.text.DownloadableFontTextAppearanceSpan;
 
 import java.util.List;
 
@@ -35,7 +37,8 @@ class RichAnswerText implements AnswerText {
     private final boolean mReverseStockTextColor;
     private String mAccessibilityDescription;
     private int mMaxLines = 1;
-    @AnswerType private final int mAnswerType;
+    private final AnswerType mAnswerType;
+    private boolean mUseRichAnswerCard;
 
     @Override
     public SpannableStringBuilder getText() {
@@ -56,65 +59,83 @@ class RichAnswerText implements AnswerText {
     static AnswerText[] from(
             @NonNull Context context,
             @NonNull RichAnswerTemplate richAnswerTemplate,
-            boolean reverseStockTextColor) {
+            AnswerType answerType,
+            boolean reverseStockTextColor,
+            boolean useRichAnswerCard) {
         RichAnswerText[] result = new RichAnswerText[2];
 
-        int answerType = richAnswerTemplate.getAnswerType().getNumber();
         int maxLines = getMaxLinesForAnswerType(answerType);
-        if (answerType == AnswerType.DICTIONARY) {
+        if (answerType == AnswerType.ANSWER_TYPE_DICTIONARY) {
             result[0] =
                     new RichAnswerText(
                             context,
                             richAnswerTemplate.getAnswers(0).getHeadline(),
                             answerType,
                             /* isAnswerLine= */ true,
-                            reverseStockTextColor);
+                            reverseStockTextColor,
+                            useRichAnswerCard);
             result[1] =
                     new RichAnswerText(
                             context,
                             richAnswerTemplate.getAnswers(0).getSubhead(),
                             answerType,
                             /* isAnswerLine= */ false,
-                            reverseStockTextColor);
+                            reverseStockTextColor,
+                            useRichAnswerCard);
             result[1].mMaxLines = maxLines;
-        } else {
-            // Construct the Answer card presenting Answers in Suggest in Answer > Query order.
-            result[0] =
-                    new RichAnswerText(
-                            context,
-                            richAnswerTemplate.getAnswers(0).getSubhead(),
-                            answerType,
-                            /* isAnswerLine= */ true,
-                            reverseStockTextColor);
-            result[1] =
-                    new RichAnswerText(
-                            context,
-                            richAnswerTemplate.getAnswers(0).getHeadline(),
-                            answerType,
-                            /* isAnswerLine= */ false,
-                            reverseStockTextColor);
-            result[0].mMaxLines = maxLines;
-
-            // Note: Despite Answers in Suggest being presented in reverse order (first answer, then
-            // query) we want to ensure that the query is announced first to visually impaired
-            // people to avoid confusion, so we swap a11y texts.
-            String temp = result[1].mAccessibilityDescription;
-            result[1].mAccessibilityDescription = result[0].mAccessibilityDescription;
-            result[0].mAccessibilityDescription = temp;
+            return result;
         }
+
+        FormattedString firstLine;
+        FormattedString secondLine;
+        if (shouldSkipTextReversal(answerType)) {
+            firstLine = richAnswerTemplate.getAnswers(0).getHeadline();
+            secondLine = richAnswerTemplate.getAnswers(0).getSubhead();
+        } else {
+            firstLine = richAnswerTemplate.getAnswers(0).getSubhead();
+            secondLine = richAnswerTemplate.getAnswers(0).getHeadline();
+        }
+
+        // Construct the Answer card presenting Answers in Suggest in Answer > Query order.
+        result[0] =
+                new RichAnswerText(
+                        context,
+                        firstLine,
+                        answerType,
+                        /* isAnswerLine= */ true,
+                        reverseStockTextColor,
+                        useRichAnswerCard);
+        result[1] =
+                new RichAnswerText(
+                        context,
+                        secondLine,
+                        answerType,
+                        /* isAnswerLine= */ false,
+                        reverseStockTextColor,
+                        useRichAnswerCard);
+        result[0].mMaxLines = maxLines;
+
+        // Note: Despite Answers in Suggest being presented in reverse order (first answer, then
+        // query) we want to ensure that the query is announced first to visually impaired
+        // people to avoid confusion, so we swap a11y texts.
+        String temp = result[1].mAccessibilityDescription;
+        result[1].mAccessibilityDescription = result[0].mAccessibilityDescription;
+        result[0].mAccessibilityDescription = temp;
         return result;
     }
 
     private RichAnswerText(
             Context context,
             FormattedString formattedString,
-            int answerType,
+            AnswerType answerType,
             boolean isAnswerLine,
-            boolean reverseStockTextColor) {
+            boolean reverseStockTextColor,
+            boolean useRichAnswerCard) {
         mContext = context;
         mAnswerType = answerType;
         mIsAnswerLine = isAnswerLine;
         mReverseStockTextColor = reverseStockTextColor;
+        mUseRichAnswerCard = useRichAnswerCard;
         mText = processFormattedString(formattedString);
         mAccessibilityDescription = mText.toString();
     }
@@ -161,7 +182,11 @@ class RichAnswerText implements AnswerText {
     private MetricAffectingSpan getAppearanceForText(ColorType colorType) {
         return mIsAnswerLine
                 ? getAppearanceForAnswerText(
-                        mContext, colorType, mAnswerType, mReverseStockTextColor)
+                        mContext,
+                        colorType,
+                        mAnswerType,
+                        mReverseStockTextColor,
+                        mUseRichAnswerCard)
                 : getAppearanceForQueryText();
     }
 
@@ -176,12 +201,19 @@ class RichAnswerText implements AnswerText {
     static MetricAffectingSpan getAppearanceForAnswerText(
             Context context,
             ColorType colorType,
-            @AnswerType int answerType,
-            boolean reverseStockTextColor) {
-        if (answerType != AnswerType.DICTIONARY && answerType != AnswerType.FINANCE) {
-            return new TextAppearanceSpan(
-                    context,
-                    org.chromium.chrome.browser.omnibox.R.style.TextAppearance_TextLarge_Primary);
+            AnswerType answerType,
+            boolean reverseStockTextColor,
+            boolean useRichAnswerCard) {
+        @StyleRes
+        int largeRes =
+                useRichAnswerCard
+                        ? org.chromium.chrome.browser.omnibox.R.style
+                                .TextAppearance_Headline2Thick_Primary
+                        : org.chromium.chrome.browser.omnibox.R.style
+                                .TextAppearance_TextLarge_Primary;
+        if (answerType != AnswerType.ANSWER_TYPE_DICTIONARY
+                && answerType != AnswerType.ANSWER_TYPE_FINANCE) {
+            return new DownloadableFontTextAppearanceSpan(context, largeRes);
         }
 
         // TODO(b/327497146): skip color reversal when original data source is proto backend, which
@@ -194,14 +226,12 @@ class RichAnswerText implements AnswerText {
                 int styleResource =
                         wantPositiveColor
                                 ? org.chromium.chrome.browser.omnibox.R.style
-                                        .TextAppearance_OmniboxAnswerDescriptionPositiveSmall
+                                        .TextAppearance_OmniboxAnswerDescriptionPositive
                                 : org.chromium.chrome.browser.omnibox.R.style
-                                        .TextAppearance_OmniboxAnswerDescriptionNegativeSmall;
-                yield new TextAppearanceSpan(context, styleResource);
+                                        .TextAppearance_OmniboxAnswerDescriptionNegative;
+                yield new DownloadableFontTextAppearanceSpan(context, styleResource);
             }
-            default -> new TextAppearanceSpan(
-                    context,
-                    org.chromium.chrome.browser.omnibox.R.style.TextAppearance_TextLarge_Primary);
+            default -> new DownloadableFontTextAppearanceSpan(context, largeRes);
                 // TODO(b/327497146): handle equivalent of
                 // AnswerTextType.SUGGESTION_SECONDARY_TEXT_MEDIUM
         };
@@ -213,14 +243,33 @@ class RichAnswerText implements AnswerText {
      * @return MetricAffectingSpan object defining style for the text.
      */
     private MetricAffectingSpan getAppearanceForQueryText() {
-        return new TextAppearanceSpan(
-                mContext,
-                org.chromium.chrome.browser.omnibox.R.style.TextAppearance_TextMedium_Secondary);
+        @StyleRes
+        int res =
+                mUseRichAnswerCard
+                        ? org.chromium.chrome.browser.omnibox.R.style
+                                .TextAppearance_TextLarge_Secondary
+                        : org.chromium.chrome.browser.omnibox.R.style
+                                .TextAppearance_TextMedium_Secondary;
+        return new DownloadableFontTextAppearanceSpan(mContext, res);
     }
 
-    private static int getMaxLinesForAnswerType(int answerType) {
-        return (answerType == AnswerType.DICTIONARY || answerType == AnswerType.TRANSLATION)
+    private static int getMaxLinesForAnswerType(AnswerType answerType) {
+        return (answerType == AnswerType.ANSWER_TYPE_DICTIONARY
+                        || answerType == AnswerType.ANSWER_TYPE_TRANSLATION)
                 ? 3
                 : 1;
+    }
+
+    /**
+     * When shouldShowAnswerActions() is true, the backend provides dictionary, finance, sports,
+     * knowledge graph, and weather answer in reversed form already. Dictionary is handled
+     * separately, but for the remainder we want to skip reversing the text but continue to swap
+     * a11y content.
+     */
+    private static boolean shouldSkipTextReversal(AnswerType answerType) {
+        return OmniboxFeatures.shouldShowAnswerActions()
+                && (answerType == AnswerType.ANSWER_TYPE_FINANCE
+                        || answerType == AnswerType.ANSWER_TYPE_SPORTS
+                        || answerType == AnswerType.ANSWER_TYPE_WEATHER);
     }
 }

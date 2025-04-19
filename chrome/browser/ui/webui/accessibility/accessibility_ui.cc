@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/ui/webui/accessibility/accessibility_ui.h"
 
 #include <memory>
@@ -186,7 +191,7 @@ base::Value::Dict BuildTargetDescriptor(views::Widget* widget) {
   widget_data.Set(kTypeField, kWidget);
 
   // Use the Widget's root view ViewAccessibility's unique ID for lookup.
-  int id = widget->GetRootView()->GetViewAccessibility().GetUniqueId().Get();
+  int id = widget->GetRootView()->GetViewAccessibility().GetUniqueId();
   widget_data.Set(kWidgetIdField, id);
   return widget_data;
 }
@@ -382,16 +387,10 @@ const std::string& CheckJSValue(const std::string* str) {
 }  // namespace
 
 AccessibilityUIConfig::AccessibilityUIConfig()
-    : WebUIConfig(content::kChromeUIScheme,
-                  chrome::kChromeUIAccessibilityHost) {}
+    : DefaultWebUIConfig(content::kChromeUIScheme,
+                         chrome::kChromeUIAccessibilityHost) {}
 
 AccessibilityUIConfig::~AccessibilityUIConfig() = default;
-
-std::unique_ptr<content::WebUIController>
-AccessibilityUIConfig::CreateWebUIController(content::WebUI* web_ui,
-                                             const GURL& url) {
-  return std::make_unique<AccessibilityUI>(web_ui);
-}
 
 AccessibilityUI::AccessibilityUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
@@ -769,7 +768,7 @@ void AccessibilityUIMessageHandler::RequestWidgetsTree(
     const std::vector<views::Widget*> widgets = manager_map.GetWidgets();
     for (views::Widget* widget : widgets) {
       int current_id =
-          widget->GetRootView()->GetViewAccessibility().GetUniqueId().Get();
+          widget->GetRootView()->GetViewAccessibility().GetUniqueId();
       if (current_id == widget_id) {
         ui::AXTreeID tree_id = manager_map.GetWidgetTreeID(widget);
         DCHECK_NE(tree_id, ui::AXTreeIDUnknown());

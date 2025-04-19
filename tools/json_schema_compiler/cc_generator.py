@@ -50,6 +50,7 @@ class _Generator(object):
       .Append('#include <optional>')
       .Append('#include <ostream>')
       .Append('#include <string>')
+      .Append('#include <string_view>')
       .Append('#include <utility>')
       .Append('#include <vector>')
       .Append()
@@ -159,6 +160,17 @@ class _Generator(object):
         c.Cblock(
           self._GenerateManifestKeyConstants(
             classname_in_namespace, type_.properties.values()))
+        # Manifest key parsing for CHOICES types relies on the Populate()
+        # method. Thus, if it wouldn't be generated below, ensure it's
+        # created here.
+        # TODO(devlin): This gets precarious. Instead of having complex if-
+        # branches determining which values to construct here, we should pull
+        # this out to a helper that just returns a set of method categories to
+        # generate.
+        if (type_.property_type is PropertyType.CHOICES and
+            not type_.origin.from_json):
+          c.Cblock(self._GenerateTypePopulateFromValue(
+            classname_in_namespace, type_))
 
       if type_.origin.from_json:
         c.Cblock(self._GenerateClone(classname_in_namespace, type_))
@@ -548,7 +560,7 @@ class _Generator(object):
 
     c.Append()
 
-    c.Append('std::vector<base::StringPiece> error_path_reversed;')
+    c.Append('std::vector<std::string_view> error_path_reversed;')
     c.Append('const base::Value::Dict& dict = root_dict;')
 
     for prop in properties:
@@ -573,10 +585,10 @@ class _Generator(object):
     """
     params = [
       'const base::Value::Dict& root_dict',
-      'base::StringPiece key',
+      'std::string_view key',
       '%(classname)s& out',
       'std::u16string& error',
-      'std::vector<base::StringPiece>& error_path_reversed'
+      'std::vector<std::string_view>& error_path_reversed'
     ]
 
     c = Code()
@@ -1382,7 +1394,7 @@ class _Generator(object):
       c.Append('// static')
     maybe_namespace = '' if cpp_namespace is None else '%s::' % cpp_namespace
 
-    c.Sblock('%s%s %sParse%s(base::StringPiece enum_string) {' %
+    c.Sblock('%s%s %sParse%s(std::string_view enum_string) {' %
                  (maybe_namespace, classname, maybe_namespace, classname))
     for _, enum_value in enumerate(
           self._type_helper.FollowRef(type_).enum_values):
@@ -1411,7 +1423,7 @@ class _Generator(object):
     maybe_namespace = '' if cpp_namespace is None else '%s::' % cpp_namespace
 
     c.Sblock(
-        'std::u16string %sGet%sParseError(base::StringPiece enum_string) {' %
+        'std::u16string %sGet%sParseError(std::string_view enum_string) {' %
         (maybe_namespace, classname))
     error_message = (
         'u\"expected \\"' +

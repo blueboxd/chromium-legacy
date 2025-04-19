@@ -17,6 +17,7 @@
 #include "gpu/command_buffer/service/gpu_task_scheduler_helper.h"
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/scheduler_sequence.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "gpu/ipc/service/image_transport_surface.h"
 #include "ui/gl/init/gl_factory.h"
 
@@ -112,9 +113,15 @@ SkiaOutputSurfaceDependencyImpl::CreatePresenter() {
   }
 #endif
 
-  return gpu::ImageTransportSurface::CreatePresenter(
+  auto* dawn_context_provider = context_state->dawn_context_provider();
+  auto presenter = gpu::ImageTransportSurface::CreatePresenter(
       context_state->display(), GetGpuDriverBugWorkarounds(),
-      GetGpuFeatureInfo(), surface_handle_);
+      GetGpuFeatureInfo(), surface_handle_, dawn_context_provider);
+  if (presenter &&
+      base::FeatureList::IsEnabled(features::kHandleOverlaysSwapFailure)) {
+    presenter->SetNotifyNonSimpleOverlayFailure();
+  }
+  return presenter;
 }
 
 scoped_refptr<gl::GLSurface> SkiaOutputSurfaceDependencyImpl::CreateGLSurface(
@@ -124,6 +131,7 @@ scoped_refptr<gl::GLSurface> SkiaOutputSurfaceDependencyImpl::CreateGLSurface(
       GetSharedContextState()->display(), surface_handle_, format);
 }
 
+#if BUILDFLAG(IS_ANDROID)
 base::ScopedClosureRunner SkiaOutputSurfaceDependencyImpl::CachePresenter(
     gl::Presenter* presenter) {
   // We're running on the viz thread here. We want to release ref on the
@@ -163,8 +171,9 @@ base::ScopedClosureRunner SkiaOutputSurfaceDependencyImpl::CacheGLSurface(
 
   return base::ScopedClosureRunner(std::move(release_callback));
 }
+#endif
 
-scoped_refptr<base::TaskRunner>
+scoped_refptr<base::SingleThreadTaskRunner>
 SkiaOutputSurfaceDependencyImpl::GetClientTaskRunner() {
   return client_thread_task_runner_;
 }

@@ -72,10 +72,9 @@ class TestSelectFileDialog : public ui::SelectFileDialog {
                       int file_type_index,
                       const base::FilePath::StringType& default_extension,
                       gfx::NativeWindow owning_window,
-                      void* params,
                       const GURL* caller) override {
-    listener_->FileSelected(ui::SelectedFileInfo(forced_path_), file_type_index,
-                            params);
+    listener_->FileSelected(ui::SelectedFileInfo(forced_path_),
+                            file_type_index);
   }
   bool IsRunning(gfx::NativeWindow owning_window) const override {
     return false;
@@ -86,14 +85,6 @@ class TestSelectFileDialog : public ui::SelectFileDialog {
  private:
   // The path that will be selected by this dialog.
   base::FilePath forced_path_;
-};
-
-class TestSelectFilePolicy : public ui::SelectFilePolicy {
- public:
-  TestSelectFilePolicy& operator=(const TestSelectFilePolicy&) = delete;
-
-  bool CanOpenSelectFileDialog() override { return true; }
-  void SelectFileDenied() override {}
 };
 
 class TestSelectFileDialogFactory : public ui::SelectFileDialogFactory {
@@ -107,8 +98,7 @@ class TestSelectFileDialogFactory : public ui::SelectFileDialogFactory {
   ui::SelectFileDialog* Create(
       ui::SelectFileDialog::Listener* listener,
       std::unique_ptr<ui::SelectFilePolicy> policy) override {
-    return new TestSelectFileDialog(
-        listener, std::make_unique<TestSelectFilePolicy>(), forced_path_);
+    return new TestSelectFileDialog(listener, nullptr, forced_path_);
   }
 
  private:
@@ -137,9 +127,8 @@ class FakeCancellingSelectFileDialog : public ui::SelectFileDialog {
                       int file_type_index,
                       const base::FilePath::StringType& default_extension,
                       gfx::NativeWindow owning_window,
-                      void* params,
                       const GURL* caller) override {
-    listener_->FileSelectionCanceled(params);
+    listener_->FileSelectionCanceled();
   }
 
   bool IsRunning(gfx::NativeWindow owning_window) const override {
@@ -163,8 +152,7 @@ class FakeCancellingSelectFileDialogFactory
   ui::SelectFileDialog* Create(
       ui::SelectFileDialog::Listener* listener,
       std::unique_ptr<ui::SelectFilePolicy> policy) override {
-    return new FakeCancellingSelectFileDialog(
-        listener, std::make_unique<TestSelectFilePolicy>());
+    return new FakeCancellingSelectFileDialog(listener, nullptr);
   }
 };
 

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ui/gl/android/surface_texture.h"
 
 #include <utility>
@@ -13,6 +18,8 @@
 #include "ui/gl/android/scoped_java_surface.h"
 #include "ui/gl/android/surface_texture_listener.h"
 #include "ui/gl/gl_bindings.h"
+
+// Must come after all headers that specialize FromJniType() / ToJniType().
 #include "ui/gl/gl_jni_headers/SurfaceTexturePlatformWrapper_jni.h"
 
 #ifndef GL_ANGLE_texture_storage_external

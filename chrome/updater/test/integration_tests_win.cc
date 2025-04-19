@@ -67,6 +67,7 @@
 #include "chrome/updater/external_constants_builder.h"
 #include "chrome/updater/persisted_data.h"
 #include "chrome/updater/prefs.h"
+#include "chrome/updater/registration_data.h"
 #include "chrome/updater/test/integration_tests_impl.h"
 #include "chrome/updater/test/unit_test_util.h"
 #include "chrome/updater/test/unit_test_util_win.h"
@@ -505,18 +506,6 @@ std::wstring GetAppVersionWebString(
   return version.Get();
 }
 
-int RunVPythonCommand(const base::CommandLine& command_line) {
-  base::CommandLine python_command = command_line;
-  python_command.PrependWrapper(FILE_PATH_LITERAL("vpython3.bat"));
-
-  int exit_code = -1;
-  base::Process process = base::LaunchProcess(python_command, {});
-  EXPECT_TRUE(process.IsValid());
-  EXPECT_TRUE(process.WaitForExitWithTimeout(TestTimeouts::action_timeout(),
-                                             &exit_code));
-  return exit_code;
-}
-
 bool BuildTestAppInstaller(const base::FilePath& installer_script,
                            const base::FilePath& output_installer) {
   base::FilePath exe_path;
@@ -579,7 +568,7 @@ void RunOfflineInstallWithManifest(UpdaterScope scope,
   test::EventHolder event_holder(IsElevatedWithUACOn()
                                      ? CreateEveryoneWaitableEventForTest()
                                      : test::CreateWaitableEventForTest());
-  EXPECT_TRUE(base::WriteFile(batch_script_path, [&]() -> std::string {
+  EXPECT_TRUE(base::WriteFile(batch_script_path, [&] {
     const std::string reg_hive = IsSystemInstall(scope) ? "HKLM" : "HKCU";
     const std::string app_client_state_key_utf8 =
         base::WideToUTF8(app_client_state_key);
@@ -643,7 +632,7 @@ void RunOfflineInstallWithManifest(UpdaterScope scope,
   // * Unsuccessful interactive installs show an install error dialog that needs
   //   to be explicitly closed via `CloseInstallCompleteDialog`.
   if (is_silent_install || expect_success) {
-    EXPECT_TRUE(WaitForUpdaterExit(scope));
+    EXPECT_TRUE(WaitForUpdaterExit());
   } else {
     CloseInstallCompleteDialog(GetLocalizedString(string_resource_id_to_find));
   }
@@ -789,6 +778,11 @@ void Clean(UpdaterScope scope) {
   std::optional<base::FilePath> path = GetInstallDirectory(scope);
   ASSERT_TRUE(path);
   ASSERT_TRUE(base::DeletePathRecursively(*path)) << *path;
+
+  // Delete any updater logs in %TMP%.
+  for (const auto& file : GetUpdaterLogFilesInTmp()) {
+    ASSERT_TRUE(base::DeleteFile(file));
+  }
 }
 
 void EnterTestMode(const GURL& update_url,
@@ -847,14 +841,17 @@ void ExpectCandidateUninstalled(UpdaterScope scope) {
 }
 
 void Uninstall(UpdaterScope scope) {
-  // Note: "updater.exe --uninstall" is run from the build dir, not the install
-  // dir, because it is useful for tests to be able to run it to clean the
-  // system even if installation has failed or the installed binaries have
-  // already been removed.
-  base::FilePath path = GetSetupExecutablePath().DirName().Append(
-      FILE_PATH_LITERAL("updater_test.exe"));
-  ASSERT_FALSE(path.empty());
-  base::CommandLine command_line(path);
+  // Note: the updater uninstall is run from the build dir, not the install dir,
+  // because it is useful for tests to be able to run it to clean the system
+  // even if installation has failed or the installed binaries have already been
+  // removed.
+
+  // The updater setup executable is used instead of `updater` because setup
+  // knows how to de-elevate when run at high integrity to uninstall a per-user
+  // install, which is what is done in the
+  // `IntegrationTestUserInSystem.ElevatedInstallOfUserUpdaterAndApp` test.
+  base::CommandLine command_line(GetSetupExecutablePath());
+  ASSERT_FALSE(command_line.GetProgram().empty());
   command_line.AppendSwitch(kUninstallSwitch);
   int exit_code = -1;
   Run(scope, command_line, &exit_code);
@@ -896,7 +893,7 @@ void ExpectNotActive(UpdaterScope /*scope*/, const std::string& id) {
 
 // Waits for all updater processes to end, including the server process holding
 // the prefs lock.
-bool WaitForUpdaterExit(UpdaterScope /*scope*/) {
+bool WaitForUpdaterExit() {
   return WaitFor(
       [] { return !IsUpdaterRunning(); },
       [] {
@@ -1535,8 +1532,6 @@ void ExpectLegacyAppCommandWebSucceeds(UpdaterScope scope,
   DeleteAppClientKey(scope, appid);
 }
 
-namespace {
-
 void ExpectPolicyStatusValues(
     Microsoft::WRL::ComPtr<IPolicyStatusValue> policy_status_value,
     const std::wstring& expected_source,
@@ -1554,8 +1549,6 @@ void ExpectPolicyStatusValues(
   EXPECT_HRESULT_SUCCEEDED(policy_status_value->get_hasConflict(&has_conflict));
   EXPECT_EQ(has_conflict, expected_has_conflict);
 }
-
-}  // namespace
 
 void ExpectLegacyPolicyStatusSucceeds(UpdaterScope scope) {
   Microsoft::WRL::ComPtr<IUnknown> policy_status_server;
@@ -1632,7 +1625,10 @@ void SetupRealUpdaterLowerVersion(UpdaterScope scope) {
   base::FilePath old_updater_path =
       exe_path.Append(FILE_PATH_LITERAL("old_updater"));
 #if BUILDFLAG(CHROMIUM_BRANDING)
-#if defined(ARCH_CPU_X86_64)
+#if defined(ARCH_CPU_ARM64)
+  old_updater_path =
+      old_updater_path.Append(FILE_PATH_LITERAL("chromium_win_arm64"));
+#elif defined(ARCH_CPU_X86_64)
   old_updater_path =
       old_updater_path.Append(FILE_PATH_LITERAL("chromium_win_x86_64"));
 #elif defined(ARCH_CPU_X86)
@@ -1640,7 +1636,10 @@ void SetupRealUpdaterLowerVersion(UpdaterScope scope) {
       old_updater_path.Append(FILE_PATH_LITERAL("chromium_win_x86"));
 #endif
 #elif BUILDFLAG(GOOGLE_CHROME_BRANDING)
-#if defined(ARCH_CPU_X86_64)
+#if defined(ARCH_CPU_ARM64)
+  old_updater_path =
+      old_updater_path.Append(FILE_PATH_LITERAL("chrome_win_arm64"));
+#elif defined(ARCH_CPU_X86_64)
   old_updater_path =
       old_updater_path.Append(FILE_PATH_LITERAL("chrome_win_x86_64"));
 #elif defined(ARCH_CPU_X86)
@@ -1648,6 +1647,11 @@ void SetupRealUpdaterLowerVersion(UpdaterScope scope) {
       old_updater_path.Append(FILE_PATH_LITERAL("chrome_win_x86"));
 #endif
 #endif
+
+#if BUILDFLAG(CHROMIUM_BRANDING) || BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  old_updater_path = old_updater_path.Append(FILE_PATH_LITERAL("cipd"));
+#endif
+
   base::CommandLine command_line(
       old_updater_path.Append(FILE_PATH_LITERAL("UpdaterSetup_test.exe")));
   command_line.AppendSwitch(kInstallSwitch);
@@ -1963,7 +1967,10 @@ void InstallApp(UpdaterScope scope,
   ASSERT_EQ(key.Create(UpdaterScopeToHKeyRoot(scope),
                        GetAppClientsKey(app_id).c_str(), Wow6432(KEY_WRITE)),
             ERROR_SUCCESS);
-  RegisterApp(scope, app_id, version);
+  RegistrationRequest registration;
+  registration.app_id = app_id;
+  registration.version = version;
+  RegisterApp(scope, registration);
 }
 
 void UninstallApp(UpdaterScope scope, const std::string& app_id) {
@@ -2031,7 +2038,7 @@ void RunOfflineInstallOsNotSupported(UpdaterScope scope,
 </response>)";
   RunOfflineInstallWithManifest(scope, is_legacy_install, is_silent_install,
                                 kManifestFormat,
-                                IDS_INSTALL_OS_NOT_SUPPORTED_BASE, false);
+                                IDS_UPDATER_OS_NOT_SUPPORTED_BASE, false);
 }
 
 base::CommandLine MakeElevated(base::CommandLine command_line) {
@@ -2066,7 +2073,7 @@ void ExpectAppVersion(UpdaterScope scope,
                       const base::Version& version) {
   const base::Version app_version =
       base::MakeRefCounted<PersistedData>(
-          scope, CreateGlobalPrefs(scope)->GetPrefService(), nullptr)
+          scope, CreateGlobalPrefsForTesting(scope)->GetPrefService(), nullptr)
           ->GetProductVersion(app_id);
   EXPECT_TRUE(app_version.IsValid());
   EXPECT_EQ(version, app_version);

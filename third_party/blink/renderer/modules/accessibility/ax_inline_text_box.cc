@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/modules/accessibility/ax_position.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_range.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/gfx/geometry/transform.h"
 
@@ -185,13 +186,13 @@ ax::mojom::blink::WritingDirection AXInlineTextBox::GetTextDirection() const {
     return AXObject::GetTextDirection();
 
   switch (inline_text_box_->GetDirection()) {
-    case AbstractInlineTextBox::kLeftToRight:
+    case PhysicalDirection::kRight:
       return ax::mojom::blink::WritingDirection::kLtr;
-    case AbstractInlineTextBox::kRightToLeft:
+    case PhysicalDirection::kLeft:
       return ax::mojom::blink::WritingDirection::kRtl;
-    case AbstractInlineTextBox::kTopToBottom:
+    case PhysicalDirection::kDown:
       return ax::mojom::blink::WritingDirection::kTtb;
-    case AbstractInlineTextBox::kBottomToTop:
+    case PhysicalDirection::kUp:
       return ax::mojom::blink::WritingDirection::kBtt;
   }
 
@@ -217,8 +218,12 @@ AXObject* AXInlineTextBox::NextOnLine() const {
   if (IsDetached())
     return nullptr;
 
-  if (inline_text_box_->IsLast())
-    return ParentObject()->NextOnLine();
+  if (inline_text_box_->IsLast()) {
+    // Do not serialize nextOnlineID if it can be inferred from the parent.
+    return features::IsAccessibilityPruneRedundantInlineConnectivityEnabled()
+               ? nullptr
+               : ParentObject()->NextOnLine();
+  }
 
   if (AbstractInlineTextBox* next_on_line = inline_text_box_->NextOnLine()) {
     return AXObjectCache().Get(next_on_line);
@@ -230,8 +235,12 @@ AXObject* AXInlineTextBox::PreviousOnLine() const {
   if (IsDetached())
     return nullptr;
 
-  if (inline_text_box_->IsFirst())
-    return ParentObject()->PreviousOnLine();
+  if (inline_text_box_->IsFirst()) {
+    // Do not serialize previousOnlineID if it can be inferred from the parent.
+    return features::IsAccessibilityPruneRedundantInlineConnectivityEnabled()
+               ? nullptr
+               : ParentObject()->PreviousOnLine();
+  }
 
   AbstractInlineTextBox* previous_on_line = inline_text_box_->PreviousOnLine();
   if (previous_on_line)

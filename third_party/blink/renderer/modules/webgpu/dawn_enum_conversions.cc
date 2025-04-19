@@ -683,6 +683,10 @@ wgpu::FeatureName AsDawnEnum(const V8GPUFeatureName& webgpu_enum) {
       return wgpu::FeatureName::Float32Filterable;
     case V8GPUFeatureName::Enum::kDualSourceBlending:
       return wgpu::FeatureName::DualSourceBlending;
+    case V8GPUFeatureName::Enum::kSubgroups:
+      return wgpu::FeatureName::Subgroups;
+    case V8GPUFeatureName::Enum::kSubgroupsF16:
+      return wgpu::FeatureName::SubgroupsF16;
   }
 }
 
@@ -729,6 +733,14 @@ wgpu::BlendFactor AsDawnEnum(const V8GPUBlendFactor& webgpu_enum) {
       return wgpu::BlendFactor::Constant;
     case V8GPUBlendFactor::Enum::kOneMinusConstant:
       return wgpu::BlendFactor::OneMinusConstant;
+    case V8GPUBlendFactor::Enum::kSrc1:
+      return wgpu::BlendFactor::Src1;
+    case V8GPUBlendFactor::Enum::kOneMinusSrc1:
+      return wgpu::BlendFactor::OneMinusSrc1;
+    case V8GPUBlendFactor::Enum::kSrc1Alpha:
+      return wgpu::BlendFactor::Src1Alpha;
+    case V8GPUBlendFactor::Enum::kOneMinusSrc1Alpha:
+      return wgpu::BlendFactor::OneMinusSrc1Alpha;
   }
 }
 

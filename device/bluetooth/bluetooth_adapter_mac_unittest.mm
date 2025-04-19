@@ -6,16 +6,33 @@
 
 #import <IOBluetooth/IOBluetooth.h>
 
+#include <memory>
+
 #include "base/memory/raw_ptr.h"
 #import "base/task/sequenced_task_runner.h"
+#include "base/task/thread_pool.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
+#include "device/bluetooth/bluetooth_classic_device_mac.h"
 #include "device/bluetooth/test/mock_bluetooth_device.h"
 #import "device/bluetooth/test/test_bluetooth_adapter_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {
+
+namespace {
+
+class MockBluetoothClassicDeviceMac : public BluetoothClassicDeviceMac {
+ public:
+  MockBluetoothClassicDeviceMac(BluetoothAdapterMac* adapter,
+                                IOBluetoothDevice* device)
+      : BluetoothClassicDeviceMac(adapter, device) {}
+  MOCK_METHOD(UUIDSet, GetUUIDs, (), (const, override));
+  MOCK_METHOD(std::string, GetAddress, (), (const override));
+};
+
+}  // namespace
 
 using ::testing::Return;
 
@@ -44,15 +61,27 @@ class BluetoothAdapterMacTest : public testing::Test {
         }));
   }
 
+  std::unique_ptr<MockBluetoothClassicDeviceMac> CreateClassicDevice(
+      const std::string& device_address,
+      BluetoothDevice::UUIDSet uuids) {
+    auto device =
+        std::make_unique<testing::NiceMock<MockBluetoothClassicDeviceMac>>(
+            adapter_mac_, /*device=*/nil);
+    ON_CALL(*device, GetUUIDs).WillByDefault(Return(uuids));
+    ON_CALL(*device, GetAddress).WillByDefault(Return(device_address));
+    return device;
+  }
+
   void AddClassicDevice(const std::string& device_address,
                         BluetoothDevice::UUIDSet uuids) {
-    auto device = std::make_unique<testing::NiceMock<MockBluetoothDevice>>(
-        adapter_mac_,
-        /*bluetooth_class=*/0, "device-name", device_address,
-        /*initially_paired=*/true,
-        /*connected=*/false);
-    EXPECT_CALL(*device, GetUUIDs).WillRepeatedly(Return(uuids));
+    auto device = CreateClassicDevice(device_address, uuids);
     adapter_mac_->ClassicDeviceAdded(std::move(device));
+  }
+
+  void ClassicDeviceConnected(const std::string& device_address,
+                              BluetoothDevice::UUIDSet uuids) {
+    auto device = CreateClassicDevice(device_address, uuids);
+    adapter_mac_->DeviceConnected(std::move(device));
   }
 
  protected:
@@ -115,6 +144,50 @@ TEST_F(BluetoothAdapterMacTest, ClassicDeviceAddedAndChanged) {
   AddClassicDevice(device_address, uuids);
   EXPECT_EQ(0, observer_.device_added_count());
   EXPECT_EQ(1, observer_.device_changed_count());
+  EXPECT_EQ(observer_.last_device_address(), device_address);
+}
+
+TEST_F(BluetoothAdapterMacTest, DeviceConnected) {
+  // Simulate a paired Bluetooth Classic device with one service UUID.
+  std::string device_address = "AA:BB:CC:DD:EE:FF";
+  BluetoothDevice::UUIDSet uuids;
+  uuids.insert(BluetoothUUID("110b"));
+
+  // Device connected when device is unknown to the adapter.
+  ClassicDeviceConnected(device_address, uuids);
+  EXPECT_EQ(1, observer_.device_added_count());
+  EXPECT_EQ(0, observer_.device_changed_count());
+  EXPECT_EQ(observer_.last_device_address(), device_address);
+  observer_.Reset();
+
+  // Device connected when device is known to the adapter.
+  ClassicDeviceConnected(device_address, uuids);
+  EXPECT_EQ(0, observer_.device_added_count());
+  EXPECT_EQ(1, observer_.device_changed_count());
+}
+
+TEST_F(BluetoothAdapterMacTest, DeviceConnectedOnWorkerThread) {
+  // Simulate a paired Bluetooth Classic device with one service UUID.
+  std::string device_address = "AA:BB:CC:DD:EE:FF";
+  BluetoothDevice::UUIDSet uuids;
+  uuids.insert(BluetoothUUID("110b"));
+  auto device = CreateClassicDevice(device_address, uuids);
+
+  // Simluate a scenario where `BluetoothAdapterMac::DeviceConnected` is called
+  // on a worker thread. The usage of `base::Unretained` is safe as
+  // `adapter_mac_` is guaranteed to be alive until the end of the test.
+  base::RunLoop run_loop;
+  base::ThreadPool::PostTaskAndReply(
+      FROM_HERE,
+      base::BindOnce(&BluetoothAdapterMac::DeviceConnected,
+                     base::Unretained(adapter_mac_), std::move(device)),
+      run_loop.QuitClosure());
+  run_loop.Run();
+
+  EXPECT_TRUE(ui_task_runner_->HasPendingTask());
+  ui_task_runner_->RunPendingTasks();
+  EXPECT_EQ(1, observer_.device_added_count());
+  EXPECT_EQ(0, observer_.device_changed_count());
   EXPECT_EQ(observer_.last_device_address(), device_address);
 }
 

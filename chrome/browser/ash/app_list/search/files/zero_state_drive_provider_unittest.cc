@@ -118,9 +118,10 @@ class ZeroStateDriveProviderTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     profile_ = testing_profile_manager_->CreateTestingProfile(
         "primary_profile@test",
-        {{ash::FileSuggestKeyedServiceFactory::GetInstance(),
-          base::BindRepeating(&BuildTestFileSuggestKeyedService,
-                              temp_dir_.GetPath())}});
+        {TestingProfile::TestingFactory{
+            ash::FileSuggestKeyedServiceFactory::GetInstance(),
+            base::BindRepeating(&BuildTestFileSuggestKeyedService,
+                                temp_dir_.GetPath())}});
     file_suggest_service_ = static_cast<TestFileSuggestKeyedService*>(
         ash::FileSuggestKeyedServiceFactory::GetInstance()->GetService(
             profile_));
@@ -261,6 +262,7 @@ TEST_F(ZeroStateDriveProviderTest, RespondOnSuggestDataFetched) {
         drive_fs_mount_point_.get()->CreateArbitraryFile();
     suggestions.emplace_back(ash::FileSuggestionType::kDriveFile,
                              suggested_file_path,
+                             /*title=*/std::nullopt,
                              /*new_prediction_reason=*/std::nullopt,
                              /*modified_time=*/std::nullopt,
                              /*viewed_time=*/std::nullopt,

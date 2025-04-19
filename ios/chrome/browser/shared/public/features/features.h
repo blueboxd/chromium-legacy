@@ -16,6 +16,14 @@ namespace base {
 class TimeDelta;
 }  // namespace base
 
+// Feature flag to enable personalized messaging for Default Browser First Run,
+// Set Up List, and video promos.
+BASE_DECLARE_FEATURE(kSegmentedDefaultBrowserPromo);
+
+// Whether personalized messaging for Default Browser First Run, Set Up List,
+// and video promos is enabled.
+bool IsSegmentedDefaultBrowserPromoEnabled();
+
 // Feature flag to enable the Keyboard Accessory Upgrade.
 BASE_DECLARE_FEATURE(kIOSKeyboardAccessoryUpgrade);
 
@@ -34,6 +42,26 @@ extern const char kSafetyCheckMagicStackAutorunHoursThreshold[];
 // How many hours between each autorun of the Safety Check in the Magic Stack.
 const base::TimeDelta TimeDelayForSafetyCheckAutorun();
 
+// Feature to enable Safety Check Push Notifications.
+BASE_DECLARE_FEATURE(kSafetyCheckNotifications);
+
+// Feature to enable the refactored implementation of the `OmahaService`, using
+// new `OmahaServiceObserver`(s) for Omaha clients. Acts as a killswitch.
+BASE_DECLARE_FEATURE(kOmahaServiceRefactor);
+
+// Safety Check Notifications experiment variations.
+extern const char kSafetyCheckNotificationsExperimentType[];
+
+// Defines param values for the Safety Check Notifications feature,
+// controlling how notifications are presented to the user.
+enum class SafetyCheckNotificationsExperimentalArm {
+  // Arm that displays multiple Safety Check notifications at any given time.
+  kVerbose = 0,
+  // Arm that displays only a single Safety Check notification at any given
+  // time.
+  kSuccinct = 1,
+};
+
 // Feature flag to enable Shared Highlighting (Link to Text).
 BASE_DECLARE_FEATURE(kSharedHighlightingIOS);
 
@@ -48,6 +76,20 @@ BASE_DECLARE_FEATURE(kModernTabStrip);
 extern const char kModernTabStripParameterName[];
 extern const char kModernTabStripNTBDynamicParam[];
 extern const char kModernTabStripNTBStaticParam[];
+
+// Feature parameter for V2 of Modern Tab Strip and its params.
+extern const char kModernTabStripV2ParameterName[];
+extern const char kModernTabStripCloserNTBParam[];
+extern const char kModernTabStripDarkerBackgroundParam[];
+extern const char kModernTabStripCloserNTBDarkerBackgroundParam[];
+extern const char kModernTabStripNTBNoBackgroundParam[];
+extern const char kModernTabStripBlackBackgroundParam[];
+
+// Feature parameter (bool) for the bigger close target.
+extern const char kModernTabStripBiggerCloseTargetName[];
+
+// Whether the close button should have a bigger close target.
+bool TabStripBiggerCloseTargetEnabled();
 
 // Feature flag that allows external apps to show default browser settings.
 BASE_DECLARE_FEATURE(kDefaultBrowserIntentsShowSettings);
@@ -82,6 +124,13 @@ extern const char kIOSDockingPromoOldUserInactiveThreshold[];
 // Feature flag to enable the Docking Promo.
 BASE_DECLARE_FEATURE(kIOSDockingPromo);
 
+// Feature flag to enable the Docking Promo feature exclusively for users who
+// first meet the promo's eligibility criteria.
+//
+// NOTE: This feature flag exists to improve metrics logging to better
+// understand the feature's impact on user engagement and conversion rates.
+BASE_DECLARE_FEATURE(kIOSDockingPromoForEligibleUsersOnly);
+
 // Killswitch to enable the fixed Docking Promo trigger logic.
 BASE_DECLARE_FEATURE(kIOSDockingPromoFixedTriggerLogicKillswitch);
 
@@ -96,8 +145,12 @@ enum class DockingPromoDisplayTriggerArm {
   kDuringFRE = 2,
 };
 
-// Helper function to check if kIOSDockingPromo is enabled.
+// Helper function to check if `kIOSDockingPromo` is enabled.
 bool IsDockingPromoEnabled();
+
+// Helper function to check if `kIOSDockingPromoForEligibleUsersOnly` is
+// enabled.
+bool IsDockingPromoForEligibleUsersOnlyEnabled();
 
 // Returns the experiment type for the Docking Promo feature.
 DockingPromoDisplayTriggerArm DockingPromoExperimentTypeEnabled();
@@ -156,9 +209,6 @@ bool IsSearchWithEnabled();
 // Feature flag to hide search web in the edit menu.
 BASE_DECLARE_FEATURE(kIOSEditMenuHideSearchWeb);
 
-// Feature flag that swaps the omnibox textfield implementation.
-BASE_DECLARE_FEATURE(kIOSNewOmniboxImplementation);
-
 // Feature flag to use direct upload for Lens searches.
 BASE_DECLARE_FEATURE(kIOSLensUseDirectUpload);
 
@@ -178,6 +228,10 @@ BASE_DECLARE_FEATURE(kEnableLensInNTP);
 // Feature flag to enable the Lens "Search copied image" omnibox entrypoint.
 BASE_DECLARE_FEATURE(kEnableLensInOmniboxCopiedImage);
 
+// Feature flag to enable the Lens "Search copied image" omnibox entrypoint.
+BASE_DECLARE_FEATURE(kEnableLensOverlay);
+extern const base::NotFatalUntil kLensOverlayNotFatalUntil;
+
 // Feature flag to enable UITraitCollection workaround for fixing incorrect
 // trait propagation.
 BASE_DECLARE_FEATURE(kEnableTraitCollectionWorkAround);
@@ -188,9 +242,6 @@ BASE_DECLARE_FEATURE(kRemoveExcessNTPs);
 // Feature flag to enable shortened instruction to turn on Password AutoFill for
 // Chrome.
 BASE_DECLARE_FEATURE(kEnableShortenedPasswordAutoFillInstruction);
-
-// Feature flag to enable startup latency improvements.
-BASE_DECLARE_FEATURE(kEnableStartupImprovements);
 
 // Feature flag / Kill Switch for TCRex.
 BASE_DECLARE_FEATURE(kTCRexKillSwitch);
@@ -224,6 +275,19 @@ extern const base::FeatureParam<int>
 int LargeContextualPanelEntrypointDelayInSeconds();
 int LargeContextualPanelEntrypointDisplayedInSeconds();
 
+// A parameter representing whether the Contextual Panel entrypoint should be
+// highlighted in blue when showing an IPH.
+extern const base::FeatureParam<bool>
+    kContextualPanelEntrypointHighlightDuringIPH;
+
+bool ShouldHighlightContextualPanelEntrypointDuringIPH();
+
+// A parameter representing whether the Contextual Panel entrypoint should show
+// a rich IPH.
+extern const base::FeatureParam<bool> kContextualPanelEntrypointRichIPH;
+
+bool ShouldShowRichContextualPanelEntrypointIPH();
+
 // Feature flag to control the maximum amount of non-modal DB promo impressions
 // server-side. Enabled by default to always have a default impression limit
 // value.
@@ -238,15 +302,6 @@ extern const base::FeatureParam<int>
 // Flag to enable push notification settings menu item.
 BASE_DECLARE_FEATURE(kNotificationSettingsMenuItem);
 
-// Enables indexing Open tabs items in Spotlight.
-BASE_DECLARE_FEATURE(kSpotlightOpenTabsSource);
-
-// Enables indexing Reading List items in Spotlight.
-BASE_DECLARE_FEATURE(kSpotlightReadingListSource);
-
-// Enables intent donation for new intent types.
-BASE_DECLARE_FEATURE(kSpotlightDonateNewIntents);
-
 // Feature flag to enable the new layout of the NTP omnibox.
 BASE_DECLARE_FEATURE(kNewNTPOmniboxLayout);
 
@@ -258,42 +313,6 @@ extern const char kBottomOmniboxDefaultSettingParamBottom[];
 extern const char kBottomOmniboxDefaultSettingParamSafariSwitcher[];
 // Feature flag to change the default position of the omnibox.
 BASE_DECLARE_FEATURE(kBottomOmniboxDefaultSetting);
-
-// Feature flag to enable the bottom omnibox FRE promo.
-BASE_DECLARE_FEATURE(kBottomOmniboxPromoFRE);
-
-// Feature flag to enable the bottom omnibox app-launch promo.
-BASE_DECLARE_FEATURE(kBottomOmniboxPromoAppLaunch);
-
-// Feature param under kBottomOmniboxPromoFRE or kBottomOmniboxPromoAppLaunch to
-// skip the promo conditions for testing.
-extern const char kBottomOmniboxPromoParam[];
-extern const char kBottomOmniboxPromoParamForced[];
-
-// Type of bottom omnibox promo.
-enum class BottomOmniboxPromoType {
-  // kBottomOmniboxPromoFRE.
-  kFRE,
-  // kBottomOmniboxPromoAppLaunch.
-  kAppLaunch,
-  // Any promo type.
-  kAny,
-};
-
-// Whether the bottom omnibox promo of `type` is enabled.
-bool IsBottomOmniboxPromoFlagEnabled(BottomOmniboxPromoType type);
-
-// Feature flag to change the default proposed position in omnibox promos.
-BASE_DECLARE_FEATURE(kBottomOmniboxPromoDefaultPosition);
-
-// Feature param under kBottomOmniboxPromoDefaultPosition to select the default
-// position.
-extern const char kBottomOmniboxPromoDefaultPositionParam[];
-extern const char kBottomOmniboxPromoDefaultPositionParamTop[];
-extern const char kBottomOmniboxPromoDefaultPositionParamBottom[];
-
-// Feature flag to enable region filter for the bottom omnibox promos.
-BASE_DECLARE_FEATURE(kBottomOmniboxPromoRegionFilter);
 
 // Feature flag to put all clipboard access onto a background thread. Any
 // synchronous clipboard access will always return nil/false.
@@ -309,11 +328,21 @@ BASE_DECLARE_FEATURE(kThemeColorInTopToolbar);
 // fits the screen already).
 BASE_DECLARE_FEATURE(kTabGridAlwaysBounce);
 
-// Feature flag enabling tab grid refactoring.
-BASE_DECLARE_FEATURE(kTabGridRefactoring);
-
 // Whether the Safety Check module should be shown in the Magic Stack.
 bool IsSafetyCheckMagicStackEnabled();
+
+// Whether Safety Check Push Notifications should be sent to the user.
+bool IsSafetyCheckNotificationsEnabled();
+
+// Whether the refactored implementation of the `OmahaService` is enabled.
+bool IsOmahaServiceRefactorEnabled();
+
+// Returns the experiment type for the Safety Check Notifications feature.
+SafetyCheckNotificationsExperimentalArm
+SafetyCheckNotificationsExperimentTypeEnabled();
+
+// Feature flag enabling Choose from Drive.
+BASE_DECLARE_FEATURE(kIOSChooseFromDrive);
 
 // Feature flag enabling Save to Drive.
 BASE_DECLARE_FEATURE(kIOSSaveToDrive);
@@ -323,21 +352,6 @@ BASE_DECLARE_FEATURE(kIOSSaveToPhotos);
 
 // Feature flag enabling a fix for the Download manager mediator.
 BASE_DECLARE_FEATURE(kIOSDownloadNoUIUpdateInBackground);
-
-// Causes the restore shorty and re-signin flows to offer a history opt-in
-// screen.
-BASE_DECLARE_FEATURE(kHistoryOptInForRestoreShortyAndReSignin);
-
-// Enables batch upload entry point from the Bookmarks Manager.
-BASE_DECLARE_FEATURE(kEnableBatchUploadFromBookmarksManager);
-
-// Enables the promo in the Bookmarks Manager or Reading Lists Manager to review
-// account settings when these types are disabled.
-BASE_DECLARE_FEATURE(kEnableReviewAccountSettingsPromo);
-
-// Enables linking account settings in the Privacy Settings page footer for
-// signed in non syncing users.
-BASE_DECLARE_FEATURE(kLinkAccountSettingsToPrivacyFooter);
 
 // Feature flag to enable feed background refresh.
 // Use IsFeedBackgroundRefreshEnabled() instead of this constant directly.
@@ -353,9 +367,6 @@ BASE_DECLARE_FEATURE(kEnableFeedAblation);
 // Feature flag to enable the Follow UI update.
 BASE_DECLARE_FEATURE(kEnableFollowUIUpdate);
 
-// Feature flag to enable the live sport card in the Discover feed.
-BASE_DECLARE_FEATURE(kDiscoverFeedSportCard);
-
 // Content Push Notifications Variations.
 extern const char kContentPushNotificationsExperimentType[];
 
@@ -364,6 +375,19 @@ BASE_DECLARE_FEATURE(kContentPushNotifications);
 
 // Feature flag to enable Content Notification experiments.
 BASE_DECLARE_FEATURE(kContentNotificationExperiment);
+
+// Feature flag to enable Content Notification Provisional without any
+// conditions.
+BASE_DECLARE_FEATURE(kContentNotificationProvisionalIgnoreConditions);
+
+// True if Content Notification Provisional is enabled without any conditions.
+bool IsContentNotificationProvisionalIgnoreConditions();
+
+// Flag to override delivered NAUs.
+BASE_DECLARE_FEATURE(kContentNotificationDeliveredNAU);
+
+// Parameter value for the max number of delivered NAUs to be sent per session.
+extern const char kDeliveredNAUMaxPerSession[];
 
 // Feature flag to enable the Large Fakebox design changes.
 BASE_DECLARE_FEATURE(kIOSLargeFakebox);
@@ -394,6 +418,9 @@ BASE_DECLARE_FEATURE(kOmniboxColorIcons);
 
 // Feature flag that allows clearing data for managed users signing out.
 BASE_DECLARE_FEATURE(kClearDeviceDataOnSignOutForManagedUsers);
+
+// Feature flag that allows opening the downloaded PDF files in Chrome.
+BASE_DECLARE_FEATURE(kDownloadedPDFOpening);
 
 // Feature param under `kEnableFeedBackgroundRefresh` to also enable background
 // refresh for the Following feed.
@@ -505,11 +532,6 @@ bool IsContentPushNotificationsSetUpListEnabled();
 // YES when the Content Provisional Push Notifications are enabled.
 bool IsContentPushNotificationsProvisionalEnabled();
 
-// TODO(b/322348322): Remove provisional notifications bypass conditions testing
-// flag param. YES when the Content Provisional Push Notifications are enabled
-// and the time based conditions should be ignored.
-bool IsContentPushNotificationsProvisionalBypass();
-
 // YES when the Content Push Notifications Promo is registered with no UI
 // change.
 bool IsContentPushNotificationsPromoRegistrationOnly();
@@ -531,14 +553,25 @@ bool IsKeyboardAccessoryUpgradeEnabled();
 // Feature for the Magic Stack.
 BASE_DECLARE_FEATURE(kMagicStack);
 
-// Feature that contains the feed in a module.
-BASE_DECLARE_FEATURE(kEnableFeedContainment);
-
 // Feature that enables tab resumption.
 BASE_DECLARE_FEATURE(kTabResumption);
 
 // Feature that enables enhancements for Tab Resumption.
 BASE_DECLARE_FEATURE(kTabResumption1_5);
+
+// A parameter to indicate whether the Tab resumption tile should use salient
+// images.
+extern const char kTR15SalientImageParam[];
+
+// A parameter to indicate whether the Tab resumption tile should have a see
+// more button.
+extern const char kTR15SeeMoreButtonParam[];
+
+// Feature that enables tab resumption 2.0.
+BASE_DECLARE_FEATURE(kTabResumption2);
+
+// The parameter to enable Tab resumption 2 bubble.
+extern const char kTabResumption2BubbleParam[];
 
 // A parameter to indicate whether the Most Visited Tiles should be in the Magic
 // Stack.
@@ -566,24 +599,32 @@ extern const char kDiscoverFeedIsNativeUIEnabled[];
 extern const char kTabResumptionParameterName[];
 extern const char kTabResumptionMostRecentTabOnlyParam[];
 extern const char kTabResumptionAllTabsParam[];
-extern const char kTabResumptionAllTabsOneDayThresholdParam[];
 
-// Whether the feed is contained in a Home module.
-bool IsFeedContainmentEnabled();
-
-// The minimum padding between the modules and the screen bounds on the Home
-// surface. Relies on `IsFeedContainmentEnabled()` being enabled. This padding
-// is dynamic, so the value represents a percentage including both sides.
-CGFloat HomeModuleMinimumPadding();
+// Feature parameters for the tab resumption feature. The threshold for tabs
+// fetched from sync in seconds. Default to 12 hours.
+extern const char kTabResumptionThresholdParameterName[];
 
 // Whether the tab resumption feature is enabled.
 bool IsTabResumptionEnabled();
+
+// Whether the tab resumption feature is enabled in 2.0 version. Implies
+// `IsTabResumptionEnabled`.
+bool IsTabResumption2_0Enabled();
+
+// Whether to show the reason bubble for Tab resumption.
+bool IsTabResumption2BubbleEnabled();
 
 // Whether the tab resumption feature is enabled for most recent tab only.
 bool IsTabResumptionEnabledForMostRecentTabOnly();
 
 // Whether the tab resumption enhancements feature is enabled.
 bool IsTabResumption1_5Enabled();
+
+// Whether the tab resumption with salient images is enabled.
+bool IsTabResumption1_5SalientImageEnabled();
+
+// Whether the tab resumption with see more button is enabled.
+bool IsTabResumption1_5SeeMoreEnabled();
 
 // Convenience method for determining the tab resumption time threshold for
 // X-Devices tabs only.
@@ -621,12 +662,6 @@ extern const char kIOSTipsNotificationsEnabledParam[];
 // Helper for whether Tips Notifications are enabled.
 bool IsIOSTipsNotificationsEnabled();
 
-// Feature flag to use a UICollectionView for the Magic Stack.
-BASE_DECLARE_FEATURE(kIOSMagicStackCollectionView);
-
-// Returns true if the MagicStack UICollectionView implementation is enabled.
-bool IsIOSMagicStackCollectionViewEnabled();
-
 // Feature flag to disable fullscreen scrolling logic.
 BASE_DECLARE_FEATURE(kDisableFullscreenScrolling);
 
@@ -640,7 +675,80 @@ BASE_DECLARE_FEATURE(kPrefetchSystemCapabilitiesOnFirstRun);
 // Returns true if the system capabilities are prefetched on first run.
 bool IsPrefetchingSystemCapabilitiesOnFirstRun();
 
+// Feature flag to prefetch system capabilities on app startup.
+BASE_DECLARE_FEATURE(kPrefetchSystemCapabilitiesOnAppStartup);
+
+// Returns true if the system capabilities are prefetched on app startup.
+bool IsPrefetchingSystemCapabilitiesOnAppStartup();
+
 // Feature flag for caching the ios module ranker.
 BASE_DECLARE_FEATURE(kSegmentationPlatformIosModuleRankerCaching);
+
+// Feature flag for default browser promo experimental string for iPad.
+BASE_DECLARE_FEATURE(kDefaultBrowserPromoIPadExperimentalString);
+
+// Returns `YES` if the title and subtitle should be tailored for iPad.
+BOOL UseIPadTailoredStringForDefaultBrowserPromo();
+
+// Flag to not keep a strong reference to the spotlight index, as a tentative
+// memory improvement measure.
+BASE_DECLARE_FEATURE(kSpotlightNeverRetainIndex);
+
+// Feature that enables improvements for Save to Photos feature.
+BASE_DECLARE_FEATURE(kIOSSaveToPhotosImprovements);
+
+// A set of parameters to indicate which improvement to apply to the Save to
+// Photos feature.
+extern const char kSaveToPhotosContextMenuImprovementParam[];
+extern const char kSaveToPhotosTitleImprovementParam[];
+extern const char kSaveToPhotosAccountDefaultChoiceImprovementParam[];
+
+// Returns true if the Save to Photos action improvement is enabled.
+bool IsSaveToPhotosActionImprovementEnabled();
+
+// Returns true if the Save to Photos title improvement is enabled.
+bool IsSaveToPhotosTitleImprovementEnabled();
+
+// Returns true if the Save to Photos account picker improvement is enabled.
+bool IsSaveToPhotosAccountPickerImprovementEnabled();
+
+// Feature that enables personalization of the Home surface.
+BASE_DECLARE_FEATURE(kHomeCustomization);
+
+// Returns true if Home Customization is enabled.
+bool IsHomeCustomizationEnabled();
+
+// Feature flag to enable app background refresh.
+// Use IsAppBackgroundRefreshEnabled() instead of this constant directly.
+BASE_DECLARE_FEATURE(kEnableAppBackgroundRefresh);
+
+// Whether app background refresh is enabled.
+bool IsAppBackgroundRefreshEnabled();
+
+// Feature flag for changes that aim to improve memory footprint on the Home
+// surface.
+BASE_DECLARE_FEATURE(kHomeMemoryImprovements);
+
+// Whether Home memory improvements are enabled.
+bool IsHomeMemoryImprovementsEnabled();
+
+// Feature to enable the removal of the image in the rich IPH bubble.
+BASE_DECLARE_FEATURE(kRichBubbleWithoutImage);
+
+bool IsRichBubbleWithoutImageEnabled();
+
+// Feature flag to enable account confirmation snackbar on startup.
+BASE_DECLARE_FEATURE(kIdentityConfirmationSnackbar);
+
+// Feature param to specify how much time between identity confirmation snackbar
+// triggers to avoid over-prompting. Overridable through Finch.
+extern const base::FeatureParam<base::TimeDelta>
+    kIdentityConfirmationMinDisplayInterval;
+
+// Feature param to specify how much time to keep between the identity
+// confirmation snackbar and the last sign-in to avoid over-prompting.
+// Overridable through Finch.
+extern const base::FeatureParam<base::TimeDelta>
+    kIdentityConfirmationMinTimeSinceSignin;
 
 #endif  // IOS_CHROME_BROWSER_SHARED_PUBLIC_FEATURES_FEATURES_H_

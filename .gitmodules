@@ -151,11 +151,6 @@
 	path = third_party/accessibility_test_framework/src
 	url = https://chromium.googlesource.com/external/github.com/google/Accessibility-Test-Framework-for-Android
 	ignore = all
-[submodule "third_party/android_protobuf/src"]
-	path = third_party/android_protobuf/src
-	url = https://android.googlesource.com/platform/external/protobuf
-	gclient-condition = checkout_android
-	ignore = all
 [submodule "third_party/androidx_javascriptengine/src"]
 	path = third_party/androidx_javascriptengine/src
 	url = https://chromium.googlesource.com/aosp/platform/frameworks/support/javascriptengine/javascriptengine/src
@@ -296,7 +291,9 @@
 [submodule "third_party/farmhash/src"]
 	path = third_party/farmhash/src
 	url = https://chromium.googlesource.com/external/github.com/google/farmhash
-	ignore = all
+[submodule "third_party/fast_float/src"]
+	path = third_party/fast_float/src
+	url = https://chromium.googlesource.com/external/github.com/fastfloat/fast_float
 [submodule "third_party/ffmpeg"]
 	path = third_party/ffmpeg
 	url = https://chromium.googlesource.com/chromium/third_party/ffmpeg
@@ -426,6 +423,10 @@
 [submodule "third_party/fuzztest/src"]
 	path = third_party/fuzztest/src
 	url = https://chromium.googlesource.com/external/github.com/google/fuzztest
+	ignore = all
+[submodule "third_party/domato/src"]
+	path = third_party/domato/src
+	url = https://chromium.googlesource.com/external/github.com/googleprojectzero/domato
 	ignore = all
 [submodule "third_party/libaddressinput/src"]
 	path = third_party/libaddressinput/src
@@ -802,11 +803,6 @@
 	url = https://chrome-internal.googlesource.com/chrome/assistant
 	gclient-condition = checkout_src_internal and checkout_chromeos
 	ignore = all
-[submodule "ash/webui/conch"]
-	path = ash/webui/conch
-	url = https://chrome-internal.googlesource.com/ash/webui/conch
-	gclient-condition = checkout_src_internal and checkout_chromeos
-	ignore = all
 [submodule "build/fuchsia/internal"]
 	path = build/fuchsia/internal
 	url = https://chrome-internal.googlesource.com/fuchsia/build
@@ -855,6 +851,11 @@
 [submodule "chrome/browser/platform_experience/win"]
 	path = chrome/browser/platform_experience/win
 	url = https://chrome-internal.googlesource.com/chrome/browser/platform_experience/win
+	gclient-condition = checkout_src_internal
+	ignore = all
+[submodule "chrome/browser/request_header_integrity/internal"]
+	path = chrome/browser/request_header_integrity/internal
+	url = https://chrome-internal.googlesource.com/chrome/browser/request_header_integrity/internal
 	gclient-condition = checkout_src_internal
 	ignore = all
 [submodule "chrome/browser/resources/downloads/internal"]
@@ -926,6 +927,16 @@
 	path = chrome/services/speech/internal
 	url = https://chrome-internal.googlesource.com/chromeos/speech
 	gclient-condition = checkout_chromeos and checkout_src_internal
+	ignore = all
+[submodule "chrome/updater/internal"]
+	path = chrome/updater/internal
+	url = https://chrome-internal.googlesource.com/chrome/updater/internal
+	gclient-condition = checkout_src_internal
+	ignore = all
+[submodule "components/accessibility/internal"]
+	path = components/accessibility/internal
+	url = https://chrome-internal.googlesource.com/chrome-accessibility
+	gclient-condition = checkout_src_internal
 	ignore = all
 [submodule "components/autofill/core/browser/form_parsing/internal_resources"]
 	path = components/autofill/core/browser/form_parsing/internal_resources
@@ -1040,16 +1051,6 @@
 	path = third_party/android_tools_internal
 	url = https://chrome-internal.googlesource.com/clank/third_party/android_tools
 	gclient-condition = checkout_android and checkout_src_internal
-	ignore = all
-[submodule "third_party/gles2_conform"]
-	path = third_party/gles2_conform
-	url = https://chrome-internal.googlesource.com/chrome/deps/gles2_conform
-	gclient-condition = checkout_src_internal
-	ignore = all
-[submodule "third_party/khronos_glcts"]
-	path = third_party/khronos_glcts
-	url = https://chrome-internal.googlesource.com/chrome/deps/khronos_glcts
-	gclient-condition = checkout_src_internal
 	ignore = all
 [submodule "third_party/widevine/cdm/chromeos"]
 	path = third_party/widevine/cdm/chromeos

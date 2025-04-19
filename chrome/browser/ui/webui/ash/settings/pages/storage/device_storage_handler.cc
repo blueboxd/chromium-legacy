@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/ui/webui/ash/settings/pages/storage/device_storage_handler.h"
 
 #include <algorithm>
@@ -371,7 +376,7 @@ void StorageHandler::UpdateOverallStatistics() {
   if (total_bytes <= 0 || available_bytes < 0) {
     // We can't get useful information from the storage page if total_bytes <= 0
     // or available_bytes is less than 0. This is not expected to happen.
-    DUMP_WILL_BE_NOTREACHED_NORETURN()
+    DUMP_WILL_BE_NOTREACHED()
         << "Unable to retrieve total or available disk space";
     return;
   }

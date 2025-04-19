@@ -27,14 +27,13 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.supplier.ObservableSupplierImpl;
-import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.HistogramWatcher;
@@ -50,14 +49,12 @@ import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.R;
 import org.chromium.components.autofill.VirtualCardEnrollmentState;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.test.util.modaldialog.FakeModalDialogManager;
 
 /** Instrumentation tests for AutofillLocalCardEditor. */
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class AutofillLocalCardEditorTest {
-    @Rule public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
     @Rule public final AutofillTestRule rule = new AutofillTestRule();
 
     @Rule
@@ -235,7 +232,7 @@ public class AutofillLocalCardEditorTest {
         AutofillLocalCardEditor autofillLocalCardEditorFragment =
                 (AutofillLocalCardEditor) activity.getMainFragment();
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     try {
                         autofillLocalCardEditorFragment.mNicknameText.setText("Nickname 123");
@@ -260,7 +257,7 @@ public class AutofillLocalCardEditorTest {
                 mSettingsActivityTestRule.startSettingsActivity(fragmentArgs(guid));
         AutofillLocalCardEditor autofillLocalCardEditorFragment =
                 (AutofillLocalCardEditor) activity.getMainFragment();
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     try {
                         autofillLocalCardEditorFragment.mNicknameText.setText("Nickname 123");
@@ -274,7 +271,7 @@ public class AutofillLocalCardEditorTest {
                                 .getString(R.string.autofill_credit_card_editor_invalid_nickname));
 
         // Set the nickname to valid one.
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     try {
                         autofillLocalCardEditorFragment.mNicknameText.setText("Valid Nickname");
@@ -295,7 +292,7 @@ public class AutofillLocalCardEditorTest {
                 mSettingsActivityTestRule.startSettingsActivity(fragmentArgs(guid));
         AutofillLocalCardEditor autofillLocalCardEditorFragment =
                 (AutofillLocalCardEditor) activity.getMainFragment();
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     try {
                         autofillLocalCardEditorFragment.mNicknameText.setText("Nickname 123");
@@ -309,7 +306,7 @@ public class AutofillLocalCardEditorTest {
                                 .getString(R.string.autofill_credit_card_editor_invalid_nickname));
 
         // Clear the nickname.
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     try {
                         autofillLocalCardEditorFragment.mNicknameText.setText(null);
@@ -333,7 +330,7 @@ public class AutofillLocalCardEditorTest {
         AutofillLocalCardEditor autofillLocalCardEditorFragment =
                 (AutofillLocalCardEditor) activity.getMainFragment();
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     try {
                         autofillLocalCardEditorFragment.mNicknameText.setText(veryLongNickname);
@@ -710,7 +707,7 @@ public class AutofillLocalCardEditorTest {
 
         // Verify the dialog is open
         Assert.assertNotNull(fakeModalDialogManager.getShownDialogModel());
-        TestThreadUtils.runOnUiThreadBlocking(() -> fakeModalDialogManager.clickNegativeButton());
+        ThreadUtils.runOnUiThreadBlocking(() -> fakeModalDialogManager.clickNegativeButton());
 
         // Verify the dialog is closed
         Assert.assertNull(fakeModalDialogManager.getShownDialogModel());
@@ -739,7 +736,7 @@ public class AutofillLocalCardEditorTest {
 
         // Verify the dialog is open
         Assert.assertNotNull(fakeModalDialogManager.getShownDialogModel());
-        TestThreadUtils.runOnUiThreadBlocking(() -> fakeModalDialogManager.clickPositiveButton());
+        ThreadUtils.runOnUiThreadBlocking(() -> fakeModalDialogManager.clickPositiveButton());
 
         // Verify the dialog is closed
         Assert.assertNull(fakeModalDialogManager.getShownDialogModel());
@@ -946,7 +943,7 @@ public class AutofillLocalCardEditorTest {
 
         MenuItem deleteButton = mock(MenuItem.class);
         when(deleteButton.getItemId()).thenReturn(R.id.delete_menu_id);
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     autofillLocalCardEditorFragment.onOptionsItemSelected(deleteButton);
                 });
@@ -954,7 +951,7 @@ public class AutofillLocalCardEditorTest {
 
     private void setExpirationMonthSelectionOnEditor(
             AutofillLocalCardEditor autofillLocalCardEditorFragment, int monthSelection) {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     try {
                         autofillLocalCardEditorFragment.mExpirationMonth.setSelection(
@@ -967,7 +964,7 @@ public class AutofillLocalCardEditorTest {
 
     private void setExpirationYearSelectionOnEditor(
             AutofillLocalCardEditor autofillLocalCardEditorFragment, int yearSelection) {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     try {
                         autofillLocalCardEditorFragment.mExpirationYear.setSelection(yearSelection);
@@ -979,7 +976,7 @@ public class AutofillLocalCardEditorTest {
 
     private void setExpirationDateOnEditor(
             AutofillLocalCardEditor autofillLocalCardEditorFragment, String date) {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     try {
                         autofillLocalCardEditorFragment.mExpirationDate.setText(date);
@@ -991,7 +988,7 @@ public class AutofillLocalCardEditorTest {
 
     private void setNicknameOnEditor(
             AutofillLocalCardEditor autofillLocalCardEditorFragment, String nickname) {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     try {
                         autofillLocalCardEditorFragment.mNicknameText.setText(nickname);
@@ -1023,7 +1020,7 @@ public class AutofillLocalCardEditorTest {
     @Test
     @SmallTest
     public void testIsAmExCard_whenAmExCardNumberPrefixIsEntered_returnsTrue() {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     try {
                         assertThat(AutofillLocalCardEditor.isAmExCard(AMEX_CARD_NUMBER_PREFIX))
@@ -1037,7 +1034,7 @@ public class AutofillLocalCardEditorTest {
     @Test
     @SmallTest
     public void testIsAmExCard_whenNonAmExCardNumberPrefixIsEntered_returnsFalse() {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     try {
                         assertThat(AutofillLocalCardEditor.isAmExCard(NON_AMEX_CARD_NUMBER_PREFIX))
@@ -1049,20 +1046,20 @@ public class AutofillLocalCardEditorTest {
     }
 
     private void setCardNumberOnEditor(
-        AutofillLocalCardEditor autofillLocalCardEditorFragment, String cardNumber) {
-        TestThreadUtils.runOnUiThreadBlocking(
-            () -> {
-                try {
-                    autofillLocalCardEditorFragment.mNumberText.setText(cardNumber);
-                } catch (Exception e) {
-                    Assert.fail("Failed to set the card number");
-                }
-            });
+            AutofillLocalCardEditor autofillLocalCardEditorFragment, String cardNumber) {
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    try {
+                        autofillLocalCardEditorFragment.mNumberText.setText(cardNumber);
+                    } catch (Exception e) {
+                        Assert.fail("Failed to set the card number");
+                    }
+                });
     }
 
     private void setSecurityCodeOnEditor(
             AutofillLocalCardEditor autofillLocalCardEditorFragment, String code) {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     try {
                         autofillLocalCardEditorFragment.mCvc.setText(code);
@@ -1073,7 +1070,7 @@ public class AutofillLocalCardEditorTest {
     }
 
     private void performButtonClickOnEditor(Button button) {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     try {
                         button.performClick();

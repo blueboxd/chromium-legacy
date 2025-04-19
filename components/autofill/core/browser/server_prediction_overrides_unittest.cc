@@ -129,11 +129,10 @@ TEST(ServerPredictionOverridesTest, ParsesWellFormedOverridesCorrectly) {
                                    Key(kOverrides[2]), Key(kOverrides[3])));
 
   // General sanity checks.
-  for (int i = 0; i < 4; ++i) {
-    ASSERT_THAT(overrides.at(kOverrides[i]), SizeIs(1));
-    EXPECT_EQ(
-        FieldSignature(overrides.at(kOverrides[i]).front().field_signature()),
-        kOverrides[i].second);
+  for (const std::pair<FormSignature, FieldSignature>& override : kOverrides) {
+    ASSERT_THAT(overrides.at(override), SizeIs(1));
+    EXPECT_EQ(FieldSignature(overrides.at(override).front().field_signature()),
+              override.second);
   }
 
   // Prediction content checks.

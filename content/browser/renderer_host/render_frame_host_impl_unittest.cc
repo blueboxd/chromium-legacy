@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/renderer_host/render_frame_host_impl.h"
+
 #include <memory>
 
 #include "base/memory/ptr_util.h"
@@ -9,14 +11,14 @@
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/buildflag.h"
+#include "components/input/timeout_monitor.h"
 #include "content/browser/renderer_host/navigation_controller_impl.h"
-#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/common/features.h"
-#include "content/common/input/timeout_monitor.h"
 #include "content/public/browser/cors_origin_pattern_setter.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/fake_local_frame.h"
 #include "content/public/test/test_utils.h"
@@ -88,7 +90,25 @@ class FirstPartyOverrideContentBrowserClient : public ContentBrowserClient {
   }
 };
 
-TEST_F(RenderFrameHostImplTest, ExpectedMainWorldOrigin) {
+// A test class that forces kOriginKeyedProcessesByDefault off for tests that
+// require that same-site cross-origin navigations don't trigger a RFH swap.
+class RenderFrameHostImplTest_NoOriginKeyedProcessesByDefault
+    : public RenderFrameHostImplTest {
+ public:
+  RenderFrameHostImplTest_NoOriginKeyedProcessesByDefault() {
+    feature_list_.InitAndDisableFeature(
+        features::kOriginKeyedProcessesByDefault);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Note: Since this test is predicate on not having a RFH swap for a
+// cross-origin, same-site navigation, it only makes sense to run it with
+// kOriginKeyedProcessesByDefault disabled.
+TEST_F(RenderFrameHostImplTest_NoOriginKeyedProcessesByDefault,
+       ExpectedMainWorldOrigin) {
   GURL initial_url = GURL("https://initial.example.test/");
   GURL final_url = GURL("https://final.example.test/");
 
@@ -237,7 +257,11 @@ TEST_F(RenderFrameHostImplTest, CrossSiteAncestorInFrameTree) {
 // Test the IsolationInfo and related fields of a request during the various
 // phases of a commit, when a RenderFrameHost is reused. Once RenderDocument
 // ships, this test may no longer be needed.
-TEST_F(RenderFrameHostImplTest, IsolationInfoDuringCommit) {
+// Note: Since this test is predicate on not having a RFH swap for a
+// cross-origin, same-site navigation, it only makes sense to run it with
+// kOriginKeyedProcessesByDefault disabled.
+TEST_F(RenderFrameHostImplTest_NoOriginKeyedProcessesByDefault,
+       IsolationInfoDuringCommit) {
   GURL initial_url = GURL("https://initial.example.test/");
   url::Origin expected_initial_origin = url::Origin::Create(initial_url);
   const blink::StorageKey expected_initial_storage_key =
@@ -1240,7 +1264,9 @@ TEST_F(RenderFrameHostImplWebAuthnTest,
       "doofenshmirtz.evil", url::Origin::Create(url),
       /*is_payment_credential_creation=*/false,
       base::BindLambdaForTesting(
-          [&status](blink::mojom::AuthenticatorStatus s) { status = s; }));
+          [&status](blink::mojom::AuthenticatorStatus s, bool is_cross_origin) {
+            status = s;
+          }));
   EXPECT_EQ(status.value(),
             blink::mojom::AuthenticatorStatus::CERTIFICATE_ERROR);
 }
@@ -1275,7 +1301,9 @@ TEST_F(RenderFrameHostImplWebAuthnTest,
       "owca.org", url::Origin::Create(url),
       /*is_payment_credential_creation=*/false,
       base::BindLambdaForTesting(
-          [&status](blink::mojom::AuthenticatorStatus s) { status = s; }));
+          [&status](blink::mojom::AuthenticatorStatus s, bool is_cross_origin) {
+            status = s;
+          }));
   EXPECT_EQ(status.value(), blink::mojom::AuthenticatorStatus::SUCCESS);
 }
 
@@ -1405,6 +1433,9 @@ namespace {
 class MockWebContentsDelegate : public WebContentsDelegate {
  public:
   MOCK_METHOD(void, CloseContents, (WebContents*));
+  MOCK_METHOD(void,
+              OnTextCopiedToClipboard,
+              (RenderFrameHost*, std::u16string));
 };
 
 }  // namespace
@@ -1466,6 +1497,30 @@ TEST_F(RenderFrameHostImplTest,
   // The page should close regardless of it not being primary since the browser
   // requested it.
   testing::Mock::VerifyAndClearExpectations(&delegate);
+}
+
+// A mock WebContentsObserver for listening to text copy events.
+class TextCopiedEventObserver : public WebContentsObserver {
+ public:
+  explicit TextCopiedEventObserver(WebContents* web_contents)
+      : WebContentsObserver(web_contents) {}
+
+  MOCK_METHOD(void,
+              OnTextCopiedToClipboard,
+              (RenderFrameHost*, const std::u16string&),
+              (override));
+};
+
+// Test that the WebContentObserver is notified when text is copied to the
+// clipboard for a RenderFrameHost.
+TEST_F(RenderFrameHostImplTest, OnTextCopiedToClipboard) {
+  testing::StrictMock<TextCopiedEventObserver> observer(contents());
+  std::u16string copied_text = u"copied_text";
+
+  RenderFrameHostImpl* rfh = main_test_rfh();
+  EXPECT_CALL(observer, OnTextCopiedToClipboard(rfh, copied_text));
+
+  rfh->OnTextCopiedToClipboard(copied_text);
 }
 
 // Test if `LoadedWithCacheControlNoStoreHeader()` behaves

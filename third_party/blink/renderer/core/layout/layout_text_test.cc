@@ -18,7 +18,6 @@
 #include "third_party/blink/renderer/core/layout/inline/inline_node_data.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/testing/font_test_helpers.h"
-#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
@@ -1066,9 +1065,9 @@ TEST_F(LayoutTextTest, PhysicalLinesBoundingBoxTextCombine) {
   const auto& text_01234 = *To<Text>(target.firstChild())->GetLayoutObject();
   const auto& text_b = *To<Text>(target.nextSibling())->GetLayoutObject();
 
-  //   LayoutNGBlockFlow {HTML} at (0,0) size 800x600
-  //     LayoutNGBlockFlow {BODY} at (8,8) size 784x584
-  //       LayoutNGBlockFlow {DIV} at (0,0) size 130x300
+  //   LayoutBlockFlow {HTML} at (0,0) size 800x600
+  //     LayoutBlockFlow {BODY} at (8,8) size 784x584
+  //       LayoutBlockFlow {DIV} at (0,0) size 130x300
   //         LayoutText {#text} at (15,0) size 100x100
   //           text run at (15,0) width 100: "a"
   //         LayoutInline {C} at (15,100) size 100x100
@@ -1644,8 +1643,8 @@ TEST_F(LayoutTextTest, SetTextWithOffsetInsertSameCharacters) {
   text.insertData(0, "aa", ASSERT_NO_EXCEPTION);
 
   EXPECT_EQ(
-      "*{'aaa', ShapeResult=0+3 width=\"150\"}\n"
-      "{'aa', ShapeResult=3+2 width=\"20\"}\n",
+      "*{'aaa', ShapeResult=0+3 width=150}\n"
+      "{'aa', ShapeResult=3+2 width=20}\n",
       GetItemsAsString(*text.GetLayoutObject(), 0, kIncludeSnappedWidth));
 }
 

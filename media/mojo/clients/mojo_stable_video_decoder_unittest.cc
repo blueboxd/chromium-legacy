@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "media/mojo/clients/mojo_stable_video_decoder.h"
 
 #include <sys/mman.h>
@@ -9,6 +14,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
@@ -318,6 +324,10 @@ class MockStableVideoDecoderService : public stable::mojom::StableVideoDecoder {
   std::unique_ptr<MojoDecoderBufferReader> mojo_decoder_buffer_reader_;
 };
 
+}  // namespace
+
+// NOTE: This needs to be outside of an anonymous namespace to allow it to be
+// friended by SharedImageInterface.
 class MockSharedImageInterface : public gpu::SharedImageInterface {
  public:
   // gpu::SharedImageInterface implementation.
@@ -341,12 +351,6 @@ class MockSharedImageInterface : public gpu::SharedImageInterface {
                    gfx::GpuMemoryBufferHandle buffer_handle));
   MOCK_METHOD1(CreateSharedImage,
                SharedImageMapping(const gpu::SharedImageInfo& si_info));
-  MOCK_METHOD4(CreateSharedImage,
-               scoped_refptr<gpu::ClientSharedImage>(
-                   gfx::GpuMemoryBuffer* gpu_memory_buffer,
-                   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-                   gfx::BufferPlane plane,
-                   const gpu::SharedImageInfo& si_info));
   MOCK_METHOD2(UpdateSharedImage,
                void(const gpu::SyncToken& sync_token,
                     const gpu::Mailbox& mailbox));
@@ -369,7 +373,7 @@ class MockSharedImageInterface : public gpu::SharedImageInterface {
                                      const gfx::ColorSpace& color_space,
                                      GrSurfaceOrigin surface_origin,
                                      SkAlphaType alpha_type,
-                                     uint32_t usage));
+                                     gpu::SharedImageUsageSet usage));
   MOCK_METHOD2(PresentSwapChain,
                void(const gpu::SyncToken& sync_token,
                     const gpu::Mailbox& mailbox));
@@ -389,6 +393,8 @@ class MockSharedImageInterface : public gpu::SharedImageInterface {
  protected:
   ~MockSharedImageInterface() override = default;
 };
+
+namespace {
 
 // TestEndpoints groups a few members that result from creating and initializing
 // a MojoStableVideoDecoder so that tests can use them to set expectations
@@ -628,6 +634,7 @@ class MojoStableVideoDecoderTest : public testing::Test {
     return endpoints;
   }
 
+  base::HistogramTester histogram_tester_;
   base::test::TaskEnvironment task_environment_;
   scoped_refptr<base::SequencedTaskRunner> media_task_runner_;
 };
@@ -638,6 +645,12 @@ TEST_F(MojoStableVideoDecoderTest,
   std::unique_ptr<TestEndpoints> endpoints =
       CreateAndInitializeMojoStableVideoDecoder(config);
   ASSERT_TRUE(endpoints);
+
+  // No frames were output by the service, so the decode latency histogram
+  // should be empty.
+  histogram_tester_.ExpectTotalCount(
+      kMojoStableVideoDecoderDecodeLatencyHistogram,
+      /*expected_count=*/0u);
 }
 
 TEST_F(MojoStableVideoDecoderTest,
@@ -646,6 +659,12 @@ TEST_F(MojoStableVideoDecoderTest,
   std::unique_ptr<TestEndpoints> endpoints =
       CreateAndInitializeMojoStableVideoDecoder(config);
   ASSERT_FALSE(endpoints);
+
+  // No frames were output by the service, so the decode latency histogram
+  // should be empty.
+  histogram_tester_.ExpectTotalCount(
+      kMojoStableVideoDecoderDecodeLatencyHistogram,
+      /*expected_count=*/0u);
 }
 
 TEST_F(MojoStableVideoDecoderTest,
@@ -703,6 +722,12 @@ TEST_F(MojoStableVideoDecoderTest,
            kMaxDecodeRequestsToReplyWith, kDecoderTypeToReplyWith,
            kNeedsTranscryptionToReplyWith);
   task_environment_.RunUntilIdle();
+
+  // No frames were output by the service, so the decode latency histogram
+  // should be empty.
+  histogram_tester_.ExpectTotalCount(
+      kMojoStableVideoDecoderDecodeLatencyHistogram,
+      /*expected_count=*/0u);
 }
 
 // This test sends four frames to the service for decoding and expects to
@@ -829,6 +854,12 @@ TEST_F(MojoStableVideoDecoderTest, Decode) {
               kSecureHandle);
   }
 
+  // At this point, no decoded frames have been output by the service, so the
+  // decode latency histogram should have nothing yet.
+  histogram_tester_.ExpectTotalCount(
+      kMojoStableVideoDecoderDecodeLatencyHistogram,
+      /*expected_count=*/0u);
+
   // Now on to the second portion of the test: the service will start outputting
   // decoded frames to the client. Let's suppose the service sends the first
   // decoded frame. When the MojoStableVideoDecoder receives it, it should
@@ -911,6 +942,9 @@ TEST_F(MojoStableVideoDecoderTest, Decode) {
       received_decoded_video_frame_1->metadata().read_lock_fences_enabled);
   EXPECT_EQ(received_can_read_without_stalling_after_frame_1,
             kCanReadWithoutStallingAfterFrame1);
+  histogram_tester_.ExpectTotalCount(
+      kMojoStableVideoDecoderDecodeLatencyHistogram,
+      /*expected_count=*/1u);
 
   // Now the service will send the second decoded frame. This decoded frame has
   // the same underlying dma-buf as the first frame. Furthermore, the coded size
@@ -979,6 +1013,9 @@ TEST_F(MojoStableVideoDecoderTest, Decode) {
       received_decoded_video_frame_2->metadata().read_lock_fences_enabled);
   EXPECT_EQ(received_can_read_without_stalling_after_frame_2,
             kCanReadWithoutStallingAfterFrame2);
+  histogram_tester_.ExpectTotalCount(
+      kMojoStableVideoDecoderDecodeLatencyHistogram,
+      /*expected_count=*/2u);
 
   // Now, the service sends the third decoded frame. This frame has the same
   // underlying dma-buf as the previous frames but a different color space. This
@@ -1059,6 +1096,9 @@ TEST_F(MojoStableVideoDecoderTest, Decode) {
       received_decoded_video_frame_3->metadata().read_lock_fences_enabled);
   EXPECT_EQ(received_can_read_without_stalling_after_frame_3,
             kCanReadWithoutStallingAfterFrame3);
+  histogram_tester_.ExpectTotalCount(
+      kMojoStableVideoDecoderDecodeLatencyHistogram,
+      /*expected_count=*/3u);
 
   // Now the service will send the fourth decoded frame. This frame changes the
   // coded size, so the OOPVideoDecoder should forget all previous buffers. That
@@ -1141,6 +1181,9 @@ TEST_F(MojoStableVideoDecoderTest, Decode) {
       received_decoded_video_frame_4->metadata().read_lock_fences_enabled);
   EXPECT_EQ(received_can_read_without_stalling_after_frame_4,
             kCanReadWithoutStallingAfterFrame4);
+  histogram_tester_.ExpectTotalCount(
+      kMojoStableVideoDecoderDecodeLatencyHistogram,
+      /*expected_count=*/4u);
 
   // Now the third portion of the test: we'll release the decoded frames. Let's
   // release the first decoded frame. Since the SharedImage is still being used
@@ -1235,6 +1278,12 @@ TEST_F(MojoStableVideoDecoderTest, Reset) {
   });
   std::move(received_reset_cb).Run();
   task_environment_.RunUntilIdle();
+
+  // No frames were output by the service, so the decode latency histogram
+  // should be empty.
+  histogram_tester_.ExpectTotalCount(
+      kMojoStableVideoDecoderDecodeLatencyHistogram,
+      /*expected_count=*/0u);
 }
 
 }  // namespace media

@@ -7,13 +7,15 @@ package org.chromium.chrome.browser.ui.signin.history_sync;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.view.LayoutInflater;
-import android.view.View;
 
 import androidx.annotation.Nullable;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
+import org.chromium.chrome.browser.ui.signin.MinorModeHelper;
 import org.chromium.chrome.browser.ui.signin.R;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
@@ -25,10 +27,12 @@ public class HistorySyncCoordinator {
         boolean isLargeScreen();
     }
 
-    private final HistorySyncMediator mMediator;
+    private final Context mContext;
     private final HistorySyncDelegate mDelegate;
-    private final boolean mUseLandscapeLayout;
-    private HistorySyncView mView;
+    private final Profile mProfile;
+    private @Nullable HistorySyncView mView;
+    private final HistorySyncMediator mMediator;
+    private boolean mUseLandscapeLayout;
     private PropertyModelChangeProcessor mPropertyModelChangeProcessor;
 
     /**
@@ -52,7 +56,16 @@ public class HistorySyncCoordinator {
             @SigninAccessPoint int accessPoint,
             boolean showEmailInFooter,
             boolean shouldSignOutOnDecline,
-            @Nullable View view) {
+            @Nullable HistorySyncView view) {
+        mContext = context;
+        mDelegate = delegate;
+        mProfile = profile;
+        mView = view;
+
+        mUseLandscapeLayout =
+                !delegate.isLargeScreen()
+                        && context.getResources().getConfiguration().orientation
+                                == Configuration.ORIENTATION_LANDSCAPE;
         mMediator =
                 new HistorySyncMediator(
                         context,
@@ -60,51 +73,82 @@ public class HistorySyncCoordinator {
                         profile,
                         accessPoint,
                         showEmailInFooter,
-                        shouldSignOutOnDecline);
-        mDelegate = delegate;
-        LayoutInflater inflater = LayoutInflater.from(context);
-        mUseLandscapeLayout =
-                !delegate.isLargeScreen()
-                        && context.getResources().getConfiguration().orientation
-                                == Configuration.ORIENTATION_LANDSCAPE;
-        if (view == null) {
-            mView = inflateView(inflater);
-        } else {
-            mView = (HistorySyncView) view;
-            mView.createButtons(mDelegate.isLargeScreen() || mUseLandscapeLayout);
-        }
-        mPropertyModelChangeProcessor =
-                PropertyModelChangeProcessor.create(
-                        mMediator.getModel(), mView, HistorySyncViewBinder::bind);
+                        shouldSignOutOnDecline,
+                        mUseLandscapeLayout);
+
+        setView(view, mUseLandscapeLayout);
         RecordHistogram.recordEnumeratedHistogram(
                 "Signin.HistorySyncOptIn.Started", accessPoint, SigninAccessPoint.MAX);
+        MinorModeHelper.resolveMinorMode(
+                IdentityServicesProvider.get().getSigninManager(mProfile).getIdentityManager(),
+                IdentityServicesProvider.get()
+                        .getSigninManager(mProfile)
+                        .getIdentityManager()
+                        .getPrimaryAccountInfo(ConsentLevel.SIGNIN),
+                mMediator::onMinorModeRestrictionStatusUpdated);
     }
 
     public void destroy() {
+        setView(null, false);
+        mMediator.destroy();
+    }
+
+    public HistorySyncView getView() {
+        return mView;
+    }
+
+    /**
+     * Sets the view that is controlled by the coordinator.
+     *
+     * @param view the HistorySyncView for the selected account
+     * @param landscapeLayout whether a landscape layout is used.
+     */
+    public void setView(@Nullable HistorySyncView view, boolean landscapeLayout) {
         if (mPropertyModelChangeProcessor != null) {
             mPropertyModelChangeProcessor.destroy();
             mPropertyModelChangeProcessor = null;
         }
-        mMediator.destroy();
+        if (view != null) {
+            mUseLandscapeLayout = landscapeLayout;
+            mMediator
+                    .getModel()
+                    .set(HistorySyncProperties.USE_LANDSCAPE_LAYOUT, mUseLandscapeLayout);
+            mPropertyModelChangeProcessor =
+                    PropertyModelChangeProcessor.create(
+                            mMediator.getModel(), view, HistorySyncViewBinder::bind);
+            mView = view;
+        }
     }
 
-    public View getView() {
-        return mView;
-    }
+    /**
+     * Creates a view if needed and and sets the view that is controlled by the coordinator.
+     *
+     * @param context The Android Context used to inflate the view
+     */
+    public @Nullable HistorySyncView maybeRecreateView() {
+        HistorySyncView view = null;
+        boolean useLandscapeLayout =
+                !mDelegate.isLargeScreen()
+                        && mContext.getResources().getConfiguration().orientation
+                                == Configuration.ORIENTATION_LANDSCAPE;
 
-    private HistorySyncView inflateView(LayoutInflater inflater) {
-        HistorySyncView view =
-                (HistorySyncView)
-                        inflater.inflate(
-                                mUseLandscapeLayout
-                                        ? R.layout.history_sync_landscape_view
-                                        : R.layout.history_sync_portrait_view,
-                                null,
-                                false);
+        if (getView() == null || mUseLandscapeLayout != useLandscapeLayout) {
+            mUseLandscapeLayout = useLandscapeLayout;
+            view = inflateView(mContext, mUseLandscapeLayout);
+            setView(view, mUseLandscapeLayout);
+        }
 
-        // For phones in portrait mode, the UI shows two vertically stacked full-width buttons. In
-        // other cases, we use a horizontally stacked button bar.
-        view.createButtons(/* isButtonBar= */ mDelegate.isLargeScreen() || mUseLandscapeLayout);
         return view;
+    }
+
+    private static HistorySyncView inflateView(Context context, boolean useLandscapeLayout) {
+        LayoutInflater inflater = LayoutInflater.from(context);
+        return (HistorySyncView)
+                inflater.inflate(
+                        useLandscapeLayout
+                                ? R.layout.history_sync_landscape_view
+                                : R.layout.history_sync_portrait_view,
+                        null,
+                        false);
     }
 }

@@ -4,6 +4,8 @@
     color: var(--cros-text-color-alert);
     display: flex;
     flex-direction: row;
+    /* This max-width matches the width of the PIN input field. */
+    max-width: 200px;
     /* Enough height for two rows. */
     min-height: 48px;
   }
@@ -12,6 +14,14 @@
      dialog does not resize when there are no problems to display. */
   #errorDiv[invisible] {
     visibility: hidden;
+  }
+
+  #errorIcon {
+    --iron-icon-height: var(--cr-icon-size);
+    --iron-icon-width: var(--cr-icon-size);
+    --iron-icon-fill-color: var(--cros-icon-color-alert);
+    display: inline-block;
+    margin-inline-start: 8px;
   }
 
   #forgotPinLink {
@@ -30,37 +40,47 @@
     padding-top: var(--cr-dialog-button-container-padding-top, 16px);
   }
 
+  cr-dialog::part(dialog) {
+    /* Make sure pin dialog is usable for small window sizes. */
+    max-width: 100%;
+  }
+
   #pinKeyboardDiv {
     justify-content: center;
-  }
-
-  #pinKeyboard {
-    --cr-input-placeholder-letter-spacing: normal;
-  }
-
-  #verifyPinDialogSubtitle {
-    padding-bottom: 16px;
   }
 </style>
 <cr-dialog id="dialog" on-close="close" close-text="$i18n{close}">
   <div slot="title">$i18n{appParentalControlsAccessDialogTitle}</div>
   <div slot="body">
     <div id="pinKeyboardDiv" class="settings-box continuation">
-      <pin-keyboard id="pinKeyboard"
+      <pin-keyboard id="pinKeyboard" on-pin-change="onPinChange_"
           on-submit="onPinSubmit_" value="{{pinValue_}}"
+          disabled="[[isVerificationPending_]]"
+          aria-label="$i18n{appParentalControlsAccessDialogTitle}"
+          has-error="[[showError_]]"
           enable-placeholder>
-        <!-- TODO(b/332936223): Add PIN error message here. -->
-        <div id="errorDiv" invisible$="[[!error_]]"></div>
+        <div id="errorDiv" invisible$="[[!showError_]]">
+          <iron-icon id="errorIcon" icon="cr:error-outline"></iron-icon>
+          <span id="errorMessage">
+            $i18n{appParentalControlsPinIncorrectErrorText}
+          </span>
+        </div>
       </pin-keyboard>
     </div>
   </div>
   <div slot="button-container">
     <a id="forgotPinLink" href="$i18n{appParentalControlsLearnMoreUrl}"
-        target="_blank">
+        target="_blank" on-click="onForgotPinClick_">
       $i18n{appParentalControlsForgotPinLinkName}
     </a>
-    <cr-button class="cancel-button" on-click="onCancelClick_">
-      $i18n{cancel}
-    </cr-button>
+    <div>
+      <cr-button class="cancel-button" on-click="onCancelClick_">
+        $i18n{cancel}
+      </cr-button>
+      <cr-button class="action-button" on-click="onPinSubmit_"
+          disabled="[[!enableSubmit_]]">
+        $i18n{confirm}
+      </cr-button>
+    </div>
   </div>
 </cr-dialog>

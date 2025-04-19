@@ -36,7 +36,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -160,9 +159,33 @@ std::string GetDownloadDangerNames(DownloadDangerType type) {
       return "POTENTIALLY_UNWANTED";
     case DOWNLOAD_DANGER_TYPE_ALLOWLISTED_BY_POLICY:
       return "ALLOWLISTED_BY_POLICY";
+    case DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING:
+      return "ASYNC_SCANNING";
+    case DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED:
+      return "BLOCKED_PASSWORD_PROTECTED";
+    case DOWNLOAD_DANGER_TYPE_BLOCKED_TOO_LARGE:
+      return "BLOCKED_TOO_LARGE";
+    case DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_WARNING:
+      return "SENSITIVE_CONTENT_WARNING";
+    case DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK:
+      return "SENSITIVE_CONTENT_BLOCK";
+    case DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE:
+      return "DEEP_SCANNED_SAFE";
+    case DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS:
+      return "DEEP_SCANNED_OPENED_DANGEROUS";
+    case DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING:
+      return "PROMPT_FOR_SCANNING";
     case DOWNLOAD_DANGER_TYPE_DANGEROUS_ACCOUNT_COMPROMISE:
       return "DANGEROUS_ACCOUNT_COMPROMISE";
-    default:
+    case DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_FAILED:
+      return "DEEP_SCANNED_FAILED";
+    case DOWNLOAD_DANGER_TYPE_PROMPT_FOR_LOCAL_PASSWORD_SCANNING:
+      return "PROMPT_FOR_LOCAL_PASSWORD_SCANNING";
+    case DOWNLOAD_DANGER_TYPE_ASYNC_LOCAL_PASSWORD_SCANNING:
+      return "ASYNC_LOCAL_PASSWORD_SCANNING";
+    case DOWNLOAD_DANGER_TYPE_BLOCKED_SCAN_FAILED:
+      return "BLOCKED_SCAN_FAILED";
+    case DOWNLOAD_DANGER_TYPE_MAX:
       NOTREACHED_IN_MIGRATION();
       return "UNKNOWN_DANGER_TYPE";
   }
@@ -1127,6 +1150,10 @@ DownloadItemImpl::GetReceivedSlices() const {
   return received_slices_;
 }
 
+int64_t DownloadItemImpl::GetUploadedBytes() const {
+  return destination_info_.uploaded_bytes;
+}
+
 base::Time DownloadItemImpl::GetStartTime() const {
   return request_info_.start_time;
 }
@@ -1691,6 +1718,8 @@ void DownloadItemImpl::Start(
               base::BindRepeating(&DownloadItemImpl::OnDownloadFileInitialized,
                                   weak_ptr_factory_.GetWeakPtr()),
               GetReceivedSlices());
+
+  rename_handler_ = delegate_->GetRenameHandlerForDownload(this);
 }
 
 void DownloadItemImpl::OnDownloadFileInitialized(DownloadInterruptReason result,
@@ -1927,15 +1956,8 @@ void DownloadItemImpl::OnDownloadCompleting() {
   // Unilaterally rename; even if it already has the right name,
   // we need the annotation.
   DownloadFile::RenameCompletionCallback rename_callback =
-      base::BindOnce(&DownloadItemImpl::OnDownloadRenamedToFinalName,
+      base::BindOnce(&DownloadItemImpl::OnRenameAndAnnotateDone,
                      weak_ptr_factory_.GetWeakPtr());
-
-  // If an alternate rename handler is specified, use it instead.
-  rename_handler_ = delegate_->GetRenameHandlerForDownload(this);
-  if (rename_handler_) {
-    rename_handler_->Start(std::move(rename_callback));
-    return;
-  }
 
 #if BUILDFLAG(IS_ANDROID)
   if (GetTargetFilePath().IsContentUri()) {
@@ -1965,11 +1987,32 @@ void DownloadItemImpl::OnDownloadCompleting() {
                      std::move(quarantine), std::move(rename_callback)));
 }
 
+void DownloadItemImpl::OnRenameAndAnnotateDone(
+    DownloadInterruptReason reason,
+    const base::FilePath& full_path) {
+  DownloadFile::RenameCompletionCallback rename_callback =
+      base::BindOnce(&DownloadItemImpl::OnDownloadRenamedToFinalName,
+                     weak_ptr_factory_.GetWeakPtr());
+  if (rename_handler_) {
+    renaming_ = true;
+
+    rename_handler_->Start(
+        base::BindRepeating(&DownloadItemImpl::UpdateRenameProgress,
+                            weak_ptr_factory_.GetWeakPtr()),
+        std::move(rename_callback));
+    return;
+  }
+
+  OnDownloadRenamedToFinalName(reason, full_path);
+}
+
 void DownloadItemImpl::OnDownloadRenamedToFinalName(
     DownloadInterruptReason reason,
     const base::FilePath& full_path) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!IsSavePackageDownload());
+
+  renaming_ = false;
 
   // If a cancel or interrupt hit, we'll cancel the DownloadFile, which
   // will result in deleting the file on the file thread.  So we don't
@@ -2811,6 +2854,16 @@ const char* DownloadItemImpl::DebugResumeModeString(ResumeMode mode) {
 std::pair<int64_t, int64_t> DownloadItemImpl::GetRangeRequestOffset() const {
   return std::make_pair(request_info_.range_request_from,
                         request_info_.range_request_to);
+}
+
+void DownloadItemImpl::UpdateRenameProgress(int64_t bytes_so_far,
+                                            int64_t bytes_per_sec) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(renaming_);
+
+  destination_info_.uploaded_bytes = bytes_so_far;
+
+  UpdateObservers();
 }
 
 }  // namespace download

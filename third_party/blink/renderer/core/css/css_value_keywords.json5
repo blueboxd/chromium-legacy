@@ -520,6 +520,7 @@
     "table",
     "flex",
     "grid",
+    "masonry",
     //"math",
     //"ruby",
     // The order must match the order found in IsDisplayBox().
@@ -540,6 +541,7 @@
     "inline-table",
     "inline-flex",
     "inline-grid",
+    "inline-masonry",
     "-webkit-box",
     "-webkit-inline-box",
     "-webkit-flex",
@@ -792,6 +794,7 @@
     //
     // text-box-edge
     //
+    // "auto"
     // "alphabetic",
     // "text"
     //
@@ -800,7 +803,14 @@
     // "ideographic-ink",
     "cap",
     "ex",
-    "leading",
+
+    //
+    // text-box-trim
+    //
+    // "none"
+    "trim-both",
+    "trim-end",
+    "trim-start",
 
     //
     // text-overflow
@@ -832,7 +842,7 @@
     // normal
     "space-all",
     "space-first",
-    "trim-start",
+    // "trim-start",
 
     // text-underline-position
     // auto
@@ -884,13 +894,8 @@
     "searchfield",
     "textfield",
     "textarea",
-    // TODO(crbug/924486) All appearance values that should not be accepted by the parser (high usage).
-    "inner-spin-button",
-    "push-button",
-    "square-button",
-    "slider-horizontal",
-    "searchfield-cancel-button",
-    // TODO(crbug/1426629) All appearance values that should not be accepted by the parser (special case).
+    // TODO(crbug/1426629) slider-vertical is a non-standard value. We are
+    // waiting for its usage to be lower before deprecating it.
     "slider-vertical",
     //
     // border-image
@@ -1065,10 +1070,18 @@
     "horizontal-tb",
     "vertical-rl",
     "vertical-lr",
+    "sideways-rl",
+    "sideways-lr",
 
     // -webkit-ruby-position
     "after",
     "before",
+
+    // ruby-position
+    "inter-character",
+    // over
+    // under
+    // alternate
 
     // text-emphasis-position
     "over",
@@ -1784,7 +1797,7 @@
     "initial-only",
     // none
 
-    // inset-area
+    // position-area
     // none,
     // left,
     // center,
@@ -1836,8 +1849,8 @@
     // self-end,
     "span-self-start",
     "span-self-end",
-    // inset-area()
-    "inset-area",
+    // inset-area() (deprecated)
+    "position-area",
 
     // resize
     // none
@@ -1856,7 +1869,7 @@
     "most-block-size",
     "most-inline-size",
 
-    // position-try-options
+    // position-try-fallbacks
     // none
     "flip-block",
     "flip-inline",
@@ -1869,7 +1882,7 @@
     "anchors-visible",
     "no-overflow",
 
-    // reading-order-items
+    // reading-flow
     // normal
     "flex-visual",
     "flex-flow",
@@ -1890,5 +1903,9 @@
 
     // @supports blink-feature(RuntimeEnabledFeatureName)
     "blink-feature",
+
+    // interpolate-size
+    "numeric-only",
+    "allow-keywords",
   ],
 }

@@ -87,8 +87,36 @@ std::optional<device::ConnectionFailureReason> GetConnectionFailureReason(
       return device::ConnectionFailureReason::kUnknownConnectionError;
     case bt_private::ConnectResultType::kUnsupportedDevice:
       return device::ConnectionFailureReason::kUnsupportedDevice;
-    default:
-      return device::ConnectionFailureReason::kUnknownError;
+    case bt_private::ConnectResultType::kNotReady:
+      return device::ConnectionFailureReason::kDeviceNotReady;
+    case bt_private::ConnectResultType::kAlreadyExists:
+      return device::ConnectionFailureReason::kDeviceAlreadyExists;
+    case bt_private::ConnectResultType::kNotConnected:
+      return device::ConnectionFailureReason::kNotConnectable;
+    case bt_private::ConnectResultType::kDoesNotExist:
+      return device::ConnectionFailureReason::kNotFound;
+    case bt_private::ConnectResultType::kInvalidArgs:
+      return device::ConnectionFailureReason::kInvalidArgs;
+    case bt_private::ConnectResultType::kNonAuthTimeout:
+      return device::ConnectionFailureReason::kNonAuthTimeout;
+    case bt_private::ConnectResultType::kNoMemory:
+      return device::ConnectionFailureReason::kNoMemory;
+    case bt_private::ConnectResultType::kJniEnvironment:
+      return device::ConnectionFailureReason::kJniEnvironment;
+    case bt_private::ConnectResultType::kJniThreadAttach:
+      return device::ConnectionFailureReason::kJniThreadAttach;
+    case bt_private::ConnectResultType::kWakelock:
+      return device::ConnectionFailureReason::kWakelock;
+    case bt_private::ConnectResultType::kAlreadyConnected:
+      return device::ConnectionFailureReason::kAlreadyConnected;
+    case bt_private::ConnectResultType::kInProgress:
+      [[fallthrough]];
+    case bt_private::ConnectResultType::kAuthRejected:
+      [[fallthrough]];
+    case bt_private::ConnectResultType::kAuthCanceled:
+      [[fallthrough]];
+    case bt_private::ConnectResultType::kSuccess:
+      NOTREACHED_NORETURN();
   }
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -131,6 +159,14 @@ bt_private::ConnectResultType DeviceConnectErrorToConnectResult(
       return bt_private::ConnectResultType::kInvalidArgs;
     case device::BluetoothDevice::ERROR_NON_AUTH_TIMEOUT:
       return bt_private::ConnectResultType::kNonAuthTimeout;
+    case device::BluetoothDevice::ERROR_NO_MEMORY:
+      return bt_private::ConnectResultType::kNoMemory;
+    case device::BluetoothDevice::ERROR_JNI_ENVIRONMENT:
+      return bt_private::ConnectResultType::kJniEnvironment;
+    case device::BluetoothDevice::ERROR_JNI_THREAD_ATTACH:
+      return bt_private::ConnectResultType::kJniThreadAttach;
+    case device::BluetoothDevice::ERROR_WAKELOCK:
+      return bt_private::ConnectResultType::kWakelock;
     case device::BluetoothDevice::NUM_CONNECT_ERROR_CODES:
       NOTREACHED_IN_MIGRATION();
       break;

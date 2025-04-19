@@ -19,6 +19,8 @@
 #include "chromeos/ash/components/test/ash_test_suite.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/events/ash/event_rewriter_ash.h"
+#include "ui/events/devices/device_data_manager_test_api.h"
 
 namespace ash {
 

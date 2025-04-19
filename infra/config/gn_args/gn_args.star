@@ -96,6 +96,14 @@ gn_args.config(
     },
 )
 
+# For Android builds requiring is_desktop_android.
+gn_args.config(
+    name = "android_desktop",
+    args = {
+        "is_desktop_android": True,
+    },
+)
+
 # Representative GN args for Android developer builds.
 gn_args.config(
     name = "android_developer",
@@ -228,6 +236,13 @@ gn_args.config(
 )
 
 gn_args.config(
+    name = "cast_os",
+    args = {
+        "is_castos": True,
+    },
+)
+
+gn_args.config(
     name = "cast_receiver",
     args = {
         "enable_cast_receiver": True,
@@ -335,6 +350,9 @@ gn_args.config(
 
 gn_args.config(
     name = "chromeos_device",
+    configs = [
+        "chromeos",
+    ],
     args = {
         "is_chromeos_device": True,
     },
@@ -400,6 +418,7 @@ gn_args.config(
     args = {
         "clang_base_path": "//third_party/cronet_android_mainline_clang/linux-amd64",
         "clang_use_chrome_plugins": False,
+        "default_min_sdk_version": 29,
         # https://crbug.com/1481060
         "llvm_android_mainline": True,
     },
@@ -574,6 +593,13 @@ gn_args.config(
     name = "extended_tracing",
     args = {
         "extended_tracing_enabled": True,
+    },
+)
+
+gn_args.config(
+    name = "no_fatal_linker_warnings",
+    args = {
+        "fatal_linker_warnings": False,
     },
 )
 
@@ -779,12 +805,29 @@ gn_args.config(
 )
 
 gn_args.config(
+    name = "linux",
+    args = {
+        "target_os": "linux",
+    },
+)
+
+gn_args.config(
     name = "linux_wayland",
+    configs = [
+        "linux",
+    ],
     args = {
         "ozone_auto_platforms": False,
         "ozone_platform_wayland": True,
         "ozone_platform": "wayland",
         "use_bundled_weston": True,
+    },
+)
+
+gn_args.config(
+    name = "lld",
+    args = {
+        "use_lld": True,
     },
 )
 
@@ -1332,6 +1375,13 @@ gn_args.config(
     },
 )
 
+gn_args.config(
+    name = "webview_instrumentation_tests_multi_process_only",
+    args = {
+        "webview_instrumentation_tests_process_mode": "multiple",
+    },
+)
+
 # For Android N-P, only userdebug/eng
 gn_args.config(
     name = "webview_monochrome",
@@ -1354,6 +1404,13 @@ gn_args.config(
     name = "webview_trichrome",
     args = {
         "system_webview_package_name": "com.google.android.webview.debug",
+    },
+)
+
+gn_args.config(
+    name = "win",
+    args = {
+        "target_os": "win",
     },
 )
 

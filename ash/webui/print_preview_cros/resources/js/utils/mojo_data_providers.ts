@@ -4,10 +4,11 @@
 
 import {assert} from 'chrome://resources/js/assert.js';
 
-import {FakeDestinationProvider} from '../fakes/fake_destination_provider.js';
-import {FakePrintPreviewPageHandler} from '../fakes/fake_print_preview_page_handler.js';
+import {DestinationProviderComposite} from '../data/destination_provider_composite.js';
+import {PrintPreviewPageHandlerComposite} from '../data/print_preview_page_handler_composite.js';
 
-import {DestinationProvider, type PrintPreviewPageHandler} from './print_preview_cros_app_types.js';
+import {DestinationProviderCompositeInterface} from './print_preview_cros_app_types.js';
+import type {PrintPreviewPageHandlerCompositeInterface} from './print_preview_cros_app_types.js';
 
 /**
  * @fileoverview
@@ -16,13 +17,15 @@ import {DestinationProvider, type PrintPreviewPageHandler} from './print_preview
  */
 
 let useFakeProviders: boolean = false;
-let printPreviewPageHandler: PrintPreviewPageHandler|null = null;
-let destinationProvider: DestinationProvider|null = null;
+let printPreviewPageHandler: PrintPreviewPageHandlerCompositeInterface|null =
+    null;
+let destinationProvider: DestinationProviderCompositeInterface|null = null;
 
 // Returns shared instance of PrintPreviewPageHandler.
-export function getPrintPreviewPageHandler(): PrintPreviewPageHandler {
-  if (printPreviewPageHandler === null && useFakeProviders) {
-    printPreviewPageHandler = new FakePrintPreviewPageHandler();
+export function getPrintPreviewPageHandler():
+    PrintPreviewPageHandlerCompositeInterface {
+  if (printPreviewPageHandler === null) {
+    printPreviewPageHandler = new PrintPreviewPageHandlerComposite();
   }
 
   assert(printPreviewPageHandler);
@@ -30,9 +33,10 @@ export function getPrintPreviewPageHandler(): PrintPreviewPageHandler {
 }
 
 // Returns shared instance of DestinationProvider.
-export function getDestinationProvider(): DestinationProvider {
-  if (destinationProvider === null && useFakeProviders) {
-    destinationProvider = new FakeDestinationProvider();
+export function getDestinationProvider():
+    DestinationProviderCompositeInterface {
+  if (destinationProvider === null) {
+    destinationProvider = new DestinationProviderComposite(useFakeProviders);
   }
 
   assert(destinationProvider);

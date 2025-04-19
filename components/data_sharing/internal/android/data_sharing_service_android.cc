@@ -14,9 +14,12 @@
 #include "base/scoped_observation.h"
 #include "components/data_sharing/internal/android/data_sharing_conversion_bridge.h"
 #include "components/data_sharing/internal/android/data_sharing_network_loader_android.h"
+#include "components/data_sharing/public/data_sharing_service.h"
+#include "url/android/gurl_android.h"
+
+// Must come after all headers that specialize FromJniType() / ToJniType().
 #include "components/data_sharing/internal/jni_headers/DataSharingServiceImpl_jni.h"
 #include "components/data_sharing/internal/jni_headers/ObserverBridge_jni.h"
-#include "components/data_sharing/public/data_sharing_service.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
@@ -77,10 +80,10 @@ class DataSharingServiceAndroid::GroupDataObserverBridge
   // DataSharingService::Observer impl:
   void OnGroupChanged(const GroupData& group_data) override;
   void OnGroupAdded(const GroupData& group_data) override;
-  void OnGroupRemoved(const std::string& group_id) override;
+  void OnGroupRemoved(const GroupId& group_id) override;
 
  private:
-  ScopedJavaLocalRef<jobject> java_obj_;
+  ScopedJavaGlobalRef<jobject> java_obj_;
   base::ScopedObservation<DataSharingService, DataSharingService::Observer>
       scoped_obs_{this};
 };
@@ -88,7 +91,9 @@ class DataSharingServiceAndroid::GroupDataObserverBridge
 DataSharingServiceAndroid::GroupDataObserverBridge::GroupDataObserverBridge(
     DataSharingService* data_sharing_service,
     DataSharingServiceAndroid* data_sharing_service_android) {
-  java_obj_ = data_sharing_service_android->GetJavaObserverBridge();
+  java_obj_ = ScopedJavaGlobalRef<jobject>(
+      AttachCurrentThread(),
+      data_sharing_service_android->GetJavaObserverBridge());
   scoped_obs_.Observe(data_sharing_service);
 }
 
@@ -112,10 +117,10 @@ void DataSharingServiceAndroid::GroupDataObserverBridge::OnGroupAdded(
 }
 
 void DataSharingServiceAndroid::GroupDataObserverBridge::OnGroupRemoved(
-    const std::string& group_id) {
+    const GroupId& group_id) {
   JNIEnv* env = AttachCurrentThread();
-  Java_ObserverBridge_onGroupRemoved(env, java_obj_,
-                                     ConvertUTF8ToJavaString(env, group_id));
+  Java_ObserverBridge_onGroupRemoved(
+      env, java_obj_, ConvertUTF8ToJavaString(env, group_id.value()));
 }
 
 // This function is declared in data_sharing_service.h and
@@ -167,7 +172,7 @@ void DataSharingServiceAndroid::ReadGroup(
     const JavaParamRef<jstring>& group_id,
     const JavaParamRef<jobject>& j_callback) {
   data_sharing_service_->ReadGroup(
-      ConvertJavaStringToUTF8(env, group_id),
+      GroupId(ConvertJavaStringToUTF8(env, group_id)),
       base::BindOnce(&RunGroupDataOrFailureOutcomeCallback,
                      ScopedJavaGlobalRef<jobject>(j_callback)));
 }
@@ -187,7 +192,7 @@ void DataSharingServiceAndroid::DeleteGroup(
     const JavaParamRef<jstring>& group_id,
     const JavaParamRef<jobject>& j_callback) {
   data_sharing_service_->DeleteGroup(
-      ConvertJavaStringToUTF8(env, group_id),
+      GroupId(ConvertJavaStringToUTF8(env, group_id)),
       base::BindOnce(&RunPeopleGroupActionOutcomeCallback,
                      ScopedJavaGlobalRef<jobject>(j_callback)));
 }
@@ -198,8 +203,20 @@ void DataSharingServiceAndroid::InviteMember(
     const JavaParamRef<jstring>& invitee_email,
     const JavaParamRef<jobject>& j_callback) {
   data_sharing_service_->InviteMember(
-      ConvertJavaStringToUTF8(env, group_id),
+      GroupId(ConvertJavaStringToUTF8(env, group_id)),
       ConvertJavaStringToUTF8(env, invitee_email),
+      base::BindOnce(&RunPeopleGroupActionOutcomeCallback,
+                     ScopedJavaGlobalRef<jobject>(j_callback)));
+}
+
+void DataSharingServiceAndroid::AddMember(
+    JNIEnv* env,
+    const JavaParamRef<jstring>& group_id,
+    const JavaParamRef<jstring>& access_token,
+    const JavaParamRef<jobject>& j_callback) {
+  data_sharing_service_->AddMember(
+      GroupId(ConvertJavaStringToUTF8(env, group_id)),
+      ConvertJavaStringToUTF8(env, access_token),
       base::BindOnce(&RunPeopleGroupActionOutcomeCallback,
                      ScopedJavaGlobalRef<jobject>(j_callback)));
 }
@@ -210,7 +227,7 @@ void DataSharingServiceAndroid::RemoveMember(
     const JavaParamRef<jstring>& member_email,
     const JavaParamRef<jobject>& j_callback) {
   data_sharing_service_->RemoveMember(
-      ConvertJavaStringToUTF8(env, group_id),
+      GroupId(ConvertJavaStringToUTF8(env, group_id)),
       ConvertJavaStringToUTF8(env, member_email),
       base::BindOnce(&RunPeopleGroupActionOutcomeCallback,
                      ScopedJavaGlobalRef<jobject>(j_callback)));
@@ -225,6 +242,44 @@ bool DataSharingServiceAndroid::IsEmptyService(
 ScopedJavaLocalRef<jobject> DataSharingServiceAndroid::GetNetworkLoader(
     JNIEnv* env) {
   return network_loader_->GetJavaObject();
+}
+
+ScopedJavaLocalRef<jobject> DataSharingServiceAndroid::GetDataSharingURL(
+    JNIEnv* env,
+    const JavaParamRef<jstring>& j_group_id,
+    const JavaParamRef<jstring>& j_access_token) {
+  // Note that this function is only passing the required fields to the native
+  // service.
+  std::string group_id = ConvertJavaStringToUTF8(env, j_group_id);
+  std::string access_token = ConvertJavaStringToUTF8(env, j_access_token);
+  std::unique_ptr<GURL> url = data_sharing_service_->GetDataSharingURL(
+      GroupData(GroupId(group_id), /*display_name*/ "", /*members*/ {},
+                access_token));
+
+  if (url) {
+    return url::GURLAndroid::FromNativeGURL(env, *url);
+  } else {
+    return ScopedJavaLocalRef<jobject>();
+  }
+}
+
+ScopedJavaLocalRef<jobject> DataSharingServiceAndroid::ParseDataSharingURL(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& j_url) {
+  DataSharingService::ParseURLResult parse_result =
+      data_sharing_service_->ParseDataSharingURL(
+          url::GURLAndroid::ToNativeGURL(env, j_url));
+  return DataSharingConversionBridge::CreateParseURLResult(env, parse_result);
+}
+
+void DataSharingServiceAndroid::EnsureGroupVisibility(
+    JNIEnv* env,
+    const JavaParamRef<jstring>& group_id,
+    const JavaParamRef<jobject>& j_callback) {
+  data_sharing_service_->EnsureGroupVisibility(
+      GroupId(ConvertJavaStringToUTF8(env, group_id)),
+      base::BindOnce(&RunGroupDataOrFailureOutcomeCallback,
+                     ScopedJavaGlobalRef<jobject>(j_callback)));
 }
 
 ScopedJavaLocalRef<jobject> DataSharingServiceAndroid::GetJavaObject() {

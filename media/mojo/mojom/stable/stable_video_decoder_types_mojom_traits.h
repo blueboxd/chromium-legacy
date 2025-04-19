@@ -80,6 +80,8 @@ struct EnumTraits<media::stable::mojom::ColorSpacePrimaryID,
         return media::stable::mojom::ColorSpacePrimaryID::kWideGamutColorSpin;
       case gfx::ColorSpace::PrimaryID::CUSTOM:
         return media::stable::mojom::ColorSpacePrimaryID::kCustom;
+      case gfx::ColorSpace::PrimaryID::EBU_3213_E:
+        return media::stable::mojom::ColorSpacePrimaryID::kEBU_3213_E;
     }
 
     NOTREACHED_NORETURN();
@@ -137,6 +139,9 @@ struct EnumTraits<media::stable::mojom::ColorSpacePrimaryID,
         return true;
       case media::stable::mojom::ColorSpacePrimaryID::kCustom:
         *output = gfx::ColorSpace::PrimaryID::CUSTOM;
+        return true;
+      case media::stable::mojom::ColorSpacePrimaryID::kEBU_3213_E:
+        *output = gfx::ColorSpace::PrimaryID::EBU_3213_E;
         return true;
     }
 
@@ -1327,12 +1332,12 @@ struct EnumTraits<media::stable::mojom::VideoPixelFormat,
         return media::stable::mojom::VideoPixelFormat::kPixelFormatABGR;
       case ::media::VideoPixelFormat::PIXEL_FORMAT_XBGR:
         return media::stable::mojom::VideoPixelFormat::kPixelFormatXBGR;
-      case ::media::VideoPixelFormat::PIXEL_FORMAT_P016LE:
-        return media::stable::mojom::VideoPixelFormat::kPixelFormatP016LE;
-      case ::media::VideoPixelFormat::PIXEL_FORMAT_P216LE:
-        return media::stable::mojom::VideoPixelFormat::kPixelFormatP216LE;
-      case ::media::VideoPixelFormat::PIXEL_FORMAT_P416LE:
-        return media::stable::mojom::VideoPixelFormat::kPixelFormatP416LE;
+      case ::media::VideoPixelFormat::PIXEL_FORMAT_P010LE:
+        return media::stable::mojom::VideoPixelFormat::kPixelFormatP010LE;
+      case ::media::VideoPixelFormat::PIXEL_FORMAT_P210LE:
+        return media::stable::mojom::VideoPixelFormat::kPixelFormatP210LE;
+      case ::media::VideoPixelFormat::PIXEL_FORMAT_P410LE:
+        return media::stable::mojom::VideoPixelFormat::kPixelFormatP410LE;
       case ::media::VideoPixelFormat::PIXEL_FORMAT_XR30:
         return media::stable::mojom::VideoPixelFormat::kPixelFormatXR30;
       case ::media::VideoPixelFormat::PIXEL_FORMAT_XB30:
@@ -1447,14 +1452,14 @@ struct EnumTraits<media::stable::mojom::VideoPixelFormat,
       case media::stable::mojom::VideoPixelFormat::kPixelFormatXBGR:
         *output = ::media::VideoPixelFormat::PIXEL_FORMAT_XBGR;
         return true;
-      case media::stable::mojom::VideoPixelFormat::kPixelFormatP016LE:
-        *output = ::media::VideoPixelFormat::PIXEL_FORMAT_P016LE;
+      case media::stable::mojom::VideoPixelFormat::kPixelFormatP010LE:
+        *output = ::media::VideoPixelFormat::PIXEL_FORMAT_P010LE;
         return true;
-      case media::stable::mojom::VideoPixelFormat::kPixelFormatP216LE:
-        *output = ::media::VideoPixelFormat::PIXEL_FORMAT_P216LE;
+      case media::stable::mojom::VideoPixelFormat::kPixelFormatP210LE:
+        *output = ::media::VideoPixelFormat::PIXEL_FORMAT_P210LE;
         return true;
-      case media::stable::mojom::VideoPixelFormat::kPixelFormatP416LE:
-        *output = ::media::VideoPixelFormat::PIXEL_FORMAT_P416LE;
+      case media::stable::mojom::VideoPixelFormat::kPixelFormatP410LE:
+        *output = ::media::VideoPixelFormat::PIXEL_FORMAT_P410LE;
         return true;
       case media::stable::mojom::VideoPixelFormat::kPixelFormatXR30:
         *output = ::media::VideoPixelFormat::PIXEL_FORMAT_XR30;

@@ -8,8 +8,15 @@
 #import "base/test/scoped_feature_list.h"
 #import "base/time/time.h"
 #import "components/feature_engagement/public/feature_constants.h"
+#import "components/prefs/testing_pref_service.h"
+#import "components/sync_preferences/testing_pref_service_syncable.h"
 #import "ios/chrome/browser/default_browser/model/utils_test_support.h"
+#import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/prefs/browser_prefs.h"
+#import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/test/testing_application_context.h"
+#import "ios/web/public/test/web_task_environment.h"
 #import "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #import "testing/platform_test.h"
@@ -20,23 +27,20 @@ namespace {
 // A bit more than a day.
 constexpr base::TimeDelta kMoreThan1Day = base::Days(1) + base::Minutes(1);
 
-// Less than 7 days.
-constexpr base::TimeDelta kLessThan7Days = base::Days(7) - base::Minutes(1);
-
 // More than 7 days.
 constexpr base::TimeDelta kMoreThan7Days = base::Days(7) + base::Minutes(1);
 
 // More than 14 days.
 constexpr base::TimeDelta kMoreThan14Days = base::Days(14) + base::Minutes(1);
 
-// Less than 6 hours.
-constexpr base::TimeDelta kLessThan6Hours = base::Hours(6) - base::Minutes(1);
-
 // More than 6 hours.
 constexpr base::TimeDelta kMoreThan6Hours = base::Hours(6) + base::Minutes(1);
 
 // About 6 months.
 constexpr base::TimeDelta k6Months = base::Days(6 * 365 / 12);
+
+// About 1 year.
+constexpr base::TimeDelta kMoreThan1Year = base::Days(365) + base::Days(1);
 
 // About 2 years.
 constexpr base::TimeDelta k2Years = base::Days(2 * 365);
@@ -76,10 +80,25 @@ NSString* const kDisplayedFullscreenPromoCount = @"displayedPromoCount";
 
 class DefaultBrowserUtilsTest : public PlatformTest {
  protected:
-  void SetUp() override { ClearDefaultBrowserPromoData(); }
-  void TearDown() override { ClearDefaultBrowserPromoData(); }
+  void SetUp() override {
+    PlatformTest::SetUp();
+    ClearDefaultBrowserPromoData();
 
+    local_state_ = std::make_unique<TestingPrefServiceSimple>();
+    RegisterLocalStatePrefs(local_state_->registry());
+    TestingApplicationContext::GetGlobal()->SetLocalState(local_state_.get());
+  }
+  void TearDown() override {
+    ClearDefaultBrowserPromoData();
+
+    TestingApplicationContext::GetGlobal()->SetLocalState(nullptr);
+    local_state_.reset();
+    PlatformTest::TearDown();
+  }
+
+  web::WebTaskEnvironment task_environment_;
   base::test::ScopedFeatureList feature_list_;
+  std::unique_ptr<TestingPrefServiceSimple> local_state_;
 };
 
 // Overwrite local storage with the provided interaction information.
@@ -269,97 +288,6 @@ TEST_F(DefaultBrowserUtilsTest, CooldownRefactorFlagDisabled) {
 TEST_F(DefaultBrowserUtilsTest, TailoredPromoDoesNotAppearTwoTimes) {
   LogUserInteractionWithTailoredFullscreenPromo();
   EXPECT_TRUE(HasUserInteractedWithTailoredFullscreenPromoBefore());
-}
-
-// Tests that two recent first party intent launches are less than 6 hours
-// apart, both returning false.
-TEST_F(DefaultBrowserUtilsTest,
-       HasRecentFirstPartyIntentLaunchesAndRecordsCurrentLaunchLessThan6Hours) {
-  // Calling this more than once tests different code paths, but should return
-  // false on both calls. This is due to there being less than 6 hours between
-  // each call.
-  EXPECT_FALSE(HasRecentFirstPartyIntentLaunchesAndRecordsCurrentLaunch());
-  EXPECT_FALSE(HasRecentFirstPartyIntentLaunchesAndRecordsCurrentLaunch());
-}
-
-// Manually tests that two recent first party intent launches are less than 6
-// hours apart.
-TEST_F(
-    DefaultBrowserUtilsTest,
-    ManualHasRecentFirstPartyIntentLaunchesAndRecordsCurrentLaunchLessThan6Hours) {
-  ResetStorageAndSetTimestampForKey(kTimestampAppLastOpenedViaFirstPartyIntent,
-                                    (base::Time::Now() - kLessThan6Hours));
-  EXPECT_FALSE(HasRecentFirstPartyIntentLaunchesAndRecordsCurrentLaunch());
-}
-
-// Manually tests that two recent first party intent launches are more than 7
-// days apart.
-TEST_F(
-    DefaultBrowserUtilsTest,
-    ManualHasRecentFirstPartyIntentLaunchesAndRecordsCurrentLaunchMoreThan7Days) {
-  ResetStorageAndSetTimestampForKey(kTimestampAppLastOpenedViaFirstPartyIntent,
-                                    (base::Time::Now() - kMoreThan7Days));
-  EXPECT_FALSE(HasRecentFirstPartyIntentLaunchesAndRecordsCurrentLaunch());
-}
-
-// Manually tests that two recent first party intent launches are more than 6
-// hours apart, but less than 7 days apart. Returns true.
-TEST_F(
-    DefaultBrowserUtilsTest,
-    ManualHasRecentFirstPartyIntentLaunchesAndRecordsCurrentLaunchLessThan7DaysMoreThan6Hours) {
-  ResetStorageAndSetTimestampForKey(kTimestampAppLastOpenedViaFirstPartyIntent,
-                                    (base::Time::Now() - kLessThan7Days));
-  EXPECT_TRUE(HasRecentFirstPartyIntentLaunchesAndRecordsCurrentLaunch());
-}
-
-// Tests two consecutive pastes recorded within 7 days, second call returns
-// true.
-TEST_F(DefaultBrowserUtilsTest, TwoConsecutivePastesUnder7Days) {
-  // Should return false at first, then true since an event has already been
-  // recorded within 7 days when the second one is called.
-  EXPECT_FALSE(HasRecentValidURLPastesAndRecordsCurrentPaste());
-  EXPECT_TRUE(HasRecentValidURLPastesAndRecordsCurrentPaste());
-}
-
-// Manually tests two consecutive pastes recorded within 7 days, should return
-// true.
-TEST_F(DefaultBrowserUtilsTest, ManualTwoConsecutivePastesUnder7Days) {
-  ResetStorageAndSetTimestampForKey(kTimestampLastValidURLPasted,
-                                    (base::Time::Now() - kLessThan7Days));
-  EXPECT_TRUE(HasRecentValidURLPastesAndRecordsCurrentPaste());
-}
-
-// Manually tests two consecutive pastes recorded with more than 7 days between,
-// should return false.
-TEST_F(DefaultBrowserUtilsTest, ManualTwoConsecutivePastesOver7Days) {
-  ResetStorageAndSetTimestampForKey(kTimestampLastValidURLPasted,
-                                    (base::Time::Now() - kMoreThan7Days));
-  EXPECT_FALSE(HasRecentValidURLPastesAndRecordsCurrentPaste());
-}
-
-// Tests that a recent event timestamp (less than 6 hours) has already been
-// recorded.
-TEST_F(DefaultBrowserUtilsTest, HasRecentTimestampForKeyUnder6Hours) {
-  // Should return false at first, then true since an event has already been
-  // recorded when the second one is called.
-  EXPECT_FALSE(HasRecentTimestampForKey(kTestTimestampKey));
-  EXPECT_TRUE(HasRecentTimestampForKey(kTestTimestampKey));
-}
-
-// Manually tests that a recent event timestamp (less than 6 hours) has already
-// been recorded.
-TEST_F(DefaultBrowserUtilsTest, ManualHasRecentTimestampForKeyUnder6Hours) {
-  ResetStorageAndSetTimestampForKey(kTestTimestampKey,
-                                    (base::Time::Now() - kLessThan6Hours));
-  EXPECT_TRUE(HasRecentTimestampForKey(kTestTimestampKey));
-}
-
-// Manually tests that no recent event timestamp (more than 6 hours) has already
-// been recorded.
-TEST_F(DefaultBrowserUtilsTest, ManualRecentTimestampForKeyOver6Hours) {
-  ResetStorageAndSetTimestampForKey(kTestTimestampKey,
-                                    (base::Time::Now() - kMoreThan6Hours));
-  EXPECT_FALSE(HasRecentTimestampForKey(kTestTimestampKey));
 }
 
 // Tests that past interactions with the default browser promo are correctly
@@ -1125,5 +1053,75 @@ TEST_F(DefaultBrowserUtilsTest, GetTailoredDefaultBrowserPromoTimestampTest) {
   LogUserInteractionWithFullscreenPromo();
   EXPECT_TRUE(HasUserInteractedWithTailoredFullscreenPromoBefore());
   EXPECT_NE(base::Time::UnixEpoch(), GetTailoredDefaultBrowserPromoTimestamp());
+}
+
+// Check trigger critera experiment help functions.
+TEST_F(DefaultBrowserUtilsTest, TestTriggerCriteriaHelpFunctions) {
+  EXPECT_FALSE(HasTriggerCriteriaExperimentStarted());
+  EXPECT_FALSE(HasTriggerCriteriaExperimentStarted21days());
+
+  SetTriggerCriteriaExperimentStartTimestamp();
+
+  // Experiment started but it hasn't been 21 days.
+  EXPECT_TRUE(HasTriggerCriteriaExperimentStarted());
+  EXPECT_FALSE(HasTriggerCriteriaExperimentStarted21days());
+
+  NSDate* under_twenty_one_days_ago =
+      (base::Time::Now() - base::Days(21) + base::Minutes(10)).ToNSDate();
+  SetObjectIntoStorageForKey(kTimestampTriggerCriteriaExperimentStarted,
+                             under_twenty_one_days_ago);
+  // Experiment started but it hasn't been 21 days.
+  EXPECT_TRUE(HasTriggerCriteriaExperimentStarted());
+  EXPECT_FALSE(HasTriggerCriteriaExperimentStarted21days());
+
+  // After 21 days both should return true.
+  NSDate* over_twenty_one_days_ago =
+      (base::Time::Now() - base::Days(21) - base::Minutes(10)).ToNSDate();
+  SetObjectIntoStorageForKey(kTimestampTriggerCriteriaExperimentStarted,
+                             over_twenty_one_days_ago);
+  EXPECT_TRUE(HasTriggerCriteriaExperimentStarted());
+  EXPECT_TRUE(HasTriggerCriteriaExperimentStarted21days());
+}
+
+// Test that Blue dot display timestamp is recorded first time and is not
+// updated afterwards.
+TEST_F(DefaultBrowserUtilsTest, TestDefaultBrowserBlueDotFirstDisplay) {
+  EXPECT_FALSE(HasDefaultBrowserBlueDotDisplayTimestamp());
+
+  RecordDefaultBrowserBlueDotFirstDisplay();
+  EXPECT_TRUE(HasDefaultBrowserBlueDotDisplayTimestamp());
+
+  // Save current pref value and try calling
+  // `RecordDefaultBrowserBlueDotFirstDisplay` again.
+  base::Time timestamp =
+      local_state_->GetTime(prefs::kIosDefaultBrowserBlueDotPromoFirstDisplay);
+  RecordDefaultBrowserBlueDotFirstDisplay();
+
+  // Get pref value again and check that it's same.
+  EXPECT_EQ(timestamp, local_state_->GetTime(
+                           prefs::kIosDefaultBrowserBlueDotPromoFirstDisplay));
+}
+
+// Test that timestamp will be reset when needed.
+TEST_F(DefaultBrowserUtilsTest,
+       TestResetDefaultBrowserBlueDotDisplayTimestampIfNeeded) {
+  // It will not recent if the timestamp is less than 1 year old.
+  base::Time timestamp = base::Time::Now() - k6Months;
+  local_state_->SetTime(prefs::kIosDefaultBrowserBlueDotPromoFirstDisplay,
+                        timestamp);
+  ResetDefaultBrowserBlueDotDisplayTimestampIfNeeded();
+
+  // Check that didn't reset.
+  EXPECT_EQ(timestamp, local_state_->GetTime(
+                           prefs::kIosDefaultBrowserBlueDotPromoFirstDisplay));
+  EXPECT_TRUE(HasDefaultBrowserBlueDotDisplayTimestamp());
+
+  // Set the timestamp to over 1 year ago.
+  local_state_->SetTime(prefs::kIosDefaultBrowserBlueDotPromoFirstDisplay,
+                        base::Time::Now() - kMoreThan1Year);
+  ResetDefaultBrowserBlueDotDisplayTimestampIfNeeded();
+
+  // Check that it got reset.
+  EXPECT_FALSE(HasDefaultBrowserBlueDotDisplayTimestamp());
 }
 }  // namespace

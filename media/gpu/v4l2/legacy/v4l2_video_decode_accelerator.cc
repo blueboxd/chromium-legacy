@@ -30,8 +30,11 @@
 #include "media/base/video_frame_layout.h"
 #include "media/base/video_types.h"
 #include "media/gpu/chromeos/fourcc.h"
+#include "media/gpu/chromeos/native_pixmap_frame_resource.h"
 #include "media/gpu/chromeos/platform_video_frame_utils.h"
+#ifdef SUPPORT_MT21_PIXEL_FORMAT_SOFTWARE_DECOMPRESSION
 #include "media/gpu/chromeos/video_frame_resource.h"
+#endif
 #include "media/gpu/macros.h"
 #include "media/gpu/v4l2/v4l2_image_processor_backend.h"
 #include "media/gpu/v4l2/v4l2_utils.h"
@@ -40,11 +43,6 @@
 #include "media/gpu/video_frame_mapper_factory.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_pixmap_handle.h"
-#include "ui/gl/gl_bindings.h"
-#include "ui/gl/gl_context.h"
-#include "ui/gl/gl_display.h"
-#include "ui/gl/gl_surface_egl.h"
-#include "ui/gl/scoped_binders.h"
 
 #define NOTIFY_ERROR(x)                      \
   do {                                       \
@@ -144,9 +142,6 @@ V4L2VideoDecodeAccelerator::PictureRecord::PictureRecord(bool cleared,
 V4L2VideoDecodeAccelerator::PictureRecord::~PictureRecord() {}
 
 V4L2VideoDecodeAccelerator::V4L2VideoDecodeAccelerator(
-    EGLDisplay egl_display,
-    const GetGLContextCallback& get_gl_context_cb,
-    const MakeGLContextCurrentCallback& make_context_current_cb,
     scoped_refptr<V4L2Device> device)
     : can_use_decoder_(num_instances_.Increment() < kMaxNumOfInstances),
       child_task_runner_(base::SingleThreadTaskRunner::GetCurrentDefault()),
@@ -163,9 +158,6 @@ V4L2VideoDecodeAccelerator::V4L2VideoDecodeAccelerator(
       output_dpb_size_(0),
       picture_clearing_count_(0),
       device_poll_thread_("V4L2DevicePollThread"),
-      egl_display_(egl_display),
-      get_gl_context_cb_(get_gl_context_cb),
-      make_context_current_cb_(make_context_current_cb),
       input_format_fourcc_(0),
       weak_this_factory_(this) {
   weak_this_ = weak_this_factory_.GetWeakPtr();
@@ -217,30 +209,6 @@ bool V4L2VideoDecodeAccelerator::Initialize(const Config& config,
     decode_task_runner_ = child_task_runner_;
     DCHECK(!decode_client_);
     decode_client_ = client_;
-  }
-
-  // We need the context to be initialized to query extensions.
-  if (make_context_current_cb_) {
-    if (egl_display_ == EGL_NO_DISPLAY) {
-      VLOGF(1) << "could not get EGLDisplay";
-      return false;
-    }
-
-    if (!make_context_current_cb_.Run()) {
-      VLOGF(1) << "could not make context current";
-      return false;
-    }
-
-// TODO(posciak): https://crbug.com/450898.
-#if defined(ARCH_CPU_ARMEL)
-    gl::GLDisplayEGL* display = gl::GLDisplayEGL::GetDisplayForCurrentContext();
-    if (!display || !display->ext->b_EGL_KHR_fence_sync) {
-      VLOGF(1) << "context does not have EGL_KHR_fence_sync";
-      return false;
-    }
-#endif
-  } else {
-    DVLOGF(2) << "No GL callbacks provided, initializing without GL support";
   }
 
   decoder_state_ = kInitialized;
@@ -655,12 +623,9 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPictureTask(
       return;
     }
 
-    // TODO(nhebert): switch to NativePixmap-based FrameResource when it is
-    // available.
-    iter->output_frame =
-        VideoFrameResource::Create(VideoFrame::WrapExternalDmabufs(
-            *layout, gfx::Rect(visible_size_), visible_size_,
-            std::move(duped_fds), base::TimeDelta()));
+    iter->output_frame = NativePixmapFrameResource::Create(
+        *layout, gfx::Rect(visible_size_), visible_size_, std::move(duped_fds),
+        base::TimeDelta());
   }
 
   // The buffer can now be used for decoding
@@ -674,34 +639,12 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPictureTask(
 
 void V4L2VideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_buffer_id) {
   DVLOGF(4) << "picture_buffer_id=" << picture_buffer_id;
-  // Must be run on child thread, as we'll insert a sync in the EGL context.
   DCHECK(child_task_runner_->BelongsToCurrentThread());
-
-  std::unique_ptr<gl::GLFenceEGL> egl_fence;
-
-  if (make_context_current_cb_) {
-    if (!make_context_current_cb_.Run()) {
-      LOG(ERROR) << "could not make context current";
-      NOTIFY_ERROR(PLATFORM_FAILURE);
-      return;
-    }
-
-// TODO(posciak): https://crbug.com/450898.
-#if defined(ARCH_CPU_ARMEL)
-    egl_fence = gl::GLFenceEGL::Create();
-    if (!egl_fence) {
-      LOG(ERROR) << "gl::GLFenceEGL::Create() failed";
-      NOTIFY_ERROR(PLATFORM_FAILURE);
-      return;
-    }
-#endif
-  }
 
   decoder_thread_.task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&V4L2VideoDecodeAccelerator::ReusePictureBufferTask,
-                     base::Unretained(this), picture_buffer_id,
-                     std::move(egl_fence)));
+                     base::Unretained(this), picture_buffer_id));
 }
 
 void V4L2VideoDecodeAccelerator::Flush() {
@@ -1177,43 +1120,18 @@ void V4L2VideoDecodeAccelerator::ServiceDeviceTask(bool event_pending) {
     StartResolutionChange();
 }
 
-void V4L2VideoDecodeAccelerator::CheckGLFences() {
-  DVLOGF(4);
-  DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
-
-  while (!buffers_awaiting_fence_.empty()) {
-    if (buffers_awaiting_fence_.front().first->HasCompleted()) {
-      // Buffer at the front of the queue goes back to V4L2Queue's free list
-      // and can be reused.
-      buffers_awaiting_fence_.pop();
-    } else {
-      // If we have no free buffers available, then preemptively schedule a
-      // call to Enqueue() in a short time, otherwise we may starve out of
-      // buffers. The delay chosen roughly corresponds to the time a frame is
-      // displayed, which should be optimal in most cases.
-      if (output_queue_->FreeBuffersCount() == 0) {
-        constexpr int64_t resched_delay = 17;
-
-        decoder_thread_.task_runner()->PostDelayedTask(
-            FROM_HERE,
-            base::BindOnce(&V4L2VideoDecodeAccelerator::Enqueue,
-                           base::Unretained(this)),
-            base::Milliseconds(resched_delay));
-      }
-      break;
-    }
-  }
-}
-
 void V4L2VideoDecodeAccelerator::Enqueue() {
   DVLOGF(4);
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
   DCHECK_NE(decoder_state_, kUninitialized);
 
-  // Early return if we are running after DestroyTask() or a resolution change.
-  // This can happen due to the PostDelayedTask() in CheckGLFences().
-  if (IsDestroyPending() || decoder_state_ == kChangingResolution)
+  if (IsDestroyPending()) {
     return;
+  }
+
+  // There's no reason why this class should attempt to enqueue buffers while
+  // it's in the process of a resolution change.
+  CHECK_NE(decoder_state_, kChangingResolution);
 
   DCHECK(input_queue_);
   DCHECK(output_queue_);
@@ -1287,8 +1205,6 @@ void V4L2VideoDecodeAccelerator::Enqueue() {
 
   // Enqueue all the outputs we can.
   const int old_outputs_queued = output_queue_->QueuedBuffersCount();
-  // Release output buffers which GL fences have been signaled.
-  CheckGLFences();
   while (auto buffer_opt = output_queue_->GetFreeBuffer()) {
     if (!EnqueueOutputRecord(std::move(*buffer_opt)))
       return;
@@ -1469,8 +1385,7 @@ bool V4L2VideoDecodeAccelerator::EnqueueOutputRecord(
 }
 
 void V4L2VideoDecodeAccelerator::ReusePictureBufferTask(
-    int32_t picture_buffer_id,
-    std::unique_ptr<gl::GLFenceEGL> egl_fence) {
+    int32_t picture_buffer_id) {
   DVLOGF(4) << "picture_buffer_id=" << picture_buffer_id;
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
 
@@ -1493,18 +1408,11 @@ void V4L2VideoDecodeAccelerator::ReusePictureBufferTask(
     // It's possible that we've already posted a DismissPictureBuffer for this
     // picture, but it has not yet executed when this ReusePictureBuffer was
     // posted to us by the client. In that case just ignore this (we've already
-    // dismissed it and accounted for that) and let the fence object get
-    // destroyed.
+    // dismissed it and accounted for that).
     DVLOGF(3) << "got picture id= " << picture_buffer_id
               << " not in use (anymore?).";
     return;
   }
-
-  // Take ownership of the EGL fence and keep the buffer out of the game until
-  // the fence signals.
-  if (egl_fence)
-    buffers_awaiting_fence_.emplace(
-        std::make_pair(std::move(egl_fence), std::move(iter->second)));
 
   buffers_at_client_.erase(iter);
 
@@ -2496,9 +2404,6 @@ bool V4L2VideoDecodeAccelerator::DestroyOutputBuffers() {
                                   output_record.picture_id));
   }
 
-  while (!buffers_awaiting_fence_.empty())
-    buffers_awaiting_fence_.pop();
-
   if (!output_queue_->DeallocateBuffers()) {
     LOG(ERROR) << "Failed deallocating output buffers";
     NOTIFY_ERROR(PLATFORM_FAILURE);
@@ -2526,10 +2431,8 @@ void V4L2VideoDecodeAccelerator::SendBufferToClient(
   buffers_at_client_.emplace(
       output_record.picture_id,
       std::make_pair(std::move(vda_buffer), std::move(frame)));
-  // TODO(b/214190092): Get color space from the v4l2 buffer.
-  const Picture picture(
-      output_record.picture_id, bitstream_buffer_id, gfx::Rect(visible_size_),
-      container_color_space_.ToGfxColorSpace(), /*allow_overlay=*/true);
+  const Picture picture(output_record.picture_id, bitstream_buffer_id,
+                        gfx::Rect(visible_size_));
   pending_picture_ready_.emplace(output_record.cleared, picture);
   SendPictureReady();
   // This picture will be cleared next time we see it.

@@ -21,7 +21,6 @@
 #import "ios/web/public/session/proto/metadata.pb.h"
 #import "ios/web/public/session/proto/storage.pb.h"
 #import "ios/web/public/session/serializable_user_data_manager.h"
-#import "ios/web/public/web_client.h"
 #import "ios/web/session/session_certificate_policy_cache_impl.h"
 #import "ios/web/web_state/global_web_state_event_tracker.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
@@ -66,16 +65,6 @@ void CheckForOverRealization() {
   }
 }
 
-// Returns the session data blob from the cache for `weak_web_state`.
-NSData* FetchSessionDataBlob(base::WeakPtr<WebState> weak_web_state) {
-  web::WebState* web_state = weak_web_state.get();
-  if (!web_state) {
-    return nil;
-  }
-
-  return GetWebClient()->FetchSessionFromCache(web_state);
-}
-
 // Serializes the `session_storage` to proto::WebStateStorage.
 web::proto::WebStateStorage SessionStorageToProto(
     CRWSessionStorage* session_storage) {
@@ -113,7 +102,8 @@ WebStateImpl::WebStateImpl(const CreateParams& params) {
 }
 
 WebStateImpl::WebStateImpl(const CreateParams& params,
-                           CRWSessionStorage* session_storage) {
+                           CRWSessionStorage* session_storage,
+                           NativeSessionFetcher session_fetcher) {
   AddWebStateImplMarker();
 
   // Restore the serializable user data as user code may depend on accessing
@@ -134,7 +124,7 @@ WebStateImpl::WebStateImpl(const CreateParams& params,
       this, params.browser_state, session_storage.stableIdentifier,
       session_storage.uniqueIdentifier, std::move(metadata),
       base::BindOnce(&SessionStorageToProto, session_storage),
-      base::BindOnce(&FetchSessionDataBlob, GetWeakPtr()));
+      std::move(session_fetcher));
   saved_->SetSessionStorage(session_storage);
 
   SendGlobalCreationEvent();
@@ -263,13 +253,19 @@ void WebStateImpl::OnStateChangedForPermission(Permission permission) {
   RealizedState()->OnStateChangedForPermission(permission);
 }
 
+void WebStateImpl::OnUnderPageBackgroundColorChanged() {
+  RealizedState()->OnUnderPageBackgroundColorChanged();
+}
+
 NavigationManagerImpl& WebStateImpl::GetNavigationManagerImpl() {
   return RealizedState()->GetNavigationManager();
 }
 
 int WebStateImpl::GetNavigationItemCount() const {
-  return LIKELY(pimpl_) ? pimpl_->GetNavigationItemCount()
-                        : saved_->GetNavigationItemCount();
+  if (pimpl_) [[likely]] {
+    return pimpl_->GetNavigationItemCount();
+  }
+  return saved_->GetNavigationItemCount();
 }
 
 WebFramesManagerImpl& WebStateImpl::GetWebFramesManagerImpl(
@@ -303,7 +299,10 @@ void WebStateImpl::ClearWebUI() {
 }
 
 bool WebStateImpl::HasWebUI() const {
-  return LIKELY(pimpl_) ? pimpl_->HasWebUI() : false;
+  if (pimpl_) [[likely]] {
+    return pimpl_->HasWebUI();
+  }
+  return false;
 }
 
 void WebStateImpl::HandleWebUIMessage(const GURL& source_url,
@@ -333,7 +332,10 @@ void WebStateImpl::ShouldAllowResponse(
 }
 
 UIView* WebStateImpl::GetWebViewContainer() {
-  return LIKELY(pimpl_) ? pimpl_->GetWebViewContainer() : nil;
+  if (pimpl_) [[likely]] {
+    return pimpl_->GetWebViewContainer();
+  }
+  return nil;
 }
 
 UserAgentType WebStateImpl::GetUserAgentForNextNavigation(const GURL& url) {
@@ -341,8 +343,10 @@ UserAgentType WebStateImpl::GetUserAgentForNextNavigation(const GURL& url) {
 }
 
 UserAgentType WebStateImpl::GetUserAgentForSessionRestoration() const {
-  return LIKELY(pimpl_) ? pimpl_->GetUserAgentForSessionRestoration()
-                        : UserAgentType::AUTOMATIC;
+  if (pimpl_) [[likely]] {
+    return pimpl_->GetUserAgentForSessionRestoration();
+  }
+  return UserAgentType::AUTOMATIC;
 }
 
 void WebStateImpl::SetUserAgent(UserAgentType user_agent) {
@@ -385,7 +389,10 @@ void WebStateImpl::RunJavaScriptPromptDialog(
 }
 
 bool WebStateImpl::IsJavaScriptDialogRunning() {
-  return LIKELY(pimpl_) ? pimpl_->IsJavaScriptDialogRunning() : false;
+  if (pimpl_) [[likely]] {
+    return pimpl_->IsJavaScriptDialogRunning();
+  }
+  return false;
 }
 
 WebState* WebStateImpl::CreateNewWebState(const GURL& url,
@@ -406,7 +413,10 @@ void WebStateImpl::CancelDialogs() {
 }
 
 id<CRWWebViewNavigationProxy> WebStateImpl::GetWebViewNavigationProxy() const {
-  return LIKELY(pimpl_) ? pimpl_->GetWebViewNavigationProxy() : nil;
+  if (pimpl_) [[likely]] {
+    return pimpl_->GetWebViewNavigationProxy();
+  }
+  return nil;
 }
 
 #pragma mark - WebFrame management
@@ -450,7 +460,10 @@ void WebStateImpl::SerializeMetadataToProto(
 }
 
 WebStateDelegate* WebStateImpl::GetDelegate() {
-  return LIKELY(pimpl_) ? pimpl_->GetDelegate() : nullptr;
+  if (pimpl_) [[likely]] {
+    return pimpl_->GetDelegate();
+  }
+  return nullptr;
 }
 
 void WebStateImpl::SetDelegate(WebStateDelegate* delegate) {
@@ -471,7 +484,7 @@ bool WebStateImpl::IsRealized() const {
 WebState* WebStateImpl::ForceRealized() {
   DCHECK(!is_being_destroyed_);
 
-  if (UNLIKELY(!pimpl_)) {
+  if (!pimpl_) [[unlikely]] {
     DCHECK(saved_);
 
     // Create the RealizedWebState. At this point the WebStateImpl has
@@ -514,7 +527,10 @@ WebState* WebStateImpl::ForceRealized() {
 }
 
 bool WebStateImpl::IsWebUsageEnabled() const {
-  return LIKELY(pimpl_) ? pimpl_->IsWebUsageEnabled() : true;
+  if (pimpl_) [[likely]] {
+    return pimpl_->IsWebUsageEnabled();
+  }
+  return true;
 }
 
 void WebStateImpl::SetWebUsageEnabled(bool enabled) {
@@ -524,7 +540,10 @@ void WebStateImpl::SetWebUsageEnabled(bool enabled) {
 }
 
 UIView* WebStateImpl::GetView() {
-  return LIKELY(pimpl_) ? pimpl_->GetView() : nil;
+  if (pimpl_) [[likely]] {
+    return pimpl_->GetView();
+  }
+  return nil;
 }
 
 void WebStateImpl::DidCoverWebContent() {
@@ -536,12 +555,17 @@ void WebStateImpl::DidRevealWebContent() {
 }
 
 base::Time WebStateImpl::GetLastActiveTime() const {
-  return LIKELY(pimpl_) ? pimpl_->GetLastActiveTime()
-                        : saved_->GetLastActiveTime();
+  if (pimpl_) [[likely]] {
+    return pimpl_->GetLastActiveTime();
+  }
+  return saved_->GetLastActiveTime();
 }
 
 base::Time WebStateImpl::GetCreationTime() const {
-  return LIKELY(pimpl_) ? pimpl_->GetCreationTime() : saved_->GetCreationTime();
+  if (pimpl_) [[likely]] {
+    return pimpl_->GetCreationTime();
+  }
+  return saved_->GetCreationTime();
 }
 
 void WebStateImpl::WasShown() {
@@ -557,7 +581,10 @@ void WebStateImpl::SetKeepRenderProcessAlive(bool keep_alive) {
 }
 
 BrowserState* WebStateImpl::GetBrowserState() const {
-  return LIKELY(pimpl_) ? pimpl_->GetBrowserState() : saved_->GetBrowserState();
+  if (pimpl_) [[likely]] {
+    return pimpl_->GetBrowserState();
+  }
+  return saved_->GetBrowserState();
 }
 
 base::WeakPtr<WebState> WebStateImpl::GetWeakPtr() {
@@ -591,7 +618,10 @@ void WebStateImpl::Stop() {
 }
 
 const NavigationManager* WebStateImpl::GetNavigationManager() const {
-  return LIKELY(pimpl_) ? &pimpl_->GetNavigationManager() : nullptr;
+  if (pimpl_) [[likely]] {
+    return &pimpl_->GetNavigationManager();
+  }
+  return nullptr;
 }
 
 NavigationManager* WebStateImpl::GetNavigationManager() {
@@ -608,7 +638,10 @@ WebFramesManager* WebStateImpl::GetWebFramesManager(ContentWorld world) {
 
 const SessionCertificatePolicyCache*
 WebStateImpl::GetSessionCertificatePolicyCache() const {
-  return LIKELY(pimpl_) ? &pimpl_->GetSessionCertificatePolicyCache() : nullptr;
+  if (pimpl_) [[likely]] {
+    return &pimpl_->GetSessionCertificatePolicyCache();
+  }
+  return nullptr;
 }
 
 SessionCertificatePolicyCache*
@@ -618,7 +651,7 @@ WebStateImpl::GetSessionCertificatePolicyCache() {
 
 CRWSessionStorage* WebStateImpl::BuildSessionStorage() const {
   CRWSessionStorage* session_storage = nil;
-  if (LIKELY(pimpl_)) {
+  if (pimpl_) [[likely]] {
     proto::WebStateStorage storage;
     pimpl_->SerializeToProto(storage);
 
@@ -656,46 +689,74 @@ void WebStateImpl::ExecuteUserJavaScript(NSString* javascript) {
 }
 
 NSString* WebStateImpl::GetStableIdentifier() const {
-  return LIKELY(pimpl_) ? pimpl_->GetStableIdentifier()
-                        : saved_->GetStableIdentifier();
+  if (pimpl_) [[likely]] {
+    return pimpl_->GetStableIdentifier();
+  }
+  return saved_->GetStableIdentifier();
 }
 
 WebStateID WebStateImpl::GetUniqueIdentifier() const {
-  return LIKELY(pimpl_) ? pimpl_->GetUniqueIdentifier()
-                        : saved_->GetUniqueIdentifier();
+  if (pimpl_) [[likely]] {
+    return pimpl_->GetUniqueIdentifier();
+  }
+  return saved_->GetUniqueIdentifier();
 }
 
 const std::string& WebStateImpl::GetContentsMimeType() const {
   static std::string kEmptyString;
-  return LIKELY(pimpl_) ? pimpl_->GetContentsMimeType() : kEmptyString;
+  if (pimpl_) [[likely]] {
+    return pimpl_->GetContentsMimeType();
+  }
+  return kEmptyString;
 }
 
 bool WebStateImpl::ContentIsHTML() const {
-  return LIKELY(pimpl_) ? pimpl_->ContentIsHTML() : false;
+  if (pimpl_) [[likely]] {
+    return pimpl_->ContentIsHTML();
+  }
+  return false;
 }
 
 const std::u16string& WebStateImpl::GetTitle() const {
-  return LIKELY(pimpl_) ? pimpl_->GetTitle() : saved_->GetTitle();
+  if (pimpl_) [[likely]] {
+    return pimpl_->GetTitle();
+  }
+  return saved_->GetTitle();
 }
 
 bool WebStateImpl::IsLoading() const {
-  return LIKELY(pimpl_) ? pimpl_->IsLoading() : false;
+  if (pimpl_) [[likely]] {
+    return pimpl_->IsLoading();
+  }
+  return false;
 }
 
 double WebStateImpl::GetLoadingProgress() const {
-  return LIKELY(pimpl_) ? pimpl_->GetLoadingProgress() : 0.0;
+  if (pimpl_) [[likely]] {
+    return pimpl_->GetLoadingProgress();
+  }
+  return 0.0;
 }
 
 bool WebStateImpl::IsVisible() const {
-  return LIKELY(pimpl_) ? pimpl_->IsVisible() : false;
+  if (pimpl_) [[likely]] {
+    return pimpl_->IsVisible();
+  }
+  return false;
 }
 
 bool WebStateImpl::IsCrashed() const {
-  return LIKELY(pimpl_) ? pimpl_->IsCrashed() : false;
+  if (pimpl_) [[likely]] {
+    return pimpl_->IsCrashed();
+  }
+  return false;
 }
 
 bool WebStateImpl::IsEvicted() const {
-  return LIKELY(pimpl_) ? pimpl_->IsEvicted() : true;
+  if (pimpl_) [[likely]] {
+    return pimpl_->IsEvicted();
+  }
+  return true;
 }
 
 bool WebStateImpl::IsBeingDestroyed() const {
@@ -703,16 +764,21 @@ bool WebStateImpl::IsBeingDestroyed() const {
 }
 
 bool WebStateImpl::IsWebPageInFullscreenMode() const {
-  return LIKELY(pimpl_) ? pimpl_->IsWebPageInFullscreenMode() : false;
+  if (pimpl_) [[likely]] {
+    return pimpl_->IsWebPageInFullscreenMode();
+  }
+  return false;
 }
 
 const FaviconStatus& WebStateImpl::GetFaviconStatus() const {
-  return LIKELY(pimpl_) ? pimpl_->GetFaviconStatus()
-                        : saved_->GetFaviconStatus();
+  if (pimpl_) [[likely]] {
+    return pimpl_->GetFaviconStatus();
+  }
+  return saved_->GetFaviconStatus();
 }
 
 void WebStateImpl::SetFaviconStatus(const FaviconStatus& favicon_status) {
-  if (LIKELY(pimpl_)) {
+  if (pimpl_) [[likely]] {
     pimpl_->SetFaviconStatus(favicon_status);
   } else {
     saved_->SetFaviconStatus(favicon_status);
@@ -720,21 +786,31 @@ void WebStateImpl::SetFaviconStatus(const FaviconStatus& favicon_status) {
 }
 
 const GURL& WebStateImpl::GetVisibleURL() const {
-  return LIKELY(pimpl_) ? pimpl_->GetVisibleURL() : saved_->GetVisibleURL();
+  if (pimpl_) [[likely]] {
+    return pimpl_->GetVisibleURL();
+  }
+  return saved_->GetVisibleURL();
 }
 
 const GURL& WebStateImpl::GetLastCommittedURL() const {
-  return LIKELY(pimpl_) ? pimpl_->GetLastCommittedURL()
-                        : saved_->GetLastCommittedURL();
+  if (pimpl_) [[likely]] {
+    return pimpl_->GetLastCommittedURL();
+  }
+  return saved_->GetLastCommittedURL();
 }
 
 std::optional<GURL> WebStateImpl::GetLastCommittedURLIfTrusted() const {
-  return LIKELY(pimpl_) ? pimpl_->GetLastCommittedURLIfTrusted()
-                        : saved_->GetLastCommittedURL();
+  if (pimpl_) [[likely]] {
+    return pimpl_->GetLastCommittedURLIfTrusted();
+  }
+  return saved_->GetLastCommittedURL();
 }
 
 id<CRWWebViewProxy> WebStateImpl::GetWebViewProxy() const {
-  return LIKELY(pimpl_) ? pimpl_->GetWebViewProxy() : nil;
+  if (pimpl_) [[likely]] {
+    return pimpl_->GetWebViewProxy();
+  }
+  return nil;
 }
 
 void WebStateImpl::DidChangeVisibleSecurityState() {
@@ -746,7 +822,10 @@ WebState::InterfaceBinder* WebStateImpl::GetInterfaceBinderForMainFrame() {
 }
 
 bool WebStateImpl::HasOpener() const {
-  return LIKELY(pimpl_) ? pimpl_->HasOpener() : false;
+  if (pimpl_) [[likely]] {
+    return pimpl_->HasOpener();
+  }
+  return false;
 }
 
 void WebStateImpl::SetHasOpener(bool has_opener) {
@@ -754,7 +833,10 @@ void WebStateImpl::SetHasOpener(bool has_opener) {
 }
 
 bool WebStateImpl::CanTakeSnapshot() const {
-  return LIKELY(pimpl_) ? pimpl_->CanTakeSnapshot() : false;
+  if (pimpl_) [[likely]] {
+    return pimpl_->CanTakeSnapshot();
+  }
+  return false;
 }
 
 void WebStateImpl::TakeSnapshot(const CGRect rect, SnapshotCallback callback) {
@@ -789,13 +871,18 @@ bool WebStateImpl::SetSessionStateData(NSData* data) {
 }
 
 NSData* WebStateImpl::SessionStateData() {
-  return LIKELY(pimpl_) ? pimpl_->SessionStateData() : nil;
+  if (pimpl_) [[likely]] {
+    return pimpl_->SessionStateData();
+  }
+  return nil;
 }
 
 PermissionState WebStateImpl::GetStateForPermission(
     Permission permission) const {
-  return LIKELY(pimpl_) ? pimpl_->GetStateForPermission(permission)
-                        : PermissionStateNotAccessible;
+  if (pimpl_) [[likely]] {
+    return pimpl_->GetStateForPermission(permission);
+  }
+  return PermissionStateNotAccessible;
 }
 
 void WebStateImpl::SetStateForPermission(PermissionState state,
@@ -805,8 +892,10 @@ void WebStateImpl::SetStateForPermission(PermissionState state,
 
 NSDictionary<NSNumber*, NSNumber*>* WebStateImpl::GetStatesForAllPermissions()
     const {
-  return LIKELY(pimpl_) ? pimpl_->GetStatesForAllPermissions()
-                        : [NSDictionary dictionary];
+  if (pimpl_) [[likely]] {
+    return pimpl_->GetStatesForAllPermissions();
+  }
+  return [NSDictionary dictionary];
 }
 
 void WebStateImpl::AddPolicyDecider(WebStatePolicyDecider* decider) {
@@ -851,21 +940,21 @@ id<CRWFindInteraction> WebStateImpl::GetFindInteraction()
 }
 
 id WebStateImpl::GetActivityItem() API_AVAILABLE(ios(16.4)) {
-  if (UNLIKELY(!IsRealized())) {
+  if (!IsRealized()) [[unlikely]] {
     return nil;
   }
   return [GetWebController() activityItem];
 }
 
 UIColor* WebStateImpl::GetThemeColor() {
-  if (UNLIKELY(!IsRealized())) {
+  if (!IsRealized()) [[unlikely]] {
     return nil;
   }
   return [GetWebController() themeColor];
 }
 
 UIColor* WebStateImpl::GetUnderPageBackgroundColor() {
-  if (UNLIKELY(!IsRealized())) {
+  if (!IsRealized()) [[unlikely]] {
     return nil;
   }
   return [GetWebController() underPageBackgroundColor];
@@ -874,7 +963,7 @@ UIColor* WebStateImpl::GetUnderPageBackgroundColor() {
 #pragma mark - WebStateImpl private methods
 
 WebStateImpl::RealizedWebState* WebStateImpl::RealizedState() {
-  if (UNLIKELY(!IsRealized())) {
+  if (!IsRealized()) [[unlikely]] {
     ForceRealized();
   }
 

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "media/gpu/mac/video_toolbox_av1_accelerator.h"
 
 #include "base/numerics/safe_conversions.h"
@@ -171,7 +176,6 @@ bool VideoToolboxAV1Accelerator::ProcessFormat(
 
   // TODO(crbug.com/40227557): Consider merging with CreateFormatExtensions() to
   // avoid converting back and forth.
-  // TODO(crbug.com/40227557): Extract from sequence header instead?
   VideoColorSpace color_space = pic.get_colorspace();
 
   VideoCodecProfile profile;

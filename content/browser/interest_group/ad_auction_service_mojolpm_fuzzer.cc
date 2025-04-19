@@ -290,11 +290,7 @@ AdAuctionServiceTestcase::AdAuctionServiceTestcase(
   feature_list_.InitWithFeatures(
       /*enabled_features=*/
       {blink::features::kInterestGroupStorage,
-       blink::features::kAdInterestGroupAPI, blink::features::kFledge,
-       blink::features::kFledgeClearOriginJoinedAdInterestGroups,
-       blink::features::kFledgeNegativeTargeting,
-       features::kEnableUpdatingUserBiddingSignals,
-       features::kEnableUpdatingExecutionModeToFrozenContext},
+       blink::features::kAdInterestGroupAPI, blink::features::kFledge},
       /*disabled_features=*/{});
   fenced_frame_feature_list_.InitAndEnableFeatureWithParameters(
       blink::features::kFencedFrames, {{"implementation_type", "mparch"}});

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "media/audio/mac/audio_loopback_input_mac_impl.h"
 
 #import <ScreenCaptureKit/ScreenCaptureKit.h>
@@ -394,12 +399,15 @@ void SCKAudioInputStream::Start(AudioInputCallback* callback) {
       base::BindRepeating(&SCKAudioInputStream::OnStreamError,
                           base::Unretained(this)));
 
+  // Make a local copy of the shared_refptr in case the error handler is called
+  // after `this` is destroyed.
+  auto local_shared_helper = shared_helper_;
   [stream_ startCaptureWithCompletionHandler:^(NSError* error) {
     if (!error) {
       return;
     }
 
-    shared_helper_->OnStreamError(error);
+    local_shared_helper->OnStreamError(error);
   }];
 }
 

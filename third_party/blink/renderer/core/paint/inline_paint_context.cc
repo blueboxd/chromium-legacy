@@ -89,10 +89,6 @@ wtf_size_t InlinePaintContext::SyncDecoratingBox(
         if (decorations != &parent_decorations) {
           // It's a decorating box if it has more decorations than its parent.
           if (decorations->size() > parent_decorations.size()) {
-            DCHECK_EQ(decorations->size(), parent_decorations.size() + 1);
-            DCHECK_NE(style->GetTextDecorationLine(),
-                      TextDecorationLine::kNone);
-
             // Ensure the parent is in sync. Ancestors are pushed first.
             wtf_size_t num_pushes = 0;
             if (&parent_decorations != stop_at_) {
@@ -100,8 +96,9 @@ wtf_size_t InlinePaintContext::SyncDecoratingBox(
                                 &parent_decorations);
             }
 
-            PushDecoratingBox(item, *layout_object, *style, *decorations);
-            return num_pushes + 1;
+            num_pushes += PushDecoratingBoxesUntilParent(
+                item, *layout_object, *style, *decorations, parent_decorations);
+            return num_pushes;
           }
 
           // Rare but sometimes |AppliedTextDecorations| is duplicated instead
@@ -145,7 +142,7 @@ wtf_size_t InlinePaintContext::SyncDecoratingBox(
             const wtf_size_t size =
                 std::min(saved_decorating_boxes_->size(), decorations->size());
             inline_context_->PushDecoratingBoxes(
-                base::make_span(saved_decorating_boxes_->begin(), size));
+                base::span(*saved_decorating_boxes_).first(size));
             return size;
           }
 
@@ -159,7 +156,7 @@ wtf_size_t InlinePaintContext::SyncDecoratingBox(
               << static_cast<int>(style->GetTextDecorationLine());
         }
 
-        if (UNLIKELY(!IsA<LayoutInline>(parent))) {
+        if (!IsA<LayoutInline>(parent)) [[unlikely]] {
           // This shouldn't happen, indicating text-decoration isn't propagated
           // as expected, but the logs indicate it does, though not too often.
           // Just abort the sync.
@@ -188,6 +185,40 @@ wtf_size_t InlinePaintContext::SyncDecoratingBox(
         layout_object = parent;
         style = &parent_style;
       }
+    }
+
+    wtf_size_t PushDecoratingBoxesUntilParent(
+        const FragmentItem* item,
+        const LayoutObject& layout_object,
+        const ComputedStyle& style,
+        const Vector<AppliedTextDecoration, 1>& decorations,
+        const Vector<AppliedTextDecoration, 1>& parent_decorations) {
+      const Vector<AppliedTextDecoration, 1>* base_decorations =
+          style.BaseAppliedTextDecorations();
+      if (base_decorations == &parent_decorations ||
+          !RuntimeEnabledFeatures::CssDecoratingBoxFirstLineEnabled()) {
+        DCHECK_EQ(decorations.size(), parent_decorations.size() + 1);
+        DCHECK_NE(style.GetTextDecorationLine(), TextDecorationLine::kNone);
+        PushDecoratingBox(item, layout_object, style, decorations);
+        return 1;
+      }
+
+      if (base_decorations && base_decorations != &decorations &&
+          decorations.size() == parent_decorations.size() + 2) {
+        // When the normal style and `::first-line` have different decorations,
+        // the normal style inherits from the parent, and the `:first-line`
+        // inherits from the normal style, resulting two decorating boxes.
+        DCHECK_NE(style.GetTextDecorationLine(), TextDecorationLine::kNone);
+        PushDecoratingBox(item, layout_object, style, *base_decorations);
+        PushDecoratingBox(item, layout_object, style, decorations);
+        return 2;
+      }
+
+      // The style engine may create a clone, not an inherited decorations,
+      // such as a `<span>` in `::first-line`.
+      DCHECK_EQ(decorations.size(), parent_decorations.size() + 1);
+      PushDecoratingBox(item, layout_object, style, decorations);
+      return 1;
     }
 
     void PushDecoratingBox(

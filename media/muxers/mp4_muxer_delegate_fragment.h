@@ -27,6 +27,13 @@ uint32_t BuildFlags(const std::vector<T>& build_flags) {
   return flags;
 }
 
+// It uses the default track index for audio and video regardless of the
+// actual track index. Correction of the track index will be done in the
+// `Finalize` function that the caller MUST call before writing
+// the fragment.
+inline constexpr int kDefaultAudioIndex = 0;
+inline constexpr int kDefaultVideoIndex = 1;
+
 // This class is responsible for creating and managing the fragment that holds
 // audio and video data. It is also responsible for creating the moof and mdat
 // boxes that will be written to the file.
@@ -42,8 +49,8 @@ class Mp4MuxerDelegateFragment {
   size_t GetAudioSampleSize() const;
   size_t GetVideoSampleSize() const;
 
-  void AddAudioData(std::string encoded_data, base::TimeTicks timestamp);
-  void AddVideoData(std::string encoded_data, base::TimeTicks timestamp);
+  void AddAudioData(std::string_view encoded_data, base::TimeTicks timestamp);
+  void AddVideoData(std::string_view encoded_data, base::TimeTicks timestamp);
   void AddAudioLastTimestamp(base::TimeDelta timestamp);
   void AddVideoLastTimestamp(base::TimeDelta timestamp);
 
@@ -60,10 +67,10 @@ class Mp4MuxerDelegateFragment {
  private:
   void AddNewTrack(uint32_t track_index);
   void AddDataToRun(mp4::writable_boxes::TrackFragmentRun& trun,
-                    std::string encoded_data,
+                    std::string_view encoded_data,
                     base::TimeTicks timestamp);
   void AddDataToMdat(std::vector<uint8_t>& track_data,
-                     std::string encoded_data);
+                     std::string_view encoded_data);
   void AddLastTimestamp(mp4::writable_boxes::TrackFragmentRun& trun,
                         base::TimeDelta timestamp);
   void SetBaseDecodeTime(base::TimeTicks start_audio_time,

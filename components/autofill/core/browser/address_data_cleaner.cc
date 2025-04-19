@@ -4,6 +4,7 @@
 
 #include "components/autofill/core/browser/address_data_cleaner.h"
 
+#include "base/containers/to_vector.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "components/autofill/core/browser/address_data_manager.h"
@@ -33,20 +34,20 @@ bool ShouldWaitForSync(syncer::SyncService* sync_service) {
     return false;
   }
 
-  auto should_wait = [&sync_service](syncer::ModelType model_type) {
-    switch (sync_service->GetDownloadStatusFor(model_type)) {
-      case syncer::SyncService::ModelTypeDownloadStatus::kWaitingForUpdates:
+  auto should_wait = [&sync_service](syncer::DataType data_type) {
+    switch (sync_service->GetDownloadStatusFor(data_type)) {
+      case syncer::SyncService::DataTypeDownloadStatus::kWaitingForUpdates:
         return true;
-      case syncer::SyncService::ModelTypeDownloadStatus::kUpToDate:
+      case syncer::SyncService::DataTypeDownloadStatus::kUpToDate:
       // If the download status is kError, it will likely not become available
       // anytime soon. In this case, don't defer the cleanups.
-      case syncer::SyncService::ModelTypeDownloadStatus::kError:
+      case syncer::SyncService::DataTypeDownloadStatus::kError:
         return false;
     }
     NOTREACHED_NORETURN();
   };
-  return should_wait(syncer::ModelType::AUTOFILL_PROFILE) ||
-         should_wait(syncer::ModelType::CONTACT_INFO);
+  return should_wait(syncer::DataType::AUTOFILL_PROFILE) ||
+         should_wait(syncer::DataType::CONTACT_INFO);
 }
 
 // Quasi duplicates of rank one, those conflicting token has low quality qualify
@@ -178,7 +179,7 @@ void AddressDataCleaner::MaybeCleanupAddressData() {
   // To simplify the rollout of AutofillSilentlyRemoveQuasiDuplicates, this
   // condition is relaxed to twice per milestone (but still limited to at most
   // once per startup).
-  // TODO(b/325450676): Revert to once per milestone after the rollout.
+  // TODO(crbug.com/325450676): Revert to once per milestone after the rollout.
   if (pref_service_->GetInteger(prefs::kAutofillLastVersionDeduped) <
       CHROME_VERSION_MAJOR) {
     pref_service_->SetInteger(prefs::kAutofillLastVersionDeduped,
@@ -226,6 +227,20 @@ AddressDataCleaner::CalculateMinimalIncompatibleTypeSets(
     }
   }
   return min_incompatible_sets;
+}
+
+// static
+std::vector<FieldTypeSet>
+AddressDataCleaner::CalculateMinimalIncompatibleTypeSets(
+    const AutofillProfile& import_candidate,
+    base::span<const AutofillProfile* const> existing_profiles,
+    const AutofillProfileComparator& comparator) {
+  // Unfortunately, a vector of non-pointers is needed for
+  // `CalculateMinimalIncompatibleTypeSets()`.
+  return CalculateMinimalIncompatibleTypeSets(
+      import_candidate,
+      base::ToVector(existing_profiles, [](auto* x) { return *x; }),
+      comparator);
 }
 
 // static
@@ -305,7 +320,7 @@ void AddressDataCleaner::DeleteDisusedAddresses() {
   // pointers in `profiles`.
   std::vector<std::string> guids_to_delete;
   for (const AutofillProfile* profile : profiles) {
-    if (profile->IsDeletable()) {
+    if (IsAutofillEntryWithUseDateDeletable(profile->use_date())) {
       guids_to_delete.push_back(profile->guid());
     }
   }

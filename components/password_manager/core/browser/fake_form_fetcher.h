@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "components/password_manager/core/browser/form_fetcher.h"
 #include "components/password_manager/core/browser/password_form.h"
@@ -50,17 +49,17 @@ class FakeFormFetcher : public FormFetcher {
   bool IsBlocklisted() const override;
   bool IsMovingBlocked(const signin::GaiaIdHash& destination,
                        const std::u16string& username) const override;
-  const std::vector<raw_ptr<const PasswordForm, VectorExperimental>>&
-  GetAllRelevantMatches() const override;
+  base::span<const PasswordForm> GetAllRelevantMatches() const override;
   base::span<const PasswordForm> GetBestMatches() const override;
   const PasswordForm* GetPreferredMatch() const override;
+  std::optional<PasswordFormMetricsRecorder::MatchedFormType>
+  GetPreferredOrPotentialMatchedFormType() const override;
   // Returns a new FakeFormFetcher.
   std::unique_ptr<FormFetcher> Clone() override;
   std::optional<PasswordStoreBackendError> GetProfileStoreBackendError()
       const override;
   std::optional<PasswordStoreBackendError> GetAccountStoreBackendError()
       const override;
-  bool WereGroupedCredentialsAvailable() const override;
 
   void set_stats(const std::vector<InteractionsStats>& stats) {
     state_ = State::NOT_WAITING;
@@ -78,7 +77,22 @@ class FakeFormFetcher : public FormFetcher {
     insecure_credentials_ = credentials;
   }
 
+  void set_preferred_or_potential_matched_form_type(
+      PasswordFormMetricsRecorder::MatchedFormType
+          preferred_or_potential_matched_form_type) {
+    preferred_or_potential_matched_form_type_ =
+        preferred_or_potential_matched_form_type;
+  }
+
+  // Set non-federated matches. All matches must have the same scheme
+  // as |scheme_| as this is the standard case.
   void SetNonFederated(const std::vector<PasswordForm>& non_federated);
+
+  void SetNonFederated(
+      const std::vector<PasswordForm>& non_federated,
+      const std::vector<PasswordForm>& non_federated_same_scheme);
+
+  void SetBestMatches(const std::vector<PasswordForm>& best_matches);
 
   void SetBlocklisted(bool is_blocklisted);
 
@@ -97,13 +111,14 @@ class FakeFormFetcher : public FormFetcher {
   std::vector<InteractionsStats> stats_;
   std::vector<PasswordForm> non_federated_;
   std::vector<PasswordForm> federated_;
-  std::vector<raw_ptr<const PasswordForm, VectorExperimental>>
-      non_federated_same_scheme_;
+  std::vector<PasswordForm> non_federated_same_scheme_;
   std::vector<PasswordForm> best_matches_;
   std::vector<PasswordForm> insecure_credentials_;
   bool is_blocklisted_ = false;
   std::optional<PasswordStoreBackendError> profile_store_backend_error_;
   std::optional<PasswordStoreBackendError> account_store_backend_error_;
+  std::optional<PasswordFormMetricsRecorder::MatchedFormType>
+      preferred_or_potential_matched_form_type_;
 };
 
 }  // namespace password_manager

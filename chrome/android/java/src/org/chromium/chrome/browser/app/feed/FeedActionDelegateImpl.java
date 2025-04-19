@@ -25,7 +25,7 @@ import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.RequestCoordinatorBridge;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.signin.SigninAndHistoryOptInActivityLauncherImpl;
+import org.chromium.chrome.browser.signin.SigninAndHistorySyncActivityLauncherImpl;
 import org.chromium.chrome.browser.signin.SyncConsentActivityLauncherImpl;
 import org.chromium.chrome.browser.signin.services.SigninMetricsUtils;
 import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
@@ -33,7 +33,7 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
-import org.chromium.chrome.browser.ui.signin.SigninAndHistoryOptInCoordinator;
+import org.chromium.chrome.browser.ui.signin.SigninAndHistorySyncCoordinator;
 import org.chromium.chrome.browser.ui.signin.account_picker.AccountPickerBottomSheetStrings;
 import org.chromium.chrome.browser.util.BrowserUiUtils;
 import org.chromium.chrome.browser.util.BrowserUiUtils.ModuleTypeOnStartAndNtp;
@@ -58,14 +58,11 @@ public class FeedActionDelegateImpl implements FeedActionDelegate {
     private final Profile mProfile;
     private final BottomSheetController mBottomSheetController;
 
-    @BrowserUiUtils.HostSurface private int mHostSurface;
-
     public FeedActionDelegateImpl(
             Activity activity,
             SnackbarManager snackbarManager,
             NativePageNavigationDelegate navigationDelegate,
             BookmarkModel bookmarkModel,
-            @BrowserUiUtils.HostSurface int hostSurface,
             TabModelSelector tabModelSelector,
             Profile profile,
             BottomSheetController bottomSheetController) {
@@ -73,7 +70,6 @@ public class FeedActionDelegateImpl implements FeedActionDelegate {
         mNavigationDelegate = navigationDelegate;
         mBookmarkModel = bookmarkModel;
         mSnackbarManager = snackbarManager;
-        mHostSurface = hostSurface;
         mTabModelSelector = tabModelSelector;
         mProfile = profile;
         mBottomSheetController = bottomSheetController;
@@ -124,7 +120,7 @@ public class FeedActionDelegateImpl implements FeedActionDelegate {
                     });
         }
 
-        BrowserUiUtils.recordModuleClickHistogram(mHostSurface, ModuleTypeOnStartAndNtp.FEED);
+        BrowserUiUtils.recordModuleClickHistogram(ModuleTypeOnStartAndNtp.FEED);
     }
 
     @Override
@@ -138,7 +134,7 @@ public class FeedActionDelegateImpl implements FeedActionDelegate {
                 WindowOpenDisposition.CURRENT_TAB,
                 new LoadUrlParams(NEW_TAB_URL_HELP, PageTransition.AUTO_BOOKMARK));
 
-        BrowserUiUtils.recordModuleClickHistogram(mHostSurface, ModuleTypeOnStartAndNtp.FEED);
+        BrowserUiUtils.recordModuleClickHistogram(ModuleTypeOnStartAndNtp.FEED);
     }
 
     @Override
@@ -189,15 +185,15 @@ public class FeedActionDelegateImpl implements FeedActionDelegate {
                 new AccountPickerBottomSheetStrings.Builder(
                                 R.string.signin_account_picker_bottom_sheet_title)
                         .build();
-        SigninAndHistoryOptInActivityLauncherImpl.get()
+        SigninAndHistorySyncActivityLauncherImpl.get()
                 .launchActivityIfAllowed(
                         mActivity,
                         mProfile,
                         bottomSheetStrings,
-                        SigninAndHistoryOptInCoordinator.NoAccountSigninMode.BOTTOM_SHEET,
-                        SigninAndHistoryOptInCoordinator.WithAccountSigninMode
+                        SigninAndHistorySyncCoordinator.NoAccountSigninMode.BOTTOM_SHEET,
+                        SigninAndHistorySyncCoordinator.WithAccountSigninMode
                                 .DEFAULT_ACCOUNT_BOTTOM_SHEET,
-                        SigninAndHistoryOptInCoordinator.HistoryOptInMode.NONE,
+                        SigninAndHistorySyncCoordinator.HistoryOptInMode.NONE,
                         signinAccessPoint);
     }
 
@@ -217,15 +213,15 @@ public class FeedActionDelegateImpl implements FeedActionDelegate {
                                             .signin_account_picker_bottom_sheet_subtitle_for_back_of_card_menu_signin)
                             .setDismissButtonStringId(R.string.cancel)
                             .build();
-            SigninAndHistoryOptInActivityLauncherImpl.get()
+            SigninAndHistorySyncActivityLauncherImpl.get()
                     .launchActivityIfAllowed(
                             mActivity,
                             mProfile,
                             bottomSheetStrings,
-                            SigninAndHistoryOptInCoordinator.NoAccountSigninMode.BOTTOM_SHEET,
-                            SigninAndHistoryOptInCoordinator.WithAccountSigninMode
+                            SigninAndHistorySyncCoordinator.NoAccountSigninMode.BOTTOM_SHEET,
+                            SigninAndHistorySyncCoordinator.WithAccountSigninMode
                                     .DEFAULT_ACCOUNT_BOTTOM_SHEET,
-                            SigninAndHistoryOptInCoordinator.HistoryOptInMode.NONE,
+                            SigninAndHistorySyncCoordinator.HistoryOptInMode.NONE,
                             signinAccessPoint);
             return;
         }
@@ -238,7 +234,7 @@ public class FeedActionDelegateImpl implements FeedActionDelegate {
                                         .signin_account_picker_bottom_sheet_subtitle_for_back_of_card_menu_signin_old)
                         .setDismissButtonStringId(R.string.close)
                         .build();
-        SigninMetricsUtils.logSigninStartAccessPoint(signinAccessPoint);
+        SigninMetricsUtils.logSigninStarted(signinAccessPoint);
         SigninMetricsUtils.logSigninUserActionForAccessPoint(signinAccessPoint);
         SigninBottomSheetCoordinator signinCoordinator =
                 new SigninBottomSheetCoordinator(

@@ -15,7 +15,7 @@
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/webdata/autofill_change.h"
 #include "components/autofill/core/common/form_field_data.h"
-#include "components/sync/base/model_type.h"
+#include "components/sync/base/data_type.h"
 #include "components/webdata/common/web_data_results.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_data_service_consumer.h"
@@ -68,8 +68,8 @@ class AutofillWebDataService : public WebDataServiceBase {
       WebDataServiceConsumer* consumer);
 
   // Removes form elements recorded for Autocomplete from the database.
-  void RemoveFormElementsAddedBetween(const base::Time& delete_begin,
-                                      const base::Time& delete_end);
+  void RemoveFormElementsAddedBetween(base::Time delete_begin,
+                                      base::Time delete_end);
   void RemoveFormValueForElementName(const std::u16string& name,
                                      const std::u16string& value);
 
@@ -95,8 +95,8 @@ class AutofillWebDataService : public WebDataServiceBase {
   // in the time interval [|begin|, |end|). |begin| and |end| can be null
   // to indicate no time limitation.
   WebDataServiceBase::Handle GetCountOfValuesContainedBetween(
-      const base::Time& begin,
-      const base::Time& end,
+      base::Time begin,
+      base::Time end,
       WebDataServiceConsumer* consumer);
 
   // Schedules a task to update autocomplete entries in the web database.
@@ -208,13 +208,13 @@ class AutofillWebDataService : public WebDataServiceBase {
   void UpdateServerCardMetadata(const CreditCard& credit_card);
 
   // Removes Autofill records from the database.
-  void RemoveAutofillDataModifiedBetween(const base::Time& delete_begin,
-                                         const base::Time& delete_end);
+  void RemoveAutofillDataModifiedBetween(base::Time delete_begin,
+                                         base::Time delete_end);
 
   // Removes origin URLs associated with Autofill profiles and credit cards from
   // the database.
-  void RemoveOriginURLsModifiedBetween(const base::Time& delete_begin,
-                                       const base::Time& delete_end);
+  void RemoveOriginURLsModifiedBetween(base::Time delete_begin,
+                                       base::Time delete_end);
 
   void AddObserver(AutofillWebDataServiceObserverOnDBSequence* observer);
   void RemoveObserver(AutofillWebDataServiceObserverOnDBSequence* observer);
@@ -252,7 +252,7 @@ class AutofillWebDataService : public WebDataServiceBase {
  protected:
   ~AutofillWebDataService() override;
 
-  void NotifyOnAutofillChangedBySyncOnUISequence(syncer::ModelType model_type);
+  void NotifyOnAutofillChangedBySyncOnUISequence(syncer::DataType data_type);
 
   base::WeakPtr<AutofillWebDataService> AsWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();

@@ -7,8 +7,12 @@
 
 #include <stddef.h>
 
+#include <string>
+
 #include "base/memory/raw_ptr.h"
+#include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
+#include "components/search_engines/template_url_service.h"
 
 class AutocompleteInput;
 class AutocompleteProviderClient;
@@ -45,7 +49,12 @@ class FeaturedSearchProvider : public AutocompleteProvider {
   // Constructs a NULL_RESULT_MESSAGE match that is informational only and
   // cannot be acted upon.  This match delivers an IPH message directing users
   // to the starter pack feature.
-  void AddIPHMatch();
+  void AddIPHMatch(IphType iph_type,
+                   const std::u16string& iph_contents,
+                   const std::u16string& matched_term,
+                   const std::u16string& iph_link_text,
+                   const GURL& iph_link_url,
+                   bool deletable);
 
   void AddFeaturedEnterpriseSearchMatch(const TemplateURL& template_url,
                                         const AutocompleteInput& input);
@@ -53,13 +62,45 @@ class FeaturedSearchProvider : public AutocompleteProvider {
   // Whether to show the @gemini IPH row. This takes into account factors like
   // feature flags, zero suggest state, how many times its been shown, and past
   // user behavior.
-  bool ShouldShowIPHMatch(const AutocompleteInput& input);
+  bool ShouldShowGeminiIPHMatch(const AutocompleteInput& input) const;
+
+  // Whether to show the Enterprise featured Search IPH row. This takes into
+  // account factors like feature flags, zero suggest state, how many times it's
+  // been shown, and past user behavior.
+  bool ShouldShowEnterpriseFeaturedSearchIPHMatch(
+      const AutocompleteInput& input) const;
+
+  // Returns whether Chrome should show the IPH for `iph_type`, meaning that:
+  // - It has been shown fewer times than the session limit;
+  // - The user has not manually deleted it.
+  // If the limit is set to INT_MAX, it is not limited.
+  bool ShouldShowIPH(IphType iph_type) const;
+
+  void AddFeaturedEnterpriseSearchIPHMatch();
+
+  bool ShouldShowHistoryEmbeddingsSettingsPromoIphMatch() const;
+  void AddHistoryEmbeddingsSettingsPromoIphMatch();
+
+  bool ShouldShowHistoryEmbeddingsDisclaimerIphMatch() const;
+  void AddHistoryEmbeddingsDisclaimerIphMatch();
+
+  bool ShouldShowHistoryScopePromoIphMatch(
+      const AutocompleteInput& input) const;
+  void AddHistoryScopePromoIphMatch();
+
+  bool ShouldShowHistoryEmbeddingsScopePromoIphMatch(
+      const AutocompleteInput& input) const;
+  void AddHistoryEmbeddingsScopePromoIphMatch();
 
   raw_ptr<AutocompleteProviderClient> client_;
   raw_ptr<TemplateURLService> template_url_service_;
 
   // The number of times the IPH row has been shown so far in this session.
   size_t iph_shown_count_{0};
+
+  // Whether an IPH match was shown during the current omnibox session. Used to
+  // avoid incrementing `iph_shown_count_` more than once per session.
+  bool iph_shown_this_session_ = false;
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_FEATURED_SEARCH_PROVIDER_H_

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "components/viz/common/quads/render_pass_io.h"
 
 #include <optional>
@@ -702,6 +707,7 @@ const char* ColorSpacePrimaryIdToString(gfx::ColorSpace::PrimaryID id) {
     MATCH_ENUM_CASE(PrimaryID, APPLE_GENERIC_RGB)
     MATCH_ENUM_CASE(PrimaryID, WIDE_GAMUT_COLOR_SPIN)
     MATCH_ENUM_CASE(PrimaryID, CUSTOM)
+    MATCH_ENUM_CASE(PrimaryID, EBU_3213_E)
   }
 }
 
@@ -783,6 +789,7 @@ uint8_t StringToColorSpacePrimaryId(const std::string& token) {
   MATCH_ENUM_CASE(PrimaryID, APPLE_GENERIC_RGB)
   MATCH_ENUM_CASE(PrimaryID, WIDE_GAMUT_COLOR_SPIN)
   MATCH_ENUM_CASE(PrimaryID, CUSTOM)
+  MATCH_ENUM_CASE(PrimaryID, EBU_3213_E)
   return -1;
 }
 

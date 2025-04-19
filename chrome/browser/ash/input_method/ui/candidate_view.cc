@@ -14,6 +14,7 @@
 #include "ui/color/color_provider.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/text_constants.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
@@ -155,7 +156,7 @@ CandidateView::CandidateView(PressedCallback callback,
   }
 
   SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY);
-  SetAccessibleRole(ax::mojom::Role::kImeCandidate);
+  GetViewAccessibility().SetRole(ax::mojom::Role::kImeCandidate);
 }
 
 void CandidateView::GetPreferredWidths(int* shortcut_width,
@@ -184,7 +185,7 @@ void CandidateView::SetEntry(const ui::CandidateWindow::Entry& entry) {
   shortcut_label_->SetText(label);
   candidate_label_->SetText(entry.value);
   annotation_label_->SetText(entry.annotation);
-  SetAccessibleName(entry.value);
+  GetViewAccessibility().SetName(entry.value);
 }
 
 void CandidateView::SetInfolistIcon(bool enable) {
@@ -313,16 +314,10 @@ gfx::Size CandidateView::CalculatePreferredSize(
 void CandidateView::SetPositionData(int index, int total) {
   candidate_index_ = index;
   total_candidates_ = total;
-}
 
-void CandidateView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  Button::GetAccessibleNodeData(node_data);
-  node_data->role = ax::mojom::Role::kImeCandidate;
   // PosInSet needs to be incremented since |candidate_index_| is 0-based.
-  node_data->AddIntAttribute(ax::mojom::IntAttribute::kPosInSet,
-                             candidate_index_ + 1);
-  node_data->AddIntAttribute(ax::mojom::IntAttribute::kSetSize,
-                             total_candidates_);
+  GetViewAccessibility().SetPosInSet(candidate_index_ + 1);
+  GetViewAccessibility().SetSetSize(total_candidates_);
 }
 
 BEGIN_METADATA(CandidateView)

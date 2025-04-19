@@ -17,6 +17,8 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observation.h"
+#include "base/scoped_observation_traits.h"
 #include "base/supports_user_data.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
@@ -34,6 +36,7 @@
 #include "chrome/browser/ui/unload_controller.h"
 #include "components/paint_preview/buildflags/buildflags.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "components/saved_tab_groups/saved_tab_group_model_observer.h"
 #include "components/sessions/core/session_id.h"
 #include "components/translate/content/browser/content_translate_driver.h"
 #include "components/zoom/zoom_observer.h"
@@ -78,6 +81,7 @@ class TabMenuModelDelegate;
 
 namespace tab_groups {
 class DeletionDialogController;
+class SavedTabGroupModel;
 }
 
 namespace blink {
@@ -114,6 +118,10 @@ namespace web_modal {
 class WebContentsModalDialogHost;
 }
 
+namespace views {
+class View;
+}
+
 // This enum is not a member of `Browser` so that it can be forward
 // declared in `unload_controller.h` to avoid circular includes.
 enum class BrowserClosingStatus {
@@ -128,13 +136,13 @@ enum class BrowserClosingStatus {
 // scoped to an instance of this class, usually via direct or indirect ownership
 // of a std::unique_ptr. See BrowserWindowFeatures and TabFeatures.
 class Browser : public TabStripModelObserver,
+                public tab_groups::SavedTabGroupModelObserver,
                 public WebContentsCollection::Observer,
                 public content::WebContentsDelegate,
                 public ChromeWebModalDialogManagerDelegate,
                 public base::SupportsUserData,
                 public BookmarkTabHelperObserver,
                 public zoom::ZoomObserver,
-                public content::PageNavigator,
                 public ThemeServiceObserver,
                 public translate::ContentTranslateDriver::TranslationObserver,
                 public ui::SelectFileDialog::Listener,
@@ -742,12 +750,6 @@ class Browser : public TabStripModelObserver,
 
   // Interface implementations ////////////////////////////////////////////////
 
-  // Overridden from content::PageNavigator:
-  content::WebContents* OpenURL(
-      const content::OpenURLParams& params,
-      base::OnceCallback<void(content::NavigationHandle&)>
-          navigation_handle_callback) override;
-
   // Overridden from TabStripModelObserver:
   void OnTabStripModelChanged(
       TabStripModel* tab_strip_model,
@@ -761,6 +763,11 @@ class Browser : public TabStripModelObserver,
                               content::WebContents* contents,
                               int index) override;
   void TabStripEmpty() override;
+
+  // Overridden from tab_groups::SavedTabGroupModelObserver:
+  void SavedTabGroupAddedLocally(const base::Uuid& guid) override;
+  void SavedTabGroupRemovedLocally(
+      const tab_groups::SavedTabGroup& removed_group) override;
 
   // Overridden from content::WebContentsDelegate:
   void ActivateContents(content::WebContents* contents) override;
@@ -776,10 +783,9 @@ class Browser : public TabStripModelObserver,
   void SetFocusToLocationBar() override;
   content::KeyboardEventProcessingResult PreHandleKeyboardEvent(
       content::WebContents* source,
-      const content::NativeWebKeyboardEvent& event) override;
-  bool HandleKeyboardEvent(
-      content::WebContents* source,
-      const content::NativeWebKeyboardEvent& event) override;
+      const input::NativeWebKeyboardEvent& event) override;
+  bool HandleKeyboardEvent(content::WebContents* source,
+                           const input::NativeWebKeyboardEvent& event) override;
   bool PreHandleGestureEvent(content::WebContents* source,
                              const blink::WebGestureEvent& event) override;
   bool CanDragEnter(content::WebContents* source,
@@ -802,13 +808,9 @@ class Browser : public TabStripModelObserver,
   content::PictureInPictureResult EnterPictureInPicture(
       content::WebContents* web_contents) override;
   void ExitPictureInPicture() override;
-  bool IsBackForwardCacheSupported() override;
+  bool IsBackForwardCacheSupported(content::WebContents& web_contents) override;
   content::PreloadingEligibility IsPrerender2Supported(
       content::WebContents& web_contents) override;
-  void UpdateInspectedWebContentsIfNecessary(
-      content::WebContents* old_contents,
-      content::WebContents* new_contents,
-      base::OnceCallback<void()> callback) override;
   bool ShouldShowStaleContentOnEviction(content::WebContents* source) override;
   void MediaWatchTimeChanged(
       const content::MediaPlayerWatchTime& watch_time) override;
@@ -868,8 +870,35 @@ class Browser : public TabStripModelObserver,
 
   // BrowserWindowInterface overrides:
   views::WebView* GetWebView() override;
-  void OpenURL(const GURL& gurl, WindowOpenDisposition disposition) override;
+  Profile* GetProfile() override;
+  void OpenGURL(const GURL& gurl, WindowOpenDisposition disposition) override;
+  content::WebContents* OpenURL(
+      const content::OpenURLParams& params,
+      base::OnceCallback<void(content::NavigationHandle&)>
+          navigation_handle_callback) override;
   const SessionID& GetSessionID() override;
+  bool IsTabStripVisible() override;
+  views::View* TopContainer() override;
+  tabs::TabInterface* GetActiveTabInterface() override;
+  BrowserWindowFeatures& GetFeatures() override;
+  web_modal::WebContentsModalDialogHost*
+  GetWebContentsModalDialogHostForWindow() override;
+  bool IsActive() override;
+  base::CallbackListSubscription RegisterDidBecomeActive(
+      DidBecomeActiveCallback callback) override;
+  base::CallbackListSubscription RegisterDidBecomeInactive(
+      DidBecomeInactiveCallback callback) override;
+  ExclusiveAccessManager* GetExclusiveAccessManager() override;
+  BrowserActions* GetActions() override;
+
+  // Called by BrowserView when on active changes.
+  void DidBecomeActive();
+  void DidBecomeInactive();
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  bool IsLockedForOnTask();
+  void SetLockedForOnTask(bool locked);
+#endif
 
  private:
   friend class BrowserTest;
@@ -1089,10 +1118,8 @@ class Browser : public TabStripModelObserver,
       const zoom::ZoomController::ZoomChangedEventData& data) override;
 
   // Overridden from SelectFileDialog::Listener:
-  void FileSelected(const ui::SelectedFileInfo& file_info,
-                    int index,
-                    void* params) override;
-  void FileSelectionCanceled(void* params) override;
+  void FileSelected(const ui::SelectedFileInfo& file_info, int index) override;
+  void FileSelectionCanceled() override;
 
   // Overridden from ThemeServiceObserver:
   void OnThemeChanged() override;
@@ -1120,6 +1147,11 @@ class Browser : public TabStripModelObserver,
   // Handle changes to kDevToolsAvailability preference.
   void OnDevToolsAvailabilityChanged();
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Handle `on_task_locked_` state changes.
+  void OnLockedForOnTaskUpdated();
+#endif
+
   // UI update coalescing and handling ////////////////////////////////////////
 
   // Asks the toolbar (and as such the location bar) to update its state to
@@ -1128,6 +1160,10 @@ class Browser : public TabStripModelObserver,
   // should restore any previous location bar state (such as user editing) as
   // well.
   void UpdateToolbar(bool should_restore_state);
+
+  // Asks the toolbar to layout and redraw to reflect the current security
+  // state.
+  void UpdateToolbarSecurityState();
 
   // Does one or both of the following for each bit in |changed_flags|:
   // . If the update should be processed immediately, it is.
@@ -1187,11 +1223,6 @@ class Browser : public TabStripModelObserver,
   // browser object is set as a delegate for |web_contents| components, else
   // is is removed as a delegate.
   void SetAsDelegate(content::WebContents* web_contents, bool set_delegate);
-
-  // Shows the Find Bar, optionally selecting the next entry that matches the
-  // existing search string for that Tab. |forward_direction| controls the
-  // search direction.
-  void FindInPage(bool find_next, bool forward_direction);
 
   void TabDetachedAtImpl(content::WebContents* contents,
                          bool was_active,
@@ -1418,6 +1449,12 @@ class Browser : public TabStripModelObserver,
 
   std::unique_ptr<ScopedKeepAlive> keep_alive_;
 
+  // Observe saved tab group model events for normal browser type to
+  // update the session restore metadata with the correct saved group ID.
+  base::ScopedObservation<tab_groups::SavedTabGroupModel,
+                          tab_groups::SavedTabGroupModelObserver>
+      saved_tab_group_observation_{this};
+
   WarnBeforeClosingCallback warn_before_closing_callback_;
 
   // Tells if the browser should skip warning the user when closing the window.
@@ -1425,6 +1462,14 @@ class Browser : public TabStripModelObserver,
 
   // If true, immediately updates the UI when scheduled.
   bool update_ui_immediately_for_testing_ = false;
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // OnTask is a ChromeOS feature that is not related to web browsers, but
+  // happens to be implemented using code in //chrome/browser. The feature,
+  // when enabled, disables certain functionality that a web browser would
+  // never typically disable.
+  bool on_task_locked_ = false;
+#endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   std::unique_ptr<extensions::ExtensionBrowserWindowHelper>
@@ -1448,6 +1493,14 @@ class Browser : public TabStripModelObserver,
 #endif
 
   int force_show_bookmark_bar_flags_ = ForceShowBookmarkBarFlag::kNone;
+
+  using DidBecomeActiveCallbackList =
+      base::RepeatingCallbackList<void(BrowserWindowInterface*)>;
+  DidBecomeActiveCallbackList did_become_active_callback_list_;
+
+  using DidBecomeInactiveCallbackList =
+      base::RepeatingCallbackList<void(BrowserWindowInterface*)>;
+  DidBecomeInactiveCallbackList did_become_inactive_callback_list_;
 
   std::unique_ptr<BrowserWindowFeatures> features_;
 

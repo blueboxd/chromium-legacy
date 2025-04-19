@@ -125,12 +125,17 @@ class CONTENT_EXPORT IndexedDBTransaction
   enum class RunTasksResult { kError, kNotFinished, kCommitted, kAborted };
   std::tuple<RunTasksResult, leveldb::Status> RunTasks();
 
+  // Returns metadata relevant to idb-internals.
+  storage::mojom::IdbTransactionMetadataPtr GetIdbInternalsMetadata() const;
+  // Called when the data used to populate the struct in
+  // `GetIdbInternalsMetadata` is changed in a significant way.
+  void NotifyOfIdbInternalsRelevantChange();
+
   IndexedDBBackingStore::Transaction* BackingStoreTransaction() {
     return backing_store_transaction_.get();
   }
   int64_t id() const { return id_; }
 
-  base::WeakPtr<IndexedDBDatabase> database() const { return database_; }
   IndexedDBDatabaseCallbacks* callbacks() const {
     return connection()->callbacks();
   }
@@ -221,6 +226,7 @@ class CONTENT_EXPORT IndexedDBTransaction
   leveldb::Status CommitPhaseTwo();
   void TimeoutFired();
   void ResetTimeoutTimer();
+  void SetState(State state);
 
   const int64_t id_;
   const std::set<int64_t> object_store_ids_;

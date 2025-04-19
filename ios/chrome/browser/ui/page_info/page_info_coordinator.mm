@@ -8,8 +8,13 @@
 #import "base/metrics/histogram_functions.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
+#import "components/feature_engagement/public/event_constants.h"
+#import "components/feature_engagement/public/feature_constants.h"
+#import "components/feature_engagement/public/feature_list.h"
+#import "components/feature_engagement/public/tracker.h"
 #import "components/page_info/core/page_info_action.h"
 #import "ios/chrome/browser/content_settings/model/host_content_settings_map_factory.h"
+#import "ios/chrome/browser/feature_engagement/model/tracker_factory.h"
 #import "ios/chrome/browser/page_info/about_this_site_service_factory.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
@@ -27,6 +32,8 @@
 #import "ios/chrome/browser/ui/page_info/page_info_view_controller.h"
 #import "ios/chrome/browser/url_loading/model/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/model/url_loading_params.h"
+#import "ios/chrome/browser/web/model/web_navigation_util.h"
+#import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/web_state.h"
 
 @interface PageInfoCoordinator () <PageInfoPresentationCommands>
@@ -91,6 +98,15 @@
     _aboutThisSiteMediator.consumer = self.viewController;
   }
 
+  if (base::FeatureList::IsEnabled(
+          feature_engagement::kIPHiOSInlineEnhancedSafeBrowsingPromoFeature)) {
+    feature_engagement::Tracker* tracker =
+        feature_engagement::TrackerFactory::GetForBrowserState(
+            self.browser->GetBrowserState());
+    tracker->NotifyEvent(
+        feature_engagement::events::kEnhancedSafeBrowsingPromoCriterionMet);
+  }
+
   [self.baseViewController presentViewController:self.navigationController
                                         animated:YES
                                       completion:nil];
@@ -108,6 +124,10 @@
   [self.dispatcher stopDispatchingToTarget:self];
   self.navigationController = nil;
   self.viewController = nil;
+
+  [_securityCoordinator stop];
+  _securityCoordinator.pageInfoPresentationHandler = nil;
+  _securityCoordinator = nil;
 
   base::RecordAction(base::UserMetricsAction("PageInfo.Closed"));
 }
@@ -148,8 +168,19 @@
       page_info::kWebsiteSettingsActionHistogram,
       page_info::PAGE_INFO_ABOUT_THIS_SITE_PAGE_OPENED);
 
-  UrlLoadParams params = UrlLoadParams::InNewTab(URL);
-  params.in_incognito = self.browser->GetBrowserState()->IsOffTheRecord();
+  web::NavigationManager::WebLoadParams webParams =
+      web::NavigationManager::WebLoadParams(URL);
+  bool in_incognito = self.browser->GetBrowserState()->IsOffTheRecord();
+
+  // Add X-Client-Data header.
+  NSMutableDictionary<NSString*, NSString*>* combinedExtraHeaders =
+      [web_navigation_util::VariationHeadersForURL(URL, in_incognito)
+          mutableCopy];
+  [combinedExtraHeaders addEntriesFromDictionary:webParams.extra_headers];
+  webParams.extra_headers = [combinedExtraHeaders copy];
+  UrlLoadParams params = UrlLoadParams::InNewTab(webParams);
+  params.in_incognito = in_incognito;
+
   UrlLoadingBrowserAgent::FromBrowser(self.browser)->Load(params);
   id<PageInfoCommands> pageInfoCommandsHandler =
       HandlerForProtocol(self.dispatcher, PageInfoCommands);

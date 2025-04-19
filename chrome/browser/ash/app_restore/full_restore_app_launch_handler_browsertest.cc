@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/autotest_desks_api.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -15,8 +16,12 @@
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_util.h"
+#include "ash/wm/desks/desk_action_context_menu.h"
+#include "ash/wm/desks/desks_test_api.h"
+#include "ash/wm/desks/overview_desk_bar_view.h"
 #include "ash/wm/desks/templates/saved_desk_test_util.h"
 #include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_test_util.h"
 #include "ash/wm/window_restore/window_restore_util.h"
 #include "ash/wm/window_state.h"
@@ -88,6 +93,7 @@
 #include "ui/display/types/display_constants.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/message_center/public/cpp/notification.h"
+#include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash::full_restore {
@@ -241,18 +247,18 @@ Browser* GetBrowserForWindowId(int32_t window_id) {
   return nullptr;
 }
 
-void ClickButton(const views::Button* button) {
-  ASSERT_TRUE(button);
-  ASSERT_TRUE(button->GetVisible());
+void ClickView(const views::View* view) {
+  ASSERT_TRUE(view);
+  ASSERT_TRUE(view->GetVisible());
   aura::Window* root_window =
-      button->GetWidget()->GetNativeWindow()->GetRootWindow();
+      view->GetWidget()->GetNativeWindow()->GetRootWindow();
   ui::test::EventGenerator event_generator(root_window);
-  event_generator.MoveMouseToInHost(button->GetBoundsInScreen().CenterPoint());
+  event_generator.MoveMouseToInHost(view->GetBoundsInScreen().CenterPoint());
   event_generator.ClickLeftButton();
 }
 
 void ClickSaveDeskAsTemplateButton() {
-  ClickButton(GetSaveDeskAsTemplateButton());
+  ClickView(GetSaveDeskAsTemplateButton());
   // Wait for the template to be stored in the model.
   WaitForSavedDeskUI();
   // Clicking the save template button selects the newly created template's name
@@ -261,8 +267,25 @@ void ClickSaveDeskAsTemplateButton() {
   SendKey(ui::VKEY_RETURN, &event_generator);
 }
 
+void SelectSaveDeskAsTemplateMenuItem(int index) {
+  views::MenuItemView* menu_item =
+      ash::DesksTestApi::OpenDeskContextMenuAndGetMenuItem(
+          ash::Shell::GetPrimaryRootWindow(), DeskBarViewBase::Type::kOverview,
+          index, ash::DeskActionContextMenu::CommandId::kSaveAsTemplate);
+  ASSERT_TRUE(menu_item);
+  ClickView(menu_item);
+
+  // Wait for the template to be stored in the model.
+  WaitForSavedDeskUI();
+
+  // Clicking the save template button selects the newly created template's name
+  // field. We can press enter or escape or click to select out of it.
+  ui::test::EventGenerator event_generator(Shell::GetPrimaryRootWindow());
+  SendKey(ui::VKEY_RETURN, &event_generator);
+}
+
 void ClickTemplateItem(int index) {
-  ClickButton(GetSavedDeskItemButton(/*index=*/0));
+  ClickView(GetSavedDeskItemButton(/*index=*/0));
 }
 
 }  // namespace
@@ -630,6 +653,13 @@ IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerBrowserTest,
 // restore finishes.
 IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerBrowserTest,
                        RestoreAndLaunchBrowserWithClickRestore) {
+  // TODO(http://b/328779923): This test tests clicking a notification that will
+  // not be shown if this feature is enabled. Remove this test once this feature
+  // can no longer be disabled.
+  if (ash::features::IsForestFeatureEnabled()) {
+    GTEST_SKIP() << "Skipping test body for Forest Feature.";
+  }
+
   base::HistogramTester histogram_tester;
   size_t count = BrowserList::GetInstance()->size();
 
@@ -684,6 +714,13 @@ IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerBrowserTest,
 // when |kShowPostRebootNotification| pref is set.
 IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerBrowserTest,
                        RestoreWithPostRebootTitle) {
+  // TODO(http://b/328779923): This test tests checking a notification that will
+  // not be shown if forest feature is enabled. Remove this test once forest
+  // feature can no longer be disabled.
+  if (ash::features::IsForestFeatureEnabled()) {
+    GTEST_SKIP() << "Skipping test body for Forest Feature.";
+  }
+
   base::HistogramTester histogram_tester;
   // Add the chrome browser launch info.
   SaveBrowserAppLaunchInfo(kWindowId1);
@@ -1006,7 +1043,11 @@ IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerBrowserTest,
   ToggleOverview();
   WaitForOverviewEnterAnimation();
 
-  ClickSaveDeskAsTemplateButton();
+  if (features::IsSavedDeskUiRevampEnabled()) {
+    SelectSaveDeskAsTemplateMenuItem(/*index=*/1);
+  } else {
+    ClickSaveDeskAsTemplateButton();
+  }
 
   ToggleOverview();
   WaitForOverviewExitAnimation();
@@ -1026,7 +1067,7 @@ IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerBrowserTest,
   WaitForOverviewEnterAnimation();
 
   // Enter the saved desk library.
-  ClickButton(GetLibraryButton());
+  ClickView(GetLibraryButton());
   // Launch the first entry.
   ClickTemplateItem(/*index=*/0);
 
@@ -2205,7 +2246,11 @@ IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerArcAppBrowserTest,
   // Capture the active desk as a template.
   ToggleOverview();
   WaitForOverviewEnterAnimation();
-  ClickSaveDeskAsTemplateButton();
+  if (features::IsSavedDeskUiRevampEnabled()) {
+    SelectSaveDeskAsTemplateMenuItem(/*index=*/2);
+  } else {
+    ClickSaveDeskAsTemplateButton();
+  }
   ToggleOverview();
   WaitForOverviewExitAnimation();
 
@@ -2216,7 +2261,7 @@ IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerArcAppBrowserTest,
   // Launch the template.
   ToggleOverview();
   WaitForOverviewEnterAnimation();
-  ClickButton(GetLibraryButton());
+  ClickView(GetLibraryButton());
   ClickTemplateItem(/*index=*/0);
   ToggleOverview();
   WaitForOverviewExitAnimation();

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ash/system/focus_mode/focus_mode_util.h"
 
 #include "ash/shell.h"
@@ -10,6 +15,7 @@
 #include "ash/system/focus_mode/focus_mode_controller.h"
 #include "ash/system/model/clock_model.h"
 #include "ash/system/model/system_tray_model.h"
+#include "base/check_op.h"
 #include "base/i18n/time_formatting.h"
 #include "base/i18n/unicodestring.h"
 #include "base/strings/string_number_conversions.h"
@@ -19,6 +25,34 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace ash::focus_mode_util {
+namespace {
+
+constexpr std::pair<int, std::u16string>
+    congratulatory_pair[kCongratulatoryTitleNum] = {
+        std::make_pair(IDS_ASH_STATUS_TRAY_FOCUS_MODE_ENDING_MOMENT_TITLE,
+                       u"🎉"),
+        std::make_pair(IDS_ASH_STATUS_TRAY_FOCUS_MODE_ENDING_MOMENT_TITLE_1,
+                       u"⭐"),
+        std::make_pair(IDS_ASH_STATUS_TRAY_FOCUS_MODE_ENDING_MOMENT_TITLE_2,
+                       u"🎉"),
+        std::make_pair(IDS_ASH_STATUS_TRAY_FOCUS_MODE_ENDING_MOMENT_TITLE_3,
+                       u"⚡"),
+        std::make_pair(IDS_ASH_STATUS_TRAY_FOCUS_MODE_ENDING_MOMENT_TITLE_4,
+                       u"🎈"),
+        std::make_pair(IDS_ASH_STATUS_TRAY_FOCUS_MODE_ENDING_MOMENT_TITLE_5,
+                       u"☑"),
+};
+
+}
+
+SelectedPlaylist::SelectedPlaylist() = default;
+
+SelectedPlaylist::SelectedPlaylist(const SelectedPlaylist&) = default;
+
+SelectedPlaylist& SelectedPlaylist::operator=(const SelectedPlaylist& other) =
+    default;
+
+SelectedPlaylist::~SelectedPlaylist() = default;
 
 std::u16string GetDurationString(base::TimeDelta duration_to_format,
                                  bool digital_format) {
@@ -75,9 +109,10 @@ std::u16string GetFormattedClockString(const base::Time end_time) {
       base::kKeepAmPm);
 }
 
-std::u16string GetNotificationTitleForFocusSession(const base::Time end_time) {
+std::u16string GetNotificationDescriptionForFocusSession(
+    const base::Time end_time) {
   return l10n_util::GetStringFUTF16(
-      IDS_ASH_DO_NOT_DISTURB_NOTIFICATION_IN_FOCUS_MODE_TITLE,
+      IDS_ASH_DO_NOT_DISTURB_NOTIFICATION_IN_FOCUS_MODE_DESCRIPTION,
       GetFormattedClockString(end_time));
 }
 
@@ -98,6 +133,41 @@ std::u16string GetFormattedEndTimeString(const base::Time end_time) {
   return l10n_util::GetStringFUTF16(
       IDS_ASH_STATUS_TRAY_FOCUS_MODE_TOGGLE_TIME_SUBLABEL,
       focus_mode_util::GetFormattedClockString(end_time));
+}
+
+std::string GetSourceTitleForMediaControls(const SelectedPlaylist& playlist) {
+  if (playlist.empty() || playlist.type == SoundType::kNone) {
+    return "";
+  }
+
+  std::string playlist_type = l10n_util::GetStringUTF8(
+      playlist.type == SoundType::kYouTubeMusic
+          ? IDS_ASH_STATUS_TRAY_FOCUS_MODE_SOUNDS_YOUTUBE_MUSIC_BUTTON
+          : IDS_ASH_STATUS_TRAY_FOCUS_MODE_SOUNDS_SOUNDSCAPE_BUTTON);
+
+  if (playlist.title.empty()) {
+    return playlist_type;
+  }
+
+  return l10n_util::GetStringFUTF8(
+      IDS_ASH_STATUS_TRAY_FOCUS_MODE_SOUNDS_MEDIA_CONTROLS_SOURCE_TITLE,
+      base::UTF8ToUTF16(playlist_type), base::UTF8ToUTF16(playlist.title));
+}
+
+std::u16string GetCongratulatoryText(const size_t index) {
+  CHECK_LT(index, kCongratulatoryTitleNum);
+  return l10n_util::GetStringUTF16(congratulatory_pair[index].first);
+}
+
+std::u16string GetCongratulatoryEmoji(const size_t index) {
+  CHECK_LT(index, kCongratulatoryTitleNum);
+  return congratulatory_pair[index].second;
+}
+
+std::u16string GetCongratulatoryTextAndEmoji(const size_t index) {
+  CHECK_LT(index, kCongratulatoryTitleNum);
+  return base::JoinString(
+      {GetCongratulatoryText(index), GetCongratulatoryEmoji(index)}, u" ");
 }
 
 }  // namespace ash::focus_mode_util

@@ -1,6 +1,11 @@
 noparent = True
 
 include_rules = [
+  # No dependency on shell.h because it would bring in unnecessary deps.
+  # Use //ash/public, or pass in the needed instances directly.
+  "-ash/shell.h",
+
+  "+ash/auth",
   "+ash/ime",
   "+ash/login/ui",
   "+ash/public/cpp",
@@ -14,6 +19,7 @@ include_rules = [
   "+chromeos/constants",
   "+ui/base",
   "+ui/color",
+  "+ui/chromeos/styles",
   "+ui/gfx",
   "+ui/views",
 ]

@@ -57,7 +57,21 @@ with the updater).
 
 #### Elevation (Windows)
 The metainstaller parses its tag and re-launches itself at high integrity if
-installing an application with `needsadmin=true` or `needsadmin=prefers`.
+it is being run at medium integrity with UAC on and installing an application
+with `needsadmin=true` or `needsadmin=prefers`.
+
+More information is in the
+[design document](design_doc.md#elevation)
+.
+
+#### De-elevation (Windows)
+The metainstaller parses its tag and re-launches itself at medium integrity if
+it is being run at high integrity with UAC on and installing an application with
+`needsadmin=false`.
+
+More information is in the
+[design document](design_doc.md#de_elevation)
+.
 
 #### Localization
 Metainstaller localization presents the metainstaller UI with the user's
@@ -758,7 +772,7 @@ python3 chrome/updater/win/signing/msi_from_standalone.py
     --appid {8237E44A-0054-442C-B6B6-EA0509993955}
     --product_custom_params "&brand=GCEA"
     --product_uninstaller_additional_args=--force-uninstall
-    --product_installer_data "%7B%22dis%22%3A%7B%22msi%22%3Atrue%7D%7D"
+    --product_installer_data "%7B%22distribution%22%3A%7B%22msi%22%3Atrue%7D%7D"
     --standalone_installer_path ChromeBetaOfflineSetup.exe
     --custom_action_dll_path out/Default/msi_custom_action.dll
     --msi_base_name GoogleChromeBetaStandaloneEnterprise
@@ -777,7 +791,7 @@ metainstaller with the following parameters:
       appname=GoogleChromeBeta&needsAdmin=True&brand=GCEA
 --installsource=enterprisemsi
 --appargs=appguid={8237E44A-0054-442C-B6B6-EA0509993955}&
-          installerdata=%7B%22dis%22%3A%7B%22msi%22%3Atrue%7D%7D
+          installerdata=%7B%22distribution%22%3A%7B%22msi%22%3Atrue%7D%7D
 ```
 
 This MSI can be tagged using `tag.exe` as follows:
@@ -800,7 +814,7 @@ the following parameters:
       appname=Google%20Chrome%20Beta&needsAdmin=True&brand=GGLL
 --installsource enterprisemsi
 --appargs=appguid={8237E44A-0054-442C-B6B6-EA0509993955}&
-          installerdata=%7B%22dis%22%3A%7B%22msi%22%3Atrue%7D%7D
+          installerdata=%7B%22distribution%22%3A%7B%22msi%22%3Atrue%7D%7D
 ```
 
 ### Enterprise Enrollment
@@ -916,8 +930,8 @@ Enterprise policies can control the updates of applications:
 * If no per-application setting specifies otherwise, the default update
   policy is used.
 * If the default update policy is unset, the application may be updated.
-* Updates are always enabled for the updater itself and can't be disabled by
-  policy..
+* Updates and qualification are always enabled for the updater itself and can't
+  be disabled by policy.
 
 Refer to chrome/updater/protos/omaha\_settings.proto for more details.
 
@@ -962,6 +976,15 @@ Chrome the ability to query the updater enterprise policies.
 A client can `CoCreateInstance` the `PolicyStatusUserClass` or the
 `PolicyStatusSystemClass` to get the corresponding policy status object and
 query it via the `IPolicyStatus4` methods.
+
+#### Enterprise policies ADMX files (Windows, Google-branded builds only)
+
+ADMX files for enterprise policies are generated with each build in
+`GoogleUpdateAdmx.zip` and `GoogleCloudManagementAdmx.zip` for enterprise
+customers.
+
+These ADMX files are generated using the scripts in
+[chrome/updater/enterprise/win/google/](https://source.chromium.org/chromium/chromium/src/+/main:chrome/updater/enterprise/win/google/).
 
 #### Deploying enterprise applications via updater policy
 For each application that needs to be deployed via the updater, the policy for
@@ -1422,6 +1445,12 @@ mode and begin normal operation the next time it runs periodic tasks.
 Once operating normally, the updater only returns to eula-required mode when
 it is uninstalled and then reinstalled with `--eularequired`.
 
+### Windows: checking if EULA has already been accepted
+*   Applications can check if the EULA has already been accepted by checking
+    whether the value `eulaaccepted` does not exist at
+    `HKCU|HKLM\SOFTWARE\{Company}\Update`, or if it does exist, that it has a
+    value of `(DWORD): 1`.
+
 ### Usage Stats Acceptance
 The updater may upload its crash reports and send usage stats if and only if
 any piece of software it manages is permitted to send usage stats.
@@ -1489,6 +1518,10 @@ use `%PROGRAMFILESX86%` if appropriate instead.)
 
 On Windows for user-scope updaters, `{UPDATER_DATA_DIR}` is
 `%LOCALAPPDATA%\{COMPANY_SHORTNAME}\{PRODUCT_FULLNAME}`.
+
+On Windows, when the updater uninstalls itself, and there are no other versions
+of the updater in existence for the scope, the updater saves a copy of the final
+log file to `%TMP%\updater{guid}.log`.
 
 ## Network
 

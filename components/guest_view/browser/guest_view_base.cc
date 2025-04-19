@@ -184,7 +184,7 @@ void GuestViewBase::Init(std::unique_ptr<GuestViewBase> owned_this,
 
 void GuestViewBase::InitWithWebContents(const base::Value::Dict& create_params,
                                         WebContents* guest_web_contents) {
-  DCHECK(guest_web_contents);
+  CHECK(guest_web_contents);
 
   // Create a ZoomController to allow the guest's contents to be zoomed.
   // Do this before adding the GuestView as a WebContents Observer so that
@@ -590,7 +590,7 @@ void GuestViewBase::ContentsZoomChange(bool zoom_in) {
 
 bool GuestViewBase::HandleKeyboardEvent(
     WebContents* source,
-    const content::NativeWebKeyboardEvent& event) {
+    const input::NativeWebKeyboardEvent& event) {
   if (!attached() || !embedder_web_contents()->GetDelegate())
     return false;
 
@@ -671,8 +671,8 @@ void GuestViewBase::OnZoomChanged(
     // The embedder's zoom level has changed.
     auto* guest_zoom_controller =
         zoom::ZoomController::FromWebContents(web_contents());
-    if (blink::PageZoomValuesEqual(data.new_zoom_level,
-                                   guest_zoom_controller->GetZoomLevel())) {
+    if (blink::ZoomValuesEqual(data.new_zoom_level,
+                               guest_zoom_controller->GetZoomLevel())) {
       return;
     }
     // When the embedder's zoom level doesn't match the guest's, then update the
@@ -762,7 +762,7 @@ double GuestViewBase::GetEmbedderZoomFactor() const {
   if (!embedder_web_contents())
     return 1.0;
 
-  return blink::PageZoomLevelToZoomFactor(
+  return blink::ZoomLevelToZoomFactor(
       zoom::ZoomController::GetZoomLevelForWebContents(
           embedder_web_contents()));
 }

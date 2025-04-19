@@ -11,7 +11,6 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service.h"
 #include "chrome/common/search/instant_types.h"
 #include "components/omnibox/browser/favicon_cache.h"
@@ -19,6 +18,7 @@
 #include "components/omnibox/browser/omnibox_client.h"
 
 class Browser;
+class ChromeAutocompleteSchemeClassifier;
 class GURL;
 class LocationBar;
 class Profile;
@@ -45,7 +45,7 @@ class ChromeOmniboxClient final : public OmniboxClient {
   bool IsDefaultSearchProviderEnabled() const override;
   SessionID GetSessionID() const override;
   PrefService* GetPrefs() override;
-  bookmarks::CoreBookmarkModel* GetBookmarkModel() override;
+  bookmarks::BookmarkModel* GetBookmarkModel() override;
   AutocompleteControllerEmitter* GetAutocompleteControllerEmitter() override;
   TemplateURLService* GetTemplateURLService() override;
   const AutocompleteSchemeClassifier& GetSchemeClassifier() const override;
@@ -95,12 +95,13 @@ class ChromeOmniboxClient final : public OmniboxClient {
   void OnURLOpenedFromOmnibox(OmniboxLog* log) override;
   void OnBookmarkLaunched() override;
   void DiscardNonCommittedNavigations() override;
-  void OpenUpdateChromeDialog() override;
   void FocusWebContents() override;
   void OnNavigationLikely(
       size_t index,
       const AutocompleteMatch& match,
       omnibox::mojom::NavigationPredictor navigation_predictor) override;
+  void ShowFeedbackPage(const std::u16string& input_text,
+                        const GURL& destination_url) override;
   void OnAutocompleteAccept(
       const GURL& destination_url,
       TemplateURLRef::PostContent* post_content,
@@ -116,6 +117,7 @@ class ChromeOmniboxClient final : public OmniboxClient {
       IDNA2008DeviationCharacter deviation_char_in_hostname) override;
   void OnInputInProgress(bool in_progress) override;
   void OnPopupVisibilityChanged() override;
+  void OpenIphLink(GURL gurl) override;
   base::WeakPtr<OmniboxClient> AsWeakPtr() override;
 
   // Update shortcuts when a navigation succeeds.
@@ -138,7 +140,7 @@ class ChromeOmniboxClient final : public OmniboxClient {
   const raw_ptr<LocationBar> location_bar_;
   const raw_ptr<Browser, DanglingUntriaged> browser_;
   const raw_ptr<Profile> profile_;
-  ChromeAutocompleteSchemeClassifier scheme_classifier_;
+  std::unique_ptr<ChromeAutocompleteSchemeClassifier> scheme_classifier_;
   std::vector<BitmapFetcherService::RequestId> request_ids_;
   FaviconCache favicon_cache_;
 

@@ -201,9 +201,7 @@ interface Internals {
 
     [RaisesException] DOMString layerTreeAsText(Document document, optional unsigned short flags);
 
-    DOMString scrollingStateTreeAsText(Document document);
     [RaisesException] DOMString mainThreadScrollingReasons(Document document);
-    [RaisesException] DOMRectList nonFastScrollableRects(Document document);
 
     void evictAllResources();
 
@@ -219,7 +217,7 @@ interface Internals {
     [RaisesException] void setPageScaleFactor(float scaleFactor);
     [RaisesException] void setPageScaleFactorLimits(float minScaleFactor, float maxScaleFactor);
 
-    [RaisesException] float pageZoomFactor();
+    [RaisesException] float layoutZoomFactor();
 
     [RaisesException] void setIsCursorVisible(Document document, boolean isVisible);
     void setMaxNumberOfFramesToTen(boolean enable);

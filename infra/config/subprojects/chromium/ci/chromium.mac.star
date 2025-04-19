@@ -7,7 +7,7 @@ load("//lib/args.star", "args")
 load("//lib/branches.star", "branches")
 load("//lib/builder_config.star", "builder_config")
 load("//lib/builder_health_indicators.star", "health_spec")
-load("//lib/builders.star", "cpu", "os", "sheriff_rotations", "siso")
+load("//lib/builders.star", "cpu", "gardener_rotations", "os", "siso")
 load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
 load("//lib/gn_args.star", "gn_args")
@@ -21,7 +21,7 @@ ci.defaults.set(
     ),
     pool = ci.DEFAULT_POOL,
     os = os.MAC_DEFAULT,
-    sheriff_rotations = sheriff_rotations.CHROMIUM,
+    gardener_rotations = gardener_rotations.CHROMIUM,
     tree_closing = True,
     main_console_view = "main",
     execution_timeout = ci.DEFAULT_EXECUTION_TIMEOUT,
@@ -60,7 +60,7 @@ consoles.console_view(
 )
 
 def ios_builder(*, name, **kwargs):
-    kwargs.setdefault("sheriff_rotations", sheriff_rotations.IOS)
+    kwargs.setdefault("gardener_rotations", gardener_rotations.IOS)
     kwargs.setdefault("xcode", xcode.xcode_default)
     return ci.builder(name = name, **kwargs)
 
@@ -96,6 +96,7 @@ ci.builder(
             "remoteexec",
             "minimal_symbols",
             "x64",
+            "mac",
         ],
     ),
     cpu = cpu.ARM64,
@@ -134,6 +135,7 @@ ci.builder(
             "debug_builder",
             "remoteexec",
             "x64",
+            "mac",
         ],
     ),
     os = os.MAC_ANY,
@@ -171,6 +173,7 @@ ci.builder(
         configs = [
             "release_builder",
             "remoteexec",
+            "mac",
             "arm64",
         ],
     ),
@@ -204,6 +207,7 @@ ci.builder(
         configs = [
             "debug_builder",
             "remoteexec",
+            "mac",
             "arm64",
         ],
     ),
@@ -246,6 +250,7 @@ ci.builder(
             "release_builder",
             "remoteexec",
             "minimal_symbols",
+            "mac",
         ],
     ),
     os = os.MAC_DEFAULT,
@@ -277,12 +282,13 @@ ci.builder(
         configs = [
             "release_builder",
             "remoteexec",
+            "mac",
             "x64",
         ],
     ),
     os = os.MAC_DEFAULT,
     cpu = cpu.ARM64,
-    sheriff_rotations = args.ignore_default(None),
+    gardener_rotations = args.ignore_default(None),
     tree_closing = False,
     console_view_entry = consoles.console_view_entry(
         category = "release",
@@ -375,6 +381,35 @@ ci.thin_tester(
 )
 
 ci.thin_tester(
+    name = "mac13-skia-alt-arm64-rel-tests",
+    description_html = "Runs web tests with Skia Graphite on Mac ARM machines",
+    triggered_by = ["ci/mac-arm64-rel"],
+    builder_spec = builder_config.builder_spec(
+        execution_mode = builder_config.execution_mode.TEST,
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_arch = builder_config.target_arch.ARM,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.MAC,
+        ),
+    ),
+    gardener_rotations = args.ignore_default(None),
+    tree_closing = False,
+    console_view_entry = consoles.console_view_entry(
+        category = "release|arm64",
+        short_name = "skia-alt",
+    ),
+    contact_team_email = "chrome-skia-graphite@google.com",
+)
+
+ci.thin_tester(
     name = "mac14-arm64-rel-tests",
     branch_selector = branches.selector.MAC_BRANCHES,
     description_html = "Runs MacOS 14 tests on ARM machines",
@@ -395,41 +430,11 @@ ci.thin_tester(
             target_platform = builder_config.target_platform.MAC,
         ),
     ),
-    # TODO(crbug.com/336530603): Add to rotation when it's stable.
-    sheriff_rotations = args.ignore_default(None),
     tree_closing = False,
     console_view_entry = consoles.console_view_entry(
         category = "release|arm64",
         short_name = "14",
     ),
-    contact_team_email = "bling-engprod@google.com",
-)
-
-ci.thin_tester(
-    name = "Mac10.15 Tests",
-    branch_selector = branches.selector.MAC_BRANCHES,
-    triggered_by = ["ci/Mac Builder"],
-    builder_spec = builder_config.builder_spec(
-        execution_mode = builder_config.execution_mode.TEST,
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = [
-                "mb",
-            ],
-            build_config = builder_config.build_config.RELEASE,
-            target_bits = 64,
-            target_platform = builder_config.target_platform.MAC,
-        ),
-        build_gs_bucket = "chromium-mac-archive",
-    ),
-    console_view_entry = consoles.console_view_entry(
-        category = "mac",
-        short_name = "15",
-    ),
-    cq_mirrors_console_view = "mirrors",
     contact_team_email = "bling-engprod@google.com",
 )
 
@@ -532,7 +537,7 @@ ci.thin_tester(
         ),
         build_gs_bucket = "chromium-mac-archive",
     ),
-    sheriff_rotations = args.ignore_default(None),
+    gardener_rotations = args.ignore_default(None),
     console_view_entry = consoles.console_view_entry(
         category = "debug",
         short_name = "14",
@@ -562,7 +567,7 @@ ci.thin_tester(
         ),
     ),
     # TODO(crbug.com/336530603): Add to rotation when it's stable.
-    sheriff_rotations = args.ignore_default(None),
+    gardener_rotations = args.ignore_default(None),
     console_view_entry = consoles.console_view_entry(
         category = "mac",
         short_name = "14",

@@ -351,8 +351,6 @@ suite('PasswordDetailsCardTest', function() {
 
   // <if expr="_google_chrome">
   test('share button available when sync enabled', async function() {
-    loadTimeData.overrideValues({enableSendPasswords: true});
-
     syncProxy.syncInfo = {
       isEligibleForAccountStorage: false,
       isSyncingPasswords: true,
@@ -375,8 +373,6 @@ suite('PasswordDetailsCardTest', function() {
   });
 
   test('share button available for account store users', async function() {
-    loadTimeData.overrideValues({enableSendPasswords: true});
-
     syncProxy.syncInfo = {
       isEligibleForAccountStorage: true,
       isSyncingPasswords: false,
@@ -393,8 +389,6 @@ suite('PasswordDetailsCardTest', function() {
   });
 
   test('sharing disabled by policy', async function() {
-    loadTimeData.overrideValues({enableSendPasswords: true});
-
     syncProxy.syncInfo = {
       isEligibleForAccountStorage: false,
       isSyncingPasswords: true,
@@ -414,8 +408,6 @@ suite('PasswordDetailsCardTest', function() {
   });
 
   test('sharing unavailable for federated credentials', async function() {
-    loadTimeData.overrideValues({enableSendPasswords: true});
-
     syncProxy.syncInfo = {
       isEligibleForAccountStorage: false,
       isSyncingPasswords: true,
@@ -431,26 +423,7 @@ suite('PasswordDetailsCardTest', function() {
     assertFalse(!!sharePasswordFlow);
   });
 
-  test('sharing unavailable without enableSendPasswords', async function() {
-    loadTimeData.overrideValues({enableSendPasswords: false});
-
-    syncProxy.syncInfo = {
-      isEligibleForAccountStorage: false,
-      isSyncingPasswords: true,
-    };
-
-    const card = await createCardElement();
-
-    assertFalse(isVisible(card.$.shareButton));
-
-    const sharePasswordFlow =
-        card.shadowRoot!.querySelector('share-password-flow');
-    assertFalse(!!sharePasswordFlow);
-  });
-
   test('share button unavailable when sync disabled', async function() {
-    loadTimeData.overrideValues({enableSendPasswords: true});
-
     syncProxy.syncInfo = {
       isEligibleForAccountStorage: false,
       isSyncingPasswords: false,
@@ -469,7 +442,6 @@ suite('PasswordDetailsCardTest', function() {
   test(
       'clicking save password in account opens move password dialog',
       async function() {
-        loadTimeData.overrideValues({enableButterOnDesktopFollowup: true});
         passwordManager.data.isOptedInAccountStorage = true;
         syncProxy.syncInfo = {
           isEligibleForAccountStorage: true,

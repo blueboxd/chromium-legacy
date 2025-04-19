@@ -30,6 +30,10 @@
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
+#if !BUILDFLAG(IS_CHROMEOS)
+#include "base/test/scoped_feature_list.h"
+#include "chrome/browser/enterprise/profile_management/profile_management_features.h"
+#endif  //  !BUILDFLAG(IS_CHROMEOS)
 
 using testing::_;
 using testing::Invoke;
@@ -70,15 +74,18 @@ class ManagedUserProfileNoticeHandlerTestBase
     account_info_.account_id = CoreAccountId::FromGaiaId(account_info_.gaia);
   }
 
-  void InitializeHandler(ManagedUserProfileNoticeUI::ScreenType screen_type,
-                         bool profile_creation_required_by_policy,
-                         bool show_link_data_option,
-                         signin::SigninChoiceCallback proceed_callback) {
+  void InitializeHandler(
+      ManagedUserProfileNoticeUI::ScreenType screen_type,
+      bool profile_creation_required_by_policy,
+      bool show_link_data_option,
+      signin::SigninChoiceCallbackVariant process_user_choice_callback,
+      base::OnceClosure done_callback) {
     message_handler_.reset();
 
     message_handler_ = std::make_unique<ManagedUserProfileNoticeHandler>(
         /*browser=*/nullptr, screen_type, profile_creation_required_by_policy,
-        show_link_data_option, account_info_, std::move(proceed_callback));
+        show_link_data_option, account_info_,
+        std::move(process_user_choice_callback), std::move(done_callback));
     message_handler_->set_web_ui_for_test(web_ui());
     message_handler_->RegisterMessages();
   }
@@ -99,17 +106,62 @@ class ManagedUserProfileNoticeHandlerTestBase
 };
 
 struct HandleProceedTestParam {
+  ManagedUserProfileNoticeHandler::State state =
+      ManagedUserProfileNoticeHandler::State::kDisclosure;
   bool profile_creation_required_by_policy = false;
   bool should_link_data = false;
   signin::SigninChoice expected_choice = signin::SIGNIN_CHOICE_CANCEL;
+  signin::SigninChoiceOperationResult choice_operation_result =
+      signin::SigninChoiceOperationResult::SIGNIN_SILENT_SUCCESS;
 };
 const HandleProceedTestParam kHandleProceedParams[] = {
-    {false, false, signin::SIGNIN_CHOICE_NEW_PROFILE},
-    {false, true, signin::SIGNIN_CHOICE_CONTINUE},
-    {true, false, signin::SIGNIN_CHOICE_NEW_PROFILE},
-    {true, true, signin::SIGNIN_CHOICE_CONTINUE},
+    {ManagedUserProfileNoticeHandler::State::kDisclosure, false, false,
+     signin::SIGNIN_CHOICE_NEW_PROFILE,
+     signin::SigninChoiceOperationResult::SIGNIN_ERROR},
+    {ManagedUserProfileNoticeHandler::State::kDisclosure, false, true,
+     signin::SIGNIN_CHOICE_CONTINUE,
+     signin::SigninChoiceOperationResult::SIGNIN_ERROR},
+    {ManagedUserProfileNoticeHandler::State::kDisclosure, true, false,
+     signin::SIGNIN_CHOICE_NEW_PROFILE,
+     signin::SigninChoiceOperationResult::SIGNIN_ERROR},
+    {ManagedUserProfileNoticeHandler::State::kDisclosure, true, true,
+     signin::SIGNIN_CHOICE_CONTINUE,
+     signin::SigninChoiceOperationResult::SIGNIN_ERROR},
+    {ManagedUserProfileNoticeHandler::State::kDisclosure, false, false,
+     signin::SIGNIN_CHOICE_NEW_PROFILE,
+     signin::SigninChoiceOperationResult::SIGNIN_CONFIRM_SUCCESS},
+    {ManagedUserProfileNoticeHandler::State::kDisclosure, false, true,
+     signin::SIGNIN_CHOICE_CONTINUE,
+     signin::SigninChoiceOperationResult::SIGNIN_CONFIRM_SUCCESS},
+    {ManagedUserProfileNoticeHandler::State::kDisclosure, true, false,
+     signin::SIGNIN_CHOICE_NEW_PROFILE,
+     signin::SigninChoiceOperationResult::SIGNIN_CONFIRM_SUCCESS},
+    {ManagedUserProfileNoticeHandler::State::kDisclosure, true, true,
+     signin::SIGNIN_CHOICE_CONTINUE,
+     signin::SigninChoiceOperationResult::SIGNIN_CONFIRM_SUCCESS},
+    {ManagedUserProfileNoticeHandler::State::kDisclosure, false, false,
+     signin::SIGNIN_CHOICE_NEW_PROFILE,
+     signin::SigninChoiceOperationResult::SIGNIN_TIMEOUT},
+    {ManagedUserProfileNoticeHandler::State::kDisclosure, false, true,
+     signin::SIGNIN_CHOICE_CONTINUE,
+     signin::SigninChoiceOperationResult::SIGNIN_TIMEOUT},
+    {ManagedUserProfileNoticeHandler::State::kDisclosure, true, false,
+     signin::SIGNIN_CHOICE_NEW_PROFILE,
+     signin::SigninChoiceOperationResult::SIGNIN_TIMEOUT},
+    {ManagedUserProfileNoticeHandler::State::kDisclosure, true, true,
+     signin::SIGNIN_CHOICE_CONTINUE,
+     signin::SigninChoiceOperationResult::SIGNIN_TIMEOUT},
+    {ManagedUserProfileNoticeHandler::State::kSuccess, false, false,
+     signin::SIGNIN_CHOICE_NEW_PROFILE,
+     signin::SigninChoiceOperationResult::SIGNIN_CONFIRM_SUCCESS},
+    {ManagedUserProfileNoticeHandler::State::kError, false, false,
+     signin::SIGNIN_CHOICE_NEW_PROFILE,
+     signin::SigninChoiceOperationResult::SIGNIN_CONFIRM_SUCCESS},
+    {ManagedUserProfileNoticeHandler::State::kTimeout, false, false,
+     signin::SIGNIN_CHOICE_NEW_PROFILE,
+     signin::SigninChoiceOperationResult::SIGNIN_CONFIRM_SUCCESS},
 };
-
+// kTimeout, kProcessing, kError, kSuccess
 class ManagedUserProfileNoticeHandleProceedTest
     : public ManagedUserProfileNoticeHandlerTestBase,
       public testing::WithParamInterface<HandleProceedTestParam> {};
@@ -117,17 +169,93 @@ class ManagedUserProfileNoticeHandleProceedTest
 // Tests how `HandleProceed` processes the arguments and the handler's state to
 // notify the registered callback.
 TEST_P(ManagedUserProfileNoticeHandleProceedTest, HandleProceed) {
-  base::MockCallback<signin::SigninChoiceCallback> mock_proceed_callback;
+  base::MockCallback<signin::SigninChoiceCallback>
+      mock_process_user_choice_callback;
+  base::MockCallback<base::OnceClosure> mock_done_callback;
   InitializeHandler(
       ManagedUserProfileNoticeUI::ScreenType::kEntepriseAccountSyncEnabled,
       GetParam().profile_creation_required_by_policy,
-      /*show_link_data_option=*/true, mock_proceed_callback.Get());
+      /*show_link_data_option=*/true, mock_process_user_choice_callback.Get(),
+      mock_done_callback.Get());
 
   base::Value::List args;
+  args.Append(GetParam().state);
   args.Append(GetParam().should_link_data);
-  EXPECT_CALL(mock_proceed_callback, Run(GetParam().expected_choice));
+
+  EXPECT_CALL(mock_process_user_choice_callback,
+              Run(GetParam().expected_choice));
+  EXPECT_CALL(mock_done_callback, Run());
   web_ui()->HandleReceivedMessage("proceed", args);
 }
+
+#if !BUILDFLAG(IS_CHROMEOS)
+// Tests how `HandleProceed` processes the arguments and the handler's state to
+// notify the registered callback.
+TEST_P(ManagedUserProfileNoticeHandleProceedTest,
+       HandleProceedWithDoneCallback) {
+  base::test::ScopedFeatureList feature_list(
+      profile_management::features::kOidcAuthProfileManagement);
+
+  base::MockCallback<signin::SigninChoiceWithConfirmationCallback>
+      mock_process_user_choice_callback;
+  base::MockCallback<base::OnceClosure> mock_done_callback;
+  InitializeHandler(
+      ManagedUserProfileNoticeUI::ScreenType::kEntepriseAccountSyncEnabled,
+      GetParam().profile_creation_required_by_policy,
+      /*show_link_data_option=*/true, mock_process_user_choice_callback.Get(),
+      mock_done_callback.Get());
+
+  base::Value::List args;
+  args.Append(ManagedUserProfileNoticeHandler::State::kDisclosure);
+  args.Append(GetParam().should_link_data);
+  base::RunLoop run_loop;
+  EXPECT_CALL(mock_process_user_choice_callback,
+              Run(GetParam().expected_choice, ::testing::_))
+      .WillOnce([&run_loop](
+                    signin::SigninChoice choice,
+                    signin::SigninChoiceOperationDoneCallback done_callback) {
+        std::move(done_callback)
+            .Run(signin::SigninChoiceOperationResult::SIGNIN_SILENT_SUCCESS);
+        run_loop.Quit();
+      });
+  EXPECT_CALL(mock_done_callback, Run());
+  web_ui()->HandleReceivedMessage("proceed", args);
+  run_loop.Run();
+}
+
+TEST_P(ManagedUserProfileNoticeHandleProceedTest,
+       HandleProceedWithSuccessConfirmationCallback) {
+  base::test::ScopedFeatureList feature_list(
+      profile_management::features::kOidcAuthProfileManagement);
+  base::MockCallback<signin::SigninChoiceWithConfirmationCallback>
+      mock_process_user_choice_callback;
+  base::MockCallback<base::OnceClosure> mock_done_callback;
+  InitializeHandler(
+      ManagedUserProfileNoticeUI::ScreenType::kEntepriseAccountSyncEnabled,
+      GetParam().profile_creation_required_by_policy,
+      /*show_link_data_option=*/true, mock_process_user_choice_callback.Get(),
+      mock_done_callback.Get());
+
+  base::Value::List args;
+  args.Append(ManagedUserProfileNoticeHandler::State::kDisclosure);
+  args.Append(GetParam().should_link_data);
+  base::RunLoop run_loop;
+  EXPECT_CALL(mock_process_user_choice_callback,
+              Run(GetParam().expected_choice, ::testing::_))
+      .WillOnce(
+          [&run_loop](signin::SigninChoice choice,
+                      signin::SigninChoiceOperationDoneCallback done_callback) {
+            std::move(done_callback).Run(GetParam().choice_operation_result);
+            run_loop.Quit();
+          });
+  web_ui()->HandleReceivedMessage("proceed", args);
+  run_loop.Run();
+  testing::Mock::VerifyAndClearExpectations(&mock_process_user_choice_callback);
+  EXPECT_CALL(mock_done_callback, Run());
+  web_ui()->HandleReceivedMessage("proceed", args);
+}
+
+#endif  //  !BUILDFLAG(IS_CHROMEOS)
 
 INSTANTIATE_TEST_SUITE_P(All,
                          ManagedUserProfileNoticeHandleProceedTest,

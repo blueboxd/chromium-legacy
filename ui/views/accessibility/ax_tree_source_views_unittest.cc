@@ -12,7 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_tree_data.h"
-#include "ui/accessibility/platform/ax_unique_id.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -23,7 +22,6 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/test/widget_test.h"
-#include "ui/views/widget/unique_widget_ptr.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -50,7 +48,7 @@ class AXTreeSourceViewsTest : public ViewsTestBase {
   void SetUp() override {
     ViewsTestBase::SetUp();
     widget_ = std::make_unique<Widget>();
-    Widget::InitParams params(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET,
+    Widget::InitParams params(Widget::InitParams::CLIENT_OWNS_WIDGET,
                               Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     params.bounds = gfx::Rect(11, 22, 333, 444);
     params.context = GetContext();
@@ -78,7 +76,7 @@ class AXTreeSourceViewsTest : public ViewsTestBase {
     ViewsTestBase::TearDown();
   }
 
-  UniqueWidgetPtr widget_;
+  std::unique_ptr<Widget> widget_;
   raw_ptr<Label, AcrossTasksDanglingUntriaged> label1_ = nullptr;
   raw_ptr<Label, AcrossTasksDanglingUntriaged> label2_ = nullptr;
   raw_ptr<Textfield, AcrossTasksDanglingUntriaged> textfield_ = nullptr;
@@ -162,7 +160,7 @@ TEST_F(AXTreeSourceViewsTest, IgnoredView) {
 
 TEST_F(AXTreeSourceViewsTest, ViewWithChildTreeHasNoChildren) {
   View* contents_view = widget_->GetContentsView();
-  contents_view->GetViewAccessibility().OverrideChildTreeID(
+  contents_view->GetViewAccessibility().SetChildTreeID(
       ui::AXTreeID::CreateNewAXTreeID());
 
   AXAuraObjCache cache;
@@ -206,7 +204,7 @@ TEST_F(AXTreeSourceViewsDesktopWidgetTest, FocusedChildWindowDestroyed) {
   test::WidgetDestroyedWaiter waiter(widget_.get());
 
   // Close the widget to destroy the child.
-  widget_.reset();
+  widget_->CloseNow();
 
   // Wait for the async widget close.
   waiter.Wait();

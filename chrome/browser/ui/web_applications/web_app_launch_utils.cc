@@ -29,6 +29,7 @@
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
+#include "chrome/browser/apps/link_capturing/link_capturing_features.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/sessions/app_session_service.h"
@@ -38,7 +39,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -56,6 +56,8 @@
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
+#include "chrome/browser/web_applications/web_app_launch_params.h"
+#include "chrome/browser/web_applications/web_app_launch_queue.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
@@ -105,15 +107,6 @@
 namespace web_app {
 
 namespace {
-
-ui::WindowShowState DetermineWindowShowState(bool is_system_web_app) {
-  // Show SWAs in Kiosk non-fullscreen.
-  if (chrome::IsRunningInForcedAppMode() && !is_system_web_app) {
-    return ui::SHOW_STATE_FULLSCREEN;
-  }
-
-  return ui::SHOW_STATE_DEFAULT;
-}
 
 Browser* ReparentWebContentsIntoAppBrowser(content::WebContents* contents,
                                            Browser* target_browser,
@@ -480,37 +473,58 @@ void MaybeAddPinnedHomeTab(Browser* browser, const std::string& app_id) {
   }
 }
 
-Browser* CreateWebApplicationWindow(Profile* profile,
-                                    const std::string& app_id,
-                                    WindowOpenDisposition disposition,
-                                    int32_t restore_id,
-                                    bool omit_from_session_restore,
-                                    bool can_resize,
-                                    bool can_maximize,
-                                    bool can_fullscreen,
-                                    bool is_system_web_app,
-                                    const gfx::Rect initial_bounds) {
+Browser::CreateParams CreateParamsForApp(const webapps::AppId& app_id,
+                                         bool is_popup,
+                                         bool trusted_source,
+                                         const gfx::Rect& window_bounds,
+                                         Profile* profile,
+                                         bool user_gesture) {
   std::string app_name = GenerateApplicationNameFromAppId(app_id);
-  Browser::CreateParams browser_params =
-      disposition == WindowOpenDisposition::NEW_POPUP
+  Browser::CreateParams params =
+      is_popup
           ? Browser::CreateParams::CreateForAppPopup(
-                app_name, /*trusted_source=*/true, initial_bounds, profile,
-                /*user_gesture=*/true)
+                app_name, trusted_source, window_bounds, profile, user_gesture)
           : Browser::CreateParams::CreateForApp(
-                app_name, /*trusted_source=*/true, initial_bounds, profile,
-                /*user_gesture=*/true);
-  browser_params.initial_show_state =
-      DetermineWindowShowState(is_system_web_app);
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  browser_params.restore_id = restore_id;
-#endif
-  browser_params.omit_from_session_restore = omit_from_session_restore;
-  browser_params.can_resize = can_resize;
-  browser_params.can_maximize = can_maximize;
-  browser_params.can_fullscreen = can_fullscreen;
-  Browser* browser = Browser::Create(browser_params);
-  MaybeAddPinnedHomeTab(browser, app_id);
+                app_name, trusted_source, window_bounds, profile, user_gesture);
+  params.initial_show_state = chrome::IsRunningInForcedAppMode()
+                                  ? ui::SHOW_STATE_FULLSCREEN
+                                  : ui::SHOW_STATE_DEFAULT;
+  return params;
+}
+
+Browser* CreateWebAppWindowMaybeWithHomeTab(
+    const webapps::AppId& app_id,
+    const Browser::CreateParams& params) {
+  CHECK(params.type == Browser::Type::TYPE_APP_POPUP ||
+        params.type == Browser::Type::TYPE_APP);
+  Browser* browser = Browser::Create(params);
+  CHECK(GenerateApplicationNameFromAppId(app_id) == browser->app_name());
+  if (params.type != Browser::Type::TYPE_APP_POPUP) {
+    MaybeAddPinnedHomeTab(browser, app_id);
+  }
   return browser;
+}
+
+Browser* CreateWebAppWindowFromNavigationParamsAndEnqueueLaunch(
+    const webapps::AppId& app_id,
+    const NavigateParams& navigate_params,
+    bool should_enqueue_launch_params) {
+  Browser::CreateParams app_browser_params = CreateParamsForApp(
+      app_id, /*is_popup=*/false, /*trusted_source=*/true,
+      navigate_params.window_features.bounds,
+      navigate_params.initiating_profile, navigate_params.user_gesture);
+  Browser* created_browser =
+      CreateWebAppWindowMaybeWithHomeTab(app_id, app_browser_params);
+  if (should_enqueue_launch_params && navigate_params.contents_to_insert) {
+    WebAppLaunchParams launch_params;
+    launch_params.started_new_navigation = true;
+    launch_params.app_id = app_id;
+    launch_params.target_url = navigate_params.url;
+    WebAppTabHelper::FromWebContents(navigate_params.contents_to_insert.get())
+        ->EnsureLaunchQueue()
+        .Enqueue(std::move(launch_params));
+  }
+  return created_browser;
 }
 
 content::WebContents* NavigateWebApplicationWindow(
@@ -725,7 +739,7 @@ void UpdateLaunchStats(content::WebContents* web_contents,
   // Update the launch time in the site engagement service. A recent web
   // app launch will provide an engagement boost to the origin.
   site_engagement::SiteEngagementService::Get(profile)
-      ->SetLastShortcutLaunchTime(web_contents, launch_url);
+      ->SetLastShortcutLaunchTime(web_contents, app_id, launch_url);
 }
 
 void LaunchWebApp(apps::AppLaunchParams params,
@@ -798,6 +812,137 @@ void LaunchWebApp(apps::AppLaunchParams params,
                      browser ? browser->AsWeakPtr() : nullptr,
                      web_contents ? web_contents->GetWeakPtr() : nullptr,
                      container, base::Value(std::move(debug_value))));
+}
+
+std::optional<std::pair<Browser*, int>> MaybeHandleAppNavigation(
+    Profile* profile,
+    const NavigateParams& params) {
+  if (params.open_pwa_window_if_possible) {
+    std::optional<webapps::AppId> app_id =
+        web_app::FindInstalledAppWithUrlInScope(profile, params.url,
+                                                /*window_only=*/true);
+    if (!app_id && params.force_open_pwa_window) {
+      // In theory |force_open_pwa_window| should only be set if we know a
+      // matching PWA is installed. However, we can reach here if
+      // `WebAppRegistrar` hasn't finished starting yet, which can happen if
+      // Chrome is launched with the URL of an isolated app as an argument.
+      // This isn't a supported way to launch isolated apps, so we can cancel
+      // the navigation, but if we want to support it in the future we'll need
+      // to block until `WebAppRegistrar` is loaded.
+      return std::optional<std::pair<Browser*, int>>({/*browser=*/nullptr, -1});
+    }
+    if (app_id) {
+      // Reuse the existing browser for in-app same window navigations.
+      bool navigating_same_app =
+          params.browser &&
+          web_app::AppBrowserController::IsForWebApp(params.browser, *app_id);
+      if (navigating_same_app) {
+        if (params.disposition == WindowOpenDisposition::CURRENT_TAB) {
+          return std::optional<std::pair<Browser*, int>>({params.browser, -1});
+        }
+
+        // If the browser window does not yet have any tabs, and we are
+        // attempting to add the first tab to it, allow for it to be reused.
+        bool navigating_new_tab =
+            params.disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB ||
+            params.disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB;
+        bool browser_has_no_tabs =
+            params.browser && params.browser->tab_strip_model()->empty();
+        if (navigating_new_tab && browser_has_no_tabs) {
+          return std::optional<std::pair<Browser*, int>>({params.browser, -1});
+        }
+      }
+
+      auto GetOriginSpecified = [](const NavigateParams& params) {
+        return params.window_features.has_x && params.window_features.has_y
+                   ? Browser::ValueSpecified::kSpecified
+                   : Browser::ValueSpecified::kUnspecified;
+      };
+
+      // App popups are handled in the switch statement in
+      // `GetBrowserAndTabForDisposition()`.
+      if (params.disposition != WindowOpenDisposition::NEW_POPUP &&
+          Browser::GetCreationStatusForProfile(profile) ==
+              Browser::CreationStatus::kOk) {
+        std::string app_name =
+            web_app::GenerateApplicationNameFromAppId(*app_id);
+        // Installed PWAs are considered trusted.
+        Browser::CreateParams browser_params =
+            Browser::CreateParams::CreateForApp(
+                app_name, /*trusted_source=*/true,
+                params.window_features.bounds, profile, params.user_gesture);
+        browser_params.initial_origin_specified = GetOriginSpecified(params);
+        Browser* browser = Browser::Create(browser_params);
+        return std::optional<std::pair<Browser*, int>>({browser, -1});
+      }
+    }
+  }
+
+  // Conveniently filters out right clicks from being handled by link capturing.
+  if (!apps::features::IsLinkCapturingReimplementationEnabled() ||
+      params.started_from_context_menu) {
+    return std::nullopt;
+  }
+
+  // Handle web app link capturing reimplementation and correct app window
+  // context maintenance use-cases.
+  web_app::WebAppProvider* provider =
+      web_app::WebAppProvider::GetForWebApps(profile);
+  web_app::WebAppRegistrar& registrar = provider->registrar_unsafe();
+
+  std::optional<webapps::AppId> controlling_app_id =
+      registrar.FindAppThatCapturesLinksInScope(params.url);
+
+  bool comes_from_app_browser =
+      params.browser && web_app::AppBrowserController::IsWebApp(params.browser);
+
+  auto OpensInStandaloneExperience =
+      [&registrar](const webapps::AppId& app_id) -> bool {
+    return registrar.GetAppEffectiveDisplayMode(app_id) !=
+           DisplayMode::kBrowser;
+  };
+
+  if (comes_from_app_browser) {
+    // Shift-clicks that come from an app browser always open in a new app
+    // container.
+    // TODO(crbug.com/351775835): Support DisplayMode of kBrowser as well.
+    if (params.disposition == WindowOpenDisposition::NEW_WINDOW &&
+        controlling_app_id.has_value() &&
+        OpensInStandaloneExperience(*controlling_app_id)) {
+      // `should_enqueue_launch_params` is true because the existence of a
+      // `controlling_app_id` ensures that there is an app that controls
+      // params.url.
+      Browser* app_window =
+          CreateWebAppWindowFromNavigationParamsAndEnqueueLaunch(
+              *controlling_app_id, params,
+              /*should_enqueue_launch_params=*/true);
+      return std::optional<std::pair<Browser*, int>>({app_window, -1});
+    }
+
+    CHECK(params.browser->app_controller());
+    const webapps::AppId& current_app_id =
+        params.browser->app_controller()->app_id();
+    // Middle clicks only open in a new app window (or an existing tab of an app
+    // if the app supports tabbed mode) if there is a same scope navigation
+    // happening from an app window.
+    if (params.disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB &&
+        OpensInStandaloneExperience(current_app_id) &&
+        registrar.IsUrlInAppExtendedScope(params.url, current_app_id) &&
+        registrar.CapturesLinksInScope(current_app_id)) {
+      if (!params.browser->app_controller()->ShouldHideNewTabButton()) {
+        // Apps that support tabbed mode can open a new tab in the current app
+        // browser itself.
+        return std::optional<std::pair<Browser*, int>>({params.browser, -1});
+      } else {
+        Browser* app_window =
+            CreateWebAppWindowFromNavigationParamsAndEnqueueLaunch(
+                current_app_id, params,
+                /*should_enqueue_launch_params=*/true);
+        return std::optional<std::pair<Browser*, int>>({app_window, -1});
+      }
+    }
+  }
+  return std::nullopt;
 }
 
 }  // namespace web_app

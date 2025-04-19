@@ -141,7 +141,7 @@ class PredictionManagerTestBase : public PlatformTest {
         OptimizationGuideServiceFactory::GetInstance(),
         OptimizationGuideServiceFactory::GetDefaultFactory());
     builder.SetPrefService(std::move(testing_prefs));
-    browser_state_ = builder.Build();
+    browser_state_ = std::move(builder).Build();
 
     OptimizationGuideServiceFactory::GetForBrowserState(browser_state_.get())
         ->DoFinalInit(BackgroundDownloadServiceFactory::GetForBrowserState(
@@ -151,9 +151,9 @@ class PredictionManagerTestBase : public PlatformTest {
   void CreateOffTheRecordBrowserState() {
     ChromeBrowserState* otr_browser_state =
         browser_state_->CreateOffTheRecordBrowserStateWithTestingFactories(
-            {std::make_pair(
+            {TestChromeBrowserState::TestingFactory{
                 OptimizationGuideServiceFactory::GetInstance(),
-                OptimizationGuideServiceFactory::GetDefaultFactory())});
+                OptimizationGuideServiceFactory::GetDefaultFactory()}});
     OptimizationGuideServiceFactory::GetForBrowserState(otr_browser_state)
         ->DoFinalInit();
   }
@@ -269,7 +269,7 @@ class PredictionManagerTestBase : public PlatformTest {
   base::test::ScopedFeatureList scoped_feature_list_;
   web::WebTaskEnvironment task_environment_{
       web::WebTaskEnvironment::MainThreadType::IO};
-  IOSChromeScopedTestingLocalState local_state_;
+  IOSChromeScopedTestingLocalState scoped_testing_local_state_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   variations::ScopedVariationsIdsProvider scoped_variations_ids_provider_{
       variations::VariationsIdsProvider::Mode::kUseSignedInState};

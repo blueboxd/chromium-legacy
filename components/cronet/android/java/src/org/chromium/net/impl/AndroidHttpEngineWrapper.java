@@ -12,6 +12,7 @@ import android.net.http.HttpEngine;
 import android.os.Process;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresExtension;
 import androidx.annotation.VisibleForTesting;
@@ -27,6 +28,7 @@ import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandlerFactory;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -41,6 +43,10 @@ import java.util.concurrent.RejectedExecutionException;
 @RequiresExtension(extension = EXT_API_LEVEL, version = EXT_VERSION)
 class AndroidHttpEngineWrapper extends CronetEngineBase {
     private static final String TAG = "HttpEngineWrapper";
+
+    private static boolean sNetlogUnsupportedLogged;
+    private static boolean sGlobalMetricsUnsupportedLogged;
+
     private final HttpEngine mBackend;
     private final int mThreadPriority;
     // The thread that priority has been set on.
@@ -66,17 +72,28 @@ class AndroidHttpEngineWrapper extends CronetEngineBase {
 
     @Override
     public void startNetLogToFile(String fileName, boolean logAll) {
-        // TODO(danstahr): Hidden API access
+        // TODO: Hidden API access
+        if (!sNetlogUnsupportedLogged) {
+            Log.i(TAG, "Netlog is unsupported when HttpEngineNativeProvider is used.");
+            sNetlogUnsupportedLogged = true;
+        }
     }
 
     @Override
     public void stopNetLog() {
-        // TODO(danstahr): Hidden API access
+        // TODO: Hidden API access
     }
 
     @Override
     public byte[] getGlobalMetricsDeltas() {
-        // TODO(danstahr): Hidden API access
+        // TODO: Hidden API access
+        if (!sGlobalMetricsUnsupportedLogged) {
+            Log.i(
+                    TAG,
+                    "GlobalMetricsDelta is unsupported when HttpEngineNativeProvider is used. An"
+                            + " empty protobuf is returned.");
+            sGlobalMetricsUnsupportedLogged = true;
+        }
         return new byte[0];
     }
 
@@ -221,7 +238,10 @@ class AndroidHttpEngineWrapper extends CronetEngineBase {
             String method,
             ArrayList<Map.Entry<String, String>> requestHeaders,
             UploadDataProvider uploadDataProvider,
-            Executor uploadDataProviderExecutor) {
+            Executor uploadDataProviderExecutor,
+            byte[] dictionarySha256Hash,
+            ByteBuffer sharedDictionary,
+            @NonNull String sharedDictionaryId) {
         AndroidUrlRequestCallbackWrapper wrappedCallback =
                 new AndroidUrlRequestCallbackWrapper(callback);
         android.net.http.UrlRequest.Builder requestBuilder =

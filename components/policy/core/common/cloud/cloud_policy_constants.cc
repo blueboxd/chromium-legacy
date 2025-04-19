@@ -78,6 +78,8 @@ const char kValueRequestUploadPolicyValidationReport[] =
 const char kValueRequestPublicSamlUser[] = "public_saml_user_request";
 const char kValueRequestCertProvisioningRequest[] = "client_cert_provisioning";
 const char kValueRequestChromeProfileReport[] = "chrome_profile_report";
+const char kValueRequestFmRegistrationTokenUpload[] =
+    "fm_registration_token_upload";
 
 const char kChromeDevicePolicyType[] = "google/chromeos/device";
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -157,7 +159,5 @@ std::string GetPolicyVerificationKey() {
 // can load it one last time. However, it really depends on the reason of the
 // rotation. From a different angle, if a key is no longer trusted, so should
 // anything bound to it.
-
-const char kPolicyFCMInvalidationSenderID[] = "1013309121859";
 
 }  // namespace policy

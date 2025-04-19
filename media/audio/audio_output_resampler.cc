@@ -18,6 +18,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/not_fatal_until.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -437,7 +438,7 @@ void AudioOutputResampler::StopStream(AudioOutputProxy* stream_proxy) {
   DCHECK(audio_manager()->GetTaskRunner()->BelongsToCurrentThread());
 
   auto it = callbacks_.find(stream_proxy);
-  DCHECK(it != callbacks_.end());
+  CHECK(it != callbacks_.end(), base::NotFatalUntil::M130);
   StopStreamInternal(*it);
 }
 
@@ -530,8 +531,11 @@ int OnMoreDataConverter::OnMoreData(base::TimeDelta delay,
                                     base::TimeTicks delay_timestamp,
                                     const AudioGlitchInfo& glitch_info,
                                     AudioBus* dest) {
-  TRACE_EVENT2("audio", "OnMoreDataConverter::OnMoreData", "input buffer size",
-               input_buffer_size_, "output buffer size", output_buffer_size_);
+  TRACE_EVENT("audio", "OnMoreDataConverter::OnMoreData", "input buffer size",
+              input_buffer_size_, "output buffer size", output_buffer_size_,
+              "playout_delay (ms)", delay.InMillisecondsF(),
+              "delay_timestamp (ms)",
+              (delay_timestamp - base::TimeTicks()).InMillisecondsF());
   current_delay_ = delay;
   current_delay_timestamp_ = delay_timestamp;
   audio_converter_.ConvertWithInfo(0, glitch_info, dest);
@@ -547,6 +551,8 @@ int OnMoreDataConverter::OnMoreData(base::TimeDelta delay,
 double OnMoreDataConverter::ProvideInput(AudioBus* dest,
                                          uint32_t frames_delayed,
                                          const AudioGlitchInfo& glitch_info) {
+  TRACE_EVENT("audio", "OnMoreDataConverter::ProvideInput", "delay (frames)",
+              frames_delayed);
   base::TimeDelta new_delay =
       current_delay_ + AudioTimestampHelper::FramesToTime(
                            frames_delayed, input_samples_per_second_);

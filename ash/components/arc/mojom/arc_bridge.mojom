@@ -23,6 +23,7 @@ import "ash/components/arc/mojom/crash_collector.mojom";
 import "ash/components/arc/mojom/digital_goods.mojom";
 import "ash/components/arc/mojom/disk_space.mojom";
 import "ash/components/arc/mojom/enterprise_reporting.mojom";
+import "ash/components/arc/mojom/error_notification.mojom";
 import "ash/components/arc/mojom/file_system.mojom";
 import "ash/components/arc/mojom/iio_sensor.mojom";
 import "ash/components/arc/mojom/ime.mojom";
@@ -31,7 +32,6 @@ import "ash/components/arc/mojom/intent_helper.mojom";
 import "ash/components/arc/mojom/keyboard_shortcut.mojom";
 import "ash/components/arc/mojom/keymaster.mojom";
 import "ash/components/arc/mojom/keymint.mojom";
-import "ash/components/arc/mojom/kiosk.mojom";
 import "ash/components/arc/mojom/media_session.mojom";
 import "ash/components/arc/mojom/memory.mojom";
 import "ash/components/arc/mojom/metrics.mojom";
@@ -64,9 +64,9 @@ import "ash/components/arc/mojom/wallpaper.mojom";
 import "ash/components/arc/mojom/webapk.mojom";
 import "chromeos/components/payments/mojom/payment_app.mojom";
 
-// Next MinVersion: 67
-// Deprecated method IDs: 101, 105, 121, 132, 134, 136, 137, 153, 154, 160
-// Next method ID: 172
+// Next MinVersion: 68
+// Deprecated method IDs: 101, 105, 121, 126, 132, 134, 136, 137, 153, 154, 160
+// Next method ID: 173
 interface ArcBridgeHost {
   // Keep the entries alphabetical. In order to do so without breaking
   // compatibility with the ARC instance, explicitly assign each interface a
@@ -148,6 +148,10 @@ interface ArcBridgeHost {
   [MinVersion=15] OnEnterpriseReportingInstanceReady@122(
       pending_remote<EnterpriseReportingInstance> instance_remote);
 
+  // Notifies Chrome that the ErrorNotificationInstance interface is ready.
+  [MinVersion=67] OnErrorNotificationInstanceReady@172(
+    pending_remote<ErrorNotificationInstance> instance_remote);
+
   // Notifies Chrome that the FileSystemInstance interface is ready.
   [MinVersion=13] OnFileSystemInstanceReady@119(
       pending_remote<FileSystemInstance> instance_remote);
@@ -179,10 +183,6 @@ interface ArcBridgeHost {
   // Notifies Chrome that the KeyMintInstance interface is ready.
   [MinVersion=63] OnKeyMintInstanceReady@168(
       pending_remote<keymint.KeyMintInstance> instance_remote);
-
-  // Notifies Chrome that the KioskInstance interface is ready.
-  [MinVersion=20] OnKioskInstanceReady@126(
-      pending_remote<KioskInstance> instance_remote);
 
   // Notifies Chrome that the MediaSessionInstance interface is ready.
   [MinVersion=43] OnMediaSessionInstanceReady@148(

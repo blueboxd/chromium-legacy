@@ -26,6 +26,7 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/base/ui_base_features.h"
@@ -114,7 +115,7 @@ class ExitLoopOnRelease : public View {
 BEGIN_METADATA(ExitLoopOnRelease)
 END_METADATA
 
-// A view that does a capture on ui::ET_GESTURE_TAP_DOWN events.
+// A view that does a capture on ui::EventType::kGestureTapDown events.
 class GestureCaptureView : public View {
   METADATA_HEADER(GestureCaptureView, View)
 
@@ -129,7 +130,7 @@ class GestureCaptureView : public View {
  private:
   // View:
   void OnGestureEvent(ui::GestureEvent* event) override {
-    if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
+    if (event->type() == ui::EventType::kGestureTapDown) {
       GetWidget()->SetCapture(this);
       event->StopPropagation();
     }
@@ -273,6 +274,17 @@ class DragView : public View, public DragController {
   }
 
   // View:
+
+  // See the comment for `received_drag_event_` for why this is Lacros-only.
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  void OnMouseEvent(ui::MouseEvent* event) override {
+    if (event->type() == ui::EventType::kMouseDragged) {
+      received_drag_event_ = true;
+    }
+    View::OnMouseEvent(event);
+  }
+#endif
+
   bool GetDropFormats(
       int* formats,
       std::set<ui::ClipboardFormatType>* format_types) override {
@@ -301,11 +313,26 @@ class DragView : public View, public DragController {
   }
 
   void OnMouseExited(const ui::MouseEvent& event) override {
-    if (on_mouse_exit_) {
+    // Depending on the initial mouse position and the timing when the OS
+    // informs us about it, we might get an extra mouse exit event that is
+    // unrelated to DnD.
+    if (received_drag_event_ && on_mouse_exit_) {
       std::move(on_mouse_exit_).Run();
     }
   }
 
+  // Whether we've received an EventType::kMouseDragged event yet.
+  //
+  // This is needed on Lacros, where we sometimes get an EventType::kMouseExited
+  // event that's unrelated to DnD. To prevent that from messing up the test
+  // flow, we ignore all such events until we receive an
+  // EventType::kMouseDragged event. On all other platforms, initializing it to
+  // true disables this workaround.
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  bool received_drag_event_ = false;
+#else
+  bool received_drag_event_ = true;
+#endif
   base::OnceClosure on_drag_enter_, on_drag_exit_, on_capture_lost_,
       on_mouse_exit_;
 };
@@ -392,7 +419,7 @@ std::unique_ptr<Textfield> CreateTextfield() {
   // Focusable views must have an accessible name in order to pass the
   // accessibility paint checks. The name can be literal text, placeholder
   // text or an associated label.
-  textfield->SetAccessibleName(u"Foo");
+  textfield->GetViewAccessibility().SetName(u"Foo");
   return textfield;
 }
 
@@ -530,8 +557,9 @@ class TouchEventHandler : public ui::EventHandler {
  private:
   // ui::EventHandler:
   void OnTouchEvent(ui::TouchEvent* event) override {
-    if (event->type() == ui::ET_TOUCH_PRESSED)
+    if (event->type() == ui::EventType::kTouchPressed) {
       ActivateViaMouse();
+    }
   }
 
   raw_ptr<Widget> widget_;
@@ -575,23 +603,23 @@ TEST_F(WidgetTestInteractive, CheckResizeControllerEvents) {
 
   // Move to an outside position.
   gfx::Point p1(200, 200);
-  ui::MouseEvent moved_out(ui::ET_MOUSE_MOVED, p1, p1, ui::EventTimeForNow(),
-                           ui::EF_NONE, ui::EF_NONE);
+  ui::MouseEvent moved_out(ui::EventType::kMouseMoved, p1, p1,
+                           ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
   toplevel->OnMouseEvent(&moved_out);
   EXPECT_EQ(0, view->EnteredCalls());
   EXPECT_EQ(0, view->ExitedCalls());
 
   // Move onto the active view.
   gfx::Point p2(95, 95);
-  ui::MouseEvent moved_over(ui::ET_MOUSE_MOVED, p2, p2, ui::EventTimeForNow(),
-                            ui::EF_NONE, ui::EF_NONE);
+  ui::MouseEvent moved_over(ui::EventType::kMouseMoved, p2, p2,
+                            ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
   toplevel->OnMouseEvent(&moved_over);
   EXPECT_EQ(1, view->EnteredCalls());
   EXPECT_EQ(0, view->ExitedCalls());
 
   // Move onto the outer resizing border.
   gfx::Point p3(102, 95);
-  ui::MouseEvent moved_resizer(ui::ET_MOUSE_MOVED, p3, p3,
+  ui::MouseEvent moved_resizer(ui::EventType::kMouseMoved, p3, p3,
                                ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
   toplevel->OnMouseEvent(&moved_resizer);
   EXPECT_EQ(0, view->EnteredCalls());
@@ -743,10 +771,13 @@ TEST_F(WidgetTestInteractive, MAYBE_ChildStackedRelativeToParent) {
 
 TEST_F(WidgetTestInteractive, ChildWidgetStackAbove) {
   WidgetAutoclosePtr toplevel(CreateTopLevelPlatformWidget());
-  Widget* children[] = {CreateChildPlatformWidget(toplevel->GetNativeView()),
-                        CreateChildPlatformWidget(toplevel->GetNativeView()),
-                        CreateChildPlatformWidget(toplevel->GetNativeView())};
-  int order[] = {0, 1, 2};
+  auto children = std::to_array<Widget*>(
+      {CreateChildPlatformWidget(toplevel->GetNativeView()),
+       CreateChildPlatformWidget(toplevel->GetNativeView()),
+       CreateChildPlatformWidget(toplevel->GetNativeView())});
+  auto order = std::to_array<size_t>({0, 1, 2});
+
+  static_assert(children.size() == order.size());
 
   children[0]->ShowInactive();
   children[1]->ShowInactive();
@@ -756,23 +787,29 @@ TEST_F(WidgetTestInteractive, ChildWidgetStackAbove) {
   do {
     children[order[1]]->StackAboveWidget(children[order[0]]);
     children[order[2]]->StackAboveWidget(children[order[1]]);
-    for (int i = 0; i < 3; i++)
-      for (int j = 0; j < 3; j++)
-        if (i < j)
+    for (size_t i = 0; i < order.size(); i++) {
+      for (size_t j = 0; j < order.size(); j++) {
+        if (i < j) {
           EXPECT_FALSE(
               IsWindowStackedAbove(children[order[i]], children[order[j]]));
-        else if (i > j)
+        } else if (i > j) {
           EXPECT_TRUE(
               IsWindowStackedAbove(children[order[i]], children[order[j]]));
-  } while (std::next_permutation(order, order + 3));
+        }
+      }
+    }
+  } while (std::next_permutation(order.begin(), order.end()));
 }
 
 TEST_F(WidgetTestInteractive, ChildWidgetStackAtTop) {
   WidgetAutoclosePtr toplevel(CreateTopLevelPlatformWidget());
-  Widget* children[] = {CreateChildPlatformWidget(toplevel->GetNativeView()),
-                        CreateChildPlatformWidget(toplevel->GetNativeView()),
-                        CreateChildPlatformWidget(toplevel->GetNativeView())};
-  int order[] = {0, 1, 2};
+  auto children = std::to_array<Widget*>(
+      {CreateChildPlatformWidget(toplevel->GetNativeView()),
+       CreateChildPlatformWidget(toplevel->GetNativeView()),
+       CreateChildPlatformWidget(toplevel->GetNativeView())});
+  auto order = std::to_array<size_t>({0, 1, 2});
+
+  static_assert(children.size() == order.size());
 
   children[0]->ShowInactive();
   children[1]->ShowInactive();
@@ -782,15 +819,18 @@ TEST_F(WidgetTestInteractive, ChildWidgetStackAtTop) {
   do {
     children[order[1]]->StackAtTop();
     children[order[2]]->StackAtTop();
-    for (int i = 0; i < 3; i++)
-      for (int j = 0; j < 3; j++)
-        if (i < j)
+    for (size_t i = 0; i < order.size(); i++) {
+      for (size_t j = 0; j < order.size(); j++) {
+        if (i < j) {
           EXPECT_FALSE(
               IsWindowStackedAbove(children[order[i]], children[order[j]]));
-        else if (i > j)
+        } else if (i > j) {
           EXPECT_TRUE(
               IsWindowStackedAbove(children[order[i]], children[order[j]]));
-  } while (std::next_permutation(order, order + 3));
+        }
+      }
+    }
+  } while (std::next_permutation(order.begin(), order.end()));
 }
 
 #if BUILDFLAG(IS_WIN)
@@ -1027,7 +1067,7 @@ TEST_F(DesktopWidgetTestInteractive, WindowModalWindowDestroyedActivationTest) {
 
   // Create a modal dialog.
   auto dialog_delegate = std::make_unique<DialogDelegateView>();
-  dialog_delegate->SetModalType(ui::MODAL_TYPE_WINDOW);
+  dialog_delegate->SetModalType(ui::mojom::ModalType::kWindow);
 
   Widget* modal_dialog_widget = views::DialogDelegate::CreateDialogWidget(
       dialog_delegate.release(), nullptr, top_level_widget->GetNativeView());
@@ -1429,7 +1469,7 @@ class SyntheticMouseMoveCounter : public ui::EventHandler {
 
   // ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override {
-    if (event->type() == ui::ET_MOUSE_MOVED && event->IsSynthesized()) {
+    if (event->type() == ui::EventType::kMouseMoved && event->IsSynthesized()) {
       ++count_;
     }
   }
@@ -1545,7 +1585,7 @@ TEST_F(DesktopWidgetTestInteractive,
   // Create a modal dialog.
   // This instance will be destroyed when the dialog is destroyed.
   auto dialog_delegate = std::make_unique<DialogDelegateView>();
-  dialog_delegate->SetModalType(ui::MODAL_TYPE_WINDOW);
+  dialog_delegate->SetModalType(ui::mojom::ModalType::kWindow);
   Widget* modal_dialog_widget = DialogDelegate::CreateDialogWidget(
       dialog_delegate.release(), nullptr, top_level->GetNativeView());
   modal_dialog_widget->SetBounds(gfx::Rect(0, 0, 100, 10));
@@ -1786,9 +1826,9 @@ TEST_F(WidgetCaptureTest, CaptureAutoReset) {
 
   // By default, mouse release removes capture.
   gfx::Point click_location(45, 15);
-  ui::MouseEvent release(ui::ET_MOUSE_RELEASED, click_location, click_location,
-                         ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
-                         ui::EF_LEFT_MOUSE_BUTTON);
+  ui::MouseEvent release(ui::EventType::kMouseReleased, click_location,
+                         click_location, ui::EventTimeForNow(),
+                         ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   toplevel->OnMouseEvent(&release);
   EXPECT_FALSE(toplevel->HasCapture());
 
@@ -1818,22 +1858,23 @@ TEST_F(WidgetCaptureTest, ResetCaptureOnGestureEnd) {
   toplevel->Show();
 
   // Start a gesture on |gesture|.
-  ui::GestureEvent tap_down(15, 15, 0, base::TimeTicks(),
-                            ui::GestureEventDetails(ui::ET_GESTURE_TAP_DOWN));
+  ui::GestureEvent tap_down(
+      15, 15, 0, base::TimeTicks(),
+      ui::GestureEventDetails(ui::EventType::kGestureTapDown));
   ui::GestureEvent end(15, 15, 0, base::TimeTicks(),
-                       ui::GestureEventDetails(ui::ET_GESTURE_END));
+                       ui::GestureEventDetails(ui::EventType::kGestureEnd));
   toplevel->OnGestureEvent(&tap_down);
 
   // Now try to click on |mouse|. Since |gesture| will have capture, |mouse|
   // will not receive the event.
   gfx::Point click_location(45, 15);
 
-  ui::MouseEvent press(ui::ET_MOUSE_PRESSED, click_location, click_location,
-                       ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
-                       ui::EF_LEFT_MOUSE_BUTTON);
-  ui::MouseEvent release(ui::ET_MOUSE_RELEASED, click_location, click_location,
-                         ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
-                         ui::EF_LEFT_MOUSE_BUTTON);
+  ui::MouseEvent press(ui::EventType::kMousePressed, click_location,
+                       click_location, ui::EventTimeForNow(),
+                       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+  ui::MouseEvent release(ui::EventType::kMouseReleased, click_location,
+                         click_location, ui::EventTimeForNow(),
+                         ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
 
   EXPECT_TRUE(toplevel->HasCapture());
 
@@ -1878,12 +1919,12 @@ TEST_F(WidgetCaptureTest, DisableCaptureWidgetFromMousePress) {
   gfx::Point location(20, 20);
   base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          &Widget::OnMouseEvent, base::Unretained(second),
-          base::Owned(new ui::MouseEvent(
-              ui::ET_MOUSE_RELEASED, location, location, ui::EventTimeForNow(),
-              ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON))));
-  ui::MouseEvent press(ui::ET_MOUSE_PRESSED, location, location,
+      base::BindOnce(&Widget::OnMouseEvent, base::Unretained(second),
+                     base::Owned(new ui::MouseEvent(
+                         ui::EventType::kMouseReleased, location, location,
+                         ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+                         ui::EF_LEFT_MOUSE_BUTTON))));
+  ui::MouseEvent press(ui::EventType::kMousePressed, location, location,
                        ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
                        ui::EF_LEFT_MOUSE_BUTTON);
   first->OnMouseEvent(&press);
@@ -1893,7 +1934,8 @@ TEST_F(WidgetCaptureTest, DisableCaptureWidgetFromMousePress) {
 // Tests some grab/ungrab events. Only one Widget can have capture at any given
 // time.
 TEST_F(WidgetCaptureTest, GrabUngrab) {
-  auto top_level = CreateTestWidget();
+  auto top_level =
+      CreateTestWidget(Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET);
   top_level->SetContentsView(std::make_unique<MouseView>());
 
   Widget* child1 = new Widget;
@@ -2000,7 +2042,7 @@ TEST_F(WidgetCaptureTest, MAYBE_SystemModalWindowReleasesCapture) {
 
   // Create a modal dialog.
   auto dialog_delegate = std::make_unique<DialogDelegateView>();
-  dialog_delegate->SetModalType(ui::MODAL_TYPE_SYSTEM);
+  dialog_delegate->SetModalType(ui::mojom::ModalType::kSystem);
 
   Widget* modal_dialog_widget = views::DialogDelegate::CreateDialogWidget(
       dialog_delegate.release(), nullptr, top_level_widget->GetNativeView());
@@ -2185,8 +2227,9 @@ TEST_F(WidgetCaptureTest, MouseEventDispatchedToRightWindow) {
   widget2->GetAndClearGotMouseEvent();
   // Send a mouse event to the RootWindow associated with |widget1|. Even though
   // |widget2| has capture, |widget1| should still get the event.
-  ui::MouseEvent mouse_event(ui::ET_MOUSE_EXITED, gfx::Point(), gfx::Point(),
-                             ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
+  ui::MouseEvent mouse_event(ui::EventType::kMouseExited, gfx::Point(),
+                             gfx::Point(), ui::EventTimeForNow(), ui::EF_NONE,
+                             ui::EF_NONE);
   ui::EventDispatchDetails details =
       widget1->GetNativeWindow()->GetHost()->GetEventSink()->OnEventFromSource(
           &mouse_event);
@@ -2382,7 +2425,8 @@ TEST_F(WidgetInputMethodInteractiveTest, AcceleratorInTextfield) {
   textfield_ptr->SetTextInputType(ui::TEXT_INPUT_TYPE_TEXT);
   textfield_ptr->RequestFocus();
 
-  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_F, ui::EF_ALT_DOWN);
+  ui::KeyEvent key_event(ui::EventType::kKeyPressed, ui::VKEY_F,
+                         ui::EF_ALT_DOWN);
   ui::Accelerator accelerator(key_event);
   widget->GetFocusManager()->RegisterAccelerator(
       accelerator, ui::AcceleratorManager::kNormalPriority, textfield_ptr);
@@ -2484,16 +2528,8 @@ class DesktopWidgetDragTestInteractive : public DesktopWidgetTestInteractive,
   base::RunLoop drag_wait_loop_;
 };
 
-// TODO(crbug.com/333076102): Re-enable flaky tests
-#if BUILDFLAG(IS_CHROMEOS) && defined(ADDRESS_SANITIZER) && \
-    defined(LEAK_SANITIZER)
-#define MAYBE_CancelShellDrag DISABLED_CancelShellDrag
-#else
-#define MAYBE_CancelShellDrag CancelShellDrag
-#endif
-
 // Cancels a DnD session started by `RunShellDrag()`.
-TEST_F(DesktopWidgetDragTestInteractive, MAYBE_CancelShellDrag) {
+TEST_F(DesktopWidgetDragTestInteractive, CancelShellDrag) {
   WidgetAutoclosePtr widget(new Widget);
 
   auto cancel = [&]() {

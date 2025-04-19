@@ -15,6 +15,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/not_fatal_until.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "components/google/core/common/google_util.h"
@@ -329,7 +330,7 @@ bool VisitDatabase::FillVisitVectorWithOptions(sql::Statement& statement,
         if (!ov.app_id && visit.app_id) {
           auto is_matched = [ov](VisitRow v) { return ov.url_id == v.url_id; };
           auto pos = std::find_if(visits->begin(), visits->end(), is_matched);
-          DCHECK(pos != visits->end());
+          CHECK(pos != visits->end(), base::NotFatalUntil::M130);
           *pos = visit;
           found_urls[visit.url_id] = visit;
         }
@@ -673,18 +674,18 @@ bool VisitDatabase::GetSomeForeignVisits(VisitID max_visit_id,
   visits->clear();
 
   // Exactly all foreign visits (i.e. coming from a different device) have an
-  // `originator_cache_guid` set. (This does *not* include legacy TypedURL
-  // visits though - those have SOURCE_SYNCED but are otherwise not considered
-  // "foreign".)
+  // `originator_cache_guid` set.
   sql::Statement statement(GetDB().GetCachedStatement(
       SQL_FROM_HERE,
       "SELECT" HISTORY_VISIT_ROW_FIELDS
       "FROM visits "
       "WHERE originator_cache_guid IS NOT NULL AND originator_cache_guid != '' "
+      "AND (transition & ?) <> 0 "
       "AND id <= ? "
       "LIMIT ?"));
-  statement.BindInt64(0, max_visit_id);
-  statement.BindInt(1, max_results);
+  statement.BindInt64(0, ui::PAGE_TRANSITION_CHAIN_END);
+  statement.BindInt64(1, max_visit_id);
+  statement.BindInt(2, max_results);
 
   return FillVisitVector(statement, visits);
 }
@@ -1135,7 +1136,7 @@ void VisitDatabase::GetVisitsSource(const VisitVector& visits,
       sql.append(base::NumberToString(visits[j].visit_id));
     }
     sql.append(") ORDER BY id");
-    sql::Statement statement(GetDB().GetUniqueStatement(sql.c_str()));
+    sql::Statement statement(GetDB().GetUniqueStatement(sql));
 
     // Get the source entries out of the query result.
     while (statement.Step()) {

@@ -74,6 +74,8 @@ public class TabGroupSyncServiceAndroidUnitTest {
         Assert.assertEquals(TEST_GROUP_TITLE, group.title);
         Assert.assertEquals(TabGroupColorId.RED, group.color);
         Assert.assertEquals(3, group.savedTabs.size());
+        Assert.assertEquals("creator_cache_guid", group.creatorCacheGuid);
+        Assert.assertEquals("last_updater_cache_guid", group.lastUpdaterCacheGuid);
 
         SavedTabGroupTab tab1 = group.savedTabs.get(0);
         Assert.assertNotNull(tab1.syncId);
@@ -90,6 +92,8 @@ public class TabGroupSyncServiceAndroidUnitTest {
         Assert.assertEquals(Integer.valueOf(2), tab3.position);
         Assert.assertEquals(TEST_TAB_TITLE, tab3.title);
         Assert.assertEquals(new GURL(null), tab3.url);
+        Assert.assertEquals("creator_cache_guid", tab3.creatorCacheGuid);
+        Assert.assertEquals("last_updater_cache_guid", tab3.lastUpdaterCacheGuid);
     }
 
     @CalledByNative
@@ -133,6 +137,11 @@ public class TabGroupSyncServiceAndroidUnitTest {
     @CalledByNative
     public void testUpdateVisualData() {
         mService.updateVisualData(LOCAL_TAB_GROUP_ID_1, TEST_GROUP_TITLE_2, TabGroupColorId.GREEN);
+    }
+
+    @CalledByNative
+    public void testMakeTabGroupShared(String collaborationId) {
+        mService.makeTabGroupShared(LOCAL_TAB_GROUP_ID_1, collaborationId);
     }
 
     @CalledByNative

@@ -47,6 +47,8 @@
 #include "ui/aura/window_observer.h"
 #endif  // RESIZE_DOCUMENT_PICTURE_IN_PICTURE_TO_DIALOG
 
+class BrowserFrameBoundsChangeAnimation;
+
 namespace views {
 class FrameBackground;
 class Label;
@@ -102,10 +104,11 @@ class PictureInPictureBrowserFrameView
   void AddedToWidget() override;
   void RemovedFromWidget() override;
 #if BUILDFLAG(IS_LINUX)
-  gfx::Insets MirroredFrameBorderInsets() const override;
+  gfx::Insets RestoredMirroredFrameBorderInsets() const override;
   gfx::Insets GetInputInsets() const override;
   SkRRect GetRestoredClipRegion() const override;
 #endif
+  void SetFrameBounds(const gfx::Rect& bounds) override;
 
   // ChromeLocationBarModelDelegate:
   content::WebContents* GetActiveWebContents() const override;
@@ -204,6 +207,9 @@ class PictureInPictureBrowserFrameView
 #if BUILDFLAG(IS_WIN)
   gfx::Insets GetClientAreaInsets(HMONITOR monitor) const;
 #endif
+
+  // Returns true if `content_setting_views_` has any visible views.
+  bool HasAnyVisibleContentSettingViews() const;
 
   // Helper functions for testing.
   std::vector<gfx::Animation*> GetRenderActiveAnimationsForTesting();
@@ -363,6 +369,8 @@ class PictureInPictureBrowserFrameView
   gfx::MultiAnimation hide_back_to_tab_button_animation_;
   gfx::MultiAnimation show_close_button_animation_;
   gfx::MultiAnimation hide_close_button_animation_;
+  gfx::LinearAnimation show_all_buttons_animation_;
+  gfx::LinearAnimation hide_all_buttons_animation_;
 
   // The foreground color given the current state of the
   // `top_bar_color_animation_`.
@@ -383,6 +391,10 @@ class PictureInPictureBrowserFrameView
 
   // If non-null, this displays the allow / block setting overlay for autopip.
   raw_ptr<AutoPipSettingOverlayView> auto_pip_setting_overlay_ = nullptr;
+
+  // Animates programmatic changes to bounds (e.g. via `resizeTo()` or
+  // `resizeBy()` calls).
+  std::unique_ptr<BrowserFrameBoundsChangeAnimation> bounds_change_animation_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_FRAME_PICTURE_IN_PICTURE_BROWSER_FRAME_VIEW_H_

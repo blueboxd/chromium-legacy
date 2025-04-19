@@ -10,30 +10,31 @@ import {AnchorAlignment} from '//resources/cr_elements/cr_action_menu/cr_action_
 export const minOverflowLengthToScroll = 75;
 export const spinnerDebounceTimeout = 150;
 export const playFromSelectionTimeout = spinnerDebounceTimeout + 25;
+export const toastDurationMs = 10000;
 
-export const defaultFontName: string = 'sans-serif';
-
-// Defines the valid font names that can be passed to front-end and maps
-// them to a corresponding class style in app.html. Must stay in-sync with
-// the names set in read_anything_model.cc.
-const validFontNames: Array<{name: string, css: string}> = [
-  {name: 'Poppins', css: 'Poppins'},
-  {name: 'Sans-serif', css: 'sans-serif'},
-  {name: 'Serif', css: 'serif'},
-  {name: 'Comic Neue', css: '"Comic Neue"'},
-  {name: 'Lexend Deca', css: '"Lexend Deca"'},
-  {name: 'EB Garamond', css: '"EB Garamond"'},
-  {name: 'STIX Two Text', css: '"STIX Two Text"'},
-  {name: 'Andika', css: 'Andika'},
-];
+// Events emitted from the toolbar to the app
+export enum ToolbarEvent {
+  LETTER_SPACING = 'letter-spacing-change',
+  LINE_SPACING = 'line-spacing-change',
+  THEME = 'theme-change',
+  FONT_SIZE = 'font-size-change',
+  FONT = 'font-change',
+  RATE = 'rate-change',
+  PLAY_PAUSE = 'play-pause-click',
+  HIGHLIGHT_TOGGLE = 'highlight-toggle',
+  NEXT_GRANULARITY = 'next-granularity-click',
+  PREVIOUS_GRANULARITY = 'previous-granularity-click',
+  LINKS = 'links-toggle',
+  IMAGES = 'images-toggle',
+  VOICE = 'select-voice',
+  LANGUAGE_TOGGLE = 'voice-language-toggle',
+  PLAY_PREVIEW = 'preview-voice',
+}
 
 const ACTIVE_CSS_CLASS = 'active';
 
-// Validate that the given font name is a valid choice, or use the default.
-export function validatedFontName(fontName: string): string {
-  const validFontName =
-      validFontNames.find((f: {name: string}) => f.name === fontName);
-  return validFontName ? validFontName.css : defaultFontName;
+export function getCurrentSpeechRate(): number {
+  return parseFloat(chrome.readingMode.speechRate.toFixed(1));
 }
 
 export function openMenu(

@@ -24,12 +24,14 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
 import org.chromium.android_webview.AwContents;
+import org.chromium.android_webview.AwCookieManager;
 import org.chromium.android_webview.test.TestAwContentsClient.OnReceivedErrorHelper;
 import org.chromium.android_webview.test.util.AwTestTouchUtils;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.base.test.util.TestFileUtil;
@@ -105,6 +107,7 @@ public class AwContentsClientShouldInterceptRequestTest extends AwParameterizedT
         mTestContainerView = mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         mAwContents = mTestContainerView.getAwContents();
         mShouldInterceptRequestHelper = mContentsClient.getShouldInterceptRequestHelper();
+        mAwContents.getSettings().setAllowFileAccess(true);
 
         mWebServer = TestWebServer.start();
     }
@@ -375,12 +378,12 @@ public class AwContentsClientShouldInterceptRequestTest extends AwParameterizedT
         }
 
         @Override
-        public int read(byte b[]) throws IOException {
+        public int read(byte[] b) throws IOException {
             return -1;
         }
 
         @Override
-        public int read(byte b[], int off, int len) throws IOException {
+        public int read(byte[] b, int off, int len) throws IOException {
             return -1;
         }
 
@@ -422,12 +425,12 @@ public class AwContentsClientShouldInterceptRequestTest extends AwParameterizedT
         }
 
         @Override
-        public int read(byte b[]) throws IOException {
+        public int read(byte[] b) throws IOException {
             throw new IOException("test exception");
         }
 
         @Override
-        public int read(byte b[], int off, int len) throws IOException {
+        public int read(byte[] b, int off, int len) throws IOException {
             throw new IOException("test exception");
         }
 
@@ -684,6 +687,38 @@ public class AwContentsClientShouldInterceptRequestTest extends AwParameterizedT
         Assert.assertEquals(expectedTitle, mActivityTestRule.getTitleOnUiThread(mAwContents));
         Assert.assertEquals(0, mWebServer.getRequestCount("/" + CommonResources.ABOUT_FILENAME));
         histogramExpectation.assertExpected();
+    }
+
+    // Regression test for b/345306067.
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    // Disable this to make sure the cookie call hits the IO thread.
+    @CommandLineFlags.Add({"disable-features=NetworkServiceDedicatedThread"})
+    public void testGetCookieInAvailable() throws Throwable {
+        final String syncGetUrl = mWebServer.getResponseUrl("/intercept_me");
+        AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+
+        final String aboutPageUrl = addAboutPageToTestServer(mWebServer);
+        mActivityTestRule.loadUrlSync(
+                mAwContents, mContentsClient.getOnPageFinishedHelper(), aboutPageUrl);
+
+        // This will intercept the call to `syncGetUrl` in `getHeaderValue()` below.
+        final String encoding = "UTF-8";
+        mShouldInterceptRequestHelper.setReturnValue(
+                new WebResourceResponseInfo(
+                        "text/html",
+                        encoding,
+                        new ByteArrayInputStream("foo".getBytes(encoding)) {
+                            @Override
+                            public synchronized int available() {
+                                new AwCookieManager().setCookie(aboutPageUrl, "foo");
+                                return super.available();
+                            }
+                        }));
+        Assert.assertEquals(
+                "3", getHeaderValue(mAwContents, mContentsClient, syncGetUrl, "Content-Length"));
+        Assert.assertEquals(1, mShouldInterceptRequestHelper.getRequestCountForUrl(syncGetUrl));
     }
 
     @Test
@@ -1371,6 +1406,37 @@ public class AwContentsClientShouldInterceptRequestTest extends AwParameterizedT
         Assert.assertEquals(destinationUrl, mShouldInterceptRequestHelper.getUrls().get(1));
 
         Assert.assertEquals(0, mWebServer.getRequestCount("/hello.txt"));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "Network"})
+    @CommandLineFlags.Add("webview-intercepted-cookie-header")
+    public void testCookieHeaders() throws Throwable {
+        var cookieManager = mAwContents.getBrowserContext().getCookieManager();
+        final String destinationUrl =
+                mWebServer.setResponse("/hello.txt", "", new ArrayList<Pair<String, String>>());
+
+        cookieManager.setCookie(destinationUrl, "blah=yo");
+
+        var headersForInjectedResponse = new HashMap<String, String>();
+        // Forcing a cookie to be set in the response
+        headersForInjectedResponse.put("set-cookie", "foo=bar");
+
+        mShouldInterceptRequestHelper.setReturnValueForUrl(
+                destinationUrl,
+                stringWithHeadersToWebResourceResponseInfo("hello", headersForInjectedResponse));
+
+        mActivityTestRule.loadUrlSync(
+                mAwContents, mContentsClient.getOnPageFinishedHelper(), destinationUrl);
+
+        // These are the cookies that were sent before we set a new one.
+        var resourceRequest = mShouldInterceptRequestHelper.getRequestsForUrl(destinationUrl);
+        Assert.assertTrue(resourceRequest.requestHeaders.containsKey("Cookie"));
+        Assert.assertEquals("blah=yo", resourceRequest.requestHeaders.get("Cookie"));
+
+        // And then we should see our new value in the cookie manager.
+        Assert.assertEquals("blah=yo; foo=bar", cookieManager.getCookie(destinationUrl));
     }
 
     @Test

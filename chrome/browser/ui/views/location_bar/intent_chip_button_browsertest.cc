@@ -114,7 +114,7 @@ class IntentChipButtonBrowserTest : public web_app::WebAppNavigationBrowserTest,
         nullptr, ui_test_utils::BrowserChangeObserver::ChangeType::kAdded);
 
     views::test::ButtonTestApi test_api(GetIntentChip());
-    ui::MouseEvent e(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+    ui::MouseEvent e(ui::EventType::kMousePressed, gfx::Point(), gfx::Point(),
                      ui::EventTimeForNow(), 0, 0);
     test_api.NotifyClick(e);
 
@@ -273,51 +273,6 @@ IN_PROC_BROWSER_TEST_P(IntentChipButtonBrowserTest, OpensAppForPreferredApp) {
                                                          test_web_app_id()));
 }
 #endif  // BUILDFLAG(IS_CHROMEOS)
-
-IN_PROC_BROWSER_TEST_P(IntentChipButtonBrowserTest, ShowsAppIconInChip) {
-  // With ChromeRefresh2023, the same icon is always shown in the chip and this
-  // test is no longer meaningful.
-  if (features::IsChromeRefresh2023()) {
-    GTEST_SKIP() << "With ChromeRefresh2023, the same icon is always shown in "
-                    "the chip and this test is no longer meaningful.";
-  }
-
-  InstallOverlappingApp();
-
-  const GURL root_url = https_server().GetURL(GetAppUrlHost(), "/");
-  const GURL overlapped_url =
-      https_server().GetURL(GetAppUrlHost(), GetInScopeUrlPath());
-  const GURL non_overlapped_url =
-      https_server().GetURL(GetAppUrlHost(), GetOutOfScopeUrlPath());
-
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
-  NavigateAndWaitForIconUpdate(root_url);
-
-  auto icon1 =
-      GetIntentChip()->GetImage(views::Button::ButtonState::STATE_NORMAL);
-  ASSERT_FALSE(IntentPickerTabHelper::FromWebContents(web_contents)
-                   ->app_icon()
-                   .IsEmpty());
-
-  NavigateAndWaitForIconUpdate(non_overlapped_url);
-
-  // The chip should still be showing the same app icon.
-  auto icon2 =
-      GetIntentChip()->GetImage(views::Button::ButtonState::STATE_NORMAL);
-  ASSERT_TRUE(icon1.BackedBySameObjectAs(icon2));
-
-  NavigateAndWaitForIconUpdate(overlapped_url);
-
-  // Loading a URL with multiple apps available should switch to a generic icon.
-  auto icon3 =
-      GetIntentChip()->GetImage(views::Button::ButtonState::STATE_NORMAL);
-  ASSERT_FALSE(icon1.BackedBySameObjectAs(icon3));
-  ASSERT_TRUE(IntentPickerTabHelper::FromWebContents(web_contents)
-                  ->app_icon()
-                  .IsEmpty());
-}
 
 INSTANTIATE_TEST_SUITE_P(,
                          IntentChipButtonBrowserTest,

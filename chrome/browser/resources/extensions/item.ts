@@ -26,7 +26,6 @@ import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {assert, assertNotReached} from 'chrome://resources/js/assert.js';
 import {flush, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {ExtensionsHatsBrowserProxyImpl} from './extension_hats_browser_proxy.js';
 import {getTemplate} from './item.html.js';
 import {ItemMixin} from './item_mixin.js';
 import {computeInspectableViewLabel, EnableControl, getEnableControl, getEnableToggleAriaLabel, getEnableToggleTooltipText, getItemSource, getItemSourceString, isEnabled, sortViews, SourceType, userCanChangeEnablement} from './item_util.js';
@@ -189,8 +188,6 @@ export class ExtensionsItemElement extends ExtensionsItemElementBase {
       const actionToRecord = this.data.safetyCheckText ?
           'SafetyCheck.ReviewPanelRemoveClicked' :
           'SafetyCheck.NonTriggeringExtensionRemoved';
-      ExtensionsHatsBrowserProxyImpl.getInstance()
-          .nonTriggerExtensionRemovedAction();
       chrome.metricsPrivate.recordUserAction(actionToRecord);
     }
     this.delegate.deleteItem(this.data.id);
@@ -328,24 +325,59 @@ export class ExtensionsItemElement extends ExtensionsItemElementBase {
         'itemInspectViewsExtra', (this.data.views.length - 1).toString());
   }
 
+  /**
+   * @return Whether the extension has severe warnings. Doesn't determine the
+   *     warning's visibility.
+   */
   private hasSevereWarnings_(): boolean {
     return this.data.disableReasons.corruptInstall ||
         this.data.disableReasons.suspiciousInstall ||
         this.data.runtimeWarnings.length > 0 || !!this.data.blacklistText;
   }
 
+  /**
+   * @return Whether the extension has an MV2 warning. Doesn't determine the
+   *     warning's visibility.
+   */
+  private hasMv2DeprecationWarning_(): boolean {
+    return this.data.disableReasons.unsupportedManifestVersion;
+  }
+
+  /**
+   * @return Whether the extension has an allowlist warning. Doesn't determine
+   *     the warning's visibility.
+   */
+  private hasAllowlistWarning_(): boolean {
+    return this.data.showSafeBrowsingAllowlistWarning;
+  }
+
   private showDescription_(): boolean {
-    return !this.hasSevereWarnings_() &&
-        !this.data.showSafeBrowsingAllowlistWarning;
+    // Description is only visible iff no warnings are visible.
+    return !this.hasSevereWarnings_() && !this.hasMv2DeprecationWarning_() &&
+        !this.hasAllowlistWarning_();
+  }
+
+  private showSevereWarnings(): boolean {
+    // Severe warning are always visible, if they exist.
+    return this.hasSevereWarnings_();
+  }
+
+  private showMv2DeprecationWarning_(): boolean {
+    // MV2 deprecation warning is visible, if existent, if there are no severe
+    // warnings visible.
+    // Note: The item card has a fixed height and the content might get cropped
+    // if too many warnings are displayed.
+    return this.hasMv2DeprecationWarning_() && !this.hasSevereWarnings_();
   }
 
   private showAllowlistWarning_(): boolean {
-    // Only show the allowlist warning if there are no other warnings. The item
-    // card has a fixed height and the content might get cropped if too many
-    // warnings are displayed. This should be a rare edge case and the allowlist
-    // warning will still be shown in the item detail view.
-    return this.data.showSafeBrowsingAllowlistWarning &&
-        !this.hasSevereWarnings_();
+    // Allowlist warning is visible, if existent, if there are no severe
+    // warnings or mv2 deprecation warnings visible.
+    // Note: The item card has a fixed height and the content might get cropped
+    // if too many warnings are displayed. This should be a rare edge case and
+    // the allowlist warning will still be shown in the item detail view.
+    return this.hasAllowlistWarning_() && !this.hasSevereWarnings_() &&
+        !this.hasMv2DeprecationWarning_();
   }
 }
 

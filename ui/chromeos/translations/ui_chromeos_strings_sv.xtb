@@ -262,7 +262,7 @@
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3138624403379688522">Ogiltig pinkod. Du har <ph name="RETRIES" /> försök kvar.</translation>
 <translation id="3157931365184549694">Återställ</translation>
-<translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (med maskinvarustöd)</translation>
+<translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (med hårdvarustöd)</translation>
 <translation id="3188257591659621405">Mina filer</translation>
 <translation id="3194553149358267393">Inga nya ljudfiler</translation>
 <translation id="3197563288998582412">Storbritannien (dvorak)</translation>
@@ -337,6 +337,7 @@
 <translation id="3689865792480713551">Avbryt <ph name="ACTIVITY_DESCRIPTION" />.</translation>
 <translation id="3690128548376345212">Nätverk <ph name="NETWORK_INDEX" /> av <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, inaktiverat, <ph name="CONNECTION_STATUS" />, signalstyrka <ph name="SIGNAL_STRENGTH" /> %, information</translation>
 <translation id="3691184985318546178">singalesiska</translation>
+<translation id="3702842351052426940">SIM-kortet eller eSIM-profilen kan ha inaktiverats. Testa att byta SIM-kort eller byta eSIM-profil.</translation>
 <translation id="3722341589402358578">Ett fel har uppstått. Vissa objekt kanske inte har slängts.</translation>
 <translation id="3726463242007121105">Enheten kan inte öppnas eftersom dess filsystem inte stöds.</translation>
 <translation id="3727148787322499904">Om du ändrar denna inställning påverkas alla delade nätverk</translation>
@@ -356,6 +357,7 @@
 <translation id="3822559385185038546">Administratören har gjort den här proxyn obligatorisk</translation>
 <translation id="3830674330436234648">Ingen uppspelning är tillgänglig</translation>
 <translation id="383652340667548381">serbiska</translation>
+<translation id="3839045880592694915">Operatören tillåter inte att modemet ansluter. Kontakta mobiloperatören för mer information.</translation>
 <translation id="385051799172605136">Föregående</translation>
 <translation id="3855472144336161447">Tyska (neo 2)</translation>
 <translation id="3858860766373142691">Namn</translation>
@@ -375,10 +377,10 @@
 <translation id="3999574733850440202">Nyligen öppnade Microsoft-filer har flyttats till OneDrive</translation>
 <translation id="4002066346123236978">Titel</translation>
 <translation id="4017788180641807848">engelska (USA) med Workman-tangentbord</translation>
-<translation id="4019998208269143058">Fäst i Snabbfiler</translation>
 <translation id="4040753847560036377">Fel PUK-kod</translation>
 <translation id="4057991113334098539">Aktiverar...</translation>
 <translation id="4092890906744441904">iriska</translation>
+<translation id="4101601646343868113">Logga in på ditt mobilnätverk och bekräfta att ditt mobildataabonnemang är aktivt</translation>
 <translation id="4124731372776320263">Synkroniserar 1 fil på Drive</translation>
 <translation id="4124935795427217608">Enhörning</translation>
 <translation id="4131235941541910880">Lägg objekt som inte behövs i papperskorgen</translation>
@@ -603,6 +605,7 @@
 <translation id="5625294776298156701">tamilskt tangentbord (Tamil99)</translation>
 <translation id="5633226425545095130">Om du flyttar det här objektet delas det med alla som har åtkomst till den delade mappen <ph name="DESTINATION_NAME" />.</translation>
 <translation id="5649768706273821470">Lyssna</translation>
+<translation id="5650895901941743674">Kontrollera din APN-konfiguration</translation>
 <translation id="5669691691057771421">Ange en ny pinkod</translation>
 <translation id="5678784840044122290">Linux-programmet blir tillgängligt via terminalen och det kan också finnas en ikon för det i startprogrammet.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Det gick inte att koppla från ett arkiv eller en virtuell hårddisk<ph name="END_BOLD" />
@@ -682,6 +685,7 @@
 <translation id="6267547857941397424">Nätverk <ph name="NETWORK_INDEX" /> av <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, signalstyrka <ph name="SIGNAL_STRENGTH" /> %, telefonens batterinivå <ph name="BATTERY_STATUS" /> %, anslut</translation>
 <translation id="6269630227984243955">malajiska</translation>
 <translation id="6271903698064569429">Det gick inte att ladda upp filerna eftersom <ph name="SHARED_DRIVE_NAME" /> inte har tillräckligt med lagringsutrymme.</translation>
+<translation id="6279140785485544797">Ditt mobildataabonnemang kan ha löpt ut. Kontakta mobiloperatören för support.</translation>
 <translation id="6287852322318138013">Välj en app om du vill öppna filen</translation>
 <translation id="6295542640242147836">Lås SIM</translation>
 <translation id="6296410173147755564">Ogiltig PUK-kod</translation>
@@ -691,7 +695,6 @@
 <translation id="6320212353742551423"><ph name="ARCHIVE_TYPE" />-arkiv</translation>
 <translation id="6321303798550928047">Vinkar</translation>
 <translation id="6327785803543103246">Automatisk identifiering av webbproxy</translation>
-<translation id="6337014272874260727">Lossa från Snabbfiler</translation>
 <translation id="6339145975392024142">Internationellt för USA (PC)</translation>
 <translation id="6356685157277930264">Feedback för filfönster</translation>
 <translation id="6358884629796491903">Drake</translation>
@@ -737,6 +740,7 @@
 <translation id="6750737795876287924">Aktuell katalog</translation>
 <translation id="6751256176799620176">1 mapp har valts</translation>
 <translation id="6755827872271341378">ChromeOS Flex-enhet</translation>
+<translation id="6777029074498310250">Besök <ph name="LINK_BEGIN" />onedrive.live.com<ph name="LINK_END" /> för mer information</translation>
 <translation id="6790428901817661496">Spela</translation>
 <translation id="6794539005637808366">Återställ objektet eller dra det till en ny mapp utanför papperskorgen</translation>
 <translation id="6795884519221689054">Panda</translation>
@@ -790,6 +794,7 @@
 <translation id="7086590977277044826">tamilskt tangentbord (InScript)</translation>
 <translation id="7088615885725309056">Äldre</translation>
 <translation id="7103992300314999525">makedonska</translation>
+<translation id="7104338189998813914">Det gick inte att få åtkomst till ditt OneDrive-konto</translation>
 <translation id="7106346894903675391">Köp mer lagringsutrymme ...</translation>
 <translation id="7126604456862387217">&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt; – &lt;em&gt;sök i Drive&lt;/em&gt;</translation>
 <translation id="7135561821015524160">kannada, fonetiskt</translation>
@@ -1008,6 +1013,7 @@
 <translation id="8600173386174225982">Fillistan har ändrats till miniatyrvy.</translation>
 <translation id="8601932370724196034">Bildfil för Crostini</translation>
 <translation id="8609695766746872526">isländska</translation>
+<translation id="8630384863424041081">Ange pinkoden för SIM-kortet eller standardpinkoden från operatören. Kontakta mobiloperatören för support.</translation>
 <translation id="863903787380594467">Fel pinkod. Du har <ph name="RETRIES" /> försök kvar.</translation>
 <translation id="8639391553632924850"><ph name="INPUT_LABEL" /> – Port</translation>
 <translation id="8656407365183407932">Dina offlinefiler togs bort</translation>

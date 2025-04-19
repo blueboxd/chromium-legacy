@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "media/video/gpu_memory_buffer_video_frame_pool.h"
 
 #include <GLES2/gl2.h>
@@ -25,6 +30,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/not_fatal_until.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/sequenced_task_runner.h"
@@ -88,10 +94,8 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
         gpu_factories_(gpu_factories),
         output_format_(GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED),
         tick_clock_(base::DefaultTickClock::GetInstance()),
-        is_mappable_si_enabled_(
-            base::FeatureList::IsEnabled(
-                kAlwaysUseMappableSIForGpuMemoryBufferVideoFramePool) &&
-            IsMultiPlaneFormatForSoftwareVideoEnabled()) {
+        is_mappable_si_enabled_(base::FeatureList::IsEnabled(
+            kAlwaysUseMappableSIForGpuMemoryBufferVideoFramePool)) {
     DCHECK(media_task_runner_);
     DCHECK(worker_task_runner_);
 
@@ -162,10 +166,6 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
     // same method. With MappableSI, keeping the |scoped_mapping| will allow to
     // Map() and reset(UnMap()) it as needed to achieve same behavior.
     std::unique_ptr<gpu::ClientSharedImage::ScopedMapping> scoped_mapping;
-
-    // Tracks whether the SharedImage is created with GpuMemoryBuffer containing
-    // multiplanar format and prefers external sampler.
-    bool needs_external_sampler = false;
   };
 
   // All the resources needed to compose a frame.
@@ -318,7 +318,7 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
   uint32_t buffer_id_ = 0;
 
   const bool is_mappable_si_enabled_;
-  uint32_t si_usage_ = 0;
+  gpu::SharedImageUsageSet si_usage_;
 };
 
 namespace {
@@ -448,7 +448,7 @@ VideoPixelFormat VideoFormat(
     case GpuVideoAcceleratorFactories::OutputFormat::NV12_DUAL_GMB:
       return PIXEL_FORMAT_NV12;
     case GpuVideoAcceleratorFactories::OutputFormat::P010:
-      return PIXEL_FORMAT_P016LE;
+      return PIXEL_FORMAT_P010LE;
     case GpuVideoAcceleratorFactories::OutputFormat::BGRA:
       return PIXEL_FORMAT_ARGB;
     case GpuVideoAcceleratorFactories::OutputFormat::RGBA:
@@ -766,16 +766,14 @@ gfx::Size CodedSize(const VideoFrame* video_frame,
   return output;
 }
 
-bool SetPrefersExternalSampler(viz::SharedImageFormat& format) {
+void SetPrefersExternalSampler(viz::SharedImageFormat& format) {
   if (format.is_multi_plane()) {
     // Set prefers external sampler only for multiplanar formats on ozone based
     // platforms.
 #if BUILDFLAG(IS_OZONE)
     format.SetPrefersExternalSampler();
-    return true;
 #endif
   }
-  return false;
 }
 
 }  // unnamed namespace
@@ -853,9 +851,9 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
     case PIXEL_FORMAT_XBGR:
     case PIXEL_FORMAT_NV16:
     case PIXEL_FORMAT_NV24:
-    case PIXEL_FORMAT_P016LE:
-    case PIXEL_FORMAT_P216LE:
-    case PIXEL_FORMAT_P416LE:
+    case PIXEL_FORMAT_P010LE:
+    case PIXEL_FORMAT_P210LE:
+    case PIXEL_FORMAT_P410LE:
     case PIXEL_FORMAT_XR30:
     case PIXEL_FORMAT_XB30:
     case PIXEL_FORMAT_RGBAF16:
@@ -1262,7 +1260,7 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::OnCopiesDoneOnMediaThread(
     // shutdown we also need to remove the pool entry for them.
     if (!in_shutdown_) {
       auto it = base::ranges::find(resources_pool_, frame_resources);
-      DCHECK(it != resources_pool_.end());
+      CHECK(it != resources_pool_.end(), base::NotFatalUntil::M130);
       resources_pool_.erase(it);
     }
 
@@ -1362,25 +1360,15 @@ scoped_refptr<VideoFrame> GpuMemoryBufferVideoFramePool::PoolImpl::
     // ::GetOrCreateFrameResource().
     if (!is_mappable_si_enabled_ && !plane_resource.shared_image) {
       constexpr char kDebugLabel[] = "MediaGmbVideoFramePool";
-      if (IsMultiPlaneFormatForSoftwareVideoEnabled()) {
-        viz::SharedImageFormat si_format =
-            OutputFormatToSharedImageFormat(output_format_, plane);
-        if (handle.type != gfx::GpuMemoryBufferType::SHARED_MEMORY_BUFFER) {
-          if (SetPrefersExternalSampler(si_format)) {
-            plane_resource.needs_external_sampler = true;
-          }
-        }
-        plane_resource.shared_image =
-            sii->CreateSharedImage({si_format, gpu_memory_buffer->GetSize(),
-                                    color_space, si_usage_, kDebugLabel},
-                                   std::move(handle));
-      } else {
-        plane_resource.shared_image = sii->CreateSharedImage(
-            gpu_memory_buffer, gpu_factories_->GpuMemoryBufferManager(),
-            gfx::BufferPlane::DEFAULT,
-            {color_space, kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
-             si_usage_, kDebugLabel});
+      viz::SharedImageFormat si_format =
+          OutputFormatToSharedImageFormat(output_format_, plane);
+      if (handle.type != gfx::GpuMemoryBufferType::SHARED_MEMORY_BUFFER) {
+        SetPrefersExternalSampler(si_format);
       }
+      plane_resource.shared_image =
+          sii->CreateSharedImage({si_format, gpu_memory_buffer->GetSize(),
+                                  color_space, si_usage_, kDebugLabel},
+                                 std::move(handle));
       CHECK(plane_resource.shared_image);
     } else {
       sii->UpdateSharedImage(frame_resources->sync_token,
@@ -1393,10 +1381,7 @@ scoped_refptr<VideoFrame> GpuMemoryBufferVideoFramePool::PoolImpl::
   // mailboxes refer to will be used only after all the previous commands posted
   // in the SharedImageInterface have been processed.
   gpu::SyncToken sync_token = sii->GenUnverifiedSyncToken();
-  const gfx::BufferFormat buffer_format =
-      GpuMemoryBufferFormat(output_format_, 0);
-  auto texture_target = shared_images[0]->GetTextureTarget(
-      gfx::BufferUsage::SCANOUT_CPU_READ_WRITE, buffer_format);
+  auto texture_target = shared_images[0]->GetTextureTarget();
 
   VideoPixelFormat frame_format = VideoFormat(output_format_);
 
@@ -1420,8 +1405,7 @@ scoped_refptr<VideoFrame> GpuMemoryBufferVideoFramePool::PoolImpl::
     frame->set_ycbcr_info(ycbcr_info);
   }
 
-  if (NumGpuMemoryBuffers(output_format_) == 1 &&
-      IsMultiPlaneFormatForSoftwareVideoEnabled()) {
+  if (NumGpuMemoryBuffers(output_format_) == 1) {
     // Set type only for NV12_SINGLE_GMB and P010 cases. For NV12_DUAL_GMB and
     // I420 cases there are still multiple GMBs with one for each plane so we
     // have multiple shared images and it still goes through the legacy

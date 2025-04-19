@@ -6,6 +6,7 @@
 #define CC_TEST_FAKE_PICTURE_LAYER_TILING_CLIENT_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/memory/raw_ptr.h"
 #include "cc/raster/raster_source.h"
@@ -43,7 +44,9 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
       const PictureLayerTiling* tiling) const override;
   bool RequiresHighResToDraw() const override;
   const PaintWorkletRecordMap& GetPaintWorkletRecords() const override;
-  void OnTilesAdded() override;
+  void OnAllTilesDoneCleared() override;
+  std::vector<const DrawImage*> GetDiscardableImagesInRect(
+      const gfx::Rect& rect) const override;
   ScrollOffsetMap GetRasterInducingScrollOffsets() const override;
 
   void set_twin_tiling_set(PictureLayerTilingSet* set) {

@@ -8,11 +8,17 @@
 
 #include "base/check_deref.h"
 #include "base/functional/callback.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_client.h"
+#include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/browser/merchant_promo_code_manager.h"
+#include "components/autofill/core/browser/payments/autofill_offer_manager.h"
 #include "components/autofill/core/browser/payments/credit_card_cvc_authenticator.h"
 #include "components/autofill/core/browser/payments/credit_card_otp_authenticator.h"
 #include "components/autofill/core/browser/payments/test/mock_payments_window_manager.h"
 #include "components/autofill/core/browser/payments/virtual_card_enrollment_manager.h"
+#include "components/autofill/core/browser/ui/suggestion.h"
+#include "components/autofill/core/browser/ui/touch_to_fill_delegate.h"
 
 #if !BUILDFLAG(IS_ANDROID)
 #include "components/autofill/core/browser/payments/local_card_migration_manager.h"
@@ -73,7 +79,28 @@ void TestPaymentsAutofillClient::ConfirmUploadIbanToCloud(
 bool TestPaymentsAutofillClient::CloseWebauthnDialog() {
   return true;
 }
+#else   // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
+void TestPaymentsAutofillClient::ConfirmAccountNameFixFlow(
+    base::OnceCallback<void(const std::u16string&)> callback) {
+  credit_card_name_fix_flow_bubble_was_shown_ = true;
+  std::move(callback).Run(std::u16string(u"Gaia Name"));
+}
+
+void TestPaymentsAutofillClient::ConfirmExpirationDateFixFlow(
+    const CreditCard& card,
+    base::OnceCallback<void(const std::u16string&, const std::u16string&)>
+        callback) {
+  credit_card_name_fix_flow_bubble_was_shown_ = true;
+  std::move(callback).Run(
+      std::u16string(u"03"),
+      std::u16string(base::ASCIIToUTF16(test::NextYear().c_str())));
+}
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+
+TestPaymentsNetworkInterface*
+TestPaymentsAutofillClient::GetPaymentsNetworkInterface() {
+  return payments_network_interface_.get();
+}
 
 void TestPaymentsAutofillClient::ShowAutofillProgressDialog(
     AutofillProgressDialogType autofill_progress_dialog_type,
@@ -87,11 +114,6 @@ void TestPaymentsAutofillClient::CloseAutofillProgressDialog(
   if (no_user_perceived_authentication_callback) {
     std::move(no_user_perceived_authentication_callback).Run();
   }
-}
-
-TestPaymentsNetworkInterface*
-TestPaymentsAutofillClient::GetPaymentsNetworkInterface() {
-  return payments_network_interface_.get();
 }
 
 void TestPaymentsAutofillClient::ShowAutofillErrorDialog(
@@ -158,10 +180,6 @@ void TestPaymentsAutofillClient::ShowMandatoryReauthOptInPrompt(
   mandatory_reauth_opt_in_prompt_was_shown_ = true;
 }
 
-bool TestPaymentsAutofillClient::GetMandatoryReauthOptInPromptWasShown() {
-  return mandatory_reauth_opt_in_prompt_was_shown_;
-}
-
 MockIbanManager* TestPaymentsAutofillClient::GetIbanManager() {
   if (!mock_iban_manager_) {
     mock_iban_manager_ = std::make_unique<testing::NiceMock<MockIbanManager>>(
@@ -179,6 +197,34 @@ MockIbanAccessManager* TestPaymentsAutofillClient::GetIbanAccessManager() {
   return mock_iban_access_manager_.get();
 }
 
+void TestPaymentsAutofillClient::ShowMandatoryReauthOptInConfirmation() {
+  mandatory_reauth_opt_in_prompt_was_reshown_ = true;
+}
+
+MerchantPromoCodeManager*
+TestPaymentsAutofillClient::GetMerchantPromoCodeManager() {
+  return &mock_merchant_promo_code_manager_;
+}
+
+AutofillOfferManager* TestPaymentsAutofillClient::GetAutofillOfferManager() {
+  return autofill_offer_manager_.get();
+}
+
+bool TestPaymentsAutofillClient::ShowTouchToFillCreditCard(
+    base::WeakPtr<TouchToFillDelegate> delegate,
+    base::span<const autofill::CreditCard> cards_to_suggest,
+    base::span<const Suggestion> suggestions) {
+  return false;
+}
+
+bool TestPaymentsAutofillClient::GetMandatoryReauthOptInPromptWasShown() {
+  return mandatory_reauth_opt_in_prompt_was_shown_;
+}
+
+bool TestPaymentsAutofillClient::GetMandatoryReauthOptInPromptWasReshown() {
+  return mandatory_reauth_opt_in_prompt_was_reshown_;
+}
+
 void TestPaymentsAutofillClient::set_virtual_card_enrollment_manager(
     std::unique_ptr<VirtualCardEnrollmentManager> vcem) {
   virtual_card_enrollment_manager_ = std::move(vcem);
@@ -187,6 +233,11 @@ void TestPaymentsAutofillClient::set_virtual_card_enrollment_manager(
 void TestPaymentsAutofillClient::set_otp_authenticator(
     std::unique_ptr<CreditCardOtpAuthenticator> authenticator) {
   otp_authenticator_ = std::move(authenticator);
+}
+
+MockMerchantPromoCodeManager*
+TestPaymentsAutofillClient::GetMockMerchantPromoCodeManager() {
+  return &mock_merchant_promo_code_manager_;
 }
 
 }  // namespace autofill::payments

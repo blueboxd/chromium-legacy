@@ -71,18 +71,22 @@ InterpolableValue* CreateTranslateIdentity() {
 
 InterpolationValue ConvertTranslateOperation(
     const TranslateTransformOperation* translate,
+    const CSSProperty& property,
     double zoom) {
   if (!translate)
     return CreateNoneValue();
 
   auto* result =
       MakeGarbageCollected<InterpolableList>(kTranslateComponentIndexCount);
-  result->Set(kTranslateX,
-              InterpolableLength::MaybeConvertLength(translate->X(), zoom));
-  result->Set(kTranslateY,
-              InterpolableLength::MaybeConvertLength(translate->Y(), zoom));
+  result->Set(kTranslateX, InterpolableLength::MaybeConvertLength(
+                               translate->X(), property, zoom,
+                               /*interpolate_size=*/std::nullopt));
+  result->Set(kTranslateY, InterpolableLength::MaybeConvertLength(
+                               translate->Y(), property, zoom,
+                               /*interpolate_size=*/std::nullopt));
   result->Set(kTranslateZ, InterpolableLength::MaybeConvertLength(
-                               Length::Fixed(translate->Z()), zoom));
+                               Length::Fixed(translate->Z()), property, zoom,
+                               /*interpolate_size=*/std::nullopt));
   return InterpolationValue(result);
 }
 
@@ -107,7 +111,7 @@ InterpolationValue CSSTranslateInterpolationType::MaybeConvertInherit(
       state.ParentStyle()->Translate();
   conversion_checkers.push_back(
       MakeGarbageCollected<InheritedTranslateChecker>(inherited_translate));
-  return ConvertTranslateOperation(inherited_translate,
+  return ConvertTranslateOperation(inherited_translate, CssProperty(),
                                    state.ParentStyle()->EffectiveZoom());
 }
 
@@ -159,7 +163,8 @@ PairwiseInterpolationValue CSSTranslateInterpolationType::MaybeMergeSingles(
 InterpolationValue
 CSSTranslateInterpolationType::MaybeConvertStandardPropertyUnderlyingValue(
     const ComputedStyle& style) const {
-  return ConvertTranslateOperation(style.Translate(), style.EffectiveZoom());
+  return ConvertTranslateOperation(style.Translate(), CssProperty(),
+                                   style.EffectiveZoom());
 }
 
 void CSSTranslateInterpolationType::Composite(

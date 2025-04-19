@@ -1,7 +1,12 @@
 // Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
+
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 // Notes about usage of this object by VideoCaptureImplManager.
 //
 // VideoCaptureImplManager access this object by using a Unretained()
@@ -11,18 +16,20 @@
 
 #include "third_party/blink/renderer/platform/video_capture/video_capture_impl.h"
 
+#include <GLES2/gl2extchromium.h>
 #include <stddef.h>
+
 #include <algorithm>
 #include <memory>
 #include <utility>
 
-#include <GLES2/gl2extchromium.h>
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/task/bind_post_task.h"
 #include "base/task/sequenced_task_runner.h"
@@ -34,16 +41,16 @@
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "media/base/limits.h"
-#include "media/base/media_switches.h"
 #include "media/base/video_frame.h"
 #include "media/capture/mojom/video_capture_buffer.mojom-blink.h"
 #include "media/capture/mojom/video_capture_types.mojom-blink.h"
 #include "media/capture/video_capture_types.h"
 #include "media/video/gpu_video_accelerator_factories.h"
-#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
+#include "third_party/blink/public/platform/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 #if BUILDFLAG(IS_MAC)
@@ -76,14 +83,13 @@ struct GpuMemoryBufferResources {
   // The GpuMemoryBuffer backing the camera frame.
   std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer;
   // The SharedImage created from |gpu_memory_buffer|.
-  scoped_refptr<gpu::ClientSharedImage>
-      shared_images[media::VideoFrame::kMaxPlanes];
+  scoped_refptr<gpu::ClientSharedImage> shared_image;
   // The release sync token for |shared_images|.
   gpu::SyncToken release_sync_token;
 };
 
 struct VideoCaptureImpl::BufferContext
-    : public base::RefCountedThreadSafe<BufferContext> {
+    : public ThreadSafeRefCounted<BufferContext> {
  public:
   BufferContext(media::mojom::blink::VideoBufferHandlePtr buffer_handle,
                 scoped_refptr<base::SequencedTaskRunner> media_task_runner)
@@ -98,9 +104,9 @@ struct VideoCaptureImpl::BufferContext
         InitializeFromReadOnlyShmemRegion(
             std::move(buffer_handle->get_read_only_shmem_region()));
         break;
-      case VideoFrameBufferHandleType::kSharedImageHandles:
+      case VideoFrameBufferHandleType::kSharedImageHandle:
         InitializeFromSharedImage(
-            std::move(buffer_handle->get_shared_image_handles()));
+            std::move(buffer_handle->get_shared_image_handle()));
         break;
       case VideoFrameBufferHandleType::kGpuMemoryBufferHandle:
 #if !BUILDFLAG(IS_APPLE) && !BUILDFLAG(IS_WIN)
@@ -125,14 +131,11 @@ struct VideoCaptureImpl::BufferContext
   const base::ReadOnlySharedMemoryRegion* read_only_shmem_region() const {
     return &read_only_shmem_region_;
   }
-  const Vector<scoped_refptr<gpu::ClientSharedImage>>& shared_images() const {
-    return shared_images_;
+  const scoped_refptr<gpu::ClientSharedImage>& shared_image() const {
+    return shared_image_;
   }
   const gpu::SyncToken& shared_image_sync_token() const {
     return shared_image_sync_token_;
-  }
-  uint32_t shared_image_texture_target() const {
-    return shared_image_texture_target_;
   }
   media::GpuVideoAcceleratorFactories* gpu_factories() const {
     return gpu_factories_;
@@ -216,21 +219,10 @@ struct VideoCaptureImpl::BufferContext
   }
 
   void InitializeFromSharedImage(
-      media::mojom::blink::SharedImageBufferHandleSetPtr shared_image_handles) {
-    DCHECK_GE(media::VideoFrame::kMaxPlanes,
-              shared_image_handles->shared_images.size());
-    for (wtf_size_t i = 0; i < media::VideoFrame::kMaxPlanes; ++i) {
-      if (i < shared_image_handles->shared_images.size()) {
-        scoped_refptr<gpu::ClientSharedImage> shared_image =
-            gpu::ClientSharedImage::ImportUnowned(
-                shared_image_handles->shared_images[i]);
-        shared_images_.emplace_back(shared_image);
-      } else {
-        shared_images_.emplace_back(nullptr);
-      }
-    }
-    shared_image_sync_token_ = shared_image_handles->sync_token;
-    shared_image_texture_target_ = shared_image_handles->texture_target;
+      media::mojom::blink::SharedImageBufferHandleSetPtr shared_image_handle) {
+    shared_image_ = gpu::ClientSharedImage::ImportUnowned(
+        shared_image_handle->shared_image);
+    shared_image_sync_token_ = shared_image_handle->sync_token;
   }
 
   void InitializeFromGpuMemoryBufferHandle(
@@ -239,21 +231,18 @@ struct VideoCaptureImpl::BufferContext
         std::move(gpu_memory_buffer_handle));
   }
 
-  friend class base::RefCountedThreadSafe<BufferContext>;
+  friend class ThreadSafeRefCounted<BufferContext>;
   virtual ~BufferContext() {
     if (!gmb_resources_)
       return;
-    for (size_t plane = 0; plane < media::VideoFrame::kMaxPlanes; ++plane) {
-      if (!gmb_resources_->shared_images[plane]) {
-        continue;
-      }
-      media_task_runner_->PostTask(
-          FROM_HERE,
-          base::BindOnce(&BufferContext::DestroyTextureOnMediaThread,
-                         gpu_factories_,
-                         std::move(gmb_resources_->shared_images[plane]),
-                         gmb_resources_->release_sync_token));
+    if (!gmb_resources_->shared_image) {
+      return;
     }
+    media_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&BufferContext::DestroyTextureOnMediaThread,
+                       gpu_factories_, std::move(gmb_resources_->shared_image),
+                       gmb_resources_->release_sync_token));
   }
 
   VideoFrameBufferHandleType buffer_type_;
@@ -272,13 +261,12 @@ struct VideoCaptureImpl::BufferContext
 
   // These point into one of the above mappings, which hold the mapping open for
   // the lifetime of this object.
-  const uint8_t* data_ = nullptr;
+  raw_ptr<const uint8_t> data_ = nullptr;
   size_t data_size_ = 0;
 
-  // Only valid for |buffer_type_ == SHARED_IMAGE_HANDLES|.
-  Vector<scoped_refptr<gpu::ClientSharedImage>> shared_images_;
+  // Only valid for |buffer_type_ == SHARED_IMAGE_HANDLE|.
+  scoped_refptr<gpu::ClientSharedImage> shared_image_;
   gpu::SyncToken shared_image_sync_token_;
-  uint32_t shared_image_texture_target_;
 
   // The following is for |buffer_type == GPU_MEMORY_BUFFER_HANDLE|.
 
@@ -386,19 +374,14 @@ VideoCaptureImpl::CreateVideoFrameInitData(
       video_frame_init_data.frame_or_buffer = frame;
       break;
     }
-    case VideoFrameBufferHandleType::kSharedImageHandles: {
-      scoped_refptr<gpu::ClientSharedImage>
-          shared_images[media::VideoFrame::kMaxPlanes];
-      CHECK_GE(media::VideoFrame::kMaxPlanes,
-               buffer_context->shared_images().size());
-      for (wtf_size_t i = 0; i < buffer_context->shared_images().size(); i++) {
-        shared_images[i] = buffer_context->shared_images()[i];
-      }
+    case VideoFrameBufferHandleType::kSharedImageHandle: {
+      CHECK(buffer_context->shared_image());
       video_frame_init_data.frame_or_buffer =
-          media::VideoFrame::WrapSharedImages(
+          media::VideoFrame::WrapSharedImage(
               video_frame_init_data.ready_buffer->info->pixel_format,
-              shared_images, buffer_context->shared_image_sync_token(),
-              buffer_context->shared_image_texture_target(),
+              buffer_context->shared_image(),
+              buffer_context->shared_image_sync_token(),
+              buffer_context->shared_image()->GetTextureTarget(),
               media::VideoFrame::ReleaseMailboxCB(),
               gfx::Size(video_frame_init_data.ready_buffer->info->coded_size),
               gfx::Rect(video_frame_init_data.ready_buffer->info->visible_rect),
@@ -588,8 +571,6 @@ bool VideoCaptureImpl::BindVideoFrameOnMediaTaskRunner(
   DCHECK(output_format ==
          media::GpuVideoAcceleratorFactories::OutputFormat::NV12_SINGLE_GMB);
 
-  std::vector<gfx::BufferPlane> planes;
-
   // The SharedImages here are used to back VideoFrames. They may be read by the
   // raster interface for format conversion (e.g., for 2-copy import into WebGL)
   // as well as by the GLES2 interface for one-copy import into WebGL.
@@ -604,132 +585,46 @@ bool VideoCaptureImpl::BindVideoFrameOnMediaTaskRunner(
   usage |= gpu::SHARED_IMAGE_USAGE_WEBGPU_READ;
 #endif
 
-  // The feature flags here are a little subtle:
-  // * IsMultiPlaneFormatForHardwareVideoEnabled() controls whether Multiplanar
-  //   SI is used (i.e., whether a single SharedImage is created via passing a
-  //   viz::MultiPlaneFormat rather than the legacy codepath of passing a
-  //   GMB).
-  // * kMultiPlaneVideoCaptureSharedImages controls whether planes are sampled
-  //   individually rather than using external sampling.
-  //
-  // These two flags are orthogonal:
-  // * If both flags are true, one SharedImage with format MultiPlaneFormat::
-  //   kNV12 will be created.
-  // * If using multiplane SI without per-plane sampling, one SharedImage with
-  //   format MultiPlaneFormat::kNV12 configured to use external sampling
-  //   will be created (this is supported only on Ozone-based platforms and
-  //   not expected to be requested on other platforms).
-  // * If using per-plane sampling without multiplane SI, one SharedImage will
-  //   be created for each plane via the legacy "pass GMB" entrypoint.
-  // * If both flags are false, one SharedImage will be created via the legacy
-  //   "pass GMB" entrypoint (this uses external sampling on the other side
-  //   based on the format of the GMB).
-  bool create_multiplanar_image =
-      media::IsMultiPlaneFormatForHardwareVideoEnabled();
-  bool use_per_plane_sampling =
-      base::FeatureList::IsEnabled(media::kMultiPlaneVideoCaptureSharedImages);
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
-  // External sampling isn't supported on Windows/Mac with Multiplane SI (it's
-  // not supported with legacy SI either for that matter, but we restricted
-  // the CHECK here to Multiplane SI as in the case of legacy SI the flow is
-  // more nebulous and we wanted to restrict any impact here to the Multiplane
-  // SI flow).
-  // NOTE: This CHECK would ideally be done if !BUILDFLAG(IS_OZONE), but this
-  // codepath is entered in tests for Android, which does not have
-  // kMultiPlaneVideoCaptureSharedImages set. This codepath is not entered in
-  // production for Android (see
-  // https://chromium-review.googlesource.com/c/chromium/src/+/4640009/comment/29c99ef9_587e49dc/
-  // for a detailed discussion).
-  CHECK(!create_multiplanar_image || use_per_plane_sampling);
-#endif
-
-  if (create_multiplanar_image || !use_per_plane_sampling) {
-    planes.push_back(gfx::BufferPlane::DEFAULT);
-  } else {
-    // Using per-plane sampling without multiplane SI.
-    planes.push_back(gfx::BufferPlane::Y);
-    planes.push_back(gfx::BufferPlane::UV);
-  }
-  CHECK(planes.size() == 1 || !create_multiplanar_image);
-
-  for (size_t plane = 0; plane < planes.size(); ++plane) {
-    if (should_recreate_shared_image ||
-        !video_frame_init_data.buffer_context->gmb_resources()
-             ->shared_images[plane]) {
-      auto multiplanar_si_format = viz::MultiPlaneFormat::kNV12;
+  if (should_recreate_shared_image ||
+      !video_frame_init_data.buffer_context->gmb_resources()->shared_image) {
+    auto multiplanar_si_format = viz::MultiPlaneFormat::kNV12;
 #if BUILDFLAG(IS_OZONE)
-      if (!use_per_plane_sampling) {
-        multiplanar_si_format.SetPrefersExternalSampler();
-      }
+    multiplanar_si_format.SetPrefersExternalSampler();
 #endif
-      CHECK_EQ(gpu_memory_buffer->GetFormat(),
-               gfx::BufferFormat::YUV_420_BIPLANAR);
-      scoped_refptr<gpu::ClientSharedImage> client_shared_image;
-      if (create_multiplanar_image) {
-        client_shared_image = sii->CreateSharedImage(
+    CHECK_EQ(gpu_memory_buffer->GetFormat(),
+             gfx::BufferFormat::YUV_420_BIPLANAR);
+    scoped_refptr<gpu::ClientSharedImage> client_shared_image =
+        sii->CreateSharedImage(
             {multiplanar_si_format, gpu_memory_buffer->GetSize(),
-             video_frame_init_data.ready_buffer->info->color_space, usage,
-             "VideoCaptureFrameBuffer"},
+             video_frame_init_data.ready_buffer->info->color_space,
+             gpu::SharedImageUsageSet(usage), "VideoCaptureFrameBuffer"},
             gpu_memory_buffer->CloneHandle());
 
-      } else {
-        client_shared_image = sii->CreateSharedImage(
-            gpu_memory_buffer.get(),
-            video_frame_init_data.buffer_context->gpu_factories()
-                ->GpuMemoryBufferManager(),
-            planes[plane],
-            {video_frame_init_data.ready_buffer->info->color_space,
-             kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, usage,
-             "VideoCaptureFrameBuffer"});
-      }
-      CHECK(client_shared_image);
-      video_frame_init_data.buffer_context->gmb_resources()
-          ->shared_images[plane] = std::move(client_shared_image);
-    } else {
-      sii->UpdateSharedImage(
-          video_frame_init_data.buffer_context->gmb_resources()
-              ->release_sync_token,
-          video_frame_init_data.buffer_context->gmb_resources()
-              ->shared_images[plane]
-              ->mailbox());
-    }
+    CHECK(client_shared_image);
+    video_frame_init_data.buffer_context->gmb_resources()->shared_image =
+        std::move(client_shared_image);
+  } else {
+    sii->UpdateSharedImage(video_frame_init_data.buffer_context->gmb_resources()
+                               ->release_sync_token,
+                           video_frame_init_data.buffer_context->gmb_resources()
+                               ->shared_image->mailbox());
   }
 
   const unsigned texture_target =
-#if BUILDFLAG(IS_LINUX)
-      // Explicitly set GL_TEXTURE_EXTERNAL_OES if necessary:
-      // `media::VideoFrame::RequiresExternalSampler()` requires it for NV12
-      // format, while `ClientSharedImage::GetTextureTarget(BufferUsage,
-      // BufferFormat)` will return GL_TEXTURE_2D if it is not backed by
-      // ClientSharedImage::GetTextureTarget() (which by design handles this
-      // case correctly).
-      // TODO(crbug.com/41494843): Eliminate this client-side check post-rollout
-      // of ClientSharedImage::GetTextureTarget().
-      (!base::FeatureList::IsEnabled(
-           gpu::kUseUniversalGetTextureTargetFunction) &&
-       (video_frame_init_data.ready_buffer->info->pixel_format ==
-        media::PIXEL_FORMAT_NV12))
-          ? GL_TEXTURE_EXTERNAL_OES
-          :
-#endif
-          video_frame_init_data.buffer_context->gmb_resources()
-              ->shared_images[0]
-              ->GetTextureTarget(gfx::BufferUsage::SCANOUT_CPU_READ_WRITE,
-                                 gpu_memory_buffer->GetFormat());
+      video_frame_init_data.buffer_context->gmb_resources()
+          ->shared_image->GetTextureTarget();
   const gpu::SyncToken sync_token = sii->GenVerifiedSyncToken();
 
-  for (size_t plane = 0; plane < planes.size(); ++plane) {
-    DCHECK(video_frame_init_data.buffer_context->gmb_resources()
-               ->shared_images[plane]);
-  }
+  auto& shared_image =
+      video_frame_init_data.buffer_context->gmb_resources()->shared_image;
+  DCHECK(shared_image);
 
   const auto gmb_size = gpu_memory_buffer->GetSize();
   scoped_refptr<media::VideoFrame> frame =
       media::VideoFrame::WrapExternalGpuMemoryBuffer(
           gfx::Rect(video_frame_init_data.ready_buffer->info->visible_rect),
-          gmb_size, std::move(gpu_memory_buffer),
-          video_frame_init_data.buffer_context->gmb_resources()->shared_images,
-          sync_token, texture_target,
+          gmb_size, std::move(gpu_memory_buffer), shared_image, sync_token,
+          texture_target,
           base::BindOnce(&BufferContext::MailboxHolderReleased,
                          video_frame_init_data.buffer_context),
           video_frame_init_data.ready_buffer->info->timestamp);
@@ -738,15 +633,13 @@ bool VideoCaptureImpl::BindVideoFrameOnMediaTaskRunner(
     return false;
   }
 
-  // If we created a single multiplanar image, inform the VideoFrame that it
-  // should go down the normal SharedImageFormat codepath rather than the
-  // codepath used for legacy multiplanar formats.
-  if (create_multiplanar_image) {
-    frame->set_shared_image_format_type(
-        use_per_plane_sampling
-            ? media::SharedImageFormatType::kSharedImageFormat
-            : media::SharedImageFormatType::kSharedImageFormatExternalSampler);
-  }
+  // For a single multiplanar image, inform the VideoFrame that it
+  // should go down the normal SharedImageFormat codepath or the one with
+  // ExternalSampler.
+  frame->set_shared_image_format_type(
+      shared_image->format().PrefersExternalSampler()
+          ? media::SharedImageFormatType::kSharedImageFormatExternalSampler
+          : media::SharedImageFormatType::kSharedImageFormat);
 
   frame->metadata().allow_overlay = true;
   frame->metadata().read_lock_fences_enabled = true;
@@ -772,7 +665,7 @@ struct VideoCaptureImpl::ClientInfo {
 VideoCaptureImpl::VideoCaptureImpl(
     media::VideoCaptureSessionId session_id,
     scoped_refptr<base::SequencedTaskRunner> main_task_runner,
-    BrowserInterfaceBrokerProxy* browser_interface_broker)
+    const BrowserInterfaceBrokerProxy& browser_interface_broker)
     : device_id_(session_id),
       session_id_(session_id),
       video_capture_host_for_testing_(nullptr),
@@ -784,7 +677,7 @@ VideoCaptureImpl::VideoCaptureImpl(
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   DETACH_FROM_THREAD(io_thread_checker_);
 
-  browser_interface_broker->GetInterface(
+  browser_interface_broker.GetInterface(
       pending_video_capture_host_.InitWithNewPipeAndPassReceiver());
 
   gpu_factories_ = Platform::Current()->GetGpuFactories();
@@ -1030,8 +923,8 @@ void VideoCaptureImpl::OnNewBuffer(
 
   const bool inserted =
       client_buffers_
-          .emplace(buffer_id, new BufferContext(std::move(buffer_handle),
-                                                media_task_runner_))
+          .emplace(buffer_id, base::MakeRefCounted<BufferContext>(
+                                  std::move(buffer_handle), media_task_runner_))
           .second;
   DCHECK(inserted);
 }

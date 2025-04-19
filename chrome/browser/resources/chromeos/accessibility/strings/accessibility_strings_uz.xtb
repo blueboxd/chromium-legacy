@@ -219,6 +219,7 @@
 <translation id="2490721194269245365">Xira siyohrang</translation>
 <translation id="249330843868392562">Nutq sintezatori sozlamalarini ochish</translation>
 <translation id="2497706219848005458">Yorqin yashil</translation>
+<translation id="2512979179176933762">oynalarni koʻrsatish</translation>
 <translation id="2523609930580546572">ChromeVox qo‘llanmasi</translation>
 <translation id="2525706221823668172">Chromebook tezkor tugmalari</translation>
 <translation id="2553108862507765288">grammatik xato</translation>
@@ -263,7 +264,6 @@
 <translation id="2783001728278437613">{COUNT,plural, =1{+#}other{+#}}</translation>
 <translation id="2792200646155001340">Shuningdek, avvalgi elementga qaytish uchun bir barmoq bilan chapga surish mumkin. Hoziroq sinang.</translation>
 <translation id="280499067616661124">Sahifadan qidirish (ChromeVox)</translation>
-<translation id="2811019999044652585">Asboblar yoki tizim panellari kabi ekranning boshqa qismlariga o‘tish uchun “Control + Forward” tugmalarini bosing. Chromebook qurilmalarida “Forward” tugmasi “2” tugmasining tepasida joylashgan.</translation>
 <translation id="2811204574343810641">Qator</translation>
 <translation id="2816868829355607410">Amaliy mashqlar: Oʻtish buyruqlari</translation>
 <translation id="2841013758207633010">Vaqt</translation>
@@ -519,6 +519,7 @@
 <translation id="4432457053224379116">Xinarang</translation>
 <translation id="4432896207833262240">Belgilangan kontent</translation>
 <translation id="4437615272777527928">Menyuda qidirish uchun soʻrovni kiriting. Natijalarga oʻtish uchun yuqoriga va pastga strelkalarini bosing. Matn kursorini siljitish va bir menyudan boshqasiga oʻtish uchun chapga va oʻngga strelkalaridan foydalaning.</translation>
+<translation id="4453530046591759283">Asboblar yoki tizim panellari kabi ekranning boshqa qismlariga oʻtish uchun Control + F1 tugmalarini bosing. F1 tugmasi Escape tugmasidan oʻngdagi birinchi tugma.</translation>
 <translation id="4457472090507035117">Joriy ovozni tanlash:</translation>
 <translation id="4476183483923481720">yangi qator</translation>
 <translation id="4479068155583208887">Toʻq xira qizil</translation>
@@ -879,6 +880,7 @@
 <translation id="7091296112653361280">Terirang</translation>
 <translation id="7095834689119144465">Matn tahriri: faqat sonlar</translation>
 <translation id="7096001299300236431">Avvalgi media</translation>
+<translation id="7096668131290451939">Darslik rejimidan chiqish uchun Escape tugmasini qayta bosing</translation>
 <translation id="7116595520562830928">multln</translation>
 <translation id="712735679809149106">so‘zlarning aytilishi</translation>
 <translation id="7137397390322864165">Qizgʻish</translation>
@@ -1071,7 +1073,6 @@
 <translation id="847040613207937740">Keyingi belgilash katakchasi mavjud emas</translation>
 <translation id="8473540203671727883">Sichqoncha ostidagi matnni ovoz chiqarib oʻqish</translation>
 <translation id="8476408756881832830">ChromeVox ekrandan o‘qiyotganda media fayllar ijrosi vaqtincha to‘xtatilsin</translation>
-<translation id="8476508772960940536">umumiy rejimi</translation>
 <translation id="8480873377842220259">Endi siz ayrim asosiy navigatsiya qoidalari bilan tanishasiz. Ekran boʻylab siljish uchun Qidiruv va strelka tugmalarini bosib turing. Davom etish uchun Qidiruv + Oʻngga strelkasini bosing</translation>
 <translation id="8503360654911991865">Navigatsiya aniqligini kamaytirish</translation>
 <translation id="8520472399088452386">Hisoblagich</translation>

@@ -38,8 +38,6 @@ std::string_view GetProfilePrefNameForPref(mojom::PrefPath path) {
       base::MakeFixedFlatMap<mojom::PrefPath, std::string_view>({
           {mojom::PrefPath::kAccessibilitySpokenFeedbackEnabled,
            ash::prefs::kAccessibilitySpokenFeedbackEnabled},
-          {mojom::PrefPath::kAccessibilityPdfOcrAlwaysActive,
-           ::prefs::kAccessibilityPdfOcrAlwaysActive},
           {mojom::PrefPath::kAccessibilityReducedAnimationsEnabled,
            ash::prefs::kAccessibilityReducedAnimationsEnabled},
           {mojom::PrefPath::kUserGeolocationAccessLevel,
@@ -75,7 +73,14 @@ std::string_view GetProfilePrefNameForPref(mojom::PrefPath path) {
            DefaultSearchManager::kDefaultSearchProviderDataPrefName},
           {mojom::PrefPath::kIsolatedWebAppsEnabled,
            ash::prefs::kIsolatedWebAppsEnabled},
-          {mojom::PrefPath::kMahiEnabled, ash::prefs::kMahiEnabled},
+          {mojom::PrefPath::kHmrEnabled, ash::prefs::kHmrEnabled},
+          {mojom::PrefPath::kUserCameraAllowed, ash::prefs::kUserCameraAllowed},
+          {mojom::PrefPath::kUserMicrophoneAllowed,
+           ash::prefs::kUserMicrophoneAllowed},
+          {mojom::PrefPath::kHMRConsentStatus, ash::prefs::kHMRConsentStatus},
+          {mojom::PrefPath::kHMRConsentWindowDismissCount,
+           ash::prefs::kHMRConsentWindowDismissCount},
+
       });
   auto pref_name = kProfilePrefPathToName.find(path);
   DCHECK(pref_name != kProfilePrefPathToName.end());
@@ -277,6 +282,8 @@ std::optional<PrefsAsh::State> PrefsAsh::GetState(mojom::PrefPath path) {
     case mojom::PrefPath::kDnsOverHttpsTemplates:
     case mojom::PrefPath::kDnsOverHttpsTemplatesWithIdentifiers:
     case mojom::PrefPath::kDnsOverHttpsSalt:
+    case mojom::PrefPath::kAccessibilityPdfOcrAlwaysActiveDeprecated:
+    case mojom::PrefPath::kMahiEnabledDeprecated:
       LOG(WARNING) << "Unknown pref path: " << path;
       return std::nullopt;
     case mojom::PrefPath::kMetricsReportingEnabled:
@@ -301,9 +308,12 @@ std::optional<PrefsAsh::State> PrefsAsh::GetState(mojom::PrefPath path) {
     case mojom::PrefPath::kAccessCodeCastDeviceAdditionTime:
     case mojom::PrefPath::kDefaultSearchProviderDataPrefName:
     case mojom::PrefPath::kIsolatedWebAppsEnabled:
-    case mojom::PrefPath::kAccessibilityPdfOcrAlwaysActive:
     case mojom::PrefPath::kAccessibilityReducedAnimationsEnabled:
-    case mojom::PrefPath::kMahiEnabled: {
+    case mojom::PrefPath::kHmrEnabled:
+    case mojom::PrefPath::kUserCameraAllowed:
+    case mojom::PrefPath::kUserMicrophoneAllowed:
+    case mojom::PrefPath::kHMRConsentStatus:
+    case mojom::PrefPath::kHMRConsentWindowDismissCount: {
       if (!profile_prefs_registrar_) {
         LOG(WARNING) << "Primary profile is not yet initialized";
         return std::nullopt;

@@ -8,6 +8,7 @@ assert(enterprise_client_certificates)
 
 source_set("core") {
   public = [
+    "browser_cloud_management_delegate.h",
     "certificate_provisioning_service.h",
     "certificate_store.h",
     "client_certificates_service.h",
@@ -25,6 +26,7 @@ source_set("core") {
     "private_key.h",
     "private_key_factory.h",
     "private_key_types.h",
+    "profile_cloud_management_delegate.h",
     "store_error.h",
     "unexportable_private_key.h",
     "unexportable_private_key_factory.h",
@@ -32,11 +34,13 @@ source_set("core") {
   ]
 
   sources = [
+    "browser_cloud_management_delegate.cc",
     "certificate_provisioning_service.cc",
     "certificate_store.cc",
     "client_certificates_service.cc",
     "client_identity.cc",
     "constants.cc",
+    "dm_server_client.cc",
     "ec_private_key.cc",
     "ec_private_key_factory.cc",
     "features.cc",
@@ -46,6 +50,7 @@ source_set("core") {
     "private_key.cc",
     "private_key_factory.cc",
     "private_key_types.cc",
+    "profile_cloud_management_delegate.cc",
     "ssl_client_cert_identity_wrapper.cc",
     "ssl_client_cert_identity_wrapper.h",
     "ssl_key_converter.cc",
@@ -59,12 +64,15 @@ source_set("core") {
   public_deps = [
     "//base",
     "//components/enterprise/client_certificates/proto:db_client_certs",
+    "//components/enterprise/core",
     "//components/keyed_service/core",
     "//components/leveldb_proto",
     "//crypto",
   ]
 
   deps = [
+    "//components/enterprise",
+    "//components/enterprise/browser/identifiers",
     "//components/policy/core/common",
     "//components/policy/proto",
     "//components/prefs",
@@ -119,6 +127,7 @@ source_set("unit_tests") {
     "certificate_provisioning_service_unittest.cc",
     "certificate_store_unittest.cc",
     "client_certificates_service_unittest.cc",
+    "dm_server_client_unittest.cc",
     "ec_private_key_factory_unittest.cc",
     "ec_private_key_unittest.cc",
     "key_upload_client_unittest.cc",
@@ -135,11 +144,16 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/enterprise/client_certificates/proto:db_client_certs",
     "//components/leveldb_proto:test_support",
+    "//components/policy/core/common",
+    "//components/policy/core/common:test_support",
     "//components/prefs:test_support",
+    "//content/test:test_support",
     "//crypto",
     "//crypto:test_support",
     "//net",
     "//net:test_support",
+    "//services/network:test_support",
+    "//services/network/public/cpp",
     "//testing/gmock",
     "//testing/gtest",
   ]

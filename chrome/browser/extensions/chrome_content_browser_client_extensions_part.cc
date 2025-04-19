@@ -70,10 +70,12 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/mime_types_handler.h"
+#include "extensions/common/manifest_handlers/sandboxed_page_info.h"
 #include "extensions/common/mojom/manifest.mojom-shared.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/switches.h"
 #include "pdf/buildflags.h"
+#include "third_party/blink/public/common/features_generated.h"
 #include "url/origin.h"
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -94,12 +96,6 @@ using content::SiteInstance;
 using content::WebContents;
 
 namespace extensions {
-
-// This feature is a kill switch for the Direct Sockets API in Chrome Apps.
-// See crbug.com/329445684 for details.
-BASE_FEATURE(kDirectSocketsInChromeApps,
-             "DirectSocketsInChromeApps",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 namespace {
 
@@ -338,6 +334,41 @@ bool ChromeContentBrowserClientExtensionsPart::DoesSiteRequireDedicatedProcess(
 }
 
 // static
+bool ChromeContentBrowserClientExtensionsPart::
+    ShouldAllowCrossProcessSandboxedFrameForPrecursor(
+        content::BrowserContext* browser_context,
+        const GURL& precursor,
+        const GURL& url) {
+  if (precursor.is_empty()) {
+    return true;
+  }
+
+  // Non-manifest sandboxed extension URLs should stay in the main extension
+  // process, and have API access. Manifest-sandboxed extension URLs, sandboxed
+  // about:srcdoc and data urls should be isolated in cross-process sandboxes,
+  // and not have API access.
+  const ExtensionId extension_id = ExtensionSet::GetExtensionIdByURL(precursor);
+  if (extension_id.empty()) {
+    return true;
+  }
+
+  if (url.IsAboutSrcdoc() || url.SchemeIs(url::kDataScheme)) {
+    return true;
+  }
+
+  const Extension* extension = ExtensionRegistry::Get(browser_context)
+                                   ->enabled_extensions()
+                                   .GetByID(extension_id);
+  if (!extension) {
+    // If the extension isn't active, allow using a cross-process sandbox.
+    return true;
+  }
+
+  // Determine whether the URL is manifest-sandboxed.
+  return SandboxedPageInfo::IsSandboxedPage(extension, url.path());
+}
+
+// static
 bool ChromeContentBrowserClientExtensionsPart::CanCommitURL(
     content::RenderProcessHost* process_host,
     const GURL& url) {
@@ -366,6 +397,16 @@ bool ChromeContentBrowserClientExtensionsPart::CanCommitURL(
   // processes, such as incognito split mode.
   ProcessMap* process_map = ProcessMap::Get(process_host->GetBrowserContext());
   if (process_map->Contains(extension->id(), process_host->GetID())) {
+    return true;
+  }
+
+  // If an extension URL is listed as sandboxed in the manifest, its process
+  // won't be in the process map. Instead, allow it here and rely on the
+  // ChildProcessSecurityPolicy::CanAccessDataForOrigin check (which occurs
+  // separately) to verify that the ProcessLock matches the extension's origin.
+  // TODO(https://crbug.com/346264217): Also ensure the process is sandboxed, if
+  // that does not cause problems for pushState cases.
+  if (SandboxedPageInfo::IsSandboxedPage(extension, url.path())) {
     return true;
   }
 
@@ -739,6 +780,13 @@ void ChromeContentBrowserClientExtensionsPart::SiteInstanceGotProcessAndSite(
     return;
   }
 
+  // Manifest-sandboxed documents, and data: or or about:srcdoc urls, do not get
+  // access to the extension APIs. We trust that the given SiteInstance is only
+  // marked as sandboxed in cases that do not have access to extension APIs.
+  if (site_instance->IsSandboxed()) {
+    return;
+  }
+
   // Note that this may be called more than once for multiple instances
   // of the same extension, such as when the same hosted app is opened in
   // unrelated tabs. This call will ignore duplicate insertions, which is fine,
@@ -851,7 +899,7 @@ void ChromeContentBrowserClientExtensionsPart::
     }
 
     // Direct Sockets API is enabled for Chrome Apps with "sockets" permission.
-    if (base::FeatureList::IsEnabled(kDirectSocketsInChromeApps) &&
+    if (base::FeatureList::IsEnabled(blink::features::kDirectSockets) &&
         extension->is_platform_app() && SocketsManifestData::Get(extension)) {
       command_line->AppendSwitchASCII(::switches::kEnableBlinkFeatures,
                                       "DirectSockets");

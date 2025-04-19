@@ -20,7 +20,6 @@
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_drop_target.h"
-#include "ash/wm/overview/overview_focus_cycler_old.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_grid_event_handler.h"
 #include "ash/wm/overview/overview_item_base.h"
@@ -37,6 +36,7 @@
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/window_mini_view_header_view.h"
 #include "ash/wm/window_preview_view.h"
+#include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
 #include "ash/wm/window_util.h"
@@ -193,6 +193,27 @@ OverviewItem::~OverviewItem() {
   aura::Window* window = GetWindow();
   WindowState::Get(window)->RemoveObserver(this);
   window->RemoveObserver(this);
+}
+
+void OverviewItem::CloseWindow() {
+  RefreshShadowVisuals(/*shadow_visible=*/false);
+
+  gfx::RectF inset_bounds(target_bounds_);
+  inset_bounds.Inset(gfx::InsetsF::VH(target_bounds_.height() * kPreCloseScale,
+                                      target_bounds_.width() * kPreCloseScale));
+  // Scale down both the window and label.
+  SetBounds(inset_bounds, OVERVIEW_ANIMATION_CLOSING_OVERVIEW_ITEM);
+
+  // First animate opacity to an intermediate value concurrently with the
+  // scaling animation.
+  AnimateOpacity(kClosingItemOpacity, OVERVIEW_ANIMATION_CLOSING_OVERVIEW_ITEM);
+
+  // Fade out the window and the label, effectively hiding them.
+  AnimateOpacity(/*opacity=*/0.0, OVERVIEW_ANIMATION_CLOSE_OVERVIEW_ITEM);
+
+  // `transform_window_` will delete `this` by deleting the widget associated
+  // with `this`.
+  transform_window_.Close();
 }
 
 void OverviewItem::OnFocusedViewActivated() {
@@ -580,12 +601,10 @@ void OverviewItem::RestoreWindow(bool reset_transform, bool animate) {
     return;
   }
 
-  const auto enter_exit_type = overview_session_->enter_exit_overview_type();
+  const OverviewEnterExitType enter_exit_type =
+      overview_session_->enter_exit_overview_type();
   if (is_moving_to_another_desk_ ||
       enter_exit_type == OverviewEnterExitType::kImmediateExit) {
-    if (auto* focus_cycler_old = overview_session_->focus_cycler_old()) {
-      focus_cycler_old->OnViewDestroyingOrDisabling(overview_item_view_);
-    }
     ImmediatelyCloseWidgetOnExit(std::move(item_widget_));
     overview_item_view_ = nullptr;
     return;
@@ -639,12 +658,8 @@ void OverviewItem::EnsureVisible() {
   transform_window_.EnsureVisible();
 }
 
-std::vector<OverviewFocusableView*> OverviewItem::GetFocusableViews() const {
-  // `overview_item_view_` might be set to nullptr in `RestoreWindow()` or
-  // `ShutDown()`.
-  return overview_item_view_
-             ? std::vector<OverviewFocusableView*>{overview_item_view_}
-             : std::vector<OverviewFocusableView*>{};
+std::vector<views::Widget*> OverviewItem::GetFocusableWidgets() {
+  return {item_widget_.get()};
 }
 
 views::View* OverviewItem::GetBackDropView() const {
@@ -722,27 +737,6 @@ void OverviewItem::OnStartingAnimationComplete() {
   UpdateCannotSnapWarningVisibility(/*animate=*/true);
 }
 
-void OverviewItem::CloseWindows() {
-  RefreshShadowVisuals(/*shadow_visible=*/false);
-
-  gfx::RectF inset_bounds(target_bounds_);
-  inset_bounds.Inset(gfx::InsetsF::VH(target_bounds_.height() * kPreCloseScale,
-                                      target_bounds_.width() * kPreCloseScale));
-  // Scale down both the window and label.
-  SetBounds(inset_bounds, OVERVIEW_ANIMATION_CLOSING_OVERVIEW_ITEM);
-
-  // First animate opacity to an intermediate value concurrently with the
-  // scaling animation.
-  AnimateOpacity(kClosingItemOpacity, OVERVIEW_ANIMATION_CLOSING_OVERVIEW_ITEM);
-
-  // Fade out the window and the label, effectively hiding them.
-  AnimateOpacity(/*opacity=*/0.0, OVERVIEW_ANIMATION_CLOSE_OVERVIEW_ITEM);
-
-  // `transform_window_` will delete `this` by deleting the widget associated
-  // with `this`.
-  transform_window_.Close();
-}
-
 void OverviewItem::Restack() {
   aura::Window* parent_window = transform_window_.window()->parent();
   aura::Window* stacking_target = GetStackBelowTarget();
@@ -751,29 +745,16 @@ void OverviewItem::Restack() {
     DCHECK_EQ(parent_window, stacking_target->parent());
     parent_window->StackChildBelow(window, stacking_target);
   }
-
-  auto* item_widget_window = item_widget_->GetNativeWindow();
-  DCHECK_EQ(parent_window, item_widget_window->parent());
-  parent_window->StackChildBelow(item_widget_window, window);
-
-  if (cannot_snap_widget_) {
-    DCHECK_EQ(parent_window, cannot_snap_widget_->GetNativeWindow()->parent());
-    parent_window->StackChildAbove(cannot_snap_widget_->GetNativeWindow(),
-                                   window);
-  }
 }
 
 void OverviewItem::StartDrag() {
-  // Stack the window and the widget window at the top. This is to ensure that
-  // they appear above other app windows, as well as above the desks bar. Note
-  // that the stacking operations are done in this order to make sure that the
-  // window appears above the widget window.
-  if (aura::Window* widget_window = item_widget_->GetNativeWindow()) {
-    widget_window->parent()->StackChildAtTop(widget_window);
-  }
-
+  // Stack the window at the top. This is to ensure that they appear above other
+  // app windows, as well as above the desks bar.
   aura::Window* window = GetWindow();
   window->parent()->StackChildAtTop(window);
+
+  // Clear the focus ring from the `item_widget_` if it is currently focused.
+  item_widget_->GetFocusManager()->ClearFocus();
 }
 
 void OverviewItem::OnOverviewItemDragStarted() {
@@ -898,7 +879,7 @@ void OverviewItem::AnimateAndCloseItem(bool up) {
   overview_session_->PositionWindows(/*animate=*/true);
   overview_item_view_->OnOverviewItemWindowRestoring();
 
-  int translation_y = kSwipeToCloseCloseTranslationDp * (up ? -1 : 1);
+  const int translation_y = kSwipeToCloseCloseTranslationDp * (up ? -1 : 1);
   gfx::Transform transform;
   transform.Translate(gfx::Vector2d(0, translation_y));
 
@@ -942,16 +923,12 @@ void OverviewItem::UpdateOverviewItemFillMode() {
   overview_item_view_->SetBackdropVisibility(show_backdrop);
 }
 
-gfx::Point OverviewItem::GetMagnifierFocusPointInScreen() const {
-  return overview_item_view_->GetMagnifierFocusPointInScreen();
-}
-
 const gfx::RoundedCornersF OverviewItem::GetRoundedCorners() const {
   if (transform_window_.IsMinimizedOrTucked()) {
     return overview_item_view_->GetRoundedCorners();
   }
 
-  aura::Window* window = transform_window_.window();
+  const aura::Window* window = transform_window_.window();
   const auto header_rounded_corners = overview_item_view_->header_view()
                                           ->GetBackground()
                                           ->GetRoundedCornerRadii()
@@ -1041,6 +1018,30 @@ void OverviewItem::OnWindowBoundsChanged(aura::Window* window,
   overview_grid_->PositionWindows(/*animate=*/false);
 }
 
+void OverviewItem::OnWindowStackingChanged(aura::Window* window) {
+  if (overview_session_ && overview_session_->is_shutting_down()) {
+    return;
+  }
+
+  CHECK(item_widget_);
+  auto* parent_window = window->parent();
+  auto* item_widget_window = item_widget_->GetNativeWindow();
+
+  // Window parent change should be handled in
+  // `OverviewItem::OnWindowParentChanged()`.
+  if (parent_window != item_widget_window->parent()) {
+    return;
+  }
+
+  parent_window->StackChildBelow(item_widget_window, window);
+
+  if (cannot_snap_widget_) {
+    CHECK_EQ(parent_window, cannot_snap_widget_->GetNativeWindow()->parent());
+    parent_window->StackChildAbove(cannot_snap_widget_->GetNativeWindow(),
+                                   window);
+  }
+}
+
 void OverviewItem::OnWindowDestroying(aura::Window* window) {
   // TODO(b/298518626): Create a Delegate class to handle window destroying as
   // the current case may no longer apply to group item. We should inform its
@@ -1111,11 +1112,16 @@ void OverviewItem::CreateItemWidget(
     EventHandlerDelegate* event_handler_delegate) {
   TRACE_EVENT0("ui", "OverviewItem::CreateItemWidget");
 
-  item_widget_ = std::make_unique<views::Widget>();
+  views::Widget::InitParams params = CreateOverviewItemWidgetParams(
+      GetWindow()->parent(), "OverviewItemWidget",
+      /*accept_events=*/true);
+  // The key is not needed for all `OverviewItemBase` objects, such as the drop
+  // target.
+  params.init_properties_container.SetProperty(kIsOverviewItemKey, true);
+
+  item_widget_ = std::make_unique<views::Widget>(std::move(params));
   item_widget_->set_focus_on_creation(false);
-  item_widget_->Init(CreateOverviewItemWidgetParams(GetWindow()->parent(),
-                                                    "OverviewItemWidget",
-                                                    /*accept_events=*/true));
+
   aura::Window* widget_window = item_widget_->GetNativeWindow();
   widget_window->parent()->StackChildBelow(widget_window, GetWindow());
   // Overview uses custom animations so remove the default ones.
@@ -1197,7 +1203,7 @@ aura::Window* OverviewItem::GetStackBelowTarget() const {
   // Find the last window in `overview_grid_` that comes before `window` and has
   // the same parent.
   for (const std::unique_ptr<OverviewItemBase>& overview_item :
-       overview_grid_->window_list()) {
+       overview_grid_->item_list()) {
     // `overview_item` could represent an overview group item, which would never
     // be strictly equal to this. However, the group item would contain `this`.
     // Using `Contains()` ensures `this` check works correctly for both single
@@ -1440,7 +1446,8 @@ void OverviewItem::CloseButtonPressed() {
     base::RecordAction(
         base::UserMetricsAction("Tablet_WindowCloseFromOverviewButton"));
   }
-  CloseWindows();
+
+  CloseWindow();
 }
 
 }  // namespace ash

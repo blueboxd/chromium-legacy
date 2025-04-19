@@ -6,12 +6,13 @@
 
 #include "base/containers/contains.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/not_fatal_until.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/ranges/algorithm.h"
 #include "base/state_transitions.h"
-#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-shared.h"
+#include "third_party/blink/public/platform/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/css/style_rule.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
@@ -30,7 +31,6 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/speculation_rules/document_rule_predicate.h"
 #include "third_party/blink/renderer/core/speculation_rules/speculation_candidate.h"
-#include "third_party/blink/renderer/core/speculation_rules/speculation_rules_features.h"
 #include "third_party/blink/renderer/core/speculation_rules/speculation_rules_metrics.h"
 #include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer.h"
@@ -254,8 +254,9 @@ void DocumentSpeculationRules::AddRuleSet(SpeculationRuleSet* rule_set) {
     } else {
       NOTREACHED_IN_MIGRATION() << "error with unknown rule source";
     }
-  } else if (rule_set->source()->IsFromBrowserInjected()) {
-    // Don't insert browser-injected rule sets on pages that have other rules.
+  } else if (rule_set->source()->IsFromBrowserInjectedAndRespectsOptOut()) {
+    // Don't insert browser-injected rule sets that respect the opt-out on pages
+    // that have other rules.
     for (const auto& other_rule_set : rule_sets_) {
       if (!other_rule_set->source()->IsFromBrowserInjected()) {
         CountSpeculationRulesLoadOutcome(
@@ -306,10 +307,12 @@ void DocumentSpeculationRules::AddRuleSet(SpeculationRuleSet* rule_set) {
                           : WebFeature::kSpeculationRulesAuthorPrerenderRule);
   }
 
+  // If non-browser-injected speculation rules are injected, then remove all
+  // opt-out respecting browser-injected speculation rules.
   if (!rule_set->source()->IsFromBrowserInjected()) {
     HeapVector<Member<SpeculationRuleSet>> to_remove;
     for (const auto& other_rule_set : rule_sets_) {
-      if (other_rule_set->source()->IsFromBrowserInjected()) {
+      if (other_rule_set->source()->IsFromBrowserInjectedAndRespectsOptOut()) {
         to_remove.push_back(other_rule_set);
       }
     }
@@ -325,8 +328,9 @@ void DocumentSpeculationRules::AddRuleSet(SpeculationRuleSet* rule_set) {
 }
 
 void DocumentSpeculationRules::RemoveRuleSet(SpeculationRuleSet* rule_set) {
-  auto* it = base::ranges::remove(rule_sets_, rule_set);
-  DCHECK(it != rule_sets_.end()) << "rule set was removed without existing";
+  auto it = base::ranges::remove(rule_sets_, rule_set);
+  CHECK(it != rule_sets_.end(), base::NotFatalUntil::M130)
+      << "rule set was removed without existing";
   rule_sets_.erase(it, rule_sets_.end());
   if (rule_set->has_document_rule()) {
     InvalidateAllLinks();
@@ -426,17 +430,6 @@ void DocumentSpeculationRules::DocumentReferrerPolicyChanged() {
 }
 
 void DocumentSpeculationRules::DocumentBaseURLChanged() {
-  // Replace every existing rule set with a new copy that is parsed using the
-  // updated document base URL.
-  for (Member<SpeculationRuleSet>& rule_set : rule_sets_) {
-    SpeculationRuleSet::Source* source = rule_set->source();
-    rule_set = SpeculationRuleSet::Parse(
-        source, GetSupplementable()->GetExecutionContext());
-    // There should not be any parsing errors as these rule sets have already
-    // been parsed once without errors, and an updated base URL should not cause
-    // new errors. There may however still be warnings.
-    DCHECK(rule_set);
-  }
   if (initialized_)
     InvalidateAllLinks();
   QueueUpdateSpeculationCandidates();
@@ -449,18 +442,15 @@ void DocumentSpeculationRules::DocumentBaseTargetChanged() {
 void DocumentSpeculationRules::LinkMatchedSelectorsUpdated(
     HTMLAnchorElement* link) {
   DCHECK(initialized_);
-  DCHECK(SelectorMatchesEnabled());
-
   InvalidateLink(link);
   QueueUpdateSpeculationCandidates();
 }
 
 void DocumentSpeculationRules::LinkGainedOrLostComputedStyle(
     HTMLAnchorElement* link) {
-  if (!SelectorMatchesEnabled() || !initialized_) {
+  if (!initialized_) {
     return;
   }
-
   InvalidateLink(link);
   QueueUpdateSpeculationCandidates();
 }
@@ -472,7 +462,7 @@ void DocumentSpeculationRules::DocumentStyleUpdated() {
 }
 
 void DocumentSpeculationRules::ChildStyleRecalcBlocked(Element* root) {
-  if (!SelectorMatchesEnabled() || !initialized_) {
+  if (!initialized_) {
     return;
   }
 
@@ -513,7 +503,7 @@ void DocumentSpeculationRules::ChildStyleRecalcBlocked(Element* root) {
 }
 
 void DocumentSpeculationRules::DidStyleChildren(Element* root) {
-  if (!SelectorMatchesEnabled() || !initialized_) {
+  if (!initialized_) {
     return;
   }
 
@@ -628,7 +618,7 @@ void DocumentSpeculationRules::UpdateSpeculationCandidatesMicrotask() {
   // Wait for style to be clean before proceeding. Or force it, if this update
   // needs to happen promptly.
   Document& document = *GetSupplementable();
-  if (SelectorMatchesEnabled() && document.NeedsLayoutTreeUpdate()) {
+  if (document.NeedsLayoutTreeUpdate()) {
     if (pending_update_state_ ==
         PendingUpdateState::kMicrotaskQueuedWithForcedStyleUpdate) {
       document.UpdateStyleAndLayoutTree();
@@ -644,9 +634,7 @@ void DocumentSpeculationRules::UpdateSpeculationCandidatesMicrotask() {
 void DocumentSpeculationRules::UpdateSpeculationCandidates() {
   Document& document = *GetSupplementable();
   DCHECK_NE(pending_update_state_, PendingUpdateState::kNoUpdate);
-  if (SelectorMatchesEnabled()) {
-    DCHECK(!document.NeedsLayoutTreeUpdate());
-  }
+  DCHECK(!document.NeedsLayoutTreeUpdate());
 
   // We are actually performing the update below, so mark as no update pending.
   SetPendingUpdateState(PendingUpdateState::kNoUpdate);
@@ -669,8 +657,11 @@ void DocumentSpeculationRules::UpdateSpeculationCandidates() {
         if (!referrer)
           continue;
 
+        // Ensured by `SpeculationRuleSet`.
         CHECK(!rule->target_browsing_context_name_hint() ||
               action == mojom::blink::SpeculationAction::kPrerender);
+        CHECK(!rule->requires_anonymous_client_ip_when_cross_origin() ||
+              action == mojom::blink::SpeculationAction::kPrefetch);
 
         candidates.push_back(MakeGarbageCollected<SpeculationCandidate>(
             url, action, referrer.value(),
@@ -720,18 +711,12 @@ void DocumentSpeculationRules::UpdateSpeculationCandidates() {
   // Note that the document's URL is not necessarily the same as the base URL
   // (e,g., when a <base> element is present in the document).
   const KURL& document_url = document.Url();
-  auto* last = base::ranges::remove_if(candidates, [&](const auto& candidate) {
+  auto last = base::ranges::remove_if(candidates, [&](const auto& candidate) {
     const KURL& url = candidate->url();
     return url.HasFragmentIdentifier() &&
            EqualIgnoringFragmentIdentifier(url, document_url);
   });
   candidates.Shrink(base::checked_cast<wtf_size_t>(last - candidates.begin()));
-
-  if (!sent_is_part_of_no_vary_search_trial_ &&
-      RuntimeEnabledFeatures::NoVarySearchPrefetchEnabled(execution_context)) {
-    sent_is_part_of_no_vary_search_trial_ = true;
-    host->EnableNoVarySearchSupport();
-  }
 
   probe::SpeculationCandidatesUpdated(document, candidates);
 
@@ -790,22 +775,20 @@ void DocumentSpeculationRules::AddLinkBasedSpeculationCandidates(
             return;
           }
 
-          if (SelectorMatchesEnabled()) {
-            // We exclude links that don't have a ComputedStyle stored (or have
-            // a ComputedStyle only because EnsureComputedStyle was called, and
-            // otherwise wouldn't). This corresponds to links that are not in
-            // the flat tree or links with a "display: none" inclusive-ancestor.
-            if (ComputedStyle::IsNullOrEnsured(link->GetComputedStyle())) {
-              return;
-            }
+          // We exclude links that don't have a ComputedStyle stored (or have
+          // a ComputedStyle only because EnsureComputedStyle was called, and
+          // otherwise wouldn't). This corresponds to links that are not in
+          // the flat tree or links with a "display: none" inclusive-ancestor.
+          if (ComputedStyle::IsNullOrEnsured(link->GetComputedStyle())) {
+            return;
+          }
 
-            // Links with display locked ancestors can have a stale
-            // ComputedStyle, i.e. a ComputedStyle that wasn't updated during a
-            // style update because the element isn't currently being rendered,
-            // but is not discarded either. We ignore these links as well.
-            if (stale_links_.Contains(link)) {
-              return;
-            }
+          // Links with display locked ancestors can have a stale
+          // ComputedStyle, i.e. a ComputedStyle that wasn't updated during a
+          // style update because the element isn't currently being rendered,
+          // but is not discarded either. We ignore these links as well.
+          if (stale_links_.Contains(link)) {
+            return;
           }
 
           for (SpeculationRule* rule : speculation_rules) {
@@ -919,8 +902,7 @@ void DocumentSpeculationRules::AddLink(HTMLAnchorElement* link) {
   pending_links_.insert(link);
   // TODO(crbug.com/1371522): A stale link is guaranteed to not match, so we
   // should put it into |unmatched_links_| directly and skip queueing an update.
-  if (SelectorMatchesEnabled() &&
-      DisplayLockUtilities::LockedAncestorPreventingStyle(*link)) {
+  if (DisplayLockUtilities::LockedAncestorPreventingStyle(*link)) {
     stale_links_.insert(link);
   }
 }
@@ -944,7 +926,7 @@ void DocumentSpeculationRules::RemoveLink(HTMLAnchorElement* link) {
     return;
   }
   auto it = pending_links_.find(link);
-  DCHECK(it != pending_links_.end());
+  CHECK(it != pending_links_.end(), base::NotFatalUntil::M130);
   pending_links_.erase(it);
 }
 
@@ -974,10 +956,6 @@ void DocumentSpeculationRules::InvalidateAllLinks() {
 }
 
 void DocumentSpeculationRules::UpdateSelectors() {
-  if (!SelectorMatchesEnabled()) {
-    return;
-  }
-
   HeapVector<Member<StyleRule>> selectors;
   for (SpeculationRuleSet* rule_set : rule_sets_) {
     selectors.AppendVector(rule_set->selectors());
@@ -1017,15 +995,6 @@ void DocumentSpeculationRules::SetPendingUpdateState(
   }
 #endif
   pending_update_state_ = new_state;
-}
-
-bool DocumentSpeculationRules::SelectorMatchesEnabled() {
-  if (was_selector_matches_enabled_) {
-    return true;
-  }
-  was_selector_matches_enabled_ = speculation_rules::SelectorMatchesEnabled(
-      GetSupplementable()->GetExecutionContext());
-  return was_selector_matches_enabled_;
 }
 
 }  // namespace blink

@@ -22,7 +22,6 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/testing/null_execution_context.h"
-#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/task_environment.h"
 
 namespace blink {
@@ -1426,7 +1425,7 @@ TEST(CSSParserImplTest, AllPropertiesCanParseImportant) {
   }
 
   // So that we don't introduce more, or break the entire test inadvertently.
-  EXPECT_EQ(broken_properties, 20);
+  EXPECT_EQ(broken_properties, 19);
 }
 
 TEST(CSSParserImplTest, ParseSupportsBlinkFeature) {
@@ -1448,7 +1447,7 @@ TEST(CSSParserImplTest, ParseSupportsBlinkFeature) {
   StyleRuleSupports* supports_rule = DynamicTo<StyleRuleSupports>(rule);
   ASSERT_TRUE(supports_rule->ConditionIsSupported());
 
-  StyleRuleBase::ChildRuleVector child_rules = supports_rule->ChildRules();
+  StyleRuleBase::ChildRuleVector& child_rules = supports_rule->ChildRules();
   ASSERT_EQ(child_rules.size(), 2u);
   ASSERT_EQ(String("div"),
             To<StyleRule>(child_rules[0].Get())->SelectorsText());
@@ -1490,7 +1489,7 @@ TEST(CSSParserImplTest, ParseSupportsBlinkFeatureDisabledFeature) {
   StyleRuleSupports* supports_rule = DynamicTo<StyleRuleSupports>(rule);
   ASSERT_FALSE(supports_rule->ConditionIsSupported());
 
-  StyleRuleBase::ChildRuleVector child_rules = supports_rule->ChildRules();
+  StyleRuleBase::ChildRuleVector& child_rules = supports_rule->ChildRules();
   ASSERT_EQ(child_rules.size(), 2u);
   ASSERT_EQ(String("div"),
             To<StyleRule>(child_rules[0].Get())->SelectorsText());

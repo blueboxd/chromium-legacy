@@ -5,27 +5,15 @@
 #include <memory>
 
 #include "base/task/sequenced_task_runner.h"
-#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "media/base/audio_decoder.h"
-#include "media/base/media_switches.h"
 #include "media/base/offloading_audio_encoder.h"
 #include "media/filters/mac/audio_toolbox_audio_decoder.h"
 #include "media/filters/mac/audio_toolbox_audio_encoder.h"
-#include "media/gpu/ipc/service/vda_video_decoder.h"
 #include "media/gpu/mac/video_toolbox_video_decoder.h"
 #include "media/mojo/services/gpu_mojo_media_client.h"
 
 namespace media {
-
-namespace {
-
-bool UseVTVD() {
-  return base::FeatureList::IsEnabled(kVideoToolboxVideoDecoder) &&
-         IsMultiPlaneFormatForHardwareVideoEnabled();
-}
-
-}  // namespace
 
 class GpuMojoMediaClientMac final : public GpuMojoMediaClient {
  public:
@@ -36,27 +24,26 @@ class GpuMojoMediaClientMac final : public GpuMojoMediaClient {
  protected:
   std::unique_ptr<VideoDecoder> CreatePlatformVideoDecoder(
       VideoDecoderTraits& traits) final {
-    if (UseVTVD()) {
-      return std::make_unique<VideoToolboxVideoDecoder>(
-          traits.task_runner, traits.media_log->Clone(), gpu_workarounds_,
-          gpu_task_runner_, traits.get_command_buffer_stub_cb);
-    }
+    return std::make_unique<VideoToolboxVideoDecoder>(
+        traits.task_runner, traits.media_log->Clone(), gpu_workarounds_,
+        gpu_task_runner_, traits.get_command_buffer_stub_cb);
+  }
 
-    return VdaVideoDecoder::Create(
-        traits.task_runner, gpu_task_runner_, traits.media_log->Clone(),
-        *traits.target_color_space, gpu_preferences_, gpu_workarounds_,
-        traits.get_command_buffer_stub_cb,
-        VideoDecodeAccelerator::Config::OutputMode::kAllocate);
+  std::optional<SupportedAudioDecoderConfigs>
+  GetPlatformSupportedAudioDecoderConfigs() final {
+    SupportedAudioDecoderConfigs audio_configs;
+    audio_configs.emplace_back(AudioCodec::kAAC, AudioCodecProfile::kXHE_AAC);
+#if BUILDFLAG(ENABLE_PLATFORM_AC3_EAC3_AUDIO)
+    audio_configs.emplace_back(AudioCodec::kAC3, AudioCodecProfile::kUnknown);
+    audio_configs.emplace_back(AudioCodec::kEAC3, AudioCodecProfile::kUnknown);
+#endif  // BUILDFLAG(ENABLE_PLATFORM_AC3_EAC3_AUDIO)
+    return audio_configs;
   }
 
   std::optional<SupportedVideoDecoderConfigs>
-  GetPlatformSupportedVideoDecoderConfigs(
-      GetVdaConfigsCB get_vda_configs) final {
-    if (UseVTVD()) {
-      return VideoToolboxVideoDecoder::GetSupportedVideoDecoderConfigs(
-          gpu_workarounds_);
-    }
-    return std::move(get_vda_configs).Run();
+  GetPlatformSupportedVideoDecoderConfigs() final {
+    return VideoToolboxVideoDecoder::GetSupportedVideoDecoderConfigs(
+        gpu_workarounds_);
   }
 
   std::unique_ptr<AudioDecoder> CreatePlatformAudioDecoder(
@@ -74,10 +61,7 @@ class GpuMojoMediaClientMac final : public GpuMojoMediaClient {
   }
 
   VideoDecoderType GetPlatformDecoderImplementationType() final {
-    if (UseVTVD()) {
-      return VideoDecoderType::kVideoToolbox;
-    }
-    return VideoDecoderType::kVda;
+    return VideoDecoderType::kVideoToolbox;
   }
 };
 

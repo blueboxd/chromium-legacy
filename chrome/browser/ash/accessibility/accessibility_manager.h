@@ -25,7 +25,6 @@
 #include "chrome/browser/extensions/api/braille_display_private/braille_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_observer.h"
-#include "chrome/common/extensions/api/accessibility_private.h"
 #include "chromeos/ash/components/audio/cras_audio_handler.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/session_manager/core/session_manager.h"
@@ -37,13 +36,20 @@
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/extension_system.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/accessibility/public/mojom/assistive_technology_type.mojom.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/base/ime/ash/input_method_manager.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/devices/input_device_event_observer.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/wm/core/coordinate_conversion.h"
+
+// Matches 'supports_os_accessibility_service` in
+// //services/accessibility/buildflags.gni.
+#if BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/common/extensions/api/accessibility_private.h"
+#include "services/accessibility/public/mojom/assistive_technology_type.mojom.h"
+#endif  // BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace content {
 struct FocusedNodeDetails;
@@ -204,6 +210,10 @@ class AccessibilityManager
 
   // Returns true if FaceGaze is enabled.
   bool IsFaceGazeEnabled() const;
+
+  // Toggles whether FaceGaze is sending gesture detection information to
+  // settings.
+  void ToggleGestureInfoForSettings(bool enabled) const;
 
   // Requests the Autoclick extension find the bounds of the nearest scrollable
   // ancestor to the point in the screen, as given in screen coordinates.
@@ -395,6 +405,10 @@ class AccessibilityManager
   // Sets the startup sound user preference.
   void SetStartupSoundEnabled(bool value) const;
 
+  // Requests that the system display a preview of the flash notifications
+  // feature.
+  void PreviewFlashNotification() const;
+
   // Gets the bluetooth braille display device address for the current user.
   const std::string GetBluetoothBrailleDisplayAddress() const;
 
@@ -428,6 +442,9 @@ class AccessibilityManager
                                int flags,
                                int changed_button_flags,
                                gfx::Point location_in_screen);
+
+  // Looks up the action key that translates to F7 for caret browsing dialog.
+  std::optional<ui::KeyboardCode> GetCaretBrowsingActionKey();
 
   // SodaInstaller::Observer:
   void OnSodaInstalled(speech::LanguageCode language_code) override;
@@ -514,6 +531,7 @@ class AccessibilityManager
   void PostLoadEnhancedNetworkTts();
 
   void UpdateAlwaysShowMenuFromPref();
+  void OnFaceGazeChanged();
   void OnLargeCursorChanged();
   void OnLiveCaptionChanged();
   void OnStickyKeysChanged();
@@ -612,6 +630,7 @@ class AccessibilityManager
 
   // Methods for managing the FaceGaze assets DLC.
   void OnFaceGazeAssetsInstalled(bool success, const std::string& root_path);
+  void OnFaceGazeAssetsFailed(std::string_view error);
   void OnFaceGazeAssetsCreated(
       std::optional<::extensions::api::accessibility_private::FaceGazeAssets>
           assets);

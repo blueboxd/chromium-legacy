@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/353039516): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ui/ozone/platform/wayland/host/zwp_text_input_wrapper_v1.h"
 
 #include <sys/mman.h>
@@ -10,10 +15,12 @@
 #include <string_view>
 #include <utility>
 
+#include "base/base64.h"
 #include "base/check.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_split.h"
 #include "base/time/time.h"
 #include "ui/base/wayland/wayland_client_input_types.h"
@@ -102,6 +109,32 @@ std::vector<std::string> ParseModifiersMap(wl_array* array) {
       base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 }
 
+// Returns ImeTextSpan style to be assigned. Maybe nullopt if it is not
+// supported.
+std::optional<ZWPTextInputWrapperClient::SpanStyle::Style> ConvertStyle(
+    uint32_t style) {
+  switch (style) {
+    case ZWP_TEXT_INPUT_V1_PREEDIT_STYLE_DEFAULT:
+      return {{ImeTextSpan::Type::kComposition, ImeTextSpan::Thickness::kNone}};
+    case ZWP_TEXT_INPUT_V1_PREEDIT_STYLE_HIGHLIGHT:
+      return {
+          {ImeTextSpan::Type::kComposition, ImeTextSpan::Thickness::kThick}};
+    case ZWP_TEXT_INPUT_V1_PREEDIT_STYLE_UNDERLINE:
+      return {{ImeTextSpan::Type::kComposition, ImeTextSpan::Thickness::kThin}};
+    case ZWP_TEXT_INPUT_V1_PREEDIT_STYLE_SELECTION:
+      return {{ImeTextSpan::Type::kSuggestion, ImeTextSpan::Thickness::kNone}};
+    case ZWP_TEXT_INPUT_V1_PREEDIT_STYLE_INCORRECT:
+      return {{ImeTextSpan::Type::kMisspellingSuggestion,
+               ImeTextSpan::Thickness::kNone}};
+    case ZWP_TEXT_INPUT_V1_PREEDIT_STYLE_NONE:
+    case ZWP_TEXT_INPUT_V1_PREEDIT_STYLE_ACTIVE:
+    case ZWP_TEXT_INPUT_V1_PREEDIT_STYLE_INACTIVE:
+    default:
+      VLOG(1) << "Unsupported style. Skipped: " << style;
+  }
+  return std::nullopt;
+}
+
 }  // namespace
 
 ZWPTextInputWrapperV1::ZWPTextInputWrapperV1(
@@ -136,6 +169,7 @@ ZWPTextInputWrapperV1::ZWPTextInputWrapperV1(
               &OnSetVirtualKeyboardOccludedBounds,
           .confirm_preedit = &OnConfirmPreedit,
           .insert_image = &OnInsertImage,
+          .insert_image_with_large_url = &OnInsertImageWithLargeURL,
       };
 
   obj_ = wl::Object<zwp_text_input_v1>(
@@ -221,6 +255,7 @@ void ZWPTextInputWrapperV1::SetCursorRect(const gfx::Rect& rect) {
 
 void ZWPTextInputWrapperV1::SetSurroundingText(
     const std::string& text,
+    const gfx::Range& preedit_range,
     const gfx::Range& selection_range) {
   // Wayland packet has a limit of size due to its serialization format,
   // so if it exceeds 16 bits, it may be broken.
@@ -399,7 +434,10 @@ void ZWPTextInputWrapperV1::OnPreeditString(
   auto spans = std::move(self->spans_);
   int32_t preedit_cursor = self->preedit_cursor_;
   self->ResetInputEventState();
-  self->client_->OnPreeditString(text, spans, preedit_cursor);
+  self->client_->OnPreeditString(text, spans,
+                                 preedit_cursor < 0
+                                     ? gfx::Range::InvalidRange()
+                                     : gfx::Range(preedit_cursor));
 }
 
 // static
@@ -411,7 +449,7 @@ void ZWPTextInputWrapperV1::OnPreeditStyling(
     uint32_t style) {
   auto* self = static_cast<ZWPTextInputWrapperV1*>(data);
   self->spans_.push_back(
-      ZWPTextInputWrapperClient::SpanStyle{index, length, style});
+      ZWPTextInputWrapperClient::SpanStyle{index, length, ConvertStyle(style)});
 }
 
 // static
@@ -563,6 +601,43 @@ void ZWPTextInputWrapperV1::OnInsertImage(
     void* data,
     struct zcr_extended_text_input_v1* extended_text_input,
     const char* src) {
+  auto* self = static_cast<ZWPTextInputWrapperV1*>(data);
+  self->client_->OnInsertImage(GURL(src));
+}
+
+// static
+void ZWPTextInputWrapperV1::OnInsertImageWithLargeURL(
+    void* data,
+    struct zcr_extended_text_input_v1* extended_text_input,
+    const char* mime_type,
+    const char* charset,
+    const int32_t raw_fd,
+    const uint32_t size) {
+  // Read raw data from fd.
+  std::string raw_data;
+  raw_data.resize(size);
+  base::ScopedFD fd(raw_fd);
+  if (!base::ReadFromFD(fd.get(), raw_data)) {
+    LOG(ERROR) << "Failed to read file descriptor for image insertion";
+    return;
+  }
+
+  // Re-construct data url.
+  std::string src = "data:";
+  if (mime_type) {
+    base::StrAppend(&src, {mime_type});
+  }
+  if (charset && strlen(charset) > 0) {
+    base::StrAppend(&src, {";charset=", charset});
+  }
+  base::StrAppend(&src, {";base64,"});
+  // SAFETY: TODO(crbug.com/353039516): fix unsafe buffer manipulation in span
+  // creation.
+  base::Base64EncodeAppend(
+      base::make_span((const unsigned char*)(raw_data.data()), raw_data.size()),
+      &src);
+
+  // Dispatch image insertion request.
   auto* self = static_cast<ZWPTextInputWrapperV1*>(data);
   self->client_->OnInsertImage(GURL(src));
 }

@@ -25,6 +25,7 @@
 #include "third_party/blink/public/platform/web_fetch_client_settings_object.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/post_message_helper.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_post_message_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_structured_serialize_options.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/event_target_names.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
@@ -46,6 +47,7 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/script_type_names.h"
+#include "third_party/blink/renderer/core/workers/custom_event_message.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker_messaging_proxy.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/worker_classic_script_loader.h"
@@ -195,25 +197,66 @@ void DedicatedWorker::postMessage(ScriptState* script_state,
       perfetto::Flow::Global(trace_id));  // SchedulePostMessage
 }
 
-void DedicatedWorker::Start() {
-  TRACE_EVENT("blink.worker", "DedicatedWorker::Start");
-  if (base::FeatureList::IsEnabled(
-          features::kDedicatedWorkerAblationStudyEnabled)) {
-    GetExecutionContext()
-        ->GetTaskRunner(TaskType::kInternalDefault)
-        ->PostDelayedTask(
-            FROM_HERE,
-            WTF::BindOnce(&DedicatedWorker::StartInternal,
-                          WrapPersistent(this)),
-            base::Milliseconds(features::kDedicatedWorkerStartDelayInMs.Get()));
+void DedicatedWorker::PostCustomEvent(
+    TaskType task_type,
+    ScriptState* script_state,
+    CrossThreadFunction<Event*(ScriptState*, CustomEventMessage)>
+        event_factory_callback,
+    CrossThreadFunction<Event*(ScriptState*)> event_factory_error_callback,
+    const ScriptValue& message,
+    HeapVector<ScriptValue>& transfer,
+    ExceptionState& exception_state) {
+  CHECK(!GetExecutionContext() || GetExecutionContext()->IsContextThread());
+  if (!GetExecutionContext()) {
     return;
   }
-  StartInternal();
+
+  StructuredSerializeOptions* options = StructuredSerializeOptions::Create();
+  if (!transfer.empty()) {
+    options->setTransfer(transfer);
+  }
+  CustomEventMessage transferable_message;
+  Transferables transferables;
+
+  if (!message.IsEmpty()) {
+    scoped_refptr<SerializedScriptValue> serialized_message =
+        PostMessageHelper::SerializeMessageByMove(
+            script_state->GetIsolate(), message, options, transferables,
+            exception_state);
+    if (exception_state.HadException()) {
+      return;
+    }
+    CHECK(serialized_message);
+    transferable_message.message = serialized_message;
+  }
+  // Disentangle the port in preparation for sending it to the remote context.
+  transferable_message.ports = MessagePort::DisentanglePorts(
+      ExecutionContext::From(script_state), transferables.message_ports,
+      exception_state);
+  if (exception_state.HadException()) {
+    return;
+  }
+
+  transferable_message.sender_stack_trace_id =
+      ThreadDebugger::From(script_state->GetIsolate())
+          ->StoreCurrentStackTrace("Worker.PostCustomEvent");
+  uint64_t trace_id = base::trace_event::GetNextGlobalTraceId();
+  transferable_message.trace_id = trace_id;
+  context_proxy_->PostCustomEventToWorkerGlobalScope(
+      task_type, std::move(event_factory_callback),
+      std::move(event_factory_error_callback), std::move(transferable_message));
+  TRACE_EVENT_INSTANT(
+      "devtools.timeline", "SchedulePostCustomEvent", "data",
+      [&](perfetto::TracedValue context) {
+        inspector_schedule_post_message_event::Data(
+            std::move(context), GetExecutionContext(), trace_id);
+      },
+      perfetto::Flow::Global(trace_id));  // SchedulePostCustomEvent
 }
 
 // https://html.spec.whatwg.org/C/#worker-processing-model
-void DedicatedWorker::StartInternal() {
-  TRACE_EVENT("blink.worker", "DedicatedWorker::StartInternal");
+void DedicatedWorker::Start() {
+  TRACE_EVENT("blink.worker", "DedicatedWorker::Start");
   DCHECK(GetExecutionContext()->IsContextThread());
   start_time_ = base::TimeTicks::Now();
 
@@ -247,7 +290,8 @@ void DedicatedWorker::StartInternal() {
     factory_client_->CreateWorkerHost(
         token_, script_request_url_, credentials_mode,
         WebFetchClientSettingsObject(*outside_fetch_client_settings_object_),
-        std::move(blob_url_token), GetExecutionContext()->HasStorageAccess());
+        std::move(blob_url_token),
+        GetExecutionContext()->GetStorageAccessApiStatus());
     // Continue in OnScriptLoadStarted() or OnScriptLoadStartFailed().
     return;
   }
@@ -465,6 +509,49 @@ void DedicatedWorker::ContinueStart(
         back_forward_cache_controller_host) {
   UMA_HISTOGRAM_TIMES("Worker.TopLevelScript.LoadStartedTime",
                       base::TimeTicks::Now() - start_time_);
+  TRACE_EVENT("blink.worker", "DedicatedWorker::ContinueStart");
+  if (base::FeatureList::IsEnabled(
+          features::kDedicatedWorkerAblationStudyEnabled)) {
+    CHECK(GetExecutionContext());
+    TRACE_EVENT("blink.worker", "DedicatedWorkerAblationStudyEnabled",
+                "DedicatedWorkerStartDelayInMs",
+                features::kDedicatedWorkerStartDelayInMs.Get());
+    GetExecutionContext()
+        ->GetTaskRunner(TaskType::kInternalDefault)
+        ->PostDelayedTask(
+            FROM_HERE,
+            WTF::BindOnce(&DedicatedWorker::ContinueStartInternal,
+                          WrapWeakPersistent(this), script_url,
+                          std::move(worker_main_script_load_params),
+                          std::move(referrer_policy),
+                          std::move(response_content_security_policies),
+                          source_code, reject_coep_unsafe_none,
+                          std::move(back_forward_cache_controller_host)),
+            base::Milliseconds(features::kDedicatedWorkerStartDelayInMs.Get()));
+    return;
+  }
+  ContinueStartInternal(script_url, std::move(worker_main_script_load_params),
+                        std::move(referrer_policy),
+                        std::move(response_content_security_policies),
+                        source_code, reject_coep_unsafe_none,
+                        std::move(back_forward_cache_controller_host));
+}
+
+void DedicatedWorker::ContinueStartInternal(
+    const KURL& script_url,
+    std::unique_ptr<WorkerMainScriptLoadParameters>
+        worker_main_script_load_params,
+    network::mojom::ReferrerPolicy referrer_policy,
+    Vector<network::mojom::blink::ContentSecurityPolicyPtr>
+        response_content_security_policies,
+    const String& source_code,
+    RejectCoepUnsafeNone reject_coep_unsafe_none,
+    mojo::PendingRemote<mojom::blink::BackForwardCacheControllerHost>
+        back_forward_cache_controller_host) {
+  TRACE_EVENT("blink.worker", "DedicatedWorker::ContinueStartInternal");
+  if (!GetExecutionContext()) {
+    return;
+  }
   context_proxy_->StartWorkerGlobalScope(
       CreateGlobalScopeCreationParams(
           script_url, referrer_policy,
@@ -569,7 +656,8 @@ DedicatedWorker::CreateGlobalScopeCreationParams(
       execution_context->IsIsolatedContext(),
       /*interface_registry=*/nullptr,
       std::move(agent_group_scheduler_compositor_task_runner),
-      top_level_frame_security_origin, execution_context->HasStorageAccess());
+      top_level_frame_security_origin,
+      execution_context->GetStorageAccessApiStatus());
   params->dedicated_worker_start_time = start_time_;
   return params;
 }

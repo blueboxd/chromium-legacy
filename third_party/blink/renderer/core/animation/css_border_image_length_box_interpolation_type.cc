@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/core/animation/css_border_image_length_box_interpolation_type.h"
 
 #include <memory>
@@ -233,6 +238,7 @@ InterpolationValue ConvertBorderImageAutoSide() {
 }
 
 InterpolationValue ConvertBorderImageLengthBox(const BorderImageLengthBox& box,
+                                               const CSSProperty& property,
                                                double zoom) {
   Vector<scoped_refptr<const NonInterpolableValue>> non_interpolable_values(
       kSideIndexCount);
@@ -243,14 +249,14 @@ InterpolationValue ConvertBorderImageLengthBox(const BorderImageLengthBox& box,
   sides[kSideLeft] = &box.Left();
 
   return ListInterpolationFunctions::CreateList(
-      kSideIndexCount, [&sides, zoom](wtf_size_t index) {
+      kSideIndexCount, [&sides, &property, zoom](wtf_size_t index) {
         const BorderImageLength& side = *sides[index];
         if (side.IsNumber())
           return ConvertBorderImageNumberSide(side.Number());
         if (side.length().IsAuto())
           return ConvertBorderImageAutoSide();
-        return InterpolationValue(
-            InterpolableLength::MaybeConvertLength(side.length(), zoom));
+        return InterpolationValue(InterpolableLength::MaybeConvertLength(
+            side.length(), property, zoom, /*interpolate_size=*/std::nullopt));
       });
 }
 
@@ -297,7 +303,7 @@ CSSBorderImageLengthBoxInterpolationType::MaybeConvertInitial(
   return ConvertBorderImageLengthBox(
       GetBorderImageLengthBox(
           CssProperty(), state.GetDocument().GetStyleResolver().InitialStyle()),
-      1);
+      CssProperty(), 1);
 }
 
 InterpolationValue
@@ -308,7 +314,7 @@ CSSBorderImageLengthBoxInterpolationType::MaybeConvertInherit(
       GetBorderImageLengthBox(CssProperty(), *state.ParentStyle());
   conversion_checkers.push_back(MakeGarbageCollected<InheritedSideTypesChecker>(
       CssProperty(), SideTypes(inherited)));
-  return ConvertBorderImageLengthBox(inherited,
+  return ConvertBorderImageLengthBox(inherited, CssProperty(),
                                      state.ParentStyle()->EffectiveZoom());
 }
 
@@ -363,7 +369,8 @@ InterpolationValue CSSBorderImageLengthBoxInterpolationType::
     MaybeConvertStandardPropertyUnderlyingValue(
         const ComputedStyle& style) const {
   return ConvertBorderImageLengthBox(
-      GetBorderImageLengthBox(CssProperty(), style), style.EffectiveZoom());
+      GetBorderImageLengthBox(CssProperty(), style), CssProperty(),
+      style.EffectiveZoom());
 }
 
 PairwiseInterpolationValue

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.password_manager;
 
 import static org.chromium.base.ThreadUtils.assertOnBackgroundThread;
 import static org.chromium.chrome.browser.password_manager.PasswordManagerSetting.AUTO_SIGN_IN;
+import static org.chromium.chrome.browser.password_manager.PasswordManagerSetting.BIOMETRIC_REAUTH_BEFORE_PWD_FILLING;
 import static org.chromium.chrome.browser.password_manager.PasswordManagerSetting.OFFER_TO_SAVE_PASSWORDS;
 import static org.chromium.chrome.browser.password_manager.PasswordSettingsUpdaterMetricsRecorder.getStoreType;
 
@@ -49,8 +50,7 @@ public class PasswordSettingsUpdaterDispatcherBridge {
     }
 
     @CalledByNative
-    void getSettingValue(
-            String account, @PasswordManagerSetting int setting, boolean isPartOfMigration) {
+    void getSettingValue(String account, @PasswordManagerSetting int setting) {
         assertOnBackgroundThread();
         PasswordSettingsUpdaterMetricsRecorder metricsRecorder =
                 new PasswordSettingsUpdaterMetricsRecorder(
@@ -65,30 +65,33 @@ public class PasswordSettingsUpdaterDispatcherBridge {
                                 mReceiverBridge.onSettingValueFetched(
                                         OFFER_TO_SAVE_PASSWORDS,
                                         offerToSavePasswords,
-                                        metricsRecorder,
-                                        isPartOfMigration),
+                                        metricsRecorder),
                         exception ->
                                 handleFetchingExceptionOnUiThread(
-                                        OFFER_TO_SAVE_PASSWORDS,
-                                        exception,
-                                        metricsRecorder,
-                                        isPartOfMigration));
+                                        OFFER_TO_SAVE_PASSWORDS, exception, metricsRecorder));
                 break;
             case AUTO_SIGN_IN:
                 mSettingsAccessor.getAutoSignIn(
                         getAccount(account),
                         autoSignIn ->
                                 mReceiverBridge.onSettingValueFetched(
-                                        AUTO_SIGN_IN,
-                                        autoSignIn,
-                                        metricsRecorder,
-                                        isPartOfMigration),
+                                        AUTO_SIGN_IN, autoSignIn, metricsRecorder),
                         exception ->
                                 handleFetchingExceptionOnUiThread(
-                                        AUTO_SIGN_IN,
+                                        AUTO_SIGN_IN, exception, metricsRecorder));
+                break;
+            case BIOMETRIC_REAUTH_BEFORE_PWD_FILLING:
+                mSettingsAccessor.getUseBiometricReauthBeforeFilling(
+                        value ->
+                                handleSettingValueFetchedOnUiThread(
+                                        BIOMETRIC_REAUTH_BEFORE_PWD_FILLING,
+                                        value,
+                                        metricsRecorder),
+                        exception ->
+                                handleFetchingExceptionOnUiThread(
+                                        BIOMETRIC_REAUTH_BEFORE_PWD_FILLING,
                                         exception,
-                                        metricsRecorder,
-                                        isPartOfMigration));
+                                        metricsRecorder));
                 break;
             default:
                 assert false : "All settings need to be handled.";
@@ -96,11 +99,7 @@ public class PasswordSettingsUpdaterDispatcherBridge {
     }
 
     @CalledByNative
-    void setSettingValue(
-            String account,
-            @PasswordManagerSetting int setting,
-            boolean value,
-            boolean isPartOfMigration) {
+    void setSettingValue(String account, @PasswordManagerSetting int setting, boolean value) {
         assertOnBackgroundThread();
         PasswordSettingsUpdaterMetricsRecorder metricsRecorder =
                 new PasswordSettingsUpdaterMetricsRecorder(
@@ -114,65 +113,60 @@ public class PasswordSettingsUpdaterDispatcherBridge {
                         getAccount(account),
                         unused ->
                                 mReceiverBridge.onSettingValueSet(
-                                        OFFER_TO_SAVE_PASSWORDS,
-                                        metricsRecorder,
-                                        isPartOfMigration),
+                                        OFFER_TO_SAVE_PASSWORDS, metricsRecorder),
                         exception ->
                                 handleSettingExceptionOnUiThread(
-                                        OFFER_TO_SAVE_PASSWORDS,
-                                        exception,
-                                        metricsRecorder,
-                                        isPartOfMigration));
+                                        OFFER_TO_SAVE_PASSWORDS, exception, metricsRecorder));
                 break;
             case AUTO_SIGN_IN:
                 mSettingsAccessor.setAutoSignIn(
                         value,
                         getAccount(account),
-                        unused ->
-                                mReceiverBridge.onSettingValueSet(
-                                        AUTO_SIGN_IN, metricsRecorder, isPartOfMigration),
+                        unused -> mReceiverBridge.onSettingValueSet(AUTO_SIGN_IN, metricsRecorder),
                         exception ->
                                 handleSettingExceptionOnUiThread(
-                                        AUTO_SIGN_IN,
-                                        exception,
-                                        metricsRecorder,
-                                        isPartOfMigration));
+                                        AUTO_SIGN_IN, exception, metricsRecorder));
                 break;
             default:
                 assert false : "All settings need to be handled.";
         }
     }
 
+    // TODO(crbug.com/343879727) : Remove this after "Authenticate with biometrics before password
+    // filling" setting is introduced in GMS Core.
+    private void handleSettingValueFetchedOnUiThread(
+            @PasswordManagerSetting int setting,
+            Optional<Boolean> value,
+            PasswordSettingsUpdaterMetricsRecorder metricsRecorder) {
+        PostTask.runOrPostTask(
+                TaskTraits.UI_DEFAULT,
+                () -> mReceiverBridge.onSettingValueFetched(setting, value, metricsRecorder));
+    }
+
     private void handleFetchingExceptionOnUiThread(
             @PasswordManagerSetting int setting,
             Exception exception,
-            PasswordSettingsUpdaterMetricsRecorder metricsRecorder,
-            boolean isPartOfMigration) {
+            PasswordSettingsUpdaterMetricsRecorder metricsRecorder) {
         // Error callback could be either triggered
         // - by the GMS Core on the UI thread
         // - by the downstream backend on the operation thread if preconditions are not met
         // |runOrPostTask| ensures callback will always be executed on the UI thread.
         PostTask.runOrPostTask(
                 TaskTraits.UI_DEFAULT,
-                () ->
-                        mReceiverBridge.handleFetchingException(
-                                setting, exception, metricsRecorder, isPartOfMigration));
+                () -> mReceiverBridge.handleFetchingException(setting, exception, metricsRecorder));
     }
 
     private void handleSettingExceptionOnUiThread(
             @PasswordManagerSetting int setting,
             Exception exception,
-            PasswordSettingsUpdaterMetricsRecorder metricsRecorder,
-            boolean isPartOfMigration) {
+            PasswordSettingsUpdaterMetricsRecorder metricsRecorder) {
         // Error callback could be either triggered
         // - by the GMS Core on the UI thread
         // - by the downstream backend on the operation thread if preconditions are not met
         // |runOrPostTask| ensures callback will always be executed on the UI thread.
         PostTask.runOrPostTask(
                 TaskTraits.UI_DEFAULT,
-                () ->
-                        mReceiverBridge.handleSettingException(
-                                setting, exception, metricsRecorder, isPartOfMigration));
+                () -> mReceiverBridge.handleSettingException(setting, exception, metricsRecorder));
     }
 
     private Optional<Account> getAccount(String syncingAccount) {

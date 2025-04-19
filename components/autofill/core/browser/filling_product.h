@@ -23,7 +23,9 @@ enum class FillingProduct {
   kPassword,
   kCompose,
   kPlusAddresses,
-  kMaxValue = kPlusAddresses
+  kStandaloneCvc,
+  kPredictionImprovements,
+  kMaxValue = kPredictionImprovements
 };
 
 FillingProduct GetFillingProductFromSuggestionType(SuggestionType type);

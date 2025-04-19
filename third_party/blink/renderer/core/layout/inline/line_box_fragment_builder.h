@@ -7,20 +7,16 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/fragment_builder.h"
-#include "third_party/blink/renderer/core/layout/geometry/logical_rect.h"
 #include "third_party/blink/renderer/core/layout/inline/inline_break_token.h"
 #include "third_party/blink/renderer/core/layout/inline/inline_node.h"
 #include "third_party/blink/renderer/core/layout/inline/physical_line_box_fragment.h"
-#include "third_party/blink/renderer/core/layout/layout_result.h"
-#include "third_party/blink/renderer/core/layout/physical_fragment.h"
-#include "third_party/blink/renderer/core/layout/positioned_float.h"
 #include "third_party/blink/renderer/platform/fonts/font_height.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 
 class ComputedStyle;
-class InlineBreakToken;
+class LayoutResult;
 class LogicalLineContainer;
 class LogicalLineItems;
 
@@ -31,19 +27,25 @@ class CORE_EXPORT LineBoxFragmentBuilder final : public FragmentBuilder {
   LineBoxFragmentBuilder(InlineNode node,
                          const ComputedStyle* style,
                          const ConstraintSpace& space,
-                         WritingDirectionMode writing_direction)
+                         WritingDirectionMode writing_direction,
+                         const InlineBreakToken* break_token)
       : FragmentBuilder(
             node,
             style,
             space,
             // Always use LTR because line items are in visual order.
-            {writing_direction.GetWritingMode(), TextDirection::kLtr}),
+            {writing_direction.GetWritingMode(), TextDirection::kLtr},
+            break_token),
         line_box_type_(PhysicalLineBoxFragment::kNormalLineBox),
         base_direction_(TextDirection::kLtr) {}
   LineBoxFragmentBuilder(const LineBoxFragmentBuilder&) = delete;
   LineBoxFragmentBuilder& operator=(const LineBoxFragmentBuilder&) = delete;
 
   void Reset();
+
+  const InlineBreakToken* PreviousBreakToken() const {
+    return To<InlineBreakToken>(previous_break_token_);
+  }
 
   LayoutUnit LineHeight() const {
     return metrics_.LineHeight().ClampNegativeToZero();
@@ -78,9 +80,6 @@ class CORE_EXPORT LineBoxFragmentBuilder final : public FragmentBuilder {
 
   const FontHeight& Metrics() const { return metrics_; }
   void SetMetrics(const FontHeight& metrics) { metrics_ = metrics; }
-  void SetIntrinsicMetrics(const FontHeight& intrinsic_metrics) {
-    intrinsic_metrics_ = intrinsic_metrics;
-  }
 
   void SetBaseDirection(TextDirection direction) {
     base_direction_ = direction;
@@ -112,7 +111,6 @@ class CORE_EXPORT LineBoxFragmentBuilder final : public FragmentBuilder {
   std::optional<LayoutUnit> trim_block_end_by_;
   LayoutUnit annotation_block_offset_adjustment_;
   FontHeight metrics_ = FontHeight::Empty();
-  FontHeight intrinsic_metrics_ = FontHeight::Empty();
   LayoutUnit hang_inline_size_;
   PhysicalLineBoxFragment::LineBoxType line_box_type_;
   TextDirection base_direction_;

@@ -160,7 +160,7 @@ chromium-metrics-reviews@google.com.
   <int value="106" label="ToggleOverview"/>
   <int value="107" label="ToggleProjectorMarker"/>
   <int value="108" label="ToggleResizeLockMenu"/>
-  <int value="109" label="ToggleSnapGroupWindowsGroupAndUngroup"/>
+  <int value="109" label="CreateSnapGroup"/>
   <int value="110" label="ToggleSnapGroupWindowsMinimizeAndRestore"/>
   <int value="111" label="ToggleSpokenFeedback"/>
   <int value="112" label="ToggleStylusTools"/>
@@ -183,6 +183,11 @@ chromium-metrics-reviews@google.com.
   <int value="129" label="TogglePicker"/>
   <int value="130" label="AccessibilityAction"/>
   <int value="131" label="EnableSelectToSpeak"/>
+  <int value="132" label="TilingWindowResizeLeft"/>
+  <int value="133" label="TilingWindowResizeRight"/>
+  <int value="134" label="TilingWindowResizeUp"/>
+  <int value="135" label="TilingWindowResizeDown"/>
+  <int value="136" label="ToggleMouseKeys"/>
   <int value="9000" label="DebugClearUseKMeansPref"/>
   <int value="9001" label="DebugKeyboardBacklightToggle"/>
   <int value="9002" label="DebugMicrophoneMuteToggle"/>
@@ -211,6 +216,7 @@ chromium-metrics-reviews@google.com.
   <int value="9025" label="DevToggleAppList"/>
   <int value="9026" label="DevToggleUnifiedDesktop"/>
   <int value="9027" label="DebugToggleFocusModeState"/>
+  <int value="9028" label="DebugStartSunfishSession"/>
 </enum>
 
 <enum name="ArcIntentHandlerDestinationPlatform">
@@ -779,6 +785,11 @@ chromium-metrics-reviews@google.com.
   <int value="3" label="UnknownClassification"/>
 </enum>
 
+<enum name="CompanionAppState">
+  <int value="0" label="Available"/>
+  <int value="1" label="Installed"/>
+</enum>
+
 <enum name="CrashSeverityProductType">
   <int value="0" label="Unspecified"/>
   <int value="1" label="UI"/>
@@ -824,6 +835,32 @@ chromium-metrics-reviews@google.com.
   <int value="14" label="StylusGarage"/>
   <int value="15" label="Stylus"/>
   <int value="16" label="Crash"/>
+</enum>
+
+<enum name="CrosHealthdRoutineCategory">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="PrimeSearch"/>
+  <int value="2" label="FloatingPoint"/>
+  <int value="3" label="Memory"/>
+  <int value="4" label="AudioDriver"/>
+  <int value="5" label="CpuStress"/>
+  <int value="6" label="UfsLifetime"/>
+  <int value="7" label="DiskRead"/>
+  <int value="8" label="CpuCache"/>
+  <int value="9" label="VolumeButton"/>
+  <int value="10" label="LedLitUp"/>
+  <int value="11" label="BluetoothPower"/>
+  <int value="12" label="BluetoothDiscovery"/>
+  <int value="13" label="Fan"/>
+  <int value="14" label="BluetoothScanning"/>
+  <int value="15" label="BluetoothPairing"/>
+  <int value="16" label="CameraAvailability"/>
+  <int value="17" label="Urandom"/>
+  <int value="18" label="NetworkBandwidth"/>
+  <int value="19" label="SensitiveSensor"/>
+  <int value="20" label="CameraFrameAnalysis"/>
+  <int value="21" label="BatteryDischarge"/>
+  <int value="22" label="KeyboardBacklight"/>
 </enum>
 
 <enum name="CrosHealthdTelemetryResult">
@@ -1101,6 +1138,8 @@ chromium-metrics-reviews@google.com.
   <int value="44" label="InvalidPkcs12"/>
   <int value="45" label="Pkcs12WrongPassword"/>
   <int value="46" label="Pkcs12InvalidMac"/>
+  <int value="47" label="FailedToMakeCertNickname"/>
+  <int value="48" label="AlreadyExists"/>
 </enum>
 
 <enum name="KcerPkcs12ImportEvent">
@@ -1155,6 +1194,7 @@ chromium-metrics-reviews@google.com.
   <int value="21" label="EmojiPicker"/>
   <int value="22" label="Dictation"/>
   <int value="23" label="PrivacyScreenToggle"/>
+  <int value="24" label="Accessibility"/>
 </enum>
 
 <enum name="KeyboardTopRowLayoutWithExtraSublayout">
@@ -1170,6 +1210,7 @@ chromium-metrics-reviews@google.com.
   <int value="4" label="Layout3"/>
   <int value="5" label="Layout4"/>
   <int value="6" label="LayoutCustom1"/>
+  <int value="7" label="LayoutCustom2"/>
 </enum>
 
 <enum name="KeyPermissionsManagerMigrationStatus">
@@ -1177,6 +1218,13 @@ chromium-metrics-reviews@google.com.
   <int value="1" label="kSucceeded"/>
   <int value="2" label="kFailed"/>
   <int value="3" label="kNecessary"/>
+</enum>
+
+<enum name="KeyUsageCategory">
+  <int value="0" label="PhysicallyPresent"/>
+  <int value="1" label="VirtuallyPresent"/>
+  <int value="2" label="PhysicallyPressed"/>
+  <int value="3" label="VirtuallyPressed"/>
 </enum>
 
 <enum name="LanguagePackDlcErrorType">
@@ -1244,9 +1292,11 @@ chromeos/ash/components/language/language_packs/language_pack_manager.h -->
   <int value="-1760656795" label="kk"/>
   <int value="-1728890006" label="kn"/>
   <int value="-1722334576" label="sv"/>
+  <int value="-1688219359" label="pt-br"/>
   <int value="-1667118147" label="bg"/>
   <int value="-1660178764" label="bn"/>
   <int value="-1391374456" label="ur"/>
+  <int value="-1373851596" label="zh-HK"/>
   <int value="-1340196252" label="en-gb"/>
   <int value="-1339452358" label="hu"/>
   <int value="-1319436779" label="lt"/>
@@ -1257,6 +1307,7 @@ chromeos/ash/components/language/language_packs/language_pack_manager.h -->
   <int value="-795149789" label="en-au"/>
   <int value="-763755563" label="ru"/>
   <int value="-703387832" label="ml"/>
+  <int value="-678198435" label="fil"/>
   <int value="-651240163" label="am"/>
   <int value="-622454823" label="cs"/>
   <int value="-554160101" label="es"/>
@@ -1278,11 +1329,13 @@ chromeos/ash/components/language/language_packs/language_pack_manager.h -->
   <int value="218790103" label="es-us"/>
   <int value="385084822" label="pt"/>
   <int value="411897228" label="fr"/>
+  <int value="466028662" label="pt-pt"/>
   <int value="579959091" label="iw"/>
   <int value="592207805" label="pl"/>
   <int value="656523220" label="zh"/>
   <int value="771718923" label="yue"/>
   <int value="771844654" label="uk"/>
+  <int value="864680139" label="en"/>
   <int value="916296240" label="id"/>
   <int value="934072607" label="ta"/>
   <int value="942489058" label="gu"/>
@@ -1315,6 +1368,12 @@ chromeos/ash/components/language/language_packs/language_pack_manager.h -->
   <int value="2" label="Settings changed"/>
 </enum>
 
+<enum name="MahiCacheHit">
+  <int value="0" label="No Hit"/>
+  <int value="1" label="Summary"/>
+  <int value="2" label="Content"/>
+</enum>
+
 <enum name="MahiContextMenuButtonType">
   <int value="0" label="Summary Button"/>
   <int value="1" label="Outline"/>
@@ -1328,6 +1387,19 @@ chromeos/ash/components/language/language_packs/language_pack_manager.h -->
   <int value="2" label="Submit Question Button"/>
   <int value="3" label="Condensed Menu Button"/>
   <int value="4" label="Settings Button"/>
+</enum>
+
+<enum name="MahiResponseStatus">
+  <int value="0" label="Success"/>
+  <int value="1" label="Unknown Error"/>
+  <int value="2" label="Inappropriate"/>
+  <int value="3" label="Low Quota"/>
+  <int value="4" label="Quota Limit Hit"/>
+  <int value="5" label="Resource Exhausted"/>
+  <int value="6" label="Content Extraction Error"/>
+  <int value="7" label="Can't Find Output Data"/>
+  <int value="8" label="Restricted Country"/>
+  <int value="9" label="Unsupported Language"/>
 </enum>
 
 <enum name="MetadataTier">
@@ -1361,6 +1433,12 @@ chromeos/ash/components/language/language_packs/language_pack_manager.h -->
   <int value="9" label="Backspace"/>
   <int value="10" label="Escape"/>
   <int value="11" label="Assistant"/>
+</enum>
+
+<enum name="OptInCardAction">
+  <int value="0" label="ShowCard"/>
+  <int value="1" label="AcceptButtonPressed"/>
+  <int value="2" label="DeclineButtonPressed"/>
 </enum>
 
 <enum name="OwnerKeyUmaEvent">
@@ -1553,6 +1631,12 @@ chromeos/ash/components/language/language_packs/language_pack_manager.h -->
   <int value="15" label="PD Sinking Host"/>
   <int value="16" label="Non-PD Sink"/>
   <int value="17" label="Power Brick"/>
+</enum>
+
+<enum name="PeripheralCustomizationMetricsType">
+  <int value="0" label="Mouse"/>
+  <int value="1" label="GraphicsTablet"/>
+  <int value="2" label="GraphicsTabletPen"/>
 </enum>
 
 <enum name="PopularCamPeriphModuleID">
@@ -1790,6 +1874,17 @@ https://chromium.googlesource.com/chromiumos/platform2/+/main/secagentd/proto/se
   <int value="2" label="Suspended"/>
 </enum>
 
+<enum name="TelemetryExtensionRoutineCategory">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Memory"/>
+  <int value="2" label="VolumeButton"/>
+  <int value="3" label="Fan"/>
+  <int value="4" label="LedLitUp"/>
+  <int value="5" label="NetworkBandwidth"/>
+  <int value="6" label="CameraFrameAnalysis"/>
+  <int value="7" label="KeyboardBacklight"/>
+</enum>
+
 <enum name="UmaInitParamsResult">
   <int value="0" label="Client ID and entropy sources were found"/>
   <int value="1" label="Only the client ID was found"/>
@@ -1822,6 +1917,12 @@ https://chromium.googlesource.com/chromiumos/platform2/+/main/secagentd/proto/se
   <int value="7" label="Google Play error">
     Installing the WebAPK through Google Play failed with an error.
   </int>
+</enum>
+
+<enum name="WelcomeExperienceNotificationEventType">
+  <int value="0" label="Shown"/>
+  <int value="1" label="Clicked"/>
+  <int value="2" label="SettingChanged"/>
 </enum>
 
 <enum name="WrongConfigurationMetric">

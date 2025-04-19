@@ -8,7 +8,7 @@
 #include "components/enterprise/client_certificates/core/cloud_management_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace client_certificates {
+namespace enterprise_attestation {
 
 class MockCloudManagementDelegate : public CloudManagementDelegate {
  public:
@@ -16,12 +16,13 @@ class MockCloudManagementDelegate : public CloudManagementDelegate {
   ~MockCloudManagementDelegate() override;
 
   MOCK_METHOD(std::optional<std::string>, GetDMToken, (), (const, override));
-  MOCK_METHOD(std::optional<std::string>,
-              GetUploadBrowserPublicKeyUrl,
-              (),
-              (const, override));
+  MOCK_METHOD(void,
+              UploadBrowserPublicKey,
+              (const enterprise_management::DeviceManagementRequest&,
+               policy::DMServerJobConfiguration::Callback callback),
+              (override));
 };
 
-}  // namespace client_certificates
+}  // namespace enterprise_attestation
 
 #endif  // COMPONENTS_ENTERPRISE_CLIENT_CERTIFICATES_CORE_MOCK_CLOUD_MANAGEMENT_DELEGATE_H_

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/platform/peerconnection/resolution_monitor.h"
 
 #include <bitset>
@@ -12,8 +17,8 @@
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "media/base/decoder_buffer.h"
-#include "media/filters/vp9_parser.h"
 #include "media/parsers/vp8_parser.h"
+#include "media/parsers/vp9_parser.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/libgav1/src/src/buffer_pool.h"
 #include "third_party/libgav1/src/src/decoder_state.h"

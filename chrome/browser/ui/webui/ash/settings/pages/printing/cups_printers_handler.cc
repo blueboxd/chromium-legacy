@@ -1083,7 +1083,7 @@ void CupsPrintersHandler::HandleSelectPPDFile(const base::Value::List& args) {
   file_type_info.extensions.push_back({"ppd.gz"});
   select_file_dialog_->SelectFile(
       ui::SelectFileDialog::SELECT_OPEN_FILE, std::u16string(), downloads_path,
-      &file_type_info, 0, FILE_PATH_LITERAL(""), owning_window, nullptr);
+      &file_type_info, 0, FILE_PATH_LITERAL(""), owning_window);
 }
 
 void CupsPrintersHandler::ResolveManufacturersDone(
@@ -1121,8 +1121,7 @@ void CupsPrintersHandler::ResolvePrintersDone(
 }
 
 void CupsPrintersHandler::FileSelected(const ui::SelectedFileInfo& file,
-                                       int index,
-                                       void* params) {
+                                       int index) {
   DCHECK(!webui_callback_id_.empty());
 
   select_file_dialog_ = nullptr;
@@ -1139,7 +1138,7 @@ void CupsPrintersHandler::FileSelected(const ui::SelectedFileInfo& file,
                      weak_factory_.GetWeakPtr(), file.path()));
 }
 
-void CupsPrintersHandler::FileSelectionCanceled(void* params) {
+void CupsPrintersHandler::FileSelectionCanceled() {
   select_file_dialog_ = nullptr;
 }
 

@@ -36,8 +36,6 @@ class KioskSystemSession {
   KioskSystemSession& operator=(const KioskSystemSession&) = delete;
   ~KioskSystemSession();
 
-  static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
-
   // Destroys ash observers.
   void ShuttingDown();
 
@@ -54,6 +52,8 @@ class KioskSystemSession {
   device_weekly_scheduled_suspend_controller_for_testing() {
     return device_weekly_scheduled_suspend_controller_.get();
   }
+
+  kiosk_vision::KioskVision& kiosk_vision() { return kiosk_vision_; }
 
  private:
   class LacrosWatcher;

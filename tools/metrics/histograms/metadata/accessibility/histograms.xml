@@ -146,6 +146,22 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Accessibility.Android.KeyboardShortcut.{ScreenReaderState}"
+    enum="KeyboardShortcutsSemanticMeaning" expires_after="2025-08-30">
+  <owner>mschillaci@google.com</owner>
+  <owner>katie@chromium.org</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    When a keyboard shortcut is used on Android, tracks the action of the
+    shortcut, and splits based on whether or not a screen reader is running.
+  </summary>
+  <token key="ScreenReaderState">
+    <variant name="NoScreenReader" summary="User is not using a screen reader"/>
+    <variant name="ScreenReaderRunning"
+        summary="User is using a screen reader"/>
+  </token>
+</histogram>
+
 <histogram name="Accessibility.Android.OnDemand.EventsDropped" units="count"
     expires_after="2025-02-28">
   <owner>mschillaci@google.com</owner>
@@ -282,7 +298,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.Android.PageZoom.MainFrameZoomFactor"
-    units="zoom factor %" expires_after="2024-11-03">
+    units="zoom factor %" expires_after="2025-01-05">
   <owner>mschillaci@google.com</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -452,7 +468,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.ATK-APIs" enum="AccessibilityATKAPIEnum"
-    expires_after="2024-11-17">
+    expires_after="2025-01-26">
   <owner>jdiggs@chromium.org</owner>
   <owner>jkim@igalia.com</owner>
   <owner>chrome-a11y-core@google.com</owner>
@@ -506,7 +522,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.AXTreeSnapshotter.Snapshot.Error"
-    enum="AXTreeSnapshotErrorReason" expires_after="2024-09-30">
+    enum="AXTreeSnapshotErrorReason" expires_after="2025-02-02">
   <owner>mschillaci@google.com</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -519,7 +535,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.AXTreeSnapshotter.Snapshot.NoRestrictions.Nodes"
-    units="count" expires_after="2024-09-30">
+    units="count" expires_after="2024-12-24">
   <owner>mschillaci@google.com</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -529,7 +545,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.AXTreeSnapshotter.Snapshot.NoRestrictions.Time"
-    units="ms" expires_after="2024-09-30">
+    units="ms" expires_after="2024-12-24">
   <owner>mschillaci@google.com</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -539,7 +555,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.AXTreeSnapshotter.Snapshot.Request"
-    enum="BooleanSent" expires_after="2024-09-30">
+    enum="BooleanSent" expires_after="2024-12-08">
   <owner>mschillaci@google.com</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -560,7 +576,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.CaptionSettingsLoadedFromPrefs"
-    enum="BooleanEnabled" expires_after="2024-08-07">
+    enum="BooleanEnabled" expires_after="2025-06-27">
   <owner>evliu@google.com</owner>
   <owner>chrome-media-ux@google.com</owner>
   <summary>
@@ -570,13 +586,20 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.CaptionSettingsLoadedFromSystemSettings"
-    enum="BooleanEnabled" expires_after="2024-08-07">
+    enum="BooleanEnabled" expires_after="2025-06-27">
   <owner>evliu@google.com</owner>
   <owner>chrome-media-ux@google.com</owner>
   <summary>
     Whether custom caption settings were loaded from the system preferences.
     Recorded when WebKit preferences are overridden.
   </summary>
+</histogram>
+
+<histogram name="Accessibility.ChromeVox.PerformCommand"
+    enum="ChromeVoxCommand" expires_after="2025-08-08">
+  <owner>kyungjunlee@google.com</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>Records when a user performs a ChromeVox command.</summary>
 </histogram>
 
 <histogram name="Accessibility.ChromeVox.PerformGestureType"
@@ -602,7 +625,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.CrosAutoclick.TrayMenu.ChangeAction"
-    enum="AutoclickActionType" expires_after="2024-09-29">
+    enum="AutoclickActionType" expires_after="2024-12-08">
   <owner>katie@chromium.org</owner>
   <owner>dtseng@chromium.org</owner>
   <owner>chrome-a11y-core@google.com</owner>
@@ -613,7 +636,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.CrosCaretBlinkInterval" units="ms"
-    expires_after="2024-11-10">
+    expires_after="2025-01-12">
   <owner>katie@chromium.org</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -627,7 +650,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.CrosColorCorrection.FilterAmount" units="%"
-    expires_after="2024-10-20">
+    expires_after="2024-12-24">
   <owner>katie@chromium.org</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -639,7 +662,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.CrosColorCorrection.FilterType"
-    enum="ColorCorrectionFilterTypes" expires_after="2024-10-20">
+    enum="ColorCorrectionFilterTypes" expires_after="2024-12-24">
   <owner>katie@chromium.org</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -678,7 +701,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Accessibility.CrosDictation.ListeningDuration.OnDeviceRecognition"
-    units="ms" expires_after="2024-08-04">
+    units="ms" expires_after="2024-12-08">
   <owner>katie@chromium.org</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -716,7 +739,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.CrosDictation.PumpkinSucceeded"
-    enum="BooleanUsage" expires_after="2024-10-06">
+    enum="BooleanUsage" expires_after="2024-12-08">
   <owner>akihiroota@chromium.org</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -734,7 +757,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.CrosDictation.UsedOnDeviceSpeech"
-    enum="BooleanUsage" expires_after="2024-11-17">
+    enum="BooleanUsage" expires_after="2025-01-26">
   <owner>katie@chromium.org</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -766,7 +789,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.CrosSelectToSpeak.BackgroundShading"
-    enum="BooleanEnabled" expires_after="2024-09-29">
+    enum="BooleanEnabled" expires_after="2024-12-08">
   <owner>katie@chromium.org</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -845,7 +868,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.CrosSelectToSpeak.SentenceNavigationMethod"
-    enum="CrosSelectToSpeakActivationMethod" expires_after="2024-10-06">
+    enum="CrosSelectToSpeakActivationMethod" expires_after="2024-12-08">
   <owner>ajitnarayanan@google.com</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -1094,6 +1117,7 @@ chromium-metrics-reviews@google.com.
   <token key="FeatureName" variants="BaseCrosAccessibilityFeatures">
     <variant name="Autoclick"/>
     <variant name="CursorColor"/>
+    <variant name="FlashNotifications"/>
     <variant name="LiveCaption"/>
     <variant name="MonoAudio"/>
     <variant name="MouseKeys"/>
@@ -1125,6 +1149,8 @@ even if they fit the naming pattern. -->
                  2022-07-07, and 2023-11-30 to 2024-02-29, data might be
                  missing."/>
     <variant name="CursorColor" summary="colorize the cursor"/>
+    <variant name="FlashNotifications"
+        summary="flash the screen for notifications"/>
     <variant name="MonoAudio.Enabled" summary="MonoAudio"/>
     <variant name="SpokenFeedback.BrailleDisplayConnected"
         summary="braille display. An enabled (true) value means that a
@@ -1170,7 +1196,7 @@ even if they fit the naming pattern. -->
 </histogram>
 
 <histogram name="Accessibility.EventProcessingTime3{Variation}" units="ms"
-    expires_after="2024-10-28">
+    expires_after="2024-12-30">
   <owner>grt@chromium.org</owner>
   <owner>aleventhal@chromium.org</owner>
   <summary>
@@ -1200,6 +1226,21 @@ even if they fit the naming pattern. -->
     AccessibilityPerformanceFiltering feature is enabled.
 
     This is currently only used on Android OS.
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.FaceGaze.AverageFaceLandmarkerLatency"
+    units="ms" expires_after="2025-05-30">
+  <owner>akihiroota@chromium.org</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    The time it takes for the FaceLandmarker API to process a single video
+    frame. This histogram is recorded once every 100 frames and represents the
+    average latency of the FaceLandmarker API on those frames. The reason we use
+    the average is because there could be potentially thousands of calls to the
+    FaceLandmarker API during a FaceGaze session and we don't want to clutter
+    the histograms. Each call to record a histogram also takes work and we don't
+    want to spam the histograms API multiple times per second.
   </summary>
 </histogram>
 
@@ -1250,7 +1291,7 @@ even if they fit the naming pattern. -->
 </histogram>
 
 <histogram name="Accessibility.ImageLabels.ModalDialogAccepted"
-    enum="BooleanAccepted" expires_after="2024-10-13">
+    enum="BooleanAccepted" expires_after="2024-12-15">
   <owner>katie@chromium.org</owner>
   <owner>dtseng@chromium.org</owner>
   <summary>
@@ -1352,7 +1393,7 @@ even if they fit the naming pattern. -->
 </histogram>
 
 <histogram name="Accessibility.iOS.NewLargerTextCategory" enum="BooleanHit"
-    expires_after="2024-10-16">
+    expires_after="2024-12-15">
   <owner>gambard@chromium.org</owner>
   <owner>rkgibson@google.com</owner>
   <summary>
@@ -1465,7 +1506,7 @@ even if they fit the naming pattern. -->
 </histogram>
 
 <histogram name="Accessibility.LiveCaption.Duration.CaptionBubble{Visibility}3"
-    units="ms" expires_after="2024-09-30">
+    units="ms" expires_after="2024-12-08">
   <owner>abigailbklein@google.com</owner>
   <owner>evliu@google.com</owner>
   <owner>chrome-a11y-core@google.com</owner>
@@ -1483,7 +1524,7 @@ even if they fit the naming pattern. -->
 </histogram>
 
 <histogram name="Accessibility.LiveCaption.EnableFrom{Entrypoint}"
-    enum="BooleanEnabled" expires_after="2024-09-30">
+    enum="BooleanEnabled" expires_after="2024-12-08">
   <owner>katie@chromium.org</owner>
   <owner>abigailbklein@google.com</owner>
   <owner>evliu@google.com</owner>
@@ -1541,7 +1582,7 @@ even if they fit the naming pattern. -->
 </histogram>
 
 <histogram name="Accessibility.LiveCaption.LoadSodaErrorCode"
-    enum="WinGetLastError" expires_after="2024-09-30">
+    enum="WinGetLastError" expires_after="2024-12-08">
   <owner>abigailbklein@google.com</owner>
   <owner>evliu@google.com</owner>
   <owner>chrome-a11y-core@google.com</owner>
@@ -1553,7 +1594,7 @@ even if they fit the naming pattern. -->
 </histogram>
 
 <histogram name="Accessibility.LiveCaption.LoadSodaResult"
-    enum="LoadSodaResult" expires_after="2024-09-30">
+    enum="LoadSodaResult" expires_after="2024-12-08">
   <owner>abigailbklein@google.com</owner>
   <owner>evliu@google.com</owner>
   <owner>chrome-a11y-core@google.com</owner>
@@ -1582,7 +1623,7 @@ even if they fit the naming pattern. -->
 </histogram>
 
 <histogram name="Accessibility.LiveCaption.Session2"
-    enum="LiveCaptionSessionEvent" expires_after="2024-09-30">
+    enum="LiveCaptionSessionEvent" expires_after="2024-12-08">
   <owner>katie@chromium.org</owner>
   <owner>abigailbklein@google.com</owner>
   <owner>evliu@google.com</owner>
@@ -1624,7 +1665,7 @@ even if they fit the naming pattern. -->
 
 <histogram
     name="Accessibility.LiveCaption.{SodaLanguageCode}.SessionContainsRecognizedSpeech"
-    enum="BooleanEnabled" expires_after="2024-09-30">
+    enum="BooleanEnabled" expires_after="2024-12-08">
   <owner>evliu@google.com</owner>
   <owner>chrome-media-ux@google.com</owner>
   <owner>chrome-a11y-core@google.com</owner>
@@ -1650,7 +1691,7 @@ even if they fit the naming pattern. -->
 </histogram>
 
 <histogram name="Accessibility.LiveTranslate.CharactersTranslated"
-    units="count" expires_after="2024-10-13">
+    units="count" expires_after="2024-12-15">
   <owner>evliu@google.com</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -1660,7 +1701,7 @@ even if they fit the naming pattern. -->
 </histogram>
 
 <histogram name="Accessibility.LiveTranslate.EnableFrom{Entrypoint}"
-    enum="BooleanEnabled" expires_after="2024-10-13">
+    enum="BooleanEnabled" expires_after="2024-12-15">
   <owner>evliu@google.com</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -1676,7 +1717,7 @@ even if they fit the naming pattern. -->
 </histogram>
 
 <histogram name="Accessibility.LiveTranslate.SourceLanguage"
-    enum="LocaleCodeISO639" expires_after="2024-10-13">
+    enum="LocaleCodeISO639" expires_after="2024-12-15">
   <owner>evliu@google.com</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -1686,12 +1727,24 @@ even if they fit the naming pattern. -->
 </histogram>
 
 <histogram name="Accessibility.LiveTranslate.TargetLanguage"
-    enum="LocaleCodeISO639" expires_after="2024-10-13">
+    enum="LocaleCodeISO639" expires_after="2024-12-15">
   <owner>evliu@google.com</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
     Records the target language of a request to the Cloud Translate service.
     Recorded once per call to the Cloud Translate service.
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.MainNodeAnnotations.AnnotationResult"
+    enum="MainNodeAnnotationResult" expires_after="2025-02-28">
+  <owner>abigailbklein@google.com</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    The result of the Screen2x run to identify a main node in the accessibility
+    tree. The result could successfully identify a main node; could identify an
+    invalid node; or could return a result after a previous had already labeled
+    a main node.
   </summary>
 </histogram>
 
@@ -1793,8 +1846,18 @@ even if they fit the naming pattern. -->
   </summary>
 </histogram>
 
+<histogram name="Accessibility.PdfOcr.CrosSelectToSpeak.PagesOcred"
+    units="count" expires_after="2025-07-31">
+  <owner>kyungjunlee@google.com</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    Records the number of OCRed pages in the PDF file opened by Select-to-Speak
+    users on ChromeOS.
+  </summary>
+</histogram>
+
 <histogram name="Accessibility.PdfOcr.InaccessiblePdfPageCount" units="count"
-    expires_after="2024-10-06">
+    expires_after="2024-12-08">
   <owner>kyungjunlee@google.com</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -1803,8 +1866,49 @@ even if they fit the naming pattern. -->
   </summary>
 </histogram>
 
-<histogram name="Accessibility.PdfOcr.MostDetectedLanguageInOcrData"
-    enum="LocaleCodeISO639" expires_after="2024-10-06">
+<histogram name="Accessibility.PdfOcr.MediaApp.ActiveTime" units="seconds"
+    expires_after="2025-06-30">
+  <owner>kyungjunlee@google.com</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    Records the time difference between when a ChromeVox user starts reading
+    OCRed content in MediaApp and when the user reads it most recently.
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.PdfOcr.MediaApp.MostDetectedLanguageInOcrData"
+    enum="LocaleCodeISO639" expires_after="2025-06-30">
+  <owner>kyungjunlee@google.com</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    Records the language that is detected most in each OCR data when MediaApp
+    (i.e. AXMediaAppUntrustedHandler) receives the OCR data from the OCR model.
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.PdfOcr.MediaApp.PdfLoaded" enum="BooleanExists"
+    expires_after="2025-06-30">
+  <owner>nektar@chromium.org</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    Tracks how many PDFs were opened in the Media App while the ChromeVox screen
+    reader is enabled, which causes the PDF to be OCRed.
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.PdfOcr.MediaApp.PercentageReadingProgression"
+    units="%" expires_after="2025-06-30">
+  <owner>kyungjunlee@google.com</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    Records the reading progression of a11y users in OCRed content in MediaApp
+    in percentage. The reading progression (RP) is calculated with the following
+    formula: RP = greatest visited page number / page count * 100.
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.PdfOcr.MostDetectedLanguageInOcrData2"
+    enum="LocaleCodeISO639" expires_after="2025-06-30">
   <owner>kyungjunlee@google.com</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -1814,7 +1918,7 @@ even if they fit the naming pattern. -->
 </histogram>
 
 <histogram name="Accessibility.PdfOcr.PDFImages" enum="PdfOcrRequestStatus"
-    expires_after="2024-10-06">
+    expires_after="2024-12-08">
   <owner>kyungjunlee@google.com</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -1828,23 +1932,13 @@ even if they fit the naming pattern. -->
 </histogram>
 
 <histogram name="Accessibility.PdfOcr.UserAcceptLanguage"
-    enum="LocaleCodeISO639" expires_after="2024-10-06">
+    enum="LocaleCodeISO639" expires_after="2024-12-08">
   <owner>kyungjunlee@google.com</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
     Records user accept languages when PDF OCR first runs for the always mode
     after user login; or whenever the user uses the once mode to extract text
     from a PDF file.
-  </summary>
-</histogram>
-
-<histogram name="Accessibility.PdfOcr.UserSelection" enum="PdfOcrUserSelection"
-    expires_after="2025-02-28">
-  <owner>kyungjunlee@google.com</owner>
-  <owner>chrome-a11y-core@google.com</owner>
-  <summary>
-    Tracks the PDF OCR menu item that the user selects to turn on or off the PDF
-    OCR feature.
   </summary>
 </histogram>
 
@@ -1863,7 +1957,7 @@ even if they fit the naming pattern. -->
 </histogram>
 
 <histogram name="Accessibility.Performance.AXObjectCacheImpl.Incremental"
-    units="bytes" expires_after="2024-09-22">
+    units="bytes" expires_after="2024-12-08">
   <owner>kevers@chromium.org</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -1878,7 +1972,7 @@ even if they fit the naming pattern. -->
 
 <histogram
     name="Accessibility.Performance.AXObjectCacheImpl.Incremental.{DataType}"
-    units="bytes" expires_after="2024-09-22">
+    units="bytes" expires_after="2025-02-09">
   <owner>kevers@chromium.org</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -1902,7 +1996,7 @@ even if they fit the naming pattern. -->
 </histogram>
 
 <histogram name="Accessibility.Performance.AXObjectCacheImpl.Snapshot"
-    units="bytes" expires_after="2024-11-17">
+    units="bytes" expires_after="2025-01-26">
   <owner>kevers@chromium.org</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -1995,17 +2089,17 @@ even if they fit the naming pattern. -->
   </summary>
 </histogram>
 
-<histogram name="Accessibility.Performance.GetUpdatesAndEventsForSerialization"
-    units="microseconds" expires_after="2025-02-28">
+<histogram name="Accessibility.Performance.FinalizingTreeLifecycleStage"
+    units="microseconds" expires_after="2025-07-07">
+  <owner>lucasradaelli@google.com</owner>
   <owner>mschillaci@google.com</owner>
   <owner>aleventhal@chromium.org</owner>
   <owner>janewman@microsoft.com</owner>
   <owner>kevers@chromium.org</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
-    Tracks time spent on the render process collecting nodes, node data and
-    events for the next serialization. Logged each time the method is run during
-    post-lifecycle steps.
+    Tracks time spent on the render process executing the lifecycle stage
+    FinalizingTree.
 
     Warning: This metric may include reports from clients with low-resolution
     clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
@@ -2045,16 +2139,18 @@ even if they fit the naming pattern. -->
   </summary>
 </histogram>
 
-<histogram name="Accessibility.Performance.ProcessDeferredAccessibilityEvents2"
-    units="microseconds" expires_after="2025-02-28">
+<histogram
+    name="Accessibility.Performance.ProcessDeferredUpdatesLifecycleStage"
+    units="microseconds" expires_after="2025-07-07">
+  <owner>lucasradaelli@google.com</owner>
   <owner>mschillaci@google.com</owner>
   <owner>aleventhal@chromium.org</owner>
   <owner>janewman@microsoft.com</owner>
   <owner>kevers@chromium.org</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
-    Tracks time spent on the render process processing deferred accessibility
-    events.
+    Tracks time spent on the render process executing the accessibility stage
+    ProcessDeferredUpdates.
 
     Warning: This metric may include reports from clients with low-resolution
     clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
@@ -2106,6 +2202,26 @@ even if they fit the naming pattern. -->
   </summary>
 </histogram>
 
+<histogram name="Accessibility.Performance.SerializeLifecycleStage"
+    units="microseconds" expires_after="2025-07-07">
+  <owner>lucasradaelli@google.com</owner>
+  <owner>mschillaci@google.com</owner>
+  <owner>aleventhal@chromium.org</owner>
+  <owner>janewman@microsoft.com</owner>
+  <owner>kevers@chromium.org</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    Tracks time spent on the render process executing the lifecycle stage
+    Serialize.
+
+    Warning: This metric may include reports from clients with low-resolution
+    clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
+    will cause this metric to have an abnormal distribution. When considering
+    revising this histogram, see UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES for the
+    solution.
+  </summary>
+</histogram>
+
 <histogram name="Accessibility.Performance.SerializeLocationChanges"
     units="microseconds" expires_after="2025-02-28">
   <owner>mschillaci@google.com</owner>
@@ -2126,6 +2242,27 @@ even if they fit the naming pattern. -->
   </summary>
 </histogram>
 
+<histogram
+    name="Accessibility.Performance.TotalAccessibilityCleanLayoutLifecycleStages"
+    units="microseconds" expires_after="2025-07-07">
+  <owner>lucasradaelli@google.com</owner>
+  <owner>mschillaci@google.com</owner>
+  <owner>aleventhal@chromium.org</owner>
+  <owner>janewman@microsoft.com</owner>
+  <owner>kevers@chromium.org</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    Tracks time spent on the render process executing all the accessibility
+    lifecycle stages that run when layout is clean.
+
+    Warning: This metric may include reports from clients with low-resolution
+    clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
+    will cause this metric to have an abnormal distribution. When considering
+    revising this histogram, see UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES for the
+    solution.
+  </summary>
+</histogram>
+
 <histogram name="Accessibility.Performance.Tree.Unserialize2"
     units="microseconds" expires_after="2025-02-28">
   <owner>aleventhal@chromium.org</owner>
@@ -2136,25 +2273,6 @@ even if they fit the naming pattern. -->
   <summary>
     Tracks time spent on the browser process unserializing accessibility
     updates. Logged each time the method is run without returning early.
-
-    Warning: This metric may include reports from clients with low-resolution
-    clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
-    will cause this metric to have an abnormal distribution. When considering
-    revising this histogram, see UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES for the
-    solution.
-  </summary>
-</histogram>
-
-<histogram name="Accessibility.Performance.UpdateTreeIfNeeded"
-    units="microseconds" expires_after="2025-02-28">
-  <owner>mschillaci@google.com</owner>
-  <owner>aleventhal@chromium.org</owner>
-  <owner>janewman@microsoft.com</owner>
-  <owner>kevers@chromium.org</owner>
-  <owner>chrome-a11y-core@google.com</owner>
-  <summary>
-    Tracks time spent on the render process ensuring the tree is fully updated
-    so that it can be frozen for the next serialization.
 
     Warning: This metric may include reports from clients with low-resolution
     clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
@@ -2195,72 +2313,6 @@ even if they fit the naming pattern. -->
         summary="navigates by one node in the given direction."/>
     <variant name="UMA_API_TEXT_RANGEFROMPOINT"
         summary="gets the text range under the given point."/>
-    <variant name="UMA_API_TEXTRANGE_COMPARE"
-        summary="compares two text ranges"/>
-    <variant name="UMA_API_TEXTRANGE_COMPAREENDPOINTS"
-        summary="compares two endpoints"/>
-    <variant name="UMA_API_TEXTRANGE_EXPANDTOENCLOSINGUNIT"
-        summary="expands or contracts the text range to given unit."/>
-    <variant name="UMA_API_TEXTRANGE_FINDATTRIBUTE"
-        summary="searches for an attribute within text range."/>
-    <variant name="UMA_API_TEXTRANGE_FINDTEXT"
-        summary="searches for given text within the text range."/>
-    <variant name="UMA_API_TEXTRANGE_GETATTRIBUTEVALUE"
-        summary="gets the value of the given attribute."/>
-    <variant name="UMA_API_TEXTRANGE_GETBOUNDINGRECTANGLES"
-        summary="gets the bounding rectanges of a text range."/>
-    <variant name="UMA_API_TEXTRANGE_GETCHILDREN"
-        summary="gets all children within a text range."/>
-    <variant name="UMA_API_TEXTRANGE_GETENCLOSINGELEMENT"
-        summary="gets the element that encloses the text range."/>
-    <variant name="UMA_API_TEXTRANGE_GETTEXT"
-        summary="gets the text within a text range."/>
-    <variant name="UMA_API_TEXTRANGE_MOVE"
-        summary="moves the text range by the given amount."/>
-    <variant name="UMA_API_TEXTRANGE_MOVEENDPOINTBYUNIT"
-        summary="moves endpoint by the given unit."/>
-    <variant name="UMA_API_TEXTRANGE_MOVEENPOINTBYRANGE"
-        summary="moves endpoint by the given range."/>
-  </token>
-</histogram>
-
-<histogram name="Accessibility.Performance.WinAPIs.{Source}.{API}"
-    units="microseconds" expires_after="2025-02-28">
-  <owner>aleventhal@chromium.org</owner>
-  <owner>javiercon@microsoft.com</owner>
-  <owner>janewman@microsoft.com</owner>
-  <owner>benjamin.beaudry@microsoft.com</owner>
-  <owner>chrome-a11y-core@google.com</owner>
-  <summary>
-    Tracks time taken to execute the public Windows API that {API}. This is
-    recorded for all Windows users that call into our public APIs.
-
-    It will also record the {Source} of the {API} call, which can be one of the
-    following: - WebContents: The API was called on web contents. - Views: The
-    API was called on a view.
-
-    Warning: This metric may include reports from clients with low-resolution
-    clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
-    will cause this metric to have an abnormal distribution. When considering
-    revising this histogram, see UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES for the
-    solution.
-  </summary>
-  <token key="Source">
-    <variant name="Views" summary="The API was called on a view."/>
-    <variant name="WebContents" summary="The API was called on web contents"/>
-  </token>
-  <token key="API">
-    <variant name="UMA_API_ELEMENT_PROVIDER_FROM_POINT"
-        summary="finds a node given a point."/>
-    <variant name="UMA_API_GET_BOUNDINGRECTANGLE"
-        summary="gets the bounding rectangle of a node."/>
-    <variant name="UMA_API_GET_PATTERN_PROVIDER"
-        summary="retrieves an object that provides support for the given
-                 control pattern."/>
-    <variant name="UMA_API_GET_PROPERTY_VALUE"
-        summary="gets the value of the specified property."/>
-    <variant name="UMA_API_NAVIGATE"
-        summary="navigates by one node in the given direction."/>
     <variant name="UMA_API_TEXTRANGE_COMPARE"
         summary="compares two text ranges"/>
     <variant name="UMA_API_TEXTRANGE_COMPAREENDPOINTS"
@@ -2370,6 +2422,16 @@ even if they fit the naming pattern. -->
   </token>
 </histogram>
 
+<histogram name="Accessibility.ReadAnything.NewPage" enum="ReadAnythingNewPage"
+    expires_after="2025-02-28">
+  <owner>kristislee@google.com</owner>
+  <owner>komo-eng@google.com</owner>
+  <summary>
+    Records when the Read Anything panel distills a new page and whether the
+    user uses Read Aloud to play the text aloud for the new page.
+  </summary>
+</histogram>
+
 <histogram name="Accessibility.ReadAnything.OmniboxIconShown"
     enum="BooleanShown" expires_after="2025-02-28">
   <owner>abigailbklein@google.com</owner>
@@ -2377,8 +2439,59 @@ even if they fit the naming pattern. -->
   <summary>Records when the Read Anything omnibox icon is shown.</summary>
 </histogram>
 
+<histogram name="Accessibility.ReadAnything.ReadAloud.HighlightState"
+    enum="ReadAnythingHighlightState" expires_after="2025-02-28">
+  <owner>kristislee@google.com</owner>
+  <owner>komo-eng@google.com</owner>
+  <summary>
+    Records the user-chosen highlight state for reading aloud in the Read
+    Anything panel.
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.ReadAnything.ReadAloud.Language"
+    enum="LocaleCodeISO639" expires_after="2025-02-28">
+  <owner>kristislee@google.com</owner>
+  <owner>komo-eng@google.com</owner>
+  <summary>
+    Records which language the user is using to read aloud text in the Read
+    Anything panel.
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.ReadAnything.ReadAloud.SettingsChange"
+    enum="ReadAnythingReadAloudSettingsChange" expires_after="2025-02-28">
+  <owner>lwinston@google.com</owner>
+  <owner>komo-eng@google.com</owner>
+  <summary>
+    Records when the user changes a read aloud speech setting in the Read
+    Anything panel.
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.ReadAnything.ReadAloud.Voice"
+    enum="ReadAnythingReadAloudVoice" expires_after="2025-02-28">
+  <owner>kristislee@google.com</owner>
+  <owner>komo-eng@google.com</owner>
+  <summary>
+    Records which kind of voice the user is using to read aloud text in the Read
+    Anything panel. This is recorded when speech stops, either from user action
+    or when speech completes, to avoid blocking speech.
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.ReadAnything.ReadAloud.VoiceSpeed"
+    units="speech rate %" expires_after="2025-02-28">
+  <owner>kristislee@google.com</owner>
+  <owner>komo-eng@google.com</owner>
+  <summary>
+    Records the user-chosen voice speed for reading aloud in the Read Anything
+    panel.
+  </summary>
+</histogram>
+
 <histogram name="Accessibility.ReadAnything.ReadAloud{Action}SessionCount"
-    units="count" expires_after="2024-09-30">
+    units="count" expires_after="2024-12-15">
   <owner>lwinston@google.com</owner>
   <owner>komo-eng@google.com</owner>
   <summary>
@@ -2433,7 +2546,7 @@ even if they fit the naming pattern. -->
 </histogram>
 
 <histogram name="Accessibility.ReadAnything.SpeechPlaybackSession" units="ms"
-    expires_after="2024-09-30">
+    expires_after="2024-12-08">
   <owner>lwinston@google.com</owner>
   <owner>komo-eng@google.com</owner>
   <summary>
@@ -2445,7 +2558,7 @@ even if they fit the naming pattern. -->
 
 <histogram
     name="Accessibility.ReadAnything.TimeFromEntryTriggeredToContentLoaded"
-    units="ms" expires_after="2024-09-30">
+    units="ms" expires_after="2024-12-08">
   <owner>lwinston@google.com</owner>
   <owner>komo-eng@google.com</owner>
   <summary>
@@ -2456,7 +2569,7 @@ even if they fit the naming pattern. -->
 
 <histogram
     name="Accessibility.ReadAnything.TimeFromEntryTriggeredToWebUIConnected"
-    units="ms" expires_after="2024-09-30">
+    units="ms" expires_after="2024-12-08">
   <owner>lwinston@google.com</owner>
   <owner>komo-eng@google.com</owner>
   <summary>
@@ -2467,7 +2580,7 @@ even if they fit the naming pattern. -->
 
 <histogram
     name="Accessibility.ReadAnything.TimeFromWebUIConnectToContentLoaded"
-    units="ms" expires_after="2024-09-30">
+    units="ms" expires_after="2024-12-08">
   <owner>lwinston@google.com</owner>
   <owner>komo-eng@google.com</owner>
   <summary>
@@ -2477,7 +2590,7 @@ even if they fit the naming pattern. -->
 </histogram>
 
 <histogram name="Accessibility.ReadAnything.TimeFrom{Flow}StartedTo{Method}"
-    units="ms" expires_after="2024-09-30">
+    units="ms" expires_after="2024-12-08">
   <owner>lwinston@google.com</owner>
   <owner>komo-eng@google.com</owner>
   <summary>
@@ -2512,29 +2625,14 @@ even if they fit the naming pattern. -->
   </summary>
 </histogram>
 
-<histogram name="Accessibility.ScreenAI.AnnotateScreenshotTime.{Result}"
-    units="ms" expires_after="2025-02-28">
-  <owner>kyungjunlee@google.com</owner>
-  <owner>chrome-a11y-core@google.com</owner>
-  <summary>
-    Records the time taken to get a screenshot for ScreenAI visual annotator for
-    cases where the action {Result}. It's being emitted each time whenever it
-    gets or fails to get a screenshot for ScreenAI visual annotator. Refer to
-    AXScreenAIAnnotator::OnScreenshotReceived for details.
-  </summary>
-  <token key="Result">
-    <variant name="Failure" summary="has failed"/>
-    <variant name="Success" summary="has succeeded"/>
-  </token>
-</histogram>
-
-<histogram name="Accessibility.ScreenAI.Component.Available"
-    enum="BooleanSuccess" expires_after="2025-02-28">
+<histogram name="Accessibility.ScreenAI.Component.Available2"
+    enum="ComponentAvailability" expires_after="2025-02-28">
   <owner>rhalavati@chromium.org</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
     Records if the component was available or could be downloaded when it was
-    needed.
+    needed. If not available, it also records if the network connection existed
+    or not.
   </summary>
 </histogram>
 
@@ -2559,6 +2657,13 @@ even if they fit the naming pattern. -->
   </token>
 </histogram>
 
+<histogram name="Accessibility.ScreenAI.DlcInstallResult"
+    enum="DlcInstallResult" expires_after="2024-12-13">
+  <owner>rhalavati@chromium.org</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>Records the result of Screen AI DLC installation.</summary>
+</histogram>
+
 <histogram name="Accessibility.ScreenAI.LibraryLoadDetailedResultOnWindows"
     enum="WinGetLastError" expires_after="2025-02-28">
   <owner>rhalavati@chromium.org</owner>
@@ -2577,7 +2682,7 @@ even if they fit the naming pattern. -->
 </histogram>
 
 <histogram name="Accessibility.ScreenAI.OCR.ImageSize.PDF" units="count"
-    expires_after="2024-10-01">
+    expires_after="2024-12-08">
   <owner>rhalavati@chromium.org</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -2586,7 +2691,7 @@ even if they fit the naming pattern. -->
 </histogram>
 
 <histogram name="Accessibility.ScreenAI.OCR.ImageSize10M" units="count"
-    expires_after="2024-10-01">
+    expires_after="2024-12-08">
   <owner>rhalavati@chromium.org</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -2595,7 +2700,7 @@ even if they fit the naming pattern. -->
 </histogram>
 
 <histogram name="Accessibility.ScreenAI.OCR.Latency.{ImageSize}" units="ms"
-    expires_after="2024-12-01">
+    expires_after="2025-02-02">
   <owner>rhalavati@chromium.org</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -2611,7 +2716,7 @@ even if they fit the naming pattern. -->
 </histogram>
 
 <histogram name="Accessibility.ScreenAI.OCR.LinesCount" units="count"
-    expires_after="2024-10-01">
+    expires_after="2024-12-08">
   <owner>rhalavati@google.com</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -2620,7 +2725,7 @@ even if they fit the naming pattern. -->
 </histogram>
 
 <histogram name="Accessibility.ScreenAI.OCR.LinesCount.PDF" units="count"
-    expires_after="2024-10-01">
+    expires_after="2024-12-08">
   <owner>rhalavati@google.com</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -2629,7 +2734,7 @@ even if they fit the naming pattern. -->
 </histogram>
 
 <histogram name="Accessibility.ScreenAI.OCR.Time.PDF" units="ms"
-    expires_after="2024-10-01">
+    expires_after="2024-12-08">
   <owner>rhalavati@chromium.org</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -2657,7 +2762,7 @@ even if they fit the naming pattern. -->
 </histogram>
 
 <histogram name="Accessibility.ScreenAI.Service.Initialization"
-    enum="BooleanSuccess" expires_after="2024-10-01">
+    enum="BooleanSuccess" expires_after="2024-12-08">
   <owner>rhalavati@chromium.org</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -2666,7 +2771,7 @@ even if they fit the naming pattern. -->
 </histogram>
 
 <histogram name="Accessibility.ScreenAI.Service.InitializationTime.{Result}"
-    units="ms" expires_after="2024-10-01">
+    units="ms" expires_after="2024-12-08">
   <owner>rhalavati@chromium.org</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -2675,6 +2780,48 @@ even if they fit the naming pattern. -->
   <token key="Result">
     <variant name="Failure" summary="fail initialization"/>
     <variant name="Success" summary="initialize successfully"/>
+  </token>
+</histogram>
+
+<histogram name="Accessibility.ScreenAI.{Feature}.Idle.Connected"
+    enum="BooleanConnected" expires_after="2025-02-28">
+  <owner>rhalavati@chromium.org</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    Records whether the {Feature} has been connected to a client or not while
+    being idle (initialized but not used for more than 10min). This metric is
+    collected only once during the life time of ScreenAI service.
+  </summary>
+  <token key="Feature">
+    <variant name="MainContentExtraction" summary="Main Content Extraction"/>
+    <variant name="OCR" summary="Optical Character Recognition"/>
+  </token>
+</histogram>
+
+<histogram name="Accessibility.ScreenAI.{feature}.InitializationLatency"
+    units="ms" expires_after="2025-02-28">
+  <owner>rhalavati@chromium.org</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    Records how long it takes to initialize {feature} in Screen AI service.
+  </summary>
+  <token key="feature">
+    <variant name="MainContentExtraction"
+        summary="Main Content Extraction functionality"/>
+    <variant name="OCR" summary="OCR functionality"/>
+  </token>
+</histogram>
+
+<histogram name="Accessibility.ScreenAI.{Feature}.Successful"
+    enum="BooleanSuccess" expires_after="2025-02-28">
+  <owner>rhalavati@chromium.org</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    Records if a request to {Feature} of ScreenAI service was successful or not.
+  </summary>
+  <token key="Feature">
+    <variant name="MainContentExtraction" summary="Main Content Extraction"/>
+    <variant name="OCR" summary="Optical Character Recognition"/>
   </token>
 </histogram>
 
@@ -2707,7 +2854,7 @@ even if they fit the naming pattern. -->
 </histogram>
 
 <histogram name="Accessibility.VTTContainsStyleBlock" enum="BooleanEnabled"
-    expires_after="2024-08-07">
+    expires_after="2025-06-27">
   <owner>evliu@google.com</owner>
   <owner>chrome-media-ux@google.com</owner>
   <summary>
@@ -2834,7 +2981,7 @@ even if they fit the naming pattern. -->
 </histogram>
 
 <histogram name="DomDistiller.ReaderShownForPageLoad" enum="Boolean"
-    expires_after="2024-11-17">
+    expires_after="2025-01-26">
   <owner>mdjones@chromium.org</owner>
   <summary>
     Records if the panel became visible at any point after a page was navigated.
@@ -2842,7 +2989,7 @@ even if they fit the naming pattern. -->
 </histogram>
 
 <histogram name="DomDistiller.Time.ViewingReaderModePage" units="ms"
-    expires_after="2024-09-22">
+    expires_after="2024-12-08">
   <owner>mdjones@chromium.org</owner>
   <summary>
     Records the amount of time a user spent on a Reader Mode Page.

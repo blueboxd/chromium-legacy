@@ -31,6 +31,10 @@ std::string FillingProductToString(FillingProduct filling_product) {
       return "Compose";
     case FillingProduct::kPlusAddresses:
       return "PlusAddresses";
+    case FillingProduct::kStandaloneCvc:
+      return "VirtualCard.StandaloneCvc";
+    case FillingProduct::kPredictionImprovements:
+      return "PredictionImprovements";
   };
   NOTREACHED_NORETURN();
 }
@@ -47,17 +51,21 @@ FillingProduct GetFillingProductFromSuggestionType(SuggestionType type) {
     case SuggestionType::kEditAddressProfile:
     case SuggestionType::kDeleteAddressProfile:
     case SuggestionType::kDevtoolsTestAddresses:
+    case SuggestionType::kDevtoolsTestAddressByCountry:
     case SuggestionType::kDevtoolsTestAddressEntry:
+    case SuggestionType::kManageAddress:
       return FillingProduct::kAddress;
     case SuggestionType::kCreditCardEntry:
     case SuggestionType::kCreditCardFieldByFieldFilling:
     case SuggestionType::kVirtualCreditCardEntry:
     case SuggestionType::kScanCreditCard:
     case SuggestionType::kShowAccountCards:
+    case SuggestionType::kManageCreditCard:
       return FillingProduct::kCreditCard;
     case SuggestionType::kMerchantPromoCodeEntry:
       return FillingProduct::kMerchantPromoCode;
     case SuggestionType::kIbanEntry:
+    case SuggestionType::kManageIban:
       return FillingProduct::kIban;
     case SuggestionType::kAutocompleteEntry:
       return FillingProduct::kAutocomplete;
@@ -84,12 +92,12 @@ FillingProduct GetFillingProductFromSuggestionType(SuggestionType type) {
       return FillingProduct::kCompose;
     case SuggestionType::kCreateNewPlusAddress:
     case SuggestionType::kFillExistingPlusAddress:
+    case SuggestionType::kManagePlusAddress:
       return FillingProduct::kPlusAddresses;
-    case SuggestionType::kAutofillOptions:
     case SuggestionType::kSeePromoCodeDetails:
     case SuggestionType::kTitle:
     case SuggestionType::kSeparator:
-    case SuggestionType::kClearForm:
+    case SuggestionType::kUndoOrClear:
     case SuggestionType::kDatalistEntry:
     case SuggestionType::kMixedFormMessage:
     case SuggestionType::kInsecureContextPaymentDisabledMessage:
@@ -113,6 +121,8 @@ FillingProduct GetFillingProductFromFieldTypeGroup(
       return FillingProduct::kAddress;
     case FieldTypeGroup::kCreditCard:
       return FillingProduct::kCreditCard;
+    case FieldTypeGroup::kStandaloneCvcField:
+      return FillingProduct::kStandaloneCvc;
     case FieldTypeGroup::kPasswordField:
     case FieldTypeGroup::kUsernameField:
       return FillingProduct::kPassword;

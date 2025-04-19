@@ -13,10 +13,6 @@
 #include <set>
 #include <vector>
 
-#include "base/allocator/partition_allocator/src/partition_alloc/address_pool_manager.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_address_space.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_buildflags.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_constants.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/memory/page_size.h"
@@ -34,6 +30,10 @@
 #include "chromeos/ash/components/memory/userspace_swap/userspace_swap.mojom-forward.h"
 #include "chromeos/ash/components/memory/userspace_swap/userspace_swap.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "partition_alloc/address_pool_manager.h"
+#include "partition_alloc/buildflags.h"
+#include "partition_alloc/partition_address_space.h"
+#include "partition_alloc/partition_alloc_constants.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/os_metrics.h"
 #include "third_party/abseil-cpp/absl/utility/utility.h"
 
@@ -165,7 +165,7 @@ class RendererSwapDataImpl : public RendererSwapData {
   uint64_t reclaimed_bytes_ = 0;
 
   // Areas which can be used for moving PTEs.
-  std::stack<const Region> free_swap_dest_areas_;
+  std::stack<Region> free_swap_dest_areas_;
 
   std::unique_ptr<UserfaultFD> uffd_;
   std::unique_ptr<SwapFile> swap_file_;

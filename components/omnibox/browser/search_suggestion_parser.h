@@ -18,6 +18,7 @@
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/suggestion_answer.h"
 #include "components/omnibox/browser/suggestion_group_util.h"
+#include "third_party/omnibox_proto/answer_type.pb.h"
 #include "third_party/omnibox_proto/chrome_searchbox_stats.pb.h"
 #include "third_party/omnibox_proto/entity_info.pb.h"
 #include "third_party/omnibox_proto/navigational_intent.pb.h"
@@ -198,6 +199,9 @@ class SearchSuggestionParser {
       return answer_template_;
     }
 
+    void SetAnswerType(const omnibox::AnswerType& answer_type);
+    const omnibox::AnswerType& answer_type() const { return answer_type_; }
+
     void SetEntityInfo(const omnibox::EntityInfo&);
     const omnibox::EntityInfo& entity_info() const { return entity_info_; }
 
@@ -237,8 +241,11 @@ class SearchSuggestionParser {
     // Optional short answer to the input that produced this suggestion.
     std::optional<SuggestionAnswer> answer_;
 
-    // Optional proto that contains answer info.
+    // Optional proto that contains answer info for rich answers.
     std::optional<omnibox::RichAnswerTemplate> answer_template_;
+
+    // Answer type for answer verticals, including rich answers.
+    omnibox::AnswerType answer_type_ = omnibox::ANSWER_TYPE_UNSPECIFIED;
 
     // Proto containing various pieces of data related to entity suggestions.
     omnibox::EntityInfo entity_info_;

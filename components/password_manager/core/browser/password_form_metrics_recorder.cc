@@ -8,6 +8,7 @@
 
 #include <algorithm>
 
+#include "base/check_deref.h"
 #include "base/check_op.h"
 #include "base/containers/contains.h"
 #include "base/metrics/histogram_functions.h"
@@ -58,6 +59,7 @@ PasswordFormMetricsRecorder::BubbleDismissalReason GetBubbleDismissalReason(
     case metrics_util::CLICKED_MANAGE_PASSWORD:
     case metrics_util::CLICKED_PASSWORDS_DASHBOARD:
     case metrics_util::AUTO_SIGNIN_TOAST_TIMEOUT:
+    case metrics_util::CLICKED_GOT_IT:
       break;
 
     // These should not reach here:
@@ -119,7 +121,7 @@ UsernamePasswordsState CalculateUsernamePasswordsState(
         saved_passwords) {
   UsernamePasswordsState result;
 
-  for (const FormFieldData& field : submitted_form.fields) {
+  for (const FormFieldData& field : submitted_form.fields()) {
     const std::u16string& value =
         field.user_input().empty() ? field.value() : field.user_input();
 
@@ -195,7 +197,7 @@ bool BlocklistedBySmartBubble(
     const std::vector<InteractionsStats>& interactions_stats) {
   const int show_threshold =
       password_bubble_experiment::GetSmartBubbleDismissalThreshold();
-  for (const FormFieldData& field : submitted_form.fields) {
+  for (const FormFieldData& field : submitted_form.fields()) {
     const std::u16string& value =
         field.user_input().empty() ? field.value() : field.user_input();
     for (const InteractionsStats& stat : interactions_stats) {
@@ -248,11 +250,18 @@ PasswordFormMetricsRecorder::~PasswordFormMetricsRecorder() {
     ukm_entry_builder_.SetSubmission_Observed(0 /*false*/);
   }
 
-  if (submit_result_ != SubmitResult::kNotSubmitted && submitted_form_type_) {
-    base::UmaHistogramEnumeration("PasswordManager.SubmittedFormType2",
-                                  submitted_form_type_.value());
-    ukm_entry_builder_.SetSubmission_SubmittedFormType2(
-        static_cast<int64_t>(submitted_form_type_.value()));
+  if (submit_result_ != SubmitResult::kNotSubmitted) {
+    if (submitted_form_type_.has_value()) {
+      base::UmaHistogramEnumeration("PasswordManager.SubmittedFormType2",
+                                    submitted_form_type_.value());
+      ukm_entry_builder_.SetSubmission_SubmittedFormType2(
+          static_cast<int64_t>(submitted_form_type_.value()));
+    }
+
+    if (automation_rate_.has_value()) {
+      base::UmaHistogramPercentage("PasswordManager.FillingAutomationRate",
+                                   100 * automation_rate_.value());
+    }
   }
 
   ukm_entry_builder_.SetUpdating_Prompt_Shown(update_prompt_shown_);
@@ -418,6 +427,13 @@ PasswordFormMetricsRecorder::~PasswordFormMetricsRecorder() {
   }
 
   ukm_entry_builder_.Record(ukm::UkmRecorder::Get());
+
+#if BUILDFLAG(IS_ANDROID)
+  if (form_submission_reached_) {
+    LogFormSubmissionsVsSavePromptsHistogram(
+        metrics_util::SaveFlowStep::kFormSubmitted);
+  }
+#endif
 }
 
 void PasswordFormMetricsRecorder::MarkGenerationAvailable() {
@@ -448,6 +464,10 @@ void PasswordFormMetricsRecorder::LogSubmitPassed() {
   ukm_entry_builder_.SetSubmission_Observed(1 /*true*/);
   ukm_entry_builder_.SetSubmission_SubmissionResult(
       static_cast<int64_t>(SubmitResult::kPassed));
+  if (HasGeneratedPassword(generated_password_status_)) {
+    ukm_entry_builder_.SetSubmission_SubmissionResult_GeneratedPassword(
+        static_cast<int64_t>(SubmitResult::kPassed));
+  }
   submit_result_ = SubmitResult::kPassed;
 }
 
@@ -463,6 +483,10 @@ void PasswordFormMetricsRecorder::LogSubmitFailed() {
   ukm_entry_builder_.SetSubmission_Observed(1 /*true*/);
   ukm_entry_builder_.SetSubmission_SubmissionResult(
       static_cast<int64_t>(SubmitResult::kFailed));
+  if (HasGeneratedPassword(generated_password_status_)) {
+    ukm_entry_builder_.SetSubmission_SubmissionResult_GeneratedPassword(
+        static_cast<int64_t>(SubmitResult::kFailed));
+  }
   submit_result_ = SubmitResult::kFailed;
 }
 
@@ -570,50 +594,22 @@ void PasswordFormMetricsRecorder::RecordMatchedFormType(
       match_type = FormMatchType::kPublicSuffixMatch;
       break;
     case password_manager_util::GetLoginMatchType::kGrouped:
-      match_type = FormMatchType::kGroupedWebsites;
-      break;
+      // Grouped credentials are never filled on page load.
+      NOTREACHED_NORETURN();
   }
   UMA_HISTOGRAM_ENUMERATION("PasswordManager.MatchedFormType", match_type);
 }
 
 void PasswordFormMetricsRecorder::RecordPotentialPreferredMatch(
-    const PasswordForm* preferred_match,
-    const bool were_grouped_credentials_availible) {
+    std::optional<MatchedFormType> form_type) {
+  if (!form_type) {
+    return;
+  }
   if (std::exchange(recorded_potential_preferred_matched_password_type, true)) {
     return;
   }
-
-  using FormMatchType =
-      password_manager::PasswordFormMetricsRecorder::MatchedFormType;
-  FormMatchType match_type;
-
-  if (!preferred_match) {
-    if (were_grouped_credentials_availible) {
-      UMA_HISTOGRAM_ENUMERATION("PasswordManager.PotentialBestMatchFormType",
-                                FormMatchType::kGroupedWebsites);
-    }
-    return;
-  }
-
-  switch (password_manager_util::GetMatchType(*preferred_match)) {
-    case password_manager_util::GetLoginMatchType::kExact:
-      match_type = FormMatchType::kExactMatch;
-      break;
-    case password_manager_util::GetLoginMatchType::kAffiliated:
-      match_type =
-          affiliations::IsValidAndroidFacetURI(preferred_match->signon_realm)
-              ? FormMatchType::kAffiliatedApp
-              : FormMatchType::kAffiliatedWebsites;
-      break;
-    case password_manager_util::GetLoginMatchType::kPSL:
-      match_type = FormMatchType::kPublicSuffixMatch;
-      break;
-    case password_manager_util::GetLoginMatchType::kGrouped:
-      match_type = FormMatchType::kGroupedWebsites;
-      break;
-  }
   UMA_HISTOGRAM_ENUMERATION("PasswordManager.PotentialBestMatchFormType",
-                            match_type);
+                            form_type.value());
 }
 
 void PasswordFormMetricsRecorder::CalculateFillingAssistanceMetric(
@@ -648,6 +644,7 @@ void PasswordFormMetricsRecorder::CalculatePasswordFillingAssistanceMetric(
     features_util::PasswordAccountStorageUsageLevel
         account_storage_usage_level) {
   CalculateJsOnlyInput(submitted_form);
+  CalculateAutomationRate(submitted_form);
   if (is_main_frame_secure_ && submitted_form.action().is_valid() &&
       !submitted_form.is_action_empty() &&
       !submitted_form.action().SchemeIsCryptographic()) {
@@ -795,7 +792,7 @@ void PasswordFormMetricsRecorder::CalculateJsOnlyInput(
     const FormData& submitted_form) {
   bool had_focus = false;
   bool had_user_input_or_autofill_on_password = false;
-  for (const auto& field : submitted_form.fields) {
+  for (const auto& field : submitted_form.fields()) {
     if (field.HadFocus()) {
       had_focus = true;
     }
@@ -809,6 +806,30 @@ void PasswordFormMetricsRecorder::CalculateJsOnlyInput(
                        ? JsOnlyInput::kAutofillOrUserInput
                        : (had_focus ? JsOnlyInput::kOnlyJsInputWithFocus
                                     : JsOnlyInput::kOnlyJsInputNoFocus);
+}
+
+void PasswordFormMetricsRecorder::CalculateAutomationRate(
+    const FormData& submitted_form) {
+  float total_length_autofilled_fields = 0.0;
+  float total_length = 0.0;
+  for (const auto& field : submitted_form.fields()) {
+    if (!field.IsTextInputElement()) {
+      continue;
+    }
+
+    // The field was never filled or typed in, ignore it.
+    if (!field.DidUserType() && !field.WasPasswordAutofilled()) {
+      continue;
+    }
+    if (field.WasPasswordAutofilled()) {
+      total_length_autofilled_fields += field.value().size();
+    }
+    total_length += field.value().size();
+  }
+
+  if (total_length > 0) {
+    automation_rate_ = total_length_autofilled_fields / total_length;
+  }
 }
 
 void PasswordFormMetricsRecorder::CacheParsingResultInFillingMode(
@@ -905,6 +926,9 @@ void PasswordFormMetricsRecorder::RecordPasswordBubbleShown(
     case metrics_util::MANUAL_ADD_USERNAME_BUBBLE:
     case metrics_util::AUTOMATIC_RELAUNCH_CHROME_BUBBLE:
     case metrics_util::AUTOMATIC_DEFAULT_STORE_CHANGED_BUBBLE:
+    case metrics_util::AUTOMATIC_PASSKEY_SAVED_CONFIRMATION:
+    case metrics_util::AUTOMATIC_PASSKEY_DELETED_CONFIRMATION:
+    case metrics_util::MANUAL_PASSKEY_DELETED_CONFIRMATION:
       // Do nothing.
       return;
 
@@ -952,6 +976,41 @@ void PasswordFormMetricsRecorder::RecordUIDismissalReason(
 
 void PasswordFormMetricsRecorder::RecordFillEvent(ManagerAutofillEvent event) {
   ukm_entry_builder_.SetManagerFill_Action(event);
+}
+
+std::string
+PasswordFormMetricsRecorder::FillingAssinstanceToHatsInProductDataString() {
+  if (!absl::holds_alternative<FillingAssistance>(filling_assistance_)) {
+    return std::string();
+  }
+
+  FillingAssistance filling_assistance =
+      absl::get<FillingAssistance>(filling_assistance_);
+  // These values are used for logging and should not be modified.
+  switch (filling_assistance) {
+    case FillingAssistance::kAutomatic:
+      return "Credentials were filled automatically";
+    case FillingAssistance::kManual:
+      return "Credentials were filled manually, without typing";
+    case FillingAssistance::kUsernameTypedPasswordFilled:
+      return "Password was filled (automatically or manually), known username "
+             "was typed";
+    case FillingAssistance::kKnownPasswordTyped:
+      return "Known password was typed";
+    case FillingAssistance::kNewPasswordTypedWhileCredentialsExisted:
+      return "Unknown password was typed while some credentials were stored.";
+    case FillingAssistance::kNoSavedCredentials:
+      return "No saved credentials.";
+    case FillingAssistance::kNoUserInputNoFillingInPasswordFields:
+      return "Neither user input nor filling.";
+    case FillingAssistance::kNoSavedCredentialsAndBlocklisted:
+      return "Domain is blocklisted and no other credentials exist.";
+    case FillingAssistance::kNoSavedCredentialsAndBlocklistedBySmartBubble:
+      return "No credentials exist and the user has ignored the save bubble "
+             "too often, meaning that they won't be asked to save credentials "
+             "anymore.";
+  };
+  NOTREACHED_NORETURN();
 }
 
 }  // namespace password_manager

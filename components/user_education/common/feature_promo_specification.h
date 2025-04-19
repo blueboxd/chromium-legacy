@@ -63,8 +63,9 @@ class FeaturePromoSpecification {
     //
     // Default is zero unless there are additional conditions, in which case it
     // is a week.
-    void set_initial_delay_days(uint32_t initial_delay_days) {
+    AdditionalConditions& set_initial_delay_days(uint32_t initial_delay_days) {
       this->initial_delay_days_ = initial_delay_days;
+      return *this;
     }
     std::optional<uint32_t> initial_delay_days() const {
       return initial_delay_days_;
@@ -73,7 +74,10 @@ class FeaturePromoSpecification {
     // Sets the number of times a promoted feature can be used before the
     // associated promo stops showing. Default is zero - i.e. if the feature is
     // used at all, the promo won't show.
-    void set_used_limit(uint32_t used_limit) { this->used_limit_ = used_limit; }
+    AdditionalConditions& set_used_limit(uint32_t used_limit) {
+      this->used_limit_ = used_limit;
+      return *this;
+    }
     std::optional<uint32_t> used_limit() const { return used_limit_; }
 
     // Adds an additional constraint on when the promo can show. `event_name` is
@@ -86,7 +90,7 @@ class FeaturePromoSpecification {
                                 Constraint constraint,
                                 uint32_t count,
                                 std::optional<uint32_t> in_days = std::nullopt);
-    void AddAdditionalCondition(
+    AdditionalConditions& AddAdditionalCondition(
         const AdditionalCondition& additional_condition);
     const std::vector<AdditionalCondition>& additional_conditions() const {
       return additional_conditions_;
@@ -369,6 +373,21 @@ class FeaturePromoSpecification {
   // `kNormal` requires being on an allowlist.
   FeaturePromoSpecification& SetPromoSubtype(PromoSubtype promo_subtype);
 
+  // For keyed and legal notice IPH, allows the promo to be re-shown under
+  // specific circumstances. For keyed promos, the limit applies per key, not
+  // the entire promo.
+  //
+  // There is a minimum allowed `reshow_delay` depending on promo type. The
+  // current minimum delays are:
+  //  - two weeks for "toast" promos
+  //  - three months (90 days) for heavyweight promos
+  //
+  // The `max_show_count` is optional and can be used to limit the number of
+  // times the promo can be shown, regardless of delay. If specified, this
+  // count must be at least 2 (else it is meaningless).
+  FeaturePromoSpecification& SetReshowPolicy(base::TimeDelta reshow_delay,
+                                             std::optional<int> max_show_count);
+
   // Set the anchor element filter.
   FeaturePromoSpecification& SetAnchorElementFilter(
       AnchorElementFilter anchor_element_filter);
@@ -410,6 +429,10 @@ class FeaturePromoSpecification {
   const std::u16string custom_action_caption() const {
     return custom_action_caption_;
   }
+  const std::optional<base::TimeDelta>& reshow_delay() const {
+    return reshow_delay_;
+  }
+  const std::optional<int>& max_show_count() const { return max_show_count_; }
 
   // Sets whether the custom action button is the default button on the help
   // bubble (default is false). It is an error to call this method for a promo
@@ -492,6 +515,10 @@ class FeaturePromoSpecification {
 
   // Whether we are allowed to search for the anchor element in any context.
   bool in_any_context_ = false;
+
+  // Whether and how many times the promo can reshow.
+  std::optional<base::TimeDelta> reshow_delay_;
+  std::optional<int> max_show_count_;
 
   // The filter to use if there is more than one matching element, or
   // additional processing is needed (default is to always use the first

@@ -18,7 +18,6 @@ import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -29,7 +28,6 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
 import org.chromium.base.Callback;
-import org.chromium.base.CollectionUtil;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.JniMocker;
@@ -39,10 +37,14 @@ import org.chromium.chrome.browser.password_manager.FakePasswordCheckupClientHel
 import org.chromium.chrome.browser.password_manager.FakePasswordManagerBackendSupportHelper;
 import org.chromium.chrome.browser.password_manager.PasswordCheckupClientHelperFactory;
 import org.chromium.chrome.browser.password_manager.PasswordManagerBackendSupportHelper;
+import org.chromium.chrome.browser.password_manager.PasswordManagerHelper;
+import org.chromium.chrome.browser.password_manager.PasswordManagerHelperJni;
 import org.chromium.chrome.browser.password_manager.PasswordManagerUtilBridge;
 import org.chromium.chrome.browser.password_manager.PasswordManagerUtilBridgeJni;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
+import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.sync.SyncServiceFactory;
 import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
@@ -50,12 +52,12 @@ import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskInfo;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
+import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.components.sync.SyncService;
-import org.chromium.components.sync.UserSelectableType;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.components.user_prefs.UserPrefsJni;
 
-import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
 
 /** Unit tests for SafetyHubFetchService. */
@@ -64,15 +66,18 @@ public class SafetyHubFetchServiceTest {
     private static final int ONE_DAY_IN_MILLISECONDS = (int) TimeUnit.DAYS.toMillis(1);
     private static final String TEST_EMAIL_ADDRESS = "test@email.com";
 
-    @Rule public TestRule mProcessor = new Features.JUnitProcessor();
     @Rule public MockitoRule mMockitoRule = MockitoJUnit.rule();
     @Rule public JniMocker mJniMocker = new JniMocker();
 
     @Mock private SyncService mSyncService;
+    @Mock private SigninManager mSigninManager;
+    @Mock private IdentityServicesProvider mIdentityServicesProvider;
+    @Mock private IdentityManager mIdentityManager;
     @Mock private Profile mProfile;
     @Mock private PrefService mPrefService;
     @Mock private UserPrefs.Natives mUserPrefsNatives;
     @Mock private PasswordManagerUtilBridge.Natives mPasswordManagerUtilBridgeNativeMock;
+    @Mock private PasswordManagerHelper.Natives mPasswordManagerHelperNativeMock;
     @Mock private BackgroundTaskScheduler mTaskScheduler;
     @Mock private Callback<Boolean> mTaskFinishedCallback;
     @Captor private ArgumentCaptor<TaskInfo> mTaskInfoCaptor;
@@ -86,33 +91,37 @@ public class SafetyHubFetchServiceTest {
         mJniMocker.mock(UserPrefsJni.TEST_HOOKS, mUserPrefsNatives);
         mJniMocker.mock(
                 PasswordManagerUtilBridgeJni.TEST_HOOKS, mPasswordManagerUtilBridgeNativeMock);
+        mJniMocker.mock(PasswordManagerHelperJni.TEST_HOOKS, mPasswordManagerHelperNativeMock);
 
         when(mProfile.getOriginalProfile()).thenReturn(mProfile);
         when(mUserPrefsNatives.get(mProfile)).thenReturn(mPrefService);
+        when(mIdentityServicesProvider.getSigninManager(mProfile)).thenReturn(mSigninManager);
+        when(mSigninManager.getIdentityManager()).thenReturn(mIdentityManager);
+        when(mIdentityServicesProvider.getIdentityManager(mProfile)).thenReturn(mIdentityManager);
 
+        IdentityServicesProvider.setInstanceForTests(mIdentityServicesProvider);
         SyncServiceFactory.setInstanceForTesting(mSyncService);
-        setPasswordSync(true);
+
+        setSignedInState(true);
         setUpPasswordManagerBackendForTesting();
         setUPMStatus(true);
 
         BackgroundTaskSchedulerFactory.setSchedulerForTesting(mTaskScheduler);
     }
 
-    private void setPasswordSync(boolean isSyncing) {
-        when(mSyncService.isSyncFeatureEnabled()).thenReturn(isSyncing);
-        when(mSyncService.getSelectedTypes())
+    private void setSignedInState(boolean signedIn) {
+        when(mIdentityManager.hasPrimaryAccount(ConsentLevel.SIGNIN)).thenReturn(signedIn);
+        when(mIdentityManager.getPrimaryAccountInfo(ConsentLevel.SIGNIN))
                 .thenReturn(
-                        isSyncing
-                                ? CollectionUtil.newHashSet(UserSelectableType.PASSWORDS)
-                                : new HashSet<>());
-        when(mSyncService.getAccountInfo())
-                .thenReturn(CoreAccountInfo.createFromEmailAndGaiaId(TEST_EMAIL_ADDRESS, "0"));
+                        signedIn
+                                ? CoreAccountInfo.createFromEmailAndGaiaId(TEST_EMAIL_ADDRESS, "0")
+                                : null);
     }
 
     private void setUPMStatus(boolean isUPMEnabled) {
         when(mPasswordManagerUtilBridgeNativeMock.areMinUpmRequirementsMet())
                 .thenReturn(isUPMEnabled);
-        when(mPasswordManagerUtilBridgeNativeMock.shouldUseUpmWiring(true, mPrefService))
+        when(mPasswordManagerUtilBridgeNativeMock.shouldUseUpmWiring(mSyncService, mPrefService))
                 .thenReturn(isUPMEnabled);
     }
 
@@ -153,30 +162,30 @@ public class SafetyHubFetchServiceTest {
         new SafetyHubFetchService(mProfile).onForegroundSessionStart();
 
         // Verify prefs are cleaned up when task is cancelled.
-        verify(mPrefService, times(1)).setInteger(Pref.BREACHED_CREDENTIALS_COUNT, 0);
+        verify(mPrefService, times(1)).clearPref(Pref.BREACHED_CREDENTIALS_COUNT);
         verify(mTaskScheduler, times(1)).cancel(any(), eq(TaskIds.SAFETY_HUB_JOB_ID));
         verify(mTaskScheduler, never()).schedule(any(), mTaskInfoCaptor.capture());
     }
 
     @Test
     @Features.EnableFeatures(ChromeFeatureList.SAFETY_HUB)
-    public void testTaskCancelled_WhenSyncStatusChanged_SyncDisabled() {
-        setPasswordSync(false);
+    public void testTaskCancelled_WhenSigninStatusChanged_SignOut() {
+        setSignedInState(false);
 
-        new SafetyHubFetchService(mProfile).syncStateChanged();
+        new SafetyHubFetchService(mProfile).onSignedOut();
 
         // Verify prefs are cleaned up when task is cancelled.
-        verify(mPrefService, times(1)).setInteger(Pref.BREACHED_CREDENTIALS_COUNT, 0);
+        verify(mPrefService, times(1)).clearPref(Pref.BREACHED_CREDENTIALS_COUNT);
         verify(mTaskScheduler, times(1)).cancel(any(), eq(TaskIds.SAFETY_HUB_JOB_ID));
         verify(mTaskScheduler, never()).schedule(any(), any());
     }
 
     @Test
     @Features.EnableFeatures(ChromeFeatureList.SAFETY_HUB)
-    public void testTaskScheduled_WhenSyncStatusChanged_SyncEnabled() {
-        setPasswordSync(true);
+    public void testTaskScheduled_WhenSigninStatusChanged_SignIn() {
+        setSignedInState(true);
 
-        new SafetyHubFetchService(mProfile).syncStateChanged();
+        new SafetyHubFetchService(mProfile).onSignedIn();
 
         verify(mTaskScheduler, times(1)).schedule(any(), mTaskInfoCaptor.capture());
         TaskInfo taskInfo = mTaskInfoCaptor.getValue();
@@ -192,7 +201,7 @@ public class SafetyHubFetchServiceTest {
         new SafetyHubFetchService(mProfile).onForegroundSessionStart();
 
         // Verify prefs are cleaned up when task is cancelled.
-        verify(mPrefService, times(1)).setInteger(Pref.BREACHED_CREDENTIALS_COUNT, 0);
+        verify(mPrefService, times(1)).clearPref(Pref.BREACHED_CREDENTIALS_COUNT);
         verify(mTaskScheduler, times(1)).cancel(any(), eq(TaskIds.SAFETY_HUB_JOB_ID));
         verify(mTaskScheduler, never()).schedule(any(), mTaskInfoCaptor.capture());
     }

@@ -4,6 +4,7 @@
 
 #include "ash/wm/gestures/wm_gesture_handler.h"
 
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/desks/desks_controller.h"
@@ -42,8 +43,8 @@ std::optional<OverviewEnterExitType> HandleContinuousScrollIntoOverview(
                : OverviewEnterExitType::kNormal;
   }
 
-  // If `scroll_in_progress`, the last gesture event was a `ET_SCROLL`, and we
-  // need to update the continuous animation.
+  // If `scroll_in_progress`, the last gesture event was a `EventType::kScroll`,
+  // and we need to update the continuous animation.
   if (scroll_in_progress) {
     return OverviewEnterExitType::kContinuousAnimationEnterOnScrollUpdate;
   }
@@ -163,19 +164,19 @@ bool WmGestureHandler::ProcessScrollEvent(const ui::ScrollEvent& event) {
     return false;
   }
 
-  // ET_SCROLL_FLING_CANCEL means a touchpad swipe has started.
-  if (event.type() == ui::ET_SCROLL_FLING_CANCEL) {
+  // EventType::kScrollFlingCancel means a touchpad swipe has started.
+  if (event.type() == ui::EventType::kScrollFlingCancel) {
     scroll_data_ = ScrollData();
     return false;
   }
 
-  // ET_SCROLL_FLING_START means a touchpad swipe has ended.
-  if (event.type() == ui::ET_SCROLL_FLING_START) {
+  // EventType::kScrollFlingStart means a touchpad swipe has ended.
+  if (event.type() == ui::EventType::kScrollFlingStart) {
     bool success = EndScroll();
     DCHECK(!scroll_data_);
     return success;
   }
-  DCHECK_EQ(ui::ET_SCROLL, event.type());
+  DCHECK_EQ(ui::EventType::kScroll, event.type());
 
   const int direction = window_util::IsNaturalScrollOn(event) ? -1 : 1;
 

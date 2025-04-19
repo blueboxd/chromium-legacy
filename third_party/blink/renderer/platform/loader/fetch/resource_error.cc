@@ -200,10 +200,8 @@ bool ResourceError::IsTrustTokenCacheHit() const {
 bool ResourceError::IsUnactionableTrustTokensStatus() const {
   return IsTrustTokenCacheHit() ||
          (error_code_ == net::ERR_TRUST_TOKEN_OPERATION_FAILED &&
-          (trust_token_operation_error_ ==
-               network::mojom::TrustTokenOperationStatus::kUnavailable ||
-           trust_token_operation_error_ ==
-               network::mojom::TrustTokenOperationStatus::kUnauthorized));
+          trust_token_operation_error_ ==
+              network::mojom::TrustTokenOperationStatus::kUnauthorized);
 }
 
 bool ResourceError::IsCacheMiss() const {
@@ -237,6 +235,14 @@ BlockedByResponseReasonToResourceRequestBlockedReason(
         kCorpNotSameOriginAfterDefaultedToSameOriginByCoep:
       return blink::ResourceRequestBlockedReason::
           kCorpNotSameOriginAfterDefaultedToSameOriginByCoep;
+    case network::mojom::BlockedByResponseReason::
+        kCorpNotSameOriginAfterDefaultedToSameOriginByDip:
+      return blink::ResourceRequestBlockedReason::
+          kCorpNotSameOriginAfterDefaultedToSameOriginByDip;
+    case network::mojom::BlockedByResponseReason::
+        kCorpNotSameOriginAfterDefaultedToSameOriginByCoepAndDip:
+      return blink::ResourceRequestBlockedReason::
+          kCorpNotSameOriginAfterDefaultedToSameOriginByCoepAndDip;
     case network::mojom::BlockedByResponseReason::kCorpNotSameSite:
       return blink::ResourceRequestBlockedReason::kCorpNotSameSite;
   }
@@ -315,6 +321,14 @@ String DescriptionForBlockedByClientOrResponse(
     case ResourceRequestBlockedReason::
         kCorpNotSameOriginAfterDefaultedToSameOriginByCoep:
       detail = "NotSameOriginAfterDefaultedToSameOriginByCoep";
+      break;
+    case ResourceRequestBlockedReason::
+        kCorpNotSameOriginAfterDefaultedToSameOriginByDip:
+      detail = "NotSameOriginAfterDefaultedToSameOriginByDip";
+      break;
+    case ResourceRequestBlockedReason::
+        kCorpNotSameOriginAfterDefaultedToSameOriginByCoepAndDip:
+      detail = "NotSameOriginAfterDefaultedToSameOriginByCoepAndDip";
       break;
     case ResourceRequestBlockedReason::kCorpNotSameSite:
       detail = "NotSameSite";

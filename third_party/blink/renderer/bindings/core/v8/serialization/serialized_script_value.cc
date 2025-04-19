@@ -28,6 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 
 #include <memory>
@@ -61,7 +66,6 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
-#include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
@@ -225,22 +229,6 @@ scoped_refptr<SerializedScriptValue> SerializedScriptValue::Create(
 
   DataBufferPtr data_buffer = AllocateBuffer(data.size());
   data_buffer.as_span().copy_from(data);
-  SwapWiredDataIfNeeded(data_buffer.as_span());
-
-  return base::AdoptRef(new SerializedScriptValue(std::move(data_buffer)));
-}
-
-scoped_refptr<SerializedScriptValue> SerializedScriptValue::Create(
-    scoped_refptr<const SharedBuffer> buffer) {
-  if (!buffer)
-    return Create();
-
-  DataBufferPtr data_buffer = AllocateBuffer(buffer->size());
-  size_t offset = 0u;
-  for (base::span<const char> span : *buffer) {
-    data_buffer.subspan(offset, span.size()).copy_from(base::as_bytes(span));
-    offset += span.size();
-  }
   SwapWiredDataIfNeeded(data_buffer.as_span());
 
   return base::AdoptRef(new SerializedScriptValue(std::move(data_buffer)));
@@ -494,7 +482,7 @@ void SerializedScriptValue::CloneSharedArrayBuffers(
   HeapHashSet<Member<DOMArrayBufferBase>> visited;
   shared_array_buffers_contents_.Grow(array_buffers.size());
   wtf_size_t i = 0;
-  for (auto* it = array_buffers.begin(); it != array_buffers.end(); ++it) {
+  for (auto it = array_buffers.begin(); it != array_buffers.end(); ++it) {
     DOMSharedArrayBuffer* shared_array_buffer = *it;
     if (visited.Contains(shared_array_buffer))
       continue;
@@ -567,7 +555,7 @@ ArrayBufferArray SerializedScriptValue::ExtractNonSharedArrayBuffers(
   ArrayBufferArray result;
   // Partition array_buffers into [shared..., non_shared...], maintaining
   // relative ordering of elements with the same predicate value.
-  auto* non_shared_begin =
+  auto non_shared_begin =
       std::stable_partition(array_buffers.begin(), array_buffers.end(),
                             [](Member<DOMArrayBufferBase>& array_buffer) {
                               return array_buffer->IsShared();
@@ -591,7 +579,7 @@ SerializedScriptValue::TransferArrayBufferContents(
   if (!array_buffers.size())
     return ArrayBufferContentsArray();
 
-  for (auto* it = array_buffers.begin(); it != array_buffers.end(); ++it) {
+  for (auto it = array_buffers.begin(); it != array_buffers.end(); ++it) {
     DOMArrayBufferBase* array_buffer = *it;
     if (array_buffer->IsDetached()) {
       wtf_size_t index =
@@ -616,7 +604,7 @@ SerializedScriptValue::TransferArrayBufferContents(
       static_cast<HeapHashSet<Member<DOMArrayBufferBase>>*>(buffer)->clear();
     }
   } promptly_free_array_buffers{&visited};
-  for (auto* it = array_buffers.begin(); it != array_buffers.end(); ++it) {
+  for (auto it = array_buffers.begin(); it != array_buffers.end(); ++it) {
     DOMArrayBufferBase* array_buffer_base = *it;
     if (visited.Contains(array_buffer_base))
       continue;

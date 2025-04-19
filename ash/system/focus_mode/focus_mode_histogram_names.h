@@ -18,10 +18,19 @@ constexpr char kInitialDurationOnSessionStartsHistogramName[] =
     "Ash.FocusMode.StartSession.InitialDuration";
 constexpr char kStartSessionSourceHistogramName[] =
     "Ash.FocusMode.StartSession.ToggleSource";
+constexpr char kStartedWithTaskStatekHistogramName[] =
+    "Ash.FocusMode.StartSession.TaskState";
+constexpr char kStartedWithExistingMediaPlayingHistogramName[] =
+    "Ash.FocusMode.StartSession.ExistingMediaPlaying";
 
 // Histograms recorded during a session.
 constexpr char kToggleEndButtonDuringSessionHistogramName[] =
     "Ash.FocusMode.DuringSession.ToggleEndSessionSource";
+constexpr char kSoundscapeLatencyInMillisecondsHistogramName[] =
+    "Ash.FocusMode.SoundscapeLatency";
+constexpr char kYouTubeMusicLatencyInMillisecondsHistogramName[] =
+    "Ash.FocusMode.YouTubeMusicLatency";
+constexpr char kPlaylistChosenHistogram[] = "Ash.FocusMode.PlaylistChosen";
 
 // Histograms recorded when a session ends.
 constexpr char kTasksSelectedHistogramName[] = "Ash.FocusMode.TasksSelected";
@@ -35,6 +44,12 @@ constexpr char kSessionDurationHistogramName[] =
     "Ash.FocusMode.SessionDuration";
 constexpr char kEndingMomentBubbleActionHistogram[] =
     "Ash.FocusMode.EndingMomentBubbleAction";
+constexpr char kPlaylistTypesSelectedDuringSession[] =
+    "Ash.FocusMode.PlaylistTypesSelectedDuringSession";
+constexpr char kCountPlaylistsPlayedDuringSession[] =
+    "Ash.FocusMode.PlaylistsDuringSession";
+constexpr char kMusicPausedEventsCount[] =
+    "Ash.FocusMode.MusicPausedSessionCount";
 
 // This enum is used for metrics, so enum values should not be changed. New enum
 // values can be added, but existing enums must never be renumbered or deleted
@@ -90,6 +105,53 @@ enum class EndingMomentBubbleClosedReason {
   kExtended = 1,  // Bubble was opened and minutes were added to the session.
   kOpended = 2,   // Bubble was opened but no action was taken.
   kMaxValue = kOpended,
+};
+
+// This enum is used for metrics, so enum values should not be changed. New enum
+// values can be added, but existing enums must never be renumbered or deleted
+// and reused.
+// This should be kept in sync with `FocusModeStartedWithTaskState` enum in
+// tools/metrics/histograms/metadata/ash/enums.xml.
+enum class StartedWithTaskState {
+  kNoTask = 0,  // Start a session without a selected task.
+  kPreviouslySelectedTask =
+      1,  // Start a session with a selected task which was selected in the
+          // previous focus session and hasn't been completed by the end of the
+          // previous session.
+  kNewlySelectedTask = 2,  // Start a session with a selected task which isn't
+                           // `kPreviouslySelectedTask` type.
+  kMaxValue = kNewlySelectedTask,
+};
+
+// This enum is used for metrics, so enum values should not be changed. New enum
+// values can be added, but existing enums must never be renumbered or deleted
+// and reused.
+// This should be kept in sync with `PlaylistTypesSelectedDuringSessionType`
+// enum in tools/metrics/histograms/metadata/ash/enums.xml.
+enum class PlaylistTypesSelectedDuringFocusSessionType {
+  kNone = 0,
+  kYouTubeMusic = 1,
+  kSoundscapes = 2,
+  kYouTubeMusicAndSoundscapes = 3,
+  kMaxValue = kYouTubeMusicAndSoundscapes,
+};
+
+// This enum is used for metrics, so enum values should not be changed. New enum
+// values can be added, but existing enums must never be renumbered or deleted
+// and reused.
+// This should be kept in sync with `FocusModePlaylistChosen` enum in
+// tools/metrics/histograms/metadata/ash/enums.xml.
+enum class FocusModePlaylistChosen {
+  kNone = 0,
+  kSoundscapes1 = 1,
+  kSoundscapes2 = 2,
+  kSoundscapes3 = 3,
+  kSoundscapes4 = 4,
+  kYouTubeMusic1 = 5,
+  kYouTubeMusic2 = 6,
+  kYouTubeMusic3 = 7,
+  kYouTubeMusic4 = 8,
+  kMaxValue = kYouTubeMusic4,
 };
 
 }  // namespace ash::focus_mode_histogram_names

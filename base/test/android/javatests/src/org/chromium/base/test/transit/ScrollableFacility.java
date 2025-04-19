@@ -6,11 +6,10 @@ package org.chromium.base.test.transit;
 
 import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.Espresso.onView;
-import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
 
-import static org.chromium.base.test.transit.ViewElement.sharedViewElement;
+import static org.chromium.base.test.transit.ViewSpec.viewSpec;
 
 import android.view.View;
 
@@ -31,6 +30,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.function.Function;
 
 /**
  * Represents a facility that contains items which may or may not be visible due to scrolling.
@@ -41,10 +41,6 @@ public abstract class ScrollableFacility<HostStationT extends Station>
         extends Facility<HostStationT> {
 
     private ArrayList<Item<?>> mItems;
-
-    public ScrollableFacility(HostStationT station) {
-        super(station);
-    }
 
     /** Must populate |items| with the expected items. */
     protected abstract void declareItems(ItemsBuilder items);
@@ -70,7 +66,7 @@ public abstract class ScrollableFacility<HostStationT extends Station>
                         break;
                     case Presence.PRESENT_AND_ENABLED:
                     case Presence.PRESENT_AND_DISABLED:
-                        elements.declareView(item.mViewElement);
+                        elements.declareView(item.mViewSpec, item.mViewElementOptions);
                         break;
                     case Presence.MAYBE_PRESENT:
                     case Presence.MAYBE_PRESENT_STUB:
@@ -89,7 +85,7 @@ public abstract class ScrollableFacility<HostStationT extends Station>
     public class ItemsBuilder {
         /** Create a new item stub which throws UnsupportedOperationException if selected. */
         public Item<Void> declareStubItem(
-                Matcher<View> onScreenViewMatcher, Matcher<?> offScreenDataMatcher) {
+                Matcher<View> onScreenViewMatcher, @Nullable Matcher<?> offScreenDataMatcher) {
             Item<Void> item =
                     new Item<>(
                             onScreenViewMatcher,
@@ -103,8 +99,8 @@ public abstract class ScrollableFacility<HostStationT extends Station>
         /** Create a new item which runs |selectHandler| when selected. */
         public <SelectReturnT> Item<SelectReturnT> declareItem(
                 Matcher<View> onScreenViewMatcher,
-                Matcher<?> offScreenDataMatcher,
-                Callable<SelectReturnT> selectHandler) {
+                @Nullable Matcher<?> offScreenDataMatcher,
+                Function<ItemOnScreenFacility<SelectReturnT>, SelectReturnT> selectHandler) {
             Item<SelectReturnT> item =
                     new Item<>(
                             onScreenViewMatcher,
@@ -118,7 +114,7 @@ public abstract class ScrollableFacility<HostStationT extends Station>
         /** Create a new item which transitions to a |DestinationStationT| when selected. */
         public <DestinationStationT extends Station> Item<DestinationStationT> declareItemToStation(
                 Matcher<View> onScreenViewMatcher,
-                Matcher<?> offScreenDataMatcher,
+                @Nullable Matcher<?> offScreenDataMatcher,
                 Callable<DestinationStationT> destinationStationFactory) {
             var item =
                     new Item<DestinationStationT>(
@@ -126,7 +122,9 @@ public abstract class ScrollableFacility<HostStationT extends Station>
                             offScreenDataMatcher,
                             Presence.PRESENT_AND_ENABLED,
                             /* selectHandler= */ null);
-            item.setSelectHandler(() -> travelToStation(item, destinationStationFactory));
+            item.setSelectHandler(
+                    (itemOnScreenFacility) ->
+                            travelToStation(item, itemOnScreenFacility, destinationStationFactory));
             mItems.add(item);
             return item;
         }
@@ -135,7 +133,7 @@ public abstract class ScrollableFacility<HostStationT extends Station>
         public <EnteredFacilityT extends Facility<HostStationT>>
                 Item<EnteredFacilityT> declareItemToFacility(
                         Matcher<View> onScreenViewMatcher,
-                        Matcher<?> offScreenDataMatcher,
+                        @Nullable Matcher<?> offScreenDataMatcher,
                         Callable<EnteredFacilityT> destinationFacilityFactory) {
             final var item =
                     new Item<EnteredFacilityT>(
@@ -143,14 +141,16 @@ public abstract class ScrollableFacility<HostStationT extends Station>
                             offScreenDataMatcher,
                             Presence.PRESENT_AND_ENABLED,
                             /* selectHandler= */ null);
-            item.setSelectHandler(() -> enterFacility(item, destinationFacilityFactory));
+            item.setSelectHandler(
+                    (itemOnScreenFacility) ->
+                            enterFacility(item, itemOnScreenFacility, destinationFacilityFactory));
             mItems.add(item);
             return item;
         }
 
         /** Create a new disabled item. */
         public Item<Void> declareDisabledItem(
-                Matcher<View> onScreenViewMatcher, Matcher<?> offScreenDataMatcher) {
+                Matcher<View> onScreenViewMatcher, @Nullable Matcher<?> offScreenDataMatcher) {
             Item<Void> item =
                     new Item<>(
                             onScreenViewMatcher,
@@ -163,7 +163,7 @@ public abstract class ScrollableFacility<HostStationT extends Station>
 
         /** Create a new item expected to be absent. */
         public Item<Void> declareAbsentItem(
-                Matcher<View> onScreenViewMatcher, Matcher<?> offScreenDataMatcher) {
+                Matcher<View> onScreenViewMatcher, @Nullable Matcher<?> offScreenDataMatcher) {
             Item<Void> item =
                     new Item<>(onScreenViewMatcher, offScreenDataMatcher, Presence.ABSENT, null);
             mItems.add(item);
@@ -173,8 +173,8 @@ public abstract class ScrollableFacility<HostStationT extends Station>
         /** Create a new item which may or may not be present. */
         public <SelectReturnT> Item<SelectReturnT> declarePossibleItem(
                 Matcher<View> onScreenViewMatcher,
-                Matcher<?> offScreenDataMatcher,
-                Callable<SelectReturnT> selectHandler) {
+                @Nullable Matcher<?> offScreenDataMatcher,
+                Function<ItemOnScreenFacility<SelectReturnT>, SelectReturnT> selectHandler) {
             Item<SelectReturnT> item =
                     new Item<>(
                             onScreenViewMatcher,
@@ -197,7 +197,8 @@ public abstract class ScrollableFacility<HostStationT extends Station>
             return item;
         }
 
-        private static Void unsupported() {
+        private static <HostStationT extends Station> Void unsupported(
+                ScrollableFacility<HostStationT>.ItemOnScreenFacility<Void> itemOnScreen) {
             // Selected an item created with newStubItem().
             // Use newItemToStation(), newItemToFacility() or newItem() to declare expected behavior
             // when this item is selected.
@@ -245,20 +246,22 @@ public abstract class ScrollableFacility<HostStationT extends Station>
         protected final @Nullable Matcher<View> mOnScreenViewMatcher;
         protected final @Nullable Matcher<?> mOffScreenDataMatcher;
         protected final @Presence int mPresence;
-        protected final @Nullable ViewElement mViewElement;
-        protected @Nullable Callable<SelectReturnT> mSelectHandler;
+        protected final @Nullable ViewSpec mViewSpec;
+        protected final @Nullable ViewElement.Options mViewElementOptions;
+        protected @Nullable Function<ItemOnScreenFacility<SelectReturnT>, SelectReturnT>
+                mSelectHandler;
 
         /**
          * Use one of {@link ScrollableFacility.ItemsBuilder}'s methods to instantiate:
          *
          * <ul>
-         *   <li>{@link ItemsBuilder#declareItem(Matcher, Matcher, Callable)}
+         *   <li>{@link ItemsBuilder#declareItem(Matcher, Matcher, Function)}
          *   <li>{@link ItemsBuilder#declareItemToFacility(Matcher, Matcher, Callable)}
          *   <li>{@link ItemsBuilder#declareItemToStation(Matcher, Matcher, Callable)}
          *   <li>{@link ItemsBuilder#declareDisabledItem(Matcher, Matcher)}
          *   <li>{@link ItemsBuilder#declareAbsentItem(Matcher, Matcher)}
          *   <li>{@link ItemsBuilder#declareStubItem(Matcher, Matcher)}
-         *   <li>{@link ItemsBuilder#declarePossibleItem(Matcher, Matcher, Callable)}
+         *   <li>{@link ItemsBuilder#declarePossibleItem(Matcher, Matcher, Function)}
          *   <li>{@link ItemsBuilder#declarePossibleStubItem()}
          * </ul>
          */
@@ -266,7 +269,9 @@ public abstract class ScrollableFacility<HostStationT extends Station>
                 @Nullable Matcher<View> onScreenViewMatcher,
                 @Nullable Matcher<?> offScreenDataMatcher,
                 @Presence int presence,
-                @Nullable Callable<SelectReturnT> selectHandler) {
+                @Nullable
+                        Function<ItemOnScreenFacility<SelectReturnT>, SelectReturnT>
+                                selectHandler) {
             mPresence = presence;
             mOnScreenViewMatcher = onScreenViewMatcher;
             mOffScreenDataMatcher = offScreenDataMatcher;
@@ -274,20 +279,21 @@ public abstract class ScrollableFacility<HostStationT extends Station>
 
             switch (mPresence) {
                 case Presence.ABSENT, Presence.MAYBE_PRESENT_STUB:
-                    mViewElement = null;
+                    mViewSpec = null;
+                    mViewElementOptions = null;
                     break;
                 case Presence.PRESENT_AND_ENABLED:
                 case Presence.MAYBE_PRESENT:
-                    mViewElement = sharedViewElement(mOnScreenViewMatcher);
+                    mViewSpec = viewSpec(mOnScreenViewMatcher);
+                    mViewElementOptions = ViewElement.Options.DEFAULT;
                     break;
                 case Presence.PRESENT_AND_DISABLED:
-                    mViewElement =
-                            sharedViewElement(
-                                    mOnScreenViewMatcher,
-                                    ViewElement.newOptions().expectDisabled().build());
+                    mViewSpec = viewSpec(mOnScreenViewMatcher);
+                    mViewElementOptions = ViewElement.expectDisabledOption();
                     break;
                 default:
-                    mViewElement = null;
+                    mViewSpec = null;
+                    mViewElementOptions = null;
                     assert false;
             }
         }
@@ -307,15 +313,14 @@ public abstract class ScrollableFacility<HostStationT extends Station>
          * @return a ItemScrolledTo facility representing the item on the screen, which runs the
          *     |selectHandler| when selected.
          */
-        public ItemOnScreenFacility<HostStationT, SelectReturnT> scrollTo() {
+        public ItemOnScreenFacility<SelectReturnT> scrollTo() {
             assert mPresence != Presence.ABSENT;
 
             // Could in theory try to scroll to a stub, but not supporting this prevents the
             // creation of a number of objects that are likely not going to be used.
             assert mPresence != Presence.MAYBE_PRESENT_STUB;
 
-            ItemOnScreenFacility<HostStationT, SelectReturnT> focusedItem =
-                    new ItemOnScreenFacility<>(mHostStation, this);
+            ItemOnScreenFacility<SelectReturnT> focusedItem = new ItemOnScreenFacility<>(this);
 
             try {
                 onView(mOnScreenViewMatcher)
@@ -327,7 +332,8 @@ public abstract class ScrollableFacility<HostStationT extends Station>
             }
         }
 
-        protected void setSelectHandler(Callable<SelectReturnT> selectHandler) {
+        protected void setSelectHandler(
+                Function<ItemOnScreenFacility<SelectReturnT>, SelectReturnT> selectHandler) {
             assert mSelectHandler == null;
             mSelectHandler = selectHandler;
         }
@@ -336,53 +342,117 @@ public abstract class ScrollableFacility<HostStationT extends Station>
             return mPresence;
         }
 
-        public ViewElement getViewElement() {
-            return mViewElement;
+        public ViewSpec getViewSpec() {
+            return mViewSpec;
         }
 
-        protected Callable<SelectReturnT> getSelectHandler() {
+        public ViewElement.Options getViewElementOptions() {
+            return mViewElementOptions;
+        }
+
+        protected Function<ItemOnScreenFacility<SelectReturnT>, SelectReturnT> getSelectHandler() {
             return mSelectHandler;
         }
 
         private void triggerScrollTo() {
-            try {
-                onData(mOffScreenDataMatcher).perform(ViewActions.scrollTo());
-            } catch (PerformException performException) {
-                throw TravelException.newTravelException(
-                        String.format(
-                                "Could not scroll using data matcher %s", mOnScreenViewMatcher),
-                        performException);
+            if (mOffScreenDataMatcher != null) {
+                // If there is a data matcher, use it to scroll as the item might be in a
+                // RecyclerView.
+                try {
+                    onData(mOffScreenDataMatcher).perform(ViewActions.scrollTo());
+                } catch (PerformException performException) {
+                    throw TravelException.newTravelException(
+                            String.format(
+                                    "Could not scroll using data matcher %s",
+                                    mOffScreenDataMatcher),
+                            performException);
+                }
+            } else {
+                // If there is no data matcher, use the ViewMatcher to scroll as the item should be
+                // created but not displayed.
+                try {
+                    onView(mOnScreenViewMatcher).perform(ViewActions.scrollTo());
+                } catch (PerformException performException) {
+                    throw TravelException.newTravelException(
+                            String.format(
+                                    "Could not scroll using view matcher %s", mOnScreenViewMatcher),
+                            performException);
+                }
             }
         }
     }
 
     private <EnteredFacilityT extends Facility> EnteredFacilityT enterFacility(
-            Item<EnteredFacilityT> item, Callable<EnteredFacilityT> mDestinationFactory) {
+            Item<EnteredFacilityT> item,
+            ItemOnScreenFacility<EnteredFacilityT> itemOnScreenFacility,
+            Callable<EnteredFacilityT> destinationFactory) {
         EnteredFacilityT destination;
         try {
-            destination = mDestinationFactory.call();
+            destination = destinationFactory.call();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
-        return mHostStation.enterFacilitySync(
-                destination, () -> item.getViewElement().perform(click()));
+        return mHostStation.swapFacilitySync(
+                List.of(this, itemOnScreenFacility), destination, item.getViewSpec()::click);
     }
 
     private <DestinationStationT extends Station> DestinationStationT travelToStation(
-            Item<DestinationStationT> item, Callable<DestinationStationT> mDestinationFactory) {
+            Item<DestinationStationT> item,
+            ItemOnScreenFacility<DestinationStationT> itemOnScreenFacility,
+            Callable<DestinationStationT> destinationFactory) {
         DestinationStationT destination;
         try {
-            destination = mDestinationFactory.call();
+            destination = destinationFactory.call();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
-        return mHostStation.travelToSync(destination, () -> item.getViewElement().perform(click()));
+        return mHostStation.travelToSync(destination, item.getViewSpec()::click);
     }
 
     /** Get all {@link Item}s declared in this {@link ScrollableFacility}. */
     public List<Item<?>> getItems() {
         return mItems;
+    }
+
+    /**
+     * A facility representing an item inside a {@link ScrollableFacility} shown on the screen.
+     *
+     * @param <SelectReturnT> the return type of the |selectHandler|.
+     */
+    public class ItemOnScreenFacility<SelectReturnT> extends Facility<HostStationT> {
+
+        protected final Item<SelectReturnT> mItem;
+
+        protected ItemOnScreenFacility(Item<SelectReturnT> item) {
+            mItem = item;
+        }
+
+        @Override
+        public void declareElements(Elements.Builder elements) {
+            elements.declareView(mItem.getViewSpec(), mItem.getViewElementOptions());
+        }
+
+        /** Select the item and trigger its |selectHandler|. */
+        public SelectReturnT select() {
+            if (mItem.getPresence() == Presence.ABSENT) {
+                throw new IllegalStateException("Cannot click on an absent item");
+            }
+            if (mItem.getPresence() == Presence.PRESENT_AND_DISABLED) {
+                throw new IllegalStateException("Cannot click on a disabled item");
+            }
+
+            try {
+                return mItem.getSelectHandler().apply(this);
+            } catch (Exception e) {
+                throw TravelException.newTravelException("Select handler threw an exception:", e);
+            }
+        }
+
+        /** Return the {@link Item} that is on the screen. */
+        public Item<SelectReturnT> getItem() {
+            return mItem;
+        }
     }
 }

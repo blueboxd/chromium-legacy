@@ -2,9 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include <memory>
 
 #include "base/command_line.h"
+#include "base/containers/heap_array.h"
 #include "base/memory/raw_ptr.h"
 #include "base/process/process.h"
 #include "base/threading/platform_thread.h"
@@ -169,8 +175,10 @@ class RecordReplayContext : public GpuControl {
       context_ = context_stub;
     } else {
       gl::GLContextAttribs attribs;
-      if (gpu_preferences_.use_passthrough_cmd_decoder)
+      if (gpu_preferences_.use_passthrough_cmd_decoder) {
         attribs.bind_generates_resource = bind_generates_resource;
+        attribs.allow_client_arrays = false;
+      }
       surface_ = gl::init::CreateOffscreenGLSurface(gl::GetDefaultDisplay(),
                                                     gfx::Size());
       context_ = gl::init::CreateGLContext(share_group_.get(), surface_.get(),
@@ -442,11 +450,11 @@ class DecoderPerfTest : public testing::Test {
       GLint log_length = 0;
       gl_->GetShaderiv(shader, GL_INFO_LOG_LENGTH, &log_length);
       if (log_length) {
-        std::unique_ptr<GLchar[]> log(new GLchar[log_length]);
+        auto log = base::HeapArray<GLchar>::WithSize(log_length);
         GLsizei returned_log_length = 0;
         gl_->GetShaderInfoLog(shader, log_length, &returned_log_length,
-                              log.get());
-        LOG(ERROR) << std::string(log.get(), returned_log_length);
+                              log.data());
+        LOG(ERROR) << std::string(log.data(), returned_log_length);
       }
       gl_->DeleteShader(shader);
       return 0;

@@ -109,18 +109,18 @@ void RenderAccessibilityManager::Reset(uint32_t reset_token) {
 }
 
 void RenderAccessibilityManager::HandleAccessibilityEvents(
-    blink::mojom::AXUpdatesAndEventsPtr updates_and_events,
+    ui::AXUpdatesAndEvents& updates_and_events,
     uint32_t reset_token,
     blink::mojom::RenderAccessibilityHost::HandleAXEventsCallback callback) {
   CHECK(reset_token);
   GetOrCreateRemoteRenderAccessibilityHost()->HandleAXEvents(
-      std::move(updates_and_events), reset_token, std::move(callback));
+      updates_and_events, reset_token, std::move(callback));
 }
 
 mojo::Remote<blink::mojom::RenderAccessibilityHost>&
 RenderAccessibilityManager::GetOrCreateRemoteRenderAccessibilityHost() {
   if (!render_accessibility_host_) {
-    render_frame_->GetBrowserInterfaceBroker()->GetInterface(
+    render_frame_->GetBrowserInterfaceBroker().GetInterface(
         render_accessibility_host_.BindNewPipeAndPassReceiver());
   }
   return render_accessibility_host_;

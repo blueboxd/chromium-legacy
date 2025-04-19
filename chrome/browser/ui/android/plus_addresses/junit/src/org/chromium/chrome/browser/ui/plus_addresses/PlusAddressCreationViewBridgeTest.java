@@ -43,17 +43,17 @@ import org.chromium.url.GURL;
 public class PlusAddressCreationViewBridgeTest {
     private static final long NATIVE_PLUS_ADDRESS_CREATION_VIEW = 100L;
     private static final String MODAL_TITLE = "lorem ipsum title";
-    private static final String MODAL_PLUS_ADDRESS_DESCRIPTION =
+    private static final String MODAL_PLUS_ADDRESS_DESCRIPTION = "lorem ipsum description";
+    private static final String MODAL_PLUS_ADDRESS_NOTICE =
             "lorem ipsum description <link>test link</link> <b>test bold</b>";
-    private static final String MODAL_FORMATTED_PLUS_ADDRESS_DESCRIPTION =
-            "lorem ipsum description test link test bold";
     private static final String MODAL_PROPOSED_PLUS_ADDRESS_PLACEHOLDER = "placeholder";
     private static final String MODAL_OK = "ok";
     private static final String MODAL_CANCEL = "cancel";
     private static final String MODAL_PROPOSED_PLUS_ADDRESS = "plus+1@plus.plus";
     private static final String MODAL_ERROR_MESSAGE = "error! <link>test link</link>";
-    private static final String MANAGE_URL = "manage.com";
+    private static final String LEARN_MORE_URL = "learn.more.com";
     private static final String ERROR_URL = "bug.com";
+    private static final boolean REFRESH_SUPPORTED = true;
 
     @Rule public JniMocker mJniMocker = new JniMocker();
     @Mock private Profile mProfile;
@@ -105,11 +105,13 @@ public class PlusAddressCreationViewBridgeTest {
                         mPlusAddressCreationViewBridge,
                         MODAL_TITLE,
                         MODAL_PLUS_ADDRESS_DESCRIPTION,
+                        MODAL_PLUS_ADDRESS_NOTICE,
                         MODAL_PROPOSED_PLUS_ADDRESS_PLACEHOLDER,
                         MODAL_OK,
                         MODAL_CANCEL,
                         MODAL_ERROR_MESSAGE,
-                        new GURL(MANAGE_URL),
+                        REFRESH_SUPPORTED,
+                        new GURL(LEARN_MORE_URL),
                         new GURL(ERROR_URL)))
                 .thenReturn(mCoordinator);
     }
@@ -118,12 +120,14 @@ public class PlusAddressCreationViewBridgeTest {
         mPlusAddressCreationViewBridge.show(
                 MODAL_TITLE,
                 MODAL_PLUS_ADDRESS_DESCRIPTION,
+                MODAL_PLUS_ADDRESS_NOTICE,
                 MODAL_PROPOSED_PLUS_ADDRESS_PLACEHOLDER,
                 MODAL_OK,
                 MODAL_CANCEL,
                 MODAL_ERROR_MESSAGE,
-                MANAGE_URL,
-                ERROR_URL);
+                LEARN_MORE_URL,
+                ERROR_URL,
+                REFRESH_SUPPORTED);
     }
 
     @Test
@@ -153,6 +157,21 @@ public class PlusAddressCreationViewBridgeTest {
         mPlusAddressCreationViewBridge.destroy();
 
         verify(mCoordinator, times(1)).destroy();
+    }
+
+    @Test
+    @SmallTest
+    public void testOnRefreshClicked_callsNativeOnRefreshClicked() {
+        mPlusAddressCreationViewBridge.onRefreshClicked();
+        verify(mBridgeNatives).onRefreshClicked(eq(NATIVE_PLUS_ADDRESS_CREATION_VIEW), any());
+    }
+
+    @Test
+    @SmallTest
+    public void testRefreshClicked_doesNotCallNative_afterDestroy() {
+        mPlusAddressCreationViewBridge.destroy();
+        mPlusAddressCreationViewBridge.onRefreshClicked();
+        verifyNoInteractions(mBridgeNatives);
     }
 
     @Test
@@ -218,6 +237,15 @@ public class PlusAddressCreationViewBridgeTest {
         showBottomSheet();
         mPlusAddressCreationViewBridge.showError();
         verify(mCoordinator, times(1)).showError();
+    }
+
+    @Test
+    @SmallTest
+    public void testHideRefreshButton_callsCoordinator() {
+        setupCoordinatorFactory();
+        showBottomSheet();
+        mPlusAddressCreationViewBridge.hideRefreshButton();
+        verify(mCoordinator).hideRefreshButton();
     }
 
     @Test

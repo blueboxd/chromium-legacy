@@ -9,13 +9,13 @@
 #import "base/metrics/user_metrics_action.h"
 #import "base/strings/strcat.h"
 #import "ios/chrome/browser/default_browser/model/utils.h"
+#import "ios/chrome/browser/default_promo/ui_bundled/default_browser_instructions_view.h"
 #import "ios/chrome/browser/intents/intents_donation_helper.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_image_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_utils.h"
-#import "ios/chrome/browser/ui/default_promo/default_browser_instructions_view.h"
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller_constants.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
@@ -56,7 +56,7 @@ enum class DefaultBrowserSettingsPageUsage {
   kDisplay,
   kMaxValue = kDisplay,
 };
-// LINT.ThenChange(//tools/metrics/histograms/metadata/ios/enums.xml)
+// LINT.ThenChange(/tools/metrics/histograms/metadata/ios/enums.xml)
 }  // namespace
 
 @interface DefaultBrowserSettingsTableViewController () {
@@ -242,11 +242,15 @@ enum class DefaultBrowserSettingsPageUsage {
 
 // Adds default browser video instructions view as a background view.
 - (void)addDefaultBrowserVideoInstructionsView {
+  ConfirmationAlertViewController* alertScreen =
+      [[ConfirmationAlertViewController alloc] init];
   DefaultBrowserInstructionsView* instructionsView =
       [[DefaultBrowserInstructionsView alloc] initWithDismissButton:NO
                                                    hasRemindMeLater:NO
                                                            hasSteps:YES
-                                                      actionHandler:self];
+                                                      actionHandler:self
+                                          alertScreenViewController:alertScreen
+                                                          titleText:nil];
 
   self.tableView.backgroundView = [[UIView alloc] init];
   [self.tableView.backgroundView

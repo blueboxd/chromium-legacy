@@ -207,6 +207,7 @@ export function createExtensionInfo(
           custodianApprovalRequired: false,
           parentDisabledPermissions: false,
           reloading: false,
+          unsupportedManifestVersion: false,
         },
         fileAccess: {
           isEnabled: false,
@@ -235,9 +236,8 @@ export function createExtensionInfo(
         webStoreUrl: '',
         showSafeBrowsingAllowlistWarning: false,
         showAccessRequestsInToolbar: false,
-        acknowledgeSafetyCheckWarning: false,
         isAffectedByMV2Deprecation: false,
-        didAcknowledgeMV2DeprecationWarning: false,
+        didAcknowledgeMV2DeprecationNotice: false,
         safetyCheckWarningReason: 'UNPUBLISHED',
       },
       properties || {});

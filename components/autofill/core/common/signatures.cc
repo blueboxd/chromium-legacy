@@ -18,8 +18,6 @@
 #include "components/autofill/core/common/form_field_data.h"
 #include "url/gurl.h"
 
-using base::UTF16ToUTF8;
-
 namespace autofill {
 
 namespace {
@@ -92,17 +90,18 @@ FormSignature CalculateFormSignature(const FormData& form_data) {
 
   std::string form_signature_field_names;
 
-  for (const FormFieldData& field : form_data.fields) {
+  for (const FormFieldData& field : form_data.fields()) {
     if (!IsCheckable(field.check_status())) {
       // Add all supported form fields (including with empty names) to the
       // signature.  This is a requirement for Autofill servers.
-      base::StrAppend(&form_signature_field_names,
-                      {"&", StripDigitsIfRequired(UTF16ToUTF8(field.name()))});
+      base::StrAppend(
+          &form_signature_field_names,
+          {"&", StripDigitsIfRequired(base::UTF16ToUTF8(field.name()))});
     }
   }
 
-  std::string form_name =
-      StripDigitsIfRequired(GetDOMFormName(UTF16ToUTF8(form_data.name())));
+  std::string form_name = StripDigitsIfRequired(
+      GetDOMFormName(base::UTF16ToUTF8(form_data.name())));
   std::string form_string = base::StrCat(
       {scheme, "://", host, "&", form_name, form_signature_field_names});
   return FormSignature(StrToHash64Bit(form_string));
@@ -120,7 +119,7 @@ FormSignature CalculateAlternativeFormSignature(const FormData& form_data) {
   }
 
   std::string form_signature_field_types;
-  for (const FormFieldData& field : form_data.fields) {
+  for (const FormFieldData& field : form_data.fields()) {
     if (!IsCheckable(field.check_status())) {
       // Add all supported form fields' form control types to the signature.
       // We use the string representation of the FormControlType because
@@ -139,7 +138,7 @@ FormSignature CalculateAlternativeFormSignature(const FormData& form_data) {
   // Add more non-empty elements (one of path, reference, or query ordered by
   // preference) for small forms with 1-2 fields in order to prevent signature
   // collisions.
-  if (form_data.fields.size() <= 2) {
+  if (form_data.fields().size() <= 2) {
     // Path piece includes the slash "/", so a non-empty path must have length
     // longer than 1.
     if (form_data.url().path_piece().length() > 1) {
@@ -157,8 +156,9 @@ FormSignature CalculateAlternativeFormSignature(const FormData& form_data) {
 FieldSignature CalculateFieldSignatureByNameAndType(
     std::u16string_view field_name,
     FormControlType field_type) {
-  return FieldSignature(StrToHash32Bit(base::StrCat(
-      {UTF16ToUTF8(field_name), "&", FormControlTypeToString(field_type)})));
+  return FieldSignature(
+      StrToHash32Bit(base::StrCat({base::UTF16ToUTF8(field_name), "&",
+                                   FormControlTypeToString(field_type)})));
 }
 
 FieldSignature CalculateFieldSignatureForField(
@@ -169,13 +169,13 @@ FieldSignature CalculateFieldSignatureForField(
 
 uint64_t StrToHash64Bit(std::string_view str) {
   auto bytes = base::as_bytes(base::make_span(str));
-  const base::SHA1Digest digest = base::SHA1HashSpan(bytes);
+  const base::SHA1Digest digest = base::SHA1Hash(bytes);
   return PackBytes(base::make_span(digest).subspan<0, 8>());
 }
 
 uint32_t StrToHash32Bit(std::string_view str) {
   auto bytes = base::as_bytes(base::make_span(str));
-  const base::SHA1Digest digest = base::SHA1HashSpan(bytes);
+  const base::SHA1Digest digest = base::SHA1Hash(bytes);
   return PackBytes(base::make_span(digest).subspan<0, 4>());
 }
 

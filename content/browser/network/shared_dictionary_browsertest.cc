@@ -7,6 +7,7 @@
 
 #include "base/base_paths.h"
 #include "base/files/file_util.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
 #include "base/strings/strcat.h"
@@ -25,6 +26,7 @@
 #include "content/public/browser/clear_site_data_utils.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -41,8 +43,9 @@
 #include "net/base/schemeful_site.h"
 #include "net/base/url_util.h"
 #include "net/dns/mock_host_resolver.h"
-#include "net/extras/shared_dictionary/shared_dictionary_isolation_key.h"
 #include "net/extras/shared_dictionary/shared_dictionary_usage_info.h"
+#include "net/shared_dictionary/shared_dictionary_constants.h"
+#include "net/shared_dictionary/shared_dictionary_isolation_key.h"
 #include "net/ssl/client_cert_identity.h"
 #include "net/ssl/client_cert_identity_test_util.h"
 #include "net/ssl/client_cert_store.h"
@@ -51,8 +54,8 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/test_data_directory.h"
 #include "services/network/public/cpp/features.h"
-#include "services/network/public/cpp/shared_dictionary_encoding_names.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/shared_dictionary_access_observer.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/features.h"
@@ -521,6 +524,7 @@ class DummyClientCertStoreContentBrowserClient
   }
   base::OnceClosure SelectClientCertificate(
       BrowserContext* browser_context,
+      int process_id,
       WebContents* web_contents,
       net::SSLCertRequestInfo* cert_request_info,
       net::ClientCertIdentityList client_certs,
@@ -762,12 +766,12 @@ class SharedDictionaryBrowserTestBase : public ContentBrowserTest {
           if (base::FeatureList::IsEnabled(network::features::kSharedZstd)) {
             response->AddCustomHeader(
                 "content-encoding",
-                network::GetSharedZstdContentEncodingName());
+                net::shared_dictionary::kSharedZstdContentEncodingName);
             response->set_content(kZstdCompressedDataString);
           } else {
             response->AddCustomHeader(
                 "content-encoding",
-                network::GetSharedBrotliContentEncodingName());
+                net::shared_dictionary::kSharedBrotliContentEncodingName);
             response->set_content(kBrotliCompressedDataString);
           }
         } else {
@@ -1331,6 +1335,33 @@ class SharedDictionaryBrowserTest
   }
   GURL GetCrossOriginURL(std::string_view relative_url) const {
     return cross_origin_server()->GetURL(relative_url);
+  }
+
+  bool HasPreloadedSharedDictionaryInfo() {
+    bool result = false;
+    base::RunLoop run_loop;
+    GetTargetNetworkContext()->HasPreloadedSharedDictionaryInfoForTesting(
+        base::BindLambdaForTesting([&](bool value) {
+          result = value;
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+    return result;
+  }
+
+  void SendMemoryPressureToNetworkService() {
+    content::GetNetworkService()->OnMemoryPressure(
+        base::MemoryPressureListener::MemoryPressureLevel::
+            MEMORY_PRESSURE_LEVEL_CRITICAL);
+    // To make sure that OnMemoryPressure has been received by the network
+    // service, send a GetNetworkList IPC and wait for the result.
+    base::RunLoop run_loop;
+    content::GetNetworkService()->GetNetworkList(
+        net::INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES,
+        base::BindLambdaForTesting(
+            [&](const std::optional<net::NetworkInterfaceList>&
+                    interface_list) { run_loop.Quit(); }));
+    run_loop.Run();
   }
 
  private:
@@ -2296,6 +2327,72 @@ IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
             EvalJs(GetTargetShell()->web_contents()->GetPrimaryMainFrame(),
                    "document.body.innerText")
                 .ExtractString());
+}
+
+IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
+                       EncodedBodySizeAndDecodedBodySize) {
+  RunWriteDictionaryTest(FetchType::kLinkRelCompressionDictionary,
+                         GetURL("/shared_dictionary/blank.html"),
+                         GetURL("/shared_dictionary/test.dict"));
+
+  EXPECT_EQ(base::StringPrintf("%zu, %zu", kZstdCompressedDataString.size(),
+                               kCompressedDataOriginalString.size()),
+            EvalJs(GetTargetShell()->web_contents()->GetPrimaryMainFrame(),
+                   JsReplace(R"(
+          (async () => {
+            const targetUrl = $1;
+            const promise = new Promise((resolve) => {
+              const observer = new PerformanceObserver((list) => {
+                list.getEntries().forEach((entry) => {
+                  if (entry.name == targetUrl) {
+                    resolve(entry);
+                  }
+                });
+              });
+              observer.observe({ type: 'resource', buffered: true });
+            });
+            fetch(targetUrl);
+            const entry = await promise;
+            return entry.encodedBodySize + ', ' + entry.decodedBodySize;
+          })();
+        )",
+                             GetURL("/shared_dictionary/path/test?")))
+                .ExtractString());
+}
+
+IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
+                       PreloadSharedDictionaryInfo) {
+  mojo::PendingRemote<network::mojom::PreloadedSharedDictionaryInfoHandle>
+      preloaded_shared_dictionaries_handle;
+  GetTargetNetworkContext()->PreloadSharedDictionaryInfoForDocument(
+      {GetURL("/")},
+      preloaded_shared_dictionaries_handle.InitWithNewPipeAndPassReceiver());
+  EXPECT_TRUE(HasPreloadedSharedDictionaryInfo());
+  preloaded_shared_dictionaries_handle.reset();
+  EXPECT_FALSE(HasPreloadedSharedDictionaryInfo());
+}
+
+IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
+                       DoNotPreloadDictionayUnderMemoryPressure) {
+  SendMemoryPressureToNetworkService();
+  mojo::PendingRemote<network::mojom::PreloadedSharedDictionaryInfoHandle>
+      preloaded_shared_dictionaries_handle;
+  GetTargetNetworkContext()->PreloadSharedDictionaryInfoForDocument(
+      {GetURL("/")},
+      preloaded_shared_dictionaries_handle.InitWithNewPipeAndPassReceiver());
+  EXPECT_FALSE(HasPreloadedSharedDictionaryInfo());
+}
+
+IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
+                       PreloadedDictionayDiscardedByMemoryPressure) {
+  mojo::PendingRemote<network::mojom::PreloadedSharedDictionaryInfoHandle>
+      preloaded_shared_dictionaries_handle;
+  GetTargetNetworkContext()->PreloadSharedDictionaryInfoForDocument(
+      {GetURL("/")},
+      preloaded_shared_dictionaries_handle.InitWithNewPipeAndPassReceiver());
+  EXPECT_TRUE(HasPreloadedSharedDictionaryInfo());
+  SendMemoryPressureToNetworkService();
+  EXPECT_FALSE(HasPreloadedSharedDictionaryInfo());
 }
 
 }  // namespace

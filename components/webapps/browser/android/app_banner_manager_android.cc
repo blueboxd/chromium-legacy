@@ -29,7 +29,6 @@
 #include "components/webapps/browser/android/bottomsheet/pwa_bottom_sheet_controller.h"
 #include "components/webapps/browser/android/shortcut_info.h"
 #include "components/webapps/browser/android/webapps_icon_utils.h"
-#include "components/webapps/browser/android/webapps_jni_headers/AppBannerManager_jni.h"
 #include "components/webapps/browser/android/webapps_utils.h"
 #include "components/webapps/browser/banners/app_banner_metrics.h"
 #include "components/webapps/browser/banners/app_banner_settings_helper.h"
@@ -49,6 +48,9 @@
 #include "skia/ext/skia_utils_base.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+
+// Must come after all headers that specialize FromJniType() / ToJniType().
+#include "components/webapps/browser/android/webapps_jni_headers/AppBannerManager_jni.h"
 
 using base::android::ConvertJavaStringToUTF16;
 using base::android::ConvertJavaStringToUTF8;
@@ -239,14 +241,11 @@ AppBannerManagerAndroid::ParamsToPerformInstallableWebAppCheck() {
   InstallableParams params;
   params.valid_primary_icon = true;
   params.installable_criteria =
-      base::FeatureList::IsEnabled(features::kUniversalInstallManifest)
-          ? InstallableCriteria::kImplicitManifestFieldsHTML
-          : InstallableCriteria::kValidManifestWithIcons;
+      InstallableCriteria::kImplicitManifestFieldsHTML;
   params.fetch_screenshots = true;
   params.prefer_maskable_icon =
       WebappsIconUtils::DoesAndroidSupportMaskableIcons();
-  params.fetch_favicon =
-      base::FeatureList::IsEnabled(features::kUniversalInstallIcon);
+  params.fetch_favicon = true;
   return params;
 }
 
@@ -664,13 +663,6 @@ bool AppBannerManagerAndroid::MaybeShowPwaBottomSheetController(
                           AppBannerManagerAndroid::GetAndroidWeakPtr(),
                           config.validated_url),
       std::move(a2hs_params));
-}
-
-void AppBannerManagerAndroid::PerformWorkerCheckForAmbientBadge(
-    InstallableParams params,
-    InstallableCallback callback) {
-  InstallableManager::FromWebContents(&GetWebContents())
-      ->GetData(params, std::move(callback));
 }
 
 void AppBannerManagerAndroid::OnMlInstallPrediction(

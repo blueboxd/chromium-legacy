@@ -29,11 +29,13 @@
 #include "components/webapps/browser/installable/ml_install_operation_tracker.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/bubble/bubble_dialog_model_host.h"
 #include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/view_utils.h"
+#include "ui/views/widget/widget.h"
 
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/web_applications/web_app_helpers.h"
@@ -87,7 +89,7 @@ void ShowSimpleInstallDialogForWebApps(
 
 #if BUILDFLAG(IS_CHROMEOS)
   webapps::AppId app_id =
-      web_app::GenerateAppIdFromManifestId(web_app_info->manifest_id);
+      web_app::GenerateAppIdFromManifestId(web_app_info->manifest_id());
   metrics::structured::StructuredMetricsClient::Record(
       cros_events::AppDiscovery_Browser_AppInstallDialogShown().SetAppId(
           app_id));
@@ -103,7 +105,7 @@ void ShowSimpleInstallDialogForWebApps(
                                   kIconSize, web_app_info->icon_bitmaps.any),
                               gfx::Size(kIconSize, kIconSize));
     auto app_name = web_app_info->title;
-    GURL start_url = web_app_info->start_url;
+    GURL start_url = web_app_info->start_url();
 
     auto delegate = std::make_unique<web_app::WebAppInstallDialogDelegate>(
         web_contents, std::move(web_app_info), std::move(install_tracker),
@@ -125,7 +127,7 @@ void ShowSimpleInstallDialogForWebApps(
                 &WebAppInstallDialogDelegate::OnClose, delegate_weak_ptr))
             .SetDialogDestroyingCallback(base::BindOnce(
                 &WebAppInstallDialogDelegate::OnDestroyed, delegate_weak_ptr))
-            .OverrideDefaultButton(ui::DialogButton::DIALOG_BUTTON_NONE)
+            .OverrideDefaultButton(ui::DialogButton::DIALOG_BUTTON_CANCEL)
             .AddCustomField(
                 std::make_unique<views::BubbleDialogModelHost::CustomView>(
                     WebAppIconNameAndOriginView::Create(icon_image, app_name,
@@ -133,7 +135,7 @@ void ShowSimpleInstallDialogForWebApps(
                     views::BubbleDialogModelHost::FieldType::kControl))
             .Build();
     auto dialog = views::BubbleDialogModelHost::CreateModal(
-        std::move(dialog_model), ui::MODAL_TYPE_CHILD);
+        std::move(dialog_model), ui::mojom::ModalType::kChild);
 
     if (g_dont_close_on_deactivate) {
       dialog->set_close_on_deactivate(false);
@@ -142,7 +144,9 @@ void ShowSimpleInstallDialogForWebApps(
     if (icon) {
       dialog_delegate->SetAnchorView(icon);
     }
-    constrained_window::ShowWebModalDialogViews(dialog.release(), web_contents);
+    views::Widget* modal_widget = constrained_window::ShowWebModalDialogViews(
+        dialog.release(), web_contents);
+    delegate_weak_ptr->StartObservingForPictureInPictureOcclusion(modal_widget);
   } else {
     auto* dialog_view = new PWAConfirmationBubbleView(
         anchor_view, web_contents->GetWeakPtr(), icon, std::move(web_app_info),

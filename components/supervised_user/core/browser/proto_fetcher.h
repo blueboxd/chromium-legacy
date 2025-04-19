@@ -24,6 +24,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "base/types/expected.h"
 #include "base/types/strong_alias.h"
+#include "base/version_info/channel.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/supervised_user/core/browser/api_access_token_fetcher.h"
@@ -66,28 +67,25 @@ namespace supervised_user {
 
 // Holds the status of the fetch. The callback's response will be set iff the
 // status is ok.
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
 class ProtoFetcherStatus {
  public:
   using HttpStatusOrNetErrorType =
       base::StrongAlias<class HttpStatusOrNetErrorTag, int>;
 
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  //
+  // LINT.IfChange(State)
   enum State {
     OK = 0,
-    GOOGLE_SERVICE_AUTH_ERROR = 1,  // Error occurred during the access token
-                                    // fetching phase. See
-                                    // GetGoogleServiceAuthError for details.
-    HTTP_STATUS_OR_NET_ERROR =
-        2,  // The request was performed, but network or http returned errors.
-            // This is default chromium approach to combine those two domains.
-    INVALID_RESPONSE = 3,  // The request was performed without error, but http
-                           // response could not be processed or was unexpected.
-    DATA_ERROR = 4,  // The request was parsed, but did not contain all required
-                     // data. Not signalled by this fetcher itself, but might be
-                     // used by consumers to indicate data problem.
+    GOOGLE_SERVICE_AUTH_ERROR = 1,
+    HTTP_STATUS_OR_NET_ERROR = 2,
+    INVALID_RESPONSE = 3,
+    DATA_ERROR = 4,  //  Not signalled by this fetcher itself, but might be used
+                     //  by consumers to indicate data problem.
     kMaxValue = DATA_ERROR,  // keep last, required for metrics.
   };
+  // LINT.ThenChange(//tools/metrics/histograms/metadata/families/enums.xml:SupervisedUserProtoFetcherStatus)
 
   // Status might be used in base::expected context as possible error, since it
   // contains two error-enabled attributes which are copyable / assignable.
@@ -181,7 +179,7 @@ class Metrics {
   void RecordApiLatency(
       ProtoFetcherStatus::HttpStatusOrNetErrorType http_status_or_net_error);
   virtual void RecordStatusLatency(const ProtoFetcherStatus& status) const;
-  void RecordAuthError(const ProtoFetcherStatus& status) const;
+  void RecordAuthError(const GoogleServiceAuthError& auth_error) const;
   void RecordHttpStatusOrNetError(const ProtoFetcherStatus& status) const;
 
  protected:
@@ -255,7 +253,8 @@ class AbstractProtoFetcher {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::string_view payload,
       const FetcherConfig& fetcher_config,
-      const FetcherConfig::PathArgs& args = {});
+      const FetcherConfig::PathArgs& args = {},
+      std::optional<version_info::Channel> channel = std::nullopt);
 
   // Not copyable.
   AbstractProtoFetcher(const AbstractProtoFetcher&) = delete;
@@ -290,12 +289,17 @@ class AbstractProtoFetcher {
   const std::string payload_;
   const FetcherConfig config_;
   const FetcherConfig::PathArgs args_;
+  std::optional<version_info::Channel> channel_;
   std::optional<Metrics> metrics_;
 
   // Entrypoint of the fetch process, which starts with ApiAccessToken access
   // followed by a request made with SimpleURLLoader. Purposely made last field
   // should it depend on other members of this class.
   ApiAccessTokenFetcher fetcher_;
+
+  // If an auth error was encountered when fetching the access token, it is
+  // stored here (whether or not it was fatal).
+  std::optional<GoogleServiceAuthError> access_token_auth_error_;
 };
 
 // Overlay over ProtoFetcher that interprets successful responses as given
@@ -306,6 +310,9 @@ class AbstractProtoFetcher {
 template <typename Response>
 class TypedProtoFetcher : public AbstractProtoFetcher {
  public:
+  // Called when fetch completes. The response contains value iff the status
+  // doesn't signal error (see ProtoFetcherStatus::IsOK). In not-OK situations,
+  // the response is empty.
   using Callback = base::OnceCallback<void(const ProtoFetcherStatus&,
                                            std::unique_ptr<Response>)>;
   TypedProtoFetcher() = delete;
@@ -315,12 +322,14 @@ class TypedProtoFetcher : public AbstractProtoFetcher {
       std::string_view payload,
       const FetcherConfig& fetcher_config,
       const FetcherConfig::PathArgs& args,
+      std::optional<version_info::Channel> channel,
       Callback callback)
       : AbstractProtoFetcher(identity_manager,
                              url_loader_factory,
                              payload,
                              fetcher_config,
-                             args),
+                             args,
+                             channel),
         callback_(std::move(callback)) {}
 
   virtual ~TypedProtoFetcher() = default;
@@ -367,6 +376,7 @@ class StatusFetcher : public AbstractProtoFetcher {
       std::string_view payload,
       const FetcherConfig& fetcher_config,
       const FetcherConfig::PathArgs& args,
+      std::optional<version_info::Channel> channel,
       Callback callback);
   ~StatusFetcher() override;
 
@@ -392,12 +402,14 @@ class ProtoFetcher {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const google::protobuf::MessageLite& request,
       const FetcherConfig& fetcher_config,
-      const FetcherConfig::PathArgs& args = {})
+      const FetcherConfig::PathArgs& args = {},
+      std::optional<version_info::Channel> channel = std::nullopt)
       : identity_manager_(identity_manager),
         url_loader_factory_(url_loader_factory),
         payload_(request.SerializeAsString()),
         config_(fetcher_config),
-        args_(args) {}
+        args_(args),
+        channel_(channel) {}
   virtual ~ProtoFetcher() = default;
 
   // Kicks off the fetching process. The fetcher must not be started before
@@ -406,7 +418,7 @@ class ProtoFetcher {
     CHECK(!fetcher_) << "Only stopped fetcher can be started.";
     fetcher_ = std::make_unique<TypedProtoFetcher<Response>>(
         identity_manager_.get(), url_loader_factory_, payload_, config_, args_,
-        std::move(callback));
+        channel_, std::move(callback));
   }
 
   // Terminates the fetching process. The fetcher must be still operating while
@@ -427,6 +439,7 @@ class ProtoFetcher {
   std::string payload_;
   const FetcherConfig config_;
   const FetcherConfig::PathArgs args_;
+  std::optional<version_info::Channel> channel_;
   std::unique_ptr<TypedProtoFetcher<Response>> fetcher_;
 };
 
@@ -445,12 +458,14 @@ class RetryingFetcherImpl final : public ProtoFetcher<Response> {
       const google::protobuf::MessageLite& request,
       const FetcherConfig& fetcher_config,
       const FetcherConfig::PathArgs& args,
+      std::optional<version_info::Channel> channel,
       const net::BackoffEntry::Policy& backoff_policy)
       : ProtoFetcher<Response>(identity_manager,
                                url_loader_factory,
                                request,
                                fetcher_config,
-                               args),
+                               args,
+                               channel),
         backoff_entry_(&backoff_policy),
         metrics_(OverallMetrics::FromConfig(fetcher_config)) {}
 
@@ -587,7 +602,8 @@ CreateClassifyURLFetcher(
     signin::IdentityManager& identity_manager,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const kidsmanagement::ClassifyUrlRequest& request,
-    const FetcherConfig& config = kClassifyUrlConfig);
+    const FetcherConfig& config = kClassifyUrlConfig,
+    version_info::Channel channel = version_info::Channel::UNKNOWN);
 
 // Creates a disposable instance of an access token consumer that will create
 // a new permission request for a given url.
@@ -615,20 +631,31 @@ std::unique_ptr<ProtoFetcher<Response>> CreateTestFetcher(
 //
 // `args` are only relevant if `fetcher_config` uses template path (see
 // supervised_user::FetcherConfig::service_path).
+//
+// `channel` must be specified if `fetcher_config` has
+// `CredentialsRequirement::kBestEffort`.
 template <typename Response>
 std::unique_ptr<ProtoFetcher<Response>> CreateFetcher(
     signin::IdentityManager& identity_manager,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const google::protobuf::MessageLite& request,
     const FetcherConfig& fetcher_config,
-    const FetcherConfig::PathArgs& args = {}) {
+    const FetcherConfig::PathArgs& args = {},
+    const std::optional<version_info::Channel> channel = std::nullopt) {
+  CHECK((fetcher_config.access_token_config.credentials_requirement !=
+         AccessTokenConfig::CredentialsRequirement::kBestEffort) ||
+        channel)
+      << "The Chrome channel must be specified for fetchers which can send "
+         "requests without user credentials.";
+
   if (fetcher_config.backoff_policy.has_value()) {
     return std::make_unique<RetryingFetcherImpl<Response>>(
         identity_manager, url_loader_factory, request, fetcher_config, args,
-        *fetcher_config.backoff_policy);
+        channel, *fetcher_config.backoff_policy);
   } else {
     return std::make_unique<ProtoFetcher<Response>>(
-        identity_manager, url_loader_factory, request, fetcher_config, args);
+        identity_manager, url_loader_factory, request, fetcher_config, args,
+        channel);
   }
 }
 

@@ -190,9 +190,9 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
   }
 
   TestingProfile::TestingFactories GetTestingFactories() const override {
-    return {
-        {StatefulSSLHostStateDelegateFactory::GetInstance(),
-         StatefulSSLHostStateDelegateFactory::GetDefaultFactoryForTesting()}};
+    return {TestingProfile::TestingFactory{
+        StatefulSSLHostStateDelegateFactory::GetInstance(),
+        StatefulSSLHostStateDelegateFactory::GetDefaultFactoryForTesting()}};
   }
 
   void SetDefaultUIExpectations(MockPageInfoUI* mock_ui) {
@@ -306,8 +306,8 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
     // missing ones needed by these tests.
     infobars::ContentInfoBarManager::CreateForWebContents(contents);
     content_settings::PageSpecificContentSettings::CreateForWebContents(
-        contents, std::make_unique<chrome::PageSpecificContentSettingsDelegate>(
-                      contents));
+        contents,
+        std::make_unique<PageSpecificContentSettingsDelegate>(contents));
     permissions::PermissionRecoverySuccessRateTracker::CreateForWebContents(
         contents);
   }

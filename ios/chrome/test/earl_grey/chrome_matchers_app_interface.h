@@ -151,9 +151,6 @@
 // Returns matcher for `text` being the inline autocomplete text in the omnibox.
 + (id<GREYMatcher>)omniboxContainingAutocompleteText:(NSString*)text;
 
-// Returns matcher for omniboxAutocomplete label in the omnibox.
-+ (id<GREYMatcher>)omniboxAutocompleteLabel;
-
 // Returns matcher for `text` being a substring of the text in the location
 // view.
 + (id<GREYMatcher>)locationViewContainingText:(NSString*)text;
@@ -168,6 +165,9 @@
 
 // Matcher for the Share... button.
 + (id<GREYMatcher>)shareButton;
+
+// Matcher for the Show Full URL action button.
++ (id<GREYMatcher>)showFullURLFromWebContextMenu;
 
 // Matcher for the tab Share button (either in the omnibox or the toolbar).
 + (id<GREYMatcher>)tabShareButton;
@@ -334,10 +334,6 @@
 // screen.
 + (id<GREYMatcher>)inactiveTabsSettingsButton;
 
-// Returns matcher for the Tab Pickup Settings button on the Tabs Settings
-// screen.
-+ (id<GREYMatcher>)tabPickupSettingsButton;
-
 // Returns matcher for the Tabs Settings button on the main Settings screen.
 + (id<GREYMatcher>)tabsSettingsButton;
 
@@ -488,6 +484,9 @@
 
 // Returns a matcher for "Open In..." button.
 + (id<GREYMatcher>)openInButton;
+
+// Returns a matcher for "Open" button.
++ (id<GREYMatcher>)openPDFButton;
 
 // Returns the GREYMatcher for the cell at `index` in the tab grid.
 + (id<GREYMatcher>)tabGridCellAtIndex:(unsigned int)index;

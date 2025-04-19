@@ -15,6 +15,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
@@ -75,6 +76,10 @@ TabSliderButton::TabSliderButton(PressedCallback callback,
   views::InstallPillHighlightPathGenerator(this);
 
   SetTooltipText(tooltip_text);
+  GetViewAccessibility().SetRole(ax::mojom::Role::kToggleButton);
+  GetViewAccessibility().SetCheckedState(selected_
+                                             ? ax::mojom::CheckedState::kTrue
+                                             : ax::mojom::CheckedState::kFalse);
 }
 
 TabSliderButton::~TabSliderButton() = default;
@@ -90,6 +95,9 @@ void TabSliderButton::SetSelected(bool selected) {
   }
 
   selected_ = selected;
+  GetViewAccessibility().SetCheckedState(selected_
+                                             ? ax::mojom::CheckedState::kTrue
+                                             : ax::mojom::CheckedState::kFalse);
   if (selected_ && tab_slider_) {
     tab_slider_->OnButtonSelected(this);
   }
@@ -102,15 +110,6 @@ SkColor TabSliderButton::GetColorIdOnButtonState() {
   return selected()
              ? (enabled ? kSelectedColorId : kDisabledSelectedColorId)
              : (enabled ? kUnselectedColorId : kDisabledUnselectedColorId);
-}
-
-void TabSliderButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  Button::GetAccessibleNodeData(node_data);
-  const std::u16string tooltip = GetTooltipText(gfx::Point());
-  node_data->role = ax::mojom::Role::kToggleButton;
-  node_data->SetName(tooltip);
-  node_data->SetCheckedState(selected_ ? ax::mojom::CheckedState::kTrue
-                                       : ax::mojom::CheckedState::kFalse);
 }
 
 void TabSliderButton::NotifyClick(const ui::Event& event) {

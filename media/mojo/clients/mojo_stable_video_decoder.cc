@@ -7,11 +7,13 @@
 #include <optional>
 
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/viz/common/resources/shared_image_format.h"
 #include "gpu/command_buffer/client/client_shared_image.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
+#include "gpu/command_buffer/common/shared_image_capabilities.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "media/base/supported_video_decoder_config.h"
@@ -30,6 +32,9 @@
 
 namespace media {
 
+const char kMojoStableVideoDecoderDecodeLatencyHistogram[] =
+    "Media.MojoStableVideoDecoder.Decode";
+
 namespace {
 
 std::optional<viz::SharedImageFormat> GetSharedImageFormat(
@@ -42,7 +47,7 @@ std::optional<viz::SharedImageFormat> GetSharedImageFormat(
     case PIXEL_FORMAT_NV12:
       si_format = viz::MultiPlaneFormat::kNV12;
       break;
-    case PIXEL_FORMAT_P016LE:
+    case PIXEL_FORMAT_P010LE:
       si_format = viz::MultiPlaneFormat::kP010;
       break;
     case PIXEL_FORMAT_YV12:
@@ -80,7 +85,7 @@ class MojoStableVideoDecoder::SharedImageHolder
       return nullptr;
     }
 
-    uint32_t shared_image_usage =
+    gpu::SharedImageUsageSet shared_image_usage =
         gpu::SHARED_IMAGE_USAGE_DISPLAY_READ | gpu::SHARED_IMAGE_USAGE_SCANOUT;
     if (frame_resource->metadata().is_webgpu_compatible &&
         !sii->GetCapabilities().disable_webgpu_shared_images) {
@@ -135,8 +140,8 @@ class MojoStableVideoDecoder::SharedImageHolder
 
   gfx::GenericSharedMemoryId id() const { return id_; }
 
-  const gpu::Mailbox& mailbox() const {
-    return client_shared_image_->mailbox();
+  const scoped_refptr<gpu::ClientSharedImage> client_shared_image() const {
+    return client_shared_image_;
   }
 
   uint32_t texture_target() const {
@@ -154,7 +159,9 @@ class MojoStableVideoDecoder::SharedImageHolder
     return sii_->GenUnverifiedSyncToken();
   }
 
-  void Update() { sii_->UpdateSharedImage(gpu::SyncToken(), mailbox()); }
+  void Update() {
+    sii_->UpdateSharedImage(gpu::SyncToken(), client_shared_image()->mailbox());
+  }
 
  private:
   friend class base::RefCountedThreadSafe<SharedImageHolder>;
@@ -190,7 +197,8 @@ MojoStableVideoDecoder::MojoStableVideoDecoder(
     MediaLog* media_log,
     mojo::PendingRemote<stable::mojom::StableVideoDecoder>
         pending_remote_decoder)
-    : media_task_runner_(std::move(media_task_runner)),
+    : timestamps_(128),
+      media_task_runner_(std::move(media_task_runner)),
       gpu_factories_(gpu_factories),
       media_log_(media_log),
       pending_remote_decoder_(std::move(pending_remote_decoder)),
@@ -237,6 +245,10 @@ void MojoStableVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
                                     DecodeCB decode_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(!!oop_video_decoder_);
+  if (!buffer->end_of_stream()) {
+    timestamps_.Put(buffer->timestamp().InMilliseconds(),
+                    base::TimeTicks::Now());
+  }
   oop_video_decoder_->Decode(std::move(buffer), std::move(decode_cb));
 }
 
@@ -418,12 +430,13 @@ void MojoStableVideoDecoder::OnFrameResourceDecoded(
   // at least as long as the user of the decoded frame needs it. The latter is
   // to ensure the service gets notified that it may re-use the underlying
   // buffer once the decoded frame is no longer needed.
-  gpu::MailboxHolder mailbox_holders[VideoFrame::kMaxPlanes] = {
-      gpu::MailboxHolder(shared_image->mailbox(),
-                         shared_image->GenUnverifiedSyncToken(),
-                         shared_image->texture_target())};
-  scoped_refptr<VideoFrame> mailbox_frame = VideoFrame::WrapNativeTextures(
-      frame_resource->format(), mailbox_holders,
+  auto client_shared_image = shared_image->client_shared_image();
+  auto sync_token = shared_image->GenUnverifiedSyncToken();
+  auto texture_target = shared_image->texture_target();
+
+  scoped_refptr<VideoFrame> mailbox_frame = VideoFrame::WrapSharedImage(
+      frame_resource->format(), std::move(client_shared_image), sync_token,
+      texture_target,
       /*mailbox_holders_release_cb=*/
       base::DoNothingWithBoundArgs(std::move(shared_image), frame_resource),
       /*coded_size=*/GetRectSizeFromOrigin(frame_resource->visible_rect()),
@@ -442,6 +455,19 @@ void MojoStableVideoDecoder::OnFrameResourceDecoded(
   mailbox_frame->metadata().read_lock_fences_enabled = true;
   mailbox_frame->metadata().is_webgpu_compatible =
       frame_resource->metadata().is_webgpu_compatible;
+
+  const int64_t timestamp = frame_resource->timestamp().InMilliseconds();
+  const auto timestamp_it = timestamps_.Peek(timestamp);
+  // The OOPVideoDecoder has an internal cache that ensures incoming frames have
+  // a timestamp that corresponds to an earlier Decode() call. The cache in the
+  // OOPVideoDecoder is of the same size as |timestamps_|. Therefore, we should
+  // always be able to find the incoming frame in |timestamps_|, hence the
+  // CHECK().
+  CHECK(timestamp_it != timestamps_.end());
+  const auto decode_start_time = timestamp_it->second;
+  const auto decode_end_time = base::TimeTicks::Now();
+  UMA_HISTOGRAM_TIMES(kMojoStableVideoDecoderDecodeLatencyHistogram,
+                      decode_end_time - decode_start_time);
 
   output_cb_.Run(std::move(mailbox_frame));
 }

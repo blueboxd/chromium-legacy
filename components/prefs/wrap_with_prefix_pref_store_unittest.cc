@@ -58,7 +58,7 @@ class MockPrefStoreObserver : public PrefStore::Observer {
  public:
   ~MockPrefStoreObserver() override = default;
 
-  MOCK_METHOD(void, OnPrefValueChanged, (const std::string& key), (override));
+  MOCK_METHOD(void, OnPrefValueChanged, (std::string_view key), (override));
   MOCK_METHOD(void, OnInitializationCompleted, (bool succeeded), (override));
 };
 
@@ -392,6 +392,23 @@ TEST_F(WrapWithPrefixPrefStoreTest, HasReadErrorDelegateWithNullDelegate) {
   store().ReadPrefsAsync(nullptr);
   // Returns true even though no instance was passed.
   EXPECT_TRUE(store().HasReadErrorDelegate());
+}
+
+TEST_F(WrapWithPrefixPrefStoreTest, GetValueForPrefixedKeyIfNonExisting) {
+  target_store().SetString(kPrefixedTestPref, "value");
+  EXPECT_FALSE(store().GetValue(kPrefixedTestPref, nullptr));
+}
+
+TEST_F(WrapWithPrefixPrefStoreTest, GetValueForExistingIfExisting) {
+  target_store().SetString("prefixed.prefixed.test.pref", "value");
+  EXPECT_TRUE(ValueInStoreIs(store(), kPrefixedTestPref, "value"));
+}
+
+TEST_F(WrapWithPrefixPrefStoreTest, SetValueForPrefixedKey) {
+  EXPECT_CALL(observer_, OnPrefValueChanged(kPrefixedTestPref));
+
+  store().SetValue(kPrefixedTestPref, base::Value("value"), /*flags=*/0);
+  EXPECT_TRUE(ValueInStoreIs(store(), kPrefixedTestPref, "value"));
 }
 
 using WrapWithPrefixPrefStoreDeathTest = WrapWithPrefixPrefStoreTest;

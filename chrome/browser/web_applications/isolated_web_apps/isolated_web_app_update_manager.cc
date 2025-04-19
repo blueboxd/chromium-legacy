@@ -33,7 +33,9 @@
 #include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"
 #include "chrome/browser/profiles/keep_alive/scoped_profile_keep_alive.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/isolated_web_apps/error/uma_logging.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_apply_update_command.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_install_command_helper.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_install_source.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_storage_location.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_update_apply_task.h"
@@ -132,7 +134,7 @@ IsolatedWebAppUpdateManager::IsolatedWebAppUpdateManager(
           // Similar to extensions, we don't do any automatic updates in guest
           // sessions.
           !profile.IsGuestSession() &&
-          // Web Apps are not a thing in off the record profiles, but have this
+          // Web Apps are not a thing in off the record profiles, but have
           // here just in case - we also wouldn't want to automatically update
           // IWAs in incognito windows.
           !profile.IsOffTheRecord() &&
@@ -161,6 +163,8 @@ void IsolatedWebAppUpdateManager::Start() {
 
   has_started_ = true;
   install_manager_observation_.Observe(&provider_->install_manager());
+  key_distribution_info_observation_.Observe(
+      IwaKeyDistributionInfoProvider::GetInstance());
 
   if (!IsAnyIwaInstalled()) {
     // If no IWA is installed, then we do not need to regularly check for
@@ -179,6 +183,11 @@ void IsolatedWebAppUpdateManager::Start() {
     if (!url_info.has_value()) {
       LOG(ERROR) << "Unable to calculate IsolatedWebAppUrlInfo from "
                  << web_app.start_url();
+
+      web_app::UmaLogExpectedStatus<IsolatedWebAppUpdateError>(
+          "WebApp.Isolated.Update",
+          base::unexpected(
+              IsolatedWebAppUpdateError::kCantCalculateIsolatedWebAppUrlInfo));
       continue;
     }
 
@@ -309,17 +318,16 @@ void IsolatedWebAppUpdateManager::OnWebAppUninstalled(
 
 bool IsolatedWebAppUpdateManager::MaybeDiscoverUpdatesForApp(
     const webapps::AppId& app_id) {
-  const WebApp* web_app = provider_->registrar_unsafe().GetAppById(app_id);
-  if (!web_app || !web_app->isolation_data().has_value()) {
-    return false;
-  }
+  ASSIGN_OR_RETURN(const WebApp& iwa,
+                   GetIsolatedWebAppById(provider_->registrar_unsafe(), app_id),
+                   [](const std::string&) { return false; });
 
   base::flat_map<web_package::SignedWebBundleId, GURL>
       id_to_update_manifest_map =
           GetForceInstalledBundleIdToUpdateManifestUrlMap();
 
   bool queued_update_discovery_task =
-      MaybeQueueUpdateDiscoveryTask(*web_app, id_to_update_manifest_map);
+      MaybeQueueUpdateDiscoveryTask(iwa, id_to_update_manifest_map);
   if (queued_update_discovery_task) {
     task_queue_.MaybeStartNextTask();
   }
@@ -345,6 +353,45 @@ void IsolatedWebAppUpdateManager::DiscoverApplyAndPrioritizeLocalDevModeUpdate(
       base::BindOnce(&IsolatedWebAppUpdateManager::OnLocalUpdateDiscovered,
                      weak_factory_.GetWeakPtr(), url_info,
                      std::move(callback)));
+}
+
+void IsolatedWebAppUpdateManager::OnComponentUpdateSuccess(
+    const base::Version& component_version) {
+  // The corresponding observer is added during `Start()`.
+  CHECK(has_started_);
+
+  if (!automatic_updates_enabled_) {
+    return;
+  }
+
+  // Queue updates for all apps affected by key rotation.
+  for (const WebApp& app : provider_->registrar_unsafe().GetApps()) {
+    if (!app.isolation_data()) {
+      continue;
+    }
+    const auto& isolation_data = *app.isolation_data();
+
+    auto url_info = IsolatedWebAppUrlInfo::Create(app.manifest_id());
+    if (!url_info.has_value()) {
+      continue;
+    }
+
+    auto result = LookupRotatedKey(url_info->web_bundle_id());
+    // If the rotated key is null, there's no point in updating the
+    // app (as the update won't succeed anyway).
+    if (result != KeyRotationLookupResult::kKeyFound) {
+      continue;
+    }
+    KeyRotationData data =
+        GetKeyRotationData(url_info->web_bundle_id(), isolation_data);
+    // If either the bundle or the pending update already includes the rotated
+    // key, there's no need to rush with updates.
+    if (data.current_installation_has_rk || data.pending_update_has_rk) {
+      continue;
+    }
+
+    MaybeDiscoverUpdatesForApp(app.app_id());
+  }
 }
 
 bool IsolatedWebAppUpdateManager::IsAnyIwaInstalled() {
@@ -486,6 +533,8 @@ void IsolatedWebAppUpdateManager::CreateUpdateApplyWaiter(
 void IsolatedWebAppUpdateManager::OnUpdateDiscoveryTaskCompleted(
     std::unique_ptr<IsolatedWebAppUpdateDiscoveryTask> task,
     IsolatedWebAppUpdateDiscoveryTask::CompletionStatus status) {
+  TrackResultOfUpdateDiscoveryTask(status);
+
   if (status.has_value() && *status ==
                                 IsolatedWebAppUpdateDiscoveryTask::Success::
                                     kUpdateFoundAndSavedInDatabase) {
@@ -493,6 +542,15 @@ void IsolatedWebAppUpdateManager::OnUpdateDiscoveryTaskCompleted(
   }
 
   task_queue_.MaybeStartNextTask();
+}
+
+void IsolatedWebAppUpdateManager::TrackResultOfUpdateDiscoveryTask(
+    IsolatedWebAppUpdateDiscoveryTask::CompletionStatus status) const {
+  if (!status.has_value()) {
+    web_app::UmaLogExpectedStatus<IsolatedWebAppUpdateError>(
+        "WebApp.Isolated.Update",
+        base::unexpected(FromDiscoveryTaskError(status.error())));
+  }
 }
 
 void IsolatedWebAppUpdateManager::OnUpdateApplyWaiterFinished(
@@ -513,6 +571,8 @@ void IsolatedWebAppUpdateManager::OnUpdateApplyWaiterFinished(
 void IsolatedWebAppUpdateManager::OnUpdateApplyTaskCompleted(
     std::unique_ptr<IsolatedWebAppUpdateApplyTask> task,
     IsolatedWebAppUpdateApplyTask::CompletionStatus status) {
+  TrackResultOfUpdateApplyTask(status);
+
   auto callbacks_it =
       on_update_finished_callbacks_.find(task->url_info().app_id());
   if (callbacks_it != on_update_finished_callbacks_.end()) {
@@ -523,6 +583,18 @@ void IsolatedWebAppUpdateManager::OnUpdateApplyTaskCompleted(
   }
 
   task_queue_.MaybeStartNextTask();
+}
+
+void IsolatedWebAppUpdateManager::TrackResultOfUpdateApplyTask(
+    IsolatedWebAppUpdateApplyTask::CompletionStatus status) const {
+  if (status.has_value()) {
+    web_app::UmaLogExpectedStatus<IsolatedWebAppUpdateError>(
+        "WebApp.Isolated.Update", base::ok());
+  } else {
+    web_app::UmaLogExpectedStatus<IsolatedWebAppUpdateError>(
+        "WebApp.Isolated.Update",
+        base::unexpected(IsolatedWebAppUpdateError::kUpdateApplyFailed));
+  }
 }
 
 void IsolatedWebAppUpdateManager::OnLocalUpdateDiscovered(
@@ -794,6 +866,31 @@ void IsolatedWebAppUpdateManager::TaskQueue::OnUpdateApplyTaskCompleted(
   }
 
   update_manager_->OnUpdateApplyTaskCompleted(std::move(task), status);
+}
+
+IsolatedWebAppUpdateError IsolatedWebAppUpdateManager::FromDiscoveryTaskError(
+    const IsolatedWebAppUpdateDiscoveryTask::Error& error) const {
+  switch (error) {
+    case IsolatedWebAppUpdateDiscoveryTask::Error::
+        kUpdateManifestDownloadFailed:
+      return IsolatedWebAppUpdateError::kUpdateManifestDownloadFailed;
+    case IsolatedWebAppUpdateDiscoveryTask::Error::kUpdateManifestInvalidJson:
+      return IsolatedWebAppUpdateError::kUpdateManifestInvalidJson;
+    case IsolatedWebAppUpdateDiscoveryTask::Error::
+        kUpdateManifestInvalidManifest:
+      return IsolatedWebAppUpdateError::kUpdateManifestInvalidManifest;
+    case IsolatedWebAppUpdateDiscoveryTask::Error::
+        kUpdateManifestNoApplicableVersion:
+      return IsolatedWebAppUpdateError::kUpdateManifestNoApplicableVersion;
+    case IsolatedWebAppUpdateDiscoveryTask::Error::kIwaNotInstalled:
+      return IsolatedWebAppUpdateError::kIwaNotInstalled;
+    case IsolatedWebAppUpdateDiscoveryTask::Error::kDownloadPathCreationFailed:
+      return IsolatedWebAppUpdateError::kDownloadPathCreationFailed;
+    case IsolatedWebAppUpdateDiscoveryTask::Error::kBundleDownloadError:
+      return IsolatedWebAppUpdateError::kBundleDownloadError;
+    case IsolatedWebAppUpdateDiscoveryTask::Error::kUpdateDryRunFailed:
+      return IsolatedWebAppUpdateError::kUpdateDryRunFailed;
+  }
 }
 
 }  // namespace web_app

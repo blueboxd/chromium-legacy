@@ -10,6 +10,7 @@
 #include <optional>
 #include <set>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "base/callback_list.h"
@@ -43,6 +44,10 @@ namespace user_manager {
 // Feature that removes legacy supervised users.
 BASE_DECLARE_FEATURE(kRemoveLegacySupervisedUsersOnStartup);
 
+// Feature that removes deprecated ARC kiosk users.
+USER_MANAGER_EXPORT
+BASE_DECLARE_FEATURE(kRemoveDeprecatedArcKioskUsersOnStartup);
+
 // Base implementation of the UserManager interface.
 class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
  public:
@@ -53,7 +58,8 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   // should stop supporting devices with LSUs by 2024.
   // These values are logged to UMA. Entries should not be renumbered and
   // numeric values should never be reused. Please keep in sync with
-  // "LegacySupervisedUserStatus" in src/tools/metrics/histograms/enums.xml.
+  // "LegacySupervisedUserStatus" in
+  // src/tools/metrics/histograms/metadata/families/enums.xml.
   enum class LegacySupervisedUserStatus {
     // Non-LSU Gaia user displayed on login screen.
     kGaiaUserDisplayed = 0,
@@ -63,10 +69,30 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
     // LSU attempted to delete cryptohome. Expect this count to decline to zero
     // over time as we delete LSUs.
     kLSUDeleted = 2,
-    // Add future entires above this comment, in sync with
-    // "LegacySupervisedUserStatus" in src/tools/metrics/histograms/enums.xml.
+    // Add future entries above this comment, in sync with
+    // "LegacySupervisedUserStatus" in
+    // src/tools/metrics/histograms/metadata/families/enums.xml.
     // Update kMaxValue to the last value.
     kMaxValue = kLSUDeleted
+  };
+
+  // These enum values represent a deprecated ARC kiosk user's status on the
+  // sign in screen.
+  // TODO(b/355590943): Remove once all ARC kiosk users are deleted in the wild.
+  // ARC Kiosk has been deprecated and removed in m126. However, the accounts
+  // still exist on the devices if configured prior to m126, but hidden. These
+  // values are logged to UMA. Entries should not be renumbered and numeric
+  // values should never be reused. Please keep in sync with
+  // "DeprecatedArcKioskUserStatus" in src/tools/metrics/histograms/enums.xml.
+  enum class DeprecatedArcKioskUserStatus {
+    // ARC kiosk hidden on login screen. Expect this count to decline to zero
+    // over
+    // time.
+    kHidden = 0,
+    // Attempted to delete cryptohome. Expect this count to decline to zero
+    // over time.
+    kDeleted = 1,
+    kMaxValue = kDeleted
   };
 
   // Delegate interface to inject //chrome/* dependency.
@@ -85,6 +111,19 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
 
     // Returns whether user session restore is in progress.
     virtual bool IsUserSessionRestoreInProgress() = 0;
+
+    // Returns UserType for the DeviceLocalAccount of the given `email`.
+    virtual std::optional<UserType> GetDeviceLocalAccountUserType(
+        std::string_view email) = 0;
+
+    // Verifies the Profile's state for the given `user` on login.
+    virtual void CheckProfileOnLogin(const User& user) = 0;
+
+    // Removes the Profile tied to the `account_id`.
+    virtual void RemoveProfileByAccountId(const AccountId& account_id) = 0;
+
+    // Triggers to remove cryptohome for the user identified by `account_id`
+    virtual void RemoveCryptohomeAsync(const AccountId& account_id) = 0;
   };
 
   // Creates UserManagerBase with |task_runner| for UI thread, and given
@@ -102,6 +141,11 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   // Histogram for tracking the number of deprecated legacy supervised user
   // cryptohomes remaining in the wild.
   static const char kLegacySupervisedUsersHistogramName[];
+
+  // Histogram for tracking the number of deprecated ARC kiosk user
+  // cryptohomes remaining in the wild.
+  // TODO(b/355590943): clean up once there is no ARC kiosk records.
+  static const char kDeprecatedArcKioskUsersHistogramName[];
 
   // Registers UserManagerBase preferences.
   static void RegisterPrefs(PrefRegistrySimple* registry);
@@ -151,6 +195,9 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
                             const std::string& display_email) override;
   UserType GetUserType(const AccountId& account_id) override;
   void SaveUserType(const User* user) override;
+  void SetUserUsingSaml(const AccountId& account_id,
+                        bool using_saml,
+                        bool using_saml_principals_api) override;
   std::optional<std::string> GetOwnerEmail() override;
   void RecordOwner(const AccountId& owner) override;
   void UpdateUserAccountData(const AccountId& account_id,
@@ -169,7 +216,6 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   bool IsLoggedInAsManagedGuestSession() const override;
   bool IsLoggedInAsGuest() const override;
   bool IsLoggedInAsKioskApp() const override;
-  bool IsLoggedInAsArcKioskApp() const override;
   bool IsLoggedInAsWebKioskApp() const override;
   bool IsLoggedInAsAnyKioskApp() const override;
   bool IsLoggedInAsStub() const override;
@@ -199,8 +245,15 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   void NotifyUserRemoved(const AccountId& account_id,
                          UserRemovalReason reason) override;
   void NotifyUserNotAllowed(const std::string& user_email) final;
+  bool IsGuestSessionAllowed() const override;
+  bool IsGaiaUserAllowed(const User& user) const override;
+  bool IsUserAllowed(const User& user) const override;
   PrefService* GetLocalState() const final;
   bool IsFirstExecAfterBoot() const final;
+  bool IsDeprecatedSupervisedAccountId(
+      const AccountId& account_id) const override;
+  bool IsDeviceLocalAccountMarkedForRemoval(
+      const AccountId& account_id) const override;
   void SetUserAffiliated(const AccountId& account_id,
                          bool is_affiliated) override;
   bool HasBrowserRestarted() const final;
@@ -239,14 +292,9 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   // equals to active_user_, active_user_ is reset to NULL.
   virtual void DeleteUser(User* user);
 
-  // Loads |users_| from Local State if the list has not been loaded yet.
-  // Subsequent calls have no effect. Must be called on the UI thread.
-  virtual void EnsureUsersLoaded();
-
   // Loads device local accounts from the Local state and fills in
   // |device_local_accounts_set|.
-  virtual void LoadDeviceLocalAccounts(
-      std::set<AccountId>* device_local_accounts_set) = 0;
+  void LoadDeviceLocalAccounts(std::set<AccountId>* device_local_accounts_set);
 
   // Notifies observers that active user has changed.
   void NotifyActiveUserChanged(User* active_user);
@@ -260,13 +308,6 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   // Notifies observers that another user was added to the session.
   void NotifyUserAddedToSession(const User* added_user);
 
-  // Implementation for RemoveUser method. It is synchronous. It is called from
-  // RemoveUserInternal after owner check.
-  // Pass |account_id| by value here to avoid use-after-free. Original
-  // |account_id| could be destroyed during the user removal.
-  virtual void RemoveNonOwnerUserInternal(AccountId account_id,
-                                          UserRemovalReason reason);
-
   // Removes a regular or supervised user from the user list.
   // Returns the user if found or NULL otherwise.
   // Also removes the user from the persistent user list.
@@ -279,32 +320,24 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   // via OnUserToBeRemoved, OnUserRemoved and LocalStateChanged.
   // If |trigger_cryptohome_removal| is set to true, this triggeres an
   // asynchronous operation to remove the user data in Cryptohome.
-  void RemoveUserFromListImpl(const AccountId& account_id,
+  void RemoveUserFromListImpl(AccountId account_id,
                               std::optional<UserRemovalReason> reason,
                               bool trigger_cryptohome_removal);
 
   // Implementation for RemoveUser method. This is an asynchronous part of the
   // method, that verifies that owner will not get deleted, and calls
   // |RemoveNonOwnerUserInternal|.
-  virtual void RemoveUserInternal(const AccountId& account_id,
-                                  UserRemovalReason reason);
+  void RemoveUserInternal(const AccountId& account_id,
+                          UserRemovalReason reason);
 
   // Removes data stored or cached outside the user's cryptohome (wallpaper,
   // avatar, OAuth token status, display name, display email).
   virtual void RemoveNonCryptohomeData(const AccountId& account_id);
 
-  // Check for a particular user type.
-
-  // These methods are called when corresponding user type has signed in.
-
-  virtual bool IsEphemeralAccountIdByPolicy(
-      const AccountId& account_id) const = 0;
-
   // Getters/setters for private members.
 
   const EphemeralModeConfig& GetEphemeralModeConfig() const;
-  virtual void SetEphemeralModeConfig(
-      EphemeralModeConfig ephemeral_mode_config);
+  void SetEphemeralModeConfig(EphemeralModeConfig ephemeral_mode_config);
 
   virtual void ResetOwnerId();
   virtual void SetOwnerId(const AccountId& owner_account_id);
@@ -349,9 +382,9 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   UserList lru_logged_in_users_;
 
  private:
-  // Stages of loading user list from preferences. Some methods can have
-  // different behavior depending on stage.
-  enum UserLoadStage { STAGE_NOT_LOADED = 0, STAGE_LOADING, STAGE_LOADED };
+  // Loads |users_| from Local State if the list has not been loaded yet.
+  // Subsequent calls have no effect. Must be called on the UI thread.
+  void EnsureUsersLoaded();
 
   // Returns a list of users who have logged into this device previously.
   // Same as GetUsers but used if you need to modify User from that list.
@@ -411,6 +444,11 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
 
   void RemoveLegacySupervisedUser(const AccountId& account_id);
 
+  // Returns true if |account_id| is a deprecated ARC kiosk account.
+  // TODO(b/355590943): Check if it is not used anymore and remove it.
+  bool IsDeprecatedArcKioskAccountId(const AccountId& account_id) const;
+  void RemoveDeprecatedArcKioskUser(const AccountId& account_id);
+
   std::unique_ptr<Delegate> delegate_;
 
   // TaskRunner for UI thread.
@@ -423,9 +461,6 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
 
   // Handles multi-user sign-in policy.
   MultiUserSignInPolicyController multi_user_sign_in_policy_controller_;
-
-  // Indicates stage of loading user from prefs.
-  UserLoadStage user_loading_stage_ = STAGE_NOT_LOADED;
 
   // Cached flag of whether the currently logged-in user existed before this
   // login.

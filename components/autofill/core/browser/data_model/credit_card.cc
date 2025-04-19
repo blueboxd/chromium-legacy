@@ -26,8 +26,8 @@
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_type.h"
-#include "components/autofill/core/browser/data_model/autofill_metadata.h"
 #include "components/autofill/core/browser/data_model/data_model_utils.h"
+#include "components/autofill/core/browser/data_model/payments_metadata.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/payments/constants.h"
@@ -37,13 +37,12 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_regexes.h"
+#include "components/autofill/core/common/credit_card_network_identifiers.h"
 #include "components/autofill/core/common/credit_card_number_validation.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
-
-using base::ASCIIToUTF16;
 
 namespace autofill {
 
@@ -98,7 +97,7 @@ std::u16string NetworkForFill(const std::string& network) {
 std::u16string GetLastFourDigits(const std::u16string& number) {
   static const size_t kNumLastDigits = 4;
 
-  std::u16string stripped = CreditCard::StripSeparators(number);
+  std::u16string stripped = StripCardNumberSeparators(number);
   if (stripped.size() <= kNumLastDigits)
     return stripped;
 
@@ -245,11 +244,6 @@ CreditCard& CreditCard::operator=(CreditCard&& credit_card) = default;
 CreditCard::~CreditCard() = default;
 
 // static
-const std::u16string CreditCard::StripSeparators(const std::u16string& number) {
-  return StripCardNumberSeparators(number);
-}
-
-// static
 std::u16string CreditCard::NetworkForDisplay(const std::string& network) {
   if (kGenericCard == network)
     return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_GENERIC);
@@ -304,9 +298,11 @@ int CreditCard::IconResourceId(Suggestion::Icon icon) {
     case Suggestion::Icon::kDelete:
     case Suggestion::Icon::kDevice:
     case Suggestion::Icon::kEdit:
+    case Suggestion::Icon::kEmail:
     case Suggestion::Icon::kEmpty:
     case Suggestion::Icon::kGlobe:
     case Suggestion::Icon::kGoogle:
+    case Suggestion::Icon::kGoogleMonochrome:
     case Suggestion::Icon::kGooglePasswordManager:
     case Suggestion::Icon::kGooglePay:
     case Suggestion::Icon::kGooglePayDark:
@@ -331,11 +327,6 @@ int CreditCard::IconResourceId(Suggestion::Icon icon) {
 // static
 int CreditCard::IconResourceId(std::string_view icon_str) {
   return IconResourceId(ConvertCardNetworkIntoIcon(icon_str));
-}
-
-// static
-const char* CreditCard::GetCardNetwork(const std::u16string& number) {
-  return autofill::GetCardNetwork(number);
 }
 
 // static
@@ -386,53 +377,64 @@ void CreditCard::SetNetworkForMaskedCard(std::string_view network) {
   network_ = std::string(network);
 }
 
-AutofillMetadata CreditCard::GetMetadata() const {
-  AutofillMetadata metadata = AutofillDataModel::GetMetadata();
+PaymentsMetadata CreditCard::GetMetadata() const {
+  PaymentsMetadata metadata(*this);
   metadata.id = (record_type_ == RecordType::kLocalCard ? guid() : server_id_);
   metadata.billing_address_id = billing_address_id_;
   return metadata;
 }
 
-double CreditCard::GetRankingScore(base::Time current_time) const {
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillEnableRankingFormulaCreditCards)) {
-    int virtual_card_boost =
-        virtual_card_enrollment_state_ != VirtualCardEnrollmentState::kEnrolled
-            ? 0
-            : features::kAutofillRankingFormulaVirtualCardBoost.Get() *
-                  exp(-GetDaysSinceLastUse(current_time) /
-                      features::kAutofillRankingFormulaVirtualCardBoostHalfLife
-                          .Get());
-
-    // Exponentially decay the use count by the days since the data model was
-    // last used. Add a virtual card boost if the model is a virtual card.
-    return (log10(use_count() + 1) *
-            exp(-GetDaysSinceLastUse(current_time) /
-                features::kAutofillRankingFormulaCreditCardsUsageHalfLife
-                    .Get())) +
-           virtual_card_boost;
+double CreditCard::GetRankingScore(base::Time current_time,
+                                   bool use_frecency) const {
+  if (use_frecency || !base::FeatureList::IsEnabled(
+                          features::kAutofillEnableRankingFormulaCreditCards)) {
+    // Default to legacy frecency scoring.
+    return AutofillDataModel::GetRankingScore(current_time);
   }
 
-  // Default to legacy frecency scoring.
-  return AutofillDataModel::GetRankingScore(current_time);
+  // Calculate score with new ranking algorithm. The new algorithm is only used
+  // when `use_frecency` is false and the new ranking experiment is enabled.
+  const int virtual_card_boost =
+      virtual_card_enrollment_state_ != VirtualCardEnrollmentState::kEnrolled
+          ? 0
+          : features::kAutofillRankingFormulaVirtualCardBoost.Get() *
+                exp(-GetDaysSinceLastUse(current_time) /
+                    features::kAutofillRankingFormulaVirtualCardBoostHalfLife
+                        .Get());
+
+  // Exponentially decay the use count by the days since the data model was
+  // last used. Add a virtual card boost if the model is a virtual card.
+  return (log10(use_count() + 1) *
+          exp(-GetDaysSinceLastUse(current_time) /
+              features::kAutofillRankingFormulaCreditCardsUsageHalfLife
+                  .Get())) +
+         virtual_card_boost;
 }
 
-bool CreditCard::SetMetadata(const AutofillMetadata& metadata) {
+bool CreditCard::HasGreaterRankingThan(const CreditCard& other,
+                                       base::Time comparison_time,
+                                       bool use_frecency) const {
+  const double score = GetRankingScore(comparison_time, use_frecency);
+  const double other_score =
+      other.GetRankingScore(comparison_time, use_frecency);
+  return AutofillDataModel::CompareRankingScores(score, other_score,
+                                                 other.use_date());
+}
+
+bool CreditCard::SetMetadata(const PaymentsMetadata& metadata) {
   // Make sure the ids matches.
   if (metadata.id !=
       (record_type_ == RecordType::kLocalCard ? guid() : server_id_)) {
     return false;
   }
-
-  if (!AutofillDataModel::SetMetadata(metadata))
-    return false;
-
+  set_use_count(metadata.use_count);
+  set_use_date(metadata.use_date);
   billing_address_id_ = metadata.billing_address_id;
   return true;
 }
 
 bool CreditCard::IsDeletable() const {
-  return AutofillDataModel::IsDeletable() &&
+  return IsAutofillEntryWithUseDateDeletable(use_date()) &&
          IsExpired(AutofillClock::Now() - kDisusedDataModelDeletionTimeDelta);
 }
 
@@ -496,7 +498,9 @@ std::u16string CreditCard::GetRawInfo(FieldType type) const {
 void CreditCard::SetRawInfoWithVerificationStatus(FieldType type,
                                                   const std::u16string& value,
                                                   VerificationStatus status) {
-  DCHECK_EQ(FieldTypeGroup::kCreditCard, GroupTypeOfFieldType(type));
+  DCHECK(FieldTypeGroupSet(
+             {FieldTypeGroup::kCreditCard, FieldTypeGroup::kStandaloneCvcField})
+             .contains(GroupTypeOfFieldType(type)));
   switch (type) {
     case CREDIT_CARD_NAME_FULL:
       name_on_card_ = value;
@@ -566,14 +570,13 @@ void CreditCard::GetMatchingTypes(const std::u16string& text,
                                   FieldTypeSet* matching_types) const {
   FormGroup::GetMatchingTypes(text, app_locale, matching_types);
 
-  std::u16string card_number =
-      GetInfo(AutofillType(CREDIT_CARD_NUMBER), app_locale);
+  std::u16string card_number = GetInfo(CREDIT_CARD_NUMBER, app_locale);
   if (!card_number.empty()) {
     // We only have the last four digits for masked cards, so match against
     // that if |this| is a masked card.
     bool numbers_match = record_type_ == RecordType::kMaskedServerCard
                              ? GetLastFourDigits(text) == LastFourDigits()
-                             : StripSeparators(text) == card_number;
+                             : StripCardNumberSeparators(text) == card_number;
     if (numbers_match)
       matching_types->insert(CREDIT_CARD_NUMBER);
   }
@@ -622,8 +625,8 @@ void CreditCard::SetNickname(const std::u16string& nickname) {
 
 bool CreditCard::UpdateFromImportedCard(const CreditCard& imported_card,
                                         const std::string& app_locale) {
-  if (this->GetInfo(AutofillType(CREDIT_CARD_NUMBER), app_locale) !=
-      imported_card.GetInfo(AutofillType(CREDIT_CARD_NUMBER), app_locale)) {
+  if (this->GetInfo(CREDIT_CARD_NUMBER, app_locale) !=
+      imported_card.GetInfo(CREDIT_CARD_NUMBER, app_locale)) {
     return false;
   }
 
@@ -813,7 +816,8 @@ bool CreditCard::HasSameNumberAs(const CreditCard& other) const {
     return LastFourDigits() == other.LastFourDigits();
   }
 
-  return StripSeparators(number_) == StripSeparators(other.number_);
+  return StripCardNumberSeparators(number_) ==
+         StripCardNumberSeparators(other.number_);
 }
 
 bool CreditCard::HasSameExpirationDateAs(const CreditCard& other) const {
@@ -937,7 +941,7 @@ std::u16string CreditCard::LastFourDigits() const {
 }
 
 std::u16string CreditCard::FullDigitsForDisplay() const {
-  std::u16string stripped = CreditCard::StripSeparators(number_);
+  std::u16string stripped = StripCardNumberSeparators(number_);
   if (stripped.size() == 16) {
     return AddWhiteSpaceSeparatorForNumber(stripped,
                                            k16DigitNumberSegmentations);
@@ -1025,14 +1029,14 @@ std::u16string CreditCard::CardIdentifierStringAndDescriptiveExpiration(
   return l10n_util::GetStringFUTF16(
       IDS_AUTOFILL_CREDIT_CARD_TWO_LINE_LABEL_FROM_NAME,
       CardNameAndLastFourDigits(customized_nickname),
-      GetInfo(AutofillType(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR), app_locale));
+      GetInfo(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR, app_locale));
 }
 
 std::u16string CreditCard::DescriptiveExpiration(
     const std::string& app_locale) const {
   return l10n_util::GetStringFUTF16(
       IDS_AUTOFILL_CREDIT_CARD_TWO_LINE_LABEL_FROM_CARD_NUMBER,
-      GetInfo(AutofillType(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR), app_locale));
+      GetInfo(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR, app_locale));
 }
 
 std::u16string CreditCard::AbbreviatedExpirationDateForDisplay(
@@ -1111,7 +1115,7 @@ std::u16string CreditCard::GetInfoImpl(const AutofillType& type,
     if (record_type() == RecordType::kMaskedServerCard) {
       return NetworkAndLastFourDigits();
     }
-    return StripSeparators(number_);
+    return StripCardNumberSeparators(number_);
   }
   return GetRawInfo(storable_type);
 }
@@ -1126,8 +1130,8 @@ bool CreditCard::SetInfoWithVerificationStatusImpl(
     return SetExpirationMonthFromString(value, app_locale);
 
   if (storable_type == CREDIT_CARD_NUMBER) {
-    SetRawInfoWithVerificationStatus(storable_type, StripSeparators(value),
-                                     status);
+    SetRawInfoWithVerificationStatus(storable_type,
+                                     StripCardNumberSeparators(value), status);
   } else {
     SetRawInfoWithVerificationStatus(storable_type, value, status);
   }
@@ -1159,18 +1163,18 @@ void CreditCard::SetNumber(const std::u16string& number) {
   // Set the type based on the card number, but only for full numbers, not
   // when we have masked cards from the server (last 4 digits).
   if (record_type_ != RecordType::kMaskedServerCard) {
-    network_ = GetCardNetwork(StripSeparators(number_));
+    network_ = GetCardNetwork(StripCardNumberSeparators(number_));
   }
 }
 
 void CreditCard::RecordAndLogUse() {
   UMA_HISTOGRAM_COUNTS_1000("Autofill.DaysSinceLastUse.CreditCard",
                             (AutofillClock::Now() - use_date()).InDays());
-  set_use_date(AutofillClock::Now());
+  RecordUseDate(AutofillClock::Now());
   set_use_count(use_count() + 1);
 }
 
-bool CreditCard::IsExpired(const base::Time& current_time) const {
+bool CreditCard::IsExpired(base::Time current_time) const {
   return !IsValidCreditCardExpirationDate(expiration_year_, expiration_month_,
                                           current_time);
 }

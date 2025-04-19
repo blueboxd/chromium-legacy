@@ -8,6 +8,7 @@ import './sandboxed_load_time_data.js';
 
 import {COLOR_PROVIDER_CHANGED, ColorChangeUpdater} from '//resources/cr_components/color_change_listener/colors_css_updater.js';
 import type {RectF} from '//resources/mojo/ui/gfx/geometry/mojom/geometry.mojom-webui.js';
+import type {Url as MojoUrl} from '//resources/mojo/url/mojom/url.mojom-webui.js';
 import {assertCast, MessagePipe} from '//system_apps/message_pipe.js';
 
 import type {MahiUntrustedPageHandlerRemote, OcrUntrustedPageHandlerRemote, PageMetadata} from './media_app_ui_untrusted.mojom-webui.js';
@@ -23,6 +24,12 @@ const parentMessagePipe = new MessagePipe('chrome://media-app', window.parent);
  * know the name until the file is navigated to.
  */
 const PLACEHOLDER_BLOB = new Blob([]);
+
+/**
+ * On PDF loaded, try to get this byte size of text content to check whether
+ * this file contains text.
+ */
+const PDF_TEXT_CONTENT_PEEK_BYTE_SIZE = 100;
 
 /**
  * A file received from the privileged context, and decorated with IPC methods
@@ -290,6 +297,8 @@ ocrCallbackRouter.requestBitmap.addListener(async (requestedPageId: string) => {
 });
 ocrCallbackRouter.setViewport.addListener(
     (viewportBox: RectF) => void getApp()?.setViewport(viewportBox));
+ocrCallbackRouter.setPdfOcrEnabled.addListener(
+    (enabled: boolean) => void getApp()?.setPdfOcrEnabled(enabled));
 ocrCallbackRouter.onConnectionError.addListener(() => {
   console.warn('Calling MediaApp RequestBitmap() failed to return bitmap.');
 });
@@ -318,6 +327,18 @@ const DELEGATE: ClientApiDelegate = {
         await parentMessagePipe.sendMessage(Message.OPEN_FEEDBACK_DIALOG);
     return response['errorMessage'] as string;
   },
+  async submitForm(
+      url: MojoUrl,
+      payload: number[],
+      header: string,
+  ) {
+    const msg = {
+      url,
+      payload,
+      header,
+    };
+    await parentMessagePipe.sendMessage(Message.SUBMIT_FORM, msg);
+  },
   async toggleBrowserFullscreenMode() {
     await parentMessagePipe.sendMessage(Message.TOGGLE_BROWSER_FULLSCREEN_MODE);
   },
@@ -338,14 +359,19 @@ const DELEGATE: ClientApiDelegate = {
   },
   notifyCurrentFile(name?: string, type?: string) {
     parentMessagePipe.sendMessage(Message.NOTIFY_CURRENT_FILE, {name, type});
+  },
+  notifyFileOpened(name?: string, type?: string) {
+    // Close any existing pipes when opening a new file.
+    ocrUntrustedPageHandler?.$.close();
+    mahiUntrustedPageHandler?.$.close();
+
     if (type === 'application/pdf') {
       ocrUntrustedPageHandler = connectToOcrHandler();
       mahiUntrustedPageHandler = connectToMahiHandler(name);
-    } else {
-      // If the new file is not PDF, disconnect PDF page handlers if any.
-      ocrUntrustedPageHandler?.$.close();
-      mahiUntrustedPageHandler?.$.close();
     }
+  },
+  notifyFilenameChanged(name: string) {
+    mahiUntrustedPageHandler?.onPdfFileNameUpdated(name);
   },
   async extractPreview(file: Blob) {
     try {
@@ -384,7 +410,21 @@ const DELEGATE: ClientApiDelegate = {
     await ocrUntrustedPageHandler?.viewportUpdated(viewportBox, scaleFactor);
   },
   async onPdfLoaded() {
-    await mahiUntrustedPageHandler?.onPdfLoaded();
+    let hasText = false;
+    const app = getApp();
+    if (app) {
+      const peekContent =
+          (await app.getPdfContent(PDF_TEXT_CONTENT_PEEK_BYTE_SIZE))
+              ?.toString() ??
+          '';
+      hasText = peekContent.trim() !== '';
+    }
+
+    if (!hasText) {
+      mahiUntrustedPageHandler?.$.close();
+    } else {
+      await mahiUntrustedPageHandler?.onPdfLoaded();
+    }
   },
   async onPdfContextMenuShow(anchor: RectF) {
     await mahiUntrustedPageHandler?.onPdfContextMenuShow(anchor);

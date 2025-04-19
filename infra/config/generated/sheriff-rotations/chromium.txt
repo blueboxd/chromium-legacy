@@ -48,7 +48,6 @@ ci/Mac ASan 64 Builder
 ci/Mac ASan 64 Tests (1)
 ci/Mac Builder
 ci/Mac Builder (dbg)
-ci/Mac10.15 Tests
 ci/Mac11 Tests
 ci/Mac12 Tests
 ci/Mac13 Tests
@@ -105,13 +104,13 @@ ci/linux-chromeos-dbg
 ci/linux-chromeos-rel
 ci/linux-extended-tracing-rel
 ci/linux-gcc-rel
-ci/linux-lacros-asan-lsan-rel
 ci/linux-lacros-builder-rel
 ci/linux-lacros-dbg
 ci/linux-lacros-tester-rel
 ci/linux-presubmit
 ci/linux-ubsan-vptr
 ci/linux-v4l2-codec-rel
+ci/linux-win-cross-rel
 ci/mac-archive-rel
 ci/mac-arm64-archive-rel
 ci/mac-arm64-dbg
@@ -121,11 +120,13 @@ ci/mac-official
 ci/mac11-arm64-rel-tests
 ci/mac12-arm64-rel-tests
 ci/mac13-arm64-rel-tests
+ci/mac14-arm64-rel-tests
 ci/win-archive-rel
 ci/win-arm64-dbg
 ci/win-arm64-rel
 ci/win-asan
 ci/win-official
 ci/win-presubmit
+ci/win11-arm64-rel-tests
 ci/win32-archive-rel
 ci/win32-official

@@ -3,164 +3,290 @@
 // found in the LICENSE file.
 import 'chrome-untrusted://read-anything-side-panel.top-chrome/read_anything.js';
 
-import {convertLangOrLocaleForVoicePackManager, convertLangToAnAvailableLangIfPresent, createInitialListOfEnabledLanguages, mojoVoicePackStatusToVoicePackStatusEnum, VoicePackStatus} from 'chrome-untrusted://read-anything-side-panel.top-chrome/read_anything.js';
+import {convertLangOrLocaleForVoicePackManager, convertLangOrLocaleToExactVoicePackLocale, convertLangToAnAvailableLangIfPresent, createInitialListOfEnabledLanguages, getFilteredVoiceList, mojoVoicePackStatusToVoicePackStatusEnum, VoicePackServerStatusErrorCode, VoicePackServerStatusSuccessCode} from 'chrome-untrusted://read-anything-side-panel.top-chrome/read_anything.js';
 import {assertDeepEquals, assertEquals} from 'chrome-untrusted://webui-test/chai_assert.js';
+
+import {createSpeechSynthesisVoice} from './common.js';
+
 
 suite('voice and language utils', () => {
   test('mojoVoicePackStatusToVoicePackStatusEnum', () => {
     // Success codes
     assertEquals(
-        (mojoVoicePackStatusToVoicePackStatusEnum('kNotInstalled')),
-        VoicePackStatus.EXISTS);
+        VoicePackServerStatusSuccessCode.NOT_INSTALLED,
+        mojoVoicePackStatusToVoicePackStatusEnum('kNotInstalled').code);
     assertEquals(
-        (mojoVoicePackStatusToVoicePackStatusEnum('kInstalled')),
-        VoicePackStatus.DOWNLOADED);
+        VoicePackServerStatusSuccessCode.INSTALLED,
+        mojoVoicePackStatusToVoicePackStatusEnum('kInstalled').code);
     assertEquals(
-        (mojoVoicePackStatusToVoicePackStatusEnum('kInstalling')),
-        VoicePackStatus.INSTALLING);
+        VoicePackServerStatusSuccessCode.INSTALLING,
+        mojoVoicePackStatusToVoicePackStatusEnum('kInstalling').code);
 
     // Error codes
     assertEquals(
-        (mojoVoicePackStatusToVoicePackStatusEnum('kUnknown')),
-        VoicePackStatus.INSTALL_ERROR);
+        VoicePackServerStatusErrorCode.OTHER,
+        mojoVoicePackStatusToVoicePackStatusEnum('kUnknown').code);
     assertEquals(
-        (mojoVoicePackStatusToVoicePackStatusEnum('kOther')),
-        VoicePackStatus.INSTALL_ERROR);
+        VoicePackServerStatusErrorCode.OTHER,
+        mojoVoicePackStatusToVoicePackStatusEnum('kOther').code);
     assertEquals(
-        (mojoVoicePackStatusToVoicePackStatusEnum('kWrongId')),
-        VoicePackStatus.INSTALL_ERROR);
+        VoicePackServerStatusErrorCode.WRONG_ID,
+        mojoVoicePackStatusToVoicePackStatusEnum('kWrongId').code);
     assertEquals(
-        (mojoVoicePackStatusToVoicePackStatusEnum('kNeedReboot')),
-        VoicePackStatus.INSTALL_ERROR);
+        VoicePackServerStatusErrorCode.NEED_REBOOT,
+        mojoVoicePackStatusToVoicePackStatusEnum('kNeedReboot').code);
     assertEquals(
-        (mojoVoicePackStatusToVoicePackStatusEnum('kAllocation')),
-        VoicePackStatus.INSTALL_ERROR);
+        VoicePackServerStatusErrorCode.ALLOCATION,
+        mojoVoicePackStatusToVoicePackStatusEnum('kAllocation').code);
     assertEquals(
-        (mojoVoicePackStatusToVoicePackStatusEnum('kUnsupportedPlatform')),
-        VoicePackStatus.INSTALL_ERROR);
+        VoicePackServerStatusErrorCode.UNSUPPORTED_PLATFORM,
+        mojoVoicePackStatusToVoicePackStatusEnum('kUnsupportedPlatform').code);
   });
 
   test('convertLangOrLocaleForVoicePackManager', () => {
     // Converts to locale when necessary
-    assertEquals(convertLangOrLocaleForVoicePackManager('en'), 'en-us');
-    assertEquals(convertLangOrLocaleForVoicePackManager('es'), 'es-es');
-    assertEquals(convertLangOrLocaleForVoicePackManager('pt'), 'pt-br');
+    assertEquals('en-us', convertLangOrLocaleForVoicePackManager('en'));
+    assertEquals('es-es', convertLangOrLocaleForVoicePackManager('es'));
+    assertEquals('pt-br', convertLangOrLocaleForVoicePackManager('pt'));
 
     // Converts to base language when necessary
-    assertEquals(convertLangOrLocaleForVoicePackManager('fr-FR'), 'fr');
-    assertEquals(convertLangOrLocaleForVoicePackManager('fr-Bf'), 'fr');
+    assertEquals('fr', convertLangOrLocaleForVoicePackManager('fr-FR'));
+    assertEquals('fr', convertLangOrLocaleForVoicePackManager('fr-Bf'));
 
 
     // Converts from unsupported locale to supported locale when necessary
-    assertEquals(convertLangOrLocaleForVoicePackManager('en-UK'), 'en-us');
-    assertEquals(convertLangOrLocaleForVoicePackManager('es-MX'), 'es-es');
+    assertEquals('en-us', convertLangOrLocaleForVoicePackManager('en-UK'));
+    assertEquals('es-es', convertLangOrLocaleForVoicePackManager('es-MX'));
 
     // Keeps base language when necessary
-    assertEquals(convertLangOrLocaleForVoicePackManager('nl'), 'nl');
-    assertEquals(convertLangOrLocaleForVoicePackManager('yue'), 'yue');
+    assertEquals('nl', convertLangOrLocaleForVoicePackManager('nl'));
+    assertEquals('yue', convertLangOrLocaleForVoicePackManager('yue'));
 
     // Keeps locale when necesseary
-    assertEquals(convertLangOrLocaleForVoicePackManager('en-GB'), 'en-gb');
-    assertEquals(convertLangOrLocaleForVoicePackManager('es-es'), 'es-es');
-    assertEquals(convertLangOrLocaleForVoicePackManager('pt-Br'), 'pt-br');
+    assertEquals('en-gb', convertLangOrLocaleForVoicePackManager('en-GB'));
+    assertEquals('es-es', convertLangOrLocaleForVoicePackManager('es-es'));
+    assertEquals('pt-br', convertLangOrLocaleForVoicePackManager('pt-Br'));
 
     // Unsupported languages are undefined
-    assertEquals(convertLangOrLocaleForVoicePackManager('cn'), undefined);
+    assertEquals(undefined, convertLangOrLocaleForVoicePackManager('cn'));
+
+    // Uses enabled langs when available
+    const enabledLangs = ['en-au', 'es-us', 'pt-pt'];
+    assertEquals(
+        'en-au', convertLangOrLocaleForVoicePackManager('en', enabledLangs));
+    assertEquals(
+        'es-us', convertLangOrLocaleForVoicePackManager('es', enabledLangs));
+    assertEquals(
+        'pt-pt', convertLangOrLocaleForVoicePackManager('pt', enabledLangs));
+
+    // Uses available langs when available
+    const availableLangs = ['en-gb', 'es-us', 'pt-pt'];
+    assertEquals(
+        'en-gb',
+        convertLangOrLocaleForVoicePackManager('en', [], availableLangs));
+    assertEquals(
+        'es-us',
+        convertLangOrLocaleForVoicePackManager('es', [], availableLangs));
+    assertEquals(
+        'pt-pt',
+        convertLangOrLocaleForVoicePackManager('pt', [], availableLangs));
+  });
+
+  test('convertLangOrLocaleToExactVoicePackLocale', () => {
+    // Converts to voice pack locale when multiple supported
+    assertEquals('en-us', convertLangOrLocaleToExactVoicePackLocale('en'));
+    assertEquals('es-es', convertLangOrLocaleToExactVoicePackLocale('es'));
+    assertEquals('pt-br', convertLangOrLocaleToExactVoicePackLocale('pt'));
+
+    // Converts to voice pack locale when only one locale supported
+    assertEquals('fr-fr', convertLangOrLocaleToExactVoicePackLocale('fr'));
+    assertEquals('it-it', convertLangOrLocaleToExactVoicePackLocale('it'));
+    assertEquals('bn-bd', convertLangOrLocaleToExactVoicePackLocale('bn'));
+
+    // Converts from unsupported locale to supported locale when necessary
+    assertEquals('en-us', convertLangOrLocaleToExactVoicePackLocale('en-UK'));
+    assertEquals('es-es', convertLangOrLocaleToExactVoicePackLocale('es-MX'));
+
+    // Keeps locale when necesseary
+    assertEquals('en-gb', convertLangOrLocaleToExactVoicePackLocale('en-GB'));
+    assertEquals('es-es', convertLangOrLocaleToExactVoicePackLocale('es-es'));
+    assertEquals('pt-br', convertLangOrLocaleToExactVoicePackLocale('pt-Br'));
+
+    // Unsupported languages are undefined
+    assertEquals(undefined, convertLangOrLocaleToExactVoicePackLocale('cn'));
+    assertEquals(undefined, convertLangOrLocaleToExactVoicePackLocale('ar'));
   });
 
   test('convertLangToAnAvailableLangIfPresent', () => {
     // Returns direct matches
     assertEquals(
-        convertLangToAnAvailableLangIfPresent('en-us', ['en', 'fr', 'en-us']),
-        'en-us');
+        'en-us',
+        convertLangToAnAvailableLangIfPresent('en-us', ['en', 'fr', 'en-us']));
     assertEquals(
-        convertLangToAnAvailableLangIfPresent('en', ['en', 'fr', 'en-us']),
-        'en');
+        'en',
+        convertLangToAnAvailableLangIfPresent('en', ['en', 'fr', 'en-us']));
 
     // Finds matching locale for base lang input
     assertEquals(
-        convertLangToAnAvailableLangIfPresent('en', ['en-US', 'fr']), 'en-us');
+        'en-us', convertLangToAnAvailableLangIfPresent('en', ['en-US', 'fr']));
 
     // Finds locale with same base language as input locale, without a direct
     // locale match
     assertEquals(
-        convertLangToAnAvailableLangIfPresent('en-nz', ['en-US', 'fr']),
-        'en-us');
+        'en-us',
+        convertLangToAnAvailableLangIfPresent('en-nz', ['en-US', 'fr']));
 
     // If there's no direct locale match, but our base lang matches both a
     // base lang and a locale with the same base, default to the base lang
     assertEquals(
-        convertLangToAnAvailableLangIfPresent('en-nz', ['en-US', 'en', 'fr']),
-        'en');
+        'en',
+        convertLangToAnAvailableLangIfPresent('en-nz', ['en-US', 'en', 'fr']));
 
     // Uses browser language fallback.
     assertEquals(
-        convertLangToAnAvailableLangIfPresent('es', ['en-US', 'en', 'fr']),
-        chrome.readingMode.defaultLanguageForSpeech);
+        chrome.readingMode.defaultLanguageForSpeech,
+        convertLangToAnAvailableLangIfPresent('es', ['en-US', 'en', 'fr']));
 
     // No match
     assertEquals(
-        convertLangToAnAvailableLangIfPresent('es', ['zh', 'jp', 'fr']),
-        undefined);
+        undefined,
+        convertLangToAnAvailableLangIfPresent('es', ['zh', 'jp', 'fr']));
   });
 
   test('createInitialListOfEnabledLanguages', () => {
     assertDeepEquals(
+        ['en'],
         createInitialListOfEnabledLanguages(
             /* browserOrPageBaseLang= */ 'fr',
             /* storedLanguagesPref= */[], /* availableLangs= */['en'],
-            /* langOfDefaultVoice= */ 'en'),
-        ['en']);
+            /* langOfDefaultVoice= */ 'en'));
 
     assertDeepEquals(
+        ['fr-fr'],
         createInitialListOfEnabledLanguages(
             /* browserOrPageBaseLang= */ 'fr',
             /* storedLanguagesPref= */[], /* availableLangs= */['en', 'fr-FR'],
-            /* langOfDefaultVoice= */ 'en'),
-        ['fr-fr']);
+            /* langOfDefaultVoice= */ 'en'));
 
     assertDeepEquals(
+        ['en-us', 'fr-fr'],
         createInitialListOfEnabledLanguages(
             /* browserOrPageBaseLang= */ 'fr',
             /* storedLanguagesPref= */['en'],
             /* availableLangs= */['en-us', 'fr-FR'],
             /* langOfDefaultVoice= */ 'en')
-            .sort(),
-        ['en-us', 'fr-fr']);
+            .sort());
 
     assertDeepEquals(
+        ['en-uk', 'fr-fr'],
         createInitialListOfEnabledLanguages(
             /* browserOrPageBaseLang= */ 'fr',
             /* storedLanguagesPref= */['en-us'],
             /* availableLangs= */['en-uk', 'fr-FR'],
             /* langOfDefaultVoice= */ undefined)
-            .sort(),
-        ['en-uk', 'fr-fr']);
+            .sort());
 
     assertDeepEquals(
+        ['en-uk'],
         createInitialListOfEnabledLanguages(
             /* browserOrPageBaseLang= */ 'en',
             /* storedLanguagesPref= */['en-uk'],
             /* availableLangs= */['en-uk', 'en-us'],
             /* langOfDefaultVoice= */ undefined)
-            .sort(),
-        ['en-uk']);
+            .sort());
 
     assertDeepEquals(
+        ['en-us'],
         createInitialListOfEnabledLanguages(
             /* browserOrPageBaseLang= */ 'en',
             /* storedLanguagesPref= */['en-us'],
             /* availableLangs= */['en-uk', 'en-us'],
             /* langOfDefaultVoice= */ undefined)
-            .sort(),
-        ['en-us']);
+            .sort());
 
     assertDeepEquals(
+        [],
         createInitialListOfEnabledLanguages(
             /* browserOrPageBaseLang= */ 'fr',
             /* storedLanguagesPref= */[],
             /* availableLangs= */[],
-            /* langOfDefaultVoice= */ undefined),
-        []);
+            /* langOfDefaultVoice= */ undefined));
+  });
+
+  test('getFilteredVoiceList filters remote voices', () => {
+    const voice1 = {
+      default: true,
+      name: 'Eitan',
+      lang: 'en-us',
+      localService: false,
+      voiceURI: '',
+    };
+    const voice2 = {
+      default: false,
+      name: 'Lauren',
+      lang: 'en-us',
+      localService: true,
+      voiceURI: '',
+    };
+    let possibleVoices: SpeechSynthesisVoice[] = [voice1];
+
+    // Remote voices not filtered out with just one voice.
+    assertDeepEquals([voice1], getFilteredVoiceList(possibleVoices));
+
+    possibleVoices = [voice1, voice2];
+    // Remote voices filtered out when a local voice exists
+    assertDeepEquals([voice2], getFilteredVoiceList(possibleVoices));
+  });
+
+  test('getFilteredVoiceList filters Android voices', () => {
+    const voice1 = {
+      default: false,
+      name: 'Xiang',
+      lang: 'en-us',
+      localService: true,
+      voiceURI: '',
+    };
+    const voice2 = {
+      default: true,
+      name: 'Kristi (Android)',
+      lang: 'en-us',
+      localService: true,
+      voiceURI: '',
+    };
+
+    // Android voices should be filtered out only on ChromeOS Ash.
+    const possibleVoices: SpeechSynthesisVoice[] = [voice1, voice2];
+
+    if (chrome.readingMode.isChromeOsAsh) {
+      assertDeepEquals([voice1], getFilteredVoiceList(possibleVoices));
+    } else {
+      assertDeepEquals([voice1, voice2], getFilteredVoiceList(possibleVoices));
+    }
+  });
+
+  test('getFilteredVoiceList filters eSpeak voices', () => {
+    const voice1 = createSpeechSynthesisVoice(
+        {default: true, name: 'eSpeak Yu', localService: true, lang: 'en-us'});
+    const voice2 = createSpeechSynthesisVoice(
+        {default: true, name: 'eSpeak Kristi', localService: true, lang: 'cy'});
+    const voice3 = createSpeechSynthesisVoice({
+      default: true,
+      name: 'eSpeak Lauren',
+      localService: true,
+      lang: 'en-cb',
+    });
+
+    const possibleVoices: SpeechSynthesisVoice[] = [voice1, voice2, voice3];
+
+    if (chrome.readingMode.isChromeOsAsh) {
+      // Welsh isn't a Google TTS locale, so the Welsh eSpeak voice should be
+      // kept, but the English eSpeak voices should be filtered out because
+      // Google TTS voices in English (even if in a different locale) exist.
+      assertDeepEquals([voice2], getFilteredVoiceList(possibleVoices));
+    } else {
+      // eSpeak voices should be filtered out only on ChromeOS Ash.
+      assertDeepEquals(
+          [voice1, voice2, voice3], getFilteredVoiceList(possibleVoices));
+    }
   });
 });

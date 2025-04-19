@@ -114,7 +114,10 @@ void LogAddressProfileImportUkm(
     AutofillProfileImportType import_type,
     AutofillClient::AddressPromptUserDecision user_decision,
     const ProfileImportMetadata& profile_import_metadata,
-    size_t num_edited_fields);
+    size_t num_edited_fields,
+    std::optional<AutofillProfile> import_candidate,
+    const std::vector<const AutofillProfile*>& existing_profiles,
+    std::string_view app_locale);
 
 // Logs the status of an address import requirement defined by type.
 void LogAddressFormImportRequirementMetric(
@@ -133,13 +136,25 @@ void LogProfileImportType(AutofillProfileImportType import_type);
 // Logs the type of a profile import that are used for the silent updates.
 void LogSilentUpdatesProfileImportType(AutofillProfileImportType import_type);
 
-// Logs the user decision for importing a new profile.
+// Logs the user decision for importing a new profile with variants for ready
+// users (users who have at least one profile stored already) and non-ready
+// users. Besides this, decision is also recorded for the subset of ready users
+// who have a a quasi-duplicate profile stored, and also in a separate histogram
+// for all users.
 void LogNewProfileImportDecision(
-    AutofillClient::AddressPromptUserDecision decision);
+    AutofillClient::AddressPromptUserDecision decision,
+    const std::vector<const AutofillProfile*>& existing_profiles,
+    const AutofillProfile& import_candidate,
+    std::string_view app_locale);
 
-// Logs the user decision for updating an exiting profile.
+// Logs the user decision for updating an exiting profile with variants for
+// users who have a quasi-duplicate profile stored (that is not
+// `import_candidate`), and also in a separate histogram for all users
 void LogProfileUpdateImportDecision(
-    AutofillClient::AddressPromptUserDecision decision);
+    AutofillClient::AddressPromptUserDecision decision,
+    const std::vector<const AutofillProfile*>& existing_profiles,
+    const AutofillProfile& import_candidate,
+    std::string_view app_locale);
 
 // Logs if at least one setting-inaccessible field was removed on import.
 void LogRemovedSettingInaccessibleFields(bool did_remove);
@@ -155,6 +170,9 @@ void LogPhoneNumberImportParsingResult(bool parsed_successfully);
 
 // Logs that a specific type was edited in a save prompt.
 void LogNewProfileEditedType(FieldType edited_type);
+
+// Logs which storage a newly imported profile will be saved to.
+void LogNewProfileStorageLocation(const AutofillProfile& import_candidate);
 
 // Logs that a specific type changed in a profile update that received the
 // user |decision|. Note that additional manual edits in the update prompt are

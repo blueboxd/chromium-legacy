@@ -69,9 +69,8 @@ class ExtensionViewViews : public views::WebView,
   void ResizeDueToAutoResize(content::WebContents* web_contents,
                              const gfx::Size& new_size) override;
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
-  bool HandleKeyboardEvent(
-      content::WebContents* source,
-      const content::NativeWebKeyboardEvent& event) override;
+  bool HandleKeyboardEvent(content::WebContents* source,
+                           const input::NativeWebKeyboardEvent& event) override;
   void OnLoaded() override;
 
   // views::WebView:
@@ -89,9 +88,7 @@ class ExtensionViewViews : public views::WebView,
 
   // The container this view is in (not necessarily its direct superview).
   // Note: the view does not own its container.
-  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
-  // #addr-of
-  RAW_PTR_EXCLUSION Container* container_ = nullptr;
+  raw_ptr<Container> container_ = nullptr;
 
   // A handler to handle unhandled keyboard messages coming back from the
   // renderer process.

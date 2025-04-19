@@ -25,6 +25,7 @@
 #include "content/public/browser/web_contents_observer.h"
 
 class LoginUIService;
+enum class ChromeSigninUserChoice;
 
 namespace content {
 class WebUI;
@@ -39,16 +40,6 @@ class SyncSetupInProgressHandle;
 }  // namespace syncer
 
 namespace settings {
-
-// Enum used to share the sign in state with the WebUI.
-// TODO(b/336510160): Look into integrating SYNC_PAUSED value.
-enum class SignedInState {
-  SignedOut = 0,
-  SignedIn = 1,
-  Syncing = 2,
-  SignedInPaused = 3,
-  WebOnlySignedIn = 4,
-};
 
 class PeopleHandler : public SettingsPageUIHandler,
                       public signin::IdentityManager::Observer,
@@ -68,6 +59,11 @@ class PeopleHandler : public SettingsPageUIHandler,
   PeopleHandler& operator=(const PeopleHandler&) = delete;
 
   ~PeopleHandler() override;
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+  void HandleSetChromeSigninUserChoiceForTesting(const std::string& email,
+                                                 ChromeSigninUserChoice choice);
+#endif
 
  protected:
   // Terminates the sync setup flow.
@@ -131,6 +127,7 @@ class PeopleHandler : public SettingsPageUIHandler,
                            DashboardClearWhileSettingsOpen_ConfirmLater);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerDiceTest, StoredAccountsList);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerGuestModeTest, GetStoredAccountsList);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, SyncCookiesDisabled);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, TurnOffSync);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, GetStoredAccountsList);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerMainProfile, Signout);
@@ -140,6 +137,8 @@ class PeopleHandler : public SettingsPageUIHandler,
                            GetStoredAccountsList);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerWebOnlySigninTest,
                            ChromeSigninUserAvailableOnWebSignin);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerWithCookiesSyncTest,
+                           SyncCookiesSupported);
 #if DCHECK_IS_ON()
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerMainProfile, DeleteProfileCrashes);
 #endif

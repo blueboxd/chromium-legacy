@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/342213636): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "content/browser/browser_thread_impl.h"
 
 #include <string>
@@ -259,5 +264,42 @@ void BrowserThread::PostBestEffortTask(
           base::BindOnce(base::IgnoreResult(&base::TaskRunner::PostTask),
                          std::move(task_runner), from_here, std::move(task)));
 }
+
+namespace internal {
+
+bool BrowserThreadChecker::CalledOnValidBrowserThread(
+    BrowserThread::ID thread_identifier) const {
+  return BrowserThread::CurrentlyOn(thread_identifier);
+}
+
+const BrowserThreadChecker& GetBrowserThreadChecker(
+    BrowserThread::ID thread_identifier) {
+  static std::array<BrowserThreadChecker, BrowserThread::ID_COUNT>
+      browser_thread_checkers;
+  return browser_thread_checkers[thread_identifier];
+}
+
+ScopedValidateBrowserThreadChecker::ScopedValidateBrowserThreadChecker(
+    BrowserThread::ID thread_identifier,
+    base::NotFatalUntil fatal_milestone) {
+  const auto& checker = GetBrowserThreadChecker(thread_identifier);
+  CHECK(checker.CalledOnValidBrowserThread(thread_identifier), fatal_milestone)
+      << BrowserThread::GetCurrentlyOnErrorMessage(thread_identifier);
+}
+
+ScopedValidateBrowserThreadChecker::~ScopedValidateBrowserThreadChecker() =
+    default;
+
+#if DCHECK_IS_ON()
+ScopedValidateBrowserThreadDebugChecker::
+    ScopedValidateBrowserThreadDebugChecker(
+        BrowserThread::ID thread_identifier) {
+  const auto& checker = GetBrowserThreadChecker(thread_identifier);
+  DCHECK(checker.CalledOnValidBrowserThread(thread_identifier))
+      << BrowserThread::GetCurrentlyOnErrorMessage(thread_identifier);
+}
+#endif  // DCHECK_IS_ON()
+
+}  // namespace internal
 
 }  // namespace content

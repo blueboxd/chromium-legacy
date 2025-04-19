@@ -10,18 +10,22 @@ import android.view.Window;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.chromium.base.cached_flags.BooleanCachedFieldTrialParameter;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.Supplier;
+import org.chromium.chrome.browser.browser_controls.BottomControlsStacker;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
+import org.chromium.chrome.browser.keyboard_accessory.AccessorySheetVisualStateProvider;
 import org.chromium.chrome.browser.layouts.LayoutManager;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionsVisualState;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.ui.edge_to_edge.EdgeToEdgeController;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
-import org.chromium.components.browser_ui.widget.InsetObserver;
+import org.chromium.ui.InsetObserver;
 
 import java.util.Optional;
 
@@ -35,6 +39,14 @@ import java.util.Optional;
 public class TabbedSystemUiCoordinator {
     private @Nullable TabbedNavigationBarColorController mNavigationBarColorController;
 
+    private static final String NAV_BAR_COLOR_ANIMATION_DISABLED_PARAM = "color_animation_disabled";
+    public static final BooleanCachedFieldTrialParameter
+            NAV_BAR_COLOR_ANIMATION_DISABLED_CACHED_PARAM =
+                    ChromeFeatureList.newBooleanCachedFieldTrialParameter(
+                            ChromeFeatureList.NAV_BAR_COLOR_MATCHES_TAB_BACKGROUND,
+                            NAV_BAR_COLOR_ANIMATION_DISABLED_PARAM,
+                            false);
+
     /**
      * Construct a new {@link TabbedSystemUiCoordinator}.
      *
@@ -44,6 +56,8 @@ public class TabbedSystemUiCoordinator {
      * @param fullscreenManager The {@link FullscreenManager} used for containing activity
      * @param edgeToEdgeControllerSupplier Supplies an {@link EdgeToEdgeController} to detect when
      *     the UI is being drawn edge to edge.
+     * @param bottomControlsStacker The {@link BottomControlsStacker} for interacting with and
+     *     checking the state of the bottom browser controls.
      * @param browserControlsStateProvider Supplies a {@link BrowserControlsStateProvider} for the
      *     browser controls.
      * @param snackbarManagerSupplier Supplies a {@link SnackbarManager} for snackbar management.
@@ -53,6 +67,9 @@ public class TabbedSystemUiCoordinator {
      *     changes to the bottom sheet.
      * @param omniboxSuggestionsVisualState An optional {@link OmniboxSuggestionsVisualState} for
      *     access to the visual state of the omnibox suggestions.
+     * @param accessorySheetVisualStateSupplier Supplies an {@link
+     *     AccessorySheetVisualStateProvider} to watch for visual changes to the keyboard accessory
+     *     sheet.
      * @param insetObserver An {@link InsetObserver} to listen for changes to the window insets.
      */
     public TabbedSystemUiCoordinator(
@@ -61,11 +78,15 @@ public class TabbedSystemUiCoordinator {
             @Nullable ObservableSupplier<LayoutManager> layoutManagerSupplier,
             FullscreenManager fullscreenManager,
             ObservableSupplier<EdgeToEdgeController> edgeToEdgeControllerSupplier,
+            @NonNull BottomControlsStacker bottomControlsStacker,
             @NonNull BrowserControlsStateProvider browserControlsStateProvider,
             @NonNull Supplier<SnackbarManager> snackbarManagerSupplier,
             @NonNull ObservableSupplier<ContextualSearchManager> contextualSearchManagerSupplier,
             @NonNull BottomSheetController bottomSheetController,
             @NonNull Optional<OmniboxSuggestionsVisualState> omniboxSuggestionsVisualState,
+            @NonNull
+                    ObservableSupplier<AccessorySheetVisualStateProvider>
+                            accessorySheetVisualStateSupplier,
             InsetObserver insetObserver) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             assert layoutManagerSupplier != null;
@@ -76,11 +97,13 @@ public class TabbedSystemUiCoordinator {
                             layoutManagerSupplier,
                             fullscreenManager,
                             edgeToEdgeControllerSupplier,
+                            bottomControlsStacker,
                             browserControlsStateProvider,
                             snackbarManagerSupplier,
                             contextualSearchManagerSupplier,
                             bottomSheetController,
                             omniboxSuggestionsVisualState,
+                            accessorySheetVisualStateSupplier,
                             insetObserver);
         }
     }

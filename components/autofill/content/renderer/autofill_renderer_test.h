@@ -50,22 +50,22 @@ class MockAutofillDriver : public mojom::AutofillDriver {
   MOCK_METHOD(void,
               CaretMovedInFormField,
               (const FormData& form,
-               const FormFieldData& field,
+               FieldRendererId field_id,
                const gfx::Rect& caret_bounds),
               (override));
   MOCK_METHOD(void,
               TextFieldDidChange,
               (const FormData& form,
-               const FormFieldData& field,
+               FieldRendererId field_id,
                base::TimeTicks timestamp),
               (override));
   MOCK_METHOD(void,
               TextFieldDidScroll,
-              (const FormData& form, const FormFieldData& field),
+              (const FormData& form, FieldRendererId field_id),
               (override));
   MOCK_METHOD(void,
               SelectControlDidChange,
-              (const FormData& form, const FormFieldData& field),
+              (const FormData& form, FieldRendererId field_id),
               (override));
   MOCK_METHOD(void,
               SelectOrSelectListFieldOptionsDidChange,
@@ -74,25 +74,22 @@ class MockAutofillDriver : public mojom::AutofillDriver {
   MOCK_METHOD(void,
               JavaScriptChangedAutofilledValue,
               (const FormData& form,
-               const FormFieldData& field,
+               FieldRendererId field_id,
                const std::u16string& old_value,
                bool formatting_ony),
               (override));
   MOCK_METHOD(void,
               AskForValuesToFill,
               (const FormData& form,
-               const FormFieldData& field,
+               FieldRendererId field_id,
                const gfx::Rect& caret_bounds,
                AutofillSuggestionTriggerSource trigger_source),
               (override));
   MOCK_METHOD(void, HidePopup, (), (override));
-  MOCK_METHOD(void,
-              FocusOnNonFormField,
-              (bool had_interacted_form),
-              (override));
+  MOCK_METHOD(void, FocusOnNonFormField, (), (override));
   MOCK_METHOD(void,
               FocusOnFormField,
-              (const FormData& form, const FormFieldData& field),
+              (const FormData& form, FieldRendererId field_id),
               (override));
   MOCK_METHOD(void,
               DidFillAutofillFormData,
@@ -119,6 +116,20 @@ class AutofillRendererTest : public content::RenderViewTest {
       std::unique_ptr<PasswordAutofillAgent> password_autofill_agent,
       std::unique_ptr<PasswordGenerationAgent> password_generation_agent,
       blink::AssociatedInterfaceRegistry* associated_interfaces);
+
+  blink::WebDocument GetDocument() { return GetMainFrame()->GetDocument(); }
+
+  blink::WebElement GetWebElementById(std::string_view id) {
+    return GetDocument().GetElementById(blink::WebString::FromUTF8(id));
+  }
+
+  blink::WebFormControlElement GetFormControlElementById(std::string_view id) {
+    return GetWebElementById(id).DynamicTo<blink::WebFormControlElement>();
+  }
+
+  blink::WebInputElement GetInputElementById(std::string_view id) {
+    return GetWebElementById(id).DynamicTo<blink::WebInputElement>();
+  }
 
   // Simulates a click on the element with id `element_id` and, if, successful,
   // runs until the task environment is idle. Waits until the `TaskEnvironment`

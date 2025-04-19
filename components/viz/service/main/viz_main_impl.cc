@@ -71,6 +71,13 @@ VizMainImpl::VizMainImpl(Delegate* delegate,
           base::SingleThreadTaskRunner::GetCurrentDefault()) {
   DCHECK(gpu_init_);
 
+  // Null hypothesis finch testing. This code has no functional purpose.
+  // See: crbug.com/354724066
+  if (base::FeatureList::IsEnabled(features::kVizNullHypothesis)) {
+    LOG(WARNING) << "VizNullHypothesis is enabled (not a warning)";
+  } else {
+    LOG(WARNING) << "VizNullHypothesis is disabled (not a warning)";
+  }
   // TODO(crbug.com/41252481): Remove this when Mus Window Server and GPU are
   // split into separate processes. Until then this is necessary to be able to
   // run Mushrome (chrome with mus) with Mus running in the browser process.
@@ -195,7 +202,9 @@ void VizMainImpl::CreateGpuService(
     // These are the viz threads that are on the critical path of all frames.
     base::flat_set<base::PlatformThreadId> gpu_process_thread_ids;
 
-    // Add the current (GPU Main) thread or Compositor GPU thread ID.
+    // Add the current (GPU Main) thread and Compositor GPU thread IDs.
+    gpu_process_thread_ids.insert(base::PlatformThread::CurrentId());
+
     CompositorGpuThread* compositor_gpu_thread =
         gpu_service_->compositor_gpu_thread();
 
@@ -203,8 +212,6 @@ void VizMainImpl::CreateGpuService(
         base::FeatureList::IsEnabled(
             ::features::kEnableADPFGpuCompositorThread)) {
       gpu_process_thread_ids.insert(compositor_gpu_thread->GetThreadId());
-    } else {
-      gpu_process_thread_ids.insert(base::PlatformThread::CurrentId());
     }
 
     // Add IO thread ID.

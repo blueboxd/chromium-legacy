@@ -18,6 +18,7 @@
 #include "components/optimization_guide/core/optimization_guide_switches.h"
 #include "components/optimization_guide/proto/common_types.pb.h"
 #include "components/optimization_guide/proto/on_device_base_model_metadata.pb.h"
+#include "components/prefs/pref_service.h"
 #include "services/on_device_model/public/cpp/model_assets.h"
 
 namespace optimization_guide {
@@ -39,6 +40,7 @@ base::expected<std::unique_ptr<OnDeviceModelAdaptationMetadata>,
 CreateAdaptatonMetadataFromModelExecutionConfig(
     ModelBasedCapabilityKey feature,
     std::unique_ptr<on_device_model::AdaptationAssetPaths> asset_paths,
+    int64_t version,
     std::unique_ptr<proto::OnDeviceModelExecutionConfig> execution_config) {
   if (!execution_config) {
     return base::unexpected(OnDeviceModelAdaptationAvailability::
@@ -54,7 +56,7 @@ CreateAdaptatonMetadataFromModelExecutionConfig(
                                 kAdaptationModelExecutionConfigInvalid);
   }
   return base::ok(OnDeviceModelAdaptationMetadata::New(
-      *asset_paths,
+      asset_paths.get(), version,
       base::MakeRefCounted<OnDeviceModelFeatureAdapter>(std::move(config))));
 }
 
@@ -77,16 +79,20 @@ OnDeviceModelAdaptationMetadataCreated(
 // static
 std::unique_ptr<OnDeviceModelAdaptationMetadata>
 OnDeviceModelAdaptationMetadata::New(
-    const on_device_model::AdaptationAssetPaths& asset_paths,
+    on_device_model::AdaptationAssetPaths* asset_paths,
+    int64_t version,
     scoped_refptr<OnDeviceModelFeatureAdapter> adapter) {
-  return base::WrapUnique(
-      new OnDeviceModelAdaptationMetadata(asset_paths, std::move(adapter)));
+  return base::WrapUnique(new OnDeviceModelAdaptationMetadata(
+      asset_paths, version, std::move(adapter)));
 }
 
 OnDeviceModelAdaptationMetadata::OnDeviceModelAdaptationMetadata(
-    const on_device_model::AdaptationAssetPaths& asset_paths,
+    on_device_model::AdaptationAssetPaths* asset_paths,
+    int64_t version,
     scoped_refptr<OnDeviceModelFeatureAdapter> adapter)
-    : asset_paths_(std::move(asset_paths)), adapter_(std::move(adapter)) {}
+    : asset_paths_(base::OptionalFromPtr(asset_paths)),
+      version_(version),
+      adapter_(std::move(adapter)) {}
 
 OnDeviceModelAdaptationMetadata::OnDeviceModelAdaptationMetadata(
     const OnDeviceModelAdaptationMetadata&) = default;
@@ -97,13 +103,19 @@ OnDeviceModelAdaptationLoader::OnDeviceModelAdaptationLoader(
     OptimizationGuideModelProvider* model_provider,
     base::WeakPtr<OnDeviceModelComponentStateManager>
         on_device_component_state_manager,
+    PrefService* local_state,
     OnLoadFn on_load_fn)
     : feature_(feature),
       on_load_fn_(on_load_fn),
+      local_state_(local_state),
       model_provider_(model_provider),
       background_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT})) {
   CHECK(features::internal::IsOnDeviceModelAdaptationEnabled(feature_));
+  if (!on_device_component_state_manager) {
+    return;
+  }
+
   component_state_manager_observation_.Observe(
       on_device_component_state_manager.get());
   if (auto* state = on_device_component_state_manager->GetState()) {
@@ -139,6 +151,11 @@ void OnDeviceModelAdaptationLoader::StateChanged(
   if (!switches::GetOnDeviceModelExecutionOverride() && !base_model_spec_) {
     RecordAdaptationModelAvailability(
         feature_, OnDeviceModelAdaptationAvailability::kBaseModelSpecInvalid);
+    return;
+  }
+  if (!WasOnDeviceEligibleFeatureRecentlyUsed(feature_, *local_state_)) {
+    RecordAdaptationModelAvailability(
+        feature_, OnDeviceModelAdaptationAvailability::kFeatureNotRecentlyUsed);
     return;
   }
 
@@ -185,7 +202,7 @@ void OnDeviceModelAdaptationLoader::OnModelUpdated(
       FROM_HERE,
       base::BindOnce(&ReadOnDeviceModelExecutionConfig, *execution_config_file),
       base::BindOnce(&CreateAdaptatonMetadataFromModelExecutionConfig, feature_,
-                     std::move(result.value()))
+                     std::move(result.value()), model_info->GetVersion())
           .Then(
               base::BindOnce(&OnDeviceModelAdaptationMetadataCreated, feature_))
           .Then(on_load_fn_));
@@ -228,8 +245,8 @@ OnDeviceModelAdaptationLoader::ProcessModelUpdate(
   auto weights_file = model_info->GetAdditionalFileWithBaseName(
       kOnDeviceModelAdaptationWeightsFile);
   if (!weights_file) {
-    return base::unexpected(
-        OnDeviceModelAdaptationAvailability::kAdaptationModelInvalid);
+    // Return that the weights file was not provided.
+    return base::ok(nullptr);
   }
   auto adaptations_assets =
       std::make_unique<on_device_model::AdaptationAssetPaths>();

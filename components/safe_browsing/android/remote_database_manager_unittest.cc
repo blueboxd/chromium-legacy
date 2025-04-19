@@ -38,25 +38,23 @@ class TestUrlCheckInterceptor : public safe_browsing::UrlCheckInterceptor {
   // Checks the threat type of |url| previously set by
   // |SetSafetyNetThreatTypeForUrl|. It crashes if the threat type of |url| is
   // not set in advance.
-  void CheckBySafetyNet(
-      std::unique_ptr<SafeBrowsingApiHandlerBridge::ResponseCallback> callback,
-      const GURL& gurl) override {
+  void CheckBySafetyNet(SafeBrowsingApiHandlerBridge::ResponseCallback callback,
+                        const GURL& gurl) override {
     std::string url = gurl.spec();
     DCHECK(base::Contains(urls_safetynet_threat_type_, url));
-    std::move(*callback).Run(urls_safetynet_threat_type_[url],
-                             ThreatMetadata());
+    std::move(callback).Run(urls_safetynet_threat_type_[url], ThreatMetadata());
   }
 
   // Checks the threat type of |url| previously set by
   // |SetSafeBrowsingThreatTypeForUrl|. It crashes if the threat type of |url|
   // is not set in advance.
   void CheckBySafeBrowsing(
-      std::unique_ptr<SafeBrowsingApiHandlerBridge::ResponseCallback> callback,
+      SafeBrowsingApiHandlerBridge::ResponseCallback callback,
       const GURL& gurl) override {
     std::string url = gurl.spec();
     DCHECK(base::Contains(urls_safebrowsing_threat_type_, url));
-    std::move(*callback).Run(urls_safebrowsing_threat_type_[url],
-                             ThreatMetadata());
+    std::move(callback).Run(urls_safebrowsing_threat_type_[url],
+                            ThreatMetadata());
   }
 
   void SetSafetyNetThreatTypeForUrl(const GURL& url, SBThreatType threat_type) {
@@ -89,6 +87,12 @@ class TestClient : public SafeBrowsingDatabaseManager::Client {
                               SBThreatType threat_type,
                               const ThreatMetadata& metadata) override {
     EXPECT_EQ(expected_url_, url);
+    EXPECT_EQ(expected_threat_type_, threat_type);
+    is_callback_called_ = true;
+  }
+
+  void OnCheckDownloadUrlResult(const std::vector<GURL>& url_chain,
+                                SBThreatType threat_type) override {
     EXPECT_EQ(expected_threat_type_, threat_type);
     is_callback_called_ = true;
   }
@@ -199,6 +203,23 @@ TEST_F(RemoteDatabaseManagerTest, ThreatSource_SafeBrowsingNewGmsApiDisabled) {
       kSafeBrowsingNewGmsApiForBrowseUrlDatabaseCheck);
   EXPECT_EQ(ThreatSource::REMOTE,
             db_->GetBrowseUrlThreatSource(CheckBrowseUrlType::kHashDatabase));
+}
+
+TEST_F(RemoteDatabaseManagerTest, CheckDownloadUrl) {
+  GURL url("https://example.com");
+  GURL referrer_url("https://unrelated.com");
+  url_interceptor_->SetSafeBrowsingThreatTypeForUrl(url,
+                                                    SB_THREAT_TYPE_URL_MALWARE);
+  url_interceptor_->SetSafeBrowsingThreatTypeForUrl(referrer_url,
+                                                    SB_THREAT_TYPE_SAFE);
+
+  TestClient client(db_, /*expected_url=*/url,
+                    /*expected_threat_type=*/SB_THREAT_TYPE_URL_MALWARE);
+
+  db_->CheckDownloadUrl({GURL("https://unrelated.com/"), url}, &client);
+
+  task_environment_.RunUntilIdle();
+  EXPECT_TRUE(client.IsCallbackCalled());
 }
 
 }  // namespace safe_browsing

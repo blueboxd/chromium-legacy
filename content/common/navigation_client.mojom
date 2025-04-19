@@ -167,7 +167,9 @@ struct DidCommitProvisionalLoadParams {
   mojo_base.mojom.TimeTicks? unload_start;
   mojo_base.mojom.TimeTicks? unload_end;
 
-  // Timestamp of when this frame committed its navigation.
+  // Timestamp of when this frame started and ended the commit for the
+  // navigation.
+  mojo_base.mojom.TimeTicks commit_navigation_start;
   mojo_base.mojom.TimeTicks? commit_navigation_end;
 };
 
@@ -233,6 +235,10 @@ interface NavigationClient {
   // navigation: otherwise, this may interfere with the navigation queueing
   // logic (by unexpectedly cancelling the queued navigation).
   const uint32 kResetForSwap = 1;
+
+  // Explicit reset reason when the NavigationClient needs to be reset because
+  // the renderer explicitly aborted the navigation (instead of e.g. crashing).
+  const uint32 kResetForAbort = 2;
 
   // Tells the renderer that a navigation is ready to commit.
   //

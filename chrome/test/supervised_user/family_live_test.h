@@ -10,7 +10,6 @@
 #include <string>
 #include <string_view>
 
-#include "base/types/strong_alias.h"
 #include "chrome/browser/signin/e2e_tests/live_test.h"
 #include "chrome/browser/signin/e2e_tests/signin_util.h"
 #include "chrome/browser/signin/e2e_tests/test_accounts_util.h"
@@ -24,29 +23,34 @@
 
 namespace supervised_user {
 
-// A unique prefix identifier for a household (containing parents and children)
-// from source chrome/browser/internal/resources/signin/test_accounts.json.
-using FamilyIdentifier =
-    base::StrongAlias<class FamilyIdentifierTag, std::string>;
+// Refers to the family prefix in resources/signin/test_accounts.json
+const char* const kFamilyIdentifierSwitch =
+    "supervised-tests-family-identifier";
+
+// Alternatively, use these two to provide head of household's and child's
+// credentials directly, in <username>:<password> syntax (colon separated).
+const char* const kHeadOfHouseholdCredentialsSwitch =
+    "supervised-tests-hoh-credentials";
+const char* const kChildCredentialsSwitch =
+    "supervised-tests-child-credentials";
 
 // A LiveTest which assumes a specific structure of provided test accounts,
 // which are forming a family:
 // * head of household,
 // * child.
+// The family is read from command line switch at kFamilyIdentifierSwitch.
 class FamilyLiveTest : public signin::test::LiveTest {
  public:
-  FamilyLiveTest() = delete;
-  // Navigation will be allowed to extra hosts.
-  explicit FamilyLiveTest(FamilyIdentifier family_identifier);
+  FamilyLiveTest();
   // The provided family identifier will be used to select the test accounts.
   // Navigation will be allowed to extra hosts.
-  FamilyLiveTest(FamilyIdentifier family_identifier,
-                 const std::vector<std::string>& extra_enabled_hosts);
+  explicit FamilyLiveTest(const std::vector<std::string>& extra_enabled_hosts);
 
   ~FamilyLiveTest() override;
 
-  // Turns on sync and closes auxiliary tabs.
-  static void TurnOnSyncFor(FamilyMember& member);
+  // Turns on sync and waits for the sync subsystem to start. Manages the list
+  // of open service tabs.
+  void TurnOnSyncFor(FamilyMember& member);
 
  protected:
   void SetUp() override;
@@ -57,29 +61,21 @@ class FamilyLiveTest : public signin::test::LiveTest {
   // explicitly added to `extra_enabled_hosts`.
   GURL GetRoutedUrl(std::string_view url_spec) const;
 
-  FamilyMember& head_of_household() {
-    CHECK(head_of_household_) << "No head of household found in family: " +
-                                     std::string(family_identifier_->data());
-    return *head_of_household_;
-  }
-  FamilyMember& child() {
-    CHECK(child_) << "No child found in family: " +
-                         std::string(family_identifier_->data());
-    return *child_;
-  }
+  FamilyMember& head_of_household() const;
+  FamilyMember& child() const;
 
  private:
-  // Extracts requested account, which must exist.
-  signin::test::TestAccount GetTestAccount(std::string_view account_name) const;
-  // Checks if the requested account exists.
-  bool AccountExists(std::string_view account_name) const;
+  void SetFamilyMembers(const ::signin::test::TestAccount& head_of_household,
+                        const ::signin::test::TestAccount& child);
 
-  // Creates a new browser signed in to the specified account, which must
-  // exist.
+  // Extracts requested account from test_accounts.json file, which must exist.
+  signin::test::TestAccount GetAccountFromFile(
+      std::string_view account_name_suffix) const;
+
+  // Creates a new browser signed in to the specified account
   std::unique_ptr<FamilyMember> MakeSignedInBrowser(
-      std::string_view account_name);
+      const signin::test::TestAccount& account);
 
-  FamilyIdentifier family_identifier_;
   std::unique_ptr<FamilyMember> head_of_household_;
   std::unique_ptr<FamilyMember> child_;
 
@@ -93,10 +89,8 @@ class FamilyLiveTest : public signin::test::LiveTest {
 class InteractiveFamilyLiveTest
     : public InteractiveBrowserTestT<FamilyLiveTest> {
  public:
-  InteractiveFamilyLiveTest() = delete;
-  explicit InteractiveFamilyLiveTest(FamilyIdentifier family_identifier);
-  InteractiveFamilyLiveTest(
-      FamilyIdentifier family_identifier,
+  InteractiveFamilyLiveTest();
+  explicit InteractiveFamilyLiveTest(
       const std::vector<std::string>& extra_enabled_hosts);
 
  protected:

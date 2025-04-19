@@ -178,19 +178,22 @@ class ValidityServiceBrowserTestBase : public PlatformBrowserTest {
         GetActiveWebContents()->GetBrowserContext(), embedded_url,
         top_level_url, ContentSettingsType::TPCD_TRIAL);
     GetTpcdTrialService()->Update3pcdTrialSettingsForTesting(
-        url::Origin::Create(embedded_url), top_level_url.spec(),
-        match_subdomains, /*enabled=*/true);
+        OriginTrialStatusChangeDetails(url::Origin::Create(embedded_url),
+                                       top_level_url.spec(), match_subdomains,
+                                       /*enabled=*/true,
+                                       /*source_id=*/std::nullopt));
     setting_observer.Wait();
 
     // Verify that a |TPCD_TRIAL| content setting now allows |embedded_url|
     // access to cookies as a third-party when embedded by |top_level_url|.
     content_settings::CookieSettings* settings =
         CookieSettingsFactory::GetForProfile(GetProfile()).get();
-    ASSERT_EQ(
-        settings->GetCookieSetting(embedded_url, top_level_url, {}, nullptr),
-        CONTENT_SETTING_ALLOW);
+    ASSERT_EQ(settings->GetCookieSetting(embedded_url, net::SiteForCookies(),
+                                         top_level_url, {}, nullptr),
+              CONTENT_SETTING_ALLOW);
     ASSERT_EQ(settings->GetThirdPartyCookieAllowMechanism(
-                  embedded_url, top_level_url, {}, nullptr),
+                  embedded_url, net::SiteForCookies::FromUrl(top_level_url),
+                  top_level_url, {}, nullptr),
               content_settings::CookieSettingsBase::
                   ThirdPartyCookieAllowMechanism::kAllowBy3PCD);
   }
@@ -211,10 +214,11 @@ class ValidityServiceBrowserTestBase : public PlatformBrowserTest {
     // access to cookies as a third-party when embedded by |top_level_url|.
     content_settings::CookieSettings* settings =
         CookieSettingsFactory::GetForProfile(GetProfile()).get();
-    ASSERT_EQ(settings->GetCookieSetting(GURL(), top_level_url, {}, nullptr),
+    ASSERT_EQ(settings->GetCookieSetting(GURL(), net::SiteForCookies(),
+                                         top_level_url, {}, nullptr),
               CONTENT_SETTING_ALLOW);
-    ASSERT_EQ(settings->GetThirdPartyCookieAllowMechanism(GURL(), top_level_url,
-                                                          {}, nullptr),
+    ASSERT_EQ(settings->GetThirdPartyCookieAllowMechanism(
+                  GURL(), net::SiteForCookies(), top_level_url, {}, nullptr),
               content_settings::CookieSettingsBase::
                   ThirdPartyCookieAllowMechanism::kAllowByTopLevel3PCD);
   }
@@ -286,7 +290,8 @@ IN_PROC_BROWSER_TEST_F(ValidityService3pTrialBrowserTest,
 
   // Verify |iframe_url| no longer has third-party cookie access when
   // embedded by |top_level_url|.
-  EXPECT_EQ(settings->GetCookieSetting(iframe_url, top_level_url, {}, nullptr),
+  EXPECT_EQ(settings->GetCookieSetting(iframe_url, net::SiteForCookies(),
+                                       top_level_url, {}, nullptr),
             CONTENT_SETTING_BLOCK);
 }
 
@@ -319,9 +324,11 @@ IN_PROC_BROWSER_TEST_F(ValidityService3pTrialBrowserTest,
 
   // Verify |iframe_url| and |grant_url| no longer have
   // third-party cookie access when embedded by |top_level_url|.
-  EXPECT_EQ(settings->GetCookieSetting(iframe_url, top_level_url, {}, nullptr),
+  EXPECT_EQ(settings->GetCookieSetting(iframe_url, net::SiteForCookies(),
+                                       top_level_url, {}, nullptr),
             CONTENT_SETTING_BLOCK);
-  EXPECT_EQ(settings->GetCookieSetting(grant_url, top_level_url, {}, nullptr),
+  EXPECT_EQ(settings->GetCookieSetting(grant_url, net::SiteForCookies(),
+                                       top_level_url, {}, nullptr),
             CONTENT_SETTING_BLOCK);
 }
 
@@ -352,7 +359,8 @@ IN_PROC_BROWSER_TEST_F(ValidityService3pTrialBrowserTest,
 
   // Verify |iframe_url| no longer has third-party cookie access when embedded
   // by |top_level_url|.
-  EXPECT_EQ(settings->GetCookieSetting(iframe_url, top_level_url, {}, nullptr),
+  EXPECT_EQ(settings->GetCookieSetting(iframe_url, net::SiteForCookies(),
+                                       top_level_url, {}, nullptr),
             CONTENT_SETTING_BLOCK);
 }
 
@@ -388,9 +396,11 @@ IN_PROC_BROWSER_TEST_F(
 
   // Verify |iframe_url| and |grant_url| no longer have
   // third-party cookie access when embedded by |top_level_url|.
-  EXPECT_EQ(settings->GetCookieSetting(iframe_url, top_level_url, {}, nullptr),
+  EXPECT_EQ(settings->GetCookieSetting(iframe_url, net::SiteForCookies(),
+                                       top_level_url, {}, nullptr),
             CONTENT_SETTING_BLOCK);
-  EXPECT_EQ(settings->GetCookieSetting(grant_url, top_level_url, {}, nullptr),
+  EXPECT_EQ(settings->GetCookieSetting(grant_url, net::SiteForCookies(),
+                                       top_level_url, {}, nullptr),
             CONTENT_SETTING_BLOCK);
 }
 
@@ -435,13 +445,14 @@ IN_PROC_BROWSER_TEST_F(ValidityService3pTrialBrowserTest,
 
   // Verify |TPCD_TRIAL| content settings with the same primary pattern as the
   // setting that allowed 3PC access in the iframe have been removed.
-  EXPECT_EQ(settings->GetCookieSetting(iframe_url, top_level_url, {}, nullptr),
+  EXPECT_EQ(settings->GetCookieSetting(iframe_url, net::SiteForCookies(),
+                                       top_level_url, {}, nullptr),
             CONTENT_SETTING_BLOCK);
-  EXPECT_EQ(settings->GetCookieSetting(iframe_url, GURL("https://b.test"), {},
-                                       nullptr),
+  EXPECT_EQ(settings->GetCookieSetting(iframe_url, net::SiteForCookies(),
+                                       GURL("https://b.test"), {}, nullptr),
             CONTENT_SETTING_BLOCK);
-  EXPECT_EQ(settings->GetCookieSetting(iframe_url, GURL("https://c.test"), {},
-                                       nullptr),
+  EXPECT_EQ(settings->GetCookieSetting(iframe_url, net::SiteForCookies(),
+                                       GURL("https://c.test"), {}, nullptr),
             CONTENT_SETTING_BLOCK);
 
   // Note: since the setting allowing |iframe_url| to access 3PC under
@@ -449,21 +460,24 @@ IN_PROC_BROWSER_TEST_F(ValidityService3pTrialBrowserTest,
   // allowed access in the iframe context did not, the setting for 3PC access
   // under |other_top_level_url| must've been created with another
   // token and should NOT be removed.
-  EXPECT_EQ(
-      settings->GetCookieSetting(iframe_url, other_top_level_url, {}, nullptr),
-      CONTENT_SETTING_ALLOW);
+  EXPECT_EQ(settings->GetCookieSetting(iframe_url, net::SiteForCookies(),
+                                       other_top_level_url, {}, nullptr),
+            CONTENT_SETTING_ALLOW);
   EXPECT_EQ(settings->GetThirdPartyCookieAllowMechanism(
-                iframe_url, other_top_level_url, {}, nullptr),
+                iframe_url, net::SiteForCookies::FromUrl(other_top_level_url),
+                other_top_level_url, {}, nullptr),
             content_settings::CookieSettingsBase::
                 ThirdPartyCookieAllowMechanism::kAllowBy3PCD);
 
   // Verify |other_embedded_url| still has a |TPCD_TRIAL| grant for third-party
   // cookie access when embedded by |top_level_url|.
-  EXPECT_EQ(settings->GetCookieSetting(other_embedded_url, top_level_url, {},
-                                       nullptr),
-            CONTENT_SETTING_ALLOW);
+  EXPECT_EQ(
+      settings->GetCookieSetting(other_embedded_url, net::SiteForCookies(),
+                                 top_level_url, {}, nullptr),
+      CONTENT_SETTING_ALLOW);
   EXPECT_EQ(settings->GetThirdPartyCookieAllowMechanism(
-                other_embedded_url, top_level_url, {}, nullptr),
+                other_embedded_url, net::SiteForCookies::FromUrl(top_level_url),
+                top_level_url, {}, nullptr),
             content_settings::CookieSettingsBase::
                 ThirdPartyCookieAllowMechanism::kAllowBy3PCD);
 }
@@ -510,13 +524,14 @@ IN_PROC_BROWSER_TEST_F(
 
   // Verify |TPCD_TRIAL| content settings with the same primary pattern as the
   // setting that allowed 3PC access in the iframe have been removed.
-  EXPECT_EQ(settings->GetCookieSetting(iframe_url, top_level_url, {}, nullptr),
+  EXPECT_EQ(settings->GetCookieSetting(iframe_url, net::SiteForCookies(),
+                                       top_level_url, {}, nullptr),
             CONTENT_SETTING_BLOCK);
-  EXPECT_EQ(settings->GetCookieSetting(iframe_url, GURL("https://b.test"), {},
-                                       nullptr),
+  EXPECT_EQ(settings->GetCookieSetting(iframe_url, net::SiteForCookies(),
+                                       GURL("https://b.test"), {}, nullptr),
             CONTENT_SETTING_BLOCK);
-  EXPECT_EQ(settings->GetCookieSetting(iframe_url, GURL("https://c.test"), {},
-                                       nullptr),
+  EXPECT_EQ(settings->GetCookieSetting(iframe_url, net::SiteForCookies(),
+                                       GURL("https://c.test"), {}, nullptr),
             CONTENT_SETTING_BLOCK);
 
   // Note: since the setting allowing |iframe_url| to access 3PC under
@@ -524,21 +539,24 @@ IN_PROC_BROWSER_TEST_F(
   // that allowed access in the iframe context did, the setting for 3PC access
   // under |other_top_level_url| must've been created with another
   // token and should NOT be removed.
-  EXPECT_EQ(
-      settings->GetCookieSetting(iframe_url, other_top_level_url, {}, nullptr),
-      CONTENT_SETTING_ALLOW);
+  EXPECT_EQ(settings->GetCookieSetting(iframe_url, net::SiteForCookies(),
+                                       other_top_level_url, {}, nullptr),
+            CONTENT_SETTING_ALLOW);
   EXPECT_EQ(settings->GetThirdPartyCookieAllowMechanism(
-                iframe_url, other_top_level_url, {}, nullptr),
+                iframe_url, net::SiteForCookies::FromUrl(other_top_level_url),
+                other_top_level_url, {}, nullptr),
             content_settings::CookieSettingsBase::
                 ThirdPartyCookieAllowMechanism::kAllowBy3PCD);
 
   // Verify |other_embedded_url| still has a |TPCD_TRIAL| grant for
   // third-party cookie access when embedded by |top_level_url|.
-  EXPECT_EQ(settings->GetCookieSetting(other_embedded_url, top_level_url, {},
-                                       nullptr),
-            CONTENT_SETTING_ALLOW);
+  EXPECT_EQ(
+      settings->GetCookieSetting(other_embedded_url, net::SiteForCookies(),
+                                 top_level_url, {}, nullptr),
+      CONTENT_SETTING_ALLOW);
   EXPECT_EQ(settings->GetThirdPartyCookieAllowMechanism(
-                other_embedded_url, top_level_url, {}, nullptr),
+                other_embedded_url, net::SiteForCookies::FromUrl(top_level_url),
+                top_level_url, {}, nullptr),
             content_settings::CookieSettingsBase::
                 ThirdPartyCookieAllowMechanism::kAllowBy3PCD);
 }
@@ -597,16 +615,16 @@ IN_PROC_BROWSER_TEST_F(ValidityService3pTrialBrowserTest,
 
     // Verify |iframe_url| no longer has access to third-party cookies when
     // embedded by |top_level_url|.
-    EXPECT_EQ(
-        settings->GetCookieSetting(iframe_url, top_level_url, {}, nullptr),
-        CONTENT_SETTING_BLOCK);
+    EXPECT_EQ(settings->GetCookieSetting(iframe_url, net::SiteForCookies(),
+                                         top_level_url, {}, nullptr),
+              CONTENT_SETTING_BLOCK);
   }
 
   // Verify |kTrialEnabledSite| still has access to third-party cookies when
   // embedded by |top_level_url|.
-  EXPECT_EQ(
-      settings->GetCookieSetting(kTrialEnabledSite, top_level_url, {}, nullptr),
-      CONTENT_SETTING_ALLOW);
+  EXPECT_EQ(settings->GetCookieSetting(kTrialEnabledSite, net::SiteForCookies(),
+                                       top_level_url, {}, nullptr),
+            CONTENT_SETTING_ALLOW);
 }
 
 class ValidityService1pTrialBrowserTest
@@ -632,7 +650,7 @@ class ValidityService1pTrialBrowserTest
 
     URLLoaderInterceptor::WriteResponse(
         base::StrCat({"HTTP/1.1 200 OK\n", "Content-type: text/html\n",
-                      "Origin-Trial: ", kTopLevelTrialToken, "\n", "\n"}),
+                      "Origin-Trial: ", k1pDeprecationTrialToken, "\n", "\n"}),
         ("<html><head><title>Trial enabled page with iframe</title></head>"
          "<body>"
          "<iframe id='test'></iframe>"
@@ -667,7 +685,8 @@ IN_PROC_BROWSER_TEST_F(ValidityService1pTrialBrowserTest,
 
   // Verify third-party cookie access is no longer permitted under
   // |top_level_url|.
-  EXPECT_EQ(settings->GetCookieSetting(GURL(), top_level_url, {}, nullptr),
+  EXPECT_EQ(settings->GetCookieSetting(GURL(), net::SiteForCookies(),
+                                       top_level_url, {}, nullptr),
             CONTENT_SETTING_BLOCK);
 }
 
@@ -698,7 +717,8 @@ IN_PROC_BROWSER_TEST_F(ValidityService1pTrialBrowserTest,
 
   // Verify third-party cookie access is no longer permitted under
   // |top_level_url|.
-  EXPECT_EQ(settings->GetCookieSetting(GURL(), top_level_url, {}, nullptr),
+  EXPECT_EQ(settings->GetCookieSetting(GURL(), net::SiteForCookies(),
+                                       top_level_url, {}, nullptr),
             CONTENT_SETTING_BLOCK);
 }
 
@@ -731,9 +751,11 @@ IN_PROC_BROWSER_TEST_F(ValidityService1pTrialBrowserTest,
 
   // Verify third-party cookie access is no longer permitted under
   // |top_level_url| or |grant_url|.
-  EXPECT_EQ(settings->GetCookieSetting(GURL(), top_level_url, {}, nullptr),
+  EXPECT_EQ(settings->GetCookieSetting(GURL(), net::SiteForCookies(),
+                                       top_level_url, {}, nullptr),
             CONTENT_SETTING_BLOCK);
-  EXPECT_EQ(settings->GetCookieSetting(GURL(), grant_url, {}, nullptr),
+  EXPECT_EQ(settings->GetCookieSetting(GURL(), net::SiteForCookies(), grant_url,
+                                       {}, nullptr),
             CONTENT_SETTING_BLOCK);
 }
 
@@ -761,10 +783,11 @@ IN_PROC_BROWSER_TEST_F(ValidityService1pTrialBrowserTest,
 
     // Verify third-party cookie access is now permitted under
     // |top_level_url|.
-    ASSERT_EQ(settings->GetCookieSetting(GURL(), top_level_url, {}, nullptr),
+    ASSERT_EQ(settings->GetCookieSetting(GURL(), net::SiteForCookies(),
+                                         top_level_url, {}, nullptr),
               CONTENT_SETTING_ALLOW);
-    ASSERT_EQ(settings->GetThirdPartyCookieAllowMechanism(GURL(), top_level_url,
-                                                          {}, nullptr),
+    ASSERT_EQ(settings->GetThirdPartyCookieAllowMechanism(
+                  GURL(), net::SiteForCookies(), top_level_url, {}, nullptr),
               content_settings::CookieSettingsBase::
                   ThirdPartyCookieAllowMechanism::kAllowByTopLevel3PCD);
   }
@@ -799,14 +822,15 @@ IN_PROC_BROWSER_TEST_F(ValidityService1pTrialBrowserTest,
 
     // Verify third-party cookie access is no longer permitted under
     // |other_top_level_url|.
-    EXPECT_EQ(
-        settings->GetCookieSetting(GURL(), other_top_level_url, {}, nullptr),
-        CONTENT_SETTING_BLOCK);
+    EXPECT_EQ(settings->GetCookieSetting(GURL(), net::SiteForCookies(),
+                                         other_top_level_url, {}, nullptr),
+              CONTENT_SETTING_BLOCK);
   }
 
   // Verify third-party cookie access is still permitted under
   // |top_level_url|.
-  EXPECT_EQ(settings->GetCookieSetting(GURL(), top_level_url, {}, nullptr),
+  EXPECT_EQ(settings->GetCookieSetting(GURL(), net::SiteForCookies(),
+                                       top_level_url, {}, nullptr),
             CONTENT_SETTING_ALLOW);
 
   HostContentSettingsMap* settings_map =

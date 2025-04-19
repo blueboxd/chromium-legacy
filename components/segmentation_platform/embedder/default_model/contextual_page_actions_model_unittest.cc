@@ -27,31 +27,59 @@ TEST_F(ContextualPageActionsModelTest, ExecuteModelWithInput) {
   ExpectExecutionWithInput(input, /*expected_error=*/true,
                            /*expected_result=*/{});
 
-  // Price tracking = 0, reader mode = 0
-  input = {0, 0};
+  // Price insights = 0, price tracking = 0, reader mode = 0,
+  input = {0, 0, 0};
   ExpectExecutionWithInput(input, /*expected_error=*/false,
-                           /*expected_result=*/{0, 0});
+                           /*expected_result=*/{0, 0, 0});
   ExpectClassifierResults(input, {});
 
-  // Price tracking = 1, reader mode = 0
-  input = {1, 0};
+  // Price insights = 1, price tracking = 0, reader mode = 0,
+  input = {1, 0, 0};
   ExpectExecutionWithInput(input, /*expected_error=*/false,
-                           /*expected_result=*/{1, 0});
+                           /*expected_result=*/{1, 0, 0});
+  ExpectClassifierResults(input,
+                          {kContextualPageActionModelLabelPriceInsights});
+
+  // Price insights = 0, price tracking = 1, reader mode = 0,
+  input = {0, 1, 0};
+  ExpectExecutionWithInput(input, /*expected_error=*/false,
+                           /*expected_result=*/{0, 1, 0});
   ExpectClassifierResults(input,
                           {kContextualPageActionModelLabelPriceTracking});
 
-  // Price tracking = 0, reader mode = 1
-  input = {0, 1};
+  // Price insights = 0, price tracking = 0, reader mode = 1,
+  input = {0, 0, 1};
   ExpectExecutionWithInput(input, /*expected_error=*/false,
-                           /*expected_result=*/{0, 1});
+                           /*expected_result=*/{0, 0, 1});
   ExpectClassifierResults(input, {kContextualPageActionModelLabelReaderMode});
 
-  // Price tracking = 1, reader mode = 1
-  input = {1, 1};
+  // Price insights = 1, price tracking = 0, reader mode = 1,
+  input = {1, 0, 1};
   ExpectExecutionWithInput(input, /*expected_error=*/false,
-                           /*expected_result=*/{1, 1});
+                           /*expected_result=*/{1, 0, 1});
+  ExpectClassifierResults(input,
+                          {kContextualPageActionModelLabelPriceInsights});
+
+  // Price insights = 1, price tracking = 1, reader mode = 0,
+  input = {1, 1, 0};
+  ExpectExecutionWithInput(input, /*expected_error=*/false,
+                           /*expected_result=*/{1, 1, 0});
+  ExpectClassifierResults(input,
+                          {kContextualPageActionModelLabelPriceInsights});
+
+  // Price insights = 0, price tracking = 1, reader mode = 1,
+  input = {0, 1, 1};
+  ExpectExecutionWithInput(input, /*expected_error=*/false,
+                           /*expected_result=*/{0, 1, 1});
   ExpectClassifierResults(input,
                           {kContextualPageActionModelLabelPriceTracking});
+
+  // Price insights = 1, price tracking = 1, reader mode = 1,
+  input = {1, 1, 1};
+  ExpectExecutionWithInput(input, /*expected_error=*/false,
+                           /*expected_result=*/{1, 1, 1});
+  ExpectClassifierResults(input,
+                          {kContextualPageActionModelLabelPriceInsights});
 }
 
 }  // namespace segmentation_platform

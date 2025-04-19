@@ -122,6 +122,8 @@ void PopulateLoadTimeData(content::WebUI* web_ui,
         "isVcBackgroundReplaceAllowed",
         ash::features::IsVcBackgroundReplaceEnabled() &&
             ash::personalization_app::IsEligibleForSeaPen(profile));
+    source->AddBoolean("isCrosSwitcherEnabled",
+                       ash::features::IsCrosSwitcherEnabled());
     source->AddBoolean(
         "featureManagementShowoff",
         base::FeatureList::IsEnabled(ash::features::kFeatureManagementShowoff));
@@ -142,12 +144,9 @@ void PopulateLoadTimeData(content::WebUI* web_ui,
     source->AddBoolean("HelpAppAutoTriggerInstallDialog",
                        base::FeatureList::IsEnabled(
                            features::kHelpAppAutoTriggerInstallDialog));
-    // Only use the action URL if both the uri and dialog features have been
-    // enabled.
-    source->AddBoolean("UseActionUrl",
-                       chromeos::features::IsAppInstallServiceUriEnabled() &&
-                           base::FeatureList::IsEnabled(
-                               chromeos::features::kCrosWebAppInstallDialog));
+    // Only use the action URL if the install URI is enabled.
+    // TODO(b/346687914): Clean up flag in Showoff code.
+    source->AddBoolean("UseActionUrl", true);
   }
 
   PrefService* pref_service = profile->GetPrefs();

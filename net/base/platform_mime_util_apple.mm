@@ -56,37 +56,8 @@ bool PlatformMimeUtil::GetPlatformMimeTypeFromExtension(
     *result = base::SysNSStringToUTF8(uttype.preferredMIMEType);
     return true;
   }
-#if (BUILDFLAG(IS_MAC) &&                                    \
-     MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_VERSION_11_0) || \
-    (BUILDFLAG(IS_IOS) && __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_14_0)
-  else {
-    base::apple::ScopedCFTypeRef<CFStringRef> ext_ref(
-        base::SysUTF8ToCFStringRef(ext_nodot));
-    if (!ext_ref) {
-      return false;
-    }
-    base::apple::ScopedCFTypeRef<CFStringRef> uti(
-        UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension,
-                                              ext_ref.get(),
-                                              /*inConformingToUTI=*/nullptr));
-    if (!uti) {
-      return false;
-    }
-    base::apple::ScopedCFTypeRef<CFStringRef> mime_ref(
-        UTTypeCopyPreferredTagWithClass(uti.get(), kUTTagClassMIMEType));
-    if (!mime_ref) {
-      return false;
-    }
-
-    *result = base::SysCFStringRefToUTF8(mime_ref.get());
-    return true;
-  }
-#else
-  NOTREACHED_IN_MIGRATION();
-  return false;
-#endif  // (BUILDFLAG(IS_MAC) && MAC_OS_X_VERSION_MIN_REQUIRED <
-        // MAC_OS_VERSION_11_0) || (BUILDFLAG(IS_IOS) &&
-        // __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_14_0)
+  *result = base::SysNSStringToUTF8(uttype.preferredMIMEType);
+  return true;
 }
 
 bool PlatformMimeUtil::GetPlatformPreferredExtensionForMimeType(
@@ -103,39 +74,8 @@ bool PlatformMimeUtil::GetPlatformPreferredExtensionForMimeType(
     *ext = base::SysNSStringToUTF8(uttype.preferredFilenameExtension);
     return true;
   }
-#if (BUILDFLAG(IS_MAC) &&                                    \
-     MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_VERSION_11_0) || \
-    (BUILDFLAG(IS_IOS) && __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_14_0)
-  else {
-    base::apple::ScopedCFTypeRef<CFStringRef> mime_ref(
-        base::SysUTF8ToCFStringRef(mime_type));
-    if (!mime_ref) {
-      return false;
-    }
-    base::apple::ScopedCFTypeRef<CFStringRef> uti(
-        UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType,
-                                              mime_ref.get(),
-                                              /*inConformingToUTI=*/nullptr));
-    if (!uti) {
-      return false;
-    }
-    base::apple::ScopedCFTypeRef<CFStringRef> ext_ref(
-        UTTypeCopyPreferredTagWithClass(uti.get(),
-                                        kUTTagClassFilenameExtension));
-    if (!ext_ref) {
-      return false;
-    }
-
-    *ext = base::SysCFStringRefToUTF8(ext_ref.get());
-    return true;
-  }
-
-#else
-  NOTREACHED_IN_MIGRATION();
-  return false;
-#endif  // (BUILDFLAG(IS_MAC) && MAC_OS_X_VERSION_MIN_REQUIRED <
-        // MAC_OS_VERSION_11_0) || (BUILDFLAG(IS_IOS) &&
-        // __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_14_0)
+  *ext = base::SysNSStringToUTF8(uttype.preferredFilenameExtension);
+  return true;
 }
 
 void PlatformMimeUtil::GetPlatformExtensionsForMimeType(
@@ -203,11 +143,13 @@ void PlatformMimeUtil::GetPlatformExtensionsForMimeType(
       }
     }
 
-    // Huh? Give up.
-    base::FilePath::StringType ext;
-    if (GetPlatformPreferredExtensionForMimeType(mime_type, &ext)) {
-      extensions->insert(ext);
-    }
+  if (extensions_found) {
+    return;
+  }
+
+  base::FilePath::StringType ext;
+  if (GetPlatformPreferredExtensionForMimeType(mime_type, &ext)) {
+    extensions->insert(ext);
   }
 #endif
 }

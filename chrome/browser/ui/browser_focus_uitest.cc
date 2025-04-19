@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include <stddef.h>
 
 #include "base/files/file_util.h"
@@ -829,16 +834,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, NoFocusForBackgroundNTP) {
 // Tests that the location bar is focusable when showing, which is the case in
 // popup windows.
 // TODO(crbug.com/40794922): Flaky on Linux.
-#if BUILDFLAG(IS_LINUX)
-#define MAYBE_PopupLocationBar DISABLED_PopupLocationBar
-#else
-#define MAYBE_PopupLocationBar PopupLocationBar
-#endif
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_PopupLocationBar) {
-  // TODO (crbug/1520655): Remove the skip once the test is fixed.
-  if (features::IsChromeRefresh2023()) {
-    GTEST_SKIP();
-  }
+// TODO(crbug/1520655): Broken since CR2023.
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_PopupLocationBar) {
   Browser* popup_browser = CreateBrowserForPopup(browser()->profile());
 
   // Make sure the popup is in the front. Otherwise the test is flaky.

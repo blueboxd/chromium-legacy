@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "mojo/core/ports/port_locker.h"
 
 #include <algorithm>
@@ -37,6 +42,7 @@ PortLocker::PortLocker(const PortRef** port_refs, size_t num_ports)
   std::sort(
       port_refs_, port_refs_ + num_ports_,
       [](const PortRef* a, const PortRef* b) { return a->port() < b->port(); });
+
   for (size_t i = 0; i < num_ports_; ++i) {
     // TODO(crbug.com/40522227): Remove this CHECK.
     CHECK(port_refs_[i]->port());

@@ -196,11 +196,9 @@ TEST_F(LocationBarModelImplTest, MAYBE_PreventElisionWorks) {
 TEST_F(LocationBarModelImplTest, GetVectorIcon) {
   delegate()->SetSecurityLevel(security_state::SecurityLevel::WARNING);
 
-  gfx::ImageSkia expected_icon = gfx::CreateVectorIcon(
-      features::IsChromeRefresh2023()
-          ? vector_icons::kNotSecureWarningChromeRefreshIcon
-          : vector_icons::kNotSecureWarningIcon,
-      gfx::kFaviconSize, gfx::kPlaceholderColor);
+  gfx::ImageSkia expected_icon =
+      gfx::CreateVectorIcon(vector_icons::kNotSecureWarningChromeRefreshIcon,
+                            gfx::kFaviconSize, gfx::kPlaceholderColor);
 
   gfx::ImageSkia icon = gfx::CreateVectorIcon(
       model()->GetVectorIcon(), gfx::kFaviconSize, gfx::kPlaceholderColor);
@@ -266,7 +264,7 @@ TEST_F(LocationBarModelImplTest, GetPageClassification) {
   // Verify the page classification for prefetch and non-prefetch requests.
   EXPECT_EQ(OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS,
             model.GetPageClassification(OmniboxFocusSource::OMNIBOX));
-  EXPECT_EQ(OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS,
+  EXPECT_EQ(OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS,
             model.GetPageClassification(OmniboxFocusSource::FAKEBOX));
   EXPECT_EQ(OmniboxEventProto::NTP_ZPS_PREFETCH,
             model.GetPageClassification(OmniboxFocusSource::OMNIBOX,

@@ -10,15 +10,16 @@
 #import "base/strings/sys_string_conversions.h"
 #import "components/image_fetcher/core/image_data_fetcher.h"
 #import "components/prefs/pref_service.h"
+#import "ios/chrome/browser/bookmarks/model/bookmark_model_factory.h"
 #import "ios/chrome/browser/commerce/model/shopping_service_factory.h"
 #import "ios/chrome/browser/push_notification/model/push_notification_service.h"
 #import "ios/chrome/browser/shared/coordinator/alert/alert_coordinator.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
-#import "ios/chrome/browser/shared/model/browser_state/browser_state_info_cache.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state_manager.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
+#import "ios/chrome/browser/shared/model/profile/profile_attributes_storage_ios.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/public/commands/bookmarks_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
@@ -65,17 +66,20 @@
     prefService->SetBoolean(prefs::kPriceNotificationsHasBeenShown, true);
   }
 
-  base::FilePath path = self.browser->GetBrowserState()->GetStatePath();
   BrowserStateInfoCache* infoCache = GetApplicationContext()
                                          ->GetChromeBrowserStateManager()
                                          ->GetBrowserStateInfoCache();
-  size_t browserStateIndex = infoCache->GetIndexOfBrowserStateWithPath(path);
+  const size_t browserStateIndex = infoCache->GetIndexOfBrowserStateWithName(
+      self.browser->GetBrowserState()->GetBrowserStateName());
   NSString* gaiaID = base::SysUTF8ToNSString(
       infoCache->GetGAIAIdOfBrowserStateAtIndex(browserStateIndex));
   PushNotificationService* pushNotificationService =
       GetApplicationContext()->GetPushNotificationService();
   commerce::ShoppingService* shoppingService =
       commerce::ShoppingServiceFactory::GetForBrowserState(
+          self.browser->GetBrowserState());
+  bookmarks::BookmarkModel* bookmarkModel =
+      ios::BookmarkModelFactory::GetForBrowserState(
           self.browser->GetBrowserState());
   web::WebState* webState =
       self.browser->GetWebStateList()->GetActiveWebState();
@@ -84,6 +88,7 @@
           self.browser->GetBrowserState()->GetSharedURLLoaderFactory());
   self.mediator = [[PriceNotificationsPriceTrackingMediator alloc]
       initWithShoppingService:shoppingService
+                bookmarkModel:bookmarkModel
                  imageFetcher:std::move(imageFetcher)
                      webState:webState
       pushNotificationService:pushNotificationService];

@@ -220,6 +220,7 @@ Chrome arakatzaileko menua irekitzeko, sakatu Alt tekla eta F.</translation>
 <translation id="2490721194269245365">Marroi-arrosa</translation>
 <translation id="249330843868392562">Ireki testua ahots bihurtzeko eginbidearen ezarpenak</translation>
 <translation id="2497706219848005458">Berde horixka</translation>
+<translation id="2512979179176933762">erakutsi leihoak</translation>
 <translation id="2523609930580546572">ChromeVox tutoriala</translation>
 <translation id="2525706221823668172">Chromebook-eko lasterbideak</translation>
 <translation id="2553108862507765288">gramatika-akatsa</translation>
@@ -264,7 +265,6 @@ Chrome arakatzaileko menua irekitzeko, sakatu Alt tekla eta F.</translation>
 <translation id="2783001728278437613">{COUNT,plural, =1{eta beste #}other{eta beste #}}</translation>
 <translation id="2792200646155001340">Hatz bat eskuinetik ezkerrera pasatuta ere itzul zaitezke aurreko elementura. Proba ezazu.</translation>
 <translation id="280499067616661124">Orrian bilatzeko ChromeVox agindua</translation>
-<translation id="2811019999044652585">Pantailaren beste toki batzuetara joateko (adibidez, tresna-barrak eta sistema-erretilua), sakatu Kontrol + Aurrera. Chromebook-etan, Aurrera tekla 2 zenbakiaren teklaren gainean dago.</translation>
 <translation id="2811204574343810641">Errenkada</translation>
 <translation id="2816868829355607410">Praktikatzeko eremua: toki batetik bestera joateko aginduak</translation>
 <translation id="2841013758207633010">Ordua</translation>
@@ -520,6 +520,7 @@ Chrome arakatzaileko menua irekitzeko, sakatu Alt tekla eta F.</translation>
 <translation id="4432457053224379116">Indiako gorria</translation>
 <translation id="4432896207833262240">Markatutako edukia</translation>
 <translation id="4437615272777527928">Idatzi menuetan bilatu nahi duzuna. Erabili Gora eta Behera geziak emaitza batetik bestera joateko. Erabili Ezkerrera eta Eskuinera geziak testu-kurtsorea doitzeko eta menu batetik bestera aldatzeko.</translation>
+<translation id="4453530046591759283">Pantailaren beste toki batzuetara joateko (adibidez, tresna-barrak edo sistema-erretilua), sakatu Kontrol + F1. Ihes teklaren eskuinaldean dagoen lehenengo tekla da F1.</translation>
 <translation id="4457472090507035117">Hautatu oraingo ahotsa:</translation>
 <translation id="4476183483923481720">lerro berria</translation>
 <translation id="4479068155583208887">Adreilu gorriaren kolorekoa</translation>
@@ -880,6 +881,7 @@ Chrome arakatzaileko menua irekitzeko, sakatu Alt tekla eta F.</translation>
 <translation id="7091296112653361280">Navajo zuria</translation>
 <translation id="7095834689119144465">Editatu soilik zenbakizko testua</translation>
 <translation id="7096001299300236431">Aurreko multimedia-elementua</translation>
+<translation id="7096668131290451939">Ikasteko modutik irteteko, sakatu berriro Ihes</translation>
 <translation id="7116595520562830928">multln</translation>
 <translation id="712735679809149106">hitzen oihartzuna</translation>
 <translation id="7137397390322864165">Izokin-kolorekoa</translation>
@@ -1071,7 +1073,6 @@ Chrome arakatzaileko menua irekitzeko, sakatu Alt tekla eta F.</translation>
 <translation id="847040613207937740">Ez dago beste koadrorik honen ondoren</translation>
 <translation id="8473540203671727883">Irakurri ozen saguaren kurtsorearen azpiko testua</translation>
 <translation id="8476408756881832830">Pausatu erreprodukzioa ChromeVox hitz egiten ari bada</translation>
-<translation id="8476508772960940536">leihoen ikuspegi orokorra</translation>
 <translation id="8480873377842220259">Nabigazioaren hastapenak ikastera zoaz. Pantailatik mugitzeko, eduki sakatuta Bilaketa eta sakatu gezi-teklak. Aurrera egiteko, sakatu Bilaketa + eskuinera egiteko gezi-tekla.</translation>
 <translation id="8503360654911991865">Gutxitu nabigazio-pikortsutasuna</translation>
 <translation id="8520472399088452386">Biratze-botoia</translation>

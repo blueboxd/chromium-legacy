@@ -15,7 +15,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.util.Batch;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
@@ -34,7 +34,6 @@ import org.chromium.chrome.test.R;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.permissions.DismissalType;
 import org.chromium.components.permissions.PermissionsAndroidFeatureList;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentSwitches;
 
 import java.util.List;
@@ -42,7 +41,7 @@ import java.util.List;
 /** Testing the interaction with the runtime permission prompt (Android level prompt). */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-@Batch(Batch.PER_CLASS)
+// TODO(crbug.com/344665249): Failing when batched, batch this again.
 public class RuntimePermissionTest {
     @Rule public PermissionTestRule mPermissionTestRule = new PermissionTestRule();
 
@@ -64,6 +63,7 @@ public class RuntimePermissionTest {
     @Test
     @MediumTest
     @Feature({"RuntimePermissions", "Location"})
+    @DisabledTest(message = "crbug.com/344053209")
     public void testAllowRuntimeLocation() throws Exception {
         RuntimePermissionTestUtils.setupGeolocationSystemMock();
 
@@ -260,7 +260,7 @@ public class RuntimePermissionTest {
                     }
                 };
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     DownloadManagerService.getDownloadManagerService()
                             .addDownloadObserver(observer);
@@ -385,6 +385,7 @@ public class RuntimePermissionTest {
     @Test
     @MediumTest
     @Feature({"RuntimePermissions", "Location"})
+    @DisabledTest(message = "crbug.com/344053209")
     public void testAlreadyGrantedRuntimeLocation() throws Exception {
         RuntimePermissionTestUtils.setupGeolocationSystemMock();
 

@@ -20,7 +20,6 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
@@ -31,6 +30,7 @@ import org.mockito.junit.MockitoRule;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.FakeTimeTestRule;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseActivityTestRule;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Batch;
@@ -38,11 +38,9 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.components.messages.MessageStateHandler.Position;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import org.chromium.ui.test.util.BlankUiTestActivity;
-import org.chromium.ui.test.util.DisableAnimationsTestRule;
 
 /** Tests for {@link SingleActionMessage}. */
 @RunWith(BaseJUnit4ClassRunner.class)
@@ -50,13 +48,8 @@ import org.chromium.ui.test.util.DisableAnimationsTestRule;
 @Features.EnableFeatures({
     MessageFeatureList.MESSAGES_ANDROID_EXTRA_HISTOGRAMS,
     MessageFeatureList.MESSAGES_FOR_ANDROID_FULLY_VISIBLE_CALLBACK,
-    MessageFeatureList.MESSAGES_FOR_ANDROID_STACKING_ANIMATION
 })
 public class SingleActionMessageTest {
-    @ClassRule
-    public static DisableAnimationsTestRule sDisableAnimationsRule =
-            new DisableAnimationsTestRule();
-
     @ClassRule
     public static BaseActivityTestRule<BlankUiTestActivity> sActivityTestRule =
             new BaseActivityTestRule<>(BlankUiTestActivity.class);
@@ -77,7 +70,6 @@ public class SingleActionMessageTest {
     }
 
     @Rule public MockitoRule mMockitoRule = MockitoJUnit.rule();
-    @Rule public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
     @Rule public FakeTimeTestRule mFakeTime = new FakeTimeTestRule();
     @Mock private SwipeAnimationHandler mSwipeAnimationHandler;
     @Mock private MessageBannerCoordinator mMessageBanner;
@@ -91,7 +83,7 @@ public class SingleActionMessageTest {
     @BeforeClass
     public static void setupSuite() {
         sActivityTestRule.launchActivity(null);
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     sActivity = sActivityTestRule.getActivity();
                 });
@@ -142,8 +134,7 @@ public class SingleActionMessageTest {
                 0,
                 container.getChildCount());
         message.dismiss(DismissReason.UNKNOWN);
-        mDismissCallback.waitForFirst(
-                "Dismiss callback should be called when message is dismissed");
+        mDismissCallback.waitForOnly("Dismiss callback should be called when message is dismissed");
         Assert.assertTrue(
                 "mMessageDismissed should be true when a message is dismissed.",
                 message.getMessageDismissedForTesting());
@@ -242,15 +233,15 @@ public class SingleActionMessageTest {
                 message.getAutoDismissDuration());
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     @MediumTest
-    @Features.DisableFeatures(MessageFeatureList.MESSAGES_FOR_ANDROID_STACKING_ANIMATION)
     public void testAddMultipleSingleActionMessage() {
         MessageContainer container = new MessageContainer(sActivity, null);
         PropertyModel m1 = createBasicSingleActionMessageModel();
         PropertyModel m2 = createBasicSingleActionMessageModel();
         final MessageBannerView view1 = createMessageBannerView(container);
         final MessageBannerView view2 = createMessageBannerView(container);
+        // expect no crash
         createAndShowSingleActionMessage(container, m1, view1);
         createAndShowSingleActionMessage(container, m2, view2);
     }

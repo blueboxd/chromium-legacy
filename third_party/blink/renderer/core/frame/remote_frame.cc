@@ -10,6 +10,7 @@
 #include "third_party/blink/public/common/fenced_frame/fenced_frame_utils.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/navigation/navigation_policy.h"
+#include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame_replication_state.mojom-blink.h"
@@ -125,14 +126,9 @@ RemoteFrame::RemoteFrame(
       task_runner_(page.GetPageScheduler()
                        ->GetAgentGroupScheduler()
                        .DefaultTaskRunner()) {
-  // TODO(crbug.com/1094850): Remove this check once the renderer is correctly
-  // handling errors during the creation of HTML portal elements, which would
-  // otherwise cause RemoteFrame() being created with empty frame tokens.
-  if (!frame_token.value().is_empty()) {
-    auto frame_tracking_result = GetRemoteFramesMap().insert(
-        RemoteFrameToken::Hasher()(frame_token), this);
-    CHECK(frame_tracking_result.stored_value) << "Inserting a duplicate item.";
-  }
+  auto frame_tracking_result = GetRemoteFramesMap().insert(
+      RemoteFrameToken::Hasher()(frame_token), this);
+  CHECK(frame_tracking_result.stored_value) << "Inserting a duplicate item.";
 
   dom_window_ = MakeGarbageCollected<RemoteDOMWindow>(*this);
 
@@ -239,11 +235,9 @@ void RemoteFrame::Navigate(FrameLoadRequest& frame_request,
     initiator_frame_is_ad = window->GetFrame()->IsAdFrame();
     is_ad_script_in_stack = window->GetFrame()->IsAdScriptInStack();
 
-    if (frame_request.ClientRedirectReason() != ClientNavigationReason::kNone) {
-      probe::FrameRequestedNavigation(window->GetFrame(), this, url,
-                                      frame_request.ClientRedirectReason(),
-                                      kNavigationPolicyCurrentTab);
-    }
+    probe::FrameRequestedNavigation(window->GetFrame(), this, url,
+                                    frame_request.GetClientNavigationReason(),
+                                    kNavigationPolicyCurrentTab);
 
     if (!initiator_frame_token) {
       initiator_frame_token = window->GetFrame()->GetLocalFrameToken();
@@ -295,6 +289,7 @@ void RemoteFrame::Navigate(FrameLoadRequest& frame_request,
     params->source_location->line = source_location->LineNumber();
     params->source_location->column = source_location->ColumnNumber();
   }
+  params->storage_access_api_status = window->GetStorageAccessApiStatus();
 
   params->impression = frame_request.Impression();
 
@@ -315,6 +310,8 @@ void RemoteFrame::Navigate(FrameLoadRequest& frame_request,
                                                   is_ad_script_in_stack);
 
   params->is_container_initiated = frame_request.IsContainerInitiated();
+  params->has_rel_opener = frame_request.GetWindowFeatures().explicit_opener;
+
   GetRemoteFrameHostRemote().OpenURL(std::move(params));
 }
 
@@ -477,16 +474,13 @@ void RemoteFrame::ForwardPostMessage(
   if (source_frame)
     source_token = source_frame->GetLocalFrameToken();
 
-  String source_origin = source_security_origin
-                             ? source_security_origin->ToString()
-                             : g_empty_string;
   String target_origin = target_security_origin
                              ? target_security_origin->ToString()
                              : g_empty_string;
 
-  GetRemoteFrameHostRemote().RouteMessageEvent(source_token, source_origin,
-                                               target_origin,
-                                               std::move(transferable_message));
+  GetRemoteFrameHostRemote().RouteMessageEvent(
+      source_token, source_security_origin, target_origin,
+      std::move(transferable_message));
 }
 
 bool RemoteFrame::IsRemoteFrameHostRemoteBound() {
@@ -962,6 +956,8 @@ bool RemoteFrame::SynchronizeVisualProperties(
           pending_visual_properties_.screen_infos ||
       sent_visual_properties_->zoom_level !=
           pending_visual_properties_.zoom_level ||
+      sent_visual_properties_->css_zoom_factor !=
+          pending_visual_properties_.css_zoom_factor ||
       sent_visual_properties_->page_scale_factor !=
           pending_visual_properties_.page_scale_factor ||
       sent_visual_properties_->compositing_scale_factor !=
@@ -1063,8 +1059,22 @@ void RemoteFrame::DidChangeScreenInfos(
   SynchronizeVisualProperties();
 }
 
-void RemoteFrame::ZoomLevelChanged(double zoom_level) {
-  pending_visual_properties_.zoom_level = zoom_level;
+void RemoteFrame::ZoomFactorChanged(double zoom_factor) {
+  // zoom_factor includes device scale factor, browser zoom, and css zoom.
+  WebViewImpl* view = GetPage()->GetChromeClient().GetWebView();
+  double device_scale_factor = view->ZoomFactorForViewportLayout();
+  if (Owner() && Owner()->IsLocal()) {
+    DCHECK(ancestor_widget_);
+    double zoom_level = ancestor_widget_->GetZoomLevel();
+    pending_visual_properties_.zoom_level = zoom_level;
+    double browser_zoom_factor = view->ZoomLevelToZoomFactor(zoom_level);
+    pending_visual_properties_.css_zoom_factor =
+        zoom_factor / (device_scale_factor * browser_zoom_factor);
+  } else {
+    pending_visual_properties_.zoom_level =
+        ZoomFactorToZoomLevel(zoom_factor / device_scale_factor);
+    pending_visual_properties_.css_zoom_factor = 1.0;
+  }
   SynchronizeVisualProperties();
 }
 

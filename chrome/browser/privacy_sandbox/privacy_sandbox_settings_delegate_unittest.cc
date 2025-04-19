@@ -49,6 +49,9 @@ namespace {
 
 using ::privacy_sandbox::tracking_protection::
     TrackingProtectionOnboardingStatus;
+using NoticeType = privacy_sandbox::TrackingProtectionOnboarding::NoticeType;
+using SurfaceType = privacy_sandbox::TrackingProtectionOnboarding::SurfaceType;
+
 constexpr char kTestEmail[] = "test@test.com";
 
 class PrivacySandboxSettingsDelegateTest : public testing::Test {
@@ -675,8 +678,9 @@ TEST_P(CookieDeprecationLabelAllowedTest, IsClientEligibleChecked) {
     auto* onboarding_service =
         TrackingProtectionOnboardingFactory::GetForProfile(profile());
     // Simulate onboarding a profile.
-    onboarding_service->MaybeMarkEligible();
-    onboarding_service->OnboardingNoticeShown();
+    onboarding_service->MaybeMarkModeBEligible();
+    onboarding_service->NoticeShown(SurfaceType::kDesktop,
+                                    NoticeType::kModeBOnboarding);
   }
 
   for (bool is_client_eligible : {false, true}) {
@@ -710,16 +714,6 @@ TEST_P(CookieDeprecationLabelAllowedTest, OnboardingStatusChecked) {
           .expected_allowed = false,
       },
       {
-          .onboarding_status = TrackingProtectionOnboardingStatus::kRequested,
-          .need_onboarding = false,
-          .expected_allowed = true,
-      },
-      {
-          .onboarding_status = TrackingProtectionOnboardingStatus::kRequested,
-          .need_onboarding = true,
-          .expected_allowed = true,
-      },
-      {
           .onboarding_status = TrackingProtectionOnboardingStatus::kOnboarded,
           .need_onboarding = false,
           .expected_allowed = true,
@@ -751,13 +745,6 @@ TEST_P(CookieDeprecationLabelAllowedTest, OnboardingStatusChecked) {
     if (disable_3pcs) {
       prefs()->SetInteger(prefs::kTrackingProtectionOnboardingStatus,
                           static_cast<int>(test_case.onboarding_status));
-      EXPECT_EQ(delegate()->IsCookieDeprecationLabelAllowed(),
-                test_case.expected_allowed);
-    } else if (test_case.onboarding_status !=
-               TrackingProtectionOnboardingStatus::
-                   kRequested)  // Silent Onboarding can never be combined with
-                                // the requested status.
-    {
       prefs()->SetInteger(prefs::kTrackingProtectionSilentOnboardingStatus,
                           static_cast<int>(test_case.onboarding_status));
       EXPECT_EQ(delegate()->IsCookieDeprecationLabelAllowed(),
@@ -837,8 +824,9 @@ TEST_P(ThirdPartyCookiesBlockedByCookieDeprecationExperimentTest,
     auto* onboarding_service =
         TrackingProtectionOnboardingFactory::GetForProfile(profile());
     // Simulate onboarding a profile.
-    onboarding_service->MaybeMarkEligible();
-    onboarding_service->OnboardingNoticeShown();
+    onboarding_service->MaybeMarkModeBEligible();
+    onboarding_service->NoticeShown(SurfaceType::kDesktop,
+                                    NoticeType::kModeBOnboarding);
   }
 
   prefs()->SetInteger(prefs::kCookieControlsMode,

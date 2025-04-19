@@ -29,16 +29,25 @@ impl fend_core::Interrupt for TimeoutInterrupt {
     }
 }
 
+fn is_allowed_byte(byte: u8) -> bool {
+    // All bytes of UTF-8 non-ASCII codepoints have an MSB of 1, which should
+    // never match any ASCII character.
+    matches!(byte, b' ' | b'0'..=b'9' | b'+' | b'-' | b'*' | b'/' | b'(' | b')')
+}
+
 pub fn evaluate_using_rust(query: &[u8], out_result: &mut String, timeout_in_ms: u32) -> bool {
-    let Ok(query_str) = std::str::from_utf8(query) else {
+    if !query.iter().any(|c| is_allowed_byte(*c)) {
+        return false;
+    }
+    let Ok(query) = std::str::from_utf8(query) else {
         return false;
     };
     let mut context = fend_core::Context::new();
     let result = if timeout_in_ms > 0 {
         let interrupt = TimeoutInterrupt::new_with_timeout(timeout_in_ms.into());
-        fend_core::evaluate_with_interrupt(query_str, &mut context, &interrupt)
+        fend_core::evaluate_with_interrupt(query, &mut context, &interrupt)
     } else {
-        fend_core::evaluate(query_str, &mut context)
+        fend_core::evaluate(query, &mut context)
     };
     match result {
         Err(_) => false,

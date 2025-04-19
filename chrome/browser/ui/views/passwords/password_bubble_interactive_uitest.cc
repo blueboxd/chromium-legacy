@@ -55,6 +55,7 @@
 #include "ui/views/controls/textarea/textarea.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/focus/focus_manager.h"
+#include "ui/views/test/widget_test.h"
 
 using base::Bucket;
 using net::test_server::BasicHttpResponse;
@@ -86,13 +87,14 @@ views::EditableCombobox* GetUsernameDropdown(
 
 void ClickOnView(views::View* view) {
   CHECK(view);
-  ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-                         ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
-                         ui::EF_LEFT_MOUSE_BUTTON);
+  ui::MouseEvent pressed(ui::EventType::kMousePressed, gfx::Point(),
+                         gfx::Point(), ui::EventTimeForNow(),
+                         ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   view->OnMousePressed(pressed);
-  ui::MouseEvent released_event = ui::MouseEvent(
-      ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(), ui::EventTimeForNow(),
-      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+  ui::MouseEvent released_event =
+      ui::MouseEvent(ui::EventType::kMouseReleased, gfx::Point(), gfx::Point(),
+                     ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+                     ui::EF_LEFT_MOUSE_BUTTON);
   view->OnMouseReleased(released_event);
 }
 
@@ -119,8 +121,7 @@ class PasswordBubbleInteractiveUiTest : public ManagePasswordsTest {
  public:
   PasswordBubbleInteractiveUiTest() {
     scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{password_manager::features::
-                                  kButterOnDesktopFollowup},
+        /*enabled_features=*/{},
         /*disabled_features=*/{
             password_manager::features::kPasswordManualFallbackAvailable});
   }
@@ -478,12 +479,16 @@ IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest, AutoSigninNoFocus) {
 IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest, LeakPromptHidesBubble) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   SetupPendingPassword();
-  EXPECT_TRUE(IsBubbleShowing());
+  ASSERT_NE(PasswordBubbleViewBase::manage_password_bubble(), nullptr);
+  views::Widget* password_bubble =
+      PasswordBubbleViewBase::manage_password_bubble()->GetWidget();
+  ASSERT_NE(password_bubble, nullptr);
+  views::test::WidgetVisibleWaiter(password_bubble).Wait();
 
   GetController()->OnCredentialLeak(
       password_manager::CredentialLeakFlags::kPasswordSaved,
       GURL("https://example.com"), std::u16string(u"Eve"));
-  EXPECT_FALSE(IsBubbleShowing());
+  views::test::WidgetDestroyedWaiter(password_bubble).Wait();
 }
 
 class PasswordBubbleInteractiveUiTestWithExplicitBrowserSigninParam
@@ -898,10 +903,10 @@ IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest,
 
   views::View* note_view = bubble->GetViewByID(
       static_cast<int>(password_manager::ManagePasswordsViewIDs::kNoteLabel));
-  note_view->OnKeyPressed(
-      ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_CONTROL_DOWN));
-  note_view->OnKeyPressed(
-      ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_C, ui::EF_CONTROL_DOWN));
+  note_view->OnKeyPressed(ui::KeyEvent(ui::EventType::kKeyPressed, ui::VKEY_A,
+                                       ui::EF_CONTROL_DOWN));
+  note_view->OnKeyPressed(ui::KeyEvent(ui::EventType::kKeyPressed, ui::VKEY_C,
+                                       ui::EF_CONTROL_DOWN));
 
   EXPECT_THAT(
       histogram_tester.GetAllSamples(
@@ -966,15 +971,15 @@ IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest,
   views::View* note_view = bubble->GetViewByID(
       static_cast<int>(password_manager::ManagePasswordsViewIDs::kNoteLabel));
   auto* note_label = static_cast<views::Label*>(note_view);
-  note_view->OnMousePressed(
-      ui::MouseEvent(ui::ET_MOUSE_RELEASED, gfx::Point(0, 0), gfx::Point(0, 0),
-                     ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0));
+  note_view->OnMousePressed(ui::MouseEvent(
+      ui::EventType::kMouseReleased, gfx::Point(0, 0), gfx::Point(0, 0),
+      ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0));
   note_label->SelectAll();
-  note_view->OnMouseReleased(
-      ui::MouseEvent(ui::ET_MOUSE_RELEASED, gfx::Point(0, 0), gfx::Point(0, 0),
-                     ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0));
-  note_view->OnKeyPressed(
-      ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_C, ui::EF_CONTROL_DOWN));
+  note_view->OnMouseReleased(ui::MouseEvent(
+      ui::EventType::kMouseReleased, gfx::Point(0, 0), gfx::Point(0, 0),
+      ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0));
+  note_view->OnKeyPressed(ui::KeyEvent(ui::EventType::kKeyPressed, ui::VKEY_C,
+                                       ui::EF_CONTROL_DOWN));
   note_label->ExecuteCommand(views::Label::MenuCommands::kCopy,
                              /*event_flags=*/0);
 
@@ -1007,15 +1012,15 @@ IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest,
   views::View* note_view = bubble->GetViewByID(
       static_cast<int>(password_manager::ManagePasswordsViewIDs::kNoteLabel));
   auto* note_label = static_cast<views::Label*>(note_view);
-  note_view->OnMousePressed(
-      ui::MouseEvent(ui::ET_MOUSE_RELEASED, gfx::Point(0, 0), gfx::Point(0, 0),
-                     ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0));
+  note_view->OnMousePressed(ui::MouseEvent(
+      ui::EventType::kMouseReleased, gfx::Point(0, 0), gfx::Point(0, 0),
+      ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0));
   note_label->SelectRange(gfx::Range(0, 5));
-  note_view->OnMouseReleased(
-      ui::MouseEvent(ui::ET_MOUSE_RELEASED, gfx::Point(0, 0), gfx::Point(0, 0),
-                     ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0));
-  note_view->OnKeyPressed(
-      ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_C, ui::EF_CONTROL_DOWN));
+  note_view->OnMouseReleased(ui::MouseEvent(
+      ui::EventType::kMouseReleased, gfx::Point(0, 0), gfx::Point(0, 0),
+      ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0));
+  note_view->OnKeyPressed(ui::KeyEvent(ui::EventType::kKeyPressed, ui::VKEY_C,
+                                       ui::EF_CONTROL_DOWN));
   note_label->ExecuteCommand(views::Label::MenuCommands::kCopy,
                              /*event_flags=*/0);
 
@@ -1155,10 +1160,6 @@ class SharedPasswordsNotificationBubbleInteractiveUiTest
  public:
   ~SharedPasswordsNotificationBubbleInteractiveUiTest() override = default;
   auto ScreenshotSharedPasswordsNotificationRootView(const char* baseline);
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_{
-      password_manager::features::kSharedPasswordNotificationUI};
 };
 
 auto SharedPasswordsNotificationBubbleInteractiveUiTest::

@@ -57,16 +57,27 @@ std::atomic<LoggingLevel> g_main_thread_log_level{LoggingLevel::kNone};
 // Indicates whether HangWatcher::Run() should return after the next monitoring.
 std::atomic<bool> g_keep_monitoring{true};
 
+// If true, indicates that this process's shutdown sequence has started. Once
+// flipped to true, cannot be un-flipped.
+std::atomic<bool> g_shutting_down{false};
+
 // Emits the hung thread count histogram. |count| is the number of threads
 // of type |thread_type| that were hung or became hung during the last
 // monitoring window. This function should be invoked for each thread type
-// encountered on each call to Monitor().
-void LogHungThreadCountHistogram(HangWatcher::ThreadType thread_type,
-                                 int count) {
+// encountered on each call to Monitor(). `sample_ticks` is the time at which
+// the sample was taken and `monitoring_period` is the interval being sampled.
+void LogStatusHistogram(HangWatcher::ThreadType thread_type,
+                        int count,
+                        TimeTicks sample_ticks,
+                        TimeDelta monitoring_period) {
   // In the case of unique threads like the IO or UI/Main thread a count does
   // not make sense.
   const bool any_thread_hung = count >= 1;
+  const bool shutting_down = g_shutting_down.load(std::memory_order_relaxed);
 
+  // Uses histogram macros instead of functions. This increases binary size
+  // slightly, but runs slightly faster. These histograms are logged pretty
+  // often, so we prefer improving runtime.
   const HangWatcher::ProcessType process_type =
       g_hang_watcher_process_type.load(std::memory_order_relaxed);
   switch (process_type) {
@@ -76,16 +87,26 @@ void LogHungThreadCountHistogram(HangWatcher::ThreadType thread_type,
     case HangWatcher::ProcessType::kBrowserProcess:
       switch (thread_type) {
         case HangWatcher::ThreadType::kIOThread:
-          UMA_HISTOGRAM_BOOLEAN(
-              "HangWatcher.IsThreadHung.BrowserProcess."
-              "IOThread",
-              any_thread_hung);
+          if (shutting_down) {
+            UMA_HISTOGRAM_BOOLEAN(
+                "HangWatcher.IsThreadHung.BrowserProcess.IOThread.Shutdown",
+                any_thread_hung);
+          } else {
+            UMA_HISTOGRAM_BOOLEAN(
+                "HangWatcher.IsThreadHung.BrowserProcess.IOThread.Normal",
+                any_thread_hung);
+          }
           break;
         case HangWatcher::ThreadType::kMainThread:
-          UMA_HISTOGRAM_BOOLEAN(
-              "HangWatcher.IsThreadHung.BrowserProcess."
-              "UIThread",
-              any_thread_hung);
+          if (shutting_down) {
+            UMA_HISTOGRAM_BOOLEAN(
+                "HangWatcher.IsThreadHung.BrowserProcess.UIThread.Shutdown",
+                any_thread_hung);
+          } else {
+            UMA_HISTOGRAM_BOOLEAN(
+                "HangWatcher.IsThreadHung.BrowserProcess.UIThread.Normal",
+                any_thread_hung);
+          }
           break;
         case HangWatcher::ThreadType::kThreadPoolThread:
           // Not recorded for now.
@@ -95,20 +116,22 @@ void LogHungThreadCountHistogram(HangWatcher::ThreadType thread_type,
 
     case HangWatcher::ProcessType::kGPUProcess:
       // Not recorded for now.
+      CHECK(!shutting_down);
       break;
 
     case HangWatcher::ProcessType::kRendererProcess:
+      CHECK(!shutting_down);
       switch (thread_type) {
         case HangWatcher::ThreadType::kIOThread:
-          UMA_HISTOGRAM_BOOLEAN(
-              "HangWatcher.IsThreadHung.RendererProcess."
-              "IOThread",
+          UMA_HISTOGRAM_SPLIT_BY_PROCESS_PRIORITY(
+              UMA_HISTOGRAM_BOOLEAN, sample_ticks, monitoring_period,
+              "HangWatcher.IsThreadHung.RendererProcess.IOThread",
               any_thread_hung);
           break;
         case HangWatcher::ThreadType::kMainThread:
-          UMA_HISTOGRAM_BOOLEAN(
-              "HangWatcher.IsThreadHung.RendererProcess."
-              "MainThread",
+          UMA_HISTOGRAM_SPLIT_BY_PROCESS_PRIORITY(
+              UMA_HISTOGRAM_BOOLEAN, sample_ticks, monitoring_period,
+              "HangWatcher.IsThreadHung.RendererProcess.MainThread",
               any_thread_hung);
           break;
         case HangWatcher::ThreadType::kThreadPoolThread:
@@ -118,17 +141,16 @@ void LogHungThreadCountHistogram(HangWatcher::ThreadType thread_type,
       break;
 
     case HangWatcher::ProcessType::kUtilityProcess:
+      CHECK(!shutting_down);
       switch (thread_type) {
         case HangWatcher::ThreadType::kIOThread:
           UMA_HISTOGRAM_BOOLEAN(
-              "HangWatcher.IsThreadHung.UtilityProcess."
-              "IOThread",
+              "HangWatcher.IsThreadHung.UtilityProcess.IOThread",
               any_thread_hung);
           break;
         case HangWatcher::ThreadType::kMainThread:
           UMA_HISTOGRAM_BOOLEAN(
-              "HangWatcher.IsThreadHung.UtilityProcess."
-              "MainThread",
+              "HangWatcher.IsThreadHung.UtilityProcess.MainThread",
               any_thread_hung);
           break;
         case HangWatcher::ThreadType::kThreadPoolThread:
@@ -416,6 +438,7 @@ void HangWatcher::UnitializeOnMainThreadForTesting() {
   g_threadpool_log_level.store(LoggingLevel::kNone, std::memory_order_relaxed);
   g_io_thread_log_level.store(LoggingLevel::kNone, std::memory_order_relaxed);
   g_main_thread_log_level.store(LoggingLevel::kNone, std::memory_order_relaxed);
+  g_shutting_down.store(false, std::memory_order_relaxed);
 }
 
 // static
@@ -463,8 +486,18 @@ void HangWatcher::InvalidateActiveExpectations() {
   state->SetIgnoreCurrentWatchHangsInScope();
 }
 
+// static
+void HangWatcher::SetShuttingDown() {
+  // memory_order_relaxed offers no memory order guarantees. In rare cases, we
+  // could falsely log to BrowserProcess.Normal instead of
+  // BrowserProcess.Shutdown. This is OK in practice.
+  bool was_shutting_down =
+      g_shutting_down.exchange(true, std::memory_order_relaxed);
+  DCHECK(!was_shutting_down);
+}
+
 HangWatcher::HangWatcher()
-    : monitor_period_(kMonitoringPeriod),
+    : monitoring_period_(kMonitoringPeriod),
       should_monitor_(WaitableEvent::ResetPolicy::AUTOMATIC),
       thread_(this, kThreadName),
       tick_clock_(base::DefaultTickClock::GetInstance()),
@@ -587,7 +620,7 @@ void HangWatcher::Wait() {
     const base::TimeTicks time_before_wait = tick_clock_->NowTicks();
 
     // Sleep until next scheduled monitoring or until signaled.
-    const bool was_signaled = should_monitor_.TimedWait(monitor_period_);
+    const bool was_signaled = should_monitor_.TimedWait(monitoring_period_);
 
     if (after_wait_callback_)
       after_wait_callback_.Run(time_before_wait);
@@ -595,10 +628,10 @@ void HangWatcher::Wait() {
     const base::TimeTicks time_after_wait = tick_clock_->NowTicks();
     const base::TimeDelta wait_time = time_after_wait - time_before_wait;
     const bool wait_was_normal =
-        wait_time <= (monitor_period_ + kWaitDriftTolerance);
+        wait_time <= (monitoring_period_ + kWaitDriftTolerance);
 
     UMA_HISTOGRAM_TIMES("HangWatcher.SleepDrift.BrowserProcess",
-                        wait_time - monitor_period_);
+                        wait_time - monitoring_period_);
 
     if (!wait_was_normal) {
       // If the time spent waiting was too high it might indicate the machine is
@@ -699,7 +732,8 @@ HangWatcher::WatchStateSnapShot::WatchStateSnapShot() = default;
 
 void HangWatcher::WatchStateSnapShot::Init(
     const HangWatchStates& watch_states,
-    base::TimeTicks deadline_ignore_threshold) {
+    base::TimeTicks deadline_ignore_threshold,
+    base::TimeDelta monitoring_period) {
   DCHECK(!initialized_);
 
   // No matter if the snapshot is actionable or not after this function
@@ -797,7 +831,7 @@ void HangWatcher::WatchStateSnapShot::Init(
     if (hang_count != kInvalidHangCount &&
         ThreadTypeLoggingLevelGreaterOrEqual(thread_type,
                                              LoggingLevel::kUmaOnly)) {
-      LogHungThreadCountHistogram(thread_type, hang_count);
+      LogStatusHistogram(thread_type, hang_count, now, monitoring_period);
     }
   }
 
@@ -873,7 +907,7 @@ bool HangWatcher::WatchStateSnapShot::IsActionable() const {
 HangWatcher::WatchStateSnapShot HangWatcher::GrabWatchStateSnapshotForTesting()
     const {
   WatchStateSnapShot snapshot;
-  snapshot.Init(watch_states_, deadline_ignore_threshold_);
+  snapshot.Init(watch_states_, deadline_ignore_threshold_, TimeDelta());
   return snapshot;
 }
 
@@ -886,7 +920,8 @@ void HangWatcher::Monitor() {
   if (watch_states_.empty())
     return;
 
-  watch_state_snapshot_.Init(watch_states_, deadline_ignore_threshold_);
+  watch_state_snapshot_.Init(watch_states_, deadline_ignore_threshold_,
+                             monitoring_period_);
 
   if (watch_state_snapshot_.IsActionable()) {
     DoDumpWithoutCrashing(watch_state_snapshot_);
@@ -918,6 +953,9 @@ void HangWatcher::DoDumpWithoutCrashing(
 
   SCOPED_CRASH_KEY_STRING32("HangWatcher", "seconds-since-last-resume",
                             GetTimeSinceLastSystemPowerResumeCrashKeyValue());
+
+  SCOPED_CRASH_KEY_BOOL("HangWatcher", "shutting-down",
+                        g_shutting_down.load(std::memory_order_relaxed));
 #endif
 
   // To avoid capturing more than one hang that blames a subset of the same
@@ -965,7 +1003,7 @@ void HangWatcher::SetOnHangClosureForTesting(base::RepeatingClosure closure) {
 
 void HangWatcher::SetMonitoringPeriodForTesting(base::TimeDelta period) {
   DCHECK_CALLED_ON_VALID_THREAD(constructing_thread_checker_);
-  monitor_period_ = period;
+  monitoring_period_ = period;
 }
 
 void HangWatcher::SetAfterWaitCallbackForTesting(

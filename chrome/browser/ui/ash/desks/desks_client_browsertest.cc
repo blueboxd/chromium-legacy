@@ -26,12 +26,16 @@
 #include "ash/test/ash_test_util.h"
 #include "ash/webui/system_apps/public/system_web_app_type.h"
 #include "ash/wm/desks/desk.h"
+#include "ash/wm/desks/desk_action_context_menu.h"
 #include "ash/wm/desks/desks_controller.h"
+#include "ash/wm/desks/desks_test_api.h"
 #include "ash/wm/desks/desks_test_util.h"
+#include "ash/wm/desks/overview_desk_bar_view.h"
 #include "ash/wm/desks/templates/admin_template_launch_tracker.h"
 #include "ash/wm/desks/templates/saved_desk_controller.h"
 #include "ash/wm/desks/templates/saved_desk_metrics_util.h"
 #include "ash/wm/desks/templates/saved_desk_presenter.h"
+#include "ash/wm/desks/templates/saved_desk_save_desk_button.h"
 #include "ash/wm/desks/templates/saved_desk_test_util.h"
 #include "ash/wm/desks/templates/saved_desk_util.h"
 #include "ash/wm/float/float_controller.h"
@@ -127,6 +131,7 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/range/range.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/menu/menu_item_view.h"
 #include "url/gurl.h"
 
 using ::testing::_;
@@ -338,26 +343,40 @@ void SendKey(ui::KeyboardCode key_code) {
   ash::SendKey(key_code, &generator);
 }
 
-void ClickButton(const views::Button* button) {
-  DCHECK(button);
-  DCHECK(button->GetVisible());
+// TODO(sammiequon): Use ash::test::ClickOnView().
+void ClickView(const views::View* view) {
+  DCHECK(view);
+  DCHECK(view->GetVisible());
   aura::Window* root_window =
-      button->GetWidget()->GetNativeWindow()->GetRootWindow();
+      view->GetWidget()->GetNativeWindow()->GetRootWindow();
   ui::test::EventGenerator event_generator(root_window);
-  event_generator.MoveMouseToInHost(button->GetBoundsInScreen().CenterPoint());
+  event_generator.MoveMouseToInHost(view->GetBoundsInScreen().CenterPoint());
   event_generator.ClickLeftButton();
 }
 
 // If `wait_for_ui` is true, wait for the callback from the model to update the
 // UI.
 void ClickSaveDeskAsTemplateButton(bool wait_for_ui) {
-  const views::Button* save_desk_as_template_button =
-      ash::GetSaveDeskAsTemplateButton();
-  DCHECK(save_desk_as_template_button);
-  ClickButton(save_desk_as_template_button);
+  if (ash::features::IsSavedDeskUiRevampEnabled()) {
+    // Get the menu option to save the desk as a template and click it.
+    views::MenuItemView* menu_item =
+        ash::DesksTestApi::OpenDeskContextMenuAndGetMenuItem(
+            ash::Shell::GetPrimaryRootWindow(),
+            ash::DeskBarViewBase::Type::kOverview, /*index=*/0u,
+            ash::DeskActionContextMenu::CommandId::kSaveAsTemplate);
+    ASSERT_TRUE(menu_item);
+    ClickView(menu_item);
+  } else {
+    const views::Button* save_desk_as_template_button =
+        ash::GetSaveDeskAsTemplateButton();
+    DCHECK(save_desk_as_template_button);
+    ClickView(save_desk_as_template_button);
+  }
+
   if (wait_for_ui) {
     ash::WaitForSavedDeskUI();
   }
+
   // Clicking the save template button selects the newly created template's name
   // field. We can press enter or escape or click to select out of it.
   SendKey(ui::VKEY_RETURN);
@@ -371,19 +390,19 @@ void ClickSaveDeskForLaterButton() {
   const views::Button* save_desk_for_later_button =
       ash::GetSaveDeskForLaterButton();
   DCHECK(save_desk_for_later_button);
-  ClickButton(save_desk_for_later_button);
+  ClickView(save_desk_for_later_button);
 }
 
 void ClickLibraryButton() {
   const views::Button* zero_state_templates_button = ash::GetLibraryButton();
   ASSERT_TRUE(zero_state_templates_button);
-  ClickButton(zero_state_templates_button);
+  ClickView(zero_state_templates_button);
 }
 
 void ClickFirstTemplateItem() {
   const views::Button* template_item = ash::GetSavedDeskItemButton(/*index=*/0);
   DCHECK(template_item);
-  ClickButton(template_item);
+  ClickView(template_item);
 }
 
 const std::vector<raw_ptr<const ash::DeskTemplate, VectorExperimental>>
@@ -530,8 +549,7 @@ class DesksClientTest : public extensions::PlatformAppBrowserTest {
     std::vector<base::test::FeatureRef> enabled_features = {
         ash::features::kDesksTemplates};
     std::vector<base::test::FeatureRef> disabled_features = {
-        ash::features::kDeskTemplateSync,
-        ash::features::kFasterSplitScreenSetup};
+        ash::features::kDeskTemplateSync};
     scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
 
     // Suppress the multitask menu nudge as we'll be checking the stacking order
@@ -1541,12 +1559,17 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, SystemUIBasic) {
 
   // Note that this button needs at least one window to show up. Browser tests
   // have an existing browser window, so no new window needs to be created.
-  const views::Button* save_desk_as_template_button =
-      ash::GetSaveDeskAsTemplateButton();
-  ASSERT_TRUE(save_desk_as_template_button);
-  ClickButton(save_desk_as_template_button);
+  // TODO(http://b/350771229): Remove `if` when Forest is enabled.
+  if (ash::features::IsSavedDeskUiRevampEnabled()) {
+    ClickSaveDeskAsTemplateButton();
+  } else {
+    const views::Button* save_desk_as_template_button =
+        ash::GetSaveDeskAsTemplateButton();
+    ASSERT_TRUE(save_desk_as_template_button);
+    ClickView(save_desk_as_template_button);
 
-  ash::WaitForSavedDeskUI();
+    ash::WaitForSavedDeskUI();
+  }
 
   EXPECT_EQ(1u, desk_model->GetEntryCount());
 
@@ -1785,7 +1808,7 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, SystemUICaptureIncognitoBrowserTest) {
   // MaterialNext uses PillButton instead of dialog buttons.
   if (std::string_view(dialog_accept_button->GetClassName()) ==
       std::string_view(ash::PillButton::kViewClassName)) {
-    ClickButton(dialog_accept_button);
+    ClickView(dialog_accept_button);
   } else {
     // Use a key press to accept the dialog instead of a click as
     // dialog buttons think a click generated by the event generator is an
@@ -2388,7 +2411,7 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest,
 
   const views::Button* delete_button =
       ash::GetSavedDeskItemDeleteButton(/*index=*/0);
-  ClickButton(delete_button);
+  ClickView(delete_button);
 
   // Confirm deleting a template. Use a key press to accept the dialog instead
   // of a click as dialog buttons think a click generated by the event generator
@@ -2659,7 +2682,7 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest,
   // Wait for the bounds to finish animating.
   ash::ShellTestApi().WaitForWindowFinishAnimating(
       save_desk_button->GetWidget()->GetNativeWindow());
-  ClickButton(save_desk_button);
+  ClickView(save_desk_button);
   ash::WaitForSavedDeskUI();
 
   // Wait for the browser to close.
@@ -3281,6 +3304,13 @@ using SaveAndRecallBrowserTest = DesksClientTest;
 
 IN_PROC_BROWSER_TEST_F(SaveAndRecallBrowserTest,
                        SystemUIBlockingDialogAccepted) {
+  // TODO(http://b/350771229): This test tests clicking the "Save desk for
+  // later" button that will not be shown if the feature is enabled. This test
+  // will be fixed before the button change is no longer hidden behind the flag.
+  if (ash::features::IsSavedDeskUiRevampEnabled()) {
+    GTEST_SKIP() << "Skipping test body for saved desk revamp feature.";
+  }
+
   SetupBrowserToConfirmClose(browser());
 
   // We'll now save the desk as Save & Recall. After saving desks, this
@@ -3313,6 +3343,13 @@ IN_PROC_BROWSER_TEST_F(SaveAndRecallBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(SaveAndRecallBrowserTest,
                        SystemUIBlockingDialogRejected) {
+  // TODO(http://b/350771229): This test tests clicking the "Save desk for
+  // later" button that will not be shown if the feature is enabled. This test
+  // will be fixed before the button change is no longer hidden behind the flag.
+  if (ash::features::IsSavedDeskUiRevampEnabled()) {
+    GTEST_SKIP() << "Skipping test body for saved desk revamp feature.";
+  }
+
   SetupBrowserToConfirmClose(browser());
 
   ash::ToggleOverview();
@@ -3340,8 +3377,7 @@ class SnapGroupDesksClientTest : public DesksClientTest {
  public:
   SnapGroupDesksClientTest() {
     scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{ash::features::kFasterSplitScreenSetup,
-                              ash::features::kSnapGroup},
+        /*enabled_features=*/{ash::features::kSnapGroup},
         /*disabled_features=*/{});
   }
   SnapGroupDesksClientTest(const SnapGroupDesksClientTest&) = delete;

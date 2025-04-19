@@ -34,10 +34,6 @@ class ExtensionUninstallDialog : public ChromeAppIconDelegate,
                                  public ExtensionRegistryObserver,
                                  public ProfileObserver {
  public:
-  // Implement this callback to handle checking for the dialog's header message.
-  using OnWillShowCallback =
-      base::RepeatingCallback<void(ExtensionUninstallDialog*)>;
-
   // The type of action the dialog took at close.
   // Do not reorder this enum as it is used in UMA histograms.
   enum CloseAction {
@@ -88,14 +84,8 @@ class ExtensionUninstallDialog : public ChromeAppIconDelegate,
       UninstallReason reason,
       UninstallSource source);
 
-  std::string GetHeadingText();
-
   // Returns true if a checkbox should be shown in the dialog.
   bool ShouldShowCheckbox() const;
-
-  // Returns the string to be displayed with the checkbox. Must not be called if
-  // ShouldShowCheckbox() returns false.
-  std::u16string GetCheckboxLabel() const;
 
   // Called when the dialog is closing to do any book-keeping.
   void OnDialogClosed(CloseAction action);
@@ -105,7 +95,7 @@ class ExtensionUninstallDialog : public ChromeAppIconDelegate,
   }
 
   // Called from unit test to check callbacks in dialog.
-  static void SetOnShownCallbackForTesting(OnWillShowCallback* callback);
+  static void SetOnShownCallbackForTesting(base::RepeatingClosure* callback);
 
  protected:
   // Constructor used by the derived classes.

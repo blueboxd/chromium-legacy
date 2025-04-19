@@ -44,7 +44,9 @@ enum class DismissReason {
   DISMISSED_BY_FEATURE = 9,
 
   // Insert new values before this line.
-  COUNT
+  COUNT,
+
+  kMaxValue = COUNT,
 };
 
 // "Urgent" means the user should take actions ASAP, such as responding to
@@ -118,7 +120,7 @@ enum class MessageIdentifier {
   // Removed: RESTORE_CUSTOM_TAB = 37,
   // Removed: UNDO_CUSTOM_TAB_RESTORATION = 38,
   CVC_SAVE = 39,
-  TRACKING_PROTECTION_NOTICE = 40,
+  // Removed: TRACKING_PROTECTION_NOTICE = 40,
   DESKTOP_SITE_WINDOW_SETTING = 41,
   PROMPT_HATS_LOCATION_CUSTOM_INVITATION = 42,
   PROMPT_HATS_LOCATION_GENERIC_INVITATION = 43,
@@ -127,6 +129,9 @@ enum class MessageIdentifier {
   PROMPT_HATS_MICROPHONE_CUSTOM_INVITATION = 46,
   PROMPT_HATS_MICROPHONE_GENERIC_INVITATION = 47,
   PERMISSION_BLOCKED = 48,
+  SAVE_CARD_FAILURE = 49,
+  VIRTUAL_CARD_ENROLL_FAILURE = 50,
+  PROMPT_HATS_QUICK_DELETE = 51,
   // Insert new values before this line.
   COUNT
 };

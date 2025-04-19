@@ -33,6 +33,8 @@
 #include "third_party/blink/renderer/core/dom/element_rare_data_vector.h"
 #include "third_party/blink/renderer/core/dom/first_letter_pseudo_element.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/dom/scroll_marker_group_pseudo_element.h"
+#include "third_party/blink/renderer/core/dom/scroll_marker_pseudo_element.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
@@ -73,10 +75,6 @@ PseudoId ResolvePseudoIdAlias(PseudoId pseudo_id) {
 
 }  // namespace
 
-bool PseudoElementLayoutObjectIsNeeded(PseudoId pseudo_id,
-                                       const DisplayStyle& pseudo_style,
-                                       const Element* originating_element);
-
 PseudoElement* PseudoElement::Create(Element* parent,
                                      PseudoId pseudo_id,
                                      const AtomicString& view_transition_name) {
@@ -88,11 +86,16 @@ PseudoElement* PseudoElement::Create(Element* parent,
     DCHECK(transition);
     return transition->CreatePseudoElement(parent, pseudo_id,
                                            view_transition_name);
+  } else if (ResolvePseudoIdAlias(pseudo_id) == kPseudoIdScrollMarkerGroup) {
+    return MakeGarbageCollected<ScrollMarkerGroupPseudoElement>(parent,
+                                                                pseudo_id);
+  } else if (pseudo_id == kPseudoIdScrollMarker) {
+    return MakeGarbageCollected<ScrollMarkerPseudoElement>(parent);
   }
   DCHECK(pseudo_id == kPseudoIdAfter || pseudo_id == kPseudoIdBefore ||
          pseudo_id == kPseudoIdBackdrop || pseudo_id == kPseudoIdMarker ||
-         pseudo_id == kPseudoIdScrollMarkerGroupBefore ||
-         pseudo_id == kPseudoIdScrollMarkerGroupAfter);
+         pseudo_id == kPseudoIdScrollNextButton ||
+         pseudo_id == kPseudoIdScrollPrevButton);
   return MakeGarbageCollected<PseudoElement>(parent, pseudo_id,
                                              view_transition_name);
 }
@@ -125,6 +128,21 @@ const QualifiedName& PseudoElementTagName(PseudoId pseudo_id) {
       DEFINE_STATIC_LOCAL(QualifiedName, scroll_marker_group,
                           (AtomicString("::scroll-marker-group")));
       return scroll_marker_group;
+    }
+    case kPseudoIdScrollNextButton: {
+      DEFINE_STATIC_LOCAL(QualifiedName, scroll_next_button,
+                          (AtomicString("::scroll-next-button")));
+      return scroll_next_button;
+    }
+    case kPseudoIdScrollPrevButton: {
+      DEFINE_STATIC_LOCAL(QualifiedName, scroll_prev_button,
+                          (AtomicString("::scroll-prev-button")));
+      return scroll_prev_button;
+    }
+    case kPseudoIdScrollMarker: {
+      DEFINE_STATIC_LOCAL(QualifiedName, scroll_marker,
+                          (AtomicString("::scroll-marker")));
+      return scroll_marker;
     }
     case kPseudoIdViewTransition: {
       DEFINE_STATIC_LOCAL(QualifiedName, transition,
@@ -295,7 +313,7 @@ void PseudoElement::AttachLayoutTree(AttachContext& context) {
   // Do not create a layout object for the ::marker in that case.
   if (pseudo_id_ == kPseudoIdMarker) {
     LayoutObject* originating_layout = parentNode()->GetLayoutObject();
-    if (!originating_layout || !originating_layout->IsListItemIncludingNG()) {
+    if (!originating_layout || !originating_layout->IsListItem()) {
       context.counters_context.EnterElement(*this);
       Node::AttachLayoutTree(context);
       context.counters_context.LeaveElement(*this);
@@ -331,24 +349,33 @@ void PseudoElement::AttachLayoutTree(AttachContext& context) {
       }
       break;
     }
+    case kPseudoIdScrollNextButton:
+    case kPseudoIdScrollPrevButton:
+      if (style.ContentBehavesAsNormal()) {
+        context.counters_context.LeaveElement(*this);
+        return;
+      }
+      break;
     case kPseudoIdBefore:
     case kPseudoIdAfter:
-    case kPseudoIdScrollMarkerGroupBefore:
-    case kPseudoIdScrollMarkerGroupAfter:
       break;
+    case kPseudoIdScrollMarker: {
+      To<ScrollMarkerGroupPseudoElement>(context.parent->GetNode())
+          ->AddToFocusGroup(*To<ScrollMarkerPseudoElement>(this));
+      break;
+    }
     default: {
       context.counters_context.LeaveElement(*this);
       return;
     }
   }
 
-  DCHECK(!style.ContentBehavesAsNormal() ||
-         GetPseudoIdForStyling() == kPseudoIdScrollMarkerGroup);
+  DCHECK(!style.ContentBehavesAsNormal());
   DCHECK(!style.ContentPreventsBoxGeneration());
   for (const ContentData* content = style.GetContentData(); content;
        content = content->Next()) {
     if (!content->IsAltText()) {
-      LayoutObject* child = content->CreateLayoutObject(*this, style);
+      LayoutObject* child = content->CreateLayoutObject(*layout_object);
       if (layout_object->IsChildAllowed(child, style)) {
         layout_object->AddChild(child);
         if (child->IsQuote()) {
@@ -363,7 +390,7 @@ void PseudoElement::AttachLayoutTree(AttachContext& context) {
           if (context.counters_context.AttachmentRootIsDocumentElement()) {
             Vector<int> counter_values =
                 context.counters_context.GetCounterValues(
-                    layout_counter->Identifier(), *this,
+                    *this, layout_counter->Identifier(),
                     layout_counter->Separator().IsNull());
             layout_counter->UpdateCounter(std::move(counter_values));
           } else {
@@ -376,6 +403,21 @@ void PseudoElement::AttachLayoutTree(AttachContext& context) {
     }
   }
   context.counters_context.LeaveElement(*this);
+}
+
+bool PseudoElement::CanGenerateContent() const {
+  switch (GetPseudoIdForStyling()) {
+    case kPseudoIdMarker:
+    case kPseudoIdBefore:
+    case kPseudoIdAfter:
+    case kPseudoIdScrollMarker:
+    case kPseudoIdScrollMarkerGroup:
+    case kPseudoIdScrollNextButton:
+    case kPseudoIdScrollPrevButton:
+      return true;
+    default:
+      return false;
+  }
 }
 
 bool PseudoElement::LayoutObjectIsNeeded(const DisplayStyle& style) const {
@@ -396,7 +438,7 @@ bool PseudoElement::CanGeneratePseudoElement(PseudoId pseudo_id) const {
   return Element::CanGeneratePseudoElement(pseudo_id);
 }
 
-Node* PseudoElement::InnerNodeForHitTesting() const {
+Node* PseudoElement::InnerNodeForHitTesting() {
   Node* parent = ParentOrShadowHostNode();
   if (parent && parent->IsPseudoElement())
     return To<PseudoElement>(parent)->InnerNodeForHitTesting();
@@ -451,6 +493,10 @@ bool PseudoElementLayoutObjectIsNeeded(PseudoId pseudo_id,
     case kPseudoIdBefore:
     case kPseudoIdAfter:
       return !pseudo_style.ContentPreventsBoxGeneration();
+    case kPseudoIdScrollMarker:
+    case kPseudoIdScrollNextButton:
+    case kPseudoIdScrollPrevButton:
+      return !pseudo_style.ContentBehavesAsNormal();
     case kPseudoIdMarker: {
       if (!pseudo_style.ContentBehavesAsNormal()) {
         return !pseudo_style.ContentPreventsBoxGeneration();

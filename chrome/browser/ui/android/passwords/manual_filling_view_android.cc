@@ -18,8 +18,6 @@
 #include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
-#include "chrome/android/features/keyboard_accessory/internal/jni/ManualFillingComponentBridge_jni.h"
-#include "chrome/android/features/keyboard_accessory/public/jni/UserInfoField_jni.h"
 #include "chrome/browser/keyboard_accessory/android/accessory_sheet_data.h"
 #include "chrome/browser/keyboard_accessory/android/accessory_sheet_enums.h"
 #include "chrome/browser/keyboard_accessory/android/manual_filling_controller.h"
@@ -32,6 +30,10 @@
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
 #include "url/android/gurl_android.h"
+
+// Must come after all headers that specialize FromJniType() / ToJniType().
+#include "chrome/android/features/keyboard_accessory/internal/jni/ManualFillingComponentBridge_jni.h"
+#include "chrome/android/features/keyboard_accessory/public/jni/UserInfoField_jni.h"
 
 using autofill::AccessorySheetData;
 using autofill::AccessorySheetField;
@@ -62,8 +64,14 @@ AccessorySheetField ConvertJavaUserInfoField(
       env, Java_UserInfoField_getId(env, j_field_to_convert));
   bool is_obfuscated = Java_UserInfoField_isObfuscated(env, j_field_to_convert);
   bool selectable = Java_UserInfoField_isSelectable(env, j_field_to_convert);
-  return AccessorySheetField(display_text, text_to_fill, a11y_description, id,
-                             is_obfuscated, selectable);
+  return AccessorySheetField::Builder()
+      .SetDisplayText(std::move(display_text))
+      .SetTextToFill(std::move(text_to_fill))
+      .SetA11yDescription(std::move(a11y_description))
+      .SetId(std::move(id))
+      .SetIsObfuscated(is_obfuscated)
+      .SetSelectable(selectable)
+      .Build();
 }
 
 // The Conversion does not require any actual methods from either side of the
@@ -92,6 +100,15 @@ ScopedJavaGlobalRef<jobject> ConvertAccessorySheetDataToJavaObject(
         toggle.is_enabled(), static_cast<int>(toggle.accessory_action()));
   }
 
+  for (const autofill::PlusAddressSection& plus_address_section :
+       tab_data.plus_address_section_list()) {
+    Java_ManualFillingComponentBridge_addPlusAddressSectionToAccessorySheetData(
+        env, java_object, j_tab_data,
+        static_cast<int>(tab_data.get_sheet_type()),
+        plus_address_section.origin(),
+        plus_address_section.plus_address().display_text());
+  }
+
   for (const autofill::PasskeySection& passkey_section :
        tab_data.passkey_section_list()) {
     Java_ManualFillingComponentBridge_addPasskeySectionToAccessorySheetData(
@@ -111,7 +128,7 @@ ScopedJavaGlobalRef<jobject> ConvertAccessorySheetDataToJavaObject(
           env, java_object, j_user_info,
           static_cast<int>(tab_data.get_sheet_type()), field.display_text(),
           field.text_to_fill(), field.a11y_description(), field.id(),
-          field.is_obfuscated(), field.selectable());
+          field.icon_id(), field.is_obfuscated(), field.selectable());
     }
   }
 

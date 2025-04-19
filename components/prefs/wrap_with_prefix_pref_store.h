@@ -31,6 +31,8 @@
 //
 // This can be used to merge separate pref stores into one single storage under
 // separate dictionary items.
+//
+// NOTE: Users are responsible for ensuring the prefix is not an existing pref.
 class COMPONENTS_PREFS_EXPORT WrapWithPrefixPrefStore
     : public PersistentPrefStore,
       public PrefStore::Observer {
@@ -51,26 +53,26 @@ class COMPONENTS_PREFS_EXPORT WrapWithPrefixPrefStore
   bool IsInitializationComplete() const override;
 
   // PersistentPrefStore implementation.
-  bool GetMutableValue(const std::string& key, base::Value** result) override;
-  void ReportValueChanged(const std::string& key, uint32_t flags) override;
-  void SetValue(const std::string& key,
+  bool GetMutableValue(std::string_view key, base::Value** result) override;
+  void ReportValueChanged(std::string_view key, uint32_t flags) override;
+  void SetValue(std::string_view key,
                 base::Value value,
                 uint32_t flags) override;
-  void SetValueSilently(const std::string& key,
+  void SetValueSilently(std::string_view key,
                         base::Value value,
                         uint32_t flags) override;
-  void RemoveValue(const std::string& key, uint32_t flags) override;
+  void RemoveValue(std::string_view key, uint32_t flags) override;
   bool ReadOnly() const override;
   PrefReadError GetReadError() const override;
   PersistentPrefStore::PrefReadError ReadPrefs() override;
   void ReadPrefsAsync(ReadErrorDelegate* error_delegate) override;
   void SchedulePendingLossyWrites() override;
   void OnStoreDeletionFromDisk() override;
-  void RemoveValuesByPrefixSilently(const std::string& prefix) override;
+  void RemoveValuesByPrefixSilently(std::string_view prefix) override;
   bool HasReadErrorDelegate() const override;
 
   // PrefStore::Observer implementation.
-  void OnPrefValueChanged(const std::string& key) override;
+  void OnPrefValueChanged(std::string_view key) override;
   void OnInitializationCompleted(bool succeeded) override;
 
  protected:
@@ -84,7 +86,7 @@ class COMPONENTS_PREFS_EXPORT WrapWithPrefixPrefStore
   scoped_refptr<PersistentPrefStore> target_pref_store_;
   const std::string dotted_prefix_;
 
-  base::ObserverList<PrefStore::Observer, true>::Unchecked observers_;
+  base::ObserverList<PrefStore::Observer, true> observers_;
 
   // Optional so we can differentiate `nullopt` from `nullptr`.
   std::optional<std::unique_ptr<PersistentPrefStore::ReadErrorDelegate>>

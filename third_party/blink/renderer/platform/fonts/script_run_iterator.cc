@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/platform/fonts/script_run_iterator.h"
 
 #include <algorithm>
@@ -25,10 +30,11 @@ namespace {
 // https://docs.microsoft.com/en-us/typography/opentype/spec/scripttags
 inline UScriptCode GetScriptForOpenType(UChar32 ch, UErrorCode* status) {
   UScriptCode script = uscript_getScript(ch, status);
-  if (UNLIKELY(U_FAILURE(*status)))
+  if (U_FAILURE(*status)) [[unlikely]] {
     return script;
-  if (UNLIKELY(script == USCRIPT_KATAKANA ||
-               script == USCRIPT_KATAKANA_OR_HIRAGANA)) {
+  }
+  if (script == USCRIPT_KATAKANA || script == USCRIPT_KATAKANA_OR_HIRAGANA)
+      [[unlikely]] {
     return USCRIPT_HIRAGANA;
   }
   return script;
@@ -41,7 +47,7 @@ inline bool IsHanScript(UScriptCode script) {
 
 inline UScriptCode FirstHanScript(
     const ScriptRunIterator::UScriptCodeList& list) {
-  const auto* const result = base::ranges::find_if(list, IsHanScript);
+  const auto result = base::ranges::find_if(list, IsHanScript);
   if (result != list.end())
     return *result;
   return USCRIPT_INVALID_CODE;
@@ -99,7 +105,7 @@ void FixScriptsByEastAsianWidth(UChar32 ch,
     // U+300C in https://www.unicode.org/Public/UNIDATA/ScriptExtensions.txt.
     DEFINE_STATIC_LOCAL(ScriptRunIterator::UScriptCodeList, han_scripts,
                         (GetHanScriptExtensions()));
-    if (UNLIKELY(han_scripts.empty())) {
+    if (han_scripts.empty()) [[unlikely]] {
       // When |GetHanScriptExtensions| returns an empty list, replacing with it
       // will crash later, which makes the analysis complicated.
       NOTREACHED_IN_MIGRATION();
@@ -164,11 +170,13 @@ void ICUScriptData::GetScripts(UChar32 ch, UScriptCodeList& dst) const {
     // Not common or primary, with extensions that are not in order. We know
     // the primary, so we insert it at the front and swap the previous front
     // to somewhere else in the list.
-    auto* it = std::find(dst.begin() + 1, dst.end(), primary_script);
+    auto it = std::find(dst.begin() + 1, dst.end(), primary_script);
     if (it == dst.end()) {
       dst.push_back(primary_script);
+      std::swap(dst.front(), dst.back());
+    } else {
+      std::swap(*dst.begin(), *it);
     }
-    std::swap(*dst.begin(), *it);
     return;
   }
 
@@ -353,8 +361,8 @@ bool ScriptRunIterator::MergeSets() {
     return false;
   }
 
-  auto* current_set_it = current_set_.begin();
-  auto* current_end = current_set_.end();
+  auto current_set_it = current_set_.begin();
+  auto current_end = current_set_.end();
   // Most of the time, this is the only one.
   // Advance the current iterator, we won't need to check it again later.
   UScriptCode priority_script = *current_set_it++;
@@ -384,8 +392,8 @@ bool ScriptRunIterator::MergeSets() {
 
   // Establish the priority script, if we have one.
   // First try current priority script.
-  auto* next_it = next_set_->begin();
-  auto* next_end = next_set_->end();
+  auto next_it = next_set_->begin();
+  auto next_end = next_set_->end();
   if (!have_priority) {
     // So try next priority script.
     // Skip the first current script, we already know it's not there.
@@ -397,7 +405,7 @@ bool ScriptRunIterator::MergeSets() {
 
   // Note that we can never write more scripts into the current vector than
   // it already contains, so currentWriteIt won't ever exceed the size/capacity.
-  auto* current_write_it = current_set_.begin();
+  auto current_write_it = current_set_.begin();
   if (have_priority) {
     // keep the priority script.
     *current_write_it++ = priority_script;

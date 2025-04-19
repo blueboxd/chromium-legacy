@@ -10,11 +10,12 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_consumer.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_view_controller_delegate.h"
 
-@class BubblePresenter;
 @class ContentSuggestionsViewController;
 @class FeedHeaderViewController;
 @class FeedMetricsRecorder;
 @class FeedWrapperViewController;
+typedef NS_ENUM(NSInteger, FeedLayoutUpdateType);
+@protocol HelpCommands;
 @class MagicStackCollectionViewController;
 @protocol NewTabPageContentDelegate;
 @class NewTabPageHeaderViewController;
@@ -53,7 +54,7 @@
 @property(nonatomic, weak) FeedMetricsRecorder* feedMetricsRecorder;
 
 // Whether or not the feed is visible.
-@property(nonatomic, assign, getter=isFeedVisible) BOOL feedVisible;
+@property(nonatomic, assign) BOOL feedVisible;
 
 // The view controller representing the NTP feed header.
 @property(nonatomic, weak) FeedHeaderViewController* feedHeaderViewController;
@@ -62,8 +63,8 @@
 // header and the feed collection).
 @property(nonatomic, weak) UIViewController* feedTopSectionViewController;
 
-// Bubble presenter for displaying IPH bubbles relating to the NTP.
-@property(nonatomic, strong) BubblePresenter* bubblePresenter;
+// In-product help handle for displaying IPH bubbles relating to the NTP.
+@property(nonatomic, weak) id<HelpCommands> helpHandler;
 
 // Whether or not this NTP has fully appeared for the first time yet. This value
 // remains YES if viewDidAppear has been called.
@@ -140,7 +141,7 @@
 - (void)updateScrollPositionForFeedTopSectionClosed;
 
 // Signals that the feed has completed its updates (i.e. loading cards).
-- (void)feedLayoutDidEndUpdates;
+- (void)feedLayoutDidEndUpdatesWithType:(FeedLayoutUpdateType)type;
 
 // Clears state and delegates.
 - (void)invalidate;

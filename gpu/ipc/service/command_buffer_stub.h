@@ -15,7 +15,7 @@
 
 #include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/raw_ref.h"
+#include "base/memory/stack_allocated.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/task/sequenced_task_runner.h"
@@ -154,6 +154,7 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
   void OnRescheduleAfterFinished() override;
   void ScheduleGrContextCleanup() override;
   void HandleReturnData(base::span<const uint8_t> data) override;
+  bool ShouldYield() override;
 
   using MemoryTrackerFactory =
       base::RepeatingCallback<std::unique_ptr<MemoryTracker>()>;
@@ -198,6 +199,8 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
   // queries or schedule other delayed work after completion. This makes the
   // context current on construction if possible.
   class ScopedContextOperation {
+    STACK_ALLOCATED();
+
    public:
     explicit ScopedContextOperation(CommandBufferStub& stub);
     ~ScopedContextOperation();
@@ -208,7 +211,7 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
     bool is_context_current() const { return cache_use_.has_value(); }
 
    private:
-    const raw_ref<CommandBufferStub> stub_;
+    CommandBufferStub& stub_;
     bool have_context_ = false;
     std::optional<gles2::ProgramCache::ScopedCacheUse> cache_use_;
   };

@@ -72,7 +72,7 @@ class AutofillCrowdsourcingManager {
   // `forms` - array of forms aggregated in this request.
   virtual bool StartQueryRequest(
       const std::vector<raw_ptr<FormStructure, VectorExperimental>>& forms,
-      net::IsolationInfo isolation_info,
+      std::optional<net::IsolationInfo> isolation_info,
       QueryRequestCompleteCallback callback);
 
   // Starts an upload request for `upload_contents`. If `upload_contents` has
@@ -84,7 +84,7 @@ class AutofillCrowdsourcingManager {
   virtual bool StartUploadRequest(
       std::vector<AutofillUploadContents> upload_contents,
       mojom::SubmissionSource form_submission_source,
-      PrefService* prefs);
+      bool is_password_manager_upload);
 
   // Returns true if the autofill server communication is enabled.
   bool IsEnabled() const;

@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <compare>
 #include <functional>
+#include <iterator>
 #include <memory>
 #include <ostream>
 #include <string>
@@ -28,6 +29,7 @@
 #include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/not_fatal_until.h"
 #include "base/numerics/clamped_math.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
@@ -57,7 +59,6 @@
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_factory_client.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
-#include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -73,56 +74,12 @@
 #include "third_party/zlib/google/zip.h"
 #include "url/origin.h"
 
-// Invokes a given method on an IndexedDBBucketContext, synchronously or
-// asynchronously depending on the state of the kIndexedDBShardBackingStores
-// flag. This is a transitional helper and should be replaced by SequenceBound
-// when the feature is enabled by default.
-#define CALL_BUCKET_METHOD(bucket_id, method, ...)              \
-  {                                                             \
-    if (ShardingEnabled()) {                                    \
-      auto iter = bucket_contexts_sharded_.find(bucket_id);     \
-      if (iter != bucket_contexts_sharded_.end()) {             \
-        iter->second.AsyncCall(&IndexedDBBucketContext::method) \
-            .WithArgs(__VA_ARGS__);                             \
-      }                                                         \
-    } else {                                                    \
-      auto iter = bucket_contexts_.find(bucket_id);             \
-      if (iter != bucket_contexts_.end()) {                     \
-        iter->second->method(__VA_ARGS__);                      \
-      }                                                         \
-    }                                                           \
-  }
-
-#define CALL_BUCKET_METHOD_THEN(bucket_id, method, callback, ...) \
-  {                                                               \
-    if (ShardingEnabled()) {                                      \
-      auto iter = bucket_contexts_sharded_.find(bucket_id);       \
-      if (iter != bucket_contexts_sharded_.end()) {               \
-        iter->second.AsyncCall(&IndexedDBBucketContext::method)   \
-            .WithArgs(__VA_ARGS__)                                \
-            .Then(callback);                                      \
-      } else {                                                    \
-        callback.Run();                                           \
-      }                                                           \
-    } else {                                                      \
-      auto iter = bucket_contexts_.find(bucket_id);               \
-      if (iter != bucket_contexts_.end()) {                       \
-        iter->second->method(__VA_ARGS__);                        \
-      }                                                           \
-      callback.Run();                                             \
-    }                                                             \
-  }
-
 namespace content {
 
 using blink::StorageKey;
 using storage::BucketLocator;
 
 namespace {
-
-bool ShardingEnabled() {
-  return base::FeatureList::IsEnabled(features::kIndexedDBShardBackingStores);
-}
 
 // Creates a task runner suitable for use either as the main IDB thread or for a
 // backing store. See https://crbug.com/329221141 for notes on task priority.
@@ -318,10 +275,12 @@ void IndexedDBContextImpl::BindIndexedDB(
     const BucketLocator& bucket_locator,
     mojo::PendingRemote<storage::mojom::IndexedDBClientStateChecker>
         client_state_checker_remote,
+    const base::UnguessableToken& client_token,
     mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) {
-  auto on_got_bucket = base::BindOnce(
-      &IndexedDBContextImpl::BindIndexedDBImpl, weak_factory_.GetWeakPtr(),
-      std::move(client_state_checker_remote), std::move(receiver));
+  auto on_got_bucket = base::BindOnce(&IndexedDBContextImpl::BindIndexedDBImpl,
+                                      weak_factory_.GetWeakPtr(),
+                                      std::move(client_state_checker_remote),
+                                      client_token, std::move(receiver));
 
   if (bucket_locator.is_default) {
     // If it's for a default bucket, `bucket_locator` will be a placeholder
@@ -339,6 +298,7 @@ void IndexedDBContextImpl::BindIndexedDB(
 void IndexedDBContextImpl::BindIndexedDBImpl(
     mojo::PendingRemote<storage::mojom::IndexedDBClientStateChecker>
         client_state_checker_remote,
+    const base::UnguessableToken& client_token,
     mojo::PendingReceiver<blink::mojom::IDBFactory> pending_receiver,
     storage::QuotaErrorOr<storage::BucketInfo> bucket_info) {
   std::optional<storage::BucketInfo> bucket;
@@ -347,9 +307,11 @@ void IndexedDBContextImpl::BindIndexedDBImpl(
   }
   if (bucket) {
     EnsureBucketContext(*bucket, GetDataPath(bucket->ToBucketLocator()));
-    CALL_BUCKET_METHOD(bucket->id, AddReceiver,
-                       std::move(client_state_checker_remote),
-                       std::move(pending_receiver));
+    auto iter = bucket_contexts_.find(bucket->id);
+    CHECK(iter != bucket_contexts_.end(), base::NotFatalUntil::M130);
+    iter->second.AsyncCall(&IndexedDBBucketContext::AddReceiver)
+        .WithArgs(std::move(client_state_checker_remote), client_token,
+                  std::move(pending_receiver));
   } else {
     mojo::MakeSelfOwnedReceiver(std::make_unique<MissingBucketErrorEndpoint>(),
                                 std::move(pending_receiver));
@@ -400,7 +362,54 @@ void IndexedDBContextImpl::ForceClose(storage::BucketId bucket_id,
                                       base::OnceClosure closure) {
   const bool doom =
       reason == storage::mojom::ForceCloseReason::FORCE_CLOSE_DELETE_ORIGIN;
-  CALL_BUCKET_METHOD_THEN(bucket_id, ForceClose, std::move(closure), doom);
+  auto iter = bucket_contexts_.find(bucket_id);
+  if (iter != bucket_contexts_.end()) {
+    iter->second.AsyncCall(&IndexedDBBucketContext::ForceClose)
+        .WithArgs(doom)
+        .Then(std::move(closure));
+  } else {
+    std::move(closure).Run();
+  }
+}
+
+void IndexedDBContextImpl::StartMetadataRecording(
+    storage::BucketId bucket_id,
+    StartMetadataRecordingCallback callback) {
+  auto iter = bucket_contexts_.find(bucket_id);
+  if (iter != bucket_contexts_.end()) {
+    iter->second.AsyncCall(&IndexedDBBucketContext::StartMetadataRecording)
+        .Then(std::move(callback));
+  } else {
+    pending_bucket_recording_.insert(bucket_id);
+    std::move(callback).Run();
+  }
+}
+
+void IndexedDBContextImpl::StopMetadataRecording(
+    storage::BucketId bucket_id,
+    StopMetadataRecordingCallback callback) {
+  pending_bucket_recording_.erase(bucket_id);
+  auto iter = bucket_contexts_.find(bucket_id);
+  if (iter != bucket_contexts_.end()) {
+    iter->second.AsyncCall(&IndexedDBBucketContext::StopMetadataRecording)
+        .Then(std::move(callback));
+  } else {
+    std::move(callback).Run({});
+  }
+}
+
+void IndexedDBContextImpl::GetDevToolsTokenForClient(
+    storage::BucketId bucket_id,
+    const base::UnguessableToken& client_token,
+    GetDevToolsTokenForClientCallback callback) {
+  auto iter = bucket_contexts_.find(bucket_id);
+  if (iter != bucket_contexts_.end()) {
+    iter->second.AsyncCall(&IndexedDBBucketContext::GetDevToolsTokenForClient)
+        .WithArgs(client_token,
+                  base::BindPostTask(idb_task_runner_, std::move(callback)));
+  } else {
+    std::move(callback).Run(std::nullopt);
+  }
 }
 
 void IndexedDBContextImpl::DownloadBucketData(
@@ -566,8 +575,10 @@ void IndexedDBContextImpl::WriteToIndexedDBForTesting(
     const std::string& value,
     base::OnceClosure callback) {
   DCHECK(BucketContextExists(bucket_locator.id));
-  CALL_BUCKET_METHOD_THEN(bucket_locator.id, WriteToIndexedDBForTesting,
-                          std::move(callback), key, value);
+  bucket_contexts_.find(bucket_locator.id)
+      ->second.AsyncCall(&IndexedDBBucketContext::WriteToIndexedDBForTesting)
+      .WithArgs(key, value)
+      .Then(std::move(callback));
 }
 
 void IndexedDBContextImpl::GetPathForBlobForTesting(
@@ -582,30 +593,17 @@ void IndexedDBContextImpl::GetPathForBlobForTesting(
 void IndexedDBContextImpl::CompactBackingStoreForTesting(
     const BucketLocator& bucket_locator,
     base::OnceClosure callback) {
-  if (ShardingEnabled()) {
-    bucket_contexts_sharded_.find(bucket_locator.id)
-        ->second
-        .AsyncCall(&IndexedDBBucketContext::CompactBackingStoreForTesting)
-        .Then(std::move(callback));
-  } else {
-    bucket_contexts_.find(bucket_locator.id)
-        ->second->CompactBackingStoreForTesting();  // IN-TEST
-    std::move(callback).Run();
-  }
+  bucket_contexts_.find(bucket_locator.id)
+      ->second.AsyncCall(&IndexedDBBucketContext::CompactBackingStoreForTesting)
+      .Then(std::move(callback));
 }
 
 void IndexedDBContextImpl::GetUsageForTesting(
     GetUsageForTestingCallback callback) {
   if (in_memory()) {
-    if (ShardingEnabled()) {
-      DCHECK_EQ(1U, bucket_contexts_sharded_.size());
-      GetInMemorySize(bucket_contexts_sharded_.begin()->first,
-                      std::move(callback));
-    } else {
       DCHECK_EQ(1U, bucket_contexts_.size());
       GetInMemorySize(bucket_contexts_.begin()->first, std::move(callback));
-    }
-    return;
+      return;
   }
 
   int64_t total_size = 0;
@@ -746,18 +744,17 @@ IndexedDBContextImpl::~IndexedDBContextImpl() {
   // `bucket_contexts_` while it's being iterated.
   weak_factory_.InvalidateWeakPtrs();
   for (auto& [bucket_id, context] : bucket_contexts_) {
-    context->ForceClose(/*doom=*/false);
-  }
-  bucket_contexts_.clear();
-
-  for (auto& [bucket_id, context] : bucket_contexts_sharded_) {
     context.AsyncCall(&IndexedDBBucketContext::ForceClose)
         .WithArgs(/*doom=*/false);
   }
-  bucket_contexts_sharded_.clear();
+  bucket_contexts_.clear();
 
-  base::UmaHistogramTimes("IndexedDB.ContextShutdownDuration",
-                          base::TimeTicks::Now() - shutdown_start_time_);
+  // Shutdown won't go through `ShutdownOnIDBSequence()` for in-memory DBs and
+  // in some tests.
+  if (!shutdown_start_time_.is_null()) {
+    base::UmaHistogramTimes("IndexedDB.ContextShutdownDuration",
+                            base::TimeTicks::Now() - shutdown_start_time_);
+  }
 }
 
 void IndexedDBContextImpl::ShutdownOnIDBSequence(base::TimeTicks start_time) {
@@ -1020,61 +1017,37 @@ void IndexedDBContextImpl::ForEachBucketContext(
     IndexedDBBucketContext::InstanceClosure callback) {
   for_each_bucket_context_ = callback;
   for (auto& [bucket_id, bucket_context] : bucket_contexts_) {
-    bucket_context->RunInstanceClosure(for_each_bucket_context_);
+    bucket_context.AsyncCall(&IndexedDBBucketContext::RunInstanceClosure)
+        .WithArgs(for_each_bucket_context_);
   }
 }
 
 void IndexedDBContextImpl::GetInMemorySize(
     storage::BucketId bucket_id,
     base::OnceCallback<void(int64_t)> on_got_size) const {
-  if (ShardingEnabled()) {
-    auto iter = bucket_contexts_sharded_.find(bucket_id);
-    if (iter == bucket_contexts_sharded_.end()) {
+    auto iter = bucket_contexts_.find(bucket_id);
+    if (iter == bucket_contexts_.end()) {
       std::move(on_got_size).Run(0);
     } else {
       iter->second.AsyncCall(&IndexedDBBucketContext::GetInMemorySize)
           .Then(std::move(on_got_size));
     }
-  } else {
-    auto iter = bucket_contexts_.find(bucket_id);
-    if (iter == bucket_contexts_.end()) {
-      std::move(on_got_size).Run(0);
-    } else {
-      std::move(on_got_size).Run(iter->second->GetInMemorySize());
-    }
-  }
 }
 
 std::vector<storage::BucketId>
 IndexedDBContextImpl::GetOpenBucketIdsForTesting() const {
   std::vector<storage::BucketId> output;
   output.reserve(bucket_contexts_.size());
-  if (ShardingEnabled()) {
-    for (const auto& [bucket_id, bucket_context] : bucket_contexts_sharded_) {
-      output.push_back(bucket_id);
-    }
-  } else {
-    for (const auto& [bucket_id, bucket_context] : bucket_contexts_) {
-      output.push_back(bucket_id);
-    }
+  for (const auto& [bucket_id, bucket_context] : bucket_contexts_) {
+    output.push_back(bucket_id);
   }
   return output;
 }
 
-IndexedDBBucketContext* IndexedDBContextImpl::GetBucketContextForTesting(
-    const storage::BucketId& id) {
+base::SequenceBound<IndexedDBBucketContext>*
+IndexedDBContextImpl::GetBucketContextForTesting(const storage::BucketId& id) {
   auto it = bucket_contexts_.find(id);
   if (it != bucket_contexts_.end()) {
-    return it->second.get();
-  }
-  return nullptr;
-}
-
-base::SequenceBound<IndexedDBBucketContext>*
-IndexedDBContextImpl::GetShardedBucketContextForTesting(
-    const storage::BucketId& id) {
-  auto it = bucket_contexts_sharded_.find(id);
-  if (it != bucket_contexts_sharded_.end()) {
     return &it->second;
   }
   return nullptr;
@@ -1088,23 +1061,14 @@ void IndexedDBContextImpl::FillInBucketMetadata(
     return;
   }
 
-  if (ShardingEnabled()) {
-    bucket_contexts_sharded_.find(info->bucket_locator.id)
-        ->second.AsyncCall(&IndexedDBBucketContext::FillInMetadata)
-        .WithArgs(std::move(info))
-        .Then(std::move(result));
-  } else {
-    std::move(result).Run(bucket_contexts_.find(info->bucket_locator.id)
-                              ->second->FillInMetadata(std::move(info)));
-  }
+  bucket_contexts_.find(info->bucket_locator.id)
+      ->second.AsyncCall(&IndexedDBBucketContext::FillInMetadata)
+      .WithArgs(std::move(info))
+      .Then(std::move(result));
 }
 
 void IndexedDBContextImpl::DestroyBucketContext(storage::BucketId bucket_id) {
-  if (ShardingEnabled()) {
-    bucket_contexts_sharded_.erase(bucket_id);
-  } else {
     bucket_contexts_.erase(bucket_id);
-  }
 }
 
 void IndexedDBContextImpl::EnsureBucketContext(
@@ -1118,32 +1082,22 @@ void IndexedDBContextImpl::EnsureBucketContext(
 
   const BucketLocator bucket_locator = bucket.ToBucketLocator();
   IndexedDBBucketContext::Delegate bucket_delegate;
-  bucket_delegate.on_ready_for_destruction =
+  bucket_delegate.on_ready_for_destruction = base::BindPostTask(
+      idb_task_runner_,
       base::BindOnce(&IndexedDBContextImpl::DestroyBucketContext,
-                     weak_factory_.GetWeakPtr(), bucket_locator.id);
-  bucket_delegate.on_content_changed = base::BindRepeating(
+                     weak_factory_.GetWeakPtr(), bucket_locator.id));
+  bucket_delegate.on_content_changed = base::BindPostTask(
+      idb_task_runner_,
       base::BindRepeating(&IndexedDBContextImpl::NotifyIndexedDBContentChanged,
                           weak_factory_.GetWeakPtr(), bucket_locator));
-  bucket_delegate.on_files_written =
+  bucket_delegate.on_files_written = base::BindPostTask(
+      idb_task_runner_,
       base::BindRepeating(&IndexedDBContextImpl::OnFilesWritten,
-                          weak_factory_.GetWeakPtr(), bucket_locator);
-  bucket_delegate.for_each_bucket_context = base::BindRepeating(
-      &IndexedDBContextImpl::ForEachBucketContext, weak_factory_.GetWeakPtr());
-
-  if (ShardingEnabled()) {
-    bucket_delegate.on_ready_for_destruction = base::BindPostTask(
-        idb_task_runner_, std::move(bucket_delegate.on_ready_for_destruction));
-    bucket_delegate.on_receiver_bounced = base::BindPostTask(
-        idb_task_runner_,
-        base::BindRepeating(&IndexedDBContextImpl::BindIndexedDB,
-                            weak_factory_.GetWeakPtr(), bucket_locator));
-    bucket_delegate.on_content_changed = base::BindPostTask(
-        idb_task_runner_, bucket_delegate.on_content_changed);
-    bucket_delegate.on_files_written =
-        base::BindPostTask(idb_task_runner_, bucket_delegate.on_files_written);
-    bucket_delegate.for_each_bucket_context = base::BindPostTask(
-        idb_task_runner_, bucket_delegate.for_each_bucket_context);
-  }
+                          weak_factory_.GetWeakPtr(), bucket_locator));
+  bucket_delegate.for_each_bucket_context = base::BindPostTask(
+      idb_task_runner_,
+      base::BindRepeating(&IndexedDBContextImpl::ForEachBucketContext,
+                          weak_factory_.GetWeakPtr()));
 
   mojo::PendingRemote<storage::mojom::BlobStorageContext>
       cloned_blob_storage_context;
@@ -1160,27 +1114,24 @@ void IndexedDBContextImpl::EnsureBucketContext(
         fsa_context.InitWithNewPipeAndPassReceiver());
   }
 
-  if (ShardingEnabled()) {
-    bucket_contexts_sharded_.emplace(
-        bucket_locator.id,
-        base::SequenceBound<IndexedDBBucketContext>(
-            force_single_thread_ ? IDBTaskRunner() : CreateTaskRunner(), bucket,
-            data_directory, std::move(bucket_delegate), quota_manager_proxy_,
-            io_task_runner_, std::move(cloned_blob_storage_context),
-            std::move(fsa_context), for_each_bucket_context_));
-  } else {
-    bucket_contexts_.emplace(
-        bucket_locator.id,
-        std::make_unique<IndexedDBBucketContext>(
-            bucket, data_directory, std::move(bucket_delegate),
-            quota_manager_proxy_, io_task_runner_,
-            std::move(cloned_blob_storage_context), std::move(fsa_context),
-            for_each_bucket_context_));
-  }
+  const auto& [iter, inserted] = bucket_contexts_.emplace(
+      bucket_locator.id,
+      base::SequenceBound<IndexedDBBucketContext>(
+          force_single_thread_ ? IDBTaskRunner() : CreateTaskRunner(), bucket,
+          data_directory, std::move(bucket_delegate), quota_manager_proxy_,
+          io_task_runner_, std::move(cloned_blob_storage_context),
+          std::move(fsa_context), for_each_bucket_context_));
+  DCHECK(inserted);
   if (pending_failure_injector_) {
-    CALL_BUCKET_METHOD(bucket_locator.id, BindMockFailureSingletonForTesting,
-                       std::move(pending_failure_injector_));
+    iter->second
+        .AsyncCall(&IndexedDBBucketContext::BindMockFailureSingletonForTesting)
+        .WithArgs(std::move(pending_failure_injector_));
   }
+  // Start metadata recording on the context if it was pending.
+  if (pending_bucket_recording_.erase(bucket_locator.id)) {
+    iter->second.AsyncCall(&IndexedDBBucketContext::StartMetadataRecording);
+  }
+
   bucket_set_.insert(bucket_locator);
 }
 
@@ -1214,11 +1165,6 @@ void IndexedDBContextImpl::PerformStorageCleanup(
 }
 
 bool IndexedDBContextImpl::BucketContextExists(storage::BucketId bucket_id) {
-  if (ShardingEnabled()) {
-    return bucket_contexts_sharded_.find(bucket_id) !=
-           bucket_contexts_sharded_.end();
-  }
-
   return bucket_contexts_.find(bucket_id) != bucket_contexts_.end();
 }
 

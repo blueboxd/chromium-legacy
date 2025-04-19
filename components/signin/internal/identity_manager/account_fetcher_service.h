@@ -15,6 +15,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/memory/raw_ptr.h"
+#include "base/scoped_observation.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -98,11 +99,6 @@ class AccountFetcherService : public ProfileOAuth2TokenServiceObserver {
   // network requests.
   void EnableAccountRemovalForTest();
 
-  // Force-enables Account Capabilities fetches. For use in testing contexts.
-  // Passing the false value doesn't necessary disables fetches, it just turns
-  // force-enable off.
-  void EnableAccountCapabilitiesFetcherForTest(bool enabled);
-
   // Returns the AccountCapabilitiesFetcherFactory, for use in tests only.
   AccountCapabilitiesFetcherFactory*
   GetAccountCapabilitiesFetcherFactoryForTest();
@@ -155,7 +151,6 @@ class AccountFetcherService : public ProfileOAuth2TokenServiceObserver {
   void ResetChildInfo();
 #endif
 
-  bool IsAccountCapabilitiesFetchingEnabled();
   void StartFetchingAccountCapabilities(
       const CoreAccountInfo& core_account_info);
 
@@ -191,7 +186,6 @@ class AccountFetcherService : public ProfileOAuth2TokenServiceObserver {
   bool network_initialized_ = false;
   bool refresh_tokens_loaded_ = false;
   bool enable_account_removal_for_test_ = false;
-  bool enable_account_capabilities_fetcher_for_test_ = false;
   std::unique_ptr<signin::PersistentRepeatingTimer> repeating_timer_;
 
 #if BUILDFLAG(IS_ANDROID)
@@ -216,6 +210,10 @@ class AccountFetcherService : public ProfileOAuth2TokenServiceObserver {
   // Used for fetching the account images.
   std::unique_ptr<image_fetcher::ImageFetcherImpl> image_fetcher_;
   std::unique_ptr<image_fetcher::ImageDecoder> image_decoder_;
+
+  base::ScopedObservation<ProfileOAuth2TokenService,
+                          ProfileOAuth2TokenServiceObserver>
+      token_service_observation_{this};
 
   SEQUENCE_CHECKER(sequence_checker_);
 };

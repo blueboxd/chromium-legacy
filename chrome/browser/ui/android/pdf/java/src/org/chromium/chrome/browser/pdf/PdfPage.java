@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.pdf;
 
 import android.app.Activity;
+import android.net.Uri;
 
 import androidx.annotation.VisibleForTesting;
 
@@ -18,6 +19,8 @@ public class PdfPage extends BasicNativePage {
     @VisibleForTesting final PdfCoordinator mPdfCoordinator;
     private String mTitle;
     private final String mUrl;
+    private boolean mIsIncognito;
+    private boolean mIsDownloadSafe;
 
     /**
      * Create a new instance of the pdf page.
@@ -38,14 +41,19 @@ public class PdfPage extends BasicNativePage {
             String defaultTitle) {
         super(host);
 
+        mIsDownloadSafe = pdfInfo.isDownloadSafe;
+        String decodedUrl = PdfUtils.decodePdfPageUrl(url);
         String filepath =
-                pdfInfo.filepath == null ? PdfUtils.getFilePathFromUrl(url) : pdfInfo.filepath;
+                pdfInfo.filepath == null
+                        ? PdfUtils.getFilePathFromUrl(decodedUrl)
+                        : pdfInfo.filepath;
         mTitle =
                 pdfInfo.filename == null
-                        ? PdfUtils.getFileNameFromUrl(url, defaultTitle)
+                        ? PdfUtils.getFileNameFromUrl(decodedUrl, defaultTitle)
                         : pdfInfo.filename;
         mUrl = url;
         mPdfCoordinator = new PdfCoordinator(host, profile, activity, filepath, url);
+        mIsIncognito = profile.isOffTheRecord();
         initWithView(mPdfCoordinator.getView());
     }
 
@@ -75,13 +83,32 @@ public class PdfPage extends BasicNativePage {
     }
 
     @Override
+    public boolean isDownloadSafe() {
+        return mIsDownloadSafe;
+    }
+
+    @Override
     public void destroy() {
         super.destroy();
+        // TODO(b/348701300): check if pdf should be opened inline.
+        if (mIsIncognito) {
+            PdfContentProvider.removeContentUri(mPdfCoordinator.getFilepath());
+        }
         mPdfCoordinator.destroy();
     }
 
-    public void onDownloadComplete(String pdfFileName, String pdfFilePath) {
+    public void onDownloadComplete(String pdfFileName, String pdfFilePath, boolean isDownloadSafe) {
         mTitle = pdfFileName;
+        mIsDownloadSafe = isDownloadSafe;
+        // TODO(b/348701300): check if pdf should be opened inline.
+        if (mIsIncognito) {
+            Uri uri = PdfContentProvider.createContentUri(pdfFilePath, pdfFileName);
+            if (uri == null) {
+                // TODO(b/348712628): show some error UI when content URI is null.
+                return;
+            }
+            pdfFilePath = uri.toString();
+        }
         mPdfCoordinator.onDownloadComplete(pdfFilePath);
     }
 

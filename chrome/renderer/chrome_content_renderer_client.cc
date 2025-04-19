@@ -6,6 +6,7 @@
 
 #include <functional>
 #include <memory>
+#include <optional>
 #include <string_view>
 #include <utility>
 
@@ -14,11 +15,11 @@
 #include "base/debug/crash_logging.h"
 #include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/process/current_process.h"
+#include "base/profiler/process_type.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -42,6 +43,7 @@
 #include "chrome/common/secure_origin_allowlist.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
+#include "chrome/common/webui_util.h"
 #include "chrome/grit/branded_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/renderer_resources.h"
@@ -86,7 +88,6 @@
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/error_page/common/error.h"
 #include "components/error_page/common/localized_error.h"
-#include "components/feed/buildflags.h"
 #include "components/feed/feed_feature_list.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/heap_profiling/in_process/heap_profiler_controller.h"
@@ -118,15 +119,16 @@
 #include "components/web_cache/renderer/web_cache_impl.h"
 #include "components/webapps/renderer/web_page_metadata_agent.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/page_visibility_state.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/common/url_utils.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_visitor.h"
 #include "extensions/buildflags/buildflags.h"
 #include "extensions/renderer/extensions_renderer_api_provider.h"
-#include "extensions/renderer/worker_script_context_set.h"
 #include "ipc/ipc_sync_channel.h"
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
@@ -177,6 +179,8 @@
 #include "chrome/renderer/wallet/boarding_pass_extractor.h"
 #include "components/facilitated_payments/content/renderer/facilitated_payments_agent.h"
 #include "components/facilitated_payments/core/features/features.h"
+#include "components/feed/content/renderer/rss_link_reader.h"
+#include "components/feed/feed_feature_list.h"
 #else
 #include "chrome/renderer/searchbox/searchbox.h"
 #include "chrome/renderer/searchbox/searchbox_extension.h"
@@ -189,11 +193,6 @@
 
 #if BUILDFLAG(IS_WIN)
 #include "chrome/renderer/render_frame_font_family_accessor.h"
-#endif
-
-#if BUILDFLAG(ENABLE_FEED_V2)
-#include "components/feed/content/renderer/rss_link_reader.h"
-#include "components/feed/feed_feature_list.h"
 #endif
 
 #if BUILDFLAG(ENABLE_NACL)
@@ -761,9 +760,10 @@ void ChromeContentRendererClient::RenderFrameCreated(
   new SpellCheckPanel(render_frame, registry, this);
 #endif  // BUILDFLAG(HAS_SPELLCHECK_PANEL)
 #endif
-#if BUILDFLAG(ENABLE_FEED_V2)
-  if (render_frame->IsMainFrame() &&
-      feed::IsWebFeedEnabledForLocale(country_codes::GetCurrentCountryCode())) {
+#if BUILDFLAG(IS_ANDROID)
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(feed::switches::kEnableRssLinkReader) &&
+      render_frame->IsMainFrame()) {
     new feed::RssLinkReader(render_frame, registry);
   }
 #endif
@@ -864,6 +864,25 @@ bool ChromeContentRendererClient::IsPluginHandledExternally(
 #else   // !(BUILDFLAG(ENABLE_EXTENSIONS) && BUILDFLAG(ENABLE_PLUGINS))
   return false;
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS) && BUILDFLAG(ENABLE_PLUGINS)
+}
+
+bool ChromeContentRendererClient::IsDomStorageDisabled() const {
+  if (!base::FeatureList::IsEnabled(features::kPdfEnforcements)) {
+    return false;
+  }
+
+#if BUILDFLAG(ENABLE_PDF) && BUILDFLAG(ENABLE_EXTENSIONS)
+  // PDF renderers shouldn't need to access DOM storage interfaces. Note that
+  // it's still possible to access localStorage or sessionStorage in a PDF
+  // document's context via DevTools; returning false here ensures that these
+  // objects are just seen as null by JavaScript (similarly to what happens for
+  // opaque origins). This avoids a renderer kill by the browser process which
+  // isn't expecting PDF renderer processes to ever use DOM storage
+  // interfaces. See https://crbug.com/357014503.
+  return pdf::IsPdfRenderer();
+#else
+  return false;
+#endif
 }
 
 v8::Local<v8::Object> ChromeContentRendererClient::GetScriptableObject(
@@ -1372,15 +1391,14 @@ void ChromeContentRendererClient::PostIOThreadCreated(
     base::SingleThreadTaskRunner* io_thread_task_runner) {
   io_thread_task_runner->PostTask(
       FROM_HERE, base::BindOnce(&ThreadProfiler::StartOnChildThread,
-                                metrics::CallStackProfileParams::Thread::kIo));
+                                base::ProfilerThreadType::kIo));
 }
 
 void ChromeContentRendererClient::PostCompositorThreadCreated(
     base::SingleThreadTaskRunner* compositor_thread_task_runner) {
   compositor_thread_task_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(&ThreadProfiler::StartOnChildThread,
-                     metrics::CallStackProfileParams::Thread::kCompositor));
+      FROM_HERE, base::BindOnce(&ThreadProfiler::StartOnChildThread,
+                                base::ProfilerThreadType::kCompositor));
   // Enable stack sampling for tracing.
   // We pass in CreateCoreUnwindersFactory here since it lives in the chrome/
   // layer while TracingSamplerProfiler is outside of chrome/.
@@ -1412,17 +1430,8 @@ bool ChromeContentRendererClient::AllowPopup() {
 bool ChromeContentRendererClient::ShouldNotifyServiceWorkerOnWebSocketActivity(
     v8::Local<v8::Context> context) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  extensions::ScriptContext* script_context =
-      ChromeExtensionsRendererClient::GetInstance()
-          ->extension_dispatcher()
-          ->GetWorkerScriptContextSet()
-          ->GetContextByV8Context(context);
-  // Only notify on web socket activity if the service worker is the background
-  // service worker for an extension.
-  return script_context &&
-         ChromeExtensionsRendererClient::GetInstance()
-             ->ExtensionAPIEnabledForServiceWorkerScript(
-                 script_context->service_worker_scope(), script_context->url());
+  return extensions::Dispatcher::ShouldNotifyServiceWorkerOnWebSocketActivity(
+      context);
 #else
   return false;
 #endif
@@ -1445,7 +1454,8 @@ ChromeContentRendererClient::GetProtocolHandlerSecurityLevel(
 void ChromeContentRendererClient::WillSendRequest(
     WebLocalFrame* frame,
     ui::PageTransition transition_type,
-    const blink::WebURL& url,
+    const blink::WebURL& upstream_url,
+    const blink::WebURL& target_url,
     const net::SiteForCookies& site_for_cookies,
     const url::Origin* initiator_origin,
     GURL* new_url) {
@@ -1453,22 +1463,24 @@ void ChromeContentRendererClient::WillSendRequest(
   // Check whether the request should be allowed. If not allowed, we reset the
   // URL to something invalid to prevent the request and cause an error.
   ChromeExtensionsRendererClient::GetInstance()->WillSendRequest(
-      frame, transition_type, url, site_for_cookies, initiator_origin, new_url);
+      frame, transition_type, upstream_url, target_url, site_for_cookies,
+      initiator_origin, new_url);
   if (!new_url->is_empty())
     return;
 #endif
 
-  if (!url.ProtocolIs(chrome::kChromeSearchScheme))
+  if (!target_url.ProtocolIs(chrome::kChromeSearchScheme)) {
     return;
+  }
 
 #if !BUILDFLAG(IS_ANDROID)
   SearchBox* search_box =
       SearchBox::Get(content::RenderFrame::FromWebFrame(frame->LocalRoot()));
   if (search_box) {
     // Note: this GURL copy could be avoided if host() were added to WebURL.
-    GURL gurl(url);
+    GURL gurl(target_url);
     if (gurl.host_piece() == chrome::kChromeUIFaviconHost)
-      search_box->GenerateImageURLFromTransientURL(url, new_url);
+      search_box->GenerateImageURLFromTransientURL(target_url, new_url);
   }
 #endif  // !BUILDFLAG(IS_ANDROID)
 }
@@ -1484,8 +1496,24 @@ uint64_t ChromeContentRendererClient::VisitedLinkHash(
       canonical_url);
 }
 
+uint64_t ChromeContentRendererClient::PartitionedVisitedLinkFingerprint(
+    std::string_view canonical_link_url,
+    const net::SchemefulSite& top_level_site,
+    const url::Origin& frame_origin) {
+  return chrome_observer_->visited_link_reader()->ComputePartitionedFingerprint(
+      canonical_link_url, top_level_site, frame_origin);
+}
+
 bool ChromeContentRendererClient::IsLinkVisited(uint64_t link_hash) {
   return chrome_observer_->visited_link_reader()->IsVisited(link_hash);
+}
+
+void ChromeContentRendererClient::AddOrUpdateVisitedLinkSalt(
+    const url::Origin& origin,
+    uint64_t salt) {
+  base::UmaHistogramBoolean(
+      "Blink.History.VisitedLinks.IsSaltFromNavigationThrottle", true);
+  return chrome_observer_->visited_link_reader()->AddOrUpdateSalt(origin, salt);
 }
 
 std::unique_ptr<blink::WebPrescientNetworking>
@@ -1571,6 +1599,14 @@ std::unique_ptr<blink::WebSocketHandshakeThrottleProvider>
 ChromeContentRendererClient::CreateWebSocketHandshakeThrottleProvider() {
   return std::make_unique<WebSocketHandshakeThrottleProviderImpl>(
       browser_interface_broker_.get());
+}
+
+bool ChromeContentRendererClient::ShouldUseCodeCacheWithHashing(
+    const blink::WebURL& request_url) const {
+  if (content::HasWebUIScheme(request_url)) {
+    return chrome::ShouldUseCodeCacheForWebUIUrl(GURL(request_url));
+  }
+  return true;
 }
 
 std::unique_ptr<media::KeySystemSupportRegistration>
@@ -1675,10 +1711,7 @@ void ChromeContentRendererClient::
       blink::WebRuntimeFeatures::EnableWebUSBOnServiceWorkers(true);
     }
 #if !BUILDFLAG(IS_ANDROID)
-    if (base::FeatureList::IsEnabled(
-            features::kEnableWebHidOnExtensionServiceWorker)) {
-      blink::WebRuntimeFeatures::EnableWebHIDOnServiceWorkers(true);
-    }
+    blink::WebRuntimeFeatures::EnableWebHIDOnServiceWorkers(true);
 #endif  // !BUILDFLAG(IS_ANDROID)
   }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
@@ -1696,8 +1729,7 @@ bool ChromeContentRendererClient::AllowScriptExtensionForServiceWorker(
 void ChromeContentRendererClient::
     WillInitializeServiceWorkerContextOnWorkerThread() {
   // This is called on the service worker thread.
-  ThreadProfiler::StartOnChildThread(
-      metrics::CallStackProfileParams::Thread::kServiceWorker);
+  ThreadProfiler::StartOnChildThread(base::ProfilerThreadType::kServiceWorker);
 }
 
 void ChromeContentRendererClient::
@@ -1785,20 +1817,23 @@ blink::WebFrame* ChromeContentRendererClient::FindFrame(
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 }
 
-bool ChromeContentRendererClient::IsSafeRedirectTarget(const GURL& from_url,
-                                                       const GURL& to_url) {
+bool ChromeContentRendererClient::IsSafeRedirectTarget(const GURL& upstream_url,
+                                                       const GURL& target_url) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  if (to_url.SchemeIs(extensions::kExtensionScheme)) {
+  if (target_url.SchemeIs(extensions::kExtensionScheme)) {
     const extensions::Extension* extension =
-        extensions::RendererExtensionRegistry::Get()->GetByID(to_url.host());
-    if (!extension)
+        extensions::RendererExtensionRegistry::Get()->GetByID(
+            target_url.host());
+    if (!extension) {
       return false;
+    }
     // TODO(solomonkinard): Use initiator_origin and add tests.
-    if (extensions::WebAccessibleResourcesInfo::IsResourceWebAccessible(
-            extension, to_url.path(), nullptr)) {
+    if (extensions::WebAccessibleResourcesInfo::IsResourceWebAccessibleRedirect(
+            extension, target_url, /*initiator_origin=*/std::nullopt,
+            upstream_url)) {
       return true;
     }
-    return extension->guid() == from_url.host();
+    return extension->guid() == upstream_url.host();
   }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
   return true;

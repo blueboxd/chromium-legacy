@@ -114,17 +114,19 @@ void Label::SetText(const std::u16string& new_text) {
   full_text_->SetText(new_text);
   ClearDisplayText();
 
-  if (GetAccessibleName().empty() || GetAccessibleName() == current_text) {
+  if (GetViewAccessibility().GetCachedName().empty() ||
+      GetViewAccessibility().GetCachedName() == current_text) {
     if (new_text.empty()) {
-      SetAccessibleName(new_text,
-                        ax::mojom::NameFrom::kAttributeExplicitlyEmpty);
+      GetViewAccessibility().SetName(
+          new_text, ax::mojom::NameFrom::kAttributeExplicitlyEmpty);
     } else {
-      SetAccessibleName(new_text);
+      GetViewAccessibility().SetName(new_text);
     }
   }
 
-  OnPropertyChanged(&full_text_ + kLabelText,
-                    kPropertyEffectsPreferredSizeChanged);
+  OnPropertyChanged(
+      ui::metadata::MakeUniquePropertyKey(&full_text_, kLabelText),
+      kPropertyEffectsPreferredSizeChanged);
   stored_selection_range_ = gfx::Range::InvalidRange();
 }
 
@@ -150,9 +152,9 @@ void Label::SetTextContext(int text_context) {
   if (GetWidget())
     UpdateColorsFromTheme();
 
-  SetAccessibleRole(text_context_ == style::CONTEXT_DIALOG_TITLE
-                        ? ax::mojom::Role::kTitleBar
-                        : ax::mojom::Role::kStaticText);
+  GetViewAccessibility().SetRole(text_context_ == style::CONTEXT_DIALOG_TITLE
+                                     ? ax::mojom::Role::kTitleBar
+                                     : ax::mojom::Role::kStaticText);
 
   OnPropertyChanged(&text_context_, kPropertyEffectsPreferredSizeChanged);
 }
@@ -308,8 +310,9 @@ void Label::SetShadows(const gfx::ShadowValues& shadows) {
     return;
   full_text_->set_shadows(shadows);
   ClearDisplayText();
-  OnPropertyChanged(&full_text_ + kLabelShadows,
-                    kPropertyEffectsPreferredSizeChanged);
+  OnPropertyChanged(
+      ui::metadata::MakeUniquePropertyKey(&full_text_, kLabelShadows),
+      kPropertyEffectsPreferredSizeChanged);
 }
 
 bool Label::GetSubpixelRenderingEnabled() const {
@@ -350,7 +353,8 @@ void Label::SetHorizontalAlignment(gfx::HorizontalAlignment alignment) {
     return;
   full_text_->SetHorizontalAlignment(alignment);
   ClearDisplayText();
-  OnPropertyChanged(&full_text_ + kLabelHorizontalAlignment,
+  OnPropertyChanged(ui::metadata::MakeUniquePropertyKey(
+                        &full_text_, kLabelHorizontalAlignment),
                     kPropertyEffectsPaint);
 }
 
@@ -363,8 +367,9 @@ void Label::SetVerticalAlignment(gfx::VerticalAlignment alignment) {
     return;
   full_text_->SetVerticalAlignment(alignment);
   ClearDisplayText();
-  OnPropertyChanged(&full_text_ + kLabelVerticalAlignment,
-                    kPropertyEffectsPaint);
+  OnPropertyChanged(
+      ui::metadata::MakeUniquePropertyKey(&full_text_, kLabelVerticalAlignment),
+      kPropertyEffectsPaint);
 }
 
 int Label::GetLineHeight() const {
@@ -381,8 +386,9 @@ void Label::SetLineHeight(int line_height) {
   line_height_ = line_height;
   full_text_->SetMinLineHeight(line_height);
   ClearDisplayText();
-  OnPropertyChanged(&full_text_ + kLabelLineHeight,
-                    kPropertyEffectsPreferredSizeChanged);
+  OnPropertyChanged(
+      ui::metadata::MakeUniquePropertyKey(&full_text_, kLabelLineHeight),
+      kPropertyEffectsPreferredSizeChanged);
 }
 
 bool Label::GetMultiLine() const {
@@ -424,8 +430,9 @@ void Label::SetObscured(bool obscured) {
   ClearDisplayText();
   if (obscured)
     SetSelectable(false);
-  OnPropertyChanged(&full_text_ + kLabelObscured,
-                    kPropertyEffectsPreferredSizeChanged);
+  OnPropertyChanged(
+      ui::metadata::MakeUniquePropertyKey(&full_text_, kLabelObscured),
+      kPropertyEffectsPreferredSizeChanged);
 }
 
 bool Label::IsDisplayTextClipped() const {
@@ -458,7 +465,8 @@ void Label::SetAllowCharacterBreak(bool allow_character_break) {
     return;
   full_text_->SetWordWrapBehavior(behavior);
   ClearDisplayText();
-  OnPropertyChanged(&full_text_ + kLabelAllowCharacterBreak,
+  OnPropertyChanged(ui::metadata::MakeUniquePropertyKey(
+                        &full_text_, kLabelAllowCharacterBreak),
                     kPropertyEffectsPreferredSizeChanged);
 }
 
@@ -639,8 +647,9 @@ std::vector<gfx::Rect> Label::GetSubstringBounds(const gfx::Range& range) {
 
 base::CallbackListSubscription Label::AddTextChangedCallback(
     views::PropertyChangedCallback callback) {
-  return AddPropertyChangedCallback(&full_text_ + kLabelText,
-                                    std::move(callback));
+  return AddPropertyChangedCallback(
+      ui::metadata::MakeUniquePropertyKey(&full_text_, kLabelText),
+      std::move(callback));
 }
 
 int Label::GetBaseline() const {
@@ -654,21 +663,25 @@ gfx::Size Label::CalculatePreferredSize(
   // TODO(munjal): This logic probably belongs to the View class. But for now,
   // put it here since putting it in View class means all inheriting classes
   // need to respect the |collapse_when_hidden_| flag.
-  if (!GetVisible() && collapse_when_hidden_)
+  if (!GetVisible() && collapse_when_hidden_) {
     return gfx::Size();
+  }
 
-  if (GetMultiLine() && fixed_width_ != 0 && !GetText().empty())
-    return gfx::Size(fixed_width_, GetHeightForWidth(fixed_width_));
+  if (GetMultiLine() && fixed_width_ != 0 && !GetText().empty()) {
+    return gfx::Size(fixed_width_, GetLabelHeightForWidth(fixed_width_));
+  }
 
   gfx::Size size(GetBoundedTextSize(available_size));
   const gfx::Insets insets = GetInsets();
   size.Enlarge(insets.width(), insets.height());
 
-  if (GetMultiLine() && max_width_ != 0 && max_width_ < size.width())
-    return gfx::Size(max_width_, GetHeightForWidth(max_width_));
+  if (GetMultiLine() && max_width_ != 0 && max_width_ < size.width()) {
+    return gfx::Size(max_width_, GetLabelHeightForWidth(max_width_));
+  }
 
-  if (GetMultiLine() && GetMaxLines() > 0)
-    return gfx::Size(size.width(), GetHeightForWidth(size.width()));
+  if (GetMultiLine() && GetMaxLines() > 0) {
+    return gfx::Size(size.width(), GetLabelHeightForWidth(size.width()));
+  }
   return size;
 }
 
@@ -701,9 +714,10 @@ gfx::Size Label::GetMinimumSize() const {
   return size;
 }
 
-int Label::GetHeightForWidth(int w) const {
-  if (!GetVisible() && collapse_when_hidden_)
+int Label::GetLabelHeightForWidth(int w) const {
+  if (!GetVisible() && collapse_when_hidden_) {
     return 0;
+  }
 
   w -= GetInsets().width();
   int height = 0;
@@ -1005,16 +1019,17 @@ void Label::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   // If the accessible name changed since the last time we computed the text
   // offsets, we need to recompute them.
   if (::ui::AXPlatform::GetInstance().IsUiaProviderEnabled() &&
-      ax_name_used_to_compute_offsets_ != GetAccessibleName()) {
+      ax_name_used_to_compute_offsets_ !=
+          GetViewAccessibility().GetCachedName()) {
     GetViewAccessibility().ClearTextOffsets();
     ax_name_used_to_compute_offsets_.clear();
 
-    // TODO(ViewsAX): When this function is only used to initialize the cache
-    // with these values, refactor this part to not rely on the cache as it will
-    // cause a chicken and egg situation. For now, this is necessary to keep the
-    // text offsets up to date.
+    // TODO(crbug.com/325137417): When this function is only used to initialize
+    // the cache with these values, refactor this part to not rely on the cache
+    // as it will cause a chicken and egg situation. For now, this is necessary
+    // to keep the text offsets up to date.
     if (RefreshAccessibleTextOffsets()) {
-      ax_name_used_to_compute_offsets_ = GetAccessibleName();
+      ax_name_used_to_compute_offsets_ = GetViewAccessibility().GetCachedName();
       node_data->AddIntListAttribute(
           ax::mojom::IntListAttribute::kCharacterOffsets,
           GetViewAccessibility().GetCharacterOffsets());
@@ -1219,10 +1234,11 @@ void Label::Init(const std::u16string& text,
   UpdateFullTextElideBehavior();
   full_text_->SetDirectionalityMode(directionality_mode);
 
-  SetAccessibilityProperties(text_context_ == style::CONTEXT_DIALOG_TITLE
-                                 ? ax::mojom::Role::kTitleBar
-                                 : ax::mojom::Role::kStaticText,
-                             text);
+  GetViewAccessibility().SetProperties(
+      text_context_ == style::CONTEXT_DIALOG_TITLE
+          ? ax::mojom::Role::kTitleBar
+          : ax::mojom::Role::kStaticText,
+      text);
 
   SetText(text);
 
@@ -1258,8 +1274,11 @@ gfx::Size Label::GetTextSize() const {
 
 gfx::Size Label::GetBoundedTextSize(const SizeBounds& available_size) const {
   gfx::Size size;
+  const int base_line_height = GetLineHeight();
+  SizeBound w =
+      std::max<SizeBound>(0, available_size.width() - GetInsets().width());
   if (GetText().empty()) {
-    size = gfx::Size(0, GetLineHeight());
+    size = gfx::Size(0, base_line_height);
   } else if (max_width_single_line_ > 0) {
     DCHECK(!GetMultiLine());
     // Enable eliding during text width calculation. This allows the RenderText
@@ -1271,17 +1290,24 @@ gfx::Size Label::GetBoundedTextSize(const SizeBounds& available_size) const {
     full_text_->SetDisplayRect(
         gfx::Rect(0, 0, max_width_single_line_ - GetInsets().width(), 0));
     size = full_text_->GetStringSize();
+
+    if (base_line_height > 0) {
+      size.set_height(base::checked_cast<int>(GetRequiredLines()) *
+                      base_line_height);
+    }
   } else {
-    const int width = available_size.width().is_bounded()
-                          ? available_size.width().value()
-                          : 0;
+    const int width = w.is_bounded() ? w.value() : 0;
     // SetDisplayRect() has side-effect. The text height will change to respect
     // width.
-    // TODO(crbug.com/40232910): `width` should respect insets, but doing so
-    // will break LabelTest.MultiLineSizing. Fix that.
     full_text_->SetDisplayRect(gfx::Rect(0, 0, width, 0));
     size = full_text_->GetStringSize();
+
+    if (base_line_height > 0) {
+      size.set_height(base::checked_cast<int>(GetRequiredLines()) *
+                      base_line_height);
+    }
   }
+
   const gfx::Insets shadow_margin = -gfx::ShadowValue::GetMargin(GetShadows());
   size.Enlarge(shadow_margin.width(), shadow_margin.height());
   return size;

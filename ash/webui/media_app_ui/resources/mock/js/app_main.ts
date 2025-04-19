@@ -180,6 +180,9 @@ class BacklightApp extends HTMLElement implements ClientApi {
 
     this.replaceChild(child, this.currentMedia);
     this.currentMedia = child;
+    if (mimeType === 'application/pdf') {
+      this.delegate!.notifyFileOpened(file.name, mimeType);
+    }
     this.delegate!.notifyCurrentFile(file.name, mimeType);
     this.appBar.setFilename(file.name);
   }
@@ -235,6 +238,8 @@ class BacklightApp extends HTMLElement implements ClientApi {
   }
 
   async setViewport(_viewport: RectF) {}
+
+  async setPdfOcrEnabled(_enabled: boolean) {}
 
   async getPdfContent(_limit: number) {
     return {

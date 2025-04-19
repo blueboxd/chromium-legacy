@@ -7,15 +7,14 @@
 #include <cstddef>
 
 #include "partition_alloc/build_config.h"
+#include "partition_alloc/buildflags.h"
 #include "partition_alloc/oom.h"
 #include "partition_alloc/partition_alloc_base/check.h"
 #include "partition_alloc/partition_alloc_base/debug/alias.h"
 #include "partition_alloc/partition_alloc_base/threading/platform_thread_for_testing.h"
-#include "partition_alloc/partition_alloc_buildflags.h"
 
-#if PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && PA_BUILDFLAG(USE_STARSCAN)
+#if PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 #include "partition_alloc/stack/stack.h"
-#include "partition_alloc/starscan/pcscan.h"
 #endif
 
 namespace partition_alloc::internal::base {
@@ -63,7 +62,7 @@ DWORD __stdcall ThreadFunc(void* params) {
                                  GetCurrentProcess(), &platform_handle, 0,
                                  FALSE, DUPLICATE_SAME_ACCESS);
 
-#if PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && PA_BUILDFLAG(USE_STARSCAN)
+#if PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
   StackTopRegistry::Get().NotifyThreadCreated();
 #endif
 
@@ -75,7 +74,7 @@ DWORD __stdcall ThreadFunc(void* params) {
   delete thread_params;
   delegate->ThreadMain();
 
-#if PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && PA_BUILDFLAG(USE_STARSCAN)
+#if PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
   StackTopRegistry::Get().NotifyThreadDestroyed();
 #endif
   return 0;
@@ -90,7 +89,7 @@ bool CreateThreadInternal(size_t stack_size,
   unsigned int flags = 0;
   if (stack_size > 0) {
     flags = STACK_SIZE_PARAM_IS_A_RESERVATION;
-#if defined(ARCH_CPU_32_BITS)
+#if PA_BUILDFLAG(PA_ARCH_CPU_32_BITS)
   } else {
     // The process stack size is increased to give spaces to |RendererMain| in
     // |chrome/BUILD.gn|, but keep the default stack size of other threads to

@@ -14,6 +14,7 @@
 #include "components/commerce/core/commerce_feature_list.h"
 #include "components/commerce/core/pref_names.h"
 #include "components/commerce/core/price_tracking_utils.h"
+#include "components/commerce/core/product_specifications/product_specifications_service.h"
 #include "components/commerce/core/product_specifications/product_specifications_set.h"
 #include "components/commerce/core/shopping_service.h"
 #include "components/commerce/core/webui/webui_utils.h"
@@ -225,14 +226,13 @@ void CommerceInternalsHandler::GetSubscriptionDetails(
       SubscriptionType::kPriceTrack,
       base::BindOnce(
           [](GetSubscriptionDetailsCallback callback,
-             bookmarks::BookmarkModel* bookmark_model,
+             base::WeakPtr<bookmarks::BookmarkModel> bookmark_model,
              const std::string& locale_on_startup,
              std::vector<CommerceSubscription> subscriptions) {
             std::move(callback).Run(GetSubscriptionsMojom(
-                bookmark_model, locale_on_startup, subscriptions));
+                bookmark_model.get(), locale_on_startup, subscriptions));
           },
-          std::move(callback),
-          std::move(shopping_service_->GetBookmarkModelUsedForSync()),
+          std::move(callback), shopping_service_->bookmark_model_->AsWeakPtr(),
           shopping_service_->locale_on_startup_));
 }
 
@@ -260,4 +260,33 @@ void CommerceInternalsHandler::GetProductSpecificationsDetails(
   std::move(callback).Run(std::move(product_specifications_list));
 }
 
+void CommerceInternalsHandler::ResetProductSpecifications() {
+  auto* product_specifications_service =
+      shopping_service_->GetProductSpecificationsService();
+  if (!product_specifications_service) {
+    return;
+  }
+  shopping_service_->pref_service_->SetInteger(
+      commerce::kProductSpecificationsEntryPointShowIntervalInDays, 0);
+  shopping_service_->pref_service_->SetTime(
+      commerce::kProductSpecificationsEntryPointLastDismissedTime,
+      base::Time::Now());
+  shopping_service_->pref_service_->SetInteger(
+      commerce::kProductSpecificationsAcceptedDisclosureVersion,
+      static_cast<int>(shopping_service::mojom::
+                           ProductSpecificationsDisclosureVersion::kUnknown));
+  product_specifications_service->GetAllProductSpecifications(base::BindOnce(
+      &CommerceInternalsHandler::DeleteAllProductSpecificationSets,
+      weak_ptr_factory_.GetWeakPtr()));
+}
+
+void CommerceInternalsHandler::DeleteAllProductSpecificationSets(
+    const std::vector<ProductSpecificationsSet> sets) {
+  auto* product_specifications_service =
+      shopping_service_->GetProductSpecificationsService();
+  for (auto& set : sets) {
+    product_specifications_service->DeleteProductSpecificationsSet(
+        set.uuid().AsLowercaseString());
+  }
+}
 }  // namespace commerce

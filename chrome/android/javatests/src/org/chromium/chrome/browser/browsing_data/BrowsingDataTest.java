@@ -15,13 +15,14 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
-import org.chromium.base.test.util.Features.EnableFeatures;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.base.test.util.RequiresRestart;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.password_manager.PasswordManagerTestHelper;
 import org.chromium.chrome.browser.password_manager.PasswordStoreBridge;
@@ -32,8 +33,8 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.batch.BlankCTATabInitialStateRule;
 import org.chromium.chrome.test.util.browser.signin.SigninTestRule;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.ui.test.util.GmsCoreVersionRestriction;
 import org.chromium.url.GURL;
 
 import java.util.Arrays;
@@ -44,7 +45,6 @@ import java.util.concurrent.TimeoutException;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({
     ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-    ChromeSwitches.SKIP_LOCAL_UPM_GMS_CORE_VERSION_CHECK_FOR_TESTING,
 })
 @Batch(Batch.PER_CLASS)
 public class BrowsingDataTest {
@@ -71,7 +71,7 @@ public class BrowsingDataTest {
 
     private void clearBrowsingData(int dataType, int timePeriod) throws TimeoutException {
         CallbackHelper helper = new CallbackHelper();
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     BrowsingDataBridge.getForProfile(ProfileManager.getLastUsedRegularProfile())
                             .clearBrowsingData(
@@ -90,7 +90,7 @@ public class BrowsingDataTest {
                     out[0] = result;
                     helper.notifyCalled();
                 };
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     counter[0] =
                             new BrowsingDataCounterBridge(
@@ -175,7 +175,7 @@ public class BrowsingDataTest {
         // TODO(roagarwal) : Crashes on BrowsingDataType.SITE_SETTINGS, BrowsingDataType.BOOKMARKS
         // data types.
         CallbackHelper helper = new CallbackHelper();
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     BrowsingDataBridge.getForProfile(ProfileManager.getLastUsedRegularProfile())
                             .clearBrowsingDataIncognitoForTesting(
@@ -195,16 +195,16 @@ public class BrowsingDataTest {
     /** Test that both local and account passwords are deleted. */
     @Test
     @SmallTest
-    @EnableFeatures({
-        ChromeFeatureList.UNIFIED_PASSWORD_MANAGER_LOCAL_PASSWORDS_ANDROID_NO_MIGRATION
-    })
+    @Restriction({GmsCoreVersionRestriction.RESTRICTION_TYPE_VERSION_GE_24W15})
+    @RequiresRestart("crbug.com/358427311")
     public void testLocalAndAccountPasswordsDeleted() throws Exception {
         // Set up a syncing user with one password in each store.
         mSigninTestRule.addTestAccountThenSigninAndEnableSync();
         PasswordManagerTestHelper.setAccountForPasswordStore(SigninTestRule.TEST_ACCOUNT_EMAIL);
         PasswordStoreBridge bridge =
-                TestThreadUtils.runOnUiThreadBlockingNoException(() -> new PasswordStoreBridge());
-        TestThreadUtils.runOnUiThreadBlocking(
+                ThreadUtils.runOnUiThreadBlocking(
+                        () -> new PasswordStoreBridge(sActivityTestRule.getProfile(false)));
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     bridge.insertPasswordCredentialInProfileStore(
                             new PasswordStoreCredential(

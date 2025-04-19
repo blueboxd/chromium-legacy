@@ -76,16 +76,16 @@ class AutofillXHRSubmissionDetectionTest : public PlatformTest {
     web_state_.SetWebFramesManager(content_world,
                                    std::move(web_frames_manager));
 
-    // Replace AutofillManager with the test implementation.
-    autofill_manager_injector_ =
-        std::make_unique<TestAutofillManagerInjector<TestingAutofillManager>>(
-            &web_state_);
-
     // Driver factory needs to exist before any call to
     // `AutofillDriverIOS::FromWebStateAndWebFrame`, or we crash.
     autofill::AutofillDriverIOSFactory::CreateForWebState(
         &web_state_, &autofill_client_, /*bridge=*/nil,
         /*locale=*/"en");
+
+    // Replace AutofillManager with the test implementation.
+    autofill_manager_injector_ =
+        std::make_unique<TestAutofillManagerInjector<TestingAutofillManager>>(
+            &web_state_);
 
     // Inject a fake main frame.
     auto main_frame =
@@ -126,7 +126,7 @@ TEST_F(AutofillXHRSubmissionDetectionTest,
   FormFieldData form_field_data1;
   form_field_data1.set_renderer_id(FieldRendererId(2));
   form_field_data1.set_host_form_id(form_data1.renderer_id());
-  form_data1.fields = {form_field_data1};
+  form_data1.set_fields({form_field_data1});
 
   FormData form_data2;
   form_data2.set_renderer_id(FormRendererId(3));
@@ -140,18 +140,18 @@ TEST_F(AutofillXHRSubmissionDetectionTest,
   // Simulate typing in the first form.
   auto* autofill_driver = main_frame_driver();
   ASSERT_TRUE(autofill_driver);
-  autofill_driver->TextFieldDidChange(form_data1, form_field_data1,
+  autofill_driver->TextFieldDidChange(form_data1, form_field_data1.global_id(),
                                       base::TimeTicks::Now());
   // Simulate typing in the first field of the second form.
   form_field_data2.set_value(u"value2");
-  form_data2.fields = {form_field_data2, form_field_data3};
-  autofill_driver->TextFieldDidChange(form_data2, form_field_data2,
+  form_data2.set_fields({form_field_data2, form_field_data3});
+  autofill_driver->TextFieldDidChange(form_data2, form_field_data2.global_id(),
                                       base::TimeTicks::Now());
 
   // Simulate typing on the other field of the second form.
   form_field_data3.set_value(u"value3");
-  form_data2.fields = {form_field_data2, form_field_data3};
-  autofill_driver->TextFieldDidChange(form_data2, form_field_data3,
+  form_data2.set_fields({form_field_data2, form_field_data3});
+  autofill_driver->TextFieldDidChange(form_data2, form_field_data3.global_id(),
                                       base::TimeTicks::Now());
   // Simulate forms removal.
   autofill_driver->FormsRemoved(
@@ -165,7 +165,7 @@ TEST_F(AutofillXHRSubmissionDetectionTest,
   // Check that the submitted form has the values "typed" in each field.
   EXPECT_TRUE(
       FormData::DeepEqual(*autofill_manager.submitted_form(), form_data2));
-  EXPECT_THAT(autofill_manager.submitted_form()->fields,
+  EXPECT_THAT(autofill_manager.submitted_form()->fields(),
               ElementsAre(Property(&FormFieldData::value, u"value2"),
                           Property(&FormFieldData::value, u"value3")));
 
@@ -198,7 +198,7 @@ TEST_F(AutofillXHRSubmissionDetectionTest,
   form_field_data.set_renderer_id(FieldRendererId(2));
   form_field_data.set_host_form_id(form_data.renderer_id());
   form_field_data.set_value(u"value");
-  form_data.fields = {form_field_data};
+  form_data.set_fields({form_field_data});
 
   // Simulate autofilling the form.
   auto* autofill_driver = main_frame_driver();
@@ -215,7 +215,7 @@ TEST_F(AutofillXHRSubmissionDetectionTest,
   ASSERT_TRUE(autofill_manager.submitted_form());
   EXPECT_TRUE(
       FormData::DeepEqual(*autofill_manager.submitted_form(), form_data));
-  EXPECT_THAT(autofill_manager.submitted_form()->fields,
+  EXPECT_THAT(autofill_manager.submitted_form()->fields(),
               ElementsAre(Property(&FormFieldData::value, u"value")));
 
   histogram_tester_->ExpectUniqueSample(
@@ -251,20 +251,20 @@ TEST_F(AutofillXHRSubmissionDetectionTest,
   FormFieldData form_field_data2;
   form_field_data2.set_renderer_id(FieldRendererId(2));
   form_field_data2.set_host_form_id(form_data.renderer_id());
-  form_data.fields = {form_field_data1, form_field_data2};
+  form_data.set_fields({form_field_data1, form_field_data2});
 
   // Simulate the user updating the first field.
   auto* autofill_driver = main_frame_driver();
   ASSERT_TRUE(autofill_driver);
   form_field_data1.set_value(u"value1");
-  form_data.fields = {form_field_data1, form_field_data2};
-  autofill_driver->TextFieldDidChange(form_data, form_field_data1,
+  form_data.set_fields({form_field_data1, form_field_data2});
+  autofill_driver->TextFieldDidChange(form_data, form_field_data1.global_id(),
                                       base::TimeTicks::Now());
 
   // Simulate the user updating the second field.
   form_field_data2.set_value(u"value2");
-  form_data.fields = {form_field_data1, form_field_data2};
-  autofill_driver->TextFieldDidChange(form_data, form_field_data2,
+  form_data.set_fields({form_field_data1, form_field_data2});
+  autofill_driver->TextFieldDidChange(form_data, form_field_data2.global_id(),
                                       base::TimeTicks::Now());
 
   // Simulate the removal of the first formless field.
@@ -306,7 +306,7 @@ TEST_F(AutofillXHRSubmissionDetectionTest,
   ASSERT_TRUE(autofill_manager.submitted_form());
   EXPECT_TRUE(
       FormData::DeepEqual(*autofill_manager.submitted_form(), form_data));
-  EXPECT_THAT(autofill_manager.submitted_form()->fields,
+  EXPECT_THAT(autofill_manager.submitted_form()->fields(),
               ElementsAre(Property(&FormFieldData::value, u"value1"),
                           Property(&FormFieldData::value, u"value2")));
 
@@ -338,7 +338,7 @@ TEST_F(AutofillXHRSubmissionDetectionTest,
   FormFieldData form_field_data;
   form_field_data.set_renderer_id(FieldRendererId(2));
   form_field_data.set_host_form_id(form_data.renderer_id());
-  form_data.fields = {form_field_data};
+  form_data.set_fields({form_field_data});
 
   auto* autofill_driver = main_frame_driver();
   ASSERT_TRUE(autofill_driver);
@@ -378,12 +378,12 @@ TEST_F(AutofillXHRSubmissionDetectionTest,
   form_field_data.set_renderer_id(FieldRendererId(2));
   form_field_data.set_host_form_id(form_data.renderer_id());
   form_field_data.set_value(u"value1");
-  form_data.fields = {form_field_data};
+  form_data.set_fields({form_field_data});
 
   // Simulate the user updating the form field.
   auto* autofill_driver = main_frame_driver();
   ASSERT_TRUE(autofill_driver);
-  autofill_driver->TextFieldDidChange(form_data, form_field_data,
+  autofill_driver->TextFieldDidChange(form_data, form_field_data.global_id(),
                                       base::TimeTicks::Now());
 
   // Update the form field in FieldDataManager.
@@ -405,7 +405,7 @@ TEST_F(AutofillXHRSubmissionDetectionTest,
   ASSERT_TRUE(autofill_manager.submitted_form());
   EXPECT_TRUE(
       FormData::DeepEqual(form_data, *autofill_manager.submitted_form()));
-  EXPECT_THAT(autofill_manager.submitted_form()->fields,
+  EXPECT_THAT(autofill_manager.submitted_form()->fields(),
               ElementsAre(Property(&FormFieldData::value, u"value2")));
 }
 

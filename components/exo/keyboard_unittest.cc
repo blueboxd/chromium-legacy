@@ -59,7 +59,6 @@ constexpr uint32_t kShiftMask = 1 << 0;
 constexpr uint32_t kControlMask = 1 << 2;
 constexpr uint32_t kAltMask = 1 << 3;
 constexpr uint32_t kNumLockMask = 1 << 4;
-constexpr uint32_t kCommandMask = 1 << 6;
 
 class KeyboardTest : public test::ExoTestBase {
  public:
@@ -162,20 +161,24 @@ TEST_F(KeyboardTest, CorrectSeatPressedKeysOnSwitchingDesks) {
     seat.WillProcessEvent(&key_event);
     GetEventGenerator()->Dispatch(&key_event);
 
-    EXPECT_EQ(type != ui::ET_KEY_RELEASED,
+    EXPECT_EQ(type != ui::EventType::kKeyReleased,
               seat.pressed_keys().count(PhysicalCode(code)));
 
     seat.DidProcessEvent(&key_event);
   };
 
   ash::DeskSwitchAnimationWaiter waiter;
-  displatch_key_event(ui::ET_KEY_PRESSED, ui::VKEY_MENU, ui::DomCode::ALT_LEFT,
+  displatch_key_event(ui::EventType::kKeyPressed, ui::VKEY_MENU,
+                      ui::DomCode::ALT_LEFT,
                       /*flags=*/0);
-  displatch_key_event(ui::ET_KEY_PRESSED, ui::VKEY_TAB, ui::DomCode::TAB,
+  displatch_key_event(ui::EventType::kKeyPressed, ui::VKEY_TAB,
+                      ui::DomCode::TAB,
                       /*flags=*/ui::EF_ALT_DOWN);
-  displatch_key_event(ui::ET_KEY_RELEASED, ui::VKEY_MENU, ui::DomCode::ALT_LEFT,
+  displatch_key_event(ui::EventType::kKeyReleased, ui::VKEY_MENU,
+                      ui::DomCode::ALT_LEFT,
                       /*flags=*/0);
-  displatch_key_event(ui::ET_KEY_RELEASED, ui::VKEY_TAB, ui::DomCode::TAB,
+  displatch_key_event(ui::EventType::kKeyReleased, ui::VKEY_TAB,
+                      ui::DomCode::TAB,
                       /*flags=*/0);
 
   EXPECT_TRUE(seat.pressed_keys().empty());
@@ -739,7 +742,7 @@ TEST_F(KeyboardTest, OnKeyboardKey_NotSendKeyIfConsumedByIme) {
       ui::DomCode::US_A);
 
   {
-    ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_A, 0);
+    ui::KeyEvent event(ui::EventType::kKeyPressed, ui::VKEY_A, 0);
     ui::SetKeyboardImeFlags(&event, ui::kPropertyKeyboardImeHandledFlag);
     event.set_source_device_id(0);
     generator.Dispatch(&event);
@@ -901,7 +904,7 @@ TEST_F(KeyboardTest, KeyboardKey_SuppressAutoRepeat) {
   seat.set_physical_code_for_currently_processing_event_for_testing(
       ui::DomCode::US_X);
   {
-    ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_X, 0);
+    ui::KeyEvent event(ui::EventType::kKeyPressed, ui::VKEY_X, 0);
     event.set_source_device_id(ui::ED_UNKNOWN_DEVICE);
     {
       ui::Event::Properties properties;
@@ -932,7 +935,7 @@ TEST_F(KeyboardTest, KeyboardKey_SuppressAutoRepeat) {
   seat.set_physical_code_for_currently_processing_event_for_testing(
       ui::DomCode::US_Y);
   {
-    ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_Y, 0);
+    ui::KeyEvent event(ui::EventType::kKeyPressed, ui::VKEY_Y, 0);
     event.set_source_device_id(ui::ED_UNKNOWN_DEVICE);
     {
       ui::Event::Properties properties;
@@ -1608,7 +1611,7 @@ TEST_F(KeyboardTest, AckKeyboardKeyAcceleratorOnRelease) {
   // Register accelerator to be triggered.
   ui::TestAcceleratorTarget accelerator_target;
   {
-    ui::Accelerator accelerator(ui::VKEY_LWIN, 0,
+    ui::Accelerator accelerator(ui::VKEY_CONTROL, 0,
                                 ui::Accelerator::KeyState::RELEASED);
     ash::AcceleratorControllerImpl* controller =
         ash::Shell::Get()->accelerator_controller();
@@ -1638,16 +1641,16 @@ TEST_F(KeyboardTest, AckKeyboardKeyAcceleratorOnRelease) {
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
   keyboard.SetNeedKeyboardKeyAcks(true);
 
-  // Press SEARCH key.
+  // Press CONTROL key.
   EXPECT_CALL(*delegate_ptr, OnKeyboardModifiers(KeyboardModifiers{
-                                 kCommandMask | kNumLockMask, 0, 0, 0}));
+                                 kControlMask | kNumLockMask, 0, 0, 0}));
   EXPECT_CALL(*delegate_ptr,
-              OnKeyboardKey(testing::_, ui::DomCode::META_LEFT, true))
+              OnKeyboardKey(testing::_, ui::DomCode::CONTROL_LEFT, true))
       .WillOnce(testing::Return(1));
 
   seat.set_physical_code_for_currently_processing_event_for_testing(
-      ui::DomCode::META_LEFT);
-  generator.PressKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
+      ui::DomCode::CONTROL_LEFT);
+  generator.PressKey(ui::VKEY_CONTROL, ui::EF_CONTROL_DOWN);
   // SEARCH key can be used as a modifier, so it is handled in release event.
   // Thus accelerator handler should not be triggered.
   EXPECT_EQ(0, accelerator_target.accelerator_count());
@@ -1663,9 +1666,9 @@ TEST_F(KeyboardTest, AckKeyboardKeyAcceleratorOnRelease) {
   EXPECT_CALL(*delegate_ptr,
               OnKeyboardModifiers(KeyboardModifiers{kNumLockMask, 0, 0, 0}));
   EXPECT_CALL(*delegate_ptr,
-              OnKeyboardKey(testing::_, ui::DomCode::META_LEFT, false))
+              OnKeyboardKey(testing::_, ui::DomCode::CONTROL_LEFT, false))
       .WillOnce(testing::Return(2));
-  generator.ReleaseKey(ui::VKEY_LWIN, 0);
+  generator.ReleaseKey(ui::VKEY_CONTROL, 0);
   testing::Mock::VerifyAndClearExpectations(delegate_ptr);
   // Now the accelerator should be handled.
   EXPECT_EQ(1, accelerator_target.accelerator_count());

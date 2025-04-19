@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_actions.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window/public/browser_window_features.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_coordinator.h"
@@ -85,9 +86,7 @@ ExtensionSidePanelCoordinator::ExtensionSidePanelCoordinator(
     scoped_service_observation_.Observe(service);
     LoadExtensionIcon();
     if (IsGlobalCoordinator()) {
-      if (features::IsSidePanelPinningEnabled()) {
-        UpdateActionItemIcon();
-      }
+      UpdateActionItemIcon();
       browser_->tab_strip_model()->AddObserver(this);
     }
 
@@ -103,9 +102,7 @@ ExtensionSidePanelCoordinator::ExtensionSidePanelCoordinator(
   }
 }
 
-ExtensionSidePanelCoordinator::~ExtensionSidePanelCoordinator() {
-  DeregisterEntry();
-}
+ExtensionSidePanelCoordinator::~ExtensionSidePanelCoordinator() = default;
 
 content::WebContents*
 ExtensionSidePanelCoordinator::GetHostWebContentsForTesting() const {
@@ -278,8 +275,7 @@ void ExtensionSidePanelCoordinator::CreateAndRegisterEntry() {
   // is always deregistered when this class is destroyed, so CreateView can't be
   // called after the destruction of `this`.
   registry_->Register(std::make_unique<SidePanelEntry>(
-      GetEntryKey(), base::UTF8ToUTF16(extension_->short_name()),
-      ui::ImageModel::FromImage(extension_icon_->image()),
+      GetEntryKey(),
       base::BindRepeating(&ExtensionSidePanelCoordinator::CreateView,
                           base::Unretained(this))));
 }
@@ -325,7 +321,7 @@ void ExtensionSidePanelCoordinator::HandleCloseExtensionSidePanel(
   Browser* browser = GetBrowser();
   DCHECK(browser);
 
-  auto* coordinator = SidePanelUtil::GetSidePanelCoordinatorForBrowser(browser);
+  auto* coordinator = browser->GetFeatures().side_panel_coordinator();
 
   // If the SidePanelEntry for this extension is showing when window.close() is
   // called, close the side panel. Otherwise, clear the entry's cached view.

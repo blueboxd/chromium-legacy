@@ -85,8 +85,7 @@ class PageSpecificSiteDataDialogUnitTest
     NavigateAndCommit(GURL(kCurrentUrl));
     content_settings::PageSpecificContentSettings::CreateForWebContents(
         web_contents(),
-        std::make_unique<chrome::PageSpecificContentSettingsDelegate>(
-            web_contents()));
+        std::make_unique<PageSpecificContentSettingsDelegate>(web_contents()));
 
     profile()->GetPrefs()->SetInteger(
         prefs::kCookieControlsMode,
@@ -112,14 +111,14 @@ TEST_F(PageSpecificSiteDataDialogUnitTest, CookieAccessed) {
       {content::CookieAccessDetails::Type::kRead,
        GURL(kCurrentUrl),
        GURL(kCurrentUrl),
-       {*first_party_cookie},
-       false});
+       {{*first_party_cookie}},
+       /* blocked_by_policy = */ false});
   content_settings->OnCookiesAccessed(
       {content::CookieAccessDetails::Type::kRead,
        GURL(kThirdPartyUrl),
        /*firstparty*/ GURL(kCurrentUrl),
-       {*third_party_cookie},
-       false});
+       {{*third_party_cookie}},
+       /* blocked_by_policy = */ false});
 
   auto delegate =
       std::make_unique<test::PageSpecificSiteDataDialogTestApi>(web_contents());
@@ -161,8 +160,8 @@ TEST_F(PageSpecificSiteDataDialogUnitTest,
       {content::CookieAccessDetails::Type::kRead,
        GURL(kThirdPartyUrl),
        GURL(kThirdPartyUrl),
-       {*first_party_cookie},
-       false});
+       {{*first_party_cookie}},
+       /* blocked_by_policy = */ false});
   content_settings->OnBrowsingDataAccessed(
       CreateUnpartitionedStorageKey(GURL(kThirdPartyUrl)),
       BrowsingDataModel::StorageType::kQuotaStorage,
@@ -195,8 +194,8 @@ TEST_F(PageSpecificSiteDataDialogUnitTest,
       {content::CookieAccessDetails::Type::kRead,
        GURL(kThirdPartyUrl),
        GURL(kThirdPartyUrl),
-       {*first_party_cookie},
-       false});
+       {{*first_party_cookie}},
+       /* blocked_by_policy = */ false});
   content_settings->OnBrowsingDataAccessed(
       CreateUnpartitionedStorageKey(GURL(kThirdPartyUrl)),
       BrowsingDataModel::StorageType::kQuotaStorage,
@@ -248,8 +247,8 @@ TEST_F(PageSpecificSiteDataDialogUnitTest,
       {content::CookieAccessDetails::Type::kRead,
        GURL(kThirdPartyUrl),
        GURL(kCurrentUrl),
-       {*third_party_cookie},
-       false});
+       {{*third_party_cookie}},
+       /* blocked_by_policy = */ false});
   content_settings->OnBrowsingDataAccessed(
       CreateThirdPartyStorageKey(GURL(kThirdPartyUrl), GURL(kCurrentUrl)),
       BrowsingDataModel::StorageType::kQuotaStorage,
@@ -282,8 +281,8 @@ TEST_F(PageSpecificSiteDataDialogUnitTest,
       {content::CookieAccessDetails::Type::kRead,
        GURL(kThirdPartyUrl),
        GURL(kCurrentUrl),
-       {*third_party_cookie},
-       false});
+       {{*third_party_cookie}},
+       /* blocked_by_policy = */ false});
   content_settings->OnBrowsingDataAccessed(
       CreateThirdPartyStorageKey(GURL(kThirdPartyUrl), GURL(kCurrentUrl)),
       BrowsingDataModel::StorageType::kQuotaStorage,
@@ -340,8 +339,8 @@ TEST_F(PageSpecificSiteDataDialogUnitTest,
       {content::CookieAccessDetails::Type::kRead,
        GURL(kThirdPartyUrl),
        GURL(kThirdPartyUrl),
-       {*first_party_cookie},
-       false});
+       {{*first_party_cookie}},
+       /* blocked_by_policy = */ false});
   content_settings->OnBrowsingDataAccessed(
       CreateUnpartitionedStorageKey(GURL(kThirdPartyUrl)),
       BrowsingDataModel::StorageType::kQuotaStorage,
@@ -354,8 +353,8 @@ TEST_F(PageSpecificSiteDataDialogUnitTest,
       {content::CookieAccessDetails::Type::kRead,
        GURL(kThirdPartyUrl),
        GURL(kCurrentUrl),
-       {*third_party_cookie},
-       false});
+       {{*third_party_cookie}},
+       /* blocked_by_policy = */ false});
   content_settings->OnBrowsingDataAccessed(
       CreateThirdPartyStorageKey(GURL(kThirdPartyUrl), GURL(kCurrentUrl)),
       BrowsingDataModel::StorageType::kQuotaStorage,
@@ -388,8 +387,8 @@ TEST_F(PageSpecificSiteDataDialogUnitTest,
       {content::CookieAccessDetails::Type::kRead,
        GURL(kThirdPartyUrl),
        GURL(kThirdPartyUrl),
-       {*first_party_cookie},
-       false});
+       {{*first_party_cookie}},
+       /* blocked_by_policy = */ false});
   content_settings->OnBrowsingDataAccessed(
       CreateUnpartitionedStorageKey(GURL(kThirdPartyUrl)),
       BrowsingDataModel::StorageType::kQuotaStorage,
@@ -404,8 +403,8 @@ TEST_F(PageSpecificSiteDataDialogUnitTest,
       {content::CookieAccessDetails::Type::kRead,
        GURL(kThirdPartyUrl),
        GURL(kCurrentUrl),
-       {*third_party_cookie},
-       false});
+       {{*third_party_cookie}},
+       /* blocked_by_policy = */ false});
   content_settings->OnBrowsingDataAccessed(
       CreateThirdPartyStorageKey(GURL(kThirdPartyUrl), GURL(kCurrentUrl)),
       BrowsingDataModel::StorageType::kQuotaStorage,

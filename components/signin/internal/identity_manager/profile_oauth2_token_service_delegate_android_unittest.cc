@@ -6,8 +6,12 @@
 
 #include <memory>
 
+#include "base/functional/callback_helpers.h"
+#include "base/scoped_observation.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/signin/internal/identity_manager/account_tracker_service.h"
+#include "components/signin/internal/identity_manager/profile_oauth2_token_service_delegate.h"
+#include "components/signin/internal/identity_manager/profile_oauth2_token_service_observer.h"
 #include "components/signin/public/base/signin_switches.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -67,13 +71,9 @@ class OAuth2TokenServiceDelegateAndroidTest
     SetUpMockAccountManagerFacade();
     delegate_ = std::make_unique<OAuth2TokenServiceDelegateAndroidForTest>(
         &account_tracker_service_);
-    delegate_->AddObserver(&observer_);
+    delegate_->SetOnRefreshTokenRevokedNotified(base::DoNothing());
+    token_service_observation_.Observe(delegate_.get());
     CreateAndSeedAccounts();
-  }
-
-  void TearDown() override {
-    delegate_->RemoveObserver(&observer_);
-    testing::Test::TearDown();
   }
 
   AccountTrackerService CreateAccountTrackerService() {
@@ -125,6 +125,9 @@ class OAuth2TokenServiceDelegateAndroidTest
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   std::unique_ptr<OAuth2TokenServiceDelegateAndroidForTest> delegate_;
   StrictMock<TestObserver> observer_;
+  base::ScopedObservation<ProfileOAuth2TokenServiceDelegate,
+                          ProfileOAuth2TokenServiceObserver>
+      token_service_observation_{&observer_};
 
   AccountInfo account1_;
   AccountInfo account2_;

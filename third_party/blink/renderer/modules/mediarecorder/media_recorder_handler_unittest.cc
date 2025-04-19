@@ -59,6 +59,7 @@ using ::testing::InvokeWithoutArgs;
 using ::testing::Lt;
 using ::testing::Mock;
 using ::testing::Return;
+using ::testing::SizeIs;
 using ::testing::TestWithParam;
 using ::testing::ValuesIn;
 
@@ -68,7 +69,8 @@ using ::testing::ValuesIn;
 #define HAS_AAC_ENCODER 1
 #endif
 
-#if BUILDFLAG(IS_MAC) && BUILDFLAG(USE_PROPRIETARY_CODECS)
+#if (BUILDFLAG(IS_MAC) || BUILDFLAG(IS_ANDROID)) && \
+    BUILDFLAG(USE_PROPRIETARY_CODECS)
 #define HAS_AAC_ENCODER 1
 #endif
 
@@ -163,7 +165,7 @@ class MockMediaRecorder : public MediaRecorder {
 
   MOCK_METHOD(void,
               WriteData,
-              (const void*, size_t, bool, double, ErrorEvent*));
+              (base::span<const uint8_t>, bool, double, ErrorEvent*));
   MOCK_METHOD(void, OnError, (DOMExceptionCode code, const String& message));
 };
 
@@ -212,6 +214,14 @@ class MediaRecorderHandlerFixture : public ScopedMockOverlayScrollbars {
     return true;
   }
 
+  bool IsAv1CodecSupported(const String codecs) {
+#if BUILDFLAG(ENABLE_LIBAOM)
+    return true;
+#else
+    return codecs.Find("av1") != kNotFound && codecs.Find("av01") != kNotFound;
+#endif
+  }
+
   WeakCell<AudioTrackRecorder::CallbackInterface>* GetAudioCallbackInterface() {
     return media_recorder_handler_->audio_recorders_[0]
         ->callback_interface_for_testing();
@@ -253,7 +263,7 @@ class MediaRecorderHandlerFixture : public ScopedMockOverlayScrollbars {
       std::string encoded_data,
       base::TimeTicks timestamp) {
     media_recorder_handler_->OnEncodedAudio(params, std::move(encoded_data),
-                                            absl::nullopt, timestamp);
+                                            std::nullopt, timestamp);
   }
 
   void OnAudioBusForTesting(const media::AudioBus& audio_bus) {
@@ -412,14 +422,6 @@ class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
     }
 #endif
     return true;
-  }
-
-  bool IsAv1CodecSupported(const String codecs) {
-#if BUILDFLAG(ENABLE_LIBAOM)
-    return true;
-#else
-    return codecs.Find("av1") != kNotFound && codecs.Find("av01") != kNotFound;
-#endif
   }
 
   bool IsAvc1CodecSupported(const String codecs) {
@@ -586,15 +588,15 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
 
   if (GetParam().use_mp4_muxer) {
     {
-      const size_t kMfraBoxSize = 48u;
+      const size_t kMfraBoxSize = 76u;
       base::RunLoop run_loop;
       // WriteData is called as many as fragments (`moof` box) in addition
       // to 3 times of `ftyp`, `moov`, `mfra` boxes.
-      EXPECT_CALL(*recorder, WriteData(_, Lt(kMfraBoxSize), _, _, _))
+      EXPECT_CALL(*recorder, WriteData(SizeIs(Lt(kMfraBoxSize)), _, _, _))
           .Times(AtLeast(1));
-      EXPECT_CALL(*recorder, WriteData(_, Gt(kMfraBoxSize), _, _, _))
+      EXPECT_CALL(*recorder, WriteData(SizeIs(Gt(kMfraBoxSize)), _, _, _))
           .Times(AtLeast(1));
-      EXPECT_CALL(*recorder, WriteData(_, kMfraBoxSize, _, _, _))
+      EXPECT_CALL(*recorder, WriteData(SizeIs(kMfraBoxSize), _, _, _))
           .Times(1)
           .WillOnce(RunOnceClosure(run_loop.QuitClosure()));
 
@@ -611,9 +613,11 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
       base::RunLoop run_loop;
       // writeData() is pinged a number of times as the WebM header is written;
       // the last time it is called it has the encoded data.
-      EXPECT_CALL(*recorder, WriteData(_, Lt(kEncodedSizeThreshold), _, _, _))
+      EXPECT_CALL(*recorder,
+                  WriteData(SizeIs(Lt(kEncodedSizeThreshold)), _, _, _))
           .Times(AtLeast(1));
-      EXPECT_CALL(*recorder, WriteData(_, Gt(kEncodedSizeThreshold), _, _, _))
+      EXPECT_CALL(*recorder,
+                  WriteData(SizeIs(Gt(kEncodedSizeThreshold)), _, _, _))
           .Times(1)
           .WillOnce(RunOnceClosure(run_loop.QuitClosure()));
 
@@ -626,9 +630,11 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
       base::RunLoop run_loop;
       // The second time around writeData() is called a number of times to write
       // the WebM frame header, and then is pinged with the encoded data.
-      EXPECT_CALL(*recorder, WriteData(_, Lt(kEncodedSizeThreshold), _, _, _))
+      EXPECT_CALL(*recorder,
+                  WriteData(SizeIs(Lt(kEncodedSizeThreshold)), _, _, _))
           .Times(AtLeast(1));
-      EXPECT_CALL(*recorder, WriteData(_, Gt(kEncodedSizeThreshold), _, _, _))
+      EXPECT_CALL(*recorder,
+                  WriteData(SizeIs(Gt(kEncodedSizeThreshold)), _, _, _))
           .Times(1)
           .WillOnce(RunOnceClosure(run_loop.QuitClosure()));
 
@@ -644,15 +650,19 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
       base::RunLoop run_loop;
       // The second time around writeData() is called a number of times to write
       // the WebM frame header, and then is pinged with the encoded data.
-      EXPECT_CALL(*recorder, WriteData(_, Lt(kEncodedSizeThreshold), _, _, _))
+      EXPECT_CALL(*recorder,
+                  WriteData(SizeIs(Lt(kEncodedSizeThreshold)), _, _, _))
           .Times(AtLeast(1));
-      EXPECT_CALL(*recorder, WriteData(_, Gt(kEncodedSizeThreshold), _, _, _))
+      EXPECT_CALL(*recorder,
+                  WriteData(SizeIs(Gt(kEncodedSizeThreshold)), _, _, _))
           .Times(1)
           .WillOnce(RunOnceClosure(run_loop.QuitClosure()));
       if (GetParam().encoder_supports_alpha) {
-        EXPECT_CALL(*recorder, WriteData(_, Lt(kEncodedSizeThreshold), _, _, _))
+        EXPECT_CALL(*recorder,
+                    WriteData(SizeIs(Lt(kEncodedSizeThreshold)), _, _, _))
             .Times(AtLeast(1));
-        EXPECT_CALL(*recorder, WriteData(_, Gt(kEncodedSizeThreshold), _, _, _))
+        EXPECT_CALL(*recorder,
+                    WriteData(SizeIs(Gt(kEncodedSizeThreshold)), _, _, _))
             .Times(1)
             .WillOnce(RunOnceClosure(run_loop.QuitClosure()));
       }
@@ -701,9 +711,11 @@ TEST_P(MediaRecorderHandlerTest, OpusEncodeAudioFrames) {
     base::RunLoop run_loop;
     // WriteData is called as many as fragments (`moof` box) in addition
     // to 2 times of `ftyp`, `moov` boxes (no 'mfra'box as it is audio only).
-    EXPECT_CALL(*recorder, WriteData(_, Lt(kEncodedSizeThreshold), _, _, _))
+    EXPECT_CALL(*recorder,
+                WriteData(SizeIs(Lt(kEncodedSizeThreshold)), _, _, _))
         .Times(AtLeast(1));
-    EXPECT_CALL(*recorder, WriteData(_, Gt(kEncodedSizeThreshold), _, _, _))
+    EXPECT_CALL(*recorder,
+                WriteData(SizeIs(Gt(kEncodedSizeThreshold)), _, _, _))
         .Times(2)
         .WillOnce(RunOnceClosure(run_loop.QuitClosure()));
 
@@ -727,9 +739,11 @@ TEST_P(MediaRecorderHandlerTest, OpusEncodeAudioFrames) {
       base::RunLoop run_loop;
       // writeData() is pinged a number of times as the WebM header is written;
       // the last time it is called it has the encoded data.
-      EXPECT_CALL(*recorder, WriteData(_, Lt(kEncodedSizeThreshold), _, _, _))
+      EXPECT_CALL(*recorder,
+                  WriteData(SizeIs(Lt(kEncodedSizeThreshold)), _, _, _))
           .Times(AtLeast(1));
-      EXPECT_CALL(*recorder, WriteData(_, Gt(kEncodedSizeThreshold), _, _, _))
+      EXPECT_CALL(*recorder,
+                  WriteData(SizeIs(Gt(kEncodedSizeThreshold)), _, _, _))
           .Times(1)
           .WillOnce(RunOnceClosure(run_loop.QuitClosure()));
 
@@ -744,9 +758,11 @@ TEST_P(MediaRecorderHandlerTest, OpusEncodeAudioFrames) {
       base::RunLoop run_loop;
       // The second time around writeData() is called a number of times to write
       // the WebM frame header, and then is pinged with the encoded data.
-      EXPECT_CALL(*recorder, WriteData(_, Lt(kEncodedSizeThreshold), _, _, _))
+      EXPECT_CALL(*recorder,
+                  WriteData(SizeIs(Lt(kEncodedSizeThreshold)), _, _, _))
           .Times(AtLeast(1));
-      EXPECT_CALL(*recorder, WriteData(_, Gt(kEncodedSizeThreshold), _, _, _))
+      EXPECT_CALL(*recorder,
+                  WriteData(SizeIs(Gt(kEncodedSizeThreshold)), _, _, _))
           .Times(1)
           .WillOnce(RunOnceClosure(run_loop.QuitClosure()));
 
@@ -789,7 +805,8 @@ TEST_P(MediaRecorderHandlerTest, WebmMuxerErrorWhileEncoding) {
     const size_t kEncodedSizeThreshold = 16;
     base::RunLoop run_loop;
     EXPECT_CALL(*recorder, WriteData).Times(AtLeast(1));
-    EXPECT_CALL(*recorder, WriteData(_, Gt(kEncodedSizeThreshold), _, _, _))
+    EXPECT_CALL(*recorder,
+                WriteData(SizeIs(Gt(kEncodedSizeThreshold)), _, _, _))
         .Times(1)
         .WillOnce(RunOnceClosure(run_loop.QuitClosure()));
 
@@ -1029,13 +1046,15 @@ TEST_P(MediaRecorderHandlerIsSupportedTypeTestForMp4,
   const String good_mp4_video_mime_types[] = {"video/mp4"};
   const String bad_mp4_video_mime_types[] = {"video/MP4"};
 
-  const String good_mp4_video_codecs[] = {"avc1", "avc1.420034", "vp9"};
-  const String bad_mp4_video_codecs[] = {"h264", "vp8", "avc11", "aVc1",
-                                         "avc1.123456"};
+  const String good_mp4_video_codecs[] = {"avc1", "avc1.420034", "vp9", "av01",
+                                          "av01.2.19H.08.0.000.09.16.09.1"};
+  const String bad_mp4_video_codecs[] = {"h264", "vp8",         "avc11",
+                                         "aVc1", "avc1.123456", "av1"};
 
-  const String good_mp4_video_codecs_non_proprietory[] = {"vp9"};
+  const String good_mp4_video_codecs_non_proprietory[] = {
+      "vp9", "av01", "av01.2.19H.08.0.000.09.16.09.1"};
   const String bad_mp4_video_codecs_non_proprietory[] = {
-      "avc1", "h264", "vp8", "avc11", "aVc1", "avc1.123456"};
+      "avc1", "h264", "vp8", "avc11", "aVc1", "avc1.123456", "av1"};
 
   // audio types.
   const String good_mp4_audio_mime_types[] = {"audio/mp4"};
@@ -1055,6 +1074,9 @@ TEST_P(MediaRecorderHandlerIsSupportedTypeTestForMp4,
     // success cases.
     for (const auto& type : good_mp4_video_mime_types) {
       for (const auto& codec : good_mp4_video_codecs) {
+        if (!IsAv1CodecSupported(codec)) {
+          continue;
+        }
         EXPECT_TRUE(media_recorder_handler_->CanSupportMimeType(type, codec));
       }
     }
@@ -1070,6 +1092,9 @@ TEST_P(MediaRecorderHandlerIsSupportedTypeTestForMp4,
 
     for (const auto& type : good_mp4_video_mime_types) {
       for (const auto& video_codec : good_mp4_video_codecs) {
+        if (!IsAv1CodecSupported(video_codec)) {
+          continue;
+        }
         for (const auto& audio_codec : good_mp4_audio_codecs) {
           if (!IsTargetAudioCodecSupported(audio_codec)) {
             continue;
@@ -1088,6 +1113,9 @@ TEST_P(MediaRecorderHandlerIsSupportedTypeTestForMp4,
     // failure cases.
     for (const auto& type : bad_mp4_video_mime_types) {
       for (const auto& codec : good_mp4_video_codecs) {
+        if (!IsAv1CodecSupported(codec)) {
+          continue;
+        }
         EXPECT_FALSE(media_recorder_handler_->CanSupportMimeType(type, codec));
       }
     }
@@ -1101,6 +1129,9 @@ TEST_P(MediaRecorderHandlerIsSupportedTypeTestForMp4,
     // success cases.
     for (const auto& type : good_mp4_video_mime_types) {
       for (const auto& codec : good_mp4_video_codecs_non_proprietory) {
+        if (!IsAv1CodecSupported(codec)) {
+          continue;
+        }
         EXPECT_TRUE(media_recorder_handler_->CanSupportMimeType(type, codec));
       }
     }
@@ -1113,6 +1144,9 @@ TEST_P(MediaRecorderHandlerIsSupportedTypeTestForMp4,
 
     for (const auto& type : good_mp4_video_mime_types) {
       for (const auto& video_codec : good_mp4_video_codecs_non_proprietory) {
+        if (!IsAv1CodecSupported(video_codec)) {
+          continue;
+        }
         for (const auto& audio_codec : good_mp4_audio_codecs_non_proprietory) {
           String codecs = video_codec + "," + audio_codec;
           EXPECT_TRUE(
@@ -1160,12 +1194,18 @@ TEST_P(MediaRecorderHandlerIsSupportedTypeTestForMp4,
 
     for (const auto& type : good_mp4_audio_mime_types) {
       for (const auto& codec : good_mp4_video_codecs) {
+        if (!IsAv1CodecSupported(codec)) {
+          continue;
+        }
         EXPECT_FALSE(media_recorder_handler_->CanSupportMimeType(type, codec));
       }
     }
 
     for (const auto& type : good_mp4_audio_mime_types) {
       for (const auto& video_codec : good_mp4_video_codecs) {
+        if (!IsAv1CodecSupported(video_codec)) {
+          continue;
+        }
         for (const auto& audio_codec : good_mp4_audio_codecs) {
           String codecs = video_codec + "," + audio_codec;
           EXPECT_FALSE(
@@ -1198,12 +1238,18 @@ TEST_P(MediaRecorderHandlerIsSupportedTypeTestForMp4,
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
     for (const auto& type : good_mp4_video_mime_types) {
       for (const auto& codec : good_mp4_video_codecs) {
+        if (!IsAv1CodecSupported(codec)) {
+          continue;
+        }
         EXPECT_FALSE(media_recorder_handler_->CanSupportMimeType(type, codec));
       }
     }
 #else
     for (const auto& type : good_mp4_video_mime_types) {
       for (const auto& codec : good_mp4_video_codecs) {
+        if (!IsAv1CodecSupported(codec)) {
+          continue;
+        }
         EXPECT_FALSE(media_recorder_handler_->CanSupportMimeType(type, codec));
       }
     }
@@ -1589,7 +1635,7 @@ TEST_P(MediaRecorderHandlerPassthroughTest, PassesThrough) {
   {
     base::RunLoop run_loop;
     EXPECT_CALL(*recorder, WriteData).Times(AtLeast(1));
-    EXPECT_CALL(*recorder, WriteData(_, Ge(kFrameSize), _, _, _))
+    EXPECT_CALL(*recorder, WriteData(SizeIs(Ge(kFrameSize)), _, _, _))
         .Times(1)
         .WillOnce(RunOnceClosure(run_loop.QuitClosure()));
     OnVideoFrameForTesting(frame);

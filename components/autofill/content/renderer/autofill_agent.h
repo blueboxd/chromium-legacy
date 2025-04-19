@@ -13,7 +13,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/feature_list.h"
-#include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
 #include "base/memory/weak_ptr.h"
@@ -23,9 +22,12 @@
 #include "components/autofill/content/common/mojom/autofill_agent.mojom.h"
 #include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
+#include "components/autofill/content/renderer/form_cache.h"
 #include "components/autofill/content/renderer/form_tracker.h"
+#include "components/autofill/content/renderer/timing.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/field_data_manager.h"
+#include "components/autofill/core/common/form_data_predictions.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "content/public/renderer/render_frame_observer.h"
@@ -49,7 +51,6 @@ class WebFormElement;
 
 namespace autofill {
 
-class FormCache;
 class PasswordAutofillAgent;
 class PasswordGenerationAgent;
 
@@ -66,7 +67,7 @@ class PasswordGenerationAgent;
 // To handle this state, care must be taken to check for nullptrs:
 // - `unsafe_autofill_driver()`
 // - `unsafe_render_frame()`
-// - `form_cache_`
+// - `GetDocument()`
 //
 // This RenderFrame owns all forms and fields in the renderer-browser
 // communication:
@@ -148,11 +149,15 @@ class AutofillAgent : public content::RenderFrameObserver,
   void BindPendingReceiver(
       mojo::PendingAssociatedReceiver<mojom::AutofillAgent> pending_receiver);
 
+  blink::WebDocument GetDocument() const;
+
   // Callers must not store the returned value longer than a function scope.
   // unsafe_autofill_driver() is nullptr if unsafe_render_frame() is nullptr and
   // the `autofill_driver_` has not been bound yet.
   mojom::AutofillDriver* unsafe_autofill_driver();
   mojom::PasswordManagerDriver& GetPasswordManagerDriver();
+
+  CallTimerState GetCallTimerState(CallTimerState::CallSite call_site) const;
 
   // mojom::AutofillAgent:
   void TriggerFormExtraction() override;
@@ -290,12 +295,6 @@ class AutofillAgent : public content::RenderFrameObserver,
     const raw_ref<AutofillAgent> agent_;
   };
 
-  // The legacy focus-change behavior is broken in many ways and to be removed
-  // once the kill switch `kAutofillNewFocusEvents` is removed.
-  // TODO(crbug.com/337690061): Remove when cleaning up
-  // `kAutofillNewFocusEvents`.
-  void FocusedElementChangedDeprecated(const blink::WebElement& element);
-
   // The RenderFrame* is nullptr while the AutofillAgent is pending deletion,
   // between OnDestruct() and ~AutofillAgent().
   content::RenderFrame* unsafe_render_frame() const {
@@ -322,6 +321,7 @@ class AutofillAgent : public content::RenderFrameObserver,
                             mojom::SubmissionSource source);
 
   // blink::WebAutofillClient:
+  void TextFieldCleared(const blink::WebFormControlElement&) override;
   void TextFieldDidEndEditing(const blink::WebInputElement& element) override;
   void TextFieldDidChange(const blink::WebFormControlElement& element) override;
   void ContentEditableDidChange(const blink::WebElement& element) override;
@@ -452,7 +452,7 @@ class AutofillAgent : public content::RenderFrameObserver,
                : last_interacted_form_;
   }
 
-  // TODO(b/40281981): Remove.
+  // TODO(crbug.com/40281981): Remove.
   std::optional<FormData>& provisionally_saved_form() {
     return form_tracker_->provisionally_saved_form();
   }
@@ -468,9 +468,8 @@ class AutofillAgent : public content::RenderFrameObserver,
   // the direction to traverse in.
   blink::WebNode NextWebNode(const blink::WebNode& current_node, bool next);
 
-  // Contains the form of the document. Does not survive navigation and is
-  // reset when the AutofillAgent is pending deletion.
-  std::unique_ptr<FormCache> form_cache_;
+  // Contains the forms of the document.
+  FormCache form_cache_{this};
 
   std::unique_ptr<PasswordAutofillAgent> password_autofill_agent_;
   std::unique_ptr<PasswordGenerationAgent> password_generation_agent_;
@@ -483,7 +482,7 @@ class AutofillAgent : public content::RenderFrameObserver,
   std::vector<std::pair<FieldRef, blink::WebAutofillState>> previewed_elements_;
 
   // Last form which was interacted with by the user.
-  // TODO(b/40281981): Remove when tracking becomes only FormTracker's
+  // TODO(crbug.com/40281981): Remove when tracking becomes only FormTracker's
   // responsibility.
   FormRef last_interacted_form_;
 
@@ -568,6 +567,11 @@ class AutofillAgent : public content::RenderFrameObserver,
     // The timer for the next CaretMovedInFormField().
     base::OneShotTimer timer;
   } caret_state_;
+
+  struct {
+    base::TimeTicks last_autofill_agent_reset = base::TimeTicks::Now();
+    base::TimeTicks last_dom_content_loaded;
+  } timing_;
 
   base::WeakPtrFactory<AutofillAgent> weak_ptr_factory_{this};
 };

@@ -6,27 +6,15 @@
 
 #import "base/feature_list.h"
 #import "base/metrics/histogram_functions.h"
+#import "base/notreached.h"
 #import "components/signin/public/base/signin_metrics.h"
 #import "components/signin/public/base/signin_switches.h"
-#import "ios/chrome/browser/shared/ui/elements/activity_overlay_view.h"
+#import "components/signin/public/identity_manager/tribool.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util.h"
-
-namespace {
-
-// Duration for fading in/out views.
-constexpr base::TimeDelta kAnimationDuration = base::Milliseconds(200);
-
-}  // namespace
-
-@interface HistorySyncViewController ()
-
-@property(nonatomic, strong) ActivityOverlayView* overlay;
-
-@end
 
 @implementation HistorySyncViewController
 
@@ -58,30 +46,15 @@ constexpr base::TimeDelta kAnimationDuration = base::Milliseconds(200);
     // been updated.
     if (self.actionButtonsVisibility == ActionButtonsVisibility::kDefault) {
       self.actionButtonsVisibility = ActionButtonsVisibility::kHidden;
-
-      // Hide the title and subtitles.
-      self.titleLabel.alpha = 0;
-      self.subtitleLabel.alpha = 0;
-
-      // Start the spinner.
-      [self.view addSubview:self.overlay];
-      AddSameConstraints(self.view, self.overlay);
-      [self.overlay.indicator startAnimating];
     }
   } else if (base::FeatureList::GetInstance() &&
              base::FeatureList::GetInstance()->IsFeatureOverridden(
                  switches::kMinorModeRestrictionsForHistorySyncOptIn.name)) {
     // Record button type metrics when the feature is overriden to be disabled.
-    [self recordButtonTypeMetricsWithRestrictionStatus:NO];
+    base::UmaHistogramEnumeration(
+        "Signin.SyncButtons.Shown",
+        signin_metrics::SyncButtonsType::kHistorySyncNotEqualWeighted);
   }
-}
-
-- (ActivityOverlayView*)overlay {
-  if (!_overlay) {
-    _overlay = [[ActivityOverlayView alloc] init];
-    _overlay.translatesAutoresizingMaskIntoConstraints = NO;
-  }
-  return _overlay;
 }
 
 #pragma mark - HistorySyncConsumer
@@ -99,42 +72,36 @@ constexpr base::TimeDelta kAnimationDuration = base::Milliseconds(200);
   self.disclaimerText = text;
 }
 
-- (void)displayButtonsWithRestrictionStatus:(BOOL)isRestricted {
+- (void)displayButtonsWithRestrictionCapability:
+    (signin::Tribool)canShowUnrestrictedViewCapability {
   if (base::FeatureList::IsEnabled(
           switches::kMinorModeRestrictionsForHistorySyncOptIn)) {
-    if (self.actionButtonsVisibility == ActionButtonsVisibility::kHidden) {
-      // Fade out the spinner while fading in the title and subtitle.
-      // The buttons will be shown simultaneously.
-      __weak __typeof(self) weakSelf = self;
-      [UIView animateWithDuration:kAnimationDuration.InSecondsF()
-          animations:^{
-            weakSelf.overlay.alpha = 0;
-            // titleLabel is created on-demand and should not be
-            // created with an empty titleText.
-            if (weakSelf.titleText) {
-              weakSelf.titleLabel.alpha = 1;
-            }
-            weakSelf.subtitleLabel.alpha = 1;
-          }
-          completion:^(BOOL finished) {
-            [weakSelf.overlay removeFromSuperview];
-          }];
+    // Show action buttons and record button metrics.
+    signin_metrics::SyncButtonsType buttonType;
+    switch (canShowUnrestrictedViewCapability) {
+      case signin::Tribool::kUnknown:
+        self.actionButtonsVisibility =
+            ActionButtonsVisibility::kEquallyWeightedButtonShown;
+        buttonType = signin_metrics::SyncButtonsType::
+            kHistorySyncEqualWeightedFromDeadline;
+        break;
+      case signin::Tribool::kFalse:
+        self.actionButtonsVisibility =
+            ActionButtonsVisibility::kEquallyWeightedButtonShown;
+        buttonType = signin_metrics::SyncButtonsType::
+            kHistorySyncEqualWeightedFromCapability;
+        break;
+      case signin::Tribool::kTrue:
+        self.actionButtonsVisibility =
+            ActionButtonsVisibility::kRegularButtonsShown;
+        buttonType =
+            signin_metrics::SyncButtonsType::kHistorySyncNotEqualWeighted;
+        break;
+      default:
+        NOTREACHED();
     }
-
-    // Show action buttons.
-    self.actionButtonsVisibility =
-        isRestricted ? ActionButtonsVisibility::kEquallyWeightedButtonShown
-                     : ActionButtonsVisibility::kRegularButtonsShown;
-    [self recordButtonTypeMetricsWithRestrictionStatus:isRestricted];
+    base::UmaHistogramEnumeration("Signin.SyncButtons.Shown", buttonType);
   }
-}
-
-- (void)recordButtonTypeMetricsWithRestrictionStatus:(BOOL)isRestricted {
-  signin_metrics::SyncButtonsType buttonType =
-      isRestricted
-          ? signin_metrics::SyncButtonsType::kHistorySyncEqualWeighted
-          : signin_metrics::SyncButtonsType::kHistorySyncNotEqualWeighted;
-  base::UmaHistogramEnumeration("Signin.SyncButtons.Shown", buttonType);
 }
 
 @end

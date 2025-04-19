@@ -12,9 +12,9 @@
 
 namespace partition_alloc::internal {
 
-struct PartitionSuperPageExtentEntry;
+struct WritablePartitionSuperPageExtentEntry;
 
-#if PA_BUILDFLAG(PA_DCHECK_IS_ON)
+#if PA_BUILDFLAG(DCHECKS_ARE_ON)
 
 // To allow these asserts to have empty bodies in no-DCHECK() builds, while
 // avoiding issues with circular includes.
@@ -22,7 +22,7 @@ struct PartitionSuperPageExtentEntry;
 // Export symbol if dcheck-is-on. Because the body is not empty.
 #define PA_EXPORT_IF_DCHECK_IS_ON() PA_COMPONENT_EXPORT(PARTITION_ALLOC)
 
-#else  // PA_BUILDFLAG(PA_DCHECK_IS_ON)
+#else  // PA_BUILDFLAG(DCHECKS_ARE_ON)
 
 // The static_assert() eats follow-on semicolons.
 #define PA_EMPTY_BODY_IF_DCHECK_IS_OFF() \
@@ -31,7 +31,7 @@ struct PartitionSuperPageExtentEntry;
 // inline if dcheck-is-off so it's no overhead.
 #define PA_EXPORT_IF_DCHECK_IS_ON() PA_ALWAYS_INLINE
 
-#endif  // PA_BUILDFLAG(PA_DCHECK_IS_ON)
+#endif  // PA_BUILDFLAG(DCHECKS_ARE_ON)
 
 PA_EXPORT_IF_DCHECK_IS_ON()
 void DCheckIsValidSlotSpan(internal::SlotSpanMetadata* slot_span)
@@ -43,7 +43,7 @@ void DCheckIsWithInSuperPagePayload(uintptr_t address)
 
 PA_EXPORT_IF_DCHECK_IS_ON()
 void DCheckNumberOfPartitionPagesInSuperPagePayload(
-    const PartitionSuperPageExtentEntry* entry,
+    WritablePartitionSuperPageExtentEntry* entry,
     const PartitionRoot* root,
     size_t number_of_nonempty_slot_spans) PA_EMPTY_BODY_IF_DCHECK_IS_OFF();
 

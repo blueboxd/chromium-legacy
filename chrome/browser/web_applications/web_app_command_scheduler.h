@@ -28,6 +28,7 @@
 #include "chrome/browser/web_applications/commands/uninstall_all_user_installed_web_apps_command.h"
 #include "chrome/browser/web_applications/external_install_options.h"
 #include "chrome/browser/web_applications/externally_managed_app_manager.h"
+#include "chrome/browser/web_applications/isolated_web_apps/cleanup_orphaned_isolated_web_apps_command.h"
 #include "chrome/browser/web_applications/isolated_web_apps/install_isolated_web_app_command.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_prepare_and_store_update_command.h"
 #include "chrome/browser/web_applications/jobs/uninstall/uninstall_job.h"
@@ -88,6 +89,9 @@ class WebAppCommandScheduler {
   using InstallIsolatedWebAppCallback = base::OnceCallback<void(
       base::expected<InstallIsolatedWebAppCommandSuccess,
                      InstallIsolatedWebAppCommandError>)>;
+  using CleanupOrphanedIsolatedWebAppsCallback = base::OnceCallback<void(
+      base::expected<CleanupOrphanedIsolatedWebAppsCommandSuccess,
+                     CleanupOrphanedIsolatedWebAppsCommandError>)>;
   using WebAppIconDiagnosticResultCallback =
       base::OnceCallback<void(std::optional<WebAppIconDiagnosticResult>)>;
 
@@ -195,6 +199,10 @@ class WebAppCommandScheduler {
       std::unique_ptr<ScopedKeepAlive> optional_keep_alive,
       std::unique_ptr<ScopedProfileKeepAlive> optional_profile_keep_alive,
       InstallIsolatedWebAppCallback callback,
+      const base::Location& call_location = FROM_HERE);
+
+  virtual void CleanupOrphanedIsolatedApps(
+      CleanupOrphanedIsolatedWebAppsCallback callback,
       const base::Location& call_location = FROM_HERE);
 
   // Schedules a command to prepare the update of an Isolated Web App.
@@ -451,11 +459,14 @@ class WebAppCommandScheduler {
                          const base::Location& location = FROM_HERE);
 
   // Used to schedule a synchronization of a web app's OS states with the
-  // current DB states.
+  // current DB states. If `upgrade_to_fully_installed_if_installed` is
+  // specified and the app is installed, then this command will upgrade the
+  // installation status to proto::InstallState::INSTALLED_WITH_OS_INTEGRATION.
   void SynchronizeOsIntegration(
       const webapps::AppId& app_id,
       base::OnceClosure synchronize_callback,
       std::optional<SynchronizeOsOptions> synchronize_options = std::nullopt,
+      bool upgrade_to_fully_installed_if_installed = false,
       const base::Location& location = FROM_HERE);
 
   // Sets the user display mode for an app, and also makes sure os integration

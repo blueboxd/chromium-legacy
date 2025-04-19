@@ -24,6 +24,7 @@
 #include "chrome/browser/password_manager/password_manager_test_base.h"
 #include "chrome/browser/password_manager/passwords_navigation_observer.h"
 #include "chrome/browser/password_manager/profile_password_store_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
 #include "chrome/browser/sync/test/integration/secondary_account_helper.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
@@ -55,7 +56,8 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_switches.h"
 #include "components/signin/public/identity_manager/account_info.h"
-#include "components/sync/base/model_type.h"
+#include "components/signin/public/identity_manager/identity_test_utils.h"
+#include "components/sync/base/data_type.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/service/sync_service_impl.h"
 #include "components/sync/test/fake_server_nigori_helper.h"
@@ -146,8 +148,8 @@ class SyncActiveWithoutPasswordsChecker
 // Note: This helper applies to ChromeOS too, but is currently unused there. So
 // define it out to prevent a compile error due to the unused function.
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-void GetNewTab(Browser* browser, content::WebContents** web_contents) {
-  PasswordManagerBrowserTestBase::GetNewTab(browser, web_contents);
+content::WebContents* GetNewTab(Browser* browser) {
+  return PasswordManagerBrowserTestBase::GetNewTab(browser);
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -164,9 +166,7 @@ class PasswordManagerSyncTest : public SyncTest {
     // updating a password become flaky.
     feature_list_.InitWithFeatures(
         /*enabled_features=*/{password_manager::features::kFillOnAccountSelect,
-                              switches::kExplicitBrowserSigninUIOnDesktop,
-                              password_manager::features::
-                                  kButterOnDesktopFollowup},
+                              switches::kExplicitBrowserSigninUIOnDesktop},
         /*disabled_features=*/{});
   }
 
@@ -438,8 +438,7 @@ class PasswordManagerSyncExplicitParamTest
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
 IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest, ChooseDestinationStore) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
-  content::WebContents* web_contents = nullptr;
-  GetNewTab(GetBrowser(0), &web_contents);
+  content::WebContents* web_contents = GetNewTab(GetBrowser(0));
 
   SetupSyncTransportWithPasswordAccountStorage();
 
@@ -485,27 +484,16 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest, ChooseDestinationStore) {
 
     // Save the password and check the store.
     BubbleObserver bubble_observer(web_contents);
-    // TODO: crbug.com/40943570 - Remove this flag check after feature is fully rolled out.
-    if (base::FeatureList::IsEnabled(
-            password_manager::features::kButterOnDesktopFollowup)) {
-      EXPECT_TRUE(
-          bubble_observer.IsDefaultStoreChangedPromptShownAutomatically());
-      bubble_observer.AcknowledgeDefaultStoreChange();
 
-      ASSERT_TRUE(bubble_observer.IsSavePromptShownAutomatically());
-      bubble_observer.AcceptSavePrompt();
+    EXPECT_TRUE(
+        bubble_observer.IsDefaultStoreChangedPromptShownAutomatically());
+    bubble_observer.AcknowledgeDefaultStoreChange();
 
-      EXPECT_THAT(GetAllLoginsFromAccountPasswordStore(),
-                  testing::Contains(MatchesLogin("localuser", "localpass")));
-    } else {
-      ASSERT_TRUE(bubble_observer.IsSavePromptShownAutomatically());
-      bubble_observer.AcceptSavePrompt();
+    ASSERT_TRUE(bubble_observer.IsSavePromptShownAutomatically());
+    bubble_observer.AcceptSavePrompt();
 
-      std::vector<std::unique_ptr<password_manager::PasswordForm>>
-          profile_credentials = GetAllLoginsFromProfilePasswordStore();
-      EXPECT_THAT(profile_credentials,
-                  ElementsAre(MatchesLogin("localuser", "localpass")));
-    }
+    EXPECT_THAT(GetAllLoginsFromAccountPasswordStore(),
+                testing::Contains(MatchesLogin("localuser", "localpass")));
   }
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -517,8 +505,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest, UpdateInProfileStore) {
 
   SetupSyncTransportWithPasswordAccountStorage();
 
-  content::WebContents* web_contents = nullptr;
-  GetNewTab(GetBrowser(0), &web_contents);
+  content::WebContents* web_contents = GetNewTab(GetBrowser(0));
 
   // Go to a form and submit a different password.
   NavigateToFile(web_contents, kExampleHostname,
@@ -544,8 +531,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest, UpdateInAccountStore) {
 
   SetupSyncTransportWithPasswordAccountStorage();
 
-  content::WebContents* web_contents = nullptr;
-  GetNewTab(GetBrowser(0), &web_contents);
+  content::WebContents* web_contents = GetNewTab(GetBrowser(0));
 
   // Go to a form and submit a different password.
   NavigateToFile(web_contents, kExampleHostname,
@@ -573,8 +559,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
 
   SetupSyncTransportWithPasswordAccountStorage();
 
-  content::WebContents* web_contents = nullptr;
-  GetNewTab(GetBrowser(0), &web_contents);
+  content::WebContents* web_contents = GetNewTab(GetBrowser(0));
 
   // Go to a form and submit a different password.
   NavigateToFile(web_contents, kExampleHostname,
@@ -609,8 +594,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
 
   SetupSyncTransportWithPasswordAccountStorage();
 
-  content::WebContents* web_contents = nullptr;
-  GetNewTab(GetBrowser(0), &web_contents);
+  content::WebContents* web_contents = GetNewTab(GetBrowser(0));
 
   // Go to a form and submit a different password.
   NavigateToFile(web_contents, kExampleHostname,
@@ -657,8 +641,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
   ASSERT_THAT(GetAllLoginsFromAccountPasswordStore(),
               ElementsAre(MatchesLogin("user", "accountpass")));
 
-  content::WebContents* web_contents = nullptr;
-  GetNewTab(GetBrowser(0), &web_contents);
+  content::WebContents* web_contents = GetNewTab(GetBrowser(0));
 
   // Go to a form and submit the version of the credentials from the profile
   // store.
@@ -696,8 +679,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
   ASSERT_THAT(GetAllLoginsFromAccountPasswordStore(),
               ElementsAre(MatchesLogin("user", "accountpass")));
 
-  content::WebContents* web_contents = nullptr;
-  GetNewTab(GetBrowser(0), &web_contents);
+  content::WebContents* web_contents = GetNewTab(GetBrowser(0));
 
   // Go to a form and submit the version of the credentials from the account
   // store.
@@ -724,8 +706,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
 
   SetupSyncTransportWithPasswordAccountStorage();
 
-  content::WebContents* web_contents = nullptr;
-  GetNewTab(GetBrowser(0), &web_contents);
+  content::WebContents* web_contents = GetNewTab(GetBrowser(0));
 
   // Go to a form (on www.) and submit it with the saved credentials.
   NavigateToFile(web_contents, kExampleHostname,
@@ -755,8 +736,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
 
   SetupSyncTransportWithPasswordAccountStorage();
 
-  content::WebContents* web_contents = nullptr;
-  GetNewTab(GetBrowser(0), &web_contents);
+  content::WebContents* web_contents = GetNewTab(GetBrowser(0));
 
   // Go to a form (on www.) and submit it with the saved credentials.
   NavigateToFile(web_contents, kExampleHostname,
@@ -786,8 +766,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
 
   SetupSyncTransportWithPasswordAccountStorage();
 
-  content::WebContents* web_contents = nullptr;
-  GetNewTab(GetBrowser(0), &web_contents);
+  content::WebContents* web_contents = GetNewTab(GetBrowser(0));
 
   // Go to a form (on www.) and submit it with the saved credentials.
   NavigateToFile(web_contents, kExampleHostname,
@@ -812,8 +791,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
 
   SetupSyncTransportWithPasswordAccountStorage();
 
-  content::WebContents* web_contents = nullptr;
-  GetNewTab(GetBrowser(0), &web_contents);
+  content::WebContents* web_contents = GetNewTab(GetBrowser(0));
 
   // Navigate to a Gaia signin form and submit a credential for the primary
   // account.
@@ -839,8 +817,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
 
   SetupSyncTransportWithPasswordAccountStorage();
 
-  content::WebContents* web_contents = nullptr;
-  GetNewTab(GetBrowser(0), &web_contents);
+  content::WebContents* web_contents = GetNewTab(GetBrowser(0));
 
   // Navigate to a Gaia signin form and submit a credential for an account that
   // is *not* the primary one.
@@ -869,8 +846,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
 
   SetupSyncTransportWithPasswordAccountStorage();
 
-  content::WebContents* web_contents = nullptr;
-  GetNewTab(GetBrowser(0), &web_contents);
+  content::WebContents* web_contents = GetNewTab(GetBrowser(0));
 
   // Navigate to a Gaia signin form and submit a new password for the primary
   // account.
@@ -895,8 +871,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
 IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
                        SignOutWithUnsyncedPasswordsOpensBubble) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
-  content::WebContents* web_contents = nullptr;
-  GetNewTab(GetBrowser(0), &web_contents);
+  content::WebContents* web_contents = GetNewTab(GetBrowser(0));
 
   SetupSyncTransportWithPasswordAccountStorage();
 
@@ -1122,9 +1097,6 @@ INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(PasswordManagerSyncExplicitParamTest);
 
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
-// Context: Clearing cookies resets the opt-in to its default state. For users
-// whose default is "false", this means account storage gets disabled, and no
-// password data can be uploaded after that.
 // This test verifies that if such users delete passwords along with cookies,
 // the password deletions are uploaded before the server connection is cut.
 IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
@@ -1141,7 +1113,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
 
   // Make sure the password show up in the account store and on the server.
   ASSERT_EQ(passwords_helper::GetAllLogins(account_store).size(), 1u);
-  ASSERT_EQ(fake_server_->GetSyncEntitiesByModelType(syncer::PASSWORDS).size(),
+  ASSERT_EQ(fake_server_->GetSyncEntitiesByDataType(syncer::PASSWORDS).size(),
             1u);
   EXPECT_TRUE(password_manager::features_util::IsOptedInForAccountStorage(
       GetProfile(0)->GetPrefs(), GetSyncService(0)));
@@ -1159,10 +1131,15 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
 
   // Now passwords should be removed from the client and server.
   EXPECT_EQ(passwords_helper::GetAllLogins(account_store).size(), 0u);
-  EXPECT_EQ(fake_server_->GetSyncEntitiesByModelType(syncer::PASSWORDS).size(),
+  EXPECT_EQ(fake_server_->GetSyncEntitiesByDataType(syncer::PASSWORDS).size(),
             0u);
 
-  // The opt-in is back to its default state, false.
+  // The user is still opted in (because they are still signed in).
+  EXPECT_TRUE(password_manager::features_util::IsOptedInForAccountStorage(
+      GetProfile(0)->GetPrefs(), GetSyncService(0)));
+
+  // The preference is reset as the account is removed from Chrome.
+  SignOut();
   EXPECT_FALSE(password_manager::features_util::IsOptedInForAccountStorage(
       GetProfile(0)->GetPrefs(), GetSyncService(0)));
 }

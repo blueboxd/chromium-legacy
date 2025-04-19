@@ -5,31 +5,59 @@
 #include "ash/picker/views/picker_view.h"
 
 #include <memory>
+#include <optional>
+#include <string>
+#include <string_view>
 #include <utility>
+#include <vector>
 
 #include "ash/ash_element_identifiers.h"
+#include "ash/picker/metrics/picker_performance_metrics.h"
 #include "ash/picker/metrics/picker_session_metrics.h"
 #include "ash/picker/model/picker_action_type.h"
+#include "ash/picker/model/picker_caps_lock_position.h"
+#include "ash/picker/model/picker_mode_type.h"
 #include "ash/picker/model/picker_search_results_section.h"
-#include "ash/picker/views/picker_category_view.h"
+#include "ash/picker/views/picker_emoji_bar_view.h"
+#include "ash/picker/views/picker_item_with_submenu_view.h"
 #include "ash/picker/views/picker_key_event_handler.h"
 #include "ash/picker/views/picker_main_container_view.h"
 #include "ash/picker/views/picker_page_view.h"
+#include "ash/picker/views/picker_positioning.h"
+#include "ash/picker/views/picker_pseudo_focus.h"
+#include "ash/picker/views/picker_search_bar_textfield.h"
 #include "ash/picker/views/picker_search_field_view.h"
 #include "ash/picker/views/picker_search_results_view.h"
 #include "ash/picker/views/picker_search_results_view_delegate.h"
 #include "ash/picker/views/picker_strings.h"
 #include "ash/picker/views/picker_style.h"
+#include "ash/picker/views/picker_submenu_controller.h"
+#include "ash/picker/views/picker_submenu_view.h"
+#include "ash/picker/views/picker_traversable_item_container.h"
 #include "ash/picker/views/picker_view_delegate.h"
 #include "ash/picker/views/picker_zero_state_view.h"
 #include "ash/public/cpp/picker/picker_category.h"
 #include "ash/public/cpp/picker/picker_search_result.h"
+#include "ash/public/cpp/window_properties.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/check.h"
+#include "base/check_op.h"
+#include "base/containers/contains.h"
 #include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
+#include "base/location.h"
+#include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
+#include "build/branding_buildflags.h"
+#include "chromeos/ash/grit/ash_resources.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "ui/aura/window.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/emoji/emoji_panel_helper.h"
 #include "ui/base/interaction/element_identifier.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_constants.h"
@@ -44,12 +72,20 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/view_class_properties.h"
+#include "ui/views/view_observer.h"
+#include "ui/views/view_tracker.h"
 #include "ui/views/view_utils.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#include "chromeos/ash/resources/internal/strings/grit/ash_internal_strings.h"
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+
 namespace ash {
 namespace {
+
+constexpr int kVerticalPaddingBetweenPickerContainers = 8;
 
 // Padding to separate the Picker window from the screen edge.
 constexpr gfx::Insets kPaddingFromScreenEdge(16);
@@ -58,6 +94,7 @@ std::unique_ptr<views::BubbleBorder> CreateBorder() {
   auto border = std::make_unique<views::BubbleBorder>(
       views::BubbleBorder::NONE, views::BubbleBorder::NO_SHADOW);
   border->SetCornerRadius(kPickerContainerBorderRadius);
+  border->SetColor(SK_ColorTRANSPARENT);
   return border;
 }
 
@@ -68,10 +105,11 @@ std::unique_ptr<views::BubbleBorder> CreateBorder() {
 // top of the Picker view to the center of the search field, which we use to try
 // to vertically align the search field with the center of the anchor bounds.
 // `anchor_bounds` and returned bounds should be in screen coordinates.
-gfx::Rect GetPickerViewBounds(const gfx::Rect& anchor_bounds,
-                              PickerLayoutType layout_type,
-                              const gfx::Size& picker_view_size,
-                              int picker_view_search_field_vertical_offset) {
+gfx::Rect GetPickerViewBoundsWithoutSelectedText(
+    const gfx::Rect& anchor_bounds,
+    PickerLayoutType layout_type,
+    const gfx::Size& picker_view_size,
+    int picker_view_search_field_vertical_offset) {
   gfx::Rect screen_work_area = display::Screen::GetScreen()
                                    ->GetDisplayMatching(anchor_bounds)
                                    .work_area();
@@ -110,69 +148,185 @@ gfx::Rect GetPickerViewBounds(const gfx::Rect& anchor_bounds,
   return picker_view_bounds;
 }
 
+// Gets the preferred Picker view bounds in the case that there is selected
+// text. We try to left align the Picker view above or below `anchor_bounds`,
+// while taking into account `layout_type`, `picker_view_size` and available
+// space on the screen. `anchor_bounds` and returned bounds should be in screen
+// coordinates.
+gfx::Rect GetPickerViewBoundsWithSelectedText(
+    const gfx::Rect& anchor_bounds,
+    PickerLayoutType layout_type,
+    const gfx::Size& picker_view_size) {
+  gfx::Rect screen_work_area = display::Screen::GetScreen()
+                                   ->GetDisplayMatching(anchor_bounds)
+                                   .work_area();
+  screen_work_area.Inset(kPaddingFromScreenEdge);
+  gfx::Rect picker_view_bounds(picker_view_size);
+  switch (layout_type) {
+    case PickerLayoutType::kMainResultsBelowSearchField:
+      // Left aligned below the anchor.
+      picker_view_bounds.set_origin(
+          gfx::Point(anchor_bounds.x(), anchor_bounds.bottom()));
+      break;
+    case PickerLayoutType::kMainResultsAboveSearchField:
+      // Left aligned above the anchor.
+      picker_view_bounds.set_origin(gfx::Point(
+          anchor_bounds.x(), anchor_bounds.y() - picker_view_size.height()));
+      break;
+  }
+
+  // Adjust if necessary to keep the whole Picker view onscreen.
+  picker_view_bounds.AdjustToFit(screen_work_area);
+  return picker_view_bounds;
+}
+
 PickerCategory GetCategoryForMoreResults(PickerSectionType type) {
   switch (type) {
     case PickerSectionType::kNone:
-    case PickerSectionType::kCategories:
-    case PickerSectionType::kSuggestions:
     case PickerSectionType::kEditorWrite:
     case PickerSectionType::kEditorRewrite:
+    case PickerSectionType::kExamples:
       NOTREACHED_NORETURN();
-    case PickerSectionType::kExpressions:
-      return PickerCategory::kExpressions;
+    case PickerSectionType::kClipboard:
+      return PickerCategory::kClipboard;
     case PickerSectionType::kLinks:
       return PickerCategory::kLinks;
-    case PickerSectionType::kFiles:
+    case PickerSectionType::kLocalFiles:
       return PickerCategory::kLocalFiles;
     case PickerSectionType::kDriveFiles:
       return PickerCategory::kDriveFiles;
-    case PickerSectionType::kGifs:
-      return PickerCategory::kExpressions;
   }
 }
 
-std::vector<PickerSearchResult> GetMostRecentResult(
-    std::vector<PickerSearchResultsSection> results) {
-  if (results.empty() || results[0].type() != PickerSectionType::kNone) {
-    return {};
+std::u16string GetSearchFieldPlaceholderText(PickerModeType mode,
+                                             bool is_editor_available) {
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  switch (mode) {
+    case PickerModeType::kUnfocused:
+      return l10n_util::GetStringUTF16(
+          IDS_PICKER_SEARCH_FIELD_NO_FOCUS_PLACEHOLDER_TEXT);
+    case PickerModeType::kNoSelection:
+      return l10n_util::GetStringUTF16(
+          is_editor_available
+              ? IDS_PICKER_SEARCH_FIELD_NO_SELECTION_WITH_EDITOR_PLACEHOLDER_TEXT
+              : IDS_PICKER_SEARCH_FIELD_NO_SELECTION_PLACEHOLDER_TEXT);
+    case PickerModeType::kHasSelection:
+      return l10n_util::GetStringUTF16(
+          is_editor_available
+              ? IDS_PICKER_SEARCH_FIELD_HAS_SELECTION_WITH_EDITOR_PLACEHOLDER_TEXT
+              : IDS_PICKER_SEARCH_FIELD_HAS_SELECTION_PLACEHOLDER_TEXT);
+    default:
+      NOTREACHED_NORETURN();
   }
-  base::span<const PickerSearchResult> search_results = results[0].results();
-  if (search_results.empty()) {
-    return {};
+#else
+  return u"Placeholder";
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+}
+
+std::u16string GetNoResultsFoundDescription(PickerCategory category) {
+  switch (category) {
+    case PickerCategory::kLinks:
+      return l10n_util::GetStringUTF16(
+          IDS_PICKER_NO_RESULTS_FOR_BROWSING_HISTORY_LABEL_TEXT);
+    case PickerCategory::kClipboard:
+      return l10n_util::GetStringUTF16(
+          IDS_PICKER_NO_RESULTS_FOR_CLIPBOARD_LABEL_TEXT);
+    case PickerCategory::kDriveFiles:
+      return l10n_util::GetStringUTF16(
+          IDS_PICKER_NO_RESULTS_FOR_DRIVE_FILES_LABEL_TEXT);
+    case PickerCategory::kLocalFiles:
+      return l10n_util::GetStringUTF16(
+          IDS_PICKER_NO_RESULTS_FOR_LOCAL_FILES_LABEL_TEXT);
+    case PickerCategory::kDatesTimes:
+    case PickerCategory::kUnitsMaths:
+      // TODO: b/345303965 - Add finalized strings for dates and maths.
+      return l10n_util::GetStringUTF16(IDS_PICKER_NO_RESULTS_TEXT);
+    case PickerCategory::kEditorWrite:
+    case PickerCategory::kEditorRewrite:
+    case PickerCategory::kEmojisGifs:
+      NOTREACHED_NORETURN();
   }
-  return {search_results[0]};
+}
+
+ui::ImageModel GetNoResultsFoundIllustration() {
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  return ui::ResourceBundle::GetSharedInstance().GetThemedLottieImageNamed(
+      IDR_PICKER_NO_RESULTS_ILLUSTRATION);
+#else
+  return {};
+#endif
+}
+
+bool IsEditorAvailable(base::span<PickerCategory> available_categories) {
+  return base::Contains(available_categories, PickerCategory::kEditorWrite) ||
+         base::Contains(available_categories, PickerCategory::kEditorRewrite);
 }
 
 }  // namespace
 
 PickerView::PickerView(PickerViewDelegate* delegate,
+                       const gfx::Rect& anchor_bounds,
                        PickerLayoutType layout_type,
+                       PickerPositionType position_type,
                        const base::TimeTicks trigger_event_timestamp)
     : performance_metrics_(trigger_event_timestamp), delegate_(delegate) {
   SetShowCloseButton(false);
-  SetPreferredSize(kPickerViewMaxSize);
   SetProperty(views::kElementIdentifierKey, kPickerElementId);
+  // TODO: b/357991165 - The desired bounds delegate here is *not* used directly
+  // by the widget, because PickerWidget does not use `autosize`. Rather,
+  // PickerView manually calls GetDesiredWidgetBounds to adjust the Widget
+  // bounds to realign the search field with the caret position. Move this logic
+  // to a standalone class.
+  if (position_type == PickerPositionType::kNearAnchor) {
+    set_desired_bounds_delegate(base::BindRepeating(
+        &PickerView::GetTargetBounds, base::Unretained(this), anchor_bounds,
+        layout_type));
+  }
 
   SetLayoutManager(std::make_unique<views::FlexLayout>())
-      ->SetOrientation(views::LayoutOrientation::kVertical);
+      ->SetOrientation(views::LayoutOrientation::kVertical)
+      .SetCollapseMargins(true)
+      .SetIgnoreDefaultMainAxisMargins(true)
+      .SetDefault(views::kMarginsKey,
+                  gfx::Insets::VH(kVerticalPaddingBetweenPickerContainers, 0));
 
   AddMainContainerView(layout_type);
+  if (base::Contains(delegate_->GetAvailableCategories(),
+                     PickerCategory::kEmojisGifs)) {
+    AddEmojiBarView();
+  }
 
   // Automatically focus on the search field.
   SetInitiallyFocusedView(search_field_view_);
 
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
+  AddAccelerator(ui::Accelerator(ui::VKEY_BROWSER_BACK, ui::EF_NONE));
   key_event_handler_.SetActivePseudoFocusHandler(this);
+
+  pseudo_focused_view_tracker_.SetTrackEntireViewHierarchy(true);
+  preview_bubble_observation_.Observe(&preview_controller_);
 }
 
 PickerView::~PickerView() = default;
 
 bool PickerView::AcceleratorPressed(const ui::Accelerator& accelerator) {
-  CHECK_EQ(accelerator.key_code(), ui::VKEY_ESCAPE);
-  if (auto* widget = GetWidget()) {
-    widget->CloseWithReason(views::Widget::ClosedReason::kEscKeyPressed);
+  switch (accelerator.key_code()) {
+    case ui::VKEY_ESCAPE:
+      if (preview_controller_.IsBubbleVisible()) {
+        preview_controller_.CloseBubble();
+      } else if (submenu_controller_.GetSubmenuView() != nullptr) {
+        submenu_controller_.Close();
+      } else if (auto* widget = GetWidget()) {
+        // Otherwise, close the Picker widget.
+        widget->CloseWithReason(views::Widget::ClosedReason::kEscKeyPressed);
+      }
+      return true;
+    case ui::VKEY_BROWSER_BACK:
+      OnSearchBackButtonPressed();
+      return true;
+    default:
+      NOTREACHED_NORETURN();
   }
-  return true;
 }
 
 std::unique_ptr<views::NonClientFrameView> PickerView::CreateNonClientFrameView(
@@ -185,10 +339,22 @@ std::unique_ptr<views::NonClientFrameView> PickerView::CreateNonClientFrameView(
 
 void PickerView::AddedToWidget() {
   performance_metrics_.StartRecording(*GetWidget());
+  // Due to layout considerations, only populate the emoji bar after the
+  // PickerView has been added to a widget.
+  ResetEmojiBarToZeroState();
 }
 
 void PickerView::RemovedFromWidget() {
   performance_metrics_.StopRecording();
+}
+
+void PickerView::Layout(PassKey) {
+  LayoutSuperclass<views::View>(this);
+
+  if (widget_bounds_needs_update_ && GetWidget() != nullptr) {
+    GetWidget()->SetBounds(GetDesiredWidgetBounds());
+    widget_bounds_needs_update_ = false;
+  }
 }
 
 void PickerView::SelectZeroStateCategory(PickerCategory category) {
@@ -204,20 +370,36 @@ PickerActionType PickerView::GetActionForResult(
   return delegate_->GetActionForResult(result);
 }
 
-void PickerView::GetZeroStateRecentResults(PickerCategory category,
-                                           SearchResultsCallback callback) {
-  delegate_->GetResultsForCategory(
-      category,
-      base::BindRepeating(&GetMostRecentResult).Then(std::move(callback)));
+void PickerView::OnSearchResultsViewHeightChanged() {
+  SetWidgetBoundsNeedsUpdate();
 }
 
-void PickerView::GetSuggestedZeroStateEditorResults(
-    SuggestedEditorResultsCallback callback) {
-  delegate_->GetSuggestedEditorResults(std::move(callback));
+void PickerView::GetZeroStateSuggestedResults(
+    SuggestedResultsCallback callback) {
+  delegate_->GetZeroStateSuggestedResults(std::move(callback));
 }
 
-void PickerView::NotifyPseudoFocusChanged(views::View* view) {
-  search_field_view_->SetTextfieldActiveDescendant(view);
+void PickerView::RequestPseudoFocus(views::View* view) {
+  // Only allow `view` to become pseudo focused if it is visible and part of the
+  // active item container.
+  if (view == nullptr || !view->IsDrawn() ||
+      active_item_container_ == nullptr ||
+      !active_item_container_->ContainsItem(view)) {
+    return;
+  }
+  SetPseudoFocusedView(view);
+}
+
+void PickerView::OnZeroStateViewHeightChanged() {
+  SetWidgetBoundsNeedsUpdate();
+}
+
+PickerCapsLockPosition PickerView::GetCapsLockPosition() {
+  return delegate_->GetCapsLockPosition();
+}
+
+void PickerView::SetCapsLockDisplayed(bool displayed) {
+  delegate_->GetSessionMetrics().SetCapsLockDisplayed(displayed);
 }
 
 void PickerView::SelectSearchResult(const PickerSearchResult& result) {
@@ -227,25 +409,24 @@ void PickerView::SelectSearchResult(const PickerSearchResult& result) {
   } else if (const PickerSearchResult::SearchRequestData* search_request_data =
                  std::get_if<PickerSearchResult::SearchRequestData>(
                      &result.data())) {
-    search_field_view_->SetQueryText(search_request_data->text);
-    StartSearch(search_request_data->text);
+    UpdateSearchQueryAndActivePage(search_request_data->primary_text);
   } else if (const PickerSearchResult::EditorData* editor_data =
                  std::get_if<PickerSearchResult::EditorData>(&result.data())) {
-    delegate_->ShowEditor(editor_data->preset_query_id,
-                          editor_data->freeform_text);
+    delegate_->ShowEditor(
+        editor_data->preset_query_id,
+        base::UTF16ToUTF8(search_field_view_->GetQueryText()));
   } else {
+    delegate_->GetSessionMetrics().SetSelectedResult(
+        result, search_results_view_->GetIndex(result));
     switch (delegate_->GetActionForResult(result)) {
       case PickerActionType::kInsert:
-        delegate_->GetSessionMetrics().SetInsertedResult(
-            result, search_results_view_->GetIndex(result));
-        delegate_->InsertResultOnNextFocus(result);
-        GetWidget()->Close();
+        delegate_->CloseWidgetThenInsertResultOnNextFocus(result);
         break;
       case PickerActionType::kOpen:
+      case PickerActionType::kDo:
         delegate_->OpenResult(result);
         GetWidget()->Close();
         break;
-      case PickerActionType::kDo:
       case PickerActionType::kCreate:
         NOTREACHED_NORETURN();
     }
@@ -257,91 +438,240 @@ void PickerView::SelectMoreResults(PickerSectionType type) {
                           search_field_view_->GetQueryText());
 }
 
+void PickerView::ShowEmojiPicker(ui::EmojiPickerCategory category) {
+  PickerSessionMetrics& session_metrics = delegate_->GetSessionMetrics();
+  session_metrics.SetSelectedCategory(PickerCategory::kEmojisGifs);
+
+  if (auto* widget = GetWidget()) {
+    widget->CloseWithReason(views::Widget::ClosedReason::kLostFocus);
+  }
+
+  session_metrics.SetOutcome(PickerSessionMetrics::SessionOutcome::kRedirected);
+  delegate_->ShowEmojiPicker(category, search_field_view_->GetQueryText());
+}
+
 bool PickerView::DoPseudoFocusedAction() {
-  if (main_container_view_->active_page() == nullptr) {
+  if (clear_results_timer_.IsRunning()) {
+    // New results are still pending.
+    // TODO: b/351920494 - Insert the first new result instead of doing nothing.
     return false;
   }
-  return main_container_view_->active_page()->DoPseudoFocusedAction();
+
+  if (auto* submenu_view = views::AsViewClass<PickerItemWithSubmenuView>(
+          GetPseudoFocusedView())) {
+    submenu_view->ShowSubmenu();
+    SetPseudoFocusedView(submenu_controller_.GetSubmenuView()->GetTopItem());
+    return true;
+  }
+
+  return GetPseudoFocusedView() == nullptr
+             ? false
+             : DoPickerPseudoFocusedActionOnView(GetPseudoFocusedView());
 }
 
 bool PickerView::MovePseudoFocusUp() {
-  if (main_container_view_->active_page() == nullptr) {
-    return false;
+  if (views::View* item_above =
+          active_item_container_->GetItemAbove(GetPseudoFocusedView())) {
+    SetPseudoFocusedView(item_above);
+  } else {
+    AdvanceActiveItemContainer(PickerPseudoFocusDirection::kBackward);
   }
-  return main_container_view_->active_page()->MovePseudoFocusUp();
+  return true;
 }
 
 bool PickerView::MovePseudoFocusDown() {
-  if (main_container_view_->active_page() == nullptr) {
-    return false;
+  if (views::View* item_below =
+          active_item_container_->GetItemBelow(GetPseudoFocusedView())) {
+    SetPseudoFocusedView(item_below);
+  } else {
+    AdvanceActiveItemContainer(PickerPseudoFocusDirection::kForward);
   }
-  return main_container_view_->active_page()->MovePseudoFocusDown();
+  return true;
 }
 
 bool PickerView::MovePseudoFocusLeft() {
-  if (main_container_view_->active_page() == nullptr) {
-    return false;
+  if (IsContainedInSubmenu(GetPseudoFocusedView())) {
+    SetPseudoFocusedView(submenu_controller_.GetAnchorView());
+    submenu_controller_.Close();
+    return true;
   }
-  return main_container_view_->active_page()->MovePseudoFocusLeft();
+
+  if (views::View* left_item =
+          active_item_container_->GetItemLeftOf(GetPseudoFocusedView())) {
+    SetPseudoFocusedView(left_item);
+    return true;
+  }
+  return false;
 }
 
 bool PickerView::MovePseudoFocusRight() {
-  if (main_container_view_->active_page() == nullptr) {
-    return false;
+  if (views::IsViewClass<PickerItemWithSubmenuView>(GetPseudoFocusedView())) {
+    views::AsViewClass<PickerItemWithSubmenuView>(GetPseudoFocusedView())
+        ->ShowSubmenu();
+    SetPseudoFocusedView(submenu_controller_.GetSubmenuView()->GetTopItem());
+    return true;
   }
-  return main_container_view_->active_page()->MovePseudoFocusRight();
+
+  if (views::View* right_item =
+          active_item_container_->GetItemRightOf(GetPseudoFocusedView())) {
+    SetPseudoFocusedView(right_item);
+    return true;
+  }
+  return false;
 }
 
-void PickerView::AdvancePseudoFocus(PseudoFocusDirection direction) {
-  if (main_container_view_->active_page() == nullptr) {
-    return;
+bool PickerView::AdvancePseudoFocus(PickerPseudoFocusDirection direction) {
+  if (preview_controller_.IsBubbleVisible()) {
+    preview_controller_.CloseBubble();
   }
-  main_container_view_->active_page()->AdvancePseudoFocus(direction);
+  if (GetPseudoFocusedView() == nullptr) {
+    return false;
+  }
+  SetPseudoFocusedView(GetNextPickerPseudoFocusableView(
+      GetPseudoFocusedView(), direction, /*should_loop=*/true));
+  return true;
+}
+
+void PickerView::OnPreviewBubbleVisibilityChanged(bool visible) {
+  if (views::Widget* widget = GetWidget()) {
+    // When the bubble is visible, turn off hiding the cursor on Esc key.
+    // If the cursor hides on Esc, the preview bubble is closed due to its
+    // OnMouseExit event handler, before PickerView has a chance to handle the
+    // Esc key.
+    widget->GetNativeWindow()->SetProperty(ash::kShowCursorOnKeypress, visible);
+  }
 }
 
 gfx::Rect PickerView::GetTargetBounds(const gfx::Rect& anchor_bounds,
                                       PickerLayoutType layout_type) {
-  return GetPickerViewBounds(anchor_bounds, layout_type, size(),
-                             search_field_view_->bounds().CenterPoint().y());
+  return delegate_->GetMode() == PickerModeType::kHasSelection
+             ? GetPickerViewBoundsWithSelectedText(anchor_bounds, layout_type,
+                                                   size())
+             : GetPickerViewBoundsWithoutSelectedText(
+                   anchor_bounds, layout_type, size(),
+                   search_field_view_->bounds().CenterPoint().y() +
+                       main_container_view_->bounds().y());
 }
 
-void PickerView::StartSearch(const std::u16string& query) {
+void PickerView::UpdateSearchQueryAndActivePage(std::u16string query) {
+  search_field_view_->SetQueryText(std::move(query));
+  search_field_view_->RequestFocus();
+  UpdateActivePage();
+}
+
+void PickerView::UpdateActivePage() {
+  std::u16string_view query =
+      base::TrimWhitespace(search_field_view_->GetQueryText(), base::TRIM_ALL);
+
+  if (query == last_query_ && selected_category_ == last_selected_category_) {
+    return;
+  }
+  last_query_ = std::u16string(query);
+  last_selected_category_ = selected_category_;
+
   delegate_->GetSessionMetrics().UpdateSearchQuery(query);
+
   if (!query.empty()) {
-    SetActivePage(search_results_view_);
-    published_first_results_ = false;
+    // Don't switch the active page immediately to the search view - this will
+    // be done when the clear results timer fires, or when
+    // `PublishSearchResults` is called.
+    clear_results_timer_.Start(
+        FROM_HERE, kClearResultsTimeout,
+        base::BindOnce(&PickerView::OnClearResultsTimerFired,
+                       weak_ptr_factory_.GetWeakPtr()));
+    delegate_->StartEmojiSearch(query,
+                                base::BindOnce(&PickerView::PublishEmojiResults,
+                                               weak_ptr_factory_.GetWeakPtr()));
     delegate_->StartSearch(
         query, selected_category_,
-        base::BindRepeating(
-            &PickerView::PublishSearchResults, weak_ptr_factory_.GetWeakPtr(),
-            /*show_no_results_found=*/selected_category_.has_value()));
-  } else if (selected_category_.has_value()) {
-    SetActivePage(category_view_);
-  } else {
-    search_results_view_->ClearSearchResults();
-    SetActivePage(zero_state_view_);
-  }
-}
-
-void PickerView::PublishSearchResults(
-    bool show_no_results_found,
-    std::vector<PickerSearchResultsSection> results) {
-  // TODO: b/333826943: This is a hacky way to detect if there are no results.
-  // Design a better API for notifying when the search has completed without any
-  // results.
-  if (show_no_results_found && results.empty()) {
-    search_results_view_->ShowNoResultsFound();
+        base::BindRepeating(&PickerView::PublishSearchResults,
+                            weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
-  if (!published_first_results_) {
-    search_results_view_->ClearSearchResults();
-    published_first_results_ = true;
+  if (selected_category_.has_value()) {
+    SetActivePage(category_results_view_);
+    if (last_suggested_results_category_ != selected_category_) {
+      // Getting suggested results for a category can be slow, so show a
+      // loading animation.
+      category_results_view_->ShowLoadingAnimation();
+      delegate_->GetResultsForCategory(
+          *selected_category_,
+          base::BindRepeating(&PickerView::PublishCategoryResults,
+                              weak_ptr_factory_.GetWeakPtr(),
+                              *selected_category_));
+      last_suggested_results_category_ = selected_category_;
+    }
+  } else {
+    SetActivePage(zero_state_view_);
   }
+  delegate_->StopSearch();
+  clear_results_timer_.Stop();
+  search_results_view_->ClearSearchResults();
+  ResetEmojiBarToZeroState();
+}
+
+void PickerView::PublishEmojiResults(std::vector<PickerSearchResult> results) {
+  if (emoji_bar_view_ == nullptr) {
+    return;
+  }
+
+  emoji_bar_view_->SetSearchResults(std::move(results));
+  search_results_view_->SetNumEmojiResultsForA11y(
+      emoji_bar_view_->GetNumItems());
+}
+
+void PickerView::OnClearResultsTimerFired() {
+  // `PickerView::UpdateActivePage` ensures that if the active page was set to
+  // the zero state or category view, the timer that this is called from is
+  // cancelled - which guarantees that this can't be called.
+  SetActivePage(search_results_view_);
+
+  search_results_view_->ClearSearchResults();
+  performance_metrics_.MarkSearchResultsUpdated(
+      PickerPerformanceMetrics::SearchResultsUpdate::kClear);
+}
+
+void PickerView::PublishSearchResults(
+    std::vector<PickerSearchResultsSection> results) {
+  // `PickerView::UpdateActivePage` ensures that if the active page was set to
+  // the zero state or category view, the delegate's search is stopped - which
+  // guarantees that this can't be called.
+  SetActivePage(search_results_view_);
+
+  bool clear_stale_results = clear_results_timer_.IsRunning();
+  if (clear_stale_results) {
+    clear_results_timer_.Stop();
+    search_results_view_->ClearSearchResults();
+  }
+
+  if (results.empty()) {
+    bool no_results_found_shown = search_results_view_->SearchStopped(
+        /*illustration=*/{},
+        l10n_util::GetStringUTF16(IDS_PICKER_NO_RESULTS_TEXT));
+    if (no_results_found_shown) {
+      performance_metrics_.MarkSearchResultsUpdated(
+          PickerPerformanceMetrics::SearchResultsUpdate::kNoResultsFound);
+    } else {
+      CHECK(!clear_stale_results)
+          << "Stale results were cleared when no results were found, but the "
+             "\"no results found\" screen was not shown";
+      // `clear_stale_results` must be false here, so nothing happened.
+    }
+    return;
+  }
+
   for (PickerSearchResultsSection& result : results) {
     search_results_view_->AppendSearchResults(std::move(result));
   }
-  performance_metrics_.MarkSearchResultsUpdated();
+
+  PickerPerformanceMetrics::SearchResultsUpdate update;
+  if (clear_stale_results) {
+    update = PickerPerformanceMetrics::SearchResultsUpdate::kReplace;
+  } else {
+    update = PickerPerformanceMetrics::SearchResultsUpdate::kAppend;
+  }
+  performance_metrics_.MarkSearchResultsUpdated(update);
 }
 
 void PickerView::SelectCategory(PickerCategory category) {
@@ -351,10 +681,10 @@ void PickerView::SelectCategory(PickerCategory category) {
 void PickerView::SelectCategoryWithQuery(PickerCategory category,
                                          std::u16string_view query) {
   PickerSessionMetrics& session_metrics = delegate_->GetSessionMetrics();
-  session_metrics.SetAction(category);
+  session_metrics.SetSelectedCategory(category);
   selected_category_ = category;
 
-  if (category == PickerCategory::kExpressions) {
+  if (category == PickerCategory::kEmojisGifs) {
     if (auto* widget = GetWidget()) {
       // TODO(b/316936394): Correctly handle opening of emoji picker. Probably
       // best to wait for the IME on focus event, or save some coordinates and
@@ -383,42 +713,26 @@ void PickerView::SelectCategoryWithQuery(PickerCategory category,
     return;
   }
 
-  if (GetPickerCategoryType(category) ==
-      PickerCategoryType::kCaseTransformations) {
-    session_metrics.SetOutcome(PickerSessionMetrics::SessionOutcome::kFormat);
-    delegate_->TransformSelectedText(category);
-    GetWidget()->Close();
-    return;
-  }
-
-  if (category == PickerCategory::kCapsOn ||
-      category == PickerCategory::kCapsOff) {
-    session_metrics.SetOutcome(PickerSessionMetrics::SessionOutcome::kFormat);
-    delegate_->SetCapsLockEnabled(category == PickerCategory::kCapsOn);
-    GetWidget()->Close();
-    return;
-  }
-
   search_field_view_->SetPlaceholderText(
       GetSearchFieldPlaceholderTextForPickerCategory(category));
-  search_field_view_->SetQueryText(std::u16string(query));
-
-  if (query.empty()) {
-    // Getting suggested results for a category can be slow, so show a loading
-    // animation.
-    category_view_->ShowLoadingAnimation();
-    SetActivePage(category_view_);
-    delegate_->GetResultsForCategory(
-        category, base::BindRepeating(&PickerView::PublishCategoryResults,
-                                      weak_ptr_factory_.GetWeakPtr()));
-  } else {
-    StartSearch(std::u16string(query));
-  }
+  search_field_view_->SetBackButtonVisible(true);
+  SetEmojiBarVisibleIfEnabled(false);
+  UpdateSearchQueryAndActivePage(std::u16string(query));
 }
 
 void PickerView::PublishCategoryResults(
+    PickerCategory category,
     std::vector<PickerSearchResultsSection> results) {
-  category_view_->SetResults(std::move(results));
+  category_results_view_->ClearSearchResults();
+
+  for (PickerSearchResultsSection& section : results) {
+    if (!section.results().empty()) {
+      category_results_view_->AppendSearchResults(std::move(section));
+    }
+  }
+
+  category_results_view_->SearchStopped(GetNoResultsFoundIllustration(),
+                                        GetNoResultsFoundDescription(category));
 }
 
 void PickerView::AddMainContainerView(PickerLayoutType layout_type) {
@@ -428,28 +742,140 @@ void PickerView::AddMainContainerView(PickerLayoutType layout_type) {
   // `base::Unretained` is safe here because this class owns
   // `main_container_view_`, which owns `search_field_view_`.
   search_field_view_ = main_container_view_->AddSearchFieldView(
-      std::make_unique<PickerSearchFieldView>(
-          base::BindRepeating(&PickerView::StartSearch, base::Unretained(this)),
-          &key_event_handler_, &performance_metrics_));
+      views::Builder<PickerSearchFieldView>(
+          std::make_unique<PickerSearchFieldView>(
+              base::IgnoreArgs<const std::u16string&>(base::BindRepeating(
+                  &PickerView::UpdateActivePage, base::Unretained(this))),
+              base::BindRepeating(&PickerView::OnSearchBackButtonPressed,
+                                  base::Unretained(this)),
+              &key_event_handler_, &performance_metrics_))
+          .SetPlaceholderText(GetSearchFieldPlaceholderText(
+              delegate_->GetMode(),
+              IsEditorAvailable(delegate_->GetAvailableCategories())))
+          .Build());
   main_container_view_->AddContentsView(layout_type);
 
   zero_state_view_ =
       main_container_view_->AddPage(std::make_unique<PickerZeroStateView>(
-          this, delegate_->GetAvailableCategories(),
-          delegate_->GetRecentResultsCategories(), kPickerViewMaxSize.width(),
-          delegate_->GetAssetFetcher()));
-  category_view_ =
-      main_container_view_->AddPage(std::make_unique<PickerCategoryView>(
-          this, kPickerViewMaxSize.width(), delegate_->GetAssetFetcher()));
+          this, delegate_->GetAvailableCategories(), kPickerViewWidth,
+          delegate_->GetAssetFetcher(), &submenu_controller_,
+          &preview_controller_));
+  category_results_view_ =
+      main_container_view_->AddPage(std::make_unique<PickerSearchResultsView>(
+          this, kPickerViewWidth, delegate_->GetAssetFetcher(),
+          &submenu_controller_, &preview_controller_));
   search_results_view_ =
       main_container_view_->AddPage(std::make_unique<PickerSearchResultsView>(
-          this, kPickerViewMaxSize.width(), delegate_->GetAssetFetcher()));
+          this, kPickerViewWidth, delegate_->GetAssetFetcher(),
+          &submenu_controller_, &preview_controller_));
 
   SetActivePage(zero_state_view_);
 }
 
+void PickerView::AddEmojiBarView() {
+  emoji_bar_view_ =
+      AddChildViewAt(std::make_unique<PickerEmojiBarView>(
+                         this, kPickerViewWidth,
+                         /*is_gifs_enabled*/ delegate_->IsGifsEnabled()),
+                     0);
+}
+
 void PickerView::SetActivePage(PickerPageView* page_view) {
   main_container_view_->SetActivePage(page_view);
+  SetPseudoFocusedView(nullptr);
+  active_item_container_ = page_view;
+  SetPseudoFocusedView(active_item_container_->GetTopItem());
+  SetWidgetBoundsNeedsUpdate();
+}
+
+void PickerView::SetEmojiBarVisibleIfEnabled(bool visible) {
+  if (emoji_bar_view_ == nullptr) {
+    return;
+  }
+  emoji_bar_view_->SetVisible(visible);
+  SetWidgetBoundsNeedsUpdate();
+}
+
+void PickerView::AdvanceActiveItemContainer(
+    PickerPseudoFocusDirection direction) {
+  if (active_item_container_ == submenu_controller_.GetSubmenuView()) {
+    // Just keep the submenu as the active item container.
+  } else if (emoji_bar_view_ == nullptr ||
+             active_item_container_ == emoji_bar_view_) {
+    active_item_container_ = main_container_view_;
+  } else {
+    active_item_container_ = emoji_bar_view_;
+  }
+  SetPseudoFocusedView(direction == PickerPseudoFocusDirection::kForward
+                           ? active_item_container_->GetTopItem()
+                           : active_item_container_->GetBottomItem());
+}
+
+void PickerView::SetPseudoFocusedView(views::View* view) {
+  if (view == nullptr) {
+    SetPseudoFocusedView(search_field_view_->textfield());
+    return;
+  }
+
+  if (pseudo_focused_view_tracker_.view() == view) {
+    return;
+  }
+
+  if (IsContainedInSubmenu(view)) {
+    active_item_container_ = submenu_controller_.GetSubmenuView();
+  } else {
+    submenu_controller_.Close();
+    if (emoji_bar_view_ != nullptr && emoji_bar_view_->Contains(view)) {
+      active_item_container_ = emoji_bar_view_;
+    } else {
+      active_item_container_ = main_container_view_;
+    }
+  }
+
+  RemovePickerPseudoFocusFromView(pseudo_focused_view_tracker_.view());
+
+  pseudo_focused_view_tracker_.SetView(view);
+  // base::Unretained() is safe here because this class owns
+  // `pseudo_focused_view_tracker_`.
+  pseudo_focused_view_tracker_.SetIsDeletingCallback(base::BindOnce(
+      &PickerView::SetPseudoFocusedView, base::Unretained(this), nullptr));
+
+  search_field_view_->SetTextfieldActiveDescendant(view);
+  view->ScrollViewToVisible();
+  ApplyPickerPseudoFocusToView(view);
+}
+
+views::View* PickerView::GetPseudoFocusedView() {
+  return pseudo_focused_view_tracker_.view();
+}
+
+void PickerView::OnSearchBackButtonPressed() {
+  search_field_view_->SetPlaceholderText(GetSearchFieldPlaceholderText(
+      delegate_->GetMode(),
+      IsEditorAvailable(delegate_->GetAvailableCategories())));
+  search_field_view_->SetBackButtonVisible(false);
+  SetEmojiBarVisibleIfEnabled(true);
+  selected_category_ = std::nullopt;
+  UpdateSearchQueryAndActivePage(u"");
+  CHECK_EQ(main_container_view_->active_page(), zero_state_view_)
+      << "UpdateSearchQueryAndActivePage did not set active page to zero state "
+         "view";
+}
+
+void PickerView::ResetEmojiBarToZeroState() {
+  if (emoji_bar_view_ == nullptr) {
+    return;
+  }
+  emoji_bar_view_->SetSearchResults(delegate_->GetSuggestedEmoji());
+}
+
+bool PickerView::IsContainedInSubmenu(views::View* view) {
+  return submenu_controller_.GetSubmenuView() != nullptr &&
+         submenu_controller_.GetSubmenuView()->Contains(view);
+}
+
+void PickerView::SetWidgetBoundsNeedsUpdate() {
+  widget_bounds_needs_update_ = true;
 }
 
 BEGIN_METADATA(PickerView)

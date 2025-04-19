@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/342213636): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include <memory>
 
 #include "base/test/scoped_feature_list.h"
@@ -24,41 +29,11 @@ namespace content {
 namespace {
 
 #if BUILDFLAG(IS_ANDROID)
-const char* const kExpectedFontFamilyNames[] = {"AndroidClock",
-                                                "Roboto",
-                                                "Droid Sans Mono",
-                                                "Roboto",
-                                                "Noto Color Emoji",
-                                                "Noto Sans Bengali",
-                                                "Noto Sans Bengali UI",
-                                                "Noto Sans Devanagari",
-                                                "Noto Sans Devanagari UI",
-                                                "Noto Sans Kannada",
-                                                "Noto Sans Kannada",
-                                                "Noto Sans Kannada UI",
-                                                "Noto Sans Kannada UI",
-                                                "Noto Sans Lao",
-                                                "Noto Sans Lao",
-                                                "Noto Sans Lao UI",
-                                                "Noto Sans Lao UI",
-                                                "Noto Sans Malayalam",
-                                                "Noto Sans Malayalam UI",
-                                                "Noto Sans Tamil",
-                                                "Noto Sans Tamil UI",
-                                                "Noto Sans Telugu",
-                                                "Noto Sans Telugu",
-                                                "Noto Sans Telugu UI",
-                                                "Noto Sans Telugu UI",
-                                                "Noto Sans Thai",
-                                                "Noto Sans Thai",
-                                                "Noto Sans Thai UI",
-                                                "Noto Sans Thai UI",
-                                                "Roboto",
-                                                "Roboto Condensed",
-                                                "Roboto Condensed",
-                                                "Roboto Condensed",
-                                                "Roboto Condensed",
-                                                "Roboto"};
+const char* const kExpectedFontFamilyNames[] = {
+    "AndroidClock",     "Droid Sans Mono",  "Roboto",
+    "Noto Color Emoji", "Noto Sans Lao UI", "Noto Sans Lao UI",
+    "Noto Sans Thai",   "Noto Sans Thai",   "Noto Sans Thai UI",
+    "Noto Sans Thai UI"};
 #elif BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 const char* const kExpectedFontFamilyNames[] = {"Ahem",
                                                 "Arimo",

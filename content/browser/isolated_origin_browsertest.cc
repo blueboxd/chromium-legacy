@@ -149,7 +149,7 @@ class IsolatedOriginTestBase : public ContentBrowserTest {
         WebExposedIsolationLevel::kNotIsolated, /*is_guest=*/false,
         /*does_site_request_dedicated_process_for_coop=*/false,
         /*is_jit_disabled=*/false, /*is_pdf=*/false,
-        /*is_fenced=*/false));
+        /*is_fenced=*/false, /*cross_origin_isolation_key=*/std::nullopt));
   }
 
   WebContentsImpl* web_contents() const {
@@ -177,7 +177,7 @@ class IsolatedOriginTestBase : public ContentBrowserTest {
         WebExposedIsolationLevel::kNotIsolated, /*is_guest=*/false,
         /*does_site_request_dedicated_process_for_coop=*/false,
         /*is_jit_disabled=*/false, /*is_pdf=*/false,
-        /*is_fenced=*/false));
+        /*is_fenced=*/false, /*cross_origin_isolation_key=*/std::nullopt));
   }
 
  protected:
@@ -187,7 +187,6 @@ class IsolatedOriginTestBase : public ContentBrowserTest {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ContentBrowserTest::SetUpCommandLine(command_line);
     mock_cert_verifier_.SetUpCommandLine(command_line);
   }
 
@@ -246,8 +245,15 @@ class OriginIsolationOptInHeaderTest : public IsolatedOriginTestBase {
   OriginIsolationOptInHeaderTest()
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
     feature_list_.InitWithFeatures(
-        {features::kOriginIsolationHeader},
-        {blink::features::kOriginAgentClusterDefaultEnabled});
+        /*enabled_features=*/{features::kOriginIsolationHeader},
+        /*disabled_features=*/{
+            // TODO(https://crbug.com/40259221): update this test to be
+            // parameterized on kOriginKeyedProcessesByDefault, and then
+            // make sure all the tests have correct expectations both with and
+            // without. This will assist in removing the
+            // kOriginAgentClusterDefaultEnabled flag.
+            blink::features::kOriginAgentClusterDefaultEnabled,
+            features::kOriginKeyedProcessesByDefault});
   }
   ~OriginIsolationOptInHeaderTest() override = default;
 
@@ -880,6 +886,90 @@ IN_PROC_BROWSER_TEST_F(OriginKeyedProcessByDefaultTest,
       site_instance->GetSiteInfo().requires_origin_keyed_process_by_default());
 }
 
+// A test to make sure that a renderer-initiated navigation from a default-
+// isolated frame to about:blank doesn't crash on a ProcessLock mismatch.
+IN_PROC_BROWSER_TEST_F(OriginKeyedProcessByDefaultTest,
+                       RendererInitiatedNavigationToAboutBlankSucceeds) {
+  GURL test_url(https_server()->GetURL("foo.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), test_url));
+
+  // Verify the main frame got an origin-keyed process by default.
+  FrameTreeNode* root = web_contents()->GetPrimaryFrameTree().root();
+  scoped_refptr<SiteInstanceImpl> site_instance =
+      root->current_frame_host()->GetSiteInstance();
+  EXPECT_TRUE(site_instance->GetSiteInfo().requires_origin_keyed_process());
+  EXPECT_TRUE(
+      site_instance->GetSiteInfo().requires_origin_keyed_process_by_default());
+
+  // Record the origin of the isolated frame.
+  std::string initial_origin = EvalJs(shell(), "origin").ExtractString();
+  EXPECT_EQ(url::Origin::Create(test_url).GetURL(), GURL(initial_origin));
+
+  // Renderer-initiated navigation to about:blank.
+  TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
+  EXPECT_TRUE(ExecJs(shell(), "location.href = 'about:blank';"));
+  navigation_observer.Wait();
+
+  // Expect that the about:blank frame inherits the origin of the initiator.
+  // Also, this gives us additional verification that the navigation succeeded
+  // without hitting the ProcessLock check.
+  EXPECT_EQ(initial_origin, EvalJs(shell(), "origin").ExtractString());
+  scoped_refptr<SiteInstanceImpl> new_site_instance =
+      root->current_frame_host()->GetSiteInstance();
+  // Note: the site_instance has changed, due to the proactive BrowsingInstance
+  // swap done to make the previous page eligible for back-forward cache.
+  // Note: some bots may run this test with BFCache disabled, so we need to
+  // handle both cases here.
+  if (base::FeatureList::IsEnabled(features::kBackForwardCache)) {
+    EXPECT_NE(site_instance, new_site_instance);
+  } else {
+    EXPECT_EQ(site_instance, new_site_instance);
+  }
+  EXPECT_EQ(site_instance->GetSiteInfo(), site_instance->GetSiteInfo());
+  EXPECT_TRUE(new_site_instance->GetSiteInfo().requires_origin_keyed_process());
+}
+
+// A test to make sure that a renderer-initiated navigation from a default-
+// isolated frame to about:blank doesn't crash on a ProcessLock mismatch.
+// This test is similar to RendererInitiatedNavigationToAboutBlankSucceeds
+// but with BFCache disabled.
+IN_PROC_BROWSER_TEST_F(
+    OriginKeyedProcessByDefaultTest,
+    RendererInitiatedNavigationToAboutBlankSucceeds_BFCacheDisabled) {
+  DisableBackForwardCacheForTesting(
+      web_contents(), BackForwardCacheImpl::TEST_REQUIRES_NO_CACHING);
+  GURL test_url(https_server()->GetURL("foo.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), test_url));
+
+  // Verify the main frame got an origin-keyed process by default.
+  FrameTreeNode* root = web_contents()->GetPrimaryFrameTree().root();
+  scoped_refptr<SiteInstanceImpl> site_instance =
+      root->current_frame_host()->GetSiteInstance();
+  EXPECT_TRUE(site_instance->GetSiteInfo().requires_origin_keyed_process());
+  EXPECT_TRUE(
+      site_instance->GetSiteInfo().requires_origin_keyed_process_by_default());
+
+  // Record the origin of the isolated frame.
+  std::string initial_origin = EvalJs(shell(), "origin").ExtractString();
+  EXPECT_EQ(url::Origin::Create(test_url).GetURL(), GURL(initial_origin));
+
+  // Renderer-initiated navigation to about:blank.
+  TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
+  EXPECT_TRUE(ExecJs(shell(), "location.href = 'about:blank';"));
+  navigation_observer.Wait();
+
+  // Expect that the about:blank frame inherits the origin of the initiator.
+  // Also, this gives us additional verification that the navigation succeeded
+  // without hitting the ProcessLock check.
+  EXPECT_EQ(initial_origin, EvalJs(shell(), "origin").ExtractString());
+  scoped_refptr<SiteInstanceImpl> new_site_instance =
+      root->current_frame_host()->GetSiteInstance();
+  // Note: with BFCache disabled, the site_instance does not change.
+  EXPECT_EQ(site_instance, new_site_instance);
+  EXPECT_EQ(site_instance->GetSiteInfo(), site_instance->GetSiteInfo());
+  EXPECT_TRUE(new_site_instance->GetSiteInfo().requires_origin_keyed_process());
+}
+
 // The same as for DefaultOptInIsIsolated, but testing on a subframe.
 IN_PROC_BROWSER_TEST_F(OriginKeyedProcessByDefaultTest,
                        SubframeDefaultIsOriginKeyedProcess) {
@@ -949,12 +1039,29 @@ IN_PROC_BROWSER_TEST_F(OriginKeyedProcessByDefaultTest,
   EXPECT_TRUE(isolation_state2->requires_origin_keyed_process());
 }
 
+// The test ExplicitOptInRespected tests the speculative RFH created before
+// receiving the OAC headers. The delay must be set to zero so that the
+// speculative RFH is always created before receiving the header.
+class OriginKeyedProcessByDefaultTestWithoutSpeculativeRFHDelay
+    : public OriginKeyedProcessByDefaultTest {
+ public:
+  OriginKeyedProcessByDefaultTestWithoutSpeculativeRFHDelay() {
+    feature_list_for_defer_speculative_rfh_.InitAndEnableFeatureWithParameters(
+        features::kDeferSpeculativeRFHCreation,
+        {{"create_speculative_rfh_delay_ms", "0"}});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_for_defer_speculative_rfh_;
+};
+
 // Using origin-keyed processes by default faces a challenge for speculative
 // RenderFrameHosts, which are created before any OAC headers arrive.
 // Note: the origin is tracked even though the SiteInfo still says it is an
 // origin-keyed process by default.
-IN_PROC_BROWSER_TEST_F(OriginKeyedProcessByDefaultTest,
-                       ExplicitOptInRespected) {
+IN_PROC_BROWSER_TEST_F(
+    OriginKeyedProcessByDefaultTestWithoutSpeculativeRFHDelay,
+    ExplicitOptInRespected) {
   GURL test_url(https_server()->GetURL("foo.com",
                                        "/cross_site_iframe_factory.html?"
                                        "foo.com(foo.com)"));
@@ -1594,7 +1701,7 @@ IN_PROC_BROWSER_TEST_F(OriginIsolationOptInHeaderTest,
       WebExposedIsolationLevel::kNotIsolated, /*is_guest=*/false,
       /*does_site_request_dedicated_process_for_coop=*/false,
       /*is_jit_disabled=*/false, /*is_pdf=*/false,
-      /*is_fenced=*/false));
+      /*is_fenced=*/false, /*cross_origin_isolation_key=*/std::nullopt));
   EXPECT_TRUE(NavigateToURL(shell(), test_url));
   EXPECT_EQ(2u, CollectAllRenderFrameHosts(shell()->web_contents()).size());
 
@@ -4254,7 +4361,7 @@ IN_PROC_BROWSER_TEST_F(
   // Cancel the hung request and commit a real navigation to an isolated
   // origin. This should now end up in the ServiceWorker's process.
   web_contents()->GetPrimaryFrameTree().root()->ResetNavigationRequest(
-      NavigationDiscardReason::kCancelled);
+      NavigationDiscardReason::kExplicitCancellation);
   GURL isolated_url(
       embedded_test_server()->GetURL("isolated.foo.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), isolated_url));
@@ -6464,8 +6571,13 @@ class COOPIsolationTest : public IsolatedOriginTestBase {
  public:
   // Note: the COOP header is only populated for HTTPS.
   COOPIsolationTest() : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kSiteIsolationForCrossOriginOpenerPolicy);
+    // Note: OriginKeyedProcessesByDefault should only apply when strict site
+    // isolation is in effect, and these tests turn that off via
+    // NoSiteIsolationContentBrowserClient.
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{features::
+                                  kSiteIsolationForCrossOriginOpenerPolicy},
+        /*disabled_features=*/{features::kOriginKeyedProcessesByDefault});
   }
 
   ~COOPIsolationTest() override = default;
@@ -6643,6 +6755,73 @@ IN_PROC_BROWSER_TEST_F(COOPIsolationTest, SameOriginAllowPopups) {
       popup->web_contents()->GetPrimaryMainFrame()->GetSiteInstance());
   EXPECT_FALSE(new_instance->RequiresDedicatedProcess());
   EXPECT_NE(new_instance, coop_instance);
+  FrameTreeNode* popup_child =
+      static_cast<WebContentsImpl*>(popup->web_contents())
+          ->GetPrimaryFrameTree()
+          .root()
+          ->child_at(0);
+  EXPECT_EQ(popup_child->current_frame_host()->GetSiteInstance(),
+            coop_instance);
+
+  // Navigate the popup to coop.com again, staying in the same
+  // BrowsingInstance, and verify that it goes back to the opener's
+  // SiteInstance.
+  EXPECT_TRUE(NavigateToURLFromRenderer(popup, popup_url));
+  EXPECT_EQ(popup->web_contents()->GetPrimaryMainFrame()->GetSiteInstance(),
+            coop_instance);
+}
+
+// Verify that the `noopener-allow-popups COOP header value triggers isolation,
+// and that this behaves sanely with window.open().
+IN_PROC_BROWSER_TEST_F(COOPIsolationTest, NoopenerAllowPopups) {
+  if (AreAllSitesIsolatedForTesting()) {
+    return;
+  }
+
+  // Navigate to a coop.com URL with no COOP.
+  GURL coop_url = https_server()->GetURL(
+      "coop.com", "/set-header?Cross-Origin-Opener-Policy: unsafe-none");
+  EXPECT_TRUE(NavigateToURL(shell(), coop_url));
+  EXPECT_EQ(
+      web_contents()->GetPrimaryMainFrame()->cross_origin_opener_policy().value,
+      network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone);
+  SiteInstanceImpl* coop_instance =
+      web_contents()->GetPrimaryMainFrame()->GetSiteInstance();
+  // The coop.com unsafe-none COOP page should not trigger the isolation
+  // heuristic and not require a dedicated process locked to coop.com.
+  EXPECT_FALSE(coop_instance->RequiresDedicatedProcess());
+
+  auto lock = coop_instance->GetProcess()->GetProcessLock();
+  EXPECT_FALSE(lock.is_locked_to_site());
+
+  // Open a noopener-allow-popups COOP same-site URL in a popup, which should
+  // swap a BrowsingInstance because of noopener-allow-popups.  Verify that the
+  // popup ends up in a different SiteInstance from the opener.
+  GURL popup_url(https_server()->GetURL(
+      "coop.com",
+      "/set-header?Cross-Origin-Opener-Policy: noopener-allow-popups"));
+  Shell* popup = OpenPopup(shell(), popup_url, "");
+  RenderFrameHostImpl* popup_rfh = static_cast<RenderFrameHostImpl*>(
+      popup->web_contents()->GetPrimaryMainFrame());
+  EXPECT_EQ(popup_rfh->cross_origin_opener_policy().value,
+            network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone);
+  // TODO(https://crbug.com/344963946): Update the test values.
+  EXPECT_EQ(popup_rfh->GetSiteInstance(), coop_instance);
+  EXPECT_EQ(popup_rfh->GetSiteInstance()->GetProcess(),
+            coop_instance->GetProcess());
+
+  // Navigate the popup to another non-isolated site, staying in the same
+  // BrowsingInstance, and verify that it swaps to a new non-isolated
+  // SiteInstance.  The non-isolated site has a child which is same-origin with
+  // the COOP page; verify that it's placed in the same SiteInstance as the
+  // COOP page, as they are allowed to synchronously script each other.
+  GURL a_url(https_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a.com(coop.com)"));
+  EXPECT_TRUE(NavigateToURLFromRenderer(popup, a_url));
+  SiteInstanceImpl* new_instance = static_cast<SiteInstanceImpl*>(
+      popup->web_contents()->GetPrimaryMainFrame()->GetSiteInstance());
+  EXPECT_FALSE(new_instance->RequiresDedicatedProcess());
+  EXPECT_EQ(new_instance, coop_instance);
   FrameTreeNode* popup_child =
       static_cast<WebContentsImpl*>(popup->web_contents())
           ->GetPrimaryFrameTree()

@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_stream.h"
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/html/html_html_element.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
@@ -223,10 +224,10 @@ TEST(CSSParsingUtilsTest, DashedIdent) {
 
 TEST(CSSParsingUtilsTest, ConsumeAbsoluteColor) {
   auto ConsumeColorForTest = [](String css_text, auto func) {
-    auto tokens = CSSTokenizer(css_text).TokenizeToEOF();
-    CSSParserTokenRange range(tokens);
+    CSSTokenizer tokenizer(css_text);
+    CSSParserTokenStream stream(tokenizer);
     CSSParserContext* context = MakeContext();
-    return func(range, *context);
+    return func(stream, *context);
   };
 
   struct {
@@ -252,9 +253,8 @@ TEST(CSSParsingUtilsTest, ConsumeAbsoluteColor) {
        nullptr},
   };
   for (auto& expectation : expectations) {
-    EXPECT_EQ(ConsumeColorForTest(
-                  expectation.css_text,
-                  css_parsing_utils::ConsumeColor<CSSParserTokenRange>),
+    EXPECT_EQ(ConsumeColorForTest(expectation.css_text,
+                                  css_parsing_utils::ConsumeColor),
               expectation.consume_color_expectation);
     EXPECT_EQ(ConsumeColorForTest(expectation.css_text,
                                   css_parsing_utils::ConsumeAbsoluteColor),
@@ -264,9 +264,9 @@ TEST(CSSParsingUtilsTest, ConsumeAbsoluteColor) {
 
 TEST(CSSParsingUtilsTest, InternalColorsOnlyAllowedInUaMode) {
   auto ConsumeColorForTest = [](String css_text, CSSParserMode mode) {
-    auto tokens = CSSTokenizer(css_text).TokenizeToEOF();
-    CSSParserTokenRange range(tokens);
-    return css_parsing_utils::ConsumeColor(range, *MakeContext(mode));
+    CSSTokenizer tokenizer(css_text);
+    CSSParserTokenStream stream(tokenizer);
+    return css_parsing_utils::ConsumeColor(stream, *MakeContext(mode));
   };
 
   struct {
@@ -317,19 +317,19 @@ TEST(CSSParsingUtilsTest, ConsumeColorRangePreservation) {
   for (const char*& test : tests) {
     String input(test);
     SCOPED_TRACE(input);
-    Vector<CSSParserToken, 32> tokens = CSSTokenizer(input).TokenizeToEOF();
-    CSSParserTokenRange range(tokens);
-    EXPECT_EQ(nullptr, css_parsing_utils::ConsumeColor(range, *MakeContext()));
-    EXPECT_EQ(test, range.Serialize());
+    CSSTokenizer tokenizer(input);
+    CSSParserTokenStream stream(tokenizer);
+    EXPECT_EQ(nullptr, css_parsing_utils::ConsumeColor(stream, *MakeContext()));
+    EXPECT_EQ(test, stream.RemainingText());
   }
 }
 
-TEST(CSSParsingUtilsTest, InternalPositionTryOptionsInUAMode) {
-  auto ConsumePositionTryOptionForTest = [](String css_text,
-                                            CSSParserMode mode) {
+TEST(CSSParsingUtilsTest, InternalPositionTryFallbacksInUAMode) {
+  auto ConsumePositionTryFallbackForTest = [](String css_text,
+                                              CSSParserMode mode) {
     CSSTokenizer tokenizer(css_text);
     CSSParserTokenStream stream(tokenizer);
-    return css_parsing_utils::ConsumeSinglePositionTryOption(
+    return css_parsing_utils::ConsumeSinglePositionTryFallback(
         stream, *MakeContext(mode));
   };
 
@@ -346,14 +346,14 @@ TEST(CSSParsingUtilsTest, InternalPositionTryOptionsInUAMode) {
       {.css_text = "-internal-foo", .allow_ua = true, .allow_other = false},
   };
   for (auto& expectation : expectations) {
-    EXPECT_EQ(ConsumePositionTryOptionForTest(expectation.css_text,
-                                              kHTMLStandardMode) != nullptr,
+    EXPECT_EQ(ConsumePositionTryFallbackForTest(expectation.css_text,
+                                                kHTMLStandardMode) != nullptr,
               expectation.allow_other);
-    EXPECT_EQ(ConsumePositionTryOptionForTest(expectation.css_text,
-                                              kHTMLQuirksMode) != nullptr,
+    EXPECT_EQ(ConsumePositionTryFallbackForTest(expectation.css_text,
+                                                kHTMLQuirksMode) != nullptr,
               expectation.allow_other);
-    EXPECT_EQ(ConsumePositionTryOptionForTest(expectation.css_text,
-                                              kUASheetMode) != nullptr,
+    EXPECT_EQ(ConsumePositionTryFallbackForTest(expectation.css_text,
+                                                kUASheetMode) != nullptr,
               expectation.allow_ua);
   }
 }

@@ -22,7 +22,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/not_fatal_until.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/task/updateable_sequenced_task_runner.h"
@@ -125,16 +124,21 @@ void AggregationServiceImpl::AssembleReport(
   assembler_->AssembleReport(std::move(report_request), std::move(callback));
 }
 
-void AggregationServiceImpl::SendReport(const GURL& url,
-                                        const AggregatableReport& report,
-                                        SendCallback callback) {
-  SendReport(url, base::Value(report.GetAsJson()), std::move(callback));
+void AggregationServiceImpl::SendReport(
+    const GURL& url,
+    const AggregatableReport& report,
+    std::optional<AggregatableReportRequest::DelayType> delay_type,
+    SendCallback callback) {
+  SendReport(url, base::Value(report.GetAsJson()), delay_type,
+             std::move(callback));
 }
 
-void AggregationServiceImpl::SendReport(const GURL& url,
-                                        const base::Value& contents,
-                                        SendCallback callback) {
-  sender_->SendReport(url, contents, std::move(callback));
+void AggregationServiceImpl::SendReport(
+    const GURL& url,
+    const base::Value& contents,
+    std::optional<AggregatableReportRequest::DelayType> delay_type,
+    SendCallback callback) {
+  sender_->SendReport(url, contents, delay_type, std::move(callback));
 }
 
 const base::SequenceBound<AggregationServiceStorage>&
@@ -163,7 +167,7 @@ void AggregationServiceImpl::ClearData(
 }
 
 void AggregationServiceImpl::OnUserVisibleTaskComplete() {
-  CHECK_GT(num_pending_user_visible_tasks_, 0, base::NotFatalUntil::M128);
+  CHECK_GT(num_pending_user_visible_tasks_, 0);
   --num_pending_user_visible_tasks_;
 
   // No more user visible tasks, so we can reset the priority.
@@ -219,8 +223,7 @@ void AggregationServiceImpl::OnReportAssemblyComplete(
     std::optional<AggregatableReport> report,
     AggregatableReportAssembler::AssemblyStatus status) {
   CHECK_EQ(report.has_value(),
-           status == AggregatableReportAssembler::AssemblyStatus::kOk,
-           base::NotFatalUntil::M128);
+           status == AggregatableReportAssembler::AssemblyStatus::kOk);
   base::UmaHistogramLongTimes100(
       request_id.has_value()
           ? "PrivacySandbox.AggregationService.ScheduledRequests.AssemblyTime"
@@ -251,7 +254,8 @@ void AggregationServiceImpl::OnReportAssemblyComplete(
   // reporting is allowed before sending. We don't currently have the top-frame
   // origin to perform this check.
   base::Value value(report->GetAsJson());
-  SendReport(reporting_url, value,
+  auto delay_type = report_request.delay_type();
+  SendReport(reporting_url, value, delay_type,
              /*callback=*/
              base::BindOnce(
                  &AggregationServiceImpl::OnReportSendingComplete,

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.multiwindow;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityManager.AppTask;
+import android.app.ActivityOptions;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -190,7 +191,7 @@ public class MultiWindowUtils implements ActivityStateListener {
         if (mIsInMultiWindowModeForTesting) return true;
         if (activity == null) return false;
 
-        return ApiCompatibilityUtils.isInMultiWindowMode(activity);
+        return activity.isInMultiWindowMode();
     }
 
     /**
@@ -386,7 +387,9 @@ public class MultiWindowUtils implements ActivityStateListener {
             throw new IllegalStateException(
                     "Attempting to open window in other display, but one is not found");
         }
-        return ApiCompatibilityUtils.createLaunchDisplayIdActivityOptions(id);
+        ActivityOptions options = ActivityOptions.makeBasic();
+        options.setLaunchDisplayId(id);
+        return options.toBundle();
     }
 
     /**
@@ -471,10 +474,17 @@ public class MultiWindowUtils implements ActivityStateListener {
             int taskId = activity.getTaskId();
             if (taskId != currentTaskId && isActivityVisible(activity)) {
                 // Found a visible task. Return its base ChromeTabbedActivity instance.
+                StringBuilder activityNameBuilder = new StringBuilder();
                 for (Activity a : runningActivities) {
-                    if (a instanceof ChromeTabbedActivity && a.getTaskId() == taskId) return a;
+                    if (a.getTaskId() == taskId) {
+                        activityNameBuilder.append(a.getClass().getName()).append(",");
+                        if (a instanceof ChromeTabbedActivity) return a;
+                    }
                 }
-                assert false : "Should have found the ChromeTabbedActivity of the visible task";
+                assert false
+                        : "Should have found the ChromeTabbedActivity of the visible task."
+                                + " Activities in this task: "
+                                + activityNameBuilder;
                 break;
             }
         }

@@ -19,6 +19,7 @@
 #include "base/time/default_tick_clock.h"
 #include "base/timer/timer.h"
 #include "components/drive/drive_notification_observer.h"
+#include "components/drive/features.h"
 #include "components/invalidation/public/invalidation_handler.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -86,9 +87,12 @@ class DriveNotificationManager : public KeyedService,
   // Returns true if `IsRegistered()` and `invalidation_service_` is enabled.
   bool AreInvalidationsEnabled() const;
 
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
   enum NotificationSource {
-    NOTIFICATION_XMPP,
-    NOTIFICATION_POLLING,
+    kNotificationXMPP = 0,
+    kNotificationPolling = 1,
+    kMaxValue = kNotificationPolling
   };
 
   // Restarts the polling timer. Used for polling-based notification.

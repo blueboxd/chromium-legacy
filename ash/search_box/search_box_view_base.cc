@@ -252,8 +252,8 @@ class SearchBoxTextfield : public views::Textfield {
 
   void OnGestureEvent(ui::GestureEvent* event) override {
     switch (event->type()) {
-      case ui::ET_GESTURE_LONG_PRESS:
-      case ui::ET_GESTURE_LONG_TAP:
+      case ui::EventType::kGestureLongPress:
+      case ui::EventType::kGestureLongTap:
         // Prevent Long Press from being handled at all, if inactive
         if (!search_box_view_->is_search_box_active()) {
           event->SetHandled();
@@ -265,11 +265,6 @@ class SearchBoxTextfield : public views::Textfield {
         // Handle all other events as normal
         Textfield::OnGestureEvent(event);
     }
-  }
-
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    views::Textfield::GetAccessibleNodeData(node_data);
-    search_box_view_->UpdateSearchTextfieldAccessibleNodeData(node_data);
   }
 
  private:
@@ -453,6 +448,8 @@ SearchBoxViewBase::SearchBoxViewBase()
       std::make_unique<views::FillLayout>());
   content_container_->SetFlexForView(search_box_button_container_, 0,
                                      /*use_min_size=*/true);
+
+  UpdateSearchTextfieldAccessibleActiveDescendantId();
 }
 
 SearchBoxViewBase::~SearchBoxViewBase() = default;
@@ -628,8 +625,10 @@ void SearchBoxViewBase::SetSearchBoxActive(bool active,
 
   UpdateSearchBoxBorder();
   // Keep the current keyboard visibility if the user already started typing.
-  if (event_type != ui::ET_KEY_PRESSED && event_type != ui::ET_KEY_RELEASED)
+  if (event_type != ui::EventType::kKeyPressed &&
+      event_type != ui::EventType::kKeyReleased) {
     UpdateKeyboardVisibility();
+  }
   UpdateButtonsVisibility();
   OnSearchBoxActiveChanged(active);
 
@@ -705,8 +704,7 @@ bool SearchBoxViewBase::IsSearchBoxTrimmedQueryEmpty() const {
   return trimmed_query.empty();
 }
 
-void SearchBoxViewBase::UpdateSearchTextfieldAccessibleNodeData(
-    ui::AXNodeData* node_data) {}
+void SearchBoxViewBase::UpdateSearchTextfieldAccessibleActiveDescendantId() {}
 
 void SearchBoxViewBase::ClearSearch() {
   search_box_->SetText(std::u16string());
@@ -814,7 +812,7 @@ void SearchBoxViewBase::ContentsChanged(views::Textfield* sender,
   search_box_->RequestFocus();
   HandleQueryChange(new_contents, /*initiated_by_user=*/true);
   if (!new_contents.empty())
-    SetSearchBoxActive(true, ui::ET_KEY_PRESSED);
+    SetSearchBoxActive(true, ui::EventType::kKeyPressed);
   UpdateButtonsVisibility();
 }
 
@@ -846,8 +844,8 @@ void SearchBoxViewBase::SetShowAssistantButton(bool show) {
 }
 
 void SearchBoxViewBase::HandleSearchBoxEvent(ui::LocatedEvent* located_event) {
-  if (located_event->type() == ui::ET_MOUSE_PRESSED ||
-      located_event->type() == ui::ET_GESTURE_TAP) {
+  if (located_event->type() == ui::EventType::kMousePressed ||
+      located_event->type() == ui::EventType::kGestureTap) {
     const bool event_is_in_searchbox_bounds =
         GetBoundsInScreen().Contains(located_event->root_location());
     if (!event_is_in_searchbox_bounds)

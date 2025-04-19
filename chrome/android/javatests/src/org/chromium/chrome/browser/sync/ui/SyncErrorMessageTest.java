@@ -4,6 +4,12 @@
 
 package org.chromium.chrome.browser.sync.ui;
 
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.intent.Intents.intended;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
+
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -11,10 +17,15 @@ import static org.mockito.Mockito.description;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
 
 import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
+import androidx.test.espresso.intent.Intents;
+import androidx.test.espresso.intent.matcher.IntentMatchers;
 import androidx.test.filters.LargeTest;
 
 import org.junit.Assert;
@@ -25,20 +36,27 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.HistogramWatcher;
+import org.chromium.base.test.util.JniMocker;
 import org.chromium.base.test.util.Matchers;
 import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.password_manager.PasswordManagerUtilBridge;
+import org.chromium.chrome.browser.password_manager.PasswordManagerUtilBridgeJni;
+import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.sync.FakeSyncServiceImpl;
 import org.chromium.chrome.browser.sync.SyncTestRule;
+import org.chromium.chrome.browser.sync.settings.ManageSyncSettings;
 import org.chromium.chrome.browser.sync.settings.SyncSettingsUtils;
 import org.chromium.chrome.browser.sync.settings.SyncSettingsUtils.SyncError;
-import org.chromium.chrome.browser.sync.ui.SyncErrorMessage.MessageType;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
@@ -47,7 +65,6 @@ import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.messages.MessageBannerProperties;
 import org.chromium.components.messages.MessageDispatcher;
 import org.chromium.components.signin.base.GoogleServiceAuthError;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.io.IOException;
@@ -57,6 +74,9 @@ import java.io.IOException;
 @DoNotBatch(reason = "TODO(crbug.com/40743432): SyncTestRule doesn't support batching.")
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class SyncErrorMessageTest {
+    @Rule public final JniMocker mJniMocker = new JniMocker();
+
+    @Mock private PasswordManagerUtilBridge.Natives mPasswordManagerUtilBridgeJniMock;
     @Mock private MessageDispatcher mMessageDispatcher;
     private FakeSyncServiceImpl mFakeSyncServiceImpl;
 
@@ -83,6 +103,7 @@ public class SyncErrorMessageTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        mJniMocker.mock(PasswordManagerUtilBridgeJni.TEST_HOOKS, mPasswordManagerUtilBridgeJniMock);
         SyncErrorMessageImpressionTracker.resetLastShownTime();
         mFakeSyncServiceImpl = (FakeSyncServiceImpl) mSyncTestRule.getSyncService();
         SyncErrorMessage.setMessageDispatcherForTesting(mMessageDispatcher);
@@ -118,7 +139,7 @@ public class SyncErrorMessageTest {
         verifyHasShownMessage();
 
         // Resolving the error should dismiss the current message.
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     mFakeSyncServiceImpl.setInitialSyncFeatureSetupComplete(
                             SyncFirstSetupCompleteSource.BASIC_FLOW);
@@ -186,21 +207,36 @@ public class SyncErrorMessageTest {
         mSyncTestRule.setUpAccountAndEnableSyncForTesting();
         SyncTestUtil.waitForSyncFeatureActive();
         mFakeSyncServiceImpl.setEngineInitialized(true);
-        mFakeSyncServiceImpl.setAuthError(GoogleServiceAuthError.State.NONE);
-        mFakeSyncServiceImpl.setPassphraseRequiredForPreferredDataTypes(false);
-        mFakeSyncServiceImpl.setRequiresClientUpgrade(false);
 
         @SyncError
         int syncError =
-                TestThreadUtils.runOnUiThreadBlockingNoException(
+                ThreadUtils.runOnUiThreadBlocking(
                         () -> {
-                            mFakeSyncServiceImpl.setInitialSyncFeatureSetupComplete(
-                                    SyncFirstSetupCompleteSource.BASIC_FLOW);
                             return SyncSettingsUtils.getSyncError(
                                     mSyncTestRule.getProfile(/* incognito= */ false));
                         });
 
-        Assert.assertEquals(MessageType.NOT_SHOWN, SyncErrorMessage.getMessageType(syncError));
+        Assert.assertEquals(SyncError.NO_ERROR, syncError);
+        mSyncTestRule.loadUrl(UrlConstants.VERSION_URL);
+
+        verifyHasNeverShownMessage();
+    }
+
+    @Test
+    @LargeTest
+    public void testSyncErrorMessageNotShownForUpmBackendOutdated() {
+        when(mPasswordManagerUtilBridgeJniMock.isGmsCoreUpdateRequired(any(), any()))
+                .thenReturn(true);
+        mSyncTestRule.setUpAccountAndEnableSyncForTesting();
+        @SyncError
+        int syncError =
+                ThreadUtils.runOnUiThreadBlocking(
+                        () -> {
+                            return SyncSettingsUtils.getSyncError(
+                                    mSyncTestRule.getProfile(/* incognito= */ false));
+                        });
+        Assert.assertEquals(SyncError.UPM_BACKEND_OUTDATED, syncError);
+        mSyncTestRule.loadUrl(UrlConstants.VERSION_URL);
 
         verifyHasNeverShownMessage();
     }
@@ -425,6 +461,38 @@ public class SyncErrorMessageTest {
         mRenderTestRule.render(view, "identity_error_message_client_out_of_date");
     }
 
+    @Test
+    @LargeTest
+    @EnableFeatures({ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS})
+    public void testActionForPassphraseRequiredForSignedInUsers() throws Exception {
+        SyncErrorMessage.setMessageDispatcherForTesting(null);
+
+        HistogramWatcher histogramWatcher =
+                HistogramWatcher.newBuilder()
+                        .expectIntRecord(
+                                "Sync.IdentityErrorMessage.PassphraseRequired",
+                                SyncSettingsUtils.ErrorUiAction.SHOWN)
+                        .expectIntRecord(
+                                "Sync.IdentityErrorMessage.PassphraseRequired",
+                                SyncSettingsUtils.ErrorUiAction.BUTTON_CLICKED)
+                        .build();
+
+        // Sign in.
+        mSyncTestRule.setUpAccountAndSignInForTesting();
+        mFakeSyncServiceImpl.setEngineInitialized(true);
+        mFakeSyncServiceImpl.setPassphraseRequiredForPreferredDataTypes(true);
+        mSyncTestRule.loadUrl(UrlConstants.VERSION_URL);
+
+        Intents.init();
+        onViewWaiting(allOf(withText("Enter"), isDisplayed())).perform(click());
+        intended(
+                IntentMatchers.hasExtra(
+                        SettingsActivity.EXTRA_SHOW_FRAGMENT, ManageSyncSettings.class.getName()));
+        Intents.release();
+
+        histogramWatcher.assertExpected();
+    }
+
     private void verifyHasShownMessage() {
         verify(
                         mMessageDispatcher,
@@ -453,7 +521,7 @@ public class SyncErrorMessageTest {
     }
 
     private @Nullable SyncErrorMessage getSyncErrorMessage() {
-        return TestThreadUtils.runOnUiThreadBlockingNoException(
+        return ThreadUtils.runOnUiThreadBlocking(
                 () ->
                         SyncErrorMessage.getKeyForTesting()
                                 .retrieveDataFromHost(

@@ -34,6 +34,7 @@
 #include "chrome/browser/ui/webui/downloads/downloads.mojom.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_item.h"
+#include "components/download/public/common/download_item_rename_handler.h"
 #include "components/safe_browsing/core/common/features.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/url_formatter/elide_url.h"
@@ -170,6 +171,17 @@ std::u16string GetFormattedDisplayUrl(const GURL& url) {
     result = result.substr(result.size() - kMaxDisplayURLChars);
   }
   return result;
+}
+
+void FillUrlFields(const GURL& url,
+                   std::optional<GURL>& data_url,
+                   std::u16string& display_url_out) {
+  // If URL is too long, don't make it clickable.
+  if (url.is_valid() && url.spec().length() <= url::kMaxURLChars) {
+    data_url = std::make_optional<GURL>(url);
+  }
+
+  display_url_out = GetFormattedDisplayUrl(url);
 }
 
 }  // namespace
@@ -357,12 +369,10 @@ downloads::mojom::DataPtr DownloadsListTracker::CreateDownloadData(
   file_name = base::i18n::GetDisplayStringInLTRDirectionality(file_name);
 
   file_value->file_name = base::UTF16ToUTF8(file_name);
-  // If URL is too long, don't make it clickable.
-  if (download_item->GetURL().is_valid() &&
-      download_item->GetURL().spec().length() <= url::kMaxURLChars) {
-    file_value->url = std::make_optional<GURL>(download_item->GetURL());
-  }
-  file_value->display_url = GetFormattedDisplayUrl(download_item->GetURL());
+  FillUrlFields(download_item->GetURL(), file_value->url,
+                file_value->display_url);
+  FillUrlFields(download_item->GetReferrerUrl(), file_value->referrer_url,
+                file_value->display_referrer_url);
   file_value->total = download_item->GetTotalBytes();
   file_value->file_externally_removed =
       download_item->GetFileExternallyRemoved();
@@ -399,7 +409,7 @@ downloads::mojom::DataPtr DownloadsListTracker::CreateDownloadData(
         state = downloads::mojom::State::kInProgress;
       }
       progress_status_text = download_model.GetTabProgressStatusText();
-      percent = download_item->PercentComplete();
+      percent = GetPercentComplete(download_item);
       break;
     }
 
@@ -408,7 +418,7 @@ downloads::mojom::DataPtr DownloadsListTracker::CreateDownloadData(
       progress_status_text = download_model.GetTabProgressStatusText();
 
       if (download_item->CanResume())
-        percent = download_item->PercentComplete();
+        percent = GetPercentComplete(download_item);
 
       // TODO(crbug.com/40467967): GetHistoryPageStatusText() is using
       // GetStatusText() as a temporary measure until the layout is fixed to
@@ -605,4 +615,17 @@ void DownloadsListTracker::RemoveItem(const SortedSet::iterator& remove) {
     }
   }
   sorted_items_.erase(remove);
+}
+
+int DownloadsListTracker::GetPercentComplete(
+    download::DownloadItem* download_item) const {
+  auto* renamer = download_item->GetRenameHandler();
+  if (renamer && renamer->ShowRenameProgress()) {
+    return static_cast<int>(((download_item->GetReceivedBytes() +
+                              download_item->GetUploadedBytes()) *
+                             0.5 * 100.0) /
+                            download_item->GetTotalBytes());
+  } else {
+    return download_item->PercentComplete();
+  }
 }

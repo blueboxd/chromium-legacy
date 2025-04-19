@@ -18,14 +18,13 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
-import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.MainSettings;
-import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
-import org.chromium.chrome.browser.signin.SigninAndHistoryOptInActivityLauncherImpl;
+import org.chromium.chrome.browser.settings.SettingsLauncherFactory;
+import org.chromium.chrome.browser.signin.SigninAndHistorySyncActivityLauncherImpl;
 import org.chromium.chrome.browser.signin.SyncConsentActivityLauncherImpl;
 import org.chromium.chrome.browser.signin.services.DisplayableProfileData;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
@@ -37,7 +36,7 @@ import org.chromium.chrome.browser.toolbar.ButtonData.ButtonSpec;
 import org.chromium.chrome.browser.toolbar.ButtonDataImpl;
 import org.chromium.chrome.browser.toolbar.ButtonDataProvider;
 import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarButtonVariant;
-import org.chromium.chrome.browser.ui.signin.SigninAndHistoryOptInCoordinator;
+import org.chromium.chrome.browser.ui.signin.SigninAndHistorySyncCoordinator;
 import org.chromium.chrome.browser.ui.signin.SigninUtils;
 import org.chromium.chrome.browser.ui.signin.account_picker.AccountPickerBottomSheetStrings;
 import org.chromium.chrome.browser.user_education.IPHCommandBuilder;
@@ -53,8 +52,8 @@ import org.chromium.components.signin.identitymanager.PrimaryAccountChangeEvent;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 
 /**
- * Handles displaying IdentityDisc on toolbar depending on several conditions
- * (user sign-in state, whether NTP is shown)
+ * Handles displaying IdentityDisc on toolbar depending on several conditions (user sign-in state,
+ * whether NTP is shown)
  */
 public class IdentityDiscController
         implements NativeInitObserver,
@@ -78,13 +77,11 @@ public class IdentityDiscController
     private boolean mNativeIsInitialized;
 
     private boolean mIsTabNtp;
-    private boolean mIsStartSurface;
 
     /**
-     *
      * @param context The Context for retrieving resources, launching preference activity, etc.
      * @param activityLifecycleDispatcher Dispatcher for activity lifecycle events, e.g. native
-     *         initialization completing.
+     *     initialization completing.
      */
     public IdentityDiscController(
             Context context,
@@ -145,19 +142,6 @@ public class IdentityDiscController
         return mButtonData;
     }
 
-    public ButtonData getForStartSurface(@LayoutType int layoutType) {
-        if (layoutType != LayoutType.START_SURFACE) {
-            mIsStartSurface = false;
-            mButtonData.setCanShow(false);
-            return mButtonData;
-        } else {
-            mIsStartSurface = true;
-        }
-
-        calculateButtonData();
-        return mButtonData;
-    }
-
     private void calculateButtonData() {
         if (!mNativeIsInitialized) {
             assert !mButtonData.canShow();
@@ -179,13 +163,16 @@ public class IdentityDiscController
             return buttonSpec;
         }
 
+        // `supportsTinting` must be false when showing the user's profile image or its placeholder,
+        // to not alter the images colors in those cases.
+        boolean shouldSupportTinting = email == null;
         String contentDescription = getContentDescription(email);
         return new ButtonSpec(
                 drawable,
                 buttonSpec.getOnClickListener(),
                 /* onLongClickListener= */ null,
                 contentDescription,
-                buttonSpec.getSupportsTinting(),
+                shouldSupportTinting,
                 buttonSpec.getIPHCommandBuilder(),
                 AdaptiveToolbarButtonVariant.UNKNOWN,
                 buttonSpec.getActionChipLabelResId(),
@@ -209,16 +196,12 @@ public class IdentityDiscController
      * Returns Profile picture Drawable. The size of the image corresponds to current visual state.
      */
     private Drawable getProfileImage(@Nullable String email) {
-        if (email == null) {
-            return AppCompatResources.getDrawable(mContext, R.drawable.account_circle);
-        }
-        return mProfileDataCache.getProfileDataOrDefault(email).getImage();
+        return email == null
+                ? AppCompatResources.getDrawable(mContext, R.drawable.account_circle)
+                : mProfileDataCache.getProfileDataOrDefault(email).getImage();
     }
 
-    /**
-     * Resets ProfileDataCache. Used for flushing cached image
-     * when sign-in state changes.
-     */
+    /** Resets ProfileDataCache. Used for flushing cached image when sign-in state changes. */
     private void resetIdentityDiscCache() {
         if (mProfileDataCache != null) {
             mProfileDataCache.removeObserver(this);
@@ -295,11 +278,11 @@ public class IdentityDiscController
 
     /**
      * Records IdentityDisc usage with feature engagement tracker. This signal can be used to decide
-     * whether to show in-product help.
-     * We also record the clicking actions on the profile icon in histograms.
+     * whether to show in-product help. We also record the clicking actions on the profile icon in
+     * histograms.
      */
     private void recordIdentityDiscUsed() {
-        BrowserUiUtils.recordIdentityDiscClicked(mIsStartSurface, mIsTabNtp);
+        BrowserUiUtils.recordIdentityDiscClicked(mIsTabNtp);
 
         assert isProfileInitialized();
         Tracker tracker = TrackerFactory.getTrackerForProfile(mProfileSupplier.get());
@@ -375,7 +358,6 @@ public class IdentityDiscController
                 IdentityServicesProvider.get()
                         .getSigninManager(mProfileSupplier.get().getOriginalProfile());
         if (getSignedInAccountInfo() == null && !signinManager.isSigninDisabledByPolicy()) {
-            // TODO(crbug.com/41496906): Implement the new sign-in flow for automotive.
             if (SigninUtils.shouldShowNewSigninFlow()) {
                 AccountPickerBottomSheetStrings bottomSheetStrings =
                         new AccountPickerBottomSheetStrings.Builder(
@@ -384,22 +366,22 @@ public class IdentityDiscController
                                         R.string
                                                 .signin_account_picker_bottom_sheet_benefits_subtitle)
                                 .build();
-                SigninAndHistoryOptInActivityLauncherImpl.get()
+                SigninAndHistorySyncActivityLauncherImpl.get()
                         .launchActivityIfAllowed(
                                 mContext,
                                 mProfileSupplier.get().getOriginalProfile(),
                                 bottomSheetStrings,
-                                SigninAndHistoryOptInCoordinator.NoAccountSigninMode.BOTTOM_SHEET,
-                                SigninAndHistoryOptInCoordinator.WithAccountSigninMode
+                                SigninAndHistorySyncCoordinator.NoAccountSigninMode.BOTTOM_SHEET,
+                                SigninAndHistorySyncCoordinator.WithAccountSigninMode
                                         .DEFAULT_ACCOUNT_BOTTOM_SHEET,
-                                SigninAndHistoryOptInCoordinator.HistoryOptInMode.OPTIONAL,
+                                SigninAndHistorySyncCoordinator.HistoryOptInMode.OPTIONAL,
                                 SigninAccessPoint.NTP_SIGNED_OUT_ICON);
             } else {
                 SyncConsentActivityLauncherImpl.get()
                         .launchActivityIfAllowed(mContext, SigninAccessPoint.NTP_SIGNED_OUT_ICON);
             }
         } else {
-            SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+            SettingsLauncher settingsLauncher = SettingsLauncherFactory.createSettingsLauncher();
             settingsLauncher.launchSettingsActivity(mContext, MainSettings.class);
         }
     }

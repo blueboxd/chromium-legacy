@@ -285,10 +285,13 @@ bool GLContextEGL::InitializeImpl(GLSurface* compatible_surface,
 
   if (gl_display_->ext->b_EGL_ANGLE_create_context_client_arrays) {
     context_attributes.push_back(EGL_CONTEXT_CLIENT_ARRAYS_ENABLED_ANGLE);
-    context_attributes.push_back(
-        attribs.angle_create_context_client_arrays ? EGL_TRUE : EGL_FALSE);
+    context_attributes.push_back(attribs.allow_client_arrays ? EGL_TRUE
+                                                             : EGL_FALSE);
   } else {
-    DCHECK(!attribs.angle_create_context_client_arrays);
+    // Client arrays are allowed by default without
+    // ANGLE_create_context_client_arrays to control it. Verify that's the
+    // requested behavior.
+    DCHECK(attribs.allow_client_arrays);
   }
 
   if (gl_display_->ext->b_EGL_ANGLE_robust_resource_initialization ||
@@ -601,8 +604,7 @@ unsigned int GLContextEGL::CheckStickyGraphicsResetStatusImpl() {
   const ExtensionsGL& ext = g_current_gl_driver->ext;
   if ((graphics_reset_status_ == GL_NO_ERROR) &&
       gl_display_->ext->b_EGL_EXT_create_context_robustness &&
-      (ext.b_GL_KHR_robustness || ext.b_GL_EXT_robustness ||
-       ext.b_GL_ARB_robustness)) {
+      (ext.b_GL_KHR_robustness || ext.b_GL_EXT_robustness)) {
     graphics_reset_status_ = glGetGraphicsResetStatusARB();
   }
   return graphics_reset_status_;

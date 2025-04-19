@@ -29,6 +29,7 @@ import './app_parental_controls/app_setup_pin_dialog.js';
 import './app_parental_controls/app_verify_pin_dialog.js';
 
 import {PrefsMixin} from '/shared/settings/prefs/prefs_mixin.js';
+import {CrToggleElement} from 'chrome://resources/ash/common/cr_elements/cr_toggle/cr_toggle.js';
 import {I18nMixin} from 'chrome://resources/ash/common/cr_elements/i18n_mixin.js';
 import {App} from 'chrome://resources/cr_components/app_management/app_management.mojom-webui.js';
 import {AppManagementEntryPoint, AppManagementEntryPointsHistogramName} from 'chrome://resources/cr_components/app_management/constants.js';
@@ -43,12 +44,15 @@ import {androidAppsVisible, isAppParentalControlsFeatureAvailable, isArcVmEnable
 import {RouteOriginMixin} from '../common/route_origin_mixin.js';
 import {DropdownMenuOptionList} from '../controls/settings_dropdown_menu.js';
 import {App as AppWithNotifications, AppNotificationsHandlerInterface, AppNotificationsObserverReceiver, Readiness} from '../mojom-webui/app_notification_handler.mojom-webui.js';
+import {AppParentalControlsHandlerInterface} from '../mojom-webui/app_parental_controls_handler.mojom-webui.js';
 import {Section} from '../mojom-webui/routes.mojom-webui.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
 import {Route, Router, routes} from '../router.js';
 
 import {AndroidAppsBrowserProxyImpl, AndroidAppsInfo} from './android_apps_browser_proxy.js';
 import {getAppNotificationProvider} from './app_notifications_page/mojo_interface_provider.js';
+import {getAppParentalControlsProvider} from './app_parental_controls/mojo_interface_provider.js';
+import {ParentalControlsDialogType, recordParentalControlsDialogFlowCompleted, recordParentalControlsDialogOpened} from './app_parental_controls/metrics_utils.js';
 import {getTemplate} from './os_apps_page.html.js';
 
 export function isAppInstalled(app: AppWithNotifications): boolean {
@@ -138,7 +142,7 @@ export class OsSettingsAppsPageElement extends OsSettingsAppsPageElementBase {
       },
 
       /**
-       * Whether the Disable Parental Controls dialog should be shown.
+       * Whether the Disable Parental Controls PIN dialog should be shown.
        */
       showParentalControlsDisablePinDialog_: {
         type: Boolean,
@@ -157,6 +161,12 @@ export class OsSettingsAppsPageElement extends OsSettingsAppsPageElementBase {
        * Whether the Parental Controls PIN verification dialog should be shown.
        */
       showParentalControlsVerifyPinDialog_: {
+        type: Boolean,
+        value: false,
+      },
+
+      /** Whether the user has set up app parental controls. */
+      isParentalControlsSetupCompleted_: {
         type: Boolean,
         value: false,
       },
@@ -228,6 +238,7 @@ export class OsSettingsAppsPageElement extends OsSettingsAppsPageElementBase {
           Setting.kManageAndroidPreferences,
           Setting.kTurnOnPlayStore,
           Setting.kRestoreAppsAndPages,
+          Setting.kAppParentalControls,
         ]),
       },
 
@@ -279,6 +290,7 @@ export class OsSettingsAppsPageElement extends OsSettingsAppsPageElementBase {
   private isPluginVmAvailable_: boolean;
   private isRevampWayfindingEnabled_: boolean;
   private mojoInterfaceProvider_: AppNotificationsHandlerInterface;
+  private parentalControlsHandler_: AppParentalControlsHandlerInterface;
   private onStartupOptions_: DropdownMenuOptionList;
   private rowIcons_: Record<string, string>;
   private section_: Section;
@@ -288,6 +300,7 @@ export class OsSettingsAppsPageElement extends OsSettingsAppsPageElementBase {
   private showParentalControlsDisablePinDialog_: boolean;
   private showParentalControlsSetupPinDialog_: boolean;
   private showParentalControlsVerifyPinDialog_: boolean;
+  private isParentalControlsSetupCompleted_: boolean;
   private readonly shouldShowStartup_: boolean;
 
   constructor() {
@@ -321,6 +334,11 @@ export class OsSettingsAppsPageElement extends OsSettingsAppsPageElementBase {
     this.mojoInterfaceProvider_.getApps().then((result) => {
       this.appsWithNotifications_ = result.apps;
     });
+
+    this.parentalControlsHandler_ = getAppParentalControlsProvider();
+    this.getIsParentalControlsSetupCompleted_().then((isCompleted) => {
+      this.isParentalControlsSetupCompleted_ = isCompleted;
+    });
   }
 
   override ready(): void {
@@ -331,7 +349,11 @@ export class OsSettingsAppsPageElement extends OsSettingsAppsPageElementBase {
     this.addFocusConfig(
         routes.MANAGE_ISOLATED_WEB_APPS, '#manageIsolatedWebAppsRow');
     this.addFocusConfig(
-        routes.ANDROID_APPS_DETAILS, '#androidApps .subpage-arrow');
+        routes.ANDROID_APPS_DETAILS,
+        () => this.shadowRoot!.querySelector<HTMLElement>(
+            this.androidAppsInfo.playStoreEnabled ?
+                '#androidApps .subpage-arrow' :
+                '#arcEnable'));
   }
 
   override currentRouteChanged(newRoute: Route, oldRoute?: Route): void {
@@ -364,46 +386,80 @@ export class OsSettingsAppsPageElement extends OsSettingsAppsPageElementBase {
     Router.getInstance().navigateTo(routes.APP_NOTIFICATIONS);
   }
 
+  private async getIsParentalControlsSetupCompleted_(): Promise<boolean> {
+    const response = await this.parentalControlsHandler_.isSetupCompleted();
+    return response.isCompleted;
+  }
+
   private onClickParentalControls_(): void {
-    const isParentalControlsSetupCompleted =
-        this.getPref('on_device_app_controls.setup_completed').value;
-    if (isParentalControlsSetupCompleted) {
-      this.showParentalControlsVerifyPinDialog_ = true;
-    }
+    this.getIsParentalControlsSetupCompleted_().then((isSetupCompleted) => {
+      if (isSetupCompleted) {
+        this.showParentalControlsVerifyPinDialog_ = true;
+        recordParentalControlsDialogOpened(
+            ParentalControlsDialogType.ENTER_SUBPAGE_VERIFICATION);
+      }
+    });
   }
 
   private setUpParentalControls_(e: Event): void {
     this.showParentalControlsSetupPinDialog_ = true;
+    recordParentalControlsDialogOpened(
+        ParentalControlsDialogType.SET_UP_CONTROLS);
     // Stop propagation to keep the subpage from opening.
     e.stopPropagation();
   }
 
   private disableParentalControls_(e: Event): void {
     this.showParentalControlsDisablePinDialog_ = true;
+    recordParentalControlsDialogOpened(
+        ParentalControlsDialogType.DISABLE_CONTROLS_VERIFICATION);
     // Stop propagation to keep the subpage from opening.
     e.stopPropagation();
   }
 
-  private onVerifyPinDialogClose_(): void {
-    this.showParentalControlsVerifyPinDialog_ = false;
-    // TODO(b/332936481): Only navigate to the subpage on successful PIN
-    // verification.
+  private onAccessPinVerified_(): void {
     this.navigateToParentalControls_();
+    recordParentalControlsDialogFlowCompleted(
+        ParentalControlsDialogType.ENTER_SUBPAGE_VERIFICATION);
   }
 
-  private onDisablePinDialogClose_(): void {
-    this.showParentalControlsDisablePinDialog_ = false;
-    // TODO(b/334102223): Only set setup pref to false on successful PIN
-    // verification.
-    this.setPrefValue('on_device_app_controls.setup_completed', false);
+  private onSetupPinSuccess_(): void {
+    this.navigateToParentalControls_();
+
+    this.getIsParentalControlsSetupCompleted_().then((isCompleted) => {
+      this.isParentalControlsSetupCompleted_ = isCompleted;
+    });
+    recordParentalControlsDialogFlowCompleted(
+        ParentalControlsDialogType.SET_UP_CONTROLS);
+  }
+
+  private onDisablePinVerified_(): void {
+    this.parentalControlsHandler_.onControlsDisabled();
+    this.getIsParentalControlsSetupCompleted_().then((isCompleted) => {
+      this.isParentalControlsSetupCompleted_ = isCompleted;
+    });
+    recordParentalControlsDialogFlowCompleted(
+        ParentalControlsDialogType.DISABLE_CONTROLS_VERIFICATION);
+  }
+
+  private onVerifyPinDialogClose_(): void {
+    this.showParentalControlsVerifyPinDialog_ = false;
   }
 
   private onSetupPinDialogClose_(): void {
     this.showParentalControlsSetupPinDialog_ = false;
   }
 
-  private onSetupPinSuccess_(): void {
-    this.navigateToParentalControls_();
+  private async onDisablePinDialogClose_(): Promise<void> {
+    this.showParentalControlsDisablePinDialog_ = false;
+    const toggle =
+        this.shadowRoot!.querySelector<HTMLElement>('#appParentalControls')!
+            .querySelector<CrToggleElement>('#toggle');
+    // If the toggle is still on the page, reset toggle in case the disable flow
+    // was cancelled prior to completion.
+    if (toggle) {
+      toggle.checked = await this.getIsParentalControlsSetupCompleted_();
+    }
   }
 
   private onClickManageIsolatedWebApps_(): void {
@@ -414,7 +470,6 @@ export class OsSettingsAppsPageElement extends OsSettingsAppsPageElementBase {
     this.setPrefValue('arc.enabled', true);
     event.stopPropagation();
   }
-
 
   private isEnforced_(pref: chrome.settingsPrivate.PrefObject): boolean {
     return pref.enforcement === chrome.settingsPrivate.Enforcement.ENFORCED;

@@ -15,7 +15,6 @@
 #include "base/test/icu_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/companion/core/features.h"
 #include "chrome/browser/extensions/api/side_panel/side_panel_api.h"
 #include "chrome/browser/extensions/api/side_panel/side_panel_service.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -24,6 +23,8 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window/public/browser_window_features.h"
+#include "chrome/browser/ui/tabs/public/tab_features.h"
 #include "chrome/browser/ui/toolbar/pinned_toolbar/pinned_toolbar_actions_model.h"
 #include "chrome/browser/ui/toolbar/pinned_toolbar/pinned_toolbar_actions_model_factory.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
@@ -35,6 +36,7 @@
 #include "chrome/browser/ui/views/side_panel/side_panel_content_proxy.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_coordinator.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_entry.h"
+#include "chrome/browser/ui/views/side_panel/side_panel_entry_id.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_entry_observer.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_registry.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_util.h"
@@ -52,7 +54,6 @@
 #include "extensions/test/test_extension_dir.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/views/layout/animating_layout_manager_test_util.h"
 #include "ui/views/test/button_test_api.h"
 #include "ui/views/test/views_test_utils.h"
@@ -65,8 +66,7 @@ namespace {
 // when shown.
 std::unique_ptr<SidePanelEntry> CreateEntry(const SidePanelEntry::Key& key) {
   return std::make_unique<SidePanelEntry>(
-      key, u"basic entry",
-      ui::ImageModel::FromVectorIcon(kReadingListIcon, ui::kColorIcon),
+      key,
       base::BindRepeating([]() { return std::make_unique<views::View>(); }));
 }
 
@@ -79,63 +79,83 @@ std::unique_ptr<KeyedService> BuildSidePanelService(
 
 class SidePanelCoordinatorTest : public TestWithBrowserView {
  public:
+  SidePanelCoordinatorTest() {
+    scoped_feature_list_.InitWithFeatures({features::kSidePanelResizing}, {});
+  }
   void SetUp() override {
-    feature_list_.InitWithFeatures({features::kSidePanelPinning}, {});
     TestWithBrowserView::SetUp();
 
     AddTabToBrowser(GURL("http://foo1.com"));
     AddTabToBrowser(GURL("http://foo2.com"));
 
+    // Note that every tab has read anything added automatically.
+    //
     // Add a kCustomizeChrome entry to the contextual registry for the first
     // tab.
     browser_view()->browser()->tab_strip_model()->ActivateTabAt(0);
-    content::WebContents* active_contents =
-        browser_view()->GetActiveWebContents();
-    auto* registry = SidePanelRegistry::Get(active_contents);
+    auto* registry = browser_view()
+                         ->browser()
+                         ->GetActiveTabInterface()
+                         ->GetTabFeatures()
+                         ->side_panel_registry();
     registry->Register(std::make_unique<SidePanelEntry>(
-        SidePanelEntry::Id::kCustomizeChrome, u"testing1",
-        ui::ImageModel::FromVectorIcon(kReadingListIcon, ui::kColorIcon),
+        SidePanelEntry::Id::kCustomizeChrome,
         base::BindRepeating([]() { return std::make_unique<views::View>(); })));
     contextual_registries_.push_back(registry);
 
     // Add a kLens entry to the contextual registry for the second tab.
     browser_view()->browser()->tab_strip_model()->ActivateTabAt(1);
-    active_contents = browser_view()->GetActiveWebContents();
-    registry = SidePanelRegistry::Get(active_contents);
+    registry = browser_view()
+                   ->browser()
+                   ->GetActiveTabInterface()
+                   ->GetTabFeatures()
+                   ->side_panel_registry();
     registry->Register(std::make_unique<SidePanelEntry>(
-        SidePanelEntry::Id::kLens, u"testing1",
-        ui::ImageModel::FromVectorIcon(kReadingListIcon, ui::kColorIcon),
+        SidePanelEntry::Id::kLens,
         base::BindRepeating([]() { return std::make_unique<views::View>(); })));
-    contextual_registries_.push_back(SidePanelRegistry::Get(active_contents));
+    contextual_registries_.push_back(browser_view()
+                                         ->browser()
+                                         ->GetActiveTabInterface()
+                                         ->GetTabFeatures()
+                                         ->side_panel_registry());
 
     // Add a kCustomizeChrome entry to the contextual registry for the second
     // tab.
     registry->Register(std::make_unique<SidePanelEntry>(
-        SidePanelEntry::Id::kCustomizeChrome, u"testing1",
-        ui::ImageModel::FromVectorIcon(kReadingListIcon, ui::kColorIcon),
+        SidePanelEntry::Id::kCustomizeChrome,
         base::BindRepeating([]() { return std::make_unique<views::View>(); })));
 
-    coordinator_ = SidePanelUtil::GetSidePanelCoordinatorForBrowser(browser());
+    coordinator_ = browser()->GetFeatures().side_panel_coordinator();
     coordinator_->SetNoDelaysForTesting(true);
-    global_registry_ = coordinator_->global_registry_;
+    global_registry_ = coordinator_->window_registry_.get();
 
-    // Verify the first tab has one entry, kCustomizeChrome.
+    // Verify the first tab has two entries, kReadAnything and kCustomizeChrome.
     browser_view()->browser()->tab_strip_model()->ActivateTabAt(0);
-    active_contents = browser_view()->GetActiveWebContents();
-    SidePanelRegistry* contextual_registry =
-        SidePanelRegistry::Get(active_contents);
-    EXPECT_EQ(contextual_registry->entries().size(), 1u);
-    EXPECT_EQ(contextual_registry->entries()[0]->key().id(),
-              SidePanelEntry::Id::kCustomizeChrome);
-
-    // Verify the second tab has 2 entries, kLens and kCustomizeChrome.
-    browser_view()->browser()->tab_strip_model()->ActivateTabAt(1);
-    active_contents = browser_view()->GetActiveWebContents();
-    contextual_registry = SidePanelRegistry::Get(active_contents);
+    auto* contextual_registry = browser_view()
+                                    ->browser()
+                                    ->GetActiveTabInterface()
+                                    ->GetTabFeatures()
+                                    ->side_panel_registry();
     EXPECT_EQ(contextual_registry->entries().size(), 2u);
     EXPECT_EQ(contextual_registry->entries()[0]->key().id(),
-              SidePanelEntry::Id::kLens);
+              SidePanelEntry::Id::kReadAnything);
     EXPECT_EQ(contextual_registry->entries()[1]->key().id(),
+              SidePanelEntry::Id::kCustomizeChrome);
+
+    // Verify the second tab has 3 entries, kReadAnything, kLens and
+    // kCustomizeChrome.
+    browser_view()->browser()->tab_strip_model()->ActivateTabAt(1);
+    contextual_registry = browser_view()
+                              ->browser()
+                              ->GetActiveTabInterface()
+                              ->GetTabFeatures()
+                              ->side_panel_registry();
+    EXPECT_EQ(contextual_registry->entries().size(), 3u);
+    EXPECT_EQ(contextual_registry->entries()[0]->key().id(),
+              SidePanelEntry::Id::kReadAnything);
+    EXPECT_EQ(contextual_registry->entries()[1]->key().id(),
+              SidePanelEntry::Id::kLens);
+    EXPECT_EQ(contextual_registry->entries()[2]->key().id(),
               SidePanelEntry::Id::kCustomizeChrome);
 
     extensions::SidePanelService::GetFactoryInstance()->SetTestingFactory(
@@ -161,9 +181,9 @@ class SidePanelCoordinatorTest : public TestWithBrowserView {
   void SetUpPinningTest() {
     content::WebContents* const web_contents =
         browser_view()->browser()->tab_strip_model()->GetWebContentsAt(0);
-    auto* const registry = SidePanelRegistry::Get(web_contents);
+    auto* const registry = SidePanelRegistry::GetDeprecated(web_contents);
     registry->Register(std::make_unique<SidePanelEntry>(
-        SidePanelEntry::Id::kAboutThisSite, std::u16string(), ui::ImageModel(),
+        SidePanelEntry::Id::kAboutThisSite,
         base::BindRepeating([]() { return std::make_unique<views::View>(); })));
     contextual_registries_.push_back(registry);
   }
@@ -193,12 +213,10 @@ class SidePanelCoordinatorTest : public TestWithBrowserView {
   void AddTabToBrowser(const GURL& tab_url) {
     AddTab(browser_view()->browser(), tab_url);
     // Remove the companion entry if it present.
-    auto* registry =
-        SidePanelRegistry::Get(browser_view()->GetActiveWebContents());
+    auto* registry = SidePanelRegistry::GetDeprecated(
+        browser_view()->GetActiveWebContents());
     registry->Deregister(
         SidePanelEntry::Key(SidePanelEntry::Id::kSearchCompanion));
-    registry->Deregister(
-        SidePanelEntry::Key(SidePanelEntry::Id::kReadAnything));
   }
 
  protected:
@@ -213,8 +231,8 @@ class SidePanelCoordinatorTest : public TestWithBrowserView {
 
   void ClickButton(views::Button* button) {
     views::test::ButtonTestApi(button).NotifyClick(ui::MouseEvent(
-        ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(), base::TimeTicks(),
-        ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+        ui::EventType::kMousePressed, gfx::Point(), gfx::Point(),
+        base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   }
 
   SidePanelEntry::Key GetKeyForExtension(const extensions::ExtensionId& id) {
@@ -256,7 +274,7 @@ class SidePanelCoordinatorTest : public TestWithBrowserView {
         extensions::ExtensionBuilder(name)
             .SetLocation(extensions::mojom::ManifestLocation::kInternal)
             .SetManifestVersion(3)
-            .AddPermission("sidePanel")
+            .AddAPIPermission("sidePanel")
             .Build();
 
     extension_service()->GrantPermissions(extension.get());
@@ -281,13 +299,13 @@ class SidePanelCoordinatorTest : public TestWithBrowserView {
     return extension_service_;
   }
 
-  base::test::ScopedFeatureList feature_list_;
   raw_ptr<extensions::ExtensionService> extension_service_;
   raw_ptr<extensions::TestExtensionSystem> extension_system_;
   raw_ptr<SidePanelCoordinator, DanglingUntriaged> coordinator_;
   raw_ptr<SidePanelRegistry, DanglingUntriaged> global_registry_;
   std::vector<raw_ptr<SidePanelRegistry, DanglingUntriaged>>
       contextual_registries_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 class MockSidePanelViewStateObserver : public SidePanelViewStateObserver {
@@ -586,16 +604,18 @@ TEST_F(SidePanelCoordinatorTest, SwapBetweenTabsWithReadingListOpen) {
 }
 
 TEST_F(SidePanelCoordinatorTest, ContextualEntryDeregistered) {
-  // Verify the first tab has one entry, kCustomizeChrome.
+  // Verify the first tab has two entries, kReadAnything and kCustomizeChrome.
   browser_view()->browser()->tab_strip_model()->ActivateTabAt(0);
-  EXPECT_EQ(contextual_registries_[0]->entries().size(), 1u);
+  EXPECT_EQ(contextual_registries_[0]->entries().size(), 2u);
   EXPECT_EQ(contextual_registries_[0]->entries()[0]->key().id(),
+            SidePanelEntry::Id::kReadAnything);
+  EXPECT_EQ(contextual_registries_[0]->entries()[1]->key().id(),
             SidePanelEntry::Id::kCustomizeChrome);
 
   // Deregister kCustomizeChrome from the first tab.
   contextual_registries_[0]->Deregister(
       SidePanelEntry::Key(SidePanelEntry::Id::kCustomizeChrome));
-  EXPECT_EQ(contextual_registries_[0]->entries().size(), 0u);
+  EXPECT_EQ(contextual_registries_[0]->entries().size(), 1u);
 }
 
 TEST_F(SidePanelCoordinatorTest, ContextualEntryDeregisteredWhileVisible) {
@@ -620,7 +640,7 @@ TEST_F(SidePanelCoordinatorTest, ContextualEntryDeregisteredWhileVisible) {
       SidePanelEntry::Key(SidePanelEntry::Id::kCustomizeChrome));
   contextual_registries_[0]->Deregister(
       SidePanelEntry::Key(SidePanelEntry::Id::kCustomizeChrome));
-  EXPECT_EQ(contextual_registries_[0]->entries().size(), 0u);
+  EXPECT_EQ(contextual_registries_[0]->entries().size(), 1u);
 
   // Verify the panel defaults back to the last visible global entry or the
   // reading list.
@@ -647,7 +667,7 @@ TEST_F(
   // Deregister kCustomizeChrome from the first tab.
   contextual_registries_[0]->Deregister(
       SidePanelEntry::Key(SidePanelEntry::Id::kCustomizeChrome));
-  EXPECT_EQ(contextual_registries_[0]->entries().size(), 0u);
+  EXPECT_EQ(contextual_registries_[0]->entries().size(), 1u);
 
   // Verify the panel closes.
   EXPECT_FALSE(browser_view()->unified_side_panel()->GetVisible());
@@ -1123,6 +1143,72 @@ TEST_F(SidePanelCoordinatorTest,
   EXPECT_FALSE(contextual_registries_[1]->active_entry().has_value());
 }
 
+// Verify that side panels maintain individual widths when the
+// #side-panel-resizing flag is enabled. In this case, the bookmarks and reading
+// list side panels should be able to have independent widths.
+TEST_F(SidePanelCoordinatorTest, SidePanelWidthPreference) {
+  ASSERT_TRUE(browser_view());
+  SidePanel* side_panel = browser_view()->unified_side_panel();
+  ASSERT_TRUE(side_panel);
+
+  PrefService* prefs = browser_view()->browser()->profile()->GetPrefs();
+  auto& dict = prefs->GetDict(prefs::kSidePanelIdToWidth);
+  const std::string bookmarks_side_panel_id =
+      SidePanelEntryIdToString(SidePanelEntry::Id::kBookmarks);
+  const std::string reading_list_side_panel_id =
+      SidePanelEntryIdToString(SidePanelEntry::Id::kReadingList);
+
+  // Verify both side panels do not have a default value.
+  EXPECT_FALSE(dict.FindInt(bookmarks_side_panel_id).has_value());
+  EXPECT_FALSE(dict.FindInt(reading_list_side_panel_id).has_value());
+
+  coordinator_->Toggle(SidePanelEntry::Key(SidePanelEntry::Id::kBookmarks),
+                       SidePanelOpenTrigger::kPinnedEntryToolbarButton);
+  views::test::RunScheduledLayout(browser_view());
+  const int initial_bookmark_width = side_panel->width();
+  const int expected_bookmark_width = initial_bookmark_width + 100;
+
+  // Resize the bookmarks side panel.
+  side_panel->OnResize(-100, false);
+
+  // Ensure the bookmark width is updated accordingly after resizing.
+  views::test::RunScheduledLayout(browser_view());
+  EXPECT_EQ(side_panel->width(), expected_bookmark_width);
+
+  // Verify the preference value is updated after resize
+  EXPECT_EQ(expected_bookmark_width, prefs->GetDict(prefs::kSidePanelIdToWidth)
+                                         .FindInt(bookmarks_side_panel_id));
+
+  // Show the reading list side panel.
+  coordinator_->Show(SidePanelEntry::Id::kReadingList);
+  views::test::RunScheduledLayout(browser_view());
+
+  // Verify the side panel keeps the bookmarks resized width since it doesn't
+  // have a default value yet.
+  EXPECT_EQ(expected_bookmark_width, side_panel->width());
+  const int initial_reading_list_width = side_panel->width();
+  const int expected_reading_list_width = initial_reading_list_width - 50;
+
+  // Resize the reading list side panel.
+  side_panel->OnResize(-50, false);
+  views::test::RunScheduledLayout(browser_view());
+
+  // Ensure the reading list width is updated accordingly after resizing.
+  EXPECT_EQ(side_panel->width(), expected_reading_list_width);
+
+  // Verify the preference value is updated after resize
+  EXPECT_EQ(expected_reading_list_width,
+            prefs->GetDict(prefs::kSidePanelIdToWidth)
+                .FindInt(reading_list_side_panel_id));
+
+  // Show the bookmarks side panel again to verify we use the correct width.
+  coordinator_->Show(SidePanelEntry::Id::kBookmarks);
+  views::test::RunScheduledLayout(browser_view());
+
+  EXPECT_NE(expected_reading_list_width, side_panel->width());
+  EXPECT_EQ(expected_bookmark_width, side_panel->width());
+}
+
 class TestSidePanelObserver : public SidePanelEntryObserver {
  public:
   explicit TestSidePanelObserver(SidePanelRegistry* registry)
@@ -1132,6 +1218,15 @@ class TestSidePanelObserver : public SidePanelEntryObserver {
   void OnEntryHidden(SidePanelEntry* entry) override {
     registry_->Deregister(entry->key());
   }
+
+  void OnEntryWillHide(SidePanelEntry* entry,
+                       SidePanelEntryHideReason reason) override {
+    last_entry_will_hide_entry_id_ = entry->key().id();
+    last_entry_will_hide_reason_ = reason;
+  }
+
+  std::optional<SidePanelEntry::Id> last_entry_will_hide_entry_id_;
+  std::optional<SidePanelEntryHideReason> last_entry_will_hide_reason_;
 
  private:
   raw_ptr<SidePanelRegistry> registry_;
@@ -1145,8 +1240,7 @@ TEST_F(SidePanelCoordinatorTest,
   auto observer =
       std::make_unique<TestSidePanelObserver>(contextual_registries_[0]);
   auto entry = std::make_unique<SidePanelEntry>(
-      SidePanelEntry::Id::kAboutThisSite, u"About this site",
-      ui::ImageModel::FromVectorIcon(kReadingListIcon, ui::kColorIcon),
+      SidePanelEntry::Id::kAboutThisSite,
       base::BindRepeating([]() { return std::make_unique<views::View>(); }));
   entry->AddObserver(observer.get());
   contextual_registries_[0]->Register(std::move(entry));
@@ -1155,7 +1249,11 @@ TEST_F(SidePanelCoordinatorTest,
   // Switch to another entry.
   coordinator_->Show(SidePanelEntry::Id::kReadingList);
 
-  // Verify that the previous entry has deregistered.
+  // Verify that the previous entry has deregistered and is hidden.
+  EXPECT_THAT(observer->last_entry_will_hide_entry_id_,
+              testing::Optional(SidePanelEntry::Id::kAboutThisSite));
+  EXPECT_THAT(observer->last_entry_will_hide_reason_,
+              testing::Optional(SidePanelEntryHideReason::kReplaced));
   EXPECT_FALSE(contextual_registries_[0]->GetEntryForKey(
       SidePanelEntry::Key(SidePanelEntry::Id::kAboutThisSite)));
 }
@@ -1168,8 +1266,7 @@ TEST_F(SidePanelCoordinatorTest,
   auto observer =
       std::make_unique<TestSidePanelObserver>(contextual_registries_[0]);
   auto entry = std::make_unique<SidePanelEntry>(
-      SidePanelEntry::Id::kAboutThisSite, u"About this site",
-      ui::ImageModel::FromVectorIcon(kReadingListIcon, ui::kColorIcon),
+      SidePanelEntry::Id::kAboutThisSite,
       base::BindRepeating([]() { return std::make_unique<views::View>(); }));
   entry->AddObserver(observer.get());
   contextual_registries_[0]->Register(std::move(entry));
@@ -1178,7 +1275,11 @@ TEST_F(SidePanelCoordinatorTest,
   // Close the side panel.
   coordinator_->Close();
 
-  // Verify that the previous entry has deregistered.
+  // Verify that the previous entry has deregistered and is hidden.
+  EXPECT_THAT(observer->last_entry_will_hide_entry_id_,
+              testing::Optional(SidePanelEntry::Id::kAboutThisSite));
+  EXPECT_THAT(observer->last_entry_will_hide_reason_,
+              testing::Optional(SidePanelEntryHideReason::kSidePanelClosed));
   EXPECT_FALSE(contextual_registries_[0]->GetEntryForKey(
       SidePanelEntry::Key(SidePanelEntry::Id::kAboutThisSite)));
 }
@@ -1190,14 +1291,12 @@ TEST_F(SidePanelCoordinatorTest, ShouldNotRecreateTheSameEntry) {
 
   int count = 0;
   global_registry_->Register(std::make_unique<SidePanelEntry>(
-      SidePanelEntry::Id::kLens, u"lens",
-      ui::ImageModel::FromVectorIcon(kReadingListIcon, ui::kColorIcon),
-      base::BindRepeating(
-          [](int* count) {
-            (*count)++;
-            return std::make_unique<views::View>();
-          },
-          &count)));
+      SidePanelEntry::Id::kLens, base::BindRepeating(
+                                     [](int* count) {
+                                       (*count)++;
+                                       return std::make_unique<views::View>();
+                                     },
+                                     &count)));
   coordinator_->Show(SidePanelEntry::Id::kLens);
   ASSERT_EQ(1, count);
   coordinator_->Show(SidePanelEntry::Id::kLens);
@@ -1484,13 +1583,11 @@ TEST_F(SidePanelCoordinatorTest, DeregisterAndReturnView) {
   auto create_entry_with_counter = [](const SidePanelEntry::Key& key,
                                       int counter) {
     return std::make_unique<SidePanelEntry>(
-        key, u"basic entry",
-        ui::ImageModel::FromVectorIcon(kReadingListIcon, ui::kColorIcon),
-        base::BindRepeating(
-            [](int counter) -> std::unique_ptr<views::View> {
-              return std::make_unique<ViewWithCounter>(counter);
-            },
-            counter));
+        key, base::BindRepeating(
+                 [](int counter) -> std::unique_ptr<views::View> {
+                   return std::make_unique<ViewWithCounter>(counter);
+                 },
+                 counter));
   };
 
   // Register the entry but don't show it.
@@ -1589,23 +1686,18 @@ TEST_F(SidePanelCoordinatorTest, ExtensionSidePanelHasPinButton) {
 class SidePanelCoordinatorLoadingContentTest : public SidePanelCoordinatorTest {
  public:
   void SetUp() override {
-    feature_list_.InitWithFeatures(
-        {features::kSidePanelPinning, features::kResponsiveToolbar}, {});
     TestWithBrowserView::SetUp();
 
     AddTabToBrowser(GURL("http://foo1.com"));
     AddTabToBrowser(GURL("http://foo2.com"));
 
-    coordinator_ = SidePanelUtil::GetSidePanelCoordinatorForBrowser(browser());
-    global_registry_ = SidePanelCoordinator::GetGlobalSidePanelRegistry(
-        browser_view()->browser());
+    coordinator_ = browser()->GetFeatures().side_panel_coordinator();
+    global_registry_ = coordinator_->GetWindowRegistry();
 
     // Add a kCustomizeChrome entry to the global registry with loading content
     // not available.
     std::unique_ptr<SidePanelEntry> entry1 = std::make_unique<SidePanelEntry>(
         SidePanelEntry::Id::kCustomizeChrome,
-        l10n_util::GetStringUTF16(IDS_SIDE_PANEL_CUSTOMIZE_CHROME_TITLE),
-        ui::ImageModel::FromVectorIcon(kReadingListIcon, ui::kColorIcon),
         base::BindRepeating([]() {
           auto view = std::make_unique<views::View>();
           SidePanelUtil::GetSidePanelContentProxy(view.get())
@@ -1619,8 +1711,6 @@ class SidePanelCoordinatorLoadingContentTest : public SidePanelCoordinatorTest {
     // available.
     std::unique_ptr<SidePanelEntry> entry2 = std::make_unique<SidePanelEntry>(
         SidePanelEntry::Id::kLens,
-        l10n_util::GetStringUTF16(IDS_LENS_DEFAULT_TITLE),
-        ui::ImageModel::FromVectorIcon(kReadingListIcon, ui::kColorIcon),
         base::BindRepeating([]() {
           auto view = std::make_unique<views::View>();
           SidePanelUtil::GetSidePanelContentProxy(view.get())
@@ -1633,8 +1723,6 @@ class SidePanelCoordinatorLoadingContentTest : public SidePanelCoordinatorTest {
     // Add a kAboutThisSite entry to the global registry with content available.
     std::unique_ptr<SidePanelEntry> entry3 = std::make_unique<SidePanelEntry>(
         SidePanelEntry::Id::kAboutThisSite,
-        l10n_util::GetStringUTF16(IDS_PAGE_INFO_ABOUT_THIS_PAGE_TITLE),
-        ui::ImageModel::FromVectorIcon(kReadingListIcon, ui::kColorIcon),
         base::BindRepeating([]() {
           auto view = std::make_unique<views::View>();
           SidePanelUtil::GetSidePanelContentProxy(view.get())
@@ -1671,10 +1759,12 @@ TEST_F(SidePanelCoordinatorLoadingContentTest, ContentDelaysForLoadingContent) {
   loading_content_proxy =
       SidePanelUtil::GetSidePanelContentProxy(loading_content);
   EXPECT_FALSE(loading_content_proxy->IsAvailable());
-  EXPECT_EQ(GetTitleText(), loading_content_entry1_->name());
+  EXPECT_EQ(coordinator_->GetCurrentEntryId(),
+            loading_content_entry1_->key().id());
   // Set as available and make sure the title has updated.
   loading_content_proxy->SetAvailable(true);
-  EXPECT_EQ(GetTitleText(), loading_content_entry2_->name());
+  EXPECT_EQ(coordinator_->GetCurrentEntryId(),
+            loading_content_entry2_->key().id());
 }
 
 TEST_F(SidePanelCoordinatorLoadingContentTest,
@@ -1682,7 +1772,8 @@ TEST_F(SidePanelCoordinatorLoadingContentTest,
   EXPECT_FALSE(browser_view()->unified_side_panel()->GetVisible());
   coordinator_->Show(loaded_content_entry1_->key().id());
   EXPECT_TRUE(browser_view()->unified_side_panel()->GetVisible());
-  EXPECT_EQ(GetTitleText(), loaded_content_entry1_->name());
+  EXPECT_EQ(coordinator_->GetCurrentEntryId(),
+            loaded_content_entry1_->key().id());
 
   // Switch to loading_content_entry1_ that has loading content.
   coordinator_->Show(loading_content_entry1_->key().id());
@@ -1691,7 +1782,8 @@ TEST_F(SidePanelCoordinatorLoadingContentTest,
   SidePanelContentProxy* loading_content_proxy1 =
       SidePanelUtil::GetSidePanelContentProxy(loading_content1);
   EXPECT_FALSE(loading_content_proxy1->IsAvailable());
-  EXPECT_EQ(GetTitleText(), loaded_content_entry1_->name());
+  EXPECT_EQ(coordinator_->GetCurrentEntryId(),
+            loaded_content_entry1_->key().id());
   // Verify the loading_content_entry1_ is the loading entry.
   EXPECT_EQ(coordinator_->GetLoadingEntryForTesting(), loading_content_entry1_);
 
@@ -1705,19 +1797,22 @@ TEST_F(SidePanelCoordinatorLoadingContentTest,
   EXPECT_FALSE(loading_content_proxy2->IsAvailable());
   // Verify the loading_content_entry2_ is no longer the loading entry.
   EXPECT_EQ(coordinator_->GetLoadingEntryForTesting(), loading_content_entry2_);
-  EXPECT_EQ(GetTitleText(), loaded_content_entry1_->name());
+  EXPECT_EQ(coordinator_->GetCurrentEntryId(),
+            loaded_content_entry1_->key().id());
 
   // Set loading_content_entry1_ as available and verify it is not made the
   // active entry.
   loading_content_proxy1->SetAvailable(true);
   EXPECT_EQ(coordinator_->GetLoadingEntryForTesting(), loading_content_entry2_);
-  EXPECT_EQ(GetTitleText(), loaded_content_entry1_->name());
+  EXPECT_EQ(coordinator_->GetCurrentEntryId(),
+            loaded_content_entry1_->key().id());
 
   // Set loading_content_entry2_ as available and verify it is made the active
   // entry.
   loading_content_proxy2->SetAvailable(true);
   EXPECT_EQ(coordinator_->GetLoadingEntryForTesting(), nullptr);
-  EXPECT_EQ(GetTitleText(), loading_content_entry2_->name());
+  EXPECT_EQ(coordinator_->GetCurrentEntryId(),
+            loading_content_entry2_->key().id());
 }
 
 TEST_F(SidePanelCoordinatorLoadingContentTest,
@@ -1743,7 +1838,8 @@ TEST_F(SidePanelCoordinatorLoadingContentTest,
   SidePanelContentProxy* loading_content_proxy2 =
       SidePanelUtil::GetSidePanelContentProxy(loading_content);
   EXPECT_FALSE(loading_content_proxy2->IsAvailable());
-  EXPECT_EQ(GetTitleText(), loading_content_entry1_->name());
+  EXPECT_EQ(coordinator_->GetCurrentEntryId(),
+            loading_content_entry1_->key().id());
   // Verify the loading_content_entry2_ is the loading entry.
   EXPECT_EQ(coordinator_->GetLoadingEntryForTesting(), loading_content_entry2_);
 
@@ -1751,16 +1847,19 @@ TEST_F(SidePanelCoordinatorLoadingContentTest,
   coordinator_->Show(loading_content_entry1_->key().id());
   // Verify the loading_content_entry2_ is no longer the loading entry.
   EXPECT_EQ(coordinator_->GetLoadingEntryForTesting(), nullptr);
-  EXPECT_EQ(GetTitleText(), loading_content_entry1_->name());
+  EXPECT_EQ(coordinator_->GetCurrentEntryId(),
+            loading_content_entry1_->key().id());
 
   // Set loading_content_entry2_ as available and verify it is not made the
   // active entry.
   loading_content_proxy2->SetAvailable(true);
-  EXPECT_EQ(GetTitleText(), loading_content_entry1_->name());
+  EXPECT_EQ(coordinator_->GetCurrentEntryId(),
+            loading_content_entry1_->key().id());
 
   // Show loading_content_entry2_ and verify it shows without availability
   // needing to be set again.
   coordinator_->Show(loading_content_entry2_->key().id());
   EXPECT_EQ(coordinator_->GetLoadingEntryForTesting(), nullptr);
-  EXPECT_EQ(GetTitleText(), loading_content_entry2_->name());
+  EXPECT_EQ(coordinator_->GetCurrentEntryId(),
+            loading_content_entry2_->key().id());
 }

@@ -135,8 +135,31 @@ class CONTENT_EXPORT WebAuthenticationDelegate {
       BrowserContext* browser_context,
       const url::Origin& caller_origin);
 
-  // Invokes the callback with true when passkeys provided by browser sync are
-  // available for use, and false otherwise. The callback can be invoked
+  // DeletePasskey removes a passkey from the credential storage provider using
+  // the provided credential ID and relying party ID.
+  virtual void DeletePasskey(content::WebContents* web_contents,
+                             const std::vector<uint8_t>& passkey_credential_id,
+                             const std::string& relying_party_id);
+
+  // DeleteUnacceptedPasskeys removes any non-appearing credential in the
+  // all_accepted_credentials_ids list from the credential storage provider for
+  // the given relying party ID and user ID.
+  virtual void DeleteUnacceptedPasskeys(
+      content::WebContents* web_contents,
+      const std::string& relying_party_id,
+      const std::vector<uint8_t>& user_id,
+      const std::vector<std::vector<uint8_t>>& all_accepted_credentials_ids);
+
+  // UpdateUserPasskeys updates the name and display name of a passkey for the
+  // given relying party ID and user ID.
+  virtual void UpdateUserPasskeys(content::WebContents* web_contents,
+                                  const std::string& relying_party_id,
+                                  std::vector<uint8_t>& user_id,
+                                  const std::string& name,
+                                  const std::string& display_name);
+
+  // Invokes the callback with true when passkeys provided by browser sync
+  // are available for use, and false otherwise. The callback can be invoked
   // synchronously or asynchronously.
   virtual void BrowserProvidedPasskeysAvailable(
       BrowserContext* browser_context,
@@ -258,14 +281,17 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
 
   // Supplies callbacks that the embedder can invoke to initiate certain
   // actions, namely: cancel the request, start the request over, preselect an
-  // account, dispatch request to connected authenticators, and power on the
-  // bluetooth adapter.
+  // account, dispatch request to connected authenticators, power on the
+  // bluetooth adapter, and request permission to use the bluetooth adapter.
   virtual void RegisterActionCallbacks(
       base::OnceClosure cancel_callback,
       base::RepeatingClosure start_over_callback,
       AccountPreselectedCallback account_preselected_callback,
       device::FidoRequestHandlerBase::RequestCallback request_callback,
-      base::RepeatingClosure bluetooth_adapter_power_on_callback);
+      base::RepeatingClosure bluetooth_adapter_power_on_callback,
+      base::RepeatingCallback<
+          void(device::FidoRequestHandlerBase::BlePermissionCallback)>
+          request_ble_permission_callback);
 
   // Invokes |callback| with |true| if the given relying party ID is permitted
   // to receive attestation certificates from the provided FidoAuthenticator.
@@ -386,7 +412,8 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   // |FidoAuthenticatorAdded|.
   bool EmbedderControlsAuthenticatorDispatch(
       const device::FidoAuthenticator& authenticator) override;
-  void BluetoothAdapterPowerChanged(bool is_powered_on) override;
+  void BluetoothAdapterStatusChanged(
+      device::FidoRequestHandlerBase::BleStatus ble_status) override;
   void FidoAuthenticatorAdded(
       const device::FidoAuthenticator& authenticator) override;
   void FidoAuthenticatorRemoved(std::string_view device_id) override;

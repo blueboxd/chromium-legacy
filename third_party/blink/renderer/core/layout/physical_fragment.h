@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_PHYSICAL_FRAGMENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_PHYSICAL_FRAGMENT_H_
 
@@ -85,6 +90,9 @@ class CORE_EXPORT PhysicalFragment : public GarbageCollected<PhysicalFragment> {
     // includes a non-optional kPageArea child.
     // See https://drafts.csswg.org/css-page-3/#page-model
     kPageBorderBox,
+    // Page margin fragment (e.g. author-specified header / footer). Used by
+    // printing.
+    kPageMargin,
     // A page area fragment. Used by printing. This is a fragmentainer, into
     // which document contents flow and get fragmented. It is sized with respect
     // to any given @page size when possible, and also honors scaling from print
@@ -130,10 +138,6 @@ class CORE_EXPORT PhysicalFragment : public GarbageCollected<PhysicalFragment> {
                    unsigned sub_type);
 
   PhysicalFragment(const PhysicalFragment& other);
-
-  ~PhysicalFragment();
-
-  void Dispose();
 
   FragmentType Type() const { return static_cast<FragmentType>(type_); }
   bool IsContainer() const {
@@ -566,7 +570,7 @@ class CORE_EXPORT PhysicalFragment : public GarbageCollected<PhysicalFragment> {
       using pointer = value_type*;
       using reference = value_type&;
 
-      constexpr ConstIterator() = default;
+      ConstIterator() = default;
 
       ConstIterator(const PhysicalFragmentLink* current, wtf_size_t size)
           : current_(current), end_(current + size) {
@@ -597,8 +601,9 @@ class CORE_EXPORT PhysicalFragment : public GarbageCollected<PhysicalFragment> {
       void SkipInvalidAndSetPostLayout() {
         for (; current_ != end_; ++current_) {
           const PhysicalFragment* fragment = current_->fragment.Get();
-          if (UNLIKELY(fragment->IsLayoutObjectDestroyedOrMoved()))
+          if (fragment->IsLayoutObjectDestroyedOrMoved()) [[unlikely]] {
             continue;
+          }
           if (const PhysicalFragment* post_layout = fragment->PostLayout()) {
             post_layout_.fragment = post_layout;
             post_layout_.offset = current_->offset;
@@ -680,12 +685,20 @@ class CORE_EXPORT PhysicalFragment : public GarbageCollected<PhysicalFragment> {
            PropagatedSnapAreas();
   }
 
-  struct OofData : public GarbageCollected<OofData> {
+  class OofData : public GarbageCollected<OofData>,
+                  private PhysicalAnchorQuery {
    public:
     virtual ~OofData() = default;
-    virtual void Trace(Visitor* visitor) const;
-    HeapVector<PhysicalOofPositionedNode> oof_positioned_descendants;
-    PhysicalAnchorQuery anchor_query;
+    void Trace(Visitor* visitor) const override;
+    HeapVector<PhysicalOofPositionedNode>& OofPositionedDescendants() {
+      return oof_positioned_descendants_;
+    }
+    PhysicalAnchorQuery& AnchorQuery() {
+      return *static_cast<PhysicalAnchorQuery*>(this);
+    }
+
+   private:
+    HeapVector<PhysicalOofPositionedNode> oof_positioned_descendants_;
   };
 
   // Returns true if some child is OOF in the fragment tree. This happens if
@@ -703,13 +716,13 @@ class CORE_EXPORT PhysicalFragment : public GarbageCollected<PhysicalFragment> {
   }
 
   bool HasOutOfFlowPositionedDescendants() const {
-    return oof_data_ && !oof_data_->oof_positioned_descendants.empty();
+    return oof_data_ && !oof_data_->OofPositionedDescendants().empty();
   }
 
   base::span<PhysicalOofPositionedNode> OutOfFlowPositionedDescendants() const;
 
   bool HasAnchorQuery() const {
-    return oof_data_ && !oof_data_->anchor_query.IsEmpty();
+    return oof_data_ && !oof_data_->AnchorQuery().IsEmpty();
   }
   bool HasAnchorQueryToPropagate() const {
     return HasAnchorQuery() || Style().AnchorName() || IsImplicitAnchor();
@@ -717,7 +730,7 @@ class CORE_EXPORT PhysicalFragment : public GarbageCollected<PhysicalFragment> {
   const PhysicalAnchorQuery* AnchorQuery() const {
     if (!HasAnchorQuery())
       return nullptr;
-    return &oof_data_->anchor_query;
+    return &oof_data_->AnchorQuery();
   }
 
   const FragmentedOofData* GetFragmentedOofData() const;
@@ -731,6 +744,8 @@ class CORE_EXPORT PhysicalFragment : public GarbageCollected<PhysicalFragment> {
   bool NeedsOOFPositionedInfoPropagation() const;
 
  protected:
+  ~PhysicalFragment() = default;
+
   const ComputedStyle& SlowEffectiveStyle() const;
 
   void AddOutlineRectsForNormalChildren(

@@ -49,6 +49,7 @@
 <translation id="2295140143284145483">Survey</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="2353636109065292463">Checking your Internet connection</translation>
+<translation id="2359808026110333948">Continue</translation>
 <translation id="2388990488038464401">Call this number from your phone?</translation>
 <translation id="2435457462613246316">Show password</translation>
 <translation id="24452542372838207">Expand notification</translation>
@@ -129,6 +130,7 @@
 <translation id="5574202486608032840"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /> system</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">Left arrow</translation>
+<translation id="5633029987065897167">Empty</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}other{# mins}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Active today}=1{Active 1 day ago}other{Active # days ago}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 day and }other{# days and }}</translation>

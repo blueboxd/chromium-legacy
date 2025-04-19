@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 
 #include <numeric>
@@ -116,7 +121,7 @@ TEST(NativeValueTraitsImplTest, IDLRecord) {
             .As<v8::Proxy>();
 
     ExceptionState exception_state_from_proxy(
-        scope.GetIsolate(), ExceptionContextType::kOperationInvoke,
+        scope.GetIsolate(), v8::ExceptionContext::kOperation,
         "NativeValueTraitsImplTest", "IDLRecordTest");
     const auto& record_from_proxy =
         NativeValueTraits<IDLRecord<IDLString, IDLLong>>::NativeValue(
@@ -395,10 +400,8 @@ v8::Local<Arr> MakeArray(v8::Isolate* isolate, size_t size) {
   return arr;
 }
 
-using PassAsSpanShared =
-    PassAsSpan<PassAsSpanMarkerBase::AllowSharedFlag::kAllowShared>;
-using PassAsSpanNoShared =
-    PassAsSpan<PassAsSpanMarkerBase::AllowSharedFlag::kDoNotAllowShared>;
+using PassAsSpanShared = PassAsSpan<PassAsSpanMarkerBase::Flags::kAllowShared>;
+using PassAsSpanNoShared = PassAsSpan<PassAsSpanMarkerBase::Flags::kNone>;
 
 TEST(NativeValueTraitsImplTest, PassAsSpanBasic) {
   constexpr size_t kBufferSize = 4;
@@ -564,6 +567,164 @@ TEST(NativeValueTraitsImplTest, PassAsSpanCopy) {
   result = NativeValueTraits<PassAsSpanShared>::ArgumentValue(
       scope.GetIsolate(), 0, v8_object2, exception_state);
   EXPECT_THAT(result2.as_span(), testing::ElementsAre(0, 1, 2, 3));
+}
+
+template <typename T>
+using TypedPassAsSpanShared =
+    PassAsSpan<PassAsSpanMarkerBase::Flags::kAllowShared, T>;
+template <typename T>
+using TypedPassAsSpanNoShared =
+    PassAsSpan<PassAsSpanMarkerBase::Flags::kNone, T>;
+
+TEST(NativeValueTraitsImplTest, TypedPassAsSpanBasic) {
+  test::TaskEnvironment task_environment;
+  V8TestingScope scope;
+  NonThrowableExceptionState exception_state;
+  v8::Local<v8::Object> v8_object =
+      EvaluateScriptForObject(scope, "new Uint16Array([0, 1, 2, 3])");
+
+  EXPECT_THAT(NativeValueTraits<TypedPassAsSpanShared<uint16_t>>::ArgumentValue(
+                  scope.GetIsolate(), 0, v8_object, exception_state)
+                  .as_span(),
+              testing::ElementsAre(0, 1, 2, 3));
+}
+
+TEST(NativeValueTraitsImplTest, TypedPassAsSpanSubarray) {
+  static const int32_t kRawData[] = {-1, -2, -3, -4};
+
+  test::TaskEnvironment task_environment;
+  V8TestingScope scope;
+  NonThrowableExceptionState exception_state;
+
+  auto v8_arraybuffer =
+      MakeArray<v8::ArrayBuffer>(scope.GetIsolate(), sizeof kRawData);
+  memcpy(v8_arraybuffer->Data(), kRawData, sizeof kRawData);
+  v8::Local<v8::Int32Array> int32_array = v8::Int32Array::New(
+      v8_arraybuffer, /* byte_offset=*/1 * sizeof(int32_t), /* length=*/2);
+
+  EXPECT_THAT(NativeValueTraits<TypedPassAsSpanShared<int32_t>>::ArgumentValue(
+                  scope.GetIsolate(), 0, int32_array, exception_state)
+                  .as_span(),
+              testing::ElementsAre(-2, -3));
+}
+
+TEST(NativeValueTraitsImplTest, TypedPassAsSpanBadType) {
+  static const int32_t kRawData[] = {-1, -2, -3, -4};
+
+  test::TaskEnvironment task_environment;
+  V8TestingScope scope;
+
+  auto v8_arraybuffer =
+      MakeArray<v8::ArrayBuffer>(scope.GetIsolate(), sizeof kRawData);
+  memcpy(v8_arraybuffer->Data(), kRawData, sizeof kRawData);
+
+  {
+    DummyExceptionStateForTesting exception_state;
+    EXPECT_THAT(
+        NativeValueTraits<TypedPassAsSpanShared<int32_t>>::ArgumentValue(
+            scope.GetIsolate(), 0, v8_arraybuffer, exception_state)
+            .as_span(),
+        testing::IsEmpty());
+    EXPECT_TRUE(exception_state.HadException());
+  }
+
+  v8::Local<v8::Int32Array> int32_array = v8::Int32Array::New(
+      v8_arraybuffer, /* byte_offset=*/0, /* length=*/std::size(kRawData));
+
+  {
+    DummyExceptionStateForTesting exception_state;
+    EXPECT_THAT(
+        NativeValueTraits<TypedPassAsSpanShared<uint32_t>>::ArgumentValue(
+            scope.GetIsolate(), 0, int32_array, exception_state)
+            .as_span(),
+        testing::IsEmpty());
+    EXPECT_TRUE(exception_state.HadException());
+  }
+  {
+    DummyExceptionStateForTesting exception_state;
+    EXPECT_THAT(NativeValueTraits<TypedPassAsSpanShared<int8_t>>::ArgumentValue(
+                    scope.GetIsolate(), 0, int32_array, exception_state)
+                    .as_span(),
+                testing::IsEmpty());
+    EXPECT_TRUE(exception_state.HadException());
+  }
+}
+
+// Uint8 arrays get their own coverage because of ClampedUint8Array :-/
+TEST(NativeValueTraitsImplTest, TypedPassAsSpanUint8) {
+  test::TaskEnvironment task_environment;
+  NonThrowableExceptionState exception_state;
+  V8TestingScope scope;
+  {
+    v8::Local<v8::Object> v8_object =
+        EvaluateScriptForObject(scope, "new Uint8Array([0, 1, 256, 257])");
+
+    EXPECT_THAT(
+        NativeValueTraits<TypedPassAsSpanShared<uint8_t>>::ArgumentValue(
+            scope.GetIsolate(), 0, v8_object, exception_state)
+            .as_span(),
+        testing::ElementsAre(0, 1, 0, 1));
+  }
+  {
+    v8::Local<v8::Object> v8_object = EvaluateScriptForObject(
+        scope, "new Uint8ClampedArray([0, 1, 256, 257])");
+    EXPECT_THAT(
+        NativeValueTraits<TypedPassAsSpanShared<uint8_t>>::ArgumentValue(
+            scope.GetIsolate(), 0, v8_object, exception_state)
+            .as_span(),
+        testing::ElementsAre(0, 1, 255, 255));
+
+    DummyExceptionStateForTesting thrown_exception;
+    EXPECT_THAT(
+        NativeValueTraits<TypedPassAsSpanShared<uint16_t>>::ArgumentValue(
+            scope.GetIsolate(), 0, v8_object, thrown_exception)
+            .as_span(),
+        testing::IsEmpty());
+    EXPECT_TRUE(thrown_exception.HadException());
+  }
+}
+
+template <typename T>
+using PassAsSpanSequence =
+    PassAsSpan<PassAsSpanMarkerBase::Flags::kAllowSequence, T>;
+
+TEST(NativeValueTraitsImplTest, PassAsSpanAllowSequence) {
+  test::TaskEnvironment task_environment;
+  NonThrowableExceptionState exception_state;
+  V8TestingScope scope;
+  {
+    v8::Local<v8::Object> v8_object =
+        EvaluateScriptForObject(scope, "[1, 2, 3, 4]");
+
+    EXPECT_THAT(NativeValueTraits<PassAsSpanSequence<uint8_t>>::ArgumentValue(
+                    scope.GetIsolate(), 0, v8_object, exception_state)
+                    .as_span(),
+                testing::ElementsAre(1, 2, 3, 4));
+    EXPECT_THAT(NativeValueTraits<PassAsSpanSequence<double>>::ArgumentValue(
+                    scope.GetIsolate(), 0, v8_object, exception_state)
+                    .as_span(),
+                testing::ElementsAre(1.0, 2.0, 3.0, 4.0));
+
+    DummyExceptionStateForTesting thrown_exception;
+    EXPECT_THAT(
+        NativeValueTraits<TypedPassAsSpanShared<uint16_t>>::ArgumentValue(
+            scope.GetIsolate(), 0, v8_object, thrown_exception)
+            .as_span(),
+        testing::IsEmpty());
+    EXPECT_TRUE(thrown_exception.HadException());
+  }
+  {
+    v8::Local<v8::Object> v8_iterable = EvaluateScriptForObject(scope, R"(
+        (function*() {
+            yield 1;
+            yield 2;
+            yield 3;
+        })())");
+    EXPECT_THAT(NativeValueTraits<PassAsSpanSequence<uint8_t>>::ArgumentValue(
+                    scope.GetIsolate(), 0, v8_iterable, exception_state)
+                    .as_span(),
+                testing::ElementsAre(1, 2, 3));
+  }
 }
 
 }  // namespace

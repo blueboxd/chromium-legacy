@@ -4,6 +4,8 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/functional/callback_forward.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -21,6 +23,7 @@
 #include "chrome/browser/ui/exclusive_access/exclusive_access_test.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/test/isolated_web_app_test_utils.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
 #include "chrome/browser/web_applications/test/os_integration_test_override_impl.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -38,6 +41,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/frame/user_activation_state.h"
@@ -117,6 +121,23 @@ class FullscreenControllerInteractiveTest : public ExclusiveAccessTest {
     ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), key_code, false,
                                                 false, false, false));
     run_loop.Run();
+  }
+
+  void WaitForPointerLockBubbleToHide() {
+    PointerLockController* pointer_lock_controller =
+        browser()->exclusive_access_manager()->pointer_lock_controller();
+    base::RunLoop run_loop;
+    pointer_lock_controller->set_bubble_hide_callback_for_test(
+        base::BindRepeating(
+            [](base::RunLoop* run_loop,
+               ExclusiveAccessBubbleHideReason reason) {
+              ASSERT_EQ(reason, ExclusiveAccessBubbleHideReason::kTimeout);
+              run_loop->Quit();
+            },
+            &run_loop));
+    run_loop.Run();
+    pointer_lock_controller->set_bubble_hide_callback_for_test(
+        base::NullCallback());
   }
 
  private:
@@ -516,6 +537,9 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   ASSERT_TRUE(IsExclusiveAccessBubbleDisplayed());
   ASSERT_TRUE(IsPointerLocked());
   ASSERT_TRUE(IsExclusiveAccessBubbleDisplayed());
+  // Wait for the bubble to be shown for its full duration. This allows
+  // the page to lock the pointer without showing the bubble later.
+  WaitForPointerLockBubbleToHide();
 
   // Unlock the pointer from target, make sure it's unlocked.
   PressKeyAndWaitForPointerLockRequest(ui::VKEY_U);
@@ -531,6 +555,40 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   PressKeyAndWaitForPointerLockRequest(ui::VKEY_U);
   ASSERT_FALSE(IsPointerLocked());
   ASSERT_FALSE(IsExclusiveAccessBubbleDisplayed());
+}
+
+// TODO: crbug.com/336428594 - Flaky on Lacros.
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_SecondPointerLockShowsBubble DISABLED_SecondPointerLockShowsBubble
+#else
+#define MAYBE_SecondPointerLockShowsBubble SecondPointerLockShowsBubble
+#endif
+IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
+                       MAYBE_SecondPointerLockShowsBubble) {
+  SetWebContentsGrantedSilentPointerLockPermission();
+  auto test_server_handle = embedded_test_server()->StartAndReturnHandle();
+  ASSERT_TRUE(test_server_handle);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(kFullscreenPointerLockHTML)));
+
+  ASSERT_FALSE(IsExclusiveAccessBubbleDisplayed());
+
+  // Lock the pointer with a user gesture.
+  PressKeyAndWaitForPointerLockRequest(ui::VKEY_1);
+  ASSERT_TRUE(IsExclusiveAccessBubbleDisplayed());
+  ASSERT_TRUE(IsPointerLocked());
+  ASSERT_TRUE(IsExclusiveAccessBubbleDisplayed());
+
+  // Unlock the pointer from target, make sure it's unlocked.
+  PressKeyAndWaitForPointerLockRequest(ui::VKEY_U);
+  ASSERT_FALSE(IsPointerLocked());
+  ASSERT_FALSE(IsExclusiveAccessBubbleDisplayed());
+
+  // Lock the pointer again. The bubble wasn't shown for its full duration last
+  // time, so it gets shown again.
+  PressKeyAndWaitForPointerLockRequest(ui::VKEY_1);
+  ASSERT_TRUE(IsPointerLocked());
+  ASSERT_TRUE(IsExclusiveAccessBubbleDisplayed());
 }
 
 // Tests pointer lock is exited on page navigation.
@@ -703,7 +761,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   Browser* popup = ui_test_utils::WaitForBrowserToOpen();
   EXPECT_EQ(2u, browser_list->size());
   ui_test_utils::BrowserActivationWaiter(popup).WaitForActivation();
-  EXPECT_EQ(popup, browser_list->GetLastActive());
+  EXPECT_TRUE(ui_test_utils::IsBrowserActive(popup));
   ASSERT_FALSE(IsWindowFullscreenForTabOrPending());
 }
 
@@ -725,8 +783,9 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
                        CapturedContentEntersFullscreenWithinTab) {
   // Simulate tab capture, as used by getDisplayMedia() content sharing.
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  base::ScopedClosureRunner capture_closure = tab->IncrementCapturerCount(
-      gfx::Size(), /*stay_hidden=*/false, /*stay_awake=*/false);
+  base::ScopedClosureRunner capture_closure =
+      tab->IncrementCapturerCount(gfx::Size(), /*stay_hidden=*/false,
+                                  /*stay_awake=*/false, /*is_activity=*/true);
   EXPECT_TRUE(tab->IsBeingVisiblyCaptured());
 
   // The browser enters fullscreen-within-tab mode synchronously, but the window
@@ -754,8 +813,9 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
                        OpeningPopupDoesNotExitFullscreenWithinTab) {
   // Simulate visible tab capture and enter fullscreen-within-tab.
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  base::ScopedClosureRunner capture_closure = tab->IncrementCapturerCount(
-      gfx::Size(), /*stay_hidden=*/false, /*stay_awake=*/false);
+  base::ScopedClosureRunner capture_closure =
+      tab->IncrementCapturerCount(gfx::Size(), /*stay_hidden=*/false,
+                                  /*stay_awake=*/false, /*is_activity=*/true);
   tab->GetDelegate()->EnterFullscreenModeForTab(tab->GetPrimaryMainFrame(), {});
   EXPECT_EQ(tab->GetDelegate()->GetFullscreenState(tab).target_mode,
             content::FullscreenMode::kPseudoContent);
@@ -766,9 +826,9 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   EXPECT_EQ(1u, browser_list->size());
   content::ExecuteScriptAsync(tab, "open('.', '', 'popup')");
   Browser* popup = ui_test_utils::WaitForBrowserToOpen();
-  ui_test_utils::WaitForBrowserSetLastActive(popup);
+  ASSERT_TRUE(popup);
+  ui_test_utils::WaitUntilBrowserBecomeActive(popup);
   EXPECT_EQ(2u, browser_list->size());
-  EXPECT_EQ(popup, browser_list->GetLastActive());
   EXPECT_EQ(tab->GetDelegate()->GetFullscreenState(tab).target_mode,
             content::FullscreenMode::kPseudoContent);
 }
@@ -777,8 +837,9 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
                        BlockingContentsDoesNotExitFullscreenWithinTab) {
   // Simulate visible tab capture and enter fullscreen-within-tab.
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  base::ScopedClosureRunner capture_closure = tab->IncrementCapturerCount(
-      gfx::Size(), /*stay_hidden=*/false, /*stay_awake=*/false);
+  base::ScopedClosureRunner capture_closure =
+      tab->IncrementCapturerCount(gfx::Size(), /*stay_hidden=*/false,
+                                  /*stay_awake=*/false, /*is_activity=*/true);
   tab->GetDelegate()->EnterFullscreenModeForTab(tab->GetPrimaryMainFrame(), {});
   EXPECT_EQ(tab->GetDelegate()->GetFullscreenState(tab).target_mode,
             content::FullscreenMode::kPseudoContent);
@@ -809,31 +870,36 @@ class AutomaticFullscreenTest : public FullscreenControllerInteractiveTest,
               url, url, ContentSettingsType::AUTOMATIC_FULLSCREEN,
               CONTENT_SETTING_ALLOW);
     };
+
+    // Support multiple sites on the test server.
+    host_resolver()->AddRule("*", "127.0.0.1");
+
     if (GetParam()) {
-      iwa_test_server_ = web_app::CreateAndStartDevServer(
-          FILE_PATH_LITERAL("web_apps/simple_isolated_app"));
+      embedded_https_test_server().ServeFilesFromSourceDirectory(
+          GetChromeTestDataDir().AppendASCII("web_apps/simple_isolated_app"));
+      ASSERT_TRUE(embedded_https_test_server().Start());
       auto url_info = web_app::InstallDevModeProxyIsolatedWebApp(
-          browser()->profile(), iwa_test_server_->GetOrigin());
+          browser()->profile(), embedded_https_test_server().GetOrigin());
       allow_automatic_fullscreen(url_info.origin().GetURL());
       auto* frame =
           web_app::OpenIsolatedWebApp(browser()->profile(), url_info.app_id());
       web_contents_ = content::WebContents::FromRenderFrameHost(frame);
     } else {
-      ASSERT_TRUE(embedded_test_server()->Start());
-      const GURL url = embedded_test_server()->GetURL("/simple.html");
+      ASSERT_TRUE(embedded_https_test_server().Start());
+      GURL url = embedded_https_test_server().GetURL("a.com", "/simple.html");
       allow_automatic_fullscreen(url);
-      ASSERT_TRUE(AddTabAtIndex(0, url, ui::PAGE_TRANSITION_TYPED));
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
       web_contents_ = browser()->tab_strip_model()->GetActiveWebContents();
     }
+    ASSERT_TRUE(WaitForRenderFrameReady(web_contents_->GetPrimaryMainFrame()));
   }
 
   void TearDownOnMainThread() override { web_contents_ = nullptr; }
 
-  bool RequestFullscreen(bool gesture = false) {
+  bool RequestFullscreen(bool gesture = false,
+                         content::RenderFrameHost* rfh = nullptr) {
     static constexpr char kScript[] = R"JS(
         (async () => {
-          if (navigator.userActivation.isActive != $1)
-            return false;
           try { await document.body.requestFullscreen(); } catch {}
           return !!document.fullscreenElement;
         })();
@@ -841,10 +907,16 @@ class AutomaticFullscreenTest : public FullscreenControllerInteractiveTest,
 
     auto options = gesture ? content::EXECUTE_SCRIPT_DEFAULT_OPTIONS
                            : content::EXECUTE_SCRIPT_NO_USER_GESTURE;
-    auto script = content::JsReplace(kScript, gesture);
-    Browser* browser = chrome::FindBrowserWithTab(web_contents_);
+    rfh = rfh ? rfh : web_contents_->GetPrimaryMainFrame();
+    content::WebContents* tab = content::WebContents::FromRenderFrameHost(rfh);
+    Browser* browser = chrome::FindBrowserWithTab(tab);
+    if (!gesture) {
+      // Ensure nothing inadvertently triggered user activation beforehand.
+      EXPECT_EQ(false, EvalJs(rfh, "navigator.userActivation.isActive",
+                              content::EXECUTE_SCRIPT_NO_USER_GESTURE));
+    }
     ui_test_utils::FullscreenWaiter waiter(browser, {.tab_fullscreen = true});
-    auto result = EvalJs(web_contents_, script, options);
+    auto result = EvalJs(rfh, kScript, options);
     if (result.error.empty() && result.ExtractBool()) {
       waiter.Wait();
     }
@@ -866,40 +938,52 @@ class AutomaticFullscreenTest : public FullscreenControllerInteractiveTest,
     return result.error.empty() && !browser->window()->IsFullscreen();
   }
 
-  bool OpenPopupAndRequestFullscreenOnLoad() {
+  std::pair<bool, Browser*> OpenPopupAndRequestFullscreenOnLoad() {
+    ui_test_utils::BrowserChangeObserver popup_observer(
+        nullptr, ui_test_utils::BrowserChangeObserver::ChangeType::kAdded);
     const std::string script = R"((() => {
       let w = open(location.href, '', 'popup');
       return new Promise(resolve => {
-        w.onload = () => {
-          w.document.onfullscreenchange = () => {
-            clearInterval(w.int);
-            resolve(!!w.document.fullscreenElement);
-          };
-          // Wait for document settings to reach the renderer after load :-/
-          w.int = setInterval(() => w.document.body.requestFullscreen(), 500);
-          // Stop retrying fullscreen before any ongoing 5s exit cooldown ends.
-          // Timeout precisely; time since `lastExit` may vary: e.g. 500-1750ms.
-          if (window.lastExit && (Date.now() - window.lastExit) < 5000) {
-            setTimeout(w.document.onfullscreenchange,
-                       4500 + window.lastExit - Date.now());
-          }
+        w.onload = async () => {
+          try { await w.document.body.requestFullscreen(); } catch {}
+          resolve(!!w.document.fullscreenElement);
         };
       });
     })())";
+
     Browser* browser = chrome::FindBrowserWithTab(web_contents_);
     auto result = EvalJs(web_contents_, script);
-    Browser* popup = BrowserList::GetInstance()->GetLastActive();
+    Browser* popup = popup_observer.Wait();
+    if (!popup) {
+      return std::make_pair(false, nullptr);
+    }
     EXPECT_NE(popup, browser);
+    ui_test_utils::WaitUntilBrowserBecomeActive(popup);
     ui_test_utils::FullscreenWaiter waiter(popup, {.tab_fullscreen = true});
     if (result.error.empty() && result.ExtractBool()) {
       waiter.Wait();
     }
-    return popup->window()->IsFullscreen();
+    return std::make_pair(popup->window()->IsFullscreen(), popup);
+  }
+
+  std::string QueryPermission(
+      const content::ToRenderFrameHost& target,
+      std::optional<bool> allow_without_gesture = true) {
+    const std::string options =
+        allow_without_gesture.has_value()
+            ? content::JsReplace(", allowWithoutGesture: $1",
+                                 allow_without_gesture.value())
+            : "";
+    const std::string descriptor = "{name: 'fullscreen'" + options + "}";
+    const std::string script =
+        "navigator.permissions.query(" + descriptor +
+        ").then(permission => permission.state).catch(e => e.name);";
+    return EvalJs(target, script, content::EXECUTE_SCRIPT_NO_USER_GESTURE)
+        .ExtractString();
   }
 
  protected:
   raw_ptr<content::WebContents> web_contents_ = nullptr;
-  std::unique_ptr<net::EmbeddedTestServer> iwa_test_server_;
 
  private:
   base::test::ScopedFeatureList feature_list_;
@@ -947,7 +1031,7 @@ IN_PROC_BROWSER_TEST_P(AutomaticFullscreenTest, EventuallyAfterExit) {
 }
 
 IN_PROC_BROWSER_TEST_P(AutomaticFullscreenTest, Popup) {
-  EXPECT_TRUE(OpenPopupAndRequestFullscreenOnLoad());
+  EXPECT_TRUE(OpenPopupAndRequestFullscreenOnLoad().first);
 }
 
 IN_PROC_BROWSER_TEST_P(AutomaticFullscreenTest, PopupImmediatelyAfterExit) {
@@ -955,7 +1039,7 @@ IN_PROC_BROWSER_TEST_P(AutomaticFullscreenTest, PopupImmediatelyAfterExit) {
   const base::TimeTicks exit = base::TimeTicks::Now();
   EXPECT_TRUE(ExitFullscreen());
   EXPECT_LT(base::TimeTicks::Now() - exit, base::Seconds(5));
-  EXPECT_FALSE(OpenPopupAndRequestFullscreenOnLoad());
+  EXPECT_FALSE(OpenPopupAndRequestFullscreenOnLoad().first);
 }
 
 IN_PROC_BROWSER_TEST_P(AutomaticFullscreenTest, PopupEventuallyAfterExit) {
@@ -966,12 +1050,13 @@ IN_PROC_BROWSER_TEST_P(AutomaticFullscreenTest, PopupEventuallyAfterExit) {
   base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(), base::Milliseconds(5300));
   run_loop.Run();
-  EXPECT_TRUE(OpenPopupAndRequestFullscreenOnLoad());
+  EXPECT_TRUE(OpenPopupAndRequestFullscreenOnLoad().first);
 }
 
 IN_PROC_BROWSER_TEST_P(AutomaticFullscreenTest, ImmediatelyAfterPopupExit) {
-  EXPECT_TRUE(OpenPopupAndRequestFullscreenOnLoad());
-  Browser* popup = BrowserList::GetInstance()->GetLastActive();
+  auto [success, popup] = OpenPopupAndRequestFullscreenOnLoad();
+  EXPECT_TRUE(success);
+  ASSERT_TRUE(popup);
   const base::TimeTicks exit = base::TimeTicks::Now();
   ExitFullscreen(popup->tab_strip_model()->GetActiveWebContents());
   EXPECT_LT(base::TimeTicks::Now() - exit, base::Seconds(5));
@@ -984,8 +1069,9 @@ IN_PROC_BROWSER_TEST_P(AutomaticFullscreenTest, ImmediatelyAfterPopupExit) {
 }
 
 IN_PROC_BROWSER_TEST_P(AutomaticFullscreenTest, EventuallyAfterPopupExit) {
-  EXPECT_TRUE(OpenPopupAndRequestFullscreenOnLoad());
-  Browser* popup = BrowserList::GetInstance()->GetLastActive();
+  auto [success, popup] = OpenPopupAndRequestFullscreenOnLoad();
+  EXPECT_TRUE(success);
+  ASSERT_TRUE(popup);
   ExitFullscreen(popup->tab_strip_model()->GetActiveWebContents());
   base::RunLoop run_loop;
   // TODO(crbug.com/333133285): Avoid waiting this long in wall-clock time.
@@ -1004,6 +1090,44 @@ IN_PROC_BROWSER_TEST_P(AutomaticFullscreenTest, BlockingContentsDoesNotExit) {
   static_cast<web_modal::WebContentsModalDialogManagerDelegate*>(browser)
       ->SetWebContentsBlocked(web_contents_, true);
   EXPECT_TRUE(web_contents_->IsFullscreen());
+}
+
+IN_PROC_BROWSER_TEST_P(AutomaticFullscreenTest, QueryPermissionWithGesture) {
+  // Expect an API TypeError when allowWithoutGesture is false or unspecified.
+  EXPECT_EQ(
+      "TypeError",
+      QueryPermission(web_contents_, /*allow_without_gesture=*/std::nullopt));
+  EXPECT_EQ("TypeError",
+            QueryPermission(web_contents_, /*allow_without_gesture=*/false));
+}
+
+IN_PROC_BROWSER_TEST_P(AutomaticFullscreenTest, QueryPermissionWithoutGesture) {
+  // Permission is pre-granted on the initial test origin and denied elsewhere.
+  EXPECT_EQ("granted", QueryPermission(web_contents_));
+  const GURL url = embedded_https_test_server().GetURL("b.com", "/simple.html");
+  content::RenderFrameHost* rfh = ui_test_utils::NavigateToURL(browser(), url);
+  EXPECT_EQ("denied", QueryPermission(rfh));
+}
+
+IN_PROC_BROWSER_TEST_P(AutomaticFullscreenTest, CrossOriginIFrameDenied) {
+  // Append a cross-origin iframe without the permission policy.
+  const GURL src = embedded_https_test_server().GetURL("b.com", "/simple.html");
+  content::RenderFrameHost* rfh = web_contents_->GetPrimaryMainFrame();
+  web_app::CreateIframe(rfh, "", src, /*permissions_policy=*/"");
+  content::RenderFrameHost* child = ChildFrameAt(rfh, 0);
+  EXPECT_EQ("denied", QueryPermission(child));
+  EXPECT_FALSE(RequestFullscreen(/*gesture=*/false, child));
+}
+
+IN_PROC_BROWSER_TEST_P(AutomaticFullscreenTest, CrossOriginIFrameGranted) {
+  // Append a cross-origin iframe with the permission policy.
+  const GURL src = embedded_https_test_server().GetURL("b.com", "/simple.html");
+  content::RenderFrameHost* rfh = web_contents_->GetPrimaryMainFrame();
+  web_app::CreateIframe(rfh, "", src, /*permissions_policy=*/"fullscreen *");
+  content::RenderFrameHost* child = ChildFrameAt(rfh, 0);
+  EXPECT_EQ("granted", QueryPermission(child));
+  EXPECT_TRUE(RequestFullscreen(child));
+  EXPECT_TRUE(ExitFullscreen());
 }
 
 INSTANTIATE_TEST_SUITE_P(, AutomaticFullscreenTest, ::testing::Bool());
@@ -1052,7 +1176,7 @@ class TestScreenEnvironment {
     if ((virtual_display_util_ = display::test::VirtualDisplayUtil::TryCreate(
              display::Screen::GetScreen()))) {
       secondary_display_id_ = virtual_display_util_->AddDisplay(
-          1, display::test::VirtualDisplayUtil::k1920x1080);
+          1, display::test::VirtualDisplayUtil::k1024x768);
     } else {
       GTEST_SKIP() << "Skipping test; unavailable multi-screen support.";
     }
@@ -1102,6 +1226,7 @@ class TestScreenEnvironment {
 // specific screen, move fullscreen windows to different displays, and more.
 // Tests must run in series to manage virtual displays on supported platforms.
 // Use 2+ physical displays to run locally with --gtest_also_run_disabled_tests.
+// See: //docs/ui/display/multiscreen_testing.md
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 #define MAYBE_MultiScreenFullscreenControllerInteractiveTest \
   MultiScreenFullscreenControllerInteractiveTest
@@ -1637,10 +1762,10 @@ IN_PROC_BROWSER_TEST_F(MAYBE_MultiScreenFullscreenControllerInteractiveTest,
   // The opener should still be fullscreen.
   EXPECT_TRUE(IsWindowFullscreenForTabOrPending());
   // Popup window activation is delayed until its opener exits fullscreen.
-  EXPECT_EQ(browser(), browser_list->GetLastActive());
+  EXPECT_FALSE(ui_test_utils::IsBrowserActive(popup));
   ToggleTabFullscreen(/*enter_fullscreen=*/false);
   ui_test_utils::BrowserActivationWaiter(popup).WaitForActivation();
-  EXPECT_EQ(popup, browser_list->GetLastActive());
+  EXPECT_TRUE(ui_test_utils::IsBrowserActive(popup));
 }
 
 // TODO(crbug.com/40111905): Disabled on Windows, where views::FullscreenHandler
@@ -1716,79 +1841,8 @@ IN_PROC_BROWSER_TEST_F(MAYBE_MultiScreenFullscreenControllerInteractiveTest,
   EXPECT_NE(GetCurrentDisplay(browser()).id(), GetCurrentDisplay(popup).id());
 
   // Popup window activation is delayed until its opener exits fullscreen.
-  EXPECT_EQ(browser(), browser_list->GetLastActive());
+  EXPECT_FALSE(ui_test_utils::IsBrowserActive(popup));
   ToggleTabFullscreen(/*enter_fullscreen=*/false);
   ui_test_utils::BrowserActivationWaiter(popup).WaitForActivation();
-  EXPECT_EQ(popup, browser_list->GetLastActive());
+  EXPECT_TRUE(ui_test_utils::IsBrowserActive(popup));
 }
-
-// Tests FullscreenController support for fullscreen on screenschange events.
-// Tests must run in series to manage virtual displays on supported platforms.
-// Use 2+ physical displays to run locally with --gtest_also_run_disabled_tests.
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_MAC)
-#define MAYBE_FullscreenOnScreensChangeFullscreenControllerInteractiveTest \
-  FullscreenOnScreensChangeFullscreenControllerInteractiveTest
-#else
-#define MAYBE_FullscreenOnScreensChangeFullscreenControllerInteractiveTest \
-  DISABLED_FullscreenOnScreensChangeFullscreenControllerInteractiveTest
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_MAC)
-class MAYBE_FullscreenOnScreensChangeFullscreenControllerInteractiveTest
-    : public MAYBE_MultiScreenFullscreenControllerInteractiveTest,
-      public testing::WithParamInterface<bool> {
- public:
-  MAYBE_FullscreenOnScreensChangeFullscreenControllerInteractiveTest() {
-    feature_list_.InitWithFeatureState(
-        blink::features::kWindowPlacementFullscreenOnScreensChange, GetParam());
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-// TODO(crbug.com/40723237): Disabled on Windows, where RenderWidgetHostViewAura
-// blindly casts display::Screen::GetScreen() to display::win::ScreenWin*.
-// TODO(crbug.com/40171349): Disabled on Mac due to flaky ObserverList crashes.
-// TODO(crbug.com/40895682): Disabled on ChromiumOS due to flakes and even, on
-// MSAN, consistent failures.
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS)
-#define MAYBE_FullscreenOnScreensChange DISABLED_FullscreenOnScreensChange
-#else
-#define MAYBE_FullscreenOnScreensChange FullscreenOnScreensChange
-#endif
-// Tests async fullscreen requests on screenschange event.
-IN_PROC_BROWSER_TEST_P(
-    MAYBE_FullscreenOnScreensChangeFullscreenControllerInteractiveTest,
-    MAYBE_FullscreenOnScreensChange) {
-  content::WebContents* tab = SetUpWindowManagementTab();
-
-  // Add a screenschange handler to requestFullscreen using the transient
-  // affordance granted on screen change events, after user activation expiry.
-  const std::string request_fullscreen_script = R"(
-    (async () => {
-      const screenDetails = await window.getScreenDetails();
-      screenDetails.onscreenschange = async () => {
-        if (!navigator.userActivation.isActive)
-          await document.body.requestFullscreen();
-      };
-    })();
-  )";
-  EXPECT_TRUE(ExecJs(tab, request_fullscreen_script));
-  EXPECT_FALSE(browser()->window()->IsFullscreen());
-  WaitForUserActivationExpiry();
-
-  // Update the display configuration to trigger screenDetails.onscreenschange.
-  ui_test_utils::FullscreenWaiter waiter(browser(),
-                                         {.tab_fullscreen = GetParam()});
-  UpdateScreenEnvironment();
-  waiter.Wait();
-  EXPECT_EQ(GetParam(), browser()->window()->IsFullscreen());
-
-  // Close all tabs to avoid assertions failing when their cached screen info
-  // differs from the restored original Screen instance.
-  browser()->tab_strip_model()->CloseAllTabs();
-}
-
-INSTANTIATE_TEST_SUITE_P(
-    ,
-    MAYBE_FullscreenOnScreensChangeFullscreenControllerInteractiveTest,
-    ::testing::Bool());

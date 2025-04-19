@@ -783,7 +783,6 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_IncompliantPlatformDelayInstall) {
 
   // Fake auto launch.
   ReloadAutolaunchKioskApps();
-  KioskChromeAppManager::Get()->SetEnableAutoLaunch(true);
   KioskChromeAppManager::Get()->SetAppWasAutoLaunchedWithZeroDelay(
       kTestOfflineEnabledKioskAppId);
 
@@ -805,7 +804,6 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, IncompliantPlatformDelayInstall) {
 
   // Fake auto launch.
   ReloadAutolaunchKioskApps();
-  KioskChromeAppManager::Get()->SetEnableAutoLaunch(true);
   KioskChromeAppManager::Get()->SetAppWasAutoLaunchedWithZeroDelay(
       kTestOfflineEnabledKioskAppId);
 
@@ -830,7 +828,6 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, IncompliantPlatformFirstInstall) {
 
   // Fake auto launch.
   ReloadAutolaunchKioskApps();
-  KioskChromeAppManager::Get()->SetEnableAutoLaunch(true);
   KioskChromeAppManager::Get()->SetAppWasAutoLaunchedWithZeroDelay(
       kTestOfflineEnabledKioskAppId);
 
@@ -944,12 +941,6 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
   // Verify the secondary app is removed.
   EXPECT_TRUE(IsAppInstalled(kTestSharedModuleId, "1.0.0"));
   EXPECT_FALSE(IsAppInstalled(kTestSecondaryApp1Id, "1.0.0"));
-}
-
-// This simulates the stand-alone ARC kiosk app case. The primary app has a
-// shared ARC runtime but no secondary apps.
-IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchAppWithSharedModuleNoSecondary) {
-  LaunchAppWithSharedModule();
 }
 
 IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_LaunchAppWithUpdatedModule) {

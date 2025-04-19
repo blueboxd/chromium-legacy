@@ -25,6 +25,7 @@ bool CalculateTriggerSubmission(SubmissionReadinessState submission_readiness) {
     case SubmissionReadinessState::kNoPasswordField:
     case SubmissionReadinessState::kFieldBetweenUsernameAndPassword:
     case SubmissionReadinessState::kFieldAfterPasswordField:
+    case SubmissionReadinessState::kLikelyHasCaptcha:
       return false;
 
     case SubmissionReadinessState::kEmptyFields:
@@ -49,11 +50,11 @@ SubmissionReadinessState CalculateSubmissionReadiness(
   const autofill::FormData& form_data = params.form;
   uint64_t username_index = params.username_field_index;
   uint64_t password_index = params.password_field_index;
-  size_t number_of_elements = form_data.fields.size();
+  size_t number_of_elements = form_data.fields().size();
   CHECK(username_index <= number_of_elements &&
         password_index <= number_of_elements);
-  if (form_data.fields.empty() || ((username_index == number_of_elements) &&
-                                   (password_index == number_of_elements))) {
+  if (form_data.fields().empty() || ((username_index == number_of_elements) &&
+                                     (password_index == number_of_elements))) {
     // This is unexpected. |form| is supposed to contain username or
     // password elements.
     return SubmissionReadinessState::kError;
@@ -79,25 +80,30 @@ SubmissionReadinessState CalculateSubmissionReadiness(
   };
 
   for (size_t i = username_index + 1; i < password_index; ++i) {
-    if (!ShouldIgnoreField(form_data.fields[i])) {
+    if (!ShouldIgnoreField(form_data.fields()[i])) {
       return SubmissionReadinessState::kFieldBetweenUsernameAndPassword;
     }
   }
 
   for (size_t i = password_index + 1; i < number_of_elements; ++i) {
-    if (!ShouldIgnoreField(form_data.fields[i])) {
+    if (!ShouldIgnoreField(form_data.fields()[i])) {
       return SubmissionReadinessState::kFieldAfterPasswordField;
     }
   }
 
+  // There is likely a CAPTCHA in the child frame.
+  if (form_data.likely_contains_captcha()) {
+    return SubmissionReadinessState::kLikelyHasCaptcha;
+  }
+
   size_t number_of_visible_elements = 0;
   for (size_t i = 0; i < number_of_elements; ++i) {
-    if (ShouldIgnoreField(form_data.fields[i])) {
+    if (ShouldIgnoreField(form_data.fields()[i])) {
       continue;
     }
 
     if (username_index != i && password_index != i &&
-        form_data.fields[i].value().empty()) {
+        form_data.fields()[i].value().empty()) {
       return SubmissionReadinessState::kEmptyFields;
     }
     number_of_visible_elements++;
@@ -127,7 +133,19 @@ PasswordCredentialFillerImpl::~PasswordCredentialFillerImpl() = default;
 void PasswordCredentialFillerImpl::FillUsernameAndPassword(
     const std::u16string& username,
     const std::u16string& password) {
-  CHECK(driver_);
+  if (!driver_) {
+    // If `driver_` (per frame) was destroyed, it means a navigation happened
+    // and the filling data doesn't apply to the new page. The correct behavior
+    // in this case is to hide the filling UI, meaning this code path is
+    // unreachable. *However*, if the UI wasn't hidden due to a bug, simply
+    // ignore the click here. That's better than:
+    //   a) Proceeding, which will cause a nullptr deref below.
+    //   b) CHECK(driver_), which would crash.
+    // Supposedly, the user can still dismiss the UI to get out of the broken
+    // state. See crbug.com/349073346.
+    return;
+  }
+
   if (!base::FeatureList::IsEnabled(
           features::kPasswordSuggestionBottomSheetV2)) {
     driver_->KeyboardReplacingSurfaceClosed(ToShowVirtualKeyboard(false));

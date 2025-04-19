@@ -21,6 +21,11 @@
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/common/pref_names.h"
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chromeos/ash/components/system/fake_statistics_provider.h"
+#include "chromeos/ash/components/system/statistics_provider.h"
+#endif
+
 namespace web_app {
 
 class DedupeInstallUrlsCommandTest : public WebAppTest {
@@ -41,6 +46,20 @@ class DedupeInstallUrlsCommandTest : public WebAppTest {
         &provider().web_contents_manager());
 
     test::AwaitStartWebAppProviderAndSubsystems(profile());
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    // Mocking the StatisticsProvider for testing.
+    ash::system::StatisticsProvider::SetTestProvider(&statistics_provider);
+    statistics_provider.SetMachineStatistic(ash::system::kActivateDateKey,
+                                            "2023-18");
+#endif
+  }
+
+  void TearDown() override {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    ash::system::StatisticsProvider::SetTestProvider(nullptr);
+#endif
+    WebAppTest::TearDown();
   }
 
   WebAppProvider& provider() {
@@ -76,9 +95,10 @@ class DedupeInstallUrlsCommandTest : public WebAppTest {
     options.user_type_allowlist = {"unmanaged"};
     scope.apps.push_back(std::move(options));
 
-    base::test::TestFuture<std::map<GURL /*install_url*/,
-                                    ExternallyManagedAppManager::InstallResult>,
-                           std::map<GURL /*install_url*/, bool /*succeeded*/>>
+    base::test::TestFuture<
+        std::map<GURL /*install_url*/,
+                 ExternallyManagedAppManager::InstallResult>,
+        std::map<GURL /*install_url*/, webapps::UninstallResultCode>>
         future;
     provider().preinstalled_web_app_manager().LoadAndSynchronizeForTesting(
         future.GetCallback());
@@ -114,6 +134,10 @@ class DedupeInstallUrlsCommandTest : public WebAppTest {
   base::AutoReset<bool> bypass_dependencies_;
   base::AutoReset<bool> skip_preinstalled_web_app_startup_;
   base::AutoReset<bool> bypass_offline_manifest_requirement_;
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  ash::system::FakeStatisticsProvider statistics_provider;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 };
 
 TEST_F(DedupeInstallUrlsCommandTest,

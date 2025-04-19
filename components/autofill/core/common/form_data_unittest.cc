@@ -8,6 +8,8 @@
 
 #include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/form_data_test_api.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,9 +30,9 @@ void SerializeInVersion1Format(const FormData& form_data,
   pickle->WriteString(form_data.url().spec());
   pickle->WriteString(form_data.action().spec());
   pickle->WriteBool(true);  // Used to be |user_submitted|, which was removed.
-  pickle->WriteInt(static_cast<int>(form_data.fields.size()));
-  for (size_t i = 0; i < form_data.fields.size(); ++i) {
-    SerializeFormFieldData(form_data.fields[i], pickle);
+  pickle->WriteInt(static_cast<int>(form_data.fields().size()));
+  for (size_t i = 0; i < form_data.fields().size(); ++i) {
+    SerializeFormFieldData(form_data.fields()[i], pickle);
   }
 }
 
@@ -41,9 +43,9 @@ void SerializeInVersion2Format(const FormData& form_data,
   pickle->WriteString(form_data.url().spec());
   pickle->WriteString(form_data.action().spec());
   pickle->WriteBool(true);  // Used to be |user_submitted|, which was removed.
-  pickle->WriteInt(static_cast<int>(form_data.fields.size()));
-  for (size_t i = 0; i < form_data.fields.size(); ++i) {
-    SerializeFormFieldData(form_data.fields[i], pickle);
+  pickle->WriteInt(static_cast<int>(form_data.fields().size()));
+  for (size_t i = 0; i < form_data.fields().size(); ++i) {
+    SerializeFormFieldData(form_data.fields()[i], pickle);
   }
 }
 
@@ -54,9 +56,9 @@ void SerializeInVersion3Format(const FormData& form_data,
   pickle->WriteString(form_data.url().spec());
   pickle->WriteString(form_data.action().spec());
   pickle->WriteBool(true);  // Used to be |user_submitted|, which was removed.
-  pickle->WriteInt(static_cast<int>(form_data.fields.size()));
-  for (size_t i = 0; i < form_data.fields.size(); ++i) {
-    SerializeFormFieldData(form_data.fields[i], pickle);
+  pickle->WriteInt(static_cast<int>(form_data.fields().size()));
+  for (size_t i = 0; i < form_data.fields().size(); ++i) {
+    SerializeFormFieldData(form_data.fields()[i], pickle);
   }
   pickle->WriteBool(false);  // Used to be `is_form_tag`, which was removed
 }
@@ -67,9 +69,9 @@ void SerializeInVersion4Format(const FormData& form_data,
   pickle->WriteString16(form_data.name());
   pickle->WriteString(form_data.url().spec());
   pickle->WriteString(form_data.action().spec());
-  pickle->WriteInt(static_cast<int>(form_data.fields.size()));
-  for (size_t i = 0; i < form_data.fields.size(); ++i) {
-    SerializeFormFieldData(form_data.fields[i], pickle);
+  pickle->WriteInt(static_cast<int>(form_data.fields().size()));
+  for (size_t i = 0; i < form_data.fields().size(); ++i) {
+    SerializeFormFieldData(form_data.fields()[i], pickle);
   }
   pickle->WriteBool(false);  // Used to be `is_form_tag`, which was removed
 }
@@ -80,9 +82,9 @@ void SerializeInVersion5Format(const FormData& form_data,
   pickle->WriteString16(form_data.name());
   pickle->WriteString(form_data.url().spec());
   pickle->WriteString(form_data.action().spec());
-  pickle->WriteInt(static_cast<int>(form_data.fields.size()));
-  for (size_t i = 0; i < form_data.fields.size(); ++i) {
-    SerializeFormFieldData(form_data.fields[i], pickle);
+  pickle->WriteInt(static_cast<int>(form_data.fields().size()));
+  for (size_t i = 0; i < form_data.fields().size(); ++i) {
+    SerializeFormFieldData(form_data.fields()[i], pickle);
   }
   pickle->WriteBool(false);  // Used to be `is_form_tag`, which was removed
   pickle->WriteBool(/*is_formless_checkout=*/true);
@@ -94,9 +96,9 @@ void SerializeInVersion6Format(const FormData& form_data,
   pickle->WriteString16(form_data.name());
   pickle->WriteString(form_data.url().spec());
   pickle->WriteString(form_data.action().spec());
-  pickle->WriteInt(static_cast<int>(form_data.fields.size()));
-  for (size_t i = 0; i < form_data.fields.size(); ++i) {
-    SerializeFormFieldData(form_data.fields[i], pickle);
+  pickle->WriteInt(static_cast<int>(form_data.fields().size()));
+  for (size_t i = 0; i < form_data.fields().size(); ++i) {
+    SerializeFormFieldData(form_data.fields()[i], pickle);
   }
   pickle->WriteBool(false);  // Used to be `is_form_tag`, which was removed
   pickle->WriteBool(/*is_formless_checkout=*/true);
@@ -109,9 +111,9 @@ void SerializeInVersion7Format(const FormData& form_data,
   pickle->WriteString16(form_data.name());
   pickle->WriteString(form_data.url().spec());
   pickle->WriteString(form_data.action().spec());
-  pickle->WriteInt(static_cast<int>(form_data.fields.size()));
-  for (size_t i = 0; i < form_data.fields.size(); ++i) {
-    SerializeFormFieldData(form_data.fields[i], pickle);
+  pickle->WriteInt(static_cast<int>(form_data.fields().size()));
+  for (size_t i = 0; i < form_data.fields().size(); ++i) {
+    SerializeFormFieldData(form_data.fields()[i], pickle);
   }
   pickle->WriteBool(false);  // Used to be `is_form_tag`, which was removed
   pickle->WriteString(form_data.main_frame_origin().Serialize());
@@ -123,9 +125,9 @@ void SerializeInVersion8Format(const FormData& form_data,
   pickle->WriteString16(form_data.name());
   pickle->WriteString(form_data.url().spec());
   pickle->WriteString(form_data.action().spec());
-  pickle->WriteInt(static_cast<int>(form_data.fields.size()));
-  for (size_t i = 0; i < form_data.fields.size(); ++i) {
-    SerializeFormFieldData(form_data.fields[i], pickle);
+  pickle->WriteInt(static_cast<int>(form_data.fields().size()));
+  for (size_t i = 0; i < form_data.fields().size(); ++i) {
+    SerializeFormFieldData(form_data.fields()[i], pickle);
   }
   pickle->WriteString(form_data.main_frame_origin().Serialize());
 }
@@ -137,9 +139,9 @@ void SerializeIncorrectFormat(const FormData& form_data, base::Pickle* pickle) {
   pickle->WriteString(form_data.url().spec());
   pickle->WriteString(form_data.action().spec());
   pickle->WriteBool(true);  // Used to be |user_submitted|, which was removed.
-  pickle->WriteInt(static_cast<int>(form_data.fields.size()));
-  for (size_t i = 0; i < form_data.fields.size(); ++i) {
-    SerializeFormFieldData(form_data.fields[i], pickle);
+  pickle->WriteInt(static_cast<int>(form_data.fields().size()));
+  for (size_t i = 0; i < form_data.fields().size(); ++i) {
+    SerializeFormFieldData(form_data.fields()[i], pickle);
   }
 }
 
@@ -162,14 +164,14 @@ void FillInDummyFormData(FormData* data) {
   field_data.set_is_focusable(true);
   field_data.set_should_autocomplete(false);
   field_data.set_text_direction(base::i18n::RIGHT_TO_LEFT);
-  field_data.set_options({{.value = u"First", .content = u"First"},
-                          {.value = u"Second", .content = u"Second"}});
-  data->fields.push_back(field_data);
+  field_data.set_options({{.value = u"First", .text = u"First"},
+                          {.value = u"Second", .text = u"Second"}});
+  test_api(*data).Append(field_data);
 
   // Change a few fields.
   field_data.set_max_length(150);
-  field_data.set_options({{.value = u"Third", .content = u"Third"}});
-  data->fields.push_back(field_data);
+  field_data.set_options({{.value = u"Third", .text = u"Third"}});
+  test_api(*data).Append(field_data);
 }
 
 }  // namespace

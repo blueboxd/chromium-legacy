@@ -178,7 +178,7 @@ base::Value::Dict NetLogFailureParam(int net_error,
 }  // namespace
 
 WebSocketBasicHandshakeStream::WebSocketBasicHandshakeStream(
-    std::unique_ptr<ClientSocketHandle> connection,
+    std::unique_ptr<StreamSocketHandle> connection,
     WebSocketStream::ConnectDelegate* connect_delegate,
     bool is_for_get_to_http_proxy,
     std::vector<std::string> requested_sub_protocols,
@@ -262,12 +262,8 @@ int WebSocketBasicHandshakeStream::SendRequest(
   }
   enriched_headers.SetHeader(websockets::kSecWebSocketKey, handshake_challenge);
 
-  AddVectorHeaderIfNonEmpty(websockets::kSecWebSocketExtensions,
-                            requested_extensions_,
-                            &enriched_headers);
-  AddVectorHeaderIfNonEmpty(websockets::kSecWebSocketProtocol,
-                            requested_sub_protocols_,
-                            &enriched_headers);
+  AddVectorHeaders(requested_extensions_, requested_sub_protocols_,
+                   &enriched_headers);
 
   handshake_challenge_response_ =
       ComputeSecWebSocketAccept(handshake_challenge);
@@ -306,15 +302,9 @@ int WebSocketBasicHandshakeStream::ReadResponseBody(
 }
 
 void WebSocketBasicHandshakeStream::Close(bool not_reusable) {
-  // This class ignores the value of |not_reusable| and never lets the socket be
+  // This class ignores the value of `not_reusable` and never lets the socket be
   // re-used.
-  if (!parser())
-    return;
-  StreamSocket* socket = state_.connection()->socket();
-  if (socket)
-    socket->Disconnect();
-  parser()->OnConnectionClose();
-  state_.connection()->Reset();
+  state_.Close(/*not_reusable=*/true);
 }
 
 bool WebSocketBasicHandshakeStream::IsResponseBodyComplete() const {
@@ -326,12 +316,11 @@ bool WebSocketBasicHandshakeStream::IsConnectionReused() const {
 }
 
 void WebSocketBasicHandshakeStream::SetConnectionReused() {
-  state_.connection()->set_reuse_type(ClientSocketHandle::REUSED_IDLE);
+  state_.SetConnectionReused();
 }
 
 bool WebSocketBasicHandshakeStream::CanReuseConnection() const {
-  return parser() && state_.connection()->socket() &&
-         parser()->CanReuseConnection();
+  return state_.CanReuseConnection();
 }
 
 int64_t WebSocketBasicHandshakeStream::GetTotalReceivedBytes() const {
@@ -349,22 +338,15 @@ bool WebSocketBasicHandshakeStream::GetAlternativeService(
 
 bool WebSocketBasicHandshakeStream::GetLoadTimingInfo(
     LoadTimingInfo* load_timing_info) const {
-  return state_.connection()->GetLoadTimingInfo(IsConnectionReused(),
-                                                load_timing_info);
+  return state_.GetLoadTimingInfo(load_timing_info);
 }
 
 void WebSocketBasicHandshakeStream::GetSSLInfo(SSLInfo* ssl_info) {
-  if (!state_.connection()->socket() ||
-      !state_.connection()->socket()->GetSSLInfo(ssl_info)) {
-    ssl_info->Reset();
-  }
+  state_.GetSSLInfo(ssl_info);
 }
 
 int WebSocketBasicHandshakeStream::GetRemoteEndpoint(IPEndPoint* endpoint) {
-  if (!state_.connection() || !state_.connection()->socket())
-    return ERR_SOCKET_NOT_CONNECTED;
-
-  return state_.connection()->socket()->GetPeerAddress(endpoint);
+  return state_.GetRemoteEndpoint(endpoint);
 }
 
 void WebSocketBasicHandshakeStream::PopulateNetErrorDetails(
@@ -387,10 +369,6 @@ std::unique_ptr<HttpStream>
 WebSocketBasicHandshakeStream::RenewStreamForAuth() {
   DCHECK(IsResponseBodyComplete());
   DCHECK(!parser()->IsMoreDataBuffered());
-  // The HttpStreamParser object still has a pointer to the connection. Just to
-  // be extra-sure it doesn't touch the connection again, delete it here rather
-  // than leaving it until the destructor is called.
-  state_.DeleteParser();
 
   auto handshake_stream = std::make_unique<WebSocketBasicHandshakeStream>(
       state_.ReleaseConnection(), connect_delegate_,
@@ -413,9 +391,6 @@ std::string_view WebSocketBasicHandshakeStream::GetAcceptChViaAlps() const {
 }
 
 std::unique_ptr<WebSocketStream> WebSocketBasicHandshakeStream::Upgrade() {
-  // The HttpStreamParser object has a pointer to our ClientSocketHandle. Make
-  // sure it does not touch it again before it is destroyed.
-  state_.DeleteParser();
   WebSocketTransportClientSocketPool::UnlockEndpoint(
       state_.connection(), websocket_endpoint_lock_manager_);
   std::unique_ptr<WebSocketStream> basic_stream =

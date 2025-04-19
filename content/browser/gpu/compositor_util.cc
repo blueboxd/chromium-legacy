@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/342213636): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "content/browser/gpu/compositor_util.h"
 
 #include <stddef.h>
@@ -34,7 +39,6 @@
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_switches.h"
-#include "gpu/ipc/host/gpu_memory_buffer_support.h"
 #include "gpu/vulkan/buildflags.h"
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
@@ -477,6 +481,10 @@ bool IsGpuMemoryBufferCompositorResourcesEnabled() {
   return true;
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
   return features::IsDelegatedCompositingEnabled();
+#elif BUILDFLAG(IS_WIN)
+  return features::IsDelegatedCompositingEnabled() &&
+         features::kDelegatedCompositingModeParam.Get() ==
+             features::DelegatedCompositingMode::kFull;
 #else
   return false;
 #endif

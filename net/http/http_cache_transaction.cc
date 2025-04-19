@@ -25,16 +25,17 @@
 #include "base/auto_reset.h"
 #include "base/compiler_specific.h"
 #include "base/containers/fixed_flat_set.h"
+#include "base/containers/span.h"
 #include "base/feature_list.h"
 #include "base/format_macros.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr_exclusion.h"
+#include "base/memory/stack_allocated.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/power_monitor/power_monitor.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"  // For EqualsCaseInsensitiveASCII.
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/clock.h"
@@ -149,8 +150,8 @@ constexpr HeaderNameAndValue kForceValidateHeaders[] = {
 bool HeaderMatches(const HttpRequestHeaders& headers,
                    const HeaderNameAndValue* search) {
   for (; search->name; ++search) {
-    std::string header_value;
-    if (!headers.GetHeader(search->name, &header_value)) {
+    std::optional<std::string> header_value = headers.GetHeader(search->name);
+    if (!header_value) {
       continue;
     }
 
@@ -158,7 +159,7 @@ bool HeaderMatches(const HttpRequestHeaders& headers,
       return true;
     }
 
-    HttpUtil::ValuesIterator v(header_value.begin(), header_value.end(), ',');
+    HttpUtil::ValuesIterator v(header_value->begin(), header_value->end(), ',');
     while (v.GetNext()) {
       if (base::EqualsCaseInsensitiveASCII(v.value_piece(), search->value)) {
         return true;
@@ -478,6 +479,15 @@ int64_t HttpCache::Transaction::GetTotalSentBytes() const {
     total_sent_bytes += transaction->GetTotalSentBytes();
   }
   return total_sent_bytes;
+}
+
+int64_t HttpCache::Transaction::GetReceivedBodyBytes() const {
+  int64_t received_body_bytes = network_transaction_info_.received_body_bytes;
+  const HttpTransaction* transaction = GetOwnedOrMovedNetworkTransaction();
+  if (transaction) {
+    received_body_bytes = transaction->GetReceivedBodyBytes();
+  }
+  return received_body_bytes;
 }
 
 void HttpCache::Transaction::DoneReading() {
@@ -1614,9 +1624,10 @@ int HttpCache::Transaction::DoCacheReadResponse() {
 }
 
 int HttpCache::Transaction::DoCacheReadResponseComplete(int result) {
-  TRACE_EVENT_INSTANT(
-      "net", "HttpCacheTransaction::DoCacheReadResponseComplete",
-      perfetto::Track(trace_id_), "result", result, "io_buf_len", io_buf_len_);
+  TRACE_EVENT_INSTANT("net",
+                      "HttpCacheTransaction::DoCacheReadResponseComplete",
+                      perfetto::Track(trace_id_), "result", result,
+                      "io_buf_len", read_buf_->size());
   net_log_.EndEventWithNetErrorCode(NetLogEventType::HTTP_CACHE_READ_INFO,
                                     result);
   EndDiskCacheAccessTimeCount(DiskCacheAccessType::kRead);
@@ -1624,8 +1635,8 @@ int HttpCache::Transaction::DoCacheReadResponseComplete(int result) {
   // Record the time immediately before the cached response is parsed.
   read_headers_since_ = TimeTicks::Now();
 
-  if (result != io_buf_len_ ||
-      !HttpCache::ParseResponseInfo(read_buf_->data(), io_buf_len_, &response_,
+  if (result != read_buf_->size() ||
+      !HttpCache::ParseResponseInfo(read_buf_->span(), &response_,
                                     &truncated_)) {
     return OnCacheReadError(result, true);
   }
@@ -1672,7 +1683,8 @@ int HttpCache::Transaction::DoCacheReadResponseComplete(int result) {
   }
 
   if (response_.restricted_prefetch &&
-      !(request_->load_flags & LOAD_CAN_USE_RESTRICTED_PREFETCH)) {
+      !(request_->load_flags &
+        LOAD_CAN_USE_RESTRICTED_PREFETCH_FOR_MAIN_FRAME)) {
     TransitionToState(STATE_SEND_REQUEST);
     return OK;
   }
@@ -1680,7 +1692,7 @@ int HttpCache::Transaction::DoCacheReadResponseComplete(int result) {
   // When a restricted prefetch is reused, we lift its reuse restriction.
   bool restricted_prefetch_reuse =
       response_.restricted_prefetch &&
-      request_->load_flags & LOAD_CAN_USE_RESTRICTED_PREFETCH;
+      request_->load_flags & LOAD_CAN_USE_RESTRICTED_PREFETCH_FOR_MAIN_FRAME;
   DCHECK(!restricted_prefetch_reuse || response_.unused_since_prefetch);
 
   if (response_.unused_since_prefetch !=
@@ -1693,7 +1705,8 @@ int HttpCache::Transaction::DoCacheReadResponseComplete(int result) {
     updated_prefetch_response_->unused_since_prefetch =
         !response_.unused_since_prefetch;
     if (response_.restricted_prefetch &&
-        request_->load_flags & LOAD_CAN_USE_RESTRICTED_PREFETCH) {
+        request_->load_flags &
+            LOAD_CAN_USE_RESTRICTED_PREFETCH_FOR_MAIN_FRAME) {
       updated_prefetch_response_->restricted_prefetch = false;
     }
 
@@ -1918,7 +1931,6 @@ int HttpCache::Transaction::DoSendRequestComplete(int result) {
 
   const HttpResponseInfo* response = network_trans_->GetResponseInfo();
   response_.network_accessed = response->network_accessed;
-  response_.was_fetched_via_proxy = response->was_fetched_via_proxy;
   response_.proxy_chain = response->proxy_chain;
   response_.restricted_prefetch = response->restricted_prefetch;
   response_.resolve_error_info = response->resolve_error_info;
@@ -2566,10 +2578,9 @@ void HttpCache::Transaction::SetRequest(const NetLogWithSource& net_log) {
   //
   // The former modes trump latter modes, so if we find a matching header we
   // can stop iterating kSpecialHeaders.
-  //
   static const struct {
-    // This field is not a raw_ptr<> because it was filtered by the rewriter
-    // for: #global-scope
+    // RAW_PTR_EXCLUSION: Never allocated by PartitionAlloc (always points to
+    // constexpr tables), so there is no benefit to using a raw_ptr, only cost.
     RAW_PTR_EXCLUSION const HeaderNameAndValue* search;
     int load_flag;
   } kSpecialHeaders[] = {
@@ -2598,13 +2609,14 @@ void HttpCache::Transaction::SetRequest(const NetLogWithSource& net_log) {
   // cache validation request.
   for (size_t i = 0; i < std::size(kValidationHeaders); ++i) {
     const ValidationHeaderInfo& info = kValidationHeaders[i];
-    std::string validation_value;
-    if (request_->extra_headers.GetHeader(info.request_header_name,
-                                          &validation_value)) {
-      if (!external_validation_.values[i].empty() || validation_value.empty()) {
+    if (std::optional<std::string> validation_value =
+            request_->extra_headers.GetHeader(info.request_header_name);
+        validation_value) {
+      if (!external_validation_.values[i].empty() ||
+          validation_value->empty()) {
         external_validation_error = true;
       }
-      external_validation_.values[i] = validation_value;
+      external_validation_.values[i] = std::move(validation_value).value();
       external_validation_.initialized = true;
     }
   }
@@ -3151,10 +3163,13 @@ bool HttpCache::Transaction::ComputeUnusablePerCachingHeaders() {
     return false;
   }
 
-  // If none of the above is true and the entry has zero freshness, then it
-  // won't be usable absent load flag override.
-  return response_.headers->GetFreshnessLifetimes(response_.response_time)
-      .freshness.is_zero();
+  // If none of the above is true and the entry has zero freshness and
+  // no stale-while-revaliate, then it won't be usable absent load flag
+  // override.
+  auto freshness_lifetimes =
+      response_.headers->GetFreshnessLifetimes(response_.response_time);
+  return freshness_lifetimes.freshness.is_zero() &&
+         freshness_lifetimes.staleness.is_zero();
 }
 
 // We just received some headers from the server. We may have asked for a range,
@@ -3305,8 +3320,8 @@ int HttpCache::Transaction::DoConnectedCallback() {
     return OK;
   }
 
-  auto type = response_.was_fetched_via_proxy ? TransportType::kCachedFromProxy
-                                              : TransportType::kCached;
+  auto type = response_.WasFetchedViaProxy() ? TransportType::kCachedFromProxy
+                                             : TransportType::kCached;
   return connected_callback_.Run(
       TransportInfo(type, response_.remote_endpoint, /*accept_ch_frame_arg=*/"",
                     /*cert_is_issued_by_known_root=*/false, kProtoUnknown),
@@ -3933,6 +3948,8 @@ void HttpCache::Transaction::SaveNetworkTransactionInfo(
   network_transaction_info_.total_received_bytes +=
       transaction.GetTotalReceivedBytes();
   network_transaction_info_.total_sent_bytes += transaction.GetTotalSentBytes();
+  network_transaction_info_.received_body_bytes =
+      transaction.GetReceivedBodyBytes();
 
   ConnectionAttempts attempts = transaction.GetConnectionAttempts();
   for (const auto& attempt : attempts) {

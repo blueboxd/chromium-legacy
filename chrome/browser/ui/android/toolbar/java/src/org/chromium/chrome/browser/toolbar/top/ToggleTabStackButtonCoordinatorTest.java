@@ -13,12 +13,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.content.Context;
+import android.graphics.Canvas;
+import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -26,13 +27,13 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.LooperMode;
 
-import org.chromium.base.Callback;
+import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.Features;
 import org.chromium.chrome.browser.layouts.LayoutStateProvider;
 import org.chromium.chrome.browser.layouts.LayoutType;
+import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
 import org.chromium.chrome.browser.user_education.IPHCommand;
 import org.chromium.chrome.browser.user_education.UserEducationHelper;
 
@@ -43,14 +44,14 @@ import java.util.Set;
 @RunWith(BaseRobolectricTestRunner.class)
 @LooperMode(LooperMode.Mode.LEGACY)
 public class ToggleTabStackButtonCoordinatorTest {
-    @Rule public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
 
     @Mock private Context mContext;
     @Mock private LayoutStateProvider mLayoutStateProvider;
     @Mock private ToggleTabStackButton mToggleTabStackButton;
     @Mock private android.content.res.Resources mResources;
     @Mock private UserEducationHelper mUserEducationHelper;
-    @Mock private Callback<Boolean> mSetNewTabButtonHighlightCallback;
+    @Mock private OnClickListener mOnClickListener;
+    @Mock private OnLongClickListener mOnLongClickListener;
 
     @Captor private ArgumentCaptor<IPHCommand> mIPHCommandCaptor;
 
@@ -61,6 +62,10 @@ public class ToggleTabStackButtonCoordinatorTest {
     private Set<LayoutStateProvider.LayoutStateObserver> mLayoutStateObserverSet;
 
     private OneshotSupplierImpl<LayoutStateProvider> mLayoutSateProviderOneshotSupplier;
+    private ObservableSupplier<Integer> mTabCountSupplier;
+    private ObservableSupplierImpl<Integer> mArchivedTabCountSupplier;
+
+    private ToggleTabStackButtonCoordinator mCoordinator;
 
     @Before
     public void setUp() {
@@ -87,23 +92,33 @@ public class ToggleTabStackButtonCoordinatorTest {
 
         mLayoutStateObserverSet = new HashSet<>();
         mLayoutSateProviderOneshotSupplier = new OneshotSupplierImpl<>();
+        mTabCountSupplier = new ObservableSupplierImpl<>();
 
         // Defaults most test cases expect, can be overridden by each test though.
         when(mToggleTabStackButton.isShown()).thenReturn(true);
         mIsIncognito = false;
+        mCoordinator = newToggleTabStackButtonCoordinator(mToggleTabStackButton);
     }
 
     private ToggleTabStackButtonCoordinator newToggleTabStackButtonCoordinator(
             ToggleTabStackButton toggleTabStackButton) {
-        return new ToggleTabStackButtonCoordinator(
-                mContext,
-                toggleTabStackButton,
-                mUserEducationHelper,
-                () -> mIsIncognito,
-                mPromoShownOneshotSupplier,
-                mLayoutSateProviderOneshotSupplier,
-                mSetNewTabButtonHighlightCallback,
-                new ObservableSupplierImpl<>());
+        ToggleTabStackButtonCoordinator coordinator =
+                new ToggleTabStackButtonCoordinator(
+                        mContext,
+                        toggleTabStackButton,
+                        mUserEducationHelper,
+                        () -> mIsIncognito,
+                        mPromoShownOneshotSupplier,
+                        mLayoutSateProviderOneshotSupplier,
+                        new ObservableSupplierImpl<>());
+        coordinator.initializeWithNative(
+                mOnClickListener,
+                mOnLongClickListener,
+                mTabCountSupplier,
+                mArchivedTabCountSupplier,
+                () -> {},
+                () -> {});
+        return coordinator;
     }
 
     private void showOverviewMode() {
@@ -137,34 +152,18 @@ public class ToggleTabStackButtonCoordinatorTest {
         reset(mUserEducationHelper);
     }
 
-    private void verifyNtpButtonHighlightChanged(boolean expectedHighlight) {
-        verify(mSetNewTabButtonHighlightCallback).onResult(expectedHighlight);
-        reset(mSetNewTabButtonHighlightCallback);
-    }
-
-    private void verifyNtpButtonHighlightNotChanged() {
-        verify(mSetNewTabButtonHighlightCallback, never()).onResult(any());
-        reset(mSetNewTabButtonHighlightCallback);
-    }
-
     @Test
     public void testOverviewBehaviorAvailableDuringConstruction() {
         mLayoutSateProviderOneshotSupplier.set(mLayoutStateProvider);
-        ToggleTabStackButtonCoordinator toggleTabStackButtonCoordinator =
-                newToggleTabStackButtonCoordinator(
-                        /* toggleTabStackButton= */ mToggleTabStackButton);
         Assert.assertEquals("Should have 1 overview observer", 1, mLayoutStateObserverSet.size());
 
-        toggleTabStackButtonCoordinator.destroy();
+        mCoordinator.destroy();
         Assert.assertTrue("Should have no overview observers", mLayoutStateObserverSet.isEmpty());
     }
 
     @Test
     public void testOverviewBehaviorAvailableAfterDestroy() {
-        ToggleTabStackButtonCoordinator toggleTabStackButtonCoordinator =
-                newToggleTabStackButtonCoordinator(
-                        /* toggleTabStackButton= */ mToggleTabStackButton);
-        toggleTabStackButtonCoordinator.destroy();
+        mCoordinator.destroy();
 
         mLayoutSateProviderOneshotSupplier.set(mLayoutStateProvider);
         Assert.assertTrue("Should have no overview observers", mLayoutStateObserverSet.isEmpty());
@@ -172,201 +171,159 @@ public class ToggleTabStackButtonCoordinatorTest {
 
     @Test
     public void testDestroyDuringIph() {
-        ToggleTabStackButtonCoordinator toggleTabStackButtonCoordinator =
-                newToggleTabStackButtonCoordinator(
-                        /* toggleTabStackButton= */ mToggleTabStackButton);
         mLayoutSateProviderOneshotSupplier.set(mLayoutStateProvider);
         mPromoShownOneshotSupplier.set(false);
 
-        toggleTabStackButtonCoordinator.handlePageLoadFinished();
+        mCoordinator.handlePageLoadFinished();
         IPHCommand iphCommand = verifyIphShown();
 
         iphCommand.onShowCallback.run();
         Assert.assertEquals("Should have 1 overview observer", 1, mLayoutStateObserverSet.size());
 
-        toggleTabStackButtonCoordinator.destroy();
+        mCoordinator.destroy();
         Assert.assertTrue("Should have no overview observers", mLayoutStateObserverSet.isEmpty());
     }
 
     @Test
     public void testIphAndOverviewHighlight() {
-        ToggleTabStackButtonCoordinator toggleTabStackButtonCoordinator =
-                newToggleTabStackButtonCoordinator(
-                        /* toggleTabStackButton= */ mToggleTabStackButton);
         mLayoutSateProviderOneshotSupplier.set(mLayoutStateProvider);
         mPromoShownOneshotSupplier.set(false);
 
-        toggleTabStackButtonCoordinator.handlePageLoadFinished();
+        mCoordinator.handlePageLoadFinished();
         IPHCommand iphCommand = verifyIphShown();
 
         iphCommand.onShowCallback.run();
-        assertEquals(true, toggleTabStackButtonCoordinator.mIphBeingShown);
-        verifyNtpButtonHighlightNotChanged();
+        assertEquals(true, mCoordinator.mIphBeingShown);
 
         showOverviewMode();
-        assertEquals(true, toggleTabStackButtonCoordinator.mIphBeingShown);
-        verifyNtpButtonHighlightChanged(true);
+        assertEquals(true, mCoordinator.mIphBeingShown);
 
         iphCommand.onDismissCallback.run();
-        assertEquals(false, toggleTabStackButtonCoordinator.mIphBeingShown);
-        verifyNtpButtonHighlightNotChanged();
+        assertEquals(false, mCoordinator.mIphBeingShown);
         hideOverviewMode();
-        assertEquals(false, toggleTabStackButtonCoordinator.mIphBeingShown);
-        verifyNtpButtonHighlightChanged(false);
+        assertEquals(false, mCoordinator.mIphBeingShown);
     }
 
     @Test
     public void testDismissIphBeforeOverview() {
-        ToggleTabStackButtonCoordinator toggleTabStackButtonCoordinator =
-                newToggleTabStackButtonCoordinator(
-                        /* toggleTabStackButton= */ mToggleTabStackButton);
         mLayoutSateProviderOneshotSupplier.set(mLayoutStateProvider);
         mPromoShownOneshotSupplier.set(false);
 
-        toggleTabStackButtonCoordinator.handlePageLoadFinished();
+        mCoordinator.handlePageLoadFinished();
         IPHCommand iphCommand = verifyIphShown();
 
         iphCommand.onShowCallback.run();
-        assertEquals(true, toggleTabStackButtonCoordinator.mIphBeingShown);
-        verifyNtpButtonHighlightNotChanged();
+        assertEquals(true, mCoordinator.mIphBeingShown);
 
         iphCommand.onDismissCallback.run();
-        assertEquals(false, toggleTabStackButtonCoordinator.mIphBeingShown);
-        verifyNtpButtonHighlightNotChanged();
+        assertEquals(false, mCoordinator.mIphBeingShown);
 
         showOverviewMode();
-        assertEquals(false, toggleTabStackButtonCoordinator.mIphBeingShown);
-        verifyNtpButtonHighlightNotChanged();
+        assertEquals(false, mCoordinator.mIphBeingShown);
 
         hideOverviewMode();
-        assertEquals(false, toggleTabStackButtonCoordinator.mIphBeingShown);
-        verifyNtpButtonHighlightNotChanged();
+        assertEquals(false, mCoordinator.mIphBeingShown);
     }
 
     @Test
     public void testOverviewModeEventsWithoutIph() {
-        ToggleTabStackButtonCoordinator toggleTabStackButtonCoordinator =
-                newToggleTabStackButtonCoordinator(
-                        /* toggleTabStackButton= */ mToggleTabStackButton);
         mLayoutSateProviderOneshotSupplier.set(mLayoutStateProvider);
         mPromoShownOneshotSupplier.set(false);
 
         showOverviewMode();
-        assertEquals(false, toggleTabStackButtonCoordinator.mIphBeingShown);
-        verifyNtpButtonHighlightNotChanged();
+        assertEquals(false, mCoordinator.mIphBeingShown);
 
         hideOverviewMode();
-        assertEquals(false, toggleTabStackButtonCoordinator.mIphBeingShown);
-        verifyNtpButtonHighlightNotChanged();
+        assertEquals(false, mCoordinator.mIphBeingShown);
     }
 
     @Test
     public void testIphWithNoPageLoad() {
-        ToggleTabStackButtonCoordinator toggleTabStackButtonCoordinator =
-                newToggleTabStackButtonCoordinator(
-                        /* toggleTabStackButton= */ mToggleTabStackButton);
         mLayoutSateProviderOneshotSupplier.set(mLayoutStateProvider);
         mPromoShownOneshotSupplier.set(false);
 
-        verifyIphNotShown();
-    }
-
-    @Test
-    public void testIphWithNoViewButton() {
-        ToggleTabStackButtonCoordinator toggleTabStackButtonCoordinator =
-                newToggleTabStackButtonCoordinator(/* toggleTabStackButton= */ null);
-        mLayoutSateProviderOneshotSupplier.set(mLayoutStateProvider);
-        mPromoShownOneshotSupplier.set(false);
-
-        toggleTabStackButtonCoordinator.handlePageLoadFinished();
         verifyIphNotShown();
     }
 
     @Test
     public void testIphWithNoOverviewModeBehavior() {
-        ToggleTabStackButtonCoordinator toggleTabStackButtonCoordinator =
-                newToggleTabStackButtonCoordinator(
-                        /* toggleTabStackButton= */ mToggleTabStackButton);
         mPromoShownOneshotSupplier.set(false);
 
-        toggleTabStackButtonCoordinator.handlePageLoadFinished();
+        mCoordinator.handlePageLoadFinished();
         IPHCommand iphCommand = verifyIphShown();
 
         iphCommand.onShowCallback.run();
-        assertEquals(true, toggleTabStackButtonCoordinator.mIphBeingShown);
-        verifyNtpButtonHighlightNotChanged();
+        assertEquals(true, mCoordinator.mIphBeingShown);
 
         showOverviewMode();
-        assertEquals(true, toggleTabStackButtonCoordinator.mIphBeingShown);
-        verifyNtpButtonHighlightNotChanged();
+        assertEquals(true, mCoordinator.mIphBeingShown);
 
         iphCommand.onDismissCallback.run();
-        assertEquals(false, toggleTabStackButtonCoordinator.mIphBeingShown);
-        verifyNtpButtonHighlightNotChanged();
+        assertEquals(false, mCoordinator.mIphBeingShown);
 
         hideOverviewMode();
-        assertEquals(false, toggleTabStackButtonCoordinator.mIphBeingShown);
-        verifyNtpButtonHighlightNotChanged();
+        assertEquals(false, mCoordinator.mIphBeingShown);
     }
 
     @Test
     public void testIphIncognito() {
-        ToggleTabStackButtonCoordinator toggleTabStackButtonCoordinator =
-                newToggleTabStackButtonCoordinator(
-                        /* toggleTabStackButton= */ mToggleTabStackButton);
         mLayoutSateProviderOneshotSupplier.set(mLayoutStateProvider);
         mPromoShownOneshotSupplier.set(false);
 
         mIsIncognito = true;
-        toggleTabStackButtonCoordinator.handlePageLoadFinished();
+        mCoordinator.handlePageLoadFinished();
         verifyIphNotShown();
 
         mIsIncognito = false;
-        toggleTabStackButtonCoordinator.handlePageLoadFinished();
+        mCoordinator.handlePageLoadFinished();
         verifyIphShown();
     }
 
     @Test
     public void testIphIsShown() {
-        ToggleTabStackButtonCoordinator toggleTabStackButtonCoordinator =
-                newToggleTabStackButtonCoordinator(
-                        /* toggleTabStackButton= */ mToggleTabStackButton);
         mLayoutSateProviderOneshotSupplier.set(mLayoutStateProvider);
         mPromoShownOneshotSupplier.set(false);
 
         when(mToggleTabStackButton.isShown()).thenReturn(false);
-        toggleTabStackButtonCoordinator.handlePageLoadFinished();
+        mCoordinator.handlePageLoadFinished();
         verifyIphNotShown();
 
         when(mToggleTabStackButton.isShown()).thenReturn(true);
-        toggleTabStackButtonCoordinator.handlePageLoadFinished();
+        mCoordinator.handlePageLoadFinished();
         verifyIphShown();
     }
 
     @Test
     public void testIphShowedPromo() {
-        ToggleTabStackButtonCoordinator toggleTabStackButtonCoordinator =
-                newToggleTabStackButtonCoordinator(
-                        /* toggleTabStackButton= */ mToggleTabStackButton);
         mLayoutSateProviderOneshotSupplier.set(mLayoutStateProvider);
         mPromoShownOneshotSupplier.set(true);
 
-        toggleTabStackButtonCoordinator.handlePageLoadFinished();
+        mCoordinator.handlePageLoadFinished();
         verifyIphNotShown();
     }
 
     @Test
     public void testIphDelayedPromoShown() {
-        ToggleTabStackButtonCoordinator toggleTabStackButtonCoordinator =
-                newToggleTabStackButtonCoordinator(
-                        /* toggleTabStackButton= */ mToggleTabStackButton);
         mLayoutSateProviderOneshotSupplier.set(mLayoutStateProvider);
 
-        toggleTabStackButtonCoordinator.handlePageLoadFinished();
+        mCoordinator.handlePageLoadFinished();
         verifyIphNotShown();
 
         mPromoShownOneshotSupplier.set(false);
-        toggleTabStackButtonCoordinator.handlePageLoadFinished();
+        mCoordinator.handlePageLoadFinished();
         verifyIphShown();
+    }
+
+    @Test
+    public void testSetBrandedColorScheme() {
+        mCoordinator.setBrandedColorScheme(BrandedColorScheme.DARK_BRANDED_THEME);
+        verify(mToggleTabStackButton).setBrandedColorScheme(BrandedColorScheme.DARK_BRANDED_THEME);
+    }
+
+    @Test
+    public void testDrawTabSwitcherAnimationOverlay() {
+        Canvas canvas = new Canvas();
+        mCoordinator.drawTabSwitcherAnimationOverlay(mToggleTabStackButton, canvas, 255);
+        verify(mToggleTabStackButton).drawTabSwitcherAnimationOverlay(canvas, 255);
     }
 }

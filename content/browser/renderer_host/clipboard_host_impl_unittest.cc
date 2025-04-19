@@ -51,9 +51,7 @@ namespace content {
 
 class ClipboardHostImplTest : public RenderViewHostTestHarness {
  protected:
-  ClipboardHostImplTest()
-      : clipboard_(ui::TestClipboard::CreateForCurrentThread()) {
-  }
+  ClipboardHostImplTest() { ui::TestClipboard::CreateForCurrentThread(); }
 
   ~ClipboardHostImplTest() override {
     ui::Clipboard::DestroyClipboardForCurrentThread();
@@ -62,6 +60,7 @@ class ClipboardHostImplTest : public RenderViewHostTestHarness {
   void SetUp() override {
     RenderViewHostTestHarness::SetUp();
     SetContents(CreateTestWebContents());
+    NavigateAndCommit(GURL("https://google.com/"));
     ClipboardHostImpl::Create(web_contents()->GetPrimaryMainFrame(),
                               remote_.BindNewPipeAndPassReceiver());
   }
@@ -76,17 +75,17 @@ class ClipboardHostImplTest : public RenderViewHostTestHarness {
     return remote_;
   }
 
-  // Re-creates the system clipboard and returns the previous clipboard.
-  std::unique_ptr<ui::Clipboard> DeleteAndRecreateClipboard() {
-    auto original_clipboard = ui::Clipboard::TakeForCurrentThread();
-    clipboard_ = ui::TestClipboard::CreateForCurrentThread();
-    return original_clipboard;
+  // Re-creates the system clipboard.
+  void DeleteAndRecreateClipboard() {
+    ui::Clipboard::DestroyClipboardForCurrentThread();
+    ui::TestClipboard::CreateForCurrentThread();
   }
 
-  ui::Clipboard* system_clipboard() { return clipboard_; }
+  static ui::Clipboard* system_clipboard() {
+    return ui::Clipboard::GetForCurrentThread();
+  }
 
  private:
-  raw_ptr<ui::Clipboard, DanglingUntriaged> clipboard_;
   mojo::Remote<blink::mojom::ClipboardHost> remote_;
 };
 
@@ -157,10 +156,11 @@ TEST_F(ClipboardHostImplTest, ReadAvailableTypes_TextUriList) {
     base::Pickle pickle;
     ui::WriteCustomDataToPickle(custom_data, &pickle);
     writer.WritePickledData(pickle,
-                            ui::ClipboardFormatType::WebCustomDataType());
+                            ui::ClipboardFormatType::DataTransferCustomType());
   }
   EXPECT_FALSE(IsFormatAvailable(ui::ClipboardFormatType::FilenamesType()));
-  EXPECT_TRUE(IsFormatAvailable(ui::ClipboardFormatType::WebCustomDataType()));
+  EXPECT_TRUE(
+      IsFormatAvailable(ui::ClipboardFormatType::DataTransferCustomType()));
   EXPECT_TRUE(IsFormatAvailable(ui::ClipboardFormatType::PlainTextType()));
   mojo_clipboard()->ReadAvailableTypes(ui::ClipboardBuffer::kCopyPaste, &types);
   EXPECT_TRUE(base::Contains(types, u"text/plain"));
@@ -171,37 +171,51 @@ class ClipboardHostImplWriteTest : public RenderViewHostTestHarness {
  protected:
   ClipboardHostImplWriteTest()
       : RenderViewHostTestHarness(
-            base::test::TaskEnvironment::TimeSource::MOCK_TIME),
-        clipboard_(ui::TestClipboard::CreateForCurrentThread()) {}
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
+    ui::TestClipboard::CreateForCurrentThread();
+  }
 
   void SetUp() override {
     RenderViewHostTestHarness::SetUp();
     SetContents(CreateTestWebContents());
-    fake_clipboard_host_impl_ =
-        new ClipboardHostImpl(*web_contents()->GetPrimaryMainFrame(),
-                              remote_.BindNewPipeAndPassReceiver());
+    NavigateAndCommit(GURL("https://foobar.com/"));
+  }
+
+  void TearDown() override {
+    fake_clipboard_host_impl_ = nullptr;
+    RenderViewHostTestHarness::TearDown();
   }
 
   ~ClipboardHostImplWriteTest() override {
     ui::Clipboard::DestroyClipboardForCurrentThread();
   }
 
-  ClipboardHostImpl* clipboard_host_impl() { return fake_clipboard_host_impl_; }
+  // Creates a fake clipboard host if it doesn't exist, or returns the already
+  // created pointer.
+  ClipboardHostImpl* clipboard_host_impl() {
+    if (!fake_clipboard_host_impl_) {
+      fake_clipboard_host_impl_ =
+          new ClipboardHostImpl(*web_contents()->GetPrimaryMainFrame(),
+                                remote_.BindNewPipeAndPassReceiver());
+    }
+    return fake_clipboard_host_impl_;
+  }
 
   mojo::Remote<blink::mojom::ClipboardHost>& mojo_clipboard() {
     return remote_;
   }
 
-  ui::Clipboard* system_clipboard() { return clipboard_; }
+  static ui::Clipboard* system_clipboard() {
+    return ui::Clipboard::GetForCurrentThread();
+  }
 
-  RenderFrameHost& rfh() { return clipboard_host_impl()->render_frame_host(); }
+  RenderFrameHost& rfh() { return *web_contents()->GetPrimaryMainFrame(); }
 
  private:
   mojo::Remote<blink::mojom::ClipboardHost> remote_;
-  const raw_ptr<ui::Clipboard, DanglingUntriaged> clipboard_;
   // `ClipboardHostImpl` is a `DocumentService` and manages its own
   // lifetime.
-  raw_ptr<ClipboardHostImpl, DanglingUntriaged> fake_clipboard_host_impl_;
+  raw_ptr<ClipboardHostImpl> fake_clipboard_host_impl_;
 };
 
 TEST_F(ClipboardHostImplWriteTest, MainFrameURL) {
@@ -374,45 +388,45 @@ TEST_F(ClipboardHostImplWriteTest, WriteBitmap_Empty) {
   EXPECT_TRUE(png.empty());
 }
 
-TEST_F(ClipboardHostImplWriteTest, WriteCustomData) {
+TEST_F(ClipboardHostImplWriteTest, WriteDataTransferCustomData) {
   base::flat_map<std::u16string, std::u16string> custom_data;
   custom_data[u"text/type1"] = u"data1";
   custom_data[u"text/type2"] = u"data2";
   custom_data[u"text/type3"] = u"data3";
 
-  clipboard_host_impl()->WriteCustomData(custom_data);
+  clipboard_host_impl()->WriteDataTransferCustomData(custom_data);
   clipboard_host_impl()->CommitWrite();
 
   base::test::TestFuture<const std::u16string&> future_1;
   base::test::TestFuture<const std::u16string&> future_2;
   base::test::TestFuture<const std::u16string&> future_3;
 
-  clipboard_host_impl()->ReadCustomData(ui::ClipboardBuffer::kCopyPaste,
-                                        u"text/type1", future_1.GetCallback());
-  clipboard_host_impl()->ReadCustomData(ui::ClipboardBuffer::kCopyPaste,
-                                        u"text/type2", future_2.GetCallback());
-  clipboard_host_impl()->ReadCustomData(ui::ClipboardBuffer::kCopyPaste,
-                                        u"text/type3", future_3.GetCallback());
+  clipboard_host_impl()->ReadDataTransferCustomData(
+      ui::ClipboardBuffer::kCopyPaste, u"text/type1", future_1.GetCallback());
+  clipboard_host_impl()->ReadDataTransferCustomData(
+      ui::ClipboardBuffer::kCopyPaste, u"text/type2", future_2.GetCallback());
+  clipboard_host_impl()->ReadDataTransferCustomData(
+      ui::ClipboardBuffer::kCopyPaste, u"text/type3", future_3.GetCallback());
 
   EXPECT_EQ(custom_data[u"text/type1"], future_1.Take());
   EXPECT_EQ(custom_data[u"text/type2"], future_2.Take());
   EXPECT_EQ(custom_data[u"text/type3"], future_3.Take());
 }
 
-TEST_F(ClipboardHostImplWriteTest, WriteCustomData_Empty) {
+TEST_F(ClipboardHostImplWriteTest, WriteDataTransferCustomData_Empty) {
   base::flat_map<std::u16string, std::u16string> custom_data;
   custom_data[u"text/type1"] = u"";
 
-  clipboard_host_impl()->WriteCustomData(custom_data);
+  clipboard_host_impl()->WriteDataTransferCustomData(custom_data);
   clipboard_host_impl()->CommitWrite();
 
   base::test::TestFuture<const std::u16string&> future_1;
   base::test::TestFuture<const std::u16string&> future_2;
 
-  clipboard_host_impl()->ReadCustomData(ui::ClipboardBuffer::kCopyPaste,
-                                        u"text/type1", future_1.GetCallback());
-  clipboard_host_impl()->ReadCustomData(ui::ClipboardBuffer::kCopyPaste,
-                                        u"text/type2", future_2.GetCallback());
+  clipboard_host_impl()->ReadDataTransferCustomData(
+      ui::ClipboardBuffer::kCopyPaste, u"text/type1", future_1.GetCallback());
+  clipboard_host_impl()->ReadDataTransferCustomData(
+      ui::ClipboardBuffer::kCopyPaste, u"text/type2", future_2.GetCallback());
 
   EXPECT_TRUE(future_1.Take().empty());
   EXPECT_TRUE(future_2.Take().empty());
@@ -479,6 +493,7 @@ class ClipboardHostImplAsyncWriteTest : public RenderViewHostTestHarness {
   void SetUp() override {
     RenderViewHostTestHarness::SetUp();
     SetContents(CreateTestWebContents());
+    NavigateAndCommit(GURL("https://google.com/"));
     fake_clipboard_host_impl_ =
         new AsyncWriteClipboardHostImpl(*web_contents()->GetPrimaryMainFrame(),
                                         remote_.BindNewPipeAndPassReceiver());

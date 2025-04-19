@@ -2,7 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/interest_group/auction_runner.h"
+#include <cstddef>
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/342213636): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
 
 #include <stdint.h>
 
@@ -26,6 +30,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/notreached.h"
+#include "base/process/process.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
@@ -44,9 +49,11 @@
 #include "content/browser/fenced_frame/fenced_frame_reporter.h"
 #include "content/browser/interest_group/ad_auction_page_data.h"
 #include "content/browser/interest_group/additional_bids_test_util.h"
+#include "content/browser/interest_group/auction_metrics_recorder.h"
 #include "content/browser/interest_group/auction_nonce_manager.h"
 #include "content/browser/interest_group/auction_process_manager.h"
 #include "content/browser/interest_group/auction_result.h"
+#include "content/browser/interest_group/auction_runner.h"
 #include "content/browser/interest_group/auction_worklet_manager.h"
 #include "content/browser/interest_group/debuggable_auction_worklet.h"
 #include "content/browser/interest_group/debuggable_auction_worklet_tracker.h"
@@ -65,6 +72,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/services/auction_worklet/auction_v8_helper.h"
 #include "content/services/auction_worklet/auction_worklet_service_impl.h"
+#include "content/services/auction_worklet/public/cpp/real_time_reporting.h"
 #include "content/services/auction_worklet/public/mojom/auction_shared_storage_host.mojom.h"
 #include "content/services/auction_worklet/public/mojom/auction_worklet_service.mojom.h"
 #include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom.h"
@@ -104,6 +112,20 @@ using auction_worklet::TestDevToolsAgentClient;
 using testing::HasSubstr;
 
 namespace content {
+class ProcessHandleTestPeer {
+ public:
+  explicit ProcessHandleTestPeer(
+      const AuctionProcessManager::ProcessHandle* handle)
+      : handle_(handle) {}
+
+  void CallOnLaunchedWithPidForCurrentProcess() {
+    handle_->OnBaseProcessLaunched(base::Process::Current());
+  }
+
+ private:
+  raw_ptr<const AuctionProcessManager::ProcessHandle> handle_;
+};
+
 namespace {
 
 using InterestGroupKey = blink::InterestGroupKey;
@@ -1137,8 +1159,8 @@ std::string MakeBidScriptWithRealTimeReporting(int bid) {
     function generateBid(
         interestGroup, auctionSignals, perBuyerSignals, trustedBiddingSignals,
         browserSignals) {
-      realTimeReporting.contributeToRealTimeHistogram(
-          100 + bid, {priorityWeight: 1.5});
+      realTimeReporting.contributeToHistogram(
+        {bucket: 100 + bid, priorityWeight: 1.5});
       return {
         bid: bid,
         render: interestGroup.ads[0].renderURL,
@@ -1154,8 +1176,8 @@ std::string MakeBidScriptWithRealTimeReporting(int bid) {
 
 const char kDecisionScriptWithRealTimeReporting[] = R"(
   function scoreAd(adMetadata, bid, auctionConfig, browserSignals) {
-    realTimeReporting.contributeToRealTimeHistogram(
-        200 + bid, {priorityWeight: 1.5});
+    realTimeReporting.contributeToHistogram(
+        {bucket: 200 + bid, priorityWeight: 1.5});
     return {desirability: 2 * bid, bid: 10 * bid, allowComponentAuction: true};
   }
 
@@ -1306,16 +1328,26 @@ BuildPrivateAggregationRequest(
       std::move(debug_mode_details));
 }
 
+auction_worklet::mojom::EventTypePtr Reserved(
+    auction_worklet::mojom::ReservedEventType reserved_event_type) {
+  return auction_worklet::mojom::EventType::NewReserved(reserved_event_type);
+}
+
+auction_worklet::mojom::EventTypePtr NonReserved(
+    const std::string& event_type) {
+  return auction_worklet::mojom::EventType::NewNonReserved(event_type);
+}
+
 const auction_worklet::mojom::PrivateAggregationRequestPtr
 BuildPrivateAggregationForEventRequest(
     absl::uint128 bucket,
     int value,
-    std::string event_type,
+    auction_worklet::mojom::EventTypePtr event_type,
     std::optional<uint64_t> filtering_id = std::nullopt) {
   auction_worklet::mojom::AggregatableReportForEventContribution contribution(
       auction_worklet::mojom::ForEventSignalBucket::NewIdBucket(bucket),
       auction_worklet::mojom::ForEventSignalValue::NewIntValue(value),
-      filtering_id, event_type);
+      filtering_id, std::move(event_type));
 
   return auction_worklet::mojom::PrivateAggregationRequest::New(
       auction_worklet::mojom::AggregatableReportContribution::
@@ -1328,14 +1360,14 @@ auction_worklet::mojom::PrivateAggregationRequestPtr
 BuildPrivateAggregationForBaseValue(
     absl::uint128 bucket,
     auction_worklet::mojom::BaseValue base_value,
-    std::string event_type,
+    auction_worklet::mojom::EventTypePtr event_type,
     std::optional<uint64_t> filtering_id = std::nullopt) {
   auction_worklet::mojom::AggregatableReportForEventContribution contribution(
       auction_worklet::mojom::ForEventSignalBucket::NewIdBucket(bucket),
       auction_worklet::mojom::ForEventSignalValue::NewSignalValue(
           auction_worklet::mojom::SignalValue::New(base_value, /*scale=*/1.0,
                                                    /*offset=*/0)),
-      filtering_id, event_type);
+      filtering_id, std::move(event_type));
 
   return auction_worklet::mojom::PrivateAggregationRequest::New(
       auction_worklet::mojom::AggregatableReportContribution::
@@ -1358,33 +1390,24 @@ void AuthorizeKAnonAd(const blink::InterestGroup::Ad& ad,
                       const char* url,
                       StorageInterestGroup& group) {
   DCHECK_EQ(url, ad.render_url());
-  group.bidding_ads_kanon.emplace_back();
-  group.bidding_ads_kanon.back().hashed_key =
-      blink::HashedKAnonKeyForAdBid(group.interest_group, ad.render_url());
-  group.bidding_ads_kanon.back().is_k_anonymous = true;
-  group.bidding_ads_kanon.back().last_updated = base::Time::Now();
+  group.hashed_kanon_keys.emplace(
+      blink::HashedKAnonKeyForAdBid(group.interest_group, ad.render_url()));
 }
 
 void AuthorizeKAnonReporting(const blink::InterestGroup::Ad& ad,
                              const char* url,
                              StorageInterestGroup& group) {
   DCHECK_EQ(url, ad.render_url());
-  group.reporting_ads_kanon.emplace_back();
-  group.reporting_ads_kanon.back().hashed_key =
-      blink::HashedKAnonKeyForAdNameReporting(group.interest_group, ad);
-  group.reporting_ads_kanon.back().is_k_anonymous = true;
-  group.reporting_ads_kanon.back().last_updated = base::Time::Now();
+  group.hashed_kanon_keys.emplace(
+      blink::HashedKAnonKeyForAdNameReporting(group.interest_group, ad));
 }
 
 void AuthorizeKAnonAdComponent(const blink::InterestGroup::Ad& ad,
                                const char* url,
                                StorageInterestGroup& group) {
   DCHECK_EQ(url, ad.render_url());
-  group.component_ads_kanon.emplace_back();
-  group.component_ads_kanon.back().hashed_key =
-      blink::HashedKAnonKeyForAdComponentBid(ad.render_url());
-  group.component_ads_kanon.back().is_k_anonymous = true;
-  group.component_ads_kanon.back().last_updated = base::Time::Now();
+  group.hashed_kanon_keys.emplace(
+      blink::HashedKAnonKeyForAdComponentBid(ad.render_url()));
 }
 
 quiche::ObliviousHttpRequest::Context
@@ -1457,6 +1480,10 @@ class SameProcessAuctionProcessManager : public AuctionProcessManager {
         auction_worklet::AuctionWorkletServiceImpl::CreateForService(
             std::move(auction_worklet_service_receiver)));
     return nullptr;
+  }
+
+  void OnNewProcessAssigned(const ProcessHandle* handle) override {
+    ProcessHandleTestPeer(handle).CallOnLaunchedWithPidForCurrentProcess();
   }
 
   scoped_refptr<SiteInstance> MaybeComputeSiteInstance(
@@ -1671,6 +1698,8 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
     same_process_auction_process_manager_ = nullptr;
     // And this points into the process manager as well.
     auction_worklet_manager_.reset();
+
+    auction_metrics_recorder_.reset();
 
     interest_group_manager_.reset();
     auction_nonce_manager_.reset();
@@ -1915,9 +1944,12 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
     // So destroy it now, since we are going to make a new one shortly anyway.
     auction_worklet_manager_.reset();
 
+    auction_metrics_recorder_.reset();
+
     interest_group_manager_ = std::make_unique<TestInterestGroupManagerImpl>(
         frame_origin_, GetClientSecurityState(),
         dummy_report_shared_url_loader_factory_);
+
     if (!auction_process_manager_) {
       auto same_process_auction_process_manager =
           std::make_unique<SameProcessAuctionProcessManager>();
@@ -1926,6 +1958,10 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
       auction_process_manager_ =
           std::move(same_process_auction_process_manager);
     }
+
+    ukm_source_id_ = ukm::AssignNewSourceId();
+    auction_metrics_recorder_ =
+        std::make_unique<AuctionMetricsRecorder>(ukm_source_id_);
     auction_worklet_manager_ = std::make_unique<AuctionWorkletManager>(
         auction_process_manager_.get(), top_frame_origin_, frame_origin_, this);
     interest_group_manager_->set_auction_process_manager_for_testing(
@@ -1986,19 +2022,17 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
         task_environment()->FastForwardBy(base::Seconds(1));
       }
 
-      for (const auto& kanon_data : bidder.bidding_ads_kanon) {
-        interest_group_manager_->UpdateKAnonymity(kanon_data);
-      }
-      for (const auto& kanon_data : bidder.component_ads_kanon) {
-        interest_group_manager_->UpdateKAnonymity(kanon_data);
-      }
-      for (const auto& kanon_data : bidder.reporting_ads_kanon) {
-        interest_group_manager_->UpdateKAnonymity(kanon_data);
-      }
+      blink::InterestGroupKey bidder_group_key(bidder.interest_group.owner,
+                                               bidder.interest_group.name);
+      base::Time update_time(base::Time::Now());
+      std::vector<std::string> positive_hashed_keys_to_update(
+          bidder.hashed_kanon_keys.begin(), bidder.hashed_kanon_keys.end());
+      interest_group_manager_->UpdateKAnonymity(
+          bidder_group_key, positive_hashed_keys_to_update, update_time,
+          /*replace_existing_values*/ true);
     }
 
     interest_group_manager_->ClearLoggedData();
-    source_id_ = ukm::AssignNewSourceId();
 
     task_environment()->FastForwardBy(between_join_run_auction_delay_);
 
@@ -2014,13 +2048,13 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
             base::Unretained(browser_context()));
 
     auction_runner_ = AuctionRunner::CreateAndStart(
-        auction_worklet_manager_.get(), auction_nonce_manager_.get(),
-        interest_group_manager_.get(), /*browser_context=*/browser_context(),
-        &private_aggregation_manager_,
+        auction_metrics_recorder_.get(), auction_worklet_manager_.get(),
+        auction_nonce_manager_.get(), interest_group_manager_.get(),
+        /*browser_context=*/browser_context(), &private_aggregation_manager_,
         base::BindRepeating(&AuctionRunnerTest::GetAdAuctionPageData,
                             base::Unretained(this)),
         private_aggregation_manager_.GetLogPrivateAggregationRequestsCallback(),
-        std::move(auction_config), top_frame_origin_, frame_origin_, source_id_,
+        std::move(auction_config), top_frame_origin_, frame_origin_,
         GetClientSecurityState(), dummy_report_shared_url_loader_factory_,
         IsInterestGroupApiAllowedCallback(), std::move(attestation_callback),
         abortable_ad_auction_.BindNewPipeAndPassReceiver(),
@@ -2349,7 +2383,10 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
                 auction_worklet::mojom::ScoreAdDependencyLatencies::New(
                     /*code_ready_latency=*/std::nullopt,
                     /*direct_from_seller_signals_latency=*/std::nullopt,
-                    /*trusted_scoring_signals_latency=*/std::nullopt),
+                    /*trusted_scoring_signals_latency=*/std::nullopt,
+                    /*deps_wait_start_time=*/base::TimeTicks::Now(),
+                    /*score_ad_start_time=*/base::TimeTicks::Now(),
+                    /*score_ad_finish_time=*/base::TimeTicks::Now()),
                 /*errors=*/{});
       }
     }
@@ -2501,6 +2538,7 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
                 Entry::kResultName,
                 Entry::kEndToEndLatencyInMillisName,
                 Entry::kLoadInterestGroupPhaseLatencyInMillisName,
+                Entry::kLoadInterestGroupPhaseEndTimeInMillisName,
                 Entry::kNumInterestGroupsName,
                 Entry::kNumNegativeInterestGroupsName,
                 Entry::kNumOwnersWithInterestGroupsName,
@@ -2508,6 +2546,9 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
                 Entry::kNumDistinctOwnersWithInterestGroupsName,
                 Entry::kNumSellersWithBiddersName,
                 Entry::kNumBidderWorkletsName,
+                /* WorkletCreation phase metrics */
+                Entry::kWorkletCreationPhaseStartTimeInMillisName,
+                Entry::kWorkletCreationPhaseEndTimeInMillisName,
                 /* Bid filtering metrics */
                 Entry::kNumBidsAbortedByBuyerCumulativeTimeoutName,
                 Entry::kNumBidsAbortedByBidderWorkletFatalErrorName,
@@ -2556,6 +2597,11 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
                     kMeanGenerateBidDirectFromSellerSignalsCriticalPathLatencyInMillisName,
                 Entry::
                     kMeanGenerateBidTrustedBiddingSignalsCriticalPathLatencyInMillisName,
+                /* GenerateBid phase metrics */
+                Entry::kBidSignalsFetchPhaseStartTimeInMillisName,
+                Entry::kBidSignalsFetchPhaseEndTimeInMillisName,
+                Entry::kBidGenerationPhaseStartTimeInMillisName,
+                Entry::kBidGenerationPhaseEndTimeInMillisName,
                 /* Bids queued waiting to begin ScoreAd */
                 Entry::kNumTopLevelBidsQueuedWaitingForConfigPromisesName,
                 Entry::kNumTopLevelBidsQueuedWaitingForSellerWorkletName,
@@ -2588,11 +2634,16 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
                     kMeanScoreAdDirectFromSellerSignalsCriticalPathLatencyInMillisName,
                 Entry::
                     kMeanScoreAdTrustedScoringSignalsCriticalPathLatencyInMillisName,
+                /* ScoreAd phase metrics */
+                Entry::kScoreSignalsFetchPhaseStartTimeInMillisName,
+                Entry::kScoreSignalsFetchPhaseEndTimeInMillisName,
+                Entry::kScoringPhaseStartTimeInMillisName,
+                Entry::kScoringPhaseEndTimeInMillisName,
             });
 
     EXPECT_THAT(ukm_entries, testing::SizeIs(1));
     if (ukm_entries.size() == 1) {
-      EXPECT_EQ(ukm_entries.at(0).source_id, source_id_);
+      EXPECT_EQ(ukm_entries.at(0).source_id, ukm_source_id_);
       return ukm_entries.at(0).metrics;
     }
 
@@ -2937,6 +2988,9 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
     EXPECT_THAT(
         ukm_metrics,
         HasMetric(UkmEntry::kLoadInterestGroupPhaseLatencyInMillisName));
+    EXPECT_THAT(
+        ukm_metrics,
+        HasMetric(UkmEntry::kLoadInterestGroupPhaseEndTimeInMillisName));
     EXPECT_THAT(ukm_metrics, HasMetric(UkmEntry::kEndToEndLatencyInMillisName));
 
     EXPECT_THAT(ukm_metrics,
@@ -3345,6 +3399,8 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
           base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
               nullptr);
 
+  ukm::SourceId ukm_source_id_;
+  std::unique_ptr<AuctionMetricsRecorder> auction_metrics_recorder_;
   std::unique_ptr<AuctionWorkletManager> auction_worklet_manager_;
   std::unique_ptr<AuctionNonceManager> auction_nonce_manager_;
 
@@ -3372,8 +3428,6 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
 
   // The TestInterestGroupManager is recreated and repopulated for each auction.
   std::unique_ptr<TestInterestGroupManagerImpl> interest_group_manager_;
-
-  ukm::SourceId source_id_;
 
   std::unique_ptr<AuctionRunner> auction_runner_;
   std::unique_ptr<InterestGroupAuctionReporter> reporter_;
@@ -3813,25 +3867,30 @@ TEST_F(AuctionRunnerTest, Basic) {
 
   EXPECT_THAT(
       private_aggregation_manager_.TakeLoggedPrivateAggregationRequests(),
-      ElementsAreRequests(
-          kExpectedGenerateBidPrivateAggregationRequest,
-          kExpectedGenerateBidPrivateAggregationRequest,
-          kExpectedReportWinPrivateAggregationRequest,
-          kExpectedScoreAdPrivateAggregationRequest,
-          kExpectedScoreAdPrivateAggregationRequest,
-          kExpectedReportResultPrivateAggregationRequest,
-          BuildPrivateAggregationForEventRequest(/*bucket=*/10, /*value=*/21,
-                                                 /*event_type=*/"click"),
-          BuildPrivateAggregationForEventRequest(/*bucket=*/10, /*value=*/22,
-                                                 /*event_type=*/"click"),
-          BuildPrivateAggregationForEventRequest(/*bucket=*/30, /*value=*/42,
-                                                 /*event_type=*/"click"),
-          BuildPrivateAggregationForEventRequest(/*bucket=*/50, /*value=*/60,
-                                                 /*event_type=*/"click"),
-          BuildPrivateAggregationForEventRequest(/*bucket=*/50, /*value=*/60,
-                                                 /*event_type=*/"click"),
-          BuildPrivateAggregationForEventRequest(/*bucket=*/70, /*value=*/80,
-                                                 /*event_type=*/"click")));
+      ElementsAreRequests(kExpectedGenerateBidPrivateAggregationRequest,
+                          kExpectedGenerateBidPrivateAggregationRequest,
+                          kExpectedReportWinPrivateAggregationRequest,
+                          kExpectedScoreAdPrivateAggregationRequest,
+                          kExpectedScoreAdPrivateAggregationRequest,
+                          kExpectedReportResultPrivateAggregationRequest,
+                          BuildPrivateAggregationForEventRequest(
+                              /*bucket=*/10, /*value=*/21,
+                              /*event_type=*/NonReserved("click")),
+                          BuildPrivateAggregationForEventRequest(
+                              /*bucket=*/10, /*value=*/22,
+                              /*event_type=*/NonReserved("click")),
+                          BuildPrivateAggregationForEventRequest(
+                              /*bucket=*/30, /*value=*/42,
+                              /*event_type=*/NonReserved("click")),
+                          BuildPrivateAggregationForEventRequest(
+                              /*bucket=*/50, /*value=*/60,
+                              /*event_type=*/NonReserved("click")),
+                          BuildPrivateAggregationForEventRequest(
+                              /*bucket=*/50, /*value=*/60,
+                              /*event_type=*/NonReserved("click")),
+                          BuildPrivateAggregationForEventRequest(
+                              /*bucket=*/70, /*value=*/80,
+                              /*event_type=*/NonReserved("click"))));
 
   EXPECT_THAT(result_.private_aggregation_event_map,
               testing::UnorderedElementsAre(testing::Pair(
@@ -4216,6 +4275,218 @@ TEST_F(AuctionRunnerTest, WorkletServiceGetNextSellerWorkletThreadIndex) {
   EXPECT_EQ(auction_worklet_service2->GetNextSellerWorkletThreadIndex(), 1u);
   EXPECT_EQ(auction_worklet_service1->GetNextSellerWorkletThreadIndex(), 2u);
   EXPECT_EQ(auction_worklet_service1->GetNextSellerWorkletThreadIndex(), 3u);
+}
+
+TEST_F(AuctionRunnerTest, BidderThreadPoolExpanded) {
+  mojo::PendingRemote<auction_worklet::mojom::AuctionWorkletService>
+      auction_worklet_service_remote;
+  mojo::PendingReceiver<auction_worklet::mojom::AuctionWorkletService>
+      auction_worklet_service_receiver =
+          auction_worklet_service_remote.InitWithNewPipeAndPassReceiver();
+
+  auto auction_worklet_service =
+      auction_worklet::AuctionWorkletServiceImpl::CreateForService(
+          std::move(auction_worklet_service_receiver));
+
+  network::TestURLLoaderFactory test_url_loader_factory;
+
+  auction_worklet::TestAuctionNetworkEventsHandler
+      auction_network_events_handler;
+
+  mojo::Remote<auction_worklet::mojom::BidderWorklet> bidder_worklet1;
+  mojo::PendingReceiver<auction_worklet::mojom::BidderWorklet>
+      worklet_receiver1 = bidder_worklet1.BindNewPipeAndPassReceiver();
+
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> url_loader_factory1;
+  test_url_loader_factory.Clone(
+      url_loader_factory1.InitWithNewPipeAndPassReceiver());
+
+  std::vector<
+      mojo::PendingRemote<auction_worklet::mojom::AuctionSharedStorageHost>>
+      shared_storage_hosts1(10);
+
+  auction_worklet_service->LoadBidderWorklet(
+      std::move(worklet_receiver1), std::move(shared_storage_hosts1),
+      /*should_pause_on_start=*/false, std::move(url_loader_factory1),
+      auction_network_events_handler.CreateRemote(),
+      /*script_source_url=*/GURL("https://ad1.com"),
+      /*bidding_wasm_helper_url=*/{}, /*trusted_bidding_signals_url=*/{},
+      /*trusted_bidding_signals_slot_size_param=*/{},
+      /*top_window_origin=*/url::Origin::Create(GURL("https://ad1.com")),
+      auction_worklet::mojom::AuctionWorkletPermissionsPolicyState::New(
+          /*private_aggregation_allowed=*/false,
+          /*shared_storage_allowed=*/false),
+      /*experiment_group_id=*/{},
+      /*public_key=*/nullptr);
+
+  // There are 10 bidder threads and 1 seller thread.
+  EXPECT_EQ(auction_worklet_service->AuctionV8HelpersForTesting().size(), 11u);
+
+  mojo::Remote<auction_worklet::mojom::BidderWorklet> bidder_worklet2;
+  mojo::PendingReceiver<auction_worklet::mojom::BidderWorklet>
+      worklet_receiver2 = bidder_worklet2.BindNewPipeAndPassReceiver();
+
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> url_loader_factory2;
+  test_url_loader_factory.Clone(
+      url_loader_factory2.InitWithNewPipeAndPassReceiver());
+
+  std::vector<
+      mojo::PendingRemote<auction_worklet::mojom::AuctionSharedStorageHost>>
+      shared_storage_hosts2(20);
+
+  auction_worklet_service->LoadBidderWorklet(
+      std::move(worklet_receiver2), std::move(shared_storage_hosts2),
+      /*should_pause_on_start=*/false, std::move(url_loader_factory2),
+      auction_network_events_handler.CreateRemote(),
+      /*script_source_url=*/GURL("https://ad1.com"),
+      /*bidding_wasm_helper_url=*/{}, /*trusted_bidding_signals_url=*/{},
+      /*trusted_bidding_signals_slot_size_param=*/{},
+      /*top_window_origin=*/url::Origin::Create(GURL("https://ad1.com")),
+      auction_worklet::mojom::AuctionWorkletPermissionsPolicyState::New(
+          /*private_aggregation_allowed=*/false,
+          /*shared_storage_allowed=*/false),
+      /*experiment_group_id=*/{},
+      /*public_key=*/nullptr);
+
+  // There are 20 bidder threads and 1 seller thread.
+  EXPECT_EQ(auction_worklet_service->AuctionV8HelpersForTesting().size(), 21u);
+}
+
+// Regression test for crbug.com/349067504: partial reset of the per-process
+// bidder thread pool, with subsequent reuse of the reset entry. Expect
+// successful execution.
+//
+// Steps:
+// 1. Start Worklet Service 1, load a Bidder Worklet (requesting 2 threads).
+// 2. Start Worklet Service 2, load a Bidder Worklet (requesting 1 thread).
+// 3. Destroy Worklet Service 1.
+// 4. Start Worklet Service 3, load a Bidder Worklet (requesting 2 threads).
+TEST_F(AuctionRunnerTest, BidderThreadPoolPartiallyResetAndSubsequentlyReused) {
+  mojo::PendingRemote<auction_worklet::mojom::AuctionWorkletService>
+      auction_worklet_service_remote1;
+  mojo::PendingReceiver<auction_worklet::mojom::AuctionWorkletService>
+      auction_worklet_service_receiver1 =
+          auction_worklet_service_remote1.InitWithNewPipeAndPassReceiver();
+
+  auto auction_worklet_service1 =
+      auction_worklet::AuctionWorkletServiceImpl::CreateForService(
+          std::move(auction_worklet_service_receiver1));
+
+  network::TestURLLoaderFactory test_url_loader_factory;
+
+  auction_worklet::TestAuctionNetworkEventsHandler
+      auction_network_events_handler;
+
+  mojo::Remote<auction_worklet::mojom::BidderWorklet> bidder_worklet1;
+  mojo::PendingReceiver<auction_worklet::mojom::BidderWorklet>
+      worklet_receiver1 = bidder_worklet1.BindNewPipeAndPassReceiver();
+
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> url_loader_factory1;
+  test_url_loader_factory.Clone(
+      url_loader_factory1.InitWithNewPipeAndPassReceiver());
+
+  std::vector<
+      mojo::PendingRemote<auction_worklet::mojom::AuctionSharedStorageHost>>
+      shared_storage_hosts1(2);
+
+  auction_worklet_service1->LoadBidderWorklet(
+      std::move(worklet_receiver1), std::move(shared_storage_hosts1),
+      /*should_pause_on_start=*/false, std::move(url_loader_factory1),
+      auction_network_events_handler.CreateRemote(),
+      /*script_source_url=*/GURL("https://ad1.com"),
+      /*bidding_wasm_helper_url=*/{}, /*trusted_bidding_signals_url=*/{},
+      /*trusted_bidding_signals_slot_size_param=*/{},
+      /*top_window_origin=*/url::Origin::Create(GURL("https://ad1.com")),
+      auction_worklet::mojom::AuctionWorkletPermissionsPolicyState::New(
+          /*private_aggregation_allowed=*/false,
+          /*shared_storage_allowed=*/false),
+      /*experiment_group_id=*/{},
+      /*public_key=*/nullptr);
+
+  // There are 2 bidder threads and 1 seller thread.
+  EXPECT_EQ(auction_worklet_service1->AuctionV8HelpersForTesting().size(), 3u);
+
+  mojo::Remote<auction_worklet::mojom::BidderWorklet> bidder_worklet2;
+  mojo::PendingReceiver<auction_worklet::mojom::BidderWorklet>
+      worklet_receiver2 = bidder_worklet2.BindNewPipeAndPassReceiver();
+
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> url_loader_factory2;
+  test_url_loader_factory.Clone(
+      url_loader_factory2.InitWithNewPipeAndPassReceiver());
+
+  std::vector<
+      mojo::PendingRemote<auction_worklet::mojom::AuctionSharedStorageHost>>
+      shared_storage_hosts2(1);
+
+  mojo::PendingRemote<auction_worklet::mojom::AuctionWorkletService>
+      auction_worklet_service_remote2;
+  mojo::PendingReceiver<auction_worklet::mojom::AuctionWorkletService>
+      auction_worklet_service_receiver2 =
+          auction_worklet_service_remote2.InitWithNewPipeAndPassReceiver();
+
+  auto auction_worklet_service2 =
+      auction_worklet::AuctionWorkletServiceImpl::CreateForService(
+          std::move(auction_worklet_service_receiver2));
+
+  auction_worklet_service2->LoadBidderWorklet(
+      std::move(worklet_receiver2), std::move(shared_storage_hosts2),
+      /*should_pause_on_start=*/false, std::move(url_loader_factory2),
+      auction_network_events_handler.CreateRemote(),
+      /*script_source_url=*/GURL("https://ad1.com"),
+      /*bidding_wasm_helper_url=*/{}, /*trusted_bidding_signals_url=*/{},
+      /*trusted_bidding_signals_slot_size_param=*/{},
+      /*top_window_origin=*/url::Origin::Create(GURL("https://ad1.com")),
+      auction_worklet::mojom::AuctionWorkletPermissionsPolicyState::New(
+          /*private_aggregation_allowed=*/false,
+          /*shared_storage_allowed=*/false),
+      /*experiment_group_id=*/{},
+      /*public_key=*/nullptr);
+
+  // There are 1 bidder thread and 1 seller thread.
+  EXPECT_EQ(auction_worklet_service2->AuctionV8HelpersForTesting().size(), 2u);
+
+  // Reset Worklet Service 1, resetting the second entry in the thread pool
+  // while preserving the first entry.
+  auction_worklet_service1.reset();
+
+  mojo::PendingRemote<auction_worklet::mojom::AuctionWorkletService>
+      auction_worklet_service_remote3;
+  mojo::PendingReceiver<auction_worklet::mojom::AuctionWorkletService>
+      auction_worklet_service_receiver3 =
+          auction_worklet_service_remote3.InitWithNewPipeAndPassReceiver();
+
+  auto auction_worklet_service3 =
+      auction_worklet::AuctionWorkletServiceImpl::CreateForService(
+          std::move(auction_worklet_service_receiver3));
+
+  mojo::Remote<auction_worklet::mojom::BidderWorklet> bidder_worklet3;
+  mojo::PendingReceiver<auction_worklet::mojom::BidderWorklet>
+      worklet_receiver3 = bidder_worklet3.BindNewPipeAndPassReceiver();
+
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> url_loader_factory3;
+  test_url_loader_factory.Clone(
+      url_loader_factory3.InitWithNewPipeAndPassReceiver());
+
+  std::vector<
+      mojo::PendingRemote<auction_worklet::mojom::AuctionSharedStorageHost>>
+      shared_storage_hosts3(2);
+
+  auction_worklet_service3->LoadBidderWorklet(
+      std::move(worklet_receiver3), std::move(shared_storage_hosts3),
+      /*should_pause_on_start=*/false, std::move(url_loader_factory3),
+      auction_network_events_handler.CreateRemote(),
+      /*script_source_url=*/GURL("https://ad1.com"),
+      /*bidding_wasm_helper_url=*/{}, /*trusted_bidding_signals_url=*/{},
+      /*trusted_bidding_signals_slot_size_param=*/{},
+      /*top_window_origin=*/url::Origin::Create(GURL("https://ad1.com")),
+      auction_worklet::mojom::AuctionWorkletPermissionsPolicyState::New(
+          /*private_aggregation_allowed=*/false,
+          /*shared_storage_allowed=*/false),
+      /*experiment_group_id=*/{},
+      /*public_key=*/nullptr);
+
+  // There are 2 bidder threads and 1 seller thread.
+  EXPECT_EQ(auction_worklet_service3->AuctionV8HelpersForTesting().size(), 3u);
 }
 
 TEST_F(AuctionRunnerTest, PauseBidder) {
@@ -7627,9 +7898,6 @@ TEST_F(AuctionRunnerTest, PromiseSignals4) {
 // An auction that passes empty additionalBids via a promise (in that headers
 // are never observed carrying them).
 TEST_F(AuctionRunnerTest, PromiseSignalsAdditionalBids) {
-  base::test::ScopedFeatureList additional_bids_on;
-  additional_bids_on.InitAndEnableFeature(
-      blink::features::kFledgeNegativeTargeting);
   auction_nonce_ = CreateAuctionNonce();
   pass_promise_for_additional_bids_ = true;
 
@@ -7857,10 +8125,6 @@ TEST_F(AuctionRunnerTest, PromiseSignalsComponentAuction) {
 //
 // See https://crbug.com/1488417
 TEST_F(AuctionRunnerTest, PromiseAndNetworkErrors) {
-  base::test::ScopedFeatureList additional_bids_on;
-  additional_bids_on.InitAndEnableFeature(
-      blink::features::kFledgeNegativeTargeting);
-
   SetUpComponentAuctionAndResponses(/*bidder1_seller=*/kComponentSeller1,
                                     /*bidder2_seller=*/kComponentSeller1,
                                     /*bid_from_component_auction_wins=*/true,
@@ -8386,9 +8650,6 @@ TEST_F(AuctionRunnerTest, PromiseSignalsBadAuctionId6) {
 }
 
 TEST_F(AuctionRunnerTest, PromiseSignalsBadAuctionIdAdditionalBids) {
-  base::test::ScopedFeatureList additional_bids_on;
-  additional_bids_on.InitAndEnableFeature(
-      blink::features::kFledgeNegativeTargeting);
   pass_promise_for_additional_bids_ = true;
 
   auction_worklet::AddJavascriptResponse(
@@ -8429,11 +8690,9 @@ TEST_F(AuctionRunnerTest, PromiseSignalsBadAuctionIdAdditionalBids) {
 // An auction where the winning additional bid claims to be from an IG the user
 // is already in.
 TEST_F(AuctionRunnerTest, AdditionalBidAliasesInterestGroup) {
-  base::test::ScopedFeatureList additional_bids_on;
-  additional_bids_on.InitWithFeatures(
-      {blink::features::kFledgeNegativeTargeting,
-       blink::features::kBiddingAndScoringDebugReportingAPI},
-      {});
+  base::test::ScopedFeatureList debug_reporting_api_on;
+  debug_reporting_api_on.InitAndEnableFeature(
+      blink::features::kBiddingAndScoringDebugReportingAPI);
 
   const char kAdditionalBidUrl[] =
       "https://adplatform.com/offers-contextual.js";
@@ -8583,28 +8842,34 @@ TEST_F(AuctionRunnerTest, AdditionalBidAliasesInterestGroup) {
 
   EXPECT_THAT(
       private_aggregation_manager_.TakeLoggedPrivateAggregationRequests(),
-      ElementsAreRequests(
-          kExpectedGenerateBidPrivateAggregationRequest,
-          kExpectedGenerateBidPrivateAggregationRequest,
-          kExpectedReportWinPrivateAggregationRequest,
-          kExpectedScoreAdPrivateAggregationRequest,
-          kExpectedScoreAdPrivateAggregationRequest,
-          kExpectedScoreAdPrivateAggregationRequest,
-          kExpectedReportResultPrivateAggregationRequest,
-          BuildPrivateAggregationForEventRequest(/*bucket=*/10, /*value=*/21,
-                                                 /*event_type=*/"click"),
-          BuildPrivateAggregationForEventRequest(/*bucket=*/10, /*value=*/22,
-                                                 /*event_type=*/"click"),
-          BuildPrivateAggregationForEventRequest(/*bucket=*/30, /*value=*/80,
-                                                 /*event_type=*/"click"),
-          BuildPrivateAggregationForEventRequest(/*bucket=*/50, /*value=*/60,
-                                                 /*event_type=*/"click"),
-          BuildPrivateAggregationForEventRequest(/*bucket=*/50, /*value=*/60,
-                                                 /*event_type=*/"click"),
-          BuildPrivateAggregationForEventRequest(/*bucket=*/50, /*value=*/60,
-                                                 /*event_type=*/"click"),
-          BuildPrivateAggregationForEventRequest(/*bucket=*/70, /*value=*/80,
-                                                 /*event_type=*/"click")));
+      ElementsAreRequests(kExpectedGenerateBidPrivateAggregationRequest,
+                          kExpectedGenerateBidPrivateAggregationRequest,
+                          kExpectedReportWinPrivateAggregationRequest,
+                          kExpectedScoreAdPrivateAggregationRequest,
+                          kExpectedScoreAdPrivateAggregationRequest,
+                          kExpectedScoreAdPrivateAggregationRequest,
+                          kExpectedReportResultPrivateAggregationRequest,
+                          BuildPrivateAggregationForEventRequest(
+                              /*bucket=*/10, /*value=*/21,
+                              /*event_type=*/NonReserved("click")),
+                          BuildPrivateAggregationForEventRequest(
+                              /*bucket=*/10, /*value=*/22,
+                              /*event_type=*/NonReserved("click")),
+                          BuildPrivateAggregationForEventRequest(
+                              /*bucket=*/30, /*value=*/80,
+                              /*event_type=*/NonReserved("click")),
+                          BuildPrivateAggregationForEventRequest(
+                              /*bucket=*/50, /*value=*/60,
+                              /*event_type=*/NonReserved("click")),
+                          BuildPrivateAggregationForEventRequest(
+                              /*bucket=*/50, /*value=*/60,
+                              /*event_type=*/NonReserved("click")),
+                          BuildPrivateAggregationForEventRequest(
+                              /*bucket=*/50, /*value=*/60,
+                              /*event_type=*/NonReserved("click")),
+                          BuildPrivateAggregationForEventRequest(
+                              /*bucket=*/70, /*value=*/80,
+                              /*event_type=*/NonReserved("click"))));
 
   EXPECT_THAT(result_.private_aggregation_event_map,
               testing::UnorderedElementsAre(testing::Pair(
@@ -8681,11 +8946,9 @@ TEST_F(AuctionRunnerTest, AdditionalBidAliasesInterestGroup) {
 // An auction where the winning additional bid claims to be from an IG the user
 // is not in.
 TEST_F(AuctionRunnerTest, AdditionalBidDistinctFromInterestGroup) {
-  base::test::ScopedFeatureList additional_bids_on;
-  additional_bids_on.InitWithFeatures(
-      {blink::features::kFledgeNegativeTargeting,
-       blink::features::kBiddingAndScoringDebugReportingAPI},
-      {});
+  base::test::ScopedFeatureList debug_reporting_api_on;
+  debug_reporting_api_on.InitAndEnableFeature(
+      blink::features::kBiddingAndScoringDebugReportingAPI);
 
   const char kAdditionalBidUrl[] =
       "https://adplatform.com/offers-contextual.js";
@@ -8836,28 +9099,34 @@ TEST_F(AuctionRunnerTest, AdditionalBidDistinctFromInterestGroup) {
 
   EXPECT_THAT(
       private_aggregation_manager_.TakeLoggedPrivateAggregationRequests(),
-      ElementsAreRequests(
-          kExpectedGenerateBidPrivateAggregationRequest,
-          kExpectedGenerateBidPrivateAggregationRequest,
-          kExpectedReportWinPrivateAggregationRequest,
-          kExpectedScoreAdPrivateAggregationRequest,
-          kExpectedScoreAdPrivateAggregationRequest,
-          kExpectedScoreAdPrivateAggregationRequest,
-          kExpectedReportResultPrivateAggregationRequest,
-          BuildPrivateAggregationForEventRequest(/*bucket=*/10, /*value=*/21,
-                                                 /*event_type=*/"click"),
-          BuildPrivateAggregationForEventRequest(/*bucket=*/10, /*value=*/22,
-                                                 /*event_type=*/"click"),
-          BuildPrivateAggregationForEventRequest(/*bucket=*/30, /*value=*/80,
-                                                 /*event_type=*/"click"),
-          BuildPrivateAggregationForEventRequest(/*bucket=*/50, /*value=*/60,
-                                                 /*event_type=*/"click"),
-          BuildPrivateAggregationForEventRequest(/*bucket=*/50, /*value=*/60,
-                                                 /*event_type=*/"click"),
-          BuildPrivateAggregationForEventRequest(/*bucket=*/50, /*value=*/60,
-                                                 /*event_type=*/"click"),
-          BuildPrivateAggregationForEventRequest(/*bucket=*/70, /*value=*/80,
-                                                 /*event_type=*/"click")));
+      ElementsAreRequests(kExpectedGenerateBidPrivateAggregationRequest,
+                          kExpectedGenerateBidPrivateAggregationRequest,
+                          kExpectedReportWinPrivateAggregationRequest,
+                          kExpectedScoreAdPrivateAggregationRequest,
+                          kExpectedScoreAdPrivateAggregationRequest,
+                          kExpectedScoreAdPrivateAggregationRequest,
+                          kExpectedReportResultPrivateAggregationRequest,
+                          BuildPrivateAggregationForEventRequest(
+                              /*bucket=*/10, /*value=*/21,
+                              /*event_type=*/NonReserved("click")),
+                          BuildPrivateAggregationForEventRequest(
+                              /*bucket=*/10, /*value=*/22,
+                              /*event_type=*/NonReserved("click")),
+                          BuildPrivateAggregationForEventRequest(
+                              /*bucket=*/30, /*value=*/80,
+                              /*event_type=*/NonReserved("click")),
+                          BuildPrivateAggregationForEventRequest(
+                              /*bucket=*/50, /*value=*/60,
+                              /*event_type=*/NonReserved("click")),
+                          BuildPrivateAggregationForEventRequest(
+                              /*bucket=*/50, /*value=*/60,
+                              /*event_type=*/NonReserved("click")),
+                          BuildPrivateAggregationForEventRequest(
+                              /*bucket=*/50, /*value=*/60,
+                              /*event_type=*/NonReserved("click")),
+                          BuildPrivateAggregationForEventRequest(
+                              /*bucket=*/70, /*value=*/80,
+                              /*event_type=*/NonReserved("click"))));
 
   EXPECT_THAT(result_.private_aggregation_event_map,
               testing::UnorderedElementsAre(testing::Pair(
@@ -9635,8 +9904,10 @@ TEST_F(AuctionRunnerTest, PromiseServerResponseResolveTwice) {
   ad_auction_page_data_->AddAuctionResultWitnessForOrigin(kSeller,
                                                           witnessed_hash);
 
-  AdAuctionRequestContext context(kSeller, {}, std::move(client_context),
-                                  base::TimeTicks::Now());
+  AdAuctionRequestContext context(kSeller, /*group_names=*/{},
+                                  std::move(client_context),
+                                  base::TimeTicks::Now(),
+                                  /*group_pagg_coordinators=*/{});
   ad_auction_page_data_->RegisterAdAuctionRequestContext(request_id,
                                                          std::move(context));
 
@@ -9718,10 +9989,6 @@ TEST_F(AuctionRunnerTest, PromiseSignalsUpdateNonPromise9) {
 
 // Trying to update additionalBids twice.
 TEST_F(AuctionRunnerTest, PromiseSignalsUpdateNonPromiseAdditionalBids) {
-  base::test::ScopedFeatureList additional_bids_on;
-  additional_bids_on.InitAndEnableFeature(
-      blink::features::kFledgeNegativeTargeting);
-
   // Have two kind of promises so we don't just finish after first
   // additionalBids update
   use_promise_for_per_buyer_signals_ = true;
@@ -9764,49 +10031,6 @@ TEST_F(AuctionRunnerTest, PromiseSignalsUpdateNonPromiseAdditionalBids) {
       blink::mojom::AuctionAdConfigAuctionId::NewMainAuction(0));
   task_environment()->RunUntilIdle();
   EXPECT_EQ("ResolvedAdditionalBids updating non-promise", TakeBadMessage());
-}
-
-// Trying to update additionalBids when the negative targeting feature is off.
-TEST_F(AuctionRunnerTest, PromiseSignalsUpdateAdditionalBidsFeatureOff) {
-  base::test::ScopedFeatureList additional_bids_off;
-  additional_bids_off.InitAndDisableFeature(
-      blink::features::kFledgeNegativeTargeting);
-
-  pass_promise_for_additional_bids_ = true;
-
-  auction_worklet::AddJavascriptResponse(
-      &url_loader_factory_, kBidder1Url,
-      MakeBidScript(kSeller, "1", "https://ad1.com/", /*num_ad_components=*/0,
-                    kBidder1, kBidder1Name));
-  auction_worklet::AddJavascriptResponse(
-      &url_loader_factory_, kBidder2Url,
-      MakeBidScript(kSeller, "2", "https://ad2.com/", /*num_ad_components=*/0,
-                    kBidder2, kBidder2Name));
-  auction_worklet::AddJavascriptResponse(&url_loader_factory_, kSellerUrl,
-                                         MakeAuctionScript());
-
-  std::vector<StorageInterestGroup> bidders;
-  bidders.emplace_back(MakeInterestGroup(
-      kBidder1, kBidder1Name, kBidder1Url,
-      /*trusted_bidding_signals_url=*/std::nullopt,
-      /*trusted_bidding_signals_keys=*/{}, GURL("https://ad1.com"),
-      /*ad_component_urls=*/std::nullopt));
-  bidders.emplace_back(MakeInterestGroup(
-      kBidder2, kBidder2Name, kBidder2Url,
-      /*trusted_bidding_signals_url=*/std::nullopt,
-      /*trusted_bidding_signals_keys=*/{}, GURL("https://ad2.com"),
-      /*ad_component_urls=*/std::nullopt));
-  StartAuction(kSellerUrl, std::move(bidders));
-
-  // Can't complete yet.
-  task_environment()->RunUntilIdle();
-  EXPECT_FALSE(auction_run_loop_->AnyQuitCalled());
-
-  abortable_ad_auction_->ResolvedAdditionalBids(
-      blink::mojom::AuctionAdConfigAuctionId::NewMainAuction(0));
-  task_environment()->RunUntilIdle();
-  EXPECT_EQ("ResolvedAdditionalBids with FledgeNegativeTargeting off",
-            TakeBadMessage());
 }
 
 // Trying to update directFromSellerSignalsHeaderAdSlot twice.
@@ -10609,7 +10833,10 @@ TEST_F(AuctionRunnerTest, LateSellerWorkletSendPendingSignalsRequestsCalled) {
           auction_worklet::mojom::ScoreAdDependencyLatencies::New(
               /*code_ready_latency=*/std::nullopt,
               /*direct_from_seller_signals_latency=*/std::nullopt,
-              /*trusted_scoring_signals_latency=*/std::nullopt),
+              /*trusted_scoring_signals_latency=*/std::nullopt,
+              /*deps_wait_start_time=*/base::TimeTicks::Now(),
+              /*score_ad_start_time=*/base::TimeTicks::Now(),
+              /*score_ad_finish_time=*/base::TimeTicks::Now()),
           /*errors=*/{});
 
   score_ad_params = seller_worklet->WaitForScoreAd();
@@ -10632,7 +10859,10 @@ TEST_F(AuctionRunnerTest, LateSellerWorkletSendPendingSignalsRequestsCalled) {
           auction_worklet::mojom::ScoreAdDependencyLatencies::New(
               /*code_ready_latency=*/std::nullopt,
               /*direct_from_seller_signals_latency=*/std::nullopt,
-              /*trusted_scoring_signals_latency=*/std::nullopt),
+              /*trusted_scoring_signals_latency=*/std::nullopt,
+              /*deps_wait_start_time=*/base::TimeTicks::Now(),
+              /*score_ad_start_time=*/base::TimeTicks::Now(),
+              /*score_ad_finish_time=*/base::TimeTicks::Now()),
           /*errors=*/{});
 
   // Finish the auction.
@@ -10893,7 +11123,10 @@ TEST_F(AuctionRunnerTest, BidderCrashBeforeBidding) {
             auction_worklet::mojom::ScoreAdDependencyLatencies::New(
                 /*code_ready_latency=*/std::nullopt,
                 /*direct_from_seller_signals_latency=*/std::nullopt,
-                /*trusted_scoring_signals_latency=*/std::nullopt),
+                /*trusted_scoring_signals_latency=*/std::nullopt,
+                /*deps_wait_start_time=*/base::TimeTicks::Now(),
+                /*score_ad_start_time=*/base::TimeTicks::Now(),
+                /*score_ad_finish_time=*/base::TimeTicks::Now()),
             /*errors=*/{});
 
     // Finish the auction.
@@ -11148,7 +11381,10 @@ TEST_F(AuctionRunnerTest, ComponentAuctionOneBidderCrashesBeforeBidding) {
           auction_worklet::mojom::ScoreAdDependencyLatencies::New(
               /*code_ready_latency=*/std::nullopt,
               /*direct_from_seller_signals_latency=*/std::nullopt,
-              /*trusted_scoring_signals_latency=*/std::nullopt),
+              /*trusted_scoring_signals_latency=*/std::nullopt,
+              /*deps_wait_start_time=*/base::TimeTicks::Now(),
+              /*score_ad_start_time=*/base::TimeTicks::Now(),
+              /*score_ad_finish_time=*/base::TimeTicks::Now()),
           /*errors=*/{});
 
   // Top-level seller worklet scores the bid.
@@ -11175,7 +11411,10 @@ TEST_F(AuctionRunnerTest, ComponentAuctionOneBidderCrashesBeforeBidding) {
           auction_worklet::mojom::ScoreAdDependencyLatencies::New(
               /*code_ready_latency=*/std::nullopt,
               /*direct_from_seller_signals_latency=*/std::nullopt,
-              /*trusted_scoring_signals_latency=*/std::nullopt),
+              /*trusted_scoring_signals_latency=*/std::nullopt,
+              /*deps_wait_start_time=*/base::TimeTicks::Now(),
+              /*score_ad_start_time=*/base::TimeTicks::Now(),
+              /*score_ad_finish_time=*/base::TimeTicks::Now()),
           /*errors=*/{});
 
   // Top-level seller worklet returns a report url.
@@ -11375,7 +11614,10 @@ TEST_F(AuctionRunnerTest, ComponentAuctionComponentSellerBadBidParams) {
             auction_worklet::mojom::ScoreAdDependencyLatencies::New(
                 /*code_ready_latency=*/std::nullopt,
                 /*direct_from_seller_signals_latency=*/std::nullopt,
-                /*trusted_scoring_signals_latency=*/std::nullopt),
+                /*trusted_scoring_signals_latency=*/std::nullopt,
+                /*deps_wait_start_time=*/base::TimeTicks::Now(),
+                /*score_ad_start_time=*/base::TimeTicks::Now(),
+                /*score_ad_finish_time=*/base::TimeTicks::Now()),
             /*errors=*/{});
 
     // The auction fails, because of the bad ComponentAuctionModifiedBidParams.
@@ -11453,7 +11695,10 @@ TEST_F(AuctionRunnerTest, TopLevelSellerBadBidParams) {
           auction_worklet::mojom::ScoreAdDependencyLatencies::New(
               /*code_ready_latency=*/std::nullopt,
               /*direct_from_seller_signals_latency=*/std::nullopt,
-              /*trusted_scoring_signals_latency=*/std::nullopt),
+              /*trusted_scoring_signals_latency=*/std::nullopt,
+              /*deps_wait_start_time=*/base::TimeTicks::Now(),
+              /*score_ad_start_time=*/base::TimeTicks::Now(),
+              /*score_ad_finish_time=*/base::TimeTicks::Now()),
           /*errors=*/{});
 
   auction_run_loop_->Run();
@@ -11540,7 +11785,10 @@ TEST_F(AuctionRunnerTest, NullAdComponents) {
               auction_worklet::mojom::ScoreAdDependencyLatencies::New(
                   /*code_ready_latency=*/std::nullopt,
                   /*direct_from_seller_signals_latency=*/std::nullopt,
-                  /*trusted_scoring_signals_latency=*/std::nullopt),
+                  /*trusted_scoring_signals_latency=*/std::nullopt,
+                  /*deps_wait_start_time=*/base::TimeTicks::Now(),
+                  /*score_ad_start_time=*/base::TimeTicks::Now(),
+                  /*score_ad_finish_time=*/base::TimeTicks::Now()),
               /*errors=*/{});
 
       // Finish the auction.
@@ -11664,7 +11912,10 @@ TEST_F(AuctionRunnerTest, AdComponentsLimit) {
               auction_worklet::mojom::ScoreAdDependencyLatencies::New(
                   /*code_ready_latency=*/std::nullopt,
                   /*direct_from_seller_signals_latency=*/std::nullopt,
-                  /*trusted_scoring_signals_latency=*/std::nullopt),
+                  /*trusted_scoring_signals_latency=*/std::nullopt,
+                  /*deps_wait_start_time=*/base::TimeTicks::Now(),
+                  /*score_ad_start_time=*/base::TimeTicks::Now(),
+                  /*score_ad_finish_time=*/base::TimeTicks::Now()),
               /*errors=*/{});
 
       // Finish the auction.
@@ -12062,7 +12313,10 @@ TEST_F(AuctionRunnerTest, BadScoreAdBidInSellerCurrency) {
             auction_worklet::mojom::ScoreAdDependencyLatencies::New(
                 /*code_ready_latency=*/std::nullopt,
                 /*direct_from_seller_signals_latency=*/std::nullopt,
-                /*trusted_scoring_signals_latency=*/std::nullopt),
+                /*trusted_scoring_signals_latency=*/std::nullopt,
+                /*deps_wait_start_time=*/base::TimeTicks::Now(),
+                /*score_ad_start_time=*/base::TimeTicks::Now(),
+                /*score_ad_finish_time=*/base::TimeTicks::Now()),
             /*errors=*/{});
     auction_run_loop_->Run();
     EXPECT_EQ("Invalid bid_in_seller_currency", TakeBadMessage());
@@ -12120,7 +12374,10 @@ TEST_F(AuctionRunnerTest, BadScoreAdScore) {
             auction_worklet::mojom::ScoreAdDependencyLatencies::New(
                 /*code_ready_latency=*/std::nullopt,
                 /*direct_from_seller_signals_latency=*/std::nullopt,
-                /*trusted_scoring_signals_latency=*/std::nullopt),
+                /*trusted_scoring_signals_latency=*/std::nullopt,
+                /*deps_wait_start_time=*/base::TimeTicks::Now(),
+                /*score_ad_start_time=*/base::TimeTicks::Now(),
+                /*score_ad_finish_time=*/base::TimeTicks::Now()),
             /*errors=*/{});
     auction_run_loop_->Run();
     EXPECT_EQ("Invalid score", TakeBadMessage());
@@ -12174,7 +12431,10 @@ TEST_F(AuctionRunnerTest, DestroyBidderWorkletWithoutBid) {
           auction_worklet::mojom::ScoreAdDependencyLatencies::New(
               /*code_ready_latency=*/std::nullopt,
               /*direct_from_seller_signals_latency=*/std::nullopt,
-              /*trusted_scoring_signals_latency=*/std::nullopt),
+              /*trusted_scoring_signals_latency=*/std::nullopt,
+              /*deps_wait_start_time=*/base::TimeTicks::Now(),
+              /*score_ad_start_time=*/base::TimeTicks::Now(),
+              /*score_ad_finish_time=*/base::TimeTicks::Now()),
           /*errors=*/{});
 
   // Finish the auction.
@@ -12255,7 +12515,10 @@ TEST_F(AuctionRunnerTest, Tie) {
             auction_worklet::mojom::ScoreAdDependencyLatencies::New(
                 /*code_ready_latency=*/std::nullopt,
                 /*direct_from_seller_signals_latency=*/std::nullopt,
-                /*trusted_scoring_signals_latency=*/std::nullopt),
+                /*trusted_scoring_signals_latency=*/std::nullopt,
+                /*deps_wait_start_time=*/base::TimeTicks::Now(),
+                /*score_ad_start_time=*/base::TimeTicks::Now(),
+                /*score_ad_finish_time=*/base::TimeTicks::Now()),
             /*errors=*/{});
 
     // Bidder2 returns a bid, which is then scored.
@@ -12282,7 +12545,10 @@ TEST_F(AuctionRunnerTest, Tie) {
             auction_worklet::mojom::ScoreAdDependencyLatencies::New(
                 /*code_ready_latency=*/std::nullopt,
                 /*direct_from_seller_signals_latency=*/std::nullopt,
-                /*trusted_scoring_signals_latency=*/std::nullopt),
+                /*trusted_scoring_signals_latency=*/std::nullopt,
+                /*deps_wait_start_time=*/base::TimeTicks::Now(),
+                /*score_ad_start_time=*/base::TimeTicks::Now(),
+                /*score_ad_finish_time=*/base::TimeTicks::Now()),
             /*errors=*/{});
     // Need to flush the service pipe to make sure the AuctionRunner has
     // received the score.
@@ -12430,7 +12696,10 @@ TEST_F(AuctionRunnerTest, WorkletOrder) {
                     auction_worklet::mojom::ScoreAdDependencyLatencies::New(
                         /*code_ready_latency=*/std::nullopt,
                         /*direct_from_seller_signals_latency=*/std::nullopt,
-                        /*trusted_scoring_signals_latency=*/std::nullopt),
+                        /*trusted_scoring_signals_latency=*/std::nullopt,
+                        /*deps_wait_start_time=*/base::TimeTicks::Now(),
+                        /*score_ad_start_time=*/base::TimeTicks::Now(),
+                        /*score_ad_finish_time=*/base::TimeTicks::Now()),
                     /*errors=*/{});
             // Wait for the AuctionRunner to receive the score.
             task_environment()->RunUntilIdle();
@@ -12455,7 +12724,10 @@ TEST_F(AuctionRunnerTest, WorkletOrder) {
                     auction_worklet::mojom::ScoreAdDependencyLatencies::New(
                         /*code_ready_latency=*/std::nullopt,
                         /*direct_from_seller_signals_latency=*/std::nullopt,
-                        /*trusted_scoring_signals_latency=*/std::nullopt),
+                        /*trusted_scoring_signals_latency=*/std::nullopt,
+                        /*deps_wait_start_time=*/base::TimeTicks::Now(),
+                        /*score_ad_start_time=*/base::TimeTicks::Now(),
+                        /*score_ad_finish_time=*/base::TimeTicks::Now()),
                     /*errors=*/{});
             // Wait for the AuctionRunner to receive the score.
             task_environment()->RunUntilIdle();
@@ -12665,6 +12937,130 @@ TEST_F(AuctionRunnerTest, ExecutionModeGroupByOrigin) {
               testing::ElementsAre(GURL("https://adplatform.com/metrics/6")));
 }
 
+// With a scaling factor of 1.0, and with 9 interest groups, one thread will be
+// requested for the bidder worklet.
+TEST_F(AuctionRunnerTest, SmallInterestGroupsCount_OneBidderThreadRequested) {
+  base::test::ScopedFeatureList feature_list;
+  base::FieldTrialParams params;
+  params["bidder_worklet_thread_pool_size_logarithmic_scaling_factor"] = "1.0";
+  feature_list.InitAndEnableFeatureWithParameters(
+      features::kFledgeBidderWorkletThreadPool, params);
+
+  UseMockWorkletService();
+
+  // The `MockBidderWorklet` does not support testing multiple calls to
+  // `BeginGenerateBid()`. Thus, disable that code path, but still allow testing
+  // other auction functions.
+  mock_auction_process_manager_->SetSkipGenerateBid();
+
+  const char kScript[] = R"(
+    if (!('count' in globalThis))
+      globalThis.count = 1;
+    function generateBid() {
+      ++count;
+      return {ad: ["ad"], bid:count, render:"https://response.test/"};
+    }
+    function reportWin(auctionSignals, perBuyerSignals, sellerSignals,
+                       browserSignals) {}
+  )";
+
+  const char kSellerScript[] = R"(
+    function scoreAd(adMetadata, bid, auctionConfig, trustedScoringSignals,
+                     browserSignals) {
+      return {desirability: bid,
+              ad: adMetadata};
+    }
+    function reportResult() {}
+  )";
+
+  auction_worklet::AddJavascriptResponse(&url_loader_factory_, kBidder1Url,
+                                         kScript);
+  auction_worklet::AddJavascriptResponse(&url_loader_factory_, kSellerUrl,
+                                         kSellerScript);
+
+  std::vector<StorageInterestGroup> bidders;
+  for (int i = 0; i < 9; ++i) {
+    StorageInterestGroup ig = MakeInterestGroup(
+        kBidder1, kBidder1Name + base::NumberToString(i), kBidder1Url,
+        /* trusted_bidding_signals_url=*/std::nullopt,
+        /* trusted_bidding_signals_keys=*/{}, GURL("https://response.test/"));
+    ig.joining_origin = url::Origin::Create(GURL("https://sports.example.org"));
+    ig.interest_group.execution_mode =
+        blink::InterestGroup::ExecutionMode::kFrozenContext;
+    bidders.push_back(std::move(ig));
+  }
+
+  StartAuction(kSellerUrl, std::move(bidders));
+  auction_run_loop_->Run();
+
+  EXPECT_EQ(mock_auction_process_manager_->load_bidder_worklet_count(), 1u);
+  EXPECT_EQ(
+      mock_auction_process_manager_->last_load_bidder_worklet_threads_count(),
+      1u);
+}
+
+// with a scaling factor of 1.0, and with 10 interest groups, two threads will
+// be requested for the bidder worklet.
+TEST_F(AuctionRunnerTest, LargeInterestGroupsCount_TwoBidderThreadsRequested) {
+  base::test::ScopedFeatureList feature_list;
+  base::FieldTrialParams params;
+  params["bidder_worklet_thread_pool_size_logarithmic_scaling_factor"] = "1.0";
+  feature_list.InitAndEnableFeatureWithParameters(
+      features::kFledgeBidderWorkletThreadPool, params);
+
+  UseMockWorkletService();
+
+  // The `MockBidderWorklet` does not support testing multiple calls to
+  // `BeginGenerateBid()`. Thus, disable that code path, but still allow testing
+  // other auction functions.
+  mock_auction_process_manager_->SetSkipGenerateBid();
+
+  const char kScript[] = R"(
+    if (!('count' in globalThis))
+      globalThis.count = 1;
+    function generateBid() {
+      ++count;
+      return {ad: ["ad"], bid:count, render:"https://response.test/"};
+    }
+    function reportWin(auctionSignals, perBuyerSignals, sellerSignals,
+                       browserSignals) {}
+  )";
+
+  const char kSellerScript[] = R"(
+    function scoreAd(adMetadata, bid, auctionConfig, trustedScoringSignals,
+                     browserSignals) {
+      return {desirability: bid,
+              ad: adMetadata};
+    }
+    function reportResult() {}
+  )";
+
+  auction_worklet::AddJavascriptResponse(&url_loader_factory_, kBidder1Url,
+                                         kScript);
+  auction_worklet::AddJavascriptResponse(&url_loader_factory_, kSellerUrl,
+                                         kSellerScript);
+
+  std::vector<StorageInterestGroup> bidders;
+  for (int i = 0; i < 10; ++i) {
+    StorageInterestGroup ig = MakeInterestGroup(
+        kBidder1, kBidder1Name + base::NumberToString(i), kBidder1Url,
+        /* trusted_bidding_signals_url=*/std::nullopt,
+        /* trusted_bidding_signals_keys=*/{}, GURL("https://response.test/"));
+    ig.joining_origin = url::Origin::Create(GURL("https://sports.example.org"));
+    ig.interest_group.execution_mode =
+        blink::InterestGroup::ExecutionMode::kFrozenContext;
+    bidders.push_back(std::move(ig));
+  }
+
+  StartAuction(kSellerUrl, std::move(bidders));
+  auction_run_loop_->Run();
+
+  EXPECT_EQ(mock_auction_process_manager_->load_bidder_worklet_count(), 1u);
+  EXPECT_EQ(
+      mock_auction_process_manager_->last_load_bidder_worklet_threads_count(),
+      2u);
+}
+
 // Test the case where the only bidder times out due to the
 // perBuyerCumulativeTimeouts.
 TEST_F(AuctionRunnerTest, PerBuyerCumulativeTimeouts) {
@@ -12748,7 +13144,10 @@ TEST_F(AuctionRunnerTest,
           auction_worklet::mojom::ScoreAdDependencyLatencies::New(
               /*code_ready_latency=*/std::nullopt,
               /*direct_from_seller_signals_latency=*/std::nullopt,
-              /*trusted_scoring_signals_latency=*/std::nullopt),
+              /*trusted_scoring_signals_latency=*/std::nullopt,
+              /*deps_wait_start_time=*/base::TimeTicks::Now(),
+              /*score_ad_start_time=*/base::TimeTicks::Now(),
+              /*score_ad_finish_time=*/base::TimeTicks::Now()),
           /*errors=*/{});
 
   // Finish the auction.
@@ -12873,7 +13272,10 @@ TEST_F(AuctionRunnerTest,
           auction_worklet::mojom::ScoreAdDependencyLatencies::New(
               /*code_ready_latency=*/std::nullopt,
               /*direct_from_seller_signals_latency=*/std::nullopt,
-              /*trusted_scoring_signals_latency=*/std::nullopt),
+              /*trusted_scoring_signals_latency=*/std::nullopt,
+              /*deps_wait_start_time=*/base::TimeTicks::Now(),
+              /*score_ad_start_time=*/base::TimeTicks::Now(),
+              /*score_ad_finish_time=*/base::TimeTicks::Now()),
           /*errors=*/{});
 
   // Finish the auction.
@@ -14022,7 +14424,10 @@ TEST_F(
            {/*code_ready_latency=*/base::Milliseconds(550),
             /*config_promises_latency=*/nullopt,
             /*direct_from_seller_signals_latency=*/base::Milliseconds(400),
-            /*trusted_bidding_signals_latency=*/nullopt}),
+            /*trusted_bidding_signals_latency=*/nullopt,
+            /*deps_wait_start_time=*/base::TimeTicks::Now(),
+            /*generate_bid_start_time=*/base::TimeTicks::Now(),
+            /*generate_bid_finish_time=*/base::TimeTicks::Now()}),
        /*code_ready_latency_in_millis=*/500,
        /*num_bidder_worklet_on_critical_path=*/1,
        /*bidder_worklet_critical_path_latency_in_millis=*/100,
@@ -14041,7 +14446,10 @@ TEST_F(
            {/*code_ready_latency=*/nullopt,
             /*config_promises_latency=*/base::Milliseconds(550),
             /*direct_from_seller_signals_latency=*/nullopt,
-            /*trusted_bidding_signals_latency=*/base::Milliseconds(300)}),
+            /*trusted_bidding_signals_latency=*/base::Milliseconds(300),
+            /*deps_wait_start_time=*/base::TimeTicks::Now(),
+            /*generate_bid_start_time=*/base::TimeTicks::Now(),
+            /*generate_bid_finish_time=*/base::TimeTicks::Now()}),
        /*code_ready_latency_in_millis=*/nullopt,
        /*num_bidder_worklet_on_critical_path=*/0,
        /*bidder_worklet_critical_path_latency_in_millis=*/nullopt,
@@ -14060,7 +14468,10 @@ TEST_F(
            {/*code_ready_latency=*/base::Milliseconds(50),
             /*config_promises_latency=*/base::Milliseconds(200),
             /*direct_from_seller_signals_latency=*/base::Milliseconds(550),
-            /*trusted_bidding_signals_latency=*/nullopt}),
+            /*trusted_bidding_signals_latency=*/nullopt,
+            /*deps_wait_start_time=*/base::TimeTicks::Now(),
+            /*generate_bid_start_time=*/base::TimeTicks::Now(),
+            /*generate_bid_finish_time=*/base::TimeTicks::Now()}),
        /*code_ready_latency_in_millis=*/50,
        /*num_bidder_worklet_on_critical_path=*/0,
        /*bidder_worklet_critical_path_latency_in_millis=*/nullopt,
@@ -14079,7 +14490,10 @@ TEST_F(
            {/*code_ready_latency=*/base::Milliseconds(100),
             /*config_promises_latency=*/base::Milliseconds(51),
             /*direct_from_seller_signals_latency=*/base::Milliseconds(100),
-            /*trusted_bidding_signals_latency=*/base::Milliseconds(550)}),
+            /*trusted_bidding_signals_latency=*/base::Milliseconds(550),
+            /*deps_wait_start_time=*/base::TimeTicks::Now(),
+            /*generate_bid_start_time=*/base::TimeTicks::Now(),
+            /*generate_bid_finish_time=*/base::TimeTicks::Now()}),
        /*code_ready_latency_in_millis=*/100,
        /*num_bidder_worklet_on_critical_path=*/0,
        /*bidder_worklet_critical_path_latency_in_millis=*/nullopt,
@@ -14098,7 +14512,10 @@ TEST_F(
            {/*code_ready_latency=*/base::Milliseconds(100),
             /*config_promises_latency=*/base::Milliseconds(550),
             /*direct_from_seller_signals_latency=*/base::Milliseconds(100),
-            /*trusted_bidding_signals_latency=*/base::Milliseconds(550)}),
+            /*trusted_bidding_signals_latency=*/base::Milliseconds(550),
+            /*deps_wait_start_time=*/base::TimeTicks::Now(),
+            /*generate_bid_start_time=*/base::TimeTicks::Now(),
+            /*generate_bid_finish_time=*/base::TimeTicks::Now()}),
        /*code_ready_latency_in_millis=*/100,
        /*num_bidder_worklet_on_critical_path=*/0,
        /*bidder_worklet_critical_path_latency_in_millis=*/nullopt,
@@ -14160,7 +14577,10 @@ TEST_F(
             auction_worklet::mojom::ScoreAdDependencyLatencies::New(
                 /*code_ready_latency=*/std::nullopt,
                 /*direct_from_seller_signals_latency=*/std::nullopt,
-                /*trusted_scoring_signals_latency=*/std::nullopt),
+                /*trusted_scoring_signals_latency=*/std::nullopt,
+                /*deps_wait_start_time=*/base::TimeTicks::Now(),
+                /*score_ad_start_time=*/base::TimeTicks::Now(),
+                /*score_ad_finish_time=*/base::TimeTicks::Now()),
             /*errors=*/{});
 
     // Finish the auction.
@@ -14292,7 +14712,10 @@ TEST_F(AuctionRunnerTest,
        ScoreAdDependencyLatencies(
            {/*code_ready_latency=*/base::Milliseconds(550),
             /*direct_from_seller_signals_latency=*/base::Milliseconds(400),
-            /*trusted_scoring_signals_latency=*/nullopt}),
+            /*trusted_scoring_signals_latency=*/nullopt,
+            /*deps_wait_start_time=*/base::TimeTicks::Now(),
+            /*score_ad_start_time=*/base::TimeTicks::Now(),
+            /*score_ad_finish_time=*/base::TimeTicks::Now()}),
        /*code_ready_latency_in_millis=*/500,
        /*num_bidder_worklet_on_critical_path=*/1,
        /*bidder_worklet_critical_path_latency_in_millis=*/100,
@@ -14307,7 +14730,10 @@ TEST_F(AuctionRunnerTest,
        ScoreAdDependencyLatencies(
            {/*code_ready_latency=*/base::Milliseconds(200),
             /*direct_from_seller_signals_latency=*/base::Milliseconds(550),
-            /*trusted_scoring_signals_latency=*/nullopt}),
+            /*trusted_scoring_signals_latency=*/nullopt,
+            /*deps_wait_start_time=*/base::TimeTicks::Now(),
+            /*score_ad_start_time=*/base::TimeTicks::Now(),
+            /*score_ad_finish_time=*/base::TimeTicks::Now()}),
        /*code_ready_latency_in_millis=*/200,
        /*num_bidder_worklet_on_critical_path=*/0,
        /*bidder_worklet_critical_path_latency_in_millis=*/nullopt,
@@ -14322,7 +14748,10 @@ TEST_F(AuctionRunnerTest,
        ScoreAdDependencyLatencies(
            {/*code_ready_latency=*/base::Milliseconds(100),
             /*direct_from_seller_signals_latency=*/base::Milliseconds(100),
-            /*trusted_scoring_signals_latency=*/base::Milliseconds(550)}),
+            /*trusted_scoring_signals_latency=*/base::Milliseconds(550),
+            /*deps_wait_start_time=*/base::TimeTicks::Now(),
+            /*score_ad_start_time=*/base::TimeTicks::Now(),
+            /*score_ad_finish_time=*/base::TimeTicks::Now()}),
        /*code_ready_latency_in_millis=*/100,
        /*num_bidder_worklet_on_critical_path=*/0,
        /*bidder_worklet_critical_path_latency_in_millis=*/nullopt,
@@ -14337,7 +14766,10 @@ TEST_F(AuctionRunnerTest,
        ScoreAdDependencyLatencies(
            {/*code_ready_latency=*/base::Milliseconds(550),
             /*direct_from_seller_signals_latency=*/base::Milliseconds(100),
-            /*trusted_scoring_signals_latency=*/base::Milliseconds(550)}),
+            /*trusted_scoring_signals_latency=*/base::Milliseconds(550),
+            /*deps_wait_start_time=*/base::TimeTicks::Now(),
+            /*score_ad_start_time=*/base::TimeTicks::Now(),
+            /*score_ad_finish_time=*/base::TimeTicks::Now()}),
        /*code_ready_latency_in_millis=*/500,
        /*num_bidder_worklet_on_critical_path=*/0,
        /*bidder_worklet_critical_path_latency_in_millis=*/nullopt,
@@ -14377,7 +14809,10 @@ TEST_F(AuctionRunnerTest,
             /*code_ready_latency=*/std::nullopt,
             /*config_promises_latency=*/std::nullopt,
             /*direct_from_seller_signals_latency=*/std::nullopt,
-            /*trusted_bidding_signals_latency=*/std::nullopt));
+            /*trusted_bidding_signals_latency=*/std::nullopt,
+            /*deps_wait_start_time=*/base::TimeTicks::Now(),
+            /*generate_bid_start_time=*/base::TimeTicks::Now(),
+            /*generate_bid_finish_time=*/base::TimeTicks::Now()));
 
     // Score the ad.
     auto score_ad_params = seller_worklet->WaitForScoreAd();
@@ -14480,6 +14915,177 @@ TEST_F(AuctionRunnerTest,
                 kMeanScoreAdTrustedScoringSignalsCriticalPathLatencyInMillisName,
             test_case.trusted_scoring_signals_critical_path_latency_in_millis));
   }
+}
+
+// Test the phase metrics for the WorkletCreation phase.
+TEST_F(AuctionRunnerTest, VerifyWorkletCreationPhaseMetrics) {
+  auto same_process_auction_process_manager =
+      std::make_unique<SameProcessAuctionProcessManager>();
+  same_process_auction_process_manager_ =
+      same_process_auction_process_manager.get();
+  auction_process_manager_ = std::move(same_process_auction_process_manager);
+
+  RunStandardAuction();
+
+  ukm::TestUkmRecorder::HumanReadableUkmMetrics ukm_metrics = GetUkmMetrics();
+
+  using UkmEntry = ukm::builders::AdsInterestGroup_AuctionLatency_V2;
+
+  EXPECT_THAT(ukm_metrics,
+              HasMetric(UkmEntry::kWorkletCreationPhaseStartTimeInMillisName));
+  EXPECT_THAT(ukm_metrics,
+              HasMetric(UkmEntry::kWorkletCreationPhaseEndTimeInMillisName));
+}
+
+// Test the phase metrics for GenerateBid and ScoreAd phases.
+TEST_F(AuctionRunnerTest, VerifyGenerateBidAndScoreAdPhaseMetrics) {
+  StartStandardAuctionWithMockService();
+
+  auto seller_worklet = mock_auction_process_manager_->TakeSellerWorklet();
+  ASSERT_TRUE(seller_worklet);
+
+  // First bid.
+  auto bidder1_worklet =
+      mock_auction_process_manager_->TakeBidderWorklet(kBidder1Url);
+  ASSERT_TRUE(bidder1_worklet);
+  bidder1_worklet->InvokeGenerateBidCallback(
+      /*bid=*/2, /*bid_currency=*/std::nullopt,
+      /*ad_descriptor=*/blink::AdDescriptor(GURL("https://ad1.com/")),
+      auction_worklet::mojom::BidRole::kUnenforcedKAnon,
+      /*further_bids=*/{},
+      /*ad_component_descriptors=*/std::nullopt,
+      /*duration=*/base::TimeDelta(),
+      /*bidding_signals_data_version=*/std::nullopt,
+      /*debug_loss_report_url=*/std::nullopt,
+      /*debug_win_report_url=*/std::nullopt,
+      /*pa_requests=*/{},
+      /*real_time_contributions=*/{},
+      /*dependency_latencies=*/
+      auction_worklet::mojom::GenerateBidDependencyLatencies::New(
+          /*code_ready_latency=*/std::nullopt,
+          /*config_promises_latency=*/std::nullopt,
+          /*direct_from_seller_signals_latency=*/std::nullopt,
+          /*trusted_bidding_signals_latency=*/std::nullopt,
+          /*deps_wait_start_time=*/base::TimeTicks::Now(),
+          /*generate_bid_start_time=*/base::TimeTicks::Now(),
+          /*generate_bid_finish_time=*/base::TimeTicks::Now()));
+
+  // Score the first ad.
+  auto score_ad_params = seller_worklet->WaitForScoreAd();
+  EXPECT_EQ(kBidder1, score_ad_params.interest_group_owner);
+  EXPECT_EQ(2, score_ad_params.bid);
+  mojo::Remote<auction_worklet::mojom::ScoreAdClient>(
+      std::move(score_ad_params.score_ad_client))
+      ->OnScoreAdComplete(
+          /*score=*/10,
+          /*reject_reason=*/
+          auction_worklet::mojom::RejectReason::kNotAvailable,
+          auction_worklet::mojom::ComponentAuctionModifiedBidParamsPtr(),
+          /*bid_in_seller_currency=*/std::nullopt,
+          /*scoring_signals_data_version=*/std::nullopt,
+          /*debug_loss_report_url=*/std::nullopt,
+          /*debug_win_report_url=*/std::nullopt, /*pa_requests=*/{},
+          /*real_time_contributions=*/{},
+          /*scoring_latency=*/base::Milliseconds(0),
+          /*score_ad_dependency_latencies=*/
+          auction_worklet::mojom::ScoreAdDependencyLatencies::New(
+              /*code_ready_latency=*/base::Milliseconds(100),
+              /*direct_from_seller_signals_latency=*/base::Milliseconds(100),
+              /*trusted_scoring_signals_latency=*/base::Milliseconds(550),
+              /*deps_wait_start_time=*/base::TimeTicks::Now(),
+              /*score_ad_start_time=*/base::TimeTicks::Now(),
+              /*score_ad_finish_time=*/base::TimeTicks::Now()),
+          /*errors=*/{});
+
+  // Second bid.
+  auto bidder2_worklet =
+      mock_auction_process_manager_->TakeBidderWorklet(kBidder2Url);
+  ASSERT_TRUE(bidder2_worklet);
+  bidder2_worklet->InvokeGenerateBidCallback(
+      /*bid=*/1, /*bid_currency=*/std::nullopt,
+      /*ad_descriptor=*/blink::AdDescriptor(GURL("https://ad2.com/")),
+      auction_worklet::mojom::BidRole::kUnenforcedKAnon,
+      /*further_bids=*/{},
+      /*ad_component_descriptors=*/std::nullopt,
+      /*duration=*/base::TimeDelta(),
+      /*bidding_signals_data_version=*/std::nullopt,
+      /*debug_loss_report_url=*/std::nullopt,
+      /*debug_win_report_url=*/std::nullopt,
+      /*pa_requests=*/{},
+      /*real_time_contributions=*/{},
+      /*dependency_latencies=*/
+      auction_worklet::mojom::GenerateBidDependencyLatencies::New(
+          /*code_ready_latency=*/std::nullopt,
+          /*config_promises_latency=*/std::nullopt,
+          /*direct_from_seller_signals_latency=*/std::nullopt,
+          /*trusted_bidding_signals_latency=*/std::nullopt,
+          /*deps_wait_start_time=*/base::TimeTicks::Now(),
+          /*generate_bid_start_time=*/base::TimeTicks::Now(),
+          /*generate_bid_start_time=*/base::TimeTicks::Now()));
+
+  // Score the second ad.
+  score_ad_params = seller_worklet->WaitForScoreAd();
+  EXPECT_EQ(kBidder2, score_ad_params.interest_group_owner);
+  EXPECT_EQ(1, score_ad_params.bid);
+  mojo::Remote<auction_worklet::mojom::ScoreAdClient>(
+      std::move(score_ad_params.score_ad_client))
+      ->OnScoreAdComplete(
+          /*score=*/15,
+          /*reject_reason=*/
+          auction_worklet::mojom::RejectReason::kNotAvailable,
+          auction_worklet::mojom::ComponentAuctionModifiedBidParamsPtr(),
+          /*bid_in_seller_currency=*/std::nullopt,
+          /*scoring_signals_data_version=*/std::nullopt,
+          /*debug_loss_report_url=*/std::nullopt,
+          /*debug_win_report_url=*/std::nullopt, /*pa_requests=*/{},
+          /*real_time_contributions=*/{},
+          /*scoring_latency=*/base::Milliseconds(0),
+          /*score_ad_dependency_latencies=*/
+          auction_worklet::mojom::ScoreAdDependencyLatencies::New(
+              /*code_ready_latency=*/base::Milliseconds(100),
+              /*direct_from_seller_signals_latency=*/base::Milliseconds(100),
+              /*trusted_scoring_signals_latency=*/base::Milliseconds(550),
+              /*deps_wait_start_time=*/base::TimeTicks::Now(),
+              /*score_ad_start_time=*/base::TimeTicks::Now(),
+              /*score_ad_finish_time=*/base::TimeTicks::Now()),
+          /*errors=*/{});
+
+  // Finish the auction.
+  seller_worklet->WaitForReportResult();
+  seller_worklet->InvokeReportResultCallback();
+  mock_auction_process_manager_->WaitForWinningBidderReload();
+  bidder2_worklet =
+      mock_auction_process_manager_->TakeBidderWorklet(kBidder2Url);
+  bidder2_worklet->WaitForReportWin();
+  bidder2_worklet->InvokeReportWinCallback();
+  auction_run_loop_->Run();
+
+  EXPECT_THAT(result_.errors, testing::UnorderedElementsAre());
+  EXPECT_EQ(kBidder2Key, result_.winning_group_id);
+  EXPECT_EQ(GURL("https://ad2.com/"), result_.ad_descriptor->url);
+
+  ukm::TestUkmRecorder::HumanReadableUkmMetrics ukm_metrics = GetUkmMetrics();
+
+  using UkmEntry = ukm::builders::AdsInterestGroup_AuctionLatency_V2;
+
+  EXPECT_THAT(ukm_metrics,
+              HasMetric(UkmEntry::kBidSignalsFetchPhaseStartTimeInMillisName));
+  EXPECT_THAT(ukm_metrics,
+              HasMetric(UkmEntry::kBidSignalsFetchPhaseEndTimeInMillisName));
+  EXPECT_THAT(ukm_metrics,
+              HasMetric(UkmEntry::kBidGenerationPhaseStartTimeInMillisName));
+  EXPECT_THAT(ukm_metrics,
+              HasMetric(UkmEntry::kBidGenerationPhaseEndTimeInMillisName));
+
+  EXPECT_THAT(
+      ukm_metrics,
+      HasMetric(UkmEntry::kScoreSignalsFetchPhaseStartTimeInMillisName));
+  EXPECT_THAT(ukm_metrics,
+              HasMetric(UkmEntry::kScoreSignalsFetchPhaseEndTimeInMillisName));
+  EXPECT_THAT(ukm_metrics,
+              HasMetric(UkmEntry::kScoringPhaseStartTimeInMillisName));
+  EXPECT_THAT(ukm_metrics,
+              HasMetric(UkmEntry::kScoringPhaseEndTimeInMillisName));
 }
 
 // An auction with two successful bids. contributeToHistogram() and
@@ -15300,23 +15906,32 @@ TEST_F(AuctionRunnerTest, PrivateAggregationRequestForEventFilteringId) {
       ElementsAreRequests(
           BuildPrivateAggregationForEventRequest(
               /*bucket=*/123, /*value=*/4,
-              /*event_type=*/"reserved.always",
+              /*event_type=*/
+              Reserved(
+                  auction_worklet::mojom::ReservedEventType::kReservedAlways),
               /*filtering_id=*/1),
           BuildPrivateAggregationForEventRequest(
               /*bucket=*/123, /*value=*/4,
-              /*event_type=*/"reserved.always",
+              /*event_type=*/
+              Reserved(
+                  auction_worklet::mojom::ReservedEventType::kReservedAlways),
               /*filtering_id=*/std::nullopt),
           BuildPrivateAggregationForEventRequest(
               /*bucket=*/234, /*value=*/5,
-              /*event_type=*/"reserved.always",
+              /*event_type=*/
+              Reserved(
+                  auction_worklet::mojom::ReservedEventType::kReservedAlways),
               /*filtering_id=*/0),
           BuildPrivateAggregationForEventRequest(
               /*bucket=*/234, /*value=*/5,
-              /*event_type=*/"reserved.always",
+              /*event_type=*/
+              Reserved(
+                  auction_worklet::mojom::ReservedEventType::kReservedAlways),
               /*filtering_id=*/255),
-          BuildPrivateAggregationForEventRequest(/*bucket=*/456, /*value=*/7,
-                                                 /*event_type=*/"click",
-                                                 /*filtering_id=*/2)));
+          BuildPrivateAggregationForEventRequest(
+              /*bucket=*/456, /*value=*/7,
+              /*event_type=*/NonReserved("click"),
+              /*filtering_id=*/2)));
 }
 
 TEST_F(AuctionRunnerTest,
@@ -15336,11 +15951,8 @@ TEST_F(AuctionRunnerTest,
   PrivateAggregationRequests bidder_1_pa_requests;
   bidder_1_pa_requests.push_back(
       BuildPrivateAggregationForEventRequest(
-          /*bucket=*/10, /*value=*/20, /*event_type=*/"reserved.always")
-          .Clone());
-  bidder_1_pa_requests.push_back(
-      BuildPrivateAggregationForEventRequest(
-          /*bucket=*/11, /*value=*/21, /*event_type=*/"reserved.not-supported")
+          /*bucket=*/10, /*value=*/20, /*event_type=*/
+          Reserved(auction_worklet::mojom::ReservedEventType::kReservedAlways))
           .Clone());
 
   // Bidder1 returns a bid with a private aggregation request whose reserved
@@ -15384,7 +15996,10 @@ TEST_F(AuctionRunnerTest,
           auction_worklet::mojom::ScoreAdDependencyLatencies::New(
               /*code_ready_latency=*/std::nullopt,
               /*direct_from_seller_signals_latency=*/std::nullopt,
-              /*trusted_scoring_signals_latency=*/std::nullopt),
+              /*trusted_scoring_signals_latency=*/std::nullopt,
+              /*deps_wait_start_time=*/base::TimeTicks::Now(),
+              /*score_ad_start_time=*/base::TimeTicks::Now(),
+              /*score_ad_finish_time=*/base::TimeTicks::Now()),
           /*errors=*/{});
 
   PrivateAggregationRequests report_win_pa_requests;
@@ -15454,18 +16069,19 @@ TEST_F(AuctionRunnerTest, PrivateAggregationTimeMetrics) {
         bidder_pa_requests, seller_pa_requests;
     bidder_pa_requests.push_back(BuildPrivateAggregationForBaseValue(
         /*bucket=*/100 * i, auction_worklet::mojom::BaseValue::kScriptRunTime,
-        "reserved.always"));
+        Reserved(auction_worklet::mojom::ReservedEventType::kReservedAlways)));
     seller_pa_requests.push_back(BuildPrivateAggregationForBaseValue(
         /*bucket=*/100 * i + 10,
-        auction_worklet::mojom::BaseValue::kScriptRunTime, "reserved.always"));
+        auction_worklet::mojom::BaseValue::kScriptRunTime,
+        Reserved(auction_worklet::mojom::ReservedEventType::kReservedAlways)));
     bidder_pa_requests.push_back(BuildPrivateAggregationForBaseValue(
         /*bucket=*/100 * i + 1,
         auction_worklet::mojom::BaseValue::kSignalsFetchTime,
-        "reserved.always"));
+        Reserved(auction_worklet::mojom::ReservedEventType::kReservedAlways)));
     seller_pa_requests.push_back(BuildPrivateAggregationForBaseValue(
         /*bucket=*/100 * i + 11,
         auction_worklet::mojom::BaseValue::kSignalsFetchTime,
-        "reserved.always"));
+        Reserved(auction_worklet::mojom::ReservedEventType::kReservedAlways)));
     bidder_worklets[i]->InvokeGenerateBidCallback(
         i + 1, /*bid_currency=*/std::nullopt,
         blink::AdDescriptor(
@@ -15504,7 +16120,10 @@ TEST_F(AuctionRunnerTest, PrivateAggregationTimeMetrics) {
                 /*code_ready_latency=*/std::nullopt,
                 /*direct_from_seller_signals_latency=*/std::nullopt,
                 /*trusted_scoring_signals_latency=*/
-                base::Milliseconds(100 * i + 21)),
+                base::Milliseconds(100 * i + 21),
+                /*deps_wait_start_time=*/base::TimeTicks::Now(),
+                /*score_ad_start_time=*/base::TimeTicks::Now(),
+                /*score_ad_finish_time=*/base::TimeTicks::Now()),
             /*errors=*/{});
   }
 
@@ -15512,16 +16131,16 @@ TEST_F(AuctionRunnerTest, PrivateAggregationTimeMetrics) {
       bidder_report_pa_requests, seller_report_pa_requests;
   bidder_report_pa_requests.push_back(BuildPrivateAggregationForBaseValue(
       /*bucket=*/50, auction_worklet::mojom::BaseValue::kScriptRunTime,
-      "reserved.always"));
+      Reserved(auction_worklet::mojom::ReservedEventType::kReservedAlways)));
   seller_report_pa_requests.push_back(BuildPrivateAggregationForBaseValue(
       /*bucket=*/60, auction_worklet::mojom::BaseValue::kScriptRunTime,
-      "reserved.always"));
+      Reserved(auction_worklet::mojom::ReservedEventType::kReservedAlways)));
   bidder_report_pa_requests.push_back(BuildPrivateAggregationForBaseValue(
       /*bucket=*/51, auction_worklet::mojom::BaseValue::kSignalsFetchTime,
-      "reserved.always"));
+      Reserved(auction_worklet::mojom::ReservedEventType::kReservedAlways)));
   seller_report_pa_requests.push_back(BuildPrivateAggregationForBaseValue(
       /*bucket=*/61, auction_worklet::mojom::BaseValue::kSignalsFetchTime,
-      "reserved.always"));
+      Reserved(auction_worklet::mojom::ReservedEventType::kReservedAlways)));
 
   // Need to flush the service pipe to make sure the AuctionRunner has
   // received the score.
@@ -15618,18 +16237,19 @@ TEST_F(AuctionRunnerTest, ComponentAuctionPrivateAggregationTimeMetrics) {
         bidder_pa_requests, component_seller_pa_requests;
     bidder_pa_requests.push_back(BuildPrivateAggregationForBaseValue(
         /*bucket=*/100 * i, auction_worklet::mojom::BaseValue::kScriptRunTime,
-        "reserved.always"));
+        Reserved(auction_worklet::mojom::ReservedEventType::kReservedAlways)));
     component_seller_pa_requests.push_back(BuildPrivateAggregationForBaseValue(
         /*bucket=*/100 * i + 10,
-        auction_worklet::mojom::BaseValue::kScriptRunTime, "reserved.always"));
+        auction_worklet::mojom::BaseValue::kScriptRunTime,
+        Reserved(auction_worklet::mojom::ReservedEventType::kReservedAlways)));
     bidder_pa_requests.push_back(BuildPrivateAggregationForBaseValue(
         /*bucket=*/100 * i + 1,
         auction_worklet::mojom::BaseValue::kSignalsFetchTime,
-        "reserved.always"));
+        Reserved(auction_worklet::mojom::ReservedEventType::kReservedAlways)));
     component_seller_pa_requests.push_back(BuildPrivateAggregationForBaseValue(
         /*bucket=*/100 * i + 11,
         auction_worklet::mojom::BaseValue::kSignalsFetchTime,
-        "reserved.always"));
+        Reserved(auction_worklet::mojom::ReservedEventType::kReservedAlways)));
     bidder_worklets[i]->InvokeGenerateBidCallback(
         i + 1, /*bid_currency=*/std::nullopt,
         blink::AdDescriptor(
@@ -15662,7 +16282,10 @@ TEST_F(AuctionRunnerTest, ComponentAuctionPrivateAggregationTimeMetrics) {
                 /*code_ready_latency=*/std::nullopt,
                 /*direct_from_seller_signals_latency=*/std::nullopt,
                 /*trusted_scoring_signals_latency=*/
-                base::Milliseconds(100 * i + 21)),
+                base::Milliseconds(100 * i + 21),
+                /*deps_wait_start_time=*/base::TimeTicks::Now(),
+                /*score_ad_start_time=*/base::TimeTicks::Now(),
+                /*score_ad_finish_time=*/base::TimeTicks::Now()),
             /*errors=*/{});
   }
 
@@ -15670,10 +16293,10 @@ TEST_F(AuctionRunnerTest, ComponentAuctionPrivateAggregationTimeMetrics) {
       top_seller_pa_requests;
   top_seller_pa_requests.push_back(BuildPrivateAggregationForBaseValue(
       /*bucket=*/20, auction_worklet::mojom::BaseValue::kScriptRunTime,
-      "reserved.always"));
+      Reserved(auction_worklet::mojom::ReservedEventType::kReservedAlways)));
   top_seller_pa_requests.push_back(BuildPrivateAggregationForBaseValue(
       /*bucket=*/21, auction_worklet::mojom::BaseValue::kSignalsFetchTime,
-      "reserved.always"));
+      Reserved(auction_worklet::mojom::ReservedEventType::kReservedAlways)));
 
   auto top_score_ad_params = top_seller_worklet->WaitForScoreAd();
   mojo::Remote<auction_worklet::mojom::ScoreAdClient>(
@@ -15694,7 +16317,10 @@ TEST_F(AuctionRunnerTest, ComponentAuctionPrivateAggregationTimeMetrics) {
           auction_worklet::mojom::ScoreAdDependencyLatencies::New(
               /*code_ready_latency=*/std::nullopt,
               /*direct_from_seller_signals_latency=*/std::nullopt,
-              /*trusted_scoring_signals_latency=*/base::Milliseconds(31)),
+              /*trusted_scoring_signals_latency=*/base::Milliseconds(31),
+              /*deps_wait_start_time=*/base::TimeTicks::Now(),
+              /*score_ad_start_time=*/base::TimeTicks::Now(),
+              /*score_ad_finish_time=*/base::TimeTicks::Now()),
           /*errors=*/{});
 
   std::vector<auction_worklet::mojom::PrivateAggregationRequestPtr>
@@ -15702,24 +16328,26 @@ TEST_F(AuctionRunnerTest, ComponentAuctionPrivateAggregationTimeMetrics) {
       top_seller_report_pa_requests;
   bidder_report_pa_requests.push_back(BuildPrivateAggregationForBaseValue(
       /*bucket=*/50, auction_worklet::mojom::BaseValue::kScriptRunTime,
-      "reserved.always"));
+      Reserved(auction_worklet::mojom::ReservedEventType::kReservedAlways)));
   component_seller_report_pa_requests.push_back(
       BuildPrivateAggregationForBaseValue(
           /*bucket=*/60, auction_worklet::mojom::BaseValue::kScriptRunTime,
-          "reserved.always"));
+          Reserved(
+              auction_worklet::mojom::ReservedEventType::kReservedAlways)));
   top_seller_report_pa_requests.push_back(BuildPrivateAggregationForBaseValue(
       /*bucket=*/70, auction_worklet::mojom::BaseValue::kScriptRunTime,
-      "reserved.always"));
+      Reserved(auction_worklet::mojom::ReservedEventType::kReservedAlways)));
   bidder_report_pa_requests.push_back(BuildPrivateAggregationForBaseValue(
       /*bucket=*/51, auction_worklet::mojom::BaseValue::kSignalsFetchTime,
-      "reserved.always"));
+      Reserved(auction_worklet::mojom::ReservedEventType::kReservedAlways)));
   component_seller_report_pa_requests.push_back(
       BuildPrivateAggregationForBaseValue(
           /*bucket=*/61, auction_worklet::mojom::BaseValue::kSignalsFetchTime,
-          "reserved.always"));
+          Reserved(
+              auction_worklet::mojom::ReservedEventType::kReservedAlways)));
   top_seller_report_pa_requests.push_back(BuildPrivateAggregationForBaseValue(
       /*bucket=*/71, auction_worklet::mojom::BaseValue::kSignalsFetchTime,
-      "reserved.always"));
+      Reserved(auction_worklet::mojom::ReservedEventType::kReservedAlways)));
 
   top_seller_worklet->WaitForReportResult();
   top_seller_worklet->SetReportingLatency(base::Milliseconds(200));
@@ -16871,7 +17499,10 @@ TEST_F(AuctionRunnerTest, RealTimeReportingSellerBadContribution) {
             auction_worklet::mojom::ScoreAdDependencyLatencies::New(
                 /*code_ready_latency=*/std::nullopt,
                 /*direct_from_seller_signals_latency=*/std::nullopt,
-                /*trusted_scoring_signals_latency=*/std::nullopt),
+                /*trusted_scoring_signals_latency=*/std::nullopt,
+                /*deps_wait_start_time=*/base::TimeTicks::Now(),
+                /*score_ad_start_time=*/base::TimeTicks::Now(),
+                /*score_ad_finish_time=*/base::TimeTicks::Now()),
             /*errors=*/{});
     auction_run_loop_->Run();
     EXPECT_EQ(test_case.expected_error_message, TakeBadMessage());
@@ -16887,7 +17518,7 @@ TEST_F(AuctionRunnerTest, RealTimeReportingSellerBadContribution) {
 }
 
 TEST_F(AuctionRunnerTest, RealTimeReportingAllOptedIn) {
-  // Optin all buyers and seller for real time reporting.
+  // Opt in all buyers and seller for real time reporting.
   auto type = blink::mojom::AuctionAdConfigNonSharedParams::
       RealTimeReportingType::kDefaultLocalReporting;
   seller_real_time_reporting_type_ = type;
@@ -16928,28 +17559,8 @@ TEST_F(AuctionRunnerTest, RealTimeReportingAllOptedIn) {
                                          /*bucket=*/202, priority_weight)))));
 }
 
-TEST_F(AuctionRunnerTest, RealTimeReportingNoOneOptedIn) {
-  auction_worklet::AddJavascriptResponse(
-      &url_loader_factory_, kBidder1Url,
-      MakeBidScriptWithRealTimeReporting(/*bid=*/1));
-  auction_worklet::AddJavascriptResponse(
-      &url_loader_factory_, kBidder2Url,
-      MakeBidScriptWithRealTimeReporting(/*bid=*/2));
-  auction_worklet::AddJavascriptResponse(&url_loader_factory_, kSellerUrl,
-                                         kDecisionScriptWithRealTimeReporting);
-
-  // Bidder 2 won the auction.
-  RunStandardAuction(/*request_trusted_bidding_signals=*/false);
-  EXPECT_THAT(result_.errors, testing::UnorderedElementsAre());
-  EXPECT_FALSE(result_.aborted_by_script);
-  EXPECT_EQ(kBidder2Key, result_.winning_group_id);
-  EXPECT_EQ(GURL("https://ad2.com/"), result_.ad_descriptor->url);
-
-  EXPECT_TRUE(result_.real_time_contributions.empty());
-}
-
 TEST_F(AuctionRunnerTest, RealTimeReportingPartialOptedIn) {
-  // Optin seller and kBidder1 for real time reporting.
+  // Opt in seller and kBidder1 for real time reporting.
   auto type = blink::mojom::AuctionAdConfigNonSharedParams::
       RealTimeReportingType::kDefaultLocalReporting;
   seller_real_time_reporting_type_ = type;
@@ -17150,7 +17761,7 @@ TEST_F(AuctionRunnerTest,
 // Real time reporting contributions are still collected when auction fails
 // (e.g., all bids rejected).
 TEST_F(AuctionRunnerTest, RealTimeReportingFailAuctionAllBidsRejected) {
-  // Optin all buyers and seller for real time reporting.
+  // Opt in all buyers and seller for real time reporting.
   auto type = blink::mojom::AuctionAdConfigNonSharedParams::
       RealTimeReportingType::kDefaultLocalReporting;
   seller_real_time_reporting_type_ = type;
@@ -17187,6 +17798,167 @@ TEST_F(AuctionRunnerTest, RealTimeReportingFailAuctionAllBidsRejected) {
           // Has empty contributions instead of no entry for seller,
           // since seller opted in.
           testing::Pair(kSeller, ElementsAreContributions())));
+}
+
+// Similar to NoSellerScript, but tests real time reporting contribution for
+// this error.
+TEST_F(AuctionRunnerTest, RealTimeReportingSellerScriptLoadFailed) {
+  // Real time reporting platform contributions also require opt-in.
+  seller_real_time_reporting_type_ =
+      blink::mojom::AuctionAdConfigNonSharedParams::RealTimeReportingType::
+          kDefaultLocalReporting;
+
+  url_loader_factory_.AddResponse(kSellerUrl.spec(), "", net::HTTP_NOT_FOUND);
+  RunStandardAuction();
+  EXPECT_FALSE(result_.winning_group_id);
+  EXPECT_FALSE(result_.ad_descriptor);
+  EXPECT_THAT(result_.errors,
+              testing::ElementsAre(
+                  "Failed to load https://adstuff.publisher1.com/auction.js "
+                  "HTTP status = 404 Not Found."));
+  EXPECT_THAT(
+      result_.real_time_contributions,
+      testing::ElementsAre(testing::Pair(
+          kSeller, ElementsAreContributions(BuildRealTimeContribution(
+                       /*bucket=*/1024 +
+                           auction_worklet::RealTimeReportingPlatformError::
+                               kScoringScriptLoadFailure,
+                       /*priority_weight=*/1)))));
+}
+
+// An auction with different types of real time reporting contributions.
+TEST_F(AuctionRunnerTest, RealTimeReportingMixedContributions) {
+  // Opt in all buyers and seller for real time reporting.
+  auto type = blink::mojom::AuctionAdConfigNonSharedParams::
+      RealTimeReportingType::kDefaultLocalReporting;
+  seller_real_time_reporting_type_ = type;
+  per_buyer_real_time_reporting_types_.emplace();
+  per_buyer_real_time_reporting_types_->insert(std::make_pair(kBidder1, type));
+  per_buyer_real_time_reporting_types_->insert(std::make_pair(kBidder2, type));
+
+  // Bidder 1 load script would fail.
+  url_loader_factory_.AddResponse(kBidder1Url.spec(), "", net::HTTP_NOT_FOUND);
+
+  auction_worklet::AddJavascriptResponse(
+      &url_loader_factory_, kBidder2Url,
+      MakeBidScriptWithRealTimeReporting(/*bid=*/2));
+  // Bidder 2 load trusted bidding signals would fail.
+  url_loader_factory_.AddResponse(kBidder2TrustedSignalsUrl.spec() +
+                                      "?hostname=publisher1.com&keys=l1,l2"
+                                      "&interestGroupNames=Another+Ad+Thing",
+                                  "", net::HTTP_NOT_FOUND);
+
+  auction_worklet::AddJavascriptResponse(&url_loader_factory_, kSellerUrl,
+                                         kDecisionScriptWithRealTimeReporting);
+  RunStandardAuction();
+  EXPECT_EQ(kBidder2Key, result_.winning_group_id);
+  EXPECT_EQ(GURL("https://ad2.com/"), result_.ad_descriptor->url);
+  EXPECT_THAT(
+      result_.errors,
+      testing::UnorderedElementsAre(
+          "Failed to load https://adplatform.com/offers.js "
+          "HTTP status = 404 Not Found.",
+          "Failed to load https://anotheradthing.com/"
+          "signals2?hostname=publisher1.com&keys=l1,l2&"
+          "interestGroupNames=Another+Ad+Thing HTTP status = 404 Not Found."));
+  double priority_weight = 1.5;
+  EXPECT_THAT(
+      result_.real_time_contributions,
+      testing::UnorderedElementsAre(
+          // Bidder 1 has a platform contribution for failed bidding script
+          // load.
+          testing::Pair(
+              kBidder1,
+              ElementsAreContributions(BuildRealTimeContribution(
+                  /*bucket=*/1024 +
+                      auction_worklet::RealTimeReportingPlatformError::
+                          kBiddingScriptLoadFailure,
+                  /*priority_weight=*/1))),
+          // Bidder 2 has a contribution from API call, and a contribution from
+          // flatform contribution for failed trusted bidding signals load.
+          testing::Pair(
+              kBidder2,
+              ElementsAreContributions(
+                  BuildRealTimeContribution(
+                      /*bucket=*/102, priority_weight),
+                  BuildRealTimeContribution(
+                      /*bucket=*/1024 +
+                          auction_worklet::RealTimeReportingPlatformError::
+                              kTrustedBiddingSignalsFailure,
+                      /*priority_weight=*/1))),
+          testing::Pair(kSeller,
+                        ElementsAreContributions(BuildRealTimeContribution(
+                            /*bucket=*/202, priority_weight)))));
+}
+
+// Similar to RealTimeReportingMixedContributions, but no origin opted in for
+// real time reporting. There should be no real time reporting contributions,
+// including those from API calls or platform contributions.
+TEST_F(AuctionRunnerTest, RealTimeReportingMixedContributionsNoOptIn) {
+  // Bidder 1 load script would fail.
+  url_loader_factory_.AddResponse(kBidder1Url.spec(), "", net::HTTP_NOT_FOUND);
+
+  auction_worklet::AddJavascriptResponse(
+      &url_loader_factory_, kBidder2Url,
+      MakeBidScriptWithRealTimeReporting(/*bid=*/2));
+  // Bidder 2 load trusted bidding signals would fail.
+  url_loader_factory_.AddResponse(kBidder2TrustedSignalsUrl.spec() +
+                                      "?hostname=publisher1.com&keys=l1,l2"
+                                      "&interestGroupNames=Another+Ad+Thing",
+                                  "", net::HTTP_NOT_FOUND);
+
+  auction_worklet::AddJavascriptResponse(&url_loader_factory_, kSellerUrl,
+                                         kDecisionScriptWithRealTimeReporting);
+  RunStandardAuction();
+  EXPECT_EQ(kBidder2Key, result_.winning_group_id);
+  EXPECT_EQ(GURL("https://ad2.com/"), result_.ad_descriptor->url);
+  EXPECT_THAT(
+      result_.errors,
+      testing::UnorderedElementsAre(
+          "Failed to load https://adplatform.com/offers.js "
+          "HTTP status = 404 Not Found.",
+          "Failed to load https://anotheradthing.com/"
+          "signals2?hostname=publisher1.com&keys=l1,l2&"
+          "interestGroupNames=Another+Ad+Thing HTTP status = 404 Not Found."));
+  EXPECT_TRUE(result_.real_time_contributions.empty());
+}
+
+// Similar to RealTimeReportingMixedContributions, but with feature
+// kFledgeRealTimeReporting disabled. There should be no real time reporting
+// contributions, including those from API calls or platform contributions.
+TEST_F(AuctionRunnerTest, RealTimeReportingMixedContributionsFeatureDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      blink::features::kFledgeRealTimeReporting);
+
+  // Opt in all buyers and seller for real time reporting.
+  auto type = blink::mojom::AuctionAdConfigNonSharedParams::
+      RealTimeReportingType::kDefaultLocalReporting;
+  seller_real_time_reporting_type_ = type;
+  per_buyer_real_time_reporting_types_.emplace();
+  per_buyer_real_time_reporting_types_->insert(std::make_pair(kBidder1, type));
+  per_buyer_real_time_reporting_types_->insert(std::make_pair(kBidder2, type));
+
+  // Bidder 1 load script would fail.
+  url_loader_factory_.AddResponse(kBidder1Url.spec(), "", net::HTTP_NOT_FOUND);
+
+  auction_worklet::AddJavascriptResponse(
+      &url_loader_factory_, kBidder2Url,
+      MakeBidScriptWithRealTimeReporting(/*bid=*/2));
+  // Bidder 2 load trusted bidding signals would fail.
+  url_loader_factory_.AddResponse(kBidder2TrustedSignalsUrl.spec() +
+                                      "?hostname=publisher1.com&keys=l1,l2"
+                                      "&interestGroupNames=Another+Ad+Thing",
+                                  "", net::HTTP_NOT_FOUND);
+
+  auction_worklet::AddJavascriptResponse(&url_loader_factory_, kSellerUrl,
+                                         kDecisionScriptWithRealTimeReporting);
+  RunStandardAuction();
+  // No winner because bidding and seller scripts throw realTimeReporting
+  // undefined exceptions.
+  EXPECT_FALSE(result_.winning_group_id);
+  EXPECT_FALSE(result_.ad_descriptor);
+  EXPECT_TRUE(result_.real_time_contributions.empty());
 }
 
 class RoundingTest : public AuctionRunnerTest,
@@ -19554,7 +20326,10 @@ TEST_P(AuctionRunnerBiddingAndScoringDebugReportingAPIEnabledTest,
             auction_worklet::mojom::ScoreAdDependencyLatencies::New(
                 /*code_ready_latency=*/std::nullopt,
                 /*direct_from_seller_signals_latency=*/std::nullopt,
-                /*trusted_scoring_signals_latency=*/std::nullopt),
+                /*trusted_scoring_signals_latency=*/std::nullopt,
+                /*deps_wait_start_time=*/base::TimeTicks::Now(),
+                /*score_ad_start_time=*/base::TimeTicks::Now(),
+                /*score_ad_finish_time=*/base::TimeTicks::Now()),
             /*errors=*/{});
     auction_run_loop_->Run();
     EXPECT_EQ(test_case.expected_error_message, TakeBadMessage());
@@ -19632,7 +20407,10 @@ TEST_P(AuctionRunnerBiddingAndScoringDebugReportingAPIEnabledTest,
           auction_worklet::mojom::ScoreAdDependencyLatencies::New(
               /*code_ready_latency=*/std::nullopt,
               /*direct_from_seller_signals_latency=*/std::nullopt,
-              /*trusted_scoring_signals_latency=*/std::nullopt),
+              /*trusted_scoring_signals_latency=*/std::nullopt,
+              /*deps_wait_start_time=*/base::TimeTicks::Now(),
+              /*score_ad_start_time=*/base::TimeTicks::Now(),
+              /*score_ad_finish_time=*/base::TimeTicks::Now()),
           /*errors=*/{});
 
   seller_worklet->WaitForReportResult();
@@ -22045,10 +22823,6 @@ TEST_P(AuctionRunnerKAnonTest, ReportingId) {
 }
 
 TEST_P(AuctionRunnerKAnonTest, AdditionalBidBuyerReporting) {
-  base::test::ScopedFeatureList additional_bids_on;
-  additional_bids_on.InitAndEnableFeature(
-      blink::features::kFledgeNegativeTargeting);
-
   const char kAdditionalBidUrl[] =
       "https://adplatform.com/offers-contextual.js";
 
@@ -22363,8 +23137,9 @@ TEST_F(AuctionRunnerTest, ServerResponseLogsErrors) {
           witnessed_hash);
     }
 
-    AdAuctionRequestContext context(kSeller, {}, std::move(client_context),
-                                    base::TimeTicks::Now());
+    AdAuctionRequestContext context(
+        kSeller, /*group_names=*/{}, std::move(client_context),
+        base::TimeTicks::Now(), /*group_pagg_coordinators=*/{});
     ad_auction_page_data_->RegisterAdAuctionRequestContext(request_id,
                                                            std::move(context));
 
@@ -22569,7 +23344,8 @@ TEST_F(AuctionRunnerTest, MatcheReportingIdsInServerResponse) {
         kSeller,
         {{kBidder1,
           {"NoReportingIds", "BuyerReportingId", "BuyerAndSellerReportingId"}}},
-        std::move(client_context), base::TimeTicks::Now());
+        std::move(client_context), base::TimeTicks::Now(),
+        /*group_pagg_coordinators=*/{});
     ad_auction_page_data_->RegisterAdAuctionRequestContext(request_id,
                                                            std::move(context));
 
@@ -22614,52 +23390,7 @@ TEST_F(AuctionRunnerTest, MatcheReportingIdsInServerResponse) {
   }
 }
 
-TEST_F(AuctionRunnerTest,
-       TrustedBiddingSignalsAdSlotParamGroupingFeatureDisabled) {
-  base::test::ScopedFeatureList debug_features;
-  debug_features.InitAndDisableFeature(
-      blink::features::kFledgeTrustedBiddingSignalsSlotSize);
-
-  auction_worklet::AddJavascriptResponse(
-      &url_loader_factory_, kBidder1Url,
-      MakeConstBidScript(1, "https://ad1.com/"));
-  auction_worklet::AddJavascriptResponse(&url_loader_factory_, kSellerUrl,
-                                         kMinimumDecisionScript);
-
-  requested_size_ = blink::AdSize(10, blink::AdSize::LengthUnit::kPixels, 20,
-                                  blink::AdSize::LengthUnit::kPixels);
-  all_slots_requested_sizes_ = {
-      blink::AdSize(10, blink::AdSize::LengthUnit::kPixels, 20,
-                    blink::AdSize::LengthUnit::kPixels),
-      blink::AdSize(30, blink::AdSize::LengthUnit::kPixels, 40,
-                    blink::AdSize::LengthUnit::kPixels)};
-
-  StartAuction(kSellerUrl, CreateTrustedBiddingSignalsSlotSizeModeBidders());
-
-  // Wait for bidding signals network requests to be made.
-  task_environment()->RunUntilIdle();
-
-  std::vector<GURL> pending_request_urls;
-  for (const auto& pending_request : *url_loader_factory_.pending_requests()) {
-    pending_request_urls.push_back(pending_request.request.url);
-  }
-
-  // When kFledgeTrustedBiddingSignalsSlotSize is disabled, all requests should
-  // be merged, regardless of kFledgeTrustedBiddingSignalsSlotSize.
-  EXPECT_THAT(pending_request_urls,
-              testing::ElementsAre(GURL(
-                  kBidder1TrustedSignalsUrl.spec() +
-                  "?hostname=publisher1.com&keys=k1,k2,k3,k4,k5,k6"
-                  "&interestGroupNames=name1,name2,name3,name4,name5,name6")));
-
-  // No need to finish the auction.
-}
-
 TEST_F(AuctionRunnerTest, TrustedBiddingSignalsAdSlotParamGrouping) {
-  base::test::ScopedFeatureList debug_features;
-  debug_features.InitAndEnableFeature(
-      blink::features::kFledgeTrustedBiddingSignalsSlotSize);
-
   auction_worklet::AddJavascriptResponse(
       &url_loader_factory_, kBidder1Url,
       MakeConstBidScript(1, "https://ad1.com/"));
@@ -22702,10 +23433,6 @@ TEST_F(AuctionRunnerTest, TrustedBiddingSignalsAdSlotParamGrouping) {
 }
 
 TEST_F(AuctionRunnerTest, TrustedBiddingSignalsAdSlotParamGroupingNoSizes) {
-  base::test::ScopedFeatureList debug_features;
-  debug_features.InitAndEnableFeature(
-      blink::features::kFledgeTrustedBiddingSignalsSlotSize);
-
   auction_worklet::AddJavascriptResponse(
       &url_loader_factory_, kBidder1Url,
       MakeConstBidScript(1, "https://ad1.com/"));

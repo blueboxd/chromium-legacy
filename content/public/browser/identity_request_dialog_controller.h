@@ -49,6 +49,9 @@ struct CONTENT_EXPORT IdentityProviderMetadata {
   GURL brand_icon_url;
   GURL idp_login_url;
   std::string requested_label;
+  // For registered IdPs, the type is used to only show the accounts when the
+  // RP is compatible.
+  std::vector<std::string> types;
   // The URL of the configuration endpoint. This is stored in
   // IdentityProviderMetadata so that the UI code can pass it along when an
   // Account is selected by the user.
@@ -94,12 +97,18 @@ class CONTENT_EXPORT IdentityRequestDialogController {
   enum class DismissReason {
     kOther = 0,
     kCloseButton = 1,
+    // Android-specific
     kSwipe = 2,
+    // Android-specific
     kVirtualKeyboardShown = 3,
     kGotItButton = 4,
     kMoreDetailsButton = 5,
+    // Android-specific
+    kBackPress = 6,
+    // Android-specific
+    kTapScrim = 7,
 
-    kMaxValue = kMoreDetailsButton,
+    kMaxValue = kTapScrim,
   };
 
   // A Java counterpart will be generated for this enum.
@@ -144,17 +153,16 @@ class CONTENT_EXPORT IdentityRequestDialogController {
   // Shows and accounts selections for the given IDP. The `on_selected` callback
   // is called with the selected account id or empty string otherwise.
   // `sign_in_mode` represents whether this is an auto re-authn flow.
-  // `new_account_idp` is the account that was just logged in, which should be
-  // prioritized in the UI. Returns true if the method successfully showed UI.
-  // When false, the caller should assume that the API invocation was terminated
-  // and the cleanup methods invoked.
+  // `new_accounts_idp` are the accounts that were just logged in, which should
+  // be prioritized in the UI. Returns true if the method successfully showed
+  // UI. When false, the caller should assume that the API invocation was
+  // terminated and the cleanup methods invoked.
   virtual bool ShowAccountsDialog(
-      const std::string& top_frame_for_display,
-      const std::optional<std::string>& iframe_for_display,
+      const std::string& rp_for_display,
       const std::vector<IdentityProviderData>& identity_provider_data,
       IdentityRequestAccount::SignInMode sign_in_mode,
       blink::mojom::RpMode rp_mode,
-      const std::optional<IdentityProviderData>& new_account_idp,
+      const std::optional<IdentityProviderData>& new_accounts_idp,
       AccountSelectionCallback on_selected,
       LoginToIdPCallback on_add_account,
       DismissCallback dismiss_callback,
@@ -166,22 +174,19 @@ class CONTENT_EXPORT IdentityRequestDialogController {
   // Returns true if the method successfully showed UI. When false, the caller
   // should assume that the API invocation was terminated and the cleanup
   // methods invoked.
-  virtual bool ShowFailureDialog(
-      const std::string& top_frame_for_display,
-      const std::optional<std::string>& iframe_for_display,
-      const std::string& idp_for_display,
-      blink::mojom::RpContext rp_context,
-      blink::mojom::RpMode rp_mode,
-      const IdentityProviderMetadata& idp_metadata,
-      DismissCallback dismiss_callback,
-      LoginToIdPCallback login_callback);
+  virtual bool ShowFailureDialog(const std::string& rp_for_display,
+                                 const std::string& idp_for_display,
+                                 blink::mojom::RpContext rp_context,
+                                 blink::mojom::RpMode rp_mode,
+                                 const IdentityProviderMetadata& idp_metadata,
+                                 DismissCallback dismiss_callback,
+                                 LoginToIdPCallback login_callback);
 
   // Shows an error UI when the user's sign-in attempt failed. Returns true if
   // the method successfully showed UI. When false, the caller should assume
   // that the API invocation was terminated and the cleanup methods invoked.
   virtual bool ShowErrorDialog(
-      const std::string& top_frame_for_display,
-      const std::optional<std::string>& iframe_for_display,
+      const std::string& rp_for_display,
       const std::string& idp_for_display,
       blink::mojom::RpContext rp_context,
       blink::mojom::RpMode rp_mode,
@@ -194,7 +199,7 @@ class CONTENT_EXPORT IdentityRequestDialogController {
   // for their accounts to be fetched. Returns true if the method successfully
   // showed UI. When false, the caller should assume that the API invocation was
   // terminated and the cleanup methods invoked.
-  virtual bool ShowLoadingDialog(const std::string& top_frame_for_display,
+  virtual bool ShowLoadingDialog(const std::string& rp_for_display,
                                  const std::string& idp_for_display,
                                  blink::mojom::RpContext rp_context,
                                  blink::mojom::RpMode rp_mode,
@@ -209,10 +214,15 @@ class CONTENT_EXPORT IdentityRequestDialogController {
 
   // Show a modal dialog that loads content from the IdP.
   virtual WebContents* ShowModalDialog(const GURL& url,
+                                       blink::mojom::RpMode rp_mode,
                                        DismissCallback dismiss_callback);
 
   // Closes the modal dialog.
   virtual void CloseModalDialog();
+
+  // When called on an object corresponding to the popup opened by
+  // ShowModalDialog, returns the web contents for the original RP page.
+  virtual WebContents* GetRpWebContents();
 
   // Request the user's permission to register an origin as an identity
   // provider. Calls the callback with a response of whether the request was

@@ -49,7 +49,8 @@
           "group": "tryserver.chromium.fuzz"
         }
       ],
-      "retry_failed_shards": true
+      "retry_failed_shards": true,
+      "targets_spec_directory": "src/infra/config/generated/builders/ci/UBSan Release/targets"
     }
   },
   "$build/reclient": {
@@ -75,6 +76,9 @@
     ]
   },
   "builder_group": "chromium.fuzz",
+  "gardener_rotations": [
+    "chromium"
+  ],
   "recipe": "chromium",
   "sheriff_rotations": [
     "chromium"

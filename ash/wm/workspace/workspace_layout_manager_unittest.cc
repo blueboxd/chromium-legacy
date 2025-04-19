@@ -1108,6 +1108,55 @@ TEST_F(WorkspaceLayoutManagerTest,
   event_generator->ClickLeftButton();
 }
 
+// Tests that when a window is snapped, then maximized, then dragged out to an
+// area *not* to snap, the window is *not* restored to snap state. Regression
+// test for http://b/324477985.
+TEST_F(WorkspaceLayoutManagerTest, DragToSnapThenMaximize) {
+  UpdateDisplay("800x600");
+
+  auto get_drag_point = [](aura::Window* win) {
+    auto* frame = NonClientFrameViewAsh::Get(win);
+    return frame->GetHeaderView()->GetBoundsInScreen().CenterPoint();
+  };
+
+  // Create a normal window, then drag to snap to the right.
+  std::unique_ptr<aura::Window> window(CreateAppWindow());
+  const gfx::Rect normal_bounds(window->GetBoundsInScreen());
+  ASSERT_EQ(gfx::Rect(0, 0, 300, 300), normal_bounds);
+  const gfx::Rect work_area =
+      screen_util::GetDisplayWorkAreaBoundsInParent(window.get());
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(get_drag_point(window.get()));
+  event_generator->DragMouseTo(work_area.right_center());
+  WindowState* window_state = WindowState::Get(window.get());
+  EXPECT_EQ(WindowStateType::kSecondarySnapped, window_state->GetStateType());
+  gfx::Rect snapped_bounds(work_area);
+  snapped_bounds.set_x(work_area.x() + work_area.width() / 2);
+  snapped_bounds.set_width(work_area.width() / 2);
+  ASSERT_EQ(snapped_bounds, window->GetBoundsInScreen());
+  ASSERT_NE(normal_bounds, snapped_bounds);
+
+  // Maximize the window. The window will have snapped restore state.
+  window_state->Maximize();
+  ASSERT_EQ(work_area, window->GetBoundsInScreen());
+  EXPECT_EQ(WindowStateType::kMaximized, window_state->GetStateType());
+  EXPECT_EQ(WindowStateType::kSecondarySnapped,
+            window_state->GetRestoreWindowState());
+
+  // Drag the maximized window to the center of the work area.
+  event_generator->MoveMouseTo(get_drag_point(window.get()));
+  event_generator->DragMouseTo(work_area.CenterPoint());
+  EXPECT_NE(WindowStateType::kSecondarySnapped, window_state->GetStateType());
+  EXPECT_NE(snapped_bounds, window->GetBoundsInScreen());
+  EXPECT_EQ(WindowStateType::kNormal, window_state->GetStateType());
+  EXPECT_EQ(WindowStateType::kNormal, window_state->GetRestoreWindowState());
+
+  // Drag the window to snap again.
+  event_generator->MoveMouseTo(get_drag_point(window.get()));
+  event_generator->DragMouseTo(work_area.right_center());
+  EXPECT_EQ(WindowStateType::kSecondarySnapped, window_state->GetStateType());
+}
+
 // Following "Solo" tests were originally written for BaseLayoutManager.
 using WorkspaceLayoutManagerSoloTest = AshTestBase;
 
@@ -2092,8 +2141,9 @@ class WorkspaceLayoutManagerKeyboardTest : public AshTestBase {
     work_area_insets->UpdateWorkAreaInsetsForTest(root, gfx::Rect(),
                                                   gfx::Insets(), insets);
 
-    ash::KeyboardStateDescriptor state{true, keyboard_bounds_, keyboard_bounds_,
-                                       keyboard_bounds_};
+    ash::KeyboardStateDescriptor state{/*is_visible=*/true,
+                                       /*is_temporary=*/false, keyboard_bounds_,
+                                       keyboard_bounds_, keyboard_bounds_};
     work_area_insets->OnKeyboardAppearanceChanged(state);
   }
 
@@ -2103,8 +2153,9 @@ class WorkspaceLayoutManagerKeyboardTest : public AshTestBase {
     work_area_insets->UpdateWorkAreaInsetsForTest(
         root, gfx::Rect(), gfx::Insets(), restore_work_area_insets_);
 
-    ash::KeyboardStateDescriptor state{true, gfx::Rect(), gfx::Rect(),
-                                       gfx::Rect()};
+    ash::KeyboardStateDescriptor state{/*is_visible=*/true,
+                                       /*is_temporary=*/false, gfx::Rect(),
+                                       gfx::Rect(), gfx::Rect()};
     work_area_insets->OnKeyboardAppearanceChanged(state);
 
     layout_manager_->OnKeyboardDisplacingBoundsChanged(gfx::Rect());
@@ -2247,7 +2298,7 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest,
 
   // Open keyboard in sticky mode.
   kb_controller->ShowKeyboard(true);
-  ASSERT_TRUE(keyboard::WaitUntilShown());
+  ASSERT_TRUE(keyboard::test::WaitUntilShown());
 
   int shift =
       work_area.height() - kb_controller->GetKeyboardWindow()->bounds().y();

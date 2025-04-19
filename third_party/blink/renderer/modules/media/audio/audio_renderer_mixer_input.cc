@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/modules/media/audio/audio_renderer_mixer_input.h"
 
 #include <cmath>
@@ -230,7 +235,8 @@ double AudioRendererMixerInput::ProvideInput(
     media::AudioBus* audio_bus,
     uint32_t frames_delayed,
     const media::AudioGlitchInfo& glitch_info) {
-  TRACE_EVENT0("audio", "AudioRendererMixerInput::ProvideInput");
+  TRACE_EVENT("audio", "AudioRendererMixerInput::ProvideInput",
+              "delay (frames)", frames_delayed);
   const base::TimeDelta delay = media::AudioTimestampHelper::FramesToTime(
       frames_delayed, params_.sample_rate());
 

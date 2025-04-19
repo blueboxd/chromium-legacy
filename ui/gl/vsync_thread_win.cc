@@ -7,7 +7,10 @@
 #include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "base/memory/stack_allocated.h"
+#include "base/notreached.h"
 #include "base/power_monitor/power_monitor.h"
+#include "base/synchronization/lock_subtle.h"
 #include "base/time/time.h"
 #include "base/trace_event/typed_macros.h"
 #include "base/win/windows_version.h"
@@ -16,6 +19,9 @@
 
 namespace gl {
 namespace {
+
+// Whether the current thread holds the `VSyncThreadWin` lock.
+thread_local bool g_current_thread_holds_lock = false;
 
 // Check if a DXGI adapter is stale and needs to be replaced. This can happen
 // e.g. when detaching/reattaching remote desktop sessions and causes subsequent
@@ -137,6 +143,35 @@ VSyncThreadWin* VSyncThreadWin::GetInstance() {
   return vsync_thread;
 }
 
+class VSyncThreadWin::AutoVSyncThreadLock {
+  STACK_ALLOCATED();
+
+ public:
+  AutoVSyncThreadLock(VSyncThreadWin* vsync_thread)
+      EXCLUSIVE_LOCK_FUNCTION(vsync_thread->lock_) {
+    if (g_current_thread_holds_lock) {
+      vsync_thread->lock_.AssertAcquired();
+    } else {
+      auto_lock_.emplace(
+          vsync_thread->lock_,
+          // This lock is used to satisfy a mutual exclusion guarantee verified
+          // by a SEQUENCE_CHECKER in `observers_`.
+          base::subtle::LockTracking::kEnabled);
+      g_current_thread_holds_lock = true;
+    }
+  }
+
+  ~AutoVSyncThreadLock() UNLOCK_FUNCTION() {
+    DCHECK(g_current_thread_holds_lock);
+    if (auto_lock_.has_value()) {
+      g_current_thread_holds_lock = false;
+    }
+  }
+
+ private:
+  std::optional<base::AutoLock> auto_lock_;
+};
+
 VSyncThreadWin::VSyncThreadWin(Microsoft::WRL::ComPtr<IDXGIDevice> dxgi_device)
     : vsync_thread_("GpuVSyncThread"),
       vsync_provider_(gfx::kNullAcceleratedWidget),
@@ -149,13 +184,7 @@ VSyncThreadWin::VSyncThreadWin(Microsoft::WRL::ComPtr<IDXGIDevice> dxgi_device)
 }
 
 VSyncThreadWin::~VSyncThreadWin() {
-  {
-    base::AutoLock auto_lock(lock_);
-    observers_.clear();
-  }
-  vsync_thread_.Stop();
-
-  base::PowerMonitor::RemovePowerSuspendObserver(this);
+  NOTREACHED_NORETURN();
 }
 
 void VSyncThreadWin::PostTaskIfNeeded() {
@@ -173,28 +202,28 @@ void VSyncThreadWin::PostTaskIfNeeded() {
 }
 
 void VSyncThreadWin::AddObserver(VSyncObserver* obs) {
-  base::AutoLock auto_lock(lock_);
-  observers_.insert(obs);
+  AutoVSyncThreadLock auto_lock(this);
+  observers_.AddObserver(obs);
   PostTaskIfNeeded();
 }
 
 void VSyncThreadWin::RemoveObserver(VSyncObserver* obs) {
-  base::AutoLock auto_lock(lock_);
-  observers_.erase(obs);
+  AutoVSyncThreadLock auto_lock(this);
+  observers_.RemoveObserver(obs);
 }
 
 void VSyncThreadWin::OnSuspend() {
-  base::AutoLock auto_lock(lock_);
+  AutoVSyncThreadLock auto_lock(this);
   is_suspended_ = true;
 }
 
 void VSyncThreadWin::OnResume() {
-  base::AutoLock auto_lock(lock_);
+  AutoVSyncThreadLock auto_lock(this);
   is_suspended_ = false;
   PostTaskIfNeeded();
 }
 
-void VSyncThreadWin::WaitForVSync() {
+base::TimeDelta VSyncThreadWin::GetVsyncInterval() {
   base::TimeTicks vsync_timebase;
   base::TimeDelta vsync_interval;
 
@@ -218,6 +247,11 @@ void VSyncThreadWin::WaitForVSync() {
           : vsync_provider_.GetVSyncParametersIfAvailable(&vsync_timebase,
                                                           &vsync_interval);
   DCHECK(get_vsync_params_succeeded);
+  return vsync_interval;
+}
+
+void VSyncThreadWin::WaitForVSync() {
+  base::TimeDelta vsync_interval = GetVsyncInterval();
 
   if (!dxgi_adapter_ || !DXGIFactoryIsCurrent(dxgi_adapter_.Get())) {
     TRACE_EVENT("gpu", "DXGIFactoryIsCurrent non-current factory");
@@ -259,14 +293,14 @@ void VSyncThreadWin::WaitForVSync() {
     base::Time::ActivateHighResolutionTimer(false);
   }
 
-  base::AutoLock auto_lock(lock_);
+  AutoVSyncThreadLock auto_lock(this);
   DCHECK(is_vsync_task_posted_);
   is_vsync_task_posted_ = false;
   PostTaskIfNeeded();
 
   const base::TimeTicks vsync_time = base::TimeTicks::Now();
-  for (VSyncObserver* obs : observers_) {
-    obs->OnVSync(vsync_time, vsync_interval);
+  for (VSyncObserver& obs : observers_) {
+    obs.OnVSync(vsync_time, vsync_interval);
   }
 }
 

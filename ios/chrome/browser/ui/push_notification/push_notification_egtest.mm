@@ -72,8 +72,12 @@ void TapMenuItem(int labelId) {
 
   [ChromeEarlGrey writeFirstRunSentinel];
   [ChromeEarlGrey clearDefaultBrowserPromoData];
+  [ChromeEarlGrey
+      resetDataForLocalStatePref:prefs::kIosDefaultBrowserPromoLastAction];
   [ChromeEarlGrey resetDataForLocalStatePref:
                       prefs::kIosCredentialProviderPromoLastActionTaken];
+  [ChromeEarlGrey
+      resetDataForLocalStatePref:prefs::kAppLevelPushNotificationPermissions];
   [NewTabPageAppInterface resetSetUpListPrefs];
 }
 

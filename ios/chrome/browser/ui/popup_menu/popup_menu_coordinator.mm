@@ -13,12 +13,13 @@
 #import "base/metrics/user_metrics_action.h"
 #import "components/feature_engagement/public/event_constants.h"
 #import "components/feature_engagement/public/tracker.h"
-#import "ios/chrome/browser/bookmarks/model/account_bookmark_model_factory.h"
-#import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_model_factory.h"
+#import "ios/chrome/browser/bookmarks/model/bookmark_model_factory.h"
+#import "ios/chrome/browser/bubble/ui_bundled/bubble_view_controller_presenter.h"
 #import "ios/chrome/browser/feature_engagement/model/tracker_factory.h"
 #import "ios/chrome/browser/follow/model/follow_action_state.h"
 #import "ios/chrome/browser/follow/model/follow_browser_agent.h"
 #import "ios/chrome/browser/iph_for_new_chrome_user/model/tab_based_iph_browser_agent.h"
+#import "ios/chrome/browser/lens_overlay/coordinator/lens_overlay_availability.h"
 #import "ios/chrome/browser/overlays/model/public/overlay_presenter.h"
 #import "ios/chrome/browser/promos_manager/model/promos_manager_factory.h"
 #import "ios/chrome/browser/reading_list/model/reading_list_browser_agent.h"
@@ -38,16 +39,20 @@
 #import "ios/chrome/browser/shared/public/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/find_in_page_commands.h"
+#import "ios/chrome/browser/shared/public/commands/help_commands.h"
 #import "ios/chrome/browser/shared/public/commands/lens_commands.h"
+#import "ios/chrome/browser/shared/public/commands/lens_overlay_commands.h"
 #import "ios/chrome/browser/shared/public/commands/omnibox_commands.h"
 #import "ios/chrome/browser/shared/public/commands/overflow_menu_customization_commands.h"
 #import "ios/chrome/browser/shared/public/commands/page_info_commands.h"
 #import "ios/chrome/browser/shared/public/commands/popup_menu_commands.h"
 #import "ios/chrome/browser/shared/public/commands/price_notifications_commands.h"
 #import "ios/chrome/browser/shared/public/commands/qr_scanner_commands.h"
+#import "ios/chrome/browser/shared/public/commands/quick_delete_commands.h"
 #import "ios/chrome/browser/shared/public/commands/settings_commands.h"
 #import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
 #import "ios/chrome/browser/shared/public/commands/text_zoom_commands.h"
+#import "ios/chrome/browser/shared/public/commands/whats_new_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/util/layout_guide_names.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
@@ -57,8 +62,6 @@
 #import "ios/chrome/browser/supervised_user/model/supervised_user_service_factory.h"
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/ui/browser_container/browser_container_mediator.h"
-#import "ios/chrome/browser/ui/bubble/bubble_presenter.h"
-#import "ios/chrome/browser/ui/bubble/bubble_view_controller_presenter.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/feature_flags.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/overflow_menu_mediator.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/overflow_menu_metrics.h"
@@ -104,8 +107,6 @@ using base::UserMetricsAction;
 @property(nonatomic, strong) PopupMenuTableViewController* viewController;
 // Handles user interaction with the popup menu items.
 @property(nonatomic, strong) PopupMenuActionHandler* actionHandler;
-// Time when the presentation of the popup menu is requested.
-@property(nonatomic, assign) NSTimeInterval requestStartTime;
 
 // Time when the tools menu opened.
 @property(nonatomic, assign) NSTimeInterval toolsMenuOpenTime;
@@ -140,9 +141,7 @@ using base::UserMetricsAction;
 
 @synthesize mediator = _mediator;
 @synthesize presenter = _presenter;
-@synthesize requestStartTime = _requestStartTime;
 @synthesize UIUpdater = _UIUpdater;
-@synthesize bubblePresenter = _bubblePresenter;
 @synthesize viewController = _viewController;
 @synthesize baseViewController = _baseViewController;
 
@@ -222,8 +221,6 @@ using base::UserMetricsAction;
   // Allow the non-modal promo scheduler to close the promo.
   [nonModalPromoScheduler logPopupMenuEntered];
 
-  self.requestStartTime = [NSDate timeIntervalSinceReferenceDate];
-
   PopupMenuTableViewController* tableViewController =
       [[PopupMenuTableViewController alloc] init];
   tableViewController.baseViewController = self.baseViewController;
@@ -231,11 +228,6 @@ using base::UserMetricsAction;
       kPopupMenuToolsMenuTableViewId;
 
   self.viewController = tableViewController;
-
-  BOOL triggerNewIncognitoTabTip =
-      self.bubblePresenter.incognitoTabTipBubblePresenter.triggerFollowUpAction;
-  self.bubblePresenter.incognitoTabTipBubblePresenter.triggerFollowUpAction =
-      NO;
 
   OverlayPresenter* overlayPresenter = OverlayPresenter::FromBrowser(
       self.browser, OverlayModality::kWebContentArea);
@@ -279,10 +271,15 @@ using base::UserMetricsAction;
     mediator.settingsHandler = HandlerForProtocol(dispatcher, SettingsCommands);
     mediator.bookmarksHandler =
         HandlerForProtocol(dispatcher, BookmarksCommands);
+    if (IsLensOverlayAvailable()) {
+      mediator.lensOverlayHandler =
+          HandlerForProtocol(dispatcher, LensOverlayCommands);
+    }
     mediator.browserCoordinatorHandler =
         HandlerForProtocol(dispatcher, BrowserCoordinatorCommands);
     mediator.findInPageHandler =
         HandlerForProtocol(dispatcher, FindInPageCommands);
+    mediator.helpHandler = HandlerForProtocol(dispatcher, HelpCommands);
     mediator.overflowMenuCustomizationHandler =
         HandlerForProtocol(dispatcher, OverflowMenuCustomizationCommands);
     mediator.pageInfoHandler = HandlerForProtocol(dispatcher, PageInfoCommands);
@@ -291,17 +288,16 @@ using base::UserMetricsAction;
     mediator.priceNotificationHandler =
         HandlerForProtocol(dispatcher, PriceNotificationsCommands);
     mediator.textZoomHandler = HandlerForProtocol(dispatcher, TextZoomCommands);
+    mediator.quickDeleteHandler =
+        HandlerForProtocol(dispatcher, QuickDeleteCommands);
+    mediator.whatsNewHandler = HandlerForProtocol(dispatcher, WhatsNewCommands);
 
     mediator.webStateList = self.browser->GetWebStateList();
     mediator.navigationAgent =
         WebNavigationBrowserAgent::FromBrowser(self.browser);
     mediator.baseViewController = self.baseViewController;
-    mediator.localOrSyncableBookmarkModel =
-        ios::LocalOrSyncableBookmarkModelFactory::GetForBrowserState(
-            self.browser->GetBrowserState());
-    mediator.accountBookmarkModel =
-        ios::AccountBookmarkModelFactory::GetForBrowserState(
-            self.browser->GetBrowserState());
+    mediator.bookmarkModel = ios::BookmarkModelFactory::GetForBrowserState(
+        self.browser->GetBrowserState());
     mediator.readingListModel =
         ReadingListModelFactory::GetInstance()->GetForBrowserState(
             self.browser->GetBrowserState());
@@ -404,7 +400,6 @@ using base::UserMetricsAction;
                                     ->IsOffTheRecord()
                readingListModel:ReadingListModelFactory::GetForBrowserState(
                                     self.browser->GetBrowserState())
-      triggerNewIncognitoTabTip:triggerNewIncognitoTabTip
          browserPolicyConnector:GetApplicationContext()
                                     ->GetBrowserPolicyConnector()];
   self.mediator.engagementTracker =
@@ -415,9 +410,8 @@ using base::UserMetricsAction;
       ReadingListBrowserAgent::FromBrowser(self.browser);
   self.mediator.lensCommandsHandler =
       HandlerForProtocol(self.browser->GetCommandDispatcher(), LensCommands);
-  self.mediator.bookmarkModel =
-      ios::LocalOrSyncableBookmarkModelFactory::GetForBrowserState(
-          self.browser->GetBrowserState());
+  self.mediator.bookmarkModel = ios::BookmarkModelFactory::GetForBrowserState(
+      self.browser->GetBrowserState());
   self.mediator.prefService = self.browser->GetBrowserState()->GetPrefs();
   self.mediator.templateURLService =
       ios::TemplateURLServiceFactory::GetForBrowserState(
@@ -449,6 +443,8 @@ using base::UserMetricsAction;
       self.browser->GetCommandDispatcher(), PopupMenuCommands);
   self.actionHandler.qrScannerCommandsHandler = HandlerForProtocol(
       self.browser->GetCommandDispatcher(), QRScannerCommands);
+  self.actionHandler.helpHandler =
+      HandlerForProtocol(self.browser->GetCommandDispatcher(), HelpCommands);
   self.actionHandler.delegate = self.mediator;
   self.actionHandler.navigationAgent =
       WebNavigationBrowserAgent::FromBrowser(self.browser);
@@ -638,15 +634,6 @@ using base::UserMetricsAction;
 - (void)containedPresenterDidPresent:(id<ContainedPresenter>)presenter {
   if (presenter != self.presenter)
     return;
-
-  if (self.requestStartTime != 0) {
-    base::TimeDelta elapsed = base::Seconds(
-        [NSDate timeIntervalSinceReferenceDate] - self.requestStartTime);
-    UMA_HISTOGRAM_TIMES("Toolbar.ShowToolsMenuResponsiveness", elapsed);
-    // Reset the start time to ensure that whatever happens, we only record
-    // this once.
-    self.requestStartTime = 0;
-  }
 }
 
 #pragma mark - PopupMenuPresenterDelegate

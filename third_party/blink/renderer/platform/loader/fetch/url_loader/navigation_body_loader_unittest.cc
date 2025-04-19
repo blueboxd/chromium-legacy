@@ -6,6 +6,7 @@
 
 #include <string_view>
 
+#include "base/containers/span.h"
 #include "base/functional/bind.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_runner.h"
@@ -102,10 +103,11 @@ class NavigationBodyLoaderTest : public ::testing::Test,
   }
 
   void Write(const std::string& buffer) {
-    size_t size = buffer.size();
-    MojoResult result = writer_->WriteData(buffer.c_str(), &size, kNone);
+    size_t actually_written_bytes = 0;
+    MojoResult result = writer_->WriteData(base::as_byte_span(buffer), kNone,
+                                           actually_written_bytes);
     ASSERT_EQ(MOJO_RESULT_OK, result);
-    ASSERT_EQ(buffer.size(), size);
+    ASSERT_EQ(buffer.size(), actually_written_bytes);
   }
 
   void WriteAndFlush(const std::string& buffer) {
@@ -129,9 +131,10 @@ class NavigationBodyLoaderTest : public ::testing::Test,
       run_loop_->Quit();
   }
 
-  void DecodedBodyDataReceived(const WebString& data,
-                               const WebEncodingData& encoding_data,
-                               base::span<const char> encoded_data) override {
+  void DecodedBodyDataReceived(
+      const WebString& data,
+      const WebEncodingData& encoding_data,
+      base::SpanOrSize<const char> encoded_data) override {
     ASSERT_FALSE(did_receive_data_);
     ASSERT_TRUE(expecting_decoded_data_received_);
     did_receive_decoded_data_ = true;
@@ -524,9 +527,10 @@ class ChunkingLoaderClient : public WebNavigationBodyLoader::Client {
   void BodyDataReceived(base::span<const char> data) override {
     NOTREACHED_IN_MIGRATION();
   }
-  void DecodedBodyDataReceived(const WebString& data,
-                               const WebEncodingData& encoding_data,
-                               base::span<const char> encoded_data) override {
+  void DecodedBodyDataReceived(
+      const WebString& data,
+      const WebEncodingData& encoding_data,
+      base::SpanOrSize<const char> encoded_data) override {
     scheduler::GetSingleThreadTaskRunnerForTesting()->PostTask(
         FROM_HERE, base::BindOnce(&ChunkingLoaderClient::CreateNewChunk,
                                   base::Unretained(this)));

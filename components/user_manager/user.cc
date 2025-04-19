@@ -163,10 +163,6 @@ bool User::CanLock() const {
   return profile_prefs_->GetBoolean(ash::prefs::kAllowScreenLock);
 }
 
-bool User::HasDefaultImage() const {
-  return UserManager::Get()->IsValidDefaultUserImageId(image_index_);
-}
-
 std::string User::display_email() const {
   return display_email_;
 }
@@ -282,11 +278,6 @@ User* User::CreateKioskAppUser(const AccountId& kiosk_app_account_id) {
   return new User(kiosk_app_account_id, UserType::kKioskApp);
 }
 
-User* User::CreateArcKioskAppUser(const AccountId& arc_kiosk_account_id) {
-  // TODO(b/336756417): Remove this method
-  NOTREACHED_NORETURN();
-}
-
 User* User::CreateWebKioskAppUser(const AccountId& web_kiosk_account_id) {
   return new User(web_kiosk_account_id, UserType::kWebKioskApp);
 }
@@ -307,7 +298,6 @@ void User::SetImage(std::unique_ptr<UserImage> user_image, int image_index) {
   image_index_ = image_index;
   image_is_stub_ = false;
   image_is_loading_ = false;
-  DCHECK(HasDefaultImage() || user_image_->has_image_bytes());
 }
 
 void User::SetImageURL(const GURL& image_url) {

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #ifndef CC_PAINT_PAINT_OP_WRITER_H_
 #define CC_PAINT_PAINT_OP_WRITER_H_
 
@@ -21,6 +26,7 @@
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkYUVAInfo.h"
+#include "third_party/skia/include/effects/SkGradientShader.h"
 
 struct SkGainmapInfo;
 struct SkHighContrastConfig;
@@ -65,12 +71,12 @@ class CC_PAINT_EXPORT PaintOpWriter {
                 size_t size,
                 const PaintOp::SerializeOptions& options,
                 bool enable_security_constraints = false)
-      : memory_(static_cast<char*>(memory)),
+      : memory_(static_cast<uint8_t*>(memory)),
         size_(base::bits::AlignDown(size, kDefaultAlignment)),
         options_(options),
         enable_security_constraints_(enable_security_constraints) {
     memory_end_ = memory_ + size_;
-    AssertAlignment(memory, BufferAlignment());
+    AssertAlignment(memory_, BufferAlignment());
   }
 
   ~PaintOpWriter();
@@ -234,6 +240,7 @@ class CC_PAINT_EXPORT PaintOpWriter {
   void Write(SkYUVAInfo::Subsampling subsampling);
   void Write(const gpu::Mailbox& mailbox);
   void Write(const SkHighContrastConfig& config);
+  void Write(const SkGradientShader::Interpolation& interpolation);
 
   // Shaders and filters need to know the current transform in order to lock in
   // the scale factor they will be evaluated at after deserialization. This is
@@ -270,10 +277,10 @@ class CC_PAINT_EXPORT PaintOpWriter {
   // of [kDefaultAlignment, BufferAlignment()].
   void AlignMemory(size_t alignment);
 
-  static void AssertAlignment(const volatile void* memory, size_t alignment) {
+  static void AssertAlignment(const volatile uint8_t* memory,
+                              size_t alignment) {
 #if DCHECK_IS_ON()
-    uintptr_t uintptr = reinterpret_cast<uintptr_t>(memory);
-    DCHECK_EQ(uintptr, base::bits::AlignUp(uintptr, alignment));
+    DCHECK_EQ(memory, base::bits::AlignUp(memory, alignment));
 #endif
   }
   void AssertFieldAlignment() {
@@ -332,7 +339,7 @@ class CC_PAINT_EXPORT PaintOpWriter {
     // above (the comma followed by ... generates a fold expression).
     // Note that `vals` on the inside of the fold expression refers to
     // one specific value.
-    char* ptr = memory_;
+    uint8_t* ptr = memory_;
     (
         [&] {
           static_assert(std::is_trivially_copyable_v<decltype(vals)>);
@@ -452,15 +459,15 @@ class CC_PAINT_EXPORT PaintOpWriter {
       bool* paint_image_needs_mips,
       gpu::Mailbox* mailbox_out);
 
-  char* memory_ = nullptr;
-  const char* memory_end_ = nullptr;
+  uint8_t* memory_ = nullptr;
+  const uint8_t* memory_end_ = nullptr;
   size_t size_ = 0u;
   const PaintOp::SerializeOptions& options_;
   bool valid_ = true;
 
   // Indicates that the following security constraints must be applied during
   // serialization:
-  // 1) PaintRecords and SkDrawLoopers must be ignored.
+  // 1) PaintRecords and DrawLoopers must be ignored.
   // 2) Codec backed images must be decoded and only the bitmap should be
   // serialized.
   const bool enable_security_constraints_;

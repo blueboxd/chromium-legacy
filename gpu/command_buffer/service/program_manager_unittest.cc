@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "gpu/command_buffer/service/program_manager.h"
 
 #include <stddef.h>
@@ -27,7 +32,6 @@
 #include "gpu/config/gpu_preferences.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_mock.h"
-#include "ui/gl/gl_version_info.h"
 
 using ::testing::_;
 using ::testing::DoAll;
@@ -78,7 +82,7 @@ class ProgramManagerTestBase : public GpuServiceTest, public DecoderClient {
   }
   void SetUp() override {
     // Parameters same as GpuServiceTest::SetUp
-    SetUpBase("2.0", "GL_EXT_framebuffer_object");
+    SetUpBase("OpenGL ES 2.0", "GL_EXT_framebuffer_object");
   }
   void TearDown() override {
     manager_->Destroy(false);
@@ -97,6 +101,7 @@ class ProgramManagerTestBase : public GpuServiceTest, public DecoderClient {
   void OnSwapBuffers(uint64_t swap_id, uint32_t flags) override {}
   void ScheduleGrContextCleanup() override {}
   void HandleReturnData(base::span<const uint8_t> data) override {}
+  bool ShouldYield() override { return false; }
 
   std::unique_ptr<ProgramManager> manager_;
   GpuPreferences gpu_preferences_;
@@ -243,7 +248,7 @@ class ProgramManagerWithShaderTest : public ProgramManagerTestBase {
   static const GLint kBadUniformIndex = 1000;
 
   static const char* kOutputVariable1Name;
-  static const GLint kOutputVariable1Size = 1;
+  static const GLint kOutputVariable1Size = 0;
   static const GLenum kOutputVariable1Precision = GL_MEDIUM_FLOAT;
   static const bool kOutputVariable1StaticUse = true;
   static const GLint kOutputVariable1Location = -1;
@@ -257,6 +262,7 @@ class ProgramManagerWithShaderTest : public ProgramManagerTestBase {
  protected:
   typedef TestHelper::AttribInfo AttribInfo;
   typedef TestHelper::UniformInfo UniformInfo;
+  typedef TestHelper::ProgramOutputInfo ProgramOutputInfo;
 
   typedef enum {
     kVarUniform,
@@ -275,13 +281,13 @@ class ProgramManagerWithShaderTest : public ProgramManagerTestBase {
   } VarInfo;
 
   void SetUp() override {
-    // Need to be at leat 3.1 for UniformBlock related GL APIs.
-    SetUpBase("3.1", "");
+    // Need to be at least ES3 for UniformBlock related GL APIs.
+    SetUpBase("OpenGL ES 3.0", "");
   }
 
   Program* SetupDefaultProgram() {
     SetupShaderExpectations(kAttribs, kNumAttribs, kUniforms, kNumUniforms,
-                            kServiceProgramId);
+                            nullptr, 0, kServiceProgramId);
 
     Shader* vertex_shader = shader_manager_.CreateShader(
         kVertexShaderClientId, kVertexShaderServiceId, GL_VERTEX_SHADER);
@@ -308,10 +314,13 @@ class ProgramManagerWithShaderTest : public ProgramManagerTestBase {
                                size_t num_attribs,
                                UniformInfo* uniforms,
                                size_t num_uniforms,
+                               ProgramOutputInfo* program_outputs,
+                               size_t num_program_outputs,
                                GLuint service_id) {
-    TestHelper::SetupShaderExpectations(gl_.get(), feature_info_.get(), attribs,
-                                        num_attribs, uniforms, num_uniforms,
-                                        service_id);
+    TestHelper::SetupShaderExpectationsWithVaryings(
+        gl_.get(), feature_info_.get(), attribs, num_attribs, uniforms,
+        num_uniforms, nullptr, 0, program_outputs, num_program_outputs,
+        service_id);
   }
 
   void SetupExpectationsForClearingUniforms(
@@ -322,11 +331,13 @@ class ProgramManagerWithShaderTest : public ProgramManagerTestBase {
 
   // Return true if link status matches expected_link_status
   bool LinkAsExpected(Program* program,
-                      bool expected_link_status) {
+                      bool expected_link_status,
+                      ProgramOutputInfo* program_outputs = nullptr,
+                      size_t num_program_outputs = 0) {
     GLuint service_id = program->service_id();
     if (expected_link_status) {
       SetupShaderExpectations(kAttribs, kNumAttribs, kUniforms, kNumUniforms,
-                              service_id);
+                              program_outputs, num_program_outputs, service_id);
     }
     program->Link(nullptr, this);
     GLint link_status;
@@ -822,7 +833,7 @@ TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsGLUnderscoreUniform) {
   };
   const size_t kNumUniforms = std::size(kUniforms);
   SetupShaderExpectations(kAttribs, kNumAttribs, kUniforms, kNumUniforms,
-                          kServiceProgramId);
+                          nullptr, 0, kServiceProgramId);
   Shader* vshader = shader_manager_.CreateShader(
       kVertexShaderClientId, kVertexShaderServiceId, GL_VERTEX_SHADER);
   ASSERT_TRUE(vshader != nullptr);
@@ -886,7 +897,7 @@ TEST_F(ProgramManagerWithShaderTest, SimilarArrayNames) {
   };
   const size_t kNumUniforms = std::size(kUniforms);
   SetupShaderExpectations(kAttribs, kNumAttribs, kUniforms, kNumUniforms,
-                          kServiceProgramId);
+                          nullptr, 0, kServiceProgramId);
   Shader* vshader = shader_manager_.CreateShader(
       kVertexShaderClientId, kVertexShaderServiceId, GL_VERTEX_SHADER);
   ASSERT_TRUE(vshader != nullptr);
@@ -985,9 +996,18 @@ TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsWrongTypeInfo) {
       kUniform3NameWithArrayIndex,
     },
   };
+  static ProgramManagerWithShaderTest::ProgramOutputInfo kProgramOutputs[] = {
+      {
+          kOutputVariable1Name, kOutputVariable1Size, kOutputVariable1Type,
+          7,  // color_name
+          0,  // index
+      },
+  };
   const size_t kNumAttribs = std::size(kAttribs);
   const size_t kNumUniforms = std::size(kUniforms);
+  const size_t kNumProgramOutputs = std::size(kProgramOutputs);
   SetupShaderExpectations(kAttribs, kNumAttribs, kUniforms, kNumUniforms,
+                          kProgramOutputs, kNumProgramOutputs,
                           kServiceProgramId);
   Program* program =
       manager_->CreateProgram(kClientProgramId, kServiceProgramId);
@@ -1890,6 +1910,14 @@ TEST_F(ProgramManagerWithShaderTest, FragmentOutputTypes) {
   }
 
   {  // Single user defined output.
+    static ProgramOutputInfo kProgramOutputs[] = {{
+        "myOutput",            // name
+        0,                     // size
+        GL_UNSIGNED_INT_VEC4,  // type
+        7,                     // color_name
+        0,                     // index
+    }};
+    const size_t kNumProgramOutputs = std::size(kProgramOutputs);
     OutputVariableList fragment_outputs;
     sh::OutputVariable var = TestHelper::ConstructOutputVariable(
         GL_UNSIGNED_INT_VEC4, 0, GL_MEDIUM_INT, true, "myOutput");
@@ -1898,12 +1926,21 @@ TEST_F(ProgramManagerWithShaderTest, FragmentOutputTypes) {
     TestHelper::SetShaderStates(gl_.get(), fshader, true, nullptr, nullptr,
                                 nullptr, nullptr, nullptr, nullptr, nullptr,
                                 &fragment_outputs, nullptr);
-    EXPECT_TRUE(LinkAsExpected(program, true));
+    EXPECT_TRUE(
+        LinkAsExpected(program, true, kProgramOutputs, kNumProgramOutputs));
     EXPECT_EQ(0x2u, program->fragment_output_type_mask());
     EXPECT_EQ(0x3u, program->fragment_output_written_mask());
   }
 
   {  // Single user defined output - no static use.
+    static ProgramOutputInfo kProgramOutputs[] = {{
+        "myOutput",            // name
+        0,                     // size
+        GL_UNSIGNED_INT_VEC4,  // type
+        7,                     // color_name
+        0,                     // index
+    }};
+    const size_t kNumProgramOutputs = std::size(kProgramOutputs);
     OutputVariableList fragment_outputs;
     sh::OutputVariable var = TestHelper::ConstructOutputVariable(
         GL_UNSIGNED_INT_VEC4, 0, GL_MEDIUM_INT, false, "myOutput");
@@ -1912,27 +1949,46 @@ TEST_F(ProgramManagerWithShaderTest, FragmentOutputTypes) {
     TestHelper::SetShaderStates(gl_.get(), fshader, true, nullptr, nullptr,
                                 nullptr, nullptr, nullptr, nullptr, nullptr,
                                 &fragment_outputs, nullptr);
-    EXPECT_TRUE(LinkAsExpected(program, true));
+    EXPECT_TRUE(
+        LinkAsExpected(program, true, kProgramOutputs, kNumProgramOutputs));
     EXPECT_EQ(0x2u, program->fragment_output_type_mask());
     EXPECT_EQ(0x3u, program->fragment_output_written_mask());
   }
 
   {  // Multiple user defined outputs.
+    static ProgramOutputInfo program_outputs[] = {
+        {
+            "myOutput",            // name
+            0,                     // size
+            GL_UNSIGNED_INT_VEC4,  // type
+            7,                     // color_name
+            0,                     // index
+        },
+        {
+            "myOutput1",    // name
+            0,              // size
+            GL_FLOAT_VEC4,  // type
+            7,              // color_name
+            0,              // index
+        },
+    };
+    const size_t num_program_outputs = std::size(program_outputs);
     OutputVariableList fragment_outputs;
     sh::OutputVariable var = TestHelper::ConstructOutputVariable(
         GL_INT_VEC4, 0, GL_MEDIUM_INT, true, "myOutput");
     var.location = 0;
     fragment_outputs.push_back(var);
-    var = TestHelper::ConstructOutputVariable(
-        GL_FLOAT_VEC4, 2, GL_MEDIUM_FLOAT, true, "myOutputArray");
+    var = TestHelper::ConstructOutputVariable(GL_FLOAT_VEC4, 0, GL_MEDIUM_FLOAT,
+                                              true, "myOutput1");
     var.location = 2;
     fragment_outputs.push_back(var);
     TestHelper::SetShaderStates(gl_.get(), fshader, true, nullptr, nullptr,
                                 nullptr, nullptr, nullptr, nullptr, nullptr,
                                 &fragment_outputs, nullptr);
-    EXPECT_TRUE(LinkAsExpected(program, true));
-    EXPECT_EQ(0xF1u, program->fragment_output_type_mask());
-    EXPECT_EQ(0xF3u, program->fragment_output_written_mask());
+    EXPECT_TRUE(
+        LinkAsExpected(program, true, program_outputs, num_program_outputs));
+    EXPECT_EQ(0x31u, program->fragment_output_type_mask());
+    EXPECT_EQ(0x33u, program->fragment_output_written_mask());
   }
 }
 
@@ -2028,7 +2084,7 @@ TEST_F(ProgramManagerWithShaderTest, BindUniformLocation) {
   const size_t kNumAttribs = std::size(kAttribs);
   const size_t kNumUniforms = std::size(kUniforms);
   SetupShaderExpectations(kAttribs, kNumAttribs, kUniforms, kNumUniforms,
-                          kServiceProgramId);
+                          nullptr, 0, kServiceProgramId);
   program->Link(nullptr, this);
 
   EXPECT_EQ(kUniform1DesiredLocation,
@@ -2050,7 +2106,7 @@ TEST_F(ProgramManagerWithShaderTest, ZeroSizeUniformMarkedInvalid) {
   const size_t kNumInvalidUniforms = std::size(kInvalidUniforms);
 
   SetupShaderExpectations(kAttribs, kNumAttribs, kInvalidUniforms,
-                          kNumInvalidUniforms, kServiceProgramId);
+                          kNumInvalidUniforms, nullptr, 0, kServiceProgramId);
 
   Shader* vertex_shader = shader_manager_.CreateShader(
       kVertexShaderClientId, kVertexShaderServiceId, GL_VERTEX_SHADER);
@@ -2232,7 +2288,7 @@ class ProgramManagerWithCacheTest : public ProgramManagerTestBase {
   void SetExpectationsForProgramLink(GLuint service_program_id) {
     TestHelper::SetupShaderExpectations(gl_.get(), feature_info_.get(), nullptr,
                                         0, nullptr, 0, service_program_id);
-    if (gl::g_current_gl_driver->ext.b_GL_ARB_get_program_binary) {
+    if (gl::g_current_gl_driver->ext.b_GL_OES_get_program_binary) {
       EXPECT_CALL(*gl_.get(),
                   ProgramParameteri(service_program_id,
                                     PROGRAM_BINARY_RETRIEVABLE_HINT,
@@ -2369,18 +2425,6 @@ TEST_P(ProgramManagerDualSourceBlendingES2Test, UseSecondaryFragCoord) {
   Program* program =
       SetupProgramForVariables(nullptr, 0, kFragmentVaryings,
                                std::size(kFragmentVaryings), &shader_version);
-
-  const gl::GLVersionInfo& gl_version = feature_info_->gl_version_info();
-  if (!gl_version.is_es) {
-    // The call is expected only for OpenGL. OpenGL ES expects to
-    // output GLES SL 1.00, which does not bind.
-    EXPECT_CALL(*(gl_.get()),
-                BindFragDataLocationIndexed(kServiceProgramId, 0, 1,
-                                            StrEq("angle_SecondaryFragColor")))
-        .Times(1)
-        .RetiresOnSaturation();
-  }
-
   EXPECT_TRUE(LinkAsExpected(program, true));
 }
 
@@ -2396,18 +2440,6 @@ TEST_P(ProgramManagerDualSourceBlendingES2Test, UseSecondaryFragData) {
   Program* program =
       SetupProgramForVariables(nullptr, 0, kFragmentVaryings,
                                std::size(kFragmentVaryings), &shader_version);
-
-  const gl::GLVersionInfo& gl_version = feature_info_->gl_version_info();
-  if (!gl_version.is_es) {
-    // The call is expected only for OpenGL. OpenGL ES expects to
-    // output GLES SL 1.00, which does not bind.
-    EXPECT_CALL(*(gl_.get()),
-                BindFragDataLocationIndexed(kServiceProgramId, 0, 1,
-                                            StrEq("angle_SecondaryFragData")))
-        .Times(1)
-        .RetiresOnSaturation();
-  }
-
   EXPECT_TRUE(LinkAsExpected(program, true));
 }
 
@@ -2415,9 +2447,6 @@ INSTANTIATE_TEST_SUITE_P(
     SupportedContexts,
     ProgramManagerDualSourceBlendingES2Test,
     testing::Values(
-        make_gl_ext_tuple("3.2",
-                          "GL_ARB_draw_buffers GL_ARB_blend_func_extended "
-                          "GL_ARB_program_interface_query"),
         make_gl_ext_tuple("OpenGL ES 3.1",
                           "GL_EXT_draw_buffers GL_EXT_blend_func_extended")));
 

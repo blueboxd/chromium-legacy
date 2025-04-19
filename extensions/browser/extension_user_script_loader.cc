@@ -30,8 +30,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
-#include "extensions/browser/api/scripting/scripting_constants.h"
-#include "extensions/browser/api/scripting/scripting_utils.h"
 #include "extensions/browser/component_extension_resource_manager.h"
 #include "extensions/browser/content_verifier/content_verifier.h"
 #include "extensions/browser/extension_file_task_runner.h"
@@ -39,6 +37,8 @@
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/l10n_file_util.h"
+#include "extensions/browser/scripting_constants.h"
+#include "extensions/browser/scripting_utils.h"
 #include "extensions/browser/state_store.h"
 #include "extensions/browser/user_script_loader.h"
 #include "extensions/common/api/content_scripts.h"
@@ -72,39 +72,11 @@ enum class ReadScriptContentSource {
   // ExtensionResource.
   kFile,
   // ResourceBundle.
-  kResouceBundle,
+  kResourceBundle,
 };
 
-struct VerifyContentInfo {
-  VerifyContentInfo(const scoped_refptr<ContentVerifier>& verifier,
-                    const ExtensionId& extension_id,
-                    const base::FilePath& extension_root,
-                    const base::FilePath relative_path,
-                    std::optional<std::string> content)
-      : verifier(verifier),
-        extension_id(extension_id),
-        extension_root(extension_root),
-        relative_path(relative_path),
-        content(std::move(content)) {}
-
-  // We explicitly disallow copying this because the `content` string may
-  // be quite large for different extension files.
-  VerifyContentInfo(const VerifyContentInfo&) = delete;
-  VerifyContentInfo& operator=(VerifyContentInfo&) = delete;
-
-  VerifyContentInfo(VerifyContentInfo&& other) = default;
-  VerifyContentInfo& operator=(VerifyContentInfo&& other) = default;
-
-  scoped_refptr<ContentVerifier> verifier;
-  ExtensionId extension_id;
-  base::FilePath extension_root;
-  base::FilePath relative_path;
-
-  // The content to verify, or nullopt if there was an error retrieving it
-  // from its associated file. Example of errors are: missing or unreadable
-  // file.
-  std::optional<std::string> content;
-};
+// The key for storing a dynamic content script's id.
+inline constexpr char kId[] = "id";
 
 // Reads and returns {content, source} of a |script_file|.
 //   - content contains the std::string content, or nullopt if the script file
@@ -120,7 +92,7 @@ ReadScriptContent(UserScript::Content* script_file,
     if (script_resource_id) {
       const ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
       return {rb.LoadDataResourceString(*script_resource_id),
-              ReadScriptContentSource::kResouceBundle};
+              ReadScriptContentSource::kResourceBundle};
     }
     LOG(WARNING) << "Failed to get file path to "
                  << script_file->relative_path().value() << " from "
@@ -146,24 +118,21 @@ ReadScriptContent(UserScript::Content* script_file,
 }
 
 // Verifies file contents as they are read.
-void VerifyContent(VerifyContentInfo info) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  DCHECK(info.verifier);
-  scoped_refptr<ContentVerifyJob> job(info.verifier->CreateAndStartJobFor(
-      info.extension_id, info.extension_root, info.relative_path));
-  if (job.get()) {
-    if (info.content)
-      job->Read(info.content->data(), info.content->size(), MOJO_RESULT_OK);
-    else
-      job->Read("", 0u, MOJO_RESULT_NOT_FOUND);
-    job->Done();
+void VerifyContent(ContentVerifier* verifier,
+                   const ExtensionId& extension_id,
+                   const base::FilePath& extension_root,
+                   const base::FilePath& relative_path,
+                   const std::optional<std::string>& content) {
+  DCHECK(verifier);
+  scoped_refptr<ContentVerifyJob> job(ContentVerifier::CreateAndStartJobFor(
+      extension_id, extension_root, relative_path, verifier));
+  CHECK(job);
+  if (content) {
+    job->BytesRead(content->data(), content->size(), MOJO_RESULT_OK);
+  } else {
+    job->BytesRead("", 0u, MOJO_RESULT_NOT_FOUND);
   }
-}
-
-void ForwardVerifyContentToIO(VerifyContentInfo info) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  content::GetIOThreadTaskRunner({})->PostTask(
-      FROM_HERE, base::BindOnce(&VerifyContent, std::move(info)));
+  job->DoneReading();
 }
 
 void RecordContentScriptLength(const std::string& script_content) {
@@ -222,15 +191,8 @@ void LoadScriptContent(const mojom::HostID& host_id,
   if (needs_content_verification && verifier.get()) {
     // Note: |content| is nullopt here for missing / unreadable file. We still
     // pass it through ContentVerifier to report content verification error.
-    VerifyContentInfo info(verifier, host_id.id, script_file->extension_root(),
-                           script_file->relative_path(), content);
-
-    // Call VerifyContent() after yielding on UI thread so it is ensured that
-    // ContentVerifierIOData is populated at the time we call VerifyContent().
-    // Priority set explicitly to avoid unwanted task priority inheritance.
-    content::GetUIThreadTaskRunner({base::TaskPriority::USER_BLOCKING})
-        ->PostTask(FROM_HERE,
-                   base::BindOnce(&ForwardVerifyContentToIO, std::move(info)));
+    VerifyContent(verifier.get(), host_id.id, script_file->extension_root(),
+                  script_file->relative_path(), content);
   }
 
   if (!content)
@@ -329,10 +291,10 @@ void LoadUserScripts(
       script_files_length += script_file->GetContent().length();
     }
     if (script->css_scripts().size() > 0) {
-      std::unique_ptr<SubstitutionMap> localization_messages(
+      std::unique_ptr<SubstitutionMap> localization_messages =
           l10n_file_util::LoadMessageBundleSubstitutionMap(
               host_info.file_path, script->host_id().id,
-              host_info.default_locale, host_info.gzip_permission));
+              host_info.default_locale, host_info.gzip_permission);
 
       for (const std::unique_ptr<UserScript::Content>& script_file :
            script->css_scripts()) {
@@ -394,7 +356,7 @@ ContentScriptDictToSerializedUserScript(const base::Value::Dict& dict) {
     return std::nullopt;  // Bad entry.
   }
 
-  auto* id = dict.FindString(scripting::kId);
+  auto* id = dict.FindString(kId);
   if (!id || id->empty()) {
     return std::nullopt;  // Bad entry.
   }
@@ -851,7 +813,7 @@ void ExtensionUserScriptLoader::DynamicScriptsStorageHelper::SetDynamicScripts(
 
     base::Value::Dict value =
         script_serialization::SerializeUserScript(*script).ToValue();
-    value.Set(scripting::kId, script->id());
+    value.Set(kId, script->id());
 
     scripts_value.Append(std::move(value));
     persistent_patterns.AddPatterns(script->url_patterns());

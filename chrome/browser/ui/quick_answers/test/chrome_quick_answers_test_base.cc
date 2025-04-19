@@ -33,6 +33,8 @@ void ChromeQuickAnswersTestBase::SetUp() {
   GetFakeUserManager()->AddUser(account_id);
   GetFakeUserManager()->LoginUser(account_id);
 
+  SetUpInitialPrefValues();
+
   quick_answers_controller_ = std::make_unique<QuickAnswersControllerImpl>(
       read_write_cards_ui_controller_);
 
@@ -57,7 +59,8 @@ void ChromeQuickAnswersTestBase::CreateAndShowBasicMenu() {
   menu_model_->AddItem(0, u"Menu item");
   menu_runner_ = std::make_unique<views::MenuRunner>(
       menu_model_.get(), views::MenuRunner::CONTEXT_MENU);
-  menu_parent_ = CreateTestWidget();
+  menu_parent_ =
+      CreateTestWidget(views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET);
   menu_runner_->RunMenuAt(menu_parent_.get(), nullptr, gfx::Rect(),
                           views::MenuAnchorPosition::kTopLeft,
                           ui::MENU_SOURCE_MOUSE);

@@ -28,6 +28,9 @@ namespace growth {
 using CampaignComponentLoadedCallback = base::OnceCallback<void(
     const std::optional<const base::FilePath>& file_path)>;
 
+using OnTrackerInitializedCallback =
+    base::OnceCallback<void(bool init_success)>;
+
 using ActionMap = std::map<ActionType, std::unique_ptr<ActionPerformer>>;
 
 class CampaignsManagerClient {
@@ -41,6 +44,9 @@ class CampaignsManagerClient {
   // when loaded.
   virtual void LoadCampaignsComponent(
       CampaignComponentLoadedCallback callback) = 0;
+
+  virtual void AddOnTrackerInitializedCallback(
+      OnTrackerInitializedCallback callback) = 0;
 
   // True if the device is in demo mode.
   virtual bool IsDeviceInDemoMode() const = 0;
@@ -56,6 +62,11 @@ class CampaignsManagerClient {
 
   // Returns user selected locale.
   virtual const std::string& GetUserLocale() const = 0;
+
+  // Returns the permanent country code stored for this client.
+  // Country code is in the format of lowercase ISO 3166-1 alpha-2.
+  // Example: `us`, `br`, `in`.
+  virtual const std::string GetCountryCode() const = 0;
 
   // Get demo mode app component version.
   virtual const base::Version& GetDemoModeAppVersion() const = 0;

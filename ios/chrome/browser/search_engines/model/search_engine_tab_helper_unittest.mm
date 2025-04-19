@@ -7,10 +7,12 @@
 #import "base/containers/contains.h"
 #import "base/functional/bind.h"
 #import "base/strings/utf_string_conversions.h"
+#import "base/test/bind.h"
 #import "base/test/ios/wait_util.h"
 #import "components/favicon/core/favicon_service.h"
 #import "components/favicon/ios/web_favicon_driver.h"
 #import "components/keyed_service/core/service_access_type.h"
+#import "components/search_engines/search_engines_test_environment.h"
 #import "components/search_engines/template_url_service.h"
 #import "ios/chrome/browser/favicon/model/favicon_service_factory.h"
 #import "ios/chrome/browser/search_engines/model/template_url_service_factory.h"
@@ -37,15 +39,6 @@ const char kOpenSearchXmlFilePath[] =
     "/ios/testing/data/http_server_files/opensearch.xml";
 const char kPonyHtmlFilePath[] =
     "/ios/testing/data/http_server_files/pony.html";
-
-// A BrowserStateKeyedServiceFactory::TestingFactory that creates a testing
-// TemplateURLService. The created TemplateURLService may contain some default
-// TemplateURLs.
-std::unique_ptr<KeyedService> CreateTestingTemplateURLService(
-    web::BrowserState*) {
-  return std::make_unique<TemplateURLService>(/*initializers=*/nullptr,
-                                              /*count=*/0);
-}
 }
 
 // Test fixture for SearchEngineTabHelper class.
@@ -65,15 +58,14 @@ class SearchEngineTabHelperTest : public PlatformTest {
     TestChromeBrowserState::Builder builder;
     builder.AddTestingFactory(
         ios::TemplateURLServiceFactory::GetInstance(),
-        base::BindRepeating(
-            [](web::BrowserState*) -> std::unique_ptr<KeyedService> {
-              auto model = std::make_unique<TemplateURLService>(
-                  /*initializers=*/nullptr, /*count=*/0);
-
+        base::BindLambdaForTesting(
+            [this](web::BrowserState*) -> std::unique_ptr<KeyedService> {
+              std::unique_ptr<TemplateURLService> model =
+                  search_engines_test_environment_.ReleaseTemplateURLService();
               return model;
             }));
 
-    browser_state_ = builder.Build();
+    browser_state_ = std::move(builder).Build();
     web::WebState::CreateParams params(browser_state_.get());
     web_state_ = web::WebState::Create(params);
     web_state_->GetView();
@@ -89,11 +81,6 @@ class SearchEngineTabHelperTest : public PlatformTest {
     template_url_service()->Load();
   }
 
-  TestChromeBrowserState::TestingFactories GetTestingFactories() {
-    return {{ios::TemplateURLServiceFactory::GetInstance(),
-             base::BindRepeating(&CreateTestingTemplateURLService)}};
-  }
-
   // Returns the testing TemplateURLService.
   TemplateURLService* template_url_service() {
     ChromeBrowserState* browser_state =
@@ -103,6 +90,7 @@ class SearchEngineTabHelperTest : public PlatformTest {
 
   web::WebState* web_state() { return web_state_.get(); }
 
+  search_engines::SearchEnginesTestEnvironment search_engines_test_environment_;
   web::ScopedTestingWebClient web_client_;
   web::WebTaskEnvironment task_environment_{
       web::WebTaskEnvironment::MainThreadType::IO};

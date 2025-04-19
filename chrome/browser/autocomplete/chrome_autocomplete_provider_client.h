@@ -57,7 +57,7 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
   history_embeddings::HistoryEmbeddingsService* GetHistoryEmbeddingsService()
       override;
   scoped_refptr<history::TopSites> GetTopSites() override;
-  bookmarks::CoreBookmarkModel* GetBookmarkModel() override;
+  bookmarks::BookmarkModel* GetBookmarkModel() override;
   history::URLDatabase* GetInMemoryDatabase() override;
   InMemoryURLIndex* GetInMemoryURLIndex() override;
   TemplateURLService* GetTemplateURLService() override;
@@ -109,6 +109,8 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
   const TabMatcher& GetTabMatcher() const override;
   bool IsIncognitoModeAvailable() const override;
   bool IsSharingHubAvailable() const override;
+  bool IsHistoryEmbeddingsEnabled() const override;
+  bool IsHistoryEmbeddingsSettingVisible() const override;
   base::WeakPtr<AutocompleteProviderClient> GetWeakPtr() override;
 
   // OmniboxAction::Client:

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #ifndef CC_BASE_RTREE_H_
 #define CC_BASE_RTREE_H_
 
@@ -93,8 +98,6 @@ class RTree {
   // Returns respective bounds of all items in this rtree in the order of items.
   // Production code except tracing should not use this method.
   std::map<T, gfx::Rect> GetAllBoundsForTracing() const;
-
-  void Reset();
 
  private:
   // These values were empirically determined to produce reasonable performance
@@ -410,15 +413,6 @@ void RTree<T>::GetAllBoundsRecursive(Node<T>* node,
     else
       GetAllBoundsRecursive(node->children[i].subtree, results);
   }
-}
-
-template <typename T>
-void RTree<T>::Reset() {
-  num_data_elements_ = 0;
-  root_.subtree = nullptr;
-  nodes_.clear();
-  root_.bounds = gfx::Rect();
-  has_valid_bounds_ = true;
 }
 
 }  // namespace cc

@@ -5,9 +5,10 @@
 #import "ios/chrome/browser/tab_insertion/model/tab_insertion_browser_agent.h"
 
 #import "build/blink_buildflags.h"
+#import "components/tab_groups/tab_group_id.h"
 #import "ios/chrome/browser/ntp/model/new_tab_page_tab_helper.h"
-#import "ios/chrome/browser/sessions/session_restoration_service.h"
-#import "ios/chrome/browser/sessions/session_restoration_service_factory.h"
+#import "ios/chrome/browser/sessions/model/session_restoration_service.h"
+#import "ios/chrome/browser/sessions/model/session_restoration_service_factory.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/web_state_list/tab_group.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
@@ -106,22 +107,24 @@ web::WebState* TabInsertionBrowserAgent::InsertWebState(
                                            ui::PAGE_TRANSITION_LINK)) {
     params = WebStateList::InsertionParams::AtIndex(web_state_list->count());
   }
-  params.Activate(!tab_insertion_params.in_background)
+
+  bool should_activate =
+      !tab_insertion_params.in_background || web_state_list->empty();
+
+  params.Activate(should_activate)
       .InheritOpener(tab_insertion_params.inherit_opener)
       .WithOpener(WebStateOpener(tab_insertion_params.parent));
+  if (tab_insertion_params.insert_in_group && tab_insertion_params.tab_group) {
+    params.InGroup(tab_insertion_params.tab_group.get());
+  }
   web::WebState* web_state_ptr = web_state.get();
   web_state_list->InsertWebState(std::move(web_state), params);
-  if (tab_insertion_params.insert_in_group) {
-    if (tab_insertion_params.tab_group) {
-      web_state_list->MoveToGroup(
-          {web_state_list->GetIndexOfWebState(web_state_ptr)},
-          tab_insertion_params.tab_group.get());
-    } else {
-      web_state_list->CreateGroup(
-          {web_state_list->GetIndexOfWebState(web_state_ptr)},
-          tab_groups::TabGroupVisualData{
-              u"", TabGroup::DefaultColorForNewTabGroup(web_state_list)});
-    }
+  if (tab_insertion_params.insert_in_group && !tab_insertion_params.tab_group) {
+    web_state_list->CreateGroup(
+        {web_state_list->GetIndexOfWebState(web_state_ptr)},
+        tab_groups::TabGroupVisualData{
+            u"", TabGroup::DefaultColorForNewTabGroup(web_state_list)},
+        tab_groups::TabGroupId::GenerateNew());
   }
   return web_state_ptr;
 }

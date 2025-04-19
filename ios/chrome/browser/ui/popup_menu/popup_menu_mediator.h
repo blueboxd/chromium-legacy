@@ -11,13 +11,16 @@
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_action_handler_delegate.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_ui_updating.h"
 
+namespace bookmarks {
+class BookmarkModel;
+}  // namespace bookmarks
+
 namespace feature_engagement {
 class Tracker;
 }  // namespace feature_engagement
 
 class BrowserPolicyConnectorIOS;
 class FollowBrowserAgent;
-class LegacyBookmarkModel;
 @protocol LensCommands;
 class OverlayPresenter;
 @protocol PopupMenuConsumer;
@@ -34,12 +37,10 @@ class WebStateList;
     : NSObject <BrowserContainerConsumer, PopupMenuActionHandlerDelegate>
 
 // Initializes the mediator with whether it `isIncognito`, a `readingListModel`
-// used to display the badge for the reading list entry, whether the mediator
-// should `triggerNewIncognitoTabTip`, and a `browserPolicyConnector` used to
-// check if the browser is managed by policy.
+// used to display the badge for the reading list entry, and a
+// `browserPolicyConnector` used to check if the browser is managed by policy.
 - (instancetype)initWithIsIncognito:(BOOL)isIncognito
                    readingListModel:(ReadingListModel*)readingListModel
-          triggerNewIncognitoTabTip:(BOOL)triggerNewIncognitoTabTip
              browserPolicyConnector:
                  (BrowserPolicyConnectorIOS*)browserPolicyConnector
     NS_DESIGNATED_INITIALIZER;
@@ -61,7 +62,7 @@ class WebStateList;
 // object.
 @property(nonatomic, assign) feature_engagement::Tracker* engagementTracker;
 // The bookmarks model to know if the page is bookmarked.
-@property(nonatomic, assign) LegacyBookmarkModel* bookmarkModel;
+@property(nonatomic, assign) bookmarks::BookmarkModel* bookmarkModel;
 // Pref service to retrieve preference values.
 @property(nonatomic, assign) PrefService* prefService;
 // The template url service to use for checking whether search by image is

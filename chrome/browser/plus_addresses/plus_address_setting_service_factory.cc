@@ -9,9 +9,10 @@
 #include "base/no_destructor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_selections.h"
-#include "chrome/browser/sync/model_type_store_service_factory.h"
-#include "components/plus_addresses/settings/plus_address_setting_service.h"
-#include "components/sync/model/model_type_store_service.h"
+#include "chrome/browser/sync/data_type_store_service_factory.h"
+#include "components/plus_addresses/settings/plus_address_setting_service_impl.h"
+#include "components/plus_addresses/settings/plus_address_setting_sync_bridge.h"
+#include "components/sync/model/data_type_store_service.h"
 
 // static
 PlusAddressSettingServiceFactory*
@@ -37,13 +38,15 @@ PlusAddressSettingServiceFactory::PlusAddressSettingServiceFactory()
               .WithSystem(ProfileSelection::kNone)
               .WithAshInternals(ProfileSelection::kNone)
               .Build()) {
-  DependsOn(ModelTypeStoreServiceFactory::GetInstance());
+  DependsOn(DataTypeStoreServiceFactory::GetInstance());
 }
 
 std::unique_ptr<KeyedService>
 PlusAddressSettingServiceFactory::BuildServiceInstanceForBrowserContext(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
-  return std::make_unique<plus_addresses::PlusAddressSettingService>(
-      ModelTypeStoreServiceFactory::GetForProfile(profile)->GetStoreFactory());
+  return std::make_unique<plus_addresses::PlusAddressSettingServiceImpl>(
+      plus_addresses::PlusAddressSettingSyncBridge::CreateBridge(
+          DataTypeStoreServiceFactory::GetForProfile(profile)
+              ->GetStoreFactory()));
 }

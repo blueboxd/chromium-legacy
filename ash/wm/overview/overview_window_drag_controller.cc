@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ash/wm/overview/overview_window_drag_controller.h"
 
 #include <algorithm>
@@ -13,7 +18,7 @@
 #include "ash/shell.h"
 #include "ash/wm/desks/desk_icon_button.h"
 #include "ash/wm/desks/desks_util.h"
-#include "ash/wm/desks/legacy_desk_bar_view.h"
+#include "ash/wm/desks/overview_desk_bar_view.h"
 #include "ash/wm/float/float_controller.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -106,19 +111,18 @@ bool DraggedItemIsVisibleOnAllDesks(OverviewItemBase* item) {
 }
 
 // Returns the scaled-down size of the dragged item that should be used when
-// it's dragged over the LegacyDeskBarView that belongs to |overview_grid|.
+// it's dragged over the OverviewDeskBarView that belongs to |overview_grid|.
 // |window_original_size| is the size of the item's window before it was scaled
 // up for dragging.
 gfx::SizeF GetItemSizeWhenOnDesksBar(OverviewGrid* overview_grid,
                                      const gfx::SizeF& window_original_size) {
   DCHECK(overview_grid);
-  const LegacyDeskBarView* desks_bar_view = overview_grid->desks_bar_view();
+  const OverviewDeskBarView* desks_bar_view = overview_grid->desks_bar_view();
   DCHECK(desks_bar_view);
 
-  const int expanded_desks_bar_height =
-      LegacyDeskBarView::GetPreferredBarHeight(
-          overview_grid->root_window(), LegacyDeskBarView::Type::kOverview,
-          LegacyDeskBarView::State::kExpanded);
+  const int expanded_desks_bar_height = DeskBarViewBase::GetPreferredBarHeight(
+      overview_grid->root_window(), DeskBarViewBase::Type::kOverview,
+      DeskBarViewBase::State::kExpanded);
 
   // We should always use the expanded desks bar height here even if the desks
   // bar is actually in zero state to calculate `scale_factor`. Because if zero
@@ -164,13 +168,6 @@ float GetManhattanDistanceY(float point_y, const gfx::RectF& rect) {
 
 void RecordDrag(OverviewDragAction action) {
   base::UmaHistogramEnumeration("Ash.Overview.WindowDrag.Workflow", action);
-}
-
-// Returns true if the `item` can to be snapped in overview, an
-// `OverviewGroupItem` with two `OverviewItem`s is not allowed to snap in
-// overview.
-bool IsEligibleForDragToSnap(OverviewItemBase* item) {
-  return (item->GetWindows().size() == 1u) && ShouldAllowSplitView();
 }
 
 // Restores the new desk button state back to the
@@ -261,7 +258,8 @@ OverviewWindowDragController::OverviewWindowDragController(
       event_source_item_(event_source_item),
       display_count_(Shell::GetAllRootWindows().size()),
       is_touch_dragging_(is_touch_dragging),
-      is_eligible_for_drag_to_snap_(IsEligibleForDragToSnap(item)),
+      is_eligible_for_drag_to_snap_(
+          IsEligibleForDraggingToSnapInOverview(item)),
       virtual_desks_bar_enabled_(GetVirtualDesksBarEnabled(item)) {
   CHECK(!OverviewController::Get()->IsInStartAnimation());
   CHECK(!SplitViewController::Get(item_->root_window())->IsDividerAnimating());
@@ -397,10 +395,10 @@ void OverviewWindowDragController::StartNormalDragMode(
   }
 
   item_->UpdateShadowTypeForDrag(/*is_dragging=*/true);
+  aura::Window* dragged_window = item_->GetWindow();
 
   if (is_eligible_for_drag_to_snap_) {
-    overview_session_->SetSplitViewDragIndicatorsDraggedWindow(
-        item_->GetWindow());
+    overview_session_->SetSplitViewDragIndicatorsDraggedWindow(dragged_window);
     overview_session_->UpdateSplitViewDragIndicatorsWindowDraggingStates(
         GetRootWindowBeingDraggedIn(),
         SplitViewDragIndicators::ComputeWindowDraggingState(
@@ -410,10 +408,10 @@ void OverviewWindowDragController::StartNormalDragMode(
     item_->HideCannotSnapWarning(/*animate=*/true);
 
     // Update the split view divider bar status if necessary. If splitview is
-    // active when dragging the overview window, the split divider bar should be
-    // placed below the dragged window during dragging.
+    // active when dragging the `dragged_window`, the split divider bar should
+    // be placed below the dragged window during dragging.
     SplitViewController::Get(item_->root_window())
-        ->OnWindowDragStarted(item_->GetWindow());
+        ->OnWindowDragStarted(dragged_window);
   }
 
   if (virtual_desks_bar_enabled_) {
@@ -442,9 +440,9 @@ void OverviewWindowDragController::StartNormalDragMode(
           GetItemSizeWhenOnDesksBar(grid.get(), window_original_size);
       grid_desks_bar_data.desks_bar_bounds = grid_desks_bar_data.shrink_bounds =
           gfx::RectF(grid->desks_bar_view()->GetBoundsInScreen());
-      const int expanded_height = LegacyDeskBarView::GetPreferredBarHeight(
-          grid->root_window(), LegacyDeskBarView::Type::kOverview,
-          LegacyDeskBarView::State::kExpanded);
+      const int expanded_height = DeskBarViewBase::GetPreferredBarHeight(
+          grid->root_window(), DeskBarViewBase::Type::kOverview,
+          DeskBarViewBase::State::kExpanded);
       grid_desks_bar_data.desks_bar_bounds.set_height(expanded_height);
       grid_desks_bar_data.shrink_bounds.set_height(expanded_height);
       grid_desks_bar_data.shrink_bounds.Inset(gfx::InsetsF::VH(
@@ -455,8 +453,7 @@ void OverviewWindowDragController::StartNormalDragMode(
     }
   }
 
-  overview_session_->float_container_stacker()->OnDragStarted(
-      item_->GetWindow());
+  overview_session_->float_container_stacker()->OnDragStarted(dragged_window);
 }
 
 OverviewWindowDragController::DragResult OverviewWindowDragController::Fling(
@@ -614,6 +611,7 @@ void OverviewWindowDragController::ContinueDragToClose(
   float opacity = original_opacity_;
   if (opacity > kItemMinOpacity)
     opacity = original_opacity_ - val * (original_opacity_ - kItemMinOpacity);
+
   item_->SetOpacity(opacity);
 
   // When dragging to close, only update the y component.
@@ -1047,8 +1045,12 @@ void OverviewWindowDragController::MaybeScaleUpNewDeskButton() {
     return;
   }
 
+  // Do not reposition the windows while changing the desk icon button. This
+  // could cause items to shift around mid drag.
+  overview_session_->SuspendReposition();
   desks_bar_view->UpdateDeskIconButtonState(
       new_desk_button, /*target_state=*/DeskIconButton::State::kActive);
+  overview_session_->ResumeReposition();
 }
 
 }  // namespace ash

@@ -128,7 +128,7 @@ bool ProfileTokenQuality::AddObservationsForFilledForm(
     const FormStructure& form_structure,
     const FormData& form_data,
     const PersonalDataManager& pdm) {
-  CHECK_EQ(form_structure.field_count(), form_data.fields.size());
+  CHECK_EQ(form_structure.field_count(), form_data.fields().size());
 
   std::vector<const AutofillProfile*> other_profiles =
       pdm.address_data_manager().GetProfiles();
@@ -145,7 +145,7 @@ bool ProfileTokenQuality::AddObservationsForFilledForm(
       continue;
     }
     if (!field.autofilled_type()) {
-      // TODO(b/311604770): Field-by-field filling doesn't support
+      // TODO(crbug.com/311604770): Field-by-field filling doesn't support
       // `autofilled_type()`.
       continue;
     }
@@ -167,11 +167,18 @@ bool ProfileTokenQuality::AddObservationsForFilledForm(
       // An observation for the `stored_type` and `hash` was already collected.
       continue;
     }
+
+    // If the field has a selected option, we give precedence to the option's
+    // text over its value because the user-visible text is likely more
+    // meaningful. Currently, only <select> elements may have a selected option.
+    base::optional_ref<const SelectOption> selected_option =
+        form_data.fields()[i].selected_option();
+    std::u16string value =
+        selected_option ? selected_option->text : form_data.fields()[i].value();
     possible_observations.emplace_back(
         stored_type,
         Observation{.type = base::to_underlying(GetObservationTypeFromField(
-                        field, form_data.fields[i].value(), other_profiles,
-                        pdm.app_locale())),
+                        field, value, other_profiles, pdm.app_locale())),
                     .form_hash = hash});
   }
   return AddSubsetOfObservations(std::move(possible_observations)) > 0;
@@ -205,6 +212,8 @@ void ProfileTokenQuality::SaveObservationsForFilledFormForAllSubmittedProfiles(
       pdm.address_data_manager().UpdateProfile(updatable_profile);
     }
   }
+
+  autofill_metrics::LogProfileTokenQualityScoreMetric(form_structure, pdm);
 }
 
 std::vector<ObservationType>
@@ -253,8 +262,8 @@ size_t ProfileTokenQuality::AddSubsetOfObservations(
                                         : 1;
   // Shuffle the `observations` and add the first `observations_to_add` many.
   base::RandomShuffle(observations.begin(), observations.end());
-  for (auto& [type, observation] : base::make_span(
-           observations.begin(), observations.begin() + observations_to_add)) {
+  for (auto& [type, observation] :
+       base::span(observations).first(observations_to_add)) {
     AddObservation(type, std::move(observation));
   }
   return observations_to_add;

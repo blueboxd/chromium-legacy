@@ -24,7 +24,8 @@ namespace os_crypt_async {
 
 class AppBoundEncryptionProviderWin : public os_crypt_async::KeyProvider {
  public:
-  explicit AppBoundEncryptionProviderWin(PrefService* local_state);
+  AppBoundEncryptionProviderWin(PrefService* local_state,
+                                bool use_for_encryption);
   ~AppBoundEncryptionProviderWin() override;
 
   // Not copyable.
@@ -33,10 +34,6 @@ class AppBoundEncryptionProviderWin : public os_crypt_async::KeyProvider {
       const AppBoundEncryptionProviderWin&) = delete;
 
   static void RegisterLocalPrefs(PrefRegistrySimple* registry);
-
-  // Set encryption enabled for testing. Should be called before creating any
-  // instances of the class.
-  static void SetEnableEncryptionForTesting(bool use_for_encryption);
 
  private:
   // These values are persisted to logs. Entries should not be renumbered and
@@ -54,12 +51,12 @@ class AppBoundEncryptionProviderWin : public os_crypt_async::KeyProvider {
   bool UseForEncryption() override;
   bool IsCompatibleWithOsCryptSync() override;
 
-  base::expected<std::vector<const uint8_t>, KeyRetrievalStatus>
+  base::expected<std::vector<uint8_t>, KeyRetrievalStatus>
   RetrieveEncryptedKey();
   void StoreEncryptedKeyAndReply(
       const std::vector<uint8_t>& decrypted_key,
       KeyCallback callback,
-      const std::optional<std::vector<const uint8_t>>& encrypted_key);
+      const std::optional<std::vector<uint8_t>>& encrypted_key);
   static void ReplyWithKey(KeyCallback callback,
                            std::optional<std::vector<uint8_t>> decrypted_key);
 
@@ -67,6 +64,8 @@ class AppBoundEncryptionProviderWin : public os_crypt_async::KeyProvider {
 
   class COMWorker;
   base::SequenceBound<COMWorker> com_worker_;
+
+  const bool use_for_encryption_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

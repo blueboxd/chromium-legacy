@@ -22,13 +22,14 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Batch;
-import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.Features.EnableFeatures;
+import org.chromium.base.test.util.HistogramWatcher;
+import org.chromium.base.test.util.RequiresRestart;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.AutofillUiUtils.CardIconSize;
 import org.chromium.chrome.browser.autofill.AutofillUiUtils.CardIconSpecs;
@@ -48,7 +49,6 @@ import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.image_fetcher.test.TestImageFetcher;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.user_prefs.UserPrefs;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.url.GURL;
 
 import java.util.concurrent.TimeoutException;
@@ -61,7 +61,6 @@ import java.util.concurrent.TimeoutException;
 })
 @Batch(Batch.PER_CLASS)
 public class FinancialAccountsManagementFragmentTest {
-    @Rule public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
     @Rule public final AutofillTestRule rule = new AutofillTestRule();
 
     @Rule
@@ -91,7 +90,7 @@ public class FinancialAccountsManagementFragmentTest {
     @Before
     public void setUp() {
         mAutofillTestHelper = new AutofillTestHelper();
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     PersonalDataManager personalDataManager =
                             AutofillTestHelper.getPersonalDataManagerForLastUsedProfile();
@@ -117,7 +116,7 @@ public class FinancialAccountsManagementFragmentTest {
     @After
     public void tearDown() throws TimeoutException {
         mAutofillTestHelper.clearAllDataForTesting();
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     AutofillTestHelper.getPersonalDataManagerForLastUsedProfile()
                             .getImageFetcherForTesting()
@@ -154,7 +153,7 @@ public class FinancialAccountsManagementFragmentTest {
     @MediumTest
     public void testPixPrefEnabled_pixSwitchEnabled() throws Exception {
         AutofillTestHelper.addMaskedBankAccount(PIX_BANK_ACCOUNT);
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     getPrefService().setBoolean(Pref.FACILITATED_PAYMENTS_PIX, true);
                 });
@@ -171,7 +170,7 @@ public class FinancialAccountsManagementFragmentTest {
     @MediumTest
     public void testPixPrefDisabled_pixSwitchDisabled() throws Exception {
         AutofillTestHelper.addMaskedBankAccount(PIX_BANK_ACCOUNT);
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     getPrefService().setBoolean(Pref.FACILITATED_PAYMENTS_PIX, false);
                 });
@@ -272,7 +271,7 @@ public class FinancialAccountsManagementFragmentTest {
     @MediumTest
     public void testPixAccountDisplayIconNotCached_prefIconSetToDefault() {
         AutofillTestHelper.addMaskedBankAccount(PIX_BANK_ACCOUNT);
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     AutofillTestHelper.getPersonalDataManagerForLastUsedProfile()
                             .getImageFetcherForTesting()
@@ -301,6 +300,7 @@ public class FinancialAccountsManagementFragmentTest {
     // Test that Pix bank accounts are removed when the Pix toggle is turned off.
     @Test
     @MediumTest
+    @RequiresRestart("crbug.com/344671557")
     public void testPixSwitchDisabled_bankAccountPrefsRemoved() {
         AutofillTestHelper.addMaskedBankAccount(PIX_BANK_ACCOUNT);
         SettingsActivity activity = mSettingsActivityTestRule.startSettingsActivity(new Bundle());
@@ -309,7 +309,7 @@ public class FinancialAccountsManagementFragmentTest {
         assertThat(bankAccountPref).isNotNull();
 
         // Set the Pix toggle to off.
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     pixSwitch.performClick();
                 });
@@ -324,7 +324,7 @@ public class FinancialAccountsManagementFragmentTest {
     @MediumTest
     public void testPixSwitchEnabled_bankAccountPrefsAdded() {
         AutofillTestHelper.addMaskedBankAccount(PIX_BANK_ACCOUNT);
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     getPrefService().setBoolean(Pref.FACILITATED_PAYMENTS_PIX, false);
                 });
@@ -335,7 +335,7 @@ public class FinancialAccountsManagementFragmentTest {
         assertThat(bankAccountPref).isNull();
 
         // Set the Pix toggle to on.
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     pixSwitch.performClick();
                 });
@@ -343,6 +343,67 @@ public class FinancialAccountsManagementFragmentTest {
         // Verify that the bank account preference is now not null.
         bankAccountPref = getBankAccountPreference(activity, PIX_BANK_ACCOUNT);
         assertThat(bankAccountPref).isNotNull();
+    }
+
+    @Test
+    @MediumTest
+    public void testFragmentShown_histogramLogged() {
+        var fragmentShownHistogram =
+                HistogramWatcher.newSingleRecordWatcher(
+                        FinancialAccountsManagementFragment.FRAGMENT_SHOWN_HISTOGRAM, true);
+
+        mSettingsActivityTestRule.startSettingsActivity(new Bundle());
+
+        fragmentShownHistogram.assertExpected();
+    }
+
+    @Test
+    @MediumTest
+    @RequiresRestart("crbug.com/344671557")
+    public void testPixToggleTurnedOn_histogramLogged() {
+        AutofillTestHelper.addMaskedBankAccount(PIX_BANK_ACCOUNT);
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    getPrefService().setBoolean(Pref.FACILITATED_PAYMENTS_PIX, false);
+                });
+        var pixToggleEnabledHistogram =
+                HistogramWatcher.newSingleRecordWatcher(
+                        FinancialAccountsManagementFragment
+                                .FACILITATED_PAYMENTS_TOGGLE_UPDATED_HISTOGRAM,
+                        true);
+        SettingsActivity activity = mSettingsActivityTestRule.startSettingsActivity(new Bundle());
+        ChromeSwitchPreference pixSwitch = getPixSwitchPreference(activity);
+        assertThat(pixSwitch.isChecked()).isFalse();
+
+        // Set the Pix toggle to on.
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    pixSwitch.performClick();
+                });
+
+        pixToggleEnabledHistogram.assertExpected();
+    }
+
+    @Test
+    @MediumTest
+    public void testPixToggleTurnedOff_histogramLogged() {
+        AutofillTestHelper.addMaskedBankAccount(PIX_BANK_ACCOUNT);
+        var pixToggleDisabledHistogram =
+                HistogramWatcher.newSingleRecordWatcher(
+                        FinancialAccountsManagementFragment
+                                .FACILITATED_PAYMENTS_TOGGLE_UPDATED_HISTOGRAM,
+                        false);
+        SettingsActivity activity = mSettingsActivityTestRule.startSettingsActivity(new Bundle());
+        ChromeSwitchPreference pixSwitch = getPixSwitchPreference(activity);
+        assertThat(pixSwitch.isChecked()).isTrue();
+
+        // Set the Pix toggle to off.
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    pixSwitch.performClick();
+                });
+
+        pixToggleDisabledHistogram.assertExpected();
     }
 
     private static PreferenceScreen getPreferenceScreen(SettingsActivity activity) {

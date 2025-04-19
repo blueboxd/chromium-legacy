@@ -145,7 +145,7 @@ void DevToolsHost::DisconnectClient() {
 float DevToolsHost::zoomFactor() {
   if (!frontend_frame_)
     return 1;
-  float zoom_factor = frontend_frame_->PageZoomFactor();
+  float zoom_factor = frontend_frame_->LayoutZoomFactor();
   // Cancel the device scale factor applied to the zoom factor.
   const ChromeClient* client =
       frontend_frame_->View()->GetChromeClient();
@@ -224,10 +224,6 @@ static std::vector<MenuItemInfo> PopulateContextMenuItems(
       String label = item->getLabelOr(String());
       label.Ensure16Bit();
       item_info.label = std::u16string(label.Characters16(), label.length());
-      String shortcut = item->getShortcutOr(String());
-      shortcut.Ensure16Bit();
-      item_info.shortcut =
-          std::u16string(shortcut.Characters16(), shortcut.length());
       item_info.enabled = item->enabled();
       item_info.action = item->id();
       item_info.checked = item->checked();
@@ -258,7 +254,7 @@ void DevToolsHost::showContextMenuAtPoint(
   auto* menu_provider =
       MakeGarbageCollected<FrontendMenuProvider>(this, std::move(menu_items));
   menu_provider_ = menu_provider;
-  float zoom = target_frame->PageZoomFactor();
+  float zoom = target_frame->LayoutZoomFactor();
   {
     ContextMenuAllowedScope scope;
     target_frame->GetPage()->GetContextMenuController().ClearContextMenu();

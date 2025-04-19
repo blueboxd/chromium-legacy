@@ -112,9 +112,9 @@ bool SendKeyEventImpl(const std::string& type,
                       aura::WindowTreeHost* host) {
   ui::EventType event_type;
   if (type == kKeyDown)
-    event_type = ui::ET_KEY_PRESSED;
+    event_type = ui::EventType::kKeyPressed;
   else if (type == kKeyUp)
-    event_type = ui::ET_KEY_RELEASED;
+    event_type = ui::EventType::kKeyReleased;
   else
     return false;
 
@@ -123,17 +123,17 @@ bool SendKeyEventImpl(const std::string& type,
   if (code == ui::VKEY_UNKNOWN) {
     // Handling of special printable characters (e.g. accented characters) for
     // which there is no key code.
-    if (event_type == ui::ET_KEY_RELEASED) {
+    if (event_type == ui::EventType::kKeyReleased) {
       // This can be null if no text input field is focused.
       ui::TextInputClient* tic = GetFocusedTextInputClient();
 
-      SendProcessKeyEvent(ui::ET_KEY_PRESSED, host);
+      SendProcessKeyEvent(ui::EventType::kKeyPressed, host);
 
       ui::KeyEvent char_event = ui::KeyEvent::FromCharacter(
           key_value, code, ui::DomCode::NONE, ui::EF_NONE);
       if (tic)
         tic->InsertChar(char_event);
-      SendProcessKeyEvent(ui::ET_KEY_RELEASED, host);
+      SendProcessKeyEvent(ui::EventType::kKeyReleased, host);
     }
     return true;
   }
@@ -463,6 +463,14 @@ bool ChromeVirtualKeyboardDelegate::IsSettingsEnabled() {
 }
 
 void ChromeVirtualKeyboardDelegate::OnClipboardHistoryItemsUpdated() {
+  // Clipboard history is only used for multipaste in the virtual keyboard, so
+  // there is no need to act on clipboard history events when the virtual
+  // keyboard is disabled.
+  if (!ChromeKeyboardControllerClient::HasInstance() ||
+      !ChromeKeyboardControllerClient::Get()->is_keyboard_enabled()) {
+    return;
+  }
+
   EventRouter* router = GetRouterForEventName(
       browser_context_, keyboard_api::OnClipboardHistoryChanged::kEventName);
   if (!router)
@@ -528,8 +536,7 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
   features.Append(GenerateFeatureFlag(
       "autocorrectparamstuning",
       base::FeatureList::IsEnabled(ash::features::kAutocorrectParamsTuning)));
-  features.Append(
-      GenerateFeatureFlag("jelly", chromeos::features::IsJellyEnabled()));
+  features.Append(GenerateFeatureFlag("jelly", true));
   features.Append(GenerateFeatureFlag(
       "japanesefunctionrow",
       base::FeatureList::IsEnabled(ash::features::kJapaneseFunctionRow)));

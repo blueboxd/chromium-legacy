@@ -49,6 +49,14 @@ class CookieControlsBridge : public CookieControlsObserver {
 
   void OnEntryPointAnimated(JNIEnv* env);
 
+  static base::android::ScopedJavaLocalRef<jobject> CreateTpFeaturesList(
+      JNIEnv* env);
+
+  static void CreateTpFeatureAndAddToList(
+      JNIEnv* env,
+      base::android::ScopedJavaLocalRef<jobject> jfeatures,
+      TrackingProtectionFeature feature);
+
   // CookieControlsObserver:
   void OnStatusChanged(
       bool controls_visible,
@@ -63,6 +71,8 @@ class CookieControlsBridge : public CookieControlsObserver {
       bool protections_on,
       CookieBlocking3pcdStatus blocking_status,
       bool should_highlight) override;
+
+  void OnReloadThresholdExceeded() override;
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> jobject_;

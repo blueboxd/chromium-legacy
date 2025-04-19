@@ -22,6 +22,8 @@
 #include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/commerce/mock_commerce_ui_tab_helper.h"
 #include "chrome/browser/ui/signin/bubble_signin_promo_delegate.h"
+#include "chrome/browser/ui/tabs/public/tab_features.h"
+#include "chrome/browser/ui/tabs/public/tab_interface.h"
 #include "chrome/browser/ui/views/commerce/price_tracking_view.h"
 #include "chrome/browser/ui/views/commerce/shopping_collection_iph_view.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -100,26 +102,28 @@ class BookmarkBubbleViewTestBase : public BrowserWithTestWindowTest {
   }
 
   TestingProfile::TestingFactories GetTestingFactories() override {
-    TestingProfile::TestingFactories factories = {
-        {BookmarkModelFactory::GetInstance(),
-         BookmarkModelFactory::GetDefaultFactory()},
-        {commerce::ShoppingServiceFactory::GetInstance(),
-         base::BindRepeating([](content::BrowserContext* context) {
-           return commerce::MockShoppingService::Build();
-         })},
-        // Used by IdentityTestEnvironmentProfileAdaptor.
-        {ChromeSigninClientFactory::GetInstance(),
-         base::BindRepeating(&BuildChromeSigninClientWithURLLoader,
-                             test_url_loader_factory())},
-        // Used by ImageService.
-        {SyncServiceFactory::GetInstance(),
-         base::BindRepeating([](content::BrowserContext*) {
-           return static_cast<std::unique_ptr<KeyedService>>(
-               std::make_unique<syncer::TestSyncService>());
-         })}};
-    IdentityTestEnvironmentProfileAdaptor::
-        AppendIdentityTestEnvironmentFactories(&factories);
-    return factories;
+    return IdentityTestEnvironmentProfileAdaptor::
+        GetIdentityTestEnvironmentFactoriesWithAppendedFactories(
+            {TestingProfile::TestingFactory{
+                 BookmarkModelFactory::GetInstance(),
+                 BookmarkModelFactory::GetDefaultFactory()},
+             TestingProfile::TestingFactory{
+                 commerce::ShoppingServiceFactory::GetInstance(),
+                 base::BindRepeating([](content::BrowserContext* context) {
+                   return commerce::MockShoppingService::Build();
+                 })},
+             // Used by IdentityTestEnvironmentProfileAdaptor.
+             TestingProfile::TestingFactory{
+                 ChromeSigninClientFactory::GetInstance(),
+                 base::BindRepeating(&BuildChromeSigninClientWithURLLoader,
+                                     test_url_loader_factory())},
+             // Used by ImageService.
+             TestingProfile::TestingFactory{
+                 SyncServiceFactory::GetInstance(),
+                 base::BindRepeating([](content::BrowserContext*) {
+                   return static_cast<std::unique_ptr<KeyedService>>(
+                       std::make_unique<syncer::TestSyncService>());
+                 })}});
   }
 
   BookmarkModel* GetBookmarkModel() { return bookmark_model_; }
@@ -270,6 +274,7 @@ class PriceTrackingViewFeatureFlagTest
       public testing::WithParamInterface<bool> {
  public:
   PriceTrackingViewFeatureFlagTest() {
+    MockCommerceUiTabHelper::ReplaceFactory();
     const bool is_feature_enabled = GetParam();
     if (is_feature_enabled) {
       test_features_.InitAndEnableFeature(commerce::kShoppingList);
@@ -299,11 +304,11 @@ TEST_P(PriceTrackingViewFeatureFlagTest, PriceTrackingViewCreation) {
   const bool is_feature_enabled = GetParam();
   mock_shopping_service->SetIsShoppingListEligible(is_feature_enabled);
 
-  MockCommerceUiTabHelper::CreateForWebContents(
-      browser()->tab_strip_model()->GetActiveWebContents());
-  auto* mock_tab_helper_ = static_cast<MockCommerceUiTabHelper*>(
-      MockCommerceUiTabHelper::FromWebContents(
-          browser()->tab_strip_model()->GetActiveWebContents()));
+  auto* mock_tab_helper_ =
+      static_cast<MockCommerceUiTabHelper*>(browser()
+                                                ->GetActiveTabInterface()
+                                                ->GetTabFeatures()
+                                                ->commerce_ui_tab_helper());
   const gfx::Image image = mock_tab_helper_->GetValidProductImage();
   ON_CALL(*mock_tab_helper_, GetProductImage)
       .WillByDefault(

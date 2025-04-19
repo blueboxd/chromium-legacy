@@ -17,6 +17,7 @@
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/ash/drive/file_system_util.h"
+#include "chrome/browser/ash/input_method/editor_mediator_factory.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ui/webui/ash/settings/pages/device/device_display_handler.h"
 #include "chrome/browser/ui/webui/ash/settings/pages/device/device_keyboard_handler.h"
@@ -30,6 +31,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -847,6 +849,12 @@ void AddDeviceKeyboardStrings(content::WebUIDataSource* html_source) {
       {"perDeviceKeyboardKeyMeta", IDS_SETTINGS_PER_DEVICE_KEYBOARD_KEY_META},
       {"perDeviceKeyboardKeyFunction",
        IDS_SETTINGS_PER_DEVICE_KEYBOARD_KEY_FUNCTION},
+      {"openAppLabel", IDS_SETTINGS_PER_DEVICE_OPEN_APP_LABEL},
+      {"installAppLabel", IDS_SETTINGS_PER_DEVICE_INSTALL_APP_LABEL},
+      {"installAppButton", IDS_SETTINGS_PER_DEVICE_INSTALL_APP_BUTTON},
+      {"deviceNameLabel", IDS_SETTINGS_PER_DEVICE_NAME},
+      {"deviceBatteryLabel",
+       IDS_SETTINGS_PER_DEVICE_BATTERY_PERCENTAGE_A11Y_LABEL},
   };
   html_source->AddLocalizedStrings(keyboard_strings);
 
@@ -1058,9 +1066,14 @@ DeviceSection::DeviceSection(Profile* profile,
     : OsSettingsSection(profile, search_tag_registry),
       inputs_subsection_(
           ash::features::IsOsSettingsRevampWayfindingEnabled()
-              ? std::make_optional<InputsSection>(profile,
-                                                  search_tag_registry,
-                                                  pref_service)
+              ? std::make_optional<InputsSection>(
+                    profile,
+                    search_tag_registry,
+                    pref_service,
+                    chromeos::features::IsOrcaEnabled()
+                        ? input_method::EditorMediatorFactory::GetInstance()
+                              ->GetForProfile(profile)
+                        : nullptr)
               : std::nullopt),
       power_subsection_(
           !ash::features::IsOsSettingsRevampWayfindingEnabled()
@@ -1183,6 +1196,9 @@ void DeviceSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   html_source->AddBoolean(
       "enableF11AndF12KeyShortcuts",
       base::FeatureList::IsEnabled(::features::kSupportF11AndF12KeyShortcuts));
+
+  html_source->AddBoolean("enableWelcomeExperience",
+                          ash::features::IsWelcomeExperienceEnabled());
 
   AddDevicePointersStrings(html_source);
   AddDeviceGraphicsTabletStrings(html_source);
@@ -1702,9 +1718,7 @@ void DeviceSection::AddDevicePointersStrings(
       {"mouseSpeed", IDS_SETTINGS_MOUSE_SPEED_LABEL},
       {"cursorSpeed", IDS_SETTINGS_CURSOR_SPEED_LABEL},
       {"pointingStickSpeed", IDS_SETTINGS_POINTING_STICK_SPEED_LABEL},
-      {"mouseSwapButtonsLabel",
-       kIsRevampEnabled ? IDS_OS_SETTINGS_REVAMP_MOUSE_SWAP_BUTTONS_LABEL
-                        : IDS_SETTINGS_MOUSE_SWAP_BUTTONS_LABEL},
+      {"mouseSwapButtonsLabel", IDS_SETTINGS_MOUSE_SWAP_BUTTONS_LABEL},
       {"mouseCursor", IDS_SETTINGS_MOUSE_CURSOR_LABEL},
       {"mouseScrolling", IDS_SETTINGS_MOUSE_SCROLLING_LABEL},
       {"pointingStickPrimaryButton",
@@ -1824,12 +1838,18 @@ void DeviceSection::AddCustomizeButtonsPageStrings(
        IDS_SETTINGS_CUSTOMIZE_BUTTONS_SUBPAGE_DESCRIPTION},
       {"customizeTabletButtonSubpageDescription",
        IDS_SETTINGS_CUSTOMIZE_TABLET_BUTTONS_SUBPAGE_DESCRIPTION},
-      {"customizeMouseButtonsNudgeHeader",
-       IDS_SETTINGS_CUSTOMIZE_MOUSE_BUTTONS_NUDGE_HEADER},
-      {"customizeTabletButtonsNudgeHeader",
-       IDS_SETTINGS_CUSTOMIZE_TABLET_BUTTONS_NUDGE_HEADER},
-      {"customizePenButtonsNudgeHeader",
-       IDS_SETTINGS_CUSTOMIZE_PEN_BUTTONS_NUDGE_HEADER},
+      {"customizeMouseButtonsNudgeHeaderWithoutMetadata",
+       IDS_SETTINGS_CUSTOMIZE_MOUSE_BUTTONS_NUDGE_HEADER_WITHOUT_METADATA},
+      {"customizeMouseButtonsNudgeHeaderWithMetadata",
+       IDS_SETTINGS_CUSTOMIZE_MOUSE_BUTTONS_NUDGE_HEADER_WITH_METADATA},
+      {"customizeTabletButtonsNudgeHeaderWithoutMetadata",
+       IDS_SETTINGS_CUSTOMIZE_TABLET_BUTTONS_NUDGE_HEADER_WITHOUT_METADATA},
+      {"customizeTabletButtonsNudgeHeaderWithMetadata",
+       IDS_SETTINGS_CUSTOMIZE_TABLET_BUTTONS_NUDGE_HEADER_WITH_METADATA},
+      {"customizePenButtonsNudgeHeaderWithoutMetadata",
+       IDS_SETTINGS_CUSTOMIZE_PEN_BUTTONS_NUDGE_HEADER_WITHOUT_METADATA},
+      {"customizePenButtonsNudgeHeaderWithMetadata",
+       IDS_SETTINGS_CUSTOMIZE_PEN_BUTTONS_NUDGE_HEADER_WITH_METADATA},
       {"customizeMouseButtonsTitle",
        IDS_SETTINGS_CUSTOMIZE_MOUSE_BUTTONS_TITLE},
       {"disbableOptionLabel", IDS_SETTINGS_DISABLE_OPTION_LABEL},
@@ -1900,6 +1920,18 @@ void DeviceSection::AddDeviceDisplayStrings(
       {"displayOverscanSubtitle",
        kIsRevampEnabled ? IDS_OS_SETTINGS_REVAMP_DISPLAY_BOUNDARIES_DESCRIPTION
                         : IDS_SETTINGS_DISPLAY_OVERSCAN_SUBTITLE},
+      {"displayPositionDown", IDS_SETTINGS_DISPLAY_LAYOUT_DONW_A11Y_LABEL},
+      {"displayPositionDownAndLeft",
+       IDS_SETTINGS_DISPLAY_LAYOUT_DONW_AND_LEFT_A11Y_LABEL},
+      {"displayPositionDownAndRight",
+       IDS_SETTINGS_DISPLAY_LAYOUT_DONW_AND_RIGHT_A11Y_LABEL},
+      {"displayPositionLeft", IDS_SETTINGS_DISPLAY_LAYOUT_LEFT_A11Y_LABEL},
+      {"displayPositionRight", IDS_SETTINGS_DISPLAY_LAYOUT_RIGHT_A11Y_LABEL},
+      {"displayPositionUp", IDS_SETTINGS_DISPLAY_LAYOUT_UP_A11Y_LABEL},
+      {"displayPositionUpAndLeft",
+       IDS_SETTINGS_DISPLAY_LAYOUT_UP_AND_LEFT_A11Y_LABEL},
+      {"displayPositionUpAndRight",
+       IDS_SETTINGS_DISPLAY_LAYOUT_UP_AND_RIGHT_A11Y_LABEL},
       {"displayRefreshRateInterlacedMenuItem",
        IDS_SETTINGS_DISPLAY_REFRESH_RATE_INTERLACED_MENU_ITEM},
       {"displayRefreshRateMenuItem",

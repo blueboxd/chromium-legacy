@@ -5,11 +5,10 @@
 #ifndef IOS_CHROME_BROWSER_UI_TAB_SWITCHER_TAB_GRID_GRID_BASE_GRID_VIEW_CONTROLLER_SUBCLASSING_H_
 #define IOS_CHROME_BROWSER_UI_TAB_SWITCHER_TAB_GRID_GRID_BASE_GRID_VIEW_CONTROLLER_SUBCLASSING_H_
 
+#import "ios/chrome/browser/ui/menu/menu_histograms.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/base_grid_view_controller.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_cell.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_layout.h"
-
-extern NSString* const kGridOpenTabsSectionIdentifier;
 
 // To ease the use of generics with the diffable data source, define a Snapshot
 // type.
@@ -32,12 +31,22 @@ typedef UICollectionViewDiffableDataSource<NSString*, GridItemIdentifier*>
 // "Undo" the close all.
 @property(nonatomic, readonly) BOOL isClosingAllOrUndoRunning;
 
+// The current mode for the grid.
+@property(nonatomic, assign, readonly) TabGridMode mode;
+
 // Creates the cell and supplementary view registrations and assigns them to the
 // appropriate properties.
 - (void)createRegistrations NS_REQUIRES_SUPER;
 
 // Returns a configured header for the given index path.
-- (UICollectionReusableView*)headerForSectionAtIndexPath:(NSIndexPath*)indexPath
+- (UICollectionReusableView*)headerForSectionAtIndexPath:
+    (NSIndexPath*)indexPath;
+
+// Returns a configured cell for the given `indexPath` and `itemIdentifier`. The
+// subclass must call super if it can't handle it.
+- (UICollectionViewCell*)cellForItemAtIndexPath:(NSIndexPath*)indexPath
+                                 itemIdentifier:
+                                     (GridItemIdentifier*)itemIdentifier
     NS_REQUIRES_SUPER;
 
 // Updates the ring to be around the currently selected item. If
@@ -60,6 +69,16 @@ typedef UICollectionViewDiffableDataSource<NSString*, GridItemIdentifier*>
 
 // Returns the number of tabs in the collection view.
 - (NSInteger)numberOfTabs;
+
+// Provides an opportunity to the subclasses to add items to `snapshot`.
+- (void)addAdditionalItemsToSnapshot:(GridSnapshot*)snapshot;
+
+// Provides an opportunity to update `snapshot` after an update of the grid's
+// mode.
+- (void)updateSnapshotForModeUpdate:(GridSnapshot*)snapshot;
+
+// Returns the scenario histogram to be used to display a context menu.
+- (MenuScenarioHistogram)scenarioForContextMenu;
 
 @end
 

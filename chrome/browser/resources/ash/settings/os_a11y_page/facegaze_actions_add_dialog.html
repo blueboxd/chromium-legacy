@@ -1,0 +1,234 @@
+<style include="os-settings-icons settings-shared iron-flex">
+  :host {
+    --dialog-horizontal-padding: 24px;
+  }
+
+  cr-dialog [slot=title] {
+    padding-inline-end: var(--dialog-horizontal-padding);
+    padding-inline-start: var(--dialog-horizontal-padding);
+    padding-top: var(--dialog-horizontal-padding);
+  }
+
+  cr-dialog [slot=body] {
+    padding-inline-end: var(--dialog-horizontal-padding);
+    padding-inline-start: var(--dialog-horizontal-padding);
+  }
+
+  cr-dialog [slot=button-container] {
+    padding-bottom: 20px;
+    padding-inline-end: var(--dialog-horizontal-padding);
+    padding-inline-start: var(--dialog-horizontal-padding);
+    padding-top: 20px;
+  }
+
+  .centered-message {
+    align-items: center;
+    color: var(--md-loading-message-color);
+    display: flex;
+    flex: 1;
+    font: var(--cros-button-1-font);
+    height: 100%;
+    justify-content: center;
+  }
+
+  #dialogBody {
+    display: flex;
+    flex-direction: column;
+    height: 336px;
+    overflow: auto;
+    padding-inline-end: 0;
+    padding-inline-start: 0;
+  }
+
+  iron-icon[icon='settings:check-circle'] {
+    --iron-icon-fill-color: var(--cr-link-color);
+    margin-inline-end: 26px;
+  }
+
+  iron-list > div:not(.selected):hover {
+    background-color: var(--cros-menu-item-bg-color-focus);
+  }
+
+  [scrollable] iron-list > :not(.no-outline):focus {
+    background-color: var(--cros-menu-item-bg-color-focus);
+  }
+
+  [scrollable] iron-list > .selected:not(.no-outline):focus {
+    background-color: transparent;
+  }
+
+  .list-item {
+    color: var(--cros-text-color-primary);
+    min-height: 36px;
+  }
+
+  .padded {
+    padding-inline-end: var(--dialog-horizontal-padding);
+    padding-inline-start: var(--dialog-horizontal-padding);
+  }
+
+  paper-ripple {
+    color: var(--cros-menu-item-ripple-color);
+  }
+
+  .justify-space-between {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  #sliderContainer {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+  }
+
+  #sliderContainer .slider-button {
+    margin-inline-start: -8px;
+    margin-inline-end: -8px;
+  }
+
+  #faceGazeGestureThresholdSlider {
+    flex: 1;
+    max-width: 200px;
+  }
+
+</style>
+
+<cr-dialog id="dialog" close-text="$i18n{close}" show-on-attach>
+  <template is="dom-if" if="[[showSelectAction_]]" restamp>
+    <div slot="title">$i18n{faceGazeActionsDialogTitle}</div>
+    <div id="dialogBody" slot="body" scrollable>
+      <iron-list id="faceGazeAvailableActionsList"
+          scroll-target="[[$$('[slot=body]')]]"
+          items="[[displayedActions_]]" selection-enabled
+          selected-item="{{selectedAction_}}">
+        <template>
+          <!-- |selected| is a property of iron-list -->
+          <div class$="list-item [[getItemClass_(selected)]]"
+              tabindex$="[[tabIndex]]">
+            <paper-ripple></paper-ripple>
+            <div class="flex padded" aria-hidden="true">
+              [[getActionDisplayText_(item)]]
+            </div>
+            <iron-icon icon="settings:check-circle" hidden="[[!selected]]">
+            </iron-icon>
+          </div>
+        </template>
+      </iron-list>
+    </div>
+    <div slot="button-container">
+      <cr-button class="cancel-button" on-click="onCancelButtonClick_">
+        $i18n{cancel}
+      </cr-button>
+      <cr-button id="faceGazeAddActionNextButton"
+          class="next-button" on-click="onActionNextButtonClick_"
+          disabled="[[disableActionNextButton_]]">
+        $i18n{next}
+      </cr-button>
+    </div>
+  </template>
+
+  <template is="dom-if" if="[[showSelectGesture_]]" restamp>
+    <div slot="title">[[localizedSelectGestureTitle_]]</div>
+    <div id="dialogBody" slot="body" scrollable>
+        <div slot="subtitle" class="padded">
+          $i18n{faceGazeActionsDialogSelectGestureSubtitle}
+        </div>
+        <iron-list id="faceGazeAvailableGesturesList"
+            scroll-target="[[$$('[slot=body]')]]"
+            items="[[displayedGestures_]]" selection-enabled
+            selected-item="{{selectedGesture_}}">
+          <template>
+            <!-- |selected| is a property of iron-list -->
+            <div class$="list-item [[getItemClass_(selected)]]"
+                tabindex$="[[tabIndex]]">
+              <paper-ripple></paper-ripple>
+              <div class="flex padded" aria-hidden="true">
+                [[getGestureDisplayText_(item)]]
+              </div>
+              <iron-icon icon="settings:check-circle" hidden="[[!selected]]">
+              </iron-icon>
+            </div>
+          </template>
+        </iron-list>
+    </div>
+    <div slot="button-container" class="justify-space-between">
+      <div id="leftBtnGroup">
+        <template is="dom-if" if="[[displayGesturePreviousButton_]]" restamp>
+          <cr-button
+              id="faceGazeGesturePreviousButton"
+              class="button" on-click="onGesturePreviousButtonClick_">
+            $i18n{faceGazePrevious}
+          </cr-button>
+        </template>
+      </div>
+      <div id="rightBtnGroup">
+        <cr-button class="cancel-button" on-click="onCancelButtonClick_">
+          $i18n{cancel}
+        </cr-button>
+        <cr-button id="faceGazeGestureNextButton"
+            class="next-button" on-click="onGestureNextButtonClick_"
+            disabled="[[disableGestureNextButton_]]">
+          $i18n{next}
+        </cr-button>
+      </div>
+    </div>
+  </template>
+
+  <!-- TODO(b:341770753): Build custom webcam, dynamic slider value and knob label components for setting the gesture threshold. -->
+  <template is="dom-if" if="[[showGestureThreshold_]]" restamp>
+    <div slot="title">[[localizedGestureThresholdTitle_]]</div>
+    <div slot="body">
+        <div slot="subtitle">
+          $i18n{faceGazeActionsDialogGestureThresholdSubtitle}
+        </div>
+        <div id="sliderContainer">
+          <cr-icon-button
+              id="faceGazeGestureThresholdDecrementButton"
+              iron-icon="os-settings:chevron-left"
+              class="slider-button"
+              on-click="onDecreaseThresholdButtonClick_">
+          </cr-icon-button>
+          <cr-slider
+              id="faceGazeGestureThresholdSlider"
+              label_="$i18n{faceGazeActionsDialogGestureThresholdKnobLabel}"
+              value="[[gestureThresholdValue_]]"
+              on-cr-slider-value-changed="onThresholdSliderChanged_"
+              key-press-slider-increment="5"
+              min="1" max="100">
+          </cr-slider>
+          <cr-icon-button
+              id="faceGazeGestureThresholdIncrementButton"
+              iron-icon="os-settings:chevron-right"
+              class="slider-button"
+              on-click="onIncreaseThresholdButtonClick_">
+          </cr-icon-button>
+        </div>
+        <!-- TODO(b:341770753): Reflect count of gesture detection in this string. -->
+        <!-- TODO(b:341770655): Localize this string. -->
+        <div class="start settings-box-text">
+          [[getGestureDisplayText_(selectedGesture_)]] detected (0)
+        </div>
+    </div>
+    <div slot="button-container" class="justify-space-between">
+      <div id="leftBtnGroup">
+        <template is="dom-if" if="[[displayGesturePreviousButton_]]" restamp>
+          <cr-button id="faceGazeThresholdPreviousButton"
+              class="button" on-click="onGestureThresholdPreviousButtonClick_">
+            $i18n{faceGazePrevious}
+          </cr-button>
+        </template>
+      </div>
+      <div id="rightBtnGroup">
+        <cr-button class="cancel-button" on-click="onCancelButtonClick_">
+          $i18n{cancel}
+        </cr-button>
+        <cr-button id="faceGazeActionDialogSaveButton"
+            class="next-button"
+            on-click="onSaveButtonClick_">
+          $i18n{save}
+        </cr-button>
+      </div>
+    </div>
+  </template>
+</cr-dialog>

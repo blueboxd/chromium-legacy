@@ -57,7 +57,6 @@
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
-#include "third_party/blink/renderer/core/layout/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/lcp_critical_path_predictor/element_locator.h"
 #include "third_party/blink/renderer/core/lcp_critical_path_predictor/lcp_critical_path_predictor.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
@@ -576,12 +575,12 @@ Node::InsertionNotificationRequest HTMLImageElement::InsertedInto(
     }
   }
 
-  static const bool is_lcpp_enabled =
-      base::FeatureList::IsEnabled(features::kLCPCriticalPathPredictor);
-  if (is_lcpp_enabled &&
+  static const bool is_image_lcpp_enabled =
+      base::FeatureList::IsEnabled(features::kLCPCriticalPathPredictor) &&
       features::
           kLCPCriticalPathPredictorImageLoadPriorityEnabledForHTMLImageElement
-              .Get()) {
+              .Get();
+  if (is_image_lcpp_enabled) {
     if (LocalFrame* frame = GetDocument().GetFrame()) {
       if (LCPCriticalPathPredictor* lcpp = frame->GetLCPP()) {
         if (lcpp->IsElementMatchingLocator(*this)) {
@@ -895,8 +894,12 @@ gfx::SizeF HTMLImageElement::DefaultDestinationSize(
     return gfx::SizeF();
 
   Image* image = image_content->GetImage();
-  if (auto* svg_image = DynamicTo<SVGImage>(image))
-    return svg_image->ConcreteObjectSize(default_object_size);
+  if (auto* svg_image = DynamicTo<SVGImage>(image)) {
+    const SVGImageViewInfo* view_info =
+        SVGImageForContainer::CreateViewInfo(*svg_image, *this);
+    return SVGImageForContainer::ConcreteObjectSize(*svg_image, view_info,
+                                                    default_object_size);
+  }
 
   PhysicalSize size(image->Size(respect_orientation));
   if (GetLayoutObject() && GetLayoutObject()->IsLayoutImage() &&

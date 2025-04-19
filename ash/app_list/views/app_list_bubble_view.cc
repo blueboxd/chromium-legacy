@@ -85,9 +85,6 @@ namespace {
 // Folder view inset from the edge of the bubble.
 constexpr int kFolderViewInset = 16;
 
-// Elevation for the bubble's shadow.
-constexpr int kShadowElevation = 3;
-
 AppListConfig* GetAppListConfig() {
   return AppListConfigProvider::Get().GetConfigForType(
       AppListConfigType::kDense, /*can_create=*/true);
@@ -192,7 +189,7 @@ class ButtonFocusSkipper : public ui::EventHandler {
     bool skip_focus = false;
     // This class overrides OnEvent() to examine all events so that focus
     // behavior is restored by mouse events, gesture events, etc.
-    if (event->type() == ui::ET_KEY_PRESSED) {
+    if (event->type() == ui::EventType::kKeyPressed) {
       ui::KeyboardCode key = event->AsKeyEvent()->key_code();
       if (key == ui::VKEY_UP || key == ui::VKEY_DOWN) {
         skip_focus = true;
@@ -226,18 +223,12 @@ AppListBubbleView::AppListBubbleView(
   layer()->SetBackgroundBlur(ColorProvider::kBackgroundBlurSigma);
   layer()->SetBackdropFilterQuality(ColorProvider::kBackgroundBlurQuality);
 
-  const bool is_jelly_enabled = chromeos::features::IsJellyEnabled();
-  ui::ColorId background_color_id =
-      is_jelly_enabled
-          ? static_cast<ui::ColorId>(cros_tokens::kCrosSysSystemBaseElevated)
-          : kColorAshShieldAndBase80;
+  ui::ColorId background_color_id = cros_tokens::kCrosSysSystemBaseElevated;
   SetBackground(views::CreateThemedRoundedRectBackground(background_color_id,
                                                          corner_radius));
 
   SetBorder(std::make_unique<views::HighlightBorder>(
-      corner_radius,
-      is_jelly_enabled ? views::HighlightBorder::Type::kHighlightBorderOnShadow
-                       : views::HighlightBorder::Type::kHighlightBorder1,
+      corner_radius, views::HighlightBorder::Type::kHighlightBorderOnShadow,
       /*insets_type=*/views::HighlightBorder::InsetsType::kHalfInsets));
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
@@ -640,8 +631,9 @@ void AppListBubbleView::ShowPage(AppListBubblePage page) {
       apps_collections_page_->SetVisible(false);
       // Explicitly set search box inactive so the next attempt to activate it
       // will succeed.
-      search_box_view_->SetSearchBoxActive(false,
-                                           /*event_type=*/ui::ET_UNKNOWN);
+      search_box_view_->SetSearchBoxActive(
+          false,
+          /*event_type=*/ui::EventType::kUnknown);
       assistant_page_->RequestFocus();
       break;
   }
@@ -767,7 +759,8 @@ void AppListBubbleView::AssistantButtonPressed() {
 
 void AppListBubbleView::CloseButtonPressed() {
   // Activate and focus the search box.
-  search_box_view_->SetSearchBoxActive(true, /*event_type=*/ui::ET_UNKNOWN);
+  search_box_view_->SetSearchBoxActive(true,
+                                       /*event_type=*/ui::EventType::kUnknown);
   search_box_view_->ClearSearch();
 }
 
@@ -780,12 +773,6 @@ void AppListBubbleView::OnSearchBoxKeyEvent(ui::KeyEvent* event) {
 bool AppListBubbleView::CanSelectSearchResults() {
   return current_page_ == AppListBubblePage::kSearch &&
          search_page_->search_view()->CanSelectSearchResults();
-}
-
-bool AppListBubbleView::HandleFocusMoveAboveSearchResults(
-    const ui::KeyEvent& key_event) {
-  return search_page_->search_view()->OverrideKeyNavigationAboveSearchResults(
-      key_event);
 }
 
 void AppListBubbleView::ShowFolderForItemView(AppListItemView* folder_item_view,
@@ -871,15 +858,6 @@ void AppListBubbleView::OnShowAnimationEnded(const gfx::Rect& layer_bounds) {
   // is needed to reset state before starting the hide animation.
   layer()->SetBounds(layer_bounds);
 
-  // Add a shadow.
-  // TODO(b/292286998): The shadow is removed when jelly is enabled for
-  // consistency with bubbles in status area. Add it when status area bubbles
-  // get updated.
-  if (!chromeos::features::IsJellyEnabled()) {
-    view_shadow_ = std::make_unique<views::ViewShadow>(this, kShadowElevation);
-    view_shadow_->SetRoundedCornerRadius(GetBubbleCornerRadius());
-  }
-
   if (current_page_ == AppListBubblePage::kAppsCollections) {
     apps_collections_page_->RecordAboveTheFoldMetrics();
   } else if (current_page_ == AppListBubblePage::kApps) {
@@ -940,7 +918,8 @@ void AppListBubbleView::MaybeFocusAndActivateSearchBox() {
     return;
   }
 
-  search_box_view_->SetSearchBoxActive(true, /*event_type=*/ui::ET_UNKNOWN);
+  search_box_view_->SetSearchBoxActive(true,
+                                       /*event_type=*/ui::EventType::kUnknown);
   // Explicitly request focus in case the search box was active before.
   search_box_view_->search_box()->RequestFocus();
 }

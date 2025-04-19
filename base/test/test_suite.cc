@@ -44,6 +44,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
+#include "base/test/fuzztest_init_helper.h"
 #include "base/test/gtest_xml_unittest_result_printer.h"
 #include "base/test/gtest_xml_util.h"
 #include "base/test/icu_test_util.h"
@@ -52,13 +53,14 @@
 #include "base/test/multiprocess_test.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_run_loop_timeout.h"
+#include "base/test/test_suite_helper.h"
 #include "base/test/test_switches.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "base/tracing_buildflags.h"
 #include "build/build_config.h"
-#include "partition_alloc/partition_alloc_buildflags.h"
+#include "partition_alloc/buildflags.h"
 #include "partition_alloc/tagging.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -166,39 +168,7 @@ class FeatureListScopedToEachTest : public testing::EmptyTestEventListener {
       delete;
 
   void OnTestStart(const testing::TestInfo& test_info) override {
-    const CommandLine* command_line = CommandLine::ForCurrentProcess();
-
-    // We set up a FeatureList via ScopedFeatureList::InitFromCommandLine().
-    // This ensures that code using that API will not hit an error that it's
-    // not set. It will be cleared by ~ScopedFeatureList().
-
-    // TestFeatureForBrowserTest1 and TestFeatureForBrowserTest2 used in
-    // ContentBrowserTestScopedFeatureListTest to ensure ScopedFeatureList keeps
-    // features from command line.
-    // TestBlinkFeatureDefault is used in RuntimeEnabledFeaturesTest to test a
-    // behavior with OverrideState::OVERIDE_USE_DEFAULT.
-    std::string enabled =
-        command_line->GetSwitchValueASCII(switches::kEnableFeatures);
-    std::string disabled =
-        command_line->GetSwitchValueASCII(switches::kDisableFeatures);
-    enabled += ",TestFeatureForBrowserTest1,*TestBlinkFeatureDefault";
-    disabled += ",TestFeatureForBrowserTest2";
-    scoped_feature_list_.InitFromCommandLine(enabled, disabled);
-
-    // The enable-features and disable-features flags were just slurped into a
-    // FeatureList, so remove them from the command line. Tests should enable
-    // and disable features via the ScopedFeatureList API rather than
-    // command-line flags.
-    CommandLine new_command_line(command_line->GetProgram());
-    CommandLine::SwitchMap switches = command_line->GetSwitches();
-
-    switches.erase(switches::kEnableFeatures);
-    switches.erase(switches::kDisableFeatures);
-
-    for (const auto& iter : switches)
-      new_command_line.AppendSwitchNative(iter.first, iter.second);
-
-    *CommandLine::ForCurrentProcess() = new_command_line;
+    test::InitScopedFeatureListForTesting(scoped_feature_list_);
 
     // TODO(crbug.com/40255771): Enable PartitionAlloc in unittests with
     // ASAN.
@@ -451,9 +421,8 @@ int TestSuite::Run() {
   int result = RunAllTests();
 
 #if BUILDFLAG(IS_APPLE)
-  // This MUST happen before Shutdown() since Shutdown() tears down
-  // objects (such as NotificationService::current()) that Cocoa
-  // objects use to remove themselves as observers.
+  // This MUST happen before Shutdown() since Shutdown() tears down objects that
+  // Cocoa objects use to remove themselves as observers.
   scoped_pool.Recycle();
 #endif
 
@@ -663,6 +632,7 @@ void TestSuite::InitializeFromCommandLine(int* argc, char** argv) {
   // CommandLine::Init() is called earlier from PreInitialize().
   testing::InitGoogleTest(argc, argv);
   testing::InitGoogleMock(argc, argv);
+  MaybeInitFuzztest(*argc, argv);
 
 #if BUILDFLAG(IS_IOS)
   InitIOSArgs(*argc, argv);

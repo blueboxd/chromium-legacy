@@ -5,12 +5,17 @@
 #ifndef CHROME_BROWSER_WEBAUTHN_GPM_ENCLAVE_CONTROLLER_H_
 #define CHROME_BROWSER_WEBAUTHN_GPM_ENCLAVE_CONTROLLER_H_
 
+#include <cstdint>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
+#include "base/functional/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
@@ -40,11 +45,17 @@ namespace signin {
 class PrimaryAccountAccessTokenFetcher;
 }  // namespace signin
 
+namespace sync_pb {
+class WebauthnCredentialSpecifics;
+}  // namespace sync_pb
+
 class Profile;
 
 class GPMEnclaveController : AuthenticatorRequestDialogModel::Observer,
                              EnclaveManager::Observer {
  public:
+  static constexpr base::TimeDelta kDownloadAccountStateTimeout =
+      base::Seconds(1);
   struct DownloadedAccountState;
   enum class EnclaveUserVerificationMethod;
 
@@ -63,12 +74,6 @@ class GPMEnclaveController : AuthenticatorRequestDialogModel::Observer,
     kEmpty,
     // The enclave is ready to use.
     kReady,
-    // The enclave is ready to use, but the UI needs to collect a PIN before
-    // making a transaction.
-    kReadyWithPIN,
-    // The enclave is ready to use, but the UI needs to collect biometrics
-    // before making a transaction.
-    kReadyWithBiometrics,
   };
 
   explicit GPMEnclaveController(
@@ -178,7 +183,6 @@ class GPMEnclaveController : AuthenticatorRequestDialogModel::Observer,
 
   // AuthenticatorRequestDialogModel::Observer:
   void OnTrustThisComputer() override;
-  void OnGPMOnboardingAccepted() override;
   void OnGPMPinOptionChanged(bool is_arbitrary) override;
   void OnGPMCreatePasskey() override;
   void OnGPMConfirmOffTheRecordCreate() override;
@@ -186,6 +190,7 @@ class GPMEnclaveController : AuthenticatorRequestDialogModel::Observer,
   void OnTouchIDComplete(bool success) override;
   void OnForgotGPMPinPressed() override;
   void OnReauthComplete(std::string rapt) override;
+  void OnGpmPasskeysReset(bool success) override;
 
   // Starts a create() or get() action with the enclave.
   void StartTransaction();
@@ -205,14 +210,12 @@ class GPMEnclaveController : AuthenticatorRequestDialogModel::Observer,
 
   // Accessors for the profile pref that counts the number of consecutive failed
   // PIN attempts to know when a lockout will happen.
-  bool GetFailedPINAttemptCount();
+  int GetFailedPINAttemptCount();
   void SetFailedPINAttemptCount(int count);
 
   // Invoked when a passkey request has been sent to the enclave service with
   // PIN UV, and the request succeeded or a PIN validation error occurred.
   void HandlePINValidationResult(device::enclave::PINValidationResult type);
-
-  void ContinueGPMCreatePasskey();
 
   const content::GlobalRenderFrameHostId render_frame_host_id_;
   const std::string rp_id_;
@@ -296,9 +299,12 @@ class GPMEnclaveController : AuthenticatorRequestDialogModel::Observer,
   // Set to true when the user initiates reset GPM pin flow during UV.
   bool changing_gpm_pin_ = false;
 
-  // Used for the incognito dialog confirmation handler to know which flow
-  // to resume.
-  AuthenticatorRequestDialogModel::Step last_step_;
+  // Records when the user has confirmed credential creation in an Incognito
+  // context.
+  bool off_the_record_confirmed_ = false;
+
+  // Whether the user confirmed GPM PIN creation in the flow.
+  bool gpm_pin_creation_confirmed_ = false;
 
   const raw_ptr<base::Clock> clock_;
 

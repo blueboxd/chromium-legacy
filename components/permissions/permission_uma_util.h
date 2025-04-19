@@ -6,6 +6,8 @@
 #define COMPONENTS_PERMISSIONS_PERMISSION_UMA_UTIL_H_
 
 #include <optional>
+#include <set>
+#include <string>
 #include <vector>
 
 #include "base/memory/raw_ptr.h"
@@ -320,7 +322,13 @@ enum class OsScreenAction {
   // around the prompt).
   DISMISSED_SCRIM = 2,
 
-  kMaxValue = DISMISSED_SCRIM,
+  // Os prompt denied.
+  OS_PROMPT_DENIED = 3,
+
+  // Os prompt allowed.
+  OS_PROMPT_ALLOWED = 4,
+
+  kMaxValue = OS_PROMPT_ALLOWED,
 };
 
 // These values are logged to UMA. Entries should not be renumbered and
@@ -609,6 +617,7 @@ class PermissionUmaUtil {
   static const char kPermissionsPromptDenied[];
   static const char kPermissionsPromptDeniedGesture[];
   static const char kPermissionsPromptDeniedNoGesture[];
+  static const char kPermissionsPromptDismissed[];
 
   static const char kPermissionsExperimentalUsagePrefix[];
   static const char kPermissionsActionPrefix[];

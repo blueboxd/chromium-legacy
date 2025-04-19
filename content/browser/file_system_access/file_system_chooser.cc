@@ -237,7 +237,7 @@ void FileSystemChooser::CreateAndShow(
   // In content_shell --run-web-tests, there might be no dialog available. In
   // that case just abort.
   if (!listener->dialog_) {
-    listener->FileSelectionCanceled(nullptr);
+    listener->FileSelectionCanceled();
     return;
   }
 
@@ -247,7 +247,6 @@ void FileSystemChooser::CreateAndShow(
       /*default_extension=*/base::FilePath::StringType(),
       web_contents ? web_contents->GetTopLevelNativeWindow()
                    : gfx::NativeWindow(),
-      /*params=*/nullptr,
       /*caller=*/
       web_contents ? &web_contents->GetPrimaryMainFrame()->GetLastCommittedURL()
                    : nullptr);
@@ -303,15 +302,13 @@ FileSystemChooser::~FileSystemChooser() {
 }
 
 void FileSystemChooser::FileSelected(const ui::SelectedFileInfo& file,
-                                     int index,
-                                     void* params) {
+                                     int index) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  MultiFilesSelected({file}, params);
+  MultiFilesSelected({file});
 }
 
 void FileSystemChooser::MultiFilesSelected(
-    const std::vector<ui::SelectedFileInfo>& files,
-    void* params) {
+    const std::vector<ui::SelectedFileInfo>& files) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::vector<ResultEntry> result;
 
@@ -329,7 +326,7 @@ void FileSystemChooser::MultiFilesSelected(
   delete this;
 }
 
-void FileSystemChooser::FileSelectionCanceled(void* params) {
+void FileSystemChooser::FileSelectionCanceled() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::move(callback_).Run(
       file_system_access_error::FromStatus(

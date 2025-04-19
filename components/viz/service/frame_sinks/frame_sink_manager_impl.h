@@ -20,13 +20,14 @@
 #include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
+#include "base/sequence_checker.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "components/viz/common/constants.h"
 #include "components/viz/common/surfaces/frame_sink_bundle_id.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
+#include "components/viz/service/display/overdraw_tracker.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_impl.h"
 #include "components/viz/service/frame_sinks/frame_counter.h"
 #include "components/viz/service/frame_sinks/frame_sink_observer.h"
@@ -45,8 +46,11 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/viz/privileged/mojom/compositing/frame_sink_manager.mojom.h"
+#include "services/viz/privileged/mojom/compositing/frame_sink_manager_test_api.mojom.h"
 #include "services/viz/privileged/mojom/compositing/frame_sink_video_capture.mojom.h"
+#include "services/viz/privileged/mojom/compositing/frame_sinks_metrics_recorder.mojom.h"
 #include "services/viz/public/mojom/compositing/video_detector_observer.mojom.h"
+#include "third_party/blink/public/mojom/widget/platform_widget.mojom.h"
 
 namespace viz {
 
@@ -66,6 +70,8 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
     : public SurfaceObserver,
       public FrameSinkVideoCapturerManager,
       public mojom::FrameSinkManager,
+      public mojom::FrameSinksMetricsRecorder,
+      public mojom::FrameSinkManagerTestApi,
       public HitTestAggregatorDelegate,
       public SurfaceManagerDelegate {
  public:
@@ -137,7 +143,9 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
       const FrameSinkId& frame_sink_id,
       const std::optional<FrameSinkBundleId>& bundle_id,
       mojo::PendingReceiver<mojom::CompositorFrameSink> receiver,
-      mojo::PendingRemote<mojom::CompositorFrameSinkClient> client) override;
+      mojo::PendingRemote<mojom::CompositorFrameSinkClient> client,
+      mojo::PendingRemote<blink::mojom::RenderInputRouterClient> rir_client)
+      override;
   void DestroyCompositorFrameSink(
       const FrameSinkId& frame_sink_id,
       DestroyCompositorFrameSinkCallback callback) override;
@@ -155,27 +163,41 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   void RequestCopyOfOutput(const SurfaceId& surface_id,
                            std::unique_ptr<CopyOutputRequest> request,
                            bool capture_exact_surface_id) override;
+#if BUILDFLAG(IS_ANDROID)
   void CacheBackBuffer(uint32_t cache_id,
                        const FrameSinkId& root_frame_sink_id) override;
   void EvictBackBuffer(uint32_t cache_id,
                        EvictBackBufferCallback callback) override;
+#endif
   void UpdateDebugRendererSettings(
       const DebugRendererSettings& debug_settings) override;
   void Throttle(const std::vector<FrameSinkId>& ids,
                 base::TimeDelta interval) override;
   void StartThrottlingAllFrameSinks(base::TimeDelta interval) override;
   void StopThrottlingAllFrameSinks() override;
-  void StartFrameCountingForTest(base::TimeTicks start_time,
-                                 base::TimeDelta bucket_size) override;
-  void StopFrameCountingForTest(
-      StopFrameCountingForTestCallback callback) override;
   void ClearUnclaimedViewTransitionResources(
       const blink::ViewTransitionToken& transition_token) override;
-  void HasUnclaimedViewTransitionResourcesForTest(
-      HasUnclaimedViewTransitionResourcesForTestCallback callback) override;
-  void SetSameDocNavigationScreenshotSizeForTesting(
+  void CreateMetricsRecorderForTest(
+      mojo::PendingReceiver<mojom::FrameSinksMetricsRecorder> receiver)
+      override;
+  void EnableFrameSinkManagerTestApi(
+      mojo::PendingReceiver<mojom::FrameSinkManagerTestApi> receiver) override;
+
+  // mojom::FrameSinksMetricsTracker implementation:
+  void StartFrameCounting(base::TimeTicks start_time,
+                          base::TimeDelta bucket_size) override;
+  void StopFrameCounting(StopFrameCountingCallback callback) override;
+  void StartOverdrawTracking(const FrameSinkId& root_frame_sink_id,
+                             base::TimeDelta bucket_size) override;
+  void StopOverdrawTracking(const FrameSinkId& root_frame_sink_id,
+                            StopOverdrawTrackingCallback callback) override;
+
+  // mojom::FrameSinkManagerTestApi implementation:
+  void HasUnclaimedViewTransitionResources(
+      HasUnclaimedViewTransitionResourcesCallback callback) override;
+  void SetSameDocNavigationScreenshotSize(
       const gfx::Size& result_size,
-      SetSameDocNavigationScreenshotSizeForTestingCallback callback) override;
+      SetSameDocNavigationScreenshotSizeCallback callback) override;
 
   void DestroyFrameSinkBundle(const FrameSinkBundleId& id);
 
@@ -324,7 +346,7 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
 
  private:
   friend class FrameSinkManagerTest;
-  friend class CompositorFrameSinkSupportTest;
+  friend class CompositorFrameSinkSupportTestBase;
 
   // Metadata for a CompositorFrameSink.
   struct FrameSinkData {
@@ -477,9 +499,11 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   // often BeginFrames are sent for all current and future frame sinks.
   std::optional<base::TimeDelta> global_throttle_interval_ = std::nullopt;
 
+#if BUILDFLAG(IS_ANDROID)
   base::flat_map<uint32_t, base::ScopedClosureRunner> cached_back_buffers_;
+#endif
 
-  THREAD_CHECKER(thread_checker_);
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // |video_detector_| is instantiated lazily in order to avoid overhead on
   // platforms that don't need video detection.
@@ -501,7 +525,10 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   //     OnFrameTokenChanged() will be directly called (without PostTask) on
   //     |client_|. Used for some unit tests.
   raw_ptr<mojom::FrameSinkManagerClient, DanglingUntriaged> client_ = nullptr;
-  mojo::Receiver<mojom::FrameSinkManager> receiver_{this};
+
+  mojo::Receiver<mojom::FrameSinkManager> frame_sink_manager_receiver_{this};
+  mojo::Receiver<mojom::FrameSinksMetricsRecorder> metrics_receiver_{this};
+  mojo::Receiver<mojom::FrameSinkManagerTestApi> test_api_receiver_{this};
 
   base::ObserverList<FrameSinkObserver>::Unchecked observer_list_;
 

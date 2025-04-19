@@ -20,6 +20,7 @@
 
 namespace blink {
 class LowPrecisionTimer;
+class ScriptedIdleTaskController;
 class TimerBase;
 class TimerBasedTickProvider;
 class WebRtcTaskQueue;
@@ -32,6 +33,9 @@ class AlsaPcmOutputStream;
 class AlsaPcmInputStream;
 class FakeAudioWorker;
 }  // namespace media
+namespace viz {
+class ExternalBeginFrameSourceWin;
+}  // namespace viz
 namespace webrtc {
 class ThreadWrapper;
 }  // namespace webrtc
@@ -64,6 +68,7 @@ class PostDelayedTaskPassKey {
   friend class base::DeadlineTimer;
   friend class base::MetronomeTimer;
   friend class blink::LowPrecisionTimer;
+  friend class blink::ScriptedIdleTaskController;
   friend class blink::TimerBase;
   friend class blink::TimerBasedTickProvider;
   friend class blink::WebRtcTaskQueue;
@@ -85,6 +90,7 @@ class RunOrPostTaskPassKey {
 
   friend class IPC::ChannelAssociatedGroupController;
   friend class RunOrPostTaskPassKeyForTesting;
+  friend class viz::ExternalBeginFrameSourceWin;
 };
 
 class PostDelayedTaskPassKeyForTesting : public PostDelayedTaskPassKey {};

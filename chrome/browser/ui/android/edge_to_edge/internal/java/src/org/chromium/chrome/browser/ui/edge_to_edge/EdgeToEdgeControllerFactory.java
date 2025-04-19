@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.ui.edge_to_edge;
 
 import static org.chromium.chrome.browser.ui.edge_to_edge.EdgeToEdgeUtils.hasTappableBottomBar;
+import static org.chromium.chrome.browser.ui.edge_to_edge.EdgeToEdgeUtils.isEdgeToEdgeBottomChinEnabled;
+import static org.chromium.chrome.browser.ui.edge_to_edge.EdgeToEdgeUtils.isEnabled;
 
 import android.app.Activity;
 import android.os.Build;
@@ -16,9 +18,11 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.BuildInfo;
+import org.chromium.base.lifetime.Destroyable;
 import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.chrome.browser.browser_controls.BottomControlsStacker;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.layouts.LayoutManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowAndroid;
@@ -40,6 +44,7 @@ public class EdgeToEdgeControllerFactory {
      *     changes.
      * @param browserControlsStateProvider Provides the state of the BrowserControls so we can tell
      *     if the Toolbar is changing.
+     * @param layoutManager The {@link LayoutManager} for checking the active layout type.
      * @return An EdgeToEdgeController to control drawing under System Bars, or {@code null} if this
      *     version of Android does not support the APIs needed.
      */
@@ -47,10 +52,44 @@ public class EdgeToEdgeControllerFactory {
             Activity activity,
             WindowAndroid windowAndroid,
             @NonNull ObservableSupplier<Tab> tabObservableSupplier,
-            BrowserControlsStateProvider browserControlsStateProvider) {
+            BrowserControlsStateProvider browserControlsStateProvider,
+            LayoutManager layoutManager) {
         if (Build.VERSION.SDK_INT < VERSION_CODES.R) return null;
+        assert isEnabled();
         return new EdgeToEdgeControllerImpl(
-                activity, windowAndroid, tabObservableSupplier, null, browserControlsStateProvider);
+                activity,
+                windowAndroid,
+                tabObservableSupplier,
+                null,
+                browserControlsStateProvider,
+                layoutManager);
+    }
+
+    /**
+     * Build the coordinator that manages the edge-to-edge bottom chin.
+     *
+     * @param androidView The Android view for the bottom chin.
+     * @param layoutManager The {@link LayoutManager} for adding new scene overlays.
+     * @param edgeToEdgeController The {@link EdgeToEdgeController} for observing the edge-to-edge
+     *     status and window bottom insets.
+     * @param navigationBarColorProvider The {@link NavigationBarColorProvider} for observing the
+     *     color for the navigation bar.
+     * @param bottomControlsStacker The {@link BottomControlsStacker} for observing and changing
+     *     browser controls heights.
+     */
+    public static Destroyable createBottomChin(
+            View androidView,
+            LayoutManager layoutManager,
+            EdgeToEdgeController edgeToEdgeController,
+            NavigationBarColorProvider navigationBarColorProvider,
+            BottomControlsStacker bottomControlsStacker) {
+        assert isEdgeToEdgeBottomChinEnabled();
+        return new EdgeToEdgeBottomChinCoordinator(
+                androidView,
+                layoutManager,
+                edgeToEdgeController,
+                navigationBarColorProvider,
+                bottomControlsStacker);
     }
 
     /**
@@ -60,37 +99,18 @@ public class EdgeToEdgeControllerFactory {
      * @param view The view to be adjusted.
      */
     public static EdgeToEdgePadAdjuster createForView(View view) {
-        return new SimpleEdgeToEdgePadAdjuster(view, /* accountForBrowserControls= */ false);
-    }
-
-    /**
-     * Creates an adjuster for padding to the view to account for edge-to-edge.
-     *
-     * @param view The view to be adjusted.
-     * @param accountForBrowserControls Whether to account for browser controls when adjusting the
-     *     view.
-     */
-    public static EdgeToEdgePadAdjuster createForView(
-            View view, boolean accountForBrowserControls) {
-        return new SimpleEdgeToEdgePadAdjuster(view, accountForBrowserControls);
-    }
-
-    /**
-     * @return whether the feature is enabled or not.
-     */
-    public static boolean isEnabled() {
-        // Make sure we test SDK version before checking the Feature so Field Trials only collect
-        // from qualifying devices.
-        if (android.os.Build.VERSION.SDK_INT < VERSION_CODES.R) return false;
-        return ChromeFeatureList.sDrawEdgeToEdge.isEnabled();
+        return new SimpleEdgeToEdgePadAdjuster(view);
     }
 
     /**
      * @return whether the configuration of the device should allow Edge To Edge.
      */
     public static boolean isSupportedConfiguration(Activity activity) {
+        // Make sure we test SDK version before checking the Feature so Field Trials only collect
+        // from qualifying devices.
         if (android.os.Build.VERSION.SDK_INT < VERSION_CODES.R) return false;
-        return isEnabled()
+
+        return EdgeToEdgeUtils.isEnabled()
                 && !DeviceFormFactor.isNonMultiDisplayContextOnTablet(activity)
                 && !BuildInfo.getInstance().isAutomotive
                 // TODO(https://crbug.com/325356134) use UiUtils#isGestureNavigationMode instead.

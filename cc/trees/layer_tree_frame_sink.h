@@ -40,6 +40,7 @@ namespace cc {
 
 class LayerContext;
 class LayerTreeFrameSinkClient;
+class LayerTreeHostImpl;
 
 // An interface for submitting CompositorFrames to a display compositor
 // which will compose frames from multiple clients to show on screen to the
@@ -146,7 +147,8 @@ class CC_EXPORT LayerTreeFrameSink : public viz::SharedBitmapReporter,
 
   // Creates a new LayerContext through which the client can control layers in
   // a GPU-side display tree.
-  virtual std::unique_ptr<LayerContext> CreateLayerContext();
+  virtual std::unique_ptr<LayerContext> CreateLayerContext(
+      LayerTreeHostImpl& host_impl);
 
   // viz::SharedBitmapReporter implementation.
   void DidAllocateSharedBitmap(base::ReadOnlySharedMemoryRegion region,
@@ -162,6 +164,8 @@ class CC_EXPORT LayerTreeFrameSink : public viz::SharedBitmapReporter,
   // gpu::GpuChannelLostObserver override.
   void OnGpuChannelLost() override;
 
+  void GpuChannelLostOnClientThread();
+
   raw_ptr<LayerTreeFrameSinkClient> client_ = nullptr;
 
   scoped_refptr<viz::RasterContextProvider> context_provider_;
@@ -175,8 +179,8 @@ class CC_EXPORT LayerTreeFrameSink : public viz::SharedBitmapReporter,
   int64_t source_frame_number_;
 
  private:
-  // Called on the compositor thread or the browser main thread.
-  scoped_refptr<base::SingleThreadTaskRunner> client_task_runner_;
+  // Forward the gpu channel lost task from the IO thread to the client thread.
+  base::OnceCallback<void()> task_gpu_channel_lost_on_client_thread_;
 
   THREAD_CHECKER(thread_checker_);
   base::WeakPtrFactory<LayerTreeFrameSink> weak_ptr_factory_{this};

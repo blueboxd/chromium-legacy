@@ -20,7 +20,6 @@
 #include "third_party/blink/renderer/core/layout/floats_utils.h"
 #include "third_party/blink/renderer/core/layout/geometry/bfc_offset.h"
 #include "third_party/blink/renderer/core/layout/geometry/margin_strut.h"
-#include "third_party/blink/renderer/core/layout/grid/layout_grid.h"
 #include "third_party/blink/renderer/core/layout/logical_fragment.h"
 #include "third_party/blink/renderer/core/layout/non_overflowing_scroll_range.h"
 #include "third_party/blink/renderer/core/layout/physical_fragment.h"
@@ -111,6 +110,10 @@ class CORE_EXPORT LayoutResult final : public GarbageCollected<LayoutResult> {
 
   int LinesUntilClamp() const {
     return rare_data_ ? rare_data_->lines_until_clamp : 0;
+  }
+
+  bool HasContentAfterLineClamp() const {
+    return rare_data_ && rare_data_->has_content_after_line_clamp();
   }
 
   // Returns true if the block-start/-end is trimmed by the `text-box-trim`
@@ -311,13 +314,18 @@ class CORE_EXPORT LayoutResult final : public GarbageCollected<LayoutResult> {
   // Return the amount of clearance that we have to add after the fragment. This
   // is used for BR clear elements.
   std::optional<LayoutUnit> ClearanceAfterLine() const {
-    return UNLIKELY(rare_data_) ? rare_data_->ClearanceAfterLine()
-                                : std::nullopt;
+    if (rare_data_) [[unlikely]] {
+      return rare_data_->ClearanceAfterLine();
+    }
+    return std::nullopt;
   }
 
   // Return the amount to trim the block size by the `text-box-trim` property.
   std::optional<LayoutUnit> TrimBlockEndBy() const {
-    return UNLIKELY(rare_data_) ? rare_data_->TrimBlockEndBy() : std::nullopt;
+    if (rare_data_) [[unlikely]] {
+      return rare_data_->TrimBlockEndBy();
+    }
+    return std::nullopt;
   }
 
   std::optional<LayoutUnit> MinimalSpaceShortage() const {
@@ -486,6 +494,13 @@ class CORE_EXPORT LayoutResult final : public GarbageCollected<LayoutResult> {
   // Returns the space which generated this object for caching purposes.
   const ConstraintSpace& GetConstraintSpaceForCaching() const { return space_; }
 
+  const HeapHashSet<Member<Element>>* DisplayLocksAffectedByAnchors() const {
+    if (!rare_data_) {
+      return nullptr;
+    }
+    return rare_data_->display_locks_affected_by_anchors;
+  }
+
   // This exposes a mutable part of the layout result just for the
   // |OutOfFlowLayoutPart|.
   class MutableForOutOfFlow final {
@@ -540,6 +555,9 @@ class CORE_EXPORT LayoutResult final : public GarbageCollected<LayoutResult> {
             non_overflowing_ranges);
       }
     }
+
+    void SetDisplayLocksAffectedByAnchors(
+        HeapHashSet<Member<Element>>* display_locks);
 
    private:
     friend class LayoutResult;
@@ -641,6 +659,8 @@ class CORE_EXPORT LayoutResult final : public GarbageCollected<LayoutResult> {
         DataUnionTypeValue::DefineNextValue<bool, 1>;
     using IsBlockEndTrimmedFlag =
         IsBlockStartTrimmedFlag::DefineNextValue<bool, 1>;
+    using HasContentAfterLineClampFlag =
+        IsBlockEndTrimmedFlag::DefineNextValue<bool, 1>;
 
     struct BlockData {
       GC_PLUGIN_IGNORE("crbug.com/1146383")
@@ -759,6 +779,14 @@ class CORE_EXPORT LayoutResult final : public GarbageCollected<LayoutResult> {
       bit_field.set<IsBlockEndTrimmedFlag>(true);
     }
 
+    bool has_content_after_line_clamp() const {
+      return bit_field.get<HasContentAfterLineClampFlag>();
+    }
+
+    void set_has_content_after_line_clamp() {
+      bit_field.set<HasContentAfterLineClampFlag>(true);
+    }
+
     template <typename DataType>
     DataType* EnsureData(DataType* address, DataUnionType data_type) {
       DataUnionType old_data_type = data_union_type();
@@ -807,14 +835,16 @@ class CORE_EXPORT LayoutResult final : public GarbageCollected<LayoutResult> {
       return data ? data->line_data.get() : nullptr;
     }
     LineSmallData* EnsureLineSmallData() {
-      return UNLIKELY(HasData(kLineData))
-                 ? EnsureLineData()
-                 : EnsureData(&line_small_data, kLineSmallData);
+      if (HasData(kLineData)) [[unlikely]] {
+        return EnsureLineData();
+      }
+      return EnsureData(&line_small_data, kLineSmallData);
     }
     const LineSmallData* GetLineSmallData() const {
-      return UNLIKELY(HasData(kLineData))
-                 ? GetLineData()
-                 : GetData(&line_small_data, kLineSmallData);
+      if (HasData(kLineData)) [[unlikely]] {
+        return GetLineData();
+      }
+      return GetData(&line_small_data, kLineSmallData);
     }
     MathData* EnsureMathData() {
       return EnsureData<MathData>(&math_data, kMathData);
@@ -972,6 +1002,7 @@ class CORE_EXPORT LayoutResult final : public GarbageCollected<LayoutResult> {
     LayoutUnit annotation_overflow;
     LayoutUnit block_end_annotation_space;
     int lines_until_clamp = 0;
+    Member<HeapHashSet<Member<Element>>> display_locks_affected_by_anchors;
 
    private:
     // Only valid if line_box_bfc_block_offset_is_set

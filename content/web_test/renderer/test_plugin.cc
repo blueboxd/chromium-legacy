@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/342213636): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "content/web_test/renderer/test_plugin.h"
 
 #include <stddef.h>
@@ -334,10 +339,6 @@ void TestPlugin::UpdateGeometry(const gfx::Rect& window_rect,
 
   content_changed_ = true;
   layer_->SetNeedsDisplay();
-}
-
-bool TestPlugin::IsPlaceholder() {
-  return false;
 }
 
 v8::Local<v8::Object> TestPlugin::V8ScriptableObject(v8::Isolate* isolate) {

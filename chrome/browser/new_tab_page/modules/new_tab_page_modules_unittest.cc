@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/new_tab_page/modules/new_tab_page_modules.h"
+
 #include <algorithm>
 #include <string>
 #include <utility>
@@ -11,7 +13,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/new_tab_page/modules/modules_switches.h"
-#include "chrome/browser/new_tab_page/modules/new_tab_page_modules.h"
+#include "chrome/browser/new_tab_page/modules/test_support.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/search/ntp_features.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -20,30 +22,10 @@
 
 namespace ntp {
 
-const std::vector<base::test::FeatureRef>& kAllModuleFeatures = {
-    ntp_features::kNtpChromeCartModule,
-    ntp_features::kNtpDriveModule,
-    ntp_features::kNtpFeedModule,
-    ntp_features::kNtpHistoryClustersModule,
-    ntp_features::kNtpRecipeTasksModule,
-};
-
-std::vector<base::test::FeatureRef> ComputeDisabledFeaturesList(
-    const std::vector<base::test::FeatureRef>& features,
-    const std::vector<base::test::FeatureRef>& enabled_features) {
-  std::vector<base::test::FeatureRef> disabled_features;
-  std::copy_if(features.begin(), features.end(),
-               std::back_inserter(disabled_features),
-               [&enabled_features](base::test::FeatureRef feature_to_copy) {
-                 return !base::Contains(enabled_features, feature_to_copy);
-               });
-  return disabled_features;
-}
-
 TEST(NewTabPageModulesTest, MakeModuleIdNames_SingleModuleEnabled) {
   const std::vector<base::test::FeatureRef>& some_module_features = {
-      ntp_features::kNtpRecipeTasksModule, ntp_features::kNtpFeedModule,
-      ntp_features::kNtpHistoryClustersModule};
+      ntp_features::kNtpFeedModule,
+      ntp_features::kNtpMostRelevantTabResumptionModule};
   for (auto& feature : some_module_features) {
     base::test::ScopedFeatureList features;
     features.InitWithFeatures(
@@ -52,7 +34,8 @@ TEST(NewTabPageModulesTest, MakeModuleIdNames_SingleModuleEnabled) {
                                                           {feature}));
 
     const std::vector<std::pair<const std::string, int>> module_id_names =
-        MakeModuleIdNames(false);
+        MakeModuleIdNames(/*drive_module_enabled=*/false,
+                          /*is_managed_profile=*/false);
     ASSERT_EQ(1u, module_id_names.size());
   }
 }
@@ -60,15 +43,50 @@ TEST(NewTabPageModulesTest, MakeModuleIdNames_SingleModuleEnabled) {
 TEST(NewTabPageModulesTest, MakeModuleIdNames_WithDriveModule) {
   base::test::ScopedFeatureList features;
   const std::vector<base::test::FeatureRef>& enabled_features = {
-      ntp_features::kNtpRecipeTasksModule, ntp_features::kNtpDriveModule};
+      ntp_features::kNtpDriveModule};
   features.InitWithFeatures(
       /*enabled_features=*/enabled_features,
       /*disabled_features=*/ComputeDisabledFeaturesList(kAllModuleFeatures,
                                                         enabled_features));
 
   const std::vector<std::pair<const std::string, int>> module_id_names =
-      MakeModuleIdNames(true);
+      MakeModuleIdNames(/*drive_module_enabled=*/true,
+                        /*is_managed_profile=*/false);
+  ASSERT_EQ(1u, module_id_names.size());
+}
+
+TEST(NewTabPageModulesTest, MakeModuleIdNames_Managed) {
+  base::test::ScopedFeatureList features;
+  const std::vector<base::test::FeatureRef>& enabled_features = {
+      ntp_features::kNtpCalendarModule,
+      ntp_features::kNtpOutlookCalendarModule,
+  };
+  features.InitWithFeatures(
+      /*enabled_features=*/enabled_features,
+      /*disabled_features=*/ComputeDisabledFeaturesList(kAllModuleFeatures,
+                                                        enabled_features));
+
+  const std::vector<std::pair<const std::string, int>> module_id_names =
+      MakeModuleIdNames(/*drive_module_enabled=*/false,
+                        /*is_managed_profile=*/true);
   ASSERT_EQ(2u, module_id_names.size());
+}
+
+TEST(NewTabPageModulesTest, MakeModuleIdNames_NotManaged) {
+  base::test::ScopedFeatureList features;
+  const std::vector<base::test::FeatureRef>& enabled_features = {
+      ntp_features::kNtpCalendarModule,
+      ntp_features::kNtpOutlookCalendarModule,
+  };
+  features.InitWithFeatures(
+      /*enabled_features=*/enabled_features,
+      /*disabled_features=*/ComputeDisabledFeaturesList(kAllModuleFeatures,
+                                                        enabled_features));
+
+  const std::vector<std::pair<const std::string, int>> module_id_names =
+      MakeModuleIdNames(/*drive_module_enabled=*/false,
+                        /*is_managed_profile=*/false);
+  ASSERT_EQ(0u, module_id_names.size());
 }
 
 #if !defined(OFFICIAL_BUILD)
@@ -79,14 +97,15 @@ TEST(NewTabPageModulesTest, MakeModuleIdNames_DummyModules) {
       /*disabled_features=*/kAllModuleFeatures);
 
   const std::vector<std::pair<const std::string, int>> module_id_names =
-      MakeModuleIdNames(false);
+      MakeModuleIdNames(/*drive_module_enabled=*/false,
+                        /*is_managed_profile=*/false);
   ASSERT_EQ(1u, module_id_names.size());
 }
 #endif
 
 const char kSampleUserEmail[] = "user@gmail.com";
 const std::vector<std::pair<const std::string, int>> kSampleModules = {
-    {"recipe_tasks", IDS_NTP_MODULES_RECIPE_TASKS_SENTENCE}};
+    {"drive", IDS_NTP_MODULES_DRIVE_SENTENCE}};
 
 TEST(NewTabPageModulesTest, HasModulesEnabled_SignedInAccount) {
   base::test::TaskEnvironment task_environment;
@@ -127,61 +146,5 @@ TEST(NewTabPageModulesTest,
   signin::IdentityTestEnvironment identity_test_env;
   ASSERT_TRUE(
       HasModulesEnabled(kSampleModules, identity_test_env.identity_manager()));
-}
-
-TEST(NewTabPageModulesTest, ShowChromeCart_WithoutChromeCartInHistoryModule) {
-  base::test::ScopedFeatureList features;
-  features.InitWithFeatures(
-      /*enabled_features=*/{ntp_features::kNtpChromeCartModule,
-                            ntp_features::kNtpHistoryClustersModule},
-      /*disabled_features=*/{
-          ntp_features::kNtpChromeCartInHistoryClusterModule});
-
-  const std::vector<std::pair<const std::string, int>> module_id_names =
-      MakeModuleIdNames(false);
-  std::vector<std::string> module_names;
-  for (auto pair : module_id_names) {
-    module_names.emplace_back(pair.first);
-  }
-  ASSERT_FALSE(std::find(module_names.begin(), module_names.end(),
-                         "chrome_cart") == module_names.end());
-}
-
-TEST(NewTabPageModulesTest, NoChromeCart_WithChromeCartInHistoryModule) {
-  base::test::ScopedFeatureList features;
-  features.InitWithFeatures(
-      /*enabled_features=*/{ntp_features::kNtpChromeCartModule,
-                            ntp_features::kNtpHistoryClustersModule,
-                            ntp_features::kNtpChromeCartInHistoryClusterModule},
-      /*disabled_features=*/{});
-
-  const std::vector<std::pair<const std::string, int>> module_id_names =
-      MakeModuleIdNames(false);
-  std::vector<std::string> module_names;
-  for (auto pair : module_id_names) {
-    module_names.emplace_back(pair.first);
-  }
-  ASSERT_TRUE(std::find(module_names.begin(), module_names.end(),
-                        "chrome_cart") == module_names.end());
-}
-
-TEST(NewTabPageModulesTest,
-     ShowChromeCart_WithChromeCartInHistoryModuleCoexist) {
-  base::test::ScopedFeatureList features;
-  features.InitWithFeatures(
-      /*enabled_features=*/{ntp_features::kNtpChromeCartModule,
-                            ntp_features::kNtpHistoryClustersModule,
-                            ntp_features::kNtpChromeCartInHistoryClusterModule,
-                            ntp_features::kNtpChromeCartHistoryClusterCoexist},
-      /*disabled_features=*/{});
-
-  const std::vector<std::pair<const std::string, int>> module_id_names =
-      MakeModuleIdNames(false);
-  std::vector<std::string> module_names;
-  for (auto pair : module_id_names) {
-    module_names.emplace_back(pair.first);
-  }
-  ASSERT_FALSE(std::find(module_names.begin(), module_names.end(),
-                         "chrome_cart") == module_names.end());
 }
 }  // namespace ntp

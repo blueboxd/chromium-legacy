@@ -140,7 +140,7 @@ class NetworkHandler : public DevToolsDomainHandler,
                      Maybe<std::string> url,
                      Maybe<std::string> domain,
                      Maybe<std::string> path,
-                     Maybe<std::string> partition_key,
+                     Maybe<Network::CookiePartitionKey> partition_key,
                      std::unique_ptr<DeleteCookiesCallback> callback) override;
   void SetCookie(const std::string& name,
                  const std::string& value,
@@ -155,7 +155,7 @@ class NetworkHandler : public DevToolsDomainHandler,
                  Maybe<bool> same_party,
                  Maybe<std::string> source_scheme,
                  Maybe<int> source_port,
-                 Maybe<std::string> partition_key,
+                 Maybe<Network::CookiePartitionKey> partition_key,
                  std::unique_ptr<SetCookieCallback> callback) override;
   void SetCookies(
       std::unique_ptr<protocol::Array<Network::CookieParam>> cookies,
@@ -316,6 +316,7 @@ class NetworkHandler : public DevToolsDomainHandler,
       const std::string& error_message,
       const std::optional<std::string>& bundle_request_devtools_id);
 
+  void OnPolicyContainerHostUpdated();
   bool enabled() const { return enabled_; }
 
   Network::Frontend* frontend() const { return frontend_.get(); }

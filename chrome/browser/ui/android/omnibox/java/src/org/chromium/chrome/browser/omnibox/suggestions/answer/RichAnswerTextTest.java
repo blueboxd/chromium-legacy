@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions.answer;
 
+import android.app.Activity;
 import android.content.Context;
 import android.text.SpannableStringBuilder;
 import android.text.style.TextAppearanceSpan;
@@ -14,15 +15,21 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.Features.EnableFeatures;
+import org.chromium.chrome.R;
 import org.chromium.components.omnibox.AnswerDataProto.AnswerData;
 import org.chromium.components.omnibox.AnswerDataProto.FormattedString;
 import org.chromium.components.omnibox.AnswerDataProto.FormattedString.ColorType;
 import org.chromium.components.omnibox.AnswerDataProto.FormattedString.FormattedStringFragment;
+import org.chromium.components.omnibox.AnswerTypeProto.AnswerType;
+import org.chromium.components.omnibox.OmniboxFeatureList;
+import org.chromium.components.omnibox.OmniboxFeatures;
 import org.chromium.components.omnibox.RichAnswerTemplateProto.RichAnswerTemplate;
-import org.chromium.components.omnibox.RichAnswerTemplateProto.RichAnswerTemplate.AnswerType;
+import org.chromium.components.omnibox.RichAnswerTemplateProto.SuggestionEnhancement;
+import org.chromium.components.omnibox.RichAnswerTemplateProto.SuggestionEnhancements;
 
 /** Tests for {@link RichAnswerText}. */
 @RunWith(BaseRobolectricTestRunner.class)
@@ -32,20 +39,22 @@ public class RichAnswerTextTest {
     private TextAppearanceSpan mRedText;
     private TextAppearanceSpan mPrimaryText;
     private TextAppearanceSpan mMediumText;
+    private TextAppearanceSpan mHeadlineText;
 
     @Before
     public void setUp() {
-        mContext = ContextUtils.getApplicationContext();
+        mContext = Robolectric.buildActivity(Activity.class).setup().get();
+        mContext.setTheme(R.style.Theme_BrowserUI_DayNight);
         mGreenText =
                 new TextAppearanceSpan(
                         mContext,
                         org.chromium.chrome.browser.omnibox.test.R.style
-                                .TextAppearance_OmniboxAnswerDescriptionPositiveSmall);
+                                .TextAppearance_OmniboxAnswerDescriptionPositive);
         mRedText =
                 new TextAppearanceSpan(
                         mContext,
                         org.chromium.chrome.browser.omnibox.test.R.style
-                                .TextAppearance_OmniboxAnswerDescriptionNegativeSmall);
+                                .TextAppearance_OmniboxAnswerDescriptionNegative);
         mPrimaryText =
                 new TextAppearanceSpan(
                         mContext,
@@ -56,6 +65,11 @@ public class RichAnswerTextTest {
                         mContext,
                         org.chromium.chrome.browser.omnibox.R.style
                                 .TextAppearance_TextMedium_Secondary);
+        mHeadlineText =
+                new TextAppearanceSpan(
+                        mContext,
+                        org.chromium.chrome.browser.omnibox.R.style
+                                .TextAppearance_Headline2Thick_Primary);
     }
 
     @Test
@@ -78,13 +92,14 @@ public class RichAnswerTextTest {
 
         RichAnswerTemplate richAnswerTemplate =
                 RichAnswerTemplate.newBuilder()
-                        .setAnswerType(AnswerType.DICTIONARY)
                         .addAnswers(
                                 0,
                                 AnswerData.newBuilder().setHeadline(headline).setSubhead(subhead))
                         .build();
 
-        AnswerText[] texts = RichAnswerText.from(mContext, richAnswerTemplate, false);
+        AnswerType answerType = AnswerType.ANSWER_TYPE_DICTIONARY;
+        AnswerText[] texts =
+                RichAnswerText.from(mContext, richAnswerTemplate, answerType, false, false);
         Assert.assertEquals(texts[0].getMaxLines(), 1);
         Assert.assertEquals(texts[1].getMaxLines(), 3);
         Assert.assertEquals(texts[0].getAccessibilityDescription(), "define adroit • /əˈdroit/");
@@ -134,7 +149,6 @@ public class RichAnswerTextTest {
 
         RichAnswerTemplate richAnswerTemplate =
                 RichAnswerTemplate.newBuilder()
-                        .setAnswerType(AnswerType.FINANCE)
                         .addAnswers(
                                 0,
                                 AnswerData.newBuilder()
@@ -142,7 +156,9 @@ public class RichAnswerTextTest {
                                         .setSubhead(positiveSubhead))
                         .build();
 
-        AnswerText[] texts = RichAnswerText.from(mContext, richAnswerTemplate, false);
+        AnswerType answerType = AnswerType.ANSWER_TYPE_FINANCE;
+        AnswerText[] texts =
+                RichAnswerText.from(mContext, richAnswerTemplate, answerType, false, false);
         // A11y descriptions are reverse of visual ordering.
         Assert.assertEquals(
                 texts[0].getAccessibilityDescription(), "goog stock GOOG(NASDAQ), 3:22 PM EDT");
@@ -181,15 +197,13 @@ public class RichAnswerTextTest {
 
         RichAnswerTemplate negativeRichAnswerTemplate =
                 RichAnswerTemplate.newBuilder()
-                        .setAnswerType(AnswerType.FINANCE)
                         .addAnswers(
                                 0,
                                 AnswerData.newBuilder()
                                         .setHeadline(headline)
                                         .setSubhead(negativeSubhead))
                         .build();
-
-        texts = RichAnswerText.from(mContext, negativeRichAnswerTemplate, false);
+        texts = RichAnswerText.from(mContext, negativeRichAnswerTemplate, answerType, false, false);
         primaryText = texts[0].getText();
 
         Assert.assertEquals(primaryText.toString(), "100.00 -1.00");
@@ -226,7 +240,6 @@ public class RichAnswerTextTest {
 
         RichAnswerTemplate richAnswerTemplate =
                 RichAnswerTemplate.newBuilder()
-                        .setAnswerType(AnswerType.FINANCE)
                         .addAnswers(
                                 0,
                                 AnswerData.newBuilder()
@@ -234,7 +247,9 @@ public class RichAnswerTextTest {
                                         .setSubhead(positiveSubhead))
                         .build();
 
-        AnswerText[] texts = RichAnswerText.from(mContext, richAnswerTemplate, true);
+        AnswerType answerType = AnswerType.ANSWER_TYPE_FINANCE;
+        AnswerText[] texts =
+                RichAnswerText.from(mContext, richAnswerTemplate, answerType, true, false);
         SpannableStringBuilder primaryText = texts[0].getText();
 
         Assert.assertEquals(primaryText.toString(), "100.00 +1.00");
@@ -259,7 +274,6 @@ public class RichAnswerTextTest {
 
         RichAnswerTemplate negativeRichAnswerTemplate =
                 RichAnswerTemplate.newBuilder()
-                        .setAnswerType(AnswerType.FINANCE)
                         .addAnswers(
                                 0,
                                 AnswerData.newBuilder()
@@ -267,7 +281,7 @@ public class RichAnswerTextTest {
                                         .setSubhead(negativeSubhead))
                         .build();
 
-        texts = RichAnswerText.from(mContext, negativeRichAnswerTemplate, true);
+        texts = RichAnswerText.from(mContext, negativeRichAnswerTemplate, answerType, true, false);
         primaryText = texts[0].getText();
 
         Assert.assertEquals(primaryText.toString(), "100.00 -1.00");
@@ -298,13 +312,14 @@ public class RichAnswerTextTest {
 
         RichAnswerTemplate richAnswerTemplate =
                 RichAnswerTemplate.newBuilder()
-                        .setAnswerType(AnswerType.WEATHER)
                         .addAnswers(
                                 0,
                                 AnswerData.newBuilder().setHeadline(headline).setSubhead(subhead))
                         .build();
 
-        AnswerText[] texts = RichAnswerText.from(mContext, richAnswerTemplate, false);
+        AnswerType answerType = AnswerType.ANSWER_TYPE_WEATHER;
+        AnswerText[] texts =
+                RichAnswerText.from(mContext, richAnswerTemplate, answerType, false, false);
         Assert.assertEquals(texts[0].getMaxLines(), 1);
         Assert.assertEquals(texts[1].getMaxLines(), 1);
 
@@ -344,13 +359,14 @@ public class RichAnswerTextTest {
 
         RichAnswerTemplate richAnswerTemplate =
                 RichAnswerTemplate.newBuilder()
-                        .setAnswerType(AnswerType.TRANSLATION)
                         .addAnswers(
                                 0,
                                 AnswerData.newBuilder().setHeadline(headline).setSubhead(subhead))
                         .build();
 
-        AnswerText[] texts = RichAnswerText.from(mContext, richAnswerTemplate, false);
+        AnswerType answerType = AnswerType.ANSWER_TYPE_TRANSLATION;
+        AnswerText[] texts =
+                RichAnswerText.from(mContext, richAnswerTemplate, answerType, false, false);
         Assert.assertEquals(texts[0].getMaxLines(), 3);
         Assert.assertEquals(texts[1].getMaxLines(), 1);
     }
@@ -374,13 +390,14 @@ public class RichAnswerTextTest {
                         .build();
         RichAnswerTemplate richAnswerTemplate =
                 RichAnswerTemplate.newBuilder()
-                        .setAnswerType(AnswerType.CURRENCY)
                         .addAnswers(
                                 0,
                                 AnswerData.newBuilder().setHeadline(headline).setSubhead(subhead))
                         .build();
 
-        AnswerText[] texts = RichAnswerText.from(mContext, richAnswerTemplate, false);
+        AnswerType answerType = AnswerType.ANSWER_TYPE_CURRENCY;
+        AnswerText[] texts =
+                RichAnswerText.from(mContext, richAnswerTemplate, answerType, false, false);
         SpannableStringBuilder primaryText = texts[0].getText();
         SpannableStringBuilder secondaryText = texts[1].getText();
 
@@ -402,13 +419,14 @@ public class RichAnswerTextTest {
 
         RichAnswerTemplate richAnswerTemplate =
                 RichAnswerTemplate.newBuilder()
-                        .setAnswerType(AnswerType.WEATHER)
                         .addAnswers(
                                 0,
                                 AnswerData.newBuilder().setHeadline(headline).setSubhead(subhead))
                         .build();
 
-        AnswerText[] texts = RichAnswerText.from(mContext, richAnswerTemplate, false);
+        AnswerType answerType = AnswerType.ANSWER_TYPE_WEATHER;
+        AnswerText[] texts =
+                RichAnswerText.from(mContext, richAnswerTemplate, answerType, false, false);
         SpannableStringBuilder primaryText = texts[0].getText();
         SpannableStringBuilder secondaryText = texts[1].getText();
 
@@ -423,5 +441,48 @@ public class RichAnswerTextTest {
                 secondaryText.getSpans(0, secondaryText.length(), TextAppearanceSpan.class);
         Assert.assertEquals(textAppearanceSpans.length, 1);
         Assert.assertEquals(textAppearanceSpans[0].getTextSize(), mMediumText.getTextSize());
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures(OmniboxFeatureList.OMNIBOX_ANSWER_ACTIONS)
+    public void testRichAnswerCard() {
+        OmniboxFeatures.sAnswerActionsShowRichCard.setForTesting(true);
+        // The backend sends the lines in Answer > query order for some answer types (dictionary,
+        // sports, weather, finance, knowledge graph). These should not have their order reversed.
+        FormattedString headline =
+                FormattedString.newBuilder().setText("64•F Thu - Redmond, WA").build();
+        FormattedString subhead = FormattedString.newBuilder().setText("redmond weather").build();
+
+        RichAnswerTemplate richAnswerTemplate =
+                RichAnswerTemplate.newBuilder()
+                        .setEnhancements(
+                                SuggestionEnhancements.newBuilder()
+                                        .addEnhancements(
+                                                SuggestionEnhancement.newBuilder()
+                                                        .setDisplayText("7 day forecast"))
+                                        .build())
+                        .addAnswers(
+                                0,
+                                AnswerData.newBuilder().setHeadline(headline).setSubhead(subhead))
+                        .build();
+
+        AnswerType answerType = AnswerType.ANSWER_TYPE_WEATHER;
+        AnswerText[] texts =
+                RichAnswerText.from(mContext, richAnswerTemplate, answerType, false, true);
+        SpannableStringBuilder primaryText = texts[0].getText();
+        SpannableStringBuilder secondaryText = texts[1].getText();
+
+        Assert.assertEquals(primaryText.toString(), "64•F Thu - Redmond, WA");
+        TextAppearanceSpan[] textAppearanceSpans =
+                primaryText.getSpans(0, primaryText.length(), TextAppearanceSpan.class);
+        Assert.assertEquals(textAppearanceSpans.length, 1);
+        Assert.assertEquals(textAppearanceSpans[0].getTextSize(), mHeadlineText.getTextSize());
+
+        Assert.assertEquals(secondaryText.toString(), "redmond weather");
+        textAppearanceSpans =
+                secondaryText.getSpans(0, secondaryText.length(), TextAppearanceSpan.class);
+        Assert.assertEquals(textAppearanceSpans.length, 1);
+        Assert.assertEquals(textAppearanceSpans[0].getTextSize(), mPrimaryText.getTextSize());
     }
 }

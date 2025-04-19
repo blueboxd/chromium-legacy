@@ -21,12 +21,23 @@ class LensOverlayRequestIdGenerator {
   // sequence.
   void ResetRequestId();
 
+  // Creates a new analytics id to use in followup requests. This should be
+  // called for each interaction.
+  void CreateNewAnalyticsId();
+
   // Increments the sequence and returns the next request id.
   std::unique_ptr<lens::LensOverlayRequestId> GetNextRequestId();
+
+  // Returns the current analytics id as a base32 encoded string.
+  std::string GetBase32EncodedAnalyticsId();
 
  private:
   // The current uuid. Valid for the duration of a Lens overlay session.
   uint64_t uuid_;
+
+  // The analytics id for the current request. Will be updated on each
+  // query.
+  std::string analytics_id_;
 
   // The current sequence id.
   int sequence_id_;

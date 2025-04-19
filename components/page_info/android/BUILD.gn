@@ -49,6 +49,7 @@ android_resources("java_resources") {
     "java/res/layout/page_info_row.xml",
     "java/res/layout/page_info_summary.xml",
     "java/res/layout/page_info_title.xml",
+    "java/res/layout/tracking_protection_managed_title.xml",
     "java/res/layout/tracking_protection_status.xml",
     "java/res/values-night/dimens.xml",
     "java/res/values/dimens.xml",
@@ -140,6 +141,27 @@ android_library("java") {
   ]
 
   resources_package = "org.chromium.components.page_info"
+}
+
+android_library("javatests") {
+  testonly = true
+  sources = [ "javatests/src/org/chromium/components/page_info/TrackingProtectionStatusPreferenceTest.java" ]
+  deps = [
+    ":java",
+    "//base:base_java_test_support",
+    "//components/browser_ui/settings/android:test_support_java",
+    "//components/content_settings/android:content_settings_enums_java",
+    "//components/content_settings/android:java",
+    "//content/public/test/android:content_java_test_support",
+    "//third_party/androidx:androidx_annotation_annotation_java",
+    "//third_party/androidx:androidx_preference_preference_java",
+    "//third_party/androidx:androidx_test_espresso_espresso_core_java",
+    "//third_party/androidx:androidx_test_runner_java",
+    "//third_party/hamcrest:hamcrest_core_java",
+    "//third_party/hamcrest:hamcrest_library_java",
+    "//third_party/junit",
+    "//ui/android:ui_java_test_support",
+  ]
 }
 
 generate_jni("jni_headers") {

@@ -78,6 +78,7 @@ import org.chromium.components.search_engines.TemplateUrl;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.ResourceRequestBody;
+import org.chromium.ui.KeyboardUtils;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.interpolators.Interpolators;
@@ -139,7 +140,7 @@ class LocationBarMediator
 
                 @Override
                 public void setValue(LocationBarMediator object, float value) {
-                    setUrlFocusChangeFraction(value, value, value);
+                    setUrlFocusChangeFraction(value, value);
                 }
             };
 
@@ -283,6 +284,7 @@ class LocationBarMediator
         mUrlCoordinator = null;
         mPrivacyPreferencesManager = null;
         mVoiceRecognitionHandler.removeObserver(this);
+        mVoiceRecognitionHandler.destroy();
         mVoiceRecognitionHandler = null;
         mLocationBarDataProvider.removeObserver(this);
         mDeferredNativeRunnables.clear();
@@ -367,20 +369,15 @@ class LocationBarMediator
     }
 
     /* package */ void setUrlFocusChangeFraction(
-            float ntpSearchBoxScrollFraction,
-            float startSurfaceScrollFraction,
-            float urlFocusChangeFraction) {
-        float fraction =
-                Math.max(
-                        Math.max(ntpSearchBoxScrollFraction, startSurfaceScrollFraction),
-                        urlFocusChangeFraction);
+            float ntpSearchBoxScrollFraction, float urlFocusChangeFraction) {
+        float fraction = Math.max(ntpSearchBoxScrollFraction, urlFocusChangeFraction);
         mUrlFocusChangeFraction = fraction;
         if (mIsTablet) {
             mLocationBarDataProvider
                     .getNewTabPageDelegate()
                     .setUrlFocusChangeAnimationPercent(fraction);
             mLocationBarLayout.setUrlFocusChangePercent(
-                    fraction, fraction, fraction, mIsUrlFocusChangeInProgress);
+                    fraction, fraction, mIsUrlFocusChangeInProgress);
         } else {
             // Determine when the focus state changes as a result of ntp scrolling.
             boolean isLocationBarFocusedFromNtpScroll =
@@ -402,7 +399,6 @@ class LocationBarMediator
             // Add expansion animation for the space besides status view in location bar.
             mLocationBarLayout.setUrlFocusChangePercent(
                     ntpSearchBoxScrollFraction,
-                    startSurfaceScrollFraction,
                     urlFocusChangeFraction,
                     mIsUrlFocusChangeInProgress);
             mStatusCoordinator.setUrlFocusChangePercent(fraction);
@@ -448,6 +444,15 @@ class LocationBarMediator
             return;
         }
 
+        // Verify if Hardware keyboard still requests Software keyboard (IME) to be used.
+        // If that happens, suppress early focus to take Software keyboard out of the way.
+        // This is specifically relevant in Incognito mode, where Soft keyboard clobbers relevant
+        // messages.
+        // The setting below is not explicitly itemized in Settings.Secure, but it corresponds
+        // to whether Software keyboard would be called up when Physical keyboard is in use on
+        // Pixel devices.
+        if (KeyboardUtils.shouldShowImeWithHardwareKeyboard(mContext)) return;
+
         mUrlFocusedWithoutAnimations = true;
         // This method should only be called on devices with a hardware keyboard attached, as
         // described in the documentation for LocationBar#showUrlBarCursorWithoutFocusAnimations.
@@ -473,7 +478,7 @@ class LocationBarMediator
     /*package */ void revertChanges() {
         if (mUrlHasFocus) {
             GURL currentUrl = mLocationBarDataProvider.getCurrentGurl();
-            if (NativePage.isChromePageUrl(currentUrl, mLocationBarDataProvider.isIncognito())) {
+            if (NativePage.isChromePageUrl(currentUrl, mLocationBarDataProvider.isOffTheRecord())) {
                 setUrlBarTextEmpty();
             } else {
                 setUrlBarText(
@@ -748,7 +753,7 @@ class LocationBarMediator
         if (mIsTablet) {
             float urlFocusChangeFraction = showExpandedState ? 1.0f : 0.0f;
             mLocationBarLayout.setUrlFocusChangePercent(
-                    urlFocusChangeFraction, urlFocusChangeFraction, urlFocusChangeFraction, false);
+                    urlFocusChangeFraction, urlFocusChangeFraction, false);
             mLocationBarLayout.updateLayoutParams(
                     MeasureSpec.makeMeasureSpec(
                             mLocationBarLayout.getMeasuredWidth(), MeasureSpec.EXACTLY));
@@ -1071,7 +1076,7 @@ class LocationBarMediator
         mBrandedColorScheme =
                 OmniboxResourceProvider.getBrandedColorScheme(
                         mContext,
-                        mLocationBarDataProvider.isIncognito(),
+                        mLocationBarDataProvider.isIncognitoBranded(),
                         getPrimaryBackgroundColor());
 
         // The delete button only appears when the url bar has focus, so its tint is rather static,
@@ -1095,7 +1100,7 @@ class LocationBarMediator
         // of whether it is branded or not.
         if (isUrlBarFocused()) {
             return ChromeColors.getDefaultThemeColor(
-                    mContext, mLocationBarDataProvider.isIncognito());
+                    mContext, mLocationBarDataProvider.isIncognitoBranded());
         } else {
             return mLocationBarDataProvider.getPrimaryColor();
         }
@@ -1216,7 +1221,7 @@ class LocationBarMediator
         if (tab == null) return false;
         // The save offline button should not be shown on native pages. Currently, trying to
         // save an offline page in incognito crashes, so don't show it on incognito either.
-        return shouldShowPageActionButtons() && !tab.isIncognito();
+        return shouldShowPageActionButtons() && !tab.isOffTheRecord();
     }
 
     private boolean isSaveOfflineButtonEnabled() {
@@ -1288,7 +1293,7 @@ class LocationBarMediator
         updateButtonVisibility();
         updateSearchEngineStatusIconShownState();
         // Update the visuals to use correct incognito colors.
-        mUrlCoordinator.setIncognitoColorsEnabled(mLocationBarDataProvider.isIncognito());
+        mUrlCoordinator.setIncognitoColorsEnabled(mLocationBarDataProvider.isIncognitoBranded());
     }
 
     @Override
@@ -1393,11 +1398,6 @@ class LocationBarMediator
 
     @Override
     public @Nullable VoiceRecognitionHandler getVoiceRecognitionHandler() {
-        // TODO(crbug.com/40153763): StartSurfaceMediator can call this method after destroy().
-        if (mLocationBarLayout == null) {
-            return null;
-        }
-
         return mVoiceRecognitionHandler;
     }
 
@@ -1490,7 +1490,7 @@ class LocationBarMediator
 
     @Override
     public boolean allowKeyboardLearning() {
-        return !mLocationBarDataProvider.isIncognito();
+        return !mLocationBarDataProvider.isOffTheRecord();
     }
 
     // Traditional way to intercept keycode_back, which is deprecated from T.
@@ -1527,13 +1527,22 @@ class LocationBarMediator
         // into the omnibox after it gains focus due to hardware keyboard availability and a
         // subsequent tap will hide the suggestions dropdown shown for the typed text, while keeping
         // the scrim on the web contents, which is not desirable.
-        if (!mUrlFocusedWithoutAnimations
-                || mUrlCoordinator == null
-                || !TextUtils.isEmpty(mUrlCoordinator.getTextWithoutAutocomplete())) {
-            return;
-        }
-        handleUrlFocusAnimation(true);
+        if (!TextUtils.isEmpty(mUrlCoordinator.getTextWithoutAutocomplete())) return;
         recordOmniboxFocusReason(OmniboxFocusReason.TAP_AFTER_FOCUS_FROM_KEYBOARD);
+        completeUrlFocusAnimationAndEnableSuggestions();
+    }
+
+    /**
+     * Trigger focus animations to adequately enable Autocomplete and Suggestions. This is required
+     * only when the intention is to trigger the suggestions dropdown after the omnibox has gained
+     * focus without animations.
+     *
+     * <p>This call trusts the caller has performed all necessary verifications, and will display
+     * suggestions unconditionally.
+     */
+    /* package */ void completeUrlFocusAnimationAndEnableSuggestions() {
+        if (!mUrlFocusedWithoutAnimations || mUrlCoordinator == null) return;
+        handleUrlFocusAnimation(true);
     }
 
     // BackPressHandler implementation.
@@ -1553,18 +1562,6 @@ class LocationBarMediator
     // OnKeyListener implementation.
     @Override
     public boolean onKey(View view, int keyCode, KeyEvent event) {
-        // Trigger focus animations to adequately set system state before potentially handling the
-        // key event. This is required only when the intention is to trigger the suggestions
-        // dropdown after the omnibox has gained focus without animations and a valid key is
-        // pressed. All printing keys will be taken into account as long as CTRL is not pressed,
-        // since that may trigger special functionality.
-        if (mUrlFocusedWithoutAnimations
-                && event.getAction() == KeyEvent.ACTION_DOWN
-                && event.isPrintingKey()
-                && !event.isCtrlPressed()) {
-            handleUrlFocusAnimation(/* hasFocus= */ true);
-        }
-
         return handleKeyEvent(view, keyCode, event);
     }
 
@@ -1633,24 +1630,14 @@ class LocationBarMediator
      * Updates the color of the hint text in the search box.
      *
      * @param useDefaultUrlBarHintTextColor Whether to use the default color for the search text in
-     *     the search box. If not we will use specific color for surface polish.
+     *     the search box. If not we will use specific color for NTP's un-focus state.
      */
     public void updateUrlBarHintTextColor(boolean useDefaultUrlBarHintTextColor) {
         if (useDefaultUrlBarHintTextColor) {
             mUrlCoordinator.setUrlBarHintTextColorForDefault(mBrandedColorScheme);
         } else {
-            mUrlCoordinator.setUrlBarHintTextColorForSurfacePolish();
+            mUrlCoordinator.setUrlBarHintTextColorForNtp();
         }
-    }
-
-    /**
-     * Updates the typeface and style of the search text in the search box.
-     *
-     * @param useDefaultUrlBarTypeface Whether to use the default typeface for the search text in
-     *     the search box. If not we will use medium Google sans typeface for surface polish.
-     */
-    public void updateUrlBarTypeface(boolean useDefaultUrlBarTypeface) {
-        mUrlCoordinator.updateUrlBarTypeface(useDefaultUrlBarTypeface);
     }
 
     /**
@@ -1658,7 +1645,7 @@ class LocationBarMediator
      *
      * @param useDefaultUrlActionContainerEndMargin Whether to use the default end margin for the
      *     url action container in the search box. If not we will use the specific end margin value
-     *     for surface polish.
+     *     for NTP's un-focus state.
      */
     public void updateUrlActionContainerEndMargin(boolean useDefaultUrlActionContainerEndMargin) {
         mLocationBarLayout.updateUrlActionContainerEndMargin(useDefaultUrlActionContainerEndMargin);

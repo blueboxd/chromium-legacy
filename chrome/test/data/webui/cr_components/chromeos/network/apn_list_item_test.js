@@ -12,7 +12,7 @@ import {OncMojo} from 'chrome://resources/ash/common/network/onc_mojo.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {ApnState, ApnType, CrosNetworkConfigRemote} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-webui.js';
 import {NetworkType, PortalState} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/network_types.mojom-webui.js';
-import {assertEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {FakeNetworkConfig} from 'chrome://webui-test/chromeos/fake_network_config_mojom.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 import {eventToPromise} from 'chrome://webui-test/test_util.js';
@@ -245,13 +245,14 @@ suite('ApnListItemTest', function() {
     assertFalse(apnListItem.$.dotsMenu.open);
   });
 
-  [true, false].forEach(isApnRevampAndPoliciesEnabled => {
+  [true, false].forEach(isApnRevampAndAllowApnModificationPolicyEnabled => {
     test(
         `Clicking APN details button triggers a show-apn-detail-dialog event
-        when isApnRevampAndPoliciesEnabled is ${isApnRevampAndPoliciesEnabled}`,
+        when isApnRevampAndAllowApnModificationPolicyEnabled is ${
+            isApnRevampAndAllowApnModificationPolicyEnabled}`,
         async function() {
           loadTimeData.overrideValues({
-            isApnRevampAndPoliciesEnabled,
+            isApnRevampAndAllowApnModificationPolicyEnabled,
           });
           await init();
           apnListItem.apn = TEST_APN_EVENT_DATA.apn;
@@ -294,7 +295,7 @@ suite('ApnListItemTest', function() {
           assertEquals(ApnDetailDialogMode.EDIT, eventData.detail.mode);
           assertFalse(apnListItem.$.dotsMenu.open);
 
-          if (isApnRevampAndPoliciesEnabled) {
+          if (isApnRevampAndAllowApnModificationPolicyEnabled) {
             // Case: APN modification is disallowed.
             apnListItem.shouldDisallowApnModification = true;
             await flushTasks();

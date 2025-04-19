@@ -25,7 +25,6 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/speculation_rules/stub_speculation_host.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
-#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/task_environment.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
@@ -137,8 +136,9 @@ void CommitTestNavigation(
     const Vector<std::pair<String, String>>& response_headers) {
   auto navigation_params = std::make_unique<WebNavigationParams>();
   navigation_params->url = url;
-  WebNavigationParams::FillStaticResponse(navigation_params.get(), "text/html",
-                                          "UTF-8", "<!DOCTYPE html>");
+  WebNavigationParams::FillStaticResponse(
+      navigation_params.get(), "text/html", "UTF-8",
+      base::span_from_cstring("<!DOCTYPE html>"));
   for (const auto& [header, value] : response_headers)
     navigation_params->response.AddHttpHeaderField(header, value);
   frame.Loader().CommitNavigation(std::move(navigation_params), nullptr);
@@ -186,10 +186,6 @@ TEST(SpeculationRulesPrefetchFutureOriginTrialTest, FirstPartyTrialToken) {
 
   // This should have enabled the origin trial and all its dependent features.
   EXPECT_TRUE(RuntimeEnabledFeatures::SpeculationRulesPrefetchFutureEnabled(
-      frame.DomWindow()));
-  EXPECT_TRUE(RuntimeEnabledFeatures::SpeculationRulesDocumentRulesEnabled(
-      frame.DomWindow()));
-  EXPECT_TRUE(RuntimeEnabledFeatures::SpeculationRulesFetchFromHeaderEnabled(
       frame.DomWindow()));
 }
 

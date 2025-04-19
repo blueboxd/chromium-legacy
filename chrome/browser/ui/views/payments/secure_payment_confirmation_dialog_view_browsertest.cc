@@ -26,6 +26,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -83,7 +84,7 @@ class SecurePaymentConfirmationDialogViewTest
     return weak_ptr_factory_.GetWeakPtr();
   }
 
-  void CreateModel() {
+  virtual void CreateModel() {
     model_.set_title(l10n_util::GetStringUTF16(
         IDS_SECURE_PAYMENT_CONFIRMATION_VERIFY_PURCHASE));
 
@@ -206,17 +207,23 @@ class SecurePaymentConfirmationDialogViewTest
               test_delegate_->dialog_view()->GetDialogButtonLabel(
                   ui::DIALOG_BUTTON_CANCEL));
 
-    EXPECT_TRUE(GetViewByID(
-        SecurePaymentConfirmationDialogView::DialogViewID::HEADER_ICON));
+    if (ShouldShowHeaderIcon()) {
+      EXPECT_TRUE(GetViewByID(
+          SecurePaymentConfirmationDialogView::DialogViewID::HEADER_ICON));
+    } else {
+      EXPECT_FALSE(GetViewByID(
+          SecurePaymentConfirmationDialogView::DialogViewID::HEADER_ICON));
+    }
 
-    EXPECT_EQ(
-        model_.progress_bar_visible(),
-        GetViewByID(
-            SecurePaymentConfirmationDialogView::DialogViewID::PROGRESS_BAR)
-            ->GetVisible());
+    ASSERT_TRUE(test_delegate_->dialog_view()->GetBubbleFrameView());
+    std::optional<double> progress =
+        test_delegate_->dialog_view()->GetBubbleFrameView()->GetProgress();
+    ASSERT_EQ(model_.progress_bar_visible(), progress.has_value());
 
-    ExpectLabelText(model_.title(),
+    ExpectLabelText(GetExpectedTitleText(),
                     SecurePaymentConfirmationDialogView::DialogViewID::TITLE);
+
+    ExpectViewMatchesModelForDescription();
 
     ExpectLabelText(
         model_.merchant_label(),
@@ -263,6 +270,16 @@ class SecurePaymentConfirmationDialogViewTest
     ExpectViewMatchesModelForNetworkAndIssuerRows();
   }
 
+  virtual bool ShouldShowHeaderIcon() { return true; }
+
+  virtual std::u16string GetExpectedTitleText() { return model_.title(); }
+
+  virtual void ExpectViewMatchesModelForDescription() {
+    // Without the flag enabled, the description should not be shown.
+    EXPECT_FALSE(GetViewByID(
+        SecurePaymentConfirmationDialogView::DialogViewID::DESCRIPTION));
+  }
+
   virtual void ExpectViewMatchesModelForNetworkAndIssuerRows() {
     // Without the flag enabled, the network and issuer views should not be
     // shown even though the data is set into the model. See
@@ -284,7 +301,7 @@ class SecurePaymentConfirmationDialogViewTest
 
   void ClickButton(views::View* button) {
     gfx::Point center(button->width() / 2, button->height() / 2);
-    const ui::MouseEvent event(ui::ET_MOUSE_PRESSED, center, center,
+    const ui::MouseEvent event(ui::EventType::kMousePressed, center, center,
                                ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
                                ui::EF_LEFT_MOUSE_BUTTON);
     button->OnMousePressed(event);
@@ -611,6 +628,13 @@ IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationDialogViewTest,
 class SecurePaymentConfirmationDialogViewNetworkAndIssuerIconsTest
     : public SecurePaymentConfirmationDialogViewTest {
  public:
+  SecurePaymentConfirmationDialogViewNetworkAndIssuerIconsTest() {
+    base::FieldTrialParams params;
+    params["spc_network_and_issuer_icons_option"] = "rows";
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        blink::features::kSecurePaymentConfirmationNetworkAndIssuerIcons,
+        params);
+  }
   void ExpectViewMatchesModelForNetworkAndIssuerRows() override {
     ExpectLabelText(
         model_.network_label(),
@@ -632,8 +656,7 @@ class SecurePaymentConfirmationDialogViewNetworkAndIssuerIconsTest
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_{
-      blink::features::kSecurePaymentConfirmationNetworkAndIssuerIcons};
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Variant of the main ViewMatchesModel test, which verifies that the network
@@ -676,6 +699,115 @@ IN_PROC_BROWSER_TEST_F(
       SecurePaymentConfirmationDialogView::DialogViewID::ISSUER_VALUE));
   ASSERT_FALSE(GetViewByID(
       SecurePaymentConfirmationDialogView::DialogViewID::ISSUER_ICON));
+}
+
+// A variant of SecurePaymentConfirmationDialogViewTest that enables the inline
+// title feature, and verifies the contents.
+class SecurePaymentConfirmationDialogViewInlineNetworkAndIssuerIconsTest
+    : public SecurePaymentConfirmationDialogViewTest {
+ public:
+  SecurePaymentConfirmationDialogViewInlineNetworkAndIssuerIconsTest() {
+    base::FieldTrialParams params;
+    params["spc_network_and_issuer_icons_option"] = "inline";
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        blink::features::kSecurePaymentConfirmationNetworkAndIssuerIcons,
+        params);
+  }
+
+  void CreateModel() override {
+    SecurePaymentConfirmationDialogViewTest::CreateModel();
+
+    model_.set_title(l10n_util::GetStringUTF16(
+        IDS_SECURE_PAYMENT_CONFIRMATION_INLINE_TITLE));
+    model_.set_description(l10n_util::GetStringUTF16(
+        IDS_SECURE_PAYMENT_CONFIRMATION_INLINE_DESCRIPTION));
+  }
+
+  bool ShouldShowHeaderIcon() override { return false; }
+
+  std::u16string GetExpectedTitleText() override {
+    return base::ReplaceStringPlaceholders(model_.title(),
+                                           model_.relying_party_id(), nullptr);
+  }
+
+  void ExpectViewMatchesModelForDescription() override {
+    ExpectLabelText(
+        model_.description(),
+        SecurePaymentConfirmationDialogView::DialogViewID::DESCRIPTION);
+  }
+
+  void ExpectViewMatchesModelForNetworkAndIssuerRows() override {
+    // For the inline view, there are no label or values for network/issuer, but
+    // the icons should be present.
+    EXPECT_FALSE(GetViewByID(
+        SecurePaymentConfirmationDialogView::DialogViewID::NETWORK_LABEL));
+    EXPECT_FALSE(GetViewByID(
+        SecurePaymentConfirmationDialogView::DialogViewID::NETWORK_VALUE));
+    EXPECT_FALSE(GetViewByID(
+        SecurePaymentConfirmationDialogView::DialogViewID::ISSUER_LABEL));
+    EXPECT_FALSE(GetViewByID(
+        SecurePaymentConfirmationDialogView::DialogViewID::ISSUER_VALUE));
+
+    ExpectIcon(*model_.network_icon(),
+               SecurePaymentConfirmationDialogView::DialogViewID::NETWORK_ICON);
+    ExpectIcon(*model_.issuer_icon(),
+               SecurePaymentConfirmationDialogView::DialogViewID::ISSUER_ICON);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Variant of the main ViewMatchesModel test, which verifies that the title,
+// description, and network/issuer icons are shown when the flag is enabled.
+IN_PROC_BROWSER_TEST_F(
+    SecurePaymentConfirmationDialogViewInlineNetworkAndIssuerIconsTest,
+    ViewMatchesModel) {
+  CreateModel();
+  InvokeSecurePaymentConfirmationUI();
+  ExpectViewMatchesModel();
+}
+
+// Tests that the network icon is not shown if it isn't in the model.
+IN_PROC_BROWSER_TEST_F(
+    SecurePaymentConfirmationDialogViewInlineNetworkAndIssuerIconsTest,
+    NetworkIconNotShownIfNotPresent) {
+  CreateModel();
+
+  model_.set_network_icon(SkBitmap());
+  InvokeSecurePaymentConfirmationUI();
+
+  // The title should still be present.
+  ExpectLabelText(GetExpectedTitleText(),
+                  SecurePaymentConfirmationDialogView::DialogViewID::TITLE);
+
+  // The network icon should not be shown, but the issuer icon should still be
+  // present.
+  ASSERT_FALSE(GetViewByID(
+      SecurePaymentConfirmationDialogView::DialogViewID::NETWORK_ICON));
+  ASSERT_TRUE(GetViewByID(
+      SecurePaymentConfirmationDialogView::DialogViewID::ISSUER_ICON));
+}
+
+// Tests that the issuer icon is not shown if it isn't in the model.
+IN_PROC_BROWSER_TEST_F(
+    SecurePaymentConfirmationDialogViewInlineNetworkAndIssuerIconsTest,
+    IssuerIconNotShownIfNotPresent) {
+  CreateModel();
+
+  model_.set_issuer_icon(SkBitmap());
+  InvokeSecurePaymentConfirmationUI();
+
+  // The title should still be present.
+  ExpectLabelText(GetExpectedTitleText(),
+                  SecurePaymentConfirmationDialogView::DialogViewID::TITLE);
+
+  // The issuer icon should not be shown, but the network icon should still be
+  // present.
+  ASSERT_FALSE(GetViewByID(
+      SecurePaymentConfirmationDialogView::DialogViewID::ISSUER_ICON));
+  ASSERT_TRUE(GetViewByID(
+      SecurePaymentConfirmationDialogView::DialogViewID::NETWORK_ICON));
 }
 
 }  // namespace payments

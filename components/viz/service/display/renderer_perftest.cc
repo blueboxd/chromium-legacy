@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 // This perf test measures the time from when the display compositor starts
 // drawing on the compositor thread to when a swap buffers occurs on the
 // GPU main thread.
@@ -274,9 +279,10 @@ class RendererPerfTest : public VizPerfTest {
     auto overlay_processor = std::make_unique<OverlayProcessorStub>();
     display_ = std::make_unique<Display>(
         &shared_bitmap_manager_, /*shared_image_manager=*/nullptr,
-        /*sync_point_manager=*/nullptr, renderer_settings_, &debug_settings_,
-        kArbitraryFrameSinkId, std::move(display_controller),
-        std::move(output_surface), std::move(overlay_processor),
+        /*sync_point_manager=*/nullptr, /*gpu_scheduler=*/nullptr,
+        renderer_settings_, &debug_settings_, kArbitraryFrameSinkId,
+        std::move(display_controller), std::move(output_surface),
+        std::move(overlay_processor),
         /*display_scheduler=*/nullptr,
         base::SingleThreadTaskRunner::GetCurrentDefault());
     display_->SetVisible(true);

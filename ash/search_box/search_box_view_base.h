@@ -146,8 +146,7 @@ class SearchBoxViewBase : public views::View,
   // Whether the trimmed query in the search box is empty.
   bool IsSearchBoxTrimmedQueryEmpty() const;
 
-  virtual void UpdateSearchTextfieldAccessibleNodeData(
-      ui::AXNodeData* node_data);
+  virtual void UpdateSearchTextfieldAccessibleActiveDescendantId();
 
   void ClearSearch();
 
@@ -211,7 +210,7 @@ class SearchBoxViewBase : public views::View,
 
   void SetShowAssistantButton(bool show);
 
-  // Detects |ET_MOUSE_PRESSED| and |ET_GESTURE_TAP| events on the white
+  // Detects |kMousePressed| and |EventType::kGestureTap| events on the white
   // background of the search box.
   virtual void HandleSearchBoxEvent(ui::LocatedEvent* located_event);
 

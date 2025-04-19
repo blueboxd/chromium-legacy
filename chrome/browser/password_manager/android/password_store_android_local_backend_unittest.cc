@@ -77,9 +77,6 @@ class PasswordStoreAndroidLocalBackendTest : public testing::Test {
   PasswordStoreAndroidLocalBackendTest() {
     prefs_.registry()->RegisterBooleanPref(
         prefs::kUnenrolledFromGoogleMobileServicesDueToErrors, false);
-    prefs_.registry()->RegisterBooleanPref(prefs::kUserReceivedGMSCoreError,
-                                           false);
-
     ResetBackend();
   }
 
@@ -343,15 +340,15 @@ TEST_F(PasswordStoreAndroidLocalBackendTest,
   base::MockCallback<LoginsOrErrorReply> mock_reply;
   EXPECT_CALL(*bridge_helper(), GetAllLogins).WillOnce(Return(kJobId));
   backend().GetAllLoginsAsync(mock_reply.Get());
-  EXPECT_CALL(
-      mock_reply,
-      Run(VariantWith<PasswordStoreBackendError>(PasswordStoreBackendError(
-          PasswordStoreBackendErrorType::kUncategorized,
-          PasswordStoreBackendErrorRecoveryType::kRecoverable))));
-  AndroidBackendError error{AndroidBackendErrorType::kExternalError};
-  // Simulate receiving INTERNAL_ERROR code from GMSCore.
   int kInternalErrorCode =
       static_cast<int>(AndroidBackendAPIErrorCode::kInternalError);
+  PasswordStoreBackendError expected_error = {
+      PasswordStoreBackendErrorType::kUncategorized};
+  expected_error.android_backend_api_error = kInternalErrorCode;
+  EXPECT_CALL(mock_reply,
+              Run(VariantWith<PasswordStoreBackendError>(expected_error)));
+  AndroidBackendError error{AndroidBackendErrorType::kExternalError};
+  // Simulate receiving INTERNAL_ERROR code from GMSCore.
   error.api_error_code = std::optional<int>(kInternalErrorCode);
   consumer().OnError(kJobId, std::move(error));
   RunUntilIdle();
@@ -513,11 +510,11 @@ TEST_P(PasswordStoreAndroidLocalBackendRetriesTest,
     task_environment_.FastForwardUntilNoTasksRemain();
   }
 
-  EXPECT_CALL(
-      mock_reply,
-      Run(VariantWith<PasswordStoreBackendError>(PasswordStoreBackendError(
-          PasswordStoreBackendErrorType::kUncategorized,
-          PasswordStoreBackendErrorRecoveryType::kRecoverable))));
+  PasswordStoreBackendError expected_error{
+      PasswordStoreBackendErrorType::kUncategorized};
+  expected_error.android_backend_api_error = static_cast<int>(GetParam());
+  EXPECT_CALL(mock_reply,
+              Run(VariantWith<PasswordStoreBackendError>(expected_error)));
   consumer().OnError(kJobId, error);
 
   RunUntilIdle();
@@ -551,11 +548,11 @@ TEST_P(PasswordStoreAndroidLocalBackendRetriesTest,
     task_environment_.FastForwardUntilNoTasksRemain();
   }
 
-  EXPECT_CALL(
-      mock_reply,
-      Run(VariantWith<PasswordStoreBackendError>(PasswordStoreBackendError(
-          PasswordStoreBackendErrorType::kUncategorized,
-          PasswordStoreBackendErrorRecoveryType::kRecoverable))));
+  PasswordStoreBackendError expected_error{
+      PasswordStoreBackendErrorType::kUncategorized};
+  expected_error.android_backend_api_error = static_cast<int>(GetParam());
+  EXPECT_CALL(mock_reply,
+              Run(VariantWith<PasswordStoreBackendError>(expected_error)));
   consumer().OnError(kJobId, error);
 
   RunUntilIdle();

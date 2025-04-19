@@ -36,6 +36,7 @@
 namespace blink {
 
 class CSSLengthResolver;
+class CSSMathExpressionNode;
 
 // Dimension calculations are imprecise, often resulting in values of e.g.
 // 44.99998. We need to go ahead and round if we're really close to the next
@@ -318,6 +319,9 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
   bool IsLength() const;
   bool IsNumber() const;
   bool IsInteger() const;
+  static bool IsPercentage(UnitType unit) {
+    return unit == UnitType::kPercentage;
+  }
   bool IsPercentage() const;
   // Is this a percentage *or* a calc() with a percentage?
   bool HasPercentage() const;
@@ -367,7 +371,49 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
   // Converts to a Length (Fixed, Percent or Calculated)
   Length ConvertToLength(const CSSLengthResolver&) const;
 
-  bool IsZero() const;
+  enum class BoolStatus {
+    kTrue,
+    kFalse,
+    kUnresolvable,
+  };
+
+  BoolStatus IsZero() const;
+  BoolStatus IsOne() const;
+  BoolStatus IsHundred() const;
+  BoolStatus IsNegative() const;
+
+  // this + value
+  CSSPrimitiveValue* Add(double value, UnitType unit_type) const;
+  // value + this
+  CSSPrimitiveValue* AddTo(double value, UnitType unit_type) const;
+  // this + value
+  CSSPrimitiveValue* Add(const CSSPrimitiveValue& value) const;
+  // value + this
+  CSSPrimitiveValue* AddTo(const CSSPrimitiveValue& value) const;
+  // this - value
+  CSSPrimitiveValue* Subtract(double value, UnitType unit_type) const;
+  // value - this
+  CSSPrimitiveValue* SubtractFrom(double value, UnitType unit_type) const;
+  // this - value
+  CSSPrimitiveValue* Subtract(const CSSPrimitiveValue& value) const;
+  // value - this
+  CSSPrimitiveValue* SubtractFrom(const CSSPrimitiveValue& value) const;
+  // this * value
+  CSSPrimitiveValue* Multiply(double value, UnitType unit_type) const;
+  // value * this
+  CSSPrimitiveValue* MultiplyBy(double value, UnitType unit_type) const;
+  // this * value
+  CSSPrimitiveValue* Multiply(const CSSPrimitiveValue& value) const;
+  // value * this
+  CSSPrimitiveValue* MultiplyBy(const CSSPrimitiveValue& value) const;
+  // this / value
+  CSSPrimitiveValue* Divide(double value, UnitType unit_type) const;
+  // Note: value / this is not allowed until typed arithmetic is implemented.
+  CSSPrimitiveValue* DivideBy(double value, UnitType unit_type) const = delete;
+  // Note: this / value is not allowed until typed arithmetic is implemented.
+  CSSPrimitiveValue* Divide(const CSSPrimitiveValue& value) const = delete;
+  // Note: value / this is not allowed until typed arithmetic is implemented.
+  CSSPrimitiveValue* DivideBy(const CSSPrimitiveValue& value) const = delete;
 
   // TODO(crbug.com/979895): The semantics of these untyped getters are not very
   // clear if |this| is a math function. Do not add new callers before further
@@ -394,6 +440,7 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
   int ComputeInteger(const CSSLengthResolver&) const;
   double ComputeNumber(const CSSLengthResolver&) const;
   double ComputePercentage(const CSSLengthResolver&) const;
+  double ComputeValueInCanonicalUnit(const CSSLengthResolver&) const;
 
   static const char* UnitTypeToString(UnitType);
   static UnitType StringToUnitType(StringView string) {
@@ -430,6 +477,7 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
 
  private:
   bool InvolvesLayout() const;
+  const CSSMathExpressionNode* ToMathExpressionNode() const;
 };
 
 using CSSLengthArray = CSSPrimitiveValue::CSSLengthArray;

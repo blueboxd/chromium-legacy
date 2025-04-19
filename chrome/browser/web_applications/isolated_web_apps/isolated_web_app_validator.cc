@@ -27,49 +27,40 @@ IsolatedWebAppValidator::IsolatedWebAppValidator() = default;
 
 IsolatedWebAppValidator::~IsolatedWebAppValidator() = default;
 
-void IsolatedWebAppValidator::ValidateIntegrityBlock(
+base::expected<void, std::string>
+IsolatedWebAppValidator::ValidateIntegrityBlock(
     const web_package::SignedWebBundleId& expected_web_bundle_id,
     const web_package::SignedWebBundleIntegrityBlock& integrity_block,
     bool dev_mode,
-    const IsolatedWebAppTrustChecker& trust_checker,
-    IntegrityBlockCallback callback) {
+    const IsolatedWebAppTrustChecker& trust_checker) {
   if (expected_web_bundle_id.is_for_proxy_mode()) {
-    std::move(callback).Run(base::unexpected(
-        "Web Bundle IDs of type ProxyMode are not supported."));
-    return;
+    return base::unexpected(
+        "Web Bundle IDs of type ProxyMode are not supported.");
   }
 
-  if (integrity_block.signature_stack().size() != 1) {
-    // TODO: crbug.com/40239682 - Support more than one signature.
-    std::move(callback).Run(base::unexpected(
-        base::StringPrintf("Expected exactly 1 signature, but got %zu.",
-                           integrity_block.signature_stack().size())));
-    return;
+  if (integrity_block.signature_stack().size() > 1 &&
+      !integrity_block.is_v2()) {
+    return base::unexpected(base::StringPrintf(
+        "Expected exactly 1 signature for the v1 integrity block, but got %zu.",
+        integrity_block.signature_stack().size()));
   }
 
-  auto derived_web_bundle_id =
-      integrity_block.signature_stack().derived_web_bundle_id();
+  auto derived_web_bundle_id = integrity_block.web_bundle_id();
   if (derived_web_bundle_id != expected_web_bundle_id) {
-    std::move(callback).Run(base::unexpected(base::StringPrintf(
-        "The Web Bundle ID (%s) derived from the public key does not "
+    return base::unexpected(base::StringPrintf(
+        "The Web Bundle ID (%s) derived from the integrity block does not "
         "match the expected Web Bundle ID (%s).",
         derived_web_bundle_id.id().c_str(),
-        expected_web_bundle_id.id().c_str())));
-    return;
+        expected_web_bundle_id.id().c_str()));
   }
-
-  // In the future, we'd also validate other properties of the Integrity Block
-  // in here, such as whether its version is supported (once we support multiple
-  // Integrity Block versions).
 
   IsolatedWebAppTrustChecker::Result result =
       trust_checker.IsTrusted(expected_web_bundle_id, dev_mode);
   if (result.status != IsolatedWebAppTrustChecker::Result::Status::kTrusted) {
-    std::move(callback).Run(base::unexpected(result.message));
-    return;
+    return base::unexpected(result.message);
   }
 
-  std::move(callback).Run(base::ok());
+  return base::ok();
 }
 
 base::expected<void, UnusableSwbnFileError>

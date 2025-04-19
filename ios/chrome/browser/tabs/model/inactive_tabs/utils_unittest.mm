@@ -7,8 +7,10 @@
 #import "base/test/metrics/histogram_tester.h"
 #import "base/test/scoped_feature_list.h"
 #import "base/test/task_environment.h"
+#import "components/tab_groups/tab_group_id.h"
 #import "ios/chrome/browser/ntp/model/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/ntp/model/new_tab_page_tab_helper_delegate.h"
+#import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser/test/test_browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
@@ -28,6 +30,8 @@
 #import "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "ui/base/device_form_factor.h"
+
+using tab_groups::TabGroupId;
 
 // Fake WebStateList delegate that attaches the required tab helper.
 class InactiveTabsFakeWebStateListDelegate : public FakeWebStateListDelegate {
@@ -55,9 +59,13 @@ class InactiveTabsUtilsTest : public PlatformTest {
     SnapshotBrowserAgent::CreateForBrowser(browser_inactive_.get());
   }
 
+  PrefService* local_state() {
+    return GetApplicationContext()->GetLocalState();
+  }
+
  protected:
   web::WebTaskEnvironment task_environment_;
-  IOSChromeScopedTestingLocalState local_state_;
+  IOSChromeScopedTestingLocalState scoped_testing_local_state_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   std::unique_ptr<TestBrowser> browser_active_;
   std::unique_ptr<TestBrowser> browser_inactive_;
@@ -247,7 +255,7 @@ TEST_F(InactiveTabsUtilsTest, RestoreAllInactive) {
   // either via the flag, or via the user pref. Disable in both places.
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndDisableFeature(kTabInactivityThreshold);
-  local_state_.Get()->SetInteger(prefs::kInactiveTabsTimeThreshold, -1);
+  local_state()->SetInteger(prefs::kInactiveTabsTimeThreshold, -1);
 
   WebStateList* active_web_state_list = browser_active_->GetWebStateList();
   WebStateList* inactive_web_state_list = browser_inactive_->GetWebStateList();
@@ -368,7 +376,7 @@ TEST_F(InactiveTabsUtilsTest, ComplicatedRestore) {
   // either via the flag, or via the user pref. Disable in both places.
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndDisableFeature(kTabInactivityThreshold);
-  local_state_.Get()->SetInteger(prefs::kInactiveTabsTimeThreshold, -1);
+  local_state()->SetInteger(prefs::kInactiveTabsTimeThreshold, -1);
 
   WebStateList* active_web_state_list = browser_active_->GetWebStateList();
   WebStateList* inactive_web_state_list = browser_inactive_->GetWebStateList();
@@ -482,7 +490,7 @@ TEST_F(InactiveTabsUtilsTest, EnsurePreferencePriority) {
 
   // Test that flags are taken into account instead of pref as we set the
   // preference default value.
-  local_state_.Get()->SetInteger(prefs::kInactiveTabsTimeThreshold, 0);
+  local_state()->SetInteger(prefs::kInactiveTabsTimeThreshold, 0);
 
   WebStateList* active_web_state_list = browser_active_->GetWebStateList();
   WebStateList* inactive_web_state_list = browser_inactive_->GetWebStateList();
@@ -511,7 +519,7 @@ TEST_F(InactiveTabsUtilsTest, EnsurePreferencePriority) {
   CheckOrder(inactive_web_state_list, expected_inactive_order);
 
   // Set the preference to 14.
-  local_state_.Get()->SetInteger(prefs::kInactiveTabsTimeThreshold, 14);
+  local_state()->SetInteger(prefs::kInactiveTabsTimeThreshold, 14);
   MoveTabsFromInactiveToActive(browser_inactive_.get(), browser_active_.get());
 
   // Expect a log of 0 duplicate.
@@ -532,7 +540,7 @@ TEST_F(InactiveTabsUtilsTest, RestoreAllInactiveTabsRemovesCrossDuplicates) {
   // either via the flag, or via the user pref. Disable in both places.
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndDisableFeature(kTabInactivityThreshold);
-  local_state_.Get()->SetInteger(prefs::kInactiveTabsTimeThreshold, -1);
+  local_state()->SetInteger(prefs::kInactiveTabsTimeThreshold, -1);
 
   // Create known identifiers and last_active_time.
   const web::WebStateID unique_identifier = web::WebStateID::NewUnique();
@@ -664,7 +672,7 @@ TEST_F(InactiveTabsUtilsTest, DoNotMoveTabInGroupToInactive) {
   EXPECT_EQ(active_web_state_list->count(), 3);
   EXPECT_EQ(inactive_web_state_list->count(), 0);
 
-  active_web_state_list->CreateGroup({0}, {});
+  active_web_state_list->CreateGroup({0}, {}, TabGroupId::GenerateNew());
 
   EXPECT_EQ(active_web_state_list->count(), 3);
   EXPECT_EQ(inactive_web_state_list->count(), 0);

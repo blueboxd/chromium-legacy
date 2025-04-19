@@ -110,12 +110,17 @@ public class MainActivity extends AppCompatActivity
     private static final String SHARED_PREF_SIDE_SHEET_ROUNDED_CORNER = "RoundedCorner";
     private static final String SHARED_PREF_CONTENT_SCROLL = "ContentScrollMayResizeTab";
     private static final String SHARED_PREF_SEARCH_IN_CCT = "SearchInCCT";
+    private static final String SHARED_PREF_SEND_TO_EXTERNAL_APP = "SendToExternalApp";
     private static final String SHARED_PREF_SHARE_IDENTITY = "ShareIdentity";
     private static final String SHARED_PREF_CONNECT_BUTTON = "ConnectButton";
     private static final String SHARED_PREF_DISCONNECT_BUTTON = "DisconnectButton";
     private static final String SHARED_PREF_WARMUP_BUTTON = "WarmupButton";
     private static final String SHARED_PREF_MAY_LAUNCH_BUTTON = "MayLaunchButton";
     private static final String SHARED_PREF_ENGAGEMENT_SIGNALS_BUTTON = "EngagementSignalsButton";
+    private static final String CCT_OPTION_REGULAR = "CCT";
+    private static final String CCT_OPTION_PARTIAL = "Partial CCT";
+    private static final String CCT_OPTION_INCOGNITO = "Incognito CCT";
+    private static final String CCT_OPTION_EPHEMERAL = "Ephemeral CCT";
     private static final int CLOSE_ICON_X = 0;
     private static final int CLOSE_ICON_BACK = 1;
     private static final int CLOSE_ICON_CHECK = 2;
@@ -163,6 +168,7 @@ public class MainActivity extends AppCompatActivity
     private CheckBox mSideSheetRoundedCornerCheckbox;
     private CheckBox mContentScrollCheckbox;
     private CheckBox mSearchInCCTCheckbox;
+    private CheckBox mSendToExternalAppCheckbox;
     private CheckBox mShareIdentityCheckbox;
     private TextView mPcctBreakpointLabel;
     private SeekBar mPcctBreakpointSlider;
@@ -502,6 +508,7 @@ public class MainActivity extends AppCompatActivity
         Spinner colorSpinner = (Spinner) findViewById(R.id.color_spinner);
         HashMap<String, String> colors = new HashMap<String, String>();
         colors.put("Default", "");
+        colors.put("White (AGA Light)", "#ffffff");
         colors.put("Orange", "#ef6c00");
         colors.put("Red", "#c63d3c");
         colors.put("Green", "#369f3d");
@@ -671,11 +678,20 @@ public class MainActivity extends AppCompatActivity
         mShareIdentityCheckbox = findViewById(R.id.share_identity_checkbox);
         mShareIdentityCheckbox.setChecked(
                 mSharedPref.getInt(SHARED_PREF_SHARE_IDENTITY, UNCHECKED) == CHECKED);
+        mSendToExternalAppCheckbox = findViewById(R.id.send_to_external_app_checkbox);
+        mSendToExternalAppCheckbox.setChecked(
+                mSharedPref.getInt(SHARED_PREF_SEND_TO_EXTERNAL_APP, UNCHECKED) == CHECKED);
     }
 
     private void initializeCctSpinner() {
         Spinner cctSpinner = (Spinner) findViewById(R.id.cct_spinner);
-        String[] cctOptions = new String[] {"CCT", "Partial CCT", "Incognito CCT"};
+        String[] cctOptions =
+                new String[] {
+                    CCT_OPTION_REGULAR,
+                    CCT_OPTION_PARTIAL,
+                    CCT_OPTION_INCOGNITO,
+                    CCT_OPTION_EPHEMERAL
+                };
         String prefCct = mSharedPref.getString(SHARED_PREF_CCT, "");
         for (int i = 0; i < cctOptions.length; i++) {
             if (cctOptions[i].equals(prefCct)) {
@@ -938,7 +954,7 @@ public class MainActivity extends AppCompatActivity
         CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder(session);
         prepareMenuItems(builder);
         prepareActionButton(builder);
-        boolean isPCCT = mCctType.equals("Partial CCT");
+        boolean isPCCT = mCctType.equals(CCT_OPTION_PARTIAL);
         prepareAesthetics(builder, isPCCT);
 
         // @CloseButtonPosition
@@ -958,11 +974,14 @@ public class MainActivity extends AppCompatActivity
         }
 
         if (mShareIdentityCheckbox.isChecked()) builder.setShareIdentityEnabled(true);
+        if (mSendToExternalAppCheckbox.isChecked()) {
+            builder.setSendToExternalDefaultHandlerEnabled(true);
+        }
 
         CustomTabsIntent customTabsIntent;
+        editor.putString(SHARED_PREF_CCT, mCctType);
 
         if (isPCCT) {
-            editor.putString(SHARED_PREF_CCT, "Partial CCT");
             int pcctInitialWidthPx = mPcctInitialWidthSlider.getProgress();
             if (pcctInitialWidthPx != 0) {
                 builder.setInitialActivityWidthPx(pcctInitialWidthPx);
@@ -1009,8 +1028,6 @@ public class MainActivity extends AppCompatActivity
             customTabsIntent.intent.putExtra(
                     EXTRA_ACTIVITY_SIDE_SHEET_DECORATION_TYPE, decorationType);
         } else {
-            editor.putString(
-                    SHARED_PREF_CCT, mCctType.equals("Incognito CCT") ? "Incognito CCT" : "CCT");
             if (session != null && mBottomToolbarCheckbox.isChecked()) {
                 prepareBottombar(builder);
                 Intent broadcastIntent = new Intent(this, BottomBarManager.SwipeUpReceiver.class);
@@ -1020,16 +1037,26 @@ public class MainActivity extends AppCompatActivity
                 builder.setSecondaryToolbarSwipeUpGesture(pi);
             }
             customTabsIntent = builder.build();
-            // NOTE: opening in incognito may be restricted. This assumes it is not.
             customTabsIntent.intent.putExtra(
                     "com.google.android.apps.chrome.EXTRA_OPEN_NEW_INCOGNITO_TAB",
-                    mCctType.equals("Incognito CCT"));
+                    mCctType.equals(CCT_OPTION_INCOGNITO));
+            customTabsIntent.intent.putExtra(
+                    "androidx.browser.customtabs.extra.ENABLE_EPHEMERAL_BROWSING",
+                    mCctType.equals(CCT_OPTION_EPHEMERAL));
+            // TODO(crbug.com/358346921): Remove when crrev.com/c/5770644 lands.
+            customTabsIntent.intent.putExtra(
+                    "com.google.android.apps.chrome.EXTRA_OPEN_NEW_EPHEMERAL_TAB",
+                    mCctType.equals(CCT_OPTION_EPHEMERAL));
+
             customTabsIntent.intent.putExtra(EXTRA_CLOSE_BUTTON_POSITION, closeButtonPosition);
         }
 
         customTabsIntent.intent.putExtra(EXTRA_OMNIBOX_ENABLED, mSearchInCCTCheckbox.isChecked());
 
         if (startActivityForResult) {
+            if (!TextUtils.isEmpty(mPackageNameToBind)) {
+                customTabsIntent.intent.setPackage(mPackageNameToBind);
+            }
             customTabsIntent.intent.setData(Uri.parse(url));
             startActivityForResult(customTabsIntent.intent, 0);
         } else {

@@ -9,6 +9,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
 import android.app.DownloadManager;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build.VERSION_CODES;
 
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.filters.MediumTest;
@@ -23,6 +24,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.Criteria;
@@ -40,9 +42,7 @@ import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemState;
 import org.chromium.components.offline_items_collection.UpdateDelta;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
-import org.chromium.ui.test.util.UiDisableIf;
 import org.chromium.url.GURL;
 
 import java.io.ByteArrayInputStream;
@@ -63,7 +63,7 @@ public class OMADownloadHandlerTest {
 
     @Before
     public void before() {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     mTestInfoBarController = new TestInfoBarController();
                     DownloadManagerService.getDownloadManagerService()
@@ -312,7 +312,7 @@ public class OMADownloadHandlerTest {
      */
     @Test
     @MediumTest
-    @DisableIf.Device(type = {UiDisableIf.TABLET}) // https://crbug.com/338971643
+    @DisableIf.Build(sdk_is_greater_than = VERSION_CODES.Q) // https://crbug.com/338971643
     @Feature({"Download"})
     public void testQueryDownloadResult() {
         Context context = getTestContext();
@@ -346,7 +346,7 @@ public class OMADownloadHandlerTest {
      */
     @Test
     @MediumTest
-    @DisableIf.Device(type = {UiDisableIf.TABLET}) // https://crbug.com/338971643
+    @DisableIf.Build(sdk_is_greater_than = VERSION_CODES.Q) // https://crbug.com/338971643
     @Feature({"Download"})
     public void testClearPendingOMADownloads() {
         Context context = getTestContext();
@@ -423,7 +423,7 @@ public class OMADownloadHandlerTest {
 
         DownloadInfo info = new DownloadInfo.Builder().build();
         final OMADownloadHandlerForTest omaHandler =
-                TestThreadUtils.runOnUiThreadBlockingNoException(
+                ThreadUtils.runOnUiThreadBlocking(
                         () -> {
                             return new OMADownloadHandlerForTest(context) {
                                 @Override

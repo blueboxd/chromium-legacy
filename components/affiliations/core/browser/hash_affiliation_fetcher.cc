@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "components/affiliations/core/browser/hash_affiliation_fetcher.h"
 
 #include "base/metrics/histogram_functions.h"
@@ -24,7 +29,7 @@
 namespace affiliations {
 
 namespace {
-const int kPrefixLength = 16;
+constexpr int kPrefixLength = 16;
 
 // Enumeration listing the possible outcomes of fetching affiliation information
 // from the Affiliation API. This is used in UMA histograms, so do not change
@@ -48,7 +53,7 @@ uint64_t ComputeHashPrefix(const FacetURI& uri) {
   static_assert(kPrefixLength < 64,
                 "Prefix should not be longer than 8 bytes.");
 
-  int bytes_count = kPrefixLength / 8 + (kPrefixLength % 8 != 0);
+  constexpr int bytes_count = kPrefixLength / 8 + (kPrefixLength % 8 != 0);
 
   uint8_t hash[bytes_count];
   crypto::SHA256HashString(uri.canonical_spec(), hash, bytes_count);

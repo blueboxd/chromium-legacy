@@ -35,17 +35,22 @@
  * version of this file under any of the LGPL, the MPL or the GPL.
  */
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/platform/image-decoders/jpeg/jpeg_image_decoder.h"
 
 #include <limits>
 #include <memory>
 
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/numerics/checked_math.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image_metrics.h"
-#include "third_party/blink/renderer/platform/image-decoders/exif_reader.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/private/SkJpegMetadataDecoder.h"
 
@@ -460,15 +465,9 @@ class JPEGImageReader final {
         jpeg_calc_output_dimensions(&info_);
         decoder_->SetDecodedSize(info_.output_width, info_.output_height);
 
-        DecodedImageMetaData metadata;
-        if (sk_sp<SkData> exif_data =
-                metadata_decoder_->getExifMetadata(/*copyData=*/false)) {
-          base::span<const uint8_t> exif_span(exif_data->bytes(),
-                                              exif_data->size());
-          ReadExif(exif_span, metadata);
-        }
-        decoder_->ApplyMetadata(
-            metadata, gfx::Size(info_.output_width, info_.output_height));
+        decoder_->ApplyExifMetadata(
+            metadata_decoder_->getExifMetadata(/*copyData=*/false).get(),
+            gfx::Size(info_.output_width, info_.output_height));
 
         // Allow color management of the decoded RGBA pixels if possible.
         if (!decoder_->IgnoresColorSpace()) {
@@ -759,7 +758,7 @@ class JPEGImageReader final {
   // we set to next_input_byte. libjpeg will update next_input_byte when it
   // has found the next restart position, so if it no longer matches this
   // value, we know we've reached the next restart position.
-  const JOCTET* last_set_byte_;
+  raw_ptr<const JOCTET> last_set_byte_;
 
   jpeg_decompress_struct info_;
   decoder_error_mgr err_;

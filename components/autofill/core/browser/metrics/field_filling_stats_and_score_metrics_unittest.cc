@@ -58,6 +58,11 @@ std::vector<test::FieldDescription> GetTestFormDataFields() {
       {.role = NAME_FIRST, .value = u"Random Value", .is_autofilled = false},
       {.role = NAME_MIDDLE, .value = u"Random Value", .is_autofilled = false},
       {.role = NAME_LAST, .value = u"Random Value", .is_autofilled = false},
+      {.role = ADDRESS_HOME_LINE1,
+       .value = u"Erika-mann",
+       .is_autofilled = true},
+      {.role = ADDRESS_HOME_ZIP, .value = u"89173", .is_autofilled = true},
+      {.role = ADDRESS_HOME_APT_NUM, .value = u"33", .is_autofilled = true},
       // The last field is not autofilled and empty.
       {.role = ADDRESS_HOME_CITY, .value = u"", .is_autofilled = false},
       // We add two credit cards field to make sure those are counted
@@ -92,19 +97,20 @@ class AutofillFieldFillingStatsAndScoreMetricsTest
   // Simulates user changes to the fields [1, 5] of `form_data_`. Used
   // to cover user correction metrics.
   void SimulationOfDefaultUserChangesOnAddedFormTextFields() {
-    ASSERT_GT(form_data_.fields.size(), 6u);
+    ASSERT_GT(form_data_.fields().size(), 6u);
     // Elvis is of type NAME_FIRST in the test profile.
-    SimulateUserChangedTextFieldTo(form_data_, form_data_.fields[1], u"Elvis");
+    SimulateUserChangedTextFieldTo(form_data_, form_data_.fields()[1],
+                                   u"Elvis");
     // Presley is of type NAME_LAST in the test profile
-    SimulateUserChangedTextFieldTo(form_data_, form_data_.fields[2],
+    SimulateUserChangedTextFieldTo(form_data_, form_data_.fields()[2],
                                    u"Presley");
     // Presley is of type NAME_LAST in the test profile
-    SimulateUserChangedTextFieldTo(form_data_, form_data_.fields[3],
+    SimulateUserChangedTextFieldTo(form_data_, form_data_.fields()[3],
                                    u"Presley");
     // This is a random string of UNKNOWN_TYPE.
-    SimulateUserChangedTextFieldTo(form_data_, form_data_.fields[4],
+    SimulateUserChangedTextFieldTo(form_data_, form_data_.fields()[4],
                                    u"something random");
-    SimulateUserChangedTextFieldTo(form_data_, form_data_.fields[5], u"");
+    SimulateUserChangedTextFieldTo(form_data_, form_data_.fields()[5], u"");
   }
 
   // Creates, adds and "sees" a form that contains `fields`.
@@ -134,32 +140,48 @@ TEST_F(AutofillFieldFillingStatsAndScoreMetricsTest, FillingStats) {
 
   SubmitForm(form);
 
-  // Testing of the FormFillingStats expectations.
-  ExpectFieldFillingStatsUniqueSample(histogram_tester, "Address.Accepted", 2);
-  ExpectFieldFillingStatsUniqueSample(histogram_tester,
-                                      "Address.CorrectedToSameType", 2);
-  ExpectFieldFillingStatsUniqueSample(histogram_tester,
-                                      "Address.CorrectedToDifferentType", 1);
-  ExpectFieldFillingStatsUniqueSample(histogram_tester,
-                                      "Address.CorrectedToUnknownType", 1);
-  ExpectFieldFillingStatsUniqueSample(histogram_tester,
-                                      "Address.CorrectedToEmpty", 1);
-  ExpectFieldFillingStatsUniqueSample(histogram_tester, "Address.LeftEmpty", 1);
-  ExpectFieldFillingStatsUniqueSample(histogram_tester,
-                                      "Address.ManuallyFilledToSameType", 2);
-  ExpectFieldFillingStatsUniqueSample(
-      histogram_tester, "Address.ManuallyFilledToDifferentType", 1);
-  ExpectFieldFillingStatsUniqueSample(histogram_tester,
-                                      "Address.ManuallyFilledToUnknownType", 3);
-  ExpectFieldFillingStatsUniqueSample(histogram_tester,
-                                      "Address.TotalManuallyFilled", 6);
-  ExpectFieldFillingStatsUniqueSample(histogram_tester, "Address.TotalFilled",
-                                      7);
-  ExpectFieldFillingStatsUniqueSample(histogram_tester,
-                                      "Address.TotalCorrected", 5);
-  ExpectFieldFillingStatsUniqueSample(histogram_tester, "Address.TotalUnfilled",
-                                      7);
-  ExpectFieldFillingStatsUniqueSample(histogram_tester, "Address.Total", 14);
+  // Testing of the FormFillingStats expectations. Note that `form` is an
+  // address form but also a `FormTypeNameForLogging::kPostalAddressForm` form,
+  // as opposed to for example, a `FormTypeNameForLogging::kEmailOnlyForm`.
+  for (std::string_view form_type :
+       {FormTypeNameForLoggingToStringView(
+            FormTypeNameForLogging::kAddressForm),
+        FormTypeNameForLoggingToStringView(
+            FormTypeNameForLogging::kPostalAddressForm)}) {
+    ExpectFieldFillingStatsUniqueSample(
+        histogram_tester, base::StrCat({form_type, ".Accepted"}), 5);
+    ExpectFieldFillingStatsUniqueSample(
+        histogram_tester, base::StrCat({form_type, ".CorrectedToSameType"}), 2);
+    ExpectFieldFillingStatsUniqueSample(
+        histogram_tester,
+        base::StrCat({form_type, ".CorrectedToDifferentType"}), 1);
+    ExpectFieldFillingStatsUniqueSample(
+        histogram_tester, base::StrCat({form_type, ".CorrectedToUnknownType"}),
+        1);
+    ExpectFieldFillingStatsUniqueSample(
+        histogram_tester, base::StrCat({form_type, ".CorrectedToEmpty"}), 1);
+    ExpectFieldFillingStatsUniqueSample(
+        histogram_tester, base::StrCat({form_type, ".LeftEmpty"}), 1);
+    ExpectFieldFillingStatsUniqueSample(
+        histogram_tester,
+        base::StrCat({form_type, ".ManuallyFilledToSameType"}), 2);
+    ExpectFieldFillingStatsUniqueSample(
+        histogram_tester,
+        base::StrCat({form_type, ".ManuallyFilledToDifferentType"}), 1);
+    ExpectFieldFillingStatsUniqueSample(
+        histogram_tester,
+        base::StrCat({form_type, ".ManuallyFilledToUnknownType"}), 3);
+    ExpectFieldFillingStatsUniqueSample(
+        histogram_tester, base::StrCat({form_type, ".TotalManuallyFilled"}), 6);
+    ExpectFieldFillingStatsUniqueSample(
+        histogram_tester, base::StrCat({form_type, ".TotalFilled"}), 10);
+    ExpectFieldFillingStatsUniqueSample(
+        histogram_tester, base::StrCat({form_type, ".TotalCorrected"}), 5);
+    ExpectFieldFillingStatsUniqueSample(
+        histogram_tester, base::StrCat({form_type, ".TotalUnfilled"}), 7);
+    ExpectFieldFillingStatsUniqueSample(
+        histogram_tester, base::StrCat({form_type, ".Total"}), 17);
+  }
 }
 
 // Same as above but for different filling methods. Note that metrics related to
@@ -228,16 +250,16 @@ TEST_F(AutofillFieldFillingStatsAndScoreMetricsTest,
   ExpectFieldFillingStatsUniqueSample(histogram_tester,
                                       "FullForm.Address.CorrectedToEmpty", 1);
   ExpectFieldFillingStatsUniqueSample(histogram_tester,
-                                      "FullForm.Address.TotalFilled", 4);
+                                      "FullForm.Address.TotalFilled", 7);
   ExpectFieldFillingStatsUniqueSample(histogram_tester,
                                       "FullForm.Address.TotalCorrected", 3);
   ExpectFieldFillingStatsUniqueSample(histogram_tester,
-                                      "FullForm.Address.Total", 4);
+                                      "FullForm.Address.Total", 7);
 
   // Manually filled fields are only counted under Any since they have no
   // filling method.
   ExpectFieldFillingStatsUniqueSample(histogram_tester, "Any.Address.Accepted",
-                                      2);
+                                      5);
   ExpectFieldFillingStatsUniqueSample(histogram_tester,
                                       "Any.Address.CorrectedToSameType", 2);
   ExpectFieldFillingStatsUniqueSample(
@@ -257,13 +279,13 @@ TEST_F(AutofillFieldFillingStatsAndScoreMetricsTest,
   ExpectFieldFillingStatsUniqueSample(histogram_tester,
                                       "Any.Address.TotalManuallyFilled", 6);
   ExpectFieldFillingStatsUniqueSample(histogram_tester,
-                                      "Any.Address.TotalFilled", 7);
+                                      "Any.Address.TotalFilled", 10);
   ExpectFieldFillingStatsUniqueSample(histogram_tester,
                                       "Any.Address.TotalCorrected", 5);
   ExpectFieldFillingStatsUniqueSample(histogram_tester,
                                       "Any.Address.TotalUnfilled", 7);
   ExpectFieldFillingStatsUniqueSample(histogram_tester, "Any.Address.Total",
-                                      14);
+                                      17);
 }
 
 // Test form-wise filling score for the different form types.
@@ -278,7 +300,7 @@ TEST_F(AutofillFieldFillingStatsAndScoreMetricsTest, FillingScores) {
 
   // The form contains a total of 7 autofilled address fields. Two fields are
   // accepted while 5 are corrected.
-  const int accepted_address_fields = 2;
+  const int accepted_address_fields = 5;
   const int corrected_address_fields = 5;
 
   const int expected_address_score =
@@ -332,13 +354,15 @@ TEST_F(AutocompleteUnrecognizedFieldFillingStatsTest, FieldFillingStats) {
             .autocomplete_attribute = "unrecognized"},
            {.role = EMAIL_ADDRESS, .autocomplete_attribute = "unrecognized"}}});
 
-  SimulateUserChangedTextFieldTo(form, form.fields[0], u"Corrected First Name");
-  SimulateUserChangedTextFieldTo(form, form.fields[1],
+  SimulateUserChangedTextFieldTo(form, form.fields()[0],
+                                 u"Corrected First Name");
+  SimulateUserChangedTextFieldTo(form, form.fields()[1],
                                  u"Corrected Middle Name");
-  SimulateUserChangedTextFieldTo(form, form.fields[2], u"Corrected Last Name");
-  SimulateUserChangedTextFieldTo(form, form.fields[8],
+  SimulateUserChangedTextFieldTo(form, form.fields()[2],
+                                 u"Corrected Last Name");
+  SimulateUserChangedTextFieldTo(form, form.fields()[8],
                                  u"Manually Filled Phone");
-  SimulateUserChangedTextFieldTo(form, form.fields[9],
+  SimulateUserChangedTextFieldTo(form, form.fields()[9],
                                  u"Manually Filled Email");
 
   base::HistogramTester histogram_tester;

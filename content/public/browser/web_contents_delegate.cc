@@ -98,13 +98,13 @@ bool WebContentsDelegate::HandleContextMenu(RenderFrameHost& render_frame_host,
 
 KeyboardEventProcessingResult WebContentsDelegate::PreHandleKeyboardEvent(
     WebContents* source,
-    const NativeWebKeyboardEvent& event) {
+    const input::NativeWebKeyboardEvent& event) {
   return KeyboardEventProcessingResult::NOT_HANDLED;
 }
 
 bool WebContentsDelegate::HandleKeyboardEvent(
     WebContents* source,
-    const NativeWebKeyboardEvent& event) {
+    const input::NativeWebKeyboardEvent& event) {
   return false;
 }
 
@@ -370,7 +370,8 @@ bool WebContentsDelegate::ShouldAllowLazyLoad() {
   return true;
 }
 
-bool WebContentsDelegate::IsBackForwardCacheSupported() {
+bool WebContentsDelegate::IsBackForwardCacheSupported(
+    WebContents& web_contents) {
   return false;
 }
 
@@ -387,13 +388,6 @@ WebContentsDelegate::ShouldOverrideUserAgentForPrerender2() {
 bool WebContentsDelegate::ShouldAllowPartialParamMismatchOfPrerender2(
     NavigationHandle& navigation_handle) {
   return false;
-}
-
-void WebContentsDelegate::UpdateInspectedWebContentsIfNecessary(
-    WebContents* old_contents,
-    WebContents* new_contents,
-    base::OnceCallback<void()> callback) {
-  std::move(callback).Run();
 }
 
 bool WebContentsDelegate::ShouldShowStaleContentOnEviction(
@@ -420,5 +414,12 @@ bool WebContentsDelegate::MaybeCopyContentAreaAsBitmap(
     base::OnceCallback<void(const SkBitmap&)> callback) {
   return false;
 }
+
+#if BUILDFLAG(IS_ANDROID)
+BackForwardTransitionAnimationManager::FallbackUXConfig
+WebContentsDelegate::GetBackForwardTransitionFallbackUXConfig() {
+  return BackForwardTransitionAnimationManager::FallbackUXConfig();
+}
+#endif  // BUILDFLAG(IS_ANDROID)
 
 }  // namespace content

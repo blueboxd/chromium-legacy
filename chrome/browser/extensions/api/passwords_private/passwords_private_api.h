@@ -435,6 +435,9 @@ class PasswordsPrivateSwitchBiometricAuthBeforeFillingStateFunction
 
   // ExtensionFunction overrides.
   ResponseAction Run() override;
+
+ private:
+  void OnAuthenticationComplete(bool result);
 };
 
 class PasswordsPrivateShowAddShortcutDialogFunction : public ExtensionFunction {
@@ -489,6 +492,9 @@ class PasswordsPrivateIsPasswordManagerPinAvailableFunction
 
   // ExtensionFunction overrides.
   ResponseAction Run() override;
+
+ private:
+  void OnPasswordManagerPinAvailabilityReceived(bool is_available);
 };
 
 class PasswordsPrivateDisconnectCloudAuthenticatorFunction
@@ -518,6 +524,22 @@ class PasswordsPrivateIsConnectedToCloudAuthenticatorFunction
 
   // ExtensionFunction overrides.
   ResponseAction Run() override;
+};
+
+class PasswordsPrivateDeleteAllPasswordManagerDataFunction
+    : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("passwordsPrivate.deleteAllPasswordManagerData",
+                             PASSWORDSPRIVATE_DELETEALLPASSWORDMANAGERDATA)
+
+ protected:
+  ~PasswordsPrivateDeleteAllPasswordManagerDataFunction() override = default;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+
+ private:
+  void OnDeletionCompleted(bool success);
 };
 
 }  // namespace extensions

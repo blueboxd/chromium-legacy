@@ -25,6 +25,7 @@
 #include "base/task/current_thread.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
+#include "components/input/render_widget_host_input_event_router.h"
 #include "components/viz/common/features.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/download/drag_download_util.h"
@@ -36,7 +37,6 @@
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
-#include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/browser/web_contents/aura/gesture_nav_simple.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -232,7 +232,7 @@ void PrepareDragForDownload(const DropData& drop_data,
   auto download_file = std::make_unique<DragDownloadFile>(
       download_path, base::File(), download_url,
       Referrer(page_url, drop_data.referrer_policy), page_encoding,
-      web_contents);
+      provider->GetRendererTaintedOrigin(), web_contents);
   ui::DownloadFileInfo file_download(base::FilePath(),
                                      std::move(download_file));
   provider->SetDownloadFileInfo(&file_download);
@@ -269,8 +269,9 @@ void PrepareDragData(const DropData& drop_data,
   // SetURL() will itself do SetString() when a string hasn't been set yet,
   // but we want to prefer drop_data.text.string() over the URL string if it
   // exists.
-  if (drop_data.text && !drop_data.text->empty())
+  if (drop_data.text) {
     provider->SetString(*drop_data.text);
+  }
   if (drop_data.url.is_valid())
     provider->SetURL(drop_data.url, drop_data.url_title);
   if (drop_data.html && !drop_data.html->empty())
@@ -286,7 +287,7 @@ void PrepareDragData(const DropData& drop_data,
   if (!drop_data.custom_data.empty()) {
     base::Pickle pickle;
     ui::WriteCustomDataToPickle(drop_data.custom_data, &pickle);
-    provider->SetPickledData(ui::ClipboardFormatType::WebCustomDataType(),
+    provider->SetPickledData(ui::ClipboardFormatType::DataTransferCustomType(),
                              pickle);
   }
 }
@@ -780,8 +781,8 @@ void WebContentsViewAura::PrepareDropData(
     }
   }
 
-  if (std::optional<base::Pickle> pickle =
-          data.GetPickledData(ui::ClipboardFormatType::WebCustomDataType());
+  if (std::optional<base::Pickle> pickle = data.GetPickledData(
+          ui::ClipboardFormatType::DataTransferCustomType());
       pickle.has_value()) {
     if (std::optional<std::unordered_map<std::u16string, std::u16string>>
             maybe_custom_data = ui::ReadCustomDataIntoMap(pickle.value());
@@ -803,13 +804,7 @@ void WebContentsViewAura::EndDrag(
   RenderWidgetHost* source_rwh = source_rwh_weak_ptr.get();
 
   aura::Window* window = GetContentNativeView();
-  // When the drag is cancelled after a portal activation, we would have already
-  // destroyed the page's RWHV (the predecessor page is now an orphaned portal),
-  // and GetContentNativeView() will return a nullptr.
-  if (!window) {
-    web_contents_->SystemDragEnded(source_rwh);
-    return;
-  }
+  CHECK(window);
 
   gfx::PointF screen_loc =
       gfx::PointF(display::Screen::GetScreen()->GetCursorScreenPoint());
@@ -938,11 +933,6 @@ void WebContentsViewAura::FocusThroughTabTraversal(bool reverse) {
 
 DropData* WebContentsViewAura::GetDropData() const {
   return current_drag_data_.get();
-}
-
-void WebContentsViewAura::TransferDragSecurityInfo(WebContentsView* view) {
-  WebContentsViewAura* view_aura = static_cast<WebContentsViewAura*>(view);
-  drag_security_info_ = view_aura->drag_security_info_;
 }
 
 gfx::Rect WebContentsViewAura::GetViewBounds() const {
@@ -1135,8 +1125,6 @@ void WebContentsViewAura::StartDragging(
   // that case.
   base::WeakPtr<RenderWidgetHostImpl> source_rwh_weak_ptr =
       source_rwh->GetWeakPtr();
-  // It's also possible for portal activation and adoption to destroy `this`
-  // during the nested run loop. See https://crbug.com/1312144.
   base::WeakPtr<WebContentsViewAura> weak_this = weak_ptr_factory_.GetWeakPtr();
 
   drag_security_info_.OnDragInitiated(source_rwh, drop_data);
@@ -1151,7 +1139,9 @@ void WebContentsViewAura::StartDragging(
   auto data = std::make_unique<ui::OSExchangeData>(std::move(provider));
   data->SetSource(std::make_unique<ui::DataTransferEndpoint>(
       web_contents_->GetPrimaryMainFrame()->GetLastCommittedURL(),
-      web_contents_->GetBrowserContext()->IsOffTheRecord()));
+      ui::DataTransferEndpointOptions{
+          .off_the_record =
+              web_contents_->GetBrowserContext()->IsOffTheRecord()}));
   WebContentsDelegate* delegate = web_contents_->GetDelegate();
   if (delegate && delegate->IsPrivileged())
     data->MarkAsFromPrivileged();
@@ -1178,13 +1168,6 @@ void WebContentsViewAura::StartDragging(
                                event_info.source);
   }
 
-  if (!weak_this) {
-    if (source_rwh_weak_ptr) {
-      source_rwh_weak_ptr->DragSourceSystemDragEnded();
-    }
-    return;
-  }
-
   // Bail out immediately if the contents view window is gone. Note that it is
   // not safe to access any class members in this case since |this| may already
   // be destroyed. The local variable |drag_source| will still be valid though,
@@ -1194,6 +1177,9 @@ void WebContentsViewAura::StartDragging(
     // renderer is going away.
     return;
   }
+
+  // |this| should still be alive at this point.
+  CHECK(weak_this, base::NotFatalUntil::M130);
 
   // If drag is still in progress that means we haven't received drop targeting
   // callback yet. So we have to make sure to delay calling EndDrag until drop
@@ -1329,7 +1315,7 @@ void WebContentsViewAura::OnMouseEvent(ui::MouseEvent* event) {
   if (!web_contents_->GetDelegate())
     return;
 
-  if (event->type() == ui::ET_MOUSE_PRESSED) {
+  if (event->type() == ui::EventType::kMousePressed) {
     // Linux window managers like to handle raise-on-click themselves.  If we
     // raise-on-click manually, this may override user settings that prevent
     // focus-stealing.
@@ -1506,10 +1492,12 @@ aura::client::DragUpdateInfo WebContentsViewAura::OnDragUpdated(
   }
   aura::client::DragUpdateInfo drag_info;
   auto* focused_frame = web_contents_->GetFocusedFrame();
-  if (focused_frame && !web_contents_->GetBrowserContext()->IsOffTheRecord()) {
+  if (focused_frame && !web_contents_->GetBrowserContext()->IsOffTheRecord() &&
+      web_contents_->GetPrimaryMainFrame()->GetLastCommittedURL().is_valid()) {
     drag_info.data_endpoint = ui::DataTransferEndpoint(
         web_contents_->GetPrimaryMainFrame()->GetLastCommittedURL(),
-        web_contents_->GetBrowserContext()->IsOffTheRecord());
+        {.off_the_record =
+             web_contents_->GetBrowserContext()->IsOffTheRecord()});
   }
 
   std::unique_ptr<DropData> drop_data = std::make_unique<DropData>();

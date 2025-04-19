@@ -10,6 +10,7 @@
 #include "ash/constants/ash_pref_names.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/login/ui/login_data_dispatcher.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/brightness_control_delegate.h"
 #include "ash/system/power/power_status.h"
@@ -17,6 +18,7 @@
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
@@ -151,6 +153,18 @@ class BrightnessControllerChromeosTest : public AshTestBase {
 
   void AdvanceClock(base::TimeDelta time) {
     task_environment()->AdvanceClock(time);
+  }
+
+  void SetAmbientLightSensorEnabled(
+      bool enabled,
+      power_manager::AmbientLightSensorChange_Cause cause) {
+    brightness_control_delegate()->SetAmbientLightSensorEnabled(
+        enabled, BrightnessControlDelegate::
+                     AmbientLightSensorEnabledChangeSource::kSettingsApp);
+    power_manager::AmbientLightSensorChange sensor_change;
+    sensor_change.set_sensor_enabled(enabled);
+    sensor_change.set_cause(cause);
+    power_manager_client()->SendAmbientLightSensorEnabledChanged(sensor_change);
   }
 
   void SetBrightness(double brightness_percent,
@@ -597,13 +611,17 @@ TEST_F(BrightnessControllerChromeosTest, SetAmbientLightSensorEnabled) {
   EXPECT_TRUE(power_manager_client()->is_ambient_light_sensor_enabled());
 
   // Disable the ambient light sensor via the BrightnessControlDelegate.
-  brightness_control_delegate()->SetAmbientLightSensorEnabled(false);
+  brightness_control_delegate()->SetAmbientLightSensorEnabled(
+      false, BrightnessControlDelegate::AmbientLightSensorEnabledChangeSource::
+                 kSettingsApp);
   // PowerManagerClient should have been invoked, disabling the ambient light
   // sensor.
   EXPECT_FALSE(power_manager_client()->is_ambient_light_sensor_enabled());
 
   // Re-enabled the ambient light sensor via the BrightnessControlDelegate.
-  brightness_control_delegate()->SetAmbientLightSensorEnabled(true);
+  brightness_control_delegate()->SetAmbientLightSensorEnabled(
+      true, BrightnessControlDelegate::AmbientLightSensorEnabledChangeSource::
+                kSettingsApp);
   // PowerManagerClient should have been invoked, re-enabling the ambient light
   // sensor.
   EXPECT_TRUE(power_manager_client()->is_ambient_light_sensor_enabled());
@@ -615,7 +633,9 @@ TEST_F(BrightnessControllerChromeosTest, GetAmbientLightSensorEnabled) {
   SetBatteryPower();
 
   // Disable the ambient light sensor via the BrightnessControlDelegate.
-  brightness_control_delegate()->SetAmbientLightSensorEnabled(false);
+  brightness_control_delegate()->SetAmbientLightSensorEnabled(
+      false, BrightnessControlDelegate::AmbientLightSensorEnabledChangeSource::
+                 kSettingsApp);
 
   // GetAmbientLightSensorEnabled should return that the the light sensor is
   // currently not enabled.
@@ -625,7 +645,9 @@ TEST_F(BrightnessControllerChromeosTest, GetAmbientLightSensorEnabled) {
       }));
 
   // Re-enable the ambient light sensor via the BrightnessControlDelegate.
-  brightness_control_delegate()->SetAmbientLightSensorEnabled(true);
+  brightness_control_delegate()->SetAmbientLightSensorEnabled(
+      true, BrightnessControlDelegate::AmbientLightSensorEnabledChangeSource::
+                kSettingsApp);
 
   // GetAmbientLightSensorEnabled should return that the the light sensor is
   // currently enabled.
@@ -661,7 +683,9 @@ TEST_F(BrightnessControllerChromeosTest, AmbientLightSensorDisabledReasonPref) {
   SetBatteryPower();
 
   // Set the ambient light sensor to be enabled initially.
-  power_manager_client()->SetAmbientLightSensorEnabled(true);
+  power_manager::SetAmbientLightSensorEnabledRequest request;
+  request.set_sensor_enabled(true);
+  power_manager_client()->SetAmbientLightSensorEnabled(request);
   // Wait for AmbientLightSensorEnabledChange observer to be notified.
   run_loop_.RunUntilIdle();
 
@@ -676,7 +700,8 @@ TEST_F(BrightnessControllerChromeosTest, AmbientLightSensorDisabledReasonPref) {
       HasAmbientLightSensorDisabledReasonPrefValue(known_user, account_id));
 
   // Disable the ambient light sensor.
-  power_manager_client()->SetAmbientLightSensorEnabled(false);
+  request.set_sensor_enabled(false);
+  power_manager_client()->SetAmbientLightSensorEnabled(request);
   // Wait for AmbientLightSensorEnabledChange observer to be notified.
   run_loop_.RunUntilIdle();
 
@@ -690,7 +715,8 @@ TEST_F(BrightnessControllerChromeosTest, AmbientLightSensorDisabledReasonPref) {
       GetAmbientLightSensorDisabledReasonPrefValue(known_user, account_id));
 
   // Re-enable the ambient light sensor.
-  power_manager_client()->SetAmbientLightSensorEnabled(true);
+  request.set_sensor_enabled(true);
+  power_manager_client()->SetAmbientLightSensorEnabled(request);
   // Wait for AmbientLightSensorEnabledChange observer to be notified.
   run_loop_.RunUntilIdle();
 
@@ -734,58 +760,52 @@ TEST_F(BrightnessControllerChromeosTest, AmbientLightSensorDisabledReasonPref) {
 }
 
 TEST_F(BrightnessControllerChromeosTest, AmbientLightSensorEnabledPref) {
+  // Activate user session.
   GetSessionControllerClient()->SetSessionState(
       session_manager::SessionState::ACTIVE);
-  SetBatteryPower();
 
   // Set the ambient light sensor to be enabled initially.
-  power_manager_client()->SetAmbientLightSensorEnabled(true);
+  power_manager::SetAmbientLightSensorEnabledRequest request;
+  request.set_sensor_enabled(true);
+  power_manager_client()->SetAmbientLightSensorEnabled(request);
   // Wait for AmbientLightSensorEnabledChange observer to be notified.
   run_loop_.RunUntilIdle();
 
-  // On the login screen, focus a user.
-  AccountId account_id = AccountId::FromUserEmail(kUserEmail);
-  login_data_dispatcher()->NotifyFocusPod(account_id);
-
-  user_manager::KnownUser known_user(local_state());
-
-  // There should not be a KnownUser pref set initially because a user account
-  // wasn't focused at the time of the change.
-  EXPECT_FALSE(
-      HasDisplayAmbientLightSensorEnabledPrefValue(known_user, account_id));
-  // However, the synced profile pref value should default to true.
+  // User pref is default to true.
   EXPECT_TRUE(
       Shell::Get()->session_controller()->GetActivePrefService()->GetBoolean(
           prefs::kDisplayAmbientLightSensorLastEnabled));
 
-  // Disable the ambient light sensor.
-  power_manager_client()->SetAmbientLightSensorEnabled(false);
-  // Wait for AmbientLightSensorEnabledChange observer to be notified.
-  run_loop_.RunUntilIdle();
-
-  // After the ambient light sensor status is disabled, the KnownUser pref
-  // should be stored with the correct value.
+  // Disable the sensor via brightness change (not from settings app), pref
+  // should remain true.
+  SetAmbientLightSensorEnabled(
+      false, power_manager::AmbientLightSensorChange_Cause::
+                 AmbientLightSensorChange_Cause_BRIGHTNESS_USER_REQUEST);
   EXPECT_TRUE(
-      HasDisplayAmbientLightSensorEnabledPrefValue(known_user, account_id));
-  EXPECT_FALSE(
-      GetDisplayAmbientLightSensorEnabledPrefValue(known_user, account_id));
-  // The synced profile pref should also have the correct value.
+      Shell::Get()->session_controller()->GetActivePrefService()->GetBoolean(
+          prefs::kDisplayAmbientLightSensorLastEnabled));
+
+  // Re-enable the sensor from settings app, pref should be true.
+  SetAmbientLightSensorEnabled(
+      true, power_manager::AmbientLightSensorChange_Cause::
+                AmbientLightSensorChange_Cause_USER_REQUEST_SETTINGS_APP);
+  EXPECT_TRUE(
+      Shell::Get()->session_controller()->GetActivePrefService()->GetBoolean(
+          prefs::kDisplayAmbientLightSensorLastEnabled));
+
+  // Disable the sensor again, this time, the request is from settings app, the
+  // pref should be updated to false.
+  SetAmbientLightSensorEnabled(
+      false, power_manager::AmbientLightSensorChange_Cause::
+                 AmbientLightSensorChange_Cause_USER_REQUEST_SETTINGS_APP);
   EXPECT_FALSE(
       Shell::Get()->session_controller()->GetActivePrefService()->GetBoolean(
           prefs::kDisplayAmbientLightSensorLastEnabled));
 
-  // Re-enable the ambient light sensor.
-  power_manager_client()->SetAmbientLightSensorEnabled(true);
-  // Wait for AmbientLightSensorEnabledChange observer to be notified.
-  run_loop_.RunUntilIdle();
-
-  // After the ambient light sensor status is re-enabled, the KnownUser pref
-  // should be stored with the correct value.
-  EXPECT_TRUE(
-      HasDisplayAmbientLightSensorEnabledPrefValue(known_user, account_id));
-  EXPECT_TRUE(
-      GetDisplayAmbientLightSensorEnabledPrefValue(known_user, account_id));
-  // The synced profile pref should also have the correct value.
+  // Re-enable the sensor via user settings and verify the preference updates.
+  SetAmbientLightSensorEnabled(
+      true, power_manager::AmbientLightSensorChange_Cause::
+                AmbientLightSensorChange_Cause_USER_REQUEST_SETTINGS_APP);
   EXPECT_TRUE(
       Shell::Get()->session_controller()->GetActivePrefService()->GetBoolean(
           prefs::kDisplayAmbientLightSensorLastEnabled));
@@ -854,13 +874,43 @@ TEST_F(BrightnessControllerChromeosTest, SetBrightnessPercent_Cause) {
           SetBacklightBrightnessRequest_Cause_USER_REQUEST_FROM_SETTINGS_APP);
 }
 
+TEST_F(BrightnessControllerChromeosTest, SetAmbientLightSensorEnabled_Cause) {
+  GetSessionControllerClient()->SetSessionState(
+      session_manager::SessionState::ACTIVE);
+  SetChargerPower();
+
+  brightness_control_delegate()->SetAmbientLightSensorEnabled(
+      true, BrightnessControlDelegate::AmbientLightSensorEnabledChangeSource::
+                kSettingsApp);
+
+  // Brightness changes from Setting app should have cause
+  // "USER_REQUEST_FROM_SETTINGS_APP".
+  EXPECT_EQ(
+      power_manager_client()->requested_ambient_light_sensor_enabled_cause(),
+      power_manager::
+          SetAmbientLightSensorEnabledRequest_Cause_USER_REQUEST_FROM_SETTINGS_APP);
+
+  brightness_control_delegate()->SetAmbientLightSensorEnabled(
+      false, BrightnessControlDelegate::AmbientLightSensorEnabledChangeSource::
+                 kRestoredFromUserPref);
+
+  // Brightness changes from the Settings app should have cause
+  // "USER_REQUEST_FROM_SETTINGS_APP".
+  EXPECT_EQ(
+      power_manager_client()->requested_ambient_light_sensor_enabled_cause(),
+      power_manager::
+          SetAmbientLightSensorEnabledRequest_Cause_RESTORED_FROM_USER_PREFERENCE);
+}
+
 TEST_F(BrightnessControllerChromeosTest,
        RestoreBrightnessSettingsFromPref_FlagEnabled) {
   scoped_feature_list_.InitAndEnableFeature(
       features::kEnableBrightnessControlInSettings);
 
   // Set initial ALS status and brightness level.
-  power_manager_client()->SetAmbientLightSensorEnabled(true);
+  power_manager::SetAmbientLightSensorEnabledRequest request;
+  request.set_sensor_enabled(true);
+  power_manager_client()->SetAmbientLightSensorEnabled(request);
   power_manager_client()->set_screen_brightness_percent(kInitialBrightness);
 
   // Clear user sessions and reset to the primary login screen.
@@ -952,7 +1002,8 @@ TEST_F(BrightnessControllerChromeosTest,
   // Simulate a reboot, which resets the value of the ambient light sensor and
   // the screen brightness.
   ClearLogin();
-  power_manager_client()->SetAmbientLightSensorEnabled(true);
+  request.set_sensor_enabled(true);
+  power_manager_client()->SetAmbientLightSensorEnabled(request);
   power_manager_client()->set_screen_brightness_percent(kInitialBrightness);
 
   LoginScreenFocusAccount(second_account);
@@ -1002,7 +1053,9 @@ TEST_F(BrightnessControllerChromeosTest,
       features::kEnableBrightnessControlInSettings);
 
   // Set initial ALS status and brightness level.
-  power_manager_client()->SetAmbientLightSensorEnabled(true);
+  power_manager::SetAmbientLightSensorEnabledRequest request;
+  request.set_sensor_enabled(true);
+  power_manager_client()->SetAmbientLightSensorEnabled(request);
   power_manager_client()->set_screen_brightness_percent(kInitialBrightness);
 
   // Clear user sessions and reset to the primary login screen.
@@ -1060,7 +1113,8 @@ TEST_F(BrightnessControllerChromeosTest,
   // Simulate a reboot, which resets the value of the ambient light sensor and
   // the screen brightness.
   ClearLogin();
-  power_manager_client()->SetAmbientLightSensorEnabled(true);
+  request.set_sensor_enabled(true);
+  power_manager_client()->SetAmbientLightSensorEnabled(request);
   power_manager_client()->set_screen_brightness_percent(kInitialBrightness);
 
   LoginScreenFocusAccount(first_account);
@@ -1087,12 +1141,230 @@ TEST_F(BrightnessControllerChromeosTest,
 }
 
 TEST_F(BrightnessControllerChromeosTest,
+       ReenableAmbientLightSensor_Reboot_DisabledFromSettingsApp) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kEnableBrightnessControlInSettings);
+
+  // Set initial ALS status and brightness level.
+  power_manager::SetAmbientLightSensorEnabledRequest request;
+  request.set_sensor_enabled(true);
+  power_manager_client()->SetAmbientLightSensorEnabled(request);
+  power_manager_client()->set_screen_brightness_percent(kInitialBrightness);
+
+  // Log in
+  ClearLogin();
+  AccountId account_id = AccountId::FromUserEmail(kUserEmail);
+  user_manager::KnownUser known_user(local_state());
+  SimulateUserLogin(kUserEmail);
+
+  // Set ALS to false, and set the disabled reason to be
+  // USER_REQUEST_SETTINGS_APP.
+  SetAmbientLightSensorEnabled(
+      false,
+      power_manager::AmbientLightSensorChange_Cause_USER_REQUEST_SETTINGS_APP);
+  known_user.SetPath(
+      account_id, prefs::kAmbientLightSensorDisabledReason,
+      std::make_optional<base::Value>(
+          power_manager::
+              AmbientLightSensorChange_Cause_USER_REQUEST_SETTINGS_APP));
+
+  // ALS is disabled.
+  ExpectAmbientLightSensorEnabled(
+      false,
+      "Ambient light sensor is disabled, the request is from settings app.");
+  EXPECT_EQ(false, GetDisplayAmbientLightSensorEnabledPrefValue(known_user,
+                                                                account_id));
+
+  // "disabled reason" pref stored in KnownUser should be
+  // USER_REQUEST_SETTINGS_APP.
+  EXPECT_TRUE(
+      HasAmbientLightSensorDisabledReasonPrefValue(known_user, account_id));
+  EXPECT_EQ(
+      power_manager::AmbientLightSensorChange_Cause_USER_REQUEST_SETTINGS_APP,
+      GetAmbientLightSensorDisabledReasonPrefValue(known_user, account_id));
+
+  // Simulate reboot, and log in again.
+  known_user.SetPath(account_id, prefs::kInternalDisplayScreenBrightnessPercent,
+                     std::make_optional<base::Value>(30.0));
+  login_data_dispatcher()->NotifyFocusPod(account_id);
+
+  // Expect ambient light sensor remain disabled, and brightness should be
+  // restored.
+  ExpectAmbientLightSensorEnabled(false, "ALS remain disabled");
+  ExpectBrightnessPercent(30.0, "Brightness percent should be restored.");
+
+  // Simulate reboot, and log in the third time.
+  login_data_dispatcher()->NotifyFocusPod(account_id);
+
+  // ALS and brightness should remain the same as last reboot.
+  ExpectAmbientLightSensorEnabled(false, "ALS should remain disabled.");
+  ExpectBrightnessPercent(30.0, "Brightness percent should be restored.");
+}
+TEST_F(BrightnessControllerChromeosTest,
+       ReenableAmbientLightSensor_Reboot_DisabledFromBrightnessKey) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kEnableBrightnessControlInSettings);
+
+  // Set initial ALS status and brightness level.
+  power_manager::SetAmbientLightSensorEnabledRequest request;
+  request.set_sensor_enabled(true);
+  power_manager_client()->SetAmbientLightSensorEnabled(request);
+  power_manager_client()->set_screen_brightness_percent(kInitialBrightness);
+
+  // Log in
+  ClearLogin();
+  AccountId account_id = AccountId::FromUserEmail(kUserEmail);
+  user_manager::KnownUser known_user(local_state());
+  SimulateUserLogin(kUserEmail);
+
+  // Set ALS to false, and set the disabled reason to be
+  // BRIGHTNESS_USER_REQUEST.
+  SetAmbientLightSensorEnabled(
+      false,
+      power_manager::AmbientLightSensorChange_Cause_BRIGHTNESS_USER_REQUEST);
+  known_user.SetPath(
+      account_id, prefs::kAmbientLightSensorDisabledReason,
+      std::make_optional<base::Value>(
+          power_manager::
+              AmbientLightSensorChange_Cause_BRIGHTNESS_USER_REQUEST));
+
+  // ALS is disabled.
+  ExpectAmbientLightSensorEnabled(
+      false,
+      "Ambient light sensor is disabled, the request is from settings app.");
+  EXPECT_EQ(false, GetDisplayAmbientLightSensorEnabledPrefValue(known_user,
+                                                                account_id));
+
+  // "disabled reason" pref stored in KnownUser should be
+  // BRIGHTNESS_USER_REQUEST.
+  EXPECT_TRUE(
+      HasAmbientLightSensorDisabledReasonPrefValue(known_user, account_id));
+  EXPECT_EQ(
+      power_manager::AmbientLightSensorChange_Cause_BRIGHTNESS_USER_REQUEST,
+      GetAmbientLightSensorDisabledReasonPrefValue(known_user, account_id));
+
+  // Simulate reboot, and log in again.
+  known_user.SetPath(account_id, prefs::kInternalDisplayScreenBrightnessPercent,
+                     std::make_optional<base::Value>(30.0));
+  login_data_dispatcher()->NotifyFocusPod(account_id);
+
+  // Expect ambient light sensor is re-enabled.
+  ExpectAmbientLightSensorEnabled(true, "ALS is re-enabled.");
+
+  // Simulate reboot, and log in the third time.
+  login_data_dispatcher()->NotifyFocusPod(account_id);
+
+  // ALS should remain enabled.
+  ExpectAmbientLightSensorEnabled(
+      true, "ALS should remain enabled after re-enabled in last reboot.");
+}
+
+TEST_F(BrightnessControllerChromeosTest,
+       ReenableAmbientLightSensor_AfterLocalMidnight_DisableFromSettings) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kEnableBrightnessControlInSettings);
+
+  // Set initial ALS status and brightness level.
+  power_manager::SetAmbientLightSensorEnabledRequest request;
+  request.set_sensor_enabled(true);
+  power_manager_client()->SetAmbientLightSensorEnabled(request);
+  power_manager_client()->set_screen_brightness_percent(kInitialBrightness);
+
+  // Log in
+  ClearLogin();
+  AccountId account_id = AccountId::FromUserEmail(kUserEmail);
+  user_manager::KnownUser known_user(local_state());
+  SimulateUserLogin(kUserEmail);
+
+  // Set ALS to false, and set the disabled reason to be
+  // USER_REQUEST_SETTINGS_APP.
+  SetAmbientLightSensorEnabled(
+      false,
+      power_manager::AmbientLightSensorChange_Cause_USER_REQUEST_SETTINGS_APP);
+  known_user.SetPath(
+      account_id, prefs::kAmbientLightSensorDisabledReason,
+      std::make_optional<base::Value>(
+          power_manager::
+              AmbientLightSensorChange_Cause_USER_REQUEST_SETTINGS_APP));
+
+  // "disabled reason" pref stored in KnownUser should be USER_REQUEST.
+  EXPECT_TRUE(
+      HasAmbientLightSensorDisabledReasonPrefValue(known_user, account_id));
+  EXPECT_EQ(
+      power_manager::AmbientLightSensorChange_Cause_USER_REQUEST_SETTINGS_APP,
+      GetAmbientLightSensorDisabledReasonPrefValue(known_user, account_id));
+
+  ExpectAmbientLightSensorEnabled(
+      false,
+      "Ambient light sensor is disabled, the request is from settings app.");
+
+  AdvanceClock(base::Days(2));
+
+  system::BrightnessControllerChromeos* brightness_controller =
+      static_cast<system::BrightnessControllerChromeos*>(
+          brightness_control_delegate());
+  brightness_controller->SuspendImminent(
+      power_manager::SuspendImminent::LID_CLOSED);
+
+  ExpectAmbientLightSensorEnabled(false,
+                                  "Ambient light sensor remain disabled.");
+}
+
+TEST_F(BrightnessControllerChromeosTest,
+       ReenableAmbientLightSensor_AfterLocalMidnight_DisableOutsideSettings) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kEnableBrightnessControlInSettings);
+
+  // Set initial ALS status and brightness level.
+  power_manager::SetAmbientLightSensorEnabledRequest request;
+  request.set_sensor_enabled(true);
+  power_manager_client()->SetAmbientLightSensorEnabled(request);
+  power_manager_client()->set_screen_brightness_percent(kInitialBrightness);
+
+  ClearLogin();
+  AccountId account_id = AccountId::FromUserEmail(kUserEmail);
+  user_manager::KnownUser known_user(local_state());
+  SimulateUserLogin(kUserEmail);
+
+  // Set ALS to false, and set the disabled reason to be brightness key.
+  SetAmbientLightSensorEnabled(
+      false,
+      power_manager::AmbientLightSensorChange_Cause_BRIGHTNESS_USER_REQUEST);
+  known_user.SetPath(
+      account_id, prefs::kAmbientLightSensorDisabledReason,
+      std::make_optional<base::Value>(
+          power_manager::
+              AmbientLightSensorChange_Cause_BRIGHTNESS_USER_REQUEST));
+
+  // "disabled reason" pref stored in KnownUser should be USER_REQUEST.
+  EXPECT_TRUE(
+      HasAmbientLightSensorDisabledReasonPrefValue(known_user, account_id));
+  EXPECT_EQ(
+      power_manager::AmbientLightSensorChange_Cause_BRIGHTNESS_USER_REQUEST,
+      GetAmbientLightSensorDisabledReasonPrefValue(known_user, account_id));
+
+  ExpectAmbientLightSensorEnabled(false, "Ambient light sensor is disabled.");
+
+  AdvanceClock(base::Days(2));
+
+  system::BrightnessControllerChromeos* brightness_controller =
+      static_cast<system::BrightnessControllerChromeos*>(
+          brightness_control_delegate());
+  brightness_controller->SuspendImminent(
+      power_manager::SuspendImminent::LID_CLOSED);
+
+  ExpectAmbientLightSensorEnabled(true, "Ambient light sensor is re-enabled.");
+}
+
+TEST_F(BrightnessControllerChromeosTest,
        RestoreAutoBrightnessForNewUser_FlagEnabled) {
   scoped_feature_list_.InitAndEnableFeature(
       features::kEnableBrightnessControlInSettings);
 
   // Set initial ALS status and brightness level.
-  power_manager_client()->SetAmbientLightSensorEnabled(true);
+  power_manager::SetAmbientLightSensorEnabledRequest request;
+  request.set_sensor_enabled(true);
+  power_manager_client()->SetAmbientLightSensorEnabled(request);
   power_manager_client()->set_screen_brightness_percent(kInitialBrightness);
 
   // Clear user sessions and reset to the primary login screen.
@@ -1143,7 +1415,8 @@ TEST_F(BrightnessControllerChromeosTest,
   // Simulate a reboot, which resets the value of the ambient light sensor and
   // the screen brightness.
   ClearLogin();
-  power_manager_client()->SetAmbientLightSensorEnabled(true);
+  request.set_sensor_enabled(true);
+  power_manager_client()->SetAmbientLightSensorEnabled(request);
   power_manager_client()->set_screen_brightness_percent(kInitialBrightness);
 
   // Simulate a login with a second user, as if it's that user's first time
@@ -1191,7 +1464,9 @@ TEST_F(BrightnessControllerChromeosTest,
       features::kEnableBrightnessControlInSettings);
 
   // Set initial ALS status and brightness level.
-  power_manager_client()->SetAmbientLightSensorEnabled(true);
+  power_manager::SetAmbientLightSensorEnabledRequest request;
+  request.set_sensor_enabled(true);
+  power_manager_client()->SetAmbientLightSensorEnabled(request);
   power_manager_client()->set_screen_brightness_percent(kInitialBrightness);
 
   // Clear user sessions and reset to the primary login screen.
@@ -1242,7 +1517,8 @@ TEST_F(BrightnessControllerChromeosTest,
   // Simulate a reboot, which resets the value of the ambient light sensor and
   // the screen brightness.
   ClearLogin();
-  power_manager_client()->SetAmbientLightSensorEnabled(true);
+  request.set_sensor_enabled(true);
+  power_manager_client()->SetAmbientLightSensorEnabled(request);
   power_manager_client()->set_screen_brightness_percent(kInitialBrightness);
 
   // Simulate a login with a second user, as if it's that user's first time
@@ -1279,6 +1555,34 @@ TEST_F(BrightnessControllerChromeosTest,
       true,
       "Ambient light sensor should be enabled for first user after logging in "
       "from a new device.");
+}
+
+TEST_F(BrightnessControllerChromeosTest,
+       RecordStartupAmbientLightSensorStatus) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kEnableBrightnessControlInSettings);
+  histogram_tester_->ExpectTotalCount(
+      "ChromeOS.Display.Startup.AmbientLightSensorEnabled", 0);
+
+  // Set ALS and sensor status.
+  power_manager::SetAmbientLightSensorEnabledRequest request;
+  request.set_sensor_enabled(true);
+  power_manager_client()->SetAmbientLightSensorEnabled(request);
+  power_manager_client()->set_has_ambient_light_sensor(true);
+  run_loop_.RunUntilIdle();
+
+  // Log in.
+  ClearLogin();
+  AccountId first_account = AccountId::FromUserEmail(kUserEmail);
+  LoginScreenFocusAccount(first_account);
+  histogram_tester_->ExpectBucketCount(
+      "ChromeOS.Display.Startup.AmbientLightSensorEnabled", true, 1);
+
+  // Log in again, expect no extra metric is emitted.
+  ClearLogin();
+  LoginScreenFocusAccount(first_account);
+  histogram_tester_->ExpectTotalCount(
+      "ChromeOS.Display.Startup.AmbientLightSensorEnabled", 1);
 }
 
 }  // namespace ash

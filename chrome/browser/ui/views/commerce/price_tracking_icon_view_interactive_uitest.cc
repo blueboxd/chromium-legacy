@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/commerce/price_tracking_icon_view.h"
-
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -16,8 +14,10 @@
 #include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/commerce/commerce_ui_tab_helper.h"
 #include "chrome/browser/ui/commerce/mock_commerce_ui_tab_helper.h"
+#include "chrome/browser/ui/tabs/public/tab_features.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/commerce/price_tracking_bubble_dialog_view.h"
+#include "chrome/browser/ui/views/commerce/price_tracking_icon_view.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -47,7 +47,6 @@
 #include "ui/base/interaction/element_tracker.h"
 #include "ui/base/interaction/interactive_test.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/styled_label.h"
@@ -159,7 +158,10 @@ class PriceTrackingIconViewInteractiveTest : public InteractiveBrowserTest {
                image_fetcher::ImageFetcherCallback* image_callback,
                image_fetcher::ImageFetcherParams params) {
               SkBitmap bitmap;
-              bitmap.allocN32Pixels(1, 1);
+              // The image size must not be too small (e.g., 1x1), as it becomes
+              // empty when cropped for rounded corners in BubbleFrameView,
+              // triggering a DCHECK in ImageSkiaRep.
+              bitmap.allocN32Pixels(10, 10);
               gfx::Image image =
                   gfx::Image(gfx::ImageSkia::CreateFrom1xBitmap(bitmap));
 
@@ -167,9 +169,10 @@ class PriceTrackingIconViewInteractiveTest : public InteractiveBrowserTest {
                   .Run(std::move(image), image_fetcher::RequestMetadata());
             });
 
-    tab_helper_ = static_cast<commerce::CommerceUiTabHelper*>(
-        commerce::CommerceUiTabHelper::FromWebContents(
-            browser()->tab_strip_model()->GetActiveWebContents()));
+    tab_helper_ = browser()
+                      ->GetActiveTabInterface()
+                      ->GetTabFeatures()
+                      ->commerce_ui_tab_helper();
     tab_helper_->GetPriceTrackingControllerForTesting()
         ->SetImageFetcherForTesting(image_fetcher_.get());
 
@@ -246,13 +249,8 @@ IN_PROC_BROWSER_TEST_F(
       FlushEvents(), WaitForShow(kPriceTrackingChipElementId),
       CheckView(kPriceTrackingChipElementId,
                 base::BindOnce([](PriceTrackingIconView* view) {
-                  if (features::IsChromeRefresh2023()) {
-                    return view->GetVectorIcon().name ==
-                           omnibox::kPriceTrackingEnabledRefreshIcon.name;
-                  } else {
-                    return view->GetVectorIcon().name ==
-                           omnibox::kPriceTrackingEnabledFilledIcon.name;
-                  }
+                  return view->GetVectorIcon().name ==
+                         omnibox::kPriceTrackingEnabledRefreshIcon.name;
                 })),
       PressButton(kPriceTrackingChipElementId), FlushEvents(),
       WaitForShow(kPriceTrackingBubbleDialogId));
@@ -351,13 +349,8 @@ IN_PROC_BROWSER_TEST_F(PriceTrackingIconViewInteractiveTest,
                 })),
       CheckView(kPriceTrackingChipElementId,
                 base::BindOnce([](PriceTrackingIconView* view) {
-                  if (features::IsChromeRefresh2023()) {
-                    return view->GetVectorIcon().name ==
-                           omnibox::kPriceTrackingDisabledRefreshIcon.name;
-                  } else {
-                    return view->GetVectorIcon().name ==
-                           omnibox::kPriceTrackingDisabledIcon.name;
-                  }
+                  return view->GetVectorIcon().name ==
+                          omnibox::kPriceTrackingDisabledRefreshIcon.name;
                 })),
       PressButton(kPriceTrackingChipElementId), FlushEvents(),
       WaitForShow(kPriceTrackingBubbleDialogId));
@@ -377,13 +370,8 @@ IN_PROC_BROWSER_TEST_F(PriceTrackingIconViewInteractiveTest,
           l10n_util::GetStringUTF16(IDS_OMNIBOX_TRACKING_PRICE)),
       CheckView(kPriceTrackingChipElementId,
                 base::BindOnce([](PriceTrackingIconView* view) {
-                  if (features::IsChromeRefresh2023()) {
-                    return view->GetVectorIcon().name ==
-                           omnibox::kPriceTrackingEnabledRefreshIcon.name;
-                  } else {
-                    return view->GetVectorIcon().name ==
-                           omnibox::kPriceTrackingEnabledFilledIcon.name;
-                  }
+                  return view->GetVectorIcon().name ==
+                          omnibox::kPriceTrackingEnabledRefreshIcon.name;
                 })));
 }
 
@@ -585,13 +573,8 @@ IN_PROC_BROWSER_TEST_F(PriceTrackingIconViewErrorHandelingTest,
                 })),
       CheckView(kPriceTrackingChipElementId,
                 base::BindOnce([](PriceTrackingIconView* view) {
-                  if (features::IsChromeRefresh2023()) {
-                    return view->GetVectorIcon().name ==
-                           omnibox::kPriceTrackingDisabledRefreshIcon.name;
-                  } else {
-                    return view->GetVectorIcon().name ==
-                           omnibox::kPriceTrackingDisabledIcon.name;
-                  }
+                  return view->GetVectorIcon().name ==
+                          omnibox::kPriceTrackingDisabledRefreshIcon.name;
                 })),
       PressButton(kPriceTrackingChipElementId), FlushEvents(),
 
@@ -604,13 +587,8 @@ IN_PROC_BROWSER_TEST_F(PriceTrackingIconViewErrorHandelingTest,
                 })),
       CheckView(kPriceTrackingChipElementId,
                 base::BindOnce([](PriceTrackingIconView* view) {
-                  if (features::IsChromeRefresh2023()) {
-                    return view->GetVectorIcon().name ==
-                           omnibox::kPriceTrackingDisabledRefreshIcon.name;
-                  } else {
-                    return view->GetVectorIcon().name ==
-                           omnibox::kPriceTrackingDisabledIcon.name;
-                  }
+                  return view->GetVectorIcon().name ==
+                          omnibox::kPriceTrackingDisabledRefreshIcon.name;
                 })),
       EnsureNotPresent(kPriceTrackingBubbleDialogId));
 }

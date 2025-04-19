@@ -87,6 +87,7 @@ class CompositorLock;
 
 namespace content {
 
+class AgentClusterKey;
 class CrossOriginEmbedderPolicyReporter;
 class FrameTreeNode;
 class NavigationUIData;
@@ -257,6 +258,9 @@ class CONTENT_EXPORT NavigationRequest
       bool is_pdf,
       bool is_embedder_initiated_fenced_frame_navigation = false,
       bool is_container_initiated = false,
+      bool has_rel_opener = false,
+      net::StorageAccessApiStatus storage_access_api_status =
+          net::StorageAccessApiStatus::kNone,
       std::optional<std::u16string> embedder_shared_storage_context =
           std::nullopt);
 
@@ -351,6 +355,7 @@ class CONTENT_EXPORT NavigationRequest
   base::TimeTicks NavigationInputStart() override;
   const NavigationHandleTiming& GetNavigationHandleTiming() override;
   bool IsPost() override;
+  std::string GetRequestMethod() override;
   const blink::mojom::Referrer& GetReferrer() override;
   void SetReferrer(blink::mojom::ReferrerPtr referrer) override;
   bool HasUserGesture() override;
@@ -430,6 +435,7 @@ class CONTENT_EXPORT NavigationRequest
   bool IsPdf() override;
   void WriteIntoTrace(perfetto::TracedProto<TraceProto> context) const override;
   bool SetNavigationTimeout(base::TimeDelta timeout) override;
+  void CancelNavigationTimeout() override;
   void SetAllowCookiesFromBrowser(bool allow_cookies_from_browser) override;
   void GetResponseBody(ResponseBodyCallback callback) override;
   PreloadingTriggerType GetPrerenderTriggerType() override;
@@ -446,6 +452,7 @@ class CONTENT_EXPORT NavigationRequest
   blink::mojom::RendererContentSettingsPtr GetContentSettingsForTesting()
       override;
   void SetIsAdTagged() override;
+  std::optional<NavigationDiscardReason> GetNavigationDiscardReason() override;
   // NOTE: Read function comments in NavigationHandle before use!
   std::optional<url::Origin> GetOriginToCommit() override;
   // End of NavigationHandle implementation.
@@ -755,7 +762,7 @@ class CONTENT_EXPORT NavigationRequest
   // CreateForCommit().
   bool IsNavigationStarted() const;
 
-  std::unique_ptr<PeakGpuMemoryTracker> TakePeakGpuMemoryTracker();
+  std::unique_ptr<input::PeakGpuMemoryTracker> TakePeakGpuMemoryTracker();
 
   std::unique_ptr<NavigationEarlyHintsManager> TakeEarlyHintsManager();
 
@@ -1337,6 +1344,25 @@ class CONTENT_EXPORT NavigationRequest
     return did_encounter_cross_origin_redirect_;
   }
 
+  // Determines whether this navigation request was initiated by an animated
+  // transition.
+  void set_was_initiated_by_animated_transition() {
+    was_initiated_by_animated_transition_ = true;
+  }
+  bool was_initiated_by_animated_transition() const {
+    return was_initiated_by_animated_transition_;
+  }
+
+  void set_navigation_discard_reason(
+      NavigationDiscardReason navigation_discard_reason) {
+    CHECK(!navigation_discard_reason_.has_value());
+    navigation_discard_reason_ = navigation_discard_reason;
+  }
+
+  NavigationDiscardReason GetTypeForNavigationDiscardReason();
+
+  void set_force_no_https_upgrade() { force_no_https_upgrade_ = true; }
+
  private:
   friend class NavigationRequestTest;
 
@@ -1729,7 +1755,8 @@ class CONTENT_EXPORT NavigationRequest
   void RenderProcessHostDestroyed(RenderProcessHost* host) override;
 
   // Updates navigation handle timings.
-  void UpdateNavigationHandleTimingsOnResponseReceived(bool is_first_response);
+  void UpdateNavigationHandleTimingsOnResponseReceived(bool is_redirect,
+                                                       bool is_first_response);
   void UpdateNavigationHandleTimingsOnCommitSent();
 
   // Helper function that computes the SiteInfo for |common_params_.url|.
@@ -1942,6 +1969,13 @@ class CONTENT_EXPORT NavigationRequest
   std::pair<std::optional<url::Origin>, std::string>
   GetOriginForURLLoaderFactoryAfterResponseWithDebugInfo();
 
+  // Computes the CrossOriginIsolationKey to use for committing the navigation.
+  // A nullopt result means that either the cross-origin isolation status of the
+  // request cannot be determined because we do not have final headers for the
+  // navigation yet, or that the navigation is not cross-origin isolated.
+  std::optional<AgentClusterKey::CrossOriginIsolationKey>
+  ComputeCrossOriginIsolationKey();
+
   // Computes the web-exposed isolation information based on `coop_status_` and
   // current `frame_tree_node_` info.
   // If the return result is nullopt, it means that the WebExposedIsolationInfo
@@ -2031,6 +2065,22 @@ class CONTENT_EXPORT NavigationRequest
   void MaybeRecordTraceEventsAndHistograms();
 
   void ResetViewTransitionState();
+
+  // This check is to prevent a race condition where a parent fenced frame
+  // initiates a nested fenced frame navigation right before the entire frame
+  // tree has network access disabled. If such navigation is allowed to commit,
+  // the navigated fenced frame will have network access. This allows parent
+  // fenced frame to communicate cross-site data into child fenced frame, which
+  // is bad. So we need to disable navigations when both the embedder and nested
+  // frames have already disabled network.
+  bool IsDisabledEmbedderInitiatedFencedFrameNavigation();
+
+  // Sets the expected process to the process of the current associated RFH.
+  void SetExpectedProcessIfAssociated();
+
+  // Sets the Document-Isolation-Policy header to a default value in unsecure
+  // contexts or if DocumentIsolationPolicy is not supported.
+  void SanitizeDocumentIsolationPolicyHeader();
 
   // Never null. The pointee node owns this navigation request instance.
   // This field is not a raw_ptr because of incompatibilities with tracing
@@ -2251,7 +2301,7 @@ class CONTENT_EXPORT NavigationRequest
 
   // Set to false if we want to update the session history but not update the
   // browser history. E.g., on unreachable urls or navigations in non-primary
-  // frame trees or portals.
+  // frame trees.
   bool should_update_history_ = false;
 
   // The previous main frame URL that the user was on. This may be empty if
@@ -2294,9 +2344,6 @@ class CONTENT_EXPORT NavigationRequest
 
   // The time BeginNavigation() was called.
   base::TimeTicks begin_navigation_time_;
-
-  // The time just after NavigationURLLoader::Start() was called.
-  base::TimeTicks loader_start_time_;
 
   // The time OnResponseStarted() was called.
   base::TimeTicks receive_response_time_;
@@ -2449,7 +2496,7 @@ class CONTENT_EXPORT NavigationRequest
 
   std::unique_ptr<CrossOriginEmbedderPolicyReporter> coep_reporter_;
 
-  std::unique_ptr<PeakGpuMemoryTracker> loading_mem_tracker_;
+  std::unique_ptr<input::PeakGpuMemoryTracker> loading_mem_tracker_;
 
   // Structure tracking the effects of the CrossOriginOpenerPolicy on this
   // navigation.
@@ -2857,6 +2904,20 @@ class CONTENT_EXPORT NavigationRequest
   // transferred to the new Document's view. If the navigation finishes without
   // committing, the resources are destroyed with this request.
   std::unique_ptr<ScopedViewTransitionResources> view_transition_resources_;
+
+  // If true, this means that this navigation request was initiated by an
+  // animated transition.
+  bool was_initiated_by_animated_transition_ = false;
+
+  // If the navigation is cancelled/discarded before it commits, the reason
+  // for cancellation will be saved.
+  std::optional<NavigationDiscardReason> navigation_discard_reason_;
+
+  // If true, HTTPS Upgrades will be disabled on this navigation request.
+  bool force_no_https_upgrade_ = false;
+
+  // The initial request method of the request, before any redirects.
+  std::string request_method_;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_{this};
 };

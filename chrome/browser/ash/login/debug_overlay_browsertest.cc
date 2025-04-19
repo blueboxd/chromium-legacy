@@ -21,7 +21,7 @@ constexpr char kDebugButton[] = "invokeDebuggerButton";
 constexpr char kDebugOverlay[] = "debuggerOverlay";
 constexpr char kScreensPanel[] = "DebuggerPanelScreens";
 
-constexpr int kCommonScreensCount = 50;
+constexpr int kCommonScreensCount = 51;
 constexpr int kOobeOnlyScreensCount = 10;
 constexpr int kLoginOnlyScreensCount = 6;
 
@@ -43,7 +43,8 @@ class DebugOverlayTest : public OobeBaseTest {
     feature_list_.InitWithFeatures(
         {features::kOobeChoobe, features::kOobeTouchpadScroll,
          features::kOobeDisplaySize, features::kOobeGaiaInfoScreen,
-         features::kOobeSoftwareUpdate},
+         features::kOobeSoftwareUpdate, features::kOobePersonalizedOnboarding,
+         features::kOobePerksDiscovery},
         {});
   }
 

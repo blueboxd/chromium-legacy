@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/ui/webui/history/history_ui.h"
 
 #include <memory>
@@ -21,11 +26,14 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/commerce/shopping_service_factory.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
+#include "chrome/browser/history_embeddings/history_embeddings_utils.h"
 #include "chrome/browser/page_image_service/image_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
+#include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/ui_features.h"
+#include "chrome/browser/ui/webui/commerce/shopping_ui_handler_delegate.h"
 #include "chrome/browser/ui/webui/cr_components/history_clusters/history_clusters_util.h"
 #include "chrome/browser/ui/webui/cr_components/history_embeddings/history_embeddings_handler.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
@@ -92,6 +100,13 @@ content::WebUIDataSource* CreateAndAddHistoryUIHTMLSource(Profile* profile) {
       {"clearBrowsingDataLinkTooltip", IDS_SETTINGS_OPENS_IN_NEW_TAB},
       {"clearSearch", IDS_CLEAR_SEARCH},
       {"collapseSessionButton", IDS_HISTORY_OTHER_SESSIONS_COLLAPSE_SESSION},
+      {"compareHistoryEmpty", IDS_COMPARE_HISTORY_EMPTY},
+      {"compareHistoryRemove", IDS_COMPARE_HISTORY_REMOVE},
+      {"compareHistoryHeader", IDS_COMPARE_HISTORY_HEADER},
+      {"compareHistoryInfo", IDS_COMPARE_HISTORY_INFO},
+      {"compareHistoryListsMenuItem", IDS_COMPARE_HISTORY_MENU_ITEM},
+      {"compareHistoryRow", IDS_COMPARE_HISTORY_ROW},
+      {"compareHistoryMenuAriaLabel", IDS_COMPARE_HISTORY_MENU_ARIA_LABEL},
       {"delete", IDS_HISTORY_DELETE},
       {"deleteSuccess", IDS_HISTORY_REMOVE_PAGE_SUCCESS},
       {"deleteConfirm", IDS_HISTORY_DELETE_PRIOR_VISITS_CONFIRM_BUTTON},
@@ -112,8 +127,6 @@ content::WebUIDataSource* CreateAndAddHistoryUIHTMLSource(Profile* profile) {
       {"noResults", IDS_HISTORY_NO_RESULTS},
       {"noSearchResults", IDS_HISTORY_NO_SEARCH_RESULTS},
       {"noSyncedResults", IDS_HISTORY_NO_SYNCED_RESULTS},
-      {"productSpecificationsListsMenuItem",
-       IDS_PRODUCT_SPECIFICATIONS_HISTORY_MENU_ITEM},
       {"removeBookmark", IDS_HISTORY_REMOVE_BOOKMARK},
       {"removeFromHistory", IDS_HISTORY_REMOVE_PAGE},
       {"removeSelected", IDS_HISTORY_REMOVE_SELECTED_ITEMS},
@@ -173,30 +186,44 @@ content::WebUIDataSource* CreateAndAddHistoryUIHTMLSource(Profile* profile) {
       prefs->GetInteger(history_clusters::prefs::kLastSelectedTab));
 
   bool enable_history_embeddings =
-      base::FeatureList::IsEnabled(history_embeddings::kHistoryEmbeddings);
+      history_embeddings::IsHistoryEmbeddingsEnabledForProfile(profile);
   source->AddBoolean("enableHistoryEmbeddings", enable_history_embeddings);
   static constexpr webui::LocalizedString kHistoryEmbeddingsStrings[] = {
       {"historyEmbeddingsDisclaimer", IDS_HISTORY_EMBEDDINGS_DISCLAIMER},
+      {"historyEmbeddingsPromoLabel", IDS_HISTORY_EMBEDDINGS_PROMO_LABEL},
+      {"historyEmbeddingsPromoClose", IDS_HISTORY_EMBEDDINGS_PROMO_CLOSE},
       {"historyEmbeddingsPromoHeading", IDS_HISTORY_EMBEDDINGS_PROMO_HEADING},
       {"historyEmbeddingsPromoBody", IDS_HISTORY_EMBEDDINGS_PROMO_BODY},
+      {"historyEmbeddingsShowByLabel",
+       IDS_HISTORY_EMBEDDINGS_SHOW_BY_ARIA_LABEL},
       {"historyEmbeddingsShowByDate", IDS_HISTORY_EMBEDDINGS_SHOW_BY_DATE},
       {"historyEmbeddingsShowByGroup", IDS_HISTORY_EMBEDDINGS_SHOW_BY_GROUP},
       {"historyEmbeddingsSuggestion1", IDS_HISTORY_EMBEDDINGS_SUGGESTION_1},
       {"historyEmbeddingsSuggestion2", IDS_HISTORY_EMBEDDINGS_SUGGESTION_2},
       {"historyEmbeddingsSuggestion3", IDS_HISTORY_EMBEDDINGS_SUGGESTION_3},
+      {"historyEmbeddingsSuggestion1AriaLabel",
+       IDS_HISTORY_EMBEDDINGS_SUGGESTION_1_ARIA_LABEL},
+      {"historyEmbeddingsSuggestion2AriaLabel",
+       IDS_HISTORY_EMBEDDINGS_SUGGESTION_2_ARIA_LABEL},
+      {"historyEmbeddingsSuggestion3AriaLabel",
+       IDS_HISTORY_EMBEDDINGS_SUGGESTION_3_ARIA_LABEL},
       {"historyEmbeddingsHeading", IDS_HISTORY_EMBEDDINGS_HEADING},
       {"historyEmbeddingsHeadingLoading",
        IDS_HISTORY_EMBEDDINGS_HEADING_LOADING},
       {"historyEmbeddingsFooter", IDS_HISTORY_EMBEDDINGS_FOOTER},
       {"learnMore", IDS_LEARN_MORE},
-      {"thumbsUp", IDS_HISTORY_EMBEDDINGS_THUMBS_UP},
-      {"thumbsDown", IDS_HISTORY_EMBEDDINGS_THUMBS_DOWN},
+      {"thumbsUp", IDS_THUMBS_UP_RESULTS_A11Y_LABEL},
+      {"thumbsDown", IDS_THUMBS_DOWN_OPENS_FEEDBACK_FORM_A11Y_LABEL},
   };
   source->AddLocalizedStrings(kHistoryEmbeddingsStrings);
-  source->AddString("historyEmbeddingsPromoBody",
-                    l10n_util::GetStringFUTF16(
-                        IDS_HISTORY_EMBEDDINGS_PROMO_BODY,
-                        base::UTF8ToUTF16(chrome::kChromeUISettingsURL)));
+  source->AddString(
+      "historyEmbeddingsPromoBody",
+      l10n_util::GetStringFUTF16(IDS_HISTORY_EMBEDDINGS_PROMO_BODY,
+                                 chrome::kHistorySearchSettingURL));
+  source->AddInteger("historyEmbeddingsSearchMinimumWordCount",
+                     history_embeddings::kSearchQueryMinimumWordCount.Get());
+  source->AddString("historyEmbeddingsHelpArticleUrl",
+                    chrome::kHistorySearchLearnMorePageURL);
 
   // History clusters
   HistoryClustersUtil::PopulateSource(source, profile, /*in_side_panel=*/false);
@@ -212,9 +239,10 @@ content::WebUIDataSource* CreateAndAddHistoryUIHTMLSource(Profile* profile) {
   // Product specifications:
   commerce::ShoppingService* service =
       commerce::ShoppingServiceFactory::GetForBrowserContext(profile);
-  source->AddBoolean(
-      "productSpecificationsListsEnabled",
-      commerce::IsProductSpecificationsEnabled(service->GetAccountChecker()));
+  source->AddBoolean("compareHistoryEnabled",
+                     commerce::CanManageProductSpecificationsSets(
+                         service->GetAccountChecker(),
+                         service->GetProductSpecificationsService()));
 
   return source;
 }
@@ -285,7 +313,7 @@ void HistoryUI::BindInterface(
         pending_page_handler) {
   history_embeddings_handler_ = std::make_unique<HistoryEmbeddingsHandler>(
       std::move(pending_page_handler),
-      Profile::FromWebUI(web_ui())->GetWeakPtr());
+      Profile::FromWebUI(web_ui())->GetWeakPtr(), web_ui());
 }
 
 void HistoryUI::BindInterface(
@@ -332,7 +360,10 @@ void HistoryUI::CreateShoppingServiceHandler(
   shopping_service_handler_ =
       std::make_unique<commerce::ShoppingServiceHandler>(
           std::move(page), std::move(receiver), bookmark_model,
-          shopping_service, profile->GetPrefs(), tracker, nullptr);
+          shopping_service, profile->GetPrefs(), tracker,
+          std::make_unique<commerce::ShoppingUiHandlerDelegate>(nullptr,
+                                                                profile),
+          nullptr);
 }
 
 void HistoryUI::UpdateDataSource() {
@@ -355,4 +386,21 @@ void HistoryUI::UpdateDataSource() {
 
   content::WebUIDataSource::Update(profile, chrome::kChromeUIHistoryHost,
                                    std::move(update));
+}
+
+void HistoryUI::BindInterface(
+    mojo::PendingReceiver<help_bubble::mojom::HelpBubbleHandlerFactory>
+        pending_receiver) {
+  if (help_bubble_handler_factory_receiver_.is_bound()) {
+    help_bubble_handler_factory_receiver_.reset();
+  }
+  help_bubble_handler_factory_receiver_.Bind(std::move(pending_receiver));
+}
+
+void HistoryUI::CreateHelpBubbleHandler(
+    mojo::PendingRemote<help_bubble::mojom::HelpBubbleClient> client,
+    mojo::PendingReceiver<help_bubble::mojom::HelpBubbleHandler> handler) {
+  help_bubble_handler_ = std::make_unique<user_education::HelpBubbleHandler>(
+      std::move(handler), std::move(client), this,
+      std::vector<ui::ElementIdentifier>{kHistorySearchInputElementId});
 }

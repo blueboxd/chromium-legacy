@@ -10,7 +10,7 @@
 #import "components/policy/core/common/policy_pref_names.h"
 #import "components/sync_preferences/testing_pref_service_syncable.h"
 #import "ios/chrome/browser/policy/model/policy_util.h"
-#import "ios/chrome/browser/sessions/test_session_service.h"
+#import "ios/chrome/browser/sessions/model/test_session_service.h"
 #import "ios/chrome/browser/shared/model/browser/test/test_browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
@@ -51,7 +51,7 @@ class BrowserActionFactoryTest : public PlatformTest {
 
   void SetUp() override {
     TestChromeBrowserState::Builder test_cbs_builder;
-    chrome_browser_state_ = test_cbs_builder.Build();
+    chrome_browser_state_ = std::move(test_cbs_builder).Build();
 
     test_browser_ = std::make_unique<TestBrowser>(chrome_browser_state_.get());
 

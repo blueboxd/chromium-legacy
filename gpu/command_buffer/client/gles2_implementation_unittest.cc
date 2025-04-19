@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 // Tests for GLES2Implementation.
 
 #include "gpu/command_buffer/client/gles2_implementation.h"
@@ -238,8 +243,8 @@ class GLES2ImplementationTest : public testing::Test {
       capabilities_.sync_query = sync_query;
       gl_capabilities_.occlusion_query_boolean = occlusion_query_boolean;
       gl_capabilities_.timer_queries = timer_queries;
-      capabilities_.major_version = major_version;
-      capabilities_.minor_version = minor_version;
+      gl_capabilities_.major_version = major_version;
+      gl_capabilities_.minor_version = minor_version;
       EXPECT_CALL(*gpu_control_, GetCapabilities())
           .WillOnce(ReturnRef(capabilities_));
       EXPECT_CALL(*gpu_control_, GetGLCapabilities())

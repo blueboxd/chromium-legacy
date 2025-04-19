@@ -17,6 +17,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/back_forward_transition_animation_manager.h"
 #include "content/public/browser/eye_dropper.h"
 #include "content/public/browser/fullscreen_types.h"
 #include "content/public/browser/invalidate_type.h"
@@ -69,7 +70,6 @@ class SiteInstance;
 struct ContextMenuParams;
 struct DropData;
 struct MediaPlayerWatchTime;
-struct NativeWebKeyboardEvent;
 struct Referrer;
 }  // namespace content
 
@@ -83,6 +83,10 @@ namespace gfx {
 class Rect;
 class Size;
 }
+
+namespace input {
+struct NativeWebKeyboardEvent;
+}  // namespace input
 
 namespace ui {
 class Event;
@@ -292,14 +296,14 @@ class CONTENT_EXPORT WebContentsDelegate {
   // See enum for description of return values.
   virtual KeyboardEventProcessingResult PreHandleKeyboardEvent(
       WebContents* source,
-      const NativeWebKeyboardEvent& event);
+      const input::NativeWebKeyboardEvent& event);
 
   // Allows delegates to handle unhandled keyboard messages coming back from
   // the renderer. Returns true if the event was handled, false otherwise. A
   // true value means no more processing should happen on the event. The default
   // return value is false
   virtual bool HandleKeyboardEvent(WebContents* source,
-                                   const NativeWebKeyboardEvent& event);
+                                   const input::NativeWebKeyboardEvent& event);
 
   // Allows delegates to handle gesture events before sending to the renderer.
   // Returns true if the |event| was handled and thus shouldn't be processed
@@ -720,7 +724,7 @@ class CONTENT_EXPORT WebContentsDelegate {
 
   // Return true if the back forward cache is supported. This is not an
   // indication that the cache will be used.
-  virtual bool IsBackForwardCacheSupported();
+  virtual bool IsBackForwardCacheSupported(WebContents& web_contents);
 
   // Returns PreloadingEligibility::kEligible if Prerender2 (see
   // content/browser/preloading/prerender/README.md for details) is supported.
@@ -741,18 +745,6 @@ class CONTENT_EXPORT WebContentsDelegate {
   // contents.
   virtual bool ShouldAllowPartialParamMismatchOfPrerender2(
       NavigationHandle& navigation_handle);
-
-  // If |old_contents| is being inspected by a DevTools window, it updates the
-  // window to inspect |new_contents| instead and calls |callback| after it
-  // finishes asynchronously. If no window is present, or no update is
-  // necessary, |callback| is run synchronously (immediately on the same stack).
-  //
-  // TODO(crbug.com/40287334): This has no remaining call sites and can be
-  // removed.
-  virtual void UpdateInspectedWebContentsIfNecessary(
-      WebContents* old_contents,
-      WebContents* new_contents,
-      base::OnceCallback<void()> callback);
 
   // Returns true if the widget's frame content needs to be stored before
   // eviction and displayed until a new frame is generated. If false, a white
@@ -820,6 +812,11 @@ class CONTENT_EXPORT WebContentsDelegate {
   // has changed. If necessary, the delegate should use this notification to
   // hold on its animation until the back forward transition has completed.
   virtual void DidBackForwardTransitionAnimationChange() {}
+
+  // Asks the embedder for the configuration used to compose a fallback UX, for
+  // navigation transitions.
+  virtual BackForwardTransitionAnimationManager::FallbackUXConfig
+  GetBackForwardTransitionFallbackUXConfig();
 #endif  // BUILDFLAG(IS_ANDROID)
 
  protected:

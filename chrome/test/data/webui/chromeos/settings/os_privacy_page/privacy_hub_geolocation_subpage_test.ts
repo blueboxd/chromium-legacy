@@ -5,12 +5,13 @@
 import 'chrome://os-settings/lazy_load.js';
 
 import {PrivacyHubBrowserProxyImpl, SettingsPrivacyHubGeolocationSubpage} from 'chrome://os-settings/lazy_load.js';
-import {appPermissionHandlerMojom, CrLinkRowElement, GeolocationAccessLevel, LocalizedLinkElement, Router, routes, ScheduleType, setAppPermissionProviderForTesting, SettingsDropdownMenuElement, SettingsPrivacyHubSystemServiceRow} from 'chrome://os-settings/os_settings.js';
+import {appPermissionHandlerMojom, ControlledButtonElement, ControlledRadioButtonElement, CrDialogElement, CrLinkRowElement, CrTooltipIconElement, GeolocationAccessLevel, Router, routes, ScheduleType, setAppPermissionProviderForTesting, SettingsPrivacyHubSystemServiceRow} from 'chrome://os-settings/os_settings.js';
+import {CrButtonElement} from 'chrome://resources/ash/common/cr_elements/cr_button/cr_button.js';
 import {PermissionType, TriState} from 'chrome://resources/cr_components/app_management/app_management.mojom-webui.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
-import {DomRepeat, flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {DomRepeat} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {assertEquals, assertLT, assertNotReached, assertNull, assertTrue} from 'chrome://webui-test/chai_assert.js';
-import {flushTasks, waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
+import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
 import {FakeMetricsPrivate} from '../fake_metrics_private.js';
 
@@ -70,7 +71,7 @@ suite('<settings-privacy-hub-geolocation-subpage>', () => {
     };
     privacyHubGeolocationSubpage.prefs = prefs;
     document.body.appendChild(privacyHubGeolocationSubpage);
-    flush();
+    await flushTasks();
   }
 
 
@@ -93,29 +94,38 @@ suite('<settings-privacy-hub-geolocation-subpage>', () => {
     return 'ChromeOS.PrivacyHub.Geolocation.AccessLevelChanged.SystemSettings';
   }
 
-  function setGeolocationAccessLevel(accessLevel: GeolocationAccessLevel) {
-    const dropdown = privacyHubGeolocationSubpage.shadowRoot!
-                         .querySelector('settings-dropdown-menu')!.shadowRoot!
-                         .querySelector<HTMLSelectElement>('#dropdownMenu')!;
-    assertTrue(!!dropdown);
+  function getGeolocationLabel(): string {
+    return privacyHubGeolocationSubpage.shadowRoot!
+        .querySelector<HTMLDivElement>('#geolocationStatus')!.innerText;
+  }
 
-    dropdown.value = accessLevel.toString();
-    dropdown.dispatchEvent(new CustomEvent('change'));
-    flush();
+  function getGeolocationSubLabel(): string {
+    return privacyHubGeolocationSubpage.shadowRoot!
+        .querySelector<HTMLDivElement>(
+            '#geolocationStatusDescription')!.innerText;
+  }
+
+  async function setGeolocationAccessLevelPref(
+      accessLevel: GeolocationAccessLevel) {
+    privacyHubGeolocationSubpage.prefs.ash.user.geolocation_access_level.value =
+        accessLevel;
+    privacyHubGeolocationSubpage.notifyPath(
+        'prefs.ash.user.geolocation_access_level', accessLevel);
+    await flushTasks();
   }
 
   function getGeolocationAccessLevel(): GeolocationAccessLevel {
-    const dropdown = privacyHubGeolocationSubpage.shadowRoot!
-                         .querySelector('settings-dropdown-menu')!.shadowRoot!
-                         .querySelector<HTMLSelectElement>('#dropdownMenu')!;
-    assertTrue(!!dropdown);
+    const geolocationAccessLevel = getGeolocationLabel();
+    assertTrue(!!geolocationAccessLevel);
 
-    switch (dropdown.value) {
-      case '0':
+    switch (geolocationAccessLevel) {
+      case privacyHubGeolocationSubpage.i18n(
+          'geolocationAccessLevelDisallowed'):
         return GeolocationAccessLevel.DISALLOWED;
-      case '1':
+      case privacyHubGeolocationSubpage.i18n('geolocationAccessLevelAllowed'):
         return GeolocationAccessLevel.ALLOWED;
-      case '2':
+      case privacyHubGeolocationSubpage.i18n(
+          'geolocationAccessLevelOnlyAllowedForSystem'):
         return GeolocationAccessLevel.ONLY_ALLOWED_FOR_SYSTEM;
     }
 
@@ -157,7 +167,7 @@ suite('<settings-privacy-hub-geolocation-subpage>', () => {
     // Check subtext:
     // Check when the system service is not configured to use geolocation (e.g.
     // time zone is selected from the static list).
-    if (isConfiguredToUseGeolocation) {
+    if (!isConfiguredToUseGeolocation) {
       assertEquals(
           expectedDescriptions['notConfiguredText'],
           getSystemServicePermissionText(systemService));
@@ -180,24 +190,29 @@ suite('<settings-privacy-hub-geolocation-subpage>', () => {
     }
   }
 
-  function setAutomaticTimeZoneEnabled(enabled: boolean) {
+  async function setAutomaticTimeZoneEnabled(enabled: boolean) {
     privacyHubGeolocationSubpage.set(
-        'generated.resolve_timezone_by_geolocation_on_off.value', enabled);
+        'prefs.generated.resolve_timezone_by_geolocation_on_off.value',
+        enabled);
+    await flushTasks();
   }
 
-  function setNightLightScheduleType(scheduleType: ScheduleType) {
+  async function setNightLightScheduleType(scheduleType: ScheduleType) {
     privacyHubGeolocationSubpage.set(
-        'ash.night_light.schedule_type.value', scheduleType);
+        'prefs.ash.night_light.schedule_type.value', scheduleType);
+    await flushTasks();
   }
 
-  function setLocalWeatherEnabled(enabled: boolean) {
+  async function setLocalWeatherEnabled(enabled: boolean) {
     privacyHubGeolocationSubpage.set(
-        'settings.ambient_mode.enabled.value', enabled);
+        'prefs.settings.ambient_mode.enabled.value', enabled);
+    await flushTasks();
   }
 
-  function setDarkThemeScheduleType(scheduleType: ScheduleType) {
+  async function setDarkThemeScheduleType(scheduleType: ScheduleType) {
     privacyHubGeolocationSubpage.set(
-        'ash.dark_mode.schedule_type.value', scheduleType);
+        'prefs.ash.dark_mode.schedule_type.value', scheduleType);
+    await flushTasks();
   }
 
 
@@ -213,18 +228,18 @@ suite('<settings-privacy-hub-geolocation-subpage>', () => {
         getSystemServicesFromSubpage(privacyHubGeolocationSubpage);
     assertEquals(4, systemServices.length);
 
-    const i18n = privacyHubGeolocationSubpage.i18n;
     for (const timeZoneAutomaticSetting of [true, false]) {
-      setAutomaticTimeZoneEnabled(timeZoneAutomaticSetting);
-      await waitAfterNextRender(privacyHubGeolocationSubpage);
+      await setAutomaticTimeZoneEnabled(timeZoneAutomaticSetting);
 
       checkService(
           systemServices[0]!,
-          i18n('privacyHubSystemServicesAutomaticTimeZoneName'),
+          privacyHubGeolocationSubpage.i18n(
+              'privacyHubSystemServicesAutomaticTimeZoneName'),
           timeZoneAutomaticSetting, {
-            notConfiguredText:
-                i18n('privacyHubSystemServicesGeolocationNotConfigured'),
-            allowedText: i18n('privacyHubSystemServicesAllowedText'),
+            notConfiguredText: privacyHubGeolocationSubpage.i18n(
+                'privacyHubSystemServicesGeolocationNotConfigured'),
+            allowedText: privacyHubGeolocationSubpage.i18n(
+                'privacyHubSystemServicesAllowedText'),
             blockedText: 'Blocked. Time zone is currently set to ' +
                 'Test Time Zone' +
                 ' and can only be updated manually.',
@@ -236,16 +251,36 @@ suite('<settings-privacy-hub-geolocation-subpage>', () => {
             .filter(value => typeof value === 'number') as ScheduleType[];
     // Test Night Light
     for (const scheduleType of allScheduleTypes) {
-      setNightLightScheduleType(scheduleType as ScheduleType);
-      await waitAfterNextRender(privacyHubGeolocationSubpage);
+      await setNightLightScheduleType(scheduleType as ScheduleType);
 
       checkService(
           systemServices[1]!,
-          i18n('privacyHubSystemServicesSunsetScheduleName'),
+          privacyHubGeolocationSubpage.i18n(
+              'privacyHubSystemServicesSunsetScheduleName'),
           scheduleType === ScheduleType.SUNSET_TO_SUNRISE, {
-            notConfiguredText:
-                i18n('privacyHubSystemServicesGeolocationNotConfigured'),
-            allowedText: i18n('privacyHubSystemServicesAllowedText'),
+            notConfiguredText: privacyHubGeolocationSubpage.i18n(
+                'privacyHubSystemServicesGeolocationNotConfigured'),
+            allowedText: privacyHubGeolocationSubpage.i18n(
+                'privacyHubSystemServicesAllowedText'),
+            blockedText:
+                'Blocked. Schedule is currently set to 7:00AM - 8:00PM' +
+                ' and can only be updated manually.',
+          });
+    }
+
+    // Test Dark Theme
+    for (const scheduleType of allScheduleTypes) {
+      await setDarkThemeScheduleType(scheduleType as ScheduleType);
+
+      checkService(
+          systemServices[2]!,
+          privacyHubGeolocationSubpage.i18n(
+              'privacyHubSystemServicesDarkThemeName'),
+          scheduleType === ScheduleType.SUNSET_TO_SUNRISE, {
+            notConfiguredText: privacyHubGeolocationSubpage.i18n(
+                'privacyHubSystemServicesGeolocationNotConfigured'),
+            allowedText: privacyHubGeolocationSubpage.i18n(
+                'privacyHubSystemServicesAllowedText'),
             blockedText:
                 'Blocked. Schedule is currently set to 7:00AM - 8:00PM' +
                 ' and can only be updated manually.',
@@ -254,30 +289,17 @@ suite('<settings-privacy-hub-geolocation-subpage>', () => {
 
     // Test Local Weather
     for (const localWeatherEnabled of [true, false]) {
-      setLocalWeatherEnabled(localWeatherEnabled);
-      await waitAfterNextRender(privacyHubGeolocationSubpage);
+      await setLocalWeatherEnabled(localWeatherEnabled);
 
       checkService(
-          systemServices[2]!, i18n('privacyHubSystemServicesLocalWeatherName'),
+          systemServices[3]!,
+          privacyHubGeolocationSubpage.i18n(
+              'privacyHubSystemServicesLocalWeatherName'),
           localWeatherEnabled, {
-            notConfiguredText:
-                i18n('privacyHubSystemServicesGeolocationNotConfigured'),
-            allowedText: i18n('privacyHubSystemServicesAllowedText'),
-            blockedText: 'Blocked',
-          });
-    }
-
-    // Test Dark Theme
-    for (const scheduleType of allScheduleTypes) {
-      setDarkThemeScheduleType(scheduleType as ScheduleType);
-      await waitAfterNextRender(privacyHubGeolocationSubpage);
-
-      checkService(
-          systemServices[3]!, i18n('privacyHubSystemServicesDarkThemeName'),
-          scheduleType === ScheduleType.SUNSET_TO_SUNRISE, {
-            notConfiguredText:
-                i18n('privacyHubSystemServicesGeolocationNotConfigured'),
-            allowedText: i18n('privacyHubSystemServicesAllowedText'),
+            notConfiguredText: privacyHubGeolocationSubpage.i18n(
+                'privacyHubSystemServicesGeolocationNotConfigured'),
+            allowedText: privacyHubGeolocationSubpage.i18n(
+                'privacyHubSystemServicesAllowedText'),
             blockedText: 'Blocked',
           });
     }
@@ -286,54 +308,117 @@ suite('<settings-privacy-hub-geolocation-subpage>', () => {
   test('Geolocation sub-label updates on location change', async () => {
     await initPage();
 
-    let subLabelElement: LocalizedLinkElement|null;
-    let subLabel: string;
-
-    // Helper function to remove HTML tags from the localizedString.
-    const removeAnchorTags = (text: string) =>
-        text.replace('<a>', '').replace('</a>', '');
-
     // Check "Allowed"
     assertTrue(getGeolocationAccessLevel() === GeolocationAccessLevel.ALLOWED);
-    subLabelElement =
-        privacyHubGeolocationSubpage.shadowRoot!
-            .querySelector<LocalizedLinkElement>(
-                '#geolocationModeDescriptionDiv > localized-link');
-    assertTrue(!!subLabelElement);
-    subLabel = subLabelElement.localizedString.toString();
+    assertEquals(
+        privacyHubGeolocationSubpage.i18n('geolocationAccessLevelAllowed'),
+        getGeolocationLabel());
     assertEquals(
         privacyHubGeolocationSubpage.i18n('geolocationAllowedModeDescription'),
-        removeAnchorTags(subLabel));
+        getGeolocationSubLabel());
 
     // Check "Allowed For System Services"
-    setGeolocationAccessLevel(GeolocationAccessLevel.ONLY_ALLOWED_FOR_SYSTEM);
+    setGeolocationAccessLevelPref(
+        GeolocationAccessLevel.ONLY_ALLOWED_FOR_SYSTEM);
     assertTrue(
         getGeolocationAccessLevel() ===
         GeolocationAccessLevel.ONLY_ALLOWED_FOR_SYSTEM);
-    subLabelElement =
-        privacyHubGeolocationSubpage.shadowRoot!
-            .querySelector<LocalizedLinkElement>(
-                '#geolocationModeDescriptionDiv > localized-link');
-    assertTrue(!!subLabelElement);
-    subLabel = subLabelElement.localizedString.toString();
+    assertEquals(
+        privacyHubGeolocationSubpage.i18n(
+            'geolocationAccessLevelOnlyAllowedForSystem'),
+        getGeolocationLabel());
     assertEquals(
         privacyHubGeolocationSubpage.i18n(
             'geolocationOnlyAllowedForSystemModeDescription'),
-        removeAnchorTags(subLabel));
+        getGeolocationSubLabel());
 
     // Check "Blocked for all"
-    setGeolocationAccessLevel(GeolocationAccessLevel.DISALLOWED);
+    setGeolocationAccessLevelPref(GeolocationAccessLevel.DISALLOWED);
     assertTrue(
         getGeolocationAccessLevel() === GeolocationAccessLevel.DISALLOWED);
-    subLabelElement =
-        privacyHubGeolocationSubpage.shadowRoot!
-            .querySelector<LocalizedLinkElement>(
-                '#geolocationModeDescriptionDiv > localized-link');
-    assertTrue(!!subLabelElement);
-    subLabel = subLabelElement.localizedString.toString();
+    assertEquals(
+        privacyHubGeolocationSubpage.i18n('geolocationAccessLevelDisallowed'),
+        getGeolocationLabel());
     assertEquals(
         privacyHubGeolocationSubpage.i18n('geolocationBlockedModeDescription'),
-        removeAnchorTags(subLabel));
+        getGeolocationSubLabel());
+  });
+
+  function getGeolocationSelectorDialog(): CrDialogElement|null {
+    return privacyHubGeolocationSubpage.shadowRoot!
+        .querySelector<CrDialogElement>('#systemGeolocationDialog');
+  }
+
+  async function selectGeolocationAccessLevelInDialog(
+      accessLevel: GeolocationAccessLevel) {
+    // Exhaustive list of radio button id's of the dialog mapped to its
+    // corresponding  geolocation access level.
+    const accessLevelToRadioButtonIdMap = {
+      [GeolocationAccessLevel.ALLOWED]: 'systemGeolocationAccessAllowedForAll',
+      [GeolocationAccessLevel.ONLY_ALLOWED_FOR_SYSTEM]:
+          'systemGeolocationAccessOnlyAllowedForSystem',
+      [GeolocationAccessLevel.DISALLOWED]: 'systemGeolocationAccessBlocked',
+    };
+    assertEquals(
+        GeolocationAccessLevel.MAX_VALUE + 1,
+        Object.keys(accessLevelToRadioButtonIdMap).length);
+
+    // Click change button.
+    const changeGeolocationButton =
+        privacyHubGeolocationSubpage.shadowRoot!.querySelector<CrButtonElement>(
+            '#changeAccessButton');
+    assertTrue(!!changeGeolocationButton, 'Change button is missing');
+    changeGeolocationButton.click();
+    await flushTasks();
+
+    // Check that geolocation selector dialog appears.
+    const geolocationSelectorDialog = getGeolocationSelectorDialog();
+    assertTrue(
+        !!geolocationSelectorDialog, 'Geolocation selector dialog is missing');
+
+    // Check that the Dialog radio-buttons represent all access levels.
+    const radioButtonList =
+        geolocationSelectorDialog.querySelectorAll('controlled-radio-button');
+    assertEquals(
+        GeolocationAccessLevel.MAX_VALUE + 1, radioButtonList.length,
+        'Radio buttons don\'t match with the access levels');
+
+    // Select the intended radio button and click submit.
+    const radioButton: ControlledRadioButtonElement =
+        Array.from(radioButtonList)
+            .find(
+                (elem: ControlledRadioButtonElement) =>
+                    elem.id === accessLevelToRadioButtonIdMap[accessLevel])!;
+    radioButton.click();
+    await flushTasks();
+    const confirmButton: CrButtonElement =
+        geolocationSelectorDialog.querySelector<CrButtonElement>(
+            '#confirmButton')!;
+    confirmButton.click();
+    await flushTasks();
+
+    // Check that the dialog disappears.
+    assertNull(
+        getGeolocationSelectorDialog(),
+        'Geolocation selector dialog is not dismissed');
+  }
+
+  test('Select geolocation access level from dialog', async () => {
+    await initPage();
+
+    // Geolocation selector dialog should be hidden.
+    assertNull(getGeolocationSelectorDialog());
+
+    for (const accessLevel of Object.values(GeolocationAccessLevel)
+             .filter(v => typeof v === 'number')) {
+      await selectGeolocationAccessLevelInDialog(accessLevel);
+      assertEquals(
+          accessLevel,
+          privacyHubGeolocationSubpage
+              .getPref('ash.user.geolocation_access_level')
+              .value,
+          'Preference didn\'t update');
+    }
   });
 
   test('App list displayed when geolocation allowed', async () => {
@@ -350,7 +435,7 @@ suite('<settings-privacy-hub-geolocation-subpage>', () => {
   test('App list not displayed when geolocation not allowed', async () => {
     await initPage();
     // Disable geolocation access.
-    setGeolocationAccessLevel(GeolocationAccessLevel.DISALLOWED);
+    setGeolocationAccessLevelPref(GeolocationAccessLevel.DISALLOWED);
 
     assertNull(getAppList());
     assertTrue(!!getNoAppHasAccessTextSection());
@@ -360,7 +445,8 @@ suite('<settings-privacy-hub-geolocation-subpage>', () => {
 
     // Setting location permission to "Only allowed for system" should have
     // similar effect.
-    setGeolocationAccessLevel(GeolocationAccessLevel.ONLY_ALLOWED_FOR_SYSTEM);
+    setGeolocationAccessLevelPref(
+        GeolocationAccessLevel.ONLY_ALLOWED_FOR_SYSTEM);
     assertNull(getAppList());
     assertTrue(!!getNoAppHasAccessTextSection());
     assertEquals(
@@ -472,30 +558,27 @@ suite('<settings-privacy-hub-geolocation-subpage>', () => {
     assertEquals(GeolocationAccessLevel.ALLOWED, getGeolocationAccessLevel());
 
     // Change dropdown and check the corresponding metric is recorded.
-    setGeolocationAccessLevel(GeolocationAccessLevel.DISALLOWED);
+    await selectGeolocationAccessLevelInDialog(
+        GeolocationAccessLevel.DISALLOWED);
     assertEquals(
         1,
         metrics.countMetricValue(
             histogram(), GeolocationAccessLevel.DISALLOWED));
 
     // Change dropdown and check the corresponding metric is recorded.
-    setGeolocationAccessLevel(GeolocationAccessLevel.ONLY_ALLOWED_FOR_SYSTEM);
+    await selectGeolocationAccessLevelInDialog(
+        GeolocationAccessLevel.ONLY_ALLOWED_FOR_SYSTEM);
     assertEquals(
         1,
         metrics.countMetricValue(
             histogram(), GeolocationAccessLevel.ONLY_ALLOWED_FOR_SYSTEM));
 
     // Change dropdown and check the corresponding metric is recorded.
-    setGeolocationAccessLevel(GeolocationAccessLevel.ALLOWED);
+    await selectGeolocationAccessLevelInDialog(GeolocationAccessLevel.ALLOWED);
     assertEquals(
         1,
         metrics.countMetricValue(histogram(), GeolocationAccessLevel.ALLOWED));
   });
-
-  function getGeolocationDropdown(): SettingsDropdownMenuElement|null {
-    return privacyHubGeolocationSubpage.shadowRoot!
-        .querySelector<SettingsDropdownMenuElement>('#geolocationDropdown');
-  }
 
   function getManagePermissionsInChromeRow(): CrLinkRowElement|null {
     return privacyHubGeolocationSubpage.shadowRoot!
@@ -513,25 +596,27 @@ suite('<settings-privacy-hub-geolocation-subpage>', () => {
         privacyHubGeolocationSubpage.i18n('websitesSectionTitle'),
         privacyHubGeolocationSubpage.shadowRoot!
             .querySelector<HTMLElement>(
-                '#websitesSectionTitle')!.innerText!.trim());
+                '#websitesSectionTitle')!.innerText!.trim()),
+        'problem 1';
 
     assertEquals(
         privacyHubGeolocationSubpage.i18n(
             'manageLocationPermissionsInChromeText'),
-        getManagePermissionsInChromeRow()!.label);
+        getManagePermissionsInChromeRow()!.label, 'problem 2');
 
     // Disable geolocation access.
-    setGeolocationAccessLevel(GeolocationAccessLevel.DISALLOWED);
+    setGeolocationAccessLevelPref(GeolocationAccessLevel.DISALLOWED);
     assertEquals(
         privacyHubGeolocationSubpage.i18n('noWebsiteCanUseLocationText'),
-        getNoWebsiteHasAccessTextRow()!.innerText!.trim());
+        getNoWebsiteHasAccessTextRow()!.innerText!.trim(), 'problem 3');
 
     // Setting location to "only allowed for system services" should have same
     // effect as disabling.
-    setGeolocationAccessLevel(GeolocationAccessLevel.ONLY_ALLOWED_FOR_SYSTEM);
+    setGeolocationAccessLevelPref(
+        GeolocationAccessLevel.ONLY_ALLOWED_FOR_SYSTEM);
     assertEquals(
         privacyHubGeolocationSubpage.i18n('noWebsiteCanUseLocationText'),
-        getNoWebsiteHasAccessTextRow()!.innerText!.trim());
+        getNoWebsiteHasAccessTextRow()!.innerText!.trim(), 'problem 4');
   });
 
   test(
@@ -568,12 +653,13 @@ suite('<settings-privacy-hub-geolocation-subpage>', () => {
   test('Websites section is hidden when location is not allowed', async () => {
     await initPage();
     // Disable location access.
-    setGeolocationAccessLevel(GeolocationAccessLevel.DISALLOWED);
+    setGeolocationAccessLevelPref(GeolocationAccessLevel.DISALLOWED);
     assertNull(getManagePermissionsInChromeRow());
     assertTrue(!!getNoWebsiteHasAccessTextRow());
 
     // Set location to "only allowed for system", UI should remain the same.
-    setGeolocationAccessLevel(GeolocationAccessLevel.ONLY_ALLOWED_FOR_SYSTEM);
+    setGeolocationAccessLevelPref(
+        GeolocationAccessLevel.ONLY_ALLOWED_FOR_SYSTEM);
     assertNull(getManagePermissionsInChromeRow());
     assertTrue(!!getNoWebsiteHasAccessTextRow());
   });
@@ -581,19 +667,20 @@ suite('<settings-privacy-hub-geolocation-subpage>', () => {
   test('System services section', async () => {
     await initPage();
 
-    setGeolocationAccessLevel(GeolocationAccessLevel.ONLY_ALLOWED_FOR_SYSTEM);
-    checkServiceSection();
+    await setGeolocationAccessLevelPref(
+        GeolocationAccessLevel.ONLY_ALLOWED_FOR_SYSTEM);
+    await checkServiceSection();
 
-    setGeolocationAccessLevel(GeolocationAccessLevel.DISALLOWED);
-    checkServiceSection();
+    await setGeolocationAccessLevelPref(GeolocationAccessLevel.DISALLOWED);
+    await checkServiceSection();
 
-    setGeolocationAccessLevel(GeolocationAccessLevel.ALLOWED);
-    checkServiceSection();
+    await setGeolocationAccessLevelPref(GeolocationAccessLevel.ALLOWED);
+    await checkServiceSection();
   });
 
   test('Timezone update in system services section', async () => {
     await initPage();
-    setGeolocationAccessLevel(GeolocationAccessLevel.DISALLOWED);
+    setGeolocationAccessLevelPref(GeolocationAccessLevel.DISALLOWED);
     const systemServices =
         getSystemServicesFromSubpage(privacyHubGeolocationSubpage);
 
@@ -638,6 +725,30 @@ suite('<settings-privacy-hub-geolocation-subpage>', () => {
         getSystemServicePermissionText(systemServices[1]!));
   });
 
+  test('Location controls is disabled when managed by policy', async () => {
+    await initPage();
+    privacyHubGeolocationSubpage.prefs.ash.user.geolocation_access_level
+        .enforcement = chrome.settingsPrivate.Enforcement.ENFORCED;
+    privacyHubGeolocationSubpage.prefs.ash.user.geolocation_access_level
+        .controlledBy = chrome.settingsPrivate.ControlledBy.USER_POLICY;
+    privacyHubGeolocationSubpage.notifyPath(
+        'prefs.ash.user.geolocation_access_level.enforcement');
+    privacyHubGeolocationSubpage.notifyPath(
+        'prefs.ash.user.geolocation_access_level.controlledBy');
+    await flushTasks();
+
+    // Change button should be disabled.
+    const changeButton =
+        privacyHubGeolocationSubpage.shadowRoot!
+            .querySelector<ControlledButtonElement>('#changeAccessButton')!;
+    assertTrue(changeButton.disabled, 'Change button not disabled');
+
+    // Policy indicator should be shown.
+    assertTrue(
+        !!changeButton.shadowRoot!.querySelector('cr-policy-pref-indicator'),
+        'Policy indicator missing');
+  });
+
   test('Location control is disabled for secondary users', async () => {
     // Simulate secondary user flow.
     loadTimeData.overrideValues({
@@ -645,8 +756,14 @@ suite('<settings-privacy-hub-geolocation-subpage>', () => {
     });
     await initPage();
 
-    assertTrue(getGeolocationDropdown()!.disabled);
+    // Change button should be disabled.
+    const changeButton =
+        privacyHubGeolocationSubpage.shadowRoot!
+            .querySelector<ControlledButtonElement>('#changeAccessButton')!;
+    assertTrue(changeButton.disabled);
+
+    // Managed icon with tooltip should be present.
+    assertTrue(!!privacyHubGeolocationSubpage.shadowRoot!
+                     .querySelector<CrTooltipIconElement>('cr-tooltip-icon'));
   });
-
-
 });

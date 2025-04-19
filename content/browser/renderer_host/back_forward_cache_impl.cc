@@ -331,7 +331,7 @@ void RestoreBrowserControlsState(RenderFrameHostImpl* cached_rfh) {
     cached_rfh->GetPage().UpdateBrowserControlsState(
         cc::BrowserControlsState::kBoth, cc::BrowserControlsState::kHidden,
         // Do not animate as we want this to happen "instantaneously"
-        false);
+        false, std::nullopt);
   }
 }
 
@@ -352,7 +352,8 @@ void RequestRecordTimeToVisible(RenderFrameHostImpl* rfh,
 // this Entry are foregrounded.
 bool HasForegroundedProcess(BackForwardCacheImpl::Entry& entry) {
   for (const auto& rvh : entry.render_view_hosts()) {
-    if (!rvh->GetProcess()->IsProcessBackgrounded()) {
+    if (rvh->GetProcess()->GetPriority() !=
+        base::Process::Priority::kBestEffort) {
       return true;
     }
   }
@@ -564,7 +565,7 @@ void BackForwardCacheImpl::Entry::WriteIntoTrace(
   dict.Add("render_frame_host", render_frame_host());
 }
 
-void BackForwardCacheImpl::RenderProcessBackgroundedChanged(
+void BackForwardCacheImpl::RenderProcessPriorityChanged(
     RenderProcessHostImpl* host) {
   EnforceCacheSizeLimit();
 }
@@ -1310,10 +1311,13 @@ std::unique_ptr<BackForwardCacheImpl::Entry> BackForwardCacheImpl::RestoreEntry(
 }
 
 void BackForwardCacheImpl::Flush() {
+  Flush(NotRestoredReason::kCacheFlushed);
+}
+
+void BackForwardCacheImpl::Flush(NotRestoredReason reason) {
   TRACE_EVENT0("navigation", "BackForwardCache::Flush");
   for (std::unique_ptr<Entry>& entry : entries_) {
-    entry->render_frame_host()->EvictFromBackForwardCacheWithReason(
-        BackForwardCacheMetrics::NotRestoredReason::kCacheFlushed);
+    entry->render_frame_host()->EvictFromBackForwardCacheWithReason(reason);
   }
 }
 

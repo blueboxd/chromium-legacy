@@ -488,6 +488,7 @@ chromium-metrics-reviews@google.com.
   <int value="28" label="HOST_SESSION_DISCONNECTED"/>
   <int value="29" label="FAILURE_UNKNOWN_ERROR"/>
   <int value="30" label="FAILURE_REAUTHZ_POLICY_CHECK_FAILED"/>
+  <int value="31" label="FAILURE_NO_COMMON_AUTH_METHOD"/>
 </enum>
 
 <enum name="EnterpriseDeviceManagementStatus">
@@ -605,15 +606,6 @@ chromium-metrics-reviews@google.com.
   <int value="5" label="kMove"/>
   <int value="6" label="kOpen"/>
   <int value="7" label="kShare"/>
-</enum>
-
-<enum name="EnterpriseDlpPolicyLevel">
-  <summary>Restriction level enforced by Data Leak Prevention policy.</summary>
-  <int value="0" label="Unknown"/>
-  <int value="1" label="Report"/>
-  <int value="2" label="Warn"/>
-  <int value="3" label="Block"/>
-  <int value="4" label="Allow"/>
 </enum>
 
 <enum name="EnterpriseDlpPolicyRestriction">
@@ -898,14 +890,6 @@ chromium-metrics-reviews@google.com.
   <int value="5"
       label="DEP Enrollment (automatically grants UAMDM status / full
              management capabilities)"/>
-</enum>
-
-<enum name="EnterpriseMacMDMStatusOld">
-  <summary>The Mac MDM enrollment status (old API).</summary>
-  <int value="0" label="API unavailable"/>
-  <int value="1" label="Unable to parse result"/>
-  <int value="2" label="No enrollment"/>
-  <int value="3" label="MDM enrollment"/>
 </enum>
 
 <enum name="EnterprisePolicies">
@@ -1845,7 +1829,6 @@ chromium-metrics-reviews@google.com.
   <int value="955" label="WebHidAllowDevicesWithHidUsagesForUrls"/>
   <int value="956" label="SecondaryGoogleAccountUsage"/>
   <int value="957" label="DeviceEncryptedReportingPipelineEnabled"/>
-  <int value="958" label="IsolatedAppsDeveloperModeAllowed"/>
   <int value="959" label="FloatingWorkspaceEnabled"/>
   <int value="960" label="WindowPlacementAllowedForUrls"/>
   <int value="961" label="WindowPlacementBlockedForUrls"/>
@@ -2122,7 +2105,7 @@ chromium-metrics-reviews@google.com.
   <int value="1235" label="PrivacySandboxIpProtectionEnabled"/>
   <int value="1236" label="OrcaEnabled"/>
   <int value="1237" label="EnterpriseLogoUrl"/>
-  <int value="1238" label="CustomProfileLabel"/>
+  <int value="1238" label="EnterpriseCustomLabel"/>
   <int value="1239" label="ProfileLabel"/>
   <int value="1240" label="PrivacySandboxFingerprintingProtectionEnabled"/>
   <int value="1241" label="MultiScreenCaptureAllowedForUrls"/>
@@ -2131,7 +2114,6 @@ chromium-metrics-reviews@google.com.
   <int value="1246" label="ApplicationBoundEncryptionEnabled"/>
   <int value="1247" label="DeviceAuthenticationFlowAutoReloadInterval"/>
   <int value="1248" label="ShowAiIntroScreenEnabled"/>
-  <int value="1249" label="ShowTunaScreenEnabled"/>
   <int value="1250" label="EnterpriseBadgingTemporarySetting"/>
   <int value="1251" label="GenAILocalFoundationalModelSettings"/>
   <int value="1252" label="DeviceExtensionsSystemLogEnabled"/>
@@ -2150,6 +2132,29 @@ chromium-metrics-reviews@google.com.
   <int value="1265" label="DynamicCodeSettings"/>
   <int value="1266" label="LensOverlaySettings"/>
   <int value="1267" label="ThirdPartyPasswordManagersAllowed"/>
+  <int value="1268" label="DeviceAllowEnterpriseRemoteAccessConnections"/>
+  <int value="1270" label="FocusModeSoundsEnabled"/>
+  <int value="1271" label="ExtensionDeveloperModeSettings"/>
+  <int value="1272" label="LocalUserFilesMigrationDestination"/>
+  <int value="1273" label="KioskBrowserPermissionsAllowedForOrigins"/>
+  <int value="1274" label="LensOnGalleryEnabled"/>
+  <int value="1275" label="HistorySearchSettings"/>
+  <int value="1276" label="DevicePostQuantumKeyAgreementEnabled"/>
+  <int value="1277" label="DefaultJavaScriptOptimizerSetting"/>
+  <int value="1278" label="JavaScriptOptimizerAllowedForSites"/>
+  <int value="1279" label="JavaScriptOptimizerBlockedForSites"/>
+  <int value="1280" label="PromotionsEnabled"/>
+  <int value="1281" label="QRCodeGeneratorEnabled"/>
+  <int value="1282" label="DnsOverHttpsExcludedDomains"/>
+  <int value="1283" label="DnsOverHttpsIncludedDomains"/>
+  <int value="1284" label="SystemShortcutBehavior"/>
+  <int value="1285" label="DeletingUndecryptablePasswordsEnabled"/>
+  <int value="1286" label="StandardizedBrowserZoomEnabled"/>
+  <int value="1287" label="ReportingEndpoints"/>
+  <int value="1288" label="PrintingLPACSandboxEnabled"/>
+  <int value="1289" label="ShowGeminiIntroScreenEnabled"/>
+  <int value="1290" label="DeviceRestrictionSchedule"/>
+  <int value="1291" label="TabCompareSettings"/>
 </enum>
 
 <enum name="EnterprisePoliciesSources">
@@ -2266,6 +2271,14 @@ chromium-metrics-reviews@google.com.
   <int value="2" label="Failure encoding the profile id."/>
 </enum>
 
+<enum name="EnterpriseProfileUnaffiliatedReason">
+  <summary>Profile management status.</summary>
+  <int value="0" label="User unmanaged"/>
+  <int value="1" label="User managed by cloud and device unmanaged"/>
+  <int value="2" label="User managed by cloud and device managed by platform"/>
+  <int value="3" label="User and device managed by cloud and unaffiliated"/>
+</enum>
+
 <enum name="EnterpriseReportingEventType">
   <int value="0" label="Unknown event"/>
   <int value="1" label="Password reuse event"/>
@@ -2356,11 +2369,47 @@ chromium-metrics-reviews@google.com.
 </enum>
 
 <enum name="ManagedScreensaverImageDownloadResult">
+<!-- Keep this in sync with ScreensaverImageDownloadResult in
+  //ash/ambient/managed/screensaver_image_downloader.h -->
+
   <int value="0" label="Image downloaded successfully"/>
   <int value="1" label="Network error"/>
   <int value="2" label="File save error"/>
   <int value="3" label="Write to filesystem error"/>
   <int value="4" label="Image download cancelled"/>
+</enum>
+
+<enum name="OidcInterceptionFunnelStep">
+  <int value="0" label="Created throttle for valid redirection"/>
+  <int value="1" label="Successfuly parsed out required info for registration"/>
+  <int value="2" label="Enrollment attempt started"/>
+  <int value="3" label="Showed unified consent dialog"/>
+  <int value="4" label="Started OIDC profile registration"/>
+</enum>
+
+<enum name="OidcInterceptionResult">
+  <int value="0" label="Other interception in progress"/>
+  <int value="1" label="Interception is for the current profile"/>
+  <int value="2" label="Can't retrieve info from URL"/>
+  <int value="3" label="Unified consent dialog rejected"/>
+  <int value="4" label="OIDC profile registration failure"/>
+  <int value="5" label="Can't start enrollment from Guest or OTR profile"/>
+</enum>
+
+<enum name="OidcProfileCreationFunnelStep">
+  <int value="0" label="OIDC-managed profile created"/>
+  <int value="1" label="Started policy fetch"/>
+  <int value="2" label="Adding GAIA user as primary account"/>
+</enum>
+
+<enum name="OidcProfileCreationResult">
+  <int value="0" label="OIDC profile flow succeeds"/>
+  <int value="1" label="Profile Switch"/>
+  <int value="2" label="OIDC-managed profile creation failure"/>
+  <int value="3" label="OIDC profile policy fetch failure"/>
+  <int value="4"
+      label="Dasher-based OIDC profile can't add/set primary account"/>
+  <int value="5" label="Profile ID mismatch with registration request"/>
 </enum>
 
 <enum name="OsSuite">
@@ -2468,6 +2517,16 @@ chromium-metrics-reviews@google.com.
   <int value="7" label="GetUserInfoError"/>
 </enum>
 
+<enum name="StateDeterminationStatus">
+  <int value="0" label="Disabled via never switch"/>
+  <int value="1" label="Disabled via kill switch"/>
+  <int value="2" label="Disabled on unbranded build"/>
+  <int value="3" label="Disabled on non-Chrome device"/>
+  <int value="4" label="Enabled on official Google Chrome"/>
+  <int value="5" label="Enabled on official Google Flex"/>
+  <int value="6" label="Enabled via always switch"/>
+</enum>
+
 <enum name="StateKeysRetrievalErrorType">
   <int value="0" label="No error"/>
   <int value="1" label="Invalid response"/>
@@ -2486,6 +2545,28 @@ chromium-metrics-reviews@google.com.
   <int value="6" label="Canvas"/>
   <int value="7" label="[Deprecated] Google News"/>
   <int value="8" label="Explore"/>
+</enum>
+
+<enum name="WindowsProfileType">
+  <int value="0" label="API Failed">The API call to GetProfileType failed.</int>
+  <int value="1" label="Invalid">
+    GetProfileType returned an invalid profile type.
+  </int>
+  <int value="2" label="None">
+    GetProfileType returned no profile type. This usually implies a local
+    (non-roaming) profile.
+  </int>
+  <int value="3" label="PT_MANDATORY">
+    The user has a Mandatory User Profiles.
+  </int>
+  <int value="4" label="PT_ROAMING">The user has a Roaming User Profiles.</int>
+  <int value="5" label="PT_ROAMING_PREEXISTING">
+    The user has a Roaming User Profile that was created on another PC and is
+    being downloaded. This profile type implies PT_ROAMING.
+  </int>
+  <int value="6" label="PT_TEMPORARY">
+    The user has a Temporary User Profiles; it will be deleted at logoff.
+  </int>
 </enum>
 
 <enum name="WmiQueryError">

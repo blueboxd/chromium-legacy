@@ -11,8 +11,10 @@
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" /> þræðir, <ph name="CPU_MAX_CLOCK_SPEED" /> GHz)</translation>
 <translation id="1047773237499189053">Nýr eiginleiki í boði, notaðu ör upp-lykilinn til að fá frekari upplýsingar.</translation>
 <translation id="1049663189809099096">ljósgul(ur)</translation>
+<translation id="1053371972724535586">Upptökurnar mínar</translation>
 <translation id="1056898198331236512">Viðvörun</translation>
 <translation id="1059913517121127803">Ekki tókst að skanna</translation>
+<translation id="1061864016440983342">Nota án staðsetningar</translation>
 <translation id="1062823486781306604"><ph name="INDEX" /> af <ph name="COUNT" />, <ph name="NAME" />.</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">Eldveggur greindist</translation>
@@ -34,6 +36,7 @@
 <translation id="1164939766849482256">Skjávari, frá dögun til rökkurs</translation>
 <translation id="1167755866710282443">Opnaðu valmyndina til að sérsníða lykla. Dragðu valmyndina til að færa hana.</translation>
 <translation id="1171349345463658120">strandlón</translation>
+<translation id="1173894706177603556">Endurnefna</translation>
 <translation id="1174073918202301297">Flýtileið bætt við</translation>
 <translation id="11743817593307477">Notaðu örvalyklana til að færa stýringuna á valda leikjaaðgerð. Notaðu Enter-lykilinn til að staðfesta staðsetningu stýringarinnar. Notaðu Escape-lykilinn til að hætta við.</translation>
 <translation id="1175697296044146566"><ph name="DEVICE_TYPE" /> er í umsjón <ph name="MANAGER" />.</translation>
@@ -59,6 +62,7 @@
 <translation id="1290331692326790741">Lítill sendistyrkur</translation>
 <translation id="1300115153046603471">Aðgangsstaður er af gerðinni „sjálfgefið“ og „<ph name="ATTACH" />“.</translation>
 <translation id="1301069673413256657">GSM</translation>
+<translation id="1304014921944666344">Búið til</translation>
 <translation id="1308754910631152188">Uppfærir (<ph name="PERCENTAGE_VALUE" />% lokið)</translation>
 <translation id="1309341072016605398"><ph name="MINUTES" /> mínútur</translation>
 <translation id="1310380015393971138">Ekkert <ph name="NETWORK_NAME" /> netkerfi er tiltækt</translation>
@@ -81,6 +85,7 @@
 <translation id="1413240736185167732">Mistókst – bilun í síu</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
 <translation id="1418991483994088776">orkídea</translation>
+<translation id="142205161612889714">WebM</translation>
 <translation id="142228117786570094">Ég er með lyklasett</translation>
 <translation id="1423591390236870726">Ekki var ýtt á lykilinn <ph name="KEY_NAME" /></translation>
 <translation id="1432110487435300883">Deildu gildinu <ph name="CATEGORY_TEXT" /> með <ph name="CONVERSION_RATE" /> til að fá námundaða niðurstöðu</translation>
@@ -101,6 +106,7 @@
 <translation id="1499900233129743732"><ph name="MANAGER" /> hefur umsjón með þessum notanda og getur stjórnað stillingum og skoðað notendavirkni með fjartengingu.</translation>
 <translation id="150962533380566081">Ógilt PUK-númer.</translation>
 <translation id="1510238584712386396">Ræsiforrit</translation>
+<translation id="1514446283880973949">Skrifaðu af meira öryggi, taktu saman efni, fáðu skilgreiningar og fleira</translation>
 <translation id="1515129336378114413">heimasíða vafra</translation>
 <translation id="1526389707933164996">Hreyfimynd skjávara</translation>
 <translation id="152892567002884378">Hækka hljóð</translation>
@@ -113,6 +119,8 @@
 <translation id="1567064801249837505">Albúm</translation>
 <translation id="1572585716423026576">Nota sem veggfóður</translation>
 <translation id="1578784163189013834">Velja bakgrunn skjávara</translation>
+<translation id="1588438908519853928">Venjuleg</translation>
+<translation id="1591562245178063882">Þessi mánuður</translation>
 <translation id="1593528591614229756">Gakktu úr skugga um að velja aðgangsstaði sem símafyrirtækið eða stjórnandinn þinn veita. Slökkt verður á sérsniðnum aðgangsstöðum þegar þú velur aðgangsstað. Ógildir aðgangsstaðir kunna að valda truflunum á farsímatengingunni þinni. <ph name="LINK_BEGIN" />Nánar<ph name="LINK_END" /></translation>
 <translation id="160633243685262989">Forskoða mynd</translation>
 <translation id="1611649489706141841">áfram</translation>
@@ -149,6 +157,7 @@
 <translation id="1738949837603788263">Svæði <ph name="ZONE_NUMBER" /></translation>
 <translation id="1745577949879301685">Ekki tókst að hlaða myndum. Athugaðu nettenginguna og reyndu að hlaða myndunum aftur.</translation>
 <translation id="1751249301761991853">Persónulegt</translation>
+<translation id="1751335846119670066">Hjálpaðu mér að lesa</translation>
 <translation id="1753496554272155572">Loka forskoðun veggfóðurs</translation>
 <translation id="1754578112426924640">Breyta hnappi fyrir <ph name="ACCELERATOR_INFO" />.</translation>
 <translation id="1755556344721611131">Greiningarforrit</translation>
@@ -185,6 +194,7 @@
 <translation id="1874612839560830905">MTU</translation>
 <translation id="1876997008435570708">fiðrildi</translation>
 <translation id="188114911237521550">Slökkva á dökku þema</translation>
+<translation id="1884794756658039602">Nánar um mælendakenni.</translation>
 <translation id="1885577615937958993">spóla áfram í efni</translation>
 <translation id="1887850431809612466">Útgáfa vélbúnaðar</translation>
 <translation id="189221451253258459">neongrænn</translation>
@@ -193,6 +203,7 @@
 <translation id="1908234395526491708">UDP-beiðnir mistókust</translation>
 <translation id="1908394185991500139">ör til vinstri</translation>
 <translation id="1923388006036088459">Áherslulitir</translation>
+<translation id="1945403655450283000">Upptökutæki</translation>
 <translation id="1947737735496445907">Prentað</translation>
 <translation id="1951012854035635156">Hjálpari</translation>
 <translation id="1954818433534793392">bygging</translation>
@@ -217,14 +228,20 @@
 <translation id="2080070583977670716">Fleiri stillingar</translation>
 <translation id="2082932131694554252">Úthlutaður lykill á lyklaborði</translation>
 <translation id="2085089206770112532">Draga úr birtustigi skjás</translation>
+<translation id="2085876078937250610">Vista…</translation>
+<translation id="2086091080968010660">Breytingar sem byggja á tímasetningu eru hugsanlega ekki nákvæmar. Kveiktu á aðgangi kerfisins að staðsetningu í stillingunum.</translation>
 <translation id="2102231663024125441">Breytingar á texta</translation>
+<translation id="2102648867808308635">Hjálpa mér að lesa þessa síðu</translation>
 <translation id="2105810540595158374">Tækið er leikjafjarstýring.</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, útgáfa <ph name="MILESTONE_VERSION" /></translation>
+<translation id="2124643134650336457">Aðeins í boði á ensku (Bandaríkin) eins og stendur</translation>
 <translation id="2126937207024182736"><ph name="AVAILABLE_MEMORY" /> GB af <ph name="TOTAL_MEMORY" /> GB tiltæk</translation>
 <translation id="2135668738111962377">Breyta <ph name="ACTION_NAME" /></translation>
 <translation id="2138109643290557664">Fljótum hjá</translation>
 <translation id="2141644705054017895"><ph name="PERCENTAGE_VALUE" />%</translation>
+<translation id="2148716181193084225">Í dag</translation>
 <translation id="2152882202543497059"><ph name="NUMBER" /> myndir</translation>
+<translation id="2156072344042480449">Tvær síðustu skipanir frá þér. Þú getur aðeins notað þessari skipanir á þessari síðu.</translation>
 <translation id="2157660087437850958">emoji-val</translation>
 <translation id="2157959690810728433">Í BIÐRÖÐ</translation>
 <translation id="2158971754079422508"><ph name="DESC_TEXT" />: Reyna aftur</translation>
@@ -236,7 +253,6 @@
 <translation id="2189104374785738357">Breyta upplýsingum um aðgangsstað</translation>
 <translation id="2195732836444333448">Við getum ekki tekið meira að okkur eins og er. Komdu fljótt aftur.</translation>
 <translation id="2201758491318984023">reiðhjól</translation>
-<translation id="2203222757805818543">Núverandi stilling er á bilinu <ph name="SUNRISE" /> - <ph name="SUNSET" />. Til að uppfæra sjálfvirkt dökku stillinguna skaltu <ph name="BEGIN_LINK" />kveikja á aðgangi að staðsetningu<ph name="END_LINK" /></translation>
 <translation id="2203272733515928691">náttúrulaug</translation>
 <translation id="2203642483788377106">kletti</translation>
 <translation id="2208388655216963643">impressjónískum stíl</translation>
@@ -256,9 +272,11 @@
 <translation id="2267285889943769271">Bæta við skjámynd</translation>
 <translation id="2271469253353559191">Áætlun dökkrar stillingar</translation>
 <translation id="2276999893457278469">Helsta hjálparefnið</translation>
+<translation id="2277631741861284101">Taktu upp hljóð og deildu því á einfaldan hátt</translation>
 <translation id="2279051792571591988">Endurheimta sjálfgildi</translation>
 <translation id="2286454467119466181">Einfalt</translation>
 <translation id="2287186687001756809">Engin mynd tiltæk. Opnaðu <ph name="LINK" /> til að bæta við myndum</translation>
+<translation id="2294577623958216786">Núverandi áætlun er stillt á <ph name="SUNRISE" />-<ph name="SUNSET" />. Kveiktu á aðgangi kerfisins að staðsetningu til að uppfæra áætlun sólarlags og sólarupprásar sjálfkrafa.</translation>
 <translation id="2305172810646967500">Svartur</translation>
 <translation id="2307344026739914387">Nota núverandi lyklasett</translation>
 <translation id="2308243864813041101">Taktu USB-snúru <ph name="DEVICE_NAME" /> úr sambandi til að halda uppfærsluferlinu áfram</translation>
@@ -280,6 +298,7 @@
 <translation id="2414886740292270097">Dökkt</translation>
 <translation id="2418150275289244458">Opna í stillingum</translation>
 <translation id="2421798028054665193">Mynd <ph name="CURRENT_PAGE" /> af <ph name="TOTAL_PAGES" /></translation>
+<translation id="242825218556404975">Ekkert tal greindist</translation>
 <translation id="2446553403094072641">Nákvæmni hlaupakommu</translation>
 <translation id="2448312741937722512">Gerð</translation>
 <translation id="2472215337771558851">Notaðu rithjálp til að búa til drög eða fínpússa fyrirliggjandi skrif með aðstoð gervigreindar Google</translation>
@@ -303,6 +322,8 @@
 <translation id="2538719227433767804">+<ph name="NUM_HIDDEN_OPTIONS" /> í viðbót</translation>
 <translation id="2561093647892030937">sítrónur</translation>
 <translation id="2570743873672969996">Keyrir prófið <ph name="TEST_NAME" />...</translation>
+<translation id="2575552334616524665">Þú getur kveikt á þessu í stillingunum eða í valmyndinni <ph name="THREE_DOTS_MENU_ICON" /></translation>
+<translation id="2576253868710695442">Þetta mun nota allt að 2 GB af geymslurými</translation>
 <translation id="2584547424703650812">Glóandi landslag</translation>
 <translation id="2584559707064218956">Opnaðu stillingarnar til að setja þetta upp.</translation>
 <translation id="2586146417912237930">bláum og dimmfjólubláum lit</translation>
@@ -313,6 +334,7 @@
 <translation id="2618015542787108131">sandöldu</translation>
 <translation id="2619761439309613843">Uppfæra daglega</translation>
 <translation id="2620436844016719705">Kerfi</translation>
+<translation id="2637303424821734920">SLÖKKT - <ph name="BEGIN_LINK" />Kveiktu á aðgangi kerfis að staðsetningu<ph name="END_LINK" /> til að sýna staðbundið veður</translation>
 <translation id="2638662041295312666">Innskráningarmynd</translation>
 <translation id="2640549051766135490">Albúmið <ph name="TITLE" /> <ph name="DESC" /> valið</translation>
 <translation id="2645380101799517405">Stýringar</translation>
@@ -322,6 +344,7 @@
 <translation id="2656001153562991489">Aðeins fyrir Chromebook Plus</translation>
 <translation id="2665671725390405060">Hlusta á framburð</translation>
 <translation id="267442004702508783">endurnýja</translation>
+<translation id="2675392311492541028">Umritun og samantekt</translation>
 <translation id="268270014981824665">dekkja lyklaborð</translation>
 <translation id="2712812801627182647">TLS-auðkenningarlykill</translation>
 <translation id="2713444072780614174">Hvítur</translation>
@@ -335,6 +358,7 @@
 <translation id="2780756493585863768">Nýlegir bakgrunnar sem eru knúnir af gervigreind Google</translation>
 <translation id="2783010256799387990">STÓÐST</translation>
 <translation id="2786429550992142861">líni</translation>
+<translation id="2787237339470862294">Þetta tungumál er ekki stutt eins og er</translation>
 <translation id="2787435249130282949">ljósara lyklaborð</translation>
 <translation id="2805756323405976993">Forrit</translation>
 <translation id="28232023175184696">Ekki er hægt að tengjast netinu. Smelltu til að reyna aftur.</translation>
@@ -361,6 +385,7 @@
 <translation id="3017079585324758401">Bakgrunnur</translation>
 <translation id="3027578600144895987">Loka myndavélinni</translation>
 <translation id="3031560714565892478">Tækið er kvikmyndatökuvél.</translation>
+<translation id="3042927241478734594">Loka upptöku?</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" />mA</translation>
 <translation id="3056720590588772262">Endastaður</translation>
 <translation id="3060579846059757016">Útlínur</translation>
@@ -374,6 +399,7 @@
 <translation id="3102119246920354026">Skyndiminni</translation>
 <translation id="3122464029669770682">Örgjörvi</translation>
 <translation id="3122614491980756867">sundlaugum</translation>
+<translation id="3122883569442693641">Nánari upplýsingar</translation>
 <translation id="3124039320086536031">Tæki er tengt.</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{Fjarlægja síðu?}=1{Fjarlægja síðu {PAGE_NUMBER}?}one{Fjarlægja síðu {PAGE_NUMBER}?}other{Fjarlægja síðu {PAGE_NUMBER}?}}</translation>
 <translation id="3140130301071865159">snjó</translation>
@@ -421,6 +447,7 @@
 <translation id="33736539805963175"><ph name="LETTERS_COLOR" /> bakgrunnur með bókstafnum <ph name="LETTERS_LETTER" /></translation>
 <translation id="3383623117265110236">Sérstakt</translation>
 <translation id="3404249063913988450">Virkja skjávara</translation>
+<translation id="3410165745972100556">Slökkt er á umritun</translation>
 <translation id="3413935475507503304">Til að halda áfram að uppfæra skaltu smella á „Áfram“.</translation>
 <translation id="3428551088151258685">utandyra</translation>
 <translation id="3428971106895559033">Pastellitaður</translation>
@@ -435,6 +462,7 @@
 <translation id="346423161771747987">Straumur</translation>
 <translation id="346539236881580388">Taka aftur</translation>
 <translation id="3484914941826596830">Ekki taka þetta ytra tæki úr sambandi eða slökkva á tölvunni þinni á meðan fastbúnaðurinn uppfærist. Þú getur minnkað þennan glugga. Uppfærslan gæti tekið nokkrar mínútur og óvíst er að ytra tækið virki á meðan.</translation>
+<translation id="3485555238092220889">aðgengisaðgerð</translation>
 <translation id="3486220673238053218">skilgreining</translation>
 <translation id="3487866404496702283">Ábendingar um mahi-eiginleika</translation>
 <translation id="3488065109653206955">Virkjað að hluta</translation>
@@ -454,6 +482,7 @@
 <translation id="3577473026931028326">Eitthvað fór úrskeiðis. Reyndu aftur.</translation>
 <translation id="357889014807611375">Wi-Fi net með mælda notkun</translation>
 <translation id="3583278742022654445">Lítill sendistyrkur. Prófaðu að færa þig nær WiFi-sendibúnaðinum.</translation>
+<translation id="3588034708467091142">Gakktu úr skugga um að þú sért með nettengingu og reyndu aftur.</translation>
 <translation id="3594280220611906414"><ph name="USER_FRIENDLY_APN_NAME" /> er notendavæna heitið á <ph name="APN_NAME" />.</translation>
 <translation id="3595596368722241419">Rafhlaða fullhlaðin</translation>
 <translation id="3600339377155080675">Spegla skjá</translation>
@@ -466,6 +495,7 @@
 <translation id="3621072146987826699">fílar</translation>
 <translation id="3632040286124154621">Góð tillaga</translation>
 <translation id="3632579075709132555">Rofalykill persónuverndarskjás</translation>
+<translation id="3639873154908477486">Heiti (A til Ö)</translation>
 <translation id="3644695927181369554">Slæm tillaga</translation>
 <translation id="3651050199673793219">Velja mælieiningu hitastigs</translation>
 <translation id="3661106764436337772">Vertu fljótari og öruggari að skrifa</translation>
@@ -477,6 +507,7 @@
 <translation id="3708186454126126312">Áður tengt</translation>
 <translation id="3715651196924935218">Hætta að nota fljótandi stillingu</translation>
 <translation id="3716250181321371108">Búa til stýringu</translation>
+<translation id="3716830479327464973">Ef þú leyfir þetta mun Upptökutækið greina hljóðupptökurnar þínar til að:</translation>
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (<ph name="AGGREGATED_COUNT" /> umsagnir)</translation>
 <translation id="3748026146096797577">Ótengt</translation>
 <translation id="3749289110408117711">Skráarheiti</translation>
@@ -484,7 +515,6 @@
 <translation id="3780740315729837296">Úthlutaðu lykli á lyklaborði</translation>
 <translation id="3784455785234192852">Læsa</translation>
 <translation id="3785643128701396311">pixlalist</translation>
-<translation id="3790109258688020991">deplastíl</translation>
 <translation id="380097101658023925">rgb-stýringar</translation>
 <translation id="38114475217616659">Hreinsa allan feril</translation>
 <translation id="3820172043799983114">Ógilt PIN-númer.</translation>
@@ -504,6 +534,7 @@
 <translation id="3869314628814282185">tjulli</translation>
 <translation id="387301095347517405">Fjöldi skipta sem rafhlaðan hefur tæmst og verið fullhlaðin aftur</translation>
 <translation id="3877066159641251281">Hlusta á þýðingu</translation>
+<translation id="3880601782712134623">Greina sjálfkrafa ólíkar raddir og merkja hvern mælanda með sjálfgefnu merki, t.d. Mælandi 1 og Mælandi 2</translation>
 <translation id="3885327323343477505">Breyta skjávara</translation>
 <translation id="3889914174935857450">Endurstilla dagsetningu</translation>
 <translation id="3897092660631435901">Valmynd</translation>
@@ -528,10 +559,14 @@
 <translation id="401147258241215701">hrafntinnu</translation>
 <translation id="4021031199988160623">Skiptu yfir í fartölvustillingu til að prófa</translation>
 <translation id="4034824040120875894">Prentari</translation>
+<translation id="4035877632587724847">Ekki leyfa</translation>
+<translation id="4042658354407913408">Slökkt er á samantekt</translation>
 <translation id="4044093238444069296">Ekki er hægt að tengjast gátt</translation>
 <translation id="4046123991198612571">Næsta lag</translation>
 <translation id="404928562651467259">VIÐVÖRUN</translation>
+<translation id="4050208988451295487">Nokkrir valkostir:</translation>
 <translation id="4054683689023980771">Sækir mynd</translation>
+<translation id="4059839844193047929">Ef þú lokar þessari síðu verður núverandi upptaka stöðvuð</translation>
 <translation id="4063039537646912479">ljósblá(r)</translation>
 <translation id="4070799384363688067">anime</translation>
 <translation id="4086271957099059213">Búa til aðra stýringu</translation>
@@ -559,9 +594,12 @@
 <translation id="4171077696775491955">draga úr birtustigi</translation>
 <translation id="4176463684765177261">Óvirkt</translation>
 <translation id="4176659219503619100">Stjórnborð</translation>
+<translation id="4193496492959950834">Stillingar Upptökutækis</translation>
 <translation id="4198398257084619072">pöndur</translation>
 <translation id="420283545744377356">Slökkva á skjávara</translation>
+<translation id="4210636113897977670">Vista og loka</translation>
 <translation id="4210659479607886331">jökulá</translation>
+<translation id="42126664696688958">Flytja út</translation>
 <translation id="4213104098953699324">USB-lyklaborð</translation>
 <translation id="4227825898293920515">Aðgangsorð rennur út eftir <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Engin prentun í gangi</translation>
@@ -582,6 +620,7 @@
 <translation id="4310735698903592804">Nýleg veggfóður knúin af gervigreind Google</translation>
 <translation id="4320904097188876154">neonbleikur</translation>
 <translation id="4333390807948134856">Ýtt var á lykilinn <ph name="KEY_NAME" /></translation>
+<translation id="4334293042716981313">Þú getur einnig <ph name="BEGIN_LINK_FREEFORM_SUBPAGE" />skrifað eigin skipun<ph name="END_LINK_FREEFORM_SUBPAGE" /></translation>
 <translation id="4354430579665871434">lykill</translation>
 <translation id="4361257691546579041">Aðgangsstaður er af gerðinni „sjálfgefið“.</translation>
 <translation id="437294888293595148">Endurstilla allar flýtileiðir</translation>
@@ -599,15 +638,18 @@
 <translation id="4422041425070339732">ör niður</translation>
 <translation id="4425149324548788773">Drifið mitt</translation>
 <translation id="4428374560396076622">Slökkt er á <ph name="NETWORK_NAME" /></translation>
+<translation id="4428840632568803690">Hátalari <ph name="SPEAKER_LABEL" /></translation>
 <translation id="4429881212383817840">Kerberos-miði rennur út fljótlega</translation>
 <translation id="4431821876790500265">Skoða skýrslu</translation>
 <translation id="4443192710976771874">rauður</translation>
+<translation id="4447592701292766824">Ekki er hægt að búa til samantekt fyrir þetta efni</translation>
 <translation id="4448096106102522892">eyju</translation>
 <translation id="445059817448385655">Eldra aðgangsorð</translation>
 <translation id="4453205916657964690">Undirnetssía</translation>
 <translation id="4454245904991689773">Skanna í</translation>
 <translation id="4456812688969919973">Ekki hægt að vista hnapp fyrir aðgangsstað lengur</translation>
 <translation id="4469288414739283461">Skjávari, jarðarflæði</translation>
+<translation id="4474142134969976028">Engar niðurstöður fundust</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Ping-prófun ósjálfgefinnar netkerfisgáttar mistókst</translation>
 <translation id="4500722292849917410">Flýtilykill ekki í boði. Ýttu á nýjan flýtilykil með því að nota breytilykil (ctrl, alt, shift eða <ph name="META_KEY" />).</translation>
@@ -627,13 +669,16 @@
 <translation id="456077979087158257">borgarlandslagi</translation>
 <translation id="4561801978359312462">SIM opið</translation>
 <translation id="4562494484721939086">Ekkert símasamband</translation>
+<translation id="4570558255126759859">Sækja Gemini-líkan til að gera samantekt á upptökum?</translation>
 <translation id="4573777384450697571">Mistókst – vottorð útrunnið</translation>
 <translation id="458794348635939462">Ekki tókst að leysa úr öllum hýslum</translation>
 <translation id="4593212453765072419">Auðkenningar staðgengilsþjóns krafist</translation>
+<translation id="4594021849294327751">Búa til textauppskrift</translation>
+<translation id="4607282946861182308">Ekki er hægt að búa til myndir af þessu. Prófaðu aðra skipun.</translation>
 <translation id="4609350030397390689">Draga úr birtustigi lyklaborðs</translation>
-<translation id="4617553623719764431">Veður er ekki sýnt því það veit ekki staðsetningu þína. Til að birta staðbundið veður <ph name="BEGIN_LINK" />skaltu kveikja á aðgangi að staðsetningu<ph name="END_LINK" /></translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> af <ph name="TOTAL_PAGE_NUMBER" />. Ýttu á færslulykilinn til að hætta við prentverkið.</translation>
 <translation id="463791356324567266">Hættir við að skanna...</translation>
+<translation id="4644611440022666152">Kveikja og sækja</translation>
 <translation id="4646949265910132906">Örugg Wi-Fi tenging</translation>
 <translation id="4650608062294027130">Hægri Shift-lykill</translation>
 <translation id="4654549501020883054">Breyta daglega</translation>
@@ -702,9 +747,11 @@
 <translation id="4981003703840817201">bláum og bleikum lit</translation>
 <translation id="498186245079027698">Athugaðu skannann og reyndu aftur. Gakktu úr skugga um að nægilegt pláss sé á tækinu fyrir skannaðar skrár.</translation>
 <translation id="4982627662315910959">Flýtilykill ekki í boði. Ýttu á nýjan flýtilykil með því að nota shift og 1 annan breytilykil (ctrl, alt eða <ph name="META_KEY" />).</translation>
+<translation id="4983216687482551672">Hljóð í Chromebook</translation>
 <translation id="4985509611418653372">Keyra</translation>
 <translation id="4987769320337599931">Eldveggur</translation>
 <translation id="4988526792673242964">Síður</translation>
+<translation id="4989542687859782284">Ekki tiltækt</translation>
 <translation id="4999333166442584738">Fela skýrslu</translation>
 <translation id="500920857929044050">Stöðva próf</translation>
 <translation id="5017508259293544172">LEAP</translation>
@@ -714,6 +761,7 @@
 <translation id="5049856988445523908">SIM læst (<ph name="LOCK_TYPE" />)</translation>
 <translation id="5050042263972837708">Heiti hóps</translation>
 <translation id="5051044138948155788">Þetta er eina síðan. Þetta opnar upphafsskjá skönnunar.</translation>
+<translation id="5078711626843651677">Raddlíkön eru vistuð tímabundið í tækinu þar til búið er að merkja mælendur. Þú getur slökkt á þessu hvenær sem er í stillingunum.</translation>
 <translation id="5078983345702708852">framúrstefnuleg</translation>
 <translation id="5087864757604726239">til baka</translation>
 <translation id="5088172560898466307">Hýsilheiti þjóns</translation>
@@ -729,6 +777,7 @@
 <translation id="5144311987923128508">Slökkt er á staðfestingarhnappi</translation>
 <translation id="5144887194300568405">Afrita þýðingu</translation>
 <translation id="5145081769226915336">Kveikja sjálfkrafa á dökkri stillingu?</translation>
+<translation id="5145331109270917438">Dagsetning breytingar</translation>
 <translation id="5154917547274118687">Minni</translation>
 <translation id="5160857336552977725">Skráðu þig inn í <ph name="DEVICE_TYPE" /></translation>
 <translation id="5168185087976003268">Ástand rafhlöðu</translation>
@@ -738,8 +787,11 @@
 <translation id="5180712487038406644">Tjáningarríkur</translation>
 <translation id="5190187232518914472">Upplifðu uppáhaldsstundirnar aftur. Opnaðu <ph name="LINK_BEGIN" />Google-myndir<ph name="LINK_END" /> til að bæta við eða breyta albúmum.</translation>
 <translation id="5212593641110061691">Tabloid</translation>
+<translation id="5220549459260334974"><ph name="PROGRESS_PERCENTAGE" />% sótt</translation>
 <translation id="5222676887888702881">Skrá út</translation>
 <translation id="522307662484862935">Ekki láta netfang fylgja</translation>
+<translation id="5223226274641517059">Umritun í beinni verður birt á meðan þú tekur upp. Þú getur slökkt á þessu hvenær sem er í stillingunum.</translation>
+<translation id="5226879510707344687">Flytja út textauppskrift</translation>
 <translation id="5227902338748591677">Áætlun dökks þema</translation>
 <translation id="5229344016299762883">Hætta að nota allan skjáinn</translation>
 <translation id="5234764350956374838">Hunsa</translation>
@@ -762,10 +814,13 @@
 <translation id="5315873049536339193">Auðkenni</translation>
 <translation id="5317780077021120954">Vista</translation>
 <translation id="5318334351163689047">TCP-beiðnir mistókust</translation>
+<translation id="53196409393069519">Kveikja á umritun?</translation>
 <translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
+<translation id="5327248766486351172">Heiti</translation>
 <translation id="5332948983412042822">Veldu nýtt núna</translation>
 <translation id="5333530671332546086">Óþekkt staða gáttar</translation>
 <translation id="5335373365677455232">bleik(ur)</translation>
+<translation id="5344619683981067131">Tillaga kemur í staðinn fyrir valinn texta</translation>
 <translation id="5346687412805619883">Staðarnet</translation>
 <translation id="5358174242040570474">Eitthvað fór úrskeiðis. Reyndu að velja veggfóður aftur eða endurræstu forritið.</translation>
 <translation id="5372659122375744710">Wi-Fi net er ekki öruggt</translation>
@@ -817,9 +872,11 @@
 <translation id="5662240986744577912">kveikja/slökkva á persónuverndarskjá</translation>
 <translation id="5669267381087807207">Virkjar</translation>
 <translation id="5670702108860320605">BSSID</translation>
+<translation id="5674943355143004615">Lýstu veggfóðrinu sem þú vilt búa til</translation>
 <translation id="5680504961595602662">Súrrealísk mynd af <ph name="SURREAL_LANDSCAPE" /> með <ph name="SURREAL_SUBJECT" /></translation>
 <translation id="5685478548317291523">kirsuber</translation>
 <translation id="5691511426247308406">Fjölskylda</translation>
+<translation id="5692395212036914927">Samantekt á upptökum og myndun heita</translation>
 <translation id="5695599963893094957">Ýttu á hvaða lykil sem er á lyklaborðinu. Hægt er að ýta á allt að 4 lykla í einu.</translation>
 <translation id="5701381305118179107">Miðjujafna</translation>
 <translation id="5703716265115423771">lækka hljóð</translation>
@@ -831,10 +888,10 @@
 <translation id="5760715441271661976">Vefgáttarstaða</translation>
 <translation id="5763838252932650682">Endurræsir og uppfærir <ph name="APP_NAME" /></translation>
 <translation id="576835345334454681">Auka birtustig skjás</translation>
+<translation id="5779818640587041940">Hafa kveikt á skjá á meðan á upptöku stendur</translation>
 <translation id="57838592816432529">Þagga</translation>
 <translation id="5784136236926853061">Langur HTTP-biðtími</translation>
 <translation id="5790391387506209808">lapis lazuli</translation>
-<translation id="5810296156135698005">barokkstíl</translation>
 <translation id="5816802250591013230">Engum flýtilykli úthlutað</translation>
 <translation id="5826644637650799838">Um listaverkið</translation>
 <translation id="5832805196449965646">Bæta notanda við</translation>
@@ -862,6 +919,7 @@
 <translation id="5928411637936685857">Eyða hnappi fyrir <ph name="ACCELERATOR_INFO" />.</translation>
 <translation id="5930669310554144537">Draumsýn</translation>
 <translation id="5931523347251946569">Skráin fannst ekki</translation>
+<translation id="5938286923316838007">Ekki er hægt að búa til upptökuheiti fyrir þetta efni</translation>
 <translation id="5939518447894949180">Endurstilla</translation>
 <translation id="594552776027197022">Búa til handahófsvalið lyklasett</translation>
 <translation id="5946538341867151940">Tenging er ekki til staðar ennþá. Ef símafyrirtækið þitt mælir með sérsniðnum aðgangsstað skaltu slá inn upplýsingar um aðgangsstaðinn með því að velja „+ Nýr aðgangsstaður“</translation>
@@ -870,6 +928,7 @@
 <translation id="594989847980441553">Veldu „Búa til“ til að búa til mynd með gervigreind.
         Hér birtast allar myndir sem búnar eru til sjálfkrafa.</translation>
 <translation id="5972388717451707488">Uppfæra vél</translation>
+<translation id="5972801171078377748">Ekki sýna þetta aftur</translation>
 <translation id="5975130252842127517">kóralrauð(ur)</translation>
 <translation id="5984145644188835034">Sjálfgefið veggfóður</translation>
 <translation id="5996832681196460718">silki</translation>
@@ -880,12 +939,14 @@
 <translation id="6040143037577758943">Loka</translation>
 <translation id="6040852767465482106">Nafnlaust auðkenni</translation>
 <translation id="604124094241169006">Sjálfvirkt</translation>
+<translation id="6042308850641462728">Meira</translation>
 <translation id="6048107060512778456">Mistókst – pappírsstífla</translation>
 <translation id="6050189528197190982">Grátónar</translation>
 <translation id="6054711098834486579">expressjónískum stíl</translation>
 <translation id="6058625436358447366">Sláðu inn gamla aðgangsorðið og það nýja til að ganga frá þessu</translation>
 <translation id="6061772781719867950">HTTP-beiðnir mistókust</translation>
 <translation id="6073292342939316679">draga úr birtustigi lyklaborðs</translation>
+<translation id="6073451960410192870">Stöðva upptöku</translation>
 <translation id="6075872808778243331">(Android) HTTP-biðtími</translation>
 <translation id="6078323886959318429">Bæta flýtileið við</translation>
 <translation id="6091080061796993741">gulur</translation>
@@ -897,6 +958,7 @@
 <translation id="6113701710518389813">Ör upp</translation>
 <translation id="6116005346231504406">Búa til fyrstu stýringu</translation>
 <translation id="6117895505466548728"><ph name="TITLE" />, +<ph name="NUMBER" /> albúm í viðbót</translation>
+<translation id="6120815036186828722">Hlustar eftir tali…</translation>
 <translation id="6122191549521593678">Á netinu</translation>
 <translation id="6122277663991249694">Innfærsluaðferðarþjónusta ChromeOS</translation>
 <translation id="6127426868813166163">hvít(ur)</translation>
@@ -918,16 +980,15 @@
 <translation id="6231648282154119906">Örugg vefskoðun Google skannar grunsamlegar skrár sjálfkrafa sem hluti af auknu vörninni sem þú valdir</translation>
 <translation id="6232017090690406397">Rafhlaða</translation>
 <translation id="6234024205316847054">Sýna yfirlit</translation>
-<translation id="6235460611964961764">Endurstilla gagnanotkun handvirkt</translation>
 <translation id="6243280677745499710">Valið núna</translation>
 <translation id="6250316632541035980">beikon og egg</translation>
-<translation id="6255213378196499011">Stillingar rithjálpar</translation>
 <translation id="6265268291107409527">Lykillinn „<ph name="KEYS" />“ er valinn. <ph name="ASSIGN_INSTRUCTION" /></translation>
 <translation id="6275224645089671689">Ör til hægri</translation>
 <translation id="6278428485366576908">Þema</translation>
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6283581480003247988">bláum og fjólubláum lit</translation>
 <translation id="6284632978374966585">Kveikja á dökku þema</translation>
+<translation id="6285260286443238386">Flytja út upptöku</translation>
 <translation id="628726841779494414">Stjórnaðu prenturunum í prentarastillingunum</translation>
 <translation id="6292095526077353682">Á meðan hleðsla stendur yfir skal sýna skjávara</translation>
 <translation id="629550705077076970">lyklaborð dekkt</translation>
@@ -941,9 +1002,11 @@
 <translation id="6327262166342360252">Þetta veggfóður var búið til með gervigreind með því að nota textann: „<ph name="PROMPT" />“.</translation>
 <translation id="6331191339300272798">Sjálfvirkt dökkt þema</translation>
 <translation id="6340526405444716530">Sérstillingar</translation>
+<translation id="6348252528297699679">Hægt er að slökkva á staðsetningu í „Stillingar &gt; Persónuvernd og öryggi &gt; Persónuverndarstillingar &gt; Aðgangur að staðsetningu“. <ph name="LINK_BEGIN" />Nánar<ph name="LINK_END" /></translation>
 <translation id="6348738456043757611">Notandanafn og aðgangsorð</translation>
 <translation id="6352210854422428614">önnur pláneta</translation>
 <translation id="6359706544163531585">Slökkva á ljósu þema</translation>
+<translation id="6359919876285606596">Þessi aðgerð er varanleg og ekki er hægt að afturkalla hana</translation>
 <translation id="636850387210749493">Fyrirtækjaskráning</translation>
 <translation id="6373461326814131011">tjörn</translation>
 <translation id="6379086450106841622">Snertiskjár</translation>
@@ -960,8 +1023,9 @@
 <translation id="6411934471898487866">birtustig lyklaborðs</translation>
 <translation id="6412715219990689313">Innbyggt lyklaborð</translation>
 <translation id="6417265370957905582">Google-hjálpari</translation>
+<translation id="6419454453018688975">Kveiktu á aðgangi kerfisins að staðsetningu</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
-<translation id="6438073885402882007">Þetta gerir kerfisþjónustum með þessa heimild kleift að nota staðsetninguna þína. Staðsetning kann að nota tækni á borð við Wi-Fi, farsímakerfi og skynjara til að áætla staðsetningu tækisins. <ph name="LINK_BEGIN" />Nánar<ph name="LINK_END" /></translation>
+<translation id="6437513277380808188">TXT</translation>
 <translation id="6439505561246192797">Lítill (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">Fara í reikningsstillingar</translation>
 <translation id="6462978824459367242">Nú er hægt að bæta við hnappi fyrir aðgangsstað</translation>
@@ -972,6 +1036,7 @@
 <translation id="6480327114083866287">Stýrt af <ph name="MANAGER" /></translation>
 <translation id="6488559935020624631">Sérstakur skjávari <ph name="PRODUCT_NAME" /></translation>
 <translation id="649050271426829538">Stöðvað – pappírsstífla</translation>
+<translation id="6490861263572002431">Sjálfvirk fletting</translation>
 <translation id="6492891353338939218">iðandi</translation>
 <translation id="6494974875566443634">Sérsnið</translation>
 <translation id="6500818810472529210">Sjá niðurstöður í Google-leit</translation>
@@ -995,8 +1060,10 @@
 <translation id="6576005492601044801">vinstri</translation>
 <translation id="6579509898032828423">Nota þessa mynd</translation>
 <translation id="6587870930887634392">safaríkt</translation>
+<translation id="6595046262780525922">Kveikja á umritun og sækja umritunarlíkanið?</translation>
 <translation id="6596816719288285829">IP-tala</translation>
 <translation id="6599673642868607614">Við þökkum þér fyrir ábendinguna. Ábendingin þín hjálpar okkur að bæta Chromebook-upplifunina og verður yfirfarin af teyminu okkar. Vegna fjölda tilkynninga höfum við ekki tök á því að svara.</translation>
+<translation id="660846213831377756">Músarhnappar</translation>
 <translation id="6618744767048954150">Í gangi</translation>
 <translation id="6620487321149975369">Prentverk birtast í ferli nema þau séu fjarlægð handvirkt</translation>
 <translation id="6624819909909965616">Ekki hægt að hlaða upp skrá sem er stærri en 10 MB</translation>
@@ -1019,6 +1086,7 @@
 <translation id="6723839937902243910">Orka</translation>
 <translation id="6723847290197874913">Baklýsing lyklaborðs</translation>
 <translation id="672609503628871915">Skoða nýjungarnar</translation>
+<translation id="6738867403308150051">Sækir…</translation>
 <translation id="6740695858234317715">rjómagulum og appelsínugulum lit</translation>
 <translation id="6741823073189174383">bátur</translation>
 <translation id="6744441848304920043">frumskógi</translation>
@@ -1037,6 +1105,7 @@
 <translation id="680983167891198932">Lykill</translation>
 <translation id="6816797338148849397">Tiltækar upplýsingar sem tengjast vali þínu. Notaðu ör upp-lykilinn til að opna.</translation>
 <translation id="6853312040151791195">Afhleðsluhraði</translation>
+<translation id="6862416241246624313">Ábending send inn</translation>
 <translation id="6866732840889595464">fagurfífill</translation>
 <translation id="6871256179359663621">ljósfjólublá(r)</translation>
 <translation id="6889786074662672253">Ekki skal taka þetta ytra tæki úr sambandi eða slökkva á tölvunni meðan á endurræsingu stendur. Þú getur minnkað þennan glugga. Þetta gæti tekið nokkrar mínútur og óvíst er að ytra tækið virki á meðan.</translation>
@@ -1045,8 +1114,11 @@
 <translation id="6905163627763043954">Prófa</translation>
 <translation id="6905724422583748843">Til baka í <ph name="PAGE_NAME" /></translation>
 <translation id="6910312834584889076">Lokið á skannanum er opið. Lokaðu skannanum og reyndu aftur.</translation>
+<translation id="6910845598686542904">Búa til líkön af röddunum sem greinast í upptökunni</translation>
 <translation id="6911383237894364323">Ekki er hægt að tengjast efnisþjónum</translation>
+<translation id="6930242544192836755">Tímalengd</translation>
 <translation id="6930597342185648547">Um bakgrunn</translation>
+<translation id="6939667434404433010">Leita eftir heiti upptöku</translation>
 <translation id="6939766318048400022">Kaffihús</translation>
 <translation id="6943893908656559156">Fjarkenni (valkvætt)</translation>
 <translation id="6953137545147683679">gulllitur</translation>
@@ -1075,6 +1147,7 @@
 <translation id="7028979494427204405"><ph name="MANAGER" /> hefur umsjón með þessu tæki og hefur aðgang að allri notendavirkni, þ.m.t. heimsóttum vefsíðum, aðgangsorðum og tölvupósti.</translation>
 <translation id="7035168792582749309">kartöflur</translation>
 <translation id="7040230719604914234">Símafyrirtæki</translation>
+<translation id="7040729769968826896">Leyfa að bera kennsl á mælendur</translation>
 <translation id="7041549558901442110">Tækið er ekki tengt.</translation>
 <translation id="7046522406494308071">Endurstilla alla flýtilykla á sjálfgildi?</translation>
 <translation id="7058278511608979688">Ljúka og vista</translation>
@@ -1118,6 +1191,7 @@
 <translation id="7212547870105584639">Stjórna stillingum aðgangsstaðar netkerfis. Aðgangsstaðir tengja saman farsímakerfi og internetið. <ph name="BEGIN_LINK_LEARN_MORE" />Nánar<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="7212734716605298123">Fastbúnaðaruppfærslur fyrir ytri tæki</translation>
 <translation id="7216409898977639127">Farsímafyrirtæki</translation>
+<translation id="7223952304612664117">Þetta gerir kerfisþjónustunni kleift að nota staðsetningarnákvæmni til að finna staðsetninguna þína. Staðsetningarnákvæmni notar upplýsingar um þráðlaus merki og skynjara til að meta staðsetningu tækisins.</translation>
 <translation id="7233782086689993269">Flýtilykill endurheimtur</translation>
 <translation id="725133483556299729">Velja netfang</translation>
 <translation id="7255187042098209569">bleikum og fjólubláum lit</translation>
@@ -1146,10 +1220,13 @@
 <translation id="7343649194310845056">Netkerfistæki</translation>
 <translation id="7344788170842919262">jarðlitum</translation>
 <translation id="7346768383111016081">Setja stýringu á leikjaaðgerð til að spila með lyklaborðinu</translation>
+<translation id="7352651011704765696">Eitthvað fór úrskeiðis</translation>
 <translation id="7353413232959255829">Leitarniðurstaða <ph name="LIST_POSITION" /> af <ph name="LIST_SIZE" />: <ph name="SEARCH_RESULT_TEXT" />. Ýttu á Enter til að fara í flýtileið.</translation>
 <translation id="7359657277149375382">Skráargerð</translation>
 <translation id="73631062356239394">Deila greiningargögnum</translation>
 <translation id="7375053625150546623">EAP</translation>
+<translation id="7378170410161264436">Upptökutækið getur búið til textauppskriftir af upptökum með tali.
+Sæktu umritunarlíkanið (allt að 100 MB) til að fá þessar textauppskriftir.</translation>
 <translation id="7384004438856720753">höll</translation>
 <translation id="7388959671917308825">Innbyggður snertiflötur</translation>
 <translation id="7397270852490618635">Slökkva á ljósu þema</translation>
@@ -1165,15 +1242,18 @@
 <translation id="7487067081878637334">Tækni</translation>
 <translation id="7490813197707563893">MAC-vistfang</translation>
 <translation id="7497215489070763236">CA-vottorð þjóns</translation>
+<translation id="7500205272584643581">Leyfa Upptökutæki að greina og merkja mælendur?</translation>
 <translation id="7501957181231305652">eða</translation>
 <translation id="7502658306369382406">IPv6-veffang</translation>
 <translation id="7507061649493508884">Litríkt <ph name="FLOWER_COLOR" /> <ph name="FLOWER_TYPE" /></translation>
 <translation id="7513770521371759388">neðst</translation>
+<translation id="7514365320538308">Sækja</translation>
 <translation id="7515998400212163428">Android</translation>
 <translation id="7525067979554623046">Búa til</translation>
 <translation id="7528507600602050979">Hjálparefni er ekki tiltækt</translation>
 <translation id="7535791657097741517">Kveikja á ljósu þema</translation>
 <translation id="7544126681856613971">þokukenndum skógi</translation>
+<translation id="7544853251252956727">Stokka</translation>
 <translation id="7550715992156305117">Greiningarrútínur</translation>
 <translation id="7551123448725492271">Tækið er hljómtæki.</translation>
 <translation id="7559239713112547082">Forskoða skjámynd</translation>
@@ -1185,6 +1265,7 @@
 <translation id="7613724632293948900">Breyta staðsetningu með mús eða örvalyklum.</translation>
 <translation id="7618774594543487847">Hlutlaust</translation>
 <translation id="7620771111601174153">Fáðu frekari upplýsingar í hjálparmiðstöðinni</translation>
+<translation id="7625095758347640998">Gervigreindarveggfóður</translation>
 <translation id="763165478673169849">Tími síðustu endurstillingar</translation>
 <translation id="7633068090678117093">Bakgrunnsmynd</translation>
 <translation id="763873111564339966">dimmfjólublár</translation>
@@ -1210,6 +1291,7 @@
 <translation id="7763470514545477072">Samsvarandi lénsending</translation>
 <translation id="7769672763586021400">Auðkenni gerðar</translation>
 <translation id="7778717409420828014">Ábendingin þín hjálpar okkur að bæta Chromebook-upplifunina og verður yfirfarin af teyminu okkar. Vegna fjölda tilkynninga höfum við ekki tök á því að svara.</translation>
+<translation id="7781829728241885113">Í gær</translation>
 <translation id="7784116172884276937">Engir DNS-þjónar eru uppsettir</translation>
 <translation id="7791543448312431591">Bæta við</translation>
 <translation id="779591286616261875">Senda nýja tilkynningu</translation>
@@ -1217,6 +1299,7 @@
 <translation id="7802764839223122985">Lykil vantar. <ph name="REASSIGN_INSTRUCTION" /></translation>
 <translation id="780301667611848630">Nei, takk</translation>
 <translation id="7805768142964895445">Staða</translation>
+<translation id="7811024689617730980">Velja sjálfvirka endurstillingardagsetningu frá 1. til 31., að báðum dögum meðtöldum</translation>
 <translation id="7813073042185856802">fjalli</translation>
 <translation id="7819857487979277519">PSK (WPA eða RSN)</translation>
 <translation id="7824219488248240180">síðimpressjónískum stíl</translation>
@@ -1225,6 +1308,7 @@
 <translation id="7846634333498149051">Lyklaborð</translation>
 <translation id="7849030488395653706">norðurljós</translation>
 <translation id="7849737607196682401">blúndu</translation>
+<translation id="7850320739366109486">Ónáðið ekki</translation>
 <translation id="7850847810298646851">Veggfóður knúið af gervigreind Google</translation>
 <translation id="785170686607360576">túlípani</translation>
 <translation id="7856267634822906833">Bluetooth-snertiskjár</translation>
@@ -1235,6 +1319,7 @@
 <translation id="7882501334836096755">Opinber lykill</translation>
 <translation id="78957024357676568">vinstri</translation>
 <translation id="7897043345768902965">göngustíg</translation>
+<translation id="7902285181767404769">Þaggaðu tilkynningar á meðan á upptöku stendur</translation>
 <translation id="7903695460270716054">Veldu sérvalin listaverk og myndir</translation>
 <translation id="7915220255123750251">Stjórna stillingum aðgangsstaðar netkerfis. Aðgangsstaðir tengja saman farsímakerfi og internetið.</translation>
 <translation id="7936303884198020182">Engir nafnaþjónar fundust</translation>
@@ -1253,6 +1338,7 @@
 <translation id="8004582292198964060">Vafri</translation>
 <translation id="8017679124341497925">Flýtileið breytt</translation>
 <translation id="802154636333426148">Niðurhal mistókst</translation>
+<translation id="8028993641010258682">Stærð</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Kveikja á sjálfvirkri litastillingu</translation>
 <translation id="8041089156583427627">Senda ábendingu</translation>
@@ -1281,12 +1367,15 @@
 <translation id="8156233298086717232">töfrandi</translation>
 <translation id="8162776280680283326">refir</translation>
 <translation id="8167413449582155132">Bakgrunnur sem er knúinn af gervigreind Google</translation>
+<translation id="8171020708598805594">Búðu sjálfkrafa til textauppskriftir, fáðu samantekt á upptökum með gervigreind Google og leitaðu að hljóði. Taktu upp, jafnvel þótt nettenging sé ekki til staðar.</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8183975772394450380">strönd</translation>
+<translation id="819278132617411009">Notaðu gervigreind Google til að koma fleiru í verk</translation>
 <translation id="8206859287963243715">Farsímakerfi</translation>
 <translation id="8208861521865154048">Fríðindi</translation>
 <translation id="8226628635270268143">Veldu uppáhaldsmyndir og -möppur</translation>
 <translation id="8227119283605456246">Hengja skrá við</translation>
+<translation id="8227488649450500937">Prófaðu eina af þessum skipunum eða skoðaðu <ph name="BEGIN_LINK_PROMPTING_GUIDE" />leiðbeiningar um skipanir<ph name="END_LINK_PROMPTING_GUIDE" /></translation>
 <translation id="8230672074305416752">Ping-prófun sjálfvalinnar netkerfisgáttar mistókst</translation>
 <translation id="8238771987802558562">Veldu aðgangsstað</translation>
 <translation id="8246209727385807362">Óþekkt símafyrirtæki</translation>
@@ -1295,6 +1384,7 @@
 <translation id="8261506727792406068">Eyða</translation>
 <translation id="8262870577632766028">1 klukkustund</translation>
 <translation id="827422111966801947">Dimmfjólublár</translation>
+<translation id="8281886186245836920">Sleppa</translation>
 <translation id="8286154143153872371">Tengstu neti og endurhladdu síðuna til að sjá veggfóður.</translation>
 <translation id="8291967909914612644">Land heimaveitu</translation>
 <translation id="8294431847097064396">Uppruni</translation>
@@ -1326,9 +1416,11 @@
 <translation id="8420955526972171689">Keyra prófanir og úrræðaleit fyrir vandamál í vélbúnaði</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8424039430705546751">niður</translation>
+<translation id="8428213095426709021">Stillingar</translation>
 <translation id="8431300646573772016">Nýjungar í ChromeOS</translation>
 <translation id="843568408673868420">Nettenging</translation>
 <translation id="844521431886043384">Ekki er búið að setja upp DNS</translation>
+<translation id="8456200178779628126">Notaðu gervigreind Google til að fá aðstoð við skrif og lestur</translation>
 <translation id="8456761643544401578">Sjálfvirk dökk stilling</translation>
 <translation id="8461329675984532579">Heiti heimaveitu</translation>
 <translation id="8475690821716466388">Wi-Fi netið er varið með veikum samskiptareglum, WEP PSK</translation>
@@ -1342,6 +1434,7 @@
 <translation id="8498220429738806196">Talning umferðar</translation>
 <translation id="8503813439785031346">Notandanafn</translation>
 <translation id="8503836310948963452">Aðeins nokkrar mínútur í viðbót…</translation>
+<translation id="8505011850330200833">Gemini-líkanið þarf að nota 2 GB af geymslurými til að geta unnið úr textauppskriftum og búið til samantektir</translation>
 <translation id="8508640263392900755">Upplýsingar um aðgangsstað</translation>
 <translation id="8522687886059337719">Nú hefurðu aðgang að nýjum <ph name="BEGIN_LINK_WALLPAPER_SUBPAGE" />veggfóðrum<ph name="END_LINK_WALLPAPER_SUBPAGE" /> og <ph name="BEGIN_LINK_SCREENSAVER_SUBPAGE" />skjávörum<ph name="END_LINK_SCREENSAVER_SUBPAGE" /></translation>
 <translation id="8528615187455571738">Crosvm</translation>
@@ -1355,10 +1448,12 @@
 <translation id="8620617069779373398">Reikistaða</translation>
 <translation id="8626489604350149811">Fleiri aðgerðir fyrir <ph name="APN_NAME" /></translation>
 <translation id="86356131183441916">Ljósfjólublár</translation>
+<translation id="8647595191512746911">Hljóðumritun</translation>
 <translation id="8651481478098336970">hljóð af</translation>
 <translation id="8655295600908251630">Rás</translation>
 <translation id="8655828773034788261">Deila vefslóð:</translation>
 <translation id="8660881923941176839">pund</translation>
+<translation id="8670057600920888023">Skapandi gervigreind er á tilraunastigi og efni kann að vera rangt, villandi eða móðgandi.</translation>
 <translation id="8670574982334489519">hægri</translation>
 <translation id="8675354002693747642">PSK-lykill</translation>
 <translation id="8677859815076891398">Engin albúm. Búðu til albúm í <ph name="LINK_BEGIN" />Google-myndum<ph name="LINK_END" />.</translation>
@@ -1367,6 +1462,7 @@
 <translation id="8709616837707653427"><ph name="DESC_TEXT" /> Notaðu ör til vinstri eða ör til hægri til að stjórna þessum eiginleika.</translation>
 <translation id="8712637175834984815">Ég skil</translation>
 <translation id="871560550817059752">Mistókst – blekið er búið</translation>
+<translation id="8721554916373590179">Dæmi um skipanir</translation>
 <translation id="8723108084122415655">Ósjálfgefið net yfir biðþröskuldi</translation>
 <translation id="8725066075913043281">Reyna aftur</translation>
 <translation id="8726019395068607495">Stöðvað – hlíf er opin</translation>
@@ -1376,6 +1472,7 @@
 <translation id="8749478549112817787">Bakgrunnur myndavélar</translation>
 <translation id="8755946156089753497">turn</translation>
 <translation id="8756235582947991808">Hvernig á að skapa með gervigreind og nokkrir hlutir til að hafa í huga</translation>
+<translation id="8760616037557661287">Eldri skipanir</translation>
 <translation id="8764414543112028321">WireGuard</translation>
 <translation id="87646919272181953">Albúm í Google-myndum</translation>
 <translation id="8775713578693478175">Aðgangsstaður mótalds</translation>
@@ -1410,6 +1507,7 @@
 <translation id="8918637186205009138"><ph name="GIVEN_NAME" /> – <ph name="DEVICE_TYPE" /></translation>
 <translation id="8918813738569491921">saltstein</translation>
 <translation id="8919837981463578619">Mistókst – bakka vantar</translation>
+<translation id="8924154518905976972">Flytja út hljóð</translation>
 <translation id="8928727111548978589">Mistókst – pappír vantar</translation>
 <translation id="8930521118335213258">Samanburður</translation>
 <translation id="8930622219860340959">Þráðlaust</translation>
@@ -1438,6 +1536,8 @@
 <translation id="9025198690966128418">Nota sem einkatæki</translation>
 <translation id="902638246363752736">Lyklaborðsstillingar</translation>
 <translation id="9028832514430399253">Kveiktu á rofanum til að velja skjávaravalkosti</translation>
+<translation id="9030883440316693822">Eyða upptöku?</translation>
+<translation id="9036971622563146214">Niðurstöður</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9045842401566197375">bækur</translation>
 <translation id="9049868303458988905">Hnappur til að vista aðgangsstað er nú virkur</translation>
@@ -1455,11 +1555,12 @@
 <translation id="910415269708673980">Endurnýja miða fyrir <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9106415115617144481">Skannar síðu <ph name="PAGE_NUMBER" /></translation>
 <translation id="9111102763498581341">Taka úr lás</translation>
+<translation id="9122492456897874028">Taktu saman efni, fáðu skilgreiningar og fleira</translation>
 <translation id="9122602430962285795">Opnaðu stillingarnar til að tengjast á ný</translation>
 <translation id="9122865513525855321">zen</translation>
 <translation id="9126720536733509015">Vista margar síður í einu PDF-skjali</translation>
 <translation id="9133772297793293778">Ýttu á 1–4 breytilykla og 1 annan lykil á lyklaborðinu. Ýttu á Alt + Esc til að loka breytingastillingu.</translation>
-<translation id="9137526406337347448">Google þjónustur</translation>
+<translation id="9137526406337347448">Google-þjónustur</translation>
 <translation id="9138630967333032450">Vinstri Shift-lykill</translation>
 <translation id="9149391708638971077">Keyra minnispróf</translation>
 <translation id="9159524746324788320">hamborgarar</translation>
@@ -1480,6 +1581,7 @@
 <translation id="939519157834106403">SSID</translation>
 <translation id="945522503751344254">Senda ábendingu</translation>
 <translation id="950520315903467048">Lykil vantar fyrir „<ph name="DIRECTION" />“. <ph name="ASSIGN_INSTRUCTION" /></translation>
+<translation id="951780398843003443">Bera saman raddir á allri upptökunni til að textauppskriftin endurspegli hvað hver mælandi segir og hvenær</translation>
 <translation id="952992212772159698">Ekki virkjuð</translation>
 <translation id="95718197892796296">leir</translation>
 <translation id="960719561871045870">Kóði símafyrirtækis</translation>

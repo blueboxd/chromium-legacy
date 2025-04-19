@@ -125,7 +125,7 @@ interface CoreProbes {
   void DidFailProvisionalLoad([Keep] LocalFrame*);
   void WillCommitLoad([Keep] LocalFrame*, DocumentLoader*);
   void DidCommitLoad([Keep] LocalFrame*, DocumentLoader*);
-  void DidNavigateWithinDocument([Keep] LocalFrame*);
+  void DidNavigateWithinDocument([Keep] LocalFrame*, blink::mojom::SameDocumentNavigationType);
   void DidRestoreFromBackForwardCache([Keep] LocalFrame*);
   void DidOpenDocument([Keep] LocalFrame*, DocumentLoader*);
   void WillCreateDocumentParser(Document*, bool& force_sync_parsing);
@@ -183,7 +183,7 @@ interface CoreProbes {
   void ShouldForceCorsPreflight(ExecutionContext*, bool* result);
   void ShouldBlockRequest(CoreProbeSink*, const KURL&, bool* result);
   void ShouldBypassServiceWorker(ExecutionContext* context, bool* result);
-  void ConsoleTimeStamp(ExecutionContext*, const String& title);
+  void ConsoleTimeStamp([Keep] v8::Isolate* isolate, v8::Local<v8::String> label);
   void WillStartDebuggerTask(CoreProbeSink*);
   void DidFinishDebuggerTask(CoreProbeSink*);
   void LifecycleEvent([Keep] LocalFrame*, DocumentLoader*, const char* name, double timestamp);

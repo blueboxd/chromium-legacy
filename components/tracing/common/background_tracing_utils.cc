@@ -44,6 +44,8 @@ const base::FeatureParam<std::string> kFieldTracingConfig{&kFieldTracing,
                                                           "config", ""};
 const base::FeatureParam<bool> kFieldTracingAnonymized{&kFieldTracing,
                                                        "anonymized", true};
+const base::FeatureParam<bool> kStartupFieldTracing{&kFieldTracing, "startup",
+                                                    false};
 const base::FeatureParam<std::string> kPresetTracingConfig{&kPresetTracing,
                                                            "config", ""};
 
@@ -210,6 +212,12 @@ bool SetupPresetTracingFromFieldTrial() {
     manager.AddPresetScenarios(
         std::move(*field_tracing_config),
         content::BackgroundTracingManager::NO_DATA_FILTERING);
+    const auto& enabled_scenarios =
+        tracing::BackgroundTracingStateManager::GetInstance()
+            .enabled_scenarios();
+    if (!enabled_scenarios.empty()) {
+      return manager.SetEnabledScenarios(enabled_scenarios);
+    }
     return true;
   }
   return false;
@@ -278,6 +286,10 @@ GetFieldTracingConfig() {
 
 bool ShouldAnonymizeFieldTracing() {
   return kFieldTracingAnonymized.Get();
+}
+
+bool ShouldTraceStartup() {
+  return kStartupFieldTracing.Get();
 }
 
 std::optional<perfetto::protos::gen::ChromeFieldTracingConfig>

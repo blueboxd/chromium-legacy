@@ -14,21 +14,21 @@
 #include <cstring>
 
 #include "partition_alloc/build_config.h"
+#include "partition_alloc/buildflags.h"
 #include "partition_alloc/oom.h"
 #include "partition_alloc/page_allocator.h"
 #include "partition_alloc/page_allocator_constants.h"
-#include "partition_alloc/partition_alloc_base/debug/debugging_buildflags.h"
 #include "partition_alloc/partition_alloc_base/notreached.h"
 #include "partition_alloc/partition_alloc_base/posix/eintr_wrapper.h"
 #include "partition_alloc/partition_alloc_check.h"
 #include "partition_alloc/thread_isolation/thread_isolation.h"
 
-#if BUILDFLAG(IS_APPLE)
+#if PA_BUILDFLAG(IS_APPLE)
 #include "partition_alloc/partition_alloc_base/apple/foundation_util.h"
-#if BUILDFLAG(IS_IOS)
+#if PA_BUILDFLAG(IS_IOS)
 #include "partition_alloc/partition_alloc_base/ios/ios_util.h"
-#elif BUILDFLAG(IS_MAC)
-#include "base/mac/mac_util.h"
+#elif PA_BUILDFLAG(IS_MAC)
+#include "partition_alloc/partition_alloc_base/mac/mac_util.h"
 #else
 #error "Unknown platform"
 #endif
@@ -38,10 +38,10 @@
 #include <Security/Security.h>
 #include <mach/mach.h>
 #endif
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX)
+#if PA_BUILDFLAG(IS_ANDROID) || PA_BUILDFLAG(IS_LINUX)
 #include <sys/prctl.h>
 #endif
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+#if PA_BUILDFLAG(IS_LINUX) || PA_BUILDFLAG(IS_CHROMEOS)
 #include <sys/resource.h>
 #endif
 
@@ -49,7 +49,7 @@
 #define MAP_ANONYMOUS MAP_ANON
 #endif
 
-#if BUILDFLAG(IS_MAC)
+#if PA_BUILDFLAG(IS_MAC)
 
 // SecTaskGetCodeSignStatus is marked as unavailable on macOS, although it’s
 // available on iOS and other Apple operating systems. It is, in fact, present
@@ -65,7 +65,7 @@ uint32_t SecTaskGetCodeSignStatus(SecTaskRef task)
     API_AVAILABLE(macos(10.12));
 #pragma clang diagnostic pop
 
-#endif  // BUILDFLAG(IS_MAC)
+#endif  // PA_BUILDFLAG(IS_MAC)
 
 namespace partition_alloc::internal {
 
@@ -108,7 +108,7 @@ void NameRegion(void* start, size_t length, PageTag page_tag) {
 
 #endif  // defined(LINUX_NAME_REGION)
 
-#if BUILDFLAG(IS_MAC)
+#if PA_BUILDFLAG(IS_MAC)
 // Tests whether the version of macOS supports the MAP_JIT flag and if the
 // current process is signed with the hardened runtime and the allow-jit
 // entitlement, returning whether MAP_JIT should be used to allocate regions
@@ -159,7 +159,7 @@ bool UseMapJit() {
   return base::apple::CFCast<CFBooleanRef>(jit_entitlement.get()) ==
          kCFBooleanTrue;
 }
-#elif BUILDFLAG(IS_IOS)
+#elif PA_BUILDFLAG(IS_IOS)
 bool UseMapJit() {
 // Always enable MAP_JIT in simulator as it is supported unconditionally.
 #if TARGET_IPHONE_SIMULATOR
@@ -170,7 +170,7 @@ bool UseMapJit() {
   return false;
 #endif  // TARGET_IPHONE_SIMULATOR
 }
-#endif  // BUILDFLAG(IS_IOS)
+#endif  // PA_BUILDFLAG(IS_IOS)
 }  // namespace
 
 // |mmap| uses a nearby address if the hint address is blocked.
@@ -184,7 +184,7 @@ uintptr_t SystemAllocPagesInternal(uintptr_t hint,
                                    PageAccessibilityConfiguration accessibility,
                                    PageTag page_tag,
                                    int file_descriptor_for_shared_alloc) {
-#if BUILDFLAG(IS_APPLE)
+#if PA_BUILDFLAG(IS_APPLE)
   // Use a custom tag to make it easier to distinguish PartitionAlloc regions
   // in vmmap(1). Tags between 240-255 are supported.
   int fd = file_descriptor_for_shared_alloc == -1
@@ -197,11 +197,11 @@ uintptr_t SystemAllocPagesInternal(uintptr_t hint,
   int access_flag = GetAccessFlags(accessibility);
   int map_flags = MAP_ANONYMOUS | MAP_PRIVATE;
 
-#if BUILDFLAG(IS_APPLE)
-  // On macOS 10.14 and higher, executables that are code signed with the
-  // "runtime" option cannot execute writable memory by default. They can opt
-  // into this capability by specifying the "com.apple.security.cs.allow-jit"
-  // code signing entitlement and allocating the region with the MAP_JIT flag.
+#if PA_BUILDFLAG(IS_APPLE)
+  // On macOS, executables that are code signed with the "runtime" option cannot
+  // execute writable memory by default. They can opt into this capability by
+  // specifying the "com.apple.security.cs.allow-jit" code signing entitlement
+  // and allocating the region with the MAP_JIT flag.
   static const bool kUseMapJit = UseMapJit();
   if (accessibility.permissions ==
           PageAccessibilityConfiguration::kInaccessibleWillJitLater &&
@@ -314,14 +314,14 @@ void DecommitSystemPagesInternal(
 
   bool change_permissions =
       accessibility_disposition == PageAccessibilityDisposition::kRequireUpdate;
-#if PA_BUILDFLAG(PA_DCHECK_IS_ON)
+#if PA_BUILDFLAG(DCHECKS_ARE_ON)
   // This is not guaranteed, show that we're serious.
   //
   // More specifically, several callers have had issues with assuming that
   // memory is zeroed, this would hopefully make these bugs more visible.  We
   // don't memset() everything, because ranges can be very large, and doing it
   // over the entire range could make Chrome unusable with
-  // PA_BUILDFLAG(PA_DCHECK_IS_ON).
+  // PA_BUILDFLAG(DCHECKS_ARE_ON).
   //
   // Only do it when we are about to change the permissions, since we don't know
   // the previous permissions, and cannot restore them.
@@ -351,7 +351,7 @@ bool DecommitAndZeroSystemPagesInternal(uintptr_t address,
                                         size_t length,
                                         PageTag page_tag) {
   int fd = -1;
-#if BUILDFLAG(IS_APPLE)
+#if PA_BUILDFLAG(IS_APPLE)
   fd = VM_MAKE_TAG(static_cast<int>(page_tag));
 #endif
 
@@ -392,7 +392,7 @@ void RecommitSystemPagesInternal(
     SetSystemPagesAccess(address, length, accessibility);
   }
 
-#if BUILDFLAG(IS_APPLE)
+#if PA_BUILDFLAG(IS_APPLE)
   // On macOS, to update accounting, we need to make another syscall. For more
   // details, see https://crbug.com/823915.
   madvise(reinterpret_cast<void*>(address), length, MADV_FREE_REUSE);
@@ -415,7 +415,7 @@ bool TryRecommitSystemPagesInternal(
     }
   }
 
-#if BUILDFLAG(IS_APPLE)
+#if PA_BUILDFLAG(IS_APPLE)
   // On macOS, to update accounting, we need to make another syscall. For more
   // details, see https://crbug.com/823915.
   madvise(reinterpret_cast<void*>(address), length, MADV_FREE_REUSE);
@@ -426,14 +426,14 @@ bool TryRecommitSystemPagesInternal(
 
 void DiscardSystemPagesInternal(uintptr_t address, size_t length) {
   void* ptr = reinterpret_cast<void*>(address);
-#if BUILDFLAG(IS_APPLE)
+#if PA_BUILDFLAG(IS_APPLE)
   int ret = madvise(ptr, length, MADV_FREE_REUSABLE);
   if (ret) {
     // MADV_FREE_REUSABLE sometimes fails, so fall back to MADV_DONTNEED.
     ret = madvise(ptr, length, MADV_DONTNEED);
   }
   PA_PCHECK(ret == 0);
-#else   // BUILDFLAG(IS_APPLE)
+#else   // PA_BUILDFLAG(IS_APPLE)
   // We have experimented with other flags, but with suboptimal results.
   //
   // MADV_FREE (Linux): Makes our memory measurements less predictable;
@@ -441,7 +441,7 @@ void DiscardSystemPagesInternal(uintptr_t address, size_t length) {
   //
   // Therefore, we just do the simple thing: MADV_DONTNEED.
   PA_PCHECK(0 == madvise(ptr, length, MADV_DONTNEED));
-#endif  // BUILDFLAG(IS_APPLE)
+#endif  // PA_BUILDFLAG(IS_APPLE)
 }
 
 }  // namespace partition_alloc::internal

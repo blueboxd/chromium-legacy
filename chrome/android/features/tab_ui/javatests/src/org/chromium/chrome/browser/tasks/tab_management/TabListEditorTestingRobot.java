@@ -30,6 +30,7 @@ import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
 
 import android.view.View;
 
+import androidx.annotation.IdRes;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.espresso.NoMatchingRootException;
 import androidx.test.espresso.NoMatchingViewException;
@@ -43,6 +44,7 @@ import org.hamcrest.TypeSafeMatcher;
 import org.junit.Assert;
 
 import org.chromium.base.test.util.RawFailureHandler;
+import org.chromium.base.test.util.ViewActionOnDescendant;
 import org.chromium.chrome.test.R;
 
 /**
@@ -125,6 +127,16 @@ public class TabListEditorTestingRobot {
             return this;
         }
 
+        public TabListEditorTestingRobot.Action clickActionButtonAdapterPosition(
+                int position, @IdRes int actionButtonId) {
+            ViewActionOnDescendant.performOnRecyclerViewNthItemDescendant(
+                    inTabListEditor(withId(R.id.tab_list_recycler_view)),
+                    position,
+                    withId(actionButtonId),
+                    click());
+            return this;
+        }
+
         public TabListEditorTestingRobot.Action clickToolbarMenuButton() {
             onView(
                             inTabListEditor(
@@ -146,18 +158,28 @@ public class TabListEditorTestingRobot {
         }
 
         public TabListEditorTestingRobot.Action clickToolbarNavigationButton() {
+            clickToolbarNavigationButton(R.string.accessibility_tab_selection_editor_back_button);
+            return this;
+        }
+
+        public TabListEditorTestingRobot.Action clickToolbarNavigationButton(
+                @IdRes int navigationButtonIdRes) {
             onView(
                             inTabListEditor(
                                     allOf(
-                                            withContentDescription(
-                                                    R.string
-                                                            .accessibility_tab_selection_editor_back_button),
+                                            withContentDescription(navigationButtonIdRes),
                                             withParent(withId(R.id.action_bar)))))
                     .perform(click());
             return this;
         }
 
         public TabListEditorTestingRobot.Action clickEndButtonAtAdapterPosition(int position) {
+            clickViewIdAtAdapterPosition(0, R.id.end_button);
+            return this;
+        }
+
+        public TabListEditorTestingRobot.Action clickViewIdAtAdapterPosition(
+                int position, @IdRes int id) {
             onView(inTabListEditor(withId(R.id.tab_list_recycler_view)))
                     .perform(
                             new ViewAction() {
@@ -178,10 +200,7 @@ public class TabListEditorTestingRobot {
                                     RecyclerView.ViewHolder viewHolder =
                                             recyclerView.findViewHolderForAdapterPosition(position);
                                     if (viewHolder.itemView == null) return;
-                                    viewHolder
-                                            .itemView
-                                            .findViewById(R.id.end_button)
-                                            .performClick();
+                                    viewHolder.itemView.findViewById(id).performClick();
                                 }
                             });
             return this;

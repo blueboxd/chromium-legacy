@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "media/cdm/library_cdm/clear_key_cdm/ffmpeg_cdm_audio_decoder.h"
 
 #include <stddef.h>
@@ -259,8 +264,7 @@ cdm::Status FFmpegCdmAudioDecoder::DecodeBuffer(
       break;
   }
 
-  if (output_timestamp_helper_->base_timestamp() == kNoTimestamp &&
-      !is_end_of_stream) {
+  if (!output_timestamp_helper_->base_timestamp() && !is_end_of_stream) {
     DCHECK(timestamp != kNoTimestamp);
     output_timestamp_helper_->SetBaseTimestamp(timestamp);
   }
@@ -332,7 +336,7 @@ bool FFmpegCdmAudioDecoder::OnNewFrame(
 }
 
 void FFmpegCdmAudioDecoder::ResetTimestampState() {
-  output_timestamp_helper_->SetBaseTimestamp(kNoTimestamp);
+  output_timestamp_helper_->Reset();
   last_input_timestamp_ = kNoTimestamp;
 }
 

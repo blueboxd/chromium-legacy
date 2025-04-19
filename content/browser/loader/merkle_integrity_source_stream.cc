@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/342213636): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "content/browser/loader/merkle_integrity_source_stream.h"
 
 #include <string.h>
@@ -106,7 +111,7 @@ bool MerkleIntegritySourceStream::FilterDataImpl(base::span<char>* output,
       return false;
     }
     uint64_t record_size =
-        base::numerics::U64FromBigEndian(base::as_bytes(bytes).first<8u>());
+        base::U64FromBigEndian(base::as_bytes(bytes).first<8u>());
     if (record_size == 0u) {
       return false;
     }

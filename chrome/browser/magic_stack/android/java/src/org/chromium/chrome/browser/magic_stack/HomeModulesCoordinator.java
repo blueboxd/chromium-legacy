@@ -5,9 +5,11 @@
 package org.chromium.chrome.browser.magic_stack;
 
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Point;
 import android.os.SystemClock;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -37,14 +39,15 @@ import java.util.Set;
 /** Root coordinator which is responsible for showing modules on home surfaces. */
 public class HomeModulesCoordinator implements ModuleDelegate, OnViewCreatedCallback {
     public static int MAXIMUM_MODULE_SIZE = 5;
+    private final Context mContext;
     private final ModuleDelegateHost mModuleDelegateHost;
     private HomeModulesMediator mMediator;
     private final HomeModulesRecyclerView mRecyclerView;
     private final ModelList mModel;
-    private final HomeModulesContextMenuManager mHomeModulesContextMenuManager;
     private final ObservableSupplier<Profile> mProfileSupplier;
     private final ModuleRegistry mModuleRegistry;
 
+    private HomeModulesContextMenuManager mHomeModulesContextMenuManager;
     private SimpleRecyclerViewAdapter mAdapter;
     private CirclePagerIndicatorDecoration mPageIndicatorDecoration;
     private SnapHelper mSnapHelper;
@@ -80,6 +83,7 @@ public class HomeModulesCoordinator implements ModuleDelegate, OnViewCreatedCall
             @NonNull HomeModulesConfigManager homeModulesConfigManager,
             @NonNull ObservableSupplier<Profile> profileSupplier,
             @NonNull ModuleRegistry moduleRegistry) {
+        mContext = activity;
         mModuleDelegateHost = moduleDelegateHost;
         mHomeModulesConfigManager = homeModulesConfigManager;
         mHomeModulesStateListener = this::onModuleConfigChanged;
@@ -124,7 +128,15 @@ public class HomeModulesCoordinator implements ModuleDelegate, OnViewCreatedCall
     private void maybeSetUpAdapter() {
         if (mAdapter != null) return;
 
-        mAdapter = new SimpleRecyclerViewAdapter(mModel);
+        mAdapter =
+                new SimpleRecyclerViewAdapter(mModel) {
+                    @Override
+                    public void onViewRecycled(ViewHolder holder) {
+                        holder.itemView.setOnLongClickListener(null);
+                        holder.itemView.setOnCreateContextMenuListener(null);
+                        super.onViewRecycled(holder);
+                    }
+                };
         mModuleRegistry.registerAdapter(mAdapter, this::onViewCreated);
         mRecyclerView.setAdapter(mAdapter);
     }
@@ -240,7 +252,7 @@ public class HomeModulesCoordinator implements ModuleDelegate, OnViewCreatedCall
 
         mProfileSupplier.removeObserver(mOnProfileAvailableObserver);
         mOnProfileAvailableObserver = null;
-        HomeModulesMetricsUtils.recordProfileReadyDelay(getHostSurfaceType(), delay);
+        HomeModulesMetricsUtils.recordProfileReadyDelay(delay);
     }
 
     /** Reacts when the home modules' specific module type is disabled or enabled. */
@@ -299,14 +311,8 @@ public class HomeModulesCoordinator implements ModuleDelegate, OnViewCreatedCall
 
     @Override
     public void onModuleClicked(@ModuleType int moduleType, int modulePosition) {
-        int hostSurface = mModuleDelegateHost.getHostSurfaceType();
         HomeModulesMetricsUtils.recordModuleClicked(
-                hostSurface, moduleType, modulePosition, mModuleDelegateHost.isHomeSurface());
-    }
-
-    @Override
-    public int getHostSurfaceType() {
-        return mModuleDelegateHost.getHostSurfaceType();
+                moduleType, modulePosition, mModuleDelegateHost.isHomeSurface());
     }
 
     @Override
@@ -351,6 +357,12 @@ public class HomeModulesCoordinator implements ModuleDelegate, OnViewCreatedCall
         ModuleProvider moduleProvider = getModuleProvider(moduleType);
         assert moduleProvider != null;
 
+        LayoutParams layoutParams = group.getLayoutParams();
+        layoutParams.height =
+                mContext.getResources()
+                        .getDimensionPixelSize(
+                                org.chromium.chrome.browser.magic_stack.R.dimen.home_module_height);
+        group.setLayoutParams(layoutParams);
         group.setOnLongClickListener(
                 view -> {
                     Point offset = mHomeModulesContextMenuManager.getContextMenuOffset();
@@ -363,7 +375,7 @@ public class HomeModulesCoordinator implements ModuleDelegate, OnViewCreatedCall
                 });
         int position = mMediator.findModuleIndexInRecyclerView(moduleType, mAdapter.getItemCount());
         HomeModulesMetricsUtils.recordModuleShown(
-                getHostSurfaceType(), moduleType, position, mModuleDelegateHost.isHomeSurface());
+                moduleType, position, mModuleDelegateHost.isHomeSurface());
     }
 
     /**
@@ -383,6 +395,10 @@ public class HomeModulesCoordinator implements ModuleDelegate, OnViewCreatedCall
         if (mHomeModulesConfigManager != null) {
             mHomeModulesConfigManager.removeListener(mHomeModulesStateListener);
             mHomeModulesConfigManager = null;
+        }
+        if (mHomeModulesContextMenuManager != null) {
+            mHomeModulesContextMenuManager.destroy();
+            mHomeModulesContextMenuManager = null;
         }
     }
 
@@ -418,5 +434,9 @@ public class HomeModulesCoordinator implements ModuleDelegate, OnViewCreatedCall
 
     Set<Integer> getFilteredEnabledModuleSetForTesting() {
         return mMediator.getFilteredEnabledModuleSet();
+    }
+
+    public HomeModulesContextMenuManager getHomeModulesContextMenuManagerForTesting() {
+        return mHomeModulesContextMenuManager;
     }
 }

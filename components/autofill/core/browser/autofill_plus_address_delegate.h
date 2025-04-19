@@ -60,10 +60,20 @@ class AutofillPlusAddressDelegate {
   virtual void GetSuggestions(
       const url::Origin& last_committed_primary_main_frame_origin,
       bool is_off_the_record,
-      AutofillClient::PasswordFormType focused_form_type,
-      std::u16string_view focused_field_value,
+      const AutofillClient::PasswordFormClassification&
+          focused_form_classification,
+      const FormFieldData& focused_field,
       AutofillSuggestionTriggerSource trigger_source,
       GetSuggestionsCallback callback) = 0;
+
+  // Returns the "Manage plus addresses..." suggestion which redirects the user
+  // to the plus address management page.
+  virtual Suggestion GetManagePlusAddressSuggestion() const = 0;
+
+  // Returns whether plus address suggestions should be mixed with single field
+  // form fill suggestions instead of override them.
+  // TODO(crbug.com/324557560): Remove once feature flag is not needed.
+  virtual bool ShouldMixWithSingleFieldFormFillSuggestions() const = 0;
 
   // Logs Autofill suggestion events related to plus addresses.
   virtual void RecordAutofillSuggestionEvent(
@@ -71,7 +81,7 @@ class AutofillPlusAddressDelegate {
 
   // An enum describing the context in which a plus address suggestion was
   // shown. These values are persisted to logs - do not modify or remove them.
-  enum SuggestionContext {
+  enum class SuggestionContext {
     // The plus address suggestion was shown alongside Autofill profile
     // suggestions because the user focused on a field classified as an email
     // field.
@@ -95,7 +105,7 @@ class AutofillPlusAddressDelegate {
       FormGlobalId form,
       FieldGlobalId field,
       SuggestionContext suggestion_context,
-      AutofillClient::PasswordFormType form_type,
+      AutofillClient::PasswordFormClassification::Type form_type,
       SuggestionType suggestion_type) = 0;
 };
 

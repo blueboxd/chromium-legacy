@@ -19,6 +19,8 @@
 
 namespace blink {
 
+MODULES_EXPORT BASE_DECLARE_FEATURE(kBreakoutBoxInsertVideoCaptureTimestamp);
+
 template <typename NativeFrameType>
 class FrameQueueUnderlyingSource : public UnderlyingSourceBase {
  public:
@@ -148,6 +150,8 @@ class FrameQueueUnderlyingSource : public UnderlyingSourceBase {
   // Maximum number of distinct frames allowed to be used by this source.
   // This limit applies only when |device_id_| is nonempty.
   const wtf_size_t frame_pool_size_ = 0;
+
+  std::optional<base::TimeTicks> first_frame_ticks_;
 };
 
 template <>

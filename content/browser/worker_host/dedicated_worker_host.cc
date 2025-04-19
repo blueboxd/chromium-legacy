@@ -26,7 +26,7 @@
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/private_network_access_util.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
-#include "content/browser/service_worker/service_worker_container_host.h"
+#include "content/browser/service_worker/service_worker_client.h"
 #include "content/browser/service_worker/service_worker_main_resource_handle.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_params_helper.h"
@@ -45,6 +45,7 @@
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "net/base/isolation_info.h"
+#include "net/storage_access_api/status.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
@@ -216,7 +217,7 @@ void DedicatedWorkerHost::StartScriptLoad(
         outside_fetch_client_settings_object,
     mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token,
     mojo::Remote<blink::mojom::DedicatedWorkerHostFactoryClient> client,
-    bool has_storage_access) {
+    net::StorageAccessApiStatus storage_access_api_status) {
   script_request_url_ = script_url;
   TRACE_EVENT("loading", "DedicatedWorkerHost::StartScriptLoad", "script_url",
               script_url);
@@ -290,22 +291,22 @@ void DedicatedWorkerHost::StartScriptLoad(
   // used for subresource loading on the worker.
   file_url_support_ = creator_origin_.scheme() == url::kFileScheme;
 
-  service_worker_handle_ = std::make_unique<ServiceWorkerMainResourceHandle>(
-      storage_partition_impl->GetServiceWorkerContext(), base::DoNothing());
-
   // For blob URL workers, inherit the controller from the worker's parent.
   // See https://w3c.github.io/ServiceWorker/#control-and-use-worker-client
   // Also, we need the worker's parent to set FetchEvent::client_id.
+  base::WeakPtr<ServiceWorkerClient> parent_service_worker_client;
   if (creator_render_frame_host) {
     // The creator of this worker is a frame.
-    service_worker_handle_->set_parent_service_worker_client(
-        creator_render_frame_host->GetLastCommittedServiceWorkerClient());
+    parent_service_worker_client =
+        creator_render_frame_host->GetLastCommittedServiceWorkerClient();
   } else {
-    base::WeakPtr<ServiceWorkerClient> creator_service_worker_client =
+    parent_service_worker_client =
         creator_worker->service_worker_handle()->service_worker_client();
-    service_worker_handle_->set_parent_service_worker_client(
-        creator_service_worker_client);
   }
+
+  service_worker_handle_ = std::make_unique<ServiceWorkerMainResourceHandle>(
+      storage_partition_impl->GetServiceWorkerContext(), base::DoNothing(),
+      std::move(parent_service_worker_client));
 
   network::mojom::ClientSecurityStatePtr client_security_state;
   if (creator_render_frame_host) {
@@ -324,7 +325,7 @@ void DedicatedWorkerHost::StartScriptLoad(
       "loading", "WorkerScriptFetcher CreateAndStart", TRACE_ID_LOCAL(this));
   WorkerScriptFetcher::CreateAndStart(
       worker_process_host_->GetID(), token_, script_url,
-      nearest_ancestor_render_frame_host, creator_render_frame_host,
+      *nearest_ancestor_render_frame_host, creator_render_frame_host,
       nearest_ancestor_render_frame_host->ComputeSiteForCookies(),
       creator_origin_, storage_key_,
       nearest_ancestor_render_frame_host->GetIsolationInfoForSubresources(),
@@ -335,7 +336,8 @@ void DedicatedWorkerHost::StartScriptLoad(
       service_worker_handle_.get(), std::move(blob_url_loader_factory), nullptr,
       storage_partition_impl, partition_domain,
       DedicatedWorkerDevToolsAgentHost::GetFor(this), token_.value(),
-      /*require_cross_site_request_for_cookies=*/false, has_storage_access,
+      /*require_cross_site_request_for_cookies=*/false,
+      storage_access_api_status,
       base::BindOnce(&DedicatedWorkerHost::DidStartScriptLoad,
                      weak_factory_.GetWeakPtr()));
 }
@@ -467,30 +469,22 @@ void DedicatedWorkerHost::DidStartScriptLoad(
       DedicatedWorkerDevToolsAgentHost::GetFor(this)->devtools_worker_token(),
       network::URLLoaderCompletionStatus(net::OK));
 
-  SubresourceLoaderParams::CheckWithMainResourceHandle(
-      service_worker_handle_.get(), result->service_worker_client.get());
+  blink::mojom::ServiceWorkerContainerInfoForClientPtr container_info;
   blink::mojom::ControllerServiceWorkerInfoPtr controller;
   if (service_worker_handle_->service_worker_client()) {
     // TODO(crbug.com/41478971): Plumb the COEP reporter.
     // TODO(crbug.com/40153087): Propagate dedicated worker ukm::SourceId
     // here.
-    service_worker_handle_->service_worker_client()->CommitResponse(
-        /*rfh_id=*/std::nullopt, std::move(result->policy_container_policies),
-        /*coep_reporter=*/{}, ukm::kInvalidSourceId);
-
-    // Prepare the controller service worker info to pass to the renderer.
-    // `controller()` can be nullptr when the client isn't controlled in the
-    // first place, or the service worker context or the service worker version
-    // is gone during dedicated worker startup.
-    if (service_worker_handle_->service_worker_client()->controller()) {
-      controller = service_worker_handle_->service_worker_client()
-                       ->CreateControllerServiceWorkerInfo();
-    }
+    std::tie(container_info, controller) =
+        service_worker_handle_->scoped_service_worker_client()
+            ->CommitResponseAndRelease(
+                /*rfh_id=*/std::nullopt,
+                std::move(result->policy_container_policies),
+                /*coep_reporter=*/{}, ukm::kInvalidSourceId);
   }
 
   client_->OnScriptLoadStarted(
-      service_worker_handle_->TakeContainerInfo(),
-      std::move(result->main_script_load_params),
+      std::move(container_info), std::move(result->main_script_load_params),
       std::move(result->subresource_loader_factories),
       subresource_loader_updater_.BindNewPipeAndPassReceiver(),
       std::move(controller),
@@ -815,8 +809,9 @@ void DedicatedWorkerHost::GetFileSystemAccessManager(
       std::move(receiver));
 }
 
+#if BUILDFLAG(ENABLE_COMPUTE_PRESSURE)
 void DedicatedWorkerHost::BindPressureService(
-    mojo::PendingReceiver<device::mojom::PressureManager> receiver) {
+    mojo::PendingReceiver<blink::mojom::WebPressureManager> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!network::IsOriginPotentiallyTrustworthy(creator_origin_)) {
@@ -848,6 +843,7 @@ void DedicatedWorkerHost::BindPressureService(
 
   pressure_service_->BindReceiver(std::move(receiver));
 }
+#endif  // BUILDFLAG(ENABLE_COMPUTE_PRESSURE)
 
 void DedicatedWorkerHost::ObserveNetworkServiceCrash(
     StoragePartitionImpl* storage_partition_impl) {
@@ -1081,21 +1077,31 @@ void DedicatedWorkerHost::BindCacheStorageInternal(
     GetWorkerCoepReporter()->Clone(
         coep_reporter.InitWithNewPipeAndPassReceiver());
   }
-  worker_process_host_->BindCacheStorage(cross_origin_embedder_policy(),
-                                         std::move(coep_reporter),
-                                         bucket_locator, std::move(receiver));
+  worker_process_host_->BindCacheStorage(
+      cross_origin_embedder_policy(), std::move(coep_reporter),
+      worker_client_security_state_->document_isolation_policy, bucket_locator,
+      std::move(receiver));
 }
 
 void DedicatedWorkerHost::GetSandboxedFileSystemForBucket(
     const storage::BucketInfo& bucket,
+    const std::vector<std::string>& directory_path_components,
     blink::mojom::BucketHost::GetDirectoryCallback callback) {
-  GetProcessHost()->GetSandboxedFileSystemForBucket(bucket.ToBucketLocator(),
-                                                    std::move(callback));
+  GetProcessHost()->GetSandboxedFileSystemForBucket(
+      bucket.ToBucketLocator(), directory_path_components, std::move(callback));
 }
 
 GlobalRenderFrameHostId DedicatedWorkerHost::GetAssociatedRenderFrameHostId()
     const {
   return GetAncestorRenderFrameHostId();
+}
+
+base::UnguessableToken DedicatedWorkerHost::GetDevToolsToken() const {
+  // This method is expected to be called only when PlzDedicatedWorker is
+  // enabled. See code comments on `WorkerDevToolsManager`.
+  CHECK(base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker));
+  return DedicatedWorkerDevToolsAgentHost::GetFor(this)
+      ->devtools_worker_token();
 }
 
 blink::scheduler::WebSchedulerTrackedFeatures

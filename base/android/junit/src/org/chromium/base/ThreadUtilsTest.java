@@ -31,19 +31,15 @@ public class ThreadUtilsTest {
         ThreadChecker checker = new ThreadChecker();
         checker.assertOnValidThread();
 
-        try {
-            PostTask.runSynchronously(TaskTraits.USER_BLOCKING, checker::assertOnValidThread);
-            Assert.fail("Expected AssertionError from ThreadChecker.");
-        } catch (RuntimeException r) {
-            AssertionError e;
-            try {
-                e = (AssertionError) r.getCause().getCause();
-            } catch (Throwable unused) {
-                throw new RuntimeException("Wrong Exception Type.", r);
-            }
-            Assert.assertThat(
-                    e.getMessage(), startsWith("UI-only class called from background thread"));
-        }
+        RuntimeException e =
+                Assert.assertThrows(
+                        RuntimeException.class,
+                        () ->
+                                PostTask.runSynchronously(
+                                        TaskTraits.USER_BLOCKING, checker::assertOnValidThread));
+        Assert.assertThat(
+                e.getCause().getMessage(),
+                startsWith("UI-only class called from background thread"));
     }
 
     @Test

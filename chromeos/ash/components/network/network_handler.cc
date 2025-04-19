@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/constants/ash_features.h"
+#include "base/memory/ptr_util.h"
 #include "base/task/single_thread_task_runner.h"
 #include "chromeos/ash/components/install_attributes/install_attributes.h"
 #include "chromeos/ash/components/network/auto_connect_handler.h"
@@ -21,6 +22,7 @@
 #include "chromeos/ash/components/network/enterprise_managed_metadata_store.h"
 #include "chromeos/ash/components/network/ephemeral_network_configuration_handler.h"
 #include "chromeos/ash/components/network/ephemeral_network_policies_enablement_handler.h"
+#include "chromeos/ash/components/network/fake_network_state_handler.h"
 #include "chromeos/ash/components/network/geolocation_handler.h"
 #include "chromeos/ash/components/network/hidden_network_handler.h"
 #include "chromeos/ash/components/network/hotspot_allowed_flag_handler.h"
@@ -62,12 +64,12 @@ namespace ash {
 
 static NetworkHandler* g_network_handler = NULL;
 
-NetworkHandler::NetworkHandler()
+NetworkHandler::NetworkHandler(std::unique_ptr<NetworkStateHandler> handler)
     : was_enterprise_managed_at_startup_(
           InstallAttributes::IsInitialized() &&
           InstallAttributes::Get()->IsEnterpriseManaged()),
       task_runner_(base::SingleThreadTaskRunner::GetCurrentDefault()),
-      network_state_handler_(new NetworkStateHandler()) {
+      network_state_handler_(std::move(handler)) {
   network_device_handler_.reset(new NetworkDeviceHandlerImpl());
   cellular_inhibitor_.reset(new CellularInhibitor());
   cellular_esim_profile_handler_.reset(new CellularESimProfileHandlerImpl());
@@ -109,9 +111,7 @@ NetworkHandler::NetworkHandler()
   network_sms_handler_.reset(new NetworkSmsHandler());
   text_message_provider_.reset(new TextMessageProvider());
   geolocation_handler_.reset(new GeolocationHandler());
-  if (ash::features::IsCellularCarrierLockEnabled()) {
-    network_3gpp_handler_.reset(new Network3gppHandler());
-  }
+  network_3gpp_handler_.reset(new Network3gppHandler());
 
   // Only watch ephemeral network policies enablement if ephemeral network
   // policies should be enabled by the feature or if the device policy to enable
@@ -223,15 +223,22 @@ void NetworkHandler::Init() {
     text_message_provider_->Init(network_sms_handler_.get(),
                                  managed_network_configuration_handler_.get());
   geolocation_handler_->Init();
-  if (ash::features::IsCellularCarrierLockEnabled()) {
-    network_3gpp_handler_->Init();
-  }
+  network_3gpp_handler_->Init();
 }
 
 // static
 void NetworkHandler::Initialize() {
   CHECK(!g_network_handler);
-  g_network_handler = new NetworkHandler();
+  g_network_handler =
+      new NetworkHandler(base::WrapUnique(new NetworkStateHandler()));
+  g_network_handler->Init();
+}
+
+// static
+void NetworkHandler::InitializeFake() {
+  CHECK(!g_network_handler);
+  g_network_handler =
+      new NetworkHandler(std::make_unique<FakeNetworkStateHandler>());
   g_network_handler->Init();
 }
 
@@ -419,7 +426,6 @@ GeolocationHandler* NetworkHandler::geolocation_handler() {
 }
 
 Network3gppHandler* NetworkHandler::network_3gpp_handler() {
-  DCHECK(ash::features::IsCellularCarrierLockEnabled());
   return network_3gpp_handler_.get();
 }
 

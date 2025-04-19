@@ -44,7 +44,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/download/public/common/mock_download_item.h"
 #include "components/enterprise/common/proto/connectors.pb.h"
-#include "components/enterprise/connectors/connectors_prefs.h"
+#include "components/enterprise/connectors/core/connectors_prefs.h"
 #include "components/policy/core/common/cloud/dm_token.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/prefs/pref_service.h"
@@ -901,7 +901,8 @@ TEST_F(DeepScanningReportingTest, ProcessesResponseCorrectly) {
         /*username*/ kUserName,
         /*profile_identifier*/ profile_->GetPath().AsUTF8Unsafe(),
         /*scan_id*/ kScanId,
-        /*content_transfer_method*/ std::nullopt);
+        /*content_transfer_method*/ std::nullopt,
+        /*user_justification*/ std::nullopt);
 
     request.Start();
 
@@ -965,7 +966,8 @@ TEST_F(DeepScanningReportingTest, ProcessesResponseCorrectly) {
         /*username*/ kUserName,
         /*profile_identifier*/ profile_->GetPath().AsUTF8Unsafe(),
         /*scan_id*/ kScanId,
-        /*content_transfer_method*/ std::nullopt);
+        /*content_transfer_method*/ std::nullopt,
+        /*user_justification*/ std::nullopt);
 
     request.Start();
 
@@ -1033,7 +1035,8 @@ TEST_F(DeepScanningReportingTest, ProcessesResponseCorrectly) {
         /*username*/ kUserName,
         /*profile_identifier*/ profile_->GetPath().AsUTF8Unsafe(),
         /*scan_id*/ kScanId,
-        /*content_transfer_method*/ std::nullopt);
+        /*content_transfer_method*/ std::nullopt,
+        /*user_justification*/ std::nullopt);
 
     request.Start();
 
@@ -1599,7 +1602,8 @@ TEST_F(DeepScanningReportingTest, MultipleFiles) {
             kScanId + std::string("0"),
             kScanId + std::string("1"),
         },
-        /*content_transfer_reason*/ std::nullopt);
+        /*content_transfer_reason*/ std::nullopt,
+        /*user_justification*/ std::nullopt);
 
     request.Start();
     run_loop.Run();

@@ -20,7 +20,7 @@
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/navigator.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
-#include "content/browser/service_worker/service_worker_container_host.h"
+#include "content/browser/service_worker/service_worker_client.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_security_utils.h"
@@ -264,9 +264,12 @@ void GetNonWindowClients(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (options->include_uncontrolled) {
     if (controller->context()) {
-      for (auto it = controller->context()->GetServiceWorkerClients(
-               controller->key(), false /* include_reserved_clients */,
-               false /* include_back_forward_cached_clients */);
+      for (auto it =
+               controller->context()
+                   ->service_worker_client_owner()
+                   .GetServiceWorkerClients(
+                       controller->key(), false /* include_reserved_clients */,
+                       false /* include_back_forward_cached_clients */);
            !it.IsAtEnd(); ++it) {
         AddNonWindowClient(*it, options->client_type, &clients);
       }
@@ -309,9 +312,12 @@ void GetWindowClients(
       clients_info;
   if (options->include_uncontrolled) {
     if (controller->context()) {
-      for (auto it = controller->context()->GetServiceWorkerClients(
-               controller->key(), false /* include_reserved_clients */,
-               false /* include_back_forward_cached_clients */);
+      for (auto it =
+               controller->context()
+                   ->service_worker_client_owner()
+                   .GetServiceWorkerClients(
+                       controller->key(), false /* include_reserved_clients */,
+                       false /* include_back_forward_cached_clients */);
            !it.IsAtEnd(); ++it) {
         AddWindowClient(*it, &clients_info);
       }
@@ -369,7 +375,8 @@ void DidGetExecutionReadyClient(
   }
 
   ServiceWorkerClient* service_worker_client =
-      context->GetServiceWorkerClientByClientID(client_uuid);
+      context->service_worker_client_owner().GetServiceWorkerClientByClientID(
+          client_uuid);
   if (!service_worker_client || !service_worker_client->is_execution_ready()) {
     // The page was destroyed before it became execution ready.  Tell the
     // renderer the page opened but it doesn't have access to it.
@@ -547,7 +554,7 @@ void NavigateClient(const GURL& url,
       false /* should_replace_current_entry */, false /* user_gesture */,
       blink::mojom::TriggeringEventInfo::kUnknown,
       std::string() /* href_translate */, nullptr /* blob_url_loader_factory */,
-      std::nullopt);
+      std::nullopt, false /* has_rel_opener */);
   new OpenURLObserver(web_contents, frame_tree_node_id,
                       base::BindOnce(&DidNavigate, context, script_url, key,
                                      std::move(callback)));
@@ -625,7 +632,7 @@ void DidNavigate(const base::WeakPtr<ServiceWorkerContextCore>& context,
     return;
   }
 
-  for (auto it = context->GetServiceWorkerClients(
+  for (auto it = context->service_worker_client_owner().GetServiceWorkerClients(
            key, true /* include_reserved_clients */,
            false /* include_back_forward_cached_clients */);
        !it.IsAtEnd(); ++it) {

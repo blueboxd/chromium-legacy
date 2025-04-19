@@ -32,6 +32,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Spy;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.Token;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
@@ -51,15 +52,12 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.RecentTabsPageTestUtils;
+import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.chrome.test.util.browser.signin.SigninTestRule;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.policy.test.annotations.Policies;
-import org.chromium.components.signin.base.AccountInfo;
-import org.chromium.components.signin.test.util.AccountCapabilitiesBuilder;
-import org.chromium.components.signin.test.util.FakeAccountManagerFacade;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.mojom.WindowOpenDisposition;
@@ -73,6 +71,7 @@ import java.util.concurrent.ExecutionException;
 /** Instrumentation tests for {@link RecentTabsPage}. */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@EnableFeatures({ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS})
 public class RecentTabsPageTest {
     private static final String EMAIL = "email@gmail.com";
     private static final String NAME = "Email Emailson";
@@ -87,7 +86,7 @@ public class RecentTabsPageTest {
     @Rule
     public final ChromeRenderTestRule mRenderTestRule =
             ChromeRenderTestRule.Builder.withPublicCorpus()
-                    .setRevision(7)
+                    .setRevision(8)
                     .setBugComponent(ChromeRenderTestRule.Component.UI_BROWSER_MOBILE_RECENT_TABS)
                     .build();
 
@@ -135,7 +134,7 @@ public class RecentTabsPageTest {
                 .openRecentlyClosedTab(mTabModel, tab, WindowOpenDisposition.NEW_BACKGROUND_TAB);
 
         final int groupIdx = !DeviceFormFactor.isNonMultiDisplayContextOnTablet(mActivity) ? 0 : 1;
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     mPage.onChildClick(null, null, groupIdx, 0, 0);
                 });
@@ -152,7 +151,7 @@ public class RecentTabsPageTest {
     @Test
     @LargeTest
     @Feature({"RecentTabsPage", "RenderTest"})
-    // Disable sign-in to suppress sync promo, as it's unrelated to this render test.
+    // Disable sign-in to suppress sign-in promo, as it's unrelated to this render test.
     @Policies.Add(@Policies.Item(key = "BrowserSignin", string = "0"))
     public void testRecentlyClosedGroup_WithTitle() throws Exception {
         mPage = loadRecentTabsPage();
@@ -178,7 +177,7 @@ public class RecentTabsPageTest {
         setRecentlyClosedEntries(Collections.singletonList(group));
         Assert.assertEquals(1, mManager.getRecentlyClosedEntries(1).size());
         final String groupString =
-                TestThreadUtils.runOnUiThreadBlockingNoException(
+                ThreadUtils.runOnUiThreadBlocking(
                         () -> {
                             return mActivity
                                     .getResources()
@@ -191,7 +190,7 @@ public class RecentTabsPageTest {
         mRenderTestRule.render(mPage.getView(), "recently_closed_group_with_title");
 
         final int groupIdx = !DeviceFormFactor.isNonMultiDisplayContextOnTablet(mActivity) ? 0 : 1;
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     mPage.onChildClick(null, null, groupIdx, 0, 0);
                 });
@@ -207,7 +206,7 @@ public class RecentTabsPageTest {
     @Test
     @LargeTest
     @Feature({"RecentTabsPage", "RenderTest"})
-    // Disable sign-in to suppress sync promo, as it's unrelated to this render test.
+    // Disable sign-in to suppress sign-in promo, as it's unrelated to this render test.
     @Policies.Add(@Policies.Item(key = "BrowserSignin", string = "0"))
     public void testRecentlyClosedGroup_WithoutTitle() throws Exception {
         mPage = loadRecentTabsPage();
@@ -234,7 +233,7 @@ public class RecentTabsPageTest {
         setRecentlyClosedEntries(Collections.singletonList(group));
         Assert.assertEquals(1, mManager.getRecentlyClosedEntries(1).size());
         final String groupString =
-                TestThreadUtils.runOnUiThreadBlockingNoException(
+                ThreadUtils.runOnUiThreadBlocking(
                         () -> {
                             return mActivity
                                     .getResources()
@@ -247,7 +246,7 @@ public class RecentTabsPageTest {
         mRenderTestRule.render(mPage.getView(), "recently_closed_group_without_title");
 
         final int groupIdx = !DeviceFormFactor.isNonMultiDisplayContextOnTablet(mActivity) ? 0 : 1;
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     mPage.onChildClick(null, null, groupIdx, 0, 0);
                 });
@@ -263,7 +262,7 @@ public class RecentTabsPageTest {
     @Test
     @LargeTest
     @Feature({"RecentTabsPage", "RenderTest"})
-    // Disable sign-in to suppress sync promo, as it's unrelated to this render test.
+    // Disable sign-in to suppress sign-in promo, as it's unrelated to this render test.
     @Policies.Add(@Policies.Item(key = "BrowserSignin", string = "0"))
     public void testRecentlyClosedBulkEvent() throws Exception {
         mPage = loadRecentTabsPage();
@@ -300,7 +299,7 @@ public class RecentTabsPageTest {
         Assert.assertEquals(1, mManager.getRecentlyClosedEntries(1).size());
         final int size = event.getTabs().size();
         final String eventString =
-                TestThreadUtils.runOnUiThreadBlockingNoException(
+                ThreadUtils.runOnUiThreadBlocking(
                         () -> {
                             return mActivity
                                     .getResources()
@@ -311,7 +310,7 @@ public class RecentTabsPageTest {
         mRenderTestRule.render(mPage.getView(), "recently_closed_bulk_event");
 
         final int groupIdx = !DeviceFormFactor.isNonMultiDisplayContextOnTablet(mActivity) ? 0 : 1;
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     mPage.onChildClick(null, null, groupIdx, 0, 0);
                 });
@@ -327,23 +326,32 @@ public class RecentTabsPageTest {
     @Test
     @MediumTest
     @Feature({"RecentTabsPage"})
-    public void testEmptyStateView() throws ExecutionException {
+    @DisableFeatures(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
+    public void testEmptyStateView_replaceSyncWithSignInDisabled() {
         // Sign in and enable sync.
-        // TODO(b/343378391) Update accountInfo to use
-        // AccountManagerTestRule.TEST_ACCOUNT_NON_DISPLAYABLE_EMAIL.
-        AccountInfo accountInfo =
-                new AccountInfo.Builder(EMAIL, FakeAccountManagerFacade.toGaiaId(EMAIL))
-                        .fullName(NAME)
-                        .givenName(NAME)
-                        .accountCapabilities(
-                                new AccountCapabilitiesBuilder()
-                                        .setCanHaveEmailAddressDisplayed(false)
-                                        .setIsSubjectToParentalControls(true)
-                                        .build())
-                        .build();
-        mSigninTestRule.addAccount(accountInfo);
+        mSigninTestRule.addAccount(AccountManagerTestRule.TEST_ACCOUNT_NON_DISPLAYABLE_EMAIL);
+        mSigninTestRule.waitForSignin(AccountManagerTestRule.TEST_ACCOUNT_NON_DISPLAYABLE_EMAIL);
         SigninTestUtil.signinAndEnableSync(
-                accountInfo, SyncTestUtil.getSyncServiceForLastUsedProfile());
+                AccountManagerTestRule.TEST_ACCOUNT_NON_DISPLAYABLE_EMAIL,
+                SyncTestUtil.getSyncServiceForLastUsedProfile());
+
+        // Open an empty recent tabs page and confirm empty view shows.
+        mPage = loadRecentTabsPage();
+        onView(
+                        allOf(
+                                withId(R.id.empty_state_container),
+                                withParent(withId(R.id.legacy_sync_promo_view_frame_layout))))
+                .check(matches(isDisplayed()));
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RecentTabsPage"})
+    @EnableFeatures(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
+    public void testEmptyStateView() {
+        mSigninTestRule.addAccount(AccountManagerTestRule.TEST_ACCOUNT_NON_DISPLAYABLE_EMAIL);
+        SigninTestUtil.signinAndEnableHistorySync(
+                AccountManagerTestRule.TEST_ACCOUNT_NON_DISPLAYABLE_EMAIL);
 
         // Open an empty recent tabs page and confirm empty view shows.
         mPage = loadRecentTabsPage();
@@ -356,13 +364,12 @@ public class RecentTabsPageTest {
 
     @Test
     @SmallTest
-    @EnableFeatures(ChromeFeatureList.DYNAMIC_TOP_CHROME)
     @DisableFeatures(ChromeFeatureList.TAB_STRIP_LAYOUT_OPTIMIZATION)
     public void testTabStripHeightChangeCallback() {
         mPage = loadRecentTabsPage();
         var tabStripHeightChangeCallback = mPage.getTabStripHeightChangeCallbackForTesting();
         int newTabStripHeight = 40;
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> tabStripHeightChangeCallback.onResult(newTabStripHeight));
         assertEquals(
                 "Top padding of page view should be updated when tab strip height changes.",
@@ -375,7 +382,7 @@ public class RecentTabsPageTest {
      * manager.
      */
     private void setRecentlyClosedEntries(List<RecentlyClosedEntry> entries) {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     mManager.setRecentlyClosedEntries(entries);
                 });
@@ -432,7 +439,7 @@ public class RecentTabsPageTest {
             final Activity activity, final View view, final int itemId) {
         // IMPLEMENTATION NOTE: Instrumentation.invokeContextMenuAction would've been much simpler,
         // but it requires the View to be focused which is hard to achieve in touch mode.
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     view.performLongClick();
                     activity.getWindow().performContextMenuIdentifierAction(itemId, 0);

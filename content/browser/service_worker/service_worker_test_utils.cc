@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/342213636): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "content/browser/service_worker/service_worker_test_utils.h"
 
 #include <algorithm>
@@ -20,6 +25,7 @@
 #include "base/uuid.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
+#include "content/browser/service_worker/service_worker_client.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -231,19 +237,27 @@ void OnWriteToDiskCacheFinished(
 
 }  // namespace
 
-ServiceWorkerRemoteContainerEndpoint::ServiceWorkerRemoteContainerEndpoint() =
-    default;
-ServiceWorkerRemoteContainerEndpoint::ServiceWorkerRemoteContainerEndpoint(
-    ServiceWorkerRemoteContainerEndpoint&& other)
-    : navigation_client_(std::move(other.navigation_client_)),
-      host_remote_(std::move(other.host_remote_)),
-      client_receiver_(std::move(other.client_receiver_)) {}
+CommittedServiceWorkerClient::CommittedServiceWorkerClient(
+    CommittedServiceWorkerClient&& other) = default;
+CommittedServiceWorkerClient::~CommittedServiceWorkerClient() = default;
 
-ServiceWorkerRemoteContainerEndpoint::~ServiceWorkerRemoteContainerEndpoint() =
-    default;
+CommittedServiceWorkerClient::CommittedServiceWorkerClient(
+    ScopedServiceWorkerClient service_worker_client,
+    const GlobalRenderFrameHostId& render_frame_host_id)
+    : service_worker_client_(std::move(service_worker_client.AsWeakPtr())) {
+  // Establish a dummy connection to allow sending messages without errors.
+  mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+      reporter;
+  auto dummy = reporter.InitWithNewPipeAndPassReceiver();
 
-void ServiceWorkerRemoteContainerEndpoint::BindForWindow(
-    blink::mojom::ServiceWorkerContainerInfoForClientPtr info) {
+  // In production code this is called from NavigationRequest in the browser
+  // process right before navigation commit.
+  auto [container_info, controller_info] =
+      std::move(service_worker_client)
+          .CommitResponseAndRelease(render_frame_host_id,
+                                    PolicyContainerPolicies(),
+                                    std::move(reporter), ukm::kInvalidSourceId);
+
   // We establish a message pipe for connecting |navigation_client_| to a fake
   // navigation client, then simulate sending the navigation commit IPC which
   // carries a service worker container info over it, then the container info
@@ -271,7 +285,8 @@ void ServiceWorkerRemoteContainerEndpoint::BindForWindow(
       /*url_loader_client_endpoints=*/nullptr,
       /*subresource_loader_factories=*/nullptr,
       /*subresource_overrides=*/std::nullopt,
-      /*controller_service_worker_info=*/nullptr, std::move(info),
+      /*controller_service_worker_info=*/std::move(controller_info),
+      std::move(container_info),
       /*subresource_proxying_loader_factory=*/mojo::NullRemote(),
       /*keep_alive_loader_factory=*/mojo::NullRemote(),
       /*fetch_later_loader_factory=*/mojo::NullAssociatedRemote(),
@@ -287,54 +302,35 @@ void ServiceWorkerRemoteContainerEndpoint::BindForWindow(
           [](mojom::DidCommitProvisionalLoadParamsPtr validated_params,
              mojom::DidCommitProvisionalLoadInterfaceParamsPtr
                  interface_params) {}));
+
+  service_worker_client_->SetContainerReady();
+
   loop.Run();
 
   client_receiver_ = std::move(received_info->client_receiver);
   host_remote_.Bind(std::move(received_info->host_remote));
 }
 
-ServiceWorkerClientAndInfo::ServiceWorkerClientAndInfo(
-    base::WeakPtr<ServiceWorkerClient> service_worker_client,
-    blink::mojom::ServiceWorkerContainerInfoForClientPtr info)
-    : service_worker_client(std::move(service_worker_client)),
-      info(std::move(info)) {}
+CommittedServiceWorkerClient::CommittedServiceWorkerClient(
+    ScopedServiceWorkerClient service_worker_client)
+    : service_worker_client_(std::move(service_worker_client.AsWeakPtr())) {
+  // For worker cases the mojo call is not emulated (just not implemented).
+  auto [received_info, controller_info] =
+      std::move(service_worker_client)
+          .CommitResponseAndRelease(
+              /*render_frame_host_id=*/std::nullopt, PolicyContainerPolicies(),
+              /*coep_reporter=*/{}, ukm::kInvalidSourceId);
 
-ServiceWorkerClientAndInfo::~ServiceWorkerClientAndInfo() = default;
+  service_worker_client_->SetContainerReady();
 
-base::WeakPtr<ServiceWorkerClient> CreateServiceWorkerClientForWindow(
-    const GlobalRenderFrameHostId& render_frame_host_id,
-    bool is_parent_frame_secure,
-    base::WeakPtr<ServiceWorkerContextCore> context,
-    ServiceWorkerRemoteContainerEndpoint* output_endpoint) {
-  std::unique_ptr<ServiceWorkerClientAndInfo> client_and_info =
-      CreateServiceWorkerClientAndInfoForWindow(context,
-                                                is_parent_frame_secure);
-  base::WeakPtr<ServiceWorkerClient> service_worker_client =
-      std::move(client_and_info->service_worker_client);
-  output_endpoint->BindForWindow(std::move(client_and_info->info));
-
-  // Establish a dummy connection to allow sending messages without errors.
-  mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
-      reporter;
-  auto dummy = reporter.InitWithNewPipeAndPassReceiver();
-
-  // In production code this is called from NavigationRequest in the browser
-  // process right before navigation commit.
-  service_worker_client->CommitResponse(
-      render_frame_host_id, PolicyContainerPolicies(), std::move(reporter),
-      ukm::kInvalidSourceId);
-  return service_worker_client;
+  client_receiver_ = std::move(received_info->client_receiver);
+  host_remote_.Bind(std::move(received_info->host_remote));
 }
 
-std::unique_ptr<ServiceWorkerClientAndInfo>
-CreateServiceWorkerClientAndInfoForWindow(
-    base::WeakPtr<ServiceWorkerContextCore> context,
-    bool are_ancestors_secure) {
-  auto [service_worker_client, info] =
-      context->CreateServiceWorkerClientForWindow(are_ancestors_secure,
-                                                  /*frame_tree_node_id=*/1);
-  return std::make_unique<ServiceWorkerClientAndInfo>(
-      std::move(service_worker_client), std::move(info));
+ServiceWorkerContainerHost& CommittedServiceWorkerClient::container_host()
+    const {
+  CHECK(service_worker_client_->container_host());
+  return *service_worker_client_->container_host();
 }
 
 base::OnceCallback<void(blink::ServiceWorkerStatusCode)>
@@ -396,6 +392,39 @@ void StopServiceWorker(ServiceWorkerVersion* version) {
   base::RunLoop run_loop;
   version->StopWorker(run_loop.QuitClosure());
   run_loop.Run();
+}
+
+ScopedServiceWorkerClient CreateServiceWorkerClient(
+    ServiceWorkerContextCore* context,
+    bool are_ancestors_secure,
+    int frame_tree_node_id) {
+  return ScopedServiceWorkerClient(
+      context->service_worker_client_owner().CreateServiceWorkerClientForWindow(
+          are_ancestors_secure, frame_tree_node_id));
+}
+
+ScopedServiceWorkerClient CreateServiceWorkerClient(
+    ServiceWorkerContextCore* context,
+    const GURL& document_url,
+    const url::Origin& top_frame_origin,
+    bool are_ancestors_secure,
+    int frame_tree_node_id) {
+  ScopedServiceWorkerClient service_worker_client = CreateServiceWorkerClient(
+      context, are_ancestors_secure, frame_tree_node_id);
+  service_worker_client->UpdateUrls(
+      document_url, top_frame_origin,
+      blink::StorageKey::CreateFirstParty(top_frame_origin));
+  return service_worker_client;
+}
+
+ScopedServiceWorkerClient CreateServiceWorkerClient(
+    ServiceWorkerContextCore* context,
+    const GURL& document_url,
+    bool are_ancestors_secure,
+    int frame_tree_node_id) {
+  return CreateServiceWorkerClient(context, document_url,
+                                   url::Origin::Create(document_url),
+                                   are_ancestors_secure, frame_tree_node_id);
 }
 
 std::unique_ptr<ServiceWorkerHost> CreateServiceWorkerHost(
@@ -856,12 +885,9 @@ void ServiceWorkerUpdateCheckTestUtils::
     // Create a data pipe which has the new block sent from the network.
     ASSERT_EQ(MOJO_RESULT_OK, mojo::CreateDataPipe(nullptr, *out_body_handle,
                                                    network_consumer));
-    size_t written_size = diff_data_block.size();
-    ASSERT_EQ(MOJO_RESULT_OK,
-              (*out_body_handle)
-                  ->WriteData(diff_data_block.c_str(), &written_size,
-                              MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
-    ASSERT_EQ(diff_data_block.size(), written_size);
+    ASSERT_EQ(
+        MOJO_RESULT_OK,
+        (*out_body_handle)->WriteAllData(base::as_byte_span(diff_data_block)));
     base::RunLoop().RunUntilIdle();
 
     // Read the data to make a pending buffer.
@@ -949,10 +975,8 @@ void ReadDataPipeInternal(mojo::DataPipeConsumerHandle handle,
                           std::string* result,
                           base::OnceClosure quit_closure) {
   while (true) {
-    size_t num_bytes;
-    const void* buffer = nullptr;
-    MojoResult rv =
-        handle.BeginReadData(&buffer, &num_bytes, MOJO_READ_DATA_FLAG_NONE);
+    base::span<const uint8_t> buffer;
+    MojoResult rv = handle.BeginReadData(MOJO_READ_DATA_FLAG_NONE, buffer);
     switch (rv) {
       case MOJO_RESULT_BUSY:
       case MOJO_RESULT_INVALID_ARGUMENT:
@@ -967,12 +991,12 @@ void ReadDataPipeInternal(mojo::DataPipeConsumerHandle handle,
                                       std::move(quit_closure)));
         return;
       case MOJO_RESULT_OK:
-        EXPECT_NE(nullptr, buffer);
-        EXPECT_GT(num_bytes, 0u);
-        uint32_t before_size = result->size();
-        result->append(static_cast<const char*>(buffer), num_bytes);
-        uint32_t read_size = result->size() - before_size;
-        EXPECT_EQ(num_bytes, read_size);
+        EXPECT_NE(nullptr, buffer.data());
+        EXPECT_GT(buffer.size(), 0u);
+        size_t before_size = result->size();
+        result->append(base::as_string_view(buffer));
+        size_t read_size = result->size() - before_size;
+        EXPECT_EQ(buffer.size(), read_size);
         rv = handle.EndReadData(read_size);
         EXPECT_EQ(MOJO_RESULT_OK, rv);
         break;

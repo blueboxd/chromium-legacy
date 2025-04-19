@@ -32,7 +32,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc.h"
+#include "partition_alloc/partition_alloc.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
@@ -82,7 +82,9 @@
 #include "third_party/blink/renderer/core/layout/flex/layout_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/forms/layout_fieldset.h"
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
+#include "third_party/blink/renderer/core/layout/grid/layout_grid.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_counter.h"
 #include "third_party/blink/renderer/core/layout/layout_custom_scrollbar_part.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
@@ -91,7 +93,6 @@
 #include "third_party/blink/renderer/core/layout/layout_image_resource_style_image.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
-#include "third_party/blink/renderer/core/layout/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_object_inl.h"
 #include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
 #include "third_party/blink/renderer/core/layout/layout_result.h"
@@ -159,7 +160,7 @@ LayoutObject* FindAncestorByPredicate(const LayoutObject* descendant,
     if (skip_info)
       skip_info->Update(*object);
 
-    if (UNLIKELY(object->IsColumnSpanAll())) {
+    if (object->IsColumnSpanAll()) [[unlikely]] {
       // The containing block chain goes directly from the column spanner to the
       // multi-column container.
       const auto* multicol_container =
@@ -347,7 +348,8 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
     return image;
   } else if (element->GetPseudoId() == kPseudoIdMarker) {
     const Element* parent = element->parentElement();
-    if (parent->GetComputedStyle()->MarkerShouldBeInside(*parent)) {
+    if (parent->GetComputedStyle()->MarkerShouldBeInside(
+            *parent, style.GetDisplayStyle())) {
       return MakeGarbageCollected<LayoutInsideListMarker>(element);
     }
     return MakeGarbageCollected<LayoutOutsideListMarker>(element);
@@ -356,6 +358,10 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
   switch (style.Display()) {
     case EDisplay::kNone:
     case EDisplay::kContents:
+    // TODO(ethavar): Return the appropriate `LayoutMasonry` object once we
+    // introduce `MasonryLayoutAlgorithm`.
+    case EDisplay::kMasonry:
+    case EDisplay::kInlineMasonry:
       return nullptr;
     case EDisplay::kInline:
       return MakeGarbageCollected<LayoutInline>(element);
@@ -388,7 +394,7 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
     case EDisplay::kWebkitBox:
     case EDisplay::kWebkitInlineBox:
       if (style.IsDeprecatedWebkitBoxWithVerticalLineClamp()) {
-        return MakeGarbageCollected<LayoutNGBlockFlow>(element);
+        return MakeGarbageCollected<LayoutBlockFlow>(element);
       }
       UseCounter::Count(element->GetDocument(),
                         WebFeature::kWebkitBoxWithoutWebkitLineClamp);
@@ -438,7 +444,7 @@ LayoutBlockFlow* LayoutObject::CreateBlockFlowOrListItem(
   }
 
   // Create a plain LayoutBlockFlow
-  return MakeGarbageCollected<LayoutNGBlockFlow>(element);
+  return MakeGarbageCollected<LayoutBlockFlow>(element);
 }
 
 LayoutObject::LayoutObject(Node* node)
@@ -677,7 +683,7 @@ void LayoutObject::AddChild(LayoutObject* new_child,
   NOT_DESTROYED();
 #if DCHECK_IS_ON()
   DCHECK(IsAllowedToModifyLayoutTreeStructure(GetDocument()) ||
-         IsDetachedNonDomRoot());
+         IsInDetachedNonDomTree());
 #endif
 
   LayoutObjectChildList* children = VirtualChildren();
@@ -700,14 +706,14 @@ void LayoutObject::AddChild(LayoutObject* new_child,
       children->InsertChildNode(this, table, before_child);
     }
     table->AddChild(new_child);
-  } else if (LIKELY(new_child->IsHorizontalWritingMode()) ||
-             !new_child->IsText()) {
+  } else if (new_child->IsHorizontalWritingMode() || !new_child->IsText())
+      [[likely]] {
     children->InsertChildNode(this, new_child, before_child);
   } else if (IsA<LayoutTextCombine>(*this)) {
     DCHECK(LayoutTextCombine::ShouldBeParentOf(*new_child)) << new_child;
     new_child->SetStyle(Style());
     children->InsertChildNode(this, new_child, before_child);
-  } else if (!IsHorizontalWritingMode() &&
+  } else if (!IsHorizontalTypographicMode(StyleRef().GetWritingMode()) &&
              LayoutTextCombine::ShouldBeParentOf(*new_child)) {
     if (before_child) {
       if (IsA<LayoutTextCombine>(before_child)) {
@@ -748,7 +754,7 @@ void LayoutObject::RemoveChild(LayoutObject* old_child) {
   NOT_DESTROYED();
 #if DCHECK_IS_ON()
   DCHECK(IsAllowedToModifyLayoutTreeStructure(GetDocument()) ||
-         IsDetachedNonDomRoot());
+         IsInDetachedNonDomTree());
 #endif
 
   LayoutObjectChildList* children = VirtualChildren();
@@ -851,6 +857,35 @@ bool LayoutObject::IsRenderedLegendInternal() const {
   const auto* parent_layout_block = DynamicTo<LayoutBlock>(parent);
   return parent_layout_block && IsA<HTMLFieldSetElement>(parent->GetNode()) &&
          LayoutFieldset::FindInFlowLegend(*parent_layout_block) == this;
+}
+
+bool LayoutObject::IsScrollMarkerGroup() const {
+  NOT_DESTROYED();
+  return GetNode() && GetNode()->IsScrollMarkerGroupPseudoElement();
+}
+
+bool LayoutObject::IsScrollMarkerGroupBefore() const {
+  NOT_DESTROYED();
+  return GetNode() && GetNode()->IsScrollMarkerGroupBeforePseudoElement();
+}
+
+LayoutObject* LayoutObject::GetScrollMarkerGroup() const {
+  NOT_DESTROYED();
+  if (Style()->ScrollMarkerGroup() == EScrollMarkerGroup::kNone ||
+      !IsScrollContainer()) {
+    return nullptr;
+  }
+  if (auto* element = DynamicTo<Element>(GetNode())) {
+    if (PseudoElement* pseudo =
+            element->GetPseudoElement(kPseudoIdScrollMarkerGroupBefore)) {
+      return pseudo->GetLayoutObject();
+    }
+    if (PseudoElement* pseudo =
+            element->GetPseudoElement(kPseudoIdScrollMarkerGroupAfter)) {
+      return pseudo->GetLayoutObject();
+    }
+  }
+  return nullptr;
 }
 
 bool LayoutObject::IsListMarkerForSummary() const {
@@ -1176,6 +1211,11 @@ PaintLayer* LayoutObject::PaintingLayer(int max_depth) const {
     // LayoutNG. LayoutNG floats are painted by the correct painting layer.
     if (object.IsFloating() && !object.IsInLayoutNGInlineFormattingContext())
       return object.ContainingBlock();
+    // Physical fragments and fragment items for ruby-text boxes are not
+    // managed by inline parents, and stored in a separated line of the IFC.
+    if (object.IsInlineRubyText()) {
+      return object.ContainingBlock();
+    }
     if (IsA<LayoutView>(object))
       return object.GetFrame()->OwnerLayoutObject();
     return object.Parent();
@@ -1199,7 +1239,8 @@ PaintLayer* LayoutObject::PaintingLayer(int max_depth) const {
       // LayoutView paint layer for such objects.
       const PhysicalBoxFragment& fragment = *box->GetPhysicalFragment(0);
       if (fragment.GetBoxType() == PhysicalFragment::kPageContainer ||
-          fragment.GetBoxType() == PhysicalFragment::kPageBorderBox) {
+          fragment.GetBoxType() == PhysicalFragment::kPageBorderBox ||
+          fragment.GetBoxType() == PhysicalFragment::kPageMargin) {
         return box->View()->Layer();
       }
     }
@@ -1219,7 +1260,7 @@ LayoutBox* LayoutObject::EnclosingBox() const {
     curr = curr->Parent();
   }
 
-  DUMP_WILL_BE_NOTREACHED_NORETURN();
+  DUMP_WILL_BE_NOTREACHED();
   return nullptr;
 }
 
@@ -1250,8 +1291,9 @@ LayoutBox* LayoutObject::ContainingNGBox() const {
     return nullptr;
   // Flow threads should be invisible to LayoutNG, so skip to the multicol
   // container.
-  if (UNLIKELY(containing_block->IsLayoutFlowThread()))
+  if (containing_block->IsLayoutFlowThread()) [[unlikely]] {
     containing_block = To<LayoutBlockFlow>(containing_block->Parent());
+  }
   if (!containing_block->IsLayoutNGObject())
     return nullptr;
   return containing_block;
@@ -1320,20 +1362,20 @@ static inline bool ObjectIsRelayoutBoundary(const LayoutObject* object) {
 
   // OOF-positioned objects which rely on their static-position for placement
   // cannot be relayout boundaries (their final position would be incorrect).
-  // TODO(crbug.com/1477314): Ignoring inset-area means we may not allow using
-  // the object as a relayout boundary even if inset-area causes the object to
-  // not rely on static position.
+  // TODO(crbug.com/40280256): Ignoring position-area means we may not allow
+  // using the object as a relayout boundary even if position-area causes the
+  // object to not rely on static position.
   const ComputedStyle* style = box->Style();
   if (box->IsOutOfFlowPositioned() &&
-      (style->HasAutoLeftAndRightIgnoringInsetArea() ||
-       style->HasAutoTopAndBottomIgnoringInsetArea())) {
+      (style->HasAutoLeftAndRightIgnoringPositionArea() ||
+       style->HasAutoTopAndBottomIgnoringPositionArea())) {
     return false;
   }
 
   // In general we can't relayout a flex item independently of its container;
   // not only is the result incorrect due to the override size that's set, it
   // also messes with the cached main size on the flexbox.
-  if (box->IsFlexItemIncludingNG()) {
+  if (box->IsFlexItem()) {
     return false;
   }
 
@@ -1376,7 +1418,7 @@ static inline bool ObjectIsRelayoutBoundary(const LayoutObject* object) {
   // A box which doesn't establish a new formating context can pass a whole
   // bunch of state (floats, margins) to an arbitrary sibling, causing that
   // sibling to position/size differently.
-  if (!box->CreatesNewFormattingContext()) {
+  if (!fragment.IsFormattingContextRoot()) {
     return false;
   }
 
@@ -1450,8 +1492,8 @@ void LayoutObject::SetNeedsCollectInlines() {
   if (NeedsCollectInlines())
     return;
 
-  if (UNLIKELY(IsSVGChild() && !IsSVGText() && !IsSVGInline() &&
-               !IsSVGInlineText() && !IsSVGForeignObject())) {
+  if (IsSVGChild() && !IsSVGText() && !IsSVGInline() && !IsSVGInlineText() &&
+      !IsSVGForeignObject()) [[unlikely]] {
     return;
   }
 
@@ -1468,7 +1510,7 @@ void LayoutObject::SetChildNeedsCollectInlines() {
   LayoutObject* object = this;
   do {
     // Should not stop at |LayoutFlowThread| as |CollectInlines()| skips them.
-    if (UNLIKELY(object->IsLayoutFlowThread())) {
+    if (object->IsLayoutFlowThread()) [[unlikely]] {
       object = object->Parent();
       continue;
     }
@@ -1492,6 +1534,9 @@ namespace {
 bool HasPropagatedLayoutObjects(const LayoutObject* object) {
   if (auto* box = DynamicTo<LayoutBox>(object)) {
     for (const auto& fragment : box->PhysicalFragments()) {
+      if (fragment.IsLayoutObjectDestroyedOrMoved()) {
+        return true;
+      }
       if (fragment.HasPropagatedLayoutObjects()) {
         return true;
       }
@@ -1630,7 +1675,6 @@ void LayoutObject::SetIntrinsicLogicalWidthsDirty(
   NOT_DESTROYED();
   bitfields_.SetIntrinsicLogicalWidthsDirty(true);
   bitfields_.SetIntrinsicLogicalWidthsDependsOnBlockConstraints(true);
-  bitfields_.SetIntrinsicLogicalWidthsChildDependsOnBlockConstraints(true);
   bitfields_.SetIndefiniteIntrinsicLogicalWidthsDirty(true);
   bitfields_.SetDefiniteIntrinsicLogicalWidthsDirty(true);
   if (mark_parents == kMarkContainerChain &&
@@ -1746,6 +1790,21 @@ LayoutObject* LayoutObject::ContainerForFixedPosition(
   return FindAncestorByPredicate(this, skip_info, [](LayoutObject* candidate) {
     return candidate->CanContainFixedPositionObjects();
   });
+}
+
+LayoutObject* LayoutObject::ContainerForColumnSpanAll(
+    AncestorSkipInfo* skip_info) const {
+  NOT_DESTROYED();
+  LayoutObject* multicol_container = SpannerPlaceholder()->Container();
+  if (skip_info) {
+    // We jumped directly from the spanner to the multicol container. Need to
+    // check if we skipped |ancestor| or filter/reflection on the way.
+    for (LayoutObject* walker = Parent();
+         walker && walker != multicol_container; walker = walker->Parent()) {
+      skip_info->Update(*walker);
+    }
+  }
+  return multicol_container;
 }
 
 LayoutBlock* LayoutObject::ContainingBlockForAbsolutePosition(
@@ -2593,14 +2652,21 @@ StyleDifference LayoutObject::AdjustStyleDifference(
   return diff;
 }
 
-void LayoutObject::SetPseudoElementStyle(const ComputedStyle* pseudo_style,
+void LayoutObject::SetPseudoElementStyle(const LayoutObject& owner,
                                          bool match_parent_size) {
   NOT_DESTROYED();
+  const ComputedStyle* pseudo_style = owner.Style();
   DCHECK(pseudo_style->StyleType() == kPseudoIdBefore ||
          pseudo_style->StyleType() == kPseudoIdAfter ||
          pseudo_style->StyleType() == kPseudoIdMarker ||
          pseudo_style->StyleType() == kPseudoIdFirstLetter ||
-         pseudo_style->StyleType() == kPseudoIdScrollMarkerGroup);
+         pseudo_style->StyleType() == kPseudoIdScrollMarkerGroup ||
+         pseudo_style->IsPageMarginBox() ||
+         pseudo_style->StyleType() == kPseudoIdScrollMarker ||
+         pseudo_style->StyleType() == kPseudoIdScrollNextButton ||
+         pseudo_style->StyleType() == kPseudoIdScrollPrevButton);
+
+  InheritIsInDetachedNonDomTree(owner);
 
   // FIXME: We should consider just making all pseudo items use an inherited
   // style.
@@ -2626,7 +2692,7 @@ void LayoutObject::SetPseudoElementStyle(const ComputedStyle* pseudo_style,
     return;
   }
 
-  if (IsText() && Parent() && UNLIKELY(Parent()->IsInitialLetterBox())) {
+  if (IsText() && Parent() && Parent()->IsInitialLetterBox()) [[unlikely]] {
     // Note: `Parent()` can be null for text for generated contents.
     // See "accessibility/css-generated-content.html"
     const ComputedStyle* initial_letter_text_style =
@@ -2636,7 +2702,7 @@ void LayoutObject::SetPseudoElementStyle(const ComputedStyle* pseudo_style,
     return;
   }
 
-  if (IsText() && UNLIKELY(IsA<LayoutTextCombine>(Parent()))) {
+  if (IsText() && IsA<LayoutTextCombine>(Parent())) [[unlikely]] {
     // See http://crbug.com/1222640
     ComputedStyleBuilder combined_text_style_builder =
         GetDocument()
@@ -3156,6 +3222,12 @@ void LayoutObject::StyleDidChange(StyleDifference diff,
     if (old_style->HasOutOfFlowPosition() != style_->HasOutOfFlowPosition()) {
       SetScrollAnchorDisablingStyleChangedOnAncestor();
       MarkParentForSpannerOrOutOfFlowPositionedChange();
+      if (old_style->HasOutOfFlowPosition()) {
+        if (auto* box = DynamicTo<LayoutBox>(this)) {
+          box->NotifyContainingDisplayLocksForAnchorPositioning(
+              box->DisplayLocksAffectedByAnchors(), nullptr);
+        }
+      }
     } else if (old_style->GetColumnSpan() != style_->GetColumnSpan()) {
       MarkParentForSpannerOrOutOfFlowPositionedChange();
     }
@@ -3172,10 +3244,12 @@ void LayoutObject::StyleDidChange(StyleDifference diff,
     SetNeedsLayoutAndIntrinsicWidthsRecalc(
         layout_invalidation_reason::kStyleChange);
   } else if (diff.NeedsPositionedMovementLayout()) {
-    if (StyleRef().HasOutOfFlowPosition()) {
-      ContainingBlock()->SetNeedsSimplifiedLayout();
-    } else {
-      ContainingBlock()->SetChildNeedsLayout();
+    if (auto* containing_block = ContainingBlock()) {
+      if (StyleRef().HasOutOfFlowPosition()) {
+        containing_block->SetNeedsSimplifiedLayout();
+      } else {
+        containing_block->SetChildNeedsLayout();
+      }
     }
   }
 
@@ -4793,7 +4867,8 @@ void LayoutObject::ClearPaintFlags() {
 
 bool LayoutObject::IsAllowedToModifyLayoutTreeStructure(Document& document) {
   return document.Lifecycle().StateAllowsLayoutTreeMutations() ||
-         document.GetStyleEngine().InContainerQueryStyleRecalc();
+         document.GetStyleEngine().InContainerQueryStyleRecalc() ||
+         document.GetStyleEngine().InScrollMarkersAttachment();
 }
 
 void LayoutObject::SetSubtreeShouldDoFullPaintInvalidation(
@@ -5126,7 +5201,7 @@ void LayoutObject::SetSVGSelfOrDescendantHasViewportDependency() {
 void LayoutObject::InvalidateSubtreePositionTry(bool mark_style_dirty) {
   NOT_DESTROYED();
 
-  bool invalidate = StyleRef().GetPositionTryOptions() != nullptr;
+  bool invalidate = StyleRef().GetPositionTryFallbacks() != nullptr;
   if (invalidate) {
     // Invalidate layout as @position-fallback styles are applied during layout.
     SetNeedsLayout(layout_invalidation_reason::kStyleChange);

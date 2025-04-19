@@ -63,7 +63,7 @@ WaylandPointer::~WaylandPointer() {
   // bugs.
   delegate_->OnPointerFocusChanged(nullptr, {}, EventTimeForNow(),
                                    wl::EventDispatchPolicy::kImmediate);
-  delegate_->OnResetPointerFlags();
+  delegate_->ReleasePressedPointerButtons(nullptr, EventTimeForNow());
 }
 
 // static
@@ -170,9 +170,10 @@ void WaylandPointer::OnButton(void* data,
       return;
   }
 
-  EventType type = state == WL_POINTER_BUTTON_STATE_PRESSED ? ET_MOUSE_PRESSED
-                                                            : ET_MOUSE_RELEASED;
-  if (type == ET_MOUSE_PRESSED) {
+  EventType type = state == WL_POINTER_BUTTON_STATE_PRESSED
+                       ? EventType::kMousePressed
+                       : EventType::kMouseReleased;
+  if (type == EventType::kMousePressed) {
     self->connection_->serial_tracker().UpdateSerial(
         wl::SerialType::kMousePress, serial);
   }

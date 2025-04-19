@@ -38,7 +38,7 @@ group("all") {
       "//remoting/host/webauthn:remote_webauthn",
     ]
 
-    if (is_linux) {
+    if (is_linux || is_win) {
       deps += [ "//remoting/host/crash:remoting_crash_uploader" ]
     }
 
@@ -398,12 +398,6 @@ static_library("common") {
     "test_echo_extension.h",
     "test_echo_extension_session.cc",
     "test_echo_extension_session.h",
-    "third_party_auth_config.cc",
-    "third_party_auth_config.h",
-    "token_validator_base.cc",
-    "token_validator_base.h",
-    "token_validator_factory_impl.cc",
-    "token_validator_factory_impl.h",
     "video_memory_utils.cc",
     "video_memory_utils.h",
     "xmpp_register_support_host_request.cc",
@@ -588,7 +582,7 @@ static_library("common") {
       "linux/wayland_seat.cc",
       "linux/wayland_seat.h",
     ]
-    libs += [ "//third_party/libei/lib64/libei.a" ]
+    libs += [ "//third_party/libei/cipd/lib64/libei.a" ]
     public_deps += [
       "//third_party/wayland:wayland_client",
       "//third_party/wayland-protocols:xdg_output_protocol",
@@ -718,6 +712,8 @@ static_library("common") {
       "//media",
       "//media/gpu:gpu",
       "//mojo/core/embedder:embedder",
+      "//remoting/base:breakpad",
+      "//remoting/host/crash:crash_uploader",
       "//remoting/host/win",
       "//remoting/host/win:messages",
       "//remoting/host/win:remoting_lib_idl",
@@ -863,9 +859,6 @@ source_set("unit_tests") {
     "setup/host_starter_oauth_helper_unittest.cc",
     "setup/me2me_native_messaging_host_unittest.cc",
     "setup/pin_validator_unittest.cc",
-    "third_party_auth_config_unittest.cc",
-    "token_validator_base_unittest.cc",
-    "token_validator_factory_impl_unittest.cc",
     "xmpp_register_support_host_request_unittest.cc",
     "zombie_host_detector_unittest.cc",
   ]
@@ -1234,15 +1227,13 @@ if (enable_me2me_host) {
     group("implementation") {
       deps = [
         ":main",
+        "//remoting/host/crash:crash_uploader_main",
         "//remoting/host/it2me:main",
         "//remoting/host/remote_open_url:main",
         "//remoting/host/setup:native_messaging_host_main",
         "//remoting/host/setup:start_host_main",
         "//remoting/host/webauthn:main",
       ]
-      if (is_linux) {
-        deps += [ "//remoting/host/crash:crash_uploader_main" ]
-      }
       if (is_win) {
         deps += [ "//remoting/host/security_key:main" ]
       }

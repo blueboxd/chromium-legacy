@@ -7,10 +7,10 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/orchestrator/ui_bundled/edit_view_animatee.h"
+#import "ios/chrome/browser/orchestrator/ui_bundled/location_bar_offset_provider.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_consumer.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
-#import "ios/chrome/browser/ui/orchestrator/edit_view_animatee.h"
-#import "ios/chrome/browser/ui/orchestrator/location_bar_offset_provider.h"
 
 @class LayoutGuideCenter;
 @protocol OmniboxAdditionalTextConsumer;
@@ -83,15 +83,16 @@ class OmniboxTextChangeDelegate;
 // The layout guide center to use to refer to the omnibox leading image.
 @property(nonatomic, strong) LayoutGuideCenter* layoutGuideCenter;
 
-// Designated initializer.
-- (instancetype)initWithIncognito:(BOOL)isIncognito;
-
 - (void)setTextChangeDelegate:(OmniboxTextChangeDelegate*)textChangeDelegate;
 
 // Hides extra chrome, i.e. attributed text, and clears.
 - (void)prepareOmniboxForScribble;
 // Restores the chrome post-scribble.
 - (void)cleanupOmniboxAfterScribble;
+
+/// Sets the thumbnail image used for image search. Set to`nil` to hide the
+/// thumbnail.
+- (void)setThumbnailImage:(UIImage*)image;
 
 @end
 

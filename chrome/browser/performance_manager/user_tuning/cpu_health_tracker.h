@@ -16,7 +16,6 @@
 #include "base/timer/timer.h"
 #include "base/types/strong_alias.h"
 #include "chrome/browser/performance_manager/public/user_tuning/performance_detection_manager.h"
-#include "components/performance_manager/public/graph/graph.h"
 #include "components/performance_manager/public/graph/graph_registered.h"
 #include "components/performance_manager/public/resource_attribution/cpu_proportion_tracker.h"
 #include "components/performance_manager/public/resource_attribution/page_context.h"
@@ -28,8 +27,7 @@
 namespace performance_manager::user_tuning {
 
 class CpuHealthTracker
-    : public performance_manager::GraphOwned,
-      public performance_manager::GraphRegisteredImpl<CpuHealthTracker> {
+    : public performance_manager::GraphOwnedAndRegistered<CpuHealthTracker> {
  public:
   using ResourceType = PerformanceDetectionManager::ResourceType;
   using HealthLevel = PerformanceDetectionManager::HealthLevel;
@@ -45,11 +43,15 @@ class CpuHealthTracker
                    ActionableTabResultCallback on_actionability_change_cb);
   ~CpuHealthTracker() override;
 
-  HealthLevel GetHealthLevelForTesting();
+  HealthLevel GetCurrentHealthLevel();
 
-  // performance_manager::GraphOwned:
-  void OnPassedToGraph(performance_manager::Graph* graph) override;
-  void OnTakenFromGraph(performance_manager::Graph* graph) override;
+  int GetTotalCpuPercentUsage(ActionableTabsResult tabs);
+
+  // Queries and process tab CPU data. This data is recorded and may invoke the
+  // status change and actionability change callback if the processed tab CPU
+  // data meets the criteria to be actionable.
+  void QueryAndProcessTabActionability(
+      std::optional<CpuPercent> system_cpu_usage_percentage);
 
  private:
   friend class CpuHealthTrackerTestHelper;
@@ -105,14 +107,17 @@ class CpuHealthTracker
 
   ActionableTabsResult actionable_tabs_;
 
-  // Map containing all page contexts and their corresponding resource
-  // measurements since the last measurement interval that are possibly
-  // actionable.
-  PageResourceMeasurements possible_actionable_pages_;
+  // Map containing all non-off record tab page contexts and their
+  // corresponding resource measurements since the last measurement interval.
+  // Some tabs are not actionable since their CPU usage may be lower than
+  // the minimum to be considered as actionable.
+  PageResourceMeasurements tab_page_measurements_;
 
   // Number of samples in a time window being used to consider the new health
   // status.
   const size_t cpu_health_sample_window_size_;
+
+  const bool is_demo_mode_;
 
   // Recent resource measurements used to determine overall resource health.
   base::circular_deque<CpuPercent> recent_resource_measurements_;
@@ -122,7 +127,6 @@ class CpuHealthTracker
   HealthLevel current_health_status_ = HealthLevel::kHealthy;
   base::RepeatingTimer cpu_probe_timer_;
   resource_attribution::CPUProportionTracker page_cpu_proportion_tracker_;
-  raw_ptr<Graph> graph_;
   base::WeakPtrFactory<CpuHealthTracker> weak_ptr_factory_{this};
 };
 

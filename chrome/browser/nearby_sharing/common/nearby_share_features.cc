@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/nearby_sharing/common/nearby_share_features.h"
+
 #include "base/feature_list.h"
+#include "nearby_share_features.h"
 
 namespace features {
 
@@ -39,10 +41,6 @@ BASE_FEATURE(kNearbySharingRestrictToContacts,
 
 bool IsNameEnabled() {
   return base::FeatureList::IsEnabled(kIsNameEnabled);
-}
-
-bool IsSelfShareEnabled() {
-  return base::FeatureList::IsEnabled(kNearbySharingSelfShare);
 }
 
 bool IsRestrictToContactsEnabled() {

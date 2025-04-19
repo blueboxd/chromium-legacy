@@ -855,7 +855,7 @@ Status ChromiumEnv::RemoveDir(const std::string& name) {
 
 Status ChromiumEnv::GetFileSize(const std::string& fname, uint64_t* size) {
   Status s;
-  absl::optional<base::File::Info> info =
+  std::optional<base::File::Info> info =
       filesystem_->GetFileInfo(base::FilePath::FromUTF8Unsafe(fname));
   if (!info) {
     *size = 0;
@@ -1149,8 +1149,9 @@ class DBTracker::TrackedDBImpl : public base::LinkNode<TrackedDBImpl>,
   leveldb::Status Write(const leveldb::WriteOptions& options,
                         leveldb::WriteBatch* updates) override {
     leveldb::Status status = db_->Write(options, updates);
-    if (LIKELY(status.ok()))
+    if (status.ok()) [[likely]] {
       return status;
+    }
     if (on_write_error_)
       on_write_error_.Run(status);
     return status;
@@ -1160,8 +1161,9 @@ class DBTracker::TrackedDBImpl : public base::LinkNode<TrackedDBImpl>,
                       const leveldb::Slice& key,
                       std::string* value) override {
     leveldb::Status status = db_->Get(options, key, value);
-    if (LIKELY(status.ok() || status.IsNotFound()))
+    if (status.ok() || status.IsNotFound()) [[likely]] {
       return status;
+    }
     if (on_get_error_)
       on_get_error_.Run(status);
     return status;
@@ -1502,7 +1504,7 @@ leveldb::Slice MakeSlice(std::string_view s) {
 
 leveldb::Slice MakeSlice(base::span<const uint8_t> s) {
   return MakeSlice(
-      base::StringPiece(reinterpret_cast<const char*>(s.data()), s.size()));
+      std::string_view(reinterpret_cast<const char*>(s.data()), s.size()));
 }
 
 }  // namespace leveldb_env

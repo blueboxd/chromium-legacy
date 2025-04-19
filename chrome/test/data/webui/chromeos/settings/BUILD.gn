@@ -64,9 +64,12 @@ build_webui_tests("build") {
 
     "controls/v2/base_row_mixin_test.ts",
     "controls/v2/pref_control_mixin_internal_test.ts",
+    "controls/v2/settings_dropdown_row_test.ts",
     "controls/v2/settings_dropdown_v2_test.ts",
-    "controls/v2/settings_toggle_v2_test.ts",
+    "controls/v2/settings_row_test.ts",
+    "controls/v2/settings_slider_row_test.ts",
     "controls/v2/settings_slider_v2_test.ts",
+    "controls/v2/settings_toggle_v2_test.ts",
 
     "crostini_page/bruschetta_subpage_test.ts",
     "crostini_page/crostini_arc_adb_test.ts",
@@ -108,6 +111,8 @@ build_webui_tests("build") {
     "device_page/key_combination_input_dialog_test.ts",
     "device_page/keyboard_six_pack_key_row_test.ts",
     "device_page/keyboard_test.ts",
+    "device_page/per_device_app_installed_row_test.ts",
+    "device_page/per_device_install_row_test.ts",
     "device_page/per_device_keyboard_remap_keys_test.ts",
     "device_page/per_device_keyboard_subsection_test.ts",
     "device_page/per_device_keyboard_test.ts",
@@ -115,6 +120,7 @@ build_webui_tests("build") {
     "device_page/per_device_mouse_test.ts",
     "device_page/per_device_pointing_stick_subsection_test.ts",
     "device_page/per_device_pointing_stick_test.ts",
+    "device_page/per_device_subsection_header_test.ts",
     "device_page/per_device_touchpad_subsection_test.ts",
     "device_page/per_device_touchpad_test.ts",
     "device_page/pointers_test.ts",
@@ -189,9 +195,14 @@ build_webui_tests("build") {
     "nearby_share_page/test_nearby_account_manager_browser_proxy.ts",
 
     "os_a11y_page/audio_and_captions_page_test.ts",
+    "os_a11y_page/ax_annotations_section_test.ts",
     "os_a11y_page/change_dictation_locale_dialog_test.ts",
     "os_a11y_page/chromevox_subpage_test.ts",
     "os_a11y_page/cursor_and_touchpad_page_test.ts",
+    "os_a11y_page/facegaze_cursor_card_test.ts",
+    "os_a11y_page/facegaze_actions_card_test.ts",
+    "os_a11y_page/facegaze_actions_add_dialog_test.ts",
+    "os_a11y_page/facegaze_subpage_test.ts",
     "os_a11y_page/display_and_magnification_subpage_test.ts",
     "os_a11y_page/keyboard_and_text_input_page_test.ts",
     "os_a11y_page/live_caption_section_test.ts",
@@ -204,6 +215,7 @@ build_webui_tests("build") {
     "os_a11y_page/switch_access_subpage_test.ts",
     "os_a11y_page/test_captions_browser_proxy.ts",
     "os_a11y_page/test_chromevox_subpage_browser_proxy.ts",
+    "os_a11y_page/test_facegaze_subpage_browser_proxy.ts",
     "os_a11y_page/test_os_a11y_page_browser_proxy.ts",
     "os_a11y_page/test_select_to_speak_subpage_browser_proxy.ts",
     "os_a11y_page/test_switch_access_subpage_browser_proxy.ts",
@@ -245,7 +257,8 @@ build_webui_tests("build") {
     "os_apps_page/app_notifications_page/fake_app_notification_handler.ts",
 
     "os_apps_page/app_parental_controls_page/app_parental_controls_subpage_test.ts",
-    "os_apps_page/app_parental_controls_page/app_setup_pin_keyboard_test.ts",
+    "os_apps_page/app_parental_controls_page/app_setup_pin_dialog_test.ts",
+    "os_apps_page/app_parental_controls_page/app_verify_pin_dialog_test.ts",
     "os_apps_page/app_parental_controls_page/block_app_item_test.ts",
     "os_apps_page/app_parental_controls_page/fake_app_parental_controls_handler.ts",
     "os_apps_page/app_parental_controls_page/test_utils.ts",
@@ -393,6 +406,8 @@ build_webui_tests("build") {
   ]
 
   mojo_files_deps = [ ":test_api_mojom_ts__generator" ]
+
+  ts_tsconfig_base = "tsconfig_base.json"
 
   ts_deps = [
     "//ash/webui/common/resources:build_ts",

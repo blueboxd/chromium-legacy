@@ -21,13 +21,13 @@ import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.autofill.payments.LegalMessageLine;
 import org.chromium.components.autofill.payments.LegalMessageLine.Link;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModel.ReadableObjectPropertyKey;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -77,8 +77,7 @@ public class AutofillSaveCardBottomSheetViewBinderTest extends BlankUiTestActivi
 
         mModelBuilder = new PropertyModel.Builder(AutofillSaveCardBottomSheetProperties.ALL_KEYS);
         mView = new AutofillSaveCardBottomSheetView(getActivity());
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> getActivity().setContentView(mView.mContentView));
+        ThreadUtils.runOnUiThreadBlocking(() -> getActivity().setContentView(mView.mContentView));
         bind(mModelBuilder);
     }
 
@@ -242,33 +241,54 @@ public class AutofillSaveCardBottomSheetViewBinderTest extends BlankUiTestActivi
         LoadingViewObserver observer = new LoadingViewObserver();
         mView.mLoadingView.addObserver(observer);
 
+        assertEquals(View.GONE, mView.mLoadingViewContainer.getVisibility());
         assertEquals(View.GONE, mView.mLoadingView.getVisibility());
         assertEquals(View.VISIBLE, mView.mAcceptButton.getVisibility());
         assertEquals(View.VISIBLE, mView.mCancelButton.getVisibility());
 
         int onShowLoadingUICompleteCount =
                 observer.getOnShowLoadingUICompleteHelper().getCallCount();
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> mModel.set(AutofillSaveCardBottomSheetProperties.SHOW_LOADING_STATE, true));
         observer.getOnShowLoadingUICompleteHelper().waitForCallback(onShowLoadingUICompleteCount);
+        assertEquals(View.VISIBLE, mView.mLoadingViewContainer.getVisibility());
         assertEquals(View.VISIBLE, mView.mLoadingView.getVisibility());
         assertEquals(View.GONE, mView.mAcceptButton.getVisibility());
         assertEquals(View.GONE, mView.mCancelButton.getVisibility());
 
         int onHideLoadingUICompleteCount =
                 observer.getOnHideLoadingUICompleteHelper().getCallCount();
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> mModel.set(AutofillSaveCardBottomSheetProperties.SHOW_LOADING_STATE, false));
         observer.getOnHideLoadingUICompleteHelper().waitForCallback(onHideLoadingUICompleteCount);
+        assertEquals(View.GONE, mView.mLoadingViewContainer.getVisibility());
         assertEquals(View.GONE, mView.mLoadingView.getVisibility());
         assertEquals(View.VISIBLE, mView.mAcceptButton.getVisibility());
         assertEquals(View.VISIBLE, mView.mCancelButton.getVisibility());
     }
 
+    @Test
+    @SmallTest
+    public void testLoadingDescription() {
+        bind(mModelBuilder.with(AutofillSaveCardBottomSheetProperties.LOADING_DESCRIPTION, ""));
+        assertThat(
+                String.valueOf(mView.mLoadingViewContainer.getContentDescription()),
+                isEmptyString());
+
+        final String descriptionText = "Loading Description";
+        bind(
+                mModelBuilder.with(
+                        AutofillSaveCardBottomSheetProperties.LOADING_DESCRIPTION,
+                        descriptionText));
+        assertEquals(
+                descriptionText,
+                String.valueOf(mView.mLoadingViewContainer.getContentDescription()));
+    }
+
     public void openLink(String url) {}
 
     private void bind(PropertyModel.Builder modelBuilder) {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     mModel = modelBuilder.build();
                     PropertyModelChangeProcessor.create(

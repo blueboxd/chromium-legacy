@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "components/commerce/core/shopping_service.h"
 
 #include <string>
@@ -21,6 +26,8 @@
 #include "components/commerce/core/proto/shopping_page_types.pb.h"
 #include "components/commerce/core/shopping_service_test_base.h"
 #include "components/commerce/core/test_utils.h"
+#include "components/history/core/browser/history_types.h"
+#include "components/history/core/browser/url_row.h"
 #include "components/optimization_guide/core/optimization_guide_decider.h"
 #include "components/optimization_guide/core/optimization_guide_decision.h"
 #include "components/optimization_guide/core/optimization_metadata.h"
@@ -46,6 +53,7 @@ using testing::_;
 namespace commerce {
 
 namespace {
+
 const char kProductUrl[] = "http://example.com/";
 const char kTitle[] = "product title";
 const char kGpcTitle[] = "product gpc title";
@@ -89,30 +97,44 @@ const uint64_t kDiscountOfferId = 123456;
 const std::vector<std::vector<std::string>> kProductCategories = {
     {"Dress", "Red Dress"}};
 
+using NiceMockWebWrapper = testing::NiceMock<MockWebWrapper>;
+
 }  // namespace
 
 class ShoppingServiceTest : public ShoppingServiceTestBase,
                             public testing::WithParamInterface<bool> {
  public:
-  ShoppingServiceTest() = default;
+  ShoppingServiceTest()
+      : ShoppingServiceTest(syncer::SyncService::TransportState::ACTIVE) {}
   ShoppingServiceTest(const ShoppingServiceTest&) = delete;
   ShoppingServiceTest operator=(const ShoppingServiceTest&) = delete;
   ~ShoppingServiceTest() override = default;
 
-  void SetUp() override {
-    scoped_feature_list_.InitWithFeatureState(
-        syncer::kReplaceSyncPromosWithSignInPromos,
-        ShouldEnableReplaceSyncPromosWithSignInPromos());
-    sync_service_->SetHasSyncConsent(
-        !ShouldEnableReplaceSyncPromosWithSignInPromos());
-    // Mimic not only the sync ConsentLevel being set but also bookmarks
-    // being specifically on.
-    static_cast<bookmarks::TestBookmarkClient*>(
-        local_or_syncable_bookmark_model_->client())
+  explicit ShoppingServiceTest(
+      syncer::SyncService::TransportState initial_sync_transport_state) {
+    if (ShouldEnableReplaceSyncPromosWithSignInPromos()) {
+      // `syncer::kSyncEnableBookmarksInTransportMode` must be enabled too in
+      // order to use account bookmarks.
+      scoped_feature_list_.InitWithFeatures(
+          /*enabled_features=*/{syncer::kReplaceSyncPromosWithSignInPromos,
+                                syncer::kSyncEnableBookmarksInTransportMode},
+          /*disabled_features=*/{});
+      bookmark_model_->CreateAccountPermanentFolders();
+    } else {
+      // Whether `syncer::kSyncEnableBookmarksInTransportMode` is enabled or not
+      // makes no difference in this case.
+      scoped_feature_list_.InitAndDisableFeature(
+          syncer::kReplaceSyncPromosWithSignInPromos);
+    }
+
+    sync_service_->SetSignedIn(ShouldEnableReplaceSyncPromosWithSignInPromos()
+                                   ? signin::ConsentLevel::kSignin
+                                   : signin::ConsentLevel::kSync);
+    sync_service_->SetMaxTransportState(initial_sync_transport_state);
+
+    static_cast<bookmarks::TestBookmarkClient*>(bookmark_model_->client())
         ->SetIsSyncFeatureEnabledIncludingBookmarks(
             !ShouldEnableReplaceSyncPromosWithSignInPromos());
-
-    ShoppingServiceTestBase::SetUp();
   }
 
   bool ShouldEnableReplaceSyncPromosWithSignInPromos() const {
@@ -241,6 +263,53 @@ TEST_P(ShoppingServiceTest, TestProductInfoResponse_FallbackToOnDemand) {
   GetCache().RemoveRef(GURL(kProductUrl));
 }
 
+// Test multiple on demand calls to get product info.
+TEST_P(ShoppingServiceTest, TestProductInfoResponse_MultipleOnDemandRequests) {
+  test_features_.InitWithFeatures(
+      {commerce::kShoppingList, commerce::kCommerceAllowServerImages}, {});
+  OptimizationMetadata meta = opt_guide_->BuildPriceTrackingResponse(
+      kTitle, kImageUrl, kOfferId, kClusterId, kCountryCode, kPrice,
+      kCurrencyCode, kGpcTitle);
+  opt_guide_->AddOnDemandShoppingResponse(
+      GURL(kProductUrl), OptimizationGuideDecision::kTrue, meta);
+  GetCache().AddRef(GURL(kProductUrl));
+
+  base::RunLoop run_loop_after_cache;
+  ProductInfo info[2];
+  shopping_service_->GetProductInfoForUrl(
+      GURL(kProductUrl), base::BindOnce(
+                             [](ProductInfo* result, const GURL& url,
+                                const std::optional<const ProductInfo>& info) {
+                               ASSERT_EQ(kProductUrl, url.spec());
+                               *result = info.value();
+                             },
+                             &info[0]));
+
+  shopping_service_->GetProductInfoForUrl(
+      GURL(kProductUrl), base::BindOnce(
+                             [](ProductInfo* result, const GURL& url,
+                                const std::optional<const ProductInfo>& info) {
+                               ASSERT_EQ(kProductUrl, url.spec());
+                               *result = info.value();
+                             },
+                             &info[1])
+                             .Then(run_loop_after_cache.QuitClosure()));
+  run_loop_after_cache.Run();
+
+  for (int i = 0; i < 2; ++i) {
+    ASSERT_EQ(kTitle, info[i].title);
+    ASSERT_EQ(kGpcTitle, info[i].product_cluster_title);
+    ASSERT_EQ(kImageUrl, info[i].image_url);
+    ASSERT_EQ(kOfferId, info[i].offer_id);
+    ASSERT_EQ(kClusterId, info[i].product_cluster_id);
+    ASSERT_EQ(kCountryCode, info[i].country_code);
+
+    ASSERT_EQ(kCurrencyCode, info[i].currency_code);
+    ASSERT_EQ(kPrice, info[i].amount_micros);
+  }
+
+  GetCache().RemoveRef(GURL(kProductUrl));
+}
 // Test that the product info api fails gracefully (callback run with nullopt)
 // if it is disabled.
 TEST_P(ShoppingServiceTest, TestProductInfoResponse_ApiDisabled) {
@@ -335,11 +404,11 @@ TEST_P(ShoppingServiceTest, TestProductInfoCacheURLCount) {
       {});
 
   std::string url = "http://example.com/foo";
-  MockWebWrapper web1(GURL(url), false);
-  MockWebWrapper web2(GURL(url), false);
+  NiceMockWebWrapper web1(GURL(url), false);
+  NiceMockWebWrapper web2(GURL(url), false);
 
   std::string url2 = "http://example.com/bar";
-  MockWebWrapper web3(GURL(url2), false);
+  NiceMockWebWrapper web3(GURL(url2), false);
 
   // Ensure navigating to then navigating away clears the cache item.
   ASSERT_EQ(0, GetProductInfoCacheOpenURLCount(GURL(url)));
@@ -382,7 +451,7 @@ TEST_P(ShoppingServiceTest, TestWebWrapperSet) {
 
   std::string url1 = "http://example.com/foo";
   std::u16string title1 = u"example1";
-  MockWebWrapper web1(GURL(url1), false, nullptr, title1);
+  NiceMockWebWrapper web1(GURL(url1), false, nullptr, title1);
 
   UrlInfo url_info1;
   url_info1.url = GURL(url1);
@@ -390,7 +459,7 @@ TEST_P(ShoppingServiceTest, TestWebWrapperSet) {
 
   std::string url2 = "http://example.com/bar";
   std::u16string title2 = u"example2";
-  MockWebWrapper web2(GURL(url2), false, nullptr, title2);
+  NiceMockWebWrapper web2(GURL(url2), false, nullptr, title2);
 
   UrlInfo url_info2;
   url_info2.url = GURL(url2);
@@ -398,7 +467,7 @@ TEST_P(ShoppingServiceTest, TestWebWrapperSet) {
 
   std::string url3 = "http://example.com/baz";
   std::u16string title3 = u"example3";
-  MockWebWrapper web3(GURL(url3), false, nullptr, title3);
+  NiceMockWebWrapper web3(GURL(url3), false, nullptr, title3);
 
   UrlInfo url_info3;
   url_info3.url = GURL(url3);
@@ -433,12 +502,62 @@ TEST_P(ShoppingServiceTest, TestWebWrapperSet) {
   ASSERT_TRUE(shopping_service_->GetUrlInfosForActiveWebWrappers().empty());
 }
 
+// Ensure we correctly identify open tabs with products.
+TEST_P(ShoppingServiceTest, TestWebWrapperSetWithProducts) {
+  test_features_.InitWithFeatures({kShoppingList}, {});
+
+  std::string url1 = "http://example.com/product";
+  std::u16string title1 = u"Product";
+  NiceMockWebWrapper web1(GURL(url1), false, nullptr, title1);
+
+  UrlInfo url_info1;
+  url_info1.url = GURL(url1);
+  url_info1.title = title1;
+
+  OptimizationMetadata meta = opt_guide_->BuildPriceTrackingResponse(
+      kTitle, kImageUrl, kOfferId, kClusterId, kCountryCode, kPrice,
+      kCurrencyCode);
+  opt_guide_->SetResponse(GURL(url1), OptimizationType::PRICE_TRACKING,
+                          OptimizationGuideDecision::kTrue, meta);
+  opt_guide_->AddOnDemandShoppingResponse(
+      GURL(url1), OptimizationGuideDecision::kTrue, meta);
+
+  std::string url2 = "http://example.com/non_product";
+  std::u16string title2 = u"Non-product";
+  NiceMockWebWrapper web2(GURL(url2), false, nullptr, title2);
+
+  UrlInfo url_info2;
+  url_info2.url = GURL(url2);
+  url_info2.title = title2;
+
+  WebWrapperCreated(&web1);
+  WebWrapperCreated(&web2);
+
+  base::RunLoop run_loop;
+  shopping_service_->GetUrlInfosForWebWrappersWithProducts(
+      base::BindOnce([](const std::vector<UrlInfo> product_tabs) {
+        ASSERT_EQ(1u, product_tabs.size());
+        ASSERT_EQ("http://example.com/product", product_tabs[0].url.spec());
+      }).Then(run_loop.QuitClosure()));
+  run_loop.Run();
+
+  WebWrapperDestroyed(&web1);
+  WebWrapperDestroyed(&web2);
+
+  base::RunLoop final_run_loop;
+  shopping_service_->GetUrlInfosForWebWrappersWithProducts(
+      base::BindOnce([](const std::vector<UrlInfo> product_tabs) {
+        ASSERT_TRUE(product_tabs.empty());
+      }).Then(final_run_loop.QuitClosure()));
+  final_run_loop.Run();
+}
+
 // Make sure recent URLs doesn't contain duplicates.
 TEST_P(ShoppingServiceTest, TestRecentUrls_NoDuplicates) {
   std::string url1 = "http://example.com/foo";
-  MockWebWrapper web1(GURL(url1), false);
+  NiceMockWebWrapper web1(GURL(url1), false);
   std::string url2 = "http://example.com/bar";
-  MockWebWrapper web2(GURL(url2), false);
+  NiceMockWebWrapper web2(GURL(url2), false);
 
   ASSERT_EQ(
       0u, shopping_service_->GetUrlInfosForRecentlyViewedWebWrappers().size());
@@ -470,25 +589,83 @@ TEST_P(ShoppingServiceTest, TestRecentUrls_NoDuplicates) {
 // Make sure recent URLs doesn't go over the max size.
 TEST_P(ShoppingServiceTest, TestRecentUrls_MaxCount) {
   for (int i = 0; i < 20; i++) {
-    MockWebWrapper wrapper = MockWebWrapper(
+    NiceMockWebWrapper wrapper = NiceMockWebWrapper(
         GURL("http://example.com/" + base::NumberToString(i)), false);
     OnWebWrapperSwitched(&wrapper);
   }
 
+  std::string url1 = "http://example.com/foo";
+  NiceMockWebWrapper web1(GURL(url1), false);
+  std::string url2 = "http://example.com/bar";
+  NiceMockWebWrapper web2(GURL(url2), false);
+
+  ASSERT_EQ(
+      10u, shopping_service_->GetUrlInfosForRecentlyViewedWebWrappers().size());
+}
+
+TEST_P(ShoppingServiceTest, TestRecentUrls_ClearedOnHistoryDeletion) {
   std::string url1 = "http://example.com/foo";
   MockWebWrapper web1(GURL(url1), false);
   std::string url2 = "http://example.com/bar";
   MockWebWrapper web2(GURL(url2), false);
 
   ASSERT_EQ(
-      10u, shopping_service_->GetUrlInfosForRecentlyViewedWebWrappers().size());
+      0u, shopping_service_->GetUrlInfosForRecentlyViewedWebWrappers().size());
+
+  OnWebWrapperSwitched(&web1);
+  OnWebWrapperSwitched(&web2);
+
+  std::vector<UrlInfo> urls =
+      shopping_service_->GetUrlInfosForRecentlyViewedWebWrappers();
+  ASSERT_EQ(2u, urls.size());
+  ASSERT_EQ(urls[0].url, GURL(url2));
+  ASSERT_EQ(urls[1].url, GURL(url1));
+
+  // Fake an event from the history service for deleting all history entries.
+  history::DeletionInfo deletion_info(history::DeletionTimeRange::AllTime(),
+                                      false, {}, {}, {});
+  shopping_service_->OnHistoryDeletions(nullptr, deletion_info);
+
+  // After history deletion the recently viewed tab list should be empty.
+  ASSERT_EQ(
+      0u, shopping_service_->GetUrlInfosForRecentlyViewedWebWrappers().size());
+}
+
+TEST_P(ShoppingServiceTest, TestRecentUrls_SingleHistoryItemDeletion) {
+  std::string url1 = "http://example.com/foo";
+  MockWebWrapper web1(GURL(url1), false);
+  std::string url2 = "http://example.com/bar";
+  MockWebWrapper web2(GURL(url2), false);
+
+  ASSERT_EQ(
+      0u, shopping_service_->GetUrlInfosForRecentlyViewedWebWrappers().size());
+
+  OnWebWrapperSwitched(&web1);
+  OnWebWrapperSwitched(&web2);
+
+  std::vector<UrlInfo> urls =
+      shopping_service_->GetUrlInfosForRecentlyViewedWebWrappers();
+  ASSERT_EQ(2u, urls.size());
+  ASSERT_EQ(urls[0].url, GURL(url2));
+  ASSERT_EQ(urls[1].url, GURL(url1));
+
+  // Fake an event from the history service for deleting a single entry.
+  history::DeletionInfo deletion_info(history::DeletionTimeRange::Invalid(),
+                                      false, {history::URLRow(GURL(url1))}, {},
+                                      {});
+  shopping_service_->OnHistoryDeletions(nullptr, deletion_info);
+
+  // After history deletion the recently viewed tab list should be empty.
+  // Deletion of any item should result in clearing all.
+  ASSERT_EQ(
+      0u, shopping_service_->GetUrlInfosForRecentlyViewedWebWrappers().size());
 }
 
 TEST_P(ShoppingServiceTest, TestRecentUrls_CacheEntriesRetained) {
   const size_t max_recents = 10;
-  std::vector<std::unique_ptr<MockWebWrapper>> web_wrappers;
+  std::vector<std::unique_ptr<NiceMockWebWrapper>> web_wrappers;
   for (size_t i = 0; i < max_recents; i++) {
-    web_wrappers.push_back(std::make_unique<MockWebWrapper>(
+    web_wrappers.push_back(std::make_unique<NiceMockWebWrapper>(
         GURL("http://example.com/" + base::NumberToString(i)), false));
     OnWebWrapperSwitched(web_wrappers[i].get());
   }
@@ -499,7 +676,7 @@ TEST_P(ShoppingServiceTest, TestRecentUrls_CacheEntriesRetained) {
 
   // Add more URLs to push the originals out.
   for (size_t i = max_recents; i < max_recents * 2; i++) {
-    web_wrappers.push_back(std::make_unique<MockWebWrapper>(
+    web_wrappers.push_back(std::make_unique<NiceMockWebWrapper>(
         GURL("http://example.com/" + base::NumberToString(i)), false));
     OnWebWrapperSwitched(web_wrappers[i].get());
   }
@@ -572,7 +749,7 @@ TEST_P(ShoppingServiceTest, TestProductInfoCacheFullLifecycle) {
       {kShoppingList, kCommerceAllowLocalImages, kCommerceAllowServerImages},
       {});
 
-  MockWebWrapper web(GURL(kProductUrl), false);
+  NiceMockWebWrapper web(GURL(kProductUrl), false);
 
   OptimizationMetadata meta = opt_guide_->BuildPriceTrackingResponse(
       kTitle, kImageUrl, kOfferId, kClusterId, kCountryCode);
@@ -629,7 +806,7 @@ TEST_P(ShoppingServiceTest,
   auto result = base::Value::Dict();
   result.Set("image", std::string(kImageUrl));
   base::Value js_result(std::move(result));
-  MockWebWrapper web(GURL(kProductUrl), false, &js_result);
+  NiceMockWebWrapper web(GURL(kProductUrl), false, &js_result);
 
   // Assume the page hasn't finished loading.
   web.SetIsFirstLoadForNavigationFinished(false);
@@ -703,7 +880,7 @@ TEST_P(ShoppingServiceTest,
   auto result = base::Value::Dict();
   result.Set("image", std::string(kImageUrl));
   base::Value js_result(std::move(result));
-  MockWebWrapper web(GURL(kProductUrl), false, &js_result);
+  NiceMockWebWrapper web(GURL(kProductUrl), false, &js_result);
 
   // Assume the page has already loaded for the navigation. This is usually the
   // case for single-page webapps.
@@ -762,7 +939,7 @@ TEST_P(ShoppingServiceTest,
 // The on-demand api should not be triggered in the case where we have an
 // explicit negative signal from the page.
 TEST_P(ShoppingServiceTest, TestProductInfoWithFallback_NoOnDemandCalls) {
-  MockWebWrapper web(GURL(kProductUrl), false);
+  NiceMockWebWrapper web(GURL(kProductUrl), false);
 
   // Assume the page has already loaded for the navigation. This is usually the
   // case for single-page webapps.
@@ -920,13 +1097,8 @@ TEST_P(ShoppingServiceTest, TestMerchantInfoResponse_ApiDisabled) {
 }
 
 TEST_P(ShoppingServiceTest, TestGetUpdatedProductInfoForBookmarks) {
-  bookmarks::BookmarkModel* model =
-      ShouldEnableReplaceSyncPromosWithSignInPromos()
-          ? account_bookmark_model_.get()
-          : local_or_syncable_bookmark_model_.get();
-
-  const bookmarks::BookmarkNode* product1 =
-      AddProductBookmark(model, u"title", GURL(kProductUrl), kClusterId, false);
+  const bookmarks::BookmarkNode* product1 = AddProductBookmark(
+      bookmark_model_.get(), u"title", GURL(kProductUrl), kClusterId, false);
 
   OptimizationMetadata updated_meta = opt_guide_->BuildPriceTrackingResponse(
       kTitle, "", kOfferId, kClusterId, kCountryCode);
@@ -952,7 +1124,7 @@ TEST_P(ShoppingServiceTest, TestGetUpdatedProductInfoForBookmarks) {
           run_loop->Quit();
         }
       },
-      model, &expected_calls, &run_loop);
+      bookmark_model_.get(), &expected_calls, &run_loop);
 
   shopping_service_->GetUpdatedProductInfoForBookmarks(bookmark_ids, callback);
   run_loop.Run();
@@ -1215,20 +1387,16 @@ TEST_P(ShoppingServiceTest,
 
 class ShoppingServiceReadyTest : public ShoppingServiceTest {
  public:
-  ShoppingServiceReadyTest() = default;
+  ShoppingServiceReadyTest()
+      : ShoppingServiceTest(syncer::SyncService::TransportState::INITIALIZING) {
+  }
   ShoppingServiceReadyTest(const ShoppingServiceReadyTest&) = delete;
   ShoppingServiceReadyTest operator=(const ShoppingServiceReadyTest&) = delete;
   ~ShoppingServiceReadyTest() override = default;
-
-  void SetUp() override {
-    sync_service_->SetTransportState(
-        syncer::SyncService::TransportState::INITIALIZING);
-
-    ShoppingServiceTest::SetUp();
-  }
 };
 
-TEST_P(ShoppingServiceReadyTest, TestServiceReadyDelaysForSync) {
+TEST_P(ShoppingServiceReadyTest,
+       TestServiceReadyDelaysForSync_TransportStartsInactive) {
   test_features_.InitWithFeatures({kShoppingList}, {});
 
   bool service_ready = false;
@@ -1239,12 +1407,11 @@ TEST_P(ShoppingServiceReadyTest, TestServiceReadyDelaysForSync) {
 
   base::RunLoop().RunUntilIdle();
 
-  // The ready check should not have run since sync is not ready.
+  // The ready check shouldn't have run since transport state is INITIALIZING.
   ASSERT_FALSE(service_ready);
 
-  sync_service_->SetHasSyncConsent(true);
-  sync_service_->SetInitialSyncFeatureSetupComplete(true);
-  sync_service_->SetTransportState(syncer::SyncService::TransportState::ACTIVE);
+  sync_service_->SetMaxTransportState(
+      syncer::SyncService::TransportState::ACTIVE);
   sync_service_->FireStateChanged();
 
   base::RunLoop().RunUntilIdle();
@@ -1253,12 +1420,12 @@ TEST_P(ShoppingServiceReadyTest, TestServiceReadyDelaysForSync) {
   ASSERT_TRUE(service_ready);
 }
 
-TEST_P(ShoppingServiceReadyTest, TestServiceReadyDelaysForSync_SyncActive) {
+TEST_P(ShoppingServiceReadyTest,
+       TestServiceReadyDelaysForSync_TransportStartsActive) {
   test_features_.InitWithFeatures({kShoppingList}, {});
 
-  sync_service_->SetHasSyncConsent(true);
-  sync_service_->SetInitialSyncFeatureSetupComplete(true);
-  sync_service_->SetTransportState(syncer::SyncService::TransportState::ACTIVE);
+  sync_service_->SetMaxTransportState(
+      syncer::SyncService::TransportState::ACTIVE);
   sync_service_->FireStateChanged();
 
   bool service_ready = false;
@@ -1522,7 +1689,7 @@ TEST_P(ShoppingServiceTest, TestPriceInsightsInfoResponse_WithCache) {
 
   // Simulate that the OptGuide result is cleared after some time but saved in
   // cache already.
-  MockWebWrapper web(GURL(kPriceInsightsUrl), false);
+  NiceMockWebWrapper web(GURL(kPriceInsightsUrl), false);
   DidNavigatePrimaryMainFrame(&web);
 
   opt_guide_->SetResponse(
@@ -1575,7 +1742,7 @@ TEST_P(ShoppingServiceTest,
                           OptimizationType::PRICE_INSIGHTS,
                           OptimizationGuideDecision::kTrue, meta);
 
-  MockWebWrapper web1(GURL(kPriceInsightsUrl), false);
+  NiceMockWebWrapper web1(GURL(kPriceInsightsUrl), false);
   DidNavigatePrimaryMainFrame(&web1);
 
   base::RunLoop run_loop1;
@@ -1597,7 +1764,7 @@ TEST_P(ShoppingServiceTest,
       OptimizationGuideDecision::kTrue, OptimizationMetadata());
 
   // Simulate navigating to another tab with the same url.
-  MockWebWrapper web2(GURL(kPriceInsightsUrl), false);
+  NiceMockWebWrapper web2(GURL(kPriceInsightsUrl), false);
   DidNavigatePrimaryMainFrame(&web2);
 
   // Navigating away from one tab should not clear the cache.

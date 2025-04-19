@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "base/time/time.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace ash {
 
@@ -29,6 +30,26 @@ enum class SoundType {
   kYouTubeMusic = 2,
 };
 
+struct ASH_EXPORT SelectedPlaylist {
+  SelectedPlaylist();
+  SelectedPlaylist(const SelectedPlaylist& other);
+  SelectedPlaylist& operator=(const SelectedPlaylist& other);
+  ~SelectedPlaylist();
+
+  bool empty() const { return id.empty(); }
+
+  std::string id;
+  std::string title;
+  gfx::ImageSkia thumbnail;
+  focus_mode_util::SoundType type = focus_mode_util::SoundType::kNone;
+  focus_mode_util::SoundState state = focus_mode_util::SoundState::kNone;
+};
+
+// Values for the "ash.focus_mode.focus_mode_sounds_enabled" policy.
+inline constexpr char kFocusModeSoundsEnabled[] = "enabled";
+inline constexpr char kFocusSoundsOnly[] = "focus-sounds";
+inline constexpr char kFocusModeSoundsDisabled[] = "disabled";
+
 constexpr std::string_view kTaskListIdKey = "taskListId";
 constexpr std::string_view kTaskIdKey = "taskId";
 constexpr std::string_view kSoundTypeKey = "SoundType";
@@ -44,6 +65,7 @@ constexpr base::TimeDelta kExtendDuration = base::Minutes(10);
 
 constexpr char kFocusModeEndingMomentNudgeId[] =
     "focus_mode_ending_moment_nudge";
+constexpr size_t kCongratulatoryTitleNum = 6;
 
 // Adaptation of `base::TimeDurationFormat`. This helper function
 // takes a `TimeDelta` and returns the time formatted according to
@@ -69,7 +91,7 @@ ASH_EXPORT std::u16string GetFormattedClockString(const base::Time end_time);
 
 // Returns a string indicating that do not disturb will be turned off when the
 // focus session ends at `end_time`.
-ASH_EXPORT std::u16string GetNotificationTitleForFocusSession(
+ASH_EXPORT std::u16string GetNotificationDescriptionForFocusSession(
     const base::Time end_time);
 
 // Reads the `timer_textfield`'s text and converts it to an integer.
@@ -79,6 +101,20 @@ ASH_EXPORT int GetTimerTextfieldInputInMinutes(
 // Returns a string of `end_time` formatted for the "Until" end time label. For
 // example: "Until 1:00 PM".
 ASH_EXPORT std::u16string GetFormattedEndTimeString(const base::Time end_time);
+
+// Returns the desired source title string to be shown in the media controls for
+// the provided playlist.
+ASH_EXPORT std::string GetSourceTitleForMediaControls(
+    const SelectedPlaylist& playlist);
+
+// Returns a congratulatory text for the ending moment.
+ASH_EXPORT std::u16string GetCongratulatoryText(const size_t index);
+
+// Returns an emoji after a congratulatory text for the ending moment.
+ASH_EXPORT std::u16string GetCongratulatoryEmoji(const size_t index);
+
+// Returns a congratulatory text followed by an emoji during the ending moment.
+ASH_EXPORT std::u16string GetCongratulatoryTextAndEmoji(const size_t index);
 
 }  // namespace focus_mode_util
 

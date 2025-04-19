@@ -48,7 +48,8 @@ class PopupSearchBarViewTest : public ChromeViewsTestBase {
   // views::ViewsTestBase:
   void SetUp() override {
     ChromeViewsTestBase::SetUp();
-    widget_ = CreateTestWidget();
+    widget_ =
+        CreateTestWidget(views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET);
     generator_ = std::make_unique<ui::test::EventGenerator>(
         views::GetRootWindow(widget_.get()));
   }
@@ -130,7 +131,8 @@ TEST_F(PopupSearchBarViewTest, OnInputChangedCallbackIsThrottled) {
       PopupSearchBarView::kInputChangeCallbackDelay);
 }
 
-// TODO(b/338934966): Enable when key events suppressing in tests is fixed.
+// TODO(crbug.com/338934966): Enable when key events suppressing in tests is
+// fixed.
 #if !BUILDFLAG(IS_WIN)
 TEST_F(PopupSearchBarViewTest, KeyPressedFromTextfieldPassedToDelegateFirst) {
   PopupSearchBarView* view = widget().SetContentsView(

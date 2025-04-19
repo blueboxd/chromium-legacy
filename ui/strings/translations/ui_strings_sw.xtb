@@ -49,6 +49,7 @@
 <translation id="2295140143284145483">Utafiti</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="2353636109065292463">Inaangalia muunganisho wako wa intaneti</translation>
+<translation id="2359808026110333948">Endelea</translation>
 <translation id="2388990488038464401">Je, ungependa kutumia simu yako kupigia namba hii?</translation>
 <translation id="2435457462613246316">Onyesha nenosiri</translation>
 <translation id="24452542372838207">Panua arifa</translation>
@@ -129,6 +130,7 @@
 <translation id="5574202486608032840">Mfumo wa <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">Mshale Kushoto</translation>
+<translation id="5633029987065897167">Hakuna data</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{Dakika 1}other{Dakika #}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Kimetumika leo}=1{Kilitumika siku 1 iliyopita}other{Kilitumika ziku # zilizopita}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{Siku 1 na }other{Siku # na }}</translation>

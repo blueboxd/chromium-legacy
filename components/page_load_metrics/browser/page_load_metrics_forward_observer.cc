@@ -74,6 +74,13 @@ PageLoadMetricsForwardObserver::OnPreviewStart(
   return STOP_OBSERVING;
 }
 
+PageLoadMetricsObserverInterface::ObservePolicy
+PageLoadMetricsForwardObserver::OnNavigationHandleTimingUpdated(
+    content::NavigationHandle* navigation_handle) {
+  // New events don't support forward observers.
+  return CONTINUE_OBSERVING;
+}
+
 // Main frame events will be converted as sub-frame events on forwarding, and
 // OnRedirect is an event only for the main frame. We just mask it here.
 PageLoadMetricsObserverInterface::ObservePolicy
@@ -206,6 +213,13 @@ void PageLoadMetricsForwardObserver::OnParseStart(
     const mojom::PageLoadTiming& timing) {}
 
 void PageLoadMetricsForwardObserver::OnParseStop(
+    const mojom::PageLoadTiming& timing) {}
+
+void PageLoadMetricsForwardObserver::OnConnectStart(
+    const mojom::PageLoadTiming& timing) {}
+void PageLoadMetricsForwardObserver::OnDomainLookupStart(
+    const mojom::PageLoadTiming& timing) {}
+void PageLoadMetricsForwardObserver::OnDomainLookupEnd(
     const mojom::PageLoadTiming& timing) {}
 
 void PageLoadMetricsForwardObserver::OnFirstPaintInPage(
@@ -434,6 +448,12 @@ void PageLoadMetricsForwardObserver::OnSharedStorageSelectURLCalled() {
     return;
   }
   parent_observer_->OnSharedStorageSelectURLCalled();
+}
+
+void PageLoadMetricsForwardObserver::OnCustomUserTimingMarkObserved(
+    const std::vector<mojom::CustomUserTimingMarkPtr>& timings) {
+  // This new API doesn't support FORWARD_OBSERVING that is discouraged for new
+  // observers.
 }
 
 }  // namespace page_load_metrics

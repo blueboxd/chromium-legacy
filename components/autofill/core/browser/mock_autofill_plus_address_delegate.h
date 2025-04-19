@@ -7,6 +7,7 @@
 
 #include "components/autofill/core/browser/autofill_plus_address_delegate.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
+#include "components/autofill/core/common/form_field_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill {
@@ -21,11 +22,19 @@ class MockAutofillPlusAddressDelegate : public AutofillPlusAddressDelegate {
               GetSuggestions,
               (const url::Origin&,
                bool,
-               AutofillClient::PasswordFormType,
-               std::u16string_view,
+               const AutofillClient::PasswordFormClassification&,
+               const FormFieldData&,
                AutofillSuggestionTriggerSource,
                GetSuggestionsCallback),
               (override));
+  MOCK_METHOD(autofill::Suggestion,
+              GetManagePlusAddressSuggestion,
+              (),
+              (const override));
+  MOCK_METHOD(bool,
+              ShouldMixWithSingleFieldFormFillSuggestions,
+              (),
+              (const override));
   MOCK_METHOD(void,
               RecordAutofillSuggestionEvent,
               (SuggestionEvent),
@@ -36,7 +45,7 @@ class MockAutofillPlusAddressDelegate : public AutofillPlusAddressDelegate {
                FormGlobalId,
                FieldGlobalId,
                SuggestionContext,
-               AutofillClient::PasswordFormType,
+               AutofillClient::PasswordFormClassification::Type,
                SuggestionType),
               (override));
 };

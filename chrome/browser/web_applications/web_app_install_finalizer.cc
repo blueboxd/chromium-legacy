@@ -28,6 +28,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/commands/web_app_uninstall_command.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_integrity_block_data.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_storage_location.h"
 #include "chrome/browser/web_applications/jobs/uninstall/remove_install_source_job.h"
 #include "chrome/browser/web_applications/jobs/uninstall/remove_install_url_job.h"
@@ -36,6 +37,7 @@
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/os_integration/web_app_shortcuts_menu.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
+#include "chrome/browser/web_applications/proto/web_app_install_state.pb.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
@@ -215,6 +217,17 @@ void ApplyUserDisplayModeSyncMitigations(
 
 }  // namespace
 
+WebAppInstallFinalizer::FinalizeOptions::IwaOptions::IwaOptions(
+    IsolatedWebAppStorageLocation location,
+    std::optional<IsolatedWebAppIntegrityBlockData> integrity_block_data)
+    : location(std::move(location)),
+      integrity_block_data(std::move(integrity_block_data)) {}
+
+WebAppInstallFinalizer::FinalizeOptions::IwaOptions::~IwaOptions() = default;
+
+WebAppInstallFinalizer::FinalizeOptions::IwaOptions::IwaOptions(
+    const IwaOptions&) = default;
+
 WebAppInstallFinalizer::FinalizeOptions::FinalizeOptions(
     webapps::WebappInstallSource install_surface)
     : source(ConvertInstallSurfaceToWebAppSource(install_surface)),
@@ -244,15 +257,7 @@ void WebAppInstallFinalizer::FinalizeInstall(
     return;
   }
 
-  webapps::ManifestId manifest_id = web_app_info.manifest_id;
-  if (manifest_id.is_valid()) {
-    CHECK(url::Origin::Create(manifest_id)
-              .IsSameOriginWith(url::Origin::Create(web_app_info.start_url)));
-  } else {
-    // TODO(b/280862254): After the manifest id constructor is required, this
-    // can be removed.
-    manifest_id = GenerateManifestIdFromStartUrlOnly(web_app_info.start_url);
-  }
+  webapps::ManifestId manifest_id = web_app_info.manifest_id();
 
   // parent_app_manifest_id can only exist if installing as a sub-app.
   CHECK((options.install_surface == webapps::WebappInstallSource::SUB_APP &&
@@ -291,40 +296,43 @@ void WebAppInstallFinalizer::OnOriginAssociationValidated(
   if (existing_web_app) {
     web_app = std::make_unique<WebApp>(*existing_web_app);
   } else {
+    // TODO(b/344718166): Ensure that manifest_id corresponds to app_id here.
     web_app = std::make_unique<WebApp>(app_id);
+    web_app->SetInstallState(proto::SUGGESTED_FROM_ANOTHER_DEVICE);
     // Ensure `web_app` has a start_url and manifest_id set before other calls
     // that depend on state being complete, eg. `WebApp::sync_proto()`.
-    web_app->SetStartUrl(web_app_info.start_url);
-    // TODO(b/280862254): CHECK that the manifest_id isn't empty after the
-    // no-arg `WebAppInstallInfo` constructor is removed. Currently,
-    // `SetStartUrl` sets a default manifest_id based on the start_url.
-    if (web_app_info.manifest_id.is_valid()) {
-      web_app->SetManifestId(web_app_info.manifest_id);
-    }
+    web_app->SetStartUrl(web_app_info.start_url());
+    web_app->SetManifestId(web_app_info.manifest_id());
   }
 
   web_app->SetValidatedScopeExtensions(validated_scope_extensions);
 
-  // The UI may initiate a full install to overwrite the existing
-  // non-locally-installed app. Therefore, |is_locally_installed| can be
-  // promoted to |true|, but not vice versa.
-  web_app->SetIsLocallyInstalled(web_app->is_locally_installed() ||
-                                 options.locally_installed);
-
-  // The last install time is always updated if the app has been locally
-  // installed, but the first install time is updated only once.
   const base::Time now_time = base::Time::Now();
-  if (options.locally_installed && web_app->first_install_time().is_null()) {
-    web_app->SetFirstInstallTime(now_time);
-  }
 
-  // The last install time is updated whenever we (re)install/update.
-  if (options.locally_installed) {
+  // The UI may initiate a full install to overwrite the existing
+  // non-locally-installed app. Therefore, `install_state` can be
+  // promoted to `INSTALLED_WITH_OS_INTEGRATION`, but not vice versa.
+  if (options.install_state ==
+      proto::InstallState::INSTALLED_WITH_OS_INTEGRATION) {
+    web_app->SetInstallState(
+        proto::InstallState::INSTALLED_WITH_OS_INTEGRATION);
+    // The last install time is always updated if the app has been locally
+    // installed, but the first install time is updated only once.
+    if (web_app->first_install_time().is_null()) {
+      web_app->SetFirstInstallTime(now_time);
+    }
+    // The last install time is updated whenever we (re)install/update.
     web_app->SetLatestInstallTime(now_time);
   }
 
-  if (!web_app->run_on_os_login_os_integration_state()) {
-    web_app->SetRunOnOsLoginOsIntegrationState(RunOnOsLoginMode::kNotRun);
+  // Handle going from SUGGESTED_FROM_ANOTHER_DEVICE ->
+  // INSTALLED_WITHOUT_OS_INTEGRATION
+  if (web_app->install_state() ==
+          proto::InstallState::SUGGESTED_FROM_ANOTHER_DEVICE &&
+      options.install_state ==
+          proto::InstallState::INSTALLED_WITHOUT_OS_INTEGRATION) {
+    web_app->SetInstallState(
+        proto::InstallState::INSTALLED_WITHOUT_OS_INTEGRATION);
   }
 
   // Set |user_display_mode| and any user-controllable fields here if this
@@ -360,10 +368,11 @@ void WebAppInstallFinalizer::OnOriginAssociationValidated(
   }
 #endif
 
-  if (options.isolated_web_app_location.has_value()) {
+  if (options.iwa_options) {
     UpdateIsolationDataAndResetPendingUpdateInfo(
-        web_app.get(), *options.isolated_web_app_location,
-        web_app_info.isolated_web_app_version);
+        web_app.get(), options.iwa_options->location,
+        web_app_info.isolated_web_app_version,
+        options.iwa_options->integrity_block_data);
   }
 
   web_app->SetParentAppId(web_app_info.parent_app_id);
@@ -380,10 +389,11 @@ void WebAppInstallFinalizer::OnOriginAssociationValidated(
       *web_app, options.source, web_app_info.is_placeholder,
       web_app_info.install_url, web_app_info.additional_policy_ids);
 
-  if (!options.locally_installed) {
+  if (options.install_state !=
+      proto::InstallState::INSTALLED_WITH_OS_INTEGRATION) {
     DCHECK(!(options.add_to_applications_menu || options.add_to_desktop ||
              options.add_to_quick_launch_bar))
-        << "Cannot create os hooks for a non-locally installed app";
+        << "Cannot create os hooks for a non-fully installed app";
   }
 
   CommitCallback commit_callback = base::BindOnce(
@@ -419,27 +429,15 @@ void WebAppInstallFinalizer::ReparentTab(const webapps::AppId& app_id,
                                          bool shortcut_created,
                                          content::WebContents* web_contents) {
   DCHECK(web_contents);
-  return provider_->ui_manager().ReparentAppTabToWindow(web_contents, app_id,
-                                                        shortcut_created);
+  provider_->ui_manager().ReparentAppTabToWindow(web_contents, app_id,
+                                                 shortcut_created);
 }
 
 void WebAppInstallFinalizer::FinalizeUpdate(
     const WebAppInstallInfo& web_app_info,
     InstallFinalizedCallback callback) {
   CHECK(started_);
-  CHECK(web_app_info.start_url.is_valid());
-  webapps::ManifestId manifest_id = web_app_info.manifest_id;
-  if (manifest_id.is_valid()) {
-    CHECK(url::Origin::Create(manifest_id)
-              .IsSameOriginWith(url::Origin::Create(web_app_info.start_url)));
-  } else {
-    // TODO(b/280862254): After the manifest id constructor is required, this
-    // can be removed.
-    CHECK_IS_TEST();
-    manifest_id = GenerateManifestIdFromStartUrlOnly(web_app_info.start_url);
-  }
-  CHECK(manifest_id.is_valid());
-
+  webapps::ManifestId manifest_id = web_app_info.manifest_id();
   const webapps::AppId app_id = GenerateAppIdFromManifestId(manifest_id);
   const WebApp* existing_web_app =
       provider_->registrar_unsafe().GetAppById(app_id);
@@ -461,16 +459,17 @@ void WebAppInstallFinalizer::FinalizeUpdate(
 
   auto web_app = std::make_unique<WebApp>(*existing_web_app);
   if (web_app->isolation_data().has_value()) {
-    base::optional_ref<const WebApp::IsolationData::PendingUpdateInfo>
+    const std::optional<WebApp::IsolationData::PendingUpdateInfo>&
         pending_update_info = web_app->isolation_data()->pending_update_info();
     CHECK(pending_update_info.has_value())
         << "Isolated Web Apps can only be updated if "
            "`WebApp::IsolationData::PendingUpdateInfo` is set.";
     CHECK_EQ(web_app_info.isolated_web_app_version,
              pending_update_info->version);
-    UpdateIsolationDataAndResetPendingUpdateInfo(web_app.get(),
-                                                 pending_update_info->location,
-                                                 pending_update_info->version);
+    UpdateIsolationDataAndResetPendingUpdateInfo(
+        web_app.get(), pending_update_info->location,
+        pending_update_info->version,
+        pending_update_info->integrity_block_data);
   }
 
   // Prepare copy-on-write to update existing app.
@@ -503,7 +502,8 @@ void WebAppInstallFinalizer::Shutdown() {
 void WebAppInstallFinalizer::UpdateIsolationDataAndResetPendingUpdateInfo(
     WebApp* web_app,
     const IsolatedWebAppStorageLocation& location,
-    const base::Version& version) {
+    const base::Version& version,
+    std::optional<IsolatedWebAppIntegrityBlockData> integrity_block_data) {
   CHECK(version.IsValid());
 
   // If previous `controlled_frame_partitions` exist, keep them the same. This
@@ -517,7 +517,7 @@ void WebAppInstallFinalizer::UpdateIsolationDataAndResetPendingUpdateInfo(
       location, version, controlled_frame_partitions,
       // Always reset `pending_update_info`, because reaching this point means
       // that an install or update just succeeded.
-      /*pending_update_info=*/std::nullopt));
+      /*pending_update_info=*/std::nullopt, std::move(integrity_block_data)));
 }
 
 void WebAppInstallFinalizer::SetWebAppManifestFieldsAndWriteData(
@@ -619,24 +619,6 @@ void WebAppInstallFinalizer::OnDatabaseCommitCompletedForInstall(
     return;
   }
 
-#if BUILDFLAG(IS_CHROMEOS)
-  // ChromeOS should always have OS integration. In the future we should always
-  // be synchronizing os integration on all platforms too.
-  // https://crbug.com/328524602
-  const bool should_install_os_hooks = true;
-#else
-  const bool should_install_os_hooks =
-      !finalize_options.bypass_os_hooks &&
-      !web_app->HasOnlySource(WebAppManagement::Type::kDefault) &&
-      finalize_options.locally_installed;
-#endif  // BUILDFLAG(IS_CHROMEOS)
-
-  if (!should_install_os_hooks) {
-    std::move(callback).Run(app_id,
-                            webapps::InstallResultCode::kSuccessNewInstall);
-    return;
-  }
-
   SynchronizeOsOptions synchronize_options;
   synchronize_options.add_shortcut_to_desktop = finalize_options.add_to_desktop;
   synchronize_options.add_to_quick_launch_bar =
@@ -673,11 +655,16 @@ void WebAppInstallFinalizer::OnDatabaseCommitCompletedForInstall(
 void WebAppInstallFinalizer::OnInstallHooksFinished(
     InstallFinalizedCallback callback,
     webapps::AppId app_id) {
-  auto joined = std::move(callback).Then(
-      base::BindOnce(&WebAppInstallFinalizer::NotifyWebAppInstalledWithOsHooks,
-                     weak_ptr_factory_.GetWeakPtr(), app_id));
-
-  std::move(joined).Run(app_id, webapps::InstallResultCode::kSuccessNewInstall);
+  // Only notify that os hooks were added if the installation was a 'full'
+  // installation.
+  if (provider_->registrar_unsafe().IsInstallState(
+          app_id, {proto::InstallState::INSTALLED_WITH_OS_INTEGRATION})) {
+    callback = std::move(callback).Then(base::BindOnce(
+        &WebAppInstallFinalizer::NotifyWebAppInstalledWithOsHooks,
+        weak_ptr_factory_.GetWeakPtr(), app_id));
+  }
+  std::move(callback).Run(app_id,
+                          webapps::InstallResultCode::kSuccessNewInstall);
 }
 
 void WebAppInstallFinalizer::NotifyWebAppInstalledWithOsHooks(

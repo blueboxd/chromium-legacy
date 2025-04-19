@@ -28,6 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/core/inspector/inspector_page_agent.h"
 
 #include <memory>
@@ -41,6 +46,7 @@
 #include "third_party/blink/public/common/origin_trials/trial_token.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_evidence.mojom-blink.h"
+#include "third_party/blink/public/mojom/loader/same_document_navigation_type.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/local_window_proxy.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_evaluation_result.h"
@@ -117,16 +123,17 @@ String ClientNavigationReasonToProtocol(ClientNavigationReason reason) {
       return ReasonEnum::HttpHeaderRefresh;
     case ClientNavigationReason::kFrameNavigation:
       return ReasonEnum::ScriptInitiated;
+    case ClientNavigationReason::kInitialFrameNavigation:
+      return ReasonEnum::InitialFrameNavigation;
     case ClientNavigationReason::kMetaTagRefresh:
       return ReasonEnum::MetaTagRefresh;
     case ClientNavigationReason::kPageBlock:
       return ReasonEnum::PageBlockInterstitial;
     case ClientNavigationReason::kReload:
       return ReasonEnum::Reload;
-    default:
-      NOTREACHED_IN_MIGRATION();
+    case ClientNavigationReason::kNone:
+      return ReasonEnum::Other;
   }
-  return ReasonEnum::Reload;
 }
 
 String NavigationPolicyToProtocol(NavigationPolicy policy) {
@@ -207,6 +214,9 @@ std::unique_ptr<protocol::Array<String>> GetEnabledWindowFeatures(
     feature_strings->emplace_back("resizable");
   if (window_features.noopener)
     feature_strings->emplace_back("noopener");
+  if (window_features.explicit_opener) {
+    feature_strings->emplace_back("opener");
+  }
   if (window_features.background)
     feature_strings->emplace_back("background");
   if (window_features.persistent)
@@ -215,20 +225,6 @@ std::unique_ptr<protocol::Array<String>> GetEnabledWindowFeatures(
 }
 
 }  // namespace
-
-struct InspectorPageAgent::IsolatedWorldRequest {
-  IsolatedWorldRequest() = delete;
-  IsolatedWorldRequest(String world_name,
-                       bool grant_universal_access,
-                       std::unique_ptr<CreateIsolatedWorldCallback> callback)
-      : world_name(world_name),
-        grant_universal_access(grant_universal_access),
-        callback(std::move(callback)) {}
-
-  const String world_name;
-  const bool grant_universal_access;
-  std::unique_ptr<CreateIsolatedWorldCallback> callback;
-};
 
 static bool PrepareResourceBuffer(const Resource* cached_resource,
                                   bool* has_zero_size) {
@@ -313,9 +309,9 @@ static void MaybeEncodeTextContent(const String& text_content,
                                   base64_encoded);
   }
 
-  const SharedBuffer::DeprecatedFlatData flat_buffer(std::move(buffer));
+  const SegmentedBuffer::DeprecatedFlatData flat_buffer(buffer.get());
   return MaybeEncodeTextContent(
-      text_content, flat_buffer.Data(),
+      text_content, flat_buffer.data(),
       base::checked_cast<wtf_size_t>(flat_buffer.size()), result,
       base64_encoded);
 }
@@ -328,8 +324,8 @@ KURL InspectorPageAgent::UrlWithoutFragment(const KURL& url) {
 }
 
 // static
-bool InspectorPageAgent::SharedBufferContent(
-    scoped_refptr<const SharedBuffer> buffer,
+bool InspectorPageAgent::SegmentedBufferContent(
+    const SegmentedBuffer* buffer,
     const String& mime_type,
     const String& text_encoding_name,
     String* result,
@@ -342,16 +338,16 @@ bool InspectorPageAgent::SharedBufferContent(
       CreateResourceTextDecoder(mime_type, text_encoding_name);
   WTF::TextEncoding encoding(text_encoding_name);
 
-  const SharedBuffer::DeprecatedFlatData flat_buffer(std::move(buffer));
+  const SegmentedBuffer::DeprecatedFlatData flat_buffer(buffer);
   if (decoder) {
-    text_content = decoder->Decode(flat_buffer.Data(), flat_buffer.size());
+    text_content = decoder->Decode(flat_buffer.data(), flat_buffer.size());
     text_content = text_content + decoder->Flush();
   } else if (encoding.IsValid()) {
     text_content = encoding.Decode(
-        flat_buffer.Data(), base::checked_cast<wtf_size_t>(flat_buffer.size()));
+        flat_buffer.data(), base::checked_cast<wtf_size_t>(flat_buffer.size()));
   }
 
-  MaybeEncodeTextContent(text_content, flat_buffer.Data(),
+  MaybeEncodeTextContent(text_content, flat_buffer.data(),
                          base::checked_cast<wtf_size_t>(flat_buffer.size()),
                          result, base64_encoded);
   return true;
@@ -372,9 +368,8 @@ bool InspectorPageAgent::CachedResourceContent(const Resource* cached_resource,
     if (!buffer)
       return false;
 
-    const SharedBuffer::DeprecatedFlatData flat_buffer(std::move(buffer));
-    *result = Base64Encode(base::as_bytes(
-        base::make_span(flat_buffer.Data(), flat_buffer.size())));
+    const SegmentedBuffer::DeprecatedFlatData flat_buffer(buffer.get());
+    *result = Base64Encode(base::as_byte_span(flat_buffer));
     *base64_encoded = true;
     return true;
   }
@@ -404,8 +399,8 @@ bool InspectorPageAgent::CachedResourceContent(const Resource* cached_resource,
       if (text_encoding_name.empty() &&
           cached_resource->GetType() != blink::ResourceType::kRaw)
         text_encoding_name = "WinLatin1";
-      return InspectorPageAgent::SharedBufferContent(
-          cached_resource->ResourceBuffer(),
+      return InspectorPageAgent::SegmentedBufferContent(
+          cached_resource->ResourceBuffer().get(),
           cached_resource->GetResponse().MimeType(), text_encoding_name, result,
           base64_encoded);
   }
@@ -479,6 +474,42 @@ String InspectorPageAgent::CachedResourceTypeJson(
   return ResourceTypeJson(ToResourceType(cached_resource.GetType()));
 }
 
+InspectorPageAgent::PageReloadScriptInjection::PageReloadScriptInjection(
+    InspectorAgentState& agent_state)
+    : pending_script_to_evaluate_on_load_once_(&agent_state,
+                                               /*default_value=*/{}),
+      target_url_for_pending_script_(&agent_state,
+                                     /*default_value=*/{}) {}
+
+void InspectorPageAgent::PageReloadScriptInjection::clear() {
+  script_to_evaluate_on_load_once_ = {};
+  pending_script_to_evaluate_on_load_once_.Set({});
+  target_url_for_pending_script_.Set({});
+}
+
+void InspectorPageAgent::PageReloadScriptInjection::SetPending(
+    String script,
+    const KURL& target_url) {
+  pending_script_to_evaluate_on_load_once_.Set(script);
+  target_url_for_pending_script_.Set(target_url.GetString().GetString());
+}
+
+void InspectorPageAgent::PageReloadScriptInjection::PromoteToLoadOnce() {
+  script_to_evaluate_on_load_once_ =
+      pending_script_to_evaluate_on_load_once_.Get();
+  target_url_for_active_script_ = target_url_for_pending_script_.Get();
+  pending_script_to_evaluate_on_load_once_.Set({});
+  target_url_for_pending_script_.Set({});
+}
+
+String InspectorPageAgent::PageReloadScriptInjection::GetScriptForInjection(
+    const KURL& target_url) {
+  if (target_url_for_active_script_ == target_url.GetString()) {
+    return script_to_evaluate_on_load_once_;
+  }
+  return {};
+}
+
 InspectorPageAgent::InspectorPageAgent(
     InspectedFrames* inspected_frames,
     Client* client,
@@ -495,8 +526,6 @@ InspectorPageAgent::InspectorPageAgent(
       screencast_enabled_(&agent_state_, /*default_value=*/false),
       lifecycle_events_enabled_(&agent_state_, /*default_value=*/false),
       bypass_csp_enabled_(&agent_state_, /*default_value=*/false),
-      pending_script_to_evaluate_on_load_once_(&agent_state_,
-                                               /*default_value=*/String()),
       scripts_to_evaluate_on_load_(&agent_state_,
                                    /*default_value=*/String()),
       worlds_to_evaluate_on_load_(&agent_state_,
@@ -506,7 +535,8 @@ InspectorPageAgent::InspectorPageAgent(
           /*default_value=*/false),
       standard_font_size_(&agent_state_, /*default_value=*/0),
       fixed_font_size_(&agent_state_, /*default_value=*/0),
-      script_font_families_cbor_(&agent_state_, std::vector<uint8_t>()) {}
+      script_font_families_cbor_(&agent_state_, std::vector<uint8_t>()),
+      script_injection_on_load_(agent_state_) {}
 
 void InspectorPageAgent::Restore() {
   if (enabled_.Get())
@@ -545,8 +575,7 @@ protocol::Response InspectorPageAgent::enable() {
 protocol::Response InspectorPageAgent::disable() {
   agent_state_.ClearAllFields();
   pending_isolated_worlds_.clear();
-  script_to_evaluate_on_load_once_ = String();
-  pending_script_to_evaluate_on_load_once_.Set(String());
+  script_injection_on_load_.clear();
   instrumenting_agents_->RemoveInspectorPageAgent(this);
   inspector_resource_content_loader_->Cancel(
       resource_content_loader_client_id_);
@@ -565,7 +594,7 @@ protocol::Response InspectorPageAgent::addScriptToEvaluateOnNewDocument(
     Maybe<bool> runImmediately,
     String* identifier) {
   Vector<WTF::String> keys = scripts_to_evaluate_on_load_.Keys();
-  auto* result = std::max_element(
+  auto result = std::max_element(
       keys.begin(), keys.end(), [](const WTF::String& a, const WTF::String& b) {
         return Decimal::FromString(a) < Decimal::FromString(b);
       });
@@ -673,8 +702,16 @@ protocol::Response InspectorPageAgent::reload(
     Maybe<bool> optional_bypass_cache,
     Maybe<String> optional_script_to_evaluate_on_load,
     Maybe<String> loader_id) {
-  pending_script_to_evaluate_on_load_once_.Set(
-      optional_script_to_evaluate_on_load.value_or(""));
+  if (loader_id.has_value() && inspected_frames_->Root()
+                                       ->Loader()
+                                       .GetDocumentLoader()
+                                       ->GetDevToolsNavigationToken()
+                                       .ToString() != loader_id->Ascii()) {
+    return protocol::Response::InvalidParams("Document already navigated");
+  }
+  script_injection_on_load_.SetPending(
+      optional_script_to_evaluate_on_load.value_or(""),
+      inspected_frames_->Root()->Loader().GetDocumentLoader()->Url());
   v8_session_->setSkipAllPauses(true);
   v8_session_->resume(true /* terminate on resume */);
   return protocol::Response::Success();
@@ -941,11 +978,32 @@ protocol::Response InspectorPageAgent::setDocumentContent(
   return protocol::Response::Success();
 }
 
-void InspectorPageAgent::DidNavigateWithinDocument(LocalFrame* frame) {
+namespace {
+const char* NavigationTypeToProtocolString(
+    mojom::blink::SameDocumentNavigationType navigation_type) {
+  switch (navigation_type) {
+    case mojom::blink::SameDocumentNavigationType::kFragment:
+      return protocol::Page::NavigatedWithinDocument::NavigationTypeEnum::
+          Fragment;
+    case mojom::blink::SameDocumentNavigationType::kHistoryApi:
+      return protocol::Page::NavigatedWithinDocument::NavigationTypeEnum::
+          HistoryApi;
+    case mojom::blink::SameDocumentNavigationType::kNavigationApiIntercept:
+    case mojom::blink::SameDocumentNavigationType::
+        kPrerenderNoVarySearchActivation:
+      return protocol::Page::NavigatedWithinDocument::NavigationTypeEnum::Other;
+  }
+}
+}  // namespace
+
+void InspectorPageAgent::DidNavigateWithinDocument(
+    LocalFrame* frame,
+    mojom::blink::SameDocumentNavigationType navigation_type) {
   Document* document = frame->GetDocument();
   if (document) {
     return GetFrontend()->navigatedWithinDocument(
-        IdentifiersFactory::FrameId(frame), document->Url());
+        IdentifiersFactory::FrameId(frame), document->Url(),
+        NavigationTypeToProtocolString(navigation_type));
   }
 }
 
@@ -994,7 +1052,9 @@ void InspectorPageAgent::DidCreateMainWorldContext(LocalFrame* frame) {
     EvaluateScriptOnNewDocument(*frame, key);
   }
 
-  if (script_to_evaluate_on_load_once_.empty()) {
+  String script = script_injection_on_load_.GetScriptForInjection(
+      frame->Loader().GetDocumentLoader()->Url());
+  if (script.empty()) {
     return;
   }
   ScriptState* script_state = ToScriptStateForMainWorld(frame);
@@ -1002,9 +1062,8 @@ void InspectorPageAgent::DidCreateMainWorldContext(LocalFrame* frame) {
     return;
   }
 
-  v8_session_->evaluate(
-      script_state->GetContext(),
-      ToV8InspectorStringView(script_to_evaluate_on_load_once_));
+  v8_session_->evaluate(script_state->GetContext(),
+                        ToV8InspectorStringView(script));
 }
 
 void InspectorPageAgent::EvaluateScriptOnNewDocument(
@@ -1054,12 +1113,11 @@ void InspectorPageAgent::LoadEventFired(LocalFrame* frame) {
 
 void InspectorPageAgent::WillCommitLoad(LocalFrame*, DocumentLoader* loader) {
   if (loader->GetFrame() == inspected_frames_->Root()) {
-    script_to_evaluate_on_load_once_ =
-        pending_script_to_evaluate_on_load_once_.Get();
-    pending_script_to_evaluate_on_load_once_.Set(String());
+    script_injection_on_load_.PromoteToLoadOnce();
   }
   GetFrontend()->frameNavigated(BuildObjectForFrame(loader->GetFrame()),
                                 protocol::Page::NavigationTypeEnum::Navigation);
+  GetFrontend()->flush();
 }
 
 void InspectorPageAgent::DidRestoreFromBackForwardCache(LocalFrame* frame) {
@@ -1578,12 +1636,12 @@ protocol::Response InspectorPageAgent::getLayoutMetrics(
                              .setClientHeight(visible_contents.height())
                              .build();
 
-  // PageZoomFactor takes CSS pixels to device/physical pixels. It includes
+  // LayoutZoomFactor takes CSS pixels to device/physical pixels. It includes
   // both browser ctrl+/- zoom as well as the device scale factor for screen
   // density. Note: we don't account for pinch-zoom, even though it scales a
   // CSS pixel, since "device pixels" coming from Blink are also unscaled by
   // pinch-zoom.
-  float css_to_physical = main_frame->PageZoomFactor();
+  float css_to_physical = main_frame->LayoutZoomFactor();
   float physical_to_css = 1.f / css_to_physical;
 
   // `visible_contents` is in physical pixels. Normlisation is needed to

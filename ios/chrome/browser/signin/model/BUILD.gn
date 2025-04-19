@@ -14,6 +14,8 @@ source_set("model") {
     "account_consistency_browser_agent.mm",
     "account_consistency_service_factory.h",
     "account_consistency_service_factory.mm",
+    "account_investigator_factory.h",
+    "account_investigator_factory.mm",
     "account_reconcilor_factory.cc",
     "account_reconcilor_factory.h",
     "authentication_service.h",
@@ -55,6 +57,8 @@ source_set("model") {
     "signin_client_factory.h",
     "signin_error_controller_factory.cc",
     "signin_error_controller_factory.h",
+    "signin_metrics_service_factory.h",
+    "signin_metrics_service_factory.mm",
   ]
   deps = [
     ":capabilities_types",
@@ -69,6 +73,7 @@ source_set("model") {
     "//components/keyed_service/core",
     "//components/keyed_service/ios",
     "//components/metrics",
+    "//components/policy/core/common:common_constants",
     "//components/pref_registry",
     "//components/prefs",
     "//components/signin/core/browser",
@@ -80,6 +85,7 @@ source_set("model") {
     "//google_apis",
     "//ios/chrome/app:tests_hook",
     "//ios/chrome/browser/bookmarks/model:model_utils",
+    "//ios/chrome/browser/browser_state/model:constants",
     "//ios/chrome/browser/content_settings/model",
     "//ios/chrome/browser/crash_report/model",
     "//ios/chrome/browser/policy/model:policy_util",
@@ -87,6 +93,7 @@ source_set("model") {
     "//ios/chrome/browser/shared/model/browser",
     "//ios/chrome/browser/shared/model/browser_state",
     "//ios/chrome/browser/shared/model/prefs:pref_names",
+    "//ios/chrome/browser/shared/model/profile",
     "//ios/chrome/browser/shared/model/web_state_list",
     "//ios/chrome/browser/shared/public/commands",
     "//ios/chrome/browser/shared/public/features",
@@ -124,12 +131,15 @@ source_set("signin_util") {
     "signin_util.mm",
   ]
   deps = [
+    ":capabilities_types",
     ":constants",
     ":signin_util_internal",
     ":system_identity",
+    ":system_identity_manager",
     "//base",
     "//components/prefs",
     "//components/signin/public/identity_manager",
+    "//ios/chrome/browser/shared/model/application_context",
     "//ios/chrome/browser/shared/model/prefs:pref_names",
     "//ios/chrome/browser/shared/public/features:system_flags",
     "//ios/public/provider/chrome/browser/signin:signin_error_api",
@@ -176,6 +186,8 @@ source_set("system_identity") {
 
 source_set("system_identity_manager") {
   sources = [
+    "account_profile_mapper.h",
+    "account_profile_mapper.mm",
     "refresh_access_token_error.h",
     "system_identity_interaction_manager.h",
     "system_identity_manager.h",
@@ -188,6 +200,8 @@ source_set("system_identity_manager") {
     ":capabilities_types",
     ":system_identity",
     "//components/signin/internal/identity_manager",
+    "//ios/chrome/browser/shared/model/application_context",
+    "//ios/chrome/browser/shared/public/features:system_flags",
   ]
 }
 
@@ -233,7 +247,11 @@ source_set("fake_account_details_view_controller") {
     "fake_account_details_view_controller.h",
     "fake_account_details_view_controller.mm",
   ]
-  deps = [ ":system_identity" ]
+  deps = [
+    ":system_identity",
+    "//base",
+    "//ios/chrome/browser/signin/model:test_constants",
+  ]
   frameworks = [ "UIKit.framework" ]
 }
 
@@ -278,6 +296,7 @@ source_set("trusted_vault_factory") {
     ":trusted_vault",
     "//base",
     "//components/keyed_service/ios",
+    "//ios/chrome/app:tests_hook",
     "//ios/chrome/browser/shared/model/application_context",
     "//ios/chrome/browser/shared/model/browser_state",
     "//ios/public/provider/chrome/browser/signin:trusted_vault_api",
@@ -333,6 +352,7 @@ source_set("unit_tests") {
   sources = [
     "account_capabilities_fetcher_ios_unittest.mm",
     "account_consistency_browser_agent_unittest.mm",
+    "account_profile_mapper_unittest.mm",
     "authentication_service_observer_bridge_unittest.mm",
     "authentication_service_unittest.mm",
     "chrome_account_manager_service_observer_bridge_unittest.mm",
@@ -353,6 +373,7 @@ source_set("unit_tests") {
     ":system_identity_manager",
     ":test_support",
     "//base",
+    "//components/policy/core/common:common_constants",
     "//components/pref_registry",
     "//components/prefs",
     "//components/prefs:test_support",
@@ -374,6 +395,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/shared/model/browser_state:test_support",
     "//ios/chrome/browser/shared/model/prefs:browser_prefs",
     "//ios/chrome/browser/shared/model/prefs:pref_names",
+    "//ios/chrome/browser/shared/model/profile",
     "//ios/chrome/browser/shared/model/web_state_list",
     "//ios/chrome/browser/shared/public/commands",
     "//ios/chrome/browser/shared/public/features",

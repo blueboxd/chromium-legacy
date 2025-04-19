@@ -36,6 +36,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/gfx/geometry/transform_util.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/view.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -319,7 +320,9 @@ ShelfNavigationWidget::Delegate::Delegate(Shelf* shelf, ShelfView* shelf_view)
         ax::mojom::Event::kChildrenChanged, true);
   }
 
-  SetAccessibleRole(ax::mojom::Role::kToolbar);
+  GetViewAccessibility().SetRole(ax::mojom::Role::kToolbar);
+  GetViewAccessibility().SetName(
+      l10n_util::GetStringUTF8(IDS_ASH_SHELF_ACCESSIBLE_NAME));
   RefreshAccessibilityWidgetNextPreviousFocus(shelf->shelf_widget());
 }
 
@@ -338,9 +341,6 @@ ShelfNavigationWidget::Delegate::GetPaneFocusTraversable() {
 
 void ShelfNavigationWidget::Delegate::GetAccessibleNodeData(
     ui::AXNodeData* node_data) {
-  node_data->role = ax::mojom::Role::kToolbar;
-  node_data->SetName(l10n_util::GetStringUTF8(IDS_ASH_SHELF_ACCESSIBLE_NAME));
-
   RefreshAccessibilityWidgetNextPreviousFocus(
       Shelf::ForWindow(GetWidget()->GetNativeWindow())->shelf_widget());
 }
@@ -379,6 +379,10 @@ bool ShelfNavigationWidget::TestApi::IsBackButtonVisible() const {
 
 views::BoundsAnimator* ShelfNavigationWidget::TestApi::GetBoundsAnimator() {
   return navigation_widget_->bounds_animator_.get();
+}
+
+views::View* ShelfNavigationWidget::TestApi::GetWidgetDelegateView() {
+  return static_cast<Delegate*>(navigation_widget_->widget_delegate());
 }
 
 ShelfNavigationWidget::ShelfNavigationWidget(Shelf* shelf,

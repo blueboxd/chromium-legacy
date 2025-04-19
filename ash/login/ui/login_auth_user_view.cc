@@ -73,6 +73,7 @@
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -89,6 +90,7 @@ namespace ash {
 namespace {
 
 constexpr const char kLoginAuthUserViewClassName[] = "LoginAuthUserView";
+constexpr int kMinimiumLoginAuthUserViewHeightDp = 346;
 
 // Distance between the user view (ie, the icon and name) and other elements
 const int kDistanceBetweenUserViewAndPasswordDp = 24;
@@ -240,7 +242,7 @@ class LoginAuthUserView::ChallengeResponseView : public views::View {
     arrow_button_view->SetInstallFocusRingOnFocus(true);
     views::InstallCircleHighlightPathGenerator(arrow_button_view.get());
     arrow_button_ = AddChildView(std::move(arrow_button_view));
-    arrow_button_->SetAccessibleName(l10n_util::GetStringUTF16(
+    arrow_button_->GetViewAccessibility().SetName(l10n_util::GetStringUTF16(
         IDS_ASH_LOGIN_START_SMART_CARD_AUTH_BUTTON_ACCESSIBLE_NAME));
 
     arrow_to_icon_spacer_ = AddChildView(std::make_unique<NonAccessibleView>());
@@ -746,7 +748,6 @@ void LoginAuthUserView::SetAuthMethods(
   pin_view_->SetVisible(current_state.has_pinpad);
 
   password_view_->SetEnabled(current_state.has_password);
-  password_view_->SetEnabledOnEmptyPassword(false);
   password_view_->SetFocusEnabledForTextfield(current_state.has_password);
   password_view_->SetVisible(current_state.has_password);
   password_view_->layer()->SetOpacity(current_state.has_password);
@@ -1036,7 +1037,7 @@ gfx::Size LoginAuthUserView::CalculatePreferredSize(
   gfx::Size size = views::View::CalculatePreferredSize(available_size);
   // Make sure we are at least as big as the user view. If we do not do this
   // the view will be below minimum size when no auth methods are displayed.
-  size.SetToMax(user_view_->GetPreferredSize());
+  size.set_height(std::max(kMinimiumLoginAuthUserViewHeightDp, size.height()));
   return size;
 }
 

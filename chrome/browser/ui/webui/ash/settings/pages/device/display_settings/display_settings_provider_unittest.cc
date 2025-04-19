@@ -192,7 +192,10 @@ class FakeBrightnessControlDelegate : public BrightnessControlDelegate {
       base::OnceCallback<void(std::optional<double>)> callback) override {
     std::move(callback).Run(brightness_percent_);
   }
-  void SetAmbientLightSensorEnabled(bool enabled) override {
+  void SetAmbientLightSensorEnabled(
+      bool enabled,
+      BrightnessControlDelegate::AmbientLightSensorEnabledChangeSource source)
+      override {
     is_ambient_light_sensor_enabled_ = enabled;
   }
   void GetAmbientLightSensorEnabled(
@@ -714,7 +717,9 @@ TEST_F(DisplaySettingsProviderTest,
   // that the value doesn't change if the feature flag is disabled.
   bool initial_sensor_enabled = true;
   brightness_control_delegate_->SetAmbientLightSensorEnabled(
-      initial_sensor_enabled);
+      initial_sensor_enabled,
+      BrightnessControlDelegate::AmbientLightSensorEnabledChangeSource::
+          kSettingsApp);
 
   provider_->SetBrightnessControlDelegateForTesting(
       brightness_control_delegate_.get());
@@ -751,7 +756,9 @@ TEST_F(DisplaySettingsProviderTest,
   // that the value changes if the feature flag is enabled.
   bool initial_sensor_enabled = true;
   brightness_control_delegate_->SetAmbientLightSensorEnabled(
-      initial_sensor_enabled);
+      initial_sensor_enabled,
+      BrightnessControlDelegate::AmbientLightSensorEnabledChangeSource::
+          kSettingsApp);
 
   provider_->SetBrightnessControlDelegateForTesting(
       brightness_control_delegate_.get());
@@ -870,6 +877,64 @@ TEST_F(DisplaySettingsProviderTest, HasAmbientLightSensor) {
       base::BindOnce([](bool has_ambient_light_sensor) {
         EXPECT_FALSE(has_ambient_light_sensor);
       }));
+}
+
+TEST_F(DisplaySettingsProviderTest, RecordUserInitiatedALSDisabledCause) {
+  feature_list_.Reset();
+  feature_list_.InitAndEnableFeature(
+      ash::features::kEnableBrightnessControlInSettings);
+
+  // No histograms should have been recorded yet.
+  histogram_tester_.ExpectTotalCount(
+      "ChromeOS.Settings.Display.Internal.UserInitiated."
+      "AmbientLightSensorDisabledCause",
+      /*expected_count=*/0);
+
+  // Verify histogram recording when ALS is disabled via settings app.
+  {
+    power_manager::AmbientLightSensorChange cause_settings_app;
+    cause_settings_app.set_sensor_enabled(false);
+    cause_settings_app.set_cause(
+        power_manager::
+            AmbientLightSensorChange_Cause_USER_REQUEST_SETTINGS_APP);
+    provider_->AmbientLightSensorEnabledChanged(cause_settings_app);
+    histogram_tester_.ExpectUniqueSample(
+        "ChromeOS.Settings.Display.Internal.UserInitiated."
+        "AmbientLightSensorDisabledCause",
+        DisplaySettingsProvider::
+            UserInitiatedDisplayAmbientLightSensorDisabledCause::
+                kUserRequestSettingsApp,
+        1);
+  }
+
+  // Ensure enabling ALS does not emit histogram.
+  {
+    power_manager::AmbientLightSensorChange cause_settings_app;
+    cause_settings_app.set_sensor_enabled(true);
+    cause_settings_app.set_cause(
+        power_manager::AmbientLightSensorChange_Cause_BRIGHTNESS_USER_REQUEST);
+    provider_->AmbientLightSensorEnabledChanged(cause_settings_app);
+    histogram_tester_.ExpectTotalCount(
+        "ChromeOS.Settings.Display.Internal.UserInitiated."
+        "AmbientLightSensorDisabledCause",
+        /*expected_count=*/1);
+  }
+
+  // Test histogram update when ALS is disabled due to brightness change.
+  {
+    power_manager::AmbientLightSensorChange cause_settings_app;
+    cause_settings_app.set_sensor_enabled(false);
+    cause_settings_app.set_cause(
+        power_manager::AmbientLightSensorChange_Cause_BRIGHTNESS_USER_REQUEST);
+    provider_->AmbientLightSensorEnabledChanged(cause_settings_app);
+    histogram_tester_.ExpectBucketCount(
+        "ChromeOS.Settings.Display.Internal.UserInitiated."
+        "AmbientLightSensorDisabledCause",
+        DisplaySettingsProvider::
+            UserInitiatedDisplayAmbientLightSensorDisabledCause::
+                kBrightnessUserRequest,
+        1);
+  }
 }
 
 }  // namespace ash::settings

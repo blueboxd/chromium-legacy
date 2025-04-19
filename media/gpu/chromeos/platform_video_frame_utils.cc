@@ -367,17 +367,14 @@ scoped_refptr<VideoFrame> CreateVideoFrameFromGpuMemoryBufferHandle(
   scoped_refptr<VideoFrame> frame;
   if (is_intel_media_compressed_buffer) {
     CHECK(pixel_format == PIXEL_FORMAT_NV12 ||
-          pixel_format == PIXEL_FORMAT_P016LE);
+          pixel_format == PIXEL_FORMAT_P010LE);
     frame = WrapChromeOSCompressedGpuMemoryBufferAsVideoFrame(
         visible_rect, natural_size, std::move(gpu_memory_buffer), timestamp);
   } else {
-    // The empty shared image array is ok because this VideoFrame is not
+    // It is not necessary to pass a SharedImage because this VideoFrame is not
     // rendered.
-    scoped_refptr<gpu::ClientSharedImage> empty_shared_image;
     frame = VideoFrame::WrapExternalGpuMemoryBuffer(
-        visible_rect, natural_size, std::move(gpu_memory_buffer),
-        empty_shared_image, gpu::SyncToken(), /*texture_target=*/0,
-        base::NullCallback(), timestamp);
+        visible_rect, natural_size, std::move(gpu_memory_buffer), timestamp);
   }
 
   if (!frame)

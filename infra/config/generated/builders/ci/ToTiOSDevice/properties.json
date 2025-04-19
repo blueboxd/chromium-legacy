@@ -67,10 +67,13 @@
     ]
   },
   "builder_group": "chromium.clang",
+  "gardener_rotations": [
+    "chromium.clang"
+  ],
   "perf_dashboard_machine_group": "ChromiumClang",
   "recipe": "chromium",
   "sheriff_rotations": [
     "chromium.clang"
   ],
-  "xcode_build_version": "15e204a"
+  "xcode_build_version": "16a5211f"
 }

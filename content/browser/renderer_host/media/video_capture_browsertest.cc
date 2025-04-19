@@ -26,6 +26,7 @@
 #include "media/base/media_switches.h"
 #include "media/capture/video_capture_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "url/origin.h"
 
 #if BUILDFLAG(IS_MAC)
 #include "base/mac/mac_util.h"
@@ -186,11 +187,9 @@ class VideoCaptureBrowserTest
                                     kFakeDeviceFactoryConfigString);
     command_line->AppendSwitch(switches::kUseFakeUIForMediaStream);
     if (params_.exercise_accelerated_jpeg_decoding) {
-      base::CommandLine::ForCurrentProcess()->AppendSwitch(
-          switches::kUseFakeMjpegDecodeAccelerator);
+      command_line->AppendSwitch(switches::kUseFakeMjpegDecodeAccelerator);
     } else {
-      base::CommandLine::ForCurrentProcess()->AppendSwitch(
-          switches::kDisableAcceleratedMjpegDecode);
+      command_line->AppendSwitch(switches::kDisableAcceleratedMjpegDecode);
     }
   }
 
@@ -221,7 +220,7 @@ class VideoCaptureBrowserTest
         params_.GetPixelFormatToUse());
     video_capture_manager_->ConnectClient(
         session_id_, capture_params, stub_client_id_,
-        &mock_controller_event_handler_,
+        &mock_controller_event_handler_, std::nullopt,
         base::BindOnce(
             &VideoCaptureBrowserTest::OnConnectClientToControllerAnswer,
             base::Unretained(this), std::move(continuation)),

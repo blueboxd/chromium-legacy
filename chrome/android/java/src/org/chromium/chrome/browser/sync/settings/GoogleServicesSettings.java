@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.metrics.ChangeMetricsReportingStateCalledFrom;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
+import org.chromium.chrome.browser.password_manager.PasswordManagerUtilBridge;
 import org.chromium.chrome.browser.password_manager.account_storage_toggle.AccountStorageToggleFragmentArgs;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.price_tracking.PriceTrackingFeatures;
@@ -35,6 +36,7 @@ import org.chromium.chrome.browser.signin.services.UnifiedConsentServiceBridge;
 import org.chromium.chrome.browser.sync.SyncServiceFactory;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.signin.SignOutCoordinator;
+import org.chromium.chrome.browser.ui.theme.ChromeSemanticColorUtils;
 import org.chromium.chrome.browser.usage_stats.UsageStatsConsentDialog;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
@@ -127,7 +129,8 @@ public class GoogleServicesSettings extends ChromeBaseSettingsFragment
         mPasswordsAccountStorage.setOnPreferenceChangeListener(this);
         if (getArguments() != null
                 && getArguments().getBoolean(AccountStorageToggleFragmentArgs.HIGHLIGHT)) {
-            mPasswordsAccountStorage.setBackgroundColor(R.color.iph_highlight_blue);
+            mPasswordsAccountStorage.setBackgroundColor(
+                    ChromeSemanticColorUtils.getIphHighlightColor(getContext()));
         }
         SyncServiceFactory.getForProfile(getProfile()).addSyncStateChangedListener(this);
 
@@ -227,18 +230,20 @@ public class GoogleServicesSettings extends ChromeBaseSettingsFragment
                 // Don't show signout dialog if there's no sync consent, as it never wipes the data.
                 IdentityServicesProvider.get()
                         .getSigninManager(getProfile())
-                        .signOut(SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS, null, false);
+                        .signOut(SignoutReason.USER_DISABLED_ALLOW_CHROME_SIGN_IN, null, false);
                 mPrefService.setBoolean(Pref.SIGNIN_ALLOWED, false);
                 return true;
             }
 
+            // TODO(crbug.com/350699437): Use a different SignoutReason.
             SignOutCoordinator.startSignOutFlow(
                     requireContext(),
                     getProfile(),
                     getChildFragmentManager(),
                     ((ModalDialogManagerHolder) getActivity()).getModalDialogManager(),
                     mSnackbarManager,
-                    SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS,
+                    SignoutReason.USER_DISABLED_ALLOW_CHROME_SIGN_IN,
+                    /* showConfirmDialog= */ true,
                     () -> {
                         mPrefService.setBoolean(Pref.SIGNIN_ALLOWED, false);
                         updatePreferences();
@@ -331,11 +336,12 @@ public class GoogleServicesSettings extends ChromeBaseSettingsFragment
         SyncService syncService = SyncServiceFactory.getForProfile(getProfile());
         mPasswordsAccountStorage.setChecked(
                 syncService.getSelectedTypes().contains(UserSelectableType.PASSWORDS));
-        // TODO(crbug.com/340629575): Handle outdated GmsCore.
         CoreAccountInfo account = syncService.getAccountInfo();
         mPasswordsAccountStorage.setVisible(
                 syncService.getAccountInfo() != null
                         && !syncService.hasSyncConsent()
+                        && !PasswordManagerUtilBridge.isGmsCoreUpdateRequired(
+                                UserPrefs.get(getProfile()), syncService)
                         && ChromeFeatureList.isEnabled(
                                 ChromeFeatureList
                                         .ENABLE_PASSWORDS_ACCOUNT_STORAGE_FOR_NON_SYNCING_USERS)

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/342213636): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include <inttypes.h>
 
 #include <map>
@@ -41,6 +46,7 @@
 #include "base/test/test_future.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "components/services/storage/indexed_db/locks/partitioned_lock_id.h"
 #include "components/services/storage/privileged/mojom/indexed_db_control.mojom.h"
@@ -222,9 +228,8 @@ class IndexedDBTest
     : public testing::Test,
       // The first boolean toggles the Storage Partitioning feature. The second
       // boolean controls the type of StorageKey to run the test on (first or
-      // third party). The third boolean controls whether to enable backing
-      // store sharding.
-      public testing::WithParamInterface<std::tuple<bool, bool, bool>> {
+      // third party).
+      public testing::WithParamInterface<std::tuple<bool, bool>> {
  public:
   blink::StorageKey kNormalFirstPartyStorageKey;
   BucketLocator kNormalFirstPartyBucketLocator;
@@ -266,8 +271,7 @@ class IndexedDBTest
             base::SequencedTaskRunner::GetCurrentDefault())) {
     scoped_feature_list_.InitWithFeatureStates(
         {{net::features::kThirdPartyStoragePartitioning,
-          IsThirdPartyStoragePartitioningEnabled()},
-         {features::kIndexedDBShardBackingStores, BackingStoresSharded()}});
+          IsThirdPartyStoragePartitioningEnabled()}});
 
     kNormalFirstPartyStorageKey =
         blink::StorageKey::CreateFromStringForTesting("http://normal.com/");
@@ -401,8 +405,6 @@ class IndexedDBTest
     return std::get<0>(GetParam());
   }
 
-  bool BackingStoresSharded() { return std::get<2>(GetParam()); }
-
   bool DeleteBucket(const storage::BucketInfo* bucket_info) {
     base::test::TestFuture<blink::mojom::QuotaStatusCode> result_code;
     context()->DeleteBucketData(bucket_info->ToBucketLocator(),
@@ -415,7 +417,8 @@ class IndexedDBTest
           checker_remote,
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver,
       storage::QuotaErrorOr<storage::BucketInfo> bucket_info) {
-    context()->BindIndexedDBImpl(std::move(checker_remote), std::move(receiver),
+    context()->BindIndexedDBImpl(std::move(checker_remote),
+                                 base::UnguessableToken(), std::move(receiver),
                                  bucket_info);
   }
 
@@ -484,18 +487,14 @@ class IndexedDBTest
 
   // This will assert if `ForceSingleThreadForTesting()` has not been called.
   IndexedDBBucketContext* GetBucketContext(storage::BucketId id) {
-    if (BackingStoresSharded()) {
-      auto* sequence_bound = context_->GetShardedBucketContextForTesting(id);
-      if (!sequence_bound) {
-        return nullptr;
-      }
-      base::test::TestFuture<IndexedDBBucketContext*> future;
-      sequence_bound->AsyncCall(&IndexedDBBucketContext::GetReferenceForTesting)
-          .Then(future.GetCallback());
-      return future.Get();
+    auto* sequence_bound = context_->GetBucketContextForTesting(id);
+    if (!sequence_bound) {
+      return nullptr;
     }
-
-    return context_->GetBucketContextForTesting(id);
+    base::test::TestFuture<IndexedDBBucketContext*> future;
+    sequence_bound->AsyncCall(&IndexedDBBucketContext::GetReferenceForTesting)
+        .Then(future.GetCallback());
+    return future.Get();
   }
 
   storage::BucketInfo GetOrCreateBucket(
@@ -568,13 +567,10 @@ INSTANTIATE_TEST_SUITE_P(
     IndexedDBTest,
     testing::Combine(
         /*enable third party storage partitioning*/ testing::Bool(),
-        testing::Values(true),
-        /*enable backing store sharding*/ testing::Bool()),
+        testing::Values(true)),
     [](const testing::TestParamInfo<IndexedDBTest::ParamType>& info) {
       std::string name = std::get<0>(info.param) ? "WithStoragePartitioning_"
                                                  : "NoStoragePartitioning_";
-      name += std::get<2>(info.param) ? "WithBackingStoredSharding"
-                                      : "NoBackingStoreSharding";
       return name;
     });
 
@@ -1504,8 +1500,7 @@ INSTANTIATE_TEST_SUITE_P(
     IndexedDBTestFirstOrThirdParty,
     testing::Combine(
         /*enable third party storage partitioning*/ testing::Bool(),
-        /*test with third party storage key*/ testing::Bool(),
-        /*enable backing store sharding*/ testing::Bool()));
+        /*test with third party storage key*/ testing::Bool()));
 
 // Verifies that the IDB connection is force closed and the directory is deleted
 // when the bucket is deleted.
@@ -1526,26 +1521,15 @@ TEST_P(IndexedDBTestFirstOrThirdParty, ForceCloseOpenDatabasesOnDelete) {
 TEST_P(IndexedDBTestFirstOrThirdParty, ForceCloseOpenDatabasesOnCommitFailure) {
   storage::BucketInfo bucket_info;
   VerifyForcedClosedCalled(
-      BackingStoresSharded()
-          ? base::BindOnce(
-                [](IndexedDBContextImpl* context,
-                   storage::BucketInfo* bucket_info) {
-                  context->GetShardedBucketContextForTesting(bucket_info->id)
-                      ->AsyncCall(&IndexedDBBucketContext::OnDatabaseError)
-                      .WithArgs(leveldb::Status::NotSupported(
-                                    "operation not supported"),
-                                std::string());
-                },
-                context(), &bucket_info)
-          : base::BindOnce(
-                [](IndexedDBContextImpl* context,
-                   storage::BucketInfo* bucket_info) {
-                  context->GetBucketContextForTesting(bucket_info->id)
-                      ->OnDatabaseError(leveldb::Status::NotSupported(
-                                            "operation not supported"),
-                                        {});
-                },
-                context(), &bucket_info),
+      base::BindOnce(
+          [](IndexedDBContextImpl* context, storage::BucketInfo* bucket_info) {
+            context->GetBucketContextForTesting(bucket_info->id)
+                ->AsyncCall(&IndexedDBBucketContext::OnDatabaseError)
+                .WithArgs(
+                    leveldb::Status::NotSupported("operation not supported"),
+                    std::string());
+          },
+          context(), &bucket_info),
       &bucket_info);
 }
 
@@ -1704,7 +1688,8 @@ TEST_P(IndexedDBTest, CloseWithReceiversActive) {
   mojo::PendingRemote<storage::mojom::IndexedDBClientStateChecker>
       checker_remote;
   bucket_context_handle->AddReceiver(
-      std::move(checker_remote), factory_remote.BindNewPipeAndPassReceiver());
+      std::move(checker_remote), /*client_token=*/{},
+      factory_remote.BindNewPipeAndPassReceiver());
 
   // The bucket context and the backing store should exist.
   VerifyBucketContext(bucket_id, /*expected_context_exists=*/true,
@@ -1739,7 +1724,8 @@ TEST_P(IndexedDBTest, CloseWithReceiversInactive) {
   mojo::PendingRemote<storage::mojom::IndexedDBClientStateChecker>
       checker_remote;
   bucket_context_handle->AddReceiver(
-      std::move(checker_remote), factory_remote.BindNewPipeAndPassReceiver());
+      std::move(checker_remote), /*client_token=*/{},
+      factory_remote.BindNewPipeAndPassReceiver());
 
   // The bucket context and the backing store should exist.
   VerifyBucketContext(bucket_id, /*expected_context_exists=*/true,
@@ -1936,14 +1922,13 @@ TEST_P(IndexedDBTest, InMemoryFactoriesStay) {
       bucket_locator.id,
       storage::mojom::ForceCloseReason::FORCE_CLOSE_INTERNALS_PAGE,
       base::DoNothing());
-  if (BackingStoresSharded()) {
-    // Verify the in-memory factory sticks around. Since it would be destroyed
-    // asynchronously, there's no reliable point in time to verify that
-    // destruction *hasn't* happened, so just wait a bit before verifying.
-    RunPostedTasks();
-    RunPostedTasks();
-    RunPostedTasks();
-  }
+  // Verify the in-memory factory sticks around. Since it would be destroyed
+  // asynchronously, there's no reliable point in time to verify that
+  // destruction *hasn't* happened, so just wait a bit before verifying.
+  RunPostedTasks();
+  RunPostedTasks();
+  RunPostedTasks();
+
   VerifyBucketContext(bucket_locator.id, /*expected_context_exists=*/true,
                       /*expected_backing_store_exists=*/true);
 
@@ -2016,33 +2001,27 @@ TEST_P(IndexedDBTest, CloseThenAddReceiver) {
   // should trigger the destruction of the bucket context.
   factory_remote1.reset();
 
-  if (BackingStoresSharded()) {
-    // However, the bucket context still exists for now because shutdown is not
-    // synchronous.
-    ASSERT_TRUE(context()->BucketContextExists(bucket_locator.id));
+  // However, the bucket context still exists for now because shutdown is not
+  // synchronous.
+  ASSERT_TRUE(context()->BucketContextExists(bucket_locator.id));
 
-    // Bind another IDB factory. It's important that this is called
-    // synchronously because it will initially attempt to bind to the existing
-    // bucket context above, but that fails in
-    // IndexedDBBucketContext::AddReceiver().
-    mojo::Remote<blink::mojom::IDBFactory> factory_remote2;
-    BindIndexedDBFactory(
-        mojo::PendingRemote<storage::mojom::IndexedDBClientStateChecker>(),
-        factory_remote2.BindNewPipeAndPassReceiver(),
-        ToBucketInfo(bucket_locator));
+  // Bind another IDB factory. It's important that this is called
+  // synchronously because it will initially attempt to bind to the existing
+  // bucket context above, but that fails in
+  // IndexedDBBucketContext::AddReceiver().
+  mojo::Remote<blink::mojom::IDBFactory> factory_remote2;
+  BindIndexedDBFactory(
+      mojo::PendingRemote<storage::mojom::IndexedDBClientStateChecker>(),
+      factory_remote2.BindNewPipeAndPassReceiver(),
+      ToBucketInfo(bucket_locator));
 
-    // Round trip a message through the new mojo pipe to verify that it is set
-    // up correctly.
-    factory_remote2.FlushForTesting();
+  // Round trip a message through the new mojo pipe to verify that it is set
+  // up correctly.
+  factory_remote2.FlushForTesting();
 
-    // It would be nice to re-verify that the new BucketContext is not the same
-    // as the old one, but there's no good way to identify them through mojo and
-    // no guarantee their memory addresses are different either.
-  } else {
-    ASSERT_TRUE(context()->BucketContextExists(bucket_locator.id));
-    RunPostedTasks();
-    ASSERT_FALSE(context()->BucketContextExists(bucket_locator.id));
-  }
+  // It would be nice to re-verify that the new BucketContext is not the same
+  // as the old one, but there's no good way to identify them through mojo and
+  // no guarantee their memory addresses are different either.
 }
 
 // Tests that the backing store is closed when the connection is closed during

@@ -19,6 +19,7 @@ import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bu
 
 import type {UpdateSyncStateEvent} from '../../clear_browsing_data_dialog/clear_browsing_data_browser_proxy.js';
 import {ClearBrowsingDataBrowserProxyImpl} from '../../clear_browsing_data_dialog/clear_browsing_data_browser_proxy.js';
+import {HatsBrowserProxyImpl, TrustSafetyInteraction} from '../../hats_browser_proxy.js';
 import {loadTimeData} from '../../i18n_setup.js';
 import type {MetricsBrowserProxy} from '../../metrics_browser_proxy.js';
 import {MetricsBrowserProxyImpl, PrivacyGuideInteractions, PrivacyGuideStepsEligibleAndReached} from '../../metrics_browser_proxy.js';
@@ -50,7 +51,7 @@ export class PrivacyGuideCompletionFragmentElement extends
         reflectToAttribute: true,
         type: Boolean,
         computed: 'computeIsNoLinkLayout_(shouldShowWaa_,' +
-            'shouldShowPrivacySandbox_, shouldShowTrackingProtection_)',
+            'shouldShowPrivacySandbox_)',
       },
 
       subheader_: {
@@ -64,24 +65,29 @@ export class PrivacyGuideCompletionFragmentElement extends
             loadTimeData.getBoolean('isPrivacySandboxRestrictedNoticeEnabled'),
       },
 
-      shouldShowTrackingProtection_: {
-        type: Boolean,
-        value: () =>
-            loadTimeData.getBoolean('enableTrackingProtectionRolloutUx'),
-      },
-
       shouldShowWaa_: {
         type: Boolean,
         value: false,
+      },
+
+      privacySandboxRowSubLabel_: {
+        type: String,
+        value: () => {
+          return loadTimeData.getString(
+              loadTimeData.getBoolean(
+                  'isPrivacySandboxPrivacyGuideAdTopicsEnabled') ?
+                  'privacyGuideCompletionCardPrivacySandboxSubLabelAdTopics' :
+                  'privacyGuideCompletionCardPrivacySandboxSubLabel');
+        },
       },
     };
   }
 
   private shouldShowPrivacySandbox_: boolean;
-  private shouldShowTrackingProtection_: boolean;
   private shouldShowWaa_: boolean;
   private metricsBrowserProxy_: MetricsBrowserProxy =
       MetricsBrowserProxyImpl.getInstance();
+  private privacySandboxRowSubLabel_: string;
 
   override ready() {
     super.ready();
@@ -99,15 +105,15 @@ export class PrivacyGuideCompletionFragmentElement extends
   }
 
   private onViewEnterStart_() {
+    HatsBrowserProxyImpl.getInstance().trustSafetyInteractionOccurred(
+        TrustSafetyInteraction.COMPLETED_PRIVACY_GUIDE);
     this.metricsBrowserProxy_
         .recordPrivacyGuideStepsEligibleAndReachedHistogram(
             PrivacyGuideStepsEligibleAndReached.COMPLETION_REACHED);
   }
 
-  // TODO(b/333527273): Remove this + other no-link logic after TP launch.
   private computeIsNoLinkLayout_() {
-    return !this.shouldShowWaa_ && !this.shouldShowPrivacySandbox_ &&
-        !this.shouldShowTrackingProtection_;
+    return !this.shouldShowWaa_ && !this.shouldShowPrivacySandbox_;
   }
 
   private computeSubheader_(): string {
@@ -148,20 +154,6 @@ export class PrivacyGuideCompletionFragmentElement extends
     // TODO(crbug.com/40162029): Replace this with an ordinary OpenWindowProxy call.
     this.shadowRoot!.querySelector<HTMLAnchorElement>('#privacySandboxLink')!
         .dispatchEvent(new MouseEvent('click'));
-  }
-
-  private onTrackingProtectionClick_() {
-    this.metricsBrowserProxy_.recordPrivacyGuideEntryExitHistogram(
-        PrivacyGuideInteractions.TRACKING_PROTECTION_COMPLETION_LINK);
-    this.metricsBrowserProxy_.recordAction(
-        'Settings.PrivacyGuide.CompletionTrackingProtectionClick');
-    // Create a MouseEvent directly to avoid Polymer failing to synthesise a
-    // click event if this function was called in response to a touch event.
-    // See crbug.com/1253883 for details.
-    // TODO(crbug.com/40162029): Replace this with an ordinary OpenWindowProxy call.
-    this.shadowRoot!
-        .querySelector<HTMLAnchorElement>(
-            '#trackingProtectionLink')!.dispatchEvent(new MouseEvent('click'));
   }
 
   private onWaaClick_() {

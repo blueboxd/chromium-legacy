@@ -19,8 +19,11 @@
 #include "chrome/browser/ui/tabs/organization/logging_util.h"
 #include "chrome/browser/ui/tabs/organization/tab_organization_request.h"
 #include "chrome/browser/ui/tabs/organization/tab_organization_session.h"
+#include "chrome/browser/ui/tabs/tab_group_model.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "components/optimization_guide/core/model_quality/feature_type_map.h"
+#include "components/optimization_guide/core/model_quality/model_quality_log_entry.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/optimization_guide/core/optimization_guide_model_executor.h"
 #include "components/optimization_guide/core/optimization_guide_switches.h"
@@ -37,38 +40,21 @@ bool CanUseOptimizationGuide(Profile* profile) {
          OptimizationGuideKeyedServiceFactory::GetForProfile(profile);
 }
 
-void OnLogResults(Profile* profile,
-                  std::unique_ptr<optimization_guide::ModelQualityLogEntry>
-                      model_quality_log_entry,
-                  const TabOrganizationSession* session) {
-  if (!model_quality_log_entry) {
-    return;
+void OnLogResults(
+    Profile* profile,
+    std::unique_ptr<optimization_guide::ModelQualityLogEntry> log_entry,
+    const TabOrganizationSession* session) {
+  if (log_entry && session->request() && session->request()->response() &&
+      session->request()->response()->organizations.size() > 0 &&
+      session->tab_organizations().size() > 0) {
+    optimization_guide::proto::TabOrganizationQuality* quality =
+        log_entry
+            ->quality_data<optimization_guide::TabOrganizationFeatureTypeMap>();
+
+    AddSessionDetailsToQuality(quality, session);
   }
 
-  OptimizationGuideKeyedService* optimization_guide_keyed_service =
-      OptimizationGuideKeyedServiceFactory::GetForProfile(profile);
-  if (!optimization_guide_keyed_service) {
-    return;
-  }
-
-  if (!session->request() || !session->request()->response() ||
-      session->request()->response()->organizations.size() == 0 ||
-      session->tab_organizations().size() == 0) {
-    if (model_quality_log_entry) {
-      optimization_guide_keyed_service->UploadModelQualityLogs(
-          std::move(model_quality_log_entry));
-    }
-    return;
-  }
-
-  optimization_guide::proto::TabOrganizationQuality* quality =
-      model_quality_log_entry
-          ->quality_data<optimization_guide::TabOrganizationFeatureTypeMap>();
-
-  AddSessionDetailsToQuality(quality, session);
-
-  optimization_guide_keyed_service->UploadModelQualityLogs(
-      std::move(model_quality_log_entry));
+  optimization_guide::ModelQualityLogEntry::Upload(std::move(log_entry));
 }
 
 void OnTabOrganizationModelExecutionResult(
@@ -77,20 +63,9 @@ void OnTabOrganizationModelExecutionResult(
     TabOrganizationRequest::BackendFailureCallback on_failure,
     optimization_guide::OptimizationGuideModelExecutionResult result,
     std::unique_ptr<optimization_guide::ModelQualityLogEntry> log_entry) {
-  OptimizationGuideKeyedService* optimization_guide_keyed_service =
-      OptimizationGuideKeyedServiceFactory::GetForProfile(profile);
-
-  if (!optimization_guide_keyed_service) {
-    std::move(on_failure).Run();
-    return;
-  }
-
   if (!result.has_value()) {
     // TODO(b/322206302): remove this when this is fixed in the ModelQualityLogEntry API
-    if (log_entry) {
-      optimization_guide_keyed_service->UploadModelQualityLogs(
-          std::move(log_entry));
-    }
+    optimization_guide::ModelQualityLogEntry::Upload(std::move(log_entry));
     std::move(on_failure).Run();
     return;
   }
@@ -99,10 +74,7 @@ void OnTabOrganizationModelExecutionResult(
       optimization_guide::proto::TabOrganizationResponse>(result.value());
 
   if (!response) {
-    if (log_entry) {
-      optimization_guide_keyed_service->UploadModelQualityLogs(
-          std::move(log_entry));
-    }
+    optimization_guide::ModelQualityLogEntry::Upload(std::move(log_entry));
     std::move(on_failure).Run();
     return;
   }
@@ -159,8 +131,22 @@ void PerformTabOrganizationExecution(
     tab->set_url(tab_data->original_url().spec());
   }
 
-  if (valid_tabs < 2) {
-    std::move(on_failure).Run();
+  // When the user only has one valid tab, and it cannot be added to existing
+  // groups, complete without running the model to show the "No groups found"
+  // error state.
+  bool should_request_organization = valid_tabs > 1;
+  if (valid_tabs == 1 &&
+      base::FeatureList::IsEnabled(features::kTabReorganization)) {
+    const auto* tab_group_model =
+        request->tab_datas()[0]->original_tab_strip_model()->group_model();
+    should_request_organization =
+        tab_group_model && !tab_group_model->ListTabGroups().empty();
+  }
+  if (!should_request_organization) {
+    std::vector<TabOrganizationResponse::Organization> organizations;
+    std::unique_ptr<TabOrganizationResponse> response =
+        std::make_unique<TabOrganizationResponse>(std::move(organizations));
+    std::move(on_completion).Run(std::move(response));
     return;
   }
 

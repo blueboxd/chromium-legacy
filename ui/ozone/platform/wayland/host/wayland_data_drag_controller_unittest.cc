@@ -2,6 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
+#include "ui/ozone/platform/wayland/host/wayland_data_drag_controller.h"
+
 #include <linux/input.h>
 #include <wayland-server.h>
 
@@ -31,10 +38,10 @@
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
+#include "ui/ozone/platform/wayland/host/wayland_connection_test_api.h"
 #include "ui/ozone/platform/wayland/host/wayland_cursor_position.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_device.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_device_manager.h"
-#include "ui/ozone/platform/wayland/host/wayland_data_drag_controller.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_offer.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_source.h"
 #include "ui/ozone/platform/wayland/host/wayland_serial_tracker.h"
@@ -47,7 +54,6 @@
 #include "ui/ozone/platform/wayland/test/test_data_offer.h"
 #include "ui/ozone/platform/wayland/test/test_data_source.h"
 #include "ui/ozone/platform/wayland/test/test_keyboard.h"
-#include "ui/ozone/platform/wayland/test/test_util.h"
 #include "ui/ozone/platform/wayland/test/test_wayland_server_thread.h"
 #include "ui/ozone/platform/wayland/test/wayland_drag_drop_test.h"
 #include "ui/ozone/platform/wayland/test/wayland_test.h"
@@ -78,13 +84,8 @@ constexpr FilenameToURLPolicy kFilenameToURLPolicy =
 
 template <typename StringType>
 PlatformClipboard::Data ToClipboardData(const StringType& data_string) {
-  auto* begin = reinterpret_cast<typename std::vector<uint8_t>::const_pointer>(
-      data_string.data());
-  std::vector<uint8_t> result(
-      begin,
-      begin + (data_string.size() * sizeof(typename StringType::value_type)));
-  return scoped_refptr<base::RefCountedBytes>(
-      base::RefCountedBytes::TakeVector(&result));
+  return base::MakeRefCounted<base::RefCountedBytes>(
+      base::as_byte_span(data_string));
 }
 
 }  // namespace
@@ -338,7 +339,7 @@ TEST_P(WaylandDataDragControllerTest, StartDragWithCustomFormats) {
   FocusAndPressLeftPointerButton(window_.get(), &delegate_);
   OSExchangeData data(OSExchangeDataProviderFactory::CreateProvider());
   ClipboardFormatType kCustomFormats[] = {
-      ClipboardFormatType::WebCustomDataType(),
+      ClipboardFormatType::DataTransferCustomType(),
       ClipboardFormatType::GetType("chromium/x-bookmark-entries"),
       ClipboardFormatType::GetType("xyz/arbitrary-custom-type")};
   for (auto format : kCustomFormats) {
@@ -1134,7 +1135,7 @@ TEST_P(WaylandDataDragControllerTest, SuppressPointerButtonReleasesAfterEnter) {
   // Ensure start_drag request is processed at compositor side and a first enter
   // is received by the client. From that point onwards, any pointer button
   // event must be no-op.
-  wl::SyncDisplay(connection_->display_wrapper(), *connection_->display());
+  WaylandConnectionTestApi(connection_.get()).SyncDisplay();
   ASSERT_TRUE(drag_controller()->has_received_enter_);
 
   // Emulates a spurious pointer button release and ensure it is no-op.
@@ -1262,6 +1263,9 @@ TEST_P(WaylandDataDragControllerTest, StartDragWithCorrectSerialForDragSource) {
 // unfinished. Regression test for https://crbug.com/1400872.
 TEST_P(WaylandDataDragControllerTest, DropWhileFetchingData) {
   const uint32_t surface_id = window_->root_surface()->get_surface_id();
+  // TODO(crbug.com/328783999): Use a RunLoop here (like in
+  // DropSeveralMimeTypes) so we can pass `no_nested_runloops=true` to
+  // `PostToServerAndWait()`.
 
   // Data for each offered mime-type is asynchronously read (eg: using
   // wl_display.sync callbacks, etc), so a single roundtrip - done implicitly
@@ -1270,22 +1274,25 @@ TEST_P(WaylandDataDragControllerTest, DropWhileFetchingData) {
   // and ensure it does not crash in the next step.
   EXPECT_CALL(*drop_handler_, OnDragEnter(_, _, _)).Times(1);
   EXPECT_CALL(*drop_handler_, MockOnDragDataAvailable()).Times(0);
-  PostToServerAndWait([surface_id](wl::TestWaylandServerThread* server) {
-    auto* data_device = server->data_device_manager()->data_device();
-    auto* data_offer = data_device->CreateAndSendDataOffer();
-    data_offer->OnOffer(
-        kMimeTypeText, ToClipboardData(std::string(kSampleTextForDragAndDrop)));
+  PostToServerAndWait(
+      [surface_id](wl::TestWaylandServerThread* server) {
+        auto* data_device = server->data_device_manager()->data_device();
+        auto* data_offer = data_device->CreateAndSendDataOffer();
+        data_offer->OnOffer(
+            kMimeTypeText,
+            ToClipboardData(std::string(kSampleTextForDragAndDrop)));
 
-    auto* surface = server->GetObject<wl::MockSurface>(surface_id);
-    data_device->OnEnter(server->GetNextSerial(), surface->resource(),
-                         wl_fixed_from_int(0), wl_fixed_from_int(0),
-                         data_offer);
+        auto* surface = server->GetObject<wl::MockSurface>(surface_id);
+        data_device->OnEnter(server->GetNextSerial(), surface->resource(),
+                             wl_fixed_from_int(0), wl_fixed_from_int(0),
+                             data_offer);
 
-    // Sending `drop` right after `enter` here ensures drag controller has not
-    // yet had the chance to (even) start the data fetching, which helps
-    // avoiding flakiness (quite common in this kind of test case).
-    data_device->OnDrop();
-  });
+        // Sending `drop` right after `enter` here ensures drag controller has
+        // not yet had the chance to (even) start the data fetching, which helps
+        // avoiding flakiness (quite common in this kind of test case).
+        data_device->OnDrop();
+      },
+      false);
   Mock::VerifyAndClearExpectations(drop_handler_.get());
 
   EXPECT_FALSE(drop_handler_->dropped_data());
@@ -1376,7 +1383,7 @@ TEST_P(WaylandDataDragControllerTest,
   // Wait for the full data fetching flow to finish before checking all
   // expectations.
   WaitForDragDropTasks();
-  wl::SyncDisplay(connection_->display_wrapper(), *connection_->display());
+  WaylandConnectionTestApi(connection_.get()).SyncDisplay();
 
   EXPECT_EQ(drag_controller_state(),
             WaylandDataDragController::State::kStarted);
@@ -1427,7 +1434,7 @@ TEST_P(WaylandDataDragControllerTest, LeaveWindowWhileFetchingData) {
   // Wait for the full data fetching flow and requests/events to finish before
   // checking all expectations.
   WaitForDragDropTasks();
-  wl::SyncDisplay(connection_->display_wrapper(), *connection_->display());
+  WaylandConnectionTestApi(connection_.get()).SyncDisplay();
 
   Mock::VerifyAndClearExpectations(drop_handler_.get());
   EXPECT_FALSE(drop_handler_->dropped_data());
@@ -1514,7 +1521,7 @@ TEST_P(WaylandDataDragControllerTest, OutgoingSessionWithoutDndFinished) {
   bool started = drag_controller()->StartSession(
       os_exchange_data, DragDropTypes::DRAG_COPY | DragDropTypes::DRAG_MOVE,
       DragEventSource::kMouse);
-  wl::SyncDisplay(connection_->display_wrapper(), *connection_->display());
+  WaylandConnectionTestApi(connection_.get()).SyncDisplay();
   ASSERT_TRUE(started);
 
   SendDndFinished();

@@ -51,8 +51,8 @@ _LIBS_DIR = 'libs'
 
 _GN_PATH = os.path.join(_CHROMIUM_SRC, 'third_party', 'depot_tools', 'gn')
 
-_GRADLEW = os.path.join(_CHROMIUM_SRC, 'third_party', 'gradle_wrapper',
-                        'gradlew')
+_GRADLEW = os.path.join(_CHROMIUM_SRC, 'third_party', 'android_build_tools',
+                        'gradle_wrapper', 'gradlew')
 
 _JAVA_HOME = os.path.join(_CHROMIUM_SRC, 'third_party', 'jdk', 'current')
 
@@ -348,8 +348,8 @@ def _CheckVulnerabilities(build_android_deps_dir, report_dst):
 
     try:
         logging.info('CMD: %s', ' '.join(gradle_cmd))
-        subprocess.run(gradle_cmd, check=True)
-    except subprocess.CalledProcessError:
+        RunCommand(gradle_cmd, print_stdout=True)
+    except Exception:
         report_path = os.path.join(report_dst, 'dependency-check-report.html')
         logging.error(
             textwrap.dedent("""
@@ -580,16 +580,21 @@ def main():
         if args.ignore_licenses:
             gradle_cmd.append('-PskipLicenses=true')
 
-        subprocess.run(gradle_cmd, check=True)
+        RunCommand(gradle_cmd, print_stdout=True)
 
         logging.info('# Reformat %s.',
                      os.path.join(args.android_deps_dir, _BUILD_GN))
-        gn_args = [
-            os.path.relpath(_GN_PATH, _CHROMIUM_SRC), 'format',
-            os.path.join(os.path.relpath(build_android_deps_dir, _CHROMIUM_SRC),
-                         _BUILD_GN)
-        ]
-        RunCommand(gn_args, print_stdout=debug, cwd=_CHROMIUM_SRC)
+        gn_path = os.path.relpath(_GN_PATH, _CHROMIUM_SRC)
+        gn_input = os.path.join(
+            os.path.relpath(build_android_deps_dir, _CHROMIUM_SRC), _BUILD_GN)
+        gn_args = [gn_path, 'format', gn_input]
+        try:
+            RunCommand(gn_args, print_stdout=debug, cwd=_CHROMIUM_SRC)
+        except Exception:
+            if os.path.exists(gn_input):
+                shutil.copyfile(gn_input, '/tmp/gn-format-input')
+                logging.warning('Saved GN input to /tmp/gn-format-input')
+            raise
 
         build_libs_dir = os.path.join(build_android_deps_dir, _LIBS_DIR)
         if args.override_artifact:

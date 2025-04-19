@@ -8,7 +8,6 @@ import android.graphics.RectF;
 import android.util.FloatProperty;
 
 import androidx.annotation.ColorInt;
-import androidx.annotation.Nullable;
 
 import org.chromium.base.MathUtils;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -29,6 +28,13 @@ public class StripLayoutGroupTitle extends StripLayoutView {
          * @param rootId The root ID of the given group indicator.
          */
         void releaseResourcesForGroupTitle(int rootId);
+
+        /**
+         * Rebuilds the resources associated with this group indicator.
+         *
+         * @param groupTitle This group indicator.
+         */
+        void rebuildResourcesForGroupTitle(StripLayoutGroupTitle groupTitle);
 
         /**
          * Handles group title click action.
@@ -72,14 +78,7 @@ public class StripLayoutGroupTitle extends StripLayoutView {
     // External influences.
     private final StripLayoutGroupTitleDelegate mDelegate;
 
-    // State variables.
-    private final boolean mIncognito;
-
     // Position variables.
-    private float mDrawX;
-    private float mDrawY;
-    private float mWidth;
-    private float mHeight;
     private final RectF mTouchTarget = new RectF();
 
     // Tab group variables.
@@ -98,78 +97,54 @@ public class StripLayoutGroupTitle extends StripLayoutView {
      * @param delegate The delegate for additional strip group title functionality.
      * @param incognito Whether or not this tab group is Incognito.
      * @param rootId The root ID for the tab group.
-     * @param title The title of the tab group, if it is set. Null otherwise.
-     * @param textWidth The width of the title text in px.
-     * @param color The color of the tab group.
      */
     public StripLayoutGroupTitle(
-            StripLayoutGroupTitleDelegate delegate,
-            boolean incognito,
-            int rootId,
-            @Nullable String title,
-            float textWidth,
-            @ColorInt int color) {
+            StripLayoutGroupTitleDelegate delegate, boolean incognito, int rootId) {
+        super(incognito);
         assert rootId != Tab.INVALID_TAB_ID : "Tried to create a group title for an invalid group.";
 
         mDelegate = delegate;
-        mIncognito = incognito;
-
         updateRootId(rootId);
-        updateTitle(title, textWidth);
-        updateTint(color);
-    }
-
-    @Override
-    public float getDrawX() {
-        return mDrawX;
     }
 
     @Override
     public void setDrawX(float x) {
-        mDrawX = x;
+        super.setDrawX(x);
         mTouchTarget.left = x;
-        mTouchTarget.right = x + mWidth;
-    }
-
-    @Override
-    public float getDrawY() {
-        return mDrawY;
+        mTouchTarget.right = x + getWidth();
     }
 
     @Override
     public void setDrawY(float y) {
-        mDrawY = y;
+        super.setDrawY(y);
         mTouchTarget.top = y;
-        mTouchTarget.bottom = y + mHeight;
-    }
-
-    @Override
-    public float getWidth() {
-        return mWidth;
+        mTouchTarget.bottom = y + getHeight();
     }
 
     @Override
     public void setWidth(float width) {
-        mWidth = width;
-        mTouchTarget.right = mDrawX + mWidth;
-    }
-
-    @Override
-    public float getHeight() {
-        return mHeight;
+        super.setWidth(width);
+        mTouchTarget.right = getDrawX() + width;
     }
 
     @Override
     public void setHeight(float height) {
-        mHeight = height;
-        mTouchTarget.bottom = mDrawY + mHeight;
+        super.setHeight(height);
+        mTouchTarget.bottom = getDrawY() + height;
     }
 
     @Override
-    public void setVisible(boolean visible) {
-        super.setVisible(visible);
+    void onVisibilityChanged(boolean newVisibility) {
+        if (newVisibility) {
+            mDelegate.rebuildResourcesForGroupTitle(this);
+        } else {
+            mDelegate.releaseResourcesForGroupTitle(mRootId);
+        }
+    }
 
-        if (!visible) mDelegate.releaseResourcesForGroupTitle(mRootId);
+    @Override
+    public void setIncognito(boolean incognito) {
+        assert false : "Incognito state of a group title cannot change";
     }
 
     @Override
@@ -208,38 +183,31 @@ public class StripLayoutGroupTitle extends StripLayoutView {
     }
 
     /**
-     * @return Whether the tab group this represents is Incognito or not.
-     */
-    public boolean isIncognito() {
-        return mIncognito;
-    }
-
-    /**
      * @return DrawX accounting for padding.
      */
     public float getPaddedX() {
-        return mDrawX + (LocalizationUtils.isLayoutRtl() ? MARGIN_END_DP : MARGIN_START_DP);
+        return getDrawX() + (LocalizationUtils.isLayoutRtl() ? MARGIN_END_DP : MARGIN_START_DP);
     }
 
     /**
      * @return DrawY accounting for padding.
      */
     public float getPaddedY() {
-        return mDrawY + MARGIN_TOP_DP;
+        return getDrawY() + MARGIN_TOP_DP;
     }
 
     /**
      * @return Width accounting for padding.
      */
     public float getPaddedWidth() {
-        return mWidth - MARGIN_START_DP - MARGIN_END_DP;
+        return getWidth() - MARGIN_START_DP - MARGIN_END_DP;
     }
 
     /**
      * @return Height accounting for padding.
      */
     public float getPaddedHeight() {
-        return mHeight - MARGIN_TOP_DP - MARGIN_BOTTOM_DP;
+        return getHeight() - MARGIN_TOP_DP - MARGIN_BOTTOM_DP;
     }
 
     /**

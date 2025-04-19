@@ -6,21 +6,27 @@ package org.chromium.chrome.browser.hub;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import static org.chromium.chrome.browser.hub.HubPaneHostProperties.ACTION_BUTTON_DATA;
+import static org.chromium.chrome.browser.hub.HubPaneHostProperties.FLOATING_ACTION_BUTTON_SUPPLIER_CALLBACK;
+import static org.chromium.chrome.browser.hub.HubPaneHostProperties.HAIRLINE_VISIBILITY;
 import static org.chromium.chrome.browser.hub.HubPaneHostProperties.PANE_ROOT_VIEW;
+import static org.chromium.chrome.browser.hub.HubPaneHostProperties.SNACKBAR_CONTAINER_CALLBACK;
 
 import android.app.Activity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
-import androidx.test.filters.MediumTest;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -32,6 +38,8 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.robolectric.shadows.ShadowLooper;
 
+import org.chromium.base.Callback;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.ui.base.TestActivity;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -50,11 +58,15 @@ public class HubPaneHostViewUnitTest {
             new ActivityScenarioRule<>(TestActivity.class);
 
     @Mock Runnable mOnActionButton;
+    @Mock Callback<ViewGroup> mSnackbarContainerCallback;
 
     private Activity mActivity;
     private HubPaneHostView mPaneHost;
     private Button mActionButton;
+    private ImageView mHairline;
+    private ViewGroup mSnackbarContainer;
     private PropertyModel mPropertyModel;
+    private Supplier<View> mFloatingActionButtonSupplier;
 
     @Before
     public void setUp() throws Exception {
@@ -68,6 +80,8 @@ public class HubPaneHostViewUnitTest {
         LayoutInflater inflater = LayoutInflater.from(mActivity);
         mPaneHost = (HubPaneHostView) inflater.inflate(R.layout.hub_pane_host_layout, null, false);
         mActionButton = mPaneHost.findViewById(R.id.host_action_button);
+        mHairline = mPaneHost.findViewById(R.id.pane_top_hairline);
+        mSnackbarContainer = mPaneHost.findViewById(R.id.pane_host_view_snackbar_container);
         mActivity.setContentView(mPaneHost);
 
         mPropertyModel = new PropertyModel(HubPaneHostProperties.ALL_KEYS);
@@ -75,7 +89,6 @@ public class HubPaneHostViewUnitTest {
     }
 
     @Test
-    @MediumTest
     public void testActionButtonVisibility() {
         DisplayButtonData displayButtonData =
                 new ResourceButtonData(
@@ -91,7 +104,6 @@ public class HubPaneHostViewUnitTest {
     }
 
     @Test
-    @MediumTest
     public void testActionButtonCallback() {
         DisplayButtonData displayButtonData =
                 new ResourceButtonData(
@@ -111,7 +123,6 @@ public class HubPaneHostViewUnitTest {
     }
 
     @Test
-    @MediumTest
     public void testEmptyActionButtonCallbackDisablesButton() {
         DisplayButtonData displayButtonData =
                 new ResourceButtonData(
@@ -125,7 +136,6 @@ public class HubPaneHostViewUnitTest {
     }
 
     @Test
-    @MediumTest
     public void testSetRootView() {
         View root1 = new View(mActivity);
         View root2 = new View(mActivity);
@@ -157,7 +167,6 @@ public class HubPaneHostViewUnitTest {
     }
 
     @Test
-    @MediumTest
     public void testSetRootView_alphaRestored() {
         View root1 = new View(mActivity);
         View root2 = new View(mActivity);
@@ -171,6 +180,84 @@ public class HubPaneHostViewUnitTest {
         mPropertyModel.set(PANE_ROOT_VIEW, null);
         mPropertyModel.set(PANE_ROOT_VIEW, root1);
         assertEquals(1, root1.getAlpha(), /* delta= */ 0);
+    }
+
+    @Test
+    public void testHairlineVisibility() {
+        assertEquals(View.GONE, mHairline.getVisibility());
+
+        mPropertyModel.set(HAIRLINE_VISIBILITY, true);
+        assertEquals(View.VISIBLE, mHairline.getVisibility());
+
+        mPropertyModel.set(HAIRLINE_VISIBILITY, false);
+        assertEquals(View.GONE, mHairline.getVisibility());
+    }
+
+    @Test
+    public void testFloatingActionButtonSupplier() {
+        Callback<Supplier<View>> callback =
+                (floatingActionButtonSupplier) -> {
+                    mFloatingActionButtonSupplier = floatingActionButtonSupplier;
+                };
+
+        assertNull(mFloatingActionButtonSupplier);
+        mPropertyModel.set(FLOATING_ACTION_BUTTON_SUPPLIER_CALLBACK, callback);
+        assertNotNull(mFloatingActionButtonSupplier);
+
+        assertEquals(View.GONE, mActionButton.getVisibility());
+        assertNull(mFloatingActionButtonSupplier.get());
+
+        mActionButton.setVisibility(View.VISIBLE);
+        assertEquals(mFloatingActionButtonSupplier.get(), mActionButton);
+    }
+
+    @Test
+    public void testSnackbarContainerSupplier() {
+        mPropertyModel.set(SNACKBAR_CONTAINER_CALLBACK, mSnackbarContainerCallback);
+        verify(mSnackbarContainerCallback).onResult(mSnackbarContainer);
+    }
+
+    @Test
+    public void testSnackbarContainerFabAnimation() {
+        mActionButton.layout(0, 0, 100, 100);
+        mSnackbarContainer.layout(0, 100, 100, 100);
+
+        int oldMargin = getBottomMargin(mActionButton);
+        View.OnLayoutChangeListener listener =
+                mPaneHost.getSnackbarLayoutChangeListenerForTesting();
+
+        listener.onLayoutChange(
+                mSnackbarContainer,
+                /* left= */ 0,
+                /* top= */ 50,
+                /* right= */ 100,
+                /* bottom= */ 100,
+                /* oldLeft= */ 0,
+                /* oldTop= */ 100,
+                /* oldRight= */ 100,
+                /* oldBottom= */ 100);
+        ShadowLooper.runUiThreadTasks();
+
+        assertEquals(oldMargin + 50, getBottomMargin(mActionButton));
+
+        listener.onLayoutChange(
+                mSnackbarContainer,
+                /* left= */ 0,
+                /* top= */ 100,
+                /* right= */ 100,
+                /* bottom= */ 100,
+                /* oldLeft= */ 0,
+                /* oldTop= */ 50,
+                /* oldRight= */ 100,
+                /* oldBottom= */ 100);
+        ShadowLooper.runUiThreadTasks();
+
+        assertEquals(oldMargin, getBottomMargin(mActionButton));
+    }
+
+    private int getBottomMargin(View view) {
+        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) view.getLayoutParams();
+        return params.bottomMargin;
     }
 
     /** Order of children does not matter. */

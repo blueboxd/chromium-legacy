@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 
 #include <dlfcn.h>
@@ -1287,6 +1292,9 @@ bool VASupportedProfiles::FillProfileInfo_Locked(
     LOG(ERROR) << "Can't get the maximum number of config attributes";
     return false;
   }
+  const bool is_mesa_gallium = VaapiWrapper::GetImplementationType() ==
+                               media::VAImplementation::kMesaGallium;
+
   std::vector<VAConfigAttrib> config_attributes(max_num_config_attributes);
   int num_config_attributes;
   va_res = vaQueryConfigAttributes(va_display, va_config_id, &va_profile,
@@ -1303,7 +1311,10 @@ bool VASupportedProfiles::FillProfileInfo_Locked(
       profile_info->supported_internal_formats.yuv420_10 = true;
     if (attrib.value & VA_RT_FORMAT_YUV422)
       profile_info->supported_internal_formats.yuv422 = true;
-    if (attrib.value & VA_RT_FORMAT_YUV444)
+    // The Mesa Gallium backend doesn't support converting YUV 4:4:4 surfaces to
+    // any VAImage fourcc that we care about, so don't VA_RT_FORMAT_YUV444 on
+    // that driver.
+    if ((attrib.value & VA_RT_FORMAT_YUV444) && !is_mesa_gallium)
       profile_info->supported_internal_formats.yuv444 = true;
     break;
   }
@@ -1961,9 +1972,12 @@ bool VaapiWrapper::GetJpegDecodeSuitableImageFourCC(unsigned int rt_format,
   } else if (GetImplementationType() == VAImplementation::kIntelIHD) {
     // (b/159896972): iHD v20.1.1 cannot create Y216 and Y416 images from a
     // decoded JPEG on gen 12. It is also failing to support Y800 format.
+    //
+    // (b/344835625): the VPP in MTL cannot be configured to output 422H.
     if (preferred_fourcc == VA_FOURCC_Y216 ||
         preferred_fourcc == VA_FOURCC_Y416 ||
-        preferred_fourcc == VA_FOURCC_Y800) {
+        preferred_fourcc == VA_FOURCC_Y800 ||
+        preferred_fourcc == VA_FOURCC_422H) {
       preferred_fourcc = VA_FOURCC_I420;
     }
   }
@@ -2600,6 +2614,9 @@ VaapiWrapper::ExportVASurfaceAsNativePixmapDmaBufUnwrapped(
     case VA_FOURCC_NV12:
       buffer_format = gfx::BufferFormat::YUV_420_BIPLANAR;
       break;
+    case VA_FOURCC_P010:
+      buffer_format = gfx::BufferFormat::P010;
+      break;
     case VA_FOURCC_ARGB:
       buffer_format = gfx::BufferFormat::BGRA_8888;
       break;
@@ -2652,18 +2669,6 @@ VaapiWrapper::ExportVASurfaceAsNativePixmapDmaBufUnwrapped(
   exported_pixmap->pixmap = base::MakeRefCounted<gfx::NativePixmapDmaBuf>(
       va_surface_size, buffer_format, std::move(handle));
   return exported_pixmap;
-}
-
-std::unique_ptr<NativePixmapAndSizeInfo>
-VaapiWrapper::ExportVASurfaceAsNativePixmapDmaBuf(const VASurface& va_surface) {
-  VAAPI_CHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (va_surface.id() == VA_INVALID_SURFACE || va_surface.size().IsEmpty() ||
-      va_surface.format() == kInvalidVaRtFormat) {
-    LOG(ERROR) << "Cannot export an invalid surface";
-    return nullptr;
-  }
-  return ExportVASurfaceAsNativePixmapDmaBufUnwrapped(va_surface.id(),
-                                                      va_surface.size());
 }
 
 std::unique_ptr<NativePixmapAndSizeInfo>

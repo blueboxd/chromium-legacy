@@ -166,6 +166,12 @@ const char kSingleUsernameFormHTML[] =
     "  <INPUT type='submit' value='Login'/>"
     "</FORM>";
 
+const char kSingleTextInputFormHTML[] =
+    "<FORM name='LoginTestForm' action='http://www.bidule.com'>"
+    "  <INPUT type='text' id='username'/>"
+    "  <INPUT type='submit' value='Login'/>"
+    "</FORM>";
+
 const char kEmptyFormHTML[] =
     "<head> <style> form {display: inline;} </style> </head>"
     "<body> <form> </form> </body>";
@@ -358,7 +364,7 @@ void SetElementReadOnly(WebInputElement& element, bool read_only) {
 
 bool FormHasFieldWithValue(const autofill::FormData& form,
                            const std::u16string& value) {
-  for (const auto& field : form.fields) {
+  for (const auto& field : form.fields()) {
     if (field.value() == value) {
       return true;
     }
@@ -566,18 +572,18 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
 
   void UpdateRendererIDsInFillData() {
     fill_data_.username_element_renderer_id =
-        username_element_.IsNull()
-            ? autofill::FieldRendererId()
-            : autofill::form_util::GetFieldRendererId(username_element_);
+        username_element_
+            ? autofill::form_util::GetFieldRendererId(username_element_)
+            : autofill::FieldRendererId();
 
     fill_data_.password_element_renderer_id =
-        password_element_.IsNull()
-            ? autofill::FieldRendererId()
-            : autofill::form_util::GetFieldRendererId(password_element_);
+        password_element_
+            ? autofill::form_util::GetFieldRendererId(password_element_)
+            : autofill::FieldRendererId();
 
-    ASSERT_TRUE(!username_element_.IsNull() || !password_element_.IsNull());
-    WebFormElement form = password_element_.IsNull() ? username_element_.Form()
-                                                     : password_element_.Form();
+    ASSERT_TRUE(username_element_ || password_element_);
+    WebFormElement form =
+        password_element_ ? password_element_.Form() : username_element_.Form();
     fill_data_.form_renderer_id = form_util::GetFormRendererId(form);
   }
 
@@ -603,23 +609,23 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     WebDocument document = GetMainFrame()->GetDocument();
     WebElement element =
         document.GetElementById(WebString::FromUTF8(id.c_str()));
-    EXPECT_FALSE(element.IsNull());
+    EXPECT_TRUE(element);
     return element;
   }
 
   WebInputElement GetInputElementByID(const std::string& id) {
     WebInputElement input_element = GetElementByID(id).To<WebInputElement>();
-    EXPECT_FALSE(input_element.IsNull());
+    EXPECT_TRUE(input_element);
     return input_element;
   }
 
   void ClearUsernameAndPasswordFieldValues() {
-    if (!username_element_.IsNull()) {
+    if (username_element_) {
       username_element_.SetValue(WebString());
       username_element_.SetSuggestedValue(WebString());
       username_element_.SetAutofillState(WebAutofillState::kNotFilled);
     }
-    if (!password_element_.IsNull()) {
+    if (password_element_) {
       password_element_.SetValue(WebString());
       password_element_.SetSuggestedValue(WebString());
       password_element_.SetAutofillState(WebAutofillState::kNotFilled);
@@ -734,7 +740,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
                                        bool password_autofilled,
                                        bool check_suggested_username,
                                        bool check_suggested_password) {
-    if (!username_element.IsNull()) {
+    if (username_element) {
       EXPECT_EQ(username, check_suggested_username
                               ? username_element.SuggestedValue().Utf8()
                               : username_element.Value().Utf8())
@@ -743,7 +749,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
                                          username_element.IsAutofilled());
     }
 
-    if (!password_element.IsNull()) {
+    if (password_element) {
       EXPECT_EQ(password, check_suggested_password
                               ? password_element.SuggestedValue().Utf8()
                               : password_element.Value().Utf8())
@@ -846,7 +852,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     }
 
     size_t unchecked_masks = expected_properties_masks.size();
-    for (const FormFieldData& field : form_data.fields) {
+    for (const FormFieldData& field : form_data.fields()) {
       const auto& it = expected_properties_masks.find(field.name());
       if (it == expected_properties_masks.end())
         continue;
@@ -968,14 +974,14 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
                             .ShadowRoot()
                             .FirstChild()
                             .To<WebInputElement>();
-    if (username_element_.IsNull()) {
+    if (!username_element_) {
       return ::testing::AssertionFailure() << "Username element is null.";
     }
     password_element_ = GetElementByID("pw_host")
                             .ShadowRoot()
                             .FirstChild()
                             .To<WebInputElement>();
-    if (password_element_.IsNull()) {
+    if (!password_element_) {
       return ::testing::AssertionFailure() << "Password element is null.";
     }
     return ::testing::AssertionSuccess();
@@ -1145,7 +1151,7 @@ TEST_F(PasswordAutofillAgentTest, NoFillingOnSignupForm_NoMetrics) {
   WebDocument document = GetMainFrame()->GetDocument();
   WebElement element =
       document.GetElementById(WebString::FromUTF8("random_info"));
-  ASSERT_FALSE(element.IsNull());
+  ASSERT_TRUE(element);
   username_element_ = element.To<WebInputElement>();
 
   fill_data_.username_element_renderer_id = autofill::FieldRendererId();
@@ -2289,7 +2295,7 @@ TEST_F(PasswordAutofillAgentTest, SubmissionReadiness_FieldsInBetween) {
   WebDocument document = GetMainFrame()->GetDocument();
   WebElement element =
       document.GetElementById(WebString::FromUTF16(u"random_field"));
-  ASSERT_FALSE(element.IsNull());
+  ASSERT_TRUE(element);
   username_element_ = element.To<WebInputElement>();
   UpdateRendererIDsInFillData();
 
@@ -2338,7 +2344,7 @@ TEST_F(PasswordAutofillAgentTest, SubmissionReadiness_EmptyFields) {
 TEST_F(PasswordAutofillAgentTest, SubmissionReadiness_MoreThanTwoFields) {
   SimulateOnFillPasswordForm(fill_data_);
   WebInputElement surname_element = GetInputElementByID("random_field");
-  ASSERT_FALSE(surname_element.IsNull());
+  ASSERT_TRUE(surname_element);
   SimulateUserInputChangeForElement(&surname_element, "Smith");
 
   EXPECT_TRUE(password_autofill_agent_->TryToShowKeyboardReplacingSurface(
@@ -2438,7 +2444,7 @@ TEST_F(PasswordAutofillAgentTest,
   WebDocument document = GetMainFrame()->GetDocument();
   WebElement element =
       document.GetElementById(WebString::FromUTF8("random_info"));
-  ASSERT_FALSE(element.IsNull());
+  ASSERT_TRUE(element);
   username_element_ = element.To<WebInputElement>();
 
   fill_data_.username_element_renderer_id = autofill::FieldRendererId();
@@ -2721,7 +2727,7 @@ TEST_F(PasswordAutofillAgentTest,
   // user selection; simulates the menu actually popping up.
   SimulatePointClick(gfx::Point(1, 1));
 
-  // No popup when using address/payment manual fallback.
+  // No popup request when using address/payment/plus address manual fallback.
   EXPECT_CALL(fake_driver_, ShowPasswordSuggestions).Times(0);
   autofill_agent_->TriggerSuggestions(
       form_util::GetFieldRendererId(username_element_),
@@ -2729,8 +2735,11 @@ TEST_F(PasswordAutofillAgentTest,
   autofill_agent_->TriggerSuggestions(
       form_util::GetFieldRendererId(username_element_),
       AutofillSuggestionTriggerSource::kManualFallbackPayments);
+  autofill_agent_->TriggerSuggestions(
+      form_util::GetFieldRendererId(username_element_),
+      AutofillSuggestionTriggerSource::kManualFallbackPlusAddresses);
 
-  // However popup is shown otherwise.
+  // However, the popup is requested for password manual fallback.
   EXPECT_CALL(fake_driver_, ShowPasswordSuggestions);
   autofill_agent_->TriggerSuggestions(
       form_util::GetFieldRendererId(username_element_),
@@ -2851,16 +2860,16 @@ TEST_F(PasswordAutofillAgentTest,
        RememberLastNonEmptyUsernameAndPasswordOnSubmit_ScriptCleared) {
   LoadHTML(kSignupFormHTML);
   WebInputElement username_element = GetInputElementByID("random_info");
-  ASSERT_FALSE(username_element.IsNull());
+  ASSERT_TRUE(username_element);
   SimulateUserInputChangeForElement(&username_element, "username");
 
   WebInputElement new_password_element = GetInputElementByID("new_password");
-  ASSERT_FALSE(new_password_element.IsNull());
+  ASSERT_TRUE(new_password_element);
   SimulateUserInputChangeForElement(&new_password_element, "random");
 
   WebInputElement confirmation_password_element =
       GetInputElementByID("confirm_password");
-  ASSERT_FALSE(confirmation_password_element.IsNull());
+  ASSERT_TRUE(confirmation_password_element);
   SimulateUserInputChangeForElement(&confirmation_password_element, "random");
 
   // Simulate that the username and the password values were cleared by the
@@ -3420,7 +3429,7 @@ TEST_F(PasswordAutofillAgentTest,
   // The password field shouldn't reveal the value on focusing.
   WebDocument document = GetMainFrame()->GetDocument();
   WebElement element = document.GetElementById(WebString::FromUTF8("password"));
-  ASSERT_FALSE(element.IsNull());
+  ASSERT_TRUE(element);
   WebInputElement password_element = element.To<WebInputElement>();
   EXPECT_FALSE(password_element.ShouldRevealPassword());
   EXPECT_FALSE(password_element.IsAutofilled());
@@ -3456,7 +3465,7 @@ TEST_F(PasswordAutofillAgentTest, PasswordGenerationSupersedesAutofill) {
   WebDocument document = GetMainFrame()->GetDocument();
   WebElement element =
       document.GetElementById(WebString::FromUTF8("new_password"));
-  ASSERT_FALSE(element.IsNull());
+  ASSERT_TRUE(element);
   password_element_ = element.To<WebInputElement>();
 
   // Update fill_data_ for the new form and simulate filling. Pretend as if
@@ -3737,7 +3746,7 @@ TEST_F(PasswordAutofillAgentTest,
   UpdateUsernameAndPasswordElements();
   WebElement captcha_element = GetMainFrame()->GetDocument().GetElementById(
       WebString::FromUTF8("captcha"));
-  ASSERT_FALSE(captcha_element.IsNull());
+  ASSERT_TRUE(captcha_element);
 
   SimulateUsernameTyping("Bob");
   SimulatePasswordTyping("mypassword");
@@ -3766,7 +3775,7 @@ TEST_F(PasswordAutofillAgentTest,
   UpdateUsernameAndPasswordElements();
   WebElement captcha_element = GetMainFrame()->GetDocument().GetElementById(
       WebString::FromUTF8("captcha"));
-  ASSERT_FALSE(captcha_element.IsNull());
+  ASSERT_TRUE(captcha_element);
 
   SimulateUsernameTyping("Bob");
   SimulatePasswordTyping("mypassword");
@@ -3802,7 +3811,7 @@ TEST_F(PasswordAutofillAgentTest,
   UpdateUsernameAndPasswordElements();
   WebElement captcha_element = GetMainFrame()->GetDocument().GetElementById(
       WebString::FromUTF8("captcha"));
-  ASSERT_FALSE(captcha_element.IsNull());
+  ASSERT_TRUE(captcha_element);
 
   SimulateUsernameTyping("Bob");
   SimulatePasswordTyping("mypassword");
@@ -3833,7 +3842,7 @@ TEST_F(PasswordAutofillAgentTest,
   UpdateUsernameAndPasswordElements();
   WebElement captcha_element = GetMainFrame()->GetDocument().GetElementById(
       WebString::FromUTF8("captcha"));
-  ASSERT_FALSE(captcha_element.IsNull());
+  ASSERT_TRUE(captcha_element);
 
   SimulateUsernameTyping("Bob");
   SimulatePasswordTyping("mypassword");
@@ -4047,7 +4056,7 @@ TEST_F(PasswordAutofillAgentTest,
     blink::WebVector<WebFormElement> forms = document.GetTopLevelForms();
     WebFormElement form_element = forms[0];
     std::vector<blink::WebFormControlElement> control_elements =
-        form_util::GetAutofillableFormControlElements(document, form_element);
+        form_util::GetOwnedAutofillableFormControls(document, form_element);
     if (test_case.has_fillable_username) {
       username_element_ = control_elements[0].To<WebInputElement>();
       password_element_ = control_elements[1].To<WebInputElement>();
@@ -4286,7 +4295,7 @@ TEST_F(PasswordAutofillAgentTest, ShowAutofillSignaturesFlag) {
     WebFormElement form_element =
         document.GetElementById(WebString::FromASCII("LoginTestForm"))
             .To<WebFormElement>();
-    ASSERT_FALSE(form_element.IsNull());
+    ASSERT_TRUE(form_element);
 
     // Check only form signature attribute. The full test is in
     // "PasswordGenerationAgentTestForHtmlAnnotation.*".
@@ -4443,7 +4452,7 @@ TEST_F(PasswordAutofillAgentTest, ManualFallbackForSaving_PasswordChangeForm) {
 
   // The user types into the new password field. Inform the driver.
   WebInputElement new_password = GetInputElementByID("newpassword");
-  ASSERT_FALSE(new_password.IsNull());
+  ASSERT_TRUE(new_password);
   SetFocused(new_password);
   SimulateUserTypingASCIICharacter('a', true);
   EXPECT_EQ(3, fake_driver_.called_inform_about_user_input_count());
@@ -4451,7 +4460,7 @@ TEST_F(PasswordAutofillAgentTest, ManualFallbackForSaving_PasswordChangeForm) {
   // Edits of the confirmation password field trigger informing the driver.
   WebInputElement confirmation_password =
       GetInputElementByID("confirmpassword");
-  ASSERT_FALSE(confirmation_password.IsNull());
+  ASSERT_TRUE(confirmation_password);
   SetFocused(confirmation_password);
   SimulateUserTypingASCIICharacter('a', true);
   EXPECT_EQ(4, fake_driver_.called_inform_about_user_input_count());
@@ -4955,19 +4964,15 @@ TEST_F(PasswordAutofillAgentTest, ModifySearchField) {
 // DOM tree starts between the <form> and <input> tags.
 TEST_F(PasswordAutofillAgentTest,
        ProvisionalPasswordSavingWhenFormTagHostsShadowDom) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      password_manager::features::kShadowDomSupport);
-
   LoadHTML(kFormTagHostsShadowDomInputs);
 
   // Identify username and password elements.
   username_element_ =
       GetElementByID("un_host").ShadowRoot().FirstChild().To<WebInputElement>();
-  ASSERT_FALSE(username_element_.IsNull());
+  ASSERT_TRUE(username_element_);
   password_element_ =
       GetElementByID("pw_host").ShadowRoot().FirstChild().To<WebInputElement>();
-  ASSERT_FALSE(password_element_.IsNull());
+  ASSERT_TRUE(password_element_);
 
   // Simulate user modifying field values and ensure they are propagated to the
   // browser.
@@ -4992,9 +4997,6 @@ TEST_F(PasswordAutofillAgentTest,
 // DOM tree starts between the <form> and <input> tags.
 TEST_F(PasswordAutofillAgentTest,
        PasswordSuggestionFillingWhenFormTagHostsShadowDom) {
-  base::test::ScopedFeatureList feature_list{
-      password_manager::features::kShadowDomSupport};
-
   LoadHTML(kFormTagHostsShadowDomInputs);
   ASSERT_TRUE(UpdateFormElementsForFormHostingShadowDom());
 
@@ -5016,9 +5018,6 @@ TEST_F(PasswordAutofillAgentTest,
 // Tests that password generation works when a Shadow DOM tree starts between
 // the <form> and <input> tags.
 TEST_F(PasswordAutofillAgentTest, PasswordGenerationWhenFormTagHostsShadowDom) {
-  base::test::ScopedFeatureList feature_list{
-      password_manager::features::kShadowDomSupport};
-
   LoadHTML(kFormTagHostsShadowDomInputs);
   ASSERT_TRUE(UpdateFormElementsForFormHostingShadowDom());
 
@@ -5069,9 +5068,9 @@ TEST_F(PasswordAutofillAgentTest, JSFieldModificationPasswordForm) {
   EXPECT_EQ(fake_driver_.called_inform_about_user_input_count(), 2);
   ASSERT_TRUE(fake_driver_.form_data_maybe_submitted().has_value());
   FormData form_data = fake_driver_.form_data_maybe_submitted().value();
-  ASSERT_EQ(form_data.fields.size(), 3u);
-  EXPECT_EQ(form_data.fields[1].value(), base::ASCIIToUTF16(kJsUsername));
-  EXPECT_EQ(form_data.fields[2].value(), base::ASCIIToUTF16(kJsPassword));
+  ASSERT_EQ(form_data.fields().size(), 3u);
+  EXPECT_EQ(form_data.fields()[1].value(), base::ASCIIToUTF16(kJsUsername));
+  EXPECT_EQ(form_data.fields()[2].value(), base::ASCIIToUTF16(kJsPassword));
 }
 
 // Test that password manager is not notified about JS inputs in non
@@ -5113,15 +5112,11 @@ TEST_F(PasswordAutofillAgentTest, TimesReceivedFillDataForFormMetric) {
       "PasswordManager.TimesReceivedFillDataForForm", 2, 1);
 }
 
-// Tests that if webauthn form was focused before parsing happened, suggestions
-// are shown to the user once the form is parsed.
-TEST_F(PasswordAutofillAgentTest,
-       ShowSuggestionsOnParsingAutofocusedWebAuthnForm) {
+// Tests that if a password form was focused before parsing happened,
+// suggestions are shown to the user once the form is parsed.
+TEST_F(PasswordAutofillAgentTest, ShowSuggestionsOnParsingAutofocusedForm) {
   scoped_feature_list_.InitAndEnableFeature(
-      password_manager::features::kShowWebauthnSuggestionsOnAutofocus);
-  LoadHTML(kWebAutnFieldHTML);
-  UpdateUsernameAndPasswordElements();
-  UpdateRendererIDsInFillData();
+      password_manager::features::kShowSuggestionsOnAutofocus);
 
 #if BUILDFLAG(IS_ANDROID)
   // A fixture needed to properly test suggestions showing on Android.
@@ -5141,15 +5136,12 @@ TEST_F(PasswordAutofillAgentTest,
   CheckSuggestions(/*typed_username=*/u"", true);
 }
 
-// Tests that if webauthn form is reparsed, suggestions are not shown
+// Tests that if a password form is reparsed, suggestions are not shown
 // automatically.
 TEST_F(PasswordAutofillAgentTest,
-       DoNotShowSuggestionsOnParsingFocusedWebAuthnFormSecondTime) {
+       DoNotShowSuggestionsOnParsingFocusedFormSecondTime) {
   scoped_feature_list_.InitAndEnableFeature(
-      password_manager::features::kShowWebauthnSuggestionsOnAutofocus);
-  LoadHTML(kWebAutnFieldHTML);
-  UpdateUsernameAndPasswordElements();
-  UpdateRendererIDsInFillData();
+      password_manager::features::kShowSuggestionsOnAutofocus);
 
 #if BUILDFLAG(IS_ANDROID)
   // A fixture needed to properly test suggestions showing on Android.
@@ -5173,16 +5165,12 @@ TEST_F(PasswordAutofillAgentTest,
   CheckSuggestionsNotShown();
 }
 
-// Tests that if webauthn form is not focused, suggestions are not shown to the
-// user once the form is parsed.
+// Tests that if a password form is not focused, suggestions are not shown to
+// the user once the form is parsed.
 TEST_F(PasswordAutofillAgentTest,
        DoNotShowSuggestionsOnParsingWebAuthnFormWithoutFocus) {
   scoped_feature_list_.InitAndEnableFeature(
-      password_manager::features::kShowWebauthnSuggestionsOnAutofocus);
-
-  LoadHTML(kWebAutnFieldHTML);
-  UpdateUsernameAndPasswordElements();
-  UpdateRendererIDsInFillData();
+      password_manager::features::kShowSuggestionsOnAutofocus);
 
 #if BUILDFLAG(IS_ANDROID)
   // A fixture needed to properly test suggestions showing on Android.
@@ -5198,28 +5186,81 @@ TEST_F(PasswordAutofillAgentTest,
   CheckSuggestionsNotShown();
 }
 
-// Tests that if non-webauthn form was focused before parsing happened,
-// suggestions are not shown to the user once the form is parsed.
-TEST_F(PasswordAutofillAgentTest,
-       DoNotShowSuggestionsOnParsingAutofocusedPasswordForm) {
-  scoped_feature_list_.InitAndEnableFeature(
-      password_manager::features::kShowWebauthnSuggestionsOnAutofocus);
+TEST_F(PasswordAutofillAgentTest, InformingBrowserAboutUsernameTextFields) {
+  LoadHTML(kSingleTextInputFormHTML);
+  UpdateOnlyUsernameElement();
 
-#if BUILDFLAG(IS_ANDROID)
-  // A fixture needed to properly test suggestions showing on Android.
-  SimulateClosingKeyboardReplacingSurfaceIfAndroid(kUsernameName);
-  // The method above leaves the field focused, which is not needed for this
-  // test.
-  BlurElement(kUsernameName);
-#endif  // BUILDFLAG(IS_ANDROID)
-
-  FocusElement(kUsernameName);
-  CheckSuggestionsNotShown();
-
-  // Simulate receiving credentials for filling from the browser.
+  // Simulate the browser parsing the text field as username and sending the
+  // correspondent fill data.
   fill_data_.wait_for_username = true;
   SimulateOnFillPasswordForm(fill_data_);
-  CheckSuggestionsNotShown();
+
+  SimulateUsernameTyping(kUsernameName);
+  EXPECT_EQ(1, fake_driver_.called_inform_about_user_input_count());
+}
+
+TEST_F(PasswordAutofillAgentTest, InformingBrowserAboutIrrelevantTextFields) {
+  LoadHTML(kSingleTextInputFormHTML);
+  UpdateOnlyUsernameElement();
+
+  // The users types into a field that was not parsed as username.
+  SimulateUsernameTyping(kUsernameName);
+  EXPECT_EQ(0, fake_driver_.called_inform_about_user_input_count());
+}
+
+// Tests that fields with banned fields do not show password suggestions.
+TEST_F(PasswordAutofillAgentTest, NoFillingFallbackForBannedFields) {
+  // Form consists both of credential and credit card fields.
+  LoadHTML(
+      R"(
+        <input type="text" id="username-field" name="username-field">
+        <input type="password" id="password-field" name="password-field">
+        <input type="text" id="credit-card-full-name"
+          name="credit-card-full-name" placeholder="Full Name">
+        <input type="password" id="credit-card-number"
+          name="credit-card-number" placeholder="Card number">
+        <input type="password" id="credit-card-cvc" name="credit-card-cvc"
+          placeholder="CVC">
+    )");
+  WebInputElement username_field = GetInputElementByID("username-field");
+  WebInputElement password_field = GetInputElementByID("username-field");
+  WebInputElement credit_card_full_name_field =
+      GetInputElementByID("credit-card-full-name");
+  WebInputElement credit_card_number_field =
+      GetInputElementByID("credit-card-number");
+  WebInputElement credit_card_cvc_field =
+      GetInputElementByID("credit-card-cvc");
+
+  // Password Manager found credential fields and has saved credentials.
+  PasswordFormFillData form_data;
+  form_data.form_renderer_id = FormRendererId();
+  form_data.username_element_renderer_id = FieldRef(username_field).GetId();
+  form_data.password_element_renderer_id = FieldRef(password_field).GetId();
+  form_data.preferred_login.username_value = kAliceUsername16;
+  form_data.preferred_login.password_value = kAlicePassword16;
+  form_data.suggestion_banned_fields = {
+      FieldRef(credit_card_full_name_field).GetId(),
+      FieldRef(credit_card_number_field).GetId(),
+      FieldRef(credit_card_cvc_field).GetId()};
+  password_autofill_agent_->SetPasswordFillData(form_data);
+
+  // Expect filling suggestion on credential forms.
+  EXPECT_TRUE(password_autofill_agent_->ShowSuggestions(
+      username_field,
+      AutofillSuggestionTriggerSource::kFormControlElementClicked));
+  EXPECT_TRUE(password_autofill_agent_->ShowSuggestions(
+      password_field,
+      AutofillSuggestionTriggerSource::kFormControlElementClicked));
+  // Expect no filling suggestion on credit card forms.
+  EXPECT_FALSE(password_autofill_agent_->ShowSuggestions(
+      credit_card_full_name_field,
+      AutofillSuggestionTriggerSource::kFormControlElementClicked));
+  EXPECT_FALSE(password_autofill_agent_->ShowSuggestions(
+      credit_card_number_field,
+      AutofillSuggestionTriggerSource::kFormControlElementClicked));
+  EXPECT_FALSE(password_autofill_agent_->ShowSuggestions(
+      credit_card_cvc_field,
+      AutofillSuggestionTriggerSource::kFormControlElementClicked));
 }
 
 #if BUILDFLAG(IS_ANDROID)

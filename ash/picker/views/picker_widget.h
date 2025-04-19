@@ -6,7 +6,7 @@
 #define ASH_PICKER_VIEWS_PICKER_WIDGET_H_
 
 #include "ash/ash_export.h"
-#include "ash/bubble/bubble_event_filter.h"
+#include "ash/picker/views/picker_bubble_event_filter.h"
 #include "base/time/time.h"
 #include "ui/views/widget/unique_widget_ptr.h"
 #include "ui/views/widget/widget.h"
@@ -15,11 +15,9 @@ namespace gfx {
 class Rect;
 }  // namespace gfx
 
-namespace ui {
-class LocatedEvent;
-}
-
 namespace ash {
+
+enum class PickerPositionType;
 class PickerViewDelegate;
 
 class ASH_EXPORT PickerWidget : public views::Widget {
@@ -39,18 +37,25 @@ class ASH_EXPORT PickerWidget : public views::Widget {
       const gfx::Rect& anchor_bounds,
       base::TimeTicks trigger_event_timestamp = base::TimeTicks::Now());
 
+  // Same as `Create`, except the created PickerWidget tries to position itself
+  // at the center of the display containing `anchor_bounds`. `anchor_bounds` is
+  // in screen coordinates.
+  static views::UniqueWidgetPtr CreateCentered(
+      PickerViewDelegate* delegate,
+      const gfx::Rect& anchor_bounds,
+      base::TimeTicks trigger_event_timestamp = base::TimeTicks::Now());
+
   // views::Widget:
   void OnNativeBlur() override;
 
  private:
   explicit PickerWidget(PickerViewDelegate* delegate,
                         const gfx::Rect& anchor_bounds,
+                        PickerPositionType position_type,
                         base::TimeTicks trigger_event_timestamp);
 
-  void OnClickOutsideWidget(const ui::LocatedEvent& event);
-
   // Used to close the Picker widget when the user clicks outside of it.
-  BubbleEventFilter bubble_event_filter_;
+  PickerBubbleEventFilter bubble_event_filter_;
 };
 
 }  // namespace ash

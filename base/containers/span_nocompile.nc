@@ -188,9 +188,17 @@ void FromVolatileArrayDisallowed() {
 void FixedSizeCopyTooSmall() {
   const int src[] = {1, 2, 3};
   int dst[2];
-  base::span(dst).copy_from(base::make_span(src));  // expected-error@*:* {{no viable conversion}}
+  base::span(dst).copy_from(base::span(src));  // expected-error@*:* {{no matching member function}}
 
-  base::span(dst).copy_from(src);  // expected-error@*:* {{no viable conversion}}
+  base::span(dst).copy_from(src);  // expected-error@*:* {{no matching member function}}
+
+  base::span(dst).copy_prefix_from(src);  // expected-error@*:* {{no matching member function}}
+}
+
+void FixedSizeCopyFromNonSpan() {
+  int dst[2];
+  // The copy_from() template overload is not selected.
+  base::span(dst).copy_from(5);  // expected-error@*:* {{no matching member function for call to 'copy_from'}}
 }
 
 void FixedSizeSplitAtOutOfBounds() {
@@ -275,6 +283,19 @@ void CompareNotComparable() {
 void AsStringViewNotBytes() {
   const int arr[] = {1, 2, 3};
   as_string_view(base::span(arr));  // expected-error@*:* {{no matching function for call to 'as_string_view'}}
+}
+
+void SpanFromCstrings() {
+  static const char with_null[] = { 'a', 'b', '\0' };
+  base::span_from_cstring(with_null);
+
+  // Can't call span_from_cstring and friends with a non-null-terminated char
+  // array.
+  static const char no_null[] = { 'a', 'b' };
+  base::span_from_cstring(no_null);  // expected-error@*:* {{no matching function for call to 'span_from_cstring'}}
+  base::span_with_nul_from_cstring(no_null);  // expected-error@*:* {{no matching function for call to 'span_with_nul_from_cstring'}}
+  base::byte_span_from_cstring(no_null);  // expected-error@*:* {{no matching function for call to 'byte_span_from_cstring'}}
+  base::byte_span_with_nul_from_cstring(no_null);  // expected-error@*:* {{no matching function for call to 'byte_span_with_nul_from_cstring'}}
 }
 
 }  // namespace base

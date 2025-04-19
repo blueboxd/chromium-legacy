@@ -3,18 +3,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from __future__ import print_function
-
 import datetime
 import os
-import sys
 import tempfile
 import unittest
-
-if sys.version_info[0] == 2:
-  import mock
-else:
-  import unittest.mock as mock
+from unittest import mock
 
 from pyfakefs import fake_filesystem_unittest
 
@@ -2325,10 +2318,6 @@ crbug.com/874695 foo/test [ Failure ]
                 'Linux Tests (dbg)(1)':
                 data_types.StepBuildStatsMap({
                     'blink_web_tests': linux_debug_stats,
-                }),
-                'Mac10.15 Tests':
-                data_types.StepBuildStatsMap({
-                    'blink_web_tests': mac10_release_stats,
                 }),
                 'mac11-arm64-rel-tests':
                 data_types.StepBuildStatsMap({

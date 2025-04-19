@@ -22,7 +22,6 @@
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
-#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
@@ -345,7 +344,7 @@ MailboxToSurfaceBridgeImpl::CreateSharedImage(
     gfx::BufferFormat buffer_format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
-    uint32_t usage,
+    gpu::SharedImageUsageSet usage,
     gpu::SyncToken& sync_token) {
   TRACE_EVENT0("gpu", __FUNCTION__);
   DCHECK(IsConnected());
@@ -360,7 +359,7 @@ MailboxToSurfaceBridgeImpl::CreateSharedImage(
       std::move(buffer_handle));
   CHECK(client_shared_image);
   sync_token = sii->GenVerifiedSyncToken();
-  DCHECK(client_shared_image->GetTextureTarget(buffer_format) == GL_TEXTURE_2D);
+  DCHECK(client_shared_image->GetTextureTarget() == GL_TEXTURE_2D);
   return client_shared_image;
 }
 

@@ -31,6 +31,7 @@ group("resources") {
       "app_service_internals:resources",
       "bookmarks:resources",
       "commerce/product_specifications:resources",
+      "data_sharing:resources",
       "downloads:resources",
       "feedback:resources",
       "gaia_auth_host:resources",
@@ -57,11 +58,9 @@ group("resources") {
       "side_panel/companion:resources",
       "side_panel/customize_chrome:resources",
       "side_panel/history_clusters:resources",
-      "side_panel/performance_controls:resources",
       "side_panel/read_anything:resources",
       "side_panel/reading_list:resources",
       "side_panel/shared:resources",
-      "side_panel/user_notes:resources",
       "signin:resources",
       "suggest_internals:resources",
       "support_tool:resources",
@@ -95,6 +94,13 @@ group("resources") {
 
   if (!is_chromeos_lacros && enable_extensions) {
     public_deps += [ "accessibility:reading_mode_gdocs_extension_resources" ]
+  }
+
+  if (is_mac) {
+    public_deps += [
+      "//chrome/browser/resources/media/mei_preload:component",
+      "//components/privacy_sandbox/privacy_sandbox_attestations/preload:component",
+    ]
   }
 
   if (is_win || is_mac || is_linux || is_chromeos_ash) {
@@ -209,6 +215,20 @@ if (!is_android) {
       "app_icon_resources_200_percent.pak",
     ]
     output_dir = "$root_gen_dir/chrome"
+  }
+
+  if (is_chromeos) {
+    grit("office_web_app_resources") {
+      source = "office_web_app/resources.grd"
+      defines = chrome_grit_defines
+      outputs = [
+        "grit/office_web_app_resources.h",
+        "grit/office_web_app_resources_map.cc",
+        "grit/office_web_app_resources_map.h",
+        "office_web_app_resources.pak",
+      ]
+      output_dir = "$root_gen_dir/chrome"
+    }
   }
 
   if (is_chrome_branded) {

@@ -33,8 +33,10 @@
 #include "skia/ext/image_operations.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -106,7 +108,7 @@ BEGIN_METADATA(BackgroundImageView)
 END_METADATA
 
 AccountSelectionModalView::AccountSelectionModalView(
-    const std::u16string& top_frame_for_display,
+    const std::u16string& rp_for_display,
     const std::optional<std::u16string>& idp_title,
     blink::mojom::RpContext rp_context,
     content::WebContents* web_contents,
@@ -116,8 +118,9 @@ AccountSelectionModalView::AccountSelectionModalView(
     : AccountSelectionViewBase(web_contents,
                                observer,
                                widget_observer,
-                               std::move(url_loader_factory)) {
-  SetModalType(ui::MODAL_TYPE_CHILD);
+                               std::move(url_loader_factory),
+                               rp_for_display) {
+  SetModalType(ui::mojom::ModalType::kChild);
   SetOwnedByWidget(true);
   set_fixed_width(kDialogWidth);
   SetShowTitle(false);
@@ -127,9 +130,7 @@ AccountSelectionModalView::AccountSelectionModalView(
       kBetweenChildSpacing));
   SetButtons(ui::DIALOG_BUTTON_NONE);
 
-  title_ = webid::GetTitle(top_frame_for_display,
-                           /*iframe_for_display=*/std::nullopt, idp_title,
-                           rp_context);
+  title_ = webid::GetTitle(rp_for_display_, idp_title, rp_context);
 }
 
 AccountSelectionModalView::~AccountSelectionModalView() = default;
@@ -196,17 +197,24 @@ void AccountSelectionModalView::InitDialogWidget() {
   }
 
   dialog_widget_ = widget->GetWeakPtr();
+  occlusion_observation_.Observe(widget);
 }
 
 std::unique_ptr<views::View>
 AccountSelectionModalView::CreatePlaceholderAccountRow() {
+  const SkColor kPlaceholderColor =
+      color_utils::IsDark(web_contents_->GetColorProvider().GetColor(
+          ui::kColorDialogBackground))
+          ? gfx::kGoogleGrey800
+          : gfx::kGoogleGrey200;
+
   std::unique_ptr<views::View> placeholder_account_icon =
       std::make_unique<views::View>();
   placeholder_account_icon->SetPreferredSize(
       gfx::Size(kModalAvatarSize, kModalAvatarSize));
   placeholder_account_icon->SizeToPreferredSize();
-  placeholder_account_icon->SetBackground(views::CreateRoundedRectBackground(
-      gfx::kGoogleGrey200, kModalAvatarSize));
+  placeholder_account_icon->SetBackground(
+      views::CreateRoundedRectBackground(kPlaceholderColor, kModalAvatarSize));
 
   constexpr int kPlaceholderAccountRowPadding = 16;
   auto row = std::make_unique<views::View>();
@@ -238,7 +246,7 @@ AccountSelectionModalView::CreatePlaceholderAccountRow() {
       gfx::Size(kPlaceholderAccountNameWidth, kPlaceholderTextHeight));
   placeholder_account_name->SizeToPreferredSize();
   placeholder_account_name->SetBackground(views::CreateRoundedRectBackground(
-      gfx::kGoogleGrey200, kPlaceholderRadius));
+      kPlaceholderColor, kPlaceholderRadius));
 
   views::View* placeholder_account_email =
       text_column->AddChildView(std::make_unique<views::View>());
@@ -246,7 +254,7 @@ AccountSelectionModalView::CreatePlaceholderAccountRow() {
       gfx::Size(kPlaceholderAccountEmailWidth, kPlaceholderTextHeight));
   placeholder_account_email->SizeToPreferredSize();
   placeholder_account_email->SetBackground(views::CreateRoundedRectBackground(
-      gfx::kGoogleGrey200, kPlaceholderRadius));
+      kPlaceholderColor, kPlaceholderRadius));
 
   return row;
 }
@@ -390,20 +398,19 @@ AccountSelectionModalView::CreateMultipleAccountChooser(
   // Add separator before the account rows.
   content->AddChildView(std::make_unique<views::Separator>());
 
-  size_t num_rows = 0;
+  int num_rows = 0;
   constexpr int kMultipleAccountsVerticalPadding = 2;
   for (const auto& idp_display_data : idp_display_data_list) {
     for (const auto& account : idp_display_data.accounts) {
       content->AddChildView(CreateAccountRow(
           account, idp_display_data,
-          /*should_hover=*/true,
+          /*clickable_position=*/num_rows++,
           /*should_include_idp=*/false,
           /*is_modal_dialog=*/true,
           /*additional_vertical_padding=*/kMultipleAccountsVerticalPadding));
       // Add separator after each account row.
       content->AddChildView(std::make_unique<views::Separator>());
     }
-    num_rows += idp_display_data.accounts.size();
   }
 
   const int per_account_size = content->GetPreferredSize().height() / num_rows;
@@ -413,7 +420,8 @@ AccountSelectionModalView::CreateMultipleAccountChooser(
 
 void AccountSelectionModalView::ShowMultiAccountPicker(
     const std::vector<IdentityProviderDisplayData>& idp_display_data_list,
-    bool show_back_button) {
+    bool show_back_button,
+    bool is_choose_an_account) {
   DCHECK(!show_back_button);
   RemoveNonHeaderChildViews();
 
@@ -507,10 +515,11 @@ AccountSelectionModalView::CreateSingleAccountChooser(
   }
 
   // Add account row.
-  row->AddChildView(CreateAccountRow(account, idp_display_data, should_hover,
-                                     /*should_include_idp=*/false,
-                                     /*is_modal_dialog=*/true,
-                                     additional_row_vertical_padding));
+  row->AddChildView(CreateAccountRow(
+      account, idp_display_data,
+      should_hover ? std::make_optional<int>(0) : std::nullopt,
+      /*should_include_idp=*/false,
+      /*is_modal_dialog=*/true, additional_row_vertical_padding));
 
   // Add separator after the account row.
   if (show_separator) {
@@ -533,8 +542,6 @@ AccountSelectionModalView::CreateSingleAccountChooser(
 }
 
 void AccountSelectionModalView::ShowSingleAccountConfirmDialog(
-    const std::u16string& top_frame_for_display,
-    const std::optional<std::u16string>& iframe_for_display,
     const content::IdentityRequestAccount& account,
     const IdentityProviderDisplayData& idp_display_data,
     bool show_back_button) {
@@ -571,8 +578,6 @@ void AccountSelectionModalView::ShowSingleAccountConfirmDialog(
 }
 
 void AccountSelectionModalView::ShowFailureDialog(
-    const std::u16string& top_frame_for_display,
-    const std::optional<std::u16string>& iframe_for_display,
     const std::u16string& idp_for_display,
     const content::IdentityProviderMetadata& idp_metadata) {
   NOTREACHED_IN_MIGRATION()
@@ -580,8 +585,6 @@ void AccountSelectionModalView::ShowFailureDialog(
 }
 
 void AccountSelectionModalView::ShowErrorDialog(
-    const std::u16string& top_frame_for_display,
-    const std::optional<std::u16string>& iframe_for_display,
     const std::u16string& idp_for_display,
     const content::IdentityProviderMetadata& idp_metadata,
     const std::optional<TokenError>& error) {
@@ -599,7 +602,6 @@ void AccountSelectionModalView::ShowLoadingDialog() {
 }
 
 void AccountSelectionModalView::ShowRequestPermissionDialog(
-    const std::u16string& top_frame_for_display,
     const content::IdentityRequestAccount& account,
     const IdentityProviderDisplayData& idp_display_data) {
   RemoveNonHeaderChildViews();
@@ -646,7 +648,7 @@ AccountSelectionModalView::CreateBrandIconImageView(
       std::make_unique<BrandIconImageView>(
           base::BindOnce(&AccountSelectionViewBase::AddIdpImage,
                          weak_ptr_factory_.GetWeakPtr()),
-          kModalIdpIconSize, /*should_circle_crop=*/false);
+          kModalIdpIconSize, /*should_circle_crop=*/true);
   brand_icon_ = brand_icon_image_view.get();
   brand_icon_image_view->SetImageSize(
       gfx::Size(kModalIdpIconSize, kModalIdpIconSize));
@@ -697,12 +699,6 @@ void AccountSelectionModalView::CloseDialog() {
 
 std::string AccountSelectionModalView::GetDialogTitle() const {
   return base::UTF16ToUTF8(title_label_->GetText());
-}
-
-std::optional<std::string> AccountSelectionModalView::GetDialogSubtitle()
-    const {
-  // We do not support showing iframe domain at this point in time.
-  return std::nullopt;
 }
 
 std::u16string AccountSelectionModalView::GetQueuedAnnouncementForTesting() {

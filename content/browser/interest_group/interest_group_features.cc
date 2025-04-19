@@ -16,17 +16,6 @@ BASE_FEATURE(kEnableIFrameAdAuctionHeaders,
              "EnableIFrameAdAuctionHeaders",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enable updating the executionMode to "frozen-context" when updating a user's
-// interests groups.
-BASE_FEATURE(kEnableUpdatingExecutionModeToFrozenContext,
-             "EnableUpdatingExecutionModeToFrozenContext",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enable updating userBiddingSignals when updating a user's interests groups.
-BASE_FEATURE(kEnableUpdatingUserBiddingSignals,
-             "EnableUpdatingUserBiddingSignals",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enable write ahead logging for interest group storage.
 BASE_FEATURE(kFledgeEnableWALForInterestGroupStorage,
              "FledgeEnableWALForInterestGroupStorage",
@@ -45,6 +34,12 @@ BASE_FEATURE(kFledgePrefetchBandAKeys,
 // database.
 BASE_FEATURE(kFledgeStoreBandAKeysInDB,
              "FledgeStoreBandAKeysInDB",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables preconnecting to interest group owner origins and a bidding signals
+// URL origin at the start of an auction.
+BASE_FEATURE(kFledgeUsePreconnectCache,
+             "FledgeUsePreconnectCache",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enable detecting inconsistency in the `PageImpl` used in the auction. Abort

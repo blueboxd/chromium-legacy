@@ -21,6 +21,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "base/strings/abseil_string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/gmock_expected_support.h"
 #include "base/types/expected.h"
 #include "base/values.h"
@@ -41,6 +42,11 @@ namespace {
 using ::testing::AllOf;
 using ::testing::Field;
 using ::testing::UnorderedElementsAreArray;
+
+struct AggregatableReportSharedInfo {
+  std::string as_string;
+  base::Value::Dict as_dict;
+};
 
 constexpr char kDefaultConfigFileName[] = "default_config.json";
 
@@ -135,12 +141,43 @@ base::Value::List GetDecryptedPayloads(std::optional<base::Value> payloads,
       continue;
     }
 
-    list.Append(
+    base::Value::Dict dict =
         base::Value::Dict()
             .Set("key", attribution_reporting::HexEncodeAggregationKey(bucket))
-            .Set("value", base::checked_cast<int>(value)));
+            .Set("value", base::checked_cast<int>(value));
+
+    if (data_map.contains(cbor::Value("id"))) {
+      const cbor::Value::BinaryValue& id_byte_string =
+          data_map.at(cbor::Value("id")).GetBytestring();
+      uint64_t id;
+      CHECK(base::HexStringToUInt64(base::HexEncode(id_byte_string), &id));
+      dict.Set("id", base::NumberToString(id));
+    }
+
+    list.Append(std::move(dict));
   }
   return list;
+}
+
+void AdjustAggregatableReportBody(base::Value::Dict& report_body) {
+  std::optional<base::Value> shared_info = report_body.Extract("shared_info");
+  CHECK(shared_info.has_value());
+  const std::string& shared_info_str = shared_info->GetString();
+
+  std::optional<base::Value::Dict> shared_info_dict =
+      base::JSONReader::ReadDict(shared_info_str, base::JSON_PARSE_RFC);
+  CHECK(shared_info_dict.has_value());
+
+  // Report IDs are a source of nondeterminism, so remove them.
+  shared_info_dict->Remove("report_id");
+
+  // Set shared_info as a dictionary for easier comparison.
+  report_body.Set("shared_info", *std::move(shared_info_dict));
+
+  report_body.Set(
+      "histograms",
+      GetDecryptedPayloads(report_body.Extract("aggregation_service_payloads"),
+                           shared_info_str));
 }
 
 class Adjuster : public ReportBodyAdjuster {
@@ -180,31 +217,15 @@ class Adjuster : public ReportBodyAdjuster {
       return;
     }
 
-    // These fields normally encode a random GUID or the absolute
-    // time and therefore are sources of nondeterminism in the
-    // output.
+    AdjustAggregatableReportBody(report_body);
+  }
 
-    // Output attribution_destination from the shared_info field.
-    const std::optional<base::Value> shared_info =
-        report_body.Extract("shared_info");
-    CHECK(shared_info.has_value());
-    const std::string& shared_info_str = shared_info->GetString();
+  void AdjustAggregatableDebug(base::Value::Dict& report_body) override {
+    if (!actual_) {
+      return;
+    }
 
-    std::optional<base::Value> shared_info_value =
-        base::JSONReader::Read(shared_info_str, base::JSON_PARSE_RFC);
-    CHECK(shared_info_value.has_value());
-    static constexpr char kKeyAttributionDestination[] =
-        "attribution_destination";
-    std::optional<base::Value> attribution_destination =
-        shared_info_value->GetDict().Extract(kKeyAttributionDestination);
-    CHECK(attribution_destination.has_value());
-    report_body.Set(kKeyAttributionDestination,
-                    std::move(*attribution_destination));
-
-    report_body.Set("histograms",
-                    GetDecryptedPayloads(
-                        report_body.Extract("aggregation_service_payloads"),
-                        shared_info_str));
+    AdjustAggregatableReportBody(report_body);
   }
 
   const bool actual_;
@@ -252,7 +273,7 @@ TEST_P(AttributionInteropTest, HasExpectedOutput) {
 
   ASSERT_OK_AND_ASSIGN(
       AttributionInteropOutput actual_output,
-      RunAttributionInteropSimulation(std::move(run), kHpkeKey.GetPublicKey()));
+      RunAttributionInteropSimulation(std::move(run), kHpkeKey));
 
   PreProcessOutput(expected_output, /*actual=*/false);
   PreProcessOutput(actual_output, /*actual=*/true);

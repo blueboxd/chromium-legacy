@@ -24,7 +24,6 @@ import org.chromium.chrome.browser.android.httpclient.SimpleHttpClient.HttpRespo
 import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.NetworkTrafficAnnotationTag;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.util.TestWebServer;
@@ -64,7 +63,7 @@ public class SimpleHttpClientTest {
                     mCallbackHelper.notifyCalled();
                 };
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () ->
                         mHttpClient =
                                 new SimpleHttpClient(ProfileManager.getLastUsedRegularProfile()));
@@ -77,7 +76,7 @@ public class SimpleHttpClientTest {
         GURL gurl = new GURL(url);
         String body = "";
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () ->
                         mHttpClient.send(
                                 gurl,
@@ -87,7 +86,7 @@ public class SimpleHttpClientTest {
                                 NetworkTrafficAnnotationTag.TRAFFIC_ANNOTATION_FOR_TESTS,
                                 mCallback));
 
-        mCallbackHelper.waitForFirst();
+        mCallbackHelper.waitForOnly();
         Assert.assertNotNull(mLastAcceptedResponse);
     }
 
@@ -107,7 +106,7 @@ public class SimpleHttpClientTest {
                 NetworkTrafficAnnotationTag.TRAFFIC_ANNOTATION_FOR_TESTS,
                 mCallback);
 
-        mCallbackHelper.waitForFirst();
+        mCallbackHelper.waitForOnly();
         Assert.assertNotNull(mLastAcceptedResponse);
     }
 
@@ -146,13 +145,12 @@ public class SimpleHttpClientTest {
                     NetworkTrafficAnnotationTag.TRAFFIC_ANNOTATION_FOR_TESTS,
                     mCallback);
 
-            receivedRequestCallback.waitForFirst();
-            TestThreadUtils.runOnUiThreadBlocking(() -> mHttpClient.destroy());
+            receivedRequestCallback.waitForOnly();
+            ThreadUtils.runOnUiThreadBlocking(() -> mHttpClient.destroy());
 
-            serverRespondedCallbackHelper.waitForFirst();
+            serverRespondedCallbackHelper.waitForOnly();
             Assert.assertThrows(
-                    TimeoutException.class,
-                    () -> mCallbackHelper.waitForFirst(1, TimeUnit.SECONDS));
+                    TimeoutException.class, () -> mCallbackHelper.waitForOnly(1, TimeUnit.SECONDS));
             Assert.assertNull(mLastAcceptedResponse);
         } finally {
             webServer.shutdown();

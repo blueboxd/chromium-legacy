@@ -10,13 +10,12 @@
 
 namespace media {
 
-D3D12Fence::D3D12Fence(Microsoft::WRL::ComPtr<ID3D12Fence> fence)
-    : fence_(std::move(fence)) {}
+D3D12Fence::D3D12Fence(ComD3D12Fence fence) : fence_(std::move(fence)) {}
 
 // static
 scoped_refptr<D3D12Fence> D3D12Fence::Create(ID3D12Device* device,
                                              D3D12_FENCE_FLAGS flags) {
-  Microsoft::WRL::ComPtr<ID3D12Fence> d3d12_fence;
+  ComD3D12Fence d3d12_fence;
   HRESULT hr = device->CreateFence(0, flags, IID_PPV_ARGS(&d3d12_fence));
   if (FAILED(hr)) {
     DLOG(ERROR) << "Failed to create D3D12Fence: "
@@ -30,9 +29,8 @@ D3D11Status::Or<uint64_t> D3D12Fence::Signal(
     ID3D12CommandQueue& command_queue) {
   HRESULT hr = command_queue.Signal(fence_.Get(), ++fence_value_);
   if (FAILED(hr)) {
-    DLOG(ERROR) << "ID3D12CommandQueue failed to signal fence: "
-                << logging::SystemErrorCodeToString(hr);
-    return D3D11StatusCode::kFenceSignalFailed;
+    return D3D11Status{D3D11StatusCode::kFenceSignalFailed,
+                       "ID3D12CommandQueue failed to signal fence", hr};
   }
   return fence_value_;
 }
@@ -45,9 +43,8 @@ D3D11Status D3D12Fence::Wait(uint64_t fence_value) const {
       nullptr, /*bManualReset=*/TRUE, /*bInitialState=*/FALSE, nullptr)};
   HRESULT hr = fence_->SetEventOnCompletion(fence_value_, fence_event.get());
   if (FAILED(hr)) {
-    DLOG(ERROR) << "Failed to SetEventOnCompletion: "
-                << logging::SystemErrorCodeToString(hr);
-    return D3D11StatusCode::kWaitForFenceFailed;
+    return D3D11Status{D3D11StatusCode::kWaitForFenceFailed,
+                       "Failed to SetEventOnCompletion", hr};
   }
 
   return WaitForSingleObject(fence_event.Get(), INFINITE) == WAIT_OBJECT_0

@@ -36,6 +36,10 @@
 #include "base/posix/file_descriptor_shuffle.h"
 #endif
 
+#if BUILDFLAG(IS_ANDROID)
+#include "base/android/binder.h"
+#endif
+
 namespace base {
 
 #if BUILDFLAG(IS_APPLE)
@@ -188,6 +192,13 @@ struct BASE_EXPORT LaunchOptions {
   // propagate FDs into the child process.
   FileHandleMappingVector fds_to_remap;
 #endif  // BUILDFLAG(IS_WIN)
+
+#if BUILDFLAG(IS_ANDROID)
+  // Set of strong IBinder references to be passed to the child process. These
+  // make their way to ChildProcessServiceDelegate.onConnectionSetup (Java)
+  // within the new child process.
+  std::vector<android::BinderRef> binders;
+#endif
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
   // Set/unset environment variables. These are applied on top of the parent
@@ -405,7 +416,7 @@ BASE_EXPORT bool GetAppOutputWithExitCode(const CommandLine& cl,
 // A Windows-specific version of GetAppOutput that takes a command line string
 // instead of a CommandLine object. Useful for situations where you need to
 // control the command line arguments directly.
-BASE_EXPORT bool GetAppOutput(CommandLine::StringPieceType cl,
+BASE_EXPORT bool GetAppOutput(CommandLine::StringViewType cl,
                               std::string* output);
 #elif BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
 // A POSIX-specific version of GetAppOutput that takes an argv array

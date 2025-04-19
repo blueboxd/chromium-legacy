@@ -27,7 +27,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -35,11 +34,9 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.FeatureList;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.JniMocker;
@@ -122,7 +119,6 @@ public class TabbedAppMenuPropertiesDelegateUnitTest {
     private static final Boolean X____ = null; // do not care
 
     @Rule public JniMocker jniMocker = new JniMocker();
-    @Rule public TestRule mProcessor = new Features.JUnitProcessor();
     @Mock private ActivityTabProvider mActivityTabProvider;
     @Mock private Tab mTab;
     @Mock private WebContents mWebContents;
@@ -199,7 +195,6 @@ public class TabbedAppMenuPropertiesDelegateUnitTest {
         when(mIdentityService.getSigninManager(any(Profile.class))).thenReturn(mSigninManager);
         when(mSigninManager.getIdentityManager()).thenReturn(mIdentityManager);
         IdentityServicesProvider.setInstanceForTests(mIdentityService);
-        FeatureList.setTestCanUseDefaultsForTesting();
         PageZoomCoordinator.setShouldShowMenuItemForTesting(false);
         FeedFeatures.setFakePrefsForTest(mPrefService);
         jniMocker.mock(AppBannerManagerJni.TEST_HOOKS, mAppBannerManagerJniMock);
@@ -436,7 +431,6 @@ public class TabbedAppMenuPropertiesDelegateUnitTest {
     }
 
     @Test
-    @EnableFeatures(ChromeFeatureList.NEW_TAB_SEARCH_ENGINE_URL_ANDROID)
     public void getFooterResourceId_dseOff_doesNotReturnWebFeedMenuItem() {
         setUpMocksForWebFeedFooter();
         when(mIdentityManager.hasPrimaryAccount(anyInt())).thenReturn(true);
@@ -449,7 +443,6 @@ public class TabbedAppMenuPropertiesDelegateUnitTest {
     }
 
     @Test
-    @EnableFeatures(ChromeFeatureList.NEW_TAB_SEARCH_ENGINE_URL_ANDROID)
     public void getFooterResourceId_dseOn_returnsWebFeedMenuItem() {
         setUpMocksForWebFeedFooter();
         when(mIdentityManager.hasPrimaryAccount(anyInt())).thenReturn(true);
@@ -461,7 +454,6 @@ public class TabbedAppMenuPropertiesDelegateUnitTest {
     }
 
     @Test
-    @EnableFeatures(ChromeFeatureList.NEW_TAB_SEARCH_ENGINE_URL_ANDROID)
     public void getFooterResourceId_signedOutUser_dseOn_doesNotReturnWebFeedMenuItem() {
         setUpMocksForWebFeedFooter();
         when(mIdentityManager.hasPrimaryAccount(anyInt())).thenReturn(false);

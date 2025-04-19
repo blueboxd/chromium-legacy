@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "sandbox/mac/seatbelt_exec.h"
 
 #include <stdint.h>
@@ -54,12 +59,12 @@ bool ReadOrWrite(int fd,
     ssize_t transacted_bytes =
         HANDLE_EINTR(Traits::Operate(fd, buffer + offset, bytes_to_transact));
     if (transacted_bytes < 0) {
-      logging::PError("%s %s failed", operation_description,
+      logging::PError("SeatbeltExec: %s %s failed", operation_description,
                       Traits::kNameString);
       return false;
     } else if (transacted_bytes == 0) {
       // A short read from the sender, perhaps the sender process died.
-      logging::Error("%s %s failed", operation_description,
+      logging::Error("SeatbeltExec: %s %s failed", operation_description,
                      Traits::kNameString);
       return false;
     }
@@ -107,8 +112,6 @@ bool SeatbeltExecClient::SendPolicy(const mac::SandboxPolicy& policy) {
   }
 
   if (!WriteString(serialized_protobuf)) {
-    logging::Error(
-        "SeatbeltExecClient: Writing the serialized profile failed.");
     return false;
   }
 

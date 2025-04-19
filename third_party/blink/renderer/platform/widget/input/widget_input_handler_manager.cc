@@ -11,12 +11,16 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
+#include "base/types/optional_ref.h"
+#include "base/types/pass_key.h"
 #include "build/build_config.h"
 #include "cc/base/features.h"
+#include "cc/input/browser_controls_offset_tags_info.h"
 #include "cc/metrics/event_metrics.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/paint_holding_reason.h"
@@ -198,12 +202,11 @@ scoped_refptr<WidgetInputHandlerManager> WidgetInputHandlerManager::Create(
     base::PlatformThreadId io_thread_id,
     base::PlatformThreadId main_thread_id) {
   DCHECK(widget_scheduler);
-  scoped_refptr<WidgetInputHandlerManager> manager =
-      new WidgetInputHandlerManager(
-          std::move(widget), std::move(frame_widget_input_handler),
-          never_composited, compositor_thread_scheduler,
-          std::move(widget_scheduler), allow_scroll_resampling, io_thread_id,
-          main_thread_id);
+  auto manager = base::MakeRefCounted<WidgetInputHandlerManager>(
+      base::PassKey<WidgetInputHandlerManager>(), std::move(widget),
+      std::move(frame_widget_input_handler), never_composited,
+      compositor_thread_scheduler, std::move(widget_scheduler),
+      allow_scroll_resampling, io_thread_id, main_thread_id);
 
   manager->InitializeInputEventSuppressionStates();
   if (uses_input_handler)
@@ -221,6 +224,7 @@ scoped_refptr<WidgetInputHandlerManager> WidgetInputHandlerManager::Create(
 }
 
 WidgetInputHandlerManager::WidgetInputHandlerManager(
+    base::PassKey<WidgetInputHandlerManager>,
     base::WeakPtr<WidgetBase> widget,
     base::WeakPtr<mojom::blink::FrameWidgetInputHandler>
         frame_widget_input_handler,
@@ -276,7 +280,8 @@ void WidgetInputHandlerManager::InitInputHandler() {
 #endif
   uses_input_handler_ = true;
   base::OnceClosure init_closure = base::BindOnce(
-      &WidgetInputHandlerManager::InitOnInputHandlingThread, AsWeakPtr(),
+      &WidgetInputHandlerManager::InitOnInputHandlingThread,
+      weak_ptr_factory_.GetWeakPtr(),
       widget_->LayerTreeHost()->GetDelegateForInput(), sync_compositing);
   InputThreadTaskRunner()->PostTask(FROM_HERE, std::move(init_closure));
 }
@@ -322,6 +327,11 @@ bool WidgetInputHandlerManager::HandleInputEvent(
   widget_->input_handler().HandleInputEvent(event, std::move(metrics),
                                             std::move(blink_callback));
 
+  if (!widget_) {
+    // The `HandleInputEvent()` call above might result in deletion of
+    // `widget_`.
+    return true;
+  }
   // TODO(szager): Should this be limited to discrete input events by
   // conditioning on (!scheduler::PendingUserInput::IsContinuousEventType())?
   widget_->LayerTreeHost()->proxy()->SetInputResponsePending();
@@ -352,6 +362,10 @@ void WidgetInputHandlerManager::InputEventsDispatched(bool raf_aligned) {
 
 void WidgetInputHandlerManager::SetNeedsMainFrame() {
   widget_->RequestAnimationAfterDelay(base::TimeDelta());
+}
+
+bool WidgetInputHandlerManager::RequestedMainFramePending() {
+  return widget_->LayerTreeHost()->RequestedMainFramePending();
 }
 
 void WidgetInputHandlerManager::WillShutdown() {
@@ -464,18 +478,17 @@ void WidgetInputHandlerManager::RecordEventMetricsForPaintTiming(
     std::optional<base::TimeTicks> first_paint_time) {
   CHECK(main_thread_task_runner_->BelongsToCurrentThread());
 
-  bool first_paint_max_delay_reached = !first_paint_time.has_value();
-
-  if (!first_paint_max_delay_reached) {
-    if (first_paint_max_delay_timer_ &&
-        first_paint_max_delay_timer_->IsRunning()) {
-      // Prevent the timer from recording the histograms again.
-      first_paint_max_delay_timer_->Stop();
-    } else {
-      // The histograms are already recorded by the timer.
-      return;
-    }
+  if (recorded_event_metric_for_paint_timing_) {
+    return;
   }
+  recorded_event_metric_for_paint_timing_ = true;
+
+  if (first_paint_max_delay_timer_ &&
+      first_paint_max_delay_timer_->IsRunning()) {
+    first_paint_max_delay_timer_->Stop();
+  }
+
+  bool first_paint_max_delay_reached = !first_paint_time.has_value();
 
   // Initialize to 0 timestamp and log 0 if there was no suppressed event or
   // the most recent suppressed event was before the first_paint_time
@@ -496,13 +509,28 @@ void WidgetInputHandlerManager::RecordEventMetricsForPaintTiming(
     suppressed_events_count = uma_data_.suppressed_events_count;
   }
 
-  UMA_HISTOGRAM_TIMES("PageLoad.Internal.SuppressedEventsTimingBeforePaint2",
+  UMA_HISTOGRAM_TIMES("PageLoad.Internal.SuppressedEventsTimingBeforePaint3",
                       diff);
   UMA_HISTOGRAM_COUNTS(
-      "PageLoad.Internal.SuppressedInteractionsCountBeforePaint2",
+      "PageLoad.Internal.SuppressedInteractionsCountBeforePaint3",
       suppressed_interactions_count);
-  UMA_HISTOGRAM_COUNTS("PageLoad.Internal.SuppressedEventsCountBeforePaint2",
+  UMA_HISTOGRAM_COUNTS("PageLoad.Internal.SuppressedEventsCountBeforePaint3",
                        suppressed_events_count);
+  UMA_HISTOGRAM_BOOLEAN(
+      "PageLoad.Internal.SuppressedEventsBeforeMissingFirstPaint",
+      first_paint_max_delay_reached);
+}
+
+void WidgetInputHandlerManager::StartFirstPaintMaxDelayTimer() {
+  if (first_paint_max_delay_timer_ || recorded_event_metric_for_paint_timing_) {
+    return;
+  }
+  first_paint_max_delay_timer_ = std::make_unique<base::OneShotTimer>();
+  first_paint_max_delay_timer_->Start(
+      FROM_HERE, kFirstPaintMaxAcceptableDelay,
+      base::BindOnce(
+          &WidgetInputHandlerManager::RecordEventMetricsForPaintTiming, this,
+          std::nullopt));
 }
 
 void WidgetInputHandlerManager::DispatchScrollGestureToCompositor(
@@ -559,6 +587,15 @@ void WidgetInputHandlerManager::DispatchEvent(
         uma_data_.suppressed_interactions_count += 1;
       }
     }
+  }
+
+  if (!widget_is_embedded_ &&
+      (suppressing_input_events_state_ &
+       static_cast<uint16_t>(SuppressingInputEventsBits::kHasNotPainted))) {
+    main_thread_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&WidgetInputHandlerManager::StartFirstPaintMaxDelayTimer,
+                       this));
   }
 
   // Drop input if we are deferring a rendering pipeline phase, unless it's a
@@ -741,9 +778,9 @@ static void WaitForInputProcessedFromMain(base::WeakPtr<WidgetBase> widget) {
   // the call will force a commit and redraw and callback when the
   // CompositorFrame has been displayed in the display service. Some examples of
   // non-trivial effects that require waiting that long: committing
-  // NonFastScrollRegions to the compositor, sending touch-action rects to the
-  // browser, and sending updated surface information to the display compositor
-  // for up-to-date OOPIF hit-testing.
+  // MainThreadScrollHitTestRegion to the compositor, sending touch-action rects
+  // to the browser, and sending updated surface information to the display
+  // compositor for up-to-date OOPIF hit-testing.
 
   widget->RequestPresentationAfterScrollAnimationEnd(
       std::move(redraw_complete_callback));
@@ -777,22 +814,8 @@ void WidgetInputHandlerManager::InitializeInputEventSuppressionStates() {
   suppressing_input_events_state_ =
       static_cast<uint16_t>(SuppressingInputEventsBits::kHasNotPainted);
 
-  // The following code assumes that for a single page load, the two calls to
-  // this method (from WIHM ctor and from WFWI::DidNavigate) are made within
-  // a time gap of kFirstPaintMaxAcceptableDelay.  If this is not true (very
-  // unlikely), the UMA will be double-counted!
-  if (!first_paint_max_delay_timer_) {
-    first_paint_max_delay_timer_ = std::make_unique<base::OneShotTimer>();
-  } else {
-    first_paint_max_delay_timer_->Stop();
-  }
-  if (!widget_is_embedded_) {
-    first_paint_max_delay_timer_->Start(
-        FROM_HERE, kFirstPaintMaxAcceptableDelay,
-        base::BindOnce(
-            &WidgetInputHandlerManager::RecordEventMetricsForPaintTiming, this,
-            std::nullopt));
-  }
+  first_paint_max_delay_timer_.reset();
+  recorded_event_metric_for_paint_timing_ = false;
 
   base::AutoLock lock(uma_data_lock_);
   uma_data_.have_emitted_uma = false;
@@ -1150,20 +1173,23 @@ WidgetInputHandlerManager::GetSynchronousCompositorRegistry() {
 
 void WidgetInputHandlerManager::ClearClient() {
   first_paint_max_delay_timer_.reset();
+  recorded_event_metric_for_paint_timing_ = false;
   input_event_queue_->ClearClient();
 }
 
 void WidgetInputHandlerManager::UpdateBrowserControlsState(
     cc::BrowserControlsState constraints,
     cc::BrowserControlsState current,
-    bool animate) {
+    bool animate,
+    base::optional_ref<const cc::BrowserControlsOffsetTagsInfo>
+        offset_tags_info) {
   if (!input_handler_proxy_) {
     return;
   }
 
   DCHECK(InputThreadTaskRunner()->BelongsToCurrentThread());
   input_handler_proxy_->UpdateBrowserControlsState(constraints, current,
-                                                   animate);
+                                                   animate, offset_tags_info);
 }
 
 void WidgetInputHandlerManager::FlushCompositorQueueForTesting() {

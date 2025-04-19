@@ -45,9 +45,8 @@ class CalendarUpNextViewPixelTest
  public:
   CalendarUpNextViewPixelTest() {
     scoped_feature_list_.InitWithFeatureStates(
-        {{features::kGlanceablesV2, AreGlanceablesV2Enabled()},
-         {features::kGlanceablesTimeManagementTasksView,
-          AreGlanceablesV2Enabled()}});
+        {{features::kGlanceablesTimeManagementTasksView,
+          AreGlanceablesEnabled()}});
   }
 
   // AshTestBase:
@@ -65,7 +64,7 @@ class CalendarUpNextViewPixelTest
     AshTestBase::TearDown();
   }
 
-  bool AreGlanceablesV2Enabled() { return GetParam(); }
+  bool AreGlanceablesEnabled() { return GetParam(); }
 
   // AshTestBase:
   std::optional<pixel_test::InitParams> CreatePixelTestInitParams()
@@ -124,7 +123,7 @@ class CalendarUpNextViewPixelTest
   std::unique_ptr<CalendarViewController> controller_;
 };
 
-INSTANTIATE_TEST_SUITE_P(GlanceablesV2,
+INSTANTIATE_TEST_SUITE_P(GlanceablesEnabled,
                          CalendarUpNextViewPixelTest,
                          testing::Bool());
 
@@ -211,7 +210,7 @@ TEST_P(
       /*revision_number=*/8, Widget()));
 }
 
-TEST_P(CalendarUpNextViewPixelTest, DISABLED_ShouldShowJoinMeetingButton) {
+TEST_P(CalendarUpNextViewPixelTest, ShouldShowJoinMeetingButton) {
   // Set time and timezone override.
   ash::system::ScopedTimezoneSettings timezone_settings(u"America/Los_Angeles");
   calendar_test_utils::ScopedLibcTimeZone scoped_libc_timezone(
@@ -233,7 +232,7 @@ TEST_P(CalendarUpNextViewPixelTest, DISABLED_ShouldShowJoinMeetingButton) {
 
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "calendar_up_next_join_button",
-      /*revision_number=*/8, Widget()));
+      /*revision_number=*/9, Widget()));
 }
 
 }  // namespace ash

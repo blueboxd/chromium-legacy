@@ -15,17 +15,16 @@ import android.widget.FrameLayout;
 import android.widget.RemoteViews;
 import android.widget.TextView;
 
-import androidx.test.core.app.ApplicationProvider;
 import androidx.test.filters.SmallTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.IntentUtils;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.shared_preferences.SharedPreferencesManager;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -39,8 +38,6 @@ import org.chromium.chrome.browser.ui.searchactivityutils.SearchActivityExtras.S
 import org.chromium.chrome.browser.ui.searchactivityutils.SearchActivityPreferencesManager.SearchActivityPreferences;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.R;
-import org.chromium.chrome.test.util.ChromeApplicationTestUtils;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -96,16 +93,9 @@ public class SearchWidgetProviderTest {
 
     @Before
     public void setUp() {
-        ChromeApplicationTestUtils.setUp(ApplicationProvider.getApplicationContext());
-
         mContext = new TestContext();
         mDelegate = new TestDelegate(mContext);
         SearchWidgetProvider.setActivityDelegateForTest(mDelegate);
-    }
-
-    @After
-    public void tearDown() {
-        ChromeApplicationTestUtils.tearDown(ApplicationProvider.getApplicationContext());
     }
 
     /**
@@ -116,7 +106,7 @@ public class SearchWidgetProviderTest {
      * @param voiceSearchAvailable Whether voice search is available.
      */
     private void performUpdate(String searchEngineName, boolean voiceSearchAvailable) {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     SearchWidgetProvider.performUpdate(
                             null,
@@ -134,7 +124,7 @@ public class SearchWidgetProviderTest {
      * that the default search engine is not yet selected.
      */
     private void setNeedToCheckForSearchEnginePromo() {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     LocaleManager.getInstance()
                             .setDelegateForTest(
@@ -183,7 +173,7 @@ public class SearchWidgetProviderTest {
     @CommandLineFlags.Remove(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
     public void testUpdateCachedEngineNameBeforeFirstRun() throws ExecutionException {
         Assert.assertFalse(
-                TestThreadUtils.runOnUiThreadBlocking(
+                ThreadUtils.runOnUiThreadBlocking(
                         () -> SearchWidgetProvider.shouldShowFullString()));
 
         // Without any idea of what the default search engine is, widgets should default to saying
@@ -218,7 +208,7 @@ public class SearchWidgetProviderTest {
             Assert.assertEquals(TestDelegate.ALL_IDS[i], mDelegate.mViews.get(i).first.intValue());
         }
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     // Check the contents of the RemoteViews by inflating them.
                     for (int i = 0; i < mDelegate.mViews.size(); i++) {
@@ -228,7 +218,7 @@ public class SearchWidgetProviderTest {
                         parentView.addView(view);
 
                         // Confirm that the string is correct.
-                        TextView titleView = (TextView) view.findViewById(R.id.title);
+                        TextView titleView = view.findViewById(R.id.title);
                         Assert.assertEquals(View.VISIBLE, titleView.getVisibility());
                         Assert.assertEquals(expectedString, titleView.getHint());
 
@@ -280,7 +270,7 @@ public class SearchWidgetProviderTest {
         instrumentation.addMonitor(monitor);
 
         // Click on the widget.
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     FrameLayout parentView = new FrameLayout(mContext);
                     View view = views.apply(mContext, parentView);

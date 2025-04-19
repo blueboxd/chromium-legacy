@@ -52,7 +52,6 @@
       "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "true",
       "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
       "RBE_fast_log_collection": "true",
-      "RBE_use_round_robin_balancer": "true",
       "RBE_use_unified_uploads": "true"
     },
     "instance": "rbe-chromium-untrusted",
@@ -80,5 +79,5 @@
   },
   "builder_group": "chromium.reclient.fyi",
   "recipe": "chromium",
-  "xcode_build_version": "15e204a"
+  "xcode_build_version": "16a5211f"
 }

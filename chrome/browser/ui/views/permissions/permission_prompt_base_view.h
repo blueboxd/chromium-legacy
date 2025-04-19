@@ -28,6 +28,7 @@ class PermissionPromptBaseView : public views::BubbleDialogDelegateView,
   PermissionPromptBaseView(
       Browser* browser,
       base::WeakPtr<permissions::PermissionPrompt::Delegate> delegate);
+  ~PermissionPromptBaseView() override;
 
   // views::BubbleDialogDelegateView:
   // Overridden to elide the prompt title if needed
@@ -68,6 +69,14 @@ class PermissionPromptBaseView : public views::BubbleDialogDelegateView,
   // without calling `PermissionPromptBaseView::AddedToWidget()`.
   void StartTrackingPictureInPictureOcclusion();
 
+  void AnchorToPageInfoOrChip();
+
+  Browser* browser() const { return browser_; }
+
+  std::vector<std::pair<size_t, size_t>> GetTitleBoldedRanges();
+  void SetTitleBoldedRanges(
+      std::vector<std::pair<size_t, size_t>> bolded_ranges);
+
  private:
   const UrlIdentity url_identity_;
 
@@ -78,6 +87,12 @@ class PermissionPromptBaseView : public views::BubbleDialogDelegateView,
   // means it will be in an always-on-top window, and needs to be tracked by the
   // PictureInPictureOcclusionTracker.
   const bool is_for_picture_in_picture_window_;
+
+  const raw_ptr<Browser> browser_ = nullptr;
+
+  // $ORIGIN in the title should be bolded, the ranges of the $ORIGINs are
+  // gained while building the title string via `l10n_util::GetStringFUTF16()`.
+  std::vector<std::pair<size_t, size_t>> title_bolded_ranges_ = {};
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_PERMISSIONS_PERMISSION_PROMPT_BASE_VIEW_H_

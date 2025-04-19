@@ -53,7 +53,7 @@ class FormEventLoggerBase {
   virtual void OnDidShowSuggestions(
       const FormStructure& form,
       const AutofillField& field,
-      const base::TimeTicks& form_parsed_timestamp,
+      base::TimeTicks form_parsed_timestamp,
       AutofillMetrics::PaymentsSigninState signin_state_for_metrics,
       bool off_the_record);
 
@@ -62,8 +62,8 @@ class FormEventLoggerBase {
   // by field filling.
   void RecordFillingOperation(
       FormGlobalId form_id,
-      base::span<const FormFieldData*> filled_fields,
-      base::span<const AutofillField*> filled_autofill_fields);
+      base::span<const FormFieldData* const> filled_fields,
+      base::span<const AutofillField* const> filled_autofill_fields);
 
   void OnDidRefill(
       AutofillMetrics::PaymentsSigninState signin_state_for_metrics,
@@ -85,6 +85,10 @@ class FormEventLoggerBase {
   // The function must not be called from the destructor, since this makes it
   // impossible to dispatch virtual functions into the derived classes.
   void OnDestroyed();
+
+  // Adds the appropriate form types based on `type` to
+  // `field_by_field_filled_form_types_` after a filling operation.
+  void OnFilledByFieldByFieldFilling(SuggestionType type);
 
   // See BrowserAutofillManager::SuggestionContext for the definitions of the
   // AblationGroup parameters.
@@ -156,7 +160,7 @@ class FormEventLoggerBase {
 
   // Whether for a submitted form, Chrome had data stored that could be
   // filled.
-  void RecordFillingReadiness(LogBuffer& logs) const;
+  virtual void RecordFillingReadiness(LogBuffer& logs) const;
 
   // Whether a user accepted a filling suggestion they saw for a form that
   // was later submitted.
@@ -185,6 +189,24 @@ class FormEventLoggerBase {
   // Returns whether the logger was notified that any data to fill is available.
   // This is used to emit the readiness key metric.
   virtual bool HasLoggedDataToFillAvailable() const = 0;
+
+  // Returns the set of all the form types the form event logger should log.
+  // This is to avoid the credit card form event logger from logging address
+  // related form types.
+  virtual DenseSet<FormTypeNameForLogging> GetSupportedFormTypeNamesForLogging()
+      const = 0;
+
+  // Returns the set of all form types the form event logger should log for
+  // `form.`
+  virtual DenseSet<FormTypeNameForLogging> GetFormTypesForLogging(
+      const FormStructure& form) const = 0;
+
+  // Returns a vector of strings for all parsed form types.
+  std::vector<std::string_view> GetParsedFormTypesAsStringViews() const;
+
+  // Returns a set of all parsed form types and form types of field-by-field
+  // filling operations.
+  DenseSet<FormTypeNameForLogging> GetParsedAndFieldByFieldFormTypes() const;
 
   // Constructor parameters.
   std::string form_type_name_;
@@ -232,8 +254,14 @@ class FormEventLoggerBase {
   // Unique ID of a Fast Checkout run. Used for metrics.
   std::optional<int64_t> fast_checkout_run_id_;
 
+  // Form types of the parsed forms for logging purposes.
+  DenseSet<FormTypeNameForLogging> parsed_form_types_;
+
   // Form types of the submitted form.
-  DenseSet<FormType> submitted_form_types_;
+  DenseSet<FormTypeNameForLogging> submitted_form_types_;
+
+  // Form types of field-by-field filling operations.
+  DenseSet<FormTypeNameForLogging> field_by_field_filled_form_types_;
 
   // A map of the form's global id and its form events.
   std::map<FormGlobalId, AutofillMetrics::FormEventSet> form_events_set_;

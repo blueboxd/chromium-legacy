@@ -388,8 +388,7 @@ gfx::ContentColorUsage GetContentColorUsageForPrioritizedTile(
     const PrioritizedTile& prioritized_tile) {
   return prioritized_tile.raster_source()
       ->GetDisplayItemList()
-      ->discardable_image_map()
-      .content_color_usage();
+      ->content_color_usage();
 }
 
 }  // namespace
@@ -1141,14 +1140,14 @@ void TileManager::PartitionImagesForCheckering(
     const gfx::Rect* invalidated_rect,
     base::flat_map<PaintImage::Id, size_t>* image_to_frame_index) {
   Tile* tile = prioritized_tile.tile();
-  std::vector<const DrawImage*> images_in_tile;
   gfx::Rect enclosing_rect = tile->enclosing_layer_rect();
   if (invalidated_rect) {
     enclosing_rect = ToEnclosingRect(
         tile->raster_transform().InverseMapRect(gfx::RectF(*invalidated_rect)));
   }
-  prioritized_tile.raster_source()->GetDiscardableImagesInRect(enclosing_rect,
-                                                               &images_in_tile);
+  std::vector<const DrawImage*> images_in_tile =
+      prioritized_tile.source_tiling()->client()->GetDiscardableImagesInRect(
+          enclosing_rect);
   WhichTree tree = tile->tiling()->tree();
 
   for (const auto* original_draw_image : images_in_tile) {
@@ -1172,9 +1171,9 @@ void TileManager::AddCheckeredImagesToDecodeQueue(
     CheckerImageTracker::DecodeType decode_type,
     CheckerImageTracker::ImageDecodeQueue* image_decode_queue) {
   Tile* tile = prioritized_tile.tile();
-  std::vector<const DrawImage*> images_in_tile;
-  prioritized_tile.raster_source()->GetDiscardableImagesInRect(
-      tile->enclosing_layer_rect(), &images_in_tile);
+  std::vector<const DrawImage*> images_in_tile =
+      prioritized_tile.source_tiling()->client()->GetDiscardableImagesInRect(
+          tile->enclosing_layer_rect());
   WhichTree tree = tile->tiling()->tree();
   for (const auto* original_draw_image : images_in_tile) {
     size_t frame_index = client_->GetFrameIndexForImage(
@@ -1379,7 +1378,7 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
                "TileManager::CreateRasterTask", "Tile", tile->id());
 
   const int msaa_sample_count = client_->GetMSAASampleCountForRaster(
-      prioritized_tile.raster_source()->GetDisplayItemList());
+      *prioritized_tile.raster_source()->GetDisplayItemList());
 
   // When possible, rasterize HDR content into F16.
   //
@@ -1402,6 +1401,20 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
     resource = resource_pool_->TryAcquireResourceForPartialRaster(
         tile->id(), tile->invalidated_content_rect(), tile->invalidated_id(),
         &invalidated_rect, target_color_params.color_space, debug_name);
+
+    constexpr double kLogProbability = 0.001;
+    if (metrics_sub_sampler_.ShouldSample(kLogProbability)) {
+      // Note this minimum area needs to be above zero to avoid division by zero
+      // error.
+      constexpr uint64_t kMinAreaForReporting = 256 * 256;
+      if (auto tile_area = tile->desired_texture_size().Area64();
+          tile_area >= kMinAreaForReporting) {
+        auto percentage_invalidated =
+            (100 * invalidated_rect.size().Area64()) / tile_area;
+        UMA_HISTOGRAM_PERCENTAGE("Compositing.TileManager.TileInvalidationArea",
+                                 percentage_invalidated);
+      }
+    }
   }
 
   bool partial_tile_decode = false;

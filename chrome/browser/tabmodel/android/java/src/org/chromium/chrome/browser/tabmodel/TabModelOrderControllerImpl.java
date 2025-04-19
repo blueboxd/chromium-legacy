@@ -33,7 +33,7 @@ class TabModelOrderControllerImpl implements TabModelOrderController {
             position = determineInsertionIndex(type, newTab);
         }
 
-        if (willOpenInForeground(type, newTab.isIncognito())) {
+        if (willOpenInForeground(type, newTab.isIncognitoBranded())) {
             // Forget any existing relationships, we don't want to make things
             // too confusing by having multiple groups active at the same time.
             forgetAllOpeners();
@@ -67,7 +67,7 @@ class TabModelOrderControllerImpl implements TabModelOrderController {
                 // If the tab was opened in the foreground, insert it adjacent to its parent tab if
                 // that exists and that tab is not the current selected tab, else insert the tab
                 // adjacent to the current tab that opened that link.
-                Tab parentTab = TabModelUtils.getTabById(currentModel, newTab.getParentId());
+                Tab parentTab = currentModel.getTabById(newTab.getParentId());
                 if (parentTab != null && currentTab != parentTab) {
                     int parentTabIndex =
                             TabModelUtils.getTabIndexById(currentModel, parentTab.getId());
@@ -141,7 +141,7 @@ class TabModelOrderControllerImpl implements TabModelOrderController {
     }
 
     @Override
-    public boolean willOpenInForeground(@TabLaunchType int type, boolean isNewTabIncognito) {
+    public boolean willOpenInForeground(@TabLaunchType int type, boolean isNewTabIncognitoBranded) {
         // Restore is handling the active index by itself.
         if (type == TabLaunchType.FROM_RESTORE
                 || type == TabLaunchType.FROM_BROWSER_ACTIONS
@@ -152,7 +152,8 @@ class TabModelOrderControllerImpl implements TabModelOrderController {
                         && type != TabLaunchType.FROM_LONGPRESS_BACKGROUND_IN_GROUP
                         && type != TabLaunchType.FROM_RECENT_TABS
                         && type != TabLaunchType.FROM_SYNC_BACKGROUND
-                || (!mTabModelSelector.isIncognitoSelected() && isNewTabIncognito);
+                || (!mTabModelSelector.isIncognitoBrandedModelSelected()
+                        && isNewTabIncognitoBranded);
     }
 
     /**

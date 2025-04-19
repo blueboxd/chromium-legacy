@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/location.h"
+#include "media/base/media_serializers.h"
 #include "media/formats/hls/parse_status.h"
 #include "media/formats/hls/source_string.h"
 #include "media/formats/hls/test_util.h"
@@ -662,7 +663,7 @@ TEST(HlsTypesTest, ParseByteRangeExpression) {
   const auto error_test = [](std::string_view input,
                              const base::Location& from =
                                  base::Location::Current()) {
-    auto result = types::ByteRangeExpression::Parse(
+    auto result = types::parsing::ByteRangeExpression::Parse(
         ResolvedSourceString::CreateForTesting(input));
     ASSERT_FALSE(result.has_value());
     auto error = std::move(result).error();
@@ -670,9 +671,9 @@ TEST(HlsTypesTest, ParseByteRangeExpression) {
         << from.ToString();
   };
   const auto ok_test =
-      [](std::string_view input, types::ByteRangeExpression expected,
+      [](std::string_view input, types::parsing::ByteRangeExpression expected,
          const base::Location& from = base::Location::Current()) {
-        auto result = types::ByteRangeExpression::Parse(
+        auto result = types::parsing::ByteRangeExpression::Parse(
             ResolvedSourceString::CreateForTesting(input));
         ASSERT_TRUE(result.has_value());
         auto value = std::move(result).value();
@@ -709,27 +710,31 @@ TEST(HlsTypesTest, ParseByteRangeExpression) {
   error_test("\"12@34\"");
 
   // Test some valid inputs
-  ok_test("0", types::ByteRangeExpression{.length = 0, .offset = std::nullopt});
-  ok_test("12",
-          types::ByteRangeExpression{.length = 12, .offset = std::nullopt});
-  ok_test("12@0", types::ByteRangeExpression{.length = 12, .offset = 0});
-  ok_test("12@34", types::ByteRangeExpression{.length = 12, .offset = 34});
-  ok_test("0@34", types::ByteRangeExpression{.length = 0, .offset = 34});
-  ok_test("0@0", types::ByteRangeExpression{.length = 0, .offset = 0});
+  ok_test("0", types::parsing::ByteRangeExpression{.length = 0,
+                                                   .offset = std::nullopt});
+  ok_test("12", types::parsing::ByteRangeExpression{.length = 12,
+                                                    .offset = std::nullopt});
+  ok_test("12@0",
+          types::parsing::ByteRangeExpression{.length = 12, .offset = 0});
+  ok_test("12@34",
+          types::parsing::ByteRangeExpression{.length = 12, .offset = 34});
+  ok_test("0@34",
+          types::parsing::ByteRangeExpression{.length = 0, .offset = 34});
+  ok_test("0@0", types::parsing::ByteRangeExpression{.length = 0, .offset = 0});
 
   // Test max supported values. These are valid ByteRangeExpressions, but not
   // necessarily valid ByteRanges.
-  ok_test(
-      "18446744073709551615@0",
-      types::ByteRangeExpression{.length = 18446744073709551615u, .offset = 0});
+  ok_test("18446744073709551615@0",
+          types::parsing::ByteRangeExpression{.length = 18446744073709551615u,
+                                              .offset = 0});
   error_test("18446744073709551616@0");
-  ok_test(
-      "0@18446744073709551615",
-      types::ByteRangeExpression{.length = 0, .offset = 18446744073709551615u});
+  ok_test("0@18446744073709551615",
+          types::parsing::ByteRangeExpression{.length = 0,
+                                              .offset = 18446744073709551615u});
   error_test("0@18446744073709551616");
   ok_test("18446744073709551615@18446744073709551615",
-          types::ByteRangeExpression{.length = 18446744073709551615u,
-                                     .offset = 18446744073709551615u});
+          types::parsing::ByteRangeExpression{.length = 18446744073709551615u,
+                                              .offset = 18446744073709551615u});
   error_test("18446744073709551616@18446744073709551615");
   error_test("18446744073709551615@18446744073709551616");
   error_test("18446744073709551616@18446744073709551616");
@@ -922,6 +927,99 @@ TEST(HlsTypesTest, ParseAudioChannels) {
   // Additional parameters are ignored
   ok_test("2//19090zz**-0/", 2, {});
   ok_test("2/FOO/19090zz**-0", 2, {"FOO"});
+}
+
+namespace {
+
+template <size_t bits>
+void HexErrorTest(std::string_view str,
+                  bool extrapolate_leading_zeros = false,
+                  bool has_prefix = true,
+                  const base::Location& from = base::Location::Current()) {
+  auto result = types::parsing::HexRepr<bits>::Parse(
+      ResolvedSourceString::CreateForTesting(str), extrapolate_leading_zeros,
+      has_prefix);
+  ASSERT_FALSE(result.has_value());
+  ASSERT_EQ(std::move(result).error().code(),
+            ParseStatusCode::kFailedToParseHexadecimalString)
+      << from.ToString();
+}
+
+template <size_t bits>
+types::parsing::HexRepr<bits>::Container HexParseOk(
+    std::string_view str,
+    bool extrapolate_leading_zeros = false,
+    bool has_prefix = true,
+    const base::Location& from = base::Location::Current()) {
+  auto result = types::parsing::HexRepr<bits>::Parse(
+      ResolvedSourceString::CreateForTesting(str), extrapolate_leading_zeros,
+      has_prefix);
+  EXPECT_TRUE(result.has_value()) << from.ToString();
+  CHECK(result.has_value());
+  return std::move(result).value();
+}
+
+}  // namespace
+
+TEST(HlsTypesTest, HexInvalidChars) {
+  HexErrorTest<8>("q");
+  HexErrorTest<8>("");
+  HexErrorTest<8>("x");
+  HexErrorTest<8>("~");
+  HexErrorTest<8>("Á");
+}
+
+TEST(HlsTypesTest, HexPrefixFlag) {
+  HexErrorTest<8>("ff");
+  ASSERT_EQ(HexParseOk<8>("12", false, false), std::make_tuple<uint8_t>(0x12));
+}
+
+TEST(HlsTypesTest, HexCapsLowerCase) {
+  ASSERT_EQ(HexParseOk<8>("0x1f"), std::make_tuple<uint8_t>(0x1f));
+  ASSERT_EQ(HexParseOk<8>("0x1F"), std::make_tuple<uint8_t>(0x1f));
+}
+
+TEST(HlsTypesTest, HexExtrapolateZero) {
+  HexErrorTest<8>("0xf");
+  ASSERT_EQ(HexParseOk<8>("0xF", true), std::make_tuple<uint8_t>(0x0f));
+
+  // extrapolate leading zeros and no prefix:
+  ASSERT_EQ(HexParseOk<8>("F", true, false), std::make_tuple<uint8_t>(0x0f));
+}
+
+TEST(HlsTypesTest, HexTooLong) {
+  HexErrorTest<8>("0x123");
+}
+
+TEST(HlsTypesTest, Hex16) {
+  // different sizes (use assignment so == operator doesn't try tuple tricks)
+  std::tuple<uint16_t> value16 = HexParseOk<16>("0x1234");
+  ASSERT_EQ(value16, std::make_tuple<uint16_t>(0x1234));
+}
+
+TEST(HlsTypesTest, Hex32) {
+  // different sizes (use assignment so == operator doesn't try tuple tricks)
+  std::tuple<uint32_t> value32 = HexParseOk<32>("0x12345678");
+  ASSERT_EQ(value32, std::make_tuple<uint32_t>(0x12345678));
+}
+
+TEST(HlsTypesTest, Hex64) {
+  // different sizes (use assignment so == operator doesn't try tuple tricks)
+  std::tuple<uint64_t> value64 = HexParseOk<64>("0x1234567812345678");
+  ASSERT_EQ(value64, std::make_tuple<uint64_t>(0x1234567812345678));
+}
+
+TEST(HlsTypesTest, HexUnpack) {
+  std::tuple<uint8_t, uint8_t, uint8_t> value24 = HexParseOk<24>("0x123456");
+  std::tuple<uint8_t, uint8_t, uint8_t> expect24 =
+      std::make_tuple(0x12, 0x34, 0x56);
+  ASSERT_EQ(value24, expect24);
+
+  std::tuple<uint16_t, uint16_t, uint16_t> value48 =
+      HexParseOk<48>("0x123456", true);
+  std::tuple<uint16_t, uint16_t, uint16_t> expect48 =
+      std::make_tuple<uint16_t, uint16_t, uint16_t>(0x0000, 0x0012, 0x3456);
+  ASSERT_EQ(value48, expect48);
 }
 
 }  // namespace media::hls

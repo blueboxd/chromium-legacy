@@ -107,7 +107,8 @@ class MockSigninUiDelegate : public SigninUiDelegate {
                signin_metrics::AccessPoint access_point,
                signin_metrics::PromoAction promo_action,
                const CoreAccountId& account_id,
-               TurnSyncOnHelper::SigninAbortedMode signin_aborted_mode),
+               TurnSyncOnHelper::SigninAbortedMode signin_aborted_mode,
+               bool is_sync_promo),
               ());
 };
 #elif BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -121,7 +122,8 @@ class MockSigninUiDelegate : public SigninUiDelegateImplDice {
                signin_metrics::AccessPoint access_point,
                signin_metrics::PromoAction promo_action,
                const CoreAccountId& account_id,
-               TurnSyncOnHelper::SigninAbortedMode signin_aborted_mode),
+               TurnSyncOnHelper::SigninAbortedMode signin_aborted_mode,
+               bool is_sync_promo),
               ());
 };
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -159,14 +161,15 @@ class SigninUiUtilTest : public BrowserWithTestWindowTest {
     SignInFromSingleAccountPromo(profile(), account_info, access_point_);
   }
 
-  void ExpectTurnSyncOn(
-      signin_metrics::AccessPoint access_point,
-      signin_metrics::PromoAction promo_action,
-      const CoreAccountId& account_id,
-      TurnSyncOnHelper::SigninAbortedMode signin_aborted_mode) {
-    EXPECT_CALL(mock_delegate_,
-                ShowTurnSyncOnUI(profile(), access_point, promo_action,
-                                 account_id, signin_aborted_mode));
+  void ExpectTurnSyncOn(signin_metrics::AccessPoint access_point,
+                        signin_metrics::PromoAction promo_action,
+                        const CoreAccountId& account_id,
+                        TurnSyncOnHelper::SigninAbortedMode signin_aborted_mode,
+                        bool is_sync_promo) {
+    EXPECT_CALL(
+        mock_delegate_,
+        ShowTurnSyncOnUI(profile(), access_point, promo_action, account_id,
+                         signin_aborted_mode, is_sync_promo));
   }
 
   void ExpectNoSigninStartedHistograms(
@@ -276,7 +279,8 @@ TEST_F(SigninUiUtilTest, EnableSyncWithExistingAccount) {
             : signin_metrics::PromoAction::PROMO_ACTION_NOT_DEFAULT;
     ExpectTurnSyncOn(signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE,
                      expected_promo_action, account_id,
-                     TurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT);
+                     TurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT,
+                     /*is_sync_promo=*/false);
     EnableSync(
         GetIdentityManager()->FindExtendedAccountInfoByAccountId(account_id),
         is_default_promo_account);
@@ -841,7 +845,8 @@ TEST_F(SigninUiUtilWithUnoDesktopTest, EnableSyncWithExistingWebOnlyAccount) {
     ExpectTurnSyncOn(
         signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE,
         expected_promo_action, account_id,
-        TurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT_ON_WEB_ONLY);
+        TurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT_ON_WEB_ONLY,
+        /*is_sync_promo=*/false);
     EnableSync(
         GetIdentityManager()->FindExtendedAccountInfoByAccountId(account_id),
         is_default_promo_account);
@@ -868,6 +873,52 @@ TEST_F(SigninUiUtilWithUnoDesktopTest, SignInWithExistingWebOnlyAccount) {
   // Verify that the primary account has been set.
   EXPECT_TRUE(
       GetIdentityManager()->HasPrimaryAccount(signin::ConsentLevel::kSignin));
+}
+
+TEST_F(SigninUiUtilWithUnoDesktopTest, ShowExtensionSigninPrompt) {
+  Profile* profile = browser()->profile();
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  ShowExtensionSigninPrompt(profile, /*enable_sync=*/false,
+                            /*email_hint=*/std::string());
+  EXPECT_EQ(1, tab_strip->count());
+  // Calling the function again reuses the tab.
+  ShowExtensionSigninPrompt(profile, /*enable_sync=*/false,
+                            /*email_hint=*/std::string());
+  EXPECT_EQ(1, tab_strip->count());
+
+  content::WebContents* tab = tab_strip->GetWebContentsAt(0);
+  ASSERT_TRUE(tab);
+  EXPECT_TRUE(base::StartsWith(
+      tab->GetVisibleURL().spec(),
+      GaiaUrls::GetInstance()->signin_chrome_sync_dice().spec(),
+      base::CompareCase::INSENSITIVE_ASCII));
+  EXPECT_NE(tab->GetVisibleURL().query().find("flow=promo"), std::string::npos);
+}
+
+TEST_F(SigninUiUtilWithUnoDesktopTest, ShowExtensionSigninPromptReauth) {
+  CoreAccountId account_id =
+      GetIdentityManager()->GetAccountsMutator()->AddOrUpdateAccount(
+          kMainGaiaID, kMainEmail, "refresh_token", false,
+          signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN,
+          signin_metrics::SourceForRefreshTokenOperation::kUnknown);
+  GetIdentityManager()->GetPrimaryAccountMutator()->SetPrimaryAccount(
+      account_id, signin::ConsentLevel::kSignin,
+      signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN);
+  signin::UpdatePersistentErrorOfRefreshTokenForAccount(
+      GetIdentityManager(), account_id,
+      GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
+
+  Profile* profile = browser()->profile();
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  ShowExtensionSigninPrompt(profile, /*enable_sync=*/false, kMainEmail);
+  EXPECT_EQ(1, tab_strip->count());
+
+  content::WebContents* tab = tab_strip->GetWebContentsAt(0);
+  ASSERT_TRUE(tab);
+  EXPECT_TRUE(
+      base::StartsWith(tab->GetVisibleURL().spec(),
+                       GaiaUrls::GetInstance()->add_account_url().spec(),
+                       base::CompareCase::INSENSITIVE_ASCII));
 }
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 
@@ -906,9 +957,10 @@ class MirrorSigninUiUtilTest : public BrowserWithTestWindowTest {
       signin_metrics::PromoAction promo_action,
       const CoreAccountId& account_id,
       TurnSyncOnHelper::SigninAbortedMode signin_aborted_mode) {
-    EXPECT_CALL(mock_delegate_,
-                ShowTurnSyncOnUI(profile(), access_point, promo_action,
-                                 account_id, signin_aborted_mode));
+    EXPECT_CALL(
+        mock_delegate_,
+        ShowTurnSyncOnUI(profile(), access_point, promo_action, account_id,
+                         signin_aborted_mode, /*is_sync_promo=*/false));
   }
 
  protected:

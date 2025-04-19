@@ -45,6 +45,8 @@ const AccessPoint kAccessPointsThatSupportUserAction[] = {
     AccessPoint::ACCESS_POINT_CHROME_SIGNIN_INTERCEPT_BUBBLE,
     AccessPoint::ACCESS_POINT_TAB_ORGANIZATION,
     AccessPoint::ACCESS_POINT_NOTIFICATIONS_OPT_IN_SCREEN_CONTENT_TOGGLE,
+    AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN_WITH_SYNC_PROMO,
+    AccessPoint::ACCESS_POINT_PRODUCT_SPECIFICATIONS,
 };
 
 const AccessPoint kAccessPointsThatSupportImpression[] = {
@@ -196,6 +198,12 @@ class SigninMetricsTest : public ::testing::Test {
         return "OidcRedirectionInterception";
       case AccessPoint::ACCESS_POINT_WEBAUTHN_MODAL_DIALOG:
         return "WebAuthnModalDialog";
+      case AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN_WITH_SYNC_PROMO:
+        return "AvatarBubbleSigninWithSyncPromo";
+      case AccessPoint::ACCESS_POINT_ACCOUNT_MENU:
+        return "AccountMenu";
+      case AccessPoint::ACCESS_POINT_PRODUCT_SPECIFICATIONS:
+        return "ProductSpecifications";
       case AccessPoint::ACCESS_POINT_MAX:
         NOTREACHED_IN_MIGRATION();
         return "";

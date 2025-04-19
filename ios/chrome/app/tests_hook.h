@@ -12,6 +12,7 @@ class PrefService;
 class ProfileOAuth2TokenServiceDelegate;
 class ProfileOAuth2TokenService;
 class SystemIdentityManager;
+class TrustedVaultClientBackend;
 namespace drive {
 class DriveService;
 }
@@ -99,6 +100,10 @@ policy::ConfigurationPolicyProvider* GetOverriddenPlatformPolicyProvider();
 // be used if this hook returns null.
 std::unique_ptr<SystemIdentityManager> CreateSystemIdentityManager();
 
+// Allow overriding the TrustedVaultClientBackend factory. The real factory
+// will be used if this hook returns null.
+std::unique_ptr<TrustedVaultClientBackend> CreateTrustedVaultClientBackend();
+
 // Returns a bulk leak check service that should be used when testing. The real
 // factory will be used if this hook returns a nullptr.
 std::unique_ptr<password_manager::BulkLeakCheckServiceInterface>
@@ -125,6 +130,10 @@ void SignalAppLaunched();
 // fast and making it flicker. Test targets do not have an artificial minimum
 // duration as it can make test flaky.
 base::TimeDelta PasswordCheckMinimumDuration();
+
+// Duration for snackbars. If the value is 0, the default value from
+// -[MDCSnackbarMessage duration] should not be updated.
+base::TimeDelta GetOverriddenSnackbarDuration();
 
 // Returns a Drive service instance that should be used in EG tests. The real
 // instance will be used if this hook returns a nullptr.

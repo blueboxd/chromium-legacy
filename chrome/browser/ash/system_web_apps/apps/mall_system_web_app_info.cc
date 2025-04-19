@@ -8,9 +8,11 @@
 #include "ash/webui/mall/url_constants.h"
 #include "ash/webui/system_apps/public/system_web_app_type.h"
 #include "base/feature_list.h"
+#include "chrome/browser/apps/user_type_filter.h"
 #include "chrome/browser/ash/system_web_apps/apps/system_web_app_install_utils.h"
 #include "chrome/browser/ash/system_web_apps/types/system_web_app_delegate.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -41,7 +43,7 @@ MallSystemAppDelegate::GetWebAppInfo() const {
   info->title = l10n_util::GetStringUTF16(IDS_MALL_APP_NAME);
 
   web_app::CreateIconInfoForSystemWebApp(
-      info->start_url,
+      info->start_url(),
       {{"mall_icon_192.png", 192,
         IDR_ASH_MALL_CROS_APP_IMAGES_MALL_ICON_192_PNG}},
       *info);
@@ -50,5 +52,20 @@ MallSystemAppDelegate::GetWebAppInfo() const {
 }
 
 bool MallSystemAppDelegate::IsAppEnabled() const {
+  if (apps::DetermineUserType(profile()) != apps::kUserTypeUnmanaged) {
+    return false;
+  }
   return chromeos::features::IsCrosMallSwaEnabled();
+}
+
+std::vector<std::string> MallSystemAppDelegate::GetAppIdsToUninstallAndReplace()
+    const {
+  // Attempt to migrate preferences from Mall preloaded web app. Note that
+  // synchronizing of preloaded PWAs and SWAs race against each other. The
+  // migration will only happen if the SWA installs before
+  // PreinstalledWebAppManager attempts to uninstall the Mall PWA. If migration
+  // does not occur, shelf and launcher will reset to default positions for the
+  // Mall app. Fixing this requires teaching ExternallyManagedAppManager how
+  // to ignore apps, the buggy behaviour is considered an acceptable tradeoff.
+  return {web_app::kMallAppId};
 }

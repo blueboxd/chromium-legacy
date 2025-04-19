@@ -4,21 +4,27 @@
 
 #include "components/power_bookmarks/storage/power_bookmark_sync_bridge.h"
 
+#include <memory>
+#include <set>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "components/power_bookmarks/common/power.h"
 #include "components/power_bookmarks/storage/power_bookmark_sync_metadata_database.h"
 #include "components/sync/base/deletion_origin.h"
+#include "components/sync/model/data_type_local_change_processor.h"
 #include "components/sync/model/in_memory_metadata_change_list.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/metadata_change_list.h"
-#include "components/sync/model/model_type_change_processor.h"
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/model/sync_metadata_store_change_list.h"
 
 namespace power_bookmarks {
 
 namespace {
-void WritePowersToSyncData(const std::vector<std::unique_ptr<Power>>& powers,
-                           PowerBookmarkSyncBridge::DataCallback callback) {
+std::unique_ptr<syncer::DataBatch> ConvertPowersToSyncData(
+    const std::vector<std::unique_ptr<Power>>& powers) {
   auto batch = std::make_unique<syncer::MutableDataBatch>();
   for (const auto& power : powers) {
     std::string guid = power->guid_string();
@@ -28,15 +34,15 @@ void WritePowersToSyncData(const std::vector<std::unique_ptr<Power>>& powers,
         entity_data->specifics.mutable_power_bookmark());
     batch->Put(guid, std::move(entity_data));
   }
-  std::move(callback).Run(std::move(batch));
+  return batch;
 }
 }  // namespace
 
 PowerBookmarkSyncBridge::PowerBookmarkSyncBridge(
     PowerBookmarkSyncMetadataDatabase* meta_db,
     Delegate* delegate,
-    std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor)
-    : syncer::ModelTypeSyncBridge(std::move(change_processor)),
+    std::unique_ptr<syncer::DataTypeLocalChangeProcessor> change_processor)
+    : syncer::DataTypeSyncBridge(std::move(change_processor)),
       meta_db_(meta_db),
       delegate_(delegate) {}
 
@@ -82,14 +88,14 @@ std::string PowerBookmarkSyncBridge::GetClientTag(
   return GetStorageKey(entity_data);
 }
 
-void PowerBookmarkSyncBridge::GetDataForCommit(StorageKeyList storage_keys,
-                                               DataCallback callback) {
-  WritePowersToSyncData(delegate_->GetPowersForGUIDs(storage_keys),
-                        std::move(callback));
+std::unique_ptr<syncer::DataBatch> PowerBookmarkSyncBridge::GetDataForCommit(
+    StorageKeyList storage_keys) {
+  return ConvertPowersToSyncData(delegate_->GetPowersForGUIDs(storage_keys));
 }
 
-void PowerBookmarkSyncBridge::GetAllDataForDebugging(DataCallback callback) {
-  WritePowersToSyncData(delegate_->GetAllPowers(), std::move(callback));
+std::unique_ptr<syncer::DataBatch>
+PowerBookmarkSyncBridge::GetAllDataForDebugging() {
+  return ConvertPowersToSyncData(delegate_->GetAllPowers());
 }
 
 void PowerBookmarkSyncBridge::SendPowerToSync(const Power& power) {
@@ -119,7 +125,7 @@ PowerBookmarkSyncBridge::CreateMetadataChangeListInTransaction() {
   // transaction.
   return std::make_unique<syncer::SyncMetadataStoreChangeList>(
       meta_db_, syncer::POWER_BOOKMARK,
-      base::BindRepeating(&syncer::ModelTypeChangeProcessor::ReportError,
+      base::BindRepeating(&syncer::DataTypeLocalChangeProcessor::ReportError,
                           change_processor()->GetWeakPtr()));
 }
 

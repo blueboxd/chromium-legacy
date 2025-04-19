@@ -100,8 +100,16 @@ void OriginTrialStateHostImpl::ApplyFeatureDiffForOriginTrial(
     }
   }
   // Apply the diff changes to the mutable RuntimeFeatureStateReadContext.
+  // TODO(crbug.com/347186599): CAVEAT EMPTOR - there are corner cases where
+  // RuntimeFeatureStateDocumentData::GetForCurrentDocument() returned a nullptr
+  // when it shouldn't have. To prevent CHECK failures, we have switched to
+  // GetOrCreateForCurrentDocument(), but this does not resolve the original
+  // corner case where the DocumentData is incorrectly created/deleted.
+  // This issue should be revisited to avoid silently dropping any feature
+  // overrides that are stored in the RFSDocumentData, in these corner cases
+  // when the data has become a nullptr.
   RuntimeFeatureStateDocumentData* document_data =
-      RuntimeFeatureStateDocumentData::GetForCurrentDocument(
+      RuntimeFeatureStateDocumentData::GetOrCreateForCurrentDocument(
           &render_frame_host());
   CHECK(document_data);
   document_data
@@ -128,7 +136,8 @@ void OriginTrialStateHostImpl::EnablePersistentTrial(
       /*origin=*/render_frame_host().GetLastCommittedOrigin(),
       /*partition_origin=*/
       render_frame_host().GetOutermostMainFrame()->GetLastCommittedOrigin(),
-      script_origins, tokens, base::Time::Now());
+      script_origins, tokens, base::Time::Now(),
+      render_frame_host().GetPageUkmSourceId());
 }
 
 }  // namespace content

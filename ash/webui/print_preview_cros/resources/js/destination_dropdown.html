@@ -4,10 +4,20 @@
     --dropdown-border-radius: 8px;
     --dropdown-outline-ring-width: 2px;
     --dropdown-width: 216px;
+    --dropdown-disabled-opacity: .38;
 
     display: inline-block;
     font: var(--cros-button-2-font);
     width: var(--dropdown-width);
+  }
+
+  :host([disabled]) {
+    pointer-events: none;
+  }
+
+  :host([disabled]) .select,
+  :host([disabled]) .select-background {
+    opacity: var(--dropdown-disabled-opacity);
   }
 
   :host([hidden]) {
@@ -81,14 +91,15 @@
       tabindex to wrapper div to ensure whole select responds to user
       interaction. -->
     <destination-row id="selected" destination="[[selectedDestination]]"
-      on-click="onSelectedClicked">
+        on-click="onSelectedClicked">
     </destination-row>
   </div>
   <div id="content" class="flex-container-column" hidden="[[!open]]">
     <!-- TODO(b/323421684): Replace with list of recent destinations, digital
     destinations, and add button to open destination dialog. -->
     <template is="dom-repeat" items="[[destinations]]">
-      <destination-row destination="[[item]]" class="select-item">
+      <destination-row destination="[[item]]" class="select-item"
+          id="row-[[item.id]]" on-click="onDestinationClicked">
       </destination-row>
     </template>
   </div>

@@ -88,6 +88,13 @@ struct RecentSeaPenThumbnailData {
   RecentSeaPenImageInfo? image_info;
 };
 
+// Represents a single entry of text query history.
+struct TextQueryHistoryEntry {
+  string query;
+
+  array<SeaPenThumbnail> thumbnails;
+};
+
 // Maximum allowable query text length, in bytes.
 // When validating length in Javascript, be careful of the difference between
 // UTF-16 (Javascript) length and UTF-8 length.
@@ -110,11 +117,26 @@ enum MantaStatusCode {
   kMax = kPerUserQuotaExceeded,
 };
 
+// An interface to provide SeaPen updates to the renderer process, e.g. when the
+// browser process has changed wallpaper.
+interface SeaPenObserver {
+  // Called to update the renderer process when the active SeaPen image has
+  // changed. Called with null when SeaPen image is unset/removed, e.g. a
+  // different type of wallpaper has been set.
+  OnSelectedSeaPenImageChanged(uint32? id);
+
+  // Called whenever there is a change to the text query history.
+  OnTextQueryHistoryChanged(array<TextQueryHistoryEntry>? entries);
+};
+
 // Provides APIs to get thumbnails and full size images. Uses APIs in
 // `manta.proto` to send requests to a google owned server.
 // Implemented in the browser process, and called by the ChromeOS
 // Personalization App (chrome://personalization) in a renderer process.
 interface SeaPenProvider {
+
+    // Binds a listener to start receiving updates on SeaPen status changes.
+    SetSeaPenObserver(pending_remote<SeaPenObserver> observer);
 
     // Given a user text input, return a set of matching thumbnails.
     // `thumbnails` will be null in case of an unrecoverable error, such as
@@ -128,7 +150,7 @@ interface SeaPenProvider {
 
     // Select a thumbnail for the current user.
     // `id` must be a valid id from a previous call to `GetSeaPenThumbnails`.
-    SelectSeaPenThumbnail(uint32 id) => (bool success);
+    SelectSeaPenThumbnail(uint32 id, bool preview_mode) => (bool success);
 
     // Gets the available previously selected SeaPen images. `ids` will be
     // empty if no thumbnails have been previously selected, or in case of disk
@@ -137,7 +159,7 @@ interface SeaPenProvider {
 
     // Sets the given SeaPen image id as the user's background. Must be a valid
     // id from a previous call to `GetRecentSeaPenImageIds`.
-    SelectRecentSeaPenImage(uint32 id) => (bool success);
+    SelectRecentSeaPenImage(uint32 id, bool preview_mode) => (bool success);
 
     // Fetches the thumbnail data for the given recent Sea Pen image `id`.
     // `id` must be a valid id from a previous call to
@@ -159,4 +181,12 @@ interface SeaPenProvider {
 
     // Called when the user close the introduction dialog for SeaPen feature.
     HandleSeaPenIntroductionDialogClosed();
+
+    // Indicates whether the device is in tablet mode.
+    IsInTabletMode() => (bool tablet_mode);
+
+    // Called to force the browser window to make the native views transparent
+    // so that the user can see wallpaper in fullscreen on their desktop. Safe
+    // to call multiple times.
+    MakeTransparent();
 };

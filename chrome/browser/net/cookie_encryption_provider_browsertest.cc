@@ -30,7 +30,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(IS_WIN)
-#include "chrome/browser/os_crypt/app_bound_encryption_provider_win.h"
 #include "chrome/browser/os_crypt/app_bound_encryption_win.h"
 #include "chrome/browser/os_crypt/test_support.h"
 #include "chrome/install_static/test/scoped_install_details.h"
@@ -90,6 +89,27 @@ struct TestCase {
   MetricsExpectation metrics_expectation_after = kNotChecked;
 };
 
+#if BUILDFLAG(IS_WIN)
+bool IsElevationRequired(TestConfiguration configuration) {
+  switch (configuration) {
+    case kOSCryptSync:
+      [[fallthrough]];
+    case kOSCryptAsync:
+      [[fallthrough]];
+    case kOSCryptAsyncWithAppBoundProviderWithEncryptionNoService:
+      return false;
+    case kOSCryptAsyncWithAppBoundProvider:
+      [[fallthrough]];
+    case kOSCryptAsyncWithAppBoundProviderWithEncryption:
+      [[fallthrough]];
+    case kOSCryptAsyncWithAppBoundProviderWithEncryptionUnsupportedUserData:
+      [[fallthrough]];
+    case kOSCryptAsyncWithAppBoundProviderDisabledByPolicy:
+      return true;
+  }
+}
+#endif  // BUILDFLAG(IS_WIN)
+
 }  // namespace
 
 class CookieEncryptionProviderBrowserTest
@@ -103,6 +123,14 @@ class CookieEncryptionProviderBrowserTest
 #endif  // BUILDFLAG(IS_WIN)
 
   void SetUp() override {
+#if BUILDFLAG(IS_WIN)
+    if ((IsElevationRequired(GetParam().before) ||
+         IsElevationRequired(GetParam().after)) &&
+        base::GetCurrentProcessIntegrityLevel() != base::HIGH_INTEGRITY) {
+      GTEST_SKIP() << "Elevation is required for this test.";
+    }
+#endif  // BUILDFLAG(IS_WIN)
+
     auto configuration =
         content::IsPreTest() ? GetParam().before : GetParam().after;
 
@@ -124,66 +152,54 @@ class CookieEncryptionProviderBrowserTest
         break;
 #if BUILDFLAG(IS_WIN)
       case kOSCryptAsyncWithAppBoundProvider:
-        if (base::GetCurrentProcessIntegrityLevel() != base::HIGH_INTEGRITY) {
-          GTEST_SKIP() << "Elevation is required for this test.";
-        }
         maybe_uninstall_service_ = os_crypt::InstallService();
         EXPECT_TRUE(maybe_uninstall_service_.has_value());
         enabled_features.push_back(
             features::kUseOsCryptAsyncForCookieEncryption);
         enabled_features.push_back(
             features::kRegisterAppBoundEncryptionProvider);
-        os_crypt_async::AppBoundEncryptionProviderWin::
-            SetEnableEncryptionForTesting(false);
+        disabled_features.push_back(
+            features::kUseAppBoundEncryptionProviderForEncryption);
         break;
       case kOSCryptAsyncWithAppBoundProviderWithEncryption:
-        if (base::GetCurrentProcessIntegrityLevel() != base::HIGH_INTEGRITY) {
-          GTEST_SKIP() << "Elevation is required for this test.";
-        }
         maybe_uninstall_service_ = os_crypt::InstallService();
         EXPECT_TRUE(maybe_uninstall_service_.has_value());
         enabled_features.push_back(
             features::kUseOsCryptAsyncForCookieEncryption);
         enabled_features.push_back(
             features::kRegisterAppBoundEncryptionProvider);
-        os_crypt_async::AppBoundEncryptionProviderWin::
-            SetEnableEncryptionForTesting(true);
+        enabled_features.push_back(
+            features::kUseAppBoundEncryptionProviderForEncryption);
         break;
       case kOSCryptAsyncWithAppBoundProviderWithEncryptionNoService:
         enabled_features.push_back(
             features::kUseOsCryptAsyncForCookieEncryption);
         enabled_features.push_back(
             features::kRegisterAppBoundEncryptionProvider);
-        os_crypt_async::AppBoundEncryptionProviderWin::
-            SetEnableEncryptionForTesting(true);
+        enabled_features.push_back(
+            features::kUseAppBoundEncryptionProviderForEncryption);
         break;
       case kOSCryptAsyncWithAppBoundProviderWithEncryptionUnsupportedUserData:
-        if (base::GetCurrentProcessIntegrityLevel() != base::HIGH_INTEGRITY) {
-          GTEST_SKIP() << "Elevation is required for this test.";
-        }
         maybe_uninstall_service_ = os_crypt::InstallService();
         EXPECT_TRUE(maybe_uninstall_service_.has_value());
         enabled_features.push_back(
             features::kUseOsCryptAsyncForCookieEncryption);
         enabled_features.push_back(
             features::kRegisterAppBoundEncryptionProvider);
-        os_crypt_async::AppBoundEncryptionProviderWin::
-            SetEnableEncryptionForTesting(true);
+        enabled_features.push_back(
+            features::kUseAppBoundEncryptionProviderForEncryption);
         os_crypt::SetNonStandardUserDataDirSupportedForTesting(
             /*supported=*/false);
         break;
       case kOSCryptAsyncWithAppBoundProviderDisabledByPolicy:
-        if (base::GetCurrentProcessIntegrityLevel() != base::HIGH_INTEGRITY) {
-          GTEST_SKIP() << "Elevation is required for this test.";
-        }
         maybe_uninstall_service_ = os_crypt::InstallService();
         EXPECT_TRUE(maybe_uninstall_service_.has_value());
         enabled_features.push_back(
             features::kUseOsCryptAsyncForCookieEncryption);
         enabled_features.push_back(
             features::kRegisterAppBoundEncryptionProvider);
-        os_crypt_async::AppBoundEncryptionProviderWin::
-            SetEnableEncryptionForTesting(false);
+        disabled_features.push_back(
+            features::kUseAppBoundEncryptionProviderForEncryption);
 
         policy_provider_.SetDefaultReturns(
             /*is_initialization_complete_return=*/true,
@@ -205,6 +221,10 @@ class CookieEncryptionProviderBrowserTest
   }
 
   void TearDown() override {
+    if (IsSkipped()) {
+      return;
+    }
+
     auto metrics_expectation = content::IsPreTest()
                                    ? GetParam().metrics_expectation_before
                                    : GetParam().metrics_expectation_after;
@@ -229,8 +249,6 @@ class CookieEncryptionProviderBrowserTest
         histogram_tester_.ExpectBucketCount(
             "OSCrypt.AppBoundProvider.Encrypt.ResultCode", S_OK, 1);
         histogram_tester_.ExpectTotalCount(
-            "OSCrypt.AppBoundProvider.Encrypt.Time", 1);
-        histogram_tester_.ExpectTotalCount(
             "OSCrypt.AppBoundProvider.Encrypt.ResultLastError", 0);
         histogram_tester_.ExpectTotalCount(
             "OSCrypt.AppBoundProvider.Decrypt.ResultCode", 0);
@@ -240,8 +258,6 @@ class CookieEncryptionProviderBrowserTest
             "OSCrypt.AppBoundProvider.KeyRetrieval.Status", /*kSuccess*/ 0, 1);
         histogram_tester_.ExpectBucketCount(
             "OSCrypt.AppBoundProvider.Decrypt.ResultCode", S_OK, 1);
-        histogram_tester_.ExpectTotalCount(
-            "OSCrypt.AppBoundProvider.Decrypt.Time", 1);
         histogram_tester_.ExpectTotalCount(
             "OSCrypt.AppBoundProvider.Decrypt.ResultLastError", 0);
         histogram_tester_.ExpectTotalCount(

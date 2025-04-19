@@ -175,8 +175,7 @@ class FrameFetchContextTest : public testing::Test {
     dummy_page_holder = nullptr;
     dummy_page_holder = std::make_unique<DummyPageHolder>(gfx::Size(500, 500));
     if (url.IsValid()) {
-      auto params = WebNavigationParams::CreateWithHTMLBufferForTesting(
-          SharedBuffer::Create(), url);
+      auto params = WebNavigationParams::CreateWithEmptyHTMLForTesting(url);
       if (!permissions_policy_header.empty()) {
         params->response.SetHttpHeaderField(http_names::kFeaturePolicy,
                                             permissions_policy_header);
@@ -767,7 +766,7 @@ TEST_P(FrameFetchContextHintsTest, MonitorDPRHints) {
   document->GetFrame()->GetClientHintsPreferences().UpdateFrom(preferences);
   ExpectHeader("https://www.example.com/1.gif", "DPR", true, "1");
   ExpectHeader("https://www.example.com/1.gif", "Sec-CH-DPR", true, "1");
-  document->GetFrame()->SetPageZoomFactor(2.5);
+  document->GetFrame()->SetLayoutZoomFactor(2.5);
   ExpectHeader("https://www.example.com/1.gif", "DPR", true, "2.5");
   ExpectHeader("https://www.example.com/1.gif", "Sec-CH-DPR", true, "2.5");
   ExpectHeader("https://www.example.com/1.gif", "Width", false, "");
@@ -780,7 +779,7 @@ TEST_P(FrameFetchContextHintsTest, MonitorDPRHints) {
 TEST_P(FrameFetchContextHintsTest, MonitorDPRHintsInsecureTransport) {
   ExpectHeader("http://www.example.com/1.gif", "DPR", false, "");
   ExpectHeader("http://www.example.com/1.gif", "Sec-CH-DPR", false, "");
-  document->GetFrame()->SetPageZoomFactor(2.5);
+  document->GetFrame()->SetLayoutZoomFactor(2.5);
   ExpectHeader("http://www.example.com/1.gif", "DPR", false, "  ");
   ExpectHeader("http://www.example.com/1.gif", "Sec-CH-DPR", false, "  ");
   ExpectHeader("http://www.example.com/1.gif", "Width", false, "");
@@ -806,7 +805,7 @@ TEST_P(FrameFetchContextHintsTest, MonitorResourceWidthHints) {
   ExpectHeader("https://www.example.com/1.gif", "DPR", false, "");
   ExpectHeader("https://www.example.com/1.gif", "Sec-CH-DPR", false, "");
 
-  document->GetFrame()->SetPageZoomFactor(2.5);
+  document->GetFrame()->SetLayoutZoomFactor(2.5);
   ExpectHeader("https://www.example.com/1.gif", "Width", true, "1250", 500);
   ExpectHeader("https://www.example.com/1.gif", "Sec-CH-Width", true, "1250",
                500);
@@ -1705,40 +1704,6 @@ TEST_P(FrameFetchContextDisableReduceAcceptLanguageTest,
   ResourceRequest request(url);
   SetupForAcceptLanguageTest(/*is_detached=*/GetParam(), request);
   // Expect no Accept-Language header set when feature is disabled.
-  EXPECT_EQ(nullptr, request.HttpHeaderField(http_names::kAcceptLanguage));
-}
-
-class FrameFetchContextReduceAcceptLanguageTest
-    : private ScopedReduceAcceptLanguageForTest,
-      public FrameFetchContextDisableReduceAcceptLanguageTest {
- public:
-  FrameFetchContextReduceAcceptLanguageTest()
-      : ScopedReduceAcceptLanguageForTest(true) {
-    scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{network::features::kReduceAcceptLanguage},
-        /*disabled_features=*/{});
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-INSTANTIATE_TEST_SUITE_P(ReduceAcceptLanguage,
-                         FrameFetchContextReduceAcceptLanguageTest,
-                         testing::Bool());
-
-// TODO(victortan) Add corresponding web platform tests once feature on.
-TEST_P(FrameFetchContextReduceAcceptLanguageTest, VerifyReduceAcceptLanguage) {
-  const KURL url("https://www.example.com/");
-  ResourceRequest request(url);
-  SetupForAcceptLanguageTest(/*is_detached=*/GetParam(), request);
-  EXPECT_EQ("en-GB", request.HttpHeaderField(http_names::kAcceptLanguage));
-}
-
-TEST_P(FrameFetchContextReduceAcceptLanguageTest, NonHttpFamilyUrl) {
-  const KURL url("ws://www.example.com/");
-  ResourceRequest request(url);
-  SetupForAcceptLanguageTest(/*is_detached=*/GetParam(), request);
   EXPECT_EQ(nullptr, request.HttpHeaderField(http_names::kAcceptLanguage));
 }
 

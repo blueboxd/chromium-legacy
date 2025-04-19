@@ -101,7 +101,7 @@ export class HelloWorldAppElement extends CrLitElement {
 
   static override get properties() {
     return {
-      message_: {String}
+      message_: {type: String},
     };
   }
 
@@ -131,6 +131,10 @@ build_webui("build") {
 
   non_web_component_files = [ "app.ts", "app.html.ts" ]
   css_files = [ "app.css" ]
+
+  # Enable the proper webui_context_type depending on whether implementing
+  # a chrome:// or chrome-untrusted:// page.
+  webui_context_type = "trusted"
 
   ts_deps = [
     "//third_party/lit/v3_0:build_ts",
@@ -354,7 +358,7 @@ do that, some small changes are needed to your code.  First, we need to add a ne
  private:
   HelloWorldDialog();
   // ui::WebDialogDelegate:
-  ui::ModalType GetDialogModalType() const override;
+  ui::mojom::ModalType GetDialogModalType() const override;
   std::u16string GetDialogTitle() const override;
   GURL GetDialogContentURL() const override;
   void GetWebUIMessageHandlers(
@@ -383,8 +387,8 @@ void HelloWorldDialog::Show() {
                         new HelloWorldDialog());
 }
 
-ui::ModalType HelloWorldDialog::GetDialogModalType() const {
-  return ui::MODAL_TYPE_NONE;
+ui::mojom::ModalType HelloWorldDialog::GetDialogModalType() const {
+  return ui::mojom::ModalType::kNone;
 }
 
 std::u16string HelloWorldDialog::GetDialogTitle() const {

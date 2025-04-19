@@ -13,7 +13,6 @@
 
 #include "base/check.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/not_fatal_until.h"
 #include "base/strings/strcat.h"
 #include "base/time/time.h"
 #include "components/services/storage/shared_storage/shared_storage_manager.h"
@@ -233,6 +232,7 @@ class SharedStorageWorkletHost::ScopedDevToolsHandle
 SharedStorageWorkletHost::SharedStorageWorkletHost(
     SharedStorageDocumentServiceImpl& document_service,
     const url::Origin& frame_origin,
+    const url::Origin& data_origin,
     const GURL& script_source_url,
     network::mojom::CredentialsMode credentials_mode,
     const std::vector<blink::mojom::OriginTrialFeature>& origin_trial_features,
@@ -241,7 +241,7 @@ SharedStorageWorkletHost::SharedStorageWorkletHost(
     blink::mojom::SharedStorageDocumentService::CreateWorkletCallback callback)
     : driver_(std::make_unique<SharedStorageRenderThreadWorkletDriver>(
           document_service.render_frame_host(),
-          script_source_url)),
+          data_origin)),
       document_service_(document_service.GetWeakPtr()),
       page_(
           static_cast<PageImpl&>(document_service.render_frame_host().GetPage())
@@ -253,7 +253,7 @@ SharedStorageWorkletHost::SharedStorageWorkletHost(
           storage_partition_->GetSharedStorageWorkletHostManager()),
       browser_context_(
           document_service.render_frame_host().GetBrowserContext()),
-      shared_storage_origin_(url::Origin::Create(script_source_url)),
+      shared_storage_origin_(data_origin),
       shared_storage_site_(net::SchemefulSite(shared_storage_origin_)),
       main_frame_origin_(document_service.main_frame_origin()),
       is_same_origin_worklet_(document_service.render_frame_host()
@@ -297,11 +297,14 @@ SharedStorageWorkletHost::SharedStorageWorkletHost(
 
   mojo::PendingRemote<network::mojom::URLLoaderFactory> url_loader_factory;
 
+  // The data origin can't be opaque.
+  DCHECK(!shared_storage_origin_.opaque());
+
   url_loader_factory_proxy_ =
       std::make_unique<SharedStorageURLLoaderFactoryProxy>(
           std::move(frame_url_loader_factory),
           url_loader_factory.InitWithNewPipeAndPassReceiver(), frame_origin,
-          script_source_url, credentials_mode,
+          shared_storage_origin_, script_source_url, credentials_mode,
           static_cast<RenderFrameHostImpl&>(
               document_service_->render_frame_host())
               .ComputeSiteForCookies());
@@ -445,18 +448,42 @@ void SharedStorageWorkletHost::SelectURL(
                                 std::move(reporting_metadata));
   }
 
-  if (private_aggregation_config->context_id.has_value() &&
-      !blink::IsValidPrivateAggregationContextId(
-          private_aggregation_config->context_id.value())) {
-    receiver_.ReportBadMessage("Invalid context_id.");
-    LogSharedStorageWorkletError(blink::SharedStorageWorkletErrorType::
-                                     kSelectURLNonWebVisibleInvalidContextId);
-    return;
+  if (private_aggregation_config->context_id.has_value()) {
+    if (!blink::IsValidPrivateAggregationContextId(
+            private_aggregation_config->context_id.value())) {
+      receiver_.ReportBadMessage("Invalid context_id.");
+      LogSharedStorageWorkletError(blink::SharedStorageWorkletErrorType::
+                                       kSelectURLNonWebVisibleInvalidContextId);
+      return;
+    }
+
+    if (document_service_->render_frame_host().IsNestedWithinFencedFrame() &&
+        base::FeatureList::IsEnabled(
+            blink::features::kFencedFramesLocalUnpartitionedDataAccess)) {
+      receiver_.ReportBadMessage(
+          "contextId cannot be set inside of fenced frames.");
+      LogSharedStorageWorkletError(blink::SharedStorageWorkletErrorType::
+                                       kSelectURLNonWebVisibleInvalidContextId);
+      return;
+    }
   }
 
   if (!blink::IsValidPrivateAggregationFilteringIdMaxBytes(
           private_aggregation_config->filtering_id_max_bytes)) {
     receiver_.ReportBadMessage("Invalid fitering_id_byte_size.");
+    LogSharedStorageWorkletError(
+        blink::SharedStorageWorkletErrorType::
+            kSelectURLNonWebVisibleInvalidFilteringIdMaxBytes);
+    return;
+  }
+
+  if (document_service_->render_frame_host().IsNestedWithinFencedFrame() &&
+      private_aggregation_config->filtering_id_max_bytes !=
+          blink::kPrivateAggregationApiDefaultFilteringIdMaxBytes &&
+      base::FeatureList::IsEnabled(
+          blink::features::kFencedFramesLocalUnpartitionedDataAccess)) {
+    receiver_.ReportBadMessage(
+        "filteringIdMaxBytes cannot be set inside of fenced frames.");
     LogSharedStorageWorkletError(
         blink::SharedStorageWorkletErrorType::
             kSelectURLNonWebVisibleInvalidFilteringIdMaxBytes);
@@ -608,18 +635,42 @@ void SharedStorageWorkletHost::Run(
     return;
   }
 
-  if (private_aggregation_config->context_id.has_value() &&
-      !blink::IsValidPrivateAggregationContextId(
-          private_aggregation_config->context_id.value())) {
-    receiver_.ReportBadMessage("Invalid context_id.");
-    LogSharedStorageWorkletError(blink::SharedStorageWorkletErrorType::
-                                     kRunNonWebVisibleInvalidContextId);
-    return;
+  if (private_aggregation_config->context_id.has_value()) {
+    if (!blink::IsValidPrivateAggregationContextId(
+            private_aggregation_config->context_id.value())) {
+      receiver_.ReportBadMessage("Invalid context_id.");
+      LogSharedStorageWorkletError(blink::SharedStorageWorkletErrorType::
+                                       kRunNonWebVisibleInvalidContextId);
+      return;
+    }
+
+    if (document_service_->render_frame_host().IsNestedWithinFencedFrame() &&
+        base::FeatureList::IsEnabled(
+            blink::features::kFencedFramesLocalUnpartitionedDataAccess)) {
+      receiver_.ReportBadMessage(
+          "contextId cannot be set inside of fenced frames.");
+      LogSharedStorageWorkletError(blink::SharedStorageWorkletErrorType::
+                                       kRunNonWebVisibleInvalidContextId);
+      return;
+    }
   }
 
   if (!blink::IsValidPrivateAggregationFilteringIdMaxBytes(
           private_aggregation_config->filtering_id_max_bytes)) {
     receiver_.ReportBadMessage("Invalid fitering_id_byte_size.");
+    LogSharedStorageWorkletError(
+        blink::SharedStorageWorkletErrorType::
+            kRunNonWebVisibleInvalidFilteringIdMaxBytes);
+    return;
+  }
+
+  if (document_service_->render_frame_host().IsNestedWithinFencedFrame() &&
+      private_aggregation_config->filtering_id_max_bytes !=
+          blink::kPrivateAggregationApiDefaultFilteringIdMaxBytes &&
+      base::FeatureList::IsEnabled(
+          blink::features::kFencedFramesLocalUnpartitionedDataAccess)) {
+    receiver_.ReportBadMessage(
+        "filteringIdMaxBytes cannot be set inside of fenced frames.");
     LogSharedStorageWorkletError(
         blink::SharedStorageWorkletErrorType::
             kRunNonWebVisibleInvalidFilteringIdMaxBytes);
@@ -1151,7 +1202,7 @@ void SharedStorageWorkletHost::
         const std::string& error_message,
         uint32_t index) {
   auto it = unresolved_urns_.find(urn_uuid);
-  DCHECK(it != unresolved_urns_.end());
+  CHECK(it != unresolved_urns_.end(), base::NotFatalUntil::M130);
 
   if ((success && index >= it->second.size()) || (!success && index != 0)) {
     // This could indicate a compromised worklet environment, so let's terminate
@@ -1183,7 +1234,7 @@ void SharedStorageWorkletHost::OnRunURLSelectionOperationOnWorkletFinished(
     uint32_t index,
     BudgetResult budget_result) {
   auto it = unresolved_urns_.find(urn_uuid);
-  DCHECK(it != unresolved_urns_.end());
+  CHECK(it != unresolved_urns_.end(), base::NotFatalUntil::M130);
 
   std::vector<blink::mojom::SharedStorageUrlWithMetadataPtr>
       urls_with_metadata = std::move(it->second);
@@ -1327,10 +1378,6 @@ SharedStorageWorkletHost::GetAndConnectToSharedStorageWorkletService() {
   DCHECK(document_service_);
 
   if (!shared_storage_worklet_service_) {
-    bool private_aggregation_permissions_policy_allowed =
-        document_service_->render_frame_host().IsFeatureEnabled(
-            blink::mojom::PermissionsPolicyFeature::kPrivateAggregation);
-
     code_cache_host_receivers_ =
         std::make_unique<CodeCacheHostImpl::ReceiverSet>(
             storage_partition_->GetGeneratedCodeCacheContext());
@@ -1362,10 +1409,19 @@ SharedStorageWorkletHost::GetAndConnectToSharedStorageWorkletService() {
         shared_storage_worklet_service_.BindNewPipeAndPassReceiver(),
         std::move(global_scope_creation_params));
 
+    const blink::PermissionsPolicy* permissions_policy =
+        rfh.permissions_policy();
+
+    bool private_aggregation_permissions_policy_allowed =
+        permissions_policy->IsFeatureEnabledForOrigin(
+            blink::mojom::PermissionsPolicyFeature::kPrivateAggregation,
+            shared_storage_origin_);
+
     auto embedder_context = static_cast<RenderFrameHostImpl&>(
                                 document_service_->render_frame_host())
                                 .frame_tree_node()
                                 ->GetEmbedderSharedStorageContextIfAllowed();
+
     shared_storage_worklet_service_->Initialize(
         shared_storage_worklet_service_client_.BindNewEndpointAndPassRemote(),
         private_aggregation_permissions_policy_allowed, embedder_context);
@@ -1378,7 +1434,7 @@ blink::mojom::PrivateAggregationOperationDetailsPtr
 SharedStorageWorkletHost::MaybeConstructPrivateAggregationOperationDetails(
     const blink::mojom::PrivateAggregationConfigPtr&
         private_aggregation_config) {
-  CHECK(browser_context_, base::NotFatalUntil::M128);
+  CHECK(browser_context_);
   CHECK(private_aggregation_config);
 
   if (!blink::ShouldDefinePrivateAggregationInSharedStorage()) {
@@ -1387,7 +1443,7 @@ SharedStorageWorkletHost::MaybeConstructPrivateAggregationOperationDetails(
 
   PrivateAggregationManager* private_aggregation_manager =
       PrivateAggregationManager::GetManager(*browser_context_);
-  CHECK(private_aggregation_manager, base::NotFatalUntil::M128);
+  CHECK(private_aggregation_manager);
 
   blink::mojom::PrivateAggregationOperationDetailsPtr pa_operation_details =
       blink::mojom::PrivateAggregationOperationDetails::New(

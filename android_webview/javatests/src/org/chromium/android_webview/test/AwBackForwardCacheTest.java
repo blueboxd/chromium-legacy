@@ -28,14 +28,15 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsStatics;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.client_hints.AwUserAgentMetadata;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.content_public.browser.test.util.HistoryUtils;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnPageCommitVisibleHelper;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnPageStartedHelper;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.ArrayList;
@@ -47,20 +48,6 @@ import java.util.concurrent.TimeUnit;
 @DoNotBatch(reason = "Tests that need browser start are incompatible with @Batch")
 public class AwBackForwardCacheTest extends AwParameterizedTest {
 
-    static class PageLoadedNotifier {
-        @JavascriptInterface
-        public void done() {
-            mPageFullyLoadedFuture.set(true);
-        }
-
-        public void setFuture(SettableFuture<Boolean> future) {
-            mPageFullyLoadedFuture = future;
-        }
-
-        private SettableFuture<Boolean> mPageFullyLoadedFuture;
-    }
-    ;
-
     private static final String TAG = "AwBackForwardCacheTest";
 
     @Rule public AwActivityTestRule mActivityTestRule;
@@ -69,16 +56,18 @@ public class AwBackForwardCacheTest extends AwParameterizedTest {
     private AwContents mAwContents;
 
     private static final String INITIAL_URL = "/android_webview/test/data/verify_bfcache.html";
-    private static final String FORWARD_URL = "/android_webview/test/data/green.html";
+    private static final String FORWARD_URL = "/android_webview/test/data/verify_bfcache2.html";
+    private static final String THIRD_URL = "/android_webview/test/data/green.html";
 
     private String mInitialUrl;
     private String mForwardUrl;
+    private String mThirdUrl;
 
     private TestAwContentsClient mContentsClient = new TestAwContentsClient();
 
     private EmbeddedTestServer mTestServer;
 
-    private PageLoadedNotifier mLoadedNotifier;
+    private TestPageLoadedNotifier mLoadedNotifier;
 
     public AwBackForwardCacheTest(AwSettingsMutation param) {
         this.mActivityTestRule = new AwActivityTestRule(param.getMutation());
@@ -96,11 +85,12 @@ public class AwBackForwardCacheTest extends AwParameterizedTest {
                         InstrumentationRegistry.getInstrumentation().getContext());
         mInitialUrl = mTestServer.getURL(INITIAL_URL);
         mForwardUrl = mTestServer.getURL(FORWARD_URL);
+        mThirdUrl = mTestServer.getURL(THIRD_URL);
 
         // The future is for waiting until page fully loaded.
         // We use this future instead of `DidFinishLoad` since this callback
         // will not get called if a page is restored from BFCache.
-        mLoadedNotifier = new PageLoadedNotifier();
+        mLoadedNotifier = new TestPageLoadedNotifier();
         mLoadedNotifier.setFuture(SettableFuture.create());
         String name = "awFullyLoadedFuture";
         AwActivityTestRule.addJavascriptInterfaceOnUiThread(mAwContents, mLoadedNotifier, name);
@@ -117,6 +107,10 @@ public class AwBackForwardCacheTest extends AwParameterizedTest {
     }
 
     private void navigateBack() throws Throwable {
+        navigateBackToUrl(mInitialUrl);
+    }
+
+    private void navigateBackToUrl(String url) throws Throwable {
         // Create a new future to avoid the future set in the initial load.
         SettableFuture<Boolean> pageFullyLoadedFuture = SettableFuture.create();
         mLoadedNotifier.setFuture(pageFullyLoadedFuture);
@@ -134,7 +128,7 @@ public class AwBackForwardCacheTest extends AwParameterizedTest {
                 InstrumentationRegistry.getInstrumentation(),
                 mAwContents.getWebContents(),
                 startHelper);
-        Assert.assertEquals(startHelper.getUrl(), mInitialUrl);
+        Assert.assertEquals(startHelper.getUrl(), url);
         Assert.assertEquals(startHelper.getCallCount(), originalCallCount + 1);
         // Wait for the page to be fully loaded
         Assert.assertEquals(
@@ -172,13 +166,19 @@ public class AwBackForwardCacheTest extends AwParameterizedTest {
         return json_obj.getJSONArray("reasons").getJSONObject(0).getString("reason");
     }
 
+    private HistogramWatcher getNotRestoredReasonsHistogramWatcher(int reason) {
+        return HistogramWatcher.newBuilder()
+                .expectIntRecord(
+                        "BackForwardCache.HistoryNavigationOutcome.NotRestoredReason", reason)
+                .build();
+    }
+
     @Test
     @LargeTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add({
-        "enable-features=WebViewBackForwardCache"
-    }) // TODO: replace with AwFeatures
-    public void testBackNavigationUsesBFCache() throws Exception, Throwable {
+    @CommandLineFlags.Add({"enable-features=WebViewBackForwardCache"})
+    public void testBFCacheEnabledWithFeatureFlag() throws Exception, Throwable {
+        mAwContents.getSettings().setBackForwardCacheEnabled(false);
         mActivityTestRule.loadUrlSync(
                 mAwContents, mContentsClient.getOnPageFinishedHelper(), mInitialUrl);
         navigateForwardAndBack();
@@ -189,12 +189,34 @@ public class AwBackForwardCacheTest extends AwParameterizedTest {
     @Test
     @LargeTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add({
-        "disable-features=WebViewBackForwardCache"
-    }) // TODO: replace with AwFeatures
-    public void testBackNavigationFollowsFeatureFlags() throws Exception, Throwable {
+    public void testBFCacheWithMultiplePages() throws Exception, Throwable {
+        mAwContents.getSettings().setBackForwardCacheEnabled(true);
         mActivityTestRule.loadUrlSync(
                 mAwContents, mContentsClient.getOnPageFinishedHelper(), mInitialUrl);
+        mActivityTestRule.loadUrlSync(
+                mAwContents, mContentsClient.getOnPageFinishedHelper(), mForwardUrl);
+        mActivityTestRule.loadUrlSync(
+                mAwContents, mContentsClient.getOnPageFinishedHelper(), mThirdUrl);
+        navigateBackToUrl(mForwardUrl);
+        Assert.assertEquals("\"null\"", getNotRestoredReasons());
+        Assert.assertTrue(isPageShowPersisted());
+        navigateBackToUrl(mInitialUrl);
+        Assert.assertEquals("\"null\"", getNotRestoredReasons());
+        Assert.assertTrue(isPageShowPersisted());
+    }
+
+    @Test
+    @LargeTest
+    @Feature({"AndroidWebView"})
+    @CommandLineFlags.Add({"disable-features=WebViewBackForwardCache"})
+    public void testBackNavigationFollowsSettings() throws Exception, Throwable {
+        mAwContents.getSettings().setBackForwardCacheEnabled(true);
+        mActivityTestRule.loadUrlSync(
+                mAwContents, mContentsClient.getOnPageFinishedHelper(), mInitialUrl);
+        navigateForwardAndBack();
+        Assert.assertEquals("\"null\"", getNotRestoredReasons());
+        Assert.assertTrue(isPageShowPersisted());
+        mAwContents.getSettings().setBackForwardCacheEnabled(false);
         navigateForwardAndBack();
         String notRestoredReasons = getNotRestoredReasons();
         Assert.assertEquals(extractSimpleReasonString(notRestoredReasons), "masked");
@@ -204,13 +226,15 @@ public class AwBackForwardCacheTest extends AwParameterizedTest {
     @Test
     @LargeTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add({"enable-features=WebViewBackForwardCache"})
     public void testPageEvictedWhenModifyingJSInterface() throws Exception, Throwable {
+        mAwContents.getSettings().setBackForwardCacheEnabled(true);
         mActivityTestRule.loadUrlSync(
                 mAwContents, mContentsClient.getOnPageFinishedHelper(), mInitialUrl);
 
         // Test adding javascript interface
         navigateForward();
+        HistogramWatcher histogramWatcher =
+                getNotRestoredReasonsHistogramWatcher(/*kWebViewJavaScriptObjectChanged*/ 65);
         Object testInjectedObject =
                 new Object() {
                     @JavascriptInterface
@@ -222,15 +246,19 @@ public class AwBackForwardCacheTest extends AwParameterizedTest {
         String notRestoredReasons = getNotRestoredReasons();
         Assert.assertEquals(extractSimpleReasonString(notRestoredReasons), "masked");
         Assert.assertFalse(isPageShowPersisted());
+        histogramWatcher.assertExpected();
 
         // Test removing javascript interface
+        histogramWatcher =
+                getNotRestoredReasonsHistogramWatcher(/*kWebViewJavaScriptObjectChanged*/ 65);
         navigateForward();
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> mAwContents.removeJavascriptInterface("testInjectedObject"));
         navigateBack();
         notRestoredReasons = getNotRestoredReasons();
         Assert.assertEquals(extractSimpleReasonString(notRestoredReasons), "masked");
         Assert.assertFalse(isPageShowPersisted());
+        histogramWatcher.assertExpected();
 
         // Test BFCache can still work for future navigations
         navigateForwardAndBack();
@@ -240,10 +268,12 @@ public class AwBackForwardCacheTest extends AwParameterizedTest {
     @Test
     @LargeTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add({"enable-features=WebViewBackForwardCache"})
     public void testPageEvictedWhenAddingWebMessageListener() throws Exception, Throwable {
+        mAwContents.getSettings().setBackForwardCacheEnabled(true);
         mActivityTestRule.loadUrlSync(
                 mAwContents, mContentsClient.getOnPageFinishedHelper(), mInitialUrl);
+        HistogramWatcher histogramWatcher =
+                getNotRestoredReasonsHistogramWatcher(/*kWebViewMessageListenerInjected*/ 66);
         navigateForward();
         TestWebMessageListener listener = new TestWebMessageListener();
         TestWebMessageListener.addWebMessageListenerOnUiThread(
@@ -252,6 +282,7 @@ public class AwBackForwardCacheTest extends AwParameterizedTest {
         String notRestoredReasons = getNotRestoredReasons();
         Assert.assertTrue(notRestoredReasons.indexOf("reasons") >= 0);
         Assert.assertFalse(isPageShowPersisted());
+        histogramWatcher.assertExpected();
 
         // Test BFCache can still work for future navigations
         navigateForwardAndBack();
@@ -264,8 +295,8 @@ public class AwBackForwardCacheTest extends AwParameterizedTest {
     @Test
     @LargeTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add({"enable-features=WebViewBackForwardCache"})
     public void testPageFinishEventNotCalled() throws Exception, Throwable {
+        mAwContents.getSettings().setBackForwardCacheEnabled(true);
         mActivityTestRule.loadUrlSync(
                 mAwContents, mContentsClient.getOnPageFinishedHelper(), mInitialUrl);
         navigateForward();
@@ -280,8 +311,8 @@ public class AwBackForwardCacheTest extends AwParameterizedTest {
     @Test
     @LargeTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add({"enable-features=WebViewBackForwardCache"})
     public void testShouldInterceptRequestNotCalled() throws Exception, Throwable {
+        mAwContents.getSettings().setBackForwardCacheEnabled(true);
         mActivityTestRule.loadUrlSync(
                 mAwContents, mContentsClient.getOnPageFinishedHelper(), mInitialUrl);
         navigateForward();
@@ -297,8 +328,8 @@ public class AwBackForwardCacheTest extends AwParameterizedTest {
     @Test
     @LargeTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add({"enable-features=WebViewBackForwardCache"})
     public void testShouldOverrideUrlLoadingNotCalled() throws Exception, Throwable {
+        mAwContents.getSettings().setBackForwardCacheEnabled(true);
         mActivityTestRule.loadUrlSync(
                 mAwContents, mContentsClient.getOnPageFinishedHelper(), mInitialUrl);
         navigateForward();
@@ -314,8 +345,8 @@ public class AwBackForwardCacheTest extends AwParameterizedTest {
     @Test
     @LargeTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add({"enable-features=WebViewBackForwardCache"})
     public void testOnLoadResourceNotCalled() throws Exception, Throwable {
+        mAwContents.getSettings().setBackForwardCacheEnabled(true);
         mActivityTestRule.loadUrlSync(
                 mAwContents, mContentsClient.getOnPageFinishedHelper(), mInitialUrl);
         navigateForward();
@@ -331,16 +362,19 @@ public class AwBackForwardCacheTest extends AwParameterizedTest {
     @Test
     @LargeTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add({"enable-features=WebViewBackForwardCache"})
     public void testManualFlushCache() throws Exception, Throwable {
+        mAwContents.getSettings().setBackForwardCacheEnabled(true);
         mActivityTestRule.loadUrlSync(
                 mAwContents, mContentsClient.getOnPageFinishedHelper(), mInitialUrl);
+        HistogramWatcher histogramWatcher =
+                getNotRestoredReasonsHistogramWatcher(/*kCacheFlushed*/ 21);
         navigateForward();
-        TestThreadUtils.runOnUiThreadBlocking(() -> mAwContents.flushBackForwardCache());
+        ThreadUtils.runOnUiThreadBlocking(() -> mAwContents.flushBackForwardCache());
         navigateBack();
         String notRestoredReasons = getNotRestoredReasons();
         Assert.assertTrue(notRestoredReasons.indexOf("reasons") >= 0);
         Assert.assertFalse(isPageShowPersisted());
+        histogramWatcher.assertExpected();
 
         // Test BFCache can still work for future navigations
         navigateForwardAndBack();
@@ -348,6 +382,8 @@ public class AwBackForwardCacheTest extends AwParameterizedTest {
     }
 
     private void verifyPageEvictedWithSettingsChange(Runnable r) throws Exception, Throwable {
+        HistogramWatcher histogramWatcher =
+                getNotRestoredReasonsHistogramWatcher(/*kWebViewSettingsChanged*/ 64);
         navigateForward();
         r.run();
         // wait for the page finished callback to avoid interfering with the next forward
@@ -357,13 +393,14 @@ public class AwBackForwardCacheTest extends AwParameterizedTest {
         navigateBack();
         finishHelper.waitForCallback(callCount, 1, SCALED_WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
         Assert.assertFalse(isPageShowPersisted());
+        histogramWatcher.assertExpected();
     }
 
     @Test
     @LargeTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add({"enable-features=WebViewBackForwardCache"})
     public void testPageEvictedWhenSettingsChanged() throws Exception, Throwable {
+        mAwContents.getSettings().setBackForwardCacheEnabled(true);
         // Set some options before the test to ensure changes are triggered.
         AwSettings settings = mAwContents.getSettings();
         settings.setSafeBrowsingEnabled(false);
@@ -374,6 +411,7 @@ public class AwBackForwardCacheTest extends AwParameterizedTest {
         settings.setAttributionBehavior(AwSettings.ATTRIBUTION_DISABLED);
         settings.setForceDarkMode(AwSettings.FORCE_DARK_OFF);
         settings.setForceDarkBehavior(AwSettings.FORCE_DARK_ONLY);
+        settings.setShouldFocusFirstNode(true);
         settings.setSpatialNavigationEnabled(false);
         settings.setEnableSupportedHardwareAcceleratedFeatures(false);
         settings.setFullscreenSupported(false);
@@ -524,8 +562,8 @@ public class AwBackForwardCacheTest extends AwParameterizedTest {
     @Test
     @LargeTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add({"enable-features=WebViewBackForwardCache"})
     public void testDoUpdateVisitedHistory() throws Exception, Throwable {
+        mAwContents.getSettings().setBackForwardCacheEnabled(true);
         mActivityTestRule.loadUrlSync(
                 mAwContents, mContentsClient.getOnPageFinishedHelper(), mInitialUrl);
         navigateForward();
@@ -543,8 +581,8 @@ public class AwBackForwardCacheTest extends AwParameterizedTest {
     @Test
     @LargeTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add({"enable-features=WebViewBackForwardCache"})
     public void testOnPageCommitVisible() throws Exception, Throwable {
+        mAwContents.getSettings().setBackForwardCacheEnabled(true);
         final OnPageCommitVisibleHelper helper = mContentsClient.getOnPageCommitVisibleHelper();
         int originalCallCount = helper.getCallCount();
         mActivityTestRule.loadUrlSync(
@@ -568,15 +606,17 @@ public class AwBackForwardCacheTest extends AwParameterizedTest {
     @Test
     @LargeTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add({"enable-features=WebViewBackForwardCache"})
     public void testPageEvictedWhenSafeBrowsingAllowlistSet() throws Exception, Throwable {
+        mAwContents.getSettings().setBackForwardCacheEnabled(true);
         mActivityTestRule.loadUrlSync(
                 mAwContents, mContentsClient.getOnPageFinishedHelper(), mInitialUrl);
+        HistogramWatcher histogramWatcher =
+                getNotRestoredReasonsHistogramWatcher(/*kWebViewSafeBrowsingAllowlistChanged*/ 67);
         navigateForward();
         ArrayList<String> allowlist = new ArrayList<>();
         allowlist.add("google.com");
         SettableFuture<Boolean> allowlistSetFuture = SettableFuture.create();
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () ->
                         AwContentsStatics.setSafeBrowsingAllowlist(
                                 allowlist,
@@ -588,6 +628,7 @@ public class AwBackForwardCacheTest extends AwParameterizedTest {
         String notRestoredReasons = getNotRestoredReasons();
         Assert.assertEquals(extractSimpleReasonString(notRestoredReasons), "masked");
         Assert.assertFalse(isPageShowPersisted());
+        histogramWatcher.assertExpected();
 
         // Test BFCache can still work for future navigations
         navigateForwardAndBack();
@@ -597,12 +638,15 @@ public class AwBackForwardCacheTest extends AwParameterizedTest {
     @Test
     @LargeTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add({"enable-features=WebViewBackForwardCache"})
     public void testPageEvictedWhenAddingDocumentStartJavascript() throws Exception, Throwable {
+        mAwContents.getSettings().setBackForwardCacheEnabled(true);
         mActivityTestRule.loadUrlSync(
                 mAwContents, mContentsClient.getOnPageFinishedHelper(), mInitialUrl);
+        HistogramWatcher histogramWatcher =
+                getNotRestoredReasonsHistogramWatcher(
+                        /*kWebViewDocumentStartJavascriptChanged */ 68);
         navigateForward();
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () ->
                         mAwContents.addDocumentStartJavaScript(
                                 "console.log(\"hello world\");", new String[] {"*"}));
@@ -610,6 +654,7 @@ public class AwBackForwardCacheTest extends AwParameterizedTest {
         String notRestoredReasons = getNotRestoredReasons();
         Assert.assertEquals(extractSimpleReasonString(notRestoredReasons), "masked");
         Assert.assertFalse(isPageShowPersisted());
+        histogramWatcher.assertExpected();
 
         // Test BFCache can still work for future navigations
         navigateForwardAndBack();

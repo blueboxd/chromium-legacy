@@ -10,28 +10,26 @@
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/page_specific_content_settings_delegate.h"
+#include "chrome/browser/fingerprinting_protection/chrome_fingerprinting_protection_web_contents_helper_factory.h"
 #include "chrome/browser/privacy_sandbox/tracking_protection_settings_factory.h"
-#include "chrome/browser/ui/cookie_controls/cookie_controls_service.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/browser/ui/cookie_controls_view.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/cookie_blocking_3pcd_status.h"
 #include "components/content_settings/core/common/cookie_controls_enforcement.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/content_settings/core/common/third_party_site_data_access_type.h"
 #include "components/content_settings/core/common/tracking_protection_feature.h"
-#include "components/fingerprinting_protection_filter/browser/fingerprinting_protection_filter_features.h"
 #include "components/fingerprinting_protection_filter/browser/fingerprinting_protection_web_contents_helper.h"
-#include "components/prefs/pref_service.h"
+#include "components/fingerprinting_protection_filter/common/fingerprinting_protection_filter_features.h"
+#include "components/privacy_sandbox/privacy_sandbox_features.h"
 #include "components/privacy_sandbox/tracking_protection_settings.h"
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "components/strings/grit/privacy_sandbox_strings.h"
-#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/ukm/test_ukm_recorder.h"
-#include "content/public/browser/cookie_access_details.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/web_contents_tester.h"
 #include "net/http/http_response_headers.h"
@@ -74,6 +72,7 @@ class MockCookieControlsObserver
                CookieBlocking3pcdStatus,
                /*should_highlight*/ bool));
   MOCK_METHOD(void, OnFinishedPageReloadWithChangedSettings, ());
+  MOCK_METHOD(void, OnReloadThresholdExceeded, ());
 };
 
 blink::StorageKey CreateUnpartitionedStorageKey(const GURL& url) {
@@ -106,7 +105,8 @@ class CookieControlsUserBypassTest : public ChromeRenderViewHostTestHarness {
     // NOTE: we make the exception short (hours rather than days) to prevent it
     // from timing out
     feature_list_.InitWithFeaturesAndParameters(
-        {{content_settings::features::kUserBypassUI, {{"expiration", "3h"}}}},
+        {{content_settings::features::kUserBypassUI,
+          {{"expiration", "3h"}, {"reload-count", "2"}}}},
         {});
   }
 
@@ -115,8 +115,7 @@ class CookieControlsUserBypassTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::SetUp();
     content_settings::PageSpecificContentSettings::CreateForWebContents(
         web_contents(),
-        std::make_unique<chrome::PageSpecificContentSettingsDelegate>(
-            web_contents()));
+        std::make_unique<PageSpecificContentSettingsDelegate>(web_contents()));
     profile()->GetPrefs()->SetInteger(
         prefs::kCookieControlsMode,
         static_cast<int>(
@@ -124,11 +123,13 @@ class CookieControlsUserBypassTest : public ChromeRenderViewHostTestHarness {
     NavigateAndCommit(GURL("chrome://newtab"));
 
     cookie_settings_ = CookieSettingsFactory::GetForProfile(profile());
+    tracking_protection_settings_ =
+        TrackingProtectionSettingsFactory::GetForProfile(profile());
     cookie_controls_ =
         std::make_unique<content_settings::CookieControlsController>(
             cookie_settings_, nullptr,
             HostContentSettingsMapFactory::GetForProfile(profile()),
-            TrackingProtectionSettingsFactory::GetForProfile(profile()));
+            tracking_protection_settings_);
     cookie_controls_->AddObserver(mock());
     testing::Mock::VerifyAndClearExpectations(mock());
 
@@ -138,6 +139,7 @@ class CookieControlsUserBypassTest : public ChromeRenderViewHostTestHarness {
   void TearDown() override {
     cookie_controls_->RemoveObserver(mock());
     cookie_controls_.reset();
+    tracking_protection_settings_ = nullptr;
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
@@ -195,6 +197,10 @@ class CookieControlsUserBypassTest : public ChromeRenderViewHostTestHarness {
     return cookie_settings_.get();
   }
 
+  privacy_sandbox::TrackingProtectionSettings* tracking_protection_settings() {
+    return tracking_protection_settings_;
+  }
+
   content_settings::PageSpecificContentSettings*
   page_specific_content_settings() {
     return content_settings::PageSpecificContentSettings::GetForFrame(
@@ -222,6 +228,8 @@ class CookieControlsUserBypassTest : public ChromeRenderViewHostTestHarness {
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> ukm_recorder_;
   std::unique_ptr<content_settings::CookieControlsController> cookie_controls_;
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;
+  raw_ptr<privacy_sandbox::TrackingProtectionSettings>
+      tracking_protection_settings_;
 };
 
 TEST_F(CookieControlsUserBypassTest, CookieBlockingChanged) {
@@ -319,7 +327,9 @@ TEST_F(CookieControlsUserBypassTest, NewTabPage) {
                   /*controls_visible=*/false, /*protections_on=*/false,
                   CookieControlsEnforcement::kNoEnforcement,
                   CookieBlocking3pcdStatus::kNotIn3pcd, zero_expiration(),
-                  std::vector<TrackingProtectionFeature>{}));
+                  GetThirdPartyCookiesFeatureForEnforcement(
+                      CookieControlsEnforcement::kNoEnforcement,
+                      BlockingStatus::kAllowed)));
   EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
                            /*icon_visible=*/false, /*protections_on=*/false,
                            CookieBlocking3pcdStatus::kNotIn3pcd,
@@ -351,7 +361,9 @@ TEST_F(CookieControlsUserBypassTest, PreferenceDisabled) {
                   /*controls_visible=*/false, /*protections_on=*/false,
                   CookieControlsEnforcement::kNoEnforcement,
                   CookieBlocking3pcdStatus::kNotIn3pcd, zero_expiration(),
-                  std::vector<TrackingProtectionFeature>{}));
+                  GetThirdPartyCookiesFeatureForEnforcement(
+                      CookieControlsEnforcement::kNoEnforcement,
+                      BlockingStatus::kAllowed)));
   EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
                            /*icon_visible=*/false, /*protections_on=*/false,
                            CookieBlocking3pcdStatus::kNotIn3pcd,
@@ -533,7 +545,7 @@ TEST_F(CookieControlsUserBypassTest, Incognito) {
           profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true), nullptr);
   content_settings::PageSpecificContentSettings::CreateForWebContents(
       incognito_web_contents.get(),
-      std::make_unique<chrome::PageSpecificContentSettingsDelegate>(
+      std::make_unique<PageSpecificContentSettingsDelegate>(
           incognito_web_contents.get()));
   auto* tester = content::WebContentsTester::For(incognito_web_contents.get());
   MockCookieControlsObserver incognito_mock_;
@@ -600,15 +612,17 @@ TEST_F(CookieControlsUserBypassTest, Incognito) {
 
   // This should be enforced regardless of the default cookie setting in the
   // default profile.
-  EXPECT_CALL(*mock(),
-              OnStatusChanged(
-                  /*controls_visible=*/false, /*protections_on=*/false,
-                  CookieControlsEnforcement::kNoEnforcement,
-                  CookieBlocking3pcdStatus::kNotIn3pcd,
-                  // Although there is an allow exception with an
-                  // expiration, because the default allow never
-                  // expires, zero_expiration is correct.
-                  zero_expiration(), std::vector<TrackingProtectionFeature>{}));
+  EXPECT_CALL(*mock(), OnStatusChanged(
+                           /*controls_visible=*/false, /*protections_on=*/false,
+                           CookieControlsEnforcement::kNoEnforcement,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           // Although there is an allow exception with an
+                           // expiration, because the default allow never
+                           // expires, zero_expiration is correct.
+                           zero_expiration(),
+                           GetThirdPartyCookiesFeatureForEnforcement(
+                               CookieControlsEnforcement::kNoEnforcement,
+                               BlockingStatus::kAllowed)));
   EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
                            /*icon_visible=*/false, /*protections_on=*/false,
                            CookieBlocking3pcdStatus::kNotIn3pcd,
@@ -729,6 +743,7 @@ TEST_F(CookieControlsUserBypassTest, FrequentPageReloads) {
                            /*icon_visible=*/true, /*protections_on=*/true,
                            CookieBlocking3pcdStatus::kNotIn3pcd,
                            /*should_highlight=*/true));
+
   NavigateAndCommit(GURL("https://example.com"));
   page_specific_content_settings()->OnBrowsingDataAccessed(
       CreateUnpartitionedStorageKey(GURL("https://thirdparty.com")),
@@ -743,6 +758,53 @@ TEST_F(CookieControlsUserBypassTest, FrequentPageReloads) {
                               ContentSettingsType::COOKIE_CONTROLS_METADATA);
   EXPECT_TRUE(stored_value.is_dict());
   EXPECT_TRUE(stored_value.GetDict().FindBool("entry_point_animated").value());
+}
+
+TEST_F(CookieControlsUserBypassTest,
+       HittingPageReloadThresholdTriggersOnReloadThresholdExceeded) {
+  // Update initial web contents to ensure the tab observer is set up.
+  cookie_controls()->Update(web_contents());
+
+  // Don't call observer when reload count = 0.
+  EXPECT_CALL(*mock(), OnReloadThresholdExceeded()).Times(0);
+
+  EXPECT_CALL(*mock(),
+              OnStatusChanged(
+                  /*controls_visible=*/true, /*protections_on=*/true,
+                  CookieControlsEnforcement::kNoEnforcement,
+                  CookieBlocking3pcdStatus::kNotIn3pcd, zero_expiration(),
+                  GetThirdPartyCookiesFeatureForEnforcement(
+                      CookieControlsEnforcement::kNoEnforcement,
+                      BlockingStatus::kBlocked)));
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/false, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
+  NavigateAndCommit(GURL("https://example.com"));
+  cookie_controls()->Update(web_contents());
+  testing::Mock::VerifyAndClearExpectations(mock());
+
+  // Don't call observer when reload count = 1.
+  EXPECT_CALL(*mock(), OnReloadThresholdExceeded()).Times(0);
+
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/false, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
+  NavigateAndCommit(GURL("https://example.com"));
+  cookie_controls()->Update(web_contents());
+  testing::Mock::VerifyAndClearExpectations(mock());
+
+  // Expect observer call when reload count hits threshold of 2.
+  EXPECT_CALL(*mock(), OnReloadThresholdExceeded());
+  // Expect that we attempt to highlight the user bypass icon.
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/false, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/true));
+  NavigateAndCommit(GURL("https://example.com"));
+  cookie_controls()->Update(web_contents());
+  testing::Mock::VerifyAndClearExpectations(mock());
 }
 
 TEST_F(CookieControlsUserBypassTest, FrequentPageReloadsMetrics) {
@@ -772,7 +834,6 @@ TEST_F(CookieControlsUserBypassTest, FrequentPageReloadsMetrics) {
                            CookieBlocking3pcdStatus::kNotIn3pcd,
                            /*should_highlight=*/false));
   page_specific_content_settings()->OnBrowsingDataAccessed(
-
       CreateUnpartitionedStorageKey(GURL("https://thirdparty.com")),
       BrowsingDataModel::StorageType::kQuotaStorage,
       /*blocked_by_policy=*/false);
@@ -1464,9 +1525,39 @@ TEST_F(CookieControlsUserBypassTest, SubresourceBlocked) {
   fingerprinting_protection_feature_list.InitAndEnableFeature(
       fingerprinting_protection_filter::features::
           kEnableFingerprintingProtectionFilter);
+  CreateFingerprintingProtectionWebContentsHelper(
+      web_contents(), /*pref_service=*/nullptr,
+      /*tracking_protection_settings=*/nullptr, /*is_incognito=*/false);
+
+  NavigateAndCommit(GURL("https://example.com"));
   fingerprinting_protection_filter::FingerprintingProtectionWebContentsHelper::
-      CreateForWebContents(web_contents(), /*pref_service=*/nullptr,
-                           /*tracking_protection_settings=*/nullptr);
+      FromWebContents(web_contents())
+          ->NotifyOnBlockedResources();
+
+  EXPECT_CALL(*mock(),
+              OnStatusChanged(
+                  /*controls_visible=*/true, /*protections_on=*/true,
+                  CookieControlsEnforcement::kNoEnforcement,
+                  CookieBlocking3pcdStatus::kNotIn3pcd, zero_expiration(),
+                  GetThirdPartyCookiesFeatureForEnforcement(
+                      CookieControlsEnforcement::kNoEnforcement,
+                      BlockingStatus::kBlocked)));
+
+  EXPECT_CALL(*mock(), OnCookieControlsIconStatusChanged(
+                           /*icon_visible=*/true, /*protections_on=*/true,
+                           CookieBlocking3pcdStatus::kNotIn3pcd,
+                           /*should_highlight=*/false));
+  cookie_controls()->Update(web_contents());
+}
+
+TEST_F(CookieControlsUserBypassTest, SubresourceBlockedInIncognito) {
+  base::test::ScopedFeatureList fingerprinting_protection_feature_list;
+  fingerprinting_protection_feature_list.InitAndEnableFeature(
+      fingerprinting_protection_filter::features::
+          kEnableFingerprintingProtectionFilterInIncognito);
+  CreateFingerprintingProtectionWebContentsHelper(
+      web_contents(), /*pref_service=*/nullptr,
+      /*tracking_protection_settings=*/nullptr, /*is_incognito=*/true);
 
   NavigateAndCommit(GURL("https://example.com"));
   fingerprinting_protection_filter::FingerprintingProtectionWebContentsHelper::
@@ -1520,3 +1611,83 @@ TEST_F(CookieControlsUserBypassTest,
   EXPECT_TRUE(stored_value.is_none());
   testing::Mock::VerifyAndClearExpectations(mock());
 }
+
+class CookieControlsUserBypassTrackingProtectionUiTest
+    : public CookieControlsUserBypassTest,
+      public testing::WithParamInterface<testing::tuple<bool, bool, bool>> {
+ public:
+  CookieControlsUserBypassTrackingProtectionUiTest() {
+    feature_list_.InitWithFeatures(
+        {
+            privacy_sandbox::kFingerprintingProtectionUserBypass,
+            privacy_sandbox::kFingerprintingProtectionSetting,
+            privacy_sandbox::kIpProtectionUserBypass,
+            privacy_sandbox::kIpProtectionV1,
+        },
+        {});
+  }
+  ~CookieControlsUserBypassTrackingProtectionUiTest() override = default;
+
+  std::vector<TrackingProtectionFeature> GetFeatureVector(
+      CookieControlsEnforcement enforcement,
+      bool protections_on) {
+    std::vector<TrackingProtectionFeature> features_list;
+    features_list.push_back(
+        {FeatureType::kThirdPartyCookies, enforcement,
+         protections_on ? BlockingStatus::kBlocked : BlockingStatus::kAllowed});
+    // Currently these ACT features do not support different enforcement types.
+    if (tracking_protection_settings()->IsIpProtectionEnabled()) {
+      features_list.push_back({FeatureType::kIpProtection,
+                               CookieControlsEnforcement::kNoEnforcement,
+                               protections_on ? BlockingStatus::kHidden
+                                              : BlockingStatus::kVisible});
+    }
+    if (tracking_protection_settings()->IsFingerprintingProtectionEnabled()) {
+      features_list.push_back({FeatureType::kFingerprintingProtection,
+                               CookieControlsEnforcement::kNoEnforcement,
+                               protections_on ? BlockingStatus::kLimited
+                                              : BlockingStatus::kAllowed});
+    }
+    return features_list;
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+TEST_P(CookieControlsUserBypassTrackingProtectionUiTest,
+       AddsActFeaturesToVectorBasedOnFeatureAndExceptionStatus) {
+  bool protections_on = std::get<0>(GetParam());
+  if (protections_on) {
+    cookie_settings()->SetThirdPartyCookieSetting(
+        GURL("https://example.com"), ContentSetting::CONTENT_SETTING_BLOCK);
+  } else {
+    tracking_protection_settings()->AddTrackingProtectionException(
+        GURL("https://example.com"));
+    cookie_settings()->SetThirdPartyCookieSetting(
+        GURL("https://example.com"), ContentSetting::CONTENT_SETTING_ALLOW);
+  }
+  profile()->GetPrefs()->SetBoolean(prefs::kFingerprintingProtectionEnabled,
+                                    std::get<1>(GetParam()));
+  profile()->GetPrefs()->SetBoolean(prefs::kIpProtectionEnabled,
+                                    std::get<2>(GetParam()));
+
+  NavigateAndCommit(GURL("https://example.com"));
+  EXPECT_CALL(*mock(),
+              OnStatusChanged(
+                  /*controls_visible=*/true, protections_on,
+                  CookieControlsEnforcement::kNoEnforcement,
+                  CookieBlocking3pcdStatus::kNotIn3pcd, zero_expiration(),
+                  GetFeatureVector(CookieControlsEnforcement::kNoEnforcement,
+                                   protections_on)));
+
+  cookie_controls()->Update(web_contents());
+  testing::Mock::VerifyAndClearExpectations(mock());
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    CookieControlsUserBypassTrackingProtectionUiTest,
+    testing::Combine(/*protections_on*/ testing::Bool(),
+                     /*kFingerprintingProtectionEnabled*/ testing::Bool(),
+                     /*kIpProtectionEnabled*/ testing::Bool()));

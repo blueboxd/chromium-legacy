@@ -9,20 +9,24 @@
 
 @class PriceInsightsItem;
 
+namespace commerce {
+enum class PriceBucket;
+}
+
 // Consumer for the Price Insights.
 @protocol PriceInsightsConsumer <NSObject>
 
-// Notifies the modulator that the trackable item was successfully subscribed
-// to.
-- (void)didStartPriceTracking;
+// Notifies the modulator that the user successfully tracked a price with or
+// without notifications being granted by the user.
+- (void)didStartPriceTrackingWithNotification:(BOOL)granted;
 
 // Notifies the modulator that the trackable item was successfully unsubscribed
 // to.
 - (void)didStopPriceTracking;
 
-// Notifies the modulator that webpage navigation has started, prompting the
-// contextual panel to dismiss itself.
-- (void)didStartNavigationToWebpage;
+// Notifies the modulator that webpage navigation has started.
+- (void)didStartNavigationToWebpageWithPriceBucket:
+    (commerce::PriceBucket)bucket;
 
 // Displays a UIAlert in the modulator that directs the user to the OS
 // permission settings to enable push notification permissions.

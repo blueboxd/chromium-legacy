@@ -325,11 +325,13 @@ TEST_F(CameraAppEventsSenderTest, BarcodeDetected) {
 TEST_F(CameraAppEventsSenderTest, Perf) {
   auto params = ash::camera_app::mojom::PerfEventParams::New();
   params->event_type =
-      ash::camera_app::mojom::PerfEventType::kVideoCapturePostProcessing;
+      ash::camera_app::mojom::PerfEventType::kVideoCapturePostProcessingSaving;
   params->duration = 10000;
   params->facing = ash::camera_app::mojom::Facing::kUnknown;
   params->resolution_width = 1920;
   params->resolution_height = 1080;
+  params->page_count = 10;
+  params->pressure = ash::camera_app::mojom::Pressure::kFair;
 
   cros_events::CameraApp_Perf expected_event;
   expected_event
@@ -338,7 +340,10 @@ TEST_F(CameraAppEventsSenderTest, Perf) {
       .SetDuration(static_cast<int64_t>(params->duration))
       .SetFacing(static_cast<cros_events::CameraAppFacing>(params->facing))
       .SetResolutionWidth(static_cast<int64_t>(params->resolution_width))
-      .SetResolutionHeight(static_cast<int64_t>(params->resolution_height));
+      .SetResolutionHeight(static_cast<int64_t>(params->resolution_height))
+      .SetPageCount(static_cast<int64_t>(params->page_count))
+      .SetPressure(
+          static_cast<cros_events::CameraAppPressure>(params->pressure));
 
   events_sender_->SendPerfEvent(std::move(params));
 
@@ -421,6 +426,32 @@ TEST_F(CameraAppEventsSenderTest, MemoryUsage) {
   for (auto it = received_metrics.begin(); it != received_metrics.end(); it++) {
     EXPECT_EQ(it->second, expected_metrics.at(it->first));
   }
+}
+
+TEST_F(CameraAppEventsSenderTest, Ocr) {
+  auto params = ash::camera_app::mojom::OcrEventParams::New();
+  params->event_type = ash::camera_app::mojom::OcrEventType::kCopyText;
+  params->is_primary_language = true;
+  params->line_count = 10;
+  params->word_count = 20;
+
+  cros_events::CameraApp_Ocr expected_event;
+  expected_event
+      .SetEventType(
+          static_cast<cros_events::CameraAppOcrEventType>(params->event_type))
+      .SetIsPrimaryLanguage(static_cast<int64_t>(true))
+      .SetLineCount(static_cast<int64_t>(params->line_count))
+      .SetWordCount(static_cast<int64_t>(params->word_count));
+
+  events_sender_->SendOcrEvent(std::move(params));
+
+  const std::vector<metrics::structured::Event>& events =
+      metrics_recorder_->GetEvents();
+  ASSERT_EQ(events.size(), 1U);
+
+  auto& received_event = events[0];
+  EXPECT_EQ(received_event.event_name(), expected_event.event_name());
+  EXPECT_EQ(received_event.metric_values(), expected_event.metric_values());
 }
 
 }  // namespace ash

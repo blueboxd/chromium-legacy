@@ -17,7 +17,7 @@ import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
+import org.chromium.chrome.browser.settings.SettingsLauncherFactory;
 import org.chromium.chrome.browser.sync.SyncServiceFactory;
 import org.chromium.chrome.browser.sync.settings.ManageSyncSettings;
 import org.chromium.chrome.browser.ui.signin.SyncConsentActivityLauncher.AccessPoint;
@@ -32,14 +32,16 @@ import org.chromium.ui.base.DeviceFormFactor;
 // still used
 /**
  * A View that shows the user the next step they must complete to start syncing their data (eg.
- * Recent Tabs or Bookmarks). If inflated manually, {@link LegacySyncPromoView#init(int)} must be
- * called before attaching this View to a ViewGroup.
+ * Recent Tabs or Bookmarks). If inflated manually, either {@link LegacySyncPromoView#init(int)} or
+ * {@link LegacySyncPromoView#setInitializeNotRequired()} must be called before attaching this View
+ * to a ViewGroup.
  */
 public class LegacySyncPromoView extends FrameLayout
         implements SyncService.SyncStateChangedListener {
     private SyncService mSyncService;
     private @AccessPoint int mAccessPoint;
     private boolean mInitialized;
+    private boolean mInitializeNotRequired;
 
     private TextView mTitle;
     private TextView mDescription;
@@ -94,6 +96,26 @@ public class LegacySyncPromoView extends FrameLayout
         mPositiveButton = findViewById(R.id.sign_in);
     }
 
+    public TextView getEmptyStateTitle() {
+        return mEmptyStateTitle;
+    }
+
+    public TextView getEmptyStateDescription() {
+        return mEmptyStateDescription;
+    }
+
+    public ImageView getEmptyStateImage() {
+        return mEmptyStateImage;
+    }
+
+    public MaterialCardViewNoShadow getOldEmptyCardView() {
+        return mOldEmptyCardView;
+    }
+
+    public View getEmptyStateView() {
+        return mEmptyView;
+    }
+
     /**
      * Provide the information necessary for this class to function.
      *
@@ -121,6 +143,10 @@ public class LegacySyncPromoView extends FrameLayout
         }
 
         // We don't call update() here as it will be called in onAttachedToWindow().
+    }
+
+    public void setInitializeNotRequired() {
+        mInitializeNotRequired = true;
     }
 
     private void update() {
@@ -242,7 +268,8 @@ public class LegacySyncPromoView extends FrameLayout
                 new ButtonPresent(
                         R.string.enable_sync_button,
                         view -> {
-                            SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+                            SettingsLauncher settingsLauncher =
+                                    SettingsLauncherFactory.createSettingsLauncher();
                             settingsLauncher.launchSettingsActivity(
                                     getContext(),
                                     ManageSyncSettings.class,
@@ -274,19 +301,31 @@ public class LegacySyncPromoView extends FrameLayout
 
     @Override
     protected void onAttachedToWindow() {
-        assert mInitialized : "init(...) must be called on LegacySyncPromoView before use.";
+        if (!mInitializeNotRequired) {
+            assert mInitialized : "init(...) must be called on LegacySyncPromoView before use.";
+        } else {
+            assert !mInitialized : "init is not required.";
+        }
 
         super.onAttachedToWindow();
-        mSyncService.addSyncStateChangedListener(this);
-        update();
+        if (mInitialized) {
+            mSyncService.addSyncStateChangedListener(this);
+            update();
+        }
     }
 
     @Override
     protected void onDetachedFromWindow() {
-        assert mInitialized : "init(...) must be called on LegacySyncPromoView before use.";
+        if (!mInitializeNotRequired) {
+            assert mInitialized : "init(...) must be called on LegacySyncPromoView before use.";
+        } else {
+            assert !mInitialized : "init is not required.";
+        }
 
         super.onDetachedFromWindow();
-        mSyncService.removeSyncStateChangedListener(this);
+        if (mInitialized) {
+            mSyncService.removeSyncStateChangedListener(this);
+        }
     }
 
     // SyncService.SyncStateChangedListener

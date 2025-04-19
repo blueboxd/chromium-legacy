@@ -23,7 +23,7 @@ class EditorManager {
   virtual ~EditorManager() = default;
 
   virtual void GetEditorPanelContext(
-      base::OnceCallback<void(EditorContext)> callback) = 0;
+      base::OnceCallback<void(const EditorContext&)> callback) = 0;
   virtual void OnPromoCardDismissed() = 0;
   virtual void OnPromoCardDeclined() = 0;
   virtual void StartEditingFlow() = 0;
@@ -34,6 +34,7 @@ class EditorManager {
   virtual void AddObserver(EditorManager::Observer* observer) = 0;
   virtual void RemoveObserver(EditorManager::Observer* observer) = 0;
   virtual void NotifyEditorModeChanged(const EditorMode& mode) = 0;
+  virtual void RequestCacheContext() = 0;
 };
 
 }  // namespace chromeos::editor_menu

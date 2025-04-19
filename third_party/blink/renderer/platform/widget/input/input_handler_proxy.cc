@@ -20,8 +20,10 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
+#include "base/types/optional_ref.h"
 #include "build/build_config.h"
 #include "cc/base/features.h"
+#include "cc/input/browser_controls_offset_tags_info.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/metrics/event_metrics.h"
 #include "cc/trees/latency_info_swap_promise_monitor.h"
@@ -90,8 +92,6 @@ cc::ScrollState CreateScrollStateForGesture(const WebGestureEvent& event) {
     case WebInputEvent::Type::kGestureScrollUpdate:
       scroll_state_data.delta_x = -event.data.scroll_update.delta_x;
       scroll_state_data.delta_y = -event.data.scroll_update.delta_y;
-      scroll_state_data.velocity_x = event.data.scroll_update.velocity_x;
-      scroll_state_data.velocity_y = event.data.scroll_update.velocity_y;
       scroll_state_data.is_in_inertial_phase =
           event.data.scroll_update.inertial_phase ==
           WebGestureEvent::InertialPhaseState::kMomentum;
@@ -203,6 +203,14 @@ bool IsGestureScrollOrPinch(WebInputEvent::Type type) {
   }
 }
 
+bool DoNotEnqueueLateScrollEvents(
+    cc::InputHandlerClient::ScrollEventDispatchMode mode) {
+  return mode == cc::InputHandlerClient::ScrollEventDispatchMode::
+                     kDispatchScrollEventsImmediately ||
+         mode == cc::InputHandlerClient::ScrollEventDispatchMode::
+                     kUseScrollPredictorForDeadline;
+}
+
 }  // namespace
 
 InputHandlerProxy::InputHandlerProxy(cc::InputHandler& input_handler,
@@ -275,6 +283,12 @@ void InputHandlerProxy::HandleInputEventWithLatencyInfo(
                                        trace_id);
               });
 
+  // Prevent the events to be counted into INP metrics if there is an active
+  // scroll.
+  if (handling_gesture_on_impl_thread_) {
+    event->EventPointer()->SetPreventCountingAsInteractionTrue();
+  }
+
   auto event_with_callback = std::make_unique<EventWithCallback>(
       std::move(event), std::move(callback), std::move(metrics));
 
@@ -324,10 +338,9 @@ void InputHandlerProxy::HandleInputEventWithLatencyInfo(
     // DeliverInputForBeginFrame we want to dispatch those immediately. We will
     // return to `enqueue_scroll_events_` once frame production has begun.
     if (gesture_event.IsScrollEvent() &&
-        scroll_event_dispatch_mode_ ==
-            cc::InputHandlerClient::ScrollEventDispatchMode::
-                kDispatchScrollEventsImmediately &&
+        DoNotEnqueueLateScrollEvents(scroll_event_dispatch_mode_) &&
         !enqueue_scroll_events_) {
+      enqueue_scroll_events_ = true;
       // TODO(jonross): this will update to a prediction that is -5ms before
       // `current_begin_frame_args_.frame_time`. We should consider not
       // dispatching if `event_with_callback` is too old, and if we expect a
@@ -553,6 +566,16 @@ void InputHandlerProxy::GenerateAndDispatchSytheticScrollPrediction(
           args.frame_time, args.interval,
           currently_active_gesture_device_.value(),
           current_active_gesture_scroll_modifiers_.value_or(0));
+  int64_t trace_id = event_with_callback->latency_info().trace_id();
+  TRACE_EVENT("input,benchmark,latencyInfo", "LatencyInfo.Flow",
+              [trace_id](perfetto::EventContext ctx) {
+                ChromeLatencyInfo* info =
+                    ctx.event()->set_chrome_latency_info();
+                info->set_trace_id(trace_id);
+                info->set_step(ChromeLatencyInfo::STEP_HANDLE_INPUT_EVENT_IMPL);
+                tracing::FillFlowEvent(ctx, TrackEvent::LegacyEvent::FLOW_INOUT,
+                                       trace_id);
+              });
   DispatchSingleInputEvent(std::move(event_with_callback));
 }
 
@@ -606,7 +629,6 @@ void InputHandlerProxy::InjectScrollbarGestureScroll(
   // Send in a LatencyInfo with SCROLLBAR type so that the end to end latency
   // is calculated specifically for scrollbars.
   ui::LatencyInfo scrollbar_latency_info(latency_info);
-  scrollbar_latency_info.set_source_event_type(ui::SourceEventType::SCROLLBAR);
 
   // This latency_info should not have already been scheduled for rendering -
   // i.e. it should be the original latency_info that was associated with the
@@ -1508,6 +1530,16 @@ void InputHandlerProxy::DeliverInputForHighLatencyMode() {
     DispatchQueuedInputEvents(false /* frame_aligned */);
 }
 
+void InputHandlerProxy::DeliverInputForDeadline() {
+  if (scroll_event_dispatch_mode_ !=
+          cc::InputHandlerClient::ScrollEventDispatchMode::
+              kUseScrollPredictorForDeadline ||
+      enqueue_scroll_events_) {
+    return;
+  }
+  GenerateAndDispatchSytheticScrollPrediction(current_begin_frame_args_);
+}
+
 void InputHandlerProxy::DidFinishImplFrame() {
   // While ReconcileElasticOverscrollAndRootScroll is called for the start of
   // draw. It is possible that there was no non-scrolling updates, which can
@@ -1575,9 +1607,12 @@ void InputHandlerProxy::RequestAnimationForSnapFling() {
 void InputHandlerProxy::UpdateBrowserControlsState(
     cc::BrowserControlsState constraints,
     cc::BrowserControlsState current,
-    bool animate) {
+    bool animate,
+    base::optional_ref<const cc::BrowserControlsOffsetTagsInfo>
+        offset_tags_info) {
   DCHECK(input_handler_);
-  input_handler_->UpdateBrowserControlsState(constraints, current, animate);
+  input_handler_->UpdateBrowserControlsState(constraints, current, animate,
+                                             offset_tags_info);
 }
 
 void InputHandlerProxy::FlushQueuedEventsForTesting() {

@@ -14,7 +14,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/observer_list.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/uuid.h"
@@ -42,6 +41,10 @@ namespace em = enterprise_management;
 using PsmExecutionResult = em::DeviceRegisterRequest::PsmExecutionResult;
 
 namespace policy {
+
+BASE_FEATURE(kPolicyFetchWithSha256,
+             "PolicyFetchWithSha256",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 namespace {
 
@@ -508,7 +511,8 @@ void CloudPolicyClient::RegisterWithOidcResponse(
     const RegistrationParameters& parameters,
     const std::string& oauth_token,
     const std::string& oidc_id_token,
-    const std::string& client_id) {
+    const std::string& client_id,
+    const base::TimeDelta& timeout_duration) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(!oidc_id_token.empty());
   CHECK(!oauth_token.empty());
@@ -524,6 +528,12 @@ void CloudPolicyClient::RegisterWithOidcResponse(
 
   auto config =
       std::make_unique<RegistrationJobConfiguration>(std::move(params));
+
+  // Set a limit for OIDC registration so the loading state doesn't hang
+  // forever.
+  if (timeout_duration > base::TimeDelta()) {
+    config->SetTimeoutDuration(timeout_duration);
+  }
 
   em::DeviceRegisterRequest* request =
       config->request()->mutable_register_request();
@@ -544,7 +554,8 @@ void CloudPolicyClient::OnRegisterWithCertificateRequestSigned(
   if (!success) {
     const em::DeviceManagementResponse response;
     OnRegisterCompleted(
-        DMServerJobResult{nullptr, 0, DM_STATUS_CANNOT_SIGN_REQUEST, response});
+        DMServerJobResult{/* job */ nullptr, 0, DM_STATUS_CANNOT_SIGN_REQUEST,
+                          /* http response code */ 0, response});
     return;
   }
 
@@ -583,6 +594,14 @@ void CloudPolicyClient::SetOAuthTokenAsAdditionalAuth(
   oauth_token_ = oauth_token;
 }
 
+em::PolicyFetchRequest::SignatureType
+CloudPolicyClient::GetPolicyFetchRequestSignatureType() {
+  if (base::FeatureList::IsEnabled(policy::kPolicyFetchWithSha256)) {
+    return em::PolicyFetchRequest::SHA256_RSA;
+  }
+  return em::PolicyFetchRequest::SHA1_RSA;
+}
+
 void CloudPolicyClient::FetchPolicy(PolicyFetchReason reason) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -618,6 +637,8 @@ void CloudPolicyClient::FetchPolicy(PolicyFetchReason reason) {
 
   // Build policy fetch requests.
   em::DevicePolicyRequest* policy_request = request->mutable_policy_request();
+  const em::PolicyFetchRequest::SignatureType signature_type =
+      GetPolicyFetchRequestSignatureType();
   for (const auto& type_to_fetch : types_to_fetch_) {
     em::PolicyFetchRequest* fetch_request = policy_request->add_requests();
     fetch_request->set_policy_type(type_to_fetch.first);
@@ -626,7 +647,7 @@ void CloudPolicyClient::FetchPolicy(PolicyFetchReason reason) {
     }
 
     // Request signed policy blobs to help prevent tampering on the client.
-    fetch_request->set_signature_type(em::PolicyFetchRequest::SHA1_RSA);
+    fetch_request->set_signature_type(signature_type);
     if (public_key_version_valid_) {
       fetch_request->set_public_key_version(public_key_version_);
     }
@@ -1151,6 +1172,49 @@ void CloudPolicyClient::ClientCertProvisioningRequest(
       std::move(request);
 
   request_jobs_.push_back(service_->CreateJob(std::move(config)));
+}
+
+void CloudPolicyClient::UploadFmRegistrationToken(
+    enterprise_management::FmRegistrationTokenUploadRequest request,
+    ResultCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!is_registered()) {
+    std::move(callback).Run(CloudPolicyClient::Result(NotRegistered()));
+    return;
+  }
+
+  auto params = DMServerJobConfiguration::CreateParams::WithClient(
+      DeviceManagementService::JobConfiguration::
+          TYPE_UPLOAD_FM_REGISTRATION_TOKEN,
+      this);
+  params.auth_data = DMAuth::FromDMToken(dm_token_);
+  params.callback =
+      base::BindOnce(&CloudPolicyClient::OnUploadFmRegistrationTokenResponse,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback));
+
+  std::unique_ptr<RegistrationJobConfiguration> config =
+      std::make_unique<RegistrationJobConfiguration>(std::move(params));
+
+  *config->request()->mutable_fm_registration_token_upload_request() =
+      std::move(request);
+
+  unique_request_job_ = service_->CreateJob(std::move(config));
+}
+
+void CloudPolicyClient::OnUploadFmRegistrationTokenResponse(
+    ResultCallback callback,
+    DMServerJobResult result) {
+  last_dm_status_ = result.dm_status;
+  if (result.dm_status != DM_STATUS_SUCCESS) {
+    NotifyClientError();
+  } else if (result.dm_status == DM_STATUS_SUCCESS &&
+             !result.response.has_fm_registration_token_upload_response()) {
+    LOG_POLICY(WARNING, REMOTE_COMMANDS)
+        << "Empty fm registration token upload response.";
+    result.dm_status = DM_STATUS_RESPONSE_DECODING_ERROR;
+  }
+  std::move(callback).Run(CloudPolicyClient::Result(result.dm_status));
 }
 
 void CloudPolicyClient::UpdateServiceAccount(const std::string& account_email) {
@@ -1711,6 +1775,9 @@ void CloudPolicyClient::CreateDeviceRegisterRequest(
   if (params.demo_mode_dimensions.has_value()) {
     *request->mutable_demo_mode_dimensions() =
         params.demo_mode_dimensions.value();
+  }
+  if (!params.oidc_state.empty()) {
+    request->set_oidc_profile_enrollment_state(params.oidc_state);
   }
 }
 

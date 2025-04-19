@@ -38,6 +38,7 @@ class SidePanel : public views::AccessiblePaneView,
   ~SidePanel() override;
 
   void SetPanelWidth(int width);
+  void UpdateSidePanelWidthPref(const std::string& panel_id, int width);
   double GetAnimationValue() const;
   gfx::RoundedCornersF background_radii() const { return background_radii_; }
   void SetBackgroundRadii(const gfx::RoundedCornersF& radii);
@@ -47,6 +48,9 @@ class SidePanel : public views::AccessiblePaneView,
   gfx::Size GetMinimumSize() const override;
   bool IsClosing();
   void DisableAnimationsForTesting() { animations_disabled_ = true; }
+  void SetKeyboardResized(bool keyboard_resized) {
+    keyboard_resized_ = keyboard_resized;
+  }
 
   // Add a header view that gets painted over the side panel border. The top
   // border area grows to accommodate the additional height of the header,
@@ -68,11 +72,15 @@ class SidePanel : public views::AccessiblePaneView,
   void RecordMetricsIfResized();
 
  private:
+  class VisibleBoundsViewClipper;
+
   void UpdateVisibility();
   bool ShouldShowAnimation() const;
+  void AnnounceResize();
 
   // views::View:
   void ChildVisibilityChanged(View* child) override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
   // views::ViewObserver:
   void OnChildViewAdded(View* observed_view, View* child) override;
@@ -102,11 +110,19 @@ class SidePanel : public views::AccessiblePaneView,
   // Should be true if the side panel was resized since metrics were last
   // logged.
   bool did_resize_ = false;
+  // Should be true if we have resized via keyboard and have not announced the
+  // resize for accessibility users.
+  bool keyboard_resized_ = false;
 
   bool animations_disabled_ = false;
 
   // Animation controlling showing and hiding of the side panel.
   gfx::SlideAnimation animation_{this};
+
+  // Helps to clip layer backed children to their visible bounds.
+  // TODO: 344626785 - Remove this once WebView layer behavior has been fixed.
+  std::unique_ptr<VisibleBoundsViewClipper> visible_bounds_view_clipper_;
+
   // Monitors content views so we will be notified if their property
   // state changes.
   base::ScopedMultiSourceObservation<View, ViewObserver>

@@ -29,6 +29,7 @@
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
@@ -276,7 +277,7 @@ class NoteLabel : public views::Label {
     if (note_.empty()) {
       SetText(note_to_display);
     }
-    SetAccessibleName(l10n_util::GetStringFUTF16(
+    GetViewAccessibility().SetName(l10n_util::GetStringFUTF16(
         IDS_MANAGE_PASSWORDS_NOTE_ACCESSIBLE_NAME, note_to_display));
   }
 
@@ -400,7 +401,8 @@ std::unique_ptr<views::View> CreateEditUsernameRow(
   *textfield = username_with_error_label_view->AddChildView(
       std::make_unique<views::Textfield>());
   (*textfield)
-      ->SetAccessibleName(
+      ->GetViewAccessibility()
+      .SetName(
           l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_USERNAME_TEXTFIELD));
   (*textfield)
       ->SetID(static_cast<int>(ManagePasswordsViewIDs::kUsernameTextField));
@@ -444,7 +446,7 @@ std::unique_ptr<views::View> CreateEditNoteRow(
   *textarea = note_with_error_label_view->AddChildView(
       std::make_unique<views::Textarea>());
   (*textarea)->SetText(form.GetNoteWithEmptyUniqueDisplayName());
-  (*textarea)->SetAccessibleName(
+  (*textarea)->GetViewAccessibility().SetName(
       l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_NOTE_TEXTFIELD));
   int line_height = views::TypographyProvider::Get().GetLineHeight(
       views::style::CONTEXT_TEXTFIELD, views::style::STYLE_PRIMARY);
@@ -493,7 +495,7 @@ std::unique_ptr<RichHoverButton> CreateManagePasswordRow(
 // static
 std::unique_ptr<views::View> ManagePasswordsDetailsView::CreateTitleView(
     const password_manager::PasswordForm& password_form,
-    base::RepeatingClosure on_back_clicked_callback) {
+    std::optional<base::RepeatingClosure> on_back_clicked_callback) {
   const auto* const layout_provider = ChromeLayoutProvider::Get();
   auto header = std::make_unique<views::BoxLayoutView>();
   // Set the space between the icon and title similar to the space in the row
@@ -508,11 +510,14 @@ std::unique_ptr<views::View> ManagePasswordsDetailsView::CreateTitleView(
       layout_provider->GetInsetsMetric(views::INSETS_VECTOR_IMAGE_BUTTON)
           .right());
 
-  auto back_button = views::CreateVectorImageButtonWithNativeTheme(
-      on_back_clicked_callback, vector_icons::kArrowBackIcon);
-  back_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_ACCNAME_BACK));
-  views::InstallCircleHighlightPathGenerator(back_button.get());
-  header->AddChildView(std::move(back_button));
+  if (on_back_clicked_callback) {
+    auto back_button = views::CreateVectorImageButtonWithNativeTheme(
+        *on_back_clicked_callback, vector_icons::kArrowBackIcon);
+    back_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_ACCNAME_BACK));
+    views::InstallCircleHighlightPathGenerator(back_button.get());
+    back_button->SetProperty(views::kElementIdentifierKey, kBackButton);
+    header->AddChildView(std::move(back_button));
+  }
 
   std::string shown_origin = password_manager::GetShownOrigin(
       password_manager::CredentialUIEntry(password_form));
@@ -523,6 +528,7 @@ std::unique_ptr<views::View> ManagePasswordsDetailsView::CreateTitleView(
 
 ManagePasswordsDetailsView::ManagePasswordsDetailsView(
     password_manager::PasswordForm password_form,
+    bool allow_empty_username_edit,
     base::RepeatingCallback<bool(const std::u16string&)>
         username_exists_callback,
     base::RepeatingClosure switched_to_edit_mode_callback,
@@ -539,7 +545,7 @@ ManagePasswordsDetailsView::ManagePasswordsDetailsView(
       CreateUsernameLabel(password_form);
   username_label->SetID(
       static_cast<int>(ManagePasswordsViewIDs::kUsernameLabel));
-  username_label->SetAccessibleName(
+  username_label->GetViewAccessibility().SetName(
       l10n_util::GetStringFUTF16(IDS_MANAGE_PASSWORDS_USERNAME_ACCESSIBLE_NAME,
                                  username_label->GetText()));
   if (!password_form.username_value.empty()) {
@@ -557,7 +563,7 @@ ManagePasswordsDetailsView::ManagePasswordsDetailsView(
         l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_UI_COPY_USERNAME),
         std::move(copy_username_button_callback),
         ManagePasswordsViewIDs::kCopyUsernameButton));
-  } else {
+  } else if (allow_empty_username_edit) {
     read_username_row_ = AddChildView(CreateDetailsRowWithActionButton(
         kAccountCircleIcon, std::move(username_label), vector_icons::kEditIcon,
         l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_EDIT_USERNAME_TOOLTIP),
@@ -572,13 +578,16 @@ ManagePasswordsDetailsView::ManagePasswordsDetailsView(
             base::BindRepeating(&ManagePasswordsDetailsView::OnUserInputChanged,
                                 base::Unretained(this))));
     edit_username_row_->SetVisible(false);
+  } else {
+    AddChildView(
+        CreateDetailsRow(kAccountCircleIcon, std::move(username_label)));
   }
 
   std::unique_ptr<views::Label> password_label =
       CreatePasswordLabel(password_form);
   password_label->SetID(
       static_cast<int>(ManagePasswordsViewIDs::kPasswordLabel));
-  if (!password_form.federation_origin.opaque()) {
+  if (password_form.IsFederatedCredential()) {
     // Federated credentials, there is no note and no copy password button.
     AddChildView(CreateDetailsRow(vector_icons::kPasswordManagerIcon,
                                   std::move(password_label)));
@@ -759,6 +768,7 @@ void ManagePasswordsDetailsView::OnUserInputChanged() {
 }
 
 DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(ManagePasswordsDetailsView, kTopView);
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(ManagePasswordsDetailsView, kBackButton);
 
 BEGIN_METADATA(ManagePasswordsDetailsView)
 END_METADATA

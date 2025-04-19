@@ -28,7 +28,7 @@ TEST(ExtensionBuilderTest, Basic) {
     ASSERT_TRUE(extension);
     EXPECT_EQ("some name", extension->name());
     EXPECT_TRUE(extension->is_extension());
-    EXPECT_EQ(2, extension->manifest_version());
+    EXPECT_EQ(3, extension->manifest_version());
   }
   {
     scoped_refptr<const Extension> extension =
@@ -41,17 +41,37 @@ TEST(ExtensionBuilderTest, Basic) {
   }
 }
 
-TEST(ExtensionBuilderTest, Permissions) {
+TEST(ExtensionBuilderTest, AddAPIPermission) {
+  // MV2 API permissions.
   {
     scoped_refptr<const Extension> extension =
-        ExtensionBuilder("no permissions").Build();
+        ExtensionBuilder("no permissions").SetManifestVersion(2).Build();
     EXPECT_TRUE(extension->permissions_data()->active_permissions().IsEmpty());
   }
   {
     scoped_refptr<const Extension> extension =
-        ExtensionBuilder("permissions")
-            .AddPermission("storage")
-            .AddPermissions({"alarms", "idle"})
+        ExtensionBuilder("api permissions")
+            .SetManifestVersion(2)
+            .AddAPIPermission("storage")
+            .AddAPIPermissions({"alarms", "idle"})
+            .Build();
+    EXPECT_TRUE(extension->permissions_data()->HasAPIPermission("storage"));
+    EXPECT_TRUE(extension->permissions_data()->HasAPIPermission("alarms"));
+    EXPECT_TRUE(extension->permissions_data()->HasAPIPermission("idle"));
+  }
+
+  // MV3 API permissions.
+  {
+    scoped_refptr<const Extension> extension =
+        ExtensionBuilder("no permissions").SetManifestVersion(3).Build();
+    EXPECT_TRUE(extension->permissions_data()->active_permissions().IsEmpty());
+  }
+  {
+    scoped_refptr<const Extension> extension =
+        ExtensionBuilder("api permissions")
+            .SetManifestVersion(3)
+            .AddAPIPermission("storage")
+            .AddAPIPermissions({"alarms", "idle"})
             .Build();
     EXPECT_TRUE(extension->permissions_data()->HasAPIPermission("storage"));
     EXPECT_TRUE(extension->permissions_data()->HasAPIPermission("alarms"));
@@ -59,18 +79,42 @@ TEST(ExtensionBuilderTest, Permissions) {
   }
 }
 
-TEST(ExtensionBuilderTest, OptionalPermissions) {
+TEST(ExtensionBuilderTest, AddOptionalAPIPermission) {
+  // MV2 optional API permissions.
   {
     scoped_refptr<const Extension> extension =
-        ExtensionBuilder("no optional permissions").Build();
+        ExtensionBuilder("no permissions").SetManifestVersion(2).Build();
     EXPECT_TRUE(
         PermissionsParser::GetOptionalPermissions(extension.get()).IsEmpty());
   }
   {
     scoped_refptr<const Extension> extension =
-        ExtensionBuilder("permissions")
-            .AddOptionalPermission("storage")
-            .AddOptionalPermissions({"alarms", "idle"})
+        ExtensionBuilder("api permissions")
+            .SetManifestVersion(2)
+            .AddOptionalAPIPermission("storage")
+            .AddOptionalAPIPermissions({"alarms", "idle"})
+            .Build();
+    EXPECT_TRUE(PermissionsParser::GetOptionalPermissions(extension.get())
+                    .HasAPIPermission("storage"));
+    EXPECT_TRUE(PermissionsParser::GetOptionalPermissions(extension.get())
+                    .HasAPIPermission("alarms"));
+    EXPECT_TRUE(PermissionsParser::GetOptionalPermissions(extension.get())
+                    .HasAPIPermission("idle"));
+  }
+
+  // MV3 optional API permissions.
+  {
+    scoped_refptr<const Extension> extension =
+        ExtensionBuilder("no permissions").SetManifestVersion(3).Build();
+    EXPECT_TRUE(
+        PermissionsParser::GetOptionalPermissions(extension.get()).IsEmpty());
+  }
+  {
+    scoped_refptr<const Extension> extension =
+        ExtensionBuilder("api permissions")
+            .SetManifestVersion(3)
+            .AddOptionalAPIPermission("storage")
+            .AddOptionalAPIPermissions({"alarms", "idle"})
             .Build();
     EXPECT_TRUE(PermissionsParser::GetOptionalPermissions(extension.get())
                     .HasAPIPermission("storage"));
@@ -81,16 +125,139 @@ TEST(ExtensionBuilderTest, OptionalPermissions) {
   }
 }
 
+TEST(ExtensionBuilderTest, AddHostPermission) {
+  // MV2 host permissions.
+  {
+    scoped_refptr<const Extension> extension =
+        ExtensionBuilder("no permissions").SetManifestVersion(2).Build();
+    EXPECT_TRUE(extension->permissions_data()
+                    ->active_permissions()
+                    .effective_hosts()
+                    .is_empty());
+  }
+  {
+    scoped_refptr<const Extension> extension =
+        ExtensionBuilder("api permissions")
+            .SetManifestVersion(2)
+            .AddHostPermission("*://one.example/*")
+            .AddHostPermissions({"*://two.example/*", "*://three.example/*"})
+            .Build();
+    EXPECT_TRUE(extension->permissions_data()
+                    ->active_permissions()
+                    .HasExplicitAccessToOrigin(GURL("http://one.example")));
+    EXPECT_TRUE(extension->permissions_data()
+                    ->active_permissions()
+                    .HasExplicitAccessToOrigin(GURL("http://two.example")));
+    EXPECT_TRUE(extension->permissions_data()
+                    ->active_permissions()
+                    .HasExplicitAccessToOrigin(GURL("http://three.example")));
+    EXPECT_FALSE(extension->permissions_data()
+                     ->active_permissions()
+                     .HasExplicitAccessToOrigin(GURL("http://four.example")));
+  }
+
+  // MV3 host permissions.
+  {
+    scoped_refptr<const Extension> extension =
+        ExtensionBuilder("no permissions").SetManifestVersion(3).Build();
+    EXPECT_TRUE(extension->permissions_data()
+                    ->active_permissions()
+                    .effective_hosts()
+                    .is_empty());
+  }
+  {
+    scoped_refptr<const Extension> extension =
+        ExtensionBuilder("api permissions")
+            .SetManifestVersion(3)
+            .AddHostPermission("*://one.example/*")
+            .AddHostPermissions({"*://two.example/*", "*://three.example/*"})
+            .Build();
+    EXPECT_TRUE(extension->permissions_data()
+                    ->active_permissions()
+                    .HasExplicitAccessToOrigin(GURL("http://one.example")));
+    EXPECT_TRUE(extension->permissions_data()
+                    ->active_permissions()
+                    .HasExplicitAccessToOrigin(GURL("http://two.example")));
+    EXPECT_TRUE(extension->permissions_data()
+                    ->active_permissions()
+                    .HasExplicitAccessToOrigin(GURL("http://three.example")));
+    EXPECT_FALSE(extension->permissions_data()
+                     ->active_permissions()
+                     .HasExplicitAccessToOrigin(GURL("http://four.example")));
+  }
+}
+
+TEST(ExtensionBuilderTest, AddOptionalHostPermission) {
+  // MV2 optional host permissions.
+  {
+    scoped_refptr<const Extension> extension =
+        ExtensionBuilder("no permissions").SetManifestVersion(2).Build();
+    EXPECT_TRUE(PermissionsParser::GetOptionalPermissions(extension.get())
+                    .effective_hosts()
+                    .is_empty());
+  }
+  {
+    scoped_refptr<const Extension> extension =
+        ExtensionBuilder("api permissions")
+            .SetManifestVersion(2)
+            .AddOptionalHostPermission("*://one.example/*")
+            .AddOptionalHostPermissions(
+                {"*://two.example/*", "*://three.example/*"})
+            .Build();
+    const PermissionSet& optional_permissions =
+        PermissionsParser::GetOptionalPermissions(extension.get());
+    EXPECT_TRUE(optional_permissions.HasExplicitAccessToOrigin(
+        GURL("http://one.example")));
+    EXPECT_TRUE(optional_permissions.HasExplicitAccessToOrigin(
+        GURL("http://two.example")));
+    EXPECT_TRUE(optional_permissions.HasExplicitAccessToOrigin(
+        GURL("http://three.example")));
+    EXPECT_FALSE(optional_permissions.HasExplicitAccessToOrigin(
+        GURL("http://four.example")));
+  }
+
+  // MV3 optional host permissions.
+  {
+    scoped_refptr<const Extension> extension =
+        ExtensionBuilder("no permissions").SetManifestVersion(3).Build();
+    EXPECT_TRUE(extension->permissions_data()
+                    ->active_permissions()
+                    .effective_hosts()
+                    .is_empty());
+  }
+  {
+    scoped_refptr<const Extension> extension =
+        ExtensionBuilder("api permissions")
+            .SetManifestVersion(3)
+            .AddOptionalHostPermission("*://one.example/*")
+            .AddOptionalHostPermissions(
+                {"*://two.example/*", "*://three.example/*"})
+            .Build();
+    const PermissionSet& optional_permissions =
+        PermissionsParser::GetOptionalPermissions(extension.get());
+    EXPECT_TRUE(optional_permissions.HasExplicitAccessToOrigin(
+        GURL("http://one.example")));
+    EXPECT_TRUE(optional_permissions.HasExplicitAccessToOrigin(
+        GURL("http://two.example")));
+    EXPECT_TRUE(optional_permissions.HasExplicitAccessToOrigin(
+        GURL("http://three.example")));
+    EXPECT_FALSE(optional_permissions.HasExplicitAccessToOrigin(
+        GURL("http://four.example")));
+  }
+}
+
 TEST(ExtensionBuilderTest, Actions) {
   {
     scoped_refptr<const Extension> extension =
         ExtensionBuilder("no action").Build();
     EXPECT_FALSE(extension->manifest()->FindKey(manifest_keys::kPageAction));
     EXPECT_FALSE(extension->manifest()->FindKey(manifest_keys::kBrowserAction));
+    EXPECT_FALSE(extension->manifest()->FindKey(manifest_keys::kAction));
   }
   {
     scoped_refptr<const Extension> extension =
         ExtensionBuilder("page action")
+            .SetManifestVersion(2)
             .SetAction(ActionInfo::Type::kPage)
             .Build();
     EXPECT_TRUE(extension->manifest()->FindKey(manifest_keys::kPageAction));
@@ -100,6 +267,7 @@ TEST(ExtensionBuilderTest, Actions) {
   {
     scoped_refptr<const Extension> extension =
         ExtensionBuilder("browser action")
+            .SetManifestVersion(2)
             .SetAction(ActionInfo::Type::kBrowser)
             .Build();
     EXPECT_FALSE(extension->manifest()->FindKey(manifest_keys::kPageAction));
@@ -124,6 +292,7 @@ TEST(ExtensionBuilderTest, Background) {
   {
     scoped_refptr<const Extension> extension =
         ExtensionBuilder("persistent background page")
+            .SetManifestVersion(2)
             .SetBackgroundContext(
                 ExtensionBuilder::BackgroundContext::BACKGROUND_PAGE)
             .Build();
@@ -134,6 +303,7 @@ TEST(ExtensionBuilderTest, Background) {
   {
     scoped_refptr<const Extension> extension =
         ExtensionBuilder("event page")
+            .SetManifestVersion(2)
             .SetBackgroundContext(
                 ExtensionBuilder::BackgroundContext::EVENT_PAGE)
             .Build();

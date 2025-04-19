@@ -692,7 +692,7 @@ Called by update_extension_histograms.py.-->
       label="SMART_CARD_PROVIDER_PRIVATE_ON_LIST_READERS_REQUESTED"/>
   <int value="503"
       label="SMART_CARD_PROVIDER_PRIVATE_ON_GET_STATUS_CHANGE_REQUESTED"/>
-  <int value="504" label="PDF_VIEWER_PRIVATE_ON_PDF_OCR_PREF_CHANGED"/>
+  <int value="504" label="DELETED_PDF_VIEWER_PRIVATE_ON_PDF_OCR_PREF_CHANGED"/>
   <int value="505" label="SMART_CARD_PROVIDER_PRIVATE_ON_CONNECT_REQUESTED"/>
   <int value="506" label="SMART_CARD_PROVIDER_PRIVATE_ON_DISCONNECT_REQUESTED"/>
   <int value="507" label="SMART_CARD_PROVIDER_PRIVATE_ON_CANCEL_REQUESTED"/>
@@ -754,6 +754,9 @@ Called by update_extension_histograms.py.-->
       label="ACCESSIBILITY_PRIVATE_ON_SELECT_TO_SPEAK_FOCUS_CHANGED"/>
   <int value="555" label="TTS_ON_VOICES_CHANGED"/>
   <int value="556" label="OS_DIAGNOSTICS_ON_ROUTINE_FINISHED"/>
+  <int value="557" label="ACCESSIBILITY_PRIVATE_ON_CHROMEVOX_FOCUS_CHANGED"/>
+  <int value="558"
+      label="ACCESSIBILITY_PRIVATE_ON_TOGGLE_GESTURE_INFO_FOR_SETTINGS"/>
 </enum>
 
 <enum name="ExtensionForceInstalledPreInstalledDeprecatedSite">
@@ -1773,7 +1776,7 @@ Called by update_extension_histograms.py.-->
   <int value="971" label="INPUTMETHODPRIVATE_FETCHALLDICTIONARYWORDS"/>
   <int value="972" label="INPUTMETHODPRIVATE_ADDWORDTODICTIONARY"/>
   <int value="973"
-      label="DASHBOARDPRIVATE_SHOWPERMISSIONPROMPTFORDELEGATEDINSTALL"/>
+      label="DELETED_DASHBOARDPRIVATE_SHOWPERMISSIONPROMPTFORDELEGATEDINSTALL"/>
   <int value="974" label="PRINTERPROVIDERINTERNAL_GETPRINTDATA"/>
   <int value="975" label="VIRTUALKEYBOARDPRIVATE_SETMODE"/>
   <int value="976" label="NETWORKINGPRIVATE_STARTACTIVATE"/>
@@ -1864,7 +1867,7 @@ Called by update_extension_histograms.py.-->
   <int value="1058"
       label="FILESYSTEMPROVIDERINTERNAL_GETACTIONSREQUESTEDSUCCESS"/>
   <int value="1059"
-      label="DASHBOARDPRIVATE_SHOWPERMISSIONPROMPTFORDELEGATEDBUNDLEINSTALL"/>
+      label="DELETED_DASHBOARDPRIVATE_SHOWPERMISSIONPROMPTFORDELEGATEDBUNDLEINSTALL"/>
   <int value="1060" label="FILEMANAGERPRIVATEINTERNAL_GETCUSTOMACTIONS"/>
   <int value="1061" label="FILEMANAGERPRIVATEINTERNAL_EXECUTECUSTOMACTION"/>
   <int value="1062" label="MDNS_FORCEDISCOVERY"/>
@@ -2606,8 +2609,8 @@ Called by update_extension_histograms.py.-->
   <int value="1757" label="OS_TELEMETRY_GETAUDIOINFO"/>
   <int value="1758" label="OS_TELEMETRY_GETMARKETINGINFO"/>
   <int value="1759" label="OS_TELEMETRY_GETUSBBUSINFO"/>
-  <int value="1760" label="PDFVIEWERPRIVATE_ISPDFOCRALWAYSACTIVE"/>
-  <int value="1761" label="PDFVIEWERPRIVATE_SETPDFOCRPREF"/>
+  <int value="1760" label="DELETED_PDFVIEWERPRIVATE_ISPDFOCRALWAYSACTIVE"/>
+  <int value="1761" label="DELETED_PDFVIEWERPRIVATE_SETPDFOCRPREF"/>
   <int value="1762" label="AUTOFILLPRIVATE_GETACCOUNTINFO"/>
   <int value="1763" label="FILEMANAGERPRIVATE_PROGRESSPAUSEDTASKS"/>
   <int value="1764" label="BOOKMARKMANAGERPRIVATE_IMPORT"/>
@@ -2745,6 +2748,14 @@ Called by update_extension_histograms.py.-->
   <int value="1887" label="PASSWORDSPRIVATE_DISCONNECTCLOUDAUTHENTICATOR"/>
   <int value="1888" label="PASSWORDSPRIVATE_ISCONNECTEDTOCLOUDAUTHENTICATOR"/>
   <int value="1889" label="WEBSTOREPRIVATE_GETMV2DEPRECATIONSTATUS"/>
+  <int value="1890" label="PERMISSIONS_ADDSITEACCESSREQUEST"/>
+  <int value="1891" label="PERMISSIONS_REMOVESITEACCESSREQUEST"/>
+  <int value="1892" label="ACCESSIBILITY_PRIVATE_SETCHROMEVOXFOCUS"/>
+  <int value="1893" label="PASSWORDSPRIVATE_DELETEALLPASSWORDMANAGERDATA"/>
+  <int value="1894"
+      label="DEVELOPERPRIVATE_DISMISSMV2DEPRECATIONNOTICEFOREXTENSION"/>
+  <int value="1895" label="AUTOTESTPRIVATE_STARTOVERDRAWTRACKING"/>
+  <int value="1896" label="AUTOTESTPRIVATE_STOPOVERDRAWTRACKING"/>
 </enum>
 
 <enum name="ExtensionInstallationCrxInstallError">
@@ -2822,13 +2833,6 @@ Called by update_extension_histograms.py.-->
   <int value="2" label="Continue to install"/>
 </enum>
 
-<enum name="ExtensionLaunchType">
-  <int value="0" label="PINNED"/>
-  <int value="1" label="REGULAR"/>
-  <int value="2" label="FULLSCREEN"/>
-  <int value="3" label="WINDOW"/>
-</enum>
-
 <enum name="ExtensionLocation">
   <int value="0" label="INVALID"/>
   <int value="1" label="INTERNAL"/>
@@ -2841,6 +2845,11 @@ Called by update_extension_histograms.py.-->
   <int value="8" label="COMMAND_LINE"/>
   <int value="9" label="EXTERNAL_POLICY"/>
   <int value="10" label="EXTERNAL_COMPONENT"/>
+</enum>
+
+<enum name="ExtensionMV2DeprecationAction">
+  <int value="0" label="Extension Removed"/>
+  <int value="1" label="Extension ReEnabled"/>
 </enum>
 
 <enum name="ExtensionNavigationScheme">
@@ -3318,6 +3327,13 @@ Called by update_extension_permission.py.-->
   <int value="3" label="Manifest Version 3 extensions only"/>
 </enum>
 
+<enum name="MV2ExtensionState">
+  <int value="0" label="Unaffected"/>
+  <int value="1" label="Soft-disabled by Chrome"/>
+  <int value="2" label="Re-enabled by user"/>
+  <int value="3" label="Other (e.g. disabled for another reason)"/>
+</enum>
+
 <enum name="ReadDynamicRulesJSONStatus">
   <int value="0" label="kSuccess"/>
   <int value="1" label="kFileDoesNotExist"/>
@@ -3366,7 +3382,7 @@ Called by update_extension_permission.py.-->
   <int value="4" label="(Obsolete) Locally Managed"/>
   <int value="5" label="Kiosk App"/>
   <int value="6" label="Regular Supervised"/>
-  <int value="7" label="ARC Kiosk"/>
+  <int value="7" label="(Obsolete) ARC Kiosk"/>
   <int value="8" label="Active Directory"/>
   <int value="9" label="Web App Kiosk"/>
 </enum>

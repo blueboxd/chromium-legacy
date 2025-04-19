@@ -31,11 +31,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.MockitoAnnotations;
 
-import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.PayloadCallbackHelper;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.password_manager.CredentialManagerLauncherFactory;
 import org.chromium.chrome.browser.password_manager.FakeCredentialManagerLauncherFactoryImpl;
@@ -51,7 +52,7 @@ import org.chromium.ui.test.util.UiDisableIf;
 
 /** Integration test for accessing credential manager. */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@Batch(Batch.PER_CLASS)
+// TODO(crbug.com/344665935): Failing when batched, batch this again.
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "show-autofill-signatures"})
 public class CredentialManagerIntegrationTest {
     @Rule public SyncTestRule mSyncTestRule = new SyncTestRule();
@@ -111,6 +112,7 @@ public class CredentialManagerIntegrationTest {
         GmsCoreVersionRestriction.RESTRICTION_TYPE_VERSION_GE_22W30
     })
     @DisableIf.Device(type = {UiDisableIf.TABLET}) // https://crbug.com/339278945
+    @DisableFeatures(ChromeFeatureList.SAFETY_HUB)
     public void testUseCredentialManagerFromSafetyCheckForLocal() {
         mSettingsActivityTestRule.startSettingsActivity();
         scrollToSetting(withText(R.string.prefs_safety_check));
@@ -130,6 +132,7 @@ public class CredentialManagerIntegrationTest {
         GmsCoreVersionRestriction.RESTRICTION_TYPE_VERSION_GE_22W30
     })
     @DisableIf.Device(type = {UiDisableIf.TABLET}) // https://crbug.com/339278945
+    @DisableFeatures(ChromeFeatureList.SAFETY_HUB)
     public void testUseCredentialManagerFromSafetyCheckForAccount() {
         mSettingsActivityTestRule.startSettingsActivity();
         scrollToSetting(withText(R.string.prefs_safety_check));

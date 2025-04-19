@@ -18,8 +18,6 @@
 
 namespace gl {
 
-const char kGLImplementationDesktopName[] = "desktop";
-const char kGLImplementationAppleName[] = "apple";
 const char kGLImplementationEGLName[] = "egl";
 const char kGLImplementationANGLEName[] = "angle";
 const char kGLImplementationMockName[] = "mock";
@@ -222,14 +220,6 @@ BASE_FEATURE(kDirectCompositionUnlimitedOverlays,
              "DirectCompositionUnlimitedOverlays",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Allow overlay candidates to have resources that are not scanout. These
-// resources will be copied to DComp surfaces in the output device, as needed.
-// This allows testing delegated compositing on versions of Windows that do not
-// support directly scanning out textures.
-BASE_FEATURE(kCopyNonOverlayResourcesToDCompSurfaces,
-             "CopyNonOverlayResourcesToDCompSurfaces",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Allow dual GPU rendering through EGL where supported, i.e., allow a WebGL
 // or WebGPU context to be on the high performance GPU if preferred and Chrome
 // internal rendering to be on the low power GPU.
@@ -264,12 +254,7 @@ BASE_FEATURE(kDefaultANGLEOpenGL,
 // Default to using ANGLE's Metal backend.
 BASE_FEATURE(kDefaultANGLEMetal,
              "DefaultANGLEMetal",
-#if BUILDFLAG(IS_IOS) || (BUILDFLAG(IS_MAC) && defined(ARCH_CPU_ARM64))
-             base::FEATURE_ENABLED_BY_DEFAULT
-#else
-             base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Default to using ANGLE's Vulkan backend.
 BASE_FEATURE(kDefaultANGLEVulkan,
@@ -349,18 +334,12 @@ BASE_FEATURE(kDXGISwapChainPresentInterval0,
              "DXGISwapChainPresentInterval0",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Kill switch using floating point based rounding adjustments in
-// SwapChainPresenter::Adjust* functions.
-BASE_FEATURE(kUseSwapChainPresenterFloatingPointAdjustments,
-             "UseSwapChainPresenterFloatingPointAdjustments",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 bool SupportsEGLDualGPURendering() {
-#if defined(USE_EGL) && (BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC))
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
   return base::FeatureList::IsEnabled(kEGLDualGPURendering);
 #else
   return false;
-#endif  // USE_EGL && (IS_WIN || IS_MAC)
+#endif  // IS_WIN || IS_MAC
 }
 
 }  // namespace features

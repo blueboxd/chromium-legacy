@@ -22,6 +22,14 @@ class VIZ_SERVICE_EXPORT NullRenderer : public DirectRenderer {
                OverlayProcessorInterface* overlay_processor);
   ~NullRenderer() override;
 
+ protected:
+  void SetRenderPassBackingDrawnRect(
+      const AggregatedRenderPassId& render_pass_id,
+      const gfx::Rect& drawn_rect) override {}
+
+  gfx::Rect GetRenderPassBackingDrawnRect(
+      const AggregatedRenderPassId& render_pass_id) const override;
+
  private:
   void SwapBuffers(SwapFrameData swap_frame_data) override;
   bool CanPartialSwap() override;
@@ -36,14 +44,11 @@ class VIZ_SERVICE_EXPORT NullRenderer : public DirectRenderer {
       const AggregatedRenderPassId& render_pass_id) const override;
   gfx::Size GetRenderPassBackingPixelSize(
       const AggregatedRenderPassId& render_pass_id) override;
-  void BindFramebufferToOutputSurface() override {}
-  void BindFramebufferToTexture(
-      const AggregatedRenderPassId render_pass_id) override {}
   void SetScissorTestRect(const gfx::Rect& scissor_rect) override {}
-  void BeginDrawingRenderPass(
-      const AggregatedRenderPass* render_pass,
-      bool needs_clear,
-      const gfx::Rect& render_pass_update_rect) override {}
+  void BeginDrawingRenderPass(const AggregatedRenderPass* render_pass,
+                              bool needs_clear,
+                              const gfx::Rect& render_pass_update_rect,
+                              const gfx::Size& viewport_size) override {}
   void DoDrawQuad(const DrawQuad* quad,
                   const gfx::QuadF* clip_region) override {}
   void BeginDrawingFrame() override;

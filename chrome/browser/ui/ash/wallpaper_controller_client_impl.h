@@ -14,7 +14,6 @@
 #include "base/memory/raw_ptr.h"
 #include "base/scoped_multi_source_observation.h"
 #include "base/scoped_observation.h"
-#include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/ash/file_manager/volume_manager_observer.h"
 #include "chrome/browser/ash/wallpaper_handlers/wallpaper_handlers.h"
 #include "chromeos/ash/components/settings/cros_settings.h"
@@ -28,6 +27,10 @@ class AccountId;
 namespace {
 class WallpaperControllerClientImplTest;
 }
+
+namespace content {
+class WebContents;
+}  // namespace content
 
 namespace wallpaper_handlers {
 class WallpaperFetcherDelegate;
@@ -87,6 +90,11 @@ class WallpaperControllerClientImpl
                   base::OnceCallback<void(const std::string&)>
                       files_id_callback) const override;
   bool IsWallpaperSyncEnabled(const AccountId& account_id) const override;
+
+  void CancelPreviewWallpaper(Profile* profile);
+  void ConfirmPreviewWallpaper(Profile* profile);
+  void MakeOpaque(content::WebContents* web_contents);
+  void MakeTransparent(content::WebContents* web_contents);
 
   // file_manager::VolumeManagerObserver:
   void OnVolumeMounted(ash::MountError error_code,

@@ -5,9 +5,6 @@
 #ifndef ASH_SYSTEM_UNIFIED_GLANCEABLE_TRAY_BUBBLE_VIEW_H_
 #define ASH_SYSTEM_UNIFIED_GLANCEABLE_TRAY_BUBBLE_VIEW_H_
 
-#include <memory>
-#include <vector>
-
 #include "ash/ash_export.h"
 #include "ash/glanceables/classroom/glanceables_classroom_student_view.h"
 #include "ash/glanceables/tasks/glanceables_tasks_view.h"
@@ -15,6 +12,7 @@
 #include "ash/system/tray/tray_bubble_view.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/views/layout/layout_types.h"
 
 namespace ui {
 template <class ItemType>
@@ -33,7 +31,6 @@ struct TaskList;
 
 class CalendarView;
 class Shelf;
-struct GlanceablesClassroomAssignment;
 
 // The bubble associated with the `GlanceableTrayBubble`. This bubble is the
 // container for the child `tasks` and `classroom` glanceables.
@@ -44,6 +41,12 @@ class ASH_EXPORT GlanceableTrayBubbleView
   METADATA_HEADER(GlanceableTrayBubbleView, TrayBubbleView)
 
  public:
+  // Registers syncable user profile prefs with the specified `registry`.
+  static void RegisterUserProfilePrefs(PrefRegistrySimple* registry);
+
+  // Clears any glanceables tray bubble related state from user `pref_services`.
+  static void ClearUserStatePrefs(PrefService* pref_service);
+
   GlanceableTrayBubbleView(const InitParams& init_params, Shelf* shelf);
   GlanceableTrayBubbleView(const GlanceableTrayBubbleView&) = delete;
   GlanceableTrayBubbleView& operator=(const GlanceableTrayBubbleView&) = delete;
@@ -59,18 +62,20 @@ class ASH_EXPORT GlanceableTrayBubbleView
 
   // views::View:
   int GetHeightForWidth(int w) const override;
+  views::SizeBounds GetAvailableSize(const View* child) const override;
 
   // TrayBubbleView:
   void AddedToWidget() override;
   void OnWidgetClosing(views::Widget* widget) override;
 
   // ScreenLayoutObserver:
-  void OnDisplayConfigurationChanged() override;
+  void OnDidApplyDisplayChanges() override;
 
   // GlanceablesTimeManagementBubbleView::Observer:
   void OnExpandStateChanged(
       GlanceablesTimeManagementBubbleView::Context context,
-      bool is_expanded) override;
+      bool is_expanded,
+      bool expand_by_overscroll) override;
 
  private:
   // Creates classroom student view if needed (if the corresponding
@@ -79,6 +84,10 @@ class ASH_EXPORT GlanceableTrayBubbleView
   void AddTaskBubbleViewIfNeeded(
       bool fetch_success,
       const ui::ListModel<api::TaskList>* task_lists);
+
+  // Sets the initial expand states of the child bubbles, which are Tasks and
+  // Classroom.
+  void UpdateChildBubblesInitialExpandState();
 
   // Updates the cached task lists to `task_lists`.
   void UpdateTaskLists(bool fetch_success,
@@ -94,13 +103,6 @@ class ASH_EXPORT GlanceableTrayBubbleView
 
   // Creates `time_management_container_view_` if needed.
   void MaybeCreateTimeManagementContainer();
-
-  // Temporary method for `GlanceablesTimeManagementClassroomStudentData`
-  // feature.
-  void OnPotentialStudentAssignmentsLoaded(
-      bool success,
-      std::vector<std::unique_ptr<GlanceablesClassroomAssignment>> assignments)
-      const;
 
   // Updates `time_management_container_view_` layout according to the number of
   // its children.

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/containers/span.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/test/bind.h"
@@ -14,6 +15,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace safe_browsing {
+
 class ConnectorDataPipeGetterTest : public testing::Test {
  public:
   std::optional<base::File> CreateFile(const std::string& content) {
@@ -21,12 +23,12 @@ class ConnectorDataPipeGetterTest : public testing::Test {
     base::FilePath path = temp_dir_.GetPath().AppendASCII("test.txt");
     base::File file(path, base::File::FLAG_CREATE | base::File::FLAG_READ |
                               base::File::FLAG_WRITE);
-    if (!file.IsValid())
+    if (!file.IsValid()) {
       return std::nullopt;
-
-    if (file.WriteAtCurrentPos(content.data(), content.size()) < 0)
+    }
+    if (!file.WriteAtCurrentPosAndCheck(base::as_byte_span(content))) {
       return std::nullopt;
-
+    }
     return file;
   }
 
@@ -63,10 +65,11 @@ class ConnectorDataPipeGetterTest : public testing::Test {
     body.reserve(expected_size);
     size_t read_chunks = 0;
     while (true) {
-      char buffer[1024];
-      size_t read_size = sizeof(buffer);
+      std::string buffer(1024, '\0');
+      size_t read_size = 0;
       MojoResult result = data_pipe_consumer_->ReadData(
-          buffer, &read_size, MOJO_READ_DATA_FLAG_NONE);
+          MOJO_READ_DATA_FLAG_NONE, base::as_writable_byte_span(buffer),
+          read_size);
       if (result == MOJO_RESULT_SHOULD_WAIT) {
         base::RunLoop().RunUntilIdle();
         continue;
@@ -74,7 +77,7 @@ class ConnectorDataPipeGetterTest : public testing::Test {
       if (result != MOJO_RESULT_OK) {
         break;
       }
-      body.append(buffer, read_size);
+      body.append(std::string_view(buffer).substr(0, read_size));
       ++read_chunks;
       if (max_chunks != 0 && read_chunks == max_chunks)
         break;

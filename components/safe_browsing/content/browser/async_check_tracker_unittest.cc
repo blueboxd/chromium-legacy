@@ -460,4 +460,68 @@ TEST_F(AsyncCheckTrackerTest,
   // tracker currently owns should also be deleted on the SB thread.
 }
 
+class AsyncCheckTrackerTestObserver : public AsyncCheckTracker::Observer {
+ public:
+  void OnAsyncSafeBrowsingCheckCompleted() override {
+    async_check_completed_times_++;
+  }
+  void OnAsyncSafeBrowsingCheckTrackerDestructed() override {
+    tracker_destructed_times_++;
+  }
+  int AsyncCheckCompletedTimes() { return async_check_completed_times_; }
+  int TrackerDestructedTimes() { return tracker_destructed_times_; }
+
+ private:
+  int async_check_completed_times_ = 0;
+  int tracker_destructed_times_ = 0;
+};
+
+class AsyncCheckTrackerObserverTest : public AsyncCheckTrackerTest {
+ protected:
+  AsyncCheckTrackerTestObserver observer_;
+};
+
+TEST_F(AsyncCheckTrackerObserverTest, OnAsyncSafeBrowsingCheckCompleted) {
+  tracker_->AddObserver(&observer_);
+
+  CallTransferUrlChecker(/*navigation_id=*/1);
+  CallPendingCheckerCompleted(/*navigation_id=*/1, /*proceed=*/true,
+                              /*has_post_commit_interstitial_skipped=*/false,
+                              /*all_checks_completed=*/false);
+  // Observer not notified, because all_checks_completed is false.
+  EXPECT_EQ(observer_.AsyncCheckCompletedTimes(), 0);
+
+  CallPendingCheckerCompleted(/*navigation_id=*/1, /*proceed=*/true,
+                              /*has_post_commit_interstitial_skipped=*/false,
+                              /*all_checks_completed=*/true);
+  EXPECT_EQ(observer_.AsyncCheckCompletedTimes(), 1);
+  CallTransferUrlChecker(/*navigation_id=*/2);
+  CallPendingCheckerCompleted(/*navigation_id=*/2, /*proceed=*/true,
+                              /*has_post_commit_interstitial_skipped=*/false,
+                              /*all_checks_completed=*/true);
+  EXPECT_EQ(observer_.AsyncCheckCompletedTimes(), 2);
+
+  tracker_->RemoveObserver(&observer_);
+
+  CallTransferUrlChecker(/*navigation_id=*/3);
+  CallPendingCheckerCompleted(/*navigation_id=*/3, /*proceed=*/true,
+                              /*has_post_commit_interstitial_skipped=*/false,
+                              /*all_checks_completed=*/true);
+  // Observer not notified, because it has removed itself.
+  EXPECT_EQ(observer_.AsyncCheckCompletedTimes(), 2);
+}
+
+TEST_F(AsyncCheckTrackerObserverTest, AsyncCheckTrackerDeletedWhileObserving) {
+  std::unique_ptr<content::WebContents> web_contents = CreateTestWebContents();
+  auto* tracker = AsyncCheckTracker::GetOrCreateForWebContents(
+      web_contents.get(), ui_manager_.get());
+  tracker->AddObserver(&observer_);
+  EXPECT_TRUE(observer_.IsInObserverList());
+
+  web_contents.reset();
+  // Ensure that the observer is auto removed after the tracker is deleted.
+  EXPECT_FALSE(observer_.IsInObserverList());
+  EXPECT_EQ(observer_.TrackerDestructedTimes(), 1);
+}
+
 }  // namespace safe_browsing

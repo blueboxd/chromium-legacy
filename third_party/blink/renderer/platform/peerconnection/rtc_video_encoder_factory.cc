@@ -18,6 +18,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/platform/allow_discouraged_type.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_video_encoder.h"
+#include "third_party/blink/renderer/platform/peerconnection/webrtc_util.h"
 #include "third_party/webrtc/api/video/resolution.h"
 #include "third_party/webrtc/api/video_codecs/h264_profile_level_id.h"
 #include "third_party/webrtc/api/video_codecs/sdp_video_format.h"
@@ -50,38 +51,6 @@ BASE_FEATURE(kMediaFoundationVP9Encoding,
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
-std::optional<media::VideoCodecProfile> WebRTCFormatToCodecProfile(
-    const webrtc::SdpVideoFormat& sdp) {
-  if (sdp.name == "H264") {
-#if !BUILDFLAG(IS_ANDROID)
-    // Enable H264 HW encode for WebRTC when SW fallback is available, which is
-    // checked by kWebRtcH264WithOpenH264FFmpeg flag. This check should be
-    // removed when SW implementation is fully enabled.
-    bool webrtc_h264_sw_enabled = false;
-#if BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
-    webrtc_h264_sw_enabled = base::FeatureList::IsEnabled(
-        blink::features::kWebRtcH264WithOpenH264FFmpeg);
-#endif  // BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
-    if (!webrtc_h264_sw_enabled)
-      return std::nullopt;
-#endif
-
-    return media::VideoCodecProfile::H264PROFILE_MIN;
-  } else if (sdp.name == "VP8") {
-    return media::VideoCodecProfile::VP8PROFILE_MIN;
-  } else if (sdp.name == "VP9") {
-    return media::VideoCodecProfile::VP9PROFILE_MIN;
-  } else if (sdp.name == "AV1") {
-    return media::VideoCodecProfile::AV1PROFILE_MIN;
-  }
-#if BUILDFLAG(RTC_USE_H265)
-  else if (sdp.name == "H265") {
-    return media::VideoCodecProfile::HEVCPROFILE_MIN;
-  }
-#endif  // BUILDFLAG(RTC_USE_H265)
-  return std::nullopt;
-}
-
 // Translate from media::VideoEncodeAccelerator::SupportedProfile to
 // webrtc::SdpVideoFormat, or return nothing if the profile isn't supported.
 std::optional<webrtc::SdpVideoFormat> VEAToWebRTCFormat(
@@ -102,12 +71,18 @@ std::optional<webrtc::SdpVideoFormat> VEAToWebRTCFormat(
     // checked by kWebRtcH264WithOpenH264FFmpeg flag. This check should be
     // removed when SW implementation is fully enabled.
     bool webrtc_h264_sw_enabled = false;
-#if BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
+// TODO(crbug.com/355256378): OpenH264 for encoding and FFmpeg for H264 decoding
+// should be detangled such that software decoding can be enabled without
+// software encoding.
+#if BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS) && \
+    BUILDFLAG(ENABLE_OPENH264)
     webrtc_h264_sw_enabled = base::FeatureList::IsEnabled(
         blink::features::kWebRtcH264WithOpenH264FFmpeg);
-#endif  // BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
-    if (!webrtc_h264_sw_enabled)
+#endif  // BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS) &&
+        // BUILDFLAG(ENABLE_OPENH264)
+    if (!webrtc_h264_sw_enabled) {
       return std::nullopt;
+    }
 #endif
 
     webrtc::H264Profile h264_profile;

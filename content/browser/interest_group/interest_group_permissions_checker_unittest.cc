@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/containers/span.h"
 #include "base/functional/callback.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
@@ -16,6 +17,7 @@
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/test/test_url_loader_factory.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -149,9 +151,8 @@ TEST_P(InterestGroupPermissionsCheckerParamaterizedTest, RequestParameters) {
   EXPECT_EQ(network::mojom::RequestMode::kCors, request.mode);
   EXPECT_EQ(kFrameOrigin, request.request_initiator);
 
-  std::string accept;
-  ASSERT_TRUE(request.headers.GetHeader("Accept", &accept));
-  EXPECT_EQ(accept, "application/json");
+  EXPECT_THAT(request.headers.GetHeader("Accept"),
+              testing::Optional(std::string("application/json")));
 }
 
 TEST_P(InterestGroupPermissionsCheckerParamaterizedTest, HttpError) {
@@ -435,10 +436,8 @@ TEST_P(InterestGroupPermissionsCheckerParamaterizedTest,
     mojo::ScopedDataPipeConsumerHandle body;
     ASSERT_EQ(mojo::CreateDataPipe(response_body.size(), producer_handle, body),
               MOJO_RESULT_OK);
-    size_t bytes_written = response_body.size();
     ASSERT_EQ(MOJO_RESULT_OK,
-              producer_handle->WriteData(response_body.data(), &bytes_written,
-                                         MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
+              producer_handle->WriteAllData(base::as_byte_span(response_body)));
 
     pending_request.client->OnReceiveResponse(std::move(head), std::move(body),
                                               std::nullopt);

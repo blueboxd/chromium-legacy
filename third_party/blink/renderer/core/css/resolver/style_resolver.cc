@@ -60,6 +60,7 @@
 #include "third_party/blink/renderer/core/css/element_rule_collector.h"
 #include "third_party/blink/renderer/core/css/font_face.h"
 #include "third_party/blink/renderer/core/css/out_of_flow_data.h"
+#include "third_party/blink/renderer/core/css/page_margins_style.h"
 #include "third_party/blink/renderer/core/css/page_rule_collector.h"
 #include "third_party/blink/renderer/core/css/part_names.h"
 #include "third_party/blink/renderer/core/css/post_style_update_scope.h"
@@ -134,20 +135,29 @@ bool ShouldStoreOldStyle(const StyleRecalcContext& style_recalc_context,
   // Storing the old style is only relevant if we risk computing the style
   // more than once for the same element. This can happen if we are currently
   // inside a size query container, or doing multiple style resolutions for
-  // position-try-options.
+  // position-try-fallbacks.
+  //
+  // For anchored elements that generate pseudo elements, we also need to store
+  // the old style for animating pseudo elements because style recalc for the
+  // originating anchored elements will always update its pseudo elements,
+  // causing the pseudo element styling to also have multiple passes.
   //
   // If we are not inside a size query container or an element with
-  // position-try-options, we can fall back to the default behavior (in
+  // position-try-fallbacks, we can fall back to the default behavior (in
   // CSSAnimations) of using the current style on Element as the old style.
   //
   // TODO(crbug.com/40943044): We also need to check whether we are a descendant
-  // of an element with position-try-options to cover the case where the
+  // of an element with position-try-fallbacks to cover the case where the
   // descendant explicitly inherits insets or other valid @position-try
-  // properties from the element with position-try-options. This applies to
+  // properties from the element with position-try-fallbacks. This applies to
   // descendants of elements with anchor queries as well.
   return (style_recalc_context.container ||
           state.StyleBuilder().HasAnchorFunctions() ||
-          state.StyleBuilder().GetPositionTryOptions() != nullptr) &&
+          state.StyleBuilder().PositionAnchor() ||
+          (state.IsForPseudoElement() &&
+           (state.ParentStyle()->HasAnchorFunctions() ||
+            state.ParentStyle()->PositionAnchor())) ||
+          state.StyleBuilder().GetPositionTryFallbacks() != nullptr) &&
          state.CanAffectAnimations();
 }
 
@@ -465,7 +475,7 @@ static CSSPropertyValueSet* UniversalOverlayUserAgentDeclaration() {
 // UA rule: ::scroll-marker-group { contain: size !important; }
 // The generation of ::scroll-marker pseudo-elements
 // cannot invalidate layout outside of this pseudo-element.
-static CSSPropertyValueSet* ScrollMarkersGroupUserAgentDeclaration() {
+static CSSPropertyValueSet* ScrollMarkerGroupUserAgentDeclaration() {
   DEFINE_STATIC_LOCAL(
       Persistent<MutableCSSPropertyValueSet>, decl,
       (MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLStandardMode)));
@@ -874,11 +884,8 @@ void StyleResolver::ForEachUARulesForElement(const Element& element,
   CSSDefaultStyleSheets& default_style_sheets =
       CSSDefaultStyleSheets::Instance();
   if (!print_media_type_) {
-    if (LIKELY(element.IsHTMLElement() || element.IsVTTElement())) {
+    if (element.IsHTMLElement() || element.IsVTTElement()) [[likely]] {
       func(default_style_sheets.DefaultHtmlStyle());
-      if (UNLIKELY(IsInMediaUAShadow(element))) {
-        func(default_style_sheets.DefaultMediaControlsStyle());
-      }
     } else if (element.IsSVGElement()) {
       func(default_style_sheets.DefaultSVGStyle());
     } else if (element.namespaceURI() == mathml_names::kNamespaceURI) {
@@ -940,6 +947,21 @@ void StyleResolver::MatchUARules(const Element& element,
   if (!match_request.IsEmpty()) {
     collector.ClearMatchedRules();
     collector.CollectMatchingRules(match_request);
+    collector.SortAndTransferMatchedRules(
+        CascadeOrigin::kUserAgent, /*is_vtt_embedded_style=*/false, tracker_);
+  }
+
+  if (IsInMediaUAShadow(element)) {
+    RuleSet* rule_set =
+        IsForcedColorsModeEnabled()
+            ? CSSDefaultStyleSheets::Instance()
+                  .DefaultForcedColorsMediaControlsStyle()
+            : CSSDefaultStyleSheets::Instance().DefaultMediaControlsStyle();
+    // Match media controls UA shadow rules in separate UA origin, as they
+    // should override UA styles regardless of specificity.
+    MatchRequest media_controls_request(rule_set);
+    collector.ClearMatchedRules();
+    collector.CollectMatchingRules(media_controls_request);
     collector.SortAndTransferMatchedRules(
         CascadeOrigin::kUserAgent, /*is_vtt_embedded_style=*/false, tracker_);
   }
@@ -1447,11 +1469,6 @@ void StyleResolver::ApplyBaseStyleNoCache(
     cascade.MutableMatchResult().AddMatchedProperties(
         UniversalOverlayUserAgentDeclaration(), CascadeOrigin::kUserAgent);
 
-    if (element->IsScrollMarkerGroupPseudoElement()) {
-      cascade.MutableMatchResult().AddMatchedProperties(
-          ScrollMarkersGroupUserAgentDeclaration(), CascadeOrigin::kUserAgent);
-    }
-
     // This adds a CSSInitialColorValue to the cascade for the document
     // element. The CSSInitialColorValue will resolve to a color-scheme
     // sensitive color in Color::ApplyValue. It is added at the start of the
@@ -1465,6 +1482,11 @@ void StyleResolver::ApplyBaseStyleNoCache(
     }
   }
 
+  if (element->IsScrollMarkerGroupPseudoElement()) {
+    cascade.MutableMatchResult().AddMatchedProperties(
+        ScrollMarkerGroupUserAgentDeclaration(), CascadeOrigin::kUserAgent);
+  }
+
   ElementRuleCollector collector(state.ElementContext(), style_recalc_context,
                                  selector_filter_, cascade.MutableMatchResult(),
                                  state.InsideLink());
@@ -1475,9 +1497,7 @@ void StyleResolver::ApplyBaseStyleNoCache(
         style_request.pseudo_id);
   }
 
-  if (!state.ParentStyle() ||
-      (style_request.pseudo_id == kPseudoIdBackdrop &&
-       !RuntimeEnabledFeatures::BackdropInheritOriginatingEnabled())) {
+  if (!state.ParentStyle()) {
     // We have no parent so use the initial style as the parent. Note that we
     // need to do this before MPC lookup, so that the parent comparison (to
     // determine if we have a hit on inherited properties) is correctly
@@ -1529,7 +1549,7 @@ void StyleResolver::ApplyBaseStyleNoCache(
 
   if (!cache_success.IsFullCacheHit()) {
     ApplyPropertiesFromCascade(state, cascade, cache_success);
-    MaybeAddToMatchedPropertiesCache(state, cache_success, result);
+    MaybeAddToMatchedPropertiesCache(state, cache_success);
   }
 
   // TODO(crbug.com/1024156): do this for CustomHighlightNames too, so we
@@ -1586,6 +1606,11 @@ void StyleResolver::ApplyBaseStyleNoCache(
   }
   state.StyleBuilder().SetPseudoElementStyles(
       match_result.PseudoElementStyles());
+
+  if (RuntimeEnabledFeatures::CSSAdvancedAttrFunctionEnabled() &&
+      state.HasAttrFunction()) {
+    state.StyleBuilder().SetHasAttrFunction();
+  }
 
   // Now we're done with all operations that may overwrite InsideLink,
   // so we can set it once and for all.
@@ -1790,7 +1815,8 @@ const ComputedStyle* StyleResolver::StyleForPage(uint32_t page_index,
 
   STACK_UNINITIALIZED StyleCascade cascade(state);
 
-  PageRuleCollector collector(parent_style, page_index, page_name,
+  PageRuleCollector collector(parent_style, CSSAtRuleID::kCSSAtRulePage,
+                              page_index, page_name,
                               cascade.MutableMatchResult());
 
   collector.MatchPageRules(
@@ -1847,6 +1873,82 @@ const ComputedStyle* StyleResolver::StyleForPage(uint32_t page_index,
   return state.TakeStyle();
 }
 
+void StyleResolver::StyleForPageMargins(const ComputedStyle& page_style,
+                                        uint32_t page_index,
+                                        const AtomicString& page_name,
+                                        PageMarginsStyle* margins_style) {
+  Element* root_element = GetDocument().documentElement();
+  if (!root_element) {
+    return;
+  }
+
+  struct Entry {
+    PageMarginsStyle::MarginSlot slot;
+    CSSAtRuleID at_rule_id;
+  };
+  const Entry table[] = {
+      {PageMarginsStyle::TopLeft, CSSAtRuleID::kCSSAtRuleTopLeft},
+      {PageMarginsStyle::TopCenter, CSSAtRuleID::kCSSAtRuleTopCenter},
+      {PageMarginsStyle::TopRight, CSSAtRuleID::kCSSAtRuleTopRight},
+      {PageMarginsStyle::RightTop, CSSAtRuleID::kCSSAtRuleRightTop},
+      {PageMarginsStyle::RightMiddle, CSSAtRuleID::kCSSAtRuleRightMiddle},
+      {PageMarginsStyle::RightBottom, CSSAtRuleID::kCSSAtRuleRightBottom},
+      {PageMarginsStyle::BottomLeft, CSSAtRuleID::kCSSAtRuleBottomLeft},
+      {PageMarginsStyle::BottomCenter, CSSAtRuleID::kCSSAtRuleBottomCenter},
+      {PageMarginsStyle::BottomRight, CSSAtRuleID::kCSSAtRuleBottomRight},
+      {PageMarginsStyle::LeftTop, CSSAtRuleID::kCSSAtRuleLeftTop},
+      {PageMarginsStyle::LeftMiddle, CSSAtRuleID::kCSSAtRuleLeftMiddle},
+      {PageMarginsStyle::LeftBottom, CSSAtRuleID::kCSSAtRuleLeftBottom},
+      {PageMarginsStyle::TopLeftCorner, CSSAtRuleID::kCSSAtRuleTopLeftCorner},
+      {PageMarginsStyle::TopRightCorner, CSSAtRuleID::kCSSAtRuleTopRightCorner},
+      {PageMarginsStyle::BottomRightCorner,
+       CSSAtRuleID::kCSSAtRuleBottomRightCorner},
+      {PageMarginsStyle::BottomLeftCorner,
+       CSSAtRuleID::kCSSAtRuleBottomLeftCorner}};
+
+  for (const Entry& entry : table) {
+    StyleResolverState margin_state(GetDocument(), *root_element,
+                                    /*StyleRecalcContext=*/nullptr,
+                                    StyleRequest(&page_style));
+    margin_state.CreateNewStyle(*InitialStyleForElement(), page_style);
+    margin_state.StyleBuilder().SetDisplay(EDisplay::kBlock);
+    margin_state.StyleBuilder().SetIsPageMarginBox(true);
+
+    STACK_UNINITIALIZED StyleCascade margin_cascade(margin_state);
+    PageRuleCollector margin_rule_collector(
+        &page_style, entry.at_rule_id, page_index, page_name,
+        margin_cascade.MutableMatchResult());
+    margin_rule_collector.MatchPageRules(
+        CSSDefaultStyleSheets::Instance().DefaultPrintStyle(),
+        CascadeOrigin::kUserAgent, /*tree_scope=*/nullptr,
+        /*layer_map=*/nullptr);
+
+    if (ScopedStyleResolver* scoped_resolver =
+            GetDocument().GetScopedStyleResolver()) {
+      scoped_resolver->MatchPageRules(margin_rule_collector);
+    }
+
+    margin_cascade.Apply();
+
+    margin_state.LoadPendingResources();
+
+    (*margins_style)[entry.slot] = margin_state.TakeStyle();
+  }
+}
+
+void StyleResolver::LoadPaginationResources() {
+  // Compute style for pages and page margins (LoadPendingResources()), to
+  // initiate loading of resources only needed by printing.
+  //
+  // TODO(crbug.com/346799729): Make sure that all resources needed are
+  // loaded. As it is now, only resources needed on the first page (with no page
+  // name) will be loaded. Any resource inside a non-empty @page selector
+  // (unless it happens to match the first page) will be missing.
+  const ComputedStyle* page_style = StyleForPage(0, /*page_name=*/g_null_atom);
+  PageMarginsStyle ignored;
+  StyleForPageMargins(*page_style, 0, /*page_name=*/g_null_atom, &ignored);
+}
+
 const ComputedStyle& StyleResolver::InitialStyle() const {
   DCHECK(initial_style_);
   return *initial_style_;
@@ -1866,7 +1968,7 @@ ComputedStyleBuilder StyleResolver::CreateComputedStyleBuilderInheritingFrom(
 float StyleResolver::InitialZoom() const {
   const Document& document = GetDocument();
   if (const LocalFrame* frame = document.GetFrame()) {
-    return !document.Printing() ? frame->PageZoomFactor() : 1;
+    return !document.Printing() ? frame->LayoutZoomFactor() : 1;
   }
   return 1;
 }
@@ -1968,8 +2070,8 @@ Element* StyleResolver::FindContainerForElement(
     const TreeScope* selector_tree_scope) {
   DCHECK(element);
   return ContainerQueryEvaluator::FindContainer(
-      element->ParentOrShadowHostElement(), container_selector,
-      selector_tree_scope);
+      ContainerQueryEvaluator::ParentContainerCandidateElement(*element),
+      container_selector, selector_tree_scope);
 }
 
 RuleIndexList* StyleResolver::PseudoCSSRulesForElement(
@@ -2369,8 +2471,7 @@ StyleResolver::CacheSuccess StyleResolver::ApplyMatchedCache(
 
 void StyleResolver::MaybeAddToMatchedPropertiesCache(
     StyleResolverState& state,
-    const CacheSuccess& cache_success,
-    const MatchResult& match_result) {
+    const CacheSuccess& cache_success) {
   state.LoadPendingResources();
 
   // NOTE: We replace everything that isn't a full cache hit. There are cases
@@ -2453,7 +2554,7 @@ bool StyleResolver::CanReuseBaseComputedStyle(const StyleResolverState& state) {
   // TODO(crbug.com/40943044): If we need to disable the optimization for
   // elements with position-fallback/anchor(), we probably need to disable
   // for descendants of such elements as well.
-  if (base_style->GetPositionTryOptions() != nullptr) {
+  if (base_style->GetPositionTryFallbacks() != nullptr) {
     return false;
   }
 
@@ -3062,18 +3163,12 @@ void StyleResolver::PropagateStyleToViewport() {
                    nullptr);
     PROPAGATE_FROM(document_element_style, ForcedColorAdjust,
                    SetForcedColorAdjust, EForcedColorAdjust::kAuto);
-    if (RuntimeEnabledFeatures::UsedColorSchemeRootScrollbarsEnabled()) {
-      PROPAGATE_FROM(document_element_style, ColorSchemeFlagsIsNormal,
-                     SetColorSchemeFlagsIsNormal, false);
-    }
+    PROPAGATE_FROM(document_element_style, ColorSchemeFlagsIsNormal,
+                   SetColorSchemeFlagsIsNormal, false);
   }
 
   // scroll-start
   {
-    PROPAGATE_FROM(document_element_style, ScrollStartBlock,
-                   SetScrollStartBlock, ScrollStartData());
-    PROPAGATE_FROM(document_element_style, ScrollStartInline,
-                   SetScrollStartInline, ScrollStartData());
     PROPAGATE_FROM(document_element_style, ScrollStartX, SetScrollStartX,
                    ScrollStartData());
     PROPAGATE_FROM(document_element_style, ScrollStartY, SetScrollStartY,

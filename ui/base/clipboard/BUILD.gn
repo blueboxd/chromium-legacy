@@ -52,7 +52,12 @@ component("clipboard_types") {
     frameworks += [ "Foundation.framework" ]
   }
   if (is_mac) {
-    frameworks += [ "AppKit.framework" ]
+    frameworks += [
+      "AppKit.framework",
+    ]
+    weak_frameworks = [
+      "UniformTypeIdentifiers.framework",
+    ]
   }
 }
 
@@ -171,6 +176,9 @@ component("clipboard") {
     frameworks = [
       "AppKit.framework",
       "CoreFoundation.framework",
+    ]
+    weak_frameworks = [
+      "UniformTypeIdentifiers.framework",
     ]
   }
 }

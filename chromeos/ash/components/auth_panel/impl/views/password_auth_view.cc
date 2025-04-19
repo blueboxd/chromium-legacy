@@ -7,16 +7,16 @@
 #include <memory>
 #include <optional>
 
+#include "ash/auth/views/auth_textfield.h"
 #include "ash/login/ui/arrow_button_view.h"
 #include "ash/login/ui/non_accessible_view.h"
+#include "ash/public/cpp/ime_controller.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/style/ash_color_id.h"
 #include "ash/style/system_textfield_controller.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/ash/components/auth_panel/impl/auth_factor_store.h"
 #include "chromeos/ash/components/auth_panel/impl/auth_panel_event_dispatcher.h"
-#include "chromeos/ash/components/auth_panel/impl/views/login_textfield.h"
 #include "chromeos/ash/components/auth_panel/impl/views/view_size_constants.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/base/ime/text_input_type.h"
@@ -24,35 +24,34 @@
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
+#include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
 #include "ui/gfx/canvas.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/highlight_border.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/view_class_properties.h"
 
-namespace {
-
-ui::ColorId GetEnabledIconColorId() {
-  const bool is_jelly = chromeos::features::IsJellyrollEnabled();
-  return is_jelly ? static_cast<ui::ColorId>(cros_tokens::kCrosSysOnSurface)
-                  : ash::kColorAshIconColorPrimary;
-}
-
-ui::ColorId GetDisabledIconColorId() {
-  const bool is_jelly = chromeos::features::IsJellyrollEnabled();
-  return is_jelly ? static_cast<ui::ColorId>(cros_tokens::kCrosSysDisabled)
-                  : ash::kColorAshIconPrimaryDisabledColor;
-}
-
-}  // namespace
-
 namespace ash {
+
+views::Textfield* PasswordAuthView::TestApi::GetPasswordTextfield() {
+  auto* password_auth_view =
+      static_cast<PasswordAuthView*>(password_auth_view_);
+  return static_cast<AuthTextfield*>(password_auth_view->auth_textfield_);
+}
+
+views::View* PasswordAuthView::TestApi::GetSubmitPasswordButton() {
+  auto* password_auth_view =
+      static_cast<PasswordAuthView*>(password_auth_view_);
+  return password_auth_view->submit_button_;
+}
 
 // The login password row contains the password textfield and different buttons
 // and indicators (easy unlock, display password, caps lock enabled).
@@ -61,51 +60,22 @@ class PasswordAuthView::LoginPasswordRow : public views::View {
 
  public:
   LoginPasswordRow() {
-    if (chromeos::features::IsJellyrollEnabled()) {
       SetBackground(views::CreateThemedRoundedRectBackground(
           cros_tokens::kCrosSysSystemBaseElevated,
           kLoginPasswordRowRoundedRectRadius));
       SetBorder(std::make_unique<views::HighlightBorder>(
           kLoginPasswordRowRoundedRectRadius,
           views::HighlightBorder::Type::kHighlightBorderNoShadow));
-    }
   }
 
   ~LoginPasswordRow() override = default;
   LoginPasswordRow(const LoginPasswordRow&) = delete;
   LoginPasswordRow& operator=(const LoginPasswordRow&) = delete;
 
-  // views::View:
-  void OnPaint(gfx::Canvas* canvas) override {
-    if (!chromeos::features::IsJellyrollEnabled()) {
-      views::View::OnPaint(canvas);
-      cc::PaintFlags flags;
-      flags.setStyle(cc::PaintFlags::kFill_Style);
-      flags.setColor(GetColorProvider()->GetColor(
-          kColorAshControlBackgroundColorInactive));
-      canvas->DrawRoundRect(GetContentsBounds(), kPasswordRowCornerRadiusDp,
-                            flags);
-    }
-  }
 };
 
 BEGIN_METADATA(PasswordAuthView, LoginPasswordRow)
 END_METADATA
-
-PasswordAuthView::TextfieldContentsChangedListener ::
-    TextfieldContentsChangedListener(SystemTextfield* textfield,
-                                     PasswordAuthView* password_auth_view)
-    : SystemTextfieldController(textfield),
-      password_auth_view_(password_auth_view) {}
-
-PasswordAuthView::TextfieldContentsChangedListener ::
-    ~TextfieldContentsChangedListener() = default;
-
-void PasswordAuthView::TextfieldContentsChangedListener::ContentsChanged(
-    views::Textfield* sender,
-    const std::u16string& new_contents) {
-  password_auth_view_->ContentsChanged(new_contents);
-}
 
 void PasswordAuthView::ConfigureRootLayout() {
   // Contains the password layout on the left and the submit button on the
@@ -143,6 +113,8 @@ void PasswordAuthView::CreateAndConfigurePasswordRow() {
       views::BoxLayout::CrossAxisAlignment::kCenter);
   password_row_layout_ = password_row_->SetLayoutManager(std::move(layout));
 
+  views::FocusRing::Install(password_row_);
+
   // Make the password row fill the view.
   password_row_container_layout->SetFlexForView(password_row_, 1);
 }
@@ -155,9 +127,9 @@ void PasswordAuthView::CreateAndConfigureCapslockIcon() {
   capslock_icon_->SetVisible(false);
 
   capslock_icon_highlighted_ = ui::ImageModel::FromVectorIcon(
-      kLockScreenCapsLockIcon, GetEnabledIconColorId());
+      kLockScreenCapsLockIcon, cros_tokens::kCrosSysOnSurface);
   capslock_icon_blurred_ = ui::ImageModel::FromVectorIcon(
-      kLockScreenCapsLockIcon, GetDisabledIconColorId());
+      kLockScreenCapsLockIcon, cros_tokens::kCrosSysDisabled);
 }
 
 void PasswordAuthView::CreateAndConfigureTextfieldContainer() {
@@ -169,18 +141,14 @@ void PasswordAuthView::CreateAndConfigureTextfieldContainer() {
 
   // Password textfield. We control the textfield size by sizing the parent
   // view, as the textfield will expand to fill it.
-  login_textfield_ =
-      textfield_container->AddChildView(std::make_unique<LoginTextfield>());
+  auth_textfield_ = textfield_container->AddChildView(
+      std::make_unique<AuthTextfield>(AuthTextfield::AuthType::kPassword));
 
-  login_textfield_->SetDelegate(this);
+  auth_textfield_->AddObserver(this);
 
-  login_textfield_->set_controller(contents_changed_listener_.get());
-  login_textfield_->SetPlaceholderText(
+  auth_textfield_->SetPlaceholderText(
       l10n_util::GetStringUTF16(IDS_ASH_IN_SESSION_AUTH_PASSWORD_PLACEHOLDER));
-
-  contents_changed_listener_ =
-      std::make_unique<TextfieldContentsChangedListener>(login_textfield_,
-                                                         this);
+  auth_textfield_->SetFocusBehavior(FocusBehavior::ALWAYS);
 
   password_row_layout_->SetFlexForView(textfield_container, 1);
 }
@@ -190,10 +158,10 @@ void PasswordAuthView::CreateAndConfigureSubmitButton() {
       base::BindRepeating(&PasswordAuthView::OnSubmitButtonPressed,
                           base::Unretained(this)),
       kSubmitButtonContentSizeDp));
-  submit_button_->SetBackgroundColorId(kColorAshControlBackgroundColorInactive);
+  submit_button_->SetBackgroundColorId(cros_tokens::kCrosSysSystemOnBase);
   submit_button_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_ASH_LOGIN_SUBMIT_BUTTON_ACCESSIBLE_NAME));
-  submit_button_->SetAccessibleName(
+  submit_button_->GetViewAccessibility().SetName(
       l10n_util::GetStringUTF16(IDS_ASH_LOGIN_SUBMIT_BUTTON_ACCESSIBLE_NAME));
   submit_button_->SetEnabled(false);
 }
@@ -214,11 +182,14 @@ void PasswordAuthView::CreateAndConfigureDisplayPasswordButton() {
       ->SetColorId(ui::kColorAshFocusRing);
 
   const ui::ImageModel invisible_icon = ui::ImageModel::FromVectorIcon(
-      kLockScreenPasswordInvisibleIcon, GetEnabledIconColorId(), kIconSizeDp);
+      kLockScreenPasswordInvisibleIcon, cros_tokens::kCrosSysOnSurface,
+      kIconSizeDp);
   const ui::ImageModel visible_icon = ui::ImageModel::FromVectorIcon(
-      kLockScreenPasswordVisibleIcon, GetEnabledIconColorId(), kIconSizeDp);
+      kLockScreenPasswordVisibleIcon, cros_tokens::kCrosSysOnSurface,
+      kIconSizeDp);
   const ui::ImageModel visible_icon_disabled = ui::ImageModel::FromVectorIcon(
-      kLockScreenPasswordVisibleIcon, GetDisabledIconColorId(), kIconSizeDp);
+      kLockScreenPasswordVisibleIcon, cros_tokens::kCrosSysDisabled,
+      kIconSizeDp);
   display_password_button_->SetImageModel(views::Button::STATE_NORMAL,
                                           visible_icon);
   display_password_button_->SetImageModel(views::Button::STATE_DISABLED,
@@ -234,30 +205,37 @@ PasswordAuthView::PasswordAuthView(AuthPanelEventDispatcher* dispatcher,
     : dispatcher_(dispatcher) {
   auth_factor_store_subscription_ = store->Subscribe(base::BindRepeating(
       &PasswordAuthView::OnStateChanged, weak_ptr_factory_.GetWeakPtr()));
-  input_methods_observer_.Observe(Shell::Get()->ime_controller());
+  input_methods_observer_.Observe(ImeController::Get());
 
   ConfigureRootLayout();
   CreateAndConfigurePasswordRow();
-  CreateAndConfigureTextfieldContainer();
   CreateAndConfigureCapslockIcon();
+  CreateAndConfigureTextfieldContainer();
   CreateAndConfigureDisplayPasswordButton();
   CreateAndConfigureSubmitButton();
 }
 
 PasswordAuthView::~PasswordAuthView() {
-  login_textfield_->SetDelegate(nullptr);
+  auth_textfield_->RemoveObserver(this);
 }
 
 AshAuthFactor PasswordAuthView::GetFactor() {
   return AshAuthFactor::kGaiaPassword;
 }
 
-bool PasswordAuthView::OnKeyPressed(const ui::KeyEvent& event) {
-  if (event.key_code() == ui::KeyboardCode::VKEY_RETURN) {
-    OnSubmitButtonPressed();
-    return true;
-  }
-  return false;
+void PasswordAuthView::RequestFocus() {
+  auth_textfield_->RequestFocus();
+}
+
+void PasswordAuthView::OnSubmit() {
+  OnSubmitButtonPressed();
+}
+
+void PasswordAuthView::OnEscape() {
+  dispatcher_->DispatchEvent(AuthPanelEventDispatcher::UserAction{
+      AuthPanelEventDispatcher::UserAction::Type::
+          kEscapePressedOnPasswordTextfield,
+      std::nullopt});
 }
 
 void PasswordAuthView::OnCapsLockChanged(bool enabled) {
@@ -278,12 +256,12 @@ void PasswordAuthView::OnDisplayPasswordButtonPressed() {
       std::nullopt});
 }
 
-void PasswordAuthView::ContentsChanged(const std::u16string& new_contents) {
+void PasswordAuthView::OnContentsChanged(const std::u16string& new_contents) {
   // TODO(b/288692954): switch to variant-based implementation of event objects.
   dispatcher_->DispatchEvent(AuthPanelEventDispatcher::UserAction{
       AuthPanelEventDispatcher::UserAction::Type::
           kPasswordTextfieldContentsChanged,
-      base::UTF16ToUTF8(login_textfield_->GetText())});
+      base::UTF16ToUTF8(auth_textfield_->GetText())});
 }
 
 gfx::Size PasswordAuthView::CalculatePreferredSize(
@@ -300,14 +278,18 @@ void PasswordAuthView::OnStateChanged(const AuthFactorStore::State& state) {
   CHECK(state.password_view_state_.has_value());
   const auto& password_view_state = state.password_view_state_.value();
 
-  UpdateTextfield(password_view_state.login_textfield_state_);
+  if (state.password_view_state_->is_password_textfield_focused_) {
+    RequestFocus();
+  }
 
-  const auto& password = password_view_state.login_textfield_state_.password_;
+  UpdateTextfield(password_view_state.auth_textfield_state_);
+
+  const auto& password = password_view_state.auth_textfield_state_.password_;
 
   bool is_display_password_button_enabled =
       password_view_state.is_factor_enabled_ && !password.empty();
   bool is_display_password_button_toggled =
-      password_view_state.login_textfield_state_.is_password_visible_;
+      password_view_state.auth_textfield_state_.is_password_visible_;
 
   display_password_button_->SetEnabled(is_display_password_button_enabled);
 
@@ -320,7 +302,8 @@ void PasswordAuthView::OnStateChanged(const AuthFactorStore::State& state) {
 
   capslock_icon_->SetVisible(password_view_state.is_capslock_on_);
 
-  SetCapsLockIconHighlighted(password_view_state.is_capslock_icon_highlighted_);
+  SetCapsLockIconHighlighted(
+      password_view_state.is_password_textfield_focused_);
 }
 
 void PasswordAuthView::SetCapsLockIconHighlighted(bool highlight) {
@@ -341,16 +324,13 @@ void PasswordAuthView::OnTextfieldFocus() {
 }
 
 void PasswordAuthView::UpdateTextfield(
-    const AuthFactorStore::State::LoginTextfieldState& login_textfield_state) {
-  login_textfield_->SetReadOnly(login_textfield_state.is_read_only);
+    const AuthFactorStore::State::AuthTextfieldState& auth_textfield_state) {
+  auth_textfield_->SetReadOnly(auth_textfield_state.is_read_only);
+  auth_textfield_->SetTextVisible(auth_textfield_state.is_password_visible_);
 
-  login_textfield_->SetTextInputType(login_textfield_state.is_password_visible_
-                                         ? ui::TEXT_INPUT_TYPE_NULL
-                                         : ui::TEXT_INPUT_TYPE_PASSWORD);
-
-  if (auto new_text = base::UTF8ToUTF16(login_textfield_state.password_);
-      new_text != login_textfield_->GetText()) {
-    login_textfield_->SetText(new_text);
+  if (auto new_text = base::UTF8ToUTF16(auth_textfield_state.password_);
+      new_text != auth_textfield_->GetText()) {
+    auth_textfield_->SetText(new_text);
   }
 }
 

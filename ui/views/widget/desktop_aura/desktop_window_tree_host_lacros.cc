@@ -95,7 +95,7 @@ bool IsImmersive(ui::PlatformFullscreenType type) {
 
 gfx::RoundedCornersF GetWindowCornerRadii(
     aura::Window* window,
-    ui::WaylandExtension* wayland_extension) {
+    ui::WaylandToplevelExtension* wayland_extension) {
   if (!wayland_extension) {
     return gfx::RoundedCornersF();
   }
@@ -124,15 +124,18 @@ DesktopWindowTreeHostLacros::DesktopWindowTreeHostLacros(
 
 DesktopWindowTreeHostLacros::~DesktopWindowTreeHostLacros() = default;
 
-ui::WaylandExtension* DesktopWindowTreeHostLacros::GetWaylandExtension() {
-  return platform_window() ? ui::GetWaylandExtension(*(platform_window()))
-                           : nullptr;
+ui::WaylandToplevelExtension*
+DesktopWindowTreeHostLacros::GetWaylandToplevelExtension() {
+  return platform_window()
+             ? ui::GetWaylandToplevelExtension(*(platform_window()))
+             : nullptr;
 }
 
-const ui::WaylandExtension* DesktopWindowTreeHostLacros::GetWaylandExtension()
-    const {
-  return platform_window() ? ui::GetWaylandExtension(*(platform_window()))
-                           : nullptr;
+const ui::WaylandToplevelExtension*
+DesktopWindowTreeHostLacros::GetWaylandToplevelExtension() const {
+  return platform_window()
+             ? ui::GetWaylandToplevelExtension(*(platform_window()))
+             : nullptr;
 }
 
 void DesktopWindowTreeHostLacros::OnNativeWidgetCreated(
@@ -142,15 +145,16 @@ void DesktopWindowTreeHostLacros::OnNativeWidgetCreated(
   platform_window()->SetUseNativeFrame(false);
 }
 
-void DesktopWindowTreeHostLacros::InitModalType(ui::ModalType modal_type) {
+void DesktopWindowTreeHostLacros::InitModalType(
+    ui::mojom::ModalType modal_type) {
   if (ui::GetSystemModalExtension(*(platform_window()))) {
     ui::GetSystemModalExtension(*(platform_window()))
-        ->SetSystemModal(modal_type == ui::MODAL_TYPE_SYSTEM);
+        ->SetSystemModal(modal_type == ui::mojom::ModalType::kSystem);
   }
 
   switch (modal_type) {
-    case ui::MODAL_TYPE_NONE:
-    case ui::MODAL_TYPE_SYSTEM:
+    case ui::mojom::ModalType::kNone:
+    case ui::mojom::ModalType::kSystem:
       break;
     default:
       // TODO(erg): Figure out under what situations |modal_type| isn't
@@ -189,6 +193,12 @@ void DesktopWindowTreeHostLacros::OnFullscreenTypeChanged(
 void DesktopWindowTreeHostLacros::OnOverviewModeChanged(bool in_overview) {
   GetContentWindow()->SetProperty(chromeos::kIsShowingInOverviewKey,
                                   in_overview);
+
+  // Window corner radius depends on whether the window is in overview mode or
+  // not. Once the overview property has been updated, the browser window
+  // corners need to be updated.
+  // See `chromeos::GetFrameCornerRadius()` for more details.
+  UpdateWindowHints();
 }
 
 void DesktopWindowTreeHostLacros::OnTooltipShownOnServer(
@@ -207,9 +217,15 @@ void DesktopWindowTreeHostLacros::OnTooltipHiddenOnServer() {
 }
 
 void DesktopWindowTreeHostLacros::OnBoundsChanged(const BoundsChange& change) {
+  // DesktopWindowTreeHostPlatform::OnBoundsChanged() may result in |this| being
+  // deleted. As an extra safety guard, keep track of `this` with a weak
+  // pointer, and only call UpdateWindowHints() if it still exists.
+  auto weak_this = weak_factory_.GetWeakPtr();
   DesktopWindowTreeHostPlatform::OnBoundsChanged(change);
 
-  UpdateWindowHints();
+  if (weak_this.get()) {
+    UpdateWindowHints();
+  }
 }
 
 void DesktopWindowTreeHostLacros::AddAdditionalInitProperties(
@@ -233,7 +249,7 @@ void DesktopWindowTreeHostLacros::OnWindowPropertyChanged(aura::Window* window,
                                                           intptr_t old) {
   CHECK_EQ(GetContentWindow(), window);
   if (key == aura::client::kTopViewInset) {
-    if (auto* wayland_extension = GetWaylandExtension()) {
+    if (auto* wayland_extension = GetWaylandToplevelExtension()) {
       wayland_extension->SetTopInset(
           GetContentWindow()->GetProperty(aura::client::kTopViewInset));
     }
@@ -281,7 +297,7 @@ void DesktopWindowTreeHostLacros::UpdateWindowHints() {
 
   aura::Window* native_window = GetWidget()->GetNativeWindow();
 
-  auto* wayland_extension = ui::GetWaylandExtension(*platform_window());
+  auto* wayland_extension = ui::GetWaylandToplevelExtension(*platform_window());
   const gfx::RoundedCornersF window_radii =
       GetWindowCornerRadii(native_window, wayland_extension);
 

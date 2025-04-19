@@ -177,14 +177,17 @@ DawnRepresentationDXGISwapChain::~DawnRepresentationDXGISwapChain() {
 
 wgpu::Texture DawnRepresentationDXGISwapChain::BeginAccess(
     wgpu::TextureUsage usage,
+    wgpu::TextureUsage internal_usage,
     const gfx::Rect& update_rect) {
   auto* swapchain_backing = static_cast<DXGISwapChainImageBacking*>(backing());
-  texture_ = swapchain_backing->BeginAccessDawn(device_, usage, update_rect);
+  texture_ = swapchain_backing->BeginAccessDawn(device_, usage, internal_usage,
+                                                update_rect);
   return texture_;
 }
 
 wgpu::Texture DawnRepresentationDXGISwapChain::BeginAccess(
-    wgpu::TextureUsage usage) {
+    wgpu::TextureUsage usage,
+    wgpu::TextureUsage internal_usage) {
   NOTREACHED_NORETURN();
 }
 

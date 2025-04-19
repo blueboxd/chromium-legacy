@@ -166,6 +166,9 @@ enum ShellWindowId {
   // notifier elements such as notification popups, toasts and system nudges.
   kShellWindowId_SettingBubbleContainer,
 
+  // The container for the live caption window.
+  kShellWindowId_LiveCaptionContainer,
+
   // The container for help bubbles which are anchored to views for the purpose
   // of user education. In the case of the Welcome Tour, which walks new users
   // through ChromeOS System UI, a background blur will be applied to the
@@ -215,10 +218,6 @@ enum ShellWindowId {
 enum NonContainerWindowId {
   // The window created by PhantomWindowController or DragWindowController.
   kShellWindowId_PhantomWindow = kShellWindowId_MaxContainer + 1,
-
-  // The window that shows the Virtual Desks bar at the top of overview. There's
-  // only one such window on each display when overview mode is active.
-  kShellWindowId_DesksBarWindow,
 
   // The window that shows a blue highlight on the edges of a selected display.
   // Only one window exists whenever the display settings page is open with

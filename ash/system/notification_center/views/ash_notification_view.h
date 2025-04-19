@@ -11,6 +11,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "ui/base/interaction/element_identifier.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
@@ -48,6 +49,8 @@ class ASH_EXPORT AshNotificationView
   METADATA_HEADER(AshNotificationView, message_center::NotificationViewBase)
 
  public:
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kBubbleIdForTesting);
+
   // TODO(crbug/1241983): Add metadata and builder support to this view.
   explicit AshNotificationView(const message_center::Notification& notification,
                                bool shown_in_popup);
@@ -294,11 +297,33 @@ class ASH_EXPORT AshNotificationView
   void AttachBinaryImageAsDropData(ui::OSExchangeData* data);
 
   // Called when the fade out animation for `view` has ended. This function
-  // reset the views's opacity to 1.0f and make it invisible.
+  // resets the views's opacity to 1.0f and makes it invisible.
   void OnFadeOutAnimationEnded(views::View* view);
 
-  // An helper wrapping `OnFadeOutAnimationEnded` for `view` as a closure.
+  // Called when the grouped animation for this view has ended, or has been
+  // aborted.
+  void OnGroupedAnimationEnded(views::View* left_content,
+                               views::View* right_content,
+                               views::View* message_label_in_expanded_state,
+                               views::View* image_container_view,
+                               views::View* action_buttons_row,
+                               AshNotificationExpandButton* expand_button,
+                               std::string notification_id,
+                               std::string parent_id);
+
+  // A helper wrapping `OnFadeOutAnimationEnded` for `view` as a closure.
   base::OnceClosure OnFadeOutAnimationEndedClosure(views::View* view);
+
+  // A helper for grouped animations ending/aborting.
+  base::OnceClosure OnGroupedAnimationEndedClosure(
+      views::View* left_content,
+      views::View* right_content,
+      views::View* message_label_in_expanded_state,
+      views::View* image_container_view,
+      views::View* action_buttons_row,
+      AshNotificationExpandButton* expand_button,
+      const std::string& notification_id,
+      std::string parent_id);
 
   // Owned by views hierarchy.
   raw_ptr<views::View> main_view_ = nullptr;

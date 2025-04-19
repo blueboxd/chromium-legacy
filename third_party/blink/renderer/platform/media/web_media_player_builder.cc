@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/check.h"
+#include "base/memory/raw_ref.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/task_runner.h"
@@ -42,16 +43,16 @@ class FrameFetchContext : public ResourceFetchContext {
   FrameFetchContext& operator=(const FrameFetchContext&) = delete;
   ~FrameFetchContext() override = default;
 
-  WebLocalFrame& frame() const { return frame_; }
+  WebLocalFrame& frame() const { return *frame_; }
 
   // ResourceFetchContext:
   std::unique_ptr<WebAssociatedURLLoader> CreateUrlLoader(
       const WebAssociatedURLLoaderOptions& options) override {
-    return frame_.CreateAssociatedURLLoader(options);
+    return frame_->CreateAssociatedURLLoader(options);
   }
 
  private:
-  WebLocalFrame& frame_;
+  const raw_ref<WebLocalFrame> frame_;
 };
 
 }  // namespace
@@ -65,7 +66,7 @@ WebMediaPlayerBuilder::WebMediaPlayerBuilder(
 
 WebMediaPlayerBuilder::~WebMediaPlayerBuilder() = default;
 
-WebMediaPlayer* WebMediaPlayerBuilder::Build(
+std::unique_ptr<WebMediaPlayer> WebMediaPlayerBuilder::Build(
     WebLocalFrame* frame,
     WebMediaPlayerClient* client,
     WebMediaPlayerEncryptedMediaClient* encrypted_client,
@@ -98,7 +99,7 @@ WebMediaPlayer* WebMediaPlayerBuilder::Build(
     scoped_refptr<ThreadSafeBrowserInterfaceBrokerProxy> remote_interfaces) {
   DCHECK_EQ(&static_cast<FrameFetchContext*>(fetch_context_.get())->frame(),
             frame);
-  return new WebMediaPlayerImpl(
+  return std::make_unique<WebMediaPlayerImpl>(
       frame, client, encrypted_client, delegate, std::move(factory_selector),
       url_index_.get(), std::move(compositor), std::move(media_log), player_id,
       std::move(defer_load_cb), std::move(audio_renderer_sink),

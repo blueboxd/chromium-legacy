@@ -21,7 +21,7 @@
 #include "components/autofill/core/common/unique_ids.h"
 #include "components/signin/public/base/gaia_id_hash.h"
 #include "url/gurl.h"
-#include "url/origin.h"
+#include "url/scheme_host_port.h"
 
 namespace password_manager {
 
@@ -417,7 +417,7 @@ struct PasswordForm {
   GURL icon_url;
 
   // The origin of identity provider used for federated login.
-  url::Origin federation_origin;
+  url::SchemeHostPort federation_origin;
 
   // If true, Chrome will not return this credential to a site in response to
   // 'navigator.credentials.request()' without user interaction.
@@ -441,12 +441,6 @@ struct PasswordForm {
   // filling (e.g. only credit card fields were found). But this form can be
   // saved or filled only with the fallback.
   bool only_for_fallback = false;
-
-  // True iff the new password field was found with server hints or autocomplete
-  // attributes.
-  // Only set on form parsing for filling, and not persisted. Used as signal for
-  // password generation eligibility.
-  bool is_new_password_reliable = false;
 
   // True iff the form may be filled with webauthn credentials from an active
   // webauthn request.
@@ -525,10 +519,11 @@ struct PasswordForm {
   // It's based on heuristics and may be inaccurate.
   bool IsLikelyResetPasswordForm() const;
 
-  // Returns the `PasswordFormType` classification of this form. Note that just
-  // as `IsLikelyLoginForm()`, `IsLikelySignupForm()`, etc. this prediction is
-  // based on heuristics and may be inaccurate.
-  autofill::AutofillClient::PasswordFormType GetPasswordFormType() const;
+  // Returns the `PasswordFormClassification::Type` classification of this form.
+  // Note that just as `IsLikelyLoginForm()`, `IsLikelySignupForm()`, etc. this
+  // prediction is based on heuristics and may be inaccurate.
+  autofill::AutofillClient::PasswordFormClassification::Type
+  GetPasswordFormType() const;
 
   // Returns true if current password element is set.
   bool HasUsernameElement() const;
@@ -569,6 +564,14 @@ struct PasswordForm {
 
   PasswordForm& operator=(const PasswordForm& form);
   PasswordForm& operator=(PasswordForm&& form);
+
+#if defined(UNIT_TEST)
+  // An exact equality comparison of all the fields is only useful for tests.
+  // Production code should be using `ArePasswordFormUniqueKeysEqual` instead.
+  friend bool operator==(const PasswordForm&, const PasswordForm&) = default;
+  friend bool operator!=(const PasswordForm& lhs,
+                         const PasswordForm& rhs) = default;
+#endif
 };
 
 // True if the unique keys for the forms are the same. The unique key is
@@ -582,14 +585,10 @@ bool ArePasswordFormUniqueKeysEqual(const PasswordForm& left,
 
 // For testing.
 #if defined(UNIT_TEST)
-// An exact equality comparison of all the fields is only useful for tests.
-// Production code should be using `ArePasswordFormUniqueKeysEqual` instead.
-bool operator==(const PasswordForm& lhs, const PasswordForm& rhs);
-
 std::ostream& operator<<(std::ostream& os, PasswordForm::Scheme scheme);
 std::ostream& operator<<(std::ostream& os, const PasswordForm& form);
 std::ostream& operator<<(std::ostream& os, PasswordForm* form);
-#endif
+#endif  // defined(UNIT_TEST)
 
 constexpr PasswordForm::Store operator&(PasswordForm::Store lhs,
                                         PasswordForm::Store rhs) {

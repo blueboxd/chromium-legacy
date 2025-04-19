@@ -17,6 +17,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/signin/bound_session_credentials/bound_session_cookie_controller.h"
 #include "chrome/browser/signin/bound_session_credentials/bound_session_cookie_observer.h"
+#include "chrome/browser/signin/bound_session_credentials/bound_session_key.h"
 #include "chrome/browser/signin/bound_session_credentials/bound_session_params.pb.h"
 #include "chrome/browser/signin/bound_session_credentials/bound_session_params_util.h"
 #include "chrome/browser/signin/bound_session_credentials/bound_session_refresh_cookie_fetcher.h"
@@ -45,11 +46,14 @@ using bound_session_credentials::RotationDebugInfo;
 using chrome::mojom::ResumeBlockedRequestsTrigger;
 using unexportable_keys::ServiceErrorOr;
 using unexportable_keys::UnexportableKeyId;
+using Result = BoundSessionRefreshCookieFetcher::Result;
 
 namespace {
 constexpr char k1PSIDTSCookieName[] = "__Secure-1PSIDTS";
 constexpr char k3PSIDTSCookieName[] = "__Secure-3PSIDTS";
 constexpr char kSessionId[] = "test_session_id";
+constexpr char kSecSessionChallengeResponse[] = "test_challenge_response";
+constexpr size_t kNumberOfErrorsToIgnoreForBackoff = 3;
 
 const base::TimeDelta kCookieExpirationThreshold = base::Seconds(15);
 const base::TimeDelta kCookieRefreshInterval = base::Minutes(2);
@@ -60,13 +64,15 @@ base::Time GetTimeInTenMinutes() {
 }
 
 bound_session_credentials::Credential CreateCookieCredential(
-    const std::string& cookie_name) {
+    const std::string& cookie_name,
+    const std::string& domain,
+    const std::string& path) {
   bound_session_credentials::Credential credential;
   bound_session_credentials::CookieCredential* cookie_credential =
       credential.mutable_cookie_credential();
   cookie_credential->set_name(cookie_name);
-  cookie_credential->set_domain(".google.com");
-  cookie_credential->set_path("/");
+  cookie_credential->set_domain(domain);
+  cookie_credential->set_path(path);
   return credential;
 }
 
@@ -157,31 +163,59 @@ class BoundSessionCookieControllerImplTest
     if (!cookie_fetcher()) {
       return false;
     }
-    SimulateCompleteRefreshRequest(
-        BoundSessionRefreshCookieFetcher::Result::kSuccess,
-        GetTimeInTenMinutes());
+    SimulateCompleteRefreshRequest(Result::kSuccess, GetTimeInTenMinutes());
     task_environment_.RunUntilIdle();
     return true;
   }
 
   void SimulateCompleteRefreshRequest(
-      BoundSessionRefreshCookieFetcher::Result result,
+      Result result,
       std::optional<base::Time> cookie_expiration) {
     ASSERT_TRUE(cookie_fetcher());
-    FakeBoundSessionRefreshCookieFetcher* fetcher =
-        static_cast<FakeBoundSessionRefreshCookieFetcher*>(cookie_fetcher());
-    fetcher->SimulateCompleteRefreshRequest(result, cookie_expiration);
+    fake_cookie_fetcher()->SimulateCompleteRefreshRequest(result,
+                                                          cookie_expiration);
   }
 
   void SimulateCookieChange(const std::string& cookie_name,
                             std::optional<base::Time> cookie_expiration) {
     net::CanonicalCookie cookie = BoundSessionTestCookieManager::CreateCookie(
-        bound_session_cookie_controller()->url(), cookie_name,
+        bound_session_cookie_controller()->scope_url(), cookie_name,
         cookie_expiration);
     cookie_observer(cookie_name)
         ->OnCookieChange(
             net::CookieChangeInfo(cookie, net::CookieAccessResult(),
                                   net::CookieChangeCause::INSERTED));
+  }
+
+  void TriggerThrottlingPausedAndVerify() {
+    ASSERT_FALSE(AreAllCookiesFresh());
+    ASSERT_FALSE(
+        bound_session_cookie_controller()->ShouldPauseThrottlingRequests());
+    bound_session_cookie_controller()->HandleRequestBlockedOnCookie(
+        base::DoNothing());
+    // Complete the single retrial on transient error.
+    SimulateCompleteRefreshRequest(Result::kConnectionError, std::nullopt);
+    SimulateCompleteRefreshRequest(Result::kConnectionError, std::nullopt);
+    ASSERT_FALSE(cookie_fetcher());
+
+    for (size_t failures = 0; failures <= kNumberOfErrorsToIgnoreForBackoff;
+         failures++) {
+      base::test::TestFuture<ResumeBlockedRequestsTrigger> future;
+      bound_session_cookie_controller()->HandleRequestBlockedOnCookie(
+          future.GetCallback());
+      EXPECT_FALSE(future.IsReady());
+      SimulateCompleteRefreshRequest(Result::kServerTransientError,
+                                     std::nullopt);
+    }
+    ASSERT_TRUE(
+        bound_session_cookie_controller()->ShouldPauseThrottlingRequests());
+    base::test::TestFuture<ResumeBlockedRequestsTrigger> future;
+    bound_session_cookie_controller()->HandleRequestBlockedOnCookie(
+        future.GetCallback());
+    ASSERT_TRUE(future.IsReady());
+    ASSERT_EQ(future.Get(),
+              ResumeBlockedRequestsTrigger::kThrottlingRequestsPaused);
+    ASSERT_FALSE(cookie_fetcher());
   }
 
   base::test::TaskEnvironment* task_environment() { return &task_environment_; }
@@ -190,7 +224,8 @@ class BoundSessionCookieControllerImplTest
     on_bound_session_throttler_params_changed_call_count_++;
   }
 
-  void OnPersistentErrorEncountered() override {
+  void OnPersistentErrorEncountered(
+      BoundSessionCookieController* controller) override {
     on_persistent_error_encountered_called_ = true;
   }
 
@@ -206,6 +241,10 @@ class BoundSessionCookieControllerImplTest
 
   BoundSessionRefreshCookieFetcher* cookie_fetcher() {
     return bound_session_cookie_controller_->refresh_cookie_fetcher_.get();
+  }
+
+  FakeBoundSessionRefreshCookieFetcher* fake_cookie_fetcher() {
+    return static_cast<FakeBoundSessionRefreshCookieFetcher*>(cookie_fetcher());
   }
 
   const RotationDebugInfo& debug_info() {
@@ -235,8 +274,8 @@ class BoundSessionCookieControllerImplTest
     return it->second;
   }
 
-  base::OneShotTimer* preemptive_cookie_refresh_timer() {
-    return &bound_session_cookie_controller()->preemptive_cookie_refresh_timer_;
+  base::OneShotTimer* cookie_refresh_timer() {
+    return &bound_session_cookie_controller()->cookie_refresh_timer_;
   }
 
   base::OneShotTimer* resume_blocked_requests_timer() {
@@ -309,13 +348,28 @@ class BoundSessionCookieControllerImplTest
     bound_session_params.set_wrapped_key(
         std::string(wrapped_key.begin(), wrapped_key.end()));
     *bound_session_params.add_credentials() =
-        CreateCookieCredential(k1PSIDTSCookieName);
+        CreateCookieCredential(k1PSIDTSCookieName, ".google.com", "/");
     *bound_session_params.add_credentials() =
-        CreateCookieCredential(k3PSIDTSCookieName);
+        CreateCookieCredential(k3PSIDTSCookieName, ".google.com", "/");
     return bound_session_params;
   }
 
   base::HistogramTester* histogram_tester() { return &histogram_tester_; }
+
+  void VerifyCookieRotationOutageMetrics(bool periodic, size_t attempts) {
+    if (periodic) {
+      histogram_tester()->ExpectBucketCount(
+          "Signin.BoundSessionCredentials."
+          "CookieRotationOutageAttemptsPeriodic",
+          attempts, 1);
+      return;
+    }
+    histogram_tester()->ExpectTotalCount(
+        "Signin.BoundSessionCredentials.CookieRotationOutageDuration", 1u);
+    histogram_tester()->ExpectUniqueSample(
+        "Signin.BoundSessionCredentials.CookieRotationOutageAttempts", attempts,
+        1);
+  }
 
  private:
   base::test::TaskEnvironment task_environment_{
@@ -456,9 +510,8 @@ TEST_F(BoundSessionCookieControllerImplTest,
   task_environment()->FastForwardBy(base::Minutes(12));
   // Cookie stale.
   EXPECT_FALSE(AreAllCookiesFresh());
-  // Preemptive cookie rotation also fails with persistent error.
-  SimulateCompleteRefreshRequest(
-      BoundSessionRefreshCookieFetcher::Result::kConnectionError, std::nullopt);
+  // Preemptive cookie rotation also fails with transient error.
+  SimulateCompleteRefreshRequest(Result::kConnectionError, std::nullopt);
   EXPECT_FALSE(cookie_fetcher());
 
   // Request blocked on the cookie.
@@ -467,9 +520,7 @@ TEST_F(BoundSessionCookieControllerImplTest,
   EXPECT_FALSE(future.IsReady());
 
   // Simulate refresh complete.
-  SimulateCompleteRefreshRequest(
-      BoundSessionRefreshCookieFetcher::Result::kSuccess,
-      GetTimeInTenMinutes());
+  SimulateCompleteRefreshRequest(Result::kSuccess, GetTimeInTenMinutes());
   task_environment()->RunUntilIdle();
   EXPECT_TRUE(future.IsReady());
   EXPECT_EQ(future.Get(),
@@ -536,8 +587,7 @@ TEST_F(BoundSessionCookieControllerImplTest,
   // Cookie stale.
   EXPECT_FALSE(AreAllCookiesFresh());
   // Preemptive cookie rotation also fails with persistent error.
-  SimulateCompleteRefreshRequest(
-      BoundSessionRefreshCookieFetcher::Result::kConnectionError, std::nullopt);
+  SimulateCompleteRefreshRequest(Result::kConnectionError, std::nullopt);
   EXPECT_FALSE(cookie_fetcher());
 
   base::test::TestFuture<ResumeBlockedRequestsTrigger> future;
@@ -545,9 +595,7 @@ TEST_F(BoundSessionCookieControllerImplTest,
   EXPECT_FALSE(future.IsReady());
 
   // Simulate refresh completes with persistent failure.
-  SimulateCompleteRefreshRequest(
-      BoundSessionRefreshCookieFetcher::Result::kServerPersistentError,
-      std::nullopt);
+  SimulateCompleteRefreshRequest(Result::kServerPersistentError, std::nullopt);
   task_environment()->RunUntilIdle();
   EXPECT_TRUE(on_persistent_error_encountered_called());
   EXPECT_TRUE(future.IsReady());
@@ -562,40 +610,50 @@ TEST_F(BoundSessionCookieControllerImplTest,
                        /*count=*/1)));
 }
 
-TEST_F(BoundSessionCookieControllerImplTest, RefreshFailedTransient) {
+TEST_F(BoundSessionCookieControllerImplTest,
+       RefreshFailedTransientCookieExpired) {
   CompletePendingRefreshRequestIfAny();
-  task_environment()->FastForwardBy(base::Minutes(12));
-  EXPECT_FALSE(AreAllCookiesFresh());
-  std::array<BoundSessionRefreshCookieFetcher::Result, 2> result_types = {
-      BoundSessionRefreshCookieFetcher::Result::kConnectionError,
-      BoundSessionRefreshCookieFetcher::Result::kServerTransientError};
+  struct TestStep {
+    Result result;
+    bool expect_retried_before_resume_requests;
+  };
 
-  for (auto& result : result_types) {
-    SCOPED_TRACE(result);
+  const TestStep test_sequence[] = {
+      {Result::kServerTransientError, true},
+      // Only the first batch of requests that results in a tranisent error,
+      // cookie rotation is retried.
+      {Result::kServerTransientError, false},
+      {Result::kConnectionError, false},
+      // On success, cookie rotation retrial on transient error is reset.
+      {Result::kSuccess, false},
+      {Result::kConnectionError, true},
+      {Result::kServerTransientError, false}};
+
+  auto RunTestStep = [&](const TestStep& step) {
+    if (AreAllCookiesFresh()) {
+      task_environment()->FastForwardBy(base::Minutes(12));
+    }
+    ASSERT_FALSE(AreAllCookiesFresh());
     base::test::TestFuture<ResumeBlockedRequestsTrigger> future;
     bound_session_cookie_controller()->HandleRequestBlockedOnCookie(
         future.GetCallback());
     EXPECT_FALSE(future.IsReady());
-    SimulateCompleteRefreshRequest(result, std::nullopt);
+    SimulateCompleteRefreshRequest(step.result, GetTimeInTenMinutes());
+    if (step.expect_retried_before_resume_requests) {
+      EXPECT_FALSE(future.IsReady());
+      SimulateCompleteRefreshRequest(step.result, GetTimeInTenMinutes());
+    }
     EXPECT_TRUE(future.IsReady());
     EXPECT_EQ(future.Get(),
-              ResumeBlockedRequestsTrigger::kCookieRefreshFetchFailure);
+              step.result == Result::kSuccess
+                  ? ResumeBlockedRequestsTrigger::kCookieRefreshFetchSuccess
+                  : ResumeBlockedRequestsTrigger::kCookieRefreshFetchFailure);
+  };
+  for (const auto& step : test_sequence) {
+    RunTestStep(step);
   }
 
-  // Subsequent requests are not impacted.
-  base::test::TestFuture<ResumeBlockedRequestsTrigger> future;
-  bound_session_cookie_controller()->HandleRequestBlockedOnCookie(
-      future.GetCallback());
-  EXPECT_FALSE(future.IsReady());
-  EXPECT_TRUE(cookie_fetcher());
-  SimulateCompleteRefreshRequest(
-      BoundSessionRefreshCookieFetcher::Result::kSuccess,
-      GetTimeInTenMinutes());
-  EXPECT_TRUE(future.IsReady());
-  EXPECT_EQ(future.Get(),
-            ResumeBlockedRequestsTrigger::kCookieRefreshFetchSuccess);
   EXPECT_FALSE(on_persistent_error_encountered_called());
-
   EXPECT_THAT(
       histogram_tester()->GetAllSamples(
           "Signin.BoundSessionCredentials.ResumeThrottledRequestsTrigger"),
@@ -603,7 +661,43 @@ TEST_F(BoundSessionCookieControllerImplTest, RefreshFailedTransient) {
           base::Bucket(ResumeBlockedRequestsTrigger::kCookieRefreshFetchSuccess,
                        /*count=*/1),
           base::Bucket(ResumeBlockedRequestsTrigger::kCookieRefreshFetchFailure,
-                       /*count=*/2)));
+                       /*count=*/5)));
+}
+
+TEST_F(BoundSessionCookieControllerImplTest, PreemptiveRefreshFailedTransient) {
+  EXPECT_TRUE(CompletePendingRefreshRequestIfAny());
+  EXPECT_TRUE(cookie_refresh_timer()->IsRunning());
+  task_environment()->FastForwardBy(cookie_refresh_timer()->GetCurrentDelay());
+
+  ASSERT_TRUE(AreAllCookiesFresh());
+  base::test::TestFuture<ResumeBlockedRequestsTrigger> future;
+  bound_session_cookie_controller()->HandleRequestBlockedOnCookie(
+      future.GetCallback());
+  EXPECT_TRUE(future.IsReady());
+
+  // Failed preemptive refresh should not be retried.
+  SimulateCompleteRefreshRequest(Result::kServerTransientError, std::nullopt);
+
+  task_environment()->FastForwardBy(
+      bound_session_cookie_controller()->min_cookie_expiration_time() -
+      base::Time::Now() + base::Minutes(1));
+  ASSERT_FALSE(AreAllCookiesFresh());
+
+  future.Clear();
+  bound_session_cookie_controller()->HandleRequestBlockedOnCookie(
+      future.GetCallback());
+  SimulateCompleteRefreshRequest(Result::kServerTransientError, std::nullopt);
+  ASSERT_FALSE(future.IsReady());
+
+  // Rotation is expected to be retried.
+  SimulateCompleteRefreshRequest(Result::kServerTransientError, std::nullopt);
+  ASSERT_TRUE(future.IsReady());
+  EXPECT_THAT(
+      histogram_tester()->GetAllSamples(
+          "Signin.BoundSessionCredentials.ResumeThrottledRequestsTrigger"),
+      testing::ElementsAre(
+          base::Bucket(ResumeBlockedRequestsTrigger::kCookieRefreshFetchFailure,
+                       /*count=*/1)));
 }
 
 TEST_F(BoundSessionCookieControllerImplTest,
@@ -620,9 +714,7 @@ TEST_F(BoundSessionCookieControllerImplTest,
     EXPECT_FALSE(future.IsReady());
   }
 
-  SimulateCompleteRefreshRequest(
-      BoundSessionRefreshCookieFetcher::Result::kSuccess,
-      GetTimeInTenMinutes());
+  SimulateCompleteRefreshRequest(Result::kSuccess, GetTimeInTenMinutes());
   task_environment()->RunUntilIdle();
   for (auto& future : futures) {
     EXPECT_TRUE(future.IsReady());
@@ -661,9 +753,7 @@ TEST_F(BoundSessionCookieControllerImplTest,
 
   // Complete the pending fetch.
   EXPECT_TRUE(cookie_fetcher());
-  SimulateCompleteRefreshRequest(
-      BoundSessionRefreshCookieFetcher::Result::kSuccess,
-      GetTimeInTenMinutes());
+  SimulateCompleteRefreshRequest(Result::kSuccess, GetTimeInTenMinutes());
 
   EXPECT_THAT(
       histogram_tester()->GetAllSamples(
@@ -711,7 +801,7 @@ TEST_F(BoundSessionCookieControllerImplTest, ResumeBlockedRequestsOnTimeout) {
   // Fetcher reset.
   EXPECT_FALSE(cookie_fetcher());
   EXPECT_FALSE(resume_blocked_requests_timer()->IsRunning());
-  EXPECT_FALSE(preemptive_cookie_refresh_timer()->IsRunning());
+  EXPECT_FALSE(cookie_refresh_timer()->IsRunning());
   EXPECT_THAT(
       histogram_tester()->GetAllSamples(
           "Signin.BoundSessionCredentials.ResumeThrottledRequestsTrigger"),
@@ -806,9 +896,7 @@ TEST_F(BoundSessionCookieControllerImplTest, ResumeBlockedRequestsTimerReset) {
       future.GetCallback());
   EXPECT_FALSE(future.IsReady());
   EXPECT_TRUE(resume_blocked_requests_timer()->IsRunning());
-  SimulateCompleteRefreshRequest(
-      BoundSessionRefreshCookieFetcher::Result::kSuccess,
-      GetTimeInTenMinutes());
+  SimulateCompleteRefreshRequest(Result::kSuccess, GetTimeInTenMinutes());
   EXPECT_TRUE(future.IsReady());
   EXPECT_EQ(future.Get(),
             ResumeBlockedRequestsTrigger::kCookieRefreshFetchSuccess);
@@ -821,21 +909,21 @@ TEST_F(BoundSessionCookieControllerImplTest,
 
   // Cookie is valid and preemptive refresh is scheduled.
   EXPECT_FALSE(cookie_fetcher());
-  EXPECT_TRUE(preemptive_cookie_refresh_timer()->IsRunning());
+  EXPECT_TRUE(cookie_refresh_timer()->IsRunning());
 
   // Flip through different connection states and check that it doesn't affect
   // the fetcher state.
   SetConnectionType(network::mojom::ConnectionType::CONNECTION_5G);
   EXPECT_FALSE(cookie_fetcher());
-  EXPECT_TRUE(preemptive_cookie_refresh_timer()->IsRunning());
+  EXPECT_TRUE(cookie_refresh_timer()->IsRunning());
 
   SetConnectionType(network::mojom::ConnectionType::CONNECTION_NONE);
   EXPECT_FALSE(cookie_fetcher());
-  EXPECT_TRUE(preemptive_cookie_refresh_timer()->IsRunning());
+  EXPECT_TRUE(cookie_refresh_timer()->IsRunning());
 
   SetConnectionType(network::mojom::ConnectionType::CONNECTION_5G);
   EXPECT_FALSE(cookie_fetcher());
-  EXPECT_TRUE(preemptive_cookie_refresh_timer()->IsRunning());
+  EXPECT_TRUE(cookie_refresh_timer()->IsRunning());
 }
 
 TEST_F(BoundSessionCookieControllerImplTest,
@@ -843,26 +931,24 @@ TEST_F(BoundSessionCookieControllerImplTest,
   // Set up a situation where cookies are stale and there is no ongoing refresh.
   // `kServerTransientError` is used to complete the refresh request without
   // updating the cookies.
-  SimulateCompleteRefreshRequest(
-      BoundSessionRefreshCookieFetcher::Result::kServerTransientError,
-      std::nullopt);
+  SimulateCompleteRefreshRequest(Result::kServerTransientError, std::nullopt);
   EXPECT_FALSE(cookie_fetcher());
-  EXPECT_FALSE(preemptive_cookie_refresh_timer()->IsRunning());
+  EXPECT_FALSE(cookie_refresh_timer()->IsRunning());
 
   // Switch to another online type doesn't change anything.
   SetConnectionType(network::mojom::ConnectionType::CONNECTION_5G);
   EXPECT_FALSE(cookie_fetcher());
-  EXPECT_FALSE(preemptive_cookie_refresh_timer()->IsRunning());
+  EXPECT_FALSE(cookie_refresh_timer()->IsRunning());
 
   // Setting up an offline state.
   SetConnectionType(network::mojom::ConnectionType::CONNECTION_NONE);
   EXPECT_FALSE(cookie_fetcher());
-  EXPECT_FALSE(preemptive_cookie_refresh_timer()->IsRunning());
+  EXPECT_FALSE(cookie_refresh_timer()->IsRunning());
 
   // Cookie fetcher should start immediately as the cookie is expired.
   SetConnectionType(network::mojom::ConnectionType::CONNECTION_5G);
   EXPECT_TRUE(cookie_fetcher());
-  EXPECT_FALSE(preemptive_cookie_refresh_timer()->IsRunning());
+  EXPECT_FALSE(cookie_refresh_timer()->IsRunning());
 }
 
 class BoundSessionCookieControllerImplNoDefaultControllerTest
@@ -880,16 +966,14 @@ TEST_F(BoundSessionCookieControllerImplNoDefaultControllerTest,
   // Set up a situation where cookies are stale and there is no ongoing refresh.
   // `kServerTransientError` is used to complete the refresh request without
   // updating the cookies.
-  SimulateCompleteRefreshRequest(
-      BoundSessionRefreshCookieFetcher::Result::kServerTransientError,
-      std::nullopt);
+  SimulateCompleteRefreshRequest(Result::kServerTransientError, std::nullopt);
   EXPECT_FALSE(cookie_fetcher());
-  EXPECT_FALSE(preemptive_cookie_refresh_timer()->IsRunning());
+  EXPECT_FALSE(cookie_refresh_timer()->IsRunning());
 
   // Cookie fetcher should start immediately as the cookie is expired.
   SetConnectionType(network::mojom::ConnectionType::CONNECTION_WIFI);
   EXPECT_TRUE(cookie_fetcher());
-  EXPECT_FALSE(preemptive_cookie_refresh_timer()->IsRunning());
+  EXPECT_FALSE(cookie_refresh_timer()->IsRunning());
 }
 
 TEST_F(BoundSessionCookieControllerImplNoDefaultControllerTest,
@@ -906,16 +990,58 @@ TEST_F(BoundSessionCookieControllerImplNoDefaultControllerTest,
   BuildBoundSessionCookieController(params);
   const BoundSessionCookieControllerImpl* const controller =
       bound_session_cookie_controller();
-  EXPECT_EQ(controller->url(), GURL("https://google.com"));
+  EXPECT_EQ(controller->scope_url(), GURL("https://google.com"));
   EXPECT_EQ(controller->session_id(), kSessionId);
   EXPECT_EQ(controller->session_creation_time(), kInitTime);
   EXPECT_EQ(controller->refresh_url(), GURL(kRefreshUrl));
+  EXPECT_EQ(controller->site(), GURL("https://google.com"));
   EXPECT_THAT(
       controller->bound_cookie_names(),
       testing::UnorderedElementsAre(k1PSIDTSCookieName, k3PSIDTSCookieName));
+  const BoundSessionKey kExpectedKey{.site = GURL("https://google.com"),
+                                     .session_id = kSessionId};
+  EXPECT_EQ(controller->GetBoundSessionKey(), kExpectedKey);
   auto throttler_params = controller->bound_session_throttler_params();
   EXPECT_EQ(throttler_params->domain, "google.com");
   EXPECT_EQ(throttler_params->path, "/");
+}
+
+TEST_F(BoundSessionCookieControllerImplNoDefaultControllerTest,
+       SessionParametersScopedSession) {
+  constexpr char kRefreshUrl[] = "https://accounts.google.com/refresh";
+  constexpr base::Time kInitTime =
+      base::Time::FromMillisecondsSinceUnixEpoch(12345);
+
+  bound_session_credentials::BoundSessionParams params =
+      CreateDefaultBoundSessionParams();
+  params.set_refresh_url(kRefreshUrl);
+  *params.mutable_creation_time() =
+      bound_session_credentials::TimeToTimestamp(kInitTime);
+  params.clear_credentials();
+  *params.add_credentials() = CreateCookieCredential(
+      k1PSIDTSCookieName, ".accounts.google.com", "/secure");
+  *params.add_credentials() = CreateCookieCredential(
+      k3PSIDTSCookieName, ".accounts.google.com", "/secure");
+
+  BuildBoundSessionCookieController(params);
+  const BoundSessionCookieControllerImpl* const controller =
+      bound_session_cookie_controller();
+
+  EXPECT_EQ(controller->scope_url(),
+            GURL("https://accounts.google.com/secure"));
+  EXPECT_EQ(controller->session_id(), kSessionId);
+  EXPECT_EQ(controller->session_creation_time(), kInitTime);
+  EXPECT_EQ(controller->refresh_url(), GURL(kRefreshUrl));
+  EXPECT_EQ(controller->site(), GURL("https://google.com"));
+  EXPECT_THAT(
+      controller->bound_cookie_names(),
+      testing::UnorderedElementsAre(k1PSIDTSCookieName, k3PSIDTSCookieName));
+  const BoundSessionKey kExpectedKey{.site = GURL("https://google.com"),
+                                     .session_id = kSessionId};
+  EXPECT_EQ(controller->GetBoundSessionKey(), kExpectedKey);
+  auto throttler_params = controller->bound_session_throttler_params();
+  EXPECT_EQ(throttler_params->domain, "accounts.google.com");
+  EXPECT_EQ(throttler_params->path, "/secure");
 }
 
 TEST_F(BoundSessionCookieControllerImplTest,
@@ -939,12 +1065,11 @@ TEST_F(BoundSessionCookieControllerImplTest,
   ResetOnBoundSessionThrottlerParamsChangedCallCount();
   EXPECT_TRUE(CompletePendingRefreshRequestIfAny());
   EXPECT_EQ(on_bound_session_throttler_params_changed_call_count(), 1u);
-  EXPECT_TRUE(preemptive_cookie_refresh_timer()->IsRunning());
+  EXPECT_TRUE(cookie_refresh_timer()->IsRunning());
   base::TimeDelta expected_refresh_delay =
       bound_session_cookie_controller()->min_cookie_expiration_time() -
       base::Time::Now() - kCookieRefreshInterval;
-  EXPECT_EQ(preemptive_cookie_refresh_timer()->GetCurrentDelay(),
-            expected_refresh_delay);
+  EXPECT_EQ(cookie_refresh_timer()->GetCurrentDelay(), expected_refresh_delay);
   task_environment()->FastForwardBy(expected_refresh_delay);
   EXPECT_TRUE(cookie_fetcher());
   CompletePendingRefreshRequestIfAny();
@@ -953,7 +1078,7 @@ TEST_F(BoundSessionCookieControllerImplTest,
 TEST_F(BoundSessionCookieControllerImplTest,
        RescheduleCookieRotationOnlyIfMinimumExpirationDateChanged) {
   CompletePendingRefreshRequestIfAny();
-  EXPECT_TRUE(preemptive_cookie_refresh_timer()->IsRunning());
+  EXPECT_TRUE(cookie_refresh_timer()->IsRunning());
   task_environment()->FastForwardBy(base::Minutes(12));
 
   // We want to test that a cookie refresh is scheduled only when the minimum
@@ -961,11 +1086,9 @@ TEST_F(BoundSessionCookieControllerImplTest,
   // We first set up a situation where both cookies are stale and there is no
   // ongoing refresh. `kServerTransientError` is used to complete the refresh
   // request without updating the cookies.
-  SimulateCompleteRefreshRequest(
-      BoundSessionRefreshCookieFetcher::Result::kServerTransientError,
-      std::nullopt);
+  SimulateCompleteRefreshRequest(Result::kServerTransientError, std::nullopt);
   EXPECT_FALSE(cookie_fetcher());
-  EXPECT_FALSE(preemptive_cookie_refresh_timer()->IsRunning());
+  EXPECT_FALSE(cookie_refresh_timer()->IsRunning());
   base::Time old_min_cookie_expiration =
       bound_session_cookie_controller()->min_cookie_expiration_time();
 
@@ -975,7 +1098,7 @@ TEST_F(BoundSessionCookieControllerImplTest,
   EXPECT_EQ(bound_session_cookie_controller()->min_cookie_expiration_time(),
             old_min_cookie_expiration);
   // Cookie rotation is not scheduled.
-  EXPECT_FALSE(preemptive_cookie_refresh_timer()->IsRunning());
+  EXPECT_FALSE(cookie_refresh_timer()->IsRunning());
 
   SetExpirationTimeAndNotify(k3PSIDTSCookieName, GetTimeInTenMinutes());
   // The expiration time of the other cookie is updated, and the minimum
@@ -983,7 +1106,7 @@ TEST_F(BoundSessionCookieControllerImplTest,
   EXPECT_NE(bound_session_cookie_controller()->min_cookie_expiration_time(),
             old_min_cookie_expiration);
   // Cookie rotation scheduled.
-  EXPECT_TRUE(preemptive_cookie_refresh_timer()->IsRunning());
+  EXPECT_TRUE(cookie_refresh_timer()->IsRunning());
 }
 
 TEST_F(BoundSessionCookieControllerImplTest,
@@ -993,7 +1116,7 @@ TEST_F(BoundSessionCookieControllerImplTest,
   SetExpirationTimeAndNotify(k1PSIDTSCookieName,
                              base::Time::Now() + kCookieRefreshInterval / 2);
   EXPECT_EQ(on_bound_session_throttler_params_changed_call_count(), 1u);
-  EXPECT_FALSE(preemptive_cookie_refresh_timer()->IsRunning());
+  EXPECT_FALSE(cookie_refresh_timer()->IsRunning());
   EXPECT_TRUE(cookie_fetcher());
   CompletePendingRefreshRequestIfAny();
 }
@@ -1001,9 +1124,9 @@ TEST_F(BoundSessionCookieControllerImplTest,
 TEST_F(BoundSessionCookieControllerImplTest,
        StopCookieRotationOnCookieRefresh) {
   EXPECT_TRUE(CompletePendingRefreshRequestIfAny());
-  EXPECT_TRUE(preemptive_cookie_refresh_timer()->IsRunning());
+  EXPECT_TRUE(cookie_refresh_timer()->IsRunning());
   MaybeRefreshCookie();
-  EXPECT_FALSE(preemptive_cookie_refresh_timer()->IsRunning());
+  EXPECT_FALSE(cookie_refresh_timer()->IsRunning());
   CompletePendingRefreshRequestIfAny();
 }
 
@@ -1021,8 +1144,7 @@ TEST_F(BoundSessionCookieControllerImplTest, UpdateDebugInfo) {
 
   // CONNECTION_ERROR: 1
   trigger_rotation();
-  SimulateCompleteRefreshRequest(
-      BoundSessionRefreshCookieFetcher::Result::kConnectionError, std::nullopt);
+  SimulateCompleteRefreshRequest(Result::kConnectionError, std::nullopt);
   AddFirstFailureInfo(expected_info, base::Time::Now(),
                       RotationDebugInfo::CONNECTION_ERROR,
                       /*received_challenge=*/false);
@@ -1032,17 +1154,14 @@ TEST_F(BoundSessionCookieControllerImplTest, UpdateDebugInfo) {
 
   // CONNECTION_ERROR: 2
   trigger_rotation();
-  SimulateCompleteRefreshRequest(
-      BoundSessionRefreshCookieFetcher::Result::kConnectionError, std::nullopt);
+  SimulateCompleteRefreshRequest(Result::kConnectionError, std::nullopt);
   connection_error_counter->set_count(2);
   EXPECT_THAT(debug_info(), base::test::EqualsProto(expected_info));
 
   // CONNECTION_ERROR: 2
   // SERVER_ERROR: 1
   trigger_rotation();
-  SimulateCompleteRefreshRequest(
-      BoundSessionRefreshCookieFetcher::Result::kServerTransientError,
-      std::nullopt);
+  SimulateCompleteRefreshRequest(Result::kServerTransientError, std::nullopt);
   AddFailureCounter(expected_info, RotationDebugInfo::SERVER_ERROR);
   EXPECT_THAT(debug_info(), base::test::EqualsProto(expected_info));
 
@@ -1058,8 +1177,7 @@ TEST_F(BoundSessionCookieControllerImplTest, UpdateDebugInfo) {
   // SERVER_ERROR: 1
   // TIMEOUT: 1
   trigger_rotation();
-  SimulateCompleteRefreshRequest(
-      BoundSessionRefreshCookieFetcher::Result::kConnectionError, std::nullopt);
+  SimulateCompleteRefreshRequest(Result::kConnectionError, std::nullopt);
   connection_error_counter->set_count(3);
   EXPECT_THAT(debug_info(), base::test::EqualsProto(expected_info));
 
@@ -1067,4 +1185,237 @@ TEST_F(BoundSessionCookieControllerImplTest, UpdateDebugInfo) {
   trigger_rotation();
   EXPECT_TRUE(CompletePendingRefreshRequestIfAny());
   EXPECT_THAT(debug_info(), base::test::EqualsProto(RotationDebugInfo()));
+}
+
+TEST_F(BoundSessionCookieControllerImplTest,
+       ChallengeReusedCookieRotationTransientError) {
+  ASSERT_FALSE(AreAllCookiesFresh());
+  bound_session_cookie_controller()->HandleRequestBlockedOnCookie(
+      base::DoNothing());
+  ASSERT_TRUE(cookie_fetcher());
+  FakeBoundSessionRefreshCookieFetcher* fetcher = fake_cookie_fetcher();
+  ASSERT_TRUE(fetcher);
+  EXPECT_FALSE(fetcher->sec_session_challenge_response());
+  // Simulate a challenge response.
+  fetcher->set_sec_session_challenge_response(kSecSessionChallengeResponse);
+  SimulateCompleteRefreshRequest(Result::kServerTransientError, std::nullopt);
+
+  bound_session_cookie_controller()->HandleRequestBlockedOnCookie(
+      base::DoNothing());
+  fetcher = fake_cookie_fetcher();
+  ASSERT_TRUE(fetcher);
+  EXPECT_EQ(fetcher->sec_session_challenge_response(),
+            kSecSessionChallengeResponse);
+
+  SimulateCompleteRefreshRequest(Result::kSuccess, GetTimeInTenMinutes());
+}
+
+TEST_F(BoundSessionCookieControllerImplTest,
+       ChallengeNotReusedCookieRotationSuccess) {
+  ASSERT_FALSE(AreAllCookiesFresh());
+  bound_session_cookie_controller()->HandleRequestBlockedOnCookie(
+      base::DoNothing());
+  ASSERT_TRUE(cookie_fetcher());
+  FakeBoundSessionRefreshCookieFetcher* fetcher = fake_cookie_fetcher();
+  ASSERT_TRUE(fetcher);
+  EXPECT_FALSE(fetcher->sec_session_challenge_response());
+  fetcher->set_sec_session_challenge_response("sec_session_challenge_response");
+  SimulateCompleteRefreshRequest(Result::kSuccess, GetTimeInTenMinutes());
+
+  task_environment()->FastForwardBy(base::Minutes(12));
+  ASSERT_FALSE(AreAllCookiesFresh());
+  bound_session_cookie_controller()->HandleRequestBlockedOnCookie(
+      base::DoNothing());
+  fetcher = fake_cookie_fetcher();
+  ASSERT_TRUE(fetcher);
+  EXPECT_FALSE(fetcher->sec_session_challenge_response());
+  CompletePendingRefreshRequestIfAny();
+}
+
+TEST_F(BoundSessionCookieControllerImplTest,
+       ThrottlingPausedRequestsImmediatelyResumed) {
+  TriggerThrottlingPausedAndVerify();
+  VerifyCookieRotationOutageMetrics(/*periodic=*/true,
+                                    kNumberOfErrorsToIgnoreForBackoff + 1);
+  histogram_tester()->ExpectTotalCount(
+      "Signin.BoundSessionCredentials.CookieRotationOutageDuration", 0);
+  histogram_tester()->ExpectTotalCount(
+      "Signin.BoundSessionCredentials.CookieRotationOutageAttempts", 0);
+
+  ResetBoundSessionCookieController();
+  VerifyCookieRotationOutageMetrics(/*periodic=*/false,
+                                    kNumberOfErrorsToIgnoreForBackoff + 1);
+}
+
+TEST_F(BoundSessionCookieControllerImplTest, ThrottlingPausedUpdateRenderers) {
+  TriggerThrottlingPausedAndVerify();
+  VerifyCookieRotationOutageMetrics(/*periodic=*/true,
+                                    kNumberOfErrorsToIgnoreForBackoff + 1);
+
+  // Notify throtteling paused and bound throttler params should return null.
+  EXPECT_EQ(on_bound_session_throttler_params_changed_call_count(), 1u);
+  EXPECT_FALSE(
+      bound_session_cookie_controller()->bound_session_throttler_params());
+
+  ASSERT_TRUE(cookie_refresh_timer()->IsRunning());
+  task_environment()->FastForwardBy(cookie_refresh_timer()->GetCurrentDelay());
+  SimulateCompleteRefreshRequest(Result::kServerTransientError, std::nullopt);
+  // Throttler params did not change and should not be notified.
+  EXPECT_EQ(on_bound_session_throttler_params_changed_call_count(), 1u);
+  VerifyCookieRotationOutageMetrics(/*periodic=*/true,
+                                    kNumberOfErrorsToIgnoreForBackoff + 1);
+  ResetBoundSessionCookieController();
+  VerifyCookieRotationOutageMetrics(/*periodic=*/false,
+                                    kNumberOfErrorsToIgnoreForBackoff + 2);
+}
+
+TEST_F(BoundSessionCookieControllerImplTest,
+       ThrottlingPausedResetOnCookieRotationSuccess) {
+  TriggerThrottlingPausedAndVerify();
+  EXPECT_TRUE(cookie_refresh_timer()->IsRunning());
+  task_environment()->FastForwardBy(cookie_refresh_timer()->GetCurrentDelay());
+
+  SimulateCompleteRefreshRequest(Result::kSuccess, GetTimeInTenMinutes());
+  task_environment()->RunUntilIdle();
+
+  // One notification for throttling paused and another throttling resumed.
+  EXPECT_EQ(on_bound_session_throttler_params_changed_call_count(), 2u);
+  EXPECT_TRUE(
+      bound_session_cookie_controller()->bound_session_throttler_params());
+  VerifyCookieRotationOutageMetrics(/*periodic=*/false,
+                                    kNumberOfErrorsToIgnoreForBackoff + 1);
+
+  // Back off should be reset.
+  ASSERT_TRUE(
+      bound_session_cookie_controller()->bound_session_throttler_params());
+  base::test::TestFuture<ResumeBlockedRequestsTrigger> future;
+  bound_session_cookie_controller()->HandleRequestBlockedOnCookie(
+      future.GetCallback());
+  ASSERT_TRUE(future.IsReady());
+  ASSERT_EQ(future.Get(), ResumeBlockedRequestsTrigger::kCookieAlreadyFresh);
+
+  // Expire cookies and verify cookie rotation is triggered.
+  task_environment()->FastForwardBy(base::Minutes(12));
+  future.Clear();
+  bound_session_cookie_controller()->HandleRequestBlockedOnCookie(
+      future.GetCallback());
+  ASSERT_FALSE(future.IsReady());
+  SimulateCompleteRefreshRequest(Result::kSuccess, GetTimeInTenMinutes());
+  EXPECT_EQ(future.Get(),
+            ResumeBlockedRequestsTrigger::kCookieRefreshFetchSuccess);
+  // Outage metrics should not have changed.
+  VerifyCookieRotationOutageMetrics(/*periodic=*/false,
+                                    kNumberOfErrorsToIgnoreForBackoff + 1);
+}
+
+TEST_F(BoundSessionCookieControllerImplTest,
+       ThrottlingPausedResetOnOnCookieFresh) {
+  TriggerThrottlingPausedAndVerify();
+  VerifyCookieRotationOutageMetrics(/*periodic=*/true,
+                                    kNumberOfErrorsToIgnoreForBackoff + 1);
+
+  SimulateCookieChange(k1PSIDTSCookieName, GetTimeInTenMinutes());
+  SimulateCookieChange(k3PSIDTSCookieName, GetTimeInTenMinutes());
+
+  VerifyCookieRotationOutageMetrics(/*periodic=*/false,
+                                    kNumberOfErrorsToIgnoreForBackoff + 1);
+
+  // One notification for throttling paused and another throttling resumed.
+  EXPECT_EQ(on_bound_session_throttler_params_changed_call_count(), 2u);
+
+  // Back off should be reset.
+  ASSERT_TRUE(
+      bound_session_cookie_controller()->bound_session_throttler_params());
+  base::test::TestFuture<ResumeBlockedRequestsTrigger> future;
+  bound_session_cookie_controller()->HandleRequestBlockedOnCookie(
+      future.GetCallback());
+  ASSERT_TRUE(future.IsReady());
+  ASSERT_EQ(future.Get(), ResumeBlockedRequestsTrigger::kCookieAlreadyFresh);
+
+  // Expire cookies and verify cookie rotation is triggered.
+  task_environment()->FastForwardBy(base::Minutes(12));
+  future.Clear();
+  bound_session_cookie_controller()->HandleRequestBlockedOnCookie(
+      future.GetCallback());
+  ASSERT_FALSE(future.IsReady());
+  SimulateCompleteRefreshRequest(Result::kSuccess, GetTimeInTenMinutes());
+  EXPECT_EQ(future.Get(),
+            ResumeBlockedRequestsTrigger::kCookieRefreshFetchSuccess);
+}
+
+TEST_F(BoundSessionCookieControllerImplTest,
+       ThrottlingPausedDifferentCookieRotationErrors) {
+  TriggerThrottlingPausedAndVerify();
+  const size_t kCookieRotationResultSize = 7;
+  Result cookie_rotation_result[kCookieRotationResultSize] = {
+      Result::kConnectionError,
+      Result::kServerTransientError,
+      Result::kServerPersistentError,
+      Result::kServerUnexepectedResponse,
+      Result::kChallengeRequiredUnexpectedFormat,
+      Result::kChallengeRequiredLimitExceeded,
+      Result::kSignChallengeFailed};
+
+  ASSERT_TRUE(
+      bound_session_cookie_controller()->ShouldPauseThrottlingRequests());
+  for (Result result : cookie_rotation_result) {
+    ASSERT_TRUE(cookie_refresh_timer()->IsRunning());
+    task_environment()->FastForwardBy(
+        cookie_refresh_timer()->GetCurrentDelay());
+    SimulateCompleteRefreshRequest(result, std::nullopt);
+  }
+  EXPECT_TRUE(
+      bound_session_cookie_controller()->ShouldPauseThrottlingRequests());
+  EXPECT_EQ(on_bound_session_throttler_params_changed_call_count(), 1u);
+  VerifyCookieRotationOutageMetrics(/*periodic=*/true,
+                                    kNumberOfErrorsToIgnoreForBackoff + 1);
+  ResetBoundSessionCookieController();
+  VerifyCookieRotationOutageMetrics(
+      /*periodic=*/false,
+      kNumberOfErrorsToIgnoreForBackoff + 1 + kCookieRotationResultSize);
+}
+
+TEST_F(BoundSessionCookieControllerImplTest,
+       ThrottlingPausedTriggeredOnlyOnServerTransientError) {
+  Result cookie_rotation_result[] = {Result::kConnectionError,
+                                     Result::kServerTransientError};
+  for (size_t i = 0; i <= kNumberOfErrorsToIgnoreForBackoff; i++) {
+    for (Result result : cookie_rotation_result) {
+      ASSERT_FALSE(
+          bound_session_cookie_controller()->ShouldPauseThrottlingRequests());
+      bound_session_cookie_controller()->HandleRequestBlockedOnCookie(
+          base::DoNothing());
+      SimulateCompleteRefreshRequest(result, std::nullopt);
+    }
+  }
+  // Only `Result::kServerTransientError` triggers backoff.
+  ASSERT_TRUE(
+      bound_session_cookie_controller()->ShouldPauseThrottlingRequests());
+}
+
+TEST_F(BoundSessionCookieControllerImplTest, ThrottlingPausedMultipleAttempts) {
+  TriggerThrottlingPausedAndVerify();
+
+  size_t kPeriodicInterval = kNumberOfErrorsToIgnoreForBackoff + 1;
+  size_t kFailedAttempts = kPeriodicInterval * 5;
+  for (size_t attempt = 0; attempt < kFailedAttempts; attempt++) {
+    ASSERT_TRUE(cookie_refresh_timer()->IsRunning());
+    task_environment()->FastForwardBy(
+        cookie_refresh_timer()->GetCurrentDelay());
+    SimulateCompleteRefreshRequest(Result::kServerTransientError, std::nullopt);
+  }
+
+  for (size_t attempts = kPeriodicInterval; attempts < kFailedAttempts;
+       attempts += kPeriodicInterval) {
+    VerifyCookieRotationOutageMetrics(/*periodic=*/true, attempts);
+  }
+  histogram_tester()->ExpectTotalCount(
+      "Signin.BoundSessionCredentials.CookieRotationOutageDuration", 0);
+  histogram_tester()->ExpectTotalCount(
+      "Signin.BoundSessionCredentials.CookieRotationOutageAttempts", 0);
+
+  ResetBoundSessionCookieController();
+  VerifyCookieRotationOutageMetrics(
+      /*periodic=*/false,
+      kNumberOfErrorsToIgnoreForBackoff + 1 + kFailedAttempts);
 }

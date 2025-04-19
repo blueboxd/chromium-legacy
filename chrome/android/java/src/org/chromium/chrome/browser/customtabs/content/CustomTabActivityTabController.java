@@ -45,7 +45,6 @@ import org.chromium.chrome.browser.customtabs.FirstMeaningfulPaintObserver;
 import org.chromium.chrome.browser.customtabs.PageLoadMetricsObserver;
 import org.chromium.chrome.browser.customtabs.ReparentingTaskProvider;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -59,6 +58,7 @@ import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParams;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
+import org.chromium.chrome.browser.tabmodel.TabClosureParams;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelInitializer;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -67,6 +67,7 @@ import org.chromium.chrome.browser.tabmodel.TabReparentingParams;
 import org.chromium.chrome.browser.translate.TranslateBridge;
 import org.chromium.content_public.browser.Visibility;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.net.NetId;
 import org.chromium.ui.base.ActivityWindowAndroid;
 
 import java.lang.annotation.Retention;
@@ -209,7 +210,7 @@ public class CustomTabActivityTabController implements InflationObserver {
     public void closeTab() {
         TabModel model = mTabFactory.getTabModelSelector().getCurrentModel();
         Tab currentTab = mTabProvider.getTab();
-        model.closeTab(currentTab, false, false);
+        model.closeTabs(TabClosureParams.closeTab(currentTab).allowUndo(false).build());
     }
 
     public boolean onlyOneTabRemaining() {
@@ -255,9 +256,9 @@ public class CustomTabActivityTabController implements InflationObserver {
         if (mSavedInstanceStateSupplier.get() == null && mConnection.hasWarmUpBeenFinished()) {
             mTabModelInitializer.initializeTabModels();
 
-            // Hidden tabs shouldn't be used in incognito, since they are always created with
-            // regular profile.
-            if (mIntentDataProvider.isIncognito()) {
+            // Hidden tabs shouldn't be used in incognito/ephemeral CCT, since they are always
+            // created with regular profile.
+            if (mIntentDataProvider.isOffTheRecord()) {
                 mTabProvider.setInitialTab(createTab(), TabCreationMode.EARLY);
                 return;
             }
@@ -285,7 +286,7 @@ public class CustomTabActivityTabController implements InflationObserver {
         TabModelOrchestrator tabModelOrchestrator = mTabFactory.getTabModelOrchestrator();
         TabModelSelectorBase tabModelSelector = tabModelOrchestrator.getTabModelSelector();
 
-        TabModel tabModel = tabModelSelector.getModel(mIntentDataProvider.isIncognito());
+        TabModel tabModel = tabModelSelector.getModel(mIntentDataProvider.isOffTheRecord());
         tabModel.addObserver(mTabObserverRegistrar);
 
         finalizeCreatingTab(tabModelOrchestrator, tabModel);
@@ -387,9 +388,9 @@ public class CustomTabActivityTabController implements InflationObserver {
         WarmupManager warmupManager = WarmupManager.getInstance();
         Profile profile =
                 ProfileProvider.getOrCreateProfile(
-                        mProfileProviderSupplier.get(), mIntentDataProvider.isIncognito());
+                        mProfileProviderSupplier.get(), mIntentDataProvider.isOffTheRecord());
         Tab tab = null;
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_PREWARM_TAB)
+        if (WarmupManager.getInstance().isCCTPrewarmTabFeatureEnabled(true)
                 && warmupManager.hasSpareTab(profile)) {
             tab = warmupManager.takeSpareTab(profile, TabLaunchType.FROM_EXTERNAL_APP);
             TabAssociatedApp.from(tab)
@@ -437,24 +438,33 @@ public class CustomTabActivityTabController implements InflationObserver {
             return webContents;
         }
 
-        webContents =
-                mWarmupManager.takeSpareWebContents(
-                        mIntentDataProvider.isIncognito(), /* initiallyHidden= */ false);
-        if (webContents != null) {
-            recordWebContentsStateOnLaunch(WebContentsState.SPARE_WEBCONTENTS);
-            return webContents;
+        // Check if any available target network specified via customTabsIntent before creating
+        // web contents, and we only use the spare web contents if the provided network is the
+        // default one.
+        // TODO: this check can be removed once the spare web contents can be created with a
+        // particular target network as well, e.g. via {@link CustomTabsSession#mayLaunchUrl}.
+        long targetNetwork = mIntentDataProvider.getTargetNetwork();
+        if (targetNetwork == NetId.INVALID) {
+            webContents =
+                    mWarmupManager.takeSpareWebContents(
+                            mIntentDataProvider.isOffTheRecord(), /* initiallyHidden= */ false);
+            if (webContents != null) {
+                recordWebContentsStateOnLaunch(WebContentsState.SPARE_WEBCONTENTS);
+                return webContents;
+            }
         }
 
         recordWebContentsStateOnLaunch(WebContentsState.NO_WEBCONTENTS);
         return mWebContentsFactory.createWebContentsWithWarmRenderer(
                 ProfileProvider.getOrCreateProfile(
-                        mProfileProviderSupplier.get(), mIntentDataProvider.isIncognito()),
-                false);
+                        mProfileProviderSupplier.get(), mIntentDataProvider.isOffTheRecord()),
+                /* initiallyHidden= */ false,
+                targetNetwork);
     }
 
     private @Nullable WebContents takeAsyncWebContents() {
-        // Async WebContents are not supported for Incognito CCT.
-        if (mIntentDataProvider.isIncognito()) return null;
+        // Async WebContents are not supported for Incognito/Ephemeral CCT.
+        if (mIntentDataProvider.isOffTheRecord()) return null;
         int assignedTabId = IntentHandler.getTabId(mIntent);
         AsyncTabParams asyncParams = mAsyncTabParamsManager.get().remove(assignedTabId);
         if (asyncParams == null) return null;
@@ -468,7 +478,7 @@ public class CustomTabActivityTabController implements InflationObserver {
             tab.getView().requestFocus();
         }
 
-        if (!tab.isIncognito()) {
+        if (!tab.isOffTheRecord()) {
             TabObserver observer =
                     new EmptyTabObserver() {
                         @Override
@@ -497,6 +507,7 @@ public class CustomTabActivityTabController implements InflationObserver {
         // be generated in the middle of tab initialization.
         mTabObserverRegistrar.addObserversForTab(tab);
         prepareTabBackground(tab);
+        mCustomTabObserver.get().setLongPressLinkSelectText(tab, mIntentDataProvider.isAuthTab());
     }
 
     public void registerTabObserver(TabObserver observer) {

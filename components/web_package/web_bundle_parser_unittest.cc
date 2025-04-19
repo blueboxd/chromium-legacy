@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "components/web_package/web_bundle_parser.h"
 
 #include <optional>
@@ -22,6 +27,7 @@
 #include "components/web_package/mojom/web_bundle_parser.mojom-forward.h"
 #include "components/web_package/mojom/web_bundle_parser.mojom.h"
 #include "components/web_package/signed_web_bundles/ed25519_public_key.h"
+#include "components/web_package/signed_web_bundles/integrity_block_attributes.h"
 #include "components/web_package/test_support/signed_web_bundles/web_bundle_signer.h"
 #include "components/web_package/web_bundle_builder.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -207,6 +213,8 @@ struct SignedWebBundleAndKeys {
 
 SignedWebBundleAndKeys SignBundle(
     const std::vector<uint8_t>& unsigned_bundle,
+    const std::optional<WebBundleSigner::IntegrityBlockAttributes>&
+        ib_attributes,
     WebBundleSigner::ErrorsForTesting errors_for_testing = {
         /*integrity_block_errors=*/{}, /*signatures_errors=*/{}},
     size_t num_signatures = 1) {
@@ -216,29 +224,27 @@ SignedWebBundleAndKeys SignBundle(
   }
 
   return {
-      WebBundleSigner::SignBundle(unsigned_bundle, key_pairs,
+      WebBundleSigner::SignBundle(unsigned_bundle, key_pairs, ib_attributes,
                                   errors_for_testing),
       key_pairs,
   };
 }
 
+SignedWebBundleAndKeys SignBundle(
+    const std::vector<uint8_t>& unsigned_bundle,
+    WebBundleSigner::ErrorsForTesting errors_for_testing = {
+        /*integrity_block_errors=*/{}, /*signatures_errors=*/{}},
+    size_t num_signatures = 1) {
+  return SignBundle(unsigned_bundle, /*ib_attributes=*/{}, errors_for_testing,
+                    num_signatures);
+}
+
 void CheckIfSignatureStackEntryIsValid(
-    mojom::BundleIntegrityBlockSignatureStackEntryPtr& entry,
+    const mojom::BundleIntegrityBlockSignatureStackEntryPtr& entry,
     const Ed25519PublicKey& public_key) {
   ASSERT_TRUE(entry->signature_info->is_ed25519());
   EXPECT_EQ(entry->signature_info->get_ed25519()->public_key, public_key);
 
-  // The signature should also be present at the very end of
-  // `complete_entry_cbor`.
-  auto signature_bytes = entry->signature_info->get_ed25519()->signature;
-  EXPECT_TRUE(std::equal(
-      signature_bytes.bytes().begin(), signature_bytes.bytes().end(),
-      entry->complete_entry_cbor.end() - signature_bytes.bytes().size()));
-
-  // The attributes should also be part of `complete_entry_cbor`.
-  EXPECT_NE(
-      base::ranges::search(entry->complete_entry_cbor, entry->attributes_cbor),
-      entry->complete_entry_cbor.end());
   // The attributes should contain the public key.
   EXPECT_NE(base::ranges::search(entry->attributes_cbor, public_key.bytes()),
             entry->attributes_cbor.end());
@@ -250,7 +256,10 @@ using base::test::ErrorIs;
 using testing::AllOf;
 using testing::Eq;
 using testing::Field;
+using testing::HasSubstr;
+using testing::Optional;
 using testing::Pointee;
+using testing::Property;
 
 class WebBundleParserTest : public testing::Test {
  private:
@@ -874,14 +883,6 @@ TEST_F(WebBundleParserTest,
                         Eq(mojom::BundleParseErrorType::kFormatError)),
                   Field(&mojom::BundleIntegrityBlockParseError::message,
                         Eq("Unknown cipher type of the first signature."))))));
-
-  auto result = ParseSignedBundleIntegrityBlock(&data_source);
-  ASSERT_FALSE(result.has_value());
-  EXPECT_THAT(*result.error(),
-              AllOf(Field(&mojom::BundleIntegrityBlockParseError::type,
-                          Eq(mojom::BundleParseErrorType::kFormatError)),
-                    Field(&mojom::BundleIntegrityBlockParseError::message,
-                          Eq("Unknown cipher type of the first signature."))));
 }
 
 TEST_F(WebBundleParserTest, SignedBundleWrongMagic) {
@@ -891,12 +892,12 @@ TEST_F(WebBundleParserTest, SignedBundleWrongMagic) {
   bundle_and_keys.bundle[3] ^= 1;
   TestDataSource data_source(bundle_and_keys.bundle);
 
-  auto result = ParseSignedBundleIntegrityBlock(&data_source);
-  ASSERT_FALSE(result.has_value());
-  auto& error = result.error();
-
-  EXPECT_EQ(error->type, mojom::BundleParseErrorType::kFormatError);
-  EXPECT_EQ(error->message, "Wrong array size or magic bytes.");
+  EXPECT_THAT(ParseSignedBundleIntegrityBlock(&data_source),
+              ErrorIs(Pointee(
+                  AllOf(Field(&mojom::BundleIntegrityBlockParseError::type,
+                              Eq(mojom::BundleParseErrorType::kFormatError)),
+                        Field(&mojom::BundleIntegrityBlockParseError::message,
+                              Eq("Unexpected magic bytes."))))));
 }
 
 TEST_F(WebBundleParserTest, SignedBundleUnknownVersion) {
@@ -908,30 +909,48 @@ TEST_F(WebBundleParserTest, SignedBundleUnknownVersion) {
   bundle_and_keys.bundle[12] = 'q';
   TestDataSource data_source(bundle_and_keys.bundle);
 
-  auto result = ParseSignedBundleIntegrityBlock(&data_source);
-  ASSERT_FALSE(result.has_value());
-  auto& error = result.error();
-
-  EXPECT_EQ(error->type, mojom::BundleParseErrorType::kVersionError)
-      << error->message;
+  EXPECT_THAT(
+      ParseSignedBundleIntegrityBlock(&data_source),
+      ErrorIs(Pointee(Field(&mojom::BundleIntegrityBlockParseError::type,
+                            Eq(mojom::BundleParseErrorType::kVersionError)))));
 }
 
 TEST_F(WebBundleParserTest, SignedBundleEmptySignatureStack) {
-  WebBundleBuilder builder;
-  std::vector<uint8_t> unsigned_bundle = builder.CreateBundle();
-  std::vector<uint8_t> signed_bundle(*cbor::Writer::Write(
-      WebBundleSigner::CreateIntegrityBlock(/*signature_stack=*/{})));
-  signed_bundle.insert(signed_bundle.end(), unsigned_bundle.begin(),
-                       unsigned_bundle.end());
+  std::vector<uint8_t> signed_bundle = WebBundleSigner::SignBundle(
+      WebBundleBuilder().CreateBundle(), /*key_pairs=*/{}, /*ib_attributes=*/
+      {{.web_bundle_id =
+            "amoiebz32b7o24tilu257xne2yf3nkblkploanxzm7ebeglseqpfeaacai"}},
+      {/*integrity_block_errors=*/{
+           WebBundleSigner::IntegrityBlockErrorForTesting::kEmptySignatureList},
+       /*signatures_errors=*/{}});
   TestDataSource data_source(signed_bundle);
 
-  auto result = ParseSignedBundleIntegrityBlock(&data_source);
-  ASSERT_FALSE(result.has_value());
-  auto& error = result.error();
+  EXPECT_THAT(ParseSignedBundleIntegrityBlock(&data_source),
+              ErrorIs(Pointee(
+                  AllOf(Field(&mojom::BundleIntegrityBlockParseError::type,
+                              Eq(mojom::BundleParseErrorType::kFormatError)),
+                        Field(&mojom::BundleIntegrityBlockParseError::message,
+                              Eq("The signature stack must contain at least "
+                                 "one signature."))))));
+}
 
-  EXPECT_EQ(error->type, mojom::BundleParseErrorType::kFormatError);
-  EXPECT_EQ(error->message,
-            "The signature stack must contain at least one signature.");
+TEST_F(WebBundleParserTest, SignedBundleNoBundleId) {
+  WebBundleBuilder builder;
+  std::vector<uint8_t> unsigned_bundle = builder.CreateBundle();
+  auto bundle_and_keys = SignBundle(
+      unsigned_bundle, {/*integrity_block_errors=*/{
+                            WebBundleSigner::IntegrityBlockErrorForTesting::
+                                kNoSignedWebBundleId},
+                        /*signatures_errors=*/{}});
+  TestDataSource data_source(bundle_and_keys.bundle);
+
+  EXPECT_THAT(ParseSignedBundleIntegrityBlock(&data_source),
+              ErrorIs(Pointee(
+                  AllOf(Field(&mojom::BundleIntegrityBlockParseError::type,
+                              Eq(mojom::BundleParseErrorType::kFormatError)),
+                        Field(&mojom::BundleIntegrityBlockParseError::message,
+                              Eq("`webBundleId` field in integrity block "
+                                 "attributes is missing or malformed."))))));
 }
 
 TEST_F(WebBundleParserTest, SignedBundleWrongSignatureLength) {
@@ -942,14 +961,13 @@ TEST_F(WebBundleParserTest, SignedBundleWrongSignatureLength) {
                               kInvalidSignatureLength}}});
   TestDataSource data_source(bundle_and_keys.bundle);
 
-  auto result = ParseSignedBundleIntegrityBlock(&data_source);
-  ASSERT_FALSE(result.has_value());
-  auto& error = result.error();
-
-  EXPECT_EQ(error->type, mojom::BundleParseErrorType::kFormatError);
-  EXPECT_EQ(error->message,
-            "The signature does not have the correct length, expected 64 "
-            "bytes.");
+  EXPECT_THAT(ParseSignedBundleIntegrityBlock(&data_source),
+              ErrorIs(Pointee(
+                  AllOf(Field(&mojom::BundleIntegrityBlockParseError::type,
+                              Eq(mojom::BundleParseErrorType::kFormatError)),
+                        Field(&mojom::BundleIntegrityBlockParseError::message,
+                              Eq("The signature has the wrong length. Expected "
+                                 "64, but got 65 bytes."))))));
 }
 
 TEST_F(WebBundleParserTest, SignedBundleWrongSignatureStackEntryLength) {
@@ -960,31 +978,122 @@ TEST_F(WebBundleParserTest, SignedBundleWrongSignatureStackEntryLength) {
                               kAdditionalSignatureStackEntryElement}}});
   TestDataSource data_source(bundle_and_keys.bundle);
 
-  auto result = ParseSignedBundleIntegrityBlock(&data_source);
-  ASSERT_FALSE(result.has_value());
-  auto& error = result.error();
-
-  EXPECT_EQ(error->type, mojom::BundleParseErrorType::kFormatError);
-  EXPECT_EQ(error->message,
-            "Each signature stack entry must contain exactly two elements.");
+  EXPECT_THAT(ParseSignedBundleIntegrityBlock(&data_source),
+              ErrorIs(Pointee(
+                  AllOf(Field(&mojom::BundleIntegrityBlockParseError::type,
+                              Eq(mojom::BundleParseErrorType::kFormatError)),
+                        Field(&mojom::BundleIntegrityBlockParseError::message,
+                              Eq("Each signature stack entry must contain "
+                                 "exactly two elements."))))));
 }
 
-TEST_F(WebBundleParserTest, SignedBundleWrongAdditionalAttribute) {
+TEST_F(WebBundleParserTest, SignedBundleWithMultipleAttributes) {
   auto unsigned_bundle = CreateSmallBundle();
   auto bundle_and_keys = SignBundle(
       unsigned_bundle, {/*integrity_block_errors=*/{},
                         {{WebBundleSigner::IntegritySignatureErrorForTesting::
-                              kAdditionalSignatureStackEntryAttribute}}});
+                              kAdditionalSignatureStackEntryAttributes}}});
   TestDataSource data_source(bundle_and_keys.bundle);
 
-  auto result = ParseSignedBundleIntegrityBlock(&data_source);
-  ASSERT_FALSE(result.has_value());
-  auto& error = result.error();
+  ASSERT_OK_AND_ASSIGN(auto integrity_block,
+                       ParseSignedBundleIntegrityBlock(&data_source));
 
-  EXPECT_EQ(error->type, mojom::BundleParseErrorType::kFormatError);
-  EXPECT_EQ(
-      error->message,
-      "A signature stack entry's attributes must be a map with one element.");
+  // The size of the integrity block should be exactly equal to the size
+  // difference between a signed and an unsigned bundle.
+  EXPECT_EQ(integrity_block->size,
+            bundle_and_keys.bundle.size() - unsigned_bundle.size());
+
+  // There should be exactly one signature stack entry, corresponding to the
+  // public key that was used to sign the web bundle.
+  EXPECT_EQ(integrity_block->signature_stack.size(), 1ul);
+  auto& entry = integrity_block->signature_stack[0];
+  EXPECT_NO_FATAL_FAILURE(CheckIfSignatureStackEntryIsValid(
+      entry,
+      absl::get<WebBundleSigner::Ed25519KeyPair>(bundle_and_keys.key_pairs[0])
+          .public_key));
+}
+
+TEST_F(WebBundleParserTest, SignedBundleV2) {
+  static constexpr std::string_view kWebBundleId =
+      "aerugqztij5biqquuk3mfwpsaibuegaqcitgfchwuosuofdjabzqaaic";
+  auto unsigned_bundle = CreateSmallBundle();
+  auto bundle_and_keys = SignBundle(
+      unsigned_bundle, {{.web_bundle_id = std::string(kWebBundleId)}},
+      {/*integrity_block_errors=*/{},
+       {{WebBundleSigner::IntegritySignatureErrorForTesting::
+             kAdditionalSignatureStackEntryAttributes}}});
+  TestDataSource data_source(bundle_and_keys.bundle);
+
+  ASSERT_OK_AND_ASSIGN(auto integrity_block,
+                       ParseSignedBundleIntegrityBlock(&data_source));
+
+  // The size of the integrity block should be exactly equal to the size
+  // difference between a signed and an unsigned bundle.
+  EXPECT_EQ(integrity_block->size,
+            bundle_and_keys.bundle.size() - unsigned_bundle.size());
+
+  EXPECT_THAT(integrity_block->attributes,
+              Optional(Property(&IntegrityBlockAttributes::web_bundle_id,
+                                Eq(kWebBundleId))));
+
+  // There should be exactly one signature stack entry, corresponding to the
+  // public key that was used to sign the web bundle.
+  EXPECT_EQ(integrity_block->signature_stack.size(), 1ul);
+  auto& entry = integrity_block->signature_stack[0];
+  EXPECT_NO_FATAL_FAILURE(CheckIfSignatureStackEntryIsValid(
+      entry,
+      absl::get<WebBundleSigner::Ed25519KeyPair>(bundle_and_keys.key_pairs[0])
+          .public_key));
+}
+
+TEST_F(WebBundleParserTest, SignedBundleWithMultiplePublicKeyAttributes) {
+  auto unsigned_bundle = CreateSmallBundle();
+  auto bundle_and_keys = SignBundle(
+      unsigned_bundle, {/*integrity_block_errors=*/{},
+                        {{WebBundleSigner::IntegritySignatureErrorForTesting::
+                              kMultipleValidPublicKeyAttributes}}});
+  TestDataSource data_source(bundle_and_keys.bundle);
+
+  EXPECT_THAT(ParseSignedBundleIntegrityBlock(&data_source),
+              ErrorIs(Pointee(AllOf(
+                  Field(&mojom::BundleIntegrityBlockParseError::type,
+                        Eq(mojom::BundleParseErrorType::kFormatError)),
+                  Field(&mojom::BundleIntegrityBlockParseError::message,
+                        Eq("Unknown cipher type of the first signature."))))));
+}
+
+TEST_F(WebBundleParserTest, SignedBundleUnsupportedSignatureAttributeMap) {
+  auto unsigned_bundle = CreateSmallBundle();
+  auto bundle_and_keys = SignBundle(
+      unsigned_bundle, {/*integrity_block_errors=*/{},
+                        {{WebBundleSigner::IntegritySignatureErrorForTesting::
+                              kSignatureStackEntryUnsupportedMapAttribute}}});
+  TestDataSource data_source(bundle_and_keys.bundle);
+
+  EXPECT_THAT(
+      ParseSignedBundleIntegrityBlock(&data_source),
+      ErrorIs(Pointee(AllOf(
+          Field(&mojom::BundleIntegrityBlockParseError::type,
+                Eq(mojom::BundleParseErrorType::kFormatError)),
+          Field(&mojom::BundleIntegrityBlockParseError::message,
+                HasSubstr("nested attributes are currently not supported"))))));
+}
+
+TEST_F(WebBundleParserTest, SignedBundleUnsupportedSignatureAttributeArray) {
+  auto unsigned_bundle = CreateSmallBundle();
+  auto bundle_and_keys = SignBundle(
+      unsigned_bundle, {/*integrity_block_errors=*/{},
+                        {{WebBundleSigner::IntegritySignatureErrorForTesting::
+                              kSignatureStackEntryUnsupportedArrayAttribute}}});
+  TestDataSource data_source(bundle_and_keys.bundle);
+
+  EXPECT_THAT(
+      ParseSignedBundleIntegrityBlock(&data_source),
+      ErrorIs(Pointee(AllOf(
+          Field(&mojom::BundleIntegrityBlockParseError::type,
+                Eq(mojom::BundleParseErrorType::kFormatError)),
+          Field(&mojom::BundleIntegrityBlockParseError::message,
+                HasSubstr("nested attributes are currently not supported"))))));
 }
 
 TEST_F(WebBundleParserTest, SignedBundleNoPublicKeyAttribute) {
@@ -995,14 +1104,12 @@ TEST_F(WebBundleParserTest, SignedBundleNoPublicKeyAttribute) {
                               kNoPublicKeySignatureStackEntryAttribute}}});
   TestDataSource data_source(bundle_and_keys.bundle);
 
-  auto result = ParseSignedBundleIntegrityBlock(&data_source);
-  ASSERT_FALSE(result.has_value());
-  auto& error = result.error();
-
-  EXPECT_EQ(error->type, mojom::BundleParseErrorType::kFormatError);
-  EXPECT_EQ(
-      error->message,
-      "A signature stack entry's attributes must be a map with one element.");
+  EXPECT_THAT(ParseSignedBundleIntegrityBlock(&data_source),
+              ErrorIs(Pointee(AllOf(
+                  Field(&mojom::BundleIntegrityBlockParseError::type,
+                        Eq(mojom::BundleParseErrorType::kFormatError)),
+                  Field(&mojom::BundleIntegrityBlockParseError::message,
+                        Eq("Unknown cipher type of the first signature."))))));
 }
 
 TEST_F(WebBundleParserTest, SignedBundleWrongPublicKeyAttributeName) {
@@ -1013,11 +1120,12 @@ TEST_F(WebBundleParserTest, SignedBundleWrongPublicKeyAttributeName) {
                               kWrongSignatureStackEntryAttributeName}}});
   TestDataSource data_source(bundle_and_keys.bundle);
 
-  auto result = ParseSignedBundleIntegrityBlock(&data_source);
-  ASSERT_FALSE(result.has_value());
-  EXPECT_EQ(result.error()->type, mojom::BundleParseErrorType::kFormatError);
-  EXPECT_EQ(result.error()->message,
-            "Unknown cipher type of the first signature.");
+  EXPECT_THAT(ParseSignedBundleIntegrityBlock(&data_source),
+              ErrorIs(Pointee(AllOf(
+                  Field(&mojom::BundleIntegrityBlockParseError::type,
+                        Eq(mojom::BundleParseErrorType::kFormatError)),
+                  Field(&mojom::BundleIntegrityBlockParseError::message,
+                        Eq("Unknown cipher type of the first signature."))))));
 }
 
 TEST_F(WebBundleParserTest, SignedBundleWrongPublicKeyAttributeLength) {
@@ -1028,11 +1136,12 @@ TEST_F(WebBundleParserTest, SignedBundleWrongPublicKeyAttributeLength) {
                               kWrongSignatureStackEntryAttributeNameLength}}});
   TestDataSource data_source(bundle_and_keys.bundle);
 
-  auto result = ParseSignedBundleIntegrityBlock(&data_source);
-  ASSERT_FALSE(result.has_value());
-  EXPECT_EQ(result.error()->type, mojom::BundleParseErrorType::kFormatError);
-  EXPECT_EQ(result.error()->message,
-            "Unknown cipher type of the first signature.");
+  EXPECT_THAT(ParseSignedBundleIntegrityBlock(&data_source),
+              ErrorIs(Pointee(AllOf(
+                  Field(&mojom::BundleIntegrityBlockParseError::type,
+                        Eq(mojom::BundleParseErrorType::kFormatError)),
+                  Field(&mojom::BundleIntegrityBlockParseError::message,
+                        Eq("Unknown cipher type of the first signature."))))));
 }
 
 TEST_F(WebBundleParserTest, SignedBundleWrongPublicKeyLength) {
@@ -1043,14 +1152,14 @@ TEST_F(WebBundleParserTest, SignedBundleWrongPublicKeyLength) {
                               kInvalidPublicKeyLength}}});
   TestDataSource data_source(bundle_and_keys.bundle);
 
-  auto result = ParseSignedBundleIntegrityBlock(&data_source);
-  ASSERT_FALSE(result.has_value());
-  auto& error = result.error();
-
-  EXPECT_EQ(error->type, mojom::BundleParseErrorType::kFormatError);
-  EXPECT_EQ(error->message,
-            "The Ed25519 public key does not have the correct length. Expected "
-            "32 bytes, but received 33 bytes.");
+  EXPECT_THAT(ParseSignedBundleIntegrityBlock(&data_source),
+              ErrorIs(Pointee(
+                  AllOf(Field(&mojom::BundleIntegrityBlockParseError::type,
+                              Eq(mojom::BundleParseErrorType::kFormatError)),
+                        Field(&mojom::BundleIntegrityBlockParseError::message,
+                              Eq("The Ed25519 public key does not have the "
+                                 "correct length. Expected "
+                                 "32 bytes, but received 33 bytes."))))));
 }
 
 TEST_F(WebBundleParserTest, DisconnectWhileParsingMetadata) {

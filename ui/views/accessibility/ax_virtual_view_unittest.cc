@@ -4,6 +4,7 @@
 
 #include "ui/views/accessibility/ax_virtual_view.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -62,15 +63,15 @@ class AXVirtualViewTest : public ViewsTestBase {
   void SetUp() override {
     ViewsTestBase::SetUp();
 
-    widget_ = new Widget;
+    widget_ = std::make_unique<Widget>();
     Widget::InitParams params =
-        CreateParams(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET,
+        CreateParams(Widget::InitParams::CLIENT_OWNS_WIDGET,
                      Widget::InitParams::TYPE_WINDOW);
     params.bounds = gfx::Rect(0, 0, 200, 200);
     widget_->Init(std::move(params));
     auto button = std::make_unique<TestButton>();
     button->SetSize(gfx::Size(20, 20));
-    button->SetAccessibleName(u"Button");
+    button->GetViewAccessibility().SetName(u"Button");
     button_ = widget_->GetContentsView()->AddChildView(std::move(button));
     auto virtual_label = std::make_unique<AXVirtualView>();
     virtual_label->GetCustomData().role = ax::mojom::Role::kStaticText;
@@ -100,7 +101,7 @@ class AXVirtualViewTest : public ViewsTestBase {
     button_ = nullptr;
     if (!widget_->IsClosed())
       widget_->Close();
-    widget_ = nullptr;
+    widget_.reset();
     ViewsTestBase::TearDown();
   }
 
@@ -123,7 +124,7 @@ class AXVirtualViewTest : public ViewsTestBase {
     accessibility_events_.clear();
   }
 
-  raw_ptr<Widget> widget_ = nullptr;
+  std::unique_ptr<Widget> widget_;
   raw_ptr<Button> button_ = nullptr;
   raw_ptr<AXVirtualView> virtual_label_ = nullptr;
 

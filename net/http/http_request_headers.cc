@@ -70,6 +70,8 @@ const char HttpRequestHeaders::kProxyAuthorization[] = "Proxy-Authorization";
 const char HttpRequestHeaders::kProxyConnection[] = "Proxy-Connection";
 const char HttpRequestHeaders::kRange[] = "Range";
 const char HttpRequestHeaders::kReferer[] = "Referer";
+const char HttpRequestHeaders::kSecFetchStorageAccess[] =
+    "Sec-Fetch-Storage-Access";
 const char HttpRequestHeaders::kTransferEncoding[] = "Transfer-Encoding";
 const char HttpRequestHeaders::kUserAgent[] = "User-Agent";
 
@@ -115,11 +117,19 @@ HttpRequestHeaders& HttpRequestHeaders::operator=(HttpRequestHeaders&& other) =
 
 bool HttpRequestHeaders::GetHeader(std::string_view key,
                                    std::string* out) const {
+  std::optional<std::string> value = GetHeader(key);
+  if (value) {
+    out->swap(*value);
+  }
+  return value.has_value();
+}
+
+std::optional<std::string> HttpRequestHeaders::GetHeader(
+    std::string_view key) const {
   auto it = FindHeader(key);
   if (it == headers_.end())
-    return false;
-  out->assign(it->value);
-  return true;
+    return std::nullopt;
+  return it->value;
 }
 
 void HttpRequestHeaders::Clear() {

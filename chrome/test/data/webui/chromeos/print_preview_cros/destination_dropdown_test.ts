@@ -5,11 +5,11 @@
 import 'chrome://os-print/js/destination_dropdown.js';
 
 import {PDF_DESTINATION} from 'chrome://os-print/js/data/destination_constants.js';
-import {DESTINATION_MANAGER_ACTIVE_DESTINATION_CHANGED, DESTINATION_MANAGER_SESSION_INITIALIZED, DestinationManager} from 'chrome://os-print/js/data/destination_manager.js';
+import {DESTINATION_MANAGER_ACTIVE_DESTINATION_CHANGED, DESTINATION_MANAGER_DESTINATIONS_CHANGED, DESTINATION_MANAGER_SESSION_INITIALIZED, DestinationManager} from 'chrome://os-print/js/data/destination_manager.js';
+import {DestinationProviderComposite} from 'chrome://os-print/js/data/destination_provider_composite.js';
 import {DestinationDropdownElement} from 'chrome://os-print/js/destination_dropdown.js';
-import {DESTINATION_DROPDOWN_UPDATE_DESTINATIONS, DESTINATION_DROPDOWN_UPDATE_SELECTED_DESTINATION, DestinationDropdownController} from 'chrome://os-print/js/destination_dropdown_controller.js';
+import {DESTINATION_DROPDOWN_DROPDOWN_DISABLED_CHANGED, DESTINATION_DROPDOWN_UPDATE_DESTINATIONS, DESTINATION_DROPDOWN_UPDATE_SELECTED_DESTINATION, DestinationDropdownController} from 'chrome://os-print/js/destination_dropdown_controller.js';
 import {DestinationRowElement} from 'chrome://os-print/js/destination_row.js';
-import {type FakeDestinationProvider} from 'chrome://os-print/js/fakes/fake_destination_provider.js';
 import {FAKE_PRINT_SESSION_CONTEXT_SUCCESSFUL} from 'chrome://os-print/js/fakes/fake_print_preview_page_handler.js';
 import {createCustomEvent} from 'chrome://os-print/js/utils/event_utils.js';
 import {getDestinationProvider} from 'chrome://os-print/js/utils/mojo_data_providers.js';
@@ -21,7 +21,7 @@ import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from 'chrome://
 import {MockController} from 'chrome://webui-test/chromeos/mock_controller.m.js';
 import {eventToPromise, isVisible} from 'chrome://webui-test/test_util.js';
 
-import {createTestDestination, resetDataManagersAndProviders} from './test_utils.js';
+import {createTestDestination, resetDataManagersAndProviders, waitForInitialDestinationSet, waitForPrintTicketManagerInitialized} from './test_utils.js';
 
 suite('DestinationDropdown', () => {
   let element: DestinationDropdownElement;
@@ -91,6 +91,19 @@ suite('DestinationDropdown', () => {
     return rowLabel.textContent!.trim();
   }
 
+  async function clickDropdownRowFor(destinationId: string): Promise<void> {
+    assert(element.shadowRoot);
+    const content = strictQuery<HTMLDivElement>(
+        '#content', element.shadowRoot, HTMLDivElement);
+    assertTrue(isVisible(content), 'Dropdown needs to be open');
+    const destinationRow = strictQuery<DestinationRowElement>(
+        `#row-${destinationId}`, content, DestinationRowElement);
+    assert(destinationRow, 'Only attempt to click existing destination');
+    const clickEvent = eventToPromise('click', destinationRow);
+    destinationRow.click();
+    await clickEvent;
+  }
+
   async function toggleDropdown(): Promise<void> {
     const selected = getSelectedDestinationRow();
     const clickEvent = eventToPromise('click', selected);
@@ -147,10 +160,10 @@ suite('DestinationDropdown', () => {
 
   // Verify clicking dropdown's selected UI toggles content visibility.
   test('clicking dropdown toggles content visibility', async () => {
-    const getDestinationsFn =
-        mockController.createFunctionMock(controller, 'getDestinations');
-    getDestinationsFn.returnValue = [PDF_DESTINATION];
+    await waitForInitialDestinationSet();
+    await waitForPrintTicketManagerInitialized();
 
+    assertFalse(element.disabled);
     assertTrue(isVisible(getSelectedDestinationRow()));
     const content = getDropdownContent();
     assertFalse(isVisible(content), 'Content is not initially displayed');
@@ -225,7 +238,8 @@ suite('DestinationDropdown', () => {
         // Simulate update from destination observer appends a new destination
         // to the list of destinations in dropdown.
         const destinationProvider =
-            getDestinationProvider() as FakeDestinationProvider;
+            (getDestinationProvider() as DestinationProviderComposite)
+                .fakeDestinationProvider;
         const addedDestination = createTestDestination();
         destinationProvider.setDestinationsChangesData([addedDestination]);
         const updateContentEvent = eventToPromise(
@@ -238,4 +252,98 @@ suite('DestinationDropdown', () => {
           addedDestination,
         ]);
       });
+
+  // Verify clicking a DestinationRowElement in contents calls controller's
+  // updateActiveDestination handler with the destination id of the clicked
+  // DestinationRowElement, updates selectedDestination, and closes content.
+  test(
+      'DestinationRowElement immediately closes the dropdown and passes ID ' +
+          'of the clicked row to updateActiveDestination',
+      async () => {
+        mockController.reset();
+        const selectedChanged = eventToPromise(
+            DESTINATION_DROPDOWN_UPDATE_SELECTED_DESTINATION, controller);
+        await waitForInitialDestinationSet();
+        await waitForPrintTicketManagerInitialized();
+        await selectedChanged;
+        const updateFn = mockController.createFunctionMock(
+            controller, 'updateActiveDestination');
+        updateFn.returnValue = true;
+        const testDestination = createTestDestination();
+        const destChangedEvent = eventToPromise(
+            DESTINATION_DROPDOWN_UPDATE_DESTINATIONS, controller);
+        destinationManager.setDestinationForTesting(testDestination);
+        destinationManager.dispatchEvent(
+            createCustomEvent(DESTINATION_MANAGER_DESTINATIONS_CHANGED));
+        await destChangedEvent;
+
+        // Simulate clicking a destination row.
+        await toggleDropdown();
+        updateFn.addExpectation(testDestination.id);
+        await clickDropdownRowFor(testDestination.id);
+
+        assertFalse(isVisible(getDropdownContent()), 'Dropdown closed');
+        assertEquals(
+            testDestination.displayName, getSelectedDestinationRowLabel());
+        updateFn.verifyMock();
+      });
+
+  // Verify clicking a DestinationRowElement closes content and does not
+  // update selectedDestination if provided ID is active destination.
+  test(
+      'selectedDestination not updated if updateActiveDestination returns ' +
+          'false',
+      async () => {
+        mockController.reset();
+        await waitForInitialDestinationSet();
+        await waitForPrintTicketManagerInitialized();
+        assertEquals(
+            PDF_DESTINATION.displayName, getSelectedDestinationRowLabel());
+
+        // Simulate clicking a destination row.
+        await toggleDropdown();
+        await clickDropdownRowFor(PDF_DESTINATION.id);
+
+        assertFalse(isVisible(getDropdownContent()), 'Dropdown closed');
+        assertEquals(
+            PDF_DESTINATION.displayName, getSelectedDestinationRowLabel());
+      });
+
+  // Verify click ignored if disabled is true.
+  test('cannot toggle open content when disabled', async () => {
+    await waitForInitialDestinationSet();
+    await waitForPrintTicketManagerInitialized();
+    assertFalse(element.disabled);
+
+    // Force disabled to true and emit change event to update UI.
+    const updateFn =
+        mockController.createFunctionMock(controller, 'shouldDisableDropdown');
+    updateFn.returnValue = true;
+    controller.dispatchEvent(
+        createCustomEvent(DESTINATION_DROPDOWN_DROPDOWN_DISABLED_CHANGED));
+    await toggleDropdown();
+
+    assertTrue(element.disabled);
+    assertFalse(isVisible(getDropdownContent()), 'Dropdown remains closed');
+  });
+
+  // Verify dropdown closed if open when disabled event returns true.
+  test('dropdown closed when disabled', async () => {
+    await waitForInitialDestinationSet();
+    await waitForPrintTicketManagerInitialized();
+    // Open dropdown.
+    assertFalse(element.disabled);
+    await toggleDropdown();
+    assertTrue(isVisible(getDropdownContent()), 'Dropdown open');
+
+    // Force disabled to true and emit change event to update UI.
+    const updateFn =
+        mockController.createFunctionMock(controller, 'shouldDisableDropdown');
+    updateFn.returnValue = true;
+    controller.dispatchEvent(
+        createCustomEvent(DESTINATION_DROPDOWN_DROPDOWN_DISABLED_CHANGED));
+
+    assertTrue(element.disabled);
+    assertFalse(isVisible(getDropdownContent()), 'Dropdown closed');
+  });
 });

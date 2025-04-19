@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "media/gpu/vaapi/vp9_vaapi_video_encoder_delegate.h"
 
 #include <algorithm>
@@ -785,14 +790,13 @@ bool VP9VaapiVideoEncoderDelegate::SubmitFrameParameters(
   pic_param.frame_width_dst = frame_header->render_width;
   pic_param.frame_height_dst = frame_header->render_height;
 
-  pic_param.reconstructed_frame = pic->AsVaapiVP9Picture()->GetVASurfaceID();
+  pic_param.reconstructed_frame = pic->AsVaapiVP9Picture()->va_surface_id();
   DCHECK_NE(pic_param.reconstructed_frame, VA_INVALID_ID);
 
   for (size_t i = 0; i < kVp9NumRefFrames; i++) {
     auto ref_pic = ref_frames.GetFrame(i);
     pic_param.reference_frames[i] =
-        ref_pic ? ref_pic->AsVaapiVP9Picture()->GetVASurfaceID()
-                : VA_INVALID_ID;
+        ref_pic ? ref_pic->AsVaapiVP9Picture()->va_surface_id() : VA_INVALID_ID;
   }
 
   pic_param.coded_buf = job.coded_buffer_id();

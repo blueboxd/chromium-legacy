@@ -306,8 +306,9 @@ export interface PasswordManagerProxy {
   /**
    * Switches Biometric authentication before filling state after
    * successful authentication.
+   * @return A promise that resolves with authentication result.
    */
-  switchBiometricAuthBeforeFillingState(): void;
+  switchBiometricAuthBeforeFillingState(): Promise<boolean>;
 
   /**
    * Shows the file with the exported passwords in the OS shell.
@@ -398,6 +399,11 @@ export interface PasswordManagerProxy {
    * (Passkeys Enclave).
    */
   isConnectedToCloudAuthenticator(): Promise<boolean>;
+
+  /**
+   * Deletes all password manager data (passwords, passkeys, etc.)
+   */
+  deleteAllPasswordManagerData(): Promise<boolean>;
 }
 
 /**
@@ -569,7 +575,7 @@ export class PasswordManagerImpl implements PasswordManagerProxy {
   }
 
   switchBiometricAuthBeforeFillingState() {
-    chrome.passwordsPrivate.switchBiometricAuthBeforeFillingState();
+    return chrome.passwordsPrivate.switchBiometricAuthBeforeFillingState();
   }
 
   showExportedFileInShell(filePath: string) {
@@ -641,6 +647,10 @@ export class PasswordManagerImpl implements PasswordManagerProxy {
 
   isConnectedToCloudAuthenticator() {
     return chrome.passwordsPrivate.isConnectedToCloudAuthenticator();
+  }
+
+  deleteAllPasswordManagerData() {
+    return chrome.passwordsPrivate.deleteAllPasswordManagerData();
   }
 
   static getInstance(): PasswordManagerProxy {

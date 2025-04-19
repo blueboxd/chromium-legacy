@@ -160,7 +160,13 @@ enum class PrerenderFinalStatus {
 
   kAllPrerenderingCanceled = 81,
 
-  kMaxValue = kAllPrerenderingCanceled,
+  // Cancelled by window.close() from renderer side.
+  kWindowClosed = 82,
+
+  kSlowNetwork = 83,
+  kOtherPrerenderedPageActivated = 84,
+
+  kMaxValue = kOtherPrerenderedPageActivated,
 };
 // LINT.ThenChange()
 

@@ -8,6 +8,7 @@
 #include <optional>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 #include "ash/constants/ash_switches.h"
@@ -22,7 +23,10 @@
 #include "base/logging.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
+#include "base/sequence_checker.h"
 #include "base/task/sequenced_task_runner.h"
+#include "chrome/browser/ash/app_mode/app_launch_utils.h"
+#include "chrome/browser/ash/app_mode/crash_recovery_launcher.h"
 #include "chrome/browser/ash/app_mode/kiosk_app.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager_base.h"
@@ -35,11 +39,16 @@
 #include "chrome/browser/ash/login/app_mode/kiosk_launch_controller.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/policy/core/device_local_account.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/common/chrome_switches.h"
+#include "chromeos/ash/components/kiosk/vision/internals_page_processor.h"
+#include "chromeos/ash/components/kiosk/vision/kiosk_vision.h"
 #include "chromeos/ash/components/settings/cros_settings.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "ui/ozone/public/input_controller.h"
+#include "ui/ozone/public/ozone_platform.h"
 #include "ui/wm/core/wm_core_switches.h"
 
 namespace ash {
@@ -67,6 +76,22 @@ std::optional<KioskApp> ChromeAppById(const KioskChromeAppManager& manager,
       manager_app.name, manager_app.icon);
 }
 
+KioskApp EmptyKioskApp(const KioskAppId& app_id) {
+  switch (app_id.type) {
+    case KioskAppType::kChromeApp:
+      return KioskApp{app_id,
+                      /*name=*/"",
+                      /*icon=*/gfx::ImageSkia(),
+                      /*url=*/std::nullopt};
+    case KioskAppType::kWebApp:
+      return KioskApp{app_id,
+                      /*name=*/"",
+                      /*icon=*/gfx::ImageSkia(),
+                      /*url=*/GURL()};
+  }
+  NOTREACHED_NORETURN();
+}
+
 }  // namespace
 
 KioskControllerImpl::KioskControllerImpl(
@@ -77,6 +102,8 @@ KioskControllerImpl::KioskControllerImpl(
 KioskControllerImpl::~KioskControllerImpl() = default;
 
 std::vector<KioskApp> KioskControllerImpl::GetApps() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   std::vector<KioskApp> apps;
   for (const KioskAppManagerBase::App& web_app : web_app_manager_.GetApps()) {
     apps.emplace_back(KioskAppId::ForWebApp(web_app.account_id), web_app.name,
@@ -93,6 +120,8 @@ std::vector<KioskApp> KioskControllerImpl::GetApps() const {
 
 std::optional<KioskApp> KioskControllerImpl::GetAppById(
     const KioskAppId& app_id) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   switch (app_id.type) {
     case KioskAppType::kWebApp:
       return WebAppById(web_app_manager_, app_id.account_id);
@@ -102,21 +131,24 @@ std::optional<KioskApp> KioskControllerImpl::GetAppById(
 }
 
 std::optional<KioskApp> KioskControllerImpl::GetAutoLaunchApp() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (const auto& web_account_id = web_app_manager_.GetAutoLaunchAccountId();
       web_account_id.is_valid()) {
     return WebAppById(web_app_manager_, web_account_id);
-  } else if (chrome_app_manager_.IsAutoLaunchEnabled()) {
-    std::string chrome_app_id = chrome_app_manager_.GetAutoLaunchApp();
-    CHECK(!chrome_app_id.empty());
+  } else if (std::string chrome_app_id = chrome_app_manager_.GetAutoLaunchApp();
+             !chrome_app_id.empty()) {
     return ChromeAppById(chrome_app_manager_, chrome_app_id);
   }
   return std::nullopt;
 }
 
 void KioskControllerImpl::InitializeKioskSystemSession(
-    Profile* profile,
     const KioskAppId& kiosk_app_id,
+    Profile* profile,
     const std::optional<std::string>& app_name) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   CHECK(!system_session_.has_value())
       << "KioskSystemSession is already initialized";
 
@@ -132,20 +164,44 @@ void KioskControllerImpl::InitializeKioskSystemSession(
   }
 }
 
-void KioskControllerImpl::StartSession(const KioskAppId& app,
+void KioskControllerImpl::StartSession(const KioskAppId& app_id,
                                        bool is_auto_launch,
                                        LoginDisplayHost* host) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   CHECK_EQ(launch_controller_, nullptr);
   CHECK(!system_session_.has_value());
+
+  std::optional<KioskApp> app_maybe = GetAppById(app_id);
+  // TODO(b/306117645) change to CHECK and drop `value_or`.
+  DUMP_WILL_BE_CHECK(app_maybe.has_value());
+  KioskApp app = std::move(app_maybe).value_or(EmptyKioskApp(app_id));
+
   launch_controller_ = std::make_unique<KioskLaunchController>(
-      host, host->GetOobeUI(), /*done_callback=*/
+      host, host->GetOobeUI(),
+      /*app_launched_callback=*/
+      base::BindOnce(&KioskControllerImpl::OnAppLaunched,
+                     base::Unretained(this)),
+      /*done_callback=*/
       base::BindOnce(&KioskControllerImpl::OnLaunchComplete,
                      base::Unretained(this)));
-  launch_controller_->Start(app, is_auto_launch);
+  launch_controller_->Start(std::move(app), is_auto_launch);
+}
+
+void KioskControllerImpl::StartSessionAfterCrash(const KioskAppId& app,
+                                                 Profile* profile) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  crash_recovery_launcher_ =
+      std::make_unique<CrashRecoveryLauncher>(CHECK_DEREF(profile), app);
+  crash_recovery_launcher_->Start(
+      base::BindOnce(&KioskControllerImpl::OnLaunchCompleteAfterCrash,
+                     // Safe since `this` owns the `crash_recovery_launcher_`.
+                     base::Unretained(this), app, profile));
 }
 
 bool KioskControllerImpl::IsSessionStarting() const {
-  return launch_controller_ != nullptr;
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return launch_controller_ != nullptr || crash_recovery_launcher_ != nullptr;
 }
 
 void KioskControllerImpl::CancelSessionStart() {
@@ -154,29 +210,65 @@ void KioskControllerImpl::CancelSessionStart() {
 
 void KioskControllerImpl::AddProfileLoadFailedObserver(
     KioskProfileLoadFailedObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   CHECK_NE(launch_controller_, nullptr);
   launch_controller_->AddKioskProfileLoadFailedObserver(observer);
 }
 
 void KioskControllerImpl::RemoveProfileLoadFailedObserver(
     KioskProfileLoadFailedObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (launch_controller_) {
     launch_controller_->RemoveKioskProfileLoadFailedObserver(observer);
   }
 }
 
 bool KioskControllerImpl::HandleAccelerator(LoginAcceleratorAction action) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   return launch_controller_ && launch_controller_->HandleAccelerator(action);
 }
 
+void KioskControllerImpl::OnGuestAdded(
+    content::WebContents* guest_web_contents) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (system_session_.has_value()) {
+    system_session_->OnGuestAdded(guest_web_contents);
+  }
+}
+
 KioskSystemSession* KioskControllerImpl::GetKioskSystemSession() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (!system_session_.has_value()) {
     return nullptr;
   }
   return &system_session_.value();
 }
 
+kiosk_vision::TelemetryProcessor*
+KioskControllerImpl::GetKioskVisionTelemetryProcessor() {
+  auto* kiosk_system_session = GetKioskSystemSession();
+  if (!kiosk_system_session) {
+    return nullptr;
+  }
+  return kiosk_system_session->kiosk_vision().GetTelemetryProcessor();
+}
+
+kiosk_vision::InternalsPageProcessor*
+KioskControllerImpl::GetKioskVisionInternalsPageProcessor() {
+  auto* kiosk_system_session = GetKioskSystemSession();
+  if (!kiosk_system_session) {
+    return nullptr;
+  }
+  return kiosk_system_session->kiosk_vision().GetInternalsPageProcessor();
+}
+
 void KioskControllerImpl::OnUserLoggedIn(const user_manager::User& user) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (!user.IsKioskType()) {
     return;
   }
@@ -218,15 +310,28 @@ void KioskControllerImpl::OnUserLoggedIn(const user_manager::User& user) {
       !kiosk_app_id.empty()) {
     chrome_app_manager_.SetAppWasAutoLaunchedWithZeroDelay(kiosk_app_id);
   }
+
+  if (auto* input_controller =
+          ui::OzonePlatform::GetInstance()->GetInputController()) {
+    input_controller->DisableKeyboardImposterCheck();
+  }
 }
 
-void KioskControllerImpl::OnLaunchComplete(
-    std::optional<KioskAppLaunchError::Error> error) {
+void KioskControllerImpl::OnAppLaunched(
+    const KioskAppId& kiosk_app_id,
+    Profile* profile,
+    const std::optional<std::string>& app_name) {
+  InitializeKioskSystemSession(kiosk_app_id, profile, app_name);
+}
+
+void KioskControllerImpl::OnLaunchComplete(KioskAppLaunchError::Error error) {
   // Delete the launcher so it doesn't end up with dangling references.
   DeleteLaunchControllerAsync();
 }
 
 void KioskControllerImpl::DeleteLaunchControllerAsync() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // Deleted asynchronously since this method is invoked in a callback called by
   // the launcher itself, but don't use `DeleteSoon` to prevent the launcher
   // from outliving `this`.
@@ -236,7 +341,25 @@ void KioskControllerImpl::DeleteLaunchControllerAsync() {
 }
 
 void KioskControllerImpl::DeleteLaunchController() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   launch_controller_.reset();
+}
+
+void KioskControllerImpl::OnLaunchCompleteAfterCrash(
+    const KioskAppId& app,
+    Profile* profile,
+    bool success,
+    const std::optional<std::string>& app_name) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (success) {
+    InitializeKioskSystemSession(app, profile, app_name);
+  } else {
+    chrome::AttemptUserExit();
+  }
+
+  // Delete launcher so it doesn't end up with dangling references.
+  crash_recovery_launcher_.reset();
 }
 
 }  // namespace ash

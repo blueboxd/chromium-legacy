@@ -2,22 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifdef UNSAFE_BUFFERS_BUILD
-// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
-#pragma allow_unsafe_buffers
-#endif
-
 #include "base/token.h"
 
 #include <inttypes.h>
 
+#include <array>
 #include <optional>
+#include <string_view>
 
 #include "base/check.h"
 #include "base/hash/hash.h"
 #include "base/pickle.h"
 #include "base/rand_util.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 
 namespace base {
@@ -40,11 +36,11 @@ std::string Token::ToString() const {
 }
 
 // static
-std::optional<Token> Token::FromString(StringPiece string_representation) {
+std::optional<Token> Token::FromString(std::string_view string_representation) {
   if (string_representation.size() != 32) {
     return std::nullopt;
   }
-  uint64_t words[2];
+  std::array<uint64_t, 2> words;
   for (size_t i = 0; i < 2; i++) {
     uint64_t word = 0;
     // This j loop is similar to HexStringToUInt64 but we are intentionally

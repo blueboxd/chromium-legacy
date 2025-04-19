@@ -25,28 +25,16 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/layout/layout_types.h"
 #include "ui/views/layout/table_layout.h"
 #include "ui/views/view.h"
-
-// TODO(b/335543015): This part of code is just for to provide a temporary
-// solution to show digits on the icon button while to issue is fixed.
-#include "base/strings/string_number_conversions.h"
-#include "ui/base/models/image_model.h"
-#include "ui/color/color_provider.h"
-#include "ui/gfx/canvas.h"
-#include "ui/gfx/font.h"
-#include "ui/gfx/font_list.h"
-#include "ui/gfx/image/canvas_image_source.h"
-#include "ui/gfx/image/image_skia.h"
-// Temporary includes end.
 
 namespace ash {
 
 namespace {
 
 constexpr int kButtonSize = 48;
-constexpr int kFontSize = 32;
 constexpr int kButtonsVerticalPadding = 12;
 constexpr int kButtonsHorizontalPadding = 16;
 constexpr int kPinKeyboardHeightDp =
@@ -62,34 +50,6 @@ void StyleButton(IconButton* button_ptr) {
   button_ptr->SetBackgroundColor(kButtonBackgroundColorId);
   button_ptr->SetIconColor(kButtonContentColorId);
 }
-
-// TODO(b/335543015): This function should be removed after the issue is fixed.
-
-class DigitImageSource : public gfx::CanvasImageSource {
- public:
-  DigitImageSource(PinKeyboardView* view, int digit)
-      : gfx::CanvasImageSource(gfx::Size(kFontSize, kFontSize)),
-        view_(view),
-        digit_(digit) {}
-  DigitImageSource(const DigitImageSource&) = delete;
-  DigitImageSource& operator=(const DigitImageSource&) = delete;
-  ~DigitImageSource() override = default;
-
-  void Draw(gfx::Canvas* canvas) override {
-    SkColor digit_color =
-        view_->GetColorProvider()->GetColor(kButtonContentColorId);
-    gfx::FontList font = gfx::FontList({"Roboto"}, gfx::Font::NORMAL, 32,
-                                       gfx::Font::Weight::NORMAL);
-
-    canvas->DrawStringRectWithFlags(
-        base::NumberToString16(digit_), font, digit_color,
-        gfx::Rect(kFontSize, kFontSize), gfx::Canvas::TEXT_ALIGN_CENTER);
-  }
-
- private:
-  raw_ptr<PinKeyboardView> view_ = nullptr;
-  int digit_;
-};
 
 }  // namespace
 
@@ -136,7 +96,9 @@ PinKeyboardView* PinKeyboardView::TestApi::GetView() {
 //----------------------- PinKeyboardView ------------------------
 
 PinKeyboardView::PinKeyboardView() {
-  SetAccessibleName(l10n_util::GetStringUTF16(IDS_ASH_AUTH_PIN_KEYBOARD));
+  GetViewAccessibility().SetRole(ax::mojom::Role::kKeyboard);
+  GetViewAccessibility().SetName(
+      l10n_util::GetStringUTF16(IDS_ASH_AUTH_PIN_KEYBOARD));
   // The pin pad is always LTR.
   SetFlipCanvasOnPaintForRTLUI(false);
 
@@ -204,11 +166,6 @@ gfx::Size PinKeyboardView::CalculatePreferredSize(
   return gfx::Size(kPinKeyboardWidthDp, kPinKeyboardHeightDp);
 }
 
-void PinKeyboardView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ax::mojom::Role::kKeyboard;
-  node_data->SetName(GetAccessibleName());
-}
-
 void PinKeyboardView::OnDigitButtonPressed(int digit) {
   CHECK_GE(digit, 0);
   CHECK_LT(digit, 10);
@@ -229,19 +186,19 @@ void PinKeyboardView::AddDigitButton(int digit) {
   CHECK_GE(digit, 0);
   CHECK_LT(digit, 10);
 
-  auto* button_ptr = AddChildView(std::make_unique<IconButton>(
-      base::BindRepeating(&PinKeyboardView::OnDigitButtonPressed,
-                          weak_ptr_factory_.GetWeakPtr(), digit),
-      IconButton::Type::kXLarge, &kLockScreenBackspaceIcon,
-      IDS_ASH_PIN_KEYBOARD_DELETE_ACCESSIBLE_NAME));
+  IconButton::Builder builder;
+  builder.SetType(IconButton::Type::kXLarge)
+      .SetAccessibleName(base::NumberToString16(digit))
+      .SetCallback(base::BindRepeating(&PinKeyboardView::OnDigitButtonPressed,
+                                       weak_ptr_factory_.GetWeakPtr(), digit))
+      .SetTogglable(false)
+      .SetEnabled(true)
+      .SetSymbol(static_cast<char>('0' + digit));
+
+  auto* button_ptr = AddChildView(builder.Build());
+
   digit_buttons_[digit] = button_ptr;
   StyleButton(button_ptr);
-  // TODO(b/335543015): This part of the code should be removed after the issue
-  // is fixed.
-  ui::ImageModel img = ui::ImageModel::FromImageSkia(
-      gfx::CanvasImageSource::MakeImageSkia<DigitImageSource>(this, digit));
-  button_ptr->SetImageModel(IconButton::ButtonState::STATE_NORMAL, img);
-  // Temporary code end.
 }
 
 void PinKeyboardView::AddObserver(Observer* observer) {

@@ -570,7 +570,7 @@ void SequenceManagerImpl::LogTaskDebugInfo(
       LOG(INFO) << "#" << static_cast<uint64_t>(task->enqueue_order()) << " "
                 << selected_work_queue->task_queue()->GetName()
                 << (task->cross_thread_ ? " Run crossthread " : " Run ")
-                << debug::StackTrace(task_trace.data(), length);
+                << debug::StackTrace(base::span(task_trace).first(length));
       break;
     }
 
@@ -627,12 +627,12 @@ SequenceManagerImpl::SelectNextTaskImpl(LazyNow& lazy_now,
       return std::nullopt;
 
     // If the head task was canceled, remove it and run the selector again.
-    if (UNLIKELY(work_queue->RemoveAllCanceledTasksFromFront()))
+    if (work_queue->RemoveAllCanceledTasksFromFront()) [[unlikely]] {
       continue;
+    }
 
-    if (UNLIKELY(work_queue->GetFrontTask()->nestable ==
-                     Nestable::kNonNestable &&
-                 main_thread_only().nesting_depth > 0)) {
+    if (work_queue->GetFrontTask()->nestable == Nestable::kNonNestable &&
+        main_thread_only().nesting_depth > 0) [[unlikely]] {
       // Defer non-nestable work. NOTE these tasks can be arbitrarily delayed so
       // the additional delay should not be a problem.
       // Note because we don't delete queues while nested, it's perfectly OK to

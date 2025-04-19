@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/types/optional_util.h"
 #include "net/base/cronet_buildflags.h"
+#include "net/base/features.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/site_for_cookies.h"
@@ -37,6 +38,7 @@ std::string SerializeSchemefulSite(const SchemefulSite& site) {
 }  // namespace
 
 CookiePartitionKey::SerializedCookiePartitionKey::SerializedCookiePartitionKey(
+    base::PassKey<CookiePartitionKey> key,
     const std::string& site,
     bool has_cross_site_ancestor)
     : top_level_site_(site),
@@ -45,6 +47,17 @@ CookiePartitionKey::SerializedCookiePartitionKey::SerializedCookiePartitionKey(
 const std::string&
 CookiePartitionKey::SerializedCookiePartitionKey::TopLevelSite() const {
   return top_level_site_;
+}
+
+std::string CookiePartitionKey::SerializedCookiePartitionKey::GetDebugString()
+    const {
+  std::string out = TopLevelSite();
+  if (base::FeatureList::IsEnabled(
+          features::kAncestorChainBitEnabledInPartitionedCookies)) {
+    base::StrAppend(
+        &out, {", ", has_cross_site_ancestor() ? "cross-site" : "same-site"});
+  }
+  return out;
 }
 
 #if !BUILDFLAG(CRONET_BUILD)
@@ -108,8 +121,8 @@ bool CookiePartitionKey::operator<(const CookiePartitionKey& other) const {
 base::expected<CookiePartitionKey::SerializedCookiePartitionKey, std::string>
 CookiePartitionKey::Serialize(const std::optional<CookiePartitionKey>& in) {
   if (!in) {
-    return base::ok(
-        SerializedCookiePartitionKey(kEmptyCookiePartitionKey, true));
+    return base::ok(SerializedCookiePartitionKey(
+        base::PassKey<CookiePartitionKey>(), kEmptyCookiePartitionKey, true));
   }
 
   if (!in->IsSerializeable()) {
@@ -117,7 +130,8 @@ CookiePartitionKey::Serialize(const std::optional<CookiePartitionKey>& in) {
   }
 
   return base::ok(SerializedCookiePartitionKey(
-      SerializeSchemefulSite(in->site_), in->IsThirdParty()));
+      base::PassKey<CookiePartitionKey>(), SerializeSchemefulSite(in->site_),
+      in->IsThirdParty()));
 }
 
 std::optional<CookiePartitionKey> CookiePartitionKey::FromNetworkIsolationKey(

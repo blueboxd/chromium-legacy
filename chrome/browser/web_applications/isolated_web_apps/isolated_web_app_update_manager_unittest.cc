@@ -21,11 +21,13 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/gmock_expected_support.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
 #include "base/test/test_timeouts.h"
 #include "base/test/values_test_util.h"
 #include "base/time/time.h"
+#include "base/types/expected.h"
 #include "base/version.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate_factory.h"
@@ -34,7 +36,9 @@
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_source.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_storage_location.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_trust_checker.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_update_discovery_task.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
+#include "chrome/browser/web_applications/isolated_web_apps/iwa_identity_validator.h"
 #include "chrome/browser/web_applications/isolated_web_apps/policy/isolated_web_app_policy_constants.h"
 #include "chrome/browser/web_applications/isolated_web_apps/test/test_signed_web_bundle_builder.h"
 #include "chrome/browser/web_applications/test/fake_web_app_database_factory.h"
@@ -186,6 +190,7 @@ class IsolatedWebAppUpdateManagerTest : public WebAppTest {
     // Clearing Cache will clear PNACL cache, which needs this delegate set.
     nacl_browser_delegate_.Init(profile_manager().profile_manager());
 #endif  // BUILDFLAG(ENABLE_NACL)
+    IwaIdentityValidator::CreateSingleton();
   }
 
   void TearDown() override {
@@ -264,7 +269,7 @@ TEST_F(IsolatedWebAppUpdateManagerDevModeUpdateTest,
       TestSignedWebBundleBuilder::BuildOptions()
           .SetVersion(base::Version("2.0.0"))
           .SetAppName("updated iwa")
-          .SetKeyPair(key_pair));
+          .AddKeyPair(key_pair));
 
   ASSERT_THAT(temp_dir_.CreateUniqueTempDir(), IsTrue());
   base::FilePath path = temp_dir_.GetPath().AppendASCII("bundle.swbn");
@@ -273,7 +278,7 @@ TEST_F(IsolatedWebAppUpdateManagerDevModeUpdateTest,
 
   IsolatedWebAppUrlInfo url_info =
       IsolatedWebAppUrlInfo::CreateFromSignedWebBundleId(
-          web_package::SignedWebBundleId::CreateForEd25519PublicKey(
+          web_package::SignedWebBundleId::CreateForPublicKey(
               key_pair.public_key));
 
   AddDummyIsolatedAppToRegistry(
@@ -296,7 +301,8 @@ TEST_F(IsolatedWebAppUpdateManagerDevModeUpdateTest,
                           test::IsolationDataIs(
                               location, Eq(base::Version("2.0.0")),
                               /*controlled_frame_partitions=*/_,
-                              /*pending_update_info=*/Eq(std::nullopt))));
+                              /*pending_update_info=*/Eq(std::nullopt),
+                              /*integrity_block_data=*/_)));
 
   // TODO(crbug.com/40277668): As a temporary fix to avoid race conditions with
   // `ScopedProfileKeepAlive`s, manually shutdown `KeyedService`s holding them.
@@ -324,7 +330,7 @@ class IsolatedWebAppUpdateManagerUpdateTest
             base::Version update_version,
             std::string update_app_name)
         : url_info(IsolatedWebAppUrlInfo::CreateFromSignedWebBundleId(
-              web_package::SignedWebBundleId::CreateForEd25519PublicKey(
+              web_package::SignedWebBundleId::CreateForPublicKey(
                   key_pair.public_key))),
           key_pair(std::move(key_pair)),
           installed_location(std::move(installed_location)),
@@ -417,7 +423,7 @@ class IsolatedWebAppUpdateManagerUpdateTest
     return TestSignedWebBundleBuilder::BuildDefault(
         TestSignedWebBundleBuilder::BuildOptions()
             .SetVersion(version)
-            .SetKeyPair(key_pair));
+            .AddKeyPair(key_pair));
   }
 
   virtual void SeedWebAppDatabase() {}
@@ -574,7 +580,9 @@ TEST_F(IsolatedWebAppUpdateManagerUpdateMockTimeTest,
                                         /*controlled_frame_partitions=*/_,
                                         test::PendingUpdateInfoIs(
                                             UpdateLocationMatcher(profile()),
-                                            Eq(base::Version("2.0.0"))))));
+                                            Eq(base::Version("2.0.0")),
+                                            /*integrity_block_data=*/_),
+                                        /*integrity_block_data=*/_)));
 
   EXPECT_THAT(
       UpdateDiscoveryLog(),
@@ -635,7 +643,9 @@ TEST_F(IsolatedWebAppUpdateManagerUpdateMockTimeTest,
                                         /*controlled_frame_partitions=*/_,
                                         test::PendingUpdateInfoIs(
                                             UpdateLocationMatcher(profile()),
-                                            Eq(base::Version("2.0.0"))))));
+                                            Eq(base::Version("2.0.0")),
+                                            /*integrity_block_data=*/_),
+                                        /*integrity_block_data=*/_)));
 
   EXPECT_THAT(
       UpdateDiscoveryLog(),
@@ -688,7 +698,9 @@ TEST_F(IsolatedWebAppUpdateManagerUpdateMockTimeTest, DiscoverUpdatesNow) {
                                         /*controlled_frame_partitions=*/_,
                                         test::PendingUpdateInfoIs(
                                             UpdateLocationMatcher(profile()),
-                                            Eq(base::Version("2.0.0"))))));
+                                            Eq(base::Version("2.0.0")),
+                                            /*integrity_block_data=*/_),
+                                        /*integrity_block_data=*/_)));
 
   EXPECT_THAT(
       UpdateDiscoveryLog(),
@@ -727,7 +739,9 @@ TEST_F(IsolatedWebAppUpdateManagerUpdateTest,
                                         /*controlled_frame_partitions=*/_,
                                         test::PendingUpdateInfoIs(
                                             UpdateLocationMatcher(profile()),
-                                            Eq(iwa_info1_->update_version)))));
+                                            Eq(iwa_info1_->update_version),
+                                            /*integrity_block_data=*/_),
+                                        /*integrity_block_data=*/_)));
 
   EXPECT_THAT(
       UpdateDiscoveryLog(),
@@ -748,7 +762,8 @@ TEST_F(IsolatedWebAppUpdateManagerUpdateTest,
                               UpdateLocationMatcher(profile()),
                               Eq(iwa_info1_->update_version),
                               /*controlled_frame_partitions=*/_,
-                              /*pending_update_info=*/Eq(std::nullopt))));
+                              /*pending_update_info=*/Eq(std::nullopt),
+                              /*integrity_block_data=*/_)));
 }
 
 TEST_F(IsolatedWebAppUpdateManagerUpdateTest,
@@ -815,7 +830,8 @@ TEST_F(IsolatedWebAppUpdateManagerUpdateTest,
                               UpdateLocationMatcher(profile()),
                               Eq(iwa_info1_->update_version),
                               /*controlled_frame_partitions=*/_,
-                              /*pending_update_info=*/Eq(std::nullopt))));
+                              /*pending_update_info=*/Eq(std::nullopt),
+                              /*integrity_block_data=*/_)));
   EXPECT_THAT(fake_provider().registrar_unsafe().GetAppById(
                   iwa_info2_->url_info.app_id()),
               test::IwaIs(iwa_info2_->update_app_name,
@@ -823,7 +839,8 @@ TEST_F(IsolatedWebAppUpdateManagerUpdateTest,
                               UpdateLocationMatcher(profile()),
                               Eq(iwa_info2_->update_version),
                               /*controlled_frame_partitions=*/_,
-                              /*pending_update_info=*/Eq(std::nullopt))));
+                              /*pending_update_info=*/Eq(std::nullopt),
+                              /*integrity_block_data=*/_)));
 }
 
 TEST_F(IsolatedWebAppUpdateManagerUpdateTest,
@@ -869,7 +886,7 @@ TEST_F(IsolatedWebAppUpdateManagerUpdateTest,
   }
 
   EXPECT_THAT(UninstallPolicyInstalledIwa(iwa_to_uninstall->url_info.app_id()),
-              Eq(webapps::UninstallResultCode::kSuccess));
+              Eq(webapps::UninstallResultCode::kAppRemoved));
 
   EXPECT_THAT(UpdateDiscoveryTasks(),
               UnorderedElementsAre(IsDict(DictionaryHasValue(
@@ -908,7 +925,7 @@ TEST_F(IsolatedWebAppUpdateManagerUpdateTest,
                   "app_id", base::Value(iwa_info1_->url_info.app_id())))));
 
   EXPECT_THAT(UninstallPolicyInstalledIwa(iwa_info1_->url_info.app_id()),
-              Eq(webapps::UninstallResultCode::kSuccess));
+              Eq(webapps::UninstallResultCode::kAppRemoved));
 
   EXPECT_THAT(UpdateApplyWaiters(), IsEmpty());
   EXPECT_THAT(UpdateApplyTasks(), IsEmpty());
@@ -984,7 +1001,7 @@ TEST_F(IsolatedWebAppUpdateManagerUpdateTest,
   }
 
   EXPECT_THAT(UninstallPolicyInstalledIwa(iwa_to_uninstall->url_info.app_id()),
-              Eq(webapps::UninstallResultCode::kSuccess));
+              Eq(webapps::UninstallResultCode::kAppRemoved));
 
   EXPECT_THAT(UpdateApplyTasks(),
               UnorderedElementsAre(IsDict(
@@ -1015,10 +1032,12 @@ class IsolatedWebAppUpdateManagerUpdateApplyOnStartupTest
 
     std::unique_ptr<WebApp> iwa = CreateIsolatedWebApp(
         iwa_info1_->url_info.origin().GetURL(),
-        WebApp::IsolationData(
-            iwa_info1_->installed_location, iwa_info1_->installed_version, {},
-            WebApp::IsolationData::PendingUpdateInfo(
-                update_location_, iwa_info1_->update_version)));
+        WebApp::IsolationData(iwa_info1_->installed_location,
+                              iwa_info1_->installed_version, {},
+                              WebApp::IsolationData::PendingUpdateInfo(
+                                  update_location_, iwa_info1_->update_version,
+                                  /*integrity_block_data=*/std::nullopt),
+                              /*integrity_block_data=*/std::nullopt));
     CreateStoragePartition(iwa_info1_->url_info);
 
     Registry registry;
@@ -1049,7 +1068,6 @@ class IsolatedWebAppUpdateManagerUpdateApplyOnStartupTest
     web_app->SetScope(start_url.DeprecatedGetOriginAsURL());
     web_app->SetManifestId(start_url.DeprecatedGetOriginAsURL());
     web_app->AddSource(WebAppManagement::Type::kIwaUserInstalled);
-    web_app->SetIsLocallyInstalled(true);
     web_app->SetIsolationData(isolation_data);
     web_app->SetUserDisplayMode(mojom::UserDisplayMode::kStandalone);
     return web_app;
@@ -1071,7 +1089,8 @@ TEST_F(IsolatedWebAppUpdateManagerUpdateApplyOnStartupTest,
                           test::IsolationDataIs(
                               update_location_, Eq(iwa_info1_->update_version),
                               /*controlled_frame_partitions=*/_,
-                              /*pending_update_info=*/Eq(std::nullopt))));
+                              /*pending_update_info=*/Eq(std::nullopt),
+                              /*integrity_block_data=*/_)));
 }
 
 class IsolatedWebAppUpdateManagerDiscoveryTimerTest
@@ -1225,4 +1244,65 @@ INSTANTIATE_TEST_SUITE_P(
         ));
 
 }  // namespace
+
+TEST_F(IsolatedWebAppUpdateManagerUpdateTest, UpdateDiscoveryTaskSuccess) {
+  base::HistogramTester histogram_tester;
+  IsolatedWebAppUpdateDiscoveryTask::CompletionStatus status =
+      IsolatedWebAppUpdateDiscoveryTask::Success::kNoUpdateFound;
+
+  update_manager().TrackResultOfUpdateDiscoveryTaskForTesting(status);
+
+  // When the discovery task is successful, no UMA metric should be recorded.
+  histogram_tester.ExpectTotalCount("WebApp.Isolated.UpdateSuccess", 0);
+  histogram_tester.ExpectTotalCount("WebApp.Isolated.UpdateError", 0);
+}
+
+TEST_F(IsolatedWebAppUpdateManagerUpdateTest, UpdateDiscoveryTaskFails) {
+  base::HistogramTester histogram_tester;
+  IsolatedWebAppUpdateDiscoveryTask::CompletionStatus status = base::unexpected(
+      IsolatedWebAppUpdateDiscoveryTask::Error::kUpdateManifestInvalidJson);
+
+  update_manager().TrackResultOfUpdateDiscoveryTaskForTesting(status);
+
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("WebApp.Isolated.UpdateSuccess"),
+      AllOf(SizeIs(1), BucketsAre(base::Bucket(/*update_success=*/false, 1))));
+
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("WebApp.Isolated.UpdateError"),
+      AllOf(SizeIs(1),
+            BucketsAre(base::Bucket(
+                IsolatedWebAppUpdateError::kUpdateManifestInvalidJson, 1))));
+}
+
+TEST_F(IsolatedWebAppUpdateManagerUpdateTest, UpdateApplyTaskSuccess) {
+  base::HistogramTester histogram_tester;
+  IsolatedWebAppUpdateApplyTask::CompletionStatus status = base::ok();
+
+  update_manager().TrackResultOfUpdateApplyTaskForTesting(status);
+
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("WebApp.Isolated.UpdateSuccess"),
+      AllOf(SizeIs(1), BucketsAre(base::Bucket(/*update_success=*/true, 1))));
+  histogram_tester.ExpectTotalCount("WebApp.Isolated.UpdateError", 0);
+}
+
+TEST_F(IsolatedWebAppUpdateManagerUpdateTest, UpdateApplyTaskFails) {
+  base::HistogramTester histogram_tester;
+  IsolatedWebAppUpdateApplyTask::CompletionStatus status =
+      base::unexpected<IsolatedWebAppApplyUpdateCommandError>(
+          {"error message"});
+
+  update_manager().TrackResultOfUpdateApplyTaskForTesting(status);
+
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("WebApp.Isolated.UpdateSuccess"),
+      AllOf(SizeIs(1), BucketsAre(base::Bucket(/*update_success=*/false, 1))));
+
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("WebApp.Isolated.UpdateError"),
+      AllOf(SizeIs(1), BucketsAre(base::Bucket(
+                           IsolatedWebAppUpdateError::kUpdateApplyFailed, 1))));
+}
+
 }  // namespace web_app

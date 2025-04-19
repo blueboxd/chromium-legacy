@@ -24,6 +24,8 @@
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 #include "chromeos/ash/components/drivefs/drivefs_host.h"
 #include "chromeos/ash/components/drivefs/drivefs_pinning_manager.h"
+#include "chromeos/ash/components/drivefs/mojom/drivefs.mojom.h"
+#include "chromeos/ash/components/drivefs/mojom/notifications.mojom.h"
 #include "chromeos/ash/components/network/network_state.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/network_state_handler_observer.h"
@@ -36,6 +38,7 @@
 #include "google_apis/common/api_error_codes.h"
 #include "google_apis/common/auth_service_interface.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 
 class PrefService;
 
@@ -45,6 +48,7 @@ class SequencedTaskRunner;
 
 namespace drivefs {
 class DriveFsHost;
+class DriveFsSearchQuery;
 
 namespace mojom {
 class DriveFs;
@@ -78,6 +82,26 @@ struct QuickAccessItem {
   double confidence;
 };
 
+// Notifications/Errors coming from DriveFs side which we need to persist in
+// the Chrome side.
+struct PersistedMessage {
+  // Where does the message come from in DriveFs.
+  enum Source {
+    kNotification = 0,
+    kError = 1,
+  };
+  Source source;
+
+  // DriveFs Notification/Error types which require persistence.
+  using Type = absl::variant<drivefs::mojom::DriveFsNotification::Tag,
+                             drivefs::mojom::MirrorSyncError::Type>;
+  Type type;
+
+  base::FilePath path;
+
+  int64_t stable_id;
+};
+
 // DriveIntegrationService is used to integrate Drive to Chrome. This class
 // exposes the file system representation built on top of Drive and some
 // other Drive related objects to the file manager, and some other sub
@@ -96,8 +120,7 @@ class DriveIntegrationService : public KeyedService,
   using GetQuickAccessItemsCallback =
       base::OnceCallback<void(FileError, std::vector<QuickAccessItem>)>;
   using SearchDriveByFileNameCallback =
-      base::OnceCallback<void(FileError,
-                              std::vector<drivefs::mojom::QueryItemPtr>)>;
+      drivefs::mojom::SearchQuery::GetNextPageCallback;
   using GetThumbnailCallback =
       base::OnceCallback<void(const std::optional<std::vector<uint8_t>>&)>;
   using GetReadOnlyAuthenticationTokenCallback =
@@ -239,6 +262,13 @@ class DriveIntegrationService : public KeyedService,
       drivefs::mojom::QueryParameters::SortDirection sort_direction,
       drivefs::mojom::QueryParameters::QuerySource query_source,
       SearchDriveByFileNameCallback callback) const;
+  // Returns nullptr if DriveFS is not mounted.
+  std::unique_ptr<drivefs::DriveFsSearchQuery> CreateSearchQueryByFileName(
+      std::string query,
+      int max_results,
+      drivefs::mojom::QueryParameters::SortField sort_field,
+      drivefs::mojom::QueryParameters::SortDirection sort_direction,
+      drivefs::mojom::QueryParameters::QuerySource query_source) const;
 
   // Returns the metadata for Drive file at |local_path|.
   void GetMetadata(const base::FilePath& local_path,

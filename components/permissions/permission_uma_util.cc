@@ -719,6 +719,8 @@ const char PermissionUmaUtil::kPermissionsPromptDeniedGesture[] =
     "Permissions.Prompt.Denied.Gesture";
 const char PermissionUmaUtil::kPermissionsPromptDeniedNoGesture[] =
     "Permissions.Prompt.Denied.NoGesture";
+const char PermissionUmaUtil::kPermissionsPromptDismissed[] =
+    "Permissions.Prompt.Dismissed";
 const char PermissionUmaUtil::kPermissionsExperimentalUsagePrefix[] =
     "Permissions.Experimental.Usage.";
 const char PermissionUmaUtil::kPermissionsActionPrefix[] =
@@ -781,8 +783,15 @@ void PermissionUmaUtil::RecordDismissalType(
     const std::vector<ContentSettingsType>& content_settings_types,
     PermissionPromptDisposition ui_disposition,
     DismissalType dismissalType) {
-  RequestTypeForUma type = GetUmaValueForRequestType(
-      ContentSettingsTypeToRequestType(content_settings_types[0]));
+  std::optional<RequestType> request_type =
+      ContentSettingsTypeToRequestTypeIfExists(content_settings_types[0]);
+  if (!request_type.has_value()) {
+    base::UmaHistogramEnumeration(
+        "Permissions.Prompt.Dismissed.InvalidContentSetting",
+        content_settings_types[0]);
+    return;
+  }
+  RequestTypeForUma type = GetUmaValueForRequestType(request_type.value());
 
   if (content_settings_types.size() > 1) {
     type = RequestTypeForUma::MULTIPLE_AUDIO_AND_VIDEO_CAPTURE;
@@ -1554,9 +1563,9 @@ void PermissionUmaUtil::RecordPageInfoDialogAccessType(
 std::string PermissionUmaUtil::GetOneTimePermissionEventHistogram(
     ContentSettingsType type) {
   // `FILE_SYSTEM_WRITE_GUARD` is not part of `OneTimePermission`,
-  // (i.e. `CanPermissionBeAllowedOnce()`), but it uses its background expiry
+  // (i.e. `DoesSupportTemporaryGrants()`), but it uses its background expiry
   // flow. As a result, allow logging for this event.
-  DCHECK(permissions::PermissionUtil::CanPermissionBeAllowedOnce(type) ||
+  DCHECK(permissions::PermissionUtil::DoesSupportTemporaryGrants(type) ||
          type == ContentSettingsType::FILE_SYSTEM_WRITE_GUARD);
 
   std::string permission_type = GetPermissionRequestString(
@@ -1882,6 +1891,12 @@ void PermissionUmaUtil::RecordElementAnchoredBubbleOsMetrics(
         break;
       case OsScreenAction::DISMISSED_SCRIM:
         screen_action = "DismissScrim";
+        break;
+      case OsScreenAction::OS_PROMPT_DENIED:
+        screen_action = "OsPromptDenied";
+        break;
+      case OsScreenAction::OS_PROMPT_ALLOWED:
+        screen_action = "OsPromptAllowed";
         break;
       default:
         NOTREACHED_IN_MIGRATION();

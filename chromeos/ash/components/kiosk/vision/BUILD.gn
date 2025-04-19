@@ -9,6 +9,8 @@ assert(is_chromeos_ash)
 component("vision") {
   defines = [ "IS_KIOSK_VISION_IMPL" ]
   sources = [
+    "internals_page_processor.cc",
+    "internals_page_processor.h",
     "kiosk_vision.cc",
     "kiosk_vision.h",
     "telemetry_processor.cc",
@@ -20,8 +22,10 @@ component("vision") {
     "//base",
     "//chromeos/ash/components/dbus/dlcservice",
     "//chromeos/ash/components/dbus/dlcservice:dlcservice_proto",
+    "//chromeos/ash/components/kiosk/vision/webui:mojo_bindings",
     "//components/capture_mode",
     "//components/prefs",
+    "//components/reporting/proto:metric_data_proto",
     "//content/public/browser",
     "//media/capture/video/chromeos/mojom:cros_camera",
     "//mojo/public/cpp/bindings",
@@ -43,6 +47,8 @@ source_set("internal") {
     "internal/detection_processor.h",
     "internal/pref_observer.cc",
     "internal/pref_observer.h",
+    "internal/retry_timer.cc",
+    "internal/retry_timer.h",
   ]
   deps = [
     ":vision_prefs",
@@ -62,6 +68,7 @@ source_set("unit_tests") {
     "internal/fake_cros_camera_service.cc",
     "internal/fake_cros_camera_service.h",
     "kiosk_vision_unittest.cc",
+    "telemetry_processor_unittest.cc",
   ]
   deps = [
     ":internal",

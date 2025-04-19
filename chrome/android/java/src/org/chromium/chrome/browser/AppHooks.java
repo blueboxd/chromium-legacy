@@ -4,13 +4,15 @@
 
 package org.chromium.chrome.browser;
 
+import android.content.Context;
+import android.view.View;
+
 import androidx.annotation.Nullable;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ResettersForTesting;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.gsa.GSAHelper;
-import org.chromium.chrome.browser.historyreport.AppIndexingReporter;
 import org.chromium.chrome.browser.init.ProcessInitializationHandler;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.metrics.VariationsSession;
@@ -25,6 +27,7 @@ import org.chromium.chrome.browser.sync.TrustedVaultClient;
 import org.chromium.chrome.browser.ui.signin.GoogleActivityController;
 import org.chromium.chrome.browser.usage_stats.DigitalWellbeingClient;
 import org.chromium.chrome.browser.webapps.GooglePlayWebApkInstallDelegate;
+import org.chromium.components.commerce.core.ShoppingService.PriceInsightsInfo;
 import org.chromium.components.policy.AppRestrictionsProvider;
 import org.chromium.components.policy.CombinedPolicyProvider;
 import org.chromium.components.signin.AccountManagerDelegate;
@@ -71,16 +74,8 @@ public abstract class AppHooks {
     }
 
     /**
-     * Creates a new {@link AppIndexingReporter}.
-     * @return the created {@link AppIndexingReporter}.
-     */
-    public AppIndexingReporter createAppIndexingReporter() {
-        return new AppIndexingReporter();
-    }
-
-    /**
-     * @return An instance of {@link CustomTabsConnection}. Should not be called
-     * outside of {@link CustomTabsConnection#getInstance()}.
+     * @return An instance of {@link CustomTabsConnection}. Should not be called outside of {@link
+     *     CustomTabsConnection#getInstance()}.
      */
     public CustomTabsConnection createCustomTabsConnection() {
         return new CustomTabsConnection();
@@ -193,6 +188,11 @@ public abstract class AppHooks {
     }
 
     public void registerProtoExtensions() {}
+
+    /** Returns the view of the line chart given the price insights info.  */
+    public View getLineChartForPriceInsightsInfo(Context context, PriceInsightsInfo info) {
+        return null;
+    }
 
     // Stop! Do not add new methods to AppHooks anymore. Follow go/apphooks-migration instead.
 }

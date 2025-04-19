@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/themes/browser_theme_pack.h"
 
 #include <limits.h>
@@ -439,7 +444,7 @@ class ThemeImagePngSource : public gfx::ImageSkiaSource {
       SkBitmap bitmap;
       if (!gfx::PNGCodec::Decode(exact_png_it->second->data(),
                                  exact_png_it->second->size(), &bitmap)) {
-        NOTREACHED_IN_MIGRATION();
+        // The image is either broken or a different format.
         return gfx::ImageSkiaRep();
       }
       bitmap_map_[scale_factor] = bitmap;
@@ -1550,8 +1555,8 @@ bool BrowserThemePack::LoadRawBitmapsTo(
             image_skia.AddRepresentation(gfx::ImageSkiaRep(
                 bitmap, ui::GetScaleForResourceScaleFactor(scale_factor)));
           } else {
-            NOTREACHED_IN_MIGRATION()
-                << "Unable to decode theme image resource " << entry.first;
+            // The image is either broken or a different format.
+            return false;
           }
         }
       }
@@ -2076,9 +2081,7 @@ void BrowserThemePack::GenerateRawImageForAllSupportedScales(
   SkBitmap available_bitmap;
   if (!gfx::PNGCodec::Decode(it->second->data(), it->second->size(),
                              &available_bitmap)) {
-    NOTREACHED_IN_MIGRATION()
-        << "Unable to decode theme image for prs_id=" << prs_id
-        << " for scale_factor=" << available_scale_factor;
+    // The image is either broken or a different format.
     return;
   }
 

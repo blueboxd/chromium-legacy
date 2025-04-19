@@ -155,7 +155,7 @@ TEST_F(CWVAutofillControllerTest, FetchProfileSuggestions) {
       suggestionWithValue:kTestFieldValue
        displayDescription:kTestDisplayDescription
                      icon:nil
-              popupItemId:autofill::SuggestionType::kAutocompleteEntry
+                     type:autofill::SuggestionType::kAutocompleteEntry
         backendIdentifier:nil
            requiresReauth:NO];
   [autofill_agent_ addSuggestion:suggestion
@@ -202,7 +202,7 @@ TEST_F(CWVAutofillControllerTest, FetchPasswordSuggestions) {
       suggestionWithValue:kTestFieldValue
        displayDescription:nil
                      icon:nil
-              popupItemId:autofill::SuggestionType::kAutocompleteEntry
+                     type:autofill::SuggestionType::kAutocompleteEntry
         backendIdentifier:nil
            requiresReauth:NO];
   OCMExpect([password_controller_
@@ -252,7 +252,7 @@ TEST_F(CWVAutofillControllerTest, AcceptSuggestion) {
       suggestionWithValue:kTestFieldValue
        displayDescription:nil
                      icon:nil
-              popupItemId:autofill::SuggestionType::kAutocompleteEntry
+                     type:autofill::SuggestionType::kAutocompleteEntry
         backendIdentifier:nil
            requiresReauth:NO];
   CWVAutofillSuggestion* suggestion =
@@ -453,6 +453,7 @@ TEST_F(CWVAutofillControllerTest, SuggestPasswordCallback) {
   __block BOOL decision_handler_called = NO;
   [autofill_controller_ sharedPasswordController:password_controller_
                   showGeneratedPotentialPassword:fake_generated_password
+                                       proactive:NO
                                  decisionHandler:^(BOOL accept) {
                                    decision_handler_called = YES;
                                    EXPECT_TRUE(accept);

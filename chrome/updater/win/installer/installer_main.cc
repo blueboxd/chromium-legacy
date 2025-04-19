@@ -10,7 +10,6 @@
 
 #include "base/at_exit.h"
 #include "chrome/updater/win/installer/installer.h"
-#include "chrome/updater/win/ui/l10n_util.h"
 
 // http://blogs.msdn.com/oldnewthing/archive/2004/10/25/247180.aspx
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -20,17 +19,5 @@ int WINAPI wWinMain(HINSTANCE /* instance */,
                     LPWSTR command_line,
                     int /* command_show */) {
   base::AtExitManager exit_manager;
-
-  updater::ProcessExitResult result =
-      updater::WMain(reinterpret_cast<HMODULE>(&__ImageBase));
-
-  // If errors occur, display UI only when the metainstaller runs without
-  // command line arguments.
-  if (result.exit_code != updater::SUCCESS_EXIT_CODE &&
-      wcslen(command_line) == 0) {
-    ::MessageBoxEx(nullptr,
-                   updater::GetLocalizedErrorString(result.exit_code).c_str(),
-                   nullptr, 0, 0);
-  }
-  return result.exit_code;
+  return updater::WMain(reinterpret_cast<HMODULE>(&__ImageBase));
 }

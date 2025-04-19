@@ -2,11 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/ash/input_method/editor_switch.h"
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
-#include "base/containers/contains.h"
+#include "base/containers/extend.h"
+#include "base/containers/fixed_flat_set.h"
 #include "base/json/json_reader.h"
 #include "chrome/browser/ash/file_manager/app_id.h"
 #include "chrome/browser/ash/input_method/editor_consent_enums.h"
@@ -34,57 +40,10 @@
 namespace ash::input_method {
 namespace {
 
-constexpr std::string_view kCountryAllowlist[] = {
-    "au", "be", "ca", "ch", "cz", "de", "dk", "es", "fi",
-    "fr", "gb", "ie", "in", "it", "jp", "lu", "mx", "no",
-    "nz", "nl", "pl", "pt", "se", "us", "za",
-};
-
-constexpr ui::TextInputType kTextInputTypeAllowlist[] = {
-    ui::TEXT_INPUT_TYPE_CONTENT_EDITABLE, ui::TEXT_INPUT_TYPE_TEXT,
-    ui::TEXT_INPUT_TYPE_TEXT_AREA};
-
-constexpr chromeos::AppType kAppTypeDenylist[] = {
-    chromeos::AppType::ARC_APP,
-    chromeos::AppType::CROSTINI_APP,
-};
-
 const char* kWorkspaceDomainsWithPathDenylist[][2] = {
     {"calendar.google", ""}, {"docs.google", ""},      {"drive.google", ""},
     {"keep.google", ""},     {"mail.google", "/chat"}, {"mail.google", "/mail"},
     {"meet.google", ""},     {"script.google", ""},    {"sites.google", ""},
-};
-
-const char* kWorkspaceAppIdDenylist[] = {
-    extension_misc::kGmailAppId,
-    extension_misc::kCalendarAppId,
-    extension_misc::kGoogleDocsAppId,
-    extension_misc::kGoogleSlidesAppId,
-    extension_misc::kGoogleSheetsAppId,
-    extension_misc::kGoogleDriveAppId,
-    extension_misc::kGoogleKeepAppId,
-    extension_misc::kGoogleMeetPwaAppId,
-    extension_misc::kGoogleDocsPwaAppId,
-    extension_misc::kGoogleSheetsPwaAppId,
-    // App ids in demo mode
-    extension_misc::kCalendarDemoAppId,
-    extension_misc::kGoogleDocsDemoAppId,
-    extension_misc::kGoogleSheetsDemoAppId,
-    extension_misc::kGoogleSlidesDemoAppId,
-    web_app::kGmailAppId,
-    web_app::kGoogleChatAppId,
-    web_app::kGoogleMeetAppId,
-    web_app::kGoogleDocsAppId,
-    web_app::kGoogleSlidesAppId,
-    web_app::kGoogleSheetsAppId,
-    web_app::kGoogleDriveAppId,
-    web_app::kGoogleKeepAppId,
-    web_app::kGoogleCalendarAppId,
-};
-
-const char* kNonWorkspaceAppIdDenylist[] = {
-    extension_misc::kFilesManagerAppId,
-    file_manager::kFileManagerSwaAppId,
 };
 
 constexpr int kTextLengthMaxLimit = 10000;
@@ -93,22 +52,44 @@ constexpr char kExperimentName[] = "OrcaEnabled";
 
 constexpr char kImeAllowlistLabel[] = "ime_allowlist";
 
-std::vector<std::string> Combine(
-    const std::vector<std::vector<std::string>>& vecs) {
-  std::vector<std::string> combined;
-  for (auto& vec : vecs) {
-    combined.insert(combined.end(), vec.begin(), vec.end());
-  }
-  return combined;
-}
+std::vector<std::string> AllowedInputMethods() {
+  std::vector<std::string> input_methods = EnglishInputMethods();
 
-const std::vector<std::string>& AllowedInputMethods() {
-  static const base::NoDestructor<std::vector<std::string>> input_methods(
-      base::FeatureList::IsEnabled(chromeos::features::kOrcaInternationalize)
-          ? Combine({EnglishInputMethods(), FrenchInputMethods(),
-                     GermanInputMethods(), JapaneseInputMethods()})
-          : EnglishInputMethods());
-  return *input_methods;
+  if (base::FeatureList::IsEnabled(features::kOrcaDanish)) {
+    base::Extend(input_methods, DanishInputMethods());
+  }
+  if (base::FeatureList::IsEnabled(features::kOrcaDutch)) {
+    base::Extend(input_methods, DutchInputMethods());
+  }
+  if (base::FeatureList::IsEnabled(features::kOrcaFinnish)) {
+    base::Extend(input_methods, FinnishInputMethods());
+  }
+  if (base::FeatureList::IsEnabled(features::kOrcaFrench)) {
+    base::Extend(input_methods, FrenchInputMethods());
+  }
+  if (base::FeatureList::IsEnabled(features::kOrcaGerman)) {
+    base::Extend(input_methods, GermanInputMethods());
+  }
+  if (base::FeatureList::IsEnabled(features::kOrcaItalian)) {
+    base::Extend(input_methods, ItalianInputMethods());
+  }
+  if (base::FeatureList::IsEnabled(features::kOrcaJapanese)) {
+    base::Extend(input_methods, JapaneseInputMethods());
+  }
+  if (base::FeatureList::IsEnabled(features::kOrcaNorwegian)) {
+    base::Extend(input_methods, NorwegianInputMethods());
+  }
+  if (base::FeatureList::IsEnabled(features::kOrcaPortugese)) {
+    base::Extend(input_methods, PortugeseInputMethods());
+  }
+  if (base::FeatureList::IsEnabled(features::kOrcaSpanish)) {
+    base::Extend(input_methods, SpanishInputMethods());
+  }
+  if (base::FeatureList::IsEnabled(features::kOrcaSwedish)) {
+    base::Extend(input_methods, SwedishInputMethods());
+  }
+
+  return input_methods;
 }
 
 manta::FeatureSupportStatus FetchOrcaAccountCapabilityFromMantaService(
@@ -129,20 +110,23 @@ bool IsProfileManaged(Profile* profile) {
           profile_policy_connector->IsManaged());
 }
 
-bool IsGoogleInternalAccountEmailFromProfile(Profile* profile) {
-  std::optional<std::string> user_email =
-      GetSignedInUserEmailFromProfile(profile);
-
-  return user_email.has_value() &&
-         gaia::IsGoogleInternalAccountEmail(*user_email);
-}
-
 bool IsCountryAllowed(std::string_view country_code) {
-  return base::Contains(kCountryAllowlist, country_code);
+  constexpr auto kCountryAllowlist = base::MakeFixedFlatSet<std::string_view>({
+      "au", "be", "ca", "ch", "cz", "de", "dk", "es", "fi",
+      "fr", "gb", "ie", "in", "it", "jp", "lu", "mx", "no",
+      "nz", "nl", "pl", "pt", "se", "us", "za",
+  });
+
+  return kCountryAllowlist.contains(country_code);
 }
 
 bool IsInputTypeAllowed(ui::TextInputType type) {
-  return base::Contains(kTextInputTypeAllowlist, type);
+  constexpr auto kTextInputTypeAllowlist =
+      base::MakeFixedFlatSet<ui::TextInputType>(
+          {ui::TEXT_INPUT_TYPE_CONTENT_EDITABLE, ui::TEXT_INPUT_TYPE_TEXT,
+           ui::TEXT_INPUT_TYPE_TEXT_AREA});
+
+  return kTextInputTypeAllowlist.contains(type);
 }
 
 bool IsInputMethodEngineAllowed(const std::vector<std::string>& allowlist,
@@ -160,7 +144,13 @@ bool IsAppTypeAllowed(chromeos::AppType app_type) {
       app_type == chromeos::AppType::ARC_APP) {
     return true;
   }
-  return !base::Contains(kAppTypeDenylist, app_type);
+
+  constexpr auto kAppTypeDenylist = base::MakeFixedFlatSet<chromeos::AppType>({
+      chromeos::AppType::ARC_APP,
+      chromeos::AppType::CROSTINI_APP,
+  });
+
+  return !kAppTypeDenylist.contains(app_type);
 }
 
 bool IsTriggerableFromConsentStatus(ConsentStatus consent_status) {
@@ -169,9 +159,8 @@ bool IsTriggerableFromConsentStatus(ConsentStatus consent_status) {
          consent_status == ConsentStatus::kUnset;
 }
 
-bool IsUrlAllowed(Profile* profile, GURL url) {
-  if (IsGoogleInternalAccountEmailFromProfile(profile) &&
-      base::FeatureList::IsEnabled(features::kOrcaOnWorkspace)) {
+bool IsUrlAllowed(GURL url) {
+  if (base::FeatureList::IsEnabled(features::kOrcaOnWorkspace)) {
     return true;
   }
 
@@ -181,17 +170,51 @@ bool IsUrlAllowed(Profile* profile, GURL url) {
       return false;
     }
   }
+
   return true;
 }
 
-bool IsAppAllowed(Profile* profile, std::string_view app_id) {
-  if (base::Contains(kNonWorkspaceAppIdDenylist, app_id)) {
+bool IsAppAllowed(std::string_view app_id) {
+  constexpr auto kNonWorkspaceAppIdDenylist =
+      base::MakeFixedFlatSet<std::string_view>({
+          extension_misc::kFilesManagerAppId,
+          file_manager::kFileManagerSwaAppId,
+      });
+
+  if (kNonWorkspaceAppIdDenylist.contains(app_id)) {
     return false;
   }
 
-  return (IsGoogleInternalAccountEmailFromProfile(profile) &&
-          base::FeatureList::IsEnabled(features::kOrcaOnWorkspace)) ||
-         !base::Contains(kWorkspaceAppIdDenylist, app_id);
+  constexpr auto kWorkspaceAppIdDenylist =
+      base::MakeFixedFlatSet<std::string_view>({
+          extension_misc::kGmailAppId,
+          extension_misc::kCalendarAppId,
+          extension_misc::kGoogleDocsAppId,
+          extension_misc::kGoogleSlidesAppId,
+          extension_misc::kGoogleSheetsAppId,
+          extension_misc::kGoogleDriveAppId,
+          extension_misc::kGoogleKeepAppId,
+          extension_misc::kGoogleMeetPwaAppId,
+          extension_misc::kGoogleDocsPwaAppId,
+          extension_misc::kGoogleSheetsPwaAppId,
+          // App ids in demo mode
+          extension_misc::kCalendarDemoAppId,
+          extension_misc::kGoogleDocsDemoAppId,
+          extension_misc::kGoogleSheetsDemoAppId,
+          extension_misc::kGoogleSlidesDemoAppId,
+          web_app::kGmailAppId,
+          web_app::kGoogleChatAppId,
+          web_app::kGoogleMeetAppId,
+          web_app::kGoogleDocsAppId,
+          web_app::kGoogleSlidesAppId,
+          web_app::kGoogleSheetsAppId,
+          web_app::kGoogleDriveAppId,
+          web_app::kGoogleKeepAppId,
+          web_app::kGoogleCalendarAppId,
+      });
+
+  return base::FeatureList::IsEnabled(features::kOrcaOnWorkspace) ||
+         !kWorkspaceAppIdDenylist.contains(app_id);
 }
 
 bool IsTriggerableFromTextLength(int text_length) {
@@ -349,11 +372,11 @@ std::vector<EditorBlockedReason> EditorSwitch::GetBlockedReasons() const {
     blocked_reasons.push_back(EditorBlockedReason::kBlockedByTextLength);
   }
 
-  if (!IsUrlAllowed(profile_, context_->active_url())) {
+  if (!IsUrlAllowed(context_->active_url())) {
     blocked_reasons.push_back(EditorBlockedReason::kBlockedByUrl);
   }
 
-  if (!IsAppAllowed(profile_, context_->app_id())) {
+  if (!IsAppAllowed(context_->app_id())) {
     blocked_reasons.push_back(EditorBlockedReason::kBlockedByApp);
   }
 
@@ -395,8 +418,8 @@ bool EditorSwitch::CanBeTriggered() const {
          IsInputTypeAllowed(context_->input_type()) &&
          IsAppTypeAllowed(context_->app_type()) &&
          IsTriggerableFromConsentStatus(current_consent_status) &&
-         IsUrlAllowed(profile_, context_->active_url()) &&
-         IsAppAllowed(profile_, context_->app_id()) &&
+         IsUrlAllowed(context_->active_url()) &&
+         IsAppAllowed(context_->app_id()) &&
          !net::NetworkChangeNotifier::IsOffline() &&
          !context_->InTabletMode() &&
          // user pref value
@@ -407,8 +430,12 @@ bool EditorSwitch::CanBeTriggered() const {
 }
 
 EditorMode EditorSwitch::GetEditorMode() const {
+  if (!IsAllowedForUse()) {
+    return EditorMode::kHardBlocked;
+  }
+
   if (!CanBeTriggered()) {
-    return EditorMode::kBlocked;
+    return EditorMode::kSoftBlocked;
   }
 
   ConsentStatus current_consent_status = GetConsentStatusFromInteger(

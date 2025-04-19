@@ -12,7 +12,7 @@ Are you a Google employee? See
 
 ## System requirements
 
-* A 64-bit Intel machine with at least 8GB of RAM. More than 16GB is highly
+* An x86-64 machine with at least 8GB of RAM. More than 16GB is highly
   recommended.
 * At least 100GB of free disk space on an NTFS-formatted hard drive. FAT32
   will not work, as some of the Git packfiles are larger than 4GB.
@@ -397,6 +397,29 @@ $ autoninja -C out\Default ..\..\base\logging.cc^^
 In addition to `foo.cc^^`, Siso also supports `foo.h^^` syntax to compile
 the corresponding `foo.o` if it exists.
 
+If you run a `bash` shell, you can use the following script to ease invocation:
+
+```shell
+#!/bin/sh
+files=("${@/#/..\/..\/}")
+autoninja -C out/Default ${files[@]/%/^^}
+```
+
+This script assumes it is run from `src` and your output dir is `out/Default`;
+it invokes `autoninja` to compile all given files. If you place it in your
+`$PATH` and name it e.g. `compile`, you can invoke like this:
+
+```shell
+$ pwd  # Just to illustrate where this is run from
+/c/src
+$ compile base/time/time.cc base/time/time_unittest.cc
+...
+[0/47] 5.56s S CXX obj/base/base/time.obj
+...
+[2/3] 9.27s S CXX obj/base/base_unittests/time_unittest.obj
+...
+```
+
 ## Run Chromium
 
 Once it is built, you can simply run the browser:
@@ -434,6 +457,19 @@ $ out\Default\unit_tests.exe --gtest_filter="BrowserListUnitTest.*"
 
 You can find out more about GoogleTest at its
 [GitHub page](https://github.com/google/googletest).
+
+## Build an Installer
+
+Build the `mini_installer` target to create a self-contained installer. This
+has everything needed to install your browser on a machine.
+
+```shell
+$ autoninja -C out\Default mini_installer
+```
+
+See [//chrome/installer/setup/README.md](../chrome/installer/setup/README.md)
+and [//chrome/installer/mini_installer/README.md](../chrome/installer/mini_installer/README.md)
+for more information.
 
 ## Update your checkout
 

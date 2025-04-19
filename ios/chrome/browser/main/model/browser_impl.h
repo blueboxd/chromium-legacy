@@ -29,7 +29,8 @@ class BrowserImpl final : public Browser, public BrowserWebStateListDelegate {
               CommandDispatcher* command_dispatcher,
               BrowserImpl* active_browser,
               InsertionPolicy insertion_policy,
-              ActivationPolicy activation_policy);
+              ActivationPolicy activation_policy,
+              Type type);
 
   BrowserImpl(const BrowserImpl&) = delete;
   BrowserImpl& operator=(const BrowserImpl&) = delete;
@@ -37,7 +38,11 @@ class BrowserImpl final : public Browser, public BrowserWebStateListDelegate {
   ~BrowserImpl() final;
 
   // Browser.
+  Type type() const override;
+  // TODO(crbug.com/358301380): After all usage has changed to GetProfile(),
+  // remove this method.
   ChromeBrowserState* GetBrowserState() final;
+  ChromeBrowserState* GetProfile() final;
   WebStateList* GetWebStateList() final;
   CommandDispatcher* GetCommandDispatcher() final;
   SceneState* GetSceneState() final;
@@ -51,6 +56,9 @@ class BrowserImpl final : public Browser, public BrowserWebStateListDelegate {
   void DestroyInactiveBrowser() final;
 
  private:
+  // The type of this browser.
+  const Type type_;
+
   // The ChromeBrowserState this Browser is attached to. Must not be null.
   raw_ptr<ChromeBrowserState> const browser_state_;
 

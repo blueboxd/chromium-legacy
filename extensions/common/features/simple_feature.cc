@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "extensions/common/features/simple_feature.h"
 
 #include <algorithm>
@@ -131,23 +136,6 @@ std::string GetDisplayName(mojom::ContextType context) {
       return "offscreen document";
     case mojom::ContextType::kUserScript:
       return "user script";
-  }
-  NOTREACHED_IN_MIGRATION();
-  return "";
-}
-
-std::string GetDisplayName(version_info::Channel channel) {
-  switch (channel) {
-    case version_info::Channel::UNKNOWN:
-      return "trunk";
-    case version_info::Channel::CANARY:
-      return "canary";
-    case version_info::Channel::DEV:
-      return "dev";
-    case version_info::Channel::BETA:
-      return "beta";
-    case version_info::Channel::STABLE:
-      return "stable";
   }
   NOTREACHED_IN_MIGRATION();
   return "";
@@ -396,8 +384,8 @@ std::string SimpleFeature::GetAvailabilityMessage(
     case UNSUPPORTED_CHANNEL:
       return base::StringPrintf(
           "'%s' requires %s channel or newer, but this is the %s channel.",
-          name().c_str(), GetDisplayName(channel).c_str(),
-          GetDisplayName(GetCurrentChannel()).c_str());
+          name().c_str(), version_info::GetChannelString(channel).data(),
+          version_info::GetChannelString(GetCurrentChannel()).data());
     case MISSING_COMMAND_LINE_SWITCH:
       DCHECK(command_line_switch_);
       return base::StringPrintf(

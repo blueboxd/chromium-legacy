@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/342213636): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "content/test/mock_clipboard_host.h"
 
 #include <vector>
@@ -119,9 +124,10 @@ void MockClipboardHost::ReadFiles(ui::ClipboardBuffer clipboard_buffer,
   std::move(callback).Run(blink::mojom::ClipboardFiles::New());
 }
 
-void MockClipboardHost::ReadCustomData(ui::ClipboardBuffer clipboard_buffer,
-                                       const std::u16string& type,
-                                       ReadCustomDataCallback callback) {
+void MockClipboardHost::ReadDataTransferCustomData(
+    ui::ClipboardBuffer clipboard_buffer,
+    const std::u16string& type,
+    ReadDataTransferCustomDataCallback callback) {
   auto it = custom_data_.find(type);
   std::move(callback).Run(it != custom_data_.end() ? it->second
                                                    : std::u16string());
@@ -153,7 +159,7 @@ void MockClipboardHost::WriteSmartPasteMarker() {
   write_smart_paste_ = true;
 }
 
-void MockClipboardHost::WriteCustomData(
+void MockClipboardHost::WriteDataTransferCustomData(
     const base::flat_map<std::u16string, std::u16string>& data) {
   if (needs_reset_)
     Reset();

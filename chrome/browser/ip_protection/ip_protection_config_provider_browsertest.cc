@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ip_protection/ip_protection_config_provider.h"
 
+#include <string>
+#include <vector>
+
 #include "base/callback_list.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
@@ -58,11 +61,13 @@ class IpProtectionConfigGetterInterceptor
   IpProtectionConfigGetterInterceptor(IpProtectionConfigProvider* getter,
                                       std::string token,
                                       base::Time expiration,
+                                      network::GeoHint geo_hint,
                                       bool should_intercept = true)
       : getter_(getter),
         receiver_id_(getter_->receiver_id_for_testing()),
         token_(std::move(token)),
         expiration_(expiration),
+        geo_hint_(geo_hint),
         should_intercept_(should_intercept) {
     auto* old_impl =
         getter_->receivers_for_testing().SwapImplForTesting(receiver_id_, this);
@@ -83,10 +88,10 @@ class IpProtectionConfigGetterInterceptor
                         network::mojom::IpProtectionProxyLayer proxy_layer,
                         TryGetAuthTokensCallback callback) override {
     if (should_intercept_) {
-      std::vector<network::mojom::BlindSignedAuthTokenPtr> tokens;
+      std::vector<network::BlindSignedAuthToken> tokens;
       for (uint32_t i = 0; i < batch_size; i++) {
-        auto token =
-            network::mojom::BlindSignedAuthToken::New(token_, expiration_);
+        network::BlindSignedAuthToken token = {
+            .token = token_, .expiration = expiration_, .geo_hint = geo_hint_};
         tokens.push_back(std::move(token));
       }
       std::move(callback).Run(std::move(tokens), base::Time());
@@ -100,6 +105,8 @@ class IpProtectionConfigGetterInterceptor
 
   base::Time expiration() const { return expiration_; }
 
+  network::GeoHint geo_hint() const { return geo_hint_; }
+
   void EnableInterception() { should_intercept_ = true; }
   void DisableInterception() { should_intercept_ = false; }
 
@@ -112,6 +119,7 @@ class IpProtectionConfigGetterInterceptor
   mojo::ReceiverId receiver_id_;
   std::string token_;
   base::Time expiration_;
+  network::GeoHint geo_hint_;
   bool should_intercept_;
 };
 
@@ -123,8 +131,7 @@ class IpProtectionConfigProviderBrowserTest : public PlatformBrowserTest {
   IpProtectionConfigProviderBrowserTest()
       : profile_selections_(IpProtectionConfigProviderFactory::GetInstance(),
                             IpProtectionConfigProviderFactory::
-                                CreateProfileSelectionsForTesting()) {
-  }
+                                CreateProfileSelectionsForTesting()) {}
 
   void TearDownOnMainThread() override {
     PlatformBrowserTest::TearDownOnMainThread();
@@ -140,9 +147,11 @@ class IpProtectionConfigProviderBrowserTest : public PlatformBrowserTest {
 
     std::string token = "best_token_ever";
     base::Time expiration = base::Time::Now() + base::Seconds(12345);
+    network::GeoHint geo_hint = {
+        .country_code = "US", .iso_region = "US-AL", .city_name = "ALABASTER"};
     main_profile_auth_token_getter_interceptor_ =
         std::make_unique<IpProtectionConfigGetterInterceptor>(
-            provider, token, expiration, /*should_intercept=*/false);
+            provider, token, expiration, geo_hint, /*should_intercept=*/false);
 
     network::mojom::NetworkContext* main_profile_network_context =
         GetProfile()->GetDefaultStoragePartition()->GetNetworkContext();
@@ -160,7 +169,7 @@ class IpProtectionConfigProviderBrowserTest : public PlatformBrowserTest {
 
     incognito_profile_auth_token_getter_interceptor_ =
         std::make_unique<IpProtectionConfigGetterInterceptor>(
-            provider, token, expiration, /*should_intercept=*/false);
+            provider, token, expiration, geo_hint, /*should_intercept=*/false);
   }
 
   void EnableInterception() {
@@ -214,22 +223,24 @@ IN_PROC_BROWSER_TEST_F(IpProtectionConfigProviderBrowserTest,
 
   std::string token = "best_token_ever";
   base::Time expiration = base::Time::Now() + base::Seconds(12345);
+  network::GeoHint geo_hint = {
+      .country_code = "US", .iso_region = "US-AL", .city_name = "ALABASTER"};
   ASSERT_EQ(getter->receivers_for_testing().size(), 1U);
   auto auth_token_getter_interceptor_ =
-      std::make_unique<IpProtectionConfigGetterInterceptor>(getter, token,
-                                                            expiration);
+      std::make_unique<IpProtectionConfigGetterInterceptor>(
+          getter, token, expiration, geo_hint);
 
   // To test that the Network Service can successfully request tokens, use the
   // test method on NetworkContext that will have it request tokens and then
   // send back the first token that it receives.
-  base::test::TestFuture<network::mojom::BlindSignedAuthTokenPtr,
+  base::test::TestFuture<const std::optional<network::BlindSignedAuthToken>&,
                          std::optional<base::Time>>
       future;
   auto* ipp_proxy_delegate = getter->last_remote_for_testing();
   ipp_proxy_delegate->VerifyIpProtectionConfigGetterForTesting(
       future.GetCallback());
-  const network::mojom::BlindSignedAuthTokenPtr& result =
-      future.Get<network::mojom::BlindSignedAuthTokenPtr>();
+  const std::optional<network::BlindSignedAuthToken>& result =
+      future.Get<std::optional<network::BlindSignedAuthToken>>();
   ASSERT_TRUE(result);
   EXPECT_EQ(result->token, token);
   // Expiration is "fuzzed" backward in time, so expect less-than.
@@ -243,8 +254,8 @@ IN_PROC_BROWSER_TEST_F(IpProtectionConfigProviderBrowserTest,
   // incognito mode network context's `mojo::Receiver()`.
   ASSERT_EQ(getter->receivers_for_testing().size(), 2U);
   auto incognito_auth_token_getter_interceptor_ =
-      std::make_unique<IpProtectionConfigGetterInterceptor>(getter, token,
-                                                            expiration);
+      std::make_unique<IpProtectionConfigGetterInterceptor>(
+          getter, token, expiration, geo_hint);
 
   // Verify that we can get tokens from the incognito mode profile.
   future.Clear();
@@ -252,8 +263,8 @@ IN_PROC_BROWSER_TEST_F(IpProtectionConfigProviderBrowserTest,
   ASSERT_NE(incognito_ipp_proxy_delegate, ipp_proxy_delegate);
   incognito_ipp_proxy_delegate->VerifyIpProtectionConfigGetterForTesting(
       future.GetCallback());
-  const network::mojom::BlindSignedAuthTokenPtr& incognito_result =
-      future.Get<network::mojom::BlindSignedAuthTokenPtr>();
+  const std::optional<network::BlindSignedAuthToken>& incognito_result =
+      future.Get<std::optional<network::BlindSignedAuthToken>>();
   ASSERT_TRUE(incognito_result);
   EXPECT_EQ(incognito_result->token, token);
   EXPECT_LT(incognito_result->expiration, expiration);
@@ -262,8 +273,8 @@ IN_PROC_BROWSER_TEST_F(IpProtectionConfigProviderBrowserTest,
   future.Clear();
   ipp_proxy_delegate->VerifyIpProtectionConfigGetterForTesting(
       future.GetCallback());
-  const network::mojom::BlindSignedAuthTokenPtr& second_attempt_result =
-      future.Get<network::mojom::BlindSignedAuthTokenPtr>();
+  const std::optional<network::BlindSignedAuthToken>& second_attempt_result =
+      future.Get<std::optional<network::BlindSignedAuthToken>>();
   ASSERT_TRUE(second_attempt_result);
   EXPECT_EQ(second_attempt_result->token, token);
   EXPECT_LT(second_attempt_result->expiration, expiration);
@@ -383,7 +394,7 @@ IN_PROC_BROWSER_TEST_F(IpProtectionConfigProviderIdentityBrowserTest,
   // Request tokens from both contexts and ensure that the "don't retry"
   // cooldown time is returned. The provider should do this itself, so the
   // interceptors won't be used for this part.
-  base::test::TestFuture<network::mojom::BlindSignedAuthTokenPtr,
+  base::test::TestFuture<const std::optional<network::BlindSignedAuthToken>&,
                          std::optional<base::Time>>
       future;
   main_profile_ipp_proxy_delegate_->VerifyIpProtectionConfigGetterForTesting(
@@ -441,9 +452,9 @@ IN_PROC_BROWSER_TEST_F(IpProtectionConfigProviderIdentityBrowserTest,
   future.Clear();
   main_profile_ipp_proxy_delegate_->VerifyIpProtectionConfigGetterForTesting(
       future.GetCallback());
-  const network::mojom::BlindSignedAuthTokenPtr&
+  const std::optional<network::BlindSignedAuthToken>&
       main_profile_third_attempt_result =
-          future.Get<network::mojom::BlindSignedAuthTokenPtr>();
+          future.Get<std::optional<network::BlindSignedAuthToken>>();
   ASSERT_TRUE(main_profile_third_attempt_result);
   EXPECT_EQ(main_profile_third_attempt_result->token,
             main_profile_auth_token_getter_interceptor_->token());
@@ -453,9 +464,9 @@ IN_PROC_BROWSER_TEST_F(IpProtectionConfigProviderIdentityBrowserTest,
   future.Clear();
   incognito_profile_ipp_proxy_delegate_
       ->VerifyIpProtectionConfigGetterForTesting(future.GetCallback());
-  const network::mojom::BlindSignedAuthTokenPtr&
+  const std::optional<network::BlindSignedAuthToken>&
       incognito_profile_third_attempt_result =
-          future.Get<network::mojom::BlindSignedAuthTokenPtr>();
+          future.Get<std::optional<network::BlindSignedAuthToken>>();
   ASSERT_TRUE(incognito_profile_third_attempt_result);
   EXPECT_EQ(incognito_profile_third_attempt_result->token,
             incognito_profile_auth_token_getter_interceptor_->token());
@@ -504,10 +515,10 @@ IN_PROC_BROWSER_TEST_F(IpProtectionConfigProviderUserSettingBrowserTest,
 
   // Request tokens from both contexts and ensure that the "don't retry"
   // cooldown time is returned.
-  base::test::TestFuture<network::mojom::BlindSignedAuthTokenPtr,
+  base::test::TestFuture<const std::optional<network::BlindSignedAuthToken>&,
                          std::optional<base::Time>>
       main_profile_verification_future;
-  base::test::TestFuture<network::mojom::BlindSignedAuthTokenPtr,
+  base::test::TestFuture<const std::optional<network::BlindSignedAuthToken>&,
                          std::optional<base::Time>>
       incognito_profile_verification_future;
 
@@ -556,14 +567,14 @@ IN_PROC_BROWSER_TEST_F(IpProtectionConfigProviderUserSettingBrowserTest,
       ->VerifyIpProtectionConfigGetterForTesting(
           incognito_profile_verification_future.GetCallback());
 
-  const network::mojom::BlindSignedAuthTokenPtr&
+  const std::optional<network::BlindSignedAuthToken>&
       main_profile_second_attempt_result =
           main_profile_verification_future
-              .Get<network::mojom::BlindSignedAuthTokenPtr>();
-  const network::mojom::BlindSignedAuthTokenPtr&
+              .Get<std::optional<network::BlindSignedAuthToken>>();
+  const std::optional<network::BlindSignedAuthToken>&
       incognito_profile_second_attempt_result =
           incognito_profile_verification_future
-              .Get<network::mojom::BlindSignedAuthTokenPtr>();
+              .Get<std::optional<network::BlindSignedAuthToken>>();
 
   ASSERT_TRUE(main_profile_second_attempt_result);
   ASSERT_TRUE(incognito_profile_second_attempt_result);
@@ -609,16 +620,8 @@ class IpProtectionConfigProviderPolicyBrowserTest : public policy::PolicyTest {
       profile_selections_;
 };
 
-// TODO(https://crbug.com/328624105): These policy tests are flaky on Android.
-// Re-enable them once the root cause has been determined.
-#if BUILDFLAG(IS_ANDROID)
-#define MAYBE(test) DISABLED_##test
-#else
-#define MAYBE(test) test
-#endif
-
 IN_PROC_BROWSER_TEST_F(IpProtectionConfigProviderPolicyBrowserTest,
-                       MAYBE(IpProtectionEnterprisePolicyDisableAndEnable)) {
+                       IpProtectionEnterprisePolicyDisableAndEnable) {
   IpProtectionConfigProvider* provider =
       IpProtectionConfigProvider::Get(GetProfile());
 
@@ -639,7 +642,7 @@ IN_PROC_BROWSER_TEST_F(IpProtectionConfigProviderPolicyBrowserTest,
 // pref value should no longer be considered managed and should effectively be
 // reset to its initial state.
 IN_PROC_BROWSER_TEST_F(IpProtectionConfigProviderPolicyBrowserTest,
-                       MAYBE(IpProtectionEnterprisePolicyUnsetAfterSet)) {
+                       IpProtectionEnterprisePolicyUnsetAfterSet) {
   IpProtectionConfigProvider* provider =
       IpProtectionConfigProvider::Get(GetProfile());
 

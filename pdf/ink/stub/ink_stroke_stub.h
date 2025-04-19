@@ -5,25 +5,33 @@
 #ifndef PDF_INK_STUB_INK_STROKE_STUB_H_
 #define PDF_INK_STUB_INK_STROKE_STUB_H_
 
-#include <memory>
-
 #include "pdf/ink/ink_stroke.h"
+#include "pdf/ink/stub/ink_modeled_shape_view_stub.h"
+#include "pdf/ink/stub/ink_stroke_input_batch_stub.h"
+#include "pdf/ink/stub/ink_stroke_input_batch_view_stub.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace chrome_pdf {
 
-class InkModeledShape;
-class InkModeledShapeStub;
+class InkModeledShapeViewStub;
 
 class InkStrokeStub : public InkStroke {
  public:
-  InkStrokeStub();
+  InkStrokeStub(SkColor brush_color, const InkStrokeInputBatchStub& inputs);
+  InkStrokeStub(const InkStrokeStub&) = delete;
+  InkStrokeStub& operator=(const InkStrokeStub&) = delete;
   ~InkStrokeStub() override;
 
   // InkStroke:
-  const InkModeledShape* GetShape() const override;
+  SkColor GetBrushColor() const override;
+  const InkStrokeInputBatchView& GetInputs() const override;
+  const InkModeledShapeView& GetShape() const override;
 
  private:
-  const std::unique_ptr<InkModeledShapeStub> shape_;
+  const SkColor brush_color_;
+  const InkModeledShapeViewStub shape_;
+  const InkStrokeInputBatchStub inputs_;
+  const InkStrokeInputBatchViewStub inputs_view_;
 };
 
 }  // namespace chrome_pdf

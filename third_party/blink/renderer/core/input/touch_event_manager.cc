@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/core/input/touch_event_manager.h"
 
 #include <memory>
@@ -205,7 +210,7 @@ Touch* TouchEventManager::CreateDomTouch(
 
   WebPointerEvent transformed_event =
       point_attr->event_.WebPointerEventInRootFrame();
-  float scale_factor = 1.0f / target_frame->PageZoomFactor();
+  float scale_factor = 1.0f / target_frame->LayoutZoomFactor();
 
   gfx::PointF document_point =
       gfx::ScalePoint(target_frame->View()->RootFrameToDocument(

@@ -31,9 +31,7 @@ import androidx.appcompat.content.res.AppCompatResources;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -45,8 +43,6 @@ import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowToast;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -58,12 +54,12 @@ import org.chromium.chrome.browser.theme.ThemeUtils;
 import org.chromium.chrome.browser.toolbar.ButtonData.ButtonSpec;
 import org.chromium.chrome.browser.toolbar.ButtonDataImpl;
 import org.chromium.chrome.browser.toolbar.R;
-import org.chromium.chrome.browser.toolbar.ToolbarFeatures;
 import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarButtonVariant;
 import org.chromium.chrome.browser.toolbar.menu_button.MenuButtonCoordinator;
 import org.chromium.chrome.browser.toolbar.top.CaptureReadinessResult.TopToolbarAllowCaptureReason;
 import org.chromium.chrome.browser.toolbar.top.CaptureReadinessResult.TopToolbarBlockCaptureReason;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator.ToolbarColorObserver;
+import org.chromium.chrome.browser.toolbar.top.tab_strip.TabStripTransitionCoordinator;
 import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
 import org.chromium.ui.widget.ToastManager;
 
@@ -74,9 +70,9 @@ import java.util.List;
 @LooperMode(LooperMode.Mode.PAUSED)
 @RunWith(BaseRobolectricTestRunner.class)
 public final class ToolbarTabletUnitTest {
-    @Rule public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
     @Mock private LocationBarCoordinator mLocationBar;
     @Mock private LocationBarCoordinatorTablet mLocationBarTablet;
+    @Mock private ToggleTabStackButtonCoordinator mTabSwitcherButtonCoordinator;
     @Mock private StatusCoordinator mStatusCoordinator;
     @Mock private MenuButtonCoordinator mMenuButtonCoordinator;
     @Mock private TabStripTransitionCoordinator mTabStripTransitionCoordinator;
@@ -89,7 +85,7 @@ public final class ToolbarTabletUnitTest {
     private ImageButton mBackButton;
     private ImageButton mForwardButton;
     private ImageButton mMenuButton;
-    private ImageButton mTabSwitcherButton;
+    private ToggleTabStackButton mTabSwitcherButton;
     private ImageButton mBookmarkButton;
     private ImageButton mSaveOfflineButton;
     private View mLocationBarButton;
@@ -108,6 +104,7 @@ public final class ToolbarTabletUnitTest {
         LocationBarLayout locationBarLayout = mToolbarTablet.findViewById(R.id.location_bar);
         locationBarLayout.setStatusCoordinatorForTesting(mStatusCoordinator);
         mToolbarTablet.setMenuButtonCoordinatorForTesting(mMenuButtonCoordinator);
+        mToolbarTablet.setTabSwitcherButtonCoordinatorForTesting(mTabSwitcherButtonCoordinator);
         mToolbarTablet.setTabStripTransitionCoordinator(mTabStripTransitionCoordinator);
         mToolbarTablet.setToolbarColorObserver(mToolbarColorObserver);
         mToolbarTabletLayout =
@@ -118,6 +115,7 @@ public final class ToolbarTabletUnitTest {
         mReloadingButton = mToolbarTablet.findViewById(R.id.refresh_button);
         mMenuButton = mToolbarTablet.findViewById(R.id.menu_button);
         mTabSwitcherButton = mToolbarTablet.findViewById(R.id.tab_switcher_button);
+        when(mTabSwitcherButtonCoordinator.getContainerView()).thenReturn(mTabSwitcherButton);
         mLocationBarButton = mToolbarTablet.findViewById(R.id.location_bar_status_icon);
         mBookmarkButton = mToolbarTablet.findViewById(R.id.bookmark_button);
         mSaveOfflineButton = mToolbarTablet.findViewById(R.id.save_offline_button);
@@ -584,28 +582,12 @@ public final class ToolbarTabletUnitTest {
     }
 
     @Test
-    @Features.EnableFeatures(ChromeFeatureList.TABLET_TAB_SWITCHER_LONG_PRESS_MENU)
-    public void longPressTabSwitcherMenu() {
-        CallbackHelper callback = new CallbackHelper();
-        mToolbarTablet.setOnTabSwitcherLongClickHandler(
-                (v) -> {
-                    callback.notifyCalled();
-                    return true;
-                });
-        mTabSwitcherButton.performLongClick();
-        Assert.assertEquals("Long press callback not triggered.", 1, callback.getCallCount());
-    }
-
-    @Test
-    @EnableFeatures(ChromeFeatureList.DYNAMIC_TOP_CHROME)
     @DisableFeatures(ChromeFeatureList.TAB_STRIP_LAYOUT_OPTIMIZATION)
     public void testThemeColorChange() {
-        ToolbarFeatures.USE_TOOLBAR_BG_COLOR_FOR_STRIP_TRANSITION_SCRIM.setForTesting(true);
         int color = Color.BLACK;
         mToolbarTablet.onThemeColorChanged(color, false);
         // Verify that ToolbarColorObserver is notified of the color change.
         verify(mToolbarColorObserver).onToolbarColorChanged(color);
-        ToolbarFeatures.USE_TOOLBAR_BG_COLOR_FOR_STRIP_TRANSITION_SCRIM.setForTesting(false);
     }
 
     @Test

@@ -40,6 +40,7 @@
 #include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
+#include "base/uuid.h"
 #include "base/win/atl.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_com_initializer.h"
@@ -150,6 +151,31 @@ TEST(WinUtil, RunElevated) {
 
 TEST(WinUtil, RunDeElevated_Exe) {
   if (!::IsUserAnAdmin() || !IsUACOn()) {
+    GTEST_SKIP();
+  }
+
+  // Create a shared event to be waited for in this process and signaled in the
+  // test process to confirm that the test process is running at medium
+  // integrity.
+  // The event is created with a security descriptor that allows the medium
+  // integrity process to signal it.
+  test::EventHolder event_holder(CreateEveryoneWaitableEventForTest());
+  ASSERT_NE(event_holder.event.handle(), nullptr);
+
+  base::CommandLine test_process_cmd_line = GetTestProcessCommandLine(
+      GetUpdaterScopeForTesting(), test::GetTestName());
+  test_process_cmd_line.AppendSwitchNative(kTestEventToSignalIfMediumIntegrity,
+                                           event_holder.name);
+  EXPECT_THAT(RunDeElevated(test_process_cmd_line),
+              base::test::ValueIs(DWORD{0}));
+  EXPECT_TRUE(event_holder.event.IsSignaled());
+
+  EXPECT_TRUE(test::WaitFor(
+      [] { return test::FindProcesses(kTestProcessExecutableName).empty(); }));
+}
+
+TEST(WinUtil, RunDeElevatedNoWait_Exe) {
+  if (!::IsUserAnAdmin() || !IsUACOn()) {
     return;
   }
 
@@ -166,8 +192,8 @@ TEST(WinUtil, RunDeElevated_Exe) {
   test_process_cmd_line.AppendSwitchNative(kTestEventToSignalIfMediumIntegrity,
                                            event_holder.name);
   EXPECT_HRESULT_SUCCEEDED(
-      RunDeElevated(test_process_cmd_line.GetProgram().value(),
-                    test_process_cmd_line.GetArgumentsString()));
+      RunDeElevatedNoWait(test_process_cmd_line.GetProgram().value(),
+                          test_process_cmd_line.GetArgumentsString()));
   EXPECT_TRUE(event_holder.event.TimedWait(TestTimeouts::action_max_timeout()));
 
   EXPECT_TRUE(test::WaitFor(
@@ -647,6 +673,38 @@ TEST(WinUtil, StringFromGuid) {
   GUID guid = {0};
   EXPECT_HRESULT_SUCCEEDED(::CoCreateGuid(&guid));
   EXPECT_EQ(base::win::WStringFromGUID(guid), StringFromGuid(guid));
+}
+
+TEST(WinUtil, GetUniqueTempFilePath) {
+  EXPECT_FALSE(GetUniqueTempFilePath({}));
+
+  std::optional<base::FilePath> p = GetUniqueTempFilePath(base::FilePath(
+      L"C:\\Program Files (x86)\\Google\\GoogleUpdater\\updater.log"));
+  ASSERT_TRUE(p);
+  std::wstring p_base = p->BaseName().value();
+  EXPECT_TRUE(base::StartsWith(p_base, L"updater"));
+  EXPECT_TRUE(base::EndsWith(p_base, L".log"));
+  base::ReplaceSubstringsAfterOffset(&p_base, 0, L"updater", {});
+  base::ReplaceSubstringsAfterOffset(&p_base, 0, L".log", {});
+  EXPECT_TRUE(base::Uuid::ParseLowercase(base::WideToUTF8(p_base)).is_valid());
+}
+
+TEST(WinUtil, SetEulaAccepted) {
+  // This will set `eulaaccepted=0` in the registry.
+  EXPECT_TRUE(
+      SetEulaAccepted(GetUpdaterScopeForTesting(), /*eula_accepted=*/false));
+  DWORD eula_accepted = 0;
+  const HKEY root = UpdaterScopeToHKeyRoot(GetUpdaterScopeForTesting());
+  EXPECT_EQ(base::win::RegKey(root, UPDATER_KEY, Wow6432(KEY_READ))
+                .ReadValueDW(L"eulaaccepted", &eula_accepted),
+            ERROR_SUCCESS);
+  EXPECT_EQ(eula_accepted, 0ul);
+
+  // This will delete the `eulaaccepted` value in the registry.
+  EXPECT_TRUE(
+      SetEulaAccepted(GetUpdaterScopeForTesting(), /*eula_accepted=*/true));
+  EXPECT_FALSE(base::win::RegKey(root, UPDATER_KEY, Wow6432(KEY_READ))
+                   .HasValue(L"eulaaccepted"));
 }
 
 }  // namespace updater::test

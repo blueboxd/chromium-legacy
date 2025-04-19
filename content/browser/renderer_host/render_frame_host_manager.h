@@ -20,7 +20,6 @@
 #include "base/types/expected.h"
 #include "content/browser/renderer_host/browsing_context_group_swap.h"
 #include "content/browser/renderer_host/browsing_context_state.h"
-#include "content/browser/renderer_host/navigation_discard_reason.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/should_swap_browsing_instance.h"
@@ -32,6 +31,7 @@
 #include "content/common/content_export.h"
 #include "content/common/frame.mojom-forward.h"
 #include "content/public/browser/global_request_id.h"
+#include "content/public/browser/navigation_discard_reason.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/referrer.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
@@ -80,7 +80,24 @@ enum class GetFrameHostForNavigationFailed {
   // RenderFrameHost (because the pre-existing unsuitable speculative
   // RenderFrameHost cannot be discarded).
   kBlockedByPendingCommit,
+  // Intentionally defer the creation of the RenderFrameHost to prioritize
+  // initiating the network request instead.
+  // Please refer to the comments of features:kDeferSpeculativeRFHCreation
+  // in contents/common/features.cc for more details.
+  kIntentionalDefer,
 };
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+//
+// LINT.IfChange(DeferSpeculativeRFHAction)
+enum class DeferSpeculativeRFHAction {
+  kNotDeferred = 0,
+  kDeferredWithRenderProcessWarmUp = 1,
+  kDeferredWithoutRenderProcessWarmUp = 2,
+  kMaxValue = kDeferredWithoutRenderProcessWarmUp,
+};
+// LINT.ThenChange(//tools/metrics/histograms/metadata/navigation/enums.xml:DeferSpeculativeRFHAction)
 
 // Manages RenderFrameHosts for a FrameTreeNode. It maintains a
 // current_frame_host() which is the content currently visible to the user. When
@@ -745,13 +762,15 @@ class CONTENT_EXPORT RenderFrameHostManager {
       IsSameSiteGetter& is_same_site,
       CoopSwapResult coop_swap_result,
       bool was_server_redirect,
-      bool should_replace_current_entry);
+      bool should_replace_current_entry,
+      bool has_rel_opener);
 
   BrowsingContextGroupSwap ShouldProactivelySwapBrowsingInstance(
       const UrlInfo& destination_url_info,
       bool is_reload,
       IsSameSiteGetter& is_same_site,
-      bool should_replace_current_entry);
+      bool should_replace_current_entry,
+      bool has_rel_opener);
 
   // Returns the SiteInstance to use for the navigation.
   //
@@ -771,6 +790,7 @@ class CONTENT_EXPORT RenderFrameHostManager {
       CoopSwapResult coop_swap_result,
       bool should_replace_current_entry,
       bool force_new_browsing_instance,
+      bool has_rel_opener,
       BrowsingContextGroupSwap* browsing_context_group_swap,
       std::string* reason);
 

@@ -8,6 +8,8 @@
 #include "base/command_line.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
+#include "base/profiler/process_type.h"
+#include "base/profiler/stack_sampler.h"
 #include "base/rand_util.h"
 #include "build/branding_buildflags.h"
 #include "chrome/common/channel_info.h"
@@ -76,14 +78,14 @@ bool ThreadProfilerConfiguration::IsProfilerEnabledForCurrentProcess() const {
   return EnableForVariationGroup(config.variation_group) &&
          IsProcessGloballyEnabled(
              config,
-             GetProfileParamsProcess(*base::CommandLine::ForCurrentProcess()));
+             GetProfilerProcessType(*base::CommandLine::ForCurrentProcess()));
 }
 
 bool ThreadProfilerConfiguration::IsProfilerEnabledForCurrentProcessAndThread(
-    metrics::CallStackProfileParams::Thread thread) const {
+    base::ProfilerThreadType thread) const {
   return IsProfilerEnabledForCurrentProcess() &&
          platform_configuration_->IsEnabledForThread(
-             GetProfileParamsProcess(*base::CommandLine::ForCurrentProcess()),
+             GetProfilerProcessType(*base::CommandLine::ForCurrentProcess()),
              thread, GetReleaseChannel());
 }
 
@@ -112,6 +114,10 @@ bool ThreadProfilerConfiguration::GetSyntheticFieldTrial(
       *group_name = "Control";
       break;
 
+    case kProfileEnabledWithThreadPool:
+      *group_name = "EnabledWithThreadPool";
+      break;
+
     case kProfileEnabled:
       *group_name = "Enabled";
       break;
@@ -124,7 +130,7 @@ bool ThreadProfilerConfiguration::GetSyntheticFieldTrial(
 }
 
 bool ThreadProfilerConfiguration::IsProfilerEnabledForChildProcess(
-    metrics::CallStackProfileParams::Process child_process) const {
+    base::ProfilerProcessType child_process) const {
   const auto& config = absl::get<BrowserProcessConfiguration>(configuration_);
 
   const double enable_fraction =
@@ -140,7 +146,7 @@ void ThreadProfilerConfiguration::AppendCommandLineSwitchForChildProcess(
     base::CommandLine* child_process_command_line) const {
   DCHECK(absl::holds_alternative<BrowserProcessConfiguration>(configuration_));
   if (!IsProfilerEnabledForChildProcess(
-          GetProfileParamsProcess(*child_process_command_line))) {
+          GetProfilerProcessType(*child_process_command_line))) {
     return;
   }
 
@@ -160,12 +166,24 @@ bool ThreadProfilerConfiguration::IsJavaNameHashingEnabled() const {
 }
 #endif  // BUILDFLAG(IS_ANDROID)
 
+bool ThreadProfilerConfiguration::IsThreadPoolEnabledForCurrentProcess() const {
+  if (absl::holds_alternative<ChildProcessConfiguration>(configuration_)) {
+    return base::CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kStackProfilerUseThreadPool);
+  }
+
+  const auto& config = absl::get<BrowserProcessConfiguration>(configuration_);
+  return config.variation_group == kProfileEnabledWithThreadPool;
+}
+
 ThreadProfilerConfiguration::ThreadProfilerConfiguration()
     : platform_configuration_(ThreadProfilerPlatformConfiguration::Create(
           IsBrowserTestModeEnabled())),
       configuration_(GenerateConfiguration(
-          GetProfileParamsProcess(*base::CommandLine::ForCurrentProcess()),
-          *platform_configuration_)) {}
+          GetProfilerProcessType(*base::CommandLine::ForCurrentProcess()),
+          *platform_configuration_)) {
+  base::StackSampler::SetUseThreadPool(IsThreadPoolEnabledForCurrentProcess());
+}
 
 // static
 bool ThreadProfilerConfiguration::EnableForVariationGroup(
@@ -174,13 +192,14 @@ bool ThreadProfilerConfiguration::EnableForVariationGroup(
   // that are to be enabled.
   return variation_group.has_value() &&
          (*variation_group == kProfileEnabled ||
+          *variation_group == kProfileEnabledWithThreadPool ||
           *variation_group == kProfileControl);
 }
 
 // static
 bool ThreadProfilerConfiguration::IsProcessGloballyEnabled(
     const ThreadProfilerConfiguration::BrowserProcessConfiguration& config,
-    metrics::CallStackProfileParams::Process process) {
+    base::ProfilerProcessType process) {
   return !config.process_type_to_sample.has_value() ||
          process == *config.process_type_to_sample;
 }
@@ -234,16 +253,17 @@ ThreadProfilerConfiguration::GenerateBrowserProcessConfiguration(
       relative_populations =
           platform_configuration.GetEnableRates(release_channel);
 
-  const std::optional<metrics::CallStackProfileParams::Process>
-      process_type_to_sample = platform_configuration.ChooseEnabledProcess();
+  const std::optional<base::ProfilerProcessType> process_type_to_sample =
+      platform_configuration.ChooseEnabledProcess();
 
-  CHECK_EQ(0, relative_populations.experiment % 2);
+  CHECK_EQ(0, relative_populations.experiment % 3);
   return {
       ChooseVariationGroup({
           {kProfileDisabledOutsideOfExperiment, relative_populations.disabled},
           {kProfileEnabled, relative_populations.enabled},
-          {kProfileControl, relative_populations.experiment / 2},
-          {kProfileDisabled, relative_populations.experiment / 2},
+          {kProfileEnabledWithThreadPool, relative_populations.experiment / 3},
+          {kProfileControl, relative_populations.experiment / 3},
+          {kProfileDisabled, relative_populations.experiment / 3},
       }),
       process_type_to_sample};
 }
@@ -263,10 +283,11 @@ ThreadProfilerConfiguration::GenerateChildProcessConfiguration(
 // static
 ThreadProfilerConfiguration::Configuration
 ThreadProfilerConfiguration::GenerateConfiguration(
-    metrics::CallStackProfileParams::Process process,
+    base::ProfilerProcessType process,
     const ThreadProfilerPlatformConfiguration& platform_configuration) {
-  if (process == metrics::CallStackProfileParams::Process::kBrowser)
+  if (process == base::ProfilerProcessType::kBrowser) {
     return GenerateBrowserProcessConfiguration(platform_configuration);
+  }
 
   return GenerateChildProcessConfiguration(
       *base::CommandLine::ForCurrentProcess());

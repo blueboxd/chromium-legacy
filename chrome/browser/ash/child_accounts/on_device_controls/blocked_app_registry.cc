@@ -5,11 +5,15 @@
 #include "chrome/browser/ash/child_accounts/on_device_controls/blocked_app_registry.h"
 
 #include <algorithm>
+#include <set>
+#include <string>
 #include <utility>
 
+#include "app_controls_metrics_utils.h"
 #include "ash/constants/ash_pref_names.h"
 #include "base/containers/contains.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "blocked_app_registry.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -31,7 +35,9 @@ bool ShouldIncludeApp(apps::AppType app_type) {
 
 BlockedAppRegistry::BlockedAppRegistry(apps::AppServiceProxy* app_service,
                                        PrefService* pref_service)
-    : store_(pref_service), app_service_(app_service) {
+    : store_(pref_service),
+      app_service_(app_service),
+      app_activity_watcher_(this, app_service) {
   CHECK(app_service_);
 
   registry_ = store_.GetFromPref();
@@ -40,6 +46,13 @@ BlockedAppRegistry::BlockedAppRegistry(apps::AppServiceProxy* app_service,
   VLOG(1) << "app-controls: calling block apps to initialize the state in app "
              "service";
   app_service_->BlockApps(GetBlockedApps());
+
+  base::UmaHistogramCounts1000(
+      kOnDeviceControlsBlockedAppsEngagementHistogramName,
+      GetBlockedApps().size());
+  base::UmaHistogramBoolean(
+      kOnDeviceControlsPinSetCompletedHistogramName,
+      pref_service->GetBoolean(prefs::kOnDeviceAppControlsSetupCompleted));
 }
 
 BlockedAppRegistry::~BlockedAppRegistry() = default;
@@ -49,6 +62,9 @@ void BlockedAppRegistry::AddApp(const std::string& app_id) {
 
   if (base::Contains(registry_, app_id)) {
     LOG(WARNING) << app_id << " already in blocked app registry";
+    base::UmaHistogramEnumeration(
+        kOnDeviceControlsBlockAppActionHistogramName,
+        OnDeviceControlsBlockAppAction::kBlockAppError);
     return;
   }
   registry_[app_id] = BlockedAppDetails();
@@ -58,6 +74,11 @@ void BlockedAppRegistry::AddApp(const std::string& app_id) {
 
   // TODO(b/338247185): Only update value that changed.
   store_.SaveToPref(registry_);
+
+  base::UmaHistogramCounts1000(kOnDeviceControlsBlockedAppsCountHistogramName,
+                               GetBlockedApps().size());
+  base::UmaHistogramEnumeration(kOnDeviceControlsBlockAppActionHistogramName,
+                                OnDeviceControlsBlockAppAction::kBlockApp);
 }
 
 void BlockedAppRegistry::RemoveApp(const std::string& app_id) {
@@ -65,6 +86,9 @@ void BlockedAppRegistry::RemoveApp(const std::string& app_id) {
 
   if (!base::Contains(registry_, app_id)) {
     LOG(WARNING) << app_id << " not in blocked app registry";
+    base::UmaHistogramEnumeration(
+        kOnDeviceControlsBlockAppActionHistogramName,
+        OnDeviceControlsBlockAppAction::kUnblockAppError);
     return;
   }
   registry_.erase(app_id);
@@ -74,6 +98,29 @@ void BlockedAppRegistry::RemoveApp(const std::string& app_id) {
 
   // TODO(b/338247185): Only update value that changed.
   store_.SaveToPref(registry_);
+
+  base::UmaHistogramCounts1000(kOnDeviceControlsBlockedAppsCountHistogramName,
+                               GetBlockedApps().size());
+  base::UmaHistogramEnumeration(kOnDeviceControlsBlockAppActionHistogramName,
+                                OnDeviceControlsBlockAppAction::kUnblockApp);
+}
+
+void BlockedAppRegistry::RemoveAllApps() {
+  VLOG(1) << "app-controls: unblocking all apps";
+
+  // Registry must be cleared before apps are unblocked so that `GetAppState`
+  // correctly identifies that the apps are available.
+  const std::set<std::string> blocked_apps = GetBlockedApps();
+  registry_.clear();
+  app_service_->UnblockApps(blocked_apps);
+
+  store_.SaveToPref(registry_);
+
+  base::UmaHistogramCounts1000(kOnDeviceControlsBlockedAppsCountHistogramName,
+                               GetBlockedApps().size());
+  base::UmaHistogramEnumeration(
+      kOnDeviceControlsBlockAppActionHistogramName,
+      OnDeviceControlsBlockAppAction::kUnblockAllApps);
 }
 
 std::set<std::string> BlockedAppRegistry::GetBlockedApps() {
@@ -161,6 +208,9 @@ void BlockedAppRegistry::OnAppUninstalled(const std::string& app_id) {
 
   // TODO(b/338247185): Only update value that changed.
   store_.SaveToPref(registry_);
+  base::UmaHistogramEnumeration(
+      kOnDeviceControlsBlockAppActionHistogramName,
+      OnDeviceControlsBlockAppAction::kUninstallBlockedApp);
 }
 
 int BlockedAppRegistry::GetUninstalledBlockedAppCount() const {
@@ -187,12 +237,18 @@ void BlockedAppRegistry::RemoveOldestUninstalledApp() {
   if (oldest_app.empty()) {
     VLOG(1)
         << "app-controls: removing oldest uninstalled blocked app - not found";
+    base::UmaHistogramEnumeration(
+        kOnDeviceControlsAppRemovalHistogramName,
+        OnDeviceControlsAppRemoval::kOldestUninstalledAppNotFound);
     return;
   }
 
   VLOG(1) << "app-controls: removing oldest uninstalled blocked app "
           << oldest_app;
   RemoveApp(oldest_app);
+  base::UmaHistogramEnumeration(
+      kOnDeviceControlsAppRemovalHistogramName,
+      OnDeviceControlsAppRemoval::kOldestUninstalledAppRemoved);
 }
 
 }  // namespace ash::on_device_controls

@@ -2,11 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifdef UNSAFE_BUFFERS_BUILD
-// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
-#pragma allow_unsafe_buffers
-#endif
-
 #include "base/containers/span.h"
 
 #include <stdint.h>
@@ -22,14 +17,19 @@
 #include <utility>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/containers/adapters.h"
 #include "base/containers/checked_iterators.h"
+#include "base/debug/alias.h"
+#include "base/memory/raw_span.h"
+#include "base/numerics/byte_conversions.h"
 #include "base/ranges/algorithm.h"
 #include "base/test/gtest_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::ElementsAre;
+using ::testing::ElementsAreArray;
 using ::testing::Eq;
 using ::testing::Pointwise;
 
@@ -172,13 +172,15 @@ TEST(SpanTest, DefaultConstructor) {
 
 TEST(SpanTest, ConstructFromDataAndSize) {
   constexpr int* kNull = nullptr;
-  constexpr span<int> empty_span(kNull, 0u);
+  // SAFETY: zero size is correct when pointer argument is NULL.
+  constexpr span<int> UNSAFE_BUFFERS(empty_span(kNull, 0u));
   EXPECT_TRUE(empty_span.empty());
   EXPECT_EQ(nullptr, empty_span.data());
 
   std::vector<int> vector = {1, 1, 2, 3, 5, 8};
 
-  span<int> dynamic_span(vector.data(), vector.size());
+  // SAFETY: `vector.size()` describes valid portion of `vector.data()`.
+  span<int> UNSAFE_BUFFERS(dynamic_span(vector.data(), vector.size()));
   EXPECT_EQ(vector.data(), dynamic_span.data());
   EXPECT_EQ(vector.size(), dynamic_span.size());
 
@@ -186,7 +188,8 @@ TEST(SpanTest, ConstructFromDataAndSize) {
     EXPECT_EQ(vector[i], dynamic_span[i]);
   }
 
-  span<int, 6> static_span(vector.data(), vector.size());
+  // SAFETY: `vector.size()` describes valid portion of `vector.data()`.
+  span<int, 6> UNSAFE_BUFFERS(static_span(vector.data(), vector.size()));
   EXPECT_EQ(vector.data(), static_span.data());
   EXPECT_EQ(vector.size(), static_span.size());
 
@@ -195,15 +198,32 @@ TEST(SpanTest, ConstructFromDataAndSize) {
   }
 }
 
+TEST(SpanTest, ConstructFromDataAndZeroSize) {
+  char* nullptr_to_char = nullptr;
+
+  auto empty_span = UNSAFE_BUFFERS(span<char>(nullptr_to_char, 0u));
+  EXPECT_EQ(empty_span.size(), 0u);
+  EXPECT_EQ(empty_span.data(), nullptr);
+  EXPECT_TRUE(empty_span.empty());
+
+  // We expect a `DCHECK` to catch construction of a dangling span - let's cover
+  // this expectation in a test, so that future `//base` refactorings (e.g.
+  // maybe switching to `std::span`) won't just silently change of this aspect
+  // of span behavior.
+  EXPECT_DCHECK_DEATH({ UNSAFE_BUFFERS(span<char>(nullptr_to_char, 123u)); });
+}
+
 TEST(SpanTest, ConstructFromIterAndSize) {
   constexpr int* kNull = nullptr;
-  constexpr span<int> empty_span(kNull, 0u);
+  // SAFETY: zero size is correct when pointer argument is NULL.
+  constexpr span<int> UNSAFE_BUFFERS(empty_span(kNull, 0u));
   EXPECT_TRUE(empty_span.empty());
   EXPECT_EQ(nullptr, empty_span.data());
 
   std::vector<int> vector = {1, 1, 2, 3, 5, 8};
 
-  span<int> dynamic_span(vector.begin(), vector.size());
+  // SAFETY: `vector.size()` describes valid bytes following `vector.begin()`.
+  span<int> UNSAFE_BUFFERS(dynamic_span(vector.begin(), vector.size()));
   EXPECT_EQ(vector.data(), dynamic_span.data());
   EXPECT_EQ(vector.size(), dynamic_span.size());
 
@@ -211,7 +231,8 @@ TEST(SpanTest, ConstructFromIterAndSize) {
     EXPECT_EQ(vector[i], dynamic_span[i]);
   }
 
-  span<int, 6> static_span(vector.begin(), vector.size());
+  // SAFETY: `vector.size()` describes valid bytes following `vector.begin()`.
+  span<int, 6> UNSAFE_BUFFERS(static_span(vector.begin(), vector.size()));
   EXPECT_EQ(vector.data(), static_span.data());
   EXPECT_EQ(vector.size(), static_span.size());
 
@@ -222,13 +243,17 @@ TEST(SpanTest, ConstructFromIterAndSize) {
 
 TEST(SpanTest, ConstructFromIterPair) {
   constexpr int* kNull = nullptr;
-  constexpr span<int> empty_span(kNull, kNull);
+  // SAFETY: required for test, NULL range valid.
+  constexpr span<int> UNSAFE_BUFFERS(empty_span(kNull, kNull));
   EXPECT_TRUE(empty_span.empty());
   EXPECT_EQ(nullptr, empty_span.data());
 
   std::vector<int> vector = {1, 1, 2, 3, 5, 8};
 
-  span<int> dynamic_span(vector.begin(), vector.begin() + vector.size() / 2);
+  // SAFETY: `vector.size()` describes valid portion of `vector.data()`,
+  // thus one-half `vector.size()` is within this range.
+  span<int> UNSAFE_BUFFERS(
+      dynamic_span(vector.begin(), vector.begin() + vector.size() / 2));
   EXPECT_EQ(vector.data(), dynamic_span.data());
   EXPECT_EQ(vector.size() / 2, dynamic_span.size());
 
@@ -236,7 +261,10 @@ TEST(SpanTest, ConstructFromIterPair) {
     EXPECT_EQ(vector[i], dynamic_span[i]);
   }
 
-  span<int, 3> static_span(vector.begin(), vector.begin() + vector.size() / 2);
+  // SAFETY: `vector.size()` describes valid portion of `vector.data()`,
+  // thus one-half `vector.size()` is within this range.
+  span<int, 3> UNSAFE_BUFFERS(
+      static_span(vector.begin(), vector.begin() + vector.size() / 2));
   EXPECT_EQ(vector.data(), static_span.data());
   EXPECT_EQ(vector.size() / 2, static_span.size());
 
@@ -370,24 +398,16 @@ TEST(SpanTest, ConstructFromArray) {
 
   span<const int> const_span = array;
   EXPECT_EQ(array, const_span.data());
-  EXPECT_EQ(std::size(array), const_span.size());
-  for (size_t i = 0; i < const_span.size(); ++i) {
-    EXPECT_EQ(array[i], const_span[i]);
-  }
+  EXPECT_THAT(const_span, ElementsAreArray(array));
 
   span<int> dynamic_span = array;
   EXPECT_EQ(array, dynamic_span.data());
-  EXPECT_EQ(std::size(array), dynamic_span.size());
-  for (size_t i = 0; i < dynamic_span.size(); ++i) {
-    EXPECT_EQ(array[i], dynamic_span[i]);
-  }
+  EXPECT_THAT(dynamic_span, ElementsAreArray(array));
 
   span<int, std::size(array)> static_span = array;
   EXPECT_EQ(array, static_span.data());
   EXPECT_EQ(std::size(array), static_span.size());
-  for (size_t i = 0; i < static_span.size(); ++i) {
-    EXPECT_EQ(array[i], static_span[i]);
-  }
+  EXPECT_THAT(static_span, ElementsAreArray(array));
 
   [](span<const int> dynamic_span) {
     EXPECT_EQ(dynamic_span.size(), 5u);
@@ -404,7 +424,6 @@ TEST(SpanTest, ConstructFromArray) {
 
 TEST(SpanTest, ConstructFromVolatileArray) {
   static volatile int array[] = {5, 4, 3, 2, 1};
-
   span<const volatile int> const_span(array);
   static_assert(std::is_same_v<decltype(&const_span[1]), const volatile int*>);
   static_assert(
@@ -412,7 +431,10 @@ TEST(SpanTest, ConstructFromVolatileArray) {
   EXPECT_EQ(array, const_span.data());
   EXPECT_EQ(std::size(array), const_span.size());
   for (size_t i = 0; i < const_span.size(); ++i) {
-    EXPECT_EQ(array[i], const_span[i]);
+    // SAFETY: `const_span` is the same size as `array` per previous
+    // EXPECT_EQ(), and const_span.size() describes the valid portion of
+    // const span, so indexing `array` at the same place is valid.
+    EXPECT_EQ(UNSAFE_BUFFERS(array[i]), const_span[i]);
   }
 
   span<volatile int> dynamic_span(array);
@@ -421,7 +443,10 @@ TEST(SpanTest, ConstructFromVolatileArray) {
   EXPECT_EQ(array, dynamic_span.data());
   EXPECT_EQ(std::size(array), dynamic_span.size());
   for (size_t i = 0; i < dynamic_span.size(); ++i) {
-    EXPECT_EQ(array[i], dynamic_span[i]);
+    // SAFETY: `dynamic_span` is the same size as `array` per previous
+    // EXPECT_EQ(), and `dynamic_span.size()` describes the valid portion of
+    // `dynamic_span`, so indexing `array` at the same place is valid.
+    EXPECT_EQ(UNSAFE_BUFFERS(array[i]), dynamic_span[i]);
   }
 
   span<volatile int, std::size(array)> static_span(array);
@@ -430,7 +455,10 @@ TEST(SpanTest, ConstructFromVolatileArray) {
   EXPECT_EQ(array, static_span.data());
   EXPECT_EQ(std::size(array), static_span.size());
   for (size_t i = 0; i < static_span.size(); ++i) {
-    EXPECT_EQ(array[i], static_span[i]);
+    // SAFETY: `static_span` is the same size as `array` per previous
+    // EXPECT_EQ(), and `static_span.size()` describes the valid portion of
+    // `static_span`, so indexing `array` at the same place is valid.
+    EXPECT_EQ(UNSAFE_BUFFERS(array[i]), static_span[i]);
   }
 }
 
@@ -469,15 +497,22 @@ TEST(SpanTest, ConstructFromInitializerList) {
   EXPECT_EQ(il.size(), const_span.size());
 
   for (size_t i = 0; i < const_span.size(); ++i) {
-    EXPECT_EQ(il.begin()[i], const_span[i]);
+    // SAFETY: `il.begin()` is valid to index up to `il.size()`, and
+    // `il.size()` equals `const_span.size()`, so `il.begin()` is valid
+    // to index up to `const_span.size()` per above loop condition.
+    EXPECT_EQ(UNSAFE_BUFFERS(il.begin()[i]), const_span[i]);
   }
 
-  span<const int, 6> static_span(il.begin(), il.end());
+  // SAFETY: [il.begin()..il.end()) is a valid range over `il`.
+  span<const int, 6> UNSAFE_BUFFERS(static_span(il.begin(), il.end()));
   EXPECT_EQ(il.begin(), static_span.data());
   EXPECT_EQ(il.size(), static_span.size());
 
   for (size_t i = 0; i < static_span.size(); ++i) {
-    EXPECT_EQ(il.begin()[i], static_span[i]);
+    // SAFETY: `il.begin()` is valid to index up to `il.size()`, and
+    // `il.size()` equals `static_span.size()`, so `il.begin()` is valid
+    // to index up to `static_span.size()` per above loop condition.
+    EXPECT_EQ(UNSAFE_BUFFERS(il.begin()[i]), static_span[i]);
   }
 }
 
@@ -500,7 +535,9 @@ TEST(SpanTest, ConstructFromStdString) {
     EXPECT_EQ(str[i], dynamic_span[i]);
   }
 
-  span<char, 6> static_span(data(str), str.size());
+  // SAFETY: `str.size()` describes the valid portion of `str.data()` prior
+  // to the terminating NUL.
+  span<char, 6> UNSAFE_BUFFERS(static_span(str.data(), str.size()));
   EXPECT_EQ(str.data(), static_span.data());
   EXPECT_EQ(str.size(), static_span.size());
 
@@ -520,7 +557,8 @@ TEST(SpanTest, ConstructFromConstContainer) {
     EXPECT_EQ(vector[i], const_span[i]);
   }
 
-  span<const int, 6> static_span(vector.data(), vector.size());
+  // SAFETY: `vector.size()` describes valid portion of `vector.data()`.
+  span<const int, 6> UNSAFE_BUFFERS(static_span(vector.data(), vector.size()));
   EXPECT_EQ(vector.data(), static_span.data());
   EXPECT_EQ(vector.size(), static_span.size());
 
@@ -548,7 +586,8 @@ TEST(SpanTest, ConstructFromContainer) {
     EXPECT_EQ(vector[i], dynamic_span[i]);
   }
 
-  span<int, 6> static_span(vector.data(), vector.size());
+  // SAFETY: vector.size() describes valid portion of vector.data().
+  span<int, 6> UNSAFE_BUFFERS(static_span(vector.data(), vector.size()));
   EXPECT_EQ(vector.data(), static_span.data());
   EXPECT_EQ(vector.size(), static_span.size());
 
@@ -571,6 +610,20 @@ TEST(SpanTest, ConstructFromRange) {
     auto s = base::span(r);
     static_assert(std::same_as<decltype(s), base::span<const int>>);
     EXPECT_EQ(s, base::span({1, 2, 3}));
+
+    // Implicit from modern range with dynamic size to dynamic span.
+    base::span<const int> imp = r;
+    EXPECT_EQ(imp, base::span({1, 2, 3}));
+  }
+  {
+    Range r;
+    auto s = base::span<const int, 3u>(r);
+    EXPECT_EQ(s, base::span({1, 2, 3}));
+
+    // Explicit from modern range with dynamic size to fixed span.
+    static_assert(!std::convertible_to<decltype(r), base::span<const int, 3u>>);
+    base::span<const int, 3u> imp(r);
+    EXPECT_EQ(imp, base::span({1, 2, 3}));
   }
 
   struct LegacyRange {
@@ -586,7 +639,71 @@ TEST(SpanTest, ConstructFromRange) {
     auto s = base::span(r);
     static_assert(std::same_as<decltype(s), base::span<const int>>);
     EXPECT_EQ(s, base::span({1, 2, 3}));
+
+    // Implicit from legacy range with dynamic size to dynamic span.
+    base::span<const int> imp = r;
+    EXPECT_EQ(imp, base::span({1, 2, 3}));
   }
+  {
+    LegacyRange r;
+    auto s = base::span<const int, 3u>(r);
+    EXPECT_EQ(s, base::span({1, 2, 3}));
+
+    // Explicit from legacy range with dynamic size to fixed span.
+    static_assert(!std::convertible_to<decltype(r), base::span<const int, 3u>>);
+    base::span<const int, 3> imp(r);
+    EXPECT_EQ(imp, base::span({1, 2, 3}));
+  }
+
+  using FixedRange = const std::array<int, 3>;
+  static_assert(std::ranges::contiguous_range<FixedRange>);
+  static_assert(std::ranges::sized_range<FixedRange>);
+  {
+    FixedRange r = {1, 2, 3};
+    auto s = base::span(r);
+    static_assert(std::same_as<decltype(s), base::span<const int, 3>>);
+    EXPECT_EQ(s, base::span({1, 2, 3}));
+
+    // Implicit from fixed size to dynamic span.
+    base::span<const int> imp = r;
+    EXPECT_EQ(imp, base::span({1, 2, 3}));
+  }
+  {
+    FixedRange r = {1, 2, 3};
+    auto s = base::span<const int, 3u>(r);
+    EXPECT_EQ(s, base::span({1, 2, 3}));
+
+    // Implicit from fixed size to fixed span.
+    base::span<const int, 3u> imp = r;
+    EXPECT_EQ(imp, base::span({1, 2, 3}));
+  }
+
+  // Construction from std::vectors.
+
+  {
+    // Implicit.
+    static_assert(std::convertible_to<const std::vector<int>, span<const int>>);
+    const std::vector<int> i{1, 2, 3};
+    span<const int> s = i;
+    EXPECT_EQ(s, i);
+  }
+  {
+    // Explicit.
+    static_assert(
+        !std::convertible_to<const std::vector<int>, span<const int, 3u>>);
+    static_assert(
+        std::constructible_from<span<const int, 3u>, const std::vector<int>>);
+    const std::vector<int> i{1, 2, 3};
+    span<const int, 3u> s(i);
+    EXPECT_EQ(s, base::span(i));
+  }
+
+  // vector<bool> is special and can't be converted to a span since it does not
+  // actually hold an array of `bool`.
+  static_assert(
+      !std::constructible_from<span<const bool>, const std::vector<bool>>);
+  static_assert(
+      !std::constructible_from<span<const bool, 3u>, const std::vector<bool>>);
 }
 
 TEST(SpanTest, FromRefOfMutableStackVariable) {
@@ -646,7 +763,7 @@ TEST(SpanTest, FromCString) {
   }
   // Includes the terminating null, size known at compile time.
   {
-    auto s = base::span("hello");
+    auto s = base::span_with_nul_from_cstring("hello");
     static_assert(std::same_as<decltype(s), span<const char, 6u>>);
     EXPECT_EQ(s[0u], 'h');
     EXPECT_EQ(s[1u], 'e');
@@ -663,18 +780,61 @@ TEST(SpanTest, FromCString) {
     EXPECT_EQ(s[1u], 'e');
     EXPECT_EQ(s[4u], 'o');
   }
+  // Includes the terminating null, size known at compile time. Converted to a
+  // span of uint8_t bytes.
+  {
+    auto s = base::byte_span_with_nul_from_cstring("hello");
+    static_assert(std::same_as<decltype(s), span<const uint8_t, 6u>>);
+    EXPECT_EQ(s[0u], 'h');
+    EXPECT_EQ(s[1u], 'e');
+    EXPECT_EQ(s[4u], 'o');
+    EXPECT_EQ(s[5u], '\0');
+  }
+}
+
+TEST(SpanTest, FromCStringOtherTypes) {
+  {
+    auto s = base::span_from_cstring("hello");
+    static_assert(std::same_as<decltype(s), span<const char, 5u>>);
+    EXPECT_EQ(s[0u], 'h');
+    EXPECT_EQ(s[1u], 'e');
+    EXPECT_EQ(s[4u], 'o');
+  }
+  {
+    auto s = base::span_from_cstring(L"hello");
+    static_assert(std::same_as<decltype(s), span<const wchar_t, 5u>>);
+    EXPECT_EQ(s[0u], L'h');
+    EXPECT_EQ(s[1u], L'e');
+    EXPECT_EQ(s[4u], L'o');
+  }
+  {
+    auto s = base::span_from_cstring(u"hello");
+    static_assert(std::same_as<decltype(s), span<const char16_t, 5u>>);
+    EXPECT_EQ(s[0u], u'h');
+    EXPECT_EQ(s[1u], u'e');
+    EXPECT_EQ(s[4u], u'o');
+  }
+  {
+    auto s = base::span_from_cstring(U"hello");
+    static_assert(std::same_as<decltype(s), span<const char32_t, 5u>>);
+    EXPECT_EQ(s[0u], U'h');
+    EXPECT_EQ(s[1u], U'e');
+    EXPECT_EQ(s[4u], U'o');
+  }
 }
 
 TEST(SpanTest, ConvertNonConstIntegralToConst) {
   std::vector<int> vector = {1, 1, 2, 3, 5, 8};
 
-  span<int> int_span(vector.data(), vector.size());
+  // SAFETY: `vector.size()` describes valid portion of `vector.data()`.
+  span<int> UNSAFE_BUFFERS(int_span(vector.data(), vector.size()));
   span<const int> const_span(int_span);
   EXPECT_EQ(int_span.size(), const_span.size());
 
   EXPECT_THAT(const_span, Pointwise(Eq(), int_span));
 
-  span<int, 6> static_int_span(vector.data(), vector.size());
+  // SAFETY: `vector.size()` describes valid portion of `vector.data()`.
+  span<int, 6> UNSAFE_BUFFERS(static_int_span(vector.data(), vector.size()));
   span<const int, 6> static_const_span(static_int_span);
   EXPECT_THAT(static_const_span, Pointwise(Eq(), static_int_span));
 }
@@ -696,7 +856,9 @@ TEST(SpanTest, ConvertNonConstPointerToConst) {
   // due to CWG Defect 330:
   // http://open-std.org/JTC1/SC22/WG21/docs/cwg_defects.html#330
 
-  span<int*, 3> static_non_const_pointer_span(vector.data(), vector.size());
+  // SAFETY: `vector.size()` describes valid portion of `vector.data()`.
+  span<int*, 3> UNSAFE_BUFFERS(
+      static_non_const_pointer_span(vector.data(), vector.size()));
   EXPECT_THAT(static_non_const_pointer_span, Pointwise(Eq(), vector));
   span<int* const, 3> static_const_pointer_span(static_non_const_pointer_span);
   EXPECT_THAT(static_const_pointer_span,
@@ -711,7 +873,9 @@ TEST(SpanTest, ConvertBetweenEquivalentTypes) {
   EXPECT_EQ(int32_t_span.data(), converted_span.data());
   EXPECT_EQ(int32_t_span.size(), converted_span.size());
 
-  span<int32_t, 5> static_int32_t_span(vector.data(), vector.size());
+  // SAFETY: `vector.size()` describes valid portion of `vector.data()`.
+  span<int32_t, 5> UNSAFE_BUFFERS(
+      static_int32_t_span(vector.data(), vector.size()));
   span<int, 5> static_converted_span(static_int32_t_span);
   EXPECT_EQ(static_int32_t_span.data(), static_converted_span.data());
   EXPECT_EQ(static_int32_t_span.size(), static_converted_span.size());
@@ -762,14 +926,16 @@ TEST(SpanTest, TemplatedLast) {
 
   {
     constexpr auto subspan = span.last<0>();
-    static_assert(span.data() + 3 == subspan.data(), "");
+    // SAFETY: static_assert() doesn't execute code at runtime.
+    static_assert(UNSAFE_BUFFERS(span.data() + 3) == subspan.data(), "");
     static_assert(0u == subspan.size(), "");
     static_assert(0u == decltype(subspan)::extent, "");
   }
 
   {
     constexpr auto subspan = span.last<1>();
-    static_assert(span.data() + 2 == subspan.data(), "");
+    // SAFETY: static_assert() doesn't execute code at runtime.
+    static_assert(UNSAFE_BUFFERS(span.data() + 2) == subspan.data(), "");
     static_assert(1u == subspan.size(), "");
     static_assert(1u == decltype(subspan)::extent, "");
     static_assert(3 == subspan[0], "");
@@ -777,7 +943,8 @@ TEST(SpanTest, TemplatedLast) {
 
   {
     constexpr auto subspan = span.last<2>();
-    static_assert(span.data() + 1 == subspan.data(), "");
+    // SAFETY: static_assert() doesn't execute code at runtime.
+    static_assert(UNSAFE_BUFFERS(span.data() + 1) == subspan.data(), "");
     static_assert(2u == subspan.size(), "");
     static_assert(2u == decltype(subspan)::extent, "");
     static_assert(2 == subspan[0], "");
@@ -811,7 +978,8 @@ TEST(SpanTest, TemplatedSubspan) {
 
   {
     constexpr auto subspan = span.subspan<1>();
-    static_assert(span.data() + 1 == subspan.data(), "");
+    // SAFETY: static_assert() doesn't execute code at runtime.
+    static_assert(UNSAFE_BUFFERS(span.data() + 1) == subspan.data(), "");
     static_assert(2u == subspan.size(), "");
     static_assert(2u == decltype(subspan)::extent, "");
     static_assert(2 == subspan[0], "");
@@ -820,7 +988,8 @@ TEST(SpanTest, TemplatedSubspan) {
 
   {
     constexpr auto subspan = span.subspan<2>();
-    static_assert(span.data() + 2 == subspan.data(), "");
+    // SAFETY: static_assert() doesn't execute code at runtime.
+    static_assert(UNSAFE_BUFFERS(span.data() + 2) == subspan.data(), "");
     static_assert(1u == subspan.size(), "");
     static_assert(1u == decltype(subspan)::extent, "");
     static_assert(3 == subspan[0], "");
@@ -828,7 +997,8 @@ TEST(SpanTest, TemplatedSubspan) {
 
   {
     constexpr auto subspan = span.subspan<3>();
-    static_assert(span.data() + 3 == subspan.data(), "");
+    // SAFETY: static_assert() doesn't execute code at runtime.
+    static_assert(UNSAFE_BUFFERS(span.data() + 3) == subspan.data(), "");
     static_assert(0u == subspan.size(), "");
     static_assert(0u == decltype(subspan)::extent, "");
   }
@@ -842,14 +1012,16 @@ TEST(SpanTest, TemplatedSubspan) {
 
   {
     constexpr auto subspan = span.subspan<1, 0>();
-    static_assert(span.data() + 1 == subspan.data(), "");
+    // SAFETY: static_assert() doesn't execute code at runtime.
+    static_assert(UNSAFE_BUFFERS(span.data() + 1) == subspan.data(), "");
     static_assert(0u == subspan.size(), "");
     static_assert(0u == decltype(subspan)::extent, "");
   }
 
   {
     constexpr auto subspan = span.subspan<2, 0>();
-    static_assert(span.data() + 2 == subspan.data(), "");
+    // SAFETY: static_assert() doesn't execute code at runtime.
+    static_assert(UNSAFE_BUFFERS(span.data() + 2) == subspan.data(), "");
     static_assert(0u == subspan.size(), "");
     static_assert(0u == decltype(subspan)::extent, "");
   }
@@ -864,7 +1036,8 @@ TEST(SpanTest, TemplatedSubspan) {
 
   {
     constexpr auto subspan = span.subspan<1, 1>();
-    static_assert(span.data() + 1 == subspan.data(), "");
+    // SAFETY: static_assert() doesn't execute code at runtime.
+    static_assert(UNSAFE_BUFFERS(span.data() + 1) == subspan.data(), "");
     static_assert(1u == subspan.size(), "");
     static_assert(1u == decltype(subspan)::extent, "");
     static_assert(2 == subspan[0], "");
@@ -872,7 +1045,8 @@ TEST(SpanTest, TemplatedSubspan) {
 
   {
     constexpr auto subspan = span.subspan<2, 1>();
-    static_assert(span.data() + 2 == subspan.data(), "");
+    // SAFETY: static_assert() doesn't execute code at runtime.
+    static_assert(UNSAFE_BUFFERS(span.data() + 2) == subspan.data(), "");
     static_assert(1u == subspan.size(), "");
     static_assert(1u == decltype(subspan)::extent, "");
     static_assert(3 == subspan[0], "");
@@ -889,7 +1063,8 @@ TEST(SpanTest, TemplatedSubspan) {
 
   {
     constexpr auto subspan = span.subspan<1, 2>();
-    static_assert(span.data() + 1 == subspan.data(), "");
+    // SAFETY: static_assert() doesn't execute code at runtime.
+    static_assert(UNSAFE_BUFFERS(span.data() + 1) == subspan.data(), "");
     static_assert(2u == subspan.size(), "");
     static_assert(2u == decltype(subspan)::extent, "");
     static_assert(2 == subspan[0], "");
@@ -908,15 +1083,19 @@ TEST(SpanTest, TemplatedSubspan) {
 }
 
 TEST(SpanTest, SubscriptedBeginIterator) {
-  int array[] = {1, 2, 3};
+  std::array<int, 3> array = {1, 2, 3};
   span<const int> const_span(array);
   for (size_t i = 0; i < const_span.size(); ++i) {
-    EXPECT_EQ(array[i], const_span.begin()[i]);
+    // SAFETY: The range starting at `const_span.begin()` is valid up
+    // to `const_span.size()`.
+    EXPECT_EQ(array[i], UNSAFE_BUFFERS(const_span.begin()[i]));
   }
 
   span<int> mutable_span(array);
   for (size_t i = 0; i < mutable_span.size(); ++i) {
-    EXPECT_EQ(array[i], mutable_span.begin()[i]);
+    // SAFETY: The range starting at `mutable_span.begin()` is valid up
+    // to `mutable_span.size()`.
+    EXPECT_EQ(array[i], UNSAFE_BUFFERS(mutable_span.begin()[i]));
   }
 }
 
@@ -965,14 +1144,19 @@ TEST(SpanTest, TemplatedLastOnDynamicSpan) {
 
   {
     auto subspan = span.last<0>();
-    EXPECT_EQ(span.data() + 3, subspan.data());
+    // `array` has three elmenents, so `span` has three elements, so
+    // `span.data() + 3` points to one byte beyond the object as allowed
+    // per standards.
+    EXPECT_EQ(UNSAFE_BUFFERS(span.data() + 3), subspan.data());
     EXPECT_EQ(0u, subspan.size());
     static_assert(0u == decltype(subspan)::extent, "");
   }
 
   {
     auto subspan = span.last<1>();
-    EXPECT_EQ(span.data() + 2, subspan.data());
+    // `array` has three elmenents, so `span` has three elements, so
+    // `span.data() + 2` points within it.
+    EXPECT_EQ(UNSAFE_BUFFERS(span.data() + 2), subspan.data());
     EXPECT_EQ(1u, subspan.size());
     static_assert(1u == decltype(subspan)::extent, "");
     EXPECT_EQ(3, subspan[0]);
@@ -980,7 +1164,9 @@ TEST(SpanTest, TemplatedLastOnDynamicSpan) {
 
   {
     auto subspan = span.last<2>();
-    EXPECT_EQ(span.data() + 1, subspan.data());
+    // `array` has three elmenents, so `span` has three elements, so
+    // `span.data() + 1` points within it.
+    EXPECT_EQ(UNSAFE_BUFFERS(span.data() + 1), subspan.data());
     EXPECT_EQ(2u, subspan.size());
     static_assert(2u == decltype(subspan)::extent, "");
     EXPECT_EQ(2, subspan[0]);
@@ -1014,7 +1200,9 @@ TEST(SpanTest, TemplatedSubspanFromDynamicSpan) {
 
   {
     auto subspan = span.subspan<1>();
-    EXPECT_EQ(span.data() + 1, subspan.data());
+    // SAFETY: `array` has three elmenents, so `span` has three elements, so
+    // `span.data() + 1` points within it.
+    EXPECT_EQ(UNSAFE_BUFFERS(span.data() + 1), subspan.data());
     EXPECT_EQ(2u, subspan.size());
     static_assert(2u == decltype(subspan)::extent, "");
     EXPECT_EQ(2, subspan[0]);
@@ -1023,7 +1211,9 @@ TEST(SpanTest, TemplatedSubspanFromDynamicSpan) {
 
   {
     auto subspan = span.subspan<2>();
-    EXPECT_EQ(span.data() + 2, subspan.data());
+    // SAFETY: `array` has three elmenents, so `span` has three elements, so
+    // `span.data() + 2` points within it.
+    EXPECT_EQ(UNSAFE_BUFFERS(span.data() + 2), subspan.data());
     EXPECT_EQ(1u, subspan.size());
     static_assert(1u == decltype(subspan)::extent, "");
     EXPECT_EQ(3, subspan[0]);
@@ -1031,7 +1221,10 @@ TEST(SpanTest, TemplatedSubspanFromDynamicSpan) {
 
   {
     auto subspan = span.subspan<3>();
-    EXPECT_EQ(span.data() + 3, subspan.data());
+    // SAFETY: `array` has three elmenents, so `span` has three elements, so
+    // `span.data() + 3` points to one byte beyond the object as permitted by
+    // C++ specification.
+    EXPECT_EQ(UNSAFE_BUFFERS(span.data() + 3), subspan.data());
     EXPECT_EQ(0u, subspan.size());
     static_assert(0u == decltype(subspan)::extent, "");
   }
@@ -1045,14 +1238,18 @@ TEST(SpanTest, TemplatedSubspanFromDynamicSpan) {
 
   {
     auto subspan = span.subspan<1, 0>();
-    EXPECT_EQ(span.data() + 1, subspan.data());
+    // SAFETY: `array` has three elmenents, so `span` has three elements, so
+    // `span.data() + 1` points within it.
+    EXPECT_EQ(UNSAFE_BUFFERS(span.data() + 1), subspan.data());
     EXPECT_EQ(0u, subspan.size());
     static_assert(0u == decltype(subspan)::extent, "");
   }
 
   {
     auto subspan = span.subspan<2, 0>();
-    EXPECT_EQ(span.data() + 2, subspan.data());
+    // SAFETY: `array` has three elmenents, so `span` has three elements, so
+    // `span.data() + 2` points within it.
+    EXPECT_EQ(UNSAFE_BUFFERS(span.data() + 2), subspan.data());
     EXPECT_EQ(0u, subspan.size());
     static_assert(0u == decltype(subspan)::extent, "");
   }
@@ -1067,7 +1264,9 @@ TEST(SpanTest, TemplatedSubspanFromDynamicSpan) {
 
   {
     auto subspan = span.subspan<1, 1>();
-    EXPECT_EQ(span.data() + 1, subspan.data());
+    // SAFETY: `array` has three elmenents, so `span` has three elements, so
+    // `span.data() + 1` points within it.
+    EXPECT_EQ(UNSAFE_BUFFERS(span.data() + 1), subspan.data());
     EXPECT_EQ(1u, subspan.size());
     static_assert(1u == decltype(subspan)::extent, "");
     EXPECT_EQ(2, subspan[0]);
@@ -1075,7 +1274,9 @@ TEST(SpanTest, TemplatedSubspanFromDynamicSpan) {
 
   {
     auto subspan = span.subspan<2, 1>();
-    EXPECT_EQ(span.data() + 2, subspan.data());
+    // SAFETY: `array` has three elmenents, so `span` has three elements, so
+    // `span.data() + 2` points within it.
+    EXPECT_EQ(UNSAFE_BUFFERS(span.data() + 2), subspan.data());
     EXPECT_EQ(1u, subspan.size());
     static_assert(1u == decltype(subspan)::extent, "");
     EXPECT_EQ(3, subspan[0]);
@@ -1092,7 +1293,9 @@ TEST(SpanTest, TemplatedSubspanFromDynamicSpan) {
 
   {
     auto subspan = span.subspan<1, 2>();
-    EXPECT_EQ(span.data() + 1, subspan.data());
+    // SAFETY: `array` has three elmenents, so `span` has three elements, so
+    // `span.data() + 1` points within it.
+    EXPECT_EQ(UNSAFE_BUFFERS(span.data() + 1), subspan.data());
     EXPECT_EQ(2u, subspan.size());
     static_assert(2u == decltype(subspan)::extent, "");
     EXPECT_EQ(2, subspan[0]);
@@ -1151,20 +1354,27 @@ TEST(SpanTest, Last) {
 
   {
     auto subspan = span.last(0u);
-    EXPECT_EQ(span.data() + 3, subspan.data());
+    // SAFETY: `array` has three elmenents, so `span` has three elements, so
+    // `span.data() + 3` points to one byte beyond the object, as permitted by
+    // C++ specification.
+    EXPECT_EQ(UNSAFE_BUFFERS(span.data() + 3), subspan.data());
     EXPECT_EQ(0u, subspan.size());
   }
 
   {
     auto subspan = span.last(1u);
-    EXPECT_EQ(span.data() + 2, subspan.data());
+    // SAFETY: `array` has three elmenents, so `span` has three elements, so
+    // `span.data() + 2` points within it.
+    EXPECT_EQ(UNSAFE_BUFFERS(span.data() + 2), subspan.data());
     EXPECT_EQ(1u, subspan.size());
     EXPECT_EQ(3, subspan[0]);
   }
 
   {
     auto subspan = span.last(2u);
-    EXPECT_EQ(span.data() + 1, subspan.data());
+    // SAFETY: `array` has three elmenents, so `span` has three elements, so
+    // `span.data() + 1` points within it.
+    EXPECT_EQ(UNSAFE_BUFFERS(span.data() + 1), subspan.data());
     EXPECT_EQ(2u, subspan.size());
     EXPECT_EQ(2, subspan[0]);
     EXPECT_EQ(3, subspan[1]);
@@ -1195,7 +1405,9 @@ TEST(SpanTest, Subspan) {
 
   {
     auto subspan = span.subspan(1);
-    EXPECT_EQ(span.data() + 1, subspan.data());
+    // SAFETY: `array` has three elmenents, so `span` has three elements, so
+    // `span.data() + 1` points within it.
+    EXPECT_EQ(UNSAFE_BUFFERS(span.data() + 1), subspan.data());
     EXPECT_EQ(2u, subspan.size());
     EXPECT_EQ(2, subspan[0]);
     EXPECT_EQ(3, subspan[1]);
@@ -1203,14 +1415,19 @@ TEST(SpanTest, Subspan) {
 
   {
     auto subspan = span.subspan(2);
-    EXPECT_EQ(span.data() + 2, subspan.data());
+    // SAFETY: `array` has three elmenents, so `span` has three elements, so
+    // `span.data() + 2` points within it.
+    EXPECT_EQ(UNSAFE_BUFFERS(span.data() + 2), subspan.data());
     EXPECT_EQ(1u, subspan.size());
     EXPECT_EQ(3, subspan[0]);
   }
 
   {
     auto subspan = span.subspan(3);
-    EXPECT_EQ(span.data() + 3, subspan.data());
+    // SAFETY: `array` has three elmenents, so `span` has three elements, so
+    // `span.data() + 3` points to one byte beyond the object, as permitted by
+    // C++ specification.
+    EXPECT_EQ(UNSAFE_BUFFERS(span.data() + 3), subspan.data());
     EXPECT_EQ(0u, subspan.size());
   }
 
@@ -1222,13 +1439,17 @@ TEST(SpanTest, Subspan) {
 
   {
     auto subspan = span.subspan(1, 0);
-    EXPECT_EQ(span.data() + 1, subspan.data());
+    // SAFETY: `array` has three elmenents, so `span` has three elements, so
+    // `span.data() + 1` points within it.
+    EXPECT_EQ(UNSAFE_BUFFERS(span.data() + 1), subspan.data());
     EXPECT_EQ(0u, subspan.size());
   }
 
   {
     auto subspan = span.subspan(2, 0);
-    EXPECT_EQ(span.data() + 2, subspan.data());
+    // SAFETY: `array` has three elmenents, so `span` has three elements, so
+    // `span.data() + 2` points within it.
+    EXPECT_EQ(UNSAFE_BUFFERS(span.data() + 2), subspan.data());
     EXPECT_EQ(0u, subspan.size());
   }
 
@@ -1241,14 +1462,18 @@ TEST(SpanTest, Subspan) {
 
   {
     auto subspan = span.subspan(1, 1);
-    EXPECT_EQ(span.data() + 1, subspan.data());
+    // SAFETY: `array` has three elmenents, so `span` has three elements, so
+    // `span.data() + 1` points within it.
+    EXPECT_EQ(UNSAFE_BUFFERS(span.data() + 1), subspan.data());
     EXPECT_EQ(1u, subspan.size());
     EXPECT_EQ(2, subspan[0]);
   }
 
   {
     auto subspan = span.subspan(2, 1);
-    EXPECT_EQ(span.data() + 2, subspan.data());
+    // SAFETY: `array` has three elmenents, so `span` has three elements, so
+    // `span.data() + 2` points within it.
+    EXPECT_EQ(UNSAFE_BUFFERS(span.data() + 2), subspan.data());
     EXPECT_EQ(1u, subspan.size());
     EXPECT_EQ(3, subspan[0]);
   }
@@ -1263,7 +1488,9 @@ TEST(SpanTest, Subspan) {
 
   {
     auto subspan = span.subspan(1, 2);
-    EXPECT_EQ(span.data() + 1, subspan.data());
+    // SAFETY: `array` has three elmenents, so `span` has three elements, so
+    // `span.data() + 1` points within it.
+    EXPECT_EQ(UNSAFE_BUFFERS(span.data() + 1), subspan.data());
     EXPECT_EQ(2u, subspan.size());
     EXPECT_EQ(2, subspan[0]);
     EXPECT_EQ(3, subspan[1]);
@@ -1276,6 +1503,22 @@ TEST(SpanTest, Subspan) {
     EXPECT_EQ(1, subspan[0]);
     EXPECT_EQ(2, subspan[1]);
     EXPECT_EQ(3, subspan[2]);
+  }
+}
+
+TEST(SpanTest, ToFixedExtent) {
+  {
+    const int kArray[] = {1, 2, 3};
+    const span<const int> s(kArray);
+
+    auto static_span = s.to_fixed_extent<3>();
+    ASSERT_TRUE(static_span.has_value());
+    static_assert(std::same_as<typename decltype(static_span)::value_type,
+                               span<const int, 3>>);
+    EXPECT_EQ(s.data(), static_span->data());
+    EXPECT_EQ(s.size(), static_span->size());
+
+    EXPECT_EQ(std::nullopt, s.to_fixed_extent<4>());
   }
 }
 
@@ -1320,7 +1563,8 @@ TEST(SpanTest, Empty) {
   {
     std::vector<int> vector = {1, 2, 3};
     span<int> s = vector;
-    span<int> span_of_checked_iterators = {s.end(), s.end()};
+    // SAFETY: The empty range at end of a vector is a valid range.
+    span<int> span_of_checked_iterators = UNSAFE_BUFFERS({s.end(), s.end()});
     EXPECT_TRUE(span_of_checked_iterators.empty());
   }
 }
@@ -1412,20 +1656,38 @@ TEST(SpanTest, AsBytes) {
 }
 
 TEST(SpanTest, AsWritableBytes) {
-  std::vector<int> vec = {1, 1, 2, 3, 5, 8};
-  span<int> mutable_span(vec);
-  auto writable_bytes_span = as_writable_bytes(mutable_span);
-  static_assert(
-      std::is_same_v<decltype(writable_bytes_span), base::span<uint8_t>>);
-  EXPECT_EQ(reinterpret_cast<uint8_t*>(vec.data()), writable_bytes_span.data());
-  EXPECT_EQ(sizeof(int) * vec.size(), writable_bytes_span.size());
-  EXPECT_EQ(writable_bytes_span.size(), writable_bytes_span.size_bytes());
+  {
+    std::vector<int> vec = {1, 1, 2, 3, 5, 8};
+    span<int> mutable_span(vec);
+    auto writable_bytes_span = as_writable_bytes(mutable_span);
+    static_assert(
+        std::is_same_v<decltype(writable_bytes_span), base::span<uint8_t>>);
+    EXPECT_EQ(reinterpret_cast<uint8_t*>(vec.data()),
+              writable_bytes_span.data());
+    EXPECT_EQ(sizeof(int) * vec.size(), writable_bytes_span.size());
+    EXPECT_EQ(writable_bytes_span.size(), writable_bytes_span.size_bytes());
 
-  // Set the first entry of vec by writing through the span.
-  std::fill(writable_bytes_span.data(),
-            writable_bytes_span.data() + sizeof(int), 'a');
-  static_assert(sizeof(int) == 4u);  // Otherwise char literal wrong below.
-  EXPECT_EQ('aaaa', vec[0]);
+    // Set the first entry of vec by writing through the span.
+    std::ranges::fill(writable_bytes_span.first(sizeof(int)), 'a');
+    static_assert(sizeof(int) == 4u);  // Otherwise char literal wrong below.
+    EXPECT_EQ('aaaa', vec[0]);
+  }
+  {
+    std::vector<int> vec = {1, 1, 2, 3, 5, 8};
+    raw_span<int> mutable_raw_span(vec);
+    auto writable_bytes_span = as_writable_bytes(mutable_raw_span);
+    static_assert(
+        std::is_same_v<decltype(writable_bytes_span), base::span<uint8_t>>);
+    EXPECT_EQ(reinterpret_cast<uint8_t*>(vec.data()),
+              writable_bytes_span.data());
+    EXPECT_EQ(sizeof(int) * vec.size(), writable_bytes_span.size());
+    EXPECT_EQ(writable_bytes_span.size(), writable_bytes_span.size_bytes());
+
+    // Set the first entry of vec by writing through the span.
+    std::ranges::fill(writable_bytes_span.first(sizeof(int)), 'a');
+    static_assert(sizeof(int) == 4u);  // Otherwise char literal wrong below.
+    EXPECT_EQ('aaaa', vec[0]);
+  }
 }
 
 TEST(SpanTest, AsChars) {
@@ -1447,23 +1709,48 @@ TEST(SpanTest, AsChars) {
     EXPECT_EQ(sizeof(int) * vec.size(), chars_span.size());
     EXPECT_EQ(chars_span.size(), chars_span.size_bytes());
   }
+  {
+    std::vector<int> vec = {1, 1, 2, 3, 5, 8};
+    raw_span<int> mutable_span(vec);
+    auto chars_span = as_chars(mutable_span);
+    static_assert(std::is_same_v<decltype(chars_span), base::span<const char>>);
+    EXPECT_EQ(reinterpret_cast<const char*>(vec.data()), chars_span.data());
+    EXPECT_EQ(sizeof(int) * vec.size(), chars_span.size());
+    EXPECT_EQ(chars_span.size(), chars_span.size_bytes());
+  }
 }
 
 TEST(SpanTest, AsWritableChars) {
-  std::vector<int> vec = {1, 1, 2, 3, 5, 8};
-  span<int> mutable_span(vec);
-  auto writable_chars_span = as_writable_chars(mutable_span);
-  static_assert(
-      std::is_same_v<decltype(writable_chars_span), base::span<char>>);
-  EXPECT_EQ(reinterpret_cast<char*>(vec.data()), writable_chars_span.data());
-  EXPECT_EQ(sizeof(int) * vec.size(), writable_chars_span.size());
-  EXPECT_EQ(writable_chars_span.size(), writable_chars_span.size_bytes());
+  {
+    std::vector<int> vec = {1, 1, 2, 3, 5, 8};
+    span<int> mutable_span(vec);
+    auto writable_chars_span = as_writable_chars(mutable_span);
+    static_assert(
+        std::is_same_v<decltype(writable_chars_span), base::span<char>>);
+    EXPECT_EQ(reinterpret_cast<char*>(vec.data()), writable_chars_span.data());
+    EXPECT_EQ(sizeof(int) * vec.size(), writable_chars_span.size());
+    EXPECT_EQ(writable_chars_span.size(), writable_chars_span.size_bytes());
 
-  // Set the first entry of vec by writing through the span.
-  std::fill(writable_chars_span.data(),
-            writable_chars_span.data() + sizeof(int), 'a');
-  static_assert(sizeof(int) == 4u);  // Otherwise char literal wrong below.
-  EXPECT_EQ('aaaa', vec[0]);
+    // Set the first entry of vec by writing through the span.
+    std::ranges::fill(writable_chars_span.first(sizeof(int)), 'a');
+    static_assert(sizeof(int) == 4u);  // Otherwise char literal wrong below.
+    EXPECT_EQ('aaaa', vec[0]);
+  }
+  {
+    std::vector<int> vec = {1, 1, 2, 3, 5, 8};
+    raw_span<int> mutable_span(vec);
+    auto writable_chars_span = as_writable_chars(mutable_span);
+    static_assert(
+        std::is_same_v<decltype(writable_chars_span), base::span<char>>);
+    EXPECT_EQ(reinterpret_cast<char*>(vec.data()), writable_chars_span.data());
+    EXPECT_EQ(sizeof(int) * vec.size(), writable_chars_span.size());
+    EXPECT_EQ(writable_chars_span.size(), writable_chars_span.size_bytes());
+
+    // Set the first entry of vec by writing through the span.
+    std::ranges::fill(writable_chars_span.first(sizeof(int)), 'a');
+    static_assert(sizeof(int) == 4u);  // Otherwise char literal wrong below.
+    EXPECT_EQ('aaaa', vec[0]);
+  }
 }
 
 TEST(SpanTest, AsByteSpan) {
@@ -1571,13 +1858,15 @@ TEST(SpanTest, AsStringView) {
 
 TEST(SpanTest, MakeSpanFromDataAndSize) {
   int* nullint = nullptr;
-  auto empty_span = make_span(nullint, 0u);
+  // SAFETY: zero size is correct when pointer is NULL.
+  auto empty_span = UNSAFE_BUFFERS(make_span(nullint, 0u));
   EXPECT_TRUE(empty_span.empty());
   EXPECT_EQ(nullptr, empty_span.data());
 
   std::vector<int> vector = {1, 1, 2, 3, 5, 8};
-  span<int> expected_span(vector.data(), vector.size());
-  auto made_span = make_span(vector.data(), vector.size());
+  // SAFETY: vector.size() describes valid portion of vector.data().
+  span<int> UNSAFE_BUFFERS(expected_span(vector.data(), vector.size()));
+  auto made_span = UNSAFE_BUFFERS(make_span(vector.data(), vector.size()));
   EXPECT_EQ(expected_span.data(), made_span.data());
   EXPECT_EQ(expected_span.size(), made_span.size());
   static_assert(decltype(made_span)::extent == dynamic_extent, "");
@@ -1587,13 +1876,16 @@ TEST(SpanTest, MakeSpanFromDataAndSize) {
 
 TEST(SpanTest, MakeSpanFromPointerPair) {
   int* nullint = nullptr;
-  auto empty_span = make_span(nullint, nullint);
+  // SAFETY: The empty range between NULL and NULL is valid range.
+  auto empty_span = UNSAFE_BUFFERS(make_span(nullint, nullint));
   EXPECT_TRUE(empty_span.empty());
   EXPECT_EQ(nullptr, empty_span.data());
 
   std::vector<int> vector = {1, 1, 2, 3, 5, 8};
-  span<int> expected_span(vector.data(), vector.size());
-  auto made_span = make_span(vector.data(), vector.data() + vector.size());
+  // SAFETY: `vector.size()` describes valid portion of `vector.data()`.
+  span<int> UNSAFE_BUFFERS(expected_span(vector.data(), vector.size()));
+  auto made_span =
+      UNSAFE_BUFFERS(make_span(vector.data(), vector.data() + vector.size()));
   EXPECT_EQ(expected_span.data(), made_span.data());
   EXPECT_EQ(expected_span.size(), made_span.size());
   static_assert(decltype(made_span)::extent == dynamic_extent, "");
@@ -1636,7 +1928,9 @@ TEST(SpanTest, MakeSpanFromConstContainer) {
 
 TEST(SpanTest, MakeStaticSpanFromConstContainer) {
   const std::vector<int> vector = {-1, -2, -3, -4, -5};
-  span<const int, 5> expected_span(vector.data(), vector.size());
+  // SAFETY: `vector.size()` describes valid portion of `vector.data()`.
+  span<const int, 5> UNSAFE_BUFFERS(
+      expected_span(vector.data(), vector.size()));
   auto made_span = make_span<5>(vector);
   EXPECT_EQ(expected_span.data(), made_span.data());
   EXPECT_EQ(expected_span.size(), made_span.size());
@@ -1658,7 +1952,8 @@ TEST(SpanTest, MakeSpanFromContainer) {
 
 TEST(SpanTest, MakeStaticSpanFromContainer) {
   std::vector<int> vector = {-1, -2, -3, -4, -5};
-  span<int, 5> expected_span(vector.data(), vector.size());
+  // SAFETY: `vector.size()` describes valid portion of `vector.data()`.
+  span<int, 5> UNSAFE_BUFFERS(expected_span(vector.data(), vector.size()));
   auto made_span = make_span<5>(vector);
   EXPECT_EQ(expected_span.data(), make_span<5>(vector).data());
   EXPECT_EQ(expected_span.size(), make_span<5>(vector).size());
@@ -1696,7 +1991,9 @@ TEST(SpanTest, MakeSpanFromRValueContainer) {
 
 TEST(SpanTest, MakeStaticSpanFromRValueContainer) {
   std::vector<int> vector = {-1, -2, -3, -4, -5};
-  span<const int, 5> expected_span(vector.data(), vector.size());
+  // SAFETY: `vector.size()` describes valid portion of `vector.data()`.
+  span<const int, 5> UNSAFE_BUFFERS(
+      expected_span(vector.data(), vector.size()));
   // Note: While static_cast<T&&>(foo) is effectively just a fancy spelling of
   // std::move(foo), make_span does not actually take ownership of the passed in
   // container. Writing it this way makes it more obvious that we simply care
@@ -1752,7 +2049,7 @@ TEST(SpanTest, MakeSpanFromStaticSpan) {
 }
 
 TEST(SpanTest, EnsureConstexprGoodness) {
-  static constexpr int kArray[] = {5, 4, 3, 2, 1};
+  static constexpr std::array<int, 5> kArray = {5, 4, 3, 2, 1};
   constexpr span<const int> constexpr_span(kArray);
   const size_t size = 2;
 
@@ -1855,29 +2152,37 @@ TEST(SpanTest, IteratorIsRangeMoveSafe) {
   for (const int dest_start_index : kOverlappingStartIndexes) {
     EXPECT_FALSE(CheckedContiguousIterator<const int>::IsRangeMoveSafe(
         span.begin(), span.end(),
-        CheckedContiguousIterator<const int>(
+        // SAFETY: TODO(tsepez): iterator constructor safety is dubious
+        // given that we are adding indices like -4 to `data()`.
+        UNSAFE_BUFFERS(CheckedContiguousIterator<const int>(
             span.data() + dest_start_index,
-            span.data() + dest_start_index + kNumElements)));
+            span.data() + dest_start_index + kNumElements))));
   }
 
   // Non-overlapping ranges.
   for (const int dest_start_index : kNonOverlappingStartIndexes) {
     EXPECT_TRUE(CheckedContiguousIterator<const int>::IsRangeMoveSafe(
         span.begin(), span.end(),
-        CheckedContiguousIterator<const int>(
+        // SAFETY: TODO(tsepez): iterator constructor safety is dubious
+        // given that we are adding indices like -7 to `data()`.
+        UNSAFE_BUFFERS(CheckedContiguousIterator<const int>(
             span.data() + dest_start_index,
-            span.data() + dest_start_index + kNumElements)));
+            span.data() + dest_start_index + kNumElements))));
   }
 
   // IsRangeMoveSafe is true if the length to be moved is 0.
   EXPECT_TRUE(CheckedContiguousIterator<const int>::IsRangeMoveSafe(
       span.begin(), span.begin(),
-      CheckedContiguousIterator<const int>(span.data(), span.data())));
+      // SAFETY: Empty range at the start of a span is always valid.
+      UNSAFE_BUFFERS(
+          CheckedContiguousIterator<const int>(span.data(), span.data()))));
 
   // IsRangeMoveSafe is false if end < begin.
   EXPECT_FALSE(CheckedContiguousIterator<const int>::IsRangeMoveSafe(
       span.end(), span.begin(),
-      CheckedContiguousIterator<const int>(span.data(), span.data())));
+      // SAFETY: Empty range at the start of a span is always valid.
+      UNSAFE_BUFFERS(
+          CheckedContiguousIterator<const int>(span.data(), span.data()))));
 }
 
 TEST(SpanTest, Sort) {
@@ -1964,6 +2269,7 @@ TEST(SpanTest, CopyFrom) {
   EXPECT_THAT(vec, ElementsAre(4, 5, 6));
 
   // Test too small destinations.
+  EXPECT_DEATH_IF_SUPPORTED(empty_static_span.copy_from(dynamic_span), "");
   EXPECT_DEATH_IF_SUPPORTED(empty_dynamic_span.copy_from(static_span), "");
   EXPECT_DEATH_IF_SUPPORTED(empty_dynamic_span.copy_from(dynamic_span), "");
   EXPECT_DEATH_IF_SUPPORTED(dynamic_span.last(2u).copy_from(static_span), "");
@@ -1981,6 +2287,147 @@ TEST(SpanTest, CopyFrom) {
 
   dynamic_span.first(1u).copy_from(span(source).last(1u));
   EXPECT_THAT(vec, ElementsAre(9, 9, 6));
+
+  struct NonTrivial {
+    NonTrivial(int o) : i(o) {}
+    NonTrivial(const NonTrivial& o) : i(o) {}
+    NonTrivial& operator=(const NonTrivial& o) {
+      i = o;
+      return *this;
+    }
+    operator int() const { return i; }
+    int i;
+  };
+
+  // Overlapping spans. Fixed size.
+  {
+    int long_arr_is_long[] = {1, 2, 3, 4, 5, 6, 7};
+    auto left = span(long_arr_is_long).first<5>();
+    auto right = span(long_arr_is_long).last<5>();
+    left.copy_from(right);
+    EXPECT_THAT(long_arr_is_long, ElementsAre(3, 4, 5, 6, 7, 6, 7));
+  }
+  {
+    int long_arr_is_long[] = {1, 2, 3, 4, 5, 6, 7};
+    auto left = span(long_arr_is_long).first<5>();
+    auto right = span(long_arr_is_long).last<5>();
+    right.copy_from(left);
+    EXPECT_THAT(long_arr_is_long, ElementsAre(1, 2, 1, 2, 3, 4, 5));
+  }
+  {
+    int long_arr_is_long[] = {1, 2, 3, 4, 5, 6, 7};
+    auto left = span(long_arr_is_long).first<5>();
+    left.copy_from(left);
+    EXPECT_THAT(long_arr_is_long, ElementsAre(1, 2, 3, 4, 5, 6, 7));
+  }
+  {
+    NonTrivial long_arr_is_long[] = {1, 2, 3, 4, 5, 6, 7};
+    auto left = span(long_arr_is_long).first<5>();
+    auto right = span(long_arr_is_long).last<5>();
+    left.copy_from(right);
+    EXPECT_THAT(long_arr_is_long, ElementsAre(3, 4, 5, 6, 7, 6, 7));
+  }
+  {
+    NonTrivial long_arr_is_long[] = {1, 2, 3, 4, 5, 6, 7};
+    auto left = span(long_arr_is_long).first<5>();
+    auto right = span(long_arr_is_long).last<5>();
+    right.copy_from(left);
+    EXPECT_THAT(long_arr_is_long, ElementsAre(1, 2, 1, 2, 3, 4, 5));
+  }
+  {
+    NonTrivial long_arr_is_long[] = {1, 2, 3, 4, 5, 6, 7};
+    auto left = span(long_arr_is_long).first<5>();
+    left.copy_from(left);
+    EXPECT_THAT(long_arr_is_long, ElementsAre(1, 2, 3, 4, 5, 6, 7));
+  }
+
+  // Overlapping spans. Dynamic size.
+  {
+    int long_arr_is_long[] = {1, 2, 3, 4, 5, 6, 7};
+    auto left = span<int>(long_arr_is_long).first(5u);
+    auto right = span<int>(long_arr_is_long).last(5u);
+    left.copy_from(right);
+    EXPECT_THAT(long_arr_is_long, ElementsAre(3, 4, 5, 6, 7, 6, 7));
+  }
+  {
+    int long_arr_is_long[] = {1, 2, 3, 4, 5, 6, 7};
+    auto left = span<int>(long_arr_is_long).first(5u);
+    auto right = span<int>(long_arr_is_long).last(5u);
+    right.copy_from(left);
+    EXPECT_THAT(long_arr_is_long, ElementsAre(1, 2, 1, 2, 3, 4, 5));
+  }
+  {
+    int long_arr_is_long[] = {1, 2, 3, 4, 5, 6, 7};
+    auto left = span<int>(long_arr_is_long).first(5u);
+    left.copy_from(left);
+    EXPECT_THAT(long_arr_is_long, ElementsAre(1, 2, 3, 4, 5, 6, 7));
+  }
+  {
+    NonTrivial long_arr_is_long[] = {1, 2, 3, 4, 5, 6, 7};
+    auto left = span<NonTrivial>(long_arr_is_long).first(5u);
+    auto right = span<NonTrivial>(long_arr_is_long).last(5u);
+    left.copy_from(right);
+    EXPECT_THAT(long_arr_is_long, ElementsAre(3, 4, 5, 6, 7, 6, 7));
+  }
+  {
+    NonTrivial long_arr_is_long[] = {1, 2, 3, 4, 5, 6, 7};
+    auto left = span<NonTrivial>(long_arr_is_long).first(5u);
+    auto right = span<NonTrivial>(long_arr_is_long).last(5u);
+    right.copy_from(left);
+    EXPECT_THAT(long_arr_is_long, ElementsAre(1, 2, 1, 2, 3, 4, 5));
+  }
+  {
+    NonTrivial long_arr_is_long[] = {1, 2, 3, 4, 5, 6, 7};
+    auto left = span<NonTrivial>(long_arr_is_long).first(5u);
+    left.copy_from(left);
+    EXPECT_THAT(long_arr_is_long, ElementsAre(1, 2, 3, 4, 5, 6, 7));
+  }
+}
+
+TEST(SpanTest, CopyFromNonoverlapping) {
+  int arr[] = {1, 2, 3};
+  span<int, 0> empty_static_span;
+  span<int, 3> static_span = base::make_span(arr);
+
+  std::vector<int> vec = {4, 5, 6};
+  span<int> empty_dynamic_span;
+  span<int> dynamic_span = base::make_span(vec);
+
+  // Handle empty cases gracefully.
+  UNSAFE_BUFFERS({
+    empty_static_span.copy_from_nonoverlapping(empty_dynamic_span);
+    empty_dynamic_span.copy_from_nonoverlapping(empty_static_span);
+    static_span.first(empty_static_span.size())
+        .copy_from_nonoverlapping(empty_static_span);
+    dynamic_span.first(empty_dynamic_span.size())
+        .copy_from_nonoverlapping(empty_dynamic_span);
+    EXPECT_THAT(arr, ElementsAre(1, 2, 3));
+    EXPECT_THAT(vec, ElementsAre(4, 5, 6));
+
+    // Test too small destinations.
+    EXPECT_DEATH_IF_SUPPORTED(
+        empty_static_span.copy_from_nonoverlapping(dynamic_span), "");
+    EXPECT_DEATH_IF_SUPPORTED(
+        empty_dynamic_span.copy_from_nonoverlapping(static_span), "");
+    EXPECT_DEATH_IF_SUPPORTED(
+        empty_dynamic_span.copy_from_nonoverlapping(dynamic_span), "");
+    EXPECT_DEATH_IF_SUPPORTED(
+        dynamic_span.last(2u).copy_from_nonoverlapping(static_span), "");
+
+    std::vector<int> source = {7, 8, 9};
+
+    static_span.first(2u).copy_from_nonoverlapping(span(source).last(2u));
+    EXPECT_THAT(arr, ElementsAre(8, 9, 3));
+
+    dynamic_span.first(2u).copy_from_nonoverlapping(span(source).last(2u));
+    EXPECT_THAT(vec, ElementsAre(8, 9, 6));
+
+    static_span.first(1u).copy_from_nonoverlapping(span(source).last(1u));
+    EXPECT_THAT(arr, ElementsAre(9, 9, 3));
+
+    dynamic_span.first(1u).copy_from_nonoverlapping(span(source).last(1u));
+    EXPECT_THAT(vec, ElementsAre(9, 9, 6));
+  })
 }
 
 TEST(SpanTest, CopyFromConversion) {
@@ -1991,8 +2438,7 @@ TEST(SpanTest, CopyFromConversion) {
   span<int> dynamic_span = base::make_span(vec);
 
   std::vector convert_from = {7, 8, 9};
-  // Dynamic size to static size requires an explicit conversion.
-  static_span.copy_from(make_span<3u>(convert_from));
+  static_span.copy_from(convert_from);
   dynamic_span.copy_from(convert_from);
   EXPECT_THAT(static_span, ElementsAre(7, 8, 9));
   EXPECT_THAT(dynamic_span, ElementsAre(7, 8, 9));
@@ -2014,6 +2460,64 @@ TEST(SpanTest, CopyFromConversion) {
   dynamic_span.copy_from(convert_from_const_array);
   EXPECT_THAT(static_span, ElementsAre(-1, -2, -3));
   EXPECT_THAT(dynamic_span, ElementsAre(-1, -2, -3));
+}
+
+TEST(SpanTest, CopyPrefixFrom) {
+  const int vals[] = {1, 2, 3, 4, 5};
+  int arr[] = {1, 2, 3, 4, 5};
+  span<int, 2> fixed2 = span(arr).first<2>();
+  span<int, 3> fixed3 = span(arr).last<3>();
+  span<int> dyn2 = span(arr).first(2u);
+  span<int> dyn3 = span(arr).last(3u);
+
+  // Copy from a larger buffer.
+  EXPECT_CHECK_DEATH(fixed2.copy_prefix_from(dyn3));
+  EXPECT_CHECK_DEATH(dyn2.copy_prefix_from(fixed3));
+  EXPECT_CHECK_DEATH(dyn2.copy_prefix_from(dyn3));
+
+  // Copy from a smaller buffer into the prefix.
+  fixed3.copy_prefix_from(fixed2);
+  EXPECT_THAT(arr, ElementsAre(1, 2, 1, 2, 5));
+  span(arr).copy_from(vals);
+
+  fixed3.copy_prefix_from(dyn2);
+  EXPECT_THAT(arr, ElementsAre(1, 2, 1, 2, 5));
+  span(arr).copy_from(vals);
+
+  dyn3.copy_prefix_from(fixed2);
+  EXPECT_THAT(arr, ElementsAre(1, 2, 1, 2, 5));
+  span(arr).copy_from(vals);
+
+  dyn3.copy_prefix_from(dyn2);
+  EXPECT_THAT(arr, ElementsAre(1, 2, 1, 2, 5));
+  span(arr).copy_from(vals);
+
+  // Copy from an empty buffer.
+  fixed2.copy_prefix_from(span<int, 0>());
+  EXPECT_THAT(arr, ElementsAre(1, 2, 3, 4, 5));
+  fixed2.copy_prefix_from(span<int>());
+  EXPECT_THAT(arr, ElementsAre(1, 2, 3, 4, 5));
+  dyn2.copy_prefix_from(span<int, 0>());
+  EXPECT_THAT(arr, ElementsAre(1, 2, 3, 4, 5));
+  dyn2.copy_prefix_from(span<int>());
+  EXPECT_THAT(arr, ElementsAre(1, 2, 3, 4, 5));
+
+  // Copy from a same-size buffer.
+  fixed3.first<2>().copy_prefix_from(fixed2);
+  EXPECT_THAT(arr, ElementsAre(1, 2, 1, 2, 5));
+  span(arr).copy_from(vals);
+
+  fixed3.first<2>().copy_prefix_from(dyn2);
+  EXPECT_THAT(arr, ElementsAre(1, 2, 1, 2, 5));
+  span(arr).copy_from(vals);
+
+  dyn3.first(2u).copy_prefix_from(fixed2);
+  EXPECT_THAT(arr, ElementsAre(1, 2, 1, 2, 5));
+  span(arr).copy_from(vals);
+
+  dyn3.first(2u).copy_prefix_from(dyn2);
+  EXPECT_THAT(arr, ElementsAre(1, 2, 1, 2, 5));
+  span(arr).copy_from(vals);
 }
 
 TEST(SpanTest, SplitAt) {
@@ -2089,14 +2593,19 @@ TEST(SpanTest, SplitAt) {
     static_assert(std::same_as<decltype(left), span<int, 1u>>);
     static_assert(std::same_as<decltype(right), span<int, 2u>>);
     EXPECT_EQ(left.data(), static_span.data());
-    EXPECT_EQ(right.data(), static_span.data() + 1u);
+    // SAFETY: `array` has three elmenents, so `static_span` has three
+    // elements, so `static_span.data() + 1u` points within it.
+    EXPECT_EQ(right.data(), UNSAFE_BUFFERS(static_span.data() + 1u));
   }
   {
     auto [left, right] = static_span.split_at<3u>();
     static_assert(std::same_as<decltype(left), span<int, 3u>>);
     static_assert(std::same_as<decltype(right), span<int, 0u>>);
     EXPECT_EQ(left.data(), static_span.data());
-    EXPECT_EQ(right.data(), static_span.data() + 3u);
+    // SAFETY: `array` has three elmenents, so `static_span` has three
+    // elements, so `static_span.data() + 3u` points to one byte beyond
+    // the end of the object as permitted by C++ standard.
+    EXPECT_EQ(right.data(), UNSAFE_BUFFERS(static_span.data() + 3u));
   }
   {
     auto [left, right] = dynamic_span.split_at<0u>();
@@ -2111,7 +2620,9 @@ TEST(SpanTest, SplitAt) {
     static_assert(std::same_as<decltype(left), span<int, 1u>>);
     static_assert(std::same_as<decltype(right), span<int>>);
     EXPECT_EQ(left.data(), dynamic_span.data());
-    EXPECT_EQ(right.data(), dynamic_span.data() + 1u);
+    // SAFETY: `array` has three elmenents, so `dynamic_span` has three
+    // elements, so `dynamic_span.data() + 1u` points within it.
+    EXPECT_EQ(right.data(), UNSAFE_BUFFERS(dynamic_span.data() + 1u));
     EXPECT_EQ(right.size(), 2u);
   }
   {
@@ -2119,18 +2630,22 @@ TEST(SpanTest, SplitAt) {
     static_assert(std::same_as<decltype(left), span<int, 3u>>);
     static_assert(std::same_as<decltype(right), span<int>>);
     EXPECT_EQ(left.data(), dynamic_span.data());
-    EXPECT_EQ(right.data(), dynamic_span.data() + 3u);
+    // SAFETY: `array` has three elmenents, so `dynamic_span` has three
+    // elements, so `dynamic_span.data() + 3u` points to one byte beyond
+    // the end of the object as permitted by C++ standard.
+    EXPECT_EQ(right.data(), UNSAFE_BUFFERS(dynamic_span.data() + 3u));
     EXPECT_EQ(right.size(), 0u);
   }
   // Invalid fixed-size split from dynamic will fail at runtime.
   EXPECT_CHECK_DEATH({ dynamic_span.split_at<4u>(); });
 }
 
-TEST(SpanTest, Compare) {
+TEST(SpanTest, CompareEquality) {
   static_assert(std::equality_comparable<int>);
   int32_t arr2[] = {1, 2};
   int32_t arr3[] = {1, 2, 3};
   int32_t rra3[] = {3, 2, 1};
+  int32_t vec3[] = {1, 2, 3};
   constexpr const int32_t arr2_c[] = {1, 2};
   constexpr const int32_t arr3_c[] = {1, 2, 3};
   constexpr const int32_t rra3_c[] = {3, 2, 1};
@@ -2311,10 +2826,435 @@ TEST(SpanTest, Compare) {
   EXPECT_TRUE(arr2_c == span(arr3).first(2u));
   EXPECT_TRUE(arr2_c != span(rra3).first(2u));
 
+  // Comparing mutable to mutable, there's no ambiguity about which overload to
+  // call (mutable or implicit-const).
+  EXPECT_FALSE(span(arr3) == rra3);            // Fixed size.
+  EXPECT_FALSE(span(vec3).first(2u) == vec3);  // Dynamic size.
+  EXPECT_FALSE(span(arr3).first(2u) == rra3);  // Fixed with dynamic size.
+
   // Constexpr comparison.
   static_assert(span<int>() == span<int, 0u>());
   static_assert(span(arr2_c) == span(arr3_c).first(2u));
   static_assert(span(arr2_c) == span(arr3_lc).first(2u));
+}
+
+TEST(SpanTest, CompareOrdered) {
+  static_assert(std::three_way_comparable<int>);
+  int32_t arr2[] = {1, 2};
+  int32_t arr3[] = {1, 2, 3};
+  int32_t rra3[] = {3, 2, 1};
+  int32_t vec3[] = {1, 2, 3};
+  constexpr const int32_t arr2_c[] = {1, 2};
+  constexpr const int32_t arr3_c[] = {1, 2, 3};
+  constexpr const int32_t rra3_c[] = {3, 2, 1};
+
+  // Less than.
+  EXPECT_TRUE(span(arr3) < span(rra3));
+  EXPECT_TRUE(span(arr2).first(2u) < span(arr3));
+  // Greater than.
+  EXPECT_TRUE(span(rra3) > span(arr3));
+  EXPECT_TRUE(span(arr3) > span(arr2).first(2u));
+
+  // Comparing empty spans that are fixed and dynamic size.
+  EXPECT_TRUE((span<int32_t>() <=> span<int32_t>()) == 0);
+  EXPECT_TRUE((span<int32_t, 0u>() <=> span<int32_t>()) == 0);
+  EXPECT_TRUE((span<int32_t>() <=> span<int32_t, 0u>()) == 0);
+  EXPECT_TRUE((span<int32_t, 0u>() <=> span<int32_t, 0u>()) == 0);
+  // Non-null data pointer, but both are empty.
+  EXPECT_TRUE(span(arr2).first(0u) <=> span(arr2).last(0u) == 0);
+  EXPECT_TRUE(span(arr2).first<0u>() <=> span(arr2).last<0u>() == 0);
+
+  // Spans of different dynamic sizes.
+  EXPECT_TRUE(span(arr2).first(2u) <=> span(arr3).first(3u) < 0);
+  // Spans of same dynamic size and same values.
+  EXPECT_TRUE(span(arr2).first(2u) <=> span(arr3).first(2u) == 0);
+  // Spans of same dynamic size but different values.
+  EXPECT_TRUE(span(arr2).first(2u) <=> span(rra3).first(2u) < 0);
+
+  // Spans of different sizes (one dynamic one fixed).
+  EXPECT_TRUE(span(arr2).first<2u>() <=> span(arr3).first(3u) < 0);
+  EXPECT_TRUE(span(arr2).first(2u) <=> span(arr3).first<3u>() < 0);
+  // Spans of same size and same values.
+  EXPECT_TRUE(span(arr2).first<2u>() <=> span(arr3).first(2u) == 0);
+  EXPECT_TRUE(span(arr2).first(2u) <=> span(arr3).first<2u>() == 0);
+  // Spans of same size but different values.
+  EXPECT_TRUE(span(arr2).first<2u>() <=> span(rra3).first(2u) < 0);
+  EXPECT_TRUE(span(arr2).first(2u) <=> span(rra3).first<2u>() < 0);
+
+  // Spans of different fixed sizes do not compile (as in Rust)
+  // https://godbolt.org/z/MrnbPeozr and are covered in nocompile tests.
+
+  // Comparing const and non-const. Same tests as above otherwise.
+
+  EXPECT_TRUE((span<const int32_t>() <=> span<int32_t>()) == 0);
+  EXPECT_TRUE((span<const int32_t, 0u>() <=> span<int32_t>()) == 0);
+  EXPECT_TRUE((span<const int32_t>() <=> span<int32_t, 0u>()) == 0);
+  EXPECT_TRUE((span<const int32_t, 0u>() <=> span<int32_t, 0u>()) == 0);
+
+  EXPECT_TRUE((span<int32_t>() <=> span<const int32_t>()) == 0);
+  EXPECT_TRUE((span<int32_t, 0u>() <=> span<const int32_t>()) == 0);
+  EXPECT_TRUE((span<int32_t>() <=> span<const int32_t, 0u>()) == 0);
+  EXPECT_TRUE((span<int32_t, 0u>() <=> span<const int32_t, 0u>()) == 0);
+
+  EXPECT_TRUE(span(arr2_c).first(0u) <=> span(arr2).last(0u) == 0);
+  EXPECT_TRUE(span(arr2_c).first<0u>() <=> span(arr2).last<0u>() == 0);
+
+  EXPECT_TRUE(span(arr2).first(0u) <=> span(arr2_c).last(0u) == 0);
+  EXPECT_TRUE(span(arr2).first<0u>() <=> span(arr2_c).last<0u>() == 0);
+
+  EXPECT_TRUE(span(arr2_c).first(2u) <=> span(arr3).first(3u) < 0);
+  EXPECT_TRUE(span(arr2_c).first(2u) <=> span(arr3).first(2u) == 0);
+  EXPECT_TRUE(span(arr2_c).first(2u) <=> span(rra3).first(2u) < 0);
+
+  EXPECT_TRUE(span(arr2).first(2u) <=> span(arr3_c).first(3u) < 0);
+  EXPECT_TRUE(span(arr2).first(2u) <=> span(arr3_c).first(2u) == 0);
+  EXPECT_TRUE(span(arr2).first(2u) <=> span(rra3_c).first(2u) < 0);
+
+  EXPECT_TRUE(span(arr2_c).first<2u>() <=> span(arr3).first(3u) < 0);
+  EXPECT_TRUE(span(arr2_c).first(2u) <=> span(arr3).first<3u>() < 0);
+  EXPECT_TRUE(span(arr2_c).first<2u>() <=> span(arr3).first(2u) == 0);
+  EXPECT_TRUE(span(arr2_c).first(2u) <=> span(arr3).first<2u>() == 0);
+  EXPECT_TRUE(span(arr2_c).first<2u>() <=> span(rra3).first(2u) < 0);
+  EXPECT_TRUE(span(arr2_c).first(2u) <=> span(rra3).first<2u>() < 0);
+
+  EXPECT_TRUE(span(arr2).first<2u>() <=> span(arr3_c).first(3u) < 0);
+  EXPECT_TRUE(span(arr2).first(2u) <=> span(arr3_c).first<3u>() < 0);
+  EXPECT_TRUE(span(arr2).first<2u>() <=> span(arr3_c).first(2u) == 0);
+  EXPECT_TRUE(span(arr2).first(2u) <=> span(arr3_c).first<2u>() == 0);
+  EXPECT_TRUE(span(arr2).first<2u>() <=> span(rra3_c).first(2u) < 0);
+  EXPECT_TRUE(span(arr2).first(2u) <=> span(rra3_c).first<2u>() < 0);
+
+  // Comparing different types which are comparable. Same tests as above
+  // otherwise.
+
+  static_assert(std::three_way_comparable_with<int32_t, int64_t>);
+  int64_t arr2_l[] = {1, 2};
+  int64_t arr3_l[] = {1, 2, 3};
+  int64_t rra3_l[] = {3, 2, 1};
+
+  EXPECT_TRUE((span<int32_t>() <=> span<int64_t>()) == 0);
+  EXPECT_TRUE((span<int32_t, 0u>() <=> span<int64_t>()) == 0);
+  EXPECT_TRUE((span<int32_t>() <=> span<int64_t, 0u>()) == 0);
+  EXPECT_TRUE((span<int32_t, 0u>() <=> span<int64_t, 0u>()) == 0);
+
+  EXPECT_TRUE((span<int32_t>() <=> span<int64_t>()) == 0);
+  EXPECT_TRUE((span<int32_t, 0u>() <=> span<int64_t>()) == 0);
+  EXPECT_TRUE((span<int32_t>() <=> span<int64_t, 0u>()) == 0);
+  EXPECT_TRUE((span<int32_t, 0u>() <=> span<int64_t, 0u>()) == 0);
+
+  EXPECT_TRUE(span(arr2_l).first(0u) <=> span(arr2).last(0u) == 0);
+  EXPECT_TRUE(span(arr2_l).first<0u>() <=> span(arr2).last<0u>() == 0);
+
+  EXPECT_TRUE(span(arr2).first(0u) <=> span(arr2_l).last(0u) == 0);
+  EXPECT_TRUE(span(arr2).first<0u>() <=> span(arr2_l).last<0u>() == 0);
+
+  EXPECT_TRUE(span(arr2_l).first(2u) <=> span(arr3).first(3u) < 0);
+  EXPECT_TRUE(span(arr2_l).first(2u) <=> span(arr3).first(2u) == 0);
+  EXPECT_TRUE(span(arr2_l).first(2u) <=> span(rra3).first(2u) < 0);
+
+  EXPECT_TRUE(span(arr2).first(2u) <=> span(arr3_l).first(3u) < 0);
+  EXPECT_TRUE(span(arr2).first(2u) <=> span(arr3_l).first(2u) == 0);
+  EXPECT_TRUE(span(arr2).first(2u) <=> span(rra3_l).first(2u) < 0);
+
+  EXPECT_TRUE(span(arr2_l).first<2u>() <=> span(arr3).first(3u) < 0);
+  EXPECT_TRUE(span(arr2_l).first(2u) <=> span(arr3).first<3u>() < 0);
+  EXPECT_TRUE(span(arr2_l).first<2u>() <=> span(arr3).first(2u) == 0);
+  EXPECT_TRUE(span(arr2_l).first(2u) <=> span(arr3).first<2u>() == 0);
+  EXPECT_TRUE(span(arr2_l).first<2u>() <=> span(rra3).first(2u) < 0);
+  EXPECT_TRUE(span(arr2_l).first(2u) <=> span(rra3).first<2u>() < 0);
+
+  EXPECT_TRUE(span(arr2).first<2u>() <=> span(arr3_l).first(3u) < 0);
+  EXPECT_TRUE(span(arr2).first(2u) <=> span(arr3_l).first<3u>() < 0);
+  EXPECT_TRUE(span(arr2).first<2u>() <=> span(arr3_l).first(2u) == 0);
+  EXPECT_TRUE(span(arr2).first(2u) <=> span(arr3_l).first<2u>() == 0);
+  EXPECT_TRUE(span(arr2).first<2u>() <=> span(rra3_l).first(2u) < 0);
+  EXPECT_TRUE(span(arr2).first(2u) <=> span(rra3_l).first<2u>() < 0);
+
+  // Comparing different types and different const-ness at the same time.
+
+  constexpr const int64_t arr2_lc[] = {1, 2};
+  constexpr const int64_t arr3_lc[] = {1, 2, 3};
+  constexpr const int64_t rra3_lc[] = {3, 2, 1};
+
+  EXPECT_TRUE((span<const int32_t>() <=> span<int64_t>()) == 0);
+  EXPECT_TRUE((span<const int32_t, 0u>() <=> span<int64_t>()) == 0);
+  EXPECT_TRUE((span<const int32_t>() <=> span<int64_t, 0u>()) == 0);
+  EXPECT_TRUE((span<const int32_t, 0u>() <=> span<int64_t, 0u>()) == 0);
+
+  EXPECT_TRUE((span<int32_t>() <=> span<const int64_t>()) == 0);
+  EXPECT_TRUE((span<int32_t, 0u>() <=> span<const int64_t>()) == 0);
+  EXPECT_TRUE((span<int32_t>() <=> span<const int64_t, 0u>()) == 0);
+  EXPECT_TRUE((span<int32_t, 0u>() <=> span<const int64_t, 0u>()) == 0);
+
+  EXPECT_TRUE(span(arr2_lc).first(0u) <=> span(arr2).last(0u) == 0);
+  EXPECT_TRUE(span(arr2_lc).first<0u>() <=> span(arr2).last<0u>() == 0);
+
+  EXPECT_TRUE(span(arr2).first(0u) <=> span(arr2_lc).last(0u) == 0);
+  EXPECT_TRUE(span(arr2).first<0u>() <=> span(arr2_lc).last<0u>() == 0);
+
+  EXPECT_TRUE(span(arr2_lc).first(2u) <=> span(arr3).first(3u) < 0);
+  EXPECT_TRUE(span(arr2_lc).first(2u) <=> span(arr3).first(2u) == 0);
+  EXPECT_TRUE(span(arr2_lc).first(2u) <=> span(rra3).first(2u) < 0);
+
+  EXPECT_TRUE(span(arr2).first(2u) <=> span(arr3_lc).first(3u) < 0);
+  EXPECT_TRUE(span(arr2).first(2u) <=> span(arr3_lc).first(2u) == 0);
+  EXPECT_TRUE(span(arr2).first(2u) <=> span(rra3_lc).first(2u) < 0);
+
+  EXPECT_TRUE(span(arr2_lc).first<2u>() <=> span(arr3).first(3u) < 0);
+  EXPECT_TRUE(span(arr2_lc).first(2u) <=> span(arr3).first<3u>() < 0);
+  EXPECT_TRUE(span(arr2_lc).first<2u>() <=> span(arr3).first(2u) == 0);
+  EXPECT_TRUE(span(arr2_lc).first(2u) <=> span(arr3).first<2u>() == 0);
+  EXPECT_TRUE(span(arr2_lc).first<2u>() <=> span(rra3).first(2u) < 0);
+  EXPECT_TRUE(span(arr2_lc).first(2u) <=> span(rra3).first<2u>() < 0);
+
+  EXPECT_TRUE(span(arr2).first<2u>() <=> span(arr3_lc).first(3u) < 0);
+  EXPECT_TRUE(span(arr2).first(2u) <=> span(arr3_lc).first<3u>() < 0);
+  EXPECT_TRUE(span(arr2).first<2u>() <=> span(arr3_lc).first(2u) == 0);
+  EXPECT_TRUE(span(arr2).first(2u) <=> span(arr3_lc).first<2u>() == 0);
+  EXPECT_TRUE(span(arr2).first<2u>() <=> span(rra3_lc).first(2u) < 0);
+  EXPECT_TRUE(span(arr2).first(2u) <=> span(rra3_lc).first<2u>() < 0);
+
+  // Comparing with an implicit conversion to span. This only works if the span
+  // types actually match (i.e. not for any comparable types) since otherwise
+  // the type can not be deduced. Implicit conversion from mutable to const
+  // can be inferred though.
+
+  EXPECT_TRUE(arr2 <=> span(arr3).first(3u) < 0);
+  EXPECT_TRUE(arr2 <=> span(arr3).first(2u) == 0);
+  EXPECT_TRUE(arr2 <=> span(rra3).first(2u) < 0);
+
+  EXPECT_TRUE(arr2 <=> span(arr3_c).first(3u) < 0);
+  EXPECT_TRUE(arr2 <=> span(arr3_c).first(2u) == 0);
+  EXPECT_TRUE(arr2 <=> span(rra3_c).first(2u) < 0);
+
+  EXPECT_TRUE(arr2_c <=> span(arr3).first(3u) < 0);
+  EXPECT_TRUE(arr2_c <=> span(arr3).first(2u) == 0);
+  EXPECT_TRUE(arr2_c <=> span(rra3).first(2u) < 0);
+
+  // Comparing mutable to mutable, there's no ambiguity about which overload to
+  // call (mutable or implicit-const).
+  EXPECT_FALSE(span(arr3) <=> rra3 == 0);            // Fixed size.
+  EXPECT_FALSE(span(vec3).first(2u) <=> vec3 == 0);  // Dynamic size.
+  EXPECT_FALSE(span(arr3).first(2u) <=> rra3 == 0);  // Fixed with dynamic size.
+
+  // Constexpr comparison.
+  static_assert(span<int>() <=> span<int, 0u>() == 0);
+  static_assert(span(arr2_c) <=> span(arr3_c).first(2u) == 0);
+  static_assert(span(arr2_c) <=> span(arr3_lc).first(2u) == 0);
+}
+
+TEST(SpanTest, GMockMacroCompatibility) {
+  int arr1[] = {1, 3, 5};
+  int arr2[] = {1, 3, 5};
+  std::vector vec1(std::begin(arr1), std::end(arr1));
+  std::vector vec2(std::begin(arr2), std::end(arr2));
+  span<int, 3> static_span1(arr1);
+  span<int, 3> static_span2(arr2);
+  span<int> dynamic_span1(vec1);
+  span<int> dynamic_span2(vec2);
+
+  EXPECT_THAT(arr1, ElementsAreArray(static_span2));
+  EXPECT_THAT(arr1, ElementsAreArray(dynamic_span2));
+
+  EXPECT_THAT(vec1, ElementsAreArray(static_span2));
+  EXPECT_THAT(vec1, ElementsAreArray(dynamic_span2));
+
+  EXPECT_THAT(static_span1, ElementsAre(1, 3, 5));
+  EXPECT_THAT(static_span1, ElementsAreArray(arr2));
+  EXPECT_THAT(static_span1, ElementsAreArray(static_span2));
+  EXPECT_THAT(static_span1, ElementsAreArray(dynamic_span2));
+  EXPECT_THAT(static_span1, ElementsAreArray(vec2));
+
+  EXPECT_THAT(dynamic_span1, ElementsAre(1, 3, 5));
+  EXPECT_THAT(dynamic_span1, ElementsAreArray(arr2));
+  EXPECT_THAT(dynamic_span1, ElementsAreArray(static_span2));
+  EXPECT_THAT(dynamic_span1, ElementsAreArray(dynamic_span2));
+  EXPECT_THAT(dynamic_span1, ElementsAreArray(vec2));
+}
+
+// These are all examples from //docs/unsafe_buffers.md, copied here to ensure
+// they compile.
+TEST(SpanTest, Example_UnsafeBuffersPatterns) {
+  struct Object {
+    int a;
+  };
+  auto func_with_const_ptr_size = [](const uint8_t*, size_t) {};
+  auto func_with_mut_ptr_size = [](uint8_t*, size_t) {};
+  auto func_with_const_span = [](span<const uint8_t>) {};
+  auto func_with_mut_span = [](span<uint8_t>) {};
+  auto two_byte_arrays = [](const uint8_t*, const uint8_t*) {};
+  auto two_byte_spans = [](span<const uint8_t>, span<const uint8_t>) {};
+
+  UNSAFE_BUFFERS({
+    uint8_t array1[12];
+    uint8_t array2[16];
+    uint64_t array3[2];
+    memcpy(array1, array2 + 8, 4);
+    memcpy(array1 + 4, array3, 8);
+  })
+
+  {
+    uint8_t array1[12];
+    uint8_t array2[16];
+    uint64_t array3[2];
+    base::span(array1).first(4u).copy_from(base::span(array2).subspan(8u, 4u));
+    base::span(array1).subspan(4u).copy_from(
+        base::as_byte_span(array3).first(8u));
+
+    {
+      // Use `split_at()` to ensure `array1` is fully written.
+      auto [from2, from3] = base::span(array1).split_at(4u);
+      from2.copy_from(base::span(array2).subspan(8u, 4u));
+      from3.copy_from(base::as_byte_span(array3).first(8u));
+    }
+    {
+      // This can even be ensured at compile time (if sizes and offsets are all
+      // constants).
+      auto [from2, from3] = base::span(array1).split_at<4u>();
+      from2.copy_from(base::span(array2).subspan<8u, 4u>());
+      from3.copy_from(base::as_byte_span(array3).first<8u>());
+    }
+  }
+
+  UNSAFE_BUFFERS({
+    uint8_t array1[12];
+    uint64_t array2[2];
+    Object array3[4];
+    memset(array1, 0, 12);
+    memset(array2, 0, 2 * sizeof(uint64_t));
+    memset(array3, 0, 4 * sizeof(Object));
+  })
+
+  {
+    uint8_t array1[12];
+    uint64_t array2[2];
+    Object array3[4];
+    std::ranges::fill(array1, 0u);
+    std::ranges::fill(array2, 0u);
+    std::ranges::fill(base::as_writable_byte_span(array3), 0u);
+  }
+
+  UNSAFE_BUFFERS({
+    uint8_t array1[12] = {};
+    uint8_t array2[12] = {};
+    [[maybe_unused]] bool ne = memcmp(array1, array2, sizeof(array1)) == 0;
+    [[maybe_unused]] bool less = memcmp(array1, array2, sizeof(array1)) < 0;
+
+    // In tests.
+    for (size_t i = 0; i < sizeof(array1); ++i) {
+      SCOPED_TRACE(i);
+      EXPECT_EQ(array1[i], array2[i]);
+    }
+  })
+
+  {
+    uint8_t array1[12] = {};
+    uint8_t array2[12] = {};
+    // If one side is a span, the other will convert to span too.
+    [[maybe_unused]] bool eq = base::span(array1) == array2;
+    [[maybe_unused]] bool less = base::span(array1) < array2;
+
+    // In tests.
+    EXPECT_EQ(base::span(array1), array2);
+  }
+
+  UNSAFE_BUFFERS({
+    uint8_t array[44] = {};
+    uint32_t v1;
+    memcpy(&v1, array, sizeof(v1));  // Front.
+    uint64_t v2;
+    memcpy(&v2, array + 6, sizeof(v2));  // Middle.
+  })
+
+  {
+    uint8_t array[44] = {};
+    [[maybe_unused]] uint32_t v1 =
+        base::U32FromLittleEndian(base::span(array).first<4u>());  // Front.
+    [[maybe_unused]] uint64_t v2 = base::U64FromLittleEndian(
+        base::span(array).subspan<6u, 8u>());  // Middle.
+  }
+
+  UNSAFE_BUFFERS({
+    // `array` must be aligned for the cast to be valid. Moreover, the
+    // dereference is only valid because Chromium builds with
+    // -fno-strict-aliasing.
+    alignas(uint64_t) uint8_t array[44] = {};
+    [[maybe_unused]] uint32_t v1 =
+        *reinterpret_cast<const uint32_t*>(array);  // Front.
+    [[maybe_unused]] uint64_t v2 =
+        *reinterpret_cast<const uint64_t*>(array + 16);  // Middle.
+  })
+
+  {
+    uint8_t array[44] = {};
+    [[maybe_unused]] uint32_t v1 =
+        base::U32FromLittleEndian(base::span(array).first<4u>());  // Front.
+    [[maybe_unused]] uint64_t v2 = base::U64FromLittleEndian(
+        base::span(array).subspan<16u, 8u>());  // Middle.
+  }
+
+  UNSAFE_BUFFERS({
+    std::string str = "hello world";
+    func_with_const_ptr_size(reinterpret_cast<const uint8_t*>(str.data()),
+                             str.size());
+    func_with_mut_ptr_size(reinterpret_cast<uint8_t*>(str.data()), str.size());
+  })
+
+  {
+    std::string str = "hello world";
+    base::span<const uint8_t> bytes = base::as_byte_span(str);
+    func_with_const_ptr_size(bytes.data(), bytes.size());
+    base::span<uint8_t> mut_bytes = base::as_writable_byte_span(str);
+    func_with_mut_ptr_size(mut_bytes.data(), mut_bytes.size());
+
+    // Replace pointer and size with a span, though.
+    func_with_const_span(base::as_byte_span(str));
+    func_with_mut_span(base::as_writable_byte_span(str));
+  }
+
+  UNSAFE_BUFFERS({
+    uint8_t array[8];
+    uint64_t val;
+    two_byte_arrays(array, reinterpret_cast<const uint8_t*>(&val));
+  })
+
+  {
+    uint8_t array[8];
+    uint64_t val;
+    base::span<uint8_t> val_span = base::byte_span_from_ref(val);
+    two_byte_arrays(array, val_span.data());
+
+    // Replace an unbounded pointer a span, though.
+    two_byte_spans(base::span(array), base::byte_span_from_ref(val));
+  }
+}
+
+TEST(SpanTest, Printing) {
+  struct S {
+    std::string ToString() const { return "S()"; }
+  };
+
+  // Gtest prints values in the spans. Chars are special.
+  EXPECT_EQ(testing::PrintToString(base::span({1, 2, 3})), "[1, 2, 3]");
+  EXPECT_EQ(testing::PrintToString(base::span({S(), S()})), "[S(), S()]");
+  EXPECT_EQ(testing::PrintToString(base::span({'a', 'b', 'c'})), "[\"abc\"]");
+  EXPECT_EQ(testing::PrintToString(base::span({'a', 'b', 'c', '\0'})),
+            std::string_view("[\"abc\0\"]", 8u));
+  EXPECT_EQ(testing::PrintToString(base::span({'a', 'b', '\0', 'c', '\0'})),
+            std::string_view("[\"ab\0c\0\"]", 9u));
+  EXPECT_EQ(testing::PrintToString(base::span<int>()), "[]");
+  EXPECT_EQ(testing::PrintToString(base::span<char>()), "[\"\"]");
+
+  // Base prints values in spans. Chars are special.
+  EXPECT_EQ(base::ToString(base::span({1, 2, 3})), "[1, 2, 3]");
+  EXPECT_EQ(base::ToString(base::span({S(), S()})), "[S(), S()]");
+  EXPECT_EQ(base::ToString(base::span({'a', 'b', 'c'})), "[\"abc\"]");
+  EXPECT_EQ(base::ToString(base::span({'a', 'b', 'c', '\0'})),
+            std::string_view("[\"abc\0\"]", 8u));
+  EXPECT_EQ(base::ToString(base::span({'a', 'b', '\0', 'c', '\0'})),
+            std::string_view("[\"ab\0c\0\"]", 9u));
+  EXPECT_EQ(base::ToString(base::span<int>()), "[]");
+  EXPECT_EQ(base::ToString(base::span<char>()), "[\"\"]");
 }
 
 }  // namespace base

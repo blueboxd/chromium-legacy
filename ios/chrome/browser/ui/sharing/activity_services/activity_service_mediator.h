@@ -11,7 +11,7 @@
 #import "ios/chrome/browser/ui/sharing/sharing_scenario.h"
 
 namespace bookmarks {
-class CoreBookmarkModel;
+class BookmarkModel;
 }
 
 @protocol BookmarksCommands;
@@ -22,6 +22,7 @@ class CoreBookmarkModel;
 @class ChromeActivityFileSource;
 @class NonModalDefaultBrowserPromoSchedulerSceneAgent;
 @protocol FindInPageCommands;
+@protocol HelpCommands;
 class PrefService;
 class ReadingListBrowserAgent;
 @protocol QRGenerationCommands;
@@ -33,18 +34,18 @@ class WebNavigationBrowserAgent;
 // Mediator used to generate activities.
 @interface ActivityServiceMediator : NSObject
 
-// Initializes a mediator instance with a `handler` used to execute action, a
-// `bookmarksHandler` to execute Bookmarks actions, a
-// `qrGenerationHandler` to execute QR generation actions, a `prefService` to
-// read settings and policies, and a `bookmarkModel` to retrieve bookmark
-// states.
-// `baseViewController` can be passed to activities which need to present VCs.
+// Initializes a mediator instance with a `helpHandler` used to execute action,
+// a `bookmarksHandler` to execute Bookmarks actions, a `qrGenerationHandler` to
+// execute QR generation actions, a `prefService` to read settings and policies,
+// and a `bookmarkModel` to retrieve bookmark states. `baseViewController` can
+// be passed to activities which need to present VCs.
 - (instancetype)initWithHandler:
                     (id<BrowserCoordinatorCommands, FindInPageCommands>)handler
                bookmarksHandler:(id<BookmarksCommands>)bookmarksHandler
+                    helpHandler:(id<HelpCommands>)helpHandler
             qrGenerationHandler:(id<QRGenerationCommands>)qrGenerationHandler
                     prefService:(PrefService*)prefService
-                  bookmarkModel:(bookmarks::CoreBookmarkModel*)bookmarkModel
+                  bookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
              baseViewController:(UIViewController*)baseViewController
                 navigationAgent:(WebNavigationBrowserAgent*)agent
         readingListBrowserAgent:

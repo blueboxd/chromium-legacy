@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/ui/views/status_bubble_views.h"
 
 #include <algorithm>
@@ -11,7 +16,6 @@
 #include "base/i18n/rtl.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/raw_ptr_exclusion.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
@@ -220,9 +224,7 @@ class StatusBubbleViews::StatusView : public views::View {
   raw_ptr<StatusBubbleViews> status_bubble_;
 
   // The currently-displayed text.
-  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
-  // #addr-of
-  RAW_PTR_EXCLUSION views::Label* text_;
+  raw_ptr<views::Label> text_;
 
   // A timer used to delay destruction of the popup widget. This is meant to
   // balance the performance tradeoffs of rapid creation/destruction and the
@@ -710,13 +712,11 @@ void StatusBubbleViews::InitPopup() {
     DCHECK(!expand_view_);
     popup_ = std::make_unique<views::Widget>();
 
-#if BUILDFLAG(IS_MAC)
     views::Widget::InitParams params(
-        views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
+        views::Widget::InitParams::CLIENT_OWNS_WIDGET,
+#if BUILDFLAG(IS_MAC)
         views::Widget::InitParams::TYPE_TOOLTIP);
 #else
-    views::Widget::InitParams params(
-        views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
         views::Widget::InitParams::TYPE_POPUP);
 #endif
 

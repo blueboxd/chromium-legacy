@@ -25,6 +25,7 @@
 #include "components/autofill/core/browser/test_autofill_external_delegate.h"
 #include "components/autofill/core/browser/test_autofill_manager_waiter.h"
 #include "components/autofill/core/common/autofill_test_utils.h"
+#include "components/autofill/core/common/form_data_test_api.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,7 +33,7 @@
 namespace autofill {
 
 static PersonalDataManager* GetPersonalDataManager(Profile* profile) {
-  return PersonalDataManagerFactory::GetForProfile(profile);
+  return PersonalDataManagerFactory::GetForBrowserContext(profile);
 }
 
 void AddTestProfile(Profile* base_profile, const AutofillProfile& profile) {
@@ -69,7 +70,7 @@ void WaitForPersonalDataChange(Profile* base_profile) {
 
 void WaitForPersonalDataManagerToBeLoaded(Profile* base_profile) {
   PersonalDataManager* pdm =
-      PersonalDataManagerFactory::GetForProfile(base_profile);
+      PersonalDataManagerFactory::GetForBrowserContext(base_profile);
   while (!pdm->IsDataLoaded())
     WaitForPersonalDataChange(base_profile);
 }
@@ -89,13 +90,14 @@ void WaitForPersonalDataManagerToBeLoaded(Profile* base_profile) {
   // flakiness.
   client.SetKeepPopupOpenForTesting(true);
 
+  FormFieldData field = test::CreateTestFormField(
+      "Full name", "name", "", FormControlType::kInputText, "name");
+  field.set_is_focusable(true);
+  field.set_should_autocomplete(true);
+  field.set_bounds(element_bounds);
   FormData form;
   form.set_url(GURL("https://foo.com/bar"));
-  form.fields = {test::CreateTestFormField(
-      "Full name", "name", "", FormControlType::kInputText, "name")};
-  form.fields.front().set_is_focusable(true);
-  form.fields.front().set_should_autocomplete(true);
-  form.fields.front().set_bounds(element_bounds);
+  form.set_fields({field});
 
   // Not adding a profile would result in `AskForValuesToFill()` not finding any
   // suggestions and hiding the Autofill Popup.
@@ -113,7 +115,7 @@ void WaitForPersonalDataManagerToBeLoaded(Profile* base_profile) {
                                    {AutofillManagerEvent::kAskForValuesToFill});
   gfx::PointF p = element_bounds.origin();
   driver.renderer_events().AskForValuesToFill(
-      form, form.fields.front(),
+      form, form.fields().front().renderer_id(),
       /*caret_bounds=*/gfx::Rect(gfx::Point(p.x(), p.y()), gfx::Size(0, 10)),
       AutofillSuggestionTriggerSource::kFormControlElementClicked);
   testing::AssertionResult waiter_assertion_result = waiter.Wait();

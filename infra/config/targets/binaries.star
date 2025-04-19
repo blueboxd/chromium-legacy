@@ -301,51 +301,6 @@ targets.binaries.console_test_launcher(
 
 # TODO(crbug.com/41489655): Remove unneeded cast_* suites.
 
-targets.binaries.console_test_launcher(
-    name = "cast_display_settings_unittests",
-    label = "//chromecast/ui/display_settings:cast_display_settings_unittests",
-)
-
-targets.binaries.console_test_launcher(
-    name = "cast_audio_backend_unittests",
-    label = "//chromecast/media/cma/backend:cast_audio_backend_unittests",
-)
-
-targets.binaries.console_test_launcher(
-    name = "cast_base_unittests",
-    label = "//chromecast/base:cast_base_unittests",
-)
-
-targets.binaries.console_test_launcher(
-    name = "cast_cast_core_unittests",
-    label = "//chromecast/cast_core:cast_cast_core_unittests",
-)
-
-targets.binaries.console_test_launcher(
-    name = "cast_crash_unittests",
-    label = "//chromecast/crash:cast_crash_unittests",
-)
-
-targets.binaries.console_test_launcher(
-    name = "cast_graphics_unittests",
-    label = "//chromecast/graphics:cast_graphics_unittests",
-)
-
-targets.binaries.console_test_launcher(
-    name = "cast_media_unittests",
-    label = "//chromecast/media:cast_media_unittests",
-)
-
-targets.binaries.console_test_launcher(
-    name = "cast_shell_browsertests",
-    label = "//chromecast:cast_shell_browsertests",
-)
-
-targets.binaries.console_test_launcher(
-    name = "cast_shell_unittests",
-    label = "//chromecast:cast_shell_unittests",
-)
-
 targets.binaries.windowed_test_launcher(
     name = "cast_unittests",
     label = "//media/cast:cast_unittests",
@@ -787,6 +742,12 @@ targets.binaries.windowed_test_launcher(
 )
 
 targets.binaries.console_test_launcher(
+    name = "enterprise_companion_tests",
+    label = "//chrome/enterprise_companion:enterprise_companion_tests",
+    args = ["--gtest_shuffle"],
+)
+
+targets.binaries.console_test_launcher(
     name = "env_chromium_unittests",
     label = "//third_party/leveldatabase:env_chromium_unittests",
 )
@@ -867,6 +828,11 @@ targets.binaries.generated_script(
 )
 
 targets.binaries.console_test_launcher(
+    name = "fuzzing_unittests",
+    label = "//testing/libfuzzer/tests:fuzzing_unittests",
+)
+
+targets.binaries.console_test_launcher(
     name = "gcm_unit_tests",
     label = "//google_apis/gcm:gcm_unit_tests",
 )
@@ -902,11 +868,6 @@ targets.binaries.windowed_test_launcher(
     label = "//ui/gl:gl_unittests_ozone",
     label_type = "group",
     executable = "gl_unittests",
-)
-
-targets.binaries.console_test_launcher(
-    name = "gles2_conform_test",
-    label = "//gpu/gles2_conform_support:gles2_conform_test",
 )
 
 targets.binaries.script(
@@ -1443,18 +1404,8 @@ targets.binaries.generated_script(
 )
 
 targets.binaries.generated_script(
-    name = "performance_test_suite_android_clank_monochrome",
-    label = "//chrome/test:performance_test_suite_android_clank_monochrome",
-)
-
-targets.binaries.generated_script(
     name = "performance_test_suite_android_clank_monochrome_64_32_bundle",
     label = "//chrome/test:performance_test_suite_android_clank_monochrome_64_32_bundle",
-)
-
-targets.binaries.generated_script(
-    name = "performance_test_suite_android_clank_monochrome_bundle",
-    label = "//chrome/test:performance_test_suite_android_clank_monochrome_bundle",
 )
 
 targets.binaries.generated_script(
@@ -1688,22 +1639,30 @@ targets.binaries.generated_script(
     ),
 )
 
-targets.binaries.script(
-    name = "telemetry_gpu_integration_test",
-    label = "//chrome/test:telemetry_gpu_integration_test",
-    script = "//testing/scripts/run_gpu_integration_test_as_googletest.py",
+targets.binaries.generated_script(
+    name = "trichrome_webview_wpt_64",
+    label = "//android_webview/test:trichrome_webview_wpt_64",
+    results_handler = "layout tests",
     args = [
-        "../../content/test/gpu/run_gpu_integration_test.py",
+        "--results-directory",
+        "${ISOLATED_OUTDIR}",
     ],
+    merge = targets.merge(
+        script = "//third_party/blink/tools/merge_web_test_results.py",
+        args = [
+            "--verbose",
+        ],
+    ),
 )
 
-targets.binaries.script(
+targets.binaries.generated_script(
+    name = "telemetry_gpu_integration_test",
+    label = "//chrome/test:telemetry_gpu_integration_test",
+)
+
+targets.binaries.generated_script(
     name = "telemetry_gpu_integration_test_android_chrome",
     label = "//chrome/test:telemetry_gpu_integration_test_android_chrome",
-    script = "//testing/scripts/run_gpu_integration_test_as_googletest.py",
-    args = [
-        "../../content/test/gpu/run_gpu_integration_test.py",
-    ],
 )
 
 targets.binaries.script(
@@ -1750,14 +1709,9 @@ targets.binaries.script(
     ],
 )
 
-targets.binaries.script(
+targets.binaries.generated_script(
     name = "telemetry_perf_unittests",
     label = "//chrome/test:telemetry_perf_unittests",
-    script = "//testing/scripts/run_telemetry_as_googletest.py",
-    args = [
-        "../../tools/perf/run_tests",
-        "-v",
-    ],
 )
 
 targets.binaries.script(
@@ -1941,7 +1895,7 @@ targets.binaries.console_test_launcher(
 
 targets.binaries.console_test_launcher(
     name = "usage_time_limit_unittests",
-    label = "//chrome/test:usage_time_limit_unittests",
+    label = "//chrome/browser/ash/child_accounts/time_limit_consistency_test:usage_time_limit_unittests",
 )
 
 targets.binaries.console_test_launcher(
@@ -2104,6 +2058,9 @@ targets.binaries.script(
         "apks/SystemWebView.apk",
         "--use-apk-under-test-flags-file",
         "-v",
+        # Required for stack.py to find build artifacts for symbolization.
+        "--output-directory",
+        ".",
     ],
 )
 
@@ -2121,6 +2078,9 @@ targets.binaries.script(
         "apks/TrichromeWebView.apk",
         "--use-apk-under-test-flags-file",
         "-v",
+        # Required for stack.py to find build artifacts for symbolization.
+        "--output-directory",
+        ".",
     ],
 )
 
@@ -2138,6 +2098,9 @@ targets.binaries.script(
         "apks/TrichromeWebView64.apk",
         "--use-apk-under-test-flags-file",
         "-v",
+        # Required for stack.py to find build artifacts for symbolization.
+        "--output-directory",
+        ".",
     ],
 )
 
@@ -2170,6 +2133,9 @@ targets.binaries.script(
         "apks/SystemWebView64.apk",
         "--use-apk-under-test-flags-file",
         "-v",
+        # Required for stack.py to find build artifacts for symbolization.
+        "--output-directory",
+        ".",
     ],
 )
 
@@ -2181,9 +2147,6 @@ targets.binaries.console_test_launcher(
 targets.binaries.console_test_launcher(
     name = "webview_ui_test_app_test_apk",
     label = "//android_webview/tools/automated_ui_tests:webview_ui_test_app_test_apk",
-    args = [
-        "--use-apk-under-test-flags-file",
-    ],
 )
 
 targets.binaries.windowed_test_launcher(

@@ -4,10 +4,10 @@
 
 #include "components/autofill/core/browser/test_browser_autofill_manager.h"
 
-#include "autofill_test_utils.h"
+#include "base/check_deref.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/autofill/core/browser/autofill_suggestion_generator.h"
+#include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/browser_autofill_manager_test_api.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_structure.h"
@@ -52,11 +52,11 @@ void TestBrowserAutofillManager::OnFormsSeen(
 
 void TestBrowserAutofillManager::OnTextFieldDidChange(
     const FormData& form,
-    const FormFieldData& field,
+    const FieldGlobalId& field_id,
     const base::TimeTicks timestamp) {
   TestAutofillManagerWaiter waiter(*this,
                                    {AutofillManagerEvent::kTextFieldDidChange});
-  AutofillManager::OnTextFieldDidChange(form, field, timestamp);
+  AutofillManager::OnTextFieldDidChange(form, field_id, timestamp);
   ASSERT_TRUE(waiter.Wait());
 }
 
@@ -71,24 +71,24 @@ void TestBrowserAutofillManager::OnDidFillAutofillFormData(
 
 void TestBrowserAutofillManager::OnAskForValuesToFill(
     const FormData& form,
-    const FormFieldData& field,
+    const FieldGlobalId& field_id,
     const gfx::Rect& caret_bounds,
     AutofillSuggestionTriggerSource trigger_source) {
   TestAutofillManagerWaiter waiter(*this,
                                    {AutofillManagerEvent::kAskForValuesToFill});
-  AutofillManager::OnAskForValuesToFill(form, field, caret_bounds,
+  AutofillManager::OnAskForValuesToFill(form, field_id, caret_bounds,
                                         trigger_source);
   ASSERT_TRUE(waiter.Wait());
 }
 
 void TestBrowserAutofillManager::OnJavaScriptChangedAutofilledValue(
     const FormData& form,
-    const FormFieldData& field,
+    const FieldGlobalId& field_id,
     const std::u16string& old_value,
     bool formatting_only) {
   TestAutofillManagerWaiter waiter(
       *this, {AutofillManagerEvent::kJavaScriptChangedAutofilledValue});
-  AutofillManager::OnJavaScriptChangedAutofilledValue(form, field, old_value,
+  AutofillManager::OnJavaScriptChangedAutofilledValue(form, field_id, old_value,
                                                       formatting_only);
   ASSERT_TRUE(waiter.Wait());
 }
@@ -142,7 +142,7 @@ void TestBrowserAutofillManager::UploadVotesAndLogQuality(
                 possible_types.size());
       for (auto it : expected_submitted_field_types_[i]) {
         EXPECT_TRUE(possible_types.count(it))
-            << "Expected type: " << AutofillType(it).ToStringView();
+            << "Expected type: " << FieldTypeToStringView(it);
       }
     }
   }
@@ -225,13 +225,14 @@ const std::string TestBrowserAutofillManager::GetSubmittedFormSignature() {
 
 void TestBrowserAutofillManager::OnAskForValuesToFillTest(
     const FormData& form,
-    const FormFieldData& field,
+    const FieldGlobalId& field_id,
     AutofillSuggestionTriggerSource trigger_source) {
   TestAutofillManagerWaiter waiter(*this,
                                    {AutofillManagerEvent::kAskForValuesToFill});
-  gfx::PointF p = field.bounds().origin();
+  gfx::PointF p =
+      CHECK_DEREF(form.FindFieldByGlobalId(field_id)).bounds().origin();
   gfx::Rect caret_bounds(gfx::Point(p.x(), p.y()), gfx::Size(0, 10));
-  BrowserAutofillManager::OnAskForValuesToFill(form, field, caret_bounds,
+  BrowserAutofillManager::OnAskForValuesToFill(form, field_id, caret_bounds,
                                                trigger_source);
   ASSERT_TRUE(waiter.Wait());
 }
@@ -255,6 +256,10 @@ void TestBrowserAutofillManager::SetAutofillPaymentMethodsEnabled(
     TestAutofillClient& client,
     bool autofill_payment_methods_enabled) {
   autofill_payment_methods_enabled_ = autofill_payment_methods_enabled;
+  if (PrefService* prefs = client.GetPrefs()) {
+    prefs->SetBoolean(prefs::kAutofillCreditCardEnabled,
+                      autofill_payment_methods_enabled);
+  }
   if (!autofill_payment_methods_enabled) {
     // Credit card data is refreshed when this pref is changed.
     client.GetPersonalDataManager()

@@ -13,6 +13,7 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
@@ -21,20 +22,27 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.Callback;
 import org.chromium.base.Log;
+import org.chromium.base.ResettersForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
+import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.base.supplier.SyncOneshotSupplier;
 import org.chromium.base.supplier.SyncOneshotSupplierImpl;
 import org.chromium.base.supplier.TransitiveObservableSupplier;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
+import org.chromium.build.BuildConfig;
+import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.hub.DisplayButtonData;
 import org.chromium.chrome.browser.hub.FadeHubLayoutAnimationFactory;
 import org.chromium.chrome.browser.hub.FullButtonData;
 import org.chromium.chrome.browser.hub.HubContainerView;
+import org.chromium.chrome.browser.hub.HubFieldTrial;
 import org.chromium.chrome.browser.hub.HubLayoutAnimationListener;
 import org.chromium.chrome.browser.hub.HubLayoutAnimatorProvider;
 import org.chromium.chrome.browser.hub.HubLayoutConstants;
@@ -43,13 +51,21 @@ import org.chromium.chrome.browser.hub.Pane;
 import org.chromium.chrome.browser.hub.PaneHubController;
 import org.chromium.chrome.browser.hub.ShrinkExpandAnimationData;
 import org.chromium.chrome.browser.hub.ShrinkExpandHubLayoutAnimationFactory;
+import org.chromium.chrome.browser.profiles.ProfileProvider;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab_ui.RecyclerViewPosition;
+import org.chromium.chrome.browser.tab_ui.TabSwitcher;
 import org.chromium.chrome.browser.tab_ui.TabSwitcherCustomViewManager;
 import org.chromium.chrome.browser.tasks.tab_management.TabListCoordinator.TabListMode;
+import org.chromium.chrome.browser.ui.edge_to_edge.EdgeToEdgeUtils;
+import org.chromium.chrome.browser.user_education.IPHCommand;
+import org.chromium.chrome.browser.user_education.IPHCommandBuilder;
+import org.chromium.chrome.browser.user_education.UserEducationHelper;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.widget.MenuOrKeyboardActionController.MenuOrKeyboardActionHandler;
+import org.chromium.components.feature_engagement.FeatureConstants;
+import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.List;
@@ -59,17 +75,24 @@ import java.util.function.DoubleConsumer;
  * An abstract {@link Pane} representing a tab switcher for shared logic between the normal and
  * incognito modes.
  */
-public abstract class TabSwitcherPaneBase implements Pane, TabSwitcherResetHandler {
+public abstract class TabSwitcherPaneBase implements Pane, TabSwitcher, TabSwitcherResetHandler {
     private static final String TAG = "TabSwitcherPaneBase";
+    private static final int ON_SHOWN_IPH_DELAY = 700;
+
+    private static boolean sShowIphForTesting;
 
     protected final ObservableSupplierImpl<DisplayButtonData> mReferenceButtonDataSupplier =
             new ObservableSupplierImpl<>();
     protected final ObservableSupplierImpl<FullButtonData> mNewTabButtonDataSupplier =
             new ObservableSupplierImpl<>();
+    protected final ObservableSupplierImpl<Boolean> mHairlineVisibilitySupplier =
+            new ObservableSupplierImpl<>();
+    protected final UserEducationHelper mUserEducationHelper;
     private final ObservableSupplierImpl<Boolean> mIsVisibleSupplier =
             new ObservableSupplierImpl<>();
     private final ObservableSupplierImpl<Boolean> mIsAnimatingSupplier =
             new ObservableSupplierImpl<>();
+    private final Callback<Boolean> mVisibilityObserver = this::onVisibilityChanged;
     private final Handler mHandler = new Handler();
     private final Runnable mSoftCleanupRunnable = this::softCleanupInternal;
     private final Runnable mHardCleanupRunnable = this::hardCleanupInternal;
@@ -101,6 +124,7 @@ public abstract class TabSwitcherPaneBase implements Pane, TabSwitcherResetHandl
                     new TransitiveObservableSupplier<>(
                             mTabSwitcherPaneCoordinatorSupplier,
                             pc -> pc.getHandleBackPressChangedSupplier());
+    private final OneshotSupplier<ProfileProvider> mProfileProviderSupplier;
     private final FrameLayout mRootView;
     private final TabSwitcherPaneCoordinatorFactory mFactory;
     private final boolean mIsIncognito;
@@ -121,29 +145,38 @@ public abstract class TabSwitcherPaneBase implements Pane, TabSwitcherResetHandl
     private boolean mNativeInitialized;
     private @Nullable PaneHubController mPaneHubController;
     private @Nullable Long mWaitForTabStateInitializedStartTimeMs;
+    private @Nullable Tracker mTracker;
 
     /**
      * @param context The activity context.
+     * @param profileProviderSupplier The profile provider supplier.
      * @param factory The factory used to construct {@link TabSwitcherPaneCoordinator}s.
      * @param isIncognito Whether the pane is incognito.
      * @param onToolbarAlphaChange Observer to notify when alpha changes during animations.
+     * @param userEducationHelper Used for showing IPHs.
      */
     TabSwitcherPaneBase(
             @NonNull Context context,
+            @NonNull OneshotSupplier<ProfileProvider> profileProviderSupplier,
             @NonNull TabSwitcherPaneCoordinatorFactory factory,
             boolean isIncognito,
-            @NonNull DoubleConsumer onToolbarAlphaChange) {
+            @NonNull DoubleConsumer onToolbarAlphaChange,
+            @NonNull UserEducationHelper userEducationHelper) {
+        mProfileProviderSupplier = profileProviderSupplier;
         mFactory = factory;
         mIsIncognito = isIncognito;
 
         mRootView = new FrameLayout(context);
         mIsVisibleSupplier.set(false);
+        mIsVisibleSupplier.addObserver(mVisibilityObserver);
         mIsAnimatingSupplier.set(false);
         mOnToolbarAlphaChange = onToolbarAlphaChange;
+        mUserEducationHelper = userEducationHelper;
     }
 
     @Override
     public void destroy() {
+        mIsVisibleSupplier.removeObserver(mVisibilityObserver);
         destroyTabSwitcherPaneCoordinator();
     }
 
@@ -171,7 +204,6 @@ public abstract class TabSwitcherPaneBase implements Pane, TabSwitcherResetHandl
     public void notifyLoadHint(@LoadHint int loadHint) {
         boolean isVisible = loadHint == LoadHint.HOT;
         mIsVisibleSupplier.set(isVisible);
-
         removeDelayedCallbacks();
 
         if (isVisible) {
@@ -179,11 +211,10 @@ public abstract class TabSwitcherPaneBase implements Pane, TabSwitcherResetHandl
             showAllTabs();
             setInitialScrollIndexOffset();
             // TODO(crbug.com/40942549): This should only happen when the Pane becomes user visible
-            // which
-            // might only happen after the Hub animation finishes. Figure out how to handle that
-            // since the load hint for hot will come before the animation is started. Panes likely
-            // need to know an animation is going to play and when it is finished (possibly using
-            // the isAnimatingSupplier?).
+            // which might only happen after the Hub animation finishes. Figure out how to handle
+            // that since the load hint for hot will come before the animation is started. Panes
+            // likely need to know an animation is going to play and when it is finished (possibly
+            // using the isAnimatingSupplier?).
             requestAccessibilityFocusOnCurrentTab();
         } else {
             cancelWaitForTabStateInitializedTimer();
@@ -214,6 +245,11 @@ public abstract class TabSwitcherPaneBase implements Pane, TabSwitcherResetHandl
     @Override
     public @NonNull ObservableSupplier<DisplayButtonData> getReferenceButtonDataSupplier() {
         return mReferenceButtonDataSupplier;
+    }
+
+    @Override
+    public @NonNull ObservableSupplier<Boolean> getHairlineVisibilitySupplier() {
+        return mHairlineVisibilitySupplier;
     }
 
     @Override
@@ -287,7 +323,7 @@ public abstract class TabSwitcherPaneBase implements Pane, TabSwitcherResetHandl
                     Rect finalRect;
 
                     Rect recyclerViewRect = coordinator.getRecyclerViewRect();
-                    if (ChromeFeatureList.sDrawEdgeToEdge.isEnabled()) {
+                    if (EdgeToEdgeUtils.isEnabled()) {
                         // Extend the recyclerViewRect to include the bottom nav bar area on
                         // edge-to-edge to align the animation with the start / end state.
                         Rect rootViewRect = new Rect();
@@ -354,6 +390,7 @@ public abstract class TabSwitcherPaneBase implements Pane, TabSwitcherResetHandl
         assert false : "Not reached.";
     }
 
+    @Override
     public void initWithNative() {
         if (mNativeInitialized) return;
 
@@ -366,6 +403,7 @@ public abstract class TabSwitcherPaneBase implements Pane, TabSwitcherResetHandl
     }
 
     /** Returns a {@link Supplier} that provides dialog visibility information. */
+    @Override
     public @Nullable Supplier<Boolean> getTabGridDialogVisibilitySupplier() {
         @Nullable
         TabSwitcherPaneCoordinator coordinator = mTabSwitcherPaneCoordinatorSupplier.get();
@@ -374,11 +412,13 @@ public abstract class TabSwitcherPaneBase implements Pane, TabSwitcherResetHandl
     }
 
     /** Returns a {@link TabSwitcherCustomViewManager} for supplying custom views. */
+    @Override
     public @Nullable TabSwitcherCustomViewManager getTabSwitcherCustomViewManager() {
         return mTabSwitcherCustomViewManager;
     }
 
     /** Returns the number of elements in the tab switcher's tab list model. */
+    @Override
     public int getTabSwitcherTabListModelSize() {
         @Nullable
         TabSwitcherPaneCoordinator coordinator = mTabSwitcherPaneCoordinatorSupplier.get();
@@ -387,6 +427,7 @@ public abstract class TabSwitcherPaneBase implements Pane, TabSwitcherResetHandl
     }
 
     /** Set the tab switcher's RecyclerViewPosition. */
+    @Override
     public void setTabSwitcherRecyclerViewPosition(RecyclerViewPosition position) {
         @Nullable
         TabSwitcherPaneCoordinator coordinator = mTabSwitcherPaneCoordinatorSupplier.get();
@@ -395,22 +436,36 @@ public abstract class TabSwitcherPaneBase implements Pane, TabSwitcherResetHandl
     }
 
     /** Show the Quick Delete animation on the tab list . */
+    @Override
     public void showQuickDeleteAnimation(Runnable onAnimationEnd, List<Tab> tabs) {
         @Nullable
         TabSwitcherPaneCoordinator coordinator = mTabSwitcherPaneCoordinatorSupplier.get();
-        if (coordinator == null) {
+        if (coordinator == null || getTabListMode() != TabListMode.GRID) {
             onAnimationEnd.run();
             return;
         }
         coordinator.showQuickDeleteAnimation(onAnimationEnd, tabs);
     }
 
-    /**
-     * Requests to show a dialog for a tab group.
-     *
-     * @param tabId The id of any tab in the group.
-     * @return Whether the request to show was able to be handled.
-     */
+    @Override
+    public void showCloseAllTabsAnimation(Runnable onAnimationEnd) {
+        @Nullable
+        TabSwitcherPaneCoordinator coordinator = mTabSwitcherPaneCoordinatorSupplier.get();
+        if (coordinator == null || getTabListMode() != TabListMode.GRID) {
+            onAnimationEnd.run();
+        } else {
+            coordinator.showCloseAllTabsAnimation(onAnimationEnd);
+        }
+    }
+
+    @Override
+    public void openInvitationModal(String invitationId) {
+        TabSwitcherPaneCoordinator coordinator = mTabSwitcherPaneCoordinatorSupplier.get();
+        if (coordinator == null) return;
+        coordinator.openInvitationModal(invitationId);
+    }
+
+    @Override
     public boolean requestOpenTabGroupDialog(int tabId) {
         @Nullable
         TabSwitcherPaneCoordinator coordinator = mTabSwitcherPaneCoordinatorSupplier.get();
@@ -434,6 +489,12 @@ public abstract class TabSwitcherPaneBase implements Pane, TabSwitcherResetHandl
     /** Returns whether to eagerly create the coordinator in the {@link LoadHint.WARM} state. */
     protected abstract boolean shouldEagerlyCreateCoordinator();
 
+    /** A runnable that will be invoked when delegate UI creates a tab group. */
+    protected abstract Runnable getOnTabGroupCreationRunnable();
+
+    /** Called when the pane is shown to indicate IPH should maybe be shown. */
+    protected abstract void tryToTriggerOnShownIphs();
+
     /** Requests accessibility focus on the currently selected tab in the tab switcher. */
     protected void requestAccessibilityFocusOnCurrentTab() {
         TabSwitcherPaneCoordinator coordinator = mTabSwitcherPaneCoordinatorSupplier.get();
@@ -454,6 +515,15 @@ public abstract class TabSwitcherPaneBase implements Pane, TabSwitcherResetHandl
         return mIsVisibleSupplier;
     }
 
+    /**
+     * Holds whether there's an ongoing animation with this Pane and outside the hub. Care must be
+     * taken when reading this supplier as animations do not start synchronously with focus changes,
+     * and a Pane may be shown before the enter animation actually starts.
+     */
+    protected @NonNull ObservableSupplier<Boolean> getIsAnimatingSupplier() {
+        return mIsAnimatingSupplier;
+    }
+
     /** Returns whether the pane is focused. */
     protected boolean isFocused() {
         return mPaneHubController != null;
@@ -471,6 +541,29 @@ public abstract class TabSwitcherPaneBase implements Pane, TabSwitcherResetHandl
         return mTabSwitcherPaneCoordinatorSupplier.get();
     }
 
+    /** Returns an observable supplier that hold the current coordinator. */
+    protected @NonNull ObservableSupplier<TabSwitcherPaneCoordinator>
+            getTabSwitcherPaneCoordinatorSupplier() {
+        return mTabSwitcherPaneCoordinatorSupplier;
+    }
+
+    /** Notify that the new tab button was clicked. */
+    protected void notifyNewTabButtonClick() {
+        if (HubFieldTrial.usesFloatActionButton()) {
+            getTracker().notifyEvent("tab_switcher_floating_action_button_clicked");
+        }
+    }
+
+    /** Returns the feature engagement tracker. */
+    protected Tracker getTracker() {
+        if (mTracker != null) return mTracker;
+
+        mTracker =
+                TrackerFactory.getTrackerForProfile(
+                        mProfileProviderSupplier.get().getOriginalProfile());
+        return mTracker;
+    }
+
     /** Creates a {@link TabSwitcherCoordinator}. */
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     void createTabSwitcherPaneCoordinator() {
@@ -484,7 +577,9 @@ public abstract class TabSwitcherPaneBase implements Pane, TabSwitcherResetHandl
                         mIsVisibleSupplier,
                         mIsAnimatingSupplier,
                         this::onTabClick,
-                        mIsIncognito);
+                        mHairlineVisibilitySupplier::set,
+                        mIsIncognito,
+                        getOnTabGroupCreationRunnable());
         mTabSwitcherPaneCoordinatorSupplier.set(coordinator);
         mTabSwitcherCustomViewManager.setDelegate(
                 coordinator.getTabSwitcherCustomViewManagerDelegate());
@@ -561,15 +656,61 @@ public abstract class TabSwitcherPaneBase implements Pane, TabSwitcherResetHandl
         mHandler.removeCallbacks(mDestroyCoordinatorRunnable);
     }
 
-    /**
-     * Open the invitation modal on top of the tab switcher view when an invitation intent is
-     * intercepted.
-     *
-     * @param invitationId The id of the invitation.
-     */
-    public void openInvitationModal(String invitationId) {
-        TabSwitcherPaneCoordinator coordinator = mTabSwitcherPaneCoordinatorSupplier.get();
-        if (coordinator == null) return;
-        coordinator.openInvitationModal(invitationId);
+    private void onVisibilityChanged(boolean visible) {
+        if (visible) {
+            postOnShownIphRunner();
+        }
+    }
+
+    private void postOnShownIphRunner() {
+        // TODO(crbug.com/346356139): Figure out a more elegant way of observing entering the hub as
+        // well as switching between panes. Knowing when these animations complete turns out to be
+        // fairly difficult, especially knowing when we're about to enter a transition.
+        PostTask.postDelayedTask(TaskTraits.UI_DEFAULT, this::onShownIphRunner, ON_SHOWN_IPH_DELAY);
+    }
+
+    private void onShownIphRunner() {
+        if (BuildConfig.IS_FOR_TEST && !sShowIphForTesting) return;
+
+        // The IPH system will ensure we don't show everything at once.
+        tryToTriggerFloatingActionButtonIph();
+        tryToTriggerOnShownIphs();
+    }
+
+    private void tryToTriggerFloatingActionButtonIph() {
+        @Nullable PaneHubController paneHubController = getPaneHubController();
+        if (paneHubController == null) return;
+        @Nullable View anchorView = paneHubController.getFloatingActionButton();
+        if (anchorView == null) return;
+
+        if (getIsAnimatingSupplier().get()) return;
+
+        IPHCommand command =
+                new IPHCommandBuilder(
+                                getRootView().getResources(),
+                                FeatureConstants.TAB_SWITCHER_FLOATING_ACTION_BUTTON,
+                                R.string.iph_tab_switcher_floating_action_button,
+                                R.string.iph_tab_switcher_floating_action_button)
+                        .setAnchorView(anchorView)
+                        .build();
+        mUserEducationHelper.requestShowIPH(command);
+    }
+
+    void softCleanupForTesting() {
+        mSoftCleanupRunnable.run();
+    }
+
+    void hardCleanupForTesting() {
+        mHardCleanupRunnable.run();
+    }
+
+    void destroyCoordinatorForTesting() {
+        mDestroyCoordinatorRunnable.run();
+    }
+
+    static void setShowIphForTesting(boolean showIphForTesting) {
+        boolean oldValue = sShowIphForTesting;
+        sShowIphForTesting = showIphForTesting;
+        ResettersForTesting.register(() -> sShowIphForTesting = oldValue);
     }
 }

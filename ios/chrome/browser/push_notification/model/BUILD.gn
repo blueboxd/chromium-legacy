@@ -10,6 +10,7 @@ source_set("browser_state_service") {
   deps = [
     ":push_notification_client",
     ":push_notification_service",
+    ":push_notification_service_header",
     "//base",
     "//components/keyed_service/core",
     "//components/prefs",
@@ -31,6 +32,7 @@ source_set("browser_state_service_factory") {
   deps = [
     ":browser_state_service",
     ":push_notification_service",
+    ":push_notification_service_header",
     "//base",
     "//components/keyed_service/ios",
     "//ios/chrome/browser/commerce/model",
@@ -38,6 +40,10 @@ source_set("browser_state_service_factory") {
     "//ios/chrome/browser/shared/model/browser_state",
     "//ios/chrome/browser/signin/model",
   ]
+}
+
+source_set("push_notification_service_header") {
+  sources = [ "push_notification_service.h" ]
 }
 
 source_set("push_notification_service") {
@@ -52,7 +58,6 @@ source_set("push_notification_service") {
     "push_notification_configuration.mm",
     "push_notification_delegate.h",
     "push_notification_delegate.mm",
-    "push_notification_service.h",
     "push_notification_service.mm",
     "push_notification_settings_util.h",
     "push_notification_settings_util.mm",
@@ -62,12 +67,15 @@ source_set("push_notification_service") {
   deps = [
     ":constants",
     ":push_notification_client",
+    ":push_notification_service_header",
     "//base",
     "//components/commerce/core:pref_names",
     "//components/optimization_guide/core:features",
     "//components/pref_registry",
     "//components/prefs",
     "//components/search_engines",
+    "//components/send_tab_to_self",
+    "//components/sync_device_info",
     "//ios/chrome/app/application_delegate:app_state_header",
     "//ios/chrome/app/startup:startup_basic",
     "//ios/chrome/browser/commerce/model/push_notification",
@@ -76,15 +84,19 @@ source_set("push_notification_service") {
     "//ios/chrome/browser/content_notification/model:content_notification_service",
     "//ios/chrome/browser/content_notification/model:content_notification_service_factory",
     "//ios/chrome/browser/content_notification/model:util",
+    "//ios/chrome/browser/safety_check_notifications/model:notification_client",
     "//ios/chrome/browser/search_engines/model:template_url_service_factory",
     "//ios/chrome/browser/shared/coordinator/scene:scene_state_header",
     "//ios/chrome/browser/shared/model/application_context",
     "//ios/chrome/browser/shared/model/browser",
     "//ios/chrome/browser/shared/model/browser_state",
     "//ios/chrome/browser/shared/model/prefs:pref_names",
+    "//ios/chrome/browser/shared/model/profile",
     "//ios/chrome/browser/shared/public/features:features",
     "//ios/chrome/browser/signin/model",
+    "//ios/chrome/browser/sync/model:device_info_sync_service_factory",
     "//ios/chrome/browser/tips_notifications/model:client",
+    "//ios/chrome/common/app_group",
   ]
 }
 
@@ -94,17 +106,19 @@ source_set("push_notification_client") {
     "push_notification_client.mm",
     "push_notification_client_id.h",
   ]
-  deps = [
+  public_deps = [
     "//base",
+    "//ios/chrome/browser/shared/model/browser_state",
+    "//url:url",
+  ]
+  deps = [
     "//ios/chrome/browser/shared/coordinator/scene:scene_state_header",
     "//ios/chrome/browser/shared/model/application_context",
     "//ios/chrome/browser/shared/model/browser",
-    "//ios/chrome/browser/shared/model/browser_state",
     "//ios/chrome/browser/shared/model/prefs:pref_names",
     "//ios/chrome/browser/shared/public/commands",
     "//ios/chrome/browser/url_loading/model",
     "//ios/public/provider/chrome/browser/user_feedback:user_feedback_api",
-    "//url:url",
   ]
 }
 
@@ -128,6 +142,7 @@ source_set("unit_tests") {
   deps = [
     ":push_notification_client",
     ":push_notification_service",
+    ":push_notification_service_header",
     ":test_support",
     "//base",
     "//base/test:test_support",
@@ -140,6 +155,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/shared/model/browser_state",
     "//ios/chrome/browser/shared/model/browser_state:test_support",
     "//ios/chrome/browser/shared/model/prefs:pref_names",
+    "//ios/chrome/browser/shared/model/profile",
     "//ios/chrome/browser/shared/public/features:features",
     "//ios/chrome/browser/signin/model:fake_system_identity",
     "//ios/chrome/test:test_support",

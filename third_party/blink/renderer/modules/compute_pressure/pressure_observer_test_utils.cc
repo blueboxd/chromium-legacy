@@ -7,7 +7,7 @@
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/device/public/mojom/pressure_update.mojom-blink.h"
-#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/platform/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_exception.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -19,7 +19,7 @@ FakePressureService::FakePressureService() = default;
 FakePressureService::~FakePressureService() = default;
 
 void FakePressureService::BindRequest(mojo::ScopedMessagePipeHandle handle) {
-  mojo::PendingReceiver<device::mojom::blink::PressureManager> receiver(
+  mojo::PendingReceiver<mojom::blink::WebPressureManager> receiver(
       std::move(handle));
   DCHECK(!receiver_.is_bound());
   receiver_.Bind(std::move(receiver));
@@ -27,12 +27,11 @@ void FakePressureService::BindRequest(mojo::ScopedMessagePipeHandle handle) {
       &FakePressureService::OnConnectionError, WTF::Unretained(this)));
 }
 
-void FakePressureService::AddClient(
-    mojo::PendingRemote<device::mojom::blink::PressureClient> client,
-    device::mojom::PressureSource source,
-    AddClientCallback callback) {
-  client_remote_.Bind(std::move(client));
-  std::move(callback).Run(device::mojom::blink::PressureStatus::kOk);
+void FakePressureService::AddClient(device::mojom::blink::PressureSource source,
+                                    AddClientCallback callback) {
+  std::move(callback).Run(
+      device::mojom::blink::PressureManagerAddClientResult::NewPressureClient(
+          client_remote_.BindNewPipeAndPassReceiver()));
 }
 
 void FakePressureService::SendUpdate(
@@ -48,7 +47,7 @@ void FakePressureService::OnConnectionError() {
 ComputePressureTestingContext::ComputePressureTestingContext(
     FakePressureService* mock_pressure_service) {
   DomWindow()->GetBrowserInterfaceBroker().SetBinderForTesting(
-      device::mojom::blink::PressureManager::Name_,
+      mojom::blink::WebPressureManager::Name_,
       WTF::BindRepeating(&FakePressureService::BindRequest,
                          WTF::Unretained(mock_pressure_service)));
 }
@@ -58,7 +57,7 @@ ComputePressureTestingContext::~ComputePressureTestingContext() {
   // our mocks rebinding an already-bound Binding.
   // See https://crbug.com/1010116 for more information.
   DomWindow()->GetBrowserInterfaceBroker().SetBinderForTesting(
-      device::mojom::blink::PressureManager::Name_, {});
+      mojom::blink::WebPressureManager::Name_, {});
 }
 
 LocalDOMWindow* ComputePressureTestingContext::DomWindow() {

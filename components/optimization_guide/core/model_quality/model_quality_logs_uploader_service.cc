@@ -10,6 +10,8 @@
 #include "base/trace_event/trace_event.h"
 #include "components/optimization_guide/core/access_token_helper.h"
 #include "components/optimization_guide/core/model_execution/feature_keys.h"
+#include "components/optimization_guide/core/model_execution/model_execution_prefs.h"
+#include "components/optimization_guide/core/model_execution/model_execution_util.h"
 #include "components/optimization_guide/core/model_quality/feature_type_map.h"
 #include "components/optimization_guide/core/model_quality/model_quality_log_entry.h"
 #include "components/optimization_guide/core/model_quality/model_quality_util.h"
@@ -17,7 +19,6 @@
 #include "components/optimization_guide/core/optimization_guide_enums.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/optimization_guide/core/optimization_guide_logger.h"
-#include "components/optimization_guide/core/optimization_guide_prefs.h"
 #include "components/optimization_guide/core/optimization_guide_switches.h"
 #include "components/optimization_guide/core/optimization_guide_util.h"
 #include "components/prefs/pref_service.h"
@@ -112,6 +113,9 @@ void RecordUserFeedbackHistogram(proto::LogAiDataRequest* log_ai_data_request) {
                           ->user_feedback();
       RecordUserFeedbackHistogram(feature, user_feedback);
       break;
+    case UserVisibleFeatureKey::kHistorySearch:
+      // TODO(crbug.com/345308285): Add user feedback for history searches.
+      break;
   }
 }
 
@@ -151,8 +155,8 @@ void OnURLLoadComplete(
 }
 
 proto::PerformanceClass GetPerformanceClass(PrefService* local_state) {
-  int value =
-      local_state->GetInteger(prefs::localstate::kOnDevicePerformanceClass);
+  int value = local_state->GetInteger(
+      model_execution::prefs::localstate::kOnDevicePerformanceClass);
   OnDeviceModelPerformanceClass performance_class =
       static_cast<OnDeviceModelPerformanceClass>(value);
   switch (performance_class) {
@@ -198,7 +202,7 @@ bool ModelQualityLogsUploaderService::CanUploadLogs(
   return false;
 }
 
-void ModelQualityLogsUploaderService::SetSystemProfileProto(
+void ModelQualityLogsUploaderService::SetSystemMetadata(
     proto::LoggingMetadata* logging_metadata) {}
 
 void ModelQualityLogsUploaderService::SetUrlLoaderFactoryForTesting(
@@ -233,7 +237,7 @@ void ModelQualityLogsUploaderService::UploadModelQualityLogs(
     logging_metadata->set_client_id(client_id);
   }
 
-  SetSystemProfileProto(logging_metadata);
+  SetSystemMetadata(logging_metadata);
 
   proto::PerformanceClass perf_class = GetPerformanceClass(pref_service_);
   if (perf_class != proto::PERFORMANCE_CLASS_UNSPECIFIED) {
@@ -241,8 +245,14 @@ void ModelQualityLogsUploaderService::UploadModelQualityLogs(
         perf_class);
   }
 
+  UploadFinalizedLog(std::move(log_ai_data_request), feature);
+}
+
+void ModelQualityLogsUploaderService::UploadFinalizedLog(
+    std::unique_ptr<proto::LogAiDataRequest> log,
+    UserVisibleFeatureKey feature) {
   std::string serialized_logs;
-  log_ai_data_request->SerializeToString(&serialized_logs);
+  log->SerializeToString(&serialized_logs);
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = model_quality_logs_uploader_service_url_;

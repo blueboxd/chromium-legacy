@@ -2,9 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "device/vr/openxr/openxr_api_wrapper.h"
 
 #include <stdint.h>
+
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -24,6 +30,7 @@
 #include "device/vr/openxr/openxr_input_helper.h"
 #include "device/vr/openxr/openxr_stage_bounds_provider.h"
 #include "device/vr/openxr/openxr_util.h"
+#include "device/vr/openxr/openxr_view_configuration.h"
 #include "device/vr/public/cpp/features.h"
 #include "device/vr/public/mojom/xr_session.mojom.h"
 #include "device/vr/test/test_hook.h"
@@ -45,34 +52,6 @@ namespace device {
 
 namespace {
 
-// The primary view configuration is always enabled and active in OpenXR. We
-// currently only support the stereo view configuration.
-static constexpr XrViewConfigurationType kPrimaryViewConfiguration =
-    XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
-// Secondary view configurations that we currently support. The OpenXR runtime
-// must also support these for them to be enabled. There can be an arbitrary
-// number of secondary views enabled.
-static constexpr std::array<XrViewConfigurationType, 1>
-    kSecondaryViewConfigurations = {
-        XR_VIEW_CONFIGURATION_TYPE_SECONDARY_MONO_FIRST_PERSON_OBSERVER_MSFT,
-};
-
-// The number of views in the primary view configuration. Each frame must
-// return at least this number of views, in addition to any secondary views
-// that are enabled and active.
-static constexpr uint32_t kNumPrimaryViews = 2;
-
-// Per the OpenXR 1.0 spec for the XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO
-// view configuration: View index 0 must represent the left eye and view index
-// 1 must represent the right eye.
-static constexpr uint32_t kLeftView = 0;
-static constexpr uint32_t kRightView = 1;
-// Since kNumPrimaryViews is used to size a vector that uses
-// kLeftView/kRightView as indices, ensure that kNumPrimaryViews is greater
-// than the largest index.
-static_assert(kRightView < kNumPrimaryViews,
-              "kNumPrimaryViews must be greater than kRightView");
-
 // We can get into a state where frames are not requested, such as when the
 // visibility state is hidden. Since OpenXR events are polled at the beginning
 // of a frame, polling would not occur in this state. To ensure events are
@@ -80,16 +59,6 @@ static_assert(kRightView < kNumPrimaryViews,
 // events if significant time has elapsed since the last time events were
 // polled.
 constexpr base::TimeDelta kTimeBetweenPollingEvents = base::Seconds(1);
-
-mojom::XREye GetEyeFromIndex(int i) {
-  if (i == kLeftView) {
-    return mojom::XREye::kLeft;
-  } else if (i == kRightView) {
-    return mojom::XREye::kRight;
-  } else {
-    return mojom::XREye::kNone;
-  }
-}
 
 const char* GetXrSessionStateName(XrSessionState state) {
   switch (state) {
@@ -174,6 +143,9 @@ OpenXrApiWrapper::~OpenXrApiWrapper() {
 void OpenXrApiWrapper::Reset() {
   SetXrSessionState(XR_SESSION_STATE_UNKNOWN);
   anchor_manager_.reset();
+  depth_sensor_.reset();
+  light_estimator_.reset();
+  scene_understanding_manager_.reset();
   unbounded_space_provider_.reset();
   unbounded_space_ = XR_NULL_HANDLE;
   local_space_ = XR_NULL_HANDLE;
@@ -187,7 +159,6 @@ void OpenXrApiWrapper::Reset() {
   bounds_provider_.reset();
   system_ = XR_NULL_SYSTEM_ID;
   instance_ = XR_NULL_HANDLE;
-  stage_parameters_enabled_ = false;
   enabled_features_.clear();
   graphics_binding_ = nullptr;
 
@@ -439,63 +410,162 @@ OpenXrApiWrapper::PickEnvironmentBlendModeForSession(
   return GetMojoBlendMode(blend_mode_);
 }
 
-OpenXrAnchorManager* OpenXrApiWrapper::GetOrCreateAnchorManager(
-    const OpenXrExtensionHelper& extension_helper) {
-  if (session_ && !anchor_manager_ &&
-      IsFeatureEnabled(device::mojom::XRSessionFeature::ANCHORS)) {
-    anchor_manager_ =
-        extension_helper.CreateAnchorManager(session_, local_space_);
-  }
+OpenXrAnchorManager* OpenXrApiWrapper::GetAnchorManager() {
   return anchor_manager_.get();
 }
 
-OpenXrLightEstimator* OpenXrApiWrapper::GetOrCreateLightEstimator(
-    const OpenXrExtensionHelper& extension_helper) {
-  if (session_ && !light_estimator_ &&
-      IsFeatureEnabled(device::mojom::XRSessionFeature::LIGHT_ESTIMATION)) {
-    light_estimator_ =
-        extension_helper.CreateLightEstimator(session_, local_space_);
-  }
-
+OpenXrLightEstimator* OpenXrApiWrapper::GetLightEstimator() {
   return light_estimator_.get();
 }
 
 OpenXRSceneUnderstandingManager*
-OpenXrApiWrapper::GetOrCreateSceneUnderstandingManager(
-    const OpenXrExtensionHelper& extension_helper) {
-  if (session_ && !scene_understanding_manager_ &&
-      IsFeatureEnabled(device::mojom::XRSessionFeature::HIT_TEST)) {
-    scene_understanding_manager_ =
-        extension_helper.CreateSceneUnderstandingManager(session_,
-                                                         local_space_);
-  }
+OpenXrApiWrapper::GetSceneUnderstandingManager() {
   return scene_understanding_manager_.get();
 }
 
-void OpenXrApiWrapper::EnableSupportedFeatures(
-    const OpenXrExtensionHelper& extension_helper,
-    device::mojom::XRSessionMode mode,
-    const std::vector<device::mojom::XRSessionFeature>& required_features,
-    const std::vector<device::mojom::XRSessionFeature>& optional_features) {
+OpenXrDepthSensor* OpenXrApiWrapper::GetDepthSensor() {
+  return depth_sensor_.get();
+}
+
+XrResult OpenXrApiWrapper::EnableSupportedFeatures(
+    const OpenXrExtensionHelper& extension_helper) {
+  CHECK(session_options_);
   enabled_features_.clear();
 
+  // First do some preliminary filtering to build a list of features we can
+  // theoretically support based on the requested mode and enabled extensions.
+  // This prevents building objects that just need to be torn down because e.g.
+  // we were missing any extensions that we can use to support a required
+  // feature.
+  auto mode = session_options_->mode;
   auto enable_function = [&extension_helper,
                           mode](device::mojom::XRSessionFeature feature) {
     return IsFeatureSupportedForMode(feature, mode) &&
            extension_helper.IsFeatureSupported(feature);
   };
 
+  if (!base::ranges::all_of(session_options_->required_features,
+                            enable_function)) {
+    return XR_ERROR_INITIALIZATION_FAILED;
+  }
+
+  std::unordered_set<mojom::XRSessionFeature> requested_features;
+  requested_features.insert(session_options_->required_features.begin(),
+                            session_options_->required_features.end());
   base::ranges::copy_if(
-      required_features,
-      std::inserter(enabled_features_, enabled_features_.begin()),
+      session_options_->optional_features,
+      std::inserter(requested_features, requested_features.begin()),
       enable_function);
-  base::ranges::copy_if(
-      optional_features,
-      std::inserter(enabled_features_, enabled_features_.begin()),
-      enable_function);
+
+  for (const auto& feature : requested_features) {
+    bool is_enabled = false;
+    bool is_required =
+        base::Contains(session_options_->required_features, feature);
+
+    switch (feature) {
+      case mojom::XRSessionFeature::REF_SPACE_LOCAL_FLOOR:
+        // BOUNDED_FLOOR may attempt to make stage_space_ as well.
+        if (stage_space_ == XR_NULL_HANDLE) {
+          CreateSpace(XR_REFERENCE_SPACE_TYPE_STAGE, &stage_space_);
+        }
+        is_enabled = stage_space_ != XR_NULL_HANDLE;
+        break;
+
+      case mojom::XRSessionFeature::REF_SPACE_BOUNDED_FLOOR:
+        // LOCAL_FLOOR may attempt to make stage_space_ as well.
+        if (stage_space_ == XR_NULL_HANDLE) {
+          CreateSpace(XR_REFERENCE_SPACE_TYPE_STAGE, &stage_space_);
+        }
+        bounds_provider_ = extension_helper.CreateStageBoundsProvider(session_);
+        UpdateStageBounds();
+        is_enabled = stage_space_ != XR_NULL_HANDLE && bounds_provider_;
+        break;
+
+      case mojom::XRSessionFeature::REF_SPACE_UNBOUNDED:
+        unbounded_space_provider_ =
+            extension_helper.CreateUnboundedSpaceProvider();
+        if (unbounded_space_provider_) {
+          if (XR_FAILED(unbounded_space_provider_->CreateSpace(
+                  session_, &unbounded_space_))) {
+            unbounded_space_provider_ = nullptr;
+          }
+        }
+        is_enabled = unbounded_space_ != XR_NULL_HANDLE;
+        break;
+
+      case mojom::XRSessionFeature::HIT_TEST:
+        scene_understanding_manager_ =
+            extension_helper.CreateSceneUnderstandingManager(session_,
+                                                             local_space_);
+        is_enabled = scene_understanding_manager_ != nullptr;
+        break;
+
+      case mojom::XRSessionFeature::LIGHT_ESTIMATION:
+        light_estimator_ =
+            extension_helper.CreateLightEstimator(session_, local_space_);
+        is_enabled = light_estimator_ != nullptr;
+        break;
+
+      case mojom::XRSessionFeature::ANCHORS:
+        anchor_manager_ =
+            extension_helper.CreateAnchorManager(session_, local_space_);
+        is_enabled = anchor_manager_ != nullptr;
+        break;
+
+      case mojom::XRSessionFeature::DEPTH:
+        if (session_options_->depth_options) {
+          depth_sensor_ = extension_helper.CreateDepthSensor(
+              session_, local_space_, *session_options_->depth_options);
+        }
+        is_enabled = depth_sensor_ != nullptr;
+        break;
+
+      case mojom::XRSessionFeature::HAND_INPUT:
+        is_enabled = input_helper_ && input_helper_->IsHandTrackingEnabled();
+        break;
+
+      case mojom::XRSessionFeature::SECONDARY_VIEWS:
+        // SECONDARY_VIEWS support can't be checked beyond just the
+        // mode/extension check. If we passed that, then it's enabled.
+        is_enabled = true;
+        break;
+
+      case mojom::XRSessionFeature::REF_SPACE_VIEWER:
+      case mojom::XRSessionFeature::REF_SPACE_LOCAL:
+        // Supported by the core spec with no special additional features
+        is_enabled = true;
+        break;
+
+      case mojom::XRSessionFeature::PLANE_DETECTION:
+      case mojom::XRSessionFeature::LAYERS:
+      case mojom::XRSessionFeature::FRONT_FACING:
+      case mojom::XRSessionFeature::IMAGE_TRACKING:
+      case mojom::XRSessionFeature::CAMERA_ACCESS:
+      case mojom::XRSessionFeature::DOM_OVERLAY:
+        // Not supported by OpenXR at all, shouldn't have even been asked for.
+        DLOG(ERROR) << __func__
+                    << " Received request for unsupported feature: " << feature;
+        break;
+    }
+
+    DVLOG(1) << __func__ << " feature=" << feature
+             << " is_enabled=" << is_enabled << " is_required=" << is_required;
+    if (is_enabled) {
+      enabled_features_.insert(feature);
+    } else if (is_required) {  // Not enabled but required
+      return XR_ERROR_INITIALIZATION_FAILED;
+    }
+  }
+
+  return XR_SUCCESS;
 }
 
 bool OpenXrApiWrapper::UpdateAndGetSessionEnded() {
+  // Early return if we already know that the session doesn't exist.
+  if (!IsInitialized()) {
+    return true;
+  }
+
   // Ensure we have the latest state from the OpenXR runtime.
   if (XR_FAILED(ProcessEvents())) {
     DCHECK(!session_running_);
@@ -519,18 +589,6 @@ XrResult OpenXrApiWrapper::InitSession(
   DCHECK(IsInitialized());
   DCHECK(options);
 
-  EnableSupportedFeatures(extension_helper, options->mode,
-                          options->required_features,
-                          options->optional_features);
-  if (!base::ranges::all_of(
-          options->required_features,
-          [this](const device::mojom::XRSessionFeature& feature) {
-            return base::Contains(enabled_features_, feature);
-          })) {
-    std::move(on_session_started_callback)
-        .Run(std::move(options), XR_ERROR_INITIALIZATION_FAILED);
-  }
-
   session_options_ = std::move(options);
   on_session_started_callback_ = std::move(on_session_started_callback);
   on_session_ended_callback_ = std::move(on_session_ended_callback);
@@ -542,9 +600,15 @@ XrResult OpenXrApiWrapper::InitSession(
       CreateSpace(XR_REFERENCE_SPACE_TYPE_LOCAL, &local_space_));
   RETURN_IF_XR_FAILED(CreateSpace(XR_REFERENCE_SPACE_TYPE_VIEW, &view_space_));
 
+  bool enable_hand_tracking =
+      base::Contains(session_options_->required_features,
+                     device::mojom::XRSessionFeature::HAND_INPUT) ||
+      base::Contains(session_options_->optional_features,
+                     device::mojom::XRSessionFeature::HAND_INPUT);
+
   RETURN_IF_XR_FAILED(OpenXRInputHelper::CreateOpenXRInputHelper(
       instance_, system_, extension_helper, session_, local_space_,
-      IsFeatureEnabled(mojom::XRSessionFeature::HAND_INPUT), &input_helper_));
+      enable_hand_tracking, &input_helper_));
 
   // Make sure all of the objects we initialized are there.
   DCHECK(HasSession());
@@ -553,28 +617,11 @@ XrResult OpenXrApiWrapper::InitSession(
   DCHECK(HasSpace(XR_REFERENCE_SPACE_TYPE_VIEW));
   DCHECK(input_helper_);
 
-  // These are the only features that use stage parameters. If none of them were
-  // requested for the session, we can avoid querying this every frame.
-  stage_parameters_enabled_ = base::ranges::any_of(
-      enabled_features_, [](mojom::XRSessionFeature feature) {
-        return feature == mojom::XRSessionFeature::REF_SPACE_LOCAL_FLOOR ||
-               feature == mojom::XRSessionFeature::REF_SPACE_BOUNDED_FLOOR ||
-               feature == mojom::XRSessionFeature::ANCHORS;
-      });
+  XrResult result = EnableSupportedFeatures(extension_helper);
 
-  if (stage_parameters_enabled_) {
-    bounds_provider_ = extension_helper.CreateStageBoundsProvider(session_);
-  }
-
-  // It's ok if stage_space_ fails since not all OpenXR devices are required to
-  // support this reference space.
-  CreateSpace(XR_REFERENCE_SPACE_TYPE_STAGE, &stage_space_);
-  UpdateStageBounds();
-
-  unbounded_space_provider_ = extension_helper.CreateUnboundedSpaceProvider();
-  if (unbounded_space_provider_) {
-    RETURN_IF_XR_FAILED(
-        unbounded_space_provider_->CreateSpace(session_, &unbounded_space_));
+  if (XR_FAILED(result)) {
+    std::move(on_session_started_callback)
+        .Run(std::move(session_options_), result);
   }
 
   EnsureEventPolling();
@@ -695,6 +742,10 @@ XrSpace OpenXrApiWrapper::GetReferenceSpace(
 // Based on the capabilities of the system and runtime, determine whether
 // to use shared images to draw into OpenXR swap chain buffers.
 bool OpenXrApiWrapper::ShouldCreateSharedImages() const {
+  if (!HasSession()) {
+    return false;
+  }
+
   // TODO(crbug.com/40917171): Investigate moving the remaining Windows-
   // only checks out of this class and into the GraphicsBinding.
 #if BUILDFLAG(IS_WIN)
@@ -1014,6 +1065,8 @@ XrResult OpenXrApiWrapper::LocateViews(
   if ((view_state.viewStateFlags & XR_VIEW_STATE_POSITION_VALID_BIT) &&
       (view_state.viewStateFlags & XR_VIEW_STATE_ORIENTATION_VALID_BIT)) {
     view_config.SetViews(std::move(new_views));
+  } else {
+    DVLOG(3) << __func__ << " Could not locate views";
   }
 
   return XR_SUCCESS;
@@ -1038,11 +1091,7 @@ mojom::XRViewPtr OpenXrApiWrapper::CreateView(
   view->eye = eye;
   view->mojo_from_view = XrPoseToGfxTransform(xr_view.pose);
 
-  view->field_of_view = mojom::VRFieldOfView::New();
-  view->field_of_view->up_degrees = base::RadToDeg(xr_view.fov.angleUp);
-  view->field_of_view->down_degrees = base::RadToDeg(-xr_view.fov.angleDown);
-  view->field_of_view->left_degrees = base::RadToDeg(-xr_view.fov.angleLeft);
-  view->field_of_view->right_degrees = base::RadToDeg(xr_view.fov.angleRight);
+  view->field_of_view = XrFovToMojomFov(xr_view.fov);
 
   view->viewport =
       gfx::Rect(x_offset, 0, view_config.Properties()[view_index].Width(),
@@ -1195,9 +1244,15 @@ void OpenXrApiWrapper::EnsureEventPolling() {
 }
 
 XrResult OpenXrApiWrapper::ProcessEvents() {
+  // If we have no instance, we cannot process events. In this case the session
+  // has likely already been ended.
+  if (!HasInstance()) {
+    return XR_ERROR_INSTANCE_LOST;
+  }
+
   // If we've received an exit gesture from any of the input sources, end the
   // session.
-  if (input_helper_->ReceivedExitGesture()) {
+  if (input_helper_ && input_helper_->ReceivedExitGesture()) {
     XrResult xr_result = xrEndSession(session_);
     Uninitialize();
     return xr_result;
@@ -1316,18 +1371,14 @@ bool OpenXrApiWrapper::CanEnableAntiAliasing() const {
 
 // stage bounds is fixed unless we received event
 // XrEventDataReferenceSpaceChangePending
-XrResult OpenXrApiWrapper::UpdateStageBounds() {
+void OpenXrApiWrapper::UpdateStageBounds() {
   DCHECK(HasSession());
 
-  if (StageParametersEnabled()) {
-    if (!bounds_provider_) {
-      return XR_SPACE_BOUNDS_UNAVAILABLE;
-    }
-
+  // We don't check for any feature enablement here because we'll have only
+  // created the bounds_provider_ if the relevant features were enabled.
+  if (bounds_provider_) {
     stage_bounds_ = bounds_provider_->GetStageBounds();
   }
-
-  return XR_SUCCESS;
 }
 
 bool OpenXrApiWrapper::GetStageParameters(
@@ -1335,11 +1386,20 @@ bool OpenXrApiWrapper::GetStageParameters(
     gfx::Transform& local_from_stage) {
   DCHECK(HasSession());
 
-  if (!HasSpace(XR_REFERENCE_SPACE_TYPE_LOCAL))
+  // We should only supply stage parameters if we are supposed to provide
+  // information about the local floor or bounded reference spaces.
+  if (!IsFeatureEnabled(mojom::XRSessionFeature::REF_SPACE_LOCAL_FLOOR) ||
+      !IsFeatureEnabled(mojom::XRSessionFeature::REF_SPACE_BOUNDED_FLOOR)) {
     return false;
+  }
 
-  if (!HasSpace(XR_REFERENCE_SPACE_TYPE_STAGE))
+  if (!HasSpace(XR_REFERENCE_SPACE_TYPE_LOCAL)) {
     return false;
+  }
+
+  if (!HasSpace(XR_REFERENCE_SPACE_TYPE_STAGE)) {
+    return false;
+  }
 
   stage_bounds = stage_bounds_;
 
@@ -1404,10 +1464,6 @@ void OpenXrApiWrapper::SetXrSessionState(XrSessionState new_state) {
   }
 
   session_state_ = new_state;
-}
-
-bool OpenXrApiWrapper::StageParametersEnabled() const {
-  return stage_parameters_enabled_;
 }
 
 VRTestHook* OpenXrApiWrapper::test_hook_ = nullptr;

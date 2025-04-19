@@ -254,14 +254,36 @@ bool AutoEnrollmentTypeChecker::IsUnifiedStateDeterminationEnabled() {
   std::string command_line_mode = command_line->GetSwitchValueASCII(
       ash::switches::kEnterpriseEnableUnifiedStateDetermination);
   if (command_line_mode == kUnifiedStateDeterminationAlways) {
+    base::UmaHistogramEnumeration(kUMAStateDeterminationStatus,
+                                  USDStatus::kEnabledViaAlwaysSwitch);
     return true;
   }
   if (command_line_mode == kUnifiedStateDeterminationNever) {
+    base::UmaHistogramEnumeration(kUMAStateDeterminationStatus,
+                                  USDStatus::kDisabledViaNeverSwitch);
     return false;
   }
   if (IsUnifiedStateDeterminationDisabledByKillSwitch()) {
+    base::UmaHistogramEnumeration(kUMAStateDeterminationStatus,
+                                  USDStatus::kDisabledViaKillSwitch);
     return false;
   }
+
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  base::UmaHistogramEnumeration(kUMAStateDeterminationStatus,
+                                USDStatus::kDisabledOnUnbrandedBuild);
+#else
+  if (IsOfficialGoogleChrome()) {
+    base::UmaHistogramEnumeration(kUMAStateDeterminationStatus,
+                                  USDStatus::kEnabledOnOfficialGoogleChrome);
+  } else if (IsOfficialGoogleFlex()) {
+    base::UmaHistogramEnumeration(kUMAStateDeterminationStatus,
+                                  USDStatus::kEnabledOnOfficialGoogleFlex);
+  } else {
+    base::UmaHistogramEnumeration(kUMAStateDeterminationStatus,
+                                  USDStatus::kDisabledOnNonChromeDevice);
+  }
+#endif
 
   // Official Google OSes support unified state determination.
   return IsOfficialGoogleOS();
@@ -399,7 +421,13 @@ AutoEnrollmentTypeChecker::GetFRERequirementAccordingToVPD(
       LOG(ERROR) << "VPD could not be read, forcing auto-enrollment check.";
       return FRERequirement::kExplicitlyRequired;
     case ash::system::StatisticsProvider::VpdStatus::kUnknown:
-      NOTREACHED_IN_MIGRATION() << "VPD status is unknown";
+      // TODO(crbug.com/40580068): It looks like this is hit on
+      // ChromeSessionManagerRlzTest.DeviceIsUnlocked for instance (on the
+      // "linux-chromeos-chrome" bot) but doesn't seem to be hit in the wild. If
+      // the test setup is bad and this truly shouldn't be unreachable we should
+      // upgrade this to a NOTREACHED(), otherwise we should probably add a
+      // comment for why this can happen and remove the invariant.
+      DUMP_WILL_BE_NOTREACHED() << "VPD status is unknown";
       return FRERequirement::kRequired;
   }
 }

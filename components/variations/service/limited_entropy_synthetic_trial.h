@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/version_info/channel.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/variations/synthetic_trial_registry.h"
 
@@ -25,7 +26,8 @@ inline constexpr char kIsLimitedEntropySyntheticTrialSeedValidHistogram[] =
 
 class LimitedEntropySyntheticTrial {
  public:
-  explicit LimitedEntropySyntheticTrial(PrefService* local_state);
+  explicit LimitedEntropySyntheticTrial(PrefService* local_state,
+                                        version_info::Channel channel);
 
   LimitedEntropySyntheticTrial(const LimitedEntropySyntheticTrial&) = delete;
   LimitedEntropySyntheticTrial& operator=(const LimitedEntropySyntheticTrial&) =
@@ -43,10 +45,7 @@ class LimitedEntropySyntheticTrial {
 
   // Returns the randomization seed of this trial. This should only be used by
   // the Ash Chrome client when sending the seed to Lacros, or in tests.
-  //
-  // Side effect: Initializes the seed, storing the result to prefs, if the seed
-  // was not already initialized.
-  static uint64_t GetRandomizationSeed(PrefService* local_state);
+  uint64_t GetRandomizationSeed(PrefService* local_state);
 #endif
 
   // Returns whether the client is in the enabled group for this trial.

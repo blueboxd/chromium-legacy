@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_FACILITATED_PAYMENTS_UI_CHROME_FACILITATED_PAYMENTS_CLIENT_H_
 #define CHROME_BROWSER_FACILITATED_PAYMENTS_UI_CHROME_FACILITATED_PAYMENTS_CLIENT_H_
 
-#include "base/gtest_prod_util.h"
 #include "chrome/browser/facilitated_payments/ui/android/facilitated_payments_controller.h"
 #include "components/facilitated_payments/content/browser/content_facilitated_payments_driver_factory.h"
 #include "components/facilitated_payments/core/browser/facilitated_payments_client.h"
@@ -39,13 +38,11 @@ class ChromeFacilitatedPaymentsClient
   void LoadRiskData(base::OnceCallback<void(const std::string&)>
                         on_risk_data_loaded_callback) override;
 
+  virtual void SetFacilitatedPaymentsControllerForTesting(
+      std::unique_ptr<FacilitatedPaymentsController> controller);
+
  private:
   friend class content::WebContentsUserData<ChromeFacilitatedPaymentsClient>;
-
-  FRIEND_TEST_ALL_PREFIXES(ChromeFacilitatedPaymentsClientTest,
-                           GetPaymentsDataManager);
-  FRIEND_TEST_ALL_PREFIXES(ChromeFacilitatedPaymentsClientTest,
-                           GetFacilitatedPaymentsNetworkInterface);
 
   // FacilitatedPaymentsClient:
   // This returns nullptr if the `Profile` associated is null.
@@ -59,6 +56,9 @@ class ChromeFacilitatedPaymentsClient
       base::span<autofill::BankAccount> bank_account_suggestions,
       base::OnceCallback<void(bool, int64_t)> on_user_decision_callback)
       override;
+  void ShowProgressScreen() override;
+  void ShowErrorScreen() override;
+  void DismissPrompt() override;
 
   payments::facilitated::ContentFacilitatedPaymentsDriverFactory
       driver_factory_;
@@ -66,9 +66,8 @@ class ChromeFacilitatedPaymentsClient
   std::unique_ptr<payments::facilitated::FacilitatedPaymentsNetworkInterface>
       facilitated_payments_network_interface_;
 
-#if BUILDFLAG(IS_ANDROID)
-  FacilitatedPaymentsController facilitated_payments_controller_;
-#endif
+  std::unique_ptr<FacilitatedPaymentsController>
+      facilitated_payments_controller_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };

@@ -43,10 +43,13 @@
 using content::BrowserThread;
 
 static const char* kGoodURL = "https://www.good.com";
+static const char* kGoodIpAddress = "http://1.2.3.4/";
 static const char* kBadURL = "https://www.malware.com";
+static const char* kBadURLWithAlternateScheme = "http://www.malware.com";
 static const char* kBadURLWithPath = "https://www.malware.com/index.html";
-static const char* kAnotherBadURL = "https://www.badware.com";
-static const char* kLandingURL = "https://www.landing.com";
+static const char* kIpAddress = "https://195.127.0.11/uploads";
+static const char* kIpAddressAlternatePathAndScheme =
+    "http://195.127.0.11/otherPath";
 static const char* kRedirectURL = "https://www.test1.com";
 static const char* kAnotherRedirectURL = "https://www.test2.com";
 
@@ -122,7 +125,6 @@ class TestSafeBrowsingBlockingPage : public SafeBrowsingBlockingPage {
                 /*settings_helper=*/nullptr),
             BaseSafeBrowsingErrorUI::SBErrorDisplayOptions(
                 BaseBlockingPage::IsMainPageLoadPending(unsafe_resources),
-                BaseBlockingPage::IsSubresource(unsafe_resources),
                 false,                 // is_extended_reporting_opt_in_allowed
                 false,                 // is_off_the_record
                 false,                 // is_extended_reporting_enabled
@@ -141,7 +143,9 @@ class TestSafeBrowsingBlockingPage : public SafeBrowsingBlockingPage {
             /*trigger_manager=*/nullptr,
             /*is_proceed_anyway_disabled=*/false,
             /*is_safe_browsing_surveys_enabled=*/true,
-            /*trust_safety_sentiment_service_trigger=*/base::NullCallback()) {
+            /*trust_safety_sentiment_service_trigger=*/base::NullCallback(),
+            /*ignore_auto_revocation_notifications_trigger=*/
+            base::NullCallback()) {
     // Don't delay details at all for the unittest.
     SetThreatDetailsProceedDelayForTesting(0);
     DontCreateViewForTesting();
@@ -272,32 +276,27 @@ class SafeBrowsingUIManagerTest : public content::RenderViewHostTestHarness {
 
   void AddToAllowlist(security_interstitials::UnsafeResource resource,
                       bool pending) {
-    ui_manager_->AddToAllowlistUrlSet(
-        SafeBrowsingUIManager::GetMainFrameAllowlistUrlForResourceForTesting(
-            resource),
-        resource.navigation_id, web_contents(), pending, resource.threat_type);
+    ui_manager_->AddToAllowlistUrlSet(resource.url, resource.navigation_id,
+                                      web_contents(), pending,
+                                      resource.threat_type);
   }
 
   security_interstitials::UnsafeResource MakeUnsafeResource(
       const char* url,
-      bool is_subresource,
       const SBThreatType threat_type =
           SBThreatType::SB_THREAT_TYPE_URL_MALWARE) {
     auto* primary_main_frame = web_contents()->GetPrimaryMainFrame();
-    return MakeUnsafeResource(url, is_subresource,
-                              primary_main_frame->GetGlobalId(),
+    return MakeUnsafeResource(url, primary_main_frame->GetGlobalId(),
                               primary_main_frame->GetFrameToken(), threat_type);
   }
 
   security_interstitials::UnsafeResource MakeUnsafeResource(
       const char* url,
-      bool is_subresource,
       content::GlobalRenderFrameHostId frame_id,
       const blink::LocalFrameToken& frame_token,
       const SBThreatType threat_type) {
     security_interstitials::UnsafeResource resource;
     resource.url = GURL(url);
-    resource.is_subresource = is_subresource;
     resource.render_process_id = frame_id.child_id;
     resource.render_frame_token = frame_token.value();
     resource.threat_type = threat_type;
@@ -306,8 +305,7 @@ class SafeBrowsingUIManagerTest : public content::RenderViewHostTestHarness {
 
   security_interstitials::UnsafeResource MakeUnsafeResourceAndStartNavigation(
       const char* url) {
-    security_interstitials::UnsafeResource resource =
-        MakeUnsafeResource(url, false /* is_subresource */);
+    security_interstitials::UnsafeResource resource = MakeUnsafeResource(url);
 
     // The WC doesn't have a URL without a navigation. A main-frame malware
     // unsafe resource must be a pending navigation.
@@ -370,7 +368,7 @@ TEST_F(SafeBrowsingUIManagerTest,
       web_contents()->GetController().GetVisibleEntry();
   ASSERT_TRUE(entry);
   EXPECT_TRUE(ui_manager()->IsUrlAllowlistedOrPendingForWebContents(
-      resource.url, resource.is_subresource, entry,
+      resource.url, entry,
       unsafe_resource_util::GetWebContentsForResource(resource),
       /*allowlist_only=*/false, &threat_type));
 
@@ -381,7 +379,7 @@ TEST_F(SafeBrowsingUIManagerTest,
   SimulateBlockingPageDone(resources, /*proceed=*/false);
 
   EXPECT_FALSE(ui_manager()->IsUrlAllowlistedOrPendingForWebContents(
-      resource.url, resource.is_subresource, entry,
+      resource.url, entry,
       unsafe_resource_util::GetWebContentsForResource(resource),
       /*allowlist_only=*/false, &threat_type));
 }
@@ -396,10 +394,34 @@ TEST_F(SafeBrowsingUIManagerTest, AllowlistRemembersThreatType) {
       web_contents()->GetController().GetVisibleEntry();
   ASSERT_TRUE(entry);
   EXPECT_TRUE(ui_manager()->IsUrlAllowlistedOrPendingForWebContents(
-      resource.url, resource.is_subresource, entry,
+      resource.url, entry,
       unsafe_resource_util::GetWebContentsForResource(resource), true,
       &threat_type));
   EXPECT_EQ(resource.threat_type, threat_type);
+}
+
+TEST_F(SafeBrowsingUIManagerTest, Allowlisted_RedirectChain) {
+  security_interstitials::UnsafeResource resource = MakeUnsafeResource(
+      kBadURL, SBThreatType::SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING);
+  AddToAllowlist(resource, /*pending=*/false);
+
+  auto navigation = content::NavigationSimulator::CreateBrowserInitiated(
+      GURL(kGoodURL), web_contents());
+  navigation->Start();
+  navigation->Redirect(GURL(kBadURL));
+  navigation->Redirect(GURL(kAnotherRedirectURL));
+  navigation->Commit();
+
+  content::NavigationEntry* entry =
+      web_contents()->GetController().GetVisibleEntry();
+
+  ASSERT_TRUE(entry);
+  EXPECT_EQ(entry->GetRedirectChain().size(), 3u);
+  resource.url = GURL(kAnotherRedirectURL);
+  // Although kAnotherRedirectURL is not directly allowlisted, IsAllowlisted
+  // should return true because one of the URLs on its redirect chain is
+  // allowlisted.
+  EXPECT_TRUE(IsAllowlisted(resource));
 }
 
 TEST_F(SafeBrowsingUIManagerTest, AllowlistIgnoresPath) {
@@ -415,6 +437,40 @@ TEST_F(SafeBrowsingUIManagerTest, AllowlistIgnoresPath) {
   EXPECT_TRUE(IsAllowlisted(resource_path));
 }
 
+TEST_F(SafeBrowsingUIManagerTest, AllowlistIgnoresScheme) {
+  security_interstitials::UnsafeResource resource =
+      MakeUnsafeResourceAndStartNavigation(kBadURL);
+  AddToAllowlist(resource, /*pending=*/false);
+  EXPECT_TRUE(IsAllowlisted(resource));
+
+  content::WebContentsTester::For(web_contents())->CommitPendingNavigation();
+
+  security_interstitials::UnsafeResource alternate_scheme_resource =
+      MakeUnsafeResource(kBadURLWithAlternateScheme);
+  EXPECT_TRUE(IsAllowlisted(alternate_scheme_resource));
+
+  security_interstitials::UnsafeResource good_resource =
+      MakeUnsafeResource(kGoodURL);
+  EXPECT_FALSE(IsAllowlisted(good_resource));
+}
+
+TEST_F(SafeBrowsingUIManagerTest, AllowlistIPAddress) {
+  security_interstitials::UnsafeResource resource =
+      MakeUnsafeResourceAndStartNavigation(kIpAddress);
+  AddToAllowlist(resource, /*pending=*/false);
+  EXPECT_TRUE(IsAllowlisted(resource));
+
+  content::WebContentsTester::For(web_contents())->CommitPendingNavigation();
+
+  security_interstitials::UnsafeResource alternate_unsafe_resource =
+      MakeUnsafeResource(kIpAddressAlternatePathAndScheme);
+  EXPECT_TRUE(IsAllowlisted(alternate_unsafe_resource));
+
+  security_interstitials::UnsafeResource good_resource =
+      MakeUnsafeResource(kGoodIpAddress);
+  EXPECT_FALSE(IsAllowlisted(good_resource));
+}
+
 TEST_F(SafeBrowsingUIManagerTest, AllowlistIgnoresThreatType) {
   security_interstitials::UnsafeResource resource =
       MakeUnsafeResourceAndStartNavigation(kBadURL);
@@ -422,55 +478,9 @@ TEST_F(SafeBrowsingUIManagerTest, AllowlistIgnoresThreatType) {
   EXPECT_TRUE(IsAllowlisted(resource));
 
   security_interstitials::UnsafeResource resource_phishing =
-      MakeUnsafeResource(kBadURL, false /* is_subresource */);
+      MakeUnsafeResource(kBadURL);
   resource_phishing.threat_type = SBThreatType::SB_THREAT_TYPE_URL_PHISHING;
   EXPECT_TRUE(IsAllowlisted(resource_phishing));
-}
-
-TEST_F(SafeBrowsingUIManagerTest, AllowlistWithUnrelatedPendingLoad) {
-  // Commit load of landing page.
-  NavigateAndCommit(GURL(kLandingURL));
-  auto unrelated_navigation =
-      content::NavigationSimulator::CreateBrowserInitiated(GURL(kGoodURL),
-                                                           web_contents());
-  {
-    // Simulate subresource malware hit on the landing page.
-    security_interstitials::UnsafeResource resource =
-        MakeUnsafeResource(kBadURL, true /* is_subresource */);
-
-    // Start pending load to unrelated site.
-    unrelated_navigation->Start();
-
-    // Allowlist the resource on the landing page.
-    AddToAllowlist(resource, /*pending=*/false);
-    EXPECT_TRUE(IsAllowlisted(resource));
-  }
-
-  // Commit the pending load of unrelated site.
-  unrelated_navigation->Commit();
-  {
-    // The unrelated site is not on the allowlist, even if the same subresource
-    // was on it.
-    security_interstitials::UnsafeResource resource =
-        MakeUnsafeResource(kBadURL, true /* is_subresource */);
-    EXPECT_FALSE(IsAllowlisted(resource));
-  }
-
-  // Navigate back to the original landing url.
-  NavigateAndCommit(GURL(kLandingURL));
-  {
-    security_interstitials::UnsafeResource resource =
-        MakeUnsafeResource(kBadURL, true /* is_subresource */);
-    // Original resource url is allowlisted.
-    EXPECT_TRUE(IsAllowlisted(resource));
-  }
-  {
-    // A different malware subresource on the same page is also allowlisted.
-    // (The allowlist is by the page url, not the resource url.)
-    security_interstitials::UnsafeResource resource2 =
-        MakeUnsafeResource(kAnotherBadURL, true /* is_subresource */);
-    EXPECT_TRUE(IsAllowlisted(resource2));
-  }
 }
 
 TEST_F(SafeBrowsingUIManagerTest, UICallbackProceed) {
@@ -576,19 +586,17 @@ class SecurityStateWebContentsDelegate : public content::WebContentsDelegate {
 }  // namespace
 
 // Tests that the WebContentsDelegate is notified of a visible security
-// state change when a blocking page is shown for a subresource.
-TEST_F(SafeBrowsingUIManagerTest,
-       VisibleSecurityStateChangedForUnsafeSubresource) {
+// state change when a blocking page is shown.
+TEST_F(SafeBrowsingUIManagerTest, VisibleSecurityStateChanged) {
   SecurityStateWebContentsDelegate delegate;
   web_contents()->SetDelegate(&delegate);
 
-  // Simulate a blocking page showing for an unsafe subresource.
-  security_interstitials::UnsafeResource resource =
-      MakeUnsafeResource(kBadURL, true /* is_subresource */);
+  // Simulate a blocking page.
+  security_interstitials::UnsafeResource resource = MakeUnsafeResource(kBadURL);
   // Needed for showing the blocking page.
   resource.threat_source = safe_browsing::ThreatSource::REMOTE;
 
-  NavigateAndCommit(GURL("http://example.test"));
+  NavigateAndCommit(GURL(kBadURL));
 
   delegate.ClearVisibleSecurityStateChanged();
   EXPECT_FALSE(delegate.visible_security_state_changed());
@@ -619,9 +627,8 @@ TEST_F(SafeBrowsingUIManagerTest, ShowBlockPageNoCallback) {
   SecurityStateWebContentsDelegate delegate;
   web_contents()->SetDelegate(&delegate);
 
-  // Simulate a blocking page showing for an unsafe subresource.
-  security_interstitials::UnsafeResource resource =
-      MakeUnsafeResource(kBadURL, false /* is_subresource */);
+  // Simulate a blocking page.
+  security_interstitials::UnsafeResource resource = MakeUnsafeResource(kBadURL);
   // Needed for showing the blocking page.
   resource.threat_source = safe_browsing::ThreatSource::REMOTE;
 
@@ -634,8 +641,7 @@ TEST_F(SafeBrowsingUIManagerTest, NoInterstitialInExtensions) {
   // Pretend the current web contents is in an extension.
   ui_manager_delegate()->set_is_hosting_extension(true);
 
-  security_interstitials::UnsafeResource resource =
-      MakeUnsafeResource(kBadURL, false /* is_subresource */);
+  security_interstitials::UnsafeResource resource = MakeUnsafeResource(kBadURL);
 
   SafeBrowsingCallbackWaiter waiter;
   resource.callback =
@@ -649,8 +655,7 @@ TEST_F(SafeBrowsingUIManagerTest, NoInterstitialInExtensions) {
 }
 
 TEST_F(SafeBrowsingUIManagerTest, DisplayInterstitial) {
-  security_interstitials::UnsafeResource resource =
-      MakeUnsafeResource(kBadURL, false /* is_subresource */);
+  security_interstitials::UnsafeResource resource = MakeUnsafeResource(kBadURL);
 
   SafeBrowsingCallbackWaiter waiter;
   resource.callback =
@@ -665,8 +670,7 @@ TEST_F(SafeBrowsingUIManagerTest, DisplayInterstitial) {
 }
 
 TEST_F(SafeBrowsingUIManagerTest, DisplayInterstitial_PostCommitInterstitial) {
-  security_interstitials::UnsafeResource resource =
-      MakeUnsafeResource(kBadURL, false /* is_subresource */);
+  security_interstitials::UnsafeResource resource = MakeUnsafeResource(kBadURL);
   resource.threat_source = safe_browsing::ThreatSource::REMOTE;
   // Make it a post commit interstitial.
   resource.threat_type = SBThreatType::SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING;
@@ -709,8 +713,7 @@ TEST_F(SafeBrowsingUIManagerTest,
 TEST_F(SafeBrowsingUIManagerTest,
        AllowlistSetSeverestThreatTypeInRedirectChain) {
   security_interstitials::UnsafeResource resource =
-      MakeUnsafeResource(kGoodURL, false /* is_subresource */,
-                         SBThreatType::SB_THREAT_TYPE_API_ABUSE);
+      MakeUnsafeResource(kGoodURL, SBThreatType::SB_THREAT_TYPE_API_ABUSE);
   AddToAllowlist(resource, true);
 
   auto navigation = content::NavigationSimulator::CreateBrowserInitiated(
@@ -730,35 +733,33 @@ TEST_F(SafeBrowsingUIManagerTest,
   // in the chain.
   SBThreatType threat_type;
   security_interstitials::UnsafeResource final_resource =
-      MakeUnsafeResource(kAnotherRedirectURL, false /* is_subresource */);
+      MakeUnsafeResource(kAnotherRedirectURL);
   EXPECT_TRUE(ui_manager()->IsUrlAllowlistedOrPendingForWebContents(
-      final_resource.url, final_resource.is_subresource, entry,
+      final_resource.url, entry,
       unsafe_resource_util::GetWebContentsForResource(final_resource), false,
       &threat_type));
   EXPECT_EQ(threat_type, resource.threat_type);
 
   security_interstitials::UnsafeResource redirect_resource =
-      MakeUnsafeResource(kRedirectURL, false /* is_subresource */,
-                         SBThreatType::SB_THREAT_TYPE_BILLING);
+      MakeUnsafeResource(kRedirectURL, SBThreatType::SB_THREAT_TYPE_BILLING);
   AddToAllowlist(redirect_resource, true);
 
   // The second redirect url has a less severe threat type, the final
   // url's threat type should still be the first one in the chain.
   EXPECT_TRUE(ui_manager()->IsUrlAllowlistedOrPendingForWebContents(
-      final_resource.url, final_resource.is_subresource, entry,
+      final_resource.url, entry,
       unsafe_resource_util::GetWebContentsForResource(final_resource), false,
       &threat_type));
   EXPECT_EQ(threat_type, resource.threat_type);
 
-  redirect_resource =
-      MakeUnsafeResource(kRedirectURL, false /* is_subresource */,
-                         SBThreatType::SB_THREAT_TYPE_MANAGED_POLICY_BLOCK);
+  redirect_resource = MakeUnsafeResource(
+      kRedirectURL, SBThreatType::SB_THREAT_TYPE_MANAGED_POLICY_BLOCK);
   AddToAllowlist(redirect_resource, true);
 
   // Now that the second redirect url has a  more severe threat type, the final
   // url's threat type should be set to that one.
   EXPECT_TRUE(ui_manager()->IsUrlAllowlistedOrPendingForWebContents(
-      final_resource.url, final_resource.is_subresource, entry,
+      final_resource.url, entry,
       unsafe_resource_util::GetWebContentsForResource(final_resource), false,
       &threat_type));
   EXPECT_EQ(threat_type, redirect_resource.threat_type);

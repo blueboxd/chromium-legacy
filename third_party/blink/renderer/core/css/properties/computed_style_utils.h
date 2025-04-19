@@ -27,7 +27,7 @@ class CSSNumericLiteralValue;
 class CSSStyleValue;
 class CSSValue;
 class FontFamily;
-class InsetArea;
+class PositionArea;
 class StyleColor;
 class StyleIntrinsicLength;
 class StylePropertyShorthand;
@@ -50,9 +50,14 @@ class CORE_EXPORT ComputedStyleUtils {
     return ZoomAdjustedPixelValue(length.Value(), style);
   }
 
-  static CSSValue* CurrentColorOrValidColor(const ComputedStyle&,
-                                            const StyleColor&,
-                                            CSSValuePhase);
+  static const CSSValue* ValueForColor(const StyleColor&);
+  static const CSSValue* ValueForColor(const StyleColor&,
+                                       const ComputedStyle&,
+                                       const Color* override_current_color,
+                                       CSSValuePhase);
+  static const CSSValue* CurrentColorOrValidColor(const ComputedStyle&,
+                                                  const StyleColor&,
+                                                  CSSValuePhase);
   static const blink::Color BorderSideColor(const ComputedStyle&,
                                             const StyleColor&,
                                             EBorderStyle,
@@ -253,7 +258,8 @@ class CORE_EXPORT ComputedStyleUtils {
   static CSSValueList* ValueForBorderRadiusShorthand(const ComputedStyle&);
   static CSSValue* StrokeDashArrayToCSSValueList(const SVGDashArray&,
                                                  const ComputedStyle&);
-  static CSSValue* ValueForSVGPaint(const SVGPaint&, const ComputedStyle&);
+  static const CSSValue* ValueForSVGPaint(const SVGPaint&,
+                                          const ComputedStyle&);
   static CSSValue* ValueForSVGResource(const StyleSVGResource*);
   static CSSValue* ValueForShadowData(const ShadowData&,
                                       const ComputedStyle&,
@@ -346,7 +352,8 @@ class CORE_EXPORT ComputedStyleUtils {
                                            const StyleIntrinsicLength&);
   static CSSValue* ValueForScrollStart(const ComputedStyle&,
                                        const ScrollStartData&);
-  static CSSValue* ValueForInsetArea(const blink::InsetArea&);
+  static CSSValue* ValueForPositionArea(const blink::PositionArea&);
+  static CSSValue* ValueForPositionTryFallbacks(const PositionTryFallbacks&);
   static std::unique_ptr<CrossThreadStyleValue>
   CrossThreadStyleValueFromCSSStyleValue(CSSStyleValue* style_value);
 

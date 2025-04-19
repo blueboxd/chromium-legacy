@@ -54,8 +54,8 @@ CONTENT_EXPORT extern const base::FeatureParam<
     PrefetchClientHintsCrossSiteBehavior>
     kPrefetchClientHintsCrossSiteBehavior;
 
-// If enabled, prefetches may occur in off-the-record browser contexts.
-CONTENT_EXPORT BASE_DECLARE_FEATURE(kPrefetchOffTheRecord);
+// If enabled, prefetch requests may include X-Client-Data request header.
+CONTENT_EXPORT BASE_DECLARE_FEATURE(kPrefetchXClientDataHeader);
 
 // If enabled, then prefetch serving will apply mitigations if it may have been
 // contaminated by cross-partition state.
@@ -69,10 +69,9 @@ CONTENT_EXPORT extern const base::FeatureParam<bool>
 // If explicitly disabled, prefetch proxy is not used.
 BASE_DECLARE_FEATURE(kPrefetchProxy);
 
-// Stops waiting for response head when a prefetch is cancelled.
-// TOOD(https://crbug.com/342197918): This should be inlined fairly briskly;
-// it's only here to make shipping aggressively safer.
-CONTENT_EXPORT BASE_DECLARE_FEATURE(kPrefetchUnblockOnCancel);
+// If enabled, responses with an operative Cookie-Indices will not be used
+// if the relevant cookie values have changed.
+CONTENT_EXPORT BASE_DECLARE_FEATURE(kPrefetchCookieIndices);
 
 }  // namespace features
 

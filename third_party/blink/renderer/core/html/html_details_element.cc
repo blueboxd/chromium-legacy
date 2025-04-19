@@ -39,7 +39,7 @@
 #include "third_party/blink/renderer/core/html/html_summary_element.h"
 #include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
 #include "third_party/blink/renderer/core/html_names.h"
-#include "third_party/blink/renderer/core/layout/layout_ng_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -200,7 +200,9 @@ void HTMLDetailsElement::ParseAttribute(
 
     if (is_open_) {
       content->RemoveInlineStyleProperty(CSSPropertyID::kContentVisibility);
-      content->RemoveInlineStyleProperty(CSSPropertyID::kDisplay);
+      if (!RuntimeEnabledFeatures::DetailsStylingEnabled()) {
+        content->RemoveInlineStyleProperty(CSSPropertyID::kDisplay);
+      }
 
       // https://html.spec.whatwg.org/multipage/interactive-elements.html#ensure-details-exclusivity-by-closing-other-elements-if-needed
       //
@@ -228,8 +230,10 @@ void HTMLDetailsElement::ParseAttribute(
         }
       }
     } else {
-      content->SetInlineStyleProperty(CSSPropertyID::kDisplay,
-                                      CSSValueID::kBlock);
+      if (!RuntimeEnabledFeatures::DetailsStylingEnabled()) {
+        content->SetInlineStyleProperty(CSSPropertyID::kDisplay,
+                                        CSSValueID::kBlock);
+      }
       content->SetInlineStyleProperty(CSSPropertyID::kContentVisibility,
                                       CSSValueID::kHidden);
       content->EnsureDisplayLockContext().SetIsDetailsSlotElement(true);
@@ -348,33 +352,34 @@ bool HTMLDetailsElement::ExpandDetailsAncestors(const Node& node) {
   return details_to_open.size();
 }
 
-bool HTMLDetailsElement::IsValidInvokeAction(HTMLElement& invoker,
-                                             InvokeAction action) {
-  bool parent_is_valid = HTMLElement::IsValidInvokeAction(invoker, action);
+bool HTMLDetailsElement::IsValidCommand(HTMLElement& invoker,
+                                        CommandEventType command) {
+  bool parent_is_valid = HTMLElement::IsValidCommand(invoker, command);
   if (!RuntimeEnabledFeatures::HTMLInvokeActionsV2Enabled()) {
     return parent_is_valid;
   }
-  return parent_is_valid || action == InvokeAction::kToggle ||
-         action == InvokeAction::kOpen || action == InvokeAction::kClose;
+  return parent_is_valid || command == CommandEventType::kToggle ||
+         command == CommandEventType::kOpen ||
+         command == CommandEventType::kClose;
 }
 
-bool HTMLDetailsElement::HandleInvokeInternal(HTMLElement& invoker,
-                                              InvokeAction action) {
-  CHECK(IsValidInvokeAction(invoker, action));
+bool HTMLDetailsElement::HandleCommandInternal(HTMLElement& invoker,
+                                               CommandEventType command) {
+  CHECK(IsValidCommand(invoker, command));
 
-  if (HTMLElement::HandleInvokeInternal(invoker, action)) {
+  if (HTMLElement::HandleCommandInternal(invoker, command)) {
     return true;
   }
 
-  if (action == InvokeAction::kAuto || action == InvokeAction::kToggle) {
+  if (command == CommandEventType::kToggle) {
     ToggleOpen();
     return true;
-  } else if (action == InvokeAction::kClose) {
+  } else if (command == CommandEventType::kClose) {
     if (is_open_) {
       setAttribute(html_names::kOpenAttr, g_null_atom);
     }
     return true;
-  } else if (action == InvokeAction::kOpen) {
+  } else if (command == CommandEventType::kOpen) {
     if (!is_open_) {
       setAttribute(html_names::kOpenAttr, g_empty_atom);
     }

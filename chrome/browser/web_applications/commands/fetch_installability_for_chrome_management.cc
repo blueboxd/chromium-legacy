@@ -17,6 +17,7 @@
 #include "chrome/browser/web_applications/locks/web_app_lock_manager.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_contents/web_app_data_retriever.h"
 #include "components/webapps/browser/installable/installable_logging.h"
 #include "components/webapps/browser/web_contents/web_app_url_loader.h"
@@ -117,7 +118,6 @@ void FetchInstallabilityForChromeManagement::OnUrlLoadedCheckInstallability(
 
 void FetchInstallabilityForChromeManagement::OnWebAppInstallabilityChecked(
     blink::mojom::ManifestPtr opt_manifest,
-    const GURL& manifest_url,
     bool valid_manifest_for_web_app,
     webapps::InstallableStatusCode error_code) {
   if (IsWebContentsDestroyed()) {

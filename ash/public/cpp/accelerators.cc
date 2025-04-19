@@ -8,6 +8,7 @@
 #include "base/functional/callback.h"
 #include "base/no_destructor.h"
 #include "media/base/media_switches.h"
+#include "ui/events/event_constants.h"
 
 namespace ash {
 
@@ -245,7 +246,7 @@ const AcceleratorData kAcceleratorData[] = {
     {true, ui::VKEY_BROWSER_BACK, ui::EF_NONE,
      AcceleratorAction::kMinimizeTopWindowOnBack},
     {true, ui::VKEY_G, ui::EF_SHIFT_DOWN | ui::EF_COMMAND_DOWN,
-     AcceleratorAction::kToggleSnapGroupWindowsGroupAndUngroup},
+     AcceleratorAction::kCreateSnapGroup},
     {true, ui::VKEY_D, ui::EF_SHIFT_DOWN | ui::EF_COMMAND_DOWN,
      AcceleratorAction::kToggleSnapGroupWindowsMinimizeAndRestore},
     {true, ui::VKEY_Z, ui::EF_COMMAND_DOWN,
@@ -260,6 +261,9 @@ const AcceleratorData kAcceleratorData[] = {
      AcceleratorAction::kToggleDockedMagnifier},
     {true, ui::VKEY_M, ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN,
      AcceleratorAction::kToggleFullscreenMagnifier},
+
+    {true, ui::VKEY_M, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
+     AcceleratorAction::kToggleMouseKeys},
 
     // Media Player shortcuts.
     {true, ui::VKEY_MEDIA_NEXT_TRACK, ui::EF_NONE,
@@ -404,12 +408,27 @@ const size_t kToggleGameDashboardAcceleratorDataLength =
     std::size(kToggleGameDashboardAcceleratorData);
 
 const AcceleratorData kTogglePickerAcceleratorData[] = {
-    {false, ui::VKEY_RIGHT_ALT, ui::EF_NONE, AcceleratorAction::kTogglePicker},
+    {false, ui::VKEY_RIGHT_ALT, ui::EF_NONE, AcceleratorAction::kTogglePicker,
+     true},
     {true, ui::VKEY_F, ui::EF_COMMAND_DOWN, AcceleratorAction::kTogglePicker},
 };
 
 const size_t kTogglePickerAcceleratorDataLength =
     std::size(kTogglePickerAcceleratorData);
+
+const AcceleratorData kTilingWindowResizeAcceleratorData[] = {
+    {true, ui::VKEY_OEM_COMMA, ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN,
+     AcceleratorAction::kTilingWindowResizeLeft},
+    {true, ui::VKEY_OEM_PERIOD, ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN,
+     AcceleratorAction::kTilingWindowResizeRight},
+    {true, ui::VKEY_OEM_1, ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN,
+     AcceleratorAction::kTilingWindowResizeUp},
+    {true, ui::VKEY_OEM_2, ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN,
+     AcceleratorAction::kTilingWindowResizeDown},
+};
+
+const size_t kTilingWindowResizeAcceleratorDataLength =
+    std::size(kTilingWindowResizeAcceleratorData);
 
 // static
 AcceleratorController* AcceleratorController::Get() {

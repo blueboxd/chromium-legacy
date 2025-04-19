@@ -17,6 +17,7 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "third_party/blink/public/common/features.h"
@@ -105,7 +106,7 @@ class SubAppsPermissionsPolicyBrowserTest
 
     IsolatedWebAppUrlInfo url_info =
         IsolatedWebAppUrlInfo::CreateFromSignedWebBundleId(
-            web_package::SignedWebBundleId::CreateForEd25519PublicKey(
+            web_package::SignedWebBundleId::CreateForPublicKey(
                 key_pair_.public_key));
 
     parent_app_id_ = url_info.app_id();

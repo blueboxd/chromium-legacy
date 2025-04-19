@@ -16,11 +16,13 @@
 #include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/not_fatal_until.h"
 #include "base/strings/string_util.h"
 #include "base/task/single_thread_task_runner.h"
 #include "components/services/storage/public/cpp/quota_client_callback_wrapper.h"
 #include "content/browser/log_console_message.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
+#include "content/browser/service_worker/service_worker_client.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
@@ -231,41 +233,41 @@ int GetWarmedUpServiceWorkerCount(
 
 }  // namespace
 
-ServiceWorkerContextCore::ServiceWorkerClientIterator::
+ServiceWorkerClientOwner::ServiceWorkerClientIterator::
     ~ServiceWorkerClientIterator() = default;
 
 ServiceWorkerClient&
-ServiceWorkerContextCore::ServiceWorkerClientIterator::operator*() const {
+ServiceWorkerClientOwner::ServiceWorkerClientIterator::operator*() const {
   DCHECK(!IsAtEnd());
   return *iterator_->second;
 }
 
 ServiceWorkerClient*
-ServiceWorkerContextCore::ServiceWorkerClientIterator::operator->() const {
+ServiceWorkerClientOwner::ServiceWorkerClientIterator::operator->() const {
   DCHECK(!IsAtEnd());
   return iterator_->second.get();
 }
 
-ServiceWorkerContextCore::ServiceWorkerClientIterator&
-ServiceWorkerContextCore::ServiceWorkerClientIterator::operator++() {
+ServiceWorkerClientOwner::ServiceWorkerClientIterator&
+ServiceWorkerClientOwner::ServiceWorkerClientIterator::operator++() {
   DCHECK(!IsAtEnd());
   ++iterator_;
   ForwardUntilMatchingServiceWorkerClient();
   return *this;
 }
 
-bool ServiceWorkerContextCore::ServiceWorkerClientIterator::IsAtEnd() const {
+bool ServiceWorkerClientOwner::ServiceWorkerClientIterator::IsAtEnd() const {
   return iterator_ == map_->end();
 }
 
-ServiceWorkerContextCore::ServiceWorkerClientIterator::
+ServiceWorkerClientOwner::ServiceWorkerClientIterator::
     ServiceWorkerClientIterator(ServiceWorkerClientByClientUUIDMap* map,
                                 ServiceWorkerClientPredicate predicate)
     : map_(map), predicate_(std::move(predicate)), iterator_(map_->begin()) {
   ForwardUntilMatchingServiceWorkerClient();
 }
 
-void ServiceWorkerContextCore::ServiceWorkerClientIterator::
+void ServiceWorkerClientOwner::ServiceWorkerClientIterator::
     ForwardUntilMatchingServiceWorkerClient() {
   while (!IsAtEnd()) {
     if (predicate_.is_null() || predicate_.Run(**this)) {
@@ -274,6 +276,24 @@ void ServiceWorkerContextCore::ServiceWorkerClientIterator::
     ++iterator_;
   }
   return;
+}
+
+ServiceWorkerClientOwner::ServiceWorkerClientOwner(
+    ServiceWorkerContextCore& context)
+    : context_(context),
+      container_host_receivers_(std::make_unique<mojo::AssociatedReceiverSet<
+                                    blink::mojom::ServiceWorkerContainerHost,
+                                    ServiceWorkerContainerHostForClient*>>()) {
+  container_host_receivers_->set_disconnect_handler(base::BindRepeating(
+      &ServiceWorkerClientOwner::OnContainerHostReceiverDisconnected,
+      base::Unretained(this)));
+}
+
+ServiceWorkerClientOwner::~ServiceWorkerClientOwner() = default;
+
+void ServiceWorkerClientOwner::ResetContext(
+    ServiceWorkerContextCore& new_context) {
+  context_ = new_context;
 }
 
 ServiceWorkerContextCore::ServiceWorkerContextCore(
@@ -286,9 +306,8 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
     ServiceWorkerContextSynchronousObserverList* synchronous_observer_list,
     ServiceWorkerContextWrapper* wrapper)
     : wrapper_(wrapper),
-      container_host_receivers_(std::make_unique<mojo::AssociatedReceiverSet<
-                                    blink::mojom::ServiceWorkerContainerHost,
-                                    ServiceWorkerContainerHostForClient*>>()),
+      service_worker_client_owner_(
+          std::make_unique<ServiceWorkerClientOwner>(*this)),
       registry_(
           std::make_unique<ServiceWorkerRegistry>(this,
                                                   quota_manager_proxy,
@@ -312,10 +331,6 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
             non_network_pending_loader_factory_bundle_for_update_check));
   }
 
-  container_host_receivers_->set_disconnect_handler(base::BindRepeating(
-      &ServiceWorkerContextCore::OnContainerHostReceiverDisconnected,
-      base::Unretained(this)));
-
   if (quota_manager_proxy) {
     quota_manager_proxy->RegisterClient(
         quota_client_receiver_->BindNewPipeAndPassRemote(),
@@ -329,13 +344,11 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
 }
 
 ServiceWorkerContextCore::ServiceWorkerContextCore(
-    ServiceWorkerContextCore* old_context,
+    std::unique_ptr<ServiceWorkerContextCore> old_context,
     ServiceWorkerContextWrapper* wrapper)
     : wrapper_(wrapper),
-      service_worker_clients_by_uuid_(
-          std::move(old_context->service_worker_clients_by_uuid_)),
-      container_host_receivers_(
-          std::move(old_context->container_host_receivers_)),
+      service_worker_client_owner_(
+          std::move(old_context->service_worker_client_owner_)),
       registry_(
           std::make_unique<ServiceWorkerRegistry>(this,
                                                   old_context->registry())),
@@ -350,10 +363,8 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
       quota_client_(std::move(old_context->quota_client_)),
       quota_client_wrapper_(std::move(old_context->quota_client_wrapper_)),
       quota_client_receiver_(std::move(old_context->quota_client_receiver_)) {
-  container_host_receivers_->set_disconnect_handler(base::BindRepeating(
-      &ServiceWorkerContextCore::OnContainerHostReceiverDisconnected,
-      base::Unretained(this)));
   quota_client_->ResetContext(*this);
+  service_worker_client_owner_->ResetContext(*this);
 
   // Uma (ServiceWorker.Storage.RegisteredStorageKeyCacheInitialization.Time)
   // shouldn't be recorded when ServiceWorkerContextCore is recreated. Hence we
@@ -371,8 +382,8 @@ ServiceWorkerContextCore::~ServiceWorkerContextCore() {
   job_coordinator_->AbortAll();
 }
 
-ServiceWorkerContextCore::ServiceWorkerClientIterator
-ServiceWorkerContextCore::GetServiceWorkerClients(
+ServiceWorkerClientOwner::ServiceWorkerClientIterator
+ServiceWorkerClientOwner::GetServiceWorkerClients(
     const blink::StorageKey& key,
     bool include_reserved_clients,
     bool include_back_forward_cached_clients) {
@@ -384,8 +395,8 @@ ServiceWorkerContextCore::GetServiceWorkerClients(
                           include_back_forward_cached_clients));
 }
 
-ServiceWorkerContextCore::ServiceWorkerClientIterator
-ServiceWorkerContextCore::GetWindowServiceWorkerClients(
+ServiceWorkerClientOwner::ServiceWorkerClientIterator
+ServiceWorkerClientOwner::GetWindowServiceWorkerClients(
     const blink::StorageKey& key,
     bool include_reserved_clients) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -395,7 +406,7 @@ ServiceWorkerContextCore::GetWindowServiceWorkerClients(
                           include_reserved_clients));
 }
 
-void ServiceWorkerContextCore::HasMainFrameWindowClient(
+void ServiceWorkerClientOwner::HasMainFrameWindowClient(
     const blink::StorageKey& key,
     BoolCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -418,47 +429,35 @@ void ServiceWorkerContextCore::HasMainFrameWindowClient(
       FROM_HERE, base::BindOnce(std::move(callback), has_main_frame));
 }
 
-std::tuple<base::WeakPtr<ServiceWorkerClient>,
-           blink::mojom::ServiceWorkerContainerInfoForClientPtr>
-ServiceWorkerContextCore::CreateServiceWorkerClientForWindow(
+ScopedServiceWorkerClient
+ServiceWorkerClientOwner::CreateServiceWorkerClientForWindow(
     bool are_ancestors_secure,
     int frame_tree_node_id) {
   auto client = std::make_unique<ServiceWorkerClient>(
-      AsWeakPtr(), are_ancestors_secure, frame_tree_node_id);
+      context_->AsWeakPtr(), are_ancestors_secure, frame_tree_node_id);
   auto weak_client = client->AsWeakPtr();
   auto inserted = service_worker_clients_by_uuid_
                       .emplace(weak_client->client_uuid(), std::move(client))
                       .second;
   DCHECK(inserted);
-
-  auto container_info =
-      blink::mojom::ServiceWorkerContainerInfoForClient::New();
-  ServiceWorkerContainerHostForClient::Create(weak_client, container_info);
-
-  return std::make_tuple(std::move(weak_client), std::move(container_info));
+  return ScopedServiceWorkerClient(std::move(weak_client));
 }
 
-std::tuple<base::WeakPtr<ServiceWorkerClient>,
-           blink::mojom::ServiceWorkerContainerInfoForClientPtr>
-ServiceWorkerContextCore::CreateServiceWorkerClientForWorker(
+ScopedServiceWorkerClient
+ServiceWorkerClientOwner::CreateServiceWorkerClientForWorker(
     int process_id,
     ServiceWorkerClientInfo client_info) {
-  auto client = std::make_unique<ServiceWorkerClient>(AsWeakPtr(), process_id,
-                                                      client_info);
+  auto client = std::make_unique<ServiceWorkerClient>(context_->AsWeakPtr(),
+                                                      process_id, client_info);
   auto weak_client = client->AsWeakPtr();
   auto inserted = service_worker_clients_by_uuid_
                       .emplace(weak_client->client_uuid(), std::move(client))
                       .second;
   DCHECK(inserted);
-
-  auto container_info =
-      blink::mojom::ServiceWorkerContainerInfoForClient::New();
-  ServiceWorkerContainerHostForClient::Create(weak_client, container_info);
-
-  return std::make_tuple(std::move(weak_client), std::move(container_info));
+  return ScopedServiceWorkerClient(std::move(weak_client));
 }
 
-void ServiceWorkerContextCore::BindHost(
+void ServiceWorkerClientOwner::BindHost(
     ServiceWorkerContainerHostForClient& container_host,
     mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
         host_receiver) {
@@ -466,11 +465,11 @@ void ServiceWorkerContextCore::BindHost(
                                  &container_host);
 }
 
-void ServiceWorkerContextCore::UpdateServiceWorkerClientClientID(
+void ServiceWorkerClientOwner::UpdateServiceWorkerClientClientID(
     const std::string& current_client_uuid,
     const std::string& new_client_uuid) {
   auto it = service_worker_clients_by_uuid_.find(current_client_uuid);
-  DCHECK(it != service_worker_clients_by_uuid_.end());
+  CHECK(it != service_worker_clients_by_uuid_.end(), base::NotFatalUntil::M130);
   std::unique_ptr<ServiceWorkerClient> service_worker_client =
       std::move(it->second);
   service_worker_clients_by_uuid_.erase(it);
@@ -482,7 +481,7 @@ void ServiceWorkerContextCore::UpdateServiceWorkerClientClientID(
   DCHECK(inserted);
 }
 
-ServiceWorkerClient* ServiceWorkerContextCore::GetServiceWorkerClientByClientID(
+ServiceWorkerClient* ServiceWorkerClientOwner::GetServiceWorkerClientByClientID(
     const std::string& client_uuid) {
   auto it = service_worker_clients_by_uuid_.find(client_uuid);
   if (it == service_worker_clients_by_uuid_.end()) {
@@ -491,7 +490,7 @@ ServiceWorkerClient* ServiceWorkerContextCore::GetServiceWorkerClientByClientID(
   return it->second.get();
 }
 
-ServiceWorkerClient* ServiceWorkerContextCore::GetServiceWorkerClientByWindowId(
+ServiceWorkerClient* ServiceWorkerClientOwner::GetServiceWorkerClientByWindowId(
     const base::UnguessableToken& window_id) {
   for (auto& it : service_worker_clients_by_uuid_) {
     if (it.second->fetch_request_window_id() == window_id)
@@ -501,19 +500,33 @@ ServiceWorkerClient* ServiceWorkerContextCore::GetServiceWorkerClientByWindowId(
   return nullptr;
 }
 
-void ServiceWorkerContextCore::OnContainerHostReceiverDisconnected() {
-  ServiceWorkerContainerHostForClient* container_host =
-      container_host_receivers_->current_context();
+void ServiceWorkerClientOwner::OnContainerHostReceiverDisconnected() {
+  DestroyServiceWorkerClient(container_host_receivers_->current_context()
+                                 ->service_worker_client()
+                                 .AsWeakPtr());
+}
 
+void ServiceWorkerContextCore::OnClientDestroyed(
+    ServiceWorkerClient& service_worker_client) {
   observer_list_->Notify(
       FROM_HERE, &ServiceWorkerContextCoreObserver::OnClientDestroyed,
-      container_host->service_worker_client().ukm_source_id(),
-      container_host->url(),
-      container_host->service_worker_client().GetClientType());
+      service_worker_client.container_host()
+          ? service_worker_client.container_host()->ukm_source_id()
+          : ukm::kInvalidSourceId,
+      service_worker_client.url(), service_worker_client.GetClientType());
+}
+
+void ServiceWorkerClientOwner::DestroyServiceWorkerClient(
+    base::WeakPtr<ServiceWorkerClient> service_worker_client) {
+  if (!service_worker_client) {
+    return;
+  }
+
+  context_->OnClientDestroyed(*service_worker_client);
 
   size_t removed = service_worker_clients_by_uuid_.erase(
-      container_host->service_worker_client().client_uuid());
-  DCHECK_EQ(removed, 1u);
+      service_worker_client->client_uuid());
+  CHECK_EQ(removed, 1u);
 }
 
 void ServiceWorkerContextCore::RegisterServiceWorker(
@@ -680,11 +693,11 @@ int ServiceWorkerContextCore::GetNextEmbeddedWorkerId() {
 
 void ServiceWorkerContextCore::NotifyClientIsExecutionReady(
     const ServiceWorkerClient& service_worker_client) {
-  DCHECK(service_worker_client.is_execution_ready());
+  CHECK(service_worker_client.is_execution_ready());
   observer_list_->Notify(
       FROM_HERE, &ServiceWorkerContextCoreObserver::OnClientIsExecutionReady,
-      service_worker_client.ukm_source_id(), service_worker_client.url(),
-      service_worker_client.GetClientType());
+      service_worker_client.container_host()->ukm_source_id(),
+      service_worker_client.url(), service_worker_client.GetClientType());
 }
 
 bool ServiceWorkerContextCore::MaybeHasRegistrationForStorageKey(
@@ -712,7 +725,7 @@ void ServiceWorkerContextCore::AddWarmUpRequest(
     const GURL& document_url,
     const blink::StorageKey& key,
     ServiceWorkerContext::WarmUpServiceWorkerCallback callback) {
-  const size_t kRequestQueueLength =
+  static const size_t kRequestQueueLength =
       blink::features::kSpeculativeServiceWorkerWarmUpRequestQueueLength.Get();
 
   // Erase redundant warm-up requests.
@@ -731,15 +744,7 @@ void ServiceWorkerContextCore::AddWarmUpRequest(
     std::move(cb).Run();
   }
 
-  // TODO(crbug.com/40263674): Move `kFifo` to the caller.
-  const bool kFifo =
-      blink::features::kSpeculativeServiceWorkerWarmUpOnInsertedIntoDom.Get();
-
-  if (kFifo) {
-    warm_up_requests_.emplace_front(document_url, key, std::move(callback));
-  } else {
-    warm_up_requests_.emplace_back(document_url, key, std::move(callback));
-  }
+  warm_up_requests_.emplace_back(document_url, key, std::move(callback));
 
   while (warm_up_requests_.size() > kRequestQueueLength) {
     auto [front_url, front_key, front_callback] =
@@ -757,8 +762,10 @@ ServiceWorkerContextCore::PopNextWarmUpRequest() {
     return std::nullopt;
   }
 
+  static const int kSpeculativeServiceWorkerWarmUpMaxCount =
+      blink::features::kSpeculativeServiceWorkerWarmUpMaxCount.Get();
   if (GetWarmedUpServiceWorkerCount(live_versions_) >=
-      blink::features::kSpeculativeServiceWorkerWarmUpMaxCount.Get()) {
+      kSpeculativeServiceWorkerWarmUpMaxCount) {
     warm_up_requests_.clear();
     return std::nullopt;
   }
@@ -939,7 +946,7 @@ void ServiceWorkerContextCore::AddLiveVersion(ServiceWorkerVersion* version) {
 void ServiceWorkerContextCore::RemoveLiveVersion(int64_t id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto it = live_versions_.find(id);
-  DCHECK(it != live_versions_.end());
+  CHECK(it != live_versions_.end(), base::NotFatalUntil::M130);
   ServiceWorkerVersion* version = it->second;
 
   if (version->running_status() != blink::EmbeddedWorkerStatus::kStopped) {
@@ -1362,6 +1369,54 @@ void ServiceWorkerContextCore::DidGetRegisteredStorageKeys(
         "ServiceWorker.Storage.RegisteredStorageKeyCacheInitialization.Time",
         base::TimeTicks::Now() - start_time);
   }
+}
+
+ScopedServiceWorkerClient::ScopedServiceWorkerClient(
+    base::WeakPtr<ServiceWorkerClient> service_worker_client)
+    : service_worker_client_(std::move(service_worker_client)) {}
+
+ScopedServiceWorkerClient::~ScopedServiceWorkerClient() {
+  if (!service_worker_client_) {
+    return;
+  }
+
+  // Don't destroy the client if committed, because it means this is already
+  // `Release()`d.
+  if (service_worker_client_->is_response_committed()) {
+    return;
+  }
+
+  service_worker_client_->owner().DestroyServiceWorkerClient(
+      std::move(service_worker_client_));
+}
+
+ScopedServiceWorkerClient::ScopedServiceWorkerClient(
+    ScopedServiceWorkerClient&& other) = default;
+
+std::tuple<blink::mojom::ServiceWorkerContainerInfoForClientPtr,
+           blink::mojom::ControllerServiceWorkerInfoPtr>
+ScopedServiceWorkerClient::CommitResponseAndRelease(
+    std::optional<GlobalRenderFrameHostId> rfh_id,
+    const PolicyContainerPolicies& policy_container_policies,
+    mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+        coep_reporter,
+    ukm::SourceId ukm_source_id) {
+  if (!service_worker_client_) {
+    return {};
+  }
+
+  blink::mojom::ServiceWorkerContainerInfoForClientPtr container_info =
+      service_worker_client_->CommitResponse(
+          base::PassKey<ScopedServiceWorkerClient>(), std::move(rfh_id),
+          policy_container_policies, std::move(coep_reporter),
+          std::move(ukm_source_id));
+
+  blink::mojom::ControllerServiceWorkerInfoPtr controller;
+  if (service_worker_client_->controller()) {
+    controller = service_worker_client_->container_host()
+                     ->CreateControllerServiceWorkerInfo();
+  }
+  return std::make_tuple(std::move(container_info), std::move(controller));
 }
 
 #if !BUILDFLAG(IS_ANDROID)

@@ -164,7 +164,6 @@ map_keys! {
     KEY, KEY_KEY = "key",
     LAST_USED, LAST_USED_KEY = "last_used",
     PIN_ATTEMPTS, PIN_ATTEMPTS_KEY = "pin_attempts",
-    PIN_HIGH_WATER, PIN_HIGH_WATER_KEY = "pin_high_water",
     PRIV_KEY, PRIV_KEY_KEY = "priv_key",
     PUB_KEY, PUB_KEY_KEY = "pub_key",
     PUB_KEYS, PUB_KEYS_KEY = "pub_keys",
@@ -281,8 +280,6 @@ fn get_secret_from_request(
 pub struct PINState {
     /// The number of incorrect attempts made.
     attempts: i64,
-    /// The highest PIN generation seen so far.
-    generation_high_water: i64,
 }
 
 // The parsed form of the account's state.
@@ -381,11 +378,7 @@ impl ParsedState {
             Some(Value::Int(attempts)) => *attempts,
             _ => 0,
         };
-        let generation_high_water = match device.get(PIN_HIGH_WATER_KEY) {
-            Some(Value::Int(value)) => *value,
-            _ => 0,
-        };
-        Ok(PINState { attempts, generation_high_water })
+        Ok(PINState { attempts })
     }
 
     fn set_pin_state(&mut self, device_id: &[u8], pin_state: PINState) -> Result<(), RequestError> {
@@ -394,11 +387,6 @@ impl ParsedState {
             device.remove(PIN_ATTEMPTS_KEY);
         } else {
             device.insert(PIN_ATTEMPTS.into(), Value::Int(pin_state.attempts));
-        }
-        if pin_state.generation_high_water == 0 {
-            device.remove(PIN_HIGH_WATER_KEY);
-        } else {
-            device.insert(PIN_HIGH_WATER.into(), Value::Int(pin_state.generation_high_water));
         }
         Ok(())
     }
@@ -424,18 +412,25 @@ impl Default for ParsedState {
 /// Represents the type of public key that authenticates a request.
 #[derive(PartialEq, Eq, PartialOrd, Ord, Copy, Clone)]
 enum AuthLevel {
+    /// The key is kept in software.
+    Software,
     /// The key is hardware bound to the device.
     Hardware,
     /// The key is bound to the device and requires user verification before
     /// it can be used for signing.
     UserVerification,
+    // The key is kept in software, but user verification is performed before it is used for
+    // signing.
+    SoftwareUserVerification,
 }
 
 impl AuthLevel {
     fn as_str(&self) -> &'static str {
         match self {
+            AuthLevel::Software => "sw",
             AuthLevel::Hardware => "hw",
             AuthLevel::UserVerification => "uv",
+            AuthLevel::SoftwareUserVerification => "swuv",
         }
     }
 }
@@ -444,8 +439,10 @@ impl core::str::FromStr for AuthLevel {
     type Err = ();
     fn from_str(s: &str) -> Result<AuthLevel, ()> {
         match s {
+            "sw" => Ok(AuthLevel::Software),
             "hw" => Ok(AuthLevel::Hardware),
             "uv" => Ok(AuthLevel::UserVerification),
+            "swuv" => Ok(AuthLevel::SoftwareUserVerification),
             _ => Err(()),
         }
     }
@@ -682,10 +679,6 @@ enum RequestError {
     /// any more.
     PINLocked,
 
-    /// A newer PIN has been seen. The client should fetch updated PIN
-    /// information.
-    PINOutdated,
-
     /// Client provided recovery key store keys that had a lower version than
     /// those previously used.
     RecoveryKeyStoreDowngrade,
@@ -703,7 +696,6 @@ impl RequestError {
             RequestError::Duplicate => Value::Int(2),
             RequestError::IncorrectPIN => Value::Int(3),
             RequestError::PINLocked => Value::Int(4),
-            RequestError::PINOutdated => Value::Int(5),
             RequestError::RecoveryKeyStoreDowngrade => Value::Int(6),
             RequestError::Debug(s) => Value::String(String::from(*s)),
         }
@@ -800,7 +792,12 @@ fn do_device_register(
                     if spki::parse(spki).is_none() {
                         return debug("cannot parse SPKI from pub_key entry");
                     };
-                    if k == AuthLevel::UserVerification.as_str() {
+                    if k == AuthLevel::UserVerification.as_str()
+                        || k == AuthLevel::SoftwareUserVerification.as_str()
+                    {
+                        if has_uv_key {
+                            return debug("can't register both uv and swuv key");
+                        }
                         has_uv_key = true;
                     }
                 }
@@ -903,6 +900,10 @@ fn do_device_add_uv_key(
     let Some(Value::Map(pub_keys)) = device.get(PUB_KEYS_KEY) else {
         return debug("device missing pub_keys");
     };
+    let swuv = MapKey::String(String::from(AuthLevel::SoftwareUserVerification.as_str()));
+    if pub_keys.contains_key(&swuv) {
+        return debug("software UV key already registered");
+    }
     let uv = MapKey::String(String::from(AuthLevel::UserVerification.as_str()));
     match pub_keys.get(&uv) {
         Some(Value::Bytestring(existing_uv_key)) => {
@@ -1389,6 +1390,47 @@ mod tests {
     }
 
     #[test]
+    fn test_device_register_uv_and_swuv() {
+        // Can't register both a UV and SWUV key.
+        let encoded_register = cbor!([{
+            CMD: "device/register",
+            DEVICE_ID: (TEST_DEVICE_ID.clone()),
+            PUB_KEYS: {"uv": (SPKI.as_slice()), "swuv": (SPKI.as_slice())},
+        }])
+        .to_bytes();
+        let msg = cbor!({ENCODED_REQUESTS: encoded_register}).to_bytes();
+        let (output, _) = process_client_msg(
+            ClientState::Initial,
+            EXTERNAL_CONTEXT.clone(),
+            TEST_HANDSHAKE_HASH.as_slice(),
+            msg,
+        )
+        .unwrap();
+        assert!(!is_ok(&output));
+    }
+
+    #[test]
+    fn test_device_register_software_uv_and_uv_pending() {
+        // Can't register both a software UV key and a UV-pending signal.
+        let encoded_register = cbor!([{
+            CMD: "device/register",
+            DEVICE_ID: (TEST_DEVICE_ID.clone()),
+            PUB_KEYS: {"swuv": (SPKI.as_slice())},
+            UV_KEY_PENDING: true,
+        }])
+        .to_bytes();
+        let msg = cbor!({ENCODED_REQUESTS: encoded_register}).to_bytes();
+        let (output, _) = process_client_msg(
+            ClientState::Initial,
+            EXTERNAL_CONTEXT.clone(),
+            TEST_HANDSHAKE_HASH.as_slice(),
+            msg,
+        )
+        .unwrap();
+        assert!(!is_ok(&output));
+    }
+
+    #[test]
     fn test_device_add_uv_key_without_uv_pending() {
         // add_uv_key should fail if the device didn't opt to later add a UV
         // key at registration time.
@@ -1650,18 +1692,14 @@ mod tests {
         let pin_claim =
             seal_aes_256_gcm(&pin_data.claim_key, &pin_data.pin_hash, passkeys::PIN_CLAIM_AAD);
 
-        // Using the PIN should set the highwater mark to 1, which is the generation
-        // number from `pin_data`, above.
         let (error, pin_state, state) =
             attempt_pin(REGISTERED_STATE.clone(), &wrapped_pin_data, &pin_claim);
         assert!(error.is_none());
-        assert_eq!(pin_state.generation_high_water, 1);
         assert_eq!(pin_state.attempts, 0);
 
         // Using the same PIN again shouldn't change anything.
         let (error, pin_state, state) = attempt_pin(state, &wrapped_pin_data, &pin_claim);
         assert!(error.is_none());
-        assert_eq!(pin_state.generation_high_water, 1);
         assert_eq!(pin_state.attempts, 0);
 
         // Trying the wrong PIN should fail and increment the attempts counter.
@@ -1670,24 +1708,11 @@ mod tests {
             seal_aes_256_gcm(&pin_data.claim_key, &wrong_pin_hash, passkeys::PIN_CLAIM_AAD);
         let (error, pin_state, state) = attempt_pin(state, &wrapped_pin_data, &wrong_pin_claim);
         assert_eq!(error, Some(Value::Int(3)));
-        assert_eq!(pin_state.generation_high_water, 1);
         assert_eq!(pin_state.attempts, 1);
 
         // The correct PIN should reset it again.
         let (error, pin_state, state) = attempt_pin(state, &wrapped_pin_data, &pin_claim);
         assert!(error.is_none());
-        assert_eq!(pin_state.generation_high_water, 1);
-        assert_eq!(pin_state.attempts, 0);
-
-        // Trying to submit an older generation PIN should fail without updating the
-        // attempts counter.
-        let older_generation_pin_data = pin::Data { generation: 0, ..pin_data };
-        let older_generation_wrapped_pin_data =
-            older_generation_pin_data.encrypt(SAMPLE_SECURITY_DOMAIN_SECRET);
-        let (error, pin_state, state) =
-            attempt_pin(state, &older_generation_wrapped_pin_data, &pin_claim);
-        assert_eq!(error, Some(Value::Int(5)));
-        assert_eq!(pin_state.generation_high_water, 1);
         assert_eq!(pin_state.attempts, 0);
 
         // The wrong PIN five times in a row should lock the device.
@@ -1697,20 +1722,17 @@ mod tests {
         let (_error, _pin_state, state) = attempt_pin(state, &wrapped_pin_data, &wrong_pin_claim);
         let (error, pin_state, state) = attempt_pin(state, &wrapped_pin_data, &wrong_pin_claim);
         assert_eq!(error, Some(Value::Int(3)));
-        assert_eq!(pin_state.generation_high_water, 1);
         assert_eq!(pin_state.attempts, 5);
 
         // Now the wrong PIN will generate a different error and not increment the
         // counter.
         let (error, pin_state, state) = attempt_pin(state, &wrapped_pin_data, &wrong_pin_claim);
         assert_eq!(error, Some(Value::Int(4)));
-        assert_eq!(pin_state.generation_high_water, 1);
         assert_eq!(pin_state.attempts, 5);
 
         // And so will the correct PIN.
         let (error, pin_state, _state) = attempt_pin(state, &wrapped_pin_data, &pin_claim);
         assert_eq!(error, Some(Value::Int(4)));
-        assert_eq!(pin_state.generation_high_water, 1);
         assert_eq!(pin_state.attempts, 5);
     }
 
@@ -1745,7 +1767,6 @@ mod tests {
         let (error, pin_state, _) =
             attempt_pin(REGISTERED_STATE.clone(), &wrapped_pin_data, &pin_claim);
         assert!(error.is_none());
-        assert_eq!(pin_state.generation_high_water, 1);
         assert_eq!(pin_state.attempts, 0);
     }
 
@@ -2148,6 +2169,8 @@ mod tests {
             CERT_XML: (recovery_key_store::SAMPLE_CERTS_XML),
             SIG_XML: (recovery_key_store::SAMPLE_SIG_XML),
             WRAPPED_SECRET: (REGISTERED_STATE_WRAPPED_SECRET.clone()),
+            COUNTER_ID: (&[3u8; recovery_key_store::COUNTER_ID_LEN]),
+            VAULT_HANDLE_WITHOUT_TYPE: (&[4u8; recovery_key_store::VAULT_HANDLE_LEN - 1]),
         });
         let configs = BTreeMap::from([]);
 

@@ -29,6 +29,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/toggle_button.h"
 #include "ui/views/controls/label.h"
@@ -138,7 +139,7 @@ PageInfoPermissionContentView::PageInfoPermissionContentView(
       std::make_unique<views::ToggleButton>(base::BindRepeating(
           &PageInfoPermissionContentView::OnToggleButtonPressed,
           base::Unretained(this))));
-  toggle_button_->SetAccessibleName(
+  toggle_button_->GetViewAccessibility().SetName(
       l10n_util::GetStringFUTF16(IDS_PAGE_INFO_SELECTOR_TOOLTIP,
                                  PageInfoUI::PermissionTypeToUIString(type)));
   toggle_button_->SetPreferredSize(
@@ -240,7 +241,7 @@ void PageInfoPermissionContentView::SetPermissionInfo(
                                       CONTENT_SETTING_DEFAULT);
     remember_setting_->SetVisible(
         (permissions::PermissionUtil::IsPermission(type_) &&
-         permissions::PermissionUtil::CanPermissionBeAllowedOnce(
+         permissions::PermissionUtil::DoesSupportTemporaryGrants(
              permission_.type)) &&
         (permission_.setting != CONTENT_SETTING_BLOCK));
   }
@@ -257,7 +258,7 @@ void PageInfoPermissionContentView::OnToggleButtonPressed() {
 
   // One time permissible permissions show a remember me checkbox only for the
   // non-deny state.
-  if (permissions::PermissionUtil::CanPermissionBeAllowedOnce(
+  if (permissions::PermissionUtil::DoesSupportTemporaryGrants(
           permission_.type)) {
     PreferredSizeChanged();
   }

@@ -49,7 +49,7 @@
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/events/keycodes/keyboard_code_conversion_mac.h"
 
-namespace content {
+namespace input {
 
 namespace {
 
@@ -143,16 +143,6 @@ void SetWebEventLocationFromEventInView(blink::WebMouseEvent* result,
 
   CGEventRef cgEvent = nullptr;
   if (unacceleratedMovement && (cgEvent = [event CGEvent]) != nullptr) {
-    // The caller should have already validated that we are running on a
-    // compatible OS before asking for unaccelerated movement.
-    // See RenderWidgetHostViewMac::IsUnadjustedMouseMovementSupported
-    // for the OS validation.
-#if DCHECK_IS_ON()
-    if (@available(macOS 10.15.1, *)) { /* nop */
-    } else {
-      NOTREACHED_IN_MIGRATION();
-    }
-#endif
     result->movement_x = CGEventGetIntegerValueField(
         cgEvent, kCGEventUnacceleratedPointerMovementX);
     result->movement_y = CGEventGetIntegerValueField(
@@ -718,4 +708,4 @@ blink::WebTouchEvent WebTouchEventBuilder::Build(NSEvent* event, NSView* view) {
   return result;
 }
 
-}  // namespace content
+}  // namespace input

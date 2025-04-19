@@ -22,7 +22,7 @@ import {Route, Router, routes} from '../router.js';
 
 import {getTemplate} from './customize_tablet_buttons_subpage.html.js';
 import {getInputDeviceSettingsProvider} from './input_device_mojo_interface_provider.js';
-import {ActionChoice, GraphicsTablet, InputDeviceSettingsProviderInterface} from './input_device_settings_types.js';
+import {ActionChoice, GraphicsTablet, GraphicsTabletButtonConfig, InputDeviceSettingsProviderInterface, MetaKey} from './input_device_settings_types.js';
 
 const SettingsCustomizeTabletButtonsSubpageElementBase =
     RouteObserverMixin(I18nMixin(PolymerElement));
@@ -48,11 +48,9 @@ export class SettingsCustomizeTabletButtonsSubpageElement extends
       },
 
       /**
-       * Use hasLauncherButton to decide which meta key icon to display.
+       * Use metaKey to decide which meta key icon to display.
        */
-      hasLauncherButton_: {
-        type: Boolean,
-      },
+      metaKey_: Object,
     };
   }
 
@@ -69,15 +67,15 @@ export class SettingsCustomizeTabletButtonsSubpageElement extends
       getInputDeviceSettingsProvider();
   private previousRoute_: Route|null = null;
   private isInitialized_: boolean = false;
-  private hasLauncherButton_: boolean;
+  private metaKey_: MetaKey = MetaKey.kSearch;
 
   override async connectedCallback(): Promise<void> {
     super.connectedCallback();
 
     this.addEventListener('button-remapping-changed', this.onSettingsChanged);
-    this.hasLauncherButton_ =
-        (await this.inputDeviceSettingsProvider_.hasLauncherButton())
-            ?.hasLauncherButton;
+    this.metaKey_ =
+        (await this.inputDeviceSettingsProvider_.getMetaKeyToDisplay())
+            ?.metaKey;
   }
 
   override disconnectedCallback(): void {
@@ -108,7 +106,7 @@ export class SettingsCustomizeTabletButtonsSubpageElement extends
     }
     this.inputDeviceSettingsProvider_.startObserving(this.selectedTablet.id);
     getAnnouncerInstance().announce(
-        this.i18n('customizeTabletButtonsNudgeHeader') + ' ' +
+        this.getcustomizeTabletButtonsNudgeHeader_() + ' ' +
         this.getDescription_());
   }
 
@@ -176,6 +174,15 @@ export class SettingsCustomizeTabletButtonsSubpageElement extends
     }
     return this.i18n(
         'customizeTabletButtonSubpageDescription', this.selectedTablet!.name);
+  }
+
+  private getcustomizeTabletButtonsNudgeHeader_(): string {
+    if (this.selectedTablet?.graphicsTabletButtonConfig !==
+        GraphicsTabletButtonConfig.kNoConfig) {
+      return this.i18n('customizeTabletButtonsNudgeHeaderWithMetadata');
+    } else {
+      return this.i18n('customizeTabletButtonsNudgeHeaderWithoutMetadata');
+    }
   }
 }
 

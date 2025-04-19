@@ -141,19 +141,6 @@ if (android_64bit_target_cpu && skip_secondary_abi_for_cq) {
     bundle_name = "SystemWebView"
     min_sdk_version = default_min_sdk_version
   }
-
-  if (is_official_build) {
-    # Used for binary size monitoring.
-    create_app_bundle_minimal_apks("system_webview_minimal_apks") {
-      deps = [ ":$_main_system_webview_bundle_target" ]
-      bundle_path = "$root_build_dir/apks/SystemWebView.aab"
-    }
-
-    android_resource_sizes_test("resource_sizes_system_webview_bundle") {
-      file_path = "$root_build_dir/apks/SystemWebView.minimal.apks"
-      data_deps = [ ":system_webview_minimal_apks" ]
-    }
-  }
 }
 
 if (android_64bit_target_cpu) {
@@ -303,16 +290,11 @@ if (android_64bit_target_cpu) {
   }
 }
 
-if (is_official_build && !skip_secondary_abi_for_cq) {
+if (is_official_build && !android_64bit_target_cpu) {
   # Used for binary size monitoring.
   create_app_bundle_minimal_apks("trichrome_webview_minimal_apks") {
     deps = [ ":$_main_trichrome_webview_bundle_target" ]
     bundle_path = "$root_build_dir/apks/TrichromeWebView.aab"
-  }
-
-  android_resource_sizes_test("resource_sizes_trichrome_webview_bundle") {
-    file_path = "$root_build_dir/apks/TrichromeWebView.minimal.apks"
-    data_deps = [ ":trichrome_webview_minimal_apks" ]
   }
 }
 
@@ -391,6 +373,10 @@ if (android_64bit_target_cpu && !skip_secondary_abi_for_cq) {
 
   if (is_official_build) {
     # Used for binary size monitoring.
+    create_app_bundle_minimal_apks("trichrome_webview_64_minimal_apks") {
+      deps = [ ":trichrome_webview_64_bundle" ]
+      bundle_path = "$root_build_dir/apks/TrichromeWebView64.aab"
+    }
     create_app_bundle_minimal_apks("trichrome_webview_32_minimal_apks") {
       deps = [ ":trichrome_webview_32_bundle" ]
       bundle_path = "$root_build_dir/apks/TrichromeWebView32.aab"
@@ -513,8 +499,11 @@ generate_jni("common_jni") {
 generate_jni("browser_jni_headers") {
   sources = [
     "java/src/org/chromium/android_webview/AndroidProtocolHandler.java",
+    "java/src/org/chromium/android_webview/AppDefinedDomains.java",
+    "java/src/org/chromium/android_webview/AwAssetReader.java",
     "java/src/org/chromium/android_webview/AwBrowserContext.java",
     "java/src/org/chromium/android_webview/AwBrowserContextStore.java",
+    "java/src/org/chromium/android_webview/AwBrowserMainParts.java",
     "java/src/org/chromium/android_webview/AwBrowserProcess.java",
     "java/src/org/chromium/android_webview/AwContents.java",
     "java/src/org/chromium/android_webview/AwContentsBackgroundThreadClient.java",
@@ -547,13 +536,14 @@ generate_jni("browser_jni_headers") {
     "java/src/org/chromium/android_webview/WebMessageListenerHolder.java",
     "java/src/org/chromium/android_webview/WebMessageListenerInfo.java",
     "java/src/org/chromium/android_webview/client_hints/AwUserAgentMetadata.java",
+    "java/src/org/chromium/android_webview/contextmenu/AwContextMenuHelper.java",
     "java/src/org/chromium/android_webview/gfx/AwDrawFnImpl.java",
     "java/src/org/chromium/android_webview/gfx/AwGLFunctor.java",
     "java/src/org/chromium/android_webview/gfx/AwPicture.java",
     "java/src/org/chromium/android_webview/gfx/JavaBrowserViewRendererHelper.java",
     "java/src/org/chromium/android_webview/gfx/RootBeginFrameSourceWebView.java",
-    "java/src/org/chromium/android_webview/ip_protection/ExclusionUtilities.java",
     "java/src/org/chromium/android_webview/metrics/AwMetricsServiceClient.java",
+    "java/src/org/chromium/android_webview/metrics/AwSiteVisitLogger.java",
     "java/src/org/chromium/android_webview/permission/AwPermissionRequest.java",
     "java/src/org/chromium/android_webview/safe_browsing/AwSafeBrowsingConfigHelper.java",
     "java/src/org/chromium/android_webview/safe_browsing/AwSafeBrowsingSafeModeAction.java",
@@ -565,9 +555,12 @@ generate_jni("browser_jni_headers") {
 android_library("browser_java") {
   sources = [
     "java/src/org/chromium/android_webview/AndroidProtocolHandler.java",
+    "java/src/org/chromium/android_webview/AppDefinedDomains.java",
     "java/src/org/chromium/android_webview/AwActionModeCallback.java",
+    "java/src/org/chromium/android_webview/AwAssetReader.java",
     "java/src/org/chromium/android_webview/AwBrowserContext.java",
     "java/src/org/chromium/android_webview/AwBrowserContextStore.java",
+    "java/src/org/chromium/android_webview/AwBrowserMainParts.java",
     "java/src/org/chromium/android_webview/AwBrowserProcess.java",
     "java/src/org/chromium/android_webview/AwClassPreloader.java",
     "java/src/org/chromium/android_webview/AwComputedFlags.java",
@@ -641,7 +634,6 @@ android_library("browser_java") {
     "java/src/org/chromium/android_webview/NoopSafeModeAction.java",
     "java/src/org/chromium/android_webview/NullAwViewMethods.java",
     "java/src/org/chromium/android_webview/OverScrollGlow.java",
-    "java/src/org/chromium/android_webview/PlatformServiceBridgeAwContentsWrapper.java",
     "java/src/org/chromium/android_webview/PopupTouchHandleDrawable.java",
     "java/src/org/chromium/android_webview/ScriptHandler.java",
     "java/src/org/chromium/android_webview/ScrollAccessibilityHelper.java",
@@ -657,6 +649,16 @@ android_library("browser_java") {
     "java/src/org/chromium/android_webview/WebviewErrorCode.java",
     "java/src/org/chromium/android_webview/autofill/AndroidAutofillSafeModeAction.java",
     "java/src/org/chromium/android_webview/client_hints/AwUserAgentMetadata.java",
+    "java/src/org/chromium/android_webview/contextmenu/AwContextMenuCoordinator.java",
+    "java/src/org/chromium/android_webview/contextmenu/AwContextMenuHeaderCoordinator.java",
+    "java/src/org/chromium/android_webview/contextmenu/AwContextMenuHeaderProperties.java",
+    "java/src/org/chromium/android_webview/contextmenu/AwContextMenuHeaderViewBinder.java",
+    "java/src/org/chromium/android_webview/contextmenu/AwContextMenuHelper.java",
+    "java/src/org/chromium/android_webview/contextmenu/AwContextMenuItem.java",
+    "java/src/org/chromium/android_webview/contextmenu/AwContextMenuItemDelegate.java",
+    "java/src/org/chromium/android_webview/contextmenu/AwContextMenuItemProperties.java",
+    "java/src/org/chromium/android_webview/contextmenu/AwContextMenuItemViewBinder.java",
+    "java/src/org/chromium/android_webview/contextmenu/AwContextMenuPopulator.java",
     "java/src/org/chromium/android_webview/gfx/AwDrawFnImpl.java",
     "java/src/org/chromium/android_webview/gfx/AwFunctor.java",
     "java/src/org/chromium/android_webview/gfx/AwGLFunctor.java",
@@ -664,7 +666,6 @@ android_library("browser_java") {
     "java/src/org/chromium/android_webview/gfx/JavaBrowserViewRendererHelper.java",
     "java/src/org/chromium/android_webview/gfx/RectUtils.java",
     "java/src/org/chromium/android_webview/gfx/RootBeginFrameSourceWebView.java",
-    "java/src/org/chromium/android_webview/ip_protection/ExclusionUtilities.java",
     "java/src/org/chromium/android_webview/media_integrity/AwMediaIntegrityServiceFactory.java",
     "java/src/org/chromium/android_webview/media_integrity/AwMediaIntegrityServiceImpl.java",
     "java/src/org/chromium/android_webview/metrics/AwMetricsLogUploader.java",
@@ -710,10 +711,14 @@ android_library("browser_java") {
     "//components/content_capture/android:java",
     "//components/crash/android:handler_java",
     "//components/crash/android:java",
+    "//components/embedder_support/android:application_java",
+    "//components/embedder_support/android:context_menu_java",
     "//components/embedder_support/android:embedder_util_java",
     "//components/embedder_support/android:util_java",
     "//components/embedder_support/android:web_contents_delegate_java",
+    "//components/embedder_support/android:web_contents_delegate_java_resources",
     "//components/embedder_support/android/metrics:java",
+    "//components/ip_protection/android/android_auth_client_lib/client:ip_protection_auth_client_java",
     "//components/minidump_uploader:minidump_uploader_java",
     "//components/navigation_interception/android:navigation_interception_java",
     "//components/policy/android:policy_java",
@@ -722,6 +727,7 @@ android_library("browser_java") {
     "//components/url_formatter/android:url_formatter_java",
     "//components/variations:variations_java",
     "//components/variations/android:variations_java",
+    "//components/viz:viz_java",
     "//components/viz/service:service_java",
     "//components/webauthn/android:java",
     "//components/zoom/android:java",
@@ -739,6 +745,7 @@ android_library("browser_java") {
     "//services/service_manager/public/java:service_manager_java",
     "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
     "//third_party/android_deps:protobuf_lite_runtime_java",
+    "//third_party/androidx:androidx_activity_activity_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/androidx:androidx_core_core_java",
     "//third_party/blink/public:blink_headers_java",
@@ -857,6 +864,7 @@ java_cpp_features("common_java_features_srcjar") {
 android_library("common_java") {
   sources = [
     "java/src/org/chromium/android_webview/common/AwResource.java",
+    "java/src/org/chromium/android_webview/common/BackgroundThreadExecutor.java",
     "java/src/org/chromium/android_webview/common/BugTrackerConstants.java",
     "java/src/org/chromium/android_webview/common/CommandLineUtil.java",
     "java/src/org/chromium/android_webview/common/DeveloperModeUtils.java",
@@ -891,6 +899,7 @@ android_library("common_java") {
     "//content/public/common:common_java",
     "//gpu/config:config_java",
     "//media/base/android:media_java",
+    "//net:cookie_switches_java",
     "//net/base:features_java",
     "//services/network/public:features_java",
     "//services/tracing/public:features_java",
@@ -1084,7 +1093,13 @@ android_resources("resources") {
     "java/res/drawable-xhdpi/ic_play_circle_outline_black_48dp.png",
     "java/res/drawable-xxhdpi/ic_play_circle_outline_black_48dp.png",
     "java/res/drawable-xxxhdpi/ic_play_circle_outline_black_48dp.png",
+    "java/res/drawable/aw_context_menu_bg.xml",
+    "java/res/layout/aw_context_menu.xml",
+    "java/res/layout/aw_context_menu_fullscreen_container.xml",
+    "java/res/layout/aw_context_menu_header.xml",
+    "java/res/layout/aw_context_menu_row.xml",
     "java/res/raw/histograms_allowlist.txt",
+    "java/res/values/styles.xml",
   ]
   deps = [ ":strings_grd" ]
 }

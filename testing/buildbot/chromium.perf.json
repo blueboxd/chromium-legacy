@@ -364,6 +364,49 @@
       }
     ]
   },
+  "android-pixel-tangor-perf": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "-v",
+          "--browser=android-trichrome-chrome-google-64-32-bundle",
+          "--upload-results",
+          "--test-shard-map-filename=android-pixel-tangor-perf_map.json",
+          "--ignore-benchmark-exit-code"
+        ],
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "performance_test_suite_android_clank_trichrome_chrome_google_64_32_bundle",
+        "resultdb": {
+          "enable": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimensions": {
+            "device_os_flavor": "google",
+            "device_type": "tangorpro",
+            "os": "Android",
+            "pool": "chrome.tests.perf"
+          },
+          "expiration": 7200,
+          "hard_timeout": 21600,
+          "io_timeout": 21600,
+          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 8
+        },
+        "test": "performance_test_suite_android_clank_trichrome_chrome_google_64_32_bundle",
+        "trigger_script": {
+          "args": [
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "requires_simultaneous_shard_dispatch": true,
+          "script": "//testing/trigger_scripts/perf_device_trigger.py"
+        }
+      }
+    ]
+  },
   "android-pixel2-perf": {
     "isolated_scripts": [
       {
@@ -683,7 +726,7 @@
           "hard_timeout": 21600,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 48
+          "shards": 40
         },
         "test": "performance_webview_test_suite",
         "trigger_script": {
@@ -717,6 +760,7 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimensions": {
+            "device_os": "AP1A.240405.002",
             "device_os_flavor": "google",
             "device_type": "oriole",
             "os": "Android",
@@ -760,6 +804,7 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimensions": {
+            "device_os": "AP1A.240405.002",
             "device_os_flavor": "google",
             "device_type": "oriole",
             "os": "Android",
@@ -803,6 +848,7 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimensions": {
+            "device_os": "AP1A.240405.002",
             "device_os_flavor": "google",
             "device_type": "raven",
             "os": "Android",
@@ -846,6 +892,7 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimensions": {
+            "device_os": "AP1A.240405.002",
             "device_os_flavor": "google",
             "device_type": "raven",
             "os": "Android",
@@ -943,6 +990,11 @@
     ]
   },
   "android_arm64-builder-perf-pgo": {},
+  "android_arm64_high_end-builder-perf": {
+    "additional_compile_targets": [
+      "trichrome_google_64_32_minimal_apks"
+    ]
+  },
   "chromecast-linux-builder-perf": {
     "additional_compile_targets": [
       "cast_shell"
@@ -1161,7 +1213,8 @@
   },
   "linux-builder-perf": {
     "additional_compile_targets": [
-      "chromedriver"
+      "chromedriver_group",
+      "chrome/installer/linux"
     ],
     "isolated_scripts": [
       {
@@ -1335,14 +1388,14 @@
       "script": "//tools/perf/process_perf_results.py"
     }
   },
-  "mac-14-m1-pro-perf": {
+  "linux-r350-perf": {
     "isolated_scripts": [
       {
         "args": [
           "-v",
           "--browser=release",
           "--upload-results",
-          "--test-shard-map-filename=mac-14-m1-pro-perf_map.json",
+          "--test-shard-map-filename=linux-r350-perf_map.json",
           "--ignore-benchmark-exit-code",
           "--assert-gpu-compositing"
         ],
@@ -1356,16 +1409,15 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimensions": {
-            "cpu": "arm",
-            "mac_model": "MacBookPro18,3",
-            "os": "Mac-14",
-            "pool": "chrome.tests.perf"
+            "os": "Ubuntu-22",
+            "pool": "chrome.tests.perf",
+            "synthetic_product_name": "PowerEdge R350 (Dell Inc.)"
           },
           "expiration": 7200,
           "hard_timeout": 21600,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 1
+          "shards": 30
         },
         "test": "performance_test_suite",
         "trigger_script": {
@@ -1668,14 +1720,58 @@
           "dimensions": {
             "cpu": "arm",
             "mac_model": "MacBookPro18,3",
-            "os": "Mac-13",
+            "os": "Mac",
             "pool": "chrome.tests.perf"
           },
           "expiration": 7200,
           "hard_timeout": 21600,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 1
+          "shards": 4
+        },
+        "test": "performance_test_suite",
+        "trigger_script": {
+          "args": [
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "requires_simultaneous_shard_dispatch": true,
+          "script": "//testing/trigger_scripts/perf_device_trigger.py"
+        }
+      }
+    ]
+  },
+  "mac-m1_mini_2020-no-brp-perf": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "-v",
+          "--browser=release",
+          "--upload-results",
+          "--test-shard-map-filename=mac-m1_mini_2020-no-brp-perf_map.json",
+          "--ignore-benchmark-exit-code",
+          "--assert-gpu-compositing"
+        ],
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "performance_test_suite",
+        "resultdb": {
+          "enable": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimensions": {
+            "cpu": "arm",
+            "mac_model": "Macmini9,1",
+            "os": "Mac",
+            "pool": "chrome.tests.perf"
+          },
+          "expiration": 7200,
+          "hard_timeout": 21600,
+          "io_timeout": 21600,
+          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 20
         },
         "test": "performance_test_suite",
         "trigger_script": {
@@ -1719,7 +1815,51 @@
           "hard_timeout": 21600,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 26
+          "shards": 28
+        },
+        "test": "performance_test_suite",
+        "trigger_script": {
+          "args": [
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "requires_simultaneous_shard_dispatch": true,
+          "script": "//testing/trigger_scripts/perf_device_trigger.py"
+        }
+      }
+    ]
+  },
+  "mac-m1_mini_2020-perf-local": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "-v",
+          "--browser=release",
+          "--upload-results",
+          "--test-shard-map-filename=mac-m1_mini_2020-perf-local_map.json",
+          "--ignore-benchmark-exit-code",
+          "--assert-gpu-compositing"
+        ],
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "performance_test_suite",
+        "resultdb": {
+          "enable": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimensions": {
+            "cpu": "arm",
+            "mac_model": "Macmini9,1",
+            "os": "Mac",
+            "pool": "chrome.tests.perf"
+          },
+          "expiration": 7200,
+          "hard_timeout": 21600,
+          "io_timeout": 21600,
+          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 1
         },
         "test": "performance_test_suite",
         "trigger_script": {
@@ -1763,7 +1903,7 @@
           "hard_timeout": 21600,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 4
+          "shards": 7
         },
         "test": "performance_test_suite",
         "trigger_script": {
@@ -1846,8 +1986,7 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimensions": {
-            "gpu": "8086:5912-27.20.100.8681",
-            "os": "Windows-10-18363.476",
+            "os": "Windows-10",
             "pool": "chrome.tests.perf",
             "synthetic_product_name": "OptiPlex 7050 (Dell Inc.)"
           },
@@ -1855,7 +1994,7 @@
           "hard_timeout": 21600,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 20
+          "shards": 18
         },
         "test": "performance_test_suite",
         "trigger_script": {
@@ -1890,8 +2029,7 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimensions": {
-            "gpu": "8086:5912-27.20.100.8681",
-            "os": "Windows-10-18363.476",
+            "os": "Windows-10",
             "pool": "chrome.tests.perf",
             "synthetic_product_name": "OptiPlex 7050 (Dell Inc.)"
           },
@@ -1899,7 +2037,7 @@
           "hard_timeout": 21600,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 26
+          "shards": 18
         },
         "test": "performance_test_suite",
         "trigger_script": {
@@ -1942,8 +2080,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimensions": {
-            "gpu": "1002:1638-30.0.13033.1000",
-            "os": "Windows-10-19043",
+            "gpu": "1002:1638",
+            "os": "Windows-10",
             "pool": "chrome.tests.perf",
             "synthetic_product_name": "OMEN by HP Laptop 16-c0xxx [ ] (HP)"
           },
@@ -1986,8 +2124,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimensions": {
-            "gpu": "1002:1638-30.0.13033.1000",
-            "os": "Windows-10-19043",
+            "gpu": "1002:1638",
+            "os": "Windows-10",
             "pool": "chrome.tests.perf",
             "synthetic_product_name": "OMEN by HP Laptop 16-c0xxx [ ] (HP)"
           },
@@ -2034,8 +2172,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimensions": {
-            "gpu": "8086:1616-20.19.15.5070|8086:1616-10.0.18362.1",
-            "os": "Windows-10-18363.476|Windows-10-18363.1621",
+            "gpu": "8086:1616-20.19.15.5171",
+            "os": "Windows-10-19045",
             "pool": "chrome.tests.perf",
             "synthetic_product_name": "HP Laptop 15-bs1xx [Type1ProductConfigId] (HP)"
           },
@@ -2043,7 +2181,7 @@
           "hard_timeout": 21600,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 48
+          "shards": 24
         },
         "test": "performance_test_suite",
         "trigger_script": {
@@ -2078,8 +2216,8 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimensions": {
-            "gpu": "8086:1616-20.19.15.5070|8086:1616-10.0.18362.1",
-            "os": "Windows-10-18363.476|Windows-10-18363.1621",
+            "gpu": "8086:1616",
+            "os": "Windows-10",
             "pool": "chrome.tests.perf"
           },
           "expiration": 7200,

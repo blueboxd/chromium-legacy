@@ -371,17 +371,33 @@ class CONTENT_EXPORT WebContentsObserver : public base::CheckedObserver {
   // DocumentUserData for more details).
   virtual void DidFinishNavigation(NavigationHandle* navigation_handle) {}
 
+  // Called when the NavigationHandleTiming associated with `navigation_handle`
+  // has been updated, which can be triggered by any of these events:
+  // - The URLLoader for the network request had started (if the navigation
+  //   needs a URLLoader)
+  // - A network response has been received (including redirect responses)
+  // - The navigation got blocked, and will commit an error page.
+  // - The Commit IPC has been sent
+  virtual void DidUpdateNavigationHandleTiming(
+      NavigationHandle* navigation_handle) {}
+
   // Called after the WebContents completes the previewed page activation steps.
   // `activation_time` is the time the activation happened.
   virtual void DidActivatePreviewedPage(base::TimeTicks activation_time) {}
 
   // Document load events ------------------------------------------------------
 
-  // These three methods correspond to the points in time when a document starts
-  // loading for the first time (initiates outgoing requests), when incoming
-  // data subsequently starts arriving, and when it finishes loading. Note:
-  // There is no guarantee that calls to DidStartLoading/DidStopLoading are
-  // interleaved (e.g. there can be 2 calls to DidStartLoading in a row).
+  // These three methods correspond to the points in time when any document in
+  // the frame tree starts loading for the first time (initiates outgoing
+  // requests), when incoming data subsequently starts arriving, and when the
+  // whole frame tree finishes loading.
+  // Notes:
+  // - There is no guarantee that calls to DidStartLoading/DidStopLoading are
+  //   interleaved (e.g. there can be 2 calls to DidStartLoading in a row).
+  // - These functions are different and unrelated from DidFinishLoad, which
+  //   is a notification about a specific document instead of the whole frame
+  //   tree, and uses a slightly different trigger to signify that the load had
+  //   finished.
   virtual void DidStartLoading() {}
   virtual void DidStopLoading() {}
 
@@ -442,8 +458,12 @@ class CONTENT_EXPORT WebContentsObserver : public base::CheckedObserver {
   // content scripts marked "document_end" get injected into the frame.
   virtual void DOMContentLoaded(RenderFrameHost* render_frame_host) {}
 
-  // This method is invoked when the load is done, i.e. the spinner of the tab
-  // will stop spinning, and the onload event was dispatched.
+  // This method is invoked when the load is done for the document represented
+  // by `render_frame_host` on the renderer side, e.g. the onload event was
+  // dispatched. Note that this function is not related to
+  // `DidStartLoading()` or `DidStopLoading()` as those functions track the
+  // loading state of the whole frame tree and uses a different set of triggers
+  // to mark the load ending.
   //
   // If the WebContents is displaying replacement content, e.g. network error
   // pages, DidFinishLoad is invoked for frames that were not sending
@@ -672,13 +692,6 @@ class CONTENT_EXPORT WebContentsObserver : public base::CheckedObserver {
                                         RenderFrameHost* render_frame_host,
                                         bool is_full_page) {}
 
-  // Notifies that an |inner_web_contents| instance has been detached from this
-  // WebContents. InnerWebContentsAttached() will already have been called for
-  // the |inner_web_contents|. By the time this is called the
-  // |inner_web_contents| will have been removed from the WebContents tree, but
-  // will still be alive and is safe to observe.
-  virtual void InnerWebContentsDetached(WebContents* inner_web_contents) {}
-
   // Invoked when WebContents::Clone() was used to clone a WebContents.
   virtual void DidCloneToNewWebContents(WebContents* old_web_contents,
                                         WebContents* new_web_contents) {}
@@ -851,6 +864,16 @@ class CONTENT_EXPORT WebContentsObserver : public base::CheckedObserver {
 
   // Invoked when a paste event occurs.
   virtual void OnPaste() {}
+
+  // Called when `copied_text` was copied to the clipboard from a given
+  // `render_frame_host` within this WebContents. Use this observer instead of
+  // ui::ClipboardObserver if you care about the source RenderFrameHost where
+  // the copy operation took place.
+  // Note: If clipboard copy events for other types of data are later needed by
+  // other WebContentsObservers, it'd be okay to generalize this method to
+  // support content::ClipboardPasteData directly.
+  virtual void OnTextCopiedToClipboard(RenderFrameHost* render_frame_host,
+                                       const std::u16string& copied_text) {}
 
   // Invoked if an IPC message is coming from a specific RenderFrameHost.
   virtual bool OnMessageReceived(const IPC::Message& message,

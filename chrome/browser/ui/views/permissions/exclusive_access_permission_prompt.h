@@ -7,6 +7,7 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/ui/views/permissions/chip/chip_controller.h"
 #include "chrome/browser/ui/views/permissions/embedded_permission_prompt_content_scrim_view.h"
 #include "chrome/browser/ui/views/permissions/permission_prompt_desktop.h"
 #include "components/permissions/permission_prompt.h"
@@ -49,7 +50,7 @@ class ExclusiveAccessPermissionPrompt
   ExclusiveAccessPermissionPromptView* GetViewForTesting();
 
  private:
-  void ShowPrompt();
+  bool ShowPrompt();
   void ClosePrompt();
 
   views::UniqueWidgetPtr content_scrim_widget_;

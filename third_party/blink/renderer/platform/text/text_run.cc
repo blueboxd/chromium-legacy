@@ -23,8 +23,14 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/platform/text/text_run.h"
 
+#include "base/memory/raw_ptr_exclusion.h"
 #include "third_party/blink/renderer/platform/text/bidi_paragraph.h"
 #include "third_party/blink/renderer/platform/text/character.h"
 #include "third_party/blink/renderer/platform/wtf/size_assertions.h"
@@ -35,7 +41,8 @@ namespace blink {
 struct SameSizeAsTextRun {
   DISALLOW_NEW();
   union {
-    const void* pointer;
+    // RAW_PTR_EXCLUSION: #union
+    RAW_PTR_EXCLUSION const void* pointer;
   };
   int integer;
   uint32_t bitfields : 4;

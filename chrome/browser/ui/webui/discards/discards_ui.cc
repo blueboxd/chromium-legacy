@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/ui/webui/discards/discards_ui.h"
 
 #include <utility>
@@ -15,6 +20,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/performance_manager/public/user_tuning/performance_detection_manager.h"
 #include "chrome/browser/performance_manager/public/user_tuning/user_tuning_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit.h"
@@ -237,6 +243,11 @@ class DiscardsDetailsProviderImpl : public discards::mojom::DetailsProvider {
                                    BatterySaverModeState::kDisabled));
   }
 
+  void RefreshPerformanceTabCpuMeasurements() override {
+    performance_manager::user_tuning::PerformanceDetectionManager::GetInstance()
+        ->ForceTabCpuDataRefresh();
+  }
+
  private:
   mojo::Receiver<discards::mojom::DetailsProvider> receiver_;
 };
@@ -248,6 +259,11 @@ DiscardsUI::DiscardsUI(content::WebUI* web_ui)
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
       profile, chrome::kChromeUIDiscardsHost);
+
+  source->AddBoolean(
+      "isPerformanceInterventionDemoModeEnabled",
+      base::FeatureList::IsEnabled(
+          performance_manager::features::kPerformanceInterventionDemoMode));
 
   webui::SetupWebUIDataSource(
       source, base::make_span(kDiscardsResources, kDiscardsResourcesSize),

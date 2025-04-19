@@ -314,6 +314,14 @@ bool IdentityManager::HasAccountWithRefreshTokenInPersistentErrorState(
   return GetErrorStateOfRefreshTokenForAccount(account_id).IsPersistentError();
 }
 
+#if BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
+std::vector<uint8_t>
+IdentityManager::GetWrappedBindingKeyOfRefreshTokenForAccount(
+    const CoreAccountId& account_id) const {
+  return token_service_->GetWrappedBindingKey(account_id);
+}
+#endif
+
 GoogleServiceAuthError IdentityManager::GetErrorStateOfRefreshTokenForAccount(
     const CoreAccountId& account_id) const {
   return token_service_->GetAuthError(account_id);
@@ -663,7 +671,7 @@ void IdentityManager::OnFetchAccessTokenComplete(
     const CoreAccountId& account_id,
     const std::string& consumer_id,
     const ScopeSet& scopes,
-    GoogleServiceAuthError error,
+    const GoogleServiceAuthError& error,
     base::Time expiration_time) {
   for (auto& observer : diagnostics_observation_list_)
     observer.OnAccessTokenRequestCompleted(account_id, consumer_id, scopes,

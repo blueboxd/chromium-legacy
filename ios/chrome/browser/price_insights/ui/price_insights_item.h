@@ -7,7 +7,13 @@
 
 #import <UIKit/UIKit.h>
 
+#include <string>
+
 class GURL;
+
+namespace commerce {
+enum class PriceBucket;
+}
 
 // Base object for Price Insights data. This will be used to pass the data to
 // the UICollectionViewCell.
@@ -17,12 +23,10 @@ class GURL;
 @property(nonatomic, copy) NSString* title;
 // The product variants.
 @property(nonatomic, copy) NSString* variants;
-// The product typically low price.
-@property(nonatomic, copy) NSString* lowPrice;
-// The product typically high price.
-@property(nonatomic, copy) NSString* highPrice;
 // The product price currency.
-@property(nonatomic, copy) NSString* currency;
+@property(nonatomic, assign) std::string currency;
+// The product country code.
+@property(nonatomic, assign) std::string country;
 // The price history.
 @property(nonatomic, copy) NSDictionary* priceHistory;
 // The product buying options URL.
@@ -33,7 +37,10 @@ class GURL;
 @property(nonatomic, assign) BOOL isPriceTracked;
 // The product URL.
 @property(nonatomic, assign) const GURL& productURL;
-
+// The product cluster id.
+@property(nonatomic, assign) uint64_t clusterId;
+// The product current price bucket.
+@property(nonatomic, assign) commerce::PriceBucket priceBucket;
 @end
 
 #endif  // IOS_CHROME_BROWSER_PRICE_INSIGHTS_UI_PRICE_INSIGHTS_ITEM_H_

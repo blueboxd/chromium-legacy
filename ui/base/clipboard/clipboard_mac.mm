@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ui/base/clipboard/clipboard_mac.h"
 
 #import <Cocoa/Cocoa.h>
@@ -34,6 +39,7 @@
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/clipboard_format_type.h"
 #include "ui/base/clipboard/clipboard_metrics.h"
+#include "ui/base/clipboard/clipboard_monitor.h"
 #include "ui/base/clipboard/clipboard_util_mac.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
@@ -367,10 +373,11 @@ void ClipboardMac::ReadPng(ClipboardBuffer buffer,
 
 // |data_dst| is not used. It's only passed to be consistent with other
 // platforms.
-void ClipboardMac::ReadCustomData(ClipboardBuffer buffer,
-                                  const std::u16string& type,
-                                  const DataTransferEndpoint* data_dst,
-                                  std::u16string* result) const {
+void ClipboardMac::ReadDataTransferCustomData(
+    ClipboardBuffer buffer,
+    const std::u16string& type,
+    const DataTransferEndpoint* data_dst,
+    std::u16string* result) const {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
   RecordRead(ClipboardFormatMetric::kCustomData);
@@ -599,10 +606,7 @@ void ClipboardMac::WriteBitmapInternal(const SkBitmap& bitmap,
   }
 
   NSBitmapImageRep* image_rep = skia::SkBitmapToNSBitmapImageRep(bitmap);
-  if (!image_rep) {
-    NOTREACHED_IN_MIGRATION() << "SkBitmapToNSBitmapImageRep failed";
-    return;
-  }
+  CHECK(image_rep) << "SkBitmapToNSBitmapImageRep failed";
   // Attempt to format the image representation as a PNG, and write it directly
   // to the clipboard if this succeeds. This will write both a PNG and a TIFF.
   NSData* data = [image_rep representationUsingType:NSBitmapImageFileTypePNG

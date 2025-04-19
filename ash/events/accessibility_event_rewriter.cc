@@ -37,7 +37,7 @@ ui::InputDeviceType GetInputDeviceType(
     return ui::INPUT_DEVICE_BLUETOOTH;
   // On Chrome OS emulated on Linux, the keyboard is always "UNKNOWN".
   if (base::SysInfo::IsRunningOnChromeOS())
-    DUMP_WILL_BE_NOTREACHED_NORETURN();
+    DUMP_WILL_BE_NOTREACHED();
   return ui::INPUT_DEVICE_UNKNOWN;
 }
 }  // namespace
@@ -222,7 +222,7 @@ bool AccessibilityEventRewriter::RewriteEventForSwitchAccess(
     return false;
   }
 
-  if (key_event->type() == ui::ET_KEY_PRESSED) {
+  if (key_event->type() == ui::EventType::kKeyPressed) {
     AccessibilityController* accessibility_controller =
         Shell::Get()->accessibility_controller();
 
@@ -255,7 +255,7 @@ bool AccessibilityEventRewriter::RewriteEventForMagnifier(
     return false;
   }
 
-  if (key_event->type() == ui::ET_KEY_PRESSED) {
+  if (key_event->type() == ui::EventType::kKeyPressed) {
     // If first time key is pressed (e.g. not repeat), start scrolling.
     if (!(key_event->flags() & ui::EF_IS_REPEAT))
       OnMagnifierKeyPressed(key_event);
@@ -264,7 +264,7 @@ bool AccessibilityEventRewriter::RewriteEventForMagnifier(
     return true;
   }
 
-  if (key_event->type() == ui::ET_KEY_RELEASED) {
+  if (key_event->type() == ui::EventType::kKeyReleased) {
     OnMagnifierKeyReleased(key_event);
     return true;
   }
@@ -316,8 +316,8 @@ void AccessibilityEventRewriter::MaybeSendMouseEvent(const ui::Event& event) {
   AccessibilityController* accessibility_controller =
       Shell::Get()->accessibility_controller();
   if (send_mouse_events_ &&
-      (event.type() == ui::ET_MOUSE_MOVED ||
-       event.type() == ui::ET_MOUSE_DRAGGED) &&
+      (event.type() == ui::EventType::kMouseMoved ||
+       event.type() == ui::EventType::kMouseDragged) &&
       (accessibility_controller->fullscreen_magnifier().enabled() ||
        accessibility_controller->docked_magnifier().enabled() ||
        accessibility_controller->spoken_feedback().enabled() ||

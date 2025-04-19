@@ -82,6 +82,8 @@ void NearbyPresenceServiceImpl::StartScan(
     std::move(on_start_scan_callback)
         .Run(/*scan_session=*/nullptr,
              /*status=*/enums::StatusCode::kFailedToStartProcess);
+
+    metrics::RecordScanRequestResult(enums::StatusCode::kFailedToStartProcess);
     return;
   }
 
@@ -234,6 +236,8 @@ void NearbyPresenceServiceImpl::OnScanStarted(
   }
   std::move(on_start_scan_callback)
       .Run(std::move(scan_session), enums::ConvertToPresenceStatus(status));
+
+  metrics::RecordScanRequestResult(enums::ConvertToPresenceStatus(status));
 }
 
 void NearbyPresenceServiceImpl::OnScanSessionDisconnect(
@@ -250,10 +254,10 @@ void NearbyPresenceServiceImpl::OnScanSessionDisconnect(
 }
 
 void NearbyPresenceServiceImpl::OnNearbyProcessStopped(
-    ash::nearby::NearbyProcessManager::NearbyProcessShutdownReason) {
-  // TODO(b/277819923): Add metric to record shutdown reason for Nearby
-  // Presence process.
+    ash::nearby::NearbyProcessManager::NearbyProcessShutdownReason
+        shutdown_reason) {
   LOG(WARNING) << __func__ << ": Nearby process stopped.";
+  metrics::RecordNearbyProcessShutdownReason(shutdown_reason);
   Shutdown();
 }
 

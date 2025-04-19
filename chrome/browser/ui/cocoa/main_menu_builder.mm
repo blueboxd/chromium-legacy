@@ -80,8 +80,6 @@ NSMenuItem* BuildAppMenu(NSApplication* nsapp,
                   .action(@selector(toggleConfirmToQuit:))
                   .remove_if(is_pwa),
               Item().is_separator(),
-              // AppKit inserts "Quit and Keep Windows" as an alternate item
-              // automatically by using the -terminate: action.
               Item(IDS_EXIT_MAC)
                   .string_format_1(product_name)
                   .tag(IDC_EXIT)
@@ -126,11 +124,14 @@ NSMenuItem* BuildFileMenu(NSApplication* nsapp,
                   .command_id(IDC_FOCUS_LOCATION)
                   .remove_if(is_pwa),
               Item().is_separator(),
-              // AppKit inserts "Close All" as an alternate item automatically
-              // by using the -performClose: action.
               Item(IDS_CLOSE_WINDOW_MAC)
                   .tag(IDC_CLOSE_WINDOW)
                   .action(@selector(performClose:)),
+              Item(IDS_CLOSE_ALL_WINDOWS_MAC)
+                  .action(@selector(closeAll:))
+                  .is_alternate()
+                  .key_equivalent(@"W", NSEventModifierFlagCommand |
+                                            NSEventModifierFlagOption),
               Item(IDS_CLOSE_TAB_MAC)
                   .command_id(IDC_CLOSE_TAB)
                   .remove_if(is_pwa),
@@ -291,6 +292,8 @@ NSMenuItem* BuildViewMenu(NSApplication* nsapp,
                   .command_id(IDC_TOGGLE_FULLSCREEN_TOOLBAR),
               Item(IDS_CONTEXT_MENU_SHOW_FULL_URLS)
                   .command_id(IDC_SHOW_FULL_URLS),
+              Item(IDS_CONTEXT_MENU_SHOW_GOOGLE_LENS_SHORTCUT)
+                  .command_id(IDC_SHOW_GOOGLE_LENS_SHORTCUT),
               Item(IDS_CUSTOMIZE_TOUCH_BAR)
                   .tag(IDC_CUSTOMIZE_TOUCH_BAR)
                   .action(@selector(toggleTouchBarCustomizationPalette:))
@@ -310,7 +313,6 @@ NSMenuItem* BuildViewMenu(NSApplication* nsapp,
               Item(IDS_ENTER_FULLSCREEN_MAC)
                   .action(@selector(toggleFullScreen:))
                   .is_alternate()
-                  .remove_if(base::mac::MacOSMajorVersion() <= 11)
                   .key_equivalent(@"f", NSEventModifierFlagCommand |
                                             NSEventModifierFlagControl),
               Item(IDS_TEXT_DEFAULT_MAC)
@@ -669,8 +671,9 @@ NSMenuItem* MenuItemBuilder::Build() const {
     NSMenu* menu = [[NSMenu alloc] initWithTitle:title];
     for (const auto& subitem : submenu_.value()) {
       NSMenuItem* ns_subitem = subitem.Build();
-      if (ns_subitem)
+      if (ns_subitem) {
         [menu addItem:ns_subitem];
+      }
     }
     item.submenu = menu;
   }

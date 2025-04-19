@@ -66,6 +66,7 @@ class ResizeToggleMenu : public views::WidgetObserver,
 
     const raw_ref<const gfx::VectorIcon> icon_;
     bool is_selected_{false};
+    const int title_string_id_;
   };
 
   ResizeToggleMenu(base::OnceClosure on_bubble_widget_closing_callback,

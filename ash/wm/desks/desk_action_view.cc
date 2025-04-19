@@ -23,6 +23,7 @@ constexpr int kCornerRadius = 20;
 
 DeskActionView::DeskActionView(const std::u16string& combine_desks_target_name,
                                const std::u16string& close_all_target_name,
+                               base::RepeatingClosure context_menu_callback,
                                base::RepeatingClosure combine_desks_callback,
                                base::RepeatingClosure close_all_callback,
                                base::RepeatingClosure focus_change_callback,
@@ -35,39 +36,57 @@ DeskActionView::DeskActionView(const std::u16string& combine_desks_target_name,
       this, kColorAshShieldAndBase80, ColorProvider::kBackgroundBlurSigma,
       gfx::RoundedCornersF(kCornerRadius));
 
-  combine_desks_button_ = AddChildView(std::make_unique<DeskActionButton>(
-      combine_desks_target_name, DeskActionButton::Type::kCombineDesk,
-      std::move(combine_desks_callback), this));
+  // The "Save desk as template" and "Save desk for later" buttons are being
+  // merged into the desk action context menu, behind the a feature flag. Thus,
+  // we replace the combine desks button with a button to open the context menu
+  // if the feature is enabled.
+  if (features::IsSavedDeskUiRevampEnabled()) {
+    context_menu_button_ = AddChildView(std::make_unique<DeskActionButton>(
+        // The tooltip for the context menu button will be set by the button
+        // itself, as its tooltip is constant.
+        std::u16string(), DeskActionButton::Type::kContextMenu,
+        std::move(context_menu_callback), this));
+    context_menu_button_->AddObserver(this);
+  } else {
+    combine_desks_button_ = AddChildView(std::make_unique<DeskActionButton>(
+        combine_desks_target_name, DeskActionButton::Type::kCombineDesk,
+        std::move(combine_desks_callback), this));
+    combine_desks_button_->AddObserver(this);
+  }
 
   close_all_button_ = AddChildView(std::make_unique<DeskActionButton>(
       close_all_target_name, DeskActionButton::Type::kCloseDesk,
       std::move(close_all_callback), this));
-
-  combine_desks_button_->AddObserver(this);
   close_all_button_->AddObserver(this);
 }
 
 DeskActionView::~DeskActionView() {
-  combine_desks_button_->RemoveObserver(this);
+  if (features::IsSavedDeskUiRevampEnabled()) {
+    context_menu_button_->RemoveObserver(this);
+  } else {
+    combine_desks_button_->RemoveObserver(this);
+  }
   close_all_button_->RemoveObserver(this);
 }
 
 bool DeskActionView::ChildHasFocus() const {
-  if (mini_view_->owner_bar()->type() == DeskBarViewBase::Type::kOverview &&
-      !features::IsOverviewNewFocusEnabled()) {
-    return combine_desks_button_->is_focused() ||
-           close_all_button_->is_focused();
-  }
-  return combine_desks_button_->HasFocus() || close_all_button_->HasFocus();
+  return (features::IsSavedDeskUiRevampEnabled()
+              ? context_menu_button_->HasFocus()
+              : combine_desks_button_->HasFocus()) ||
+         close_all_button_->HasFocus();
 }
 
 void DeskActionView::OnViewFocused(views::View* observed) {
-  CHECK(observed == combine_desks_button_ || observed == close_all_button_);
+  CHECK(observed);
+  CHECK(observed == context_menu_button_ || observed == combine_desks_button_ ||
+        observed == close_all_button_);
   OnFocusChange();
 }
 
 void DeskActionView::OnViewBlurred(views::View* observed) {
-  CHECK(observed == combine_desks_button_ || observed == close_all_button_);
+  CHECK(observed);
+  CHECK(observed == context_menu_button_ || observed == combine_desks_button_ ||
+        observed == close_all_button_);
   OnFocusChange();
 }
 

@@ -730,7 +730,7 @@ TEST_F(NetworkServiceTest, DisableDohUpgradeProviders) {
     CHECK(it != net::DohProviderEntry::GetList().end())
         << "Provider named \"" << provider
         << "\" not found in DoH provider list.";
-    return (*it)->feature;
+    return (*it)->feature.get();
   };
 
   base::test::ScopedFeatureList scoped_features;
@@ -1091,7 +1091,7 @@ TEST_F(NetworkServiceTest, SetMaskedDomainList) {
       mojo_base::ProtoWrapper(mdl),
       /*exclusion_list=*/std::vector<std::string>());
 
-  EXPECT_TRUE(service()->network_service_proxy_allow_list()->IsPopulated());
+  EXPECT_TRUE(service()->masked_domain_list_manager()->IsPopulated());
 }
 
 class TestCookieEncryptionProvider : public mojom::CookieEncryptionProvider {
@@ -1346,6 +1346,9 @@ TEST_F(NetworkServiceTestWithService, StartsNetLog) {
 
   base::Value::Dict log_dict = base::test::ParseJsonDictFromFile(log_path);
   ASSERT_EQ(*log_dict.FindStringByDottedPath("constants.amiatest"), "iamatest");
+
+  // The log should have a "polledData" list.
+  ASSERT_TRUE(log_dict.FindList("polledData"));
 }
 
 // Verifies that a passed net log file is successfully opened and sane data

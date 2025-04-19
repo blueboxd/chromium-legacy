@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/core/css/parser/css_parser_fast_paths.h"
 
 #ifdef __SSE2__
@@ -330,9 +335,12 @@ static unsigned FindLengthOfValidDouble(const LChar* string, const LChar* end) {
 
     // https://community.arm.com/arm-community-blogs/b/infrastructure-solutions-blog/posts/porting-x86-vector-bitmask-optimizations-to-arm-neon
     uint64_t is_decimal_bits =
-        vget_lane_u64(vreinterpret_u64_u8(vshrn_n_u16(is_decimal_mask, 4)), 0);
-    uint64_t is_mark_bits =
-        vget_lane_u64(vreinterpret_u64_u8(vshrn_n_u16(is_mark_mask, 4)), 0);
+        vget_lane_u64(vreinterpret_u64_u8(vshrn_n_u16(
+                          vreinterpretq_u16_s8(is_decimal_mask), 4)),
+                      0);
+    uint64_t is_mark_bits = vget_lane_u64(
+        vreinterpret_u64_u8(vshrn_n_u16(vreinterpretq_u16_s8(is_mark_mask), 4)),
+        0);
 
     // Only count the first decimal mark.
     is_mark_bits &= -is_mark_bits;
@@ -1142,15 +1150,6 @@ ParseColorResult CSSParserFastPaths::ParseColor(const String& string,
                            color_id);
 }
 
-bool CSSParserFastPaths::IsNonStandardAppearanceValuesHighUsage(
-    CSSValueID value_id) {
-  return value_id == CSSValueID::kInnerSpinButton ||
-         value_id == CSSValueID::kPushButton ||
-         value_id == CSSValueID::kSquareButton ||
-         value_id == CSSValueID::kSliderHorizontal ||
-         value_id == CSSValueID::kSearchfieldCancelButton;
-}
-
 bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
     CSSPropertyID property_id,
     CSSValueID value_id,
@@ -1242,6 +1241,9 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
       return value_id == CSSValueID::kAuto ||
              value_id == CSSValueID::kWebkitOptimizeContrast ||
              value_id == CSSValueID::kPixelated;
+    case CSSPropertyID::kInterpolateSize:
+      return value_id == CSSValueID::kNumericOnly ||
+             value_id == CSSValueID::kAllowKeywords;
     case CSSPropertyID::kIsolation:
       return value_id == CSSValueID::kAuto || value_id == CSSValueID::kIsolate;
     case CSSPropertyID::kListStylePosition:
@@ -1316,8 +1318,8 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
              value_id == CSSValueID::kMostHeight ||
              value_id == CSSValueID::kMostBlockSize ||
              value_id == CSSValueID::kMostInlineSize;
-    case CSSPropertyID::kReadingOrderItems:
-      DCHECK(RuntimeEnabledFeatures::CSSReadingOrderItemsEnabled());
+    case CSSPropertyID::kReadingFlow:
+      DCHECK(RuntimeEnabledFeatures::CSSReadingFlowEnabled());
       return value_id == CSSValueID::kNormal ||
              value_id == CSSValueID::kFlexVisual ||
              value_id == CSSValueID::kFlexFlow ||
@@ -1333,7 +1335,7 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
              value_id == CSSValueID::kInternalTextareaAuto ||
              (RuntimeEnabledFeatures::CSSResizeAutoEnabled() &&
               value_id == CSSValueID::kAuto);
-    case CSSPropertyID::kScrollMarkers:
+    case CSSPropertyID::kScrollMarkerGroup:
       return value_id == CSSValueID::kNone || value_id == CSSValueID::kAfter ||
              value_id == CSSValueID::kBefore;
     case CSSPropertyID::kScrollBehavior:
@@ -1438,9 +1440,6 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
              (RuntimeEnabledFeatures::StylableSelectEnabled() &&
               value_id == CSSValueID::kBaseSelect) ||
              (RuntimeEnabledFeatures::
-                  NonStandardAppearanceValuesHighUsageEnabled() &&
-              IsNonStandardAppearanceValuesHighUsage(value_id)) ||
-             (RuntimeEnabledFeatures::
                   NonStandardAppearanceValueSliderVerticalEnabled() &&
               value_id == CSSValueID::kSliderVertical) ||
              value_id == CSSValueID::kNone || value_id == CSSValueID::kAuto;
@@ -1470,6 +1469,11 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
              value_id == CSSValueID::kStart || value_id == CSSValueID::kEnd ||
              value_id == CSSValueID::kCenter ||
              value_id == CSSValueID::kBaseline;
+    case CSSPropertyID::kBoxDecorationBreak:
+      if (!RuntimeEnabledFeatures::BoxDecorationBreakEnabled()) {
+        return false;
+      }
+      [[fallthrough]];
     case CSSPropertyID::kWebkitBoxDecorationBreak:
       return value_id == CSSValueID::kClone || value_id == CSSValueID::kSlice;
     case CSSPropertyID::kWebkitBoxDirection:
@@ -1576,6 +1580,11 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
     case CSSPropertyID::kWebkitRtlOrdering:
       return value_id == CSSValueID::kLogical ||
              value_id == CSSValueID::kVisual;
+    case CSSPropertyID::kRubyAlign:
+      return value_id == CSSValueID::kSpaceAround ||
+             value_id == CSSValueID::kStart ||
+             value_id == CSSValueID::kCenter ||
+             value_id == CSSValueID::kSpaceBetween;
     case CSSPropertyID::kWebkitRubyPosition:
       return value_id == CSSValueID::kBefore || value_id == CSSValueID::kAfter;
     case CSSPropertyID::kRubyPosition:
@@ -1627,6 +1636,12 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
       return value_id >= CSSValueID::kHorizontalTb &&
              value_id <= CSSValueID::kVerticalLr;
     case CSSPropertyID::kWritingMode:
+      if (RuntimeEnabledFeatures::SidewaysWritingModesEnabled()) {
+        if (value_id == CSSValueID::kSidewaysRl ||
+            value_id == CSSValueID::kSidewaysLr) {
+          return true;
+        }
+      }
       return value_id == CSSValueID::kHorizontalTb ||
              value_id == CSSValueID::kVerticalRl ||
              value_id == CSSValueID::kVerticalLr ||
@@ -1659,8 +1674,10 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
       return value_id == CSSValueID::kNormal || value_id == CSSValueID::kNone;
     case CSSPropertyID::kTextBoxTrim:
       DCHECK(RuntimeEnabledFeatures::CSSTextBoxTrimEnabled());
-      return value_id == CSSValueID::kNone || value_id == CSSValueID::kStart ||
-             value_id == CSSValueID::kEnd || value_id == CSSValueID::kBoth;
+      return value_id == CSSValueID::kNone ||
+             value_id == CSSValueID::kTrimStart ||
+             value_id == CSSValueID::kTrimEnd ||
+             value_id == CSSValueID::kTrimBoth;
     default:
       NOTREACHED_IN_MIGRATION();
       return false;
@@ -1681,6 +1698,7 @@ CSSBitset CSSParserFastPaths::handled_by_keyword_fast_paths_properties_{{
     CSSPropertyID::kBorderLeftStyle,
     CSSPropertyID::kBorderRightStyle,
     CSSPropertyID::kBorderTopStyle,
+    CSSPropertyID::kBoxDecorationBreak,
     CSSPropertyID::kBoxSizing,
     CSSPropertyID::kBufferedRendering,
     CSSPropertyID::kCaptionSide,
@@ -1700,6 +1718,7 @@ CSSBitset CSSParserFastPaths::handled_by_keyword_fast_paths_properties_{{
     CSSPropertyID::kImageRendering,
     CSSPropertyID::kInternalOverflowBlock,
     CSSPropertyID::kInternalOverflowInline,
+    CSSPropertyID::kInterpolateSize,
     CSSPropertyID::kListStylePosition,
     CSSPropertyID::kMaskType,
     CSSPropertyID::kMathShift,
@@ -1719,15 +1738,15 @@ CSSBitset CSSParserFastPaths::handled_by_keyword_fast_paths_properties_{{
     CSSPropertyID::kPointerEvents,
     CSSPropertyID::kPosition,
     CSSPropertyID::kPositionTryOrder,
-    CSSPropertyID::kReadingOrderItems,
+    CSSPropertyID::kReadingFlow,
     CSSPropertyID::kResize,
-    CSSPropertyID::kScrollMarkers,
+    CSSPropertyID::kScrollMarkerGroup,
     CSSPropertyID::kScrollBehavior,
     CSSPropertyID::kOverscrollBehaviorInline,
     CSSPropertyID::kOverscrollBehaviorBlock,
     CSSPropertyID::kOverscrollBehaviorX,
     CSSPropertyID::kOverscrollBehaviorY,
-    CSSPropertyID::kRubyPosition,
+    CSSPropertyID::kRubyAlign,
     CSSPropertyID::kShapeRendering,
     CSSPropertyID::kSpeak,
     CSSPropertyID::kStrokeLinecap,

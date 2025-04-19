@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "services/viz/public/cpp/compositing/quads_mojom_traits.h"
 
 #include <optional>
@@ -165,7 +170,6 @@ bool StructTraits<viz::mojom::TextureQuadStateDataView, viz::DrawQuad>::Read(
   if (!data.ReadUvTopLeft(&quad->uv_top_left) ||
       !data.ReadUvBottomRight(&quad->uv_bottom_right) ||
       !data.ReadProtectedVideoType(&protected_video_type) ||
-      !data.ReadHdrMetadata(&quad->hdr_metadata) ||
       !data.ReadOverlayPriorityHint(&overlay_priority_hint) ||
       !data.ReadRoundedDisplayMasksInfo(&quad->rounded_display_masks_info)) {
     return false;

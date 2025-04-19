@@ -37,7 +37,7 @@ base::Value::Dict WrapWithPrefixPrefStore::GetValues() const {
   return {};
 }
 
-bool WrapWithPrefixPrefStore::GetMutableValue(const std::string& key,
+bool WrapWithPrefixPrefStore::GetMutableValue(std::string_view key,
                                               base::Value** value) {
   return target_pref_store_->GetMutableValue(AddDottedPrefix(key), value);
 }
@@ -58,26 +58,26 @@ bool WrapWithPrefixPrefStore::IsInitializationComplete() const {
   return target_pref_store_->IsInitializationComplete();
 }
 
-void WrapWithPrefixPrefStore::SetValue(const std::string& key,
+void WrapWithPrefixPrefStore::SetValue(std::string_view key,
                                        base::Value value,
                                        uint32_t flags) {
   target_pref_store_->SetValue(AddDottedPrefix(key), std::move(value), flags);
 }
 
-void WrapWithPrefixPrefStore::SetValueSilently(const std::string& key,
+void WrapWithPrefixPrefStore::SetValueSilently(std::string_view key,
                                                base::Value value,
                                                uint32_t flags) {
   target_pref_store_->SetValueSilently(AddDottedPrefix(key), std::move(value),
                                        flags);
 }
 
-void WrapWithPrefixPrefStore::RemoveValue(const std::string& key,
+void WrapWithPrefixPrefStore::RemoveValue(std::string_view key,
                                           uint32_t flags) {
   target_pref_store_->RemoveValue(AddDottedPrefix(key), flags);
 }
 
 void WrapWithPrefixPrefStore::RemoveValuesByPrefixSilently(
-    const std::string& prefix) {
+    std::string_view prefix) {
   target_pref_store_->RemoveValuesByPrefixSilently(AddDottedPrefix(prefix));
 }
 
@@ -127,16 +127,16 @@ void WrapWithPrefixPrefStore::OnStoreDeletionFromDisk() {
   // independently notified of this.
 }
 
-void WrapWithPrefixPrefStore::ReportValueChanged(const std::string& key,
+void WrapWithPrefixPrefStore::ReportValueChanged(std::string_view key,
                                                  uint32_t flags) {
   return target_pref_store_->ReportValueChanged(AddDottedPrefix(key), flags);
 }
 
-void WrapWithPrefixPrefStore::OnPrefValueChanged(const std::string& key) {
+void WrapWithPrefixPrefStore::OnPrefValueChanged(std::string_view key) {
   if (!HasDottedPrefix(key)) {
     return;
   }
-  std::string original_key(RemoveDottedPrefix(key));
+  std::string_view original_key(RemoveDottedPrefix(key));
   for (PrefStore::Observer& observer : observers_) {
     observer.OnPrefValueChanged(original_key);
   }
@@ -155,7 +155,6 @@ void WrapWithPrefixPrefStore::OnInitializationCompleted(bool succeeded) {
 
 std::string WrapWithPrefixPrefStore::AddDottedPrefix(
     std::string_view path) const {
-  CHECK(!HasDottedPrefix(path));
   return base::StrCat({dotted_prefix_, path});
 }
 

@@ -34,7 +34,6 @@
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/os_integration/web_app_file_handler_manager.h"
 #include "chrome/browser/web_applications/os_integration/web_app_protocol_handler_manager.h"
-#include "chrome/browser/web_applications/os_integration/web_app_shortcut_manager.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/preinstalled_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -57,9 +56,12 @@
 #include "content/public/browser/web_contents.h"
 
 #if BUILDFLAG(IS_CHROMEOS)
+#include "base/feature_list.h"
 #include "chrome/browser/web_applications/isolated_web_apps/policy/isolated_web_app_policy_manager.h"
 #include "chrome/browser/web_applications/migrations/adobe_express_oem_to_default_migration.h"
+#include "chrome/browser/web_applications/migrations/migrate_preinstalls_to_aps.h"
 #include "chrome/browser/web_applications/web_app_run_on_os_login_manager.h"
+#include "chromeos/constants/chromeos_features.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -304,7 +306,7 @@ void WebAppProvider::Shutdown() {
   web_app_policy_manager_->Shutdown();
   icon_manager_->Shutdown();
   install_finalizer_->Shutdown();
-  registrar_->Shutdown();
+  os_integration_manager_->Shutdown();
   is_registry_ready_ = false;
 }
 
@@ -351,11 +353,9 @@ void WebAppProvider::CreateSubsystems(Profile* profile) {
       std::make_unique<WebAppFileHandlerManager>(profile);
   auto protocol_handler_manager =
       std::make_unique<WebAppProtocolHandlerManager>(profile);
-  auto shortcut_manager = std::make_unique<WebAppShortcutManager>(
-      profile, file_handler_manager.get(), protocol_handler_manager.get());
 
   os_integration_manager_ = std::make_unique<OsIntegrationManager>(
-      profile, std::move(shortcut_manager), std::move(file_handler_manager),
+      profile, std::move(file_handler_manager),
       std::move(protocol_handler_manager));
 
   command_manager_ = std::make_unique<WebAppCommandManager>(profile);
@@ -420,6 +420,10 @@ void WebAppProvider::OnSyncBridgeReady() {
 #if BUILDFLAG(IS_CHROMEOS)
   web_app::migrations::MigrateAdobeExpressFromOemInstallToDefault(
       sync_bridge_.get());
+  if (base::FeatureList::IsEnabled(
+          chromeos::features::kPreinstalledWebAppsCoreOnly)) {
+    web_app::migrations::MigratePreinstallsToAps(sync_bridge_.get());
+  }
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
   base::ConcurrentClosures concurrent;

@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/not_fatal_until.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "net/base/address_family.h"
@@ -33,6 +34,7 @@
 #include "net/dns/host_resolver_manager_service_endpoint_request_impl.h"
 #include "net/dns/host_resolver_mdns_task.h"
 #include "net/dns/host_resolver_nat64_task.h"
+#include "net/dns/host_resolver_system_task.h"
 #include "net/dns/public/dns_query_type.h"
 #include "net/dns/public/secure_dns_mode.h"
 #include "net/log/net_log_with_source.h"
@@ -379,7 +381,7 @@ bool HostResolverManager::Job::ServeFromHosts() {
 
 void HostResolverManager::Job::OnAddedToJobMap(JobMap::iterator iterator) {
   DCHECK(!self_iterator_);
-  DCHECK(iterator != resolver_->jobs_.end());
+  CHECK(iterator != resolver_->jobs_.end(), base::NotFatalUntil::M130);
   self_iterator_ = iterator;
 }
 
@@ -609,11 +611,17 @@ void HostResolverManager::Job::StartSystemTask() {
   DCHECK_EQ(1, num_occupied_job_slots_);
   DCHECK(HasAddressType(key_.query_types));
 
+  std::optional<HostResolverSystemTask::CacheParams> cache_params;
+  if (key_.resolve_context->host_resolver_cache()) {
+    cache_params.emplace(*key_.resolve_context->host_resolver_cache(),
+                         key_.network_anonymization_key);
+  }
+
   system_task_ = HostResolverSystemTask::Create(
       std::string(key_.host.GetHostnameWithoutBrackets()),
       HostResolver::DnsQueryTypeSetToAddressFamily(key_.query_types),
       key_.flags, resolver_->host_resolver_system_params_, net_log_,
-      key_.GetTargetNetwork());
+      key_.GetTargetNetwork(), std::move(cache_params));
 
   // Start() could be called from within Resolve(), hence it must NOT directly
   // call OnSystemTaskComplete, for example, on synchronous failure.
@@ -690,7 +698,7 @@ void HostResolverManager::Job::StartDnsTask(bool secure) {
   DCHECK(!resolver_->ShouldForceSystemResolverDueToTestOverride());
 
   CHECK(!dns_task_results_manager_);
-  if (base::FeatureList::IsEnabled(features::kUseServiceEndpointRequest)) {
+  if (base::FeatureList::IsEnabled(features::kHappyEyeballsV3)) {
     dns_task_results_manager_ = std::make_unique<DnsTaskResultsManager>(
         this, key_.host, key_.query_types, net_log_);
   }

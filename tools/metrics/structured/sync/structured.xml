@@ -989,7 +989,7 @@
   </event>
 </project>
 
-<project name="CrOSEvents" cros_events="true">
+<project name="CrOSEvents" cros_events="true" targets="webui,chromium">
   <owner>jongahn@chromium.org</owner>
   <id>per-project</id>
   <scope>device</scope>
@@ -1048,6 +1048,13 @@
     <variant value="3">MOUSE</variant>
     <variant value="4">TOUCH</variant>
     <variant value="5">VOLUME_KEY</variant>
+  </enum>
+
+  <enum name="CameraAppPressure">
+    <variant value="0">NOMINAL</variant>
+    <variant value="1">FAIR</variant>
+    <variant value="2">SERIOUS</variant>
+    <variant value="3">CRITICAL</variant>
   </enum>
 
   <enum name="CameraAppAndroidIntentResultType">
@@ -1129,17 +1136,29 @@
     <variant value="3">LAUNCHING_FROM_LAUNCH_APP_WARM</variant>
     <variant value="4">LAUNCHING_FROM_WINDOW_CREATION</variant>
     <variant value="5">MODE_SWITCHING</variant>
-    <variant value="6">PHOTO_CAPTURE_POST_PROCESSING</variant>
+    <variant value="6">PHOTO_CAPTURE_POST_PROCESSING_SAVING</variant>
     <variant value="7">PHOTO_CAPTURE_SHUTTER</variant>
     <variant value="8">PHOTO_TAKING</variant>
-    <variant value="9">PORTRAIT_MODE_CAPTURE_POST_PROCESSING</variant>
-    <variant value="10">TIMELAPSE_CAPTURE_POST_PROCESSING</variant>
-    <variant value="11">VIDEO_CAPTURE_POST_PROCESSING</variant>
+    <variant value="9">PORTRAIT_MODE_CAPTURE_POST_PROCESSING_SAVING</variant>
+    <variant value="10">TIMELAPSE_CAPTURE_POST_PROCESSING_SAVING</variant>
+    <variant value="11">VIDEO_CAPTURE_POST_PROCESSING_SAVING</variant>
+    <variant value="12">SNAPSHOT_TAKING</variant>
+    <variant value="13">DOCUMENT_CAPTURE_POST_PROCESSING</variant>
+    <variant value="14">DOCUMENT_PDF_SAVING</variant>
+    <variant value="15">OCR_SCANNING</variant>
+    <variant value="16">GIF_CAPTURE_SAVING</variant>
+  </enum>
+
+  <enum name="CameraAppOcrEventType">
+    <variant value="0">COPY_TEXT</variant>
+    <variant value="1">TEXT_DETECTED</variant>
   </enum>
 
   <enum name="CampaignButtonId">
     <variant value="0">PRIMARY</variant>
     <variant value="1">SECONDARY</variant>
+    <variant value="2">OTHERS</variant>
+    <variant value="3">CLOSE</variant>
   </enum>
 
   <enum name="QuickStartAbortFlowReason">
@@ -1203,6 +1222,9 @@
     <variant value="2">ABANDONED</variant>
     <variant value="3">REDIRECTED</variant>
     <variant value="4">FORMAT</variant>
+    <variant value="5">OPEN_FILE</variant>
+    <variant value="6">OPEN_LINK</variant>
+    <variant value="7">CREATE</variant>
   </enum>
 
   <enum name="PickerAction">
@@ -1234,7 +1256,7 @@
     <variant value="6">DATES_TIMES</variant>
     <variant value="7">UNITS_MATHS</variant>
     <variant value="8">CASE_TRANSFORM</variant>
-    <variant value="9">TENOR</variant>
+    <variant value="9">DEPRECATED_TENOR</variant>
   </enum>
 
   <enum name="PickerResultType">
@@ -1247,7 +1269,7 @@
     <variant value="6">CLIPBOARD_TEXT</variant>
     <variant value="7">CLIPBOARD_IMAGE</variant>
     <variant value="8">CLIPBOARD_HTML</variant>
-    <variant value="9">GIF</variant>
+    <variant value="9">DEPRECATED_GIF</variant>
     <variant value="10">LINK</variant>
     <variant value="11">LOCAL_FILE</variant>
     <variant value="12">DRIVE_FILE</variant>
@@ -1350,6 +1372,17 @@
     <metric name="AppState" type="int">
       <summary>
         Denotes a change in an app state. 0 - INACTIVE, 1 - ACTIVE, 2 - CLOSED.
+      </summary>
+    </metric>
+  </event>
+
+  <event name="AppDiscovery.ArcAppCameraAccessed">
+    <summary>
+      Recorded when a camera is accessed from an ARC app.
+    </summary>
+    <metric name="AppId" type="raw-string">
+      <summary>
+        Key that identifies an app.
       </summary>
     </metric>
   </event>
@@ -1679,7 +1712,7 @@
     </metric>
     <metric name="PageCount" type="int">
       <summary>
-        Integer indicating how many pages are there in the document scanning result.
+        Integer indicating how many pages are saved from document scanning.
       </summary>
     </metric>
   </event>
@@ -1757,6 +1790,16 @@
         is not provided.
       </summary>
     </metric>
+    <metric name="PageCount" type="int">
+      <summary>
+        Integer indicating how many pages are there in the document scanning result.
+      </summary>
+    </metric>
+    <metric name="Pressure" type="CameraAppPressure">
+      <summary>
+        The CPU pressure level.
+      </summary>
+    </metric>
   </event>
 
   <event name="CameraApp.UnsupportedProtocol">
@@ -1791,6 +1834,34 @@
     <metric name="MemoryUsage" type="int">
       <summary>
         Integer indicating the maximum memory usage within the session in bytes.
+      </summary>
+    </metric>
+  </event>
+
+  <event name="CameraApp.Ocr">
+    <summary>
+      Event recorded when OCR detects text on the preview or users interact with
+      the detected text.
+    </summary>
+    <metric name="EventType" type="CameraAppOcrEventType">
+      <summary>
+        The type of the event about the OCR feature.
+      </summary>
+    </metric>
+    <metric name="IsPrimaryLanguage" type="int">
+      <summary>
+        Boolean indicating whether the language of detected text is the same as the
+        user's primary language.
+      </summary>
+    </metric>
+    <metric name="LineCount" type="int">
+      <summary>
+        The number of lines of the detected text.
+      </summary>
+    </metric>
+    <metric name="WordCount" type="int">
+      <summary>
+        The number of words of the detected text.
       </summary>
     </metric>
   </event>
@@ -2787,6 +2858,11 @@
     <metric name="MouseButton" type="int">
       <summary>
         An index of a mouse button as defined in JavaScript MouseEvent.
+      </summary>
+    </metric>
+    <metric name="DoubleClick" type="int">
+      <summary>
+        A boolean describing if the event is a double click.
       </summary>
     </metric>
     <metric name="Context" type="int">

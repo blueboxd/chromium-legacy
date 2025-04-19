@@ -2,10 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 
 #include <memory>
 #include <utility>
+
 #include "base/memory/scoped_refptr.h"
 #include "base/numerics/checked_math.h"
 #include "base/numerics/clamped_math.h"
@@ -586,7 +592,7 @@ ImageBitmap::ImageBitmap(ImageElementBase* image,
             : ImageDecoder::kDefaultBitDepth,
         parsed_options.has_color_space_conversion ? ColorBehavior::kTag
                                                   : ColorBehavior::kIgnore,
-        Platform::GetMaxDecodedImageBytes()));
+        cc::AuxImage::kDefault, Platform::GetMaxDecodedImageBytes()));
     auto skia_image = ImageBitmap::GetSkImageFromDecoder(std::move(decoder));
     if (!skia_image)
       return;
@@ -1041,8 +1047,8 @@ ScriptPromise<ImageBitmap> ImageBitmap::CreateAsync(
     }
   }
 
-  SVGImageForContainer::Create(To<SVGImage>(input.get()),
-                               gfx::SizeF(input_rect.size()), 1, NullURL(),
+  SVGImageForContainer::Create(To<SVGImage>(*input),
+                               gfx::SizeF(input_rect.size()), 1, nullptr,
                                preferred_color_scheme)
       ->Draw(canvas, cc::PaintFlags(), gfx::RectF(draw_dst_rect),
              gfx::RectF(draw_src_rect), ImageDrawOptions());

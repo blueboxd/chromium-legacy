@@ -2,6 +2,10 @@
 -All/NavigationEntryScreenshotBrowserTest.SameOriginIFrame_NotCaptured/CrossOrigin_BFCacheEnabled
 -All/NavigationEntryScreenshotBrowserTest.SameOriginIFrame_NotCaptured/SameOrigin_BFCacheDisabled
 -All/NavigationEntryScreenshotBrowserTest.SameOriginIFrame_NotCaptured/SameOrigin_BFCacheEnabled
--CompositorImplBrowserTestRefreshRate.VideoPreference
 -CrossPlatformAccessibilityBrowserTest.ImplicitRootScroller
--FontUniqueNameBrowserTest.ContentLocalFontsMatching
+
+# crbug.com/343335591
+-FormControlsBrowserTest.Button
+-FormControlsBrowserTest.Checkbox
+-FormControlsBrowserTest.MultiSelect
+-FormControlsBrowserTest.Select

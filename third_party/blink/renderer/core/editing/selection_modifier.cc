@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/physical_fragment.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -94,7 +95,11 @@ VisiblePositionInFlatTree SelectionModifier::PreviousParagraphPosition(
         new_position.DeepEquivalent() == position.DeepEquivalent())
       break;
     position = new_position;
-  } while (InSameParagraph(passed_position, position));
+  } while (InSameParagraph(
+      passed_position, position,
+      RuntimeEnabledFeatures::ModifyParagraphCrossEditingoundaryEnabled()
+          ? kCanCrossEditingBoundary
+          : kCannotCrossEditingBoundary));
   return position;
 }
 
@@ -111,7 +116,11 @@ VisiblePositionInFlatTree SelectionModifier::NextParagraphPosition(
         new_position.DeepEquivalent() == position.DeepEquivalent())
       break;
     position = new_position;
-  } while (InSameParagraph(passed_position, position));
+  } while (InSameParagraph(
+      passed_position, position,
+      RuntimeEnabledFeatures::ModifyParagraphCrossEditingoundaryEnabled()
+          ? kCanCrossEditingBoundary
+          : kCannotCrossEditingBoundary));
   return position;
 }
 
@@ -514,7 +523,13 @@ VisiblePositionInFlatTree SelectionModifier::ModifyMovingForward(
     case TextGranularity::kLineBoundary:
       return LogicalEndOfLine(EndForPlatform());
     case TextGranularity::kParagraphBoundary:
-      return EndOfParagraph(EndForPlatform());
+      return EndOfParagraph(
+          EndForPlatform(),
+          RuntimeEnabledFeatures::
+                      MoveToParagraphStartOrEndSkipsNonEditableEnabled() &&
+                  IsEditablePosition(EndForPlatform().DeepEquivalent())
+              ? EditingBoundaryCrossingRule::kCanSkipOverEditingBoundary
+              : EditingBoundaryCrossingRule::kCannotCrossEditingBoundary);
     case TextGranularity::kDocumentBoundary: {
       const VisiblePositionInFlatTree& pos = EndForPlatform();
       if (IsEditablePosition(pos.DeepEquivalent())) {
@@ -709,7 +724,13 @@ VisiblePositionInFlatTree SelectionModifier::ModifyMovingBackward(
       pos = LogicalStartOfLine(StartForPlatform());
       break;
     case TextGranularity::kParagraphBoundary:
-      pos = StartOfParagraph(StartForPlatform());
+      pos = StartOfParagraph(
+          StartForPlatform(),
+          RuntimeEnabledFeatures::
+                      MoveToParagraphStartOrEndSkipsNonEditableEnabled() &&
+                  IsEditablePosition(StartForPlatform().DeepEquivalent())
+              ? EditingBoundaryCrossingRule::kCanSkipOverEditingBoundary
+              : EditingBoundaryCrossingRule::kCannotCrossEditingBoundary);
       break;
     case TextGranularity::kDocumentBoundary:
       pos = StartForPlatform();
@@ -996,10 +1017,12 @@ static LayoutUnit LineDirectionPointForBlockDirectionNavigationOf(
   // This ignores transforms on purpose, for now. Vertical navigation is done
   // without consulting transforms, so that 'up' in transformed text is 'up'
   // relative to the text, not absolute 'up'.
-  PhysicalOffset caret_point =
-      UNLIKELY(caret_rect.layout_object->HasFlippedBlocksWritingMode())
-          ? caret_rect.rect.MaxXMinYCorner()
-          : caret_rect.rect.MinXMinYCorner();
+  PhysicalOffset caret_point;
+  if (caret_rect.layout_object->HasFlippedBlocksWritingMode()) [[unlikely]] {
+    caret_point = caret_rect.rect.MaxXMinYCorner();
+  } else {
+    caret_point = caret_rect.rect.MinXMinYCorner();
+  }
   caret_point = caret_rect.layout_object->LocalToAbsolutePoint(
       caret_point, kIgnoreTransforms);
   return caret_rect.layout_object->IsHorizontalWritingMode() ? caret_point.left

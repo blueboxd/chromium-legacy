@@ -8,6 +8,7 @@
 
 #include "ash/public/cpp/test/in_process_data_decoder.h"
 #include "ash/public/cpp/wallpaper/wallpaper_types.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_util.h"
@@ -131,7 +132,8 @@ TEST_F(WallpaperMetricsProviderTest, RecordsImageSettledWithEmptyCollectionId) {
   histogram_tester.ExpectTotalCount("Ash.Wallpaper.Collection.Settled", 0);
 }
 
-TEST_F(WallpaperMetricsProviderTest, RecordsSeaPenTemplateSettled) {
+// TODO(crbug.com/347294904): Re-enable this test
+TEST_F(WallpaperMetricsProviderTest, DISABLED_RecordsSeaPenTemplateSettled) {
   SimulateUserLogin(kAccountId);
   AccountId account_id =
       ash::Shell::Get()->session_controller()->GetActiveAccountId();

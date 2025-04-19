@@ -154,6 +154,16 @@ password_manager::PasswordForm CreateTestPasswordForm(
   return form;
 }
 
+password_manager::PasswordForm CreateTestBlockedSiteForm(
+    password_manager::PasswordForm::Store store,
+    int index = 0) {
+  PasswordForm form;
+  form.url = GURL("https://blockedsite" + base::NumberToString(index) + ".com");
+  form.blocked_by_user = true;
+  form.in_store = store;
+  return form;
+}
+
 }  // namespace
 
 // Tests whether adding and removing an observer works as expected.
@@ -188,7 +198,7 @@ TEST_F(SavedPasswordsPresenterTest, NotifyObservers) {
 TEST_F(SavedPasswordsPresenterTest, IgnoredCredentials) {
   PasswordForm federated_form;
   federated_form.federation_origin =
-      url::Origin::Create(GURL("https://example.com"));
+      url::SchemeHostPort(GURL("https://example.com"));
 
   StrictMockSavedPasswordsPresenterObserver observer;
   presenter().AddObserver(&observer);
@@ -806,7 +816,7 @@ TEST_F(SavedPasswordsPresenterTest,
   federated_form.signon_realm = "https://federated.com";
   federated_form.username_value = u"example@gmail.com";
   federated_form.federation_origin =
-      url::Origin::Create(GURL(u"federatedOrigin.com"));
+      url::SchemeHostPort(GURL(u"federatedOrigin.com"));
   federated_form.in_store = PasswordForm::Store::kProfileStore;
 
   store().AddLogin(form);
@@ -853,7 +863,7 @@ TEST_F(SavedPasswordsPresenterTest, GetSavedCredentialsWithPasskeys) {
   federated_form.signon_realm = "federation://federated.com/idp.com";
   federated_form.username_value = u"example@gmail.com";
   federated_form.federation_origin =
-      url::Origin::Create(GURL("federation-origin.com"));
+      url::SchemeHostPort(GURL("federation-origin.com"));
   federated_form.in_store = PasswordForm::Store::kProfileStore;
 
   sync_pb::WebauthnCredentialSpecifics passkey = CreateTestPasskey();
@@ -1050,6 +1060,31 @@ TEST_F(SavedPasswordsPresenterTest, EditPasskeyNotFound) {
   presenter().RemoveObserver(&observer);
 }
 
+TEST_F(SavedPasswordsPresenterTest, DeleteAllDataWithPasskey) {
+  // Password grouping is required for passkey support.
+  if (!IsGroupingEnabled()) {
+    return;
+  }
+  sync_pb::WebauthnCredentialSpecifics passkey = CreateTestPasskey();
+  passkey_store().AddNewPasskeyForTesting(passkey);
+  RunUntilIdle();
+
+  PasswordForm form =
+      CreateTestPasswordForm(PasswordForm::Store::kProfileStore);
+  PasswordForm blocked_form =
+      CreateTestBlockedSiteForm(PasswordForm::Store::kProfileStore);
+
+  store().AddLogins({form, blocked_form});
+  RunUntilIdle();
+
+  base::MockCallback<base::OnceCallback<void(bool)>> completion_callback;
+  EXPECT_CALL(completion_callback, Run(true)).Times(1);
+  presenter().DeleteAllData(completion_callback.Get());
+  RunUntilIdle();
+  EXPECT_TRUE(passkey_store().GetAllPasskeys().empty());
+  EXPECT_TRUE(store().IsEmpty());
+}
+
 #endif
 
 TEST_F(SavedPasswordsPresenterTest, UndoRemoval) {
@@ -1069,6 +1104,32 @@ TEST_F(SavedPasswordsPresenterTest, UndoRemoval) {
   presenter().UndoLastRemoval();
   RunUntilIdle();
   EXPECT_THAT(presenter().GetSavedCredentials(), ElementsAre(credential));
+}
+
+TEST_F(SavedPasswordsPresenterTest, DeleteAllData) {
+  PasswordForm form =
+      CreateTestPasswordForm(PasswordForm::Store::kProfileStore);
+  PasswordForm blocked_form =
+      CreateTestBlockedSiteForm(PasswordForm::Store::kProfileStore);
+
+  store().AddLogins({form, blocked_form});
+  RunUntilIdle();
+
+  EXPECT_EQ(store().stored_passwords().size(), 2u);
+
+  base::MockCallback<base::OnceCallback<void(bool)>> completion_callback;
+  EXPECT_CALL(completion_callback, Run(true)).Times(1);
+  presenter().DeleteAllData(completion_callback.Get());
+  RunUntilIdle();
+  EXPECT_TRUE(store().IsEmpty());
+}
+
+TEST_F(SavedPasswordsPresenterTest, DeleteAllDataEmpty) {
+  base::MockCallback<base::OnceCallback<void(bool)>> completion_callback;
+  EXPECT_CALL(completion_callback, Run(true)).Times(1);
+  presenter().DeleteAllData(completion_callback.Get());
+  RunUntilIdle();
+  EXPECT_TRUE(store().IsEmpty());
 }
 
 namespace {
@@ -1117,6 +1178,80 @@ class SavedPasswordsPresenterWithTwoStoresTest : public testing::Test {
 };
 
 }  // namespace
+
+TEST_F(SavedPasswordsPresenterWithTwoStoresTest,
+       DeleteAllDataFromTwoStoresEmpty) {
+  base::MockCallback<base::OnceCallback<void(bool)>> completion_callback;
+  EXPECT_CALL(completion_callback, Run(true)).Times(1);
+  presenter().DeleteAllData(completion_callback.Get());
+  RunUntilIdle();
+  EXPECT_TRUE(account_store().IsEmpty());
+  EXPECT_TRUE(profile_store().IsEmpty());
+}
+
+TEST_F(SavedPasswordsPresenterWithTwoStoresTest, DeleteAllDataFromTwoStores) {
+  PasswordForm profile_store_form =
+      CreateTestPasswordForm(PasswordForm::Store::kProfileStore, 1);
+  PasswordForm blocked_form =
+      CreateTestBlockedSiteForm(PasswordForm::Store::kProfileStore);
+
+  PasswordForm account_store_form =
+      CreateTestPasswordForm(PasswordForm::Store::kAccountStore, 2);
+
+  profile_store().AddLogins({profile_store_form, blocked_form});
+  account_store().AddLogins({account_store_form});
+  RunUntilIdle();
+
+  EXPECT_EQ(profile_store().stored_passwords().size(), 2u);
+  EXPECT_EQ(account_store().stored_passwords().size(), 1u);
+
+  base::MockCallback<base::OnceCallback<void(bool)>> completion_callback;
+  EXPECT_CALL(completion_callback, Run(true)).Times(1);
+  presenter().DeleteAllData(completion_callback.Get());
+  RunUntilIdle();
+  EXPECT_TRUE(account_store().IsEmpty());
+  EXPECT_TRUE(profile_store().IsEmpty());
+}
+
+TEST_F(SavedPasswordsPresenterWithTwoStoresTest,
+       DeleteAllDataAccountStoreNotEmpty) {
+  PasswordForm account_store_form =
+      CreateTestPasswordForm(PasswordForm::Store::kAccountStore);
+  PasswordForm blocked_form =
+      CreateTestBlockedSiteForm(PasswordForm::Store::kAccountStore);
+
+  account_store().AddLogins({account_store_form, blocked_form});
+  RunUntilIdle();
+
+  EXPECT_EQ(account_store().stored_passwords().size(), 2u);
+
+  base::MockCallback<base::OnceCallback<void(bool)>> completion_callback;
+  EXPECT_CALL(completion_callback, Run(true)).Times(1);
+  presenter().DeleteAllData(completion_callback.Get());
+  RunUntilIdle();
+  EXPECT_TRUE(account_store().IsEmpty());
+  EXPECT_TRUE(profile_store().IsEmpty());
+}
+
+TEST_F(SavedPasswordsPresenterWithTwoStoresTest,
+       DeleteAllDataProfileStoreNotEmpty) {
+  PasswordForm profile_store_form =
+      CreateTestPasswordForm(PasswordForm::Store::kProfileStore);
+  PasswordForm blocked_form =
+      CreateTestBlockedSiteForm(PasswordForm::Store::kProfileStore);
+
+  profile_store().AddLogins({profile_store_form, blocked_form});
+  RunUntilIdle();
+
+  EXPECT_EQ(profile_store().stored_passwords().size(), 2u);
+
+  base::MockCallback<base::OnceCallback<void(bool)>> completion_callback;
+  EXPECT_CALL(completion_callback, Run(true)).Times(1);
+  presenter().DeleteAllData(completion_callback.Get());
+  RunUntilIdle();
+  EXPECT_TRUE(account_store().IsEmpty());
+  EXPECT_TRUE(profile_store().IsEmpty());
+}
 
 // Tests whether adding credentials to profile or account store notifies
 // observers with credentials in both stores.

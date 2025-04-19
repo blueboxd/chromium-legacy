@@ -17,6 +17,8 @@ import org.jni_zero.NativeMethods;
 @JNINamespace("base::android")
 public class InputHintChecker {
 
+    private static boolean sAllowSetViewForTesting;
+
     /**
      * Sets the current View for the next input hint requests from native.
      *
@@ -28,14 +30,66 @@ public class InputHintChecker {
      * @param view The View to pull the input hint from next time.
      */
     public static void setView(@Nullable View view) {
-        if (Build.VERSION.SDK_INT >= VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            // TODO(pasko): Restrict to SDK_INT >= V when V is available in VERSION_CODES.
+        if (sAllowSetViewForTesting || Build.VERSION.SDK_INT >= VERSION_CODES.VANILLA_ICE_CREAM) {
             InputHintCheckerJni.get().setView(view);
         }
     }
 
+    public static void setAllowSetViewForTesting(boolean allow) {
+        sAllowSetViewForTesting = allow;
+    }
+
+    /**
+     * Returns true iff the asynchronous initialization has completed successfully.
+     *
+     * <p>This method is not exposed outside of testing because before initialization checking for
+     * the hint silently reports that no input is queued.
+     */
+    public static boolean isInitializedForTesting() {
+        return InputHintCheckerJni.get().isInitializedForTesting(); // IN-TEST
+    }
+
+    public static boolean failedToInitializeForTesting() {
+        return InputHintCheckerJni.get().failedToInitializeForTesting(); // IN-TEST
+    }
+
+    /**
+     * Returns the result of calling view.probablyHasInput() on the View that was set before with
+     * setView().
+     *
+     * <p>This method is not exposed outside of testing because the intention is to only invoke it
+     * from native.
+     */
+    public static boolean hasInputForTesting() {
+        return InputHintCheckerJni.get().hasInputForTesting(); // IN-TEST
+    }
+
+    public static boolean hasInputWithThrottlingForTesting() {
+        return InputHintCheckerJni.get().hasInputWithThrottlingForTesting(); // IN-TEST
+    }
+
+    /**
+     * Set the initial view incorrectly to cause initialization failure.
+     *
+     * <p>Wrongly initialized InputHintChecker should not be used across tests, hence tests using
+     * this method cannot be batched. Therefore, there is no need to reset this state between tests.
+     */
+    public static void setWrongViewForTesting() {
+        // On Android V all instances of View have the method probablyHasInput(). Use an
+        // instance of another class to reliably fail at finding this method on all OS releases.
+        InputHintCheckerJni.get().setView(new Object());
+    }
+
     @NativeMethods
     interface Natives {
-        void setView(View view);
+        void setView(Object view);
+
+        boolean isInitializedForTesting(); // IN-TEST
+
+        boolean failedToInitializeForTesting(); // IN-TEST
+
+        boolean hasInputForTesting(); // IN-TEST
+
+        boolean hasInputWithThrottlingForTesting(); // IN-TEST
     }
 }

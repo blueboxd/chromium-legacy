@@ -4,6 +4,8 @@
 
 #include "components/omnibox/browser/autocomplete_match.h"
 
+#include <algorithm>
+#include <string>
 #include <string_view>
 #include <vector>
 
@@ -28,6 +30,7 @@
 #include "components/omnibox/browser/actions/omnibox_action.h"
 #include "components/omnibox/browser/actions/omnibox_action_concepts.h"
 #include "components/omnibox/browser/actions/omnibox_action_in_suggest.h"
+#include "components/omnibox/browser/actions/omnibox_answer_action.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/document_provider.h"
@@ -40,10 +43,15 @@
 #include "components/search_engines/template_url_service.h"
 #include "inline_autocompletion_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "third_party/omnibox_proto/answer_type.pb.h"
 #include "third_party/omnibox_proto/entity_info.pb.h"
 #include "third_party/omnibox_proto/groups.pb.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "url/third_party/mozilla/url_parse.h"
+
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+#include "components/omnibox/browser/featured_search_provider.h"
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
 #if (!BUILDFLAG(IS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !BUILDFLAG(IS_IOS)
 #include "components/omnibox/browser/suggestion_answer.h"
@@ -163,17 +171,22 @@ inline void hash_combine(std::size_t& seed, const T& value) {
 
 }  // namespace
 
-template <typename S, typename T>
-size_t ACMatchKeyHash<S, T>::operator()(const ACMatchKey<S, T>& key) const {
+template <typename... Args>
+size_t ACMatchKeyHash<Args...>::operator()(
+    const ACMatchKey<Args...>& key) const {
   size_t seed = 0;
-  hash_combine(seed, key.first);
-  hash_combine(seed, key.second);
+  // Compute a hash by applying hash_combine to each element of the "key" tuple.
+  std::apply([&seed](auto&&... args) { ((hash_combine(seed, args)), ...); },
+             key);
   return seed;
 }
 
 // This trick allows implementing ACMatchKeyHash in the implementation file.
-template struct ACMatchKeyHash<std::u16string, std::string>;
-template struct ACMatchKeyHash<std::string, bool>;
+// Every unique specialization of ACMatchKey should have a corresponding
+// declaration here.
+template struct ACMatchKeyHash<std::u16string,
+                               std::string>;  // base_search_provider
+template struct ACMatchKeyHash<std::string, bool, bool>;  // autocomplete_result
 
 // RichAutocompletionParams ---------------------------------------------------
 
@@ -216,17 +229,6 @@ void RichAutocompletionParams::ClearParamsForTesting() {
 }
 
 // AutocompleteMatch ----------------------------------------------------------
-
-// static
-const char* const AutocompleteMatch::kDocumentTypeStrings[]{
-    "none",        "drive_docs", "drive_forms", "drive_sheets", "drive_slides",
-    "drive_image", "drive_pdf",  "drive_video", "drive_folder", "drive_other"};
-
-static_assert(
-    std::size(AutocompleteMatch::kDocumentTypeStrings) ==
-        static_cast<int>(AutocompleteMatch::DocumentType::DOCUMENT_TYPE_SIZE),
-    "Sizes of AutocompleteMatch::kDocumentTypeStrings and "
-    "AutocompleteMatch::DocumentType don't match.");
 
 // static
 const char* AutocompleteMatch::DocumentTypeString(DocumentType type) {
@@ -301,6 +303,7 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
       swap_contents_and_description(match.swap_contents_and_description),
       answer(match.answer),
       answer_template(match.answer_template),
+      answer_type(match.answer_type),
       transition(match.transition),
       type(match.type),
       suggest_type(match.suggest_type),
@@ -327,7 +330,11 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
       suggest_tiles(match.suggest_tiles),
       scoring_signals(match.scoring_signals),
       culled_by_provider(match.culled_by_provider),
-      shortcut_boosted(match.shortcut_boosted) {}
+      shortcut_boosted(match.shortcut_boosted),
+      iph_type(match.iph_type),
+      iph_link_text(match.iph_link_text),
+      iph_link_url(match.iph_link_url),
+      feedback_type(match.feedback_type) {}
 
 AutocompleteMatch::AutocompleteMatch(AutocompleteMatch&& match) noexcept {
   *this = std::move(match);
@@ -367,6 +374,7 @@ AutocompleteMatch& AutocompleteMatch::operator=(
       std::move(match.swap_contents_and_description);
   answer = std::move(match.answer);
   answer_template = std::move(match.answer_template);
+  answer_type = std::move(match.answer_type);
   transition = std::move(match.transition);
   type = std::move(match.type);
   suggest_type = std::move(match.suggest_type);
@@ -387,6 +395,10 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   scoring_signals = std::move(match.scoring_signals);
   culled_by_provider = std::move(match.culled_by_provider);
   shortcut_boosted = std::move(match.shortcut_boosted);
+  iph_type = std::move(match.iph_type);
+  iph_link_text = std::move(match.iph_link_text);
+  iph_link_url = std::move(match.iph_link_url);
+  feedback_type = std::move(match.feedback_type);
 #if BUILDFLAG(IS_ANDROID)
   DestroyJavaObject();
   std::swap(java_match_, match.java_match_);
@@ -436,6 +448,7 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   swap_contents_and_description = match.swap_contents_and_description;
   answer = match.answer;
   answer_template = match.answer_template;
+  answer_type = match.answer_type;
   transition = match.transition;
   type = match.type;
   suggest_type = match.suggest_type;
@@ -464,6 +477,10 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   scoring_signals = match.scoring_signals;
   culled_by_provider = match.culled_by_provider;
   shortcut_boosted = match.shortcut_boosted;
+  iph_type = match.iph_type;
+  iph_link_text = match.iph_link_text;
+  iph_link_url = match.iph_link_url;
+  feedback_type = match.feedback_type;
 
 #if BUILDFLAG(IS_ANDROID)
   // In case the target element previously held a java object, release it.
@@ -481,42 +498,20 @@ AutocompleteMatch& AutocompleteMatch::operator=(
 
 #if (!BUILDFLAG(IS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !BUILDFLAG(IS_IOS)
 // static
-const gfx::VectorIcon& AutocompleteMatch::AnswerTypeToAnswerIconDeprecated(
-    int type) {
-  switch (static_cast<SuggestionAnswer::AnswerType>(type)) {
-    case SuggestionAnswer::ANSWER_TYPE_CURRENCY:
+const gfx::VectorIcon& AutocompleteMatch::AnswerTypeToAnswerIcon(int type) {
+  switch (static_cast<omnibox::AnswerType>(type)) {
+    case omnibox::ANSWER_TYPE_CURRENCY:
       return omnibox::kAnswerCurrencyChromeRefreshIcon;
-    case SuggestionAnswer::ANSWER_TYPE_DICTIONARY:
+    case omnibox::ANSWER_TYPE_DICTIONARY:
       return omnibox::kAnswerDictionaryChromeRefreshIcon;
-    case SuggestionAnswer::ANSWER_TYPE_FINANCE:
+    case omnibox::ANSWER_TYPE_FINANCE:
       return omnibox::kAnswerFinanceChromeRefreshIcon;
-    case SuggestionAnswer::ANSWER_TYPE_SUNRISE:
+    case omnibox::ANSWER_TYPE_SUNRISE_SUNSET:
       return omnibox::kAnswerSunriseChromeRefreshIcon;
-    case SuggestionAnswer::ANSWER_TYPE_TRANSLATION:
+    case omnibox::ANSWER_TYPE_TRANSLATION:
       return omnibox::kAnswerTranslationChromeRefreshIcon;
-    case SuggestionAnswer::ANSWER_TYPE_WHEN_IS:
+    case omnibox::ANSWER_TYPE_WHEN_IS:
       return omnibox::kAnswerWhenIsChromeRefreshIcon;
-    default:
-      return omnibox::kAnswerDefaultIcon;
-  }
-}
-
-// static
-const gfx::VectorIcon& AutocompleteMatch::AnswerTypeToAnswerIcon(
-    omnibox::RichAnswerTemplate::AnswerType type) {
-  switch (type) {
-    case omnibox::RichAnswerTemplate::DICTIONARY:
-      return omnibox::kAnswerDictionaryChromeRefreshIcon;
-    case omnibox::RichAnswerTemplate::FINANCE:
-      return omnibox::kAnswerFinanceChromeRefreshIcon;
-    case omnibox::RichAnswerTemplate::SUNRISE_SUNSET:
-      return omnibox::kAnswerSunriseChromeRefreshIcon;
-    case omnibox::RichAnswerTemplate::TRANSLATION:
-      return omnibox::kAnswerTranslationChromeRefreshIcon;
-    case omnibox::RichAnswerTemplate::WHEN_IS:
-      return omnibox::kAnswerWhenIsChromeRefreshIcon;
-    case omnibox::RichAnswerTemplate::CURRENCY:
-      return omnibox::kAnswerCurrencyChromeRefreshIcon;
     default:
       return omnibox::kAnswerDefaultIcon;
   }
@@ -527,11 +522,8 @@ const gfx::VectorIcon& AutocompleteMatch::GetVectorIcon(
     const TemplateURL* turl) const {
   if (is_bookmark)
     return omnibox::kBookmarkChromeRefreshIcon;
-  if (omnibox_feature_configs::SuggestionAnswerMigration::Get().enabled &&
-      answer_template.has_value()) {
-    return AnswerTypeToAnswerIcon(answer_template->answer_type());
-  } else if (answer.has_value()) {
-    return AnswerTypeToAnswerIconDeprecated(answer->type());
+  if (answer_type != omnibox::ANSWER_TYPE_UNSPECIFIED) {
+    return AnswerTypeToAnswerIcon(answer_type);
   }
 
   switch (type) {
@@ -554,19 +546,14 @@ const gfx::VectorIcon& AutocompleteMatch::GetVectorIcon(
     case Type::FEATURED_ENTERPRISE_SEARCH:
       return omnibox::kPageChromeRefreshIcon;
 
-    case Type::SEARCH_SUGGEST: {
-      if (IsTrendSuggestion()) {
-        return omnibox::kTrendingUpChromeRefreshIcon;
-      }
-      return vector_icons::kSearchChromeRefreshIcon;
-    }
+    case Type::SEARCH_SUGGEST:
+      return IsTrendSuggestion() ? omnibox::kTrendingUpChromeRefreshIcon
+                                 : vector_icons::kSearchChromeRefreshIcon;
 
-    case Type::PEDAL: {
-      if (takeover_action) {
-        return takeover_action->GetVectorIcon();
-      }
-      ABSL_FALLTHROUGH_INTENDED;
-    }
+    case Type::PEDAL:
+      return takeover_action ? takeover_action->GetVectorIcon()
+                             : vector_icons::kSearchChromeRefreshIcon;
+
     case Type::SEARCH_WHAT_YOU_TYPED:
     case Type::SEARCH_SUGGEST_ENTITY:
     case Type::SEARCH_SUGGEST_PROFILE:
@@ -580,10 +567,9 @@ const gfx::VectorIcon& AutocompleteMatch::GetVectorIcon(
       return vector_icons::kSearchChromeRefreshIcon;
 
     case Type::SEARCH_HISTORY:
-    case Type::SEARCH_SUGGEST_PERSONALIZED: {
+    case Type::SEARCH_SUGGEST_PERSONALIZED:
       DCHECK(IsSearchHistoryType(type));
       return vector_icons::kHistoryChromeRefreshIcon;
-    }
 
     case Type::EXTENSION_APP_DEPRECATED:
       return omnibox::kExtensionAppIcon;
@@ -591,14 +577,26 @@ const gfx::VectorIcon& AutocompleteMatch::GetVectorIcon(
     case Type::CALCULATOR:
       return omnibox::kCalculatorChromeRefreshIcon;
 
-    case Type::NULL_RESULT_MESSAGE: {
-      // The IPH suggestion uses the spark icon. Otherwise (for No Results
+    case Type::NULL_RESULT_MESSAGE:
+      // Select the icon according to the type of IPH. Otherwise (for No Results
       // Found), fallthrough to use the empty icon.
-      if (IsIPHSuggestion()) {
-        return omnibox::kSparkIcon;
+      switch (iph_type) {
+        case IphType::kNone:
+          return empty_icon;
+        case IphType::kGemini:
+          return omnibox::kSparkIcon;
+        case IphType::kFeaturedEnterpriseSearch:
+          return omnibox::kEnterpriseIcon;
+        case IphType::kHistoryEmbeddingsSettingsPromo:
+          return omnibox::kSparkIcon;
+        case IphType::kHistoryEmbeddingsDisclaimer:
+          return empty_icon;
+        case IphType::kHistoryScopePromo:
+          return vector_icons::kHistoryChromeRefreshIcon;
+        case IphType::kHistoryEmbeddingsScopePromo:
+          return omnibox::kSparkIcon;
       }
-      ABSL_FALLTHROUGH_INTENDED;
-    }
+
     case Type::SEARCH_SUGGEST_TAIL:
       return empty_icon;
 
@@ -1231,7 +1229,6 @@ TemplateURL* AutocompleteMatch::GetTemplateURL(
 GURL AutocompleteMatch::ImageUrl() const {
   if (omnibox_feature_configs::SuggestionAnswerMigration::Get().enabled &&
       answer_template.has_value()) {
-    CHECK_GT(answer_template->answers_size(), 0);
     return GURL(answer_template->answers(0).image().url());
   }
   return answer ? answer->image_url() : image_url;
@@ -1265,7 +1262,7 @@ void AutocompleteMatch::RecordAdditionalInfo(const std::string& property,
                                    (base::Time::Now() - value).InHours()));
 }
 
-std::string AutocompleteMatch::GetAdditionalInfo(
+std::string AutocompleteMatch::GetAdditionalInfoForDebugging(
     const std::string& property) const {
   auto i(additional_info.find(property));
   return (i == additional_info.end()) ? std::string() : i->second;
@@ -1391,8 +1388,7 @@ AutocompleteMatch::GetOmniboxEventResultType(int action_index) const {
     case AutocompleteMatchType::NUM_TYPES:
       break;
   }
-  DUMP_WILL_BE_NOTREACHED_NORETURN()
-      << "Unknown AutocompleteMatchType: " << type;
+  DUMP_WILL_BE_NOTREACHED() << "Unknown AutocompleteMatchType: " << type;
   return OmniboxEventProto::Suggestion::UNKNOWN_RESULT_TYPE;
 }
 
@@ -1404,6 +1400,13 @@ bool AutocompleteMatch::IsVerbatimType() const {
   return type == AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED ||
          type == AutocompleteMatchType::URL_WHAT_YOU_TYPED ||
          is_keyword_verbatim_match;
+}
+
+bool AutocompleteMatch::IsVerbatimUrlSuggestion() const {
+  return type == AutocompleteMatchType::URL_WHAT_YOU_TYPED ||
+         base::ranges::any_of(duplicate_matches, [](const auto& match) {
+           return match.type == AutocompleteMatchType::URL_WHAT_YOU_TYPED;
+         });
 }
 
 bool AutocompleteMatch::IsSearchProviderSearchSuggestion() const {
@@ -1441,6 +1444,10 @@ int AutocompleteMatch::GetSortingOrder() const {
     return 3;
   }
 #endif  // !BUILDFLAG(IS_IOS)
+  if (answer_template && actions.size() > 0 &&
+      OmniboxFieldTrial::kAnswerActionsShowAboveKeyboard.Get()) {
+    return 4;
+  }
   if (IsSearchType(type)) {
     return 3;
   }
@@ -1449,13 +1456,69 @@ int AutocompleteMatch::GetSortingOrder() const {
       shortcut_boosted) {
     return 2;
   }
+  if (IsIPHSuggestion())
+    return 5;
   return 4;
 }
 
-bool AutocompleteMatch::IsUrlScoringEligible() const {
-  return scoring_signals.has_value() &&
-         type != AutocompleteMatchType::URL_WHAT_YOU_TYPED &&
-         !force_skip_ml_scoring && !AutocompleteMatch::IsSearchType(type);
+bool AutocompleteMatch::IsMlSignalLoggingEligible() const {
+  const auto& ml_config = OmniboxFieldTrial::GetMLConfig();
+  return type == AutocompleteMatchType::URL_WHAT_YOU_TYPED ||
+         type == AutocompleteMatchType::HISTORY_URL ||
+         type == AutocompleteMatchType::HISTORY_TITLE ||
+         type == AutocompleteMatchType::BOOKMARK_TITLE ||
+         type == AutocompleteMatchType::NAVSUGGEST ||
+         type == AutocompleteMatchType::NAVSUGGEST_PERSONALIZED ||
+         type == AutocompleteMatchType::TILE_NAVSUGGEST ||
+         (ml_config.shortcut_document_signals &&
+          type == AutocompleteMatchType::DOCUMENT_SUGGESTION) ||
+         AutocompleteMatch::IsSearchType(type) ||
+         AutocompleteMatch::IsVerbatimType();
+}
+
+bool AutocompleteMatch::IsMlScoringEligible() const {
+  if (!scoring_signals.has_value()) {
+    return false;
+  }
+  const auto& ml_config = OmniboxFieldTrial::GetMLConfig();
+
+  // Search suggestions are conditionally eligible for ML scoring.
+  if (AutocompleteMatch::IsSearchType(type)) {
+    return ml_config.enable_ml_scoring_for_searches;
+  }
+
+  // Verbatim URL suggestions are conditionally eligible for ML scoring.
+  // A "verbatim URL" suggestion is any suggestion that is UWYT itself or has
+  // been deduped with a UWYT suggestion.
+  if (AutocompleteMatch::IsVerbatimUrlSuggestion()) {
+    return ml_config.enable_ml_scoring_for_verbatim_urls;
+  }
+
+  // Certain suggestion types are manually excluded from ML scoring (since
+  // applying ML scoring to these suggestions currently results in suboptimal
+  // behavior).
+  if (type == AutocompleteMatchType::NAVSUGGEST ||
+      type == AutocompleteMatchType::NAVSUGGEST_PERSONALIZED ||
+      type == AutocompleteMatchType::TILE_NAVSUGGEST) {
+    return false;
+  }
+
+  // Do not apply ML scoring to stale suggestions sourced from the
+  // DocumentProvider cache.
+  if (type == AutocompleteMatchType::DOCUMENT_SUGGESTION && relevance == 0) {
+    return false;
+  }
+
+  // If any of the duplicates under this match are ineligible for ML scoring,
+  // then the top-level match (this) is also considered ineligible for ML
+  // scoring.
+  if (base::ranges::any_of(duplicate_matches, [](const auto& match) {
+        return !match.IsMlScoringEligible();
+      })) {
+    return false;
+  }
+
+  return true;
 }
 
 bool AutocompleteMatch::IsTrendSuggestion() const {
@@ -1463,12 +1526,7 @@ bool AutocompleteMatch::IsTrendSuggestion() const {
 }
 
 bool AutocompleteMatch::IsIPHSuggestion() const {
-  if (!OmniboxFieldTrial::IsStarterPackIPHEnabled()) {
-    return false;
-  }
-
-  return type == AutocompleteMatchType::NULL_RESULT_MESSAGE &&
-         provider->type() == AutocompleteProvider::TYPE_FEATURED_SEARCH;
+  return iph_type != IphType::kNone;
 }
 
 void AutocompleteMatch::FilterOmniboxActions(
@@ -1528,6 +1586,17 @@ void AutocompleteMatch::FilterAndSortActionsInSuggest() {
   for (auto pair : actions_in_suggest_to_reinsert) {
     actions.emplace_back(std::move(pair.second));
   }
+}
+
+void AutocompleteMatch::RemoveAnswerActions() {
+  if (actions.empty()) {
+    return;
+  }
+
+  std::erase_if(actions, [&](const auto& action) {
+    auto* ans_action = OmniboxAnswerAction::FromAction(action.get());
+    return ans_action != nullptr;
+  });
 }
 
 bool AutocompleteMatch::IsTrivialAutocompletion() const {
@@ -1666,8 +1735,11 @@ void AutocompleteMatch::UpgradeMatchWithPropertiesFrom(
   from_previous = from_previous && duplicate_match.from_previous;
 
   // Absorb the `actions` and `takeover_action` so they won't be buried.
+  // Don't absorb answer actions; they should always be created fresh.
   if (actions.empty() && !duplicate_match.actions.empty() &&
-      IsActionCompatible()) {
+      IsActionCompatible() &&
+      OmniboxAnswerAction::FromAction(duplicate_match.actions[0].get()) ==
+          nullptr) {
     actions = std::move(duplicate_match.actions);
     takeover_action = std::move(duplicate_match.takeover_action);
   }
@@ -1695,20 +1767,9 @@ void AutocompleteMatch::UpgradeMatchWithPropertiesFrom(
         duplicate_match.rich_autocompletion_triggered;
   }
 
-  // If either one of the matches is ineligible for ML scoring, then ensure that
-  // the final match is marked as ineligible for ML scoring. Search suggestions
-  // are guaranteed to be excluded from ML scoring at this time, so there's no
-  // need to set `force_skip_ml_scoring` for those matches.
-  if (base::FeatureList::IsEnabled(omnibox::kEnableForceSkipMlScoring) &&
-      (!IsUrlScoringEligible() || !duplicate_match.IsUrlScoringEligible()) &&
-      !AutocompleteMatch::IsSearchType(type)) {
-    force_skip_ml_scoring = true;
-    RecordAdditionalInfo("force skip ml scoring", "true");
-  }
-
-  // Merge scoring signals from duplicate match for ML model scoring and
-  // training.
-  if (OmniboxFieldTrial::IsPopulatingUrlScoringSignalsEnabled()) {
+  // Merge ML scoring signals from duplicate match when appropriate.
+  if (OmniboxFieldTrial::IsPopulatingUrlScoringSignalsEnabled() &&
+      IsMlSignalLoggingEligible()) {
     MergeScoringSignals(duplicate_match);
   }
 }
@@ -1716,13 +1777,15 @@ void AutocompleteMatch::UpgradeMatchWithPropertiesFrom(
 void AutocompleteMatch::MergeScoringSignals(const AutocompleteMatch& other) {
   // Keep consistent:
   // - omnibox_event.proto `ScoringSignals`
+  // - omnibox_scoring_signals.proto `OmniboxScoringSignals`
   // - autocomplete_scoring_model_handler.cc
   //   `AutocompleteScoringModelHandler::ExtractInputFromScoringSignals()`
   // - autocomplete_match.cc `AutocompleteMatch::MergeScoringSignals()`
   // - autocomplete_controller.cc `RecordScoringSignalCoverageForProvider()`
+  // - omnibox_metrics_provider.cc `GetScoringSignalsForLogging()`
   // - omnibox.mojom `struct Signals`
-  // - omnibox_page_handler.cc `TypeConverter<AutocompleteMatch::ScoringSignals,
-  //   mojom::SignalsPtr>`
+  // - omnibox_page_handler.cc
+  //   `TypeConverter<AutocompleteMatch::ScoringSignals, mojom::SignalsPtr>`
   // - omnibox_page_handler.cc `TypeConverter<mojom::SignalsPtr,
   //   AutocompleteMatch::ScoringSignals>`
   // - omnibox_util.ts `signalNames`
@@ -1738,9 +1801,10 @@ void AutocompleteMatch::MergeScoringSignals(const AutocompleteMatch& other) {
   const char kACMatchPropertyScoringSignalsMerged[] = "Scoring signals merged";
   RecordAdditionalInfo(
       kACMatchPropertyScoringSignalsMerged,
-      GetAdditionalInfo(kACMatchPropertyScoringSignalsMerged) +
+      GetAdditionalInfoForDebugging(kACMatchPropertyScoringSignalsMerged) +
           AutocompleteMatchType::ToString(other.type) + ", " +
-          other.GetAdditionalInfo(kACMatchPropertyScoringSignalsMerged));
+          other.GetAdditionalInfoForDebugging(
+              kACMatchPropertyScoringSignalsMerged));
 
   if (!scoring_signals.has_value()) {
     scoring_signals = std::make_optional<ScoringSignals>();
@@ -1940,6 +2004,46 @@ void AutocompleteMatch::MergeScoringSignals(const AutocompleteMatch& other) {
     scoring_signals->set_search_suggest_relevance(
         std::max(scoring_signals->search_suggest_relevance(),
                  other.scoring_signals->search_suggest_relevance()));
+  }
+
+  // Take the OR result.
+  if (other.scoring_signals->has_is_search_suggest_entity()) {
+    scoring_signals->set_is_search_suggest_entity(
+        scoring_signals->is_search_suggest_entity() ||
+        other.scoring_signals->is_search_suggest_entity());
+  }
+
+  // Take the OR result.
+  if (other.scoring_signals->has_is_verbatim()) {
+    scoring_signals->set_is_verbatim(scoring_signals->is_verbatim() ||
+                                     other.scoring_signals->is_verbatim());
+  }
+
+  // Take the OR result.
+  if (other.scoring_signals->has_is_navsuggest()) {
+    scoring_signals->set_is_navsuggest(scoring_signals->is_navsuggest() ||
+                                       other.scoring_signals->is_navsuggest());
+  }
+
+  // Take the OR result.
+  if (other.scoring_signals->has_is_search_suggest_tail()) {
+    scoring_signals->set_is_search_suggest_tail(
+        scoring_signals->is_search_suggest_tail() ||
+        other.scoring_signals->is_search_suggest_tail());
+  }
+
+  // Take the OR result.
+  if (other.scoring_signals->has_is_answer_suggest()) {
+    scoring_signals->set_is_answer_suggest(
+        scoring_signals->is_answer_suggest() ||
+        other.scoring_signals->is_answer_suggest());
+  }
+
+  // Take the OR result.
+  if (other.scoring_signals->has_is_calculator_suggest()) {
+    scoring_signals->set_is_calculator_suggest(
+        scoring_signals->is_calculator_suggest() ||
+        other.scoring_signals->is_calculator_suggest());
   }
 }
 
@@ -2145,15 +2249,24 @@ void AutocompleteMatch::ValidateClassifications(
     const std::u16string& text,
     const ACMatchClassifications& classifications,
     const std::string& provider_name) {
+#if DCHECK_IS_ON()
+  std::string debug_string = " text: " + base::UTF16ToUTF8(text) +
+                             ", provider: " + provider_name +
+                             ", classifications (offset, style): ";
+  for (const auto& classification : classifications) {
+    debug_string += " (" + base::NumberToString(classification.offset) + ", " +
+                    base::NumberToString(classification.style) + ")";
+  }
+
   if (text.empty()) {
-    DCHECK(classifications.empty());
+    DCHECK(classifications.empty()) << debug_string;
     return;
   }
 
   // The classifications should always cover the whole string.
-  DCHECK(!classifications.empty()) << "No classification for \"" << text << '"';
+  DCHECK(!classifications.empty()) << " No classification;" << debug_string;
   DCHECK_EQ(0U, classifications[0].offset)
-      << "Classification misses beginning for \"" << text << '"';
+      << " Classification misses beginning;" << debug_string;
   if (classifications.size() == 1)
     return;
 
@@ -2161,13 +2274,10 @@ void AutocompleteMatch::ValidateClassifications(
   size_t last_offset = classifications[0].offset;
   for (auto i(classifications.begin() + 1); i != classifications.end(); ++i) {
     DCHECK_GT(i->offset, last_offset)
-        << " Classification for \"" << text << "\" with offset of " << i->offset
-        << " is unsorted in relation to last offset of " << last_offset
-        << ". Provider: " << provider_name << ".";
+        << " Unsorted classification;" << debug_string;
     DCHECK_LT(i->offset, text.length())
-        << " Classification of [" << i->offset << "," << text.length()
-        << "] is out of bounds for \"" << text
-        << "\". Provider: " << provider_name << ".";
+        << " Out of bounds classification;" << debug_string;
     last_offset = i->offset;
   }
+#endif  // DCHECK_IS_ON()
 }

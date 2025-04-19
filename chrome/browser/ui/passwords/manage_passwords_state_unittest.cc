@@ -81,7 +81,7 @@ class ManagePasswordsStateTest : public testing::Test {
 
     local_federated_form_ = saved_match_;
     local_federated_form_.federation_origin =
-        url::Origin::Create(GURL("https://idp.com"));
+        url::SchemeHostPort(GURL("https://idp.com"));
     local_federated_form_.password_value.clear();
     local_federated_form_.signon_realm =
         "federation://example.com/accounts.com";
@@ -675,4 +675,17 @@ TEST_F(ManagePasswordsStateTest, OnKeychainError) {
             passwords_data().state());
 }
 
+TEST_F(ManagePasswordsStateTest, OpenPasswordDetailsBubble) {
+  PasswordForm form;
+  form.username_value = u"user";
+  form.password_value = u"passw0rd";
+  form.signon_realm = "https://google.com/";
+  form.url = GURL("https://google.com");
+
+  passwords_data().OpenPasswordDetailsBubble(form);
+
+  EXPECT_EQ(passwords_data().state(), password_manager::ui::MANAGE_STATE);
+  EXPECT_EQ(passwords_data().single_credential_mode_credential(), form);
+  EXPECT_TRUE(passwords_data().origin().GetURL().is_empty());
+}
 }  // namespace

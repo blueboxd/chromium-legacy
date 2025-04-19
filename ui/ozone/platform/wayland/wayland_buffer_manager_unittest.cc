@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include <drm_fourcc.h>
 #include <overlay-prioritizer-client-protocol.h>
 
@@ -31,13 +36,13 @@
 #include "ui/ozone/platform/wayland/host/wayland_buffer_factory.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
+#include "ui/ozone/platform/wayland/host/wayland_connection_test_api.h"
 #include "ui/ozone/platform/wayland/host/wayland_frame_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_subsurface.h"
 #include "ui/ozone/platform/wayland/host/wayland_zwp_linux_dmabuf.h"
 #include "ui/ozone/platform/wayland/test/mock_surface.h"
 #include "ui/ozone/platform/wayland/test/mock_zwp_linux_dmabuf.h"
 #include "ui/ozone/platform/wayland/test/test_overlay_prioritized_surface.h"
-#include "ui/ozone/platform/wayland/test/test_util.h"
 #include "ui/ozone/platform/wayland/test/test_zwp_linux_buffer_params.h"
 #include "ui/ozone/platform/wayland/test/wayland_test.h"
 #include "ui/platform_window/platform_window_init_properties.h"
@@ -293,7 +298,7 @@ class WaylandBufferManagerTest : public WaylandTest {
                                             std::move(properties));
     EXPECT_TRUE(new_window);
 
-    wl::SyncDisplay(connection_->display_wrapper(), *connection_->display());
+    WaylandConnectionTestApi(connection_.get()).SyncDisplay();
 
     EXPECT_NE(new_window->GetWidget(), gfx::kNullAcceleratedWidget);
     return new_window;
@@ -1591,7 +1596,7 @@ TEST_P(WaylandBufferManagerTest,
   // very first configure ack to be done in the subsequent OnSequencePoint()
   // call.
   window->SetRestoredBoundsInDIP(kRestoredBounds);
-  wl::SyncDisplay(connection_->display_wrapper(), *connection_->display());
+  WaylandConnectionTestApi(connection_.get()).SyncDisplay();
 
   window->Show(false);
 
@@ -3288,9 +3293,9 @@ TEST_P(WaylandBufferManagerViewportTest, ViewportDestinationNonInteger) {
   if (!connection_->ShouldUseOverlayDelegation()) {
     GTEST_SKIP();
   }
-  constexpr gfx::RectF test_data[2][2] = {
-      {gfx::RectF({21, 18}, {7, 11}), gfx::RectF({21, 18}, {7, 11})},
-      {gfx::RectF({7, 8}, {43, 63}), gfx::RectF({7, 8}, {43, 63})}};
+  constexpr std::array<std::array<gfx::RectF, 2>, 2> test_data = {
+      {{gfx::RectF({21, 18}, {7, 11}), gfx::RectF({21, 18}, {7, 11})},
+       {gfx::RectF({7, 8}, {43, 63}), gfx::RectF({7, 8}, {43, 63})}}};
 
   for (const auto& data : test_data) {
     ViewportDestinationTestHelper(data[0] /* display_rect */,
@@ -3310,10 +3315,10 @@ TEST_P(WaylandBufferManagerViewportTest, ViewportDestinationInteger) {
     GTEST_SKIP();
   }
 
-  constexpr gfx::RectF test_data[2][2] = {
-      {gfx::RectF({21, 18}, {7.423, 11.854}), gfx::RectF({21, 18}, {7, 12})},
-      {gfx::RectF({7, 8}, {43.562, 63.76}),
-       gfx::RectF({7, 8}, {43.562, 63.76})}};
+  constexpr std::array<std::array<gfx::RectF, 2>, 2> test_data = {
+      {{gfx::RectF({21, 18}, {7.423, 11.854}), gfx::RectF({21, 18}, {7, 12})},
+       {gfx::RectF({7, 8}, {43.562, 63.76}),
+        gfx::RectF({7, 8}, {43.562, 63.76})}}};
 
   for (const auto& data : test_data) {
     ViewportDestinationTestHelper(data[0] /* display_rect */,

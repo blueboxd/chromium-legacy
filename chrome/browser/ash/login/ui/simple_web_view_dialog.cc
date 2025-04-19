@@ -14,7 +14,7 @@
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/chrome_password_reuse_detection_manager_client.h"
-#include "chrome/browser/ssl/security_state_tab_helper.h"
+#include "chrome/browser/ssl/chrome_security_state_tab_helper.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/browser.h"
@@ -37,6 +37,7 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/theme_provider.h"
 #include "ui/color/color_id.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/box_layout.h"
@@ -143,7 +144,8 @@ void SimpleWebViewDialog::StartLoad(const GURL& url) {
     web_view_container_ = std::make_unique<views::WebView>(profile_);
   web_view_ = web_view_container_.get();
   web_view_->GetWebContents()->SetDelegate(this);
-  web_view_->LoadInitialURL(url);
+  web_view_->LoadInitialURL(url,
+                            views::WebView::HttpsUpgradePolicy::kNoUpgrade);
 
   WebContents* web_contents = web_view_->GetWebContents();
   DCHECK(web_contents);
@@ -164,7 +166,8 @@ void SimpleWebViewDialog::StartLoad(const GURL& url) {
 void SimpleWebViewDialog::Init() {
   // Create the security state model that the location bar model needs.
   if (web_view_->GetWebContents())
-    SecurityStateTabHelper::CreateForWebContents(web_view_->GetWebContents());
+    ChromeSecurityStateTabHelper::CreateForWebContents(
+        web_view_->GetWebContents());
   location_bar_model_ = std::make_unique<LocationBarModelImpl>(
       this, content::kMaxURLDisplayChars);
 
@@ -179,7 +182,8 @@ void SimpleWebViewDialog::Init() {
   back->SetImageHorizontalAlignment(views::ImageButton::ALIGN_RIGHT);
   back->SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_BACK));
   back->SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY);
-  back->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_BACK));
+  back->GetViewAccessibility().SetName(
+      l10n_util::GetStringUTF16(IDS_ACCNAME_BACK));
   back->SetID(VIEW_ID_BACK_BUTTON);
   back_ = back.get();
 
@@ -190,7 +194,8 @@ void SimpleWebViewDialog::Init() {
                                     ui::EF_MIDDLE_MOUSE_BUTTON);
   forward->SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_FORWARD));
   forward->SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY);
-  forward->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_FORWARD));
+  forward->GetViewAccessibility().SetName(
+      l10n_util::GetStringUTF16(IDS_ACCNAME_FORWARD));
   forward->SetID(VIEW_ID_FORWARD_BUTTON);
   forward_ = forward.get();
 
@@ -204,7 +209,8 @@ void SimpleWebViewDialog::Init() {
   reload->SetTriggerableEventFlags(ui::EF_LEFT_MOUSE_BUTTON |
                                    ui::EF_MIDDLE_MOUSE_BUTTON);
   reload->SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_RELOAD));
-  reload->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_RELOAD));
+  reload->GetViewAccessibility().SetName(
+      l10n_util::GetStringUTF16(IDS_ACCNAME_RELOAD));
   reload->SetID(VIEW_ID_RELOAD_BUTTON);
   reload_ = reload.get();
 

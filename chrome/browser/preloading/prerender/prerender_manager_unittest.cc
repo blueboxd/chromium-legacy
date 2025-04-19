@@ -4,8 +4,6 @@
 
 #include <string>
 
-#include "base/test/scoped_feature_list.h"
-#include "chrome/browser/browser_features.h"
 #include "chrome/browser/preloading/chrome_preloading.h"
 #include "chrome/browser/preloading/prerender/prerender_manager.h"
 #include "chrome/browser/preloading/prerender/prerender_utils.h"
@@ -31,11 +29,7 @@ class PrerenderManagerTest : public ChromeRenderViewHostTestHarness {
             content::BrowserTaskEnvironment::REAL_IO_THREAD),
         prerender_helper_(
             base::BindRepeating(&PrerenderManagerTest::GetActiveWebContents,
-                                base::Unretained(this))) {
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        features::kOmniboxTriggerForPrerender2,
-        {{"SupportSearchSuggestion", "true"}});
-  }
+                                base::Unretained(this))) {}
 
   void SetUp() override {
     prerender_helper_.RegisterServerRequestMonitor(&test_server_);
@@ -70,7 +64,7 @@ class PrerenderManagerTest : public ChromeRenderViewHostTestHarness {
 
   GURL GetCanonicalSearchUrl(const GURL& search_suggestion_url) {
     GURL canonical_search_url;
-    EXPECT_TRUE(HasCanoncialPreloadingOmniboxSearchURL(
+    EXPECT_TRUE(HasCanonicalPreloadingOmniboxSearchURL(
         search_suggestion_url, profile(), &canonical_search_url));
     return canonical_search_url;
   }
@@ -106,6 +100,7 @@ class PrerenderManagerTest : public ChromeRenderViewHostTestHarness {
         preloading_data->AddPreloadingAttempt(
             chrome_preloading_predictor::kOmniboxDirectURLInput,
             content::PreloadingType::kPrerender, same_url_matcher,
+            /*planned_max_preloading_type=*/std::nullopt,
             GetActiveWebContents()
                 ->GetPrimaryMainFrame()
                 ->GetPageUkmSourceId());
@@ -118,7 +113,6 @@ class PrerenderManagerTest : public ChromeRenderViewHostTestHarness {
   static std::string search_site() { return "/title1.html"; }
 
   content::test::PrerenderTestHelper prerender_helper_;
-  base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<content::test::ScopedPrerenderWebContentsDelegate>
       web_contents_delegate_;
 

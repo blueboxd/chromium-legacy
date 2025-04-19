@@ -21,11 +21,24 @@ class MockDigitalIdentityProvider : public DigitalIdentityProvider {
   MockDigitalIdentityProvider& operator=(const MockDigitalIdentityProvider&) =
       delete;
 
-  MOCK_METHOD4(Request,
-               void(WebContents*,
-                    const url::Origin& origin,
-                    const std::string& request,
-                    DigitalIdentityCallback));
+  MOCK_METHOD(bool,
+              IsLowRiskOrigin,
+              (const url::Origin& to_check),
+              (const override));
+  MOCK_METHOD(DigitalIdentityInterstitialAbortCallback,
+              ShowDigitalIdentityInterstitial,
+              (WebContents & web_contents,
+               const url::Origin& origin,
+               DigitalIdentityInterstitialType interstitial_type,
+               DigitalIdentityInterstitialCallback callback),
+              (override));
+  MOCK_METHOD(void,
+              Request,
+              (WebContents*,
+               const url::Origin& origin,
+               const std::string& request,
+               DigitalIdentityCallback),
+              (override));
 };
 
 }  // namespace content

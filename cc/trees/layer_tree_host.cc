@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "cc/trees/layer_tree_host.h"
 
 #include <stddef.h>
@@ -22,6 +27,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/not_fatal_until.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -30,12 +36,14 @@
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
+#include "base/types/optional_ref.h"
 #include "build/build_config.h"
 #include "cc/base/devtools_instrumentation.h"
 #include "cc/base/features.h"
 #include "cc/base/histograms.h"
 #include "cc/base/math_util.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
+#include "cc/input/browser_controls_offset_tags_info.h"
 #include "cc/input/layer_selection_bound.h"
 #include "cc/input/overscroll_behavior.h"
 #include "cc/input/page_scale_animation.h"
@@ -43,6 +51,7 @@
 #include "cc/layers/heads_up_display_layer_impl.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/painted_scrollbar_layer.h"
+#include "cc/metrics/ukm_manager.h"
 #include "cc/metrics/ukm_smoothness_data.h"
 #include "cc/paint/paint_worklet_layer_painter.h"
 #include "cc/resources/ui_resource_manager.h"
@@ -66,7 +75,6 @@
 #include "cc/trees/swap_promise_manager.h"
 #include "cc/trees/transform_node.h"
 #include "cc/trees/tree_synchronizer.h"
-#include "cc/trees/ukm_manager.h"
 #include "cc/view_transition/view_transition_request.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
@@ -383,13 +391,8 @@ void LayerTreeHost::RequestMainFrameUpdate(bool report_metrics) {
 
 void LayerTreeHost::ImageDecodesFinished(
     const std::vector<std::pair<int, bool>>& results) {
-  DCHECK(IsMainThread());
-  // Issue stored callbacks and remove them from the pending list.
   for (const auto& pair : results) {
-    auto it = pending_image_decodes_.find(pair.first);
-    DCHECK(it != pending_image_decodes_.end());
-    std::move(it->second).Run(pair.second);
-    pending_image_decodes_.erase(it);
+    NotifyImageDecodeFinished(pair.first, pair.second);
   }
 }
 
@@ -406,6 +409,7 @@ std::unique_ptr<CommitState> LayerTreeHost::WillCommit(
   if (has_updates)
     result = ActivateCommitState();
   swap_promise_manager_.WillCommit();
+  mutator_host()->RemoveStaleTimelines();
   client_->WillCommit(has_updates ? *result : *pending_commit_state());
   pending_commit_state()->source_frame_number++;
   commit_completion_event_ = std::move(completion);
@@ -483,8 +487,19 @@ bool LayerTreeHost::IsUsingLayerLists() const {
 void LayerTreeHost::CommitComplete(int source_frame_number,
                                    const CommitTimestamps& commit_timestamps) {
   DCHECK(IsMainThread());
+
   // At this point, commit_completion_event_ could be for the *next* commit, and
-  // may not yet have been signaled.
+  // may not yet have been signaled. If we blocked on a protected sequence
+  // during the commit then the completion event for the frame will have been
+  // reset, which in turn unblocks starting a commit for the next frame. If we
+  // have a commit completion event that has been signaled, it means that we
+  // have not been blocked on a protected sequence during the commit. In this
+  // case, we still need to call WaitForCommitCompletion, which performs the
+  // flag reset; however, the Wait will be non-blocking given that the event was
+  // already signaled.
+  if (!in_commit()) {
+    mutator_host()->RemoveStaleTimelines();
+  }
   if (commit_completion_event_ && commit_completion_event_->IsSignaled())
     WaitForCommitCompletion(/* for_protected_sequence */ false);
   client_->DidCommit(source_frame_number, commit_timestamps.start,
@@ -498,6 +513,16 @@ void LayerTreeHost::CommitComplete(int source_frame_number,
                           waited_for_protected_sequence_);
   }
   waited_for_protected_sequence_ = false;
+}
+
+void LayerTreeHost::NotifyImageDecodeFinished(int request_id,
+                                              bool decode_succeeded) {
+  DCHECK(IsMainThread());
+  auto it = pending_image_decodes_.find(request_id);
+  CHECK(it != pending_image_decodes_.end(), base::NotFatalUntil::M130);
+  // Issue stored callback and remove them from the pending list.
+  std::move(it->second).Run(decode_succeeded);
+  pending_image_decodes_.erase(it);
 }
 
 void LayerTreeHost::NotifyTransitionRequestsFinished(
@@ -761,9 +786,9 @@ void LayerTreeHost::SetNeedsCommitWithForcedRedraw() {
 }
 
 void LayerTreeHost::SetDebugState(const LayerTreeDebugState& new_debug_state) {
-  if (LayerTreeDebugState::Equal(pending_commit_state()->debug_state,
-                                 new_debug_state))
+  if (pending_commit_state()->debug_state == new_debug_state) {
     return;
+  }
 
   pending_commit_state()->debug_state = new_debug_state;
 
@@ -1195,13 +1220,16 @@ void LayerTreeHost::DetachInputDelegateAndRenderFrameObserver() {
   proxy_->DetachInputDelegateAndRenderFrameObserver();
 }
 
-void LayerTreeHost::UpdateBrowserControlsState(BrowserControlsState constraints,
-                                               BrowserControlsState current,
-                                               bool animate) {
+void LayerTreeHost::UpdateBrowserControlsState(
+    BrowserControlsState constraints,
+    BrowserControlsState current,
+    bool animate,
+    base::optional_ref<const BrowserControlsOffsetTagsInfo> offset_tags_info) {
   DCHECK(IsMainThread());
   // Browser controls are only used in threaded mode but Blink layout tests may
   // call into this. The single threaded version is a no-op.
-  proxy_->UpdateBrowserControlsState(constraints, current, animate);
+  proxy_->UpdateBrowserControlsState(constraints, current, animate,
+                                     offset_tags_info);
 }
 
 void LayerTreeHost::AnimateLayers(base::TimeTicks monotonic_time) {
@@ -1644,6 +1672,17 @@ void LayerTreeHost::RequestViewportScreenshot(
   SetNeedsCommit();
 }
 
+void LayerTreeHost::SetPrimaryMainFrameItemSequenceNumber(
+    int64_t primary_main_frame_item_sequence_number) {
+  if (pending_commit_state()->primary_main_frame_item_sequence_number ==
+      primary_main_frame_item_sequence_number) {
+    return;
+  }
+  pending_commit_state()->primary_main_frame_item_sequence_number =
+      primary_main_frame_item_sequence_number;
+  SetNeedsCommit();
+}
+
 void LayerTreeHost::RequestNewLocalSurfaceId() {
   // We can still request a new viz::LocalSurfaceId but that request will be
   // deferred until we have a valid viz::LocalSurfaceId from the parent.
@@ -1969,8 +2008,13 @@ void LayerTreeHost::QueueImageDecode(const PaintImage& image,
                                      base::OnceCallback<void(bool)> callback) {
   TRACE_EVENT0("cc", "LayerTreeHost::QueueImageDecode");
   int next_id = s_image_decode_sequence_number.GetNext();
-  pending_commit_state()->queued_image_decodes.emplace_back(
-      next_id, std::make_unique<PaintImage>(image));
+  if (base::FeatureList::IsEnabled(
+          features::kSendExplicitDecodeRequestsImmediately)) {
+    proxy()->QueueImageDecode(next_id, image);
+  } else {
+    pending_commit_state()->queued_image_decodes.emplace_back(
+        next_id, std::make_unique<PaintImage>(image));
+  }
   pending_image_decodes_.emplace(next_id, std::move(callback));
   SetNeedsCommit();
 }

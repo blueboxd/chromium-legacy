@@ -13,24 +13,35 @@
 #include "pdf/ink/ink_brush_family.h"
 #include "pdf/ink/ink_brush_paint.h"
 #include "pdf/ink/ink_brush_tip.h"
+#include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 
 namespace chrome_pdf {
 
 namespace {
 
 std::string CreateBrushUri() {
-  // TODO(crbug.com/335524380): Use real value here.
+  // TODO(crbug.com/353942923): Use real value here.
   return "ink://ink/texture:test-texture";
+}
+
+float GetOpacity(PdfInkBrush::Type type) {
+  switch (type) {
+    case PdfInkBrush::Type::kHighlighter:
+      return 0.4f;
+    case PdfInkBrush::Type::kPen:
+      return 1.0f;
+  }
 }
 
 std::unique_ptr<InkBrush> CreateInkBrush(PdfInkBrush::Type type,
                                          PdfInkBrush::Params params) {
   CHECK_GT(params.size, 0);
 
-  // TODO(crbug.com/335524380): Use real values here.
+  // TODO(crbug.com/353942923): Use real values here.
   InkBrushTip tip;
   tip.corner_rounding = 0;
-  tip.opacity_multiplier = 1.0f;
+  tip.opacity_multiplier = GetOpacity(type);
 
   InkBrushPaint::TextureLayer layer;
   layer.color_texture_uri = CreateBrushUri();
@@ -55,6 +66,17 @@ std::unique_ptr<InkBrush> CreateInkBrush(PdfInkBrush::Type type,
                           /*epsilon=*/0.1f);
 }
 
+// Determine the area to invalidate centered around a point where a brush is
+// applied.
+gfx::Rect GetPointInvalidateArea(float brush_diameter,
+                                 const gfx::PointF& center) {
+  // Choose a rectangle that surrounds the point for the brush radius.
+  float brush_radius = brush_diameter / 2;
+  return gfx::ToEnclosingRect(gfx::RectF(center.x() - brush_radius,
+                                         center.y() - brush_radius,
+                                         brush_diameter, brush_diameter));
+}
+
 }  // namespace
 
 // static
@@ -69,6 +91,12 @@ std::optional<PdfInkBrush::Type> PdfInkBrush::StringToType(
   return std::nullopt;
 }
 
+// static
+void PdfInkBrush::CheckToolSizeIsInRange(float size) {
+  CHECK_GE(size, 1);
+  CHECK_LE(size, 16);
+}
+
 PdfInkBrush::PdfInkBrush(Type brush_type, Params brush_params)
     : ink_brush_(CreateInkBrush(brush_type, brush_params)) {
   CHECK(ink_brush_);
@@ -78,6 +106,17 @@ PdfInkBrush::~PdfInkBrush() = default;
 
 const InkBrush& PdfInkBrush::GetInkBrush() const {
   return *ink_brush_;
+}
+
+gfx::Rect PdfInkBrush::GetInvalidateArea(const gfx::PointF& center1,
+                                         const gfx::PointF& center2) const {
+  // For a line connecting `center1` to `center2`, the invalidate
+  // region is the union between the areas affected by them both.
+  float brush_diameter = ink_brush_->GetSize();
+  gfx::Rect area1 = GetPointInvalidateArea(brush_diameter, center1);
+  gfx::Rect area2 = GetPointInvalidateArea(brush_diameter, center2);
+  area2.Union(area1);
+  return area2;
 }
 
 }  // namespace chrome_pdf

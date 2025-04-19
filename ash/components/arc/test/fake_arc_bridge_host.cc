@@ -20,6 +20,7 @@
 #include "ash/components/arc/mojom/crash_collector.mojom.h"
 #include "ash/components/arc/mojom/disk_space.mojom.h"
 #include "ash/components/arc/mojom/enterprise_reporting.mojom.h"
+#include "ash/components/arc/mojom/error_notification.mojom.h"
 #include "ash/components/arc/mojom/file_system.mojom.h"
 #include "ash/components/arc/mojom/ime.mojom.h"
 #include "ash/components/arc/mojom/input_method_manager.mojom.h"
@@ -27,7 +28,6 @@
 #include "ash/components/arc/mojom/keyboard_shortcut.mojom.h"
 #include "ash/components/arc/mojom/keymaster.mojom.h"
 #include "ash/components/arc/mojom/keymint.mojom.h"
-#include "ash/components/arc/mojom/kiosk.mojom.h"
 #include "ash/components/arc/mojom/media_session.mojom.h"
 #include "ash/components/arc/mojom/memory.mojom.h"
 #include "ash/components/arc/mojom/metrics.mojom.h"
@@ -130,6 +130,10 @@ void FakeArcBridgeHost::OnEnterpriseReportingInstanceReady(
     mojo::PendingRemote<mojom::EnterpriseReportingInstance>
         enterprise_reporting_remote) {}
 
+void FakeArcBridgeHost::OnErrorNotificationInstanceReady(
+    mojo::PendingRemote<mojom::ErrorNotificationInstance>
+        error_notification_remote) {}
+
 void FakeArcBridgeHost::OnFileSystemInstanceReady(
     mojo::PendingRemote<mojom::FileSystemInstance> file_system_remote) {}
 
@@ -155,9 +159,6 @@ void FakeArcBridgeHost::OnKeymasterInstanceReady(
 
 void FakeArcBridgeHost::OnKeyMintInstanceReady(
     mojo::PendingRemote<mojom::keymint::KeyMintInstance> keymint_remote) {}
-
-void FakeArcBridgeHost::OnKioskInstanceReady(
-    mojo::PendingRemote<mojom::KioskInstance> kiosk_remote) {}
 
 void FakeArcBridgeHost::OnMediaSessionInstanceReady(
     mojo::PendingRemote<mojom::MediaSessionInstance> media_sesssion_remote) {}

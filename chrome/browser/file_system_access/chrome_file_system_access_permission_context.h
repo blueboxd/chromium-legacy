@@ -31,7 +31,6 @@
 #endif
 
 #if BUILDFLAG(ENTERPRISE_CLOUD_CONTENT_ANALYSIS)
-#include "chrome/browser/enterprise/connectors/analysis/content_analysis_delegate.h"
 #include "components/enterprise/common/files_scan_data.h"
 #endif
 
@@ -155,6 +154,9 @@ class ChromeFileSystemAccessPermissionContext
 
   // WebAppInstallManagerObserver:
   void OnWebAppInstalled(const webapps::AppId& app_id) override;
+  // TODO(crbug.com/340952100): Remove after the InstallState is saved in the
+  // database & available from OnWebAppInstalled.
+  void OnWebAppInstalledWithOsHooks(const webapps::AppId& app_id) override;
   void OnWebAppInstallManagerDestroyed() override;
   void OnWebAppWillBeUninstalled(const webapps::AppId& app_id) override;
 #endif
@@ -330,6 +332,9 @@ class ChromeFileSystemAccessPermissionContext
   // site_settings_helper, which displays File System Access permissions on the
   // chrome://settings/content/filesystem UI.
   static constexpr char kPermissionPathKey[] = "path";
+
+  // KeyedService:
+  void Shutdown() override;
 
  protected:
   SEQUENCE_CHECKER(sequence_checker_);

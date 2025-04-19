@@ -15,6 +15,49 @@
 
 namespace history_embeddings {
 
+struct ScoredUrl {
+  ScoredUrl(history::URLID url_id,
+            history::VisitID visit_id,
+            base::Time visit_time,
+            float score);
+  ~ScoredUrl();
+  ScoredUrl(ScoredUrl&&);
+  ScoredUrl& operator=(ScoredUrl&&);
+  ScoredUrl(const ScoredUrl&);
+  ScoredUrl& operator=(const ScoredUrl&);
+
+  // Basic data about the found URL/visit.
+  history::URLID url_id;
+  history::VisitID visit_id;
+  base::Time visit_time;
+
+  // A measure of how closely the query matched the found data.
+  float score;
+};
+
+struct SearchInfo {
+  SearchInfo();
+  SearchInfo(SearchInfo&&);
+  ~SearchInfo();
+
+  // Result of the search, the best scored URLs.
+  std::vector<ScoredUrl> scored_urls;
+
+  // The number of URLs searched to find this result.
+  size_t searched_url_count = 0u;
+
+  // The number of embeddings searched to find this result.
+  size_t searched_embedding_count = 0u;
+
+  // The number of embeddings scored zero due to having a source passage
+  // containing non-ASCII characters.
+  size_t skipped_nonascii_passage_count = 0u;
+
+  // Whether the search completed without interruption. Starting a new search
+  // may cause a search to halt, and in that case this member will be false.
+  bool completed = false;
+};
+
 struct UrlPassages {
   UrlPassages(history::URLID url_id,
               history::VisitID visit_id,
@@ -24,6 +67,7 @@ struct UrlPassages {
   UrlPassages& operator=(const UrlPassages&);
   UrlPassages(UrlPassages&&);
   UrlPassages& operator=(UrlPassages&&);
+  bool operator==(const UrlPassages&) const;
 
   history::URLID url_id;
   history::VisitID visit_id;
@@ -34,6 +78,7 @@ struct UrlPassages {
 class Embedding {
  public:
   explicit Embedding(std::vector<float> data);
+  Embedding(std::vector<float> data, size_t passage_word_count);
   Embedding();
   ~Embedding();
   Embedding(const Embedding&);
@@ -52,13 +97,22 @@ class Embedding {
   void Normalize();
 
   // Compares one embedding with another and returns a similarity measure.
-  float ScoreWith(const Embedding& other) const;
+  float ScoreWith(SearchInfo& search_info,
+                  const std::string& other_passage,
+                  const Embedding& other_embedding) const;
 
   // Const accessor used for storage.
   const std::vector<float>& GetData() const { return data_; }
 
+  // Used for search filtering of passages with low word count.
+  size_t GetPassageWordCount() const { return passage_word_count_; }
+  void SetPassageWordCount(size_t passage_word_count) {
+    passage_word_count_ = passage_word_count;
+  }
+
  private:
   std::vector<float> data_;
+  size_t passage_word_count_ = 0;
 };
 
 struct UrlEmbeddings {
@@ -71,11 +125,16 @@ struct UrlEmbeddings {
   UrlEmbeddings(UrlEmbeddings&&);
   UrlEmbeddings& operator=(UrlEmbeddings&&);
   UrlEmbeddings(const UrlEmbeddings&);
-  UrlEmbeddings& operator=(UrlEmbeddings&);
+  UrlEmbeddings& operator=(const UrlEmbeddings&);
   bool operator==(const UrlEmbeddings&) const;
 
-  // Finds score of embedding nearest to query, and also outputs its index.
-  std::pair<float, size_t> BestScoreWith(const Embedding& query) const;
+  // Finds score of embedding nearest to query, also taking passages
+  // into consideration since some should be skipped. The passages
+  // correspond to the embeddings 1:1 by index.
+  float BestScoreWith(SearchInfo& search_info,
+                      const Embedding& query,
+                      const proto::PassagesValue& passages,
+                      size_t search_minimum_word_count) const;
 
   history::URLID url_id;
   history::VisitID visit_id;
@@ -83,56 +142,16 @@ struct UrlEmbeddings {
   std::vector<Embedding> embeddings;
 };
 
-struct ScoredUrl {
-  ScoredUrl(history::URLID url_id,
-            history::VisitID visit_id,
-            base::Time visit_time,
-            float score,
-            size_t index,
-            Embedding passage_embedding);
-  ~ScoredUrl();
-  ScoredUrl(ScoredUrl&&);
-  ScoredUrl& operator=(ScoredUrl&&);
-  ScoredUrl(const ScoredUrl&);
-  ScoredUrl& operator=(ScoredUrl&);
+struct UrlPassagesEmbeddings {
+  UrlPassagesEmbeddings(history::URLID url_id,
+                        history::VisitID visit_id,
+                        base::Time visit_time);
+  UrlPassagesEmbeddings(const UrlPassagesEmbeddings&);
+  UrlPassagesEmbeddings& operator=(const UrlPassagesEmbeddings&);
+  bool operator==(const UrlPassagesEmbeddings&) const;
 
-  // Basic data about the found URL/visit.
-  history::URLID url_id;
-  history::VisitID visit_id;
-  base::Time visit_time;
-
-  // A measure of how closely the query matched the found data.
-  float score;
-
-  // Index of the embedding, which also corresponds to the index of the source
-  // passage used to compute the embedding.
-  size_t index;
-
-  // The embedding for the source passage. Preserved during search.
-  Embedding passage_embedding;
-
-  // Source passage; may not be populated during search, but kept in this
-  // struct for convenience when passing finished results to service callers.
-  std::string passage;
-};
-
-struct SearchInfo {
-  SearchInfo();
-  SearchInfo(SearchInfo&&);
-  ~SearchInfo();
-
-  // Result of the search, the best scored URLs.
-  std::vector<ScoredUrl> scored_urls;
-
-  // The number of URLs searched to find this result.
-  size_t searched_url_count = 0u;
-
-  // The number of embeddings searched to find this result.
-  size_t searched_embedding_count = 0u;
-
-  // Whether the search completed without interruption. Starting a new search
-  // may cause a search to halt, and in that case this member will be false.
-  bool completed = false;
+  UrlPassages url_passages;
+  UrlEmbeddings url_embeddings;
 };
 
 // This base class decouples storage classes and inverts the dependency so that
@@ -140,13 +159,13 @@ struct SearchInfo {
 // flat files, or whatever kinds of storage will work efficiently.
 class VectorDatabase {
  public:
-  struct EmbeddingsIterator {
-    virtual ~EmbeddingsIterator() = default;
+  struct UrlDataIterator {
+    virtual ~UrlDataIterator() = default;
 
     // Returns nullptr if none remain; otherwise advances the iterator
     // and returns a pointer to the next instance (which may be owned
     // by the iterator itself).
-    virtual const UrlEmbeddings* Next() = 0;
+    virtual const UrlPassagesEmbeddings* Next() = 0;
   };
 
   virtual ~VectorDatabase() = default;
@@ -156,11 +175,11 @@ class VectorDatabase {
 
   // Insert or update all embeddings for a URL's full set of passages.
   // Returns true on success.
-  virtual bool AddUrlEmbeddings(const UrlEmbeddings& url_embeddings) = 0;
+  virtual bool AddUrlData(UrlPassagesEmbeddings url_passages_embeddings) = 0;
 
   // Create an iterator that steps through database items.
   // Null may be returned if there are none.
-  virtual std::unique_ptr<EmbeddingsIterator> MakeEmbeddingsIterator(
+  virtual std::unique_ptr<UrlDataIterator> MakeUrlDataIterator(
       std::optional<base::Time> time_range_start) = 0;
 
   // Searches the database for embeddings near given `query` and returns
@@ -185,12 +204,12 @@ class VectorDatabaseInMemory : public VectorDatabase {
 
   // VectorDatabase:
   size_t GetEmbeddingDimensions() const override;
-  bool AddUrlEmbeddings(const UrlEmbeddings& url_embeddings) override;
-  std::unique_ptr<EmbeddingsIterator> MakeEmbeddingsIterator(
+  bool AddUrlData(UrlPassagesEmbeddings url_passages_embeddings) override;
+  std::unique_ptr<UrlDataIterator> MakeUrlDataIterator(
       std::optional<base::Time> time_range_start) override;
 
  private:
-  std::vector<UrlEmbeddings> data_;
+  std::vector<UrlPassagesEmbeddings> data_;
 };
 
 }  // namespace history_embeddings

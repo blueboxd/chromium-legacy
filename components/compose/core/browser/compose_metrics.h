@@ -41,6 +41,8 @@ extern const char kComposeContextMenuCtr[];
 extern const char kComposeProactiveNudgeCtr[];
 extern const char kComposeProactiveNudgeShowStatus[];
 extern const char kOpenComposeDialogResult[];
+extern const char kComposeStartSessionEntryPoint[];
+extern const char kComposeResumeSessionEntryPoint[];
 
 // Enum for calculating the CTR of the Compose context menu item.
 // These values are persisted to logs. Entries should not be renumbered and
@@ -66,34 +68,25 @@ enum class ComposeRequestReason {
   kMaxValue = kToneFormalRequest,
 };
 
-// Keep in sync with ComposeMSBBSessionCloseReasonType in
+// Close reasons for sessions that start with FRE or MSBB dialogs.
+// Keep in sync with ComposeFreOrMsbbSessionCloseReasonType in
 // src/tools/metrics/histograms/metadata/compose/enums.xml.
-enum class ComposeMSBBSessionCloseReason {
-  kMSBBEndedImplicitly = 0,
-  kMSBBCloseButtonPressed = 1,
-  kMSBBAcceptedWithoutInsert = 2,
-  kMSBBAcceptedWithInsert = 3,
-  kMaxValue = kMSBBAcceptedWithInsert,
-};
-
-// Keep in sync with ComposeFirstRunSessionCloseReasonType in
-// src/tools/metrics/histograms/metadata/compose/enums.xml.
-enum class ComposeFirstRunSessionCloseReason {
-  kEndedImplicitly = 0,
+enum class ComposeFreOrMsbbSessionCloseReason {
+  kAbandoned = 0,
   kCloseButtonPressed = 1,
-  kFirstRunDisclaimerAcknowledgedWithoutInsert = 2,
-  kFirstRunDisclaimerAcknowledgedWithInsert = 3,
-  kNewSessionWithSelectedText = 4,
-  kMaxValue = kNewSessionWithSelectedText,
+  kAckedOrAcceptedWithoutInsert = 2,
+  kAckedOrAcceptedWithInsert = 3,
+  kReplacedWithNewSession = 4,
+  kMaxValue = kReplacedWithNewSession,
 };
 
 // Keep in sync with ComposeSessionCloseReasonType in
 // src/tools/metrics/histograms/metadata/compose/enums.xml.
 enum class ComposeSessionCloseReason {
-  kAcceptedSuggestion = 0,
+  kInsertedResponse = 0,
   kCloseButtonPressed = 1,
-  kEndedImplicitly = 2,
-  kNewSessionWithSelectedText = 3,
+  kAbandoned = 2,
+  kReplacedWithNewSession = 3,
   kCanceledBeforeResponseReceived = 4,
   kMaxValue = kCanceledBeforeResponseReceived,
 };
@@ -101,7 +94,7 @@ enum class ComposeSessionCloseReason {
 // Keep in sync with ComposeSessionEventCounts in
 // src/tools/metrics/histograms/metadata/compose/enums.xml.
 enum class ComposeSessionEventTypes {
-  kDialogShown = 0,
+  kMainDialogShown = 0,
   kFREShown = 1,
   kFREAccepted = 2,
   kMSBBShown = 3,
@@ -126,7 +119,10 @@ enum class ComposeSessionEventTypes {
   kRedoClicked = 22,
   kResultEdited = 23,
   kEditedResultInserted = 24,
-  kMaxValue = kEditedResultInserted,
+  kSuccessfulRequest = 25,
+  kFailedRequest = 26,
+  kComposeDialogOpened = 27,
+  kMaxValue = kComposeDialogOpened,
 };
 
 // Enum for recording the show status of both the HMW context menu item and
@@ -138,8 +134,8 @@ enum class ComposeShowStatus {
   kShouldShow = 0,
   kGenericBlocked = 1,
   kIncompatibleFieldType = 2,
-  // kDisabledMsbb is no longer used now that we have a MSBB dialog.
-  kDisabledMsbb = 3,  // obsolete
+  // DEPRECATED: there is a MSBB dialog now.
+  // kDisabledMsbb = 3,
   kSignedOut = 4,
   kUnsupportedLanguage = 5,
   kFormFieldInCrossOriginFrame = 6,
@@ -155,11 +151,15 @@ enum class ComposeShowStatus {
   kProactiveNudgeFeatureDisabled = 16,
   kProactiveNudgeDisabledGloballyByUserPreference = 17,
   kProactiveNudgeDisabledForSiteByUserPreference = 18,
-  kPractiveNudgeDisabledByServerConfig = 19,
-  kPractiveNudgeUnknownServerConfig = 20,
-  kRandomlyBlocked = 21,
+  kProactiveNudgeDisabledByServerConfig = 19,
+  kProactiveNudgeUnknownServerConfig = 20,
+  // DEPRECATED: now using the segmentation platform.
+  // kRandomlyBlocked = 21,
   kProactiveNudgeDisabledByMSBB = 22,
-  kMaxValue = kProactiveNudgeDisabledByMSBB,
+  kProactiveNudgeBlockedBySegmentationPlatform = 23,
+  kComposeNotEnabledInCountry = 24,
+  kUndefinedCountry = 25,
+  kMaxValue = kUndefinedCountry,
 };
 
 // Enum for calculating the CTR of the Compose proactive nudge.
@@ -172,6 +172,18 @@ enum class ComposeProactiveNudgeCtrEvent {
   kUserDisabledSite = 3,
   kOpenSettings = 4,
   kMaxValue = kOpenSettings,
+};
+
+// Enum for recording the entry point for starting or resuming a Compose
+// session. Keep in sync with ComposeEntryPoint in
+// src/tools/metrics/histograms/metadata/compose/enums.xml.
+enum class ComposeEntryPoint {
+  kContextMenu = 0,
+  kProactiveNudge = 1,
+  kSelectionNudge = 2,
+  kSavedStateNudge = 3,
+  kSavedStateNotification = 4,
+  kMaxValue = kSavedStateNotification,
 };
 
 enum class EvalLocation : int {
@@ -238,14 +250,20 @@ struct ComposeSessionEvents {
   ~ComposeSessionEvents() = default;
 
   // Logging counters.
+  // Times we have opened Compose to any section (main, FRE, or MSBB).
+  unsigned int compose_dialog_open_count = 0;
+  // Times we have shown the Compose prompot (i.e. past the FRE & MSBB).
+  unsigned int compose_prompt_view_count = 0;
   // The total number of Compose Requests for the session.
-  unsigned int compose_count = 0;
-  // Times we have shown the compose dialog.
-  unsigned int dialog_shown_count = 0;
-  // Times we have shown the first run dialog.
-  unsigned int fre_dialog_shown_count = 0;
-  // Times we have shown the dialog to enable MSBB.
-  unsigned int msbb_dialog_shown_count = 0;
+  unsigned int compose_requests_count = 0;
+  // The total number of successful Compose requests.
+  unsigned int successful_requests_count = 0;
+  // The total number of Compose requests with an error.
+  unsigned int failed_requests_count = 0;
+  // Times we have shown the first run view.
+  unsigned int fre_view_count = 0;
+  // Times we have shown the view to enable MSBB.
+  unsigned int msbb_view_count = 0;
   // Times the user has pressed "undo" this session.
   unsigned int undo_count = 0;
   // Times the user has pressed "redo" this session.
@@ -402,12 +420,17 @@ void LogComposeProactiveNudgeShowStatus(ComposeShowStatus status);
 
 void LogOpenComposeDialogResult(OpenComposeDialogResult result);
 
+void LogStartSessionEntryPoint(ComposeEntryPoint entry_point);
+void LogResumeSessionEntryPoint(ComposeEntryPoint entry_point);
+
 void LogComposeRequestReason(ComposeRequestReason reason);
 void LogComposeRequestReason(EvalLocation eval_location,
                              ComposeRequestReason reason);
 
-void LogComposeRequestStatus(compose::mojom::ComposeStatus status);
+void LogComposeRequestStatus(bool page_language_supported,
+                             compose::mojom::ComposeStatus status);
 void LogComposeRequestStatus(EvalLocation eval_location,
+                             bool page_language_supported,
                              compose::mojom::ComposeStatus status);
 
 // Log the duration of a compose request. |is_ok| indicates the status of
@@ -417,18 +440,20 @@ void LogComposeRequestDuration(base::TimeDelta duration,
                                bool is_ok);
 
 void LogComposeFirstRunSessionCloseReason(
-    ComposeFirstRunSessionCloseReason reason);
+    ComposeFreOrMsbbSessionCloseReason reason);
 
 // Log session based metrics when a FRE session ends.
 void LogComposeFirstRunSessionDialogShownCount(
-    ComposeFirstRunSessionCloseReason reason,
+    ComposeFreOrMsbbSessionCloseReason reason,
     int dialog_shown_count);
 
-void LogComposeMSBBSessionCloseReason(ComposeMSBBSessionCloseReason reason);
+void LogComposeMSBBSessionCloseReason(
+    ComposeFreOrMsbbSessionCloseReason reason);
 
 // Log session based metrics when a consent session ends.
-void LogComposeMSBBSessionDialogShownCount(ComposeMSBBSessionCloseReason reason,
-                                           int dialog_shown_count);
+void LogComposeMSBBSessionDialogShownCount(
+    ComposeFreOrMsbbSessionCloseReason reason,
+    int dialog_shown_count);
 
 SessionEvalLocation GetSessionEvalLocationFromEvents(
     const ComposeSessionEvents& session_events);
@@ -473,6 +498,11 @@ void LogComposeRequestFeedback(EvalLocation eval_location,
                                ComposeRequestFeedback feedback);
 
 void LogComposeSelectAllStatus(ComposeSelectAllStatus select_all_status);
+
+// Emit an enum for for each event present in `session_events`.
+// Split the event counts histogram on `eval_location` if provided.
+void LogComposeSessionEventCounts(std::optional<EvalLocation> eval_location,
+                                  const ComposeSessionEvents& session_events);
 
 }  // namespace compose
 

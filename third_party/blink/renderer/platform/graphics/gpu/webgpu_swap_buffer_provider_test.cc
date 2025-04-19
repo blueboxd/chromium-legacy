@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/platform/graphics/gpu/webgpu_swap_buffer_provider.h"
 
 #include <dawn/dawn_proc.h>
@@ -33,17 +38,20 @@ class MockWebGPUInterface : public gpu::webgpu::WebGPUInterfaceStub {
               ReserveTexture,
               (WGPUDevice device, const WGPUTextureDescriptor* optionalDesc));
 
-  // Could have used mock, but we only care about number of associated
-  // mailboxes, so use override for now
+  // NOTE: Can switch to using mock if tracking state manually grows to be
+  // unwieldy.
   void AssociateMailbox(GLuint,
                         GLuint,
                         GLuint,
                         GLuint,
-                        GLuint,
+                        uint64_t,
+                        uint64_t internal_usage,
                         const WGPUTextureFormat*,
                         GLuint,
                         gpu::webgpu::MailboxFlags,
                         const gpu::Mailbox&) override {
+    internal_usage_from_most_recent_associate_mailbox_call =
+        static_cast<wgpu::TextureUsage>(internal_usage);
     num_associated_mailboxes++;
   }
   void DissociateMailbox(GLuint, GLuint) override {
@@ -77,6 +85,8 @@ class MockWebGPUInterface : public gpu::webgpu::WebGPUInterfaceStub {
   gpu::SyncToken most_recent_waited_token;
 
   int num_associated_mailboxes = 0;
+  wgpu::TextureUsage internal_usage_from_most_recent_associate_mailbox_call =
+      wgpu::TextureUsage::None;
 
  private:
   uint64_t token_id_ = 42;
@@ -102,6 +112,7 @@ class WebGPUSwapBufferProviderForTests : public WebGPUSwapBufferProvider {
       const wgpu::Device& device,
       scoped_refptr<DawnControlClientHolder> dawn_control_client,
       wgpu::TextureUsage usage,
+      wgpu::TextureUsage internal_usage,
       wgpu::TextureFormat format,
       PredefinedColorSpace color_space,
       const gfx::HDRMetadata& hdr_metadata)
@@ -109,6 +120,7 @@ class WebGPUSwapBufferProviderForTests : public WebGPUSwapBufferProvider {
                                  dawn_control_client,
                                  device,
                                  usage,
+                                 internal_usage,
                                  format,
                                  color_space,
                                  hdr_metadata),
@@ -119,6 +131,10 @@ class WebGPUSwapBufferProviderForTests : public WebGPUSwapBufferProvider {
         .size = {0, 0, 1},
         .format = format,
     };
+    texture_internal_usage_ = {{
+        .internalUsage = internal_usage,
+    }};
+    texture_desc_.nextInChain = &texture_internal_usage_;
   }
   ~WebGPUSwapBufferProviderForTests() override { *alive_ = false; }
 
@@ -135,6 +151,7 @@ class WebGPUSwapBufferProviderForTests : public WebGPUSwapBufferProvider {
   raw_ptr<bool> alive_;
   raw_ptr<FakeProviderClient> client_;
   wgpu::TextureDescriptor texture_desc_;
+  wgpu::DawnTextureInternalUsageDescriptor texture_internal_usage_;
 };
 
 class WireSerializer : public dawn::wire::CommandSerializer {
@@ -166,7 +183,7 @@ class WireSerializer : public dawn::wire::CommandSerializer {
  private:
   size_t offset_ = 0;
   char buf_[1024 * 1024];
-  dawn::wire::CommandHandler* handler_;
+  raw_ptr<dawn::wire::CommandHandler> handler_;
 };
 
 }  // anonymous namespace
@@ -177,6 +194,8 @@ class WebGPUSwapBufferProviderTest : public testing::Test {
       wgpu::TextureFormat::RGBA8Unorm;
   static constexpr wgpu::TextureUsage kUsage =
       wgpu::TextureUsage::RenderAttachment;
+  static constexpr wgpu::TextureUsage kInternalUsage =
+      wgpu::TextureUsage::CopyDst;
 
   void SetUp() override {
     auto webgpu = std::make_unique<MockWebGPUInterface>();
@@ -240,7 +259,8 @@ class WebGPUSwapBufferProviderTest : public testing::Test {
 
     provider_ = base::MakeRefCounted<WebGPUSwapBufferProviderForTests>(
         &provider_alive_, &client_, device_.Get(), dawn_control_client_, kUsage,
-        kFormat, PredefinedColorSpace::kSRGB, gfx::HDRMetadata());
+        kInternalUsage, kFormat, PredefinedColorSpace::kSRGB,
+        gfx::HDRMetadata());
   }
 
   void TearDown() override { Platform::UnsetMainThreadTaskRunnerForTesting(); }
@@ -716,6 +736,88 @@ TEST_F(WebGPUSwapBufferProviderTest, VerifyZeroSizeRejects) {
   EXPECT_EQ(nullptr, provider_->GetNewTexture(kZeroSize));
   EXPECT_EQ(nullptr, provider_->GetNewTexture(kZeroWidth));
   EXPECT_EQ(nullptr, provider_->GetNewTexture(kZeroHeight));
+}
+
+// Verifies that GetLastWebGPUMailboxTexture() returns empty information if no
+// swapbuffer has been created.
+TEST_F(WebGPUSwapBufferProviderTest,
+       GetLastWebGPUMailboxTextureReturnsEmptyWithoutSwapBuffer) {
+  auto mailbox_texture = provider_->GetLastWebGPUMailboxTexture();
+  EXPECT_EQ(mailbox_texture, nullptr);
+}
+
+// Verifies that GetLastWebGPUMailboxTexture() returns a correctly-configured
+// texture if a swapbuffer has been created.
+TEST_F(WebGPUSwapBufferProviderTest,
+       GetLastWebGPUMailboxTextureReturnsValidTextureWithSwapBuffer) {
+  const gfx::Size kSize(10, 20);
+
+  EXPECT_CALL(*webgpu_, ReserveTexture(device_.Get(), _))
+      .WillRepeatedly(Invoke(
+          [&](WGPUDevice device, const WGPUTextureDescriptor* desc) -> auto {
+            return ReserveTextureImpl(device, desc);
+          }));
+  provider_->GetNewTexture(kSize);
+
+  auto mailbox_texture = provider_->GetLastWebGPUMailboxTexture();
+  EXPECT_NE(mailbox_texture, nullptr);
+
+  auto texture = mailbox_texture->GetTexture();
+  EXPECT_EQ(texture.GetUsage(), kUsage);
+  EXPECT_EQ(texture.GetFormat(), kFormat);
+  EXPECT_EQ(texture.GetDepthOrArrayLayers(), 1u);
+  EXPECT_EQ(texture.GetDimension(), wgpu::TextureDimension::e2D);
+  EXPECT_EQ(texture.GetMipLevelCount(), 1u);
+  EXPECT_EQ(texture.GetSampleCount(), 1u);
+  EXPECT_EQ(texture.GetHeight(), static_cast<uint32_t>(kSize.height()));
+  EXPECT_EQ(texture.GetWidth(), static_cast<uint32_t>(kSize.width()));
+}
+
+// Verifies that GetNewTexture() passes client-specified internal usages to
+// AssociateMailbox() and additionally adds RenderAttachment as an internal
+// usage when associating the mailbox to ensure that lazy clearing is supported.
+TEST_F(WebGPUSwapBufferProviderTest,
+       GetNewTexturePassesClientSpecifiedInternalUsagePlusRenderAttachment) {
+  ASSERT_EQ(kInternalUsage & wgpu::TextureUsage::RenderAttachment, 0);
+
+  const gfx::Size kSize(10, 20);
+
+  EXPECT_EQ(webgpu_->internal_usage_from_most_recent_associate_mailbox_call,
+            wgpu::TextureUsage::None);
+
+  EXPECT_CALL(*webgpu_, ReserveTexture(device_.Get(), _))
+      .WillOnce(Invoke(
+          [&](WGPUDevice device, const WGPUTextureDescriptor* desc) -> auto {
+            return ReserveTextureImpl(device, desc);
+          }));
+  provider_->GetNewTexture(kSize);
+
+  EXPECT_EQ(webgpu_->internal_usage_from_most_recent_associate_mailbox_call,
+            kInternalUsage | wgpu::TextureUsage::RenderAttachment);
+}
+
+// Verifies that GetLastMailboxTexture() passes client-specified internal usages
+// to AssociateMailbox() and doesn't additionally add RenderAttachment (since
+// it does not instruct the decoder to do lazy clearing on this texture).
+TEST_F(WebGPUSwapBufferProviderTest,
+       GetLastMailboxTexturePassesClientSpecifiedInternalUsage) {
+  ASSERT_EQ(kInternalUsage & wgpu::TextureUsage::RenderAttachment, 0);
+
+  const gfx::Size kSize(10, 20);
+
+  EXPECT_EQ(webgpu_->internal_usage_from_most_recent_associate_mailbox_call,
+            wgpu::TextureUsage::None);
+
+  EXPECT_CALL(*webgpu_, ReserveTexture(device_.Get(), _))
+      .WillRepeatedly(Invoke(
+          [&](WGPUDevice device, const WGPUTextureDescriptor* desc) -> auto {
+            return ReserveTextureImpl(device, desc);
+          }));
+  provider_->GetNewTexture(kSize);
+
+  provider_->GetLastWebGPUMailboxTexture();
+  EXPECT_EQ(webgpu_->internal_usage_from_most_recent_associate_mailbox_call,
+            kInternalUsage);
 }
 
 }  // namespace blink

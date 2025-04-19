@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "gpu/command_buffer/service/shared_image/external_vk_image_backing_factory.h"
 
 #include <memory>
@@ -97,7 +102,14 @@ class ExternalVkImageBackingFactoryDawnTest
   }
 
  protected:
-  dawn::native::Instance dawn_instance_;
+  static constexpr WGPUInstanceDescriptor dawn_instance_desc_ = {
+      .features =
+          {
+              .timedWaitAnyEnable = true,
+          },
+  };
+  dawn::native::Instance dawn_instance_ =
+      dawn::native::Instance(&dawn_instance_desc_);
   wgpu::Device dawn_device_;
 };
 
@@ -107,8 +119,8 @@ TEST_F(ExternalVkImageBackingFactoryDawnTest, DawnWrite_SkiaVulkanRead) {
   const auto format = viz::SinglePlaneFormat::kRGBA_8888;
   const gfx::Size size(4, 4);
   const auto color_space = gfx::ColorSpace::CreateSRGB();
-  const uint32_t usage = SHARED_IMAGE_USAGE_DISPLAY_READ |
-                         SHARED_IMAGE_USAGE_WEBGPU_WRITE;
+  const gpu::SharedImageUsageSet usage =
+      SHARED_IMAGE_USAGE_DISPLAY_READ | SHARED_IMAGE_USAGE_WEBGPU_WRITE;
   const gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
   auto backing = backing_factory_->CreateSharedImage(
       mailbox, format, surface_handle, size, color_space,
@@ -220,7 +232,7 @@ TEST_F(ExternalVkImageBackingFactoryDawnTest, SkiaVulkanWrite_DawnRead) {
   const auto format = viz::SinglePlaneFormat::kRGBA_8888;
   const gfx::Size size(4, 4);
   const auto color_space = gfx::ColorSpace::CreateSRGB();
-  const uint32_t usage =
+  const gpu::SharedImageUsageSet usage =
       SHARED_IMAGE_USAGE_RASTER_WRITE | SHARED_IMAGE_USAGE_WEBGPU_READ;
   const gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
   auto backing = backing_factory_->CreateSharedImage(
@@ -316,19 +328,17 @@ TEST_F(ExternalVkImageBackingFactoryDawnTest, SkiaVulkanWrite_DawnRead) {
     queue.Submit(1, &commands);
 
     // Map the buffer to read back data
-    bool done = false;
-    dst_buffer.MapAsync(
-        wgpu::MapMode::Read, 0, 256 * size.height(),
-        [](WGPUBufferMapAsyncStatus status, void* userdata) {
-          EXPECT_EQ(status, WGPUBufferMapAsyncStatus_Success);
-          *static_cast<bool*>(userdata) = true;
-        },
-        &done);
+    wgpu::FutureWaitInfo wait_info{
+        dst_buffer.MapAsync(wgpu::MapMode::Read, 0, 256 * size.height(),
+                            wgpu::CallbackMode::WaitAnyOnly,
+                            [](wgpu::MapAsyncStatus status, const char*) {
+                              ASSERT_EQ(status, wgpu::MapAsyncStatus::Success);
+                            })};
 
-    while (!done) {
-      base::PlatformThread::Sleep(base::Microseconds(100));
-      dawn_device_.Tick();
-    }
+    wgpu::WaitStatus status =
+        wgpu::Instance(dawn_instance_.Get())
+            .WaitAny(1, &wait_info, std::numeric_limits<uint64_t>::max());
+    DCHECK(status == wgpu::WaitStatus::Success);
 
     // Check the pixel data
     const uint8_t* pixel_data =
@@ -368,9 +378,9 @@ TEST_P(ExternalVkImageBackingFactoryWithFormatTest, Basic) {
   auto color_space = gfx::ColorSpace::CreateSRGB();
   GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
   SkAlphaType alpha_type = kPremul_SkAlphaType;
-  uint32_t usage = SHARED_IMAGE_USAGE_DISPLAY_READ |
-                   SHARED_IMAGE_USAGE_GLES2_READ |
-                   SHARED_IMAGE_USAGE_GLES2_WRITE;
+  gpu::SharedImageUsageSet usage = SHARED_IMAGE_USAGE_DISPLAY_READ |
+                                   SHARED_IMAGE_USAGE_GLES2_READ |
+                                   SHARED_IMAGE_USAGE_GLES2_WRITE;
 
   bool supported = backing_factory_->CanCreateSharedImage(
       usage, format, size, /*thread_safe=*/false, gfx::EMPTY_BUFFER,
@@ -502,7 +512,7 @@ TEST_P(ExternalVkImageBackingFactoryWithFormatTest, Upload) {
   auto color_space = gfx::ColorSpace::CreateSRGB();
   GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
   SkAlphaType alpha_type = kPremul_SkAlphaType;
-  uint32_t usage =
+  gpu::SharedImageUsageSet usage =
       SHARED_IMAGE_USAGE_DISPLAY_READ | SHARED_IMAGE_USAGE_CPU_UPLOAD;
 
   // Verify backing can be created.

@@ -7,12 +7,12 @@
 #include <cstdint>
 
 #include "ash/shell.h"
+#include "ash/system/mahi/test/mock_mahi_media_app_content_manager.h"
+#include "ash/system/mahi/test/mock_mahi_media_app_events_proxy.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_window_builder.h"
 #include "ash/webui/media_app_ui/media_app_ui_untrusted.mojom.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/mahi/test/mock_mahi_media_app_content_manager.h"
-#include "chrome/browser/chromeos/mahi/test/mock_mahi_media_app_events_proxy.h"
 #include "chromeos/components/mahi/public/cpp/mahi_media_app_content_manager.h"
 #include "chromeos/components/mahi/public/cpp/mahi_media_app_events_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -52,19 +52,20 @@ class MahiMediaAppClientTest : public AshTestBase {
 
   ~MahiMediaAppClientTest() override = default;
 
-  void TearDown() override {
-    mahi_media_app_client_.reset();
-    AshTestBase::TearDown();
+  void SetUp() override {
+    // On MahiMediaAppClient destruction, it notifies an `OnPdfClosed` event.
+    EXPECT_CALL(mock_mahi_media_app_events_proxy_, OnPdfClosed(_)).Times(1);
+    AshTestBase::SetUp();
   }
 
  protected:
-  testing::NiceMock<::mahi::MockMahiMediaAppContentManager>
+  testing::NiceMock<MockMahiMediaAppContentManager>
       mock_mahi_media_app_content_manager_;
   chromeos::ScopedMahiMediaAppContentManagerSetter
       scoped_mahi_media_app_content_manager_{
           &mock_mahi_media_app_content_manager_};
 
-  testing::NiceMock<::mahi::MockMahiMediaAppEventsProxy>
+  testing::NiceMock<MockMahiMediaAppEventsProxy>
       mock_mahi_media_app_events_proxy_;
   chromeos::ScopedMahiMediaAppEventsProxySetter
       scoped_mahi_media_app_events_proxy_{&mock_mahi_media_app_events_proxy_};
@@ -72,7 +73,6 @@ class MahiMediaAppClientTest : public AshTestBase {
   testing::StrictMock<MockMahiUntrustedPage> mahi_untrusted_page_;
   mojo::Receiver<ash::media_app_ui::mojom::MahiUntrustedPage> receiver_{
       &mahi_untrusted_page_};
-  std::unique_ptr<MahiMediaAppClient> mahi_media_app_client_;
 };
 
 // Tests that requests to media app can be forwarded via mojo::Remote.
@@ -80,7 +80,7 @@ TEST_F(MahiMediaAppClientTest, HideMediaAppContextMenu) {
   std::unique_ptr<aura::Window> window(
       aura::test::CreateTestWindowWithId(-1, nullptr));
 
-  mahi_media_app_client_ = std::make_unique<MahiMediaAppClient>(
+  auto mahi_media_app_client_ = std::make_unique<MahiMediaAppClient>(
       receiver_.BindNewPipeAndPassRemote(), "test_name", window.get());
 
   EXPECT_CALL(mahi_untrusted_page_, HidePdfContextMenu()).Times(1);
@@ -95,7 +95,7 @@ TEST_F(MahiMediaAppClientTest, GetPdfContent) {
   std::unique_ptr<aura::Window> window(
       aura::test::CreateTestWindowWithId(-1, nullptr));
 
-  mahi_media_app_client_ = std::make_unique<MahiMediaAppClient>(
+  auto mahi_media_app_client_ = std::make_unique<MahiMediaAppClient>(
       receiver_.BindNewPipeAndPassRemote(), "test_name", window.get());
 
   {
@@ -141,7 +141,7 @@ TEST_F(MahiMediaAppClientTest, WindowDestroying) {
   std::unique_ptr<aura::Window> window(
       aura::test::CreateTestWindowWithId(-1, nullptr));
 
-  mahi_media_app_client_ = std::make_unique<MahiMediaAppClient>(
+  auto mahi_media_app_client_ = std::make_unique<MahiMediaAppClient>(
       receiver_.BindNewPipeAndPassRemote(), "test_name", window.get());
 
   EXPECT_EQ(mahi_media_app_client_->media_app_window(), window.get());
@@ -168,7 +168,7 @@ TEST_F(MahiMediaAppClientTest, WindowFocus) {
   focus_client->FocusWindow(window_2.get());
 
   // Creates a client with media_app_window_ = window_1.
-  mahi_media_app_client_ = std::make_unique<MahiMediaAppClient>(
+  auto mahi_media_app_client_ = std::make_unique<MahiMediaAppClient>(
       receiver_.BindNewPipeAndPassRemote(), "test_name", window_1.get());
 
   MockFunction<void(std::string check_point_name)> check;
@@ -199,4 +199,41 @@ TEST_F(MahiMediaAppClientTest, WindowFocus) {
   focus_client->FocusWindow(window_1.get());
 }
 
+// Tests the client can observe the focus events and notify proxy when the
+// associated media app window gets focus.
+TEST_F(MahiMediaAppClientTest, PdfRename) {
+  aura::test::TestWindowDelegate wd;
+  wd.set_can_focus(true);
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindowInShellWithDelegate(&wd, -1, gfx::Rect(10, 10, 50, 50)));
+
+  // `window` has focus.
+  aura::client::FocusClient* focus_client =
+      aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
+  focus_client->FocusWindow(window.get());
+
+  MockFunction<void(std::string check_point_name)> check;
+  {
+    InSequence sequence;
+    EXPECT_CALL(check, Call("PDF loaded"));
+    EXPECT_CALL(mock_mahi_media_app_events_proxy_, OnPdfGetFocus(_)).Times(1);
+    EXPECT_CALL(check, Call("updated with same name"));
+    EXPECT_CALL(check, Call("updated with new name"));
+    EXPECT_CALL(mock_mahi_media_app_events_proxy_, OnPdfGetFocus(_)).Times(1);
+  }
+
+  // Creates a client.
+  auto mahi_media_app_client_ = std::make_unique<MahiMediaAppClient>(
+      receiver_.BindNewPipeAndPassRemote(), "test_name", window.get());
+
+  check.Call("PDF loaded");
+  mahi_media_app_client_->OnPdfLoaded();
+
+  check.Call("updated with same name");
+  mahi_media_app_client_->OnPdfFileNameUpdated("test_name");
+  check.Call("updated with new name");
+  mahi_media_app_client_->OnPdfFileNameUpdated("new_name");
+
+  EXPECT_EQ(mahi_media_app_client_->file_name(), "new_name");
+}
 }  // namespace ash

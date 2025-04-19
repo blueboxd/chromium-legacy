@@ -9,16 +9,18 @@
 
 #include <string>
 
+#include "base/functional/bind.h"
 #include "build/build_config.h"
 #include "net/base/host_port_pair.h"
 #include "net/ssl/client_cert_identity.h"
+#include "ui/gfx/image/image.h"
+#include "url/gurl.h"
 
 struct AccountInfo;
 class GURL;
 class PrefRegistrySimple;
 class Profile;
 
-namespace chrome {
 namespace enterprise_util {
 
 enum EnterpriseProfileBadgingTemporarySetting : int {
@@ -87,7 +89,13 @@ bool CanShowEnterpriseBadging(Profile* profile);
 // implementation.
 bool IsKnownConsumerDomain(const std::string& email_domain);
 
+// Returns an enterprise icon hosted at `url` for `profile` using `callback`.
+// An empty image is returned in case `url` is invalid or we fail to fetch the
+// image.
+void GetManagementIcon(const GURL& url,
+                       Profile* profile,
+                       base::OnceCallback<void(const gfx::Image&)> callback);
+
 }  // namespace enterprise_util
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_ENTERPRISE_UTIL_MANAGED_BROWSER_UTILS_H_

@@ -27,10 +27,27 @@ chromium-metrics-reviews@google.com.
 <enums>
 
 <enum name="PidReuseResult">
-  <int value="0" label="Pid not reused (request success)"/>
-  <int value="1" label="Pid reused (request success)"/>
-  <int value="2" label="Pid not reused (request fail)"/>
-  <int value="3" label="Pid reused (request fail)"/>
+  <int value="0" label="Pid not reused (request fail)"/>
+  <int value="1" label="Pid reused (request fail)"/>
+  <int value="2" label="Pid not reused (request success)"/>
+  <int value="3" label="Pid reused (request success)"/>
+</enum>
+
+<enum name="QoSErrorType">
+  <int value="0" label="ProcessForbidden"/>
+  <int value="1" label="ProcessNotFound"/>
+  <int value="2" label="InvalidState"/>
+  <int value="3" label="Pidfd"/>
+  <int value="4" label="Procfs"/>
+  <int value="5" label="ProcessNotRegistered"/>
+  <int value="6" label="ThreadNotFound"/>
+  <int value="7" label="Config"/>
+  <int value="8" label="Cgroup"/>
+  <int value="9" label="SchedAttr"/>
+  <int value="10" label="LatencySensitive"/>
+  <int value="11" label="SchedQoSProc"/>
+  <int value="12" label="Storage"/>
+  <int value="13" label="CgroupEINVAL"/>
 </enum>
 
 </enums>

@@ -42,6 +42,10 @@ class String;
 
 namespace blink {
 
+// When calcuating the min/max content-contribution we sometimes need to coerce
+// a fit-content/stretch basis to auto.
+enum class CalcSizeKeywordBehavior { kAsSpecified, kAsAuto };
+
 struct PixelsAndPercent {
   DISALLOW_NEW();
   explicit PixelsAndPercent(float pixels)
@@ -288,6 +292,11 @@ class PLATFORM_EXPORT Length {
   bool HasPercentOrStretch() const;
   bool HasStretch() const;
 
+  bool HasMinContent() const;
+  bool HasMaxContent() const;
+  bool HasMinIntrinsic() const { return IsMinIntrinsic(); }
+  bool HasFitContent() const;
+
   bool IsSpecified() const {
     return GetType() == kFixed || GetType() == kPercent ||
            GetType() == kCalculated;
@@ -295,9 +304,12 @@ class PLATFORM_EXPORT Length {
 
   bool IsCalculated() const { return GetType() == kCalculated; }
   bool IsCalculatedEqual(const Length&) const;
+
+  // These type checking methods should be used with extreme caution;
+  // many uses probably want the Has* methods above to work correctly
+  // with calc-size().
   bool IsMinContent() const { return GetType() == kMinContent; }
   bool IsMaxContent() const { return GetType() == kMaxContent; }
-  bool IsContent() const { return GetType() == kContent; }
   bool IsMinIntrinsic() const { return GetType() == kMinIntrinsic; }
   bool IsFillAvailable() const { return GetType() == kFillAvailable; }
   bool IsFitContent() const { return GetType() == kFitContent; }
@@ -364,6 +376,8 @@ class PLATFORM_EXPORT Length {
    public:
     std::optional<float> size_keyword_basis = std::nullopt;
     std::optional<IntrinsicLengthEvaluator> intrinsic_evaluator = std::nullopt;
+    CalcSizeKeywordBehavior calc_size_keyword_behavior =
+        CalcSizeKeywordBehavior::kAsSpecified;
   };
 
   float NonNanCalculatedValue(float max_value, const EvaluationInput&) const;

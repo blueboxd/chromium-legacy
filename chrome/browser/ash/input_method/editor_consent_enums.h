@@ -9,18 +9,18 @@ namespace ash::input_method {
 
 enum class PromoCardAction {
   // User explicitly hits 'Learn More' button to proceed to use the feature.
-  kAccepted,
+  kAccept,
   // User explicitly declines the promo card.
-  kDeclined,
+  kDecline,
   // User dismisses the promo card.
-  kDismissed,
+  kDismiss,
 };
 
 enum class ConsentAction : int {
   // User explicitly hits "Yes/Agree" button.
-  kApproved,
+  kApprove,
   // User explicitly hits "No/Disagree" button.
-  kDeclined
+  kDecline
 };
 
 // Defines the status of the consent which we ask the user to provide before
@@ -44,7 +44,20 @@ enum class ConsentStatus : int {
 };
 
 // TODO: b: - Migrate EditorMode and EditorOpportunityMode out of this file.
-enum class EditorMode { kBlocked, kConsentNeeded, kRewrite, kWrite };
+enum class EditorMode {
+  // Blocked because it does not meet hard requirements such as user age,
+  // country and policy.
+  kHardBlocked,
+  // Temporarily blocked because it does not meet transient requirements such as
+  // internet connection, device mode.
+  kSoftBlocked,
+  // Mode that requires users to provide consent before using the feature.
+  kConsentNeeded,
+  // Feature in rewrite mode.
+  kRewrite,
+  // Feature in write mode.
+  kWrite
+};
 
 enum class EditorOpportunityMode {
   kInvalidInput,

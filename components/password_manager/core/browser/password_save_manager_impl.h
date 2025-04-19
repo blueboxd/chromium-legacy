@@ -28,15 +28,15 @@ struct PendingCredentialsStates {
   raw_ptr<const PasswordForm> similar_saved_form_from_account_store = nullptr;
 };
 
+// From all |matches| returns those that are stored in the account store.
+// |matches| point to forms held by |form_fetcher_|.
 std::vector<raw_ptr<const PasswordForm, VectorExperimental>>
-AccountStoreMatches(
-    const std::vector<raw_ptr<const PasswordForm, VectorExperimental>>&
-        matches);
+AccountStoreMatches(base::span<const PasswordForm> matches);
 
+// From all |matches| returns those that are stored in the profile store.
+// |matches| point to forms held by |form_fetcher_|.
 std::vector<raw_ptr<const PasswordForm, VectorExperimental>>
-ProfileStoreMatches(
-    const std::vector<raw_ptr<const PasswordForm, VectorExperimental>>&
-        matches);
+ProfileStoreMatches(base::span<const PasswordForm> matches);
 
 class PasswordSaveManagerImpl : public PasswordSaveManager {
  public:
@@ -145,10 +145,9 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
 
   // Returns the forms in |matches| that should be taken into account for
   // conflict resolution during generation. Will be overridden in subclasses.
+  // |matches| point to forms held by |form_fetcher_|.
   std::vector<raw_ptr<const PasswordForm, VectorExperimental>>
-  GetRelevantMatchesForGeneration(
-      const std::vector<raw_ptr<const PasswordForm, VectorExperimental>>&
-          matches);
+  GetRelevantMatchesForGeneration(base::span<const PasswordForm> matches);
 
   // Clones the current object into |clone|. |clone| must not be null.
   void CloneInto(PasswordSaveManagerImpl* clone);

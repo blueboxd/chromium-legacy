@@ -708,22 +708,6 @@ base::Value::Dict DecodeDeviceLocalAccountInfoProto(
     entry_dict.Set(ash::kAccountsPrefDeviceLocalAccountsKeyKioskAppUpdateURL,
                    entry.kiosk_app().update_url());
   }
-  if (entry.android_kiosk_app().has_package_name()) {
-    entry_dict.Set(ash::kAccountsPrefDeviceLocalAccountsKeyArcKioskPackage,
-                   entry.android_kiosk_app().package_name());
-  }
-  if (entry.android_kiosk_app().has_class_name()) {
-    entry_dict.Set(ash::kAccountsPrefDeviceLocalAccountsKeyArcKioskClass,
-                   entry.android_kiosk_app().class_name());
-  }
-  if (entry.android_kiosk_app().has_action()) {
-    entry_dict.Set(ash::kAccountsPrefDeviceLocalAccountsKeyArcKioskAction,
-                   entry.android_kiosk_app().action());
-  }
-  if (entry.android_kiosk_app().has_display_name()) {
-    entry_dict.Set(ash::kAccountsPrefDeviceLocalAccountsKeyArcKioskDisplayName,
-                   entry.android_kiosk_app().display_name());
-  }
   if (entry.web_kiosk_app().has_url()) {
     entry_dict.Set(ash::kAccountsPrefDeviceLocalAccountsKeyWebKioskUrl,
                    entry.web_kiosk_app().url());
@@ -743,6 +727,16 @@ base::Value::Dict DecodeDeviceLocalAccountInfoProto(
     entry_dict.Set(ash::kAccountsPrefDeviceLocalAccountsKeyEphemeralMode,
                    static_cast<int>(
                        em::DeviceLocalAccountInfoProto::EPHEMERAL_MODE_UNSET));
+  }
+  if (entry.has_isolated_kiosk_app()) {
+    if (entry.isolated_kiosk_app().has_web_bundle_id()) {
+      entry_dict.Set(ash::kAccountsPrefDeviceLocalAccountsKeyIwaKioskBundleId,
+                     entry.isolated_kiosk_app().web_bundle_id());
+    }
+    if (entry.isolated_kiosk_app().has_update_manifest_url()) {
+      entry_dict.Set(ash::kAccountsPrefDeviceLocalAccountsKeyIwaKioskUpdateUrl,
+                     entry.isolated_kiosk_app().update_manifest_url());
+    }
   }
   return entry_dict;
 }
@@ -876,6 +870,17 @@ void DecodeNetworkPolicies(const em::ChromeDeviceSettingsProto& policy,
                     POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
                     POLICY_SOURCE_CLOUD, base::Value(container.value()),
                     /*external_data_fetcher=*/nullptr);
+    }
+  }
+
+  if (policy.has_devicepostquantumkeyagreementenabled()) {
+    const em::BooleanPolicyProto& container(
+        policy.devicepostquantumkeyagreementenabled());
+    if (container.has_value()) {
+      policies->Set(key::kDevicePostQuantumKeyAgreementEnabled,
+                    POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                    POLICY_SOURCE_CLOUD, base::Value(container.value()),
+                    nullptr);
     }
   }
 }
@@ -2271,6 +2276,25 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
                     POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
                     POLICY_SOURCE_CLOUD, base::Value(container.value()),
                     nullptr);
+    }
+  }
+
+  if (policy.has_deviceallowenterpriseremoteaccessconnections()) {
+    const em::BooleanPolicyProto& container(
+        policy.deviceallowenterpriseremoteaccessconnections());
+    if (container.has_value()) {
+      policies->Set(key::kDeviceAllowEnterpriseRemoteAccessConnections,
+                    POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                    POLICY_SOURCE_CLOUD, base::Value(container.value()),
+                    nullptr);
+    }
+  }
+
+  if (policy.has_devicerestrictionschedule()) {
+    const em::StringPolicyProto& container(policy.devicerestrictionschedule());
+    if (container.has_value()) {
+      SetJsonDevicePolicy(key::kDeviceRestrictionSchedule, container.value(),
+                          policies);
     }
   }
 }

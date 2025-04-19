@@ -44,8 +44,6 @@
   // Enable flags for rich inline autocomplete tests.
   if ([self isRunningTest:@selector(testRichInlineDefaultSuggestion)]) {
     config.features_enabled.push_back(omnibox::kRichAutocompletion);
-    config.features_enabled.push_back(
-        omnibox::kOmniboxPopulateShortcutsDatabase);
   }
 
   // Disable AutocompleteProvider types: TYPE_SEARCH and TYPE_ON_DEVICE_HEAD.
@@ -77,7 +75,7 @@
 // Tests clearing text in the edit state of the omnibox.
 - (void)testClearButtonEditState {
   [OmniboxEarlGrey openPage:omnibox::Page(1) testServer:self.testServer];
-  [ChromeEarlGreyUI focusOmniboxAndType:@"something"];
+  [ChromeEarlGreyUI focusOmniboxAndReplaceText:@"something"];
 
   // Tap the clear button.
   [[EarlGrey selectElementWithMatcher:omnibox::ClearButtonMatcher()]
@@ -92,45 +90,6 @@
       assertWithMatcher:grey_notVisible()];
 }
 
-// TODO(crbug.com/341916045): Test is failing consistently on device.
-#if TARGET_OS_SIMULATOR
-#define MAYBE_testTapBehaviors testTapBehaviors
-#else
-#define MAYBE_testTapBehaviors DISABLED_testTapBehaviors
-#endif
-- (void)MAYBE_testTapBehaviors {
-  [OmniboxEarlGrey openPage:omnibox::Page(1) testServer:self.testServer];
-
-  GURL fullPage1GURL = self.testServer->GetURL(
-      omnibox::PageURL(omnibox::Page(1)));  //< http://127.0.0.1/foobar
-
-  NSString* schemePrefix = [NSString
-      stringWithFormat:@"%@://", base::SysUTF8ToNSString(
-                                     fullPage1GURL.scheme())];  //< http://
-  NSString* page1URL = base::SysUTF8ToNSString(fullPage1GURL.spec());
-  page1URL = [page1URL
-      substringFromIndex:schemePrefix.length];  //< 127.0.0.1:123/page1.html
-
-  // Expect "127" to autocomplete to 127[0.0.1:123/page1.html]
-  NSString* typedText = [page1URL substringToIndex:3];
-  NSString* inlineAutocomplete = [page1URL substringFromIndex:typedText.length];
-
-  [ChromeEarlGreyUI focusOmniboxAndType:typedText];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
-      assertWithMatcher:chrome_test_util::OmniboxContainingAutocompleteText(
-                            inlineAutocomplete)];
-
-  // Tapping the inline autocomplete should accept it.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
-      assertWithMatcher:chrome_test_util::OmniboxContainingAutocompleteText(
-                            @"")];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
-      assertWithMatcher:chrome_test_util::OmniboxContainingText(
-                            base::SysNSStringToUTF8(page1URL))];
-}
-
 #pragma mark - Test rich inline
 
 // Tests navigating to a shortcut as a default match.
@@ -141,8 +100,9 @@
   omnibox::Page shortcutPage = omnibox::Page(1);
 
   // Type the shortcut input in the omnibox.
-  [ChromeEarlGreyUI focusOmniboxAndType:base::SysUTF8ToNSString(
-                                            omnibox::PageTitle(shortcutPage))];
+  [ChromeEarlGreyUI
+      focusOmniboxAndReplaceText:base::SysUTF8ToNSString(
+                                     omnibox::PageTitle(shortcutPage))];
 
   // The shortcut suggestion should be default match. Press enter to navigate to
   // it.
@@ -189,8 +149,6 @@
       [self isRunningTest:@selector(testRichInlineRemovedByDelete)] ||
       [self isRunningTest:@selector(testRichInlineRemovedWithArrowKey)]) {
     config.features_enabled.push_back(omnibox::kRichAutocompletion);
-    config.features_enabled.push_back(
-        omnibox::kOmniboxPopulateShortcutsDatabase);
   }
 
   // Disable AutocompleteProvider type TYPE_ON_DEVICE_HEAD.
@@ -234,8 +192,9 @@
   omnibox::Page shortcutPage = omnibox::Page(1);
 
   // Type the shortcut input in the omnibox.
-  [ChromeEarlGreyUI focusOmniboxAndType:base::SysUTF8ToNSString(
-                                            omnibox::PageTitle(shortcutPage))];
+  [ChromeEarlGreyUI
+      focusOmniboxAndReplaceText:base::SysUTF8ToNSString(
+                                     omnibox::PageTitle(shortcutPage))];
 
   [self assertFirstSuggestionIsURL];
 
@@ -253,8 +212,9 @@
   omnibox::Page shortcutPage = omnibox::Page(1);
 
   // Type the shortcut input in the omnibox.
-  [ChromeEarlGreyUI focusOmniboxAndType:base::SysUTF8ToNSString(
-                                            omnibox::PageTitle(shortcutPage))];
+  [ChromeEarlGreyUI
+      focusOmniboxAndReplaceText:base::SysUTF8ToNSString(
+                                     omnibox::PageTitle(shortcutPage))];
 
   [self assertFirstSuggestionIsURL];
 
@@ -272,8 +232,9 @@
   omnibox::Page shortcutPage = omnibox::Page(1);
 
   // Type the shortcut input in the omnibox.
-  [ChromeEarlGreyUI focusOmniboxAndType:base::SysUTF8ToNSString(
-                                            omnibox::PageTitle(shortcutPage))];
+  [ChromeEarlGreyUI
+      focusOmniboxAndReplaceText:base::SysUTF8ToNSString(
+                                     omnibox::PageTitle(shortcutPage))];
 
   [self assertFirstSuggestionIsURL];
 

@@ -5,10 +5,9 @@
 package org.chromium.chrome.browser.pdf;
 
 import android.net.Uri;
-import android.os.ParcelFileDescriptor;
 import android.text.TextUtils;
-import android.webkit.MimeTypeMap;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.core.os.BuildCompat;
 import androidx.fragment.app.FragmentManager;
@@ -28,16 +27,33 @@ import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.ContentFeatureList;
 import org.chromium.content_public.browser.ContentFeatureMap;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.ui.base.MimeTypeUtils;
+import org.chromium.url.GURL;
 
 import java.io.File;
-import java.util.Locale;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.Objects;
 
 /** Utilities for inline pdf support. */
 public class PdfUtils {
+    @IntDef({
+        PdfPageType.NONE,
+        PdfPageType.TRANSIENT_SECURE,
+        PdfPageType.LOCAL,
+        PdfPageType.TRANSIENT_INSECURE
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface PdfPageType {
+        int NONE = 0;
+        int TRANSIENT_SECURE = 1;
+        int LOCAL = 2;
+        int TRANSIENT_INSECURE = 3;
+    }
+
     private static final String TAG = "PdfUtils";
-    private static final String PDF_EXTENSION = "pdf";
+    private static final String PARAM_ANDROID_INLINE_PDF_IN_INCOGNITO = "inline_pdf_in_incognito";
     private static boolean sShouldOpenPdfInlineForTesting;
     private static boolean sSkipLoadPdfForTesting;
 
@@ -49,22 +65,13 @@ public class PdfUtils {
      * @return Whether the navigation is to a pdf file.
      */
     public static boolean isPdfNavigation(String url, @Nullable LoadUrlParams params) {
-        if (!shouldOpenPdfInline()) {
-            return false;
-        }
-        Uri uri = Uri.parse(url);
-        String scheme = uri.getScheme();
+        String scheme = getDecodedScheme(url);
         if (scheme == null) {
             return false;
         }
-        if (scheme.equals(UrlConstants.FILE_SCHEME)) {
-            // TODO(shuyng): ask the download subsystem for MIME type.
-            String fileExtension = MimeTypeMap.getFileExtensionFromUrl(url).toLowerCase(Locale.US);
-            return !TextUtils.isEmpty(fileExtension) && fileExtension.equals(PDF_EXTENSION);
-        }
-        if (scheme.equals(UrlConstants.CONTENT_SCHEME)) {
-            String type = ContentUriUtils.getMimeType(url);
-            return type != null && type.equals(MimeTypeUtils.PDF_MIME_TYPE);
+
+        if (scheme.equals(UrlConstants.FILE_SCHEME) || scheme.equals(UrlConstants.CONTENT_SCHEME)) {
+            return true;
         }
         if (scheme.equals(UrlConstants.HTTP_SCHEME) || scheme.equals(UrlConstants.HTTPS_SCHEME)) {
             return params != null && params.getIsPdf();
@@ -72,20 +79,58 @@ public class PdfUtils {
         return false;
     }
 
+    /**
+     * Determines whether the navigation is to a permanent downloaded pdf file.
+     *
+     * @param url The url of the navigation.
+     * @return Whether the navigation is to a permanent downloaded pdf file.
+     */
+    public static boolean isDownloadedPdf(String url) {
+        String scheme = getDecodedScheme(url);
+        if (scheme == null) {
+            return false;
+        }
+
+        return scheme.equals(UrlConstants.FILE_SCHEME)
+                || scheme.equals(UrlConstants.CONTENT_SCHEME);
+    }
+
+    private static String getDecodedScheme(String url) {
+        String decodedUrl = PdfUtils.decodePdfPageUrl(url);
+        if (decodedUrl == null) {
+            return null;
+        }
+        Uri uri = Uri.parse(decodedUrl);
+        return uri.getScheme();
+    }
+
     /** Determines whether to open pdf inline. */
     @CalledByNative
-    public static boolean shouldOpenPdfInline() {
+    public static boolean shouldOpenPdfInline(boolean isIncognito) {
         if (sShouldOpenPdfInlineForTesting) return true;
-        // TODO(https://crbug.com/327492784): Update checks once release plan is finalized.
-        return ContentFeatureMap.isEnabled(ContentFeatureList.ANDROID_OPEN_PDF_INLINE)
-                && BuildCompat.isAtLeastV();
+        if (!ContentFeatureMap.isEnabled(ContentFeatureList.ANDROID_OPEN_PDF_INLINE)) {
+            return false;
+        }
+        if (isIncognito
+                && !ContentFeatureMap.getInstance()
+                        .getFieldTrialParamByFeatureAsBoolean(
+                                ContentFeatureList.ANDROID_OPEN_PDF_INLINE,
+                                PARAM_ANDROID_INLINE_PDF_IN_INCOGNITO,
+                                false)) {
+            return false;
+        }
+        // TODO(https://crbug.com/337674493): Check if pdf viewer is available on pre-V devices.
+        return BuildCompat.isAtLeastV();
     }
 
     public static PdfInfo getPdfInfo(NativePage nativePage) {
         if (nativePage == null || !nativePage.isPdf()) {
             return null;
         }
-        return new PdfInfo(nativePage.getTitle(), nativePage.getCanonicalFilepath());
+        return new PdfInfo(
+                nativePage.getTitle(),
+                nativePage.getCanonicalFilepath(),
+                nativePage.isDownloadSafe());
     }
 
     static String getFileNameFromUrl(String url, String defaultTitle) {
@@ -114,24 +159,48 @@ public class PdfUtils {
     }
 
     static String getFilePathFromUrl(String url) {
-        Uri uri = Uri.parse(url);
-        String scheme = uri.getScheme();
-        assert scheme != null;
-        assert scheme.equals(UrlConstants.HTTP_SCHEME)
-                || scheme.equals(UrlConstants.HTTPS_SCHEME)
-                || scheme.equals(UrlConstants.CONTENT_SCHEME)
-                || scheme.equals(UrlConstants.FILE_SCHEME);
-        if (scheme.equals(UrlConstants.CONTENT_SCHEME) || scheme.equals(UrlConstants.FILE_SCHEME)) {
+        GURL gurl = new GURL(url);
+        if (getPdfPageTypeInternal(gurl, false) == PdfPageType.LOCAL) {
             return url;
         }
         return null;
+    }
+
+    /** Return the type of the pdf page. */
+    public static @PdfPageType int getPdfPageType(NativePage pdfPage) {
+        if (pdfPage == null || !pdfPage.isPdf()) {
+            return PdfPageType.NONE;
+        }
+        assert pdfPage instanceof PdfPage;
+        GURL url = new GURL(pdfPage.getUrl());
+        return getPdfPageTypeInternal(url, pdfPage.isDownloadSafe());
+    }
+
+    private static @PdfPageType int getPdfPageTypeInternal(GURL url, boolean isDownloadSafe) {
+        // The url may be encoded. Try to decode first.
+        String scheme = getDecodedScheme(url.getSpec());
+        // Get scheme from url directly if fail to decode.
+        if (scheme == null) {
+            scheme = url.getScheme();
+        }
+
+        if (scheme == null) {
+            return PdfPageType.NONE;
+        }
+        if (scheme.equals(UrlConstants.HTTP_SCHEME) || scheme.equals(UrlConstants.HTTPS_SCHEME)) {
+            return isDownloadSafe ? PdfPageType.TRANSIENT_SECURE : PdfPageType.TRANSIENT_INSECURE;
+        }
+        if (scheme.equals(UrlConstants.CONTENT_SCHEME) || scheme.equals(UrlConstants.FILE_SCHEME)) {
+            return PdfPageType.LOCAL;
+        }
+        return PdfPageType.NONE;
     }
 
     static void setShouldOpenPdfInlineForTesting(boolean shouldOpenPdfInlineForTesting) {
         sShouldOpenPdfInlineForTesting = shouldOpenPdfInlineForTesting;
     }
 
-    static PdfDocumentRequest getPdfDocumentRequest(String pdfFilePath, boolean isIncognito) {
+    static PdfDocumentRequest getPdfDocumentRequest(String pdfFilePath) {
         Uri uri = Uri.parse(pdfFilePath);
         String scheme = uri.getScheme();
         PdfDocumentRequest.Builder builder = new PdfDocumentRequest.Builder();
@@ -141,10 +210,6 @@ public class PdfUtils {
             } else if (UrlConstants.FILE_SCHEME.equals(scheme)) {
                 File file = new File(Objects.requireNonNull(uri.getPath()));
                 builder.setFile(file);
-            } else if (isIncognito) {
-                int fd = getFileDescriptor(pdfFilePath);
-                ParcelFileDescriptor pfd = ParcelFileDescriptor.adoptFd(fd);
-                builder.setPfd(pfd);
             } else {
                 File file = new File(pdfFilePath);
                 // TODO: use builder.setFile(file) once supported.
@@ -158,11 +223,6 @@ public class PdfUtils {
         builder.setPdfViewSettings(
                 new PdfViewSettings(/* overrideDefaultUrlClickBehavior= */ true));
         return new PdfDocumentRequest(builder);
-    }
-
-    private static int getFileDescriptor(String filepath) throws NumberFormatException {
-        String fd = filepath.substring(filepath.lastIndexOf('/') + 1);
-        return Integer.parseInt(fd);
     }
 
     static void loadPdf(
@@ -196,6 +256,58 @@ public class PdfUtils {
         }
         RecordHistogram.recordBooleanHistogram(
                 "Android.Pdf.IsFrozenWhenDisplayed", nativePage.isFrozen());
+    }
+
+    /**
+     * Encode the download url and generate the pdf page url.
+     *
+     * @param downloadUrl The url which is interpreted as download.
+     * @return The pdf page url including the encoded downloadUrl.
+     */
+    public static String encodePdfPageUrl(String downloadUrl) {
+        try {
+            String pdfPageUrl =
+                    UrlConstants.PDF_URL
+                            + UrlConstants.PDF_URL_PARAM
+                            + URLEncoder.encode(downloadUrl, "UTF-8");
+            recordIsPdfDownloadUrlEncoded(true);
+            return pdfPageUrl;
+        } catch (java.io.UnsupportedEncodingException e) {
+            recordIsPdfDownloadUrlEncoded(false);
+            Log.e(TAG, "Unsupported encoding: " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Decode the pdf page url.
+     *
+     * @param originalUrl The url to be decoded.
+     * @return the decoded download url; or null if the original url is not a pdf page url.
+     */
+    public static String decodePdfPageUrl(String originalUrl) {
+        if (!originalUrl.startsWith(UrlConstants.PDF_URL)) {
+            return null;
+        }
+        Uri uri = Uri.parse(originalUrl);
+        String encodedUrl = uri.getQueryParameter(UrlConstants.PDF_URL_QUERY_PARAM);
+        try {
+            String decodedUrl = URLDecoder.decode(encodedUrl, "UTF-8");
+            recordIsPdfDownloadUrlDecoded(true);
+            return decodedUrl;
+        } catch (java.io.UnsupportedEncodingException e) {
+            recordIsPdfDownloadUrlDecoded(false);
+            Log.e(TAG, "Unsupported encoding: " + e.getMessage());
+            return null;
+        }
+    }
+
+    private static void recordIsPdfDownloadUrlEncoded(boolean encodeResult) {
+        RecordHistogram.recordBooleanHistogram("Android.Pdf.DownloadUrlEncoded", encodeResult);
+    }
+
+    private static void recordIsPdfDownloadUrlDecoded(boolean decodeResult) {
+        RecordHistogram.recordBooleanHistogram("Android.Pdf.DownloadUrlDecoded", decodeResult);
     }
 
     static void skipLoadPdfForTesting(boolean skipLoadPdfForTesting) {

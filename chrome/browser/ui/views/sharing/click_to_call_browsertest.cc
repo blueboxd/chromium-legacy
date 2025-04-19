@@ -20,9 +20,6 @@
 #include "chrome/browser/sharing/click_to_call/click_to_call_metrics.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_ui_controller.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_utils.h"
-#include "chrome/browser/sharing/features.h"
-#include "chrome/browser/sharing/sharing_constants.h"
-#include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sync/test/integration/sessions_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/controls/hover_button.h"
@@ -33,6 +30,10 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
+#include "components/sharing_message/features.h"
+#include "components/sharing_message/pref_names.h"
+#include "components/sharing_message/sharing_constants.h"
+#include "components/sharing_message/sharing_sync_preference.h"
 #include "components/sync/service/sync_service_impl.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/test/browser_test.h"
@@ -70,7 +71,7 @@ class ClickToCallBrowserTest : public SharingBrowserTest {
 
   void CheckLastSharingMessageSent(
       const std::string& expected_phone_number) const {
-    chrome_browser_sharing::SharingMessage sharing_message =
+    components_sharing_message::SharingMessage sharing_message =
         GetLastSharingMessageSent();
     ASSERT_TRUE(sharing_message.has_click_to_call_message());
     EXPECT_EQ(expected_phone_number,
@@ -404,7 +405,7 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, LeftClick_ChooseDevice) {
   const auto& buttons = dialog->button_list_for_testing()->children();
   ASSERT_GT(buttons.size(), 0u);
   views::test::ButtonTestApi(static_cast<views::Button*>(buttons[0]))
-      .NotifyClick(ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(),
+      .NotifyClick(ui::MouseEvent(ui::EventType::kMousePressed, gfx::Point(),
                                   gfx::Point(), ui::EventTimeForNow(), 0, 0));
 
   CheckLastReceiver(devices[0]);

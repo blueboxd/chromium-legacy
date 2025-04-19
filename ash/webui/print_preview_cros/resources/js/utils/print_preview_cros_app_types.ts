@@ -4,6 +4,8 @@
 
 import {UnguessableToken} from 'chrome://resources/mojo/mojo/public/mojom/base/unguessable_token.mojom-webui.js';
 
+import {DestinationProviderInterface} from '../../destination_provider.mojom-webui.js';
+
 /**
  * @fileoverview
  * 'print_preview_cros_app_types' contains app specific and mojo placeholder
@@ -22,18 +24,9 @@ export interface Destination {
   // Type of destination.
   printerType: PrinterType;
 
-  // Used for metrics, true when destination manually selected during CrOS
-  // preview session.
-  printerManuallySelected: boolean;
-
   // The printer status reason for a local Chrome OS printer.
   printerStatusReason: PrinterStatusReason|null;
 }
-
-// Used to track which fields are set by UI and values need to be maintained
-// during an update to destination.
-export type UiManagedDestinationFields =
-    Pick<Destination, 'printerManuallySelected'>;
 
 export interface PrintRequestOutcome {
   success: boolean;
@@ -147,7 +140,7 @@ export interface PrintTicket {
   printPreviewId: UnguessableToken;
 
   // ID of the destination print job will be sent to.
-  destination: string;
+  destinationId: string;
 
   // Whether source document is PDF or HTML.
   previewModifiable: boolean;
@@ -261,7 +254,7 @@ export interface PreviewTicket {
   requestId: number;
 
   // Id of destination.
-  deviceName: string;
+  destinationId: string;
 
   // Whether source document is PDF or HTML.
   previewModifiable: boolean;
@@ -489,7 +482,7 @@ export interface Capabilities {
 export interface SessionContext {
   // ID used to map a CrOS preview session to the responsible PrintViewManager
   // and related web contents.
-  printPreviewId: UnguessableToken;
+  printPreviewToken: UnguessableToken;
 
   // Print param which tells whether source is a PDF or HTML(modifiable).
   isModifiable: boolean;
@@ -499,23 +492,32 @@ export interface SessionContext {
   hasSelection: boolean;
 }
 
+export interface FakeGeneratePreviewObserver {
+  onDocumentReady(previewRequestId: number): void;
+}
+
 // Placeholder for PrintPreviewPageHandler mojo interface.
 export interface PrintPreviewPageHandler {
   // Completes initialization on the backend and provides immutable
   // configuration details for the current CrOS preview request in the form of
   // a SessionContext.
-  startSession(): Promise<SessionContext>;
+  startSession(dialogArgs: string): Promise<{sessionContext: SessionContext}>;
 
   // Start the print job and close the window. Requires a print ticket to detail
   // how print job should be configured.Needs to wait for result to display
   // error messaging if starting the print job fails.
-  print(ticket: PrintTicket): Promise<PrintRequestOutcome>;
+  print(ticket: PrintTicket):
+      Promise<{printRequestOutcome: PrintRequestOutcome}>;
 
   // Cancel the print preview and close the window.
   cancel(): void;
 
   // Send a request to generate a PDF with the desired settings.
   generatePreview(previewTicket: PreviewTicket): Promise<void>;
+
+  // Registers an observer that returns updates on the status of generated
+  // previews.
+  observePreviewReady(observer: FakeGeneratePreviewObserver): Promise<void>;
 }
 
 export interface FakeDestinationObserverInterface {
@@ -525,14 +527,28 @@ export interface FakeDestinationObserverInterface {
 // Placeholder for the DestinationProvider mojo interface.
 export interface DestinationProvider {
   // Retrieve a list of local print destinations; usually provided by CUPS.
-  getLocalDestinations(): Promise<Destination[]>;
+  getLocalDestinations(): Promise<{destinations: Destination[]}>;
 
   // Registers an observer which is notified every time the set of known
   // destinations are appended or updated;
   // TODO(b/323421684): Replace observer type with observer mojo interface.
   observeDestinationChanges(observer: FakeDestinationObserverInterface): void;
-
-  // Fetch the printing capabilities for a specific destination.
-  fetchCapabilities(destinationId: string, printerType: PrinterType):
-      Promise<Capabilities>;
 }
+
+// This is a temporary interface with the purpose of combining methods from the
+// above fake DestinationProvider interface and the actual
+// DestinationProviderInterface mojo implementation. All tests and classes
+// will use this interface until all methods are defined in mojom.
+// TODO(b/323421684): Remove the interface once all mojo methods are
+// implemented.
+export interface DestinationProviderCompositeInterface extends
+    DestinationProviderInterface, DestinationProvider {}
+
+// This is a temporary interface with the purpose of combining methods from the
+// above fake PrintPreviewPageHandler interface and the actual
+// PrintPreviewPageHandlerInterface mojo implementation. All tests and classes
+// will use this interface until all methods are defined in mojom.
+// TODO(b/323421684): Remove the interface once all mojo methods are
+// implemented.
+export interface PrintPreviewPageHandlerCompositeInterface extends
+    PrintPreviewPageHandler {}

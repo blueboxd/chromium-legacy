@@ -48,6 +48,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/color_palette.h"
@@ -105,6 +106,33 @@ class MaybeEmptyLabel : public views::Label {
 BEGIN_METADATA(MaybeEmptyLabel)
 END_METADATA
 
+// TODO(crbug.com/355018927): Remove this when we implement in views::Label.
+class MessageContentWrapper : public views::View {
+  METADATA_HEADER(MessageContentWrapper, views::View)
+
+ public:
+  explicit MessageContentWrapper(std::unique_ptr<views::View> title) {
+    SetUseDefaultFillLayout(true);
+    title_ = AddChildView(std::move(title));
+  }
+
+ private:
+  // View:
+  gfx::Size CalculatePreferredSize(
+      const views::SizeBounds& available_size) const override {
+    gfx::Size preferred_size = title_->GetPreferredSize(available_size);
+    if (!available_size.width().is_bounded()) {
+      preferred_size.set_width(title_->GetMinimumSize().width());
+    }
+    return preferred_size;
+  }
+
+  raw_ptr<views::View> title_ = nullptr;
+};
+
+BEGIN_METADATA(MessageContentWrapper)
+END_METADATA
+
 TestParentPermissionDialogViewObserver* test_view_observer = nullptr;
 
 }  // namespace
@@ -126,7 +154,6 @@ class ParentPermissionInputSection : public views::TextfieldController {
   ParentPermissionInputSection(
       ParentPermissionDialogView* main_view,
       const std::vector<std::u16string>& parent_permission_email_addresses,
-      int available_width,
       const std::string& child_name,
       bool is_extension_permission_dialog)
       : main_view_(main_view) {
@@ -195,7 +222,6 @@ class ParentPermissionInputSection : public views::TextfieldController {
                                          views::style::STYLE_SECONDARY);
       parent_email_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
       parent_email_label->SetMultiLine(true);
-      parent_email_label->SizeToFit(available_width);
       view->AddChildView(std::move(parent_email_label));
       // Since there is only one parent, just set the output value of selected
       // parent email address here..
@@ -216,7 +242,8 @@ class ParentPermissionInputSection : public views::TextfieldController {
     credential_input_field_ =
         view->AddChildView(std::make_unique<views::Textfield>());
     credential_input_field_->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
-    credential_input_field_->SetAccessibleName(enter_password_string);
+    credential_input_field_->GetViewAccessibility().SetName(
+        enter_password_string);
     credential_input_field_->RequestFocus();
     credential_input_field_->set_controller(this);
 
@@ -371,7 +398,7 @@ ParentPermissionDialogView::ParentPermissionDialogView(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(IDS_PARENT_PERMISSION_PROMPT_CANCEL_BUTTON));
 
-  SetModalType(ui::MODAL_TYPE_WINDOW);
+  SetModalType(ui::mojom::ModalType::kWindow);
   SetShowCloseButton(false);
   set_fixed_width(views::LayoutProvider::Get()->GetDistanceMetric(
       views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH));
@@ -449,12 +476,8 @@ void ParentPermissionDialogView::AddedToWidget() {
 
   DCHECK(!params_->message.empty());
   message_container.AddChild(
-      views::Builder<views::Label>(
-          views::BubbleFrameView::CreateDefaultTitleLabel(params_->message))
-          // Setting the message's preferred size to 0 ensures it won't
-          // influence the overall size of the dialog. It will be expanded by
-          // TableLayout.
-          .SetPreferredSize(gfx::Size(0, 0)));
+      views::Builder<views::View>(std::make_unique<MessageContentWrapper>(
+          views::BubbleFrameView::CreateDefaultTitleLabel(params_->message))));
 
   GetBubbleFrameView()->SetTitleView(std::move(message_container).Build());
 }
@@ -497,7 +520,6 @@ void ParentPermissionDialogView::CreateContents() {
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   const gfx::Insets content_insets = provider->GetDialogInsetsForContentType(
       views::DialogContentType::kControl, views::DialogContentType::kControl);
-  const int content_width = GetPreferredSize().width() - content_insets.width();
   set_margins(
       gfx::Insets::TLBR(content_insets.top(), 0, content_insets.bottom(), 0));
 
@@ -535,7 +557,6 @@ void ParentPermissionDialogView::CreateContents() {
         permission_header_label, views::style::CONTEXT_DIALOG_BODY_TEXT);
     permissions_header->SetMultiLine(true);
     permissions_header->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    permissions_header->SizeToFit(content_width);
     permissions_header->SetBorder(views::CreateEmptyBorder(gfx::Insets::TLBR(
         0, content_insets.left(), 0, content_insets.right())));
 
@@ -544,8 +565,7 @@ void ParentPermissionDialogView::CreateContents() {
     AddChildView(permissions_header);
 
     // Create permissions view.
-    auto permissions_view =
-        std::make_unique<ExtensionPermissionsView>(content_width);
+    auto permissions_view = std::make_unique<ExtensionPermissionsView>();
     permissions_view->AddPermissions(prompt_permissions_);
 
     // Add to the section container, so the permissions can scroll, since they
@@ -568,7 +588,7 @@ void ParentPermissionDialogView::CreateContents() {
   // for parent selection and password entry.
   parent_permission_input_section_ =
       std::make_unique<ParentPermissionInputSection>(
-          this, parent_permission_email_addresses_, content_width,
+          this, parent_permission_email_addresses_,
           supervised_user::GetAccountGivenName(*params_->profile),
           /*is_extension_permission_dialog=*/params_->extension != nullptr);
 
@@ -585,7 +605,6 @@ void ParentPermissionDialogView::CreateContents() {
                         content_insets.left(), 0, content_insets.right())));
   invalid_credential_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   invalid_credential_label->SetMultiLine(true);
-  invalid_credential_label->SizeToFit(content_width);
 
   // Cache the pointer so we we can update the invalid credential label when we
   // get an incorrect password.
@@ -832,12 +851,7 @@ void ParentPermissionDialogView::InitializeExtensionData(
   // Load Permissions.
   std::unique_ptr<const extensions::PermissionSet> permissions_to_display =
       extensions::util::GetInstallPromptPermissionSetForExtension(
-          extension.get(), params_->profile,
-          // Matches behavior of regular extension install prompt because this
-          // prompt is never used for delegated permissions, which the only
-          // time optional permissions are shown.
-          false /* include_optional_permissions */
-      );
+          extension.get(), params_->profile);
   extensions::Manifest::Type type = extension->GetType();
   prompt_permissions_.LoadFromPermissionSet(permissions_to_display.get(), type);
 

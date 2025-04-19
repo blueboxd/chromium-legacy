@@ -5,6 +5,7 @@ android_library("java") {
   deps = [
     "$google_play_services_package:google_play_services_auth_base_java",
     "$google_play_services_package:google_play_services_base_java",
+    "//base:base_cached_flags_java",
     "//base:base_java",
     "//build/android:build_java",
     "//components/externalauth/android:java",
@@ -143,6 +144,7 @@ android_library("signin_java_test_support") {
 android_resources("java_resources") {
   sources = [
     "java/res/drawable/account_circle.xml",
+    "java/res/drawable/account_circle_with_bg.xml",
     "java/res/drawable/logo_avatar_anonymous.xml",
   ]
 }

@@ -31,12 +31,16 @@ import org.robolectric.shadows.ShadowLooper;
 import org.chromium.base.cached_flags.CachedFlagUtils;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.Features.DisableFeatures;
+import org.chromium.base.test.util.Features.EnableFeatures;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /** Tests for {@link HubPaneHostMediator}. */
 @RunWith(BaseRobolectricTestRunner.class)
+@DisableFeatures(ChromeFeatureList.ANDROID_HUB_FLOATING_ACTION_BUTTON)
 public class HubPaneHostMediatorUnitTest {
-    public @Rule MockitoRule mMockitoRule = MockitoJUnit.rule();
+    @Rule public MockitoRule mMockitoRule = MockitoJUnit.rule();
 
     private @Mock Pane mPane;
     private @Mock FullButtonData mButtonData;
@@ -63,8 +67,8 @@ public class HubPaneHostMediatorUnitTest {
 
     @Test
     @SmallTest
+    @EnableFeatures(ChromeFeatureList.ANDROID_HUB_FLOATING_ACTION_BUTTON)
     public void testDestroy() {
-        HubFieldTrial.FLOATING_ACTION_BUTTON.setForTesting(true);
         mPaneSupplier.set(mPane);
         HubPaneHostMediator mediator = new HubPaneHostMediator(mModel, mPaneSupplier);
         ShadowLooper.idleMainLooper();
@@ -103,8 +107,8 @@ public class HubPaneHostMediatorUnitTest {
 
     @Test
     @SmallTest
+    @EnableFeatures(ChromeFeatureList.ANDROID_HUB_FLOATING_ACTION_BUTTON)
     public void testActionButtonData() {
-        HubFieldTrial.FLOATING_ACTION_BUTTON.setForTesting(true);
         new HubPaneHostMediator(mModel, mPaneSupplier);
         assertNull(mModel.get(ACTION_BUTTON_DATA));
 
@@ -132,7 +136,6 @@ public class HubPaneHostMediatorUnitTest {
     @Test
     @SmallTest
     public void testDisabledActionButtonData() {
-        HubFieldTrial.FLOATING_ACTION_BUTTON.setForTesting(false);
         new HubPaneHostMediator(mModel, mPaneSupplier);
         mPaneSupplier.set(mPane);
         mActionButtonSupplier.set(mButtonData);

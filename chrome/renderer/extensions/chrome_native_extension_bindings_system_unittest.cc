@@ -32,7 +32,7 @@ constexpr char kCallUserScriptsRegister[] =
 TEST_F(NativeExtensionBindingsSystemUnittest, InitializeContext) {
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("foo")
-          .AddPermissions({"idle", "power", "webRequest", "tabs"})
+          .AddAPIPermissions({"idle", "power", "webRequest", "tabs"})
           .Build();
   RegisterExtension(extension);
 
@@ -74,10 +74,11 @@ TEST_F(NativeExtensionBindingsSystemUnittest,
   // should be available if and only if the user is in dev mode.
   SetCurrentDeveloperMode(kRendererProfileId, true);
 
-  scoped_refptr<const Extension> extension = ExtensionBuilder("foo")
-                                                 .AddPermission("userScripts")
-                                                 .SetManifestVersion(3)
-                                                 .Build();
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("foo")
+          .AddAPIPermission("userScripts")
+          .SetManifestVersion(3)
+          .Build();
   RegisterExtension(extension);
 
   v8::HandleScope handle_scope(isolate());
@@ -135,10 +136,11 @@ TEST_F(NativeExtensionBindingsSystemUnittest,
   // should not be available if the user is not in dev mode.
   SetCurrentDeveloperMode(kRendererProfileId, false);
 
-  scoped_refptr<const Extension> extension = ExtensionBuilder("foo")
-                                                 .AddPermission("userScripts")
-                                                 .SetManifestVersion(3)
-                                                 .Build();
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("foo")
+          .AddAPIPermission("userScripts")
+          .SetManifestVersion(3)
+          .Build();
   RegisterExtension(extension);
 
   v8::HandleScope handle_scope(isolate());

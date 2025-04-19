@@ -172,8 +172,7 @@ scoped_refptr<gl::GLSurface> GLOzoneEGLWayland::CreateOffscreenGLSurface(
 
 gl::EGLDisplayPlatform GLOzoneEGLWayland::GetNativeDisplay() {
   if (connection_) {
-    return gl::EGLDisplayPlatform(
-        reinterpret_cast<EGLNativeDisplayType>(connection_->display()));
+    return connection_->GetNativeDisplay();
   }
   return gl::EGLDisplayPlatform(EGL_DEFAULT_DISPLAY);
 }
@@ -215,7 +214,6 @@ WaylandSurfaceFactory::GetAllowedGLImplementations() {
     impls.emplace_back(gl::ANGLEImplementation::kOpenGLES);
     impls.emplace_back(gl::ANGLEImplementation::kSwiftShader);
     impls.emplace_back(gl::ANGLEImplementation::kVulkan);
-    impls.emplace_back(gl::kGLImplementationEGLGLES2);
   }
   return impls;
 }

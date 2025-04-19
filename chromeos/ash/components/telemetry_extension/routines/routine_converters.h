@@ -34,6 +34,10 @@ crosapi::mojom::TelemetryDiagnosticNetworkBandwidthRoutineDetailPtr
 UncheckedConvertPtr(
     cros_healthd::mojom::NetworkBandwidthRoutineDetailPtr input);
 
+crosapi::mojom::TelemetryDiagnosticCameraFrameAnalysisRoutineDetailPtr
+UncheckedConvertPtr(
+    cros_healthd::mojom::CameraFrameAnalysisRoutineDetailPtr input);
+
 crosapi::mojom::TelemetryDiagnosticRoutineStateInitializedPtr
 UncheckedConvertPtr(cros_healthd::mojom::RoutineStateInitializedPtr input);
 
@@ -49,6 +53,10 @@ crosapi::mojom::TelemetryDiagnosticRoutineStateRunningPtr UncheckedConvertPtr(
 
 crosapi::mojom::TelemetryDiagnosticCheckLedLitUpStateInquiryPtr
 UncheckedConvertPtr(cros_healthd::mojom::CheckLedLitUpStateInquiryPtr input);
+
+crosapi::mojom::TelemetryDiagnosticCheckKeyboardBacklightStateInquiryPtr
+UncheckedConvertPtr(
+    cros_healthd::mojom::CheckKeyboardBacklightStateInquiryPtr input);
 
 crosapi::mojom::TelemetryDiagnosticRoutineInquiryPtr UncheckedConvertPtr(
     cros_healthd::mojom::RoutineInquiryPtr input);
@@ -89,11 +97,23 @@ cros_healthd::mojom::LedLitUpRoutineArgumentPtr UncheckedConvertPtr(
 cros_healthd::mojom::CheckLedLitUpStateReplyPtr UncheckedConvertPtr(
     crosapi::mojom::TelemetryDiagnosticCheckLedLitUpStateReplyPtr input);
 
+cros_healthd::mojom::CheckKeyboardBacklightStateReplyPtr UncheckedConvertPtr(
+    crosapi::mojom::TelemetryDiagnosticCheckKeyboardBacklightStateReplyPtr
+        input);
+
 cros_healthd::mojom::RoutineInquiryReplyPtr UncheckedConvertPtr(
     crosapi::mojom::TelemetryDiagnosticRoutineInquiryReplyPtr input);
 
 cros_healthd::mojom::NetworkBandwidthRoutineArgumentPtr UncheckedConvertPtr(
     crosapi::mojom::TelemetryDiagnosticNetworkBandwidthRoutineArgumentPtr
+        input);
+
+cros_healthd::mojom::CameraFrameAnalysisRoutineArgumentPtr UncheckedConvertPtr(
+    crosapi::mojom::TelemetryDiagnosticCameraFrameAnalysisRoutineArgumentPtr
+        input);
+
+cros_healthd::mojom::KeyboardBacklightRoutineArgumentPtr UncheckedConvertPtr(
+    crosapi::mojom::TelemetryDiagnosticKeyboardBacklightRoutineArgumentPtr
         input);
 
 }  // namespace unchecked
@@ -107,6 +127,10 @@ cros_healthd::mojom::LedColor Convert(
 cros_healthd::mojom::CheckLedLitUpStateReply::State Convert(
     crosapi::mojom::TelemetryDiagnosticCheckLedLitUpStateReply::State input);
 
+cros_healthd::mojom::CheckKeyboardBacklightStateReply::State Convert(
+    crosapi::mojom::TelemetryDiagnosticCheckKeyboardBacklightStateReply::State
+        input);
+
 crosapi::mojom::TelemetryDiagnosticMemtesterTestItemEnum Convert(
     cros_healthd::mojom::MemtesterTestItemEnum input);
 
@@ -118,6 +142,12 @@ crosapi::mojom::TelemetryDiagnosticRoutineStateWaiting::Reason Convert(
 
 crosapi::mojom::TelemetryDiagnosticNetworkBandwidthRoutineRunningInfo::Type
 Convert(cros_healthd::mojom::NetworkBandwidthRoutineRunningInfo::Type input);
+
+crosapi::mojom::TelemetryDiagnosticCameraFrameAnalysisRoutineDetail::Issue
+Convert(cros_healthd::mojom::CameraFrameAnalysisRoutineDetail::Issue input);
+
+crosapi::mojom::TelemetryDiagnosticCameraSubtestResult Convert(
+    cros_healthd::mojom::CameraSubtestResult input);
 
 template <class InputT,
           class OutputT = decltype(Convert(std::declval<InputT>())),

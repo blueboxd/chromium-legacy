@@ -21,10 +21,10 @@ void UmaHistogramWithTrace(void (*histogram_function)(const std::string& name,
                            base::TimeTicks end_ticks) {
   (*histogram_function)(histogram_basename, end_ticks - begin_ticks);
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
-      "startup", histogram_basename, TRACE_ID_WITH_SCOPE(histogram_basename, 0),
+      "startup", histogram_basename, TRACE_ID_LOCAL(histogram_basename),
       begin_ticks);
   TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
-      "startup", histogram_basename, TRACE_ID_WITH_SCOPE(histogram_basename, 0),
+      "startup", histogram_basename, TRACE_ID_LOCAL(histogram_basename),
       end_ticks);
 }
 }  // namespace
@@ -74,6 +74,12 @@ void GpuStartupMetricRecorder::RecordGpuInitialized(base::TimeTicks ticks) {
                         "Startup.GPU.LoadTime.ChromeMainToGpuInitialized",
                         GetCommon().chrome_main_entry_ticks_,
                         gpu_initialized_ticks_);
+  if (!GetCommon().preread_end_ticks_.is_null() &&
+      !GetCommon().preread_begin_ticks_.is_null()) {
+    UmaHistogramWithTrace(
+        &base::UmaHistogramLongTimes, "Startup.GPU.LoadTime.PreReadFile",
+        GetCommon().preread_begin_ticks_, GetCommon().preread_end_ticks_);
+  }
 }
 
 }  // namespace startup_metric_utils

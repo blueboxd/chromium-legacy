@@ -26,7 +26,6 @@ import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
-import org.chromium.base.compat.ApiHelperForR;
 import org.chromium.base.memory.MemoryPressureUma;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.shared_preferences.SharedPreferencesManager;
@@ -141,6 +140,7 @@ import org.chromium.url.GURL;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -555,7 +555,7 @@ public class ProcessInitializationHandler {
             if (includeNative) {
                 summary += "," + AnrCollector.getSharedLibraryBuildId();
             }
-            ApiHelperForR.setProcessStateSummary(am, summary.getBytes(StandardCharsets.UTF_8));
+            am.setProcessStateSummary(summary.getBytes(StandardCharsets.UTF_8));
         }
     }
 
@@ -665,10 +665,7 @@ public class ProcessInitializationHandler {
         // Record the saved restore state in a histogram
         tasks.add(ChromeBackupAgentImpl::recordRestoreHistogram);
 
-        tasks.add(
-                () -> {
-                    RevenueStats.getInstance().retrieveAndApplyTrackingIds();
-                });
+        tasks.add(RevenueStats::getInstance);
 
         tasks.add(
                 () -> {
@@ -720,22 +717,17 @@ public class ProcessInitializationHandler {
 
         tasks.add(
                 () -> {
-                    // OptimizationTypes which we give a guarantee will be registered when we pass
-                    // the onDeferredStartup() signal to OptimizationGuide.
-                    List<HintsProto.OptimizationType> registeredTypesAllowList = new ArrayList<>();
-                    registeredTypesAllowList.addAll(
-                            ShoppingPersistedTabData.getShoppingHintsToRegisterOnDeferredStartup(
-                                    profile));
                     OptimizationGuideBridge optimizationGuideBridge =
                             OptimizationGuideBridgeFactory.getForProfile(profile);
                     if (optimizationGuideBridge != null) {
-                        optimizationGuideBridge.registerOptimizationTypes(registeredTypesAllowList);
+                        // OptimizationTypes which we give a guarantee will be registered when we
+                        // pass the onDeferredStartup() signal to OptimizationGuide.
+                        optimizationGuideBridge.registerOptimizationTypes(
+                                Arrays.asList(HintsProto.OptimizationType.PRICE_TRACKING));
                         optimizationGuideBridge.onDeferredStartup();
                     }
                     // TODO(crbug.com/40236066) Move to PersistedTabData.onDeferredStartup
-                    if (PriceTrackingFeatures.isPriceTrackingEligible(profile)
-                            && ShoppingPersistedTabData.isPriceTrackingWithOptimizationGuideEnabled(
-                                    profile)) {
+                    if (PriceTrackingFeatures.isPriceTrackingEligible(profile)) {
                         ShoppingPersistedTabData.onDeferredStartup();
                     }
                 });

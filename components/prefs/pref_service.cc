@@ -10,6 +10,7 @@
 #include <string_view>
 #include <utility>
 
+#include "base/check_deref.h"
 #include "base/check_op.h"
 #include "base/debug/alias.h"
 #include "base/debug/dump_without_crashing.h"
@@ -21,6 +22,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/notreached.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/sequenced_task_runner.h"
@@ -39,10 +41,33 @@
 #include "components/prefs/android/pref_service_android.h"
 #endif
 
-namespace {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+namespace pref_service_util {
+void GetAllDottedPaths(std::string_view prefix,
+                       const base::Value::Dict& dict,
+                       std::vector<std::string>& paths) {
+  for (const auto pair : dict) {
+    std::string path;
+    if (prefix.empty()) {
+      path = pair.first;
+    } else {
+      path = base::StrCat({prefix, ".", pair.first});
+    }
 
+    if (pair.second.is_dict()) {
+      GetAllDottedPaths(path, pair.second.GetDict(), paths);
+    } else {
+      paths.push_back(path);
+    }
+  }
+}
 
-}  // namespace
+void GetAllDottedPaths(const base::Value::Dict& dict,
+                       std::vector<std::string>& paths) {
+  GetAllDottedPaths("", dict, paths);
+}
+}  // namespace pref_service_util
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 PrefService::PersistentPrefStoreLoadingObserver::
     PersistentPrefStoreLoadingObserver(PrefService* pref_service)
@@ -211,7 +236,7 @@ base::FilePath PrefService::GetFilePath(std::string_view path) const {
   return *result;
 }
 
-bool PrefService::HasPrefPath(const std::string& path) const {
+bool PrefService::HasPrefPath(std::string_view path) const {
   const Preference* pref = FindPreference(path);
   return pref && !pref->IsDefaultValue();
 }
@@ -260,17 +285,19 @@ PrefService::GetPreferencesValueAndStore() const {
 }
 
 const PrefService::Preference* PrefService::FindPreference(
-    const std::string& pref_name) const {
+    std::string_view path) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto it = prefs_map_.find(pref_name);
+  auto it = prefs_map_.find(path);
   if (it != prefs_map_.end())
     return &(it->second);
   const base::Value* default_value = nullptr;
-  if (!pref_registry_->defaults()->GetValue(pref_name, &default_value))
+  if (!pref_registry_->defaults()->GetValue(path, &default_value)) {
     return nullptr;
+  }
   it = prefs_map_
            .insert(std::make_pair(
-               pref_name, Preference(this, pref_name, default_value->type())))
+               std::string(path),
+               Preference(this, std::string(path), default_value->type())))
            .first;
   return &(it->second);
 }
@@ -302,20 +329,18 @@ PrefService::GetAllPrefStoresInitializationStatus() const {
   return GetInitializationStatus();
 }
 
-bool PrefService::IsManagedPreference(const std::string& pref_name) const {
-  const Preference* pref = FindPreference(pref_name);
+bool PrefService::IsManagedPreference(std::string_view path) const {
+  const Preference* pref = FindPreference(path);
   return pref && pref->IsManaged();
 }
 
-bool PrefService::IsPreferenceManagedByCustodian(
-    const std::string& pref_name) const {
-  const Preference* pref = FindPreference(pref_name);
+bool PrefService::IsPreferenceManagedByCustodian(std::string_view path) const {
+  const Preference* pref = FindPreference(path);
   return pref && pref->IsManagedByCustodian();
 }
 
-bool PrefService::IsUserModifiablePreference(
-    const std::string& pref_name) const {
-  const Preference* pref = FindPreference(pref_name);
+bool PrefService::IsUserModifiablePreference(std::string_view path) const {
+  const Preference* pref = FindPreference(path);
   return pref && pref->IsUserModifiable();
 }
 
@@ -334,8 +359,7 @@ const base::Value::List& PrefService::GetList(std::string_view path) const {
   return value.GetList();
 }
 
-const base::Value* PrefService::GetUserPrefValue(
-    const std::string& path) const {
+const base::Value* PrefService::GetUserPrefValue(std::string_view path) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const Preference* pref = FindPreference(path);
@@ -351,7 +375,7 @@ const base::Value* PrefService::GetUserPrefValue(
     return nullptr;
 
   if (value->type() != pref->GetType()) {
-    DUMP_WILL_BE_NOTREACHED_NORETURN()
+    DUMP_WILL_BE_NOTREACHED()
         << "Pref value type doesn't match registered type.";
     return nullptr;
   }
@@ -359,14 +383,14 @@ const base::Value* PrefService::GetUserPrefValue(
   return value;
 }
 
-void PrefService::SetDefaultPrefValue(const std::string& path,
+void PrefService::SetDefaultPrefValue(std::string_view path,
                                       base::Value value) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   pref_registry_->SetDefaultPrefValue(path, std::move(value));
 }
 
 const base::Value* PrefService::GetDefaultPrefValue(
-    const std::string& path) const {
+    std::string_view path) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Lookup the preference in the default store.
   const base::Value* value = nullptr;
@@ -375,12 +399,11 @@ const base::Value* PrefService::GetDefaultPrefValue(
   return value;
 }
 
-void PrefService::AddPrefObserver(const std::string& path, PrefObserver* obs) {
+void PrefService::AddPrefObserver(std::string_view path, PrefObserver* obs) {
   pref_notifier_->AddPrefObserver(path, obs);
 }
 
-void PrefService::RemovePrefObserver(const std::string& path,
-                                     PrefObserver* obs) {
+void PrefService::RemovePrefObserver(std::string_view path, PrefObserver* obs) {
   pref_notifier_->RemovePrefObserver(path, obs);
 }
 
@@ -392,7 +415,7 @@ PrefRegistry* PrefService::DeprecatedGetPrefRegistry() {
   return pref_registry_.get();
 }
 
-void PrefService::ClearPref(const std::string& path) {
+void PrefService::ClearPref(std::string_view path) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const Preference* pref = FindPreference(path);
@@ -404,7 +427,7 @@ void PrefService::ClearPref(const std::string& path) {
   user_pref_store_->RemoveValue(path, GetWriteFlags(pref));
 }
 
-void PrefService::ClearPrefsWithPrefixSilently(const std::string& prefix) {
+void PrefService::ClearPrefsWithPrefixSilently(std::string_view prefix) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   user_pref_store_->RemoveValuesByPrefixSilently(prefix);
 }
@@ -430,55 +453,55 @@ base::android::ScopedJavaLocalRef<jobject> PrefService::GetJavaObject() {
 }
 #endif
 
-void PrefService::Set(const std::string& path, const base::Value& value) {
+void PrefService::Set(std::string_view path, const base::Value& value) {
   SetUserPrefValue(path, value.Clone());
 }
 
-void PrefService::SetBoolean(const std::string& path, bool value) {
+void PrefService::SetBoolean(std::string_view path, bool value) {
   SetUserPrefValue(path, base::Value(value));
 }
 
-void PrefService::SetInteger(const std::string& path, int value) {
+void PrefService::SetInteger(std::string_view path, int value) {
   SetUserPrefValue(path, base::Value(value));
 }
 
-void PrefService::SetDouble(const std::string& path, double value) {
+void PrefService::SetDouble(std::string_view path, double value) {
   SetUserPrefValue(path, base::Value(value));
 }
 
-void PrefService::SetString(const std::string& path, std::string_view value) {
+void PrefService::SetString(std::string_view path, std::string_view value) {
   SetUserPrefValue(path, base::Value(value));
 }
 
-void PrefService::SetDict(const std::string& path, base::Value::Dict dict) {
+void PrefService::SetDict(std::string_view path, base::Value::Dict dict) {
   SetUserPrefValue(path, base::Value(std::move(dict)));
 }
 
-void PrefService::SetList(const std::string& path, base::Value::List list) {
+void PrefService::SetList(std::string_view path, base::Value::List list) {
   SetUserPrefValue(path, base::Value(std::move(list)));
 }
 
-void PrefService::SetFilePath(const std::string& path,
+void PrefService::SetFilePath(std::string_view path,
                               const base::FilePath& value) {
   SetUserPrefValue(path, base::FilePathToValue(value));
 }
 
-void PrefService::SetInt64(const std::string& path, int64_t value) {
+void PrefService::SetInt64(std::string_view path, int64_t value) {
   SetUserPrefValue(path, base::Int64ToValue(value));
 }
 
-int64_t PrefService::GetInt64(const std::string& path) const {
+int64_t PrefService::GetInt64(std::string_view path) const {
   const base::Value& value = GetValue(path);
   std::optional<int64_t> integer = base::ValueToInt64(value);
   DCHECK(integer);
   return integer.value_or(0);
 }
 
-void PrefService::SetUint64(const std::string& path, uint64_t value) {
+void PrefService::SetUint64(std::string_view path, uint64_t value) {
   SetUserPrefValue(path, base::Value(base::NumberToString(value)));
 }
 
-uint64_t PrefService::GetUint64(const std::string& path) const {
+uint64_t PrefService::GetUint64(std::string_view path) const {
   const base::Value& value = GetValue(path);
   if (!value.is_string())
     return 0;
@@ -488,37 +511,36 @@ uint64_t PrefService::GetUint64(const std::string& path) const {
   return result;
 }
 
-void PrefService::SetTime(const std::string& path, base::Time value) {
+void PrefService::SetTime(std::string_view path, base::Time value) {
   SetUserPrefValue(path, base::TimeToValue(value));
 }
 
-base::Time PrefService::GetTime(const std::string& path) const {
+base::Time PrefService::GetTime(std::string_view path) const {
   const base::Value& value = GetValue(path);
   std::optional<base::Time> time = base::ValueToTime(value);
   DCHECK(time);
   return time.value_or(base::Time());
 }
 
-void PrefService::SetTimeDelta(const std::string& path, base::TimeDelta value) {
+void PrefService::SetTimeDelta(std::string_view path, base::TimeDelta value) {
   SetUserPrefValue(path, base::TimeDeltaToValue(value));
 }
 
-base::TimeDelta PrefService::GetTimeDelta(const std::string& path) const {
+base::TimeDelta PrefService::GetTimeDelta(std::string_view path) const {
   const base::Value& value = GetValue(path);
   std::optional<base::TimeDelta> time_delta = base::ValueToTimeDelta(value);
   DCHECK(time_delta);
   return time_delta.value_or(base::TimeDelta());
 }
 
-base::Value* PrefService::GetMutableUserPref(const std::string& path,
+base::Value* PrefService::GetMutableUserPref(std::string_view path,
                                              base::Value::Type type) {
   CHECK(type == base::Value::Type::DICT || type == base::Value::Type::LIST);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const Preference* pref = FindPreference(path);
   if (!pref) {
-    DUMP_WILL_BE_NOTREACHED_NORETURN()
-        << "Trying to get an unregistered pref: " << path;
+    DUMP_WILL_BE_NOTREACHED() << "Trying to get an unregistered pref: " << path;
     return nullptr;
   }
   if (pref->GetType() != type) {
@@ -557,13 +579,13 @@ void PrefService::ReportUserPrefChanged(
                                            GetWriteFlags(FindPreference(key)));
 }
 
-void PrefService::SetUserPrefValue(const std::string& path,
+void PrefService::SetUserPrefValue(std::string_view path,
                                    base::Value new_value) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const Preference* pref = FindPreference(path);
   if (!pref) {
-    DUMP_WILL_BE_NOTREACHED_NORETURN()
+    DUMP_WILL_BE_NOTREACHED()
         << "Trying to write an unregistered pref: " << path;
     return;
   }
@@ -592,7 +614,7 @@ PrefService::Preference::Preference(const PrefService* service,
       // Cache the registration flags at creation time to avoid multiple map
       // lookups later.
       registration_flags_(service->pref_registry_->GetRegistrationFlags(name_)),
-      pref_service_(service) {}
+      pref_service_(CHECK_DEREF(service)) {}
 
 const base::Value* PrefService::Preference::GetValue() const {
   return pref_service_->GetPreferenceValue(name_);
@@ -686,7 +708,7 @@ const base::Value* PrefService::GetPreferenceValue(
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-void PrefService::SetStandaloneBrowserPref(const std::string& path,
+void PrefService::SetStandaloneBrowserPref(std::string_view path,
                                            const base::Value& value) {
   if (!standalone_browser_pref_store_) {
     LOG(WARNING) << "Failure to set value of " << path
@@ -697,7 +719,7 @@ void PrefService::SetStandaloneBrowserPref(const std::string& path,
       path, value.Clone(), WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 }
 
-void PrefService::RemoveStandaloneBrowserPref(const std::string& path) {
+void PrefService::RemoveStandaloneBrowserPref(std::string_view path) {
   if (!standalone_browser_pref_store_) {
     LOG(WARNING) << "Failure to remove value of " << path
                  << " in standalone browser store";
@@ -705,6 +727,22 @@ void PrefService::RemoveStandaloneBrowserPref(const std::string& path) {
   }
   standalone_browser_pref_store_->RemoveValue(
       path, WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
+}
+
+void PrefService::RemoveAllStandaloneBrowserPrefs() {
+  if (!standalone_browser_pref_store_) {
+    LOG(WARNING) << "standalone_browser_pref_store_ is null";
+    return;
+  }
+
+  std::vector<std::string> paths;
+  pref_service_util::GetAllDottedPaths(
+      standalone_browser_pref_store_->GetValues(), paths);
+
+  for (const std::string& path : paths) {
+    standalone_browser_pref_store_->RemoveValue(
+        path, WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
+  }
 }
 #endif
 

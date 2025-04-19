@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/browser_state/model/off_the_record_chrome_browser_state_impl.h"
-
 #import "base/metrics/histogram_functions.h"
 #import "base/metrics/user_metrics.h"
 #import "base/notreached.h"
@@ -16,25 +14,35 @@
 #import "components/user_prefs/user_prefs.h"
 #import "ios/chrome/browser/net/model/ios_chrome_url_request_context_getter.h"
 #import "ios/chrome/browser/prefs/model/ios_chrome_pref_service_factory.h"
+#import "ios/chrome/browser/profile/model/off_the_record_profile_ios_impl.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 
 OffTheRecordChromeBrowserStateImpl::OffTheRecordChromeBrowserStateImpl(
     scoped_refptr<base::SequencedTaskRunner> io_task_runner,
     ChromeBrowserState* original_chrome_browser_state,
     const base::FilePath& otr_path)
-    : ChromeBrowserState(otr_path, std::move(io_task_runner)),
+    : ChromeBrowserState(otr_path,
+                         /*browser_state_name=*/std::string(),
+                         std::move(io_task_runner)),
       original_chrome_browser_state_(original_chrome_browser_state),
       start_time_(base::Time::Now()),
       prefs_(CreateIncognitoBrowserStatePrefs(
           static_cast<sync_preferences::PrefServiceSyncable*>(
               original_chrome_browser_state->GetPrefs()))) {
+  BrowserStateDependencyManager::GetInstance()->MarkBrowserStateLive(this);
+
   user_prefs::UserPrefs::Set(this, GetPrefs());
   io_data_.reset(new OffTheRecordChromeBrowserStateIOData::Handle(this));
-  BrowserStateDependencyManager::GetInstance()->CreateBrowserStateServices(
-      this);
   profile_metrics::SetBrowserProfileType(
       this, profile_metrics::BrowserProfileType::kIncognito);
   base::RecordAction(base::UserMetricsAction("IncognitoMode_Started"));
+
+  // DO NOT ADD ANY INITIALISATION AFTER THIS LINE.
+
+  // The initialisation of the ChromeBrowserState is now complete and the
+  // service can be safely created.
+  BrowserStateDependencyManager::GetInstance()->CreateBrowserStateServices(
+      this);
 }
 
 OffTheRecordChromeBrowserStateImpl::~OffTheRecordChromeBrowserStateImpl() {

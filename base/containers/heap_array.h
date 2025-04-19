@@ -2,11 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifdef UNSAFE_BUFFERS_BUILD
-// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
-#pragma allow_unsafe_buffers
-#endif
-
 #ifndef BASE_CONTAINERS_HEAP_ARRAY_H_
 #define BASE_CONTAINERS_HEAP_ARRAY_H_
 
@@ -147,16 +142,27 @@ class TRIVIAL_ABI GSL_OWNER HeapArray {
   // most useful, say, when the compiler can't deduce a template
   // argument type.
   base::span<T> as_span() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return base::span<T>(data_.get(), size_);
+    // SAFETY: `size_` is the number of elements in the `data_` allocation` at
+    // all times.
+    return UNSAFE_BUFFERS(base::span<T>(data_.get(), size_));
   }
   base::span<const T> as_span() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return base::span<const T>(data_.get(), size_);
+    // SAFETY: `size_` is the number of elements in the `data_` allocation` at
+    // all times.
+    return UNSAFE_BUFFERS(base::span<const T>(data_.get(), size_));
   }
 
-  // Convenience method to copy the contents of the entire array from a
-  // span<>. Hard CHECK occurs in span<>::copy_from() if the HeapArray and
-  // the span have different sizes.
+  // Convenience method to copy the contents of a span<> into the entire array.
+  // Hard CHECK occurs in span<>::copy_from() if the HeapArray and the span
+  // have different sizes.
   void copy_from(base::span<const T> other) { as_span().copy_from(other); }
+
+  // Convenience method to copy the contents of a span<> into the start of the
+  // array. Hard CHECK occurs in span<>::copy_prefix_from() if the HeapArray
+  // isn't large enough to contain the entire span.
+  void copy_prefix_from(base::span<const T> other) {
+    as_span().copy_prefix_from(other);
+  }
 
   // Convenience methods to slice the vector into spans.
   // Returns a span over the HeapArray starting at `offset` of `count` elements.
@@ -197,7 +203,21 @@ class TRIVIAL_ABI GSL_OWNER HeapArray {
   base::span<T> leak() && {
     HeapArray<T> dropped = std::move(*this);
     T* leaked = dropped.data_.release();
-    return make_span(leaked, dropped.size_);
+    // SAFETY: The `size_` is the number of elements in the allocation in
+    // `data_` at all times, which is renamed as `leaked` here.
+    return UNSAFE_BUFFERS(span(leaked, dropped.size_));
+  }
+
+  // Allows construction of a smaller HeapArray from an existing HeapArray w/o
+  // reallocations or copies. Note: The original allocation is preserved, so
+  // CopiedFrom() should be preferred for significant size reductions.
+  base::HeapArray<T> take_first(size_t reduced_size) && {
+    CHECK_LE(reduced_size, size_);
+    size_ = 0u;
+    if (!reduced_size) {
+      data_.reset();
+    }
+    return base::HeapArray(std::move(data_), reduced_size);
   }
 
   // Delete the memory previously obtained from leak(). Argument is a pointer

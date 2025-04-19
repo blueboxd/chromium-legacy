@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "cc/trees/draw_property_utils.h"
 
 #include <stddef.h>
@@ -815,14 +820,10 @@ std::pair<gfx::MaskFilterInfo, bool> GetMaskFilterInfoPair(
   if (!property_trees->GetToTarget(node->transform_id, target_id, &to_target))
     return kEmptyMaskFilterInfoPair;
 
-  auto mfi = node->mask_filter_info;
-  mfi.ApplyTransform(to_target);
+  auto result =
+      std::make_pair(node->mask_filter_info, node->is_fast_rounded_corner);
+  result.first.ApplyTransform(to_target);
 
-  auto rrect_f = gfx::RRectF::ToEnclosingRRectF(mfi.rounded_corner_bounds());
-  auto result = std::make_pair(
-      gfx::MaskFilterInfo(rrect_f,
-                          mfi.gradient_mask().value_or(gfx::LinearGradient())),
-      node->is_fast_rounded_corner);
   if (result.first.IsEmpty()) {
     return kEmptyMaskFilterInfoPair;
   }

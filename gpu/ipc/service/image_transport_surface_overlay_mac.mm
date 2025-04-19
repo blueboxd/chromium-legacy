@@ -4,6 +4,9 @@
 
 #include "gpu/ipc/service/image_transport_surface_overlay_mac.h"
 
+#include <dawn/native/MetalBackend.h>
+#include <dawn/webgpu_cpp.h>
+
 #include <memory>
 #include <sstream>
 
@@ -46,12 +49,13 @@ BASE_FEATURE(kAVFoundationOverlays,
 // Use CVDisplayLink timing for PresentationFeedback timestamps.
 BASE_FEATURE(kNewPresentationFeedbackTimeStamps,
              "NewPresentationFeedbackTimeStamps",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_MAC)
 }  // namespace
 
-ImageTransportSurfaceOverlayMacEGL::ImageTransportSurfaceOverlayMacEGL()
-    : weak_ptr_factory_(this) {
+ImageTransportSurfaceOverlayMacEGL::ImageTransportSurfaceOverlayMacEGL(
+    DawnContextProvider* dawn_context_provider)
+    : dawn_context_provider_(dawn_context_provider), weak_ptr_factory_(this) {
   static bool av_disabled_at_command_line =
       !base::FeatureList::IsEnabled(kAVFoundationOverlays);
 
@@ -84,6 +88,7 @@ void ImageTransportSurfaceOverlayMacEGL::Present(
     PresentationCallback presentation_callback,
     gfx::FrameData data) {
   TRACE_EVENT0("gpu", "ImageTransportSurfaceOverlayMac::Present");
+  ca_layer_tree_coordinator_->SetCALayerErrorCode(data.ca_layer_error_code);
 
   // Commit the first pending frame before adding one more in Present() if there
   // are more than supported .
@@ -91,22 +96,38 @@ void ImageTransportSurfaceOverlayMacEGL::Present(
     CommitPresentedFrameToCA();
   }
 
+  // Set the display HDR headroom to be used for any tone mapping to be done
+  // at the CoreAnimation level.
+  ca_layer_tree_coordinator_->GetPendingCARendererLayerTree()
+      ->SetDisplayHDRHeadroom(data.display_hdr_headroom);
+
   // Query the underlying Metal device, if one exists. This is needed to ensure
   // synchronization between the display compositor and the HDRCopierLayer.
   // https://crbug.com/1372898
   if (gl::GLDisplayEGL* display =
           gl::GLDisplayEGL::GetDisplayForCurrentContext()) {
-    EGLAttrib angle_device_attrib = 0;
-    if (eglQueryDisplayAttribEXT(display->GetDisplay(), EGL_DEVICE_EXT,
-                                 &angle_device_attrib)) {
-      EGLDeviceEXT angle_device =
-          reinterpret_cast<EGLDeviceEXT>(angle_device_attrib);
-      EGLAttrib metal_device_attrib = 0;
-      if (eglQueryDeviceAttribEXT(angle_device, EGL_METAL_DEVICE_ANGLE,
-                                  &metal_device_attrib)) {
-        id<MTLDevice> metal_device = (__bridge id)(void*)metal_device_attrib;
-        ca_layer_tree_coordinator_->GetPendingCARendererLayerTree()
-            ->SetMetalDevice(metal_device);
+    // With SkiaGraphite, we pass the Graphite-Dawn MTLDevice for creating
+    // CAMetalLayer used to display HDR IOSurfaces. With SkiaGanesh, we pass the
+    // ANGLE MTLDevice instead.
+    if (dawn_context_provider_ &&
+        dawn_context_provider_->backend_type() == wgpu::BackendType::Metal) {
+      id<MTLDevice> metal_device = dawn::native::metal::GetMTLDevice(
+          dawn_context_provider_->GetDevice().Get());
+      ca_layer_tree_coordinator_->GetPendingCARendererLayerTree()
+          ->SetMetalDevice(metal_device);
+    } else {
+      EGLAttrib angle_device_attrib = 0;
+      if (eglQueryDisplayAttribEXT(display->GetDisplay(), EGL_DEVICE_EXT,
+                                   &angle_device_attrib)) {
+        EGLDeviceEXT angle_device =
+            reinterpret_cast<EGLDeviceEXT>(angle_device_attrib);
+        EGLAttrib metal_device_attrib = 0;
+        if (eglQueryDeviceAttribEXT(angle_device, EGL_METAL_DEVICE_ANGLE,
+                                    &metal_device_attrib)) {
+          id<MTLDevice> metal_device = (__bridge id)(void*)metal_device_attrib;
+          ca_layer_tree_coordinator_->GetPendingCARendererLayerTree()
+              ->SetMetalDevice(metal_device);
+        }
       }
     }
   }
@@ -116,11 +137,10 @@ void ImageTransportSurfaceOverlayMacEGL::Present(
 
 #if BUILDFLAG(IS_MAC)
   if (display_link_mac_ && !vsync_callback_mac_) {
-    vsync_callback_mac_ = display_link_mac_->RegisterCallback(
-        base::BindRepeating(
+    vsync_callback_mac_ =
+        display_link_mac_->RegisterCallback(base::BindRepeating(
             &ImageTransportSurfaceOverlayMacEGL::OnVSyncPresentation,
-            weak_ptr_factory_.GetWeakPtr()),
-        /*do_callback_on_register_thread=*/true);
+            weak_ptr_factory_.GetWeakPtr()));
   }
 
   bool delay_presenetation_until_next_vsync =
@@ -218,11 +238,6 @@ bool ImageTransportSurfaceOverlayMacEGL::Resize(
     bool has_alpha) {
   ca_layer_tree_coordinator_->Resize(pixel_size, scale_factor);
   return true;
-}
-
-void ImageTransportSurfaceOverlayMacEGL::SetCALayerErrorCode(
-    gfx::CALayerResult ca_layer_error_code) {
-  ca_layer_tree_coordinator_->SetCALayerErrorCode(ca_layer_error_code);
 }
 
 void ImageTransportSurfaceOverlayMacEGL::SetMaxPendingSwaps(

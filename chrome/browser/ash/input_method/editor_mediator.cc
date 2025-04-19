@@ -12,25 +12,39 @@
 #include "base/check_op.h"
 #include "base/containers/contains.h"
 #include "base/containers/fixed_flat_set.h"
+#include "chrome/browser/ash/crosapi/crosapi_ash.h"
+#include "chrome/browser/ash/crosapi/crosapi_manager.h"
 #include "chrome/browser/ash/input_method/editor_consent_enums.h"
-#include "chrome/browser/ash/input_method/editor_helpers.h"
+#include "chrome/browser/ash/input_method/editor_geolocation_provider.h"
 #include "chrome/browser/ash/input_method/editor_metrics_enums.h"
 #include "chrome/browser/ash/input_method/editor_metrics_recorder.h"
+#include "chrome/browser/ash/input_method/editor_query_context.h"
 #include "chrome/browser/ash/input_method/editor_text_query_from_manta.h"
 #include "chrome/browser/ash/input_method/editor_text_query_from_memory.h"
 #include "chrome/browser/ash/input_method/editor_text_query_provider.h"
+#include "chrome/browser/ash/magic_boost/magic_boost_controller_ash.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ui/webui/ash/mako/mako_bubble_coordinator.h"
+#include "chromeos/components/editor_menu/public/cpp/editor_helpers.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/base/ime/ash/ime_bridge.h"
 #include "ui/display/screen.h"
 #include "ui/display/tablet_state.h"
 
 namespace ash::input_method {
+namespace {
 
-EditorMediator::EditorMediator(Profile* profile, std::string_view country_code)
+constexpr std::u16string_view kAnnouncementViewName = u"Orca";
+
+}
+
+EditorMediator::EditorMediator(
+    Profile* profile,
+    std::unique_ptr<EditorGeolocationProvider> editor_geolocation_provider)
     : profile_(profile),
       panel_manager_(this),
-      editor_context_(this, this, country_code),
+      editor_geolocation_provider_(std::move(editor_geolocation_provider)),
+      editor_context_(this, this, editor_geolocation_provider_.get()),
       editor_switch_(
           std::make_unique<EditorSwitch>(this, profile, &editor_context_)),
       metrics_recorder_(
@@ -38,7 +52,8 @@ EditorMediator::EditorMediator(Profile* profile, std::string_view country_code)
                                                   GetEditorOpportunityMode())),
       consent_store_(
           std::make_unique<EditorConsentStore>(profile->GetPrefs(),
-                                               metrics_recorder_.get())) {
+                                               metrics_recorder_.get())),
+      announcer_(kAnnouncementViewName) {
   editor_context_.OnTabletModeUpdated(
       display::Screen::GetScreen()->InTabletMode());
 }
@@ -47,45 +62,24 @@ EditorMediator::~EditorMediator() = default;
 
 void EditorMediator::BindEditorClient(
     mojo::PendingReceiver<orca::mojom::EditorClient> pending_receiver) {
-  if (editor_client_connector_ != nullptr) {
-    editor_client_connector_->BindEditorClient(std::move(pending_receiver));
+  if (IsServiceConnected()) {
+    service_connection_->editor_client_connector()->BindEditorClient(
+        std::move(pending_receiver));
   }
 }
 
 void EditorMediator::OnEditorServiceConnected(bool is_connection_successful) {}
 
-void EditorMediator::SetUpNewEditorService() {
-  if (editor_service_connector_.SetUpNewEditorService()) {
-    mojo::PendingAssociatedRemote<orca::mojom::SystemActuator>
-        system_actuator_remote;
-    mojo::PendingAssociatedRemote<orca::mojom::TextQueryProvider>
-        text_query_provider_remote;
-    mojo::PendingAssociatedReceiver<orca::mojom::EditorClientConnector>
-        editor_client_connector_receiver;
-    mojo::PendingAssociatedReceiver<orca::mojom::EditorEventSink>
-        editor_event_sink_receiver;
+bool EditorMediator::IsServiceConnected() {
+  return editor_service_connector_ && editor_service_connector_->IsBound() &&
+         service_connection_;
+}
 
-    system_actuator_ = std::make_unique<EditorSystemActuator>(
-        profile_, system_actuator_remote.InitWithNewEndpointAndPassReceiver(),
-        this);
-    text_query_provider_ = std::make_unique<EditorTextQueryProvider>(
-        text_query_provider_remote.InitWithNewEndpointAndPassReceiver(),
-        metrics_recorder_.get(),
-        std::make_unique<EditorTextQueryFromManta>(profile_));
-    editor_client_connector_ = std::make_unique<EditorClientConnector>(
-        editor_client_connector_receiver.InitWithNewEndpointAndPassRemote());
-    editor_event_proxy_ = std::make_unique<EditorEventProxy>(
-        editor_event_sink_receiver.InitWithNewEndpointAndPassRemote());
-
-    editor_service_connector_.BindEditor(
-        std::move(editor_client_connector_receiver),
-        std::move(editor_event_sink_receiver),
-        std::move(system_actuator_remote),
-        std::move(text_query_provider_remote));
-
-    // TODO: b:300838514 - We should only bind the native UI with the shared lib
-    // when the Rewrite UI is shown. Consider add a listener to the
-    // write/rewrite UI and move the binding there.
+void EditorMediator::ResetEditorConnections() {
+  if (editor_service_connector_) {
+    service_connection_ = std::make_unique<ServiceConnection>(
+        profile_, this, metrics_recorder_.get(),
+        editor_service_connector_.get());
     panel_manager_.BindEditorClient();
   }
 }
@@ -98,6 +92,13 @@ void EditorMediator::BindEditorPanelManager(
 
 void EditorMediator::OnContextUpdated() {
   editor_switch_->OnContextUpdated();
+}
+
+void EditorMediator::OnImeChange(std::string_view engine_id) {
+  if (base::FeatureList::IsEnabled(ash::features::kOrcaServiceConnection) &&
+      service_connection_) {
+    ResetEditorConnections();
+  }
 }
 
 std::optional<ukm::SourceId> EditorMediator::GetUkmSourceId() {
@@ -119,15 +120,14 @@ void EditorMediator::OnFocus(int context_id) {
     return;
   }
 
-  if (IsAllowedForUse() && !editor_service_connector_.IsBound()) {
-    SetUpNewEditorService();
+  if (IsAllowedForUse() && !editor_service_connector_) {
+    editor_service_connector_ =
+        std::make_unique<EditorServiceConnector>(&editor_context_);
+    ResetEditorConnections();
   }
-  GetTextFieldContextualInfo(
-      base::BindOnce(&EditorMediator::OnTextFieldContextualInfoChanged,
-                     weak_ptr_factory_.GetWeakPtr()));
 
-  if (system_actuator_ != nullptr) {
-    system_actuator_->OnFocus(context_id);
+  if (IsServiceConnected()) {
+    service_connection_->system_actuator()->OnFocus(context_id);
   }
 }
 
@@ -140,6 +140,11 @@ void EditorMediator::OnBlur() {
 
 void EditorMediator::OnActivateIme(std::string_view engine_id) {
   editor_context_.OnActivateIme(engine_id);
+
+  if (base::FeatureList::IsEnabled(ash::features::kOrcaServiceConnection) &&
+      IsServiceConnected()) {
+    ResetEditorConnections();
+  }
 }
 
 void EditorMediator::OnDisplayTabletStateChanged(display::TabletState state) {
@@ -175,8 +180,6 @@ void EditorMediator::Announce(const std::u16string& message) {
 
 void EditorMediator::ProcessConsentAction(ConsentAction consent_action) {
   consent_store_->ProcessConsentAction(consent_action);
-  HandleTrigger(/*preset_query_id=*/std::nullopt,
-                /*freeform_text=*/std::nullopt);
 }
 
 void EditorMediator::ShowUI() {
@@ -196,50 +199,138 @@ void EditorMediator::OnEditorModeChanged(const EditorMode& mode) {
 }
 
 void EditorMediator::OnPromoCardDeclined() {
-  consent_store_->ProcessPromoCardAction(PromoCardAction::kDeclined);
+  consent_store_->ProcessPromoCardAction(PromoCardAction::kDecline);
 }
 
 void EditorMediator::HandleTrigger(
     std::optional<std::string_view> preset_query_id,
     std::optional<std::string_view> freeform_text) {
   metrics_recorder_->SetTone(preset_query_id, freeform_text);
+
+  EditorQueryContext active_query_context =
+      query_context_.has_value()
+          ? EditorQueryContext{query_context_->preset_query_id,
+                               query_context_->freeform_text}
+          : EditorQueryContext{preset_query_id, freeform_text};
+
   switch (GetEditorMode()) {
     case EditorMode::kRewrite:
-      mako_bubble_coordinator_.LoadEditorUI(profile_, MakoEditorMode::kRewrite,
-                                            preset_query_id, freeform_text);
+      mako_bubble_coordinator_.LoadEditorUI(
+          profile_, MakoEditorMode::kRewrite,
+          /*can_fallback_to_center_position=*/true,
+          active_query_context.preset_query_id,
+          active_query_context.freeform_text);
+      query_context_ = std::nullopt;
       metrics_recorder_->LogEditorState(EditorStates::kNativeRequest);
       break;
     case EditorMode::kWrite:
-      mako_bubble_coordinator_.LoadEditorUI(profile_, MakoEditorMode::kWrite,
-                                            preset_query_id, freeform_text);
+      mako_bubble_coordinator_.LoadEditorUI(
+          profile_, MakoEditorMode::kWrite,
+          /*can_fallback_to_center_position=*/true,
+          active_query_context.preset_query_id,
+          active_query_context.freeform_text);
+      query_context_ = std::nullopt;
       metrics_recorder_->LogEditorState(EditorStates::kNativeRequest);
       break;
     case EditorMode::kConsentNeeded:
-      mako_bubble_coordinator_.LoadConsentUI(profile_);
+      query_context_ = EditorQueryContext(/*preset_query_id=*/preset_query_id,
+                                          /*freeform_text=*/freeform_text);
+      if (chromeos::features::IsMagicBoostEnabled()) {
+        crosapi::CrosapiManager::Get()
+            ->crosapi_ash()
+            ->magic_boost_controller_ash()
+            ->ShowDisclaimerUi(
+                /*display_id=*/display::Screen::GetScreen()
+                    ->GetPrimaryDisplay()
+                    .id(),
+                /*action=*/
+                crosapi::mojom::MagicBoostController::TransitionAction::
+                    kShowEditorPanel,
+                /*opt_in_features=*/OptInFeatures::kOrcaAndHmr);
+      } else {
+        mako_bubble_coordinator_.LoadConsentUI(profile_);
+      }
       metrics_recorder_->LogEditorState(EditorStates::kConsentScreenImpression);
       break;
-    case EditorMode::kBlocked:
+    case EditorMode::kHardBlocked:
+    case EditorMode::kSoftBlocked:
       mako_bubble_coordinator_.CloseUI();
   }
 }
 
 void EditorMediator::CacheContext() {
+  GetTextFieldContextualInfo(
+      base::BindOnce(&EditorMediator::OnTextFieldContextualInfoChanged,
+                     weak_ptr_factory_.GetWeakPtr()));
+
   mako_bubble_coordinator_.CacheContextCaretBounds();
 
-  size_t selected_length = NonWhitespaceAndSymbolsLength(
-      surrounding_text_.text, surrounding_text_.selection_range);
+  size_t selected_length =
+      chromeos::editor_helpers::NonWhitespaceAndSymbolsLength(
+          surrounding_text_.text, surrounding_text_.selection_range);
   editor_context_.OnTextSelectionLengthChanged(selected_length);
 
-  if (editor_event_proxy_ != nullptr) {
-    editor_event_proxy_->OnSurroundingTextChanged(
+  if (IsServiceConnected()) {
+    service_connection_->editor_event_proxy()->OnSurroundingTextChanged(
         surrounding_text_.text, surrounding_text_.selection_range);
   }
 }
 
-void EditorMediator::FetchAndUpdateInputContext() {
+void EditorMediator::FetchAndUpdateInputContextForTesting() {
   GetTextFieldContextualInfo(
       base::BindOnce(&EditorMediator::OnTextFieldContextualInfoChanged,
                      weak_ptr_factory_.GetWeakPtr()));
+}
+
+EditorMediator::ServiceConnection::ServiceConnection(
+    Profile* profile,
+    EditorMediator* mediator,
+    EditorMetricsRecorder* metrics_recorder,
+    EditorServiceConnector* service_connector) {
+  mojo::PendingAssociatedRemote<orca::mojom::SystemActuator>
+      system_actuator_remote;
+  mojo::PendingAssociatedRemote<orca::mojom::TextQueryProvider>
+      text_query_provider_remote;
+  mojo::PendingAssociatedReceiver<orca::mojom::EditorClientConnector>
+      editor_client_connector_receiver;
+  mojo::PendingAssociatedReceiver<orca::mojom::EditorEventSink>
+      editor_event_sink_receiver;
+
+  system_actuator_ = std::make_unique<EditorSystemActuator>(
+      profile, system_actuator_remote.InitWithNewEndpointAndPassReceiver(),
+      mediator);
+  text_query_provider_ = std::make_unique<EditorTextQueryProvider>(
+      text_query_provider_remote.InitWithNewEndpointAndPassReceiver(),
+      metrics_recorder, std::make_unique<EditorTextQueryFromManta>(profile));
+  editor_client_connector_ = std::make_unique<EditorClientConnector>(
+      editor_client_connector_receiver.InitWithNewEndpointAndPassRemote());
+  editor_event_proxy_ = std::make_unique<EditorEventProxy>(
+      editor_event_sink_receiver.InitWithNewEndpointAndPassRemote());
+
+  service_connector->BindEditor(std::move(editor_client_connector_receiver),
+                                std::move(editor_event_sink_receiver),
+                                std::move(system_actuator_remote),
+                                std::move(text_query_provider_remote));
+}
+
+EditorMediator::ServiceConnection::~ServiceConnection() = default;
+
+EditorEventProxy* EditorMediator::ServiceConnection::editor_event_proxy() {
+  return editor_event_proxy_.get();
+}
+
+EditorClientConnector*
+EditorMediator::ServiceConnection::editor_client_connector() {
+  return editor_client_connector_.get();
+}
+
+EditorTextQueryProvider*
+EditorMediator::ServiceConnection::text_query_provider() {
+  return text_query_provider_.get();
+}
+
+EditorSystemActuator* EditorMediator::ServiceConnection::system_actuator() {
+  return system_actuator_.get();
 }
 
 void EditorMediator::OnTextFieldContextualInfoChanged(
@@ -247,8 +338,8 @@ void EditorMediator::OnTextFieldContextualInfoChanged(
   editor_context_.OnInputContextUpdated(
       IMEBridge::Get()->GetCurrentInputContext(), info);
 
-  if (system_actuator_ != nullptr) {
-    system_actuator_->OnInputContextUpdated(info.tab_url);
+  if (IsServiceConnected()) {
+    service_connection_->system_actuator()->OnInputContextUpdated(info.tab_url);
   }
 }
 
@@ -261,6 +352,10 @@ EditorMode EditorMediator::GetEditorMode() const {
     return *editor_mode_override_for_testing_;
   }
   return editor_switch_->GetEditorMode();
+}
+
+ConsentStatus EditorMediator::GetConsentStatus() const {
+  return consent_store_->GetConsentStatus();
 }
 
 EditorMetricsRecorder* EditorMediator::GetMetricsRecorder() {
@@ -283,14 +378,16 @@ void EditorMediator::Shutdown() {
   // second phase is the destruction of the eKeyedService itself.
   mako_bubble_coordinator_.CloseUI();
   profile_ = nullptr;
-  text_query_provider_ = nullptr;
   consent_store_ = nullptr;
   editor_switch_ = nullptr;
 }
 
 bool EditorMediator::SetTextQueryProviderResponseForTesting(
     const std::vector<std::string>& mock_results) {
-  text_query_provider_->SetProvider(
+  if (!IsServiceConnected()) {
+    return false;
+  }
+  service_connection_->text_query_provider()->SetProvider(
       std::make_unique<EditorTextQueryFromMemory>(mock_results));  // IN-TEST
   return true;
 }

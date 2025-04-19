@@ -12,6 +12,10 @@
 #include "base/notreached.h"
 #include "components/viz/common/resources/shared_image_format.h"
 
+#if BUILDFLAG(SKIA_USE_METAL)
+#include "third_party/skia/include/gpu/graphite/mtl/MtlGraphiteTypes.h"
+#endif
+
 namespace gpu {
 
 uint32_t SharedImageFormatToIOSurfacePixelFormat(viz::SharedImageFormat format,
@@ -121,7 +125,7 @@ unsigned int ToMTLPixelFormat(viz::SharedImageFormat format, int plane_index) {
 }
 
 #if BUILDFLAG(SKIA_USE_METAL)
-skgpu::graphite::MtlTextureInfo GraphiteMetalTextureInfo(
+skgpu::graphite::TextureInfo GraphiteMetalTextureInfo(
     viz::SharedImageFormat format,
     int plane_index,
     bool is_yuv_plane,
@@ -146,7 +150,7 @@ skgpu::graphite::MtlTextureInfo GraphiteMetalTextureInfo(
 #endif
   mtl_texture_info.fMipmapped =
       mipmapped ? skgpu::Mipmapped::kYes : skgpu::Mipmapped::kNo;
-  return mtl_texture_info;
+  return skgpu::graphite::TextureInfos::MakeMetal(mtl_texture_info);
 }
 #endif
 

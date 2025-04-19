@@ -43,7 +43,7 @@ import {getTemplate} from './settings_dropdown_v2.html.js';
  * - `value` is the underlying value for the option.
  * - `hidden` specifies whether to hide this option in the UI.
  */
-interface DropdownOption {
+export interface DropdownOption {
   label: string;
   value: number|string;
   hidden?: boolean;
@@ -92,11 +92,17 @@ export class SettingsDropdownV2Element extends SettingsDropdownV2ElementBase {
         value: undefined,
       },
 
-      /**
-       * Label for a11y purposes.
-       */
+      // A11y properties added since they are data-bound in HTML.
       ariaLabel: {
         type: String,
+        reflectToAttribute: false,
+        observer: 'onAriaLabelSet_',
+      },
+
+      ariaDescription: {
+        type: String,
+        reflectToAttribute: false,
+        observer: 'onAriaDescriptionSet_',
       },
     };
   }
@@ -133,8 +139,11 @@ export class SettingsDropdownV2Element extends SettingsDropdownV2ElementBase {
       this.updatePrefValueFromUserAction(this.value);
     }
 
-    this.dispatchEvent(new CustomEvent(
-        'change', {bubbles: true, composed: true, detail: this.value}));
+    this.dispatchEvent(new CustomEvent('change', {
+      bubbles: true,
+      composed: false,  // Event should not pass the shadow DOM boundary.
+      detail: this.value,
+    }));
   }
 
   /**
@@ -184,6 +193,34 @@ export class SettingsDropdownV2Element extends SettingsDropdownV2ElementBase {
    */
   private isSelectDisabled_(): boolean {
     return this.disabled || this.options.length === 0;
+  }
+
+  /**
+   * Manually remove the aria-label attribute from the host node since it is
+   * applied to the internal select. `reflectToAttribute=false` does not resolve
+   * this issue. This prevents the aria-label from being duplicated by
+   * screen readers.
+   */
+  private onAriaLabelSet_(): void {
+    const ariaLabel = this.getAttribute('aria-label');
+    this.removeAttribute('aria-label');
+    if (ariaLabel) {
+      this.ariaLabel = ariaLabel;
+    }
+  }
+
+  /**
+   * Manually remove the aria-description attribute from the host node since it
+   * is applied to the internal select. `reflectToAttribute=false` does not
+   * resolve this issue. This prevents the aria-description from being
+   * duplicated by screen readers.
+   */
+  private onAriaDescriptionSet_(): void {
+    const ariaDescription = this.getAttribute('aria-description');
+    this.removeAttribute('aria-description');
+    if (ariaDescription) {
+      this.ariaDescription = ariaDescription;
+    }
   }
 }
 

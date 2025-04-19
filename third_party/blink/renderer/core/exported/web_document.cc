@@ -31,6 +31,7 @@
 #include "third_party/blink/public/web/web_document.h"
 
 #include "base/memory/scoped_refptr.h"
+#include "net/storage_access_api/status.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "third_party/blink/public/common/loader/referrer_utils.h"
 #include "third_party/blink/public/platform/web_distillability.h"
@@ -159,8 +160,10 @@ net::SiteForCookies WebDocument::SiteForCookies() const {
   return ConstUnwrap<Document>()->SiteForCookies();
 }
 
-bool WebDocument::HasStorageAccess() const {
-  return ConstUnwrap<Document>()->GetExecutionContext()->HasStorageAccess();
+net::StorageAccessApiStatus WebDocument::StorageAccessApiStatus() const {
+  return ConstUnwrap<Document>()
+      ->GetExecutionContext()
+      ->GetStorageAccessApiStatus();
 }
 
 WebSecurityOrigin WebDocument::TopFrameOrigin() const {
@@ -275,8 +278,7 @@ void WebDocument::WatchCSSSelectors(const WebVector<WebString>& web_selectors) {
   if (!watch && web_selectors.empty())
     return;
   Vector<String> selectors;
-  selectors.Append(web_selectors.data(),
-                   base::checked_cast<wtf_size_t>(web_selectors.size()));
+  selectors.AppendSpan(base::span(web_selectors));
   CSSSelectorWatch::From(*document).WatchCSSSelectors(selectors);
 }
 

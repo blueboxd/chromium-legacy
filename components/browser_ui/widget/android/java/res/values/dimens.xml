@@ -30,6 +30,13 @@ found in the LICENSE file.
     <dimen name="promo_dialog_max_content_width">320dp</dimen>
     <dimen name="promo_dialog_min_scrollable_height">100dp</dimen>
 
+    <!-- IphDialog -->
+    <dimen name="iph_dialog_height">400dp</dimen>
+    <dimen name="iph_dialog_top_margin">24dp</dimen>
+    <dimen name="iph_dialog_text_top_margin_landscape">8dp</dimen>
+    <dimen name="iph_dialog_text_top_margin_portrait">16dp</dimen>
+    <dimen name="iph_dialog_text_side_margin">32dp</dimen>
+
     <!-- RadioButtonWithDescription -->
     <dimen name="radio_button_with_description_lateral_padding">16dp</dimen>
     <dimen name="radio_button_with_description_vertical_padding">10dp</dimen>
@@ -134,9 +141,9 @@ found in the LICENSE file.
     <dimen name="tile_view_padding">4dp</dimen>
     <dimen name="tile_view_padding_edge_portrait">12dp</dimen>
     <dimen name="tile_view_padding_landscape">16dp</dimen>
-    <dimen name="tile_view_title_margin_top_modern">61dp</dimen>
-    <dimen name="tile_view_padding_edge_tablet_polish">20dp</dimen>
-    <dimen name="tile_view_padding_interval_tablet_polish">16dp</dimen>
+    <dimen name="tile_view_title_margin_top_modern">63dp</dimen>
+    <dimen name="tile_view_padding_edge_tablet">20dp</dimen>
+    <dimen name="tile_view_padding_interval_tablet">16dp</dimen>
 
     <!-- Chips default measures -->
     <item name="chip_outline_alpha" format="float" type="dimen">0.8</item>
@@ -192,9 +199,21 @@ found in the LICENSE file.
     <dimen name="empty_state_text_width">341dp</dimen>
     <dimen name="empty_state_heading_padding_top">18dp</dimen>
     <dimen name="empty_state_subheading_padding_top">8dp</dimen>
+
     <!-- Surface Polish -->
     <dimen name="home_surface_background_color_elevation">@dimen/default_elevation_2</dimen>
     <item name="home_surface_search_box_background_alpha" format="float" type="dimen">0.15</item>
+    <dimen name="home_surface_ui_background_color_elevation">@dimen/default_elevation_0</dimen>
+    <dimen name="home_surface_ui_background_radius">24dp</dimen>
+    <dimen name="home_surface_search_box_background_radius">100dp</dimen>
+
+    <!-- Single Tab module -->
+    <dimen name="favicon_background_color_elevation">@dimen/default_elevation_0</dimen>
+    <dimen name="single_tab_module_tab_thumbnail_size_big">114dp</dimen>
+
+    <!-- Tab Resumption module -->
+    <dimen name="tab_resumption_module_icon_background_color_elevation">@dimen/default_elevation_1</dimen>
+    <dimen name="tab_resumption_module_tile_reason_background_color_elevation">@dimen/default_elevation_2</dimen>
 
     <!-- Preference switch -->
     <!-- Work around to adopt the material switch . See crbug/1248590. -->
@@ -208,5 +227,4 @@ found in the LICENSE file.
     <dimen name="loading_text_line_height">14dp</dimen>
     <dimen name="loading_text_line_spacing">6dp</dimen>
     <item type="fraction" format="fraction" name="loading_text_last_line_width_fraction">50%</item>
-
 </resources>

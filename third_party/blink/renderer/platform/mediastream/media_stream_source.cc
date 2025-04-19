@@ -316,6 +316,7 @@ void MediaStreamSource::ConsumeAudio(AudioBus* bus, int number_of_frames) {
                "MediaStreamSource::ConsumeAudio");
 
   DCHECK(requires_consumer_);
+
   base::AutoLock locker(audio_consumer_lock_);
   if (!audio_consumer_)
     return;

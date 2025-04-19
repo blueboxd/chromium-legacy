@@ -47,6 +47,7 @@
 #include "extensions/browser/app_window/native_app_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/base_window.h"
+#include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/color/color_provider.h"
 #include "ui/display/screen.h"
@@ -202,7 +203,8 @@ class SystemFilesAppDialogDelegate : public ash::SystemWebDialogDelegate {
   ~SystemFilesAppDialogDelegate() override = default;
 
   void SetModal(bool modal) {
-    set_dialog_modal_type(modal ? ui::MODAL_TYPE_WINDOW : ui::MODAL_TYPE_NONE);
+    set_dialog_modal_type(modal ? ui::mojom::ModalType::kWindow
+                                : ui::mojom::ModalType::kNone);
   }
 
   FrameKind GetWebDialogFrameKind() const override {
@@ -279,7 +281,6 @@ bool SelectFileDialogExtension::IsRunning(
 
 void SelectFileDialogExtension::ListenerDestroyed() {
   listener_ = nullptr;
-  params_ = nullptr;
   PendingDialog::GetInstance()->Remove(routing_id_);
 }
 
@@ -425,7 +426,6 @@ void SelectFileDialogExtension::SelectFileWithFileManagerParams(
     const base::FilePath& default_path,
     const FileTypeInfo* file_types,
     int file_type_index,
-    void* params,
     const Owner& owner,
     const std::string& search_query,
     bool show_android_picker_apps,
@@ -512,7 +512,6 @@ void SelectFileDialogExtension::SelectFileWithFileManagerParams(
   // Connect our listener to FileDialogFunction's per-tab callbacks.
   AddPending(routing_id);
 
-  params_ = params;
   routing_id_ = routing_id;
 }
 
@@ -524,7 +523,6 @@ void SelectFileDialogExtension::SelectFileImpl(
     int file_type_index,
     const base::FilePath::StringType& default_extension,
     gfx::NativeWindow owner_window,
-    void* params,
     const GURL* caller) {
   // |default_extension| is ignored.
   Owner owner;
@@ -533,7 +531,7 @@ void SelectFileDialogExtension::SelectFileImpl(
     owner.dialog_caller.emplace(*caller);
   }
   SelectFileWithFileManagerParams(type, title, default_path, file_types,
-                                  file_type_index, params, owner,
+                                  file_type_index, owner,
                                   /*search_query=*/"",
                                   /*show_android_picker_apps=*/false);
 }
@@ -602,13 +600,13 @@ void SelectFileDialogExtension::NotifyListener(
     return;
   switch (selection_type_) {
     case CANCEL:
-      listener_->FileSelectionCanceled(params_);
+      listener_->FileSelectionCanceled();
       break;
     case SINGLE_FILE:
-      listener_->FileSelected(selection_files[0], selection_index_, params_);
+      listener_->FileSelected(selection_files[0], selection_index_);
       break;
     case MULTIPLE_FILES:
-      listener_->MultiFilesSelected(selection_files, params_);
+      listener_->MultiFilesSelected(selection_files);
       break;
     default:
       NOTREACHED_NORETURN();

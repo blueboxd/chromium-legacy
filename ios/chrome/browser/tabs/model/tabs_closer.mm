@@ -4,12 +4,19 @@
 
 #import "ios/chrome/browser/tabs/model/tabs_closer.h"
 
+#import <optional>
+
 #import "base/check.h"
 #import "base/functional/bind.h"
 #import "base/functional/callback.h"
+#import "base/unguessable_token.h"
+#import "base/uuid.h"
+#import "components/saved_tab_groups/saved_tab_group.h"
+#import "components/saved_tab_groups/tab_group_sync_service.h"
 #import "components/sessions/core/session_id.h"
-#import "ios/chrome/browser/sessions/session_restoration_service.h"
-#import "ios/chrome/browser/sessions/session_restoration_service_factory.h"
+#import "ios/chrome/browser/saved_tab_groups/model/tab_group_sync_service_factory.h"
+#import "ios/chrome/browser/sessions/model/session_restoration_service.h"
+#import "ios/chrome/browser/sessions/model/session_restoration_service_factory.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/web_state_list/order_controller.h"
@@ -20,9 +27,17 @@
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list_delegate.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_opener.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/web/public/web_state.h"
 
 namespace {
+
+// Information about a tab group.
+struct TabGroupInfo {
+  const TabGroupRange group_range;
+  const tab_groups::TabGroupId tab_group_id;
+  const tab_groups::TabGroupVisualData visual_data;
+};
 
 // Moves WebStates in range [start; start+count) from `source` to `target`.
 void MoveWebStatesInRangeBetweenLists(WebStateList* source,
@@ -46,7 +61,7 @@ void MoveWebStatesInRangeBetweenLists(WebStateList* source,
       old_active_index, RemovingIndexes({.start = start, .count = count})));
 
   // Store the groups info.
-  std::vector<std::pair<TabGroupRange, tab_groups::TabGroupVisualData>> groups;
+  std::vector<TabGroupInfo> groups;
   for (const TabGroup* group : source->GetGroups()) {
     TabGroupRange range = group->range();
     // The group is not in the range of moving items, ignore it.
@@ -59,7 +74,11 @@ void MoveWebStatesInRangeBetweenLists(WebStateList* source,
     // range of closed items.
     CHECK(start <= range.range_begin() && range.range_end() <= end);
     range.Move(offset - start);
-    groups.push_back({range, group->visual_data()});
+    groups.push_back(TabGroupInfo{
+        .group_range = range,
+        .tab_group_id = group->tab_group_id(),
+        .visual_data = group->visual_data(),
+    });
   }
 
   for (int n = 0; n < count; ++n) {
@@ -77,8 +96,9 @@ void MoveWebStatesInRangeBetweenLists(WebStateList* source,
   }
 
   // Restore the groups info.
-  for (const auto& [range, visual_data] : groups) {
-    target->CreateGroup(range.AsSet(), visual_data);
+  for (const auto& group : groups) {
+    target->CreateGroup(group.group_range.AsSet(), group.visual_data,
+                        group.tab_group_id);
   }
 }
 
@@ -199,18 +219,6 @@ void TabsCloser::UndoStorage::Undo() {
 }
 
 void TabsCloser::UndoStorage::Drop() {
-  // Pretend that the original Browser's WebStateList is going through a
-  // batched operation. This is a fix for https://crbug.com/1521867 where
-  // RecentTabsMediator observes the TabRestoreService for modifications
-  // and updates its state each time it is notified by the service.
-  //
-  // Using a ScopedBatchOperation causes RecentTabsMediator to consider
-  // that a batch operation is in progress for one of the WebStateList
-  // it is observing and to avoid updating its state for each closed
-  // WebState.
-  WebStateList::ScopedBatchOperation original_browser_lock =
-      original_browser_->GetWebStateList()->StartBatchOperation();
-
   CloseAllWebStates(*temporary_browser_->GetWebStateList(),
                     WebStateList::CLOSE_USER_ACTION);
 
@@ -254,6 +262,23 @@ int TabsCloser::CloseTabs() {
       break;
   }
 
+  if (IsTabGroupSyncEnabled()) {
+    tab_groups::TabGroupSyncService* sync_service =
+        tab_groups::TabGroupSyncServiceFactory::GetForBrowserState(
+            browser_->GetBrowserState());
+    CHECK(sync_service);
+    for (const TabGroup* tab_group : web_state_list->GetGroups()) {
+      tab_groups::TabGroupId local_id = tab_group->tab_group_id();
+      std::optional<tab_groups::SavedTabGroup> saved_group =
+          sync_service->GetGroup(local_id);
+      if (saved_group) {
+        local_to_saved_group_ids_.insert(
+            std::make_pair(local_id, saved_group->saved_guid()));
+        sync_service->RemoveLocalTabGroupMapping(local_id);
+      }
+    }
+  }
+
   state_ = std::make_unique<UndoStorage>(browser_);
   state_->CloseTabs(start, count);
 
@@ -273,16 +298,54 @@ bool TabsCloser::CanUndoCloseTabs() const {
 
 int TabsCloser::UndoCloseTabs() {
   DCHECK(CanUndoCloseTabs());
-  const int result = state_->count();
-  state_->Undo();
-  state_.reset();
+  // Invalidate `state_` before performing the "undo" operation.
+  std::unique_ptr<UndoStorage> state = std::exchange(state_, {});
+  const int result = state->count();
+  if (!IsTabGroupSyncEnabled()) {
+    state->Undo();
+    return result;
+  }
+
+  tab_groups::TabGroupSyncService* sync_service =
+      tab_groups::TabGroupSyncServiceFactory::GetForBrowserState(
+          browser_->GetBrowserState());
+  CHECK(sync_service);
+  WebStateList* web_state_list = browser_->GetWebStateList();
+
+  auto pauser = sync_service->CreateScopedLocalObserverPauser();
+  std::set<const TabGroup*> tab_groups_to_delete;
+
+  state->Undo();
+
+  for (const TabGroup* tab_group : web_state_list->GetGroups()) {
+    tab_groups::LocalTabGroupID local_id = tab_group->tab_group_id();
+    auto iterator = local_to_saved_group_ids_.find(local_id);
+    CHECK(iterator != local_to_saved_group_ids_.end(),
+          base::NotFatalUntil::M132);
+
+    base::Uuid saved_id = iterator->second;
+    std::optional<tab_groups::SavedTabGroup> saved_group =
+        sync_service->GetGroup(saved_id);
+    if (!saved_group) {
+      // The group has probably been deleted remotely.
+      tab_groups_to_delete.insert(tab_group);
+      continue;
+    }
+    sync_service->ConnectLocalTabGroup(saved_id, local_id);
+  }
+  for (const TabGroup* tab_group : tab_groups_to_delete) {
+    web_state_list->DeleteGroup(tab_group);
+  }
+  local_to_saved_group_ids_.clear();
   return result;
 }
 
 int TabsCloser::ConfirmDeletion() {
   DCHECK(CanUndoCloseTabs());
-  const int result = state_->count();
-  state_->Drop();
-  state_.reset();
+  // Invalidate `state_` before performing the "drop" operation.
+  local_to_saved_group_ids_.clear();
+  std::unique_ptr<UndoStorage> state = std::exchange(state_, {});
+  const int result = state->count();
+  state->Drop();
   return result;
 }

@@ -308,6 +308,8 @@ class InspectorOverlayAgent::InspectorPageOverlayDelegate final
       return;
     }
 
+    CHECK_EQ(layer_->client(), this);
+
     overlay_->PaintOverlayPage();
 
     // The emulation scale factor is baked in the contents of the overlay layer,
@@ -318,10 +320,10 @@ class InspectorOverlayAgent::InspectorPageOverlayDelegate final
     // The overlay layer needs to be in the root property tree state (instead of
     // the default FrameOverlay state which is under the emulation scale
     // transform node) because the emulation scale is baked in the layer.
-    const auto* property_tree_state = &PropertyTreeState::Root();
+    auto property_tree_state = PropertyTreeState::Root();
     RecordForeignLayer(graphics_context, *client,
                        DisplayItem::kForeignLayerDevToolsOverlay, layer_,
-                       gfx::Point(), property_tree_state);
+                       gfx::Point(), &property_tree_state);
   }
 
   void Invalidate() override {
@@ -627,8 +629,8 @@ protocol::Response InspectorOverlayAgent::setShowScrollBottleneckRects(
     cc::LayerTreeDebugState debug_state = *widget->GetLayerTreeDebugState();
     debug_state.show_touch_event_handler_rects = show;
     debug_state.show_wheel_event_handler_rects = show;
-    debug_state.show_non_fast_scrollable_rects = show;
-    debug_state.show_main_thread_scrolling_reason_rects = show;
+    debug_state.show_main_thread_scroll_hit_test_rects = show;
+    debug_state.show_main_thread_scroll_repaint_rects = show;
     widget->SetLayerTreeDebugState(debug_state);
   }
   return protocol::Response::Success();
@@ -1047,11 +1049,11 @@ protocol::Response InspectorOverlayAgent::getHighlightObjectForTest(
   } else {
     config->color_format = ColorFormat::kHex;
   }
-  NodeHighlightTool tool(this, GetFrontend(), node, "" /* selector_list */,
-                         std::move(config));
+  NodeHighlightTool* tool = MakeGarbageCollected<NodeHighlightTool>(
+      this, GetFrontend(), node, "" /* selector_list */, std::move(config));
   node->GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
       DocumentUpdateReason::kInspector);
-  *result = tool.GetNodeInspectorHighlightAsJson(
+  *result = tool->GetNodeInspectorHighlightAsJson(
       true /* append_element_info */, include_distance.value_or(false));
   return protocol::Response::Success();
 }
@@ -1059,7 +1061,8 @@ protocol::Response InspectorOverlayAgent::getHighlightObjectForTest(
 protocol::Response InspectorOverlayAgent::getGridHighlightObjectsForTest(
     std::unique_ptr<protocol::Array<int>> node_ids,
     std::unique_ptr<protocol::DictionaryValue>* highlights) {
-  PersistentTool persistent_tool(this, GetFrontend());
+  PersistentTool* persistent_tool =
+      MakeGarbageCollected<PersistentTool>(this, GetFrontend());
 
   HeapHashMap<WeakMember<Node>, std::unique_ptr<InspectorGridHighlightConfig>>
       configs;
@@ -1072,8 +1075,8 @@ protocol::Response InspectorOverlayAgent::getGridHighlightObjectsForTest(
     configs.insert(node, std::make_unique<InspectorGridHighlightConfig>(
                              InspectorHighlight::DefaultGridConfig()));
   }
-  persistent_tool.SetGridConfigs(std::move(configs));
-  *highlights = persistent_tool.GetGridInspectorHighlightsAsJson();
+  persistent_tool->SetGridConfigs(std::move(configs));
+  *highlights = persistent_tool->GetGridInspectorHighlightsAsJson();
   return protocol::Response::Success();
 }
 
@@ -1089,8 +1092,9 @@ protocol::Response InspectorOverlayAgent::getSourceOrderHighlightObjectForTest(
   auto config = std::make_unique<InspectorSourceOrderConfig>(
       InspectorSourceOrderHighlight::DefaultConfig());
 
-  SourceOrderTool tool(this, GetFrontend(), node, std::move(config));
-  *result = tool.GetNodeInspectorSourceOrderHighlightAsJson();
+  SourceOrderTool* tool = MakeGarbageCollected<SourceOrderTool>(
+      this, GetFrontend(), node, std::move(config));
+  *result = tool->GetNodeInspectorSourceOrderHighlightAsJson();
   return protocol::Response::Success();
 }
 
@@ -1247,7 +1251,7 @@ void InspectorOverlayAgent::PaintOverlayPage() {
   // The emulation scale factor is backed in the overlay frame.
   gfx::Size viewport_size =
       gfx::ScaleToCeiledSize(visual_viewport.Size(), EmulationScaleFactor());
-  overlay_frame->SetPageZoomFactor(WindowToViewportScale());
+  overlay_frame->SetLayoutZoomFactor(WindowToViewportScale());
   overlay_frame->View()->Resize(viewport_size);
   OverlayMainFrame()->View()->UpdateAllLifecyclePhases(
       DocumentUpdateReason::kInspector);
@@ -1337,7 +1341,8 @@ void InspectorOverlayAgent::LoadOverlayPageResource() {
       GetFrame()->GetPage()->GetChromeClient(), *this);
   overlay_page_ = Page::CreateNonOrdinary(
       *overlay_chrome_client_,
-      *GetFrame()->GetFrameScheduler()->GetAgentGroupScheduler());
+      *GetFrame()->GetFrameScheduler()->GetAgentGroupScheduler(),
+      &GetFrame()->GetPage()->GetColorProviderColorMaps());
   overlay_host_ = MakeGarbageCollected<InspectorOverlayHost>(this);
 
   Settings& settings = GetFrame()->GetPage()->GetSettings();
@@ -1369,7 +1374,7 @@ void InspectorOverlayAgent::LoadOverlayPageResource() {
   auto* frame = MakeGarbageCollected<LocalFrame>(
       dummy_local_frame_client, *overlay_page_, nullptr, nullptr, nullptr,
       FrameInsertType::kInsertInConstructor, LocalFrameToken(), nullptr,
-      nullptr);
+      nullptr, mojo::NullRemote());
   frame->SetView(MakeGarbageCollected<LocalFrameView>(*frame));
   frame->Init(/*opener=*/nullptr, DocumentToken(), /*policy_container=*/nullptr,
               StorageKey(), /*document_ukm_source_id=*/ukm::kInvalidSourceId,
@@ -1377,13 +1382,14 @@ void InspectorOverlayAgent::LoadOverlayPageResource() {
   frame->View()->SetCanHaveScrollbars(false);
   frame->View()->SetBaseBackgroundColor(Color::kTransparent);
 
-  scoped_refptr<SharedBuffer> data = SharedBuffer::Create();
+  SegmentedBuffer data;
 
-  data->Append("<script>", static_cast<size_t>(8));
-  data->Append(UncompressResourceAsBinary(IDR_INSPECT_TOOL_MAIN_JS));
-  data->Append("</script>", static_cast<size_t>(9));
+  data.Append("<script>", static_cast<size_t>(8));
+  data.Append(UncompressResourceAsBinary(IDR_INSPECT_TOOL_MAIN_JS));
+  data.Append("</script>", static_cast<size_t>(9));
 
-  frame->ForceSynchronousDocumentInstall(AtomicString("text/html"), data);
+  frame->ForceSynchronousDocumentInstall(AtomicString("text/html"),
+                                         std::move(data));
 
   v8::Isolate* isolate = ToIsolate(frame);
   ScriptState* script_state = ToScriptStateForMainWorld(frame);
@@ -1440,8 +1446,8 @@ void InspectorOverlayAgent::Reset(
 
   // The zoom factor in the overlay frame already has been multiplied by the
   // window to viewport scale (aka device scale factor), so cancel it.
-  reset_data->setDouble("pageZoomFactor",
-                        GetFrame()->PageZoomFactor() / WindowToViewportScale());
+  reset_data->setDouble("pageZoomFactor", GetFrame()->LayoutZoomFactor() /
+                                              WindowToViewportScale());
 
   // TODO(szager): These values have been zero since root layer scrolling
   // landed. Probably they should be derived from

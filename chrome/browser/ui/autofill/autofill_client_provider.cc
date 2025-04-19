@@ -13,6 +13,7 @@
 
 #if BUILDFLAG(IS_ANDROID)
 #include "base/android/jni_android.h"
+#include "chrome/browser/autofill/android/android_autofill_availability_status.h"
 #include "chrome/browser/autofill/android/jni_headers/AutofillClientProviderUtils_jni.h"
 #include "chrome/browser/keyboard_accessory/android/manual_filling_controller_impl.h"
 #include "components/android_autofill/browser/android_autofill_client.h"
@@ -21,22 +22,62 @@
 namespace autofill {
 namespace {
 
-bool UsesVirtualViewStructureForAutofill(const PrefService* prefs) {
 #if BUILDFLAG(IS_ANDROID)
-  if (!base::FeatureList::IsEnabled(
-          features::kAutofillVirtualViewStructureAndroid)) {
-    return false;
+AndroidAutofillAvailabilityStatus GetAndroidAutofillAvailabilityStatus(
+    PrefService& prefs) {
+  return static_cast<AndroidAutofillAvailabilityStatus>(
+      Java_AutofillClientProviderUtils_getAndroidAutofillFrameworkAvailability(
+          base::android::AttachCurrentThread(), prefs.GetJavaObject()));
+}
+#endif
+
+#if BUILDFLAG(IS_ANDROID)
+void RecordAvailabilityStatus(AndroidAutofillAvailabilityStatus availability) {
+  base::UmaHistogramEnumeration("Autofill.AndroidAutofillAvailabilityStatus",
+                                availability);
+}
+
+// Counts how often the Chrome pref is reset because an platform autofill
+// isn't allowed or doesn't fulfill all preconditions.
+void RecordWhetherAndroidPrefResets(PrefService& prefs,
+                                    bool uses_platform_autofill) {
+  const bool will_reset_pref =
+      prefs.GetBoolean(prefs::kAutofillUsingVirtualViewStructure) &&
+      !uses_platform_autofill;
+  base::UmaHistogramBoolean("Autofill.ResetAutofillPrefToChrome",
+                            will_reset_pref);
+}
+#endif  // BUILDFLAG(IS_ANDROID)
+
+bool UsesVirtualViewStructureForAutofill(PrefService& prefs) {
+#if BUILDFLAG(IS_ANDROID)
+  const AndroidAutofillAvailabilityStatus availability =
+      GetAndroidAutofillAvailabilityStatus(prefs);
+  RecordAvailabilityStatus(availability);
+  switch (availability) {
+    case AndroidAutofillAvailabilityStatus::kAvailable:
+      return true;
+    case AndroidAutofillAvailabilityStatus::kSettingTurnedOff:
+    case AndroidAutofillAvailabilityStatus::kNotAllowedByPolicy:
+      return false;
+    case AndroidAutofillAvailabilityStatus::kAndroidVersionTooOld:
+    case AndroidAutofillAvailabilityStatus::kAndroidAutofillManagerNotAvailable:
+    case AndroidAutofillAvailabilityStatus::kAndroidAutofillNotSupported:
+    case AndroidAutofillAvailabilityStatus::kUnknownAndroidAutofillService:
+      return features::
+                 kAutofillVirtualViewStructureAndroidSkipsCompatibilityCheck
+                     .Get() ==
+             features::VirtualViewStructureSkipChecks::kSkipAllChecks;
+    case AndroidAutofillAvailabilityStatus::kAndroidAutofillServiceIsGoogle:
+      return features::
+                     kAutofillVirtualViewStructureAndroidSkipsCompatibilityCheck
+                         .Get() ==
+                 features::VirtualViewStructureSkipChecks::kSkipAllChecks ||
+             features::
+                     kAutofillVirtualViewStructureAndroidSkipsCompatibilityCheck
+                         .Get() ==
+                 features::VirtualViewStructureSkipChecks::kOnlySkipAwGCheck;
   }
-  if (!prefs->GetBoolean(prefs::kAutofillThirdPartyPasswordManagersAllowed)) {
-    return false;
-  }
-  if (!prefs->GetBoolean(prefs::kAutofillUsingVirtualViewStructure)) {
-    return false;
-  }
-  return features::kAutofillVirtualViewStructureAndroidSkipsCompatibilityCheck
-             .Get() ||
-         Java_AutofillClientProviderUtils_isAllowedToUseAndroidAutofillFramework(
-             base::android::AttachCurrentThread());
 #else
   return false;
 #endif  // BUILDFLAG(IS_ANDROID)
@@ -45,8 +86,9 @@ bool UsesVirtualViewStructureForAutofill(const PrefService* prefs) {
 }  // namespace
 
 AutofillClientProvider::AutofillClientProvider(PrefService* prefs)
-    : uses_platform_autofill_(UsesVirtualViewStructureForAutofill(prefs)) {
+    : uses_platform_autofill_(UsesVirtualViewStructureForAutofill(*prefs)) {
 #if BUILDFLAG(IS_ANDROID)
+  RecordWhetherAndroidPrefResets(*prefs, uses_platform_autofill_);
   // Ensure the pref is reset if platform autofill is restricted.
   prefs->SetBoolean(prefs::kAutofillUsingVirtualViewStructure,
                     uses_platform_autofill_);

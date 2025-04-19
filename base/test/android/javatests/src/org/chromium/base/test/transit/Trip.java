@@ -4,9 +4,9 @@
 
 package org.chromium.base.test.transit;
 
-import org.chromium.base.test.transit.ConditionWaiter.ConditionWait;
 import org.chromium.base.test.transit.ConditionalState.Phase;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -17,21 +17,30 @@ class Trip extends Transition {
     private final Station mOrigin;
     private final Station mDestination;
 
+    /**
+     * Constructor. Trip is instantiated to move from one {@link Station} into another.
+     *
+     * @param origin the {@link Station} to depart from.
+     * @param destination the {@link Station} to travel to.
+     * @param options the {@link TransitionOptions}.
+     * @param trigger the action that triggers the transition. e.g. clicking a View.
+     */
     Trip(Station origin, Station destination, TransitionOptions options, Trigger trigger) {
-        super(options, List.of(origin), List.of(destination), trigger);
+        super(
+                options,
+                getStationPlusFacilitiesWithPhase(origin, Phase.ACTIVE),
+                getStationPlusFacilitiesWithPhase(destination, Phase.NEW),
+                trigger);
         mOrigin = origin;
         mDestination = destination;
     }
 
-    @Override
-    protected List<ConditionWait> createWaits() {
-        Elements originElements =
-                mOrigin.getElementsIncludingFacilitiesWithPhase(Phase.TRANSITIONING_FROM);
-        Elements destinationElements =
-                mDestination.getElementsIncludingFacilitiesWithPhase(Phase.TRANSITIONING_TO);
-
-        return calculateConditionWaits(
-                originElements, destinationElements, getTransitionConditions());
+    private static List<? extends ConditionalState> getStationPlusFacilitiesWithPhase(
+            Station station, @Phase int phase) {
+        List<ConditionalState> allConditionalStates = new ArrayList<>();
+        allConditionalStates.add(station);
+        allConditionalStates.addAll(station.getFacilitiesWithPhase(phase));
+        return allConditionalStates;
     }
 
     @Override

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ash/webui/vc_background_ui/vc_background_ui.h"
 
 #include <string>
@@ -115,32 +120,25 @@ void VcBackgroundUI::BindInterface(
 
 void VcBackgroundUI::AddBooleans(content::WebUIDataSource* source) {
   const bool common_sea_pen_requirements =
-      sea_pen_provider_->IsEligibleForSeaPen();
+      sea_pen_provider_->IsEligibleForSeaPen() &&
+      ::ash::features::IsVcBackgroundReplaceEnabled() &&
+      manta::features::IsMantaServiceEnabled();
   source->AddBoolean("isSeaPenEnabled",
-                     ::ash::features::IsVcBackgroundReplaceEnabled() &&
-                         manta::features::IsMantaServiceEnabled() &&
                          common_sea_pen_requirements);
   source->AddBoolean("isSeaPenTextInputEnabled",
-                     ::ash::features::IsVcBackgroundReplaceEnabled() &&
+                     common_sea_pen_requirements &&
                          ::ash::features::IsSeaPenTextInputEnabled() &&
-                         manta::features::IsMantaServiceEnabled() &&
-                         common_sea_pen_requirements);
-  source->AddBoolean("isSeaPenUINextEnabled",
-                     ::ash::features::IsVcBackgroundReplaceEnabled() &&
-                         ::ash::features::IsSeaPenUINextEnabled() &&
-                         manta::features::IsMantaServiceEnabled() &&
-                         common_sea_pen_requirements);
+                         sea_pen_provider_->IsEligibleForSeaPenTextInput());
   source->AddBoolean("isSeaPenUseExptTemplateEnabled",
-                     ::ash::features::IsSeaPenUseExptTemplateEnabled() &&
-                         manta::features::IsMantaServiceEnabled() &&
-                         common_sea_pen_requirements);
+                     common_sea_pen_requirements &&
+                         ::ash::features::IsSeaPenUseExptTemplateEnabled());
   source->AddBoolean("isSeaPenEnterpriseEnabled",
-                     ::ash::features::IsVcBackgroundReplaceEnabled() &&
-                         ::ash::features::IsSeaPenEnterpriseEnabled() &&
-                         manta::features::IsMantaServiceEnabled() &&
-                         common_sea_pen_requirements);
+                     common_sea_pen_requirements &&
+                         ::ash::features::IsSeaPenEnterpriseEnabled());
   source->AddBoolean("isLacrosEnabled",
                      ::crosapi::lacros_startup_state::IsLacrosEnabled());
+  source->AddBoolean("isVcResizeThumbnailEnabled",
+                     ::ash::features::IsVcResizeThumbnailEnabled());
 }
 
 WEB_UI_CONTROLLER_TYPE_IMPL(VcBackgroundUI)

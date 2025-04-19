@@ -20,7 +20,7 @@
 #import "components/signin/public/identity_manager/account_info.h"
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
 #import "components/strings/grit/components_strings.h"
-#import "components/sync/base/model_type.h"
+#import "components/sync/base/data_type.h"
 #import "components/sync/base/user_selectable_type.h"
 #import "components/sync/service/local_data_description.h"
 #import "components/sync/service/sync_service.h"
@@ -229,10 +229,7 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
       break;
     case SyncSettingsAccountState::kSignedIn:
       BOOL would_clear_data_on_signout =
-          _authenticationService->HasPrimaryIdentityManaged(
-              signin::ConsentLevel::kSignin) &&
-          base::FeatureList::IsEnabled(
-              kClearDeviceDataOnSignOutForManagedUsers);
+          _authenticationService->ShouldClearDataForSignedInPeriodOnSignOut();
       [model addSectionWithIdentifier:SyncDataTypeSectionIdentifier];
       TableViewTextHeaderFooterItem* headerItem =
           [[TableViewTextHeaderFooterItem alloc]
@@ -246,7 +243,7 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
       TableViewTextHeaderFooterItem* footerItem =
           [[TableViewTextHeaderFooterItem alloc]
               initWithType:TypesListHeaderOrFooterType];
-      footerItem.subtitle = headerItem.text =
+      footerItem.subtitle =
           would_clear_data_on_signout
               ? l10n_util::GetNSString(
                     IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_TYPES_LIST_DESCRIPTION_FOR_MANAGED_ACCOUNT)
@@ -742,18 +739,18 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
   }
 
   // Types that are disabled by policy will be ignored.
-  syncer::ModelTypeSet requestedTypes;
+  syncer::DataTypeSet requestedTypes;
   for (syncer::UserSelectableType userSelectableType : kAccountSwitchItems) {
     if (![self isManagedSyncSettingsDataType:userSelectableType]) {
       requestedTypes.Put(
-          syncer::UserSelectableTypeToCanonicalModelType(userSelectableType));
+          syncer::UserSelectableTypeToCanonicalDataType(userSelectableType));
     }
   }
 
   __weak __typeof__(self) weakSelf = self;
   _syncService->GetLocalDataDescriptions(
       requestedTypes,
-      base::BindOnce(^(std::map<syncer::ModelType, syncer::LocalDataDescription>
+      base::BindOnce(^(std::map<syncer::DataType, syncer::LocalDataDescription>
                            description) {
         [weakSelf localDataDescriptionsFetchedWithDescription:description
                                                     firstLoad:firstLoad];
@@ -762,7 +759,7 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
 
 // Saves the local data description, and update the batch upload section.
 - (void)localDataDescriptionsFetchedWithDescription:
-            (std::map<syncer::ModelType, syncer::LocalDataDescription>)
+            (std::map<syncer::DataType, syncer::LocalDataDescription>)
                 description
                                           firstLoad:(BOOL)firstLoad {
   self.localPasswordsToUpload = 0;
@@ -959,23 +956,8 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
 #pragma mark - Properties
 
 - (BOOL)disabledBecauseOfSyncError {
-  switch (_syncService->GetUserActionableError()) {
-    case syncer::SyncService::UserActionableError::kGenericUnrecoverableError:
-      return YES;
-    case syncer::SyncService::UserActionableError::kSignInNeedsUpdate:
-    case syncer::SyncService::UserActionableError::kNone:
-    case syncer::SyncService::UserActionableError::kNeedsPassphrase:
-    case syncer::SyncService::UserActionableError::
-        kNeedsTrustedVaultKeyForPasswords:
-    case syncer::SyncService::UserActionableError::
-        kNeedsTrustedVaultKeyForEverything:
-    case syncer::SyncService::UserActionableError::
-        kTrustedVaultRecoverabilityDegradedForPasswords:
-    case syncer::SyncService::UserActionableError::
-        kTrustedVaultRecoverabilityDegradedForEverything:
-      return NO;
-  }
-  NOTREACHED_IN_MIGRATION();
+  return _syncService->GetDisableReasons().Has(
+      syncer::SyncService::DISABLE_REASON_UNRECOVERABLE_ERROR);
 }
 
 - (BOOL)shouldSyncDataItemEnabled {
@@ -1478,7 +1460,7 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
 }
 
 // Returns the sync error item type or std::nullopt if the item
-// is not an error.
+// is not an actionable error.
 - (std::optional<SyncSettingsItemType>)syncErrorItemType {
   if (self.isSyncDisabledByAdministrator) {
     return SyncDisabledByAdministratorErrorItemType;
@@ -1498,7 +1480,6 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
     case syncer::SyncService::UserActionableError::
         kTrustedVaultRecoverabilityDegradedForEverything:
       return SyncTrustedVaultRecoverabilityDegradedErrorItemType;
-    case syncer::SyncService::UserActionableError::kGenericUnrecoverableError:
     case syncer::SyncService::UserActionableError::kNone:
       return std::nullopt;
   }

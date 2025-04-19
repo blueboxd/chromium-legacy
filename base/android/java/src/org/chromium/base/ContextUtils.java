@@ -12,7 +12,6 @@ import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.res.AssetManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Process;
@@ -137,23 +136,6 @@ public class ContextUtils {
     }
 
     /**
-     * In most cases, {@link Context#getAssets()} can be used directly. Modified resources are
-     * used downstream and are set up on application startup, and this method provides access to
-     * regular assets before that initialization is complete.
-     *
-     * This method should ONLY be used for accessing files within the assets folder.
-     *
-     * @return Application assets.
-     */
-    public static AssetManager getApplicationAssets() {
-        Context context = getApplicationContext();
-        while (context instanceof ContextWrapper) {
-            context = ((ContextWrapper) context).getBaseContext();
-        }
-        return context.getAssets();
-    }
-
-    /**
      * @return Whether the process is isolated.
      */
     @SuppressWarnings("NewApi")
@@ -173,9 +155,21 @@ public class ContextUtils {
         }
     }
 
-    /** @return The name of the current process. E.g. "org.chromium.chrome:privileged_process0". */
+    /**
+     * @return The name of the current process. E.g. "org.chromium.chrome:privileged_process0".
+     */
     public static String getProcessName() {
-        return ApiCompatibilityUtils.getProcessName();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            return Application.getProcessName();
+        }
+        try {
+            Class<?> activityThreadClazz = Class.forName("android.app.ActivityThread");
+            return (String) activityThreadClazz.getMethod("currentProcessName").invoke(null);
+        } catch (Exception e) {
+            // If fallback logic is ever needed, refer to:
+            // https://chromium-review.googlesource.com/c/chromium/src/+/905563/1
+            throw JavaUtils.throwUnchecked(e);
+        }
     }
 
     /**

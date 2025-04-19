@@ -53,7 +53,10 @@ class OSSettingsLockScreenBrowserTestBase
   // The account ID of the user set up by this fixture.
   const AccountId& GetAccountId();
 
+  void AuthenticateUsingPassword();
+
  protected:
+  mojo::Remote<mojom::LockScreenSettings> lock_screen_settings_remote_;
   std::unique_ptr<LoggedInUserMixin> logged_in_user_mixin_;
   raw_ptr<CryptohomeMixin> cryptohome_{nullptr};
   OSSettingsBrowserTestMixin os_settings_mixin_{&mixin_host_};
@@ -65,7 +68,6 @@ class OSSettingsLockScreenBrowserTestBase
       const std::string& relative_url = "");
 
   mojo::Remote<mojom::OSSettingsDriver> os_settings_driver_remote_;
-  mojo::Remote<mojom::LockScreenSettings> lock_screen_settings_remote_;
 };
 
 }  // namespace ash::settings

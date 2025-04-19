@@ -65,7 +65,6 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator : public SurfaceObserver {
 
   SurfaceAggregator(SurfaceManager* manager,
                     DisplayResourceProvider* provider,
-                    bool aggregate_only_damaged,
                     bool needs_surface_damage_rect_list,
                     ExtraPassForReadbackOption extra_pass_option =
                         ExtraPassForReadbackOption::kNone,
@@ -173,9 +172,6 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator : public SurfaceObserver {
       const std::optional<gfx::Rect> added_clip_rect,
       const std::optional<gfx::Rect> dest_root_target_clip_rect,
       AggregatedRenderPass* dest_pass,
-      bool ignore_undamaged,
-      gfx::Rect* damage_rect_in_quad_space,
-      bool* damage_rect_in_quad_space_valid,
       const MaskFilterInfoExt& mask_filter_info_pair);
 
   void EmitSurfaceContent(
@@ -187,9 +183,6 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator : public SurfaceObserver {
       const std::optional<gfx::Rect> added_clip_rect,
       const std::optional<gfx::Rect> dest_root_target_clip_rect,
       AggregatedRenderPass* dest_pass,
-      bool ignore_undamaged,
-      gfx::Rect* damage_rect_in_quad_space,
-      bool* damage_rect_in_quad_space_valid,
       const MaskFilterInfoExt& mask_filter_info_pair);
 
   void EmitDefaultBackgroundColorQuad(
@@ -219,7 +212,6 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator : public SurfaceObserver {
       const gfx::Transform& target_transform,
       const std::optional<gfx::Rect> clip_rect,
       const std::optional<gfx::Rect> dest_root_target_clip_rect,
-      const Surface* surface,
       const MaskFilterInfoExt& mask_filter_info_pair);
 
   // Recursively walks through the render pass and updates the
@@ -262,12 +254,6 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator : public SurfaceObserver {
                            const gfx::Rect& damage_from_parent,
                            PrewalkResult& result);
 
-  // Processes a new resolved CompositorFrame. This declares all of the
-  // transferable resources plus what resources that are used in the
-  // render_pass_list to the resource provider. Also repopulates render pass and
-  // quad data in |resolved_frame| based on the active CompositorFrame.
-  void ProcessResolvedFrame(ResolvedFrameData& resolved_frame);
-
   void CopyUndrawnSurfaces(PrewalkResult* prewalk);
   void CopyPasses(ResolvedFrameData& resolved_frame);
   void AddColorConversionPass();
@@ -292,7 +278,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator : public SurfaceObserver {
 
   void MarkAndPropagateCopyRequestPasses(ResolvedPassData& resolved_pass);
 
-  bool CheckFrameSinksChanged(const Surface* surface);
+  bool CheckFrameSinksChanged(const SurfaceId& surface_id);
 
   // This function adds a damage rect to |surface_damage_rect_list_|. The
   // surface damage rect comes from |resolved_frame| if provided, otherwise
@@ -324,7 +310,6 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator : public SurfaceObserver {
       const CompositorRenderPass& source_pass,
       AggregatedRenderPass* dest_pass,
       const gfx::Transform& pass_to_root_target_transform,
-      const Surface* surface,
       size_t* overlay_damage_index);
 
   bool IsRootSurface(const Surface* surface) const;
@@ -356,8 +341,6 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator : public SurfaceObserver {
 
   const raw_ptr<SurfaceManager> manager_;
   const raw_ptr<DisplayResourceProvider> provider_;
-
-  const bool aggregate_only_damaged_;
 
   // If true, per-surface damage rect list will be produced.
   const bool needs_surface_damage_rect_list_;

@@ -49,8 +49,9 @@ public interface OmniboxActionFactory {
     /**
      * Construct a new OmniboxAnswerAction.
      *
-     * @param hint the title displayed on the chip
-     * @param accessibilityHint the text to be announced to the accessibility-enabled users
+     * @param nativeInstance Pointer to native instance of the object.
+     * @param hint Text that should be displayed in the associated action chip.
+     * @param accessibilityHint Text for screen reader to read when focusing action chip
      */
     @CalledByNative
     @NonNull

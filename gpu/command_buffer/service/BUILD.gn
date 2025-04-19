@@ -48,6 +48,8 @@ target(link_target_type, "service_sources") {
     "gpu_switches.h",
     "memory_tracking.cc",
     "memory_tracking.h",
+    "retaining_one_shot_timer_holder.cc",
+    "retaining_one_shot_timer_holder.h",
     "scheduler.cc",
     "scheduler.h",
     "scheduler_dfs.cc",
@@ -57,6 +59,8 @@ target(link_target_type, "service_sources") {
     "sequence_id.h",
     "sync_point_manager.cc",
     "sync_point_manager.h",
+    "task_graph.cc",
+    "task_graph.h",
     "texture_base.cc",
     "texture_base.h",
     "transfer_buffer_manager.cc",
@@ -159,8 +163,6 @@ target(link_target_type, "gles2_sources") {
     "gles2_cmd_decoder_passthrough_doers.cc",
     "gles2_cmd_decoder_passthrough_handlers.cc",
     "gles2_cmd_decoder_passthrough_handlers_autogen.cc",
-    "gles2_cmd_srgb_converter.cc",
-    "gles2_cmd_srgb_converter.h",
     "gles2_cmd_validation.cc",
     "gles2_cmd_validation.h",
     "gles2_cmd_validation_autogen.h",
@@ -240,6 +242,12 @@ target(link_target_type, "gles2_sources") {
     "shared_context_state.h",
     "shared_image/compound_image_backing.cc",
     "shared_image/compound_image_backing.h",
+    "shared_image/copy_image_plane.cc",
+    "shared_image/copy_image_plane.h",
+    "shared_image/egl_image_backing.cc",
+    "shared_image/egl_image_backing.h",
+    "shared_image/egl_image_backing_factory.cc",
+    "shared_image/egl_image_backing_factory.h",
     "shared_image/gl_common_image_backing_factory.cc",
     "shared_image/gl_common_image_backing_factory.h",
     "shared_image/gl_repack_utils.cc",
@@ -310,15 +318,6 @@ target(link_target_type, "gles2_sources") {
     sources += [
       "abstract_texture_android.cc",
       "abstract_texture_android.h",
-    ]
-  }
-
-  if (use_egl) {
-    sources += [
-      "shared_image/egl_image_backing.cc",
-      "shared_image/egl_image_backing.h",
-      "shared_image/egl_image_backing_factory.cc",
-      "shared_image/egl_image_backing_factory.h",
     ]
   }
 
@@ -529,6 +528,8 @@ target(link_target_type, "gles2_sources") {
     sources += [
       "dawn_context_provider.cc",
       "dawn_context_provider.h",
+      "shared_image/dawn_shared_texture_holder.cc",
+      "shared_image/dawn_shared_texture_holder.h",
       "shared_image/skia_graphite_dawn_image_representation.cc",
       "shared_image/skia_graphite_dawn_image_representation.h",
     ]

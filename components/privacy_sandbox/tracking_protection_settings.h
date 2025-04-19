@@ -9,6 +9,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/scoped_observation.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/privacy_sandbox/tracking_protection_onboarding.h"
 #include "components/privacy_sandbox/tracking_protection_prefs.h"
@@ -49,10 +50,6 @@ class TrackingProtectionSettings
   // (i.e. without mitigations).
   bool AreAllThirdPartyCookiesBlocked() const;
 
-  // Returns whether 3PCs are allowed in spite of 3PCD due to an enterprise
-  // policy.
-  bool AreThirdPartyCookiesAllowedByEnterprise() const;
-
   // Returns whether anti-fingerprinting is enabled.
   bool IsFingerprintingProtectionEnabled() const;
 
@@ -82,6 +79,9 @@ class TrackingProtectionSettings
 
  private:
   void OnEnterpriseControlForPrefsChanged();
+  void MaybeInitializeIppPref();
+  void MigrateUserBypassExceptions(ContentSettingsType from,
+                                   ContentSettingsType to);
 
   // Callbacks for pref observation.
   void OnDoNotTrackEnabledPrefChanged();

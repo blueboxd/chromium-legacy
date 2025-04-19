@@ -24,6 +24,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/core/css/css_gradient_value.h"
 
 #include <algorithm>
@@ -192,10 +197,12 @@ scoped_refptr<Image> CSSGradientValue::GetImage(
 }
 
 // Should only ever be called for deprecated gradients.
-static inline bool CompareStops(const CSSGradientColorStop& a,
-                                const CSSGradientColorStop& b) {
-  double a_val = a.offset_->GetDoubleValue();
-  double b_val = b.offset_->GetDoubleValue();
+static inline bool CompareStops(
+    const CSSGradientColorStop& a,
+    const CSSGradientColorStop& b,
+    const CSSToLengthConversionData& conversion_data) {
+  double a_val = a.offset_->ComputeNumber(conversion_data);
+  double b_val = b.offset_->ComputeNumber(conversion_data);
 
   return a_val < b_val;
 }
@@ -366,27 +373,34 @@ static Color ResolveStopColor(const CSSValue& stop_color,
       ResolveColorValue(stop_color, document.GetTextLinkColors(), color_scheme,
                         document.GetColorProviderForPainting(color_scheme));
   return style_stop_color.Resolve(
-      style.VisitedDependentColor(GetCSSPropertyColor()),
-      style.UsedColorScheme());
+      style.VisitedDependentColor(GetCSSPropertyColor()), color_scheme);
 }
 
-void CSSGradientValue::AddDeprecatedStops(GradientDesc& desc,
-                                          const Document& document,
-                                          const ComputedStyle& style) const {
+void CSSGradientValue::AddDeprecatedStops(
+    GradientDesc& desc,
+    const Document& document,
+    const ComputedStyle& style,
+    const CSSToLengthConversionData& conversion_data) const {
   DCHECK(gradient_type_ == kCSSDeprecatedLinearGradient ||
          gradient_type_ == kCSSDeprecatedRadialGradient);
 
   // Performance here is probably not important because this is for deprecated
   // gradients.
   auto stops_sorted = stops_;
-  std::stable_sort(stops_sorted.begin(), stops_sorted.end(), CompareStops);
+  auto comparator = [&conversion_data](const CSSGradientColorStop& a,
+                                       const CSSGradientColorStop& b) {
+    return CompareStops(a, b, conversion_data);
+  };
+  std::stable_sort(stops_sorted.begin(), stops_sorted.end(), comparator);
 
   for (const auto& stop : stops_sorted) {
     float offset;
     if (stop.offset_->IsPercentage()) {
-      offset = stop.offset_->GetFloatValue() / 100;
+      offset = stop.offset_->ComputePercentage(conversion_data) / 100;
     } else {
-      offset = stop.offset_->GetFloatValue();
+      // Deprecated gradients are only parsed with either percentage or number.
+      DCHECK(stop.offset_->IsNumber());
+      offset = stop.offset_->ComputeNumber(conversion_data);
     }
 
     const Color color = ResolveStopColor(*stop.color_, document, style);
@@ -396,66 +410,19 @@ void CSSGradientValue::AddDeprecatedStops(GradientDesc& desc,
 
 // NOTE: The difference between this and ResolveStopColor() is that
 // ResolveStopColor() returns a Color, whereas this returns a CSSValue.
-// https://www.w3.org/TR/css-images-3/#image-values says we should
-// _compute_ any <color>, so we do that, including within color-mix().
-//
-// We do not currently resolve color-contrast() and probably a few others.
-//
-// TODO(sesse): Could we avoid having all of this machinery, and instead
-// rely on regular color resolving?
-static const CSSValue* GetComputedStopColor(const CSSValue* color,
+static const CSSValue* GetComputedStopColor(const CSSValue& color,
                                             const ComputedStyle& style,
                                             bool allow_visited_style,
                                             CSSValuePhase value_phase) {
-  CSSValueID value_id = CSSValueID::kInvalid;
-  if (color && color->IsIdentifierValue()) {
-    value_id = To<CSSIdentifierValue>(*color).GetValueID();
-  } else if (const CSSColorMixValue* color_mix_value =
-                 DynamicTo<CSSColorMixValue>(color)) {
-    const CSSValue* color1 = GetComputedStopColor(
-        &color_mix_value->Color1(), style, allow_visited_style, value_phase);
-    const CSSValue* color2 = GetComputedStopColor(
-        &color_mix_value->Color2(), style, allow_visited_style, value_phase);
-    if (IsA<CSSColor>(color1) && IsA<CSSColor>(color2)) {
-      // We can resolve this color fully.
-      StyleColor style_color1(To<CSSColor>(color1)->Value());
-      StyleColor style_color2(To<CSSColor>(color2)->Value());
-      return CSSColor::Create(StyleColor::UnresolvedColorMix(
-                                  color_mix_value, style_color1, style_color2)
-                                  .Resolve(Color()));
-    } else {
-      return MakeGarbageCollected<CSSColorMixValue>(
-          color1, color2, color_mix_value->Percentage1(),
-          color_mix_value->Percentage2(),
-          color_mix_value->ColorInterpolationSpace(),
-          color_mix_value->HueInterpolationMethod());
-    }
-  }
-
-  switch (value_id) {
-    case CSSValueID::kInvalid:
-    case CSSValueID::kInternalQuirkInherit:
-    case CSSValueID::kWebkitLink:
-    case CSSValueID::kWebkitActivelink:
-    case CSSValueID::kWebkitFocusRingColor:
-      return color;
-    case CSSValueID::kCurrentcolor:
-      if (allow_visited_style) {
-        return CSSColor::Create(
-            style.VisitedDependentColor(GetCSSPropertyColor()));
-      } else {
-        return ComputedStyleUtils::CurrentColorOrValidColor(style, StyleColor(),
-                                                            value_phase);
-      }
-
-    default:
-      // TODO(crbug.com/929098) Need to pass an appropriate color scheme here.
-      // TODO(crbug.com/1231644): Need to pass an appropriate color provider
-      // here.
-      return CSSColor::Create(StyleColor::ColorFromKeyword(
-          value_id, mojom::blink::ColorScheme::kLight,
-          /*color_provider=*/nullptr));
-  }
+  // TODO(crbug.com/40779801): Need to pass an appropriate color provider here.
+  const mojom::blink::ColorScheme color_scheme = style.UsedColorScheme();
+  const StyleColor style_stop_color =
+      ResolveColorValue(color, TextLinkColors(), color_scheme, nullptr);
+  const Color current_color =
+      style.VisitedDependentColor(GetCSSPropertyColor());
+  return ComputedStyleUtils::ValueForColor(
+      style_stop_color, style, allow_visited_style ? &current_color : nullptr,
+      value_phase);
 }
 
 void CSSGradientValue::AddComputedStops(
@@ -464,8 +431,10 @@ void CSSGradientValue::AddComputedStops(
     const HeapVector<CSSGradientColorStop, 2>& stops,
     CSSValuePhase value_phase) {
   for (CSSGradientColorStop stop : stops) {
-    stop.color_ = GetComputedStopColor(stop.color_, style, allow_visited_style,
-                                       value_phase);
+    if (!stop.IsHint()) {
+      stop.color_ = GetComputedStopColor(*stop.color_, style,
+                                         allow_visited_style, value_phase);
+    }
     AddStop(stop);
   }
 }
@@ -637,7 +606,7 @@ void CSSGradientValue::AddStops(
     const ComputedStyle& style) const {
   if (gradient_type_ == kCSSDeprecatedLinearGradient ||
       gradient_type_ == kCSSDeprecatedRadialGradient) {
-    AddDeprecatedStops(desc, document, style);
+    AddDeprecatedStops(desc, document, style, conversion_data);
     return;
   }
 
@@ -673,7 +642,8 @@ void CSSGradientValue::AddStops(
 
     if (stop.offset_) {
       if (stop.offset_->IsPercentage()) {
-        stops[i].offset = stop.offset_->GetFloatValue() / 100;
+        stops[i].offset =
+            stop.offset_->ComputePercentage(conversion_data) / 100;
       } else if (stop.offset_->IsLength() ||
                  stop.offset_->IsCalculatedPercentageWithLength()) {
         float length;
@@ -859,13 +829,13 @@ static float PositionFromValue(const CSSValue* value,
   const CSSPrimitiveValue* primitive_value = To<CSSPrimitiveValue>(value);
 
   if (primitive_value->IsNumber()) {
-    return origin +
-           sign * primitive_value->GetFloatValue() * conversion_data.Zoom();
+    return origin + sign * primitive_value->ComputeNumber(conversion_data) *
+                        conversion_data.Zoom();
   }
 
   if (primitive_value->IsPercentage()) {
-    return origin +
-           sign * primitive_value->GetFloatValue() / 100.f * edge_distance;
+    return origin + sign * primitive_value->ComputePercentage(conversion_data) /
+                        100.f * edge_distance;
   }
 
   if (primitive_value->IsCalculatedPercentageWithLength()) {
@@ -1362,17 +1332,17 @@ void CSSGradientValue::AppendCSSTextForDeprecatedColorStops(
   for (unsigned i = 0; i < stops_.size(); i++) {
     const CSSGradientColorStop& stop = stops_[i];
     result.Append(", ");
-    if (stop.offset_->GetDoubleValue() == 0) {
+    if (stop.offset_->IsZero() == CSSPrimitiveValue::BoolStatus::kTrue) {
       result.Append("from(");
       result.Append(stop.color_->CssText());
       result.Append(')');
-    } else if (stop.offset_->GetDoubleValue() == 1) {
+    } else if (stop.offset_->IsOne() == CSSPrimitiveValue::BoolStatus::kTrue) {
       result.Append("to(");
       result.Append(stop.color_->CssText());
       result.Append(')');
     } else {
       result.Append("color-stop(");
-      result.AppendNumber(stop.offset_->GetDoubleValue());
+      result.Append(stop.offset_->CssText());
       result.Append(", ");
       result.Append(stop.color_->CssText());
       result.Append(')');
@@ -1517,9 +1487,10 @@ float ResolveRadius(const CSSPrimitiveValue* radius,
                     float* width_or_height = nullptr) {
   float result = 0;
   if (radius->IsNumber()) {
-    result = radius->GetFloatValue() * conversion_data.Zoom();
+    result = radius->ComputeNumber(conversion_data) * conversion_data.Zoom();
   } else if (width_or_height && radius->IsPercentage()) {
-    result = *width_or_height * radius->GetFloatValue() / 100;
+    result =
+        *width_or_height * radius->ComputePercentage(conversion_data) / 100;
   } else {
     result = radius->ComputeLength<float>(conversion_data);
   }
@@ -1948,7 +1919,7 @@ CSSConstantGradientValue* CSSConstantGradientValue::ComputedCSSValue(
     bool allow_visited_style,
     CSSValuePhase value_phase) const {
   return MakeGarbageCollected<CSSConstantGradientValue>(
-      GetComputedStopColor(color_, style, allow_visited_style, value_phase));
+      GetComputedStopColor(*color_, style, allow_visited_style, value_phase));
 }
 
 }  // namespace blink::cssvalue

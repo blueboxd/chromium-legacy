@@ -16,13 +16,14 @@ import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.sync.SyncServiceFactory;
 import org.chromium.chrome.browser.tab_resumption.TabResumptionModuleMetricsUtils.ModuleNotShownReason;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
+import org.chromium.components.sync.UserSelectableType;
 
 /** Utility class for the decision funnel on showing or hiding the tab resumption module. */
 public class TabResumptionModuleEnablement {
 
     static class LocalTab {
         static boolean isFeatureEnabled() {
-            return HomeModulesMetricsUtils.HOME_MODULES_COMBINE_TABS.getValue();
+            return HomeModulesMetricsUtils.TAB_RESUMPTION_COMBINE_TABS.getValue();
         }
 
         static boolean isAllowedByConfig() {
@@ -52,18 +53,29 @@ public class TabResumptionModuleEnablement {
         static boolean isSignedIn(Profile profile) {
             return IdentityServicesProvider.get()
                     .getIdentityManager(profile)
-                    .hasPrimaryAccount(ConsentLevel.SYNC);
+                    .hasPrimaryAccount(ConsentLevel.SIGNIN);
         }
 
         static boolean isSyncEnabled(Profile profile) {
-            return SyncServiceFactory.getForProfile(profile).hasKeepEverythingSynced();
+            return SyncServiceFactory.getForProfile(profile)
+                    .getSelectedTypes()
+                    .contains(UserSelectableType.TABS);
+        }
+
+        static boolean isV2Enabled() {
+            return ChromeFeatureList.isEnabled(ChromeFeatureList.VISITED_URL_RANKING_SERVICE)
+                    && TabResumptionModuleUtils.TAB_RESUMPTION_V2.getValue();
+        }
+
+        static boolean isV2EnabledWithLocalTabs() {
+            return isV2Enabled()
+                    && TabResumptionModuleUtils.TAB_RESUMPTION_FETCH_LOCAL_TABS_BACKEND.getValue();
         }
 
         static boolean shouldMakeProvider(Profile profile) {
             return isFeatureEnabled()
                     && isAllowedByConfig()
-                    && isSignedIn(profile)
-                    && isSyncEnabled(profile);
+                    && (isV2Enabled() || (isSignedIn(profile) && isSyncEnabled(profile)));
         }
     }
 
@@ -89,6 +101,9 @@ public class TabResumptionModuleEnablement {
         if (!SyncDerived.isFeatureEnabled()) return ModuleNotShownReason.FEATURE_DISABLED;
 
         if (!SyncDerived.isAllowedByConfig()) return ModuleNotShownReason.FEATURE_DISABLED;
+
+        // V2 can serve Local Tab suggestions, so it doesn't need sign in or sync.
+        if (SyncDerived.isV2Enabled()) return null;
 
         if (!SyncDerived.isSignedIn(profile)) return ModuleNotShownReason.NOT_SIGNED_IN;
 

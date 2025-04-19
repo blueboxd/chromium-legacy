@@ -18,6 +18,13 @@ declare_args() {
   is_java_debug = is_debug || incremental_install
 }
 
+# These two combinations could theoretically be made to work, but they are
+# not useful and so not worth the effort.
+assert(!(is_java_debug && is_official_build),
+       "Cannot have is_official_build && is_java_debug")
+assert(!(incremental_install && !is_java_debug),
+       "Cannot have incremental_install without is_java_debug")
+
 # Toolchain used to create native libraries for robolectric_binary() targets.
 robolectric_toolchain = "//build/toolchain/android:robolectric_$host_cpu"
 
@@ -123,23 +130,19 @@ if (is_android || is_chromeos) {
 
   if (!defined(default_android_ndk_root)) {
     default_android_ndk_root = "//third_party/android_toolchain/ndk"
-    if (current_cpu == "riscv64") {
-      # Today (2023-08-30) only the canary Android NDK supports RISC-V64.
-      default_android_ndk_root = "//third_party/android_toolchain_canary/ndk"
-    }
-    default_android_ndk_version = "r26b"
+    default_android_ndk_version = "r27"
   } else {
     assert(defined(default_android_ndk_version))
   }
 
   public_android_sdk_root = "//third_party/android_sdk/public"
   public_android_sdk_build_tools =
-      "${public_android_sdk_root}/build-tools/34.0.0"
-  public_android_sdk_version = "34"
-  if (android_sdk_release == "u") {
+      "${public_android_sdk_root}/build-tools/35.0.0"
+  public_android_sdk_version = "35"
+  if (android_sdk_release == "v") {
     default_android_sdk_root = public_android_sdk_root
     default_android_sdk_version = public_android_sdk_version
-    default_android_sdk_build_tools_version = "34.0.0"
+    default_android_sdk_build_tools_version = "35.0.0"
     public_android_sdk = true
   }
 
@@ -152,7 +155,7 @@ if (is_android || is_chromeos) {
     # Purposefully repeated so that downstream can change
     # default_android_sdk_root without changing lint version.
     default_lint_android_sdk_root = public_android_sdk_root
-    default_lint_android_sdk_version = 34
+    default_lint_android_sdk_version = 35
   }
 
   if (!defined(default_extras_android_sdk_root)) {

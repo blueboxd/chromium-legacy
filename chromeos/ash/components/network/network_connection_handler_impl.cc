@@ -413,8 +413,7 @@ void NetworkConnectionHandlerImpl::ConnectToNetwork(
           // If device is carrier locked, it could be unlocked only by the
           // carrier, so notification to the user is different from the case
           // where where SIM is locked using PIN/PUK code.
-          if (features::IsCellularCarrierLockEnabled() &&
-              cellular_device->IsSimCarrierLocked()) {
+          if (cellular_device->IsSimCarrierLocked()) {
             InvokeConnectErrorCallback(service_path, std::move(error_callback),
                                        kErrorSimCarrierLocked);
             return;
@@ -1103,6 +1102,13 @@ void NetworkConnectionHandlerImpl::CheckPendingRequest(
     return;
   }
   if (NetworkState::StateIsConnected(connection_state)) {
+    if (network->type() == shill::kTypeWifi) {
+      base::Value::Dict config_properties;
+      config_properties.Set(shill::kGuidProperty, network->guid());
+      configuration_handler_->SetShillProperties(
+          service_path, config_properties, base::DoNothing(),
+          network_handler::ErrorCallback());
+    }
     if (!request->profile_path.empty()) {
       // If a profile path was specified, set it on a successful connection.
       configuration_handler_->SetNetworkProfile(

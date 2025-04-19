@@ -9,6 +9,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/not_fatal_until.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
@@ -26,6 +27,7 @@
 #include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -191,7 +193,7 @@ EditorViewController::CreateComboboxForField(const EditorField& field,
   std::unique_ptr<ValidatingCombobox> combobox =
       std::make_unique<ValidatingCombobox>(GetComboboxModelForType(field.type),
                                            std::move(delegate));
-  combobox->SetAccessibleName(field.label);
+  combobox->GetViewAccessibility().SetName(field.label);
 
   std::u16string initial_value = GetInitialValueForType(field.type);
   if (!initial_value.empty())
@@ -354,7 +356,7 @@ views::View* EditorViewController::CreateInputField(views::View* editor_view,
           std::make_unique<ValidatingTextfield>(std::move(validation_delegate));
       // Set the initial value and validity state.
       text_field->SetText(initial_value);
-      text_field->SetAccessibleName(field.label);
+      text_field->GetViewAccessibility().SetName(field.label);
       *valid = IsEditingExistingItem() &&
                delegate_ptr->IsValidTextfield(text_field.get(), &error_message);
       if (IsEditingExistingItem())
@@ -446,7 +448,7 @@ void EditorViewController::AddOrUpdateErrorMessageForField(
     autofill::FieldType type,
     const std::u16string& error_message) {
   const auto& label_view_it = error_labels_.find(type);
-  DCHECK(label_view_it != error_labels_.end());
+  CHECK(label_view_it != error_labels_.end(), base::NotFatalUntil::M130);
 
   if (error_message.empty()) {
     label_view_it->second->RemoveAllChildViews();

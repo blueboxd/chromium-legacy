@@ -29,6 +29,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "components/background_sync/background_sync_permission_context.h"
 #include "components/embedder_support/permission_context_utils.h"
+#include "components/permissions/contexts/automatic_fullscreen_permission_context.h"
 #include "components/permissions/contexts/keyboard_lock_permission_context.h"
 #include "components/permissions/contexts/local_fonts_permission_context.h"
 #include "components/permissions/contexts/pointer_lock_permission_context.h"
@@ -36,6 +37,7 @@
 #include "components/permissions/contexts/window_management_permission_context.h"
 #include "components/permissions/permission_manager.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "services/device/public/cpp/device_features.h"
 #include "services/device/public/cpp/geolocation/buildflags.h"
 
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
@@ -68,9 +70,11 @@ permissions::PermissionManager::PermissionContextMap CreatePermissionContexts(
       std::make_unique<GeolocationPermissionContextDelegate>(profile);
 #endif  // BUILDFLAG(IS_ANDROID)
 #if BUILDFLAG(OS_LEVEL_GEOLOCATION_PERMISSION_SUPPORTED)
-  delegates.geolocation_system_permission_manager =
-      device::GeolocationSystemPermissionManager::GetInstance();
-  DCHECK(delegates.geolocation_system_permission_manager);
+  if (features::IsOsLevelGeolocationPermissionSupportEnabled()) {
+    delegates.geolocation_system_permission_manager =
+        device::GeolocationSystemPermissionManager::GetInstance();
+    DCHECK(delegates.geolocation_system_permission_manager);
+  }
 #endif
   delegates.media_stream_device_enumerator =
       MediaCaptureDevicesDispatcher::GetInstance();
@@ -88,6 +92,12 @@ permissions::PermissionManager::PermissionContextMap CreatePermissionContexts(
   // Add additional Chrome specific permission contexts. Please add a comment
   // when adding new contexts here explaining why it can't be shared with other
   // Content embedders by adding it to CreateDefaultPermissionContexts().
+
+  // TODO(crbug.com/40941384): Still in development for Android so we don't
+  // support it on WebLayer yet.
+  permission_contexts[ContentSettingsType::AUTOMATIC_FULLSCREEN] =
+      std::make_unique<permissions::AutomaticFullscreenPermissionContext>(
+          profile);
 
   // Depends on Chrome-only DownloadRequestLimiter.
   permission_contexts[ContentSettingsType::BACKGROUND_FETCH] =
@@ -195,6 +205,9 @@ PermissionManagerFactory::PermissionManagerFactory()
               // TODO(crbug.com/40257657): Check if this service is needed in
               // Guest mode.
               .WithGuest(ProfileSelection::kOwnInstance)
+              // TODO(crbug.com/41488885): Check if this service is needed for
+              // Ash Internals.
+              .WithAshInternals(ProfileSelection::kOwnInstance)
               .Build()) {
   DependsOn(HostContentSettingsMapFactory::GetInstance());
 }

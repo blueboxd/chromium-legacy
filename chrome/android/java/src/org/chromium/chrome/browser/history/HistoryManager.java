@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Build;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -36,7 +37,7 @@ import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
-import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
+import org.chromium.chrome.browser.settings.SettingsLauncherFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
@@ -247,6 +248,21 @@ public class HistoryManager
         mToolbar.initializeSearchView(this, R.string.history_manager_search, R.id.search_menu_id);
         mToolbar.setInfoMenuItem(R.id.info_menu_id);
         mToolbar.updateInfoMenuItem(shouldShowInfoButton(), shouldShowInfoHeaderIfAvailable());
+
+        // Make the toolbar focusable, so that focus transitions can move out from descendents of
+        // the toolbar to the neighboring delete button, and automatically to other items on the
+        // HistoryPage such as the list of HistoryItem(s).
+        mToolbar.setFocusable(true);
+        mToolbar.setNextFocusForwardId(R.id.clear_browsing_data_button);
+        mToolbar.setOnKeyListener(
+                (View view, int keyCode, KeyEvent event) -> {
+                    if ((keyCode == KeyEvent.KEYCODE_ENTER || keyCode == KeyEvent.KEYCODE_DPAD_DOWN)
+                            && event.getAction() == KeyEvent.ACTION_UP) {
+                        mToolbar.getMenu().performIdentifierAction(R.id.search_menu_id, 0);
+                        return true;
+                    }
+                    return false;
+                });
 
         // 4. Width constrain the SelectableListLayout.
         mSelectableListLayout.configureWideDisplayStyle();
@@ -572,7 +588,7 @@ public class HistoryManager
     public void onClearBrowsingDataClicked() {
         mUmaRecorder.recordClearBrowsingData(mIsIncognito);
         // Opens the clear browsing data preference.
-        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+        SettingsLauncher settingsLauncher = SettingsLauncherFactory.createSettingsLauncher();
         settingsLauncher.launchSettingsActivity(
                 mActivity, SettingsLauncher.SettingsFragment.CLEAR_BROWSING_DATA_ADVANCED_PAGE);
     }

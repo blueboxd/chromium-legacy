@@ -7,11 +7,13 @@
 
 #include <string>
 
+#include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/quick_answers/ui/quick_answers_view.h"
 #include "chrome/browser/ui/quick_answers/ui/rich_answers_view.h"
 #include "chrome/browser/ui/quick_answers/ui/user_consent_view.h"
+#include "chromeos/components/quick_answers/quick_answers_model.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/view_tracker.h"
 #include "ui/views/view_utils.h"
@@ -19,7 +21,6 @@
 #include "ui/views/widget/widget.h"
 
 class Profile;
-class QuickAnswersView;
 class QuickAnswersControllerImpl;
 
 namespace chromeos {
@@ -29,13 +30,21 @@ class ReadWriteCardsUiController;
 namespace quick_answers {
 class RichAnswersView;
 class UserConsentView;
-struct QuickAnswer;
 }  // namespace quick_answers
 
 // A controller to show/hide and handle interactions for quick
 // answers view.
 class QuickAnswersUiController {
  public:
+  using FakeOnRetryLabelPressedCallback = base::RepeatingCallback<void()>;
+
+  // TODO(b/335701090): extract those browser actions to
+  // QuickAnswersBrowserDelegate.
+  using FakeOpenSettingsCallback = base::RepeatingCallback<void()>;
+  using FakeOpenFeedbackPageCallback =
+      base::RepeatingCallback<void(const std::string&)>;
+  using FakeOpenWebUrlCallback = base::RepeatingCallback<void(const GURL&)>;
+
   explicit QuickAnswersUiController(QuickAnswersControllerImpl* controller);
   ~QuickAnswersUiController();
 
@@ -48,6 +57,11 @@ class QuickAnswersUiController {
                               const std::string& query,
                               bool is_internal);
 
+  void CreateQuickAnswersViewForPixelTest(
+      Profile* profile,
+      const std::string& query,
+      quick_answers::QuickAnswersView::Params params);
+
   // Returns true if there was a QuickAnswersView to close.
   bool CloseQuickAnswersView();
 
@@ -59,9 +73,11 @@ class QuickAnswersUiController {
   void OnGoogleSearchLabelPressed();
 
   void OnRetryLabelPressed();
+  void SetFakeOnRetryLabelPressedCallbackForTesting(
+      FakeOnRetryLabelPressedCallback fake_on_retry_label_pressed_callback);
 
   void RenderQuickAnswersViewWithResult(
-      const quick_answers::QuickAnswer& quick_answer);
+      const quick_answers::StructuredResult& structured_result);
 
   void SetActiveQuery(Profile* profile, const std::string& query);
 
@@ -77,15 +93,19 @@ class QuickAnswersUiController {
   // Closes the user consent view.
   void CloseUserConsentView();
 
-  // Invoked when user clicks the Dogfood button on Quick-Answers related views.
-  void OnDogfoodButtonPressed();
-
   // Invoked when user clicks the settings button on Quick-Answers related
   // views.
   void OnSettingsButtonPressed();
+  void SetFakeOpenSettingsCallbackForTesting(
+      FakeOpenSettingsCallback fake_open_settings_callback);
 
   // Invoked when user clicks the report query button on Quick Answers view.
   void OnReportQueryButtonPressed();
+  void SetFakeOpenFeedbackPageCallbackForTesting(
+      FakeOpenFeedbackPageCallback fake_open_feedback_page_callback);
+
+  void SetFakeOpenWebUrlForTesting(
+      FakeOpenWebUrlCallback fake_open_web_url_callback);
 
   // Handle consent result from user consent view.
   void OnUserConsentResult(bool consented);
@@ -120,6 +140,15 @@ class QuickAnswersUiController {
   }
 
  private:
+  void OpenSettings();
+  void OpenFeedbackPage(const std::string& feedback_template);
+  void OpenWebUrl(const GURL& url);
+
+  void CreateQuickAnswersViewInternal(
+      Profile* profile,
+      const std::string& query,
+      quick_answers::QuickAnswersView::Params params);
+
   // Constructs/resets the Quick Answers rich card view.
   void CreateRichAnswersView();
 
@@ -133,6 +162,11 @@ class QuickAnswersUiController {
 
   raw_ptr<Profile> profile_ = nullptr;
   std::string query_;
+
+  FakeOnRetryLabelPressedCallback fake_on_retry_label_pressed_callback_;
+  FakeOpenSettingsCallback fake_open_settings_callback_;
+  FakeOpenFeedbackPageCallback fake_open_feedback_page_callback_;
+  FakeOpenWebUrlCallback fake_open_web_url_callback_;
 
   base::WeakPtrFactory<QuickAnswersUiController> weak_factory_{this};
 };

@@ -6,6 +6,7 @@
 
 #include "base/check.h"
 #include "base/functional/bind.h"
+#include "base/not_fatal_until.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "build/build_config.h"
@@ -17,7 +18,7 @@
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/chrome_password_reuse_detection_manager_client.h"
-#include "chrome/browser/ssl/security_state_tab_helper.h"
+#include "chrome/browser/ssl/chrome_security_state_tab_helper.h"
 #include "chrome/browser/subresource_filter/chrome_content_subresource_filter_web_contents_helper_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
@@ -148,7 +149,8 @@ void PresentationReceiverWindowView::Init() {
   const auto accelerators = GetAcceleratorList();
   const auto fullscreen_accelerator = base::ranges::find(
       accelerators, IDC_FULLSCREEN, &AcceleratorMapping::command_id);
-  DCHECK(fullscreen_accelerator != accelerators.end());
+  CHECK(fullscreen_accelerator != accelerators.end(),
+        base::NotFatalUntil::M130);
   fullscreen_accelerator_ = ui::Accelerator(fullscreen_accelerator->keycode,
                                             fullscreen_accelerator->modifiers);
 #endif
@@ -165,7 +167,7 @@ void PresentationReceiverWindowView::Init() {
   // ContentSubresourceFilterThrottleManager has it as a dependency.
   infobars::ContentInfoBarManager::CreateForWebContents(web_contents);
 
-  SecurityStateTabHelper::CreateForWebContents(web_contents);
+  ChromeSecurityStateTabHelper::CreateForWebContents(web_contents);
   ChromeTranslateClient::CreateForWebContents(web_contents);
   autofill::ChromeAutofillClient::CreateForWebContents(web_contents);
   ChromePasswordManagerClient::CreateForWebContents(web_contents);
@@ -179,8 +181,7 @@ void PresentationReceiverWindowView::Init() {
   blocked_content::PopupBlockerTabHelper::CreateForWebContents(web_contents);
   content_settings::PageSpecificContentSettings::CreateForWebContents(
       web_contents,
-      std::make_unique<chrome::PageSpecificContentSettingsDelegate>(
-          web_contents));
+      std::make_unique<PageSpecificContentSettingsDelegate>(web_contents));
 
   auto* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
@@ -348,7 +349,8 @@ bool PresentationReceiverWindowView::IsExclusiveAccessBubbleDisplayed() const {
 
 void PresentationReceiverWindowView::OnExclusiveAccessUserInput() {}
 
-content::WebContents* PresentationReceiverWindowView::GetActiveWebContents() {
+content::WebContents*
+PresentationReceiverWindowView::GetWebContentsForExclusiveAccess() {
   return delegate_->web_contents();
 }
 

@@ -57,7 +57,7 @@
 #include "base/apple/scoped_cftyperef.h"
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/browser/shell_integration.h"
-#include "chrome/browser/web_applications/app_shim_registry_mac.h"
+#include "chrome/browser/web_applications/os_integration/mac/app_shim_registry.h"
 #include "net/base/filename_util.h"
 #import "skia/ext/skia_utils_mac.h"
 #endif
@@ -281,7 +281,15 @@ bool OsIntegrationTestOverrideImpl::SimulateDeleteShortcutsByUser(
 #if BUILDFLAG(IS_MAC)
 bool OsIntegrationTestOverrideImpl::DeleteChromeAppsDir() {
   if (chrome_apps_folder_.IsValid()) {
-    return chrome_apps_folder_.Delete();
+    bool success = chrome_apps_folder_.Delete();
+    if (!success) {
+      // Creating shortcuts kicks of an asynchronous task to eventually update
+      // the icon of `chrome_apps_folder_`. If that task happens to run during
+      // the above Delete() call deletion might fail. If that is the case, a
+      // single retry should be enough to be able to delete the folder anyway.
+      success = chrome_apps_folder_.Delete();
+    }
+    return success;
   } else {
     return false;
   }
@@ -485,12 +493,11 @@ bool OsIntegrationTestOverrideImpl::IsShortcutCreated(
     const webapps::AppId& app_id,
     const std::string& app_name) {
 #if BUILDFLAG(IS_WIN)
-  base::FilePath desktop_shortcut_path =
-      GetShortcutPath(profile, desktop(), app_id, app_name);
+  // A shortcut, at minimum, is in the start menu / 'application menu'
+  // directory on Windows.
   base::FilePath application_menu_shortcut_path =
       GetShortcutPath(profile, application_menu(), app_id, app_name);
-  return (base::PathExists(desktop_shortcut_path) &&
-          base::PathExists(application_menu_shortcut_path));
+  return base::PathExists(application_menu_shortcut_path);
 #elif BUILDFLAG(IS_MAC)
   base::FilePath app_shortcut_path =
       GetShortcutPath(profile, chrome_apps_folder(), app_id, app_name);
@@ -818,7 +825,7 @@ OsIntegrationTestOverrideImpl::~OsIntegrationTestOverrideImpl() {
   EXPECT_TRUE(!quick_launch_.IsValid() || quick_launch_.Delete());
   EXPECT_TRUE(!startup_.IsValid() || startup_.Delete());
 #elif BUILDFLAG(IS_MAC)
-  EXPECT_TRUE(!chrome_apps_folder_.IsValid() || chrome_apps_folder_.Delete());
+  EXPECT_TRUE(!chrome_apps_folder_.IsValid() || DeleteChromeAppsDir());
 #elif BUILDFLAG(IS_LINUX)
   EXPECT_TRUE(!desktop_.IsValid() || desktop_.Delete());
   EXPECT_TRUE(!startup_.IsValid() || startup_.Delete());

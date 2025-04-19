@@ -22,6 +22,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 
 #include "base/auto_reset.h"
@@ -644,6 +649,14 @@ SVGUseElement* SVGElement::GeneratingUseElement() const {
     return DynamicTo<SVGUseElement>(root->host());
   }
   return nullptr;
+}
+
+SVGResourceTarget& SVGElement::EnsureResourceTarget() {
+  return EnsureSVGRareData()->EnsureResourceTarget(*this);
+}
+
+bool SVGElement::IsResourceTarget() const {
+  return HasSVGRareData() && SvgRareData()->HasResourceTarget();
 }
 
 void SVGElement::SetCorrespondingElement(SVGElement* corresponding_element) {

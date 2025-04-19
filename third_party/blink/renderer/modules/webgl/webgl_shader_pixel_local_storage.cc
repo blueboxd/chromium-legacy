@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/modules/webgl/webgl_shader_pixel_local_storage.h"
 
 #include <array>
@@ -127,26 +132,7 @@ void WebGLShaderPixelLocalStorage::framebufferTexturePixelLocalStorageWEBGL(
 
 void WebGLShaderPixelLocalStorage::framebufferPixelLocalClearValuefvWEBGL(
     GLint plane,
-    NADCTypedArrayView<GLfloat> value,
-    GLuint src_offset) {
-  WebGLExtensionScopedContext scoped(this);
-  if (scoped.IsLost()) {
-    return;
-  }
-  constexpr static char function_name[] =
-      "framebufferPixelLocalClearValuefvWEBGL";
-  WebGLRenderingContextBase* context = scoped.Context();
-  if (!ValidatePLSClearCommand(context, function_name, plane, value.Size(),
-                               src_offset)) {
-    return;
-  }
-  context->ContextGL()->FramebufferPixelLocalClearValuefvANGLE(
-      plane, value.Data() + src_offset);
-}
-
-void WebGLShaderPixelLocalStorage::framebufferPixelLocalClearValuefvWEBGL(
-    GLint plane,
-    const Vector<GLfloat>& value,
+    base::span<const GLfloat> value,
     GLuint src_offset) {
   WebGLExtensionScopedContext scoped(this);
   if (scoped.IsLost()) {
@@ -165,26 +151,7 @@ void WebGLShaderPixelLocalStorage::framebufferPixelLocalClearValuefvWEBGL(
 
 void WebGLShaderPixelLocalStorage::framebufferPixelLocalClearValueivWEBGL(
     GLint plane,
-    NADCTypedArrayView<GLint> value,
-    GLuint src_offset) {
-  WebGLExtensionScopedContext scoped(this);
-  if (scoped.IsLost()) {
-    return;
-  }
-  constexpr static char function_name[] =
-      "framebufferPixelLocalClearValueivWEBGL";
-  WebGLRenderingContextBase* context = scoped.Context();
-  if (!ValidatePLSClearCommand(context, function_name, plane, value.Size(),
-                               src_offset)) {
-    return;
-  }
-  context->ContextGL()->FramebufferPixelLocalClearValueivANGLE(
-      plane, value.Data() + src_offset);
-}
-
-void WebGLShaderPixelLocalStorage::framebufferPixelLocalClearValueivWEBGL(
-    GLint plane,
-    const Vector<GLint>& value,
+    base::span<const GLint> value,
     GLuint src_offset) {
   WebGLExtensionScopedContext scoped(this);
   if (scoped.IsLost()) {
@@ -203,26 +170,7 @@ void WebGLShaderPixelLocalStorage::framebufferPixelLocalClearValueivWEBGL(
 
 void WebGLShaderPixelLocalStorage::framebufferPixelLocalClearValueuivWEBGL(
     GLint plane,
-    NADCTypedArrayView<GLuint> value,
-    GLuint src_offset) {
-  WebGLExtensionScopedContext scoped(this);
-  if (scoped.IsLost()) {
-    return;
-  }
-  constexpr static char function_name[] =
-      "framebufferPixelLocalClearValueuivWEBGL";
-  WebGLRenderingContextBase* context = scoped.Context();
-  if (!ValidatePLSClearCommand(context, function_name, plane, value.Size(),
-                               src_offset)) {
-    return;
-  }
-  context->ContextGL()->FramebufferPixelLocalClearValueuivANGLE(
-      plane, value.Data() + src_offset);
-}
-
-void WebGLShaderPixelLocalStorage::framebufferPixelLocalClearValueuivWEBGL(
-    GLint plane,
-    const Vector<GLuint>& value,
+    base::span<const GLuint> value,
     GLuint src_offset) {
   WebGLExtensionScopedContext scoped(this);
   if (scoped.IsLost()) {

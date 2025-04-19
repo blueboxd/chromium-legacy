@@ -21,11 +21,11 @@
 #include "net/cookies/cookie_partition_key.h"
 #include "net/http/http_status_code.h"
 #include "net/log/net_log_values.h"
+#include "net/shared_dictionary/shared_dictionary.h"
 #include "services/network/cors/cors_url_loader_factory.h"
 #include "services/network/cors/cors_util.h"
 #include "services/network/cors/preflight_controller.h"
 #include "services/network/network_context.h"
-#include "services/network/network_service_memory_cache.h"
 #include "services/network/private_network_access_checker.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
@@ -40,7 +40,6 @@
 #include "services/network/public/mojom/ip_address_space.mojom.h"
 #include "services/network/public/mojom/shared_dictionary_error.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
-#include "services/network/shared_dictionary/shared_dictionary.h"
 #include "services/network/shared_dictionary/shared_dictionary_access_checker.h"
 #include "services/network/shared_dictionary/shared_dictionary_constants.h"
 #include "services/network/shared_dictionary/shared_dictionary_data_pipe_writer.h"
@@ -269,7 +268,7 @@ std::optional<CorsErrorStatus> CheckRedirectLocation(
 void RecordNetworkLoaderCompletionTime(const char* suffix,
                                        base::TimeDelta elapsed) {
   base::UmaHistogramTimes(
-      base::StrCat({"NetworkService.NetworkLoaderCompletionTime.", suffix}),
+      base::StrCat({"NetworkService.NetworkLoaderCompletionTime2.", suffix}),
       elapsed);
 }
 
@@ -363,7 +362,7 @@ CorsURLLoader::CorsURLLoader(
         request_.url, request_.destination,
         base::BindOnce(
             [](base::WeakPtr<CorsURLLoader> loader,
-               std::unique_ptr<SharedDictionary> shared_dictionary) {
+               scoped_refptr<net::SharedDictionary> shared_dictionary) {
               if (loader) {
                 loader->shared_dictionary_ = std::move(shared_dictionary);
               }
@@ -603,7 +602,7 @@ void CorsURLLoader::OnReceiveResponse(
     CHECK(request_.request_initiator);
 
     if (!request_.request_initiator->IsSameOriginWith(request_.url) &&
-        !CheckSharedStorageCrossOriginWorkletAllowedResponseHeader(
+        !CheckSharedStorageCrossOriginWorkletAllowedResponseHeaderIfNeeded(
             *response_head)) {
       HandleComplete(URLLoaderCompletionStatus(net::ERR_FAILED));
       return;
@@ -1120,33 +1119,7 @@ void CorsURLLoader::StartNetworkRequest() {
 
   network_loader_start_time_ = base::TimeTicks::Now();
 
-  // Check whether a fresh entry exists in the in-memory cache.
-  std::optional<std::string> cache_key;
-  if (context_->GetMemoryCache() && !has_factory_override_) {
-    // Pass `factory_client_security_state_` directly instead of using
-    // GetClientSecurityState() so that private network access checks in
-    // the memory cache don't think that both factory and request supply
-    // client security states.
-    cache_key = context_->GetMemoryCache()->CanServe(
-        options_, request_, isolation_info_.network_isolation_key(),
-        cross_origin_embedder_policy_, factory_client_security_state_);
-  }
-
-  // TODO when crbug.com/40093296 "Don't trust |site_for_cookies| provided by
-  // the renderer" is fixed. Update the FromNetworkIsolationKey method to use
-  // request_.site_for_cookies instead of
-  // isolation_info_.site_for_cookies.
-  if (cache_key.has_value()) {
-    context_->GetMemoryCache()->CreateLoaderAndStart(
-        network_loader_.BindNewPipeAndPassReceiver(), request_id_, options_,
-        *cache_key, request_, net_log_,
-        net::CookiePartitionKey::FromNetworkIsolationKey(
-            isolation_info_.network_isolation_key(), request_.site_for_cookies,
-            net::SchemefulSite(request_.url),
-            isolation_info_.IsMainFrameRequest()),
-        network_client_receiver_.BindNewPipeAndPassRemote());
-    memory_cache_was_used_ = true;
-  } else if (sync_network_loader_factory_) {
+  if (sync_network_loader_factory_) {
     sync_network_loader_factory_->CreateLoaderAndStartWithSyncClient(
         network_loader_.BindNewPipeAndPassReceiver(), request_id_, options_,
         request_, network_client_receiver_.BindNewPipeAndPassRemote(),
@@ -1174,9 +1147,7 @@ void CorsURLLoader::HandleComplete(URLLoaderCompletionStatus status) {
     DCHECK_GE(status.completion_time, network_loader_start_time_);
     base::TimeDelta elapsed =
         status.completion_time - network_loader_start_time_;
-    if (memory_cache_was_used_) {
-      RecordNetworkLoaderCompletionTime("MemoryCache", elapsed);
-    } else if (status.exists_in_cache) {
+    if (status.exists_in_cache) {
       RecordNetworkLoaderCompletionTime("DiskCache", elapsed);
     } else {
       RecordNetworkLoaderCompletionTime("Network", elapsed);
@@ -1438,17 +1409,41 @@ std::optional<std::string> CorsURLLoader::GetHeaderString(
   return header_value;
 }
 
-// static
-bool CorsURLLoader::CheckSharedStorageCrossOriginWorkletAllowedResponseHeader(
-    const mojom::URLResponseHead& response) {
-  std::optional<std::string> header =
+bool CorsURLLoader::
+    CheckSharedStorageCrossOriginWorkletAllowedResponseHeaderIfNeeded(
+        const mojom::URLResponseHead& response) {
+  // We currently only set the "Sec-Shared-Storage-Data-Origin" request header
+  // for requests of cross-origin shared storage worklet module script where the
+  // script origin is used as the data origin. Moreover, the request header is a
+  // forbidden request header (non-modifiable by regular JavaScript), and it is
+  // set in the browser process, using the serialized script origin (which is
+  // not allowed to be opaque) as the value.
+  //
+  // Extensions could have modified or removed the
+  // "Sec-Shared-Storage-Data-Origin" request header before the request was sent
+  // to the server, but the `CorsURLLoader` still sees the original header, if
+  // any, set by `SharedStorageURLLoaderFactoryProxy`.
+  std::optional<std::string> request_header =
+      request_.headers.GetHeader("Sec-Shared-Storage-Data-Origin");
+  if (!request_header) {
+    // The data partition origin used is the invoking context's origin, so we
+    // don't require the "Shared-Storage-Cross-Origin-Worklet-Allowed" response
+    // header.
+    return true;
+  }
+
+  GURL data_origin_url(*request_header);
+  CHECK(data_origin_url.is_valid());
+  CHECK(url::Origin::Create(data_origin_url).IsSameOriginWith(request_.url));
+
+  std::optional<std::string> response_header =
       GetHeaderString(response, "Shared-Storage-Cross-Origin-Worklet-Allowed");
-  if (!header) {
+  if (!response_header) {
     return false;
   }
 
   std::optional<net::structured_headers::Item> item =
-      net::structured_headers::ParseBareItem(*header);
+      net::structured_headers::ParseBareItem(*response_header);
 
   return item && item->is_boolean() && item->GetBoolean();
 }

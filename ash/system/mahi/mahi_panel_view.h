@@ -35,10 +35,10 @@ enum class VisibilityState;
 
 // The code for Mahi main panel view. This view is placed within
 // `MahiPanelWidget`.
-class ASH_EXPORT MahiPanelView : public views::FlexLayoutView,
+class ASH_EXPORT MahiPanelView : public views::View,
                                  public views::TextfieldController,
                                  public MahiUiController::Delegate {
-  METADATA_HEADER(MahiPanelView, views::FlexLayoutView)
+  METADATA_HEADER(MahiPanelView, views::View)
 
  public:
   explicit MahiPanelView(MahiUiController* ui_controller);
@@ -49,6 +49,9 @@ class ASH_EXPORT MahiPanelView : public views::FlexLayoutView,
   // views::View:
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
+
+  // Shows the pop in animation for the panel.
+  void AnimatePopIn(const gfx::Rect& start_bounds);
 
  private:
   // views::TextfieldController:
@@ -74,16 +77,23 @@ class ASH_EXPORT MahiPanelView : public views::FlexLayoutView,
   // drag event sequence are ignored.
   void HandleDragEventIfNeeded(ui::LocatedEvent* event);
 
+  // Callbacks when the feedback buttons are toggled from inactive to active.
+  void OnThumbsUpButtonActive();
+  void OnThumbsDownButtonActive();
+
   // `ui_controller_` will outlive `this`.
   const raw_ptr<MahiUiController> ui_controller_;
 
   // Owned by the views hierarchy.
+  raw_ptr<views::FlexLayoutView> main_container_ = nullptr;
   raw_ptr<views::View> back_button_ = nullptr;
   raw_ptr<MahiContentSourceButton> content_source_button_ = nullptr;
   raw_ptr<MahiQuestionAnswerView> question_answer_view_ = nullptr;
   raw_ptr<SummaryOutlinesSection> summary_outlines_section_ = nullptr;
   raw_ptr<views::Textfield> question_textfield_ = nullptr;
   raw_ptr<IconButton> send_button_ = nullptr;
+  raw_ptr<IconButton> thumbs_up_button_ = nullptr;
+  raw_ptr<IconButton> thumbs_down_button_ = nullptr;
 
   // The time when this view is constructed, which is when the user opens this
   // view.

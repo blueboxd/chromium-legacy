@@ -9,6 +9,7 @@ import "cc/mojom/touch_action.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/network/public/mojom/source_location.mojom";
+import "services/network/public/mojom/storage_access_api.mojom";
 import "services/network/public/mojom/url_request.mojom";
 import "services/network/public/mojom/web_sandbox_flags.mojom";
 import "services/viz/public/mojom/compositing/frame_sink_id.mojom";
@@ -150,6 +151,17 @@ struct OpenURLParams {
   // Note: when relying on this in the browser process, also make sure to check
   // that this comes from the renderer process of the parent frame.
   bool is_container_initiated = false;
+
+  // True if the initiator explicitly asked for opener relationships to be
+  // preserved, via rel="opener".
+  bool has_rel_opener = false;
+
+  // The renderer's Storage Access API status (e.g. whether it has opted into
+  // accessing cross-site cookies). Note that this is not trusted; cookies will
+  // not actually be attached unless there is also a matching permission grant
+  // created by the browser process. (Also note that the Storage Access API is
+  // only relevant when third-party cookies are blocked.)
+  network.mojom.StorageAccessApiStatus storage_access_api_status = kNone;
 };
 
 // Implemented in Browser, this interface defines frame-specific methods that
@@ -225,11 +237,14 @@ interface RemoteFrameHost {
   // process to the frame token of the equivalent RemoteFrame in the target
   // renderer process.
   // |source_origin| is the origin of the source frame when the message was
-  // sent, |target_origin| specifies what the origin of the target frame must be
-  // for the message to be dispatched and |message| is the encoded data, plus
-  // any extra properties such as transferred ports or blobs.
+  // sent, and |target_origin| specifies what the origin of the target frame
+  // must be for the message to be dispatched. |source_origin| has an Origin
+  // type since it will be validated by the browser process, even when opaque
+  // with a precursor, while |target_origin| is a string since the web page
+  // specifies it, and might use an asterisk as a wildcard. |message| is the
+  // encoded data, plus any extra properties such as transferred ports or blobs.
   RouteMessageEvent(blink.mojom.LocalFrameToken? source_frame_token,
-                    mojo_base.mojom.String16 source_origin,
+                    url.mojom.Origin source_origin,
                     mojo_base.mojom.String16 target_origin,
                     blink.mojom.TransferableMessage message);
 
@@ -306,7 +321,7 @@ interface RemoteFrame {
   SetReplicatedName(string name, string unique_name);
 
   // Sent to dispatch a load event in the frame's owner element.
-  // (eg. the iframe, portal, or object element).
+  // (eg. the iframe, or object element).
   DispatchLoadEventForFrameOwner();
 
   // Sent to the remote frame placeholder in the parent process to indicate the
@@ -426,7 +441,7 @@ interface RemoteFrame {
   // `token`: The frame token. Used to map between RemoteFrame and
   //     RenderFrameProxyHost.
   // `opener_frame_token`: Frame token that identifies the opener frame if one
-  //     exists, or absl::nullopt otherwise.
+  //     exists, or std::nullopt otherwise.
   // `tree_scope_type`: Whether the owner element (e.g. <iframe>, <object>, et
   //     cetera) for this frame is in the document tree or the shadow tree.
   // `owner_properties`: This frame's FrameOwner properties, such as scrolling,

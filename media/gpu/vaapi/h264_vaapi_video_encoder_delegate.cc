@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "media/gpu/vaapi/h264_vaapi_video_encoder_delegate.h"
 
 #include <va/va.h>
@@ -21,7 +26,7 @@
 #include "media/gpu/macros.h"
 #include "media/gpu/vaapi/vaapi_common.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
-#include "media/video/h264_level_limits.h"
+#include "media/parsers/h264_level_limits.h"
 #include "media/video/video_encode_accelerator.h"
 
 namespace media {
@@ -38,11 +43,12 @@ constexpr uint32_t kIPeriod = 0;
 constexpr uint32_t kIPPeriod = 1;
 
 // The qp range is 0-51 in H264. Select 26 because of the center value.
+// WebRTC H264 encoder uses 1-51. We set the minimum QP to 1 for camera
+// and 10 for screen sharing to mitigate the bitrate overshoot due
+// to a scene, and maximum qp to 42 to pass the CTS test (b/354557852).
 constexpr uint8_t kDefaultQP = 26;
-// Note: Webrtc default values are 24 and 37 respectively, see
-// h264_encoder_impl.cc.
-// These values are selected to make our VEA tests pass.
-constexpr uint8_t kMinQP = 24;
+constexpr uint8_t kMinQP = 1;
+constexpr uint8_t kScreenMinQP = 10;
 constexpr uint8_t kMaxQP = 42;
 
 // Subjectively chosen bitrate window size for rate control, in ms.
@@ -154,7 +160,6 @@ void UpdatePictureForTemporalLayerEncoding(
           }};
 
   // Fill |pic.metadata_for_encoding| and |pic.ref|.
-  H264Metadata metadata;
   std::tie(pic.metadata_for_encoding.emplace(), pic.ref) =
       kFrameMetadata[num_layers - 2][num_encoded_frames % kTemporalLayerCycle];
 
@@ -167,10 +172,12 @@ void UpdatePictureForTemporalLayerEncoding(
   DCHECK_EQ(pic.ref_pic_list_modification_flag_l0, 0);
   DCHECK_EQ(pic.abs_diff_pic_num_minus1, 0);
   DCHECK(!ref_pic_list0.empty());
-  if (metadata.temporal_idx == 0)
+
+  if (pic.metadata_for_encoding->temporal_idx == 0) {
     ref_frame_idx = base::checked_cast<size_t>(ref_pic_list0.size() - 1);
-  else
+  } else {
     ref_frame_idx = 0;
+  }
 
   DCHECK_LT(*ref_frame_idx, ref_pic_list0.size());
   const H264Picture& ref_frame_pic = *ref_pic_list0[*ref_frame_idx];
@@ -267,6 +274,11 @@ bool H264VaapiVideoEncoderDelegate::Initialize(
       return false;
     }
     level_ = *valid_level;
+  }
+
+  if (config.content_type ==
+      VideoEncodeAccelerator::Config::ContentType::kDisplay) {
+    curr_params_.min_qp = kScreenMinQP;
   }
 
   num_temporal_layers_ = 1;
@@ -804,7 +816,7 @@ bool H264VaapiVideoEncoderDelegate::SubmitFrameParameters(
 
   VAEncPictureParameterBufferH264 pic_param = {};
 
-  auto va_surface_id = pic->AsVaapiH264Picture()->GetVASurfaceID();
+  auto va_surface_id = pic->AsVaapiH264Picture()->va_surface_id();
   pic_param.CurrPic.picture_id = va_surface_id;
   pic_param.CurrPic.TopFieldOrderCnt = pic->top_field_order_cnt;
   pic_param.CurrPic.BottomFieldOrderCnt = pic->bottom_field_order_cnt;
@@ -856,7 +868,7 @@ bool H264VaapiVideoEncoderDelegate::SubmitFrameParameters(
     H264Picture& ref_pic = *ref_pic_list0[i];
     VAPictureH264 va_pic_h264;
     InitVAPictureH264(&va_pic_h264);
-    va_pic_h264.picture_id = ref_pic.AsVaapiH264Picture()->GetVASurfaceID();
+    va_pic_h264.picture_id = ref_pic.AsVaapiH264Picture()->va_surface_id();
     va_pic_h264.flags = VA_PICTURE_H264_SHORT_TERM_REFERENCE;
     va_pic_h264.frame_idx = ref_pic.frame_num;
     va_pic_h264.TopFieldOrderCnt = ref_pic.top_field_order_cnt;

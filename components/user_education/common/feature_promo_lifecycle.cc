@@ -4,9 +4,11 @@
 
 #include "components/user_education/common/feature_promo_lifecycle.h"
 
+#include <optional>
 #include <string_view>
 
 #include "base/containers/contains.h"
+#include "base/containers/map_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -69,8 +71,26 @@ FeaturePromoLifecycle::~FeaturePromoLifecycle() {
   MaybeEndPromo();
 }
 
+FeaturePromoLifecycle& FeaturePromoLifecycle::SetReshowPolicy(
+    base::TimeDelta reshow_delay,
+    std::optional<int> max_show_count) {
+  CHECK_NE(promo_subtype_, PromoSubtype::kNormal)
+      << "Reshow not allowed for normal promos.";
+  reshow_delay_ = reshow_delay;
+  max_show_count_ = max_show_count;
+  return *this;
+}
+
 FeaturePromoResult FeaturePromoLifecycle::CanShow() const {
-  DCHECK(promo_subtype_ != PromoSubtype::kKeyedNotice || !promo_key_.empty());
+  CHECK(promo_subtype_ != PromoSubtype::kKeyedNotice || !promo_key_.empty());
+
+  // If inside the new profile grace period, the promo cannot show and would
+  // also not have shown yet.
+  if (promo_subtype_ == PromoSubtype::kNormal &&
+      GetCurrentTime() < storage_service_->profile_creation_time() +
+                             features::GetNewProfileGracePeriod()) {
+    return FeaturePromoResult::kBlockedByNewProfile;
+  }
 
   const auto data = storage_service_->ReadPromoData(*iph_feature_);
   if (!data.has_value()) {
@@ -79,6 +99,7 @@ FeaturePromoResult FeaturePromoLifecycle::CanShow() const {
 
   switch (promo_subtype_) {
     case PromoSubtype::kNormal: {
+      // Check dismissed/snoozed state.
       FeaturePromoResult result;
       switch (promo_type_) {
         case PromoType::kLegacy:
@@ -102,6 +123,7 @@ FeaturePromoResult FeaturePromoLifecycle::CanShow() const {
           result = FeaturePromoResult::kPermanentlyDismissed;
           break;
       }
+
       // Even if the promo could show, it may have exceeded its maximum show
       // count. This is always the last consideration since it is the least
       // descriptive return value.
@@ -116,13 +138,18 @@ FeaturePromoResult FeaturePromoLifecycle::CanShow() const {
       return result;
     }
     case PromoSubtype::kKeyedNotice:
-      return base::Contains(data->shown_for_keys, promo_key_)
-                 ? FeaturePromoResult::kPermanentlyDismissed
-                 : FeaturePromoResult::Success();
+      if (const auto* const key_data =
+              base::FindOrNull(data->shown_for_keys, promo_key_)) {
+        return GetReshowResult(key_data->last_shown_time, key_data->show_count);
+      }
+      return FeaturePromoResult::Success();
     case PromoSubtype::kLegalNotice:
     case PromoSubtype::kActionableAlert:
-      return data->is_dismissed ? FeaturePromoResult::kPermanentlyDismissed
-                                : FeaturePromoResult::Success();
+      if (data->is_dismissed) {
+        return GetReshowResult(data->last_show_time,
+                               data->show_count - data->snooze_count);
+      }
+      return FeaturePromoResult::Success();
   }
 }
 
@@ -316,6 +343,21 @@ void FeaturePromoLifecycle::MaybeCachePromoIndex(
   }
 }
 
+FeaturePromoResult FeaturePromoLifecycle::GetReshowResult(
+    base::Time last_shown,
+    int show_count) const {
+  if (!reshow_delay_) {
+    return FeaturePromoResult::kPermanentlyDismissed;
+  }
+  if (max_show_count_ && show_count >= *max_show_count_) {
+    return FeaturePromoResult::kPermanentlyDismissed;
+  }
+  if (GetCurrentTime() - last_shown < *reshow_delay_) {
+    return FeaturePromoResult::kBlockedByReshowDelay;
+  }
+  return FeaturePromoResult::Success();
+}
+
 void FeaturePromoLifecycle::MaybeWriteClosedPromoData(
     FeaturePromoClosedReason close_reason) {
   if (wrote_close_data_) {
@@ -346,7 +388,9 @@ void FeaturePromoLifecycle::MaybeWriteClosedPromoData(
     case FeaturePromoClosedReason::kTimeout: {
       ScopedPromoData data(storage_service_, iph_feature_);
       if (!promo_key_.empty()) {
-        data->shown_for_keys.insert(promo_key_);
+        auto& key_data = data->shown_for_keys[promo_key_];
+        ++key_data.show_count;
+        key_data.last_shown_time = GetCurrentTime();
       }
       data->last_dismissed_by = close_reason;
       if (is_rotating) {
@@ -428,7 +472,7 @@ void FeaturePromoLifecycle::RecordShown() {
     case PromoType::kTutorial:
       type_action_name.append("Tutorial");
       break;
-    case PromoType::kRotating:
+    case PromoType::kRotating: {
       // Want to track exactly which messages are being shown in a rotating
       // promo. Because the suggested cap on exact linear histograms is 100, use
       // that as the max allowed value.
@@ -436,11 +480,13 @@ void FeaturePromoLifecycle::RecordShown() {
       // Note that the +1 is not an increment, but rather reflects that
       // histograms are 1-indexed rather than 0-indexed. Therefore, the first
       // promo is promo 1, not 0.
-      UMA_HISTOGRAM_EXACT_LINEAR(
-          "UserEducation.MessageShown.RotatingPromoIndex", GetPromoIndex() + 1,
-          100);
+      const std::string histogram_name =
+          std::string("UserEducation.RotatingPromoIndex.")
+              .append(iph_feature()->name);
+      base::UmaHistogramExactLinear(histogram_name, GetPromoIndex() + 1, 100);
       type_action_name.append("Rotating");
       break;
+    }
     case PromoType::kUnspecified:
       NOTREACHED_IN_MIGRATION();
   }

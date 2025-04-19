@@ -139,19 +139,11 @@ class TestUrlCheckerClient {
   }
 
   void OnCheckUrlResult(
-      safe_browsing::SafeBrowsingUrlCheckerImpl::NativeUrlCheckNotifier*
-          slow_check_notifier,
       bool proceed,
       bool showed_interstitial,
       bool has_post_commit_interstitial_skipped,
       safe_browsing::SafeBrowsingUrlCheckerImpl::PerformedCheck
           performed_check) {
-    if (slow_check_notifier) {
-      *slow_check_notifier =
-          base::BindOnce(&TestUrlCheckerClient::OnCheckUrlResult,
-                         base::Unretained(this), nullptr);
-      return;
-    }
     url_is_unsafe_ = !proceed;
     result_pending_ = false;
     performed_check_ = performed_check;
@@ -347,7 +339,8 @@ TEST_F(SafeBrowsingServiceTest, SafeAndUnsafePages) {
                               browser_state_.get(), &safe_browsing_client_);
   GURL safe_url = GURL(kSafePage);
   client.CheckUrl(safe_url);
-  if (!base::FeatureList::IsEnabled(safe_browsing::kSafeBrowsingOnUIThread)) {
+  if (!base::FeatureList::IsEnabled(safe_browsing::kSafeBrowsingOnUIThread) ||
+      safe_browsing::kMmapSafeBrowsingDatabaseAsync.Get()) {
     EXPECT_TRUE(client.result_pending());
     client.WaitForResult();
   }
@@ -380,7 +373,8 @@ TEST_F(SafeBrowsingServiceTest, SafeAndUnsafePagesWithSyncChecker) {
                               browser_state_.get(), &safe_browsing_client_);
   GURL safe_url = GURL(kSafePage);
   client.CheckUrlWithSyncChecker(safe_url);
-  if (!base::FeatureList::IsEnabled(safe_browsing::kSafeBrowsingOnUIThread)) {
+  if (!base::FeatureList::IsEnabled(safe_browsing::kSafeBrowsingOnUIThread) ||
+      safe_browsing::kMmapSafeBrowsingDatabaseAsync.Get()) {
     EXPECT_TRUE(client.result_pending());
     client.WaitForResult();
   }
@@ -413,7 +407,8 @@ TEST_F(SafeBrowsingServiceTest, SafeAndUnsafePagesWithAsyncChecker) {
                               browser_state_.get(), &safe_browsing_client_);
   GURL safe_url = GURL(kSafePage);
   client.CheckUrlWithAsyncChecker(safe_url);
-  if (!base::FeatureList::IsEnabled(safe_browsing::kSafeBrowsingOnUIThread)) {
+  if (!base::FeatureList::IsEnabled(safe_browsing::kSafeBrowsingOnUIThread) ||
+      safe_browsing::kMmapSafeBrowsingDatabaseAsync.Get()) {
     EXPECT_TRUE(client.result_pending());
     client.WaitForResult();
   }
@@ -477,7 +472,8 @@ TEST_F(SafeBrowsingServiceTest, RealTimeSafeAndUnsafePages) {
   pref_service_->SetBoolean(
       unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled, false);
   client.CheckUrl(unsafe_url);
-  if (!base::FeatureList::IsEnabled(safe_browsing::kSafeBrowsingOnUIThread)) {
+  if (!base::FeatureList::IsEnabled(safe_browsing::kSafeBrowsingOnUIThread) ||
+      safe_browsing::kMmapSafeBrowsingDatabaseAsync.Get()) {
     EXPECT_TRUE(client.result_pending());
     client.WaitForResult();
   }
@@ -523,7 +519,8 @@ TEST_F(SafeBrowsingServiceTest, RealTimeSafeAndUnsafePagesWithSyncChecker) {
   pref_service_->SetBoolean(
       unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled, false);
   client.CheckUrlWithSyncChecker(unsafe_url);
-  if (!base::FeatureList::IsEnabled(safe_browsing::kSafeBrowsingOnUIThread)) {
+  if (!base::FeatureList::IsEnabled(safe_browsing::kSafeBrowsingOnUIThread) ||
+      safe_browsing::kMmapSafeBrowsingDatabaseAsync.Get()) {
     EXPECT_TRUE(client.result_pending());
     client.WaitForResult();
   }
@@ -569,7 +566,8 @@ TEST_F(SafeBrowsingServiceTest, RealTimeSafeAndUnsafePagesWithAsyncChecker) {
   pref_service_->SetBoolean(
       unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled, false);
   client.CheckUrlWithAsyncChecker(unsafe_url);
-  if (!base::FeatureList::IsEnabled(safe_browsing::kSafeBrowsingOnUIThread)) {
+  if (!base::FeatureList::IsEnabled(safe_browsing::kSafeBrowsingOnUIThread) ||
+      safe_browsing::kMmapSafeBrowsingDatabaseAsync.Get()) {
     EXPECT_TRUE(client.result_pending());
     client.WaitForResult();
   }
@@ -611,7 +609,8 @@ TEST_F(SafeBrowsingServiceTest,
   // flagged.
   pref_service_->SetBoolean(prefs::kSafeBrowsingEnhanced, false);
   client.CheckUrl(unsafe_url);
-  if (!base::FeatureList::IsEnabled(safe_browsing::kSafeBrowsingOnUIThread)) {
+  if (!base::FeatureList::IsEnabled(safe_browsing::kSafeBrowsingOnUIThread) ||
+      safe_browsing::kMmapSafeBrowsingDatabaseAsync.Get()) {
     EXPECT_TRUE(client.result_pending());
     client.WaitForResult();
   }

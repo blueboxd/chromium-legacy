@@ -52,6 +52,7 @@ class Font;
 class FontDescription;
 class Interpolation;
 class MatchResult;
+class PageMarginsStyle;
 class PropertyHandle;
 class StyleCascade;
 class StyleRecalcContext;
@@ -112,6 +113,19 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
                                     const AtomicString& page_name,
                                     float page_fitting_scale = 1.0,
                                     bool ignore_author_style = false);
+
+  // Calculate computed style for all 16 @page margin boxes for a given page
+  // index and name.
+  //
+  // Page margin contexts inherit from the page context (page_style).
+  void StyleForPageMargins(const ComputedStyle& page_style,
+                           uint32_t page_index,
+                           const AtomicString& page_name,
+                           PageMarginsStyle*);
+
+  // Trigger loading of resources only needed by printing (such as @page
+  // backgrounds, for instance).
+  void LoadPaginationResources();
 
   const ComputedStyle* StyleForText(Text*);
   const ComputedStyle* StyleForViewport();
@@ -347,8 +361,7 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
                                  const StyleRequest&,
                                  const MatchResult&);
   void MaybeAddToMatchedPropertiesCache(StyleResolverState&,
-                                        const CacheSuccess&,
-                                        const MatchResult&);
+                                        const CacheSuccess&);
 
   void ApplyPropertiesFromCascade(StyleResolverState&,
                                   StyleCascade& cascade,

@@ -5,39 +5,55 @@
 #include "chrome/browser/webauthn/chrome_authenticator_request_delegate.h"
 
 #include <algorithm>
+#include <array>
+#include <cstdint>
+#include <memory>
+#include <optional>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/containers/contains.h"
+#include "base/containers/span.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_future.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/password_manager/chrome_webauthn_credentials_delegate_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
 #include "chrome/browser/webauthn/passkey_model_factory.h"
 #include "chrome/browser/webauthn/webauthn_pref_names.h"
 #include "chrome/browser/webauthn/webauthn_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "chrome/test/base/testing_profile.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/base/consent_level.h"
+#include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/sync/base/features.h"
-#include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "components/sync/base/user_selectable_type.h"
+#include "components/sync/test/test_sync_service.h"
 #include "components/webauthn/core/browser/passkey_model.h"
 #include "components/webauthn/core/browser/test_passkey_model.h"
 #include "content/public/browser/authenticator_request_client_delegate.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/web_contents_tester.h"
+#include "crypto/scoped_mock_unexportable_key_provider.h"
 #include "device/fido/cable/cable_discovery_data.h"
+#include "device/fido/cable/v2_constants.h"
 #include "device/fido/discoverable_credential_metadata.h"
 #include "device/fido/features.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_discovery_factory.h"
 #include "device/fido/fido_request_handler_base.h"
-#include "device/fido/fido_transport_protocol.h"
 #include "device/fido/fido_types.h"
-#include "device/fido/test_callback_receiver.h"
 #include "device/fido/virtual_ctap2_device.h"
 #include "device/fido/virtual_fido_device_authenticator.h"
 #include "extensions/browser/extension_registry.h"
@@ -56,6 +72,7 @@
 #endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(IS_MAC)
+#include "chrome/test/base/testing_profile.h"
 #include "device/fido/mac/authenticator_config.h"
 #endif  // BUILDFLAG(IS_MAC)
 
@@ -621,7 +638,7 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest,
     scoped_refptr<const extensions::Extension> extension =
         extensions::ExtensionBuilder("Extension name")
             .SetID(kExtensionId)
-            .AddPermission(test.pattern)
+            .AddHostPermission(test.pattern)
             .Build();
     extensions::ExtensionRegistry::Get(browser_context())
         ->AddEnabled(extension);
@@ -643,7 +660,7 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest,
     scoped_refptr<const extensions::Extension> extension =
         extensions::ExtensionBuilder("Extension name")
             .SetID(kExtensionId)
-            .AddPermission(test.pattern)
+            .AddHostPermission(test.pattern)
             .Build();
     extensions::ExtensionRegistry::Get(browser_context())
         ->AddEnabled(extension);
@@ -705,11 +722,11 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, VirtualEnvironmentAttestation) {
   delegate.SetVirtualEnvironment(true);
   device::VirtualFidoDeviceAuthenticator authenticator(
       std::make_unique<device::VirtualCtap2Device>());
-  device::test::ValueCallbackReceiver<bool> cb;
+  base::test::TestFuture<bool> future;
   delegate.ShouldReturnAttestation(kRelyingPartyID, &authenticator,
                                    /*is_enterprise_attestation=*/false,
-                                   cb.callback());
-  EXPECT_TRUE(cb.value());
+                                   future.GetCallback());
+  EXPECT_TRUE(future.Get());
 }
 
 // Tests that synced GPM passkeys are injected in the transport availability
@@ -989,6 +1006,84 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, FilterGoogleComPasskeys) {
   }
 }
 
+class EnclaveAuthenticatorRequestDelegateTest
+    : public ChromeAuthenticatorRequestDelegateTest {
+ public:
+  void SetUp() override {
+    ChromeAuthenticatorRequestDelegateTest::SetUp();
+    SyncServiceFactory::GetInstance()->SetTestingFactory(
+        browser_context(),
+        base::BindRepeating([](content::BrowserContext* context)
+                                -> std::unique_ptr<KeyedService> {
+          return std::make_unique<syncer::TestSyncService>();
+        }));
+  }
+};
+
+// ChromeOS delegates this logic to a ChromeOS-specific service.
+
+#if !BUILDFLAG(IS_CHROMEOS)
+
+TEST_F(EnclaveAuthenticatorRequestDelegateTest,
+       BrowserProvidedPasskeysAvailable) {
+  struct {
+    bool is_flag_enabled;
+    bool has_consented_account;
+    bool is_syncing_passwords;
+    bool has_unexportable_keys;
+    bool expected_passkeys_available;
+  } kTestCases[] = {
+      // flag acc   sync  unexp result   flag   acc   sync  unexp result
+      {true, true, true, true, true},   {false, true, true, true, false},
+      {true, false, true, true, false}, {true, true, false, true, false},
+      {true, true, true, false, false},
+  };
+  for (const auto& test : kTestCases) {
+    SCOPED_TRACE(testing::Message()
+                 << "is_flag_enabled=" << test.is_flag_enabled);
+    SCOPED_TRACE(testing::Message()
+                 << "has_consented_account=" << test.has_consented_account);
+    SCOPED_TRACE(testing::Message()
+                 << "is_syncing_passwords=" << test.is_syncing_passwords);
+    SCOPED_TRACE(testing::Message()
+                 << "has_unexportable_keys=" << test.has_unexportable_keys);
+    ChromeWebAuthenticationDelegate delegate;
+    base::test::ScopedFeatureList scoped_feature_list_;
+    scoped_feature_list_.InitWithFeatureState(
+        device::kWebAuthnEnclaveAuthenticator, test.is_flag_enabled);
+
+    signin::IdentityManager* identity_manager =
+        IdentityManagerFactory::GetForProfile(profile());
+    if (test.has_consented_account) {
+      signin::MakePrimaryAccountAvailable(identity_manager,
+                                          "hikari@example.com",
+                                          signin::ConsentLevel::kSignin);
+    }
+
+    auto* test_sync_service = static_cast<syncer::TestSyncService*>(
+        SyncServiceFactory::GetInstance()->GetForProfile(profile()));
+    test_sync_service->GetUserSettings()->SetSelectedType(
+        syncer::UserSelectableType::kPasswords, test.is_syncing_passwords);
+
+    absl::variant<crypto::ScopedNullUnexportableKeyProvider,
+                  crypto::ScopedMockUnexportableKeyProvider>
+        unexportable_key_provider;
+    if (test.has_unexportable_keys) {
+      unexportable_key_provider
+          .emplace<crypto::ScopedMockUnexportableKeyProvider>();
+    }
+
+    base::test::TestFuture<bool> future;
+    delegate.BrowserProvidedPasskeysAvailable(browser_context(),
+                                              future.GetCallback());
+    EXPECT_TRUE(future.Wait());
+    EXPECT_EQ(future.Get(), test.expected_passkeys_available);
+    signin::ClearPrimaryAccount(identity_manager);
+  }
+}
+
+#endif  // !BUILDFLAG(IS_CHROMEOS)
+
 #if BUILDFLAG(IS_MAC)
 std::string TouchIdMetadataSecret(ChromeWebAuthenticationDelegate& delegate,
                                   content::BrowserContext* browser_context) {
@@ -1044,13 +1139,13 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, ShouldPromptForAttestationWin) {
   ::device::WinWebAuthnApiAuthenticator authenticator(
       /*current_window=*/nullptr, &win_webauthn_api);
 
-  ::device::test::ValueCallbackReceiver<bool> cb;
+  base::test::TestFuture<bool> future;
   ChromeAuthenticatorRequestDelegate delegate(main_rfh());
   delegate.ShouldReturnAttestation(kRelyingPartyID, &authenticator,
                                    /*is_enterprise_attestation=*/false,
-                                   cb.callback());
-  cb.WaitForCallback();
-  EXPECT_EQ(cb.value(), true);
+                                   future.GetCallback());
+  EXPECT_TRUE(future.Wait());
+  EXPECT_EQ(future.Get(), true);
 }
 
 #endif  // BUILDFLAG(IS_WIN)

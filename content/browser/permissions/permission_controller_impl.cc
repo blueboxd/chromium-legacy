@@ -92,6 +92,7 @@ PermissionToSchedulingFeature(PermissionType permission_name) {
     case PermissionType::SPEAKER_SELECTION:
     case PermissionType::KEYBOARD_LOCK:
     case PermissionType::POINTER_LOCK:
+    case PermissionType::AUTOMATIC_FULLSCREEN:
       return std::nullopt;
   }
 }
@@ -770,19 +771,6 @@ PermissionControllerImpl::SubscribeToPermissionStatusChange(
   }
   subscriptions_.AddWithID(std::move(subscription), id);
   return id;
-}
-
-PermissionControllerImpl::SubscriptionId
-PermissionControllerImpl::SubscribeToPermissionStatusChange(
-    PermissionType permission,
-    RenderProcessHost* render_process_host,
-    const url::Origin& requesting_origin,
-    bool should_include_device_status,
-    const base::RepeatingCallback<void(PermissionStatus)>& callback) {
-  return SubscribeToPermissionStatusChange(
-      permission, render_process_host,
-      /*render_frame_host=*/nullptr, requesting_origin.GetURL(),
-      should_include_device_status, callback);
 }
 
 void PermissionControllerImpl::UnsubscribeFromPermissionStatusChange(

@@ -13,6 +13,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/autofill_profile_test_api.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/webdata/addresses/address_autofill_table.h"
 #include "components/autofill/core/browser/webdata/addresses/contact_info_sync_util.h"
@@ -20,7 +21,7 @@
 #include "components/autofill/core/browser/webdata/mock_autofill_webdata_backend.h"
 #include "components/sync/base/features.h"
 #include "components/sync/model/data_batch.h"
-#include "components/sync/test/mock_model_type_change_processor.h"
+#include "components/sync/test/mock_data_type_local_change_processor.h"
 #include "components/webdata/common/web_database.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -42,7 +43,7 @@ constexpr char kInvalidGUID[] = "1234";
 MATCHER_P(ContactInfoSpecificsEqualsProfile, expected_profile, "") {
   AutofillProfile arg_profile = *CreateAutofillProfileFromContactInfoSpecifics(
       arg->specifics.contact_info());
-  if (!arg_profile.EqualsIncludingUsageStatsForTesting(expected_profile)) {
+  if (!test_api(arg_profile).EqualsIncludingUsageStats(expected_profile)) {
     *result_listener << "entry\n[" << arg_profile << "]\n"
                      << "did not match expected\n[" << expected_profile << "]";
     return false;
@@ -120,7 +121,7 @@ class ContactInfoSyncBridgeTest : public testing::Test {
   std::vector<AutofillProfile> GetAllDataFromTable() {
     std::vector<std::unique_ptr<AutofillProfile>> profile_ptrs;
     EXPECT_TRUE(table_.GetAutofillProfiles(AutofillProfile::Source::kAccount,
-                                           &profile_ptrs));
+                                           profile_ptrs));
     // In tests, it's more convenient to work without `std::unique_ptr`.
     std::vector<AutofillProfile> profiles;
     for (const std::unique_ptr<AutofillProfile>& profile_ptr : profile_ptrs) {
@@ -136,7 +137,7 @@ class ContactInfoSyncBridgeTest : public testing::Test {
 
   MockAutofillWebDataBackend& backend() { return backend_; }
 
-  syncer::MockModelTypeChangeProcessor& mock_processor() {
+  syncer::MockDataTypeLocalChangeProcessor& mock_processor() {
     return mock_processor_;
   }
 
@@ -149,7 +150,7 @@ class ContactInfoSyncBridgeTest : public testing::Test {
   AddressAutofillTable table_;
   AutofillSyncMetadataTable sync_metadata_table_;
   WebDatabase db_;
-  testing::NiceMock<syncer::MockModelTypeChangeProcessor> mock_processor_;
+  testing::NiceMock<syncer::MockDataTypeLocalChangeProcessor> mock_processor_;
   std::unique_ptr<ContactInfoSyncBridge> bridge_;
 };
 
@@ -262,16 +263,10 @@ TEST_F(ContactInfoSyncBridgeTest, GetDataForCommit) {
   const AutofillProfile profile2 = TestProfile(kGUID2);
   AddAutofillProfilesToTable({profile1, profile2});
 
-  // Synchronously get data the data of `kGUID1`.
-  std::vector<AutofillProfile> profiles;
-  base::RunLoop loop;
-  bridge().GetDataForCommit(
-      {kGUID1},
-      base::BindLambdaForTesting([&](std::unique_ptr<syncer::DataBatch> batch) {
-        profiles = ExtractAutofillProfilesFromDataBatch(std::move(batch));
-        loop.Quit();
-      }));
-  loop.Run();
+  // Get data the data of `kGUID1`.
+  std::vector<AutofillProfile> profiles =
+      ExtractAutofillProfilesFromDataBatch(bridge().GetDataForCommit({kGUID1}));
+
   EXPECT_THAT(profiles, ElementsAre(profile1));
 }
 
@@ -281,15 +276,9 @@ TEST_F(ContactInfoSyncBridgeTest, GetAllDataForDebugging) {
   const AutofillProfile profile2 = TestProfile(kGUID2);
   AddAutofillProfilesToTable({profile1, profile2});
 
-  // Synchronously gets all data from the `bridge()`.
-  std::vector<AutofillProfile> profiles;
-  base::RunLoop loop;
-  bridge().GetAllDataForDebugging(
-      base::BindLambdaForTesting([&](std::unique_ptr<syncer::DataBatch> batch) {
-        profiles = ExtractAutofillProfilesFromDataBatch(std::move(batch));
-        loop.Quit();
-      }));
-  loop.Run();
+  std::vector<AutofillProfile> profiles =
+      ExtractAutofillProfilesFromDataBatch(bridge().GetAllDataForDebugging());
+
   EXPECT_THAT(profiles, UnorderedElementsAre(profile1, profile2));
 }
 

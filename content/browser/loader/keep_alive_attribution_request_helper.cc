@@ -10,7 +10,6 @@
 #include <optional>
 #include <string>
 #include <utility>
-#include <vector>
 
 #include "base/atomic_sequence_num.h"
 #include "base/check.h"
@@ -27,8 +26,6 @@
 #include "content/browser/attribution_reporting/attribution_suitable_context.h"
 #include "content/public/browser/global_routing_id.h"
 #include "net/http/http_response_headers.h"
-#include "services/network/public/cpp/attribution_reporting_runtime_features.h"
-#include "services/network/public/cpp/trigger_verification.h"
 #include "services/network/public/mojom/attribution.mojom-forward.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
@@ -49,7 +46,6 @@ KeepAliveAttributionRequestHelper::CreateIfNeeded(
     const GURL& request_url,
     const std::optional<base::UnguessableToken>& attribution_src_token,
     const std::optional<std::string>& devtools_request_id,
-    network::AttributionReportingRuntimeFeatures runtime_features,
     const AttributionSuitableContext& context) {
   if (!base::FeatureList::IsEnabled(
           blink::features::kAttributionReportingInBrowserMigration)) {
@@ -78,45 +74,40 @@ KeepAliveAttributionRequestHelper::CreateIfNeeded(
   data_host_manager->NotifyBackgroundRegistrationStarted(
       id, context, *registration_eligibility, std::move(token),
       devtools_request_id);
-  return base::WrapUnique(new KeepAliveAttributionRequestHelper(
-      id, data_host_manager,
-      /*reporting_url=*/request_url, runtime_features));
+  return base::WrapUnique(
+      new KeepAliveAttributionRequestHelper(id, data_host_manager,
+                                            /*reporting_url=*/request_url));
 }
 
 KeepAliveAttributionRequestHelper::KeepAliveAttributionRequestHelper(
     BackgroundRegistrationsId id,
     AttributionDataHostManager* attribution_data_host_manager,
-    const GURL& reporting_url,
-    network::AttributionReportingRuntimeFeatures runtime_features)
-    : id_(id),
-      runtime_features_(runtime_features),
-      reporting_url_(reporting_url) {
+    const GURL& reporting_url)
+    : id_(id), reporting_url_(reporting_url) {
   CHECK(attribution_data_host_manager);
   attribution_data_host_manager_ = attribution_data_host_manager->AsWeakPtr();
 }
 
 void KeepAliveAttributionRequestHelper::OnReceiveRedirect(
     const net::HttpResponseHeaders* headers,
-    const std::vector<network::TriggerVerification>& verifications,
     const GURL& redirect_url) {
   if (!attribution_data_host_manager_) {
     return;
   }
 
   attribution_data_host_manager_->NotifyBackgroundRegistrationData(
-      id_, headers, reporting_url_, runtime_features_, verifications);
+      id_, headers, reporting_url_);
   reporting_url_ = redirect_url;
 }
 
 void KeepAliveAttributionRequestHelper::OnReceiveResponse(
-    const net::HttpResponseHeaders* headers,
-    const std::vector<network::TriggerVerification>& verifications) {
+    const net::HttpResponseHeaders* headers) {
   if (!attribution_data_host_manager_) {
     return;
   }
 
   attribution_data_host_manager_->NotifyBackgroundRegistrationData(
-      id_, headers, reporting_url_, runtime_features_, verifications);
+      id_, headers, reporting_url_);
   attribution_data_host_manager_->NotifyBackgroundRegistrationCompleted(id_);
   attribution_data_host_manager_.reset();
 }

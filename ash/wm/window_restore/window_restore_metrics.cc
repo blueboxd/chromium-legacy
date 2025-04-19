@@ -18,7 +18,7 @@ constexpr char kHistogramSuffixScreenshot[] = ".Screenshot";
 
 }  // namespace
 
-void RecordPineDialogClosing(ClosePineDialogType type) {
+void RecordDialogClosing(CloseDialogType type) {
   base::UmaHistogramEnumeration(kDialogClosedHistogram, type);
 }
 
@@ -26,7 +26,7 @@ void RecordScreenshotOnShutdownStatus(ScreenshotOnShutdownStatus status) {
   base::UmaHistogramEnumeration(kScreenshotOnShutdownStatus, status);
 }
 
-void RecordPineScreenshotDurations(PrefService* local_state) {
+void RecordScreenshotDurations(PrefService* local_state) {
   auto record_uma = [](PrefService* local_state, const std::string& name,
                        const std::string& pref_name) -> void {
     const base::TimeDelta duration = local_state->GetTimeDelta(pref_name);
@@ -39,9 +39,9 @@ void RecordPineScreenshotDurations(PrefService* local_state) {
   };
 
   record_uma(local_state, "Ash.Pine.ScreenshotTakenDuration",
-             prefs::kPineScreenshotTakenDuration);
+             prefs::kInformedRestoreScreenshotTakenDuration);
   record_uma(local_state, "Ash.Pine.ScreenshotEncodeAndSaveDuration",
-             prefs::kPineScreenshotEncodeAndSaveDuration);
+             prefs::kInformedRestoreScreenshotEncodeAndSaveDuration);
 }
 
 void RecordDialogScreenshotVisibility(bool visible) {
@@ -61,7 +61,7 @@ void RecordTimeToAction(base::TimeDelta duration, bool showing_listview) {
 }
 
 void RecordOnboardingAction(bool restore) {
-  base::UmaHistogramBoolean(kPineOnboardingHistogram, restore);
+  base::UmaHistogramBoolean(kInformedRestoreOnboardingHistogram, restore);
 }
 
 }  // namespace ash

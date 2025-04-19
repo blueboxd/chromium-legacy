@@ -105,9 +105,8 @@ repack("repack_unscaled_resources") {
       "$root_gen_dir/third_party/blink/public/resources/blink_resources.pak",
       "$root_gen_dir/third_party/blink/public/resources/blink_scaled_resources_100_percent.pak",
       "$root_gen_dir/third_party/blink/public/resources/inspector_overlay_resources.pak",
-      "$root_gen_dir/third_party/blink/public/strings/blink_accessibility_strings_en-US.pak",
       "$root_gen_dir/third_party/blink/public/strings/blink_strings_en-US.pak",
-      "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
+      "$root_gen_dir/ui/strings/auto_image_annotation_strings_en-US.pak",
     ]
     deps += [
       "//base/tracing/protos:chrome_track_event_resources",
@@ -119,8 +118,8 @@ repack("repack_unscaled_resources") {
       "//third_party/blink/public:resources",
       "//third_party/blink/public:scaled_resources_100_percent",
       "//third_party/blink/public/strings",
-      "//third_party/blink/public/strings:accessibility_strings",
       "//ui/resources:ui_resources_grd_grit",
+      "//ui/strings:auto_image_annotation_strings",
     ]
   }
 }
@@ -130,15 +129,8 @@ bundle_data_xcassets("chromium_icons") {
   sources = [
     "ChromiumIcons.xcassets/AppIcon.appiconset/Contents.json",
     "ChromiumIcons.xcassets/AppIcon.appiconset/Icon-1024.png",
-    "ChromiumIcons.xcassets/AppIcon.appiconset/Icon-120.png",
-    "ChromiumIcons.xcassets/AppIcon.appiconset/Icon-152.png",
-    "ChromiumIcons.xcassets/AppIcon.appiconset/Icon-167.png",
-    "ChromiumIcons.xcassets/AppIcon.appiconset/Icon-180.png",
-    "ChromiumIcons.xcassets/AppIcon.appiconset/Icon-29.png",
-    "ChromiumIcons.xcassets/AppIcon.appiconset/Icon-40.png",
-    "ChromiumIcons.xcassets/AppIcon.appiconset/Icon-58.png",
-    "ChromiumIcons.xcassets/AppIcon.appiconset/Icon-80.png",
-    "ChromiumIcons.xcassets/AppIcon.appiconset/Icon-87.png",
+    "ChromiumIcons.xcassets/AppIcon.appiconset/Icon-1024Dark.png",
+    "ChromiumIcons.xcassets/AppIcon.appiconset/Icon-1024Tinted.png",
   ]
 }
 

@@ -2,10 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/core/layout/table/table_layout_algorithm_types.h"
 
 #include "third_party/blink/renderer/core/layout/block_node.h"
 #include "third_party/blink/renderer/core/layout/constraint_space_builder.h"
+#include "third_party/blink/renderer/core/layout/length_utils.h"
 #include "third_party/blink/renderer/core/layout/table/layout_table_caption.h"
 #include "third_party/blink/renderer/core/layout/table/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/table/layout_table_column.h"
@@ -156,8 +162,8 @@ TableTypes::CellInlineConstraint TableTypes::CreateCellInlineConstraint(
       const auto space = builder.ToConstraintSpace();
 
       cached_min_max_sizes =
-          node.ComputeMinMaxSizes(table_writing_mode,
-                                  MinMaxSizesType::kIntrinsic, space)
+          node.ComputeMinMaxSizes(table_writing_mode, SizeType::kIntrinsic,
+                                  space)
               .sizes;
     }
 

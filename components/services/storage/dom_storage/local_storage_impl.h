@@ -81,6 +81,7 @@ class LocalStorageImpl : public base::trace_event::MemoryDumpProvider,
                      DeleteStorageCallback callback) override;
   void CleanUpStorage(CleanUpStorageCallback callback) override;
   void Flush() override;
+  void NeedsFlushForTesting(NeedsFlushForTestingCallback callback) override;
   void PurgeMemory() override;
   void ApplyPolicyUpdates(
       std::vector<mojom::StoragePolicyUpdatePtr> policy_updates) override;
@@ -99,6 +100,11 @@ class LocalStorageImpl : public base::trace_event::MemoryDumpProvider,
   // Wait for the database to be opened, or for opening to fail. If the database
   // is already opened, |callback| is invoked immediately.
   void SetDatabaseOpenCallbackForTesting(base::OnceClosure callback);
+
+  void OverrideDeleteStaleStorageAreasDelayForTesting(
+      const base::TimeDelta& delay);
+
+  void ForceFakeOpenStorageAreaForTesting(const blink::StorageKey& storage_key);
 
  private:
   friend class DOMStorageBrowserTest;
@@ -129,8 +135,8 @@ class LocalStorageImpl : public base::trace_event::MemoryDumpProvider,
   // The (possibly delayed) implementation of GetUsage(). Can be called directly
   // from that function, or through |on_database_open_callbacks_|.
   void RetrieveStorageUsage(GetUsageCallback callback);
-  void OnGotMetaData(GetUsageCallback callback,
-                     std::vector<DomStorageDatabase::KeyValuePair> data);
+  void OnGotWriteMetaData(GetUsageCallback callback,
+                          std::vector<DomStorageDatabase::KeyValuePair> data);
 
   void OnGotStorageUsageForShutdown(
       std::vector<mojom::StorageUsageInfoPtr> usage);
@@ -139,6 +145,12 @@ class LocalStorageImpl : public base::trace_event::MemoryDumpProvider,
 
   void GetStatistics(size_t* total_cache_size, size_t* unused_area_count);
   void OnCommitResult(leveldb::Status status);
+
+  // These clear stale storage areas (not read/written to within 400 days) from
+  // the database. See crbug.com/40281870 for more info.
+  void DeleteStaleStorageAreas();
+  void OnGotMetaDataToDeleteStaleStorageAreas(
+      std::vector<DomStorageDatabase::KeyValuePair> data);
 
   const base::FilePath directory_;
 
@@ -179,6 +191,11 @@ class LocalStorageImpl : public base::trace_event::MemoryDumpProvider,
   mojo::Receiver<mojom::LocalStorageControl> control_receiver_{this};
 
   base::OnceClosure shutdown_complete_callback_;
+
+  // We need to delay deleting stale storage areas until after any session
+  // restore has taken place, otherwise we might fail to record current usage.
+  // See crbug.com/40281870 for more info.
+  base::TimeDelta delete_stale_storage_areas_delay_{base::Minutes(1)};
 
   base::WeakPtrFactory<LocalStorageImpl> weak_ptr_factory_{this};
 };

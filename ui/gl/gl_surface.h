@@ -44,8 +44,7 @@ class EGLTimestampClient;
 
 // Encapsulates a surface that can be rendered to with GL, hiding platform
 // specific management.
-class GL_EXPORT GLSurface : public base::RefCounted<GLSurface>,
-                            public base::SupportsWeakPtr<GLSurface> {
+class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
  public:
   GLSurface();
 
@@ -77,11 +76,6 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface>,
   // Recreate the surface without changing the size, returning success. If
   // failed, it is possible that the context is no longer current.
   virtual bool Recreate();
-
-  // Unschedule the CommandExecutor and return true to abort the processing of
-  // a GL draw call to this surface and defer it until the CommandExecutor is
-  // rescheduled.
-  virtual bool DeferDraws();
 
   // Returns true if this surface is offscreen.
   virtual bool IsOffscreen() = 0;
@@ -159,10 +153,6 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface>,
   // on error.
   virtual bool OnMakeCurrent(GLContext* context);
 
-  // Used for explicit buffer management.
-  virtual bool SetBackbufferAllocation(bool allocated);
-  virtual void SetFrontbufferAllocation(bool allocated);
-
   // Get a handle used to share the surface with another process. Returns null
   // if this is not possible.
   virtual void* GetShareHandle();
@@ -213,11 +203,12 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface>,
   // Return the interface used for querying EGL timestamps.
   virtual EGLTimestampClient* GetEGLTimestampClient();
 
-  virtual void SetFrameRate(float frame_rate) {}
   static GLSurface* GetCurrent();
 
   virtual void SetCurrent();
   virtual bool IsCurrent();
+
+  base::WeakPtr<GLSurface> AsWeakPtr();
 
   static bool ExtensionsContain(const char* extensions, const char* name);
 
@@ -230,6 +221,9 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface>,
  protected:
   virtual ~GLSurface();
 
+  void InvalidateWeakPtrs();
+  bool HasWeakPtrs();
+
   static GpuPreference forced_gpu_preference_;
 
  private:
@@ -237,6 +231,8 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface>,
 
   friend class base::RefCounted<GLSurface>;
   friend class GLContext;
+
+  base::WeakPtrFactory<GLSurface> weak_ptr_factory_{this};
 };
 
 // Wraps GLSurface in scoped_refptr and tries to initializes it. Returns a

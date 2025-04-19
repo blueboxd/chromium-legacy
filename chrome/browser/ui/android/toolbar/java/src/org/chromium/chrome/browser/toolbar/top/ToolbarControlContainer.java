@@ -142,6 +142,10 @@ public class ToolbarControlContainer extends OptimizedFrameLayout
         }
     }
 
+    public void onPageLoadStopped() {
+        ((ToolbarViewResourceAdapter) getToolbarResourceAdapter()).onPageLoadStopped();
+    }
+
     @Override
     public void setCompositorBackgroundInitialized() {
         mIsCompositorInitialized = true;
@@ -426,6 +430,8 @@ public class ToolbarControlContainer extends OptimizedFrameLayout
 
         private int mControlsToken = TokenHolder.INVALID_TOKEN;
 
+        private boolean mNeedCaptureAfterPageLoad;
+
         /** Builds the resource adapter for the toolbar. */
         public ToolbarViewResourceAdapter(View toolbarContainer) {
             super(toolbarContainer);
@@ -508,7 +514,12 @@ public class ToolbarControlContainer extends OptimizedFrameLayout
 
                 final @LayoutType int layoutType = getCurrentLayoutType();
                 if (layoutType != LayoutType.TOOLBAR_SWIPE) {
-                    if (mConstraintsObserver != null && mTabSupplier != null) {
+                    // With BCIV enabled, we need a capture after page load before the controls are
+                    // unlocked. So, only go into this section that potentially blocks the capture
+                    // if we didn't just load a page.
+                    if (!mNeedCaptureAfterPageLoad
+                            && mConstraintsObserver != null
+                            && mTabSupplier != null) {
                         Tab tab = mTabSupplier.get();
 
                         // TODO(crbug.com/40859837): Understand and fix this for native
@@ -539,7 +550,16 @@ public class ToolbarControlContainer extends OptimizedFrameLayout
                     }
                 }
             }
+            return checkCaptureReadinessResult();
+        }
 
+        /**
+         * @return Whether a dirty check for invalidation makes sense at this time.
+         *     <p>False if either the toolbar is not dirty, or the toolbar is dirty but a capture
+         *     isn't required at this moment (see {@link TopToolbarBlockCaptureReason})
+         *     <p>True if the toolbar is dirty and a new capture is needed.
+         */
+        private boolean checkCaptureReadinessResult() {
             CaptureReadinessResult isReadyResult =
                     mToolbar == null ? null : mToolbar.isReadyForTextureCapture();
             if (isReadyResult != null
@@ -594,18 +614,23 @@ public class ToolbarControlContainer extends OptimizedFrameLayout
             mToolbar.getLocationBarContentRect(mLocationBarRect);
             mLocationBarRect.offset(mTempPosition[0], mTempPosition[1]);
 
-            int shadowHeight;
-            if (ToolbarFeatures.isDynamicTopChromeEnabled()) {
-                // When DynamicTopChrome is enabled, the tab strip height can be unpredictable
-                // during capture.
-                shadowHeight = mToolbarHairline.getHeight();
-            } else {
-                shadowHeight =
-                        mToolbarContainer.getHeight() - mToolbar.getHeight() - mTabStripHeightPx;
-            }
-
+            int shadowHeight = mToolbarHairline.getHeight();
             return ResourceFactory.createToolbarContainerResource(
                     mToolbarRect, mLocationBarRect, shadowHeight);
+        }
+
+        public void onPageLoadStopped() {
+            if (ChromeFeatureList.sBrowserControlsInViz.isEnabled()) {
+                // With capture suppression, we don't capture after navigating. Instead, we schedule
+                // a capture to happen when the controls become unlocked. With BCIV, there is no
+                // surface sync, so it's more likely to scroll before the capture is complete. To
+                // fix this, we capture after page load finishes. This is late enough in navigation
+                // to not delay other important tasks on the main thread, and early enough so we
+                // have a capture available before the controls are unlocked.
+                mNeedCaptureAfterPageLoad = true;
+                onResourceRequested();
+                mNeedCaptureAfterPageLoad = false;
+            }
         }
 
         public void destroy() {

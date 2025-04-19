@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "crypto/unexportable_key_win.h"
 
 #include <string>
@@ -315,6 +320,8 @@ class ECDSAKey : public UnexportableSigningKey {
     return SignECDSA(key_.get(), data);
   }
 
+  bool IsHardwareBacked() const override { return true; }
+
  private:
   ScopedNCryptKey key_;
   const std::vector<uint8_t> wrapped_;
@@ -345,6 +352,8 @@ class RSAKey : public UnexportableSigningKey {
       base::span<const uint8_t> data) override {
     return SignRSA(key_.get(), data);
   }
+
+  bool IsHardwareBacked() const override { return true; }
 
  private:
   ScopedNCryptKey key_;

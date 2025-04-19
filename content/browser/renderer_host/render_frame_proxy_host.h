@@ -22,7 +22,6 @@
 #include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
-#include "third_party/blink/public/common/metrics/post_message_counter.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-forward.h"
@@ -228,7 +227,7 @@ class CONTENT_EXPORT RenderFrameProxyHost
                     const blink::LocalFrameToken& source_frame_token) override;
   void RouteMessageEvent(
       const std::optional<blink::LocalFrameToken>& source_frame_token,
-      const std::u16string& source_origin,
+      const url::Origin& source_origin,
       const std::u16string& target_origin,
       blink::TransferableMessage message) override;
   void PrintCrossProcessSubframe(const gfx::Rect& rect,
@@ -314,6 +313,12 @@ class CONTENT_EXPORT RenderFrameProxyHost
   // with.
   AgentSchedulingGroupHost& GetAgentSchedulingGroup();
 
+  // Helper to compute the serialized source origin from an actual source origin
+  // for postMessage. This will ultimately be exposed to JavaScript via the
+  // message's event.origin field.
+  std::u16string SerializePostMessageSourceOrigin(
+      const url::Origin& source_origin);
+
   // Needed for tests to be able to swap the implementation and intercept calls.
   mojo::AssociatedReceiver<blink::mojom::RemoteFrameHost>&
   frame_host_receiver_for_testing() {
@@ -371,10 +376,6 @@ class CONTENT_EXPORT RenderFrameProxyHost
       remote_main_frame_host_receiver_{this};
 
   blink::RemoteFrameToken frame_token_;
-
-  // Tracks metrics related to postMessage usage.
-  // TODO(crbug.com/40737536): Remove when no longer needed.
-  blink::PostMessageCounter post_message_counter_;
 
   base::WeakPtrFactory<RenderFrameProxyHost> weak_factory_{this};
 };

@@ -9,8 +9,10 @@
  */
 
 import './privacy_hub_app_permission_row.js';
+import 'chrome://resources/ash/common/cr_elements/cr_radio_button/cr_radio_button_style.css.js';
 import 'chrome://resources/ash/common/cr_elements/icons.html.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+import '../controls/controlled_button.js';
 
 import {PrefsMixin} from '/shared/settings/prefs/prefs_mixin.js';
 import {I18nMixin} from 'chrome://resources/ash/common/cr_elements/i18n_mixin.js';
@@ -23,7 +25,8 @@ import {assertExhaustive, castExists} from '../assert_extras.js';
 import {DeepLinkingMixin} from '../common/deep_linking_mixin.js';
 import {isSecondaryUser} from '../common/load_time_booleans.js';
 import {RouteObserverMixin} from '../common/route_observer_mixin.js';
-import {DropdownMenuOptionList, SettingsDropdownMenuElement} from '../controls/settings_dropdown_menu.js';
+import {SettingsDropdownMenuElement} from '../controls/settings_dropdown_menu.js';
+import {SettingsRadioGroupElement} from '../controls/settings_radio_group.js';
 import {App, AppPermissionsHandlerInterface, AppPermissionsObserverReceiver} from '../mojom-webui/app_permission_handler.mojom-webui.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
 import {Route, Router, routes} from '../router.js';
@@ -42,6 +45,8 @@ export enum GeolocationAccessLevel {
   DISALLOWED = 0,
   ALLOWED = 1,
   ONLY_ALLOWED_FOR_SYSTEM = 2,
+
+  MAX_VALUE = ONLY_ALLOWED_FOR_SYSTEM,
 }
 
 export enum ScheduleType {
@@ -49,10 +54,6 @@ export enum ScheduleType {
   SUNSET_TO_SUNRISE = 1,
   CUSTOM = 2,
 }
-
-export const GEOLOCATION_ACCESS_LEVEL_ENUM_SIZE =
-    Object.keys(GeolocationAccessLevel).length;
-
 /**
  * Whether the app has location permission defined.
  */
@@ -81,33 +82,17 @@ export class SettingsPrivacyHubGeolocationSubpage extends
 
   static get properties() {
     return {
-      geolocationMapTargets_: {
+      geolocationAccessLevelPrefValues_: {
+        readOnly: true,
         type: Object,
-        value(this: SettingsPrivacyHubGeolocationSubpage) {
-          return [
-            {
-              value: GeolocationAccessLevel.ALLOWED,
-              name: this.i18n('geolocationAccessLevelAllowed'),
-            },
-            {
-              value: GeolocationAccessLevel.ONLY_ALLOWED_FOR_SYSTEM,
-              name: this.i18n('geolocationAccessLevelOnlyAllowedForSystem'),
-            },
-            {
-              value: GeolocationAccessLevel.DISALLOWED,
-              name: this.i18n('geolocationAccessLevelDisallowed'),
-            },
-          ];
+        value: {
+          DISALLOWED: GeolocationAccessLevel.DISALLOWED,
+          ALLOWED: GeolocationAccessLevel.ALLOWED,
+          ONLY_ALLOWED_FOR_SYSTEM:
+              GeolocationAccessLevel.ONLY_ALLOWED_FOR_SYSTEM,
         },
       },
-      /**
-       * Show the right description text for the selected geolocation mode.
-       */
-      geolocationModeDescriptionText_: {
-        type: TrustedHTML,
-        computed: 'computeGeolocationModeDescriptionText_(' +
-            'prefs.ash.user.geolocation_access_level.value)',
-      },
+
       /**
        * Apps with location permission defined.
        */
@@ -146,11 +131,18 @@ export class SettingsPrivacyHubGeolocationSubpage extends
         type: String,
         notify: true,
       },
-      sunsetScheduleText_: {
+      nightLightText_: {
         type: String,
-        computed: 'computeSunsetScheduleText_(' +
+        computed: 'computeNightLightText_(' +
             'prefs.ash.user.geolocation_access_level.value,' +
             `prefs.ash.night_light.schedule_type.value,` +
+            'currentSunRiseTime_, currentSunSetTime_)',
+      },
+      darkThemeText_: {
+        type: String,
+        computed: 'computeDarkThemeText_(' +
+            'prefs.ash.user.geolocation_access_level.value,' +
+            `prefs.ash.dark_mode.schedule_type.value,` +
             'currentSunRiseTime_, currentSunSetTime_)',
       },
       localWeatherText_: {
@@ -158,12 +150,6 @@ export class SettingsPrivacyHubGeolocationSubpage extends
         computed: 'computeLocalWeatherText_(' +
             'prefs.ash.user.geolocation_access_level.value,' +
             'prefs.settings.ambient_mode.enabled.value)',
-      },
-      darkThemeText_: {
-        type: String,
-        computed: `computeDarkThemeText_(` +
-            'prefs.ash.user.geolocation_access_level.value,' +
-            'prefs.ash.dark_mode.schedule_type.value)',
       },
     };
   }
@@ -190,7 +176,8 @@ export class SettingsPrivacyHubGeolocationSubpage extends
     Setting.kGeolocationAdvanced,
   ]);
 
-  private geolocationMapTargets_: DropdownMenuOptionList;
+  private geolocationAccessLevel_: string;
+  private geolocationAccessLevelPrefValues_: {[key: string]: number};
   private geolocationModeDescriptionText_: string;
   private appList_: App[];
   private appPermissionsObserverReceiver_: AppPermissionsObserverReceiver|null;
@@ -201,6 +188,7 @@ export class SettingsPrivacyHubGeolocationSubpage extends
   private currentTimeZoneName_: string;
   private currentSunRiseTime_: string;
   private currentSunSetTime_: string;
+  private shouldShowManageGeolocationDialog_: boolean;
 
   constructor() {
     super();
@@ -231,6 +219,47 @@ export class SettingsPrivacyHubGeolocationSubpage extends
   override disconnectedCallback(): void {
     super.disconnectedCallback();
     this.appPermissionsObserverReceiver_!.$.close();
+  }
+
+  private isGeolocationPrefEnforced_(): boolean {
+    return this.getPref('ash.user.geolocation_access_level').enforcement ===
+        chrome.settingsPrivate.Enforcement.ENFORCED;
+  }
+
+  private isGeolocationModifiable_(): boolean {
+    if (isSecondaryUser() || this.isGeolocationPrefEnforced_()) {
+      return false;
+    }
+
+    return true;
+  }
+
+  private showManageGeolocationDialog_(): void {
+    if (this.isGeolocationModifiable_()) {
+      this.shouldShowManageGeolocationDialog_ = true;
+    }
+  }
+
+  private onCancelClicked_(): void {
+    const radioGroup: SettingsRadioGroupElement =
+        this.shadowRoot!.querySelector<SettingsRadioGroupElement>(
+            '#manageGeolocationRadioGroup')!;
+    radioGroup.resetToPrefValue();
+    this.shouldShowManageGeolocationDialog_ = false;
+  }
+
+  private onConfirmClicked_(): void {
+    // Reflect user choice to the underlying pref.
+    const radioGroup: SettingsRadioGroupElement =
+        this.shadowRoot!.querySelector<SettingsRadioGroupElement>(
+            '#manageGeolocationRadioGroup')!;
+    radioGroup.sendPrefChange();
+
+    // Record metrics.
+    this.recordMetric_();
+
+    // Dismiss the dialog.
+    this.shouldShowManageGeolocationDialog_ = false;
   }
 
   private settingControlledByPrimaryUserText_(): string {
@@ -321,7 +350,7 @@ export class SettingsPrivacyHubGeolocationSubpage extends
         ScheduleType.SUNSET_TO_SUNRISE;
   }
 
-  private computeSunsetScheduleText_(): string {
+  private computeNightLightText_(): string {
     if (!this.prefs) {
       return '';
     }
@@ -342,7 +371,24 @@ export class SettingsPrivacyHubGeolocationSubpage extends
         PermissionType.kLocation);
   }
 
-  private computeGeolocationModeDescriptionText_(): TrustedHTML {
+  private computeGeolocationAccessLevelText_(): TrustedHTML {
+    const accessLevel: GeolocationAccessLevel =
+        this.getPref<GeolocationAccessLevel>(
+                'ash.user.geolocation_access_level')
+            .value;
+    switch (accessLevel) {
+      case GeolocationAccessLevel.ALLOWED:
+        return this.i18nAdvanced('geolocationAccessLevelAllowed');
+      case GeolocationAccessLevel.ONLY_ALLOWED_FOR_SYSTEM:
+        return this.i18nAdvanced('geolocationAccessLevelOnlyAllowedForSystem');
+      case GeolocationAccessLevel.DISALLOWED:
+        return this.i18nAdvanced('geolocationAccessLevelDisallowed');
+      default:
+        assertExhaustive(accessLevel);
+    }
+  }
+
+  private computeGeolocationAccessLevelDescriptionText_(): TrustedHTML {
     const accessLevel: GeolocationAccessLevel =
         this.getPref<GeolocationAccessLevel>(
                 'ash.user.geolocation_access_level')
@@ -361,11 +407,14 @@ export class SettingsPrivacyHubGeolocationSubpage extends
   }
 
   private recordMetric_(): void {
-    const accessLevel = this.$.geolocationDropdown.pref!.value;
+    const accessLevel: GeolocationAccessLevel =
+        this.getPref<GeolocationAccessLevel>(
+                'ash.user.geolocation_access_level')
+            .value;
 
     chrome.metricsPrivate.recordEnumerationValue(
         LOCATION_PERMISSION_CHANGE_FROM_SETTINGS_HISTOGRAM_NAME, accessLevel,
-        GEOLOCATION_ACCESS_LEVEL_ENUM_SIZE);
+        GeolocationAccessLevel.MAX_VALUE + 1);
   }
 
   private geolocationAllowedForSystem_(): boolean {
@@ -413,8 +462,11 @@ export class SettingsPrivacyHubGeolocationSubpage extends
 
     return this.geolocationAllowedForSystem_() ?
         this.i18n('privacyHubSystemServicesAllowedText') :
-        this.i18n('privacyHubSystemServicesBlockedText');
+        this.i18n(
+            'privacyHubSystemServicesSunsetScheduleBlockedText',
+            this.currentSunRiseTime_, this.currentSunSetTime_);
   }
+
   private onTimeZoneChanged_(): void {
     this.browserProxy_.getCurrentTimeZoneName().then((timeZoneName) => {
       this.currentTimeZoneName_ = timeZoneName;

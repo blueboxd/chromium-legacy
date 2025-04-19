@@ -1490,6 +1490,9 @@ AX_TEST_F(
       const root = await this.runWithLoadedTree(site);
       const group = root.firstChild;
       mockFeedback.call(focus(group))
+          .call(
+              () => assertTrue(RectUtil.equal(
+                  FocusBounds.get()[0], group.firstChild.location)))
           .call(doDefault(group))
           .expectSpeech('Tree item', ' 2 of 2 ')
           .call(doDefault(group))
@@ -2984,54 +2987,26 @@ AX_TEST_F('ChromeVoxBackgroundTest', 'AlertAnnouncement', async function() {
   await mockFeedback.replay();
 });
 
-/**
- * Fixtures and tests that need to be parameterized based on whether the
- * `ash::features::kHoldingSpacePredictability` feature flag is enabled.
- *
- * Generated fixtures are:
- * - ChromeVoxBackgroundTestWithHoldingSpacePredictabilityEnabled
- * - ChromeVoxBackgroundTestWithHoldingSpacePredictabilityDisabled
- */
-[true, false].forEach((enabled) => {
-  const testFixture = `ChromeVoxBackgroundTestWithHoldingSpacePredictability${
-      enabled ? 'Enabled' : 'Disabled'}`;
+AX_TEST_F(
+    'ChromeVoxBackgroundTest', 'SwipeLeftRight4ByContainers', async function() {
+      const mockFeedback = this.createMockFeedback();
+      const root = await this.runWithLoadedTree(`<p>test</p>`);
+      mockFeedback.call(doGesture(Gesture.SWIPE_RIGHT4))
+          .expectSpeech('Launcher', 'Button', 'Shelf', 'Tool bar', ', window')
+          .call(doGesture(Gesture.SWIPE_RIGHT4))
+          .expectSpeech('Shelf', 'Tool bar')
+          .call(doGesture(Gesture.SWIPE_RIGHT4))
+          .expectSpeech(/Calendar*/)
+          .call(doGesture(Gesture.SWIPE_RIGHT4))
+          .expectSpeech(/Address and search bar*/)
 
-  this[testFixture] = class extends ChromeVoxBackgroundTest {
-    /** @override */
-    testGenCppIncludes() {
-      super.testGenCppIncludes();
-      GEN('#include "ash/constants/ash_features.h"');
-    }
+          .call(doGesture(Gesture.SWIPE_LEFT4))
+          .expectSpeech(/Calendar*/)
+          .call(doGesture(Gesture.SWIPE_LEFT4))
+          .expectSpeech('Shelf', 'Tool bar');
 
-    /** @override */
-    get featureList() {
-      const featureList = {enabled: [], disabled: []};
-      (enabled ? featureList.enabled : featureList.disabled)
-          .push('ash::features::kHoldingSpacePredictability');
-      return featureList;
-    }
-  };
-
-  AX_TEST_F(testFixture, 'SwipeLeftRight4ByContainers', async function() {
-    const mockFeedback = this.createMockFeedback();
-    const root = await this.runWithLoadedTree(`<p>test</p>`);
-    mockFeedback.call(doGesture(Gesture.SWIPE_RIGHT4))
-        .expectSpeech('Launcher', 'Button', 'Shelf', 'Tool bar', ', window')
-        .call(doGesture(Gesture.SWIPE_RIGHT4))
-        .expectSpeech('Shelf', 'Tool bar')
-        .call(doGesture(Gesture.SWIPE_RIGHT4))
-        .expectSpeech(enabled ? /Tote*/ : /Calendar*/)
-        .call(doGesture(Gesture.SWIPE_RIGHT4))
-        .expectSpeech(/Address and search bar*/)
-
-        .call(doGesture(Gesture.SWIPE_LEFT4))
-        .expectSpeech(enabled ? /Tote*/ : /Calendar*/)
-        .call(doGesture(Gesture.SWIPE_LEFT4))
-        .expectSpeech('Shelf', 'Tool bar');
-
-    await mockFeedback.replay();
-  });
-});
+      await mockFeedback.replay();
+    });
 
 AX_TEST_F('ChromeVoxBackgroundTest', 'SwipeLeftRight2', async function() {
   const mockFeedback = this.createMockFeedback();
@@ -3467,8 +3442,8 @@ AX_TEST_F('ChromeVoxBackgroundTest', 'EarconPlayback', function() {
   // We only test a few earcons here. Not all earcons prevent parallel playback
   // or have mappings into the earcon engine.
 
-  // There are no tracked sources yet.
-  assertEquals(0, Object.keys(engine.lastEarconSources_).length);
+  // Ensure there are no tracked sources yet.
+  engine.lastEarconSources_ = {};
 
   // Note that alert modal vs nonmodal would be allowed to play in parallel (as
   // do wrap / wrap edge) because they are different events even though they
@@ -4179,4 +4154,11 @@ AX_TEST_F('ChromeVoxBackgroundTest', 'CustomTabList', async function() {
       .expectSpeech(/[0-9]+ of [0-9]+/)
       .expectSpeech('Selected');
   await mockFeedback.replay();
+});
+
+AX_TEST_F('ChromeVoxBackgroundTest', 'OpenKeyboardShortcuts', async function() {
+  const mockFeedback = this.createMockFeedback();
+  mockFeedback.call(doCmd('openKeyboardShortcuts'))
+      .expectSpeech('Search shortcuts')
+      .replay();
 });

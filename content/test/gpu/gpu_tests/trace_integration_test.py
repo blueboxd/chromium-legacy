@@ -105,7 +105,7 @@ basic_test_harness_script = r"""
 
 _GET_STATISTICS_EVENT_NAME = 'GetFrameStatisticsMedia'
 _SWAP_CHAIN_PRESENT_EVENT_NAME = 'SwapChain::Present'
-_UPDATE_OVERLAY_EVENT_NAME = 'DCLayerTree::VisualTree::UpdateOverlay'
+_BEGIN_OVERLAY_ACCESS_EVENT_NAME = 'SkiaOutputDeviceDComp::BeginOverlayAccess'
 _PRESENT_SWAP_CHAIN_EVENT_NAME = 'IDXGISwapChain1::Present1'
 
 _HTML_CANVAS_NOTIFY_LISTENERS_CANVAS_CHANGED_EVENT_NAME =\
@@ -116,7 +116,7 @@ _STATIC_BITMAP_TO_VID_FRAME_CONVERT_EVENT_NAME =\
 
 _MFD3D11VC_CAPTURE_EVENT_NAME = 'CopyTextureToGpuMemoryBuffer'
 _MFD3D11VC_MAP_EVENT_NAME = 'GpuMemoryBufferTrackerWin::DuplicateAsUnsafeRegion'
-_MFD3D11VC_PRESENT_EVENT_NAME = 'D3DImageBacking::ProduceGLTexturePassthrough'
+_MFD3D11VC_PRESENT_EVENT_NAME = 'DXGISharedHandleState::AcquireKeyedMutex'
 
 # Caching events and constants
 _GPU_HOST_STORE_BLOB_EVENT_NAME =\
@@ -471,7 +471,7 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
     try:
       tab.action_runner.WaitForJavaScriptCondition(args.finish_js_condition,
-                                                   timeout=30)
+                                                   timeout=60)
     finally:
       test_messages = tab.EvaluateJavaScript(
           'domAutomationController._messages')
@@ -719,20 +719,20 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     for event in event_iterator:
       if event.category != category:
         continue
-      if event.name != _UPDATE_OVERLAY_EVENT_NAME:
+      if event.name != _BEGIN_OVERLAY_ACCESS_EVENT_NAME:
         continue
-      image_type = event.args.get('image_type', None)
-      if image_type == 'DCompVisualContent':
+      debug_label = event.args.get('debug_label', None)
+      if debug_label == 'SwapChainBuffer':
         found_overlay = True
         break
     if expect_overlay and not found_overlay:
       self.fail(
           'Overlay expected but not found: matching %s events were not found' %
-          _UPDATE_OVERLAY_EVENT_NAME)
+          _BEGIN_OVERLAY_ACCESS_EVENT_NAME)
     elif expect_no_overlay and found_overlay:
       self.fail(
           'Overlay not expected but found: matching %s events were found' %
-          _UPDATE_OVERLAY_EVENT_NAME)
+          _BEGIN_OVERLAY_ACCESS_EVENT_NAME)
 
   def _EvaluateSuccess_CheckSwapChainHasAlpha(self, category: str,
                                               event_iterator: Iterator,

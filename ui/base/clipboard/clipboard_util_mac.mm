@@ -5,8 +5,7 @@
 #include "ui/base/clipboard/clipboard_util_mac.h"
 
 #include <AppKit/AppKit.h>
-#include <CoreServices/CoreServices.h>                      // pre-macOS 11
-#include <UniformTypeIdentifiers/UniformTypeIdentifiers.h>  // macOS 11
+#include <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
 #include <string>
 
@@ -248,8 +247,7 @@ NSPasteboard* ClipboardUtil::PasteboardFromBuffer(ClipboardBuffer buffer) {
       buffer_type = NSDragPboard;
       break;
     case ClipboardBuffer::kSelection:
-      NOTREACHED_IN_MIGRATION();
-      break;
+      NOTREACHED();
   }
 
   return [NSPasteboard pasteboardWithName:buffer_type];

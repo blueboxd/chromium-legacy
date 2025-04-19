@@ -9,6 +9,7 @@
 #include <mutex>
 #include <string>
 
+#include "base/memory/raw_ptr.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -42,8 +43,8 @@ class PLATFORM_EXPORT V8HistogramAccumulator {
     HistogramAndSum(base::HistogramBase* histogram,
                     std::atomic<int>* sum_microseconds)
         : original_histogram(histogram), sum_microseconds(sum_microseconds) {}
-    base::HistogramBase* original_histogram;
-    std::atomic<int>* sum_microseconds = nullptr;
+    raw_ptr<base::HistogramBase> original_histogram;
+    raw_ptr<std::atomic<int>> sum_microseconds = nullptr;
   };
 
   void* RegisterHistogramImpl(base::HistogramBase* histogram,
@@ -53,15 +54,17 @@ class PLATFORM_EXPORT V8HistogramAccumulator {
 
  private:
   struct AccumulatingHistograms {
-    base::HistogramBase* interactive_histogram;
+    raw_ptr<base::HistogramBase> interactive_histogram;
     // TODO(329408826): Add more accumulating points;
   };
 
   AccumulatingHistograms compile_foreground_;
   AccumulatingHistograms compile_background_;
+  AccumulatingHistograms execute_;
 
   std::atomic<int> compile_foreground_sum_microseconds_ = 0;
   std::atomic<int> compile_background_sum_microseconds_ = 0;
+  std::atomic<int> execute_sum_microseconds_ = 0;
 
   WTF::Vector<std::unique_ptr<HistogramAndSum>> histogram_and_sums_;
 

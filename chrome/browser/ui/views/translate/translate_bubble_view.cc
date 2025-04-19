@@ -25,10 +25,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_service.h"
+#include "chrome/browser/ui/actions/chrome_action_id.h"
+#include "chrome/browser/ui/browser_actions.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/translate/translate_bubble_model_impl.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
-#include "chrome/browser/ui/views/controls/md_text_button_with_down_arrow.h"
 #include "chrome/browser/ui/views/translate/translate_icon_view.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -61,6 +64,7 @@
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
+#include "ui/views/controls/button/md_text_button_with_down_arrow.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/highlight_path_generator.h"
@@ -116,6 +120,9 @@ TranslateBubbleView::~TranslateBubbleView() {
   // is referred by Combobox's destructor. Before destroying the models,
   // removing the child views is needed.
   RemoveAllChildViews();
+  if (features::IsToolbarPinningEnabled() && translate_action_item_) {
+    translate_action_item_->SetIsShowingBubble(false);
+  }
 }
 
 DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(TranslateBubbleView, kIdentifier);
@@ -169,6 +176,16 @@ void TranslateBubbleView::Init() {
 
   if (GetViewState() == TranslateBubbleModel::VIEW_STATE_ERROR) {
     model_->ShowError(error_type_);
+  }
+
+  if (features::IsToolbarPinningEnabled()) {
+    Browser* browser = chrome::FindLastActive();
+    if (browser) {
+      translate_action_item_ = actions::ActionManager::Get().FindAction(
+          kActionShowTranslate, browser->browser_actions()->root_action_item());
+      CHECK(translate_action_item_);
+      translate_action_item_->SetIsShowingBubble(true);
+    }
   }
 }
 
@@ -643,7 +660,8 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewError() {
       base::Unretained(translate_options_button.get())));
   std::u16string translate_options_button_label(
       l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_OPTIONS_MENU_BUTTON));
-  translate_options_button->SetAccessibleName(translate_options_button_label);
+  translate_options_button->GetViewAccessibility().SetName(
+      translate_options_button_label);
   translate_options_button->SetTooltipText(translate_options_button_label);
   translate_options_button->SetID(BUTTON_ID_OPTIONS_MENU);
   translate_options_button->SetRequestFocusOnPress(true);
@@ -732,8 +750,9 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvancedSource() {
 
   source_language_combobox->SetCallback(base::BindRepeating(
       &TranslateBubbleView::SourceLanguageChanged, base::Unretained(this)));
-  source_language_combobox->SetAccessibleName(l10n_util::GetStringUTF16(
-      IDS_TRANSLATE_BUBBLE_SOURCE_LANG_COMBOBOX_ACCNAME));
+  source_language_combobox->GetViewAccessibility().SetName(
+      l10n_util::GetStringUTF16(
+          IDS_TRANSLATE_BUBBLE_SOURCE_LANG_COMBOBOX_ACCNAME));
   source_language_combobox_ = source_language_combobox.get();
 
   auto advanced_reset_button = std::make_unique<views::MdTextButton>(
@@ -778,8 +797,9 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvancedTarget() {
 
   target_language_combobox->SetCallback(base::BindRepeating(
       &TranslateBubbleView::TargetLanguageChanged, base::Unretained(this)));
-  target_language_combobox->SetAccessibleName(l10n_util::GetStringUTF16(
-      IDS_TRANSLATE_BUBBLE_TARGET_LANG_COMBOBOX_ACCNAME));
+  target_language_combobox->GetViewAccessibility().SetName(
+      l10n_util::GetStringUTF16(
+          IDS_TRANSLATE_BUBBLE_TARGET_LANG_COMBOBOX_ACCNAME));
   target_language_combobox_ = target_language_combobox.get();
 
   auto advanced_reset_button = std::make_unique<views::MdTextButton>(
@@ -912,7 +932,7 @@ std::unique_ptr<views::Button> TranslateBubbleView::CreateOptionsMenuButton() {
   InstallCircleHighlightPathGenerator(tab_translate_options_button.get());
   std::u16string translate_options_button_label(
       l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_OPTIONS_MENU_BUTTON));
-  tab_translate_options_button->SetAccessibleName(
+  tab_translate_options_button->GetViewAccessibility().SetName(
       translate_options_button_label);
   tab_translate_options_button->SetTooltipText(translate_options_button_label);
   tab_translate_options_button->SetRequestFocusOnPress(true);

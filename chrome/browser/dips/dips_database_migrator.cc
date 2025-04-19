@@ -48,6 +48,11 @@ bool MigrateDIPSSchemaToLatestVersion(sql::Database& db,
           return false;
         }
         break;
+      case 7:
+        if (!migrator.MigrateSchemaVersionFrom6To7()) {
+          return false;
+        }
+        break;
     }
   }
   return true;
@@ -95,7 +100,7 @@ bool DIPSDatabaseMigrator::MigrateSchemaVersionFrom1To2() {
         "SET %s=NULL "
         "WHERE %s=0 ",
         column.c_str(), column.c_str());
-    sql::Statement s_nullify(db_->GetUniqueStatement(command.c_str()));
+    sql::Statement s_nullify(db_->GetUniqueStatement(command));
 
     if (!s_nullify.Run()) {
       return false;
@@ -259,4 +264,22 @@ bool DIPSDatabaseMigrator::MigrateSchemaVersionFrom5To6() {
   return meta_table_->SetVersionNumber(6) &&
          meta_table_->SetCompatibleVersionNumber(
              std::min(6, DIPSDatabase::kMinCompatibleSchemaVersion));
+}
+
+bool DIPSDatabaseMigrator::MigrateSchemaVersionFrom6To7() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  CHECK(db_->HasActiveTransactions());
+
+  static constexpr char kDeleteConfigSql[] = "DELETE FROM config WHERE key = ?";
+  CHECK(db_->IsSQLValid(kDeleteConfigSql));
+  sql::Statement statement(db_->GetUniqueStatement(kDeleteConfigSql));
+  statement.BindString(0, DIPSDatabase::kPrepopulatedKey);
+
+  if (!statement.Run()) {
+    return false;
+  }
+
+  return meta_table_->SetVersionNumber(7) &&
+         meta_table_->SetCompatibleVersionNumber(
+             std::min(7, DIPSDatabase::kMinCompatibleSchemaVersion));
 }

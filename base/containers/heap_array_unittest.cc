@@ -2,11 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifdef UNSAFE_BUFFERS_BUILD
-// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
-#pragma allow_unsafe_buffers
-#endif
-
 #include "base/containers/heap_array.h"
 
 #include <stdint.h>
@@ -16,6 +11,7 @@
 
 #include "base/containers/span.h"
 #include "base/memory/raw_ptr_exclusion.h"
+#include "base/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -96,8 +92,10 @@ TEST(HeapArray, DataAndIndex) {
   auto vec = HeapArray<uint32_t>::WithSize(2u);
   vec[0] = 100u;
   vec[1] = 101u;
-  EXPECT_EQ(vec.data()[0], 100u);
-  EXPECT_EQ(vec.data()[1], 101u);
+  auto span = vec.as_span();
+  EXPECT_EQ(span.data(), vec.data());
+  EXPECT_EQ(span[0], 100u);
+  EXPECT_EQ(span[1], 101u);
 }
 
 TEST(HeapArray, IteratorAndIndex) {
@@ -268,6 +266,43 @@ TEST(HeapArray, CopyFrom) {
   EXPECT_EQ(1001u, other[1]);
 }
 
+TEST(HeapArrayDeathTest, CopyFrom) {
+  HeapArray<uint32_t> empty;
+  HeapArray<uint32_t> something = HeapArray<uint32_t>::WithSize(2);
+  HeapArray<uint32_t> other = HeapArray<uint32_t>::WithSize(3);
+
+  EXPECT_DEATH_IF_SUPPORTED(empty.copy_from(something), "");
+  EXPECT_DEATH_IF_SUPPORTED(something.copy_from(empty), "");
+  EXPECT_DEATH_IF_SUPPORTED(other.copy_from(something), "");
+  EXPECT_DEATH_IF_SUPPORTED(something.copy_from(other), "");
+}
+
+TEST(HeapArray, CopyPrefixFrom) {
+  HeapArray<uint32_t> empty;
+  HeapArray<uint32_t> something = HeapArray<uint32_t>::WithSize(3);
+  const uint32_t kStuff[] = {1000u, 1001u};
+
+  something.copy_prefix_from(kStuff);
+  EXPECT_EQ(1000u, something[0]);
+  EXPECT_EQ(1001u, something[1]);
+  EXPECT_EQ(0u, something[2]);
+
+  empty.copy_prefix_from(span<uint32_t>());  // Should not check.
+  something.copy_prefix_from(empty);
+  EXPECT_EQ(1000u, something[0]);
+  EXPECT_EQ(1001u, something[1]);
+  EXPECT_EQ(0u, something[2]);
+}
+
+TEST(HeapArrayDeathTest, CopyPrefixFrom) {
+  HeapArray<uint32_t> empty;
+  HeapArray<uint32_t> something = HeapArray<uint32_t>::WithSize(2);
+  HeapArray<uint32_t> other = HeapArray<uint32_t>::WithSize(3);
+
+  EXPECT_DEATH_IF_SUPPORTED(empty.copy_prefix_from(something), "");
+  EXPECT_DEATH_IF_SUPPORTED(something.copy_prefix_from(other), "");
+}
+
 TEST(HeapArray, Leak) {
   size_t count = 0;
   span<DestructCounter> leaked;
@@ -284,6 +319,30 @@ TEST(HeapArray, Leak) {
   EXPECT_EQ(count, 0u);
   CStyleInvoker(HeapArray<DestructCounter>::DeleteLeakedData, leaked.data());
   EXPECT_EQ(count, 2u);
+}
+
+TEST(HeapArray, TakeFirst) {
+  auto that = HeapArray<uint32_t>::WithSize(2u);
+  auto* that_data = that.data();
+  auto smaller_that = std::move(that).take_first(1u);
+  EXPECT_EQ(smaller_that.size(), 1u);
+  EXPECT_EQ(that_data, smaller_that.data());
+  EXPECT_EQ(that.size(), 0u);
+  EXPECT_EQ(that.data(), nullptr);
+}
+
+TEST(HeapArray, TakeFirstWithZeroSize) {
+  auto that = HeapArray<uint32_t>::WithSize(2u);
+  auto smaller_that = std::move(that).take_first(0u);
+  EXPECT_EQ(smaller_that.size(), 0u);
+  EXPECT_EQ(smaller_that.data(), nullptr);
+  EXPECT_EQ(that.size(), 0u);
+  EXPECT_EQ(that.data(), nullptr);
+}
+
+TEST(HeapArrayDeathTest, TakeFirstWithOverSize) {
+  auto that = HeapArray<uint32_t>::WithSize(2u);
+  EXPECT_CHECK_DEATH(std::move(that).take_first(3u));
 }
 
 }  // namespace base

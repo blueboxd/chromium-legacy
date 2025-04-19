@@ -321,10 +321,9 @@ WebAppInstallInfo WebAppInstallInfo::CreateInstallInfoForCreateShortcut(
     const std::u16string& document_title,
     const WebAppInstallInfo& other) {
   WebAppInstallInfo create_shortcut_info(
-      GenerateManifestIdFromStartUrlOnly(document_url));
+      GenerateManifestIdFromStartUrlOnly(document_url), document_url);
   create_shortcut_info.title = document_title;
   create_shortcut_info.description = other.description;
-  create_shortcut_info.start_url = document_url;
   create_shortcut_info.manifest_url = other.manifest_url;
   create_shortcut_info.manifest_icons = other.manifest_icons;
   create_shortcut_info.icon_bitmaps = other.icon_bitmaps;
@@ -351,20 +350,48 @@ WebAppInstallInfo::CreateWithStartUrlForTesting(const GURL& start_url) {
   return info;
 }
 
-WebAppInstallInfo::WebAppInstallInfo(const webapps::ManifestId& manifest_id)
-    : manifest_id(manifest_id) {
-  CHECK(manifest_id.is_valid());
+// static
+base::expected<WebAppInstallInfo, std::string> WebAppInstallInfo::Create(
+    const GURL& manifest_url,
+    const webapps::ManifestId& manifest_id,
+    const GURL& start_url) {
+  if (!manifest_id.is_valid()) {
+    return base::unexpected(
+        "Manifest `id` is not present or invalid. manifest_url: " +
+        manifest_url.possibly_invalid_spec());
+  }
+  if (!start_url.is_valid()) {
+    return base::unexpected(
+        "Manifest `start_url` is not present or invalid. manifest_url: " +
+        manifest_url.possibly_invalid_spec());
+  }
+  if (!url::Origin::Create(start_url).IsSameOriginWith(
+          url::Origin::Create(manifest_id))) {
+    return base::unexpected(
+        "Manifest `id` and `start_url` must have the same origin. "
+        "manifest_url: " +
+        manifest_url.possibly_invalid_spec());
+  }
+
+  return WebAppInstallInfo(manifest_id, start_url);
 }
 
-WebAppInstallInfo::WebAppInstallInfo(const webapps::ManifestId& manifest_id,
-                                     const GURL& start_url)
-    : manifest_id(manifest_id), start_url(start_url) {
-  CHECK(manifest_id.is_valid());
-  CHECK(!manifest_id.has_ref());
-  CHECK(start_url.is_valid());
+namespace {
+void CheckValidManifestIdAndStartUrl(const webapps::ManifestId& manifest_id,
+                                     const GURL& start_url) {
+  CHECK(manifest_id.is_valid(), base::NotFatalUntil::M129);
+  CHECK(!manifest_id.has_ref(), base::NotFatalUntil::M129);
+  CHECK(start_url.is_valid(), base::NotFatalUntil::M129);
   CHECK(url::Origin::Create(start_url).IsSameOriginWith(
             url::Origin::Create(manifest_id)),
         base::NotFatalUntil::M129);
+}
+}  // namespace
+
+WebAppInstallInfo::WebAppInstallInfo(const webapps::ManifestId& manifest_id,
+                                     const GURL& start_url)
+    : manifest_id_(manifest_id), start_url_(start_url) {
+  CheckValidManifestIdAndStartUrl(manifest_id_, start_url_);
 }
 
 WebAppInstallInfo::WebAppInstallInfo(const WebAppInstallInfo& other) = default;
@@ -377,6 +404,14 @@ WebAppInstallInfo::~WebAppInstallInfo() = default;
 
 WebAppInstallInfo WebAppInstallInfo::Clone() const {
   return WebAppInstallInfo(*this);
+}
+
+void WebAppInstallInfo::SetManifestIdAndStartUrl(
+    const webapps::ManifestId& manifest_id,
+    const GURL& start_url) {
+  CheckValidManifestIdAndStartUrl(manifest_id, start_url);
+  manifest_id_ = manifest_id;
+  start_url_ = start_url;
 }
 
 bool operator==(const IconSizes& icon_sizes1, const IconSizes& icon_sizes2) {

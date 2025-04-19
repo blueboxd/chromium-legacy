@@ -60,9 +60,9 @@ AwSafeBrowsingBlockingPage::AwSafeBrowsingBlockingPage(
   if (errorUiType == ErrorUiType::QUIET_SMALL ||
       errorUiType == ErrorUiType::QUIET_GIANT) {
     set_sb_error_ui(std::make_unique<SafeBrowsingQuietErrorUI>(
-        unsafe_resources[0].url, main_frame_url,
-        GetInterstitialReason(unsafe_resources), display_options,
-        ui_manager->app_locale(), base::Time::NowFromSystemTime(), controller(),
+        unsafe_resources[0].url, GetInterstitialReason(unsafe_resources),
+        display_options, ui_manager->app_locale(),
+        base::Time::NowFromSystemTime(), controller(),
         errorUiType == ErrorUiType::QUIET_GIANT));
   }
 
@@ -96,9 +96,9 @@ AwSafeBrowsingBlockingPage* AwSafeBrowsingBlockingPage::CreateBlockingPage(
     const UnsafeResource& unsafe_resource,
     std::unique_ptr<AwWebResourceRequest> resource_request,
     std::optional<base::TimeTicks> blocked_page_shown_timestamp) {
-  // Log the request destination that triggers the safe browsing blocking page.
-  UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.BlockingPage.RequestDestination",
-                            unsafe_resource.request_destination);
+  // Log the threat type that triggers the safe browsing blocking page.
+  UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.BlockingPage.ThreatType",
+                            unsafe_resource.threat_type);
   const UnsafeResourceList unsafe_resources{unsafe_resource};
   AwBrowserContext* browser_context =
       AwBrowserContext::FromWebContents(web_contents);
@@ -108,10 +108,10 @@ AwSafeBrowsingBlockingPage* AwSafeBrowsingBlockingPage::CreateBlockingPage(
   BaseSafeBrowsingErrorUI::SBErrorDisplayOptions display_options =
       BaseSafeBrowsingErrorUI::SBErrorDisplayOptions(
           IsMainPageLoadPending(unsafe_resources),
-          IsSubresource(unsafe_resources),
           safe_browsing::IsExtendedReportingOptInAllowed(*pref_service),
           browser_context->IsOffTheRecord(),
-          safe_browsing::IsExtendedReportingEnabled(*pref_service),
+          safe_browsing::IsExtendedReportingEnabledBypassDeprecationFlag(
+              *pref_service),
           safe_browsing::IsExtendedReportingPolicyManaged(*pref_service),
           safe_browsing::IsEnhancedProtectionEnabled(*pref_service),
           pref_service->GetBoolean(::prefs::kSafeBrowsingProceedAnywayDisabled),

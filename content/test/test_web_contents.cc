@@ -86,7 +86,7 @@ TestWebContents::~TestWebContents() = default;
 
 const TestRenderFrameHost* TestWebContents::GetPrimaryMainFrame() const {
   const auto* const instance = WebContentsImpl::GetPrimaryMainFrame();
-  CHECK(instance->IsTestRenderFrameHost())
+  DCHECK(instance->IsTestRenderFrameHost())
       << "You may want to instantiate RenderViewHostTestEnabler.";
   return static_cast<const TestRenderFrameHost*>(instance);
 }
@@ -98,7 +98,7 @@ TestRenderFrameHost* TestWebContents::GetPrimaryMainFrame() {
 
 TestRenderViewHost* TestWebContents::GetRenderViewHost() {
   auto* instance = WebContentsImpl::GetRenderViewHost();
-  CHECK(instance->IsTestRenderViewHost())
+  DCHECK(instance->IsTestRenderViewHost())
       << "You may want to instantiate RenderViewHostTestEnabler.";
   return static_cast<TestRenderViewHost*>(instance);
 }
@@ -206,6 +206,10 @@ void TestWebContents::SetMainFrameMimeType(const std::string& mime_type) {
   GetPrimaryPage().SetContentsMimeType(mime_type);
 }
 
+void TestWebContents::SetMainFrameSize(const gfx::Size& frame_size) {
+  GetPrimaryMainFrame()->FrameSizeChanged(frame_size);
+}
+
 const std::string& TestWebContents::GetContentsMimeType() {
   return GetPrimaryPage().GetContentsMimeType();
 }
@@ -307,7 +311,8 @@ void TestWebContents::TestSetIsLoading(bool value) {
           node->render_manager()->speculative_frame_host();
       if (speculative_frame_host)
         speculative_frame_host->ResetLoadingState();
-      node->ResetNavigationRequest(NavigationDiscardReason::kCancelled);
+      node->ResetNavigationRequest(
+          NavigationDiscardReason::kExplicitCancellation);
     }
   }
 }
@@ -397,7 +402,12 @@ void TestWebContents::ResetPauseSubresourceLoadingCalled() {
   pause_subresource_loading_called_ = false;
 }
 
-void TestWebContents::SetLastActiveTime(base::TimeTicks last_active_time) {
+void TestWebContents::SetLastActiveTimeTicks(
+    base::TimeTicks last_active_time_ticks) {
+  last_active_time_ticks_ = last_active_time_ticks;
+}
+
+void TestWebContents::SetLastActiveTime(base::Time last_active_time) {
   last_active_time_ = last_active_time;
 }
 
@@ -451,6 +461,7 @@ int TestWebContents::AddPrerender(const GURL& url) {
       rfhi->GetProcess()->GetID(), GetWeakPtr(), rfhi->GetFrameToken(),
       rfhi->GetFrameTreeNodeId(), rfhi->GetPageUkmSourceId(),
       ui::PAGE_TRANSITION_LINK,
+      /*should_warm_up_compositor=*/false,
       /*url_match_predicate=*/{},
       /*prerender_navigation_handle_callback=*/{}));
 }
@@ -566,18 +577,6 @@ void TestWebContents::SetMediaCaptureRawDeviceIdsOpened(
     blink::mojom::MediaStreamType type,
     std::vector<std::string> ids) {
   media_capture_raw_device_ids_opened_[type] = std::move(ids);
-}
-
-void TestWebContents::SetHasPictureInPictureDocument(bool has_pip) {
-  WebContentsImpl::SetHasPictureInPictureDocument(has_pip);
-}
-
-void TestWebContents::SetRenderWidgetHostViewHasFocus(bool has_focus) {
-  auto* const instance = WebContentsImpl::GetRenderWidgetHostView();
-  CHECK(static_cast<content::RenderWidgetHostViewBase*>(instance)
-            ->IsTestRenderWidgetHostView())
-      << "You may want to instantiate RenderViewHostTestEnabler.";
-  static_cast<TestRenderWidgetHostView*>(instance)->set_has_focus(has_focus);
 }
 
 }  // namespace content

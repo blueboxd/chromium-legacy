@@ -910,6 +910,24 @@ AXSelection AXNode::GetUnignoredSelection() const {
   return selection;
 }
 
+bool AXNode::HasIntAttribute(ax::mojom::IntAttribute attribute) const {
+  return GetComputedNodeData().HasOrCanComputeAttribute(attribute);
+}
+int AXNode::GetIntAttribute(ax::mojom::IntAttribute attribute) const {
+  // If missing, return the default value for AXNodeData::GetIntAttribute
+  return GetComputedNodeData().GetOrComputeAttribute(attribute).value_or(0);
+}
+bool AXNode::GetIntAttribute(ax::mojom::IntAttribute attribute,
+                             int* value) const {
+  std::optional<int> maybe_value =
+      GetComputedNodeData().GetOrComputeAttribute(attribute);
+  if (maybe_value) {
+    *value = maybe_value.value();
+    return true;
+  }
+  return false;
+}
+
 bool AXNode::HasStringAttribute(ax::mojom::StringAttribute attribute) const {
   return GetComputedNodeData().HasOrCanComputeAttribute(attribute);
 }
@@ -1009,16 +1027,7 @@ void AXNode::ClearComputedNodeData() {
 
 const std::string& AXNode::GetNameUTF8() const {
   DCHECK(!tree_->GetTreeUpdateInProgressState());
-  const AXNode* node = this;
-  if (GetRole() == ax::mojom::Role::kPortal &&
-      GetNameFrom() == ax::mojom::NameFrom::kNone) {
-    const AXTreeManager* child_tree_manager =
-        AXTreeManager::ForChildTree(*this);
-    if (child_tree_manager)
-      node = child_tree_manager->GetRoot();
-  }
-
-  return node->GetStringAttribute(ax::mojom::StringAttribute::kName);
+  return this->GetStringAttribute(ax::mojom::StringAttribute::kName);
 }
 
 std::u16string AXNode::GetNameUTF16() const {

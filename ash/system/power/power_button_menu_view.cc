@@ -23,6 +23,7 @@
 #include "ash/wm/lock_state_controller.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -162,7 +163,7 @@ void PowerButtonMenuView::RecreateItems() {
       [this](bool create, PowerButtonMenuActionType action,
              base::RepeatingClosure callback, const gfx::VectorIcon& icon,
              const std::u16string& string,
-             PowerButtonMenuItemView** out_item_ptr) -> void {
+             raw_ptr<PowerButtonMenuItemView>* out_item_ptr) -> void {
     // If an item needs to be created and exists, or needs to be destroyed but
     // does not exist, there is nothing to be done.
     if (create && *out_item_ptr) {
@@ -207,13 +208,13 @@ void PowerButtonMenuView::RecreateItems() {
       kSystemPowerButtonMenuPowerOffIcon,
       l10n_util::GetStringUTF16(IDS_ASH_POWER_BUTTON_MENU_POWER_OFF_BUTTON),
       &power_off_item_);
-  add_remove_item(
-      create_sign_out, PowerButtonMenuActionType::kSignOut,
-      base::BindRepeating(&SessionControllerImpl::RequestSignOut,
-                          base::Unretained(Shell::Get()->session_controller())),
-      kSystemPowerButtonMenuSignOutIcon,
-      user::GetLocalizedSignOutStringForStatus(login_status, false),
-      &sign_out_item_);
+  add_remove_item(create_sign_out, PowerButtonMenuActionType::kSignOut,
+                  base::BindRepeating(
+                      &LockStateController::RequestSignOut,
+                      base::Unretained(Shell::Get()->lock_state_controller())),
+                  kSystemPowerButtonMenuSignOutIcon,
+                  user::GetLocalizedSignOutStringForStatus(login_status, false),
+                  &sign_out_item_);
   add_remove_item(
       create_lock_screen, PowerButtonMenuActionType::kLockScreen,
       base::BindRepeating(&SessionControllerImpl::LockScreen,

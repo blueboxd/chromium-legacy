@@ -27,6 +27,7 @@
 #include "third_party/blink/public/common/page/browsing_context_group_info.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/mojom/page/page.mojom.h"
+#include "third_party/blink/public/mojom/page/prerender_page_param.mojom.h"
 #include "third_party/blink/public/mojom/shared_storage/shared_storage_worklet_service.mojom.h"
 #include "third_party/blink/public/mojom/worker/worklet_global_scope_creation_params.mojom.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
@@ -113,8 +114,7 @@ AgentSchedulingGroup::ReceiverData::~ReceiverData() = default;
 // AgentSchedulingGroup:
 AgentSchedulingGroup::AgentSchedulingGroup(
     RenderThread& render_thread,
-    mojo::PendingReceiver<IPC::mojom::ChannelBootstrap> bootstrap,
-    mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker> broker_remote)
+    mojo::PendingReceiver<IPC::mojom::ChannelBootstrap> bootstrap)
     : agent_group_scheduler_(
           blink::scheduler::WebThreadScheduler::MainThreadScheduler()
               .CreateWebAgentGroupScheduler()),
@@ -123,8 +123,6 @@ AgentSchedulingGroup::AgentSchedulingGroup(
       receiver_(this) {
   DCHECK(agent_group_scheduler_);
   DCHECK_NE(GetMBIMode(), features::MBIMode::kLegacy);
-
-  agent_group_scheduler_->BindInterfaceBroker(std::move(broker_remote));
 
   channel_ = SyncChannel::Create(
       /*listener=*/this, /*ipc_task_runner=*/render_thread_->GetIOTaskRunner(),
@@ -152,8 +150,7 @@ AgentSchedulingGroup::AgentSchedulingGroup(
 
 AgentSchedulingGroup::AgentSchedulingGroup(
     RenderThread& render_thread,
-    PendingAssociatedReceiver<mojom::AgentSchedulingGroup> receiver,
-    mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker> broker_remote)
+    PendingAssociatedReceiver<mojom::AgentSchedulingGroup> receiver)
     : agent_group_scheduler_(
           blink::scheduler::WebThreadScheduler::MainThreadScheduler()
               .CreateWebAgentGroupScheduler()),
@@ -163,7 +160,6 @@ AgentSchedulingGroup::AgentSchedulingGroup(
                 agent_group_scheduler_->DefaultTaskRunner()) {
   DCHECK(agent_group_scheduler_);
   DCHECK_EQ(GetMBIMode(), features::MBIMode::kLegacy);
-  agent_group_scheduler_->BindInterfaceBroker(std::move(broker_remote));
 }
 
 AgentSchedulingGroup::~AgentSchedulingGroup() = default;
@@ -293,8 +289,8 @@ blink::WebView* AgentSchedulingGroup::CreateWebView(
         blink::WebFrame::FromFrameToken(params->opener_frame_token.value());
 
   blink::WebView* web_view = blink::WebView::Create(
-      new SelfOwnedWebViewClient(), params->hidden, params->is_prerendering,
-      /*is_inside_portal=*/false,
+      new SelfOwnedWebViewClient(), params->hidden,
+      std::move(params->prerender_param),
       params->type == mojom::ViewWidgetType::kFencedFrame
           ? std::make_optional(params->fenced_frame_mode)
           : std::nullopt,

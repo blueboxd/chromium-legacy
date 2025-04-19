@@ -10,10 +10,9 @@
 #include "third_party/blink/renderer/core/layout/block_node.h"
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/inline/inline_cursor.h"
-#include "third_party/blink/renderer/core/layout/layout_ng_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/paint/paint_controller_paint_test.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
-#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 using testing::ElementsAre;
 
@@ -73,10 +72,10 @@ TEST_P(BoxFragmentPainterTest, ScrollHitTestOrder) {
   EXPECT_THAT(ContentDisplayItems(),
               ElementsAre(VIEW_SCROLLING_BACKGROUND_DISPLAY_ITEM,
                           IsSameId(text_fragment.Id(), kForegroundType)));
-  HitTestData scroll_hit_test;
-  scroll_hit_test.scroll_translation =
+  auto* scroll_hit_test = MakeGarbageCollected<HitTestData>();
+  scroll_hit_test->scroll_translation =
       scroller.FirstFragment().PaintProperties()->ScrollTranslation();
-  scroll_hit_test.scroll_hit_test_rect = gfx::Rect(0, 0, 40, 40);
+  scroll_hit_test->scroll_hit_test_rect = gfx::Rect(0, 0, 40, 40);
   EXPECT_THAT(
       ContentPaintChunks(),
       ElementsAre(
@@ -88,7 +87,7 @@ TEST_P(BoxFragmentPainterTest, ScrollHitTestOrder) {
               1, 1,
               PaintChunk::Id(root_fragment.Id(), DisplayItem::kScrollHitTest),
               scroller.FirstFragment().LocalBorderBoxProperties(),
-              &scroll_hit_test, gfx::Rect(0, 0, 40, 40)),
+              scroll_hit_test, gfx::Rect(0, 0, 40, 40)),
           IsPaintChunk(1, 2)));
 }
 
@@ -227,6 +226,15 @@ TEST_P(BoxFragmentPainterTest, NodeAtPointWithSvgInline) {
                     PhysicalOffset(0, 0), HitTestPhase::kForeground);
   EXPECT_EQ(GetDocument().getElementById(AtomicString("pass")),
             result.InnerElement());
+}
+
+TEST_P(BoxFragmentPainterTest, TextareaBoxDecorationBackground) {
+  SetBodyInnerHTML("<textarea id=textarea style='resize: none'>");
+
+  auto* textarea = GetLayoutObjectByElementId("textarea");
+  EXPECT_THAT(ContentDisplayItems(),
+              ElementsAre(VIEW_SCROLLING_BACKGROUND_DISPLAY_ITEM,
+                          IsSameId(textarea->Id(), kBackgroundType)));
 }
 
 }  // namespace blink

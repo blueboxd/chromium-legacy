@@ -43,6 +43,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/scoped_canvas.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/button_controller.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/view_utils.h"
@@ -161,7 +162,7 @@ VideoConferenceTrayButton::VideoConferenceTrayButton(
 
   SetToggledVectorIcon(*toggled_icon);
 
-  SetAccessibleRole(ax::mojom::Role::kToggleButton);
+  GetViewAccessibility().SetRole(ax::mojom::Role::kToggleButton);
 
   // Reduce the focus ring padding which is installed by default by
   // `IconButton`. The default padding results in the focus ring being painted
@@ -321,7 +322,7 @@ VideoConferenceTray::~VideoConferenceTray() {
   VideoConferenceTrayController::Get()->RemoveObserver(this);
 }
 
-void VideoConferenceTray::CloseBubble() {
+void VideoConferenceTray::CloseBubbleInternal() {
   bubble_open_ = false;
   toggle_bubble_button_->SetToggled(false);
   bubble_.reset();
@@ -409,6 +410,17 @@ void VideoConferenceTray::OnScreenSharingStateChange(bool is_capturing_screen) {
     screen_share_icon_->SetIsCapturing(
         /*is_capturing=*/is_capturing_screen);
   }
+}
+
+void VideoConferenceTray::OnDlcDownloadStateChanged(
+    bool add_warning,
+    const std::u16string& feature_tile_title) {
+  auto* bubble_view = GetBubbleView();
+  if (!bubble_view) {
+    return;
+  }
+  views::AsViewClass<video_conference::BubbleView>(bubble_view)
+      ->OnDLCDownloadStateInError(add_warning, feature_tile_title);
 }
 
 void VideoConferenceTray::OnCameraCapturingStateChange(bool is_capturing) {
@@ -525,6 +537,7 @@ void VideoConferenceTray::ConstructBubbleWithMediaApps(MediaApps apps) {
   std::unique_ptr<TrayBubbleView> bubble_view;
   auto init_params = CreateInitParamsForTrayBubble(/*tray=*/this);
   init_params.preferred_width = kWideTrayMenuWidth;
+  init_params.corner_radius = kUpdatedBubbleCornerRadius;
 
   // If all of the apps are Linux apps, we will just use `LinuxAppsBubbleView`
   // specifically for this situation.

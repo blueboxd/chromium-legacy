@@ -19,6 +19,7 @@
 #include "base/scoped_observation.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "ui/base/class_property.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-forward.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_types.h"
@@ -110,6 +111,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
                             public FocusTraversable,
                             public ui::NativeThemeObserver,
                             public ui::ColorProviderSource,
+                            public ui::PropertyHandler,
                             public ui::metadata::MetaDataProvider {
   // Do not remove this macro!
   // The macro is maintained by the memory safety team.
@@ -248,15 +250,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
                  // relationship to other windows.
     };
 
-    // Default initialization with |type| set to TYPE_WINDOW.
-    // TODO(crbug.com/339619005): Remove the default constructor once call sites
-    //                            have been migrated to always specifying the
-    //                            ownership mode.
-    InitParams();
-
-    // Initialization for other |type| types.
-    // TODO(crbug.com/339619005): Remove this constructor. See comment on the
-    //                            default constructor for more details.
+    // TODO(crbug.com/339619005): Remove this constructor once call sites
+    //                            have been migrated to always specifying
+    //                            the ownership mode as well as the type.
     explicit InitParams(Type type);
 
     // The preferred constructor. Must specify the ownership mode. The ownership
@@ -339,10 +335,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // rendered, and that the client area should be equivalent to the window
     // area. Only used on some platforms (Windows and Linux).
     bool remove_standard_frame = false;
-
-    // Only used by ShellWindow on Windows. Specifies that the default icon of
-    // packaged app should be the system default icon.
-    bool use_system_default_icon = false;
 
     // Whether the widget should be maximized or minimized.
     ui::WindowShowState show_state = ui::SHOW_STATE_DEFAULT;
@@ -483,6 +475,13 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // notifications of theme changes.
     // A value of null results in the default theme being used.
     raw_ptr<ui::NativeTheme> native_theme = nullptr;
+
+#if BUILDFLAG(IS_MAC)
+    // If set to true, tags the widget as an invisible overlay widget that
+    // allows the Views tree to be broken up into distinct NSViews for use by
+    // immersive fullscreen. Not for general use.
+    bool is_overlay = false;
+#endif
   };
 
   // Represents a lock held on the widget's ShouldPaintAsActive() state. As
@@ -1231,6 +1230,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   InitParams::Ownership ownership() const { return ownership_; }
 
   bool native_widget_active() const { return native_widget_active_; }
+
+  // Called to enable or disable screenshots of this widget.
+  void SetAllowScreenshots(bool allow);
+  bool AreScreenshotsAllowed();
 
  protected:
   // Creates the RootView to be used within this Widget. Subclasses may override

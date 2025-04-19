@@ -250,7 +250,6 @@ try_.builder(
 
 try_.builder(
     name = "dawn-win11-arm64-deps-rel",
-    description_html = "Compiles and tests DEPSed binaries for Windows/ARM64",
     mirrors = [
         "ci/Dawn Win11 arm64 DEPS Builder",
     ],
@@ -355,6 +354,22 @@ try_.builder(
 )
 
 try_.builder(
+    name = "linux-dawn-nvidia-1660-exp-rel",
+    description_html = "Runs ToT Dawn tests on experimental Linux/GTX 1660 configs",
+    mirrors = [
+        "ci/Dawn Linux x64 Builder",
+        "ci/Dawn Linux x64 Experimental Release (NVIDIA GTX 1660)",
+    ],
+    gn_args = "ci/Dawn Linux x64 Builder",
+    pool = "luci.chromium.gpu.linux.nvidia.try",
+    builderless = True,
+    os = os.LINUX_DEFAULT,
+    test_presentation = resultdb.test_presentation(
+        grouping_keys = ["status", "v.test_suite", "v.gpu"],
+    ),
+)
+
+try_.builder(
     name = "linux-dawn-rel",
     mirrors = [
         "ci/Dawn Linux x64 Builder",
@@ -399,7 +414,6 @@ try_.builder(
 
 try_.builder(
     name = "dawn-try-chromeos-volteer-rel",
-    description_html = "Runs ToT Dawn tests on Skylab-hosted volteer devices",
     mirrors = [
         "ci/Dawn ChromeOS Skylab Release (volteer)",
     ],
@@ -612,7 +626,6 @@ try_.builder(
 
 try_.builder(
     name = "win11-arm64-dawn-rel",
-    description_html = "Compiles and tests ToT binaries for Windows/ARM64",
     mirrors = [
         "ci/Dawn Win11 arm64 Builder",
     ],

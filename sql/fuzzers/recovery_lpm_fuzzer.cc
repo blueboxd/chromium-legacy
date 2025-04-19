@@ -2,42 +2,81 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This fuzzer exercises recovery like sql_recovery_fuzzer, but employs a
-// different strategy for generating database files. Rather than directly
-// interpreting the fuzzer input as a SQLite database file, this fuzzer
-// constructs a DB from fuzzer-derived SQL statements and then mutates the file
-// with fuzzer-derived XOR masks before exercising recovery.
+// This fuzzer constructs a DB from fuzzer-derived SQL statements and then
+// mutates the file with fuzzer-derived XOR masks before exercising recovery.
 
 #include <fuzzer/FuzzedDataProvider.h>
-#include <stdint.h>
 
+#include <cstdint>
+#include <cstdlib>
 #include <ios>
 #include <iostream>
+#include <optional>
+#include <string>
+#include <string_view>
+#include <tuple>
+#include <type_traits>
+#include <utility>
+#include <vector>
 
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/containers/span.h"
+#include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/ranges/algorithm.h"
+#include "base/strings/cstring_view.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_logging_settings.h"
-#include "base/values.h"
+#include "build/buildflag.h"
 #include "sql/database.h"
 #include "sql/fuzzers/sql_disk_corruption.pb.h"
 #include "sql/recovery.h"
 #include "sql/statement.h"
 #include "testing/libfuzzer/proto/lpm_interface.h"
+#include "third_party/sqlite/fuzz/sql_query_grammar.pb.h"
 #include "third_party/sqlite/fuzz/sql_query_proto_to_string.h"
 
 namespace {
+
+// usage: LPM_ADDITIONAL_ARGS="..." sql_recovery_lpm_fuzzer testcases...
+//
+// Positional args:
+//   testcases                  One or more testcase files to run.
+//
+// Optional additional args (passed in through the LPM_ADDITIONAL_ARGS
+// environment variable):
+//   --dump_input               Prints the testcase file to the console in a
+//   human readable format.
+//   --out_db_path <file path>  Copies the database after it's been mutated to
+//   the given path.
+
+std::optional<base::CommandLine> GetCommandLine() {
+  char* additional_args = std::getenv("LPM_ADDITIONAL_ARGS");
+  if (additional_args == nullptr) {
+    return std::nullopt;
+  }
+  std::vector<std::string> argv = base::SplitString(
+      additional_args, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+#if BUILDFLAG(IS_WIN)
+  std::vector<std::wstring> wargv(argv.size());
+  base::ranges::transform(
+      argv.begin(), argv.end(), wargv.begin(),
+      [](std::string str) { return std::wstring(str.begin(), str.end()); });
+  return base::CommandLine::FromArgvWithoutProgram(wargv);
+#else
+  return base::CommandLine::FromArgvWithoutProgram(argv);
+#endif
+}
 
 // Initializes and manages state shared between fuzzer iterations. Use this to
 // interact with global variables, environment variables, the filesystem, etc.
@@ -47,6 +86,18 @@ class Environment {
       : temp_dir_(MakeTempDir()),
         db_path_(GetTempFilePath("db.sqlite")),
         should_dump_input_(std::getenv("LPM_DUMP_NATIVE_INPUT") != nullptr) {
+    auto command_line = GetCommandLine();
+    if (command_line) {
+      should_dump_input_ =
+          should_dump_input_ || command_line->HasSwitch("dump_input");
+      if (command_line->HasSwitch("out_db_path")) {
+        out_db_path_ = MakeAbsoluteFilePath(
+                           command_line->GetSwitchValuePath("out_db_path"))
+                           .AppendASCII("db")
+                           .AddExtensionASCII("sqlite");
+      }
+    }
+
     // Logging must be initialized before `ScopedLoggingSettings`. See
     // <https://crbug.com/331909454>.
     logging::InitLogging(logging::LoggingSettings{
@@ -66,6 +117,9 @@ class Environment {
 
   // The path to the database's backing file.
   const base::FilePath& db_path() const { return db_path_; }
+
+  // The path the database is copied to after it's been mutated.
+  const base::FilePath& out_db_path() const { return out_db_path_; }
 
   // Deletes the backing file and related journal files.
   void DeleteDbFiles() const {
@@ -111,6 +165,7 @@ class Environment {
   base::ScopedTempDir temp_dir_;
   base::FilePath db_path_;
   bool should_dump_input_ = false;
+  base::FilePath out_db_path_;
 };
 
 // A wrapper around the fuzzer's input proto. Does some preprocessing to map the
@@ -140,8 +195,8 @@ class TestCase {
   sql::Recovery::Strategy strategy() const { return strategy_; }
   bool wal_mode() const { return wal_mode_; }
   base::span<const Mutation> mutations() const { return mutations_; }
-  std::string_view sql_statement() const { return sql_statement_; }
-  std::string_view sql_statement_after_open() const {
+  base::cstring_view sql_statement() const { return sql_statement_; }
+  base::cstring_view sql_statement_after_open() const {
     return sql_statement_after_open_;
   }
 
@@ -228,7 +283,7 @@ DEFINE_PROTO_FUZZER(const sql_fuzzers::RecoveryFuzzerTestCase& fuzzer_input) {
     // foo". Temporarily silence those warnings.
     logging::ScopedLoggingSettings scoped_logging;
     logging::SetMinLogLevel(logging::LOGGING_FATAL);
-    std::ignore = database.Execute(test_case.sql_statement().data());
+    std::ignore = database.Execute(test_case.sql_statement());
   }
   database.Close();
 
@@ -269,6 +324,10 @@ DEFINE_PROTO_FUZZER(const sql_fuzzers::RecoveryFuzzerTestCase& fuzzer_input) {
     CHECK_EQ(file_length, file.GetLength());
   }
 
+  if (!env.out_db_path().empty()) {
+    base::CopyFile(env.db_path(), env.out_db_path());
+  }
+
   bool attempted_recovery = false;
   auto error_callback =
       base::BindLambdaForTesting([&](int extended_error, sql::Statement*) {
@@ -285,7 +344,7 @@ DEFINE_PROTO_FUZZER(const sql_fuzzers::RecoveryFuzzerTestCase& fuzzer_input) {
   if (opened) {
     logging::ScopedLoggingSettings scoped_logging;
     logging::SetMinLogLevel(logging::LOGGING_FATAL);
-    std::ignore = database.Execute(test_case.sql_statement_after_open().data());
+    std::ignore = database.Execute(test_case.sql_statement_after_open());
 
     database.Close();
   }

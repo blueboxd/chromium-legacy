@@ -6,6 +6,90 @@ import Charts
 import Foundation
 import SwiftUI
 
+/// `PreferenceKey` used to retrieve the width of a view during the layout process.
+struct TooltipViewWidthKey: PreferenceKey {
+  static var defaultValue: CGFloat = 0
+  static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+    value = nextValue()
+  }
+}
+
+/// Represents a view displaying a tooltip with the date and corresponding price.
+struct TooltipView: View {
+  /// Properties for the content and position of the tooltip.
+  var currency: String
+  var price: Double
+  var date: Date
+  var xPosition: CGFloat
+  var chartWidth: CGFloat
+
+  /// Corner radius.
+  static let cornerRadius = 44.0
+
+  /// Vertical padding.
+  static let verticalPadding = 8.0
+
+  /// Horizontal padding.
+  static let horizontalPadding = 2.0
+
+  /// Size of the text.
+  static let textSize = 11.0
+
+  /// Color for the tool tip background.
+  static let tooltipBackgroundColor = "tooltip_background_color"
+
+  /// Color for the tool tip text.
+  static let tooltipTextColor = "tooltip_text_color"
+
+  /// Tooltip width value.
+  @State private var tooltipWidth: CGFloat = 0
+
+  /// layoutDirection environment value.
+  @Environment(\.layoutDirection) var layoutDirection
+
+  var body: some View {
+    var tooltipText: String {
+      let priceFormatted =
+        price.formatted(.currency(code: currency).precision(.fractionLength(0)))
+      let dateFormatted = date.formatted(date: .abbreviated, time: .omitted)
+      return layoutDirection == .leftToRight
+        ? "\(priceFormatted) \(dateFormatted)" : "\(dateFormatted) \(priceFormatted)"
+    }
+
+    Text(tooltipText)
+      .font(.system(size: Self.textSize))
+      .foregroundColor(Color(Self.tooltipTextColor))
+      .padding([.leading, .trailing], Self.verticalPadding)
+      .padding([.bottom, .top], Self.horizontalPadding)
+      .background(
+        GeometryReader { geo in
+          RoundedRectangle(cornerRadius: Self.cornerRadius)
+            .fill(Color(Self.tooltipBackgroundColor))
+            .preference(key: TooltipViewWidthKey.self, value: geo.size.width)
+        }
+      )
+      .onPreferenceChange(TooltipViewWidthKey.self) { newWidth in
+        tooltipWidth = newWidth
+      }
+      .position(x: xPosition, y: 0.0)
+      .offset(
+        x: {
+          /// Adjusts the horizontal position of the tooltip to ensure it stays
+          /// within the chart's bounds and doesn't overflow out of bounds of the chart.
+          if xPosition < tooltipWidth / 2 {
+            /// If the tooltip is too far to the left, shift it right
+            return max(0, abs(xPosition - tooltipWidth / 2))
+          }
+          if xPosition > (chartWidth - (tooltipWidth / 2)) {
+            /// If the tooltip is too far to the right, shift it left
+            return min(0, chartWidth - (tooltipWidth / 2) - xPosition)
+          }
+
+          return 0.0
+        }(), y: 0.0)
+  }
+}
+
 /// Represents a view displaying a historical graph.
 struct HistoryGraph: View {
   /// The price history data consisting of dates and corresponding prices.
@@ -19,13 +103,22 @@ struct HistoryGraph: View {
   static let blue600 = UIColor(named: kBlue600Color) ?? .blue
 
   /// Color representing solid white.
-  static let solidWhite = UIColor(named: kSolidWhiteColor) ?? .white
+  static let backgroundColor = UIColor(named: kBackgroundColor) ?? .white
+
+  /// Color representing grey 200.
+  static let grey200 = UIColor(named: kGrey200Color) ?? .gray
 
   /// Number of ticks on the Y-axis.
-  static let tickCountY = 4
+  static let tickCountY = 3
 
   /// The selected date on the graph.
   @State private var selectedDate: Date?
+
+  /// The horizontal x position of the current selection on the chart.
+  @State private var selectedXPosition: CGFloat?
+
+  /// The width of the entire chart.
+  @State private var chartWidth: CGFloat?
 
   /// Color scheme environment value .
   @Environment(\.colorScheme) var colorScheme
@@ -53,8 +146,24 @@ struct HistoryGraph: View {
     /// TODO(b/333894542): Configure audio graph for accessibility and ensure labels
     /// for line marks and rule marks are accessible.
     Chart {
+      ForEach(sortedHistoryDates, id: \.key) { date, price in
+        /// Displaying the area mark under the line mark.
+        AreaMark(
+          x: .value("Date", date),
+          yStart: .value("Minimun price in range", axisTicksY.first ?? 0),
+          yEnd: .value("Price", price.doubleValue)
+        )
+        .foregroundStyle(linearGradient)
+
+        // Displaying the line mark on the graph.
+        LineMark(
+          x: .value("Date", date),
+          y: .value("Price", price.doubleValue)
+        ).foregroundStyle(Color(uiColor: Self.blue600))
+      }
+      .interpolationMethod(.stepEnd)
+
       /// Displaying the dashed line and point mark for selected date on the graph.
-      /// TODO(b/333894032): Add a tooltip displaying the price and date.
       if let selectedDate = selectedDate, let selectedPrice = history[selectedDate] {
         RuleMark(
           x: .value("Date", selectedDate)
@@ -64,28 +173,20 @@ struct HistoryGraph: View {
           x: .value("Date", selectedDate),
           y: .value("Price", selectedPrice.doubleValue)
         )
+        .symbol {
+          Circle()
+            .fill(Color(uiColor: Self.blue600))
+            .frame(width: 8, height: 8)
+            .overlay(
+              Circle()
+                .stroke(Color(uiColor: Self.backgroundColor), lineWidth: 2)
+            )
+        }
         .foregroundStyle(Color(uiColor: Self.blue600))
       }
-
-      ForEach(sortedHistoryDates, id: \.key) { date, price in
-        // Displaying the line mark on the graph.
-        LineMark(
-          x: .value("Date", date),
-          y: .value("Price", price.doubleValue)
-        ).foregroundStyle(Color(uiColor: Self.blue600))
-
-        /// Displaying the area mark under the line mark.
-        AreaMark(
-          x: .value("Date", date),
-          yStart: .value("Minimun price in range", axisTicksY.first ?? 0),
-          yEnd: .value("Price", price.doubleValue)
-        )
-        .foregroundStyle(linearGradient)
-      }
-      .interpolationMethod(.stepEnd)
     }
     .chartBackground { chartProxy in
-      Color(uiColor: Self.solidWhite)
+      Color(uiColor: Self.backgroundColor)
     }
     .chartYScale(domain: axisYRange)
     .chartYAxis {
@@ -93,37 +194,80 @@ struct HistoryGraph: View {
       AxisMarks(position: .leading, values: axisTicksY) { price in
         if let price = price.as(Double.self) {
           if price == axisTicksY.first {
-            AxisTick()
+            AxisTick(length: .longestLabel, stroke: StrokeStyle(lineWidth: 1))
+              .foregroundStyle(Color(uiColor: Self.grey200))
           } else {
             AxisValueLabel(
               format: .currency(code: currency).precision(.fractionLength(0)))
             AxisTick(stroke: StrokeStyle(lineWidth: 0))
           }
         }
-        AxisGridLine()
+        AxisGridLine(stroke: StrokeStyle(lineWidth: 1))
+          .foregroundStyle(Color(uiColor: Self.grey200))
       }
     }
-    /// TODO(b/334988024): Polish chartXAxis y adding chartXAxis.
     .chartXScale(domain: axisXRange)
+    .chartXAxis {
+      AxisMarks(preset: .aligned, stroke: StrokeStyle(lineWidth: 0))
+    }
     .chartOverlay { proxy in
       /// Gesture for selecting date on the graph.
       GeometryReader { geometry in
         Rectangle().fill(.clear).contentShape(Rectangle())
+          .onContinuousHover(perform: { phase in
+            switch phase {
+            case .active(let location):
+              updateSelectionData(location: location, geometry: geometry, chart: proxy)
+            case .ended:
+              break
+            }
+          })
           .gesture(
             DragGesture()
               .onChanged { value in
-                let startX = geometry[proxy.plotAreaFrame].origin.x
-                let currentX = value.location.x - startX
-                if let index: Date = proxy.value(atX: currentX) {
-                  selectedDate = closestDate(to: index, in: history)
-                }
-              }
-              .onEnded { _ in
-                selectedDate = nil
+                updateSelectionData(location: value.location, geometry: geometry, chart: proxy)
               }
           )
       }
     }
+    .overlay(
+      Group {
+        if let date = selectedDate, let price = history[date],
+          let xPosition = selectedXPosition, let chartWidth = chartWidth
+        {
+          TooltipView(
+            currency: currency,
+            price: price.doubleValue,
+            date: date,
+            xPosition: xPosition,
+            chartWidth: chartWidth
+          )
+        }
+      }
+    )
+    .edgesIgnoringSafeArea(.all)
+    .onAppear {
+      if selectedDate == nil {
+        selectedDate = sortedHistoryDates.last?.key
+      }
+    }
+  }
+
+  /// Updates the selected data when the given `location` is selected inside the given
+  /// `geometry` and `chart`.
+  private func updateSelectionData(location: CGPoint, geometry: GeometryProxy, chart: ChartProxy) {
+    let startX = geometry[chart.plotAreaFrame].origin.x
+    let currentX = location.x - startX
+    if let index: Date = chart.value(atX: currentX) {
+      selectedDate = closestDate(to: index, in: history)
+    }
+
+    if let selectedDate = selectedDate {
+      if let xPosition = chart.position(forX: selectedDate) {
+        selectedXPosition = xPosition + startX
+      }
+    }
+    chartWidth = geometry.size.width
   }
 
   /// Finds the closest date to the given date from the price history dictionary.
@@ -154,7 +298,7 @@ struct HistoryGraph: View {
 
     let valueRange = paddedMaxPrice - paddedMinPrice
     var tickInterval = valueRange / Double(Self.tickCountY - 1)
-    var tickLow = 0.0
+    var tickLow = paddedMinPrice
 
     /// Ensure the tick interval is a multiple of below values to improve the
     /// readability. Bigger values are used when possible.

@@ -183,18 +183,12 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   static std::unique_ptr<content::NavigationThrottle>
   MaybeCreateNavigationThrottle(content::NavigationHandle* handle);
 
-  // Updates the WebContents inspected by the DevToolsWindow by reattaching
-  // the binding to |new_web_contents|. Called when swapping an outer
-  // WebContents with its inner WebContents.
-  void UpdateInspectedWebContents(content::WebContents* new_web_contents,
-                                  base::OnceCallback<void()> callback);
-
   // Sets closure to be called after load is done. If already loaded, calls
   // closure immediately.
   void SetLoadCompletedCallback(base::OnceClosure closure);
 
   // Forwards an unhandled keyboard event to the DevTools frontend.
-  bool ForwardKeyboardEvent(const content::NativeWebKeyboardEvent& event);
+  bool ForwardKeyboardEvent(const input::NativeWebKeyboardEvent& event);
 
   // Reloads inspected web contents as if it was triggered from DevTools.
   // Returns true if it has successfully handled reload, false if the caller
@@ -408,10 +402,9 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
                          bool* proceed_to_fire_unload) override;
   content::KeyboardEventProcessingResult PreHandleKeyboardEvent(
       content::WebContents* source,
-      const content::NativeWebKeyboardEvent& event) override;
-  bool HandleKeyboardEvent(
-      content::WebContents* source,
-      const content::NativeWebKeyboardEvent& event) override;
+      const input::NativeWebKeyboardEvent& event) override;
+  bool HandleKeyboardEvent(content::WebContents* source,
+                           const input::NativeWebKeyboardEvent& event) override;
   content::JavaScriptDialogManager* GetJavaScriptDialogManager(
       content::WebContents* source) override;
   std::unique_ptr<content::EyeDropper> OpenEyeDropper(
@@ -471,8 +464,6 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   // Registers a WebContentsModalDialogManager for our WebContents in order to
   // display web modal dialogs triggered by it.
   void RegisterModalDialogManager(Browser* browser);
-
-  void OnReattachMainTargetComplete(base::Value);
 
   // Called when the accepted language changes. |navigator.language| of the
   // DevTools window should match the application language. When the user
@@ -534,8 +525,6 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   bool open_new_window_for_popups_ = false;
   raw_ptr<infobars::InfoBar> sharing_infobar_ = nullptr;
   int checked_sharing_process_id_ = content::ChildProcessHost::kInvalidUniqueID;
-
-  base::OnceCallback<void()> reattach_complete_callback_;
 
   PrefChangeRegistrar pref_change_registrar_;
 

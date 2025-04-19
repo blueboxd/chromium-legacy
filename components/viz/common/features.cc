@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/logging.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/system/sys_info.h"
 #include "build/build_config.h"
@@ -23,14 +24,6 @@
 #include "base/android/build_info.h"
 #endif
 
-namespace {
-
-// FieldTrialParams for `DynamicSchedulerForDraw` and
-// `kDynamicSchedulerForClients`.
-const char kDynamicSchedulerPercentile[] = "percentile";
-
-}  // namespace
-
 namespace features {
 
 #if BUILDFLAG(IS_ANDROID)
@@ -44,7 +37,7 @@ BASE_FEATURE(kAndroidBrowserControlsInViz,
 
 BASE_FEATURE(kBackdropFilterMirrorEdgeMode,
              "BackdropFilterMirrorEdgeMode",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kUseDrmBlackFullscreenOptimization,
              "UseDrmBlackFullscreenOptimization",
@@ -54,6 +47,10 @@ BASE_FEATURE(kUseDrmBlackFullscreenOptimization,
              base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 );
+
+BASE_FEATURE(kUseFrameIntervalDecider,
+             "UseFrameIntervalDecider",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kUseMultipleOverlays,
              "UseMultipleOverlays",
@@ -74,16 +71,34 @@ BASE_FEATURE(kDelegatedCompositing,
 #endif
 );
 
+constexpr base::FeatureParam<DelegatedCompositingMode>::Option
+    kDelegatedCompositingModeOption[] = {
+        {DelegatedCompositingMode::kFull, "full"},
 #if BUILDFLAG(IS_WIN)
-// Enable partially delegated compositing. In this mode, the web contents will
-// be forced into its own render pass instead of merging into the root pass.
-// This effectively makes it so only the browser UI quads get delegated
-// compositing.
-// TODO(crbug.com/324460866): Consider removing partially delegated compositing.
-BASE_FEATURE(kDelegatedCompositingLimitToUi,
-             "DelegatedCompositingLimitToUi",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+        {DelegatedCompositingMode::kLimitToUi, "limit_to_ui"},
 #endif
+};
+const base::FeatureParam<DelegatedCompositingMode>
+    kDelegatedCompositingModeParam = {
+        &kDelegatedCompositing,
+        "mode",
+#if BUILDFLAG(IS_WIN)
+        // TODO(crbug.com/324460866): Windows does not fully support full
+        // delegated compositing.
+        DelegatedCompositingMode::kLimitToUi,
+#else
+        DelegatedCompositingMode::kFull,
+#endif
+        &kDelegatedCompositingModeOption,
+};
+
+// If enabled, the overlay processor will force the use of dcomp surfaces as the
+// render pass backing while delegated ink is being employed. This will avoid
+// the need for finding what surface to synchronize ink updates with by making
+// all surfaces synchronize with dcomp commit
+BASE_FEATURE(kUseDCompSurfacesForDelegatedInk,
+             "UseDCompSurfacesForDelegatedInk",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kRenderPassDrawnRect,
              "RenderPassDrawnRect",
@@ -120,20 +135,6 @@ BASE_FEATURE(kWebRtcLogCapturePipeline,
              "WebRtcLogCapturePipeline",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-#if BUILDFLAG(IS_WIN)
-// Enables swap chains to call SetPresentDuration to request DWM/OS to reduce
-// vsync.
-BASE_FEATURE(kUseSetPresentDuration,
-             "UseSetPresentDuration",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#endif  // BUILDFLAG(IS_WIN)
-
-// Enables platform supported delegated ink trails instead of Skia backed
-// delegated ink trails.
-BASE_FEATURE(kUsePlatformDelegatedInk,
-             "UsePlatformDelegatedInk",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Used to debug Android WebView Vulkan composite. Composite to an intermediate
 // buffer and draw the intermediate buffer to the secondary command buffer.
 BASE_FEATURE(kWebViewVulkanIntermediateBuffer,
@@ -163,6 +164,11 @@ BASE_FEATURE(kWebViewEnableADPF,
 BASE_FEATURE(kWebViewEnableADPFRendererMain,
              "WebViewEnableADPFRendererMain",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enable WebView providing frame rate hints to View system.
+BASE_FEATURE(kWebViewFrameRateHints,
+             "WebViewFrameRateHints",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
 BASE_FEATURE(kDrawPredictedInkPoint,
@@ -177,15 +183,6 @@ const char kPredictorLinearResampling[] = "linear-resampling";
 const char kPredictorLinear1[] = "linear-1";
 const char kPredictorLinear2[] = "linear-2";
 const char kPredictorLsq[] = "lsq";
-
-// Used by Viz to parameterize adjustments to scheduler deadlines.
-BASE_FEATURE(kDynamicSchedulerForDraw,
-             "DynamicSchedulerForDraw",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-// User to parameterize adjustments to clients' deadlines.
-BASE_FEATURE(kDynamicSchedulerForClients,
-             "DynamicSchedulerForClients",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_APPLE)
 // Increase the max CALayer number allowed for CoreAnimation.
@@ -249,22 +246,6 @@ BASE_FEATURE(kAllowForceMergeRenderPassWithRequireOverlayQuads,
              "AllowForceMergeRenderPassWithRequireOverlayQuads",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Used to gate calling SetPurgeable on OutputPresenter::Image from
-// SkiaOutputDeviceBufferQueue.
-BASE_FEATURE(kBufferQueueImageSetPurgeable,
-             "BufferQueueImageSetPurgeable",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
-// On platforms using SkiaOutputDeviceBufferQueue and not yet universally using
-// SkiaRenderer-allocated images, when this is true SkiaRenderer will allocate
-// and maintain a buffer queue of images for the root render pass, instead of
-// SkiaOutputDeviceBufferQueue itself.
-BASE_FEATURE(kRendererAllocatesImages,
-             "RendererAllocatesImages",
-             base::FEATURE_ENABLED_BY_DEFAULT
-);
-#endif
 
 // If enabled, CompositorFrameSinkClient::OnBeginFrame is also treated as the
 // DidReceiveCompositorFrameAck. Both in providing the Ack for the previous
@@ -331,6 +312,17 @@ BASE_FEATURE(kDrawImmediatelyWhenInteractive,
 #endif
 );
 
+// If enabled, we immediately send acks to clients when a viz surface
+// activates. This effectively removes back-pressure. This can result in wasted
+// work and contention, but should regularize the timing of client rendering.
+BASE_FEATURE(kAckOnSurfaceActivationWhenInteractive,
+             "AckOnSurfaceActivationWhenInteractive",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+const base::FeatureParam<int>
+    kNumCooldownFramesForAckOnSurfaceActivationDuringInteraction{
+        &kAckOnSurfaceActivationWhenInteractive, "frames", 3};
+
 // When enabled, SDR maximum luminance nits of then current display will be used
 // as the HDR metadata NDWL nits.
 BASE_FEATURE(kUseDisplaySDRMaxLuminanceNits,
@@ -386,6 +378,22 @@ BASE_FEATURE(kSnapshotEvictedRootSurface,
 #endif
 );
 
+// If enabled, info for quads from the last render pass will be reported as
+// UMAs.
+BASE_FEATURE(kShouldLogFrameQuadInfo,
+             "ShouldLogFrameQuadInfo",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// When enabled, ClientResourceProvider will allow for the batching of
+// callbacks. So that the client can perform a series of individual releases,
+// but have ClientResourceProvider coordinate the callbacks. This allows all of
+// the Main-thread callbacks to be batched into a single jump to that thread.
+//
+// When disabled each callback will perform its own separate post task.
+BASE_FEATURE(kBatchResourceRelease,
+             "BatchResourceRelease",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // The scale to use for root surface snapshots on eviction. See
 // `kSnapshotEvictedRootSurface`.
 const base::FeatureParam<double> kSnapshotEvictedRootSurfaceScale{
@@ -397,17 +405,31 @@ BASE_FEATURE(kColorConversionInRenderer,
              "ColorConversionInRenderer",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Changes BeginFrame issue to use LastUsedBeginFrameArgs() instead of the
-// current set of BeginFrameArgs.
+// Stops BeginFrame issue to use |last_vsync_interval_| instead of the current
+// set of BeginFrameArgs.
 // TODO(b/333940735): Should be removed if the issue isn't fixed.
-BASE_FEATURE(kUseLastBeginFrameArgs,
-             "UseLastBeginFrameArgs",
+BASE_FEATURE(kLastVSyncArgsKillswitch,
+             "LastVSyncArgsKillswitch",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Use BlitRequests for copy requests made by ViewTransition.
 BASE_FEATURE(kBlitRequestsForViewTransition,
              "BlitRequestsForViewTransition",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Null Hypothesis test for viz. This will be used in an meta experiment to
+// judge finch variation.
+BASE_FEATURE(kVizNullHypothesis,
+             "VizNullHypothesis",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// Allows the display to seamlessly adjust the refresh rate in order to match
+// content preferences. ChromeOS only.
+BASE_FEATURE(kCrosContentAdjustedRefreshRate,
+             "CrosContentAdjustedRefreshRate",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 bool IsDelegatedCompositingEnabled() {
   return base::FeatureList::IsEnabled(kDelegatedCompositing);
@@ -431,12 +453,6 @@ bool IsUsingVizFrameSubmissionForWebView() {
 bool ShouldWebRtcLogCapturePipeline() {
   return base::FeatureList::IsEnabled(kWebRtcLogCapturePipeline);
 }
-
-#if BUILDFLAG(IS_WIN)
-bool ShouldUseSetPresentDuration() {
-  return base::FeatureList::IsEnabled(kUseSetPresentDuration);
-}
-#endif  // BUILDFLAG(IS_WIN)
 
 std::optional<int> ShouldDrawPredictedInkPoints() {
   if (!base::FeatureList::IsEnabled(kDrawPredictedInkPoint))
@@ -462,10 +478,6 @@ std::string InkPredictor() {
     return "";
 
   return GetFieldTrialParamValueByFeature(kDrawPredictedInkPoint, "predictor");
-}
-
-bool ShouldUsePlatformDelegatedInk() {
-  return base::FeatureList::IsEnabled(kUsePlatformDelegatedInk);
 }
 
 #if BUILDFLAG(IS_ANDROID)
@@ -496,32 +508,6 @@ bool UseSurfaceLayerForVideo() {
 #endif
 }
 
-// Used by Viz to determine if viz::DisplayScheduler should dynamically adjust
-// its frame deadline. Returns the percentile of historic draw times to base the
-// deadline on. Or std::nullopt if the feature is disabled.
-std::optional<double> IsDynamicSchedulerEnabledForDraw() {
-  if (!base::FeatureList::IsEnabled(kDynamicSchedulerForDraw))
-    return std::nullopt;
-  double result = base::GetFieldTrialParamByFeatureAsDouble(
-      kDynamicSchedulerForDraw, kDynamicSchedulerPercentile, -1.0);
-  if (result < 0.0)
-    return std::nullopt;
-  return result;
-}
-
-// Used by Viz to determine if the frame deadlines provided to CC should be
-// dynamically adjusted. Returns the percentile of historic draw times to base
-// the deadline on. Or std::nullopt if the feature is disabled.
-std::optional<double> IsDynamicSchedulerEnabledForClients() {
-  if (!base::FeatureList::IsEnabled(kDynamicSchedulerForClients))
-    return std::nullopt;
-  double result = base::GetFieldTrialParamByFeatureAsDouble(
-      kDynamicSchedulerForClients, kDynamicSchedulerPercentile, -1.0);
-  if (result < 0.0)
-    return std::nullopt;
-  return result;
-}
-
 int MaxOverlaysConsidered() {
   if (!base::FeatureList::IsEnabled(kUseMultipleOverlays)) {
     return 1;
@@ -535,12 +521,6 @@ bool ShouldOnBeginFrameThrottleVideo() {
   return base::FeatureList::IsEnabled(features::kOnBeginFrameThrottleVideo);
 }
 
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
-bool ShouldRendererAllocateImages() {
-  return base::FeatureList::IsEnabled(kRendererAllocatesImages);
-}
-#endif
-
 bool IsOnBeginFrameAcksEnabled() {
   return base::FeatureList::IsEnabled(features::kOnBeginFrameAcks);
 }
@@ -549,12 +529,41 @@ bool ShouldDrawImmediatelyWhenInteractive() {
   return base::FeatureList::IsEnabled(
       features::kDrawImmediatelyWhenInteractive);
 }
+bool ShouldAckOnSurfaceActivationWhenInteractive() {
+  return base::FeatureList::IsEnabled(
+      features::kAckOnSurfaceActivationWhenInteractive);
+}
+
+std::optional<uint64_t>
+NumCooldownFramesForAckOnSurfaceActivationDuringInteraction() {
+  if (!ShouldAckOnSurfaceActivationWhenInteractive()) {
+    return std::nullopt;
+  }
+  CHECK_GE(kNumCooldownFramesForAckOnSurfaceActivationDuringInteraction.Get(),
+           0)
+      << "The number of cooldown frames must be non-negative";
+  return static_cast<uint64_t>(
+      kNumCooldownFramesForAckOnSurfaceActivationDuringInteraction.Get());
+}
 
 std::optional<double> SnapshotEvictedRootSurfaceScale() {
   if (!base::FeatureList::IsEnabled(kSnapshotEvictedRootSurface)) {
     return std::nullopt;
   }
   return kSnapshotEvictedRootSurfaceScale.Get();
+}
+
+bool ShouldLogFrameQuadInfo() {
+  return base::FeatureList::IsEnabled(features::kShouldLogFrameQuadInfo);
+}
+
+bool IsUsingFrameIntervalDecider() {
+#if BUILDFLAG(IS_ANDROID)
+  if (base::FeatureList::IsEnabled(kWebViewFrameRateHints)) {
+    return true;
+  }
+#endif
+  return base::FeatureList::IsEnabled(kUseFrameIntervalDecider);
 }
 
 #if BUILDFLAG(IS_MAC)
@@ -578,4 +587,20 @@ int NumPendingFrameSupported() {
   return num;
 }
 #endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+bool IsCrosContentAdjustedRefreshRateEnabled() {
+  if (base::FeatureList::IsEnabled(kCrosContentAdjustedRefreshRate)) {
+    if (base::FeatureList::IsEnabled(kUseFrameIntervalDecider)) {
+      return true;
+    }
+
+    LOG(WARNING) << "Feature ContentAdjustedRefreshRate is ignored. It cannot "
+                    "be used without also setting UseFrameIntervalDecider.";
+  }
+
+  return false;
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 }  // namespace features

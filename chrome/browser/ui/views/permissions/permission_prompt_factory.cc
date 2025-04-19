@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/lens/lens_overlay_controller.h"
 #include "chrome/browser/ui/permission_bubble/permission_prompt.h"
-#include "chrome/browser/ui/tabs/tab_features.h"
+#include "chrome/browser/ui/tabs/public/tab_features.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/permissions/embedded_permission_prompt.h"
@@ -144,6 +144,8 @@ bool ShouldCurrentRequestUsePermissionElementSecondaryUI(
         return (request->request_type() ==
                     permissions::RequestType::kCameraStream ||
                 request->request_type() ==
+                    permissions::RequestType::kGeolocation ||
+                request->request_type() ==
                     permissions::RequestType::kMicStream) &&
                request->IsEmbeddedPermissionElementInitiated();
       });
@@ -166,7 +168,10 @@ std::unique_ptr<permissions::PermissionPrompt> CreatePwaPrompt(
     Browser* browser,
     content::WebContents* web_contents,
     permissions::PermissionPrompt::Delegate* delegate) {
-  if (delegate->ShouldCurrentRequestUseQuietUI()) {
+  if (ShouldCurrentRequestUsePermissionElementSecondaryUI(delegate)) {
+    return std::make_unique<EmbeddedPermissionPrompt>(browser, web_contents,
+                                                      delegate);
+  } else if (delegate->ShouldCurrentRequestUseQuietUI()) {
     return std::make_unique<PermissionPromptQuietIcon>(browser, web_contents,
                                                        delegate);
   } else {

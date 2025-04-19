@@ -12,11 +12,11 @@ import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.hasItems;
 
+import static org.chromium.base.ThreadUtils.runOnUiThreadBlocking;
 import static org.chromium.chrome.browser.privacy_sandbox.AdMeasurementFragment.setAdMeasurementPrefEnabled;
 import static org.chromium.chrome.browser.privacy_sandbox.FledgeFragment.setFledgePrefEnabled;
 import static org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxTestUtils.getRootViewSanitized;
 import static org.chromium.chrome.browser.privacy_sandbox.TopicsFragment.setTopicsPrefEnabled;
-import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
 import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
 
 import android.os.Bundle;
@@ -178,10 +178,7 @@ public final class PrivacySandboxSettingsFragmentTest {
 
     @Test
     @SmallTest
-    @DisableFeatures({
-        ChromeFeatureList.PRIVACY_SANDBOX_PROACTIVE_TOPICS_BLOCKING,
-        ChromeFeatureList.COOKIE_DEPRECATION_FACILITATED_TESTING
-    })
+    @DisableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_PROACTIVE_TOPICS_BLOCKING)
     public void testNavigateToTopicsPage() {
         startPrivacySandboxSettingsV4();
         onView(withText(R.string.ad_privacy_page_topics_link_row_label)).perform(click());
@@ -193,10 +190,7 @@ public final class PrivacySandboxSettingsFragmentTest {
 
     @Test
     @SmallTest
-    @EnableFeatures({
-        ChromeFeatureList.PRIVACY_SANDBOX_PROACTIVE_TOPICS_BLOCKING + ":include-mode-b/false"
-    })
-    @DisableFeatures({ChromeFeatureList.COOKIE_DEPRECATION_FACILITATED_TESTING})
+    @EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_PROACTIVE_TOPICS_BLOCKING)
     public void testNavigateToTopicsPageV2() {
         startPrivacySandboxSettingsV4();
         onView(withText(R.string.ad_privacy_page_topics_link_row_label)).perform(click());

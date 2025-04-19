@@ -50,6 +50,11 @@
 #include "components/trusted_vault/standalone_trusted_vault_client.h"
 #endif  // BUILDFLAG(IS_ANDROID)
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chromeos/crosapi/mojom/trusted_vault.mojom.h"
+#include "chromeos/lacros/lacros_service.h"
+#endif
+
 namespace {
 
 using testing::ElementsAre;
@@ -552,122 +557,6 @@ IN_PROC_BROWSER_TEST_F(TrustedVaultEncryptionKeysTabHelperBrowserTest,
           FakeAccount());
   EXPECT_THAT(actual_keys, ElementsAreArray(kEncryptionKeys));
 }
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-IN_PROC_BROWSER_TEST_F(TrustedVaultEncryptionKeysTabHelperBrowserTest,
-                       ShouldSetPasskeysEncryptionKeysInAsh) {
-  const GURL initial_url =
-      https_server()->GetURL("accounts.google.com", "/title1.html");
-  ASSERT_TRUE(content::NavigateToURL(web_contents(), initial_url));
-  EXPECT_TRUE(HasEncryptionKeysApi(web_contents()->GetPrimaryMainFrame()));
-
-  content::WebContentsConsoleObserver console_observer(web_contents());
-  console_observer.SetPattern(kConsoleSuccessMessage);
-
-  base::HistogramTester histogram_tester;
-
-  // Attempt to set keys for the passkeys domain. This should work only in Ash.
-  const std::vector<uint8_t> kEncryptionKey = {7};
-  ExecJsSetClientEncryptionKeysForSecurityDomain(
-      web_contents()->GetPrimaryMainFrame(),
-      trusted_vault::kPasskeysSecurityDomainName, kEncryptionKey);
-  ASSERT_TRUE(console_observer.Wait());
-  EXPECT_EQ(console_observer.messages().size(), 1u);
-
-  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
-
-  histogram_tester.ExpectUniqueSample(
-      "TrustedVault.JavascriptSetClientEncryptionKeysValidArgs", 1 /*Valid*/,
-      1);
-  histogram_tester.ExpectUniqueSample(
-      "TrustedVault.JavascriptSetClientEncryptionKeysForSecurityDomain",
-      2 /*Passkeys*/, 1);
-
-  histogram_tester.ExpectUniqueSample(
-      "TrustedVault.SetEncryptionKeysForSecurityDomain.AllProfiles",
-      2 /*Passkeys*/, 1);
-  histogram_tester.ExpectUniqueSample(
-      "TrustedVault.SetEncryptionKeysForSecurityDomain.OffTheRecordOnly",
-      2 /*Passkeys*/, 0);
-
-  histogram_tester.ExpectUniqueSample(
-      "Sync.TrustedVaultJavascriptSetEncryptionKeysIsIncognito",
-      0 /*Not Incognito*/, 1);
-
-  // Test that keys for the passkeys domain have been set.
-  std::vector<std::vector<uint8_t>> actual_keys =
-      FetchTrustedVaultKeysForProfile(
-          browser()->profile(), trusted_vault::SecurityDomainId::kPasskeys,
-          FakeAccount());
-  EXPECT_THAT(actual_keys, testing::ElementsAre(kEncryptionKey));
-
-  // No keys should have been set for chromesync.
-  EXPECT_THAT(FetchTrustedVaultKeysForProfile(
-                  browser()->profile(),
-                  trusted_vault::SecurityDomainId::kChromeSync, FakeAccount()),
-              IsEmpty());
-}
-#else
-IN_PROC_BROWSER_TEST_F(TrustedVaultEncryptionKeysTabHelperBrowserTest,
-                       ShouldNotSetPasskeysEncryptionKeys) {
-  // When default-enabling `kWebAuthnEnclaveAuthenticator` this test should
-  // only be run for BUILDFLAG(IS_CHROMEOS_LACROS).
-  CHECK(!base::FeatureList::IsEnabled(device::kWebAuthnEnclaveAuthenticator));
-
-  const GURL initial_url =
-      https_server()->GetURL("accounts.google.com", "/title1.html");
-  ASSERT_TRUE(content::NavigateToURL(web_contents(), initial_url));
-  // EncryptionKeysApi is created for the primary page as the origin is allowed.
-  EXPECT_TRUE(HasEncryptionKeysApi(web_contents()->GetPrimaryMainFrame()));
-
-  content::WebContentsConsoleObserver console_observer(web_contents());
-  console_observer.SetPattern(kConsoleSuccessMessage);
-
-  base::HistogramTester histogram_tester;
-
-  // Attempt to set keys for the passkeys domain. Outside of Ash, this succeeds,
-  // though no corresponding security domain client is instantiated, and so the
-  // keys are never persisted anywhere.
-  const std::vector<uint8_t> kEncryptionKey = {7};
-  ExecJsSetClientEncryptionKeysForSecurityDomain(
-      web_contents()->GetPrimaryMainFrame(),
-      trusted_vault::kPasskeysSecurityDomainName, kEncryptionKey);
-  ASSERT_TRUE(console_observer.Wait());
-  EXPECT_EQ(console_observer.messages().size(), 1u);
-
-  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
-
-  histogram_tester.ExpectUniqueSample(
-      "TrustedVault.JavascriptSetClientEncryptionKeysValidArgs", 1 /*Valid*/,
-      1);
-  histogram_tester.ExpectUniqueSample(
-      "TrustedVault.JavascriptSetClientEncryptionKeysForSecurityDomain",
-      2 /*Passkeys*/, 1);
-
-  histogram_tester.ExpectUniqueSample(
-      "TrustedVault.SetEncryptionKeysForSecurityDomain.AllProfiles",
-      2 /*Passkeys*/, 1);
-  histogram_tester.ExpectUniqueSample(
-      "TrustedVault.SetEncryptionKeysForSecurityDomain.OffTheRecordOnly",
-      2 /*Passkeys*/, 0);
-
-  histogram_tester.ExpectUniqueSample(
-      "Sync.TrustedVaultJavascriptSetEncryptionKeysIsIncognito",
-      0 /*Not Incognito*/, 1);
-
-  // No security domain client for passkeys, so no keys could have been set.
-  EXPECT_EQ(
-      TrustedVaultServiceFactory::GetForProfile(browser()->profile())
-          ->GetTrustedVaultClient(trusted_vault::SecurityDomainId::kPasskeys),
-      nullptr);
-
-  // No keys should have been set for chromesync either.
-  EXPECT_THAT(FetchTrustedVaultKeysForProfile(
-                  browser()->profile(),
-                  trusted_vault::SecurityDomainId::kChromeSync, FakeAccount()),
-              IsEmpty());
-}
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if !BUILDFLAG(IS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(

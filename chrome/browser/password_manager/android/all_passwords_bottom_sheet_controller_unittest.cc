@@ -11,6 +11,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/types/pass_key.h"
 #include "chrome/browser/password_manager/password_manager_test_util.h"
+#include "chrome/browser/plus_addresses/plus_address_service_factory.h"
 #include "chrome/browser/ui/android/passwords/all_passwords_bottom_sheet_view.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom-forward.h"
@@ -23,7 +24,13 @@
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "components/plus_addresses/fake_plus_address_service.h"
+#include "components/plus_addresses/features.h"
+#include "components/plus_addresses/plus_address_service.h"
+#include "components/plus_addresses/plus_address_test_environment.h"
+#include "components/plus_addresses/settings/fake_plus_address_setting_service.h"
 #include "components/safe_browsing/core/browser/password_protection/stub_password_reuse_detection_manager_client.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -42,6 +49,8 @@ using device_reauth::MockDeviceAuthenticator;
 using password_manager::PasswordForm;
 using password_manager::TestPasswordStore;
 using password_manager::UiCredential;
+using plus_addresses::FakePlusAddressService;
+using plus_addresses::FakePlusAddressSettingService;
 
 using CallbackFunctionMock = testing::MockFunction<void()>;
 
@@ -85,7 +94,7 @@ class MockPasswordManagerClient
               (),
               (override));
   MOCK_METHOD(bool,
-              CanUseBiometricAuthForFilling,
+              IsReauthBeforeFillingRequired,
               (device_reauth::DeviceAuthenticator*),
               (override));
 };
@@ -122,12 +131,22 @@ class AllPasswordsBottomSheetControllerTest
     : public ChromeRenderViewHostTestHarness {
  protected:
   AllPasswordsBottomSheetControllerTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        password_manager::features::kBiometricTouchToFill);
+    // Make sure that the `kPlusAddressesEnabled` feature is known to be
+    // enabled, such that `PlusAddressServiceFactory` doesn't bail early with a
+    // null return.
+    scoped_feature_list_.InitWithFeatures(
+        {password_manager::features::kBiometricTouchToFill,
+         plus_addresses::features::kPlusAddressesEnabled},
+        {});
   }
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
+    PlusAddressServiceFactory::GetInstance()->SetTestingFactory(
+        browser_context(),
+        base::BindRepeating(&AllPasswordsBottomSheetControllerTest::
+                                PlusAddressServiceTestFactory,
+                            base::Unretained(this)));
     profile_store_ = CreateAndUseTestPasswordStore(profile());
     profile_store_->Init(/*prefs=*/nullptr,
                          /*affiliated_match_helper=*/nullptr);
@@ -148,6 +167,14 @@ class AllPasswordsBottomSheetControllerTest
             mock_pwd_manager_client_.get(),
             mock_pwd_reuse_detection_manager_client_.get(),
             show_migration_warning_callback_.Get());
+  }
+
+  std::unique_ptr<KeyedService> PlusAddressServiceTestFactory(
+      content::BrowserContext* context) {
+    return std::make_unique<FakePlusAddressService>(
+        &plus_environment_.pref_service(),
+        plus_environment_.identity_env().identity_manager(),
+        &plus_environment_.setting_service());
   }
 
   void TearDown() override {
@@ -189,6 +216,8 @@ class AllPasswordsBottomSheetControllerTest
   }
 
  protected:
+  plus_addresses::test::PlusAddressTestEnvironment plus_environment_;
+
   MockPasswordManagerDriver driver_;
   scoped_refptr<TestPasswordStore> profile_store_;
   scoped_refptr<TestPasswordStore> account_store_;
@@ -281,7 +310,7 @@ TEST_F(AllPasswordsBottomSheetControllerTest, FillsPasswordIfAuthNotAvailable) {
 
   auto authenticator = std::make_unique<MockDeviceAuthenticator>();
 
-  EXPECT_CALL(client(), CanUseBiometricAuthForFilling).WillOnce(Return(false));
+  EXPECT_CALL(client(), IsReauthBeforeFillingRequired).WillOnce(Return(false));
   EXPECT_CALL(client(), GetDeviceAuthenticator)
       .WillOnce(Return(testing::ByMove(std::move(authenticator))));
   EXPECT_CALL(driver(), FillIntoFocusedField(true, std::u16string(kPassword)));
@@ -294,7 +323,7 @@ TEST_F(AllPasswordsBottomSheetControllerTest, FillsPasswordIfAuthNotAvailable) {
 TEST_F(AllPasswordsBottomSheetControllerTest, FillsPasswordIfAuthSuccessful) {
   auto authenticator = std::make_unique<MockDeviceAuthenticator>();
 
-  ON_CALL(client(), CanUseBiometricAuthForFilling).WillByDefault(Return(true));
+  ON_CALL(client(), IsReauthBeforeFillingRequired).WillByDefault(Return(true));
   EXPECT_CALL(*authenticator, AuthenticateWithMessage)
       .WillOnce(RunOnceCallback<1>(true));
   EXPECT_CALL(client(), GetDeviceAuthenticator)
@@ -310,7 +339,7 @@ TEST_F(AllPasswordsBottomSheetControllerTest, FillsPasswordIfAuthSuccessful) {
 TEST_F(AllPasswordsBottomSheetControllerTest, DoesntFillPasswordIfAuthFailed) {
   auto authenticator = std::make_unique<MockDeviceAuthenticator>();
 
-  ON_CALL(client(), CanUseBiometricAuthForFilling).WillByDefault(Return(true));
+  ON_CALL(client(), IsReauthBeforeFillingRequired).WillByDefault(Return(true));
   EXPECT_CALL(*authenticator, AuthenticateWithMessage)
       .WillOnce(RunOnceCallback<1>(false));
   EXPECT_CALL(client(), GetDeviceAuthenticator)
@@ -328,7 +357,7 @@ TEST_F(AllPasswordsBottomSheetControllerTest, CancelsAuthIfDestroyed) {
   auto authenticator = std::make_unique<MockDeviceAuthenticator>();
   auto* authenticator_ptr = authenticator.get();
 
-  ON_CALL(client(), CanUseBiometricAuthForFilling).WillByDefault(Return(true));
+  ON_CALL(client(), IsReauthBeforeFillingRequired).WillByDefault(Return(true));
   EXPECT_CALL(*authenticator_ptr, AuthenticateWithMessage);
   EXPECT_CALL(client(), GetDeviceAuthenticator)
       .WillOnce(Return(testing::ByMove(std::move(authenticator))));
@@ -434,6 +463,38 @@ TEST_F(AllPasswordsBottomSheetControllerTest,
   EXPECT_CALL(show_migration_warning_callback(), Run).Times(0);
   all_passwords_controller()->OnCredentialSelected(
       kUsername1, kPassword, RequestsToFillPassword(false));
+}
+
+TEST_F(AllPasswordsBottomSheetControllerTest,
+       IsPlusAddress_ManualFallbackDisabled) {
+  scoped_feature_list_.Reset();
+  scoped_feature_list_.InitWithFeatures(
+      {password_manager::features::kBiometricTouchToFill,
+       plus_addresses::features::kPlusAddressesEnabled},
+      {plus_addresses::features::kPlusAddressAndroidManualFallbackEnabled});
+
+  // Not a plus address according to the `FakePlusAddressService`.
+  EXPECT_FALSE(all_passwords_controller()->IsPlusAddress("exampe@gmail.com"));
+  // `kPlusAddressAndroidManualFallbackEnabled` is disabled, `IsPlusAddress()`
+  // should return `false` even for existing plus addresses.
+  EXPECT_FALSE(all_passwords_controller()->IsPlusAddress(
+      plus_addresses::FakePlusAddressService::kFakePlusAddress));
+}
+
+TEST_F(AllPasswordsBottomSheetControllerTest, IsPlusAddress) {
+  scoped_feature_list_.Reset();
+  scoped_feature_list_.InitWithFeatures(
+      {password_manager::features::kBiometricTouchToFill,
+       plus_addresses::features::kPlusAddressesEnabled,
+       plus_addresses::features::kPlusAddressAndroidManualFallbackEnabled},
+      {});
+
+  // Not a plus address according to the `FakePlusAddressService`.
+  EXPECT_FALSE(all_passwords_controller()->IsPlusAddress("exampe@gmail.com"));
+  // `kPlusAddressAndroidManualFallbackEnabled` is disabled, `IsPlusAddress()`
+  // should return `false` even for existing plus addresses.
+  EXPECT_TRUE(all_passwords_controller()->IsPlusAddress(
+      plus_addresses::FakePlusAddressService::kFakePlusAddress));
 }
 
 class AllPasswordsBottomSheetControllerAccountStoreTest

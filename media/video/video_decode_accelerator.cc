@@ -34,16 +34,6 @@ void VideoDecodeAccelerator::Client::NotifyInitializationComplete(
       << "By default deferred initialization is not supported.";
 }
 
-gpu::SharedImageStub* VideoDecodeAccelerator::Client::GetSharedImageStub()
-    const {
-  return nullptr;
-}
-
-CommandBufferHelper* VideoDecodeAccelerator::Client::GetCommandBufferHelper()
-    const {
-  return nullptr;
-}
-
 VideoDecodeAccelerator::~VideoDecodeAccelerator() = default;
 
 void VideoDecodeAccelerator::Decode(scoped_refptr<DecoderBuffer> buffer,
@@ -68,14 +58,6 @@ void VideoDecodeAccelerator::ImportBufferForPicture(
 
 void VideoDecodeAccelerator::SetOverlayInfo(const OverlayInfo& overlay_info) {
   NOTREACHED_IN_MIGRATION() << "Overlays are not supported.";
-}
-
-GLenum VideoDecodeAccelerator::GetSurfaceInternalFormat() const {
-  return GL_RGBA;
-}
-
-bool VideoDecodeAccelerator::SupportsSharedImagePictureBuffers() const {
-  return false;
 }
 
 VideoDecodeAccelerator::SupportedProfile::SupportedProfile()

@@ -18,6 +18,7 @@
 #include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/not_fatal_until.h"
 #include "base/rand_util.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
@@ -97,6 +98,7 @@
 #include "media/capture/video/chromeos/camera_hal_dispatcher_impl.h"
 #include "media/capture/video/chromeos/jpeg_accelerator_provider.h"
 #include "media/capture/video/chromeos/public/cros_features.h"
+#include "media/capture/video/chromeos/system_event_monitor_impl.h"
 #include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"
 #endif
 
@@ -1616,15 +1618,16 @@ MediaStreamManager::MediaStreamManager(
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     if (media::ShouldUseCrosCameraService()) {
+      jpeg_accelerator_provider_ =
+          std::make_unique<media::JpegAcceleratorProviderImpl>(
+              base::BindRepeating(
+                  &VideoCaptureDependencies::CreateJpegDecodeAccelerator),
+              base::BindRepeating(
+                  &VideoCaptureDependencies::CreateJpegEncodeAccelerator));
       system_event_monitor_ = std::make_unique<media::SystemEventMonitorImpl>();
       media::VideoCaptureDeviceFactoryChromeOS::SetGpuBufferManager(
           GpuMemoryBufferManagerSingleton::GetInstance());
       media::CameraHalDispatcherImpl::GetInstance()->Start();
-      media::JpegAcceleratorProviderImpl::GetInstance()->Start(
-          base::BindRepeating(
-              &VideoCaptureDependencies::CreateJpegDecodeAccelerator),
-          base::BindRepeating(
-              &VideoCaptureDependencies::CreateJpegEncodeAccelerator));
     }
 #endif
     video_capture_provider = std::make_unique<VideoCaptureProviderSwitcher>(
@@ -2323,7 +2326,6 @@ MediaStreamManager::DeviceRequest* MediaStreamManager::FindRequest(
   return (it != requests_.end()) ? it->second.get() : nullptr;
 }
 
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 MediaStreamManager::DeviceRequest*
 MediaStreamManager::FindRequestByVideoSessionId(
     const base::UnguessableToken& session_id) const {
@@ -2347,6 +2349,8 @@ MediaStreamManager::FindRequestByVideoSessionId(
 
   return nullptr;
 }
+
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
 CapturedSurfaceController* MediaStreamManager::GetCapturedSurfaceController(
     GlobalRenderFrameHostId capturer_rfh_id,
@@ -2505,7 +2509,7 @@ void MediaStreamManager::CancelRequest(
 void MediaStreamManager::DeleteRequest(
     DeviceRequests::const_iterator request_it) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(request_it != requests_.end());
+  CHECK(request_it != requests_.end(), base::NotFatalUntil::M130);
 
   SendLogMessage(base::StringPrintf("DeleteRequest([label=%s])",
                                     request_it->first.c_str()));
@@ -2618,7 +2622,8 @@ void MediaStreamManager::SetUpRequest(const std::string& label) {
       request->video_type() == MediaStreamType::DISPLAY_VIDEO_CAPTURE ||
       request->video_type() ==
           MediaStreamType::DISPLAY_VIDEO_CAPTURE_THIS_TAB ||
-      request->video_type() == MediaStreamType::DISPLAY_VIDEO_CAPTURE_SET;
+      request->video_type() == MediaStreamType::DISPLAY_VIDEO_CAPTURE_SET ||
+      request->audio_type() == MediaStreamType::DISPLAY_AUDIO_CAPTURE;
   if (is_display_capture && !SetUpDisplayCaptureRequest(request)) {
     FinalizeRequestFailed(request_it,
                           MediaStreamRequestResult::SCREEN_CAPTURE_FAILURE);
@@ -2687,13 +2692,13 @@ bool MediaStreamManager::SetUpDisplayCaptureRequest(DeviceRequest* request) {
   DCHECK(request->video_type() == MediaStreamType::DISPLAY_VIDEO_CAPTURE ||
          request->video_type() ==
              MediaStreamType::DISPLAY_VIDEO_CAPTURE_THIS_TAB ||
-         request->video_type() == MediaStreamType::DISPLAY_VIDEO_CAPTURE_SET);
+         request->video_type() == MediaStreamType::DISPLAY_VIDEO_CAPTURE_SET ||
+         request->audio_type() == MediaStreamType::DISPLAY_AUDIO_CAPTURE);
 
   // getDisplayMedia function does not permit the use of constraints for
   // selection of a source, see
   // https://w3c.github.io/mediacapture-screen-share/#constraints.
-  if (!request->stream_controls().video.requested() ||
-      !request->stream_controls().video.device_ids.empty() ||
+  if (!request->stream_controls().video.device_ids.empty() ||
       !request->stream_controls().audio.device_ids.empty()) {
     LOG(ERROR) << "Invalid display media request.";
     return false;
@@ -2890,25 +2895,19 @@ void MediaStreamManager::GetRawDeviceIdsOpenedForFrame(
     RenderFrameHost* render_frame_host,
     blink::mojom::MediaStreamType type,
     GetRawDeviceIdsOpenedForFrameCallback callback) const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  CHECK(render_frame_host);
-  auto collect_all_render_frame_host_ids = base::BindOnce(
-      [](RenderFrameHost* render_frame_host) {
-        base::flat_set<GlobalRenderFrameHostId> all_render_frame_host_ids;
-        render_frame_host->ForEachRenderFrameHost(
-            [&all_render_frame_host_ids](RenderFrameHost* render_frame_host) {
-              all_render_frame_host_ids.insert(
-                  render_frame_host->GetGlobalId());
-            });
-        return all_render_frame_host_ids;
-      },
-      render_frame_host);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  GetUIThreadTaskRunner()->PostTaskAndReplyWithResult(
-      FROM_HERE, std::move(collect_all_render_frame_host_ids),
-      base::BindPostTaskToCurrentDefault(
-          base::BindOnce(&MediaStreamManager::GetRawDeviceIdsOpenedForFrameIds,
-                         base::Unretained(this), type, std::move(callback))));
+  base::flat_set<GlobalRenderFrameHostId> all_render_frame_host_ids;
+  render_frame_host->ForEachRenderFrameHost(
+      [&all_render_frame_host_ids](RenderFrameHost* render_frame_host) {
+        all_render_frame_host_ids.insert(render_frame_host->GetGlobalId());
+      });
+
+  GetIOThreadTaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&MediaStreamManager::GetRawDeviceIdsOpenedForFrameIds,
+                     base::Unretained(this), type, std::move(callback),
+                     all_render_frame_host_ids));
 }
 
 void MediaStreamManager::GetRawDeviceIdsOpenedForFrameIds(
@@ -3166,7 +3165,7 @@ void MediaStreamManager::FinalizeRequestFailed(
     DeviceRequests::const_iterator request_it,
     MediaStreamRequestResult result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(request_it != requests_.end());
+  CHECK(request_it != requests_.end(), base::NotFatalUntil::M130);
 
   DeviceRequest* const request = request_it->second.get();
 
@@ -3229,7 +3228,7 @@ void MediaStreamManager::FinalizeMediaAccessRequest(
     DeviceRequests::const_iterator request_it,
     const blink::mojom::StreamDevicesSet& stream_devices_set) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(request_it != requests_.end());
+  CHECK(request_it != requests_.end(), base::NotFatalUntil::M130);
   DeviceRequest* const request = request_it->second.get();
 
   request->FinalizeMediaAccessRequest(request_it->first, stream_devices_set);
@@ -4291,6 +4290,15 @@ void MediaStreamManager::RegisterVideoCaptureHost(
     mojo::PendingReceiver<media::mojom::VideoCaptureHost> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   video_capture_hosts_.Add(std::move(host), std::move(receiver));
+}
+
+std::optional<url::Origin> MediaStreamManager::GetOriginByVideoSessionId(
+    const base::UnguessableToken& session_id) {
+  DeviceRequest* request = FindRequestByVideoSessionId(session_id);
+  if (request == nullptr) {
+    return std::nullopt;
+  }
+  return request->salt_and_origin.origin();
 }
 
 // static

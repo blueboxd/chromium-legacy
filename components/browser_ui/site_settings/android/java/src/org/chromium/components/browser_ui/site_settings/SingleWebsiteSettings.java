@@ -23,6 +23,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceCategory;
 import androidx.preference.PreferenceScreen;
@@ -432,6 +433,7 @@ public class SingleWebsiteSettings extends BaseSiteSettingsFragment
                     }
                 }
             }
+
             if (merged.getLocalStorageInfo() == null
                     && other.getLocalStorageInfo() != null
                     && origin.equals(other.getLocalStorageInfo().getOrigin())) {
@@ -447,10 +449,10 @@ public class SingleWebsiteSettings extends BaseSiteSettingsFragment
                     merged.addSharedDictionaryInfo(sharedDictionaryInfo);
                 }
             }
-            if (merged.getFPSCookieInfo() == null
-                    && other.getFPSCookieInfo() != null
+            if (merged.getRWSCookieInfo() == null
+                    && other.getRWSCookieInfo() != null
                     && domainAndRegistry.equals(other.getAddress().getDomainAndRegistry())) {
-                merged.setFPSCookieInfo(other.getFPSCookieInfo());
+                merged.setRWSCookieInfo(other.getRWSCookieInfo());
             }
             for (ChosenObjectInfo objectInfo : other.getChosenObjectInfo()) {
                 if (origin.equals(objectInfo.getOrigin())) {
@@ -468,6 +470,8 @@ public class SingleWebsiteSettings extends BaseSiteSettingsFragment
                     }
                 }
             }
+
+            merged.setDomainImportant(merged.isDomainImportant() || other.isDomainImportant());
 
             // TODO(crbug.com/40539464): Deal with this TODO colony.
             // TODO(mvanouwerkerk): Make the various info types share a common interface that
@@ -897,7 +901,9 @@ public class SingleWebsiteSettings extends BaseSiteSettingsFragment
                             return true;
                         });
                 if (info.getContentSettingType() == mHighlightedPermission) {
-                    preference.setBackgroundColor(mHighlightColor);
+                    preference.setBackgroundColor(
+                            AppCompatResources.getColorStateList(getContext(), mHighlightColor)
+                                    .getDefaultColor());
                 }
 
                 preference.setOrder(++mMaxPermissionOrder);
@@ -940,28 +946,28 @@ public class SingleWebsiteSettings extends BaseSiteSettingsFragment
         TextMessagePreference relatedSitesText = new TextMessagePreference(getContext(), null);
         boolean shouldRelatedSitesPrefBeVisible =
                 getSiteSettingsDelegate().isPrivacySandboxFirstPartySetsUIFeatureEnabled()
-                        && getSiteSettingsDelegate().isFirstPartySetsDataAccessEnabled()
-                        && mSite.getFPSCookieInfo() != null;
+                        && getSiteSettingsDelegate().isRelatedWebSetsDataAccessEnabled()
+                        && mSite.getRWSCookieInfo() != null;
         relatedSitesHeader.setVisible(shouldRelatedSitesPrefBeVisible);
         relatedSitesText.setVisible(shouldRelatedSitesPrefBeVisible);
 
         if (shouldRelatedSitesPrefBeVisible) {
-            var fpsInfo = mSite.getFPSCookieInfo();
+            var rwsInfo = mSite.getRWSCookieInfo();
             relatedSitesText.setTitle(
                     getContext()
                             .getResources()
                             .getQuantityString(
                                     R.plurals.allsites_fps_summary,
-                                    fpsInfo.getMembersCount(),
-                                    Integer.toString(fpsInfo.getMembersCount()),
-                                    fpsInfo.getOwner()));
+                                    rwsInfo.getMembersCount(),
+                                    Integer.toString(rwsInfo.getMembersCount()),
+                                    rwsInfo.getOwner()));
             relatedSitesText.setManagedPreferenceDelegate(
                     new ForwardingManagedPreferenceDelegate(
                             getSiteSettingsDelegate().getManagedPreferenceDelegate()) {
                         @Override
                         public boolean isPreferenceControlledByPolicy(Preference preference) {
                             return getSiteSettingsDelegate()
-                                    .isPartOfManagedFirstPartySet(mSite.getAddress().getOrigin());
+                                    .isPartOfManagedRelatedWebSet(mSite.getAddress().getOrigin());
                         }
                     });
             relatedSitesHeader.addPreference(relatedSitesText);
@@ -969,7 +975,7 @@ public class SingleWebsiteSettings extends BaseSiteSettingsFragment
             if (getSiteSettingsDelegate().shouldShowPrivacySandboxRwsUi()) {
                 relatedSitesHeader.removeAll();
                 relatedSitesHeader.addPreference(relatedSitesText);
-                for (Website site : mSite.getFPSCookieInfo().getMembers()) {
+                for (Website site : mSite.getRWSCookieInfo().getMembers()) {
                     WebsiteRowPreference preference =
                             new RwsRowPreference(
                                     relatedSitesHeader.getContext(),
@@ -1081,7 +1087,9 @@ public class SingleWebsiteSettings extends BaseSiteSettingsFragment
         @ContentSettingsType.EnumType
         int contentType = getContentSettingsTypeFromPreferenceKey(preference.getKey());
         if (contentType == mHighlightedPermission) {
-            switchPreference.setBackgroundColor(mHighlightColor);
+            switchPreference.setBackgroundColor(
+                    AppCompatResources.getColorStateList(getContext(), mHighlightColor)
+                            .getDefaultColor());
         }
     }
 

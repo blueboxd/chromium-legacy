@@ -152,6 +152,7 @@ declare global {
         reloading: boolean;
         custodianApprovalRequired: boolean;
         parentDisabledPermissions: boolean;
+        unsupportedManifestVersion: boolean;
       }
 
       export interface OptionsPage {
@@ -264,10 +265,9 @@ declare global {
         showSafeBrowsingAllowlistWarning: boolean;
         showAccessRequestsInToolbar: boolean;
         safetyCheckWarningReason: SafetyCheckWarningReason;
-        acknowledgeSafetyCheckWarning: boolean;
         pinnedToToolbar?: boolean;
         isAffectedByMV2Deprecation: boolean;
-        didAcknowledgeMV2DeprecationWarning: boolean;
+        didAcknowledgeMV2DeprecationNotice: boolean;
       }
 
       export interface ProfileInfo {
@@ -276,7 +276,7 @@ declare global {
         isDeveloperModeControlledByPolicy: boolean;
         isIncognitoAvailable: boolean;
         isChildAccount: boolean;
-        isMv2DeprecationWarningDismissed: boolean;
+        isMv2DeprecationNoticeDismissed: boolean;
       }
 
       export interface ExtensionConfigurationUpdate {
@@ -286,15 +286,13 @@ declare global {
         errorCollection?: boolean;
         hostAccess?: HostAccess;
         showAccessRequestsInToolbar?: boolean;
-        acknowledgeSafetyCheckWarning?: boolean;
         acknowledgeSafetyCheckWarningReason?: SafetyCheckWarningReason;
-        acknowledgeMv2DeprecationWarning?: boolean;
         pinnedToToolbar?: boolean;
       }
 
       export interface ProfileConfigurationUpdate {
         inDeveloperMode?: boolean;
-        isMv2DeprecationWarningDismissed?: boolean;
+        isMv2DeprecationNoticeDismissed?: boolean;
       }
 
       export interface ExtensionCommandUpdate {
@@ -507,6 +505,8 @@ declare global {
           site: string, updates: ExtensionSiteAccessUpdate[]): Promise<void>;
       export function dismissSafetyHubExtensionsMenuNotification(): void;
       export function dismissMv2DeprecationPanel(): void;
+      export function dismissMv2DeprecationNoticeForExtension(
+          extensionId: string): Promise<void>;
 
       export const onItemStateChanged: ChromeEvent<(data: EventData) => void>;
       export const onProfileStateChanged:

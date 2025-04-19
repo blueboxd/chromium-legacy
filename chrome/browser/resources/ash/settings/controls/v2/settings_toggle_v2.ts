@@ -6,9 +6,62 @@
  * @fileoverview
  * `settings-toggle-v2` wraps the cr-toggle element. Works with or
  * without a pref object.
+ *
+ * - Usage: without pref
+ *   - 'checked' is false by default
+ *
+ *   <settings-toggle-v2
+ *       checked="[[checked]]"
+ *       on-change="onToggleChange_">
+ *   <settings-toggle-v2>
+ *
+ * - Usage: with pref
+ *   - 'pref' must be provided
+ *
+ *   <settings-toggle-v2
+ *       pref="[[prefs.foo.bar]]"
+ *       on-change="onToggleChange_">
+ *   <settings-toggle-v2>
+ *
+ * - Usage: no-set-pref
+ *   - 'pref' must be provided
+ *   - If no-set-pref is passed, the pref value will not change based on the
+ *     toggle change. The property 'checked' changes with the user's click,
+ *     even when no-set-pref is true.
+ *
+ *     Example: A use-case is when changing the toggle triggers a dialog to
+ *     open where a user must confirm or cancel the toggle change.
+ *     - Invoking 'resetToPrefValue()' will change the toggle value to the
+ *       pref's value.
+ *     - Invoking 'commitPrefChange()' will change the pref value to the
+ *       toggle's 'checked' value.
+ *
+ *   <settings-toggle-v2
+ *       pref="[[prefs.foo.bar]]"
+ *       no-set-pref
+ *       on-change="openToggleDialog_">
+ *   <settings-toggle-v2>
+ *
+ * - Usage: inverted
+ *   - 'pref' must be provided
+ *   - The checked value will be the opposite of the pref's value
+ *
+ *     Example: Suppose we have multiple functionalities, such as fA and fB,
+ *     but only one of them can be enabled at any given time. fA’s value is
+ *     tied to the preference prefA. We want the toggle for fB to display the
+ *     inverse value of prefA. In other words, when fA is enabled, the toggle
+ *     for fB will show an unchecked value (OFF), and vice versa.
+ *
+ *   <settings-toggle-v2
+ *       pref="[[prefs.foo.bar]]"
+ *       on-change="onToggleChange_"
+ *       inverted>
+ *   <settings-toggle-v2>
  */
+
 import 'chrome://resources/ash/common/cr_elements/cr_toggle/cr_toggle.js';
 import 'chrome://resources/ash/common/cr_elements/cros_color_overrides.css.js';
+import 'chrome://resources/ash/common/cr_elements/policy/cr_policy_pref_indicator.js';
 
 import {CrToggleElement} from 'chrome://resources/ash/common/cr_elements/cr_toggle/cr_toggle.js';
 import {assert} from 'chrome://resources/js/assert.js';
@@ -77,12 +130,6 @@ export class SettingsToggleV2Element extends SettingsToggleV2ElementBase {
     chrome.settingsPrivate.PrefType.BOOLEAN,
   ];
 
-  override ready(): void {
-    super.ready();
-
-    this.addEventListener('click', this.onClick_);
-  }
-
   override focus(): void {
     this.$.control.focus();
   }
@@ -99,7 +146,7 @@ export class SettingsToggleV2Element extends SettingsToggleV2ElementBase {
    * Event handler for when toggle has been toggled by user action. Dispatches a
    * `change` event containing the checked value.
    */
-  private onClick_(): void {
+  private onChange_(): void {
     if (this.disabled) {
       return;
     }
@@ -112,7 +159,7 @@ export class SettingsToggleV2Element extends SettingsToggleV2ElementBase {
 
     this.dispatchEvent(new CustomEvent('change', {
       bubbles: true,
-      composed: true,
+      composed: false,  // Event should not pass the shadow DOM boundary.
       detail: this.checked,
     }));
   }

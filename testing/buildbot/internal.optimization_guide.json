@@ -36,22 +36,6 @@
   "optimization_guide-chromeos": {
     "gtest_tests": [
       {
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "chrome_ml_unittests",
-        "swarming": {
-          "dimensions": {
-            "cpu": "x86-64",
-            "os": "Ubuntu-22.04",
-            "pool": "chrome.tests"
-          },
-          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "chrome_ml_unittests",
-        "test_id_prefix": "ninja://components/optimization_guide/internal:chrome_ml_unittests/"
-      },
-      {
         "args": [
           "--gtest_filter=*OptimizationGuide*:*PageContentAnnotations*"
         ],
@@ -88,22 +72,6 @@
         },
         "test": "components_unittests",
         "test_id_prefix": "ninja://components:components_unittests/"
-      },
-      {
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "optimization_guide_unittests",
-        "swarming": {
-          "dimensions": {
-            "cpu": "x86-64",
-            "os": "Ubuntu-22.04",
-            "pool": "chrome.tests"
-          },
-          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "optimization_guide_unittests",
-        "test_id_prefix": "ninja://components/optimization_guide/internal:optimization_guide_unittests/"
       }
     ]
   },
@@ -121,7 +89,7 @@
         "swarming": {
           "dimensions": {
             "cpu": "arm64",
-            "os": "Mac-13|Mac-14",
+            "os": "Mac-14",
             "pool": "chrome.tests"
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -140,7 +108,7 @@
         "swarming": {
           "dimensions": {
             "cpu": "arm64",
-            "os": "Mac-13|Mac-14",
+            "os": "Mac-14",
             "pool": "chrome.tests"
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -159,7 +127,7 @@
         "swarming": {
           "dimensions": {
             "cpu": "arm64",
-            "os": "Mac-13|Mac-14",
+            "os": "Mac-14",
             "pool": "chrome.tests"
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -175,7 +143,7 @@
         "swarming": {
           "dimensions": {
             "cpu": "arm64",
-            "os": "Mac-13|Mac-14",
+            "os": "Mac-14",
             "pool": "chrome.tests"
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -191,7 +159,7 @@
         "swarming": {
           "dimensions": {
             "cpu": "arm64",
-            "os": "Mac-13|Mac-14",
+            "os": "Mac-14",
             "pool": "chrome.tests"
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -220,7 +188,7 @@
         "swarming": {
           "dimensions": {
             "cpu": "arm64",
-            "os": "Mac-13|Mac-14",
+            "os": "Mac-14",
             "pool": "chrome.tests"
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -243,7 +211,7 @@
         "swarming": {
           "dimensions": {
             "cpu": "arm64",
-            "os": "Mac-13|Mac-14",
+            "os": "Mac-14",
             "pool": "chrome.tests"
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -270,7 +238,7 @@
         "swarming": {
           "dimensions": {
             "cpu": "arm64",
-            "os": "Mac-13|Mac-14",
+            "os": "Mac-14",
             "pool": "chrome.tests"
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -296,7 +264,7 @@
         "swarming": {
           "dimensions": {
             "cpu": "arm64",
-            "os": "Mac-13|Mac-14",
+            "os": "Mac-14",
             "pool": "chrome.tests"
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -316,7 +284,7 @@
         "swarming": {
           "dimensions": {
             "cpu": "arm64",
-            "os": "Mac-13|Mac-14",
+            "os": "Mac-14",
             "pool": "chrome.tests"
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -340,7 +308,7 @@
         "swarming": {
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13|Mac-14",
+            "os": "Mac-14",
             "pool": "chrome.tests"
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -359,7 +327,7 @@
         "swarming": {
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13|Mac-14",
+            "os": "Mac-14",
             "pool": "chrome.tests"
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -378,7 +346,7 @@
         "swarming": {
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13|Mac-14",
+            "os": "Mac-14",
             "pool": "chrome.tests"
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -394,7 +362,7 @@
         "swarming": {
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13|Mac-14",
+            "os": "Mac-14",
             "pool": "chrome.tests"
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -410,7 +378,7 @@
         "swarming": {
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13|Mac-14",
+            "os": "Mac-14",
             "pool": "chrome.tests"
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -439,7 +407,7 @@
         "swarming": {
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13|Mac-14",
+            "os": "Mac-14",
             "pool": "chrome.tests"
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -462,7 +430,7 @@
         "swarming": {
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13|Mac-14",
+            "os": "Mac-14",
             "pool": "chrome.tests"
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -489,7 +457,7 @@
         "swarming": {
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13|Mac-14",
+            "os": "Mac-14",
             "pool": "chrome.tests"
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -515,7 +483,7 @@
         "swarming": {
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13|Mac-14",
+            "os": "Mac-14",
             "pool": "chrome.tests"
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -535,7 +503,7 @@
         "swarming": {
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13|Mac-14",
+            "os": "Mac-14",
             "pool": "chrome.tests"
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1186,6 +1154,9 @@
     ],
     "gtest_tests": [
       {
+        "args": [
+          "--use-xvfb"
+        ],
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -1202,7 +1173,8 @@
       },
       {
         "args": [
-          "--gtest_filter=*OptimizationGuide*:*PageContentAnnotations*"
+          "--gtest_filter=*OptimizationGuide*:*PageContentAnnotations*",
+          "--use-xvfb"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -1220,7 +1192,8 @@
       },
       {
         "args": [
-          "--gtest_filter=*OptimizationGuide*:*PageEntities*:*EntityAnnotator*"
+          "--gtest_filter=*OptimizationGuide*:*PageEntities*:*EntityAnnotator*",
+          "--use-xvfb"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -1237,6 +1210,9 @@
         "test_id_prefix": "ninja://components:components_unittests/"
       },
       {
+        "args": [
+          "-use-xvfb"
+        ],
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -1254,6 +1230,9 @@
         "variant_id": "Intel UHD 630 or 770"
       },
       {
+        "args": [
+          "-use-xvfb"
+        ],
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -1271,6 +1250,9 @@
         "variant_id": "NVIDIA GeForce GTX 1660"
       },
       {
+        "args": [
+          "--use-xvfb"
+        ],
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -1293,7 +1275,8 @@
           "--chromedriver",
           "chromedriver",
           "--binary",
-          "chrome"
+          "chrome",
+          "--use-xvfb"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -1315,7 +1298,8 @@
       },
       {
         "args": [
-          "--out_dir=."
+          "--out_dir=.",
+          "--use-xvfb"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -1340,7 +1324,8 @@
           "--chromedriver",
           "chromedriver",
           "--binary",
-          "chrome"
+          "chrome",
+          "--no-xvfb"
         ],
         "experiment_percentage": 100,
         "merge": {
@@ -1368,7 +1353,8 @@
           "--chromedriver",
           "chromedriver",
           "--binary",
-          "chrome"
+          "chrome",
+          "--no-xvfb"
         ],
         "experiment_percentage": 100,
         "merge": {
@@ -1396,7 +1382,8 @@
           "--chromedriver",
           "chromedriver",
           "--binary",
-          "chrome"
+          "chrome",
+          "--no-xvfb"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -1423,7 +1410,8 @@
           "--chromedriver",
           "chromedriver",
           "--binary",
-          "chrome"
+          "chrome",
+          "--no-xvfb"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -1446,6 +1434,9 @@
         "variant_id": "NVIDIA GeForce GTX 1660"
       },
       {
+        "args": [
+          "--no-xvfb"
+        ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
@@ -1467,6 +1458,9 @@
         "variant_id": "Intel UHD 630 or 770"
       },
       {
+        "args": [
+          "--no-xvfb"
+        ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },

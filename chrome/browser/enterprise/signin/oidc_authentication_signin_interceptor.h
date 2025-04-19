@@ -11,6 +11,7 @@
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/enterprise/signin/oidc_metrics_utils.h"
 #include "chrome/browser/enterprise/signin/token_managed_profile_creation_delegate.h"
 #include "chrome/browser/signin/web_signin_interceptor.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -26,19 +27,6 @@ class CloudPolicyClientRegistrationHelper;
 
 class OidcAuthenticationSigninInterceptorTest;
 
-enum class OidcInterceptionStatus {
-  kNoInterception = 0,
-  kRegister = 1,
-  kConsentCollection = 2,
-  kProfileCreation = 3,
-  kPolicyFetch = 4,
-  kSetPrimaryAccountWithInvalidToken = 5,
-  kCompleted = 6,
-  // TODO(b/319479021): Add more error reporting and retry logics to make the
-  // interceptor class more resilient
-  kError = 7,
-};
-
 class Profile;
 class ProfileAttributesEntry;
 
@@ -48,8 +36,28 @@ using policy::CloudPolicyClient;
 // Called after a valid OIDC authentication redirection is captured. The
 // interceptor is responsible for starting registration process, collecting user
 // consent, and creating/switching to a new managed profile if agreed.
-class OidcAuthenticationSigninInterceptor : public WebSigninInterceptor,
-                                            public KeyedService {
+
+// The main steps of the interception are:
+// - Check if the user is elligible to interception in
+// MaybeInterceptOidcAuthentication()
+// - Show the dialog and wait for the user choice in
+// ShowOIDCInterceptionDialog()
+// - User choice is received in OnProfileCreationChoice()
+// - Go through registration process with StartOidcRegistration() and
+// OnClientRegistered()
+// - Create a new profile with ManagedProfileCreator and then
+// OnNewSignedInProfileCreated()
+// - Fetch policies, received in OnPolicyFetchCompleteInNewProfile()
+// - Notify the dialog that the profile creation is complete with
+// user_choice_handling_done_callback_
+// - Wait for the dialog to be closed by the user and open a browser registered
+// for policies via oidc
+class OidcAuthenticationSigninInterceptor
+    : public WebSigninInterceptor,
+
+      // TODO(350960816): Restructure `OidcAuthenticationSigninInterceptor` to
+      // be a state machine instead of a keyed service.
+      public KeyedService {
  public:
   enum class SigninInterceptionType {
     kProfileSwitch,
@@ -70,8 +78,9 @@ class OidcAuthenticationSigninInterceptor : public WebSigninInterceptor,
   // are valid.
   virtual void MaybeInterceptOidcAuthentication(
       content::WebContents* intercepted_contents,
-      ProfileManagementOicdTokens oidc_tokens,
-      std::string subject_id,
+      const ProfileManagementOidcTokens& oidc_tokens,
+      const std::string& issuer_id,
+      const std::string& subject_id,
       OidcInterceptionCallback oidc_callback);
 
   // KeyedService:
@@ -82,15 +91,26 @@ class OidcAuthenticationSigninInterceptor : public WebSigninInterceptor,
     client_for_testing_ = std::move(client);
   }
 
-  OidcInterceptionStatus interception_status() { return interception_status_; }
-
  protected:
+  virtual void OnPolicyFetchCompleteInNewProfile(bool success);
+  virtual void FinalizeSigninInterception();
   virtual void CreateBrowserAfterSigninInterception();
-  // Cancels any current signin interception and resets the interceptor to its
-  // initial state.
 
  private:
+  friend class MockOidcAuthenticationSigninInterceptor;
+
+  // Cancels any current signin interception and resets the interceptor to its
+  // initial state.
   void Reset();
+
+  // `is_dasher_based` should be nullopt when `result` has type
+  // `OidcInterceptionResult` since its histogram does not have
+  // Dasher-based/Dasherless variants; it should be either True or False when
+  // `result` has type `OidcProfileCreationResult` and be used for histogram
+  // recording.
+  void HandleError(
+      std::variant<OidcInterceptionResult, OidcProfileCreationResult> result,
+      std::optional<bool> is_dasher_based = std::nullopt);
 
   // Try to send OIDC tokens to DM server for registration.
   void StartOidcRegistration();
@@ -98,39 +118,39 @@ class OidcAuthenticationSigninInterceptor : public WebSigninInterceptor,
   // (aka has a dm token) and various information should be included, most
   // importantly, if the 3P user identity is sync-ed to Google or not.
   void OnClientRegistered(std::unique_ptr<CloudPolicyClient> client,
-                          std::string preset_profile_guid);
+                          std::string preset_profile_guid,
+                          base::TimeTicks registration_start_time);
 
   // Called when user makes a decision on the profile creation dialog.
-  void OnProfileCreationChoice(SigninInterceptionResult create);
+  void OnProfileCreationChoice(
+      signin::SigninChoice choice,
+      signin::SigninChoiceOperationDoneCallback callback);
+  void OnProfileSwitchChoice(SigninInterceptionResult result);
   // Called when the new profile has been created.
   void OnNewSignedInProfileCreated(base::WeakPtr<Profile> new_profile);
-  // Called when policy fetch response has been received, For Dasher-based
-  // profiles, pulls gaia id from fetched policies and user email from DM server
-  // response, and sets this AccountId as primary user of the new profile.
-  void OnPolicyFetchCompleteInNewProfile(Profile* new_profile, bool success);
 
   const raw_ptr<Profile, DanglingUntriaged> profile_;
-  std::unique_ptr<Delegate> delegate_;
+  base::WeakPtr<Profile> new_profile_;
+  std::unique_ptr<WebSigninInterceptor::Delegate> delegate_;
   std::unique_ptr<ManagedProfileCreator> profile_creator_;
 
   // Members below are related to the interception in progress.
   base::WeakPtr<content::WebContents> web_contents_;
-  ProfileManagementOicdTokens oidc_tokens_;
+  ProfileManagementOidcTokens oidc_tokens_;
   std::string dm_token_;
   std::string client_id_;
   std::string user_display_name_;
   std::string user_email_;
-  // 'sub' idenitifer of the OIDC response, unique for each user identity from
-  // the IDP.
-  std::string subject_id_;
+  // Unique id for the OIDC user, format:
+  // "iss:<value of 'iss' field>,sub:<value of 'sub'field>"
+  // For context, 'iss' is the ID of the OIDC issuer and 'sub' is the
+  // unique-per-user subject ID within the issuer.
+  std::string unique_user_identifier_;
   bool dasher_based_ = true;
   std::string preset_profile_id_;
   raw_ptr<const ProfileAttributesEntry> switch_to_entry_ = nullptr;
   SkColor profile_color_;
-  // TODO(b/319479021): utilize the status variable to have better error
-  // handling and in metrics.
-  OidcInterceptionStatus interception_status_ =
-      OidcInterceptionStatus::kNoInterception;
+  bool interception_in_progress_ = false;
 
   std::unique_ptr<policy::CloudPolicyClientRegistrationHelper>
       registration_helper_for_temporary_client_;
@@ -142,6 +162,8 @@ class OidcAuthenticationSigninInterceptor : public WebSigninInterceptor,
   std::unique_ptr<CloudPolicyClient> client_for_testing_ = nullptr;
 
   OidcInterceptionCallback oidc_callback_;
+
+  signin::SigninChoiceOperationDoneCallback user_choice_handling_done_callback_;
 
   base::WeakPtrFactory<OidcAuthenticationSigninInterceptor> weak_factory_{this};
 

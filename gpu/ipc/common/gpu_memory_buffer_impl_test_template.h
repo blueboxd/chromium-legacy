@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 // This file defines tests that implementations of GpuMemoryBufferFactory should
 // pass in order to be conformant.
 
@@ -13,8 +18,10 @@
 
 #include <memory>
 
+#include "base/containers/heap_array.h"
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "components/viz/test/test_gpu_service_holder.h"
@@ -27,6 +34,10 @@
 #include "ui/gfx/mojom/buffer_types.mojom.h"
 #include "ui/gl/gl_display.h"
 
+#if BUILDFLAG(IS_ANDROID)
+#include "gpu/config/gpu_finch_features.h"
+#endif
+
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_OZONE)
 #include "ui/gl/init/gl_factory.h"
 #include "ui/gl/test/gl_surface_test_support.h"
@@ -38,6 +49,16 @@ namespace gpu {
 template <typename GpuMemoryBufferImplType>
 class GpuMemoryBufferImplTest : public testing::Test {
  public:
+  GpuMemoryBufferImplTest() {
+#if BUILDFLAG(IS_ANDROID)
+    // Allow for creation of this class to preserve unittest coverage while we
+    // roll out its elimination via Finch.
+    // TODO(crbug.com/343584529): Remove post-safe rollout.
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kEnableGpuMemoryBufferImplAHB);
+#endif
+  }
+
   GpuMemoryBufferImpl::DestructionCallback CreateGpuMemoryBuffer(
       const gfx::Size& size,
       gfx::BufferFormat format,
@@ -115,6 +136,9 @@ class GpuMemoryBufferImplTest : public testing::Test {
   }
 
  private:
+#if BUILDFLAG(IS_ANDROID)
+  base::test::ScopedFeatureList scoped_feature_list_;
+#endif
   bool run_gpu_test_ = false;
   GpuMemoryBufferSupport gpu_memory_buffer_support_;
   raw_ptr<gl::GLDisplay> display_ = nullptr;
@@ -132,11 +156,25 @@ class GpuMemoryBufferImplTest : public testing::Test {
 template <typename GpuMemoryBufferImplType>
 class GpuMemoryBufferImplCreateTest : public testing::Test {
  public:
+  GpuMemoryBufferImplCreateTest() {
+#if BUILDFLAG(IS_ANDROID)
+    // Allow for creation of this class to preserve unittest coverage while we
+    // roll out its elimination via Finch.
+    // TODO(crbug.com/343584529): Remove post-safe rollout.
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kEnableGpuMemoryBufferImplAHB);
+#endif
+  }
+
   GpuMemoryBufferSupport* gpu_memory_buffer_support() {
     return &gpu_memory_buffer_support_;
   }
 
  private:
+#if BUILDFLAG(IS_ANDROID)
+  base::test::ScopedFeatureList scoped_feature_list_;
+#endif
+
   GpuMemoryBufferSupport gpu_memory_buffer_support_;
 };
 
@@ -292,18 +330,18 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, Map) {
           gfx::RowSizeForBufferFormat(kBufferSize.width(), format, plane);
       EXPECT_GT(row_size_in_bytes, 0u);
 
-      std::unique_ptr<char[]> data(new char[row_size_in_bytes]);
-      memset(data.get(), 0x2a + plane, row_size_in_bytes);
+      auto data = base::HeapArray<char>::Uninit(row_size_in_bytes);
+      memset(data.data(), 0x2a + plane, row_size_in_bytes);
 
       size_t height = kBufferSize.height() /
                       gfx::SubsamplingFactorForBufferFormat(format, plane);
       for (size_t y = 0; y < height; ++y) {
         memcpy(static_cast<char*>(buffer->memory(plane)) +
                    y * buffer->stride(plane),
-               data.get(), row_size_in_bytes);
+               data.data(), row_size_in_bytes);
         EXPECT_EQ(0, memcmp(static_cast<char*>(buffer->memory(plane)) +
                                 y * buffer->stride(plane),
-                            data.get(), row_size_in_bytes));
+                            data.data(), row_size_in_bytes));
       }
     }
 
@@ -351,18 +389,18 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, PersistentMap) {
           gfx::RowSizeForBufferFormat(kBufferSize.width(), format, plane);
       EXPECT_GT(row_size_in_bytes, 0u);
 
-      std::unique_ptr<char[]> data(new char[row_size_in_bytes]);
-      memset(data.get(), 0x2a + plane, row_size_in_bytes);
+      auto data = base::HeapArray<char>::Uninit(row_size_in_bytes);
+      memset(data.data(), 0x2a + plane, row_size_in_bytes);
 
       size_t height = kBufferSize.height() /
                       gfx::SubsamplingFactorForBufferFormat(format, plane);
       for (size_t y = 0; y < height; ++y) {
         memcpy(static_cast<char*>(buffer->memory(plane)) +
                    y * buffer->stride(plane),
-               data.get(), row_size_in_bytes);
+               data.data(), row_size_in_bytes);
         EXPECT_EQ(0, memcmp(static_cast<char*>(buffer->memory(plane)) +
                                 y * buffer->stride(plane),
-                            data.get(), row_size_in_bytes));
+                            data.data(), row_size_in_bytes));
       }
     }
 
@@ -375,15 +413,15 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, PersistentMap) {
       const size_t row_size_in_bytes =
           gfx::RowSizeForBufferFormat(kBufferSize.width(), format, plane);
 
-      std::unique_ptr<char[]> data(new char[row_size_in_bytes]);
-      memset(data.get(), 0x2a + plane, row_size_in_bytes);
+      auto data = base::HeapArray<char>::Uninit(row_size_in_bytes);
+      memset(data.data(), 0x2a + plane, row_size_in_bytes);
 
       size_t height = kBufferSize.height() /
                       gfx::SubsamplingFactorForBufferFormat(format, plane);
       for (size_t y = 0; y < height; ++y) {
         EXPECT_EQ(0, memcmp(static_cast<char*>(buffer->memory(plane)) +
                                 y * buffer->stride(plane),
-                            data.get(), row_size_in_bytes));
+                            data.data(), row_size_in_bytes));
       }
     }
 

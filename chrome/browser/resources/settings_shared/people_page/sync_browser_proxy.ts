@@ -19,7 +19,8 @@ export interface StoredAccount {
 
 /**
  * Equivalent to C++ counterpart.
- * @see chrome/browser/ui/webui/settings/people_handler.h
+ * @see chrome/browser/signin/signin_ui_util.h
+ * TODO(b/336510160): Look into integrating SYNC_PAUSED value.
  */
 export enum SignedInState {
   SIGNED_OUT = 0,
@@ -46,6 +47,7 @@ export interface SyncStatus {
   statusActionText?: string;
   statusText?: string;
   supervisedUser?: boolean;
+  syncCookiesSupported?: boolean;
   syncSystemEnabled?: boolean;
 }
 
@@ -80,6 +82,9 @@ export interface SyncPrefs {
   bookmarksManaged: boolean;
   bookmarksRegistered: boolean;
   bookmarksSynced: boolean;
+  cookiesManaged: boolean;
+  cookiesRegistered: boolean;
+  cookiesSynced: boolean;
   customPassphraseAllowed: boolean;
   encryptAllData: boolean;
   extensionsManaged: boolean;
@@ -95,6 +100,9 @@ export interface SyncPrefs {
   preferencesManaged: boolean;
   preferencesRegistered: boolean;
   preferencesSynced: boolean;
+  productComparisonManaged: boolean;
+  productComparisonRegistered: boolean;
+  productComparisonSynced: boolean;
   readingListManaged: boolean;
   readingListRegistered: boolean;
   readingListSynced: boolean;
@@ -126,11 +134,13 @@ export const syncPrefsIndividualDataTypes: string[] = [
   'appsSynced',
   'autofillSynced',
   'bookmarksSynced',
+  'cookiesSynced',
   'extensionsSynced',
   'readingListSynced',
   'passwordsSynced',
   'paymentsSynced',
   'preferencesSynced',
+  'productComparisonSynced',
   'savedTabGroupsSynced',
   'tabsSynced',
   'themesSynced',

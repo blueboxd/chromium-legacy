@@ -62,8 +62,11 @@ instead of "initial value".
 |             shadow:pseudoId="-webkit-datetime-edit-year-field"
 |             "2014"
 |       <div>
+|         aria-haspopup="menu"
 |         id="picker"
 |         pseudo="-webkit-calendar-picker-indicator"
+|         role="button"
+|         tabindex="0"
 |         title="Show month picker"
 |         shadow:pseudoId="-webkit-calendar-picker-indicator"
 | <textarea>
@@ -83,11 +86,11 @@ instead of "initial value".
 |   <option>
 |     "initial value"
 |     <shadow:root>
-|       "initial value"
+|       <slot>
 |   <option>
 |     "inserted value"
 |     <shadow:root>
-|       "inserted value"
+|       <slot>
 |   <shadow:root>
 |     <div>
 |       aria-hidden="true"
@@ -98,7 +101,6 @@ instead of "initial value".
 |       id="select-button"
 |       <button>
 |         pseudo="select-fallback-button"
-|         type="popover"
 |         shadow:pseudoId="select-fallback-button"
 |         <span>
 |           pseudo="select-fallback-button-text"
@@ -119,6 +121,13 @@ instead of "initial value".
 |         shadow:pseudoId="select-fallback-datalist"
 |         <slot>
 |           id="select-datalist-options"
+|     <div>
+|       popover="manual"
+|       pseudo="-internal-select-autofill-preview"
+|       shadow:pseudoId="-internal-select-autofill-preview"
+|       <div>
+|         pseudo="-internal-select-autofill-preview-text"
+|         shadow:pseudoId="-internal-select-autofill-preview-text"
 | "input.value: initial value"
 | "internals.suggestedValue(input): suggested value"
 | "input.selectionStart: 0"

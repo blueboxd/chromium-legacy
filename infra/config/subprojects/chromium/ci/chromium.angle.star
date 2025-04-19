@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 """Definitions of builders in the chromium.angle builder group."""
 
-load("//lib/builders.star", "os", "sheriff_rotations", "siso")
+load("//lib/builders.star", "gardener_rotations", "os", "siso")
 load("//lib/builder_config.star", "builder_config")
 load("//lib/builder_health_indicators.star", "health_spec")
 load("//lib/ci.star", "ci")
@@ -15,7 +15,7 @@ ci.defaults.set(
     executable = "recipe:angle_chromium",
     builder_group = "chromium.angle",
     pool = ci.gpu.POOL,
-    sheriff_rotations = sheriff_rotations.ANGLE,
+    gardener_rotations = gardener_rotations.ANGLE,
     execution_timeout = ci.DEFAULT_EXECUTION_TIMEOUT,
     health_spec = health_spec.DEFAULT,
     properties = {
@@ -121,7 +121,6 @@ ci.gpu.linux_builder(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
             apply_configs = [
-                "angle_internal",
                 "angle_top_of_tree",
                 "fuchsia",
             ],
@@ -146,6 +145,7 @@ ci.gpu.linux_builder(
             "minimal_symbols",
             "dcheck_always_on",
             "fuchsia",
+            "x64",
         ],
     ),
     console_view_entry = consoles.console_view_entry(
@@ -182,6 +182,8 @@ ci.gpu.linux_builder(
             "remoteexec",
             "minimal_symbols",
             "dcheck_always_on",
+            "linux",
+            "x64",
         ],
     ),
     console_view_entry = consoles.console_view_entry(
@@ -279,6 +281,7 @@ ci.gpu.mac_builder(
             "remoteexec",
             "minimal_symbols",
             "dcheck_always_on",
+            "mac",
             "x64",
         ],
     ),
@@ -357,7 +360,6 @@ ci.gpu.mac_builder(
         gclient_config = builder_config.gclient_config(
             config = "ios",
             apply_configs = [
-                "angle_internal",
                 "angle_top_of_tree",
             ],
         ),
@@ -404,7 +406,6 @@ ci.thin_tester(
         gclient_config = builder_config.gclient_config(
             config = "ios",
             apply_configs = [
-                "angle_internal",
                 "angle_top_of_tree",
             ],
         ),
@@ -455,6 +456,8 @@ ci.gpu.windows_builder(
             "remoteexec",
             "minimal_symbols",
             "dcheck_always_on",
+            "win",
+            "x64",
         ],
     ),
     console_view_entry = consoles.console_view_entry(
@@ -552,6 +555,7 @@ ci.gpu.windows_builder(
             "remoteexec",
             "minimal_symbols",
             "dcheck_always_on",
+            "win",
             "x86",
         ],
     ),

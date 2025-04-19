@@ -17,6 +17,7 @@
 #include "ui/display/display.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/manager/test/fake_display_snapshot.h"
+#include "ui/display/types/display_configuration_params.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/display/types/native_display_observer.h"
 #include "ui/display/util/display_util.h"
@@ -160,7 +161,7 @@ void FakeDisplayDelegate::Configure(
   }
 
   configure_callbacks_.push(
-      base::BindOnce(std::move(callback), config_success));
+      base::BindOnce(std::move(callback), config_requests, config_success));
 
   // Start the timer if it's not already running. If there are multiple queued
   // configuration requests then ConfigureDone() will handle starting the
@@ -201,18 +202,6 @@ void FakeDisplayDelegate::SetColorCalibration(
 
 void FakeDisplayDelegate::SetGammaAdjustment(int64_t display_id,
                                              const GammaAdjustment& gamma) {}
-
-bool FakeDisplayDelegate::SetColorMatrix(
-    int64_t display_id,
-    const std::vector<float>& color_matrix) {
-  return false;
-}
-
-bool FakeDisplayDelegate::SetGammaCorrection(int64_t display_id,
-                                             const display::GammaCurve& degamma,
-                                             const display::GammaCurve& gamma) {
-  return false;
-}
 
 void FakeDisplayDelegate::SetPrivacyScreen(int64_t display_id,
                                            bool enabled,

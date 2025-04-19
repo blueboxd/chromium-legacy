@@ -23,12 +23,17 @@ class AggregatableTriggerConfig;
 class AggregatableTriggerData;
 class AggregatableValues;
 class AggregationKeys;
+class AttributionScopesData;
+class AttributionScopesSet;
 class DestinationSet;
 class EventReportWindows;
+class MaxEventLevelReports;
 class RandomizedResponseData;
+class SourceAggregatableDebugReportingConfig;
 class SuitableOrigin;
 class SummaryBuckets;
 
+struct AggregatableDebugReportingConfig;
 struct AggregatableDedupKey;
 struct EventTriggerData;
 struct FakeEventLevelReport;
@@ -46,7 +51,8 @@ FiltersDisjunction FiltersForSourceType(
 // assuming it is possible (i.e. `windows_per_type` contains a single distinct
 // value).
 TriggerSpecs SpecsFromWindowList(const std::vector<int>& windows_per_type,
-                                 bool collapse_into_single_spec);
+                                 bool collapse_into_single_spec,
+                                 MaxEventLevelReports);
 
 std::ostream& operator<<(std::ostream&, const AggregationKeys&);
 
@@ -57,6 +63,10 @@ std::ostream& operator<<(std::ostream&, const FilterPair&);
 std::ostream& operator<<(std::ostream&, const DestinationSet&);
 
 std::ostream& operator<<(std::ostream&, const EventReportWindows&);
+
+std::ostream& operator<<(std::ostream&, const AttributionScopesSet&);
+
+std::ostream& operator<<(std::ostream&, const AttributionScopesData&);
 
 std::ostream& operator<<(std::ostream&, const SourceRegistration&);
 
@@ -89,6 +99,12 @@ std::ostream& operator<<(std::ostream&, const ParseError&);
 std::ostream& operator<<(std::ostream& out, const FakeEventLevelReport&);
 
 std::ostream& operator<<(std::ostream& out, const RandomizedResponseData&);
+
+std::ostream& operator<<(std::ostream& out,
+                         const AggregatableDebugReportingConfig&);
+
+std::ostream& operator<<(std::ostream& out,
+                         const SourceAggregatableDebugReportingConfig&);
 
 }  // namespace attribution_reporting
 

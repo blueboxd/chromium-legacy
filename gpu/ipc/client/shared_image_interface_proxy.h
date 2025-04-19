@@ -17,6 +17,7 @@
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/buffer.h"
 #include "gpu/command_buffer/common/shared_image_capabilities.h"
+#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/ipc/common/gpu_memory_buffer_handle_info.h"
 
 #if BUILDFLAG(IS_WIN)
@@ -57,7 +58,7 @@ class SharedImageInterfaceProxy {
     SharedImageRefData& operator=(const SharedImageRefData&) = delete;
 
     int ref_count = 0;
-    uint32_t usage = 0;
+    gpu::SharedImageUsageSet usage;
     std::vector<SyncToken> destruction_sync_tokens;
   };
 
@@ -69,11 +70,6 @@ class SharedImageInterfaceProxy {
                             base::span<const uint8_t> pixel_data);
   Mailbox CreateSharedImage(const SharedImageInfo& si_info,
                             gfx::GpuMemoryBufferHandle handle);
-  Mailbox CreateSharedImage(gfx::BufferFormat format,
-                            gfx::BufferPlane plane,
-                            const gfx::Size& size,
-                            const SharedImageInfo& si_info,
-                            gfx::GpuMemoryBufferHandle buffer_handle);
 
 #if BUILDFLAG(IS_WIN)
   void CopyToGpuMemoryBuffer(const SyncToken& sync_token,
@@ -94,7 +90,7 @@ class SharedImageInterfaceProxy {
   void DestroySharedImage(const SyncToken& sync_token, const Mailbox& mailbox);
   void AddReferenceToSharedImage(const SyncToken& sync_token,
                                  const Mailbox& mailbox,
-                                 uint32_t usage);
+                                 gpu::SharedImageUsageSet usage);
 
   SyncToken GenVerifiedSyncToken();
   SyncToken GenUnverifiedSyncToken();
@@ -107,21 +103,22 @@ class SharedImageInterfaceProxy {
                                      const gfx::ColorSpace& color_space,
                                      GrSurfaceOrigin surface_origin,
                                      SkAlphaType alpha_type,
-                                     uint32_t usage);
+                                     gpu::SharedImageUsageSet usage);
   void PresentSwapChain(const SyncToken& sync_token, const Mailbox& mailbox);
 
 #if BUILDFLAG(IS_FUCHSIA)
   void RegisterSysmemBufferCollection(zx::eventpair service_handle,
                                       zx::channel sysmem_token,
-                                      gfx::BufferFormat format,
+                                      const viz::SharedImageFormat& format,
                                       gfx::BufferUsage usage,
                                       bool register_with_image_pipe);
 #endif  // BUILDFLAG(IS_FUCHSIA)
 
   scoped_refptr<gfx::NativePixmap> GetNativePixmap(const gpu::Mailbox& mailbox);
 
-  uint32_t UsageForMailbox(const Mailbox& mailbox);
-  void NotifyMailboxAdded(const Mailbox& mailbox, uint32_t usage);
+  gpu::SharedImageUsageSet UsageForMailbox(const Mailbox& mailbox);
+  void NotifyMailboxAdded(const Mailbox& mailbox,
+                          gpu::SharedImageUsageSet usage);
 
   const gpu::SharedImageCapabilities& GetCapabilities() {
     return capabilities_;
@@ -132,12 +129,12 @@ class SharedImageInterfaceProxy {
                           size_t* shm_offset,
                           bool* done_with_shm) EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
-  void AddMailbox(const Mailbox& mailbox, uint32_t usage)
+  void AddMailbox(const Mailbox& mailbox, SharedImageUsageSet usage)
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Returns true if it's first time mailbox was added.
   [[nodiscard]] bool AddMailboxOrAddReference(const Mailbox& mailbox,
-                                              uint32_t usage)
+                                              SharedImageUsageSet usage)
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   const raw_ptr<GpuChannelHost> host_;

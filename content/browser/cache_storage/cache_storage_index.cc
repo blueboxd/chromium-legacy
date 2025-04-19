@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/containers/contains.h"
+#include "base/not_fatal_until.h"
 
 namespace content {
 
@@ -42,7 +43,7 @@ void CacheStorageIndex::Insert(const CacheMetadata& cache_metadata) {
 void CacheStorageIndex::Delete(const std::string& cache_name) {
   DCHECK(!has_doomed_cache_);
   auto it = cache_metadata_map_.find(cache_name);
-  DCHECK(it != cache_metadata_map_.end());
+  CHECK(it != cache_metadata_map_.end(), base::NotFatalUntil::M130);
   ordered_cache_metadata_.erase(it->second);
   cache_metadata_map_.erase(it);
   storage_size_ = CacheStorage::kSizeUnknown;
@@ -54,7 +55,7 @@ bool CacheStorageIndex::SetCacheSize(const std::string& cache_name,
   if (has_doomed_cache_)
     DCHECK_NE(cache_name, doomed_cache_metadata_.name);
   auto it = cache_metadata_map_.find(cache_name);
-  DCHECK(it != cache_metadata_map_.end());
+  CHECK(it != cache_metadata_map_.end(), base::NotFatalUntil::M130);
   if (it->second->size == size)
     return false;
   it->second->size = size;
@@ -83,7 +84,7 @@ bool CacheStorageIndex::SetCachePadding(const std::string& cache_name,
   DCHECK(!has_doomed_cache_ || cache_name != doomed_cache_metadata_.name)
       << "Setting padding of doomed cache: \"" << cache_name << '"';
   auto it = cache_metadata_map_.find(cache_name);
-  DCHECK(it != cache_metadata_map_.end());
+  CHECK(it != cache_metadata_map_.end(), base::NotFatalUntil::M130);
   if (it->second->padding == padding)
     return false;
   it->second->padding = padding;
@@ -136,7 +137,7 @@ void CacheStorageIndex::CalculateStoragePadding() {
 void CacheStorageIndex::DoomCache(const std::string& cache_name) {
   DCHECK(!has_doomed_cache_);
   auto map_it = cache_metadata_map_.find(cache_name);
-  DCHECK(map_it != cache_metadata_map_.end());
+  CHECK(map_it != cache_metadata_map_.end(), base::NotFatalUntil::M130);
   doomed_cache_metadata_ = std::move(*(map_it->second));
   after_doomed_cache_metadata_ = ordered_cache_metadata_.erase(map_it->second);
   cache_metadata_map_.erase(map_it);

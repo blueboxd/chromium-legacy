@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/test/chromedriver/server/http_handler.h"
 
 #include <stddef.h>
@@ -1061,6 +1066,21 @@ HttpHandler::HttpHandler(
           WrapToCommand("ClearDevicePosture",
                         base::BindRepeating(&ExecuteClearDevicePosture))),
 
+      // Extensions for Compute Pressure API:
+      // https://w3c.github.io/compute-pressure/#automation
+      CommandMapping(kPost, "session/:sessionId/pressuresource",
+                     WrapToCommand("CreateVirtualPressureSource",
+                                   base::BindRepeating(
+                                       &ExecuteCreateVirtualPressureSource))),
+      CommandMapping(kPost, "session/:sessionId/pressuresource/:type",
+                     WrapToCommand("UpdateVirtualPressureSource",
+                                   base::BindRepeating(
+                                       &ExecuteUpdateVirtualPressureSource))),
+      CommandMapping(kDelete, "session/:sessionId/pressuresource/:type",
+                     WrapToCommand("RemoveVirtualPressureSource",
+                                   base::BindRepeating(
+                                       &ExecuteRemoveVirtualPressureSource))),
+
       //
       // Non-standard extension commands
       //
@@ -2041,7 +2061,7 @@ Status internal::ParseBidiCommand(const std::string& data,
   std::optional<double> maybe_id = parsed.FindDouble("id");
   if (!maybe_id) {
     return Status(kInvalidArgument,
-                  "BiDi command has no 'id' of type integer: " + data);
+                  "BiDi command has no 'id' of type js-uint: " + data);
   }
   std::string* maybe_method = parsed.FindString("method");
   if (!maybe_method) {

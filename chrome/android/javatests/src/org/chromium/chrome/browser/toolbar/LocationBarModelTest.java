@@ -21,16 +21,15 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterProvider;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerTabUtils;
@@ -48,7 +47,6 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.components.embedder_support.util.UrlConstants;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.url.GURL;
 import org.chromium.url.JUnitTestGURLs;
 
@@ -63,8 +61,6 @@ import java.util.List;
 public class LocationBarModelTest {
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
-
-    @Rule public TestRule mProcessor = new Features.JUnitProcessor();
 
     @Before
     public void setUp() throws InterruptedException {
@@ -98,7 +94,7 @@ public class LocationBarModelTest {
     @Test
     @SmallTest
     public void testDisplayAndEditText() {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     TestLocationBarModel model =
                             new TestLocationBarModel(mActivityTestRule.getActivity());
@@ -169,7 +165,7 @@ public class LocationBarModelTest {
                 .when(observer)
                 .onIncognitoStateChanged();
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     mActivityTestRule
                             .getActivity()
@@ -186,7 +182,7 @@ public class LocationBarModelTest {
                             .getActivity()
                             .getTabModelSelector()
                             .getCurrentModel()
-                            .setIndex(0, TabSelectionType.FROM_USER, false);
+                            .setIndex(0, TabSelectionType.FROM_USER);
                 });
 
         assertEquals(toIncognito, locationBarModel.isIncognito());
@@ -219,7 +215,7 @@ public class LocationBarModelTest {
                 .when(observer)
                 .onIncognitoStateChanged();
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     mActivityTestRule
                             .getActivity()
@@ -245,7 +241,7 @@ public class LocationBarModelTest {
         LocationBarModel locationBarModel =
                 mActivityTestRule.getActivity().getToolbarManager().getLocationBarModelForTesting();
         LocationBarDataProvider.Observer observer = mock(LocationBarDataProvider.Observer.class);
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     locationBarModel.addObserver(observer);
                 });
@@ -257,7 +253,7 @@ public class LocationBarModelTest {
 
     private void assertDisplayAndEditText(
             ToolbarDataProvider dataProvider, String displayText, String editText) {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     UrlBarData urlBarData = dataProvider.getUrlBarData();
                     assertEquals(
@@ -274,7 +270,7 @@ public class LocationBarModelTest {
      * @return The id of the current {@link Tab} as far as the {@link LocationBarModel} sees it.
      */
     public static int getCurrentTabId(final ChromeTabbedActivity activity) {
-        ToolbarLayout toolbar = (ToolbarLayout) activity.findViewById(R.id.toolbar);
+        ToolbarLayout toolbar = activity.findViewById(R.id.toolbar);
         Assert.assertNotNull("Toolbar is null", toolbar);
 
         ToolbarDataProvider dataProvider = toolbar.getToolbarDataProvider();

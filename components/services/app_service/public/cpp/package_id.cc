@@ -20,7 +20,9 @@ constexpr char kArcPlatformName[] = "android";
 constexpr char kBorealisPlatformName[] = "steam";
 constexpr char kChromeAppPlatformName[] = "chromeapp";
 constexpr char kGeForceNowPlatformName[] = "gfn";
+constexpr char kSystemPlatformName[] = "system";
 constexpr char kWebPlatformName[] = "web";
+constexpr char kWebShortcutPlatformName[] = "website";
 
 PackageType PlatformNameToPackageType(std::string_view platform_name) {
   if (platform_name == kArcPlatformName) {
@@ -35,8 +37,14 @@ PackageType PlatformNameToPackageType(std::string_view platform_name) {
   if (platform_name == kGeForceNowPlatformName) {
     return PackageType::kGeForceNow;
   }
+  if (platform_name == kSystemPlatformName) {
+    return PackageType::kSystem;
+  }
   if (platform_name == kWebPlatformName) {
     return PackageType::kWeb;
+  }
+  if (platform_name == kWebShortcutPlatformName) {
+    return PackageType::kWebsite;
   }
 
   return PackageType::kUnknown;
@@ -54,11 +62,12 @@ std::string_view PackageTypeToPlatformName(PackageType package_type) {
       return kChromeAppPlatformName;
     case PackageType::kGeForceNow:
       return kGeForceNowPlatformName;
+    case PackageType::kSystem:
+      return kSystemPlatformName;
     case PackageType::kWeb:
       return kWebPlatformName;
-    default:
-      NOTREACHED_IN_MIGRATION();
-      return "";
+    case PackageType::kWebsite:
+      return kWebShortcutPlatformName;
   }
 }
 

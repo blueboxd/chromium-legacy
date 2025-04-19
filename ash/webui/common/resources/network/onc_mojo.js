@@ -225,6 +225,18 @@ export class OncMojo {
   }
 
   /**
+   * @param {?MojomDeviceStateProperties|undefined} device
+   * @return {boolean}
+   */
+  static deviceIsFlashing(device) {
+    if (!device) {
+      return false;
+    }
+
+    return device.isFlashing;
+  }
+
+  /**
    * @param {!NetworkType} value
    * @return {string}
    */
@@ -633,6 +645,7 @@ export class OncMojo {
           signalStrength: 0,
           ssid: '',
           passpointId: '',
+          visible: true,
         };
         break;
       default:
@@ -710,6 +723,8 @@ export class OncMojo {
             wifiProperties.signalStrength;
         networkState.typeState.wifi.ssid =
             OncMojo.getActiveString(wifiProperties.ssid);
+        networkState.typeState.wifi.hiddenSsid =
+            !!OncMojo.getActiveValue(wifiProperties.hiddenSsid);
         break;
     }
     return networkState;

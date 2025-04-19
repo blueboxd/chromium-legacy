@@ -25,6 +25,12 @@ using blink::mojom::GenericIssueErrorType;
 namespace autofill::form_issues {
 namespace {
 
+constexpr CallTimerState kCallTimerStateDummy = {
+    .call_site = CallTimerState::CallSite::kUpdateFormCache,
+    .last_autofill_agent_reset = {},
+    .last_dom_content_loaded = {},
+};
+
 // Checks if the provided list `form_issues` contains a certain issue type.
 // Optionally checks whether the expected issue type has the specified
 // `violating_attr`.
@@ -212,7 +218,7 @@ TEST_F(
   WebLocalFrame* web_frame = GetMainFrame();
 
   std::vector<FormIssue> form_issues =
-      GetFormIssuesForTesting(form_util::GetAutofillableFormControlElements(
+      GetFormIssuesForTesting(form_util::GetOwnedAutofillableFormControls(
                                   web_frame->GetDocument(), WebFormElement()),
                               {});
 
@@ -237,12 +243,11 @@ TEST_F(FormAutofillIssuesTest, FormLabelForNameError) {
   WebLocalFrame* web_frame = GetMainFrame();
   FormData form_data = *form_util::ExtractFormData(
       web_frame->GetDocument(), WebFormElementFromHTML(kHtml),
-      *base::MakeRefCounted<FieldDataManager>(),
-      {form_util::ExtractOption::kValue});
+      *base::MakeRefCounted<FieldDataManager>(), kCallTimerStateDummy);
 
   std::vector<FormIssue> form_issues =
       CheckForLabelsWithIncorrectForAttributeForTesting(
-          web_frame->GetDocument(), form_data.fields, {});
+          web_frame->GetDocument(), form_data.fields(), {});
 
   EXPECT_EQ(form_issues.size(), 2u);
   EXPECT_TRUE(FormIssuesContainIssueType(
@@ -261,12 +266,11 @@ TEST_F(FormAutofillIssuesTest, FormLabelForMatchesNonExistingIdError) {
   WebLocalFrame* web_frame = GetMainFrame();
   FormData form_data = *form_util::ExtractFormData(
       web_frame->GetDocument(), WebFormElementFromHTML(kHtml),
-      *base::MakeRefCounted<FieldDataManager>(),
-      {form_util::ExtractOption::kValue});
+      *base::MakeRefCounted<FieldDataManager>(), kCallTimerStateDummy);
 
   std::vector<FormIssue> form_issues =
       CheckForLabelsWithIncorrectForAttributeForTesting(
-          web_frame->GetDocument(), form_data.fields, {});
+          web_frame->GetDocument(), form_data.fields(), {});
 
   EXPECT_EQ(form_issues.size(), 1u);
   EXPECT_TRUE(FormIssuesContainIssueType(

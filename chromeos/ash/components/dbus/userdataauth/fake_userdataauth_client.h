@@ -36,13 +36,13 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
     kAuthenticateAuthFactor,
     kPrepareGuestVault,
     kPrepareEphemeralVault,
-    kRestoreDeviceKey,
     kCreatePersistentUser,
     kPreparePersistentVault,
     kPrepareVaultForMigration,
     kAddAuthFactor,
     kUpdateAuthFactor,
     kUpdateAuthFactorMetadata,
+    kReplaceAuthFactor,
     kListAuthFactors,
     kStartMigrateToDircrypto,
     kRemove,
@@ -162,6 +162,8 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
     void SetNextOperationError(Operation operation,
                                ::cryptohome::ErrorWrapper error);
 
+    bool IsAuthenticated(const cryptohome::AccountIdentifier& account_id);
+
    private:
     FakeUserDataAuthClient::UserCryptohomeState& GetUserState(
         const cryptohome::AccountIdentifier& account_id);
@@ -254,9 +256,6 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
   void CreatePersistentUser(
       const ::user_data_auth::CreatePersistentUserRequest& request,
       CreatePersistentUserCallback callback) override;
-  void RestoreDeviceKey(
-      const ::user_data_auth::RestoreDeviceKeyRequest& request,
-      RestoreDeviceKeyCallback callback) override;
   void PreparePersistentVault(
       const ::user_data_auth::PreparePersistentVaultRequest& request,
       PreparePersistentVaultCallback callback) override;
@@ -280,6 +279,9 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
   void UpdateAuthFactorMetadata(
       const ::user_data_auth::UpdateAuthFactorMetadataRequest& request,
       UpdateAuthFactorMetadataCallback callback) override;
+  void ReplaceAuthFactor(
+      const ::user_data_auth::ReplaceAuthFactorRequest& request,
+      ReplaceAuthFactorCallback callback) override;
   void RemoveAuthFactor(
       const ::user_data_auth::RemoveAuthFactorRequest& request,
       RemoveAuthFactorCallback callback) override;
@@ -303,6 +305,9 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
   void GetRecoverableKeyStores(
       const ::user_data_auth::GetRecoverableKeyStoresRequest& request,
       GetRecoverableKeyStoresCallback) override;
+  void SetUserDataStorageWriteEnabled(
+      const ::user_data_auth::SetUserDataStorageWriteEnabledRequest& request,
+      SetUserDataStorageWriteEnabledCallback callback) override;
 
   int get_prepare_guest_request_count() const {
     return prepare_guest_request_count_;
@@ -325,7 +330,6 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
   FUDAC_OPERATION_TYPES(kPrepareGuestVault, PrepareGuestVaultRequest);
   FUDAC_OPERATION_TYPES(kPrepareEphemeralVault, PrepareEphemeralVaultRequest);
   FUDAC_OPERATION_TYPES(kCreatePersistentUser, CreatePersistentUserRequest);
-  FUDAC_OPERATION_TYPES(kRestoreDeviceKey, RestoreDeviceKeyRequest);
   FUDAC_OPERATION_TYPES(kPreparePersistentVault, PreparePersistentVaultRequest);
   FUDAC_OPERATION_TYPES(kPrepareVaultForMigration,
                         PrepareVaultForMigrationRequest);
@@ -333,6 +337,7 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
   FUDAC_OPERATION_TYPES(kUpdateAuthFactor, UpdateAuthFactorRequest);
   FUDAC_OPERATION_TYPES(kUpdateAuthFactorMetadata,
                         UpdateAuthFactorMetadataRequest);
+  FUDAC_OPERATION_TYPES(kReplaceAuthFactor, ReplaceAuthFactorRequest);
   FUDAC_OPERATION_TYPES(kListAuthFactors, ListAuthFactorsRequest);
   FUDAC_OPERATION_TYPES(kStartMigrateToDircrypto,
                         StartMigrateToDircryptoRequest);

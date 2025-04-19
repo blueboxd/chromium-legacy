@@ -18,18 +18,23 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
+import android.graphics.Paint;
 import android.text.InputType;
 import android.text.Layout;
 import android.text.SpannableStringBuilder;
 import android.text.TextPaint;
 import android.text.TextUtils;
+import android.util.TypedValue;
 import android.view.ContextThemeWrapper;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.MeasureSpec;
@@ -42,7 +47,6 @@ import androidx.core.view.inputmethod.EditorInfoCompat;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
@@ -51,14 +55,15 @@ import org.mockito.junit.MockitoRule;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.MathUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Features.EnableFeatures;
-import org.chromium.base.test.util.Features.JUnitProcessor;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.UrlBar.UrlBarDelegate;
 import org.chromium.chrome.browser.omnibox.test.R;
 
 import java.util.Collections;
+import java.util.List;
 
 /** Unit tests for the URL bar UI component. */
 @RunWith(BaseRobolectricTestRunner.class)
@@ -68,7 +73,12 @@ public class UrlBarUnitTest {
     // getVisibleMeasuredViewportWidth() returns 100. This ensures NUMBER_OF_VISIBLE_CHARACTERS
     // is accurate.
     private static final int URL_BAR_WIDTH = 100 + 8;
-    private static final int URL_BAR_HEIGHT = 10;
+    private static final int URL_BAR_HEIGHT = 50;
+    private static final float FONT_HEIGHT_NOMINAL = 100f;
+    private static final float FONT_HEIGHT_ACTUAL_TALL = 120f;
+    private static final float FONT_HEIGHT_ACTUAL_SHORT = 80f;
+    private static final float LINE_HEIGHT_REGULAR_FACTOR = UrlBar.LINE_HEIGHT_FACTOR;
+    private static final float LINE_HEIGHT_ELEGANT_FACTOR = 1.6f;
 
     // Screen width is set to 100px, with a default density of 1px per dp, and we estimate 5dp per
     // char, so there will be 20 visible characters.
@@ -79,7 +89,7 @@ public class UrlBarUnitTest {
     private static final int MIN_LENGTH_FOR_TRUNCATION = 100;
 
     private UrlBar mUrlBar;
-    public @Rule TestRule mFeaturesProcessorRule = new JUnitProcessor();
+    private Paint.FontMetrics mFontMetrics = new Paint.FontMetrics();
     public @Rule MockitoRule mockitoRule = MockitoJUnit.rule();
     private @Mock UrlBarDelegate mUrlBarDelegate;
     private @Mock ViewStructure mViewStructure;
@@ -99,28 +109,30 @@ public class UrlBarUnitTest {
     public void setUp() {
         var ctx =
                 new ContextThemeWrapper(
-                        ContextUtils.getApplicationContext(), R.style.Theme_AppCompat);
+                        ContextUtils.getApplicationContext(), R.style.Theme_BrowserUI_DayNight);
         mUrlBar = spy(new UrlBarApi26(ctx, null));
         mUrlBar.setDelegate(mUrlBarDelegate);
 
-        doReturn(1).when(mLayout).getLineCount();
-        when(mLayout.getPrimaryHorizontal(anyInt()))
-                .thenAnswer(
-                        invocation -> {
-                            return (float) ((int) invocation.getArguments()[0]) * 5;
-                        });
-        when(mPaint.getOffsetForAdvance(
+        lenient().doReturn(1).when(mLayout).getLineCount();
+        lenient()
+                .doAnswer(invocation -> (int) invocation.getArguments()[0] * 5f)
+                .when(mLayout)
+                .getPrimaryHorizontal(anyInt());
+
+        lenient()
+                .doAnswer(invocation -> (int) ((float) invocation.getArguments()[6] / 5))
+                .when(mPaint)
+                .getOffsetForAdvance(
                         any(CharSequence.class),
                         anyInt(),
                         anyInt(),
                         anyInt(),
                         anyInt(),
                         anyBoolean(),
-                        anyFloat()))
-                .thenAnswer(
-                        invocation -> {
-                            return (int) ((float) invocation.getArguments()[6] / 5);
-                        });
+                        anyFloat());
+
+        lenient().doReturn(mFontMetrics).when(mPaint).getFontMetrics();
+        lenient().doReturn(mPaint).when(mUrlBar).getPaint();
     }
 
     /** Force reset text layout. */
@@ -141,7 +153,7 @@ public class UrlBarUnitTest {
                 MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY));
         mUrlBar.layout(0, 0, width, height);
 
-        // Sanity check: new layout should be available.
+        // Confirmation check: new layout should be available.
         assertNotNull(mUrlBar.getLayout());
         assertFalse(mUrlBar.isLayoutRequested());
     }
@@ -279,6 +291,77 @@ public class UrlBarUnitTest {
     }
 
     @Test
+    public void performClick_emitsTouchEvents() {
+        mUrlBar.performClick();
+        verify(mUrlBarDelegate).onFocusByTouch();
+        // No subsequent events.
+        mUrlBar.performClick();
+        verifyNoMoreInteractions(mUrlBarDelegate);
+
+        // Simulate focus lost, then applied programmatically.
+        // This will reset the internal state, and then enable alternative event.
+        mUrlBar.onFocusChanged(false, 0, null);
+        mUrlBar.onFocusChanged(true, 0, null);
+
+        mUrlBar.performClick();
+        verify(mUrlBarDelegate).onTouchAfterFocus();
+        // No subsequent events.
+        mUrlBar.performClick();
+        verifyNoMoreInteractions(mUrlBarDelegate);
+    }
+
+    @Test
+    public void onTouchEvent_touchDownIsIgnored() {
+        mUrlBar.onFocusChanged(true, View.FOCUS_DOWN, null);
+        mUrlBar.onTouchEvent(MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, 0, 0, 0));
+        verify(mUrlBarDelegate, never()).onTouchAfterFocus();
+    }
+
+    @Test
+    public void onTouchEvent_touchUpEmitsTouchEvents() {
+        mUrlBar.onTouchEvent(MotionEvent.obtain(0, 0, MotionEvent.ACTION_UP, 0, 0, 0));
+        verify(mUrlBarDelegate).onFocusByTouch();
+        // No subsequent events.
+        mUrlBar.onTouchEvent(MotionEvent.obtain(0, 0, MotionEvent.ACTION_UP, 0, 0, 0));
+        verifyNoMoreInteractions(mUrlBarDelegate);
+
+        // Simulate focus lost, then applied programmatically.
+        // This will reset the internal state, and then enable alternative event.
+        mUrlBar.onFocusChanged(false, 0, null);
+        mUrlBar.onFocusChanged(true, 0, null);
+
+        mUrlBar.onTouchEvent(MotionEvent.obtain(0, 0, MotionEvent.ACTION_UP, 0, 0, 0));
+        verify(mUrlBarDelegate).onTouchAfterFocus();
+        // No subsequent events.
+        mUrlBar.onTouchEvent(MotionEvent.obtain(0, 0, MotionEvent.ACTION_UP, 0, 0, 0));
+        verifyNoMoreInteractions(mUrlBarDelegate);
+    }
+
+    @Test
+    public void performClick_emittedOnlyOnce() {
+        mUrlBar.performClick();
+        verify(mUrlBarDelegate).onFocusByTouch();
+
+        clearInvocations(mUrlBarDelegate);
+
+        mUrlBar.performClick();
+        verifyNoMoreInteractions(mUrlBarDelegate);
+
+        // Simluate focus lost. This should re-set recorded state and permit the UrlBar to emit
+        // focus events once more.
+        mUrlBar.onFocusChanged(false, 0, null);
+
+        mUrlBar.performClick();
+        verify(mUrlBarDelegate).onFocusByTouch();
+    }
+
+    @Test
+    public void performClick_safeWithNoDelegate() {
+        mUrlBar.setDelegate(null);
+        mUrlBar.performClick();
+    }
+
+    @Test
     public void testTruncation_NoTruncationWhileFocused() {
         mUrlBar.onFocusChanged(true, 0, null);
 
@@ -287,13 +370,6 @@ public class UrlBarUnitTest {
         assertEquals(mLongDomain, text);
 
         mUrlBar.onFocusChanged(false, 0, null);
-    }
-
-    @Test
-    public void testOnTouchEvent_handleTouchAfterFocus() {
-        mUrlBar.onFocusChanged(true, View.FOCUS_DOWN, null);
-        mUrlBar.onTouchEvent(MotionEvent.obtain(0, 0, MotionEvent.ACTION_UP, 0, 0, 0));
-        verify(mUrlBarDelegate).onTouchAfterFocus();
     }
 
     @Test
@@ -493,7 +569,7 @@ public class UrlBarUnitTest {
         mUrlBar.setScrollState(UrlBar.ScrollType.SCROLL_TO_TLD, mShortDomain.length());
         verify(mUrlBar, times(1)).calculateVisibleHint();
         String visibleHint = mUrlBar.getVisibleTextPrefixHint().toString();
-        assertEquals(url2.substring(0, NUMBER_OF_VISIBLE_CHARACTERS + 1), visibleHint);
+        assertEquals(url2.substring(0, NUMBER_OF_VISIBLE_CHARACTERS + 2), visibleHint);
     }
 
     @Test
@@ -521,5 +597,354 @@ public class UrlBarUnitTest {
         mUrlBar.setScrollState(UrlBar.ScrollType.SCROLL_TO_TLD, mShortDomain.length());
         verify(mUrlBar, times(0)).calculateVisibleHint();
         assertNull(mUrlBar.getVisibleTextPrefixHint());
+    }
+
+    @Test
+    public void keyEvents_nonEnterActionDownKeyHandling() {
+        var keysToCheck =
+                List.of(
+                        KeyEvent.KEYCODE_A,
+                        KeyEvent.KEYCODE_TAB,
+                        KeyEvent.KEYCODE_DPAD_UP,
+                        KeyEvent.KEYCODE_DPAD_DOWN);
+
+        var listener = mock(View.OnKeyListener.class);
+        mUrlBar.setKeyDownListener(listener);
+
+        for (int keyCode : keysToCheck) {
+            var event = new KeyEvent(KeyEvent.ACTION_DOWN, keyCode);
+
+            // Pre-IME Key Down, consumed: do not pass to IME.
+            doReturn(true).when(listener).onKey(any(), anyInt(), any());
+            assertTrue(mUrlBar.onKeyPreIme(keyCode, event));
+            verify(listener).onKey(mUrlBar, keyCode, event);
+            verify(mUrlBar, never()).super_onKeyPreIme(anyInt(), any());
+
+            clearInvocations(listener, mUrlBar);
+
+            // Pre-IME Key Down, not consumed: pass to IME.
+            doReturn(false).when(listener).onKey(any(), anyInt(), any());
+            doReturn(false).when(mUrlBar).super_onKeyPreIme(anyInt(), any());
+            assertFalse(mUrlBar.onKeyPreIme(keyCode, event));
+            verify(listener).onKey(mUrlBar, keyCode, event);
+            verify(mUrlBar).super_onKeyPreIme(keyCode, event);
+
+            clearInvocations(listener, mUrlBar);
+
+            // Pre-IME Key Down, not consumed: return IME result.
+            doReturn(true).when(mUrlBar).super_onKeyPreIme(anyInt(), any());
+            assertTrue(mUrlBar.onKeyPreIme(keyCode, event));
+            verify(mUrlBar).super_onKeyPreIme(keyCode, event);
+
+            clearInvocations(listener, mUrlBar);
+
+            // Post-IME Key Down: never passed to the listener.
+            doReturn(false).when(mUrlBar).super_onKeyDown(anyInt(), any());
+            assertFalse(mUrlBar.onKeyDown(keyCode, event));
+            verifyNoMoreInteractions(listener);
+
+            clearInvocations(listener, mUrlBar);
+
+            // Post-IME Key Down: return IME result.
+            doReturn(true).when(mUrlBar).super_onKeyDown(anyInt(), any());
+            assertTrue(mUrlBar.onKeyDown(keyCode, event));
+            verifyNoMoreInteractions(listener);
+
+            clearInvocations(listener, mUrlBar);
+        }
+    }
+
+    @Test
+    public void keyEvents_enterActionDownKeyHandling() {
+        var keysToCheck = List.of(KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER);
+
+        var listener = mock(View.OnKeyListener.class);
+        mUrlBar.setKeyDownListener(listener);
+
+        for (int keyCode : keysToCheck) {
+            var event = new KeyEvent(KeyEvent.ACTION_DOWN, keyCode);
+
+            // Pre-IME Key Down: passed only to IME.
+            doReturn(false).when(mUrlBar).super_onKeyPreIme(anyInt(), any());
+            assertFalse(mUrlBar.onKeyPreIme(keyCode, event));
+            verify(listener, never()).onKey(any(), anyInt(), any());
+            verify(mUrlBar).super_onKeyPreIme(keyCode, event);
+
+            clearInvocations(listener, mUrlBar);
+
+            // Post-IME Key Down: consumed keys not passed to View.
+            doReturn(true).when(listener).onKey(any(), anyInt(), any());
+            assertTrue(mUrlBar.onKeyDown(keyCode, event));
+            verify(listener).onKey(mUrlBar, keyCode, event);
+            verify(mUrlBar, never()).super_onKeyDown(anyInt(), any());
+            verifyNoMoreInteractions(listener);
+
+            clearInvocations(listener, mUrlBar);
+
+            // Post-IME Key Down: not consumed keys passed to View.
+            doReturn(false).when(listener).onKey(any(), anyInt(), any());
+            doReturn(true).when(mUrlBar).super_onKeyPreIme(anyInt(), any());
+            assertTrue(mUrlBar.onKeyDown(keyCode, event));
+            verify(listener).onKey(mUrlBar, keyCode, event);
+            verify(mUrlBar).super_onKeyDown(keyCode, event);
+            verifyNoMoreInteractions(listener);
+
+            clearInvocations(listener, mUrlBar);
+        }
+    }
+
+    @Test
+    public void keyEvents_actionUpKeysBypassListenerCompletely() {
+        var keysToCheck =
+                List.of(
+                        KeyEvent.KEYCODE_A,
+                        KeyEvent.KEYCODE_TAB,
+                        KeyEvent.KEYCODE_ENTER,
+                        KeyEvent.KEYCODE_NUMPAD_ENTER,
+                        KeyEvent.KEYCODE_DPAD_UP,
+                        KeyEvent.KEYCODE_DPAD_DOWN);
+
+        var listener = mock(View.OnKeyListener.class);
+        mUrlBar.setKeyDownListener(listener);
+
+        for (int keyCode : keysToCheck) {
+            var event = new KeyEvent(KeyEvent.ACTION_UP, keyCode);
+
+            // Pre-IME, not consumed by IME.
+            doReturn(false).when(mUrlBar).super_onKeyPreIme(anyInt(), any());
+            assertFalse(mUrlBar.onKeyPreIme(keyCode, event));
+            verify(mUrlBar).super_onKeyPreIme(keyCode, event);
+            verifyNoMoreInteractions(listener);
+
+            clearInvocations(mUrlBar);
+
+            // Pre-IME, consumed by IME.
+            doReturn(true).when(mUrlBar).super_onKeyPreIme(anyInt(), any());
+            assertTrue(mUrlBar.onKeyPreIme(keyCode, event));
+            verify(mUrlBar).super_onKeyPreIme(keyCode, event);
+            verifyNoMoreInteractions(listener);
+
+            clearInvocations(mUrlBar);
+
+            // Post-IME.
+            assertFalse(mUrlBar.onKeyUp(keyCode, event));
+            verifyNoMoreInteractions(listener);
+
+            clearInvocations(mUrlBar);
+        }
+    }
+
+    @Test
+    public void horizontalFadingEdge_followsScrollWhenNotFocused() {
+        // By default we show up unfocused.
+        mUrlBar.setScrollX(0);
+        assertTrue(mUrlBar.isHorizontalFadingEdgeEnabled());
+        assertEquals(0.f, mUrlBar.getRightFadingEdgeStrength(), MathUtils.EPSILON);
+        assertEquals(0.f, mUrlBar.getLeftFadingEdgeStrength(), MathUtils.EPSILON);
+
+        // Scroll the view to the left. This should present fading edge now.
+        mUrlBar.setScrollX(100);
+        assertTrue(mUrlBar.isHorizontalFadingEdgeEnabled());
+        assertEquals(0.f, mUrlBar.getRightFadingEdgeStrength(), MathUtils.EPSILON);
+        assertEquals(1.f, mUrlBar.getLeftFadingEdgeStrength(), MathUtils.EPSILON);
+
+        // Scroll back to initial position. Observe no fading.
+        mUrlBar.setScrollX(0);
+        assertTrue(mUrlBar.isHorizontalFadingEdgeEnabled());
+        assertEquals(0.f, mUrlBar.getRightFadingEdgeStrength(), MathUtils.EPSILON);
+        assertEquals(0.f, mUrlBar.getLeftFadingEdgeStrength(), MathUtils.EPSILON);
+    }
+
+    @Test
+    public void horizontalFadingEdge_noFadeInWhenFocused() {
+        measureAndLayoutUrlBar();
+        mUrlBar.setScrollX(100);
+        mUrlBar.onFocusChanged(true, View.LAYOUT_DIRECTION_LTR, null);
+        assertFalse(mUrlBar.isHorizontalFadingEdgeEnabled());
+
+        // NOTE: defocusing should restore fading edge.
+        mUrlBar.onFocusChanged(false, View.LAYOUT_DIRECTION_LTR, null);
+        assertTrue(mUrlBar.isHorizontalFadingEdgeEnabled());
+    }
+
+    /**
+     * Simulate specific font metrics.
+     *
+     * @param useElegantText whether Android can increase the line height by up to 60% to show text
+     * @param fontActualHeight the desired actual difference between top and the bottom pixel ever
+     *     drawn by the font
+     */
+    private void applyFontMetrics(boolean useElegantText, float fontActualHeight) {
+        mUrlBar.setTextSize(TypedValue.COMPLEX_UNIT_PX, FONT_HEIGHT_NOMINAL);
+        float lineHeightScaleFactor =
+                useElegantText ? LINE_HEIGHT_ELEGANT_FACTOR : LINE_HEIGHT_REGULAR_FACTOR;
+        doReturn((int) (FONT_HEIGHT_NOMINAL * lineHeightScaleFactor)).when(mUrlBar).getLineHeight();
+        // Respect the font height, but simulate that it's shifted 10px up.
+        mFontMetrics.top = -10;
+        mFontMetrics.bottom = fontActualHeight - 10;
+        assertEquals(FONT_HEIGHT_NOMINAL, mUrlBar.getTextSize(), MathUtils.EPSILON);
+        assertEquals(fontActualHeight, mUrlBar.getMaxHeightOfFont(), MathUtils.EPSILON);
+    }
+
+    /**
+     * Compute the expected font height given the Url bar constraints.
+     *
+     * @param useElegantText whether Android can increase the line height by up to 60% to show text
+     * @param fontActualHeight the desired actual difference between top and the bottom pixel ever
+     *     drawn by the font
+     * @param urlBarHeight the usable area of the UrlBar that will accommodate the text
+     */
+    private float computeExpectedFontHeight(
+            boolean useElegantText, float fontActualHeight, int urlBarHeight) {
+        float lineHeightScaleFactor =
+                useElegantText ? LINE_HEIGHT_ELEGANT_FACTOR : LINE_HEIGHT_REGULAR_FACTOR;
+        return FONT_HEIGHT_NOMINAL * (urlBarHeight / (fontActualHeight * lineHeightScaleFactor));
+    }
+
+    @Test
+    public void enforceMaxTextHeight_shrinkTallFontToFit_noElegantText_noPadding() {
+        doReturn(false).when(mPaint).isElegantTextHeight();
+        measureAndLayoutUrlBar();
+        applyFontMetrics(false, FONT_HEIGHT_ACTUAL_TALL);
+
+        mUrlBar.setPaddingRelative(0, 0, 0, 0);
+        mUrlBar.enforceMaxTextHeight();
+
+        assertEquals(
+                computeExpectedFontHeight(false, FONT_HEIGHT_ACTUAL_TALL, URL_BAR_HEIGHT),
+                mUrlBar.getTextSize(),
+                MathUtils.EPSILON);
+    }
+
+    @Test
+    public void enforceMaxTextHeight_shrinkTallFontToFit_noElegantText_withPadding() {
+        doReturn(false).when(mPaint).isElegantTextHeight();
+        measureAndLayoutUrlBar();
+        applyFontMetrics(false, FONT_HEIGHT_ACTUAL_TALL);
+
+        mUrlBar.setPaddingRelative(0, 5, 0, 15);
+        mUrlBar.enforceMaxTextHeight();
+
+        assertEquals(
+                computeExpectedFontHeight(false, FONT_HEIGHT_ACTUAL_TALL, URL_BAR_HEIGHT - 20),
+                mUrlBar.getTextSize(),
+                MathUtils.EPSILON);
+    }
+
+    @Test
+    public void enforceMaxTextHeight_shrinkShortFontToFit_noElegantText_noPadding() {
+        doReturn(false).when(mPaint).isElegantTextHeight();
+        applyFontMetrics(false, FONT_HEIGHT_ACTUAL_SHORT);
+        measureAndLayoutUrlBar();
+
+        mUrlBar.setPaddingRelative(0, 0, 0, 0);
+        mUrlBar.enforceMaxTextHeight();
+
+        assertEquals(
+                computeExpectedFontHeight(false, FONT_HEIGHT_ACTUAL_SHORT, URL_BAR_HEIGHT),
+                mUrlBar.getTextSize(),
+                MathUtils.EPSILON);
+    }
+
+    @Test
+    public void enforceMaxTextHeight_shrinkShortFontToFit_noElegantText_withPadding() {
+        doReturn(false).when(mPaint).isElegantTextHeight();
+        applyFontMetrics(false, FONT_HEIGHT_ACTUAL_SHORT);
+        measureAndLayoutUrlBar();
+
+        mUrlBar.setPaddingRelative(0, 5, 0, 15);
+        mUrlBar.enforceMaxTextHeight();
+
+        assertEquals(
+                computeExpectedFontHeight(false, FONT_HEIGHT_ACTUAL_SHORT, URL_BAR_HEIGHT - 20),
+                mUrlBar.getTextSize(),
+                MathUtils.EPSILON);
+    }
+
+    @Test
+    public void enforceMaxTextHeight_shrinkTallFontToFit_withElegantText_noPadding() {
+        doReturn(true).when(mPaint).isElegantTextHeight();
+        measureAndLayoutUrlBar();
+        applyFontMetrics(true, FONT_HEIGHT_ACTUAL_TALL);
+
+        mUrlBar.setPaddingRelative(0, 0, 0, 0);
+        mUrlBar.enforceMaxTextHeight();
+
+        assertEquals(
+                computeExpectedFontHeight(true, FONT_HEIGHT_ACTUAL_TALL, URL_BAR_HEIGHT),
+                mUrlBar.getTextSize(),
+                MathUtils.EPSILON);
+    }
+
+    @Test
+    public void enforceMaxTextHeight_shrinkTallFontToFit_withElegantText_withPadding() {
+        doReturn(true).when(mPaint).isElegantTextHeight();
+        measureAndLayoutUrlBar();
+        applyFontMetrics(true, FONT_HEIGHT_ACTUAL_TALL);
+
+        mUrlBar.setPaddingRelative(0, 5, 0, 15);
+        mUrlBar.enforceMaxTextHeight();
+
+        assertEquals(
+                computeExpectedFontHeight(true, FONT_HEIGHT_ACTUAL_TALL, URL_BAR_HEIGHT - 20),
+                mUrlBar.getTextSize(),
+                MathUtils.EPSILON);
+    }
+
+    @Test
+    public void enforceMaxTextHeight_shrinkShortFontToFit_withElegantText_noPadding() {
+        doReturn(true).when(mPaint).isElegantTextHeight();
+        measureAndLayoutUrlBar();
+        applyFontMetrics(true, FONT_HEIGHT_ACTUAL_SHORT);
+
+        mUrlBar.setPaddingRelative(0, 0, 0, 0);
+        mUrlBar.enforceMaxTextHeight();
+
+        assertEquals(
+                computeExpectedFontHeight(true, FONT_HEIGHT_ACTUAL_SHORT, URL_BAR_HEIGHT),
+                mUrlBar.getTextSize(),
+                MathUtils.EPSILON);
+    }
+
+    @Test
+    public void enforceMaxTextHeight_shrinkShortFontToFit_withElegantText_withPadding() {
+        doReturn(true).when(mPaint).isElegantTextHeight();
+        measureAndLayoutUrlBar();
+        applyFontMetrics(true, FONT_HEIGHT_ACTUAL_SHORT);
+
+        mUrlBar.setPaddingRelative(0, 5, 0, 15);
+        mUrlBar.enforceMaxTextHeight();
+
+        assertEquals(
+                computeExpectedFontHeight(true, FONT_HEIGHT_ACTUAL_SHORT, URL_BAR_HEIGHT - 20),
+                mUrlBar.getTextSize(),
+                MathUtils.EPSILON);
+    }
+
+    @Test
+    public void enforceMaxTextHeight_growToFitCurrentlyDisabled() {
+        doReturn(false).when(mPaint).isElegantTextHeight();
+        measureAndLayoutUrlBarForSize(URL_BAR_WIDTH, 50);
+        mUrlBar.setPaddingRelative(0, 0, 0, 0);
+        mUrlBar.setTextSize(TypedValue.COMPLEX_UNIT_PX, 40);
+        mFontMetrics.top = 0;
+        mFontMetrics.bottom = 40;
+
+        mUrlBar.enforceMaxTextHeight();
+        assertEquals(40, mUrlBar.getTextSize(), MathUtils.EPSILON);
+    }
+
+    @Test
+    public void layout_adjustFontSizeWithFixedHeight() {
+        mUrlBar.setLayoutParams(new LayoutParams(123, 123));
+        mUrlBar.layout(0, 0, 123, 123);
+        verify(mUrlBar).post(mUrlBar.mEnforceMaxTextHeight);
+    }
+
+    @Test
+    public void layout_fixedFontSizeWithWrappingHeight() {
+        mUrlBar.setLayoutParams(new LayoutParams(123, LayoutParams.WRAP_CONTENT));
+        mUrlBar.layout(0, 0, 123, 123);
+        verify(mUrlBar, never()).post(mUrlBar.mEnforceMaxTextHeight);
     }
 }

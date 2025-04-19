@@ -10,6 +10,10 @@
 #include "extensions/browser/app_window/native_app_window.h"
 #include "third_party/blink/public/mojom/page/draggable_region.mojom-forward.h"
 
+namespace gfx {
+class RoundedCornersF;
+}  // namespace gfx
+
 namespace extensions {
 
 // app_shell's NativeAppWindow implementation.
@@ -58,13 +62,13 @@ class ShellNativeAppWindow : public NativeAppWindow {
       const std::vector<blink::mojom::DraggableRegionPtr>& regions) override;
   SkRegion* GetDraggableRegion() override;
   void UpdateShape(std::unique_ptr<ShapeRects> rects) override;
-  bool HandleKeyboardEvent(
-      const content::NativeWebKeyboardEvent& event) override;
+  bool HandleKeyboardEvent(const input::NativeWebKeyboardEvent& event) override;
   bool IsFrameless() const override;
   bool HasFrameColor() const override;
   SkColor ActiveFrameColor() const override;
   SkColor InactiveFrameColor() const override;
   gfx::Insets GetFrameInsets() const override;
+  gfx::RoundedCornersF GetWindowRadii() const override;
   void SetContentSizeConstraints(const gfx::Size& min_size,
                                  const gfx::Size& max_size) override;
   void SetVisibleOnAllWorkspaces(bool always_visible) override;

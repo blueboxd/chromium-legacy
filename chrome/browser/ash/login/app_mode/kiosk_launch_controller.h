@@ -10,7 +10,6 @@
 #include <string>
 
 #include "ash/public/cpp/login_accelerators.h"
-#include "base/auto_reset.h"
 #include "base/functional/callback.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
@@ -20,11 +19,12 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ash/app_mode/cancellable_job.h"
+#include "chrome/browser/ash/app_mode/kiosk_app.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_launcher.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_types.h"
 #include "chrome/browser/ash/app_mode/kiosk_controller.h"
-#include "chrome/browser/ash/app_mode/kiosk_profile_loader.h"
+#include "chrome/browser/ash/app_mode/load_profile.h"
 #include "chrome/browser/ash/login/app_mode/force_install_observer.h"
 #include "chrome/browser/ash/login/app_mode/network_ui_controller.h"
 #include "chrome/browser/ui/webui/ash/login/app_launch_splash_screen_handler.h"
@@ -99,16 +99,33 @@ class KioskLaunchController : public KioskAppLauncher::Observer,
           const KioskAppId&,
           KioskAppLauncher::NetworkDelegate*)>;
 
+  // Callback invoked when the app window is created behind the splash screen,
+  // signifying the application has launched and is ready.
+  //
+  // The overall launch is not complete yet at this stage, the splash screen is
+  // still visible potentially for several seconds longer.
+  //
+  // May not be called in case of errors. If it is called, it is guaranteed to
+  // be called before `LaunchCompleteCallback`.
+  using AppLaunchedCallback =
+      base::OnceCallback<void(const KioskAppId& app,
+                              Profile* profile,
+                              const std::optional<std::string>& app_name)>;
+
+  // Callback invoked when the launch finished, either successfully or aborted
+  // due to an error.
   using LaunchCompleteCallback =
-      base::OnceCallback<void(std::optional<KioskAppLaunchError::Error> error)>;
+      base::OnceCallback<void(KioskAppLaunchError::Error error)>;
 
   KioskLaunchController(LoginDisplayHost* host,
                         OobeUI* oobe_ui,
+                        AppLaunchedCallback app_launched_callback,
                         LaunchCompleteCallback done_callback);
   KioskLaunchController(
       LoginDisplayHost* host,
       AppLaunchSplashScreenView* splash_screen,
-      LoadProfileCallback profile_loader,
+      kiosk::LoadProfileCallback profile_loader,
+      AppLaunchedCallback app_launched_callback,
       LaunchCompleteCallback done_callback,
       base::OnceClosure attempt_relaunch,
       base::OnceClosure attempt_logout,
@@ -119,7 +136,7 @@ class KioskLaunchController : public KioskAppLauncher::Observer,
   KioskLaunchController& operator=(const KioskLaunchController&) = delete;
   ~KioskLaunchController() override;
 
-  void Start(const KioskAppId& kiosk_app_id, bool auto_launch);
+  void Start(KioskApp app, bool auto_launch);
 
   void AddKioskProfileLoadFailedObserver(
       KioskProfileLoadFailedObserver* observer);
@@ -145,13 +162,12 @@ class KioskLaunchController : public KioskAppLauncher::Observer,
   // Values here can only be modified through the `KioskTestHelper` class.
   class TestOverrides {
    private:
-    friend class KioskTestHelper;
     friend class KioskLaunchController;
+    friend class KioskTestHelper;
 
     // Whether we should skip the wait for minimum screen show time.
     static bool skip_splash_wait;
     static bool block_app_launch;
-    static bool block_system_session_creation;
     // Whether we should prevent Kiosk launcher from exiting when launch fails.
     static bool block_exit_on_failure;
   };
@@ -210,6 +226,9 @@ class KioskLaunchController : public KioskAppLauncher::Observer,
   void FinishLaunchWithSuccess();
   void FinishLaunchWithError(KioskAppLaunchError::Error error);
 
+  const KioskApp& kiosk_app() const;
+  const KioskAppId& kiosk_app_id() const;
+
   bool auto_launch_ = false;  // Whether current app is being auto-launched.
 
   // Current state of the controller.
@@ -219,9 +238,11 @@ class KioskLaunchController : public KioskAppLauncher::Observer,
   raw_ptr<LoginDisplayHost> host_ = nullptr;
   // Owned by OobeUI.
   raw_ptr<AppLaunchSplashScreenView> splash_screen_view_ = nullptr;
-  // Current app.
-  KioskAppId kiosk_app_id_;
-  // Not owned.
+  // Current app. Present once `Start` is called.
+  std::optional<KioskApp> kiosk_app_;
+  // Current app browser window name. Present once the app window is created.
+  std::optional<std::string> app_window_name_;
+  // Kiosk profile. Non-null after profile load handler has finished.
   raw_ptr<Profile> profile_ = nullptr;
   const KioskAppLauncherFactory app_launcher_factory_;
   std::unique_ptr<NetworkUiController> network_ui_controller_;
@@ -231,6 +252,10 @@ class KioskLaunchController : public KioskAppLauncher::Observer,
 
   // Whether the controller has already been cleaned-up.
   bool cleaned_up_ = false;
+
+  // Callback invoked when the app launched. See also `AppLaunchedCallback`
+  // docs.
+  AppLaunchedCallback app_launched_callback_;
 
   // Callback invoked when the launch is complete. The `error` field indicates
   // if the launch was successful or not.
@@ -244,7 +269,7 @@ class KioskLaunchController : public KioskAppLauncher::Observer,
   // Handle to the job returned by `profile_loader_`.
   std::unique_ptr<CancellableJob> profile_loader_handle_;
   // The function used to load the Kiosk profile. Overridable in tests.
-  LoadProfileCallback profile_loader_;
+  kiosk::LoadProfileCallback profile_loader_;
 
   std::unique_ptr<app_mode::LacrosLauncher> lacros_launcher_;
 
@@ -255,7 +280,7 @@ class KioskLaunchController : public KioskAppLauncher::Observer,
   base::OneShotTimer splash_wait_timer_;
 
   // Used to prepare and launch the actual kiosk app, is created after
-  // profile initialization. Is nullptr for arc kiosks.
+  // profile initialization.
   std::unique_ptr<KioskAppLauncher> app_launcher_;
 
   // Tracks the moment when Kiosk launcher is started.

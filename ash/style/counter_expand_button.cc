@@ -21,6 +21,7 @@
 #include "ui/compositor/animation_throughput_reporter.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/animation/tween.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/animation_builder.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
@@ -129,9 +130,9 @@ void CounterExpandButton::UpdateIcons() {
 void CounterExpandButton::UpdateTooltip() {
   std::u16string tooltip_text = expanded_ ? GetExpandedStateTooltipText()
                                           : GetCollapsedStateTooltipText();
-  image_->SetTooltipText(tooltip_text);
-  SetAccessibleName(tooltip_text,
-                    tooltip_text.empty()
+  SetTooltipText(tooltip_text);
+  GetViewAccessibility().SetName(
+      tooltip_text, tooltip_text.empty()
                         ? ax::mojom::NameFrom::kAttributeExplicitlyEmpty
                         : ax::mojom::NameFrom::kAttribute);
 }
@@ -261,11 +262,11 @@ void CounterExpandButton::AnimateBoundsChange(
       .SetBounds(image_, image_target_bounds, tween_type);
 }
 
-std::u16string CounterExpandButton::GetExpandedStateTooltipText() {
+std::u16string CounterExpandButton::GetExpandedStateTooltipText() const {
   return u"";
 }
 
-std::u16string CounterExpandButton::GetCollapsedStateTooltipText() {
+std::u16string CounterExpandButton::GetCollapsedStateTooltipText() const {
   return u"";
 }
 

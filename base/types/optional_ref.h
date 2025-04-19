@@ -84,6 +84,8 @@ class optional_ref {
       std::is_convertible_v<U*, T*>;
 
  public:
+  using value_type = T;
+
   // Constructs an empty `optional_ref`.
   constexpr optional_ref() = default;
   // NOLINTNEXTLINE(google-explicit-constructor)
@@ -168,6 +170,7 @@ class optional_ref {
 
   // Returns `true` iff the `optional_ref` is non-empty.
   constexpr bool has_value() const { return ptr_; }
+  constexpr explicit operator bool() const { return has_value(); }
 
   // CHECKs if the `optional_ref` is empty.
   constexpr T& value() const {

@@ -24,6 +24,7 @@
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/view_class_properties.h"
 
@@ -57,12 +58,21 @@ void ShowSearchEngineChoiceDialog(
 
   auto delegate = std::make_unique<views::DialogDelegate>();
   delegate->SetButtons(ui::DIALOG_BUTTON_NONE);
-  delegate->SetModalType(ui::MODAL_TYPE_WINDOW);
+  delegate->SetModalType(ui::mojom::ModalType::kWindow);
   delegate->SetShowCloseButton(false);
   delegate->SetOwnedByWidget(true);
 
   auto dialogView = std::make_unique<SearchEngineChoiceDialogView>(
       &browser, boundary_dimensions_for_test, zoom_factor_for_test);
+
+  SearchEngineChoiceDialogService* dialog_service =
+      SearchEngineChoiceDialogServiceFactory::GetForProfile(browser.profile());
+  if (!dialog_service->RegisterDialog(browser,
+                                      dialogView->GetCloseViewClosure())) {
+    // The dialog was rejected. Abort, don't show anything.
+    return;
+  }
+
   dialogView->Initialize();
   delegate->SetContentsView(std::move(dialogView));
 
@@ -102,14 +112,6 @@ SearchEngineChoiceDialogView::SearchEngineChoiceDialogView(
 SearchEngineChoiceDialogView::~SearchEngineChoiceDialogView() = default;
 
 void SearchEngineChoiceDialogView::Initialize() {
-  auto* search_engine_choice_dialog_service =
-      SearchEngineChoiceDialogServiceFactory::GetForProfile(
-          browser_->profile());
-  search_engine_choice_dialog_service->NotifyDialogOpened(
-      browser_, /*close_dialog_callback=*/base::BindOnce(
-          &SearchEngineChoiceDialogView::CloseView,
-          weak_ptr_factory_.GetWeakPtr()));
-
   web_view_->LoadInitialURL(GURL(chrome::kChromeUISearchEngineChoiceURL));
 
   double zoom_factor = zoom_factor_for_test_.value_or(1.);
@@ -118,9 +120,8 @@ void SearchEngineChoiceDialogView::Initialize() {
       web_contents->GetPrimaryMainFrame();
   content::HostZoomMap* zoom_map =
       content::HostZoomMap::GetForWebContents(web_contents);
-  zoom_map->SetTemporaryZoomLevel(
-      render_frame_host->GetGlobalId(),
-      blink::PageZoomFactorToZoomLevel(zoom_factor));
+  zoom_map->SetTemporaryZoomLevel(render_frame_host->GetGlobalId(),
+                                  blink::ZoomFactorToZoomLevel(zoom_factor));
 
   int preferred_dialog_width = kPreferredMaxDialogWidth;
   int preferred_dialog_height = kPreferredMaxDialogHeight;
@@ -183,8 +184,15 @@ void SearchEngineChoiceDialogView::ShowNativeView() {
   web_view_->RequestFocus();
 }
 
+base::OnceClosure SearchEngineChoiceDialogView::GetCloseViewClosure() {
+  return base::BindOnce(&SearchEngineChoiceDialogView::CloseView,
+                        weak_ptr_factory_.GetWeakPtr());
+}
+
 void SearchEngineChoiceDialogView::CloseView() {
-  GetWidget()->Close();
+  if (auto* widget = GetWidget()) {
+    widget->Close();
+  }
 }
 
 BEGIN_METADATA(SearchEngineChoiceDialogView)

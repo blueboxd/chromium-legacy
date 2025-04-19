@@ -737,9 +737,17 @@ void CookieMonster::GetCookieListWithOptions(
 
     if (!cookie_partition_key_collection.IsEmpty()) {
       if (cookie_partition_key_collection.ContainsAllKeys()) {
-        for (const auto& it : partitioned_cookies_) {
+        for (PartitionedCookieMap::iterator partition_it =
+                 partitioned_cookies_.begin();
+             partition_it != partitioned_cookies_.end();) {
+          // InternalDeletePartitionedCookie may invalidate |partition_it| if
+          // that cookie partition only has one cookie and it expires.
+          auto cur_partition_it = partition_it;
+          ++partition_it;
+
           std::vector<CanonicalCookie*> partitioned_cookie_ptrs =
-              FindPartitionedCookiesForRegistryControlledHost(it.first, url);
+              FindPartitionedCookiesForRegistryControlledHost(
+                  cur_partition_it->first, url);
           cookie_ptrs.insert(cookie_ptrs.end(), partitioned_cookie_ptrs.begin(),
                              partitioned_cookie_ptrs.end());
         }
@@ -944,9 +952,18 @@ void CookieMonster::OnLoaded(
     std::vector<std::unique_ptr<CanonicalCookie>> cookies) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   StoreLoadedCookies(std::move(cookies));
+  base::TimeTicks now = base::TimeTicks::Now();
   base::UmaHistogramCustomTimes("Cookie.TimeBlockedOnLoad",
-                                base::TimeTicks::Now() - beginning_time,
-                                base::Milliseconds(1), base::Minutes(1), 50);
+                                now - beginning_time, base::Milliseconds(1),
+                                base::Minutes(1), 50);
+  base::TimeDelta blocked_due_to_global_op = base::Milliseconds(0);
+  if (time_start_block_load_all_.has_value()) {
+    blocked_due_to_global_op = now - *time_start_block_load_all_;
+  }
+
+  base::UmaHistogramCustomTimes("Cookie.TimeOpsBlockedDueToGlobalOp",
+                                blocked_due_to_global_op, base::Milliseconds(1),
+                                base::Minutes(1), 50);
 
   // Invoke the task queue of cookie request.
   InvokeQueue();
@@ -2698,6 +2715,9 @@ void CookieMonster::DoCookieCallback(base::OnceClosure callback) {
   seen_global_task_ = true;
 
   if (!finished_fetching_all_cookies_ && store_.get()) {
+    if (tasks_pending_.empty()) {
+      time_start_block_load_all_ = base::TimeTicks::Now();
+    }
     tasks_pending_.push_back(std::move(callback));
     return;
   }

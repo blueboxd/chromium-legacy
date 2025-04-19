@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/bookmarks/android/bookmark_bridge.h"
 
 #include <stddef.h>
@@ -59,7 +64,7 @@
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
 
-// Must come after other includes, because FromJniType() uses Profile.
+// Must come after all headers that specialize FromJniType() / ToJniType().
 #include "chrome/android/chrome_jni_headers/BookmarkBridge_jni.h"
 
 using base::android::AttachCurrentThread;
@@ -232,7 +237,7 @@ void BookmarkBridge::Destroy(JNIEnv* env) {
 
 jboolean BookmarkBridge::AreAccountBookmarkFoldersActive(JNIEnv* env) {
   if (!base::FeatureList::IsEnabled(
-          syncer::kEnableBookmarkFoldersForAccountStorage)) {
+          syncer::kSyncEnableBookmarksInTransportMode)) {
     return false;
   }
 
@@ -1016,7 +1021,7 @@ void BookmarkBridge::DeleteBookmarkImpl(const BookmarkNode* node, int type) {
   // this is called with a nullptr.
   if (!node) {
     LOG(ERROR) << "Deleting null bookmark, type:" << type;
-    DUMP_WILL_BE_NOTREACHED_NORETURN();
+    DUMP_WILL_BE_NOTREACHED();
     return;
   }
 
@@ -1477,7 +1482,7 @@ bool BookmarkBridge::IsFolderAvailable(const BookmarkNode* folder) const {
   return (folder->type() != BookmarkNode::BOOKMARK_BAR &&
           folder->type() != BookmarkNode::OTHER_NODE) ||
          (identity_manager &&
-          identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync));
+          identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSignin));
 }
 
 void BookmarkBridge::NotifyIfDoneLoading() {
@@ -1737,7 +1742,7 @@ void BookmarkBridge::ReadingListModelCompletedBatchUpdates(
 void BookmarkBridge::OnPrimaryAccountChanged(
     const signin::PrimaryAccountChangeEvent& event_details) {
   if (!base::FeatureList::IsEnabled(
-          syncer::kEnableBookmarkFoldersForAccountStorage)) {
+          syncer::kSyncEnableBookmarksInTransportMode)) {
     return;
   }
 

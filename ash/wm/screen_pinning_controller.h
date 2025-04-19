@@ -11,6 +11,7 @@
 #include "ash/ash_export.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "base/memory/raw_ptr.h"
+#include "ui/display/manager/display_manager_observer.h"
 
 namespace aura {
 class Window;
@@ -29,9 +30,8 @@ class WindowUserData;
 // developing an education app to support high stakes assessment requirements on
 // Android, or a single-purpose or kiosk application."
 // https://developer.android.com/about/versions/android-5.0.html#ScreenPinning
-// See also ArcKioskAppLauncher::CheckAndPinWindow().
 class ASH_EXPORT ScreenPinningController
-    : public WindowTreeHostManager::Observer,
+    : public display::DisplayManagerObserver,
       aura::WindowObserver {
  public:
   ScreenPinningController();
@@ -92,8 +92,8 @@ class ASH_EXPORT ScreenPinningController
   // disappears.
   void ResetWindowPinningState();
 
-  // WindowTreeHostManager::Observer:
-  void OnDisplayConfigurationChanged() override;
+  // display::DisplayManagerObserver:
+  void OnDidApplyDisplayChanges() override;
 
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;

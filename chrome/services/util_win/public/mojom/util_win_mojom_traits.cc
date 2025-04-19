@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/services/util_win/public/mojom/util_win_mojom_traits.h"
 
 #include <utility>
@@ -100,7 +105,7 @@ EnumTraits<chrome::mojom::ShortcutOperation, ::base::win::ShortcutOperation>::
     case base::win::ShortcutOperation::kUpdateExisting:
       return chrome::mojom::ShortcutOperation::kUpdateExisting;
   }
-  DUMP_WILL_BE_NOTREACHED_NORETURN();
+  DUMP_WILL_BE_NOTREACHED();
   return chrome::mojom::ShortcutOperation::kCreateAlways;
 }
 

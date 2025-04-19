@@ -13,5 +13,27 @@ export function getAbbreviatedUrl(urlString: string) {
   const url = new URL(urlString);
   // Chrome URLs should all have been filtered out.
   assert(url.protocol !== 'chrome:');
-  return url.hostname;
+
+  let abbreviatedUrl = url.host;
+
+  // We intentionally only check the start of the host for "www." as that string
+  // can appear in other parts of the name.
+  if (abbreviatedUrl.startsWith('www.')) {
+    abbreviatedUrl = abbreviatedUrl.substring(4);
+  }
+  return abbreviatedUrl;
+}
+
+/**
+ * Queries |selector| on |element|'s shadow root and returns the resulting
+ * element if there is any.
+ */
+export function $$<K extends keyof HTMLElementTagNameMap>(
+    element: Element, selector: K): HTMLElementTagNameMap[K]|null;
+export function $$<K extends keyof SVGElementTagNameMap>(
+    element: Element, selector: K): SVGElementTagNameMap[K]|null;
+export function $$<E extends Element = Element>(
+    element: Element, selector: string): E|null;
+export function $$(element: Element, selector: string) {
+  return element.shadowRoot!.querySelector(selector);
 }

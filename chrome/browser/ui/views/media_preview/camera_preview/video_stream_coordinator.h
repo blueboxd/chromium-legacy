@@ -25,6 +25,10 @@
 
 class VideoStreamView;
 
+namespace views {
+class Throbber;
+}  // namespace views
+
 // Sets up, updates and maintains the lifetime of the VideoStreamView.
 // The view controller layer would be very thin so it is combined with the
 // coordinator for the VideoStreamView.
@@ -58,6 +62,8 @@ class VideoStreamCoordinator
   void OnCameraVideoFrame(scoped_refptr<media::VideoFrame> frame) override;
   void OnFatalErrorOrDisconnection() override;
 
+  void OnPermissionChange(bool has_permission);
+
   void SetFrameReceivedCallbackForTest(base::RepeatingClosure callback) {
     frame_received_callback_for_test_ = std::move(callback);
   }
@@ -68,19 +74,38 @@ class VideoStreamCoordinator
   void OnViewIsDeleting(views::View* observed_view) override;
   void OnViewBoundsChanged(views::View* observed_view) override;
 
+  // Called when the preview is about to close. This happens in:
+  // (1) Permission prompt when the user allows camera permission.
+  // (2) Page info camera subpage on destruction when there are no active
+  // devices.
+  void OnClosing();
+
  private:
   void StopInternal(mojo::Remote<video_capture::mojom::VideoSourceProvider>
                         video_source_provider = {});
 
+  void OnReceivedFirstFrame();
+
+  void RecordVideoStreamMetrics(size_t rendered_frame_count);
+
   raw_ptr<VideoStreamView> video_stream_view_;
+  raw_ptr<views::View> preview_badge_view_;
+  raw_ptr<views::Throbber> throbber_;
   std::unique_ptr<capture_mode::CameraVideoFrameHandler> video_frame_handler_;
 
   // Runs when a new frame is received. Used for testing.
   base::RepeatingClosure frame_received_callback_for_test_;
 
   const media_preview_metrics::Context metrics_context_;
-  size_t video_stream_total_frames_;
+  size_t video_stream_total_frames_ = 0;
+  const base::TimeTicks video_stream_construction_time_;
+  std::optional<base::TimeTicks> video_stream_request_time_;
   std::optional<base::TimeTicks> video_stream_start_time_;
+  base::TimeDelta total_visible_preview_duration_;
+  std::optional<base::TimeDelta> time_to_action_without_preview_;
+
+  bool has_permission_ = false;
+  bool has_requested_any_video_feed_ = false;
 
   std::optional<std::pair<media::VideoCaptureDeviceInfo,
                           mojo::Remote<video_capture::mojom::VideoSource>>>

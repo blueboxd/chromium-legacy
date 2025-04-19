@@ -5,6 +5,7 @@
 import("//build/config/cast.gni")
 import("//build/config/python.gni")
 import("//media/media_options.gni")
+import("//services/device/public/cpp/compute_pressure/buildflags.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//third_party/blink/renderer/bindings/bindings.gni")
 import("//third_party/blink/renderer/build/scripts/scripts.gni")
@@ -76,7 +77,6 @@ component("modules") {
     "//third_party/blink/renderer/modules/cache_storage",
     "//third_party/blink/renderer/modules/canvas",
     "//third_party/blink/renderer/modules/clipboard",
-    "//third_party/blink/renderer/modules/compute_pressure",
     "//third_party/blink/renderer/modules/contacts_picker",
     "//third_party/blink/renderer/modules/content_extraction",
     "//third_party/blink/renderer/modules/content_index",
@@ -143,7 +143,6 @@ component("modules") {
     "//third_party/blink/renderer/modules/quota",
     "//third_party/blink/renderer/modules/remoteplayback",
     "//third_party/blink/renderer/modules/sanitizer_api",
-    "//third_party/blink/renderer/modules/scheduler",
     "//third_party/blink/renderer/modules/screen_details",
     "//third_party/blink/renderer/modules/screen_orientation",
     "//third_party/blink/renderer/modules/sensor",
@@ -191,8 +190,13 @@ component("modules") {
     ]
   }
 
+  if (enable_compute_pressure) {
+    sub_modules += [ "//third_party/blink/renderer/modules/compute_pressure" ]
+  }
+
   deps = [
     ":make_modules_generated",
+    "//build:android_buildflags",
     "//cc",
     "//components/webrtc:thread_wrapper",
     "//gin",
@@ -237,6 +241,8 @@ source_set("modules_testing") {
     "peerconnection/adapters/test/mock_ice_transport_adapter_cross_thread_factory.h",
     "peerconnection/testing/fake_resource_listener.cc",
     "peerconnection/testing/fake_resource_listener.h",
+    "peerconnection/testing/fake_webrtc_data_channel.cc",
+    "peerconnection/testing/fake_webrtc_data_channel.h",
     "peerconnection/testing/internals_rtc_certificate.cc",
     "peerconnection/testing/internals_rtc_certificate.h",
     "peerconnection/testing/internals_rtc_peer_connection.cc",
@@ -259,6 +265,13 @@ source_set("modules_testing") {
     "webaudio/testing/internals_web_audio.cc",
     "webaudio/testing/internals_web_audio.h",
   ]
+
+  if (enable_compute_pressure) {
+    sources += [
+      "compute_pressure/testing/internals_compute_pressure.cc",
+      "compute_pressure/testing/internals_compute_pressure.h",
+    ]
+  }
 
   configs += [
     "//third_party/blink/renderer:config",
@@ -287,7 +300,6 @@ group("make_modules_generated") {
     ":make_modules_generated_event_target_names",
     ":make_modules_generated_indexed_db_names",
     ":make_modules_generated_media_capabilities_names",
-    "//components/ml/mojom:mojom_blink_headers",
     "//components/payments/mojom:mojom_blink_headers",
     "//components/schema_org/common:mojom_blink_headers",
     "//components/services/filesystem/public/mojom:mojom_blink_headers",
@@ -402,6 +414,7 @@ source_set("unit_tests") {
     "accessibility/testing/accessibility_selection_test.h",
     "accessibility/testing/accessibility_test.cc",
     "accessibility/testing/accessibility_test.h",
+    "ai/model_execution_responder_test.cc",
     "animationworklet/animation_worklet_global_scope_test.cc",
     "animationworklet/animation_worklet_proxy_client_test.cc",
     "animationworklet/worklet_animation_test.cc",
@@ -421,8 +434,6 @@ source_set("unit_tests") {
     "canvas/canvas2d/canvas_style_test_utils.cc",
     "canvas/canvas2d/canvas_style_test_utils.h",
     "canvas/canvas2d/identifiability_study_helper_test.cc",
-    "canvas/canvas2d/recording_test_utils.cc",
-    "canvas/canvas2d/recording_test_utils.h",
     "canvas/htmlcanvas/html_canvas_element_module_test.cc",
     "canvas/offscreencanvas/offscreen_canvas_rendering_api_ukm_metrics_test.cc",
     "canvas/offscreencanvas/offscreen_canvas_test.cc",
@@ -434,6 +445,7 @@ source_set("unit_tests") {
     "credentialmanagement/credential_manager_type_converters_unittest.cc",
     "credentialmanagement/digital_identity_credential_test.cc",
     "credentialmanagement/password_credential_test.cc",
+    "credentialmanagement/public_key_credential_unittest.cc",
     "csspaint/document_paint_definition_test.cc",
     "csspaint/nativepaint/background_color_paint_definition_test.cc",
     "csspaint/nativepaint/clip_path_paint_definition_test.cc",
@@ -557,9 +569,12 @@ source_set("unit_tests") {
     "peerconnection/rtc_peer_connection_handler_test.cc",
     "peerconnection/rtc_peer_connection_test.cc",
     "peerconnection/rtc_rtp_receiver_impl_test.cc",
+    "peerconnection/rtc_rtp_script_transformer_test.cc",
     "peerconnection/rtc_rtp_sender_impl_test.cc",
     "peerconnection/rtc_rtp_transceiver_impl_test.cc",
+    "peerconnection/rtc_rtp_transport_test.cc",
     "peerconnection/rtc_sctp_transport_test.cc",
+    "peerconnection/serialized_data_for_event_test.cc",
     "peerconnection/speed_limit_uma_listener_test.cc",
     "peerconnection/thermal_resource_test.cc",
     "peerconnection/thermal_uma_listener_test.cc",
@@ -579,8 +594,6 @@ source_set("unit_tests") {
     "push_messaging/push_message_data_test.cc",
     "push_messaging/push_subscription_test.cc",
     "remoteplayback/remote_playback_test.cc",
-    "scheduler/dom_scheduler_test.cc",
-    "scheduler/dom_timer_test.cc",
     "screen_orientation/screen_orientation_controller_test.cc",
     "sensor/sensor_test_utils.cc",
     "sensor/sensor_test_utils.h",
@@ -630,14 +643,19 @@ source_set("unit_tests") {
     "xr/xr_view_test.cc",
   ]
 
+  if (enable_compute_pressure) {
+    sources += [
+      "compute_pressure/pressure_observer_test.cc",
+      "compute_pressure/pressure_observer_test_utils.cc",
+      "compute_pressure/pressure_observer_test_utils.h",
+    ]
+  }
+
   if (!is_android) {
     sources += [
       # Inline text box tests do not apply to Android, which only loads
       # AXInlineTextBox tests for the focused node.
       "accessibility/ax_inline_text_box_test.cc",
-      "compute_pressure/pressure_observer_test.cc",
-      "compute_pressure/pressure_observer_test_utils.cc",
-      "compute_pressure/pressure_observer_test_utils.h",
     ]
   }
 

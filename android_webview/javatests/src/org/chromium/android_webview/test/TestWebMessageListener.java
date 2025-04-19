@@ -9,9 +9,9 @@ import android.net.Uri;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.JsReplyProxy;
 import org.chromium.android_webview.WebMessageListener;
+import org.chromium.base.ThreadUtils;
 import org.chromium.content_public.browser.MessagePayload;
 import org.chromium.content_public.browser.MessagePort;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -57,15 +57,14 @@ public class TestWebMessageListener implements WebMessageListener {
             final WebMessageListener listener)
             throws Exception {
         AwActivityTestRule.checkJavaScriptEnabled(awContents);
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> awContents.addWebMessageListener(jsObjectName, allowedOriginRules, listener));
     }
 
     public static void removeWebMessageListenerOnUiThread(
             final AwContents awContents, final String jsObjectName) throws Exception {
         AwActivityTestRule.checkJavaScriptEnabled(awContents);
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> awContents.removeWebMessageListener(jsObjectName));
+        ThreadUtils.runOnUiThreadBlocking(() -> awContents.removeWebMessageListener(jsObjectName));
     }
 
     @Override

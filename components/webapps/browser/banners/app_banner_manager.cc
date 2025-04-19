@@ -42,6 +42,7 @@
 #include "content/public/common/url_utils.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/base/net_errors.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/manifest/manifest_util.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
@@ -84,8 +85,7 @@ int gTimeDeltaInDaysForTesting = 0;
 InstallableParams ParamsToGetManifest() {
   InstallableParams params;
   params.check_eligibility = true;
-  params.fetch_metadata =
-      base::FeatureList::IsEnabled(features::kUniversalInstallManifest);
+  params.fetch_metadata = true;
   return params;
 }
 
@@ -315,8 +315,6 @@ AppBannerManager::AppBannerManager(content::WebContents* web_contents)
       SiteEngagementObserver(site_engagement::SiteEngagementService::Get(
           web_contents->GetBrowserContext())),
       manager_(InstallableManager::FromWebContents(web_contents)),
-      manifest_(blink::mojom::Manifest::New()),
-      web_page_metadata_(mojom::WebPageMetadata::New()),
       status_reporter_(std::make_unique<NullStatusReporter>()) {
   DCHECK(manager_);
 
@@ -402,14 +400,13 @@ void AppBannerManager::OnDidGetManifest(const InstallableData& data) {
   }
   UpdateState(State::ACTIVE);
 
-  if (!data.errors.empty()) {
+  // An empty manifest indicates some kind of unrecoverable error occurred.
+  if (blink::IsEmptyManifest(*data.manifest)) {
+    CHECK(!data.errors.empty());
     Stop(data.GetFirstError());
     return;
   }
-  // An empty manifest means there was a network error or a parsing error, and
-  // that case is caught in the InstallableDataFetcher and an error is produced
-  // & caught above.
-  CHECK(!blink::IsEmptyManifest(*data.manifest));
+
   CHECK(data.manifest->id.is_valid());
   web_app_data_.emplace(data.manifest->id, data.manifest->Clone(),
                         data.web_page_metadata->Clone(), *(data.manifest_url));
@@ -741,8 +738,9 @@ void AppBannerManager::DidFinishNavigation(content::NavigationHandle* handle) {
     return;
   }
 
-  if (state_ != State::COMPLETE && state_ != State::INACTIVE)
+  if (state_ != State::COMPLETE && state_ != State::INACTIVE) {
     Terminate(TerminationCodeFromState());
+  }
   ResetCurrentPageDataInternal();
 
   if (handle->IsServedFromBackForwardCache()) {
@@ -778,11 +776,22 @@ void AppBannerManager::DidFinishLoad(
     RequestAppBanner();
 }
 
+void AppBannerManager::DidFailLoad(content::RenderFrameHost* render_frame_host,
+                                   const GURL& validated_url,
+                                   int error_code) {
+  // This is called with `net::ERR_ABORTED` if the developer manually stops the
+  // loading of the page. The pipeline still need to run if this occurs.
+  if (error_code == net::ERR_ABORTED) {
+    DidFinishLoad(render_frame_host, validated_url);
+  }
+}
+
 void AppBannerManager::DidUpdateWebManifestURL(
     content::RenderFrameHost* target_frame,
     const GURL& manifest_url) {
   if (state_ == State::INACTIVE ||
-      (state_ == State::COMPLETE && manifest_url.is_empty())) {
+      (state_ == State::COMPLETE && manifest_url.is_empty()) ||
+      !target_frame->IsInPrimaryMainFrame()) {
     return;
   }
   Terminate(manifest_url.is_empty()
@@ -814,7 +823,8 @@ void AppBannerManager::OnEngagementEvent(
     content::WebContents* contents,
     const GURL& url,
     double score,
-    site_engagement::EngagementType /*type*/) {
+    site_engagement::EngagementType /*type*/,
+    const std::optional<webapps::AppId>& /*app_id*/) {
   if (TriggeringDisabledForTesting()) {
     return;
   }

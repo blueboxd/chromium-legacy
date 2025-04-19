@@ -11,6 +11,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_client.h"
+#include "components/autofill/core/browser/payments/payments_autofill_client.h"
 #include "components/autofill/core/browser/payments/payments_network_interface.h"
 #include "components/autofill/core/browser/payments/virtual_card_enrollment_flow.h"
 #include "components/autofill/core/browser/strike_databases/payments/virtual_card_enrollment_strike_database.h"
@@ -184,10 +185,14 @@ class VirtualCardEnrollmentManager {
   void RemoveAllStrikesToBlockOfferingVirtualCardEnrollment(
       const std::string& instrument_id);
 
+  // Clears the strikes on the associated virtual card enrollment strike
+  // database.
+  void ClearAllStrikesForTesting();
+
   // Sets |save_card_bubble_accepted_timestamp_|, which will be the start time
   // for the LatencySinceUpstream metrics.
   void SetSaveCardBubbleAcceptedTimestamp(
-      const base::Time& save_card_bubble_accepted_timestamp);
+      base::Time save_card_bubble_accepted_timestamp);
 
  protected:
   // Handles the response from the UpdateVirtualCardEnrollmentRequest. |type|
@@ -197,7 +202,7 @@ class VirtualCardEnrollmentManager {
   // InitVirtualCardEnroll().
   virtual void OnDidGetUpdateVirtualCardEnrollmentResponse(
       VirtualCardEnrollmentRequestType type,
-      AutofillClient::PaymentsRpcResult result);
+      payments::PaymentsAutofillClient::PaymentsRpcResult result);
 
   // Called after virtual card enrollment is completed. Will show enroll result
   // to users.
@@ -297,7 +302,7 @@ class VirtualCardEnrollmentManager {
   // while |state_| is passed down from GetDetailsForEnroll() to track the
   // current process' state.
   void OnDidGetDetailsForEnrollResponse(
-      AutofillClient::PaymentsRpcResult result,
+      payments::PaymentsAutofillClient::PaymentsRpcResult result,
       const payments::PaymentsNetworkInterface::
           GetDetailsForEnrollmentResponseDetails& response);
 

@@ -12,6 +12,7 @@ import './autofill_page/payments_section.js';
 import './clear_browsing_data_dialog/clear_browsing_data_dialog.js';
 import './search_engines_page/search_engines_page.js';
 import './simple_confirmation_dialog.js';
+import './people_page/history_search_page.js';
 import './privacy_page/anti_abuse_page.js';
 import './privacy_page/privacy_guide/privacy_guide_description_item.js';
 import './privacy_page/privacy_guide/privacy_guide_dialog.js';
@@ -83,11 +84,13 @@ import './languages_page/edit_dictionary_page.js';
 // </if>
 
 // <if expr="not is_chromeos">
+export {ScreenAiInstallStatus} from '/shared/settings/a11y_page/ax_annotations_browser_proxy.js';
 export {CaptionsBrowserProxy, CaptionsBrowserProxyImpl, LiveCaptionLanguageList} from '/shared/settings/a11y_page/captions_browser_proxy.js';
 // </if>
 
 export {FontsBrowserProxy, FontsBrowserProxyImpl, FontsData} from '/shared/settings/appearance_page/fonts_browser_proxy.js';
 export {CrCheckboxElement} from 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.js';
+export {CrCollapseElement} from 'chrome://resources/cr_elements/cr_collapse/cr_collapse.js';
 export {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 export {CrExpandButtonElement} from 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.js';
 export {CrIconButtonElement} from 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
@@ -97,26 +100,11 @@ export {CrSliderElement} from 'chrome://resources/cr_elements/cr_slider/cr_slide
 export {CrTextareaElement} from 'chrome://resources/cr_elements/cr_textarea/cr_textarea.js';
 export {getToastManager} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.js';
 export {CrTooltipElement} from 'chrome://resources/cr_elements/cr_tooltip/cr_tooltip.js';
-export {IronCollapseElement} from 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
 export {IronListElement} from 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 export {AccessibilityBrowserProxy, AccessibilityBrowserProxyImpl} from './a11y_page/a11y_browser_proxy.js';
-export {ControlledButtonElement} from './controls/controlled_button.js';
-export {SettingsRadioGroupElement} from './controls/settings_radio_group.js';
-export {SettingsSliderElement} from './controls/settings_slider.js';
-export {SettingsToggleButtonElement} from './controls/settings_toggle_button.js';
-export {SecureDnsResolverType, SettingsSecureDnsElement} from './privacy_page/secure_dns.js';
-// <if expr="chromeos_ash">
-export {SettingsSecureDnsDialogElement} from './privacy_page/secure_dns_dialog.js';
-// </if>
-export {SecureDnsInputElement} from './privacy_page/secure_dns_input.js';
-// clang-format off
-// <if expr="is_win or is_linux or is_macosx">
-export {ScreenAiInstallStatus} from './a11y_page/a11y_browser_proxy.js';
-// </if>
-// clang-format on
 export {SettingsA11yPageElement} from './a11y_page/a11y_page.js';
 // <if expr="is_win or is_linux or is_macosx">
-export {SettingsAxAnnotationsSubpageElement} from './a11y_page/ax_annotations_subpage.js';
+export {SettingsAxAnnotationsSectionElement} from './a11y_page/ax_annotations_section.js';
 // </if>
 // <if expr="not is_chromeos">
 export {SettingsLiveCaptionElement} from './a11y_page/live_caption_section.js';
@@ -143,7 +131,11 @@ export {ClearBrowsingDataBrowserProxy, ClearBrowsingDataBrowserProxyImpl, ClearB
 export {SettingsClearBrowsingDataDialogElement} from './clear_browsing_data_dialog/clear_browsing_data_dialog.js';
 export {SettingsHistoryDeletionDialogElement} from './clear_browsing_data_dialog/history_deletion_dialog.js';
 export {SettingsPasswordsDeletionDialogElement} from './clear_browsing_data_dialog/passwords_deletion_dialog.js';
+export {ControlledButtonElement} from './controls/controlled_button.js';
 export {SettingsCheckboxElement} from './controls/settings_checkbox.js';
+export {SettingsRadioGroupElement} from './controls/settings_radio_group.js';
+export {SettingsSliderElement} from './controls/settings_slider.js';
+export {SettingsToggleButtonElement} from './controls/settings_toggle_button.js';
 export {DownloadsBrowserProxy, DownloadsBrowserProxyImpl} from './downloads_page/downloads_browser_proxy.js';
 export {SettingsDownloadsPageElement} from './downloads_page/downloads_page.js';
 // <if expr="_google_chrome">
@@ -186,6 +178,7 @@ export {SettingsDoNotTrackToggleElement} from './privacy_page/do_not_track_toggl
 export {FINGERPRINT_CHECK_DARK_URL, FINGERPRINT_CHECK_LIGHT_URL, FINGERPRINT_SCANNED_ICON_DARK, FINGERPRINT_SCANNED_ICON_LIGHT, FingerprintProgressArcElement, PROGRESS_CIRCLE_BACKGROUND_COLOR_DARK, PROGRESS_CIRCLE_BACKGROUND_COLOR_LIGHT, PROGRESS_CIRCLE_FILL_COLOR_DARK, PROGRESS_CIRCLE_FILL_COLOR_LIGHT} from './privacy_page/fingerprint_progress_arc.js';
 export {SettingsPersonalizationOptionsElement} from './privacy_page/personalization_options.js';
 export {PrivacyGuideStep} from './privacy_page/privacy_guide/constants.js';
+export {PrivacyGuideAdTopicsFragmentElement} from './privacy_page/privacy_guide/privacy_guide_ad_topics_fragment.js';
 export {PrivacyGuideCompletionFragmentElement} from './privacy_page/privacy_guide/privacy_guide_completion_fragment.js';
 export {PrivacyGuideCookiesFragmentElement} from './privacy_page/privacy_guide/privacy_guide_cookies_fragment.js';
 export {PrivacyGuideDescriptionItemElement} from './privacy_page/privacy_guide/privacy_guide_description_item.js';
@@ -195,6 +188,11 @@ export {PrivacyGuideMsbbFragmentElement} from './privacy_page/privacy_guide/priv
 export {SettingsPrivacyGuidePageElement} from './privacy_page/privacy_guide/privacy_guide_page.js';
 export {PrivacyGuideSafeBrowsingFragmentElement} from './privacy_page/privacy_guide/privacy_guide_safe_browsing_fragment.js';
 export {PrivacyGuideWelcomeFragmentElement} from './privacy_page/privacy_guide/privacy_guide_welcome_fragment.js';
+export {SecureDnsResolverType, SettingsSecureDnsElement} from './privacy_page/secure_dns.js';
+// <if expr="chromeos_ash">
+export {SettingsSecureDnsDialogElement} from './privacy_page/secure_dns_dialog.js';
+// </if>
+export {SecureDnsInputElement} from './privacy_page/secure_dns_input.js';
 export {BioEnrollDialogPage, SettingsSecurityKeysBioEnrollDialogElement} from './privacy_page/security_keys_bio_enroll_dialog.js';
 export {Ctap2Status, SampleStatus, SecurityKeysBioEnrollProxy, SecurityKeysBioEnrollProxyImpl, SecurityKeysCredentialBrowserProxy, SecurityKeysCredentialBrowserProxyImpl, SecurityKeysPhone, SecurityKeysPhonesBrowserProxy, SecurityKeysPhonesBrowserProxyImpl, SecurityKeysPhonesList, SecurityKeysPinBrowserProxy, SecurityKeysPinBrowserProxyImpl, SecurityKeysResetBrowserProxy, SecurityKeysResetBrowserProxyImpl} from './privacy_page/security_keys_browser_proxy.js';
 export {CredentialManagementDialogPage, SettingsSecurityKeysCredentialManagementDialogElement} from './privacy_page/security_keys_credential_management_dialog.js';

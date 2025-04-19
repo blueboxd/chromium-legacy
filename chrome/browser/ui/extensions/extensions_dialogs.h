@@ -11,6 +11,7 @@
 #include "base/functional/callback_forward.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/ui/extensions/mv2_disabled_dialog_controller.h"
 #include "extensions/buildflags/buildflags.h"
 #include "extensions/common/extension_id.h"
 #include "ui/base/interaction/element_identifier.h"
@@ -37,9 +38,17 @@ namespace gfx {
 class ImageSkia;
 }  // namespace gfx
 
+namespace permissions {
+class ChooserController;
+}  // namespace permissions
+
 namespace extensions {
 
 class Extension;
+
+void ShowConstrainedDeviceChooserDialog(
+    content::WebContents* web_contents,
+    std::unique_ptr<permissions::ChooserController> controller);
 
 // Shows a dialog to notify the user that the extension installation is
 // blocked due to policy. It also shows additional information from
@@ -69,6 +78,30 @@ void ShowExtensionMultipleUninstallDialog(
     const std::vector<ExtensionId>& extension_ids,
     base::OnceClosure accept_callback,
     base::OnceClosure cancel_callback);
+
+// Shows a dialog with `extensions_info` when those extensions were disabled due
+// to the MV2 deprecation.
+void ShowMv2DeprecationDisabledDialog(
+    Browser* browser,
+    std::vector<Mv2DisabledDialogController::ExtensionInfo>& extensions_info,
+    base::OnceClosure remove_callback,
+    base::OnceClosure manage_callback,
+    base::OnceClosure close_callback);
+
+// Shows a dialog when the user triggers the warning dismissal for an extension
+// affected by the MV2 deprecation.
+void ShowMv2DeprecationKeepDialog(Browser* browser,
+                                  const Extension& extension,
+                                  base::OnceClosure accept_callback,
+                                  base::OnceClosure cancel_callback);
+
+// Shows a dialog when the user re-enables an extension affected by the MV2
+// deprecation.
+void ShowMv2DeprecationReEnableDialog(
+    gfx::NativeWindow parent,
+    const ExtensionId& extension_id,
+    const std::string& extension_name,
+    base::OnceCallback<void(bool)> done_callback);
 
 // Shows a dialog when extensions require a refresh for their action
 // to be run or blocked. When the dialog is accepted, `callback` is

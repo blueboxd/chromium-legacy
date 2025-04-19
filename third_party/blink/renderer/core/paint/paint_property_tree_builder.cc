@@ -1583,7 +1583,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
         OnUpdateClip(properties_->UpdateMaskClip(
             *context_.current.clip,
             ClipPaintPropertyNode::State(
-                context_.current.transform, combined_clip,
+                *context_.current.transform, combined_clip,
                 FloatRoundedRect(gfx::ToEnclosingRect(combined_clip)))));
         // We don't use MaskClip as the output clip of Effect, Mask and
         // ClipPathMask because we only want to apply MaskClip to the contents,
@@ -2056,7 +2056,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
       if (needs_pixel_moving_filter_clip_expander) {
         OnUpdateClip(properties_->UpdatePixelMovingFilterClipExpander(
             *context_.current.clip,
-            ClipPaintPropertyNode::State(context_.current.transform,
+            ClipPaintPropertyNode::State(*context_.current.transform,
                                          properties_->Filter())));
       } else {
         OnClearClip(properties_->ClearPixelMovingFilterClipExpander());
@@ -2102,7 +2102,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateCssClip() {
           To<LayoutBox>(object_).ClipRect(context_.current.paint_offset);
       OnUpdateClip(properties_->UpdateCssClip(
           *context_.current.clip,
-          ClipPaintPropertyNode::State(context_.current.transform,
+          ClipPaintPropertyNode::State(*context_.current.transform,
                                        gfx::RectF(clip_rect),
                                        ToSnappedClipRect(clip_rect))));
     } else {
@@ -2137,6 +2137,10 @@ void FragmentPaintPropertyTreeBuilder::UpdateClipPathClip() {
   if (NeedsPaintPropertyUpdate()) {
     DCHECK(!clip_path_bounding_box_.has_value());
     if (NeedsClipPathClipOrMask(object_)) {
+      // Recalc the composited clip path paint status, which depends on whether
+      // we are in a block fragmentation
+      ClipPathClipper::ResolveClipPathStatus(
+          object_, context_.current.is_in_block_fragmentation);
       clip_path_bounding_box_ =
           ClipPathClipper::LocalClipPathBoundingBox(object_);
       if (clip_path_bounding_box_) {
@@ -2149,8 +2153,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateClipPathClip() {
                 ? gfx::Vector2dF(context_.current.paint_offset)
                 : gfx::Vector2dF();
         clip_path_bounding_box_->Offset(paint_offset);
-        if (std::optional<Path> path = ClipPathClipper::PathBasedClip(
-                object_, context_.current.is_in_block_fragmentation)) {
+        if (std::optional<Path> path =
+                ClipPathClipper::PathBasedClip(object_)) {
           path->Translate(paint_offset);
           std::optional<FloatRoundedRect> rrect;
           // TODO(crbug.com/337191311): The optimization breaks view-transition
@@ -2162,7 +2166,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateClipPathClip() {
             rrect = PathToRRect(*path);
           }
           ClipPaintPropertyNode::State state(
-              context_.current.transform, *clip_path_bounding_box_,
+              *context_.current.transform, *clip_path_bounding_box_,
               rrect.value_or(FloatRoundedRect(
                   gfx::ToEnclosingRect(*clip_path_bounding_box_))));
           if (!rrect) {
@@ -2337,7 +2341,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateOverflowControlsClip() {
                                          To<LayoutBox>(object_).Size());
     OnUpdateClip(properties_->UpdateOverflowControlsClip(
         *context_.current.clip,
-        ClipPaintPropertyNode::State(context_.current.transform,
+        ClipPaintPropertyNode::State(*context_.current.transform,
                                      gfx::RectF(clip_rect),
                                      ToSnappedClipRect(clip_rect))));
   } else {
@@ -2381,7 +2385,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateBackgroundClip() {
     }
     OnUpdateClip(properties_->UpdateBackgroundClip(
         *context_.current.clip,
-        ClipPaintPropertyNode::State(context_.current.transform,
+        ClipPaintPropertyNode::State(*context_.current.transform,
                                      gfx::RectF(clip_rect),
                                      ToSnappedClipRect(clip_rect))));
   } else {
@@ -2446,7 +2450,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateInnerBorderRadiusClip() {
 
       AdjustRoundedClipForOverflowClipMargin(box, layout_clip_rect,
                                              paint_clip_rect);
-      ClipPaintPropertyNode::State state(context_.current.transform,
+      ClipPaintPropertyNode::State state(*context_.current.transform,
                                          layout_clip_rect, paint_clip_rect);
       OnUpdateClip(properties_->UpdateInnerBorderRadiusClip(
           *context_.current.clip, std::move(state)));
@@ -2471,7 +2475,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateOverflowClip() {
     }
 
     if (NeedsOverflowClip(object_)) {
-      ClipPaintPropertyNode::State state(context_.current.transform,
+      ClipPaintPropertyNode::State state(*context_.current.transform,
                                          gfx::RectF(), FloatRoundedRect());
 
       if (object_.IsLayoutReplaced() &&
@@ -2935,7 +2939,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateOutOfFlowContext() {
       if (NeedsPaintPropertyUpdate()) {
         OnUpdateClip(properties_->UpdateCssClipFixedPosition(
             *context_.fixed_position.clip,
-            ClipPaintPropertyNode::State(&css_clip->LocalTransformSpace(),
+            ClipPaintPropertyNode::State(css_clip->LocalTransformSpace(),
                                          css_clip->LayoutClipRect().Rect(),
                                          css_clip->PaintClipRect())));
       }
@@ -3488,6 +3492,10 @@ void PaintPropertyTreeBuilder::UpdatePaintingLayer() {
   if (object_.HasLayer() &&
       To<LayoutBoxModelObject>(object_).HasSelfPaintingLayer()) {
     context_.painting_layer = To<LayoutBoxModelObject>(object_).Layer();
+  } else if (object_.IsInlineRubyText()) {
+    // Physical fragments and fragment items for ruby-text boxes are not
+    // managed by inline parents.
+    context_.painting_layer = object_.PaintingLayer();
   }
   DCHECK(context_.painting_layer == object_.PaintingLayer());
 }
@@ -3564,11 +3572,10 @@ void PaintPropertyTreeBuilder::UpdateGlobalMainThreadScrollingReasons() {
         cc::MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
   }
 
-  if (!object_.GetFrame()->Client()->GetWebFrame()) {
+  if (!RuntimeEnabledFeatures::ExcludePopupMainThreadScrollingReasonEnabled() &&
+      !object_.GetFrame()->Client()->GetWebFrame()) {
     // If there's no WebFrame, then there's no WebFrameWidget, and we can't do
     // threaded scrolling.  This currently only happens in a WebPagePopup.
-    // (However, we still allow needs_composited_scrolling to be true in this
-    // case, so that the scroller gets layerized.)
     context_.global_main_thread_scrolling_reasons |=
         cc::MainThreadScrollingReason::kPopupNoThreadedInput;
   }

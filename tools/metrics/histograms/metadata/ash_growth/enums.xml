@@ -31,6 +31,7 @@ chromium-metrics-reviews@google.com.
   <int value="1" label="Demo Mode Free Play Apps"/>
   <int value="2" label="Nudge"/>
   <int value="3" label="Notification"/>
+  <int value="4" label="OOBE Perk Discovery Page"/>
 </enum>
 
 <enum name="CampaignsManagerError">
@@ -67,6 +68,16 @@ chromium-metrics-reviews@google.com.
   <int value="30" label="Invalid button action in notification payload"/>
   <int value="31" label="Invalid notification payload"/>
   <int value="32" label="Invalid trigger targeting"/>
+  <int value="33" label="Anchor widget not found for anchoring nudge"/>
+  <int value="34" label="Position not supported for anchoring nudge"/>
+  <int value="35" label="Initializing tracker failed"/>
+  <int value="36" label="Tracker is not available in session"/>
+  <int value="37" label="User pref service not available"/>
+  <int value="38" label="User pref value type mismatched"/>
+  <int value="39" label="Invalid user pref"/>
+  <int value="40" label="Invalid user pref targeting"/>
+  <int value="41" label="Parsing user pref targeting failed"/>
+  <int value="42" label="Missing action performer action"/>
 </enum>
 
 </enums>

@@ -188,7 +188,7 @@ bool IsAddingUsernameToExistingMatch(
 // defined by the string |kSpecialSymbols|.
 int GetRandomSpecialSymbol() {
   return password_manager_util::kSpecialSymbols[base::RandGenerator(
-      std::size(password_manager_util::kSpecialSymbols))];
+      password_manager_util::kSpecialSymbols.size())];
 }
 
 // Returns a random special symbol used in |password|.
@@ -279,13 +279,15 @@ void GenerateSyntheticRenderIdsAndAssignThem(PasswordForm& matched_form) {
   uint32_t renderer_id_counter_ = 1;
 
   std::map<std::u16string, autofill::FieldRendererId> field_name_to_renderer_id;
-  for (autofill::FormFieldData& field : matched_form.form_data.fields) {
+  std::vector<FormFieldData> fields = matched_form.form_data.ExtractFields();
+  for (autofill::FormFieldData& field : fields) {
     CHECK(field.renderer_id().is_null())
         << "Unexpected non-null renderer_id in a from deserialized form "
            "LoginDatabase.";
     field.set_renderer_id(autofill::FieldRendererId(renderer_id_counter_++));
     field_name_to_renderer_id.insert({field.name(), field.renderer_id()});
   }
+  matched_form.form_data.set_fields(std::move(fields));
 
   FillRendererIdIfNotSet(matched_form.username_element,
                          &matched_form.username_element_renderer_id,
@@ -416,7 +418,7 @@ void VotesUploader::SendVoteOnCredentialsReuse(
   // to PasswordForm. Even without this check, these FormStructure's won't
   // be uploaded, but it makes it hard to see if we are encountering
   // unexpected errors.
-  if (pending->form_data.fields.empty()) {
+  if (pending->form_data.fields().empty()) {
     return;
   }
 
@@ -469,7 +471,7 @@ bool VotesUploader::UploadPasswordVote(
     return false;
   }
 
-  if (form_to_upload.form_data.fields.empty()) {
+  if (form_to_upload.form_data.fields().empty()) {
     // List of fields may be empty in tests.
     return false;
   }
@@ -599,7 +601,7 @@ void VotesUploader::UploadFirstLoginVotes(
     return;
   }
 
-  if (form_to_upload.form_data.fields.empty()) {
+  if (form_to_upload.form_data.fields().empty()) {
     // List of fields may be empty in tests.
     return;
   }
@@ -850,7 +852,7 @@ bool VotesUploader::FindUsernameInOtherAlternativeUsernames(
 }
 
 bool VotesUploader::FindCorrectedUsernameElement(
-    const std::vector<raw_ptr<const PasswordForm, VectorExperimental>>& matches,
+    base::span<const PasswordForm> matches,
     const std::u16string& username,
     const std::u16string& password) {
   // As the username may have changed, re-compute |username_correction_vote_|.
@@ -858,9 +860,9 @@ bool VotesUploader::FindCorrectedUsernameElement(
   if (username.empty()) {
     return false;
   }
-  for (const PasswordForm* match : matches) {
-    if ((match->password_value == password) &&
-        FindUsernameInOtherAlternativeUsernames(*match, username)) {
+  for (const PasswordForm& match : matches) {
+    if ((match.password_value == password) &&
+        FindUsernameInOtherAlternativeUsernames(match, username)) {
       return true;
     }
   }
@@ -925,7 +927,7 @@ VotesUploader::GeneratePasswordAttributesMetadata(
 
 void VotesUploader::StoreInitialFieldValues(
     const autofill::FormData& observed_form) {
-  for (const auto& field : observed_form.fields) {
+  for (const auto& field : observed_form.fields()) {
     if (!field.value().empty()) {
       initial_values_.insert(
           std::make_pair(field.renderer_id(), field.value()));
@@ -978,7 +980,7 @@ bool VotesUploader::SendUploadRequest(
                           login_form_signature, password_attributes,
                           should_set_passwords_were_revealed),
       form_to_upload.submission_source(),
-      /*pref_service=*/nullptr);
+      /*is_password_manager_upload=*/true);
 }
 
 bool VotesUploader::SetSingleUsernameVoteOnUsernameForm(

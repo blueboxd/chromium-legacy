@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_WEBAUTHN_PIN_OPTIONS_BUTTON_H_
 #define CHROME_BROWSER_UI_VIEWS_WEBAUTHN_PIN_OPTIONS_BUTTON_H_
 
-#include "chrome/browser/ui/views/controls/md_text_button_with_down_arrow.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/views/controls/button/md_text_button_with_down_arrow.h"
 
 namespace views {
 class MenuRunner;
@@ -35,10 +35,12 @@ class PinOptionsButton : public views::MdTextButtonWithDownArrow,
 
   // ui::SimpleMenuModel::Delegate:
   void ExecuteCommand(int command_id, int event_flags) override;
+  bool IsCommandIdChecked(int command_id) const override;
 
  private:
   void ButtonPressed();
 
+  const CommandId checked_command_id_;
   base::RepeatingCallback<void(bool)> callback_;
   std::unique_ptr<ui::SimpleMenuModel> menu_model_;
   std::unique_ptr<views::MenuRunner> menu_runner_;

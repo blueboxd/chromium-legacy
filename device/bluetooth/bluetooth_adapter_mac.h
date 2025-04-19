@@ -20,6 +20,7 @@
 #include "device/bluetooth/bluetooth_low_energy_adapter_apple.h"
 #include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 
+@class BluetoothDevicesConnectListener;
 @class IOBluetoothDevice;
 
 namespace device {
@@ -52,7 +53,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
                ErrorCallback error_callback) override;
   bool IsPresent() const override;
   bool IsPowered() const override;
-  PermissionStatus GetOsPermissionStatus() const override;
   bool IsDiscoverable() const override;
   void SetDiscoverable(bool discoverable,
                        base::OnceClosure callback,
@@ -72,7 +72,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
   void ClassicDiscoveryStopped(bool unexpected) override;
 
   // Registers that a new |device| has connected to the local host.
-  void DeviceConnected(IOBluetoothDevice* device);
+  void DeviceConnected(std::unique_ptr<BluetoothDevice> device);
 
  protected:
   // BluetoothAdapter override:
@@ -81,6 +81,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
 
   // BluetoothLowEnergyAdapterApple override:
   base::WeakPtr<BluetoothLowEnergyAdapterApple> GetLowEnergyWeakPtr() override;
+  void TriggerSystemPermissionPrompt() override;
 
  private:
   // Struct bundling information about the state of the HostController.
@@ -187,6 +188,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
   // The paired device count the last time the adapter was polled, or nullopt if
   // the adapter has not been polled.
   std::optional<uint32_t> paired_count_;
+
+  BluetoothDevicesConnectListener* __strong connect_listener_;
 
   base::WeakPtrFactory<BluetoothAdapterMac> weak_ptr_factory_{this};
 };

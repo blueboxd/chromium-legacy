@@ -172,7 +172,7 @@ TEST_F(AutocompleteTableTest, Autocomplete) {
   changes.clear();
   EXPECT_TRUE(table_->RemoveFormElementsAddedBetween(begin, Time(), changes));
 
-  const AutocompleteChange kExpectedChanges[] = {
+  const auto kExpectedChanges = std::array{
       AutocompleteChange(AutocompleteChange::REMOVE,
                          AutocompleteKey(u"Name", u"Superman")),
       AutocompleteChange(AutocompleteChange::REMOVE,
@@ -182,7 +182,7 @@ TEST_F(AutocompleteTableTest, Autocomplete) {
       AutocompleteChange(AutocompleteChange::REMOVE,
                          AutocompleteKey(u"Favorite Color", u"Green")),
   };
-  EXPECT_EQ(std::size(kExpectedChanges), changes.size());
+  EXPECT_EQ(kExpectedChanges.size(), changes.size());
   for (size_t i = 0; i < std::size(kExpectedChanges); ++i) {
     EXPECT_EQ(kExpectedChanges[i], changes[i]);
   }

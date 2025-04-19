@@ -7,32 +7,25 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_entry_observer.h"
+#include "chrome/browser/ui/views/side_panel/side_panel_enums.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_util.h"
 
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kShouldShowTitleInSidePanelHeaderKey, true)
 
 SidePanelEntry::SidePanelEntry(
     Id id,
-    std::u16string name,
-    ui::ImageModel icon,
     base::RepeatingCallback<std::unique_ptr<views::View>()>
         create_content_callback,
     base::RepeatingCallback<GURL()> open_in_new_tab_url_callback)
     : key_(id),
-      name_(std::move(name)),
-      icon_(std::move(icon)),
       create_content_callback_(std::move(create_content_callback)),
       open_in_new_tab_url_callback_(std::move(open_in_new_tab_url_callback)) {}
 
 SidePanelEntry::SidePanelEntry(
     Key key,
-    std::u16string name,
-    ui::ImageModel icon,
     base::RepeatingCallback<std::unique_ptr<views::View>()>
         create_content_callback)
     : key_(key),
-      name_(std::move(name)),
-      icon_(std::move(icon)),
       create_content_callback_(std::move(create_content_callback)) {
   DCHECK(create_content_callback_);
 }
@@ -54,12 +47,6 @@ void SidePanelEntry::ClearCachedView() {
   content_view_.reset(nullptr);
 }
 
-void SidePanelEntry::ResetIcon(ui::ImageModel icon) {
-  icon_ = std::move(icon);
-  for (SidePanelEntryObserver& observer : observers_)
-    observer.OnEntryIconUpdated(this);
-}
-
 void SidePanelEntry::OnEntryShown() {
   entry_shown_timestamp_ = base::TimeTicks::Now();
   SidePanelUtil::RecordEntryShownMetrics(key_.id(),
@@ -70,6 +57,12 @@ void SidePanelEntry::OnEntryShown() {
   ResetLoadTimestamp();
   for (SidePanelEntryObserver& observer : observers_)
     observer.OnEntryShown(this);
+}
+
+void SidePanelEntry::OnEntryWillHide(SidePanelEntryHideReason reason) {
+  for (SidePanelEntryObserver& observer : observers_) {
+    observer.OnEntryWillHide(this, reason);
+  }
 }
 
 void SidePanelEntry::OnEntryHidden() {

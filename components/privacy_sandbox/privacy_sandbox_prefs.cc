@@ -6,6 +6,7 @@
 
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
+#include "components/privacy_sandbox/privacy_sandbox_notice_storage.h"
 #include "components/privacy_sandbox/tracking_protection_prefs.h"
 
 namespace privacy_sandbox {
@@ -62,9 +63,13 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
       prefs::kPrivacySandboxTopicsConsentTextAtLastUpdate, "");
 #if BUILDFLAG(IS_ANDROID)
   registry->RegisterListPref(prefs::kPrivacySandboxActivityTypeRecord);
+  registry->RegisterListPref(prefs::kPrivacySandboxActivityTypeRecord2);
 #endif
   // Register prefs for tracking protection.
   tracking_protection::RegisterProfilePrefs(registry);
+
+  // Register prefs for the privacy sandbox notice storage system.
+  PrivacySandboxNoticeStorage::RegisterProfilePrefs(registry);
 }
 
 }  // namespace privacy_sandbox

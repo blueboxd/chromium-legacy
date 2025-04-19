@@ -82,9 +82,10 @@ class IsolatedWebAppUpdateDiscoveryTaskTest : public WebAppTest {
 
   GURL update_manifest_url_ = GURL("https://example.com/update_manifest.json");
 
-  GURL url_ = GURL(base::StrCat(
-      {chrome::kIsolatedAppScheme, url::kStandardSchemeSeparator,
-       kTestEd25519WebBundleId, "/.well-known/_generated_install_page.html"}));
+  GURL url_ = GURL(
+      base::StrCat({chrome::kIsolatedAppScheme, url::kStandardSchemeSeparator,
+                    test::GetDefaultEd25519WebBundleId().id(),
+                    "/.well-known/_generated_install_page.html"}));
   IsolatedWebAppUrlInfo url_info_ = *IsolatedWebAppUrlInfo::Create(url_);
 };
 
@@ -220,7 +221,8 @@ TEST_F(IsolatedWebAppUpdateDiscoveryTaskUpdateManifestTest,
           /*controlled_frame_partitions=*/{},
           WebApp::IsolationData::PendingUpdateInfo(
               IwaStorageOwnedBundle{"another_folder", /*dev_mode=*/false},
-              base::Version("2.0.0"))));
+              base::Version("2.0.0"), /*integrity_block_data=*/std::nullopt),
+          /*integrity_block_data=*/std::nullopt));
 
   profile_url_loader_factory().AddResponse(update_manifest_url_.spec(), R"(
     {
@@ -276,7 +278,6 @@ class IsolatedWebAppUpdateDiscoveryTaskPrepareUpdateTest
  protected:
   void SetUp() override {
     IsolatedWebAppUpdateDiscoveryTaskWebBundleDownloadTest::SetUp();
-
     SetTrustedWebBundleIdsForTesting({url_info_.web_bundle_id()});
   }
 
@@ -287,7 +288,8 @@ class IsolatedWebAppUpdateDiscoveryTaskPrepareUpdateTest
         profile(), url_info_.origin().GetURL(), "installed iwa",
         WebApp::IsolationData(installed_bundle_location_, installed_version,
                               /*controlled_frame_partitions=*/{},
-                              pending_update_info));
+                              pending_update_info,
+                              /*integrity_block_data=*/std::nullopt));
   }
 
   FakeWebContentsManager::FakePageState& CreateUpdateManifesteAndBundle(
@@ -340,9 +342,10 @@ class IsolatedWebAppUpdateDiscoveryTaskPrepareUpdateTest
   IsolatedWebAppStorageLocation installed_bundle_location_ =
       IwaStorageOwnedBundle{"old_folder", /*dev_mode=*/false};
 
-  GURL install_url_ = GURL(base::StrCat(
-      {chrome::kIsolatedAppScheme, url::kStandardSchemeSeparator,
-       kTestEd25519WebBundleId, "/.well-known/_generated_install_page.html"}));
+  GURL install_url_ = GURL(
+      base::StrCat({chrome::kIsolatedAppScheme, url::kStandardSchemeSeparator,
+                    test::GetDefaultEd25519WebBundleId().id(),
+                    "/.well-known/_generated_install_page.html"}));
   IsolatedWebAppUrlInfo url_info_ =
       *IsolatedWebAppUrlInfo ::Create(install_url_);
 };
@@ -365,13 +368,13 @@ TEST_F(IsolatedWebAppUpdateDiscoveryTaskPrepareUpdateTest, Fails) {
 
   const WebApp* web_app =
       fake_provider().registrar_unsafe().GetAppById(url_info_.app_id());
-  EXPECT_THAT(web_app,
-              test::IwaIs(Eq("installed iwa"),
-                          test::IsolationDataIs(
-                              Eq(installed_bundle_location_),
-                              Eq(base::Version("1.0.0")),
-                              /*controlled_frame_partitions=*/_,
-                              /*pending_update_info=*/Eq(std::nullopt))))
+  EXPECT_THAT(web_app, test::IwaIs(Eq("installed iwa"),
+                                   test::IsolationDataIs(
+                                       Eq(installed_bundle_location_),
+                                       Eq(base::Version("1.0.0")),
+                                       /*controlled_frame_partitions=*/_,
+                                       /*pending_update_info=*/Eq(std::nullopt),
+                                       /*integrity_block_data=*/_)))
       << task.AsDebugValue();
 }
 
@@ -401,7 +404,8 @@ TEST_F(IsolatedWebAppUpdateDiscoveryTaskPrepareUpdateTest, Succeeds) {
               test::PendingUpdateInfoIs(
                   Property("variant", &IsolatedWebAppStorageLocation::variant,
                            VariantWith<IwaStorageOwnedBundle>(_)),
-                  base::Version("3.0.0")))))
+                  base::Version("3.0.0"), /*integrity_block_data=*/_),
+              /*integrity_block_data=*/_)))
       << task.AsDebugValue();
 }
 
@@ -411,10 +415,11 @@ TEST_F(IsolatedWebAppUpdateDiscoveryTaskPrepareUpdateTest,
   // App database as a pending update, but the update manifest only contains
   // version 2 (i.e., version 3 was removed from the update manifest at some
   // point before that update had a chance to be applied).
-  InstallIwa(base::Version("1.0.0"),
-             WebApp::IsolationData::PendingUpdateInfo(
-                 IwaStorageOwnedBundle{"some_path", /*dev_mode=*/false},
-                 base::Version("3.0.0")));
+  InstallIwa(
+      base::Version("1.0.0"),
+      WebApp::IsolationData::PendingUpdateInfo(
+          IwaStorageOwnedBundle{"some_path", /*dev_mode=*/false},
+          base::Version("3.0.0"), /*integrity_block_data=*/std::nullopt));
   CreateUpdateManifesteAndBundle(base::Version("2.0.0"));
 
   Task task(update_manifest_url_, url_info_, fake_provider().scheduler(),
@@ -439,7 +444,9 @@ TEST_F(IsolatedWebAppUpdateDiscoveryTaskPrepareUpdateTest,
               test::PendingUpdateInfoIs(
                   Property("variant", &IsolatedWebAppStorageLocation::variant,
                            VariantWith<IwaStorageOwnedBundle>(_)),
-                  base::Version("2.0.0")))))
+                  base::Version("2.0.0"),
+                  /*integrity_block_data=*/_),
+              /*integrity_block_data=*/_)))
       << task.AsDebugValue();
 }
 

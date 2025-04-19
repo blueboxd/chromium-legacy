@@ -8,14 +8,13 @@
 #include <cstdint>
 
 #include "partition_alloc/address_pool_manager.h"
+#include "partition_alloc/buildflags.h"
 #include "partition_alloc/freeslot_bitmap.h"
 #include "partition_alloc/page_allocator.h"
 #include "partition_alloc/page_allocator_constants.h"
 #include "partition_alloc/partition_address_space.h"
 #include "partition_alloc/partition_alloc_base/bits.h"
 #include "partition_alloc/partition_alloc_base/compiler_specific.h"
-#include "partition_alloc/partition_alloc_base/debug/debugging_buildflags.h"
-#include "partition_alloc/partition_alloc_buildflags.h"
 #include "partition_alloc/partition_alloc_check.h"
 #include "partition_alloc/partition_alloc_constants.h"
 #include "partition_alloc/partition_alloc_forward.h"
@@ -36,18 +35,19 @@ void UnmapNow(uintptr_t reservation_start,
 PA_ALWAYS_INLINE void PartitionDirectUnmap(SlotSpanMetadata* slot_span) {
   auto* root = PartitionRoot::FromSlotSpanMetadata(slot_span);
   PartitionRootLock(root).AssertAcquired();
-  auto* extent = PartitionDirectMapExtent::FromSlotSpanMetadata(slot_span);
+  auto* extent =
+      ReadOnlyPartitionDirectMapExtent::FromSlotSpanMetadata(slot_span);
 
   // Maintain the doubly-linked list of all direct mappings.
   if (extent->prev_extent) {
     PA_DCHECK(extent->prev_extent->next_extent == extent);
-    extent->prev_extent->next_extent = extent->next_extent;
+    extent->prev_extent->ToWritable(root)->next_extent = extent->next_extent;
   } else {
     root->direct_map_list = extent->next_extent;
   }
   if (extent->next_extent) {
     PA_DCHECK(extent->next_extent->prev_extent == extent);
-    extent->next_extent->prev_extent = extent->prev_extent;
+    extent->next_extent->ToWritable(root)->prev_extent = extent->prev_extent;
   }
 
   // The actual decommit is deferred below after releasing the lock.
@@ -88,7 +88,9 @@ PA_ALWAYS_INLINE void SlotSpanMetadata::RegisterEmpty() {
   root->empty_slot_spans_dirty_bytes +=
       base::bits::AlignUp(GetProvisionedSize(), SystemPageSize());
 
-  ToSuperPageExtent()->DecrementNumberOfNonemptySlotSpans();
+  // TODO(crbug.com/40238514): SlotSpanMetadata::RegisterEmpty() will be
+  // WritableSlotSpanMetadata::RegisterEmpty(). So ToWritable() will be removed.
+  ToSuperPageExtent()->ToWritable(root)->DecrementNumberOfNonemptySlotSpans();
 
   // If the slot span is already registered as empty, don't do anything. This
   // prevents continually reusing a slot span from decommitting a bunch of other
@@ -178,7 +180,7 @@ void SlotSpanMetadata::FreeSlowPath(size_t number_of_freed) {
     // chances of it being filled up again. The old current slot span will be
     // the next slot span.
     PA_DCHECK(!next_slot_span);
-    if (PA_LIKELY(bucket->active_slot_spans_head != get_sentinel_slot_span())) {
+    if (bucket->active_slot_spans_head != get_sentinel_slot_span()) [[likely]] {
       next_slot_span = bucket->active_slot_spans_head;
     }
     bucket->active_slot_spans_head = this;
@@ -186,22 +188,22 @@ void SlotSpanMetadata::FreeSlowPath(size_t number_of_freed) {
     --bucket->num_full_slot_spans;
   }
 
-  if (PA_LIKELY(num_allocated_slots == 0)) {
+  if (num_allocated_slots == 0) [[likely]] {
     // Slot span became fully unused.
-    if (PA_UNLIKELY(bucket->is_direct_mapped())) {
+    if (bucket->is_direct_mapped()) [[unlikely]] {
       PartitionDirectUnmap(this);
       return;
     }
 
-#if PA_BUILDFLAG(PA_DCHECK_IS_ON)
+#if PA_BUILDFLAG(DCHECKS_ARE_ON)
     const PartitionFreelistDispatcher* freelist_dispatcher =
         PartitionRoot::FromSlotSpanMetadata(this)->get_freelist_dispatcher();
     freelist_dispatcher->CheckFreeList(freelist_head, bucket->slot_size);
-#endif  // PA_BUILDFLAG(PA_DCHECK_IS_ON)
+#endif  // PA_BUILDFLAG(DCHECKS_ARE_ON)
 
     // If it's the current active slot span, change it. We bounce the slot span
     // to the empty list as a force towards defragmentation.
-    if (PA_LIKELY(this == bucket->active_slot_spans_head)) {
+    if (this == bucket->active_slot_spans_head) [[likely]] {
       bucket->SetNewActiveSlotSpan();
     }
     PA_DCHECK(bucket->active_slot_spans_head != this);
@@ -311,13 +313,25 @@ void SlotSpanMetadata::SortFreelist() {
   freelist_is_sorted_ = true;
 }
 
+void SlotSpanMetadata::IncrementNumberOfNonemptySlotSpans() {
+  // TODO(crbug.com/40238514):
+  // SlotSpanMetadata::IncrementNumberOfNonemptySlotSpans() will be
+  // WritableSlotSpanMetadata::IncrementNumberOfNonemptySlotSpans(). So
+  // we will remove |root| and |ToWritable()| after introducing
+  // WritableSlotSpanMetadata.
+  auto* root = PartitionRoot::FromSlotSpanMetadata(this);
+  WritablePartitionSuperPageExtentEntry* extent =
+      ToSuperPageExtent()->ToWritable(root);
+  extent->IncrementNumberOfNonemptySlotSpans();
+}
+
 namespace {
 
 void UnmapNow(uintptr_t reservation_start,
               size_t reservation_size,
               pool_handle pool) {
   PA_DCHECK(reservation_start && reservation_size > 0);
-#if PA_BUILDFLAG(PA_DCHECK_IS_ON)
+#if PA_BUILDFLAG(DCHECKS_ARE_ON)
   // When ENABLE_BACKUP_REF_PTR_SUPPORT is off, BRP pool isn't used.
 #if PA_BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
   if (pool == kBRPPoolHandle) {
@@ -356,7 +370,7 @@ void UnmapNow(uintptr_t reservation_start,
               IsManagedByPartitionAllocConfigurablePool(reservation_start));
 #endif
   }
-#endif  // PA_BUILDFLAG(PA_DCHECK_IS_ON)
+#endif  // PA_BUILDFLAG(DCHECKS_ARE_ON)
 
   PA_DCHECK((reservation_start & kSuperPageOffsetMask) == 0);
   uintptr_t reservation_end = reservation_start + reservation_size;
@@ -382,6 +396,12 @@ void UnmapNow(uintptr_t reservation_start,
   // After resetting the table entries, unreserve and decommit the memory.
   AddressPoolManager::GetInstance().UnreserveAndDecommit(
       pool, reservation_start, reservation_size);
+
+#if PA_CONFIG(ENABLE_SHADOW_METADATA)
+  if (internal::PartitionAddressSpace::IsShadowMetadataEnabled(pool)) {
+    PartitionAddressSpace::UnmapShadowMetadata(reservation_start, pool);
+  }
+#endif
 }
 
 }  // namespace

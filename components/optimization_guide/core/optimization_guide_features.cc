@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/rand_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/to_string.h"
@@ -169,6 +170,16 @@ BASE_FEATURE(kTextSafetyRemoteFallback,
              "TextSafetyRemoteFallback",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Whether the on-device model validation checks are enabled.
+BASE_FEATURE(kOnDeviceModelValidation,
+             "OnDeviceModelValidation",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Whether the on-device model enables support_multiple_sessions
+BASE_FEATURE(kOnDeviceModelSupportMultipleSessions,
+             "OnDeviceModelSupportMultipleSessions",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // The default value here is a bit of a guess.
 // TODO(crbug.com/40163041): This should be tuned once metrics are available.
 base::TimeDelta PageTextExtractionOutstandingRequestsGracePeriod() {
@@ -289,6 +300,7 @@ bool IsModelQualityLoggingEnabledForFeature(UserVisibleFeatureKey key) {
     case UserVisibleFeatureKey::kCompose:
     case UserVisibleFeatureKey::kTabOrganization:
     case UserVisibleFeatureKey::kWallpaperSearch:
+    case UserVisibleFeatureKey::kHistorySearch:
       // Enable logging when you have approvals. For new features please
       // consult with components/optimization_guide/core/model_quality/OWNERS to
       // discuss if you need logging or not for your feature.
@@ -488,9 +500,14 @@ base::TimeDelta PredictionModelFetchInterval() {
       kOptimizationTargetPrediction, "fetch_interval_hours", 24));
 }
 
-base::TimeDelta PredictionModelNewRegistrationFetchDelay() {
-  return base::Seconds(GetFieldTrialParamByFeatureAsInt(
-      kOptimizationTargetPrediction, "new_registration_fetch_delay_secs", 30));
+base::TimeDelta PredictionModelNewRegistrationFetchRandomDelay() {
+  static const base::FeatureParam<base::TimeDelta> kMinDelay{
+      &kOptimizationTargetPrediction, "new_registration_fetch_min_delay",
+      base::Seconds(5)};
+  static const base::FeatureParam<base::TimeDelta> kMaxDelay{
+      &kOptimizationTargetPrediction, "new_registration_fetch_max_delay",
+      base::Seconds(10)};
+  return base::RandTimeDelta(kMinDelay.Get(), kMaxDelay.Get());
 }
 
 bool IsModelExecutionWatchdogEnabled() {
@@ -616,6 +633,10 @@ base::TimeDelta GetOnDeviceModelIdleTimeout() {
   return kOnDeviceModelServiceIdleTimeout.Get();
 }
 
+bool GetOnDeviceModelSupportMultipleSessions() {
+  return base::FeatureList::IsEnabled(kOnDeviceModelSupportMultipleSessions);
+}
+
 base::TimeDelta GetOnDeviceModelExecutionValidationStartupDelay() {
   static const base::FeatureParam<base::TimeDelta>
       kOnDeviceModelExecutionValidationStartupDelay{
@@ -726,6 +747,12 @@ bool IsOnDeviceExecutionEnabled() {
          base::FeatureList::IsEnabled(kOptimizationGuideOnDeviceModel);
 }
 
+base::TimeDelta GetOnDeviceEligibleModelFeatureRecentUsePeriod() {
+  return base::GetFieldTrialParamByFeatureAsTimeDelta(
+      kOptimizationGuideOnDeviceModel,
+      "on_device_model_feature_recent_use_period", base::Days(30));
+}
+
 base::TimeDelta GetOnDeviceModelRetentionTime() {
   return base::GetFieldTrialParamByFeatureAsTimeDelta(
       kOptimizationGuideOnDeviceModel, "on_device_model_retention_time",
@@ -804,6 +831,13 @@ int GetOnDeviceModelDefaultTopK() {
   return kTopK.Get();
 }
 
+int GetOnDeviceModelMaxTopK() {
+  static const base::FeatureParam<int> kMaxTopK{
+      &optimization_guide::features::kOptimizationGuideOnDeviceModel,
+      "on_device_model_max_topk", 128};
+  return kMaxTopK.Get();
+}
+
 double GetOnDeviceModelDefaultTemperature() {
   static const base::FeatureParam<double> kTemperature{
       &kOptimizationGuideOnDeviceModel, "on_device_model_temperature", 0.8};
@@ -827,6 +861,37 @@ std::vector<uint32_t> GetOnDeviceModelAllowedAdaptationRanks() {
     }
   }
   return ranks;
+}
+
+bool IsOnDeviceModelValidationEnabled() {
+  return base::FeatureList::IsEnabled(kOnDeviceModelValidation);
+}
+
+bool ShouldOnDeviceModelBlockOnValidationFailure() {
+  static const base::FeatureParam<bool> kParam{
+      &kOnDeviceModelValidation, "on_device_model_block_on_validation_failure",
+      false};
+  return kParam.Get();
+}
+
+bool ShouldOnDeviceModelClearValidationOnVersionChange() {
+  static const base::FeatureParam<bool> kParam{
+      &kOnDeviceModelValidation,
+      "on_device_model_clear_validation_on_version_change", false};
+  return kParam.Get();
+}
+
+base::TimeDelta GetOnDeviceModelValidationDelay() {
+  static const base::FeatureParam<base::TimeDelta> kParam{
+      &kOnDeviceModelValidation, "on_device_model_validation_delay",
+      base::Seconds(30)};
+  return kParam.Get();
+}
+
+int GetOnDeviceModelValidationAttemptCount() {
+  static const base::FeatureParam<int> kParam{
+      &kOnDeviceModelValidation, "on_device_model_validation_attempt_count", 3};
+  return kParam.Get();
 }
 
 }  // namespace features

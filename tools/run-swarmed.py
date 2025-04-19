@@ -76,6 +76,9 @@ def _DoSpawn(args):
       '-dump-json',
       json_file,
       '-tag=purpose:user-debug-run-swarmed',
+      # 30 is try level. So use the same here.
+      '-priority',
+      '30',
   ]
   if args.target_os == 'fuchsia':
     trigger_args += [
@@ -93,10 +96,11 @@ def _DoSpawn(args):
       # run on emulators when building for x86 on Android.
       args.swarming_os = 'Linux'
       args.pool = 'chromium.tests.avd'
-      # generic_android28 == Android P emulator. See //tools/android/avd/proto/
-      # for other options.
+      # android_28_google_apis_x86 == Android P emulator.
+      # See //tools/android/avd/proto/ for other options.
       runner_args.append(
-          '--avd-config=../../tools/android/avd/proto/generic_android28.textpb')
+          '--avd-config=../../tools/android/avd/proto/android_28_google_apis_x86.textpb'
+      )
     elif args.device_type is None and args.device_os is None:
       # The aliases for device type are stored here:
       # luci/appengine/swarming/ui2/modules/alias.js

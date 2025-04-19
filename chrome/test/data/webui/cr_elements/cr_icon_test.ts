@@ -6,11 +6,12 @@ import '//resources/polymer/v3_0/iron-iconset-svg/iron-iconset-svg.js';
 import '//resources/cr_elements/cr_icon/cr_icon.js';
 import '//resources/cr_elements/cr_icon/cr_iconset.js';
 import '//resources/cr_elements/icons.html.js';
+import './cr_icon_instrumented.js';
 
 import type {CrIconElement} from '//resources/cr_elements/cr_icon/cr_icon.js';
 import {getTrustedHTML} from '//resources/js/static_types.js';
 import {html} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {assertEquals, assertNotReached, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {microtasksFinished} from 'chrome://webui-test/test_util.js';
 
 suite('cr-icon', function() {
@@ -66,29 +67,6 @@ suite('cr-icon', function() {
     assertSvgPath(svgs[0]!, 'M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z');
   });
 
-  // Tests that cr-icons can successfully update using iron-iconset added to
-  // the document after the icon is attached.
-  test('iron-iconset added later', async () => {
-    icon.icon = 'test:print';
-    await microtasksFinished();
-    let svg = icon.shadowRoot!.querySelector('svg');
-    assertFalse(!!svg);
-
-    // Add the iron-iconset to the document.
-    const template = html`<iron-iconset-svg id="test" name="test" size="24">
-      <svg>
-        <defs>
-          <g id="print"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"></path></g>
-        </defs>
-      </svg>
-    </iron-iconset-svg>
-    `;
-    document.head.appendChild(template.content);
-    await microtasksFinished();
-    svg = icon.shadowRoot!.querySelector('svg');
-    assertTrue(!!svg);
-  });
-
   test('cr-iconset', async () => {
     icon.icon = 'cr-test:arrow-drop-up';
     await microtasksFinished();
@@ -101,28 +79,6 @@ suite('cr-icon', function() {
     svgs = icon.shadowRoot!.querySelectorAll('svg');
     assertEquals(1, svgs.length);
     assertSvgPath(svgs[0]!, 'M7 10l5 5 5-5z');
-  });
-
-  test('cr-iconset added later', async () => {
-    icon.icon = 'cr-test-late:print';
-    await microtasksFinished();
-    let svg = icon.shadowRoot!.querySelector('svg');
-    assertFalse(!!svg);
-
-    const div = document.createElement('div');
-    div.innerHTML = getTrustedHTML`
-      <cr-iconset name="cr-test-late" size="24">
-        <svg>
-          <defs>
-            <g id="print"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"></path></g>
-          </defs>
-        </svg>
-      </cr-iconset>`;
-    document.head.appendChild(div.querySelector('cr-iconset')!);
-
-    await microtasksFinished();
-    svg = icon.shadowRoot!.querySelector('svg');
-    assertTrue(!!svg);
   });
 
   test('cr-iconset used rather than iron-iconset', async () => {
@@ -159,5 +115,37 @@ suite('cr-icon', function() {
 
     // Confirm the cr-iconset value.
     assertSvgPath(svg, 'M7 14l5-5 5 5z');
+  });
+
+  test('ThrowsErrorOnUnknownIconset', async () => {
+    // Using a subclass of cr-icon which is instrumented to report errors in the
+    // updated() lifecycle callback method, for the purposes of this test. It is
+    // still exercising the relevant codepath in cr-icon itself.
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
+    const element = document.createElement('cr-icon-instrumented');
+    document.body.appendChild(element);
+
+    async function assertThrows(icon: string) {
+      element.icon = icon;
+      await microtasksFinished();
+
+      try {
+        await element.updatedComplete;
+        assertNotReached('Should have thrown');
+      } catch (e: any) {
+        assertEquals(
+            `Assertion failed: Could not find iconset for: '${icon}'`,
+            (e as Error).message);
+      }
+    }
+
+    // Check that errors are repored as expected.
+    await assertThrows('does-not-exist:foo');
+    await assertThrows('does-not-exist:bar');
+
+    // Check that existing icons still work.
+    element.icon = 'cr:chevron-right';
+    await microtasksFinished();
+    await element.updatedComplete;
   });
 });

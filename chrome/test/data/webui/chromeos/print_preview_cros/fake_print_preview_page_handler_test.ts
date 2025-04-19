@@ -4,14 +4,18 @@
 
 import 'chrome://os-print/js/fakes/fake_print_preview_page_handler.js';
 
+import {DEFAULT_PARTIAL_PRINT_TICKET} from 'chrome://os-print/js/data/ticket_constants.js';
 import {getFakePreviewTicket} from 'chrome://os-print/js/fakes/fake_data.js';
 import {FAKE_PRINT_REQUEST_FAILURE_INVALID_SETTINGS_ERROR, FAKE_PRINT_REQUEST_SUCCESSFUL, FAKE_PRINT_SESSION_CONTEXT_SUCCESSFUL, FakePrintPreviewPageHandler} from 'chrome://os-print/js/fakes/fake_print_preview_page_handler.js';
+import type {PrintTicket} from 'chrome://os-print/js/utils/print_preview_cros_app_types.js';
 import {assert} from 'chrome://resources/js/assert.js';
 import {assertEquals} from 'chrome://webui-test/chromeos/chai_assert.js';
 import {MockController} from 'chrome://webui-test/chromeos/mock_controller.m.js';
 
 suite('FakePrintPreviewPageHandler', () => {
   let printPreviewPageHandler: FakePrintPreviewPageHandler;
+
+  const ticket = {...DEFAULT_PARTIAL_PRINT_TICKET} as PrintTicket;
 
   setup(() => {
     printPreviewPageHandler = new FakePrintPreviewPageHandler();
@@ -28,9 +32,9 @@ suite('FakePrintPreviewPageHandler', () => {
   // Verify the fake PrintPreviewPageHandler returns a successful response by
   // default.
   test('default fake print request result return successful', async () => {
-    const result = await printPreviewPageHandler.print();
+    const result = await printPreviewPageHandler.print(ticket);
     assertEquals(
-        FAKE_PRINT_REQUEST_SUCCESSFUL, result,
+        FAKE_PRINT_REQUEST_SUCCESSFUL, result.printRequestOutcome,
         `Print request should be successful`);
   });
 
@@ -39,8 +43,10 @@ suite('FakePrintPreviewPageHandler', () => {
   test('can set print request result', async () => {
     printPreviewPageHandler.setPrintResult(
         FAKE_PRINT_REQUEST_FAILURE_INVALID_SETTINGS_ERROR);
-    const result = await printPreviewPageHandler.print();
-    assertEquals(FAKE_PRINT_REQUEST_FAILURE_INVALID_SETTINGS_ERROR, result);
+    const result = await printPreviewPageHandler.print(ticket);
+    assertEquals(
+        FAKE_PRINT_REQUEST_FAILURE_INVALID_SETTINGS_ERROR,
+        result.printRequestOutcome);
   });
 
   // Verify the fake PrintPreviewPageHandler cancel increases counter.
@@ -59,7 +65,7 @@ suite('FakePrintPreviewPageHandler', () => {
         mockController.createFunctionMock(methods, 'resolveMethodWithDelay');
     const delay = 0;
     resolveNoDelay.addExpectation('print', delay);
-    await printPreviewPageHandler.print();
+    await printPreviewPageHandler.print(ticket);
 
     mockController.verifyMocks();
     mockController.reset();
@@ -77,7 +83,7 @@ suite('FakePrintPreviewPageHandler', () => {
         const delay = 1;
         resolveWithDelay.addExpectation('print', delay);
         printPreviewPageHandler.setTestDelay(delay);
-        await printPreviewPageHandler.print();
+        await printPreviewPageHandler.print(ticket);
 
         mockController.verifyMocks();
         mockController.reset();
@@ -86,8 +92,8 @@ suite('FakePrintPreviewPageHandler', () => {
   // Verify the fake PrintPreviewHandler returns a successful SessionContext by
   // default.
   test('start session returns SessionContext', async () => {
-    const result = await printPreviewPageHandler.startSession();
-    assertEquals(FAKE_PRINT_SESSION_CONTEXT_SUCCESSFUL, result);
+    const result = await printPreviewPageHandler.startSession('fake-token');
+    assertEquals(FAKE_PRINT_SESSION_CONTEXT_SUCCESSFUL, result.sessionContext);
   });
 
   // Verify the fake PrintPreviewPageHandler correctly sets the preview ticket

@@ -30,6 +30,7 @@ import androidx.browser.customtabs.CustomTabsSessionToken;
 import androidx.browser.customtabs.EngagementSignalsCallback;
 import androidx.browser.customtabs.ExperimentalMinimizationCallback;
 import androidx.browser.customtabs.PostMessageServiceConnection;
+import androidx.browser.customtabs.PrefetchOptions;
 
 import org.jni_zero.CalledByNative;
 import org.jni_zero.JNINamespace;
@@ -84,7 +85,6 @@ import org.chromium.chrome.browser.ui.google_bottom_bar.proto.IntentParams.Googl
 import org.chromium.components.content_settings.CookieControlsMode;
 import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.components.embedder_support.util.UrlConstants;
-import org.chromium.components.externalauth.ExternalAuthUtils;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.components.variations.SyntheticTrialAnnotationMode;
 import org.chromium.content_public.browser.BrowserStartupController;
@@ -165,6 +165,12 @@ public class CustomTabsConnection {
     private static final String ON_RESIZED_CALLBACK = "onResized";
     private static final String ON_RESIZED_SIZE_EXTRA = "size";
 
+    @VisibleForTesting
+    static final String IS_EPHEMERAL_BROWSING_SUPPORTED = "isEphemeralBrowsingSupported";
+
+    @VisibleForTesting
+    static final String EPHEMERAL_BROWSING_SUPPORTED_KEY = "ephemeralBrowsingSupported";
+
     @VisibleForTesting static final String ON_ACTIVITY_LAYOUT_CALLBACK = "onActivityLayout";
     @VisibleForTesting static final String ON_ACTIVITY_LAYOUT_LEFT_EXTRA = "left";
     @VisibleForTesting static final String ON_ACTIVITY_LAYOUT_TOP_EXTRA = "top";
@@ -235,10 +241,13 @@ public class CustomTabsConnection {
     @Nullable private List<String> mDynamicEnabledFeatures;
     @Nullable private List<String> mDynamicDisabledFeatures;
 
+    // Async tab prewarming can cause flakiness in tests when it runs after test shutdown and
+    // triggers LifetimeAsserts.
+    @VisibleForTesting public static boolean sSkipTabPrewarmingForTesting;
+
     /**
-     * <strong>DO NOT CALL</strong>
-     * Public to be instanciable from {@link ChromeApplicationImpl}. This is however
-     * intended to be private.
+     * <strong>DO NOT CALL</strong> Public to be instanciable from {@link ChromeApplicationImpl}.
+     * This is however intended to be private.
      */
     public CustomTabsConnection() {
         super();
@@ -657,6 +666,50 @@ public class CustomTabsConnection {
         return true;
     }
 
+    @androidx.browser.customtabs.ExperimentalPrefetch
+    public boolean prefetch(
+            CustomTabsSessionToken session, Uri uri, @Nullable PrefetchOptions options) {
+        try (TraceEvent e = TraceEvent.scoped("CustomTabsConnection.prefetch")) {
+            if (!ChromeFeatureList.sPrefetchBrowserInitiatedTriggers.isEnabled()
+                    || !ChromeFeatureList.sCctNavigationalPrefetch.isEnabled()) {
+                return false;
+            }
+            return prefetchInternal(session, uri, options);
+        }
+    }
+
+    @androidx.browser.customtabs.ExperimentalPrefetch
+    private boolean prefetchInternal(
+            CustomTabsSessionToken session, Uri uri, PrefetchOptions options) {
+        String uriString = isValid(uri) ? uri.toString() : null;
+        if (uriString == null) return false;
+
+        boolean usePrefetchProxy = options.requiresAnonymousIpWhenCrossOrigin;
+        String verifiedSourceOrigin =
+                verifySourceOriginOfPrefetch(session, options.sourceOrigin)
+                        ? options.sourceOrigin.toString()
+                        : null;
+        PostTask.postTask(
+                TaskTraits.UI_DEFAULT,
+                () -> {
+                    WarmupManager.getInstance()
+                            .startPrefetchFromCCT(
+                                    uriString, usePrefetchProxy, verifiedSourceOrigin);
+                });
+        return true;
+    }
+
+    @VisibleForTesting
+    @androidx.browser.customtabs.ExperimentalPrefetch
+    boolean verifySourceOriginOfPrefetch(
+            CustomTabsSessionToken session, @Nullable Uri rawSourceOrigin) {
+        if (rawSourceOrigin == null) return false;
+        String sourceOriginString = rawSourceOrigin.toString();
+        Origin sourceOrigin = Origin.create(sourceOriginString);
+        return sourceOrigin != null
+                && mClientManager.isFirstPartyOriginForSession(session, sourceOrigin);
+    }
+
     private void enableExperimentIdsIfNecessary(Bundle extras) {
         ThreadUtils.assertOnUiThread();
         if (extras == null) return;
@@ -719,6 +772,13 @@ public class CustomTabsConnection {
      * @return The result {@link Bundle}, or null.
      */
     public @Nullable Bundle extraCommand(String commandName, Bundle args) {
+        if (commandName.equals(IS_EPHEMERAL_BROWSING_SUPPORTED)) {
+            var bundle = new Bundle();
+            bundle.putBoolean(
+                    EPHEMERAL_BROWSING_SUPPORTED_KEY,
+                    ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_EPHEMERAL_MODE));
+            return bundle;
+        }
         return null;
     }
 
@@ -1224,10 +1284,14 @@ public class CustomTabsConnection {
         return mClientManager.getClientPackageNameForSession(session);
     }
 
-    /** @return Whether the given package name is that of a first-party application. */
+    /**
+     * @return Whether the given package name is that of a first-party application.
+     */
     public boolean isFirstParty(String packageName) {
         if (packageName == null) return false;
-        return ExternalAuthUtils.getInstance().isGoogleSigned(packageName);
+        return ChromeApplicationImpl.getComponent()
+                .resolveExternalAuthUtils()
+                .isGoogleSigned(packageName);
     }
 
     void setIgnoreUrlFragmentsForSession(CustomTabsSessionToken session, boolean value) {
@@ -1443,12 +1507,14 @@ public class CustomTabsConnection {
 
     /**
      * Does setup of dynamic experiment features that can be enabled/disabled via an Intent.
+     *
      * @param intent The {@link Intent} that is active, to be scanned for enable/disable Extras.
      * @return Whether the setup will actually change the active feature set.
      */
     boolean setupDynamicFeatures(Intent intent) {
+        CustomTabsSessionToken session = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
         if (!mIsDynamicIntentFeatureOverridesEnabled
-                || (!IncognitoCustomTabIntentDataProvider.isIntentFromFirstParty(intent)
+                || (!CustomTabIntentDataProvider.isTrustedCustomTab(intent, session)
                         && !CommandLine.getInstance()
                                 .hasSwitch("cct-client-firstparty-override"))) {
             return false;
@@ -1942,8 +2008,9 @@ public class CustomTabsConnection {
     }
 
     public static void createSpareWebContents(Profile profile) {
+        if (sSkipTabPrewarmingForTesting) return;
         if (SysUtils.isLowEndDevice()) return;
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_PREWARM_TAB)) {
+        if (WarmupManager.getInstance().isCCTPrewarmTabFeatureEnabled(true)) {
             WarmupManager.getInstance().createRegularSpareTab(profile);
         } else {
             WarmupManager.getInstance().createSpareWebContents(profile);

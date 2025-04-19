@@ -7,7 +7,7 @@
 #include "base/functional/callback_helpers.h"
 #include "base/run_loop.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
-#include "content/browser/service_worker/service_worker_container_host.h"
+#include "content/browser/service_worker/service_worker_client.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_main_resource_handle.h"
@@ -118,10 +118,13 @@ TEST_F(WorkerScriptLoaderFactoryTest, ServiceWorkerContainerHost) {
 
   // Emulate CommitResponse() and SetContainerReady() calls that would happen
   // inside `WorkerScriptFetcher::callback_`.
-  service_worker_client->CommitResponse(
-      /*rfh_id=*/std::nullopt, PolicyContainerPolicies(),
-      /*coep_reporter=*/{}, ukm::kInvalidSourceId);
-  service_worker_client->SetContainerReady();
+  auto container_info =
+      service_worker_handle_->scoped_service_worker_client()
+          ->CommitResponseAndRelease(
+              /*rfh_id=*/std::nullopt, PolicyContainerPolicies(),
+              /*coep_reporter=*/{}, ukm::kInvalidSourceId);
+  (*service_worker_handle_->scoped_service_worker_client())
+      ->SetContainerReady();
   factory->GetScriptLoader()->OnFetcherCallbackCalled();
   client.RunUntilComplete();
 

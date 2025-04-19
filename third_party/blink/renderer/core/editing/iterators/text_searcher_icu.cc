@@ -25,6 +25,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/core/editing/iterators/text_searcher_icu.h"
 
 #include <unicode/usearch.h>
@@ -220,7 +225,7 @@ bool TextSearcherICU::IsCorrectKanaMatch(const UChar* text,
                                  normalized_match);
   return CheckOnlyKanaLettersInStrings(
       normalized_search_text_.data(), normalized_search_text_.size(),
-      normalized_match.begin(), normalized_match.size());
+      normalized_match.data(), normalized_match.size());
 }
 
 void TextSearcherICU::SetPattern(const UChar* pattern, wtf_size_t length) {

@@ -6,12 +6,14 @@
 
 #include "base/allocator/dispatcher/dispatcher.h"
 #include "base/allocator/dispatcher/initializer.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_buildflags.h"
+#include "base/debug/crash_logging.h"
 #include "base/debug/debugging_buildflags.h"
 #include "build/build_config.h"
 #include "components/gwp_asan/buildflags/buildflags.h"
 #include "components/memory_system/buildflags.h"
+#include "components/memory_system/memory_system_features.h"
 #include "components/memory_system/parameters.h"
+#include "partition_alloc/buildflags.h"
 #include "third_party/abseil-cpp/absl/base/attributes.h"
 
 #if BUILDFLAG(ENABLE_GWP_ASAN)
@@ -22,10 +24,10 @@
 #endif
 
 #if BUILDFLAG(IS_IOS) && PA_BUILDFLAG(USE_ALLOCATOR_SHIM)
-#include "base/allocator/partition_allocator/src/partition_alloc/shim/allocator_interception_apple.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/shim/allocator_shim.h"
 #include "base/ios/ios_util.h"
 #include "base/metrics/histogram_functions.h"
+#include "partition_alloc/shim/allocator_interception_apple.h"
+#include "partition_alloc/shim/allocator_shim.h"
 #endif
 
 // HeapProfilerController's dependencies are not compiled on iOS unless
@@ -282,17 +284,17 @@ bool MemorySystem::Impl::DispatcherIncludesPoissonAllocationSampler(
 #if BUILDFLAG(ENABLE_ALLOCATION_STACK_TRACE_RECORDER)
 bool MemorySystem::Impl::DispatcherIncludesAllocationTraceRecorder(
     const DispatcherParameters& dispatcher_parameters) {
+#if BUILDFLAG(FORCE_ALLOCATION_TRACE_RECORDER)
+  return true;
+#else
   switch (dispatcher_parameters.allocation_trace_recorder_inclusion) {
     case DispatcherParameters::AllocationTraceRecorderInclusion::kDynamic:
-#if BUILDFLAG( \
-    TREAT_DYNAMIC_INCLUSION_OF_ALLOCATION_RECORDER_AS_FORCED_INCLUSION)
-      return true;
-#else
-      return base::CPU::GetInstanceNoAllocation().has_mte();
-#endif
+      return base::CPU::GetInstanceNoAllocation().has_mte() &&
+             base::FeatureList::IsEnabled(features::kAllocationTraceRecorder);
     case DispatcherParameters::AllocationTraceRecorderInclusion::kIgnore:
       return false;
   }
+#endif
 }
 #endif
 
@@ -314,37 +316,35 @@ void MemorySystem::Impl::InitializeDispatcher(
 #endif
 
 #if BUILDFLAG(ENABLE_ALLOCATION_STACK_TRACE_RECORDER)
-  allocation_recording_.recorder =
-      new base::debug::tracer::AllocationTraceRecorder();
-
-  // Always initialize the crash client. This way it is always present in the
-  // crashpad report. The actual content will depend on further inclusion into
-  // the dispatcher.
-  allocation_recorder::crash_client::RegisterRecorderWithCrashpad(
-      *allocation_recording_.recorder);
-
   const bool include_allocation_recorder =
       DispatcherIncludesAllocationTraceRecorder(dispatcher_parameters);
 
-  base::debug::tracer::AllocationTraceRecorder* allocation_recorder_to_include =
-      nullptr;
+  static auto* const crash_key = base::debug::AllocateCrashKeyString(
+      "allocation_trace_recorder", base::debug::CrashKeySize::Size32);
+  base::debug::SetCrashKeyString(
+      crash_key, include_allocation_recorder ? "enabled" : "disabled");
 
   if (include_allocation_recorder) {
-    allocation_recorder_to_include = allocation_recording_.recorder;
+    allocation_recording_.recorder =
+        new base::debug::tracer::AllocationTraceRecorder();
+
+    allocation_recorder::crash_client::RegisterRecorderWithCrashpad(
+        *allocation_recording_.recorder);
+
 #if BUILDFLAG(ENABLE_ALLOCATION_TRACE_RECORDER_FULL_REPORTING)
     allocation_recording_.reporting = {
         *allocation_recording_.recorder, dispatcher_parameters.process_type,
         base::Seconds(15), logging::LOGGING_ERROR};
 #endif
   }
-#endif
+#endif  // BUILDFLAG(ENABLE_ALLOCATION_STACK_TRACE_RECORDER)
 
   base::allocator::dispatcher::CreateInitializer()
 #if HEAP_PROFILING_SUPPORTED
       .AddOptionalObservers(poisson_allocation_sampler)
 #endif
 #if BUILDFLAG(ENABLE_ALLOCATION_STACK_TRACE_RECORDER)
-      .AddOptionalObservers(allocation_recorder_to_include)
+      .AddOptionalObservers(allocation_recording_.recorder.get())
 #endif
       .DoInitialize(base::allocator::dispatcher::Dispatcher::GetInstance());
 }

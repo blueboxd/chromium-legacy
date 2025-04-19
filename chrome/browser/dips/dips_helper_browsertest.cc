@@ -20,7 +20,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/dips/dips_bounce_detector.h"
 #include "chrome/browser/dips/dips_service.h"
-#include "chrome/browser/dips/dips_service_factory.h"
 #include "chrome/browser/dips/dips_storage.h"
 #include "chrome/browser/dips/dips_test_utils.h"
 #include "chrome/browser/dips/dips_utils.h"
@@ -63,8 +62,7 @@ class DIPSTabHelperBrowserTest : public PlatformBrowserTest,
  protected:
   void SetUp() override {
     std::vector<base::test::FeatureRefAndParams> enabled_features;
-    std::vector<base::test::FeatureRef> disabled_features = {
-        kDipsPrepopulation};
+    std::vector<base::test::FeatureRef> disabled_features;
     if (IsPersistentStorageEnabled()) {
       enabled_features.push_back(
           {features::kDIPS,
@@ -139,8 +137,8 @@ class DIPSTabHelperBrowserTest : public PlatformBrowserTest,
 
   void EndRedirectChain() {
     WebContents* web_contents = GetActiveWebContents();
-    DIPSService* dips_service = DIPSServiceFactory::GetForBrowserContext(
-        web_contents->GetBrowserContext());
+    DIPSServiceImpl* dips_service =
+        DIPSServiceImpl::Get(web_contents->GetBrowserContext());
     GURL expected_url = web_contents->GetLastCommittedURL();
 
     RedirectChainObserver chain_observer(dips_service, expected_url);
@@ -455,149 +453,6 @@ IN_PROC_BROWSER_TEST_P(DIPSTabHelperBrowserTest,
 
 INSTANTIATE_TEST_SUITE_P(All, DIPSTabHelperBrowserTest, ::testing::Bool());
 
-// TODO(crbug.com/40488499): Android does not support PRE_ tests.
-#if !BUILDFLAG(IS_ANDROID)
-class DIPSPrepopulateTest : public PlatformBrowserTest {
- public:
-  void SetUp() override {
-    if (content::IsPreTest() && GetTestPreCount() % 2 != 0) {
-      // Alternate between disabling and enabling DIPS in `PRE_` tests.
-      // Only disable explicitly since the feature is on by default.
-      feature_list_.InitAndDisableFeature(features::kDIPS);
-    } else {
-      feature_list_.InitWithFeaturesAndParameters(
-          /*enabled_features=*/{{features::kDIPS,
-                                 {{"persist_database", "true"}}},
-                                {kDipsPrepopulation, {}}},
-          /*disabled_features=*/{});
-    }
-
-    PlatformBrowserTest::SetUp();
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    // Prevents flakiness by handling clicks even before content is drawn.
-    command_line->AppendSwitch(blink::switches::kAllowPreCommitInput);
-  }
-
-  void SetUpOnMainThread() override {
-    ASSERT_TRUE(embedded_test_server()->Start());
-    host_resolver()->AddRule("a.test", "127.0.0.1");
-    host_resolver()->AddRule("b.test", "127.0.0.1");
-    host_resolver()->AddRule("c.test", "127.0.0.1");
-    dips_service = GetDipsService(GetActiveWebContents());
-    if (dips_service) {
-      dips_service->WaitForInitCompleteForTesting(PassKey());
-    }
-  }
-
-  WebContents* GetActiveWebContents() {
-    return chrome_test_utils::GetActiveWebContents(this);
-  }
-
- protected:
-  void FlushLossyWebsiteSettings() {
-    HostContentSettingsMapFactory::GetForProfile(
-        GetActiveWebContents()->GetBrowserContext())
-        ->FlushLossyWebsiteSettings();
-  }
-
-  base::PassKey<DIPSPrepopulateTest> PassKey() { return {}; }
-
-  raw_ptr<DIPSService, DanglingUntriaged> dips_service;
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(DIPSPrepopulateTest, PRE_PrepopulateTest) {
-  ASSERT_EQ(dips_service, nullptr);  // Verify that DIPS is off.
-  // Simulate the user typing the URL to visit the page, which will record site
-  // engagement.
-  ASSERT_TRUE(ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
-      browser(), embedded_test_server()->GetURL("c.test", "/title1.html"), 1));
-  FlushLossyWebsiteSettings();
-}
-
-IN_PROC_BROWSER_TEST_F(DIPSPrepopulateTest, PrepopulateTest) {
-  ASSERT_NE(dips_service, nullptr);  // Verify that DIPS is on.
-  // Since there was previous site engagement, the DIPS DB should be
-  // prepopulated with a user interaction timestamp.
-  auto state = GetDIPSState(GetDipsService(GetActiveWebContents()),
-                            GURL("http://c.test"));
-  ASSERT_TRUE(state.has_value());
-  EXPECT_TRUE(state->user_interaction_times.has_value());
-}
-
-IN_PROC_BROWSER_TEST_F(DIPSPrepopulateTest, PRE_PrepopulateOTRTest) {
-  ASSERT_EQ(dips_service, nullptr);  // Verify that DIPS is off.
-  // Simulate the user typing the URL to visit the page, which will record site
-  // engagement.
-  ASSERT_TRUE(ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
-      browser(), embedded_test_server()->GetURL("c.test", "/title1.html"), 1));
-  FlushLossyWebsiteSettings();
-}
-
-IN_PROC_BROWSER_TEST_F(DIPSPrepopulateTest, PrepopulateOTRTest) {
-  ASSERT_NE(dips_service, nullptr);  // Verify that DIPS is on.
-  // Even though there was previous site engagement in the regular profile, the
-  // DIPS storage should not be prepopulated with a user interaction timestamp
-  // in the OTR profile.
-  Browser* incognito_browser = Browser::Create(Browser::CreateParams(
-      browser()->profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true),
-      /*user_gesture=*/true));
-
-  DIPSServiceFactory::GetForBrowserContext(incognito_browser->profile())
-      ->WaitForInitCompleteForTesting(PassKey());
-  std::optional<StateValue> state = GetDIPSState(
-      DIPSServiceFactory::GetForBrowserContext(incognito_browser->profile()),
-      GURL("http://c.test"));
-  EXPECT_FALSE(state.has_value());
-}
-
-IN_PROC_BROWSER_TEST_F(DIPSPrepopulateTest,
-                       PRE_PRE_PRE_PrepopulateExactlyOnce) {
-  ASSERT_EQ(dips_service, nullptr);  // Verify that DIPS is off.
-  // Record site engagement on a.test.
-  ASSERT_TRUE(ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
-      browser(), embedded_test_server()->GetURL("a.test", "/title1.html"), 1));
-  FlushLossyWebsiteSettings();
-}
-
-IN_PROC_BROWSER_TEST_F(DIPSPrepopulateTest, PRE_PRE_PrepopulateExactlyOnce) {
-  // Verify that a.test is prepopulated with the earlier interaction.
-  auto state = GetDIPSState(GetDipsService(GetActiveWebContents()),
-                            GURL("http://a.test"));
-  ASSERT_TRUE(state.has_value());
-  EXPECT_TRUE(state->user_interaction_times.has_value());
-}
-
-IN_PROC_BROWSER_TEST_F(DIPSPrepopulateTest, PRE_PrepopulateExactlyOnce) {
-  ASSERT_EQ(dips_service, nullptr);  // Verify that DIPS is off.
-  // Record site engagement on b.test.
-  ASSERT_TRUE(ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
-      browser(), embedded_test_server()->GetURL("b.test", "/title1.html"), 1));
-  FlushLossyWebsiteSettings();
-}
-
-// TODO (crbug.com/1418692): Rework this test to work without enabling and
-// disabling the DIPS feature, as opening a profile with the feature disabled
-// now causes any existing db files it has to be removed.
-IN_PROC_BROWSER_TEST_F(DIPSPrepopulateTest, DISABLED_PrepopulateExactlyOnce) {
-  ASSERT_NE(dips_service, nullptr);  // Verify that DIPS is on.
-  // Only the sites that were prepopulated the first time is in the database.
-  auto a_state = GetDIPSState(GetDipsService(GetActiveWebContents()),
-                              GURL("http://a.test"));
-  ASSERT_TRUE(a_state.has_value());
-  EXPECT_TRUE(a_state->user_interaction_times.has_value());
-
-  auto b_state = GetDIPSState(GetDipsService(GetActiveWebContents()),
-                              GURL("http://b.test"));
-  EXPECT_FALSE(b_state.has_value());
-}
-
-#endif  // !BUILDFLAG(IS_ANDROID)
-
 // Makes a long URL involving several stateful stateful bounces on b.test,
 // ultimately landing on c.test. Returns both the full redirect URL and the URL
 // for the landing page. The landing page URL has a param appended to it to
@@ -624,9 +479,8 @@ IN_PROC_BROWSER_TEST_P(DIPSTabHelperBrowserTest,
                        DetectRedirectHandlingFlakiness) {
   WebContents* web_contents = GetActiveWebContents();
 
-  auto* dips_storage = DIPSServiceFactory::GetForBrowserContext(
-                           web_contents->GetBrowserContext())
-                           ->storage();
+  auto* dips_storage =
+      DIPSServiceImpl::Get(web_contents->GetBrowserContext())->storage();
 
   for (int i = 0; i < 10; i++) {
     const base::Time bounce_time = base::Time::FromSecondsSinceUnixEpoch(i + 1);
@@ -673,8 +527,8 @@ IN_PROC_BROWSER_TEST_P(DIPSTabHelperBrowserTest,
                        UserClearedSitesAreNotReportedToUKM) {
   ukm::TestAutoSetUkmRecorder ukm_recorder;
   content::WebContents* web_contents = GetActiveWebContents();
-  DIPSService* dips_service = DIPSServiceFactory::GetForBrowserContext(
-      web_contents->GetBrowserContext());
+  DIPSServiceImpl* dips_service =
+      DIPSServiceImpl::Get(web_contents->GetBrowserContext());
   // A time more than an hour ago.
   base::Time old_bounce_time = base::Time::Now() - base::Hours(2);
   // A time within the past hour.
@@ -757,8 +611,8 @@ IN_PROC_BROWSER_TEST_P(DIPSTabHelperBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(DIPSTabHelperBrowserTest, SitesInOpenTabsAreExempt) {
   content::WebContents* web_contents = GetActiveWebContents();
-  DIPSService* dips_service = DIPSServiceFactory::GetForBrowserContext(
-      web_contents->GetBrowserContext());
+  DIPSServiceImpl* dips_service =
+      DIPSServiceImpl::Get(web_contents->GetBrowserContext());
 
   // A time within the past hour.
   base::Time bounce_time = base::Time::Now() - base::Minutes(10);
@@ -829,8 +683,8 @@ IN_PROC_BROWSER_TEST_P(DIPSTabHelperBrowserTest, SitesInOpenTabsAreExempt) {
 IN_PROC_BROWSER_TEST_P(DIPSTabHelperBrowserTest,
                        SitesInDestroyedTabsAreNotExempt) {
   content::WebContents* web_contents = GetActiveWebContents();
-  DIPSService* dips_service = DIPSServiceFactory::GetForBrowserContext(
-      web_contents->GetBrowserContext());
+  DIPSServiceImpl* dips_service =
+      DIPSServiceImpl::Get(web_contents->GetBrowserContext());
 
   // A time within the past hour.
   base::Time bounce_time = base::Time::Now() - base::Minutes(10);
@@ -880,8 +734,8 @@ IN_PROC_BROWSER_TEST_P(DIPSTabHelperBrowserTest,
 IN_PROC_BROWSER_TEST_P(DIPSTabHelperBrowserTest,
                        SitesInOpenTabsForDifferentProfilesAreNotExempt) {
   content::WebContents* web_contents = GetActiveWebContents();
-  DIPSService* dips_service = DIPSServiceFactory::GetForBrowserContext(
-      web_contents->GetBrowserContext());
+  DIPSServiceImpl* dips_service =
+      DIPSServiceImpl::Get(web_contents->GetBrowserContext());
 
   // A time within the past hour.
   base::Time bounce_time = base::Time::Now() - base::Minutes(10);

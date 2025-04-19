@@ -18,9 +18,16 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
+namespace autofill_prediction_improvements {
+class AutofillPredictionImprovementsFillingEngine;
+}  // namespace autofill_prediction_improvements
+
 namespace autofill {
 
 class LogBuffer;
+namespace internal {
+class FormForest;
+}
 
 // Pair of a button title (e.g. "Register") and its type (e.g.
 // INPUT_ELEMENT_SUBMIT_TYPE).
@@ -132,7 +139,8 @@ struct FrameTokenWithPredecessor {
 // [3] https://html.spec.whatwg.org/multipage/custom-elements.html#custom-elements-face-example
 // [4] https://html.spec.whatwg.org/multipage/input.html#attr-input-type
 // clang-format on
-struct FormData {
+class FormData {
+ public:
   struct FillData;
   // Returns true if many members of forms |a| and |b| are identical.
   //
@@ -180,7 +188,8 @@ struct FormData {
 
   // Finds a field in the FormData by its name or id.
   // Returns a pointer to the field if found, otherwise returns nullptr.
-  FormFieldData* FindFieldByName(std::u16string_view name_or_id);
+  // TODO(crbug.com/40100455): Move to FormDataTestApi.
+  FormFieldData* FindFieldByNameForTest(std::u16string_view name_or_id);
 
   // The id attribute of the form.
   const std::u16string& id_attribute() const { return id_attribute_; }
@@ -310,7 +319,25 @@ struct FormData {
   //   come from subframes, they're flattened into the same FormData, which then
   //   contains two representations of F; that is, FormData::fields contains two
   //   fields with the same FormFieldData::global_id().
-  std::vector<FormFieldData> fields;
+  const std::vector<FormFieldData>& fields() const { return fields_; }
+  void set_fields(std::vector<FormFieldData> new_fields) {
+    fields_ = std::move(new_fields);
+  }
+  [[nodiscard]] std::vector<FormFieldData> ExtractFields() {
+    return std::exchange(fields_, std::vector<FormFieldData>());
+  }
+  class MutableFieldsPassKey {
+    constexpr MutableFieldsPassKey() = default;
+    friend class AutofillAgent;
+    friend class FormDataAndroid;
+    friend class FormFiller;
+    friend class internal::FormForest;
+    friend class autofill_prediction_improvements::
+        AutofillPredictionImprovementsFillingEngine;
+  };
+  std::vector<FormFieldData>& mutable_fields(MutableFieldsPassKey pass_key) {
+    return fields_;
+  }
 
   // Contains unique renderer IDs of text elements which are predicted to be
   // usernames. The order matters: elements are sorted in descending likelihood
@@ -332,7 +359,14 @@ struct FormData {
   void set_is_gaia_with_skip_save_password_form(
       bool is_gaia_with_skip_save_password_form) {
     is_gaia_with_skip_save_password_form_ =
-        std::move(is_gaia_with_skip_save_password_form);
+        is_gaia_with_skip_save_password_form;
+  }
+
+  // Currently likely_contains_captcha_ is initialized only on Android platform.
+  // For all other platforms its value is always `false`.
+  bool likely_contains_captcha() const { return likely_contains_captcha_; }
+  void set_likely_contains_captcha(bool likely_contains_captcha) {
+    likely_contains_captcha_ = likely_contains_captcha;
   }
 
 #if BUILDFLAG(IS_IOS)
@@ -341,6 +375,8 @@ struct FormData {
 #endif
 
  private:
+  friend class FormDataTestApi;
+
   std::u16string id_attribute_;
   std::u16string name_attribute_;
   std::u16string name_;
@@ -356,8 +392,10 @@ struct FormData {
   std::vector<FrameTokenWithPredecessor> child_frames_;
   mojom::SubmissionIndicatorEvent submission_event_ =
       mojom::SubmissionIndicatorEvent::NONE;
+  std::vector<FormFieldData> fields_;
   std::vector<FieldRendererId> username_predictions_;
   bool is_gaia_with_skip_save_password_form_ = false;
+  bool likely_contains_captcha_ = false;
 #if BUILDFLAG(IS_IOS)
   std::string frame_id_;
 #endif
@@ -368,6 +406,12 @@ bool FormHasNonEmptyPasswordField(const FormData& form);
 
 // For testing.
 std::ostream& operator<<(std::ostream& os, const FormData& form);
+
+#if defined(UNIT_TEST)
+inline bool operator==(const FormData& lhs, const FormData& rhs) {
+  return FormData::DeepEqual(lhs, rhs);
+}
+#endif  // defined(UNIT_TEST)
 
 // Serialize FormData. Used by the PasswordManager to persist FormData
 // pertaining to password forms. Serialized data is appended to |pickle|.

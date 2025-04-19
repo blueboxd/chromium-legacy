@@ -73,8 +73,9 @@
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
 #include "net/test/test_with_task_environment.h"
+#include "net/third_party/quiche/src/quiche/common/http/http_header_block.h"
+#include "net/third_party/quiche/src/quiche/http2/test_tools/spdy_test_utils.h"
 #include "net/third_party/quiche/src/quiche/spdy/core/spdy_protocol.h"
-#include "net/third_party/quiche/src/quiche/spdy/test_tools/spdy_test_utils.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
@@ -307,8 +308,7 @@ class SpdyNetworkTransactionTest : public TestWithTaskEnvironment,
     SpdySessionDependencies* session_deps() { return session_deps_.get(); }
 
    private:
-    typedef std::vector<raw_ptr<SocketDataProvider, VectorExperimental>>
-        DataVector;
+    typedef std::vector<raw_ptr<SocketDataProvider>> DataVector;
     typedef std::vector<std::unique_ptr<SSLSocketDataProvider>> SSLVector;
     typedef std::vector<std::unique_ptr<SocketDataProvider>> AlternateVector;
     const HttpRequestInfo request_;
@@ -1667,7 +1667,7 @@ TEST_P(SpdyNetworkTransactionTest, Put) {
   // Setup the request.
   request_.method = "PUT";
 
-  spdy::Http2HeaderBlock put_headers(
+  quiche::HttpHeaderBlock put_headers(
       spdy_util_.ConstructPutHeaderBlock(kDefaultUrl, 0));
   spdy::SpdySerializedFrame req(
       spdy_util_.ConstructSpdyHeaders(1, std::move(put_headers), LOWEST, true));
@@ -1697,7 +1697,7 @@ TEST_P(SpdyNetworkTransactionTest, Head) {
   // Setup the request.
   request_.method = "HEAD";
 
-  spdy::Http2HeaderBlock head_headers(
+  quiche::HttpHeaderBlock head_headers(
       spdy_util_.ConstructHeadHeaderBlock(kDefaultUrl, 0));
   spdy::SpdySerializedFrame req(spdy_util_.ConstructSpdyHeaders(
       1, std::move(head_headers), LOWEST, true));
@@ -1838,10 +1838,11 @@ TEST_P(SpdyNetworkTransactionTest, ChunkedPost) {
   NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_, nullptr);
 
   // These chunks get merged into a single frame when being sent.
-  const int kFirstChunkSize = kUploadDataSize/2;
-  upload_chunked_data_stream()->AppendData(kUploadData, kFirstChunkSize, false);
-  upload_chunked_data_stream()->AppendData(
-      kUploadData + kFirstChunkSize, kUploadDataSize - kFirstChunkSize, true);
+  const size_t kFirstChunkSize = kUploadDataSize / 2;
+  auto [first_chunk, second_chunk] =
+      base::byte_span_from_cstring(kUploadData).split_at(kFirstChunkSize);
+  upload_chunked_data_stream()->AppendData(first_chunk, false);
+  upload_chunked_data_stream()->AppendData(second_chunk, true);
 
   helper.RunToCompletion(&data);
   TransactionHelperResult out = helper.output();
@@ -1873,16 +1874,19 @@ TEST_P(SpdyNetworkTransactionTest, DelayedChunkedPost) {
   UseChunkedPostRequest();
   NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_, nullptr);
 
-  upload_chunked_data_stream()->AppendData(kUploadData, kUploadDataSize, false);
+  upload_chunked_data_stream()->AppendData(
+      base::byte_span_from_cstring(kUploadData), false);
 
   helper.RunPreTestSetup();
   helper.AddData(&data);
   ASSERT_TRUE(helper.StartDefaultTest());
 
   base::RunLoop().RunUntilIdle();
-  upload_chunked_data_stream()->AppendData(kUploadData, kUploadDataSize, false);
+  upload_chunked_data_stream()->AppendData(
+      base::byte_span_from_cstring(kUploadData), false);
   base::RunLoop().RunUntilIdle();
-  upload_chunked_data_stream()->AppendData(kUploadData, kUploadDataSize, true);
+  upload_chunked_data_stream()->AppendData(
+      base::byte_span_from_cstring(kUploadData), true);
 
   helper.FinishDefaultTest();
   helper.VerifyDataConsumed();
@@ -1907,7 +1911,7 @@ TEST_P(SpdyNetworkTransactionTest, NullPost) {
 
   // When request.upload_data_stream is NULL for post, content-length is
   // expected to be 0.
-  spdy::Http2HeaderBlock req_block(
+  quiche::HttpHeaderBlock req_block(
       spdy_util_.ConstructPostHeaderBlock(kDefaultUrl, 0));
   spdy::SpdySerializedFrame req(
       spdy_util_.ConstructSpdyHeaders(1, std::move(req_block), LOWEST, true));
@@ -1945,7 +1949,7 @@ TEST_P(SpdyNetworkTransactionTest, EmptyPost) {
 
   const uint64_t kContentLength = 0;
 
-  spdy::Http2HeaderBlock req_block(
+  quiche::HttpHeaderBlock req_block(
       spdy_util_.ConstructPostHeaderBlock(kDefaultUrl, kContentLength));
   spdy::SpdySerializedFrame req(
       spdy_util_.ConstructSpdyHeaders(1, std::move(req_block), LOWEST, true));
@@ -2003,7 +2007,8 @@ TEST_P(SpdyNetworkTransactionTest, ResponseBeforePostCompletes) {
   EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
 
   // Finish sending the request body.
-  upload_chunked_data_stream()->AppendData(kUploadData, kUploadDataSize, true);
+  upload_chunked_data_stream()->AppendData(
+      base::byte_span_from_cstring(kUploadData), true);
   helper.WaitForCallbackToComplete();
   EXPECT_THAT(helper.output().rv, IsOk());
 
@@ -2349,7 +2354,7 @@ TEST_P(SpdyNetworkTransactionTest, RedirectGetRequest) {
   ssl_provider0.next_proto = kProtoHTTP2;
   socket_factory.AddSSLSocketDataProvider(&ssl_provider0);
 
-  spdy::Http2HeaderBlock headers0(
+  quiche::HttpHeaderBlock headers0(
       spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
   headers0["user-agent"] = "";
   headers0["accept-encoding"] = "gzip, deflate";
@@ -2373,7 +2378,7 @@ TEST_P(SpdyNetworkTransactionTest, RedirectGetRequest) {
   socket_factory.AddSSLSocketDataProvider(&ssl_provider1);
 
   SpdyTestUtil spdy_util1(/*use_priority_header=*/true);
-  spdy::Http2HeaderBlock headers1(
+  quiche::HttpHeaderBlock headers1(
       spdy_util1.ConstructGetHeaderBlock(kRedirectUrl));
   headers1["user-agent"] = "";
   headers1["accept-encoding"] = "gzip, deflate";
@@ -2469,7 +2474,8 @@ TEST_P(SpdyNetworkTransactionTest, NoConnectionPoolingOverTunnel) {
       MockWrite(ASYNC, 0,
                 "CONNECT www.example.org:443 HTTP/1.1\r\n"
                 "Host: www.example.org:443\r\n"
-                "Proxy-Connection: keep-alive\r\n\r\n"),
+                "Proxy-Connection: keep-alive\r\n"
+                "User-Agent: test-ua\r\n\r\n"),
       CreateMockWrite(req1, 2),
   };
 
@@ -2510,7 +2516,8 @@ TEST_P(SpdyNetworkTransactionTest, NoConnectionPoolingOverTunnel) {
       MockWrite(ASYNC, 0,
                 "CONNECT example.test:443 HTTP/1.1\r\n"
                 "Host: example.test:443\r\n"
-                "Proxy-Connection: keep-alive\r\n\r\n"),
+                "Proxy-Connection: keep-alive\r\n"
+                "User-Agent: test-ua\r\n\r\n"),
       CreateMockWrite(req2, 2),
   };
 
@@ -3327,10 +3334,11 @@ TEST_P(SpdyNetworkTransactionTest, ResponseHeaders) {
        2,
        {"hello", "bye", "cookie", "val1, val2"}},
       // Multiple headers are preserved: they are joined with \0 separator in
-      // spdy::Http2HeaderBlock.AppendValueOrAddHeader(), then split up in
+      // quiche::HttpHeaderBlock.AppendValueOrAddHeader(), then split up in
       // HpackEncoder, then joined with \0 separator when
       // spdy::HpackDecoderAdapter::ListenerAdapter::OnHeader() calls
-      // spdy::Http2HeaderBlock.AppendValueOrAddHeader(), then split up again in
+      // quiche::HttpHeaderBlock.AppendValueOrAddHeader(), then split up again
+      // in
       // HttpResponseHeaders.
       {2,
        {"content-encoding", "val1", "content-encoding", "val2"},
@@ -3411,7 +3419,7 @@ TEST_P(SpdyNetworkTransactionTest, InvalidResponseHeaders) {
     };
 
     // Construct the reply.
-    spdy::Http2HeaderBlock reply_headers;
+    quiche::HttpHeaderBlock reply_headers;
     AppendToHeaderBlock(test_cases[i].headers, test_cases[i].num_headers,
                         &reply_headers);
     spdy::SpdySerializedFrame resp(
@@ -3670,7 +3678,7 @@ TEST_P(SpdyNetworkTransactionTest, NetLogForResponseWithNoBody) {
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
   MockWrite writes[] = {CreateMockWrite(req, 0)};
 
-  spdy::Http2HeaderBlock response_headers;
+  quiche::HttpHeaderBlock response_headers;
   response_headers[spdy::kHttp2StatusHeader] = "200";
   response_headers["hello"] = "bye";
   spdy::SpdySerializedFrame resp(spdy_util_.ConstructSpdyResponseHeaders(
@@ -4341,7 +4349,7 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredRetry) {
   NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_, nullptr);
 
   // First socket: HTTP/2 request rejected with HTTP_1_1_REQUIRED.
-  spdy::Http2HeaderBlock headers(
+  quiche::HttpHeaderBlock headers(
       spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
   spdy::SpdySerializedFrame req(
       spdy_util_.ConstructSpdyHeaders(1, std::move(headers), LOWEST, true));
@@ -4439,7 +4447,7 @@ TEST_P(SpdyNetworkTransactionTest,
 
     // First socket: HTTP/2 request rejected with HTTP_1_1_REQUIRED.
     SpdyTestUtil spdy_util(/*use_priority_header=*/true);
-    spdy::Http2HeaderBlock headers(
+    quiche::HttpHeaderBlock headers(
         spdy_util.ConstructGetHeaderBlock(kDefaultUrl));
     spdy::SpdySerializedFrame req(
         spdy_util.ConstructSpdyHeaders(1, std::move(headers), LOWEST, true));
@@ -4556,7 +4564,8 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredProxyRetry) {
       MockWrite(ASYNC, 0,
                 "CONNECT www.example.org:443 HTTP/1.1\r\n"
                 "Host: www.example.org:443\r\n"
-                "Proxy-Connection: keep-alive\r\n\r\n"),
+                "Proxy-Connection: keep-alive\r\n"
+                "User-Agent: test-ua\r\n\r\n"),
       MockWrite(ASYNC, 2,
                 "GET / HTTP/1.1\r\n"
                 "Host: www.example.org\r\n"
@@ -4672,7 +4681,8 @@ TEST_P(SpdyNetworkTransactionTest,
         MockWrite(ASYNC, 0,
                   "CONNECT www.example.org:443 HTTP/1.1\r\n"
                   "Host: www.example.org:443\r\n"
-                  "Proxy-Connection: keep-alive\r\n\r\n"),
+                  "Proxy-Connection: keep-alive\r\n"
+                  "User-Agent: test-ua\r\n\r\n"),
         MockWrite(ASYNC, 2,
                   "GET / HTTP/1.1\r\n"
                   "Host: www.example.org\r\n"
@@ -4797,11 +4807,13 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredNestedProxyFirstProxyRetry) {
       MockWrite(ASYNC, 0,
                 "CONNECT proxy2.test:71 HTTP/1.1\r\n"
                 "Host: proxy2.test:71\r\n"
-                "Proxy-Connection: keep-alive\r\n\r\n"),
+                "Proxy-Connection: keep-alive\r\n"
+                "User-Agent: test-ua\r\n\r\n"),
       MockWrite(ASYNC, 2,
                 "CONNECT www.example.org:443 HTTP/1.1\r\n"
                 "Host: www.example.org:443\r\n"
-                "Proxy-Connection: keep-alive\r\n\r\n"),
+                "Proxy-Connection: keep-alive\r\n"
+                "User-Agent: test-ua\r\n\r\n"),
       MockWrite(ASYNC, 4,
                 "GET / HTTP/1.1\r\n"
                 "Host: www.example.org\r\n"
@@ -4952,11 +4964,13 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredNestedProxySecondProxyRetry) {
       MockWrite(ASYNC, 0,
                 "CONNECT proxy2.test:71 HTTP/1.1\r\n"
                 "Host: proxy2.test:71\r\n"
-                "Proxy-Connection: keep-alive\r\n\r\n"),
+                "Proxy-Connection: keep-alive\r\n"
+                "User-Agent: test-ua\r\n\r\n"),
       MockWrite(ASYNC, 2,
                 "CONNECT www.example.org:443 HTTP/1.1\r\n"
                 "Host: www.example.org:443\r\n"
-                "Proxy-Connection: keep-alive\r\n\r\n"),
+                "Proxy-Connection: keep-alive\r\n"
+                "User-Agent: test-ua\r\n\r\n"),
       MockWrite(ASYNC, 4,
                 "GET / HTTP/1.1\r\n"
                 "Host: www.example.org\r\n"
@@ -5041,7 +5055,8 @@ TEST_P(SpdyNetworkTransactionTest, ProxyConnect) {
   const char kConnect443[] = {
       "CONNECT www.example.org:443 HTTP/1.1\r\n"
       "Host: www.example.org:443\r\n"
-      "Proxy-Connection: keep-alive\r\n\r\n"};
+      "Proxy-Connection: keep-alive\r\n"
+      "User-Agent: test-ua\r\n\r\n"};
   const char kHTTP200[] = {"HTTP/1.1 200 OK\r\n\r\n"};
   spdy::SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
@@ -5158,7 +5173,8 @@ TEST_P(SpdyNetworkTransactionTest, DirectConnectProxyReconnect) {
   const char kConnect443[] = {
       "CONNECT www.example.org:443 HTTP/1.1\r\n"
       "Host: www.example.org:443\r\n"
-      "Proxy-Connection: keep-alive\r\n\r\n"};
+      "Proxy-Connection: keep-alive\r\n"
+      "User-Agent: test-ua\r\n\r\n"};
   const char kHTTP200[] = {"HTTP/1.1 200 OK\r\n\r\n"};
   spdy::SpdySerializedFrame req2(
       spdy_util_2.ConstructSpdyGet(kPushedUrl, 1, LOWEST));
@@ -5394,7 +5410,7 @@ TEST_P(SpdyNetworkTransactionTest, ResponseHeadersTwice) {
   spdy::SpdySerializedFrame stream1_reply(
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
 
-  spdy::Http2HeaderBlock late_headers;
+  quiche::HttpHeaderBlock late_headers;
   late_headers["hello"] = "bye";
   spdy::SpdySerializedFrame stream1_headers(
       spdy_util_.ConstructSpdyResponseHeaders(1, std::move(late_headers),
@@ -5431,7 +5447,7 @@ TEST_P(SpdyNetworkTransactionTest, SyncReplyDataAfterTrailers) {
   spdy::SpdySerializedFrame stream1_body(
       spdy_util_.ConstructSpdyDataFrame(1, false));
 
-  spdy::Http2HeaderBlock late_headers;
+  quiche::HttpHeaderBlock late_headers;
   late_headers["hello"] = "bye";
   spdy::SpdySerializedFrame stream1_headers(
       spdy_util_.ConstructSpdyResponseHeaders(1, std::move(late_headers),
@@ -6460,7 +6476,7 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlNegativeSendWindowSize) {
 }
 
 TEST_P(SpdyNetworkTransactionTest, ReceivingPushIsConnectionError) {
-  spdy::Http2HeaderBlock push_headers;
+  quiche::HttpHeaderBlock push_headers;
   spdy_util_.AddUrlToHeaderBlock("http://www.example.org/a.dat", &push_headers);
   spdy::SpdySerializedFrame push(
       spdy_util_.ConstructSpdyPushPromise(1, 2, std::move(push_headers)));
@@ -6486,7 +6502,7 @@ TEST_P(SpdyNetworkTransactionTest, ReceivingPushIsConnectionError) {
 // with odd ID is reset the same way as one with even ID.
 TEST_P(SpdyNetworkTransactionTest,
        ReceivingPushWithOddStreamIdIsConnectionError) {
-  spdy::Http2HeaderBlock push_headers;
+  quiche::HttpHeaderBlock push_headers;
   spdy_util_.AddUrlToHeaderBlock("http://www.example.org/a.dat", &push_headers);
   spdy::SpdySerializedFrame push(
       spdy_util_.ConstructSpdyPushPromise(1, 3, std::move(push_headers)));
@@ -6516,7 +6532,7 @@ TEST_P(SpdyNetworkTransactionTest, LargeRequest) {
 
   request_.extra_headers.SetHeader(kKey, kValue);
 
-  spdy::Http2HeaderBlock headers(
+  quiche::HttpHeaderBlock headers(
       spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
   headers[kKey] = kValue;
   spdy::SpdySerializedFrame req(
@@ -6545,7 +6561,7 @@ TEST_P(SpdyNetworkTransactionTest, LargeRequest) {
 
 // Regression test for https://crbug.com/535629: response header exceeds 16 kB.
 TEST_P(SpdyNetworkTransactionTest, LargeResponseHeader) {
-  spdy::Http2HeaderBlock headers(
+  quiche::HttpHeaderBlock headers(
       spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
   spdy::SpdySerializedFrame req(
       spdy_util_.ConstructSpdyHeaders(1, std::move(headers), LOWEST, true));
@@ -6651,7 +6667,7 @@ TEST_P(SpdyNetworkTransactionTest, 100Continue) {
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
   MockWrite writes[] = {CreateMockWrite(req, 0)};
 
-  spdy::Http2HeaderBlock informational_headers;
+  quiche::HttpHeaderBlock informational_headers;
   informational_headers[spdy::kHttp2StatusHeader] = "100";
   spdy::SpdySerializedFrame informational_response(
       spdy_util_.ConstructSpdyReply(1, std::move(informational_headers)));
@@ -7121,7 +7137,7 @@ TEST_P(SpdyNetworkTransactionTest, WebSocketOverHTTP2) {
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, HIGHEST));
   spdy::SpdySerializedFrame settings_ack(spdy_util_.ConstructSpdySettingsAck());
 
-  spdy::Http2HeaderBlock websocket_request_headers;
+  quiche::HttpHeaderBlock websocket_request_headers;
   websocket_request_headers[spdy::kHttp2MethodHeader] = "CONNECT";
   websocket_request_headers[spdy::kHttp2AuthorityHeader] = "www.example.org";
   websocket_request_headers[spdy::kHttp2SchemeHeader] = "https";
@@ -7255,7 +7271,8 @@ TEST_P(SpdyNetworkTransactionTest,
   MockWrite writes[] = {MockWrite(SYNCHRONOUS, 0,
                                   "CONNECT www.example.org:443 HTTP/1.1\r\n"
                                   "Host: www.example.org:443\r\n"
-                                  "Proxy-Connection: keep-alive\r\n\r\n"),
+                                  "Proxy-Connection: keep-alive\r\n"
+                                  "User-Agent: test-ua\r\n\r\n"),
                         CreateMockWrite(req, 2)};
 
   spdy::SpdySerializedFrame resp1(
@@ -7280,7 +7297,8 @@ TEST_P(SpdyNetworkTransactionTest,
       MockWrite(SYNCHRONOUS, 0,
                 "CONNECT www.example.org:443 HTTP/1.1\r\n"
                 "Host: www.example.org:443\r\n"
-                "Proxy-Connection: keep-alive\r\n\r\n"),
+                "Proxy-Connection: keep-alive\r\n"
+                "User-Agent: test-ua\r\n\r\n"),
       MockWrite(SYNCHRONOUS, 2,
                 "GET / HTTP/1.1\r\n"
                 "Host: www.example.org\r\n"
@@ -7398,7 +7416,7 @@ TEST_P(SpdyNetworkTransactionTest,
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, HIGHEST));
   spdy::SpdySerializedFrame settings_ack(spdy_util_.ConstructSpdySettingsAck());
 
-  spdy::Http2HeaderBlock websocket_request_headers;
+  quiche::HttpHeaderBlock websocket_request_headers;
   websocket_request_headers[spdy::kHttp2MethodHeader] = "CONNECT";
   websocket_request_headers[spdy::kHttp2AuthorityHeader] = "example.test";
   websocket_request_headers[spdy::kHttp2SchemeHeader] = "https";
@@ -7725,7 +7743,7 @@ TEST_P(SpdyNetworkTransactionTest, WebSocketHttp11Required) {
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, HIGHEST));
   spdy::SpdySerializedFrame settings_ack(spdy_util_.ConstructSpdySettingsAck());
 
-  spdy::Http2HeaderBlock websocket_request_headers;
+  quiche::HttpHeaderBlock websocket_request_headers;
   websocket_request_headers[spdy::kHttp2MethodHeader] = "CONNECT";
   websocket_request_headers[spdy::kHttp2AuthorityHeader] = "www.example.org";
   websocket_request_headers[spdy::kHttp2SchemeHeader] = "https";
@@ -7924,7 +7942,7 @@ TEST_P(SpdyNetworkTransactionTest, SecureWebSocketOverH2OverH2Proxy) {
       proxy_spdy_util.ConstructSpdyDataFrame(1, settings_ack, false));
 
   // WebSocket Extended CONNECT using HTTP/2.
-  spdy::Http2HeaderBlock websocket_request_headers;
+  quiche::HttpHeaderBlock websocket_request_headers;
   websocket_request_headers[spdy::kHttp2MethodHeader] = "CONNECT";
   websocket_request_headers[spdy::kHttp2AuthorityHeader] = "www.example.org";
   websocket_request_headers[spdy::kHttp2SchemeHeader] = "https";
@@ -8295,11 +8313,11 @@ TEST_P(SpdyNetworkTransactionTest, ZeroRTTNoConfirmMultipleStreams) {
 
 // Run multiple concurrent streams that require handshake confirmation.
 TEST_P(SpdyNetworkTransactionTest, ZeroRTTConfirmMultipleStreams) {
-  spdy::Http2HeaderBlock req_block1(
+  quiche::HttpHeaderBlock req_block1(
       spdy_util_.ConstructPostHeaderBlock(kDefaultUrl, 0));
   spdy::SpdySerializedFrame req1(
       spdy_util_.ConstructSpdyHeaders(1, std::move(req_block1), LOWEST, true));
-  spdy::Http2HeaderBlock req_block2(
+  quiche::HttpHeaderBlock req_block2(
       spdy_util_.ConstructPostHeaderBlock(kDefaultUrl, 0));
   spdy::SpdySerializedFrame req2(
       spdy_util_.ConstructSpdyHeaders(3, std::move(req_block2), LOWEST, true));
@@ -8383,11 +8401,11 @@ TEST_P(SpdyNetworkTransactionTest, ZeroRTTConfirmMultipleStreams) {
 TEST_P(SpdyNetworkTransactionTest, ZeroRTTConfirmNoConfirmStreams) {
   // This test orders the writes such that the GET (no confirmation) is written
   // before the POST (confirmation required).
-  spdy::Http2HeaderBlock req_block1(
+  quiche::HttpHeaderBlock req_block1(
       spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
   spdy::SpdySerializedFrame req1(
       spdy_util_.ConstructSpdyHeaders(1, std::move(req_block1), LOWEST, true));
-  spdy::Http2HeaderBlock req_block2(
+  quiche::HttpHeaderBlock req_block2(
       spdy_util_.ConstructPostHeaderBlock(kDefaultUrl, 0));
   spdy::SpdySerializedFrame req2(
       spdy_util_.ConstructSpdyHeaders(3, std::move(req_block2), LOWEST, true));
@@ -8474,11 +8492,11 @@ TEST_P(SpdyNetworkTransactionTest, ZeroRTTConfirmNoConfirmStreams) {
 TEST_P(SpdyNetworkTransactionTest, ZeroRTTNoConfirmConfirmStreams) {
   // This test orders the writes such that the GET (no confirmation) is written
   // before the POST (confirmation required).
-  spdy::Http2HeaderBlock req_block1(
+  quiche::HttpHeaderBlock req_block1(
       spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
   spdy::SpdySerializedFrame req1(
       spdy_util_.ConstructSpdyHeaders(1, std::move(req_block1), LOWEST, true));
-  spdy::Http2HeaderBlock req_block2(
+  quiche::HttpHeaderBlock req_block2(
       spdy_util_.ConstructPostHeaderBlock(kDefaultUrl, 0));
   spdy::SpdySerializedFrame req2(
       spdy_util_.ConstructSpdyHeaders(3, std::move(req_block2), LOWEST, true));
@@ -8892,7 +8910,7 @@ TEST_P(SpdyNetworkTransactionTest, GreaseFrameTypeWithGetRequest) {
   NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_,
                                      std::move(session_deps));
 
-  spdy::Http2HeaderBlock headers(
+  quiche::HttpHeaderBlock headers(
       spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
   spdy::SpdySerializedFrame req(
       spdy_util_.ConstructSpdyHeaders(1, std::move(headers), DEFAULT_PRIORITY,
@@ -9153,7 +9171,7 @@ TEST_P(SpdyNetworkTransactionTest, OnDataSentDoesNotCrashWithGreasedFrameType) {
   NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_,
                                      std::move(session_deps));
 
-  spdy::Http2HeaderBlock headers(
+  quiche::HttpHeaderBlock headers(
       spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
   spdy::SpdySerializedFrame req(
       spdy_util_.ConstructSpdyHeaders(1, std::move(headers), DEFAULT_PRIORITY,

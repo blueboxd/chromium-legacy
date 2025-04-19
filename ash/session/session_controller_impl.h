@@ -187,8 +187,9 @@ class ASH_EXPORT SessionControllerImpl : public SessionController {
   // Returns the profile path for `account_id` or empty if one does not exist.
   base::FilePath GetProfilePath(const AccountId& account_id) const;
 
-  // Returns whether `account_id` is eligible for SeaPen features.
-  bool IsEligibleForSeaPen(const AccountId& account_id) const;
+  // Returns a tuple of whether
+  // <IsVcBackgroundSupported, IsVcBackgroundAllowedByEnterprise>.
+  std::tuple<bool, bool> IsEligibleForSeaPen(const AccountId& account_id) const;
 
   // Returns the PrefService for the primary user or null if no user is signed
   // in or the PrefService connection hasn't been established.
@@ -236,6 +237,7 @@ class ASH_EXPORT SessionControllerImpl : public SessionController {
   void RemoveObserver(SessionObserver* observer) override;
   bool IsScreenLocked() const override;
   std::optional<int> GetExistingUsersCount() const override;
+  void NotifyFirstSessionReady() override;
 
   // Test helpers.
   void ClearUserSessionsForTest();

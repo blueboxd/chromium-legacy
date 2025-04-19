@@ -20,7 +20,8 @@ PointerEvent::PointerEvent(const AtomicString& type,
                            const PointerEventInit* initializer,
                            base::TimeTicks platform_time_stamp,
                            MouseEvent::SyntheticEventType synthetic_event_type,
-                           WebMenuSourceType menu_source_type)
+                           WebMenuSourceType menu_source_type,
+                           bool prevent_counting_as_interaction)
     : MouseEvent(type,
                  initializer,
                  platform_time_stamp,
@@ -38,7 +39,9 @@ PointerEvent::PointerEvent(const AtomicString& type,
       twist_(0),
       is_primary_(false),
       coalesced_events_targets_dirty_(false),
-      predicted_events_targets_dirty_(false) {
+      predicted_events_targets_dirty_(false),
+      persistent_device_id_(0),
+      prevent_counting_as_interaction_(prevent_counting_as_interaction) {
   if (initializer->hasPointerId())
     pointer_id_ = initializer->pointerId();
   if (initializer->hasWidth())
@@ -89,8 +92,8 @@ PointerEvent::PointerEvent(const AtomicString& type,
         PointerEventUtil::TransformToAzimuthInValidRange(azimuth_angle_),
         PointerEventUtil::TransformToAltitudeInValidRange(altitude_angle_));
   }
-  if (initializer->hasDeviceProperties()) {
-    device_properties_ = initializer->deviceProperties();
+  if (initializer->hasPersistentDeviceId()) {
+    persistent_device_id_ = initializer->persistentDeviceId();
   }
 }
 
@@ -160,7 +163,8 @@ HeapVector<Member<PointerEvent>> PointerEvent::getCoalescedEvents() {
     }
   }
 
-  if (coalesced_events_targets_dirty_) {
+  if (coalesced_events_targets_dirty_ &&
+      !RuntimeEnabledFeatures::PointerEventTargetsInEventListsEnabled()) {
     for (auto coalesced_event : coalesced_events_)
       coalesced_event->SetTarget(target());
     coalesced_events_targets_dirty_ = false;
@@ -169,7 +173,8 @@ HeapVector<Member<PointerEvent>> PointerEvent::getCoalescedEvents() {
 }
 
 HeapVector<Member<PointerEvent>> PointerEvent::getPredictedEvents() {
-  if (predicted_events_targets_dirty_) {
+  if (predicted_events_targets_dirty_ &&
+      !RuntimeEnabledFeatures::PointerEventTargetsInEventListsEnabled()) {
     for (auto predicted_event : predicted_events_)
       predicted_event->SetTarget(target());
     predicted_events_targets_dirty_ = false;
@@ -188,13 +193,25 @@ base::TimeTicks PointerEvent::OldestPlatformTimeStamp() const {
 void PointerEvent::Trace(Visitor* visitor) const {
   visitor->Trace(coalesced_events_);
   visitor->Trace(predicted_events_);
-  visitor->Trace(device_properties_);
   MouseEvent::Trace(visitor);
 }
 
 DispatchEventResult PointerEvent::DispatchEvent(EventDispatcher& dispatcher) {
   if (type().empty())
     return DispatchEventResult::kNotCanceled;  // Shouldn't happen.
+
+  if (isTrusted() &&
+      RuntimeEnabledFeatures::PointerEventTargetsInEventListsEnabled()) {
+    // TODO(mustaq@chromium.org): When the RTE flag is removed, get rid of
+    // `coalesced_events_targets_dirty_` and `predicted_events_targets_dirty_`.
+
+    for (auto coalesced_event : coalesced_events_) {
+      coalesced_event->SetTarget(target());
+    }
+    for (auto predicted_event : predicted_events_) {
+      predicted_event->SetTarget(target());
+    }
+  }
 
   if (type() == event_type_names::kClick) {
     return MouseEvent::DispatchEvent(dispatcher);

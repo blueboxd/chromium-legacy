@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/loader/fetch/url_loader/worker_main_script_loader.h"
 
+#include "base/containers/span.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
@@ -127,7 +128,7 @@ class WorkerMainScriptLoaderTest : public testing::Test {
                       const Resource* resource,
                       ResponseSource));
     MOCK_METHOD2(DidReceiveData,
-                 void(uint64_t identifier, base::span<const char> chunk));
+                 void(uint64_t identifier, base::SpanOrSize<const char> chunk));
     MOCK_METHOD2(DidReceiveTransferSizeUpdate,
                  void(uint64_t identifier, int transfer_size_diff));
     MOCK_METHOD2(DidDownloadToBlob, void(uint64_t identifier, BlobDataHandle*));
@@ -144,6 +145,7 @@ class WorkerMainScriptLoaderTest : public testing::Test {
                       IsInternalRequest));
     MOCK_METHOD2(DidChangeRenderBlockingBehavior,
                  void(Resource* resource, const FetchParameters& params));
+    MOCK_METHOD0(InterestedInAllRequests, bool());
     MOCK_METHOD1(EvictFromBackForwardCache,
                  void(mojom::blink::RendererEvictionReason));
   };
@@ -246,8 +248,8 @@ TEST_F(WorkerMainScriptLoaderTest, ResponseWithSucessThenOnComplete) {
   EXPECT_EQ(KURL(kTopLevelScriptURL),
             worker_main_script_loader->GetRequestURL());
   EXPECT_EQ(UTF8Encoding(), worker_main_script_loader->GetScriptEncoding());
-  EXPECT_EQ(kTopLevelScript,
-            std::string(client_->Data()->Data(), client_->Data()->size()));
+  auto flatten_data = client_->Data()->CopyAs<Vector<char>>();
+  EXPECT_EQ(kTopLevelScript, std::string(base::as_string_view(flatten_data)));
   EXPECT_EQ("text/javascript", fake_resource_load_info_notifier.GetMimeType());
 }
 

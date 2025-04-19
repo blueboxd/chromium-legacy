@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "extensions/browser/api/declarative_net_request/indexed_rule.h"
 
 #include <utility>
@@ -491,7 +496,7 @@ ParseResult ValidateMatchingResponseHeaderValues(
     const dnr_api::HeaderInfo& header_info) {
   auto validate_header_values = [](const std::vector<std::string>& values) {
     return base::ranges::all_of(values, [](const std::string& value) {
-      return !value.empty() && net::HttpUtil::IsValidHeaderValue(value);
+      return net::HttpUtil::IsValidHeaderValue(value);
     });
   };
 
@@ -763,8 +768,7 @@ ParseResult IndexedRule::CreateIndexedRule(dnr_api::Rule parsed_rule,
     }
   }
 
-  if (base::FeatureList::IsEnabled(
-          extensions_features::kDeclarativeNetRequestResponseHeaderMatching)) {
+  if (IsResponseHeaderMatchingEnabled()) {
     if (parsed_rule.condition.response_headers) {
       if (parsed_rule.condition.response_headers->empty()) {
         return ParseResult::ERROR_EMPTY_RESPONSE_HEADER_MATCHING_LIST;

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include <stddef.h>
 
 #include <memory>
@@ -18,6 +23,7 @@
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/simple_test_clock.h"
 #include "base/test/test_future.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -40,6 +46,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/browsing_data/content/browsing_data_model.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/history/core/common/pref_names.h"
 #include "components/metrics/content/subprocess_metrics_provider.h"
 #include "components/nacl/common/buildflags.h"
@@ -103,6 +110,7 @@
 using content::BrowserThread;
 using content::BrowsingDataFilterBuilder;
 
+using testing::UnorderedElementsAre;
 using testing::UnorderedElementsAreArray;
 
 namespace {
@@ -157,9 +165,7 @@ class BrowsingDataRemoverBrowserTest
  public:
   BrowsingDataRemoverBrowserTest() {
     std::vector<base::test::FeatureRef> enabled_features = {};
-    // TODO(b/314968275): Add tests for when UNO Desktop is enabled.
-    std::vector<base::test::FeatureRef> disabled_features = {
-        switches::kExplicitBrowserSigninUIOnDesktop};
+    std::vector<base::test::FeatureRef> disabled_features = {};
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
     enabled_features.push_back(media::kExternalClearKeyForTesting);
     enabled_features.push_back(features::kCdmStorageDatabase);
@@ -872,39 +878,66 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, HistoryDeletion) {
   EXPECT_FALSE(HasDataForType(kType));
 }
 
+// ChromeOS users cannot sign out, their account preferences can never be
+// cleared.
+#if !BUILDFLAG(IS_CHROMEOS)
+
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
                        ClearingCookiesAlsoClearsPasswordAccountStorageOptIn) {
+  const char kTestEmail[] = "foo@gmail.com";
   PrefService* prefs = GetProfile()->GetPrefs();
   syncer::SyncService* sync_service =
       SyncServiceFactory::GetForProfile(GetProfile());
-  signin::MakePrimaryAccountAvailable(
-      IdentityManagerFactory::GetForProfile(GetProfile()), "foo@gmail.com",
-      signin::ConsentLevel::kSignin);
-  password_manager::features_util::OptInToAccountStorage(prefs, sync_service);
-  ASSERT_TRUE(password_manager::features_util::IsOptedInForAccountStorage(
-      prefs, sync_service));
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(GetProfile());
+  signin::MakePrimaryAccountAvailable(identity_manager, kTestEmail,
+                                      signin::ConsentLevel::kSignin);
 
+  if (switches::IsExplicitBrowserSigninUIOnDesktopEnabled()) {
+    password_manager::features_util::OptOutOfAccountStorage(prefs,
+                                                            sync_service);
+  } else {
+    password_manager::features_util::OptInToAccountStorage(prefs, sync_service);
+  }
+  ASSERT_EQ(password_manager::features_util::IsOptedInForAccountStorage(
+                prefs, sync_service),
+            !switches::IsExplicitBrowserSigninUIOnDesktopEnabled());
+
+  signin::ClearPrimaryAccount(identity_manager);
   RemoveAndWait(chrome_browsing_data_remover::DATA_TYPE_SITE_DATA);
+  signin::MakePrimaryAccountAvailable(identity_manager, kTestEmail,
+                                      signin::ConsentLevel::kSignin);
 
-  EXPECT_FALSE(password_manager::features_util::IsOptedInForAccountStorage(
-      prefs, sync_service));
+  EXPECT_EQ(password_manager::features_util::IsOptedInForAccountStorage(
+                prefs, sync_service),
+            switches::IsExplicitBrowserSigninUIOnDesktopEnabled());
 }
 
 IN_PROC_BROWSER_TEST_F(
     BrowsingDataRemoverBrowserTest,
     ClearingCookiesWithFilterAlsoClearsPasswordAccountStorageOptIn) {
+  const char kTestEmail[] = "foo@gmail.com";
   PrefService* prefs = GetProfile()->GetPrefs();
   syncer::SyncService* sync_service =
       SyncServiceFactory::GetForProfile(GetProfile());
-  signin::MakePrimaryAccountAvailable(
-      IdentityManagerFactory::GetForProfile(GetProfile()), "foo@gmail.com",
-      signin::ConsentLevel::kSignin);
-  password_manager::features_util::OptInToAccountStorage(prefs, sync_service);
-  ASSERT_TRUE(password_manager::features_util::IsOptedInForAccountStorage(
-      prefs, sync_service));
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(GetProfile());
+  signin::MakePrimaryAccountAvailable(identity_manager, kTestEmail,
+                                      signin::ConsentLevel::kSignin);
+
+  if (switches::IsExplicitBrowserSigninUIOnDesktopEnabled()) {
+    password_manager::features_util::OptOutOfAccountStorage(prefs,
+                                                            sync_service);
+  } else {
+    password_manager::features_util::OptInToAccountStorage(prefs, sync_service);
+  }
+  ASSERT_EQ(password_manager::features_util::IsOptedInForAccountStorage(
+                prefs, sync_service),
+            !switches::IsExplicitBrowserSigninUIOnDesktopEnabled());
 
   // Clearing cookies for some random domain should have no effect on the
   // opt-in.
+  signin::ClearPrimaryAccount(identity_manager);
   {
     std::unique_ptr<BrowsingDataFilterBuilder> filter_builder =
         BrowsingDataFilterBuilder::Create(
@@ -913,10 +946,14 @@ IN_PROC_BROWSER_TEST_F(
     RemoveWithFilterAndWait(chrome_browsing_data_remover::DATA_TYPE_SITE_DATA,
                             std::move(filter_builder));
   }
-  EXPECT_TRUE(password_manager::features_util::IsOptedInForAccountStorage(
-      prefs, sync_service));
+  signin::MakePrimaryAccountAvailable(identity_manager, kTestEmail,
+                                      signin::ConsentLevel::kSignin);
+  EXPECT_EQ(password_manager::features_util::IsOptedInForAccountStorage(
+                prefs, sync_service),
+            !switches::IsExplicitBrowserSigninUIOnDesktopEnabled());
 
   // Clearing cookies for google.com should clear the opt-in.
+  signin::ClearPrimaryAccount(identity_manager);
   {
     std::unique_ptr<BrowsingDataFilterBuilder> filter_builder =
         BrowsingDataFilterBuilder::Create(
@@ -925,17 +962,22 @@ IN_PROC_BROWSER_TEST_F(
     RemoveWithFilterAndWait(chrome_browsing_data_remover::DATA_TYPE_SITE_DATA,
                             std::move(filter_builder));
   }
-  EXPECT_FALSE(password_manager::features_util::IsOptedInForAccountStorage(
-      prefs, sync_service));
+  signin::MakePrimaryAccountAvailable(identity_manager, kTestEmail,
+                                      signin::ConsentLevel::kSignin);
+  EXPECT_EQ(password_manager::features_util::IsOptedInForAccountStorage(
+                prefs, sync_service),
+            switches::IsExplicitBrowserSigninUIOnDesktopEnabled());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, ClearSiteData) {
+  const char kTestEmail[] = "foo@gmail.com";
   PrefService* prefs = GetProfile()->GetPrefs();
   syncer::SyncService* sync_service =
       SyncServiceFactory::GetForProfile(GetProfile());
-  signin::MakePrimaryAccountAvailable(
-      IdentityManagerFactory::GetForProfile(GetProfile()), "foo@gmail.com",
-      signin::ConsentLevel::kSignin);
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(GetProfile());
+  signin::MakePrimaryAccountAvailable(identity_manager, kTestEmail,
+                                      signin::ConsentLevel::kSignin);
 
   const GURL kFirstPartyURL("https://google.com");
   const GURL kCrossSiteURL("https://example.com");
@@ -944,7 +986,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, ClearSiteData) {
     const url::Origin origin;
     const std::optional<net::CookiePartitionKey> cookie_partition_key;
     const std::optional<blink::StorageKey> storage_key;
-    bool expects_opted_in;
+    bool expects_keep_optin_pref;
   } test_cases[] = {
       {
           url::Origin::Create(kFirstPartyURL),
@@ -991,18 +1033,35 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, ClearSiteData) {
     SCOPED_TRACE(base::StringPrintf("Test case %zu", i));
     const auto& test_case = test_cases[i];
 
-    password_manager::features_util::OptInToAccountStorage(prefs, sync_service);
-    ASSERT_TRUE(password_manager::features_util::IsOptedInForAccountStorage(
-        prefs, sync_service));
-
-    ClearSiteDataAndWait(test_case.origin, test_case.cookie_partition_key,
-                         test_case.storage_key, {});
-
+    if (switches::IsExplicitBrowserSigninUIOnDesktopEnabled()) {
+      password_manager::features_util::OptOutOfAccountStorage(prefs,
+                                                              sync_service);
+    } else {
+      password_manager::features_util::OptInToAccountStorage(prefs,
+                                                             sync_service);
+    }
     ASSERT_EQ(password_manager::features_util::IsOptedInForAccountStorage(
                   prefs, sync_service),
-              test_case.expects_opted_in);
+              !switches::IsExplicitBrowserSigninUIOnDesktopEnabled());
+    signin::ClearPrimaryAccount(identity_manager);
+    ClearSiteDataAndWait(test_case.origin, test_case.cookie_partition_key,
+                         test_case.storage_key, {});
+    signin::MakePrimaryAccountAvailable(identity_manager, kTestEmail,
+                                        signin::ConsentLevel::kSignin);
+
+    if (test_case.expects_keep_optin_pref) {
+      EXPECT_EQ(password_manager::features_util::IsOptedInForAccountStorage(
+                    prefs, sync_service),
+                !switches::IsExplicitBrowserSigninUIOnDesktopEnabled());
+    } else {
+      EXPECT_EQ(password_manager::features_util::IsOptedInForAccountStorage(
+                    prefs, sync_service),
+                switches::IsExplicitBrowserSigninUIOnDesktopEnabled());
+    }
   }
 }
+
+#endif  // !BUILDFLAG(IS_CHROMEOS)
 
 // Storage Buckets
 
@@ -1697,6 +1756,94 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
                    ->GetClearUserCredentialsCount());
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
+                       RelatedWebsiteSetsDeletion) {
+  const GURL kPrimaryUrl("https://subdomain.example.com:112");
+  const GURL kSecondaryUrl("https://subidubi.testsite.com:55");
+
+  HostContentSettingsMap* settings_map =
+      HostContentSettingsMapFactory::GetForProfile(GetProfile());
+
+  // Setting the HostContentSettingsMap's clock to test last_modified of
+  // RuleMetaData below.
+  base::SimpleTestClock test_clock;
+  settings_map->SetClockForTesting(&test_clock);
+  test_clock.SetNow(base::Time::Now());
+
+  // Expected setting for the default grant.
+  const ContentSettingPatternSource kExpectedSettingDefault(
+      ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
+      content_settings::ContentSettingToValue(CONTENT_SETTING_ASK),
+      content_settings::ProviderType::kDefaultProvider,
+      /*incognito=*/false);
+
+  // Check that there are only default grants.
+  ASSERT_THAT(
+      settings_map->GetSettingsForOneType(ContentSettingsType::STORAGE_ACCESS),
+      UnorderedElementsAre(kExpectedSettingDefault));
+  ASSERT_THAT(settings_map->GetSettingsForOneType(
+                  ContentSettingsType::TOP_LEVEL_STORAGE_ACCESS),
+              UnorderedElementsAre(kExpectedSettingDefault));
+
+  // Set RWS grants.
+  content_settings::ContentSettingConstraints constraints;
+  constraints.set_session_model(
+      content_settings::mojom::SessionModel::NON_RESTORABLE_USER_SESSION);
+  settings_map->SetContentSettingDefaultScope(
+      kPrimaryUrl, kSecondaryUrl, ContentSettingsType::STORAGE_ACCESS,
+      CONTENT_SETTING_ALLOW, constraints);
+  settings_map->SetContentSettingDefaultScope(
+      kPrimaryUrl, kSecondaryUrl, ContentSettingsType::TOP_LEVEL_STORAGE_ACCESS,
+      CONTENT_SETTING_ALLOW, constraints);
+
+  // Check that the grants were set.
+  content_settings::RuleMetaData expected_metadata;
+  expected_metadata.SetFromConstraints(constraints);
+  expected_metadata.set_last_modified(test_clock.Now());
+  EXPECT_THAT(
+      settings_map->GetSettingsForOneType(ContentSettingsType::STORAGE_ACCESS),
+      UnorderedElementsAre(
+          kExpectedSettingDefault,
+          ContentSettingPatternSource(
+              ContentSettingsPattern::FromURLToSchemefulSitePattern(
+                  GURL(kPrimaryUrl)),  // https://[*.]example.com
+              ContentSettingsPattern::FromURLToSchemefulSitePattern(
+                  GURL(kSecondaryUrl)),  // https://[*.]testsite.com
+              content_settings::ContentSettingToValue(CONTENT_SETTING_ALLOW),
+              content_settings::ProviderType::kPrefProvider,
+              /*incognito=*/false, expected_metadata)));
+  EXPECT_THAT(
+      settings_map->GetSettingsForOneType(
+          ContentSettingsType::TOP_LEVEL_STORAGE_ACCESS),
+      UnorderedElementsAre(
+          kExpectedSettingDefault,
+          ContentSettingPatternSource(
+              ContentSettingsPattern::FromURLNoWildcard(
+                  GURL(kPrimaryUrl)),  // https://subdomain.example.com:112
+              ContentSettingsPattern::FromURLToSchemefulSitePattern(
+                  GURL(kSecondaryUrl)),
+              content_settings::ContentSettingToValue(CONTENT_SETTING_ALLOW),
+              content_settings::ProviderType::kPrefProvider,
+              /*incognito=*/false, expected_metadata)));
+
+  // Remove Related Website Sets storage grants.
+  std::unique_ptr<BrowsingDataFilterBuilder> filter_builder =
+      BrowsingDataFilterBuilder::Create(
+          BrowsingDataFilterBuilder::Mode::kDelete);
+  filter_builder->AddOrigin(url::Origin::Create(kPrimaryUrl));
+  RemoveWithFilterAndWait(
+      content::BrowsingDataRemover::DATA_TYPE_RELATED_WEBSITE_SETS_PERMISSIONS,
+      std::move(filter_builder));
+
+  // Check that there's only the default grant left.
+  EXPECT_THAT(
+      settings_map->GetSettingsForOneType(ContentSettingsType::STORAGE_ACCESS),
+      UnorderedElementsAre(kExpectedSettingDefault));
+  EXPECT_THAT(settings_map->GetSettingsForOneType(
+                  ContentSettingsType::TOP_LEVEL_STORAGE_ACCESS),
+              UnorderedElementsAre(kExpectedSettingDefault));
+}
 
 // Some storage backend use a different code path for full deletions and
 // partial deletions, so we need to test both.

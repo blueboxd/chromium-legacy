@@ -17,6 +17,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import java.lang.reflect.Method;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
+import java.util.function.Predicate;
 
 /**
  * Helper class to log which WebView APIs have been implemented by app-provided callback objects.
@@ -85,7 +86,12 @@ public final class ApiImplementationLogger {
         int ONRECEIVEDHTTPAUTHREQUEST_WEBVIEW_HTTPAUTHHANDLER_STRING_STRING = 17;
         int SHOULDOVERRIDEKEYEVENT_WEBVIEW_KEYEVENT = 18;
         int ONUNHANDLEDKEYEVENT_WEBVIEW_KEYEVENT = 19;
-        int ONUNHANDLEDINPUTEVENT_WEBVIEW_INPUTEVENT = 20;
+
+        /**
+         * @deprecated Removed in public API.
+         */
+        @Deprecated int ONUNHANDLEDINPUTEVENT_WEBVIEW_INPUTEVENT = 20;
+
         int ONSCALECHANGED_WEBVIEW_FLOAT_FLOAT = 21;
         int ONRECEIVEDLOGINREQUEST_WEBVIEW_STRING_STRING_STRING = 22;
         int ONRENDERPROCESSGONE_WEBVIEW_RENDERPROCESSGONEDETAIL = 23;
@@ -187,6 +193,53 @@ public final class ApiImplementationLogger {
     }
 
     /**
+     * Allowlist of WebViewClient methods that should be logged
+     *
+     * @param method Method from WebViewClient
+     * @return true if the method should be logged
+     */
+    private static boolean shouldLogWebViewClientMethod(Method method) {
+        @WebViewClientMethod int methodEnum = toWebViewClientMethodEnum(method);
+        return switch (methodEnum) {
+            case
+                    // Include COUNT and UNKNOWN to have all values present
+                    WebViewClientMethod.COUNT,
+                    WebViewClientMethod.UNKNOWN,
+                    // The following values are marked as @removed in the API and should
+                    // not be accessed
+                    WebViewClientMethod.ONUNHANDLEDINPUTEVENT_WEBVIEW_INPUTEVENT -> false;
+
+            case WebViewClientMethod.SHOULDOVERRIDEURLLOADING_WEBVIEW_STRING,
+                    WebViewClientMethod.SHOULDOVERRIDEURLLOADING_WEBVIEW_WEBRESOURCEREQUEST,
+                    WebViewClientMethod.ONPAGESTARTED_WEBVIEW_STRING_BITMAP,
+                    WebViewClientMethod.ONPAGEFINISHED_WEBVIEW_STRING,
+                    WebViewClientMethod.ONLOADRESOURCE_WEBVIEW_STRING,
+                    WebViewClientMethod.ONPAGECOMMITVISIBLE_WEBVIEW_STRING,
+                    WebViewClientMethod.SHOULDINTERCEPTREQUEST_WEBVIEW_STRING,
+                    WebViewClientMethod.SHOULDINTERCEPTREQUEST_WEBVIEW_WEBRESOURCEREQUEST,
+                    WebViewClientMethod.ONTOOMANYREDIRECTS_WEBVIEW_MESSAGE_MESSAGE,
+                    WebViewClientMethod.ONRECEIVEDERROR_WEBVIEW_INT_STRING_STRING,
+                    WebViewClientMethod.ONRECEIVEDERROR_WEBVIEW_WEBRESOURCEREQUEST_WEBRESOURCEERROR,
+                    WebViewClientMethod
+                            .ONRECEIVEDHTTPERROR_WEBVIEW_WEBRESOURCEREQUEST_WEBRESOURCERESPONSE,
+                    WebViewClientMethod.ONFORMRESUBMISSION_WEBVIEW_MESSAGE_MESSAGE,
+                    WebViewClientMethod.DOUPDATEVISITEDHISTORY_WEBVIEW_STRING_BOOLEAN,
+                    WebViewClientMethod.ONRECEIVEDSSLERROR_WEBVIEW_SSLERRORHANDLER_SSLERROR,
+                    WebViewClientMethod.ONRECEIVEDCLIENTCERTREQUEST_WEBVIEW_CLIENTCERTREQUEST,
+                    WebViewClientMethod
+                            .ONRECEIVEDHTTPAUTHREQUEST_WEBVIEW_HTTPAUTHHANDLER_STRING_STRING,
+                    WebViewClientMethod.SHOULDOVERRIDEKEYEVENT_WEBVIEW_KEYEVENT,
+                    WebViewClientMethod.ONUNHANDLEDKEYEVENT_WEBVIEW_KEYEVENT,
+                    WebViewClientMethod.ONSCALECHANGED_WEBVIEW_FLOAT_FLOAT,
+                    WebViewClientMethod.ONRECEIVEDLOGINREQUEST_WEBVIEW_STRING_STRING_STRING,
+                    WebViewClientMethod.ONRENDERPROCESSGONE_WEBVIEW_RENDERPROCESSGONEDETAIL,
+                    WebViewClientMethod
+                            .ONSAFEBROWSINGHIT_WEBVIEW_WEBRESOURCEREQUEST_INT_SAFEBROWSINGRESPONSE -> true;
+            default -> false; // Just return false if we get an unknown value.
+        };
+    }
+
+    /**
      * Enumeration of all overridable methods in {@link android.webkit.WebChromeClient}.
      *
      * <p>These values are logged to UMA, and should never be changed or reused.
@@ -245,7 +298,12 @@ public final class ApiImplementationLogger {
         int ONJSPROMPT_WEBVIEW_STRING_STRING_STRING_JSPROMPTRESULT = 13;
         int ONJSBEFOREUNLOAD_WEBVIEW_STRING_STRING_JSRESULT = 14;
         int ONEXCEEDEDDATABASEQUOTA_STRING_STRING_LONG_LONG_LONG_QUOTAUPDATER = 15;
-        int ONREACHEDMAXAPPCACHESIZE_LONG_LONG_QUOTAUPDATER = 16;
+
+        /**
+         * @deprecated Removed in public API.
+         */
+        @Deprecated int ONREACHEDMAXAPPCACHESIZE_LONG_LONG_QUOTAUPDATER = 16;
+
         int ONGEOLOCATIONPERMISSIONSSHOWPROMPT_STRING_CALLBACK = 17;
         int ONGEOLOCATIONPERMISSIONSHIDEPROMPT_ = 18;
         int ONPERMISSIONREQUEST_PERMISSIONREQUEST = 19;
@@ -364,10 +422,61 @@ public final class ApiImplementationLogger {
         }
     }
 
+    /**
+     * Allowlist of WebChromeClient methods that should be logged
+     *
+     * @param method Method from WebViewClient
+     * @return true if the method should be logged
+     */
+    private static boolean shouldLogWebChromeClientMethod(Method method) {
+        @WebChromeClientMethod int methodEnum = toWebChromeClientMethodEnum(method);
+        return switch (methodEnum) {
+            case
+                    // Include COUNT and UNKNOWN to have all values present
+                    WebChromeClientMethod.COUNT,
+                    WebChromeClientMethod.UNKNOWN,
+                    // The following values are marked as @removed in the API and should
+                    // not be accessed
+                    WebChromeClientMethod.ONREACHEDMAXAPPCACHESIZE_LONG_LONG_QUOTAUPDATER -> false;
+
+            case WebChromeClientMethod.ONPROGRESSCHANGED_WEBVIEW_INT,
+                    WebChromeClientMethod.ONRECEIVEDTITLE_WEBVIEW_STRING,
+                    WebChromeClientMethod.ONRECEIVEDICON_WEBVIEW_BITMAP,
+                    WebChromeClientMethod.ONRECEIVEDTOUCHICONURL_WEBVIEW_STRING_BOOLEAN,
+                    WebChromeClientMethod.ONSHOWCUSTOMVIEW_VIEW_CUSTOMVIEWCALLBACK,
+                    WebChromeClientMethod.ONSHOWCUSTOMVIEW_VIEW_INT_CUSTOMVIEWCALLBACK,
+                    WebChromeClientMethod.ONHIDECUSTOMVIEW_,
+                    WebChromeClientMethod.ONCREATEWINDOW_WEBVIEW_BOOLEAN_BOOLEAN_MESSAGE,
+                    WebChromeClientMethod.ONREQUESTFOCUS_WEBVIEW,
+                    WebChromeClientMethod.ONCLOSEWINDOW_WEBVIEW,
+                    WebChromeClientMethod.ONJSALERT_WEBVIEW_STRING_STRING_JSRESULT,
+                    WebChromeClientMethod.ONJSCONFIRM_WEBVIEW_STRING_STRING_JSRESULT,
+                    WebChromeClientMethod.ONJSPROMPT_WEBVIEW_STRING_STRING_STRING_JSPROMPTRESULT,
+                    WebChromeClientMethod.ONJSBEFOREUNLOAD_WEBVIEW_STRING_STRING_JSRESULT,
+                    WebChromeClientMethod
+                            .ONEXCEEDEDDATABASEQUOTA_STRING_STRING_LONG_LONG_LONG_QUOTAUPDATER,
+                    WebChromeClientMethod.ONGEOLOCATIONPERMISSIONSSHOWPROMPT_STRING_CALLBACK,
+                    WebChromeClientMethod.ONGEOLOCATIONPERMISSIONSHIDEPROMPT_,
+                    WebChromeClientMethod.ONPERMISSIONREQUEST_PERMISSIONREQUEST,
+                    WebChromeClientMethod.ONPERMISSIONREQUESTCANCELED_PERMISSIONREQUEST,
+                    WebChromeClientMethod.ONJSTIMEOUT_,
+                    WebChromeClientMethod.ONCONSOLEMESSAGE_STRING_INT_STRING,
+                    WebChromeClientMethod.ONCONSOLEMESSAGE_CONSOLEMESSAGE,
+                    WebChromeClientMethod.GETDEFAULTVIDEOPOSTER_,
+                    WebChromeClientMethod.GETVIDEOLOADINGPROGRESSVIEW_,
+                    WebChromeClientMethod.GETVISITEDHISTORY_VALUECALLBACK,
+                    WebChromeClientMethod.ONSHOWFILECHOOSER_WEBVIEW_VALUECALLBACK_FILECHOOSERPARAMS,
+                    WebChromeClientMethod.OPENFILECHOOSER_VALUECALLBACK_STRING_STRING,
+                    WebChromeClientMethod.SETUPAUTOFILL_MESSAGE -> true;
+            default -> false; // Just return false if we get an unknown value.
+        };
+    }
+
     public static void logWebViewClientImplementation(@NonNull WebViewClient client) {
         logOverriddenImplementation(
                 WebViewClient.class,
                 client,
+                ApiImplementationLogger::shouldLogWebViewClientMethod,
                 method ->
                         RecordHistogram.recordEnumeratedHistogram(
                                 "Android.WebView.ApiCall.Overridden.WebViewClient",
@@ -383,6 +492,7 @@ public final class ApiImplementationLogger {
         logOverriddenImplementation(
                 WebChromeClient.class,
                 client,
+                ApiImplementationLogger::shouldLogWebChromeClientMethod,
                 method ->
                         RecordHistogram.recordEnumeratedHistogram(
                                 "Android.WebView.ApiCall.Overridden.WebChromeClient",
@@ -397,11 +507,15 @@ public final class ApiImplementationLogger {
     private static <T> void logOverriddenImplementation(
             Class<T> baseClass,
             T implementation,
+            Predicate<Method> methodFilter,
             Consumer<Method> histogramRecorder,
             IntConsumer countHistogramRecorder) {
         Method[] declaredMethods = baseClass.getDeclaredMethods();
         int overriddenMethods = 0;
         for (Method method : declaredMethods) {
+            if (!methodFilter.test(method)) {
+                continue;
+            }
             try {
                 Method implementedMethod =
                         implementation
@@ -412,7 +526,8 @@ public final class ApiImplementationLogger {
                     histogramRecorder.accept(method);
                 }
             } catch (NoSuchMethodException e) {
-                // This is highly unlikely to ever happen.
+                // This is highly unlikely to ever happen, as that would mean the implementation
+                // class is missing methods from it's superclass.
                 Log.d(
                         TAG,
                         "Unable to find method %s on class %s",

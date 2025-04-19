@@ -7,8 +7,11 @@
 #import "base/apple/foundation_util.h"
 #import "base/memory/raw_ptr.h"
 #import "components/prefs/pref_service.h"
+#import "ios/chrome/browser/location_bar/ui_bundled/location_bar_coordinator.h"
 #import "ios/chrome/browser/ntp/model/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/ntp/model/new_tab_page_util.h"
+#import "ios/chrome/browser/omnibox/model/omnibox_position_browser_agent.h"
+#import "ios/chrome/browser/orchestrator/ui_bundled/omnibox_focus_orchestrator.h"
 #import "ios/chrome/browser/overlays/model/public/overlay_presentation_context.h"
 #import "ios/chrome/browser/prerender/model/prerender_service.h"
 #import "ios/chrome/browser/prerender/model/prerender_service_factory.h"
@@ -25,8 +28,6 @@
 #import "ios/chrome/browser/shared/public/commands/toolbar_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/ui/location_bar/location_bar_coordinator.h"
-#import "ios/chrome/browser/ui/orchestrator/omnibox_focus_orchestrator.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive_toolbar_view_controller.h"
 #import "ios/chrome/browser/ui/toolbar/primary_toolbar_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/primary_toolbar_view_controller_delegate.h"
@@ -121,8 +122,6 @@
       startDispatchingToTarget:self
                    forProtocol:@protocol(FakeboxFocuser)];
 
-  PrefService* originalPrefs =
-      browser->GetBrowserState()->GetOriginalChromeBrowserState()->GetPrefs();
   segmentation_platform::DeviceSwitcherResultDispatcher* deviceSwitcherResult =
       nullptr;
   if (!browser->GetBrowserState()->IsOffTheRecord()) {
@@ -135,7 +134,6 @@
                isIncognito:browser->GetBrowserState()->IsOffTheRecord()];
   self.toolbarMediator.delegate = self;
   self.toolbarMediator.deviceSwitcherResultDispatcher = deviceSwitcherResult;
-  self.toolbarMediator.originalPrefService = originalPrefs;
 
   self.locationBarCoordinator =
       [[LocationBarCoordinator alloc] initWithBrowser:browser];
@@ -201,7 +199,6 @@
   [self.toolbarMediator disconnect];
   self.toolbarMediator.omniboxConsumer = nil;
   self.toolbarMediator.delegate = nil;
-  self.toolbarMediator.originalPrefService = nullptr;
   self.toolbarMediator.deviceSwitcherResultDispatcher = nullptr;
   self.toolbarMediator = nil;
 
@@ -550,18 +547,22 @@
 
 - (void)transitionOmniboxToToolbarType:(ToolbarType)toolbarType {
   _omniboxPosition = toolbarType;
+  OmniboxPositionBrowserAgent* positionBrowserAgent =
+      OmniboxPositionBrowserAgent::FromBrowser(self.browser);
   switch (toolbarType) {
     case ToolbarType::kPrimary:
       [self.primaryToolbarCoordinator
           setLocationBarViewController:self.locationBarCoordinator
                                            .locationBarViewController];
       [self.secondaryToolbarCoordinator setLocationBarViewController:nil];
+      positionBrowserAgent->SetIsCurrentLayoutBottomOmnibox(false);
       break;
     case ToolbarType::kSecondary:
       [self.secondaryToolbarCoordinator
           setLocationBarViewController:self.locationBarCoordinator
                                            .locationBarViewController];
       [self.primaryToolbarCoordinator setLocationBarViewController:nil];
+      positionBrowserAgent->SetIsCurrentLayoutBottomOmnibox(true);
       break;
   }
   [self.toolbarHeightDelegate toolbarsHeightChanged];
@@ -633,7 +634,7 @@
     // display depends on the location of the share button to anchor the IPH,
     // doing it in the middle of the animtion will lead to the anchoring point
     // being off.
-    [_helpHandler presentShareButtonHelpBubbleIfEligible];
+    [_helpHandler presentInProductHelpWithType:InProductHelpType::kShareButton];
     _showShareButtonIPHOnNextLocationBarUnfocus = NO;
   }
   if (completion) {

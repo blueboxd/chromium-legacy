@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/keyboard/key_command_actions.h"
+#import "ios/chrome/browser/keyboard/ui_bundled/key_command_actions.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_paging.h"
 
 @class TabGridPageControl;
@@ -17,13 +17,15 @@
 // size, current TabGrid page and mode:
 //
 // Horizontal-compact and vertical-regular screen size:
-//   Normal mode:    [               PageControl      Select]
-//   Remote page:    [               PageControl            ]
-//   Selection mode: [SelectAll    SelectedTabsCount    Done]
+//   Normal mode:     [               PageControl      Select]
+//   Tab Groups page: [               PageControl            ]
+//   Remote page:     [               PageControl            ]
+//   Selection mode:  [SelectAll    SelectedTabsCount    Done]
 // Other screen size:
-//   Normal mode:    [CloseAll           PageControl      Select Done]
-//   Remote page:    [                   PageControl             Done]
-//   Selection mode: [SelectAll        SelectedTabsCount         Done]
+//   Normal mode:     [CloseAll           PageControl      Select Done]
+//   Tab Groups page: [                   PageControl             Done]
+//   Remote page:     [                   PageControl             Done]
+//   Selection mode:  [SelectAll        SelectedTabsCount         Done]
 @interface TabGridTopToolbar : UIToolbar <KeyCommandActions>
 
 // These components are publicly available to allow the user to set their

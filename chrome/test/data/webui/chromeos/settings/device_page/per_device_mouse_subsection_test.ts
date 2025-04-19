@@ -5,8 +5,10 @@
 import 'chrome://os-settings/os_settings.js';
 import 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 
-import {CrLinkRowElement, CrToggleElement, FakeInputDeviceSettingsProvider, fakeMice, fakeMice2, Mouse, PolicyStatus, Router, routes, setInputDeviceSettingsProviderForTesting, SettingsDropdownMenuElement, SettingsPerDeviceMouseSubsectionElement, SettingsSliderElement, SettingsToggleButtonElement} from 'chrome://os-settings/os_settings.js';
+import {CrLinkRowElement, CrToggleElement, FakeInputDeviceSettingsProvider, fakeMice, fakeMice2, Mouse, PerDeviceSubsectionHeaderElement, PolicyStatus, Router, routes, setInputDeviceSettingsProviderForTesting, SettingsDropdownMenuElement, SettingsPerDeviceMouseSubsectionElement, SettingsSliderElement, SettingsToggleButtonElement} from 'chrome://os-settings/os_settings.js';
+import type {BluetoothBatteryIconPercentageElement} from 'chrome://resources/ash/common/bluetooth/bluetooth_battery_icon_percentage.js';
 import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
+import {strictQuery} from 'chrome://resources/ash/common/typescript_utils/strict_query.js';
 import {assert} from 'chrome://resources/js/assert.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks, waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
@@ -20,6 +22,7 @@ suite('<settings-per-device-mouse-subsection>', function() {
 
   setup(() => {
     setPeripheralCustomizationEnabled(true);
+    setWelcomeExperienceEnabled(true);
   });
 
   teardown(() => {
@@ -53,6 +56,12 @@ suite('<settings-per-device-mouse-subsection>', function() {
   function setPeripheralCustomizationEnabled(isEnabled: boolean): void {
     loadTimeData.overrideValues({
       enablePeripheralCustomization: isEnabled,
+    });
+  }
+
+  function setWelcomeExperienceEnabled(isEnabled: boolean): void {
+    loadTimeData.overrideValues({
+      enableWelcomeExperience: isEnabled,
     });
   }
 
@@ -398,4 +407,32 @@ suite('<settings-per-device-mouse-subsection>', function() {
         assert(updatedMouseScrollSpeedSlider);
         assertTrue(updatedMouseScrollSpeedSlider.disabled);
       });
+
+  test(
+      'battery percentage displayed for connected bluetooth devices',
+      async () => {
+        await initializePerDeviceMouseSubsection(fakeMice);
+        const subsectionHeader = strictQuery(
+            '#subsectionHeader', subsection.shadowRoot,
+            PerDeviceSubsectionHeaderElement);
+        const batteryIcon =
+            subsectionHeader.shadowRoot!
+                .querySelector<BluetoothBatteryIconPercentageElement>(
+                    '#batteryIcon');
+        assertTrue(isVisible(batteryIcon));
+      });
+
+  /**
+   * Test that the row to open a companion app is displayed when an app is
+   * installed.
+   */
+  test('Open app row displayed when app is installed', async () => {
+    await initializePerDeviceMouseSubsection(fakeMice);
+    let appRow = subsection.shadowRoot!.querySelector('#openApp');
+    assertFalse(isVisible(appRow));
+    subsection.set('mouse', {...fakeMice[1]});
+    await flushTasks();
+    appRow = subsection.shadowRoot!.querySelector('#AppInstalledRow');
+    assertTrue(isVisible(appRow));
+  });
 });

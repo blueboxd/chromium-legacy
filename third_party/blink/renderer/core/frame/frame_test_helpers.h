@@ -33,6 +33,7 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+
 #include <memory>
 #include <string>
 
@@ -61,7 +62,7 @@
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_view_client.h"
-#include "third_party/blink/renderer/core/exported/web_view_impl.h"
+#include "third_party/blink/renderer/core/exported/web_view_impl.h"  // IWYU pragma: export
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/web_frame_widget_impl.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
@@ -570,6 +571,8 @@ class TestWebFrameClient : public WebLocalFrameClient {
 
   void DestroyChildViews();
 
+  void SetFrameDetachedCallback(base::OnceClosure callback);
+
  private:
   void CommitNavigation(std::unique_ptr<WebNavigationInfo>);
 
@@ -594,6 +597,9 @@ class TestWebFrameClient : public WebLocalFrameClient {
   // The sandbox flags to use when committing navigations.
   network::mojom::WebSandboxFlags sandbox_flags_ =
       network::mojom::WebSandboxFlags::kNone;
+
+  // Callback to run when |FrameDetached| is called.
+  base::OnceClosure frame_detached_callback_ = base::DoNothing();
 
   WTF::Vector<std::unique_ptr<WebViewHelper>> child_web_views_;
   base::WeakPtrFactory<TestWebFrameClient> weak_factory_{this};

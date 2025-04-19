@@ -63,6 +63,8 @@ component("evdev") {
     "heatmap_palm_detector.h",
     "imposter_checker_evdev.cc",
     "imposter_checker_evdev.h",
+    "imposter_checker_evdev_state.cc",
+    "imposter_checker_evdev_state.h",
     "input_controller_evdev.cc",
     "input_controller_evdev.h",
     "input_device_factory_evdev.cc",
@@ -155,7 +157,8 @@ component("evdev") {
       "//chromeos/ash/components/feature_usage",
     ]
     visibility += [
-      "//chrome/browser/ui:ui",
+      "//chrome/browser/ui",
+      "//chrome/browser/ui/ash",
       "//chromeos/ash/components/heatmap/*",
     ]
   }
@@ -256,6 +259,7 @@ source_set("event_device_info") {
     "//ash:ash_unittests",
     "//ash/webui/diagnostics_ui/backend:*",
     "//chrome/browser/ash:unit_tests",
+    "//chrome/browser/ash/system_logs:unit_tests",
     "//chromeos/ash/services/cros_healthd/*",
     "//ui/chromeos/*",
     "//ui/events/ash/*",
@@ -279,6 +283,7 @@ source_set("event_device_info_test_utils") {
   visibility += [
     "//ash/webui/diagnostics_ui/backend:unit_tests",
     "//chrome/browser/ash:unit_tests",
+    "//chrome/browser/ash/system_logs:unit_tests",
     "//ui/events/ash:unit_tests",
   ]
 }

@@ -471,9 +471,7 @@ class NoStatePrefetchBrowserTest
 
 enum SplitCacheTestCase {
   kSplitCacheDisabled,
-  kSplitCacheEnabledDoublePlusBitKeyed,
   kSplitCacheEnabledTripleKeyed,
-  kSplitCacheEnabledTripleKeyedSharedOpaque,
 };
 
 class NoStatePrefetchBrowserTestHttpCache
@@ -494,22 +492,6 @@ class NoStatePrefetchBrowserTestHttpCache
           net::features::kSplitCacheByNetworkIsolationKey);
     }
 
-    if (GetParam() == kSplitCacheEnabledDoublePlusBitKeyed) {
-      enabled_features.push_back(
-          net::features::kEnableCrossSiteFlagNetworkIsolationKey);
-    } else {
-      disabled_features.push_back(
-          net::features::kEnableCrossSiteFlagNetworkIsolationKey);
-    }
-
-    if (GetParam() == kSplitCacheEnabledTripleKeyedSharedOpaque) {
-      enabled_features.push_back(
-          net::features::kEnableFrameSiteSharedOpaqueNetworkIsolationKey);
-    } else {
-      disabled_features.push_back(
-          net::features::kEnableFrameSiteSharedOpaqueNetworkIsolationKey);
-    }
-
     feature_list_.InitWithFeatures(enabled_features, disabled_features);
   }
 
@@ -521,12 +503,21 @@ class NoStatePrefetchBrowserTestHttpCache
   base::test::ScopedFeatureList feature_list_;
 };
 
-using NoStatePrefetchBrowserTestHttpCache_DefaultAndAppendFrameOrigin =
-    NoStatePrefetchBrowserTestHttpCache;
+class NoStatePrefetchBrowserTest_HttpCacheDefaultAndAppendFrameOrigin
+    : public NoStatePrefetchBrowserTest {
+ protected:
+  NoStatePrefetchBrowserTest_HttpCacheDefaultAndAppendFrameOrigin() {
+    feature_list_.InitAndEnableFeature(
+        net::features::kSplitCacheByNetworkIsolationKey);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
 
 // Test that the network isolation key is correctly populated during a prefetch.
-IN_PROC_BROWSER_TEST_P(
-    NoStatePrefetchBrowserTestHttpCache_DefaultAndAppendFrameOrigin,
+IN_PROC_BROWSER_TEST_F(
+    NoStatePrefetchBrowserTest_HttpCacheDefaultAndAppendFrameOrigin,
     PrefetchTwoCrossOriginFrames) {
   GURL image_src =
       embedded_test_server()->GetURL("/prerender/cacheable_image.png");
@@ -549,40 +540,8 @@ IN_PROC_BROWSER_TEST_P(
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       current_browser(), src_server()->GetURL(prerender_path)));
 
-  switch (GetParam()) {
-    case SplitCacheTestCase::kSplitCacheEnabledDoublePlusBitKeyed:
-      // If the NIK only uses an is-cross-site bit instead of the full frame
-      // site in the cache key, then the two iframes will share a cache
-      // partition.
-      WaitForRequestCount(image_src, 1);
-      break;
-    case SplitCacheTestCase::kSplitCacheEnabledTripleKeyed:
-    case SplitCacheTestCase::kSplitCacheEnabledTripleKeyedSharedOpaque:
-    case SplitCacheTestCase::kSplitCacheDisabled:
-      WaitForRequestCount(image_src, 2);
-      break;
-  }
+  WaitForRequestCount(image_src, 2);
 }
-
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    NoStatePrefetchBrowserTestHttpCache_DefaultAndAppendFrameOrigin,
-    testing::ValuesIn(
-        {SplitCacheTestCase::kSplitCacheEnabledTripleKeyed,
-         SplitCacheTestCase::kSplitCacheEnabledDoublePlusBitKeyed,
-         SplitCacheTestCase::kSplitCacheEnabledTripleKeyedSharedOpaque}),
-    [](const testing::TestParamInfo<SplitCacheTestCase>& info) {
-      switch (info.param) {
-        case (SplitCacheTestCase::kSplitCacheDisabled):
-          return "NotUsedForThisTestSuite";
-        case (SplitCacheTestCase::kSplitCacheEnabledTripleKeyed):
-          return "TripleKeyed";
-        case (SplitCacheTestCase::kSplitCacheEnabledDoublePlusBitKeyed):
-          return "DoublePlusBitKeyed";
-        case (SplitCacheTestCase::kSplitCacheEnabledTripleKeyedSharedOpaque):
-          return "TripleKeyedSharedOpaque";
-      }
-    });
 
 // Checks that a page is correctly prefetched in the case of a
 // <link rel=prerender> tag and the JavaScript on the page is not executed.
@@ -671,9 +630,8 @@ IN_PROC_BROWSER_TEST_P(
 IN_PROC_BROWSER_TEST_P(
     NoStatePrefetchBrowserTestHttpCache_DefaultAndDoubleKeyedHttpCache,
     LoadAfterPrefetchCrossOrigin) {
-  static const std::string kSecondaryDomain = "www.foo.com";
-  GURL cross_domain_url =
-      embedded_test_server()->GetURL(kSecondaryDomain, kPrefetchPageBigger);
+  GURL cross_domain_url = embedded_test_server()->GetURL(
+      test_utils::kSecondaryDomain, kPrefetchPageBigger);
 
   PrefetchFromURL(cross_domain_url, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
   WaitForRequestCount(src_server()->GetURL(kPrefetchPageBigger), 1);
@@ -691,21 +649,16 @@ IN_PROC_BROWSER_TEST_P(
 INSTANTIATE_TEST_SUITE_P(
     All,
     NoStatePrefetchBrowserTestHttpCache_DefaultAndDoubleKeyedHttpCache,
-    testing::ValuesIn(
-        {SplitCacheTestCase::kSplitCacheDisabled,
-         SplitCacheTestCase::kSplitCacheEnabledTripleKeyed,
-         SplitCacheTestCase::kSplitCacheEnabledDoublePlusBitKeyed,
-         SplitCacheTestCase::kSplitCacheEnabledTripleKeyedSharedOpaque}),
+    testing::ValuesIn({
+        SplitCacheTestCase::kSplitCacheDisabled,
+        SplitCacheTestCase::kSplitCacheEnabledTripleKeyed,
+    }),
     [](const testing::TestParamInfo<SplitCacheTestCase>& info) {
       switch (info.param) {
         case (SplitCacheTestCase::kSplitCacheDisabled):
           return "SplitCacheDisabled";
         case (SplitCacheTestCase::kSplitCacheEnabledTripleKeyed):
           return "TripleKeyed";
-        case (SplitCacheTestCase::kSplitCacheEnabledDoublePlusBitKeyed):
-          return "DoublePlusBitKeyed";
-        case (SplitCacheTestCase::kSplitCacheEnabledTripleKeyedSharedOpaque):
-          return "DoublePlusBitKeyedSharedOpaque";
       }
     });
 
@@ -937,9 +890,8 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchCookie) {
 
 // Check cookie loading for a cross-domain prefetched pages.
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchCookieCrossDomain) {
-  static const std::string secondary_domain = "www.foo.com";
   GURL cross_domain_url(base::StringPrintf(
-      "http://%s:%d%s", secondary_domain.c_str(),
+      "http://%s:%d%s", test_utils::kSecondaryDomain,
       embedded_test_server()->host_port_pair().port(), kPrefetchCookiePage));
 
   std::unique_ptr<TestPrerender> test_prerender =
@@ -961,9 +913,9 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchCookieCrossDomain) {
 // Check cookie loading for a cross-domain prefetched pages.
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
                        PrefetchCookieCrossDomainSameSiteStrict) {
-  constexpr char kSecondaryDomain[] = "www.foo.com";
+  UseHttpsSrcServer();
   GURL cross_domain_url =
-      embedded_test_server()->GetURL(kSecondaryDomain, "/echoall");
+      src_server()->GetURL(test_utils::kSecondaryDomain, "/echoall");
 
   EXPECT_TRUE(SetCookie(current_browser()->profile(), cross_domain_url,
                         "cookie_A=A; SameSite=Strict;"));
@@ -985,8 +937,13 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
           "document.body.innerHTML")
           .ExtractString();
 
-  // For any cross origin navigation (including prerender), SameSite Strict
-  // cookies should not be sent, but Lax should.
+  // The prerender request will be considered a renderer-inititated cross-origin
+  // navigation, so the SameSite=Strict cookie should not be sent and the
+  // SameSite=Lax cookie should be. Note that we can tell whether the prerender
+  // response is actually used here (assuming the prerender code is working
+  // correctly) because if it isn't, `ui_test_utils::NavigateToURL()` will
+  // perform a browser-initiated navigation which will cause SameSite=Strict
+  // cookies to be sent.
   EXPECT_EQ(std::string::npos, html_content.find("cookie_A=A"));
   EXPECT_NE(std::string::npos, html_content.find("cookie_B=B"));
 }
@@ -994,7 +951,8 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
 // Check cookie loading for a same-domain prefetched pages.
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
                        PrefetchCookieSameDomainSameSiteStrict) {
-  GURL same_domain_url = embedded_test_server()->GetURL("/echoall");
+  UseHttpsSrcServer();
+  GURL same_domain_url = src_server()->GetURL("/echoall");
 
   EXPECT_TRUE(SetCookie(current_browser()->profile(), same_domain_url,
                         "cookie_A=A; SameSite=Strict;"));
@@ -1003,6 +961,11 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
 
   std::unique_ptr<TestPrerender> test_prerender =
       PrefetchFromURL(same_domain_url, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+
+  // Modify the stored SameSite=Strict cookie so that we can tell whether the
+  // prerendered response is used by the navigation below.
+  EXPECT_TRUE(SetCookie(current_browser()->profile(), same_domain_url,
+                        "cookie_A=Modified; SameSite=Strict;"));
 
   ASSERT_TRUE(ui_test_utils::NavigateToURL(current_browser(), same_domain_url));
 
@@ -1015,9 +978,11 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
           "document.body.innerHTML")
           .ExtractString();
 
-  // For any same origin navigation (including prerender), SameSite Strict
-  // cookies should not be sent, but Lax should.
-  EXPECT_NE(std::string::npos, html_content.find("cookie_A=A"));
+  // Since the prerender request is a renderer-initiated same-origin navigation,
+  // SameSite=Strict cookies should be sent (the same way that they will be sent
+  // for browser-initiated navigations).
+  EXPECT_NE(std::string::npos, html_content.find("cookie_A=A"))
+      << "html_content: " << html_content;
   EXPECT_NE(std::string::npos, html_content.find("cookie_B=B"));
 }
 
@@ -1065,10 +1030,9 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PurposeHeaderIsSet) {
     EXPECT_FALSE(request->headers.HasHeader(kExpectedPurposeHeaderOnPrefetch));
     EXPECT_TRUE(request->cors_exempt_headers.HasHeader(
         kExpectedPurposeHeaderOnPrefetch));
-    std::string purpose_header;
-    request->cors_exempt_headers.GetHeader(kExpectedPurposeHeaderOnPrefetch,
-                                           &purpose_header);
-    EXPECT_EQ("prefetch", purpose_header);
+    EXPECT_EQ("prefetch", request->cors_exempt_headers
+                              .GetHeader(kExpectedPurposeHeaderOnPrefetch)
+                              .value_or(std::string()));
   }
 }
 
@@ -1107,9 +1071,8 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchImage) {
 
 // Checks that a cross-domain prefetching works correctly.
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchCrossDomain) {
-  static const std::string secondary_domain = "www.foo.com";
   GURL cross_domain_url(base::StringPrintf(
-      "http://%s:%d%s", secondary_domain.c_str(),
+      "http://%s:%d%s", test_utils::kSecondaryDomain,
       embedded_test_server()->host_port_pair().port(), kPrefetchPage));
   PrefetchFromURL(cross_domain_url, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
   WaitForRequestCount(src_server()->GetURL(kPrefetchPage), 1);
@@ -1118,15 +1081,13 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchCrossDomain) {
 // Checks that prefetching from a cross-domain subframe works correctly.
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
                        PrefetchFromCrossDomainSubframe) {
-  const std::string secondary_domain = "www.foo.com";
-
   GURL target_url(base::StringPrintf(
-      "http://%s:%d%s", secondary_domain.c_str(),
+      "http://%s:%d%s", test_utils::kSecondaryDomain,
       embedded_test_server()->host_port_pair().port(), kPrefetchPage));
 
   GURL inner_frame_url = ServeLoaderURLWithHostname(
       kPrefetchLoaderPath, "REPLACE_WITH_PREFETCH_URL", target_url, "",
-      secondary_domain);
+      test_utils::kSecondaryDomain);
 
   GURL outer_frame_url = ServeLoaderURL(
       kPrefetchFromSubframe, "REPLACE_WITH_SUBFRAME_URL", inner_frame_url, "");
@@ -1142,8 +1103,8 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
 
 // Checks that response header CSP is respected.
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, ResponseHeaderCSP) {
-  static const std::string secondary_domain = "foo.bar";
-  GURL second_script_url(std::string("http://foo.bar") + kPrefetchScript2);
+  GURL second_script_url(base::StringPrintf(
+      "http://%s%s", test_utils::kSecondaryDomain, kPrefetchScript2));
   GURL prefetch_response_header_csp = GetURLWithReplacement(
       kPrefetchResponseHeaderCSP, "REPLACE_WITH_PORT",
       base::NumberToString(src_server()->host_port_pair().port()));
@@ -1161,8 +1122,8 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, ResponseHeaderCSP) {
 // TODO(mattcary): probably this behavior should be consistent with
 // response-header CSP. See crbug/656581.
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, MetaTagCSP) {
-  static const std::string secondary_domain = "foo.bar";
-  GURL second_script_url(std::string("http://foo.bar") + kPrefetchScript2);
+  GURL second_script_url(base::StringPrintf(
+      "http://%s%s", test_utils::kSecondaryDomain, kPrefetchScript2));
   GURL prefetch_meta_tag_csp = GetURLWithReplacement(
       kPrefetchMetaCSP, "REPLACE_WITH_PORT",
       base::NumberToString(src_server()->host_port_pair().port()));
@@ -1798,8 +1759,6 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, OpenTaskManager) {
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, original));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, any_tab));
 
-  // ui_test_utils::NavigateToURL(current_browser(),
-  //                             src_server()->GetURL(kPrefetchPage));
   // Open a new tab to replace the one closed with all the RenderProcessHosts.
   ui_test_utils::NavigateToURLWithDisposition(
       current_browser(), src_server()->GetURL(kPrefetchPage),

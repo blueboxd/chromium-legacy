@@ -16,7 +16,6 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/performance_manager/decorators/helpers/page_live_state_decorator_helper.h"
-#include "chrome/browser/performance_manager/metrics/memory_pressure_metrics.h"
 #include "chrome/browser/performance_manager/metrics/metrics_provider_desktop.h"
 #include "chrome/browser/performance_manager/metrics/page_resource_monitor.h"
 #include "chrome/browser/performance_manager/observers/page_load_metrics_observer.h"
@@ -112,7 +111,6 @@ ChromeBrowserMainExtraPartsPerformanceManager::GetInstance() {
 // static
 void ChromeBrowserMainExtraPartsPerformanceManager::CreatePoliciesAndDecorators(
     performance_manager::Graph* graph) {
-  graph->PassToGraph(std::make_unique<performance_manager::PageAggregator>());
   graph->PassToGraph(
       std::make_unique<performance_manager::FrozenFrameAggregator>());
   graph->PassToGraph(
@@ -139,24 +137,13 @@ void ChromeBrowserMainExtraPartsPerformanceManager::CreatePoliciesAndDecorators(
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
   graph->PassToGraph(std::make_unique<
                      performance_manager::policies::OomScorePolicyChromeOS>());
   graph->PassToGraph(
       std::make_unique<
           performance_manager::policies::ReportPageProcessesPolicy>());
-#elif BUILDFLAG(IS_CHROMEOS_ASH)
-  if (base::FeatureList::IsEnabled(
-          performance_manager::features::
-              kAshUrgentDiscardingFromPerformanceManager)) {
-    graph->PassToGraph(
-        std::make_unique<
-            performance_manager::policies::OomScorePolicyChromeOS>());
-    graph->PassToGraph(
-        std::make_unique<
-            performance_manager::policies::ReportPageProcessesPolicy>());
-  }
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if !BUILDFLAG(IS_ANDROID)
   graph->PassToGraph(FormInteractionTabHelper::CreateGraphObserver());
@@ -165,19 +152,9 @@ void ChromeBrowserMainExtraPartsPerformanceManager::CreatePoliciesAndDecorators(
       std::make_unique<performance_manager::policies::PageDiscardingHelper>());
 
 #if URGENT_DISCARDING_FROM_PERFORMANCE_MANAGER()
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (base::FeatureList::IsEnabled(
-          performance_manager::features::
-              kAshUrgentDiscardingFromPerformanceManager)) {
-    graph->PassToGraph(
-        std::make_unique<
-            performance_manager::policies::UrgentPageDiscardingPolicy>());
-  }
-#else
   graph->PassToGraph(
       std::make_unique<
           performance_manager::policies::UrgentPageDiscardingPolicy>());
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #endif  // URGENT_DISCARDING_FROM_PERFORMANCE_MANAGER()
 
   if (base::FeatureList::IsEnabled(
@@ -204,8 +181,6 @@ void ChromeBrowserMainExtraPartsPerformanceManager::CreatePoliciesAndDecorators(
 #endif  // !BUILDFLAG(IS_ANDROID)
 
   graph->PassToGraph(
-      std::make_unique<performance_manager::metrics::MemoryPressureMetrics>());
-  graph->PassToGraph(
       std::make_unique<performance_manager::metrics::PageResourceMonitor>());
 
   if (base::FeatureList::IsEnabled(
@@ -214,11 +189,13 @@ void ChromeBrowserMainExtraPartsPerformanceManager::CreatePoliciesAndDecorators(
         std::make_unique<performance_manager::policies::BFCachePolicy>());
   }
 
+#if !BUILDFLAG(IS_ANDROID)
   if (base::FeatureList::IsEnabled(
           performance_manager::features::kPMProcessPriorityPolicy)) {
     graph->PassToGraph(std::make_unique<
                        performance_manager::policies::ProcessPriorityPolicy>());
   }
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_WIN)
   if (base::FeatureList::IsEnabled(
@@ -278,8 +255,8 @@ void ChromeBrowserMainExtraPartsPerformanceManager::PostCreateThreads() {
       new performance_manager::user_tuning::BatterySaverModeManager(
           g_browser_process->local_state()));
 
-  if (base::FeatureList::IsEnabled(
-          performance_manager::features::kPerformanceIntervention)) {
+  if (performance_manager::features::
+          ShouldUsePerformanceInterventionBackend()) {
     performance_detection_manager_ = base::WrapUnique(
         new performance_manager::user_tuning::PerformanceDetectionManager());
   }

@@ -822,6 +822,53 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="2" label="Error"/>
 </enum>
 
+<enum name="Platform.FbPreprocessor.CollectionAllowedStatus">
+  <summary>
+    Used to report if the collection of firmware dumps is allowed, and if not
+    why.
+  </summary>
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Allowed">Collection of firmware dumps is allowed</int>
+  <int value="2" label="DisallowedByPolicy">
+    Policy disallows the collection of firmware dumps,
+    UserFeedbackWithLowLevelDebugDataAllowed is not set
+  </int>
+  <int value="3" label="DisallowedByFinch">
+    Disabled by Finch kill-switch CrOSLateBootAllowFirmwareDumps
+  </int>
+  <int value="4" label="DisallowedForMultipleSessions">
+    Disabled because more than 1 user is logged in at the same time
+  </int>
+  <int value="5" label="DisallowedForUserDomain">
+    Collection not allowed for this domain
+  </int>
+</enum>
+
+<enum name="Platform.FbPreprocessor.FirmwareType">
+  <summary>
+    Lists the type of firmware debug dumps that can be collected in feedback
+    reports, as described in go/cros-fbpreprocessord-dd. Those types are defined
+    in fbpreprocessor.proto, enum DebugDump::Type.
+  </summary>
+  <int value="0" label="UnknownType"/>
+  <int value="1" label="WiFi"/>
+</enum>
+
+<enum name="Platform.FbPreprocessor.PseudonymizationResult">
+  <summary>
+    Used to report if the pseudonymization of firmware dumps succeeded, and if
+    not why.
+  </summary>
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Success">Pseudonymization completed successfully</int>
+  <int value="2" label="FailedToStart">
+    Failed to start the pseudonymization thread/process
+  </int>
+  <int value="3" label="NoOpFailedToMove">
+    The &quot;no-op&quot; pseudonymization failed to move the firmware dump
+  </int>
+</enum>
+
 <enum name="Platform.Memory.PsiPolicyError">
   <int value="0" label="MemInfo"/>
   <int value="1" label="Vmstat"/>
@@ -2498,6 +2545,7 @@ Full version information for the fingerprint enum values:
   <int value="399636984" label="CROS Cr50 0.0.18"/>
   <int value="403344126" label="CROS Ti50 0.23.72"/>
   <int value="404096389" label="CROS Cr50 0.5.152"/>
+  <int value="408634489" label="CROS Ti50 0.23.101"/>
   <int value="415762088" label="CROS Cr50 0.5.5"/>
   <int value="431107149" label="CROS Cr50 ro 0.0.11 rw 0.3.22"/>
   <int value="437666420" label="CROS Cr50 0.6.90"/>
@@ -2515,6 +2563,8 @@ Full version information for the fingerprint enum values:
   <int value="562513455" label="CROS Cr50 0.4.12"/>
   <int value="563952990" label="CROS Cr50 0.6.51"/>
   <int value="566085886" label="CROS Cr50 0.5.142"/>
+  <int value="602649060" label="CROS Ti50 0.22.5"/>
+  <int value="610267058" label="CROS Ti50 0.24.101"/>
   <int value="612889790" label="CROS Ti50 0.23.30"/>
   <int value="618235807" label="CROS Cr50 0.3.18"/>
   <int value="639195905" label="IFX 9655 rev 35 fw 4.32 build 036f"/>
@@ -2553,14 +2603,17 @@ Full version information for the fingerprint enum values:
   <int value="921986551" label="CROS Cr50 0.6.70"/>
   <int value="928190862" label="CROS Cr50 0.0.17"/>
   <int value="928401938" label="CROS Cr50 ro 0.0.11 rw w0.4.24"/>
+  <int value="941521429" label="CROS Ti50 0.24.112"/>
   <int value="946990224" label="CROS Ti50 0.23.71"/>
   <int value="961500628" label="CROS Cr50 0.5.11"/>
   <int value="969849518" label="CROS Cr50 0.4.9 Flags 0x10(pre-pvt)"/>
+  <int value="973237052" label="CROS Cr50 0.6.241"/>
   <int value="987235505" label="CROS Cr50 0.0.20"/>
   <int value="987973414" label="IFX 9670 rev 15 fw 6.40 build 00be"/>
   <int value="1001367086" label="CROS Cr50 0.3.15"/>
   <int value="1009763914" label="CROS Cr50 0.4.10"/>
   <int value="1013730596" label="CROS Cr50 0.0.26 Flags 0x10(pre-pvt)"/>
+  <int value="1013974746" label="CROS Ti50 0.24.100"/>
   <int value="1026059105" label="CROS Cr50 0.3.4"/>
   <int value="1039624416" label="CROS Cr50 0.3.10"/>
   <int value="1048372479" label="CROS Cr50 0.6.4"/>
@@ -2571,8 +2624,10 @@ Full version information for the fingerprint enum values:
   <int value="1069046756" label="CROS Cr50 0.5.51"/>
   <int value="1080347583" label="CROS Cr50 0.6.2"/>
   <int value="1091661035" label="CROS Cr50 0.5.201"/>
+  <int value="1101087472" label="CROS Cr50 0.6.251"/>
   <int value="1123680979" label="CROS Cr50 0.3.4 (duplicate)"/>
   <int value="1131918398" label="CROS Cr50 0.5.160"/>
+  <int value="1154690950" label="CROS Cr50 0.6.250"/>
   <int value="1172082999" label="CROS Cr50 0.5.205"/>
   <int value="1184698907" label="CROS Cr50 0.3.23"/>
   <int value="1190683265" label="CROS Cr50 0.0.14"/>
@@ -2588,6 +2643,7 @@ Full version information for the fingerprint enum values:
   <int value="1311411160" label="WEC 345"/>
   <int value="1318849875" label="CROS Cr50 0.6.100"/>
   <int value="1332366315" label="CROS Cr50 0.5.151"/>
+  <int value="1338970508" label="CROS Ti50 0.24.80"/>
   <int value="1349306733" label="CROS Cr50 0.6.222"/>
   <int value="1353576267" label="IFX 9635 fw 3.18 build 0009"/>
   <int value="1366252830" label="CROS Ti50 0.0.15"/>
@@ -2649,6 +2705,7 @@ Full version information for the fingerprint enum values:
   <int value="1865292977" label="CROS Cr50 0.0.24 aka 0.3.0"/>
   <int value="1867843231" label="CROS Ti50 0.24.50"/>
   <int value="1875276519" label="CROS Cr50 0.6.171"/>
+  <int value="1878374913" label="CROS Ti50 0.22.8"/>
   <int value="1883956482" label="CROS Cr50 0.6.153"/>
   <int value="1887455524" label="CROS Cr50 0.0.21"/>
   <int value="1895760793" label="CROS Cr50 0.5.153"/>
@@ -2660,6 +2717,7 @@ Full version information for the fingerprint enum values:
   <int value="1934507294" label="CROS Ti50 0.0.13"/>
   <int value="1935803215" label="CROS Cr50 0.3.25"/>
   <int value="1941011596" label="IFX 9655 rev 35 fw 4.34 build 03f2"/>
+  <int value="1944125174" label="CROS Cr50 0.5.241"/>
   <int value="1951490249" label="CROS Cr50 0.5.130"/>
   <int value="1953654937" label="IFX 9645 rev 45 fw 133.33 build 00e3"/>
   <int value="1974285066" label="CROS Ti50 0.23.90"/>

@@ -170,20 +170,24 @@ class CONTENT_EXPORT ServiceWorkerContext {
       StatusCodeCallback callback) = 0;
 
   // Equivalent to calling ServiceWorkerRegistration#unregister on the
-  // registration for `scope`. `callback` is passed true when the JS promise is
-  // fulfilled or false when the JS promise is rejected.
+  // registration for `scope`.
   //
   // Unregistration can fail if:
   //  * No registration exists for `scope`.
   //  * Something unexpected goes wrong, like a renderer crash.
+  //
+  // `callback` provides the status code result of the unregistration.
+  // `blink::ServiceWorkerStatusCode::kOk` means the request to unregister was
+  // sent. It does not mean the worker has been fully unregistered though.
   virtual void UnregisterServiceWorker(const GURL& scope,
                                        const blink::StorageKey& key,
-                                       ResultCallback callback) = 0;
+                                       StatusCodeCallback callback) = 0;
   // As above, but clears the service worker registration immediately rather
   // than waiting if the service worker is active and has controllees.
-  virtual void UnregisterServiceWorkerImmediately(const GURL& scope,
-                                                  const blink::StorageKey& key,
-                                                  ResultCallback callback) = 0;
+  virtual void UnregisterServiceWorkerImmediately(
+      const GURL& scope,
+      const blink::StorageKey& key,
+      StatusCodeCallback callback) = 0;
 
   // Mechanism for embedder to increment/decrement ref count of a service
   // worker.
@@ -330,6 +334,11 @@ class CONTENT_EXPORT ServiceWorkerContext {
   // `IsLiveRunningServiceWorker()` returns false.
   virtual blink::AssociatedInterfaceProvider& GetRemoteAssociatedInterfaces(
       int64_t service_worker_version_id) = 0;
+
+  // Sets the devtools force update on page load flag for service workers. See
+  // ServiceWorkerContextCore::force_update_on_page_load() for details.
+  virtual void SetForceUpdateOnPageLoadForTesting(
+      bool force_update_on_page_load) = 0;
 
  protected:
   ServiceWorkerContext() {}

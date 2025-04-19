@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/ui/webui/password_manager/password_manager_ui.h"
 
 #include "base/feature_list.h"
@@ -221,6 +226,14 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
       {"federatedCredentialProviderAriaLabel",
        IDS_PASSWORD_MANAGER_UI_FEDERATED_CREDENTIAL_ARIA_LABEL},
       {"federationLabel", IDS_PASSWORD_MANAGER_UI_FEDERATION_LABEL},
+      {"fullResetDeleteAll", IDS_PASSWORD_MANAGER_UI_FULL_RESET_DELETE_ALL},
+      {"fullResetConfirm", IDS_PASSWORD_MANAGER_UI_FULL_RESET_CONFIRM},
+      {"fullResetSuccessToast",
+       IDS_PASSWORD_MANAGER_UI_FULL_RESET_SUCCESS_TOAST},
+      {"fullResetDomainsDisplayOne",
+       IDS_PASSWORD_MANAGER_UI_FULL_RESET_DOMAINS_DISPLAY_ONE},
+      {"fullResetDomainsDisplayTwo",
+       IDS_PASSWORD_MANAGER_UI_FULL_RESET_DOMAINS_DISPLAY_TWO},
       {"gotIt", IDS_SETTINGS_GOT_IT},
       {"help", IDS_PASSWORD_MANAGER_UI_HELP},
       {"hidePassword", IDS_PASSWORD_MANAGER_UI_HIDE_PASSWORD},
@@ -366,6 +379,10 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
       {"save", IDS_SAVE},
       {"savePasswordsLabel",
        IDS_PASSWORD_MANAGER_UI_SAVE_PASSWORDS_TOGGLE_LABEL},
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+      {"screenlockReauthPromoConfirmation",
+       IDS_PASSWORD_MANAGER_UI_SCREENLOCK_REAUTH_PROMO_CARD_CONFIRMATION},
+#endif
       {"share", IDS_PASSWORD_MANAGER_UI_SHARE},
       {"shareDialogTitle", IDS_PASSWORD_MANAGER_UI_SHARE_DIALOG_TITLE},
       {"shareDialogLoadingTitle",
@@ -484,12 +501,9 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
 #endif
 
   source->AddBoolean(
-      "enableSendPasswords",
-      base::FeatureList::IsEnabled(password_manager::features::kSendPasswords));
-
-  source->AddBoolean("enableButterOnDesktopFollowup",
-                     base::FeatureList::IsEnabled(
-                         password_manager::features::kButterOnDesktopFollowup));
+      "enableWebAuthnGpmPin",
+      base::FeatureList::IsEnabled(device::kWebAuthnEnclaveAuthenticator) &&
+          device::kWebAuthnGpmPin.Get());
 
   source->AddString("passwordSharingLearnMoreURL",
                     chrome::kPasswordSharingLearnMoreURL);
@@ -539,6 +553,24 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
   source->AddString("autosigninDescription",
                     InsertBrandedPasswordManager(
                         IDS_PASSWORD_MANAGER_UI_AUTOSIGNIN_TOGGLE_DESC));
+
+  source->AddString(
+      "fullResetTitle",
+      InsertBrandedPasswordManager(IDS_PASSWORD_MANAGER_UI_FULL_RESET_TITLE));
+  source->AddString("fullResetRowDescription",
+                    InsertBrandedPasswordManager(
+                        IDS_PASSWORD_MANAGER_UI_FULL_RESET_DESCRIPTION));
+  source->AddString("fullResetConfirmationTitle",
+                    InsertBrandedPasswordManager(
+                        IDS_PASSWORD_MANAGER_UI_FULL_RESET_CONFIRMATION_TITLE));
+  source->AddString(
+      "fullResetConfirmationTitleLocal",
+      InsertBrandedPasswordManager(
+          IDS_PASSWORD_MANAGER_UI_FULL_RESET_CONFIRMATION_TITLE_LOCAL));
+  source->AddString(
+      "fullResetConfirmationDescription",
+      InsertBrandedPasswordManager(
+          IDS_PASSWORD_MANAGER_UI_FULL_RESET_CONFIRMATION_DESCIPTION));
 
   source->AddString(
       "emptyStateImportAccountStore",
@@ -595,6 +627,13 @@ void AddPluralStrings(content::WebUI* web_ui) {
   plural_string_handler->AddLocalizedString(
       "deviceOnlyPasswordsIconTooltip",
       IDS_PASSWORD_MANAGER_UI_DEVICE_ONLY_PASSWORDS_ICON_TOOLTIP);
+  plural_string_handler->AddLocalizedString(
+      "fullResetDomainsDisplayTwoAndXMore",
+      IDS_PASSWORD_MANAGER_UI_FULL_RESET_DOMAINS_DISPLAY_TWO_AND_X_MORE);
+  plural_string_handler->AddLocalizedString(
+      "fullResetPasswordsCounter", IDS_PASSWORD_MANAGER_PASSWORDS_COUNTER);
+  plural_string_handler->AddLocalizedString(
+      "fullResetPasskeysCounter", IDS_PASSWORD_MANAGER_PASSKEYS_COUNTER);
   plural_string_handler->AddLocalizedString(
       "importPasswordsFailuresSummary",
       IDS_PASSWORD_MANAGER_UI_IMPORT_FAILURES_SUMMARY);

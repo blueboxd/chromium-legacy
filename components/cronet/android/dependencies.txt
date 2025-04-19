@@ -9,6 +9,7 @@
 //build/config
 //build/config/compiler
 //build/rust
+//build/rust/chromium_prelude
 //build/rust/std
 //build/rust/std/rules
 //build/win
@@ -33,6 +34,7 @@
 //net/third_party/quiche
 //net/traffic_annotation
 //third_party/abseil-cpp
+//third_party/android_build_tools
 //third_party/android_deps
 //third_party/android_sdk
 //third_party/androidx

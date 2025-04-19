@@ -5,9 +5,30 @@
 #ifndef CHROME_ENTERPRISE_COMPANION_ENTERPRISE_COMPANION_H_
 #define CHROME_ENTERPRISE_COMPANION_ENTERPRISE_COMPANION_H_
 
+#include <optional>
+
+#include "base/files/file_path.h"
+#include "build/build_config.h"
+
 namespace enterprise_companion {
 
+// Specifies the logging module filter.
+extern const char kLoggingModuleSwitch[];
+// Runs as the embedded Crashpad handler.
+extern const char kCrashHandlerSwitch[];
+// Crash the program for testing purposes.
+extern const char kCrashMeSwitch[];
+// Install the application.
+extern const char kInstallSwitch[];
+
+#if BUILDFLAG(IS_MAC)
+// Runs the network worker.
+extern const char kNetWorkerSwitch[];
+#endif
+
 int EnterpriseCompanionMain(int argc, const char* const* argv);
+
+std::optional<base::FilePath> GetLogFilePath();
 
 }  // namespace enterprise_companion
 

@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/shared/ui/util/layout_guide_names.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_omnibox_consumer.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_type.h"
 
@@ -22,6 +23,11 @@
 /// The view controller that will parent the popup.
 - (UIViewController*)popupParentViewControllerForPresenter:
     (OmniboxPopupPresenter*)presenter;
+
+/// Returns the layout guide name used to anchor the omnibox popup to the
+/// omnibox textfield. If nil, the popup will be fully expanded inside of the
+/// parent view, from `popupParentViewForPresenter`.
+- (GuideName*)omniboxGuideNameForPresenter:(OmniboxPopupPresenter*)presenter;
 
 /// Alert the delegate that the popup opened.
 - (void)popupDidOpenForPresenter:(OmniboxPopupPresenter*)presenter;
@@ -44,7 +50,6 @@
 /// `isFocusingOmnibox`: Omnibox is being focused.
 - (void)updatePopupOnFocus:(BOOL)isFocusingOmnibox;
 
-/// Only called when IsIpadPopoutOmniboxEnabled is true.
 /// Tells the presenter to update, following a trait collection change.
 - (void)updatePopupAfterTraitCollectionChange;
 

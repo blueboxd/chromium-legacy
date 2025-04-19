@@ -118,6 +118,8 @@ class SafeBrowsingBlockingPage : public BaseBlockingPage {
       bool is_safe_browsing_surveys_enabled,
       base::OnceCallback<void(bool, SBThreatType)>
           trust_safety_sentiment_service_trigger,
+      base::OnceCallback<void(bool, SBThreatType)>
+          ignore_auto_revocation_notifications_trigger,
       network::SharedURLLoaderFactory* url_loader_for_testing = nullptr);
 
   // Called when an interstitial is closed, either due to a click through or a
@@ -159,9 +161,6 @@ class SafeBrowsingBlockingPage : public BaseBlockingPage {
   // The threat type of the resource that triggered the blocking page.
   SBThreatType threat_type_;
 
-  // Whether the blocking page is triggered by subresource.
-  bool is_subresource_;
-
  private:
   raw_ptr<history::HistoryService> history_service_ = nullptr;
   raw_ptr<SafeBrowsingNavigationObserverManager> navigation_observer_manager_ =
@@ -177,6 +176,10 @@ class SafeBrowsingBlockingPage : public BaseBlockingPage {
   // Triggers trust and safety sentiment service when interstitial closes.
   base::OnceCallback<void(bool, SBThreatType)>
       trust_safety_sentiment_service_trigger_ = base::NullCallback();
+  // Triggers callback for ignoring the url for future auto abusive notification
+  // revocation.
+  base::OnceCallback<void(bool, SBThreatType)>
+      ignore_auto_revocation_notifications_trigger_ = base::NullCallback();
   // Timestamp of when the safe browsing blocking page was shown to the user.
   int64_t warning_shown_ts_;
 };

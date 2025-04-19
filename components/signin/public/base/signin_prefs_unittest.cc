@@ -59,14 +59,16 @@ TEST_F(SigninPrefsTest, RemovingAccountPrefs) {
   ASSERT_TRUE(HasAccountPrefs(gaia_id3));
 
   // Should remove `gaia_id3`.
-  signin_prefs().RemoveAllAccountPrefsExcept({gaia_id1, gaia_id2});
+  EXPECT_EQ(signin_prefs().RemoveAllAccountPrefsExcept({gaia_id1, gaia_id2}),
+            1u);
   EXPECT_TRUE(HasAccountPrefs(gaia_id1));
   EXPECT_TRUE(HasAccountPrefs(gaia_id2));
   EXPECT_FALSE(HasAccountPrefs(gaia_id3));
 
   // Should remove `gaia_id2`. Adding a non existing pref should have no effect
   // (`gaia_id3`).
-  signin_prefs().RemoveAllAccountPrefsExcept({gaia_id1, gaia_id3});
+  EXPECT_EQ(signin_prefs().RemoveAllAccountPrefsExcept({gaia_id1, gaia_id3}),
+            1u);
   EXPECT_TRUE(HasAccountPrefs(gaia_id1));
   EXPECT_FALSE(HasAccountPrefs(gaia_id2));
   EXPECT_FALSE(HasAccountPrefs(gaia_id3));
@@ -86,7 +88,7 @@ TEST_F(SigninPrefsTest, RemovingAllAccountPrefs) {
   ASSERT_TRUE(HasAccountPrefs(gaia_id3));
 
   // Passing no accounts in the arguments should clear all prefs.
-  signin_prefs().RemoveAllAccountPrefsExcept({});
+  EXPECT_EQ(signin_prefs().RemoveAllAccountPrefsExcept({}), 3u);
   EXPECT_FALSE(HasAccountPrefs(gaia_id1));
   EXPECT_FALSE(HasAccountPrefs(gaia_id2));
   EXPECT_FALSE(HasAccountPrefs(gaia_id3));
@@ -173,4 +175,60 @@ TEST_F(SigninPrefsTest, ChromeSigninInterceptionUserChoice) {
   ASSERT_TRUE(HasAccountPrefs(gaia_id2));
   EXPECT_EQ(signin_prefs().GetChromeSigninInterceptionUserChoice(gaia_id2),
             ChromeSigninUserChoice::kNoChoice);
+}
+
+TEST_F(SigninPrefsTest, ChromeSigninInterceptionLastBubbleDeclineTime) {
+  const std::string gaia_id = "gaia_id";
+
+  ASSERT_FALSE(HasAccountPrefs(gaia_id));
+  EXPECT_FALSE(signin_prefs()
+                   .GetChromeSigninInterceptionLastBubbleDeclineTime(gaia_id)
+                   .has_value());
+
+  base::Time last_reprompt_time = base::Time::Now();
+  signin_prefs().SetChromeSigninInterceptionLastBubbleDeclineTime(
+      gaia_id, last_reprompt_time);
+
+  EXPECT_TRUE(HasAccountPrefs(gaia_id));
+  EXPECT_EQ(
+      signin_prefs().GetChromeSigninInterceptionLastBubbleDeclineTime(gaia_id),
+      last_reprompt_time);
+
+  signin_prefs().ClearChromeSigninInterceptionLastBubbleDeclineTime(gaia_id);
+  EXPECT_FALSE(signin_prefs()
+                   .GetChromeSigninInterceptionLastBubbleDeclineTime(gaia_id)
+                   .has_value());
+  EXPECT_TRUE(HasAccountPrefs(gaia_id));
+
+  // Creating the main dict through setting a different pref should still return
+  // the default value - no time.
+  const std::string gaia_id2 = "gaia_id2";
+  signin_prefs().SetChromeSigninInterceptionUserChoice(
+      gaia_id2, ChromeSigninUserChoice::kSignin);
+  ASSERT_TRUE(HasAccountPrefs(gaia_id2));
+  EXPECT_FALSE(signin_prefs()
+                   .GetChromeSigninInterceptionLastBubbleDeclineTime(gaia_id2)
+                   .has_value());
+}
+
+TEST_F(SigninPrefsTest, ChromeSigninInterceptionRepromptCount) {
+  const std::string gaia_id = "gaia_id";
+
+  ASSERT_FALSE(HasAccountPrefs(gaia_id));
+  EXPECT_EQ(signin_prefs().GetChromeSigninBubbleRepromptCount(gaia_id), 0);
+
+  signin_prefs().IncrementChromeSigninBubbleRepromptCount(gaia_id);
+  EXPECT_TRUE(HasAccountPrefs(gaia_id));
+  EXPECT_EQ(signin_prefs().GetChromeSigninBubbleRepromptCount(gaia_id), 1);
+
+  signin_prefs().ClearChromeSigninBubbleRepromptCount(gaia_id);
+  EXPECT_EQ(signin_prefs().GetChromeSigninBubbleRepromptCount(gaia_id), 0);
+
+  // Creating the main dict through setting a different pref should still return
+  // the default value - 0.
+  const std::string gaia_id2 = "gaia_id2";
+  signin_prefs().SetChromeSigninInterceptionUserChoice(
+      gaia_id2, ChromeSigninUserChoice::kSignin);
+  ASSERT_TRUE(HasAccountPrefs(gaia_id2));
+  EXPECT_EQ(signin_prefs().GetChromeSigninBubbleRepromptCount(gaia_id2), 0);
 }

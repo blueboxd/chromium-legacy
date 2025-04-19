@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "services/screen_ai/proto/main_content_extractor_proto_convertor.h"
 
 #include <string_view>
@@ -10,7 +15,6 @@
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/test_proto_loader.h"
 #include "build/build_config.h"
 #include "services/screen_ai/proto/view_hierarchy.pb.h"
@@ -220,9 +224,11 @@ TEST_F(MainContentExtractorProtoConvertorTest, PreOrderTreeGeneration) {
   ui::AXTreeUpdate tree_update =
       CreateAXTreeUpdateFromTemplate(1, input_tree, nodes_count);
   ui::AXTree tree(tree_update);
-  std::string serialized_proto = SnapshotToViewHierarchy(&tree);
+  std::optional<ViewHierarchyAndTreeSize> result =
+      SnapshotToViewHierarchy(tree);
+  ASSERT_TRUE(result);
   screenai::ViewHierarchy view_hierarchy;
-  ASSERT_TRUE(view_hierarchy.ParseFromString(serialized_proto));
+  ASSERT_TRUE(view_hierarchy.ParseFromString(result->serialized_proto));
 
   // Verify.
   EXPECT_EQ(view_hierarchy.ui_elements().size(), nodes_count);
@@ -237,34 +243,16 @@ TEST_F(MainContentExtractorProtoConvertorTest, PreOrderTreeGeneration) {
   }
 }
 
-// TODO(crbug.com/40851192): Remove this test when v2 is confirmed and is used
-// by default.
-TEST_F(MainContentExtractorProtoConvertorTest, ProtoV1Test) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(::features::kUseScreen2xV2);
-
+TEST_F(MainContentExtractorProtoConvertorTest, ProtoTest) {
   ui::AXTree tree = CreateSampleTree();
 
-  std::string generated_proto =
-      ConvertProtoToText(SnapshotToViewHierarchy(&tree));
-  WriteDebugProto(generated_proto, "expected_v1_proto.pbtxt");
+  std::optional<ViewHierarchyAndTreeSize> result =
+      SnapshotToViewHierarchy(tree);
+  ASSERT_TRUE(result);
+  std::string generated_proto = ConvertProtoToText(result->serialized_proto);
+  WriteDebugProto(generated_proto, "expected_proto.pbtxt");
   std::string expected_proto;
-  ASSERT_TRUE(base::ReadFileToString(GetTestFilePath("expected_v1_proto.pbtxt"),
-                                     &expected_proto));
-  ASSERT_EQ(generated_proto, expected_proto);
-}
-
-TEST_F(MainContentExtractorProtoConvertorTest, ProtoV2Test) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(::features::kUseScreen2xV2);
-
-  ui::AXTree tree = CreateSampleTree();
-
-  std::string generated_proto =
-      ConvertProtoToText(SnapshotToViewHierarchy(&tree));
-  WriteDebugProto(generated_proto, "expected_v2_proto.pbtxt");
-  std::string expected_proto;
-  ASSERT_TRUE(base::ReadFileToString(GetTestFilePath("expected_v2_proto.pbtxt"),
+  ASSERT_TRUE(base::ReadFileToString(GetTestFilePath("expected_proto.pbtxt"),
                                      &expected_proto));
   ASSERT_EQ(generated_proto, expected_proto);
 }

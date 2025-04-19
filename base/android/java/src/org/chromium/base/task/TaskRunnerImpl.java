@@ -17,20 +17,22 @@ import org.chromium.base.TraceEvent;
 
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 
 import javax.annotation.concurrent.GuardedBy;
 
 /**
- * Implementation of the abstract class {@link TaskRunnerImpl}. Uses AsyncTasks until
- * native APIs are available.
+ * Implementation of the abstract class {@link TaskRunnerImpl}. Uses AsyncTasks until native APIs
+ * are available.
  */
 @JNINamespace("base")
 public class TaskRunnerImpl implements TaskRunner {
+
     // TaskRunnerCleaners are enqueued to this queue when their WeakReference to a TaskRunnerIml is
     // cleared.
     private static final ReferenceQueue<Object> sQueue = new ReferenceQueue<>();
@@ -57,7 +59,7 @@ public class TaskRunnerImpl implements TaskRunner {
 
     @Nullable
     @GuardedBy("mPreNativeTaskLock")
-    private LinkedList<Runnable> mPreNativeTasks;
+    private Queue<Runnable> mPreNativeTasks;
 
     @Nullable
     @GuardedBy("mPreNativeTaskLock")
@@ -141,12 +143,15 @@ public class TaskRunnerImpl implements TaskRunner {
     }
 
     @Override
-    public void postTask(Runnable task) {
+    public final void postTask(Runnable task) {
         postDelayedTask(task, 0);
     }
 
     @Override
-    public void postDelayedTask(Runnable task, long delay) {
+    public final void postDelayedTask(Runnable task, long delay) {
+        if (PostTask.ENABLE_TASK_ORIGINS) {
+            task = PostTask.populateTaskOrigin(new TaskOriginException(), task);
+        }
         // Lock-free path when native is initialized.
         if (mNativeTaskRunnerAndroid != 0) {
             TaskRunnerImplJni.get()
@@ -176,7 +181,7 @@ public class TaskRunnerImpl implements TaskRunner {
         }
     }
 
-    protected Boolean belongsToCurrentThreadInternal() {
+    final boolean belongsToCurrentThreadInternal() {
         // TODO(crbug.com/40108370): This function shouldn't be here, and should only be used
         // by derived classes (eg. SingleThreadTaskRunner) until it is moved there, as TaskRunner
         // has no notion of belonging to a thread.
@@ -184,7 +189,7 @@ public class TaskRunnerImpl implements TaskRunner {
         synchronized (mPreNativeTaskLock) {
             oneTimeInitialization();
         }
-        if (mNativeTaskRunnerAndroid == 0) return null;
+
         return TaskRunnerImplJni.get().belongsToCurrentThread(mNativeTaskRunnerAndroid);
     }
 
@@ -195,7 +200,7 @@ public class TaskRunnerImpl implements TaskRunner {
         if (!PostTask.registerPreNativeTaskRunner(this)) {
             initNativeTaskRunner();
         } else {
-            mPreNativeTasks = new LinkedList<>();
+            mPreNativeTasks = new ArrayDeque<>();
             mPreNativeDelayedTasks = new ArrayList<>();
         }
     }

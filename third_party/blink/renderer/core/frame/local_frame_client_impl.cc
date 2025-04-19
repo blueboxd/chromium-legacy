@@ -40,6 +40,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
+#include "net/storage_access_api/status.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/common/scheduler/task_attribution_id.h"
@@ -373,23 +374,27 @@ void LocalFrameClientImpl::Detached(FrameDetachType type) {
 }
 
 void LocalFrameClientImpl::DispatchWillSendRequest(ResourceRequest& request) {
+  // Set upstream url based on the request's redirect info.
+  KURL upstream_url;
+  if (request.GetRedirectInfo().has_value()) {
+    upstream_url = KURL(request.GetRedirectInfo()->previous_url);
+  }
+
   // Give the WebLocalFrameClient a crack at the request.
   if (web_frame_->Client()) {
     WrappedResourceRequest webreq(request);
     web_frame_->Client()->WillSendRequest(
-        webreq, WebLocalFrameClient::ForRedirect(
-                    request.GetRedirectInfo().has_value()));
+        webreq,
+        WebLocalFrameClient::ForRedirect(request.GetRedirectInfo().has_value()),
+        upstream_url);
   }
 }
 
 void LocalFrameClientImpl::DispatchDidDispatchDOMContentLoadedEvent() {
-  // TODO(dglazkov): Sadly, workers are WebLocalFrameClients, and they can
-  // totally destroy themselves when DidDispatchDOMContentLoadedEvent is
-  // invoked, and in turn destroy the fake WebLocalFrame that they create, which
-  // means that you should not put any code touching `this` after the two lines
-  // below.
   if (web_frame_->Client())
     web_frame_->Client()->DidDispatchDOMContentLoadedEvent();
+
+  web_frame_->DidDispatchDOMContentLoadedEvent();
 }
 
 void LocalFrameClientImpl::DispatchDidLoadResourceFromMemoryCache(
@@ -425,8 +430,13 @@ void LocalFrameClientImpl::DidFinishSameDocumentNavigation(
     // not history-traversable).
     // Exclude the WebView not being composited because we won't present any
     // frame if it is not being actively drawn.
+    // Exclude cases with prefers-reduced-motion. Back forward transitions are
+    // disabled in this case so no screenshots are necessary.
+    bool navigation_with_screenshot = false;
     if (IsCompositedOutermostMainFrame(web_frame_) &&
-        commit_type != kWebHistoryInertCommit) {
+        commit_type != kWebHistoryInertCommit &&
+        !web_frame_->GetFrame()->GetSettings()->GetPrefersReducedMotion()) {
+      navigation_with_screenshot = true;
       WebFrameWidgetImpl* frame_widget = web_frame_->FrameWidgetImpl();
       // The outermost mainframe must have a frame widget.
       CHECK(frame_widget);
@@ -451,6 +461,9 @@ void LocalFrameClientImpl::DidFinishSameDocumentNavigation(
           },
           base::TimeTicks::Now()));
     }
+    base::UmaHistogramBoolean("Navigation.SameDocumentNavigationWithScreenshot",
+                              navigation_with_screenshot);
+
     std::optional<blink::SameDocNavigationScreenshotDestinationToken> token =
         std::nullopt;
     if (!screenshot_destination.is_empty()) {
@@ -517,16 +530,17 @@ void LocalFrameClientImpl::DispatchDidCommitLoad(
 
       web_frame_->FrameWidgetImpl()->DidNavigate();
 
-      // UKM metrics are only collected for the outermost main frame. Ensure
-      // after a navigation on the main frame we setup the appropriate
-      // structures.
+      // The navigation state pushed to the compositor is limited to outermost
+      // main frames. This is particularly important for UKM metrics, since we
+      // only record URL keyed data if the URL is being displayed in the main
+      // frame.
       if (IsCompositedOutermostMainFrame(web_frame_)) {
         WebFrameWidgetImpl* frame_widget = web_frame_->FrameWidgetImpl();
 
-        // Update the URL and the document source id used to key UKM metrics in
-        // the compositor. Note that the metrics for all frames are keyed to the
-        // main frame's URL.
-        frame_widget->SetSourceURLForCompositor(
+        // Update the navigation states (URL, the document source id used to key
+        // UKM metrics in the compositor. Note that the metrics for all frames
+        // are keyed to the main frame's URL.
+        frame_widget->UpdateNavigationStateForCompositor(
             web_frame_->GetDocument().GetUkmSourceId(),
             KURL(web_frame_->Client()->LastCommittedUrlForUKM()));
 
@@ -538,8 +552,12 @@ void LocalFrameClientImpl::DispatchDidCommitLoad(
       }
     }
   }
-  if (WebDevToolsAgentImpl* dev_tools = DevToolsAgent())
+  if (WebDevToolsAgentImpl* dev_tools =
+          DevToolsAgent(/*create_if_necessary=*/false)) {
     dev_tools->DidCommitLoadForLocalFrame(web_frame_->GetFrame());
+  }
+
+  web_frame_->DidCommitLoad();
 }
 
 void LocalFrameClientImpl::DispatchDidFailLoad(
@@ -581,7 +599,7 @@ void LocalFrameClientImpl::BeginNavigation(
     mojo::PendingRemote<mojom::blink::NavigationStateKeepAliveHandle>
         initiator_navigation_state_keep_alive_handle,
     bool is_container_initiated,
-    bool is_fullscreen_requested) {
+    bool has_rel_opener) {
   if (!web_frame_->Client())
     return;
 
@@ -633,23 +651,15 @@ void LocalFrameClientImpl::BeginNavigation(
   }
 
   navigation_info->impression = impression;
-  navigation_info->is_fullscreen_requested = is_fullscreen_requested;
-  // TODO(crbug.com/1142516): Enforce requirements here, before IPC to browser?
-  if (is_fullscreen_requested && !request.HasUserGesture() && origin_frame &&
-      origin_frame->GetSettings() &&
-      !origin_frame->GetSettings()
-           ->GetRequireTransientActivationForHtmlFullscreen()) {
-    UseCounter::Count(origin_frame->GetDocument(),
-                      WebFeature::kFullscreenAllowedByContentSetting);
-  }
 
   // Allow cookie access via Storage Access API during the navigation, if the
   // initiator has obtained storage access. Note that the network service still
-  // applies cookie semantics and user settings, and that this bool is not
+  // applies cookie semantics and user settings, and that this value is not
   // trusted by the browser process. (The Storage Access API is only relevant
   // when third-party cookies are blocked.)
-  navigation_info->has_storage_access =
-      origin_window && origin_window->HasStorageAccess();
+  navigation_info->storage_access_api_status =
+      origin_window ? origin_window->GetStorageAccessApiStatus()
+                    : net::StorageAccessApiStatus::kNone;
 
   // Can be null.
   LocalFrame* local_parent_frame = GetLocalParentFrame(web_frame_);
@@ -683,6 +693,8 @@ void LocalFrameClientImpl::BeginNavigation(
     navigation_info->initiator_frame_is_ad = origin_frame->IsAdFrame();
     navigation_info->is_ad_script_in_stack = origin_frame->IsAdScriptInStack();
   }
+
+  navigation_info->has_rel_opener = has_rel_opener;
 
   // The frame has navigated either by itself or by the action of the
   // |origin_window| when it is defined. |source_location| represents the
@@ -722,7 +734,8 @@ void LocalFrameClientImpl::BeginNavigation(
     }
   }
 
-  if (WebDevToolsAgentImpl* devtools = DevToolsAgent()) {
+  if (WebDevToolsAgentImpl* devtools =
+          DevToolsAgent(/*create_if_necessary=*/false)) {
     navigation_info->devtools_initiator_info =
         devtools->NavigationInitiatorInfo(web_frame_->GetFrame());
   }
@@ -850,17 +863,6 @@ void LocalFrameClientImpl::DidObserveLayoutShift(double score,
                                                  bool after_input_or_scroll) {
   if (WebLocalFrameClient* client = web_frame_->Client())
     client->DidObserveLayoutShift(score, after_input_or_scroll);
-}
-
-void LocalFrameClientImpl::PreloadSubresourceOptimizationsForOrigins(
-    const WTF::HashSet<scoped_refptr<const SecurityOrigin>>& origins) {
-  if (WebLocalFrameClient* client = web_frame_->Client()) {
-    std::vector<WebSecurityOrigin> origins_list;
-    for (const auto& origin : origins) {
-      origins_list.emplace_back(origin);
-    }
-    client->PreloadSubresourceOptimizationsForOrigins(origins_list);
-  }
 }
 
 void LocalFrameClientImpl::SelectorMatchChanged(
@@ -1013,9 +1015,10 @@ unsigned LocalFrameClientImpl::BackForwardLength() {
   return webview ? webview->HistoryListLength() : 0;
 }
 
-WebDevToolsAgentImpl* LocalFrameClientImpl::DevToolsAgent() {
+WebDevToolsAgentImpl* LocalFrameClientImpl::DevToolsAgent(
+    bool create_if_necessary) {
   return WebLocalFrameImpl::FromFrame(web_frame_->GetFrame()->LocalFrameRoot())
-      ->DevToolsAgentImpl();
+      ->DevToolsAgentImpl(create_if_necessary);
 }
 
 KURL LocalFrameClientImpl::OverrideFlashEmbedWithHTML(const KURL& url) {
@@ -1060,11 +1063,6 @@ LocalFrameClientImpl::MaybeGetBackgroundResourceFetchAssets() {
   return web_frame_->Client()->MaybeGetBackgroundResourceFetchAssets();
 }
 
-blink::BrowserInterfaceBrokerProxy&
-LocalFrameClientImpl::GetBrowserInterfaceBroker() {
-  return *web_frame_->Client()->GetBrowserInterfaceBroker();
-}
-
 AssociatedInterfaceProvider*
 LocalFrameClientImpl::GetRemoteNavigationAssociatedInterfaces() {
   return web_frame_->Client()->GetRemoteNavigationAssociatedInterfaces();
@@ -1076,8 +1074,10 @@ base::UnguessableToken LocalFrameClientImpl::GetDevToolsFrameToken() const {
 
 String LocalFrameClientImpl::evaluateInInspectorOverlayForTesting(
     const String& script) {
-  if (WebDevToolsAgentImpl* devtools = DevToolsAgent())
+  if (WebDevToolsAgentImpl* devtools =
+          DevToolsAgent(/*create_if_necessary=*/true)) {
     return devtools->EvaluateInOverlayForTesting(script);
+  }
   return g_empty_string;
 }
 
@@ -1195,8 +1195,14 @@ LocalFrameClientImpl::CreateResourceLoadInfoNotifierWrapper() {
 void LocalFrameClientImpl::BindDevToolsAgent(
     mojo::PendingAssociatedRemote<mojom::blink::DevToolsAgentHost> host,
     mojo::PendingAssociatedReceiver<mojom::blink::DevToolsAgent> receiver) {
-  if (WebDevToolsAgentImpl* devtools = DevToolsAgent())
+  if (WebDevToolsAgentImpl* devtools =
+          DevToolsAgent(/*create_if_necessary=*/true)) {
     devtools->BindReceiver(std::move(host), std::move(receiver));
+  }
+}
+
+bool LocalFrameClientImpl::IsDomStorageDisabled() const {
+  return web_frame_->Client()->IsDomStorageDisabled();
 }
 
 }  // namespace blink

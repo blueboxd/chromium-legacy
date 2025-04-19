@@ -10,16 +10,20 @@
 #include "base/i18n/case_conversion.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/affiliations/core/browser/affiliation_utils.h"
+#include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/password_feature_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
+#include "components/password_manager/core/browser/password_sync_util.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
 #include "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #include "components/password_manager/core/browser/webauthn_credentials_delegate.h"
 #include "components/password_manager/core/common/password_manager_constants.h"
 #include "components/sync/base/features.h"
+#include "components/sync/service/sync_service.h"
+#include "components/sync/service/sync_user_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -58,15 +62,6 @@ std::u16string GetHumanReadableRealm(const std::string& signon_realm) {
   }
   return base::UTF8ToUTF16(signon_realm);
 }
-
-// Returns a string representing the icon of either the account store or the
-// local password store.
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-Suggestion::Icon CreateStoreIcon(bool for_account_store) {
-  return for_account_store ? Suggestion::Icon::kGoogle
-                           : Suggestion::Icon::kNoIcon;
-}
-#endif
 
 #if !BUILDFLAG(IS_ANDROID)
 Suggestion CreateWebAuthnEntry(bool listed_passkeys) {
@@ -143,7 +138,9 @@ void MaybeAppendManagePasswordsEntry(std::vector<Suggestion>* suggestions) {
   // Add a separator before the manage option unless there are no suggestions
   // yet.
   if (!suggestions->empty()) {
-    suggestions->emplace_back(SuggestionType::kSeparator);
+    Suggestion separator(SuggestionType::kSeparator);
+    separator.filtration_policy = Suggestion::FiltrationPolicy::kStatic;
+    suggestions->push_back(std::move(separator));
   }
 
   Suggestion suggestion(
@@ -155,6 +152,7 @@ void MaybeAppendManagePasswordsEntry(std::vector<Suggestion>* suggestions) {
       SuggestionType::kAllSavedPasswordsEntry);
   // The UI code will pick up an icon from the resources based on the string.
   suggestion.trailing_icon = Suggestion::Icon::kGooglePasswordManager;
+  suggestion.filtration_policy = Suggestion::FiltrationPolicy::kStatic;
   suggestions->emplace_back(std::move(suggestion));
 }
 
@@ -193,12 +191,6 @@ void AppendSuggestionIfMatching(const std::u16string& field_suggestion,
     suggestion.custom_icon = custom_icon;
     // The UI code will pick up an icon from the resources based on the string.
     suggestion.icon = Suggestion::Icon::kGlobe;
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-    if (!base::FeatureList::IsEnabled(
-            password_manager::features::kButterOnDesktopFollowup)) {
-      suggestion.trailing_icon = CreateStoreIcon(from_account_store);
-    }
-#endif
     suggestions->emplace_back(std::move(suggestion));
   }
 }
@@ -243,50 +235,64 @@ void AddFillPasswordChildSuggestion(Suggestion& suggestion,
           IDS_PASSWORD_MANAGER_MANUAL_FALLBACK_FILL_PASSWORD_ENTRY),
       SuggestionType::kFillPassword);
   fill_password.payload = Suggestion::PasswordSuggestionDetails(
-      credential.password,
+      credential.username, credential.password,
+      credential.GetFirstSignonRealm(),
       GetHumanReadableRealm(credential.GetFirstSignonRealm()),
       is_cross_origin.value());
   suggestion.children.emplace_back(std::move(fill_password));
 }
 
-void AddViewPasswordDetailsChildSuggestion(Suggestion& suggestion) {
+void AddViewPasswordDetailsChildSuggestion(
+    Suggestion& suggestion,
+    const Suggestion::PasswordSuggestionDetails& payload) {
   Suggestion view_password_details(
       l10n_util::GetStringUTF16(
           IDS_PASSWORD_MANAGER_MANUAL_FALLBACK_VIEW_DETAILS_ENTRY),
       SuggestionType::kViewPasswordDetails);
   view_password_details.icon = Suggestion::Icon::kKey;
+  view_password_details.payload = payload;
   suggestion.children.emplace_back(std::move(view_password_details));
 }
 
-void AppendManualFallbackSuggestions(const CredentialUIEntry& credential,
-                                     IsTriggeredOnPasswordForm on_password_form,
-                                     IsCrossDomain is_cross_origin,
-                                     std::vector<Suggestion>* suggestions) {
+void AppendManualFallbackSuggestions(
+    const CredentialUIEntry& credential,
+    IsTriggeredOnPasswordForm on_password_form,
+    IsCrossDomain is_cross_origin,
+    bool favicon_can_be_requested_from_google,
+    std::vector<Suggestion>* suggestions,
+    Suggestion::FiltrationPolicy filtration_policy) {
   // A separate suggestion with the same (username, password) pair is displayed
   // for every affiliated domain. For example, if the credential was saved on
   // apple.com and icloud.com, there will be 2 suggestions for both of these
   // websites.
   for (const CredentialUIEntry::DomainInfo& domain_info :
        credential.GetAffiliatedDomains()) {
-    const std::string kDisplaySingonRealm = domain_info.name;
-    Suggestion suggestion(kDisplaySingonRealm, /*label=*/"",
+    Suggestion suggestion(domain_info.name, /*label=*/"",
                           Suggestion::Icon::kGlobe,
                           SuggestionType::kPasswordEntry);
     bool replaced;
     const std::u16string maybe_username =
         ReplaceEmptyUsername(credential.username, &replaced);
     suggestion.labels = {{autofill::Suggestion::Text(maybe_username)}};
-    suggestion.payload = Suggestion::PasswordSuggestionDetails(
-        credential.password, base::UTF8ToUTF16(kDisplaySingonRealm),
+    Suggestion::PasswordSuggestionDetails payload(
+        credential.username, credential.password, domain_info.signon_realm,
+        /*display_signon_realm=*/base::UTF8ToUTF16(domain_info.name),
         is_cross_origin.value());
+    suggestion.payload = payload;
     suggestion.is_acceptable = on_password_form.value();
+    if (FacetURI::FromPotentiallyInvalidSpec(domain_info.signon_realm)
+            .IsValidWebFacetURI()) {
+      suggestion.custom_icon = Suggestion::FaviconDetails(
+          domain_info.url, favicon_can_be_requested_from_google);
+    }
+    suggestion.filtration_policy = filtration_policy;
 
     if (!replaced) {
       AddPasswordUsernameChildSuggestion(maybe_username, suggestion);
     }
     AddFillPasswordChildSuggestion(suggestion, credential, is_cross_origin);
     suggestion.children.emplace_back(SuggestionType::kSeparator);
-    AddViewPasswordDetailsChildSuggestion(suggestion);
+    AddViewPasswordDetailsChildSuggestion(suggestion, payload);
 
     suggestions->emplace_back(std::move(suggestion));
   }
@@ -399,17 +405,35 @@ PasswordSuggestionGenerator::GetManualFallbackSuggestions(
   const bool generate_sections =
       !suggested_credentials.empty() && !credentials.empty();
   if (generate_sections) {
-    suggestions.emplace_back(
+    Suggestion title(
         l10n_util::GetStringUTF16(
             IDS_PASSWORD_MANAGER_MANUAL_FALLBACK_SUGGESTED_PASSWORDS_SECTION_TITLE),
         SuggestionType::kTitle);
+    title.filtration_policy =
+        Suggestion::FiltrationPolicy::kPresentOnlyWithoutFilter;
+    suggestions.push_back(std::move(title));
   }
 
+  auto* sync_service = password_client_->GetSyncService();
+  const bool is_sync_passwords_enabled =
+      sync_service &&
+      password_manager::sync_util::IsSyncFeatureEnabledIncludingPasswords(
+          sync_service);
+  const bool is_passphrase_user =
+      sync_service &&
+      sync_service->GetUserSettings()->IsUsingExplicitPassphrase();
   std::set<std::string> suggested_signon_realms;
   for (const auto& form : suggested_credentials) {
     suggested_signon_realms.insert(form.signon_realm);
-    AppendManualFallbackSuggestions(CredentialUIEntry(form), on_password_form,
-                                    IsCrossDomain(false), &suggestions);
+    const CredentialUIEntry ui_entry = CredentialUIEntry(form);
+    const bool is_from_account =
+        ui_entry.stored_in.contains(PasswordForm::Store::kAccountStore);
+    const bool favicon_can_be_requested_from_google =
+        (is_sync_passwords_enabled || is_from_account) && !is_passphrase_user;
+    AppendManualFallbackSuggestions(
+        ui_entry, on_password_form, IsCrossDomain(false),
+        favicon_can_be_requested_from_google, &suggestions,
+        Suggestion::FiltrationPolicy::kPresentOnlyWithoutFilter);
   }
 
   if (generate_sections) {
@@ -417,6 +441,8 @@ PasswordSuggestionGenerator::GetManualFallbackSuggestions(
         l10n_util::GetStringUTF16(
             IDS_PASSWORD_MANAGER_MANUAL_FALLBACK_ALL_PASSWORDS_SECTION_TITLE),
         SuggestionType::kTitle);
+    suggestions.back().filtration_policy =
+        Suggestion::FiltrationPolicy::kPresentOnlyWithoutFilter;
   }
 
   // Only the "All passwords" section should be sorted alphabetically.
@@ -431,9 +457,14 @@ PasswordSuggestionGenerator::GetManualFallbackSuggestions(
           return suggested_signon_realms.count(signon_realm);
         },
         &CredentialFacet::signon_realm);
-    AppendManualFallbackSuggestions(credential, on_password_form,
-                                    IsCrossDomain(!has_suggested_realm),
-                                    &suggestions);
+    const bool is_from_account =
+        credential.stored_in.contains(PasswordForm::Store::kAccountStore);
+    const bool favicon_can_be_requested_from_google =
+        (is_sync_passwords_enabled || is_from_account) && !is_passphrase_user;
+    AppendManualFallbackSuggestions(
+        credential, on_password_form, IsCrossDomain(!has_suggested_realm),
+        favicon_can_be_requested_from_google, &suggestions,
+        Suggestion::FiltrationPolicy::kFilterable);
   }
 
   base::ranges::sort(

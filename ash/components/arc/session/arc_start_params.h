@@ -87,9 +87,6 @@ struct StartParams {
   // Flag to enable keyboard shortcut helper integration.
   bool enable_keyboard_shortcut_helper_integration = false;
 
-  // Flag to enable notification refresh.
-  bool enable_notifications_refresh = false;
-
   // Flag to enable TTS caching.
   bool enable_tts_caching = false;
 
@@ -107,6 +104,10 @@ struct StartParams {
 
   // Flag that indicates whether ARC is already signed in.
   bool arc_signed_in = false;
+
+  // Flag that would enable ARC Attestation, and would make ARC
+  // RemotelyProvisionedComponentDevice visible to Keystore.
+  bool enable_arc_attestation = false;
 };
 
 }  // namespace arc

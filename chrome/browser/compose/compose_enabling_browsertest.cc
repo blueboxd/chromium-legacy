@@ -2,13 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/compose/compose_enabling.h"
+
 #include <vector>
 
 #include "base/feature_list.h"
+#include "base/test/gmock_expected_support.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/about_flags.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/compose/chrome_compose_client.h"
-#include "chrome/browser/compose/compose_enabling.h"
 #include "chrome/browser/optimization_guide/browser_test_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -23,6 +26,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/unified_consent/pref_names.h"
+#include "components/variations/service/variations_service.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/fenced_frame_test_util.h"
@@ -33,24 +37,28 @@
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chromeos/constants/chromeos_features.h"
 #endif  // BUILDFLAG(IS_CHROMEOS)
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "chromeos/startup/browser_init_params.h"
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-void SetLacrosInitParams(bool disable_compose) {
-  crosapi::mojom::BrowserInitParamsPtr init_params =
-      chromeos::BrowserInitParams::GetForTests()->Clone();
-  init_params->should_disable_chrome_compose_on_chromeos = disable_compose;
-  chromeos::BrowserInitParams::SetInitParamsForTests(std::move(init_params));
-}
-#endif
 
 class ComposeEnablingBrowserTestBase : public InProcessBrowserTest {
  public:
   ComposeEnablingBrowserTestBase() = default;
 
-  void SetUp() override { InProcessBrowserTest::SetUp(); }
+  void SetUpOnMainThread() override {
+    InProcessBrowserTest::SetUpOnMainThread();
+    // Set the user country to US, a Compose default-enabled country.
+    // Note: CHECK that the value was actually set to confirm that it is
+    // not leaking from a previous test run.
+    CHECK(
+        g_browser_process->variations_service()->OverrideStoredPermanentCountry(
+            "us"));
+  }
+
+  void TearDownOnMainThread() override {
+    // Cleanup the country override.
+    CHECK(
+        g_browser_process->variations_service()->OverrideStoredPermanentCountry(
+            ""));
+    InProcessBrowserTest::TearDownOnMainThread();
+  }
 
   void EnableComposePreReqs() {
     optimization_guide::EnableSigninAndModelExecutionCapability(
@@ -102,18 +110,14 @@ class ComposeEnablingBrowserTest : public ComposeEnablingBrowserTestBase {
         /*disabled_features=*/
         {
             optimization_guide::features::internal::kComposeGraduated,
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
             // All of these flags must be disabled for Compose to be enabled on
-            // ChromeOS Ash.
+            // ChromeOS.
             chromeos::features::kFeatureManagementDisableChromeCompose,
             chromeos::features::kOrca,
             chromeos::features::kOrcaDogfood,
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS)
         });
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-    SetLacrosInitParams(/*disable_compose=*/false);
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
   }
 };
 
@@ -147,18 +151,14 @@ class GraduatedComposeEnablingBrowserTest
         /*disabled_features=*/
         {
             optimization_guide::features::internal::kComposeSettingsVisibility,
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
             // All of these flags must be disabled for Compose to be enabled on
-            // ChromeOS Ash.
+            // ChromeOS.
             chromeos::features::kFeatureManagementDisableChromeCompose,
             chromeos::features::kOrca,
             chromeos::features::kOrcaDogfood,
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS)
         });
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-    SetLacrosInitParams(/*disable_compose=*/false);
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
   }
 };
 
@@ -182,19 +182,15 @@ class ComposeOnChromeOS : public ComposeEnablingBrowserTestBase {
         {
             optimization_guide::features::kOptimizationGuideModelExecution,
             optimization_guide::features::internal::kComposeSettingsVisibility,
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
             chromeos::features::kFeatureManagementDisableChromeCompose,
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS)
         },
         /*disabled_features=*/{
             optimization_guide::features::internal::kComposeGraduated,
             chromeos::features::kOrca,
             chromeos::features::kOrcaDogfood,
         });
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-    SetLacrosInitParams(/*disable_compose=*/true);
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
   }
 };
 
@@ -226,19 +222,15 @@ class GraduatedComposeOnChromeOS : public ComposeEnablingBrowserTestBase {
         {
             optimization_guide::features::kOptimizationGuideModelExecution,
             optimization_guide::features::internal::kComposeGraduated,
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
             chromeos::features::kFeatureManagementDisableChromeCompose,
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS)
         },
         /*disabled_features=*/{
             optimization_guide::features::internal::kComposeSettingsVisibility,
             chromeos::features::kOrca,
             chromeos::features::kOrcaDogfood,
         });
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-    SetLacrosInitParams(/*disable_compose=*/true);
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
   }
 };
 
@@ -256,6 +248,7 @@ class ComposeEnablingWithFencedFramesBrowserTest
     : public ComposeEnablingBrowserTest {
  public:
   void SetUpOnMainThread() override {
+    ComposeEnablingBrowserTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
 
     // Add content/test/data for cross_site_iframe_factory.html

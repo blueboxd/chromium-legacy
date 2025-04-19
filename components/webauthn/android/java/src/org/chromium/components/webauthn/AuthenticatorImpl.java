@@ -11,6 +11,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.os.Bundle;
 import android.util.Pair;
 
 import androidx.annotation.Nullable;
@@ -23,6 +24,7 @@ import org.chromium.blink.mojom.GetAssertionAuthenticatorResponse;
 import org.chromium.blink.mojom.MakeCredentialAuthenticatorResponse;
 import org.chromium.blink.mojom.PaymentOptions;
 import org.chromium.blink.mojom.PublicKeyCredentialCreationOptions;
+import org.chromium.blink.mojom.PublicKeyCredentialReportOptions;
 import org.chromium.blink.mojom.PublicKeyCredentialRequestOptions;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
@@ -172,9 +174,20 @@ public final class AuthenticatorImpl implements Authenticator, AuthenticationCon
         mPendingFido2CredentialRequest.handleMakeCredentialRequest(
                 options,
                 /* maybeClientDataHash= */ null,
+                maybeCreateBrowserOptions(),
                 mOrigin,
+                mTopOrigin,
                 this::onRegisterResponse,
                 this::onError);
+    }
+
+    private @Nullable Bundle maybeCreateBrowserOptions() {
+        if (!isChrome(mWebContents)) {
+            return null;
+        }
+        Bundle browserOptions = GpmBrowserOptionsHelper.createDefaultBrowserOptions();
+        GpmBrowserOptionsHelper.addIncognitoExtraToOptions(browserOptions, mRenderFrameHost);
+        return browserOptions;
     }
 
     @Override
@@ -203,6 +216,11 @@ public final class AuthenticatorImpl implements Authenticator, AuthenticationCon
                 mPayment,
                 this::onSignResponse,
                 this::onError);
+    }
+
+    @Override
+    public void report(PublicKeyCredentialReportOptions options, Report_Response callback) {
+        callback.call(AuthenticatorStatus.NOT_IMPLEMENTED, null);
     }
 
     @Override

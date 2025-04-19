@@ -7,7 +7,9 @@
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/desks/window_occlusion_calculator.h"
 #include "ash/wm/overview/overview_item.h"
+#include "ash/wm/overview/overview_metrics.h"
 #include "ash/wm/overview/overview_test_base.h"
 #include "ash/wm/overview/overview_test_util.h"
 #include "ash/wm/splitview/split_view_controller.h"
@@ -18,9 +20,14 @@
 #include "ash/wm/workspace_controller.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_tree_host.h"
+#include "ui/compositor/compositor.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/compositor/test/test_utils.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect.h"
@@ -32,7 +39,7 @@ class OverviewGridTest : public AshTestBase {
  public:
   OverviewGridTest() {
     scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{features::kFasterSplitScreenSetup,
+        /*enabled_features=*/{features::kSnapGroup,
                               features::kOsSettingsRevampWayfinding},
         /*disabled_features=*/{features::kForestFeature});
   }
@@ -45,7 +52,8 @@ class OverviewGridTest : public AshTestBase {
   void InitializeGrid(
       const std::vector<raw_ptr<aura::Window, VectorExperimental>>& windows) {
     aura::Window* root = Shell::GetPrimaryRootWindow();
-    grid_ = std::make_unique<OverviewGrid>(root, windows, nullptr);
+    grid_ = std::make_unique<OverviewGrid>(
+        root, windows, nullptr, window_occlusion_calculator_.AsWeakPtr());
   }
 
   void CheckAnimationStates(
@@ -59,10 +67,10 @@ class OverviewGridTest : public AshTestBase {
     ASSERT_EQ(windows.size(), expected_end_animations.size());
 
     InitializeGrid(windows);
-    ASSERT_EQ(windows.size(), grid_->window_list().size());
+    ASSERT_EQ(windows.size(), grid_->item_list().size());
 
     // The default values are to animate.
-    for (const auto& item : grid_->window_list()) {
+    for (const auto& item : grid_->item_list()) {
       SCOPED_TRACE("Initial values");
       EXPECT_TRUE(item->should_animate_when_entering());
       EXPECT_TRUE(item->should_animate_when_exiting());
@@ -70,26 +78,25 @@ class OverviewGridTest : public AshTestBase {
 
     grid_->CalculateWindowListAnimationStates(
         /*selected_item=*/nullptr, OverviewTransition::kEnter, target_bounds);
-    for (size_t i = 0; i < grid_->window_list().size(); ++i) {
+    for (size_t i = 0; i < grid_->item_list().size(); ++i) {
       SCOPED_TRACE("Enter animation, window " + base::NumberToString(i + 1));
       EXPECT_EQ(expected_start_animations[i],
-                grid_->window_list()[i]->should_animate_when_entering());
+                grid_->item_list()[i]->should_animate_when_entering());
     }
 
-    for (size_t i = 0; i < grid_->window_list().size(); ++i) {
-      grid_->window_list()[i]->set_target_bounds_for_testing(target_bounds[i]);
+    for (size_t i = 0; i < grid_->item_list().size(); ++i) {
+      grid_->item_list()[i]->set_target_bounds_for_testing(target_bounds[i]);
     }
 
-    auto* selected_item =
-        selected_window_index
-            ? grid_->window_list()[*selected_window_index].get()
-            : nullptr;
+    auto* selected_item = selected_window_index
+                              ? grid_->item_list()[*selected_window_index].get()
+                              : nullptr;
     grid_->CalculateWindowListAnimationStates(selected_item,
                                               OverviewTransition::kExit, {});
-    for (size_t i = 0; i < grid_->window_list().size(); ++i) {
+    for (size_t i = 0; i < grid_->item_list().size(); ++i) {
       SCOPED_TRACE("Exit animation, window " + base::NumberToString(i + 1));
       EXPECT_EQ(expected_end_animations[i],
-                grid_->window_list()[i]->should_animate_when_exiting());
+                grid_->item_list()[i]->should_animate_when_exiting());
     }
   }
 
@@ -100,6 +107,7 @@ class OverviewGridTest : public AshTestBase {
   OverviewGrid* grid() { return grid_.get(); }
 
  private:
+  WindowOcclusionCalculator window_occlusion_calculator_;
   std::unique_ptr<OverviewGrid> grid_;
 
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -321,13 +329,61 @@ TEST_F(OverviewGridTest, SnappedWindow) {
   EXPECT_FALSE(item3->should_animate_when_entering());
 }
 
+// TODO(b/350771229): Replace `OverviewGridTest` with `OverviewGridForestTest`
+// once `kForestFeature` is launched.
+TEST_F(OverviewGridTest, RecordsDelayedDeskBarPresentationMetric) {
+  ui::ScopedAnimationDurationScaleMode animation_scale(
+      ui::ScopedAnimationDurationScaleMode::FAST_DURATION);
+
+  // Since the windows are not maximized, the desk bar should open after
+  // the overview animation is complete, causing
+  // `kOverviewDelayedDeskBarPresentationHistogram` to be recorded.
+  std::unique_ptr<aura::Window> window1(CreateTestWindow());
+  std::unique_ptr<aura::Window> window2(CreateTestWindow());
+
+  ui::Compositor* const compositor = window1->GetHost()->compositor();
+  base::HistogramTester histogram_tester;
+  ToggleOverview();
+  ASSERT_TRUE(ui::WaitForNextFrameToBePresented(compositor));
+  histogram_tester.ExpectTotalCount(
+      kOverviewDelayedDeskBarPresentationHistogram, 0);
+  WaitForOverviewEnterAnimation();
+  ASSERT_TRUE(ui::WaitForNextFrameToBePresented(compositor));
+  histogram_tester.ExpectTotalCount(
+      kOverviewDelayedDeskBarPresentationHistogram, 1);
+}
+
+// TODO(b/350771229): Replace `OverviewGridTest` with `OverviewGridForestTest`
+// once `kForestFeature` is launched.
+TEST_F(OverviewGridTest, DoesNotRecordDelayedDeskBarPresentationMetric) {
+  ui::ScopedAnimationDurationScaleMode animation_scale(
+      ui::ScopedAnimationDurationScaleMode::FAST_DURATION);
+
+  // Since the windows are maximized, the desk bar should open immediately when
+  // we enter overview and `kOverviewDelayedDeskBarPresentationHistogram` should
+  // not be recorded.
+  std::unique_ptr<aura::Window> window1(CreateTestWindow());
+  std::unique_ptr<aura::Window> window2(CreateTestWindow());
+  WindowState::Get(window1.get())->Maximize();
+  WindowState::Get(window2.get())->Maximize();
+
+  ui::Compositor* const compositor = window1->GetHost()->compositor();
+  base::HistogramTester histogram_tester;
+  ToggleOverview();
+  ASSERT_TRUE(ui::WaitForNextFrameToBePresented(compositor));
+  WaitForOverviewEnterAnimation();
+  ASSERT_TRUE(ui::WaitForNextFrameToBePresented(compositor));
+  histogram_tester.ExpectTotalCount(
+      kOverviewDelayedDeskBarPresentationHistogram, 0);
+}
+
 class OverviewGridForestTest : public OverviewTestBase {
  public:
   OverviewGridForestTest() {
     scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{features::kFasterSplitScreenSetup,
-                              features::kOsSettingsRevampWayfinding,
-                              features::kForestFeature},
+        /*enabled_features=*/{features::kOsSettingsRevampWayfinding,
+                              features::kForestFeature,
+                              features::kDeskBarWindowOcclusionOptimization},
         /*disabled_features=*/{});
   }
   OverviewGridForestTest(const OverviewGridForestTest&) = delete;
@@ -360,7 +416,7 @@ class OverviewGridForestTest : public OverviewTestBase {
     ASSERT_TRUE(grid);
 
     const std::vector<std::unique_ptr<OverviewItemBase>>& overview_items =
-        grid->window_list();
+        grid->item_list();
     if (!expected_enter_animations.empty()) {
       ASSERT_EQ(overview_items.size(), expected_enter_animations.size());
       for (size_t i = 0; i < overview_items.size(); ++i) {

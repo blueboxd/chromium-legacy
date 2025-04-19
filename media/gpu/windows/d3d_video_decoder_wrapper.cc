@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "media/gpu/windows/d3d_video_decoder_wrapper.h"
 
 #include <dxva.h>
@@ -134,23 +139,5 @@ template bool D3DVideoDecoderWrapper::AppendBitstreamAndSliceDataWithStartCode<
 template bool D3DVideoDecoderWrapper::AppendBitstreamAndSliceDataWithStartCode<
     DXVA_Slice_VPx_Short>(base::span<const uint8_t> bitstream,
                           base::span<const uint8_t> start_code);
-
-void D3DVideoDecoderWrapper::RecordFailure(std::string_view reason,
-                                           D3D11Status::Codes code) const {
-  DLOG(ERROR) << reason;
-  MEDIA_LOG(ERROR, media_log_) << reason;
-}
-
-void D3DVideoDecoderWrapper::RecordFailure(std::string_view reason,
-                                           D3D11Status::Codes code,
-                                           HRESULT hr) const {
-  DCHECK(FAILED(hr));
-  std::string hr_string = logging::SystemErrorCodeToString(hr);
-  if (!base::IsStringUTF8AllowingNoncharacters(hr_string)) {
-    hr_string = "WARNING: system message could not be rendered!";
-  }
-  DLOG(ERROR) << reason << ": " << hr_string;
-  MEDIA_LOG(ERROR, media_log_) << reason << ": " << hr_string;
-}
 
 }  // namespace media

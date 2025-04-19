@@ -10,6 +10,7 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics_test_base.h"
+#include "components/autofill/core/common/form_data_test_api.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace autofill::autofill_metrics {
@@ -33,7 +34,7 @@ class TouchToFillForPaymentMethodsTest
  public:
   void SetUp() override {
     SetUpHelper();
-    ON_CALL(*autofill_client_, ShowTouchToFillCreditCard)
+    ON_CALL(payments_autofill_client(), ShowTouchToFillCreditCard)
         .WillByDefault(testing::Return(true));
     MockFastCheckoutClient* fast_checkout_client =
         static_cast<MockFastCheckoutClient*>(
@@ -82,20 +83,27 @@ class TouchToFillForPaymentMethodsTest
       FormData& form,
       const std::vector<bool>& fields_have_autofilled_values,
       const std::vector<FieldType>& field_types) {
-    ASSERT_EQ(form.fields.size(), fields_have_autofilled_values.size());
-    ASSERT_EQ(form.fields.size(), field_types.size());
+    ASSERT_EQ(form.fields().size(), fields_have_autofilled_values.size());
+    ASSERT_EQ(form.fields().size(), field_types.size());
     for (size_t i = 0; i < fields_have_autofilled_values.size(); i++) {
-      form.fields[i].set_is_autofilled(fields_have_autofilled_values[i]);
+      test_api(form).field(i).set_is_autofilled(
+          fields_have_autofilled_values[i]);
       CreditCard test_card = test::GetCreditCard();
-      form.fields[i].set_value(field_types[i] != CREDIT_CARD_VERIFICATION_CODE
-                                   ? test_card.GetRawInfo(field_types[i])
-                                   : u"123");
+      test_api(form).field(i).set_value(
+          field_types[i] != CREDIT_CARD_VERIFICATION_CODE
+              ? test_card.GetRawInfo(field_types[i])
+              : u"123");
     }
   }
 
   TouchToFillDelegateAndroidImpl& touch_to_fill_delegate() {
     return *static_cast<TouchToFillDelegateAndroidImpl*>(
         autofill_manager().touch_to_fill_delegate());
+  }
+
+  MockPaymentsAutofillClient& payments_autofill_client() {
+    return *static_cast<MockPaymentsAutofillClient*>(
+        autofill_client_->GetPaymentsAutofillClient());
   }
 };
 
@@ -114,14 +122,13 @@ TEST_P(TouchToFillForPaymentMethodsTest,
        AllAutofilledAndAccepted_TouchToFill_CreditCards) {
   RecreateCreditCards(/*include_local_credit_card=*/true,
                       /*include_masked_server_credit_card=*/false,
-                      /*include_full_server_credit_card=*/false,
                       /*masked_card_is_enrolled_for_virtual_card=*/false);
   TouchToFillForPaymentMethodsTestCase test_case = GetParam();
   FormData form = CreateForm(GetFields(test_case.field_types));
 
   SeeForm(form);
   autofill_manager().OnAskForValuesToFillTest(
-      form, form.fields[0],
+      form, form.fields()[0].global_id(),
       AutofillSuggestionTriggerSource::kFormControlElementClicked);
 
   base::HistogramTester histogram_tester;
@@ -135,7 +142,7 @@ TEST_P(TouchToFillForPaymentMethodsTest,
                             test_case.field_types);
   // Simulate user made change to autofilled field.
   if (!test_case.is_all_accepted) {
-    SimulateUserChangedTextField(form, form.fields[0]);
+    SimulateUserChangedTextField(form, form.fields()[0]);
   }
 
   SubmitForm(form);

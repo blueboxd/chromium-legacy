@@ -79,8 +79,23 @@ class AutofillStructuredAddress : public testing::Test {
  public:
   AutofillStructuredAddress() {
     features_.InitWithFeatures(
-        {features::kAutofillEnableSupportForAdminLevel2,
-         features::kAutofillEnableSupportForApartmentNumbers},
+        {features::kAutofillEnableSupportForLandmark,
+         features::kAutofillEnableSupportForBetweenStreets,
+         features::kAutofillEnableSupportForAdminLevel2,
+         features::kAutofillEnableSupportForApartmentNumbers,
+         features::kAutofillEnableSupportForAddressOverflow,
+         features::kAutofillEnableSupportForBetweenStreetsOrLandmark,
+         features::kAutofillEnableSupportForAddressOverflowAndLandmark,
+         features::kAutofillEnableDependentLocalityParsing,
+         features::kAutofillUseI18nAddressModel,
+         features::kAutofillUseAUAddressModel,
+         features::kAutofillUseBRAddressModel,
+         features::kAutofillUseCAAddressModel,
+         features::kAutofillUseDEAddressModel,
+         features::kAutofillUseINAddressModel,
+         features::kAutofillUseITAddressModel,
+         features::kAutofillUseMXAddressModel,
+         features::kAutofillUsePLAddressModel},
         {});
   }
 
@@ -90,7 +105,8 @@ class AutofillStructuredAddress : public testing::Test {
 
 void TestAddressLineParsing(const AddressLineParsingTestCase& test_case) {
   AddressComponentsStore address =
-      i18n_model_definition::CreateAddressComponentModel();
+      i18n_model_definition::CreateAddressComponentModel(
+          AddressCountryCode(test_case.country_code));
   const AddressComponentTestValues test_value = {
       {.type = ADDRESS_HOME_STREET_ADDRESS,
        .value = test_case.street_address,
@@ -109,7 +125,7 @@ void TestAddressLineParsing(const AddressLineParsingTestCase& test_case) {
        .status = VerificationStatus::kObserved},
       {.type = ADDRESS_HOME_STREET_LOCATION,
        .value = test_case.street_location,
-       .status = VerificationStatus::kParsed},
+       .status = VerificationStatus::kFormatted},
       {.type = ADDRESS_HOME_STREET_NAME,
        .value = test_case.street_name,
        .status = VerificationStatus::kParsed},
@@ -133,7 +149,8 @@ void TestAddressLineParsing(const AddressLineParsingTestCase& test_case) {
 
 void TestAddressLineFormatting(const AddressLineParsingTestCase& test_case) {
   AddressComponentsStore store =
-      i18n_model_definition::CreateAddressComponentModel();
+      i18n_model_definition::CreateAddressComponentModel(
+          AddressCountryCode(test_case.country_code));
   AddressComponent* root = store.Root();
 
   const AddressComponentTestValues test_value = {
@@ -152,6 +169,9 @@ void TestAddressLineFormatting(const AddressLineParsingTestCase& test_case) {
       {.type = ADDRESS_HOME_APT_NUM,
        .value = test_case.apartment_num,
        .status = VerificationStatus::kObserved},
+      {.type = ADDRESS_HOME_APT_TYPE,
+       .value = test_case.apartment_type,
+       .status = VerificationStatus::kObserved},
       {.type = ADDRESS_HOME_LANDMARK,
        .value = test_case.landmark,
        .status = VerificationStatus::kObserved},
@@ -160,6 +180,9 @@ void TestAddressLineFormatting(const AddressLineParsingTestCase& test_case) {
        .status = VerificationStatus::kObserved},
       {.type = ADDRESS_HOME_ADMIN_LEVEL2,
        .value = test_case.admin_level_2,
+       .status = VerificationStatus::kObserved},
+      {.type = ADDRESS_HOME_OVERFLOW,
+       .value = test_case.overflow,
        .status = VerificationStatus::kObserved}};
 
   SetTestValues(root, test_value);
@@ -185,6 +208,9 @@ void TestAddressLineFormatting(const AddressLineParsingTestCase& test_case) {
       {.type = ADDRESS_HOME_APT_NUM,
        .value = test_case.apartment_num,
        .status = VerificationStatus::kObserved},
+      {.type = ADDRESS_HOME_APT_TYPE,
+       .value = test_case.apartment_type,
+       .status = VerificationStatus::kObserved},
       {.type = ADDRESS_HOME_FLOOR,
        .value = test_case.floor,
        .status = VerificationStatus::kObserved},
@@ -196,6 +222,9 @@ void TestAddressLineFormatting(const AddressLineParsingTestCase& test_case) {
        .status = VerificationStatus::kObserved},
       {.type = ADDRESS_HOME_ADMIN_LEVEL2,
        .value = test_case.admin_level_2,
+       .status = VerificationStatus::kObserved},
+      {.type = ADDRESS_HOME_OVERFLOW,
+       .value = test_case.overflow,
        .status = VerificationStatus::kObserved}};
   VerifyTestValues(root, expectation);
 }
@@ -215,83 +244,86 @@ TEST_F(AutofillStructuredAddress, ParseStreetAddress) {
        .street_name = "Implerstr.",
        .house_number = "73a"},
       {.street_address = "Implerstr. 73a Obergeschoss 2 Wohnung 3",
-       .street_location = "Implerstr. 73a ",
+       .street_location = "Implerstr. 73a",
        .street_name = "Implerstr.",
        .house_number = "73a",
        .floor = "2",
        .apartment_num = "3"},
       {.street_address = "Implerstr. 73a OG 2",
-       .street_location = "Implerstr. 73a ",
+       .street_location = "Implerstr. 73a",
        .street_name = "Implerstr.",
        .house_number = "73a",
        .floor = "2"},
       {.street_address = "Implerstr. 73a 2. OG",
-       .street_location = "Implerstr. 73a ",
+       .street_location = "Implerstr. 73a",
        .street_name = "Implerstr.",
        .house_number = "73a",
        .floor = "2"},
       {.street_address = "Implerstr. no 73a",
-       .street_location = "Implerstr. no 73a",
+       .street_location = "Implerstr. 73a",
        .street_name = "Implerstr.",
        .house_number = "73a"},
       {.street_address = "Implerstr. °73a",
-       .street_location = "Implerstr. °73a",
+       .street_location = "Implerstr. 73a",
        .street_name = "Implerstr.",
        .house_number = "73a"},
       {.street_address = "Implerstr. number 73a",
-       .street_location = "Implerstr. number 73a",
+       .street_location = "Implerstr. 73a",
        .street_name = "Implerstr.",
        .house_number = "73a"},
-      {.street_address = "1600 Amphitheatre Parkway",
+      {.country_code = "GB",
+       .street_address = "1600 Amphitheatre Parkway",
        .street_location = "1600 Amphitheatre Parkway",
        .street_name = "Amphitheatre Parkway",
        .house_number = "1600"},
-      {.street_address = "1600 Amphitheatre Parkway, Floor 6 Apt 12",
-       .street_location = "1600 Amphitheatre Parkway, ",
+      {.country_code = "GB",
+       .street_address = "1600 Amphitheatre Parkway, Floor 6 Apt 12",
+       .street_location = "1600 Amphitheatre Parkway",
        .street_name = "Amphitheatre Parkway",
        .house_number = "1600",
        .floor = "6",
        .apartment_num = "12"},
-      {.street_address = "Av. Paulista, 1098, 1º andar, apto. 101",
-       .street_location = "Av. Paulista, 1098, ",
+      {.country_code = "ES",
+       .street_address = "Av. Paulista 1098, 1º andar, apto. 101",
+       .street_location = "Av. Paulista 1098",
        .street_name = "Av. Paulista",
        .house_number = "1098",
        .floor = "1",
        .apartment_num = "101"},
       // Examples for Mexico.
       {.street_address = "Street Name 12 - Piso 13 - 14",
-       .street_location = "Street Name 12 ",
+       .street_location = "Street Name 12",
        .street_name = "Street Name",
        .house_number = "12",
        .floor = "13",
        .apartment_num = "14"},
       {.street_address = "Street Name 12 - 14",
-       .street_location = "Street Name 12 ",
+       .street_location = "Street Name 12",
        .street_name = "Street Name",
        .house_number = "12",
        .floor = "",
        .apartment_num = "14"},
       {.street_address = "Street Name 12 - Piso 13",
-       .street_location = "Street Name 12 ",
+       .street_location = "Street Name 12",
        .street_name = "Street Name",
        .house_number = "12",
        .floor = "13",
        .apartment_num = ""},
       // Examples for Spain.
       {.street_address = "Street Name 1, 2º, 3ª",
-       .street_location = "Street Name 1, ",
+       .street_location = "Street Name 1",
        .street_name = "Street Name",
        .house_number = "1",
        .floor = "2",
        .apartment_num = "3"},
       {.street_address = "Street Name 1, 2º",
-       .street_location = "Street Name 1, ",
+       .street_location = "Street Name 1",
        .street_name = "Street Name",
        .house_number = "1",
        .floor = "2",
        .apartment_num = ""},
       {.street_address = "Street Name 1, 3ª",
-       .street_location = "Street Name 1, ",
+       .street_location = "Street Name 1",
        .street_name = "Street Name",
        .house_number = "1",
        .floor = "",
@@ -306,7 +338,7 @@ TEST_F(AutofillStructuredAddress, ParseStreetAddress) {
 TEST_F(AutofillStructuredAddress, ParseMultiLineStreetAddress) {
   std::vector<AddressLineParsingTestCase> test_cases = {
       {.street_address = "Implerstr. 73a\nObergeschoss 2 Wohnung 3",
-       .street_location = "Implerstr. 73a\n",
+       .street_location = "Implerstr. 73a",
        .street_name = "Implerstr.",
        .house_number = "73a",
        .floor = "2",
@@ -315,18 +347,21 @@ TEST_F(AutofillStructuredAddress, ParseMultiLineStreetAddress) {
        .street_location = "Implerstr. 73a",
        .street_name = "Implerstr.",
        .house_number = "73a"},
-      {.street_address = "1600 Amphitheatre Parkway\nFloor 6 Apt 12",
-       .street_location = "1600 Amphitheatre Parkway\n",
+      {.country_code = "ZA",
+       .street_address = "1600 Amphitheatre Parkway\nFloor 6 Apt 12",
+       .street_location = "1600 Amphitheatre Parkway",
        .street_name = "Amphitheatre Parkway",
        .house_number = "1600",
        .floor = "6",
        .apartment_num = "12"},
-      {.street_address = "1600 Amphitheatre Parkway\nSome UnparsableText",
+      {.country_code = "ZA",
+       .street_address = "1600 Amphitheatre Parkway\nSome UnparsableText",
        .street_location = "1600 Amphitheatre Parkway",
        .street_name = "Amphitheatre Parkway",
        .house_number = "1600"},
-      {.street_address = "Av. Paulista, 1098\n1º andar, apto. 101",
-       .street_location = "Av. Paulista, 1098\n",
+      {.country_code = "ES",
+       .street_address = "Av. Paulista 1098\n1º andar, apto. 101",
+       .street_location = "Av. Paulista 1098",
        .street_name = "Av. Paulista",
        .house_number = "1098",
        .floor = "1",
@@ -339,28 +374,38 @@ TEST_F(AutofillStructuredAddress, ParseMultiLineStreetAddress) {
 
 TEST_F(AutofillStructuredAddress, TestStreetAddressFormatting) {
   std::vector<AddressLineParsingTestCase> test_cases = {
-      {
-          .country_code = "BR",
-          .street_address = "Av. Brigadeiro Faria Lima, 3477, 1º andar, apto 2",
-          .street_location = "Av. Brigadeiro Faria Lima 3477",
-          .street_name = "Av. Brigadeiro Faria Lima",
-          .house_number = "3477",
-          .floor = "1",
-          .apartment_num = "2",
-      },
+      {.country_code = "BR",
+       .street_address = "Av. Brigadeiro Faria Lima, 3477\nAndar 1, Apto 2",
+       .street_location = "Av. Brigadeiro Faria Lima, 3477",
+       .street_name = "Av. Brigadeiro Faria Lima",
+       .house_number = "3477",
+       .floor = "1",
+       .apartment_type = "Apto",
+       .apartment_num = "2",
+       .overflow = "Andar 1, Apto 2"},
+      // TODO(crbug.com/40275657): Build conditional address formatting to
+      // support cases where the apt_type is not present.
+      {.country_code = "BR",
+       .street_address = "Av. Brigadeiro Faria Lima, 3477\nAndar 1, 2",
+       .street_location = "Av. Brigadeiro Faria Lima, 3477",
+       .street_name = "Av. Brigadeiro Faria Lima",
+       .house_number = "3477",
+       .floor = "1",
+       .apartment_num = "2",
+       .overflow = "Andar 1, 2"},
       {.country_code = "DE",
        .street_address = "Erika-Mann-Str. 33",
        .street_location = "Erika-Mann-Str. 33",
        .street_name = "Erika-Mann-Str.",
        .house_number = "33"},
       {.country_code = "DE",
-       .street_address = "Erika-Mann-Str. 33, 2. Stock, 12. Wohnung",
+       .street_address = "Erika-Mann-Str. 33\n2. Stock, 12. Wohnung",
        .street_location = "Erika-Mann-Str. 33",
        .street_name = "Erika-Mann-Str.",
        .house_number = "33",
-       .floor = "2",
-       .apartment_num = "12"},
-      {.street_address = "1600 Amphitheatre Parkway FL 6 APT 12",
+       .overflow = "2. Stock, 12. Wohnung"},
+      {.country_code = "XX",
+       .street_address = "Amphitheatre Parkway 1600\nApt. 12, Floor 6",
        .street_location = "Amphitheatre Parkway 1600",
        .street_name = "Amphitheatre Parkway",
        .house_number = "1600",
@@ -368,15 +413,16 @@ TEST_F(AutofillStructuredAddress, TestStreetAddressFormatting) {
        .apartment_num = "12"},
       // Examples for Mexico.
       {.country_code = "MX",
-       .street_address = "StreetName 12 - Piso 13 - 14",
+       .street_address = "StreetName 12, Piso 13, Apto 14",
        .street_location = "StreetName 12",
        .street_name = "StreetName",
        .house_number = "12",
        .floor = "13",
+       .apartment_type = "Apto",
        .apartment_num = "14",
        .admin_level_2 = "Guanajuato"},
       {.country_code = "MX",
-       .street_address = "StreetName 12 - 14",
+       .street_address = "StreetName 12, 14",
        .street_location = "StreetName 12",
        .street_name = "StreetName",
        .house_number = "12",
@@ -384,7 +430,7 @@ TEST_F(AutofillStructuredAddress, TestStreetAddressFormatting) {
        .apartment_num = "14",
        .admin_level_2 = "Oaxaca"},
       {.country_code = "MX",
-       .street_address = "StreetName 12 - Piso 13",
+       .street_address = "StreetName 12, Piso 13",
        .street_location = "StreetName 12",
        .street_name = "StreetName",
        .house_number = "12",
@@ -544,12 +590,14 @@ TEST_F(AutofillStructuredAddress, TestMigrationAndFinalization) {
       i18n_model_definition::CreateAddressComponentModel();
   AddressComponent* root = store.Root();
 
+  // The test uses Great Britain as its address model contains all the address
+  // tokens described below.
   AddressComponentTestValues test_values = {
       {.type = ADDRESS_HOME_STREET_ADDRESS,
        .value = "123 Street name",
        .status = VerificationStatus::kNoStatus},
       {.type = ADDRESS_HOME_COUNTRY,
-       .value = "US",
+       .value = "GB",
        .status = VerificationStatus::kNoStatus},
       {.type = ADDRESS_HOME_STATE,
        .value = "CA",
@@ -566,7 +614,7 @@ TEST_F(AutofillStructuredAddress, TestMigrationAndFinalization) {
        .value = "123 Street name",
        .status = VerificationStatus::kObserved},
       {.type = ADDRESS_HOME_COUNTRY,
-       .value = "US",
+       .value = "GB",
        .status = VerificationStatus::kObserved},
       {.type = ADDRESS_HOME_STATE,
        .value = "CA",
@@ -589,13 +637,13 @@ TEST_F(AutofillStructuredAddress, TestMigrationAndFinalization) {
        .value = "123 Street name",
        .status = VerificationStatus::kObserved},
       {.type = ADDRESS_HOME_COUNTRY,
-       .value = "US",
+       .value = "GB",
        .status = VerificationStatus::kObserved},
       {.type = ADDRESS_HOME_STATE,
        .value = "CA",
        .status = VerificationStatus::kObserved},
       {.type = ADDRESS_HOME_ADDRESS,
-       .value = "123 Street name CA US",
+       .value = "123 Street name\nCA",
        .status = VerificationStatus::kFormatted},
       {.type = ADDRESS_HOME_CITY,
        .value = "",
@@ -725,23 +773,23 @@ TEST_F(AutofillStructuredAddress, TestGetCommonCountry) {
       test_api(*address2.Root()).GetNodeForType(ADDRESS_HOME_COUNTRY);
 
   // No countries set.
-  EXPECT_EQ(country1->GetCommonCountry(*country2), u"");
-  EXPECT_EQ(country2->GetCommonCountry(*country1), u"");
+  EXPECT_EQ(country1->GetCommonCountry(*country2), AddressCountryCode(""));
+  EXPECT_EQ(country2->GetCommonCountry(*country1), AddressCountryCode(""));
 
   // If exactly one country is set, use it as their common one.
   country1->SetValue(u"AT", VerificationStatus::kObserved);
-  EXPECT_EQ(country1->GetCommonCountry(*country2), u"AT");
-  EXPECT_EQ(country2->GetCommonCountry(*country1), u"AT");
+  EXPECT_EQ(country1->GetCommonCountry(*country2), AddressCountryCode("AT"));
+  EXPECT_EQ(country2->GetCommonCountry(*country1), AddressCountryCode("AT"));
 
   // If both are set to the same value, use it as their common one.
   country2->SetValue(u"AT", VerificationStatus::kObserved);
-  EXPECT_EQ(country1->GetCommonCountry(*country2), u"AT");
-  EXPECT_EQ(country2->GetCommonCountry(*country1), u"AT");
+  EXPECT_EQ(country1->GetCommonCountry(*country2), AddressCountryCode("AT"));
+  EXPECT_EQ(country2->GetCommonCountry(*country1), AddressCountryCode("AT"));
 
   // If both have a different value, there is no common one.
   country2->SetValue(u"DE", VerificationStatus::kObserved);
-  EXPECT_EQ(country1->GetCommonCountry(*country2), u"");
-  EXPECT_EQ(country2->GetCommonCountry(*country1), u"");
+  EXPECT_EQ(country1->GetCommonCountry(*country2), AddressCountryCode(""));
+  EXPECT_EQ(country2->GetCommonCountry(*country1), AddressCountryCode(""));
 }
 
 // Tests retrieving a value for comparison for a field type.
@@ -933,32 +981,7 @@ INSTANTIATE_TEST_SUITE_P(
             "CanonicalState", VerificationStatus::kUserVerified, "Random",
             VerificationStatus::kParsed, "CanonicalState", false}));
 
-class AutofillI18nStructuredAddress : public testing::Test {
- public:
-  AutofillI18nStructuredAddress() {
-    features_.InitWithFeatures(
-        {features::kAutofillEnableSupportForLandmark,
-         features::kAutofillEnableSupportForBetweenStreets,
-         features::kAutofillEnableSupportForAdminLevel2,
-         features::kAutofillEnableSupportForApartmentNumbers,
-         features::kAutofillEnableSupportForAddressOverflow,
-         features::kAutofillEnableSupportForBetweenStreetsOrLandmark,
-         features::kAutofillEnableSupportForAddressOverflowAndLandmark,
-         features::kAutofillEnableDependentLocalityParsing,
-         features::kAutofillUseI18nAddressModel,
-         features::kAutofillUseAUAddressModel,
-         features::kAutofillUseBRAddressModel,
-         features::kAutofillUseDEAddressModel,
-         features::kAutofillUseINAddressModel,
-         features::kAutofillUseMXAddressModel},
-        {});
-  }
-
- private:
-  base::test::ScopedFeatureList features_;
-};
-
-TEST_F(AutofillI18nStructuredAddress, ParseStreetAddressLegacy) {
+TEST_F(AutofillStructuredAddress, ParseStreetAddressLegacy) {
   std::vector<AddressLineParsingTestCase> test_cases = {
       {.country_code = "",
        .street_address = "Erika-Mann-Str. 33",
@@ -1105,7 +1128,7 @@ TEST_F(AutofillI18nStructuredAddress, ParseStreetAddressLegacy) {
   }
 }
 
-TEST_F(AutofillI18nStructuredAddress, ParseStreetAddressMX) {
+TEST_F(AutofillStructuredAddress, ParseStreetAddressMX) {
   std::vector<AddressLineParsingTestCase> test_cases = {
       // Examples for Mexico.
       {.country_code = "MX",
@@ -1248,7 +1271,7 @@ TEST_F(AutofillI18nStructuredAddress, ParseStreetAddressMX) {
   }
 }
 
-TEST_F(AutofillI18nStructuredAddress, ParseSubpremiseMX) {
+TEST_F(AutofillStructuredAddress, ParseSubpremiseMX) {
   AddressComponentsStore address =
       i18n_model_definition::CreateAddressComponentModel(
           AddressCountryCode("MX"));
@@ -1285,7 +1308,7 @@ TEST_F(AutofillI18nStructuredAddress, ParseSubpremiseMX) {
   VerifyTestValues(address.Root(), expectation);
 }
 
-TEST_F(AutofillI18nStructuredAddress, ParseStreetAddressBR) {
+TEST_F(AutofillStructuredAddress, ParseStreetAddressBR) {
   std::vector<AddressLineParsingTestCase> test_cases = {
       // Examples for Brasil.
       {.country_code = "BR",
@@ -1433,7 +1456,7 @@ TEST_F(AutofillI18nStructuredAddress, ParseStreetAddressBR) {
   }
 }
 
-TEST_F(AutofillI18nStructuredAddress, ParseOverflowAndLandmarkBR) {
+TEST_F(AutofillStructuredAddress, ParseOverflowAndLandmarkBR) {
   AddressComponentsStore address =
       i18n_model_definition::CreateAddressComponentModel(
           AddressCountryCode("BR"));
@@ -1476,7 +1499,7 @@ TEST_F(AutofillI18nStructuredAddress, ParseOverflowAndLandmarkBR) {
   VerifyTestValues(address.Root(), expectation);
 }
 
-TEST_F(AutofillI18nStructuredAddress, ParseSubpremiseBR) {
+TEST_F(AutofillStructuredAddress, ParseSubpremiseBR) {
   std::vector<AddressLineParsingTestCase> test_cases = {
       {.subpremise = "apto 12, 1 andar",
        .floor = "1",
@@ -1522,8 +1545,7 @@ TEST_F(AutofillI18nStructuredAddress, ParseSubpremiseBR) {
   }
 }
 
-TEST_F(AutofillI18nStructuredAddress, ParseStreetAddressDE) {
-  base::test::ScopedFeatureList features_{features::kAutofillUseDEAddressModel};
+TEST_F(AutofillStructuredAddress, ParseStreetAddressDE) {
   std::vector<AddressLineParsingTestCase> test_cases = {
       // Examples for Germany.
       {.country_code = "DE",
@@ -1600,8 +1622,7 @@ TEST_F(AutofillI18nStructuredAddress, ParseStreetAddressDE) {
   }
 }
 
-TEST_F(AutofillI18nStructuredAddress, ParseStreetLocationDE) {
-  base::test::ScopedFeatureList features_{features::kAutofillUseDEAddressModel};
+TEST_F(AutofillStructuredAddress, ParseStreetLocationDE) {
   std::vector<AddressLineParsingTestCase> test_cases = {
       // Examples for Germany.
       {.country_code = "DE",
@@ -1672,8 +1693,7 @@ TEST_F(AutofillI18nStructuredAddress, ParseStreetLocationDE) {
   }
 }
 
-TEST_F(AutofillI18nStructuredAddress, ParseSubpremiseAU) {
-  base::test::ScopedFeatureList features_{features::kAutofillUseAUAddressModel};
+TEST_F(AutofillStructuredAddress, ParseSubpremiseAU) {
   std::vector<AddressLineParsingTestCase> test_cases = {
       // Examples of subpremise(in-building-location) for Australia.
       {.country_code = "AU",
@@ -1747,8 +1767,7 @@ TEST_F(AutofillI18nStructuredAddress, ParseSubpremiseAU) {
   }
 }
 
-TEST_F(AutofillI18nStructuredAddress, ParseStreetLocationAU) {
-  base::test::ScopedFeatureList features_{features::kAutofillUseAUAddressModel};
+TEST_F(AutofillStructuredAddress, ParseStreetLocationAU) {
   std::vector<AddressLineParsingTestCase> test_cases = {
       // Examples of street locations (building-location) for Australia.
       {.country_code = "AU",
@@ -1794,8 +1813,7 @@ TEST_F(AutofillI18nStructuredAddress, ParseStreetLocationAU) {
   }
 }
 
-TEST_F(AutofillI18nStructuredAddress, ParseStreetAddressAU) {
-  base::test::ScopedFeatureList features_{features::kAutofillUseAUAddressModel};
+TEST_F(AutofillStructuredAddress, ParseStreetAddressAU) {
   std::vector<AddressLineParsingTestCase> test_cases = {
       // Examples of street addresses for Australia.
       {.country_code = "AU",
@@ -1982,8 +2000,7 @@ TEST_F(AutofillI18nStructuredAddress, ParseStreetAddressAU) {
   }
 }
 
-TEST_F(AutofillI18nStructuredAddress, TestFormattingPL) {
-  base::test::ScopedFeatureList features_{features::kAutofillUsePLAddressModel};
+TEST_F(AutofillStructuredAddress, TestFormattingPL) {
   std::vector<AddressLineParsingTestCase> test_cases = {
       {.country_code = "PL",
        .street_address = "Jan Warsaw 9/10",
@@ -2070,8 +2087,7 @@ TEST_F(AutofillI18nStructuredAddress, TestFormattingPL) {
   }
 }
 
-TEST_F(AutofillI18nStructuredAddress, ParseBuildingAndUnitPL) {
-  base::test::ScopedFeatureList features_{features::kAutofillUsePLAddressModel};
+TEST_F(AutofillStructuredAddress, ParseBuildingAndUnitPL) {
   std::vector<AddressLineParsingTestCase> test_cases = {
       // Examples of house number and apartment numbers for Poland.
       {.country_code = "PL",
@@ -2134,8 +2150,7 @@ TEST_F(AutofillI18nStructuredAddress, ParseBuildingAndUnitPL) {
   }
 }
 
-TEST_F(AutofillI18nStructuredAddress, ParseStreetAddressPL) {
-  base::test::ScopedFeatureList features_{features::kAutofillUsePLAddressModel};
+TEST_F(AutofillStructuredAddress, ParseStreetAddressPL) {
   std::vector<AddressLineParsingTestCase> test_cases = {
       // Examples of street addresses for Poland.
       {.country_code = "PL",
@@ -2252,6 +2267,382 @@ TEST_F(AutofillI18nStructuredAddress, ParseStreetAddressPL) {
          .status = VerificationStatus::kParsed},
         {.type = ADDRESS_HOME_APT_NUM,
          .value = test_case.apartment_num,
+         .status = VerificationStatus::kParsed},
+    };
+    VerifyTestValues(address.Root(), expectation);
+  }
+}
+
+TEST_F(AutofillStructuredAddress, TestFormattingIT) {
+  std::vector<AddressLineParsingTestCase> test_cases = {
+      {.country_code = "IT",
+       .street_address = "Corso Vittorio Emanuele II 30",
+       .street_location = "Corso Vittorio Emanuele II 30",
+       .street_name = "Corso Vittorio Emanuele II",
+       .house_number = "30",
+       .overflow = ""},
+      {.country_code = "IT",
+       .street_address = "Corso Vittorio Emanuele II 30, Scala A Interno 4",
+       .street_location = "Corso Vittorio Emanuele II 30",
+       .street_name = "Corso Vittorio Emanuele II",
+       .house_number = "30",
+       .overflow = "Scala A Interno 4"},
+      {.country_code = "IT",
+       .street_address = "Piazza Roma 15, Appartamento 3",
+       .street_location = "Piazza Roma 15",
+       .street_name = "Piazza Roma",
+       .house_number = "15",
+       .overflow = "Appartamento 3"},
+      {.country_code = "IT",
+       .street_address = "Corso Vittorio Emanuele II, Scala A Interno 4",
+       .street_location = "Corso Vittorio Emanuele II",
+       .street_name = "Corso Vittorio Emanuele II",
+       .house_number = "",
+       .overflow = "Scala A Interno 4"},
+      {.country_code = "IT",
+       .street_address = "Corso Vittorio Emanuele II",
+       .street_location = "Corso Vittorio Emanuele II",
+       .street_name = "Corso Vittorio Emanuele II",
+       .house_number = "",
+       .overflow = ""}};
+
+  for (const auto &test_case : test_cases) {
+    AddressComponentsStore address =
+        i18n_model_definition::CreateAddressComponentModel(
+            AddressCountryCode(test_case.country_code));
+
+    const AddressComponentTestValues test_value = {
+        {.type = ADDRESS_HOME_COUNTRY,
+         .value = test_case.country_code,
+         .status = VerificationStatus::kObserved},
+        {.type = ADDRESS_HOME_STREET_NAME,
+         .value = test_case.street_name,
+         .status = VerificationStatus::kObserved},
+        {.type = ADDRESS_HOME_HOUSE_NUMBER,
+         .value = test_case.house_number,
+         .status = VerificationStatus::kObserved},
+        {.type = ADDRESS_HOME_OVERFLOW,
+         .value = test_case.overflow,
+         .status = VerificationStatus::kObserved}};
+
+    SetTestValues(address.Root(), test_value);
+
+    const AddressComponentTestValues expectation = {
+        {.type = ADDRESS_HOME_COUNTRY,
+         .value = test_case.country_code,
+         .status = VerificationStatus::kObserved},
+        {.type = ADDRESS_HOME_STREET_ADDRESS,
+         .value = test_case.street_address,
+         .status = VerificationStatus::kFormatted},
+        {.type = ADDRESS_HOME_STREET_LOCATION,
+         .value = test_case.street_location,
+         .status = VerificationStatus::kFormatted},
+        {.type = ADDRESS_HOME_STREET_NAME,
+         .value = test_case.street_name,
+         .status = VerificationStatus::kObserved},
+        {.type = ADDRESS_HOME_HOUSE_NUMBER,
+         .value = test_case.house_number,
+         .status = VerificationStatus::kObserved},
+        {.type = ADDRESS_HOME_OVERFLOW,
+         .value = test_case.overflow,
+         .status = VerificationStatus::kObserved}};
+    VerifyTestValues(address.Root(), expectation);
+  }
+}
+
+TEST_F(AutofillStructuredAddress, ParseStreetLocationIT) {
+  std::vector<AddressLineParsingTestCase> test_cases = {
+      // Examples for Italy.
+      {.country_code = "IT",
+       .street_location = "Via Nazionale 50",
+       .street_name = "Via Nazionale",
+       .house_number = "50"},
+      {.country_code = "IT",
+       .street_location = "Via Nazionale 73a",
+       .street_name = "Via Nazionale",
+       .house_number = "73a"},
+      {.country_code = "IT",
+       .street_location = "Via Nazionale, 73a",
+       .street_name = "Via Nazionale",
+       .house_number = "73a"},
+      {.country_code = "IT",
+       .street_location = "Via Nazionale no 73a",
+       .street_name = "Via Nazionale",
+       .house_number = "73a"},
+      {.country_code = "IT",
+       .street_location = "Via Nazionale °50",
+       .street_name = "Via Nazionale",
+       .house_number = "50"},
+      {.country_code = "IT",
+       .street_location = "Via Nazionale numero 50",
+       .street_name = "Via Nazionale",
+       .house_number = "50"},
+  };
+
+  for (const auto& test_case : test_cases) {
+    AddressComponentsStore address =
+        i18n_model_definition::CreateAddressComponentModel(
+            AddressCountryCode(test_case.country_code));
+
+    const AddressComponentTestValues test_value = {
+        {.type = ADDRESS_HOME_STREET_LOCATION,
+         .value = test_case.street_location,
+         .status = VerificationStatus::kObserved}};
+
+    SetTestValues(address.Root(), test_value);
+
+    const AddressComponentTestValues expectation = {
+        {.type = ADDRESS_HOME_COUNTRY,
+         .value = test_case.country_code,
+         .status = VerificationStatus::kObserved},
+        {.type = ADDRESS_HOME_STREET_LOCATION,
+         .value = test_case.street_location,
+         .status = VerificationStatus::kObserved},
+        {.type = ADDRESS_HOME_STREET_NAME,
+         .value = test_case.street_name,
+         .status = VerificationStatus::kParsed},
+        {.type = ADDRESS_HOME_HOUSE_NUMBER,
+         .value = test_case.house_number,
+         .status = VerificationStatus::kParsed},
+    };
+    VerifyTestValues(address.Root(), expectation);
+  }
+}
+
+TEST_F(AutofillStructuredAddress, ParseStreetAddressIT) {
+  std::vector<AddressLineParsingTestCase> test_cases = {
+      // Examples of street addresses for Italy.
+      {.country_code = "IT",
+       .street_address = "Corso Vittorio Emanuele II 30",
+       .street_location = "Corso Vittorio Emanuele II 30",
+       .street_name = "Corso Vittorio Emanuele II",
+       .house_number = "30",
+       .overflow = ""},
+      {.country_code = "IT",
+       .street_address = "Corso Vittorio Emanuele II, 30",
+       .street_location = "Corso Vittorio Emanuele II, 30",
+       .street_name = "Corso Vittorio Emanuele II",
+       .house_number = "30",
+       .overflow = ""},
+      {.country_code = "IT",
+       .street_address = "Corso Vittorio Emanuele II 30 Scala A Interno 4",
+       .street_location = "Corso Vittorio Emanuele II 30",
+       .street_name = "Corso Vittorio Emanuele II",
+       .house_number = "30",
+       .overflow = "Scala A Interno 4"},
+      {.country_code = "IT",
+       .street_address = "Corso Vittorio Emanuele II 30, Scala A Interno 4",
+       .street_location = "Corso Vittorio Emanuele II 30",
+       .street_name = "Corso Vittorio Emanuele II",
+       .house_number = "30",
+       .overflow = "Scala A Interno 4"},
+      {.country_code = "IT",
+       .street_address = "Corso Vittorio Emanuele II 30, Scala A, Interno 4",
+       .street_location = "Corso Vittorio Emanuele II 30",
+       .street_name = "Corso Vittorio Emanuele II",
+       .house_number = "30",
+       .overflow = "Scala A, Interno 4"},
+      {.country_code = "IT",
+       .street_address = "Piazza Roma 15, Appartamento 3",
+       .street_location = "Piazza Roma 15",
+       .street_name = "Piazza Roma",
+       .house_number = "15",
+       .overflow = "Appartamento 3"},
+      {.country_code = "IT",
+       .street_address = "Piazza Roma numero 73 Palazzo 12, Piano 3",
+       .street_location = "Piazza Roma numero 73",
+       .street_name = "Piazza Roma",
+       .house_number = "73",
+       .overflow = "Palazzo 12, Piano 3"},
+      {.country_code = "IT",
+       .street_address = "Piazza Roma nr 73",
+       .street_location = "Piazza Roma nr 73",
+       .street_name = "Piazza Roma",
+       .house_number = "73",
+       .overflow = ""},
+      {.country_code = "IT",
+       .street_address = "Casella Postale 1234 abcdefg",
+       .street_location = "Casella Postale 1234",
+       .street_name = "Casella Postale",
+       .house_number = "1234",
+       .overflow = "abcdefg"},
+      {.country_code = "IT",
+       .street_address = "Casella Postale, 1234 abcdefg",
+       .street_location = "Casella Postale, 1234",
+       .street_name = "Casella Postale",
+       .house_number = "1234",
+       .overflow = "abcdefg"},
+  };
+
+  for (const auto& test_case : test_cases) {
+    AddressComponentsStore address =
+        i18n_model_definition::CreateAddressComponentModel(
+            AddressCountryCode(test_case.country_code));
+
+    const AddressComponentTestValues test_value = {
+        {.type = ADDRESS_HOME_STREET_ADDRESS,
+         .value = test_case.street_address,
+         .status = VerificationStatus::kObserved}};
+
+    SetTestValues(address.Root(), test_value);
+    const AddressComponentTestValues expectation = {
+        {.type = ADDRESS_HOME_COUNTRY,
+         .value = test_case.country_code,
+         .status = VerificationStatus::kObserved},
+        {.type = (ADDRESS_HOME_STREET_ADDRESS),
+         .value = test_case.street_address,
+         .status = VerificationStatus::kObserved},
+        {.type = ADDRESS_HOME_STREET_LOCATION,
+         .value = test_case.street_location,
+         .status = VerificationStatus::kParsed},
+        {.type = ADDRESS_HOME_STREET_NAME,
+         .value = test_case.street_name,
+         .status = VerificationStatus::kParsed},
+        {.type = ADDRESS_HOME_HOUSE_NUMBER,
+         .value = test_case.house_number,
+         .status = VerificationStatus::kParsed},
+        {.type = ADDRESS_HOME_OVERFLOW,
+         .value = test_case.overflow,
+         .status = VerificationStatus::kParsed},
+    };
+    VerifyTestValues(address.Root(), expectation);
+  }
+}
+
+TEST_F(AutofillStructuredAddress, ParseStreetLocationFR) {
+  base::test::ScopedFeatureList features_{features::kAutofillUseFRAddressModel};
+  std::vector<AddressLineParsingTestCase> test_cases = {
+      // Examples of street locations (building-location) for France.
+      {.country_code = "FR",
+       .street_location = "1661 Place Charles de Gaulle",
+       .street_name = "Place Charles de Gaulle",
+       .house_number = "1661"},
+      {.country_code = "FR",
+       .street_location = "16A Place Charles de Gaulle",
+       .street_name = "Place Charles de Gaulle",
+       .house_number = "16A"},
+      {.country_code = "FR",
+       .street_location = "17-19 Place Charles de Gaulle",
+       .street_name = "Place Charles de Gaulle",
+       .house_number = "17-19"},
+  };
+
+  for (const auto& test_case : test_cases) {
+    AddressComponentsStore address =
+        i18n_model_definition::CreateAddressComponentModel(
+            AddressCountryCode(test_case.country_code));
+
+    const AddressComponentTestValues test_value = {
+        {.type = ADDRESS_HOME_STREET_LOCATION,
+         .value = test_case.street_location,
+         .status = VerificationStatus::kObserved}};
+
+    SetTestValues(address.Root(), test_value);
+    const AddressComponentTestValues expectation = {
+        {.type = ADDRESS_HOME_COUNTRY,
+         .value = test_case.country_code,
+         .status = VerificationStatus::kObserved},
+        {.type = ADDRESS_HOME_STREET_LOCATION,
+         .value = test_case.street_location,
+         .status = VerificationStatus::kObserved},
+        {.type = ADDRESS_HOME_STREET_NAME,
+         .value = test_case.street_name,
+         .status = VerificationStatus::kParsed},
+        {.type = ADDRESS_HOME_HOUSE_NUMBER,
+         .value = test_case.house_number,
+         .status = VerificationStatus::kParsed},
+    };
+    VerifyTestValues(address.Root(), expectation);
+  }
+}
+
+TEST_F(AutofillStructuredAddress, ParseStreetAddressFR) {
+  base::test::ScopedFeatureList features_{features::kAutofillUseFRAddressModel};
+  std::vector<AddressLineParsingTestCase> test_cases = {
+      // Examples of street addresses for France.
+      {.country_code = "FR",
+       .street_address = "1661 Place Charles de Gaulle",
+       .street_location = "1661 Place Charles de Gaulle",
+       .street_name = "Place Charles de Gaulle",
+       .house_number = "1661"},
+      {.country_code = "FR",
+       .street_address = "16A Place Charles de Gaulle",
+       .street_location = "16A Place Charles de Gaulle",
+       .street_name = "Place Charles de Gaulle",
+       .house_number = "16A"},
+      {.country_code = "FR",
+       .street_address = "Appartement 36 1661 Place Charles de Gaulle",
+       .street_location = "1661 Place Charles de Gaulle",
+       .street_name = "Place Charles de Gaulle",
+       .house_number = "1661",
+       .overflow = "Appartement 36"},
+      {.country_code = "FR",
+       .street_address = "Appartement 36\n1661 Place Charles de Gaulle",
+       .street_location = "1661 Place Charles de Gaulle",
+       .street_name = "Place Charles de Gaulle",
+       .house_number = "1661",
+       .overflow = "Appartement 36"},
+      {.country_code = "FR",
+       .street_address = "Appartement 36, 1661 Place Charles de Gaulle",
+       .street_location = "1661 Place Charles de Gaulle",
+       .street_name = "Place Charles de Gaulle",
+       .house_number = "1661",
+       .overflow = "Appartement 36"},
+      {.country_code = "FR",
+       .street_address = "App 36, 1661 Place Charles de Gaulle",
+       .street_location = "1661 Place Charles de Gaulle",
+       .street_name = "Place Charles de Gaulle",
+       .house_number = "1661",
+       .overflow = "App 36"},
+      {.country_code = "FR",
+       .street_address = "Appt 36, 1661 Place Charles de Gaulle",
+       .street_location = "1661 Place Charles de Gaulle",
+       .street_name = "Place Charles de Gaulle",
+       .house_number = "1661",
+       .overflow = "Appt 36"},
+      {.country_code = "FR",
+       .street_address = "App. 36, 1661 Place Charles de Gaulle",
+       .street_location = "1661 Place Charles de Gaulle",
+       .street_name = "Place Charles de Gaulle",
+       .house_number = "1661",
+       .overflow = "App. 36"},
+      {.country_code = "FR",
+       .street_address = "Appt. 36, 1661 Place Charles de Gaulle",
+       .street_location = "1661 Place Charles de Gaulle",
+       .street_name = "Place Charles de Gaulle",
+       .house_number = "1661",
+       .overflow = "Appt. 36"},
+  };
+
+  for (const auto& test_case : test_cases) {
+    AddressComponentsStore address =
+        i18n_model_definition::CreateAddressComponentModel(
+            AddressCountryCode(test_case.country_code));
+
+    const AddressComponentTestValues test_value = {
+        {.type = ADDRESS_HOME_STREET_ADDRESS,
+         .value = test_case.street_address,
+         .status = VerificationStatus::kObserved}};
+
+    SetTestValues(address.Root(), test_value);
+    const AddressComponentTestValues expectation = {
+        {.type = ADDRESS_HOME_COUNTRY,
+         .value = test_case.country_code,
+         .status = VerificationStatus::kObserved},
+        {.type = (ADDRESS_HOME_STREET_ADDRESS),
+         .value = test_case.street_address,
+         .status = VerificationStatus::kObserved},
+        {.type = ADDRESS_HOME_STREET_LOCATION,
+         .value = test_case.street_location,
+         .status = VerificationStatus::kParsed},
+        {.type = ADDRESS_HOME_STREET_NAME,
+         .value = test_case.street_name,
+         .status = VerificationStatus::kParsed},
+        {.type = ADDRESS_HOME_HOUSE_NUMBER,
+         .value = test_case.house_number,
+         .status = VerificationStatus::kParsed},
+        {.type = ADDRESS_HOME_OVERFLOW,
+         .value = test_case.overflow,
          .status = VerificationStatus::kParsed},
     };
     VerifyTestValues(address.Root(), expectation);

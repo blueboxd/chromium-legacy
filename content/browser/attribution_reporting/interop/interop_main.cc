@@ -96,7 +96,7 @@ int main(int argc, char* argv[]) {
   }
 
   auto default_config =
-      content::ParseAttributionInteropConfig(std::move(*default_config_dict));
+      content::ParseAttributionInteropConfig(*std::move(default_config_dict));
   if (!default_config.has_value()) {
     std::cerr << "failed to parse default config: " << default_config.error()
               << std::endl;
@@ -104,7 +104,7 @@ int main(int argc, char* argv[]) {
   }
 
   auto run =
-      content::AttributionInteropRun::Parse(std::move(*input), *default_config);
+      content::AttributionInteropRun::Parse(*std::move(input), *default_config);
   if (!run.has_value()) {
     std::cerr << "failed to parse input: " << run.error() << std::endl;
     return 1;
@@ -112,8 +112,8 @@ int main(int argc, char* argv[]) {
 
   Env env(argc, argv);
 
-  auto output = content::RunAttributionInteropSimulation(
-      std::move(*run), kHpkeKey.GetPublicKey());
+  auto output =
+      content::RunAttributionInteropSimulation(*std::move(run), kHpkeKey);
   if (!output.has_value()) {
     std::cerr << output.error() << std::endl;
     return 1;

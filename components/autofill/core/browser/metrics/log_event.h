@@ -7,10 +7,12 @@
 
 #include "base/time/time.h"
 #include "base/types/id_type.h"
+#include "components/autofill/core/browser/autofill_ablation_study.h"
 #include "components/autofill/core/browser/autofill_granular_filling_utils.h"
 #include "components/autofill/core/browser/form_filler.h"
 #include "components/autofill/core/browser/form_parsing/regex_patterns.h"
 #include "components/autofill/core/browser/proto/api_v1.pb.h"
+#include "components/autofill/core/common/is_required.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
 namespace autofill {
@@ -49,18 +51,6 @@ enum class FillDataType : uint8_t {
 // redundant events.
 bool AreCollapsible(const absl::monostate& event1,
                     const absl::monostate& event2);
-
-namespace internal {
-
-// Auxiliary type to mark members of a struct as required.
-struct IsRequired {
-  // This function is not defined and consteval. Therefore, any evaluation will
-  // fail and fail at compile time.
-  template <typename T>
-  consteval operator T();  // NOLINT
-};
-
-}  // namespace internal
 
 // Log the field that shows a dropdown list of suggestions for autofill.
 struct AskForValuesToFillFieldLogEvent {
@@ -175,6 +165,15 @@ struct RationalizationFieldLogEvent {
 
 bool AreCollapsible(const RationalizationFieldLogEvent& event1,
                     const RationalizationFieldLogEvent& event2);
+
+struct AblationFieldLogEvent {
+  AblationGroup ablation_group = internal::IsRequired();
+  AblationGroup conditional_ablation_group = internal::IsRequired();
+  int day_in_ablation_window = internal::IsRequired();
+};
+
+bool AreCollapsible(const AblationFieldLogEvent& event1,
+                    const AblationFieldLogEvent& event2);
 
 }  // namespace autofill
 

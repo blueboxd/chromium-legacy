@@ -229,13 +229,14 @@ declare global {
           Promise<UrlCollection|null>;
       export function addPassword(options: AddPasswordOptions): Promise<void>;
       export function extendAuthValidity(): Promise<void>;
-      export function switchBiometricAuthBeforeFillingState(): void;
+      export function switchBiometricAuthBeforeFillingState(): Promise<boolean>;
       export function showAddShortcutDialog(): void;
       export function showExportedFileInShell(filePath: string): void;
       export function changePasswordManagerPin(): Promise<boolean>;
       export function isPasswordManagerPinAvailable(): Promise<boolean>;
       export function disconnectCloudAuthenticator(): Promise<boolean>;
       export function isConnectedToCloudAuthenticator(): Promise<boolean>;
+      export function deleteAllPasswordManagerData(): Promise<boolean>;
 
       export const onSavedPasswordsListChanged:
           ChromeEvent<(entries: PasswordUiEntry[]) => void>;

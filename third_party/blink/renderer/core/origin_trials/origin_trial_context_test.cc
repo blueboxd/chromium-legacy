@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/core/permissions_policy/permissions_policy_parser.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/core/testing/null_execution_context.h"
-#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/task_environment.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -259,7 +258,7 @@ TEST_F(OriginTrialContextTest, ValidatorGetsCorrectSecurityInfoThirdParty) {
   EXPECT_TRUE(validation_params[0].origin.is_secure);
 
   EXPECT_EQ(2ul, validation_params[0].third_party_origin_info.size());
-  TrialTokenValidator::OriginInfo* unrelated_info = base::ranges::find_if(
+  auto unrelated_info = base::ranges::find_if(
       validation_params[0].third_party_origin_info,
       [](const TrialTokenValidator::OriginInfo& item) {
         return item.origin.IsSameOriginWith(GURL(kUnrelatedSecureOrigin));
@@ -267,7 +266,7 @@ TEST_F(OriginTrialContextTest, ValidatorGetsCorrectSecurityInfoThirdParty) {
   ASSERT_NE(validation_params[0].third_party_origin_info.end(), unrelated_info);
   EXPECT_TRUE(unrelated_info->is_secure);
 
-  TrialTokenValidator::OriginInfo* insecure_origin_info =
+  auto insecure_origin_info =
       base::ranges::find_if(validation_params[0].third_party_origin_info,
                             [](const TrialTokenValidator::OriginInfo& item) {
                               return item.origin.IsSameOriginWith(

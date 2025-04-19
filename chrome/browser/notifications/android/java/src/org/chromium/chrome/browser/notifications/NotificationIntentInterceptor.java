@@ -19,8 +19,7 @@ import androidx.annotation.Nullable;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.Log;
-import org.chromium.build.annotations.IdentifierNameString;
-import org.chromium.chrome.browser.base.SplitCompatIntentService;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
 import org.chromium.components.browser_ui.notifications.PendingIntentProvider;
 
@@ -78,20 +77,10 @@ public class NotificationIntentInterceptor {
         }
     }
 
-    public static final class Service extends SplitCompatIntentService {
-        private static @IdentifierNameString String sImplClassName =
-                "org.chromium.chrome.browser.notifications."
-                        + "NotificationIntentInterceptor$Service$Impl";
-
-        public static final class Impl extends SplitCompatIntentService.Impl {
-            @Override
-            protected void onHandleIntent(Intent intent) {
-                processIntent(ContextUtils.getApplicationContext(), intent);
-            }
-        }
-
-        public Service() {
-            super(sImplClassName, TAG);
+    public static final class ServiceImpl extends NotificationIntentInterceptorService.Impl {
+        @Override
+        protected void onHandleIntent(Intent intent) {
+            processIntent(ContextUtils.getApplicationContext(), intent);
         }
     }
 
@@ -167,9 +156,12 @@ public class NotificationIntentInterceptor {
 
         // The delete intent needs to be handled by broadcast receiver from Q due to background
         // activity start restriction.
-        boolean shouldUseService = actionType == NotificationUmaTracker.ActionType.PRE_UNSUBSCRIBE;
+        boolean shouldUseService =
+                actionType == NotificationUmaTracker.ActionType.PRE_UNSUBSCRIBE
+                        && shouldUseServiceIntentForPreUnsubscribeAction();
         boolean shouldUseBroadcast =
                 intentType == NotificationIntentInterceptor.IntentType.DELETE_INTENT
+                        || actionType == NotificationUmaTracker.ActionType.PRE_UNSUBSCRIBE
                         || actionType == NotificationUmaTracker.ActionType.UNDO_UNSUBSCRIBE
                         || actionType
                                 == NotificationUmaTracker.ActionType.COMMIT_UNSUBSCRIBE_IMPLICIT
@@ -178,7 +170,7 @@ public class NotificationIntentInterceptor {
         Context applicationContext = ContextUtils.getApplicationContext();
         Intent intent = null;
         if (shouldUseService) {
-            intent = new Intent(applicationContext, Service.class);
+            intent = new Intent(applicationContext, NotificationIntentInterceptorService.class);
         } else if (shouldUseBroadcast) {
             intent = new Intent(applicationContext, Receiver.class);
         } else {
@@ -230,6 +222,15 @@ public class NotificationIntentInterceptor {
                 /* actionType= */ NotificationUmaTracker.ActionType.UNKNOWN,
                 metadata,
                 /* pendingIntentProvider= */ null);
+    }
+
+    /** Whether to use a service-type intent for handling PRE_UNSUBSCRIBE actions. */
+    public static boolean shouldUseServiceIntentForPreUnsubscribeAction() {
+        final String useServiceIntentParam = "use_service_intent";
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.NOTIFICATION_ONE_TAP_UNSUBSCRIBE,
+                useServiceIntentParam,
+                false);
     }
 
     // Launches the notification's pending intent, which will perform Chrome feature related tasks.

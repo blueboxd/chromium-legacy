@@ -9,8 +9,9 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_anchor_query_enums.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
-#include "third_party/blink/renderer/core/style/inset_area.h"
+#include "third_party/blink/renderer/core/style/position_area.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
@@ -71,15 +72,15 @@ class CORE_EXPORT AnchorEvaluator {
   virtual std::optional<LayoutUnit> Evaluate(
       const AnchorQuery&,
       const ScopedCSSName* position_anchor,
-      const std::optional<InsetAreaOffsets>&) = 0;
+      const std::optional<PositionAreaOffsets>&) = 0;
 
-  // Take the computed inset-area and position-anchor and compute the physical
-  // offsets to inset the containing block with.
-  virtual std::optional<InsetAreaOffsets> ComputeInsetAreaOffsetsForLayout(
-      const ScopedCSSName* position_anchor,
-      InsetArea inset_area) = 0;
+  // Take the computed position-area and position-anchor and compute the
+  // physical offsets to inset the containing block with.
+  virtual std::optional<PositionAreaOffsets>
+  ComputePositionAreaOffsetsForLayout(const ScopedCSSName* position_anchor,
+                                      PositionArea position_area) = 0;
 
-  // Take the computed inset-area and position-anchor from the builder and
+  // Take the computed position-area and position-anchor from the builder and
   // compute the physical offset for anchor-center
   virtual std::optional<PhysicalOffset> ComputeAnchorCenterOffsets(
       const ComputedStyleBuilder&) = 0;
@@ -115,6 +116,8 @@ class CORE_EXPORT AnchorScope {
       *target_ = mode;
     }
   }
+  AnchorScope(CSSPropertyID property, AnchorEvaluator* anchor_evaluator)
+      : AnchorScope(PropertyMode(property), anchor_evaluator) {}
   ~AnchorScope() {
     if (target_) {
       *target_ = original_;
@@ -122,6 +125,28 @@ class CORE_EXPORT AnchorScope {
   }
 
  private:
+  static Mode PropertyMode(CSSPropertyID property) {
+    switch (property) {
+      case CSSPropertyID::kTop:
+        return Mode::kTop;
+      case CSSPropertyID::kRight:
+        return Mode::kRight;
+      case CSSPropertyID::kBottom:
+        return Mode::kBottom;
+      case CSSPropertyID::kLeft:
+        return Mode::kLeft;
+      case CSSPropertyID::kWidth:
+      case CSSPropertyID::kHeight:
+      case CSSPropertyID::kMinWidth:
+      case CSSPropertyID::kMinHeight:
+      case CSSPropertyID::kMaxWidth:
+      case CSSPropertyID::kMaxHeight:
+        return Mode::kSize;
+      default:
+        return Mode::kNone;
+    }
+  }
+
   Mode* target_;
   Mode original_;
 };

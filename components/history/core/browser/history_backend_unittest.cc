@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "components/history/core/browser/history_backend.h"
 
 #include <stddef.h>
@@ -27,6 +32,7 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/gtest_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
@@ -37,6 +43,7 @@
 #include "components/history/core/browser/history_backend_client.h"
 #include "components/history/core/browser/history_constants.h"
 #include "components/history/core/browser/history_database_params.h"
+#include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/history_types.h"
@@ -5299,6 +5306,65 @@ TEST_F(HistoryBackendTest, DeleteAllForeignVisitsWorksInBatches) {
   }
 }
 
+// Regression test for crbug.com/354474887.
+TEST_F(HistoryBackendTest, DeleteAllForeignVisitsPendingAtShutdown) {
+  const ui::PageTransition kLink = ui::PageTransitionFromInt(
+      ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_CHAIN_START |
+      ui::PAGE_TRANSITION_CHAIN_END);
+
+  const int visits_per_batch =
+      HistoryBackend::GetForeignVisitsToDeletePerBatchForTest();
+  const int total_visits = visits_per_batch + 5;
+
+  const base::Time initial_time = base::Time::Now();
+
+  // Setup: Add enough foreign visits that they'll need more than one batch to
+  // delete.
+  for (int i = 0; i < visits_per_batch + 5; ++i) {
+    VisitRow foreign_visit;
+    foreign_visit.visit_time = base::Time::Now();
+    foreign_visit.transition = kLink;
+    foreign_visit.originator_cache_guid = "originator";
+    foreign_visit.is_known_to_sync = true;
+    backend_->AddSyncedVisit(GURL("https://remote.url"), /*title=*/u"",
+                             /*hidden=*/false, foreign_visit, std::nullopt,
+                             std::nullopt);
+
+    task_environment_.FastForwardBy(base::Seconds(1));
+  }
+
+  // Setup finished - verify that the visits are there.
+  {
+    VisitVector visits;
+    backend_->db()->GetAllVisitsInRange(
+        initial_time, base::Time::Now(), kNoAppIdFilter,
+        /*max_results=*/total_visits + 1, &visits);
+    ASSERT_EQ(static_cast<int>(visits.size()), total_visits);
+  }
+
+  // Instruct the backend to delete foreign visits.
+  backend_->DeleteAllForeignVisitsAndResetIsKnownToSync();
+
+  // The first batch of visits got deleted immediately, and a task got posted
+  // to delete the next batch. Ensure that some foreign visits are left.
+  {
+    VisitVector visits;
+    backend_->db()->GetSomeForeignVisits(std::numeric_limits<VisitID>::max(), 1,
+                                         &visits);
+    ASSERT_FALSE(visits.empty());
+  }
+  // Before the next task can run (i.e. before the deletion is completed), shut
+  // down the backend.
+  backend_->Closing();
+  backend_.reset();
+  // Note that since the backend is refcounted, it might not actually be
+  // destroyed yet.
+
+  // Let any remaining tasks run.
+  task_environment_.RunUntilIdle();
+  // This should not cause any (D)CHECK failures.
+}
+
 TEST_F(HistoryBackendTest, DeleteAllForeignVisitsDoesNotDeleteFutureVisits) {
   const ui::PageTransition kLink = ui::PageTransitionFromInt(
       ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_CHAIN_START |
@@ -5365,6 +5431,66 @@ TEST_F(HistoryBackendTest, DeleteAllForeignVisitsDoesNotDeleteFutureVisits) {
     }
     EXPECT_THAT(remaining_visit_ids,
                 UnorderedElementsAreArray(new_foreign_visit_ids));
+  }
+}
+
+TEST_F(HistoryBackendTest, DeleteAllForeignVisitsAlsoDeletesChains) {
+  const ui::PageTransition kChainStart = ui::PageTransitionFromInt(
+      ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_CHAIN_START);
+  const ui::PageTransition kChainMiddle = ui::PageTransitionFromInt(
+      ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_SERVER_REDIRECT);
+  const ui::PageTransition kChainEnd = ui::PageTransitionFromInt(
+      ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_SERVER_REDIRECT |
+      ui::PAGE_TRANSITION_CHAIN_END);
+
+  const base::Time initial_time = base::Time::Now();
+
+  VisitRow foreign_visit;
+  foreign_visit.visit_time = base::Time::Now();
+  foreign_visit.originator_cache_guid = "originator";
+  foreign_visit.is_known_to_sync = true;
+
+  foreign_visit.transition = kChainStart;
+  VisitID id_start = backend_->AddSyncedVisit(
+      GURL("https://remote1.url"), /*title=*/u"",
+      /*hidden=*/false, foreign_visit, std::nullopt, std::nullopt);
+
+  foreign_visit.transition = kChainMiddle;
+  foreign_visit.referring_visit = id_start;
+  VisitID id_mid = backend_->AddSyncedVisit(
+      GURL("https://remote2.url"), /*title=*/u"",
+      /*hidden=*/false, foreign_visit, std::nullopt, std::nullopt);
+
+  foreign_visit.transition = kChainEnd;
+  foreign_visit.referring_visit = id_mid;
+  backend_->AddSyncedVisit(GURL("https://remote3.url"), /*title=*/u"",
+                           /*hidden=*/false, foreign_visit, std::nullopt,
+                           std::nullopt);
+
+  task_environment_.FastForwardBy(base::Seconds(1));
+
+  // Setup finished - verify that the visits are there.
+  {
+    VisitVector visits;
+    backend_->db()->GetAllVisitsInRange(initial_time, base::Time::Now(),
+                                        kNoAppIdFilter, /*max_results=*/10,
+                                        &visits);
+    ASSERT_EQ(visits.size(), 3u);
+  }
+
+  // Instruct the backend to delete foreign visits.
+  backend_->DeleteAllForeignVisitsAndResetIsKnownToSync();
+
+  // Wait for the scheduled deletions to happen.
+  task_environment_.RunUntilIdle();
+
+  // Make sure that all of the visits are gone.
+  {
+    VisitVector visits;
+    backend_->db()->GetAllVisitsInRange(initial_time, base::Time::Now(),
+                                        kNoAppIdFilter, /*max_results=*/10,
+                                        &visits);
+    EXPECT_TRUE(visits.empty());
   }
 }
 
@@ -5860,6 +5986,71 @@ TEST_P(HistoryBackendTestForVisitedLinks, DecreaseVisitCount) {
   }
 }
 
+TEST_P(HistoryBackendTestForVisitedLinks, DeleteAllVisitedLinksHistory) {
+  // Setup: add three visits, the second and third of which are identical so
+  // that they will share one VisitedLinkID.
+  const GURL link_url1("https://local1.url");
+  const GURL link_url2("https://local2.url");
+  const GURL top_level_url("https://local2.url");
+  const GURL frame_url("https://local3.url");
+  // Setup: Add to the HistoryDatabase via AddPageVisit().
+  VisitID visit1_id =
+      AddPageVisit(link_url1, link_transition_, top_level_url, frame_url);
+  VisitID visit2_id =
+      AddPageVisit(link_url2, link_transition_, top_level_url, frame_url);
+  // Visit #3 is identical to visit #2 - we want the VisitedLink visit_count to
+  // be more than one.
+  VisitID visit3_id =
+      AddPageVisit(link_url2, link_transition_, top_level_url, frame_url);
+
+  // Ensure the visits are added to the VisitDatabase.
+  EXPECT_NE(visit1_id, kInvalidVisitID);
+  EXPECT_NE(visit2_id, kInvalidVisitID);
+  EXPECT_NE(visit3_id, kInvalidVisitID);
+  VisitRow visit1, visit2, visit3;
+  EXPECT_TRUE(backend_->GetVisitByID(visit1_id, &visit1));
+  EXPECT_TRUE(backend_->GetVisitByID(visit2_id, &visit2));
+  EXPECT_TRUE(backend_->GetVisitByID(visit3_id, &visit3));
+  // Ensure the local visited link is added to the VisitedLinkDatabase if the
+  // flag is enabled, or not added when the flag is disabled.
+  VisitedLinkID visited_link_id1 = visit1.visited_link_id;
+  VisitedLinkID visited_link_id2 = visit2.visited_link_id;
+  VisitedLinkID visited_link_id3 = visit3.visited_link_id;
+  EXPECT_EQ(visited_link_id1 != kInvalidVisitedLinkID, is_database_enabled_);
+  EXPECT_EQ(visited_link_id2 != kInvalidVisitedLinkID, is_database_enabled_);
+  EXPECT_EQ(visited_link_id3 != kInvalidVisitedLinkID, is_database_enabled_);
+  // Ensure that visits 2 and 3 have the same VisitedLinkRow.
+  EXPECT_EQ(visited_link_id2, visited_link_id3);
+  // Save visited_link1 and visited_link2 for comparison.
+  VisitedLinkRow visited_link1, visited_link2;
+  EXPECT_EQ(backend_->db()->GetVisitedLinkRow(visited_link_id1, visited_link1),
+            is_database_enabled_);
+  EXPECT_EQ(backend_->db()->GetVisitedLinkRow(visited_link_id2, visited_link2),
+            is_database_enabled_);
+
+  // Delete all history.
+  backend_->ExpireHistoryBetween(/*restrict_urls=*/std::set<GURL>(),
+                                 /*restrict_app_id=*/kNoAppIdFilter,
+                                 /*begin_time=*/base::Time(),
+                                 /*end_time=*/base::Time::Max(),
+                                 /*user_initiated*/ true);
+
+  // Ensure that the VisitedLinkDatabase has been cleared.
+  EXPECT_FALSE(backend_->GetVisitByID(visit1_id, &visit1));
+  EXPECT_FALSE(backend_->GetVisitByID(visit2_id, &visit2));
+  EXPECT_FALSE(backend_->GetVisitByID(visit3_id, &visit3));
+
+  // Check that both VisitedLinkRows are deleted from the database.
+  EXPECT_FALSE(
+      backend_->db()->GetVisitedLinkRow(visited_link_id1, visited_link1));
+  EXPECT_FALSE(
+      backend_->db()->GetVisitedLinkRow(visited_link_id2, visited_link2));
+
+  // Ensure that we broadcast that all history should be deleted.
+  ASSERT_EQ(urls_deleted_notifications().size(), 1u);
+  EXPECT_TRUE(urls_deleted_notifications()[0].IsAllHistory());
+}
+
 TEST_P(HistoryBackendTestForVisitedLinks, NotifyVisitedLinksAdded) {
   // Setup: to be stored in the VisitedLinkDatabase, visits must contain a valid
   // top-level url and frame url, and come from a LINK or MANUAL_SUBFRAME
@@ -5888,6 +6079,55 @@ TEST_P(HistoryBackendTestForVisitedLinks, NotifyVisitedLinksAdded) {
   ASSERT_TRUE(added_links[0].top_level_url.has_value());
   EXPECT_EQ(added_links[0].top_level_url.value(), top_level_url);
   EXPECT_EQ(added_links[0].referrer, frame_url);
+}
+
+// A HistoryDBTask that runs for a specified number of iterations (returning
+// false from Run() until the target number of iterations has been reached).
+class RepeatingDBTask : public HistoryDBTask {
+ public:
+  explicit RepeatingDBTask(int iterations, base::OnceClosure done_callback)
+      : iterations_left_(iterations), done_callback_(std::move(done_callback)) {
+    CHECK(iterations_left_ > 0) << "You're holding it wrong!";
+  }
+  ~RepeatingDBTask() override = default;
+
+  bool RunOnDBThread(HistoryBackend* backend, HistoryDatabase* db) override {
+    --iterations_left_;
+    // This task is done if there are no iterations left.
+    return iterations_left_ <= 0;
+  }
+
+  void DoneRunOnMainThread() override { std::move(done_callback_).Run(); }
+
+ private:
+  int iterations_left_ = 0;
+  base::OnceClosure done_callback_;
+};
+
+// Regression test for crbug.com/352515665.
+TEST_F(HistoryBackendTest, ProcessDBTaskWithMultipleIterations) {
+  // Schedule a HistoryDBTask that will take some iterations to run.
+  base::MockOnceClosure first_task_done;
+  backend_->ProcessDBTask(
+      std::make_unique<RepeatingDBTask>(5, first_task_done.Get()),
+      base::SequencedTaskRunner::GetCurrentDefault(),
+      /*is_canceled=*/base::BindRepeating([]() { return false; }));
+
+  // Note: At this point, the first iteration of the above task has been run,
+  // and a task has been posted to run the next one.
+
+  // While the first HistoryDBTask is pending in HistoryBackend's queue, add
+  // another one. It'll get added to the queue.
+  base::MockOnceClosure second_task_done;
+  backend_->ProcessDBTask(
+      std::make_unique<RepeatingDBTask>(1, second_task_done.Get()),
+      base::SequencedTaskRunner::GetCurrentDefault(),
+      /*is_canceled=*/base::BindRepeating([]() { return false; }));
+
+  // Ensure both HistoryDBTasks finish all their iterations.
+  EXPECT_CALL(first_task_done, Run);
+  EXPECT_CALL(second_task_done, Run);
+  task_environment_.RunUntilIdle();
 }
 
 }  // namespace history

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chromeos/components/kcer/kcer_token_impl.h"
 
 #include <stdint.h>
@@ -78,8 +83,7 @@ bool GetIsHardwareBacked(const chaps::Attribute* attr,
     return false;
   }
   chromeos::PKCS11_CK_BBOOL key_in_software =
-      *reinterpret_cast<const chromeos::PKCS11_CK_KEY_TYPE*>(
-          attr->value().data());
+      *reinterpret_cast<const chromeos::PKCS11_CK_BBOOL*>(attr->value().data());
   is_hardware_backed = (key_in_software == chromeos::PKCS11_CK_FALSE);
   return true;
 }
@@ -1015,10 +1019,14 @@ void KcerTokenImpl::ImportPkcs12Cert(Pkcs12Blob pkcs12_blob,
   std::vector<CertData> certs_data;
   Pkcs12ReaderStatusCode prepare_certs_status = ValidateAndPrepareCertData(
       cert_cache_, pkcs12_reader, std::move(certs), key_data, certs_data);
+  if (prepare_certs_status == Pkcs12ReaderStatusCode::kAlreadyExists) {
+    return std::move(unblocking_callback)
+        .Run(base::unexpected(Error::kAlreadyExists));
+  }
   if ((prepare_certs_status != Pkcs12ReaderStatusCode::kSuccess) ||
       certs_data.empty()) {
     return std::move(unblocking_callback)
-        .Run(base::unexpected(ConvertPkcs12ParsingError(prepare_certs_status)));
+        .Run(base::unexpected(Error::kInvalidPkcs12));
   }
 
   auto import_callback = base::BindOnce(&KcerTokenImpl::DidImportPkcs12Cert,

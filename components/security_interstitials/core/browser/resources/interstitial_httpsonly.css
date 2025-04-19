@@ -4,7 +4,6 @@
 
 .https-only #main-content a {
   color: var(--google-blue-700);
-  text-decoration: none;
 }
 
 .https-only .icon {
@@ -16,6 +15,19 @@
 
 @media (prefers-color-scheme: dark) {
   .https-only .icon {
+    filter: invert(1) grayscale(1);
+  }
+}
+
+/* Override the icon for the August 2024 refresh */
+
+.https-only-august2024-refresh .icon {
+  background-image: url(images/no_encryption.svg);
+  filter: grayscale(1);
+}
+
+@media (prefers-color-scheme: dark) {
+  .https-only-august2024-refresh .icon {
     filter: invert(1) grayscale(1);
   }
 }

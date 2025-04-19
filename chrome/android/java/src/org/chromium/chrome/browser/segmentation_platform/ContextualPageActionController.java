@@ -117,13 +117,12 @@ public class ContextualPageActionController {
             Supplier<ShoppingService> shoppingServiceSupplier,
             Supplier<BookmarkModel> bookmarkModelSupplier) {
         mActionProviders.clear();
-        if (AdaptiveToolbarFeatures.isPriceTrackingPageActionEnabled()) {
-            mActionProviders.add(
-                    new PriceTrackingActionProvider(
-                            shoppingServiceSupplier, bookmarkModelSupplier, mProfileSupplier));
-        }
-        if (AdaptiveToolbarFeatures.isReaderModePageActionEnabled()) {
-            mActionProviders.add(new ReaderModeActionProvider());
+        mActionProviders.add(
+                new PriceTrackingActionProvider(
+                        shoppingServiceSupplier, bookmarkModelSupplier, mProfileSupplier));
+        mActionProviders.add(new ReaderModeActionProvider());
+        if (AdaptiveToolbarFeatures.isPriceInsightsPageActionEnabled()) {
+            mActionProviders.add(new PriceInsightsActionProvider(shoppingServiceSupplier));
         }
     }
 
@@ -167,6 +166,9 @@ public class ContextualPageActionController {
         inputContext.addEntry(
                 Constants.CONTEXTUAL_PAGE_ACTIONS_READER_MODE_INPUT,
                 ProcessedValue.fromFloat(signalAccumulator.hasReaderMode() ? 1.0f : 0.0f));
+        inputContext.addEntry(
+                Constants.CONTEXTUAL_PAGE_ACTIONS_PRICE_INSIGHTS_INPUT,
+                ProcessedValue.fromFloat(signalAccumulator.hasPriceInsights() ? 1.0f : 0.0f));
         inputContext.addEntry("url", ProcessedValue.fromGURL(tab.getUrl()));
 
         ContextualPageActionControllerJni.get()
@@ -181,7 +183,6 @@ public class ContextualPageActionController {
                                             && mTabSupplier.get().getId() == tab.getId();
                             if (!isSameTab) return;
 
-                            if (!AdaptiveToolbarFeatures.isContextualPageActionUiEnabled()) return;
                             showDynamicAction(result);
                         });
     }

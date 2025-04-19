@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 
+#include <optional>
 #include <string>
 #include <utility>
 
@@ -12,6 +13,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
@@ -27,6 +29,7 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_promo_util.h"
 #include "chrome/browser/signin/signin_ui_util.h"
+#include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/ui/autofill/autofill_signin_promo_tab_helper.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -50,6 +53,7 @@
 #include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/branded_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/common/save_password_progress_logger.h"
@@ -253,6 +257,29 @@ void ManagePasswordsUIController::OnHideManualFallbackForSaving() {
   UpdateBubbleAndIconVisibility();
 }
 
+void ManagePasswordsUIController::OnOpenPasswordDetailsBubble(
+    const password_manager::PasswordForm& form) {
+  std::u16string message;
+#if BUILDFLAG(IS_MAC)
+  message = l10n_util::GetStringUTF16(
+      IDS_PASSWORDS_PAGE_AUTHENTICATION_PROMPT_BIOMETRIC_SUFFIX);
+#elif BUILDFLAG(IS_WIN)
+  message = l10n_util::GetStringUTF16(IDS_PASSWORDS_PAGE_AUTHENTICATION_PROMPT);
+#endif
+
+  AuthenticateUserWithMessage(
+      message, base::BindOnce(
+                   [](ManagePasswordsUIController* self,
+                      password_manager::PasswordForm form, bool auth_success) {
+                     if (auth_success) {
+                       self->passwords_data_.OpenPasswordDetailsBubble(form);
+                       self->bubble_status_ = BubbleStatus::SHOULD_POP_UP;
+                       self->UpdateBubbleAndIconVisibility();
+                     }
+                   },
+                   this, form));
+}
+
 bool ManagePasswordsUIController::OnChooseCredentials(
     std::vector<std::unique_ptr<password_manager::PasswordForm>>
         local_credentials,
@@ -373,9 +400,7 @@ void ManagePasswordsUIController::OnPasswordAutofilled(
                    password_manager::PasswordForm::Type::kReceivedViaSharing &&
                !form->sharing_notification_displayed;
       });
-  if (has_unnotified_shared_credentials &&
-      base::FeatureList::IsEnabled(
-          password_manager::features::kSharedPasswordNotificationUI)) {
+  if (has_unnotified_shared_credentials) {
     passwords_data_.TransitionToState(
         password_manager::ui::NOTIFY_RECEIVED_SHARED_CREDENTIALS);
     bubble_status_ = BubbleStatus::SHOULD_POP_UP;
@@ -520,6 +545,19 @@ void ManagePasswordsUIController::OnKeychainError() {
 #endif
 }
 
+void ManagePasswordsUIController::OnPasskeySaved(const std::u16string& username,
+                                                 bool gpm_pin_created) {
+  passwords_data_.OnPasskeySaved(username, gpm_pin_created);
+  bubble_status_ = BubbleStatus::SHOULD_POP_UP;
+  UpdateBubbleAndIconVisibility();
+}
+
+void ManagePasswordsUIController::OnPasskeyDeleted() {
+  passwords_data_.OnPasskeyDeleted();
+  bubble_status_ = BubbleStatus::SHOULD_POP_UP;
+  UpdateBubbleAndIconVisibility();
+}
+
 void ManagePasswordsUIController::OnAddUsernameSaveClicked(
     const std::u16string& username,
     const password_manager::PasswordForm& form_to_update) {
@@ -662,6 +700,12 @@ ManagePasswordsUIController::GetCurrentForms() const {
   return passwords_data_.GetCurrentForms();
 }
 
+const std::optional<password_manager::PasswordForm>&
+ManagePasswordsUIController::
+    GetManagePasswordsSingleCredentialDetailsModeCredential() const {
+  return passwords_data_.single_credential_mode_credential();
+}
+
 const password_manager::InteractionsStats*
 ManagePasswordsUIController::GetCurrentInteractionStats() const {
   CHECK(GetState() == password_manager::ui::PENDING_PASSWORD_STATE ||
@@ -686,6 +730,18 @@ bool ManagePasswordsUIController::DidAuthForAccountStoreOptInFail() const {
 
 bool ManagePasswordsUIController::BubbleIsManualFallbackForSaving() const {
   return save_fallback_timer_.IsRunning();
+}
+
+bool ManagePasswordsUIController::GpmPinCreatedDuringRecentPasskeyCreation()
+    const {
+  CHECK_EQ(GetState(), password_manager::ui::PASSKEY_SAVED_CONFIRMATION_STATE);
+  return passwords_data_.gpm_pin_created_during_recent_passkey_creation();
+}
+
+std::u16string ManagePasswordsUIController::GetRecentlySavedPasskeyUsername()
+    const {
+  CHECK_EQ(GetState(), password_manager::ui::PASSKEY_SAVED_CONFIRMATION_STATE);
+  return passwords_data_.recently_saved_passkey_username();
 }
 
 void ManagePasswordsUIController::OnBubbleShown() {
@@ -715,6 +771,15 @@ void ManagePasswordsUIController::OnBubbleHidden() {
              password_manager::ui::MOVE_CREDENTIAL_FROM_MANAGE_BUBBLE_STATE) {
     passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
     passwords_data_.clear_selected_password();
+    update_icon = true;
+  } else if (GetState() == password_manager::ui::MANAGE_STATE &&
+             passwords_data_.single_credential_mode_credential().has_value()) {
+    if (passwords_data_.GetCurrentForms().empty()) {
+      ClearPopUpFlagForBubble();
+      passwords_data_.OnInactive();
+    } else {
+      passwords_data_.ClearSingleCredentialModeCredential();
+    }
     update_icon = true;
   }
   if (update_icon) {
@@ -863,20 +928,13 @@ void ManagePasswordsUIController::MovePasswordToAccountStore() {
         GetState() ==
             password_manager::ui::MOVE_CREDENTIAL_FROM_MANAGE_BUBBLE_STATE);
 
-  // TODO(crbug.com/40943570): After this feature lands, clean this up and use
-  // only MovePendingPasswordToAccountStoreUsingHelper() to move passwords.
-  if (base::FeatureList::IsEnabled(
-          password_manager::features::kButterOnDesktopFollowup)) {
-    MovePendingPasswordToAccountStoreUsingHelper(
-        GetPendingPassword(),
-        GetState() == password_manager::ui::MOVE_CREDENTIAL_AFTER_LOG_IN_STATE
-            ? password_manager::metrics_util::MoveToAccountStoreTrigger::
-                  kSuccessfulLoginWithProfileStorePassword
-            : password_manager::metrics_util::MoveToAccountStoreTrigger::
-                  kExplicitlyTriggeredInPasswordsManagementBubble);
-  } else {
-    passwords_data_.form_manager()->MoveCredentialsToAccountStore();
-  }
+  MovePendingPasswordToAccountStoreUsingHelper(
+      GetPendingPassword(),
+      GetState() == password_manager::ui::MOVE_CREDENTIAL_AFTER_LOG_IN_STATE
+          ? password_manager::metrics_util::MoveToAccountStoreTrigger::
+                kSuccessfulLoginWithProfileStorePassword
+          : password_manager::metrics_util::MoveToAccountStoreTrigger::
+                kExplicitlyTriggeredInPasswordsManagementBubble);
 
   ClearPopUpFlagForBubble();
   passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
@@ -965,15 +1023,18 @@ void ManagePasswordsUIController::SignIn(
 
   // If the sign in was already successful, move the password directly.
   // Otherwise, wait for a sign in event and move the password upon success.
-  signin::IdentityManager* identity_manager =
-      IdentityManagerFactory::GetForProfile(profile);
-  if (identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSignin) &&
-      !identity_manager->HasAccountWithRefreshTokenInPersistentErrorState(
-          account.account_id)) {
+  signin_util::SignedInState signed_in_state = signin_util::GetSignedInState(
+      IdentityManagerFactory::GetForProfile(profile));
+  if (signed_in_state == signin_util::SignedInState::kSignedIn) {
     MoveJustSavedPasswordAfterAccountStoreOptIn(
         password_to_move,
         password_manager::PasswordManagerClient::ReauthSucceeded(true));
   } else {
+    if (signed_in_state != signin_util::SignedInState::kSignedOut &&
+        signed_in_state != signin_util::SignedInState::kSignInPending &&
+        signed_in_state != signin_util::SignedInState::kWebOnlySignedIn) {
+      return;
+    }
     content::WebContents* sign_in_tab_contents =
         signin_ui_util::GetSignInTabWithAccessPoint(
             *chrome::FindBrowserWithTab(web_contents()),

@@ -8,7 +8,8 @@
 
 namespace compose::features {
 
-// Note: Compose is enabled by default because it requires settings UI enabling.
+// Note: Compose is enabled by default because it is country--restricted at
+// runtime.
 BASE_FEATURE(kEnableCompose, "Compose", base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kComposeInputParams,
@@ -18,6 +19,10 @@ BASE_FEATURE(kComposeInputParams,
 BASE_FEATURE(kComposeInnerText,
              "ComposeInnerText",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kComposeAXSnapshot,
+             "ComposeAXSnapshot",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kComposeAutoSubmit,
              "ComposeAutoSubmit",
@@ -43,8 +48,12 @@ BASE_FEATURE(kEnableComposeNudgeAtCursor,
              "EnableComposeNudgeAtCursor",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kEnableComposeLanguageBypass,
-             "ComposeLanguageBypass",
+BASE_FEATURE(kEnableComposeSelectionNudge,
+             "EnableComposeSelectionNudge",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kEnableComposeLanguageBypassForContextMenu,
+             "ComposeLanguageBypassForContextMenu",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kEnableComposeWebUIAnimations,
@@ -77,7 +86,7 @@ BASE_FEATURE(kComposeUiRefinement,
 
 BASE_FEATURE(kEnableNudgeForUnspecifiedHint,
              "ComposeEnableNudgeForUnspecifiedHint",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kEnableAdditionalTextMetrics,
              "EnableAdditionalTextMetrics",

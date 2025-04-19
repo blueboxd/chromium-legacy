@@ -14,9 +14,11 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/not_fatal_until.h"
 #include "base/task/single_thread_task_runner.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/base/url_util.h"
 #include "net/http/http_status_code.h"
 #include "net/log/net_log_event_type.h"
 #include "net/quic/quic_chromium_client_session.h"
@@ -178,7 +180,7 @@ void QuicChromiumClientStream::Handle::InvokeCallbacksOnClose(int error) {
 }
 
 int QuicChromiumClientStream::Handle::ReadInitialHeaders(
-    spdy::Http2HeaderBlock* header_block,
+    quiche::HttpHeaderBlock* header_block,
     CompletionOnceCallback callback) {
   ScopedBoolSaver saver(&may_invoke_callbacks_, false);
   if (!stream_)
@@ -230,7 +232,7 @@ int QuicChromiumClientStream::Handle::ReadBody(
 }
 
 int QuicChromiumClientStream::Handle::ReadTrailingHeaders(
-    spdy::Http2HeaderBlock* header_block,
+    quiche::HttpHeaderBlock* header_block,
     CompletionOnceCallback callback) {
   ScopedBoolSaver saver(&may_invoke_callbacks_, false);
   if (!stream_)
@@ -246,7 +248,7 @@ int QuicChromiumClientStream::Handle::ReadTrailingHeaders(
 }
 
 int QuicChromiumClientStream::Handle::WriteHeaders(
-    spdy::Http2HeaderBlock header_block,
+    quiche::HttpHeaderBlock header_block,
     bool fin,
     quiche::QuicheReferenceCountedPointer<quic::QuicAckListenerInterface>
         ack_notifier_delegate) {
@@ -544,22 +546,26 @@ QuicChromiumClientStream::Handle::GetGuaranteedLargestMessagePayload() const {
 QuicChromiumClientStream::QuicChromiumClientStream(
     quic::QuicStreamId id,
     quic::QuicSpdyClientSessionBase* session,
+    quic::QuicServerId server_id,
     quic::StreamType type,
     const NetLogWithSource& net_log,
     const NetworkTrafficAnnotationTag& traffic_annotation)
     : quic::QuicSpdyStream(id, session, type),
       net_log_(net_log),
       session_(session),
+      server_id_(std::move(server_id)),
       quic_version_(session->connection()->transport_version()) {}
 
 QuicChromiumClientStream::QuicChromiumClientStream(
     quic::PendingStream* pending,
     quic::QuicSpdyClientSessionBase* session,
+    quic::QuicServerId server_id,
     const NetLogWithSource& net_log,
     const NetworkTrafficAnnotationTag& traffic_annotation)
     : quic::QuicSpdyStream(pending, session),
       net_log_(net_log),
       session_(session),
+      server_id_(std::move(server_id)),
       quic_version_(session->connection()->transport_version()) {}
 
 QuicChromiumClientStream::~QuicChromiumClientStream() {
@@ -574,7 +580,19 @@ void QuicChromiumClientStream::OnInitialHeadersComplete(
   DCHECK(!initial_headers_arrived_);
   quic::QuicSpdyStream::OnInitialHeadersComplete(fin, frame_len, header_list);
 
-  spdy::Http2HeaderBlock header_block;
+  if (header_decoding_delay().has_value()) {
+    const int64_t delay_in_milliseconds =
+        header_decoding_delay()->ToMilliseconds();
+    base::UmaHistogramTimes("Net.QuicChromiumClientStream.HeaderDecodingDelay",
+                            base::Milliseconds(delay_in_milliseconds));
+    if (IsGoogleHost(server_id_.host())) {
+      base::UmaHistogramTimes(
+          "Net.QuicChromiumClientStream.HeaderDecodingDelayGoogle",
+          base::Milliseconds(delay_in_milliseconds));
+    }
+  }
+
+  quiche::HttpHeaderBlock header_block;
   int64_t length = -1;
   if (!quic::SpdyUtils::CopyAndValidateHeaders(header_list, &length,
                                                &header_block)) {
@@ -675,13 +693,13 @@ void QuicChromiumClientStream::OnCanWrite() {
 }
 
 size_t QuicChromiumClientStream::WriteHeaders(
-    spdy::Http2HeaderBlock header_block,
+    quiche::HttpHeaderBlock header_block,
     bool fin,
     quiche::QuicheReferenceCountedPointer<quic::QuicAckListenerInterface>
         ack_listener) {
   if (!session()->OneRttKeysAvailable()) {
     auto entry = header_block.find(":method");
-    DCHECK(entry != header_block.end());
+    CHECK(entry != header_block.end(), base::NotFatalUntil::M130);
     DCHECK(
         entry->second != "POST" ||
         (handle_ != nullptr && handle_->GetRequestIdempotency() == IDEMPOTENT));
@@ -814,7 +832,7 @@ void QuicChromiumClientStream::NotifyHandleOfTrailingHeadersAvailable() {
 }
 
 int QuicChromiumClientStream::DeliverEarlyHints(
-    spdy::Http2HeaderBlock* headers) {
+    quiche::HttpHeaderBlock* headers) {
   if (early_hints_.empty()) {
     return ERR_IO_PENDING;
   }
@@ -838,7 +856,7 @@ int QuicChromiumClientStream::DeliverEarlyHints(
 }
 
 int QuicChromiumClientStream::DeliverInitialHeaders(
-    spdy::Http2HeaderBlock* headers) {
+    quiche::HttpHeaderBlock* headers) {
   if (!initial_headers_arrived_) {
     return ERR_IO_PENDING;
   }
@@ -861,7 +879,7 @@ int QuicChromiumClientStream::DeliverInitialHeaders(
 }
 
 bool QuicChromiumClientStream::DeliverTrailingHeaders(
-    spdy::Http2HeaderBlock* headers,
+    quiche::HttpHeaderBlock* headers,
     int* frame_len) {
   if (trailing_headers_frame_len_ == 0) {
     return false;

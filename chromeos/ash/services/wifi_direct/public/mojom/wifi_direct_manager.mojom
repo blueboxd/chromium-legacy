@@ -4,6 +4,8 @@
 
 module ash.wifi_direct.mojom;
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum WifiDirectOperationResult {
   kSuccess,
   // Wifi Direct is disallowed in platform per Manager.P2PAllowed.
@@ -38,6 +40,8 @@ struct WifiP2PCapabilities {
   bool is_owner_ready;
   // Boolean indicating if the device is ready to connect to a P2P group.
   bool is_client_ready;
+  // Boolean indicating if the device supports P2P capabilities.
+  bool is_p2p_supported;
 };
 
 struct WifiCredentials {

@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "base/callback_list.h"
 #include "base/memory/raw_ptr.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -180,8 +181,6 @@ class VIEWS_EXPORT TabbedPaneTab : public View {
   void OnGestureEvent(ui::GestureEvent* event) override;
   gfx::Size CalculatePreferredSize(
       const SizeBounds& available_size) const override;
-  int GetHeightForWidth(int w) const override;
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool HandleAccessibleAction(const ui::AXActionData& action_data) override;
   void OnFocus() override;
   void OnBlur() override;
@@ -206,12 +205,17 @@ class VIEWS_EXPORT TabbedPaneTab : public View {
   void UpdatePreferredTitleWidth();
   void UpdateTitleColor();
 
+  void UpdateAccessibleName();
+  void UpdateAccessibleSelection();
+
   raw_ptr<TabbedPane> tabbed_pane_;
   raw_ptr<Label> title_ = nullptr;
   int preferred_title_width_;
   State state_ = State::kActive;
   // The content view associated with this tab.
   raw_ptr<View> contents_;
+
+  base::CallbackListSubscription title_text_changed_callback_;
 };
 
 // The tab strip shown above/left of the tab contents.

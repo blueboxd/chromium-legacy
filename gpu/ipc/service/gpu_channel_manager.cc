@@ -825,11 +825,10 @@ void GpuChannelManager::OnApplicationBackgrounded() {
 
   // Release all skia caching when the application is backgrounded.
   SkGraphics::PurgeAllCaches();
-  if (base::FeatureList::IsEnabled(features::kGpuCleanupInBackground)) {
-    // At that point, no frames are going to be produced. Make sure that
-    // e.g. pending SharedImage deletions happens promptly.
-    PerformImmediateCleanup();
-  }
+  // At that point, no frames are going to be produced. Make sure that
+  // e.g. pending SharedImage deletions happens promptly.
+  PerformImmediateCleanup();
+
   application_backgrounded_ = true;
 }
 
@@ -914,10 +913,6 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
       gpu_driver_bug_workarounds_.use_virtualized_gl_contexts;
 
   bool enable_angle_validation = features::IsANGLEValidationEnabled();
-#if DCHECK_IS_ON()
-  // Force validation on for all debug builds and testing
-  enable_angle_validation = true;
-#endif
 
   scoped_refptr<gl::GLShareGroup> share_group;
   bool use_passthrough_decoder = use_passthrough_cmd_decoder();
@@ -1085,8 +1080,6 @@ void GpuChannelManager::OnContextLost(
     force_restart |= (interval <= base::Seconds(5));
   }
 
-  force_restart &=
-      base::FeatureList::IsEnabled(features::kForceRestartGpuKillSwitch);
   context_lost_time_ = lost_time;
   bool is_gl = gpu_preferences_.gr_context_type == GrContextType::kGL;
   if (!force_restart && synthetic_loss && is_gl)

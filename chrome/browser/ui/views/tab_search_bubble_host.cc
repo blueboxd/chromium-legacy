@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/tabs/organization/tab_organization_service.h"
 #include "chrome/browser/ui/tabs/organization/tab_organization_service_factory.h"
 #include "chrome/browser/ui/tabs/organization/tab_organization_utils.h"
+#include "chrome/browser/ui/tabs/tab_strip_prefs.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -32,7 +33,6 @@
 #include "components/feature_engagement/public/tracker.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/widget/widget.h"
@@ -201,11 +201,12 @@ bool TabSearchBubbleHost::ShowTabSearchBubble(
     // not drawn, and potentially positioned offscreen, in fullscreen mode.
     // Place the anchor similar to where the button would be in non-fullscreen
     // mode.
-    gfx::Rect bounds = button_->GetWidget()->GetWorkAreaBoundsInScreen();
-    int offset = GetLayoutConstant(TABSTRIP_REGION_VIEW_CONTROL_PADDING);
+    const gfx::Rect bounds = button_->GetWidget()->GetWorkAreaBoundsInScreen();
+    const int offset = GetLayoutConstant(TAB_STRIP_PADDING);
 
-    int x = ShouldTabSearchRenderBeforeTabStrip() ? bounds.x() + offset
-                                                  : bounds.right() - offset;
+    const int x = tabs::GetTabSearchTrailingTabstrip(profile_)
+                      ? bounds.right() - offset
+                      : bounds.x() + offset;
 
     anchor.emplace(gfx::Rect(x, bounds.y() + offset, 0, 0));
   }
@@ -219,9 +220,9 @@ bool TabSearchBubbleHost::ShowTabSearchBubble(
       },
       *bubble_created_time_));
   webui_bubble_manager_->ShowBubble(anchor,
-                                    ShouldTabSearchRenderBeforeTabStrip()
-                                        ? views::BubbleBorder::TOP_LEFT
-                                        : views::BubbleBorder::TOP_RIGHT,
+                                    tabs::GetTabSearchTrailingTabstrip(profile_)
+                                        ? views::BubbleBorder::TOP_RIGHT
+                                        : views::BubbleBorder::TOP_LEFT,
                                     kTabSearchBubbleElementId);
 
   auto* tracker =
@@ -262,15 +263,4 @@ void TabSearchBubbleHost::ButtonPressed(const ui::Event& event) {
     return;
   }
   CloseTabSearchBubble();
-}
-
-bool TabSearchBubbleHost::ShouldTabSearchRenderBeforeTabStrip() {
-// Mac should have tabsearch on the right side. Windows >= Win10 has the
-// Tab Search button as a FrameCaptionButton, but it still needs to be on the
-// left if it exists.
-#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
-  return features::IsChromeRefresh2023();
-#else
-  return false;
-#endif
 }

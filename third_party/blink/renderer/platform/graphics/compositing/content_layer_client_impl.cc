@@ -21,8 +21,14 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_artifact.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk_subset.h"
 #include "third_party/blink/renderer/platform/graphics/paint/raster_invalidation_tracking.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scroll_paint_property_node.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+
+#if DCHECK_IS_ON()
+#include "cc/trees/layer_tree_host.h"
+#include "cc/trees/property_tree.h"
+#endif
 
 namespace blink {
 
@@ -31,7 +37,7 @@ namespace {
 bool DrawingShouldFillScrollingContentsLayer(
     const PropertyTreeState& layer_state,
     const cc::PictureLayer& layer) {
-  if (!RuntimeEnabledFeatures::FillScrollingContentsLayerEnabled()) {
+  if (!RuntimeEnabledFeatures::HitTestOpaquenessEnabled()) {
     return false;
   }
   if (!layer.draws_content()) {
@@ -76,7 +82,17 @@ void ContentLayerClientImpl::AppendAdditionalInfoAsJSON(
 #if DCHECK_IS_ON()
   if (flags & kLayerTreeIncludesPaintRecords) {
     LoggingCanvas canvas;
-    cc_display_item_list_->Raster(&canvas);
+    base::flat_map<cc::ElementId, gfx::PointF> raster_inducing_scroll_offsets;
+    for (auto& [scroll_element_id, _] :
+         cc_display_item_list_->raster_inducing_scrolls()) {
+      raster_inducing_scroll_offsets[scroll_element_id] =
+          layer.layer_tree_host()
+              ->property_trees()
+              ->scroll_tree()
+              .current_scroll_offset(scroll_element_id);
+    }
+    cc_display_item_list_->Raster(&canvas, /*image_provider=*/nullptr,
+                                  &raster_inducing_scroll_offsets);
     json.SetValue("paintRecord", canvas.Log());
   }
 #endif
@@ -85,6 +101,7 @@ void ContentLayerClientImpl::AppendAdditionalInfoAsJSON(
 void ContentLayerClientImpl::UpdateCcPictureLayer(
     const PendingLayer& pending_layer) {
   const auto& paint_chunks = pending_layer.Chunks();
+  CHECK_EQ(cc_picture_layer_->client(), this);
 #if EXPENSIVE_DCHECKS_ARE_ON()
   paint_chunk_debug_data_ = std::make_unique<JSONArray>();
   for (auto it = paint_chunks.begin(); it != paint_chunks.end(); ++it) {

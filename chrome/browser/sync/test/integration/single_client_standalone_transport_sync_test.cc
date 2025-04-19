@@ -17,8 +17,8 @@
 #include "chrome/common/chrome_paths.h"
 #include "components/password_manager/core/browser/features/password_features.h"
 #include "components/signin/public/base/signin_switches.h"
+#include "components/sync/base/data_type.h"
 #include "components/sync/base/features.h"
-#include "components/sync/base/model_type.h"
 #include "components/sync/service/glue/sync_transport_data_prefs.h"
 #include "components/sync/service/sync_service_impl.h"
 #include "components/sync/test/fake_server_nigori_helper.h"
@@ -99,16 +99,13 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
   // Make sure that only the allowed types got activated. Note that, depending
   // on some other feature flags, not all of the allowed types are necessarily
   // active, and that's okay.
-  syncer::ModelTypeSet bad_types =
+  syncer::DataTypeSet bad_types =
       base::Difference(GetSyncService(0)->GetActiveDataTypes(),
                        AllowedTypesInStandaloneTransportMode());
-  EXPECT_TRUE(bad_types.empty())
-      << syncer::ModelTypeSetToDebugString(bad_types);
+  EXPECT_TRUE(bad_types.empty()) << syncer::DataTypeSetToDebugString(bad_types);
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-// TODO(crbug.com/40145099): On Android it's currently not possible to "upgrade"
-// a kSignin account to kSync.
 #if !BUILDFLAG(IS_ANDROID)
 IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
                        SwitchesBetweenTransportAndFeature) {
@@ -124,11 +121,10 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
             GetSyncService(0)->GetTransportState());
   ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureActive());
 
-  syncer::ModelTypeSet bad_types =
+  syncer::DataTypeSet bad_types =
       base::Difference(GetSyncService(0)->GetActiveDataTypes(),
                        AllowedTypesInStandaloneTransportMode());
-  EXPECT_TRUE(bad_types.empty())
-      << syncer::ModelTypeSetToDebugString(bad_types);
+  EXPECT_TRUE(bad_types.empty()) << syncer::DataTypeSetToDebugString(bad_types);
 
   // Turn Sync-the-feature on.
   ASSERT_TRUE(GetClient(0)->SetupSync());
@@ -136,9 +132,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
             GetSyncService(0)->GetTransportState());
   EXPECT_TRUE(GetSyncService(0)->IsSyncFeatureEnabled());
   EXPECT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
-  // Make sure that some model type which is not allowed in transport-only mode
+  // Make sure that some data type which is not allowed in transport-only mode
   // got activated.
-  CHECK(!AllowedTypesInStandaloneTransportMode().Has(syncer::BOOKMARKS));
+  ASSERT_FALSE(AllowedTypesInStandaloneTransportMode().Has(syncer::BOOKMARKS));
   ASSERT_TRUE(GetSyncService(0)->GetUserSettings()->GetSelectedTypes().Has(
       syncer::UserSelectableType::kBookmarks));
   EXPECT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::BOOKMARKS));
@@ -191,7 +187,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
-// TODO(crbug.com/40145099): Android currently doesn't support PRE_ tests.
+// TODO(crbug.com/40200835): Android currently doesn't support PRE_ tests.
 #if !BUILDFLAG(IS_ANDROID)
 // Regression test for crbug.com/955989 that verifies the cache GUID is not
 // reset upon restart of the browser, in standalone transport mode.
@@ -333,7 +329,7 @@ IN_PROC_BROWSER_TEST_F(
       syncer::AUTOFILL_WALLET_CREDENTIAL));
 }
 
-// TODO(crbug.com/40145099): Android currently doesn't support PRE_ tests.
+// TODO(crbug.com/40200835): Android currently doesn't support PRE_ tests.
 #if !BUILDFLAG(IS_ANDROID)
 IN_PROC_BROWSER_TEST_F(
     SingleClientStandaloneTransportWithReplaceSyncWithSigninSyncTest,
@@ -496,7 +492,7 @@ class SingleClientStandaloneTransportReplaceSyncWithSigninMigrationSyncTest
         {switches::kExplicitBrowserSigninUIOnDesktop,
          syncer::kReadingListEnableSyncTransportModeUponSignIn,
          syncer::kSyncEnableContactInfoDataTypeInTransportMode,
-         syncer::kEnableBookmarkFoldersForAccountStorage,
+         syncer::kSyncEnableBookmarksInTransportMode,
          syncer::kEnablePreferencesAccountStorage},
         /*disabled_features=*/{});
 

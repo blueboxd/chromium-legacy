@@ -31,11 +31,13 @@ class CookieSpecifics;
 class CrossUserSharingPublicKey;
 class DebugEventInfo;
 class DebugInfo;
+class DeviceDetails;
 class DeviceInfoSpecifics;
 class DictionarySpecifics;
 class EncryptedData;
 class EntityMetadata;
 class EntitySpecifics;
+class EwalletDetails;
 class ExtensionSettingSpecifics;
 class ExtensionSpecifics;
 class HistoryDeleteDirectiveSpecifics;
@@ -65,6 +67,7 @@ class ReadingListSpecifics;
 class SavedTabGroupSpecifics;
 class SearchEngineSpecifics;
 class SecurityEventSpecifics;
+class SendTabToSelfPush;
 class SendTabToSelfSpecifics;
 class SessionHeader;
 class SessionSpecifics;
@@ -77,6 +80,7 @@ class TabNavigation;
 class ThemeSpecifics;
 class TimeRangeDirective;
 class TypedUrlSpecifics;
+class UnencryptedSharingMessage;
 class UrlDirective;
 class UserConsentSpecifics;
 class UserEventSpecifics;
@@ -150,6 +154,8 @@ base::Value DebugEventInfoToValue(const sync_pb::DebugEventInfo& proto);
 
 base::Value DebugInfoToValue(const sync_pb::DebugInfo& proto);
 
+base::Value DeviceDetailsToValue(const sync_pb::DeviceDetails& device_details);
+
 base::Value DeviceInfoSpecificsToValue(
     const sync_pb::DeviceInfoSpecifics& device_info_specifics);
 
@@ -161,6 +167,9 @@ base::Value EncryptedDataToValue(const sync_pb::EncryptedData& encrypted_data);
 base::Value EntityMetadataToValue(const sync_pb::EntityMetadata& metadata);
 
 base::Value EntitySpecificsToValue(const sync_pb::EntitySpecifics& specifics);
+
+base::Value EwalletDetailsToValue(
+    const sync_pb::EwalletDetails& ewallet_details);
 
 base::Value ExtensionSettingSpecificsToValue(
     const sync_pb::ExtensionSettingSpecifics& extension_setting_specifics);
@@ -251,6 +260,9 @@ base::Value SavedTabGroupSpecificsToValue(
 base::Value SearchEngineSpecificsToValue(
     const sync_pb::SearchEngineSpecifics& search_engine_specifics);
 
+base::Value SendTabToSelfPushToValue(
+    const sync_pb::SendTabToSelfPush& send_tab_push);
+
 base::Value SendTabToSelfSpecificsToValue(
     const sync_pb::SendTabToSelfSpecifics& send_tab_specifics);
 
@@ -282,6 +294,9 @@ base::Value TimeRangeDirectiveToValue(
 
 base::Value TypedUrlSpecificsToValue(
     const sync_pb::TypedUrlSpecifics& typed_url_specifics);
+
+base::Value UnencryptedSharingMessageToValue(
+    const sync_pb::UnencryptedSharingMessage& proto);
 
 base::Value UrlDirectiveToValue(
     const sync_pb::UrlDirective& time_range_directive);

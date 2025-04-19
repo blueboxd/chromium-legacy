@@ -15,6 +15,7 @@
 #include <string_view>
 #include <utility>
 
+#include "base/containers/span.h"
 #include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
@@ -74,6 +75,7 @@
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
 #include "net/test/test_with_task_environment.h"
+#include "net/third_party/quiche/src/quiche/common/http/http_header_block.h"
 #include "net/third_party/quiche/src/quiche/quic/core/congestion_control/send_algorithm_interface.h"
 #include "net/third_party/quiche/src/quiche/quic/core/crypto/crypto_protocol.h"
 #include "net/third_party/quiche/src/quiche/quic/core/crypto/quic_decrypter.h"
@@ -440,7 +442,8 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<TestParams>,
         base::DefaultTickClock::GetInstance(),
         base::SingleThreadTaskRunner::GetCurrentDefault().get(),
         /*socket_performance_watcher=*/nullptr, ConnectionEndpointMetadata(),
-        /*report_ecn=*/true, NetLogWithSource::Make(NetLogSourceType::NONE));
+        /*report_ecn=*/true, /*enable_origin_frame=*/true,
+        NetLogWithSource::Make(NetLogSourceType::NONE));
     session_->Initialize();
 
     // Blackhole QPACK decoder stream instead of constructing mock writes.
@@ -470,14 +473,18 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<TestParams>,
       uint64_t packet_number,
       bool fin,
       std::string_view data) {
-    return client_maker_.MakeDataPacket(packet_number, stream_id_, fin, data);
+    return client_maker_.Packet(packet_number)
+        .AddStreamFrame(stream_id_, fin, data)
+        .Build();
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructServerDataPacket(
       uint64_t packet_number,
       bool fin,
       std::string_view data) {
-    return server_maker_.MakeDataPacket(packet_number, stream_id_, fin, data);
+    return server_maker_.Packet(packet_number)
+        .AddStreamFrame(stream_id_, fin, data)
+        .Build();
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> InnerConstructRequestHeadersPacket(
@@ -543,7 +550,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<TestParams>,
   std::unique_ptr<quic::QuicReceivedPacket> ConstructResponseTrailersPacket(
       uint64_t packet_number,
       bool fin,
-      spdy::Http2HeaderBlock trailers,
+      quiche::HttpHeaderBlock trailers,
       size_t* spdy_headers_frame_length) {
     return server_maker_.MakeResponseHeadersPacket(packet_number, stream_id_,
                                                    fin, std::move(trailers),
@@ -552,22 +559,29 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<TestParams>,
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructClientRstStreamErrorPacket(
       uint64_t packet_number) {
-    return client_maker_.MakeRstPacket(packet_number, stream_id_,
-                                       quic::QUIC_ERROR_PROCESSING_STREAM);
+    return client_maker_.Packet(packet_number)
+        .AddStopSendingFrame(stream_id_, quic::QUIC_ERROR_PROCESSING_STREAM)
+        .AddRstStreamFrame(stream_id_, quic::QUIC_ERROR_PROCESSING_STREAM)
+        .Build();
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructAckAndRstStreamPacket(
       uint64_t packet_number) {
-    return client_maker_.MakeAckAndRstPacket(packet_number, stream_id_,
-                                             quic::QUIC_STREAM_CANCELLED, 2, 1);
+    return client_maker_.Packet(packet_number)
+        .AddAckFrame(/*first_received=*/1, /*largest_received=*/2,
+                     /*smallest_received=*/1)
+        .AddStopSendingFrame(stream_id_, quic::QUIC_STREAM_CANCELLED)
+        .AddRstStreamFrame(stream_id_, quic::QUIC_STREAM_CANCELLED)
+        .Build();
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructClientAckPacket(
       uint64_t packet_number,
       uint64_t largest_received,
       uint64_t smallest_received) {
-    return client_maker_.MakeAckPacket(packet_number, largest_received,
-                                       smallest_received);
+    return client_maker_.Packet(packet_number)
+        .AddAckFrame(1, largest_received, smallest_received)
+        .Build();
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructServerAckPacket(
@@ -575,8 +589,9 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<TestParams>,
       uint64_t largest_received,
       uint64_t smallest_received,
       uint64_t least_unacked) {
-    return server_maker_.MakeAckPacket(packet_number, largest_received,
-                                       smallest_received, least_unacked);
+    return server_maker_.Packet(packet_number)
+        .AddAckFrame(largest_received, smallest_received, least_unacked)
+        .Build();
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructInitialSettingsPacket() {
@@ -646,8 +661,8 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<TestParams>,
   HttpRequestHeaders headers_;
   HttpResponseInfo response_;
   scoped_refptr<IOBufferWithSize> read_buffer_;
-  spdy::Http2HeaderBlock request_headers_;
-  spdy::Http2HeaderBlock response_headers_;
+  quiche::HttpHeaderBlock request_headers_;
+  quiche::HttpHeaderBlock response_headers_;
   string request_data_;
   string response_data_;
 
@@ -894,7 +909,7 @@ TEST_P(QuicHttpStreamTest, GetRequestWithTrailers) {
   const char kResponseBody[] = "Hello world!";
   std::string header = ConstructDataHeader(strlen(kResponseBody));
   ProcessPacket(ConstructServerDataPacket(3, !kFin, header + kResponseBody));
-  spdy::Http2HeaderBlock trailers;
+  quiche::HttpHeaderBlock trailers;
   size_t spdy_trailers_frame_length;
   trailers["foo"] = "bar";
   ProcessPacket(ConstructResponseTrailersPacket(4, kFin, std::move(trailers),
@@ -1452,7 +1467,8 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequest) {
   upload_data_stream_ = std::make_unique<ChunkedUploadDataStream>(0);
   auto* chunked_upload_stream =
       static_cast<ChunkedUploadDataStream*>(upload_data_stream_.get());
-  chunked_upload_stream->AppendData(kUploadData, chunk_size, false);
+  chunked_upload_stream->AppendData(base::byte_span_from_cstring(kUploadData),
+                                    false);
 
   request_.method = "POST";
   request_.url = GURL("https://www.example.org/");
@@ -1467,7 +1483,8 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequest) {
   ASSERT_EQ(ERR_IO_PENDING,
             stream_->SendRequest(headers_, &response_, callback_.callback()));
 
-  chunked_upload_stream->AppendData(kUploadData, chunk_size, true);
+  chunked_upload_stream->AppendData(base::byte_span_from_cstring(kUploadData),
+                                    true);
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
 
   // Ack both packets in the request.
@@ -1527,7 +1544,8 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequestWithFinalEmptyDataPacket) {
   upload_data_stream_ = std::make_unique<ChunkedUploadDataStream>(0);
   auto* chunked_upload_stream =
       static_cast<ChunkedUploadDataStream*>(upload_data_stream_.get());
-  chunked_upload_stream->AppendData(kUploadData, chunk_size, false);
+  chunked_upload_stream->AppendData(base::byte_span_from_cstring(kUploadData),
+                                    false);
 
   request_.method = "POST";
   request_.url = GURL("https://www.example.org/");
@@ -1542,7 +1560,7 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequestWithFinalEmptyDataPacket) {
   ASSERT_EQ(ERR_IO_PENDING,
             stream_->SendRequest(headers_, &response_, callback_.callback()));
 
-  chunked_upload_stream->AppendData(nullptr, 0, true);
+  chunked_upload_stream->AppendData(base::byte_span_from_cstring(""), true);
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
 
   ProcessPacket(ConstructServerAckPacket(1, 1, 1, 1));
@@ -1610,7 +1628,7 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequestWithOneEmptyDataPacket) {
   ASSERT_EQ(ERR_IO_PENDING,
             stream_->SendRequest(headers_, &response_, callback_.callback()));
 
-  chunked_upload_stream->AppendData(nullptr, 0, true);
+  chunked_upload_stream->AppendData(base::byte_span_from_cstring(""), true);
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
 
   ProcessPacket(ConstructServerAckPacket(1, 1, 1, 1));
@@ -1663,16 +1681,19 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequestAbortedByResetStream) {
       DEFAULT_PRIORITY, &spdy_request_headers_frame_length,
       {header, kUploadData}));
   AddWrite(ConstructClientAckPacket(packet_number++, 3, 1));
-  AddWrite(client_maker_.MakeAckAndRstPacket(
-      packet_number++, stream_id_, quic::QUIC_STREAM_NO_ERROR, 4, 1,
-      /* include_stop_sending_if_v99 = */ false));
+  AddWrite(client_maker_.Packet(packet_number++)
+               .AddAckFrame(/*first_received=*/1, /*largest_received=*/4,
+                            /*smallest_received=*/1)
+               .AddRstStreamFrame(stream_id_, quic::QUIC_STREAM_NO_ERROR)
+               .Build());
 
   Initialize();
 
   upload_data_stream_ = std::make_unique<ChunkedUploadDataStream>(0);
   auto* chunked_upload_stream =
       static_cast<ChunkedUploadDataStream*>(upload_data_stream_.get());
-  chunked_upload_stream->AppendData(kUploadData, chunk_size, false);
+  chunked_upload_stream->AppendData(base::byte_span_from_cstring(kUploadData),
+                                    false);
 
   request_.method = "POST";
   request_.url = GURL("https://www.example.org/");
@@ -1704,11 +1725,13 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequestAbortedByResetStream) {
 
   // The server uses a STOP_SENDING frame to notify the client that it does not
   // need any further data to fully process the request.
-  ProcessPacket(server_maker_.MakeStopSendingPacket(
-      4, stream_id_, quic::QUIC_STREAM_NO_ERROR));
+  ProcessPacket(server_maker_.Packet(4)
+                    .AddStopSendingFrame(stream_id_, quic::QUIC_STREAM_NO_ERROR)
+                    .Build());
 
   // Finish feeding request body to QuicHttpStream.  Data will be discarded.
-  chunked_upload_stream->AppendData(kUploadData, chunk_size, true);
+  chunked_upload_stream->AppendData(base::byte_span_from_cstring(kUploadData),
+                                    true);
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
 
   // Verify response.
@@ -1847,8 +1870,8 @@ TEST_P(QuicHttpStreamTest, SessionClosedDuringDoLoop) {
   ASSERT_EQ(OK, request_.upload_data_stream->Init(
                     TestCompletionCallback().callback(), NetLogWithSource()));
 
-  size_t chunk_size = strlen(kUploadData);
-  chunked_upload_stream->AppendData(kUploadData, chunk_size, false);
+  chunked_upload_stream->AppendData(base::byte_span_from_cstring(kUploadData),
+                                    false);
   stream_->RegisterRequest(&request_);
   ASSERT_EQ(OK, stream_->InitializeStream(false, DEFAULT_PRIORITY,
                                           net_log_with_source_,
@@ -1860,7 +1883,8 @@ TEST_P(QuicHttpStreamTest, SessionClosedDuringDoLoop) {
   // flusher that tries to bundle request body writes.
   ASSERT_EQ(ERR_IO_PENDING,
             stream->SendRequest(headers_, &response_, callback_.callback()));
-  chunked_upload_stream->AppendData(kUploadData, chunk_size, true);
+  chunked_upload_stream->AppendData(base::byte_span_from_cstring(kUploadData),
+                                    true);
   int rv = callback_.WaitForResult();
   EXPECT_EQ(OK, rv);
   // Error will be surfaced once an attempt to read the response occurs.
@@ -1892,8 +1916,8 @@ TEST_P(QuicHttpStreamTest, SessionClosedBeforeSendHeadersComplete) {
             stream_->SendRequest(headers_, &response_, callback_.callback()));
 
   // Error will be surfaced once |upload_data_stream| triggers the next write.
-  size_t chunk_size = strlen(kUploadData);
-  chunked_upload_stream->AppendData(kUploadData, chunk_size, true);
+  chunked_upload_stream->AppendData(base::byte_span_from_cstring(kUploadData),
+                                    true);
   ASSERT_EQ(ERR_QUIC_PROTOCOL_ERROR, callback_.WaitForResult());
 
   EXPECT_LE(0, stream_->GetTotalSentBytes());
@@ -1914,8 +1938,8 @@ TEST_P(QuicHttpStreamTest, SessionClosedBeforeSendHeadersCompleteReadResponse) {
   request_.url = GURL("https://www.example.org/");
   request_.upload_data_stream = upload_data_stream_.get();
 
-  size_t chunk_size = strlen(kUploadData);
-  chunked_upload_stream->AppendData(kUploadData, chunk_size, true);
+  chunked_upload_stream->AppendData(base::byte_span_from_cstring(kUploadData),
+                                    true);
 
   ASSERT_EQ(OK, request_.upload_data_stream->Init(
                     TestCompletionCallback().callback(), NetLogWithSource()));
@@ -1963,8 +1987,8 @@ TEST_P(QuicHttpStreamTest, SessionClosedBeforeSendBodyComplete) {
   ASSERT_EQ(ERR_IO_PENDING,
             stream_->SendRequest(headers_, &response_, callback_.callback()));
 
-  size_t chunk_size = strlen(kUploadData);
-  chunked_upload_stream->AppendData(kUploadData, chunk_size, true);
+  chunked_upload_stream->AppendData(base::byte_span_from_cstring(kUploadData),
+                                    true);
   // Error does not surface yet since packet write is triggered by a packet
   // flusher that tries to bundle request body writes.
   ASSERT_EQ(OK, callback_.WaitForResult());
@@ -1998,8 +2022,8 @@ TEST_P(QuicHttpStreamTest, SessionClosedBeforeSendBundledBodyComplete) {
   request_.url = GURL("https://www.example.org/");
   request_.upload_data_stream = upload_data_stream_.get();
 
-  size_t chunk_size = strlen(kUploadData);
-  chunked_upload_stream->AppendData(kUploadData, chunk_size, false);
+  chunked_upload_stream->AppendData(base::byte_span_from_cstring(kUploadData),
+                                    false);
 
   ASSERT_EQ(OK, request_.upload_data_stream->Init(
                     TestCompletionCallback().callback(), NetLogWithSource()));
@@ -2011,7 +2035,8 @@ TEST_P(QuicHttpStreamTest, SessionClosedBeforeSendBundledBodyComplete) {
   ASSERT_EQ(ERR_IO_PENDING,
             stream_->SendRequest(headers_, &response_, callback_.callback()));
 
-  chunked_upload_stream->AppendData(kUploadData, chunk_size, true);
+  chunked_upload_stream->AppendData(base::byte_span_from_cstring(kUploadData),
+                                    true);
 
   // Error does not surface yet since packet write is triggered by a packet
   // flusher that tries to bundle request body writes.

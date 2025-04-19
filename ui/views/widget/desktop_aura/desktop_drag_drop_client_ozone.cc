@@ -43,10 +43,8 @@ bool IsValidDragImage(const gfx::ImageSkia& image) {
   // transparent image.
   const SkBitmap* in_bitmap = image.bitmap();
   for (int y = 0; y < in_bitmap->height(); ++y) {
-    uint32_t* in_row = in_bitmap->getAddr32(0, y);
-
     for (int x = 0; x < in_bitmap->width(); ++x) {
-      if (SkColorGetA(in_row[x]) > kMinAlpha) {
+      if (SkColorGetA(in_bitmap->getColor(x, y)) > kMinAlpha) {
         return true;
       }
     }
@@ -60,7 +58,7 @@ std::unique_ptr<Widget> CreateDragWidget(
     const gfx::ImageSkia& image,
     const gfx::Vector2d& drag_widget_offset) {
   auto widget = std::make_unique<Widget>();
-  Widget::InitParams params(Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
+  Widget::InitParams params(Widget::InitParams::CLIENT_OWNS_WIDGET,
                             Widget::InitParams::TYPE_DRAG);
   params.accept_events = false;
   params.opacity = Widget::InitParams::WindowOpacity::kTranslucent;

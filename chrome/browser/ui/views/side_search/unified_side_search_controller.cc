@@ -11,6 +11,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window/public/browser_window_features.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/side_search/side_search_utils.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -80,7 +81,7 @@ UnifiedSideSearchController::~UnifiedSideSearchController() {
 
 bool UnifiedSideSearchController::HandleKeyboardEvent(
     content::WebContents* source,
-    const content::NativeWebKeyboardEvent& event) {
+    const input::NativeWebKeyboardEvent& event) {
   auto* browser_view = GetBrowserView();
   return browser_view ? unhandled_keyboard_event_handler_.HandleKeyboardEvent(
                             event, browser_view->GetFocusManager())
@@ -101,7 +102,7 @@ content::WebContents* UnifiedSideSearchController::OpenURLFromTab(
 void UnifiedSideSearchController::SidePanelAvailabilityChanged(
     bool should_close) {
   if (should_close) {
-    auto* registry = SidePanelRegistry::Get(web_contents());
+    auto* registry = SidePanelRegistry::GetDeprecated(web_contents());
     if (registry && registry->GetEntryForKey(
                         SidePanelEntry::Key(SidePanelEntry::Id::kSideSearch))) {
       registry->Deregister(
@@ -245,7 +246,7 @@ Profile* UnifiedSideSearchController::GetProfile() const {
 
 SidePanelUI* UnifiedSideSearchController::GetSidePanelUI() {
   auto* browser = chrome::FindBrowserWithTab(web_contents());
-  return browser ? SidePanelUI::GetSidePanelUIForBrowser(browser) : nullptr;
+  return browser ? browser->GetFeatures().side_panel_ui() : nullptr;
 }
 
 void UnifiedSideSearchController::UpdateSidePanel() {
@@ -270,15 +271,14 @@ void UnifiedSideSearchController::UpdateSidePanel() {
 }
 
 void UnifiedSideSearchController::UpdateSidePanelRegistry(bool is_available) {
-  auto* registry = SidePanelRegistry::Get(web_contents());
+  auto* registry = SidePanelRegistry::GetDeprecated(web_contents());
   if (!registry)
     return;
   auto* current_entry = registry->GetEntryForKey(
       SidePanelEntry::Key(SidePanelEntry::Id::kSideSearch));
   if (!current_entry && is_available) {
     auto entry = std::make_unique<SidePanelEntry>(
-        SidePanelEntry::Id::kSideSearch, GetSideSearchName(),
-        GetSideSearchIcon(),
+        SidePanelEntry::Id::kSideSearch,
         base::BindRepeating(&UnifiedSideSearchController::GetSideSearchView,
                             base::Unretained(this)),
         base::BindRepeating(&UnifiedSideSearchController::GetOpenInNewTabURL,

@@ -380,6 +380,58 @@ TEST_F(ShillManagerClientTest, SetTetheringEnabled) {
   EXPECT_FALSE(error_result.IsReady());
 }
 
+TEST_F(ShillManagerClientTest, EnableTethering) {
+  const char kEnabledResult[] = "success";
+  const shill::WiFiInterfacePriority kPriority =
+      shill::WiFiInterfacePriority::OS_REQUEST;
+
+  // Create response.
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  dbus::MessageWriter writer(response.get());
+  writer.AppendString(kEnabledResult);
+
+  // Set expectation.
+  PrepareForMethodCall(shill::kEnableTetheringFunction,
+                       base::BindRepeating(&ExpectUint32Argument,
+                                           static_cast<uint32_t>(kPriority)),
+                       response.get());
+  // Call method.
+  base::test::TestFuture<std::string> enable_tethering_result;
+  base::test::TestFuture<std::string, std::string> error_result;
+  client_->EnableTethering(
+      kPriority, enable_tethering_result.GetCallback<const std::string&>(),
+      error_result.GetCallback<const std::string&, const std::string&>());
+  const std::string& enabled_result = enable_tethering_result.Get();
+  EXPECT_EQ(kEnabledResult, enabled_result);
+  // The EnableTethering() error callback should not be invoked after
+  // successful completion.
+  EXPECT_FALSE(error_result.IsReady());
+}
+
+TEST_F(ShillManagerClientTest, DisableTethering) {
+  const char kDisabledResult[] = "success";
+
+  // Create response.
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  dbus::MessageWriter writer(response.get());
+  writer.AppendString(kDisabledResult);
+
+  // Set expectation.
+  PrepareForMethodCall(shill::kDisableTetheringFunction,
+                       base::BindRepeating(&ExpectNoArgument), response.get());
+  // Call method.
+  base::test::TestFuture<std::string> disable_tethering_result;
+  base::test::TestFuture<std::string, std::string> error_result;
+  client_->DisableTethering(
+      disable_tethering_result.GetCallback<const std::string&>(),
+      error_result.GetCallback<const std::string&, const std::string&>());
+  const std::string& disabled_result = disable_tethering_result.Get();
+  EXPECT_EQ(kDisabledResult, disabled_result);
+  // The DisableTethering() error callback should not be invoked after
+  // successful completion.
+  EXPECT_FALSE(error_result.IsReady());
+}
+
 TEST_F(ShillManagerClientTest, CheckTetheringReadiness) {
   const char kReadinessResult[] = "not_ready";
 
@@ -411,8 +463,8 @@ TEST_F(ShillManagerClientTest, CreateP2PGroup) {
   const char kSSID[] = "test_ssid";
   const char kPassphrase[] = "test_password";
   const int kFrequency = 3;
-  const ShillManagerClient::WifiConcurrencyPriority kPriority =
-      ShillManagerClient::WifiConcurrencyPriority::kPriority3;
+  const shill::WiFiInterfacePriority kPriority =
+      shill::WiFiInterfacePriority::FOREGROUND_WITHOUT_FALLBACK;
 
   // Create response.
   base::Value::Dict result_dictionary;
@@ -428,7 +480,7 @@ TEST_F(ShillManagerClientTest, CreateP2PGroup) {
   input_dictionary.Set(shill::kP2PDeviceSSID, kSSID);
   input_dictionary.Set(shill::kP2PDevicePassphrase, kPassphrase);
   input_dictionary.Set(shill::kP2PDeviceFrequency, kFrequency);
-  input_dictionary.Set(shill::kP2PDevicePriority, kPriority);
+  input_dictionary.Set(shill::kP2PDevicePriority, static_cast<int>(kPriority));
 
   // Set expectation.
   const bool string_valued = false;

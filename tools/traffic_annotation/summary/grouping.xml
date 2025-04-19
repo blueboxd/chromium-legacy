@@ -252,7 +252,6 @@ after discussions on the right group.
       <annotation id="network_diagnostics_stun"/>
       <annotation id="network_diagnostics_tls"/>
       <annotation id="chromeos_emoji_picker_posts_fetcher"/>
-      <annotation id="deduplication_service"/>
       <annotation id="webapk_minter_install_request"/>
       <annotation id="network_portal_detector"/>
       <annotation id="android_feedback_connectivity_checker"/>
@@ -309,10 +308,7 @@ after discussions on the right group.
       <annotation id="remoting_corp_session_authz_generate_host_token"/>
       <annotation id="remoting_corp_session_authz_verify_session_token"/>
       <annotation id="remoting_corp_session_reauthorize_host"/>
-      <annotation id="chromeos_picker_gif_media_fetcher"/>
-      <annotation id="weather_icon"/>
       <annotation id="birch_calendar_provider"/>
-      <annotation id="birch_weather_provider"/>
       <annotation id="recovery_key_store_fetch"/>
       <annotation id="enterprise_logo_fetcher"/>
       <annotation id="remoting_corp_logging_report_session_disconnected"/>
@@ -332,6 +328,17 @@ after discussions on the right group.
       <annotation id="data_sharing_service_read_groups"/>
       <annotation id="data_sharing_service_delete_groups"/>
       <annotation id="data_sharing_service_update_group"/>
+      <annotation id="glanceables_icon_downloader"/>
+      <annotation id="dbsc_registration"/>
+      <annotation id="google_calendar_page_handler"/>
+      <annotation id="nearby_connections_wifi_direct"/>
+      <annotation id="autofill_password_favicon_fetch"/>
+      <annotation id="peripherals_companion_app"/>
+      <annotation id="enterprise_companion_event_logging"/>
+      <annotation id="get_locale_oauth2_people_api_call"/>
+      <annotation id="boca_classroom_integration"/>
+      <annotation id="android_webview_shell"/>
+      <annotation id="contextual_search_resolve_debug"/>
     </sender>
   </group>
   <group name="Admin Features" hidden="true">
@@ -378,7 +385,6 @@ after discussions on the right group.
       <annotation id="supervised_user_list_family_members"/>
       <annotation id="password_protection_request"/>
       <annotation id="permission_predictions"/>
-      <annotation id="safe_browsing_certificate_error_reporting"/>
       <annotation id="safe_browsing_client_side_phishing_detector"/>
       <annotation id="safe_browsing_extended_reporting"/>
       <annotation id="safe_browsing_extension_telemetry"/>
@@ -399,6 +405,7 @@ after discussions on the right group.
   </group>
   <group name="Chrome Commerce" hidden="true">
     <sender name="Compare">
+      <annotation id="chrome_commerce_comparable_products"/>
       <annotation id="product_specifications_fetcher"/>
     </sender>
     <sender name="Parcel Tracking">
@@ -427,6 +434,7 @@ after discussions on the right group.
       <annotation id="bidding_and_auction_server_key_fetch"/>
       <annotation id="interest_group_update_fetcher"/>
       <annotation id="interest_group_well_known_fetcher"/>
+      <annotation id="trusted_signals_fetcher"/>
     </sender>
   </group>
   <group name="Identity and Security" hidden="true">
@@ -583,10 +591,8 @@ after discussions on the right group.
       <annotation id="backdrop_next_image_download"/>
       <annotation id="drive_service"/>
       <annotation id="nux_ntp_background_preview"/>
-      <annotation id="photos_service"/>
       <annotation id="popular_sites_fetch"/>
       <annotation id="promo_service"/>
-      <annotation id="recipes_service"/>
       <annotation id="chrome_cart_discounts_lookup"/>
       <annotation id="chrome_cart_get_discounted_link"/>
     </sender>
@@ -619,6 +625,7 @@ after discussions on the right group.
       <annotation id="get_all_plus_addresses"/>
       <annotation id="plus_address_reservation"/>
       <annotation id="plus_address_confirmation"/>
+      <annotation id="plus_address_preallocation"/>
     </sender>
   </group>
 </groups>

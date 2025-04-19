@@ -18,6 +18,7 @@
 #include "components/autofill/core/browser/heuristic_source.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
+#include "components/autofill/core/common/form_data_test_api.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -112,7 +113,7 @@ std::pair<FormData, std::string> CreateFormAndServerClassification(
     field.set_host_form_id(
         field_template.host_form.value_or(form.global_id()).renderer_id);
     field.set_renderer_id(test::MakeFieldRendererId());
-    form.fields.push_back(std::move(field));
+    test_api(form).Append(std::move(field));
   }
 
   // Build the response of the Autofill Server with field classifications.
@@ -121,7 +122,7 @@ std::pair<FormData, std::string> CreateFormAndServerClassification(
   for (size_t i = 0; i < fields.size(); ++i) {
     auto* field_suggestion = form_suggestion->add_field_suggestions();
     field_suggestion->set_field_signature(
-        CalculateFieldSignatureForField(form.fields[i]).value());
+        CalculateFieldSignatureForField(form.fields()[i]).value());
     *field_suggestion->add_predictions() =
         ::autofill::test::CreateFieldPrediction(
             fields[i].field_type, fields[i].field_type_is_override);

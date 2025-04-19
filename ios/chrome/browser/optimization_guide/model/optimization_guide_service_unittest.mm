@@ -104,7 +104,7 @@ class OptimizationGuideServiceTest : public PlatformTest {
         OptimizationGuideServiceFactory::GetInstance(),
         OptimizationGuideServiceFactory::GetDefaultFactory());
     builder.SetPrefService(std::move(testing_prefs));
-    browser_state_ = builder.Build();
+    browser_state_ = std::move(builder).Build();
     optimization_guide_service_ =
         OptimizationGuideServiceFactory::GetForBrowserState(
             browser_state_.get());
@@ -116,9 +116,9 @@ class OptimizationGuideServiceTest : public PlatformTest {
   void CreateOTRBrowserState() {
     ChromeBrowserState* otr_browser_state =
         browser_state_->CreateOffTheRecordBrowserStateWithTestingFactories(
-            {std::make_pair(
+            {TestChromeBrowserState::TestingFactory{
                 OptimizationGuideServiceFactory::GetInstance(),
-                OptimizationGuideServiceFactory::GetDefaultFactory())});
+                OptimizationGuideServiceFactory::GetDefaultFactory()}});
     OptimizationGuideServiceFactory::GetForBrowserState(otr_browser_state)
         ->DoFinalInit();
   }

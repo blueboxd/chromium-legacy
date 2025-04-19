@@ -10,11 +10,13 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
+#include "ash/constants/ash_switches.h"
 #include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/crosapi/fake_browser_manager.h"
@@ -251,6 +253,9 @@ TEST_F(SessionControllerClientImplTest, MultiProfileDisallowedByUserPolicy) {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitWithFeatures(ash::standalone_browser::GetFeatureRefs(),
                                   {});
+    base::test::ScopedCommandLine scoped_command_line;
+    scoped_command_line.GetProcessCommandLine()->AppendSwitch(
+        ash::switches::kEnableLacrosForTesting);
     EXPECT_EQ(ash::AddUserSessionPolicy::ERROR_LACROS_ENABLED,
               SessionControllerClientImpl::GetAddUserSessionPolicy());
   }
@@ -520,4 +525,17 @@ TEST_F(SessionControllerClientImplTest, SessionLengthLimit) {
   local_state->SetInt64(prefs::kSessionStartTime, start_time.ToInternalValue());
   EXPECT_EQ(length_limit, session_controller.last_session_length_limit());
   EXPECT_EQ(start_time, session_controller.last_session_start_time());
+}
+
+TEST_F(SessionControllerClientImplTest, FirstSessionReady) {
+  SessionControllerClientImpl client;
+  TestSessionController session_controller;
+  client.Init();
+
+  ASSERT_EQ(0, session_controller.first_session_ready_count());
+
+  // Simulate post login tasks finish.
+  session_manager().HandleUserSessionStartUpTaskCompleted();
+
+  EXPECT_EQ(1, session_controller.first_session_ready_count());
 }

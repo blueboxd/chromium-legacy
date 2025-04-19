@@ -21,10 +21,14 @@ constexpr unsigned int kMinimumDaysBetweenBannerShows = 7;
 // Default site engagement required to trigger the banner.
 constexpr unsigned int kDefaultTotalEngagementToTrigger = 2;
 
-// Default amount of days after which the amount of user cancellations and
-// dismissals on the ML installation dialog is automatically cleared. Default to
-// 90 days, post which
-inline constexpr int kTotalDaysToStoreMLGuardrails = 60;
+// Default amount of days after which the guardrail information about user
+// cancellations and dismissals on the ML promoted installation dialog is
+// automatically cleared. To understand more on how this works, please refer to
+// `kMlPromoGuardrails` in web_app_pref_guardrails.h.
+inline constexpr int kTotalDaysToStoreMLGuardrails = 180;
+
+// Min icon size when using favicon to install webapp.
+inline constexpr int kMinimumFaviconSize = 48;
 
 #if BUILDFLAG(IS_ANDROID)
 BASE_DECLARE_FEATURE(kAddToHomescreenMessaging);
@@ -53,10 +57,7 @@ extern const base::FeatureParam<double> kWebAppsMLGuardrailResultReportProb;
 extern const base::FeatureParam<double> kWebAppsMLModelUserDeclineReportProb;
 extern const base::FeatureParam<int> kMaxDaysForMLPromotionGuardrailStorage;
 
-BASE_DECLARE_FEATURE(kUniversalInstallManifest);
-BASE_DECLARE_FEATURE(kUniversalInstallIcon);
 BASE_DECLARE_FEATURE(kUniversalInstallRootScopeNoManifest);
-extern const base::FeatureParam<int> kMinimumFaviconSize;
 BASE_DECLARE_FEATURE(kUniversalInstallDefaultUrl);
 
 }  // namespace features

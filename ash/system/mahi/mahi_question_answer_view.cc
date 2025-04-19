@@ -20,6 +20,7 @@
 #include "ash/system/mahi/mahi_constants.h"
 #include "ash/system/mahi/mahi_ui_controller.h"
 #include "ash/system/mahi/mahi_ui_update.h"
+#include "ash/system/mahi/mahi_utils.h"
 #include "ash/system/mahi/resources/grit/mahi_resources.h"
 #include "base/check.h"
 #include "base/functional/bind.h"
@@ -35,6 +36,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rounded_corners_f.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/animated_image_view.h"
@@ -79,11 +81,11 @@ constexpr int kTextBubbleLabelDefaultMaximumWidth =
 
 // ErrorBubble -----------------------------------------------------------------
 
-// A bubble presenting the error introduced by the most recent question.
+// A bubble presenting the error introduced by answering a question.
 class ErrorBubble : public views::FlexLayoutView {
   METADATA_HEADER(ErrorBubble, views::FlexLayoutView)
  public:
-  ErrorBubble() {
+  explicit ErrorBubble(int error_text_id) {
     views::Builder<views::FlexLayoutView>(this)
         .SetBorder(views::CreateEmptyBorder(kErrorBubbleInteriorMargin))
         .SetOrientation(views::LayoutOrientation::kHorizontal)
@@ -100,8 +102,7 @@ class ErrorBubble : public views::FlexLayoutView {
                 .SetID(mahi_constants::ViewId::kQuestionAnswerErrorLabel)
                 .SetMultiLine(true)
                 .SetMaximumWidth(kErrorLabelMaximumWidth)
-                .SetText(l10n_util::GetStringUTF16(
-                    IDS_ASH_MAHI_RESPONSE_STATUS_INAPPROPRIATE_LABEL_TEXT)))
+                .SetText(l10n_util::GetStringUTF16(error_text_id)))
         .BuildChildren();
   }
 };
@@ -179,6 +180,7 @@ std::unique_ptr<views::View> CreateQuestionAnswerRow(const std::u16string& text,
           base::BindOnce([](views::FlexLayoutView* layout) {
             layout->SetProperty(views::kFlexBehaviorKey,
                                 views::FlexSpecification(
+                                    views::LayoutOrientation::kHorizontal,
                                     views::MinimumFlexSizeRule::kScaleToZero,
                                     views::MaximumFlexSizeRule::kUnbounded,
                                     /*adjust_height_for_width=*/true));
@@ -237,9 +239,6 @@ MahiQuestionAnswerView::MahiQuestionAnswerView(MahiUiController* ui_controller)
   SetIgnoreDefaultMainAxisMargins(true);
   SetCollapseMargins(true);
   SetDefault(views::kMarginsKey, gfx::Insets::VH(kBetweenChildSpacing, 0));
-  SetProperty(views::kFlexBehaviorKey,
-              views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
-                                       views::MaximumFlexSizeRule::kUnbounded));
 }
 
 MahiQuestionAnswerView::~MahiQuestionAnswerView() {
@@ -262,16 +261,19 @@ bool MahiQuestionAnswerView::GetViewVisibility(VisibilityState state) const {
 
 void MahiQuestionAnswerView::OnUpdated(const MahiUiUpdate& update) {
   switch (update.type()) {
-    case MahiUiUpdateType::kAnswerLoaded:
+    case MahiUiUpdateType::kAnswerLoaded: {
       RemoveLoadingAnimatedImage();
 
       base::UmaHistogramTimes(
           mahi_constants::kAnswerLoadingTimeHistogramName,
           base::TimeTicks::Now() - answer_start_loading_time_);
 
-      AddChildView(
-          CreateQuestionAnswerRow(update.GetAnswer(), /*is_question=*/false));
+      auto& answer = update.GetAnswer();
+
+      AddChildView(CreateQuestionAnswerRow(answer, /*is_question=*/false));
+      GetViewAccessibility().AnnounceText(answer);
       return;
+    }
     case MahiUiUpdateType::kContentsRefreshInitiated:
       question_count_reporter_.ReportDataAndReset();
       RemoveAllChildViews();
@@ -279,24 +281,13 @@ void MahiQuestionAnswerView::OnUpdated(const MahiUiUpdate& update) {
     case MahiUiUpdateType::kErrorReceived: {
       RemoveLoadingAnimatedImage();
 
-      // Creates `error_bubble_` if having an inappropriate question error.
+      // Creates `error_bubble_` if having an error.
       const MahiUiError& error = update.GetError();
-      if (error.origin_state == VisibilityState::kQuestionAndAnswer &&
-          error.status == chromeos::MahiResponseStatus::kInappropriate) {
-        if (error_bubble_) {
-          LOG(ERROR) << "Tried to add a new error bubble when there is an "
-                        "existing one.";
-          return;
-        }
-        // Building `ErrorBubble` is synchronous. Therefore, it is safe to pass
-        // the reference to `error_bubble` to the callback.
+      if (error.origin_state == VisibilityState::kQuestionAndAnswer) {
         AddChildView(
-            views::Builder<ErrorBubble>()
-                .AfterBuild(base::BindOnce(
-                    [](views::ViewTracker& error_bubble, ErrorBubble* self) {
-                      error_bubble.SetView(self);
-                    },
-                    std::ref(error_bubble_)))
+            views::Builder<ErrorBubble>(
+                std::make_unique<ErrorBubble>(
+                    mahi_utils::GetErrorStatusViewTextId(error.status)))
                 .Build());
       }
       return;
@@ -305,11 +296,6 @@ void MahiQuestionAnswerView::OnUpdated(const MahiUiUpdate& update) {
       question_count_reporter_.IncreaseQuestionCount();
       AddChildView(CreateQuestionAnswerRow(update.GetQuestion(),
                                            /*is_question=*/true));
-      // Destroys `error_bubble_` if any when the user posts a new question.
-      if (error_bubble_) {
-        RemoveChildViewT(error_bubble_.view());
-      }
-
       if (answer_loading_animated_image_) {
         LOG(ERROR) << "Loading animated image shouldn't be running when a "
                       "question can be asked";
@@ -319,6 +305,8 @@ void MahiQuestionAnswerView::OnUpdated(const MahiUiUpdate& update) {
       auto* answer_loading_animated_image = AddChildView(
           views::Builder<views::AnimatedImageView>()
               .SetID(mahi_constants::ViewId::kAnswerLoadingAnimatedImage)
+              .SetAccessibleName(l10n_util::GetStringUTF16(
+                  IDS_ASH_MAHI_LOADING_ACCESSIBLE_NAME))
               .SetAnimatedImage(mahi_animation_utils::GetLottieAnimationData(
                   IDR_MAHI_LOADING_SUMMARY_ANIMATION))
               .AfterBuild(base::BindOnce([](views::AnimatedImageView* self) {

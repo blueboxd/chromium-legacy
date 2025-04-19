@@ -15,7 +15,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "chrome/browser/password_manager/profile_password_store_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
@@ -23,6 +22,7 @@
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate_mock.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/password_manager/core/browser/features/password_manager_features_util.h"
 #include "components/password_manager/core/browser/mock_password_feature_manager.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
@@ -70,11 +70,11 @@ std::unique_ptr<KeyedService> BuildTestSyncService(
   return std::make_unique<syncer::TestSyncService>();
 }
 
-void SetupAccountPasswordStore(syncer::TestSyncService* sync_service) {
-  sync_service->GetUserSettings()->SetSelectedTypes(
-      /*sync_everything=*/false,
-      /*types=*/{syncer::UserSelectableType::kPasswords});
-  sync_service->SetHasSyncConsent(false);
+void SetupAccountPasswordStore(syncer::TestSyncService* sync_service,
+                               PrefService* pref_service) {
+  sync_service->SetSignedIn(signin::ConsentLevel::kSignin);
+  ASSERT_TRUE(password_manager::features_util::IsOptedInForAccountStorage(
+      pref_service, sync_service));
 }
 
 }  // namespace
@@ -705,7 +705,7 @@ TEST_F(SaveUpdateBubbleControllerTest, PasswordsRevealedReported) {
 
 TEST_F(SaveUpdateBubbleControllerTest,
        UpdateAccountStoreAffectsTheAccountStore) {
-  SetupAccountPasswordStore(sync_service());
+  SetupAccountPasswordStore(sync_service(), prefs());
   EXPECT_CALL(*delegate(), GetPendingPassword())
       .WillOnce(ReturnRef(pending_password()));
   std::vector<std::unique_ptr<password_manager::PasswordForm>> forms;
@@ -723,7 +723,7 @@ TEST_F(SaveUpdateBubbleControllerTest,
 
 TEST_F(SaveUpdateBubbleControllerTest,
        UpdateProfileStoreDoesnotAffectTheAccountStore) {
-  SetupAccountPasswordStore(sync_service());
+  SetupAccountPasswordStore(sync_service(), prefs());
 
   EXPECT_CALL(*delegate(), GetPendingPassword())
       .WillOnce(ReturnRef(pending_password()));
@@ -741,7 +741,7 @@ TEST_F(SaveUpdateBubbleControllerTest,
 }
 
 TEST_F(SaveUpdateBubbleControllerTest, UpdateBothStoresAffectsTheAccountStore) {
-  SetupAccountPasswordStore(sync_service());
+  SetupAccountPasswordStore(sync_service(), prefs());
   EXPECT_CALL(*delegate(), GetPendingPassword())
       .WillOnce(ReturnRef(pending_password()));
 
@@ -767,7 +767,7 @@ TEST_F(SaveUpdateBubbleControllerTest, UpdateBothStoresAffectsTheAccountStore) {
 
 TEST_F(SaveUpdateBubbleControllerTest,
        SaveInAccountStoreAffectsTheAccountStore) {
-  SetupAccountPasswordStore(sync_service());
+  SetupAccountPasswordStore(sync_service(), prefs());
   ON_CALL(*password_feature_manager(), GetDefaultPasswordStore)
       .WillByDefault(
           Return(password_manager::PasswordForm::Store::kAccountStore));
@@ -778,7 +778,7 @@ TEST_F(SaveUpdateBubbleControllerTest,
 
 TEST_F(SaveUpdateBubbleControllerTest,
        SaveInProfileStoreDoesntAffectTheAccountStore) {
-  SetupAccountPasswordStore(sync_service());
+  SetupAccountPasswordStore(sync_service(), prefs());
   ON_CALL(*password_feature_manager(), GetDefaultPasswordStore)
       .WillByDefault(
           Return(password_manager::PasswordForm::Store::kProfileStore));
@@ -823,21 +823,4 @@ TEST_F(SaveUpdateBubbleControllerTest, ShowsUpdateEvenIfNoExistingCredential) {
                  PasswordBubbleControllerBase::DisplayReason::kAutomatic);
 
   EXPECT_TRUE(controller()->IsCurrentStateUpdate());
-}
-
-TEST_F(SaveUpdateBubbleControllerTest,
-       ShouldNotShowPasswordStoreComboboxIfFlagEnabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      password_manager::features::kButterOnDesktopFollowup);
-  PretendPasswordWaiting();
-
-  ON_CALL(*password_feature_manager(), ShouldShowAccountStorageBubbleUi)
-      .WillByDefault(Return(true));
-
-  ON_CALL(*password_feature_manager(),
-          ShouldOfferOptInAndMoveToAccountStoreAfterSavingLocally)
-      .WillByDefault(Return(false));
-
-  EXPECT_FALSE(controller()->ShouldShowPasswordStorePicker());
 }

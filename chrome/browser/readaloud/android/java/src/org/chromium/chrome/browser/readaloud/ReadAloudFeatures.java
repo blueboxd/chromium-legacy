@@ -11,7 +11,6 @@ import androidx.annotation.Nullable;
 import org.jni_zero.JNINamespace;
 import org.jni_zero.NativeMethods;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -121,6 +120,11 @@ public final class ReadAloudFeatures {
         return ChromeFeatureList.isEnabled(ChromeFeatureList.READALOUD_PLAYBACK);
     }
 
+    /** Returns true if Read Aloud is allowed to play in the background. */
+    public static boolean isBackgroundPlaybackEnabled() {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.READALOUD_BACKGROUND_PLAYBACK);
+    }
+
     /** Returns true if Read Aloud entrypoint can be added to overflow menu in CCT. */
     public static boolean isEnabledForOverflowMenuInCCT() {
         return ChromeFeatureList.isEnabled(ChromeFeatureList.READALOUD_IN_OVERFLOW_MENU_IN_CCT);
@@ -129,13 +133,13 @@ public final class ReadAloudFeatures {
     // TODO: b/323238277 Move this check into isAllowed()
     /** Returns true if in multi-window and ReadAloud is disabled for multi-window. */
     public static boolean isInMultiWindowAndDisabled(Activity activity) {
-        return ApiCompatibilityUtils.isInMultiWindowMode(activity)
+        return activity.isInMultiWindowMode()
                 && !ChromeFeatureList.isEnabled(ChromeFeatureList.READALOUD_IN_MULTI_WINDOW);
     }
 
     /** Returns true if Read Aloud tap to seek is enabled. */
     public static boolean isTapToSeekEnabled() {
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.READALOUD_TAP_TO_SEEK);
+        return ChromeFeatureList.sReadAloudTapToSeek.isEnabled();
     }
 
     /** Returns true if the ReadAloud CCT IPH should highlight the menu button. */
@@ -174,6 +178,11 @@ public final class ReadAloudFeatures {
         }
     }
 
+    /** Return the metrics client ID or empty string if it isn't available. */
+    public static String getMetricsId() {
+        return ReadAloudFeaturesJni.get().getMetricsId();
+    }
+
     @NativeMethods
     public interface Natives {
         // Create a native readaloud::SyntheticTrial and return its address. It must be
@@ -190,5 +199,8 @@ public final class ReadAloudFeatures {
         // Check stored synthetic trial reactivation prefs and delete those that don't
         // match current field trial state.
         void clearStaleSyntheticTrialPrefs();
+
+        // Get metrics client ID or empty string if it isn't available.
+        String getMetricsId();
     }
 }

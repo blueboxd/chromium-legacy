@@ -8,6 +8,7 @@
 
 #import "base/apple/foundation_util.h"
 #import "base/containers/contains.h"
+#import "base/feature_list.h"
 #import "base/functional/bind.h"
 #import "base/ios/block_types.h"
 #import "base/ios/ios_util.h"
@@ -76,6 +77,12 @@ using web::wk_navigation_util::IsWKInternalUrl;
 
 namespace {
 char const kFullScreenStateHistogram[] = "IOS.Fullscreen.State";
+
+// Disables logic to update CRWWebController's `_currentURLLoadWasTriggered`
+// when setting a WKWebView's interaction state.
+BASE_FEATURE(kIOSSessionRestoreLoadTriggerKillSwitch,
+             "IOSSessionRestoreLoadTriggerKillSwitch",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 }  // namespace
 
 // TODO(crbug.com/40746865): Allow usage of iOS15 interactionState on iOS 14 SDK
@@ -399,6 +406,8 @@ char const kFullScreenStateHistogram[] = "IOS.Fullscreen.State";
         @"title" : @"webViewTitleDidChange",
         @"cameraCaptureState" : @"webViewCameraCaptureStateDidChange",
         @"microphoneCaptureState" : @"webViewMicrophoneCaptureStateDidChange",
+        @"underPageBackgroundColor" :
+            @"webViewUnderPageBackgroundColorDidChange",
       }];
 
   if (web::GetWebClient()->EnableFullscreenAPI()) {
@@ -835,6 +844,9 @@ char const kFullScreenStateHistogram[] = "IOS.Fullscreen.State";
   DCHECK_EQ(self.webView.backForwardList.currentItem, nil);
   self.navigationHandler.blockUniversalLinksOnNextDecidePolicy = true;
   [self.webView setInteractionState:interactionState];
+  if (!base::FeatureList::IsEnabled(kIOSSessionRestoreLoadTriggerKillSwitch)) {
+    _currentURLLoadWasTrigerred = YES;
+  }
   return YES;
 }
 
@@ -1111,14 +1123,6 @@ char const kFullScreenStateHistogram[] = "IOS.Fullscreen.State";
 
     DCHECK_EQ(documentOrigin, committedOrigin)
         << "Old and new URL detection system have a mismatch";
-
-    ukm::SourceId sourceID = ukm::ConvertToSourceId(
-        context->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID);
-    if (sourceID != ukm::kInvalidSourceId) {
-      ukm::builders::IOS_URLMismatchInLegacyAndSlimNavigationManager(sourceID)
-          .SetHasMismatch(documentOrigin != committedOrigin)
-          .Record(ukm::UkmRecorder::Get());
-    }
   }
 }
 
@@ -1441,11 +1445,6 @@ CrFullscreenState CrFullscreenStateFromWKFullscreenState(
     [self.webView setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
                                       UIViewAutoresizingFlexibleHeight];
 
-    if (web::GetWebClient()->EnableLongPressUIContextMenu()) {
-      self.contextMenuController =
-          [[CRWContextMenuController alloc] initWithWebView:self.webView
-                                                   webState:self.webStateImpl];
-    }
 
     // WKWebViews with invalid or empty frames have exhibited rendering bugs, so
     // resize the view to match the container view upon creation.
@@ -1486,22 +1485,24 @@ CrFullscreenState CrFullscreenStateFromWKFullscreenState(
   if (!self.webView || [_containerView webViewContentView])
     return;
 
+  CrFullscreenState fullScreenState = CrFullscreenState::kNotInFullScreen;
 #if defined(__IPHONE_16_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_16_0
   if (@available(iOS 16.0, *)) {
-    CRWWebViewContentView* webViewContentView = [[CRWWebViewContentView alloc]
-        initWithWebView:self.webView
-             scrollView:self.webScrollView
-        fullscreenState:CrFullscreenStateFromWKFullscreenState(
-                            self.webView.fullscreenState)];
-    [_containerView displayWebViewContentView:webViewContentView];
-    return;
+    fullScreenState =
+        CrFullscreenStateFromWKFullscreenState(self.webView.fullscreenState);
   }
-#endif  // defined(__IPHONE_16_0)
+#endif
+  CRWWebViewContentView* webViewContentView =
+      [[CRWWebViewContentView alloc] initWithWebView:self.webView
+                                          scrollView:self.webScrollView
+                                     fullscreenState:fullScreenState];
 
-  CRWWebViewContentView* webViewContentView = [[CRWWebViewContentView alloc]
-      initWithWebView:self.webView
-           scrollView:self.webScrollView
-      fullscreenState:CrFullscreenState::kNotInFullScreen];
+  if (web::GetWebClient()->EnableLongPressUIContextMenu()) {
+    self.contextMenuController =
+        [[CRWContextMenuController alloc] initWithWebView:self.webView
+                                                 webState:self.webStateImpl
+                                            containerView:webViewContentView];
+  }
 
   [_containerView displayWebViewContentView:webViewContentView];
 }
@@ -1658,6 +1659,11 @@ CrFullscreenState CrFullscreenStateFromWKFullscreenState(
 // Called when WKWebView microphoneCaptureState property has changed.
 - (void)webViewMicrophoneCaptureStateDidChange {
   self.webStateImpl->OnStateChangedForPermission(web::PermissionMicrophone);
+}
+
+// Called when WKWebView underPageBackgroundColor property has changed.
+- (void)webViewUnderPageBackgroundColorDidChange {
+  self.webStateImpl->OnUnderPageBackgroundColorChanged();
 }
 
 - (void)fullscreenStateDidChange {

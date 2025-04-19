@@ -28,7 +28,7 @@
 #include "media/gpu/v4l2/v4l2_framerate_control.h"
 #include "media/gpu/v4l2/v4l2_queue.h"
 #include "media/gpu/v4l2/v4l2_utils.h"
-#include "media/video/h264_parser.h"
+#include "media/parsers/h264_parser.h"
 #include "third_party/abseil-cpp/absl/cleanup/cleanup.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -173,7 +173,7 @@ scoped_refptr<media::DecoderBuffer> ReassembleFragments(
   }
 
   auto reassembled_frame =
-      media::DecoderBuffer::FromArray(std::move(temp_buffer), frame_size);
+      media::DecoderBuffer::FromArray(std::move(temp_buffer));
   // Use the last fragment's timestamp as the |reassembled_frame|'s' timestamp.
   reassembled_frame->set_timestamp(fragments.back()->timestamp());
 

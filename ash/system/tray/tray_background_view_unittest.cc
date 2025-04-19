@@ -82,7 +82,7 @@ class TestTrayBackgroundView : public TrayBackgroundView,
     SetIsActive(true);
   }
 
-  void CloseBubble() override {
+  void CloseBubbleInternal() override {
     bubble_.reset();
     SetIsActive(false);
   }
@@ -488,7 +488,8 @@ TEST_F(TrayBackgroundViewTest, ContextMenu) {
 // Tests the auto-hide shelf status when opening and closing a context menu.
 TEST_F(TrayBackgroundViewTest, AutoHideShelfWithContextMenu) {
   // Create one window, or the shelf won't auto-hide.
-  std::unique_ptr<views::Widget> unused = CreateTestWidget();
+  std::unique_ptr<views::Widget> unused =
+      CreateTestWidget(views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET);
 
   // Set the shelf to auto-hide.
   Shelf* shelf = test_tray_background_view()->shelf();

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string_view>
+
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/path_service.h"
@@ -34,10 +36,6 @@ class PerformanceTimelineBrowserTest : public ContentBrowserTest {
 
   WebContentsImpl* web_contents() const {
     return static_cast<WebContentsImpl*>(shell()->web_contents());
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ContentBrowserTest::SetUpCommandLine(command_line);
   }
 
   RenderFrameHostImpl* current_frame_host() {
@@ -102,7 +100,7 @@ class PerformanceTimelineBrowserTest : public ContentBrowserTest {
   }
 
   // This method is to get the first UKM entry of a repeated event.
-  ukm::mojom::UkmEntryPtr GetFirstEntryValue(base::StringPiece entry_name) {
+  ukm::mojom::UkmEntryPtr GetFirstEntryValue(std::string_view entry_name) {
     auto merged_entries = ukm_recorder()->GetMergedEntriesByName(entry_name);
     EXPECT_EQ(1ul, merged_entries.size());
     const auto& kv = merged_entries.begin();
@@ -209,8 +207,7 @@ class PerformanceTimelineNavigationIdBrowserTest
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PerformanceTimelineBrowserTest::SetUpCommandLine(command_line);
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        "--enable-blink-test-features");
+    command_line->AppendSwitch("--enable-blink-test-features");
   }
 };
 
@@ -239,9 +236,9 @@ IN_PROC_BROWSER_TEST_F(PerformanceTimelineNavigationIdBrowserTest,
 
     // Verify `rfh_a` is stored in back/forward cache in case back/forward cache
     // feature is enabled.
-    if (IsBackForwardCacheEnabled())
+    if (IsBackForwardCacheEnabled()) {
       ASSERT_TRUE(rfh_a->IsInBackForwardCache());
-    else {
+    } else {
       // Verify `rfh_a` is deleted in case back/forward cache feature is
       // disabled.
       ASSERT_TRUE(rfh_a.WaitUntilRenderFrameDeleted());
@@ -306,8 +303,8 @@ class PerformanceTimelineBackForwardCacheRestorationBrowserTest
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ContentBrowserTest::SetUpCommandLine(command_line);
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kEnableBlinkTestFeatures, "NavigationId");
+    command_line->AppendSwitchASCII(switches::kEnableBlinkTestFeatures,
+                                    "NavigationId");
     command_line->AppendSwitch(switches::kExposeInternalsForTesting);
   }
 
@@ -456,10 +453,8 @@ class PerformanceEventTimingBrowserTest
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PerformanceTimelineBrowserTest::SetUpCommandLine(command_line);
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        "--enable-blink-test-features");
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kExposeInternalsForTesting);
+    command_line->AppendSwitch("--enable-blink-test-features");
+    command_line->AppendSwitch(switches::kExposeInternalsForTesting);
   }
 
   content::EvalJsResult setEventTimingBufferSize(int size) const {

@@ -5,6 +5,8 @@
 #include "components/privacy_sandbox/tracking_protection_settings.h"
 
 #include "base/check.h"
+#include "base/feature_list.h"
+#include "base/time/time.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -55,11 +57,6 @@ TrackingProtectionSettings::TrackingProtectionSettings(
           &TrackingProtectionSettings::OnBlockAllThirdPartyCookiesPrefChanged,
           base::Unretained(this)));
   pref_change_registrar_.Add(
-      prefs::kAllowAll3pcToggleEnabled,
-      base::BindRepeating(
-          &TrackingProtectionSettings::OnBlockAllThirdPartyCookiesPrefChanged,
-          base::Unretained(this)));
-  pref_change_registrar_.Add(
       prefs::kTrackingProtection3pcdEnabled,
       base::BindRepeating(
           &TrackingProtectionSettings::OnTrackingProtection3pcdPrefChanged,
@@ -83,8 +80,24 @@ TrackingProtectionSettings::TrackingProtectionSettings(
     onboarding_observation_.Observe(onboarding_service_);
   }
 
+  MaybeInitializeIppPref();
   // It's possible enterprise status changed while profile was shut down.
   OnEnterpriseControlForPrefsChanged();
+
+  // If feature status changed then we need to migrate content settings.
+  if (base::FeatureList::IsEnabled(kTrackingProtectionContentSettingFor3pcb) &&
+      !pref_service_->GetBoolean(prefs::kUserBypass3pcExceptionsMigrated)) {
+    MigrateUserBypassExceptions(ContentSettingsType::COOKIES,
+                                ContentSettingsType::TRACKING_PROTECTION);
+    pref_service_->SetBoolean(prefs::kUserBypass3pcExceptionsMigrated, true);
+  } else if (!base::FeatureList::IsEnabled(
+                 kTrackingProtectionContentSettingFor3pcb) &&
+             pref_service_->GetBoolean(
+                 prefs::kUserBypass3pcExceptionsMigrated)) {
+    MigrateUserBypassExceptions(ContentSettingsType::TRACKING_PROTECTION,
+                                ContentSettingsType::COOKIES);
+    pref_service_->SetBoolean(prefs::kUserBypass3pcExceptionsMigrated, false);
+  }
 }
 
 TrackingProtectionSettings::~TrackingProtectionSettings() = default;
@@ -106,19 +119,9 @@ bool TrackingProtectionSettings::IsTrackingProtection3pcdEnabled() const {
 }
 
 bool TrackingProtectionSettings::AreAllThirdPartyCookiesBlocked() const {
-  if (!IsTrackingProtection3pcdEnabled() ||
-      AreThirdPartyCookiesAllowedByEnterprise()) {
-    return false;
-  }
-  return pref_service_->GetBoolean(prefs::kBlockAll3pcToggleEnabled) ||
-         is_incognito_;
-}
-
-bool TrackingProtectionSettings::AreThirdPartyCookiesAllowedByEnterprise()
-    const {
   return IsTrackingProtection3pcdEnabled() &&
-         base::FeatureList::IsEnabled(kTrackingProtectionSettingsLaunch) &&
-         pref_service_->GetBoolean(prefs::kAllowAll3pcToggleEnabled);
+         (pref_service_->GetBoolean(prefs::kBlockAll3pcToggleEnabled) ||
+          is_incognito_);
 }
 
 bool TrackingProtectionSettings::IsFingerprintingProtectionEnabled() const {
@@ -175,6 +178,16 @@ ContentSetting TrackingProtectionSettings::GetTrackingProtectionSetting(
       GURL(), first_party_url, ContentSettingsType::TRACKING_PROTECTION, info);
 }
 
+void TrackingProtectionSettings::MaybeInitializeIppPref() {
+  if (pref_service_->GetBoolean(prefs::kIpProtectionInitializedByDogfood) ||
+      !base::FeatureList::IsEnabled(kIpProtectionDogfoodDefaultOn)) {
+    return;
+  }
+  pref_service_->SetBoolean(prefs::kIpProtectionEnabled, true);
+  pref_service_->SetBoolean(prefs::kIpProtectionInitializedByDogfood, true);
+}
+
+// TODO(https://b/333527273): Delete with Mode B cleanup
 void TrackingProtectionSettings::OnEnterpriseControlForPrefsChanged() {
   if (!IsTrackingProtection3pcdEnabled()) {
     return;
@@ -187,24 +200,46 @@ void TrackingProtectionSettings::OnEnterpriseControlForPrefsChanged() {
   }
 }
 
+// TODO(https://b/333527273): Update with Mode B cleanup
 void TrackingProtectionSettings::OnTrackingProtectionOnboardingUpdated(
     TrackingProtectionOnboarding::OnboardingStatus onboarding_status) {
   switch (onboarding_status) {
     case TrackingProtectionOnboarding::OnboardingStatus::kIneligible:
     case TrackingProtectionOnboarding::OnboardingStatus::kEligible:
-    case TrackingProtectionOnboarding::OnboardingStatus::kOffboarded:
-    case TrackingProtectionOnboarding::OnboardingStatus::kOnboardingRequested:
       pref_service_->SetBoolean(prefs::kTrackingProtection3pcdEnabled, false);
       return;
     case TrackingProtectionOnboarding::OnboardingStatus::kOnboarded:
       pref_service_->SetBoolean(prefs::kTrackingProtection3pcdEnabled, true);
-      // If the user chose to block all 3PC pre-3PCD, copy this over.
-      if (base::FeatureList::IsEnabled(kTrackingProtectionSettingsLaunch) &&
-          pref_service_->GetInteger(prefs::kCookieControlsMode) ==
-              1 /* BlockThirdParty */) {
-        pref_service_->SetBoolean(prefs::kBlockAll3pcToggleEnabled, true);
-      }
       return;
+  }
+}
+void TrackingProtectionSettings::MigrateUserBypassExceptions(
+    ContentSettingsType from,
+    ContentSettingsType to) {
+  // Gives us a bit of padding and there's no need to migrate an exception
+  // expiring within the next 5 minutes.
+  const base::Time now = base::Time::Now() + base::Minutes(5);
+  ContentSettingsForOneType existing_exceptions =
+      host_content_settings_map_->GetSettingsForOneType(from);
+  for (auto exception : existing_exceptions) {
+    // Ensure the exception comes from user bypass.
+    if (exception.metadata.expiration() <= now ||
+        !exception.primary_pattern.MatchesAllHosts() ||
+        exception.secondary_pattern.MatchesAllHosts() ||
+        exception.setting_value != CONTENT_SETTING_ALLOW) {
+      continue;
+    }
+    // Add an exception for the type we're migrating to.
+    content_settings::ContentSettingConstraints constraints;
+    constraints.set_lifetime(exception.metadata.expiration() -
+                             base::Time::Now());
+    host_content_settings_map_->SetContentSettingCustomScope(
+        ContentSettingsPattern::Wildcard(), exception.secondary_pattern, to,
+        CONTENT_SETTING_ALLOW, constraints);
+    // Remove the exception for the type we're migrating from.
+    host_content_settings_map_->SetContentSettingCustomScope(
+        ContentSettingsPattern::Wildcard(), exception.secondary_pattern, from,
+        CONTENT_SETTING_DEFAULT);
   }
 }
 

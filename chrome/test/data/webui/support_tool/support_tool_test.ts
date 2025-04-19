@@ -15,7 +15,6 @@ import type {CrCheckboxElement} from 'chrome://resources/cr_elements/cr_checkbox
 import type {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
-import {track} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import type {BrowserProxy, DataCollectorItem, IssueDetails, PiiDataItem, SupportTokenGenerationResult} from 'chrome://support-tool/browser_proxy.js';
 import {BrowserProxyImpl} from 'chrome://support-tool/browser_proxy.js';
@@ -24,6 +23,7 @@ import type {DataExportResult, SupportToolElement} from 'chrome://support-tool/s
 import {SupportToolPageIndex} from 'chrome://support-tool/support_tool.js';
 import type {UrlGeneratorElement} from 'chrome://support-tool/url_generator.js';
 import {assertEquals, assertFalse, assertNotEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {track} from 'chrome://webui-test/mouse_mock_interactions.js';
 import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 
@@ -197,18 +197,19 @@ suite('SupportToolTest', function() {
   });
 
   test('support tool pages navigation', () => {
-    const ironPages = supportTool.shadowRoot!.querySelector('iron-pages');
+    const pages = supportTool.shadowRoot!.querySelector('cr-page-selector');
+    assertTrue(!!pages);
+
     // The selected page index must be 0, which means initial page is
     // IssueDetails.
-    assertEquals(ironPages!.selected, SupportToolPageIndex.ISSUE_DETAILS);
+    assertEquals(pages.selected, SupportToolPageIndex.ISSUE_DETAILS);
     // Only continue button container must be visible in initial page.
     assertFalse(
         supportTool.shadowRoot!.getElementById(
                                    'continueButtonContainer')!.hidden);
     // Click on continue button to move onto data collector selection page.
     supportTool.shadowRoot!.getElementById('continueButton')!.click();
-    assertEquals(
-        ironPages!.selected, SupportToolPageIndex.DATA_COLLECTOR_SELECTION);
+    assertEquals(pages.selected, SupportToolPageIndex.DATA_COLLECTOR_SELECTION);
     // Click on continue button to start data collection.
     supportTool.shadowRoot!.getElementById('continueButton')!.click();
     browserProxy.whenCalled('startDataCollection').then(function([
@@ -236,7 +237,7 @@ suite('SupportToolTest', function() {
     // Check the contents of data collectors page.
     const ironListItems =
         supportTool.$.dataCollectors.shadowRoot!.querySelector(
-                                                    'iron-list')!.items!;
+                                                    'dom-repeat')!.items!;
     assertEquals(ironListItems.length, DATA_COLLECTORS.length);
     for (let i = 0; i < ironListItems.length; i++) {
       const listItem = ironListItems[i];
@@ -268,7 +269,7 @@ suite('SupportToolTest', function() {
     // Go to the data collector selection page.
     supportTool.shadowRoot!.getElementById('continueButton')!.click();
     assertEquals(
-        supportTool.shadowRoot!.querySelector('iron-pages')!.selected,
+        supportTool.shadowRoot!.querySelector('cr-page-selector')!.selected,
         SupportToolPageIndex.DATA_COLLECTOR_SELECTION);
     // Take screenshot.
     const screenshot = supportTool.$.dataCollectors.shadowRoot!
@@ -297,7 +298,7 @@ suite('SupportToolTest', function() {
     // Go to the data collector selection page.
     supportTool.shadowRoot!.getElementById('continueButton')!.click();
     assertEquals(
-        supportTool.shadowRoot!.querySelector('iron-pages')!.selected,
+        supportTool.shadowRoot!.querySelector('cr-page-selector')!.selected,
         SupportToolPageIndex.DATA_COLLECTOR_SELECTION);
     // Take a screenshot.
     const screenshot = supportTool.$.dataCollectors.shadowRoot!
@@ -326,8 +327,6 @@ suite('SupportToolTest', function() {
     const confirmButton = screenshot.shadowRoot!.getElementById('confirmEdit')!;
 
     // After clicking the confirm button, the image is changed.
-    hideInfoButton.click();
-    await waitAfterNextRender(screenshot);
     track(canvas, canvas.width / 4, canvas.height / 4, 1);
     confirmButton.click();
     await waitAfterNextRender(screenshot);
@@ -344,7 +343,7 @@ suite('SupportToolTest', function() {
       // Make sure the issue details page is displayed after cancelling data
       // collection.
       assertEquals(
-          supportTool.shadowRoot!.querySelector('iron-pages')!.selected,
+          supportTool.shadowRoot!.querySelector('cr-page-selector')!.selected,
           SupportToolPageIndex.ISSUE_DETAILS);
     });
     assertEquals(browserProxy.getCallCount('cancelDataCollection'), 1);
@@ -356,7 +355,7 @@ suite('SupportToolTest', function() {
     // filled.
     supportTool.shadowRoot!.getElementById('continueButton')!.click();
     assertEquals(
-        supportTool.shadowRoot!.querySelector('iron-pages')!.selected,
+        supportTool.shadowRoot!.querySelector('cr-page-selector')!.selected,
         SupportToolPageIndex.DATA_COLLECTOR_SELECTION);
     supportTool.shadowRoot!.getElementById('continueButton')!.click();
     // Check the contents of PII selection page.
@@ -374,7 +373,7 @@ suite('SupportToolTest', function() {
     webUIListenerCallback('support-data-export-started');
     flush();
     assertEquals(
-        supportTool.shadowRoot!.querySelector('iron-pages')!.selected,
+        supportTool.shadowRoot!.querySelector('cr-page-selector')!.selected,
         SupportToolPageIndex.EXPORT_SPINNER);
     const exportResult: DataExportResult = {
       success: true,
@@ -384,7 +383,7 @@ suite('SupportToolTest', function() {
     webUIListenerCallback('data-export-completed', exportResult);
     flush();
     assertEquals(
-        supportTool.shadowRoot!.querySelector('iron-pages')!.selected,
+        supportTool.shadowRoot!.querySelector('cr-page-selector')!.selected,
         SupportToolPageIndex.DATA_EXPORT_DONE);
   });
 });
@@ -454,7 +453,8 @@ suite('UrlGeneratorTest', function() {
     assertTrue(urlGenerator.$.errorMessageToast.open);
   });
 
-  test('token generation success', async () => {
+  // TODO(crbug.com/349562679): Re-enable test.
+  test.skip('token generation success', async () => {
     // Ensure the button is disabled when we open the page.
     const copyTokenButton = urlGenerator.shadowRoot!.getElementById(
                                 'copyTokenButton')! as CrButtonElement;

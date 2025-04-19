@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -84,7 +89,7 @@ class TileManagerPerfTest : public TestLayerTreeHostBase {
 
     std::vector<FakePictureLayerImpl*> layers = CreateLayers(layer_count, 10);
     for (auto* layer : layers)
-      layer->UpdateTiles();
+      layer->UpdateTiles(TileMemoryLimitPolicy::ALLOW_ANYTHING);
 
     timer_.Reset();
     do {
@@ -108,7 +113,7 @@ class TileManagerPerfTest : public TestLayerTreeHostBase {
 
     std::vector<FakePictureLayerImpl*> layers = CreateLayers(layer_count, 100);
     for (auto* layer : layers)
-      layer->UpdateTiles();
+      layer->UpdateTiles(TileMemoryLimitPolicy::ALLOW_ANYTHING);
 
     int priority_count = 0;
     timer_.Reset();
@@ -140,7 +145,7 @@ class TileManagerPerfTest : public TestLayerTreeHostBase {
 
     std::vector<FakePictureLayerImpl*> layers = CreateLayers(layer_count, 10);
     for (auto* layer : layers) {
-      layer->UpdateTiles();
+      layer->UpdateTiles(TileMemoryLimitPolicy::ALLOW_ANYTHING);
       for (size_t i = 0; i < layer->num_tilings(); ++i) {
         tile_manager()->InitializeTilesWithResourcesForTesting(
             layer->tilings()->tiling_at(i)->AllTilesForTesting());
@@ -171,7 +176,7 @@ class TileManagerPerfTest : public TestLayerTreeHostBase {
     std::vector<FakePictureLayerImpl*> layers =
         CreateLayers(layer_count, tile_count);
     for (auto* layer : layers) {
-      layer->UpdateTiles();
+      layer->UpdateTiles(TileMemoryLimitPolicy::ALLOW_ANYTHING);
       for (size_t i = 0; i < layer->num_tilings(); ++i) {
         tile_manager()->InitializeTilesWithResourcesForTesting(
             layer->tilings()->tiling_at(i)->AllTilesForTesting());
@@ -206,9 +211,9 @@ class TileManagerPerfTest : public TestLayerTreeHostBase {
 
     // Adjust the width and height to account for the fact that tiles
     // are bigger than 1x1.
-    LayerListSettings settings;
-    width *= settings.default_tile_size.width();
-    height *= settings.default_tile_size.height();
+    const gfx::Size tile_size = LayerTreeSettings().default_tile_size;
+    width *= tile_size.width();
+    height *= tile_size.height();
 
     // Ensure that we start with blank trees and no tiles.
     ResetTrees();
@@ -216,8 +221,7 @@ class TileManagerPerfTest : public TestLayerTreeHostBase {
     gfx::Size layer_bounds(width, height);
     gfx::Rect viewport(width / 5, height / 5);
     host_impl()->active_tree()->SetDeviceViewportRect(viewport);
-    SetupDefaultTreesWithFixedTileSize(layer_bounds,
-                                       settings.default_tile_size);
+    SetupDefaultTreesWithFixedTileSize(layer_bounds, tile_size);
 
     std::vector<FakePictureLayerImpl*> layers;
 
@@ -247,7 +251,7 @@ class TileManagerPerfTest : public TestLayerTreeHostBase {
 
   GlobalStateThatImpactsTilePriority GlobalStateForTest() {
     GlobalStateThatImpactsTilePriority state;
-    gfx::Size tile_size = LayerTreeSettings().default_tile_size;
+    const gfx::Size tile_size = LayerTreeSettings().default_tile_size;
     state.soft_memory_limit_in_bytes =
         10000u * 4u *
         static_cast<size_t>(tile_size.width() * tile_size.height());
@@ -268,7 +272,7 @@ class TileManagerPerfTest : public TestLayerTreeHostBase {
     do {
       host_impl()->AdvanceToNextFrame(base::Milliseconds(1));
       for (auto* layer : layers)
-        layer->UpdateTiles();
+        layer->UpdateTiles(TileMemoryLimitPolicy::ALLOW_ANYTHING);
 
       GlobalStateThatImpactsTilePriority global_state(GlobalStateForTest());
       tile_manager()->PrepareTiles(global_state);

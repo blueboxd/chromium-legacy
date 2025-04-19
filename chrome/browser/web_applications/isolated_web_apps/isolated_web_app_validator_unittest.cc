@@ -104,9 +104,9 @@ class IsolatedWebAppValidatorTest : public ::testing::Test {
       web_package::Ed25519PublicKey::Create(base::make_span(kPublicKeyBytes2));
 
   static inline const web_package::SignedWebBundleId kWebBundleId1 =
-      web_package::SignedWebBundleId::CreateForEd25519PublicKey(kPublicKey1);
+      web_package::SignedWebBundleId::CreateForPublicKey(kPublicKey1);
   static inline const web_package::SignedWebBundleId kWebBundleId2 =
-      web_package::SignedWebBundleId::CreateForEd25519PublicKey(kPublicKey2);
+      web_package::SignedWebBundleId::CreateForPublicKey(kPublicKey2);
 
   content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
@@ -120,46 +120,40 @@ using IsolatedWebAppValidatorIntegrityBlockTest = IsolatedWebAppValidatorTest;
 TEST_F(IsolatedWebAppValidatorIntegrityBlockTest, TwoPublicKeys) {
   auto integrity_block = MakeIntegrityBlock({kPublicKey1, kPublicKey2});
 
-  IntegrityBlockFuture future;
-  validator_.ValidateIntegrityBlock(kWebBundleId1, integrity_block,
-                                    /*dev_mode=*/false, trust_checker_,
-                                    future.GetCallback());
-  EXPECT_THAT(future.Get(), ErrorIs(HasSubstr("Expected exactly 1 signature")));
+  EXPECT_THAT(
+      validator_.ValidateIntegrityBlock(kWebBundleId1, integrity_block,
+                                        /*dev_mode=*/false, trust_checker_),
+      ErrorIs(HasSubstr("Expected exactly 1 signature")));
 }
 
 TEST_F(IsolatedWebAppValidatorIntegrityBlockTest,
        WebBundleIdAndPublicKeyDiffer) {
   auto integrity_block = MakeIntegrityBlock({kPublicKey2});
 
-  IntegrityBlockFuture future;
-  validator_.ValidateIntegrityBlock(kWebBundleId1, integrity_block,
-                                    /*dev_mode=*/false, trust_checker_,
-                                    future.GetCallback());
-  EXPECT_THAT(future.Get(),
-              ErrorIs(HasSubstr("does not match the expected Web Bundle ID")));
+  EXPECT_THAT(
+      validator_.ValidateIntegrityBlock(kWebBundleId1, integrity_block,
+                                        /*dev_mode=*/false, trust_checker_),
+      ErrorIs(HasSubstr("does not match the expected Web Bundle ID")));
 }
 
 TEST_F(IsolatedWebAppValidatorIntegrityBlockTest, IWAIsTrusted) {
   auto integrity_block = MakeIntegrityBlock();
   SetTrustedWebBundleIdsForTesting({kWebBundleId1});
 
-  IntegrityBlockFuture future;
-  validator_.ValidateIntegrityBlock(kWebBundleId1, integrity_block,
-                                    /*dev_mode=*/false, trust_checker_,
-                                    future.GetCallback());
-  EXPECT_THAT(future.Get(), HasValue());
+  EXPECT_THAT(
+      validator_.ValidateIntegrityBlock(kWebBundleId1, integrity_block,
+                                        /*dev_mode=*/false, trust_checker_),
+      HasValue());
 }
 
 TEST_F(IsolatedWebAppValidatorIntegrityBlockTest, IWAIsUntrusted) {
   auto integrity_block = MakeIntegrityBlock();
   SetTrustedWebBundleIdsForTesting({});
 
-  IntegrityBlockFuture future;
-  validator_.ValidateIntegrityBlock(kWebBundleId1, integrity_block,
-                                    /*dev_mode=*/false, trust_checker_,
-                                    future.GetCallback());
-  EXPECT_THAT(future.Get(),
-              ErrorIs(HasSubstr("public key(s) are not trusted")));
+  EXPECT_THAT(
+      validator_.ValidateIntegrityBlock(kWebBundleId1, integrity_block,
+                                        /*dev_mode=*/false, trust_checker_),
+      ErrorIs(HasSubstr("public key(s) are not trusted")));
 }
 
 class IsolatedWebAppValidatorMetadataTest

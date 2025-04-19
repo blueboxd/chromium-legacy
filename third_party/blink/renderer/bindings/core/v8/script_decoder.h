@@ -11,12 +11,15 @@
 
 #include "base/location.h"
 #include "base/task/sequenced_task_runner.h"
+#include "mojo/public/cpp/system/data_pipe.h"
+#include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string.h"
 #include "third_party/blink/renderer/platform/crypto.h"
 #include "third_party/blink/renderer/platform/heap/cross_thread_handle.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -44,7 +47,7 @@ class CORE_EXPORT ScriptDecoder {
  public:
   class CORE_EXPORT Result {
    public:
-    Result(Deque<Vector<char>> raw_data,
+    Result(SegmentedBuffer raw_data,
            String decoded_data,
            std::unique_ptr<ParkableStringImpl::SecureDigest> digest);
     ~Result() = default;
@@ -55,7 +58,7 @@ class CORE_EXPORT ScriptDecoder {
     Result(Result&&) = default;
     Result& operator=(Result&&) = default;
 
-    Deque<Vector<char>> raw_data;
+    SegmentedBuffer raw_data;
     String decoded_data;
     std::unique_ptr<ParkableStringImpl::SecureDigest> digest;
   };
@@ -90,7 +93,62 @@ class CORE_EXPORT ScriptDecoder {
   scoped_refptr<base::SequencedTaskRunner> decoding_task_runner_;
   StringBuilder builder_;
 
-  Deque<Vector<char>> raw_data_;
+  SegmentedBuffer raw_data_;
+};
+
+class DataPipeScriptDecoder;
+struct CORE_EXPORT DataPipeScriptDecoderDeleter {
+  void operator()(const DataPipeScriptDecoder* ptr);
+};
+
+using DataPipeScriptDecoderPtr =
+    std::unique_ptr<DataPipeScriptDecoder, DataPipeScriptDecoderDeleter>;
+
+// DataPipeScriptDecoder decodes and hashes the script source of a Mojo data
+// pipe on a worker thread. The OnDecodeFinishedCallback will receive the raw
+// data and the decoded data.
+// Currently this class is used only when BackgroundCodeCacheDecoderStart
+// feature is enabled.
+class CORE_EXPORT DataPipeScriptDecoder final
+    : public mojo::DataPipeDrainer::Client {
+ public:
+  using OnDecodeFinishedCallback =
+      CrossThreadOnceFunction<void(ScriptDecoder::Result)>;
+
+  // Creates a DataPipeScriptDecoder.
+  static DataPipeScriptDecoderPtr Create(
+      std::unique_ptr<TextResourceDecoder> decoder,
+      scoped_refptr<base::SequencedTaskRunner> client_task_runner,
+      OnDecodeFinishedCallback on_decode_finished_callback);
+
+  void Start(mojo::ScopedDataPipeConsumerHandle source);
+
+ private:
+  friend struct DataPipeScriptDecoderDeleter;
+
+  DataPipeScriptDecoder(
+      std::unique_ptr<TextResourceDecoder> decoder,
+      scoped_refptr<base::SequencedTaskRunner> client_task_runner,
+      OnDecodeFinishedCallback on_decode_finished_callback);
+  void Delete() const;
+
+  // implements mojo::DataPipeDrainer::Client
+  void OnDataAvailable(base::span<const uint8_t> data) override;
+  void OnDataComplete() override;
+
+  void AppendData(const String& data);
+
+  std::unique_ptr<TextResourceDecoder> decoder_;
+  scoped_refptr<base::SequencedTaskRunner> client_task_runner_;
+  OnDecodeFinishedCallback on_decode_finished_callback_;
+  scoped_refptr<base::SequencedTaskRunner> decoding_task_runner_;
+
+  std::unique_ptr<mojo::DataPipeDrainer> drainer_;
+  Digestor digestor_{kHashAlgorithmSha256};
+  DigestValue digest_value_;
+  StringBuilder builder_;
+
+  SegmentedBuffer raw_data_;
 };
 
 struct CORE_EXPORT ScriptDecoderWithClientDeleter {

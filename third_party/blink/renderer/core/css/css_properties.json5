@@ -438,7 +438,8 @@
     // - name_for_methods: "BlendMode"
     // Tweaks how we choose defaults for getter, setter, initial and type_name.
     // For example, setting this to BlendMode will make us use a setter of
-    // setBlendMode
+    // SetBlendMode. Note that 'name_for_methods' also determines the name
+    // of the generated field on ComputedStyle.
     // - initial
     // The static function to invoke on ComputedStyleInitialValues
     // or FontBuilder to retrieve the initial value.
@@ -1095,6 +1096,7 @@
     },
     {
       name: "transition-behavior",
+      keywords: ["normal", "allow-discrete"],
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
       typedom_types: ["Keyword"],
       separator: ",",
@@ -1173,7 +1175,7 @@
       supports_incremental_style: true,
       valid_for_permission_element: true,
       valid_for_page_context: true,
-      invalidate: ["accent-color", "background-current-color", "border-visual", "color"],
+      invalidate: ["accent-color", "background-current-color", "border-visual", "color", "outline"],
     },
     {
       name: "direction",
@@ -1713,13 +1715,15 @@
       inherited: true,
       field_template: "keyword",
       include_paths: ["third_party/blink/renderer/platform/text/writing_mode.h"],
-      keywords: ["horizontal-tb", "vertical-rl", "vertical-lr"],
+      keywords: ["horizontal-tb", "vertical-rl", "vertical-lr",
+                 "sideways-rl", "sideways-lr"],
       typedom_types: ["Keyword"],
       default_value: "horizontal-tb",
       type_name: "WritingMode",
       style_builder_custom_functions: ["initial", "inherit", "value"],
       priority: 1,
       valid_for_formatted_text: true,
+      valid_for_page_context: true,
       // Incremental code does not call DidChangeWritingMode(), which influences
       // the font.
       supports_incremental_style: false,
@@ -1834,7 +1838,6 @@
       converter: "ConvertAnchorName",
       keywords: ["none"],
       typedom_types: ["Keyword"],
-      runtime_flag: "CSSAnchorPositioning",
       valid_for_permission_element: true,
       invalidate: ["layout"],
     },
@@ -2577,6 +2580,16 @@
       invalidate: ["inset", "out-of-flow", "scroll-anchor"],
     },
     {
+      name: "box-decoration-break",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
+      field_group: "box",
+      field_template: "keyword",
+      keywords: ["slice", "clone"],
+      default_value: "slice",
+      invalidate: ["layout", "paint"],
+      runtime_flag: "BoxDecorationBreak",
+    },
+    {
       name: "box-shadow",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
@@ -2612,6 +2625,7 @@
       // Storage for this property also covers these legacy properties:
       // page-break-after, -webkit-column-break-after
       field_template: "keyword",
+      field_group: "*",
       keywords: [
         "auto", "avoid", "avoid-column", "avoid-page", "column", "left", "page",
         "recto", "right", "verso"
@@ -2627,6 +2641,7 @@
       // Storage for this property also covers these legacy properties:
       // page-break-before, -webkit-column-break-before
       field_template: "keyword",
+      field_group: "*",
       keywords: [
         "auto", "avoid", "avoid-column", "avoid-page", "column", "left", "page",
         "recto", "right", "verso"
@@ -2642,6 +2657,7 @@
       // Storage for this property also covers these legacy properties:
       // page-break-inside, -webkit-column-break-inside
       field_template: "keyword",
+      field_group: "*",
       keywords: ["auto", "avoid", "avoid-column", "avoid-page"],
       typedom_types: ["Keyword"],
       default_value: "auto",
@@ -2889,6 +2905,7 @@
       computed_style_custom_functions: ["getter"],
       style_builder_custom_functions: ["initial", "inherit", "value"],
       valid_for_marker: true,
+      valid_for_page_context: true,
       supports_incremental_style: true,
     },
     {
@@ -2948,6 +2965,8 @@
       style_builder_custom_functions: ["initial", "inherit", "value"],
       typedom_types: ["Keyword"],
       valid_for_highlight_legacy: true,
+      valid_for_marker: true,
+      valid_for_permission_element: true,
     },
     {
       name: "cx",
@@ -2998,7 +3017,7 @@
         "table-row", "table-column-group", "table-column", "table-cell",
         "table-caption", "-webkit-box", "-webkit-inline-box", "flex",
         "inline-flex", "grid", "inline-grid", "contents", "flow-root", "none",
-        "flow", "math", "ruby", "ruby-text"
+        "flow", "math", "ruby", "ruby-text", "masonry", "inline-masonry"
       ],
       typedom_types: ["Keyword"],
       style_builder_custom_functions: ["initial", "inherit", "value"],
@@ -3481,7 +3500,19 @@
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       type_name: "StyleInitialLetter",
       valid_for_first_letter: true,
-      invalidate: ["layout", "paint"],
+      invalidate: ["reshape", "layout", "paint"],
+    },
+    {
+      name: "interpolate-size",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
+      inherited: true,
+      field_group: "*",
+      field_template: "keyword",
+      keywords: ["numeric-only", "allow-keywords"],
+      typedom_types: ["Keyword"],
+      default_value: "numeric-only",
+      invalidate: [],
+      runtime_flag: "CSSCalcSizeFunction",
     },
     {
       name: "isolation",
@@ -3563,6 +3594,7 @@
       valid_for_marker: true,
       valid_for_permission_element: true,
       valid_for_page_context: true,
+      affected_by_zoom: true,
     },
     {
       name: "lighting-color",
@@ -3618,6 +3650,7 @@
       style_builder_custom_functions: ["value"],
       keywords: ["none"],
       invalidate: ["layout", "paint"],
+      affected_by_zoom: true,
     },
     {
       name: "list-style-position",
@@ -4502,7 +4535,7 @@
       // @position-try-styling rely on this being high-priority, so that
       // declarations from @position-try blocks can be applied conditionally
       // based on whether or not we're out-of-flow positioned. Also, it needs to
-      // have a priority higher than inset-area which is already at priority:1.
+      // have a priority higher than position-area which is already at priority:1.
       priority: 2,
       valid_for_permission_element: true,
       invalidate: ["clip", "layout", "scroll-anchor"],
@@ -4520,28 +4553,33 @@
       converter: "ConvertPositionAnchor",
       keywords: ["auto"],
       typedom_types: ["Keyword"],
-      runtime_flag: "CSSAnchorPositioning",
       valid_for_permission_element: true,
       valid_for_position_try: true,
-      // Needs to be applied before inset-area which in turn needs to be applied
+      // Needs to be applied before position-area which in turn needs to be applied
       // before inset properties.
       priority: 2,
       invalidate: ["layout", "paint"],
     },
     {
-      name: "position-try-options",
+      name: "position-try-fallbacks",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       style_builder_custom_functions: ["value"],
       field_group: "*",
       field_template: "external",
       keywords: ["none", "flip-block", "flip-inline", "flip-start"],
       typedom_types: ["Keyword"],
-      include_paths: ["third_party/blink/renderer/core/style/position_try_options.h"],
+      include_paths: ["third_party/blink/renderer/core/style/position_try_fallbacks.h"],
       wrapper_pointer_name: "Member",
-      type_name: "PositionTryOptions",
+      type_name: "PositionTryFallbacks",
       default_value: "nullptr",
       invalidate: ["layout", "paint"],
-      runtime_flag: "CSSAnchorPositioning",
+      runtime_flag: "CSSPositionTryFallbacks",
+    },
+    {
+      name: "position-try-options",
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      surrogate_for: "position-try-fallbacks",
+      runtime_flag: "CSSPositionTryOptions",
     },
     {
       name: "position-try-order",
@@ -4552,7 +4590,6 @@
       typedom_types: ["Keyword"],
       default_value: "normal",
       invalidate: ["layout", "paint"],
-      runtime_flag: "CSSPositionTryOrder",
     },
     {
       name: "position-visibility",
@@ -4568,7 +4605,6 @@
       keywords: ["always", "anchors-visible", "no-overflow"],
       typedom_types: ["Keyword"],
       invalidate: ["layout", "paint"],
-      runtime_flag: "CSSPositionVisibility",
     },
     {
       name: "quotes",
@@ -4599,7 +4635,7 @@
       invalidate: ["layout"],
     },
     {
-      name: "reading-order-items",
+      name: "reading-flow",
       property_methods: ["CSSValueFromComputedStyleInternal"],
       field_group: "*",
       field_template: "keyword",
@@ -4607,7 +4643,7 @@
       typedom_types: ["Keyword"],
       default_value: "normal",
       invalidate: ["layout"],
-      runtime_flag: "CSSReadingOrderItems",
+      runtime_flag: "CSSReadingFlow",
     },
     {
       name: "resize",
@@ -4681,7 +4717,7 @@
       invalidate: ["layout", "paint"],
     },
     {
-      name: "scroll-markers",
+      name: "scroll-marker-group",
       property_methods: ["CSSValueFromComputedStyleInternal"],
       field_group: "*",
       field_template: "keyword",
@@ -5009,38 +5045,6 @@
       computable: false,
     },
     {
-      name: "scroll-start-block",
-      property_methods: ["ParseSingleValue"],
-      field_group: "*->start",
-      field_template: "external",
-      include_paths: ["third_party/blink/renderer/core/style/scroll_start_data.h"],
-      default_value: "blink::ScrollStartData()",
-      type_name: "ScrollStartData",
-      logical_property_group : {
-        name: "scroll-start",
-        resolver: "block"
-      },
-      keywords: ["auto", "start", "end", "center", "top", "bottom", "left", "right"],
-      typedom_types: ["Keyword", "Length", "Percentage"],
-      runtime_flag: "CSSScrollStart",
-    },
-    {
-      name: "scroll-start-inline",
-      property_methods: ["ParseSingleValue"],
-      field_group: "*->start",
-      field_template: "external",
-      include_paths: ["third_party/blink/renderer/core/style/scroll_start_data.h"],
-      default_value: "blink::ScrollStartData()",
-      type_name: "ScrollStartData",
-      logical_property_group : {
-        name: "scroll-start",
-        resolver: "inline"
-      },
-      keywords: ["auto", "start", "end", "center", "top", "bottom", "left", "right"],
-      typedom_types: ["Keyword", "Length", "Percentage"],
-      runtime_flag: "CSSScrollStart",
-    },
-    {
       name: "scroll-start-x",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       field_group: "*->start",
@@ -5071,36 +5075,6 @@
       runtime_flag: "CSSScrollStart",
     },
     {
-      name: "scroll-start-target-block",
-      property_methods: ["ParseSingleValue"],
-      field_group: "*->target",
-      field_template: "keyword",
-      default_value: "none",
-      type_name: "EScrollStartTarget",
-      logical_property_group: {
-        name: "scroll-start-target",
-        resolver: "block",
-      },
-      keywords: ["none", "auto"],
-      typedom_types: ["Keyword"],
-      runtime_flag: "CSSScrollStart",
-    },
-    {
-      name: "scroll-start-target-inline",
-      property_methods: ["ParseSingleValue"],
-      field_group: "*->target",
-      field_template: "keyword",
-      default_value: "none",
-      type_name: "EScrollStartTarget",
-      logical_property_group: {
-        name: "scroll-start-target",
-        resolver: "inline",
-      },
-      keywords: ["none", "auto"],
-      typedom_types: ["Keyword"],
-      runtime_flag: "CSSScrollStart",
-    },
-    {
       name: "scroll-start-target-x",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       field_group: "*->target",
@@ -5113,7 +5087,7 @@
       },
       keywords: ["none", "auto"],
       invalidate: ["layout"],
-      runtime_flag: "CSSScrollStart",
+      runtime_flag: "CSSScrollStartTarget",
     },
     {
       name: "scroll-start-target-y",
@@ -5128,7 +5102,7 @@
       },
       keywords: ["none", "auto"],
       invalidate: ["layout"],
-      runtime_flag: "CSSScrollStart",
+      runtime_flag: "CSSScrollStartTarget",
     },
     {
       name: "scroll-timeline-axis",
@@ -5292,6 +5266,7 @@
       keywords: ["none"],
       typedom_types: ["Keyword"],
       invalidate: ["paint", "stroke"],
+      affected_by_zoom: true,
     },
     {
       name: "stroke-dashoffset",
@@ -5306,6 +5281,7 @@
       converter: "ConvertLength",
       typedom_types: ["Length", "Percentage"],
       invalidate: ["paint"],
+      affected_by_zoom: true,
     },
     {
       name: "stroke-linecap",
@@ -5377,6 +5353,7 @@
       valid_for_highlight_legacy: true,
       valid_for_highlight: true,
       invalidate: ["layout", "paint"],
+      affected_by_zoom: true,
     },
     {
       name: "table-layout",
@@ -5479,7 +5456,7 @@
       field_group: "box",
       field_template: "keyword",
       default_value: "none",
-      keywords: ["none", "start", "end", "both"],
+      keywords: ["none", "trim-start", "trim-end", "trim-both"],
       typedom_types: ["Keyword"],
       invalidate: ["layout"],
       runtime_flag: "CSSTextBoxTrim",
@@ -5616,6 +5593,7 @@
       typedom_types: ["Length", "Percentage"],
       valid_for_page_context: true,
       invalidate: ["layout", "paint"],
+      affected_by_zoom: true,
     },
     {
       name: "text-overflow",
@@ -5653,6 +5631,7 @@
       valid_for_formatted_text_run: true,
       valid_for_page_context: true,
       invalidate: ["layout", "paint"],
+      affected_by_zoom: true,
     },
     {
       name: "text-size-adjust",
@@ -5665,16 +5644,17 @@
       style_builder_custom_functions: ["initial", "inherit", "value"],
       default_value: "TextSizeAdjust::AdjustAuto()",
       getter: "GetTextSizeAdjust",
-      // When `NewTextSizeAdjust` is enabled, this affects font-size during
-      // style building and needs to apply before it.
+      // When `TextSizeAdjustImprovements` is enabled, this affects font-size
+      // during style building and needs to apply before it.
       priority: 2,
       type_name: "TextSizeAdjust",
       converter: "ConvertTextSizeAdjust",
       keywords: ["none", "auto"],
       typedom_types: ["Keyword", "Percentage"],
-      // When `NewTextSizeAdjust` is enabled, this affects font-size during
-      // style building. Changes to anything related to fonts require that we
-      // call style.UpdateFont(), which the incremental path does not do.
+      // When `TextSizeAdjustImprovements` is enabled, this affects font-size
+      // during style building. Changes to anything related to fonts require
+      // that we call style.UpdateFont(), which the incremental path does not
+      // do.
       supports_incremental_style: false,
       invalidate: ["layout", "paint"],
     },
@@ -5734,6 +5714,7 @@
       valid_for_highlight: true,
       valid_for_page_context: true,
       invalidate: ["text-decoration"],
+      affected_by_zoom: true,
     },
     {
       name: "text-underline-position",
@@ -5947,6 +5928,7 @@
       keywords: ["baseline", "sub", "super", "text-top", "text-bottom", "middle"],
       valid_for_first_letter: true,
       valid_for_first_line: true,
+      valid_for_page_context: true,
     },
     {
       name: "view-timeline-axis",
@@ -5988,23 +5970,38 @@
       field_group: "*",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       converter: "ConvertViewTransitionClass",
-      type_name: "Vector<AtomicString>",
-      default_value: "Vector<AtomicString, 0>()",
+      type_name: "ScopedCSSNameList",
+      default_value: "nullptr",
+      wrapper_pointer_name: "Member",
       field_template: "external",
       keywords: ["none"],
       typedom_types: ["Keyword"],
       runtime_flag: "CSSViewTransitionClass",
     },
     {
+      name: "view-transition-group",
+      field_group: "*",
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      converter: "ConvertViewTransitionGroup",
+      type_name: "StyleViewTransitionGroup",
+      default_value: "StyleViewTransitionGroup::Normal()",
+      include_paths: ["third_party/blink/renderer/core/style/style_view_transition_group.h"],
+      field_template: "external",
+      keywords: ["normal", "contain", "nearest"],
+      typedom_types: ["Keyword"],
+      runtime_flag: "NestedViewTransition",
+    },
+    {
       name: "view-transition-name",
       field_group: "*",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       converter: "ConvertViewTransitionName",
-      type_name: "AtomicString",
-      default_value: "AtomicString()",
+      type_name: "ScopedCSSName",
+      default_value: "nullptr",
       field_template: "external",
       keywords: ["none"],
       typedom_types: ["Keyword"],
+      wrapper_pointer_name: "Member",
     },
     {
       name: "visibility",
@@ -6096,6 +6093,7 @@
       converter: "ConvertComputedLength<short>",
       valid_for_first_letter: true,
       invalidate: ["layout", "paint"],
+      affected_by_zoom: true,
     },
     {
       name: "-webkit-border-image",
@@ -6119,6 +6117,7 @@
       converter: "ConvertComputedLength<short>",
       valid_for_first_letter: true,
       invalidate: ["layout", "paint"],
+      affected_by_zoom: true,
     },
     // For valid values of box-align see
     // http://www.w3.org/TR/2009/WD-css3-flexbox-20090723/#alignment
@@ -6135,12 +6134,9 @@
     },
     {
       name: "-webkit-box-decoration-break",
+      surrogate_for: "box-decoration-break",
       property_methods: ["CSSValueFromComputedStyleInternal"],
-      field_group: "box",
-      field_template: "keyword",
       keywords: ["slice", "clone"],
-      default_value: "slice",
-      invalidate: ["layout", "paint"],
     },
     {
       name: "-webkit-box-direction",
@@ -6569,6 +6565,18 @@
       invalidate: ["reshape"],
     },
     {
+      name: "ruby-align",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
+      inherited: true,
+      field_group: "*",
+      field_template: "keyword",
+      keywords: ["space-around", "start", "center", "space-between"],
+      default_value: "space-around",
+      valid_for_permission_element: true,
+      invalidate: ["layout", "paint"],
+      runtime_flag: "CssRubyAlign",
+    },
+    {
       name: "-webkit-ruby-position",
       property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
@@ -6580,7 +6588,7 @@
     },
     {
       name: "ruby-position",
-      property_methods: ["CSSValueFromComputedStyleInternal"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -6705,6 +6713,7 @@
       valid_for_highlight_legacy: true,
       valid_for_highlight: true,
       invalidate: ["layout", "paint"],
+      affected_by_zoom: true,
     },
     {
       name: "-webkit-transform-origin-x",
@@ -6886,6 +6895,7 @@
       valid_for_marker: true,
       valid_for_permission_element: true,
       valid_for_page_context: true,
+      affected_by_zoom: true,
     },
     {
       name: "z-index",
@@ -7089,6 +7099,42 @@
       },
       typedom_types: ["Length", "Percentage"],
       valid_for_page_context: true,
+    },
+    {
+      name: "scroll-start-block",
+      property_methods: ["ParseSingleValue"],
+      logical_property_group : {
+        name: "scroll-start",
+        resolver: "block"
+      },
+      runtime_flag: "CSSScrollStart",
+    },
+    {
+      name: "scroll-start-inline",
+      property_methods: ["ParseSingleValue"],
+      logical_property_group : {
+        name: "scroll-start",
+        resolver: "inline"
+      },
+      runtime_flag: "CSSScrollStart",
+    },
+    {
+      name: "scroll-start-target-block",
+      property_methods: ["ParseSingleValue"],
+      logical_property_group: {
+        name: "scroll-start-target",
+        resolver: "block",
+      },
+      runtime_flag: "CSSScrollStartTarget",
+    },
+    {
+      name: "scroll-start-target-inline",
+      property_methods: ["ParseSingleValue"],
+      logical_property_group: {
+        name: "scroll-start-target",
+        resolver: "inline",
+      },
+      runtime_flag: "CSSScrollStartTarget",
     },
     {
       name: "border-inline-start-width",
@@ -7571,30 +7617,43 @@
       runtime_flag: "ViewTransitionOnNavigation",
     },
     {
-      name: "inset-area",
+      name: "position-area",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       style_builder_custom_functions: ["value", "inherit"],
       field_group: "*",
       field_template: "external",
-      include_paths: ["third_party/blink/renderer/core/style/inset_area.h"],
-      converter: "ConvertInsetArea",
-      default_value: "InsetArea()",
-      type_name: "InsetArea",
+      include_paths: ["third_party/blink/renderer/core/style/position_area.h"],
+      converter: "ConvertPositionArea",
+      default_value: "PositionArea()",
+      type_name: "PositionArea",
       keywords: [
         "none", "top", "bottom", "center", "left", "right", "x-start", "x-end",
         "y-start", "y-end", "start", "end", "self-start", "self-end", "all"
       ],
       typedom_types: ["Keyword"],
       valid_for_position_try: true,
-      runtime_flag: "CSSAnchorPositioning",
+      runtime_flag: "CSSPositionAreaProperty",
       valid_for_permission_element: true,
-      // inset-area needs to be applied before inset properties since
+      // position-area needs to be applied before inset properties since
       // anchor() functions compute relative to the containing block that is
-      // modified by inset-area in AnchorEvaluatorImpl.
+      // modified by position-area in AnchorEvaluatorImpl.
       priority: 1,
       invalidate: ["layout", "out-of-flow", "paint"],
     },
+    {
+      name: "inset-area",
+      surrogate_for: "position-area",
+      runtime_flag: "CSSInsetAreaProperty",
 
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      keywords: [
+        "none", "top", "bottom", "center", "left", "right", "x-start", "x-end",
+        "y-start", "y-end", "start", "end", "self-start", "self-end", "all"
+      ],
+      typedom_types: ["Keyword"],
+      valid_for_position_try: true,
+      priority: 1,
+    },
     // Shorthands
     {
       name: "animation",
@@ -8136,7 +8195,15 @@
       name: "position-try",
       longhands: ["position-try-order", "position-try-options"],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
-      runtime_flag: "CSSPositionTryOrder",
+    },
+    {
+      // Variant of the "position-try" shorthand which has the new
+      // position-try-fallbacks instead of position-try-options.
+      name: "-alternative-position-try",
+      alternative_of: "position-try",
+      longhands: ["position-try-order", "position-try-fallbacks"],
+      property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
+      runtime_flag: "CSSPositionTryFallbacks",
     },
     {
       name: "scroll-margin",
@@ -8181,7 +8248,7 @@
       name: "scroll-start-target",
       longhands: ["scroll-start-target-block", "scroll-start-target-inline"],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
-      runtime_flag: "CSSScrollStart",
+      runtime_flag: "CSSScrollStartTarget",
     },
     {
       name: "scroll-timeline",

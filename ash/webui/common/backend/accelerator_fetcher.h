@@ -27,6 +27,7 @@ class AcceleratorFetcher : public common::mojom::AcceleratorFetcher,
 
   void BindInterface(
       mojo::PendingReceiver<common::mojom::AcceleratorFetcher> receiver);
+  void GetMetaKeyToDisplay(GetMetaKeyToDisplayCallback callback) override;
 
   // common::mojom::AcceleratorFetcher:
   void ObserveAcceleratorChanges(

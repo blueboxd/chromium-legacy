@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "cc/paint/paint_op_buffer_serializer.h"
 
 #include <limits>
@@ -244,7 +249,7 @@ bool PaintOpBufferSerializer::WillSerializeNextOp<float>(
     const auto& draw_record_op = static_cast<const DrawRecordOp&>(op);
     int save_count = canvas->getSaveCount();
     const PaintOpBuffer& buffer = draw_record_op.record.buffer();
-    if (LIKELY(draw_record_op.local_ctm)) {
+    if (draw_record_op.local_ctm) [[likely]] {
       // This record has a local CTM, meaning that any transforms in `buffer`
       // must be isolated from the parent record. Saving ensures that transforms
       // won't leak out. Then, `SerializeBuffer` will set `original_ctm` to the
@@ -265,7 +270,9 @@ bool PaintOpBufferSerializer::WillSerializeNextOp<float>(
   if (op.GetType() == PaintOpType::kDrawScrollingContents) {
     auto& scrolling_contents_op =
         static_cast<const DrawScrollingContentsOp&>(op);
-    gfx::PointF scroll_offset = scrolling_contents_op.GetScrollOffset(params);
+    CHECK(params.raster_inducing_scroll_offsets);
+    gfx::PointF scroll_offset = params.raster_inducing_scroll_offsets->at(
+        scrolling_contents_op.scroll_element_id);
     int save_count = canvas->getSaveCount();
     if (!scroll_offset.IsOrigin()) {
       Save(canvas, params);
@@ -275,7 +282,7 @@ bool PaintOpBufferSerializer::WillSerializeNextOp<float>(
     std::vector<size_t> offsets =
         scrolling_contents_op.display_item_list->OffsetsOfOpsToRaster(canvas);
     SerializeBuffer(canvas,
-                    scrolling_contents_op.display_item_list->paint_op_buffer_,
+                    scrolling_contents_op.display_item_list->paint_op_buffer(),
                     &offsets);
     RestoreToCount(canvas, save_count, params);
     return true;
@@ -283,6 +290,8 @@ bool PaintOpBufferSerializer::WillSerializeNextOp<float>(
 
   if (op.GetType() == PaintOpType::kDrawImageRect &&
       static_cast<const DrawImageRectOp&>(op).image.IsPaintWorklet()) {
+    // Note: This check must be kept in sync with the check in
+    // DrawImageRectOp::RasterWithFlags.
     DCHECK(options_.image_provider);
     const DrawImageRectOp& draw_op = static_cast<const DrawImageRectOp&>(op);
     ImageProvider::ScopedResult result =
@@ -307,13 +316,18 @@ bool PaintOpBufferSerializer::WillSerializeNextOp<float>(
     if (!success)
       return false;
 
-    // In DrawImageRectOp::RasterWithFlags, the save layer uses the
-    // flags_to_serialize or default (PaintFlags()) flags. At this point in the
-    // serialization, flags_to_serialize is always null as well.
-    SaveLayerOp save_layer_op(draw_op.src, PaintFlags());
-    success = SerializeOpWithFlags(canvas, save_layer_op, params, 1.0f);
-    if (!success)
-      return false;
+    if (static_cast<const DrawImageRectOp&>(op).image.NeedsLayer()) {
+      // In DrawImageRectOp::RasterWithFlags, the save layer uses the
+      // flags_to_serialize or default (PaintFlags()) flags. At this point in
+      // the serialization, flags_to_serialize is always null as well.
+      // TODO(crbug.com/343439032): See if we can be less aggressive about use
+      // of a save layer operation for CSS paint worklets since expensive.
+      SaveLayerOp save_layer_op(draw_op.src, PaintFlags());
+      success = SerializeOpWithFlags(canvas, save_layer_op, params, 1.0f);
+      if (!success) {
+        return false;
+      }
+    }
 
     SerializeBuffer(canvas, result.ReleaseAsRecord().buffer(), nullptr);
     RestoreToCount(canvas, save_count, params);

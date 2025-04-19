@@ -14,9 +14,21 @@
 
 namespace base {
 
-// Opens a content URI for read and returns the file descriptor to the caller.
+// Translates base::File::FLAG_* `open_flags` bitset to Java mode from
+// ParcelFileDescriptor#parseMode(): ("r", "w", "wt", "wa", "rw" or "rwt").
+// Disallows "w" which has been the source of android security issues.
+// Returns nullopt if `open_flags` are not supported.
+BASE_EXPORT std::optional<std::string> TranslateOpenFlagsToJavaMode(
+    uint32_t open_flags);
+
+// Opens a content URI and returns the file descriptor to the caller.
+// `open_flags` is a bitmap of base::File::FLAG_* values.
 // Returns -1 if the URI is invalid.
-BASE_EXPORT File OpenContentUriForRead(const FilePath& content_uri);
+BASE_EXPORT File OpenContentUri(const FilePath& content_uri,
+                                uint32_t open_flags);
+
+// Gets file size, or -1 if file is unknown length.
+BASE_EXPORT int64_t GetContentUriFileSize(const FilePath& content_uri);
 
 // Check whether a content URI exists.
 BASE_EXPORT bool ContentUriExists(const FilePath& content_uri);
@@ -31,10 +43,6 @@ BASE_EXPORT bool MaybeGetFileDisplayName(const FilePath& content_uri,
 
 // Deletes a content URI.
 BASE_EXPORT bool DeleteContentUri(const FilePath& content_uri);
-
-// Gets content URI's file path (eg: "content://org.chromium...") from normal
-// file path (eg: "/data/user/0/...").
-BASE_EXPORT FilePath GetContentUriFromFilePath(const FilePath& file_path);
 
 }  // namespace base
 

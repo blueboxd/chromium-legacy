@@ -527,7 +527,7 @@ CastActivity* CastActivityManager::AddMirroringActivity(
 
 void CastActivityManager::OnAppMessage(
     int channel_id,
-    const cast::channel::CastMessage& message) {
+    const openscreen::cast::proto::CastMessage& message) {
   // Note: app messages are received only after session is created.
   DVLOG(2) << "Received app message on cast channel " << channel_id;
   auto it = FindActivityByChannelId(channel_id);
@@ -1052,8 +1052,7 @@ std::string CastActivityManager::ChooseAppId(
     if (sink_capabilities.HasAll(info.required_capabilities))
       return info.app_id;
   }
-  DUMP_WILL_BE_NOTREACHED_NORETURN()
-      << "Can't determine app ID from capabilities.";
+  DUMP_WILL_BE_NOTREACHED() << "Can't determine app ID from capabilities.";
   return source.app_infos()[0].app_id;
 }
 

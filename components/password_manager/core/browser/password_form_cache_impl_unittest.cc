@@ -6,6 +6,7 @@
 
 #include "base/test/task_environment.h"
 #include "components/autofill/core/common/autofill_test_utils.h"
+#include "components/autofill/core/common/form_data_test_api.h"
 #include "components/password_manager/core/browser/fake_form_fetcher.h"
 #include "components/password_manager/core/browser/password_form_digest.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
@@ -57,9 +58,9 @@ class PasswordFormCacheTest : public testing::Test {
 
     // Fill values into the fields to save the form.
     FormData filled_form = form;
-    EXPECT_EQ(filled_form.fields.size(), 2u);
-    filled_form.fields[0].set_value(u"username");
-    filled_form.fields[1].set_value(u"password");
+    EXPECT_EQ(filled_form.fields().size(), 2u);
+    test_api(filled_form).field(0).set_value(u"username");
+    test_api(filled_form).field(1).set_value(u"password");
     form_manager->ProvisionallySave(
         filled_form, &driver(),
         base::LRUCache<PossibleUsernameFieldIdentifier, PossibleUsernameData>(
@@ -108,7 +109,7 @@ TEST_F(PasswordFormCacheTest, GetMatchedManager) {
       cache().GetMatchedManager(&driver(), form.renderer_id());
 
   ASSERT_TRUE(matched_manager->DoesManage(form.renderer_id(), &driver()));
-  for (const FormFieldData& field : form.fields) {
+  for (const FormFieldData& field : form.fields()) {
     ASSERT_TRUE(matched_manager->DoesManage(field.renderer_id(), &driver()));
     ASSERT_EQ(matched_manager,
               cache().GetMatchedManager(&driver(), field.renderer_id()));

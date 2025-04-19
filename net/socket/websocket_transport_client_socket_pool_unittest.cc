@@ -49,6 +49,7 @@
 #include "net/socket/websocket_endpoint_lock_manager.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_with_task_environment.h"
+#include "net/url_request/static_http_user_agent_settings.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -104,7 +105,7 @@ class WebSocketTransportClientSocketPoolTest : public TestWithTaskEnvironment {
             /*quic_supported_versions=*/nullptr,
             /*quic_session_pool=*/nullptr,
             /*proxy_delegate=*/nullptr,
-            /*http_user_agent_settings=*/nullptr,
+            &http_user_agent_settings_,
             /*ssl_client_context=*/nullptr,
             /*socket_performance_watcher_factory=*/nullptr,
             /*network_quality_estimator=*/nullptr,
@@ -169,6 +170,8 @@ class WebSocketTransportClientSocketPoolTest : public TestWithTaskEnvironment {
   std::unique_ptr<MockHostResolver> host_resolver_;
   MockTransportClientSocketFactory client_socket_factory_;
   WebSocketEndpointLockManager websocket_endpoint_lock_manager_;
+  const StaticHttpUserAgentSettings http_user_agent_settings_ = {"*",
+                                                                 "test-ua"};
   const CommonConnectJobParams common_connect_job_params_;
   WebSocketTransportClientSocketPool pool_;
   ClientSocketPoolTest test_base_;
@@ -928,7 +931,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest, Suspend) {
       MockTransportClientSocketFactory::Type::kFailing,
       std::vector{IPEndPoint(ParseIP("1:abcd::3:4:ff"), 80)},
       ERR_NETWORK_IO_SUSPENDED);
-  client_socket_factory_.SetRules(base::make_span(&rule, 1u));
+  client_socket_factory_.SetRules(base::span_from_ref(rule));
 
   TestCompletionCallback callback;
   ClientSocketHandle handle;
@@ -959,7 +962,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest, SuspendAsync) {
       MockTransportClientSocketFactory::Type::kPendingFailing,
       std::vector{IPEndPoint(ParseIP("1:abcd::3:4:ff"), 80)},
       ERR_NETWORK_IO_SUSPENDED);
-  client_socket_factory_.SetRules(base::make_span(&rule, 1u));
+  client_socket_factory_.SetRules(base::span_from_ref(rule));
 
   TestCompletionCallback callback;
   ClientSocketHandle handle;

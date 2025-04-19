@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/raw_ptr.h"
+#include "base/not_fatal_until.h"
 #include "base/process/memory.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -131,29 +132,6 @@ void SoftwareRenderer::EnsureScissorTestDisabled() {
   is_scissor_enabled_ = false;
 }
 
-void SoftwareRenderer::BindFramebufferToOutputSurface() {
-  DCHECK(!root_canvas_);
-
-  root_canvas_ = output_device_->BeginPaint(current_frame()->root_damage_rect);
-  if (!root_canvas_)
-    output_device_->EndPaint();
-  // `current_canvas_` may be pointing to `current_framebuffer_canvas_`. Make
-  // sure to re-assign it before destroying `current_framebuffer_canvas_`
-  current_canvas_ = root_canvas_;
-  current_framebuffer_canvas_.reset();
-}
-
-void SoftwareRenderer::BindFramebufferToTexture(
-    const AggregatedRenderPassId render_pass_id) {
-  auto it = render_pass_bitmaps_.find(render_pass_id);
-  DCHECK(it != render_pass_bitmaps_.end());
-  SkBitmap& bitmap = it->second;
-
-  current_framebuffer_canvas_ = std::make_unique<SkCanvas>(
-      bitmap, skia::LegacyDisplayGlobals::GetSkSurfaceProps());
-  current_canvas_ = current_framebuffer_canvas_.get();
-}
-
 void SoftwareRenderer::SetScissorTestRect(const gfx::Rect& scissor_rect) {
   is_scissor_enabled_ = true;
   scissor_rect_ = scissor_rect;
@@ -227,8 +205,31 @@ void SoftwareRenderer::ClearFramebuffer() {
 void SoftwareRenderer::BeginDrawingRenderPass(
     const AggregatedRenderPass* render_pass,
     bool needs_clear,
-    const gfx::Rect& render_pass_update_rect) {
-  if (render_pass_update_rect == gfx::Rect(current_viewport_size_)) {
+    const gfx::Rect& render_pass_update_rect,
+    const gfx::Size& viewport_size) {
+  if (render_pass == current_frame()->root_render_pass) {
+    DCHECK(!root_canvas_);
+
+    root_canvas_ =
+        output_device_->BeginPaint(current_frame()->root_damage_rect);
+    if (!root_canvas_) {
+      output_device_->EndPaint();
+    }
+    // `current_canvas_` may be pointing to `current_framebuffer_canvas_`. Make
+    // sure to re-assign it before destroying `current_framebuffer_canvas_`
+    current_canvas_ = root_canvas_;
+    current_framebuffer_canvas_.reset();
+  } else {
+    auto it = render_pass_bitmaps_.find(render_pass->id);
+    CHECK(it != render_pass_bitmaps_.end(), base::NotFatalUntil::M130);
+    SkBitmap& bitmap = it->second.bitmap;
+
+    current_framebuffer_canvas_ = std::make_unique<SkCanvas>(
+        bitmap, skia::LegacyDisplayGlobals::GetSkSurfaceProps());
+    current_canvas_ = current_framebuffer_canvas_.get();
+  }
+
+  if (render_pass_update_rect == gfx::Rect(viewport_size)) {
     EnsureScissorTestDisabled();
   } else {
     SetScissorTestRect(render_pass_update_rect);
@@ -384,8 +385,7 @@ void SoftwareRenderer::DrawPictureQuad(const PictureDrawQuad* quad) {
 
   const bool needs_transparency =
       SkScalarRoundToInt(quad->shared_quad_state->opacity * 255) < 255;
-  const bool disable_image_filtering =
-      disable_picture_quad_image_filtering_ || quad->nearest_neighbor;
+  const bool disable_image_filtering = quad->nearest_neighbor;
 
   TRACE_EVENT0("viz", "SoftwareRenderer::DrawPictureQuad");
 
@@ -414,7 +414,8 @@ void SoftwareRenderer::DrawPictureQuad(const PictureDrawQuad* quad) {
   raster_canvas->translate(-quad->content_rect.x(), -quad->content_rect.y());
   raster_canvas->clipRect(gfx::RectToSkRect(quad->content_rect));
   raster_canvas->scale(quad->contents_scale, quad->contents_scale);
-  quad->display_item_list->Raster(raster_canvas, &image_provider);
+  quad->display_item_list->Raster(raster_canvas, &image_provider,
+                                  &quad->raster_inducing_scroll_offsets);
   raster_canvas->restore();
 }
 
@@ -528,7 +529,7 @@ void SoftwareRenderer::DrawRenderPassQuad(
   auto it = render_pass_bitmaps_.find(quad->render_pass_id);
   if (it == render_pass_bitmaps_.end())
     return;
-  SkBitmap& source_bitmap = it->second;
+  SkBitmap& source_bitmap = it->second.bitmap;
 
   SkRect dest_rect = gfx::RectFToSkRect(QuadVertexRect());
   SkRect dest_visible_rect =
@@ -679,10 +680,11 @@ void SoftwareRenderer::CopyDrawnRenderPass(
     const auto& blit_request = request->blit_request();
 
     auto representation = resource_provider()->GetSharedImageRepresentation(
-        blit_request.mailbox(0).mailbox, blit_request.mailbox(0).sync_token);
+        blit_request.mailbox(), blit_request.sync_token());
 
     if (!representation) {
       DLOG(ERROR) << "BlitRequest: Couldn't create shared image representation";
+      return;
     }
 
     const auto dest_rect =
@@ -733,9 +735,8 @@ void SoftwareRenderer::CopyDrawnRenderPass(
 
     request->SendResult(std::make_unique<CopyOutputTextureResult>(
         CopyOutputResult::Format::RGBA, geometry.result_selection,
-        CopyOutputResult::TextureResult(
-            request->blit_request().mailbox(0).mailbox, gpu::SyncToken(),
-            representation->color_space()),
+        CopyOutputResult::TextureResult(request->blit_request().mailbox(),
+                                        representation->color_space()),
         CopyOutputResult::ReleaseCallbacks()));
 
     return;
@@ -1006,7 +1007,7 @@ void SoftwareRenderer::UpdateRenderPassTextures(
     gfx::Size required_size = render_pass_it->second.size;
     // The RenderPassRequirements have a hint, which is only used for gpu
     // compositing so it is ignored here.
-    const SkBitmap& bitmap = pair.second;
+    const SkBitmap& bitmap = pair.second.bitmap;
 
     bool size_appropriate = bitmap.width() >= required_size.width() &&
                             bitmap.height() >= required_size.height();
@@ -1025,8 +1026,8 @@ void SoftwareRenderer::AllocateRenderPassResourceIfNeeded(
     const RenderPassRequirements& requirements) {
   auto it = render_pass_bitmaps_.find(render_pass_id);
   if (it != render_pass_bitmaps_.end()) {
-    DCHECK(it->second.width() >= requirements.size.width() &&
-           it->second.height() >= requirements.size.height());
+    DCHECK(it->second.bitmap.width() >= requirements.size.width() &&
+           it->second.bitmap.height() >= requirements.size.height());
     return;
   }
 
@@ -1056,10 +1057,28 @@ bool SoftwareRenderer::IsRenderPassResourceAllocated(
 
 gfx::Size SoftwareRenderer::GetRenderPassBackingPixelSize(
     const AggregatedRenderPassId& render_pass_id) {
-  auto it = render_pass_bitmaps_.find(render_pass_id);
-  DCHECK(it != render_pass_bitmaps_.end());
-  SkBitmap& bitmap = it->second;
+  SkBitmap& bitmap = render_pass_bitmaps_.at(render_pass_id).bitmap;
   return gfx::Size(bitmap.width(), bitmap.height());
+}
+
+void SoftwareRenderer::SetRenderPassBackingDrawnRect(
+    const AggregatedRenderPassId& render_pass_id,
+    const gfx::Rect& drawn_rect) {
+  render_pass_bitmaps_.at(render_pass_id).drawn_rect = drawn_rect;
+}
+
+gfx::Rect SoftwareRenderer::GetRenderPassBackingDrawnRect(
+    const AggregatedRenderPassId& render_pass_id) const {
+  auto it = render_pass_bitmaps_.find(render_pass_id);
+  if (it != render_pass_bitmaps_.end()) {
+    return it->second.drawn_rect;
+  } else {
+    // DirectRenderer can call this before it has allocated a render pass
+    // backing if this is the first contiguous frame we're seeing
+    // |render_pass_id|. This can happen because it calculates the render pass
+    // scissor rect before it actually allocates the backing.
+    return gfx::Rect();
+  }
 }
 
 }  // namespace viz

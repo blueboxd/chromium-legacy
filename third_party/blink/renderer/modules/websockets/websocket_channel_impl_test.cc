@@ -6,18 +6,21 @@
 
 #include <stdint.h>
 #include <string.h>
+
 #include <memory>
 
+#include "base/containers/span.h"
 #include "base/functional/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
+#include "net/storage_access_api/status.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/websockets/websocket_connector.mojom-blink.h"
+#include "third_party/blink/public/platform/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/websocket_handshake_throttle.h"
 #include "third_party/blink/renderer/bindings/core/v8/capture_source_location.h"
@@ -67,7 +70,7 @@ class MockWebSocketChannelClient
       const Vector<base::span<const char>>& data) override {
     Vector<char> flatten;
     for (const auto& span : data) {
-      flatten.Append(span.data(), static_cast<wtf_size_t>(span.size()));
+      flatten.AppendSpan(span);
     }
     DidReceiveBinaryMessageMock(flatten);
   }
@@ -103,21 +106,23 @@ class MockWebSocketHandshakeThrottle : public WebSocketHandshakeThrottle {
 class WebSocketChannelImplTestBase : public PageTestBase {
  public:
   void SetUp() override {
-    local_frame_client_ = MakeGarbageCollected<EmptyLocalFrameClient>();
-    local_frame_client_->GetBrowserInterfaceBroker().SetBinderForTesting(
-        mojom::blink::WebSocketConnector::Name_,
-        WTF::BindRepeating(&WebSocketChannelImplTestBase::BindWebSocketConnector,
-                  GetWeakPtr()));
+    PageTestBase::SetUp();
 
-    PageTestBase::SetupPageWithClients(nullptr /* page_clients */,
-                                       local_frame_client_.Get());
+    GetFrame().GetBrowserInterfaceBroker().SetBinderForTesting(
+        mojom::blink::WebSocketConnector::Name_,
+        WTF::BindRepeating(
+            &WebSocketChannelImplTestBase::BindWebSocketConnector,
+            GetWeakPtr()));
+
     const KURL page_url("http://example.com/");
     NavigateTo(page_url);
   }
 
   void TearDown() override {
-    local_frame_client_->GetBrowserInterfaceBroker().SetBinderForTesting(
+    GetFrame().GetBrowserInterfaceBroker().SetBinderForTesting(
         mojom::blink::WebSocketConnector::Name_, {});
+
+    PageTestBase::TearDown();
   }
 
   // These need to be implemented in the subclass.
@@ -216,7 +221,7 @@ class WebSocketChannelImplTest : public WebSocketChannelImplTestBase {
         const Vector<String>& requested_protocols,
         const net::SiteForCookies& site_for_cookies,
         const String& user_agent,
-        bool has_storage_access,
+        net::StorageAccessApiStatus storage_access_api_status,
         mojo::PendingRemote<network::mojom::blink::WebSocketHandshakeClient>
             handshake_client,
         const std::optional<base::UnguessableToken>& throttling_profile_id)
@@ -326,22 +331,22 @@ class WebSocketChannelImplTest : public WebSocketChannelImplTestBase {
   Vector<uint8_t> ReadDataFromDataPipe(
       mojo::ScopedDataPipeConsumerHandle& readable,
       size_t bytes_to_read) {
-    const void* buffer;
-    size_t num_bytes = bytes_to_read;
+    base::span<const uint8_t> buffer;
     const MojoResult begin_result =
-        readable->BeginReadData(&buffer, &num_bytes, MOJO_READ_DATA_FLAG_NONE);
+        readable->BeginReadData(MOJO_READ_DATA_FLAG_NONE, buffer);
 
     DCHECK_EQ(begin_result, MOJO_RESULT_OK);
-    if (num_bytes < bytes_to_read) {
+    if (buffer.size() < bytes_to_read) {
       ADD_FAILURE() << "ReadDataFromDataPipe expected " << bytes_to_read
-                    << " bytes but only received " << num_bytes << " bytes";
+                    << " bytes but only received " << buffer.size() << " bytes";
       return Vector<uint8_t>();
     }
+    buffer = buffer.first(bytes_to_read);
 
     Vector<uint8_t> data_to_pass;
-    data_to_pass.Append(static_cast<const uint8_t*>(buffer), bytes_to_read);
+    data_to_pass.AppendRange(buffer.begin(), buffer.end());
 
-    const MojoResult end_result = readable->EndReadData(bytes_to_read);
+    const MojoResult end_result = readable->EndReadData(buffer.size());
     DCHECK_EQ(end_result, MOJO_RESULT_OK);
 
     return data_to_pass;
@@ -833,10 +838,12 @@ TEST_F(WebSocketChannelImplTest, ReceiveText) {
   auto websocket = Connect(4 * 1024, &writable, &readable, &client);
   ASSERT_TRUE(websocket);
 
-  size_t num_bytes = 6;
-  ASSERT_EQ(MOJO_RESULT_OK, writable->WriteData("FOOBAR", &num_bytes,
-                                                MOJO_WRITE_DATA_FLAG_NONE));
-  EXPECT_EQ(num_bytes, 6u);
+  size_t actually_written_bytes = 0;
+  ASSERT_EQ(
+      MOJO_RESULT_OK,
+      writable->WriteData(base::byte_span_from_cstring("FOOBAR"),
+                          MOJO_WRITE_DATA_FLAG_NONE, actually_written_bytes));
+  EXPECT_EQ(actually_written_bytes, 6u);
 
   client->OnDataFrame(true, WebSocketMessageType::TEXT, 3);
   client->OnDataFrame(true, WebSocketMessageType::TEXT, 3);
@@ -856,10 +863,12 @@ TEST_F(WebSocketChannelImplTest, ReceiveTextContinuation) {
   auto websocket = Connect(4 * 1024, &writable, &readable, &client);
   ASSERT_TRUE(websocket);
 
-  size_t num_bytes = 3;
-  ASSERT_EQ(MOJO_RESULT_OK,
-            writable->WriteData("BAZ", &num_bytes, MOJO_WRITE_DATA_FLAG_NONE));
-  EXPECT_EQ(num_bytes, 3u);
+  size_t actually_written_bytes = 0;
+  ASSERT_EQ(
+      MOJO_RESULT_OK,
+      writable->WriteData(base::byte_span_from_cstring("BAZ"),
+                          MOJO_WRITE_DATA_FLAG_NONE, actually_written_bytes));
+  EXPECT_EQ(actually_written_bytes, 3u);
 
   client->OnDataFrame(false, WebSocketMessageType::TEXT, 1);
   client->OnDataFrame(false, WebSocketMessageType::CONTINUATION, 1);
@@ -882,11 +891,12 @@ TEST_F(WebSocketChannelImplTest, ReceiveTextNonLatin1) {
   auto websocket = Connect(4 * 1024, &writable, &readable, &client);
   ASSERT_TRUE(websocket);
 
-  size_t num_bytes = 6;
+  size_t actually_written_bytes = 0;
   ASSERT_EQ(MOJO_RESULT_OK,
-            writable->WriteData("\xe7\x8b\x90\xe0\xa4\x94", &num_bytes,
-                                MOJO_WRITE_DATA_FLAG_NONE));
-  EXPECT_EQ(num_bytes, 6u);
+            writable->WriteData(
+                base::byte_span_from_cstring("\xe7\x8b\x90\xe0\xa4\x94"),
+                MOJO_WRITE_DATA_FLAG_NONE, actually_written_bytes));
+  EXPECT_EQ(actually_written_bytes, 6u);
 
   client->OnDataFrame(true, WebSocketMessageType::TEXT, 6);
   test::RunPendingTasks();
@@ -907,11 +917,12 @@ TEST_F(WebSocketChannelImplTest, ReceiveTextNonLatin1Continuation) {
   auto websocket = Connect(4 * 1024, &writable, &readable, &client);
   ASSERT_TRUE(websocket);
 
-  size_t num_bytes = 6;
+  size_t actually_written_bytes = 0;
   ASSERT_EQ(MOJO_RESULT_OK,
-            writable->WriteData("\xe7\x8b\x90\xe0\xa4\x94", &num_bytes,
-                                MOJO_WRITE_DATA_FLAG_NONE));
-  EXPECT_EQ(num_bytes, 6u);
+            writable->WriteData(
+                base::byte_span_from_cstring("\xe7\x8b\x90\xe0\xa4\x94"),
+                MOJO_WRITE_DATA_FLAG_NONE, actually_written_bytes));
+  EXPECT_EQ(actually_written_bytes, 6u);
 
   client->OnDataFrame(false, WebSocketMessageType::TEXT, 2);
   client->OnDataFrame(false, WebSocketMessageType::CONTINUATION, 2);
@@ -934,10 +945,12 @@ TEST_F(WebSocketChannelImplTest, ReceiveBinary) {
   auto websocket = Connect(4 * 1024, &writable, &readable, &client);
   ASSERT_TRUE(websocket);
 
-  size_t num_bytes = 3;
-  ASSERT_EQ(MOJO_RESULT_OK,
-            writable->WriteData("FOO", &num_bytes, MOJO_WRITE_DATA_FLAG_NONE));
-  EXPECT_EQ(num_bytes, 3u);
+  size_t actually_written_bytes = 0;
+  ASSERT_EQ(
+      MOJO_RESULT_OK,
+      writable->WriteData(base::byte_span_from_cstring("FOO"),
+                          MOJO_WRITE_DATA_FLAG_NONE, actually_written_bytes));
+  EXPECT_EQ(actually_written_bytes, 3u);
 
   client->OnDataFrame(true, WebSocketMessageType::BINARY, 3);
   test::RunPendingTasks();
@@ -957,10 +970,12 @@ TEST_F(WebSocketChannelImplTest, ReceiveBinaryContinuation) {
   auto websocket = Connect(4 * 1024, &writable, &readable, &client);
   ASSERT_TRUE(websocket);
 
-  size_t num_bytes = 3;
-  ASSERT_EQ(MOJO_RESULT_OK,
-            writable->WriteData("BAZ", &num_bytes, MOJO_WRITE_DATA_FLAG_NONE));
-  EXPECT_EQ(num_bytes, 3u);
+  size_t actually_written_bytes = 0;
+  ASSERT_EQ(
+      MOJO_RESULT_OK,
+      writable->WriteData(base::byte_span_from_cstring("BAZ"),
+                          MOJO_WRITE_DATA_FLAG_NONE, actually_written_bytes));
+  EXPECT_EQ(actually_written_bytes, 3u);
 
   client->OnDataFrame(false, WebSocketMessageType::BINARY, 1);
   client->OnDataFrame(false, WebSocketMessageType::CONTINUATION, 1);
@@ -988,11 +1003,13 @@ TEST_F(WebSocketChannelImplTest, ReceiveBinaryWithNullBytes) {
   auto websocket = Connect(4 * 1024, &writable, &readable, &client);
   ASSERT_TRUE(websocket);
 
-  size_t num_bytes = 12;
-  ASSERT_EQ(MOJO_RESULT_OK,
-            writable->WriteData("\0A3B\0ZQU\0\0\0\0", &num_bytes,
-                                MOJO_WRITE_DATA_FLAG_NONE));
-  EXPECT_EQ(num_bytes, 12u);
+  using std::string_view_literals::operator""sv;  // For NUL characters.
+  size_t actually_written_bytes = 0;
+  ASSERT_EQ(
+      MOJO_RESULT_OK,
+      writable->WriteData(base::as_byte_span("\0A3B\0ZQU\0\0\0\0"sv),
+                          MOJO_WRITE_DATA_FLAG_NONE, actually_written_bytes));
+  EXPECT_EQ(actually_written_bytes, 12u);
 
   client->OnDataFrame(true, WebSocketMessageType::BINARY, 3);
   client->OnDataFrame(true, WebSocketMessageType::BINARY, 3);
@@ -1015,11 +1032,12 @@ TEST_F(WebSocketChannelImplTest, ReceiveBinaryNonLatin1UTF8) {
   auto websocket = Connect(4 * 1024, &writable, &readable, &client);
   ASSERT_TRUE(websocket);
 
-  size_t num_bytes = 6;
+  size_t actually_written_bytes = 0;
   ASSERT_EQ(MOJO_RESULT_OK,
-            writable->WriteData("\xe7\x8b\x90\xe0\xa4\x94", &num_bytes,
-                                MOJO_WRITE_DATA_FLAG_NONE));
-  EXPECT_EQ(num_bytes, 6u);
+            writable->WriteData(
+                base::byte_span_from_cstring("\xe7\x8b\x90\xe0\xa4\x94"),
+                MOJO_WRITE_DATA_FLAG_NONE, actually_written_bytes));
+  EXPECT_EQ(actually_written_bytes, 6u);
 
   client->OnDataFrame(true, WebSocketMessageType::BINARY, 6);
   test::RunPendingTasks();
@@ -1040,11 +1058,12 @@ TEST_F(WebSocketChannelImplTest, ReceiveBinaryNonLatin1UTF8Continuation) {
   auto websocket = Connect(4 * 1024, &writable, &readable, &client);
   ASSERT_TRUE(websocket);
 
-  size_t num_bytes = 6;
+  size_t actually_written_bytes = 0;
   ASSERT_EQ(MOJO_RESULT_OK,
-            writable->WriteData("\xe7\x8b\x90\xe0\xa4\x94", &num_bytes,
-                                MOJO_WRITE_DATA_FLAG_NONE));
-  EXPECT_EQ(num_bytes, 6u);
+            writable->WriteData(
+                base::byte_span_from_cstring("\xe7\x8b\x90\xe0\xa4\x94"),
+                MOJO_WRITE_DATA_FLAG_NONE, actually_written_bytes));
+  EXPECT_EQ(actually_written_bytes, 6u);
 
   client->OnDataFrame(false, WebSocketMessageType::BINARY, 2);
   client->OnDataFrame(false, WebSocketMessageType::CONTINUATION, 2);
@@ -1067,10 +1086,12 @@ TEST_F(WebSocketChannelImplTest, ReceiveBinaryNonUTF8) {
   auto websocket = Connect(4 * 1024, &writable, &readable, &client);
   ASSERT_TRUE(websocket);
 
-  size_t num_bytes = 2;
-  ASSERT_EQ(MOJO_RESULT_OK, writable->WriteData("\x80\xff", &num_bytes,
-                                                MOJO_WRITE_DATA_FLAG_NONE));
-  EXPECT_EQ(num_bytes, 2u);
+  size_t actually_written_bytes = 0;
+  ASSERT_EQ(
+      MOJO_RESULT_OK,
+      writable->WriteData(base::byte_span_from_cstring("\x80\xff"),
+                          MOJO_WRITE_DATA_FLAG_NONE, actually_written_bytes));
+  EXPECT_EQ(actually_written_bytes, 2u);
 
   client->OnDataFrame(true, WebSocketMessageType::BINARY, 2);
   test::RunPendingTasks();
@@ -1091,10 +1112,12 @@ TEST_F(WebSocketChannelImplTest, ReceiveWithExplicitBackpressure) {
   auto websocket = Connect(4 * 1024, &writable, &readable, &client);
   ASSERT_TRUE(websocket);
 
-  size_t num_bytes = 3;
-  ASSERT_EQ(MOJO_RESULT_OK,
-            writable->WriteData("abc", &num_bytes, MOJO_WRITE_DATA_FLAG_NONE));
-  EXPECT_EQ(num_bytes, 3u);
+  size_t actually_written_bytes = 0;
+  ASSERT_EQ(
+      MOJO_RESULT_OK,
+      writable->WriteData(base::byte_span_from_cstring("abc"),
+                          MOJO_WRITE_DATA_FLAG_NONE, actually_written_bytes));
+  EXPECT_EQ(actually_written_bytes, 3u);
 
   Channel()->ApplyBackpressure();
 
@@ -1138,24 +1161,28 @@ TEST_F(WebSocketChannelImplTest,
   test::RunPendingTasks();
 
   checkpoint.Call(1);
-  size_t num_bytes = 2;
-  ASSERT_EQ(MOJO_RESULT_OK,
-            writable->WriteData("ab", &num_bytes, MOJO_WRITE_DATA_FLAG_NONE));
-  EXPECT_EQ(num_bytes, 2u);
+  size_t actually_written_bytes = 0;
+  ASSERT_EQ(
+      MOJO_RESULT_OK,
+      writable->WriteData(base::byte_span_from_cstring("ab"),
+                          MOJO_WRITE_DATA_FLAG_NONE, actually_written_bytes));
+  EXPECT_EQ(actually_written_bytes, 2u);
   test::RunPendingTasks();
 
   checkpoint.Call(2);
-  num_bytes = 2;
-  ASSERT_EQ(MOJO_RESULT_OK,
-            writable->WriteData("cd", &num_bytes, MOJO_WRITE_DATA_FLAG_NONE));
-  EXPECT_EQ(num_bytes, 2u);
+  ASSERT_EQ(
+      MOJO_RESULT_OK,
+      writable->WriteData(base::byte_span_from_cstring("cd"),
+                          MOJO_WRITE_DATA_FLAG_NONE, actually_written_bytes));
+  EXPECT_EQ(actually_written_bytes, 2u);
   test::RunPendingTasks();
 
   checkpoint.Call(3);
-  num_bytes = 4;
-  ASSERT_EQ(MOJO_RESULT_OK,
-            writable->WriteData("efgh", &num_bytes, MOJO_WRITE_DATA_FLAG_NONE));
-  EXPECT_EQ(num_bytes, 4u);
+  ASSERT_EQ(
+      MOJO_RESULT_OK,
+      writable->WriteData(base::byte_span_from_cstring("efgh"),
+                          MOJO_WRITE_DATA_FLAG_NONE, actually_written_bytes));
+  EXPECT_EQ(actually_written_bytes, 4u);
   test::RunPendingTasks();
 
   checkpoint.Call(4);
@@ -1169,10 +1196,11 @@ TEST_F(WebSocketChannelImplTest,
   test::RunPendingTasks();
 
   checkpoint.Call(6);
-  num_bytes = 4;
-  ASSERT_EQ(MOJO_RESULT_OK,
-            writable->WriteData("ijkl", &num_bytes, MOJO_WRITE_DATA_FLAG_NONE));
-  EXPECT_EQ(num_bytes, 4u);
+  ASSERT_EQ(
+      MOJO_RESULT_OK,
+      writable->WriteData(base::byte_span_from_cstring("ijkl"),
+                          MOJO_WRITE_DATA_FLAG_NONE, actually_written_bytes));
+  EXPECT_EQ(actually_written_bytes, 4u);
   test::RunPendingTasks();
 }
 
@@ -1615,7 +1643,7 @@ class MockWebSocketConnector : public mojom::blink::WebSocketConnector {
        const Vector<String>&,
        const net::SiteForCookies&,
        const String&,
-       bool,
+       net::StorageAccessApiStatus,
        mojo::PendingRemote<network::mojom::blink::WebSocketHandshakeClient>,
        const std::optional<base::UnguessableToken>&));
 };

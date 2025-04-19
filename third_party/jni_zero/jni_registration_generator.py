@@ -5,6 +5,7 @@
 
 import collections
 import functools
+import hashlib
 import itertools
 import multiprocessing
 import os
@@ -82,7 +83,7 @@ def _Flatten(jni_objs_by_path, paths):
   return itertools.chain(*(jni_objs_by_path[p] for p in paths))
 
 
-def _Generate(options, native_sources, java_sources):
+def _Generate(options, native_sources, java_sources, priority_java_sources):
   """Generates files required to perform JNI registration.
 
   Generates a srcjar containing a single class, GEN_JNI, that contains all
@@ -97,20 +98,34 @@ def _Generate(options, native_sources, java_sources):
         dependency tree. The source of truth.
     java_sources: A list of .jni.pickle or .java file paths. Used to assert
         against native_sources.
+    priority_java_sources: A list of .jni.pickle or .java file paths. Used to
+        put these listed java files first in multiplexing.
   """
-  # The native-based sources are the "source of truth" - the Java based ones
-  # will be used later to generate stubs and make assertions.
-  jni_objs_by_path = _LoadJniObjs(set(native_sources + java_sources), options)
+  native_sources_set = set(native_sources)
+  java_sources_set = set(java_sources)
+
+  jni_objs_by_path = _LoadJniObjs(native_sources_set | java_sources_set,
+                                  options)
   _FilterJniObjs(jni_objs_by_path, options)
 
   dicts = []
-  for jni_obj in _Flatten(jni_objs_by_path, native_sources):
+  for jni_obj in _Flatten(jni_objs_by_path,
+                          native_sources_set & java_sources_set):
     dicts.append(DictionaryGenerator(jni_obj, options).Generate())
-  # Sort to make output deterministic.
-  dicts.sort(key=lambda d: d['FULL_CLASS_NAME'])
 
-  stubs = _GenerateStubsAndAssert(options, jni_objs_by_path, native_sources,
-                                  java_sources)
+  priority_java_sources = set(
+      priority_java_sources) if priority_java_sources else {}
+  # Sort to make output deterministic, and to put priority_java_sources at the
+  # top.
+  dicts.sort(key=lambda d: (d['FILE_PATH'] not in priority_java_sources, d[
+      'FULL_CLASS_NAME']))
+
+  whole_hash = None
+  priority_hash = None
+  if options.enable_jni_multiplexing:
+    whole_hash, priority_hash = _GenerateHashes(dicts, priority_java_sources)
+  stubs = _GenerateStubsAndAssert(options, jni_objs_by_path, native_sources_set,
+                                  java_sources_set)
   combined_dict = {}
   for key in MERGEABLE_KEYS:
     combined_dict[key] = ''.join(d.get(key, '') for d in dicts)
@@ -141,20 +156,20 @@ def _Generate(options, native_sources, java_sources):
         set(combined_dict['PROXY_NATIVE_METHOD_ARRAY'].split('},\n')))
     combined_dict['PROXY_NATIVE_METHOD_ARRAY'] = '},\n'.join(
         p for p in proxy_native_array_list if p != '') + '}'
-    signature_to_cases = collections.defaultdict(list)
+    signature_to_cpp_calls = collections.defaultdict(list)
     for d in dicts:
-      for signature, cases in d['SIGNATURE_TO_CASES'].items():
-        signature_to_cases[signature].extend(cases)
-    combined_dict[
-        'FORWARDING_PROXY_METHODS'] = _InsertMultiplexingSwitchNumbers(
-            signature_to_cases, combined_dict['FORWARDING_PROXY_METHODS'],
-            short_gen_jni_class)
+      for signature, cases in d['SIGNATURE_TO_CPP_CALLS'].items():
+        signature_to_cpp_calls[signature].extend(cases)
+    combined_dict['FORWARDING_PROXY_METHODS'] = _InsertMultiplexingSwitchCases(
+        signature_to_cpp_calls, combined_dict['FORWARDING_PROXY_METHODS'],
+        short_gen_jni_class)
     combined_dict['FORWARDING_CALLS'] = _AddForwardingCalls(
-        signature_to_cases, short_gen_jni_class)
+        signature_to_cpp_calls, short_gen_jni_class)
 
   if options.header_path:
     combined_dict['NAMESPACE'] = options.namespace or ''
-    header_content = CreateFromDict(gen_jni_class, options, combined_dict)
+    header_content = CreateHeaderFromDict(gen_jni_class, options, combined_dict,
+                                          whole_hash, priority_hash)
     with common.atomic_output(options.header_path, mode='w') as f:
       f.write(header_content)
 
@@ -167,7 +182,11 @@ def _Generate(options, native_sources, java_sources):
         common.add_to_zip_hermetic(
             srcjar,
             f'{short_gen_jni_class.full_name_with_slashes}.java',
-            data=CreateProxyJavaFromDict(options, gen_jni_class, combined_dict))
+            data=CreateProxyJavaFromDict(options,
+                                         gen_jni_class,
+                                         combined_dict,
+                                         whole_hash=whole_hash,
+                                         priority_hash=priority_hash))
         # org/jni_zero/GEN_JNI.java
         common.add_to_zip_hermetic(
             srcjar,
@@ -188,10 +207,8 @@ def _Generate(options, native_sources, java_sources):
                                          stub_methods=stub_methods_string))
 
 
-def _GenerateStubsAndAssert(options, jni_objs_by_path, native_sources,
-                            java_sources):
-  native_sources_set = set(native_sources)
-  java_sources_set = set(java_sources)
+def _GenerateStubsAndAssert(options, jni_objs_by_path, native_sources_set,
+                            java_sources_set):
   native_only = native_sources_set - java_sources_set
   java_only = java_sources_set - native_sources_set
 
@@ -228,6 +245,29 @@ Unneeded Java files:
   return [_GenerateStubs(o.proxy_natives) for o in java_only_jni_objs]
 
 
+def _GenerateHashes(dicts, priority_java_sources):
+  # We assume that if we have identical files and they are in the same order, we
+  # will have switch number alignment. We do this, instead of directly
+  # inspecting the switch numbers, because differentiating the priority sources
+  # is a big pain.
+  whole_hash = hashlib.md5()
+  if priority_java_sources:
+    priority_hash = hashlib.md5()
+  else:
+    priority_hash = whole_hash
+  for d in dicts:
+    path = os.path.relpath(d['FILE_PATH'], start=os.path.dirname(__file__))
+    encoded = path.encode('utf-8')
+    whole_hash.update(encoded)
+    if path in priority_java_sources:
+      priority_hash.update(encoded)
+  uint64_t_max = (1 << 64) - 1
+  int64_t_min = -(1 << 63)
+  whole_hash_uint = int(whole_hash.hexdigest(), 16) % uint64_t_max
+  priority_hash_uint = int(priority_hash.hexdigest(), 16) % uint64_t_max
+  return whole_hash_uint + int64_t_min, priority_hash_uint + int64_t_min
+
+
 def _GenerateStubs(natives):
   final_string = ''
   for native in natives:
@@ -248,26 +288,24 @@ def _GenerateStubs(natives):
   return final_string
 
 
-def _InsertMultiplexingSwitchNumbers(signature_to_cases, java_functions_string,
-                                     short_gen_jni_class):
+def _InsertMultiplexingSwitchCases(signature_to_cpp_calls,
+                                   java_functions_string, short_gen_jni_class):
   switch_case_method_name_re = re.compile('return (\w+)\(')
   java_function_call_re = re.compile('public static \S+ (\w+)\(')
   method_to_switch_num = {}
-  for signature, cases in sorted(signature_to_cases.items()):
+  for signature, cases in sorted(signature_to_cpp_calls.items()):
     for i, case in enumerate(cases):
-      assert _SWITCH_NUM_TO_BE_INERSERTED_LATER_TOKEN in case
       method_name = switch_case_method_name_re.search(case).group(1)
       method_to_switch_num[method_name] = i
-      cases[i] = case.replace(_SWITCH_NUM_TO_BE_INERSERTED_LATER_TOKEN, str(i))
+      if len(cases) > 1:
+        cases[i] = f'''          case {i}:
+             {case}'''
 
   swaps = {}
   for match in java_function_call_re.finditer(java_functions_string):
-    unhashed_java_name = match.group(1)
-    is_test_only = jni_generator.NameIsTestOnly(unhashed_java_name)
-    hashed = proxy.create_hashed_method_name(unhashed_java_name, is_test_only)
-    fully_qualified_hash = f'{short_gen_jni_class.full_name_with_slashes}/{hashed}'
-    cpp_hash_name = 'Java_' + common.escape_class_name(fully_qualified_hash)
-    switch_num = method_to_switch_num[cpp_hash_name]
+    java_name = match.group(1)
+    cpp_full_name = 'Java_' + common.escape_class_name(java_name)
+    switch_num = method_to_switch_num[cpp_full_name]
     replace_location = java_functions_string.find(
         _SWITCH_NUM_TO_BE_INERSERTED_LATER_TOKEN, match.end())
     swaps[replace_location] = switch_num
@@ -284,45 +322,51 @@ def _InsertMultiplexingSwitchNumbers(signature_to_cases, java_functions_string,
   return new_java_functions_string
 
 
-
-
-def _AddForwardingCalls(signature_to_cases, short_gen_jni_class):
-  template = string.Template("""
-JNI_BOUNDARY_EXPORT ${RETURN} Java_${CLASS_NAME}_${PROXY_SIGNATURE}(
+def _AddForwardingCalls(signature_to_cpp_calls, short_gen_jni_class):
+  fn_def_template = string.Template("""
+JNI_BOUNDARY_EXPORT ${RETURN} Java_${PROXY_FN_NAME}(
     JNIEnv* env,
     jclass jcaller,
     ${PARAMS_IN_STUB}) {
-        switch (switch_num) {
-          ${CASES}
-          default:
-            JNI_ZERO_ILOG("${CLASS_NAME}_${PROXY_SIGNATURE} was called with an \
-invalid switch number: %d", switch_num);
-            JNI_ZERO_CHECK(false);
-            return${DEFAULT_RETURN};
-        }
+${FN_BODY}
 }""")
+  switch_body_template = string.Template("""
+        switch (switch_num) {
+${CASES}
+          default:
+            JNI_ZERO_DCHECK(false);
+            return${DEFAULT_RETURN};
+        }""")
 
-  switch_statements = []
-  for signature, cases in sorted(signature_to_cases.items()):
-    params_in_stub = _GetJavaToNativeParamsList(signature.param_types)
-    switch_statements.append(
-        template.substitute({
-            'RETURN':
-            signature.return_type.to_cpp(),
-            'CLASS_NAME':
-            common.escape_class_name(
-                short_gen_jni_class.full_name_with_slashes),
-            'PROXY_SIGNATURE':
-            common.escape_class_name(_GetMultiplexProxyName(signature)),
-            'PARAMS_IN_STUB':
-            params_in_stub,
-            'CASES':
-            ''.join(cases),
-            'DEFAULT_RETURN':
-            '' if signature.return_type.is_void() else ' {}',
+  forwarding_function_definitons = []
+  for signature, cases in sorted(signature_to_cpp_calls.items()):
+    param_strings, _ = _GetMultiplexingParamsList(signature.param_types)
+    java_class_name = common.escape_class_name(
+        short_gen_jni_class.full_name_with_slashes)
+    java_function_name = common.escape_class_name(
+        _GetMultiplexProxyName(signature))
+    proxy_function_name = f'{java_class_name}_{java_function_name}'
+    all_cases = '\n'.join(cases)
+    if len(cases) > 1:
+      fn_body = switch_body_template.substitute({
+          'PROXY_FN_NAME':
+          proxy_function_name,
+          'CASES':
+          all_cases,
+          'DEFAULT_RETURN':
+          '' if signature.return_type.is_void() else ' {}',
+      })
+    else:
+      fn_body = f'        {all_cases}'
+    forwarding_function_definitons.append(
+        fn_def_template.substitute({
+            'RETURN': signature.return_type.to_cpp(),
+            'PROXY_FN_NAME': proxy_function_name,
+            'PARAMS_IN_STUB': ', '.join(param_strings),
+            'FN_BODY': fn_body,
         }))
 
-  return ''.join(s for s in switch_statements)
+  return ''.join(s for s in forwarding_function_definitons)
 
 
 def _SetProxyRegistrationFields(options, gen_jni_class, registration_dict):
@@ -415,7 +459,9 @@ def CreateProxyJavaFromDict(options,
                             gen_jni_class,
                             registration_dict,
                             stub_methods='',
-                            forwarding=False):
+                            forwarding=False,
+                            whole_hash=None,
+                            priority_hash=None):
   template = string.Template("""\
 // Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
@@ -443,7 +489,13 @@ ${METHODS}
         'REQUIRE_MOCK': str(options.require_mocks).lower(),
     })
   else:
-    fields = ''
+    if options.enable_jni_multiplexing:
+      fields = f'''\
+    public static final long WHOLE_HASH = {whole_hash}L;
+    public static final long PRIORITY_HASH = {priority_hash}L;
+'''
+    else:
+      fields = ''
 
   if forwarding:
     methods = registration_dict['FORWARDING_PROXY_METHODS']
@@ -459,7 +511,8 @@ ${METHODS}
   })
 
 
-def CreateFromDict(gen_jni_class, options, registration_dict):
+def CreateHeaderFromDict(gen_jni_class, options, registration_dict, whole_hash,
+                         priority_hash):
   """Returns the content of the header file."""
   header_guard = os.path.splitext(options.header_path)[0].upper() + '_'
   header_guard = re.sub(r'[/.-]', '_', header_guard)
@@ -474,7 +527,7 @@ def CreateFromDict(gen_jni_class, options, registration_dict):
   registration_dict['EPILOGUE'] = epilogue
   template = string.Template("""\
 ${PREAMBLE}
-
+${POSSIBLE_MULTIPLEXING_HASHES}
 ${CLASS_ACCESSORS}
 // Forward declarations (methods).
 
@@ -486,31 +539,49 @@ ${EPILOGUE}
   _SetProxyRegistrationFields(options, gen_jni_class, registration_dict)
   if not options.enable_jni_multiplexing:
     registration_dict['FORWARDING_CALLS'] = ''
+    registration_dict['POSSIBLE_MULTIPLEXING_HASHES'] = ''
+  else:
+    module_name = ''
+    if options.module_name:
+      module_name = options.module_name
+    registration_dict['POSSIBLE_MULTIPLEXING_HASHES'] = f'''\
+extern const int64_t kJniZeroHash{module_name}Whole = {whole_hash}LL;
+extern const int64_t kJniZeroHash{module_name}Priority = {priority_hash}LL;'''
   if len(registration_dict['FORWARD_DECLARATIONS']) == 0:
     return ''
 
   return template.substitute(registration_dict)
 
 
-def _GetJavaToNativeParamsList(param_types):
-  if not param_types:
-    return 'jint switch_num'
-
+def _GetMultiplexingParamsList(param_types, java_types=False):
+  switch_type = 'int' if java_types else 'jint'
   # Parameters are named after their type, with a unique number per parameter
   # type to make sure the names are unique, even within the same types.
   params_type_count = collections.defaultdict(int)
-  params_in_stub = []
+  params_with_type = [f'{switch_type} switch_num']
+  param_names = ['switch_num']
   for t in param_types:
-    params_type_count[t] += 1
-    params_in_stub.append('%s %s_param%d' % (t.to_cpp(), t.to_java().replace(
-        '[]', '_array').lower(), params_type_count[t]))
+    typename = t.java_type.to_java() if java_types else t.to_cpp()
+    params_type_count[typename] += 1
+    typename_cleaned = typename.replace('[]', '_array').lower()
+    param_name = f'{typename_cleaned}_param{params_type_count[typename]}'
+    param_names.append(param_name)
+    params_with_type.append(f'{typename} {param_name}')
 
-  return 'jint switch_num, ' + ', '.join(params_in_stub)
+  return params_with_type, param_names
 
 
 def _GetRegistrationFunctionName(fully_qualified_class):
   """Returns the register name with a given class."""
   return 'RegisterNative_' + common.escape_class_name(fully_qualified_class)
+
+
+def _CreateMultiplexedSignature(proxy_signature):
+  """Inserts an int parameter as the first parameter."""
+  switch_param = java_types.JavaParam(java_types.INT, '_method_idx')
+  return java_types.JavaSignature.from_params(
+      proxy_signature.return_type,
+      java_types.JavaParamList((switch_param, ) + proxy_signature.param_list))
 
 
 class DictionaryGenerator(object):
@@ -555,7 +626,7 @@ class DictionaryGenerator(object):
         for native in self.proxy_natives))
 
     if self.options.enable_jni_multiplexing:
-      self._AddCases()
+      self._GetMuxingCalls()
 
     if self.options.use_proxy_hash or self.options.enable_jni_multiplexing:
       self.registration_dict['FORWARDING_PROXY_METHODS'] = ('\n'.join(
@@ -636,12 +707,10 @@ ${KMETHODS}
       if self.options.enable_jni_multiplexing:
         class_name = common.escape_class_name(
             self.gen_jni_class.full_name_with_slashes)
-        name = _GetMultiplexProxyName(native.proxy_signature)
-        proxy_signature = common.escape_class_name(name)
-        stub_name = 'Java_' + class_name + '_' + proxy_signature
-
-        multipliexed_signature = java_types.JavaSignature(
-            native.return_type, (java_types.INT, ), None)
+        sorted_signature = native.proxy_signature.with_params_reordered()
+        name = _GetMultiplexProxyName(sorted_signature)
+        stub_name = f'Java_{class_name}_' + common.escape_class_name(name)
+        multipliexed_signature = _CreateMultiplexedSignature(sorted_signature)
         jni_descriptor = multipliexed_signature.to_descriptor()
       elif self.options.use_proxy_hash:
         name = native.hashed_proxy_name
@@ -726,45 +795,26 @@ ${NATIVES}\
 """)
     return self._SubstituteNativeMethods(java_classes_with_natives, template)
 
-  def _AddCases(self):
+  def _GetMuxingCalls(self):
     # Switch cases are grouped together by the same proxy signatures.
-    template = string.Template("""
-          case ${SWITCH_NUM}:
-            return ${STUB_NAME}(env, jcaller${PARAMS});
-          """)
+    template = string.Template('return ${STUB_NAME}(env, jcaller${PARAMS});')
 
-    signature_to_cases = collections.defaultdict(list)
+    signature_to_cpp_calls = collections.defaultdict(list)
     for native in self.proxy_natives:
-      signature = native.proxy_signature
-      params = _GetParamsListForMultiplex(native.proxy_params, with_types=False)
+      _, param_names = _GetMultiplexingParamsList(native.proxy_param_types)
+      param_string = ', '.join(param_names[1:])
+      if param_string:
+        param_string = ', ' + param_string
       values = {
-          'SWITCH_NUM': _SWITCH_NUM_TO_BE_INERSERTED_LATER_TOKEN,
           # We are forced to call the generated stub instead of the impl because
           # the impl is not guaranteed to have a globally unique name.
           'STUB_NAME': self.jni_obj.GetStubName(native),
-          'PARAMS': params,
+          'PARAMS': param_string,
       }
-      signature_to_cases[signature].append(template.substitute(values))
+      signature = native.proxy_signature.with_params_reordered()
+      signature_to_cpp_calls[signature].append(template.substitute(values))
 
-    self.registration_dict['SIGNATURE_TO_CASES'] = signature_to_cases
-
-
-def _GetParamsListForMultiplex(params, *, with_types):
-  if not params:
-    return ''
-
-  # Parameters are named after their type, with a unique number per parameter
-  # type to make sure the names are unique, even within the same types.
-  params_type_count = collections.defaultdict(int)
-  sb = []
-  for p in params:
-    type_str = p.java_type.to_java()
-    params_type_count[type_str] += 1
-    param_type = f'{type_str} ' if with_types else ''
-    sb.append('%s%s_param%d' % (param_type, type_str.replace(
-        '[]', '_array').lower(), params_type_count[type_str]))
-
-  return ', ' + ', '.join(sb)
+    self.registration_dict['SIGNATURE_TO_CPP_CALLS'] = signature_to_cpp_calls
 
 
 _MULTIPLEXED_CHAR_BY_TYPE = {
@@ -814,16 +864,18 @@ def _MakeForwardingProxy(options, gen_jni_class, proxy_native):
         ${MAYBE_RETURN}${PROXY_CLASS}.${PROXY_METHOD_NAME}(${PARAM_NAMES});
     }""")
 
-  param_names = proxy_native.proxy_params.to_call_str()
 
   if options.enable_jni_multiplexing:
+    sorted_signature = proxy_native.proxy_signature.with_params_reordered()
+    param_names = sorted_signature.param_list.to_call_str()
     if not param_names:
       param_names = _SWITCH_NUM_TO_BE_INERSERTED_LATER_TOKEN
     else:
       param_names = _SWITCH_NUM_TO_BE_INERSERTED_LATER_TOKEN + ', ' + param_names
-    proxy_method_name = _GetMultiplexProxyName(proxy_native.proxy_signature)
+    proxy_method_name = _GetMultiplexProxyName(sorted_signature)
   else:
     proxy_method_name = proxy_native.hashed_proxy_name
+    param_names = proxy_native.proxy_params.to_call_str()
 
   return template.substitute({
       'RETURN_TYPE':
@@ -855,9 +907,11 @@ def _MakeProxySignature(options, proxy_native):
     signature_template = string.Template(native_method_line)
 
     alt_name = None
-    proxy_name = _GetMultiplexProxyName(proxy_native.proxy_signature)
-    params_with_types = 'int switch_num' + _GetParamsListForMultiplex(
-        proxy_native.proxy_params, with_types=True)
+    sorted_signature = proxy_native.proxy_signature.with_params_reordered()
+    proxy_name = _GetMultiplexProxyName(sorted_signature)
+    params_with_types_list, _ = _GetMultiplexingParamsList(
+        sorted_signature.param_list, java_types=True)
+    params_with_types = ', '.join(params_with_types_list)
   elif options.use_proxy_hash:
     signature_template = string.Template("""
       // Original name: ${ALT_NAME}""" + native_method_line)
@@ -915,8 +969,14 @@ def main(parser, args):
     parser.error('--require-mocks requires --enable-proxy-mocks.')
   if not args.header_path and args.manual_jni_registration:
     parser.error('--manual-jni-registration requires --header-path.')
+  if not args.header_path and args.enable_jni_multiplexing:
+    parser.error('--enable-jni-multiplexing requires --header-path.')
   if args.remove_uncalled_methods and not args.native_sources_file:
     parser.error('--remove-uncalled-methods requires --native-sources-file.')
+  if args.priority_java_sources_file and not args.enable_jni_multiplexing:
+    parser.error('--priority-java-sources is only for multiplexing.')
+  if args.enable_jni_multiplexing and args.use_proxy_hash:
+    parser.error('--enable-jni-multiplexing cannot work with --use-proxy-hash.')
 
   java_sources = _ParseSourceList(args.java_sources_file)
   if args.native_sources_file:
@@ -929,8 +989,12 @@ def main(parser, args):
       # Just treating it like we have perfect alignment between native and java
       # when only looking at java.
       native_sources = java_sources
+  if args.priority_java_sources_file:
+    priority_java_sources = _ParseSourceList(args.priority_java_sources_file)
+  else:
+    priority_java_sources = None
 
-  _Generate(args, native_sources, java_sources=java_sources)
+  _Generate(args, native_sources, java_sources, priority_java_sources)
 
   if args.depfile:
     # GN does not declare a dep on the sources files to avoid circular

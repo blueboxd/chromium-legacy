@@ -72,9 +72,6 @@ template COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_CRYPTOHOME)
     ReplyToCryptohomeError(const std::optional<CreatePersistentUserReply>&);
 template COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_CRYPTOHOME)
     cryptohome::ErrorWrapper
-    ReplyToCryptohomeError(const std::optional<RestoreDeviceKeyReply>&);
-template COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_CRYPTOHOME)
-    cryptohome::ErrorWrapper
     ReplyToCryptohomeError(const std::optional<PrepareGuestVaultReply>&);
 template COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_CRYPTOHOME)
     cryptohome::ErrorWrapper
@@ -97,6 +94,9 @@ template COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_CRYPTOHOME)
 template COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_CRYPTOHOME)
     cryptohome::ErrorWrapper
     ReplyToCryptohomeError(const std::optional<UpdateAuthFactorMetadataReply>&);
+template COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_CRYPTOHOME)
+    cryptohome::ErrorWrapper
+    ReplyToCryptohomeError(const std::optional<ReplaceAuthFactorReply>&);
 template COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_CRYPTOHOME)
     cryptohome::ErrorWrapper
     ReplyToCryptohomeError(const std::optional<GetAuthSessionStatusReply>&);

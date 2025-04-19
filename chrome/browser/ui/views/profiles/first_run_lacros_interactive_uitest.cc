@@ -85,6 +85,9 @@ class FirstRunLacrosInteractiveUiTest
     // Change the country to Belgium because the search engine choice screen is
     // only displayed for EEA countries.
     command_line->AppendSwitchASCII(switches::kSearchEngineChoiceCountry, "BE");
+
+    command_line->AppendSwitch(
+        switches::kIgnoreNoFirstRunForSearchEngineChoiceScreen);
   }
 
   void TearDownOnMainThread() override {
@@ -204,7 +207,8 @@ IN_PROC_BROWSER_TEST_P(FirstRunLacrosInteractiveUiTest,
   ASSERT_TRUE(IsProfileNameDefault());
   OpenFirstRun(proceed_future.GetCallback());
   GURL sync_page_url = AppendSyncConfirmationQueryParams(
-      GURL("chrome://sync-confirmation/"), SyncConfirmationStyle::kWindow);
+      GURL("chrome://sync-confirmation/"), SyncConfirmationStyle::kWindow,
+      /*is_sync_promo=*/true);
 
   RunTestSequenceInContext(
       views::ElementTrackerViews::GetContextForView(view()),

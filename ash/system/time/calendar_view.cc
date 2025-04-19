@@ -9,11 +9,13 @@
 
 #include "ash/ash_element_identifiers.h"
 #include "ash/bubble/bubble_utils.h"
+#include "ash/constants/ash_features.h"
 #include "ash/glanceables/common/glanceables_progress_bar_view.h"
 #include "ash/public/cpp/ash_typography.h"
 #include "ash/public/cpp/system_tray_client.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/icon_button.h"
 #include "ash/style/pill_button.h"
@@ -95,7 +97,7 @@ constexpr auto kHeaderIconButtonMargin =
 constexpr auto kHeaderLabelBorder = gfx::Insets::VH(4, 10);
 constexpr auto kHeaderViewMargin = gfx::Insets::TLBR(16, 16, 0, 16);
 
-// For GlanceablesV2: the border of `MonthHeaderView`.
+// The border of `MonthHeaderView` when time management glanceables are enabled.
 constexpr auto kMonthHeaderBorder = gfx::Insets::TLBR(14, 0, 2, 0);
 
 // Adds a gap between the bottom visible row in the scrollview and the top of
@@ -296,7 +298,7 @@ class MonthHeaderView : public views::View {
               .Build();
       label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_CENTER);
       label->SetBorder((views::CreateEmptyBorder(
-          calendar_utils::IsForGlanceablesV2()
+          features::AreAnyGlanceablesTimeManagementViewsEnabled()
               ? kMonthHeaderBorder
               : gfx::Insets::VH(calendar_utils::kDateVerticalPadding, 0))));
       label->SetElideBehavior(gfx::NO_ELIDE);
@@ -500,27 +502,21 @@ CalendarView::CalendarView(bool use_glanceables_container_style)
                                  ax::mojom::NameFrom::kAttribute);
 
   views::View* calendar_header_view = nullptr;
-  if (calendar_utils::IsForGlanceablesV2()) {
+  if (features::AreAnyGlanceablesTimeManagementViewsEnabled()) {
     calendar_header_view = CreateCalendarHeaderRow();
   } else {
     CreateCalendarTitleRow();
   }
 
-  // Adds an empty view as a placeholder so that the views below won't move up
-  // when the `progress_bar_` becomes invisible.
-  auto buffer_view = std::make_unique<views::View>();
-  buffer_view->SetPreferredSize(gfx::Size(1, kTitleRowProgressBarHeight));
-  AddChildViewAt(std::move(buffer_view), kTitleRowProgressBarIndex);
-
   // Adds the progress bar to layout when initialization to avoid changing the
   // layout while reading the bounds of it.
-  progress_bar_ = AddChildViewAt(std::make_unique<GlanceablesProgressBarView>(),
-                                 kTitleRowProgressBarIndex + 1);
+  progress_bar_ = AddChildView(std::make_unique<GlanceablesProgressBarView>());
+  progress_bar_->SetPreferredSize(gfx::Size(0, kTitleRowProgressBarHeight));
   progress_bar_->UpdateProgressBarVisibility(/*visible=*/false);
 
   // Adds the calendar month header view and up/down buttons after the progress
   // bar for non-Glanceables calendar view.
-  if (!calendar_utils::IsForGlanceablesV2()) {
+  if (!features::AreAnyGlanceablesTimeManagementViewsEnabled()) {
     TriView* tri_view =
         TrayPopupUtils::CreateDefaultRowView(/*use_wide_layout=*/false);
     tri_view->SetBorder(views::CreateEmptyBorder(
@@ -591,7 +587,9 @@ CalendarView::CalendarView(bool use_glanceables_container_style)
   // the current date view) and the UI within calendar sliding surfaces get
   // focused before the "Today" button in the calendar view header.
   scroll_view_->InsertBeforeInFocusList(
-      calendar_utils::IsForGlanceablesV2() ? calendar_header_view : tri_view_);
+      features::AreAnyGlanceablesTimeManagementViewsEnabled()
+          ? calendar_header_view
+          : tri_view_);
   calendar_sliding_surface_->InsertAfterInFocusList(scroll_view_);
 
   scoped_calendar_model_observer_.Observe(calendar_model_.get());
@@ -642,7 +640,7 @@ views::View* CalendarView::CreateCalendarHeaderRow() {
       IDS_ASH_CALENDAR_INFO_BUTTON_ACCESSIBLE_DESCRIPTION);
   today_button->SetBackgroundColor(cros_tokens::kCrosSysBaseElevated);
   today_button->SetProperty(views::kMarginsKey, kHeaderIconButtonMargin);
-  today_button->SetAccessibleName(l10n_util::GetStringFUTF16(
+  today_button->GetViewAccessibility().SetName(l10n_util::GetStringFUTF16(
       IDS_ASH_CALENDAR_INFO_BUTTON_ACCESSIBLE_DESCRIPTION,
       calendar_utils::GetMonthDayYear(base::Time::Now())));
   today_button->SetTooltipText(
@@ -699,9 +697,10 @@ void CalendarView::CreateCalendarTitleRow() {
                           base::Unretained(this)),
       l10n_util::GetStringUTF16(IDS_ASH_CALENDAR_INFO_BUTTON),
       PillButton::Type::kDefaultWithoutIcon, /*icon=*/nullptr);
-  reset_to_today_button_->SetAccessibleName(l10n_util::GetStringFUTF16(
-      IDS_ASH_CALENDAR_INFO_BUTTON_ACCESSIBLE_DESCRIPTION,
-      calendar_utils::GetMonthDayYear(base::Time::Now())));
+  reset_to_today_button_->GetViewAccessibility().SetName(
+      l10n_util::GetStringFUTF16(
+          IDS_ASH_CALENDAR_INFO_BUTTON_ACCESSIBLE_DESCRIPTION,
+          calendar_utils::GetMonthDayYear(base::Time::Now())));
 
   reset_to_today_button_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_ASH_CALENDAR_TODAY_BUTTON_TOOLTIP));
@@ -761,8 +760,9 @@ views::View* CalendarView::CreateButtonContainer() {
       views::BoxLayout::MainAxisAlignment::kEnd);
   // Aligns button with the calendar dates in the `TableLayout`.
   button_container_layout->set_between_child_spacing(
-      calendar_utils::IsForGlanceablesV2() ? kButtonInBetweenPadding
-                                           : kChevronInBetweenPadding);
+      features::AreAnyGlanceablesTimeManagementViewsEnabled()
+          ? kButtonInBetweenPadding
+          : kChevronInBetweenPadding);
 
   up_button_ = button_container->AddChildView(std::make_unique<IconButton>(
       base::BindRepeating(&CalendarView::OnMonthArrowButtonActivated,
@@ -988,10 +988,6 @@ void CalendarView::MaybeUpdateLoadingBarVisibility() {
   }
   progress_bar_->UpdateProgressBarVisibility(
       /*visible=*/visible);
-
-  // Updates the visibility of the buffer view so that when `progress_bar_`s
-  // visibility changes, the following views won't move up.
-  children()[size_t{kTitleRowProgressBarIndex}]->SetVisible(!visible);
 }
 
 void CalendarView::FadeInCurrentMonth() {
@@ -1752,7 +1748,7 @@ void CalendarView::OnEvent(ui::Event* event) {
   auto* focus_manager = GetFocusManager();
 
   bool is_tab_key_pressed =
-      key_event->type() == ui::EventType::ET_KEY_PRESSED &&
+      key_event->type() == ui::EventType::kKeyPressed &&
       views::FocusManager::IsTabTraversalKeyEvent(*key_event);
 
   if (is_tab_key_pressed) {
@@ -1791,7 +1787,7 @@ void CalendarView::OnEvent(ui::Event* event) {
     return;
   }
 
-  if (key_event->type() != ui::EventType::ET_KEY_PRESSED ||
+  if (key_event->type() != ui::EventType::kKeyPressed ||
       (key_code != ui::VKEY_UP && key_code != ui::VKEY_DOWN &&
        key_code != ui::VKEY_LEFT && key_code != ui::VKEY_RIGHT)) {
     GlanceableTrayChildBubble::OnEvent(event);

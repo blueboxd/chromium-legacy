@@ -61,6 +61,7 @@
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "ui/gfx/geometry/point_conversions.h"
 
 namespace blink {
@@ -237,16 +238,9 @@ SelectionInFlatTree AdjustSelectionByUserSelect(
     }
   }
 
-  if (RuntimeEnabledFeatures::AvoidCaretVisibleSelectionAdjusterEnabled()) {
-    return SelectionInFlatTree::Builder()
-        .SetBaseAndExtent(new_start_pos, new_end_pos)
-        .Build();
-  } else {
-    return SelectionInFlatTree::Builder()
-        .SetBaseAndExtent(MostBackwardCaretPosition(new_start_pos),
-                          MostForwardCaretPosition(new_end_pos))
-        .Build();
-  }
+  return SelectionInFlatTree::Builder()
+      .SetBaseAndExtent(new_start_pos, new_end_pos)
+      .Build();
 }
 
 SelectionController::~SelectionController() = default;
@@ -1279,8 +1273,10 @@ bool SelectionController::HandleGestureLongPress(
 
   if (!Selection().IsAvailable())
     return false;
-  if (hit_test_result.IsLiveLink())
+  if (!RuntimeEnabledFeatures::LongPressLinkSelectTextEnabled() &&
+      hit_test_result.IsLiveLink()) {
     return false;
+  }
 
   Node* inner_node = hit_test_result.InnerPossiblyPseudoNode();
   inner_node->GetDocument().UpdateStyleAndLayoutTree();

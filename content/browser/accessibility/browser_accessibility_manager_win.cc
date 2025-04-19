@@ -62,15 +62,19 @@ BrowserAccessibility* GetUiaTextPatternProvider(BrowserAccessibility& node) {
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
     const ui::AXTreeUpdate& initial_tree,
+    ui::AXNodeIdDelegate& node_id_delegate,
     ui::AXPlatformTreeManagerDelegate* delegate) {
-  return new BrowserAccessibilityManagerWin(initial_tree, delegate);
+  return new BrowserAccessibilityManagerWin(initial_tree, node_id_delegate,
+                                            delegate);
 }
 
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
+    ui::AXNodeIdDelegate& node_id_delegate,
     ui::AXPlatformTreeManagerDelegate* delegate) {
   return new BrowserAccessibilityManagerWin(
-      BrowserAccessibilityManagerWin::GetEmptyDocument(), delegate);
+      BrowserAccessibilityManagerWin::GetEmptyDocument(), node_id_delegate,
+      delegate);
 }
 
 BrowserAccessibilityManagerWin*
@@ -80,8 +84,9 @@ BrowserAccessibilityManager::ToBrowserAccessibilityManagerWin() {
 
 BrowserAccessibilityManagerWin::BrowserAccessibilityManagerWin(
     const ui::AXTreeUpdate& initial_tree,
+    ui::AXNodeIdDelegate& node_id_delegate,
     ui::AXPlatformTreeManagerDelegate* delegate)
-    : BrowserAccessibilityManager(delegate) {
+    : BrowserAccessibilityManager(node_id_delegate, delegate) {
   ui::win::CreateATLModuleIfNeeded();
   Initialize(initial_tree);
 }
@@ -138,6 +143,20 @@ void BrowserAccessibilityManagerWin::FireAriaNotificationEvent(
     ax::mojom::AriaNotificationPriority priority_property) {
   DCHECK(node);
 
+  // This API is only supported from Windows10 (version 1709) onwards.
+  // Check if the function pointer is valid or not.
+  using UiaRaiseNotificationEventFunction =
+      HRESULT(WINAPI*)(IRawElementProviderSimple*, NotificationKind,
+                       NotificationProcessing, BSTR, BSTR);
+  static const UiaRaiseNotificationEventFunction
+      uia_raise_notification_event_func =
+          reinterpret_cast<UiaRaiseNotificationEventFunction>(
+              ::GetProcAddress(GetModuleHandle(L"uiautomationcore.dll"),
+                               "UiaRaiseNotificationEvent"));
+  if (!uia_raise_notification_event_func) {
+    return;
+  }
+
   auto MapPropertiesToUiaNotificationProcessing =
       [&]() -> NotificationProcessing {
     switch (interrupt_property) {
@@ -172,11 +191,11 @@ void BrowserAccessibilityManagerWin::FireAriaNotificationEvent(
   const base::win::ScopedBstr notification_id_bstr(
       base::UTF8ToWide(notification_id));
 
-  UiaRaiseNotificationEvent(ToBrowserAccessibilityWin(node)->GetCOM(),
-                            NotificationKind_ActionCompleted,
-                            MapPropertiesToUiaNotificationProcessing(),
-                            announcement_bstr.Get(),
-                            notification_id_bstr.Get());
+  uia_raise_notification_event_func(ToBrowserAccessibilityWin(node)->GetCOM(),
+                                    NotificationKind_ActionCompleted,
+                                    MapPropertiesToUiaNotificationProcessing(),
+                                    announcement_bstr.Get(),
+                                    notification_id_bstr.Get());
 }
 
 void BrowserAccessibilityManagerWin::FireFocusEvent(ui::AXNode* node) {
@@ -243,10 +262,7 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       break;
     case ui::AXEventGenerator::Event::ALERT:
       FireWinAccessibilityEvent(EVENT_SYSTEM_ALERT, wrapper);
-      // Generated 'ALERT' events come from role=alert nodes in the tree.
-      // These should just be treated as normal live region changed events,
-      // since we don't want web pages to be performing system-wide alerts.
-      FireUiaAccessibilityEvent(UIA_LiveRegionChangedEventId, wrapper);
+      FireUiaAccessibilityEvent(UIA_SystemAlertEventId, wrapper);
       break;
     case ui::AXEventGenerator::Event::ATOMIC_CHANGED:
       HandleAriaPropertiesChangedEvent(*wrapper);
@@ -550,7 +566,6 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::MENU_ITEM_SELECTED:
     case ui::AXEventGenerator::Event::ORIENTATION_CHANGED:
     case ui::AXEventGenerator::Event::PARENT_CHANGED:
-    case ui::AXEventGenerator::Event::PORTAL_ACTIVATED:
     case ui::AXEventGenerator::Event::RELATED_NODE_CHANGED:
     case ui::AXEventGenerator::Event::ROW_COUNT_CHANGED:
     case ui::AXEventGenerator::Event::STATE_CHANGED:

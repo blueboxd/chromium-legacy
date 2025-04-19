@@ -14,6 +14,7 @@
 type RectF =
     import('//resources/mojo/ui/gfx/geometry/mojom/geometry.mojom-webui.js')
         .RectF;
+type MojoUrl = import('//resources/mojo/url/mojom/url.mojom-webui.js').Url;
 
 type PageMetadata =
     import('./media_app_ui_untrusted.mojom-webui.js').PageMetadata;
@@ -208,6 +209,15 @@ declare interface ClientApiDelegate {
    */
   notifyCurrentFile(name?: string, type?: string): void;
   /**
+   * Notify MediaApp that a file has been opened.
+   */
+  notifyFileOpened(name?: string, type?: string): void;
+  /**
+   * Notify the app that the current file's name has been changed by "Rename"
+   * or "Saved as".
+   */
+  notifyFilenameChanged(name: string): void;
+  /**
    * Attempts to extract a JPEG "preview" from a RAW image file. Throws on any
    * failure. Note this is typically a full-sized preview, not a thumbnail.
    * @return A Blob-backed File with type: image/jpeg.
@@ -237,24 +247,6 @@ declare interface ClientApiDelegate {
    */
   maybeTriggerPdfHats?: () => void;
   /**
-   * Alert the OCR service that the PDF's page metadata has changed.
-   */
-  pageMetadataUpdated(pageMetadata: PageMetadata[]): void;
-  /**
-   * Alert the OCR service that a specific page's contents has changed and
-   * should have OCR applied again.
-   */
-  pageContentsUpdated(dirtyPageId: string): void;
-  /**
-   * Called whenever the viewport changes, e.g. due to scrolling, zooming,
-   * resizing the window, or opening and closing toolbars/panels.
-   * @param viewportBox The new bounding box of the viewport.
-   * @param scaleFactor The ratio between CSS pixels (i.e. ignoring browser
-   *     and pinch zoom) and ink units. Larger numbers indicate the document
-   *     is more zoomed in.
-   */
-  viewportUpdated(viewportBox: RectF, scaleFactor: number): void;
-  /**
    * Called when the media app finishes loading a PDF file, to notify Mahi about
    * the refresh availability.
    */
@@ -271,6 +263,32 @@ declare interface ClientApiDelegate {
    * notify Mahi to hide its widget card accordingly.
    */
   onPdfContextMenuHide(): void;
+  /**
+   * Alert the OCR service that the PDF's page metadata has changed.
+   */
+  pageMetadataUpdated(pageMetadata: PageMetadata[]): void;
+  /**
+   * Alert the OCR service that a specific page's contents has changed and
+   * should have OCR applied again.
+   */
+  pageContentsUpdated(dirtyPageId: string): void;
+  /**
+   * Submit a form to a URL - required since plain form submit doesn't have ideal behavior in LaCrOS.
+   * @param url URL to submit the form to (must have host == lens.google.com).
+   * @param payload Bytes corresponding to formdata which is the payload.
+   * @param header The content-type header including the form boundary specifier.
+   */
+  submitForm(url: MojoUrl, payload: number[], header: string): void;
+  /**
+   * Called whenever the viewport changes, e.g. due to scrolling, zooming,
+   * resizing the window, or opening and closing toolbars/panels.
+   * @param viewportBox The new bounding box of the viewport.
+   * @param scaleFactor The ratio between CSS pixels (i.e. ignoring browser
+   *     and pinch zoom) and ink units. Larger numbers indicate the document
+   *     is more zoomed in.
+   */
+  viewportUpdated(viewportBox: RectF, scaleFactor: number): void;
+
 }
 
 /**

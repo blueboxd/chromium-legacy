@@ -6,6 +6,10 @@
 /* eslint-disable max-len */
 
 export type {
+  BigBuffer,
+} from
+    'chrome://resources/mojo/mojo/public/mojom/base/big_buffer.mojom-webui.js';
+export type {
   PointF,
 } from 'chrome://resources/mojo/ui/gfx/geometry/mojom/geometry.mojom-webui.js';
 export {
@@ -15,17 +19,17 @@ export {
   CameraAppHelper,
   CameraAppHelperRemote,
   CameraUsageOwnershipMonitorCallbackRouter,
-  DocumentOutputFormat,
   ExternalScreenMonitorCallbackRouter,
   FileMonitorResult,
+  LidState,
   LidStateMonitorCallbackRouter,
   ScreenLockedMonitorCallbackRouter,
   ScreenState,
   ScreenStateMonitorCallbackRouter,
   StorageMonitorCallbackRouter,
   StorageMonitorStatus,
+  SWPrivacySwitchMonitorCallbackRouter,
   TabletModeMonitorCallbackRouter,
-  ToteMetricFormat,
   WindowStateControllerRemote,
   WindowStateMonitorCallbackRouter,
   WindowStateType,
@@ -46,7 +50,9 @@ export {
   LaunchType,
   LowStorageActionType,
   Mode,
+  OcrEventType,
   PerfEventType,
+  Pressure,
   RecordType,
   ResolutionLevel,
   ShutterType,
@@ -61,6 +67,9 @@ export type {
   Line as OcrResultLine,
   OcrResult,
 } from '../../mojom/ash/webui/camera_app_ui/ocr.mojom-webui.js';
+export {
+  PdfBuilderRemote,
+} from '../../mojom/ash/webui/camera_app_ui/pdf_builder.mojom-webui.js';
 export {
   WifiEapMethod,
   WifiEapPhase2Method,
@@ -122,7 +131,3 @@ export {
   CameraMetadataTag,
 } from
     '../../mojom/media/capture/video/chromeos/mojom/camera_metadata_tags.mojom-webui.js';
-export {
-  LidState,
-} from
-    '../../mojom/media/capture/video/chromeos/mojom/system_event_monitor.mojom-webui.js';

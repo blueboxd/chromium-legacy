@@ -212,9 +212,9 @@ bool PaintChunker::AddRegionCaptureDataToCurrentChunk(
   bool created_new_chunk = EnsureCurrentChunk(id, client);
   auto& chunk = chunks_->back();
   if (!chunk.region_capture_data) {
-    chunk.region_capture_data = std::make_unique<RegionCaptureData>();
+    chunk.region_capture_data = MakeGarbageCollected<RegionCaptureData>();
   }
-  chunk.region_capture_data->insert_or_assign(crop_id, std::move(rect));
+  chunk.region_capture_data->map.insert_or_assign(crop_id, std::move(rect));
   return created_new_chunk;
 }
 
@@ -276,8 +276,9 @@ void PaintChunker::CreateScrollHitTestChunk(
     const PaintChunk::Id& id,
     const DisplayItemClient& client,
     const TransformPaintPropertyNode* scroll_translation,
-    const gfx::Rect& rect,
-    cc::HitTestOpaqueness hit_test_opaqueness) {
+    const gfx::Rect& scroll_hit_test_rect,
+    cc::HitTestOpaqueness hit_test_opaqueness,
+    const gfx::Rect& scrolling_contents_cull_rect) {
 #if DCHECK_IS_ON()
   if (id.type == DisplayItem::Type::kResizerScrollHitTest ||
       id.type == DisplayItem::Type::kWebPluginHitTest ||
@@ -303,10 +304,11 @@ void PaintChunker::CreateScrollHitTestChunk(
   DCHECK(created_new_chunk);
 
   auto& chunk = chunks_->back();
-  UnionBounds(rect, hit_test_opaqueness);
+  UnionBounds(scroll_hit_test_rect, hit_test_opaqueness);
   auto& hit_test_data = chunk.EnsureHitTestData();
   hit_test_data.scroll_translation = scroll_translation;
-  hit_test_data.scroll_hit_test_rect = rect;
+  hit_test_data.scroll_hit_test_rect = scroll_hit_test_rect;
+  hit_test_data.scrolling_contents_cull_rect = scrolling_contents_cull_rect;
   SetWillForceNewChunk();
 }
 

@@ -26,9 +26,11 @@
 #include "chromeos/ash/components/osauth/public/common_types.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -57,7 +59,7 @@ void AddMargins(views::View* view) {
 void ConfigurePasswordField(views::Textfield* password_field) {
   const auto password_field_name =
       l10n_util::GetStringUTF16(IDS_ASH_LOGIN_POD_PASSWORD_PLACEHOLDER);
-  password_field->SetAccessibleName(password_field_name);
+  password_field->GetViewAccessibility().SetName(password_field_name);
   password_field->SetReadOnly(false);
   password_field->SetTextInputType(ui::TextInputType::TEXT_INPUT_TYPE_PASSWORD);
   password_field->SetPlaceholderText(password_field_name);
@@ -93,7 +95,7 @@ AuthenticationDialog::AuthenticationDialog(
   set_fixed_width(views::LayoutProvider::Get()->GetDistanceMetric(
       views::DistanceMetric::DISTANCE_BUBBLE_PREFERRED_WIDTH));
   SetTitle(l10n_util::GetStringUTF16(IDS_ASH_IN_SESSION_AUTH_TITLE));
-  SetModalType(ui::MODAL_TYPE_SYSTEM);
+  SetModalType(ui::mojom::ModalType::kSystem);
 
   // Callback setup
   SetCancelCallback(base::BindOnce(&AuthenticationDialog::CancelAuthAttempt,

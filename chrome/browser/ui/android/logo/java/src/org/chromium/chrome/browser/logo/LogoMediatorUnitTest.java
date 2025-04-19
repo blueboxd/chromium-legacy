@@ -28,19 +28,17 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.homepage.HomepageManager;
 import org.chromium.chrome.browser.logo.LogoBridge.Logo;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.components.image_fetcher.ImageFetcher;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /** Unit tests for the {@link LogoMediator}. */
@@ -73,7 +71,6 @@ public class LogoMediatorUnitTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        ProfileManager.setLastUsedProfileForTesting(mProfile);
 
         mContext = ApplicationProvider.getApplicationContext();
 
@@ -83,8 +80,7 @@ public class LogoMediatorUnitTest {
 
         mJniMocker.mock(LogoBridgeJni.TEST_HOOKS, mLogoBridgeJniMock);
 
-        Assert.assertTrue(ChromeFeatureList.sStartSurfaceAndroid.isEnabled());
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> HomepageManager.getInstance().setPrefHomepageEnabled(true));
 
         mLogoModel = new PropertyModel(LogoProperties.ALL_KEYS);
@@ -172,7 +168,7 @@ public class LogoMediatorUnitTest {
         // When parent surface is shown while native library isn't loaded, calling
         // updateVisibilityAndMaybeCleanUp() will add a pending load task.
         Assert.assertTrue(logoMediator.getIsLoadPendingForTesting());
-        logoMediator.initWithNative();
+        logoMediator.initWithNative(mProfile);
 
         Assert.assertTrue(logoMediator.isLogoVisible());
         verify(mLogoBridge, times(1)).getCurrentLogo(any());
@@ -226,13 +222,13 @@ public class LogoMediatorUnitTest {
 
     private LogoMediator createMediator(boolean shouldFetchDoodle) {
         LogoMediator logoMediator = createMediatorWithoutNative(shouldFetchDoodle);
-        logoMediator.initWithNative();
+        logoMediator.initWithNative(mProfile);
         return logoMediator;
     }
 
     private LogoMediator createMediator() {
         LogoMediator logoMediator = createMediatorWithoutNative(true);
-        logoMediator.initWithNative();
+        logoMediator.initWithNative(mProfile);
         return logoMediator;
     }
 

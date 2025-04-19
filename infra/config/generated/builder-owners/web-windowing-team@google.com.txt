@@ -1,2 +1,2 @@
-ci/win10-multiscreen-fyi-rel
-try/win10-multiscreen-fyi-rel
+ci/linux-multiscreen-fyi-rel
+try/linux-multiscreen-fyi-rel

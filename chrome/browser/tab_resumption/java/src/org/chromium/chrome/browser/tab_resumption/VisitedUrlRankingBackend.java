@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.tab_resumption;
 
+import android.os.Build;
+
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.jni_zero.CalledByNative;
@@ -13,6 +16,7 @@ import org.jni_zero.NativeMethods;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.components.visited_url_ranking.ScoredURLUserAction;
 import org.chromium.url.GURL;
 
 import java.util.ArrayList;
@@ -21,6 +25,9 @@ import java.util.List;
 /** The glue code between Tab resumption module and the native fetch and rank services backend. */
 @JNINamespace("tab_resumption::jni")
 public class VisitedUrlRankingBackend implements SuggestionBackend {
+    private static final boolean sShowHistoryAppChip =
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+
     private long mNativeVisitedUrlRankingBackend;
 
     @Nullable private Runnable mUpdateObserver;
@@ -51,7 +58,7 @@ public class VisitedUrlRankingBackend implements SuggestionBackend {
 
     /** Implements {@link SuggestionBackend} */
     @Override
-    public void readCached(Callback<List<SuggestionEntry>> callback) {
+    public void read(Callback<List<SuggestionEntry>> callback) {
         List<SuggestionEntry> suggestions = new ArrayList<SuggestionEntry>();
 
         // TODO(b/337858147): handles showing local Tabs if returned from
@@ -61,6 +68,7 @@ public class VisitedUrlRankingBackend implements SuggestionBackend {
                         mNativeVisitedUrlRankingBackend,
                         TabResumptionModuleUtils.getCurrentTimeMs(),
                         TabResumptionModuleUtils.TAB_RESUMPTION_FETCH_LOCAL_TABS_BACKEND.getValue(),
+                        TabResumptionModuleUtils.TAB_RESUMPTION_FETCH_HISTORY_BACKEND.getValue(),
                         suggestions,
                         callback);
     }
@@ -73,17 +81,35 @@ public class VisitedUrlRankingBackend implements SuggestionBackend {
         }
     }
 
-    /** Helper to add new SuggestionEntry to list. */
+    /** Helper to add new {@link SuggestionEntry} to list. */
     @CalledByNative
-    private static void addSuggestionEntry(
-            String sourceName,
-            GURL url,
-            String title,
+    private void addSuggestionEntry(
+            int type,
+            @NonNull String sourceName,
+            @NonNull GURL url,
+            @NonNull String title,
             long lastActiveTime,
-            int id,
-            List<SuggestionEntry> suggestions) {
-        // TODO(crbug.com/337858147): Handle Local Tab suggestions case.
-        suggestions.add(new SuggestionEntry(sourceName, url, title, lastActiveTime, id));
+            int localTabId,
+            @NonNull String visitId,
+            long requestId,
+            String appId,
+            String reasonToShowTab,
+            @NonNull List<SuggestionEntry> suggestions) {
+        SuggestionEntry entry =
+                new SuggestionEntry(
+                        type,
+                        sourceName,
+                        url,
+                        title,
+                        lastActiveTime,
+                        localTabId,
+                        sShowHistoryAppChip ? appId : null,
+                        reasonToShowTab);
+        if (!visitId.isEmpty()) {
+            entry.trainingInfo =
+                    new TrainingInfo(mNativeVisitedUrlRankingBackend, visitId, requestId);
+        }
+        suggestions.add(entry);
     }
 
     /** Helper to call previously injected callback to pass suggestion results. */
@@ -97,15 +123,22 @@ public class VisitedUrlRankingBackend implements SuggestionBackend {
     interface Natives {
         long init(VisitedUrlRankingBackend self, @JniType("Profile*") Profile profile);
 
+        void destroy(long nativeVisitedUrlRankingBackend);
+
         void triggerUpdate(long nativeVisitedUrlRankingBackend);
 
         void getRankedSuggestions(
                 long nativeVisitedUrlRankingBackend,
                 long beginTimeMs,
                 boolean fetchLocalTabs,
+                boolean fetchHistory,
                 List<SuggestionEntry> suggestions,
                 Callback<List<SuggestionEntry>> callback);
 
-        void destroy(long nativeVisitedUrlRankingBackend);
+        void recordAction(
+                long nativeVisitedUrlRankingBackend,
+                @ScoredURLUserAction int scoredUrlUserAction,
+                String visitId,
+                long visitRequestId);
     }
 }

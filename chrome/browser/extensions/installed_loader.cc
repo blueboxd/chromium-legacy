@@ -564,11 +564,11 @@ void InstalledLoader::RecordExtensionsMetrics(Profile* profile,
         // status.
         if (dev_mode_enabled) {
           base::UmaHistogramEnumeration(
-              "Extensions.NonWebstoreLocationWithDeveloperModeOn.Enabled2",
+              "Extensions.NonWebstoreLocationWithDeveloperModeOn.Enabled3",
               location);
         } else {
           base::UmaHistogramEnumeration(
-              "Extensions.NonWebstoreLocationWithDeveloperModeOff.Enabled2",
+              "Extensions.NonWebstoreLocationWithDeveloperModeOff.Enabled3",
               location);
         }
       }
@@ -910,11 +910,11 @@ void InstalledLoader::RecordExtensionsMetrics(Profile* profile,
         !disabled_extension->from_webstore()) {
       if (dev_mode_enabled) {
         base::UmaHistogramEnumeration(
-            "Extensions.NonWebstoreLocationWithDeveloperModeOn.Disabled2",
+            "Extensions.NonWebstoreLocationWithDeveloperModeOn.Disabled3",
             location);
       } else {
         base::UmaHistogramEnumeration(
-            "Extensions.NonWebstoreLocationWithDeveloperModeOff.Disabled2",
+            "Extensions.NonWebstoreLocationWithDeveloperModeOff.Disabled3",
             location);
       }
     }
@@ -1077,26 +1077,17 @@ void InstalledLoader::RecordExtensionsMetrics(Profile* profile,
   if (incognito_allowed_count + incognito_not_allowed_count > 0) {
     base::UmaHistogramCounts100("Extensions.IncognitoAllowed",
                                 incognito_allowed_count);
-    base::UmaHistogramCounts100("Extensions.IncognitoNotAllowed",
-                                incognito_not_allowed_count);
     if (should_record_incremented_metrics) {
       base::UmaHistogramCounts100("Extensions.IncognitoAllowed2",
                                   incognito_allowed_count);
-      base::UmaHistogramCounts100("Extensions.IncognitoNotAllowed2",
-                                  incognito_not_allowed_count);
     }
   }
-  if (file_access_allowed_count + file_access_not_allowed_count > 0) {
-    base::UmaHistogramCounts100("Extensions.FileAccessAllowed",
+  if (file_access_allowed_count + file_access_not_allowed_count > 0 &&
+      should_record_incremented_metrics) {
+    base::UmaHistogramCounts100("Extensions.FileAccessAllowed2",
                                 file_access_allowed_count);
-    base::UmaHistogramCounts100("Extensions.FileAccessNotAllowed",
+    base::UmaHistogramCounts100("Extensions.FileAccessNotAllowed2",
                                 file_access_not_allowed_count);
-    if (should_record_incremented_metrics) {
-      base::UmaHistogramCounts100("Extensions.FileAccessAllowed2",
-                                  file_access_allowed_count);
-      base::UmaHistogramCounts100("Extensions.FileAccessNotAllowed2",
-                                  file_access_not_allowed_count);
-    }
   }
   base::UmaHistogramCounts100(
       "Extensions.CorruptExtensionTotalDisables",

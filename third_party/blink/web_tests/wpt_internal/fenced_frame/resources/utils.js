@@ -213,7 +213,7 @@ async function generateRemoteContextURL(headers, origin) {
   // Transform the headers into the expected format.
   // https://web-platform-tests.org/writing-tests/server-pipes.html#headers
   function escape(s) {
-    return s.replace('(', '\\(').replace(')', '\\)');
+    return s.replace('(', '\\(').replace(')', '\\)').replace(',', '\\,');
   }
   const formatted_headers = headers.map((header) => {
     return `header(${escape(header[0])}, ${escape(header[1])})`;
@@ -601,5 +601,21 @@ function setupCSP(csp, second_csp=null) {
     second_meta.httpEquiv = "Content-Security-Policy";
     second_meta.content = "frame-src " + second_csp;
     document.head.appendChild(second_meta);
+  }
+}
+
+// Clicking in WPT tends to be flaky (https://crbug.com/1066891), so you may
+// need to click multiple times to have an effect. This function clicks at
+// coordinates `{x, y}` relative to `click_origin`, by default 3 times. Should
+// not be used for tests where multiple clicks have distinct impact on the state
+// of the page, but rather to bruteforce through flakes that rely on only one
+// click.
+async function multiClick(x, y, click_origin, times = 3) {
+  for (let i = 0; i < times; i++) {
+    let actions = new test_driver.Actions();
+    await actions.pointerMove(x, y, {origin: click_origin})
+        .pointerDown()
+        .pointerUp()
+        .send();
   }
 }

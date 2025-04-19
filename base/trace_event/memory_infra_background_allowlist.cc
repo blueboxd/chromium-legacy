@@ -17,7 +17,7 @@
 #include "base/containers/fixed_flat_set.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
-#include "partition_alloc/partition_alloc_buildflags.h"
+#include "partition_alloc/buildflags.h"
 #include "third_party/abseil-cpp/absl/strings/ascii.h"
 
 #if BUILDFLAG(IS_ANDROID)
@@ -52,6 +52,7 @@ constexpr auto kDumpProviderAllowlist =
 #endif
         "ContextProviderCommandBuffer",
         "DOMStorage",
+        "DawnSharedContext",
         "DevTools",
         "DiscardableSharedMemoryManager",
         "DownloadService",
@@ -160,6 +161,7 @@ constexpr auto kAllocatorDumpNameAllowlist =
         "font_caches/shape_caches",
         "frame_evictor",
         "gpu/command_buffer_memory/buffer_0x?",
+        "gpu/dawn",
         "gpu/discardable_cache/cache_0x?",
         "gpu/discardable_cache/cache_0x?/avg_image_size",
         "gpu/gl/buffers/context_group_0x?",
@@ -203,8 +205,6 @@ constexpr auto kAllocatorDumpNameAllowlist =
         "malloc/partitions/allocator/thread_cache/main_thread",
         "malloc/partitions/aligned",
         "malloc/partitions/original",
-        "malloc/partitions/nonscannable",
-        "malloc/partitions/nonquarantinable",
         "malloc/sys_malloc",
         "malloc/win_heap",
 #endif  // PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
@@ -247,6 +247,11 @@ constexpr auto kAllocatorDumpNameAllowlist =
 #endif
         "partition_alloc/partitions/layout",
         "skia/gpu_resources/context_0x?",
+        "skia/gpu_resources/graphite_context_0x?",
+        "skia/gpu_resources/gpu_main_graphite_image_provider_0x?",
+        "skia/gpu_resources/gpu_main_graphite_recorder_0x?",
+        "skia/gpu_resources/viz_compositor_graphite_image_provider_0x?",
+        "skia/gpu_resources/viz_compositor_graphite_recorder_0x?",
         "skia/sk_glyph_cache",
         "skia/sk_resource_cache",
         "sqlite",

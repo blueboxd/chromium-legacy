@@ -4,16 +4,30 @@
 
 #include "chrome/browser/ui/webui/ash/login/oobe_screens_handler_factory.h"
 
-#include "base/check.h"
+#include "base/check_deref.h"
 #include "chrome/browser/ash/login/oobe_screen.h"
+#include "chrome/browser/ash/login/screens/ai_intro_screen.h"
+#include "chrome/browser/ash/login/screens/app_downloading_screen.h"
+#include "chrome/browser/ash/login/screens/arc_vm_data_migration_screen.h"
 #include "chrome/browser/ash/login/screens/consumer_update_screen.h"
+#include "chrome/browser/ash/login/screens/encryption_migration_screen.h"
 #include "chrome/browser/ash/login/screens/gaia_info_screen.h"
+#include "chrome/browser/ash/login/screens/gemini_intro_screen.h"
+#include "chrome/browser/ash/login/screens/lacros_data_backward_migration_screen.h"
+#include "chrome/browser/ash/login/screens/lacros_data_migration_screen.h"
 #include "chrome/browser/ash/login/screens/osauth/local_data_loss_warning_screen.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
+#include "chrome/browser/ui/webui/ash/login/ai_intro_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/app_downloading_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/arc_vm_data_migration_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/consumer_update_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/drive_pinning_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/encryption_migration_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/gaia_info_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/gemini_intro_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/gesture_navigation_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/lacros_data_backward_migration_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/lacros_data_migration_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/mojom/screens_common.mojom.h"
 #include "chrome/browser/ui/webui/ash/login/mojom/screens_factory.mojom.h"
 #include "chrome/browser/ui/webui/ash/login/mojom/screens_oobe.mojom.h"
@@ -49,44 +63,70 @@ void OobeScreensHandlerFactory::UnbindScreensHandlerFactory() {
   page_factory_receiver_.reset();
 }
 
+void OobeScreensHandlerFactory::EstablishAiIntroScreenPipe(
+    mojo::PendingReceiver<screens_common::mojom::AiIntroPageHandler> receiver,
+    EstablishAiIntroScreenPipeCallback callback) {
+  AiIntroScreen* ai_intro = CHECK_DEREF(WizardController::default_controller())
+                                .GetScreen<AiIntroScreen>();
+  ai_intro->BindPageHandlerReceiver(std::move(receiver));
+  ai_intro->PassPagePendingReceiverWithCallback(std::move(callback));
+}
+
+void OobeScreensHandlerFactory::EstablishAppDownloadingScreenPipe(
+    mojo::PendingReceiver<screens_common::mojom::AppDownloadingPageHandler>
+        receiver) {
+  AppDownloadingScreen* app_downloading =
+      CHECK_DEREF(WizardController::default_controller())
+          .GetScreen<AppDownloadingScreen>();
+  app_downloading->BindPageHandlerReceiver(std::move(receiver));
+}
+
 void OobeScreensHandlerFactory::EstablishDrivePinningScreenPipe(
     mojo::PendingReceiver<screens_common::mojom::DrivePinningPageHandler>
         receiver,
     EstablishDrivePinningScreenPipeCallback callback) {
-  CHECK(WizardController::default_controller());
   DrivePinningScreen* drive_pinning =
-      WizardController::default_controller()->GetScreen<DrivePinningScreen>();
+      CHECK_DEREF(WizardController::default_controller())
+          .GetScreen<DrivePinningScreen>();
   drive_pinning->BindPageHandlerReceiver(std::move(receiver));
   drive_pinning->PassPagePendingReceiverWithCallback(std::move(callback));
-}
-
-void OobeScreensHandlerFactory::EstablishGestureNavigationScreenPipe(
-    mojo::PendingReceiver<screens_common::mojom::GestureNavigationPageHandler>
-        receiver) {
-  CHECK(WizardController::default_controller());
-  GestureNavigationScreen* gesture_navigation =
-      WizardController::default_controller()
-          ->GetScreen<GestureNavigationScreen>();
-  gesture_navigation->BindPageHandlerReceiver(std::move(receiver));
 }
 
 void OobeScreensHandlerFactory::EstablishGaiaInfoScreenPipe(
     mojo::PendingReceiver<screens_common::mojom::GaiaInfoPageHandler> receiver,
     EstablishGaiaInfoScreenPipeCallback callback) {
-  CHECK(WizardController::default_controller());
   GaiaInfoScreen* gaia_info =
-      WizardController::default_controller()->GetScreen<GaiaInfoScreen>();
+      CHECK_DEREF(WizardController::default_controller())
+          .GetScreen<GaiaInfoScreen>();
   gaia_info->BindPageHandlerReceiver(std::move(receiver));
   gaia_info->PassPagePendingReceiverWithCallback(std::move(callback));
+}
+
+void OobeScreensHandlerFactory::EstablishGeminiIntroScreenPipe(
+    mojo::PendingReceiver<screens_common::mojom::GeminiIntroPageHandler>
+        receiver) {
+  GeminiIntroScreen* gemini_intro =
+      CHECK_DEREF(WizardController::default_controller())
+          .GetScreen<GeminiIntroScreen>();
+  gemini_intro->BindPageHandlerReceiver(std::move(receiver));
+}
+
+void OobeScreensHandlerFactory::EstablishGestureNavigationScreenPipe(
+    mojo::PendingReceiver<screens_common::mojom::GestureNavigationPageHandler>
+        receiver) {
+  GestureNavigationScreen* gesture_navigation =
+      CHECK_DEREF(WizardController::default_controller())
+          .GetScreen<GestureNavigationScreen>();
+  gesture_navigation->BindPageHandlerReceiver(std::move(receiver));
 }
 
 void OobeScreensHandlerFactory::EstablishConsumerUpdateScreenPipe(
     mojo::PendingReceiver<screens_oobe::mojom::ConsumerUpdatePageHandler>
         handler,
     EstablishConsumerUpdateScreenPipeCallback callback) {
-  CHECK(WizardController::default_controller());
   ConsumerUpdateScreen* consumer_update =
-      WizardController::default_controller()->GetScreen<ConsumerUpdateScreen>();
+      CHECK_DEREF(WizardController::default_controller())
+          .GetScreen<ConsumerUpdateScreen>();
   consumer_update->BindPageHandlerReceiver(std::move(handler));
   consumer_update->PassPagePendingReceiverWithCallback(std::move(callback));
 }
@@ -94,20 +134,69 @@ void OobeScreensHandlerFactory::EstablishConsumerUpdateScreenPipe(
 void OobeScreensHandlerFactory::EstablishPackagedLicenseScreenPipe(
     mojo::PendingReceiver<screens_oobe::mojom::PackagedLicensePageHandler>
         receiver) {
-  CHECK(WizardController::default_controller());
   PackagedLicenseScreen* packaged_license =
-      WizardController::default_controller()
-          ->GetScreen<PackagedLicenseScreen>();
+      CHECK_DEREF(WizardController::default_controller())
+          .GetScreen<PackagedLicenseScreen>();
   packaged_license->BindPageHandlerReceiver(std::move(receiver));
+}
+
+void OobeScreensHandlerFactory::EstablishArcVmDataMigrationScreenPipe(
+    mojo::PendingReceiver<screens_login::mojom::ArcVmDataMigrationPageHandler>
+        receiver,
+    EstablishArcVmDataMigrationScreenPipeCallback callback) {
+  ArcVmDataMigrationScreen* arc_vm_data_migration =
+      CHECK_DEREF(WizardController::default_controller())
+          .GetScreen<ArcVmDataMigrationScreen>();
+  arc_vm_data_migration->BindPageHandlerReceiver(std::move(receiver));
+  arc_vm_data_migration->PassPagePendingReceiverWithCallback(
+      std::move(callback));
+}
+
+void OobeScreensHandlerFactory::EstablishEncryptionMigrationScreenPipe(
+    mojo::PendingReceiver<screens_login::mojom::EncryptionMigrationPageHandler>
+        receiver,
+    EstablishEncryptionMigrationScreenPipeCallback callback) {
+  CHECK(WizardController::default_controller());
+  EncryptionMigrationScreen* encryption_migration =
+      WizardController::default_controller()
+          ->GetScreen<EncryptionMigrationScreen>();
+  encryption_migration->BindPageHandlerReceiver(std::move(receiver));
+  encryption_migration->PassPagePendingReceiverWithCallback(
+      std::move(callback));
+}
+
+void OobeScreensHandlerFactory::EstablishLacrosDataBackwardMigrationScreenPipe(
+    mojo::PendingReceiver<
+        screens_login::mojom::LacrosDataBackwardMigrationPageHandler> receiver,
+    EstablishLacrosDataBackwardMigrationScreenPipeCallback callback) {
+  CHECK(WizardController::default_controller());
+  LacrosDataBackwardMigrationScreen* lacros_data_backward =
+      WizardController::default_controller()
+          ->GetScreen<LacrosDataBackwardMigrationScreen>();
+  lacros_data_backward->BindPageHandlerReceiver(std::move(receiver));
+  lacros_data_backward->PassPagePendingReceiverWithCallback(
+      std::move(callback));
+}
+
+void OobeScreensHandlerFactory::EstablishLacrosDataMigrationScreenPipe(
+    mojo::PendingReceiver<screens_login::mojom::LacrosDataMigrationPageHandler>
+        receiver,
+    EstablishLacrosDataMigrationScreenPipeCallback callback) {
+  CHECK(WizardController::default_controller());
+  LacrosDataMigrationScreen* lacros_data_migration =
+      WizardController::default_controller()
+          ->GetScreen<LacrosDataMigrationScreen>();
+  lacros_data_migration->BindPageHandlerReceiver(std::move(receiver));
+  lacros_data_migration->PassPagePendingReceiverWithCallback(
+      std::move(callback));
 }
 
 void OobeScreensHandlerFactory::EstablishLocalDataLossWarningScreenPipe(
     mojo::PendingReceiver<
         screens_osauth::mojom::LocalDataLossWarningPageHandler> receiver) {
-  CHECK(WizardController::default_controller());
   LocalDataLossWarningScreen* local_data_loss_warning =
-      WizardController::default_controller()
-          ->GetScreen<LocalDataLossWarningScreen>();
+      CHECK_DEREF(WizardController::default_controller())
+          .GetScreen<LocalDataLossWarningScreen>();
   local_data_loss_warning->BindPageHandlerReceiver(std::move(receiver));
 }
 

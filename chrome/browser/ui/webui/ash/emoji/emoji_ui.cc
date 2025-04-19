@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/ui/webui/ash/emoji/emoji_ui.h"
 
 #include <iostream>
@@ -13,8 +18,6 @@
 #include "chrome/browser/ui/webui/ash/emoji/seal_utils.h"
 #include "chrome/browser/ui/webui/sanitized_image_source.h"
 #include "chrome/browser/ui/webui/top_chrome/webui_contents_wrapper.h"
-#include "chrome/browser/ui/webui/top_chrome/webui_contents_wrapper_service.h"
-#include "chrome/browser/ui/webui/top_chrome/webui_contents_wrapper_service_factory.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/emoji_picker_resources.h"
@@ -75,6 +78,14 @@ emoji_picker::mojom::Category ConvertCategoryEnum(
 }  // namespace
 
 namespace ash {
+
+EmojiUIConfig::EmojiUIConfig()
+    : DefaultTopChromeWebUIConfig(content::kChromeUIScheme,
+                                  chrome::kChromeUIEmojiPickerHost) {}
+
+bool EmojiUIConfig::ShouldAutoResizeHost() {
+  return true;
+}
 
 EmojiUI::EmojiUI(content::WebUI* web_ui)
     : TopChromeWebUIController(web_ui,

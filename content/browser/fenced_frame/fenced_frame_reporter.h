@@ -24,7 +24,6 @@
 #include "content/public/browser/privacy_sandbox_invoking_api.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/services/auction_worklet/public/mojom/private_aggregation_request.mojom.h"
-#include "services/network/public/cpp/attribution_reporting_runtime_features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/attribution.mojom-forward.h"
 #include "third_party/blink/public/common/fenced_frame/redacted_fenced_frame_config.h"
@@ -250,16 +249,17 @@ class CONTENT_EXPORT FencedFrameReporter
   // will be set to the ID of the navigation request initiated from the fenced
   // frame and targeting the new top-level frame. In all other cases (including
   // the fence.reportEvent() case), the navigation id will be null.
+  // Note: `ad_root_origin` will only be set for automatic beacons originating
+  // from ad components.
   bool SendReport(
       const DestinationVariant& event_variant,
       blink::FencedFrame::ReportingDestination reporting_destination,
       RenderFrameHostImpl* request_initiator_frame,
-      network::AttributionReportingRuntimeFeatures
-          attribution_reporting_runtime_features,
       std::string& error_message,
       blink::mojom::ConsoleMessageLevel& console_message_level,
       int initiator_frame_tree_node_id = RenderFrameHost::kNoFrameTreeNodeId,
-      std::optional<int64_t> navigation_id = std::nullopt);
+      std::optional<int64_t> navigation_id = std::nullopt,
+      std::optional<url::Origin> ad_root_origin = std::nullopt);
 
   // Called when a mapping for private aggregation requests of non-reserved
   // event types is received. Currently it is only called inside
@@ -328,8 +328,6 @@ class CONTENT_EXPORT FencedFrameReporter
     BeaconId beacon_id;
     bool is_automatic_beacon;
     network::mojom::AttributionSupport attribution_reporting_support;
-    network::AttributionReportingRuntimeFeatures
-        attribution_reporting_runtime_features;
   };
 
   struct PendingEvent {

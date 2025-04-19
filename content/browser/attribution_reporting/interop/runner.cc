@@ -15,16 +15,21 @@
 #include <utility>
 #include <vector>
 
+#include "base/base64.h"
 #include "base/check.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/containers/span.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/memory/raw_ref.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/ranges/algorithm.h"
 #include "base/sequence_checker.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/task_traits.h"
@@ -42,13 +47,14 @@
 #include "components/attribution_reporting/eligibility.h"
 #include "components/attribution_reporting/event_level_epsilon.h"
 #include "components/attribution_reporting/features.h"
-#include "components/attribution_reporting/max_event_level_reports.h"
 #include "components/attribution_reporting/privacy_math.h"
 #include "components/attribution_reporting/registration_eligibility.mojom-forward.h"
 #include "components/attribution_reporting/source_type.mojom-forward.h"
 #include "components/attribution_reporting/test_utils.h"
 #include "content/browser/aggregation_service/aggregatable_report.h"
+#include "content/browser/aggregation_service/aggregation_service_features.h"
 #include "content/browser/aggregation_service/aggregation_service_impl.h"
+#include "content/browser/aggregation_service/aggregation_service_test_utils.h"
 #include "content/browser/aggregation_service/public_key.h"
 #include "content/browser/attribution_reporting/attribution_background_registrations_id.h"
 #include "content/browser/attribution_reporting/attribution_cookie_checker.h"
@@ -67,9 +73,7 @@
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
-#include "services/network/public/cpp/attribution_reporting_runtime_features.h"
 #include "services/network/public/cpp/features.h"
-#include "services/network/public/cpp/trigger_verification.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/attribution.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -98,16 +102,82 @@ base::TimeDelta TimeOffset(base::Time time_origin) {
 
 class Adjuster : public ReportBodyAdjuster {
  public:
-  explicit Adjuster(base::Time time_origin) : time_origin_(time_origin) {}
+  Adjuster(base::Time time_origin,
+           const aggregation_service::TestHpkeKey& hpke_key)
+      : time_origin_(time_origin), hpke_key_(hpke_key) {}
 
   ~Adjuster() override = default;
 
  private:
   void AdjustEventLevel(base::Value::Dict& report_body) override {
-    // This field contains a string encoding seconds from the UNIX epoch. It
-    // needs to be adjusted relative to the simulator's origin time in order
-    // for test output to be consistent.
-    if (std::string* str = report_body.FindString("scheduled_report_time")) {
+    AdjustTime(report_body, "scheduled_report_time");
+  }
+
+  void AdjustAggregatable(base::Value::Dict& report_body) override {
+    AdjustAggregatableReportSharedInfo(report_body);
+  }
+
+  void AdjustAggregatableDebug(base::Value::Dict& report_body) override {
+    AdjustAggregatableReportSharedInfo(report_body);
+  }
+
+  void AdjustAggregatableReportSharedInfo(base::Value::Dict& report_body) {
+    std::string* shared_info = report_body.FindString("shared_info");
+    CHECK(shared_info);
+
+    std::optional<base::Value::Dict> shared_info_dict =
+        base::JSONReader::ReadDict(*shared_info, base::JSON_PARSE_RFC);
+    CHECK(shared_info_dict);
+
+    AdjustTime(*shared_info_dict, "scheduled_report_time");
+
+    // When source registration time is excluded from the report, its value is
+    // set to "0".
+    AdjustTime(*shared_info_dict, "source_registration_time",
+               /*skip_adjust_value=*/"0");
+
+    std::string adjusted_shared_info;
+    base::JSONWriter::Write(*shared_info_dict, &adjusted_shared_info);
+
+    // The payloads were encrypted with the original shared info, therefore
+    // need to be re-encrypted with the adjusted shared info.
+    base::Value::List* payloads =
+        report_body.FindList("aggregation_service_payloads");
+    CHECK(payloads);
+
+    for (base::Value& payload : *payloads) {
+      std::string* payload_str = payload.GetDict().FindString("payload");
+      CHECK(payload_str);
+
+      std::optional<std::vector<uint8_t>> encrypted_payload =
+          base::Base64Decode(*payload_str);
+      CHECK(encrypted_payload.has_value());
+
+      // Decrypt with the original shared info.
+      std::vector<uint8_t> decrypted_payload =
+          aggregation_service::DecryptPayloadWithHpke(
+              *encrypted_payload, hpke_key_->full_hpke_key(), *shared_info);
+
+      // Re-encrypt with the adjusted shared info.
+      std::string authenticated_info_str = base::StrCat(
+          {AggregatableReport::kDomainSeparationPrefix, adjusted_shared_info});
+      *payload_str =
+          base::Base64Encode(EncryptAggregatableReportPayloadWithHpke(
+              decrypted_payload, hpke_key_->GetPublicKey().key,
+              base::as_bytes(base::make_span(authenticated_info_str))));
+    }
+
+    *shared_info = std::move(adjusted_shared_info);
+  }
+
+  // Adjust the field that contains a string encoding seconds from the UNIX
+  // epoch. It needs to be adjusted relative to the simulator's origin time in
+  // order for test output to be consistent.
+  void AdjustTime(base::Value::Dict& dict,
+                  std::string_view key,
+                  std::string_view skip_adjust_value = "") {
+    if (std::string* str = dict.FindString(key);
+        str && *str != skip_adjust_value) {
       if (int64_t seconds; base::StringToInt64(*str, &seconds)) {
         *str = base::NumberToString(seconds -
                                     TimeOffset(time_origin_).InSeconds());
@@ -116,19 +186,22 @@ class Adjuster : public ReportBodyAdjuster {
   }
 
   const base::Time time_origin_;
+  const base::raw_ref<const aggregation_service::TestHpkeKey> hpke_key_;
 };
 
-AttributionInteropOutput::Report MakeReport(const network::ResourceRequest& req,
-                                            const base::Time time_origin) {
+AttributionInteropOutput::Report MakeReport(
+    const network::ResourceRequest& req,
+    const base::Time time_origin,
+    const aggregation_service::TestHpkeKey& hpke_key) {
   std::optional<base::Value> value =
       base::JSONReader::Read(network::GetUploadData(req), base::JSON_PARSE_RFC);
   CHECK(value.has_value());
 
-  Adjuster adjuster(time_origin);
+  Adjuster adjuster(time_origin, hpke_key);
   MaybeAdjustReportBody(req.url, *value, adjuster);
 
   return AttributionInteropOutput::Report(
-      base::Time::Now() - TimeOffset(time_origin), req.url, std::move(*value));
+      base::Time::Now() - TimeOffset(time_origin), req.url, *std::move(value));
 }
 
 class FakeCookieChecker : public AttributionCookieChecker {
@@ -207,14 +280,12 @@ class ControllableStorageDelegate : public AttributionResolverDelegateImpl {
   GetRandomizedResponseResult GetRandomizedResponse(
       const attribution_reporting::mojom::SourceType source_type,
       const attribution_reporting::TriggerSpecs& trigger_specs,
-      const attribution_reporting::MaxEventLevelReports max_event_level_reports,
       const attribution_reporting::EventLevelEpsilon epsilon) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-    ASSIGN_OR_RETURN(
-        auto response_data,
-        AttributionResolverDelegateImpl::GetRandomizedResponse(
-            source_type, trigger_specs, max_event_level_reports, epsilon));
+    ASSIGN_OR_RETURN(auto response_data,
+                     AttributionResolverDelegateImpl::GetRandomizedResponse(
+                         source_type, trigger_specs, epsilon));
 
     auto it = randomized_responses_.find(base::Time::Now());
     if (it == randomized_responses_.end()) {
@@ -223,11 +294,9 @@ class ControllableStorageDelegate : public AttributionResolverDelegateImpl {
 
     // Avoid crashing in `AttributionStorageSql::StoreSource()` by returning an
     // arbitrary error here, which will manifest as unexpected test output.
-    if (!attribution_reporting::IsValid(it->second, trigger_specs,
-                                        max_event_level_reports)) {
+    if (!attribution_reporting::IsValid(it->second, trigger_specs)) {
       LOG(ERROR) << "invalid randomized response with trigger_specs="
-                 << trigger_specs
-                 << ", max_event_level_reports=" << max_event_level_reports;
+                 << trigger_specs;
       return base::unexpected(attribution_reporting::RandomizedResponseError::
                                   kExceedsChannelCapacityLimit);
     }
@@ -254,8 +323,9 @@ class ControllableStorageDelegate : public AttributionResolverDelegateImpl {
 
   base::flat_map<base::Time, RandomizedResponse> randomized_responses_
       GUARDED_BY_CONTEXT(sequence_checker_);
+
   base::flat_map<base::Time, base::flat_set<int>>
-      null_aggregatable_reports_days_;
+      null_aggregatable_reports_days_ GUARDED_BY_CONTEXT(sequence_checker_);
 };
 
 void Handle(const AttributionSimulationEvent::StartRequest& event,
@@ -293,8 +363,7 @@ void Handle(const AttributionSimulationEvent::Response& event,
             AttributionDataHostManager& data_host_manager) {
   data_host_manager.NotifyBackgroundRegistrationData(
       BackgroundRegistrationsId(event.request_id), event.response_headers.get(),
-      event.url, {network::AttributionReportingRuntimeFeature::kCrossAppWeb},
-      /*trigger_verification=*/{});
+      event.url);
 }
 
 void Handle(const AttributionSimulationEvent::EndRequest& event,
@@ -332,8 +401,9 @@ void FastForwardUntilReportsConsumed(AttributionManager& manager,
 }  // namespace
 
 base::expected<AttributionInteropOutput, std::string>
-RunAttributionInteropSimulation(AttributionInteropRun run,
-                                const PublicKey& hpke_key) {
+RunAttributionInteropSimulation(
+    AttributionInteropRun run,
+    const aggregation_service::TestHpkeKey& hpke_key) {
   if (run.events.empty()) {
     return AttributionInteropOutput();
   }
@@ -352,6 +422,23 @@ RunAttributionInteropSimulation(AttributionInteropRun run,
         network::features::kAttributionReportingCrossAppWeb);
     scoped_api_state.emplace(AttributionOsLevelManager::ApiState::kEnabled);
   }
+  if (run.config.needs_aggregatable_debug) {
+    enabled_features.emplace_back(attribution_reporting::features::
+                                      kAttributionAggregatableDebugReporting);
+  }
+
+  if (run.config.needs_source_destination_limit) {
+    enabled_features.emplace_back(
+        attribution_reporting::features::kAttributionSourceDestinationLimit);
+  }
+
+  if (run.config.needs_aggregatable_filtering_ids) {
+    enabled_features.emplace_back(
+        attribution_reporting::features::
+            kAttributionReportingAggregatableFilteringIds);
+    enabled_features.emplace_back(
+        kPrivacySandboxAggregationServiceFilteringIds);
+  }
 
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
@@ -367,29 +454,37 @@ RunAttributionInteropSimulation(AttributionInteropRun run,
   attribution_reporting::ScopedMaxEventLevelEpsilonForTesting
       scoped_max_event_level_epsilon(run.config.max_event_level_epsilon);
 
+  attribution_reporting::ScopedMaxTriggerStateCardinalityForTesting
+      scoped_max_trigger_state_cardinality(
+          run.config.max_trigger_state_cardinality);
+
   // Prerequisites for using an environment with mock time.
   BrowserTaskEnvironment task_environment(
       base::test::TaskEnvironment::TimeSource::MOCK_TIME);
   TestBrowserContext browser_context;
 
-  // Ensure that `time_origin` has a whole number of seconds to make
-  // `AdjustEventLevelBody()` time calculations robust against
-  // sub-second-precision report times, which otherwise cannot be recovered
-  // because the `scheduled_report_time` field has second precision.
+  // Ensure that `time_origin` has a whole number of days to make
+  // `AdjustEventLevelBody()` and `AdjustAggregatableReportSharedInfo()` time
+  // calculations robust against sub-second-precision report times and rounding,
+  // which otherwise cannot be recovered because the `scheduled_report_time`
+  // field has second precision and `source_registration_time` is rounded to
+  // whole day.
   {
-    const base::Time with_millis = base::Time::Now();
+    const base::Time non_whole_day = base::Time::Now();
 
     base::Time::Exploded exploded;
-    with_millis.UTCExplode(&exploded);
+    non_whole_day.UTCExplode(&exploded);
     DCHECK(exploded.HasValidValues());
     exploded.millisecond = 0;
+    exploded.second = 0;
+    exploded.minute = 0;
+    exploded.hour = 0;
 
-    base::Time without_millis;
-    bool ok = base::Time::FromUTCExploded(exploded, &without_millis);
+    base::Time whole_day;
+    bool ok = base::Time::FromUTCExploded(exploded, &whole_day);
     DCHECK(ok);
 
-    task_environment.FastForwardBy((without_millis + base::Seconds(1)) -
-                                   with_millis);
+    task_environment.FastForwardBy((whole_day + base::Days(1)) - non_whole_day);
   }
 
   const base::Time time_origin = base::Time::Now();
@@ -412,7 +507,7 @@ RunAttributionInteropSimulation(AttributionInteropRun run,
   network::TestURLLoaderFactory test_url_loader_factory;
   test_url_loader_factory.SetInterceptor(
       base::BindLambdaForTesting([&](const network::ResourceRequest& req) {
-        output.reports.emplace_back(MakeReport(req, time_origin));
+        output.reports.emplace_back(MakeReport(req, time_origin, hpke_key));
         test_url_loader_factory.AddResponse(req.url.spec(), /*content=*/"");
       }));
 
@@ -443,12 +538,12 @@ RunAttributionInteropSimulation(AttributionInteropRun run,
         storage_partition->GetAggregationService())
         ->SetPublicKeysForTesting(  // IN-TEST
             GetAggregationServiceProcessingUrl(origin),
-            PublicKeyset({hpke_key},
+            PublicKeyset({hpke_key.GetPublicKey()},
                          /*fetch_time=*/base::Time::Now(),
                          /*expiry_time=*/base::Time::Max()));
   }
 
-  aggregation_service::ScopedAggregationCoordinatorAllowlistForTesting
+  ::aggregation_service::ScopedAggregationCoordinatorAllowlistForTesting
       scoped_aggregation_coordinators(
           std::move(run.config.aggregation_coordinator_origins));
 
@@ -491,6 +586,12 @@ void MaybeAdjustReportBody(const GURL& url,
           adjuster.AdjustVerboseDebug(*debug_data_type, *body);
         }
       }
+    }
+  } else if (url.path_piece() ==
+             "/.well-known/attribution-reporting/debug/"
+             "report-aggregate-debug") {
+    if (base::Value::Dict* dict = payload.GetIfDict()) {
+      adjuster.AdjustAggregatableDebug(*dict);
     }
   }
 }

@@ -24,8 +24,9 @@ chromium-metrics-reviews@google.com.
 
 <variants name="BooleanModel">
   <variant name="ChromeLowUserEngagement"/>
-  <variant name="ChromeStartAndroid"/>
-  <variant name="ChromeStartAndroidV2"/>
+  <variant name="ChromeStartAndroid" summary="(obsolete) Not used since M-127"/>
+  <variant name="ChromeStartAndroidV2"
+      summary="(obsolete) Not used since M-127"/>
   <variant name="CrossDeviceUserSegment"/>
   <variant name="FrequentFeatureUser"/>
   <variant name="IntentionalUserSegment"/>
@@ -67,8 +68,9 @@ chromium-metrics-reviews@google.com.
   <variant name="AdaptiveToolbar"/>
   <variant name="AndroidHomeModuleRanker"/>
   <variant name="ChromeLowUserEngagement"/>
-  <variant name="ChromeStartAndroid"/>
-  <variant name="ChromeStartAndroidV2"/>
+  <variant name="ChromeStartAndroid" summary="(obsolete) Not used since M-127"/>
+  <variant name="ChromeStartAndroidV2"
+      summary="(obsolete) Not used since M-127"/>
   <variant name="ComposePromotion"/>
   <variant name="ContextualPageActions"/>
   <variant name="CrossDeviceUser"/>
@@ -81,6 +83,7 @@ chromium-metrics-reviews@google.com.
   <variant name="FrequentFeatureUser"/>
   <variant name="IntentionalUser"/>
   <variant name="IosModuleRanker"/>
+  <variant name="MetricsClustering"/>
   <variant name="MostVisitedTilesUser"/>
   <variant name="PasswordManagerUser"/>
   <variant name="PowerUser"/>
@@ -98,8 +101,9 @@ chromium-metrics-reviews@google.com.
   <variant name="AdaptiveToolbar"/>
   <variant name="AndroidHomeModuleRanker"/>
   <variant name="ChromeLowUserEngagement"/>
-  <variant name="ChromeStartAndroid"/>
-  <variant name="ChromeStartAndroidV2"/>
+  <variant name="ChromeStartAndroid" summary="(obsolete) Not used since M-127"/>
+  <variant name="ChromeStartAndroidV2"
+      summary="(obsolete) Not used since M-127"/>
   <variant name="ComposePromotion"/>
   <variant name="ContextualPageActionPriceTracking"/>
   <variant name="CrossDeviceUserSegment"/>
@@ -113,6 +117,7 @@ chromium-metrics-reviews@google.com.
   <variant name="IntentionalUserSegment"/>
   <variant name="IosModuleRanker"/>
   <variant name="IosModuleRankerTest"/>
+  <variant name="MetricsClustering"/>
   <variant name="MostVisitedTilesUser"/>
   <variant name="NewTab"/>
   <variant name="PasswordManagerUser"/>
@@ -125,7 +130,7 @@ chromium-metrics-reviews@google.com.
   <variant name="TabletProductivityUser"/>
   <variant name="TabResumptionClassifier"/>
   <variant name="Unknown"/>
-  <variant name="URLVisitResumptionRanker"/>
+  <variant name="UrlVisitResumptionRanker"/>
   <variant name="Voice"/>
   <variant name="WebAppInstallationPromo"/>
 </variants>

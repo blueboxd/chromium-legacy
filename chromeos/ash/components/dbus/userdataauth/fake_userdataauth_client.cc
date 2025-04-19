@@ -4,15 +4,21 @@
 
 #include "chromeos/ash/components/dbus/userdataauth/fake_userdataauth_client.h"
 
+#include <cstdint>
 #include <limits>
+#include <memory>
+#include <optional>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/check.h"
-#include "base/containers/contains.h"
+#include "base/check_op.h"
+#include "base/containers/flat_map.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/notreached.h"
@@ -24,6 +30,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "chromeos/ash/components/cryptohome/constants.h"
+#include "chromeos/ash/components/cryptohome/error_types.h"
 #include "chromeos/ash/components/cryptohome/error_util.h"
 #include "chromeos/ash/components/dbus/cryptohome/UserDataAuth.pb.h"
 #include "chromeos/ash/components/dbus/cryptohome/auth_factor.pb.h"
@@ -337,6 +344,29 @@ bool AuthInputMatchesFakeFactorType(
       fake_factor);
 }
 
+// Helper that fills AuthFactorWithStatus' field with an auth factor.
+void BuildAuthFactorWithStatus(
+    const std::optional<user_data_auth::AuthFactor>& auth_factor,
+    user_data_auth::AuthFactorWithStatus* factor_with_status) {
+  *factor_with_status->mutable_auth_factor() = *auth_factor;
+  // Add all possible intents for conveniences.
+  factor_with_status->add_available_for_intents(
+      user_data_auth::AUTH_INTENT_DECRYPT);
+  factor_with_status->add_available_for_intents(
+      user_data_auth::AUTH_INTENT_VERIFY_ONLY);
+  factor_with_status->add_available_for_intents(
+      user_data_auth::AUTH_INTENT_WEBAUTHN);
+  factor_with_status->mutable_status_info()->set_time_available_in(0);
+  if (auth_factor->type() == user_data_auth::AUTH_FACTOR_TYPE_PIN) {
+    if (auth_factor->pin_metadata().auth_locked()) {
+      factor_with_status->mutable_status_info()->set_time_available_in(
+          std::numeric_limits<uint64_t>::max());
+      factor_with_status->mutable_status_info()->set_time_expiring_in(
+          std::numeric_limits<uint64_t>::max());
+    }
+  }
+}
+
 // Helper that automatically sends a reply struct to a supplied callback when
 // it goes out of scope. Basically a specialized `absl::Cleanup` or
 // `std::scope_exit`.
@@ -560,6 +590,21 @@ std::pair<std::string, std::string> FakeUserDataAuthClient::TestApi::AddSession(
   session.authenticated = authenticated;
 
   return {auth_session_id, session.broadcast_id};
+}
+
+bool FakeUserDataAuthClient::TestApi::IsAuthenticated(
+    const cryptohome::AccountIdentifier& account_id) {
+  CHECK(FakeUserDataAuthClient::Get()->users_.contains(account_id));
+
+  auto& auth_sessions = FakeUserDataAuthClient::Get()->auth_sessions_;
+
+  auto [auth_session_id, session] =
+      *find_if(std::begin(auth_sessions), std::end(auth_sessions),
+               [&account_id](auto session_entry) {
+                 return session_entry.second.account == account_id;
+               });
+
+  return session.authenticated;
 }
 
 bool FakeUserDataAuthClient::TestApi::IsCurrentSessionEphemeral() {
@@ -871,6 +916,9 @@ void FakeUserDataAuthClient::StartAuthSession(
           FakeAuthFactorToAuthFactor(label, factor);
       DCHECK(auth_factor);
       *reply.add_auth_factors() = *auth_factor;
+      auto* factor_with_status =
+          reply.add_configured_auth_factors_with_status();
+      BuildAuthFactorWithStatus(auth_factor, factor_with_status);
     }
   }
 }
@@ -903,22 +951,9 @@ void FakeUserDataAuthClient::ListAuthFactors(
         FakeAuthFactorToAuthFactor(label, factor);
     if (auth_factor) {
       *reply.add_configured_auth_factors() = *auth_factor;
-      // Hack as cryptohome sends information via list of available intents.
       auto* factor_with_status =
           reply.add_configured_auth_factors_with_status();
-      *factor_with_status->mutable_auth_factor() = *auth_factor;
-      factor_with_status->add_available_for_intents(
-          user_data_auth::AUTH_INTENT_DECRYPT);
-      factor_with_status->add_available_for_intents(
-          user_data_auth::AUTH_INTENT_VERIFY_ONLY);
-      factor_with_status->add_available_for_intents(
-          user_data_auth::AUTH_INTENT_WEBAUTHN);
-      if (absl::holds_alternative<PinFactor>(factor)) {
-        if (absl::get<PinFactor>(factor).locked) {
-          factor_with_status->mutable_status_info()->set_time_available_in(
-              std::numeric_limits<uint64_t>::max());
-        }
-      }
+      BuildAuthFactorWithStatus(auth_factor, factor_with_status);
     } else {
       LOG(WARNING) << "Ignoring auth factor incompatible with AuthFactor API: "
                    << label;
@@ -1080,52 +1115,6 @@ void FakeUserDataAuthClient::CreatePersistentUser(
       auth_session.requested_auth_session_intent);
   reply.mutable_auth_properties()->set_seconds_left(
       cryptohome::kAuthsessionInitialLifetime.InSeconds());
-}
-
-void FakeUserDataAuthClient::RestoreDeviceKey(
-    const ::user_data_auth::RestoreDeviceKeyRequest& request,
-    RestoreDeviceKeyCallback callback) {
-  ::user_data_auth::RestoreDeviceKeyReply reply;
-  ReplyOnReturn auto_reply(&reply, std::move(callback));
-  RememberRequest<Operation::kRestoreDeviceKey>(request);
-
-  if (auto error = TakeOperationError(Operation::kRestoreDeviceKey);
-      cryptohome::HasError(error)) {
-    SetErrorWrapperToReply(reply, error);
-    return;
-  }
-
-  cryptohome::ErrorWrapper error = cryptohome::ErrorWrapper::success();
-  auto* authenticated_auth_session =
-      GetAuthenticatedAuthSession(request.auth_session_id(), &error);
-
-  if (authenticated_auth_session == nullptr) {
-    SetErrorWrapperToReply(reply, error);
-    return;
-  }
-
-  if (authenticated_auth_session->ephemeral) {
-    LOG(ERROR) << "Ephemeral AuthSession used with RestoreDeviceKey";
-    SetErrorWrapperToReply(
-        reply, cryptohome::ErrorWrapper::CreateFromErrorCodeOnly(
-                   CryptohomeErrorCode::CRYPTOHOME_ERROR_INVALID_ARGUMENT));
-    return;
-  }
-
-  const auto user_it = users_.find(authenticated_auth_session->account);
-  if (user_it == std::end(users_)) {
-    SetErrorWrapperToReply(
-        reply, cryptohome::ErrorWrapper::CreateFromErrorCodeOnly(
-                   CryptohomeErrorCode::CRYPTOHOME_ERROR_ACCOUNT_NOT_FOUND));
-    return;
-  }
-
-  if (!authenticated_auth_session->authorized_auth_session_intent.Has(
-          user_data_auth::AUTH_INTENT_DECRYPT)) {
-    reply.set_error(
-        CryptohomeErrorCode::CRYPTOHOME_ERROR_UNAUTHENTICATED_AUTH_SESSION);
-    return;
-  }
 }
 
 void FakeUserDataAuthClient::PreparePersistentVault(
@@ -1504,6 +1493,52 @@ void FakeUserDataAuthClient::UpdateAuthFactorMetadata(
   return;
 }
 
+void FakeUserDataAuthClient::ReplaceAuthFactor(
+    const ::user_data_auth::ReplaceAuthFactorRequest& request,
+    ReplaceAuthFactorCallback callback) {
+  ::user_data_auth::ReplaceAuthFactorReply reply;
+  ReplyOnReturn auto_reply(&reply, std::move(callback));
+  RememberRequest<Operation::kReplaceAuthFactor>(request);
+
+  if (auto error = TakeOperationError(Operation::kReplaceAuthFactor);
+      cryptohome::HasError(error)) {
+    SetErrorWrapperToReply(reply, error);
+    return;
+  }
+
+  auto error = cryptohome::ErrorWrapper::success();
+  auto* session =
+      GetAuthenticatedAuthSession(request.auth_session_id(), &error);
+  SetErrorWrapperToReply(reply, error);
+  if (session == nullptr) {
+    return;
+  }
+
+  auto user_it = users_.find(session->account);
+  DCHECK(user_it != std::end(users_));
+  UserCryptohomeState& user_state = user_it->second;
+
+  const std::string& old_label = request.auth_factor_label();
+  DCHECK(!old_label.empty());
+  CHECK(user_state.auth_factors.contains(old_label))
+      << "Key does not exist: " << old_label;
+
+  auto [new_label, new_factor] = AuthFactorWithInputToFakeAuthFactor(
+      request.auth_factor(), request.auth_input(), enable_auth_check_);
+  CHECK(!user_state.auth_factors.contains(new_label))
+      << "Key already exists: " << new_label;
+
+  // Remove the fake old auth factor and replace with the new one.
+  bool erased = user_state.auth_factors.erase(old_label) > 0;
+  if (erased) {
+    user_state.auth_factors[std::move(new_label)] = std::move(new_factor);
+  } else {
+    SetErrorWrapperToReply(
+        reply, cryptohome::ErrorWrapper::CreateFromErrorCodeOnly(
+                   CryptohomeErrorCode::CRYPTOHOME_ERROR_KEY_NOT_FOUND));
+  }
+}
+
 void FakeUserDataAuthClient::RemoveAuthFactor(
     const ::user_data_auth::RemoveAuthFactorRequest& request,
     RemoveAuthFactorCallback callback) {
@@ -1857,6 +1892,13 @@ void FakeUserDataAuthClient::GetRecoverableKeyStores(
       *reply.add_key_stores() = std::move(*store);
     }
   }
+}
+
+void FakeUserDataAuthClient::SetUserDataStorageWriteEnabled(
+    const ::user_data_auth::SetUserDataStorageWriteEnabledRequest& request,
+    SetUserDataStorageWriteEnabledCallback callback) {
+  ::user_data_auth::SetUserDataStorageWriteEnabledReply reply;
+  std::move(callback).Run(std::move(reply));
 }
 
 }  // namespace ash

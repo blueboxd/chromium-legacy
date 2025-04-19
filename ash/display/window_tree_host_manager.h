@@ -54,22 +54,10 @@ class ASH_EXPORT WindowTreeHostManager
       public ui::ImeKeyEventDispatcher,
       public AshWindowTreeHostDelegate {
  public:
-  // TODO(oshima): Consider moving this to display::DisplayObserver.
+  // TODO(oshima): Remove this observer.
   class ASH_EXPORT Observer {
    public:
     virtual ~Observer() {}
-
-    // Invoked only once after all displays are initialized
-    // after startup.
-    virtual void OnDisplaysInitialized() {}
-
-    // Invoked when the display configuration change is requested,
-    // but before the change is applied to aura/ash.
-    virtual void OnDisplayConfigurationChanging() {}
-
-    // Invoked when the all display configuration changes
-    // have been applied.
-    virtual void OnDisplayConfigurationChanged() {}
 
     // Invoked in WindowTreeHostManager::Shutdown().
     virtual void OnWindowTreeHostManagerShutdown() {}
@@ -211,10 +199,6 @@ class ASH_EXPORT WindowTreeHostManager
   // to, for all the display providers. This ensures that the display textures
   // are rendered on the correct display.
   void UpdateHostOfDisplayProviders();
-
-  // True if display addition happens, and restore the windows back to it if
-  // they were previously inside it.
-  bool should_restore_windows_on_display_added_ = false;
 
   typedef std::map<int64_t, AshWindowTreeHost*> WindowTreeHostMap;
   // The mapping from display ID to its window tree host.

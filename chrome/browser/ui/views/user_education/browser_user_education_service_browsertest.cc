@@ -11,6 +11,7 @@
 #include <sstream>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
@@ -268,7 +269,6 @@ bool IsComparatorLimited(const feature_engagement::Comparator& comparator,
 
 using BrowserUserEducationServiceBrowserTest = InProcessBrowserTest;
 
-// TODO: crbug.com/336983096 - Consistently failing test.
 IN_PROC_BROWSER_TEST_F(BrowserUserEducationServiceBrowserTest,
                        FeatureConfigurationConsistencyCheck) {
   // Exceptions to the consistency checks. All of those with crbug.com IDs
@@ -315,8 +315,6 @@ IN_PROC_BROWSER_TEST_F(BrowserUserEducationServiceBrowserTest,
       {&feature_engagement::kIPHPowerBookmarksSidePanelFeature,
        IPHFailureReason::kWrongSessionRate,
        "crbug.com/1443067, crbug.com/1443063"},
-      {&feature_engagement::kIPHPasswordsAccountStorageFeature,
-       IPHFailureReason::kWrongSessionRate, "crbug.com/1443075"},
 
       // Deprecated; should probably be removed.
       {&feature_engagement::kIPHReadingListInSidePanelFeature, std::nullopt,
@@ -629,6 +627,18 @@ class BrowserUserEducationServiceNewBadgeBrowserTest
 
   ~BrowserUserEducationServiceNewBadgeBrowserTest() override = default;
 
+  void SetUpOnMainThread() override {
+    InProcessBrowserTest::SetUpOnMainThread();
+
+    // Make this seem like an old profile so we are not in the new profile
+    // grace period.
+    auto& storage_service =
+        UserEducationServiceFactory::GetForBrowserContext(browser()->profile())
+            ->feature_promo_storage_service();
+    storage_service.set_profile_creation_time_for_testing(
+        storage_service.GetCurrentTime() - base::Days(365));
+  }
+
  private:
   base::test::ScopedFeatureList feature_list_;
 };
@@ -721,4 +731,40 @@ IN_PROC_BROWSER_TEST_P(BrowserUserEducationServiceRecentSessionsTest,
       UserEducationServiceFactory::GetForBrowserContext(browser()->profile())
           ->recent_session_tracker();
   EXPECT_EQ(GetParam(), result != nullptr);
+}
+
+// Verify that the "disable rate limiting" command line arg works.
+class BrowserUserEducationServiceCommandLineTest
+    : public BrowserUserEducationServiceBrowserTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    if (GetParam()) {
+      command_line->AppendSwitch(
+          user_education::features::kDisableRateLimitingCommandLine);
+    }
+  }
+};
+
+INSTANTIATE_TEST_SUITE_P(,
+                         BrowserUserEducationServiceCommandLineTest,
+                         testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(BrowserUserEducationServiceCommandLineTest,
+                       DisableUserEducationRateLimiting) {
+  if (GetParam()) {
+    EXPECT_EQ(user_education::features::GetLowPriorityCooldown(),
+              base::Seconds(0));
+    EXPECT_EQ(user_education::features::GetSessionStartGracePeriod(),
+              base::Seconds(0));
+    EXPECT_EQ(user_education::features::GetNewProfileGracePeriod(),
+              base::Seconds(0));
+  } else {
+    EXPECT_GT(user_education::features::GetLowPriorityCooldown(),
+              base::Seconds(0));
+    EXPECT_GT(user_education::features::GetSessionStartGracePeriod(),
+              base::Seconds(0));
+    EXPECT_GT(user_education::features::GetNewProfileGracePeriod(),
+              base::Seconds(0));
+  }
 }

@@ -6,19 +6,19 @@
 
 #include <memory>
 #include <numeric>
-#include <vector>
 
 #include "ash/api/tasks/tasks_client.h"
 #include "ash/api/tasks/tasks_types.h"
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/glanceables/classroom/glanceables_classroom_client.h"
 #include "ash/glanceables/classroom/glanceables_classroom_student_view.h"
-#include "ash/glanceables/classroom/glanceables_classroom_types.h"
+#include "ash/glanceables/common/glanceables_time_management_bubble_view.h"
 #include "ash/glanceables/glanceables_controller.h"
-#include "ash/glanceables/glanceables_metrics.h"
 #include "ash/glanceables/tasks/glanceables_tasks_view.h"
 #include "ash/public/cpp/session/user_info.h"
 #include "ash/public/cpp/style/color_provider.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/time/calendar_view.h"
@@ -30,6 +30,9 @@
 #include "base/functional/bind.h"
 #include "base/ranges/algorithm.h"
 #include "base/time/time.h"
+#include "base/types/cxx23_to_underlying.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "components/session_manager/session_manager_types.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/list_model.h"
@@ -38,10 +41,12 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/highlight_border.h"
+#include "ui/views/layout/layout_types.h"
 
 namespace ash {
 
 using BoundsType = CalendarView::CalendarSlidingSurfaceBoundsType;
+using GlanceablesContext = GlanceablesTimeManagementBubbleView::Context;
 
 namespace {
 
@@ -57,6 +62,18 @@ constexpr int kGlanceablesContainerCornerRadius = 24;
 
 // The margin between each glanceable views.
 constexpr int kMarginBetweenGlanceables = 8;
+
+void SetLastExpandedGlanceables(GlanceablesContext context) {
+  Shell::Get()->session_controller()->GetActivePrefService()->SetInteger(
+      prefs::kGlanceablesTimeManagementLastExpandedBubble,
+      base::to_underlying(context));
+}
+
+GlanceablesContext GetLastExpandedGlanceables() {
+  return static_cast<GlanceablesContext>(
+      Shell::Get()->session_controller()->GetActivePrefService()->GetInteger(
+          prefs::kGlanceablesTimeManagementLastExpandedBubble));
+}
 
 // The container view of time management glanceables, which includes Tasks and
 // Classroom.
@@ -91,6 +108,48 @@ class TimeManagementContainer : public views::FlexLayoutView {
   TimeManagementContainer& operator=(const TimeManagementContainer&) = delete;
   ~TimeManagementContainer() override = default;
 
+  views::SizeBounds GetAvailableSize(const View* child) const override {
+    // Only consider setting a bounded available size for
+    // `GlanceablesTimeManagementBubbleView` children.
+    auto* time_management_child =
+        views::AsViewClass<GlanceablesTimeManagementBubbleView>(child);
+    if (!time_management_child || !time_management_child->IsExpanded()) {
+      return views::SizeBounds();
+    }
+
+    const auto container_available_height =
+        parent()->GetAvailableSize(this).height();
+    if (!container_available_height.is_bounded()) {
+      return views::SizeBounds();
+    }
+
+    int available_height =
+        container_available_height.value() - GetInteriorMargin().height();
+    bool is_first_visible_child = true;
+    for (auto child_iter : children()) {
+      if (!child_iter->GetVisible()) {
+        continue;
+      }
+      auto* typed_child =
+          views::AsViewClass<GlanceablesTimeManagementBubbleView>(child_iter);
+      if (!typed_child) {
+        continue;
+      }
+      if (!is_first_visible_child) {
+        available_height -= 8;
+      }
+      // Assume that only one GlanceablesTimeManagementBubbleView is expanded.
+      if (child_iter != time_management_child) {
+        available_height -= typed_child->GetCollapsedStatePreferredHeight();
+      }
+      is_first_visible_child = false;
+    }
+
+    views::SizeBounds available_size;
+    available_size.set_height(available_height);
+    return available_size;
+  }
+
   void ChildPreferredSizeChanged(views::View* child) override {
     PreferredSizeChanged();
   }
@@ -104,6 +163,19 @@ BEGIN_METADATA(TimeManagementContainer)
 END_METADATA
 
 }  // namespace
+
+// static
+void GlanceableTrayBubbleView::RegisterUserProfilePrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterIntegerPref(
+      prefs::kGlanceablesTimeManagementLastExpandedBubble,
+      base::to_underlying(GlanceablesContext::kTasks));
+}
+
+// static
+void GlanceableTrayBubbleView::ClearUserStatePrefs(PrefService* prefs) {
+  prefs->ClearPref(prefs::kGlanceablesTimeManagementLastExpandedBubble);
+}
 
 GlanceableTrayBubbleView::GlanceableTrayBubbleView(
     const InitParams& init_params,
@@ -175,12 +247,9 @@ void GlanceableTrayBubbleView::InitializeContents() {
 
   auto* const classroom_client =
       Shell::Get()->glanceables_controller()->GetClassroomClient();
-  const bool is_classroom_enabled_via_flags =
-      features::IsGlanceablesTimeManagementClassroomStudentDataEnabled() ||
-      features::IsGlanceablesTimeManagementClassroomStudentViewEnabled() ||
-      features::AreGlanceablesV2Enabled();
-  if (should_show_non_calendar_glanceables && is_classroom_enabled_via_flags &&
-      classroom_client) {
+  if (should_show_non_calendar_glanceables &&
+      features::IsGlanceablesTimeManagementClassroomStudentViewEnabled() &&
+      classroom_client && !classroom_client->IsDisabledByAdmin()) {
     CHECK(!classroom_bubble_student_view_);
     classroom_client->IsStudentRoleActive(base::BindOnce(
         &GlanceableTrayBubbleView::AddClassroomBubbleStudentViewIfNeeded,
@@ -203,6 +272,20 @@ int GlanceableTrayBubbleView::GetHeightForWidth(int width) const {
                   CalculateMaxTrayBubbleHeight(shelf_->GetWindow()));
 }
 
+views::SizeBounds GlanceableTrayBubbleView::GetAvailableSize(
+    const View* child) const {
+  if (child != time_management_container_view_) {
+    return TrayBubbleView::GetAvailableSize(child);
+  }
+
+  views::SizeBounds available_size;
+  auto max_height = CalculateMaxTrayBubbleHeight(shelf_->GetWindow());
+  available_size.set_height(max_height -
+                            calendar_view_->GetPreferredSize().height() -
+                            kMarginBetweenGlanceables);
+  return available_size;
+}
+
 void GlanceableTrayBubbleView::AddedToWidget() {
   if (!initialized_) {
     InitializeContents();
@@ -221,27 +304,30 @@ void GlanceableTrayBubbleView::OnWidgetClosing(views::Widget* widget) {
   TrayBubbleView::OnWidgetClosing(widget);
 }
 
-void GlanceableTrayBubbleView::OnDisplayConfigurationChanged() {
+void GlanceableTrayBubbleView::OnDidApplyDisplayChanges() {
   int max_height = CalculateMaxTrayBubbleHeight(shelf_->GetWindow());
   SetMaxHeight(max_height);
   SetCalendarPreferredSize();
   ChangeAnchorRect(shelf_->GetSystemTrayAnchorRect());
 }
 
-void GlanceableTrayBubbleView::OnExpandStateChanged(
-    GlanceablesTimeManagementBubbleView::Context context,
-    bool is_expanded) {
+void GlanceableTrayBubbleView::OnExpandStateChanged(GlanceablesContext context,
+                                                    bool is_expanded,
+                                                    bool expand_by_overscroll) {
   // If one of the `GlanceablesTimeManagementBubbleView` is expanded, collapse
   // the other.
-  if (context == GlanceablesTimeManagementBubbleView::Context::kClassroom &&
-      tasks_bubble_view_) {
-    tasks_bubble_view_->SetExpandState(!is_expanded);
+  if (context == GlanceablesContext::kClassroom && tasks_bubble_view_) {
+    tasks_bubble_view_->SetExpandState(!is_expanded, expand_by_overscroll);
+    SetLastExpandedGlanceables(is_expanded ? GlanceablesContext::kClassroom
+                                           : GlanceablesContext::kTasks);
     return;
   }
 
-  if (context == GlanceablesTimeManagementBubbleView::Context::kTasks &&
-      classroom_bubble_student_view_) {
-    classroom_bubble_student_view_->SetExpandState(!is_expanded);
+  if (context == GlanceablesContext::kTasks && classroom_bubble_student_view_) {
+    classroom_bubble_student_view_->SetExpandState(!is_expanded,
+                                                   expand_by_overscroll);
+    SetLastExpandedGlanceables(is_expanded ? GlanceablesContext::kTasks
+                                           : GlanceablesContext::kClassroom);
     return;
   }
 }
@@ -252,33 +338,23 @@ void GlanceableTrayBubbleView::AddClassroomBubbleStudentViewIfNeeded(
     return;
   }
 
-  if (features::AreGlanceablesV2Enabled() ||
-      features::IsGlanceablesTimeManagementClassroomStudentViewEnabled()) {
-    // Adds classroom bubble before `calendar_view_`.
-    MaybeCreateTimeManagementContainer();
-    classroom_bubble_student_view_ =
-        time_management_container_view_->AddChildView(
-            std::make_unique<GlanceablesClassroomStudentView>());
-    time_management_view_observation_.AddObservation(
-        classroom_bubble_student_view_);
-    // Collapse `classroom_bubble_student_view_` if `tasks_bubble_view_` exists.
-    if (tasks_bubble_view_) {
-      classroom_bubble_student_view_->SetExpandState(false);
-    }
-
-    UpdateTimeManagementContainerLayout();
-    UpdateBubble();
-
-    AdjustChildrenFocusOrder();
-  } else if (features::
-                 IsGlanceablesTimeManagementClassroomStudentDataEnabled()) {
-    Shell::Get()
-        ->glanceables_controller()
-        ->GetClassroomClient()
-        ->GetStudentAssignmentsWithApproachingDueDate(base::BindOnce(
-            &GlanceableTrayBubbleView::OnPotentialStudentAssignmentsLoaded,
-            weak_ptr_factory_.GetWeakPtr()));
+  // Adds classroom bubble before `calendar_view_`.
+  MaybeCreateTimeManagementContainer();
+  classroom_bubble_student_view_ =
+      time_management_container_view_->AddChildView(
+          std::make_unique<GlanceablesClassroomStudentView>());
+  time_management_view_observation_.AddObservation(
+      classroom_bubble_student_view_);
+  // If `tasks_bubble_view_` exists, collapse either `tasks_bubble_view_` or
+  // `classroom_bubble_student_view_` according to the prefs.
+  if (tasks_bubble_view_) {
+    UpdateChildBubblesInitialExpandState();
   }
+
+  UpdateTimeManagementContainerLayout();
+  UpdateBubble();
+
+  AdjustChildrenFocusOrder();
 }
 
 void GlanceableTrayBubbleView::AddTaskBubbleViewIfNeeded(
@@ -293,15 +369,30 @@ void GlanceableTrayBubbleView::AddTaskBubbleViewIfNeeded(
   tasks_bubble_view_ = time_management_container_view_->AddChildViewAt(
       std::make_unique<GlanceablesTasksView>(task_lists), 0);
   time_management_view_observation_.AddObservation(tasks_bubble_view_);
-  // Collapse `classroom_bubble_student_view_` if it exists.
+  // If `classroom_bubble_student_view_` exists, collapse either
+  // `tasks_bubble_view_` or `classroom_bubble_student_view_` according to the
+  // prefs.
   if (classroom_bubble_student_view_) {
-    classroom_bubble_student_view_->SetExpandState(false);
+    UpdateChildBubblesInitialExpandState();
   }
 
   UpdateTimeManagementContainerLayout();
   UpdateBubble();
 
   AdjustChildrenFocusOrder();
+}
+
+void GlanceableTrayBubbleView::UpdateChildBubblesInitialExpandState() {
+  // By default all children is in expanded states. Directly collapse the one
+  // that should be collapsed. Also we only have to update the expand state of
+  // one child bubble as `OnExpandStateChanged()` will automatically updates the
+  // others.
+  if (GetLastExpandedGlanceables() == GlanceablesContext::kTasks) {
+    classroom_bubble_student_view_->SetExpandState(
+        false, /*expand_by_overscroll=*/false);
+  } else {
+    tasks_bubble_view_->SetExpandState(false, /*expand_by_overscroll=*/false);
+  }
 }
 
 void GlanceableTrayBubbleView::UpdateTaskLists(
@@ -340,16 +431,6 @@ void GlanceableTrayBubbleView::MaybeCreateTimeManagementContainer() {
         AddChildViewAt(std::make_unique<TimeManagementContainer>(), 0);
     box_layout()->SetFlexForView(time_management_container_view_, 1);
   }
-}
-
-void GlanceableTrayBubbleView::OnPotentialStudentAssignmentsLoaded(
-    bool success,
-    std::vector<std::unique_ptr<GlanceablesClassroomAssignment>> assignments)
-    const {
-  auto* const controller = Shell::Get()->glanceables_controller();
-  RecordClassromInitialLoadTime(
-      /*first_occurrence=*/controller->bubble_shown_count() == 1,
-      base::TimeTicks::Now() - controller->last_bubble_show_time());
 }
 
 void GlanceableTrayBubbleView::UpdateTimeManagementContainerLayout() {

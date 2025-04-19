@@ -6,6 +6,8 @@
 #define GPU_COMMAND_BUFFER_COMMON_SHARED_IMAGE_USAGE_H_
 
 #include <stdint.h>
+
+#include <initializer_list>
 #include <string>
 
 #include "gpu/gpu_export.h"
@@ -63,28 +65,31 @@ enum SharedImageUsage : uint32_t {
   // Windows only: image will be backed by a DComp surface. A swap chain is
   // preferred when an image is opaque and expected to update frequently and
   // independently of other overlays. This flag is incompatible with
-  // DISPLAY_READ.
+  // DISPLAY_READ and SCANOUT_DXGI_SWAP_CHAIN.
   SHARED_IMAGE_USAGE_SCANOUT_DCOMP_SURFACE = 1 << 16,
+  // Windows only: image will be backed by a DXGI swap chain. This flag is
+  // incompatible with SCANOUT_DCOMP_SURFACE.
+  SHARED_IMAGE_USAGE_SCANOUT_DXGI_SWAP_CHAIN = 1 << 17,
 
   // Image will be used as a WebGPU storage texture.
-  SHARED_IMAGE_USAGE_WEBGPU_STORAGE_TEXTURE = 1 << 17,
+  SHARED_IMAGE_USAGE_WEBGPU_STORAGE_TEXTURE = 1 << 18,
 
   // Image will be written via GLES2Interface
-  SHARED_IMAGE_USAGE_GLES2_WRITE = 1 << 18,
+  SHARED_IMAGE_USAGE_GLES2_WRITE = 1 << 19,
 
   // Image will be written via RasterInterface
-  SHARED_IMAGE_USAGE_RASTER_WRITE = 1 << 19,
+  SHARED_IMAGE_USAGE_RASTER_WRITE = 1 << 20,
 
   // Image will be written by Dawn (for WebGPU)
-  SHARED_IMAGE_USAGE_WEBGPU_WRITE = 1 << 20,
+  SHARED_IMAGE_USAGE_WEBGPU_WRITE = 1 << 21,
 
   // The image will be used by GLES2 only for raster over the GLES2 interface.
   // Specified in conjunction with GLES2_READ and/or GLES2_WRITE.
-  SHARED_IMAGE_USAGE_GLES2_FOR_RASTER_ONLY = 1 << 21,
+  SHARED_IMAGE_USAGE_GLES2_FOR_RASTER_ONLY = 1 << 22,
 
   // The image will be used by raster only over the GLES2 interface.
   // Specified in conjunction with RASTER_READ and/or RASTER_WRITE.
-  SHARED_IMAGE_USAGE_RASTER_OVER_GLES2_ONLY = 1 << 22,
+  SHARED_IMAGE_USAGE_RASTER_OVER_GLES2_ONLY = 1 << 23,
 
   // Image will contain protected content to be scanned out. Note that this type
   // of image
@@ -93,7 +98,7 @@ enum SharedImageUsage : uint32_t {
   // to by a preprocessing step that converts the image's pixel format into
   // something the
   // display controller understands.
-  SHARED_IMAGE_USAGE_PROTECTED_VIDEO = 1 << 23,
+  SHARED_IMAGE_USAGE_PROTECTED_VIDEO = 1 << 24,
 
   // Start service side only usage flags after this entry. They must be larger
   // than `LAST_CLIENT_USAGE`.
@@ -102,10 +107,136 @@ enum SharedImageUsage : uint32_t {
   // Image will have pixels uploaded from CPU. The backing must implement
   // `UploadFromMemory()` if it supports this usage. Clients should specify
   // SHARED_IMAGE_USAGE_CPU_WRITE if they need to write pixels to the image.
-  SHARED_IMAGE_USAGE_CPU_UPLOAD = 1 << 24,
+  SHARED_IMAGE_USAGE_CPU_UPLOAD = 1 << 25,
 
   LAST_SHARED_IMAGE_USAGE = SHARED_IMAGE_USAGE_CPU_UPLOAD
 };
+
+class GPU_EXPORT SharedImageUsageSet {
+ public:
+  constexpr SharedImageUsageSet() = default;
+  // Permanent nolint to allow for natural conversion from mask to set.
+  // NOLINTBEGIN(google-explicit-constructor)
+  constexpr SharedImageUsageSet(SharedImageUsage mask) : set_storage_(mask) {}
+  // NOLINTEND(google-explicit-constructor)
+
+  // TODO(crbug.com/343347288): Eventually we should deprecate this constructor
+  // and replace its usage with a function named something like
+  // 'UntypedMaskCast'. This will allow easly track any remaining non typed
+  // usage.
+  explicit constexpr SharedImageUsageSet(uint32_t mask) : set_storage_(mask) {}
+
+  constexpr SharedImageUsageSet(
+      std::initializer_list<SharedImageUsage> usages) {
+    for (auto usage : usages) {
+      set_storage_ |= usage;
+    }
+  }
+
+  // Unions with 'set_b' and stores result in self.
+  inline constexpr void PutAll(gpu::SharedImageUsageSet set_b) {
+    set_storage_ = set_storage_ | static_cast<uint32_t>(set_b);
+  }
+
+  // Removes all elements of input set from this set.
+  inline constexpr void RemoveAll(gpu::SharedImageUsageSet set_b) {
+    uint32_t negation_mask = ~set_b.set_storage_;
+    set_storage_ &= negation_mask;
+  }
+
+  // Returns true iff our set is empty.
+  constexpr bool empty() const { return set_storage_ == 0; }
+
+  // The semantic expectation here is that 'Has' is for set testing of single
+  // elements.
+  inline constexpr bool Has(gpu::SharedImageUsage set_b) const {
+    return (set_storage_ & set_b) == set_b;
+  }
+
+  // These function are intentionally deleted. Use the 'Has' function as
+  // 'SharedImageUsage' is conceptually not a set.
+  inline constexpr bool HasAll(gpu::SharedImageUsage set_b) const = delete;
+  inline constexpr bool HasAny(gpu::SharedImageUsage set_b) const = delete;
+
+  // Test set membership via intersection. Returns true if 'set_b' is a subset.
+  inline constexpr bool HasAll(gpu::SharedImageUsageSet set_b) const {
+    return (set_storage_ & set_b.set_storage_) == set_b.set_storage_;
+  }
+
+  // Test set membership via intersection.
+  inline constexpr bool HasAny(gpu::SharedImageUsageSet set_b) const {
+    return (set_storage_ & set_b.set_storage_) != 0;
+  }
+
+  inline constexpr void operator|=(gpu::SharedImageUsageSet mask_b) {
+    PutAll(mask_b);
+  }
+
+  // Temporary exception to allow for existing, non type safe, conversions.
+  // TODO(crbug.com/343347288): Remove after all usage has been converted to
+  // `SharedImageUsageSet`.
+  // NOLINTBEGIN(google-explicit-constructor)
+  inline constexpr operator uint32_t() const { return set_storage_; }
+  // NOLINTEND(google-explicit-constructor)
+
+ private:
+  friend inline constexpr bool operator==(gpu::SharedImageUsageSet set_a,
+                                          gpu::SharedImageUsageSet set_b);
+
+  friend inline constexpr gpu::SharedImageUsageSet operator|(
+      gpu::SharedImageUsageSet set_a,
+      gpu::SharedImageUsage mask_b);
+  friend inline constexpr gpu::SharedImageUsageSet operator|(
+      gpu::SharedImageUsage mask_a,
+      gpu::SharedImageUsageSet set_b);
+  friend inline constexpr gpu::SharedImageUsageSet operator|(
+      gpu::SharedImageUsage mask_a,
+      gpu::SharedImageUsage mask_b);
+
+  friend inline constexpr const SharedImageUsageSet Intersection(
+      gpu::SharedImageUsageSet set_a,
+      gpu::SharedImageUsageSet set_b);
+  uint32_t set_storage_ = 0;
+};
+
+inline constexpr const SharedImageUsageSet Intersection(
+    gpu::SharedImageUsageSet set_a,
+    gpu::SharedImageUsageSet set_b) {
+  return SharedImageUsageSet(set_a.set_storage_ & set_b.set_storage_);
+}
+// The global operators below cause 'SharedImageUsage' operations to result in
+// 'SharedImageUsageSet' and avoid the ambiguity with uint32_t.
+inline constexpr gpu::SharedImageUsageSet operator|(
+    gpu::SharedImageUsageSet set_a,
+    gpu::SharedImageUsageSet set_b) {
+  set_a.PutAll(set_b);
+  return set_a;
+}
+
+inline constexpr gpu::SharedImageUsageSet operator|(
+    gpu::SharedImageUsageSet set_a,
+    gpu::SharedImageUsage mask_b) {
+  set_a.PutAll(mask_b);
+  return set_a;
+}
+
+inline constexpr gpu::SharedImageUsageSet operator|(
+    gpu::SharedImageUsage mask_a,
+    gpu::SharedImageUsageSet set_b) {
+  // Set union is order independent.
+  return set_b | mask_a;
+}
+
+inline constexpr gpu::SharedImageUsageSet operator|(
+    gpu::SharedImageUsage mask_a,
+    gpu::SharedImageUsage mask_b) {
+  return gpu::SharedImageUsageSet(mask_a) | mask_b;
+}
+
+inline constexpr bool operator==(gpu::SharedImageUsageSet set_a,
+                                 gpu::SharedImageUsageSet set_b) {
+  return set_a.set_storage_ == set_b.set_storage_;
+}
 
 // This is used as the debug_label prefix for all shared images created by
 // importing buffers in Exo. This prefix is checked in the GPU process when
@@ -113,14 +244,15 @@ enum SharedImageUsage : uint32_t {
 GPU_EXPORT extern const char kExoTextureLabelPrefix[];
 
 // Returns true if usage is a valid client usage.
-GPU_EXPORT bool IsValidClientUsage(uint32_t usage);
+GPU_EXPORT bool IsValidClientUsage(SharedImageUsageSet usage);
 
 // Returns true iff usage includes SHARED_IMAGE_USAGE_GLES2_READ or
 // SHARED_IMAGE_USAGE_GLES2_WRITE.
-GPU_EXPORT bool HasGLES2ReadOrWriteUsage(uint32_t usage);
+GPU_EXPORT bool HasGLES2ReadOrWriteUsage(SharedImageUsageSet usage);
 
 // Create a string to label SharedImageUsage.
-GPU_EXPORT std::string CreateLabelForSharedImageUsage(uint32_t usage);
+GPU_EXPORT std::string CreateLabelForSharedImageUsage(
+    SharedImageUsageSet usage);
 
 }  // namespace gpu
 

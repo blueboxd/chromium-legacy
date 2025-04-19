@@ -26,6 +26,10 @@ BASE_FEATURE(kPrefetchClientHints,
              "PrefetchClientHints",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kPrefetchXClientDataHeader,
+             "PrefetchXClientDataHeader",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 constexpr base::FeatureParam<PrefetchClientHintsCrossSiteBehavior>::Option
     kPrefetchClientHintsCrossSiteBehaviorOptions[] = {
         {PrefetchClientHintsCrossSiteBehavior::kNone, "none"},
@@ -38,22 +42,18 @@ const base::FeatureParam<PrefetchClientHintsCrossSiteBehavior>
         PrefetchClientHintsCrossSiteBehavior::kLowEntropy,
         &kPrefetchClientHintsCrossSiteBehaviorOptions};
 
-BASE_FEATURE(kPrefetchOffTheRecord,
-             "PrefetchOffTheRecord",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kPrefetchStateContaminationMitigation,
              "PrefetchStateContaminationMitigation",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 const base::FeatureParam<bool>
     kPrefetchStateContaminationSwapsBrowsingContextGroup{
-        &kPrefetchStateContaminationMitigation, "swaps_bcg", false};
+        &kPrefetchStateContaminationMitigation, "swaps_bcg", true};
 
 BASE_FEATURE(kPrefetchProxy, "PrefetchProxy", base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kPrefetchUnblockOnCancel,
-             "PrefetchUnblockOnCancel",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kPrefetchCookieIndices,
+             "PrefetchCookieIndices",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace features

@@ -11,6 +11,7 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/metrics/payments/card_unmask_authentication_metrics.h"
 #include "components/autofill/core/browser/payments/autofill_error_dialog_context.h"
+#include "components/autofill/core/browser/payments/payments_autofill_client.h"
 #include "components/autofill/core/browser/payments/test_authentication_requester.h"
 #include "components/autofill/core/browser/payments/test_payments_autofill_client.h"
 #include "components/autofill/core/browser/payments/test_payments_network_interface.h"
@@ -70,11 +71,13 @@ class CreditCardOtpAuthenticatorTestBase : public testing::Test {
     personal_data().SetPrefService(nullptr);
   }
 
-  void OnDidGetRealPan(AutofillClient::PaymentsRpcResult result,
-                       const std::string& real_pan,
-                       bool server_returned_decline_details = false) {
+  void OnDidGetRealPan(
+      payments::PaymentsAutofillClient::PaymentsRpcResult result,
+      const std::string& real_pan,
+      bool server_returned_decline_details = false) {
     payments::PaymentsNetworkInterface::UnmaskResponseDetails response;
-    if (result != AutofillClient::PaymentsRpcResult::kSuccess) {
+    if (result !=
+        payments::PaymentsAutofillClient::PaymentsRpcResult::kSuccess) {
       if (server_returned_decline_details) {
         AutofillErrorDialogContext context;
         context.type = AutofillErrorDialogType::kVirtualCardTemporaryError;
@@ -90,7 +93,8 @@ class CreditCardOtpAuthenticatorTestBase : public testing::Test {
     response.dcvv = "123";
     response.expiration_month = test::NextMonth();
     response.expiration_year = test::NextYear();
-    response.card_type = AutofillClient::PaymentsRpcCardType::kVirtualCard;
+    response.card_type =
+        payments::PaymentsAutofillClient::PaymentsRpcCardType::kVirtualCard;
     authenticator_->OnDidGetRealPan(result, response);
   }
 
@@ -99,9 +103,11 @@ class CreditCardOtpAuthenticatorTestBase : public testing::Test {
     payments::PaymentsNetworkInterface::UnmaskResponseDetails response;
     response.flow_status = flow_status;
     response.context_token = context_token;
-    response.card_type = AutofillClient::PaymentsRpcCardType::kVirtualCard;
-    authenticator_->OnDidGetRealPan(AutofillClient::PaymentsRpcResult::kSuccess,
-                                    response);
+    response.card_type =
+        payments::PaymentsAutofillClient::PaymentsRpcCardType::kVirtualCard;
+    authenticator_->OnDidGetRealPan(
+        payments::PaymentsAutofillClient::PaymentsRpcResult::kSuccess,
+        response);
   }
 
   std::string OtpAuthenticatorContextToken() {
@@ -140,13 +146,13 @@ class CreditCardOtpAuthenticatorTestBase : public testing::Test {
 
   std::unique_ptr<TestAuthenticationRequester> requester_;
   base::test::TaskEnvironment task_environment_;
+  syncer::TestSyncService sync_service_;
   TestPersonalDataManager personal_data_manager_;
   TestAutofillClient autofill_client_;
   raw_ptr<payments::TestPaymentsNetworkInterface> payments_network_interface_;
   std::unique_ptr<CreditCardOtpAuthenticator> authenticator_;
   CreditCard card_;
   CardUnmaskChallengeOption selected_otp_challenge_option_;
-  syncer::TestSyncService sync_service_;
 };
 
 class CreditCardOtpAuthenticatorTest
@@ -201,7 +207,8 @@ TEST_P(CreditCardOtpAuthenticatorTest, AuthenticateServerCardSuccess) {
       payments_network_interface_->unmask_request()->risk_data.empty());
 
   // Simulate server returns success and invoke the callback.
-  OnDidGetRealPan(AutofillClient::PaymentsRpcResult::kSuccess, kTestNumber);
+  OnDidGetRealPan(payments::PaymentsAutofillClient::PaymentsRpcResult::kSuccess,
+                  kTestNumber);
   ASSERT_TRUE(requester_->did_succeed().has_value());
   EXPECT_TRUE(*(requester_->did_succeed()));
   EXPECT_EQ(kTestNumber16, requester_->number());
@@ -225,7 +232,8 @@ TEST_P(CreditCardOtpAuthenticatorTest, SelectChallengeOptionFailsWithVcnError) {
   base::HistogramTester histogram_tester;
   // Simulate server returns virtual card permanent failure.
   payments_network_interface_->set_select_challenge_option_result(
-      AutofillClient::PaymentsRpcResult::kVcnRetrievalPermanentFailure);
+      payments::PaymentsAutofillClient::PaymentsRpcResult::
+          kVcnRetrievalPermanentFailure);
 
   // Simulate user selects OTP challenge option. Current context_token is from
   // previous unmask response. TestPaymentsNetworkInterface will ack the select
@@ -266,7 +274,7 @@ TEST_P(CreditCardOtpAuthenticatorTest,
   // Simulate server returns non-virtual card permanent failure, e.g. response
   // not complete.
   payments_network_interface_->set_select_challenge_option_result(
-      AutofillClient::PaymentsRpcResult::kPermanentFailure);
+      payments::PaymentsAutofillClient::PaymentsRpcResult::kPermanentFailure);
 
   // Simulate user selects OTP challenge option. Current context_token is from
   // previous unmask response. TestPaymentsNetworkInterface will ack the select
@@ -323,9 +331,9 @@ TEST_P(CreditCardOtpAuthenticatorTest, OtpAuthServerVcnError) {
     authenticator_->OnUnmaskPromptAccepted(/*otp=*/u"111111");
     // Simulate server returns virtual card retrieval try again failure. We will
     // show the error dialog and end session.
-    OnDidGetRealPan(
-        AutofillClient::PaymentsRpcResult::kVcnRetrievalTryAgainFailure,
-        /*real_pan=*/"", server_returned_decline_details);
+    OnDidGetRealPan(payments::PaymentsAutofillClient::PaymentsRpcResult::
+                        kVcnRetrievalTryAgainFailure,
+                    /*real_pan=*/"", server_returned_decline_details);
     // Verify error dialog is shown.
     EXPECT_TRUE(autofill_client_.GetPaymentsAutofillClient()
                     ->autofill_error_dialog_shown());
@@ -384,8 +392,9 @@ TEST_P(CreditCardOtpAuthenticatorTest, OtpAuthServerNonVcnError) {
   authenticator_->OnUnmaskPromptAccepted(/*otp=*/u"111111");
   // Simulate server returns non-Vcn try again failure. We will reuse virtual
   // card error dialog and end session.
-  OnDidGetRealPan(AutofillClient::PaymentsRpcResult::kTryAgainFailure,
-                  /*real_pan=*/"");
+  OnDidGetRealPan(
+      payments::PaymentsAutofillClient::PaymentsRpcResult::kTryAgainFailure,
+      /*real_pan=*/"");
   // Verify error dialog is shown.
   EXPECT_TRUE(autofill_client_.GetPaymentsAutofillClient()
                   ->autofill_error_dialog_shown());
@@ -461,7 +470,8 @@ TEST_P(CreditCardOtpAuthenticatorTest, OtpAuthMismatchThenRetry) {
       payments_network_interface_->unmask_request()->risk_data.empty());
 
   // Simulate server returns success for the second try and invoke the callback.
-  OnDidGetRealPan(AutofillClient::PaymentsRpcResult::kSuccess, kTestNumber);
+  OnDidGetRealPan(payments::PaymentsAutofillClient::PaymentsRpcResult::kSuccess,
+                  kTestNumber);
   ASSERT_TRUE(requester_->did_succeed().has_value());
   EXPECT_TRUE(*(requester_->did_succeed()));
   EXPECT_EQ(kTestNumber16, requester_->number());
@@ -556,7 +566,8 @@ TEST_P(CreditCardOtpAuthenticatorTest, OtpAuthExpiredThenResendOtp) {
       payments_network_interface_->unmask_request()->risk_data.empty());
 
   // Simulate server returns success for the second try and invoke the callback.
-  OnDidGetRealPan(AutofillClient::PaymentsRpcResult::kSuccess, kTestNumber);
+  OnDidGetRealPan(payments::PaymentsAutofillClient::PaymentsRpcResult::kSuccess,
+                  kTestNumber);
   ASSERT_TRUE(requester_->did_succeed().has_value());
   EXPECT_TRUE(*(requester_->did_succeed()));
   EXPECT_EQ(kTestNumber16, requester_->number());

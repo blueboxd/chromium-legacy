@@ -41,6 +41,7 @@
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-forward.h"
 #include "third_party/perfetto/include/perfetto/tracing/traced_value_forward.h"
 #include "ui/accessibility/ax_node_id_forward.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -112,6 +113,7 @@ class BrowserContext;
 class DocumentRef;
 struct GlobalRenderFrameHostId;
 struct GlobalRenderFrameHostToken;
+class NavigationHandle;
 class RenderProcessHost;
 class RenderViewHost;
 class RenderWidgetHost;
@@ -378,6 +380,31 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // one of `this` ancestors was loaded in a <fencedframe> element. This
   // supports both Shadow DOM and MPArch implementations.
   virtual bool IsNestedWithinFencedFrame() const = 0;
+
+  // Check if the frame has untrusted network access disabled.
+  //
+  // A Fenced frame can disable untrusted network access for itself and the
+  // descendant iframes in the fenced frame tree by calling the fenced frame API
+  // `window.fence.disableUntrustedNetwork()`. After this API is invoked, no
+  // untrusted network requests are allowed in the fenced frame tree, i.e. in
+  // the root fenced frame and all of its descendant iframes. This includes:
+  // * Subresources requests.
+  // * Navigation requests.
+  // * Event level reporting.
+  // * Any other network channels, for example, WebSocket, web workers, etc.
+  //
+  // Fenced frames will get access to cross-site information, for example,
+  // shared storage API after the untrusted network access is disabled.
+  //
+  // Note: An example of a trusted network request is the aggregation report
+  // sent by Private Aggregation API. Because the report is privacy preserving,
+  // it is allowed from the fenced frame after the untrusted network access is
+  // disabled. Additional trusted network communications, such as to a secure
+  // trusted execution environment, may be added in the future.
+  //
+  // See
+  // https://github.com/WICG/fenced-frame/blob/master/explainer/fenced_frames_with_local_unpartitioned_data_access.md.
+  virtual bool IsUntrustedNetworkDisabled() const = 0;
 
   // |ForEachRenderFrameHost| traverses this RenderFrameHost and all of its
   // descendants, including frames in any inner frame trees (such as guest
@@ -875,17 +902,23 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
       const gfx::Point& location,
       const blink::mojom::MediaPlayerAction& action) = 0;
 
-  // Requests the current video frame of the media player at `location`, scaled
-  // if needed to be bounded by `max_size` with aspect ratio preserved, unless
-  // the original area is already less than `max_area`, where `max_size` and
-  // `max_area` are both in device-independent pixels. This is to avoid scaling
-  // images with very large/small aspect ratio to avoid losing information. If
-  // any of the dimensions is non-positive, no scaling will be performed.
-  virtual void RequestVideoFrameAt(
+  // Requests the current video frame and bounds of the media player at
+  // `location`. The returned image is scaled if needed to be bounded by
+  // `max_size` with aspect ratio preserved, unless the original area is already
+  // less than `max_area`, where `max_size` and `max_area` are both in
+  // device-independent pixels. This is to avoid scaling images with very
+  // large/small aspect ratio to avoid losing information. If any of the
+  // dimensions is non-positive, no scaling will be performed. The bounds
+  // originate from the DOM layer, are in DIP and are relative to the local
+  // root's widget (see Element::BoundsInWidget()). No guarantee is made about
+  // their correlation with the bounds of the video frame as displayed in the
+  // presentation layer. The returned bounds are also not guaranteed to
+  // correspond to the result of returned video frame.
+  virtual void RequestVideoFrameAtWithBoundsHint(
       const gfx::Point& location,
       const gfx::Size& max_size,
       int max_area,
-      base::OnceCallback<void(const gfx::ImageSkia&)> callback) = 0;
+      base::OnceCallback<void(const SkBitmap&, const gfx::Rect&)> callback) = 0;
 
   // Creates a Network Service-backed factory from appropriate |NetworkContext|.
   //
@@ -1054,7 +1087,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // site can’t be reached".
   // This can't be called for pending commit RFH because the value is set
   // during call to RenderFrameHostImpl::DidNavigate which happens after commit.
-  virtual bool IsErrorDocument() = 0;
+  virtual bool IsErrorDocument() const = 0;
 
   // Return checked and weak references, respectively, to the current document
   // in this RenderFrameHost, which will be no longer valid once the
@@ -1081,6 +1114,16 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // browser (e.g. typing on the location bar) or from the renderer while having
   // transient user activation
   virtual bool IsLastCrossDocumentNavigationStartedByUser() const = 0;
+
+  // Returns NavigationHandles to pending-commit cross-document navigations.
+  // These navigations occur when the final RenderFrameHost for the navigation
+  // has been picked, the NavigationHandle ownership has been transferred
+  // to it, the CommitNavigation IPC has been sent to the renderer, and the
+  // navigation is waiting for the DidCommitNavigation acknowledgement. For
+  // more information on how these cross-document navigations are determined,
+  // refer to LifecycleState::kPendingCommit.
+  virtual std::vector<base::SafeRef<NavigationHandle>>
+  GetPendingCommitCrossDocumentNavigations() const = 0;
 
   // Checks Blink runtime-enabled features (BREF) to create and return
   // a CookieSettingOverrides pertaining to the last committed document in the

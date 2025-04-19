@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/modules/imagecapture/image_capture_frame_grabber.h"
 
 #include "base/synchronization/lock.h"
@@ -153,7 +158,7 @@ void ImageCaptureFrameGrabber::SingleShotFrameHandler::ConvertAndDeliverFrame(
   const bool is_readable = frame->format() == media::PIXEL_FORMAT_I420 ||
                            frame->format() == media::PIXEL_FORMAT_I420A ||
                            (frame->format() == media::PIXEL_FORMAT_NV12 &&
-                            frame->HasGpuMemoryBuffer());
+                            frame->HasMappableGpuBuffer());
   if (!is_readable) {
     cc::SkiaPaintCanvas canvas(surface->getCanvas());
     cc::PaintFlags paint_flags;
@@ -187,25 +192,25 @@ void ImageCaptureFrameGrabber::SingleShotFrameHandler::ConvertAndDeliverFrame(
 
   if (frame->storage_type() == media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
     DCHECK_EQ(frame->format(), media::PIXEL_FORMAT_NV12);
-    auto* gmb = frame->GetGpuMemoryBuffer();
-    if (!gmb->Map()) {
-      DLOG(ERROR) << "Error mapping GpuMemoryBuffer video frame";
+    auto scoped_mapping = frame->MapGMBOrSharedImage();
+    if (!scoped_mapping) {
+      DLOG(ERROR) << "Failed to get the mapped memory.";
       std::move(callback).Run(sk_sp<SkImage>());
       return;
     }
 
     // NV12 is the only supported pixel format at the moment.
     DCHECK_EQ(frame->format(), media::PIXEL_FORMAT_NV12);
-    int y_stride = gmb->stride(0);
-    int uv_stride = gmb->stride(1);
+    int y_stride = static_cast<int>(scoped_mapping->Stride(0));
+    int uv_stride = static_cast<int>(scoped_mapping->Stride(1));
     const uint8_t* y_plane =
-        (static_cast<uint8_t*>(gmb->memory(0)) + frame->visible_rect().x() +
-         (frame->visible_rect().y() * y_stride));
+        (static_cast<uint8_t*>(scoped_mapping->Memory(0)) +
+         frame->visible_rect().x() + (frame->visible_rect().y() * y_stride));
     // UV plane of NV12 has 2-byte pixel width, with half chroma subsampling
     // both horizontally and vertically.
-    const uint8_t* uv_plane = (static_cast<uint8_t*>(gmb->memory(1)) +
-                               ((frame->visible_rect().x() * 2) / 2) +
-                               ((frame->visible_rect().y() / 2) * uv_stride));
+    const uint8_t* uv_plane = scoped_mapping->Memory(1) +
+                              ((frame->visible_rect().x() * 2) / 2) +
+                              ((frame->visible_rect().y() / 2) * uv_stride);
 
     if (need_rotate) {
       // Transform to I420 first to be later on rotated.
@@ -238,8 +243,6 @@ void ImageCaptureFrameGrabber::SingleShotFrameHandler::ConvertAndDeliverFrame(
           NOTREACHED_IN_MIGRATION();
       }
     }
-
-    gmb->Unmap();
   } else {
     DCHECK(frame->format() == media::PIXEL_FORMAT_I420 ||
            frame->format() == media::PIXEL_FORMAT_I420A);

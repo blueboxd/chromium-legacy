@@ -18,6 +18,7 @@
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/shared_image_capabilities.h"
+#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "media/base/simple_sync_token_client.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_types.h"
@@ -78,7 +79,7 @@ class Context : public media::RenderableGpuMemoryBufferVideoFramePool::Context {
       const gfx::ColorSpace& color_space,
       GrSurfaceOrigin surface_origin,
       SkAlphaType alpha_type,
-      uint32_t usage,
+      gpu::SharedImageUsageSet usage,
       gpu::SyncToken& sync_token) override {
     auto* sii = SharedImageInterface();
     if (!sii) {
@@ -94,32 +95,44 @@ class Context : public media::RenderableGpuMemoryBufferVideoFramePool::Context {
   }
 
   scoped_refptr<gpu::ClientSharedImage> CreateSharedImage(
-      gfx::GpuMemoryBuffer* gpu_memory_buffer,
-      gfx::BufferPlane plane,
+      const gfx::Size& size,
+      gfx::BufferUsage buffer_usage,
+      const viz::SharedImageFormat& si_format,
       const gfx::ColorSpace& color_space,
       GrSurfaceOrigin surface_origin,
       SkAlphaType alpha_type,
-      uint32_t usage,
+      gpu::SharedImageUsageSet usage,
       gpu::SyncToken& sync_token) override {
     auto* sii = SharedImageInterface();
-    if (!sii)
+    if (!sii) {
       return nullptr;
-    auto client_shared_image = sii->CreateSharedImage(
-        gpu_memory_buffer, GpuMemoryBufferManager(), plane,
-        {color_space, surface_origin, alpha_type, usage,
-         "WebRTCVideoFramePool"});
-    CHECK(client_shared_image);
+    }
+    auto client_shared_image =
+        sii->CreateSharedImage({si_format, size, color_space, surface_origin,
+                                alpha_type, usage, "WebRTCVideoFramePool"},
+                               gpu::kNullSurfaceHandle, buffer_usage);
+    if (!client_shared_image) {
+      return nullptr;
+    }
+#if BUILDFLAG(IS_MAC)
+    client_shared_image->SetColorSpaceOnNativeBuffer(color_space);
+#endif
     sync_token = sii->GenVerifiedSyncToken();
     return client_shared_image;
   }
 
-  void DestroySharedImage(
-      const gpu::SyncToken& sync_token,
-      scoped_refptr<gpu::ClientSharedImage> shared_image) override {
+  void DestroySharedImage(const gpu::SyncToken& sync_token,
+                          scoped_refptr<gpu::ClientSharedImage> shared_image,
+                          const bool is_mappable_si_enabled) override {
     auto* sii = SharedImageInterface();
     if (!sii)
       return;
-    sii->DestroySharedImage(sync_token, std::move(shared_image));
+    CHECK(shared_image);
+    if (is_mappable_si_enabled) {
+      shared_image->UpdateDestructionSyncToken(sync_token);
+    } else {
+      sii->DestroySharedImage(sync_token, std::move(shared_image));
+    }
   }
 
  private:
@@ -292,9 +305,8 @@ WebRtcVideoFrameAdapter::SharedResources::ConstructVideoFrameFromTexture(
 #if BUILDFLAG(IS_WIN)
         // For shared memory GMBs on Windows we needed to explicitly request a
         // copy from the shared image GPU texture to the GMB.
-        DCHECK(dst_frame->HasGpuMemoryBuffer());
-        DCHECK_EQ(dst_frame->GetGpuMemoryBuffer()->GetType(),
-                  gfx::SHARED_MEMORY_BUFFER);
+        CHECK(dst_frame->HasMappableGpuBuffer());
+        CHECK(!dst_frame->HasNativeGpuMemoryBuffer());
         gpu::SyncToken blit_done_sync_token;
         ri->GenUnverifiedSyncTokenCHROMIUM(blit_done_sync_token.GetData());
 

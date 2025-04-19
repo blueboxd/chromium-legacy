@@ -95,7 +95,6 @@
 #include "chrome/browser/ui/startup/startup_types.h"
 #include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/web_applications/os_integration/web_app_shortcut_mac.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths_internal.h"
@@ -385,23 +384,6 @@ base::FilePath GetStartupProfilePathMac() {
   return profile_path_info.path;
 }
 
-void OpenUrlsInBrowserWithProfileName(const std::vector<GURL>& urls,
-                                      const base::FilePath& profile_name) {
-  g_browser_process->profile_manager()->LoadProfile(
-      profile_name, /*incognito=*/false,
-      base::BindOnce(
-          [](const std::vector<GURL>& urls, Profile* profile) {
-            if (profile) {
-              OpenUrlsInBrowserWithProfile(urls, profile);
-            } else {
-              app_controller_mac::RunInLastProfileSafely(
-                  base::BindOnce(&OpenUrlsInBrowserWithProfile, urls),
-                  app_controller_mac::kShowProfilePickerOnFailure);
-            }
-          },
-          urls));
-}
-
 // Open the urls in the last used browser. Loads the profile asynchronously if
 // needed.
 void OpenUrlsInBrowser(const std::vector<GURL>& urls) {
@@ -446,9 +428,30 @@ void OpenUrlsInBrowser(const std::vector<GURL>& urls) {
           base::BindOnce(
               [](const base::flat_map<base::FilePath, std::vector<GURL>>
                      profile_url_map) {
+                const base::FilePath& user_data_dir =
+                    g_browser_process->profile_manager()->user_data_dir();
+                ProfileAttributesStorage& profile_attributes_storage =
+                    g_browser_process->profile_manager()
+                        ->GetProfileAttributesStorage();
                 for (const auto& [profile, urls_for_profile] :
                      profile_url_map) {
-                  OpenUrlsInBrowserWithProfileName(urls_for_profile, profile);
+                  const base::FilePath profile_path =
+                      user_data_dir.Append(profile);
+                  if (profile_attributes_storage.GetProfileAttributesWithPath(
+                          profile_path)) {
+                    RunInProfileSafely(
+                        profile_path,
+                        base::BindOnce(&OpenUrlsInBrowserWithProfile,
+                                       urls_for_profile),
+                        app_controller_mac::kShowProfilePickerOnFailure);
+                  } else {
+                    // If the target profile doesn't exist, fall back to the
+                    // last profile.
+                    RunInLastProfileSafely(
+                        base::BindOnce(&OpenUrlsInBrowserWithProfile,
+                                       urls_for_profile),
+                        app_controller_mac::kShowProfilePickerOnFailure);
+                  }
                 }
               }));
     }
@@ -1475,6 +1478,7 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
         // Profile-level items that affect how the profile's UI looks should
         // only be available while there is a Profile opened.
         case IDC_SHOW_FULL_URLS:
+        case IDC_SHOW_GOOGLE_LENS_SHORTCUT:
           enable = hasLoadedProfile;
           break;
         // Browser-level items that open in new tabs or perform an action in a
@@ -2241,33 +2245,26 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
 
   if ([self windowHasBrowserTabs:[self windowForPerformClose]]) {
     // Close Window   ⇧⌘W
+    // Close All     ⌥⇧⌘W (alternate, replaces "Close Window" when ⌥ pressed)
     // Close Tab       ⌘W
     [self configureMenuItemForCloseWindow:shiftCmdWMenuItem];
     [self configureMenuItemForCloseTab:cmdWMenuItem];
   } else {
+    // (no ⇧⌘W menu item)
+    // Close All     ⌥⇧⌘W (alternate, appears when ⌥ pressed)
     // Close Window    ⌘W
-    // (no Close Tab)
-    [self configureMenuItemForCloseWindow:cmdWMenuItem];
+    //
+    // Having "Close All" appear out of nowhere when the ⌥ key is pressed is
+    // less than ideal, but "Close All" is a non-primary piece of UI and
+    // non-tabbed windows are significantly less common, so this will do for
+    // now. This may need to be revisited if it turns out to become an issue.
     [self hideMenuItem:shiftCmdWMenuItem];
-  }
-
-  // This menu item shuffling makes a "Close All" item appear. The AppKit wants
-  // to own the File menu, so this item's appearance is likely a result of
-  // magic code in the AppKit. However, we prefer to add and manage our own
-  // menu items (localization, for example). Also, this "Close All" menu item
-  // complicates the positioning of the "Close Window" and "Close Tab" items.
-  // Locate the "Close All" menu item and remove it.
-  NSMenu* fileMenu = [self fileMenu];
-  for (NSMenuItem* item in [[fileMenu itemArray] copy]) {
-    if (item.action == @selector(closeAll:)) {
-      [fileMenu removeItem:item];
-      break;
-    }
+    [self configureMenuItemForCloseWindow:cmdWMenuItem];
   }
 
   // Force no longer hidden items to appear, or newly hidden items to
   // disappear.
-  [fileMenu update];
+  [[self fileMenu] update];
 }
 
 - (BOOL)application:(NSApplication*)application
@@ -2480,7 +2477,6 @@ void OpenUrlsInBrowserWithProfile(const std::vector<GURL>& urls,
 
 // Returns the profile to be used for new windows (or nullptr if it fails).
 Profile* GetSafeProfile(Profile* loaded_profile) {
-  DCHECK(loaded_profile);
   return
       [AppController.sharedController safeProfileForNewWindows:loaded_profile];
 }
@@ -2553,10 +2549,8 @@ void RunInProfileSafely(const base::FilePath& profile_dir,
     OnProfileLoaded(std::move(callback), on_failure, profile);
     return;
   }
-  // Pass the OnceCallback by reference because CreateProfileAsync() needs a
-  // repeating callback. It will be called at most once.
-  g_browser_process->profile_manager()->CreateProfileAsync(
-      profile_dir,
+  g_browser_process->profile_manager()->LoadProfileByPath(
+      profile_dir, /*incognito=*/false,
       base::BindOnce(&OnProfileLoaded, std::move(callback), on_failure));
 }
 

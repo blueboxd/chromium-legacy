@@ -11,9 +11,9 @@
 #include "base/task/single_thread_task_runner.h"
 #include "media/mojo/mojom/media_player.mojom-blink.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/media/display_type.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-blink.h"
+#include "third_party/blink/public/platform/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -387,6 +387,8 @@ void PictureInPictureControllerImpl::CreateDocumentPictureInPictureWindow(
   web_options.width = options->width();
   web_options.height = options->height();
   web_options.disallow_return_to_opener = options->disallowReturnToOpener();
+  web_options.prefer_initial_window_placement =
+      options->preferInitialWindowPlacement();
 
   // If either width or height is specified, then both must be specified.
   if (web_options.width > 0 && web_options.height == 0) {

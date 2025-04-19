@@ -8,7 +8,7 @@
 #include "base/task/sequenced_task_runner.h"
 #include "components/commerce/core/mock_cluster_manager.h"
 #include "components/commerce/core/product_specifications/mock_product_specifications_service.h"
-#include "components/sync/test/mock_model_type_change_processor.h"
+#include "components/sync/test/mock_data_type_local_change_processor.h"
 
 namespace commerce {
 
@@ -32,13 +32,12 @@ MockShoppingService::MockShoppingService()
                                 nullptr,
                                 nullptr,
                                 nullptr,
-                                nullptr,
                                 nullptr) {
   product_specifications_service_ =
-      std::make_unique<MockProductSpecificationsService>();
+      std::make_unique<testing::NiceMock<MockProductSpecificationsService>>();
   ON_CALL(*this, GetProductSpecificationsService)
       .WillByDefault(testing::Return(product_specifications_service_.get()));
-  cluster_manager_ = std::make_unique<MockClusterManager>(
+  cluster_manager_ = std::make_unique<testing::NiceMock<MockClusterManager>>(
       product_specifications_service_.get());
   ON_CALL(*this, GetClusterManager)
       .WillByDefault(testing::Return(cluster_manager_.get()));
@@ -258,12 +257,6 @@ void MockShoppingService::SetResponseForGetDiscountInfoForUrls(
       });
 }
 
-void MockShoppingService::SetBookmarkModelUsedForSync(
-    bookmarks::BookmarkModel* bookmark_model) {
-  ON_CALL(*this, GetBookmarkModelUsedForSync)
-      .WillByDefault(testing::Return(bookmark_model));
-}
-
 void MockShoppingService::SetIsParcelTrackingEligible(bool is_eligible) {
   ON_CALL(*this, IsParcelTrackingEligible)
       .WillByDefault(testing::Return(is_eligible));
@@ -298,4 +291,5 @@ void MockShoppingService::SetResponseForGetProductSpecificationsForUrls(
                                               std::move(specs))));
           });
 }
+
 }  // namespace commerce

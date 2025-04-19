@@ -27,9 +27,12 @@ namespace autofill {
 
 struct Suggestion {
   struct PasswordSuggestionDetails {
-    friend bool operator==(const PasswordSuggestionDetails&,
-                           const PasswordSuggestionDetails&) = default;
+    std::u16string username;
     std::u16string password;
+    // The signon realm of the password. Unlike the `display_signon_realm`, it
+    // is not necessarily user friendly/readable, but rather has the raw
+    // `PasswordForm::signon_realm` value.
+    std::string signon_realm;
     // Stores either the password signon realm or the Android app name for which
     // the password was saved.
     std::u16string display_signon_realm;
@@ -37,7 +40,22 @@ struct Suggestion {
     // represent exact, strongly affiliated, PSL and weakly affiliated matches
     // for the domain the suggestions are shown for. All other suggestions have
     // this flag set to `true`.
-    bool is_cross_domain;
+    bool is_cross_domain = false;
+
+    PasswordSuggestionDetails();
+    PasswordSuggestionDetails(std::u16string_view username,
+                              std::u16string_view password,
+                              std::string_view signon_realm,
+                              std::u16string_view display_signon_realm,
+                              bool is_cross_domain);
+    PasswordSuggestionDetails(const PasswordSuggestionDetails&);
+    PasswordSuggestionDetails(PasswordSuggestionDetails&);
+    PasswordSuggestionDetails& operator=(const PasswordSuggestionDetails&);
+    PasswordSuggestionDetails& operator=(PasswordSuggestionDetails&&);
+    virtual ~PasswordSuggestionDetails();
+
+    friend bool operator==(const PasswordSuggestionDetails&,
+                           const PasswordSuggestionDetails&) = default;
   };
 
   using IsLoading = base::StrongAlias<class IsLoadingTag, bool>;
@@ -47,6 +65,27 @@ struct Suggestion {
   using ValueToFill = base::StrongAlias<struct ValueToFill, std::u16string>;
   using Payload =
       absl::variant<BackendId, GURL, ValueToFill, PasswordSuggestionDetails>;
+
+  // This struct is used to provide password suggestions with custom icons,
+  // using the favicon of the website associated with the credentials. While
+  // the favicon loads, the icon from `Suggestion::icon` will be used as
+  // a placeholder.
+  struct FaviconDetails {
+    GURL domain_url;
+
+    // Whether the favicon can be requested from a Google server. Only set to
+    // `true` if the user's association with the domain is already known to
+    // Google, e.g., because the user is syncing a credential for that domain.
+    bool can_be_requested_from_google = false;
+
+    friend bool operator==(const FaviconDetails&,
+                           const FaviconDetails&) = default;
+  };
+
+  // This type is used to specify custom icons by providing a URL to the icon.
+  // Used on Android only where `gfx::Image` (`custom_icon` alternative) is
+  // not supported.
+  using CustomIconUrl = base::StrongAlias<class CustomIconUrlTag, GURL>;
 
   // The text information shown on the UI layer for a Suggestion.
   struct Text {
@@ -78,16 +117,18 @@ struct Suggestion {
   enum class Icon {
     kNoIcon,
     kAccount,
-    // TODO(b/40266549): Rename to Undo.
+    // TODO(crbug.com/40266549): Rename to Undo.
     kClear,
     kCreate,
     kCode,
     kDelete,
     kDevice,
     kEdit,
+    kEmail,
     kEmpty,
     kGlobe,
     kGoogle,
+    kGoogleMonochrome,
     kGooglePasswordManager,
     kGooglePay,
     kGooglePayDark,
@@ -119,10 +160,29 @@ struct Suggestion {
     kIban,
   };
 
-  // TODO(b/335194240): Consolidate expected param types for these constructors.
-  // Some expect UTF16 strings and others UTF8, while internally we only use
-  // UTF16. The ones expecting UTF8 are only used by tests and could be easily
-  // refactored.
+  // This enum is used to control filtration of suggestions (see it's used in
+  // the `PopupViewViews` search bar and `AutofillPopupControllerImpl` where
+  // the logic is implemented) by explicitly marking special suggestions at
+  // creation.
+  enum class FiltrationPolicy {
+    // Suggestions, that are normally filtered. The match is highlighted on
+    // the UI and those that don't match are removed from the list.
+    kFilterable,
+
+    // Suggestions, that are excluded from filtration by always disappearing
+    // from the list as soon as any filter is applied (in other words, these
+    // suggestion don't match any filter except the empty one).
+    kPresentOnlyWithoutFilter,
+
+    // Suggestions, that are excluded from filtration by always staying in
+    // in the list (basically, these suggestions ignore filter).
+    kStatic,
+  };
+
+  // TODO(crbug.com/335194240): Consolidate expected param types for these
+  // constructors. Some expect UTF16 strings and others UTF8, while internally
+  // we only use UTF16. The ones expecting UTF8 are only used by tests and could
+  // be easily refactored.
   Suggestion();
   explicit Suggestion(std::u16string main_text);
   explicit Suggestion(SuggestionType type);
@@ -169,11 +229,12 @@ struct Suggestion {
         // Manual fallback password suggestions store the password to preview or
         // fill in the suggestion's payload. Regular per-domain contain empty
         // `BackendId`.
-        // TODO(b/333992198): Use `PasswordSuggestionDetails` for all
+        // TODO(crbug.com/333992198): Use `PasswordSuggestionDetails` for all
         // suggestions with `SuggestionType::kPasswordEntry`.
         return absl::holds_alternative<BackendId>(payload) ||
                absl::holds_alternative<PasswordSuggestionDetails>(payload);
       case SuggestionType::kFillPassword:
+      case SuggestionType::kViewPasswordDetails:
         return absl::holds_alternative<PasswordSuggestionDetails>(payload);
       case SuggestionType::kSeePromoCodeDetails:
         return absl::holds_alternative<GURL>(payload);
@@ -218,20 +279,21 @@ struct Suggestion {
   // display is enabled.
   std::u16string additional_label;
 
-  // Contains an image to display for the suggestion.
-  gfx::Image custom_icon;
+  // This field outlines various methods for specifying the custom icon.
+  // Depending on the use case and platform, it can be a `gfx::Image` instance
+  // or imply more complex semantic of fetching the icon (see `CustomIconUrl`
+  // and `FaviconDetails` docs for details).
+  absl::variant<gfx::Image, CustomIconUrl, FaviconDetails> custom_icon;
 
   // The children of this suggestion. If present, the autofill popup will have
   // submenus.
   std::vector<Suggestion> children;
 #if BUILDFLAG(IS_ANDROID)
-  // The url for the custom icon. This is used by android to fetch the image as
-  // android does not support gfx::Image directly.
-  GURL custom_icon_url;
-
   // On Android, the icon can be at the start of the suggestion before the label
   // or at the end of the label.
   bool is_icon_at_start = false;
+  // TODO(crbug.com/346469807): Remove once strings are passed directly.
+  std::u16string iph_description_text;
 #endif  // BUILDFLAG(IS_ANDROID)
 
   // This is the icon which is shown on the side of a suggestion.
@@ -252,6 +314,10 @@ struct Suggestion {
   // The In-Product-Help feature that should be shown for the suggestion.
   raw_ptr<const base::Feature> feature_for_iph = nullptr;
 
+  // The feature for the new badge if one is supposed to be shown. Currently
+  // available only on Desktop.
+  raw_ptr<const base::Feature> feature_for_new_badge = nullptr;
+
   // If specified, this text will be played back as voice over for a11y.
   std::optional<std::u16string> voice_over;
 
@@ -267,6 +333,12 @@ struct Suggestion {
   // Whether the user is able to preview the suggestion by hovering on it or
   // accept it by clicking on it.
   bool is_acceptable = true;
+
+  // How the suggestion should be handled by the filtration logic, see the enum
+  // values doc for details.
+  // Now used for filtering manually triggered password suggestions only and
+  // has no effect on other suggestions.
+  FiltrationPolicy filtration_policy = FiltrationPolicy::kFilterable;
 
   // If true, the user will see the suggestion in a "disabled and grayed-out"
   // form. This field should be true only when `is_acceptable` is false  which

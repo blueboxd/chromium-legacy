@@ -13,6 +13,7 @@ source_set("mall") {
     "mall_page_handler.h",
     "mall_ui.cc",
     "mall_ui.h",
+    "mall_ui_delegate.h",
   ]
 
   deps = [
@@ -22,6 +23,7 @@ source_set("mall") {
     "//ash/webui/mall/resources",
     "//base",
     "//chromeos/constants/",
+    "//components/strings:components_strings_grit",
     "//content/public/browser",
     "//ui/webui",
   ]
@@ -36,4 +38,8 @@ mojom("mojo_bindings") {
 
 source_set("url_constants") {
   sources = [ "url_constants.h" ]
+}
+
+source_set("app_id") {
+  sources = [ "app_id.h" ]
 }

@@ -2,13 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {EventTracker} from '//resources/js/event_tracker.js';
 import {assert} from 'chrome://resources/js/assert.js';
 
 import {createCustomEvent} from '../utils/event_utils.js';
 import {getDestinationProvider} from '../utils/mojo_data_providers.js';
-import {Destination, DestinationProvider, FakeDestinationObserverInterface, SessionContext, type UiManagedDestinationFields} from '../utils/print_preview_cros_app_types.js';
+import {Destination, DestinationProviderCompositeInterface, FakeDestinationObserverInterface, SessionContext} from '../utils/print_preview_cros_app_types.js';
+import {isValidDestination} from '../utils/validation_utils.js';
 
 import {PDF_DESTINATION} from './destination_constants.js';
+import {PRINT_TICKET_MANAGER_TICKET_CHANGED, PrintTicketManager} from './print_ticket_manager.js';
 
 /**
  * @fileoverview
@@ -50,11 +53,12 @@ export class DestinationManager extends EventTarget implements
   }
 
   static resetInstanceForTesting(): void {
+    DestinationManager.instance?.eventTracker.removeAll();
     DestinationManager.instance = null;
   }
 
   // Non-static properties:
-  private destinationProvider: DestinationProvider;
+  private destinationProvider: DestinationProviderCompositeInterface;
   private destinations: Destination[] = [];
   // Cache used for constant lookup of destinations by key.
   private destinationCache: Map<string, Destination> = new Map();
@@ -62,6 +66,9 @@ export class DestinationManager extends EventTarget implements
   private initialDestinationsLoaded = false;
   private state = DestinationManagerState.NOT_LOADED;
   private sessionContext: SessionContext;
+  private eventTracker = new EventTracker();
+  // Managers need to be set after construction to avoid circular dependencies.
+  private printTicketManager: PrintTicketManager;
 
   // `initializeSession` is only intended to be called once from the
   // `PrintPreviewCrosAppController`.
@@ -71,6 +78,13 @@ export class DestinationManager extends EventTarget implements
     assert(
         !this.sessionContext, 'SessionContext should only be configured once');
     this.sessionContext = sessionContext;
+
+    // Setup event listeners.
+    this.printTicketManager = PrintTicketManager.getInstance();
+    this.eventTracker.add(
+        this.printTicketManager, PRINT_TICKET_MANAGER_TICKET_CHANGED,
+        () => this.onPrintTicketChanged());
+
     this.fetchInitialDestinations();
     this.dispatchEvent(
         createCustomEvent(DESTINATION_MANAGER_SESSION_INITIALIZED));
@@ -100,11 +114,17 @@ export class DestinationManager extends EventTarget implements
     return this.destinationCache.has(destinationId);
   }
 
-  // TODO(b/323421684): Returns true if initial fetch has returned
-  // and there are valid destinations available in the destination
-  // cache.
-  hasLoadedAnInitialDestination(): boolean {
-    return this.initialDestinationsLoaded;
+  // Returns true if initial fetch has returned and there are valid destinations
+  // available.
+  hasAnyDestinations(): boolean {
+    return this.isSessionInitialized() && this.initialDestinationsLoaded &&
+        this.destinations.length > 0;
+  }
+
+  // Retrieve destination by ID.
+  getDestination(destinationId: string): Destination {
+    assert(this.destinationExists(destinationId));
+    return this.destinationCache.get(destinationId)!;
   }
 
   // Retrieve a list of all known destinations.
@@ -165,9 +185,6 @@ export class DestinationManager extends EventTarget implements
       return;
     }
 
-    // Ensure fields managed by UI values are maintained.
-    this.overrideUiManagedFields(destination, existingDestination);
-
     // Update destination in list and cache.
     const index = this.destinations.findIndex(
         (d: Destination) => d.id === destination.id);
@@ -184,9 +201,11 @@ export class DestinationManager extends EventTarget implements
     // Request initial data.
     this.updateState(DestinationManagerState.FETCHING);
     this.destinationProvider.getLocalDestinations().then(
-        (destinations: Destination[]): void => {
-          this.addOrUpdateDestinations(destinations);
+        (response: {destinations: Destination[]}): void => {
+          this.addOrUpdateDestinations(response.destinations);
           this.initialDestinationsLoaded = true;
+          // TODO(b/323421684): Refactor selectInitialDestination to call
+          // setPrintTicketDestination print ticket manager.
           this.selectInitialDestination();
           this.updateState(DestinationManagerState.LOADED);
         });
@@ -197,6 +216,23 @@ export class DestinationManager extends EventTarget implements
   private insertDigitalDestinations(): void {
     assert(!this.destinationCache.get(PDF_DESTINATION.id));
     this.addOrUpdateDestination(PDF_DESTINATION);
+  }
+
+  // Handles active destination updates triggered by the UI. If update is to a
+  // different property (active destination already matches the print ticket)
+  // do not attempt to update the active destination.
+  private onPrintTicketChanged(): void {
+    assert(this.printTicketManager);
+    const currentPrintTicket = this.printTicketManager.getPrintTicket();
+    assert(currentPrintTicket);
+    const nextActiveDestinationId = currentPrintTicket.destinationId || '';
+    if (nextActiveDestinationId === this.activeDestinationId) {
+      return;
+    }
+    assert(
+        isValidDestination(nextActiveDestinationId),
+        'PrintTicket won\'t be set to an invalid ID');
+    this.updateActiveDestination(nextActiveDestinationId);
   }
 
   // Determines the best fitting active destination from the available
@@ -229,15 +265,7 @@ export class DestinationManager extends EventTarget implements
     this.updateActiveDestination(this.destinations[0].id);
   }
 
-  // Creates a merge of `destination` and UI managed fields from `uiFields`
-  // to ensure fields set by UI are not lost during update.
-  // Example field: `printerManuallySelected`.
-  private overrideUiManagedFields(
-      destination: Destination, uiFields: UiManagedDestinationFields): void {
-    destination.printerManuallySelected = uiFields.printerManuallySelected;
-  }
-
-  // Updates destination ID and triggers event.
+  // Updates active destination ID and triggers event.
   private updateActiveDestination(destinationId: string): void {
     this.activeDestinationId = destinationId;
     this.dispatchEvent(

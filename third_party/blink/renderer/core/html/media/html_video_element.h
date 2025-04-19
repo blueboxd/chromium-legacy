@@ -159,6 +159,8 @@ class CORE_EXPORT HTMLVideoElement final
 
   bool IsRichlyEditableForAccessibility() const override { return false; }
 
+  void RecordVideoOcclusionState(std::string_view occlusion_state) const final;
+
   VideoWakeLock* wake_lock_for_tests() const { return wake_lock_.Get(); }
 
   MediaVideoVisibilityTracker* visibility_tracker_for_tests() const {
@@ -180,6 +182,7 @@ class CORE_EXPORT HTMLVideoElement final
   friend class HTMLMediaElementEventListenersTest;
   friend class HTMLVideoElementPersistentTest;
   friend class VideoFillingViewportTest;
+  friend class HTMLVideoElementTest;
 
   // ExecutionContextLifecycleStateObserver functions.
   void ContextDestroyed() final;
@@ -210,6 +213,8 @@ class CORE_EXPORT HTMLVideoElement final
   // interface, fully implemented in the parent class HTMLMediaElement.
   void RequestEnterPictureInPicture() final;
   void RequestMediaRemoting() final;
+  void RequestVisibility(
+      HTMLMediaElement::RequestVisibilityCallback request_visibility_cb) final;
 
   void DidMoveToNewDocument(Document& old_document) override;
 

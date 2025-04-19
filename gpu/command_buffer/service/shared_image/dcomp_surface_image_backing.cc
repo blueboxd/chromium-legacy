@@ -163,7 +163,10 @@ class DCompSurfaceImageBacking::D3DTextureGLSurfaceEGL
   }
 
  protected:
-  ~D3DTextureGLSurfaceEGL() override { Destroy(); }
+  ~D3DTextureGLSurfaceEGL() override {
+    InvalidateWeakPtrs();
+    Destroy();
+  }
 
  private:
   gfx::Size size_;
@@ -179,7 +182,7 @@ std::unique_ptr<DCompSurfaceImageBacking> DCompSurfaceImageBacking::Create(
     const gfx::ColorSpace& color_space,
     GrSurfaceOrigin surface_origin,
     SkAlphaType alpha_type,
-    uint32_t usage,
+    gpu::SharedImageUsageSet usage,
     std::string debug_label) {
   // IDCompositionSurface only supports the following formats:
   // https://learn.microsoft.com/en-us/windows/win32/api/dcomp/nf-dcomp-idcompositiondevice2-createsurface#remarks
@@ -222,7 +225,7 @@ DCompSurfaceImageBacking::DCompSurfaceImageBacking(
     const gfx::ColorSpace& color_space,
     GrSurfaceOrigin surface_origin,
     SkAlphaType alpha_type,
-    uint32_t usage,
+    gpu::SharedImageUsageSet usage,
     std::string debug_label,
     Microsoft::WRL::ComPtr<IDCompositionSurface> dcomp_surface)
     : ClearTrackingSharedImageBacking(
@@ -240,9 +243,9 @@ DCompSurfaceImageBacking::DCompSurfaceImageBacking(
           new D3DTextureGLSurfaceEGL(gl::GLSurfaceEGL::GetGLDisplayEGL(),
                                      size))),
       dcomp_surface_(std::move(dcomp_surface)) {
-  const bool has_scanout = !!(usage & SHARED_IMAGE_USAGE_SCANOUT);
-  const bool write_only = !(usage & SHARED_IMAGE_USAGE_DISPLAY_READ) &&
-                          !!(usage & SHARED_IMAGE_USAGE_DISPLAY_WRITE);
+  const bool has_scanout = usage.Has(SHARED_IMAGE_USAGE_SCANOUT);
+  const bool write_only = !usage.Has(SHARED_IMAGE_USAGE_DISPLAY_READ) &&
+                          usage.Has(SHARED_IMAGE_USAGE_DISPLAY_WRITE);
   DCHECK(has_scanout);
   DCHECK(write_only);
   DCHECK(dcomp_surface_);
@@ -431,6 +434,7 @@ void DCompSurfaceImageBacking::EndDrawGanesh() {
 wgpu::Texture DCompSurfaceImageBacking::BeginDrawDawn(
     const wgpu::Device& device,
     const wgpu::TextureUsage usage,
+    const wgpu::TextureUsage internal_usage,
     const gfx::Rect& update_rect) {
   auto draw_texture = BeginDraw(update_rect, dcomp_update_offset_);
 
@@ -488,9 +492,11 @@ wgpu::Texture DCompSurfaceImageBacking::BeginDrawDawn(
   desc.initialized = true;
   desc.nextInChain = &swapchain_begin_state;
 
-  wgpu::Texture texture = CreateDawnSharedTexture(shared_texture_memory_, usage,
-                                                  /*view_formats=*/{});
-  if (!texture || !shared_texture_memory_.BeginAccess(texture, &desc)) {
+  wgpu::Texture texture =
+      CreateDawnSharedTexture(shared_texture_memory_, usage, internal_usage,
+                              /*view_formats=*/{});
+  if (!texture || shared_texture_memory_.BeginAccess(texture, &desc) !=
+                      wgpu::Status::Success) {
     LOG(ERROR) << "Failed to begin access and produce WGPUTexture";
     return nullptr;
   }

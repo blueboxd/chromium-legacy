@@ -976,14 +976,6 @@
       initial: true,
     },
 
-    // HTML Fullscreen (e.g. `Element.requestFullscreen()`)'s transient
-    // activation requirement can be bypassed via the "Automatic Fullscreen"
-    // content setting.
-    {
-      name: "requireTransientActivationForHtmlFullscreen",
-      initial: true,
-    },
-
     //
     // Dark mode
     //
@@ -1088,7 +1080,13 @@
     {
       name: "inForcedColors",
       initial: false,
-      invalidate: ["ColorScheme"],
+      type: "bool",
+    },
+
+    {
+      name: "isForcedColorsDisabled",
+      initial: false,
+      invalidate: ["ForcedColors"],
       type: "bool",
     },
 

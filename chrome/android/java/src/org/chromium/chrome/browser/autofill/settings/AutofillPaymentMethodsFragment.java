@@ -42,7 +42,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.payments.ServiceWorkerPaymentAppBridge;
 import org.chromium.chrome.browser.settings.ChromeBaseSettingsFragment;
 import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
-import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
+import org.chromium.chrome.browser.settings.SettingsLauncherFactory;
 import org.chromium.components.autofill.MandatoryReauthAuthenticationFlowEvent;
 import org.chromium.components.autofill.VirtualCardEnrollmentState;
 import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
@@ -68,6 +68,7 @@ public class AutofillPaymentMethodsFragment extends ChromeBaseSettingsFragment
     static final String PREF_SAVE_CVC = "save_cvc";
     static final String PREF_ADD_IBAN = "add_iban";
     static final String PREF_IBAN = "iban";
+    static final String PREF_CARD_BENEFITS = "card_benefits";
     private static final String PREF_PAYMENT_APPS = "payment_apps";
 
     @VisibleForTesting
@@ -227,6 +228,22 @@ public class AutofillPaymentMethodsFragment extends ChromeBaseSettingsFragment
             }
         }
 
+        if (personalDataManager.isAutofillCreditCardEnabled()
+                && (ChromeFeatureList.isEnabled(
+                                ChromeFeatureList
+                                        .AUTOFILL_ENABLE_CARD_BENEFITS_FOR_AMERICAN_EXPRESS)
+                        || ChromeFeatureList.isEnabled(
+                                ChromeFeatureList.AUTOFILL_ENABLE_CARD_BENEFITS_FOR_CAPITAL_ONE))) {
+            Preference cardBenefitsPref = new Preference(getStyledContext());
+            cardBenefitsPref.setTitle(
+                    R.string.autofill_settings_page_card_benefits_preference_label);
+            cardBenefitsPref.setSummary(
+                    R.string.autofill_settings_page_card_benefits_preference_summary);
+            cardBenefitsPref.setKey(PREF_CARD_BENEFITS);
+            cardBenefitsPref.setFragment(AutofillCardBenefitsFragment.class.getName());
+            getPreferenceScreen().addPreference(cardBenefitsPref);
+        }
+
         for (CreditCard card : personalDataManager.getCreditCardsForSettings()) {
             // Add a preference for the credit card.
             Preference card_pref = new Preference(getStyledContext());
@@ -337,7 +354,9 @@ public class AutofillPaymentMethodsFragment extends ChromeBaseSettingsFragment
 
     private void createReauthenticatorBridge() {
         if (mReauthenticatorBridge == null) {
-            mReauthenticatorBridge = ReauthenticatorBridge.create(DeviceAuthSource.AUTOFILL);
+            mReauthenticatorBridge =
+                    ReauthenticatorBridge.create(
+                            this.getActivity(), getProfile(), DeviceAuthSource.AUTOFILL);
         }
     }
 
@@ -519,10 +538,11 @@ public class AutofillPaymentMethodsFragment extends ChromeBaseSettingsFragment
 
     /**
      * Show the local card edit page for the given local card.
+     *
      * @param preference The {@link Preference} for the local card.
      */
     private void showLocalCardEditPage(Preference preference) {
-        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+        SettingsLauncher settingsLauncher = SettingsLauncherFactory.createSettingsLauncher();
         settingsLauncher.launchSettingsActivity(
                 getActivity(), AutofillLocalCardEditor.class, preference.getExtras());
     }
@@ -590,7 +610,7 @@ public class AutofillPaymentMethodsFragment extends ChromeBaseSettingsFragment
         Bundle args = preference.getExtras();
         args.putString(
                 FinancialAccountsManagementFragment.TITLE_KEY, preference.getTitle().toString());
-        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+        SettingsLauncher settingsLauncher = SettingsLauncherFactory.createSettingsLauncher();
         settingsLauncher.launchSettingsActivity(
                 getActivity(), FinancialAccountsManagementFragment.class, args);
         return true;
@@ -610,6 +630,9 @@ public class AutofillPaymentMethodsFragment extends ChromeBaseSettingsFragment
     @Override
     public void onDestroyView() {
         PersonalDataManagerFactory.getForProfile(getProfile()).unregisterDataObserver(this);
+        if (mReauthenticatorBridge != null) {
+            mReauthenticatorBridge.destroy();
+        }
         super.onDestroyView();
     }
 }

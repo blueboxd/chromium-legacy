@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/check_is_test.h"
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
@@ -20,19 +21,22 @@
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/launch_util.h"
+#include "chrome/browser/extensions/manifest_v2_experiment_manager.h"
+#include "chrome/browser/extensions/mv2_experiment_stage.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/extensions/extensions_dialogs.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/tab_helpers.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/web_applications/extension_status_utils.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
+#include "chrome/browser/web_applications/proto/web_app_install_state.pb.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
@@ -46,6 +50,7 @@
 #include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "components/favicon/core/favicon_service.h"
+#include "components/security_state/content/security_state_tab_helper.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/webapps/browser/install_result_code.h"
 #include "components/webapps/browser/installable/installable_manager.h"
@@ -56,6 +61,7 @@
 #include "extensions/browser/api/management/management_api.h"
 #include "extensions/browser/api/management/management_api_constants.h"
 #include "extensions/browser/disable_reason.h"
+#include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -67,10 +73,6 @@
 #include "extensions/common/mojom/context_type.mojom.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "third_party/blink/public/mojom/window_features/window_features.mojom.h"
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/ash/login/demo_mode/demo_session.h"
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace {
 using InstallOrLaunchWebAppCallback =
@@ -265,7 +267,8 @@ class ChromeAppForLinkDelegate : public extensions::AppForLinkDelegate {
     extensions::api::management::ExtensionInfo info;
     info.id = app_id;
     info.name = registrar.GetAppShortName(app_id);
-    info.enabled = registrar.IsLocallyInstalled(app_id);
+    info.enabled = registrar.IsInstallState(
+        app_id, {web_app::proto::INSTALLED_WITH_OS_INTEGRATION});
     info.install_type =
         extensions::api::management::ExtensionInstallType::kOther;
     info.is_app = true;
@@ -432,11 +435,6 @@ bool ChromeManagementAPIDelegate::LaunchAppFunctionDelegate(
                             WindowOpenDisposition::NEW_FOREGROUND_TAB,
                             apps::LaunchSource::kFromManagementApi));
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  ash::DemoSession::RecordAppLaunchSourceIfInDemoMode(
-      ash::DemoSession::AppLaunchSource::kExtensionApi);
-#endif
-
   extensions::RecordAppLaunchType(extension_misc::APP_LAUNCH_EXTENSION_API,
                                   extension->GetType());
   return true;
@@ -542,7 +540,10 @@ void ChromeManagementAPIDelegate::InstallOrLaunchReplacementWebApp(
 
   // Launch the app if web_app_url happens to match start_url. If not, the app
   // could still be installed with different start_url.
-  if (provider->registrar_unsafe().IsLocallyInstalled(web_app_url)) {
+  webapps::AppId app_id = web_app::GenerateAppIdFromManifestId(web_app_url);
+  if (provider->registrar_unsafe().IsInstallState(
+          app_id, {web_app::proto::INSTALLED_WITHOUT_OS_INTEGRATION,
+                   web_app::proto::INSTALLED_WITH_OS_INTEGRATION})) {
     LaunchWebApp(
         web_app::GenerateAppId(/*manifest_id=*/std::nullopt, web_app_url),
         profile);
@@ -631,4 +632,40 @@ GURL ChromeManagementAPIDelegate::GetEffectiveUpdateURL(
   extensions::ExtensionManagement* extension_management =
       extensions::ExtensionManagementFactory::GetForBrowserContext(context);
   return extension_management->GetEffectiveUpdateURL(extension);
+}
+
+void ChromeManagementAPIDelegate::ShowMv2DeprecationReEnableDialog(
+    content::BrowserContext* context,
+    content::WebContents* web_contents,
+    const extensions::Extension& extension,
+    base::OnceCallback<void(bool)> done_callback) const {
+  // Extension should only be disabled due to MV2 deprecation in the "disable"
+  // experiment stage.
+  auto* mv2_experiment_manager =
+      extensions::ManifestV2ExperimentManager::Get(context);
+  CHECK_EQ(mv2_experiment_manager->GetCurrentExperimentStage(),
+           extensions::MV2ExperimentStage::kDisableWithReEnable);
+
+  // Tests can auto confirm the re-enable dialog.
+  auto confirm_value =
+      extensions::ScopedTestDialogAutoConfirm::GetAutoConfirmValue();
+  switch (confirm_value) {
+    case extensions::ScopedTestDialogAutoConfirm::NONE:
+      // Continue, auto confirm has not been set.
+      break;
+    case extensions::ScopedTestDialogAutoConfirm::CANCEL:
+      CHECK_IS_TEST();
+      std::move(done_callback).Run(/*enable_allowed=*/false);
+      return;
+    case extensions::ScopedTestDialogAutoConfirm::ACCEPT:
+    case extensions::ScopedTestDialogAutoConfirm::ACCEPT_AND_OPTION:
+      CHECK_IS_TEST();
+      std::move(done_callback).Run(/*enable_allowed=*/true);
+      return;
+  }
+
+  gfx::NativeWindow parent =
+      web_contents ? web_contents->GetTopLevelNativeWindow() : nullptr;
+  extensions::ShowMv2DeprecationReEnableDialog(
+      parent, extension.id(), extension.name(), std::move(done_callback));
 }

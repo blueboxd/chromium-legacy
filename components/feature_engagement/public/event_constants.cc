@@ -69,7 +69,7 @@ const char kChromeOpened[] = "chrome_opened";
 const char kIncognitoTabOpened[] = "incognito_tab_opened";
 const char kClearedBrowsingData[] = "cleared_browsing_data";
 const char kViewedReadingList[] = "viewed_reading_list";
-const char kViewedWhatsNew[] = "viewed_whats_new_m125";
+const char kViewedWhatsNew[] = "viewed_whats_new_m128";
 const char kTriggeredTranslateInfobar[] = "triggered_translate_infobar";
 const char kBottomToolbarOpened[] = "bottom_toolbar_opened";
 const char kDiscoverFeedLoaded[] = "discover_feed_loaded";
@@ -89,19 +89,15 @@ const char kPasswordManagerWidgetPromoClosed[] =
     "password_manager_widget_promo_closed";
 
 // Default browser blue dot promo.
-const char kBlueDotPromoCriterionMet[] = "blue_dot_promo_criterion_met";
-const char kBlueDotPromoEligibilityMet[] = "blue_dot_promo_eligibility_met";
 const char kBlueDotPromoOverflowMenuShown[] =
     "blue_dot_promo_overflow_menu_shown";
-const char kBlueDotPromoOverflowMenuShownNewSession[] =
-    "blue_dot_promo_overflow_menu_shown_new_session";
 const char kBlueDotPromoSettingsShown[] = "blue_dot_promo_settings_shown";
-const char kBlueDotPromoSettingsShownNewSession[] =
-    "blue_dot_promo_settings_shown_new_session";
 const char kBlueDotPromoOverflowMenuDismissed[] =
     "blue_dot_promo_overflow_menu_dismissed";
 const char kBlueDotPromoSettingsDismissed[] =
     "blue_dot_promo_settings_dismissed";
+const char kBlueDotOverflowMenuCustomized[] =
+    "blue_dot_overflow_menu_customized";
 const char kCredentialProviderExtensionPromoSnoozed[] =
     "credential_provider_extension_promo_snoozed";
 const char kDockingPromoRemindMeLater[] = "docking_promo_remind_me_later";
@@ -111,18 +107,25 @@ const char kTabGridToolbarItemUsed[] = "tab_grid_toolbar_item_used";
 const char kHistoryOnOverflowMenuUsed[] = "history_on_overflow_menu_used";
 const char kShareToolbarItemUsed[] = "share_toolbar_item_used";
 const char kLensButtonKeyboardUsed[] = "lens_keyboard_used";
-const char kOmniboxPositionPromoShown[] = "omnibox_position_promo_shown";
 const char kParcelTrackingTriggered[] = "parcel_tracking_triggered";
 const char kParcelTracked[] = "parcel_tracked";
 const char kIOSMultiGestureRefreshUsed[] = "multi_gesture_refresh_used";
 const char kIOSPullToRefreshUsed[] = "pull_to_refresh_feature_used";
+const char kIOSPullToRefreshIPHDismissButtonTapped[] =
+    "pull_to_refresh_feature_iph_dismiss_button_tapped";
 const char kIOSIncognitoPageControlTapped[] = "incognito_page_control_tapped";
 const char kIOSSwipeRightForIncognitoUsed[] = "swipe_right_for_incognito_used";
+const char kIOSSwipeRightForIncognitoIPHDismissButtonTapped[] =
+    "swipe_right_for_incognito_iph_dismiss_button_tapped";
 const char kIOSBackForwardButtonTapped[] = "back_forward_button_tapped";
 const char kIOSSwipeBackForwardUsed[] = "swiped_back_forward_used";
+const char kIOSSwipeBackForwardIPHDismissButtonTapped[] =
+    "swipe_back_forward_iph_dismiss_button_tapped";
 const char kIOSTabGridAdjacentTabTapped[] = "tab_grid_adjacent_tab_tapped";
 const char kIOSSwipeToolbarToChangeTabUsed[] =
     "swipe_toolbar_to_change_tab_used";
+const char kIOSSwipeToolbarToChangeTabIPHDismissButtonTapped[] =
+    "swipe_toolbar_to_change_tab_iph_dismiss_button_tapped";
 const char kIOSOverflowMenuCustomizationUsed[] =
     "overflow_menu_customization_used";
 const char kIOSOverflowMenuOffscreenItemUsed[] =
@@ -145,6 +148,14 @@ const char kMadeForIOSPromoTrigger[] = "made_for_ios_promo_trigger";
 const char kStaySafePromoTrigger[] = "stay_safe_promo_trigger";
 const char kTailoredDefaultBrowserPromosGroupTrigger[] =
     "tailored_default_browser_promos_group_trigger";
+const char kDefaultBrowserPromoTriggerCriteriaConditionsMet[] =
+    "default_browser_promo_trigger_criteria_conditions_met";
+const char kIOSContextualPanelSampleModelEntrypointUsed[] =
+    "ios_contextual_panel_sample_model_entrypoint_used";
+const char kIOSContextualPanelPriceInsightsEntrypointUsed[] =
+    "ios_contextual_panel_price_insights_entrypoint_used";
+const char kIOSContextualPanelPriceInsightsEntrypointExplicitlyDismissed[] =
+    "ios_contextual_panel_price_insights_entrypoint_explicitly_dismissed";
 #endif  // BUILDFLAG(IS_IOS)
 
 #if BUILDFLAG(IS_ANDROID)

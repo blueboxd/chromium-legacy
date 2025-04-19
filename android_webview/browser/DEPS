@@ -15,6 +15,7 @@ include_rules = [
   "+components/cdm/browser",
   "+components/component_updater/android",
   "+components/component_updater/installer_policies",
+  "+components/content_relationship_verification",
   "+components/crash/content/browser",
   "+components/crash/core",
   "+components/download/public/common",
@@ -32,6 +33,7 @@ include_rules = [
   "+components/origin_trials",
   "+components/os_crypt/async",
   "+components/page_load_metrics/browser",
+  "+components/page_load_metrics/google/browser",
   "+components/permissions",
   "+components/policy/core/browser",
   "+components/policy/core/common",
@@ -121,6 +123,7 @@ include_rules = [
   "+third_party/blink/public/common/web_preferences/web_preferences.h",
   "+third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h",
   "+third_party/blink/public/mojom/origin_trial_feature/origin_trial_feature.mojom-shared.h",
+  "+third_party/blink/public/mojom/permissions/permission_status.mojom-shared.h",
   "+third_party/blink/public/platform/resource_request_blocked_reason.h",
   "+third_party/crashpad/crashpad/client",
   "+third_party/crashpad/crashpad/util",
@@ -162,4 +165,6 @@ include_rules = [
   "+third_party/metrics_proto",
   # For Android WebView Media Integrity
   "+third_party/blink/public/mojom/webview/webview_media_integrity.mojom.h",
+  # For Chrome's API keys in WebView.
+  "+google_apis/google_api_keys.h",
 ]

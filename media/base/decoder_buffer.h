@@ -17,6 +17,7 @@
 #include "base/check.h"
 #include "base/containers/heap_array.h"
 #include "base/containers/span.h"
+#include "base/memory/raw_span.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory_mapping.h"
@@ -39,20 +40,12 @@ class MEDIA_EXPORT DecoderBuffer
     : public base::RefCountedThreadSafe<DecoderBuffer> {
  public:
   // ExternalMemory wraps a class owning a buffer and expose the data interface
-  // through |span|. This class is derived by a class that owns the class owning
-  // the buffer owner class. It is generally better to add the buffer class to
-  // DecoderBuffer. ExternalMemory is for a class that cannot be added; for
-  // instance, rtc::scoped_refptr<webrtc::EncodedImageBufferInterface>, webrtc
-  // class cannot be included in //media/base.
+  // through Span(). This class is derived by a class that owns the class owning
+  // the buffer owner class.
   struct MEDIA_EXPORT ExternalMemory {
    public:
-    explicit ExternalMemory(base::span<const uint8_t> span) : span_(span) {}
     virtual ~ExternalMemory() = default;
-    const base::span<const uint8_t>& span() const { return span_; }
-
-   protected:
-    ExternalMemory() = default;
-    base::span<const uint8_t> span_;
+    virtual const base::span<const uint8_t> Span() const = 0;
   };
 
   using DiscardPadding = std::pair<base::TimeDelta, base::TimeDelta>;
@@ -91,8 +84,7 @@ class MEDIA_EXPORT DecoderBuffer
   // as byte array. The buffer's |is_key_frame_| will default to false.
   //
   // Ownership of |data| is transferred to the buffer.
-  static scoped_refptr<DecoderBuffer> FromArray(base::HeapArray<uint8_t> data,
-                                                size_t size);
+  static scoped_refptr<DecoderBuffer> FromArray(base::HeapArray<uint8_t> data);
 
   // Create a DecoderBuffer where data() of |size| bytes resides within the
   // memory referred to by |region| at non-negative offset |offset|. The
@@ -167,9 +159,11 @@ class MEDIA_EXPORT DecoderBuffer
     if (writable_mapping_.IsValid())
       return writable_mapping_.GetMemoryAs<const uint8_t>();
     if (external_memory_)
-      return external_memory_->span().data();
+      return external_memory_->Span().data();
     return data_.data();
   }
+
+  base::span<const uint8_t> AsSpan() const;
 
   // The number of bytes in the buffer.
   size_t size() const {
@@ -273,7 +267,7 @@ class MEDIA_EXPORT DecoderBuffer
   // default to false.
   explicit DecoderBuffer(base::span<const uint8_t> data);
 
-  DecoderBuffer(base::HeapArray<uint8_t> data, size_t size);
+  DecoderBuffer(base::HeapArray<uint8_t> data);
 
   DecoderBuffer(base::ReadOnlySharedMemoryMapping mapping, size_t size);
 

@@ -13,6 +13,8 @@ import tempfile
 from contextlib import ExitStack
 from typing import List
 
+import monitors
+
 from common import register_common_args, register_device_args, \
                    register_log_args, resolve_packages
 from compatible_utils import running_unattended
@@ -21,6 +23,7 @@ from flash_device import register_update_args, update
 from isolate_daemon import IsolateDaemon
 from log_manager import LogManager, start_system_log
 from publish_package import publish_packages, register_package_args
+from modification_waiter import ModificationWaiter
 from run_blink_test import BlinkTestRunner
 from run_executable_test import create_executable_test_runner, \
                                 register_executable_test_args
@@ -88,6 +91,19 @@ def main():
         runner_args.device = True
 
     with ExitStack() as stack:
+        if runner_args.logs_dir:
+            # See http://crbug.com/343611361#comment5, the ffx daemon may still
+            # write logs after being shut down and causes the unnecessary test
+            # failures. So this AbstractContextManager would check the
+            # modification time of the output folder to ensure no writes
+            # happening before exiting.
+            # This may belong to IsolateDaemon, but let's keep it here to test
+            # its functionality and reliability.
+            stack.enter_context(ModificationWaiter(runner_args.logs_dir))
+            # TODO(crbug.com/343242386): Find a way to upload metric output when
+            # logs_dir is not defined.
+            stack.push(lambda *_: monitors.dump(
+                os.path.join(runner_args.logs_dir, 'invocations')))
         log_manager = LogManager(runner_args.logs_dir)
         if running_unattended():
             if runner_args.extra_path:

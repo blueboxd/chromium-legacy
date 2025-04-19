@@ -134,9 +134,9 @@ bool WebSourceBufferImpl::EvictCodedFrames(double currentPlaybackTime,
                                     newDataSize);
 }
 
-bool WebSourceBufferImpl::AppendToParseBuffer(const unsigned char* data,
-                                              size_t length) {
-  return demuxer_->AppendToParseBuffer(id_, data, length);
+bool WebSourceBufferImpl::AppendToParseBuffer(
+    base::span<const unsigned char> data) {
+  return demuxer_->AppendToParseBuffer(id_, data);
 }
 
 media::StreamParser::ParseStatus WebSourceBufferImpl::RunSegmentParserLoop(

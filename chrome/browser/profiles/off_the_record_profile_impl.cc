@@ -104,7 +104,7 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/ash/preferences.h"
+#include "chrome/browser/ash/preferences/preferences.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #endif
 
@@ -412,8 +412,6 @@ OffTheRecordProfileImpl::GetExtensionSpecialStoragePolicy() {
 }
 
 bool OffTheRecordProfileImpl::IsChild() const {
-  // TODO(treib): If we ever allow incognito for child accounts, evaluate
-  // whether we want to just return false here.
   return profile_->IsChild();
 }
 

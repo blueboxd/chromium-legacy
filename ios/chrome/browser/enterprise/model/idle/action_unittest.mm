@@ -46,7 +46,7 @@ class IdleActionTest : public PlatformTest {
     test_cbs_builder.AddTestingFactory(
         AuthenticationServiceFactory::GetInstance(),
         AuthenticationServiceFactory::GetDefaultFactory());
-    browser_state_ = test_cbs_builder.Build();
+    browser_state_ = std::move(test_cbs_builder).Build();
     AuthenticationServiceFactory::CreateAndInitializeForBrowserState(
         browser_state(), std::make_unique<FakeAuthenticationServiceDelegate>());
     main_browsing_data_remover_ = std::make_unique<FakeBrowsingDataRemover>();
@@ -90,7 +90,7 @@ class IdleActionTest : public PlatformTest {
     BrowserList* browser_list =
         BrowserListFactory::GetForBrowserState(browser_state());
     browser_list->AddBrowser(browser_.get());
-    browser_list->AddIncognitoBrowser(incognito_browser_.get());
+    browser_list->AddBrowser(incognito_browser_.get());
 
     // Insert some web states in each browser.
     std::vector<std::string> urls{"https://foo/bar", "https://car/tar",

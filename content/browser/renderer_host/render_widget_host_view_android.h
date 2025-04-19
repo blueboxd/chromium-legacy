@@ -51,9 +51,17 @@
 #include "ui/gfx/selection_bound.h"
 #include "ui/touch_selection/touch_selection_controller.h"
 
+namespace cc {
+struct BrowserControlsOffsetTagsInfo;
+}  // namespace cc
+
 namespace cc::slim {
 class SurfaceLayer;
 }
+
+namespace input {
+struct NativeWebKeyboardEvent;
+}  // namespace input
 
 namespace ui {
 class MotionEventAndroid;
@@ -71,7 +79,6 @@ class SynchronousCompositorClient;
 class TextSuggestionHostAndroid;
 class TouchSelectionControllerClientManagerAndroid;
 class WebContentsAccessibilityAndroid;
-struct NativeWebKeyboardEvent;
 struct ContextMenuParams;
 
 // -----------------------------------------------------------------------------
@@ -177,12 +184,14 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void ClearKeyboardTriggeredTooltip() override;
   void TransformPointToRootSurface(gfx::PointF* point) override;
   gfx::Rect GetBoundsInRootWindow() override;
+  const viz::LocalSurfaceId& IncrementSurfaceIdForNavigation() override;
   void ProcessAckedTouchEvent(
-      const TouchEventWithLatencyInfo& touch,
+      const input::TouchEventWithLatencyInfo& touch,
       blink::mojom::InputEventResultState ack_result) override;
   blink::mojom::InputEventResultState FilterInputEvent(
       const blink::WebInputEvent& input_event) override;
   void GestureEventAck(const blink::WebGestureEvent& event,
+                       blink::mojom::InputEventResultSource ack_source,
                        blink::mojom::InputEventResultState ack_result) override;
   void ChildDidAckGestureEvent(
       const blink::WebGestureEvent& event,
@@ -209,7 +218,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   viz::SurfaceId GetCurrentSurfaceId() const override;
   bool TransformPointToCoordSpaceForView(
       const gfx::PointF& point,
-      RenderWidgetHostViewInput* target_view,
+      input::RenderWidgetHostViewInput* target_view,
       gfx::PointF* transformed_point) override;
   TouchSelectionControllerClientManager*
   GetTouchSelectionControllerClientManager() override;
@@ -223,10 +232,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   viz::ScopedSurfaceIdAllocator DidUpdateVisualProperties(
       const cc::RenderFrameMetadata& metadata) override;
   display::ScreenInfo GetScreenInfo() const override;
-  std::vector<std::unique_ptr<ui::TouchEvent>> ExtractAndCancelActiveTouches()
-      override;
-  void TransferTouches(
-      const std::vector<std::unique_ptr<ui::TouchEvent>>& touches) override;
   ui::mojom::VirtualKeyboardMode GetVirtualKeyboardMode() override;
   viz::SurfaceId GetFallbackSurfaceIdForTesting() const override;
   void ResetGestureDetection() override;
@@ -286,7 +291,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // Returns the temporary background color of the underlaying document, for
   // example, returns black during screen rotation.
   std::optional<SkColor> GetCachedBackgroundColor();
-  void SendKeyEvent(const NativeWebKeyboardEvent& event);
+  void SendKeyEvent(const input::NativeWebKeyboardEvent& event);
   void SendMouseEvent(const blink::WebMouseEvent& event,
                       const ui::LatencyInfo& info);
   void SendMouseWheelEvent(const blink::WebMouseWheelEvent& event);
@@ -429,6 +434,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void SetNeedsBeginFrameForFlingProgress();
 
   const cc::slim::SurfaceLayer* GetSurfaceLayer() const;
+
+  void RegisterOffsetTags(const cc::BrowserControlsOffsetTagsInfo& tags_info);
+  void UnregisterOffsetTags(const cc::BrowserControlsOffsetTagsInfo& tags_info);
 
  protected:
   ~RenderWidgetHostViewAndroid() override;

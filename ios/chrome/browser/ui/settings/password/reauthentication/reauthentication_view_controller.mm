@@ -6,8 +6,8 @@
 
 #import "base/check.h"
 #import "base/metrics/histogram_macros.h"
+#import "ios/chrome/browser/shared/ui/elements/branded_navigation_item_title_view.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/ui/settings/password/branded_navigation_item_title_view.h"
 #import "ios/chrome/browser/ui/settings/password/create_password_manager_title_view.h"
 #import "ios/chrome/browser/ui/settings/password/reauthentication/reauthentication_constants.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -63,7 +63,22 @@
 
   if (_reauthUponPresentation) {
     [self recordAuthenticationEvent:ReauthenticationEvent::kAttempt];
-    [self triggerLocalAuthentication];
+    if (@available(iOS 18, *)) {
+      // TODO(crbug.com/347330366): Mock reauth will make
+      // -triggerLocalAuthentication return immediately, which means a VC is
+      // pushed and popped, following by pushing another VC. When doing this on
+      // iOS18, the top accessory views are not visible. This is either unsafe
+      // in UIKit and needs to be changed, or is a bug in iOS18, and may still
+      // require a workaround. During this investigation, simply defer calling
+      // -triggerLocalAuthentication to the next runloop on iOS18. This may be
+      // unsafe and is a short-term only solution to greening a large number of
+      // tests in one place.
+      dispatch_async(dispatch_get_main_queue(), ^{
+        [self triggerLocalAuthentication];
+      });
+    } else {
+      [self triggerLocalAuthentication];
+    }
   }
 }
 

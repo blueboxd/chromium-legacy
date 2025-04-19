@@ -4,12 +4,15 @@
 package org.jni_zero;
 
 import android.graphics.Rect;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.jni_zero.CheckDiscard;
 import org.jni_zero.JniStaticTestMocker;
 import org.jni_zero.NativeLibraryLoadedStatus;
+import org.jni_zero.SampleForTests;
+import org.jni_zero.SampleUnderSamePackage;
 import this.is.a.package.prefix.org.jni_zero.GEN_JNI;
-import this.is.a.package.prefix.org.jni_zero.SampleForTests;
 
 @CheckDiscard("crbug.com/993421")
 public class SampleForTestsJni implements SampleForTests.Natives {
@@ -37,6 +40,12 @@ public class SampleForTestsJni implements SampleForTests.Natives {
   }
 
   @Override
+  public void classUnderSamePackageTest(SampleUnderSamePackage arg) {
+    GEN_JNI.this_is_a_package_prefix_org_jni_1zero_SampleForTests_classUnderSamePackageTest(
+        arg);
+  }
+
+  @Override
   public void destroy(long nativeCPPClass, SampleForTests caller, byte[] bytes) {
     assert nativeCPPClass != 0;
     GEN_JNI.this_is_a_package_prefix_org_jni_1zero_SampleForTests_destroy(
@@ -60,12 +69,6 @@ public class SampleForTestsJni implements SampleForTests.Natives {
   @Override
   public float getFloatFunction() {
     return (float) GEN_JNI.this_is_a_package_prefix_org_jni_1zero_SampleForTests_getFloatFunction();
-  }
-
-  @Override
-  public Map getMap(Map arg0) {
-    return (Map) GEN_JNI.this_is_a_package_prefix_org_jni_1zero_SampleForTests_getMap(
-        arg0);
   }
 
   @Override
@@ -99,6 +102,18 @@ public class SampleForTestsJni implements SampleForTests.Natives {
   }
 
   @Override
+  public List listTest2(Set items) {
+    return (List) GEN_JNI.this_is_a_package_prefix_org_jni_1zero_SampleForTests_listTest2(
+        items);
+  }
+
+  @Override
+  public Map mapTest2(Map arg0) {
+    return (Map) GEN_JNI.this_is_a_package_prefix_org_jni_1zero_SampleForTests_mapTest2(
+        arg0);
+  }
+
+  @Override
   public int method(long nativeCPPClass, SampleForTests caller, String[] strings) {
     assert nativeCPPClass != 0;
     return (int) GEN_JNI.this_is_a_package_prefix_org_jni_1zero_SampleForTests_method(
@@ -113,6 +128,18 @@ public class SampleForTestsJni implements SampleForTests.Natives {
     return (double) GEN_JNI.this_is_a_package_prefix_org_jni_1zero_SampleForTests_methodOtherP0(
         nativePtr,
         caller);
+  }
+
+  @Override
+  public boolean[] primitiveArrays(byte[] b, char[] c, short[] s, int[] i, long[] l, float[] f, double[] d) {
+    return (boolean[]) GEN_JNI.this_is_a_package_prefix_org_jni_1zero_SampleForTests_primitiveArrays(
+        b,
+        c,
+        s,
+        i,
+        l,
+        f,
+        d);
   }
 
   @Override

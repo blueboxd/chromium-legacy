@@ -386,30 +386,6 @@ class IpcMessagePrinter(Printer):
 pp_set.add_printer('IPC::Message', '^IPC::Message$', IpcMessagePrinter)
 
 
-class NotificationRegistrarPrinter(Printer):
-
-  def to_string(self):
-    try:
-      registrations = self.val['registered_']
-      vector_finish = registrations['_M_impl']['_M_finish']
-      vector_start = registrations['_M_impl']['_M_start']
-      if vector_start == vector_finish:
-        return 'Not watching notifications'
-      if vector_start.dereference().type.sizeof == 0:
-        # Incomplete type: b/8242773
-        return 'Watching some notifications'
-      return ('Watching %s notifications; '
-              'print %s->registered_ for details') % (int(
-                  vector_finish - vector_start), typed_ptr(self.val.address))
-    except gdb.error:
-      return 'NotificationRegistrar'
-
-
-pp_set.add_printer('content::NotificationRegistrar',
-                   '^content::NotificationRegistrar$',
-                   NotificationRegistrarPrinter)
-
-
 class SiteInstanceImplPrinter(object):
 
   def __init__(self, val):
@@ -520,7 +496,7 @@ class ReverseCallback(gdb.Command):
     bind_state_frame = find_nearest_frame_matching(
         gdb.selected_frame(), lambda frame: frame.function() and re.match(
             '^base::internal::Invoker<.*>' +
-            '::RunOnce\(base::internal::BindStateBase\*\)$',
+            r'::RunOnce\(base::internal::BindStateBase\*\)$',
             frame.function().name))
     if bind_state_frame is None:
       raise Exception(

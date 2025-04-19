@@ -30,13 +30,14 @@ namespace {
 
 constexpr char kOriginString[] = "https://origin.test/";
 constexpr char kNameString[] = "name";
-constexpr char kAggregationCoordinatorOriginString[] = "https://example.com/";
+constexpr char kCoordinatorOriginString[] = "https://example.test/";
 
 mojom::blink::InterestGroupAdPtr MakeAdWithUrl(const KURL& url) {
   return mojom::blink::InterestGroupAd::New(
       url, /*size_group=*/String(),
       /*buyer_reporting_id=*/String(),
-      /*buyer_and_seler_reporting_id=*/String(),
+      /*buyer_and_seller_reporting_id=*/String(),
+      /*selectable_buyer_and_seller_reporting_ids=*/std::nullopt,
       /*metadata=*/String(), /*ad_render_id=*/String(),
       /*allowed_reporting_origins=*/std::nullopt);
 }
@@ -130,6 +131,8 @@ class ValidateBlinkInterestGroupTest : public testing::Test {
     blink_interest_group->trusted_bidding_signals_keys->push_back(
         String::FromUTF8("2"));
     blink_interest_group->max_trusted_bidding_signals_url_length = 8000;
+    blink_interest_group->trusted_bidding_signals_coordinator =
+        kCoordinatorOrigin;
     blink_interest_group->user_bidding_signals =
         String::FromUTF8("\"This field isn't actually validated\"");
 
@@ -169,8 +172,7 @@ class ValidateBlinkInterestGroupTest : public testing::Test {
         mojom::blink::AuctionServerRequestFlags::New();
     blink_interest_group->auction_server_request_flags->omit_ads = true;
 
-    blink_interest_group->aggregation_coordinator_origin =
-        kAggregationCoordinatorOrigin;
+    blink_interest_group->aggregation_coordinator_origin = kCoordinatorOrigin;
 
     return blink_interest_group;
   }
@@ -181,9 +183,9 @@ class ValidateBlinkInterestGroupTest : public testing::Test {
       SecurityOrigin::CreateFromString(String::FromUTF8(kOriginString));
 
   const String kName = String::FromUTF8(kNameString);
-  const scoped_refptr<const SecurityOrigin> kAggregationCoordinatorOrigin =
+  const scoped_refptr<const SecurityOrigin> kCoordinatorOrigin =
       SecurityOrigin::CreateFromString(
-          String::FromUTF8(kAggregationCoordinatorOriginString));
+          String::FromUTF8(kCoordinatorOriginString));
   test::TaskEnvironment task_environment_;
 };
 
@@ -1066,7 +1068,8 @@ TEST_F(ValidateBlinkInterestGroupTest, AdSizeGroupEmptyNameOrNotInSizeGroups) {
         KURL("https://origin.test/foo?bar"),
         /*size_group=*/test_case.ad_size_group,
         /*buyer_reporting_id=*/String(),
-        /*buyer_and_seler_reporting_id=*/String(),
+        /*buyer_and_seller_reporting_id=*/String(),
+        /*selectable_buyer_and_seller_reporting_ids=*/std::nullopt,
         /*metadata=*/String(), /*ad_render_id=*/String(),
         /*allowed_reporting_origins=*/std::nullopt));
     blink_interest_group->ad_sizes.emplace();
@@ -1108,7 +1111,8 @@ TEST_F(ValidateBlinkInterestGroupTest,
             KURL("https://origin.test/foo?bar"),
             /*size_group=*/test_case.ad_component_size_group,
             /*buyer_reporting_id=*/String(),
-            /*buyer_and_seler_reporting_id=*/String(),
+            /*buyer_and_seller_reporting_id=*/String(),
+            /*selectable_buyer_and_seller_reporting_id=*/std::nullopt,
             /*metadata=*/String(), /*ad_render_id=*/String(),
             /*allowed_reporting_origins=*/std::nullopt));
     blink_interest_group->ad_sizes.emplace();
@@ -1317,6 +1321,34 @@ TEST_F(ValidateBlinkInterestGroupTest,
       /*expected_error_field_value=*/String::FromUTF8("-1"),
       /*expected_error=*/
       String::FromUTF8("maxTrustedBiddingSignalsURLLength is negative."));
+}
+
+TEST_F(ValidateBlinkInterestGroupTest,
+       InvalidTrustedBiddingSignalsCoordinator) {
+  mojom::blink::InterestGroupPtr blink_interest_group =
+      CreateMinimalInterestGroup();
+  blink_interest_group->trusted_bidding_signals_coordinator =
+      SecurityOrigin::CreateFromString(String::FromUTF8("http://origin.test/"));
+  ExpectInterestGroupIsNotValid(
+      blink_interest_group,
+      /*expected_error_field_name=*/
+      String::FromUTF8("trustedBiddingSignalsCoordinator"),
+      /*expected_error_field_value=*/String::FromUTF8("http://origin.test"),
+      /*expected_error=*/
+      String::FromUTF8(
+          "trustedBiddingSignalsCoordinator origin must be HTTPS."));
+
+  blink_interest_group->trusted_bidding_signals_coordinator =
+      SecurityOrigin::CreateFromString(String::FromUTF8("data:,foo"));
+  // Data URLs have opaque origins, which are mapped to the string "null".
+  ExpectInterestGroupIsNotValid(
+      blink_interest_group,
+      /*expected_error_field_name=*/
+      String::FromUTF8("trustedBiddingSignalsCoordinator"),
+      /*expected_error_field_value=*/String::FromUTF8("null"),
+      /*expected_error=*/
+      String::FromUTF8(
+          "trustedBiddingSignalsCoordinator origin must be HTTPS."));
 }
 
 }  // namespace blink

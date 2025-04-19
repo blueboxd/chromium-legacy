@@ -22,7 +22,8 @@ const char kUnenrollRequestPath[] = "payments/apis/virtualcardservice/unenroll";
 UpdateVirtualCardEnrollmentRequest::UpdateVirtualCardEnrollmentRequest(
     const PaymentsNetworkInterface::UpdateVirtualCardEnrollmentRequestDetails&
         request_details,
-    base::OnceCallback<void(AutofillClient::PaymentsRpcResult)> callback)
+    base::OnceCallback<void(PaymentsAutofillClient::PaymentsRpcResult)>
+        callback)
     : request_details_(request_details), callback_(std::move(callback)) {}
 
 UpdateVirtualCardEnrollmentRequest::~UpdateVirtualCardEnrollmentRequest() =
@@ -95,8 +96,33 @@ bool UpdateVirtualCardEnrollmentRequest::IsResponseComplete() {
 }
 
 void UpdateVirtualCardEnrollmentRequest::RespondToDelegate(
-    AutofillClient::PaymentsRpcResult result) {
+    PaymentsAutofillClient::PaymentsRpcResult result) {
   std::move(callback_).Run(result);
+}
+
+std::string UpdateVirtualCardEnrollmentRequest::GetHistogramName() const {
+  switch (request_details_.virtual_card_enrollment_request_type) {
+    case VirtualCardEnrollmentRequestType::kEnroll:
+      return "UpdateVirtualCardEnrollment_Enroll";
+    default:
+      NOTREACHED_NORETURN();
+  }
+}
+
+std::optional<base::TimeDelta> UpdateVirtualCardEnrollmentRequest::GetTimeout()
+    const {
+  if (request_details_.virtual_card_enrollment_request_type !=
+      VirtualCardEnrollmentRequestType::kEnroll) {
+    return std::nullopt;
+  }
+
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillVcnEnrollRequestTimeout)) {
+    return std::nullopt;
+  }
+
+  return base::Milliseconds(
+      features::kAutofillVcnEnrollRequestTimeoutMilliseconds.Get());
 }
 
 void UpdateVirtualCardEnrollmentRequest::BuildEnrollRequestDictionary(

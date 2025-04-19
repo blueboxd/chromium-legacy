@@ -18,6 +18,12 @@
 #include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
 #include "third_party/skia/include/core/SkTextBlob.h"
 
+#if DCHECK_IS_ON()
+#include "base/debug/crash_logging.h"
+#include "base/debug/stack_trace.h"
+#include "components/crash/core/common/crash_key.h"
+#endif
+
 namespace blink {
 
 PaintController::CounterForTesting* PaintController::counter_for_testing_ =
@@ -41,7 +47,7 @@ PaintController::PaintController(Usage usage)
 PaintController::~PaintController() {
 #if DCHECK_IS_ON()
   if (usage_ == kMultiplePaints) {
-    // And the committed_ flag should have been cleared by FinishCycle().
+    // The committed_ flag should have been cleared by FinishCycle().
     DCHECK(!committed_);
   }
 #endif
@@ -50,6 +56,7 @@ PaintController::~PaintController() {
 void PaintController::Trace(Visitor* visitor) const {
   visitor->Trace(current_paint_artifact_);
   visitor->Trace(new_paint_artifact_);
+  visitor->Trace(paint_chunker_);
   visitor->Trace(clients_to_validate_);
   visitor->Trace(under_invalidation_checker_);
 }
@@ -123,13 +130,15 @@ void PaintController::RecordScrollHitTestData(
     const DisplayItemClient& client,
     DisplayItem::Type type,
     const TransformPaintPropertyNode* scroll_translation,
-    const gfx::Rect& rect,
-    cc::HitTestOpaqueness hit_test_opaqueness) {
+    const gfx::Rect& scroll_hit_test_rect,
+    cc::HitTestOpaqueness hit_test_opaqueness,
+    const gfx::Rect& scrolling_contents_cull_rect) {
   PaintChunk::Id id(client.Id(), type, current_fragment_);
   CheckNewChunkId(id);
   ValidateNewChunkClient(client);
-  paint_chunker_.CreateScrollHitTestChunk(id, client, scroll_translation, rect,
-                                          hit_test_opaqueness);
+  paint_chunker_.CreateScrollHitTestChunk(
+      id, client, scroll_translation, scroll_hit_test_rect, hit_test_opaqueness,
+      scrolling_contents_cull_rect);
   CheckNewChunk();
 }
 
@@ -291,7 +300,7 @@ bool PaintController::UseCachedSubsequenceIfPossible(
     // created multiple subsequences. If DCHECK_IS_ON(), then we should have
     // encountered the DCHECK at the end of EndSubsequence() during the previous
     // paint.
-    DUMP_WILL_BE_NOTREACHED_NORETURN();
+    DUMP_WILL_BE_NOTREACHED();
     return false;
   }
 
@@ -399,39 +408,64 @@ void PaintController::CheckNewItem(DisplayItem& display_item) {
 
 #if DCHECK_IS_ON()
   if (display_item.IsCacheable()) {
+    DEFINE_STATIC_LOCAL(std::optional<PaintChunk::Id>, last_duplicated_id, ());
+    DEFINE_STATIC_LOCAL(std::optional<base::debug::StackTrace>, previous_stack,
+                        ());
+    auto id = display_item.GetId();
+    if (id == last_duplicated_id) {
+      previous_stack.emplace();
+    }
+
     auto& new_display_item_list = new_paint_artifact_->GetDisplayItemList();
-    auto index = FindItemFromIdIndexMap(display_item.GetId(),
-                                        new_display_item_id_index_map_,
+    auto index = FindItemFromIdIndexMap(id, new_display_item_id_index_map_,
                                         new_display_item_list);
     if (index != kNotFound) {
-      ShowDebugData();
+      WTF::TextStream ts;
       const auto& chunks = new_paint_artifact_->GetPaintChunks();
-      const PaintChunk* chunk =
+      auto chunk =
           std::upper_bound(chunks.begin(), chunks.end(), index,
                            [](wtf_size_t index, const PaintChunk& chunk) {
                              return index < chunk.end_index;
                            });
       DCHECK_NE(chunk, chunks.end());
-      NOTREACHED_IN_MIGRATION()
-          << "DisplayItem "
-          << display_item.AsDebugString(*new_paint_artifact_).Utf8()
-          << " (index="
-          << new_display_item_list.size()
-          // The last chunk might not be the chunk the new item would
-          // be in because the new item might start a new chunk.
-          << " last chunk "
-          << chunks.back()
-                 .ToString(*new_paint_artifact_, /*concise=*/true)
-                 .Utf8()
-          << ")\n has duplicated id with previous "
-          << new_display_item_list[index]
-                 .AsDebugString(*new_paint_artifact_)
-                 .Utf8()
-          << " (index=" << index << " in chunk "
-          << chunk->ToString(*new_paint_artifact_, /*concise=*/true).Utf8()
-          << ")";
+      ts << "DisplayItem "
+         << display_item.AsDebugString(*new_paint_artifact_).Utf8()
+         << " (index="
+         << new_display_item_list.size()
+         // The last chunk might not be the chunk the new item would
+         // be in because the new item might start a new chunk.
+         << " last chunk "
+         << chunks.back()
+                .ToString(*new_paint_artifact_, /*concise=*/true)
+                .Utf8()
+         << ")\n has duplicated id with previous "
+         << new_display_item_list[index]
+                .AsDebugString(*new_paint_artifact_)
+                .Utf8()
+         << " (index=" << index << " in chunk "
+         << chunk->ToString(*new_paint_artifact_, /*concise=*/true).Utf8()
+         << ")";
+      std::string message = ts.Release().Utf8();
+      LOG(ERROR) << message;
+      std::string debug_data = DebugDataAsString().Utf8();
+      LOG(ERROR) << debug_data;
+      // Don't crash on the first encounter of duplicated item id. To collect
+      // more data, we expect the issue will reproduce during the next paint
+      // cycle, which will crash with more data.
+      if (previous_stack) {
+        if (debug_data.length() > 1024) {
+          debug_data = debug_data.substr(debug_data.length() - 1024);
+        }
+        SCOPED_CRASH_KEY_STRING1024("DupItemId", "DebugData", debug_data);
+        static crash_reporter::CrashKeyString<1024> previous_stack_key(
+            "DupItemId-PrevStack");
+        LOG(ERROR) << "previous stack: " << previous_stack->ToString();
+        crash_reporter::SetCrashKeyStringToStackTrace(&previous_stack_key,
+                                                      *previous_stack);
+        NOTREACHED_IN_MIGRATION() << message;
+      }
     }
-    AddToIdIndexMap(display_item.GetId(), new_display_item_list.size() - 1,
+    AddToIdIndexMap(id, new_display_item_list.size() - 1,
                     new_display_item_id_index_map_);
   }
 #endif
@@ -477,14 +511,39 @@ void PaintController::CheckNewChunkId(const PaintChunk::Id& id) {
   if (DisplayItem::IsForeignLayerType(id.type))
     return;
 
+  DEFINE_STATIC_LOCAL(std::optional<PaintChunk::Id>, last_duplicated_id, ());
+  DEFINE_STATIC_LOCAL(std::optional<base::debug::StackTrace>, previous_stack,
+                      ());
+  if (id == last_duplicated_id) {
+    previous_stack.emplace();
+  }
   auto it = new_paint_chunk_id_index_map_.find(id.AsHashKey());
   if (it != new_paint_chunk_id_index_map_.end()) {
-    ShowDebugData();
-    DUMP_WILL_BE_NOTREACHED_NORETURN()
-        << "New paint chunk id " << id.ToString(*new_paint_artifact_)
-        << " is already used by a previous chuck "
-        << new_paint_artifact_->GetPaintChunks()[it->value].ToString(
-               *new_paint_artifact_);
+    WTF::TextStream ts;
+    ts << "New paint chunk id " << id.ToString(*new_paint_artifact_)
+       << " is already used by a previous chuck "
+       << new_paint_artifact_->GetPaintChunks()[it->value].ToString(
+              *new_paint_artifact_);
+    std::string message = ts.Release().Utf8();
+    LOG(ERROR) << message;
+    std::string debug_data = DebugDataAsString().Utf8();
+    LOG(ERROR) << debug_data;
+    // Don't crash on the first encounter of duplicated chunk id. To collect
+    // more data, we expect the issue will reproduce during the next paint
+    // cycle, which will crash with more data.
+    if (previous_stack) {
+      if (debug_data.length() > 1024) {
+        debug_data = debug_data.substr(debug_data.length() - 1024);
+      }
+      SCOPED_CRASH_KEY_STRING1024("DupChunkId", "DebugData", debug_data);
+      static crash_reporter::CrashKeyString<1024> previous_stack_key(
+          "DupChunkId-PrevStack");
+      LOG(ERROR) << "previous stack: " << previous_stack->ToString();
+      crash_reporter::SetCrashKeyStringToStackTrace(&previous_stack_key,
+                                                    *previous_stack);
+      DUMP_WILL_BE_NOTREACHED() << message;
+    }
+    last_duplicated_id.emplace(id.client_id, id.type, id.fragment);
   }
 #endif
 }

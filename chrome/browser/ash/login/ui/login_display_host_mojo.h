@@ -22,6 +22,7 @@
 #include "chrome/browser/ash/login/ui/oobe_ui_dialog_delegate.h"
 #include "chrome/browser/ui/ash/login_screen_client_impl.h"
 #include "chrome/browser/ui/webui/ash/login/oobe_ui.h"
+#include "chromeos/ash/components/login/auth/auth_performer.h"
 #include "chromeos/ash/components/login/auth/auth_status_consumer.h"
 #include "chromeos/ash/components/login/auth/public/challenge_response_key.h"
 #include "components/user_manager/user.h"
@@ -91,7 +92,6 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   void SetShelfButtonsEnabled(bool enabled) override;
   void UpdateOobeDialogState(OobeDialogState state) override;
   void OnCancelPasswordChangedFlow() override;
-  void ShowEnableConsumerKioskScreen() override;
   void HandleDisplayCaptivePortal() override;
   void UpdateAddUserButtonStatus() override;
   void RequestSystemInfoUpdate() override;
@@ -198,6 +198,11 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   void ScheduleStartAuthHubInLoginMode();
   void StartAuthHubInLoginMode(bool is_cryptohome_available);
 
+  // Checks the auth factors availability and updates the user pod.
+  void UpdateAuthFactorsAvailability(const user_manager::User* user);
+
+  base::ObserverList<LoginDisplayHost::Observer> observers_;
+
   // State associated with a pending authentication attempt.
   struct AuthState {
     AuthState(AccountId account_id, base::OnceCallback<void(bool)> callback);
@@ -215,6 +220,8 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   base::CallbackListSubscription allow_new_user_subscription_;
 
   std::unique_ptr<ExistingUserController> existing_user_controller_;
+
+  AuthPerformer auth_performer_;
 
   // Called after host deletion.
   std::vector<base::OnceClosure> completion_callbacks_;
@@ -253,8 +260,6 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
 
   base::ScopedObservation<ui::UserActivityDetector, ui::UserActivityObserver>
       scoped_activity_observation_{this};
-
-  base::ObserverList<LoginDisplayHost::Observer> observers_;
 
   base::WeakPtrFactory<LoginDisplayHostMojo> weak_factory_{this};
 };

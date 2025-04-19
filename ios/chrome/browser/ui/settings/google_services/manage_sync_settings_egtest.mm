@@ -8,7 +8,8 @@
 #import "components/search_engines/search_engines_switches.h"
 #import "components/strings/grit/components_strings.h"
 #import "components/sync/base/features.h"
-#import "ios/chrome/browser/bookmarks/model/bookmark_model_type.h"
+#import "ios/chrome/browser/bookmarks/model/bookmark_storage_type.h"
+#import "ios/chrome/browser/bookmarks/ui_bundled/bookmark_earl_grey.h"
 #import "ios/chrome/browser/policy/model/policy_app_interface.h"
 #import "ios/chrome/browser/policy/model/policy_earl_grey_utils.h"
 #import "ios/chrome/browser/policy/model/policy_util.h"
@@ -17,7 +18,6 @@
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/authentication/signin_matchers.h"
 #import "ios/chrome/browser/ui/authentication/views/views_constants.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_egtest_utils.h"
 #import "ios/chrome/browser/ui/settings/google_services/bulk_upload/bulk_upload_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/features.h"
@@ -111,9 +111,9 @@ void DismissSignOutSnackbar() {
 // Adds a bookmark. The storage type is determined based on if the user is
 // signed in or not.
 void SaveBookmark(NSString* title, NSString* url) {
-  BookmarkModelType storageType = BookmarkModelType::kAccount;
+  BookmarkStorageType storageType = BookmarkStorageType::kAccount;
   if ([SigninEarlGrey isSignedOut]) {
-    storageType = BookmarkModelType::kLocalOrSyncable;
+    storageType = BookmarkStorageType::kLocalOrSyncable;
   }
   [BookmarkEarlGrey addBookmarkWithTitle:title URL:url inStorage:storageType];
 }
@@ -266,7 +266,7 @@ void ExpectBatchUploadConfirmationSnackbar(int count, NSString* email) {
 
   // Verify the "manage accounts" view is popped.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kSettingsAccountsTableViewId)]
+                                          kSettingsLegacyAccountsTableViewId)]
       assertWithMatcher:grey_notVisible()];
 
   // Verify the "manage sync" view is popped.
@@ -280,10 +280,11 @@ void ExpectBatchUploadConfirmationSnackbar(int count, NSString* email) {
       assertWithMatcher:grey_notVisible()];
 }
 
+// TODO(crbug.com/352725030): This test is flaky.
 // Tests the unsynced data dialog shows when there are unsynced passwords. Also
 // verifies that the user is still signed in when the dialog Cancel button is
 // tapped.
-- (void)testUnsyncedDataDialogShowsInCaseOfUnsyncedPasswords {
+- (void)FLAKY_testUnsyncedDataDialogShowsInCaseOfUnsyncedPasswords {
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
 
@@ -315,10 +316,11 @@ void ExpectBatchUploadConfirmationSnackbar(int count, NSString* email) {
   [ChromeEarlGrey connectFakeSyncServerNetwork];
 }
 
+// TODO(crbug.com/355133719): Remove FLAKY_ from this test.
 // Tests the unsynced data dialog shows when there are unsynced readinglist
 // entries. Also verifies that the user is still signed in when the dialog
 // Cancel button is tapped.
-- (void)testUnsyncedDataDialogShowsInCaseOfUnsyncedReadingListEntry {
+- (void)FLAKY_testUnsyncedDataDialogShowsInCaseOfUnsyncedReadingListEntry {
   // TODO(crbug.com/41494658): Test fails on iPhone device and simulator.
   if (![ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_DISABLED(@"Fails on iPhone.");
@@ -330,7 +332,8 @@ void ExpectBatchUploadConfirmationSnackbar(int count, NSString* email) {
 
   [ChromeEarlGrey disconnectFakeSyncServerNetwork];
 
-  reading_list_test_utils::AddURLToReadingList(GURL("https://example.com"));
+  reading_list_test_utils::AddURLToReadingListWithSnackbarDismiss(
+      GURL("https://example.com"), fakeIdentity.userEmail);
 
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:SettingsAccountButton()];
@@ -765,7 +768,7 @@ void ExpectBatchUploadConfirmationSnackbar(int count, NSString* email) {
 // Tests the account settings is with a user actionable error; enter
 // passphrase error.
 - (void)testAccountSettingsWithError {
-  [ChromeEarlGrey addBookmarkWithSyncPassphrase:kPassphrase];
+  [ChromeEarlGrey addSyncPassphrase:kPassphrase];
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
 
@@ -945,7 +948,8 @@ void ExpectBatchUploadConfirmationSnackbar(int count, NSString* email) {
 // contains the correct string for reading list.
 - (void)testBulkUploadDescriptionTextForReadingList {
   // Add local data.
-  reading_list_test_utils::AddURLToReadingList(GURL("https://example.com"));
+  reading_list_test_utils::AddURLToReadingListWithSnackbarDismiss(
+      GURL("https://example.com"), nil);
 
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
@@ -970,7 +974,8 @@ void ExpectBatchUploadConfirmationSnackbar(int count, NSString* email) {
   // Add local data.
   password_manager_test_utils::SavePasswordFormToProfileStore(
       @"password", @"user", @"https://example.com");
-  reading_list_test_utils::AddURLToReadingList(GURL("https://example.com"));
+  reading_list_test_utils::AddURLToReadingListWithSnackbarDismiss(
+      GURL("https://example.com"), nil);
   SaveBookmark(@"foo", @"https://www.foo.com");
 
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
@@ -998,7 +1003,8 @@ void ExpectBatchUploadConfirmationSnackbar(int count, NSString* email) {
   // Add local data.
   password_manager_test_utils::SavePasswordFormToProfileStore(
       @"password", @"user", @"https://example.com");
-  reading_list_test_utils::AddURLToReadingList(GURL("https://example.com"));
+  reading_list_test_utils::AddURLToReadingListWithSnackbarDismiss(
+      GURL("https://example.com"), nil);
   SaveBookmark(@"foo", @"https://www.foo.com");
 
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
@@ -1146,7 +1152,8 @@ void ExpectBatchUploadConfirmationSnackbar(int count, NSString* email) {
   // Add local data.
   password_manager_test_utils::SavePasswordFormToProfileStore(
       @"password", @"user", @"https://example.com");
-  reading_list_test_utils::AddURLToReadingList(GURL("https://example.com"));
+  reading_list_test_utils::AddURLToReadingListWithSnackbarDismiss(
+      GURL("https://example.com"), nil);
   SaveBookmark(@"foo", @"https://www.foo.com");
 
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
@@ -1236,7 +1243,8 @@ void ExpectBatchUploadConfirmationSnackbar(int count, NSString* email) {
   // Add local data.
   password_manager_test_utils::SavePasswordFormToProfileStore(
       @"password", @"user", @"https://example.com");
-  reading_list_test_utils::AddURLToReadingList(GURL("https://example.com"));
+  reading_list_test_utils::AddURLToReadingListWithSnackbarDismiss(
+      GURL("https://example.com"), nil);
   SaveBookmark(@"foo", @"https://www.foo.com");
 
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
@@ -1311,7 +1319,8 @@ void ExpectBatchUploadConfirmationSnackbar(int count, NSString* email) {
   // Add local data.
   password_manager_test_utils::SavePasswordFormToProfileStore(
       @"password", @"user", @"https://example.com");
-  reading_list_test_utils::AddURLToReadingList(GURL("https://example.com"));
+  reading_list_test_utils::AddURLToReadingListWithSnackbarDismiss(
+      GURL("https://example.com"), nil);
   SaveBookmark(@"foo", @"https://www.foo.com");
 
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
@@ -1434,7 +1443,7 @@ void ExpectBatchUploadConfirmationSnackbar(int count, NSString* email) {
 // Tests the account settings and the user actionable error view are dismissed
 // on account removal.
 - (void)testAccountSettingsWithErrorDismissed {
-  [ChromeEarlGrey addBookmarkWithSyncPassphrase:kPassphrase];
+  [ChromeEarlGrey addSyncPassphrase:kPassphrase];
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
 
@@ -1467,7 +1476,7 @@ void ExpectBatchUploadConfirmationSnackbar(int count, NSString* email) {
 
 // Tests the passphrase error view is dismissed when "Cancel" button is pressed.
 - (void)testErrorViewFromAccountSettingsDismissed {
-  [ChromeEarlGrey addBookmarkWithSyncPassphrase:kPassphrase];
+  [ChromeEarlGrey addSyncPassphrase:kPassphrase];
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
 
@@ -1541,7 +1550,7 @@ void ExpectBatchUploadConfirmationSnackbar(int count, NSString* email) {
 // and cleared when account is removed from device.
 - (void)testRememberCustomPassphraseAfterSignout {
   // Enable custom passphrase.
-  [ChromeEarlGrey addBookmarkWithSyncPassphrase:kPassphrase];
+  [ChromeEarlGrey addSyncPassphrase:kPassphrase];
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
 

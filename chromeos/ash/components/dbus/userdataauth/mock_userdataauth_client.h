@@ -91,11 +91,6 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) MockUserDataAuthClient
                CreatePersistentUserCallback callback),
               (override));
   MOCK_METHOD(void,
-              RestoreDeviceKey,
-              (const ::user_data_auth::RestoreDeviceKeyRequest& request,
-               RestoreDeviceKeyCallback callback),
-              (override));
-  MOCK_METHOD(void,
               PreparePersistentVault,
               (const ::user_data_auth::PreparePersistentVaultRequest& request,
                PreparePersistentVaultCallback callback),
@@ -134,6 +129,11 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) MockUserDataAuthClient
               UpdateAuthFactorMetadata,
               (const ::user_data_auth::UpdateAuthFactorMetadataRequest& request,
                UpdateAuthFactorMetadataCallback callback),
+              (override));
+  MOCK_METHOD(void,
+              ReplaceAuthFactor,
+              (const ::user_data_auth::ReplaceAuthFactorRequest& request,
+               ReplaceAuthFactorCallback callback),
               (override));
   MOCK_METHOD(void,
               ListAuthFactors,
@@ -176,6 +176,12 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) MockUserDataAuthClient
               (const ::user_data_auth::GetRecoverableKeyStoresRequest& request,
                GetRecoverableKeyStoresCallback),
               (override));
+  MOCK_METHOD(
+      void,
+      SetUserDataStorageWriteEnabled,
+      (const ::user_data_auth::SetUserDataStorageWriteEnabledRequest& request,
+       SetUserDataStorageWriteEnabledCallback),
+      (override));
 };
 
 }  // namespace ash

@@ -653,9 +653,10 @@ var availableTests = [
   },
 
   function switchBiometricAuthBeforeFillingState() {
-    chrome.passwordsPrivate.switchBiometricAuthBeforeFillingState();
-    chrome.test.assertNoLastError();
-    chrome.test.succeed();
+    chrome.passwordsPrivate.switchBiometricAuthBeforeFillingState(_ => {
+      chrome.test.assertNoLastError();
+      chrome.test.succeed();
+    });
   },
 
   function showAddShortcutDialog() {
@@ -759,6 +760,14 @@ var availableTests = [
   function disconnectCloudAuthenticator() {
     chrome.passwordsPrivate.disconnectCloudAuthenticator(success => {
       chrome.test.assertFalse(success);
+      chrome.test.assertNoLastError();
+      chrome.test.succeed();
+    });
+  },
+
+  function deleteAllPasswordManagerData() {
+    chrome.passwordsPrivate.deleteAllPasswordManagerData(success => {
+      chrome.test.assertTrue(success);
       chrome.test.assertNoLastError();
       chrome.test.succeed();
     });

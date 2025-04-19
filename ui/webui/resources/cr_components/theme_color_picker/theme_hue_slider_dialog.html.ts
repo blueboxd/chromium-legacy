@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 import {html} from '//resources/lit/v3_0/lit.rollup.js';
+
 import type {ThemeHueSliderDialogElement} from './theme_hue_slider_dialog.js';
 
 export function getHtml(this: ThemeHueSliderDialogElement) {
+  // clang-format off
   return html`
 <dialog id="dialog">
   <div id="header">
@@ -23,7 +25,8 @@ export function getHtml(this: ThemeHueSliderDialogElement) {
       @pointerup="${this.updateSelectedHueValue_}"
       @keyup="${this.updateSelectedHueValue_}"
       .style="--hue-gradient_: ${this.hueGradient_}; --knob-hue_: ${this.knobHue_}"
-      aria-labelledby="title">
+      aria-label="${this.i18n('hueSliderAriaLabel', this.minHue_, this.maxHue_)}">
   </cr-slider>
 </dialog>`;
+  // clang-format on
 }

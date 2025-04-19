@@ -6,6 +6,8 @@
 
 #import <set>
 
+#import "ios/chrome/browser/shared/model/browser/browser.h"
+#import "ios/chrome/browser/shared/model/browser/browser_list.h"
 #import "ios/chrome/browser/shared/model/web_state_list/tab_group.h"
 #import "ios/chrome/browser/tabs/model/tab_title_util.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_item_identifier.h"
@@ -32,13 +34,15 @@ bool HasDuplicateGroupsAndTabsIdentifiers(NSArray<GridItemIdentifier*>* items) {
   std::set<const TabGroup*> groups;
   for (GridItemIdentifier* item in items) {
     switch (item.type) {
-      case GridItemType::Tab:
+      case GridItemType::kInactiveTabsButton:
+        NOTREACHED_NORETURN();
+      case GridItemType::kTab:
         identifiers.insert(item.tabSwitcherItem.identifier);
         break;
-      case GridItemType::Group:
+      case GridItemType::kGroup:
         groups.insert(item.tabGroupItem.tabGroup);
         break;
-      case GridItemType::SuggestedActions:
+      case GridItemType::kSuggestedActions:
         NOTREACHED_NORETURN();
     }
   }
@@ -53,3 +57,20 @@ bool HasDuplicateIdentifiers(NSArray<TabSwitcherItem*>* items) {
   return identifiers.size() != items.count;
 }
 
+Browser* GetBrowserForTabWithId(BrowserList* browser_list,
+                                web::WebStateID identifier,
+                                bool is_otr_tab) {
+  const BrowserList::BrowserType browser_types =
+      is_otr_tab ? BrowserList::BrowserType::kIncognito
+                 : BrowserList::BrowserType::kRegularAndInactive;
+  std::set<Browser*> browsers = browser_list->BrowsersOfType(browser_types);
+  for (Browser* browser : browsers) {
+    WebStateList* web_state_list = browser->GetWebStateList();
+    int index = GetWebStateIndex(
+        web_state_list, WebStateSearchCriteria{.identifier = identifier});
+    if (index != WebStateList::kInvalidIndex) {
+      return browser;
+    }
+  }
+  return nullptr;
+}

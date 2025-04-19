@@ -13,6 +13,7 @@
 #include "ui/base/models/image_model.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
@@ -33,6 +34,32 @@ std::unique_ptr<views::View> CreateIconView(const ui::ImageModel& icon_image) {
   icon->layer()->SetFillsBoundsOpaquely(false);
   return icon;
 }
+
+// TODO(crbug.com/355018927): Remove this when we implement in views::Label.
+class SubtitleLabelWrapper : public views::View {
+  METADATA_HEADER(SubtitleLabelWrapper, views::View)
+ public:
+  explicit SubtitleLabelWrapper(std::unique_ptr<views::View> title) {
+    SetUseDefaultFillLayout(true);
+    title_ = AddChildView(std::move(title));
+  }
+
+ private:
+  // View:
+  gfx::Size CalculatePreferredSize(
+      const views::SizeBounds& available_size) const override {
+    gfx::Size preferred_size = title_->GetPreferredSize(available_size);
+    if (!available_size.width().is_bounded()) {
+      preferred_size.set_width(title_->GetMinimumSize().width());
+    }
+    return preferred_size;
+  }
+
+  raw_ptr<views::View> title_ = nullptr;
+};
+
+BEGIN_METADATA(SubtitleLabelWrapper)
+END_METADATA
 
 }  // namespace
 
@@ -139,17 +166,17 @@ RichHoverButton::RichHoverButton(
   if (!subtitle_text.empty()) {
     table_layout->AddRows(1, views::TableLayout::kFixedSize);
     AddChildView(std::make_unique<views::View>());
-    subtitle_ = AddChildView(std::make_unique<views::Label>(
+    auto subtitle = std::make_unique<views::Label>(
         subtitle_text, views::style::CONTEXT_LABEL,
-        views::style::STYLE_SECONDARY));
+        views::style::STYLE_SECONDARY);
+    subtitle_ = subtitle.get();
+
+    AddChildView(std::make_unique<SubtitleLabelWrapper>(std::move(subtitle)));
     subtitle_->SetTextStyle(views::style::STYLE_BODY_5);
     subtitle_->SetEnabledColorId(ui::kColorLabelForegroundSecondary);
     subtitle_->SetMultiLine(true);
     subtitle_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     subtitle_->SetAutoColorReadabilityEnabled(false);
-    subtitle_->SizeToFit(
-        title_->GetPreferredSize(views::SizeBounds(title_->width(), {}))
-            .width());
     AddChildView(std::make_unique<views::View>());
     AddChildView(std::make_unique<views::View>());
   }
@@ -203,16 +230,12 @@ void RichHoverButton::UpdateAccessibleName() {
       subtitle_ == nullptr
           ? title_text
           : base::JoinString({title_text, subtitle_->GetText()}, u"\n");
-  HoverButton::SetAccessibleName(accessible_name);
+  HoverButton::GetViewAccessibility().SetName(accessible_name);
 }
 
 gfx::Size RichHoverButton::CalculatePreferredSize(
     const views::SizeBounds& available_size) const {
   return Button::CalculatePreferredSize(available_size);
-}
-
-int RichHoverButton::GetHeightForWidth(int w) const {
-  return Button::GetHeightForWidth(w);
 }
 
 void RichHoverButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {

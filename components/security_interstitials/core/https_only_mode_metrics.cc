@@ -27,6 +27,12 @@ InterstitialReason GetInterstitialReason(
   if (interstitial_state.enabled_by_pref) {
     return InterstitialReason::kPref;
   }
+  if (interstitial_state.enabled_by_incognito) {
+    return InterstitialReason::kIncognito;
+  }
+  if (interstitial_state.enabled_in_balanced_mode) {
+    return InterstitialReason::kBalanced;
+  }
   return InterstitialReason::kUnknown;
 }
 
@@ -62,6 +68,7 @@ void RecordHttpsFirstModeNavigation(
   base::UmaHistogramEnumeration(kEventHistogram, event);
 
   if (!interstitial_state.enabled_by_pref &&
+      !interstitial_state.enabled_in_balanced_mode &&
       interstitial_state.enabled_by_engagement_heuristic) {
     // Only record the engagement heuristic histogram if HTTPS-First Mode wasn't
     // enabled by the UI setting.

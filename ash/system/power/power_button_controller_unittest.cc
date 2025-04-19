@@ -521,9 +521,9 @@ TEST_F(PowerButtonControllerTest, ConvertibleOnTabletMode) {
 // Tests that a single set of power button pressed-and-released operation should
 // cause only one SetBacklightsForcedOff call.
 TEST_F(PowerButtonControllerTest, IgnorePowerOnKeyEvent) {
-  ui::KeyEvent power_key_pressed(ui::ET_KEY_PRESSED, ui::VKEY_POWER,
+  ui::KeyEvent power_key_pressed(ui::EventType::kKeyPressed, ui::VKEY_POWER,
                                  ui::EF_NONE);
-  ui::KeyEvent power_key_released(ui::ET_KEY_RELEASED, ui::VKEY_POWER,
+  ui::KeyEvent power_key_released(ui::EventType::kKeyReleased, ui::VKEY_POWER,
                                   ui::EF_NONE);
 
   // There are two |power_key_pressed| events and |power_key_released| events
@@ -938,7 +938,8 @@ TEST_F(PowerButtonControllerTest, SuspendWithMenuOn) {
 
 // Tests the formerly-active window state in showing power menu.
 TEST_F(PowerButtonControllerTest, FormerlyActiveWindowInShowingMenu) {
-  std::unique_ptr<views::Widget> widget = CreateTestWidget();
+  std::unique_ptr<views::Widget> widget =
+      CreateTestWidget(views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET);
   ASSERT_TRUE(widget->IsActive());
 
   OpenPowerButtonMenu();

@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/memory/raw_ptr.h"
-#include "ui/views/widget/desktop_aura/desktop_window_tree_host_platform.h"
-
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
 #include "build/build_config.h"
@@ -16,10 +14,12 @@
 #include "ui/base/test/ui_controls.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/wm/wm_move_resize_handler.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/widget_activation_waiter.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host_platform.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/native_frame_view.h"
 
@@ -56,7 +56,7 @@ bool IsNonClientComponent(int hittest) {
 
 std::unique_ptr<Widget> CreateWidget(const gfx::Rect& bounds) {
   std::unique_ptr<Widget> widget(new Widget);
-  Widget::InitParams params(Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
+  Widget::InitParams params(Widget::InitParams::CLIENT_OWNS_WIDGET,
                             Widget::InitParams::TYPE_WINDOW);
   params.remove_standard_frame = true;
   params.native_widget = new DesktopNativeWidgetAura(widget.get());
@@ -91,8 +91,10 @@ class MouseMoveCounterHandler : public ui::EventHandler {
     // aura::WindowTreeHostPlatform::MoveCursorToScreenLocationInPixels. Thus,
     // two events will come - one is synthetic and another one is our real one.
     // Ignore the synthetic events as we are not interested in them.
-    if (event->type() == ui::ET_MOUSE_MOVED && !event->IsSynthesized())
+    if (event->type() == ui::EventType::kMouseMoved &&
+        !event->IsSynthesized()) {
       ++count_;
+    }
   }
 
   int num_mouse_moves() const { return count_; }
@@ -291,10 +293,10 @@ class DesktopWindowTreeHostPlatformImplTest
   void GenerateAndDispatchClickMouseEvent(const gfx::Point& click_location,
                                           int flags) {
     DCHECK(host_);
-    DispatchEvent(
-        GenerateMouseEvent(ui::ET_MOUSE_PRESSED, click_location, flags));
-    DispatchEvent(
-        GenerateMouseEvent(ui::ET_MOUSE_RELEASED, click_location, flags));
+    DispatchEvent(GenerateMouseEvent(ui::EventType::kMousePressed,
+                                     click_location, flags));
+    DispatchEvent(GenerateMouseEvent(ui::EventType::kMouseReleased,
+                                     click_location, flags));
   }
 
   ui::MouseEvent* GenerateMouseEvent(ui::EventType event_type,
@@ -415,11 +417,12 @@ TEST_P(DesktopWindowTreeHostPlatformImplTestWithTouch, MAYBE_HitTest) {
     // |hittest| value we specified.
 
     if (use_touch_event()) {
-      ui::GestureEventDetails gesture_details(ui::ET_GESTURE_SCROLL_BEGIN);
+      ui::GestureEventDetails gesture_details(
+          ui::EventType::kGestureScrollBegin);
       DispatchEvent(
           GenerateGestureEvent(pointer_location_in_px, gesture_details));
     } else {
-      DispatchEvent(GenerateMouseEvent(ui::ET_MOUSE_PRESSED,
+      DispatchEvent(GenerateMouseEvent(ui::EventType::kMousePressed,
                                        pointer_location_in_px,
                                        ui::EF_LEFT_MOUSE_BUTTON));
     }
@@ -436,11 +439,11 @@ TEST_P(DesktopWindowTreeHostPlatformImplTestWithTouch, MAYBE_HitTest) {
     // Dispatch mouse/touch release event to release a mouse/touch pressed
     // handler and be able to consume future events.
     if (use_touch_event()) {
-      ui::GestureEventDetails gesture_details(ui::ET_GESTURE_SCROLL_END);
+      ui::GestureEventDetails gesture_details(ui::EventType::kGestureScrollEnd);
       DispatchEvent(
           GenerateGestureEvent(pointer_location_in_px, gesture_details));
     } else {
-      DispatchEvent(GenerateMouseEvent(ui::ET_MOUSE_RELEASED,
+      DispatchEvent(GenerateMouseEvent(ui::EventType::kMouseReleased,
                                        pointer_location_in_px,
                                        ui::EF_LEFT_MOUSE_BUTTON));
     }
@@ -472,7 +475,7 @@ TEST_P(DesktopWindowTreeHostPlatformImplTestWithTouch,
   host_->ResetCalledMaximize();
 
   if (use_touch_event()) {
-    ui::GestureEventDetails details(ui::ET_GESTURE_TAP);
+    ui::GestureEventDetails details(ui::EventType::kGestureTap);
     details.set_tap_count(1);
     DispatchEvent(GenerateGestureEvent(gfx::Point(), details));
     details.set_tap_count(2);
@@ -510,7 +513,7 @@ TEST_P(DesktopWindowTreeHostPlatformImplTestWithTouch,
 
   if (use_touch_event()) {
     frame_view->set_hit_test_result(HTCLIENT);
-    ui::GestureEventDetails details(ui::ET_GESTURE_TAP);
+    ui::GestureEventDetails details(ui::EventType::kGestureTap);
     details.set_tap_count(1);
     DispatchEvent(GenerateGestureEvent(gfx::Point(), details));
 
@@ -678,7 +681,7 @@ TEST_F(DesktopWindowTreeHostPlatformImplTest, InputMethodFocus) {
 
   std::unique_ptr<Textfield> textfield(new Textfield);
   // Provide an accessible name so that accessibility paint checks pass.
-  textfield->SetAccessibleName(u"test");
+  textfield->GetViewAccessibility().SetName(u"test");
   textfield->SetBounds(0, 0, 200, 20);
   widget->GetRootView()->AddChildView(textfield.get());
   widget->ShowInactive();

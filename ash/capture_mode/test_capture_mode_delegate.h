@@ -90,7 +90,6 @@ class TestCaptureModeDelegate : public CaptureModeDelegate {
 
   // CaptureModeDelegate:
   base::FilePath GetUserDefaultDownloadsFolder() const override;
-  void ShowScreenCaptureItemInFolder(const base::FilePath& file_path) override;
   void OpenScreenCaptureItem(const base::FilePath& file_path) override;
   void OpenScreenshotInImageEditor(const base::FilePath& file_path) override;
   bool Uses24HourFormat() const override;
@@ -120,8 +119,6 @@ class TestCaptureModeDelegate : public CaptureModeDelegate {
   base::FilePath GetLinuxFilesPath() const override;
   base::FilePath GetOneDriveMountPointPath() const override;
   PolicyCapturePath GetPolicyCapturePath() const override;
-  std::unique_ptr<RecordingOverlayView> CreateRecordingOverlayView()
-      const override;
   void ConnectToVideoSourceProvider(
       mojo::PendingReceiver<video_capture::mojom::VideoSourceProvider> receiver)
       override;
@@ -137,6 +134,11 @@ class TestCaptureModeDelegate : public CaptureModeDelegate {
       crosapi::mojom::VideoConferenceMediaUsageStatusPtr status) override;
   void NotifyDeviceUsedWhileDisabled(
       crosapi::mojom::VideoConferenceMediaDevice device) override;
+  void FinalizeSavedFile(
+      base::OnceCallback<void(bool, const base::FilePath&)> callback,
+      const base::FilePath& path) override;
+  base::FilePath RedirectFilePath(const base::FilePath& path) override;
+  std::unique_ptr<AshWebView> CreateSearchResultsView() const override;
 
  private:
   std::unique_ptr<recording::RecordingServiceTestApi> recording_service_;

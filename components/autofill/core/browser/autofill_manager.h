@@ -29,6 +29,7 @@
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/common/dense_set.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/is_required.h"
 #include "components/autofill/core/common/language_code.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
@@ -41,7 +42,7 @@ namespace autofill {
 class AutofillField;
 class AutofillProfile;
 class CreditCard;
-struct FormData;
+class FormData;
 class FormFieldData;
 class FormStructure;
 class LogManager;
@@ -57,6 +58,8 @@ class LogManager;
 class AutofillManager
     : public translate::TranslateDriver::LanguageDetectionObserver {
  public:
+  using LifecycleState = AutofillDriver::LifecycleState;
+
   // Observer of AutofillManager events.
   //
   // For the On{Before,After}Foo() events, the following invariant holds:
@@ -66,15 +69,15 @@ class AutofillManager
   // - if the number of cached forms exceeds `kAutofillManagerMaxFormCacheSize`;
   // - if this AutofillManager has been destroyed or reset in the meantime.
   // - if the request in AutofillCrowdsourcingManager was not successful (i.e.
-  // no 2XX
-  //   response code or a null response body).
+  //   no 2XX response code or a null response body).
   //
   // TODO(crbug.com/40280003): Consider moving events that are specific to BAM
   // to a new BAM::Observer class.
   class Observer : public base::CheckedObserver {
    public:
-    virtual void OnAutofillManagerDestroyed(AutofillManager& manager) {}
-    virtual void OnAutofillManagerReset(AutofillManager& manager) {}
+    virtual void OnAutofillManagerStateChanged(AutofillManager& manager,
+                                               LifecycleState previous,
+                                               LifecycleState current) {}
 
     virtual void OnBeforeLanguageDetermined(AutofillManager& manager) {}
     virtual void OnAfterLanguageDetermined(AutofillManager& manager) {}
@@ -86,11 +89,13 @@ class AutofillManager
 
     virtual void OnBeforeCaretMovedInFormField(AutofillManager& manager,
                                                const FormGlobalId& form,
-                                               const FieldGlobalId& field,
+                                               const FieldGlobalId& field_id,
+                                               const std::u16string& selection,
                                                const gfx::Rect& caret_bounds) {}
     virtual void OnAfterCaretMovedInFormField(AutofillManager& manager,
                                               const FormGlobalId& form,
-                                              const FieldGlobalId& field,
+                                              const FieldGlobalId& field_id,
+                                              const std::u16string& selection,
                                               const gfx::Rect& caret_bounds) {}
 
     virtual void OnBeforeTextFieldDidChange(AutofillManager& manager,
@@ -190,7 +195,7 @@ class AutofillManager
   // TODO(crbug.com/40733066): Move to anonymous namespace once
   // BrowserAutofillManager::OnLoadedServerPredictions() moves to
   // AutofillManager.
-  static void LogAutofillTypePredictionsAvailable(
+  static void LogTypePredictionsAvailable(
       LogManager* log_manager,
       const std::vector<raw_ptr<FormStructure, VectorExperimental>>& forms);
 
@@ -198,6 +203,12 @@ class AutofillManager
   AutofillManager& operator=(const AutofillManager&) = delete;
 
   ~AutofillManager() override;
+
+  // Notifies `Observer`s and calls Reset() if applicable.
+  void OnAutofillDriverLifecycleStateChanged(
+      LifecycleState old_state,
+      LifecycleState new_state,
+      base::PassKey<AutofillDriverFactory> pass_key);
 
   AutofillClient& client() { return driver_->GetAutofillClient(); }
   const AutofillClient& client() const { return driver_->GetAutofillClient(); }
@@ -214,29 +225,30 @@ class AutofillManager
                                bool known_success,
                                mojom::SubmissionSource source);
   virtual void OnTextFieldDidChange(const FormData& form,
-                                    const FormFieldData& field,
+                                    const FieldGlobalId& field_id,
                                     const base::TimeTicks timestamp);
   void OnDidEndTextFieldEditing();
-  void OnTextFieldDidScroll(const FormData& form, const FormFieldData& field);
+  void OnTextFieldDidScroll(const FormData& form,
+                            const FieldGlobalId& field_id);
   void OnSelectControlDidChange(const FormData& form,
-                                const FormFieldData& field);
+                                const FieldGlobalId& field_id);
   void OnSelectOrSelectListFieldOptionsDidChange(const FormData& form);
-  void OnFocusOnFormField(const FormData& form, const FormFieldData& field);
-  void OnFocusOnNonFormField(bool had_interacted_form);
+  void OnFocusOnFormField(const FormData& form, const FieldGlobalId& field_id);
+  void OnFocusOnNonFormField();
   virtual void OnAskForValuesToFill(
       const FormData& form,
-      const FormFieldData& field,
+      const FieldGlobalId& field_id,
       const gfx::Rect& caret_bounds,
       AutofillSuggestionTriggerSource trigger_source);
   void OnHidePopup();
   virtual void OnCaretMovedInFormField(const FormData& form,
-                                       const FormFieldData& field,
+                                       const FieldGlobalId& field_id,
                                        const gfx::Rect& caret_bounds);
   virtual void OnDidFillAutofillFormData(const FormData& form,
                                          const base::TimeTicks timestamp);
   virtual void OnJavaScriptChangedAutofilledValue(
       const FormData& form,
-      const FormFieldData& field,
+      const FieldGlobalId& field_id,
       const std::u16string& old_value,
       bool formatting_only);
 
@@ -246,9 +258,6 @@ class AutofillManager
   // Other events.
 
   virtual void ReportAutofillWebOTPMetrics(bool used_web_otp) = 0;
-
-  // Resets cache.
-  virtual void Reset();
 
   // translate::TranslateDriver::LanguageDetectionObserver:
   void OnTranslateDriverDestroyed(
@@ -264,10 +273,11 @@ class AutofillManager
   // corresponding to |form| and |field|.  This might have the side-effect of
   // updating the cache.  Returns false if the |form| is not autofillable, or if
   // it is not already present in the cache and the cache is full.
-  bool GetCachedFormAndField(const FormData& form,
-                             const FormFieldData& field,
-                             FormStructure** form_structure,
-                             AutofillField** autofill_field) const;
+  [[nodiscard]] bool GetCachedFormAndField(
+      const FormData& form,
+      const FormFieldData& field,
+      FormStructure** form_structure,
+      AutofillField** autofill_field) const;
 
   // Returns nullptr if no cached form structure is found with a matching
   // |form_id|. Runs in logarithmic time.
@@ -312,6 +322,10 @@ class AutofillManager
  protected:
   explicit AutofillManager(AutofillDriver* driver);
 
+  // Clears the managed forms and other objects held by the AutofillManager.
+  // Does not touch the LifecycleState, which is controlled by the caller.
+  virtual void Reset();
+
   LogManager* log_manager() { return log_manager_; }
 
   // Retrieves the page language from |client_|
@@ -323,24 +337,24 @@ class AutofillManager
                                    bool known_success,
                                    mojom::SubmissionSource source) = 0;
   virtual void OnCaretMovedInFormFieldImpl(const FormData& form,
-                                           const FormFieldData& field,
+                                           const FieldGlobalId& field_id,
                                            const gfx::Rect& caret_bounds) = 0;
   virtual void OnTextFieldDidChangeImpl(const FormData& form,
-                                        const FormFieldData& field,
+                                        const FieldGlobalId& field_id,
                                         const base::TimeTicks timestamp) = 0;
   virtual void OnDidEndTextFieldEditingImpl() = 0;
   virtual void OnTextFieldDidScrollImpl(const FormData& form,
-                                        const FormFieldData& field) = 0;
+                                        const FieldGlobalId& field_id) = 0;
   virtual void OnSelectControlDidChangeImpl(const FormData& form,
-                                            const FormFieldData& field) = 0;
+                                            const FieldGlobalId& field_id) = 0;
   virtual void OnSelectOrSelectListFieldOptionsDidChangeImpl(
       const FormData& form) = 0;
   virtual void OnFocusOnFormFieldImpl(const FormData& form,
-                                      const FormFieldData& field) = 0;
-  virtual void OnFocusOnNonFormFieldImpl(bool had_interacted_form) = 0;
+                                      const FieldGlobalId& field_id) = 0;
+  virtual void OnFocusOnNonFormFieldImpl() = 0;
   virtual void OnAskForValuesToFillImpl(
       const FormData& form,
-      const FormFieldData& field,
+      const FieldGlobalId& field_id,
       const gfx::Rect& caret_bounds,
       AutofillSuggestionTriggerSource trigger_source) = 0;
   virtual void OnDidFillAutofillFormDataImpl(
@@ -349,7 +363,7 @@ class AutofillManager
   virtual void OnHidePopupImpl() = 0;
   virtual void OnJavaScriptChangedAutofilledValueImpl(
       const FormData& form,
-      const FormFieldData& field,
+      const FieldGlobalId& field_id,
       const std::u16string& old_value,
       bool formatting_only) = 0;
 

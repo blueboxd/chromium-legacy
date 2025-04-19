@@ -24,6 +24,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_switcher/browser_switcher_policy_migrator.h"
+#include "chrome/browser/enterprise/util/affiliation.h"
 #include "chrome/browser/infobars/simple_alert_infobar_creator.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "components/infobars/content/content_infobar_manager.h"
@@ -583,6 +584,7 @@ base::flat_set<std::string> ProfilePolicyConnector::user_affiliation_ids()
 void ProfilePolicyConnector::OnPolicyServiceInitialized(PolicyDomain domain) {
   DCHECK_EQ(domain, POLICY_DOMAIN_CHROME);
   ReportChromePolicyInitialized();
+  RecordAffiliationMetrics();
 }
 
 void ProfilePolicyConnector::DoPostInit() {
@@ -713,6 +715,31 @@ void ProfilePolicyConnector::RevertUseLocalTestPolicyProvider() {
     local_test_infobar_visibility_manager_
         ->DismissInfobarsForActiveLocalTestPoliciesAllTabs();
   }
+}
+
+bool ProfilePolicyConnector::IsUsingLocalTestPolicyProvider() const {
+  return local_test_policy_provider_ &&
+         local_test_policy_provider_->is_active();
+}
+
+void ProfilePolicyConnector::RecordAffiliationMetrics() {
+  const PolicyMap& chrome_policies = policy_service()->GetPolicies(
+      policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string()));
+
+  base::UmaHistogramBoolean("Enterprise.ProfileAffiliation.IsAffiliated",
+                            chrome_policies.IsUserAffiliated());
+
+  if (!chrome_policies.IsUserAffiliated()) {
+    const auto reason = enterprise_util::GetUnaffiliatedReason(this);
+    base::UmaHistogramEnumeration(
+        "Enterprise.ProfileAffiliation.UnaffiliatedReason", reason);
+  }
+
+  // base::Unretained is safe because `this` owns the timer.
+  management_status_metrics_timer_.Start(
+      FROM_HERE, base::Days(7),
+      base::BindRepeating(&ProfilePolicyConnector::RecordAffiliationMetrics,
+                          base::Unretained(this)));
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

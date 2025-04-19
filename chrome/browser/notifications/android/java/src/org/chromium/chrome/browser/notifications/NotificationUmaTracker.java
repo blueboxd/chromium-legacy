@@ -18,7 +18,6 @@ import androidx.core.app.NotificationManagerCompat;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.MathUtils;
-import org.chromium.base.compat.ApiHelperForO;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.shared_preferences.SharedPreferencesManager;
@@ -357,7 +356,7 @@ public class NotificationUmaTracker {
         if (type == SystemNotificationType.UNKNOWN || notification == null) return;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            logNotificationShown(type, ApiHelperForO.getNotificationChannelId(notification));
+            logNotificationShown(type, notification.getChannelId());
         } else {
             logNotificationShown(type, null);
         }
@@ -523,10 +522,15 @@ public class NotificationUmaTracker {
      * @param grantResults List of grant results.
      */
     public void onNotificationPermissionRequestResult(String[] permissions, int[] grantResults) {
-        if (permissions.length != 1
+        if (permissions == null
+                || permissions.length != 1
                 || grantResults.length != 1
                 || !permissions[0].equals(Manifest.permission.POST_NOTIFICATIONS)) {
-            assert false;
+            assert permissions != null : "Parameter permissions should not be null";
+            assert permissions.length == 1 : "A single permission should have been requested";
+            assert grantResults.length == 1 : "A single result should have been returned";
+            assert permissions[0].equals(Manifest.permission.POST_NOTIFICATIONS)
+                    : "The requested permission should be for notifications";
             return;
         }
 

@@ -13,6 +13,7 @@
 #include "base/functional/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/not_fatal_until.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_file_util.h"
@@ -111,8 +112,7 @@ TestingProfile* TestingProfileManager::CreateTestingProfile(
   builder.SetIsMainProfile(is_main_profile);
 #endif
 
-  builder.AddTestingFactories(testing_factories);
-  testing_factories.clear();
+  builder.AddTestingFactories(std::move(testing_factories));
 
   builder.SetSharedURLLoaderFactory(shared_url_loader_factory);
 
@@ -250,7 +250,7 @@ void TestingProfileManager::DeleteGuestProfile() {
   DCHECK(called_set_up_);
 
   auto it = testing_profiles_.find(kGuestProfileName);
-  DCHECK(it != testing_profiles_.end());
+  CHECK(it != testing_profiles_.end(), base::NotFatalUntil::M130);
 
   profile_manager_->profiles_info_.erase(ProfileManager::GetGuestProfilePath());
 }
@@ -260,7 +260,7 @@ void TestingProfileManager::DeleteSystemProfile() {
   DCHECK(called_set_up_);
 
   auto it = testing_profiles_.find(kSystemProfileName);
-  DCHECK(it != testing_profiles_.end());
+  CHECK(it != testing_profiles_.end(), base::NotFatalUntil::M130);
 
   profile_manager_->profiles_info_.erase(
       ProfileManager::GetSystemProfilePath());
@@ -269,12 +269,6 @@ void TestingProfileManager::DeleteSystemProfile() {
 
 void TestingProfileManager::DeleteProfileAttributesStorage() {
   profile_manager_->profile_attributes_storage_.reset(nullptr);
-}
-
-void TestingProfileManager::UpdateLastUser(Profile* last_active) {
-#if !BUILDFLAG(IS_ANDROID)
-  profile_manager_->UpdateLastUser(last_active);
-#endif
 }
 
 base::FilePath TestingProfileManager::GetProfilePath(

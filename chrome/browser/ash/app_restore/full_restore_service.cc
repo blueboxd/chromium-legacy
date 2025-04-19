@@ -4,19 +4,26 @@
 
 #include "chrome/browser/ash/app_restore/full_restore_service.h"
 
+#include <memory>
+#include <optional>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/constants/notifier_catalogs.h"
 #include "ash/glanceables/post_login_glanceables_metrics_recorder.h"
+#include "ash/metrics/login_unlock_throughput_recorder.h"
 #include "ash/public/cpp/notification_utils.h"
+#include "ash/public/cpp/session/session_controller.h"
 #include "ash/shell.h"
-#include "ash/utility/forest_util.h"
 #include "ash/webui/settings/public/constants/routes.mojom.h"
 #include "ash/webui/settings/public/constants/setting.mojom-shared.h"
 #include "ash/wm/desks/templates/saved_desk_controller.h"
-#include "ash/wm/window_restore/pine_contents_data.h"
-#include "ash/wm/window_restore/pine_controller.h"
+#include "ash/wm/window_restore/informed_restore_controller.h"
+#include "ash/wm/window_restore/window_restore_metrics.h"
 #include "ash/wm/window_restore/window_restore_util.h"
 #include "base/barrier_callback.h"
 #include "base/command_line.h"
@@ -24,6 +31,7 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
+#include "base/version_info/version_info.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ash/app_restore/app_restore_arc_task_handler.h"
 #include "chrome/browser/ash/app_restore/full_restore_app_launch_handler.h"
@@ -46,15 +54,19 @@
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/grit/branded_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/account_id/account_id.h"
 #include "components/app_constants/constants.h"
+#include "components/app_restore/app_restore_data.h"
 #include "components/app_restore/app_restore_info.h"
 #include "components/app_restore/app_restore_utils.h"
 #include "components/app_restore/features.h"
 #include "components/app_restore/full_restore_save_handler.h"
 #include "components/app_restore/full_restore_utils.h"
+#include "components/app_restore/restore_data.h"
+#include "components/app_restore/window_info.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/user_manager/user.h"
@@ -105,6 +117,41 @@ void MaybeInitiateAdminTemplateAutoLaunch() {
   }
 }
 
+// Collects window id and app id of normal browser windows.
+// Note that this collects both Lacros and Ash browser windows.
+std::vector<LoginUnlockThroughputRecorder::RestoreWindowID>
+CollectRestoreIDsForNormalBrowserWindows(
+    ::app_restore::RestoreData* restore_data) {
+  if (!restore_data || restore_data->app_id_to_launch_list().empty()) {
+    return {};
+  }
+
+  std::vector<LoginUnlockThroughputRecorder::RestoreWindowID> app_restore_ids;
+  for (const auto& [app_id, launch_list] :
+       restore_data->app_id_to_launch_list()) {
+    const bool is_browser = app_id == app_constants::kChromeAppId ||
+                            app_id == app_constants::kLacrosAppId;
+    // We are only interested in Ash or Lacros browsers.
+    if (!is_browser) {
+      continue;
+    }
+
+    for (const auto& [window_id, app_restore_data] : launch_list) {
+      if (app_id == app_constants::kChromeAppId) {
+        // Ignore app type browsers.
+        const bool app_type_browser =
+            app_restore_data->browser_extra_info.app_type_browser.value_or(
+                false);
+        if (app_type_browser) {
+          continue;
+        }
+      }
+      app_restore_ids.emplace_back(window_id, app_id);
+    }
+  }
+  return app_restore_ids;
+}
+
 }  // namespace
 
 bool g_restore_for_testing = true;
@@ -145,23 +192,41 @@ class DelegateImpl : public FullRestoreService::Delegate {
   DelegateImpl& operator=(const DelegateImpl&) = delete;
   ~DelegateImpl() override = default;
 
-  void MaybeStartPineOverviewSession(
-      std::unique_ptr<PineContentsData> pine_contents_data) override {
+  void MaybeStartInformedRestoreOverviewSession(
+      std::unique_ptr<InformedRestoreContentsData> contents_data) override {
     // A unit test that does not override this default delegate may not have ash
     // shell.
     if (Shell::HasInstance()) {
-      CHECK(Shell::Get()->pine_controller());
-      Shell::Get()->pine_controller()->MaybeStartPineOverviewSession(
-          std::move(pine_contents_data));
+      CHECK(Shell::Get()->informed_restore_controller());
+      Shell::Get()
+          ->informed_restore_controller()
+          ->MaybeStartInformedRestoreSession(std::move(contents_data));
     }
   }
 
-  void MaybeEndPineOverviewSession() override {
+  void MaybeEndInformedRestoreOverviewSession() override {
     // A unit test that does not override this default delegate may not have ash
     // shell.
     if (Shell::HasInstance()) {
-      CHECK(Shell::Get()->pine_controller());
-      Shell::Get()->pine_controller()->MaybeEndPineOverviewSession();
+      CHECK(Shell::Get()->informed_restore_controller());
+      Shell::Get()
+          ->informed_restore_controller()
+          ->MaybeEndInformedRestoreSession();
+    }
+  }
+
+  InformedRestoreContentsData* GetInformedRestoreContentData() override {
+    if (Shell::HasInstance()) {
+      CHECK(Shell::Get()->informed_restore_controller());
+      return Shell::Get()->informed_restore_controller()->contents_data();
+    }
+    return nullptr;
+  }
+
+  void OnInformedRestoreContentsDataUpdated() override {
+    if (Shell::HasInstance()) {
+      CHECK(Shell::Get()->informed_restore_controller());
+      Shell::Get()->informed_restore_controller()->OnContentsDataUpdated();
     }
   }
 };
@@ -235,9 +300,19 @@ FullRestoreService::FullRestoreService(Profile* profile)
     VLOG(1) << "No restore pref! First time to run full restore."
             << profile_->GetPath();
   }
+
+  // In some unit tests, there may not be a shell instance and session
+  // controller.
+  if (auto* session_controller = SessionController::Get()) {
+    session_controller->AddObserver(this);
+  }
 }
 
-FullRestoreService::~FullRestoreService() = default;
+FullRestoreService::~FullRestoreService() {
+  if (auto* session_controller = SessionController::Get()) {
+    session_controller->RemoveObserver(this);
+  }
+}
 
 void FullRestoreService::Init(bool& show_notification) {
   // If it is the first time to migrate to the full restore release, we don't
@@ -264,13 +339,27 @@ void FullRestoreService::Init(bool& show_notification) {
   PrefService* prefs = profile_->GetPrefs();
   DCHECK(prefs);
 
+  // Determine whether we should show the update string. Crash takes priority
+  // over update but we do the computations to store the pref for the next
+  // session here first. The pref may not be registered in certain unit tests.
+  bool is_update = false;
+  if (features::IsForestFeatureEnabled() &&
+      prefs->HasPrefPath(prefs::kInformedRestoreLastVersion)) {
+    const base::Version old_version(
+        prefs->GetString(prefs::kInformedRestoreLastVersion));
+    const base::Version current_version = version_info::GetVersion();
+    prefs->SetString(prefs::kInformedRestoreLastVersion,
+                     current_version.GetString());
+    is_update = old_version.IsValid() && current_version > old_version;
+  }
+
   // If the system crashed before reboot, show the restore notification.
   if (ExitTypeService::GetLastSessionExitType(profile_) == ExitType::kCrashed) {
     if (!HasRestorePref(prefs))
       SetDefaultRestorePrefIfNecessary(prefs);
 
-    MaybeShowRestoreNotification(kRestoreForCrashNotificationId,
-                                 show_notification);
+    MaybeShowRestoreNotification(
+        InformedRestoreContentsData::DialogType::kCrash, show_notification);
     return;
   }
 
@@ -289,11 +378,12 @@ void FullRestoreService::Init(bool& show_notification) {
       prefs->GetInteger(prefs::kRestoreAppsAndPagesPrefName));
   base::UmaHistogramEnumeration(kRestoreInitSettingHistogramName, restore_pref);
 
+  ::app_restore::RestoreData* restore_data =
+      app_launch_handler_->restore_data();
+
   // Record the window count from the full restore file, unless the option is do
   // not restore.
   if (restore_pref != RestoreOption::kDoNotRestore) {
-    ::app_restore::RestoreData* restore_data =
-        app_launch_handler_->restore_data();
     if (!restore_data) {
       base::UmaHistogramCounts100(kFullRestoreWindowCountHistogramName, 0);
     } else {
@@ -304,21 +394,38 @@ void FullRestoreService::Init(bool& show_notification) {
     }
   }
 
+  // LoginUnlockThroughputRecorder needs to track when session
+  // restore is done. Here we notify it of the set of normal browser windows.
+  if (ProfileHelper::IsPrimaryProfile(profile_) && Shell::HasInstance() &&
+      Shell::Get()->login_unlock_throughput_recorder()) {
+    Shell::Get()
+        ->login_unlock_throughput_recorder()
+        ->FullSessionRestoreDataLoaded(
+            CollectRestoreIDsForNormalBrowserWindows(restore_data),
+            /*restore_automatically=*/restore_pref == RestoreOption::kAlways);
+  }
+
   switch (restore_pref) {
-    case RestoreOption::kAlways:
+    case RestoreOption::kAlways: {
       Restore();
       break;
-    case RestoreOption::kAskEveryTime:
-      MaybeShowRestoreNotification(kRestoreNotificationId, show_notification);
+    }
+    case RestoreOption::kAskEveryTime: {
+      const auto dialog_type =
+          is_update ? InformedRestoreContentsData::DialogType::kUpdate
+                    : InformedRestoreContentsData::DialogType::kNormal;
+      MaybeShowRestoreNotification(dialog_type, show_notification);
       MaybeInitiateAdminTemplateAutoLaunch();
       break;
-    case RestoreOption::kDoNotRestore:
-      if (IsForestFeatureEnabled()) {
-        MaybeShowPineOnboarding();
+    }
+    case RestoreOption::kDoNotRestore: {
+      if (features::IsForestFeatureEnabled()) {
+        MaybeShowInformedRestoreOnboarding(/*restore_on=*/false);
       }
       ::full_restore::FullRestoreSaveHandler::GetInstance()->AllowSave();
       MaybeInitiateAdminTemplateAutoLaunch();
       return;
+    }
   }
 }
 
@@ -450,6 +557,19 @@ void FullRestoreService::OnAcceleratorControllerWillBeDestroyed(
   accelerator_controller_observer_.Reset();
 }
 
+void FullRestoreService::OnSessionStateChanged(
+    session_manager::SessionState state) {
+  if (!contents_data_) {
+    return;
+  }
+
+  // Start post-login session right after signing in.
+  if (state == session_manager::SessionState::ACTIVE) {
+    delegate_->MaybeStartInformedRestoreOverviewSession(
+        std::move(contents_data_));
+  }
+}
+
 void FullRestoreService::SetAppLaunchHandlerForTesting(
     std::unique_ptr<FullRestoreAppLaunchHandler> app_launch_handler) {
   app_launch_handler_ = std::move(app_launch_handler);
@@ -499,14 +619,70 @@ bool FullRestoreService::CanBeInited() const {
   return true;
 }
 
-void FullRestoreService::MaybeShowRestoreNotification(const std::string& id,
-                                                      bool& show_notification) {
+void FullRestoreService::InitInformedRestoreContentsData(
+    InformedRestoreContentsData::DialogType dialog_type) {
+  CHECK(app_launch_handler_->HasRestoreData());
+
+  contents_data_ = std::make_unique<InformedRestoreContentsData>();
+  contents_data_->dialog_type = dialog_type;
+
+  contents_data_->restore_callback = base::BindOnce(
+      &FullRestoreService::OnDialogRestore, weak_ptr_factory_.GetWeakPtr());
+  contents_data_->cancel_callback = base::BindOnce(
+      &FullRestoreService::OnDialogCancel, weak_ptr_factory_.GetWeakPtr());
+
+  // Contains per-window app data to be sorted and and added to
+  // `contents_data_`.
+  struct WindowAppData {
+    int window_id;
+    std::string app_id;
+    raw_ptr<::app_restore::AppRestoreData> app_restore_data;
+  };
+
+  // Retrieve app id's from `restore_data`. There can be multiple entries with
+  // the same app id, these denote different windows.
+  auto* restore_data = app_launch_handler_->restore_data();
+  std::vector<WindowAppData> complete_window_list;
+  for (const auto& [app_id, launch_list] :
+       restore_data->app_id_to_launch_list()) {
+    for (const std::pair<const int,
+                         std::unique_ptr<::app_restore::AppRestoreData>>&
+             id_data_pair : launch_list) {
+      complete_window_list.emplace_back(id_data_pair.first, app_id,
+                                        id_data_pair.second.get());
+    }
+  }
+
+  // Sort the windows based on their activation index (more recent windows
+  // have a lower index). Windows without an activation index can be placed at
+  // the end.
+  base::ranges::sort(complete_window_list, [](const WindowAppData& element_a,
+                                              const WindowAppData& element_b) {
+    return element_a.app_restore_data->window_info.activation_index.value_or(
+               INT_MAX) <
+           element_b.app_restore_data->window_info.activation_index.value_or(
+               INT_MAX);
+  });
+
+  for (auto info : complete_window_list) {
+    const std::string stored_title =
+        base::UTF16ToUTF8(info.app_restore_data->window_info.app_title.value_or(
+            std::u16string()));
+    contents_data_->apps_infos.emplace_back(info.app_id, stored_title,
+                                            info.window_id);
+  }
+}
+
+void FullRestoreService::MaybeShowRestoreNotification(
+    InformedRestoreContentsData::DialogType dialog_type,
+    bool& show_notification) {
   if (!app_launch_handler_) {
     return;
   }
 
   // Do not show the notification if we have no restore data.
-  if (!IsForestFeatureEnabled() && !app_launch_handler_->HasRestoreData()) {
+  if (!features::IsForestFeatureEnabled() &&
+      !app_launch_handler_->HasRestoreData()) {
     return;
   }
 
@@ -523,10 +699,13 @@ void FullRestoreService::MaybeShowRestoreNotification(const std::string& id,
     return;
   }
 
-  const bool last_session_crashed = id == kRestoreForCrashNotificationId;
+  const bool last_session_crashed =
+      dialog_type == InformedRestoreContentsData::DialogType::kCrash;
+  const std::string id = last_session_crashed ? kRestoreForCrashNotificationId
+                                              : kRestoreNotificationId;
   if (!app_launch_handler_->HasRestoreData()) {
-    CHECK(IsForestFeatureEnabled());
-    MaybeShowPineOnboarding();
+    CHECK(features::IsForestFeatureEnabled());
+    MaybeShowInformedRestoreOnboarding(/*restore_on=*/true);
     return;
   }
   CHECK(app_launch_handler_->HasRestoreData());
@@ -545,16 +724,18 @@ void FullRestoreService::MaybeShowRestoreNotification(const std::string& id,
         ->RecordPostLoginFullRestoreShown();
   }
 
-  if (IsForestFeatureEnabled()) {
+  if (features::IsForestFeatureEnabled()) {
     CHECK(delegate_);
+
+    InitInformedRestoreContentsData(dialog_type);
 
     if (crosapi::browser_util::IsLacrosEnabled()) {
       crosapi::CrosapiManager::Get()
           ->crosapi_ash()
           ->full_restore_ash()
-          ->GetSessionInformation(base::BindOnce(
-              &FullRestoreService::OnGotAllSessionsLacros,
-              weak_ptr_factory_.GetWeakPtr(), last_session_crashed));
+          ->GetSessionInformation(
+              base::BindOnce(&FullRestoreService::OnGotAllSessionsLacros,
+                             weak_ptr_factory_.GetWeakPtr()));
     } else {
       // Retrieves session service data from browser and app browsers, which
       // will be used to display favicons and tab titles.
@@ -566,7 +747,7 @@ void FullRestoreService::MaybeShowRestoreNotification(const std::string& id,
         auto barrier = base::BarrierCallback<SessionWindows>(
             /*num_callbacks=*/2u, /*done_callback=*/base::BindOnce(
                 &FullRestoreService::OnGotAllSessionsAsh,
-                weak_ptr_factory_.GetWeakPtr(), last_session_crashed));
+                weak_ptr_factory_.GetWeakPtr()));
 
         service->GetLastSession(
             base::BindOnce(&FullRestoreService::OnGotSessionAsh,
@@ -575,7 +756,7 @@ void FullRestoreService::MaybeShowRestoreNotification(const std::string& id,
             base::BindOnce(&FullRestoreService::OnGotSessionAsh,
                            weak_ptr_factory_.GetWeakPtr(), barrier));
       } else {
-        OnGotAllSessionsAsh(last_session_crashed, /*all_session_windows=*/{});
+        OnGotAllSessionsAsh(/*all_session_windows=*/{});
       }
     }
 
@@ -643,6 +824,7 @@ void FullRestoreService::MaybeShowRestoreNotification(const std::string& id,
   notification_display_service->Display(NotificationHandler::Type::TRANSIENT,
                                         *notification_,
                                         /*metadata=*/nullptr);
+  base::UmaHistogramBoolean(kFullRestoreNotificationHistogram, true);
   show_notification = true;
 }
 
@@ -678,16 +860,16 @@ void FullRestoreService::OnAppTerminating() {
   ::full_restore::FullRestoreSaveHandler::GetInstance()->SetShutDown();
 }
 
-void FullRestoreService::RestoreForForest() {
+void FullRestoreService::OnDialogRestore() {
   VLOG(1) << "The restore button is clicked for " << profile_->GetPath();
 
   Restore();
-  delegate_->MaybeEndPineOverviewSession();
+  delegate_->MaybeEndInformedRestoreOverviewSession();
 }
 
-void FullRestoreService::CancelForForest() {
+void FullRestoreService::OnDialogCancel() {
   ::full_restore::FullRestoreSaveHandler::GetInstance()->AllowSave();
-  delegate_->MaybeEndPineOverviewSession();
+  delegate_->MaybeEndInformedRestoreOverviewSession();
 }
 
 void FullRestoreService::OnGotSessionAsh(
@@ -699,7 +881,6 @@ void FullRestoreService::OnGotSessionAsh(
 }
 
 void FullRestoreService::OnGotAllSessionsAsh(
-    bool last_session_crashed,
     const std::vector<SessionWindows>& all_session_windows) {
   // Place all the session windows in map so we don't have to do so many O(n)
   // lookups below. Note that this has the additional overhead of creating the
@@ -716,12 +897,10 @@ void FullRestoreService::OnGotAllSessionsAsh(
     }
   }
 
-  OnSessionInformationReceived(app_launch_handler_->restore_data(),
-                               session_windows_map, last_session_crashed);
+  OnSessionInformationReceived(session_windows_map);
 }
 
 void FullRestoreService::OnGotAllSessionsLacros(
-    bool last_session_crashed,
     std::vector<crosapi::mojom::SessionWindowPtr> all_session_windows) {
   // Place all the session windows in map so we don't have to do so many O(n)
   // lookups below.
@@ -732,66 +911,25 @@ void FullRestoreService::OnGotAllSessionsLacros(
                                 session_window->Clone());
   }
 
-  OnSessionInformationReceived(app_launch_handler_->restore_data(),
-                               session_windows_map, last_session_crashed);
+  OnSessionInformationReceived(session_windows_map);
 }
 
 void FullRestoreService::OnSessionInformationReceived(
-    ::app_restore::RestoreData* restore_data,
-    const SessionWindowsMap& session_windows_map,
-    bool last_session_crashed) {
-  auto pine_contents_data = std::make_unique<PineContentsData>();
-  pine_contents_data->last_session_crashed = last_session_crashed;
+    const SessionWindowsMap& session_windows_map) {
+  auto* contents_data = contents_data_
+                            ? contents_data_.get()
+                            : delegate_->GetInformedRestoreContentData();
+  CHECK(contents_data);
 
-  pine_contents_data->restore_callback = base::BindOnce(
-      &FullRestoreService::RestoreForForest, weak_ptr_factory_.GetWeakPtr());
-  pine_contents_data->cancel_callback = base::BindOnce(
-      &FullRestoreService::CancelForForest, weak_ptr_factory_.GetWeakPtr());
-
-  // Contains per-window app data to be sorted and and added to
-  // `pine_contents_data`.
-  struct WindowAppData {
-    int window_id;
-    std::string app_id;
-    raw_ptr<::app_restore::AppRestoreData> app_restore_data;
-  };
-
-  // Retrieve app id's from `restore_data`. There can be multiple entries with
-  // the same app id, these denote different windows.
-  std::vector<WindowAppData> complete_window_list;
-  for (const auto& [app_id, launch_list] :
-       restore_data->app_id_to_launch_list()) {
-    for (const std::pair<const int,
-                         std::unique_ptr<::app_restore::AppRestoreData>>&
-             id_data_pair : launch_list) {
-      complete_window_list.emplace_back(id_data_pair.first, app_id,
-                                        id_data_pair.second.get());
-    }
-  }
-
-  // Sort the windows based on their activation index (more recent windows have
-  // a lower index). Windows without an activation index can be placed at the
-  // end.
-  base::ranges::sort(complete_window_list, [](const WindowAppData& element_a,
-                                              const WindowAppData& element_b) {
-    return element_a.app_restore_data->window_info.activation_index.value_or(
-               INT_MAX) <
-           element_b.app_restore_data->window_info.activation_index.value_or(
-               INT_MAX);
-  });
-
-  for (auto info : complete_window_list) {
-    const int window_id = info.window_id;
+  bool content_updated = false;
+  for (auto& info : contents_data->apps_infos) {
     const std::string app_id = info.app_id;
-    const std::string stored_title =
-        base::UTF16ToUTF8(info.app_restore_data->window_info.app_title.value_or(
-            std::u16string()));
+    const int window_id = info.window_id;
 
     // For non browsers, the app id and title is sufficient for the UI we want
     // to display.
     if (app_id != app_constants::kChromeAppId &&
         app_id != app_constants::kLacrosAppId) {
-      pine_contents_data->apps_infos.emplace_back(app_id, stored_title);
       continue;
     }
 
@@ -805,9 +943,10 @@ void FullRestoreService::OnSessionInformationReceived(
     // Default to using the app id if we cannot find the associated window for
     // whatever reason.
     if (!session_window) {
-      pine_contents_data->apps_infos.emplace_back(app_id, stored_title);
       continue;
     }
+
+    content_updated = true;
 
     // App browsers app ID is the same as regular chrome browsers. To get the
     // correct icon and title from the app service, we need to find the app
@@ -816,26 +955,41 @@ void FullRestoreService::OnSessionInformationReceived(
     if (!app_name.empty()) {
       const std::string new_app_id =
           ::app_restore::GetAppIdFromAppName(app_name);
-      pine_contents_data->apps_infos.emplace_back(
-          new_app_id.empty() ? app_id : new_app_id, stored_title);
+      if (!new_app_id.empty()) {
+        info.app_id = new_app_id;
+      }
       continue;
     }
 
-    pine_contents_data->apps_infos.emplace_back(
-        app_id, session_window->active_tab_title, session_window->urls,
-        session_window->tab_count, session_window->profile_id);
+    info = InformedRestoreContentsData::AppInfo(
+        app_id, session_window->active_tab_title, window_id,
+        session_window->urls, session_window->tab_count,
+        session_window->profile_id);
   }
 
-  delegate_->MaybeStartPineOverviewSession(std::move(pine_contents_data));
+  // Start the post-login session if not yet and pass the contents data to
+  // post-login controller.
+  if (contents_data_) {
+    delegate_->MaybeStartInformedRestoreOverviewSession(
+        std::move(contents_data_));
+    return;
+  }
+
+  // Notify the contents data updated when the data was sent to informed dialog
+  // and there are items updated.
+  if (!contents_data_ && content_updated) {
+    delegate_->OnInformedRestoreContentsDataUpdated();
+  }
 }
 
-void FullRestoreService::MaybeShowPineOnboarding() {
-  if (Shell::HasInstance()) {
-    RestoreOption restore_pref = static_cast<RestoreOption>(
-        profile_->GetPrefs()->GetInteger(prefs::kRestoreAppsAndPagesPrefName));
-    CHECK(Shell::Get()->pine_controller());
-    Shell::Get()->pine_controller()->MaybeShowPineOnboardingMessage(
-        /*restore_on=*/restore_pref == RestoreOption::kAskEveryTime);
+void FullRestoreService::MaybeShowInformedRestoreOnboarding(bool restore_on) {
+  if (Shell::HasInstance() && !profile_->IsNewProfile() &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kNoFirstRun)) {
+    CHECK(Shell::Get()->informed_restore_controller());
+    Shell::Get()
+        ->informed_restore_controller()
+        ->MaybeShowInformedRestoreOnboarding(restore_on);
   }
 }
 

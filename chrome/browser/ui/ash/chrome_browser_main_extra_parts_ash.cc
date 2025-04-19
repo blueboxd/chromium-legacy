@@ -15,6 +15,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/quick_pair/keyed_service/quick_pair_mediator.h"
 #include "ash/shell.h"
+#include "ash/system/input_device_settings/input_device_settings_controller_impl.h"
 #include "ash/system/mahi/fake_mahi_manager.h"
 #include "ash/system/video_conference/fake_video_conference_tray_controller.h"
 #include "ash/system/video_conference/video_conference_tray_controller.h"
@@ -27,12 +28,16 @@
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/ash/app_list/app_list_client_impl.h"
 #include "chrome/browser/ash/arc/util/arc_window_watcher.h"
+#include "chrome/browser/ash/boca/boca_app_client_impl.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/geolocation/system_geolocation_source.h"
 #include "chrome/browser/ash/growth/campaigns_manager_client_impl.h"
 #include "chrome/browser/ash/growth/campaigns_manager_session.h"
+#include "chrome/browser/ash/input_device_settings/peripherals_app_delegate_impl.h"
+#include "chrome/browser/ash/lobster/lobster_client_factory_impl.h"
 #include "chrome/browser/ash/login/signin/signin_error_notifier_factory.h"
 #include "chrome/browser/ash/login/ui/oobe_dialog_util_impl.h"
+#include "chrome/browser/ash/magic_boost/magic_boost_state_ash.h"
 #include "chrome/browser/ash/mahi/mahi_manager_impl.h"
 #include "chrome/browser/ash/mahi/media_app/mahi_media_app_content_manager_impl.h"
 #include "chrome/browser/ash/mahi/media_app/mahi_media_app_events_proxy_impl.h"
@@ -48,9 +53,9 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/tablet_mode/tablet_mode_page_behavior.h"
 #include "chrome/browser/enterprise/connectors/device_trust/attestation/ash/ash_attestation_cleanup_manager.h"
+#include "chrome/browser/exo_parts.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/accessibility/accessibility_controller_client.h"
-#include "chrome/browser/ui/ash/ambient/ambient_client_impl.h"
 #include "chrome/browser/ui/ash/annotator/annotator_client_impl.h"
 #include "chrome/browser/ui/ash/app_access_notifier.h"
 #include "chrome/browser/ui/ash/arc_open_url_delegate_impl.h"
@@ -80,10 +85,11 @@
 #include "chrome/browser/ui/ash/tab_cluster_ui_client.h"
 #include "chrome/browser/ui/ash/vpn_list_forwarder.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
-#include "chrome/browser/ui/quick_answers/read_write_cards_manager_impl.h"
+#include "chrome/browser/ui/chromeos/read_write_cards/read_write_cards_manager_impl.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension_factory.h"
 #include "chrome/browser/ui/views/tabs/tab_scrubber_chromeos.h"
+#include "chromeos/ash/components/boca/boca_role_util.h"
 #include "chromeos/ash/components/dbus/dbus_thread_manager.h"
 #include "chromeos/ash/components/dbus/resourced/resourced_client.h"
 #include "chromeos/ash/components/game_mode/game_mode_controller.h"
@@ -105,10 +111,6 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/ime/ash/input_method_manager.h"
 #include "ui/events/ozone/evdev/heatmap_palm_detector.h"
-
-#if BUILDFLAG(ENABLE_WAYLAND_SERVER)
-#include "chrome/browser/exo_parts.h"
-#endif
 
 namespace {
 ChromeBrowserMainExtraPartsAsh* g_instance = nullptr;
@@ -193,9 +195,6 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
 
   cast_config_controller_media_router_ =
       std::make_unique<CastConfigControllerMediaRouter>();
-
-  // Needed by AmbientController in ash.
-  ambient_client_ = std::make_unique<AmbientClientImpl>();
 
   // This controller MUST be initialized before the UI (AshShellInit) is
   // constructed. The video conferencing views will observe and have their own
@@ -293,19 +292,22 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   ui::SelectFileDialog::SetFactory(
       std::make_unique<SelectFileDialogExtensionFactory>());
 
-#if BUILDFLAG(ENABLE_WAYLAND_SERVER)
   exo_parts_ = ExoParts::CreateIfNecessary();
   if (exo_parts_) {
     exo::WMHelper::GetInstance()->RegisterAppPropertyResolver(
         std::make_unique<ExoAppTypeResolver>());
   }
-#endif
 
   // Result is unused, but `TimezoneResolverManager` must be created here for
   // its internal initialization to succeed.
   g_browser_process->platform_part()->GetTimezoneResolverManager();
 
   annotator_client_ = std::make_unique<AnnotatorClientImpl>();
+
+  if (ash::boca_util::IsEnabled()) {
+    boca_client_ = std::make_unique<ash::BocaAppClientImpl>();
+  }
+
   projector_app_client_ = std::make_unique<ProjectorAppClientImpl>();
   projector_client_ = std::make_unique<ProjectorClientImpl>();
 
@@ -346,6 +348,11 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
 
   mahi_media_app_content_manager_ =
       std::make_unique<ash::MahiMediaAppContentManagerImpl>();
+
+  // Needs to be initialized before `read_write_cards_manager_`. This is because
+  // `QuickAnswersState` needs `MagicBoostState` to be initialized before it is
+  // constructed.
+  magic_boost_state_ash_ = std::make_unique<ash::MagicBoostStateAsh>();
 
   read_write_cards_manager_ =
       std::make_unique<chromeos::ReadWriteCardsManagerImpl>();
@@ -397,6 +404,11 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit(Profile* profile,
         picker_controller, user_manager::UserManager::Get());
   }
 
+  if (auto* lobster_controller = ash::Shell::Get()->lobster_controller()) {
+    lobster_client_factory_ =
+        std::make_unique<LobsterClientFactoryImpl>(lobster_controller);
+  }
+
   oobe_dialog_util_ = std::make_unique<ash::OobeDialogUtilImpl>();
 
   game_mode_controller_ = std::make_unique<game_mode::GameModeController>();
@@ -406,6 +418,14 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit(Profile* profile,
         ash::Shell::Get()->refresh_rate_controller()->SetGameMode(
             window, game_mode == GameMode::BOREALIS);
       }));
+
+  if (ash::features::IsWelcomeExperienceEnabled()) {
+    peripherals_app_delegate_ =
+        std::make_unique<ash::PeripheralsAppDelegateImpl>();
+    ash::Shell::Get()
+        ->input_device_settings_controller()
+        ->SetPeripheralsAppDelegate(peripherals_app_delegate_.get());
+  }
 
   // Initialize TabScrubberChromeOS after the Ash Shell has been initialized.
   TabScrubberChromeOS::GetInstance();
@@ -438,11 +458,9 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   // crbug.com/1163269.
   ash::Shell::Get()->ShutdownEventDispatch();
 
-#if BUILDFLAG(ENABLE_WAYLAND_SERVER)
   // ExoParts uses state from ash, delete it before ash so that exo can
   // uninstall correctly.
   exo_parts_.reset();
-#endif
 
   mahi_manager_.reset();
   mobile_data_notifications_.reset();
@@ -494,10 +512,11 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   video_conference_tray_controller_.reset();
   read_write_cards_manager_.reset();
 
+  // Must be destructed after `read_write_cards_manager_`.
+  magic_boost_state_ash_.reset();
+
   mahi_media_app_content_manager_.reset();
   mahi_media_app_events_proxy_.reset();
-
-  ambient_client_.reset();
 
   cast_config_controller_media_router_.reset();
   if (ash::NetworkConnect::IsInitialized()) {

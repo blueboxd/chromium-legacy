@@ -3,14 +3,16 @@
 // found in the LICENSE file.
 
 #include "BadPatternFinder.h"
+
 #include <clang/AST/Decl.h>
 #include <clang/AST/RecordLayout.h>
+
+#include <algorithm>
+
 #include "BlinkGCPluginOptions.h"
 #include "Config.h"
 #include "DiagnosticsReporter.h"
 #include "RecordInfo.h"
-
-#include <algorithm>
 #include "clang/AST/ASTContext.h"
 #include "clang/ASTMatchers/ASTMatchFinder.h"
 #include "clang/ASTMatchers/ASTMatchers.h"
@@ -106,8 +108,9 @@ class OptionalOrRawPtrToGCedMatcher : public MatchFinder::MatchCallback {
       : diagnostics_(diagnostics), record_cache_(record_cache) {}
 
   void Register(MatchFinder& match_finder) {
-    // Matches fields and new-expressions of type absl::optional where the
-    // template argument is known to refer to a garbage-collected type.
+    // Matches fields and new-expressions of type std::optional or
+    // absl::optional where the template argument is known to refer to a
+    // garbage-collected type.
     auto optional_gced_type = hasType(
         classTemplateSpecializationDecl(
             hasAnyName("::absl::optional", "::std::optional", "::base::raw_ptr",
@@ -115,12 +118,12 @@ class OptionalOrRawPtrToGCedMatcher : public MatchFinder::MatchCallback {
             hasTemplateArgument(0, refersToType(anyOf(GarbageCollectedType(),
                                                       TraceableType()))))
             .bind("type"));
-    // Only check fields. Optional variables on stack will be found by
-    // conservative stack scanning.
-    auto optional_field = fieldDecl(optional_gced_type).bind("bad_field");
+    auto optional_field = fieldDecl(optional_gced_type).bind("bad_decl");
+    auto optional_var = varDecl(optional_gced_type).bind("bad_decl");
     auto optional_new_expression =
         cxxNewExpr(has(cxxConstructExpr(optional_gced_type))).bind("bad_new");
     match_finder.addDynamicMatcher(optional_field, this);
+    match_finder.addDynamicMatcher(optional_var, this);
     match_finder.addDynamicMatcher(optional_new_expression, this);
   }
 
@@ -128,20 +131,26 @@ class OptionalOrRawPtrToGCedMatcher : public MatchFinder::MatchCallback {
     auto* type = result.Nodes.getNodeAs<clang::CXXRecordDecl>("type");
     bool is_optional = (type->getName() == "optional");
     auto* arg_type = result.Nodes.getNodeAs<clang::CXXRecordDecl>("gctype");
+    bool is_gced = arg_type;
     if (!arg_type) {
       arg_type = result.Nodes.getNodeAs<clang::CXXRecordDecl>("traceable");
     }
     assert(arg_type);
-    if (auto* bad_field =
-            result.Nodes.getNodeAs<clang::FieldDecl>("bad_field")) {
-      if (Config::IsIgnoreAnnotated(bad_field) ||
-          IsOnStack(bad_field, record_cache_)) {
+    if (auto* bad_decl = result.Nodes.getNodeAs<clang::Decl>("bad_decl")) {
+      if (Config::IsIgnoreAnnotated(bad_decl)) {
+        return;
+      }
+      // Optionals of non-GCed traceable or GCed collections are allowed on
+      // stack.
+      if (is_optional &&
+          (!is_gced || Config::IsGCCollection(arg_type->getName())) &&
+          IsOnStack(bad_decl, record_cache_)) {
         return;
       }
       if (is_optional) {
-        diagnostics_.OptionalFieldUsedWithGC(bad_field, type, arg_type);
+        diagnostics_.OptionalDeclUsedWithGC(bad_decl, type, arg_type);
       } else {
-        diagnostics_.RawPtrOrRefFieldUsedWithGC(bad_field, type, arg_type);
+        diagnostics_.RawPtrOrRefDeclUsedWithGC(bad_decl, type, arg_type);
       }
     } else {
       auto* bad_new = result.Nodes.getNodeAs<clang::Expr>("bad_new");
@@ -159,15 +168,6 @@ class OptionalOrRawPtrToGCedMatcher : public MatchFinder::MatchCallback {
   RecordCache& record_cache_;
 };
 
-bool IsArrayOnStack(const clang::CXXRecordDecl* collection,
-                    const clang::Decl* decl,
-                    RecordCache& record_cache) {
-  if (collection->getNameAsString() != "array") {
-    return false;
-  }
-  return IsOnStack(decl, record_cache);
-}
-
 class CollectionOfGarbageCollectedMatcher : public MatchFinder::MatchCallback {
  public:
   explicit CollectionOfGarbageCollectedMatcher(DiagnosticsReporter& diagnostics,
@@ -175,9 +175,10 @@ class CollectionOfGarbageCollectedMatcher : public MatchFinder::MatchCallback {
       : diagnostics_(diagnostics), record_cache_(record_cache) {}
 
   void Register(MatchFinder& match_finder) {
-    auto gced_ptr_or_ref = anyOf(
-        GarbageCollectedType(), pointerType(pointee(GarbageCollectedType())),
-        referenceType(pointee(GarbageCollectedType())));
+    auto gced_ptr_or_ref =
+        anyOf(GarbageCollectedType(),
+              pointerType(pointee(GarbageCollectedType())).bind("ptr"),
+              referenceType(pointee(GarbageCollectedType())).bind("ptr"));
     auto gced_ptr_ref_or_pair =
         anyOf(gced_ptr_or_ref,
               hasCanonicalType(hasDeclaration((classTemplateSpecializationDecl(
@@ -232,15 +233,19 @@ class CollectionOfGarbageCollectedMatcher : public MatchFinder::MatchCallback {
       if (Config::IsIgnoreAnnotated(bad_decl)) {
         return;
       }
-      if (IsArrayOnStack(collection, bad_decl, record_cache_)) {
-        // std::array on stack is allowed since all references would be found by
-        // conservative stack scanning.
-        return;
-      }
-      if (member && (collection->getNameAsString() == "array")) {
-        // std::array of Members is fine as long as it is traced (which is
-        // enforced by another checker).
-        return;
+      if (collection->getNameAsString() == "array") {
+        if (member || Config::IsGCCollection(gc_type->getName())) {
+          // std::array of Members is fine as long as it is traced (which is
+          // enforced by another checker).
+          return;
+        }
+        if (result.Nodes.getNodeAs<clang::Type>("ptr") &&
+            IsOnStack(bad_decl, record_cache_)) {
+          // On stack std::array of raw pointers to GCed type is allowed.
+          // Note: this may miss cases of std::array<std::pair<GCed, GCed*>>,
+          // but such cases don't currently exist in the codebase.
+          return;
+        }
       }
       if (gc_type) {
         diagnostics_.CollectionOfGCed(bad_decl, collection, gc_type);
@@ -517,6 +522,67 @@ class PaddingInGCedMatcher : public MatchFinder::MatchCallback {
   DiagnosticsReporter& diagnostics_;
 };
 
+class GCedVarOrField : public MatchFinder::MatchCallback {
+ public:
+  GCedVarOrField(DiagnosticsReporter& diagnostics,
+                 const clang::SourceManager& source_manager)
+      : diagnostics_(diagnostics), source_manager_(source_manager) {}
+
+  void Register(MatchFinder& match_finder) {
+    auto gced_field =
+        fieldDecl(hasType(GarbageCollectedType())).bind("bad_field");
+    // As opposed to definitions, declarations of function templates with
+    // unfulfilled requires-clauses get instantiated and as such are observable
+    // in the clang AST (as functions without a body). If such a method takes a
+    // GCed type as a parameter, we should not alert on it since the method is
+    // never actually used. This is common in Blink due to the implementation of
+    // the variant CHECK_* and DCHECK_* macros (specifically the
+    // DEFINE_CHECK_OP_IMPL macro).
+    auto unimplemented_template_instance_parameter =
+        parmVarDecl(hasAncestor(functionDecl(hasParent(functionTemplateDecl()),
+                                             unless(hasBody(stmt())))));
+    auto gced_var = varDecl(hasType(GarbageCollectedType()),
+                            unless(unimplemented_template_instance_parameter))
+                        .bind("bad_var");
+    match_finder.addDynamicMatcher(gced_field, this);
+    match_finder.addDynamicMatcher(gced_var, this);
+  }
+
+  void run(const MatchFinder::MatchResult& result) override {
+    const auto* gctype = result.Nodes.getNodeAs<clang::CXXRecordDecl>("gctype");
+    assert(gctype);
+    if (Config::IsGCCollection(gctype->getName())) {
+      return;
+    }
+    const auto* field = result.Nodes.getNodeAs<clang::FieldDecl>("bad_field");
+    if (field) {
+      if (Config::IsIgnoreAnnotated(field) || IsPartOfGTest(field)) {
+        return;
+      }
+      diagnostics_.GCedField(field, gctype);
+    } else {
+      const auto* var = result.Nodes.getNodeAs<clang::VarDecl>("bad_var");
+      assert(var);
+      if (Config::IsIgnoreAnnotated(var) || IsPartOfGTest(var)) {
+        return;
+      }
+      diagnostics_.GCedVar(var, gctype);
+    }
+  }
+
+ private:
+  // Ignore violation in gtest since we can't change gtest and it won't affect
+  // production code.
+  bool IsPartOfGTest(const clang::Decl* decl) {
+    std::string filename =
+        source_manager_.getFilename(decl->getLocation()).str();
+    return filename.find("gtest") != std::string::npos;
+  }
+
+  DiagnosticsReporter& diagnostics_;
+  const clang::SourceManager& source_manager_;
+};
+
 }  // namespace
 
 void FindBadPatterns(clang::ASTContext& ast_context,
@@ -553,6 +619,9 @@ void FindBadPatterns(clang::ASTContext& ast_context,
 
   WeakPtrToGCedMatcher weak_ptr_to_gced(diagnostics);
   weak_ptr_to_gced.Register(match_finder);
+
+  GCedVarOrField gced_var_or_field(diagnostics, ast_context.getSourceManager());
+  gced_var_or_field.Register(match_finder);
 
   match_finder.matchAST(ast_context);
 }

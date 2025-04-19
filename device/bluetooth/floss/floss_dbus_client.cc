@@ -1,6 +1,11 @@
 // Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
 #include "device/bluetooth/floss/floss_dbus_client.h"
 
 #include <string>
@@ -198,8 +203,12 @@ device::BluetoothDevice::ConnectErrorCode
 FlossDBusClient::BtifStatusToConnectErrorCode(
     FlossDBusClient::BtifStatus status) {
   switch (status) {
+    case BtifStatus::kSuccess:
+      NOTREACHED_NORETURN();
     case BtifStatus::kFail:
       return device::BluetoothDevice::ConnectErrorCode::ERROR_FAILED;
+    case BtifStatus::kNotReady:
+      return device::BluetoothDevice::ConnectErrorCode::ERROR_DEVICE_NOT_READY;
     case BtifStatus::kAuthFailure:
       return device::BluetoothDevice::ConnectErrorCode::ERROR_AUTH_FAILED;
     case BtifStatus::kAuthRejected:
@@ -210,8 +219,27 @@ FlossDBusClient::BtifStatusToConnectErrorCode(
     case BtifStatus::kUnsupported:
       return device::BluetoothDevice::ConnectErrorCode::
           ERROR_UNSUPPORTED_DEVICE;
-    default:
+    case BtifStatus::kNomem:
+      return device::BluetoothDevice::ConnectErrorCode::ERROR_NO_MEMORY;
+    case BtifStatus::kParmInvalid:
+      return device::BluetoothDevice::ConnectErrorCode::ERROR_INVALID_ARGS;
+    case BtifStatus::kUnhandled:
       return device::BluetoothDevice::ConnectErrorCode::ERROR_UNKNOWN;
+    case BtifStatus::kRmtDevDown:
+      return device::BluetoothDevice::ConnectErrorCode::ERROR_DOES_NOT_EXIST;
+    case BtifStatus::kJniEnvironmentError:
+      return device::BluetoothDevice::ConnectErrorCode::ERROR_JNI_ENVIRONMENT;
+    case BtifStatus::kJniThreadAttachError:
+      return device::BluetoothDevice::ConnectErrorCode::ERROR_JNI_THREAD_ATTACH;
+    case BtifStatus::kWakelockError:
+      return device::BluetoothDevice::ConnectErrorCode::ERROR_WAKELOCK;
+    case BtifStatus::kTimeout:
+      return device::BluetoothDevice::ConnectErrorCode::ERROR_NON_AUTH_TIMEOUT;
+    case BtifStatus::kDeviceNotFound:
+    case BtifStatus::kUnexpectedState:
+    case BtifStatus::kSocketError:
+    default:
+      return device::BluetoothDevice::ConnectErrorCode::ERROR_FAILED;
   }
 }
 

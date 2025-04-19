@@ -17,6 +17,7 @@
 #include "content/common/features.h"
 #include "content/public/browser/document_user_data.h"
 #include "content/public/browser/prefetch_metrics.h"
+#include "content/public/browser/preloading.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "net/http/http_no_vary_search_data.h"
 #include "third_party/blink/public/mojom/speculation_rules/speculation_rules.mojom.h"
@@ -62,11 +63,15 @@ class CONTENT_EXPORT PrefetchDocumentManager
       const PreloadingPredictor& enacting_predictor,
       base::WeakPtr<SpeculationHostDevToolsObserver> devtools_observer);
 
+  void PrefetchAheadOfPrerender(blink::mojom::SpeculationCandidatePtr candidate,
+                                const PreloadingPredictor& enacting_predictor);
+
   // Starts the process to prefetch |url| with the given |prefetch_type|.
   void PrefetchUrl(
       const GURL& url,
       const PrefetchType& prefetch_type,
       const PreloadingPredictor& enacting_predictor,
+      PreloadingType planned_max_preloading_type,
       const blink::mojom::Referrer& referrer,
       const network::mojom::NoVarySearchPtr& no_vary_search_expected,
       base::WeakPtr<SpeculationHostDevToolsObserver> devtools_observer);
@@ -99,9 +104,6 @@ class CONTENT_EXPORT PrefetchDocumentManager
 
   // Whether the prefetch attempt for target |url| failed or discarded
   bool IsPrefetchAttemptFailedOrDiscarded(const GURL& url);
-
-  void EnableNoVarySearchSupportFromOriginTrial();
-  bool NoVarySearchSupportEnabled() const;
 
   // Returns a tuple: (can_prefetch_now, prefetch_to_evict). 'can_prefetch_now'
   // is true if we can prefetch |next_prefetch| based on the state of the
@@ -155,8 +157,6 @@ class CONTENT_EXPORT PrefetchDocumentManager
 
   // Metrics related to the prefetches requested by this page load.
   PrefetchReferringPageMetrics referring_page_metrics_;
-
-  bool no_vary_search_support_enabled_ = false;
 
   // Callback that is run when a prefetch started by |this| is being destroyed.
   PrefetchDestructionCallback prefetch_destruction_callback_;

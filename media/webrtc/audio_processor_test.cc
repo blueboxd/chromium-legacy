@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "media/webrtc/audio_processor.h"
 
 #include <stddef.h>
@@ -477,9 +482,9 @@ TEST_P(AudioProcessorDefaultOutputFormatTest, GetDefaultOutputFormat) {
   // https://crrev.com/c/3621456/comments/2e73cc96_0e9773cd for details.
   const int expected_sample_rate =
 #if BUILDFLAG(IS_CASTOS) || BUILDFLAG(IS_CAST_ANDROID)
-      std::min(sample_rate, media::kAudioProcessingSampleRateHz);
+      std::min(sample_rate, media::WebRtcAudioProcessingSampleRateHz());
 #else
-      media::kAudioProcessingSampleRateHz;
+      media::WebRtcAudioProcessingSampleRateHz();
 #endif
   const int expected_output_channels =
       settings.multi_channel_capture_processing ? input_params.channels() : 1;

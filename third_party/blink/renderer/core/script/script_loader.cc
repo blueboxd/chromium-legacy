@@ -161,6 +161,21 @@ void ScriptLoader::Trace(Visitor* visitor) const {
 
 // <spec step="A">The script element becomes connected.</spec>
 void ScriptLoader::DidNotifySubtreeInsertionsToDocument() {
+  if (already_started_ &&
+      GetScriptTypeAtPrepare(element_->TypeAttributeValue(),
+                             element_->LanguageAttributeValue()) ==
+          ScriptTypeAtPrepare::kSpeculationRules) {
+    // See https://crbug.com/359355331, where this was requested.
+    auto* message = MakeGarbageCollected<ConsoleMessage>(
+        ConsoleMessage::Source::kJavaScript, ConsoleMessage::Level::kWarning,
+        "A speculation rule set was inserted into the document but will be "
+        "ignored. This might happen, for example, if it was previously "
+        "inserted into another document, or if it was created using the "
+        "innerHTML setter.");
+    element_->GetDocument().AddConsoleMessage(message,
+                                              /*discard_duplicates=*/true);
+  }
+
   if (!parser_inserted_) {
     PendingScript* pending_script = PrepareScript(
         ParserBlockingInlineOption::kDeny, TextPosition::MinimumPosition());
@@ -171,8 +186,24 @@ void ScriptLoader::DidNotifySubtreeInsertionsToDocument() {
 // <spec step="B">The script element is connected and a node or document
 // fragment is inserted into the script element, after any script elements
 // inserted at that time.</spec>
-void ScriptLoader::ChildrenChanged() {
-  if (!parser_inserted_ && element_->IsConnected()) {
+void ScriptLoader::ChildrenChanged(
+    const ContainerNode::ChildrenChange& change) {
+  if (script_type_ == ScriptTypeAtPrepare::kSpeculationRules &&
+      (change.type == ContainerNode::ChildrenChangeType::kTextChanged ||
+       change.type == ContainerNode::ChildrenChangeType::kNonElementInserted ||
+       change.type == ContainerNode::ChildrenChangeType::kNonElementRemoved) &&
+      change.sibling_changed->IsCharacterDataNode()) {
+    // See https://crbug.com/328100599.
+    auto* message = MakeGarbageCollected<ConsoleMessage>(
+        ConsoleMessage::Source::kJavaScript, ConsoleMessage::Level::kWarning,
+        "Inline speculation rules cannot currently be modified after they are "
+        "processed. Instead, a new <script> element must be inserted.");
+    element_->GetDocument().AddConsoleMessage(message,
+                                              /*discard_duplicates=*/true);
+  }
+
+  if (change.IsChildInsertion() && !parser_inserted_ &&
+      element_->IsConnected()) {
     PendingScript* pending_script = PrepareScript(
         ParserBlockingInlineOption::kDeny, TextPosition::MinimumPosition());
     DCHECK(!pending_script);
@@ -204,13 +235,18 @@ void ScriptLoader::Removed() {
   if (ScriptWebBundle* bundle = std::exchange(script_web_bundle_, nullptr))
     bundle->WillReleaseBundleLoaderAndUnregister();
 
-  if (SpeculationRuleSet* rule_set =
-          std::exchange(speculation_rule_set_, nullptr)) {
-    // Speculation rules in this script no longer apply.
-    // Candidate speculations must be re-evaluated.
-    DCHECK_EQ(GetScriptType(), ScriptTypeAtPrepare::kSpeculationRules);
-    DocumentSpeculationRules::From(element_->GetDocument())
-        .RemoveRuleSet(rule_set);
+  RemoveSpeculationRuleSet();
+}
+
+void ScriptLoader::DocumentBaseURLChanged() {
+  if (GetScriptType() != ScriptTypeAtPrepare::kSpeculationRules) {
+    return;
+  }
+  // We reparse the original source text and generate a new SpeculationRuleSet
+  // with the new base URL. Note that any text changes since the first parse
+  // will be ignored.
+  if (SpeculationRuleSet* rule_set = RemoveSpeculationRuleSet()) {
+    AddSpeculationRuleSet(rule_set->source());
   }
 }
 
@@ -281,13 +317,6 @@ bool IsEligibleCommon(const Document& element_document) {
     return false;
 
   return true;
-}
-
-// [Intervention, ForceDefer, https://crbug.com/1339112]
-bool IsEligibleForForceDefer(const Document& element_document) {
-  return base::FeatureList::IsEnabled(
-             features::kForceDeferScriptIntervention) &&
-         IsEligibleCommon(element_document);
 }
 
 // [Intervention, ForceInOrderScript, crbug.com/1344772]
@@ -467,12 +496,6 @@ ScriptRunner::DelayReasons DetermineDelayReasonsToWait(
   if (is_eligible_for_delay &&
       script_runner->IsActive(DelayReason::kMilestone)) {
     reasons |= static_cast<DelayReasons>(DelayReason::kMilestone);
-  }
-
-  if (base::FeatureList::IsEnabled(features::kForceDeferScriptIntervention)) {
-    if (script_runner->IsActive(DelayReason::kForceDefer)) {
-      reasons |= static_cast<DelayReasons>(DelayReason::kForceDefer);
-    }
   }
 
   return reasons;
@@ -1028,20 +1051,9 @@ PendingScript* ScriptLoader::PrepareScript(
       }
 
       case ScriptTypeAtPrepare::kSpeculationRules: {
-        // https://wicg.github.io/nav-speculation/speculation-rules.html
-        // Let result be the result of parsing speculation rules given source
-        // text and base URL.
-        // Set the script’s result to result.
-        // If the script’s result is not null, append it to the element’s node
-        // document's list of speculation rule sets.
         auto* source = SpeculationRuleSet::Source::FromInlineScript(
             source_text, element_document, element_->GetDOMNodeId());
-        speculation_rule_set_ =
-            SpeculationRuleSet::Parse(source, context_window);
-        CHECK(speculation_rule_set_);
-        DocumentSpeculationRules::From(element_document)
-            .AddRuleSet(speculation_rule_set_);
-        speculation_rule_set_->AddConsoleMessageForValidation(*element_);
+        AddSpeculationRuleSet(source);
         return nullptr;
       }
 
@@ -1141,20 +1153,6 @@ PendingScript* ScriptLoader::PrepareScript(
   ScriptSchedulingType script_scheduling_type = GetScriptSchedulingTypePerSpec(
       element_document, parser_blocking_inline_option);
 
-  // [Intervention, ForceDefer, https://crbug.com/1339112]
-  // Force-defer parser-blocking and inline scripts.
-  if (IsEligibleForForceDefer(element_document) && parser_inserted_) {
-    switch (script_scheduling_type) {
-      case ScriptSchedulingType::kParserBlocking:
-      case ScriptSchedulingType::kImmediate:
-      case ScriptSchedulingType::kParserBlockingInline:
-        script_scheduling_type = ScriptSchedulingType::kForceDefer;
-        break;
-      default:
-        break;
-    }
-  }
-
   // [Intervention, SelectiveInOrderScript, crbug.com/1356396]
   // Check for external script that
   // should be in-order. This simply marks the parser blocking scripts as
@@ -1234,16 +1232,6 @@ PendingScript* ScriptLoader::PrepareScript(
           static const features::DelayAsyncScriptTarget
               delay_async_script_target =
                   features::kDelayAsyncScriptTargetParam.Get();
-          // Currently LazyEmbeds(crbug.com/1247131) experiment uses
-          // DelayAsyncScript mechanism here.
-          if (delay_async_script_target ==
-                  features::DelayAsyncScriptTarget::kCrossSiteWithAllowList ||
-              delay_async_script_target ==
-                  features::DelayAsyncScriptTarget::
-                      kCrossSiteWithAllowListReportOnly) {
-            UseCounter::Count(element_document.TopDocument(),
-                              WebFeature::kAutomaticLazyEmbeds);
-          }
           if (delay_async_script_target ==
               features::DelayAsyncScriptTarget::
                   kCrossSiteWithAllowListReportOnly) {
@@ -1270,7 +1258,6 @@ PendingScript* ScriptLoader::PrepareScript(
       return nullptr;
 
     case ScriptSchedulingType::kDefer:
-    case ScriptSchedulingType::kForceDefer:
     case ScriptSchedulingType::kParserBlocking:
     case ScriptSchedulingType::kParserBlockingInline:
       // The remaining part is implemented by the caller-side of
@@ -1292,6 +1279,7 @@ PendingScript* ScriptLoader::PrepareScript(
     }
 
     case ScriptSchedulingType::kNotSet:
+    case ScriptSchedulingType::kDeprecatedForceDefer:
       NOTREACHED_IN_MIGRATION();
       return nullptr;
   }
@@ -1462,6 +1450,39 @@ String ScriptLoader::GetScriptText() const {
   return GetStringForScriptExecution(child_text_content,
                                      element_->GetScriptElementType(),
                                      element_->GetExecutionContext());
+}
+
+void ScriptLoader::AddSpeculationRuleSet(SpeculationRuleSet::Source* source) {
+  // https://wicg.github.io/nav-speculation/speculation-rules.html
+  // Let result be the result of parsing speculation rules given source
+  // text and base URL.
+  // Set the script’s result to result.
+  // If the script’s result is not null, append it to the element’s node
+  // document's list of speculation rule sets.
+  Document& element_document = element_->GetDocument();
+  LocalDOMWindow* context_window = element_document.domWindow();
+  if (!context_window) {
+    return;
+  }
+
+  speculation_rule_set_ = SpeculationRuleSet::Parse(source, context_window);
+  CHECK(speculation_rule_set_);
+  DocumentSpeculationRules::From(element_document)
+      .AddRuleSet(speculation_rule_set_);
+  speculation_rule_set_->AddConsoleMessageForValidation(*element_);
+}
+
+SpeculationRuleSet* ScriptLoader::RemoveSpeculationRuleSet() {
+  if (SpeculationRuleSet* rule_set =
+          std::exchange(speculation_rule_set_, nullptr)) {
+    // Speculation rules in this script no longer apply.
+    // Candidate speculations must be re-evaluated.
+    DCHECK_EQ(GetScriptType(), ScriptTypeAtPrepare::kSpeculationRules);
+    DocumentSpeculationRules::From(element_->GetDocument())
+        .RemoveRuleSet(rule_set);
+    return rule_set;
+  }
+  return nullptr;
 }
 
 }  // namespace blink

@@ -70,7 +70,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/profiler/main_thread_stack_sampling_profiler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/test/base/chrome_test_suite.h"
@@ -95,6 +94,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/device/public/cpp/device_features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/base/ui_base_features.h"
@@ -102,7 +102,6 @@
 #if BUILDFLAG(IS_MAC)
 #include "base/apple/scoped_nsautorelease_pool.h"
 #include "chrome/test/base/scoped_bundle_swizzler_mac.h"
-#include "services/device/public/cpp/test/fake_geolocation_system_permission_manager.h"
 #endif
 
 #if BUILDFLAG(IS_WIN)
@@ -112,6 +111,10 @@
 #include "components/version_info/version_info.h"
 #include "ui/base/win/atl_module.h"
 #endif
+
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+#include "services/device/public/cpp/test/fake_geolocation_system_permission_manager.h"
+#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
 #include "components/captive_portal/content/captive_portal_service.h"
@@ -204,7 +207,7 @@ FakeDeviceSyncImplFactory* GetFakeDeviceSyncImplFactory() {
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 class ChromeBrowserMainExtraPartsBrowserProcessInjection
     : public ChromeBrowserMainExtraParts {
  public:
@@ -212,17 +215,22 @@ class ChromeBrowserMainExtraPartsBrowserProcessInjection
 
   // ChromeBrowserMainExtraParts implementation
   void PreCreateMainMessageLoop() override {
-    // The real GeolocationSystemPermissionManager initializes a
-    // CLLocationManager. It has been observed that when thousands of instances
-    // of this object are created, as happens when running browser tests, the
-    // CoreLocationAgent process uses lots of CPU. This makes test execution
-    // slower and causes jobs to time out. We therefore insert a fake.
-    auto fake_geolocation_system_permission_manager =
-        std::make_unique<device::FakeGeolocationSystemPermissionManager>();
-    fake_geolocation_system_permission_manager->SetSystemPermission(
-        device::LocationSystemPermissionStatus::kAllowed);
-    device::GeolocationSystemPermissionManager::SetInstance(
-        std::move(fake_geolocation_system_permission_manager));
+    if (features::IsOsLevelGeolocationPermissionSupportEnabled()) {
+      // Tests should not depend on the current state of the system-level
+      // location permission on platforms where the permission cannot be
+      // programmatically changed by tests. Insert a fake
+      // GeolocationSystemPermissionManager and simulate a granted system-level
+      // location permission.
+      //
+      // On ChromeOS, preserve the real manager so that tests can enable or
+      // disable the system preference.
+      auto fake_geolocation_system_permission_manager =
+          std::make_unique<device::FakeGeolocationSystemPermissionManager>();
+      fake_geolocation_system_permission_manager->SetSystemPermission(
+          device::LocationSystemPermissionStatus::kAllowed);
+      device::GeolocationSystemPermissionManager::SetInstance(
+          std::move(fake_geolocation_system_permission_manager));
+    }
   }
 
   ChromeBrowserMainExtraPartsBrowserProcessInjection(
@@ -230,7 +238,7 @@ class ChromeBrowserMainExtraPartsBrowserProcessInjection
   ChromeBrowserMainExtraPartsBrowserProcessInjection& operator=(
       const ChromeBrowserMainExtraPartsBrowserProcessInjection&) = delete;
 };
-#endif  // BUILDFLAG(IS_MAC)
+#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 // For browser tests that depend on AccountManager on Lacros - e.g. tests that
@@ -569,11 +577,6 @@ void InProcessBrowserTest::SetUp() {
   // function, which are now redundant.
   base::PoissonAllocationSampler::Init();
 
-  // Initialize sampling profiler in browser tests. This mimics the behavior
-  // in standalone Chrome, where this is done in chrome/app/chrome_main.cc,
-  // which does not get called by browser tests.
-  sampling_profiler_ = std::make_unique<MainThreadStackSamplingProfiler>();
-
   // Create a temporary user data directory if required.
   ASSERT_TRUE(test_launcher_utils::CreateUserDataDir(&temp_user_data_dir_))
       << "Could not create user data directory.";
@@ -746,10 +749,10 @@ size_t InProcessBrowserTest::GetTestPreCount() {
 void InProcessBrowserTest::CreatedBrowserMainParts(
     content::BrowserMainParts* parts) {
   BrowserTestBase::CreatedBrowserMainParts(parts);
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
   static_cast<ChromeBrowserMainParts*>(parts)->AddParts(
       std::make_unique<ChromeBrowserMainExtraPartsBrowserProcessInjection>());
-#endif
+#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   static_cast<ChromeBrowserMainParts*>(parts)->AddParts(
       std::make_unique<IdentityExtraSetUp>());
@@ -1182,6 +1185,9 @@ void InProcessBrowserTest::StartUniqueAshChrome(
   all_enabled_features.insert(all_enabled_features.end(),
                               enabled_features.begin(),
                               enabled_features.end());
+  // During the Lacros sunset process, LacrosOnly feature flag is retired before
+  // Lacros itself is retired b/354842935.
+  ash_cmdline.AppendSwitch("enable-lacros-for-testing");
   ash_cmdline.AppendSwitchASCII(switches::kEnableFeatures,
                                 base::JoinString(all_enabled_features, ","));
   ash_cmdline.AppendSwitchASCII(switches::kDisableFeatures,

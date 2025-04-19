@@ -60,13 +60,6 @@ const char kGoogleServicesAccountId[] = "google.services.account_id";
 const char kGoogleServicesConsentedToSync[] =
     "google.services.consented_to_sync";
 
-// Similar to kGoogleServicesLastSyncingUsername, this is the corresponding
-// version of kGoogleServicesAccountId that is not cleared on signout.
-// DEPRECATED: this preference is deprecated and is always empty. It will be
-// removed once all users are migrated to `kGoogleServicesLastSyncingGaiaId`.
-const char kGoogleServicesLastSyncingAccountIdDeprecated[] =
-    "google.services.last_account_id";
-
 // Similar to `kGoogleServicesLastSyncingUsername` that is not cleared on
 // signout. Note this is always a Gaia ID, as opposed to
 // `kGoogleServicesAccountId` which may be an email.
@@ -120,6 +113,22 @@ const char kSigninAllowed[] = "signin.allowed";
 // Contains last |ListAccounts| data which corresponds to Gaia cookies.
 const char kGaiaCookieLastListAccountsData[] =
     "gaia_cookie.last_list_accounts_data";
+
+// The timestamp when History Sync was last declined (in the opt-in screen or
+// in the settings).
+// This value is reset when the user opts in to History Sync.
+// TODO(b/344543852): This pref is not used on iOS. Migrate the equivalent iOS
+// pref to this one.
+const char kHistorySyncLastDeclinedTimestamp[] =
+    "signin.history_sync.last_declined_timestamp";
+
+// Number of times the user successively declined History Sync (in the opt-in
+// screen or in the settings).
+// This value is reset to zero when the user accepts History Sync.
+// TODO(b/344543852): This pref is not used on iOS. Migrate the equivalent iOS
+// pref to this one.
+const char kHistorySyncSuccessiveDeclineCount[] =
+    "signin.history_sync.successive_decline_count";
 
 // List of patterns to determine the account visibility.
 const char kRestrictAccountsToPatterns[] =

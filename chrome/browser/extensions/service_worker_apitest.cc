@@ -91,6 +91,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "url/url_constants.h"
@@ -412,7 +413,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, SyntaxError) {
   const ErrorList& error_list =
       ErrorConsole::Get(profile())->GetErrorsForExtension(extension->id());
   ASSERT_EQ(kErrorsExpected, error_list.size());
-  EXPECT_EQ(ExtensionError::RUNTIME_ERROR, error_list[0]->type());
+  EXPECT_EQ(ExtensionError::Type::kRuntimeError, error_list[0]->type());
   EXPECT_THAT(base::UTF16ToUTF8(error_list[0]->message()),
               HasSubstr("Error handling response: TypeError: "
                         "console.lg is not a function"));
@@ -438,7 +439,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, UndefinedVariable) {
   const ErrorList& error_list =
       ErrorConsole::Get(profile())->GetErrorsForExtension(extension->id());
   ASSERT_EQ(kErrorsExpected, error_list.size());
-  EXPECT_EQ(ExtensionError::RUNTIME_ERROR, error_list[0]->type());
+  EXPECT_EQ(ExtensionError::Type::kRuntimeError, error_list[0]->type());
   EXPECT_THAT(base::UTF16ToUTF8(error_list[0]->message()),
               HasSubstr("Error handling response: ReferenceError: "
                         "undefined_variable is not defined"));
@@ -460,7 +461,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, ConsoleError) {
       ErrorConsole::Get(profile())->GetErrorsForExtension(
           ExtensionBrowserTest::last_loaded_extension_id());
   ASSERT_EQ(kErrorsExpected, error_list.size());
-  EXPECT_EQ(ExtensionError::RUNTIME_ERROR, error_list[0]->type());
+  EXPECT_EQ(ExtensionError::Type::kRuntimeError, error_list[0]->type());
   EXPECT_THAT(base::UTF16ToUTF8(error_list[0]->message()),
               HasSubstr("Logged from MV3 service worker"));
 }
@@ -1260,7 +1261,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest,
       StartTestFromBackgroundPage("post_message_to_background_client.js");
 
   // The service worker in this test simply posts a message to the background
-  // client it receives from getBackgroundClient().
+  // page it receives from the `clients` service worker interface.
   const char* kScript =
       "var messagePromise = null;\n"
       "if (test.lastMessageFromServiceWorker) {\n"
@@ -1280,7 +1281,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest,
       StartTestFromBackgroundPage("post_message_to_sw.js");
 
   // The service worker in this test waits for a message, then echoes it back
-  // by posting a message to the background page via getBackgroundClient().
+  // over the same message pipe.
   const char* kScript =
       "var mc = new MessageChannel();\n"
       "test.waitForMessage(mc.port1).then(function(message) {\n"
@@ -1347,48 +1348,6 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest,
             NavigateAndGetPageType(get_resource_url("anotherother.html")));
   EXPECT_EQ(content::PAGE_TYPE_ERROR,
             NavigateAndGetPageType(get_resource_url("final.html")));
-}
-
-IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, BackgroundPageIsWokenIfAsleep) {
-  const Extension* extension = StartTestFromBackgroundPage("wake_on_fetch.js");
-
-  // Navigate to special URLs that this test's service worker recognises, each
-  // making a check then populating the response with either "true" or "false".
-  EXPECT_EQ("true", NavigateAndExtractInnerText(extension->GetResourceURL(
-                        "background-client-is-awake")));
-  EXPECT_EQ("true", NavigateAndExtractInnerText(
-                        extension->GetResourceURL("ping-background-client")));
-  // Ping more than once for good measure.
-  EXPECT_EQ("true", NavigateAndExtractInnerText(
-                        extension->GetResourceURL("ping-background-client")));
-
-  // Shut down the event page. The SW should detect that it's closed, but still
-  // be able to ping it.
-  ExtensionHost* background_page =
-      process_manager()->GetBackgroundHostForExtension(extension->id());
-  ASSERT_TRUE(background_page);
-  background_page->Close();
-  ExtensionBackgroundPageWaiter(profile(), *extension)
-      .WaitForBackgroundClosed();
-
-  EXPECT_EQ("false", NavigateAndExtractInnerText(extension->GetResourceURL(
-                         "background-client-is-awake")));
-  EXPECT_EQ("true", NavigateAndExtractInnerText(
-                        extension->GetResourceURL("ping-background-client")));
-  EXPECT_EQ("true", NavigateAndExtractInnerText(
-                        extension->GetResourceURL("ping-background-client")));
-  EXPECT_EQ("true", NavigateAndExtractInnerText(extension->GetResourceURL(
-                        "background-client-is-awake")));
-}
-
-IN_PROC_BROWSER_TEST_F(ServiceWorkerTest,
-                       GetBackgroundClientFailsWithNoBackgroundPage) {
-  // This extension doesn't have a background page, only a tab at page.html.
-  // The service worker it registers tries to call getBackgroundClient() and
-  // should fail.
-  // Note that this also tests that service workers can be registered from tabs.
-  EXPECT_TRUE(RunExtensionTest("service_worker/no_background",
-                               {.extension_url = "page.html"}));
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, NotificationAPI) {
@@ -2692,7 +2651,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTestWithEarlyReadyMesssage,
     context->UnregisterServiceWorker(
         scope, blink::StorageKey::CreateFirstParty(extension->origin()),
         base::BindLambdaForTesting(
-            [&run_loop](bool success) { run_loop.QuitWhenIdle(); }));
+            [&run_loop](blink::ServiceWorkerStatusCode status) {
+              run_loop.QuitWhenIdle();
+            }));
     run_loop.Run();
   }
 
@@ -2718,9 +2679,10 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTestWithEarlyReadyMesssage,
 
   EXPECT_TRUE(WaitForRegistrationMismatchMitigation());
   EXPECT_EQ(
-      1, histogram_tester().GetBucketCount(
-             "Extensions.ServiceWorkerBackground.RegistrationMismatchMitigated",
-             true));
+      1,
+      histogram_tester().GetBucketCount(
+          "Extensions.ServiceWorkerBackground.RegistrationMismatchMitigated2",
+          true));
 }
 
 // Tests that an extension's service worker can't be used to relax the extension

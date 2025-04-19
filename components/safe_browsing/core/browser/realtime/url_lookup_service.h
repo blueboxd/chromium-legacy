@@ -81,6 +81,9 @@ class RealTimeUrlLookupService : public RealTimeUrlLookupServiceBase {
   bool CanCheckSafeBrowsingHighConfidenceAllowlist() const override;
   void Shutdown() override;
   bool CanSendRTSampleRequest() const override;
+  std::string GetUserEmail() const override;
+  std::string GetBrowserDMTokenString() const override;
+  std::string GetProfileDMTokenString() const override;
   std::string GetMetricSuffix() const override;
 
 #if defined(UNIT_TEST)

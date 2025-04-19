@@ -34,13 +34,9 @@ import org.chromium.chrome.browser.theme.TopUiThemeColorProvider;
 import org.chromium.chrome.browser.toolbar.ControlContainer;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.ui.desktop_windowing.DesktopWindowStateProvider;
-import org.chromium.chrome.features.start_surface.StartSurface;
-import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.dragdrop.DragAndDropDelegate;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
-
-import java.util.concurrent.Callable;
 
 /**
  * {@link LayoutManagerChromeTablet} is the specialization of {@link LayoutManagerChrome} for the
@@ -65,21 +61,14 @@ public class LayoutManagerChromeTablet extends LayoutManagerChrome {
      *
      * @param host A {@link LayoutManagerHost} instance.
      * @param contentContainer A {@link ViewGroup} for Android views to be bound to.
-     * @param startSurfaceSupplier Supplier for an interface to talk to the Grid Tab Switcher when
-     *     Start surface refactor is disabled.
-     * @param tabSwitcherSupplier Supplier for an interface to talk to the Grid Tab Switcher when
-     *     Start surface refactor is enabled.
+     * @param tabSwitcherSupplier Supplier for an interface to talk to the Grid Tab Switcher.
      * @param tabModelSelectorSupplier Supplier for an interface to talk to the Tab Model Selector.
      * @param browserControlsStateProvider The {@link BrowserControlsStateProvider} for top
      *     controls.
      * @param tabContentManagerSupplier Supplier of the {@link TabContentManager} instance.
      * @param topUiThemeColorProvider {@link ThemeColorProvider} for top UI.
-     * @param tabSwitcherViewHolder {@link ViewGroup} used by tab switcher layout to show scrim when
-     *     overview is visible.
-     * @param scrimCoordinator {@link ScrimCoordinator} to show/hide scrim.
      * @param lifecycleDispatcher @{@link ActivityLifecycleDispatcher} to be passed to TabStrip
      *     helper.
-     * @param delayedTabSwitcherOrStartSurfaceCallable Callable to create StartSurface/GTS views.
      * @param hubLayoutDependencyHolder The dependency holder for creating {@link HubLayout}.
      * @param multiInstanceManager @{link MultiInstanceManager} passed to @{link StripLayoutHelper}
      *     to support tab drag and drop.
@@ -94,17 +83,13 @@ public class LayoutManagerChromeTablet extends LayoutManagerChrome {
     public LayoutManagerChromeTablet(
             LayoutManagerHost host,
             ViewGroup contentContainer,
-            Supplier<StartSurface> startSurfaceSupplier,
             Supplier<TabSwitcher> tabSwitcherSupplier,
             Supplier<TabModelSelector> tabModelSelectorSupplier,
             BrowserControlsStateProvider browserControlsStateProvider,
             ObservableSupplier<TabContentManager> tabContentManagerSupplier,
             Supplier<TopUiThemeColorProvider> topUiThemeColorProvider,
             ObservableSupplier<TabModelStartupInfo> tabModelStartupInfoSupplier,
-            ViewGroup tabSwitcherViewHolder,
-            ScrimCoordinator scrimCoordinator,
             ActivityLifecycleDispatcher lifecycleDispatcher,
-            Callable<ViewGroup> delayedTabSwitcherOrStartSurfaceCallable,
             HubLayoutDependencyHolder hubLayoutDependencyHolder,
             MultiInstanceManager multiInstanceManager,
             DragAndDropDelegate dragAndDropDelegate,
@@ -117,15 +102,10 @@ public class LayoutManagerChromeTablet extends LayoutManagerChrome {
         super(
                 host,
                 contentContainer,
-                startSurfaceSupplier,
                 tabSwitcherSupplier,
                 tabModelSelectorSupplier,
-                browserControlsStateProvider,
                 tabContentManagerSupplier,
                 topUiThemeColorProvider,
-                tabSwitcherViewHolder,
-                scrimCoordinator,
-                delayedTabSwitcherOrStartSurfaceCallable,
                 hubLayoutDependencyHolder);
         mTabStripLayoutHelperManager =
                 new StripLayoutHelperManager(

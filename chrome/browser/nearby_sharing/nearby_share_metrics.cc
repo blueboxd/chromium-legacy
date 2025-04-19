@@ -511,6 +511,13 @@ void RecordNearbyShareEstablishConnectionMetrics(
   }
 }
 
+void RecordNearbyShareInitialConnectionMedium(
+    nearby::connections::mojom::Medium medium) {
+  CHECK(IsTransferMedium(medium));
+  base::UmaHistogramEnumeration("Nearby.Share.Connection.InitialMedium",
+                                GetUpgradedMediumForMetrics(medium));
+}
+
 void RecordNearbyShareTimeFromInitiateSendToRemoteDeviceNotificationMetric(
     base::TimeDelta time) {
   base::UmaHistogramTimes(
@@ -729,10 +736,7 @@ void RecordNearbyShareTransferFinalStatusMetric(
 
   base::UmaHistogramBoolean("Nearby.Share.IsKnownContact", is_known);
 
-  // Log whether the transfer was a Self Share if Self Share is enabled.
-  if (features::IsSelfShareEnabled()) {
-    base::UmaHistogramBoolean("Nearby.Share.IsSelfShare", for_self_share);
-  }
+  base::UmaHistogramBoolean("Nearby.Share.IsSelfShare", for_self_share);
 
   std::string send_or_receive = GetDirectionSubcategoryName(is_incoming);
   std::string share_target_type = GetShareTargetTypeSubcategoryName(type);
@@ -776,7 +780,7 @@ void RecordNearbyShareTransferFinalStatusMetric(
       base::UmaHistogramBoolean(
           prefix + send_or_receive + share_target_type + contact_status,
           *success);
-      if (for_self_share && is_incoming && features::IsSelfShareEnabled()) {
+      if (for_self_share && is_incoming) {
         base::UmaHistogramBoolean(prefix + ".Receive" + share_target_type +
                                       ".SelfShare" +
                                       GetScreenLockedName(is_screen_locked),

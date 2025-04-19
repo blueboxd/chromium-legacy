@@ -30,20 +30,31 @@ SavedTabGroup::SavedTabGroup(
     std::optional<size_t> position,
     std::optional<base::Uuid> saved_guid,
     std::optional<LocalTabGroupID> local_group_id,
+    std::optional<std::string> creator_cache_guid,
+    std::optional<std::string> last_updater_cache_guid,
+    bool created_before_syncing_tab_groups,
     std::optional<base::Time> creation_time_windows_epoch_micros,
     std::optional<base::Time> update_time_windows_epoch_micros)
-    : saved_guid_(saved_guid.value_or(base::Uuid::GenerateRandomV4())),
+    : saved_guid_(
+          std::move(saved_guid).value_or(base::Uuid::GenerateRandomV4())),
       local_group_id_(local_group_id),
       title_(title),
       color_(color),
       saved_tabs_(urls),
       position_(position),
+      creator_cache_guid_(std::move(creator_cache_guid)),
+      last_updater_cache_guid_(std::move(last_updater_cache_guid)),
+      created_before_syncing_tab_groups_(created_before_syncing_tab_groups),
       creation_time_windows_epoch_micros_(
           creation_time_windows_epoch_micros.value_or(base::Time::Now())),
       update_time_windows_epoch_micros_(
           update_time_windows_epoch_micros.value_or(base::Time::Now())) {}
 
 SavedTabGroup::SavedTabGroup(const SavedTabGroup& other) = default;
+SavedTabGroup& SavedTabGroup::operator=(const SavedTabGroup& other) = default;
+
+SavedTabGroup::SavedTabGroup(SavedTabGroup&& other) = default;
+SavedTabGroup& SavedTabGroup::operator=(SavedTabGroup&& other) = default;
 
 SavedTabGroup::~SavedTabGroup() = default;
 
@@ -126,13 +137,36 @@ SavedTabGroup& SavedTabGroup::SetColor(tab_groups::TabGroupColorId color) {
 SavedTabGroup& SavedTabGroup::SetLocalGroupId(
     std::optional<LocalTabGroupID> tab_group_id) {
   local_group_id_ = tab_group_id;
-  SetUpdateTimeWindowsEpochMicros(base::Time::Now());
+  return *this;
+}
+
+SavedTabGroup& SavedTabGroup::SetCreatorCacheGuid(
+    std::optional<std::string> new_cache_guid) {
+  creator_cache_guid_ = new_cache_guid;
+  return *this;
+}
+
+SavedTabGroup& SavedTabGroup::SetLastUpdaterCacheGuid(
+    std::optional<std::string> cache_guid) {
+  last_updater_cache_guid_ = cache_guid;
+  return *this;
+}
+
+SavedTabGroup& SavedTabGroup::SetCreatedBeforeSyncingTabGroups(
+    bool created_before_syncing_tab_groups) {
+  created_before_syncing_tab_groups_ = created_before_syncing_tab_groups;
   return *this;
 }
 
 SavedTabGroup& SavedTabGroup::SetUpdateTimeWindowsEpochMicros(
     base::Time update_time_windows_epoch_micros) {
   update_time_windows_epoch_micros_ = update_time_windows_epoch_micros;
+  return *this;
+}
+
+SavedTabGroup& SavedTabGroup::SetLastUserInteractionTime(
+    base::Time last_user_interaction_time) {
+  last_user_interaction_time_ = last_user_interaction_time;
   return *this;
 }
 
@@ -150,6 +184,13 @@ SavedTabGroup& SavedTabGroup::SetPinned(bool pinned) {
     position_ = std::nullopt;
     SetUpdateTimeWindowsEpochMicros(base::Time::Now());
   }
+  return *this;
+}
+
+SavedTabGroup& SavedTabGroup::SetCollaborationId(
+    std::optional<std::string> collaboration_id) {
+  collaboration_id_ = std::move(collaboration_id);
+  SetUpdateTimeWindowsEpochMicros(base::Time::Now());
   return *this;
 }
 
@@ -291,15 +332,22 @@ void SavedTabGroup::UpdateTabPositionsImpl() {
 
 bool SavedTabGroup::RemoteGroupHasMoreRecentUpdates(
     base::Time remote_group_update_time) const {
+  if (AlwaysAcceptServerDataInModel()) {
+    return true;
+  }
+
   // TODO(crbug.com/40870787): Investigate if we should consider the creation
   // time.
   return remote_group_update_time >= update_time_windows_epoch_micros();
 }
 
-void SavedTabGroup::MergeRemoteGroupMetadata(const std::u16string& title,
-                                             TabGroupColorId color,
-                                             std::optional<size_t> position,
-                                             base::Time update_time) {
+void SavedTabGroup::MergeRemoteGroupMetadata(
+    const std::u16string& title,
+    TabGroupColorId color,
+    std::optional<size_t> position,
+    std::optional<std::string> creator_cache_guid,
+    std::optional<std::string> last_updater_cache_guid,
+    base::Time update_time) {
   if (!RemoteGroupHasMoreRecentUpdates(update_time)) {
     return;
   }
@@ -311,6 +359,10 @@ void SavedTabGroup::MergeRemoteGroupMetadata(const std::u16string& title,
   } else if (IsTabGroupsSaveUIUpdateEnabled()) {
     SetPinned(false);
   }
+
+  SetCreatorCacheGuid(creator_cache_guid);
+  SetLastUpdaterCacheGuid(last_updater_cache_guid);
+
   SetUpdateTimeWindowsEpochMicros(update_time);
 }
 

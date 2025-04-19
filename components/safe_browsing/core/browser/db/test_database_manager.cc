@@ -53,18 +53,14 @@ bool TestSafeBrowsingDatabaseManager::CheckExtensionIDs(
   return true;
 }
 
-bool TestSafeBrowsingDatabaseManager::CheckResourceUrl(const GURL& url,
-                                                       Client* client) {
-  NOTIMPLEMENTED();
-  return true;
-}
-
-void TestSafeBrowsingDatabaseManager::CheckUrlForHighConfidenceAllowlist(
+std::optional<
+    SafeBrowsingDatabaseManager::HighConfidenceAllowlistCheckLoggingDetails>
+TestSafeBrowsingDatabaseManager::CheckUrlForHighConfidenceAllowlist(
     const GURL& url,
-    const std::string& metric_variation,
     base::OnceCallback<void(bool)> callback) {
   NOTIMPLEMENTED();
   std::move(callback).Run(false);
+  return std::nullopt;
 }
 
 bool TestSafeBrowsingDatabaseManager::CheckUrlForSubresourceFilter(
@@ -99,11 +95,6 @@ safe_browsing::ThreatSource
 TestSafeBrowsingDatabaseManager::GetNonBrowseUrlThreatSource() const {
   NOTIMPLEMENTED();
   return safe_browsing::ThreatSource::UNKNOWN;
-}
-
-bool TestSafeBrowsingDatabaseManager::IsDownloadProtectionEnabled() const {
-  NOTIMPLEMENTED();
-  return false;
 }
 
 void TestSafeBrowsingDatabaseManager::StartOnSBThread(

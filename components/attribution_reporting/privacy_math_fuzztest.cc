@@ -13,7 +13,6 @@
 #include "components/attribution_reporting/test_utils.h"
 #include "components/attribution_reporting/trigger_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/fuzztest/src/fuzztest/fuzztest.h"
 
 namespace attribution_reporting {
@@ -29,14 +28,13 @@ void SingleSpecNumStatesMatchesRecursive(const MaxEventLevelReports max_reports,
 
   const auto collapsed_specs =
       SpecsFromWindowList(windows_per_type,
-                          /*collapse_into_single_spec=*/true);
+                          /*collapse_into_single_spec=*/true, max_reports);
 
   const auto uncollapsed_specs =
       SpecsFromWindowList(windows_per_type,
-                          /*collapse_into_single_spec=*/false);
+                          /*collapse_into_single_spec=*/false, max_reports);
 
-  EXPECT_EQ(GetNumStates(collapsed_specs, max_reports),
-            GetNumStates(uncollapsed_specs, max_reports));
+  EXPECT_EQ(GetNumStates(collapsed_specs), GetNumStates(uncollapsed_specs));
 }
 
 FUZZ_TEST(PrivacyMathTest, SingleSpecNumStatesMatchesRecursive)

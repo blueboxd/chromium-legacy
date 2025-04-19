@@ -162,22 +162,37 @@ void IsolatedWebAppUpdatePrepareAndStoreCommand::StartWithLock(
 void IsolatedWebAppUpdatePrepareAndStoreCommand::CheckIfUpdateIsStillApplicable(
     base::OnceClosure next_step_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  const WebApp* installed_app =
-      lock_->registrar().GetAppById(url_info_.app_id());
-  if (installed_app == nullptr) {
-    ReportFailure("App is no longer installed.");
-    return;
-  }
-  if (!installed_app->isolation_data().has_value()) {
-    ReportFailure("Installed app is not an Isolated Web App.");
-    return;
-  }
 
-  installed_version_ = installed_app->isolation_data()->version;
+  ASSIGN_OR_RETURN(
+      const WebApp& iwa,
+      GetIsolatedWebAppById(lock_->registrar(), url_info_.app_id()),
+      [&](const std::string& error) { ReportFailure(error); });
+  const auto& isolation_data = *iwa.isolation_data();
+  installed_version_ = isolation_data.version;
   GetMutableDebugValue().Set("installed_version",
                              installed_version_->GetString());
-  if (expected_version_.has_value() &&
-      *expected_version_ <= *installed_version_) {
+
+  switch (LookupRotatedKey(url_info_.web_bundle_id(), GetMutableDebugValue())) {
+    case KeyRotationLookupResult::kNoKeyRotation:
+      break;
+    case KeyRotationLookupResult::kKeyFound: {
+      KeyRotationData data =
+          GetKeyRotationData(url_info_.web_bundle_id(), isolation_data);
+      rotated_key_ = *data.rotated_key;
+      if (!data.current_installation_has_rk) {
+        same_version_update_allowed_by_key_rotation_ = true;
+      }
+    } break;
+    case KeyRotationLookupResult::kKeyBlocked:
+      ReportFailure(
+          "The web bundle id for this app's bundle has been blocked by the key "
+          "distribution component.");
+      return;
+  }
+
+  if (expected_version_ && (*expected_version_ < *installed_version_ ||
+                            (*expected_version_ == *installed_version_ &&
+                             !same_version_update_allowed_by_key_rotation_))) {
     ReportFailure(base::StrCat({"Installed app is already on version ",
                                 installed_version_->GetString(),
                                 ". Cannot update to version ",
@@ -185,13 +200,11 @@ void IsolatedWebAppUpdatePrepareAndStoreCommand::CheckIfUpdateIsStillApplicable(
     return;
   }
 
-  if (installed_app->isolation_data()->location.dev_mode() !=
-      update_source_->dev_mode()) {
+  if (isolation_data.location.dev_mode() != update_source_->dev_mode()) {
     std::stringstream s;
     s << "Unable to update between dev-mode and non-dev-mode storage location "
          "types ("
-      << installed_app->isolation_data()->location << " to " << *update_source_
-      << ").";
+      << isolation_data.location << " to " << *update_source_ << ").";
     ReportFailure(s.str());
     return;
   }
@@ -229,20 +242,35 @@ void IsolatedWebAppUpdatePrepareAndStoreCommand::OnCopiedToProfileDirectory(
 }
 
 void IsolatedWebAppUpdatePrepareAndStoreCommand::CheckTrustAndSignatures(
-    base::OnceClosure next_step_callback) {
+    base::OnceCallback<
+        void(std::optional<web_package::SignedWebBundleIntegrityBlock>)>
+        next_step_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   command_helper_->CheckTrustAndSignatures(
       *destination_location_, &profile(),
       base::BindOnce(
           &IsolatedWebAppUpdatePrepareAndStoreCommand::RunNextStepOnSuccess<
-              void>,
+              std::optional<web_package::SignedWebBundleIntegrityBlock>>,
           weak_factory_.GetWeakPtr(), std::move(next_step_callback)));
 }
 
 void IsolatedWebAppUpdatePrepareAndStoreCommand::CreateStoragePartition(
-    base::OnceClosure next_step_callback) {
+    base::OnceClosure next_step_callback,
+    std::optional<web_package::SignedWebBundleIntegrityBlock> integrity_block) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (integrity_block) {
+    integrity_block_data_ =
+        IsolatedWebAppIntegrityBlockData::FromIntegrityBlock(*integrity_block);
+    if (rotated_key_ && !integrity_block_data_->HasPublicKey(*rotated_key_)) {
+      ReportFailure(
+          "The update's integrity block data doesn't contain the required "
+          "public key as instructed by the key distribution component -- the "
+          "update won't succeed.");
+      return;
+    }
+  }
 
   // TODO(cmfcmf): Maybe we should log somewhere when the storage partition is
   // unexpectedly missing?
@@ -264,26 +292,25 @@ void IsolatedWebAppUpdatePrepareAndStoreCommand::LoadInstallUrl(
 
 void IsolatedWebAppUpdatePrepareAndStoreCommand::
     CheckInstallabilityAndRetrieveManifest(
-        base::OnceCallback<
-            void(IsolatedWebAppInstallCommandHelper::ManifestAndUrl)>
+        base::OnceCallback<void(blink::mojom::ManifestPtr)>
             next_step_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   command_helper_->CheckInstallabilityAndRetrieveManifest(
       *web_contents_.get(),
       base::BindOnce(
           &IsolatedWebAppUpdatePrepareAndStoreCommand::RunNextStepOnSuccess<
-              IsolatedWebAppInstallCommandHelper::ManifestAndUrl>,
+              blink::mojom::ManifestPtr>,
           weak_factory_.GetWeakPtr(), std::move(next_step_callback)));
 }
 
 void IsolatedWebAppUpdatePrepareAndStoreCommand::
     ValidateManifestAndCreateInstallInfo(
         base::OnceCallback<void(WebAppInstallInfo)> next_step_callback,
-        IsolatedWebAppInstallCommandHelper::ManifestAndUrl manifest_and_url) {
+        blink::mojom::ManifestPtr manifest) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::expected<WebAppInstallInfo, std::string> install_info =
       command_helper_->ValidateManifestAndCreateInstallInfo(expected_version_,
-                                                            manifest_and_url);
+                                                            *manifest);
   RunNextStepOnSuccess(std::move(next_step_callback), std::move(install_info));
 }
 
@@ -298,7 +325,9 @@ void IsolatedWebAppUpdatePrepareAndStoreCommand::
     CHECK_EQ(*expected_version_, install_info.isolated_web_app_version);
   }
 
-  if (install_info.isolated_web_app_version <= *installed_version_) {
+  if (install_info.isolated_web_app_version < *installed_version_ ||
+      (install_info.isolated_web_app_version == *installed_version_ &&
+       !same_version_update_allowed_by_key_rotation_)) {
     ReportFailure(base::StrCat(
         {"Installed app is already on version ",
          installed_version_->GetString(), ". Cannot update to version ",
@@ -329,8 +358,9 @@ void IsolatedWebAppUpdatePrepareAndStoreCommand::Finalize(
   WebApp::IsolationData updated_isolation_data =
       *app_to_update->isolation_data();
   updated_isolation_data.SetPendingUpdateInfo(
-      WebApp::IsolationData::PendingUpdateInfo(*destination_storage_location_,
-                                               info.isolated_web_app_version));
+      WebApp::IsolationData::PendingUpdateInfo(
+          *destination_storage_location_, info.isolated_web_app_version,
+          std::move(integrity_block_data_)));
   app_to_update->SetIsolationData(std::move(updated_isolation_data));
 }
 

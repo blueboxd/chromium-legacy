@@ -110,7 +110,6 @@ class ASH_EXPORT AppListFolderView : public views::View,
   void AddedToWidget() override;
   void Layout(PassKey) override;
   void ChildPreferredSizeChanged(View* child) override;
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 
   // AppListModelProvider::Observer:
@@ -227,6 +226,8 @@ class ASH_EXPORT AppListFolderView : public views::View,
   // `hide_for_reparent` is true if an item in the folder is being reparented to
   // the root grid view.
   void OnHideAnimationDone(bool hide_for_reparent);
+
+  void UpdateExpandedCollapsedAccessibleState() const;
 
   // Controller interface implemented by the container for this view.
   const raw_ptr<AppListFolderController> folder_controller_;

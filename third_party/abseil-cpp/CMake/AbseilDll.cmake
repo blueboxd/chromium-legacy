@@ -27,6 +27,8 @@ set(ABSL_INTERNAL_DLL_FILES
   "base/internal/low_level_scheduling.h"
   "base/internal/nullability_impl.h"
   "base/internal/per_thread_tls.h"
+  "base/internal/poison.cc"
+  "base/internal/poison.h"
   "base/prefetch.h"
   "base/internal/pretty_function.h"
   "base/internal/raw_logging.cc"
@@ -46,6 +48,8 @@ set(ABSL_INTERNAL_DLL_FILES
   "base/internal/thread_identity.h"
   "base/internal/throw_delegate.cc"
   "base/internal/throw_delegate.h"
+  "base/internal/tracing.cc"
+  "base/internal/tracing.h"
   "base/internal/tsan_mutex_interface.h"
   "base/internal/unaligned_access.h"
   "base/internal/unscaledcycleclock.cc"
@@ -121,6 +125,9 @@ set(ABSL_INTERNAL_DLL_FILES
   "debugging/symbolize.h"
   "debugging/internal/address_is_readable.cc"
   "debugging/internal/address_is_readable.h"
+  "debugging/internal/bounded_utf8_length_sequence.h"
+  "debugging/internal/decode_rust_punycode.cc"
+  "debugging/internal/decode_rust_punycode.h"
   "debugging/internal/demangle.cc"
   "debugging/internal/demangle.h"
   "debugging/internal/demangle_rust.cc"
@@ -133,6 +140,8 @@ set(ABSL_INTERNAL_DLL_FILES
   "debugging/internal/stack_consumption.h"
   "debugging/internal/stacktrace_config.h"
   "debugging/internal/symbolize.h"
+  "debugging/internal/utf8_for_code_point.cc"
+  "debugging/internal/utf8_for_code_point.h"
   "debugging/internal/vdso_support.cc"
   "debugging/internal/vdso_support.h"
   "functional/any_invocable.h"
@@ -313,7 +322,6 @@ set(ABSL_INTERNAL_DLL_FILES
   "strings/internal/string_constant.h"
   "strings/internal/stringify_sink.h"
   "strings/internal/stringify_sink.cc"
-  "strings/internal/has_absl_stringify.h"
   "strings/has_absl_stringify.h"
   "strings/has_ostream_operator.h"
   "strings/match.cc"
@@ -439,9 +447,47 @@ set(ABSL_INTERNAL_DLL_FILES
   "debugging/leak_check.cc"
 )
 
+if(NOT MSVC)
+  list(APPEND ABSL_INTERNAL_DLL_FILES
+    "flags/commandlineflag.cc"
+    "flags/commandlineflag.h"
+    "flags/config.h"
+    "flags/declare.h"
+    "flags/flag.h"
+    "flags/internal/commandlineflag.cc"
+    "flags/internal/commandlineflag.h"
+    "flags/internal/flag.cc"
+    "flags/internal/flag.h"
+    "flags/internal/parse.h"
+    "flags/internal/path_util.h"
+    "flags/internal/private_handle_accessor.cc"
+    "flags/internal/private_handle_accessor.h"
+    "flags/internal/program_name.cc"
+    "flags/internal/program_name.h"
+    "flags/internal/registry.h"
+    "flags/internal/sequence_lock.h"
+    "flags/internal/usage.cc"
+    "flags/internal/usage.h"
+    "flags/marshalling.cc"
+    "flags/marshalling.h"
+    "flags/parse.cc"
+    "flags/parse.h"
+    "flags/reflection.cc"
+    "flags/reflection.h"
+    "flags/usage.cc"
+    "flags/usage.h"
+    "flags/usage_config.cc"
+    "flags/usage_config.h"
+    "log/flags.cc"
+    "log/flags.h"
+    "log/internal/flags.h"
+  )
+endif()
+
 set(ABSL_INTERNAL_DLL_TARGETS
   "absl_check"
   "absl_log"
+  "absl_vlog_is_on"
   "algorithm"
   "algorithm_container"
   "any"
@@ -599,7 +645,28 @@ set(ABSL_INTERNAL_DLL_TARGETS
   "utility"
   "variant"
   "vlog_config_internal"
+  "vlog_is_on"
 )
+
+if(NOT MSVC)
+  list(APPEND ABSL_INTERNAL_DLL_TARGETS
+    "flags"
+    "flags_commandlineflag"
+    "flags_commandlineflag_internal"
+    "flags_config"
+    "flags_internal"
+    "flags_marshalling"
+    "flags_parse"
+    "flags_path_util"
+    "flags_private_handle_accessor"
+    "flags_program_name"
+    "flags_reflection"
+    "flags_usage"
+    "flags_usage_internal"
+    "log_internal_flags"
+    "log_flags"
+  )
+endif()
 
 set(ABSL_INTERNAL_TEST_DLL_FILES
   "hash/hash_testing.h"
@@ -746,7 +813,12 @@ function(absl_make_dll)
   else()
     set(_dll "abseil_dll")
     set(_dll_files ${ABSL_INTERNAL_DLL_FILES})
-    set(_dll_libs "")
+    set(_dll_libs
+      Threads::Threads
+      # TODO(#1495): Use $<LINK_LIBRARY:FRAMEWORK,CoreFoundation> once our
+      # minimum CMake version >= 3.24
+      $<$<PLATFORM_ID:Darwin>:-Wl,-framework,CoreFoundation>
+    )
     set(_dll_compile_definitions "")
     set(_dll_includes "")
     set(_dll_consume "ABSL_CONSUME_DLL")
@@ -764,7 +836,10 @@ function(absl_make_dll)
       ${_dll_libs}
       ${ABSL_DEFAULT_LINKOPTS}
   )
-  set_property(TARGET ${_dll} PROPERTY LINKER_LANGUAGE "CXX")
+  set_target_properties(${_dll} PROPERTIES
+    LINKER_LANGUAGE "CXX"
+    SOVERSION ${ABSL_SOVERSION}
+  )
   target_include_directories(
     ${_dll}
     PUBLIC

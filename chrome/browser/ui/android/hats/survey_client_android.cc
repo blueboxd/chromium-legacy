@@ -12,9 +12,11 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/ranges/algorithm.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/android/hats/internal/jni_headers/SurveyClientBridge_jni.h"
 #include "chrome/browser/ui/android/hats/survey_config_android.h"
 #include "ui/android/window_android.h"
+
+// Must come after all headers that specialize FromJniType() / ToJniType().
+#include "chrome/browser/ui/android/hats/internal/jni_headers/SurveyClientBridge_jni.h"
 
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaRef;
@@ -48,6 +50,10 @@ void SurveyClientAndroid::LaunchSurvey(
     const SurveyBitsData& product_specific_bits_data,
     const SurveyStringData& product_specific_string_data) {
   JNIEnv* env = base::android::AttachCurrentThread();
+  // Ignore the call if the java object is null.
+  if (!jobj_) {
+    return;
+  }
 
   // Parse bit PSDs.
   std::vector<std::string> bits_fields;

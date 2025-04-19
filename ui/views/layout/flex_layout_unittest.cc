@@ -3423,20 +3423,14 @@ class FlexLayoutCrossAxisFitTest : public FlexLayoutTest {
  protected:
   static constexpr size_t kNumChildren = 3;
   static constexpr gfx::Size kHostSize = gfx::Size(200, 20);
-  static constexpr gfx::Size kChildSizes[kNumChildren] = {{10, 10},
-                                                          {10, 10},
-                                                          {10, 30}};
-  static constexpr gfx::Insets kChildMargins[kNumChildren] = {
-      gfx::Insets::TLBR(6, 0, 2, 0), gfx::Insets::TLBR(10, 0, 5, 0),
-      gfx::Insets::TLBR(6, 0, 2, 0)};
+  static constexpr std::array<gfx::Size, kNumChildren> kChildSizes = {
+      {{10, 10}, {10, 10}, {10, 30}}};
+  static constexpr std::array<gfx::Insets, kNumChildren> kChildMargins = {
+      {gfx::Insets::TLBR(6, 0, 2, 0), gfx::Insets::TLBR(10, 0, 5, 0),
+       gfx::Insets::TLBR(6, 0, 2, 0)}};
 
   std::vector<raw_ptr<View, VectorExperimental>> child_views_;
 };
-
-// static
-constexpr gfx::Size FlexLayoutCrossAxisFitTest::kHostSize;
-constexpr gfx::Size FlexLayoutCrossAxisFitTest::kChildSizes[kNumChildren];
-constexpr gfx::Insets FlexLayoutCrossAxisFitTest::kChildMargins[kNumChildren];
 
 TEST_F(FlexLayoutCrossAxisFitTest, Layout_CrossStretch) {
   layout_->SetCrossAxisAlignment(LayoutAlignment::kStretch);
@@ -3603,16 +3597,12 @@ TEST_F(NestedFlexLayoutTest, Layout_OppositeOrientation) {
       .SetDefault(views::kMarginsKey, gfx::Insets::TLBR(2, 3, 4, 5))
       .SetInteriorMargin(gfx::Insets::TLBR(4, 3, 2, 1));
 
-  // TODO(crbug.com/40232718): See View::SetLayoutManagerUseConstrainedSpace.
-  child(1)->SetLayoutManagerUseConstrainedSpace(false);
   layout(1)
       ->SetOrientation(LayoutOrientation::kVertical)
       .SetCollapseMargins(true)
       .SetDefault(views::kMarginsKey, gfx::Insets(2))
       .SetInteriorMargin(gfx::Insets(1));
 
-  // TODO(crbug.com/40232718): See View::SetLayoutManagerUseConstrainedSpace.
-  child(2)->SetLayoutManagerUseConstrainedSpace(false);
   layout(2)
       ->SetOrientation(LayoutOrientation::kVertical)
       .SetCollapseMargins(true)
@@ -3643,16 +3633,12 @@ TEST_F(NestedFlexLayoutTest, Layout_SameOrientation) {
       .SetDefault(views::kMarginsKey, gfx::Insets::TLBR(2, 3, 4, 5))
       .SetInteriorMargin(gfx::Insets::TLBR(4, 3, 2, 1));
 
-  // TODO(crbug.com/40232718): See View::SetLayoutManagerUseConstrainedSpace.
-  child(1)->SetLayoutManagerUseConstrainedSpace(false);
   layout(1)
       ->SetOrientation(LayoutOrientation::kHorizontal)
       .SetCollapseMargins(true)
       .SetDefault(views::kMarginsKey, gfx::Insets(2))
       .SetInteriorMargin(gfx::Insets(1));
 
-  // TODO(crbug.com/40232718): See View::SetLayoutManagerUseConstrainedSpace.
-  child(2)->SetLayoutManagerUseConstrainedSpace(false);
   layout(2)
       ->SetOrientation(LayoutOrientation::kHorizontal)
       .SetCollapseMargins(true)
@@ -3685,8 +3671,6 @@ TEST_F(NestedFlexLayoutTest, Layout_Flex) {
   child(1)->SetProperty(views::kFlexBehaviorKey, kFlex1ScaleToZero);
   child(2)->SetProperty(views::kFlexBehaviorKey, kFlex1ScaleToZero);
 
-  // TODO(crbug.com/40232718): See View::SetLayoutManagerUseConstrainedSpace.
-  child(1)->SetLayoutManagerUseConstrainedSpace(false);
   layout(1)
       ->SetOrientation(LayoutOrientation::kHorizontal)
       .SetCollapseMargins(true)
@@ -3695,8 +3679,6 @@ TEST_F(NestedFlexLayoutTest, Layout_Flex) {
   grandchild(1, 1)->SetProperty(views::kFlexBehaviorKey, kFlex1ScaleToZero);
   grandchild(1, 2)->SetProperty(views::kFlexBehaviorKey, kFlex1ScaleToZero);
 
-  // TODO(crbug.com/40232718): See View::SetLayoutManagerUseConstrainedSpace.
-  child(2)->SetLayoutManagerUseConstrainedSpace(false);
   layout(2)
       ->SetOrientation(LayoutOrientation::kHorizontal)
       .SetCollapseMargins(true)

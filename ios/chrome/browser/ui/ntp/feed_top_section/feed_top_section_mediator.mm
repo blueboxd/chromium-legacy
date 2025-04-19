@@ -311,8 +311,8 @@ using base::UserMetricsAction;
 
 - (void)updateShouldShowPromo {
   // Don't show any promo if Set Up List is Enabled.
-  PrefService* localState = GetApplicationContext()->GetLocalState();
-  if (set_up_list_utils::IsSetUpListActive(localState)) {
+  if (set_up_list_utils::IsSetUpListActive(
+          GetApplicationContext()->GetLocalState(), self.prefService)) {
     // Hide promo as a safeguard in case it is being shown.
     [self.consumer hidePromo];
     return;
@@ -327,6 +327,8 @@ using base::UserMetricsAction;
   if ([self shouldShowNotificationsPromo]) {
     self.consumer.visiblePromoViewType = PromoViewTypeNotifications;
     [self.consumer showPromo];
+    [self logHistogramForAction:ContentNotificationTopOfFeedPromoAction::
+                                    kDisplayed];
     return;
   }
 }

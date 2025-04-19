@@ -48,7 +48,7 @@ class CookieControlsBubbleViewController
 
   void SetCallbacks();
   void OnUserClosedContentView();
-  void OnToggleButtonPressed(bool new_value);
+  void OnToggleButtonPressed(bool toggled_on);
   void OnFeedbackButtonPressed();
 
   void OnFaviconFetched(const favicon_base::FaviconImageResult& result) const;
@@ -56,9 +56,26 @@ class CookieControlsBubbleViewController
   void OnReloadingViewTimeout();
 
   void SwitchToReloadingView();
+
   void ApplyThirdPartyCookiesAllowedState(CookieControlsEnforcement enforcement,
                                           base::Time expiration);
   void ApplyThirdPartyCookiesBlockedState();
+
+  std::u16string GetStatusLabel(
+      content_settings::TrackingProtectionBlockingStatus blocking_status);
+
+  void FillDescriptionAndToggle(CookieControlsEnforcement enforcement,
+                                base::Time expiration);
+
+  void FillViewForThirdPartyCookies(
+      content_settings::TrackingProtectionFeature cookies_feature,
+      base::Time expiration);
+
+  void FillViewForTrackingProtection(
+      CookieControlsEnforcement enforcement,
+      base::Time expiration,
+      std::vector<content_settings::TrackingProtectionFeature> features);
+
   void CloseBubble();
 
   [[nodiscard]] std::unique_ptr<views::View> InitReloadingView(

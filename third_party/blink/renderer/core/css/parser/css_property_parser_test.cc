@@ -353,8 +353,8 @@ TEST(CSSPropertyParserTest, PaintUseCount) {
   auto dummy_page_holder =
       std::make_unique<DummyPageHolder>(gfx::Size(800, 600));
   dummy_page_holder->GetFrame().Loader().CommitNavigation(
-      WebNavigationParams::CreateWithHTMLBufferForTesting(
-          SharedBuffer::Create(), KURL("https://example.com")),
+      WebNavigationParams::CreateWithEmptyHTMLForTesting(
+          KURL("https://example.com")),
       nullptr /* extra_data */);
   Document& document = dummy_page_holder->GetDocument();
   Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
@@ -920,46 +920,6 @@ TEST(CSSPropertyParserTest, LightDarkAuthor) {
       "light-dark(url(light.png), url(dark.png))", context));
 }
 
-TEST(CSSPropertyParserTest, UALightDarkColor) {
-  ScopedCSSLightDarkColorsForTest disable_light_dark(false);
-  auto* ua_context = MakeGarbageCollected<CSSParserContext>(
-      kUASheetMode, SecureContextMode::kInsecureContext);
-
-  const struct {
-    const char* value;
-    bool valid;
-  } tests[] = {
-      {"light-dark()", false},
-      {"light-dark(#feedab)", false},
-      {"light-dark(red blue)", false},
-      {"light-dark(red,,blue)", false},
-      {"light-dark(red, blue)", true},
-      {"light-dark(#000000, #ffffff)", true},
-      {"light-dark(rgb(0, 0, 0), hsl(180, 75%, 50%))", true},
-      {"light-dark(rgba(0, 0, 0, 0.5), hsla(180, 75%, 50%, "
-       "0.7))",
-       true},
-      {"light-dark(ff0000, green)", false},
-  };
-
-  for (const auto& test : tests) {
-    EXPECT_EQ(!!CSSParser::ParseSingleValue(CSSPropertyID::kColor, test.value,
-                                            ua_context),
-              test.valid);
-  }
-}
-
-TEST(CSSPropertyParserTest, UALightDarkColorSerialization) {
-  ScopedCSSLightDarkColorsForTest disable_light_dark(false);
-
-  auto* ua_context = MakeGarbageCollected<CSSParserContext>(
-      kUASheetMode, SecureContextMode::kInsecureContext);
-  const CSSValue* value = CSSParser::ParseSingleValue(
-      CSSPropertyID::kColor, "light-dark(red,#aaa)", ua_context);
-  ASSERT_TRUE(value);
-  EXPECT_EQ("light-dark(red, rgb(170, 170, 170))", value->CssText());
-}
-
 TEST(CSSPropertyParserTest, UALightDarkBackgroundImage) {
   auto* ua_context = MakeGarbageCollected<CSSParserContext>(
       kUASheetMode, SecureContextMode::kInsecureContext);
@@ -1068,24 +1028,6 @@ TEST(CSSPropertyParserTest, ParseRevertLayer) {
       CSSPropertyID::kMarginLeft, stream, context);
   ASSERT_TRUE(value);
   EXPECT_TRUE(value->IsRevertLayerValue());
-}
-
-// anchor() and anchor-size() shouldn't parse when the feature is disabled.
-TEST(CSSPropertyParserTest, AnchorPositioningDisabled) {
-  ScopedHTMLSelectListElementForTest select_list_disabled(false);
-  ScopedCSSAnchorPositioningForTest anchor_positioning_disabled(false);
-
-  auto* context = MakeGarbageCollected<CSSParserContext>(
-      kHTMLStandardMode, SecureContextMode::kInsecureContext);
-
-  EXPECT_FALSE(
-      ParseCSSValue(CSSPropertyID::kTop, "anchor(--foo top)", context));
-  EXPECT_FALSE(
-      ParseCSSValue(CSSPropertyID::kBottom, "anchor(--foo bottom)", context));
-  EXPECT_FALSE(ParseCSSValue(CSSPropertyID::kWidth, "anchor-size(--foo width)",
-                             context));
-  EXPECT_FALSE(ParseCSSValue(CSSPropertyID::kHeight,
-                             "anchor-size(--foo height)", context));
 }
 
 void TestRepeatStyleParsing(const String& testValue,

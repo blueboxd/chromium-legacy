@@ -1,0 +1,4 @@
+include_rules = [
+  "+components/lens",
+  "+ios/chrome/browser/snapshots/model",
+]

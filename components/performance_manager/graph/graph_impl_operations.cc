@@ -4,34 +4,93 @@
 
 #include "components/performance_manager/graph/graph_impl_operations.h"
 
+#include <set>
+
 #include "base/memory/raw_ptr.h"
 #include "components/performance_manager/graph/frame_node_impl.h"
 #include "components/performance_manager/graph/page_node_impl.h"
 #include "components/performance_manager/graph/process_node_impl.h"
+#include "components/performance_manager/graph/worker_node_impl.h"
 
 namespace performance_manager {
+
+namespace {
+
+bool VisitWorkerClientFrames(
+    const WorkerNodeImpl* worker,
+    GraphImplOperations::FrameNodeImplVisitor frame_visitor,
+    std::set<const FrameNodeImpl*>& visited_frames) {
+  for (FrameNodeImpl* f : worker->client_frames()) {
+    // Mark this frame as visited.
+    const auto [_, inserted] = visited_frames.insert(f);
+    if (!inserted) {
+      // Already visited.
+      continue;
+    }
+    if (!frame_visitor(f)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool VisitWorkerAndClients(
+    WorkerNodeImpl* worker,
+    GraphImplOperations::FrameNodeImplVisitor frame_visitor,
+    GraphImplOperations::WorkerNodeImplVisitor worker_visitor,
+    std::set<const FrameNodeImpl*>& visited_frames,
+    std::set<const WorkerNodeImpl*>& visited_workers) {
+  // Mark this worker as visited.
+  const auto [_, inserted] = visited_workers.insert(worker);
+  if (!inserted) {
+    // Already visited.
+    return true;
+  }
+  if (!worker_visitor(worker)) {
+    return false;
+  }
+  if (!VisitWorkerClientFrames(worker, frame_visitor, visited_frames)) {
+    return false;
+  }
+  for (WorkerNodeImpl* w : worker->client_workers()) {
+    if (!VisitWorkerAndClients(w, frame_visitor, worker_visitor, visited_frames,
+                               visited_workers)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+}  // namespace
 
 // static
 base::flat_set<raw_ptr<PageNodeImpl, CtnExperimental>>
 GraphImplOperations::GetAssociatedPageNodes(const ProcessNodeImpl* process) {
-  base::flat_set<raw_ptr<PageNodeImpl, CtnExperimental>> page_nodes;
+  std::vector<raw_ptr<PageNodeImpl, CtnExperimental>> page_nodes;
+  page_nodes.reserve(process->frame_nodes().size());
+
   for (FrameNodeImpl* frame_node : process->frame_nodes()) {
-    page_nodes.insert(frame_node->page_node());
+    page_nodes.push_back(frame_node->page_node());
   }
-  return page_nodes;
+
+  return base::flat_set<raw_ptr<PageNodeImpl, CtnExperimental>>(
+      std::move(page_nodes));
 }
 
 // static
 base::flat_set<raw_ptr<ProcessNodeImpl, CtnExperimental>>
 GraphImplOperations::GetAssociatedProcessNodes(const PageNodeImpl* page) {
-  base::flat_set<raw_ptr<ProcessNodeImpl, CtnExperimental>> process_nodes;
+  std::vector<raw_ptr<ProcessNodeImpl, CtnExperimental>> process_nodes;
+  process_nodes.reserve(10);  // Avoid resizing in most cases.
+
   VisitFrameTreePreOrder(page,
                          [&process_nodes](FrameNodeImpl* frame_node) -> bool {
-                           if (auto* process_node = frame_node->process_node())
-                             process_nodes.insert(process_node);
+                           process_nodes.push_back(frame_node->process_node());
                            return true;
                          });
-  return process_nodes;
+
+  return base::flat_set<raw_ptr<ProcessNodeImpl, CtnExperimental>>(
+      std::move(process_nodes));
 }
 
 // static
@@ -119,6 +178,26 @@ bool GraphImplOperations::HasFrame(const PageNodeImpl* page,
     return true;
   });
   return has_frame;
+}
+
+// static
+bool GraphImplOperations::VisitAllWorkerClients(
+    const WorkerNodeImpl* worker,
+    FrameNodeImplVisitor frame_visitor,
+    WorkerNodeImplVisitor worker_visitor) {
+  std::set<const FrameNodeImpl*> visited_frames;
+  std::set<const WorkerNodeImpl*> visited_workers;
+  // Don't visit `worker` itself.
+  if (!VisitWorkerClientFrames(worker, frame_visitor, visited_frames)) {
+    return false;
+  }
+  for (WorkerNodeImpl* w : worker->client_workers()) {
+    if (!VisitWorkerAndClients(w, frame_visitor, worker_visitor, visited_frames,
+                               visited_workers)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 }  // namespace performance_manager

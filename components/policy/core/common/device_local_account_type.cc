@@ -20,9 +20,11 @@ constexpr auto kDomainPrefixMap =
     base::MakeFixedFlatMap<DeviceLocalAccountType, std::string_view>({
         {DeviceLocalAccountType::kPublicSession, "public-accounts"},
         {DeviceLocalAccountType::kKioskApp, "kiosk-apps"},
-        {DeviceLocalAccountType::kArcKioskApp, "arc-kiosk-apps"},
         {DeviceLocalAccountType::kSamlPublicSession, "saml-public-accounts"},
         {DeviceLocalAccountType::kWebKioskApp, "web-kiosk-apps"},
+        {DeviceLocalAccountType::kKioskIsolatedWebApp,
+         "kiosk-isolated-web-apps"},
+
     });
 
 constexpr char kDeviceLocalAccountDomainSuffix[] = ".device-local.localhost";
@@ -33,9 +35,9 @@ bool IsValidDeviceLocalAccountType(int value) {
   switch (static_cast<DeviceLocalAccountType>(value)) {
     case DeviceLocalAccountType::kPublicSession:
     case DeviceLocalAccountType::kKioskApp:
-    case DeviceLocalAccountType::kArcKioskApp:
     case DeviceLocalAccountType::kSamlPublicSession:
     case DeviceLocalAccountType::kWebKioskApp:
+    case DeviceLocalAccountType::kKioskIsolatedWebApp:
       return true;
   }
   return false;

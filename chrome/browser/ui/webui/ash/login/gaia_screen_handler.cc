@@ -74,6 +74,7 @@
 #include "chrome/browser/ui/webui/ash/login/network_state_informer.h"
 #include "chrome/browser/ui/webui/ash/login/online_login_utils.h"
 #include "chrome/browser/ui/webui/ash/login/reset_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/saml_challenge_key_handler.h"
 #include "chrome/browser/ui/webui/ash/login/saml_confirm_password_handler.h"
 #include "chrome/browser/ui/webui/ash/login/signin_fatal_error_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/user_creation_screen_handler.h"
@@ -118,6 +119,7 @@
 #include "net/cert/x509_certificate.h"
 #include "services/network/public/mojom/clear_data_filter.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "third_party/abseil-cpp/absl/cleanup/cleanup.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/devicetype_utils.h"
@@ -412,7 +414,9 @@ void GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent(
 
   UpdateAuthParams(params);
 
-  screen_mode_ = GetGaiaScreenMode(context.email);
+  if (auto* default_host = LoginDisplayHost::default_host(); default_host) {
+    screen_mode_ = default_host->GetWizardContext()->gaia_config.screen_mode;
+  }
   params.Set("screenMode", screen_mode_);
 
   const std::string app_locale = g_browser_process->GetApplicationLocale();
@@ -479,7 +483,6 @@ void GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent(
   }
   const std::string default_gaia_path =
       GetPath(gaia_urls.embedded_setup_chromeos_url());
-  params.Set("fallbackGaiaPath", default_gaia_path);
   switch (gaia_path) {
     case WizardContext::GaiaPath::kDefault:
       params.Set("gaiaPath", default_gaia_path);
@@ -579,6 +582,9 @@ void GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent(
         local_state->GetString(prefs::kUrlParameterToAutofillSAMLUsername));
   }
 
+  params.Set("autoReloadAttempts",
+             auth_flow_auto_reload_manager_.GetAttemptsCount());
+
   was_security_token_pin_canceled_ = false;
 
   CallExternalAPI("loadAuthenticator", std::move(params));
@@ -677,10 +683,20 @@ void GaiaScreenHandler::DeclareJSCallbacks() {
 
 void GaiaScreenHandler::HandleAuthenticatorLoaded() {
   VLOG(1) << "Authenticator finished loading";
+
+  auth_flow_auto_reload_manager_.Activate(
+      base::BindOnce(&GaiaScreenHandler::ReloadGaia, weak_factory_.GetWeakPtr(),
+                     /*force_reload=*/true));
+
   // Recreate the client cert usage observer, in order to track only the certs
   // used during the current sign-in attempt.
   extension_provided_client_cert_usage_observer_ =
       std::make_unique<LoginClientCertUsageObserver>();
+}
+
+ash::AuthenticationFlowAutoReloadManager&
+GaiaScreenHandler::GetAutoReloadManagerForTesting() {
+  return auth_flow_auto_reload_manager_;
 }
 
 void GaiaScreenHandler::HandleWebviewLoadAborted(int error_code) {
@@ -733,6 +749,10 @@ void GaiaScreenHandler::HandleCompleteAuthenticationEvent(
     bool services_provided,
     const base::Value::Dict& password_attributes,
     const base::Value::Dict& sync_trusted_vault_keys) {
+  absl::Cleanup run_callback_on_return = [this] {
+    auth_flow_auto_reload_manager_.Terminate();
+  };
+
   if (gaia_id.empty()) {
     LOG(WARNING) << "GaiaId is empty!";
   }
@@ -842,6 +862,22 @@ void GaiaScreenHandler::RecordCompleteAuthenticationMetrics(
                                   elapsed_timer_->Elapsed());
     elapsed_timer_.reset();
   }
+
+  // Record whether password or passwordless login is used, when the user is on
+  // an unmanaged device and passwordless login is allowed. Note that managed
+  // users on unmanaged device are included in the metric although they do not
+  // have the option for passwordless login at the moment; and the consumer
+  // users on managed device are excluded in the metric although they could have
+  // the option for passwordless login.
+  const bool is_enterprise_managed = g_browser_process->platform_part()
+                                         ->browser_policy_connector_ash()
+                                         ->IsDeviceEnterpriseManaged();
+  if (features::IsPasswordlessGaiaEnabledForConsumers() &&
+      !is_gaia_password_required_ && !is_enterprise_managed) {
+    base::UmaHistogramBoolean(
+        "OOBE.GaiaScreen.PasswordlessLoginRequests",
+        signin_artifacts.password.value_or(std::string()).empty());
+  }
 }
 
 void GaiaScreenHandler::CompleteAuthentication(
@@ -904,14 +940,7 @@ void GaiaScreenHandler::CompleteAuthentication(
       signin_artifacts.using_saml && !signin_artifacts.password.has_value() &&
       !signin_artifacts.challenge_response_key.has_value();
 
-  bool need_password_gaia =
-      !signin_artifacts.using_saml &&
-      signin_artifacts.password.value_or(std::string()).empty() &&
-      !ash::features::AreLocalPasswordsEnabledForConsumers();
-  const bool needs_saml_confirm_password =
-      confirm_saml_password || need_password_gaia;
-
-  if (needs_saml_confirm_password) {
+  if (confirm_saml_password) {
     auto scraped_saml_passwords =
         signin_artifacts.scraped_saml_passwords.value_or(::login::StringList{});
     CHECK_NE(scraped_saml_passwords.size(), 1u);
@@ -1213,6 +1242,7 @@ void GaiaScreenHandler::Hide() {
   hidden_ = true;
   network_state_informer_->RemoveObserver(this);
   enable_ash_httpauth_.reset();
+  auth_flow_auto_reload_manager_.Terminate();
 }
 
 void GaiaScreenHandler::LoadGaiaAsync(const AccountId& account_id) {
@@ -1669,25 +1699,23 @@ void GaiaScreenHandler::SetIsGaiaPasswordRequired(bool is_required) {
 }
 
 // static
-GaiaScreenHandler::GaiaScreenMode GaiaScreenHandler::GetGaiaScreenMode(
+WizardContext::GaiaScreenMode GaiaScreenHandler::GetGaiaScreenMode(
     const std::string& email) {
+  // Email is not empty, i.e. this is an existing user going through reauth.
+  // This means they should use Gaia reauth endpoint regardless of
+  // LoginAuthenticationBehavior policy and this should be reflected in
+  // their screen mode.
+  if (!email.empty()) {
+    return WizardContext::GaiaScreenMode::kDefault;
+  }
+
   int authentication_behavior = 0;
   CrosSettings::Get()->GetInteger(kLoginAuthenticationBehavior,
                                   &authentication_behavior);
-  if (authentication_behavior ==
-      em::LoginAuthenticationBehaviorProto::SAML_INTERSTITIAL) {
-    if (email.empty()) {
-      return GaiaScreenHandler::GAIA_SCREEN_MODE_SAML_REDIRECT;
-    } else {
-      // Email is not empty, i.e. this is an existing user going through reauth.
-      // This means they should use Gaia reauth endpoint regardless of
-      // LoginAuthenticationBehavior policy and this should be reflected in
-      // their screen mode.
-      return GaiaScreenHandler::GAIA_SCREEN_MODE_DEFAULT;
-    }
-  }
-
-  return GaiaScreenHandler::GAIA_SCREEN_MODE_DEFAULT;
+  return (authentication_behavior ==
+          em::LoginAuthenticationBehaviorProto::SAML_INTERSTITIAL)
+             ? WizardContext::GaiaScreenMode::kSamlRedirect
+             : WizardContext::GaiaScreenMode::kDefault;
 }
 
 }  // namespace ash

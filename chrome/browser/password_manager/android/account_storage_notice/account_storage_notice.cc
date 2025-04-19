@@ -9,11 +9,14 @@
 #include "base/android/jni_android.h"
 #include "base/check.h"
 #include "base/memory/ptr_util.h"
-#include "chrome/android/chrome_jni_headers/SettingsLauncherImpl_jni.h"
-#include "chrome/browser/password_manager/android/account_storage_notice/jni/AccountStorageNoticeCoordinator_jni.h"
+#include "components/password_manager/core/browser/password_store/split_stores_and_local_upm.h"
+#include "components/password_manager/core/browser/password_sync_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/service/sync_service.h"
 #include "ui/android/window_android.h"
+
+// Must come after all headers that specialize FromJniType() / ToJniType().
+#include "chrome/browser/password_manager/android/account_storage_notice/jni/AccountStorageNoticeCoordinator_jni.h"
 
 using base::android::AttachCurrentThread;
 
@@ -23,13 +26,18 @@ std::unique_ptr<AccountStorageNotice> AccountStorageNotice::MaybeShow(
     PrefService* pref_service,
     ui::WindowAndroid* window_android,
     base::OnceClosure done_cb) {
-  base::android::ScopedJavaLocalRef<jobject> java_coordinator =
-      Java_AccountStorageNoticeCoordinator_create(
-          AttachCurrentThread(),
-          sync_service ? sync_service->GetJavaObject() : nullptr,
-          pref_service->GetJavaObject(), window_android->GetJavaObject(),
-          Java_SettingsLauncherImpl_create(AttachCurrentThread()));
-  if (java_coordinator) {
+  bool can_show = Java_AccountStorageNoticeCoordinator_canShow(
+      AttachCurrentThread(),
+      sync_service ? sync_service->HasSyncConsent() : false,
+      password_manager::sync_util::HasChosenToSyncPasswords(sync_service),
+      password_manager::IsGmsCoreUpdateRequired(pref_service, sync_service),
+      pref_service->GetJavaObject(),
+      window_android ? window_android->GetJavaObject() : nullptr);
+  if (can_show) {
+    base::android::ScopedJavaLocalRef<jobject> java_coordinator =
+        Java_AccountStorageNoticeCoordinator_createAndShow(
+            AttachCurrentThread(), window_android->GetJavaObject(),
+            pref_service->GetJavaObject());
     return base::WrapUnique(
         new AccountStorageNotice(java_coordinator, std::move(done_cb)));
   }

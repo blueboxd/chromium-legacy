@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "base/memory/raw_ptr.h"
 #include "cc/trees/layer_tree_host.h"
 
@@ -763,7 +768,8 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
 };
 
 // TODO(crbug.com/41490731): Test is flaky on asan on multiple platforms.
-#if defined(ADDRESS_SANITIZER)
+// TODO(crbug.com/345499781): Test is flaky on Linux.
+#if defined(ADDRESS_SANITIZER) || defined(IS_LINUX)
 #define MAYBE_DeviceScaleFactor1_ScrollChild \
   DISABLED_DeviceScaleFactor1_ScrollChild
 #else
@@ -777,7 +783,8 @@ TEST_F(LayerTreeHostScrollTestCaseWithChild,
 }
 
 // TODO(crbug.com/41490731): Test is flaky on (at least) Mac and Linux asan.
-#if defined(ADDRESS_SANITIZER)
+// TODO(crbug.com/345499781): Test is flaky on Linux.
+#if defined(ADDRESS_SANITIZER) || defined(IS_LINUX)
 #define MAYBE_DeviceScaleFactor15_ScrollChild \
   DISABLED_DeviceScaleFactor15_ScrollChild
 #else
@@ -791,7 +798,8 @@ TEST_F(LayerTreeHostScrollTestCaseWithChild,
 }
 
 // TODO(crbug.com/41494888): Test is flaky on asan on multiple platforms.
-#if defined(ADDRESS_SANITIZER)
+// TODO(crbug.com/345499781): Test is flaky on Linux.
+#if defined(ADDRESS_SANITIZER) || defined(IS_LINUX)
 #define MAYBE_DeviceScaleFactor2_ScrollChild \
   DISABLED_DeviceScaleFactor2_ScrollChild
 #else
@@ -822,8 +830,9 @@ TEST_F(LayerTreeHostScrollTestCaseWithChild,
 
 // TODO(crbug.com/41494893): Test is flaky on Win asan.
 // TODO(crbug.com/41490731): Test is flaky on Mac asan.
+// TODO(crbug.com/345499781): Test is flaky on Linux.
 // Test is flaky on asan on multiple platforms.
-#if defined(ADDRESS_SANITIZER)
+#if defined(ADDRESS_SANITIZER) || defined(IS_LINUX)
 #define MAYBE_DeviceScaleFactor15_ScrollRootScrollLayer \
   DISABLED_DeviceScaleFactor15_ScrollRootScrollLayer
 #else
@@ -837,9 +846,10 @@ TEST_F(LayerTreeHostScrollTestCaseWithChild,
   RunTest(CompositorMode::THREADED);
 }
 
-// Test is flaky on asan on multiple platforms.
-#if defined(ADDRESS_SANITIZER)
 // TODO(crbug.com/41494746): Fix the flakiness on Mac ASan and re-enable.
+// TODO(crbug.com/345499781): Test is flaky on Linux.
+// Test is flaky on asan on multiple platforms.
+#if defined(ADDRESS_SANITIZER) || defined(IS_LINUX)
 #define MAYBE_DeviceScaleFactor2_ScrollRootScrollLayer \
   DISABLED_DeviceScaleFactor2_ScrollRootScrollLayer
 #else
@@ -892,12 +902,12 @@ class LayerTreeHostScrollTestSimple : public LayerTreeHostScrollTest {
     // We force a second draw here of the first commit before activating
     // the second commit.
     if (impl->active_tree()->source_frame_number() == 0)
-      impl->SetNeedsRedraw();
+      impl->SetNeedsRedraw(RedrawReason::kUntracked);
   }
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
     if (impl->pending_tree())
-      impl->SetNeedsRedraw();
+      impl->SetNeedsRedraw(RedrawReason::kUntracked);
 
     LayerImpl* root = impl->active_tree()->root_layer();
     LayerImpl* scroll_layer =
@@ -1072,7 +1082,7 @@ class LayerTreeHostScrollTestImplOnlyScroll : public LayerTreeHostScrollTest {
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
     if (impl->pending_tree())
-      impl->SetNeedsRedraw();
+      impl->SetNeedsRedraw(RedrawReason::kUntracked);
 
     LayerImpl* scroll_layer =
         impl->active_tree()->OuterViewportScrollLayerForTesting();
@@ -1369,8 +1379,10 @@ class LayerTreeHostScrollTestImplOnlyScrollSnap
 
 // TODO(crbug.com/40762489): Flaky on Fuchsia, ChromeOS, and Linux.
 // TODO(crbug.com/41495136): Flaky on Windows ASAN.
+// TODO(crbug.com/342502558): Flaky on Mac ASAN.
 #if !BUILDFLAG(IS_FUCHSIA) && !BUILDFLAG(IS_CHROMEOS) && \
-    !BUILDFLAG(IS_LINUX) && !(BUILDFLAG(IS_WIN) && defined(ADDRESS_SANITIZER))
+    !BUILDFLAG(IS_LINUX) &&                              \
+    !((BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)) && defined(ADDRESS_SANITIZER))
 MULTI_THREAD_TEST_F(LayerTreeHostScrollTestImplOnlyScrollSnap);
 #endif
 
@@ -1662,7 +1674,7 @@ class LayerTreeHostScrollTestScrollNonDrawnLayer
                     gfx::PointF(20.f, 20.f));
     layer_tree_host()
         ->OuterViewportScrollLayerForTesting()
-        ->SetNonFastScrollableRegion(gfx::Rect(20, 20, 20, 20));
+        ->SetMainThreadScrollHitTestRegion(gfx::Rect(20, 20, 20, 20));
   }
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
@@ -1673,7 +1685,7 @@ class LayerTreeHostScrollTestScrollNonDrawnLayer
         BeginState(gfx::Point(0, 0), gfx::Vector2dF(0, 1)).get(),
         ui::ScrollInputType::kTouchscreen);
     EXPECT_EQ(ScrollThread::kScrollOnImplThread, status.thread);
-    EXPECT_EQ(MainThreadScrollingReason::kNonFastScrollableRegion,
+    EXPECT_EQ(MainThreadScrollingReason::kMainThreadScrollHitTestRegion,
               status.main_thread_hit_test_reasons);
     impl->GetInputHandler().ScrollEnd();
 
@@ -2143,7 +2155,7 @@ class LayerTreeHostScrollTestScrollAbortedCommitMFBA
     switch (num_impl_commits_) {
       case 1:
         // Redraw so that we keep scrolling.
-        impl->SetNeedsRedraw();
+        impl->SetNeedsRedraw(RedrawReason::kUntracked);
         // Block activation until third commit is aborted.
         impl->BlockNotifyReadyToActivateForTesting(true);
         break;
@@ -2164,7 +2176,7 @@ class LayerTreeHostScrollTestScrollAbortedCommitMFBA
       case 1:
         EXPECT_EQ(2, num_impl_commits_);
         // Redraw to end the test.
-        impl->SetNeedsRedraw();
+        impl->SetNeedsRedraw(RedrawReason::kUntracked);
         break;
     }
     num_aborted_commits_++;
@@ -2284,6 +2296,7 @@ class MockInputHandlerClient : public InputHandlerClient {
       float max_page_scale_factor) override {}
   void DeliverInputForBeginFrame(const viz::BeginFrameArgs& args) override {}
   void DeliverInputForHighLatencyMode() override {}
+  void DeliverInputForDeadline() override {}
   void DidFinishImplFrame() override {}
   bool HasQueuedInput() const override { return false; }
   void SetScrollEventDispatchMode(
@@ -2782,9 +2795,10 @@ class LayerTreeHostRasterPriorityTest : public LayerTreeHostScrollTest {
 
 MULTI_THREAD_TEST_F(LayerTreeHostRasterPriorityTest);
 
-class NonScrollingNonFastScrollableRegion : public LayerTreeHostScrollTest {
+class NonScrollingMainThreadScrollHitTestRegion
+    : public LayerTreeHostScrollTest {
  public:
-  NonScrollingNonFastScrollableRegion() { SetUseLayerLists(); }
+  NonScrollingMainThreadScrollHitTestRegion() { SetUseLayerLists(); }
 
   // Setup 3 Layers:
   // 1) bottom_ which has a non-fast region in the bottom-right.
@@ -2801,7 +2815,8 @@ class NonScrollingNonFastScrollableRegion : public LayerTreeHostScrollTest {
     bottom_ = FakePictureLayer::Create(&fake_content_layer_client_);
     bottom_->SetElementId(LayerIdToElementIdForTesting(bottom_->id()));
     bottom_->SetBounds(gfx::Size(100, 100));
-    bottom_->SetNonFastScrollableRegion(Region(gfx::Rect(50, 50, 50, 50)));
+    bottom_->SetMainThreadScrollHitTestRegion(
+        Region(gfx::Rect(50, 50, 50, 50)));
     bottom_->SetHitTestable(true);
     CopyProperties(outer_scroll, bottom_.get());
     outer_scroll->AddChild(bottom_);
@@ -2820,7 +2835,7 @@ class NonScrollingNonFastScrollableRegion : public LayerTreeHostScrollTest {
     top_ = FakePictureLayer::Create(&fake_content_layer_client_);
     top_->SetElementId(LayerIdToElementIdForTesting(top_->id()));
     top_->SetBounds(gfx::Size(100, 100));
-    top_->SetNonFastScrollableRegion(Region(gfx::Rect(0, 0, 50, 50)));
+    top_->SetMainThreadScrollHitTestRegion(Region(gfx::Rect(0, 0, 50, 50)));
     top_->SetHitTestable(true);
     CopyProperties(middle_scrollable_.get(), top_.get());
     outer_scroll->AddChild(top_);
@@ -2849,7 +2864,7 @@ class NonScrollingNonFastScrollableRegion : public LayerTreeHostScrollTest {
       // Hitting a non fast region should request a hit test from the main
       // thread.
       EXPECT_EQ(ScrollThread::kScrollOnImplThread, status.thread);
-      EXPECT_EQ(MainThreadScrollingReason::kNonFastScrollableRegion,
+      EXPECT_EQ(MainThreadScrollingReason::kMainThreadScrollHitTestRegion,
                 status.main_thread_hit_test_reasons);
       impl->GetInputHandler().ScrollEnd();
     }
@@ -2893,7 +2908,7 @@ class NonScrollingNonFastScrollableRegion : public LayerTreeHostScrollTest {
   int middle_scrollable_scroll_tree_index_ = kInvalidPropertyNodeId;
 };
 
-SINGLE_THREAD_TEST_F(NonScrollingNonFastScrollableRegion);
+SINGLE_THREAD_TEST_F(NonScrollingMainThreadScrollHitTestRegion);
 
 // This test verifies that scrolling in non layer list mode (used by UI
 // compositor) is always "compositor scrolled", i.e. property trees are mutated
@@ -2981,7 +2996,8 @@ class LayerTreeHostScrollTestViewportAbortedCommit
   void WillSendBeginMainFrameOnThread(LayerTreeHostImpl* host_impl) override {
     if (is_first_frame_) {
       host_impl->browser_controls_manager()->UpdateBrowserControlsState(
-          BrowserControlsState::kHidden, BrowserControlsState::kHidden, true);
+          BrowserControlsState::kHidden, BrowserControlsState::kHidden, true,
+          std::nullopt);
       bool changed_since_last_sync = false;
       BrowserControlsState permitted_constraint =
           host_impl->browser_controls_manager()->PullConstraintForMainThread(
@@ -3106,7 +3122,7 @@ class PreventRecreatingTilingDuringScroll : public LayerTreeHostScrollTest {
         host_impl->GetInputHandler().ScrollEnd();
         // make sure redraw happen
         host_impl->active_tree()->set_needs_update_draw_properties();
-        host_impl->SetNeedsRedraw();
+        host_impl->SetNeedsRedraw(RedrawReason::kUntracked);
       }
     }
   }
@@ -3135,7 +3151,7 @@ class PreventRecreatingTilingDuringScroll : public LayerTreeHostScrollTest {
           // In pending tree, recreating tiling should delayed during scroll
           ASSERT_TRUE(scroll_check_pending_);
           ASSERT_EQ(tiling_transform.scale(), initial_scale_);
-          host_impl->SetNeedsRedraw();
+          host_impl->SetNeedsRedraw(RedrawReason::kUntracked);
         } else {
           // recreating tiling should happen after scroll finish
           ASSERT_FALSE(scroll_check_pending_);

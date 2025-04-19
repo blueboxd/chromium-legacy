@@ -15,6 +15,7 @@
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
+#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
@@ -82,6 +83,30 @@ AcceleratedStaticBitmapImage::CreateFromCanvasMailbox(
 
 // static
 scoped_refptr<AcceleratedStaticBitmapImage>
+AcceleratedStaticBitmapImage::CreateFromCanvasSharedImage(
+    scoped_refptr<gpu::ClientSharedImage> shared_image,
+    const gpu::SyncToken& sync_token,
+    GLuint shared_image_texture_id,
+    const SkImageInfo& sk_image_info,
+    GLenum texture_target,
+    bool is_origin_top_left,
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
+    base::PlatformThreadRef context_thread_ref,
+    scoped_refptr<base::SingleThreadTaskRunner> context_task_runner,
+    viz::ReleaseCallback release_callback,
+    bool supports_display_compositing,
+    bool is_overlay_candidate) {
+  return base::AdoptRef(new AcceleratedStaticBitmapImage(
+      std::move(shared_image), sync_token, shared_image_texture_id,
+      sk_image_info, texture_target, is_origin_top_left,
+      supports_display_compositing, is_overlay_candidate,
+      ImageOrientationEnum::kDefault, std::move(context_provider_wrapper),
+      context_thread_ref, std::move(context_task_runner),
+      std::move(release_callback)));
+}
+
+// static
+scoped_refptr<AcceleratedStaticBitmapImage>
 AcceleratedStaticBitmapImage::CreateFromExternalMailbox(
     const gpu::MailboxHolder& mailbox_holder,
     uint32_t usage,
@@ -113,7 +138,8 @@ AcceleratedStaticBitmapImage::CreateFromExternalMailbox(
           gfx::SkISizeToSize(sk_image_info.dimensions()), color_space,
           (is_origin_top_left) ? kTopLeft_GrSurfaceOrigin
                                : kBottomLeft_GrSurfaceOrigin,
-          sk_image_info.alphaType(), usage, mailbox_holder.texture_target);
+          sk_image_info.alphaType(), gpu::SharedImageUsageSet(usage),
+          mailbox_holder.texture_target);
   auto release_token = sii->GenVerifiedSyncToken();
   // No need to keep the original image after the new reference has been added.
   // Need to update the sync token, however.
@@ -126,16 +152,12 @@ AcceleratedStaticBitmapImage::CreateFromExternalMailbox(
         if (is_lost || !context_provider) {
           return;
         }
-        auto* sii = context_provider->ContextProvider()->SharedImageInterface();
-        if (!sii) {
-          return;
-        }
-        sii->DestroySharedImage(sync_token, std::move(shared_image));
+        shared_image->UpdateDestructionSyncToken(sync_token);
       },
-      shared_gpu_context, std::move(shared_image));
+      shared_gpu_context, shared_image);
 
   return base::AdoptRef(new AcceleratedStaticBitmapImage(
-      mailbox_holder.mailbox, release_token, 0u, sk_image_info,
+      std::move(shared_image), release_token, 0u, sk_image_info,
       mailbox_holder.texture_target, is_origin_top_left,
       supports_display_compositing, is_overlay_candidate,
       ImageOrientationEnum::kDefault, shared_gpu_context,
@@ -160,6 +182,41 @@ AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
     viz::ReleaseCallback release_callback)
     : StaticBitmapImage(orientation),
       mailbox_(mailbox),
+      sk_image_info_(sk_image_info),
+      texture_target_(texture_target),
+      is_origin_top_left_(is_origin_top_left),
+      supports_display_compositing_(supports_display_compositing),
+      is_overlay_candidate_(is_overlay_candidate),
+      context_provider_wrapper_(std::move(context_provider_wrapper)),
+      mailbox_ref_(
+          base::MakeRefCounted<MailboxRef>(sync_token,
+                                           context_thread_ref,
+                                           std::move(context_task_runner),
+                                           std::move(release_callback))),
+      paint_image_content_id_(cc::PaintImage::GetNextContentId()) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (shared_image_texture_id) {
+    InitializeTextureBacking(shared_image_texture_id);
+  }
+}
+
+AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
+    scoped_refptr<gpu::ClientSharedImage> shared_image,
+    const gpu::SyncToken& sync_token,
+    GLuint shared_image_texture_id,
+    const SkImageInfo& sk_image_info,
+    GLenum texture_target,
+    bool is_origin_top_left,
+    bool supports_display_compositing,
+    bool is_overlay_candidate,
+    const ImageOrientation& orientation,
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
+    base::PlatformThreadRef context_thread_ref,
+    scoped_refptr<base::SingleThreadTaskRunner> context_task_runner,
+    viz::ReleaseCallback release_callback)
+    : StaticBitmapImage(orientation),
+      shared_image_(std::move(shared_image)),
+      mailbox_(shared_image_->mailbox()),
       sk_image_info_(sk_image_info),
       texture_target_(texture_target),
       is_origin_top_left_(is_origin_top_left),
@@ -441,6 +498,15 @@ gpu::MailboxHolder AcceleratedStaticBitmapImage::GetMailboxHolder() const {
 
   return gpu::MailboxHolder(mailbox_, mailbox_ref_->sync_token(),
                             texture_target_);
+}
+
+scoped_refptr<gpu::ClientSharedImage>
+AcceleratedStaticBitmapImage::GetSharedImage() const {
+  if (!IsValid()) {
+    return nullptr;
+  }
+
+  return shared_image_;
 }
 
 void AcceleratedStaticBitmapImage::Transfer() {

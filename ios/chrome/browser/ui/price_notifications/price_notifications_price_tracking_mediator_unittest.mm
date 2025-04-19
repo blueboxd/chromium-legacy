@@ -4,13 +4,14 @@
 
 #import "ios/chrome/browser/ui/price_notifications/price_notifications_price_tracking_mediator.h"
 
+#import <UserNotifications/UserNotifications.h>
+
 #import <string_view>
 
 #import "base/apple/foundation_util.h"
 #import "base/memory/raw_ptr.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#import "base/test/scoped_feature_list.h"
 #import "components/bookmarks/test/bookmark_test_helpers.h"
 #import "components/commerce/core/mock_shopping_service.h"
 #import "components/commerce/core/price_tracking_utils.h"
@@ -18,11 +19,7 @@
 #import "components/image_fetcher/core/cached_image_fetcher.h"
 #import "components/image_fetcher/core/image_data_fetcher.h"
 #import "components/power_bookmarks/core/power_bookmark_utils.h"
-#import "components/sync/base/features.h"
-#import "ios/chrome/browser/bookmarks/model/account_bookmark_model_factory.h"
 #import "ios/chrome/browser/bookmarks/model/bookmark_model_factory.h"
-#import "ios/chrome/browser/bookmarks/model/legacy_bookmark_model.h"
-#import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_model_factory.h"
 #import "ios/chrome/browser/commerce/model/shopping_service_factory.h"
 #import "ios/chrome/browser/price_insights/coordinator/test_price_insights_consumer.h"
 #import "ios/chrome/browser/price_insights/ui/price_insights_item.h"
@@ -40,17 +37,22 @@
 #import "ios/chrome/browser/ui/price_notifications/price_notifications_mutator.h"
 #import "ios/chrome/browser/ui/price_notifications/price_notifications_table_view_controller.h"
 #import "ios/chrome/browser/ui/price_notifications/test_price_notifications_consumer.h"
-#import "ios/chrome/test/testing_application_context.h"
+#import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #import "ios/public/provider/chrome/browser/push_notification/push_notification_api.h"
+#import "ios/testing/scoped_block_swizzler.h"
 #import "ios/web/public/test/fakes/fake_navigation_manager.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "ios/web/public/web_state.h"
 #import "testing/platform_test.h"
+#import "third_party/ocmock/OCMock/OCMock.h"
+#import "third_party/ocmock/gtest_support.h"
 
 namespace {
 
 const char kTestUrl[] = "https://www.merchant.com/price_drop_product";
+const char kTestUrlVariant[] =
+    "https://www.merchant.com/price_drop_product?variant=1";
 const char kBookmarkTitle[] = "My product title";
 uint64_t kClusterId = 12345L;
 
@@ -79,18 +81,14 @@ void TrackBookmark(commerce::ShoppingService* shopping_service,
 
 const bookmarks::BookmarkNode* PrepareSubscription(
     commerce::MockShoppingService* shopping_service,
+    bookmarks::BookmarkModel* bookmark_model,
     BOOL unsubscribe_callback) {
-  bookmarks::BookmarkModel* bookmark_model =
-      shopping_service->GetBookmarkModelUsedForSync();
   std::string_view title = kBookmarkTitle;
   const bookmarks::BookmarkNode* product =
       commerce::AddProductBookmark(bookmark_model, base::UTF8ToUTF16(title),
                                    GURL(kTestUrl), kClusterId, true);
   const bookmarks::BookmarkNode* default_folder =
-      base::FeatureList::IsEnabled(
-          syncer::kEnableBookmarkFoldersForAccountStorage)
-          ? bookmark_model->account_mobile_node()
-          : bookmark_model->mobile_node();
+      bookmark_model->account_mobile_node();
   bookmark_model->AddURL(default_folder, default_folder->children().size(),
                          base::UTF8ToUTF16(title), GURL(kTestUrl));
   shopping_service->SetSubscribeCallbackValue(true);
@@ -119,40 +117,24 @@ const bookmarks::BookmarkNode* PrepareSubscription(
 
 }  // namespace
 
-class PriceNotificationsPriceTrackingMediatorTest
-    : public PlatformTest,
-      public testing::WithParamInterface<bool> {
+class PriceNotificationsPriceTrackingMediatorTest : public PlatformTest {
  public:
   PriceNotificationsPriceTrackingMediatorTest() {
-    if (GetParam()) {
-      feature_list_.InitAndEnableFeature(
-          syncer::kEnableBookmarkFoldersForAccountStorage);
-    } else {
-      feature_list_.InitAndDisableFeature(
-          syncer::kEnableBookmarkFoldersForAccountStorage);
-    }
-
     TestChromeBrowserState::Builder builder;
     builder.AddTestingFactory(ios::BookmarkModelFactory::GetInstance(),
                               ios::BookmarkModelFactory::GetDefaultFactory());
-    builder.AddTestingFactory(
-        ios::LocalOrSyncableBookmarkModelFactory::GetInstance(),
-        ios::LocalOrSyncableBookmarkModelFactory::GetDefaultFactory());
-    builder.AddTestingFactory(
-        ios::AccountBookmarkModelFactory::GetInstance(),
-        ios::AccountBookmarkModelFactory::GetDefaultFactory());
     builder.AddTestingFactory(
         commerce::ShoppingServiceFactory::GetInstance(),
         base::BindRepeating(
             [](web::BrowserState*) -> std::unique_ptr<KeyedService> {
               return commerce::MockShoppingService::Build();
             }));
-    std::unique_ptr<TestChromeBrowserState> test_chrome_browser_state =
-        builder.Build();
+    TestChromeBrowserState* test_chrome_browser_state =
+        browser_state_manager_.AddBrowserStateWithBuilder(std::move(builder));
 
     browser_list_ =
-        BrowserListFactory::GetForBrowserState(test_chrome_browser_state.get());
-    browser_ = std::make_unique<TestBrowser>(test_chrome_browser_state.get());
+        BrowserListFactory::GetForBrowserState(test_chrome_browser_state);
+    browser_ = std::make_unique<TestBrowser>(test_chrome_browser_state);
     browser_list_->AddBrowser(browser_.get());
     web_state_ = std::make_unique<web::FakeWebState>();
     std::unique_ptr<web::FakeNavigationManager> navigation_manager =
@@ -161,38 +143,25 @@ class PriceNotificationsPriceTrackingMediatorTest
     navigation_manager->SetLastCommittedItem(
         navigation_manager->GetItemAtIndex(0));
     web_state_->SetNavigationManager(std::move(navigation_manager));
-    web_state_->SetBrowserState(test_chrome_browser_state.get());
+    web_state_->SetBrowserState(test_chrome_browser_state);
     web_state_->SetNavigationItemCount(1);
     web_state_->SetCurrentURL(GURL(kTestUrl));
     image_fetcher_ = std::make_unique<image_fetcher::ImageDataFetcher>(
         test_chrome_browser_state->GetSharedURLLoaderFactory());
 
-    if (base::FeatureList::IsEnabled(
-            syncer::kEnableBookmarkFoldersForAccountStorage)) {
-      bookmark_model_ = ios::BookmarkModelFactory::
-          GetModelForBrowserStateIfUnificationEnabledOrDie(
-              test_chrome_browser_state.get());
-      bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model_);
-      bookmark_model_->CreateAccountPermanentFolders();
-    } else {
-      bookmark_model_ = ios::AccountBookmarkModelFactory::
-          GetDedicatedUnderlyingModelForBrowserStateIfUnificationDisabledOrDie(
-              test_chrome_browser_state.get());
-      bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model_);
-    }
+    bookmark_model_ = ios::BookmarkModelFactory::GetForBrowserState(
+        test_chrome_browser_state);
+    bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model_);
+    bookmark_model_->CreateAccountPermanentFolders();
 
     shopping_service_ = static_cast<commerce::MockShoppingService*>(
         commerce::ShoppingServiceFactory::GetForBrowserState(
-            test_chrome_browser_state.get()));
+            test_chrome_browser_state));
     shopping_service_->SetupPermissiveMock();
-    shopping_service_->SetBookmarkModelUsedForSync(bookmark_model_);
-    test_manager_ = std::make_unique<TestChromeBrowserStateManager>(
-        std::move(test_chrome_browser_state));
-    TestingApplicationContext::GetGlobal()->SetChromeBrowserStateManager(
-        test_manager_.get());
     push_notification_service_ = ios::provider::CreatePushNotificationService();
     mediator_ = [[PriceNotificationsPriceTrackingMediator alloc]
         initWithShoppingService:(commerce::ShoppingService*)shopping_service_
+                  bookmarkModel:bookmark_model_
                    imageFetcher:std::move(image_fetcher_)
                        webState:(web::WebState*)web_state_.get()
         pushNotificationService:(PushNotificationService*)
@@ -200,26 +169,42 @@ class PriceNotificationsPriceTrackingMediatorTest
   }
 
  protected:
-  base::test::ScopedFeatureList feature_list_;
+  // Sets up a mock notification center, so notification requests can be
+  // tested.
+  void SetupMockNotificationCenter() {
+    mock_notification_center_ = OCMClassMock([UNUserNotificationCenter class]);
+    // Swizzle in the mock notification center.
+    UNUserNotificationCenter* (^swizzle_block)() =
+        ^UNUserNotificationCenter*() {
+          return mock_notification_center_;
+        };
+    notification_center_swizzler_ = std::make_unique<ScopedBlockSwizzler>(
+        [UNUserNotificationCenter class], @selector(currentNotificationCenter),
+        swizzle_block);
+  }
+
   web::WebTaskEnvironment task_environment_;
+  IOSChromeScopedTestingLocalState scoped_testing_local_state_;
+  TestChromeBrowserStateManager browser_state_manager_;
   std::unique_ptr<Browser> browser_;
   PriceNotificationsPriceTrackingMediator* mediator_;
-  std::unique_ptr<ios::ChromeBrowserStateManager> test_manager_;
   std::unique_ptr<web::FakeWebState> web_state_;
   raw_ptr<commerce::MockShoppingService> shopping_service_;
   raw_ptr<bookmarks::BookmarkModel> bookmark_model_;
   raw_ptr<BrowserList> browser_list_;
   std::unique_ptr<image_fetcher::ImageDataFetcher> image_fetcher_;
   std::unique_ptr<PushNotificationService> push_notification_service_;
+  std::unique_ptr<ScopedBlockSwizzler> notification_center_swizzler_;
+  id mock_notification_center_;
   TestPriceNotificationsConsumer* consumer_ =
       [[TestPriceNotificationsConsumer alloc] init];
   TestPriceInsightsConsumer* price_insights_consumer_ =
       [[TestPriceInsightsConsumer alloc] init];
 };
 
-TEST_P(PriceNotificationsPriceTrackingMediatorTest,
+TEST_F(PriceNotificationsPriceTrackingMediatorTest,
        TrackableItemIsEmptyWhenUserIsViewingProductWebpageAndProduct) {
-  PrepareSubscription(shopping_service_, true);
+  PrepareSubscription(shopping_service_, bookmark_model_, true);
   mediator_.consumer = consumer_;
 
   ASSERT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
@@ -232,7 +217,7 @@ TEST_P(PriceNotificationsPriceTrackingMediatorTest,
   EXPECT_EQ(consumer_.isCurrentlyTrackingVisibleProduct, YES);
 }
 
-TEST_P(
+TEST_F(
     PriceNotificationsPriceTrackingMediatorTest,
     TrackableItemExistsWhenUserUntracksProductFromWebpageIsCurrentlyViewing) {
   commerce::ProductInfo product_info;
@@ -251,10 +236,7 @@ TEST_P(
 
   consumer_.didExecuteAction = NO;
   const bookmarks::BookmarkNode* default_folder =
-      base::FeatureList::IsEnabled(
-          syncer::kEnableBookmarkFoldersForAccountStorage)
-          ? bookmark_model_->account_mobile_node()
-          : bookmark_model_->mobile_node();
+      bookmark_model_->account_mobile_node();
   bookmark_model_->AddURL(default_folder, default_folder->children().size(),
                           base::UTF8ToUTF16(product_info.title),
                           GURL(kTestUrl));
@@ -275,8 +257,16 @@ TEST_P(
   EXPECT_EQ(consumer_.trackableItem.title, product.title);
 }
 
-TEST_P(PriceNotificationsPriceTrackingMediatorTest,
+TEST_F(PriceNotificationsPriceTrackingMediatorTest,
        SuccessfullyTrackedProductURLFromPriceInsights) {
+  SetupMockNotificationCenter();
+  id settings = OCMClassMock([UNNotificationSettings class]);
+  OCMStub([mock_notification_center_
+      getNotificationSettingsWithCompletionHandler:
+          ([OCMArg invokeBlockWithArgs:settings, nil])]);
+  OCMStub([settings authorizationStatus])
+      .andReturn(UNAuthorizationStatusAuthorized);
+
   commerce::ProductInfo product_info;
   product_info.title = kBookmarkTitle;
   product_info.product_cluster_id = std::make_optional(kClusterId);
@@ -293,10 +283,20 @@ TEST_P(PriceNotificationsPriceTrackingMediatorTest,
         base::RunLoop().RunUntilIdle();
         return price_insights_consumer_.didPriceTrack;
       }));
+
+  EXPECT_OCMOCK_VERIFY(mock_notification_center_);
 }
 
-TEST_P(PriceNotificationsPriceTrackingMediatorTest,
+TEST_F(PriceNotificationsPriceTrackingMediatorTest,
        PresentAlertWhenTrackingIsUnsuccessfulFromPriceInsights) {
+  SetupMockNotificationCenter();
+  id settings = OCMClassMock([UNNotificationSettings class]);
+  OCMStub([mock_notification_center_
+      getNotificationSettingsWithCompletionHandler:
+          ([OCMArg invokeBlockWithArgs:settings, nil])]);
+  OCMStub([settings authorizationStatus])
+      .andReturn(UNAuthorizationStatusAuthorized);
+
   commerce::ProductInfo product_info;
   product_info.title = kBookmarkTitle;
   product_info.product_cluster_id = std::make_optional(kClusterId);
@@ -315,9 +315,11 @@ TEST_P(PriceNotificationsPriceTrackingMediatorTest,
         return price_insights_consumer_
             .didPresentStartPriceTrackingErrorAlertForItem;
       }));
+
+  EXPECT_OCMOCK_VERIFY(mock_notification_center_);
 }
 
-TEST_P(PriceNotificationsPriceTrackingMediatorTest,
+TEST_F(PriceNotificationsPriceTrackingMediatorTest,
        SuccessfullyUntrackedProductURLFromPriceInsights) {
   commerce::ProductInfo product_info;
   product_info.title = kBookmarkTitle;
@@ -326,10 +328,7 @@ TEST_P(PriceNotificationsPriceTrackingMediatorTest,
   optional_product_info.emplace(product_info);
 
   const bookmarks::BookmarkNode* default_folder =
-      base::FeatureList::IsEnabled(
-          syncer::kEnableBookmarkFoldersForAccountStorage)
-          ? bookmark_model_->account_mobile_node()
-          : bookmark_model_->mobile_node();
+      bookmark_model_->account_mobile_node();
   bookmark_model_->AddURL(default_folder, default_folder->children().size(),
                           base::UTF8ToUTF16(product_info.title),
                           GURL(kTestUrl));
@@ -347,7 +346,7 @@ TEST_P(PriceNotificationsPriceTrackingMediatorTest,
       }));
 }
 
-TEST_P(PriceNotificationsPriceTrackingMediatorTest,
+TEST_F(PriceNotificationsPriceTrackingMediatorTest,
        PresentAlertWhenUntrackingIsUnsuccessfulFromPriceInsights) {
   commerce::ProductInfo product_info;
   product_info.title = kBookmarkTitle;
@@ -356,10 +355,7 @@ TEST_P(PriceNotificationsPriceTrackingMediatorTest,
   optional_product_info.emplace(product_info);
 
   const bookmarks::BookmarkNode* default_folder =
-      base::FeatureList::IsEnabled(
-          syncer::kEnableBookmarkFoldersForAccountStorage)
-          ? bookmark_model_->account_mobile_node()
-          : bookmark_model_->mobile_node();
+      bookmark_model_->account_mobile_node();
   bookmark_model_->AddURL(default_folder, default_folder->children().size(),
                           base::UTF8ToUTF16(product_info.title),
                           GURL(kTestUrl));
@@ -378,7 +374,7 @@ TEST_P(PriceNotificationsPriceTrackingMediatorTest,
       }));
 }
 
-TEST_P(PriceNotificationsPriceTrackingMediatorTest,
+TEST_F(PriceNotificationsPriceTrackingMediatorTest,
        NavigateToWebPageUponUserRequestsFromPriceInsights) {
   price_insights_consumer_.didNavigateToWebpage = NO;
   mediator_.priceInsightsConsumer = price_insights_consumer_;
@@ -391,6 +387,40 @@ TEST_P(PriceNotificationsPriceTrackingMediatorTest,
       }));
 }
 
-INSTANTIATE_TEST_SUITE_P(UnifiedBookmarkModel,
-                         PriceNotificationsPriceTrackingMediatorTest,
-                         testing::Bool());
+TEST_F(PriceNotificationsPriceTrackingMediatorTest,
+       SuccessfullyUntrackedProductFromPriceInsightsThroughVariantURL) {
+  commerce::ProductInfo product_info;
+  product_info.title = kBookmarkTitle;
+  product_info.product_cluster_id = std::make_optional(kClusterId);
+  std::optional<commerce::ProductInfo> optional_product_info;
+  optional_product_info.emplace(product_info);
+
+  const bookmarks::BookmarkNode* product = commerce::AddProductBookmark(
+      bookmark_model_, base::UTF8ToUTF16(product_info.title), GURL(kTestUrl),
+      kClusterId, true);
+  const bookmarks::BookmarkNode* default_folder =
+      bookmark_model_->account_mobile_node();
+  bookmark_model_->AddURL(default_folder, default_folder->children().size(),
+                          base::UTF8ToUTF16(product_info.title),
+                          GURL(kTestUrl));
+  shopping_service_->SetSubscribeCallbackValue(true);
+  shopping_service_->SetIsSubscribedCallbackValue(true);
+  TrackBookmark(shopping_service_, bookmark_model_, product);
+
+  // Call to ensure backend calls to Unsubscribe are successful.
+  shopping_service_->SetUnsubscribeCallbackValue(true);
+  shopping_service_->SetResponseForGetProductInfoForUrl(optional_product_info);
+
+  price_insights_consumer_.didPriceUntrack = NO;
+  mediator_.priceInsightsConsumer = price_insights_consumer_;
+  PriceInsightsItem* price_insights = GetPriceInsightsItem();
+  price_insights.productURL = GURL(kTestUrlVariant);
+  price_insights.clusterId = kClusterId;
+  [mediator_ priceInsightsStopTrackingItem:price_insights];
+
+  ASSERT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForActionTimeout, ^bool {
+        base::RunLoop().RunUntilIdle();
+        return price_insights_consumer_.didPriceUntrack;
+      }));
+}

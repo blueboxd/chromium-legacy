@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -1194,10 +1199,6 @@ TEST_F(AssociatedInterfaceTest, CloseSerializedAssociatedEndpoints) {
   // Regression test for https://crbug.com/331636067. Verifies that endpoint
   // lifetime is properly managed when associated endpoints are serialized into
   // a message that gets dropped before transmission.
-
-  // Force-enable the feature since this test requires it to pass.
-  base::test::ScopedFeatureList kFeatures{
-      features::kMojoFixAssociatedHandleLeak};
 
   Remote<mojom::ClumsyBinder> binder;
   ClumsyBinderImpl binder_impl(binder.BindNewPipeAndPassReceiver());

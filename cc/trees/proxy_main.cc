@@ -16,10 +16,12 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
+#include "base/types/optional_ref.h"
 #include "cc/base/completion_event.h"
 #include "cc/base/devtools_instrumentation.h"
 #include "cc/base/features.h"
 #include "cc/benchmarks/benchmark_instrumentation.h"
+#include "cc/input/browser_controls_offset_tags_info.h"
 #include "cc/paint/paint_worklet_layer_painter.h"
 #include "cc/resources/ui_resource_manager.h"
 #include "cc/trees/latency_info_swap_promise.h"
@@ -148,6 +150,9 @@ void ProxyMain::BeginMainFrame(
   // We need to issue image decode callbacks whether or not we will abort this
   // update and commit, since the request ids are only stored in
   // |begin_main_frame_state|.
+  DCHECK(!base::FeatureList::IsEnabled(
+             features::kSendExplicitDecodeRequestsImmediately) ||
+         begin_main_frame_state->completed_image_decode_requests.empty());
   layer_tree_host_->ImageDecodesFinished(
       std::move(begin_main_frame_state->completed_image_decode_requests));
 
@@ -503,6 +508,13 @@ void ProxyMain::DidObserveFirstScrollDelay(
       source_frame_number, first_scroll_delay, first_scroll_timestamp);
 }
 
+void ProxyMain::NotifyImageDecodeRequestFinished(int request_id,
+                                                 bool decode_succeeded) {
+  DCHECK(base::FeatureList::IsEnabled(
+      features::kSendExplicitDecodeRequestsImmediately));
+  layer_tree_host_->NotifyImageDecodeFinished(request_id, decode_succeeded);
+}
+
 void ProxyMain::NotifyTransitionRequestFinished(uint32_t sequence_id) {
   layer_tree_host_->NotifyTransitionRequestsFinished({sequence_id});
 }
@@ -759,6 +771,14 @@ void ProxyMain::Stop() {
   started_ = false;
 }
 
+void ProxyMain::QueueImageDecode(int request_id, const PaintImage& image) {
+  TRACE_EVENT1("cc", "ProxyMain::QueueImageDecode", "request_id", request_id);
+  ImplThreadTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&ProxyImpl::QueueImageDecodeOnImpl,
+                                base::Unretained(proxy_impl_.get()), request_id,
+                                std::make_unique<PaintImage>(image)));
+}
+
 void ProxyMain::SetMutator(std::unique_ptr<LayerTreeMutator> mutator) {
   TRACE_EVENT0("cc", "ProxyMain::SetMutator");
   ImplThreadTaskRunner()->PostTask(
@@ -803,14 +823,17 @@ void ProxyMain::ReleaseLayerTreeFrameSink() {
   completion.Wait();
 }
 
-void ProxyMain::UpdateBrowserControlsState(BrowserControlsState constraints,
-                                           BrowserControlsState current,
-                                           bool animate) {
+void ProxyMain::UpdateBrowserControlsState(
+    BrowserControlsState constraints,
+    BrowserControlsState current,
+    bool animate,
+    base::optional_ref<const BrowserControlsOffsetTagsInfo> offset_tags_info) {
   DCHECK(IsMainThread());
   ImplThreadTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&ProxyImpl::UpdateBrowserControlsStateOnImpl,
-                                base::Unretained(proxy_impl_.get()),
-                                constraints, current, animate));
+      FROM_HERE,
+      base::BindOnce(&ProxyImpl::UpdateBrowserControlsStateOnImpl,
+                     base::Unretained(proxy_impl_.get()), constraints, current,
+                     animate, offset_tags_info));
 }
 
 void ProxyMain::RequestBeginMainFrameNotExpected(bool new_state) {

@@ -15,6 +15,7 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {assertEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 import {TestMock} from 'chrome://webui-test/test_mock.js';
+import {microtasksFinished} from 'chrome://webui-test/test_util.js';
 
 let handler: TestMock<PageHandlerRemote>&PageHandlerRemote;
 let callbackRouterRemote: PageRemote;
@@ -245,15 +246,20 @@ suite('history-clusters', () => {
       result: {imageUrl: {url: 'https://example.com/image.png'}},
     }));
 
-    const urlVisit =
-        clustersElement.$.clusters.querySelector('history-cluster')!.$.container
-            .querySelector('url-visit');
+    const cluster = clustersElement.$.clusters.querySelector('history-cluster');
+    assertTrue(!!cluster);
+    const urlVisit = cluster.$.container.querySelector('url-visit');
     assertTrue(!!urlVisit);
     // Assign a copied visit object with `isKnownToSync` set to true.
-    urlVisit.visit = Object.assign({}, urlVisit.visit, {isKnownToSync: true});
+    const copiedVisit =
+        Object.assign({}, urlVisit.visit, {isKnownToSync: true});
+    const copiedCluster = Object.assign({}, cluster.cluster);
+    copiedCluster.visits[0] = copiedVisit;
+    cluster.cluster = copiedCluster;
 
     const [clientId, pageUrl] =
         await imageServiceHandler.whenCalled('getPageImageUrl');
+    await microtasksFinished();
     assertEquals(PageImageServiceClientId.Journeys, clientId);
     assertEquals(urlVisit.visit.normalizedUrl, pageUrl);
 
@@ -272,6 +278,7 @@ suite('history-clusters', () => {
     icon.url = {url: 'https://something-different.com'};
     const [newClientId, newPageUrl] =
         await imageServiceHandler.whenCalled('getPageImageUrl');
+    await microtasksFinished();
     assertEquals(PageImageServiceClientId.Journeys, newClientId);
     assertTrue(!!newPageUrl);
     assertEquals('https://something-different.com', newPageUrl.url);
@@ -283,7 +290,6 @@ suite('history-clusters', () => {
     clustersElement.scrollTarget = document.body;
 
     assertEquals(document.body, clustersElement.$.clusters.scrollTarget);
-    assertEquals(document.body, clustersElement.$.scrollThreshold.scrollTarget);
   });
 
   test('sets scroll offset', async () => {

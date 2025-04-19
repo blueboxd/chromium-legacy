@@ -6,21 +6,23 @@ import 'chrome-untrusted://lens/post_selection_renderer.js';
 
 import {BrowserProxyImpl} from 'chrome-untrusted://lens/browser_proxy.js';
 import type {LensPageRemote} from 'chrome-untrusted://lens/lens.mojom-webui.js';
+import {UserAction} from 'chrome-untrusted://lens/lens.mojom-webui.js';
 import type {PostSelectionBoundingBox, PostSelectionRendererElement} from 'chrome-untrusted://lens/post_selection_renderer.js';
-import {PERIMETER_SELECTION_PADDING_PX, RESTING_CORNER_LENGTH_PX} from 'chrome-untrusted://lens/post_selection_renderer.js';
+import {CUTOUT_RADIUS_PX, MAX_CORNER_LENGTH_PX, MAX_CORNER_RADIUS_PX, MIN_BOX_SIZE_PX, PERIMETER_SELECTION_PADDING_PX} from 'chrome-untrusted://lens/post_selection_renderer.js';
 import type {GestureEvent} from 'chrome-untrusted://lens/selection_utils.js';
 import {GestureState} from 'chrome-untrusted://lens/selection_utils.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome-untrusted://webui-test/chai_assert.js';
+import type {MetricsTracker} from 'chrome-untrusted://webui-test/metrics_test_support.js';
+import {fakeMetricsPrivate} from 'chrome-untrusted://webui-test/metrics_test_support.js';
 import {waitAfterNextRender} from 'chrome-untrusted://webui-test/polymer_test_util.js';
 import {isVisible} from 'chrome-untrusted://webui-test/test_util.js';
 
-import {assertWithinThreshold} from '../utils/object_utils.js';
+import {assertPixelsWithinThreshold, assertWithinThreshold} from '../utils/object_utils.js';
 
 import {TestLensOverlayBrowserProxy} from './test_overlay_browser_proxy.js';
 
 const TEST_WIDTH = 800;
 const TEST_HEIGHT = 500;
-const MIN_BOX_SIZE = RESTING_CORNER_LENGTH_PX * 2;
 
 function normalizeX(x: number): number {
   return x / TEST_WIDTH;
@@ -30,17 +32,11 @@ function normalizeY(y: number): number {
   return y / TEST_HEIGHT;
 }
 
-interface BoxDrag {
-  xOffset: number;
-  yOffset: number;
-  expectedTop: number;
-  expectedLeft: number;
-}
-
 suite('PostSelectionRenderer', () => {
   let postSelectionRenderer: PostSelectionRendererElement;
   let testBrowserProxy: TestLensOverlayBrowserProxy;
   let callbackRouterRemote: LensPageRemote;
+  let metrics: MetricsTracker;
 
   setup(() => {
     // Resetting the HTML needs to be the first thing we do in setup to
@@ -58,6 +54,7 @@ suite('PostSelectionRenderer', () => {
     postSelectionRenderer.style.display = 'block';
     postSelectionRenderer.style.width = `${TEST_WIDTH}px`;
     postSelectionRenderer.style.height = `${TEST_HEIGHT}px`;
+    metrics = fakeMetricsPrivate();
 
     document.body.appendChild(postSelectionRenderer);
     return waitAfterNextRender(postSelectionRenderer);
@@ -81,18 +78,6 @@ suite('PostSelectionRenderer', () => {
         left ? postSelectionBoundingBox.left : postSelectionBoundingBox.right;
     const yTarget =
         top ? postSelectionBoundingBox.top : postSelectionBoundingBox.bottom;
-    simulateDrag(xTarget, yTarget, xOffset, yOffset);
-  }
-
-  // Drags on a the post selection region, starting at the center of the box
-  // and moving by xOffset horizontal pixels and yOffset vertical pixels.
-  function simulateBoxDrag(xOffset: number, yOffset: number): void {
-    const postSelectionBoundingBox =
-        postSelectionRenderer.$.postSelection.getBoundingClientRect();
-    const xTarget =
-        postSelectionBoundingBox.left + postSelectionBoundingBox.width / 2;
-    const yTarget =
-        postSelectionBoundingBox.top + postSelectionBoundingBox.height / 2;
     simulateDrag(xTarget, yTarget, xOffset, yOffset);
   }
 
@@ -137,12 +122,39 @@ suite('PostSelectionRenderer', () => {
             '--selection-height')));
   }
 
-  // Verifies the a Lens request was issues with the given percentage values
+  // Verifies the selection corners are rendered with the given pixel values.
+  function assertPostSelectionRenderCorners(
+      expectedCornerLength: number, expectedCornerRadius: number,
+      expectedCutoutRadius: number): void {
+    assertPixelsWithinThreshold(
+        `${expectedCornerLength}px`,
+
+        postSelectionRenderer.style.getPropertyValue(
+            '--post-selection-corner-horizontal-length'));
+    assertPixelsWithinThreshold(
+        `${expectedCornerLength}px`,
+
+        postSelectionRenderer.style.getPropertyValue(
+            '--post-selection-corner-vertical-length'));
+    assertPixelsWithinThreshold(
+        `${expectedCornerRadius}px`,
+
+        postSelectionRenderer.style.getPropertyValue(
+            '--post-selection-corner-radius'));
+    assertPixelsWithinThreshold(
+        `${expectedCutoutRadius}px`,
+        postSelectionRenderer.style.getPropertyValue(
+            '--post-selection-cutout-corner-radius'));
+  }
+
+  // Verifies that a Lens request was issued with the given percentage values
   // between 0-1.
-  async function assertLensRequest(
+  async function assertLensRegionRequest(
       expectedLeft: number, expectedTop: number, expectedWidth: number,
       expectedHeight: number): Promise<void> {
-    const rect = await testBrowserProxy.handler.whenCalled('issueLensRequest');
+    await testBrowserProxy.handler.whenCalled('issueLensRegionRequest');
+    const rect =
+        testBrowserProxy.handler.getArgs('issueLensRegionRequest')[0][0];
     assertWithinThreshold(expectedLeft + expectedWidth / 2, rect.box.x);
     assertWithinThreshold(expectedTop + expectedHeight / 2, rect.box.y);
     assertWithinThreshold(expectedWidth, rect.box.width);
@@ -215,7 +227,20 @@ suite('PostSelectionRenderer', () => {
 
     assertPostSelectionRender(
         expectedLeft, expectedTop, expectedWidth, expectedHeight);
-    await assertLensRequest(
+    assertPostSelectionRenderCorners(
+        MAX_CORNER_LENGTH_PX, MAX_CORNER_RADIUS_PX, CUTOUT_RADIUS_PX);
+    assertEquals(1, metrics.count('Lens.Overlay.Overlay.UserAction'));
+    assertEquals(
+        1,
+        metrics.count(
+            'Lens.Overlay.Overlay.UserAction',
+            UserAction.kRegionSelectionChange));
+    assertEquals(
+        1,
+        metrics.count(
+            'Lens.Overlay.Overlay.ByInvocationSource.AppMenu.UserAction',
+            UserAction.kRegionSelectionChange));
+    await assertLensRegionRequest(
         expectedLeft, expectedTop, expectedWidth, expectedHeight);
   });
 
@@ -231,14 +256,47 @@ suite('PostSelectionRenderer', () => {
     await simulateCornerDrag(
         /*top=*/ true, /*left=*/ true, /*xOffset=*/ 200, /*yOffset=*/ 200);
 
-    const expectedLeft = normalizeX(110 - MIN_BOX_SIZE);
-    const expectedTop = normalizeY(80 - MIN_BOX_SIZE);
-    const expectedWidth = normalizeX(MIN_BOX_SIZE);
-    const expectedHeight = normalizeY(MIN_BOX_SIZE);
+    const expectedLeft = normalizeX(110 - MIN_BOX_SIZE_PX);
+    const expectedTop = normalizeY(80 - MIN_BOX_SIZE_PX);
+    const expectedWidth = normalizeX(MIN_BOX_SIZE_PX);
+    const expectedHeight = normalizeY(MIN_BOX_SIZE_PX);
+    const expectedCornerLength = MIN_BOX_SIZE_PX / 2;
+    const expectedCornerRadius = MIN_BOX_SIZE_PX / 3;
+    const expectedCutoutRadius = 0;
 
     assertPostSelectionRender(
         expectedLeft, expectedTop, expectedWidth, expectedHeight);
-    await assertLensRequest(
+    assertPostSelectionRenderCorners(
+        expectedCornerLength, expectedCornerRadius, expectedCutoutRadius);
+    await assertLensRegionRequest(
+        expectedLeft, expectedTop, expectedWidth, expectedHeight);
+  });
+
+  test('PostSelectionTopLeftIntermediateBox', async () => {
+    await triggerPostSelectionRender({
+      top: normalizeY(10),
+      left: normalizeX(10),
+      width: normalizeX(100),
+      height: normalizeY(70),
+    });
+    assertTrue(isVisible(postSelectionRenderer.$.postSelection));
+
+    await simulateCornerDrag(
+        /*top=*/ true, /*left=*/ true, /*xOffset=*/ 40, /*yOffset=*/ 40);
+
+    const expectedLeft = normalizeX(50);
+    const expectedTop = normalizeY(50);
+    const expectedWidth = normalizeX(60);
+    const expectedHeight = normalizeY(30);
+    const expectedCornerLength = 15;
+    const expectedCornerRadius = 10;
+    const expectedCutoutRadius = 0;
+
+    assertPostSelectionRender(
+        expectedLeft, expectedTop, expectedWidth, expectedHeight);
+    assertPostSelectionRenderCorners(
+        expectedCornerLength, expectedCornerRadius, expectedCutoutRadius);
+    await assertLensRegionRequest(
         expectedLeft, expectedTop, expectedWidth, expectedHeight);
   });
 
@@ -261,7 +319,9 @@ suite('PostSelectionRenderer', () => {
 
     assertPostSelectionRender(
         expectedLeft, expectedTop, expectedWidth, expectedHeight);
-    await assertLensRequest(
+    assertPostSelectionRenderCorners(
+        MAX_CORNER_LENGTH_PX, MAX_CORNER_RADIUS_PX, CUTOUT_RADIUS_PX);
+    await assertLensRegionRequest(
         expectedLeft, expectedTop, expectedWidth, expectedHeight);
   });
 
@@ -284,7 +344,9 @@ suite('PostSelectionRenderer', () => {
 
     assertPostSelectionRender(
         expectedLeft, expectedTop, expectedWidth, expectedHeight);
-    await assertLensRequest(
+    assertPostSelectionRenderCorners(
+        MAX_CORNER_LENGTH_PX, MAX_CORNER_RADIUS_PX, CUTOUT_RADIUS_PX);
+    await assertLensRegionRequest(
         expectedLeft, expectedTop, expectedWidth, expectedHeight);
   });
 
@@ -301,13 +363,18 @@ suite('PostSelectionRenderer', () => {
         /*top=*/ true, /*left=*/ false, /*xOffset=*/ -200, /*yOffset=*/ 200);
 
     const expectedLeft = normalizeX(10);
-    const expectedTop = normalizeY(80 - MIN_BOX_SIZE);
-    const expectedWidth = normalizeX(MIN_BOX_SIZE);
-    const expectedHeight = normalizeY(MIN_BOX_SIZE);
+    const expectedTop = normalizeY(80 - MIN_BOX_SIZE_PX);
+    const expectedWidth = normalizeX(MIN_BOX_SIZE_PX);
+    const expectedHeight = normalizeY(MIN_BOX_SIZE_PX);
+    const expectedCornerLength = MIN_BOX_SIZE_PX / 2;
+    const expectedCornerRadius = MIN_BOX_SIZE_PX / 3;
+    const expectedCutoutRadius = 0;
 
     assertPostSelectionRender(
         expectedLeft, expectedTop, expectedWidth, expectedHeight);
-    await assertLensRequest(
+    assertPostSelectionRenderCorners(
+        expectedCornerLength, expectedCornerRadius, expectedCutoutRadius);
+    await assertLensRegionRequest(
         expectedLeft, expectedTop, expectedWidth, expectedHeight);
   });
 
@@ -332,7 +399,9 @@ suite('PostSelectionRenderer', () => {
 
     assertPostSelectionRender(
         expectedLeft, expectedTop, expectedWidth, expectedHeight);
-    await assertLensRequest(
+    assertPostSelectionRenderCorners(
+        MAX_CORNER_LENGTH_PX, MAX_CORNER_RADIUS_PX, CUTOUT_RADIUS_PX);
+    await assertLensRegionRequest(
         expectedLeft, expectedTop, expectedWidth, expectedHeight);
   });
 
@@ -355,7 +424,9 @@ suite('PostSelectionRenderer', () => {
 
     assertPostSelectionRender(
         expectedLeft, expectedTop, expectedWidth, expectedHeight);
-    await assertLensRequest(
+    assertPostSelectionRenderCorners(
+        MAX_CORNER_LENGTH_PX, MAX_CORNER_RADIUS_PX, CUTOUT_RADIUS_PX);
+    await assertLensRegionRequest(
         expectedLeft, expectedTop, expectedWidth, expectedHeight);
   });
 
@@ -373,12 +444,17 @@ suite('PostSelectionRenderer', () => {
 
     const expectedLeft = normalizeX(10);
     const expectedTop = normalizeY(10);
-    const expectedWidth = normalizeX(MIN_BOX_SIZE);
-    const expectedHeight = normalizeY(MIN_BOX_SIZE);
+    const expectedWidth = normalizeX(MIN_BOX_SIZE_PX);
+    const expectedHeight = normalizeY(MIN_BOX_SIZE_PX);
+    const expectedCornerLength = MIN_BOX_SIZE_PX / 2;
+    const expectedCornerRadius = MIN_BOX_SIZE_PX / 3;
+    const expectedCutoutRadius = 0;
 
     assertPostSelectionRender(
         expectedLeft, expectedTop, expectedWidth, expectedHeight);
-    await assertLensRequest(
+    assertPostSelectionRenderCorners(
+        expectedCornerLength, expectedCornerRadius, expectedCutoutRadius);
+    await assertLensRegionRequest(
         expectedLeft, expectedTop, expectedWidth, expectedHeight);
   });
 
@@ -404,7 +480,9 @@ suite('PostSelectionRenderer', () => {
 
     assertPostSelectionRender(
         expectedLeft, expectedTop, expectedWidth, expectedHeight);
-    await assertLensRequest(
+    assertPostSelectionRenderCorners(
+        MAX_CORNER_LENGTH_PX, MAX_CORNER_RADIUS_PX, CUTOUT_RADIUS_PX);
+    await assertLensRegionRequest(
         expectedLeft, expectedTop, expectedWidth, expectedHeight);
   });
 
@@ -427,7 +505,9 @@ suite('PostSelectionRenderer', () => {
 
     assertPostSelectionRender(
         expectedLeft, expectedTop, expectedWidth, expectedHeight);
-    await assertLensRequest(
+    assertPostSelectionRenderCorners(
+        MAX_CORNER_LENGTH_PX, MAX_CORNER_RADIUS_PX, CUTOUT_RADIUS_PX);
+    await assertLensRegionRequest(
         expectedLeft, expectedTop, expectedWidth, expectedHeight);
   });
 
@@ -443,14 +523,19 @@ suite('PostSelectionRenderer', () => {
     await simulateCornerDrag(
         /*top=*/ false, /*left=*/ true, /*xOffset=*/ 200, /*yOffset=*/ -200);
 
-    const expectedLeft = normalizeX(110 - MIN_BOX_SIZE);
+    const expectedLeft = normalizeX(110 - MIN_BOX_SIZE_PX);
     const expectedTop = normalizeY(10);
-    const expectedWidth = normalizeX(MIN_BOX_SIZE);
-    const expectedHeight = normalizeY(MIN_BOX_SIZE);
+    const expectedWidth = normalizeX(MIN_BOX_SIZE_PX);
+    const expectedHeight = normalizeY(MIN_BOX_SIZE_PX);
+    const expectedCornerLength = MIN_BOX_SIZE_PX / 2;
+    const expectedCornerRadius = MIN_BOX_SIZE_PX / 3;
+    const expectedCutoutRadius = 0;
 
     assertPostSelectionRender(
         expectedLeft, expectedTop, expectedWidth, expectedHeight);
-    await assertLensRequest(
+    assertPostSelectionRenderCorners(
+        expectedCornerLength, expectedCornerRadius, expectedCutoutRadius);
+    await assertLensRegionRequest(
         expectedLeft, expectedTop, expectedWidth, expectedHeight);
   });
 
@@ -475,7 +560,9 @@ suite('PostSelectionRenderer', () => {
 
     assertPostSelectionRender(
         expectedLeft, expectedTop, expectedWidth, expectedHeight);
-    await assertLensRequest(
+    assertPostSelectionRenderCorners(
+        MAX_CORNER_LENGTH_PX, MAX_CORNER_RADIUS_PX, CUTOUT_RADIUS_PX);
+    await assertLensRegionRequest(
         expectedLeft, expectedTop, expectedWidth, expectedHeight);
   });
 
@@ -497,109 +584,6 @@ suite('PostSelectionRenderer', () => {
     };
 
     assertFalse(postSelectionRenderer.handleDownGesture(dragGesture));
-  });
-
-  test('PostSelectionWholeBox', async () => {
-    postSelectionRenderer.enableSelectionDraggingForTesting();
-
-    await triggerPostSelectionRender({
-      top: normalizeY(10),
-      left: normalizeX(10),
-      width: normalizeX(100),
-      height: normalizeY(70),
-    });
-    assertTrue(isVisible(postSelectionRenderer.$.postSelection));
-
-    await simulateBoxDrag(/*xOffset=*/ 100, /*yOffset=*/ 100);
-
-    const expectedLeft = normalizeX(110);
-    const expectedTop = normalizeY(110);
-    const expectedWidth = normalizeX(100);
-    const expectedHeight = normalizeY(70);
-
-    assertPostSelectionRender(
-        expectedLeft, expectedTop, expectedWidth, expectedHeight);
-    await assertLensRequest(
-        expectedLeft, expectedTop, expectedWidth, expectedHeight);
-  });
-
-  test('PostSelectionOutOfBounds', async () => {
-    postSelectionRenderer.enableSelectionDraggingForTesting();
-
-    await triggerPostSelectionRender({
-      top: normalizeY(10),
-      left: normalizeX(10),
-      width: normalizeX(100),
-      height: normalizeY(70),
-    });
-    assertTrue(isVisible(postSelectionRenderer.$.postSelection));
-
-    const testDrags: BoxDrag[] = [
-      // To Top Left
-      {
-        xOffset: -200,
-        yOffset: -200,
-        expectedTop: PERIMETER_SELECTION_PADDING_PX,
-        expectedLeft: PERIMETER_SELECTION_PADDING_PX,
-      },
-      // To Top Right
-      {
-        xOffset: TEST_WIDTH,
-        yOffset: -200,
-        expectedTop: PERIMETER_SELECTION_PADDING_PX,
-        expectedLeft: TEST_WIDTH - 100 - PERIMETER_SELECTION_PADDING_PX,
-      },
-      // To Bottom Right
-      {
-        xOffset: 200,
-        yOffset: TEST_HEIGHT,
-        expectedTop: TEST_HEIGHT - 70 - PERIMETER_SELECTION_PADDING_PX,
-        expectedLeft: TEST_WIDTH - 100 - PERIMETER_SELECTION_PADDING_PX,
-      },
-      // To Bottom Left
-      {
-        xOffset: -TEST_WIDTH,
-        yOffset: 200,
-        expectedTop: TEST_HEIGHT - 70 - PERIMETER_SELECTION_PADDING_PX,
-        expectedLeft: PERIMETER_SELECTION_PADDING_PX,
-      },
-    ];
-
-    // Perform 4 drags to each of the corners to ensure can't go out of bounds
-    // anywhere.
-    for (const {xOffset, yOffset, expectedLeft, expectedTop} of testDrags) {
-      testBrowserProxy.handler.reset();
-      await simulateBoxDrag(xOffset, yOffset);
-
-      const expectedLeftNorm = normalizeX(expectedLeft);
-      const expectedTopNorm = normalizeY(expectedTop);
-      const expectedWidthNorm = normalizeX(100);
-      const expectedHeightNorm = normalizeY(70);
-
-      assertPostSelectionRender(
-          expectedLeftNorm, expectedTopNorm, expectedWidthNorm,
-          expectedHeightNorm);
-      await assertLensRequest(
-          expectedLeftNorm, expectedTopNorm, expectedWidthNorm,
-          expectedHeightNorm);
-    }
-  });
-
-  test('PostSelectionNoMeaningfulDrag', async () => {
-    postSelectionRenderer.enableSelectionDraggingForTesting();
-
-    await triggerPostSelectionRender({
-      top: normalizeY(10),
-      left: normalizeX(10),
-      width: normalizeX(100),
-      height: normalizeY(70),
-    });
-    assertTrue(isVisible(postSelectionRenderer.$.postSelection));
-
-    await simulateBoxDrag(/*xOffset=*/ 0, /*yOffset=*/ 0);
-
-    // Drag that didn't change the bounds shouldn't issue a Lens request.
-    assertEquals(0, testBrowserProxy.handler.getCallCount('issueLensRequest'));
   });
 
   test('PostSelectionClearAllSelectionsCallback', async () => {

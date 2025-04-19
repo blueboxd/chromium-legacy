@@ -59,7 +59,6 @@
 #include "components/memory_pressure/multi_source_memory_pressure_monitor.h"
 #include "components/power_monitor/make_power_monitor_device_source.h"
 #include "components/services/storage/dom_storage/storage_area_impl.h"
-#include "components/tracing/common/trace_startup_config.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "components/variations/fake_crash.h"
 #include "components/viz/host/compositing_mode_reporter_impl.h"
@@ -116,6 +115,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/device_service.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/browser/network_service_util.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/service_process_host.h"
 #include "content/public/browser/site_isolation_policy.h"
@@ -140,6 +140,7 @@
 #include "mojo/public/cpp/bindings/mojo_buildflags.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "net/base/network_change_notifier.h"
+#include "net/log/net_log.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/ssl/ssl_config_service.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -149,6 +150,8 @@
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/transitional_url_loader_factory_owner.h"
+#include "services/tracing/public/cpp/trace_startup_config.h"
+#include "services/video_capture/public/cpp/features.h"
 #include "skia/ext/event_tracer_impl.h"
 #include "skia/ext/legacy_display_globals.h"
 #include "skia/ext/skia_memory_dump_provider.h"
@@ -175,7 +178,7 @@
 #include "content/browser/android/launcher_thread.h"
 #include "content/browser/android/scoped_surface_request_manager.h"
 #include "content/browser/android/tracing_controller_android.h"
-#include "content/browser/font_unique_name_lookup/font_unique_name_lookup.h"
+#include "content/browser/font_unique_name_lookup/font_unique_name_lookup_android.h"
 #include "content/browser/screen_orientation/screen_orientation_delegate_android.h"
 #include "media/base/android/media_drm_bridge_client.h"
 #include "ui/android/screen_android.h"
@@ -288,9 +291,9 @@ static void SetUpGLibLogHandler() {
   // Register GLib-handled assertions to go through our logging system.
   const char* const kLogDomains[] = {nullptr, "Gtk", "Gdk", "GLib",
                                      "GLib-GObject"};
-  for (size_t i = 0; i < std::size(kLogDomains); i++) {
+  for (const auto* domain : kLogDomains) {
     g_log_set_handler(
-        kLogDomains[i],
+        domain,
         static_cast<GLogLevelFlags>(G_LOG_FLAG_RECURSION | G_LOG_FLAG_FATAL |
                                     G_LOG_LEVEL_ERROR | G_LOG_LEVEL_CRITICAL |
                                     G_LOG_LEVEL_WARNING),
@@ -664,6 +667,15 @@ void BrowserMainLoop::PostCreateMainMessageLoop() {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:HighResTimerManager");
     hi_res_timer_manager_ =
         std::make_unique<base::HighResolutionTimerManager>();
+  }
+  {
+    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:NetLog");
+    if (content::IsOutOfProcessNetworkService()) {
+      // Initialize NetLog source IDs to use an alternate starting value for
+      // the browser process. This needs to be done early in process startup
+      // before any NetLogSource objects might get created.
+      net::NetLog::Get()->InitializeSourceIdPartition();
+    }
   }
   {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:NetworkChangeNotifier");
@@ -1218,6 +1230,7 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
     background_tracing_manager_.reset();
   }
 
+  GetContentClient()->browser()->ThreadPoolWillTerminate();
   {
     TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:ThreadPool");
     base::ThreadPoolInstance::Get()->Shutdown();
@@ -1370,7 +1383,10 @@ void BrowserMainLoop::PostCreateThreadsImpl() {
   }
 
 #if BUILDFLAG(IS_WIN)
-  system_message_window_ = std::make_unique<media::SystemMessageWindowWin>();
+  if (!base::FeatureList::IsEnabled(
+          video_capture::features::kWinCameraMonitoringInVideoCaptureService)) {
+    system_message_window_ = std::make_unique<media::SystemMessageWindowWin>();
+  }
 #elif (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)) && defined(USE_UDEV)
   device_monitor_linux_ = std::make_unique<media::DeviceMonitorLinux>();
 #endif

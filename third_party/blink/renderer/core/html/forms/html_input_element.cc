@@ -346,7 +346,7 @@ void HTMLInputElement::UpdateSelectionOnFocus(
       if (GetLayoutObject()) {
         scroll_into_view_util::ScrollRectToVisible(
             *GetLayoutObject(), BoundingBoxForScrollIntoView(),
-            ScrollAlignment::CreateScrollIntoViewParams());
+            scroll_into_view_util::CreateScrollIntoViewParams());
       }
       if (GetDocument().GetFrame())
         GetDocument().GetFrame()->Selection().RevealSelection();
@@ -951,10 +951,8 @@ void HTMLInputElement::ParseAttribute(
     input_type_view_->ReadonlyAttributeChanged();
   } else if (name == html_names::kListAttr) {
     has_non_empty_list_ = !value.empty();
-    if (has_non_empty_list_) {
-      ResetListAttributeTargetObserver();
-      ListAttributeTargetChanged();
-    }
+    ResetListAttributeTargetObserver();
+    ListAttributeTargetChanged();
     PseudoStateChanged(CSSSelector::kPseudoHasDatalist);
     UseCounter::Count(GetDocument(), WebFeature::kListAttribute);
   } else if (name == html_names::kWebkitdirectoryAttr) {
@@ -2410,32 +2408,36 @@ void HTMLInputElement::showPicker(ExceptionState& exception_state) {
         "HTMLInputElement::showPicker() requires a user gesture.");
     return;
   }
+  if (RuntimeEnabledFeatures::ShowPickerConsumeUserActivationEnabled()) {
+    LocalFrame::ConsumeTransientUserActivation(frame);
+  }
 
   input_type_view_->OpenPopupView();
 }
 
-bool HTMLInputElement::IsValidInvokeAction(HTMLElement& invoker,
-                                           InvokeAction action) {
-  bool parent_is_valid = HTMLElement::IsValidInvokeAction(invoker, action);
+bool HTMLInputElement::IsValidCommand(HTMLElement& invoker,
+                                      CommandEventType command) {
+  bool parent_is_valid = HTMLElement::IsValidCommand(invoker, command);
   if (!RuntimeEnabledFeatures::HTMLInvokeActionsV2Enabled() ||
       parent_is_valid) {
     return parent_is_valid;
   }
 
   if (input_type_->IsNumberInputType()) {
-    if (action == InvokeAction::kStepUp || action == InvokeAction::kStepDown) {
+    if (command == CommandEventType::kStepUp ||
+        command == CommandEventType::kStepDown) {
       return true;
     }
   }
 
-  return action == InvokeAction::kShowPicker;
+  return command == CommandEventType::kShowPicker;
 }
 
-bool HTMLInputElement::HandleInvokeInternal(HTMLElement& invoker,
-                                            InvokeAction action) {
-  CHECK(IsValidInvokeAction(invoker, action));
+bool HTMLInputElement::HandleCommandInternal(HTMLElement& invoker,
+                                             CommandEventType command) {
+  CHECK(IsValidCommand(invoker, command));
 
-  if (HTMLElement::HandleInvokeInternal(invoker, action)) {
+  if (HTMLElement::HandleCommandInternal(invoker, command)) {
     return true;
   }
 
@@ -2444,7 +2446,7 @@ bool HTMLInputElement::HandleInvokeInternal(HTMLElement& invoker,
     return false;
   }
 
-  if (action == InvokeAction::kShowPicker) {
+  if (command == CommandEventType::kShowPicker) {
     // Step 2. If this's relevant settings object's origin is not same origin
     // with this's relevant settings object's top-level origin, [...], then
     // return.
@@ -2474,12 +2476,12 @@ bool HTMLInputElement::HandleInvokeInternal(HTMLElement& invoker,
   }
 
   if (input_type_->IsNumberInputType()) {
-    if (action == InvokeAction::kStepUp) {
+    if (command == CommandEventType::kStepUp) {
       input_type_->StepUp(1.0, ASSERT_NO_EXCEPTION);
       return true;
     }
 
-    if (action == InvokeAction::kStepDown) {
+    if (command == CommandEventType::kStepDown) {
       input_type_->StepUp(-1.0, ASSERT_NO_EXCEPTION);
       return true;
     }

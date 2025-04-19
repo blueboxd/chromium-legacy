@@ -18,6 +18,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/safe_ref.h"
+#include "base/not_fatal_until.h"
 #include "base/ranges/algorithm.h"
 #include "base/trace_event/optional_trace_event.h"
 #include "base/trace_event/typed_macros.h"
@@ -318,7 +319,7 @@ std::vector<FrameTreeNode*> FrameTree::CollectNodesForIsLoading() {
   FrameTree::NodeIterator node_iter = node_range.begin();
   std::vector<FrameTreeNode*> nodes;
 
-  DCHECK(node_iter != node_range.end());
+  CHECK(node_iter != node_range.end(), base::NotFatalUntil::M130);
   FrameTree* root_loading_tree = root_.frame_tree().LoadingTree();
   while (node_iter != node_range.end()) {
     // Skip over frame trees and children which belong to inner web contents
@@ -696,8 +697,7 @@ scoped_refptr<RenderViewHostImpl> FrameTree::CreateRenderViewHost(
           renderer_initiated_creation, std::move(main_browsing_context_state),
           create_case, frame_sink_id));
 
-  if (ShouldCreateNewHostForAllFrames() &&
-      create_case == CreateRenderViewHostCase::kSpeculative) {
+  if (create_case == CreateRenderViewHostCase::kSpeculative) {
     set_speculative_render_view_host(rvh->GetWeakPtr());
   } else {
     // Register non-speculative RenderViewHosts. If they are speculative, they
@@ -985,7 +985,8 @@ void FrameTree::Shutdown() {
 
   // Do not update state as the FrameTree::Delegate (possibly a WebContents) is
   // being destroyed.
-  root_.ResetNavigationRequestButKeepState();
+  root_.ResetNavigationRequestButKeepState(
+      NavigationDiscardReason::kWillRemoveFrame);
   if (root_manager->speculative_frame_host()) {
     root_manager->DiscardSpeculativeRenderFrameHostForShutdown();
   }

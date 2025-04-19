@@ -24,6 +24,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_IMAGE_DECODERS_IMAGE_DECODER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_IMAGE_DECODERS_IMAGE_DECODER_H_
 
@@ -53,14 +58,13 @@
 #include "third_party/skia/modules/skcms/skcms.h"
 
 class SkColorSpace;
+class SkData;
 
 namespace gfx {
 struct HDRMetadata;
 }  // namespace gfx
 
 namespace blink {
-
-struct DecodedImageMetaData;
 
 #if SK_B32_SHIFT
 inline skcms_PixelFormat XformColorFormat() {
@@ -198,6 +202,7 @@ class PLATFORM_EXPORT ImageDecoder {
       AlphaOption,
       HighBitDepthDecodingOption,
       ColorBehavior,
+      cc::AuxImage aux_image,
       const size_t platform_max_decoded_bytes,
       const SkISize& desired_size = SkISize::MakeEmpty(),
       AnimationOption animation_option = AnimationOption::kUnspecified);
@@ -207,13 +212,14 @@ class PLATFORM_EXPORT ImageDecoder {
       AlphaOption alpha_option,
       HighBitDepthDecodingOption high_bit_depth_decoding_option,
       ColorBehavior color_behavior,
+      cc::AuxImage aux_image,
       size_t platform_max_decoded_bytes,
       const SkISize& desired_size = SkISize::MakeEmpty(),
       AnimationOption animation_option = AnimationOption::kUnspecified) {
     return Create(SegmentReader::CreateFromSharedBuffer(std::move(data)),
                   data_complete, alpha_option, high_bit_depth_decoding_option,
-                  color_behavior, platform_max_decoded_bytes, desired_size,
-                  animation_option);
+                  color_behavior, aux_image, platform_max_decoded_bytes,
+                  desired_size, animation_option);
   }
 
   // Similar to above, but does not allow mime sniffing. Creates explicitly
@@ -225,6 +231,7 @@ class PLATFORM_EXPORT ImageDecoder {
       AlphaOption alpha_option,
       HighBitDepthDecodingOption high_bit_depth_decoding_option,
       ColorBehavior color_behavior,
+      cc::AuxImage aux_image,
       size_t platform_max_decoded_bytes,
       const SkISize& desired_size = SkISize::MakeEmpty(),
       AnimationOption animation_option = AnimationOption::kUnspecified);
@@ -375,9 +382,10 @@ class PLATFORM_EXPORT ImageDecoder {
   ImageOrientationEnum Orientation() const { return orientation_; }
   gfx::Size DensityCorrectedSize() const { return density_corrected_size_; }
 
-  // Updates orientation, pixel density etc based on |metadata|.
-  void ApplyMetadata(const DecodedImageMetaData& metadata,
-                     const gfx::Size& physical_size);
+  // Updates orientation, pixel density etc based on the Exif metadata stored in
+  // |exif_data|.
+  void ApplyExifMetadata(const SkData* exif_data,
+                         const gfx::Size& physical_size);
 
   bool IgnoresColorSpace() const {
     return color_behavior_ == ColorBehavior::kIgnore;

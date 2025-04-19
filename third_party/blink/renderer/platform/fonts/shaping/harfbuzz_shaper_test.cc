@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_shaper.h"
 
 #include <unicode/uscript.h>
@@ -1959,18 +1964,13 @@ TEST_F(HarfBuzzShaperTest, ShapeVerticalWithSubpixelPositionIsRounded) {
   }
 }
 
-// Broken on iOS: https://crbug.com/1194323
-#if BUILDFLAG(IS_IOS)
+// Broken on Apple platforms: https://crbug.com/1194323
+#if BUILDFLAG(IS_APPLE)
 #define MAYBE_EmojiPercentage DISABLED_EmojiPercentage
 #else
 #define MAYBE_EmojiPercentage EmojiPercentage
 #endif
 TEST_F(HarfBuzzShaperTest, MAYBE_EmojiPercentage) {
-#if BUILDFLAG(IS_MAC)
-  if (base::mac::MacOSMajorVersion() >= 11) {
-    GTEST_SKIP() << "Broken on macOS >= 11: https://crbug.com/1194323";
-  }
-#endif
 #if BUILDFLAG(IS_WIN)
   if (base::win::OSInfo::GetInstance()->version() >=
       base::win::Version::WIN11) {

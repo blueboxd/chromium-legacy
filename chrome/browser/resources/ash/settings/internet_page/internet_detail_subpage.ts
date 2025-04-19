@@ -312,14 +312,6 @@ export class SettingsInternetDetailPageElement extends
         },
       },
 
-      isCellularCarrierLockEnabled_: {
-        type: Boolean,
-        value() {
-          return loadTimeData.valueExists('isCellularCarrierLockEnabled') &&
-              loadTimeData.getBoolean('isCellularCarrierLockEnabled');
-        },
-      },
-
       isPasspointSettingsEnabled_: {
         type: Boolean,
         readOnly: true,
@@ -329,11 +321,13 @@ export class SettingsInternetDetailPageElement extends
         },
       },
 
-      isApnRevampAndPoliciesEnabled_: {
+      isApnRevampAndAllowApnModificationPolicyEnabled_: {
         type: Boolean,
         value() {
-          return loadTimeData.valueExists('isApnRevampAndPoliciesEnabled') &&
-              loadTimeData.getBoolean('isApnRevampAndPoliciesEnabled');
+          return loadTimeData.valueExists(
+                     'isApnRevampAndAllowApnModificationPolicyEnabled') &&
+              loadTimeData.getBoolean(
+                  'isApnRevampAndAllowApnModificationPolicyEnabled');
         },
       },
 
@@ -422,9 +416,8 @@ export class SettingsInternetDetailPageElement extends
   private ipAddress_: string;
   private isApnRevampEnabled_: boolean;
   private suppressTextMessagesOverride_: boolean;
-  private isCellularCarrierLockEnabled_: boolean;
   private isPasspointSettingsEnabled_: boolean;
-  private isApnRevampAndPoliciesEnabled_: boolean;
+  private isApnRevampAndAllowApnModificationPolicyEnabled_: boolean;
   private isRevampWayfindingEnabled_: boolean;
   private isSecondaryUser_: boolean;
   private isTrafficCountersEnabled_: boolean;
@@ -1024,22 +1017,41 @@ export class SettingsInternetDetailPageElement extends
     }
   }
 
+  private checkWifiOutOfRange_(networkState: OncMojo.NetworkStateProperties|
+                               null): void {
+    if (!networkState) {
+      return;
+    }
+    if (networkState.type !== NetworkType.kWiFi) {
+      this.outOfRange_ = false;
+      return;
+    }
+
+    // A hidden network should always have the connect button regardless of
+    // whether it's visible or not.
+    this.outOfRange_ = !networkState.typeState.wifi!.hiddenSsid &&
+        !networkState.typeState.wifi!.visible;
+  }
+
   private async getNetworkDetails_(): Promise<void> {
     assertExists(this.guid);
 
+    const networkStateResponse =
+        await this.networkConfig_.getNetworkState(this.guid);
+    this.checkWifiOutOfRange_(networkStateResponse.result);
+
     if (this.isSecondaryUser_) {
-      const response = await this.networkConfig_.getNetworkState(this.guid);
-      this.getStateCallback_(response.result);
-    } else {
-      const response =
-          await this.networkConfig_.getManagedProperties(this.guid);
-      this.getPropertiesCallback_(response.result);
-      if (this.isPasspointSettingsEnabled_ &&
-          this.isPasspointWifi_(this.managedProperties_)) {
-        const response = await this.passpointService_.getPasspointSubscription(
-            this.managedProperties_!.typeProperties.wifi!.passpointId!);
-        this.passpointSubscription_ = response.result;
-      }
+      this.getStateCallback_(networkStateResponse.result);
+      return;
+    }
+
+    const response = await this.networkConfig_.getManagedProperties(this.guid);
+    this.getPropertiesCallback_(response.result);
+    if (this.isPasspointSettingsEnabled_ &&
+        this.isPasspointWifi_(this.managedProperties_)) {
+      const response = await this.passpointService_.getPasspointSubscription(
+          this.managedProperties_!.typeProperties.wifi!.passpointId!);
+      this.passpointSubscription_ = response.result;
     }
   }
 
@@ -1064,7 +1076,6 @@ export class SettingsInternetDetailPageElement extends
       this.close();
     }
     this.propertiesReceived_ = true;
-    this.outOfRange_ = false;
     if (!this.deviceState_) {
       this.getDeviceState_();
     }
@@ -1115,9 +1126,7 @@ export class SettingsInternetDetailPageElement extends
         break;
     }
     this.updateManagedProperties_(managedProperties);
-
     this.propertiesReceived_ = true;
-    this.outOfRange_ = false;
   }
 
   private getNetworkState_(properties: ManagedProperties):
@@ -1131,7 +1140,6 @@ export class SettingsInternetDetailPageElement extends
   private getDefaultConfigProperties_(): ConfigProperties {
     return OncMojo.getDefaultConfigProperties(this.managedProperties_!.type);
   }
-
 
   private async setMojoNetworkProperties_(config: ConfigProperties):
       Promise<void> {
@@ -1164,6 +1172,9 @@ export class SettingsInternetDetailPageElement extends
 
     if (OncMojo.connectionStateIsConnected(managedProperties.connectionState)) {
       if (this.isPortalState_(managedProperties.portalState)) {
+        if (managedProperties.type === NetworkType.kCellular) {
+          return this.i18n('networkListItemCellularSignIn');
+        }
         return this.i18n('networkListItemSignIn');
       }
       if (managedProperties.portalState === PortalState.kNoInternet) {
@@ -1171,9 +1182,7 @@ export class SettingsInternetDetailPageElement extends
       }
     }
 
-    if (isCarrierLockedActiveSim(
-            this.isCellularCarrierLockEnabled_, managedProperties,
-            deviceState)) {
+    if (isCarrierLockedActiveSim(managedProperties, deviceState)) {
       return this.i18n('networkMobileProviderLocked');
     }
 
@@ -1214,9 +1223,7 @@ export class SettingsInternetDetailPageElement extends
     }
 
     // Display carrier locked network as warning
-    if (isCarrierLockedActiveSim(
-            this.isCellularCarrierLockEnabled_, managedProperties,
-            deviceState)) {
+    if (isCarrierLockedActiveSim(managedProperties, deviceState)) {
       return true;
     }
 
@@ -1296,7 +1303,7 @@ export class SettingsInternetDetailPageElement extends
   }
 
   private isApnManaged_(globalPolicy: GlobalPolicy|undefined): boolean {
-    if (!this.isApnRevampAndPoliciesEnabled_) {
+    if (!this.isApnRevampAndAllowApnModificationPolicyEnabled_) {
       return false;
     }
     if (!globalPolicy) {
@@ -1936,9 +1943,7 @@ export class SettingsInternetDetailPageElement extends
                    managedProperties, globalPolicy, managedNetworkAvailable,
                    isWifiSyncEnabled)) {
       first = 'synced';
-    } else if (isCarrierLockedActiveSim(
-                   this.isCellularCarrierLockEnabled_, managedProperties,
-                   deviceState)) {
+    } else if (isCarrierLockedActiveSim(managedProperties, deviceState)) {
       first = 'carrierlocked';
     }
 
@@ -1956,9 +1961,7 @@ export class SettingsInternetDetailPageElement extends
       managedProperties: ManagedProperties, _globalPolicy: GlobalPolicy,
       _managedNetworkAvailable: boolean,
       deviceState: OncMojo.DeviceStateProperties|null): boolean {
-    if (isCarrierLockedActiveSim(
-            this.isCellularCarrierLockEnabled_, managedProperties,
-            deviceState)) {
+    if (isCarrierLockedActiveSim(managedProperties, deviceState)) {
       return false;
     }
 
@@ -1970,8 +1973,7 @@ export class SettingsInternetDetailPageElement extends
   private isCarrierLockedActiveSim_(
       managedProperties: ManagedProperties|undefined,
       deviceState: OncMojo.DeviceStateProperties|null): boolean {
-    return isCarrierLockedActiveSim(
-        this.isCellularCarrierLockEnabled_, managedProperties, deviceState);
+    return isCarrierLockedActiveSim(managedProperties, deviceState);
   }
 
   private showAutoConnect_(
@@ -2420,8 +2422,7 @@ export class SettingsInternetDetailPageElement extends
 
   private computeDisabled_(): boolean {
     return shouldDisallowNetworkModifications(
-        this.isCellularCarrierLockEnabled_, this.deviceState_,
-        this.managedProperties_);
+        this.deviceState_, this.managedProperties_);
   }
 
   private shouldShowMacAddress_(): boolean {

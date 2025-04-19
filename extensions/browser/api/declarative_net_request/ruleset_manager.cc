@@ -9,9 +9,11 @@
 #include <tuple>
 
 #include "base/check_op.h"
+#include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/functional/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/not_fatal_until.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "base/time/time.h"
@@ -31,6 +33,7 @@
 #include "extensions/browser/extension_util.h"
 #include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/switches.h"
 #include "url/origin.h"
 
 namespace extensions::declarative_net_request {
@@ -248,11 +251,13 @@ std::vector<RequestAction> RulesetManager::MergeModifyHeaderActions(
       [this](const RequestAction& lhs, const RequestAction& rhs) {
         auto lhs_install_time_it =
             extension_install_times_.find(lhs.extension_id);
-        DCHECK(lhs_install_time_it != extension_install_times_.end());
+        CHECK(lhs_install_time_it != extension_install_times_.end(),
+              base::NotFatalUntil::M130);
 
         auto rhs_install_time_it =
             extension_install_times_.find(rhs.extension_id);
-        DCHECK(rhs_install_time_it != extension_install_times_.end());
+        CHECK(rhs_install_time_it != extension_install_times_.end(),
+              base::NotFatalUntil::M130);
 
         // Same comparator as ExtensionRulesetData's for actions from different
         // extensions. Otherwise, default to RequestAction's comparator.
@@ -493,6 +498,23 @@ bool RulesetManager::ShouldEvaluateRulesetForRequest(
     const WebRequestInfo& request,
     bool is_incognito_context,
     PageAccess& host_permission_access) const {
+  // Extensions should not generally have access to requests initiated by other
+  // extensions, though the --extensions-on-chrome-urls switch overrides that
+  // restriction.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kExtensionsOnChromeURLs) &&
+      request.initiator) {
+    // Checking the precursor is necessary here since requests initiated by
+    // manifest sandbox pages have an opaque initiator origin, but still
+    // originate from an extension.
+    auto initiator_precursor =
+        request.initiator->GetTupleOrPrecursorTupleIfOpaque();
+    if (initiator_precursor.scheme() == kExtensionScheme &&
+        initiator_precursor.host() != ruleset.extension_id) {
+      return false;
+    }
+  }
+
   // Only extensions enabled in incognito should have access to requests in an
   // incognito context.
   if (is_incognito_context &&

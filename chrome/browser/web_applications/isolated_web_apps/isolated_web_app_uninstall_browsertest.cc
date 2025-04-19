@@ -26,6 +26,7 @@
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "components/web_package/signed_web_bundles/signed_web_bundle_id.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/test/browser_test.h"
@@ -81,7 +82,7 @@ class IsolatedWebAppUninstallBrowserTest
     base::ScopedAllowBlockingForTesting allow_blocking;
     TestSignedWebBundle bundle = TestSignedWebBundleBuilder::BuildDefault(
         TestSignedWebBundleBuilder::BuildOptions()
-            .SetKeyPair(key_pair_)
+            .AddKeyPair(key_pair_)
             .SetAppName("Test App"));
     ASSERT_TRUE(base::WriteFile(src_bundle_path_, bundle.data));
   }
@@ -118,7 +119,7 @@ class IsolatedWebAppUninstallBrowserTest
         future.GetCallback());
 
     auto code = future.Get();
-    ASSERT_EQ(code, webapps::UninstallResultCode::kSuccess);
+    ASSERT_EQ(code, webapps::UninstallResultCode::kAppRemoved);
     run_loop.Run();
   }
 
@@ -131,13 +132,11 @@ class IsolatedWebAppUninstallBrowserTest
   base::ScopedTempDir scoped_temp_dir_;
 
   web_package::WebBundleSigner::Ed25519KeyPair key_pair_ =
-      web_package::WebBundleSigner::Ed25519KeyPair(kTestPublicKey,
-                                                   kTestPrivateKey);
+      test::GetDefaultEd25519KeyPair();
 
   IsolatedWebAppUrlInfo url_info_ =
       IsolatedWebAppUrlInfo::CreateFromSignedWebBundleId(
-          web_package::SignedWebBundleId::CreateForEd25519PublicKey(
-              key_pair_.public_key));
+          test::GetDefaultEd25519WebBundleId());
 
   base::FilePath src_bundle_path_;
   std::optional<IsolatedWebAppInstallSource> src_source_;

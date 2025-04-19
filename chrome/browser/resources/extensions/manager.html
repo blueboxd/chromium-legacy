@@ -71,10 +71,6 @@
     on-search-changed="onFilterChanged_"
     extensions="[[extensions_]]"
     narrow="{{narrow_}}"
-<if expr="chromeos_ash">
-    on-kiosk-tap="onKioskClick_"
-    kiosk-enabled="[[kioskEnabled_]]"
-</if>
     >
 </extensions-toolbar>
 <template is="dom-if" if="[[showDrawer_]]" restamp>
@@ -96,8 +92,8 @@
   <cr-view-manager id="viewManager" role="main">
     <extensions-item-list id="items-list" delegate="[[delegate]]"
         in-dev-mode="[[inDevMode]]"
-        is-mv2-deprecation-warning-dismissed=
-            "[[isMv2DeprecationWarningDismissed]]"
+        is-mv2-deprecation-notice-dismissed=
+            "[[isMv2DeprecationNoticeDismissed]]"
         filter="[[filter]]" hidden$="[[!didInitPage_]]" slot="view"
         apps="[[apps_]]" extensions="[[extensions_]]"
         on-show-install-warnings="onShowInstallWarnings_">
@@ -163,12 +159,6 @@
       on-close="onLoadErrorDialogClose_">
   </extensions-load-error>
 </template>
-<if expr="chromeos_ash">
-<template is="dom-if" if="[[showKioskDialog_]]" restamp>
-  <extensions-kiosk-dialog id="kiosk-dialog" on-close="onKioskDialogClose_">
-  </extensions-kiosk-dialog>
-</template>
-</if>
 <template is="dom-if" if="[[showInstallWarningsDialog_]]" restamp>
   <extensions-install-warnings-dialog
       on-close="onInstallWarningsDialogClose_"

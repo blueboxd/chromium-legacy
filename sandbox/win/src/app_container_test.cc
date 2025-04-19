@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include <windows.h>
 
 #include <memory>
@@ -10,6 +15,7 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/hash/sha1.h"
 #include "base/logging.h"
@@ -42,6 +48,25 @@ namespace {
 const wchar_t kAppContainerSid[] =
     L"S-1-15-2-3251537155-1984446955-2931258699-841473695-1938553385-"
     L"924012148-2839372144";
+
+constexpr ACProfileRegistration GetProfileRegistration() {
+#if defined(ARCH_CPU_ARM64)
+  return ACProfileRegistration::kNoFirewall;
+#else
+  return ACProfileRegistration::kDefault;
+#endif  // defined(ARCH_CPU_ARM64)
+}
+
+void DeleteProfile(const wchar_t* package_name) {
+  switch (GetProfileRegistration()) {
+    case ACProfileRegistration::kDefault:
+      AppContainerBase::Delete(package_name);
+      break;
+    case ACProfileRegistration::kNoFirewall:
+      AppContainerBase::DeleteNoFirewall(package_name);
+      break;
+  }
+}
 
 std::wstring GenerateRandomPackageName() {
   return base::ASCIIToWide(base::StringPrintf(
@@ -152,15 +177,14 @@ std::wstring GetAppContainerProfileName() {
 // Adds an app container policy similar to network service.
 ResultCode AddNetworkAppContainerPolicy(TargetPolicy* policy) {
   std::wstring profile_name = GetAppContainerProfileName();
-  ResultCode ret =
-      policy->GetConfig()->AddAppContainerProfile(profile_name.c_str(), true);
+  ResultCode ret = policy->GetConfig()->AddAppContainerProfile(
+      profile_name.c_str(), GetProfileRegistration());
   if (SBOX_ALL_OK != ret)
     return ret;
   ret = policy->GetConfig()->SetTokenLevel(USER_UNPROTECTED, USER_UNPROTECTED);
   if (SBOX_ALL_OK != ret)
     return ret;
-  scoped_refptr<AppContainer> app_container =
-      policy->GetConfig()->GetAppContainer();
+  AppContainer* app_container = policy->GetConfig()->GetAppContainer();
 
   constexpr const wchar_t* kBaseCapsSt[] = {
       L"lpacChromeInstallFiles", L"registryRead", L"lpacIdentityServices",
@@ -193,18 +217,19 @@ class AppContainerTest : public ::testing::Test {
     policy_ = broker_services_->CreatePolicy();
     ASSERT_EQ(SBOX_ALL_OK, policy_->GetConfig()->SetProcessMitigations(
                                MITIGATION_HEAP_TERMINATE));
-    ASSERT_EQ(SBOX_ALL_OK, policy_->GetConfig()->AddAppContainerProfile(
-                               package_name_.c_str(), true));
-    // For testing purposes we known the base class so cast directly.
-    container_ = static_cast<AppContainerBase*>(
-        policy_->GetConfig()->GetAppContainer().get());
+    ASSERT_EQ(SBOX_ALL_OK,
+              policy_->GetConfig()->AddAppContainerProfile(
+                  package_name_.c_str(), GetProfileRegistration()));
+    created_profile_ = true;
   }
 
   void TearDown() override {
-    if (scoped_process_info_.IsValid())
+    if (scoped_process_info_.IsValid()) {
       ::TerminateProcess(scoped_process_info_.process_handle(), 0);
-    if (container_)
-      AppContainerBase::Delete(package_name_.c_str());
+    }
+    if (created_profile_) {
+      DeleteProfile(package_name_.c_str());
+    }
   }
 
  protected:
@@ -221,9 +246,15 @@ class AppContainerTest : public ::testing::Test {
     scoped_process_info_.Set(process_info);
   }
 
+  AppContainerBase* container() {
+    // For testing purposes we known the base class so cast directly.
+    return static_cast<AppContainerBase*>(
+        policy_->GetConfig()->GetAppContainer());
+  }
+
   std::wstring package_name_;
+  bool created_profile_ = false;
   raw_ptr<BrokerServices> broker_services_;
-  scoped_refptr<AppContainerBase> container_;
   std::unique_ptr<TargetPolicy> policy_;
   base::win::ScopedProcessInformation scoped_process_info_;
 };
@@ -248,7 +279,7 @@ SBOX_TESTS_COMMAND int AppContainerEvent_Open(int argc, wchar_t** argv) {
   return SBOX_TEST_FAILED;
 }
 
-TEST_F(AppContainerTest, DenyOpenEventForLowBox) {
+TEST(LowBoxTest, DenyOpenEventForLowBox) {
   if (!features::IsAppContainerSandboxSupported())
     return;
 
@@ -265,8 +296,10 @@ TEST_F(AppContainerTest, DenyOpenEventForLowBox) {
 }
 
 TEST_F(AppContainerTest, CheckIncompatibleOptions) {
-  if (!container_)
+  if (!created_profile_) {
     return;
+  }
+
   EXPECT_EQ(SBOX_ERROR_BAD_PARAMS,
             policy_->GetConfig()->SetIntegrityLevel(INTEGRITY_LEVEL_UNTRUSTED));
   EXPECT_EQ(SBOX_ERROR_BAD_PARAMS,
@@ -291,16 +324,17 @@ TEST_F(AppContainerTest, CheckIncompatibleOptions) {
 }
 
 TEST_F(AppContainerTest, NoCapabilities) {
-  if (!container_)
+  if (!created_profile_) {
     return;
+  }
 
   EXPECT_EQ(SBOX_ALL_OK, policy_->GetConfig()->SetTokenLevel(USER_UNPROTECTED,
                                                              USER_UNPROTECTED));
   EXPECT_EQ(SBOX_ALL_OK,
             policy_->GetConfig()->SetJobLevel(JobLevel::kUnprotected, 0));
 
+  auto security_capabilities = container()->GetSecurityCapabilities();
   CreateProcess();
-  auto security_capabilities = container_->GetSecurityCapabilities();
 
   CheckProcessToken(scoped_process_info_.process_handle(),
                     security_capabilities.get(), FALSE);
@@ -309,16 +343,17 @@ TEST_F(AppContainerTest, NoCapabilities) {
 }
 
 TEST_F(AppContainerTest, NoCapabilitiesRestricted) {
-  if (!container_)
+  if (!created_profile_) {
     return;
+  }
 
   EXPECT_EQ(SBOX_ALL_OK, policy_->GetConfig()->SetTokenLevel(
                              USER_RESTRICTED_SAME_ACCESS, USER_LOCKDOWN));
   EXPECT_EQ(SBOX_ALL_OK,
             policy_->GetConfig()->SetJobLevel(JobLevel::kUnprotected, 0));
 
+  auto security_capabilities = container()->GetSecurityCapabilities();
   CreateProcess();
-  auto security_capabilities = container_->GetSecurityCapabilities();
 
   CheckProcessToken(scoped_process_info_.process_handle(),
                     security_capabilities.get(), TRUE);
@@ -327,19 +362,20 @@ TEST_F(AppContainerTest, NoCapabilitiesRestricted) {
 }
 
 TEST_F(AppContainerTest, WithCapabilities) {
-  if (!container_)
+  if (!created_profile_) {
     return;
+  }
 
-  container_->AddCapability(base::win::WellKnownCapability::kInternetClient);
-  container_->AddCapability(
+  container()->AddCapability(base::win::WellKnownCapability::kInternetClient);
+  container()->AddCapability(
       base::win::WellKnownCapability::kInternetClientServer);
   EXPECT_EQ(SBOX_ALL_OK, policy_->GetConfig()->SetTokenLevel(USER_UNPROTECTED,
                                                              USER_UNPROTECTED));
   EXPECT_EQ(SBOX_ALL_OK,
             policy_->GetConfig()->SetJobLevel(JobLevel::kUnprotected, 0));
 
+  auto security_capabilities = container()->GetSecurityCapabilities();
   CreateProcess();
-  auto security_capabilities = container_->GetSecurityCapabilities();
 
   CheckProcessToken(scoped_process_info_.process_handle(),
                     security_capabilities.get(), FALSE);
@@ -348,19 +384,20 @@ TEST_F(AppContainerTest, WithCapabilities) {
 }
 
 TEST_F(AppContainerTest, WithCapabilitiesRestricted) {
-  if (!container_)
+  if (!created_profile_) {
     return;
+  }
 
-  container_->AddCapability(base::win::WellKnownCapability::kInternetClient);
-  container_->AddCapability(
+  container()->AddCapability(base::win::WellKnownCapability::kInternetClient);
+  container()->AddCapability(
       base::win::WellKnownCapability::kInternetClientServer);
   EXPECT_EQ(SBOX_ALL_OK, policy_->GetConfig()->SetTokenLevel(
                              USER_RESTRICTED_SAME_ACCESS, USER_LOCKDOWN));
   EXPECT_EQ(SBOX_ALL_OK,
             policy_->GetConfig()->SetJobLevel(JobLevel::kUnprotected, 0));
 
+  auto security_capabilities = container()->GetSecurityCapabilities();
   CreateProcess();
-  auto security_capabilities = container_->GetSecurityCapabilities();
 
   CheckProcessToken(scoped_process_info_.process_handle(),
                     security_capabilities.get(), TRUE);
@@ -369,28 +406,31 @@ TEST_F(AppContainerTest, WithCapabilitiesRestricted) {
 }
 
 TEST_F(AppContainerTest, WithImpersonationCapabilities) {
-  if (!container_)
+  if (!created_profile_) {
     return;
+  }
 
-  container_->AddCapability(base::win::WellKnownCapability::kInternetClient);
-  container_->AddCapability(
+  container()->AddCapability(base::win::WellKnownCapability::kInternetClient);
+  container()->AddCapability(
       base::win::WellKnownCapability::kInternetClientServer);
-  container_->AddImpersonationCapability(
+  container()->AddImpersonationCapability(
       base::win::WellKnownCapability::kPrivateNetworkClientServer);
-  container_->AddImpersonationCapability(
+  container()->AddImpersonationCapability(
       base::win::WellKnownCapability::kPicturesLibrary);
   EXPECT_EQ(SBOX_ALL_OK, policy_->GetConfig()->SetTokenLevel(USER_UNPROTECTED,
                                                              USER_UNPROTECTED));
   EXPECT_EQ(SBOX_ALL_OK,
             policy_->GetConfig()->SetJobLevel(JobLevel::kUnprotected, 0));
 
-  CreateProcess();
-  auto security_capabilities = container_->GetSecurityCapabilities();
+  auto security_capabilities = container()->GetSecurityCapabilities();
+  SecurityCapabilities impersonation_security_capabilities(
+      container()->GetPackageSid(),
+      container()->GetImpersonationCapabilities());
 
+  CreateProcess();
   CheckProcessToken(scoped_process_info_.process_handle(),
                     security_capabilities.get(), FALSE);
-  SecurityCapabilities impersonation_security_capabilities(
-      container_->GetPackageSid(), container_->GetImpersonationCapabilities());
+
   CheckThreadToken(scoped_process_info_.thread_handle(),
                    &impersonation_security_capabilities, FALSE);
 }
@@ -399,14 +439,14 @@ TEST_F(AppContainerTest, NoCapabilitiesLPAC) {
   if (!features::IsAppContainerSandboxSupported())
     return;
 
-  container_->SetEnableLowPrivilegeAppContainer(true);
+  container()->SetEnableLowPrivilegeAppContainer(true);
   EXPECT_EQ(SBOX_ALL_OK, policy_->GetConfig()->SetTokenLevel(USER_UNPROTECTED,
                                                              USER_UNPROTECTED));
   EXPECT_EQ(SBOX_ALL_OK,
             policy_->GetConfig()->SetJobLevel(JobLevel::kUnprotected, 0));
 
+  auto security_capabilities = container()->GetSecurityCapabilities();
   CreateProcess();
-  auto security_capabilities = container_->GetSecurityCapabilities();
 
   CheckProcessToken(scoped_process_info_.process_handle(),
                     security_capabilities.get(), FALSE);
@@ -439,7 +479,7 @@ TEST(AppContainerLaunchTest, CheckLPACACE) {
 
   EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(L"LoadDLL"));
 
-  AppContainerBase::Delete(GetAppContainerProfileName().c_str());
+  DeleteProfile(GetAppContainerProfileName().c_str());
 }
 
 TEST(AppContainerLaunchTest, IsAppContainer) {
@@ -450,7 +490,7 @@ TEST(AppContainerLaunchTest, IsAppContainer) {
 
   EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(L"CheckIsAppContainer"));
 
-  AppContainerBase::Delete(GetAppContainerProfileName().c_str());
+  DeleteProfile(GetAppContainerProfileName().c_str());
 }
 
 TEST(AppContainerLaunchTest, IsNotAppContainer) {
@@ -459,19 +499,60 @@ TEST(AppContainerLaunchTest, IsNotAppContainer) {
   EXPECT_EQ(SBOX_TEST_FAILED, runner.RunTest(L"CheckIsAppContainer"));
 }
 
-TEST_F(AppContainerTest, ChildProcessMitigationLowBox) {
+TEST(AppContainerLaunchTest, IsAppContainerNoFirewall) {
+  if (!features::IsAppContainerSandboxSupported()) {
+    return;
+  }
+  TestRunner runner;
+  std::wstring package_name = GenerateRandomPackageName();
+  ASSERT_EQ(SBOX_ALL_OK,
+            runner.GetPolicy()->GetConfig()->AddAppContainerProfile(
+                package_name.c_str(), ACProfileRegistration::kNoFirewall));
+  EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(L"CheckIsAppContainer"));
+  EXPECT_TRUE(AppContainerBase::DeleteNoFirewall(package_name.c_str()));
+}
+
+SBOX_TESTS_COMMAND int CreateTempFileInAppContainer(int argc, wchar_t** argv) {
+  if (!base::IsCurrentProcessInAppContainer()) {
+    return SBOX_TEST_FIRST_ERROR;
+  }
+  base::FilePath temp_file;
+  if (!base::CreateTemporaryFile(&temp_file)) {
+    return SBOX_TEST_SECOND_ERROR;
+  }
+  return SBOX_TEST_SUCCEEDED;
+}
+
+TEST(AppContainerLaunchTest, CreateTempFileNoFirewall) {
+  if (!features::IsAppContainerSandboxSupported()) {
+    return;
+  }
+  TestRunner runner;
+  std::wstring package_name = GenerateRandomPackageName();
+  ASSERT_EQ(SBOX_ALL_OK,
+            runner.GetPolicy()->GetConfig()->AddAppContainerProfile(
+                package_name.c_str(), ACProfileRegistration::kNoFirewall));
+  EXPECT_EQ(SBOX_ALL_OK, runner.GetPolicy()->GetConfig()->SetTokenLevel(
+                             USER_UNPROTECTED, USER_UNPROTECTED));
+
+  EXPECT_EQ(SBOX_TEST_SUCCEEDED,
+            runner.RunTest(L"CreateTempFileInAppContainer"));
+  EXPECT_TRUE(AppContainerBase::DeleteNoFirewall(package_name.c_str()));
+}
+
+TEST(LowBoxTest, ChildProcessMitigationLowBox) {
   if (!features::IsAppContainerSandboxSupported()) {
     return;
   }
 
   TestRunner runner(JobLevel::kUnprotected, USER_UNPROTECTED, USER_UNPROTECTED);
 
-#if defined(ARCH_CPU_ARM64) && !defined(NDEBUG)
+#if defined(ARCH_CPU_ARM64)
   // TODO(crbug.com/41497342) A DPLOG issued when CreateProcess() fails
   // conflicts with Csrss lockdown on Win11 ARM64 - so allow Csrss to allow the
   // process to run the right exitcode and not an access violation crash.
   runner.SetDisableCsrss(false);
-#endif  // defined(ARCH_CPU_ARM64) && !defined(NDEBUG)
+#endif  // defined(ARCH_CPU_ARM64)
 
   EXPECT_EQ(SBOX_ALL_OK,
             runner.GetPolicy()->GetConfig()->SetLowBox(kAppContainerSid));

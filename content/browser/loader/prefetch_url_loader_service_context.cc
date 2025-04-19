@@ -5,6 +5,7 @@
 #include "content/browser/loader/prefetch_url_loader_service_context.h"
 
 #include "content/browser/loader/prefetch_url_loader.h"
+#include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 #include "content/public/browser/content_browser_client.h"
@@ -55,9 +56,20 @@ void PrefetchURLLoaderServiceContext::CreatePrefetchLoaderAndStart(
   scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory_to_use =
       current_context.factory;
 
-  if (resource_request.load_flags & net::LOAD_RESTRICTED_PREFETCH) {
+  // The request must not already have its `trusted_params` initialized.
+  if (resource_request.trusted_params) {
+    loader_factory_receivers_->ReportBadMessage(
+        "Prefetch/CreatePrefetchLoaderAndStart: trusted params");
+    mojo::Remote<network::mojom::URLLoaderClient>(std::move(client))
+        ->OnComplete(
+            network::URLLoaderCompletionStatus(net::ERR_INVALID_ARGUMENT));
+    return;
+  }
+
+  if (resource_request.load_flags &
+      net::LOAD_RESTRICTED_PREFETCH_FOR_MAIN_FRAME) {
     // The renderer has marked this prefetch as restricted, meaning it is a
-    // cross-origin prefetch intended for top-leve navigation reuse. We must
+    // cross-origin prefetch intended for top-level navigation reuse. We must
     // verify that the request meets the necessary security requirements, and
     // populate `resource_request`'s IsolationInfo appropriately.
     EnsureCrossOriginFactory();
@@ -76,19 +88,35 @@ void PrefetchURLLoaderServiceContext::CreatePrefetchLoaderAndStart(
     // Cross-site prefetches shouldn't include SameSite cookies.
     resource_request.site_for_cookies = net::SiteForCookies();
 
+    // Attach the fenced frame nonce to the request's IsolationInfo. If the
+    // nonce is marked revoked for untrusted network access, the request will
+    // either not be created due to the check in
+    // `CorsURLLoaderFactory::CreateLoaderAndStart` or cancelled due to the
+    // check `CancelRequestIfNonceMatchesAndUrlNotExempted`.
+    // TODO(crbug.com/349978810): Attach credentialless iframe nonce.
+    std::optional<base::UnguessableToken> fenced_frame_nonce =
+        current_context.render_frame_host->frame_tree_node()
+            ->GetFencedFrameNonce();
+
     // Use the trusted cross-origin prefetch loader factory, and set the
     // request's IsolationInfo suitable for the cross-origin prefetch.
     network_loader_factory_to_use = current_context.cross_origin_factory;
     url::Origin destination_origin = url::Origin::Create(resource_request.url);
     resource_request.trusted_params = network::ResourceRequest::TrustedParams();
     resource_request.trusted_params->isolation_info =
-        net::IsolationInfo::Create(net::IsolationInfo::RequestType::kOther,
+        net::IsolationInfo::Create(net::IsolationInfo::RequestType::kMainFrame,
                                    destination_origin, destination_origin,
-                                   net::SiteForCookies());
+                                   net::SiteForCookies(),
+                                   /*nonce=*/fenced_frame_nonce);
   }
 
   // Recursive prefetch from a cross-origin main resource prefetch.
   if (resource_request.recursive_prefetch_token) {
+    // TODO(crbug.com/357325599): This condition is not mutually exclusive with
+    // the one above, which means that we will overwrite the IsolationInfo
+    // computed above with one that might be different. Investigate whether this
+    // behavior should be corrected.
+
     // TODO(crbug.com/40150754): Figure out why we're seeing this condition
     // hold true in the field.
     if (!current_context.cross_origin_factory) {
@@ -124,12 +152,9 @@ void PrefetchURLLoaderServiceContext::CreatePrefetchLoaderAndStart(
     prefetch_load_callback_for_testing_.Run();
   }
 
-  scoped_refptr<PrefetchedSignedExchangeCache> prefetched_signed_exchange_cache;
-  if (loader_factory_receivers_->current_context()) {
-    prefetched_signed_exchange_cache =
-        loader_factory_receivers_->current_context()
-            ->prefetched_signed_exchange_cache;
-  }
+  scoped_refptr<PrefetchedSignedExchangeCache>
+      prefetched_signed_exchange_cache =
+          current_context.prefetched_signed_exchange_cache;
 
   // base::Unretained is safe here since |this| owns the loader.
   auto loader = std::make_unique<PrefetchURLLoader>(
@@ -208,16 +233,10 @@ bool PrefetchURLLoaderServiceContext::IsValidCrossOriginPrefetch(
   // the prefetch cache. This is because it is possible that another origin
   // prefetched the same resource, which should only be reused for top-level
   // navigations.
-  if (resource_request.load_flags & net::LOAD_CAN_USE_RESTRICTED_PREFETCH) {
+  if (resource_request.load_flags &
+      net::LOAD_CAN_USE_RESTRICTED_PREFETCH_FOR_MAIN_FRAME) {
     loader_factory_receivers_->ReportBadMessage(
         "Prefetch/IsValidCrossOrigin: can use restricted prefetch");
-    return false;
-  }
-
-  // The request must not already have its |trusted_params| initialized.
-  if (resource_request.trusted_params) {
-    loader_factory_receivers_->ReportBadMessage(
-        "Prefetch/IsValidCrossOrigin: trusted params");
     return false;
   }
 
@@ -257,11 +276,23 @@ PrefetchURLLoaderServiceContext::GenerateRecursivePrefetchToken(
     return base::UnguessableToken::Create();
   }
 
+  // Attach the fenced frame nonce to the request's IsolationInfo. If the nonce
+  // is marked revoked for untrusted network access, the request will either not
+  // be created due to the check in `CorsURLLoaderFactory::CreateLoaderAndStart`
+  // or cancelled due to the check
+  // `CancelRequestIfNonceMatchesAndUrlNotExempted`.
+  // TODO(crbug.com/349978810): Attach credentialless iframe nonce.
+  std::optional<base::UnguessableToken> fenced_frame_nonce =
+      current_context->render_frame_host
+          ? current_context->render_frame_host->frame_tree_node()
+                ->GetFencedFrameNonce()
+          : std::nullopt;
+
   // Create IsolationInfo.
   url::Origin destination_origin = url::Origin::Create(request.url);
   net::IsolationInfo preload_isolation_info = net::IsolationInfo::Create(
       net::IsolationInfo::RequestType::kOther, destination_origin,
-      destination_origin, net::SiteForCookies());
+      destination_origin, net::SiteForCookies(), /*nonce=*/fenced_frame_nonce);
 
   // Generate token.
   base::UnguessableToken return_token = base::UnguessableToken::Create();

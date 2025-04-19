@@ -110,10 +110,12 @@ bool FakeWebAppUiManager::CanReparentAppTabToWindow(
   return true;
 }
 
-void FakeWebAppUiManager::ReparentAppTabToWindow(content::WebContents* contents,
-                                                 const webapps::AppId& app_id,
-                                                 bool shortcut_created) {
+Browser* FakeWebAppUiManager::ReparentAppTabToWindow(
+    content::WebContents* contents,
+    const webapps::AppId& app_id,
+    bool shortcut_created) {
   ++num_reparent_tab_calls_;
+  return nullptr;
 }
 
 void FakeWebAppUiManager::ShowWebAppIdentityUpdateDialog(
@@ -205,7 +207,7 @@ void FakeWebAppUiManager::PresentUserUninstallDialog(
     webapps::WebappUninstallSource uninstall_source,
     BrowserWindow* parent_window,
     UninstallCompleteCallback callback) {
-  std::move(callback).Run(webapps::UninstallResultCode::kSuccess);
+  std::move(callback).Run(webapps::UninstallResultCode::kAppRemoved);
 }
 
 void FakeWebAppUiManager::PresentUserUninstallDialog(
@@ -213,7 +215,7 @@ void FakeWebAppUiManager::PresentUserUninstallDialog(
     webapps::WebappUninstallSource uninstall_source,
     gfx::NativeWindow parent_window,
     UninstallCompleteCallback callback) {
-  std::move(callback).Run(webapps::UninstallResultCode::kSuccess);
+  std::move(callback).Run(webapps::UninstallResultCode::kAppRemoved);
 }
 
 void FakeWebAppUiManager::PresentUserUninstallDialog(
@@ -223,7 +225,7 @@ void FakeWebAppUiManager::PresentUserUninstallDialog(
     UninstallCompleteCallback callback,
     UninstallScheduledCallback scheduled_callback) {
   std::move(scheduled_callback).Run(/*uninstall_scheduled=*/true);
-  std::move(callback).Run(webapps::UninstallResultCode::kSuccess);
+  std::move(callback).Run(webapps::UninstallResultCode::kAppRemoved);
 }
 
 void FakeWebAppUiManager::LaunchOrFocusIsolatedWebAppInstaller(

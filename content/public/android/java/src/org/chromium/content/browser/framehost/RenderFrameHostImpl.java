@@ -26,8 +26,6 @@ import org.chromium.mojo.system.impl.CoreImpl;
 import org.chromium.url.GURL;
 import org.chromium.url.Origin;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -129,9 +127,7 @@ public class RenderFrameHostImpl implements RenderFrameHost {
     @Override
     public List<RenderFrameHost> getAllRenderFrameHosts() {
         if (mNativeRenderFrameHostAndroid == 0) return null;
-        RenderFrameHost[] frames =
-                RenderFrameHostImplJni.get().getAllRenderFrameHosts(mNativeRenderFrameHostAndroid);
-        return Collections.unmodifiableList(Arrays.asList(frames));
+        return RenderFrameHostImplJni.get().getAllRenderFrameHosts(mNativeRenderFrameHostAndroid);
     }
 
     @Override
@@ -252,9 +248,12 @@ public class RenderFrameHostImpl implements RenderFrameHost {
             String relyingPartyId,
             Origin effectiveOrigin,
             boolean isPaymentCredentialCreation,
-            Callback<Integer> callback) {
+            Callback<RenderFrameHost.WebAuthSecurityChecksResults> callback) {
         if (mNativeRenderFrameHostAndroid == 0) {
-            callback.onResult(AuthenticatorStatus.UNKNOWN_ERROR);
+            var result =
+                    new WebAuthSecurityChecksResults(
+                            AuthenticatorStatus.UNKNOWN_ERROR, /* isCrossOrigin= */ false);
+            callback.onResult(result);
             return;
         }
 
@@ -306,7 +305,8 @@ public class RenderFrameHostImpl implements RenderFrameHost {
 
         void getCanonicalUrlForSharing(long nativeRenderFrameHostAndroid, Callback<GURL> callback);
 
-        RenderFrameHost[] getAllRenderFrameHosts(long nativeRenderFrameHostAndroid);
+        @JniType("std::vector")
+        List<RenderFrameHost> getAllRenderFrameHosts(long nativeRenderFrameHostAndroid);
 
         boolean isFeatureEnabled(
                 long nativeRenderFrameHostAndroid, @PermissionsPolicyFeature int feature);
@@ -343,7 +343,7 @@ public class RenderFrameHostImpl implements RenderFrameHost {
                 String relyingPartyId,
                 Origin effectiveOrigin,
                 boolean isPaymentCredentialCreation,
-                Callback<Integer> callback);
+                Callback<RenderFrameHost.WebAuthSecurityChecksResults> callback);
 
         int getLifecycleState(long nativeRenderFrameHostAndroid);
 

@@ -14,24 +14,15 @@ class ChromeBrowserState;
 
 namespace bookmarks {
 class BookmarkModel;
-class CoreBookmarkModel;
 }  // namespace bookmarks
 
 namespace ios {
 
 class BookmarkModelFactory : public BrowserStateKeyedServiceFactory {
  public:
-  // TODO(crbug.com/326185948): Return BookmarkModel, once the other two
-  // factories are deleted.
-  static bookmarks::CoreBookmarkModel* GetForBrowserState(
+  static bookmarks::BookmarkModel* GetForBrowserState(
       ChromeBrowserState* browser_state);
-  static bookmarks::CoreBookmarkModel* GetForBrowserStateIfExists(
-      ChromeBrowserState* browser_state);
-
-  // Alternative getter that exposes the whole BookmarkModel API. Callers must
-  // ensure that `syncer::kEnableBookmarkFoldersForAccountStorage` is enabled.
-  static bookmarks::BookmarkModel*
-  GetModelForBrowserStateIfUnificationEnabledOrDie(
+  static bookmarks::BookmarkModel* GetForBrowserStateIfExists(
       ChromeBrowserState* browser_state);
 
   static BookmarkModelFactory* GetInstance();

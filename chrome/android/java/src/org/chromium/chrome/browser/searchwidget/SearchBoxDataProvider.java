@@ -43,7 +43,7 @@ class SearchBoxDataProvider implements LocationBarDataProvider {
      * @param context current context
      */
     /* package */ void initialize(Context context) {
-        mPrimaryColor = ChromeColors.getPrimaryBackgroundColor(context, isIncognito());
+        mPrimaryColor = ChromeColors.getPrimaryBackgroundColor(context, isIncognitoBranded());
     }
 
     @Override
@@ -57,7 +57,12 @@ class SearchBoxDataProvider implements LocationBarDataProvider {
     }
 
     @Override
-    public boolean isInOverviewAndShowingOmnibox() {
+    public boolean isIncognitoBranded() {
+        return false;
+    }
+
+    @Override
+    public boolean isOffTheRecord() {
         return false;
     }
 

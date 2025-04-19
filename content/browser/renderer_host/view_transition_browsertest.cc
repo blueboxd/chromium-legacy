@@ -18,6 +18,7 @@
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/default_handlers.h"
+#include "services/viz/privileged/mojom/compositing/features.mojom-features.h"
 #include "third_party/blink/public/common/features.h"
 
 namespace content {
@@ -42,7 +43,8 @@ class ViewTransitionBrowserTest : public ContentBrowserTest {
   ViewTransitionBrowserTest() {
     feature_list_.InitWithFeatures(
         /*enabled_features=*/
-        {blink::features::kViewTransitionOnNavigation},
+        {blink::features::kViewTransitionOnNavigation,
+         viz::mojom::EnableVizTestApis},
         /*disabled_features=*/{});
   }
 
@@ -83,6 +85,7 @@ IN_PROC_BROWSER_TEST_F(ViewTransitionBrowserTest,
   GURL test_url(
       embedded_test_server()->GetURL("/view_transitions/basic-vt-opt-in.html"));
   ASSERT_TRUE(NavigateToURL(shell()->web_contents(), test_url));
+  WaitForCopyableViewInWebContents(shell()->web_contents());
 
   TestNavigationManager navigation_manager(shell()->web_contents(), test_url);
   ASSERT_TRUE(
@@ -105,13 +108,18 @@ IN_PROC_BROWSER_TEST_F(ViewTransitionBrowserTest,
 
   mojo::ScopedAllowSyncCallForTesting allow_sync;
 
-  ASSERT_TRUE(
-      GetHostFrameSinkManager()->HasUnclaimedViewTransitionResourcesForTest());
+  bool has_resources = false;
+  GetHostFrameSinkManager()
+      ->GetFrameSinkManagerTestApi()
+      .HasUnclaimedViewTransitionResources(&has_resources);
+  ASSERT_TRUE(has_resources);
 
   shell()->web_contents()->Stop();
   ASSERT_FALSE(navigation_manager.was_committed());
-  ASSERT_FALSE(
-      GetHostFrameSinkManager()->HasUnclaimedViewTransitionResourcesForTest());
+  GetHostFrameSinkManager()
+      ->GetFrameSinkManagerTestApi()
+      .HasUnclaimedViewTransitionResources(&has_resources);
+  ASSERT_FALSE(has_resources);
 
   // Ensure the old renderer discards the outgoing transition.
   EXPECT_TRUE(ExecJs(
@@ -125,6 +133,7 @@ IN_PROC_BROWSER_TEST_F(ViewTransitionBrowserTest,
   GURL test_url(
       embedded_test_server()->GetURL("/view_transitions/basic-vt-opt-in.html"));
   ASSERT_TRUE(NavigateToURL(shell()->web_contents(), test_url));
+  WaitForCopyableViewInWebContents(shell()->web_contents());
 
   TestNavigationManager navigation_manager(shell()->web_contents(), test_url);
   ASSERT_TRUE(
@@ -158,6 +167,7 @@ IN_PROC_BROWSER_TEST_F(ViewTransitionBrowserTest,
   GURL test_url(
       embedded_test_server()->GetURL("/view_transitions/basic-vt-opt-in.html"));
   ASSERT_TRUE(NavigateToURL(shell()->web_contents(), test_url));
+  WaitForCopyableViewInWebContents(shell()->web_contents());
 
   TestNavigationManager navigation_manager(shell()->web_contents(), test_url);
   ASSERT_TRUE(

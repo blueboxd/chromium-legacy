@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/342213636): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 
 #include <utility>
@@ -13,6 +18,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/not_fatal_until.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -1186,7 +1192,7 @@ void PepperPluginInstanceImpl::ViewChanged(
   // TODO(chrishtr): remove device_scale
   view_data_.device_scale = 1;
   view_data_.css_scale =
-      container_->PageZoomFactor() * container_->PageScaleFactor();
+      container_->LayoutZoomFactor() * container_->PageScaleFactor();
   WebWidget* widget = render_frame()->GetLocalRootWebFrameWidget();
 
   viewport_to_dip_scale_ =
@@ -2705,7 +2711,7 @@ bool PepperPluginInstanceImpl::DecrementTextureReferenceCount(
     const viz::TransferableResource& resource) {
   auto it = base::ranges::find(texture_ref_counts_, resource.mailbox(),
                                &MailboxRefCount::first);
-  DCHECK(it != texture_ref_counts_.end());
+  CHECK(it != texture_ref_counts_.end(), base::NotFatalUntil::M130);
 
   if (it->second == 1) {
     texture_ref_counts_.erase(it);

@@ -54,6 +54,7 @@ void GrabViewSnapshotScreenCaptureKitImpl(gfx::NativeView native_view,
                                           GrabSnapshotImageCallback callback)
     API_AVAILABLE(macos(14.4)) {
   NSView* view = native_view.GetNativeNSView();
+  NSInteger window_number = view.window.windowNumber;
   __block GrabSnapshotImageCallback local_callback = std::move(callback);
 
   // Get the view frame relative to the window, and flip it to have an
@@ -83,7 +84,7 @@ void GrabViewSnapshotScreenCaptureKitImpl(gfx::NativeView native_view,
       NSUInteger sc_window_index =
           [sc_windows indexOfObjectPassingTest:^BOOL(
                           SCWindow* obj, NSUInteger idx, BOOL* stop) {
-            return obj.windowID == view.window.windowNumber;
+            return obj.windowID == window_number;
           }];
       if (sc_window_index == NSNotFound) {
         DLOG(ERROR) << "failed to find window";
@@ -172,11 +173,18 @@ gfx::Image GrabViewSnapshotCGWindowListImpl(gfx::NativeView native_view,
 }
 
 bool ShouldForceOldAPIUse() {
-  // The SCK API -[SCShareableContent
-  // getCurrentProcessShareableContentWithCompletionHandler:] does not work
-  // correctly when there are multiple instances of an app with the same bundle
-  // ID. It must not be used in that case, as it can return errors, hang, or
-  // crash. https://crbug.com/333443445, FB13717818
+  // The SCK API +[SCShareableContent
+  // getCurrentProcessShareableContentWithCompletionHandler:] was introduced in
+  // macOS 14.4, but it did not work correctly when there were multiple
+  // instances of an app with the same bundle ID.
+  //
+  // This is fixed in macOS 15.
+  //
+  // https://crbug.com/333443445, FB13717818
+  if (base::mac::MacOSVersion() > 15'00'00) {
+    return false;
+  }
+
   return [NSRunningApplication
              runningApplicationsWithBundleIdentifier:NSBundle.mainBundle
                                                          .bundleIdentifier]

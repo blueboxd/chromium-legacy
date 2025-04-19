@@ -17,11 +17,14 @@ namespace content {
 
 struct AttributionInteropRun;
 struct AttributionInteropOutput;
-struct PublicKey;
+
+namespace aggregation_service {
+class TestHpkeKey;
+}  // namespace aggregation_service
 
 base::expected<AttributionInteropOutput, std::string>
 RunAttributionInteropSimulation(AttributionInteropRun,
-                                const PublicKey& hpke_key);
+                                const aggregation_service::TestHpkeKey&);
 
 class ReportBodyAdjuster {
  public:
@@ -35,6 +38,8 @@ class ReportBodyAdjuster {
   // have a full event-level-report body.
   virtual void AdjustVerboseDebug(std::string_view debug_data_type,
                                   base::Value::Dict& body);
+
+  virtual void AdjustAggregatableDebug(base::Value::Dict&) {}
 };
 
 void MaybeAdjustReportBody(const GURL&,

@@ -39,7 +39,6 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen_request_type.h"
-#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -48,6 +47,20 @@ namespace blink {
 
 class LocalDOMWindow;
 class FullscreenOptions;
+
+// Internal type used when checking RequestFullscreen conditions.
+enum class RequestFullscreenError {
+  kNone = 0,
+  kElementTypeNotHTMLNorSVG,
+  kElementTypeDialog,
+  kElementNotConnected,
+  kElementOpenAsPopover,
+  kDisallowedByPermissionsPolicy,
+  kFullscreenNotSupported,
+  kPermissionCheckFailed,
+  kDocumentIncorrect,
+  kNotGranted,
+};
 
 // The Fullscreen class implements most of the Fullscreen API Standard,
 // https://fullscreen.spec.whatwg.org/, especially its algorithms. It is a
@@ -113,13 +126,29 @@ class CORE_EXPORT Fullscreen final : public GarbageCollected<Fullscreen>,
  private:
   static Fullscreen& From(LocalDOMWindow&);
 
+  // Run by RequestFullscreen to check conditions and invoke `callback` with any
+  // error or `kNone` to proceed. The callback may be invoked asynchronously to
+  // check permission when requests do not have transient user activation, etc.
+  static void EnforceRequestFullscreenConditions(
+      Element& pending,
+      Document& document,
+      base::OnceCallback<void(RequestFullscreenError)> callback);
+
+  // Run after EnforceRequestFullscreenConditions checks for any `error`.
+  static void ContinueRequestFullscreenAfterConditionsEnforcement(
+      Element* pending,
+      FullscreenRequestType request_type,
+      const FullscreenOptions* options,
+      ScriptPromiseResolver<IDLUndefined>* resolver,
+      RequestFullscreenError error);
+
   static void ContinueRequestFullscreen(
       Document&,
       Element&,
       FullscreenRequestType,
       const FullscreenOptions*,
       ScriptPromiseResolver<IDLUndefined>* resolver,
-      const char* error);
+      RequestFullscreenError error);
 
   static void ContinueExitFullscreen(
       Document*,
@@ -166,8 +195,11 @@ class CORE_EXPORT Fullscreen final : public GarbageCollected<Fullscreen>,
 };
 
 inline bool Fullscreen::IsFullscreenElement(const Element& element) {
-  return UNLIKELY(HasFullscreenElements()) &&
-         FullscreenElementFrom(element.GetDocument()) == &element;
+  if (HasFullscreenElements() &&
+      FullscreenElementFrom(element.GetDocument()) == &element) [[unlikely]] {
+    return true;
+  }
+  return false;
 }
 
 }  // namespace blink

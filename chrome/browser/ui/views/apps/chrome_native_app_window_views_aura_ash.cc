@@ -19,7 +19,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/icon_standardizer.h"
-#include "chrome/browser/ash/note_taking_helper.h"
+#include "chrome/browser/ash/note_taking/note_taking_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_context_menu.h"
@@ -189,7 +189,7 @@ void ChromeNativeAppWindowViewsAuraAsh::InitializeWindow(
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// ChromeNativeAppWindowViews implementation:
+// ChromeNativeAppWindowViewsAura implementation:
 void ChromeNativeAppWindowViewsAuraAsh::OnBeforeWidgetInit(
     const AppWindow::CreateParams& create_params,
     views::Widget::InitParams* init_params,
@@ -275,8 +275,16 @@ void ChromeNativeAppWindowViewsAuraAsh::EnsureAppIconCreated() {
   LoadAppIcon(true /* allow_placeholder_icon */);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// ui::BaseWindow implementation:
+gfx::RoundedCornersF ChromeNativeAppWindowViewsAuraAsh::GetWindowRadii() const {
+  if (!GetNativeWindow() || !chromeos::features::IsRoundedWindowsEnabled()) {
+    return gfx::RoundedCornersF();
+  }
+
+  const int corner_radius =
+      GetNativeWindow()->GetProperty(aura::client::kWindowCornerRadiusKey);
+  return gfx::RoundedCornersF(corner_radius);
+}
+
 gfx::Rect ChromeNativeAppWindowViewsAuraAsh::GetRestoredBounds() const {
   gfx::Rect* bounds =
       GetNativeWindow()->GetProperty(ash::kRestoreBoundsOverrideKey);
@@ -507,7 +515,7 @@ void ChromeNativeAppWindowViewsAuraAsh::OnExclusiveAccessUserInput() {
 }
 
 content::WebContents*
-ChromeNativeAppWindowViewsAuraAsh::GetActiveWebContents() {
+ChromeNativeAppWindowViewsAuraAsh::GetWebContentsForExclusiveAccess() {
   return web_view()->web_contents();
 }
 

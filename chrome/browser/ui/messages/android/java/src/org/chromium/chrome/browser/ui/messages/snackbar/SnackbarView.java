@@ -27,14 +27,13 @@ import android.widget.TextView;
 import androidx.annotation.ColorInt;
 import androidx.annotation.Nullable;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.browser.ui.edge_to_edge.EdgeToEdgeControllerFactory;
 import org.chromium.chrome.browser.ui.edge_to_edge.EdgeToEdgePadAdjuster;
 import org.chromium.chrome.browser.ui.edge_to_edge.EdgeToEdgeSupplier;
 import org.chromium.chrome.ui.messages.R;
 import org.chromium.components.browser_ui.styles.SemanticColorUtils;
-import org.chromium.components.browser_ui.widget.InsetObserver;
 import org.chromium.components.browser_ui.widget.text.TemplatePreservingTextView;
+import org.chromium.ui.InsetObserver;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.interpolators.Interpolators;
 
@@ -146,7 +145,7 @@ public class SnackbarView implements InsetObserver.WindowInsetObserver {
         mEdgeToEdgeSupplier = edgeToEdgeSupplier;
         mEdgeToEdgePadAdjuster =
                 edgeToEdgeSupplier != null
-                        ? EdgeToEdgeControllerFactory.createForView(mSnackbarView, true)
+                        ? EdgeToEdgeControllerFactory.createForView(mSnackbarView)
                         : null;
 
         updateInternal(snackbar, false);
@@ -355,9 +354,8 @@ public class SnackbarView implements InsetObserver.WindowInsetObserver {
         mMessageView.setTemplate(snackbar.getTemplateText());
         setViewText(mMessageView, snackbar.getText(), animate);
 
-        ApiCompatibilityUtils.setTextAppearance(mMessageView, getTextAppearance(snackbar));
-        ApiCompatibilityUtils.setTextAppearance(
-                mActionButtonView, getButtonTextAppearance(snackbar));
+        mMessageView.setTextAppearance(getTextAppearance(snackbar));
+        mActionButtonView.setTextAppearance(getButtonTextAppearance(snackbar));
 
         mBackgroundColor = calculateBackgroundColor(mContainerView, snackbar);
         if (mIsTablet) {

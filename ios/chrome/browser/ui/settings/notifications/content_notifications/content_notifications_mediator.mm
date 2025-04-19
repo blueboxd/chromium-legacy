@@ -5,6 +5,8 @@
 #import "ios/chrome/browser/ui/settings/notifications/content_notifications/content_notifications_mediator.h"
 
 #import "base/apple/foundation_util.h"
+#import "base/metrics/histogram_functions.h"
+#import "base/metrics/user_metrics.h"
 #import "base/notreached.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/prefs/pref_service.h"
@@ -22,7 +24,7 @@
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state_manager.h"
+#import "ios/chrome/browser/shared/model/profile/profile_manager_ios.h"
 #import "ios/chrome/browser/shared/ui/list_model/list_model.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_link_header_footer_item.h"
@@ -154,7 +156,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       setContentNotificationsFooterItem:self.contentNotificationsFooterItem];
 }
 
-#pragma mark - TrackingPriceViewControllerDelegate
+#pragma mark - ContentNotificationsViewControllerDelegate
 
 - (void)didToggleSwitchItem:(TableViewItem*)item withValue:(BOOL)value {
   ItemType type = static_cast<ItemType>(item.type);
@@ -163,11 +165,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
       if (value) {
         [self.presenter presentPushNotificationPermissionAlertWithClientIds:
                             {PushNotificationClientId::kContent}];
+        [self recordSettingsActionHistogramForAction:
+                  ContentNotificationSettingsToggleAction::kEnabledContent];
       } else {
         [self disablePreferenceFor:PushNotificationClientId::kContent];
         self.contentNotificationsItem.on = push_notification_settings::
             GetMobileNotificationPermissionStatusForClient(
                 PushNotificationClientId::kContent, _gaiaID);
+        [self recordSettingsActionHistogramForAction:
+                  ContentNotificationSettingsToggleAction::kDisabledContent];
       }
       [self sendNAUForPreferenceChangeWithClientID:PushNotificationClientId::
                                                        kContent
@@ -178,11 +184,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
       if (value) {
         [self.presenter presentPushNotificationPermissionAlertWithClientIds:
                             {PushNotificationClientId::kSports}];
+        [self recordSettingsActionHistogramForAction:
+                  ContentNotificationSettingsToggleAction::kEnabledSports];
       } else {
         [self disablePreferenceFor:PushNotificationClientId::kSports];
         self.sportsNotificationsItem.on = push_notification_settings::
             GetMobileNotificationPermissionStatusForClient(
                 PushNotificationClientId::kSports, _gaiaID);
+        [self recordSettingsActionHistogramForAction:
+                  ContentNotificationSettingsToggleAction::kDisabledSports];
       }
       [self sendNAUForPreferenceChangeWithClientID:PushNotificationClientId::
                                                        kSports
@@ -225,7 +235,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   service->SetPreference(base::SysUTF8ToNSString(_gaiaID), clientID, false);
 }
 
-// Sends an NAU when any of the settings preferences have been updated..
+// Sends an NAU when any of the settings preferences have been updated.
 - (void)sendNAUForPreferenceChangeWithClientID:
             (PushNotificationClientId)clientID
                                          value:(BOOL)value {
@@ -241,6 +251,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       break;
     case PushNotificationClientId::kCommerce:
     case PushNotificationClientId::kTips:
+    case PushNotificationClientId::kSafetyCheck:
       // This should never be reached.
       DCHECK(FALSE);
       break;
@@ -265,10 +276,16 @@ typedef NS_ENUM(NSInteger, ItemType) {
     case PushNotificationClientId::kSports:
       return _sportsNotificationsItem;
     case PushNotificationClientId::kTips:
+    case PushNotificationClientId::kSafetyCheck:
     case PushNotificationClientId::kCommerce:
       // Not a switch.
       NOTREACHED_NORETURN();
   }
+}
+
+- (void)recordSettingsActionHistogramForAction:
+    (ContentNotificationSettingsToggleAction)action {
+  base::UmaHistogramEnumeration("ContentNotifications.Settings.Action", action);
 }
 
 @end

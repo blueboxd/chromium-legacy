@@ -51,6 +51,7 @@
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/page/page.mojom-blink.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
+#include "third_party/blink/public/mojom/page/prerender_page_param.mojom-forward.h"
 #include "third_party/blink/public/mojom/renderer_preference_watcher.mojom-blink.h"
 #include "third_party/blink/public/platform/scheduler/web_agent_group_scheduler.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
@@ -96,7 +97,6 @@ class DevToolsEmulator;
 class Frame;
 class FullscreenController;
 class PageScaleConstraintsSet;
-class WebDevToolsAgentImpl;
 class WebLocalFrame;
 class WebLocalFrameImpl;
 class WebSettingsImpl;
@@ -119,8 +119,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   static WebViewImpl* Create(
       WebViewClient*,
       mojom::blink::PageVisibilityState visibility,
-      bool is_prerendering,
-      bool is_inside_portal,
+      blink::mojom::PrerenderParamPtr prerender_param,
       std::optional<blink::FencedFrame::DeprecatedFencedFrameMode>
           fenced_frame_mode,
       bool compositing_enabled,
@@ -169,8 +168,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
                     int target_y,
                     base::TimeDelta duration) override;
   void AdvanceFocus(bool reverse) override;
-  double ZoomLevel() override;
-  double SetZoomLevel(double) override;
   float PageScaleFactor() const override;
   float MinimumPageScaleFactor() const override;
   float MaximumPageScaleFactor() const override;
@@ -363,8 +360,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   Page* GetPage() const { return page_.Get(); }
 
   WebViewClient* Client() { return web_view_client_; }
-
-  WebDevToolsAgentImpl* MainFrameDevToolsAgentImpl();
 
   DevToolsEmulator* GetDevToolsEmulator() const {
     return dev_tools_emulator_.Get();
@@ -638,6 +633,9 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // Called when draggable regions in the page change.
   void DraggableRegionsChanged();
 
+  double ClampZoomLevel(double zoom_level) const;
+  double ZoomLevelToZoomFactor(double zoom_level) const;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(WebFrameTest, DivScrollIntoEditableTest);
   FRIEND_TEST_ALL_PREFIXES(WebFrameTest,
@@ -672,8 +670,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void SetPageScaleFactorAndLocation(float scale,
                                      bool is_pinch_gesture_active,
                                      const gfx::PointF&);
-  void PropagateZoomFactorToLocalFrameRoots(Frame*, float);
-
+  void PropagateZoomFactorToLocalFrameRoots(Frame* frame, float zoom_factor);
   void SetPageLifecycleStateInternal(
       mojom::blink::PageLifecycleStatePtr new_state,
       mojom::blink::PageRestoreParamsPtr page_restore_params);
@@ -703,8 +700,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   WebViewImpl(
       WebViewClient*,
       mojom::blink::PageVisibilityState visibility,
-      bool is_prerendering,
-      bool is_inside_portal,
+      blink::mojom::PrerenderParamPtr prerender_param,
       std::optional<blink::FencedFrame::DeprecatedFencedFrameMode>
           fenced_frame_mode,
       bool does_composite,
@@ -783,6 +779,11 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // Called when mojo is disconnected.
   void MojoDisconnected();
 
+  // Called when any input to zoom factor calculation changes on the WebView, to
+  // trigger recalculation of zoom factor for all affected widgets.
+  void UpdateWidgetZoomFactors();
+  void UpdateInspectorDeviceScaleFactorOverride();
+
   // A value provided by the browser to state that all Widgets in this
   // WebView's frame tree will never be user-visible and thus never need to
   // produce pixels for display. This is separate from Page visibility, as
@@ -846,15 +847,13 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // The URL that has keyboard focus.
   KURL focus_url_;
 
-  // Keeps track of the current zoom level. 0 means no zoom, positive numbers
-  // mean zoom in, negative numbers mean zoom out.
-  double zoom_level_ = 0.;
-
+  // while zoom level is stored for each frame, the maximum zoom level and
+  // minimum zoom level are a webView Property.
   const double minimum_zoom_level_;
   const double maximum_zoom_level_;
 
   // Additional zoom factor used to scale the content by device scale factor.
-  double zoom_factor_for_device_scale_factor_ = 0.;
+  double zoom_factor_for_device_scale_factor_ = 1.;
 
   // This value, when multiplied by the font scale factor, gives the maximum
   // page scale that can result from automatic zooms.

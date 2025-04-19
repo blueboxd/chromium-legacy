@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "components/viz/common/resources/shared_image_format_utils.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/media_log.h"
@@ -39,6 +40,11 @@
 namespace media {
 
 namespace {
+
+// Allow MappableSI to be used for VideoEncoderAcceleratorAdapter.
+BASE_FEATURE(kUseMappableSIForVideoEncoderAcceleratorAdapter,
+             "UseMappableSIForVideoEncoderAcceleratorAdapter",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // HW encoders expect a nonzero bitrate, so |kVEADefaultBitratePerPixel| is used
 // to estimate bits per second for ~30 fps with ~1/16 compression rate.
@@ -192,48 +198,106 @@ class VideoEncodeAcceleratorAdapter::GpuMemoryBufferVideoFramePool
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK(gfx::Rect(coded_size_).Contains(gfx::Rect(visible_size)));
 
-    if (available_gmbs_.empty()) {
-      constexpr auto kBufferFormat = gfx::BufferFormat::YUV_420_BIPLANAR;
-      constexpr auto kBufferUsage =
-          gfx::BufferUsage::VEA_READ_CAMERA_AND_CPU_READ_WRITE;
-      auto gmb = gpu_factories_->CreateGpuMemoryBuffer(
-          coded_size_, kBufferFormat, kBufferUsage);
-      if (!gmb)
-        return nullptr;
+    const auto buffer_format = gfx::BufferFormat::YUV_420_BIPLANAR;
+    const auto si_format = viz::GetSharedImageFormat(buffer_format);
+    const auto buffer_usage =
+        gfx::BufferUsage::VEA_READ_CAMERA_AND_CPU_READ_WRITE;
 
+    // Setting some default usage in order to get a mappable shared image.
+    const auto si_usage = gpu::SHARED_IMAGE_USAGE_CPU_WRITE |
+                          gpu::SHARED_IMAGE_USAGE_DISPLAY_READ;
+
+    scoped_refptr<VideoFrame> video_frame;
+    gpu::SyncToken sync_token;
+    if (base::FeatureList::IsEnabled(
+            kUseMappableSIForVideoEncoderAcceleratorAdapter)) {
+      if (available_shared_images_.empty()) {
+        auto* sii = gpu_factories_->SharedImageInterface();
+        if (!sii) {
+          LOG(ERROR) << "SharedImageInterface is null.";
+          return nullptr;
+        }
+
+        auto shared_image =
+            sii->CreateSharedImage({si_format, coded_size_, gfx::ColorSpace(),
+                                    gpu::SharedImageUsageSet(si_usage),
+                                    "VideoEncodeAcceleratorAdapter"},
+                                   gpu::kNullSurfaceHandle, buffer_usage);
+        if (!shared_image) {
+          LOG(ERROR) << "Unable to create a mappable shared image.";
+          return nullptr;
+        }
+        sync_token = sii->GenVerifiedSyncToken();
+        available_shared_images_.push_back(std::move(shared_image));
+      }
+
+      auto shared_image = std::move(available_shared_images_.back());
+      available_shared_images_.pop_back();
+
+      auto shared_image_release_cb =
+          base::BindPostTaskToCurrentDefault(base::BindOnce(
+              &GpuMemoryBufferVideoFramePool::ReuseFrame, this, shared_image));
+      video_frame = media::VideoFrame::WrapMappableSharedImage(
+          std::move(shared_image), sync_token, GL_TEXTURE_2D,
+          std::move(shared_image_release_cb), gfx::Rect(visible_size),
+          visible_size, base::TimeDelta());
+      return video_frame;
+    }
+
+    if (available_gmbs_.empty()) {
+      auto gmb = gpu_factories_->CreateGpuMemoryBuffer(
+          coded_size_, buffer_format, buffer_usage);
+      if (!gmb) {
+        return nullptr;
+      }
       available_gmbs_.push_back(std::move(gmb));
     }
 
     auto gmb = std::move(available_gmbs_.back());
     available_gmbs_.pop_back();
 
-    VideoFrame::ReleaseMailboxAndGpuMemoryBufferCB reuse_cb =
-        base::BindPostTaskToCurrentDefault(
-            base::BindOnce(&GpuMemoryBufferVideoFramePool::ReuseFrame, this));
-    scoped_refptr<gpu::ClientSharedImage>
-        kEmptySharedImages[media::VideoFrame::kMaxPlanes];
-    return VideoFrame::WrapExternalGpuMemoryBuffer(
+    video_frame = VideoFrame::WrapExternalGpuMemoryBuffer(
         gfx::Rect(visible_size), visible_size, std::move(gmb),
-        kEmptySharedImages, gpu::SyncToken(), /*texture_target=*/0,
-        std::move(reuse_cb), base::TimeDelta());
+        base::TimeDelta());
+    video_frame->SetReleaseMailboxAndGpuMemoryBufferCB(
+        base::BindPostTaskToCurrentDefault(
+            base::BindOnce(&GpuMemoryBufferVideoFramePool::ReuseFrame, this,
+                           /*shared_image=*/nullptr)));
+    return video_frame;
   }
 
  private:
   friend class RefCountedThreadSafe<GpuMemoryBufferVideoFramePool>;
   ~GpuMemoryBufferVideoFramePool() = default;
 
-  void ReuseFrame(const gpu::SyncToken& token,
+  // |shared_image| will be used when MappableSI is enabled. It will be null
+  // otherwise.
+  void ReuseFrame(scoped_refptr<gpu::ClientSharedImage> shared_image,
+                  const gpu::SyncToken& token,
                   std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     constexpr size_t kMaxPooledFrames = 5;
-    if (available_gmbs_.size() < kMaxPooledFrames)
-      available_gmbs_.push_back(std::move(gpu_memory_buffer));
+    if (shared_image) {
+      CHECK(base::FeatureList::IsEnabled(
+          kUseMappableSIForVideoEncoderAcceleratorAdapter));
+      CHECK(!gpu_memory_buffer);
+      if (available_shared_images_.size() < kMaxPooledFrames) {
+        available_shared_images_.push_back(std::move(shared_image));
+      }
+    } else {
+      if (available_gmbs_.size() < kMaxPooledFrames) {
+        available_gmbs_.push_back(std::move(gpu_memory_buffer));
+      }
+    }
   }
 
   const raw_ptr<GpuVideoAcceleratorFactories> gpu_factories_;
   const gfx::Size coded_size_;
 
   std::vector<std::unique_ptr<gfx::GpuMemoryBuffer>> available_gmbs_;
+
+  // Available mappable shared images.
+  std::vector<scoped_refptr<gpu::ClientSharedImage>> available_shared_images_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 };
@@ -558,7 +622,7 @@ void VideoEncodeAcceleratorAdapter::EncodeOnAcceleratorThread(
   // Try using a frame with GPU buffer both are true:
   // 1. the frame already has GPU buffer
   // 2. frame doesn't need resizing or can be resized by GPU encoder.
-  bool use_gpu_buffer = frame->HasGpuMemoryBuffer() &&
+  bool use_gpu_buffer = frame->HasMappableGpuBuffer() &&
                         (!frame_needs_resizing || gpu_resize_supported_);
 
   // Currently configured encoder's preference takes precedence overe heuristic
@@ -787,7 +851,6 @@ void VideoEncodeAcceleratorAdapter::BitstreamBufferReady(
   VideoEncoderOutput result;
   result.key_frame = metadata.key_frame;
   result.timestamp = metadata.timestamp;
-  result.size = metadata.payload_size_bytes;
   if (metadata.h264.has_value())
     result.temporal_id = metadata.h264.value().temporal_idx;
   else if (metadata.vp9.has_value())
@@ -815,42 +878,37 @@ void VideoEncodeAcceleratorAdapter::BitstreamBufferReady(
 
   const base::WritableSharedMemoryMapping& mapping =
       output_buffer_handles_[buffer_id]->GetMapping();
-  DCHECK_LE(result.size, mapping.size());
+  DCHECK_LE(metadata.payload_size_bytes, mapping.size());
 
-  if (result.size > 0) {
+  if (metadata.payload_size_bytes > 0) {
     bool stream_converted = false;
+    auto src = mapping.GetMemoryAsSpan<uint8_t>(metadata.payload_size_bytes);
+
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-    uint8_t* src = static_cast<uint8_t*>(mapping.memory());
-    size_t dst_size = result.size;
     size_t actual_output_size = 0;
-    auto dst = base::HeapArray<uint8_t>::Uninit(dst_size);
+    auto dst = base::HeapArray<uint8_t>::Uninit(metadata.payload_size_bytes);
     bool config_changed = false;
     media::MP4Status status;
     if (h264_converter_) {
-      status = h264_converter_->ConvertChunk(
-          base::span<uint8_t>(src, result.size), dst, &config_changed,
-          &actual_output_size);
-      if (status.code() == MP4Status::Codes::kBufferTooSmall) {
-        // Between AnnexB and AVCC bitstream formats, the start code length and
-        // the nal size length can be different. See H.264 specification at
-        // http://www.itu.int/rec/T-REC-H.264. Retry the conversion if the
-        // output buffer size is too small.
-        dst_size = actual_output_size;
-        dst = base::HeapArray<uint8_t>::Uninit(dst_size);
-        status = h264_converter_->ConvertChunk(
-            base::span<uint8_t>(src, result.size), dst, &config_changed,
-            &actual_output_size);
-      }
-
-      if (!status.is_ok()) {
-        NotifyErrorStatus(
-            EncoderStatus(EncoderStatus::Codes::kBitstreamConversionError,
-                          "Failed to convert a buffer to h264 chunk")
-                .AddCause(std::move(status)));
-        return;
-      }
-      result.size = actual_output_size;
-      result.data = std::move(dst);
+      do {
+        status = h264_converter_->ConvertChunk(src, dst, &config_changed,
+                                               &actual_output_size);
+        if (status.code() == MP4Status::Codes::kBufferTooSmall) {
+          // Between AnnexB and AVCC bitstream formats, the start code length
+          // and the nal size length can be different. See H.264 specification
+          // at http://www.itu.int/rec/T-REC-H.264. Retry the conversion if the
+          // output buffer size is too small.
+          dst = base::HeapArray<uint8_t>::Uninit(actual_output_size);
+          continue;
+        } else if (!status.is_ok()) {
+          NotifyErrorStatus(
+              EncoderStatus(EncoderStatus::Codes::kBitstreamConversionError,
+                            "Failed to convert a buffer to h264 chunk")
+                  .AddCause(std::move(status)));
+          return;
+        }
+      } while (!status.is_ok());
+      result.data = std::move(dst).take_first(actual_output_size);
       stream_converted = true;
 
       if (config_changed) {
@@ -867,26 +925,21 @@ void VideoEncodeAcceleratorAdapter::BitstreamBufferReady(
 #if BUILDFLAG(ENABLE_PLATFORM_HEVC) && \
     BUILDFLAG(ENABLE_HEVC_PARSER_AND_HW_DECODER)
       if (h265_converter_) {
-        status = h265_converter_->ConvertChunk(
-            base::span<uint8_t>(src, result.size), dst, &config_changed,
-            &actual_output_size);
-        if (status.code() == MP4Status::Codes::kBufferTooSmall) {
-          dst_size = actual_output_size;
-          dst = base::HeapArray<uint8_t>::Uninit(dst_size);
-          status = h265_converter_->ConvertChunk(
-              base::span<uint8_t>(src, result.size), dst, &config_changed,
-              &actual_output_size);
-        }
-
-        if (!status.is_ok()) {
-          NotifyErrorStatus(
-              EncoderStatus(EncoderStatus::Codes::kBitstreamConversionError,
-                            "Failed to convert a buffer to h265 chunk")
-                  .AddCause(std::move(status)));
-          return;
-        }
-        result.size = actual_output_size;
-        result.data = std::move(dst);
+        do {
+          status = h265_converter_->ConvertChunk(src, dst, &config_changed,
+                                                 &actual_output_size);
+          if (status.code() == MP4Status::Codes::kBufferTooSmall) {
+            dst = base::HeapArray<uint8_t>::Uninit(actual_output_size);
+            continue;
+          } else if (!status.is_ok()) {
+            NotifyErrorStatus(
+                EncoderStatus(EncoderStatus::Codes::kBitstreamConversionError,
+                              "Failed to convert a buffer to h265 chunk")
+                    .AddCause(std::move(status)));
+            return;
+          }
+        } while (!status.is_ok());
+        result.data = std::move(dst).take_first(actual_output_size);
         stream_converted = true;
 
         if (config_changed) {
@@ -905,8 +958,7 @@ void VideoEncodeAcceleratorAdapter::BitstreamBufferReady(
     }
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
     if (!stream_converted) {
-      result.data = base::HeapArray<uint8_t>::Uninit(result.size);
-      memcpy(result.data.data(), mapping.memory(), result.size);
+      result.data = base::HeapArray<uint8_t>::CopiedFrom(src);
     }
   }
 
@@ -1069,7 +1121,7 @@ VideoEncodeAcceleratorAdapter::PrepareCpuFrame(
     return EncoderStatus(EncoderStatus::Codes::kOutOfMemoryError);
 
   const base::WritableSharedMemoryMapping* mapping = handle->mapping();
-  auto mapped_src_frame = src_frame->HasGpuMemoryBuffer()
+  auto mapped_src_frame = src_frame->HasMappableGpuBuffer()
                               ? ConvertToMemoryMappedFrame(src_frame)
                               : src_frame;
   auto shared_frame = VideoFrame::WrapExternalData(
@@ -1104,7 +1156,7 @@ VideoEncodeAcceleratorAdapter::PrepareGpuFrame(
   const auto dest_coded_size = input_coded_size_;
   const auto dest_visible_rect = gfx::Rect(options_.frame_size);
 
-  if (src_frame->HasGpuMemoryBuffer() &&
+  if (src_frame->HasMappableGpuBuffer() &&
       src_frame->format() == PIXEL_FORMAT_NV12 &&
       (gpu_resize_supported_ || src_frame->coded_size() == dest_coded_size)) {
     // Nothing to do here, the input frame is already what we need
@@ -1132,7 +1184,7 @@ VideoEncodeAcceleratorAdapter::PrepareGpuFrame(
   // This is true because |gpu_frame| is created with
   // |VEA_READ_CAMERA_AND_CPU_READ_WRITE| usage flag.
   auto mapped_gpu_frame = ConvertToMemoryMappedFrame(gpu_frame);
-  auto mapped_src_frame = src_frame->HasGpuMemoryBuffer()
+  auto mapped_src_frame = src_frame->HasMappableGpuBuffer()
                               ? ConvertToMemoryMappedFrame(src_frame)
                               : src_frame;
   if (!mapped_gpu_frame || !mapped_src_frame)
@@ -1147,8 +1199,14 @@ VideoEncodeAcceleratorAdapter::PrepareGpuFrame(
   // |mapped_gpu_frame| has the color space respecting the color conversion in
   // ConvertAndScale().
 #if BUILDFLAG(IS_MAC)
-  gpu_frame->GetGpuMemoryBuffer()->SetColorSpace(
-      mapped_gpu_frame->ColorSpace());
+  if (base::FeatureList::IsEnabled(
+          kUseMappableSIForVideoEncoderAcceleratorAdapter)) {
+    gpu_frame->shared_image(0)->SetColorSpaceOnNativeBuffer(
+        mapped_gpu_frame->ColorSpace());
+  } else {
+    gpu_frame->GetGpuMemoryBuffer()->SetColorSpace(
+        mapped_gpu_frame->ColorSpace());
+  }
 #endif
   gpu_frame->set_color_space(mapped_gpu_frame->ColorSpace());
 

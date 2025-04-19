@@ -24,9 +24,12 @@ class AddressFieldParserTest
     default_features.InitWithFeatures({features::kAutofillUseI18nAddressModel,
                                        features::kAutofillUseAUAddressModel,
                                        features::kAutofillUseBRAddressModel,
+                                       features::kAutofillUseCAAddressModel,
                                        features::kAutofillUseDEAddressModel,
+                                       features::kAutofillUseFRAddressModel,
                                        features::kAutofillUsePLAddressModel,
                                        features::kAutofillUseINAddressModel,
+                                       features::kAutofillUseITAddressModel,
                                        features::kAutofillUseMXAddressModel},
                                       {});
   }

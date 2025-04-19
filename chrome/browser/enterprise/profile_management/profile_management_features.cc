@@ -18,6 +18,14 @@ BASE_FEATURE(kEnableProfileTokenManagement,
 
 BASE_FEATURE(kOidcAuthProfileManagement,
              "OidcAuthProfileManagement",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kOidcEnrollmentTimeout,
+             "kOidcEnrollmentTimeout",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kEnableGenericOidcAuthProfileManagement,
+             "EnableGenericOidcAuthProfileManagement",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Allow Oidc Enrollment flow to use a stubbed DM token rather than fetching a
@@ -50,5 +58,20 @@ constexpr base::FeatureParam<std::string> kOidcAuthStubUserEmail{
 // and does not work the other way around.
 constexpr base::FeatureParam<bool> kOidcAuthIsDasherBased{
     &kOidcAuthProfileManagement, "is_dasher_based", true};
+
+// If set to `true`, OIDC flow will always fail its registration and trigger the
+// Error dialog.
+constexpr base::FeatureParam<bool> kOidcAuthForceErrorUi{
+    &kOidcAuthProfileManagement, "force_error_ui", false};
+
+// If set to `true`, OIDC flow will always fail its policy fetch and trigger the
+// Timeout dialog.
+constexpr base::FeatureParam<bool> kOidcAuthForceTimeoutUi{
+    &kOidcAuthProfileManagement, "force_timeout_ui", false};
+
+// Controls the timeout duration of client registration during OIDC enrollment
+// flow, in seconds.
+constexpr base::FeatureParam<base::TimeDelta> kOidcEnrollRegistrationTimeout{
+    &kOidcEnrollmentTimeout, "registration_timeout", base::Seconds(30)};
 
 }  // namespace profile_management::features

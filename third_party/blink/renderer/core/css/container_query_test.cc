@@ -24,7 +24,6 @@
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
-#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
 
 namespace blink {
@@ -354,8 +353,8 @@ TEST_F(ContainerQueryTest, RuleCopy) {
   EXPECT_NE(container, copy);
 
   // The rules should be copied.
-  auto rules = container->ChildRules();
-  auto rules_copy = copy->ChildRules();
+  auto& rules = container->ChildRules();
+  auto& rules_copy = copy->ChildRules();
   ASSERT_EQ(1u, rules.size());
   ASSERT_EQ(1u, rules_copy.size());
   EXPECT_NE(rules[0], rules_copy[0]);
@@ -411,7 +410,7 @@ TEST_F(ContainerQueryTest, ContainerQueryEvaluation) {
 }
 
 TEST_F(ContainerQueryTest, QueryZoom) {
-  GetFrame().SetPageZoomFactor(2.0f);
+  GetFrame().SetLayoutZoomFactor(2.0f);
 
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -471,7 +470,7 @@ TEST_F(ContainerQueryTest, QueryZoom) {
 }
 
 TEST_F(ContainerQueryTest, QueryFontRelativeWithZoom) {
-  GetFrame().SetPageZoomFactor(2.0f);
+  GetFrame().SetLayoutZoomFactor(2.0f);
 
   SetBodyInnerHTML(R"HTML(
     <style>

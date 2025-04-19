@@ -10,7 +10,9 @@ if (is_android) {
 
 source_set("public") {
   sources = [
+    "data_sharing_network_loader.cc",
     "data_sharing_network_loader.h",
+    "data_sharing_network_utils.h",
     "data_sharing_sdk_delegate.h",
     "data_sharing_service.h",
     "data_sharing_ui_delegate.h",
@@ -34,12 +36,16 @@ if (is_android) {
   android_library("public_java") {
     sources = [
       "android/java/src/org/chromium/components/data_sharing/DataSharingNetworkLoader.java",
+      "android/java/src/org/chromium/components/data_sharing/DataSharingNetworkResult.java",
       "android/java/src/org/chromium/components/data_sharing/DataSharingNetworkUtils.java",
       "android/java/src/org/chromium/components/data_sharing/DataSharingRequestType.java",
+      "android/java/src/org/chromium/components/data_sharing/DataSharingSDKDelegate.java",
+      "android/java/src/org/chromium/components/data_sharing/DataSharingSDKDelegateProtoResponseCallback.java",
       "android/java/src/org/chromium/components/data_sharing/DataSharingService.java",
       "android/java/src/org/chromium/components/data_sharing/DataSharingUIDelegate.java",
       "android/java/src/org/chromium/components/data_sharing/GroupData.java",
       "android/java/src/org/chromium/components/data_sharing/GroupMember.java",
+      "android/java/src/org/chromium/components/data_sharing/GroupToken.java",
       "android/java/src/org/chromium/components/data_sharing/configs/AvatarConfig.java",
       "android/java/src/org/chromium/components/data_sharing/configs/GroupMemberConfig.java",
       "android/java/src/org/chromium/components/data_sharing/configs/MemberPickerConfig.java",
@@ -47,7 +53,9 @@ if (is_android) {
 
     deps = [
       "//base:base_java",
+      "//components/data_sharing/public/protocol:proto_java",
       "//net/android:net_java",
+      "//third_party/android_deps:protobuf_lite_runtime_java",
       "//third_party/androidx:androidx_annotation_annotation_java",
       "//third_party/jni_zero:jni_zero_java",
       "//url:gurl_java",
@@ -58,6 +66,7 @@ if (is_android) {
 
   java_cpp_enum("enums_java") {
     sources = [
+      "data_sharing_network_loader.h",
       "data_sharing_service.h",
       "group_data.h",
     ]
@@ -65,8 +74,10 @@ if (is_android) {
 
   generate_jni("jni_headers") {
     sources = [
+      "android/java/src/org/chromium/components/data_sharing/DataSharingNetworkResult.java",
       "android/java/src/org/chromium/components/data_sharing/GroupData.java",
       "android/java/src/org/chromium/components/data_sharing/GroupMember.java",
+      "android/java/src/org/chromium/components/data_sharing/GroupToken.java",
     ]
   }
 }

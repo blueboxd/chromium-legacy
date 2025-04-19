@@ -21,17 +21,16 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.mockito.quality.Strictness;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -41,7 +40,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
 import org.chromium.ui.test.util.BlankUiTestActivityTestCase;
@@ -65,8 +63,6 @@ public class AccountPickerDialogTest extends BlankUiTestActivityTestCase {
     @Rule
     public final MockitoRule mMockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
 
-    @Rule public TestRule mProcessor = new Features.JUnitProcessor();
-
     @Mock private AccountPickerCoordinator.Listener mListenerMock;
 
     private final String mFullName1 = "Test Account1";
@@ -81,7 +77,7 @@ public class AccountPickerDialogTest extends BlankUiTestActivityTestCase {
     public void setUp() {
         mAccountManagerTestRule.addAccount(mAccountName1, mFullName1, null, null);
         mAccountManagerTestRule.addAccount(mAccountName2, "", null, null);
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     mCoordinator =
                             new AccountPickerDialogCoordinator(
@@ -95,7 +91,7 @@ public class AccountPickerDialogTest extends BlankUiTestActivityTestCase {
 
     @After
     public void tearDown() {
-        TestThreadUtils.runOnUiThreadBlocking(mCoordinator::dismissDialog);
+        ThreadUtils.runOnUiThreadBlocking(mCoordinator::dismissDialog);
     }
 
     @Test

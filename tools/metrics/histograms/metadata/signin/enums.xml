@@ -134,6 +134,20 @@ chromium-metrics-reviews@google.com.
   </int>
 </enum>
 
+<!-- LINT.IfChange(AccountManagedStatusFinderOutcome) -->
+
+<enum name="AccountManagedStatusFinderOutcome">
+  <int value="0" label="Pending"/>
+  <int value="1" label="Error"/>
+  <int value="2" label="Consumer, gmail.com"/>
+  <int value="3" label="Consumer, other well-known domain"/>
+  <int value="4" label="Consumer, non-well-known domain"/>
+  <int value="5" label="Enterprise, google.com"/>
+  <int value="6" label="Enterprise, other domain"/>
+</enum>
+
+<!-- LINT.ThenChange(//components/signin/public/identity_manager/account_managed_status_finder.h:AccountManagedStatusFinderOutcome) -->
+
 <enum name="AccountReauthenticationEvent">
   <int value="0" label="STARTED"/>
   <int value="1" label="SUCCESS"/>
@@ -169,9 +183,9 @@ chromium-metrics-reviews@google.com.
   <int value="1" label="Is Shared"/>
 </enum>
 
-<enum name="BooleanShouldShow">
-  <int value="0" label="Should not show"/>
-  <int value="1" label="Should show"/>
+<enum name="BooleanSignoutFromManagedAccount">
+  <int value="0" label="Cancel sign-out"/>
+  <int value="1" label="Continue with sign-out"/>
 </enum>
 
 <enum name="BooleanWasDeferred">
@@ -216,6 +230,39 @@ chromium-metrics-reviews@google.com.
   <int value="2" label="Modified to always sign in"/>
   <int value="3" label="Modified to never sign in"/>
 </enum>
+
+<!-- LINT.IfChange(ChromeSigninUserChoice) -->
+
+<enum name="ChromeSigninUserChoice">
+  <int value="0" label="No choice selected"/>
+  <int value="1" label="Always ask"/>
+  <int value="2" label="Automatically Sign in"/>
+  <int value="3" label="Do not automatically Sign in"/>
+</enum>
+
+<!-- LINT.ThenChange(//components/signin/public/base/signin_prefs.h:ChromeSigninUserChoice) -->
+
+<!-- LINT.IfChange(ChromeSignoutConfirmationChoice) -->
+
+<enum name="ChromeSignoutConfirmationChoice">
+  <int value="0" label="Cancel Signout"/>
+  <int value="1" label="Signout"/>
+  <int value="2" label="Cancel Signout and Reauth"/>
+</enum>
+
+<!-- LINT.ThenChange(//chrome/browser/ui/signin/chrome_signout_confirmation_prompt.h:ChromeSignoutConfirmationChoice) -->
+
+<!-- LINT.IfChange(ExplicitSigninMigration) -->
+
+<enum name="ExplicitSigninMigration">
+  <int value="0" label="Migrated, signed out"/>
+  <int value="1" label="Migrated, signed in"/>
+  <int value="2" label="Migrated, syncing"/>
+  <int value="3" label="Not Migrated, signed in"/>
+  <int value="4" label="Not Migrated, syncing"/>
+</enum>
+
+<!-- LINT.ThenChange(//components/signin/core/browser/signin_metrics_service.h:ExplicitSigninMigration) -->
 
 <enum name="FRESigninEvents">
   <int value="0" label="Checking managed status"/>
@@ -361,6 +408,9 @@ chromium-metrics-reviews@google.com.
   <int value="6" label="Cookie is already fresh"/>
   <int value="7"
       label="Mojo connection with the throttle handler disconnected"/>
+  <int value="8"
+      label="Throttling requests paused due to successive server transient
+             errors"/>
 </enum>
 
 <enum name="SessionTerminationTrigger">
@@ -451,6 +501,9 @@ chromium-metrics-reviews@google.com.
   <int value="63" label="NTP Identity Disc"/>
   <int value="64" label="OIDC auth redirect URI interception"/>
   <int value="65" label="WebAuthn modal dialog"/>
+  <int value="66" label="Avatar bubble sign in with sync promo"/>
+  <int value="67" label="Account menu"/>
+  <int value="68" label="Product Specifications"/>
 </enum>
 
 <enum name="SigninAccountReconcilorState">
@@ -585,19 +638,6 @@ chromium-metrics-reviews@google.com.
 <enum name="SigninPendingResolution">
   <int value="0" label="Sign in (reauth)"/>
   <int value="1" label="Sign out"/>
-</enum>
-
-<enum name="SigninReason">
-  <int value="0" label="Signin primary account"/>
-  <int value="1" label="Add secondary account"/>
-  <int value="2" label="Reauthentication"/>
-  <int value="3" label="Unlock profile (deprecated 03-2021)"/>
-  <int value="4" label="Typed URL with unknown reason"/>
-  <int value="5"
-      label="Signin primary account with force-sign-in policy enabled"/>
-  <int value="6"
-      label="Login and acquire a login scope token without actually signing
-             into any profiles on Chrome."/>
 </enum>
 
 <enum name="SigninReauthResult">
@@ -787,6 +827,16 @@ chromium-metrics-reviews@google.com.
     The primary account might be signed out when a profile is being deleted, to
     avoid that deletion of data propagates via sync to other devices.
   </int>
+  <int value="35" label="Signed out while switching to another primary profile">
+    In the account menu, the user switched their primary account. As a first
+    step, they get signed-out of their previous primary account.
+  </int>
+  <int value="36" label="Signed out from the account menu">
+    In the account menu, the user selected the sign-out button.
+  </int>
+  <int value="37" label="User disabled allow chrome sign-in toggle">
+    User disabled &quot;Allow Chrome sign-in&quot; toggle.
+  </int>
 </enum>
 
 <enum name="SigninSSOIdentityListRequestCacheState">
@@ -812,6 +862,16 @@ chromium-metrics-reviews@google.com.
   <int value="1" label="Decrypt failed"/>
   <int value="2" label="Read DB failed (bad entry)"/>
 </enum>
+
+<!-- LINT.IfChange(SinginInterceptSupervisionState) -->
+
+<enum name="SinginInterceptSupervisionState">
+  <int value="0" label="Regular, non-supervised, user"/>
+  <int value="1" label="Supervised user"/>
+  <int value="2" label="Supervision status unknown"/>
+</enum>
+
+<!-- LINT.ThenChange(//chrome/browser/signin/dice_web_signin_interceptor.h:SinginInterceptSupervisionState) -->
 
 <enum name="SourceForRefreshTokenOperation">
   <int value="0" label="Unknown"/>
@@ -860,19 +920,27 @@ chromium-metrics-reviews@google.com.
 </enum>
 
 <enum name="SyncButtonsType">
-  <int value="0" label="Equal weighted buttons on sync screen (Android)"/>
+  <int value="0" label="Equal weighted buttons on sync screen (deprecated)"/>
   <int value="1"
       label="Not-Equal weighted buttons on sync screen (Android, Windows, Mac
              and Linux)"/>
-  <int value="2" label="Equal weighted buttons on history sync screen (iOS)"/>
+  <int value="2"
+      label="Equal weighted buttons on history sync screen (deprecated)"/>
   <int value="3"
-      label="Not-Equal weighted buttons on history sync screen (iOS)"/>
+      label="Not-Equal weighted buttons on history sync screen (iOS and
+             Android)"/>
   <int value="4"
-      label="Equal weighted buttons on sync screen from deadline (Windows,
-             Mac and Linux)"/>
+      label="Equal weighted buttons on sync screen from deadline (Android,
+             Windows, Mac and Linux)"/>
   <int value="5"
-      label="Equal weighted buttons on sync screen from capability (Windows,
-             Mac and Linux)"/>
+      label="Equal weighted buttons on sync screen from capability (Android,
+             Windows, Mac and Linux)"/>
+  <int value="6"
+      label="Equal weighted buttons on history sync screen from deadline (iOS
+             and Android)"/>
+  <int value="7"
+      label="Equal weighted buttons on history sync screen from capability
+             (iOS and Android)"/>
 </enum>
 
 <enum name="SyncErrorPromptUIAction">

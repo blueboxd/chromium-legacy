@@ -15,32 +15,39 @@ found in the LICENSE file.
     <org.chromium.components.browser_ui.widget.text.TextViewWithCompoundDrawables
             android:id="@+id/cookie_status"
             style="@style/TextAppearance.TextMedium.Secondary"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:layout_marginBottom="12dp"
             android:drawablePadding="8dp"
+            android:visibility="gone"
             app:drawableWidth="20dp"
             app:drawableHeight="20dp"/>
     <!-- IP protection section. -->
     <org.chromium.components.browser_ui.widget.text.TextViewWithCompoundDrawables
             android:id="@+id/ip_status"
             style="@style/TextAppearance.TextMedium.Secondary"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
-            android:layout_marginTop="12dp"
+            android:layout_marginEnd="12dp"
             android:layout_marginBottom="12dp"
             android:drawablePadding="8dp"
+            android:visibility="gone"
             app:drawableWidth="20dp"
             app:drawableHeight="20dp"/>
     <!-- Fingerprinting -->
     <org.chromium.components.browser_ui.widget.text.TextViewWithCompoundDrawables
             android:id="@+id/fingerprint_status"
             style="@style/TextAppearance.TextMedium.Secondary"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:layout_marginBottom="12dp"
             android:drawablePadding="8dp"
+            android:visibility="gone"
             app:drawableWidth="20dp"
             app:drawableHeight="20dp"/>
 </LinearLayout>

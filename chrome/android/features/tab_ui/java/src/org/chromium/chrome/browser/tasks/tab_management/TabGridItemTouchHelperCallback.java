@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import static org.chromium.chrome.browser.tasks.tab_management.MessageCardViewProperties.MESSAGE_TYPE;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.CARD_TYPE;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.ModelType.MESSAGE;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.ModelType.TAB;
@@ -23,16 +24,18 @@ import org.chromium.base.ResettersForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
-import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupUtils;
+import org.chromium.chrome.browser.tasks.tab_management.MessageService.MessageType;
 import org.chromium.chrome.browser.tasks.tab_management.TabListCoordinator.TabListMode;
 import org.chromium.chrome.browser.tasks.tab_management.TabListMediator.TabActionListener;
 import org.chromium.chrome.browser.tasks.tab_management.TabListMediator.TabGridDialogHandler;
+import org.chromium.chrome.browser.tasks.tab_management.TabProperties.UiType;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
@@ -62,6 +65,7 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
     private final @TabListMode int mMode;
     @Nullable private OnLongPressTabItemEventListener mOnLongPressTabItemEventListener;
     private final int mLongPressDpThreshold;
+    private final TabGroupCreationDialogManager mTabGroupCreationDialogManager;
     private float mSwipeToDismissThreshold;
     private float mMergeThreshold;
     private float mUngroupThreshold;
@@ -85,6 +89,7 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
 
     /**
      * @param context The activity context.
+     * @param tabGroupCreationDialogManager The manager for showing a dialog on group creation.
      * @param tabListModel The property model of tab data to act on.
      * @param currentTabModelFilterSupplier The supplier of the current {@link TabModelFilter}. It
      *     should never return null.
@@ -96,6 +101,7 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
      */
     public TabGridItemTouchHelperCallback(
             Context context,
+            TabGroupCreationDialogManager tabGroupCreationDialogManager,
             TabListModel tabListModel,
             Supplier<TabModelFilter> currentTabModelFilterSupplier,
             TabActionListener tabClosedListener,
@@ -115,6 +121,7 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
         mLongPressDpThreshold =
                 context.getResources()
                         .getDimensionPixelSize(R.dimen.tab_list_editor_longpress_entry_threshold);
+        mTabGroupCreationDialogManager = tabGroupCreationDialogManager;
     }
 
     /**
@@ -127,10 +134,11 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
     /**
      * This method sets up parameters that are used by the {@link ItemTouchHelper} to make decisions
      * about user actions.
-     * @param swipeToDismissThreshold          Defines the threshold that user needs to swipe in
-     *         order to be considered as a remove operation.
-     * @param mergeThreshold                   Defines the threshold of how much two items need to
-     *         be overlapped in order to be considered as a merge operation.
+     *
+     * @param swipeToDismissThreshold Defines the threshold that user needs to swipe in order to be
+     *     considered as a remove operation.
+     * @param mergeThreshold Defines the percentage threshold as a decimal of how much area of the
+     *     two items need to be overlapped in order to be considered as a merge operation.
      */
     void setupCallback(
             float swipeToDismissThreshold, float mergeThreshold, float ungroupThreshold) {
@@ -144,15 +152,28 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
                         | ItemTouchHelper.DOWN;
     }
 
+    boolean isMessageType(@Nullable RecyclerView.ViewHolder viewHolder) {
+        if (viewHolder == null) return false;
+
+        @UiType int type = viewHolder.getItemViewType();
+        return type == UiType.MESSAGE
+                || type == UiType.LARGE_MESSAGE
+                || type == UiType.CUSTOM_MESSAGE;
+    }
+
     @Override
     public int getMovementFlags(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
-        final int dragFlags =
-                viewHolder.getItemViewType() == TabProperties.UiType.MESSAGE
-                                || viewHolder.getItemViewType()
-                                        == TabProperties.UiType.LARGE_MESSAGE
-                        ? 0
-                        : mDragFlags;
-        final int swipeFlags = ItemTouchHelper.START | ItemTouchHelper.END;
+        final int dragFlags = isMessageType(viewHolder) ? 0 : mDragFlags;
+        int swipeFlags = ItemTouchHelper.START | ItemTouchHelper.END;
+        // The archived tabs message can't be dismissed.
+        if (viewHolder.getItemViewType() == UiType.CUSTOM_MESSAGE) {
+            SimpleRecyclerViewAdapter.ViewHolder simpleViewHolder =
+                    (SimpleRecyclerViewAdapter.ViewHolder) viewHolder;
+            if (simpleViewHolder.model.get(MESSAGE_TYPE) == MessageType.ARCHIVED_TABS_MESSAGE) {
+                swipeFlags = 0;
+            }
+        }
+
         mRecyclerView = recyclerView;
         return makeMovementFlags(dragFlags, swipeFlags);
     }
@@ -194,8 +215,7 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
         TabModelFilter filter = mCurrentTabModelFilterSupplier.get();
         TabModel tabModel = filter.getTabModel();
         if (!mActionsOnAllRelatedTabs) {
-            int destinationIndex =
-                    tabModel.indexOf(TabModelUtils.getTabById(tabModel, destinationTabId));
+            int destinationIndex = tabModel.indexOf(tabModel.getTabById(destinationTabId));
             tabModel.moveTab(currentTabId, distance > 0 ? destinationIndex + 1 : destinationIndex);
         } else {
             List<Tab> destinationTabGroup = getRelatedTabsForId(destinationTabId);
@@ -221,7 +241,8 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
                 (SimpleRecyclerViewAdapter.ViewHolder) viewHolder;
 
         if (simpleViewHolder.model.get(CARD_TYPE) == TAB) {
-            mTabClosedListener.run(simpleViewHolder.model.get(TabProperties.TAB_ID));
+            mTabClosedListener.run(
+                    viewHolder.itemView, simpleViewHolder.model.get(TabProperties.TAB_ID));
 
             RecordUserAction.record("MobileStackViewSwipeCloseTab." + mComponentName);
         } else if (simpleViewHolder.model.get(CARD_TYPE) == MESSAGE) {
@@ -236,6 +257,8 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
     @Override
     public void onSelectedChanged(RecyclerView.ViewHolder viewHolder, int actionState) {
         super.onSelectedChanged(viewHolder, actionState);
+        if (isMessageType(viewHolder)) return;
+
         if (actionState == ItemTouchHelper.ACTION_STATE_DRAG) {
             mSelectedTabIndex = viewHolder.getAdapterPosition();
             mModel.updateSelectedTabForMergeToGroup(mSelectedTabIndex, true);
@@ -391,7 +414,7 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
             } else if (simpleViewHolder.model.get(CARD_TYPE) == MESSAGE) {
                 index =
                         mModel.lastIndexForMessageItemFromType(
-                                simpleViewHolder.model.get(MessageCardViewProperties.MESSAGE_TYPE));
+                                simpleViewHolder.model.get(MESSAGE_TYPE));
             }
 
             if (index == TabModel.INVALID_TAB_INDEX) return;
@@ -456,11 +479,21 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
 
     private void onTabMergeToGroup(int selectedCardIndex, int hoveredCardIndex) {
         TabGroupModelFilter filter = (TabGroupModelFilter) mCurrentTabModelFilterSupplier.get();
-        if (filter.getTabAt(selectedCardIndex) == null) return;
-        if (filter.getTabAt(hoveredCardIndex) == null) return;
-        filter.mergeTabsToGroup(
-                filter.getTabAt(selectedCardIndex).getId(),
-                filter.getTabAt(hoveredCardIndex).getId());
+        Tab selectedCard = filter.getTabAt(selectedCardIndex);
+        Tab hoveredCard = filter.getTabAt(hoveredCardIndex);
+        if (selectedCard == null) return;
+        if (hoveredCard == null) return;
+        boolean willMergingCreateNewGroup =
+                filter.willMergingCreateNewGroup(List.of(selectedCard, hoveredCard));
+        filter.mergeTabsToGroup(selectedCard.getId(), hoveredCard.getId());
+
+        if (ChromeFeatureList.sTabGroupParityAndroid.isEnabled()
+                && willMergingCreateNewGroup
+                && !TabGroupCreationDialogManager.shouldSkipGroupCreationDialog(
+                        /* shouldShow= */ TabGroupCreationDialogManager
+                                .shouldShowGroupCreationDialogViaSettingsSwitch())) {
+            mTabGroupCreationDialogManager.showDialog(hoveredCard.getRootId(), filter);
+        }
 
         // If user has used drop-to-merge, send a signal to disable
         // FeatureConstants.TAB_GROUPS_DRAG_AND_DROP_FEATURE.

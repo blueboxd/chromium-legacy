@@ -19,6 +19,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/typed_macros.h"
 #include "chrome/browser/signin/bound_session_credentials/bound_session_params_util.h"
+#include "chrome/browser/signin/bound_session_credentials/bound_session_switches.h"
 #include "chrome/browser/signin/bound_session_credentials/rotation_debug_info.pb.h"
 #include "chrome/browser/signin/bound_session_credentials/session_binding_helper.h"
 #include "components/variations/net/variations_http_headers.h"
@@ -83,35 +84,67 @@ BoundSessionRefreshCookieFetcherImpl::BoundSessionRefreshCookieFetcherImpl(
       expected_cookie_names_(std::move(cookie_names)),
       is_off_the_record_profile_(is_off_the_record_profile),
       debug_info_(std::move(debug_info)) {
-  CHECK(refresh_url.is_empty() || refresh_url.is_valid());
+  CHECK(refresh_url.is_valid());
 }
 
 BoundSessionRefreshCookieFetcherImpl::~BoundSessionRefreshCookieFetcherImpl() =
     default;
 
 void BoundSessionRefreshCookieFetcherImpl::Start(
-    RefreshCookieCompleteCallback callback) {
+    RefreshCookieCompleteCallback callback,
+    std::optional<std::string> sec_session_challenge_response) {
   TRACE_EVENT("browser", "BoundSessionRefreshCookieFetcherImpl::Start",
               perfetto::Flow::FromPointer(this), "url",
               expected_cookie_domain_);
   CHECK(!callback_);
   CHECK(callback);
   callback_ = std::move(callback);
-  StartRefreshRequest(/*sec_session_challenge_response=*/std::nullopt);
+
+  // Only used for manual testing.
+  if (std::optional<base::TimeDelta> cookie_rotation_delay =
+          bound_session_credentials::GetCookieRotationDelayIfSetByCommandLine();
+      cookie_rotation_delay.has_value()) {
+    base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(
+            &BoundSessionRefreshCookieFetcherImpl::StartRefreshRequest,
+            weak_ptr_factory_.GetWeakPtr(),
+            std::move(sec_session_challenge_response)),
+        *cookie_rotation_delay);
+  } else {
+    StartRefreshRequest(std::move(sec_session_challenge_response));
+  }
 }
 
 bool BoundSessionRefreshCookieFetcherImpl::IsChallengeReceived() const {
   return assertion_requests_count_ > 0;
 }
 
+std::optional<std::string>
+BoundSessionRefreshCookieFetcherImpl::TakeSecSessionChallengeResponseIfAny() {
+  std::optional<std::string> response;
+  std::swap(response, sec_session_challenge_response_);
+  return response;
+}
+
 void BoundSessionRefreshCookieFetcherImpl::StartRefreshRequest(
     std::optional<std::string> sec_session_challenge_response) {
+  sec_session_challenge_response_ = std::move(sec_session_challenge_response);
   TRACE_EVENT("browser",
               "BoundSessionRefreshCookieFetcherImpl::StartRefreshRequest",
               perfetto::Flow::FromPointer(this), "has_challenge",
-              sec_session_challenge_response.has_value());
+              sec_session_challenge_response_.has_value());
   if (!cookie_refresh_duration_.has_value()) {
     cookie_refresh_duration_ = base::TimeTicks::Now();
+  }
+
+  // Used only for manual testing.
+  if (std::optional<BoundSessionRefreshCookieFetcher::Result> result =
+          bound_session_credentials::
+              GetCookieRotationResultIfSetByCommandLine();
+      result.has_value()) {
+    CompleteRequestAndReportRefreshResult(*result);
+    return;
   }
 
   // TODO(b/273920907): Update the `traffic_annotation` setting once a mechanism
@@ -138,31 +171,28 @@ void BoundSessionRefreshCookieFetcherImpl::StartRefreshRequest(
                 email: "chrome-signin-team@google.com"
             }
           }
-          last_reviewed: "2023-05-09"
+          last_reviewed: "2024-05-30"
         }
         policy {
           cookies_allowed: YES
           cookies_store: "user"
           setting:
-            "This is a new feature being developed behind a flag that is"
-            " disabled by default (kEnableBoundSessionCredentials). This"
-            " request will only be sent if the feature is enabled and once"
-            " a server requests it with a special header."
-
-          policy_exception_justification:
-            "Not implemented. "
-            "If the feature is on, this request must be made to ensure the user"
-            " maintains their signed in status on the web for Google owned"
-            " domains."
+             "This feature cannot be disabled in settings, but this request "
+             "won't be made unless the user signs in to google.com."
+          chrome_policy: {
+            BoundSessionCredentialsEnabled {
+              BoundSessionCredentialsEnabled: false
+            }
+          }
         })");
 
   auto request = std::make_unique<network::ResourceRequest>();
-  request->url = GetRefreshUrl();
+  request->url = refresh_url_;
   request->method = "GET";
 
-  if (sec_session_challenge_response) {
+  if (sec_session_challenge_response_) {
     request->headers.SetHeader(kRotationChallengeResponseHeader,
-                               *sec_session_challenge_response);
+                               *sec_session_challenge_response_);
   }
   request->headers.SetHeader(kRotationDebugHeader,
                              UpdateDebugInfoAndSerializeToHeader(debug_info_));
@@ -204,6 +234,7 @@ void BoundSessionRefreshCookieFetcherImpl::OnURLLoaderComplete(
   std::optional<std::string> challenge_header_value =
       GetChallengeIfBindingKeyAssertionRequired(headers);
   if (challenge_header_value) {
+    sec_session_challenge_response_.reset();
     HandleBindingKeyAssertionRequired(*challenge_header_value);
     return;
   }
@@ -361,7 +392,7 @@ void BoundSessionRefreshCookieFetcherImpl::RefreshWithChallenge(
               "BoundSessionRefreshCookieFetcherImpl::RefreshWithChallenge",
               perfetto::Flow::FromPointer(this));
   session_binding_helper_->GenerateBindingKeyAssertion(
-      challenge, GetRefreshUrl(),
+      challenge, refresh_url_,
       base::BindOnce(
           &BoundSessionRefreshCookieFetcherImpl::OnGenerateBindingKeyAssertion,
           weak_ptr_factory_.GetWeakPtr(), base::ElapsedTimer(), challenge,
@@ -439,10 +470,4 @@ void BoundSessionRefreshCookieFetcherImpl::OnCookiesAccessed(
 void BoundSessionRefreshCookieFetcherImpl::Clone(
     mojo::PendingReceiver<network::mojom::CookieAccessObserver> observer) {
   cookie_observers_.Add(this, std::move(observer));
-}
-
-const GURL& BoundSessionRefreshCookieFetcherImpl::GetRefreshUrl() {
-  return !refresh_url_.is_empty()
-             ? refresh_url_
-             : GaiaUrls::GetInstance()->rotate_bound_cookies_url();
 }

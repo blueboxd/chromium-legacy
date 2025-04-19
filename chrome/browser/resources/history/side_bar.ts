@@ -94,7 +94,7 @@ export class HistorySideBarElement extends PolymerElement {
             'historyClustersEnabled, historyClustersVisible)',
       },
 
-      productSpecificationsListsEnabled_: Boolean,
+      compareHistoryEnabled_: Boolean,
     };
   }
 
@@ -107,8 +107,8 @@ export class HistorySideBarElement extends PolymerElement {
   private historyClustersVisibleManagedByPolicy_: boolean;
   private showFooter_: boolean;
   private showHistoryClusters_: boolean;
-  private productSpecificationsListsEnabled_: boolean =
-      loadTimeData.getBoolean('productSpecificationsListsEnabled');
+  private compareHistoryEnabled_: boolean =
+      loadTimeData.getBoolean('compareHistoryEnabled');
 
   override ready() {
     super.ready();
@@ -142,7 +142,7 @@ export class HistorySideBarElement extends PolymerElement {
 
   /**
    * Prevent clicks on sidebar items from navigating. These are only links for
-   * accessibility purposes, taps are handled separately by <iron-selector>.
+   * accessibility purposes, taps are handled separately.
    */
   private onItemClick_(e: Event) {
     e.preventDefault();

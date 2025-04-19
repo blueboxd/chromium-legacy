@@ -7,7 +7,8 @@ import {BrowserProxy} from '//resources/cr_components/color_change_listener/brow
 import type {CrIconButtonElement} from '//resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import {flush} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import type {ReadAnythingToolbarElement} from 'chrome-untrusted://read-anything-side-panel.top-chrome/read_anything.js';
-import {assertEquals, assertStringContains} from 'chrome-untrusted://webui-test/chai_assert.js';
+import {ToolbarEvent} from 'chrome-untrusted://read-anything-side-panel.top-chrome/read_anything.js';
+import {assertEquals, assertFalse, assertStringContains, assertTrue} from 'chrome-untrusted://webui-test/chai_assert.js';
 
 import {suppressInnocuousErrors} from './common.js';
 import {FakeReadingMode} from './fake_reading_mode.js';
@@ -17,6 +18,7 @@ suite('HighlightToggle', () => {
   let toolbar: ReadAnythingToolbarElement;
   let testBrowserProxy: TestColorUpdaterBrowserProxy;
   let highlightButton: CrIconButtonElement;
+  let highlightEmitted: boolean;
 
   setup(() => {
     suppressInnocuousErrors();
@@ -32,13 +34,19 @@ suite('HighlightToggle', () => {
     flush();
     highlightButton =
         toolbar.shadowRoot!.querySelector<CrIconButtonElement>('#highlight')!;
+
+    highlightEmitted = false;
+    document.addEventListener(
+        ToolbarEvent.HIGHLIGHT_TOGGLE, () => highlightEmitted = true);
   });
 
   suite('by default', () => {
     test('highlighting is on', () => {
-      assertEquals(highlightButton.ironIcon, 'read-anything:highlight-on');
+      assertEquals('read-anything:highlight-on', highlightButton.ironIcon);
       assertStringContains(highlightButton.title, 'off');
-      assertEquals(chrome.readingMode.highlightGranularity, 1);
+      assertEquals(0, chrome.readingMode.highlightGranularity);
+      assertTrue(chrome.readingMode.isHighlightOn());
+      assertFalse(highlightEmitted);
     });
   });
 
@@ -48,9 +56,11 @@ suite('HighlightToggle', () => {
     });
 
     test('highlighting is turned off', () => {
-      assertEquals(highlightButton.ironIcon, 'read-anything:highlight-off');
+      assertEquals('read-anything:highlight-off', highlightButton.ironIcon);
       assertStringContains(highlightButton.title, 'on');
-      assertEquals(chrome.readingMode.highlightGranularity, 0);
+      assertEquals(1, chrome.readingMode.highlightGranularity);
+      assertFalse(chrome.readingMode.isHighlightOn());
+      assertTrue(highlightEmitted);
     });
 
     suite('on next click', () => {
@@ -59,9 +69,11 @@ suite('HighlightToggle', () => {
       });
 
       test('highlighting is turned back on', () => {
-        assertEquals(highlightButton.ironIcon, 'read-anything:highlight-on');
+        assertEquals('read-anything:highlight-on', highlightButton.ironIcon);
         assertStringContains(highlightButton.title, 'off');
-        assertEquals(chrome.readingMode.highlightGranularity, 1);
+        assertEquals(0, chrome.readingMode.highlightGranularity);
+        assertTrue(chrome.readingMode.isHighlightOn());
+        assertTrue(highlightEmitted);
       });
     });
   });

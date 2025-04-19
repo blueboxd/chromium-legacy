@@ -158,12 +158,6 @@ class COMPONENT_EXPORT(CHROMEOS_STARTUP) BrowserParamsProxy {
 
   bool IsDeskProfilesEnabled() const;
 
-  bool IsCrosWebAppInstallDialogEnabled() const;
-
-  bool IsCrosWebAppShortcutUiUpdateEnabled() const;
-
-  bool IsCrosShortstandEnabled() const;
-
   bool ShouldDisableChromeComposeOnChromeOS() const;
 
   bool IsCaptivePortalPopupWindowEnabled() const;
@@ -174,17 +168,13 @@ class COMPONENT_EXPORT(CHROMEOS_STARTUP) BrowserParamsProxy {
 
   bool IsOrcaEnabled() const;
 
-  bool IsCrosMallEnabled() const;
-
-  bool IsMagicBoostEnabled() const;
+  bool IsCrosMallWebAppEnabled() const;
 
   bool IsMahiEnabled() const;
 
   bool IsContainerAppPreinstallEnabled() const;
 
   bool IsOrcaUseL10nStringsEnabled() const;
-
-  bool IsMahiSupportedWithCorrectFeatureKey() const;
 
   bool IsOrcaInternationalizeEnabled() const;
 

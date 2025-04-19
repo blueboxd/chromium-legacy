@@ -492,13 +492,14 @@ void StyleSheetContents::ParseAuthorStyleSheet(
                         CSSDeferPropertyParsing::kYes);
 }
 
-ParseSheetResult StyleSheetContents::ParseString(const String& sheet_text,
-                                                 bool allow_import_rules) {
+ParseSheetResult StyleSheetContents::ParseString(
+    const String& sheet_text,
+    bool allow_import_rules,
+    CSSDeferPropertyParsing defer_property_parsing) {
   const auto* context =
       MakeGarbageCollected<CSSParserContext>(ParserContext(), this);
   return CSSParser::ParseSheet(context, this, sheet_text,
-                               CSSDeferPropertyParsing::kNo,
-                               allow_import_rules);
+                               defer_property_parsing, allow_import_rules);
 }
 
 bool StyleSheetContents::IsLoading() const {
@@ -653,6 +654,7 @@ static bool ChildRulesHaveFailedOrCanceledSubresources(const T& rules) {
       case StyleRuleBase::kCharset:
       case StyleRuleBase::kImport:
       case StyleRuleBase::kNamespace:
+      case StyleRuleBase::kMixin:
         NOTREACHED_IN_MIGRATION();
         break;
       case StyleRuleBase::kPage:
@@ -668,6 +670,10 @@ static bool ChildRulesHaveFailedOrCanceledSubresources(const T& rules) {
       case StyleRuleBase::kViewTransition:
       case StyleRuleBase::kFunction:
       case StyleRuleBase::kPositionTry:
+        break;
+      case StyleRuleBase::kApplyMixin:
+        // TODO(sesse): Should we go down into the rules here?
+        // Do we need to do a new name lookup then?
         break;
       case StyleRuleBase::kCounterStyle:
         if (To<StyleRuleCounterStyle>(rule)

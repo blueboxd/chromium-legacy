@@ -27,10 +27,12 @@
 #include "extensions/common/constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/base/window_open_disposition_utils.h"
 #include "ui/events/event.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
@@ -114,7 +116,7 @@ void ForceInstalledPreinstalledDeprecatedAppDialogView::CreateAndShowDialog(
   }
 
   auto delegate = std::make_unique<views::DialogDelegate>();
-  delegate->SetModalType(ui::MODAL_TYPE_CHILD);
+  delegate->SetModalType(ui::mojom::ModalType::kChild);
   delegate->SetShowCloseButton(false);
   delegate->SetOwnedByWidget(true);
   delegate->SetTitle(l10n_util::GetStringUTF16(
@@ -216,7 +218,7 @@ ForceInstalledPreinstalledDeprecatedAppDialogView::
             /*navigation_handle_callback=*/{});
       },
       web_contents->GetWeakPtr()));
-  learn_more->SetAccessibleName(
+  learn_more->GetViewAccessibility().SetName(
       l10n_util::GetStringUTF16(IDS_DEPRECATED_APPS_LEARN_MORE_AX_LABEL));
   learn_more->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 }

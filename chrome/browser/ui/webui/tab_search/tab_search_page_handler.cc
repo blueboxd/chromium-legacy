@@ -24,11 +24,13 @@
 #include "chrome/browser/extensions/api/tab_groups/tab_groups_util.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/favicon/favicon_utils.h"
+#include "chrome/browser/feedback/show_feedback_page.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -36,8 +38,8 @@
 #include "chrome/browser/ui/browser_live_tab_context.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
+#include "chrome/browser/ui/tabs/organization/tab_organization_request.h"
 #include "chrome/browser/ui/tabs/organization/tab_organization_service.h"
 #include "chrome/browser/ui/tabs/organization/tab_organization_service_factory.h"
 #include "chrome/browser/ui/tabs/organization/tab_organization_session.h"
@@ -50,6 +52,7 @@
 #include "chrome/browser/ui/webui/metrics_reporter/metrics_reporter.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search_prefs.h"
 #include "chrome/browser/ui/webui/util/image_util.h"
+#include "chrome/browser/user_education/tutorial_identifiers.h"
 #include "chrome/browser/user_education/user_education_service.h"
 #include "chrome/browser/user_education/user_education_service_factory.h"
 #include "chrome/common/webui_url_constants.h"
@@ -516,11 +519,15 @@ void TabSearchPageHandler::RestartSession() {
   }
 
   restarting_ = true;
-
+  TabOrganizationSession* current_session =
+      organization_service_->GetSessionForBrowser(browser);
+  const auto* base_session_webcontents =
+      current_session ? current_session->base_session_webcontents() : nullptr;
   // Don't notify observers to avoid a repaint
   TabOrganizationSession* session =
       organization_service_->ResetSessionForBrowser(
-          browser, TabOrganizationEntryPoint::kTabSearch, nullptr);
+          browser, TabOrganizationEntryPoint::kTabSearch,
+          base_session_webcontents);
   if (!base::Contains(listened_sessions_, session)) {
     session->AddObserver(this);
     listened_sessions_.emplace_back(session);
@@ -567,7 +574,7 @@ void TabSearchPageHandler::StartTabGroupTutorial() {
   const ui::ElementContext context = browser->window()->GetElementContext();
   CHECK(context);
 
-  user_education::TutorialIdentifier tutorial_id = kSavedTabGroupTutorialId;
+  user_education::TutorialIdentifier tutorial_id = kTabGroupTutorialId;
   tutorial_service->StartTutorial(tutorial_id, context);
 }
 
@@ -602,34 +609,21 @@ void TabSearchPageHandler::TriggerFeedback(int32_t session_id) {
       /*autofill_metadata=*/base::Value::Dict(), std::move(feedback_metadata));
 }
 
-void TabSearchPageHandler::TriggerSync() {
-  Profile* profile = chrome::FindLastActive()->profile();
-  signin_ui_util::EnableSyncFromSingleAccountPromo(
-      profile,
-      IdentityManagerFactory::GetForProfile(profile)->GetPrimaryAccountInfo(
-          signin::ConsentLevel::kSignin),
-      signin_metrics::AccessPoint::ACCESS_POINT_TAB_ORGANIZATION);
-}
-
 void TabSearchPageHandler::TriggerSignIn() {
   Profile* profile = chrome::FindLastActive()->profile();
-  signin_ui_util::ShowReauthForPrimaryAccountWithAuthError(
-      profile, signin_metrics::AccessPoint::ACCESS_POINT_TAB_ORGANIZATION);
+  if (SigninErrorControllerFactory::GetForProfile(profile)->HasError()) {
+    signin_ui_util::ShowReauthForPrimaryAccountWithAuthError(
+        profile, signin_metrics::AccessPoint::ACCESS_POINT_TAB_ORGANIZATION);
+  } else {
+    signin_ui_util::ShowSigninPromptFromPromo(
+        profile, signin_metrics::AccessPoint::ACCESS_POINT_TAB_ORGANIZATION);
+  }
 }
 
 void TabSearchPageHandler::OpenHelpPage() {
   Browser* browser = chrome::FindLastActive();
   GURL help_url("https://support.google.com/chrome?p=auto_tab_group");
   NavigateParams params(browser, help_url,
-                        ui::PageTransition::PAGE_TRANSITION_LINK);
-  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-  Navigate(&params);
-}
-
-void TabSearchPageHandler::OpenSyncSettings() {
-  Browser* browser = chrome::FindLastActive();
-  GURL settings_url("chrome://settings/syncSetup/advanced");
-  NavigateParams params(browser, settings_url,
                         ui::PageTransition::PAGE_TRANSITION_LINK);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   Navigate(&params);
@@ -937,7 +931,8 @@ tab_search::mojom::TabPtr TabSearchPageHandler::GetTab(
 
   tab_data->show_icon = tab_renderer_data.show_icon;
 
-  const base::TimeTicks last_active_time_ticks = contents->GetLastActiveTime();
+  const base::TimeTicks last_active_time_ticks =
+      contents->GetLastActiveTimeTicks();
   tab_data->last_active_time_ticks = last_active_time_ticks;
 
   // last_active_time_for_testing can affect pixel tests depending on when the
@@ -1139,6 +1134,10 @@ TabSearchPageHandler::GetMojoForTabOrganizationSession(
 
   mojo_session->session_id = session->session_id();
   mojo_session->error = tab_search::mojom::TabOrganizationError::kNone;
+  mojo_session->active_tab_id = session->base_session_webcontents()
+                                    ? extensions::ExtensionTabUtil::GetTabId(
+                                          session->base_session_webcontents())
+                                    : -1;
   std::vector<tab_search::mojom::TabOrganizationPtr> organizations;
 
   TabOrganizationRequest::State state = session->request()->state();

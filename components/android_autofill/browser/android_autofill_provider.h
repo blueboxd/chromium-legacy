@@ -7,11 +7,12 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
-#include "components/android_autofill/browser/autofill_provider.h"
 #include "components/android_autofill/browser/android_autofill_provider_bridge.h"
+#include "components/android_autofill/browser/autofill_provider.h"
 #include "components/android_autofill/browser/form_data_android.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/common/unique_ids.h"
+#include "components/webauthn/android/webauthn_cred_man_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace content {
@@ -66,16 +67,6 @@ class AndroidAutofillProvider : public AutofillProvider,
   // cached form and the interacted form fails.
   static constexpr char kPrefillRequestBottomsheetNoViewStructureDelayUma[] =
       "Autofill.WebView.BottomsheetNoViewStructureDelay";
-  static constexpr char kSimilarityCheckCacheRequestUma[] =
-      "Autofill.WebView.FormSimilarityCheck.CachedForm";
-  // The name of the UMA that is emitted when a form similarity check is run in
-  // OnAskForValuesToFill.
-  static constexpr char kSimilarityCheckAskForValuesToFillUma[] =
-      "Autofill.WebView.FormSimilarityCheck.AskForValuesToFill";
-  // The name of the UMA that is emitted when a form similarity check is run in
-  // OnFocusOnFormField.
-  static constexpr char kSimilarityCheckFocusOnFormFieldUma[] =
-      "Autofill.WebView.FormSimilarityCheck.FocusOnFormField";
 
   static void CreateForWebContents(content::WebContents* web_contents);
 
@@ -111,8 +102,7 @@ class AndroidAutofillProvider : public AutofillProvider,
                        const FormData& form,
                        bool known_success,
                        mojom::SubmissionSource source) override;
-  void OnFocusOnNonFormField(AndroidAutofillManager* manager,
-                             bool had_interacted_form) override;
+  void OnFocusOnNonFormField(AndroidAutofillManager* manager) override;
   void OnFocusOnFormField(AndroidAutofillManager* manager,
                           const FormData& form,
                           const FormFieldData& field) override;
@@ -183,10 +173,7 @@ class AndroidAutofillProvider : public AutofillProvider,
 
   // Same as `IsLinkedForm`, but also checks that `form` and `form_` are
   // similar, using form similarity checks.
-  // If `similarity_metric` is not null, it emits a
-  // `FormDataAndroid::SimilarityCheckResult` with the name `similarity_metric`.
-  bool IsLinkedForm(const FormData& form,
-                    const char* similarity_metric = nullptr);
+  bool IsLinkedForm(const FormData& form);
 
   gfx::RectF ToClientAreaBound(const gfx::RectF& bounding_box);
 
@@ -212,11 +199,14 @@ class AndroidAutofillProvider : public AutofillProvider,
   // conditions are met:
   // 1. Prefill requests are supported (correct SDK version & feature flag).
   // 2. No prefill request has been sent so far, since the framework only
-  // supports caching a single form at a time.
+  //    supports caching a single form at a time.
   // 3. There is no ongoing Autofill session. This is to ensure that the
-  // `onProvideAutofillStructure` callback from the framework does not confuse
-  // information requests for caching and for the current Autofill session.
-  // 4. The form is predicted to be a login form.
+  //    `onProvideAutofillStructure` callback from the framework does not
+  //     confuse information requests for caching and for the current Autofill
+  //     session.
+  // 4. The form is predicted to be a login form or a (assuming that
+  //    `kAndroidAutofillPrefillRequestsForChangePassword` is enabled) a change
+  //     password form.
   void MaybeSendPrefillRequest(const AndroidAutofillManager& manager,
                                FormGlobalId form_id);
 
@@ -228,10 +218,10 @@ class AndroidAutofillProvider : public AutofillProvider,
     // Returns the `PasswordParserOverrides` obtained from matching the
     // `FieldRendererId`s of username and password fields in `pw_form` to the
     // `FieldGlobalId`s in `form_structure`. Returns `std::nullopt` if no unique
-    // matching could be found. A unique matching may not exist if the form is
-    // spread across multiple iframes. In practice, this should be extremely
-    // rare for password forms.
-    static std::optional<PasswordParserOverrides> FromLoginForm(
+    // matching could be found or if the matching is incomplete. A unique
+    // matching may not exist if the form is spread across multiple iframes. In
+    // practice, this should be extremely rare for password forms.
+    static std::optional<PasswordParserOverrides> FromPasswordForm(
         const password_manager::PasswordForm& pw_form,
         const FormStructure& form_structure);
 
@@ -240,6 +230,7 @@ class AndroidAutofillProvider : public AutofillProvider,
 
     std::optional<FieldGlobalId> username_field_id;
     std::optional<FieldGlobalId> password_field_id;
+    std::optional<FieldGlobalId> new_password_field_id;
   };
 
   // Checks whether `form` is similar to the cached form. `form_structure` must
@@ -259,6 +250,32 @@ class AndroidAutofillProvider : public AutofillProvider,
   // gets accessed.
   // TODO(crbug.com/40284788): Remove once a fix is landed on the renderer side.
   void SetBottomSheetShownOff();
+
+  // Stops the keyboard suppression. Called when the CredMan UI was closed. If
+  // the UI was dismissed without selecting a passkey, `success` will be false.
+  void OnCredManUiClosed(bool success);
+
+  // Returns true if CredMan *may* be shown for the given field. It only returns
+  // false if the sheet was already shown or prefetching concluded and indicated
+  // that no passkeys are available.
+  bool IntendsToShowCredMan(content::RenderFrameHost* rfh) const;
+
+  // Returns true if a passkey request is pending  or succeeded for the given
+  // `rfh` and the CredMan UI should be shown when the given `field` is focused.
+  bool ShouldShowCredManForField(const FormFieldData& field,
+                                 content::RenderFrameHost* rfh);
+
+  // Triggers a prefetched passkey request which opens a bottom sheet.
+  void ShowCredManSheet(content::RenderFrameHost* rfh);
+
+  enum class CredManBottomSheetLifecycle {
+    kNotShown,   // The sheet hasn't been shown. Does not indicate it will be.
+    kIsShowing,  // The sheet was triggered. Does not guarantee it's visible.
+    kClosed,     // The sheet was dismissed and shouldn't be shown again.
+  };
+
+  CredManBottomSheetLifecycle credman_sheet_status_ =
+      CredManBottomSheetLifecycle::kNotShown;
 
   // This is used by the keyboard suppressor. We update it with the result of
   // the platform method call `showAutofillDialog`. Since we are not notified
@@ -296,8 +313,11 @@ class AndroidAutofillProvider : public AutofillProvider,
 
   // Properties of the last-focused field of the current session for `form_`
   // (queried input or changed select box).
-  FieldGlobalId last_focused_field_id_;
-  FieldTypeGroup field_type_group_{FieldTypeGroup::kNoGroup};
+  struct {
+    FieldGlobalId id;
+    FieldTypeGroup group = {FieldTypeGroup::kNoGroup};
+    url::Origin origin;
+  } current_field_;
 
   // The frame of the field for which the last OnAskForValuesToFill() happened.
   //
@@ -310,10 +330,6 @@ class AndroidAutofillProvider : public AutofillProvider,
   // ancestor frame of the queried field.
   content::GlobalRenderFrameHostId last_queried_field_rfh_id_;
 
-  // The origin of the field of the current session (cf.
-  // `last_focused_field_id_`). This is determines which fields are safe to be
-  // filled in cross-frame forms.
-  url::Origin triggered_origin_;
   base::WeakPtr<AndroidAutofillManager> manager_;
   bool check_submission_ = false;
   // Valid only if check_submission_ is true.
@@ -329,6 +345,8 @@ class AndroidAutofillProvider : public AutofillProvider,
 
   // Used for handling keyboard suppression in case there's a bottom sheet.
   std::unique_ptr<TouchToFillKeyboardSuppressor> keyboard_suppressor_;
+
+  base::WeakPtrFactory<AndroidAutofillProvider> weak_ptr_factory_{this};
 };
 }  // namespace autofill
 

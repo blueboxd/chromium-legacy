@@ -84,7 +84,7 @@ bool NetworkInitializeConfig(sandbox::TargetConfig* config) {
       GetContentClient()->browser()->GetLPACCapabilityNameForNetworkService();
   if (lpac_capability.empty())
     return false;
-  auto app_container = config->GetAppContainer();
+  auto* app_container = config->GetAppContainer();
   if (!app_container)
     return false;
   app_container->AddCapability(lpac_capability.c_str());
@@ -119,6 +119,10 @@ bool PrintBackendInitializeConfig(sandbox::TargetConfig* config) {
 }
 #endif
 
+std::string UtilityAppContainerId(base::CommandLine& cmd_line) {
+  return base::WideToUTF8(cmd_line.GetProgram().value());
+}
+
 bool IconReaderInitializeConfig(sandbox::TargetConfig* config) {
   DCHECK(!config->IsConfigured());
 
@@ -136,20 +140,6 @@ bool IconReaderInitializeConfig(sandbox::TargetConfig* config) {
   sandbox::MitigationFlags flags = config->GetDelayedProcessMitigations();
   flags |= sandbox::MITIGATION_DYNAMIC_CODE_DISABLE;
   result = config->SetDelayedProcessMitigations(flags);
-  if (result != sandbox::SBOX_ALL_OK)
-    return false;
-
-  // Allow file read. These should match IconLoader::GroupForFilepath().
-  result = config->AllowFileAccess(sandbox::FileSemantics::kAllowReadonly,
-                                   L"\\??\\*.exe");
-  if (result != sandbox::SBOX_ALL_OK)
-    return false;
-  result = config->AllowFileAccess(sandbox::FileSemantics::kAllowReadonly,
-                                   L"\\??\\*.dll");
-  if (result != sandbox::SBOX_ALL_OK)
-    return false;
-  result = config->AllowFileAccess(sandbox::FileSemantics::kAllowReadonly,
-                                   L"\\??\\*.ico");
   if (result != sandbox::SBOX_ALL_OK)
     return false;
   return true;
@@ -198,8 +188,7 @@ bool XrCompositingInitializeConfig(sandbox::TargetConfig* config,
   if (result != sandbox::SBOX_ALL_OK)
     return false;
 
-  std::string appcontainer_id =
-      GetContentClient()->browser()->GetAppContainerId();
+  std::string appcontainer_id = UtilityAppContainerId(cmd_line);
   result = sandbox::policy::SandboxWin::AddAppContainerProfileToConfig(
       cmd_line, sandbox_type, appcontainer_id, config);
   if (result != sandbox::SBOX_ALL_OK)
@@ -253,19 +242,22 @@ std::string UtilitySandboxedProcessLauncherDelegate::GetSandboxTag() {
 
 bool UtilitySandboxedProcessLauncherDelegate::GetAppContainerId(
     std::string* appcontainer_id) {
+  if (app_container_disabled_) {
+    return false;
+  }
   switch (sandbox_type_) {
     case sandbox::mojom::Sandbox::kMediaFoundationCdm:
     case sandbox::mojom::Sandbox::kNetwork:
     case sandbox::mojom::Sandbox::kOnDeviceModelExecution:
     case sandbox::mojom::Sandbox::kWindowsSystemProxyResolver:
     case sandbox::mojom::Sandbox::kXrCompositing:
-      *appcontainer_id = GetContentClient()->browser()->GetAppContainerId();
+      *appcontainer_id = UtilityAppContainerId(cmd_line_);
       return true;
 #if BUILDFLAG(ENABLE_PRINTING)
     case sandbox::mojom::Sandbox::kPrintCompositor:
       if (base::FeatureList::IsEnabled(
               sandbox::policy::features::kPrintCompositorLPAC)) {
-        *appcontainer_id = GetContentClient()->browser()->GetAppContainerId();
+        *appcontainer_id = UtilityAppContainerId(cmd_line_);
         return true;
       }
       return false;
@@ -447,7 +439,8 @@ bool UtilitySandboxedProcessLauncherDelegate::CetCompatible() {
 
 bool UtilitySandboxedProcessLauncherDelegate::AllowWindowsFontsDir() {
   // New utilities should use a font proxy rather than allowing direct access.
-  if (sandbox_type_ == sandbox::mojom::Sandbox::kPrintCompositor) {
+  if (sandbox_type_ == sandbox::mojom::Sandbox::kPrintCompositor &&
+      !GetContentClient()->browser()->IsPdfFontProxyEnabled()) {
     return true;
   }
   return false;

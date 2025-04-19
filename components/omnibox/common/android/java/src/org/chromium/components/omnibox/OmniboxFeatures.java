@@ -42,14 +42,14 @@ public class OmniboxFeatures {
     public static final CachedFlag sAnimateSuggestionsListAppearance =
             newFlag(OmniboxFeatureList.ANIMATE_SUGGESTIONS_LIST_APPEARANCE, false);
 
-    public static final CachedFlag sOmniboxMatchToolbarAndStatusBarColor =
-            newFlag(OmniboxFeatureList.OMNIBOX_MATCH_TOOLBAR_AND_STATUS_BAR_COLOR, false);
-
     public static final CachedFlag sTouchDownTriggerForPrefetch =
             newFlag(OmniboxFeatureList.OMNIBOX_TOUCH_DOWN_TRIGGER_FOR_PREFETCH, false);
 
     public static final CachedFlag sQueryTilesInZPSOnNTP =
             newFlag(OmniboxFeatureList.QUERY_TILES_IN_ZPS_ON_NTP, false);
+
+    public static final CachedFlag sRichInlineAutocomplete =
+            newFlag(OmniboxFeatureList.RICH_AUTOCOMPLETION, false);
 
     /**
      * Whether GeolocationHeader should use {@link
@@ -61,6 +61,9 @@ public class OmniboxFeatures {
 
     public static final CachedFlag sAsyncViewInflation =
             newFlag(OmniboxFeatureList.OMNIBOX_ASYNC_VIEW_INFLATION, false);
+
+    public static final CachedFlag sElegantTextHeight =
+            newFlag(OmniboxFeatureList.OMNIBOX_ELEGANT_TEXT_HEIGHT, false);
 
     public static final BooleanCachedFieldTrialParameter QUERY_TILES_SHOW_AS_CAROUSEL =
             newBooleanParam(sQueryTilesInZPSOnNTP, "QueryTilesShowAsCarousel", false);
@@ -79,6 +82,15 @@ public class OmniboxFeatures {
                     sTouchDownTriggerForPrefetch,
                     "max_prefetches_per_omnibox_session",
                     DEFAULT_MAX_PREFETCHES_PER_OMNIBOX_SESSION);
+
+    public static final BooleanCachedFieldTrialParameter sRichInlineShowFullUrl =
+            newBooleanParam(sRichInlineAutocomplete, "rich_autocomplete_full_url", false);
+
+    public static final IntCachedFieldTrialParameter sRichInlineMinimumInputChars =
+            newIntParam(
+                    sRichInlineAutocomplete,
+                    "rich_autocomplete_minimum_characters",
+                    Integer.MAX_VALUE);
 
     /**
      * Create an instance of a CachedFeatureFlag.
@@ -136,11 +148,6 @@ public class OmniboxFeatures {
     /** Retrieve list of FieldTrialParams that should be cached. */
     public static List<CachedFieldTrialParameter> getFieldTrialParamsToCache() {
         return sCachedParams;
-    }
-
-    /** Returns whether the toolbar and status bar color should be matched. */
-    public static boolean shouldMatchToolbarAndStatusBarColor() {
-        return sOmniboxMatchToolbarAndStatusBarColor.isEnabled();
     }
 
     /**
@@ -214,5 +221,17 @@ public class OmniboxFeatures {
     public static void setIsLowMemoryDeviceForTesting(boolean isLowMemDevice) {
         sIsLowMemoryDevice = isLowMemDevice;
         ResettersForTesting.register(() -> sIsLowMemoryDevice = null);
+    }
+
+    /**
+     * Returns whether the rich inline autocomplete URL should be shown.
+     *
+     * @param inputCount the count of characters user input.
+     * @return Whether the rich inline autocomplete URL should be shown.
+     */
+    public static boolean shouldShowRichInlineAutocompleteUrl(int inputCount) {
+        return sRichInlineAutocomplete.isEnabled()
+                && sRichInlineShowFullUrl.getValue()
+                && inputCount >= sRichInlineMinimumInputChars.getValue();
     }
 }

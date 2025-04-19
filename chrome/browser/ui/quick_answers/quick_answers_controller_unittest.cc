@@ -3,17 +3,24 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_refptr.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/quick_answers/quick_answers_controller_impl.h"
 #include "chrome/browser/ui/quick_answers/quick_answers_ui_controller.h"
 #include "chrome/browser/ui/quick_answers/test/chrome_quick_answers_test_base.h"
 #include "chrome/browser/ui/quick_answers/ui/quick_answers_view.h"
 #include "chrome/browser/ui/quick_answers/ui/user_consent_view.h"
+#include "chromeos/components/magic_boost/public/cpp/magic_boost_state.h"
+#include "chromeos/components/magic_boost/test/fake_magic_boost_state.h"
 #include "chromeos/components/quick_answers/public/cpp/quick_answers_prefs.h"
 #include "chromeos/components/quick_answers/public/cpp/quick_answers_state.h"
 #include "chromeos/components/quick_answers/quick_answers_client.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
+#include "chromeos/constants/chromeos_features.h"
+#include "chromeos/strings/grit/chromeos_strings.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/events/test/test_event.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/menu/menu_controller.h"
@@ -45,7 +52,7 @@ class QuickAnswersControllerTest : public ChromeQuickAnswersTestBase {
   void SetUp() override {
     ChromeQuickAnswersTestBase::SetUp();
 
-    QuickAnswersState::Get()->set_eligibility_for_testing(true);
+    QuickAnswersState::Get()->SetEligibilityForTesting(true);
 
     controller()->SetClient(std::make_unique<quick_answers::QuickAnswersClient>(
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
@@ -75,8 +82,8 @@ class QuickAnswersControllerTest : public ChromeQuickAnswersTestBase {
   void ShowConsentView() {
     // We can only show the consent view if the consent has not been
     // granted, so we add a sanity check here.
-    EXPECT_TRUE(QuickAnswersState::Get()->consent_status() ==
-                quick_answers::prefs::ConsentStatus::kUnknown)
+    EXPECT_EQ(QuickAnswersState::GetConsentStatus(),
+              quick_answers::prefs::ConsentStatus::kUnknown)
         << "Can not show consent view as the user consent has already "
            "been given.";
     ShowView();
@@ -121,7 +128,7 @@ class QuickAnswersControllerTest : public ChromeQuickAnswersTestBase {
 };
 
 TEST_F(QuickAnswersControllerTest, ShouldNotShowWhenFeatureNotEligible) {
-  QuickAnswersState::Get()->set_eligibility_for_testing(false);
+  QuickAnswersState::Get()->SetEligibilityForTesting(false);
   ShowView();
 
   // The feature is not eligible, nothing should be shown.
@@ -198,6 +205,32 @@ TEST_F(QuickAnswersControllerTest, DismissUserConsentView) {
   EXPECT_FALSE(ui_controller()->IsShowingUserConsentView());
 }
 
+TEST_F(QuickAnswersControllerTest, NoUserConsentView) {
+  // Note that `kMahi` is associated with the Magic Boost feature.
+  // `chromeos::features::IsMagicBoostEnabled()` is only accessible from Ash
+  // build. This test code is currently only included by Ash build.
+  base::test::ScopedFeatureList scoped_feature_list_(chromeos::features::kMahi);
+
+  chromeos::test::FakeMagicBoostState fake_magic_boost_state;
+  fake_magic_boost_state.AsyncWriteConsentStatus(
+      chromeos::HMRConsentStatus::kUnset);
+
+  ASSERT_EQ(QuickAnswersState::FeatureType::kHmr,
+            QuickAnswersState::GetFeatureType());
+  ASSERT_EQ(quick_answers::prefs::ConsentStatus::kUnknown,
+            QuickAnswersState::GetConsentStatusAs(
+                QuickAnswersState::FeatureType::kQuickAnswers));
+  ASSERT_EQ(quick_answers::prefs::ConsentStatus::kUnknown,
+            QuickAnswersState::GetConsentStatusAs(
+                QuickAnswersState::FeatureType::kHmr));
+
+  ShowConsentView();
+
+  EXPECT_FALSE(ui_controller()->IsShowingUserConsentView())
+      << "No consent UI should be shown for kHmr as it should be handled by "
+         "MagicBoost";
+}
+
 TEST_F(QuickAnswersControllerTest, DismissQuickAnswersView) {
   AcceptConsent();
   ShowView();
@@ -261,4 +294,46 @@ TEST_F(QuickAnswersControllerTest, ShouldNotCrashWhenContextMenuCloses) {
   // Confirm that the quick answers views are not showing.
   EXPECT_FALSE(ui_controller()->IsShowingUserConsentView());
   EXPECT_FALSE(ui_controller()->IsShowingQuickAnswersView());
+}
+
+TEST_F(QuickAnswersControllerTest, NullptrResultReceived) {
+  AcceptConsent();
+  ShowView();
+
+  controller()->OnQuickAnswerReceived(nullptr);
+
+  EXPECT_TRUE(ui_controller()->IsShowingQuickAnswersView());
+  EXPECT_EQ(kDefaultTitle, base::UTF16ToUTF8(ui_controller()
+                                                 ->quick_answers_view()
+                                                 ->GetResultViewForTesting()
+                                                 ->GetFirstLineText()));
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_QUICK_ANSWERS_VIEW_NO_RESULT_V2),
+            ui_controller()
+                ->quick_answers_view()
+                ->GetResultViewForTesting()
+                ->GetSecondLineText())
+      << "Expect that no result UI is shown";
+}
+
+TEST_F(QuickAnswersControllerTest, PartialNullptrResultReceived) {
+  AcceptConsent();
+  ShowView();
+
+  std::unique_ptr<quick_answers::QuickAnswersSession> quick_answers_session =
+      std::make_unique<quick_answers::QuickAnswersSession>();
+  ASSERT_FALSE(quick_answers_session->structured_result)
+      << "Test the case structured_result is nullptr";
+  controller()->OnQuickAnswerReceived(std::move(quick_answers_session));
+
+  EXPECT_TRUE(ui_controller()->IsShowingQuickAnswersView());
+  EXPECT_EQ(kDefaultTitle, base::UTF16ToUTF8(ui_controller()
+                                                 ->quick_answers_view()
+                                                 ->GetResultViewForTesting()
+                                                 ->GetFirstLineText()));
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_QUICK_ANSWERS_VIEW_NO_RESULT_V2),
+            ui_controller()
+                ->quick_answers_view()
+                ->GetResultViewForTesting()
+                ->GetSecondLineText())
+      << "Expect that no result UI is shown";
 }

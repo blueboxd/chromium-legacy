@@ -111,6 +111,14 @@ bool VideoEffectsProcessorImpl::Initialize() {
   return initialized_;
 }
 
+void VideoEffectsProcessorImpl::SetBackgroundSegmentationModel(
+    base::span<const uint8_t> model_blob) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  background_segmentation_model_blob_.resize(model_blob.size());
+  base::span(background_segmentation_model_blob_).copy_from(model_blob);
+}
+
 bool VideoEffectsProcessorImpl::InitializeGpuState() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(!ContextLossesExceedThreshold(num_context_losses_));
@@ -145,10 +153,11 @@ bool VideoEffectsProcessorImpl::InitializeGpuState() {
   raster_interface_context_provider_ =
       std::move(raster_interface_context_provider);
   raster_interface_context_provider_->AddObserver(this);
-  shared_image_interface = std::move(shared_image_interface);
+  shared_image_interface_ = std::move(shared_image_interface);
 
   processor_webgpu_ = std::make_unique<VideoEffectsProcessorWebGpu>(
-      webgpu_context_provider_,
+      webgpu_context_provider_, raster_interface_context_provider_,
+      shared_image_interface_,
       base::BindOnce(
           base::BindOnce(&VideoEffectsProcessorImpl::OnWebGpuProcessorError,
                          weak_ptr_factory_.GetWeakPtr())));
@@ -210,7 +219,8 @@ void VideoEffectsProcessorImpl::OnWebGpuProcessorError() {
   processor_webgpu_.reset();
 
   processor_webgpu_ = std::make_unique<VideoEffectsProcessorWebGpu>(
-      webgpu_context_provider_,
+      webgpu_context_provider_, raster_interface_context_provider_,
+      shared_image_interface_,
       base::BindOnce(&VideoEffectsProcessorImpl::OnWebGpuProcessorError,
                      weak_ptr_factory_.GetWeakPtr()));
   if (!processor_webgpu_->Initialize()) {
@@ -237,8 +247,9 @@ void VideoEffectsProcessorImpl::PostProcess(
     return;
   }
 
-  std::move(callback).Run(
-      mojom::PostProcessResult::NewError(mojom::PostProcessError::kUnknown));
+  processor_webgpu_->PostProcess(
+      std::move(input_frame_data), std::move(input_frame_info),
+      std::move(result_frame_data), result_pixel_format, std::move(callback));
 }
 
 void VideoEffectsProcessorImpl::MaybeCallOnUnrecoverableError() {

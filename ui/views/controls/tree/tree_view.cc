@@ -77,8 +77,9 @@ void PaintRowIcon(gfx::Canvas* canvas,
 }
 
 bool EventIsDoubleTapOrClick(const ui::LocatedEvent& event) {
-  if (event.type() == ui::ET_GESTURE_TAP)
+  if (event.type() == ui::EventType::kGestureTap) {
     return event.AsGestureEvent()->details().tap_count() == 2;
+  }
   return !!(event.flags() & ui::EF_IS_DOUBLE_CLICK);
 }
 
@@ -194,7 +195,7 @@ void TreeView::StartEditing(TreeModelNode* node) {
   editor_->SetText(selected_node_->model_node()->GetTitle());
   // TODO(crbug.com/40853810): Investigate whether accessible name should stay
   // in sync during editing.
-  editor_->SetAccessibleName(
+  editor_->GetViewAccessibility().SetName(
       selected_node_->model_node()->GetAccessibleTitle());
   LayoutEditor();
   editor_->SetVisible(true);
@@ -237,7 +238,8 @@ void TreeView::CommitEdit() {
   DCHECK(selected_node_);
   const bool editor_has_focus = editor_->HasFocus();
   model_->SetTitle(GetSelectedNode(), editor_->GetText());
-  editor_->SetAccessibleName(GetSelectedNode()->GetAccessibleTitle());
+  editor_->GetViewAccessibility().SetName(
+      GetSelectedNode()->GetAccessibleTitle());
   CancelEdit();
   if (editor_has_focus)
     RequestFocus();
@@ -423,7 +425,7 @@ bool TreeView::OnMousePressed(const ui::MouseEvent& event) {
 }
 
 void TreeView::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() == ui::ET_GESTURE_TAP) {
+  if (event->type() == ui::EventType::kGestureTap) {
     if (OnClickOrTap(*event))
       event->SetHandled();
   }
@@ -611,8 +613,9 @@ void TreeView::ContentsChanged(Textfield* sender,
 
 bool TreeView::HandleKeyEvent(Textfield* sender,
                               const ui::KeyEvent& key_event) {
-  if (key_event.type() != ui::ET_KEY_PRESSED)
+  if (key_event.type() != ui::EventType::kKeyPressed) {
     return false;
+  }
 
   switch (key_event.key_code()) {
     case ui::VKEY_RETURN:

@@ -11,7 +11,10 @@
 #include <unordered_set>
 
 #include "ash/components/arc/arc_prefs.h"
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/apps/app_service/app_install/app_install_service.h"
 #include "chrome/browser/apps/app_service/app_install/app_install_types.h"
@@ -41,11 +44,10 @@ constexpr const char kUserActionNext[] = "next";
 constexpr const char kUserActionSkip[] = "skip";
 constexpr const char kUserActionBack[] = "back";
 constexpr const char kUserActionLoaded[] = "loaded";
-constexpr const char kNoUseCasesSelectedIDName[] = "oobe_other";
+constexpr const char kNoUseCasesSelectedIDName[] = "oobe_none";
 
-constexpr const base::TimeDelta kDelaySetCategoriesAppsMapTime =
-    base::Seconds(2);
-constexpr const base::TimeDelta kDelayOverviewStepTime = base::Seconds(3);
+// Current max amount of apps we should get from the server.
+constexpr const int kMaxAppCount = 100;
 
 void WebAppInstallCallback(const std::string& package_id, bool success) {
   if (success) {
@@ -55,6 +57,56 @@ void WebAppInstallCallback(const std::string& package_id, bool success) {
     LOG(WARNING) << "Web application '" << package_id
                  << "' installation failed";
   }
+}
+
+void RecordUmaLoadingTime(base::TimeDelta delta) {
+  base::UmaHistogramCustomTimes("OOBE.PersonalizedAppsScreen.LoadingTime",
+                                delta, base::Milliseconds(1), base::Seconds(60),
+                                50);
+}
+
+void RecordUmaSelectedAppsTotalCount(int selected_apps_total_count) {
+  base::UmaHistogramCounts100(
+      "OOBE.PersonalizedAppsScreen.SelectedAppsTotalCount",
+      selected_apps_total_count);
+}
+
+void RecordUmaSelectedAppsTotalPercentage(int selected_apps_total_percentage) {
+  base::UmaHistogramPercentage(
+      "OOBE.PersonalizedAppsScreen.SelectedAppsTotalPercentage",
+      selected_apps_total_percentage);
+}
+
+void RecordUmaSelectedAppsCount(int selected_apps_count,
+                                apps::PackageType type) {
+  if (type == apps::PackageType::kArc) {
+    base::UmaHistogramCounts100(
+        "OOBE.PersonalizedAppsScreen.SelectedAppsCount.ARC",
+        selected_apps_count);
+  } else if (type == apps::PackageType::kWeb) {
+    base::UmaHistogramCounts100(
+        "OOBE.PersonalizedAppsScreen.SelectedAppsCount.Web",
+        selected_apps_count);
+  }
+}
+
+void RecordUmaSelectedAppsPercentage(int selected_apps_percentage,
+                                     apps::PackageType type) {
+  if (type == apps::PackageType::kArc) {
+    base::UmaHistogramPercentage(
+        "OOBE.PersonalizedAppsScreen.SelectedAppsPercentage.ARC",
+        selected_apps_percentage);
+  } else if (type == apps::PackageType::kWeb) {
+    base::UmaHistogramPercentage(
+        "OOBE.PersonalizedAppsScreen.SelectedAppsPercentage.Web",
+        selected_apps_percentage);
+  }
+}
+
+void RecordUmaAppID(int app_order_id) {
+  // Order is a zero-based index, so we can use ExactLinear histogram for now.
+  base::UmaHistogramExactLinear("OOBE.PersonalizedAppsScreen.SelectedAppIDs",
+                                app_order_id, kMaxAppCount);
 }
 
 }  // namespace
@@ -68,6 +120,12 @@ std::string PersonalizedRecommendAppsScreen::GetResultString(Result result) {
       return "Skip";
     case Result::kBack:
       return "Back";
+    case Result::kDataMalformed:
+      return "DataMalformed";
+    case Result::kError:
+      return "Error";
+    case Result::kTimeout:
+      return "Timeout";
     case Result::kNotApplicable:
       return BaseScreen::kNotApplicable;
   }
@@ -85,6 +143,11 @@ PersonalizedRecommendAppsScreen::~PersonalizedRecommendAppsScreen() = default;
 
 bool PersonalizedRecommendAppsScreen::MaybeSkip(WizardContext& context) {
   if (context.skip_post_login_screens_for_tests) {
+    exit_callback_.Run(Result::kNotApplicable);
+    return true;
+  }
+
+  if (!features::IsOobePersonalizedOnboardingEnabled()) {
     exit_callback_.Run(Result::kNotApplicable);
     return true;
   }
@@ -128,6 +191,13 @@ void PersonalizedRecommendAppsScreen::ShowImpl() {
 
   view_->Show();
 
+  timeout_overview_timer_ = std::make_unique<base::OneShotTimer>();
+  timeout_overview_timer_->Start(
+      FROM_HERE, delay_exit_timeout_, this,
+      &PersonalizedRecommendAppsScreen::ExitScreenTimeout);
+
+  loading_start_time_ = base::TimeTicks::Now();
+
   raw_ptr<OobeAppsDiscoveryService> oobe_apps_discovery_service_ =
       OobeAppsDiscoveryServiceFactory::GetForProfile(
           ProfileManager::GetActiveUserProfile());
@@ -143,19 +213,19 @@ void PersonalizedRecommendAppsScreen::OnResponseReceived(
   if (result != AppsFetchingResult::kSuccess) {
     LOG(ERROR)
         << "Got an error when fetched cached data from the OOBE Apps Service";
-    exit_callback_.Run(Result::kNotApplicable);
+    exit_callback_.Run(Result::kError);
     return;
   }
 
   if (app_infos.empty()) {
     LOG(ERROR) << "Empty set of apps received from the server";
-    exit_callback_.Run(Result::kNotApplicable);
+    exit_callback_.Run(Result::kDataMalformed);
     return;
   }
 
   if (use_cases.empty()) {
     LOG(ERROR) << "Empty set of use-cases received from the server";
-    exit_callback_.Run(Result::kNotApplicable);
+    exit_callback_.Run(Result::kDataMalformed);
     return;
   }
 
@@ -171,7 +241,7 @@ void PersonalizedRecommendAppsScreen::OnResponseReceived(
   //      selected" use case as the first element.
   //
   // 2. Maps Apps to Use Cases:
-  //    - Creates a map (`apps_to_use_cases`) where keys are app IDs and
+  //    - Creates a map (`use_cases_to_apps`) where keys are app IDs and
   //      values are lists of corresponding use case IDs.
   //
   // 3. Creates WebUI-Ready App Data:
@@ -212,29 +282,27 @@ void PersonalizedRecommendAppsScreen::OnResponseReceived(
                  << " use-case as zero index one, expected: "
                  << kNoUseCasesSelectedIDName << ", server data is malformed"
                  << ", skipping recommend apps screen";
-      exit_callback_.Run(Result::kNotApplicable);
+      exit_callback_.Run(Result::kDataMalformed);
       return;
     }
     selected_use_cases.emplace_back(use_cases.front());
   }
 
   std::unordered_map<std::string, std::vector<OOBEAppDefinition>>
-      apps_to_use_cases;
+      use_cases_to_apps;
+
+  app_package_id_to_order_.clear();
 
   for (const auto& app : app_infos) {
-    std::vector<std::string> tags = app.GetTags();
-    // TODO: Remove this logic once server side data is finalized and updated.
-    // There should be no apps with zero tags, but for now we will add all such
-    // apps into a special "zero use-cases selected" group, which is displayed
-    // when user skips device-use case screen.
-    if (tags.empty()) {
-      tags.emplace_back(use_cases.front().GetID());
+    if (app.GetPackageId() != std::nullopt) {
+      app_package_id_to_order_[app.GetPackageId()->ToString()] = app.GetOrder();
     }
 
+    std::vector<std::string> tags = app.GetTags();
     for (const auto& tag : tags) {
-      auto it = apps_to_use_cases.find(tag);
-      if (it == apps_to_use_cases.end()) {
-        apps_to_use_cases[tag] = std::vector<OOBEAppDefinition>{app};
+      auto it = use_cases_to_apps.find(tag);
+      if (it == use_cases_to_apps.end()) {
+        use_cases_to_apps[tag] = std::vector<OOBEAppDefinition>{app};
 
       } else {
         it->second.emplace_back(app);
@@ -248,19 +316,31 @@ void PersonalizedRecommendAppsScreen::OnResponseReceived(
   // in case multiple attached use-cases were selected by the user.
   std::unordered_set<std::string> used_apps_uuids;
 
-  // We pass a map of use_case_name` -> list of apps to the screen's WebUI.
-  base::Value::Dict apps_dict;
+  base::Value::List apps_by_use_cases_list;
+
+  // Reset it on each filtering so it's not persisted between screen
+  // back/next flow.
+  filtered_apps_count_by_type_.clear();
 
   for (const auto& selected_use_case : selected_use_cases) {
     base::Value::List apps_list;
-    DCHECK(apps_to_use_cases.find(selected_use_case.GetID()) !=
-           apps_to_use_cases.end());
-    for (const auto& app : apps_to_use_cases[selected_use_case.GetID()]) {
+    // Handle case when server-side provided use-case that doesn't have any apps
+    // attached to it.
+    if (use_cases_to_apps.find(selected_use_case.GetID()) ==
+        use_cases_to_apps.end()) {
+      LOG(ERROR) << "No applications related to the "
+                 << selected_use_case.GetID()
+                 << " use-case found, check server-side data";
+      continue;
+    }
+    for (const auto& app : use_cases_to_apps[selected_use_case.GetID()]) {
       if (used_apps_uuids.find(app.GetAppGroupUUID()) !=
           used_apps_uuids.end()) {
         continue;
       }
       used_apps_uuids.insert(app.GetAppGroupUUID());
+
+      filtered_apps_count_by_type_[app.GetPlatform()] += 1;
 
       base::Value::Dict app_dict(
           base::Value::Dict()
@@ -276,38 +356,63 @@ void PersonalizedRecommendAppsScreen::OnResponseReceived(
     }
 
     if (!apps_list.empty()) {
-      // Map a name of use-case to the list of filetered apps.
-      apps_dict.Set(selected_use_case.GetLabel(), std::move(apps_list));
+      // Create data that we pass to the WebUI.
+      apps_by_use_cases_list.Append(
+          base::Value::Dict()
+              .Set("name", selected_use_case.GetLabel())
+              .Set("apps", std::move(apps_list)));
     }
   }
 
-  if (apps_dict.empty()) {
+  if (apps_by_use_cases_list.empty()) {
     LOG(ERROR) << "No apps found after filtering, skipping the screen";
-    exit_callback_.Run(Result::kNotApplicable);
+    exit_callback_.Run(Result::kDataMalformed);
     return;
   }
-
-  apps_category_map_ = std::move(apps_dict);
 
   delay_set_apps_timer_ = std::make_unique<base::OneShotTimer>();
 
   delay_set_apps_timer_->Start(
-      FROM_HERE, kDelaySetCategoriesAppsMapTime, this,
-      &PersonalizedRecommendAppsScreen::SetCategoriesAppsMapData);
+      FROM_HERE, delay_set_apps_step_,
+      base::BindOnce(&PersonalizedRecommendAppsScreen::SetAppsAndUseCasesData,
+                     weak_factory_.GetWeakPtr(),
+                     std::move(apps_by_use_cases_list)));
 }
 
 void PersonalizedRecommendAppsScreen::HideImpl() {}
 
 void PersonalizedRecommendAppsScreen::OnInstall(
-    base::Value::List selected_apps_package_ids) const {
+    base::Value::List selected_apps_package_ids) {
   base::Value::List selected_arc_apps;
   std::vector<apps::PackageId> selected_web_apps;
+
+  int filtered_arc_apps_count =
+      filtered_apps_count_by_type_[apps::PackageType::kArc];
+  int filtered_web_apps_count =
+      filtered_apps_count_by_type_[apps::PackageType::kWeb];
+  int filtered_apps_total_count =
+      filtered_arc_apps_count + filtered_web_apps_count;
+
+  int selected_apps_total_count =
+      static_cast<int>(selected_apps_package_ids.size());
+  RecordUmaSelectedAppsTotalCount(selected_apps_total_count);
+
+  RecordUmaSelectedAppsTotalPercentage(
+      (filtered_apps_total_count > 0)
+          ? (100 * selected_apps_total_count / filtered_apps_total_count)
+          : 0);
 
   // We need to separate ARC and Web apps because they are installed
   // differently.
   // TODO(b/341309803): Unify installation logic by using AppInstallService for
   // all cases when available.
   for (const auto& selected_app_package_id : selected_apps_package_ids) {
+    auto it =
+        app_package_id_to_order_.find(selected_app_package_id.GetString());
+    if (it != app_package_id_to_order_.end()) {
+      RecordUmaAppID(it->second);
+    }
+
     std::optional<apps::PackageId> package_id =
         apps::PackageId::FromString(selected_app_package_id.GetString());
     if (!package_id.has_value()) {
@@ -320,6 +425,24 @@ void PersonalizedRecommendAppsScreen::OnInstall(
       selected_web_apps.emplace_back(std::move(*package_id));
     }
   }
+
+  int selected_arc_apps_count = selected_arc_apps.size();
+  RecordUmaSelectedAppsCount(selected_arc_apps_count, apps::PackageType::kArc);
+
+  RecordUmaSelectedAppsPercentage(
+      (filtered_arc_apps_count > 0)
+          ? (100 * selected_arc_apps_count / filtered_arc_apps_count)
+          : 0,
+      apps::PackageType::kArc);
+
+  int selected_web_apps_count = selected_web_apps.size();
+  RecordUmaSelectedAppsCount(selected_web_apps_count, apps::PackageType::kWeb);
+
+  RecordUmaSelectedAppsPercentage(
+      (filtered_web_apps_count > 0)
+          ? (100 * selected_web_apps_count / filtered_web_apps_count)
+          : 0,
+      apps::PackageType::kWeb);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
 
@@ -353,26 +476,36 @@ void PersonalizedRecommendAppsScreen::OnInstall(
   }
 }
 
+void PersonalizedRecommendAppsScreen::ExitScreenTimeout() {
+  exit_callback_.Run(Result::kTimeout);
+}
+
 void PersonalizedRecommendAppsScreen::ShowOverviewStep() {
+  RecordUmaLoadingTime(base::TimeTicks::Now() - loading_start_time_);
   if (view_) {
     view_->SetOverviewStep();
   }
 }
 
-void PersonalizedRecommendAppsScreen::SetCategoriesAppsMapData() {
+void PersonalizedRecommendAppsScreen::SetAppsAndUseCasesData(
+    base::Value::List apps_by_use_cases_list) {
   if (view_) {
-    view_->SetCategoriesAppsMapData(std::move(apps_category_map_));
+    view_->SetAppsAndUseCasesData(std::move(apps_by_use_cases_list));
   }
 }
 
 void PersonalizedRecommendAppsScreen::OnUserAction(
     const base::Value::List& args) {
+  if (is_hidden()) {
+    return;
+  }
   const std::string& action_id = args[0].GetString();
 
   if (action_id == kUserActionLoaded) {
+    timeout_overview_timer_.reset();
     delay_overview_timer_ = std::make_unique<base::OneShotTimer>();
     delay_overview_timer_->Start(
-        FROM_HERE, kDelayOverviewStepTime, this,
+        FROM_HERE, delay_overview_step_, this,
         &PersonalizedRecommendAppsScreen::ShowOverviewStep);
     return;
   }

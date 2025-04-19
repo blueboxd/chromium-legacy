@@ -289,6 +289,10 @@ void TypingCommand::ForwardDeleteKeyPressed(Document& document,
             LastTypingCommandIfStillOpenForTyping(frame)) {
       UpdateSelectionIfDifferentFromCurrentSelection(last_typing_command,
                                                      frame);
+      // Reset the 'input_type_' to default value. The actual 'input_type_' will
+      // be determined later in TypingCommand::GetInputType() based on the
+      // 'command_type_'
+      last_typing_command->input_type_ = InputEvent::InputType::kNone;
       last_typing_command->ForwardDeleteKeyPressed(
           granularity, options & kKillRing, editing_state);
       return;
@@ -787,6 +791,22 @@ bool TypingCommand::MakeEditableRootEmpty(EditingState* editing_state) {
     }
   }
 
+  // The selection is updated prior to the removal of the element
+  // that makes the node empty. (see crbug.com/40876506)
+  if (RuntimeEnabledFeatures::
+          HandleSelectionChangeOnDeletingEmptyElementEnabled()) {
+    LocalFrame* const frame = GetDocument().GetFrame();
+    const SelectionInDOMTree& new_selection =
+        SelectionInDOMTree::Builder()
+            .Collapse(Position::FirstPositionInNode(*root))
+            .Build();
+    frame->Selection().SetSelection(
+        new_selection, SetSelectionOptions::Builder()
+                           .SetIsDirectional(SelectionIsDirectional())
+                           .Build());
+    SetEndingSelection(SelectionForUndoStep::From(new_selection));
+  }
+
   RemoveAllChildrenIfPossible(root, editing_state);
   if (editing_state->IsAborted() || root->firstChild())
     return false;
@@ -794,11 +814,18 @@ bool TypingCommand::MakeEditableRootEmpty(EditingState* editing_state) {
   AddBlockPlaceholderIfNeeded(root, editing_state);
   if (editing_state->IsAborted())
     return false;
-  const SelectionInDOMTree& selection =
-      SelectionInDOMTree::Builder()
-          .Collapse(Position::FirstPositionInNode(*root))
-          .Build();
-  SetEndingSelection(SelectionForUndoStep::From(selection));
+
+  // If the feature to handle selection change on deleting an empty element is
+  // not enabled, manually set the ending selection. Otherwise, the selection is
+  // already handled by the feature.
+  if (!(RuntimeEnabledFeatures::
+            HandleSelectionChangeOnDeletingEmptyElementEnabled())) {
+    const SelectionInDOMTree& selection =
+        SelectionInDOMTree::Builder()
+            .Collapse(Position::FirstPositionInNode(*root))
+            .Build();
+    SetEndingSelection(SelectionForUndoStep::From(selection));
+  }
 
   return true;
 }

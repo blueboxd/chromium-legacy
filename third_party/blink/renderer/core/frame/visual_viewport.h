@@ -209,7 +209,7 @@ class CORE_EXPORT VisualViewport : public GarbageCollected<VisualViewport>,
   bool IsScrollCornerVisible() const override { return false; }
   gfx::Rect ScrollCornerRect() const override { return gfx::Rect(); }
   gfx::Vector2d ScrollOffsetInt() const override {
-    return gfx::ToFlooredVector2d(offset_);
+    return SnapScrollOffsetToPhysicalPixels(offset_);
   }
   ScrollOffset GetScrollOffset() const override { return offset_; }
   gfx::Vector2d MinimumScrollOffsetInt() const override;
@@ -304,8 +304,7 @@ class CORE_EXPORT VisualViewport : public GarbageCollected<VisualViewport>,
   //
   // A VisualViewport is created in renderers for remote frames / nested pages;
   // however, in those cases it is "inert", it cannot change scale or location
-  // values. Only a <portal> or outermost main frame can have an active
-  // viewport.
+  // values. Only an outermost main frame can have an active viewport.
   bool IsActiveViewport() const;
 
   OverscrollType GetOverscrollType() const { return overscroll_type_; }
@@ -362,14 +361,13 @@ class CORE_EXPORT VisualViewport : public GarbageCollected<VisualViewport>,
   scoped_refptr<cc::SolidColorScrollbarLayer> scrollbar_layer_vertical_;
 
   PropertyTreeStateOrAlias parent_property_tree_state_;
-  scoped_refptr<TransformPaintPropertyNode> device_emulation_transform_node_;
-  scoped_refptr<TransformPaintPropertyNode>
-      overscroll_elasticity_transform_node_;
-  scoped_refptr<TransformPaintPropertyNode> page_scale_node_;
-  scoped_refptr<TransformPaintPropertyNode> scroll_translation_node_;
-  scoped_refptr<ScrollPaintPropertyNode> scroll_node_;
-  scoped_refptr<EffectPaintPropertyNode> horizontal_scrollbar_effect_node_;
-  scoped_refptr<EffectPaintPropertyNode> vertical_scrollbar_effect_node_;
+  Member<TransformPaintPropertyNode> device_emulation_transform_node_;
+  Member<TransformPaintPropertyNode> overscroll_elasticity_transform_node_;
+  Member<TransformPaintPropertyNode> page_scale_node_;
+  Member<TransformPaintPropertyNode> scroll_translation_node_;
+  Member<ScrollPaintPropertyNode> scroll_node_;
+  Member<EffectPaintPropertyNode> horizontal_scrollbar_effect_node_;
+  Member<EffectPaintPropertyNode> vertical_scrollbar_effect_node_;
 
   // Offset of the visual viewport from the main frame's origin, in CSS pixels.
   ScrollOffset offset_;

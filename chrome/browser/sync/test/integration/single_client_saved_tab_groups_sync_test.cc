@@ -11,10 +11,11 @@
 #include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_service_factory.h"
 #include "components/saved_tab_groups/features.h"
 #include "components/saved_tab_groups/saved_tab_group.h"
+#include "components/saved_tab_groups/saved_tab_group_model.h"
 #include "components/saved_tab_groups/saved_tab_group_sync_bridge.h"
 #include "components/saved_tab_groups/saved_tab_group_tab.h"
+#include "components/sync/base/data_type.h"
 #include "components/sync/base/features.h"
-#include "components/sync/base/model_type.h"
 #include "components/sync/protocol/saved_tab_group_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/protocol/sync_entity.pb.h"
@@ -93,7 +94,7 @@ class SingleClientSavedTabGroupsSyncTest
 
   void RemoveDataFromFakeServer(base::Uuid uuid) {
     std::vector<sync_pb::SyncEntity> server_tabs_and_groups =
-        GetFakeServer()->GetSyncEntitiesByModelType(syncer::SAVED_TAB_GROUP);
+        GetFakeServer()->GetSyncEntitiesByDataType(syncer::SAVED_TAB_GROUP);
 
     // Remove the entity with a matching `uuid`.
     for (const sync_pb::SyncEntity& tab_or_group : server_tabs_and_groups) {
@@ -112,7 +113,7 @@ class SingleClientSavedTabGroupsSyncTest
 
   bool ContainsUuidInFakeServer(base::Uuid uuid) {
     const std::vector<sync_pb::SyncEntity> server_tabs_and_groups =
-        GetFakeServer()->GetSyncEntitiesByModelType(syncer::SAVED_TAB_GROUP);
+        GetFakeServer()->GetSyncEntitiesByDataType(syncer::SAVED_TAB_GROUP);
 
     const std::string& uuid_string = uuid.AsLowercaseString();
 
@@ -123,6 +124,10 @@ class SingleClientSavedTabGroupsSyncTest
         });
 
     return it != server_tabs_and_groups.end();
+  }
+
+  SavedTabGroupModel* GetSavedTabGroupModel() {
+    return SavedTabGroupServiceFactory::GetForProfile(GetProfile(0))->model();
   }
 
  private:
@@ -148,20 +153,19 @@ IN_PROC_BROWSER_TEST_P(SingleClientSavedTabGroupsSyncTest,
   ASSERT_TRUE(
       GetSyncService(0)->GetActiveDataTypes().Has(syncer::SAVED_TAB_GROUP));
 
-  SavedTabGroupKeyedService* const service =
-      SavedTabGroupServiceFactory::GetForProfile(GetProfile(0));
+  SavedTabGroupModel* const model = GetSavedTabGroupModel();
 
   // Verify they are added to the model.
   EXPECT_TRUE(
-      tab_groups::SavedTabOrGroupExistsChecker(service, group1.saved_guid())
+      tab_groups::SavedTabOrGroupExistsChecker(model, group1.saved_guid())
           .Wait());
 
   EXPECT_TRUE(
-      tab_groups::SavedTabOrGroupExistsChecker(service, tab1.saved_tab_guid())
+      tab_groups::SavedTabOrGroupExistsChecker(model, tab1.saved_tab_guid())
           .Wait());
 
   EXPECT_TRUE(
-      tab_groups::SavedTabOrGroupExistsChecker(service, tab2.saved_tab_guid())
+      tab_groups::SavedTabOrGroupExistsChecker(model, tab2.saved_tab_guid())
           .Wait());
 }
 
@@ -180,16 +184,15 @@ IN_PROC_BROWSER_TEST_P(SingleClientSavedTabGroupsSyncTest,
   ASSERT_TRUE(
       GetSyncService(0)->GetActiveDataTypes().Has(syncer::SAVED_TAB_GROUP));
 
-  SavedTabGroupKeyedService* const service =
-      SavedTabGroupServiceFactory::GetForProfile(GetProfile(0));
+  SavedTabGroupModel* const model = GetSavedTabGroupModel();
 
   // Verify the group is added to the model but not the tab.
   EXPECT_TRUE(
-      tab_groups::SavedTabOrGroupExistsChecker(service, group1.saved_guid())
+      tab_groups::SavedTabOrGroupExistsChecker(model, group1.saved_guid())
           .Wait());
 
-  EXPECT_TRUE(service->model()->Contains(group1.saved_guid()));
-  EXPECT_TRUE(service->model()->Get(group1.saved_guid())->saved_tabs().empty());
+  EXPECT_TRUE(model->Contains(group1.saved_guid()));
+  EXPECT_TRUE(model->Get(group1.saved_guid())->saved_tabs().empty());
 }
 
 // Save a tab with no group and validate it is added to the model.
@@ -207,8 +210,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientSavedTabGroupsSyncTest,
   ASSERT_TRUE(
       GetSyncService(0)->GetActiveDataTypes().Has(syncer::SAVED_TAB_GROUP));
 
-  SavedTabGroupKeyedService* const service =
-      SavedTabGroupServiceFactory::GetForProfile(GetProfile(0));
+  SavedTabGroupModel* const model = GetSavedTabGroupModel();
 
   // TODO(crbug.com/40912573): Verify that the orphaned tab exists but isn't
   // linked to any group.
@@ -217,11 +219,11 @@ IN_PROC_BROWSER_TEST_P(SingleClientSavedTabGroupsSyncTest,
   AddGroupToFakeServer(group1);
 
   EXPECT_TRUE(
-      tab_groups::SavedTabOrGroupExistsChecker(service, group1.saved_guid())
+      tab_groups::SavedTabOrGroupExistsChecker(model, group1.saved_guid())
           .Wait());
 
   EXPECT_TRUE(
-      tab_groups::SavedTabOrGroupExistsChecker(service, tab1.saved_tab_guid())
+      tab_groups::SavedTabOrGroupExistsChecker(model, tab1.saved_tab_guid())
           .Wait());
 }
 
@@ -243,18 +245,17 @@ IN_PROC_BROWSER_TEST_P(SingleClientSavedTabGroupsSyncTest, AddToExistingGroup) {
   ASSERT_TRUE(
       GetSyncService(0)->GetActiveDataTypes().Has(syncer::SAVED_TAB_GROUP));
 
-  SavedTabGroupKeyedService* const service =
-      SavedTabGroupServiceFactory::GetForProfile(GetProfile(0));
+  SavedTabGroupModel* const model = GetSavedTabGroupModel();
 
   // Verify they are added to the model.
   ASSERT_TRUE(
-      tab_groups::SavedTabOrGroupExistsChecker(service, group1.saved_guid())
+      tab_groups::SavedTabOrGroupExistsChecker(model, group1.saved_guid())
           .Wait());
   ASSERT_TRUE(
-      tab_groups::SavedTabOrGroupExistsChecker(service, tab1.saved_tab_guid())
+      tab_groups::SavedTabOrGroupExistsChecker(model, tab1.saved_tab_guid())
           .Wait());
   ASSERT_TRUE(
-      tab_groups::SavedTabOrGroupExistsChecker(service, tab2.saved_tab_guid())
+      tab_groups::SavedTabOrGroupExistsChecker(model, tab2.saved_tab_guid())
           .Wait());
 
   // Add another tab to `group1`.
@@ -264,7 +265,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientSavedTabGroupsSyncTest, AddToExistingGroup) {
 
   // Verify the group is updated with the additional tab.
   EXPECT_TRUE(
-      tab_groups::SavedTabOrGroupExistsChecker(service, tab3.saved_tab_guid())
+      tab_groups::SavedTabOrGroupExistsChecker(model, tab3.saved_tab_guid())
           .Wait());
 }
 
@@ -286,20 +287,19 @@ IN_PROC_BROWSER_TEST_P(SingleClientSavedTabGroupsSyncTest, RemoveTabFromGroup) {
   ASSERT_TRUE(
       GetSyncService(0)->GetActiveDataTypes().Has(syncer::SAVED_TAB_GROUP));
 
-  SavedTabGroupKeyedService* const service =
-      SavedTabGroupServiceFactory::GetForProfile(GetProfile(0));
+  SavedTabGroupModel* const model = GetSavedTabGroupModel();
 
   // Verify they are added to the model.
   ASSERT_TRUE(
-      tab_groups::SavedTabOrGroupExistsChecker(service, group1.saved_guid())
+      tab_groups::SavedTabOrGroupExistsChecker(model, group1.saved_guid())
           .Wait());
 
   ASSERT_TRUE(
-      tab_groups::SavedTabOrGroupExistsChecker(service, tab1.saved_tab_guid())
+      tab_groups::SavedTabOrGroupExistsChecker(model, tab1.saved_tab_guid())
           .Wait());
 
   ASSERT_TRUE(
-      tab_groups::SavedTabOrGroupExistsChecker(service, tab2.saved_tab_guid())
+      tab_groups::SavedTabOrGroupExistsChecker(model, tab2.saved_tab_guid())
           .Wait());
 
   // Remove tab2.
@@ -307,7 +307,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientSavedTabGroupsSyncTest, RemoveTabFromGroup) {
 
   // Verify it was removed from the model.
   EXPECT_TRUE(tab_groups::SavedTabOrGroupDoesNotExistChecker(
-                  service, tab2.saved_tab_guid())
+                  model, tab2.saved_tab_guid())
                   .Wait());
 }
 
@@ -329,18 +329,17 @@ IN_PROC_BROWSER_TEST_P(SingleClientSavedTabGroupsSyncTest, RemoveGroup) {
   ASSERT_TRUE(
       GetSyncService(0)->GetActiveDataTypes().Has(syncer::SAVED_TAB_GROUP));
 
-  SavedTabGroupKeyedService* const service =
-      SavedTabGroupServiceFactory::GetForProfile(GetProfile(0));
+  SavedTabGroupModel* const model = GetSavedTabGroupModel();
 
   // Verify they are added to the model.
   ASSERT_TRUE(
-      tab_groups::SavedTabOrGroupExistsChecker(service, group1.saved_guid())
+      tab_groups::SavedTabOrGroupExistsChecker(model, group1.saved_guid())
           .Wait());
   ASSERT_TRUE(
-      tab_groups::SavedTabOrGroupExistsChecker(service, tab1.saved_tab_guid())
+      tab_groups::SavedTabOrGroupExistsChecker(model, tab1.saved_tab_guid())
           .Wait());
   ASSERT_TRUE(
-      tab_groups::SavedTabOrGroupExistsChecker(service, tab2.saved_tab_guid())
+      tab_groups::SavedTabOrGroupExistsChecker(model, tab2.saved_tab_guid())
           .Wait());
 
   // Simulate that the group was deleted on another device, which
@@ -348,14 +347,14 @@ IN_PROC_BROWSER_TEST_P(SingleClientSavedTabGroupsSyncTest, RemoveGroup) {
   RemoveDataFromFakeServer(group1.saved_guid());
 
   // Verify the group and its tabs were removed from the model.
+  EXPECT_TRUE(
+      tab_groups::SavedTabOrGroupDoesNotExistChecker(model, group1.saved_guid())
+          .Wait());
   EXPECT_TRUE(tab_groups::SavedTabOrGroupDoesNotExistChecker(
-                  service, group1.saved_guid())
+                  model, tab1.saved_tab_guid())
                   .Wait());
   EXPECT_TRUE(tab_groups::SavedTabOrGroupDoesNotExistChecker(
-                  service, tab1.saved_tab_guid())
-                  .Wait());
-  EXPECT_TRUE(tab_groups::SavedTabOrGroupDoesNotExistChecker(
-                  service, tab2.saved_tab_guid())
+                  model, tab2.saved_tab_guid())
                   .Wait());
 
   // Verify only the tabs are stored in the server.
@@ -378,12 +377,11 @@ IN_PROC_BROWSER_TEST_P(SingleClientSavedTabGroupsSyncTest,
   ASSERT_TRUE(
       GetSyncService(0)->GetActiveDataTypes().Has(syncer::SAVED_TAB_GROUP));
 
-  SavedTabGroupKeyedService* const service =
-      SavedTabGroupServiceFactory::GetForProfile(GetProfile(0));
+  SavedTabGroupModel* const model = GetSavedTabGroupModel();
 
   // Verify they are added to the model.
   ASSERT_TRUE(
-      tab_groups::SavedTabOrGroupExistsChecker(service, group1.saved_guid())
+      tab_groups::SavedTabOrGroupExistsChecker(model, group1.saved_guid())
           .Wait());
 
   // Update metadata for group1in the server.
@@ -392,7 +390,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientSavedTabGroupsSyncTest,
   AddGroupToFakeServer(group1);
 
   // Verify the group's metadata is updated locally.
-  EXPECT_TRUE(tab_groups::SavedTabGroupMatchesChecker(service, group1).Wait());
+  EXPECT_TRUE(tab_groups::SavedTabGroupMatchesChecker(model, group1).Wait());
 }
 
 // Update the URL and title of a saved tab already in the model.
@@ -411,15 +409,14 @@ IN_PROC_BROWSER_TEST_P(SingleClientSavedTabGroupsSyncTest, UpdatedTabData) {
   ASSERT_TRUE(
       GetSyncService(0)->GetActiveDataTypes().Has(syncer::SAVED_TAB_GROUP));
 
-  SavedTabGroupKeyedService* const service =
-      SavedTabGroupServiceFactory::GetForProfile(GetProfile(0));
+  SavedTabGroupModel* const model = GetSavedTabGroupModel();
 
   // Verify they are added to the model.
   ASSERT_TRUE(
-      tab_groups::SavedTabOrGroupExistsChecker(service, group1.saved_guid())
+      tab_groups::SavedTabOrGroupExistsChecker(model, group1.saved_guid())
           .Wait());
   ASSERT_TRUE(
-      tab_groups::SavedTabOrGroupExistsChecker(service, tab1.saved_tab_guid())
+      tab_groups::SavedTabOrGroupExistsChecker(model, tab1.saved_tab_guid())
           .Wait());
 
   // Update url and title for tab1 in the server.
@@ -428,7 +425,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientSavedTabGroupsSyncTest, UpdatedTabData) {
   AddTabToFakeServer(tab1);
 
   // Verify the tab is updated locally to match.
-  EXPECT_TRUE(tab_groups::SavedTabMatchesChecker(service, tab1).Wait());
+  EXPECT_TRUE(tab_groups::SavedTabMatchesChecker(model, tab1).Wait());
 }
 
 // Reorder groups already saved in the model.
@@ -448,15 +445,14 @@ IN_PROC_BROWSER_TEST_P(SingleClientSavedTabGroupsSyncTest, ReorderGroups) {
   ASSERT_TRUE(
       GetSyncService(0)->GetActiveDataTypes().Has(syncer::SAVED_TAB_GROUP));
 
-  SavedTabGroupKeyedService* const service =
-      SavedTabGroupServiceFactory::GetForProfile(GetProfile(0));
+  SavedTabGroupModel* const model = GetSavedTabGroupModel();
 
   // Verify they are added to the model.
   ASSERT_TRUE(
-      tab_groups::SavedTabOrGroupExistsChecker(service, group1.saved_guid())
+      tab_groups::SavedTabOrGroupExistsChecker(model, group1.saved_guid())
           .Wait());
   ASSERT_TRUE(
-      tab_groups::SavedTabOrGroupExistsChecker(service, group2.saved_guid())
+      tab_groups::SavedTabOrGroupExistsChecker(model, group2.saved_guid())
           .Wait());
 
   // Update the positions of the groups in the server.
@@ -467,7 +463,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientSavedTabGroupsSyncTest, ReorderGroups) {
 
   // Verify the group positions are updated in the local model as well.
   EXPECT_TRUE(tab_groups::GroupOrderChecker(
-                  service, {group2.saved_guid(), group1.saved_guid()})
+                  model, {group2.saved_guid(), group1.saved_guid()})
                   .Wait());
 }
 
@@ -488,18 +484,17 @@ IN_PROC_BROWSER_TEST_P(SingleClientSavedTabGroupsSyncTest, ReorderTabs) {
   ASSERT_TRUE(
       GetSyncService(0)->GetActiveDataTypes().Has(syncer::SAVED_TAB_GROUP));
 
-  SavedTabGroupKeyedService* const service =
-      SavedTabGroupServiceFactory::GetForProfile(GetProfile(0));
+  SavedTabGroupModel* const model = GetSavedTabGroupModel();
 
   // Verify they are added to the model.
   ASSERT_TRUE(
-      tab_groups::SavedTabOrGroupExistsChecker(service, group1.saved_guid())
+      tab_groups::SavedTabOrGroupExistsChecker(model, group1.saved_guid())
           .Wait());
   ASSERT_TRUE(
-      tab_groups::SavedTabOrGroupExistsChecker(service, tab1.saved_tab_guid())
+      tab_groups::SavedTabOrGroupExistsChecker(model, tab1.saved_tab_guid())
           .Wait());
   ASSERT_TRUE(
-      tab_groups::SavedTabOrGroupExistsChecker(service, tab2.saved_tab_guid())
+      tab_groups::SavedTabOrGroupExistsChecker(model, tab2.saved_tab_guid())
           .Wait());
 
   // Reorder the tabs in group 1 on the server.
@@ -510,7 +505,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientSavedTabGroupsSyncTest, ReorderTabs) {
 
   // Verify the tab order was updated in the model.
   EXPECT_TRUE(tab_groups::TabOrderChecker(
-                  service, group1.saved_guid(),
+                  model, group1.saved_guid(),
                   {tab2.saved_tab_guid(), tab1.saved_tab_guid()})
                   .Wait());
 }
@@ -525,25 +520,24 @@ IN_PROC_BROWSER_TEST_P(SingleClientSavedTabGroupsSyncTest,
   AddDataToFakeServer(CreateSavedTabGroupSpecific(guid1, /*ui_v2=*/true, 0));
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  SavedTabGroupKeyedService* const service =
-      SavedTabGroupServiceFactory::GetForProfile(GetProfile(0));
+  SavedTabGroupModel* const model = GetSavedTabGroupModel();
 
   // Verify guid1 is added to the model.
-  ASSERT_TRUE(tab_groups::SavedTabOrGroupExistsChecker(service, guid1).Wait());
+  ASSERT_TRUE(tab_groups::SavedTabOrGroupExistsChecker(model, guid1).Wait());
 
   // Verify guid1 has position even the position in the proto is
   // not set.
-  EXPECT_EQ(0, service->model()->Get(guid1)->position());
+  EXPECT_EQ(0, model->Get(guid1)->position());
 
   auto guid2 = base::Uuid::GenerateRandomV4();
   AddDataToFakeServer(CreateSavedTabGroupSpecific(guid2, /*ui_v2=*/true, 1));
 
   // Verify guid2 is added to the model.
-  ASSERT_TRUE(tab_groups::SavedTabOrGroupExistsChecker(service, guid2).Wait());
+  ASSERT_TRUE(tab_groups::SavedTabOrGroupExistsChecker(model, guid2).Wait());
 
   // Verify guid2 has position even the position in the proto is
   // not set.
-  EXPECT_EQ(0, service->model()->Get(guid2)->position());
+  EXPECT_EQ(0, model->Get(guid2)->position());
 }
 
 IN_PROC_BROWSER_TEST_P(SingleClientSavedTabGroupsSyncTest,
@@ -556,28 +550,121 @@ IN_PROC_BROWSER_TEST_P(SingleClientSavedTabGroupsSyncTest,
   AddDataToFakeServer(CreateSavedTabGroupSpecific(guid1, /*ui_v2=*/false, 0));
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  SavedTabGroupKeyedService* const service =
-      SavedTabGroupServiceFactory::GetForProfile(GetProfile(0));
+  SavedTabGroupModel* const model = GetSavedTabGroupModel();
 
   // Verify guid1 is added to the model.
-  ASSERT_TRUE(tab_groups::SavedTabOrGroupExistsChecker(service, guid1).Wait());
+  ASSERT_TRUE(tab_groups::SavedTabOrGroupExistsChecker(model, guid1).Wait());
 
   // Verify guid1 has no position set even the position in the proto is set.
-  EXPECT_EQ(std::nullopt, service->model()->Get(guid1)->position());
+  EXPECT_EQ(std::nullopt, model->Get(guid1)->position());
 
   auto guid2 = base::Uuid::GenerateRandomV4();
   AddDataToFakeServer(CreateSavedTabGroupSpecific(guid2, /*ui_v2=*/false, 1));
 
   // Verify guid2 is added to the model.
-  ASSERT_TRUE(tab_groups::SavedTabOrGroupExistsChecker(service, guid2).Wait());
+  ASSERT_TRUE(tab_groups::SavedTabOrGroupExistsChecker(model, guid2).Wait());
 
   // Verify guid2 has no position set even the position in the proto is set.
-  EXPECT_EQ(std::nullopt, service->model()->Get(guid2)->position());
+  EXPECT_EQ(std::nullopt, model->Get(guid2)->position());
 }
 
 INSTANTIATE_TEST_SUITE_P(SavedTabGroup,
                          SingleClientSavedTabGroupsSyncTest,
                          testing::Bool());
+
+// On ChromeOS, Sync-the-feature gets started automatically once a primary
+// account is signed in and the transport mode is not a thing.
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+
+// Subclass that enables an additional feature, namely
+// `syncer::kReplaceSyncPromosWithSignInPromos`.
+class SingleClientSavedTabGroupsSyncTestWithTransportMode
+    : public SingleClientSavedTabGroupsSyncTest {
+ public:
+  SingleClientSavedTabGroupsSyncTestWithTransportMode() = default;
+  ~SingleClientSavedTabGroupsSyncTestWithTransportMode() override = default;
+
+ private:
+  base::test::ScopedFeatureList additional_features_{
+      syncer::kReplaceSyncPromosWithSignInPromos};
+};
+
+// Save a group with two tabs and validate they are added to the model for a
+// user that signs in without turning sync-the-feature on. It also verifies that
+// the downloaded data goes away upon signout.
+IN_PROC_BROWSER_TEST_P(SingleClientSavedTabGroupsSyncTestWithTransportMode,
+                       DownloadsGroupAndTabsInTransportMode) {
+  SavedTabGroup group1(u"Group 1", tab_groups::TabGroupColorId::kGrey, {},
+                       /*position=*/0);
+  SavedTabGroupTab tab1(GURL("about:blank"), u"about:blank",
+                        group1.saved_guid(), /*position=*/0);
+  SavedTabGroupTab tab2(GURL("about:blank"), u"about:blank",
+                        group1.saved_guid(), /*position=*/1);
+
+  // Add a group with two tabs to sync.
+  AddGroupToFakeServer(group1);
+  AddTabToFakeServer(tab1);
+  AddTabToFakeServer(tab2);
+
+  ASSERT_TRUE(SetupClients());
+  // Setup a primary account, but don't actually enable Sync-the-feature (so
+  // that Sync will start in transport mode).
+  ASSERT_TRUE(GetClient(0)->SignInPrimaryAccount());
+  // Enable tabs explicitly (as it is off by default).
+#if BUILDFLAG(IS_ANDROID)
+  // On Android, the feature is behind `UserSelectableType::kTabs`.
+  GetSyncService(0)->GetUserSettings()->SetSelectedType(
+      syncer::UserSelectableType::kTabs, true);
+#else   // BUILDFLAG(IS_ANDROID)
+  // On desktop platforms, there is a dedicated toggle.
+  GetSyncService(0)->GetUserSettings()->SetSelectedType(
+      syncer::UserSelectableType::kSavedTabGroups, true);
+#endif  // BUILDFLAG(IS_ANDROID)
+
+  ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
+  ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
+  ASSERT_TRUE(
+      GetSyncService(0)->GetPreferredDataTypes().Has(syncer::SAVED_TAB_GROUP));
+  ASSERT_TRUE(
+      GetSyncService(0)->GetActiveDataTypes().Has(syncer::SAVED_TAB_GROUP));
+
+  SavedTabGroupModel* const model = GetSavedTabGroupModel();
+
+  // Verify they are added to the model.
+  EXPECT_TRUE(
+      tab_groups::SavedTabOrGroupExistsChecker(model, group1.saved_guid())
+          .Wait());
+
+  EXPECT_TRUE(
+      tab_groups::SavedTabOrGroupExistsChecker(model, tab1.saved_tab_guid())
+          .Wait());
+
+  EXPECT_TRUE(
+      tab_groups::SavedTabOrGroupExistsChecker(model, tab2.saved_tab_guid())
+          .Wait());
+
+  // Sign out and verify that the tabs are gone.
+  GetClient(0)->SignOutPrimaryAccount();
+  ASSERT_FALSE(
+      GetSyncService(0)->GetActiveDataTypes().Has(syncer::SAVED_TAB_GROUP));
+  EXPECT_TRUE(
+      tab_groups::SavedTabOrGroupDoesNotExistChecker(model, group1.saved_guid())
+          .Wait());
+
+  EXPECT_TRUE(tab_groups::SavedTabOrGroupDoesNotExistChecker(
+                  model, tab1.saved_tab_guid())
+                  .Wait());
+
+  EXPECT_TRUE(tab_groups::SavedTabOrGroupDoesNotExistChecker(
+                  model, tab2.saved_tab_guid())
+                  .Wait());
+}
+
+INSTANTIATE_TEST_SUITE_P(SavedTabGroup,
+                         SingleClientSavedTabGroupsSyncTestWithTransportMode,
+                         testing::Bool());
+
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace
 }  // namespace tab_groups

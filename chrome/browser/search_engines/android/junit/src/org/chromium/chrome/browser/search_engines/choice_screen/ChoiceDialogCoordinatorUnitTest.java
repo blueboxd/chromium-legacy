@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.search_engines.choice_screen;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -11,8 +13,10 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
+import android.os.Looper;
 import android.view.View;
 
 import com.google.common.collect.ImmutableList;
@@ -20,7 +24,6 @@ import com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -38,6 +41,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.search_engines.DefaultSearchEngineDialogHelper;
 import org.chromium.chrome.browser.search_engines.SearchEnginePromoType;
 import org.chromium.components.search_engines.FakeTemplateUrl;
+import org.chromium.components.search_engines.SearchEngineChoiceService;
 import org.chromium.components.search_engines.TemplateUrl;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogPriority;
@@ -50,7 +54,6 @@ import java.util.List;
 @RunWith(BaseRobolectricTestRunner.class)
 @Features.EnableFeatures({ChromeFeatureList.SEARCH_ENGINE_CHOICE})
 public class ChoiceDialogCoordinatorUnitTest {
-    public @Rule TestRule mFeatureProcessor = new Features.JUnitProcessor();
     public @Rule MockitoRule mMockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
 
     private @Mock ChromeActivity<?> mActivity;
@@ -59,6 +62,8 @@ public class ChoiceDialogCoordinatorUnitTest {
     private @Mock DefaultSearchEngineDialogHelper.Delegate mDialogHelperDelegate;
     private @Mock Callback<Boolean> mOnSuccessCallback;
     private @Mock ChoiceScreenCoordinator mContentCoordinator;
+    private @Mock ChoiceDialogCoordinator mDialogCoordinator;
+    private @Mock SearchEngineChoiceService mSearchEngineChoiceService;
     private @Captor ArgumentCaptor<PropertyModel> mDialogModelCaptor;
 
     private static final TemplateUrl FAKE_SEARCH_ENGINE_A =
@@ -68,6 +73,10 @@ public class ChoiceDialogCoordinatorUnitTest {
 
     @Before
     public void setUp() {
+        SearchEngineChoiceService.setInstanceForTests(mSearchEngineChoiceService);
+    }
+
+    private void setUpMocksForRealCoordinator() {
         doReturn(mModalDialogManager).when(mActivity).getModalDialogManager();
         doReturn(mContentView).when(mContentCoordinator).getContentView();
 
@@ -78,6 +87,7 @@ public class ChoiceDialogCoordinatorUnitTest {
 
     @Test
     public void testShowDialog() {
+        setUpMocksForRealCoordinator();
         ChoiceDialogCoordinator coordinator =
                 new ChoiceDialogCoordinator(mActivity, mDialogHelperDelegate, mOnSuccessCallback) {
                     @Override
@@ -108,6 +118,7 @@ public class ChoiceDialogCoordinatorUnitTest {
 
     @Test
     public void testChooseOnDialog() {
+        setUpMocksForRealCoordinator();
         final Promise<ChoiceScreenDelegate> delegateCaptor = new Promise<>();
 
         ChoiceDialogCoordinator coordinator =
@@ -141,5 +152,88 @@ public class ChoiceDialogCoordinatorUnitTest {
                                 FAKE_SEARCH_ENGINE_B.getKeyword()),
                         FAKE_SEARCH_ENGINE_B.getKeyword());
         verify(mOnSuccessCallback).onResult(true);
+    }
+
+    @Test
+    @Features.EnableFeatures({ChromeFeatureList.CLAY_BLOCKING})
+    public void testShouldShowDeviceChoiceDialog() {
+        doReturn(true).when(mSearchEngineChoiceService).isDeviceChoiceDialogEligible();
+        doReturn(Promise.fulfilled(true))
+                .when(mSearchEngineChoiceService)
+                .shouldShowDeviceChoiceDialog();
+
+        assertNotNull(ChoiceDialogCoordinator.maybeShowInternal(() -> mDialogCoordinator));
+        shadowOf(Looper.getMainLooper()).idle();
+        verify(mDialogCoordinator).show();
+    }
+
+    @Test
+    @Features.EnableFeatures({ChromeFeatureList.CLAY_BLOCKING})
+    public void testShouldShowDeviceChoiceDialog_doesNotShowWhenNotEligible() {
+        doReturn(false).when(mSearchEngineChoiceService).isDeviceChoiceDialogEligible();
+
+        assertNull(ChoiceDialogCoordinator.maybeShowInternal(() -> mDialogCoordinator));
+        shadowOf(Looper.getMainLooper()).idle();
+        verify(mDialogCoordinator, never()).show();
+    }
+
+    @Test
+    @Features.EnableFeatures({ChromeFeatureList.CLAY_BLOCKING})
+    public void testShouldShowDeviceChoiceDialog_doesNotShowWhenShouldNot() {
+        doReturn(true).when(mSearchEngineChoiceService).isDeviceChoiceDialogEligible();
+        doReturn(Promise.fulfilled(false))
+                .when(mSearchEngineChoiceService)
+                .shouldShowDeviceChoiceDialog();
+
+        assertNotNull(ChoiceDialogCoordinator.maybeShowInternal(() -> mDialogCoordinator));
+        shadowOf(Looper.getMainLooper()).idle();
+        verify(mDialogCoordinator, never()).show();
+    }
+
+    @Test
+    @Features.EnableFeatures({ChromeFeatureList.CLAY_BLOCKING})
+    public void testShouldShowDeviceChoiceDialog_showsAfterDelayedApproval() {
+        var pendingPromise = new Promise<Boolean>();
+        doReturn(true).when(mSearchEngineChoiceService).isDeviceChoiceDialogEligible();
+        doReturn(pendingPromise).when(mSearchEngineChoiceService).shouldShowDeviceChoiceDialog();
+
+        assertNotNull(ChoiceDialogCoordinator.maybeShowInternal(() -> mDialogCoordinator));
+        shadowOf(Looper.getMainLooper()).idle();
+        verify(mDialogCoordinator, never()).show();
+
+        pendingPromise.fulfill(true);
+        shadowOf(Looper.getMainLooper()).idle();
+        verify(mDialogCoordinator).show();
+    }
+
+    @Test
+    @Features.EnableFeatures({ChromeFeatureList.CLAY_BLOCKING})
+    public void testShouldShowDeviceChoiceDialog_doesNotShowAfterDelayedDisapproval() {
+        var pendingPromise = new Promise<Boolean>();
+        doReturn(true).when(mSearchEngineChoiceService).isDeviceChoiceDialogEligible();
+        doReturn(pendingPromise).when(mSearchEngineChoiceService).shouldShowDeviceChoiceDialog();
+
+        assertNotNull(ChoiceDialogCoordinator.maybeShowInternal(() -> mDialogCoordinator));
+        shadowOf(Looper.getMainLooper()).idle();
+        verify(mDialogCoordinator, never()).show();
+
+        pendingPromise.fulfill(false);
+        shadowOf(Looper.getMainLooper()).idle();
+        verify(mDialogCoordinator, never()).show();
+    }
+
+    @Test
+    @Features.EnableFeatures({ChromeFeatureList.CLAY_BLOCKING})
+    public void testShouldShowDeviceChoiceDialog_doesNotShowAfterTimeout() {
+        var pendingPromise = new Promise<Boolean>();
+        doReturn(true).when(mSearchEngineChoiceService).isDeviceChoiceDialogEligible();
+        doReturn(pendingPromise).when(mSearchEngineChoiceService).shouldShowDeviceChoiceDialog();
+
+        assertNotNull(ChoiceDialogCoordinator.maybeShowInternal(() -> mDialogCoordinator));
+        shadowOf(Looper.getMainLooper()).idle();
+        verify(mDialogCoordinator, never()).show();
+
+        shadowOf(Looper.getMainLooper()).runToEndOfTasks(); // Advance past the timeout delay.
+        verify(mDialogCoordinator, never()).show();
     }
 }

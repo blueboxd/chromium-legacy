@@ -13,25 +13,25 @@
 #include <thread>
 #include <type_traits>
 #include <utility>
+#include <variant>
 
 #include "base/allocator/partition_alloc_features.h"
 #include "base/allocator/partition_alloc_support.h"
 #include "base/cpu.h"
-#include "base/logging.h"
-#include "base/memory/raw_ptr_asan_service.h"
 #include "base/metrics/histogram_base.h"
-#include "base/task/thread_pool.h"
 #include "base/test/bind.h"
 #include "base/test/gtest_util.h"
 #include "base/test/memory/dangling_ptr_instrumentation.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/types/to_address.h"
 #include "partition_alloc/build_config.h"
+#include "partition_alloc/buildflags.h"
 #include "partition_alloc/dangling_raw_ptr_checks.h"
 #include "partition_alloc/partition_alloc-inl.h"
 #include "partition_alloc/partition_alloc.h"
+#include "partition_alloc/partition_alloc_base/cpu.h"
+#include "partition_alloc/partition_alloc_base/logging.h"
 #include "partition_alloc/partition_alloc_base/numerics/checked_math.h"
-#include "partition_alloc/partition_alloc_buildflags.h"
 #include "partition_alloc/partition_alloc_config.h"
 #include "partition_alloc/partition_alloc_constants.h"
 #include "partition_alloc/partition_alloc_hooks.h"
@@ -43,7 +43,6 @@
 #include "partition_alloc/tagging.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/variant.h"
 
 #if PA_BUILDFLAG(USE_ASAN_BACKUP_REF_PTR)
 #include <sanitizer/asan_interface.h>
@@ -1447,21 +1446,21 @@ TEST_F(RawPtrTest, WorksWithOptional) {
 
 TEST_F(RawPtrTest, WorksWithVariant) {
   int x = 100;
-  absl::variant<int, raw_ptr<int>> vary;
+  std::variant<int, raw_ptr<int>> vary;
   ASSERT_EQ(0u, vary.index());
-  EXPECT_EQ(0, absl::get<int>(vary));
+  EXPECT_EQ(0, std::get<int>(vary));
 
   vary = x;
   ASSERT_EQ(0u, vary.index());
-  EXPECT_EQ(100, absl::get<int>(vary));
+  EXPECT_EQ(100, std::get<int>(vary));
 
   vary = nullptr;
   ASSERT_EQ(1u, vary.index());
-  EXPECT_EQ(nullptr, absl::get<raw_ptr<int>>(vary));
+  EXPECT_EQ(nullptr, std::get<raw_ptr<int>>(vary));
 
   vary = &x;
   ASSERT_EQ(1u, vary.index());
-  EXPECT_EQ(&x, absl::get<raw_ptr<int>>(vary));
+  EXPECT_EQ(&x, std::get<raw_ptr<int>>(vary));
 }
 
 TEST_F(RawPtrTest, CrossKindConversion) {
@@ -1566,7 +1565,7 @@ TEST_F(RawPtrTest, EphemeralRawAddrPointerReference) {
 // InstanceTracer has additional fields, so just skip this test when instance
 // tracing is enabled.
 #if !PA_BUILDFLAG(ENABLE_BACKUP_REF_PTR_INSTANCE_TRACER)
-#if defined(COMPILER_GCC) && !defined(__clang__)
+#if PA_BUILDFLAG(PA_COMPILER_GCC) && !defined(__clang__)
 // In GCC this test will optimize the return value of the constructor, so
 // assert fails. Disable optimizations to verify uninitialized attribute works
 // as expected.
@@ -1580,7 +1579,7 @@ TEST_F(RawPtrTest, AllowUninitialized) {
   new (&storage) CountingRawPtrUninitialized<int>;
   EXPECT_EQ(storage, kPattern);
 }
-#if defined(COMPILER_GCC) && !defined(__clang__)
+#if PA_BUILDFLAG(PA_COMPILER_GCC) && !defined(__clang__)
 #pragma GCC pop_options
 #endif
 #endif  // !PA_BUILDFLAG(ENABLE_BACKUP_REF_PTR_INSTANCE_TRACER)
@@ -1751,6 +1750,33 @@ TEST_F(BackupRefPtrTest, QuarantinedBytes) {
             0U);
 }
 
+TEST_F(BackupRefPtrTest, SameSlotAssignmentWhenDangling) {
+  uint64_t* ptr = reinterpret_cast<uint64_t*>(
+      allocator_.root()->Alloc(sizeof(uint64_t), ""));
+  raw_ptr<uint64_t, DisableDanglingPtrDetection> wrapped_ptr = ptr;
+  ASSERT_EQ(allocator_.root()->total_count_of_brp_quarantined_slots.load(
+                std::memory_order_relaxed),
+            0U);
+
+  // Make the pointer dangle. Memory will get quarantined.
+  allocator_.root()->Free(ptr);
+  ASSERT_EQ(allocator_.root()->total_count_of_brp_quarantined_slots.load(
+                std::memory_order_relaxed),
+            1U);
+
+  // Test for crbug.com/347461704 which caused the ref-count to be first
+  // dropped, leading to dequarantining and releasing the memory, then
+  // increasing ref-count on an already released memory.
+  wrapped_ptr = ptr;
+
+  // Many things may go wrong after the above instruction (particularly on
+  // DCHECK builds), but just in case check that memory continues to be
+  // quarantined.
+  EXPECT_EQ(allocator_.root()->total_count_of_brp_quarantined_slots.load(
+                std::memory_order_relaxed),
+            1U);
+}
+
 void RunBackupRefPtrImplAdvanceTest(
     partition_alloc::PartitionAllocator& allocator,
     size_t requested_size) {
@@ -1857,7 +1883,9 @@ TEST_F(BackupRefPtrTest, GetDeltaElems) {
   size_t requested_size = allocator_.root()->AdjustSizeForExtrasSubtract(512);
   char* ptr1 = static_cast<char*>(allocator_.root()->Alloc(requested_size));
   char* ptr2 = static_cast<char*>(allocator_.root()->Alloc(requested_size));
-  ASSERT_LT(ptr1, ptr2);  // There should be a ref-count between slots.
+  ASSERT_LT(partition_alloc::UntagPtr(ptr1),
+            partition_alloc::UntagPtr(
+                ptr2));  // There should be a ref-count between slots.
   raw_ptr<char, AllowPtrArithmetic> protected_ptr1 = ptr1;
   raw_ptr<char, AllowPtrArithmetic> protected_ptr1_2 = ptr1 + 1;
   raw_ptr<char, AllowPtrArithmetic> protected_ptr1_3 =
@@ -2025,7 +2053,7 @@ TEST_F(BackupRefPtrTest, WorksWithOptional) {
   allocator_.root()->Free(ptr);
 }
 
-// Tests that ref-count management is correct, despite `absl::variant` may be
+// Tests that ref-count management is correct, despite `std::variant` may be
 // using `union` underneath.
 TEST_F(BackupRefPtrTest, WorksWithVariant) {
   void* ptr = allocator_.root()->Alloc(16);
@@ -2033,7 +2061,7 @@ TEST_F(BackupRefPtrTest, WorksWithVariant) {
       allocator_.root()->InSlotMetadataPointerFromObjectForTesting(ptr);
   EXPECT_TRUE(ref_count->IsAliveWithNoKnownRefs());
 
-  absl::variant<uintptr_t, raw_ptr<void>> vary = ptr;
+  std::variant<uintptr_t, raw_ptr<void>> vary = ptr;
   ASSERT_EQ(1u, vary.index());
   EXPECT_TRUE(ref_count->IsAlive() && !ref_count->IsAliveWithNoKnownRefs());
 
@@ -2050,7 +2078,7 @@ TEST_F(BackupRefPtrTest, WorksWithVariant) {
   EXPECT_TRUE(ref_count->IsAliveWithNoKnownRefs());
 
   {
-    absl::variant<uintptr_t, raw_ptr<void>> vary2 = ptr;
+    std::variant<uintptr_t, raw_ptr<void>> vary2 = ptr;
     ASSERT_EQ(1u, vary2.index());
     EXPECT_TRUE(ref_count->IsAlive() && !ref_count->IsAliveWithNoKnownRefs());
   }
@@ -2330,7 +2358,7 @@ TEST_F(BackupRefPtrTest, Duplicate) {
 }
 #endif  // PA_BUILDFLAG(BACKUP_REF_PTR_POISON_OOB_PTR)
 
-#if PA_BUILDFLAG(PA_EXPENSIVE_DCHECKS_ARE_ON)
+#if PA_BUILDFLAG(EXPENSIVE_DCHECKS_ARE_ON)
 TEST_F(BackupRefPtrTest, WriteAfterFree) {
   constexpr uint64_t kPayload = 0x1234567890ABCDEF;
 
@@ -2350,7 +2378,7 @@ TEST_F(BackupRefPtrTest, WriteAfterFree) {
       },
       "");
 }
-#endif  // PA_BUILDFLAG(PA_EXPENSIVE_DCHECKS_ARE_ON)
+#endif  // PA_BUILDFLAG(EXPENSIVE_DCHECKS_ARE_ON)
 
 namespace {
 constexpr uint8_t kCustomQuarantineByte = 0xff;
@@ -2403,7 +2431,7 @@ TEST_F(BackupRefPtrTest, RawPtrTraits_DisableBRP) {
     // Freeing would  update the MTE tag so use |TagPtr()| to dereference it
     // below.
     allocator_.root()->Free(ptr);
-#if PA_BUILDFLAG(PA_DCHECK_IS_ON) || \
+#if PA_BUILDFLAG(DCHECKS_ARE_ON) || \
     PA_BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
     // Recreate the raw_ptr so we can use a pointer with the updated MTE tag.
     // Reassigning to |ptr| would hit the PartitionRefCount cookie check rather

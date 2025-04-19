@@ -101,7 +101,8 @@
 </style>
 
 <downloads-toolbar id="toolbar" items="[[items_]]"
-    spinner-active="{{spinnerActive_}}" role="none"
+    spinner-active="[[spinnerActive_]]" role="none"
+    on-spinner-active-changed="onSpinnerActiveChanged_"
     on-search-changed="onSearchChanged_">
 </downloads-toolbar>
 <div id="drop-shadow" class="cr-container-shadow"></div>
@@ -116,8 +117,11 @@
       <downloads-item data="[[item]]" tabindex$="[[tabIndex]]"
           iron-list-tab-index="[[tabIndex]]" last-focused="{{lastFocused_}}"
           list-blurred="{{listBlurred_}}" focus-row-index="[[index]]"
+<if expr="_google_chrome">
           show-esb-promotion="[[shouldShowEsbPromotion_(item, item.isDangerous,
-                    this.firstDangerousItemId_)]]">
+                    this.firstDangerousItemId_)]]"
+</if>
+      >
       </downloads-item>
     </template>
   </iron-list>
@@ -134,10 +138,23 @@
   </cr-button>
 </cr-toast-manager>
 <template is="dom-if"
-    if="[[shouldShowBypassWarningDialog_(bypassDialogItemId_)]]"
+    if="[[shouldShowBypassWarningPrompt_(bypassPromptItemId_)]]"
     restamp>
-  <download-bypass-warning-confirmation-dialog
-      file-name="[[computeBypassWarningDialogFileName_(bypassDialogItemId_)]]"
-      on-close="onBypassWarningConfirmationDialogClose_">
-  </download-bypass-warning-confirmation-dialog>
+  <template is="dom-if" if="[[dangerousDownloadInterstitial_]]" restamp>
+    <downloads-dangerous-download-interstitial
+        bypass-prompt-item-id="[[bypassPromptItemId_]]"
+        trust-site-line=
+        "[[computeDangerousInterstitialTrustSiteLine_(bypassPromptItemId_)]]"
+        trust-site-line-accessible-text=
+        "[[computeDangerInterstitialTrustSiteAccessible_(bypassPromptItemId_)]]"
+        on-cancel="onDangerousDownloadInterstitialCancel_"
+        on-close="onDangerousDownloadInterstitialClose_">
+    </downloads-dangerous-download-interstitial>
+  </template>
+  <template is="dom-if" if="[[!dangerousDownloadInterstitial_]]" restamp>
+    <download-bypass-warning-confirmation-dialog
+        file-name="[[computeBypassWarningDialogFileName_(bypassPromptItemId_)]]"
+        on-close="onBypassWarningConfirmationDialogClose_">
+    </download-bypass-warning-confirmation-dialog>
+  </template>
 </template>

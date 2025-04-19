@@ -14,8 +14,10 @@
 #include <memory>
 #include <optional>
 
+#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_backing_factory.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_format_service_utils.h"
+#include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/gpu_gles2_export.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -35,7 +37,8 @@ class GPU_GLES2_EXPORT D3DImageBackingFactory
   D3DImageBackingFactory(
       Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
       scoped_refptr<DXGISharedHandleManager> dxgi_shared_handle_manager,
-      const GLFormatCaps& gl_format_caps);
+      const GLFormatCaps& gl_format_caps,
+      const GpuDriverBugWorkarounds& workarounds = GpuDriverBugWorkarounds());
 
   D3DImageBackingFactory(const D3DImageBackingFactory&) = delete;
   D3DImageBackingFactory& operator=(const D3DImageBackingFactory&) = delete;
@@ -77,7 +80,7 @@ class GPU_GLES2_EXPORT D3DImageBackingFactory
                                     const gfx::ColorSpace& color_space,
                                     GrSurfaceOrigin surface_origin,
                                     SkAlphaType alpha_type,
-                                    uint32_t usage);
+                                    gpu::SharedImageUsageSet usage);
 
   std::unique_ptr<SharedImageBacking> CreateSharedImage(
       const Mailbox& mailbox,
@@ -87,7 +90,7 @@ class GPU_GLES2_EXPORT D3DImageBackingFactory
       const gfx::ColorSpace& color_space,
       GrSurfaceOrigin surface_origin,
       SkAlphaType alpha_type,
-      uint32_t usage,
+      SharedImageUsageSet usage,
       std::string debug_label,
       bool is_thread_safe) override;
   std::unique_ptr<SharedImageBacking> CreateSharedImage(
@@ -97,7 +100,7 @@ class GPU_GLES2_EXPORT D3DImageBackingFactory
       const gfx::ColorSpace& color_space,
       GrSurfaceOrigin surface_origin,
       SkAlphaType alpha_type,
-      uint32_t usage,
+      SharedImageUsageSet usage,
       std::string debug_label,
       bool is_thread_safe,
       base::span<const uint8_t> pixel_data) override;
@@ -108,22 +111,11 @@ class GPU_GLES2_EXPORT D3DImageBackingFactory
       const gfx::ColorSpace& color_space,
       GrSurfaceOrigin surface_origin,
       SkAlphaType alpha_type,
-      uint32_t usage,
+      SharedImageUsageSet usage,
       std::string debug_label,
       gfx::GpuMemoryBufferHandle handle) override;
-  std::unique_ptr<SharedImageBacking> CreateSharedImage(
-      const Mailbox& mailbox,
-      gfx::GpuMemoryBufferHandle handle,
-      gfx::BufferFormat format,
-      gfx::BufferPlane plane,
-      const gfx::Size& size,
-      const gfx::ColorSpace& color_space,
-      GrSurfaceOrigin surface_origin,
-      SkAlphaType alpha_type,
-      uint32_t usage,
-      std::string debug_label) override;
 
-  bool IsSupported(uint32_t usage,
+  bool IsSupported(SharedImageUsageSet usage,
                    viz::SharedImageFormat format,
                    const gfx::Size& size,
                    bool thread_safe,
@@ -136,22 +128,6 @@ class GPU_GLES2_EXPORT D3DImageBackingFactory
   }
 
  private:
-  // `format` can be single planar format, multiplanar format (with
-  // BufferPlane::DEFAULT) or legacy multiplanar format converted to single
-  // planar for per plane access eg. BufferFormat::YUV_420_BIPLANAR converted
-  // to RED_8 (for BufferPlane::Y), RG_88 (for BufferPlane::UV). It does not
-  // support external sampler use cases.
-  std::unique_ptr<SharedImageBacking> CreateSharedImageGMBs(
-      const Mailbox& mailbox,
-      gfx::GpuMemoryBufferHandle handle,
-      viz::SharedImageFormat format,
-      gfx::BufferPlane plane,
-      const gfx::Size& size,
-      const gfx::ColorSpace& color_space,
-      GrSurfaceOrigin surface_origin,
-      SkAlphaType alpha_type,
-      uint32_t usage,
-      std::string debug_label);
   bool SupportsBGRA8UnormStorage();
 
   // D3D11 device used for creating textures. This is also Skia's D3D11 device.
@@ -168,6 +144,9 @@ class GPU_GLES2_EXPORT D3DImageBackingFactory
   // Capabilities needed for getting the correct GL format for creating GL
   // textures.
   const GLFormatCaps gl_format_caps_;
+
+  // True if using UpdateSubresource1() in UploadFromMemory() is allowed.
+  const bool use_update_subresource1_;
 };
 
 }  // namespace gpu

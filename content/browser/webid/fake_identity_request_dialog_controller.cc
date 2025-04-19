@@ -20,8 +20,7 @@ FakeIdentityRequestDialogController::~FakeIdentityRequestDialogController() =
     default;
 
 bool FakeIdentityRequestDialogController::ShowAccountsDialog(
-    const std::string& top_frame_for_display,
-    const std::optional<std::string>& iframe_for_display,
+    const std::string& rp_for_display,
     const std::vector<content::IdentityProviderData>& identity_provider_data,
     IdentityRequestAccount::SignInMode sign_in_mode,
     blink::mojom::RpMode rp_mode,
@@ -54,13 +53,9 @@ bool FakeIdentityRequestDialogController::ShowAccountsDialog(
       break;
   };
 
-  if (is_interception_enabled_) {
-    // Browser automation will handle selecting an account/canceling.
-    return true;
-  }
   // Use the provided account, if any. Otherwise do not run the callback right
   // away.
-  if (selected_account_) {
+  if (selected_account_ && !is_interception_enabled_) {
     std::move(on_selected)
         .Run(identity_provider_data[0].idp_metadata.config_url,
              *selected_account_,
@@ -74,8 +69,7 @@ bool FakeIdentityRequestDialogController::ShowAccountsDialog(
 }
 
 bool FakeIdentityRequestDialogController::ShowFailureDialog(
-    const std::string& top_frame_for_display,
-    const std::optional<std::string>& iframe_for_display,
+    const std::string& rp_for_display,
     const std::string& idp_for_display,
     blink::mojom::RpContext rp_context,
     blink::mojom::RpMode rp_mode,
@@ -87,8 +81,7 @@ bool FakeIdentityRequestDialogController::ShowFailureDialog(
 }
 
 bool FakeIdentityRequestDialogController::ShowErrorDialog(
-    const std::string& top_frame_for_display,
-    const std::optional<std::string>& iframe_for_display,
+    const std::string& rp_for_display,
     const std::string& idp_for_display,
     blink::mojom::RpContext rp_context,
     blink::mojom::RpMode rp_mode,
@@ -105,7 +98,7 @@ bool FakeIdentityRequestDialogController::ShowErrorDialog(
 }
 
 bool FakeIdentityRequestDialogController::ShowLoadingDialog(
-    const std::string& top_frame_for_display,
+    const std::string& rp_for_display,
     const std::string& idp_for_display,
     blink::mojom::RpContext rp_context,
     blink::mojom::RpMode rp_mode,
@@ -133,6 +126,7 @@ void FakeIdentityRequestDialogController::ShowUrl(LinkType link_type,
 
 content::WebContents* FakeIdentityRequestDialogController::ShowModalDialog(
     const GURL& url,
+    blink::mojom::RpMode rp_mode,
     DismissCallback dismiss_callback) {
   if (!web_contents_) {
     return nullptr;

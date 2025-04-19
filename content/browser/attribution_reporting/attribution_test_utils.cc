@@ -13,12 +13,16 @@
 #include <vector>
 
 #include "base/check.h"
+#include "base/functional/overloaded.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
+#include "components/attribution_reporting/aggregatable_debug_reporting_config.h"
 #include "components/attribution_reporting/aggregatable_dedup_key.h"
+#include "components/attribution_reporting/aggregatable_filtering_id_max_bytes.h"
 #include "components/attribution_reporting/aggregatable_trigger_config.h"
 #include "components/attribution_reporting/aggregatable_trigger_data.h"
 #include "components/attribution_reporting/aggregatable_values.h"
+#include "components/attribution_reporting/constants.h"
 #include "components/attribution_reporting/destination_set.h"
 #include "components/attribution_reporting/event_report_windows.h"
 #include "components/attribution_reporting/event_trigger_data.h"
@@ -41,10 +45,9 @@
 #include "net/base/net_errors.h"
 #include "net/base/schemeful_site.h"
 #include "net/http/structured_headers.h"
-#include "services/network/public/cpp/trigger_verification.h"
-#include "services/network/public/cpp/trigger_verification_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -76,10 +79,9 @@ SourceBuilder::SourceBuilder(base::Time time)
           {net::SchemefulSite::Deserialize(kDefaultDestinationOrigin)})),
       reporting_origin_(*SuitableOrigin::Deserialize(kDefaultReportOrigin)) {
   registration_.source_event_id = 123;
-  registration_.max_event_level_reports =
-      attribution_reporting::MaxEventLevelReports::Max();
   registration_.trigger_specs = attribution_reporting::TriggerSpecs(
-      source_type_, attribution_reporting::EventReportWindows());
+      source_type_, attribution_reporting::EventReportWindows(),
+      attribution_reporting::MaxEventLevelReports::Max());
 }
 
 SourceBuilder::~SourceBuilder() = default;
@@ -128,7 +130,8 @@ SourceBuilder& SourceBuilder::SetReportingOrigin(SuitableOrigin origin) {
 SourceBuilder& SourceBuilder::SetSourceType(SourceType source_type) {
   source_type_ = source_type;
   registration_.trigger_specs = attribution_reporting::TriggerSpecs(
-      source_type_, attribution_reporting::EventReportWindows());
+      source_type_, attribution_reporting::EventReportWindows(),
+      attribution_reporting::MaxEventLevelReports(source_type));
   return *this;
 }
 
@@ -183,6 +186,12 @@ SourceBuilder& SourceBuilder::SetRemainingAggregatableAttributionBudget(
   return *this;
 }
 
+SourceBuilder& SourceBuilder::SetRemainingAggregatableDebugBudget(
+    int remaining_aggregatable_debug_budget) {
+  remaining_aggregatable_debug_budget_ = remaining_aggregatable_debug_budget;
+  return *this;
+}
+
 SourceBuilder& SourceBuilder::SetRandomizedResponseRate(
     double randomized_response_rate) {
   randomized_response_rate_ = randomized_response_rate;
@@ -214,8 +223,8 @@ SourceBuilder& SourceBuilder::SetTriggerSpecs(
 
 SourceBuilder& SourceBuilder::SetMaxEventLevelReports(
     int max_event_level_reports) {
-  registration_.max_event_level_reports =
-      attribution_reporting::MaxEventLevelReports(max_event_level_reports);
+  registration_.trigger_specs.SetMaxEventLevelReportsForTesting(
+      attribution_reporting::MaxEventLevelReports(max_event_level_reports));
   return *this;
 }
 
@@ -227,6 +236,19 @@ SourceBuilder& SourceBuilder::SetTriggerDataMatching(
 
 SourceBuilder& SourceBuilder::SetDebugCookieSet(bool debug_cookie_set) {
   debug_cookie_set_ = debug_cookie_set;
+  return *this;
+}
+
+SourceBuilder& SourceBuilder::SetAggregatableDebugReportingConfig(
+    attribution_reporting::SourceAggregatableDebugReportingConfig
+        aggregatable_debug_reporting_config) {
+  registration_.aggregatable_debug_reporting_config =
+      std::move(aggregatable_debug_reporting_config);
+  return *this;
+}
+
+SourceBuilder& SourceBuilder::SetDestinationLimitPriority(int64_t priority) {
+  registration_.destination_limit_priority = priority;
   return *this;
 }
 
@@ -245,12 +267,13 @@ StoredSource SourceBuilder::BuildStored() const {
       registration_.source_event_id, registration_.destination_set,
       source_time_, expiry_time, registration_.trigger_specs,
       source_time_ + registration_.aggregatable_report_window,
-      registration_.max_event_level_reports, registration_.priority,
-      registration_.filter_data, registration_.debug_key,
-      registration_.aggregation_keys, attribution_logic_, active_state_,
-      source_id_, remaining_aggregatable_attribution_budget_,
-      randomized_response_rate_, registration_.trigger_data_matching,
-      registration_.event_level_epsilon);
+      registration_.priority, registration_.filter_data,
+      registration_.debug_key, registration_.aggregation_keys,
+      attribution_logic_, active_state_, source_id_,
+      remaining_aggregatable_attribution_budget_, randomized_response_rate_,
+      registration_.trigger_data_matching, registration_.event_level_epsilon,
+      registration_.aggregatable_debug_reporting_config.config().key_piece,
+      remaining_aggregatable_debug_budget_);
   source.dedup_keys() = dedup_keys_;
   source.aggregatable_dedup_keys() = aggregatable_dedup_keys_;
   return source;
@@ -349,12 +372,6 @@ TriggerBuilder& TriggerBuilder::SetSourceRegistrationTimeConfig(
   return *this;
 }
 
-TriggerBuilder& TriggerBuilder::SetVerifications(
-    std::vector<network::TriggerVerification> verifications) {
-  verifications_ = std::move(verifications);
-  return *this;
-}
-
 TriggerBuilder& TriggerBuilder::SetFilterPair(
     attribution_reporting::FilterPair filter_pair) {
   filter_pair_ = std::move(filter_pair);
@@ -370,6 +387,19 @@ TriggerBuilder& TriggerBuilder::SetAggregatableDedupKeyFilterPair(
 TriggerBuilder& TriggerBuilder::SetTriggerContextId(
     std::string trigger_context_id) {
   trigger_context_id_ = std::move(trigger_context_id);
+  return *this;
+}
+
+TriggerBuilder& TriggerBuilder::SetAggregatableDebugReportingConfig(
+    attribution_reporting::AggregatableDebugReportingConfig
+        aggregatable_trigger_config) {
+  aggregatable_debug_reporting_config_ = std::move(aggregatable_trigger_config);
+  return *this;
+}
+
+TriggerBuilder& TriggerBuilder::SetAggregatableFilteringIdMaxBytes(
+    attribution_reporting::AggregatableFilteringIdsMaxBytes max_bytes) {
+  aggregatable_filtering_id_max_bytes_ = max_bytes;
   return *this;
 }
 
@@ -393,11 +423,13 @@ AttributionTrigger TriggerBuilder::Build(
   reg.aggregation_coordinator_origin = aggregation_coordinator_origin_;
   reg.aggregatable_trigger_config =
       *attribution_reporting::AggregatableTriggerConfig::Create(
-          source_registration_time_config_, trigger_context_id_);
+          source_registration_time_config_, trigger_context_id_,
+          aggregatable_filtering_id_max_bytes_);
+  reg.aggregatable_debug_reporting_config =
+      aggregatable_debug_reporting_config_;
 
   return AttributionTrigger(reporting_origin_, std::move(reg),
-                            destination_origin_, verifications_,
-                            is_within_fenced_frame_);
+                            destination_origin_, is_within_fenced_frame_);
 }
 
 AttributionInfoBuilder::AttributionInfoBuilder(SuitableOrigin context_origin)
@@ -468,16 +500,16 @@ ReportBuilder& ReportBuilder::SetAggregationCoordinatorOrigin(
   return *this;
 }
 
-ReportBuilder& ReportBuilder::SetVerificationToken(
-    std::optional<std::string> verification_token) {
-  verification_token_ = std::move(verification_token);
-  return *this;
-}
-
 ReportBuilder& ReportBuilder::SetSourceRegistrationTimeConfig(
     attribution_reporting::mojom::SourceRegistrationTimeConfig
         source_registration_time_config) {
   source_registration_time_config_ = source_registration_time_config;
+  return *this;
+}
+
+ReportBuilder& ReportBuilder::SetAggregatableFilteringIdsMaxBytes(
+    attribution_reporting::AggregatableFilteringIdsMaxBytes max_bytes) {
+  aggregatable_filtering_ids_max_bytes_ = max_bytes;
   return *this;
 }
 
@@ -492,7 +524,8 @@ AttributionReport ReportBuilder::Build() const {
       attribution_info_, report_id_, report_time_,
       /*initial_report_time=*/report_time_, external_report_id_,
       /*failed_send_attempts=*/0,
-      AttributionReport::EventLevelData(trigger_data_, priority_, source_));
+      AttributionReport::EventLevelData(trigger_data_, priority_, source_),
+      source_.common_info().reporting_origin());
 }
 
 AttributionReport ReportBuilder::BuildAggregatableAttribution() const {
@@ -502,10 +535,12 @@ AttributionReport ReportBuilder::BuildAggregatableAttribution() const {
       /*failed_send_attempts=*/0,
       AttributionReport::AggregatableAttributionData(
           AttributionReport::CommonAggregatableData(
-              aggregation_coordinator_origin_, verification_token_,
+              aggregation_coordinator_origin_,
               *attribution_reporting::AggregatableTriggerConfig::Create(
-                  source_registration_time_config_, trigger_context_id_)),
-          contributions_, source_));
+                  source_registration_time_config_, trigger_context_id_,
+                  aggregatable_filtering_ids_max_bytes_)),
+          contributions_, source_),
+      source_.common_info().reporting_origin());
 }
 
 AttributionReport ReportBuilder::BuildNullAggregatable() const {
@@ -515,10 +550,12 @@ AttributionReport ReportBuilder::BuildNullAggregatable() const {
       /*failed_send_attempts=*/0,
       AttributionReport::NullAggregatableData(
           AttributionReport::CommonAggregatableData(
-              aggregation_coordinator_origin_, verification_token_,
+              aggregation_coordinator_origin_,
               *attribution_reporting::AggregatableTriggerConfig::Create(
-                  source_registration_time_config_, trigger_context_id_)),
-          source_.common_info().reporting_origin(), source_.source_time()));
+                  source_registration_time_config_, trigger_context_id_,
+                  attribution_reporting::AggregatableFilteringIdsMaxBytes())),
+          source_.source_time()),
+      source_.common_info().reporting_origin());
 }
 
 // Does not compare source IDs, as they are set by the underlying sqlite DB and
@@ -529,20 +566,14 @@ bool operator==(const StoredSource& a, const StoredSource& b) {
         source.common_info(), source.source_event_id(),
         source.destination_sites(), source.source_time(), source.expiry_time(),
         source.trigger_specs(), source.aggregatable_report_window_time(),
-        source.max_event_level_reports(), source.priority(),
-        source.filter_data(), source.debug_key(), source.aggregation_keys(),
-        source.attribution_logic(), source.active_state(), source.dedup_keys(),
+        source.priority(), source.filter_data(), source.debug_key(),
+        source.aggregation_keys(), source.attribution_logic(),
+        source.active_state(), source.dedup_keys(),
         source.remaining_aggregatable_attribution_budget(),
         source.aggregatable_dedup_keys(), source.randomized_response_rate(),
-        source.trigger_data_matching(), source.event_level_epsilon());
-  };
-  return tie(a) == tie(b);
-}
-
-bool operator==(const AttributionReport::EventLevelData& a,
-                const AttributionReport::EventLevelData& b) {
-  const auto tie = [](const AttributionReport::EventLevelData& data) {
-    return std::make_tuple(data.trigger_data, data.priority, data.source);
+        source.trigger_data_matching(), source.event_level_epsilon(),
+        source.aggregatable_debug_key_piece(),
+        source.remaining_aggregatable_debug_budget());
   };
   return tie(a) == tie(b);
 }
@@ -552,8 +583,7 @@ bool operator==(const AttributionReport::EventLevelData& a,
 bool operator==(const AttributionReport::CommonAggregatableData& a,
                 const AttributionReport::CommonAggregatableData& b) {
   const auto tie = [](const AttributionReport::CommonAggregatableData& data) {
-    return std::make_tuple(data.verification_token,
-                           data.aggregation_coordinator_origin,
+    return std::make_tuple(data.aggregation_coordinator_origin,
                            data.aggregatable_trigger_config);
   };
   return tie(a) == tie(b);
@@ -564,7 +594,8 @@ bool operator==(const AttributionReport::AggregatableAttributionData& a,
   const auto tie =
       [](const AttributionReport::AggregatableAttributionData& data) {
         return std::make_tuple(data.common_data, data.contributions,
-                               data.source);
+                               data.source_time, data.source_debug_key,
+                               data.source_origin);
       };
   return tie(a) == tie(b);
 }
@@ -572,8 +603,7 @@ bool operator==(const AttributionReport::AggregatableAttributionData& a,
 bool operator==(const AttributionReport::NullAggregatableData& a,
                 const AttributionReport::NullAggregatableData& b) {
   const auto tie = [](const AttributionReport::NullAggregatableData& data) {
-    return std::make_tuple(data.common_data, data.reporting_origin,
-                           data.fake_source_time);
+    return std::make_tuple(data.common_data, data.fake_source_time);
   };
   return tie(a) == tie(b);
 }
@@ -585,7 +615,8 @@ bool operator==(const AttributionReport& a, const AttributionReport& b) {
     return std::make_tuple(report.attribution_info(), report.report_time(),
                            report.initial_report_time(),
                            report.external_report_id(),
-                           report.failed_send_attempts(), report.data());
+                           report.failed_send_attempts(), report.data(),
+                           report.reporting_origin());
   };
   return tie(a) == tie(b);
 }
@@ -627,18 +658,10 @@ std::ostream& operator<<(std::ostream& out,
 
 std::ostream& operator<<(std::ostream& out,
                          const AttributionTrigger& conversion) {
-  out << "{registration=" << conversion.registration()
-      << ",destination_origin=" << conversion.destination_origin()
-      << ",is_within_fenced_frame=" << conversion.is_within_fenced_frame()
-      << ",verifications=[";
-  const char* separator = "";
-  for (const auto& verification : conversion.verifications()) {
-    out << separator << verification;
-    separator = ", ";
-  }
-  out << "]";
-
-  return out << "}";
+  return out << "{registration=" << conversion.registration()
+             << ",destination_origin=" << conversion.destination_origin()
+             << ",is_within_fenced_frame="
+             << conversion.is_within_fenced_frame() << "}";
 }
 
 std::ostream& operator<<(std::ostream& out, const CommonSourceInfo& source) {
@@ -673,7 +696,6 @@ std::ostream& operator<<(std::ostream& out, const StoredSource& source) {
       << ",trigger_specs=" << source.trigger_specs()
       << ",aggregatable_report_window_time="
       << source.aggregatable_report_window_time()
-      << ",max_event_level_reports=" << source.max_event_level_reports()
       << ",priority=" << source.priority()
       << ",filter_data=" << source.filter_data() << ",debug_key="
       << (source.debug_key() ? base::NumberToString(*source.debug_key())
@@ -687,7 +709,10 @@ std::ostream& operator<<(std::ostream& out, const StoredSource& source) {
       << ",randomized_response_rate=" << source.randomized_response_rate()
       << ",event_level_epsilon=" << source.event_level_epsilon()
       << ",trigger_data_matching=" << source.trigger_data_matching()
-      << ",dedup_keys=[";
+      << ",aggregatable_debug_key_piece="
+      << source.aggregatable_debug_key_piece()
+      << ",remaining_aggregatable_debug_budget="
+      << source.remaining_aggregatable_debug_budget() << ",dedup_keys=[";
 
   const char* separator = "";
   for (int64_t dedup_key : source.dedup_keys()) {
@@ -715,28 +740,30 @@ std::ostream& operator<<(
 
 std::ostream& operator<<(std::ostream& out,
                          const AttributionReport::EventLevelData& data) {
-  return out << "{trigger_data=" << data.trigger_data
-             << ",priority=" << data.priority
-             << ",source=" << data.source << "}";
+  out << "{trigger_data=" << data.trigger_data << ",priority=" << data.priority
+      << ",source_origin=" << data.source_origin
+      << ",destinations=" << data.destinations
+      << ",source_event_id=" << data.source_event_id
+      << ",source_type=" << data.source_type << ",source_debug_key=";
+
+  if (data.source_debug_key.has_value()) {
+    out << *data.source_debug_key;
+  } else {
+    out << "null";
+  }
+
+  return out << ",randomized_response_rate=" << data.randomized_response_rate
+             << ",attributed_truthfully=" << data.attributed_truthfully << "}";
 }
 
 std::ostream& operator<<(
     std::ostream& out,
     const AttributionReport::CommonAggregatableData& data) {
-  out << "{aggregation_coordinator_origin="
-      << (data.aggregation_coordinator_origin.has_value()
-              ? data.aggregation_coordinator_origin->Serialize()
-              : "null")
-      << ",verification_token=";
-
-  if (const auto& verification_token = data.verification_token;
-      verification_token.has_value()) {
-    out << *verification_token;
-  } else {
-    out << "(null)";
-  }
-
-  return out << ",aggregatable_trigger_config="
+  return out << "{aggregation_coordinator_origin="
+             << (data.aggregation_coordinator_origin.has_value()
+                     ? data.aggregation_coordinator_origin->Serialize()
+                     : "null")
+             << ",aggregatable_trigger_config="
              << data.aggregatable_trigger_config << "}";
 }
 
@@ -751,15 +778,20 @@ std::ostream& operator<<(
     separator = ", ";
   }
 
-  out << "]";
+  out << "],source_time=" << data.source_time << ",source_debug_key=";
 
-  return out << ",source=" << data.source << "}";
+  if (data.source_debug_key.has_value()) {
+    out << *data.source_debug_key;
+  } else {
+    out << "null";
+  }
+
+  return out << ",source_origin=" << data.source_origin << "}";
 }
 
 std::ostream& operator<<(std::ostream& out,
                          const AttributionReport::NullAggregatableData& data) {
   return out << "{common_data=" << data.common_data
-             << ",reporting_origin=" << data.reporting_origin
              << ",fake_source_time=" << data.fake_source_time << "}";
 }
 
@@ -778,7 +810,8 @@ std::ostream& operator<<(std::ostream& out, const AttributionReport& report) {
              << ",initial_report_time=" << report.initial_report_time()
              << ",external_report_id=" << report.external_report_id()
              << ",failed_send_attempts=" << report.failed_send_attempts()
-             << ",data=" << report.data() << "}";
+             << ",data=" << report.data()
+             << ",reporting_origin=" << report.reporting_origin() << "}";
 }
 
 std::ostream& operator<<(std::ostream& out, SendResult::Status status) {
@@ -799,9 +832,30 @@ std::ostream& operator<<(std::ostream& out, SendResult::Status status) {
 }
 
 std::ostream& operator<<(std::ostream& out, const SendResult& info) {
-  return out << "{status=" << info.status
-             << ",network_error=" << net::ErrorToShortString(info.network_error)
-             << ",http_response_code=" << info.http_response_code << "}";
+  absl::visit(base::Overloaded{
+                  [&](SendResult::Sent sent) {
+                    out << "{Sent={result=";
+                    switch (sent.result) {
+                      case SendResult::Sent::Result::kSent:
+                        out << "kSent";
+                        break;
+                      case SendResult::Sent::Result::kTransientFailure:
+                        out << "kTransientFailure";
+                        break;
+                      case SendResult::Sent::Result::kFailure:
+                        out << "kFailure";
+                        break;
+                    }
+                    out << ",status=" << sent.status << "}}";
+                  },
+                  [&](SendResult::Dropped) { out << "{Dropped={}}"; },
+                  [&](SendResult::AssemblyFailure failure) {
+                    out << "{AssemblyFailure={transient=" << failure.transient
+                        << "}}";
+                  },
+              },
+              info.result);
+  return out;
 }
 
 std::ostream& operator<<(std::ostream& out,
@@ -819,7 +873,7 @@ TestAggregatableSourceProvider::TestAggregatableSourceProvider(size_t size) {
   auto source =
       attribution_reporting::AggregationKeys::FromKeys(std::move(keys));
   DCHECK(source.has_value());
-  source_ = std::move(*source);
+  source_ = *std::move(source);
 }
 
 TestAggregatableSourceProvider::~TestAggregatableSourceProvider() = default;
@@ -842,7 +896,10 @@ TriggerBuilder DefaultAggregatableTriggerBuilder(
         *attribution_reporting::AggregatableTriggerData::Create(
             absl::MakeUint128(/*high=*/i, /*low=*/0),
             /*source_keys=*/{key_id}, FilterPair()));
-    aggregatable_values.emplace(std::move(key_id), histogram_values[i]);
+    aggregatable_values.emplace(
+        std::move(key_id),
+        *attribution_reporting::AggregatableValuesValue::Create(
+            histogram_values[i], attribution_reporting::kDefaultFilteringId));
   }
 
   return TriggerBuilder()
@@ -859,7 +916,7 @@ DefaultAggregatableHistogramContributions(
       contributions;
   for (size_t i = 0; i < histogram_values.size(); ++i) {
     contributions.emplace_back(absl::MakeUint128(i, i), histogram_values[i],
-                               /*filtering_id=*/std::nullopt);
+                               attribution_reporting::kDefaultFilteringId);
   }
   return contributions;
 }
@@ -927,6 +984,13 @@ void ExpectValidAttributionReportingEligibleHeaderForNavigation(
       header,
       /*required_keys=*/{"navigation-source"},
       /*prohibited_keys=*/{"event-source", "trigger"});
+}
+
+void ExpectEmptyAttributionReportingEligibleHeader(const std::string& header) {
+  CheckAttributionReportingHeader(
+      header,
+      /*required_keys=*/{},
+      /*prohibited_keys=*/{"navigation-source", "event-source", "trigger"});
 }
 
 void ExpectValidAttributionReportingSupportHeader(const std::string& header,

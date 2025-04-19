@@ -32,6 +32,14 @@ if (headless_enable_commands) {
 }
 
 bundle_hyphen_data = (is_linux || is_win) && !headless_use_embedded_resources
+should_strip_binary = is_chrome_for_testing && is_linux
+
+if (should_strip_binary) {
+  import("//build/linux/strip_binary.gni")
+}
+
+# If supported, field trials need to be enabled by --enable-field-trial-config switch.
+headless_support_field_trials = headless_use_prefs
 
 # Headless defines config applied to every target below.
 config("headless_defines_config") {
@@ -51,6 +59,10 @@ config("headless_defines_config") {
 
   if (headless_mode_policy_supported) {
     defines += [ "HEADLESS_MODE_POLICY_SUPPORTED" ]
+  }
+
+  if (headless_support_field_trials) {
+    defines += [ "HEADLESS_SUPPORT_FIELD_TRIALS" ]
   }
 }
 
@@ -246,6 +258,8 @@ component("headless_non_renderer") {
     "lib/browser/headless_platform_event_source.h",
     "lib/browser/headless_request_context_manager.cc",
     "lib/browser/headless_request_context_manager.h",
+    "lib/browser/headless_screen.cc",
+    "lib/browser/headless_screen.h",
     "lib/browser/headless_web_contents_impl.cc",
     "lib/browser/headless_web_contents_impl.h",
     "lib/browser/headless_window_tree_host.h",
@@ -268,7 +282,6 @@ component("headless_non_renderer") {
     "lib/renderer/allowlist.h",
     "lib/renderer/headless_content_renderer_client.cc",
     "lib/renderer/headless_content_renderer_client.h",
-    "lib/switches.cc",
     "lib/utility/headless_content_utility_client.cc",
     "lib/utility/headless_content_utility_client.h",
     "public/headless_browser.h",
@@ -302,8 +315,6 @@ component("headless_non_renderer") {
       "lib/browser/headless_browser_impl_aura.cc",
       "lib/browser/headless_focus_client.cc",
       "lib/browser/headless_focus_client.h",
-      "lib/browser/headless_screen.cc",
-      "lib/browser/headless_screen.h",
       "lib/browser/headless_window_parenting_client.cc",
       "lib/browser/headless_window_parenting_client.h",
       "lib/browser/headless_window_tree_host.cc",
@@ -386,6 +397,18 @@ component("headless_non_renderer") {
       "//components/policy/content",
       "//components/policy/core/browser",
       "//components/policy/core/common:policy_path_constants",
+    ]
+  }
+
+  if (headless_support_field_trials) {
+    sources += [
+      "lib/browser/headless_field_trials.cc",
+      "lib/browser/headless_field_trials.h",
+    ]
+    deps += [
+      "//components/metrics",
+      "//components/variations",
+      "//components/variations/service",
     ]
   }
 
@@ -671,6 +694,8 @@ test("headless_browsertests") {
     "//components/embedder_support:embedder_support",
     "//components/headless/select_file_dialog",
     "//components/headless/test",
+    "//components/infobars/content",
+    "//components/infobars/core",
     "//components/policy/core/browser",
     "//components/security_state/content",
     "//components/version_info",
@@ -739,6 +764,7 @@ if (is_win) {
     ]
     deps = [
       ":headless_non_renderer",
+      "//base/version_info",
       "//build:branding_buildflags",
       "//components/crash/core/app:app",
       "//components/crash/core/app:run_as_crashpad_handler",
@@ -789,6 +815,7 @@ static_library("headless_shell_lib") {
   }
 
   deps = [
+    "//base/version_info",
     "//build:branding_buildflags",
     "//components/devtools/simple_devtools_protocol_client",
     "//components/embedder_support",
@@ -874,6 +901,17 @@ action("generate_headless_shell_license_file") {
     ".",
   ]
   outputs = [ _license_path ]
+}
+
+if (should_strip_binary) {
+  strip_binary("strip_headless_shell_binary") {
+    binary_input = "$root_out_dir/headless_shell"
+    deps = [ ":headless_shell" ]
+  }
+
+  group("strip_chrome_for_testing_linux_files") {
+    deps = [ ":strip_headless_shell_binary" ]
+  }
 }
 
 executable("headless_shell") {

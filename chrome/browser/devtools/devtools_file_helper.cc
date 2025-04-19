@@ -84,14 +84,12 @@ class SelectFileDialog : public ui::SelectFileDialog::Listener {
   }
 
   // ui::SelectFileDialog::Listener implementation.
-  void FileSelected(const ui::SelectedFileInfo& file,
-                    int index,
-                    void* params) override {
+  void FileSelected(const ui::SelectedFileInfo& file, int index) override {
     std::move(selected_callback_).Run(file.path());
     delete this;
   }
 
-  void FileSelectionCanceled(void* params) override {
+  void FileSelectionCanceled() override {
     if (canceled_callback_) {
       std::move(canceled_callback_).Run();
     }
@@ -121,7 +119,7 @@ class SelectFileDialog : public ui::SelectFileDialog::Listener {
     }
     select_file_dialog_->SelectFile(
         type, std::u16string(), default_path, &file_type_info, 0, ext,
-        platform_util::GetTopLevel(web_contents->GetNativeView()), nullptr);
+        platform_util::GetTopLevel(web_contents->GetNativeView()));
   }
 
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;

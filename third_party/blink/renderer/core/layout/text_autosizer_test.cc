@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -36,11 +37,11 @@ class TextAutosizerClient : public RenderingTestChromeClient {
 
 class TextAutosizerTest : public RenderingTest,
                           public testing::WithParamInterface<bool>,
-                          private ScopedNewTextSizeAdjustForTest {
+                          private ScopedTextSizeAdjustImprovementsForTest {
  public:
   TextAutosizerTest()
       : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()),
-        ScopedNewTextSizeAdjustForTest(GetParam()) {}
+        ScopedTextSizeAdjustImprovementsForTest(GetParam()) {}
 
   RenderingTestChromeClient& GetChromeClient() const override {
     return GetTextAutosizerClient();
@@ -55,7 +56,7 @@ class TextAutosizerTest : public RenderingTest,
 
     // This fake ChromeClient cannot update device scale factor (DSF). We apply
     // DSF to the zoom factor manually.
-    GetDocument().GetFrame()->SetPageZoomFactor(device_scale_factor);
+    GetDocument().GetFrame()->SetLayoutZoomFactor(device_scale_factor);
   }
 
  private:
@@ -353,7 +354,7 @@ TEST_P(TextAutosizerTest, AccessibilityFontScaleFactor) {
 }
 
 TEST_P(TextAutosizerTest, AccessibilityFontScaleFactorWithTextSizeAdjustNone) {
-  if (RuntimeEnabledFeatures::NewTextSizeAdjustEnabled()) {
+  if (RuntimeEnabledFeatures::TextSizeAdjustImprovementsEnabled()) {
     // Non-auto values of text-size-adjust should disable all automatic font
     // scale adjustment.
     return;
@@ -440,7 +441,7 @@ TEST_P(TextAutosizerTest, ChangingAccessibilityFontScaleFactor) {
 }
 
 TEST_P(TextAutosizerTest, TextSizeAdjustDoesNotDisableAccessibility) {
-  if (RuntimeEnabledFeatures::NewTextSizeAdjustEnabled()) {
+  if (RuntimeEnabledFeatures::TextSizeAdjustImprovementsEnabled()) {
     // Non-auto values of text-size-adjust should disable all automatic font
     // scale adjustment.
     return;
@@ -1218,9 +1219,10 @@ TEST_P(TextAutosizerTest, UsedDeviceScaleAdjustmentUseCounterWithoutViewport) {
 
 class TextAutosizerSimTest : public SimTest,
                              public testing::WithParamInterface<bool>,
-                             private ScopedNewTextSizeAdjustForTest {
+                             private ScopedTextSizeAdjustImprovementsForTest {
  public:
-  TextAutosizerSimTest() : ScopedNewTextSizeAdjustForTest(GetParam()) {}
+  TextAutosizerSimTest()
+      : ScopedTextSizeAdjustImprovementsForTest(GetParam()) {}
 
  private:
   void SetUp() override {

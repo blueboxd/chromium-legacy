@@ -6,13 +6,29 @@ package org.chromium.chrome.browser.facilitated_payments;
 
 import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasToString;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertNotNull;
 
+import static org.chromium.base.ThreadUtils.runOnUiThreadBlocking;
+import static org.chromium.chrome.browser.facilitated_payments.FacilitatedPaymentsPaymentMethodsProperties.DISMISS_HANDLER;
+import static org.chromium.chrome.browser.facilitated_payments.FacilitatedPaymentsPaymentMethodsProperties.FopSelectorProperties.SCREEN_ITEMS;
 import static org.chromium.chrome.browser.facilitated_payments.FacilitatedPaymentsPaymentMethodsProperties.ItemType.BANK_ACCOUNT;
-import static org.chromium.chrome.browser.facilitated_payments.FacilitatedPaymentsPaymentMethodsProperties.SHEET_ITEMS;
-import static org.chromium.chrome.browser.facilitated_payments.FacilitatedPaymentsPaymentMethodsProperties.VISIBLE;
-import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
+import static org.chromium.chrome.browser.facilitated_payments.FacilitatedPaymentsPaymentMethodsProperties.ItemType.CONTINUE_BUTTON;
+import static org.chromium.chrome.browser.facilitated_payments.FacilitatedPaymentsPaymentMethodsProperties.SCREEN;
+import static org.chromium.chrome.browser.facilitated_payments.FacilitatedPaymentsPaymentMethodsProperties.SCREEN_VIEW_MODEL;
+import static org.chromium.chrome.browser.facilitated_payments.FacilitatedPaymentsPaymentMethodsProperties.SequenceScreen.ERROR_SCREEN;
+import static org.chromium.chrome.browser.facilitated_payments.FacilitatedPaymentsPaymentMethodsProperties.SequenceScreen.FOP_SELECTOR;
+import static org.chromium.chrome.browser.facilitated_payments.FacilitatedPaymentsPaymentMethodsProperties.SequenceScreen.PROGRESS_SCREEN;
+import static org.chromium.chrome.browser.facilitated_payments.FacilitatedPaymentsPaymentMethodsProperties.VISIBLE_STATE;
+import static org.chromium.chrome.browser.facilitated_payments.FacilitatedPaymentsPaymentMethodsProperties.VisibleState.HIDDEN;
+import static org.chromium.chrome.browser.facilitated_payments.FacilitatedPaymentsPaymentMethodsProperties.VisibleState.SHOWN;
+import static org.chromium.chrome.browser.facilitated_payments.FacilitatedPaymentsPaymentMethodsProperties.VisibleState.SWAPPING_SCREEN;
 
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
@@ -36,11 +52,12 @@ import org.chromium.components.autofill.payments.BankAccount;
 import org.chromium.components.autofill.payments.PaymentInstrument;
 import org.chromium.components.autofill.payments.PaymentRail;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.SheetState;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetTestSupport;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
-import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
+import org.chromium.ui.widget.ButtonCompat;
 
 /** Instrumentation tests for {@link FacilitatedPaymentsPaymentMethodsView}. */
 @RunWith(ChromeJUnit4ClassRunner.class)
@@ -79,6 +96,7 @@ public final class FacilitatedPaymentsPaymentMethodsViewTest {
     private BottomSheetController mBottomSheetController;
     private BottomSheetTestSupport mSheetTestSupport;
     private FacilitatedPaymentsPaymentMethodsView mView;
+    private FacilitatedPaymentsPaymentMethodsMediator mMediator;
     private PropertyModel mModel;
 
     @Before
@@ -91,9 +109,15 @@ public final class FacilitatedPaymentsPaymentMethodsViewTest {
                         .getRootUiCoordinatorForTesting()
                         .getBottomSheetController();
         mSheetTestSupport = new BottomSheetTestSupport(mBottomSheetController);
+        mMediator = new FacilitatedPaymentsPaymentMethodsMediator();
         runOnUiThreadBlocking(
                 () -> {
-                    mModel = createFacilitatedPaymentsPaymentMethodsModel();
+                    mModel =
+                            new PropertyModel.Builder(
+                                            FacilitatedPaymentsPaymentMethodsProperties.ALL_KEYS)
+                                    .with(VISIBLE_STATE, HIDDEN)
+                                    .with(DISMISS_HANDLER, (Integer unused) -> {})
+                                    .build();
                     mView =
                             new FacilitatedPaymentsPaymentMethodsView(
                                     mActivityTestRule.getActivity(), mBottomSheetController);
@@ -107,17 +131,57 @@ public final class FacilitatedPaymentsPaymentMethodsViewTest {
 
     @Test
     @MediumTest
-    public void testVisibilityChangedByModel() {
+    public void testViewCanBeShownUsingTheModel() {
+        // Confirm that the bottom sheet is not open.
+        assertThat(mBottomSheetController.isSheetOpen(), is(false));
+
         runOnUiThreadBlocking(
                 () -> {
-                    mModel.get(SHEET_ITEMS)
+                    mModel.set(SCREEN, FOP_SELECTOR);
+                    mModel.get(SCREEN_VIEW_MODEL)
+                            .get(SCREEN_ITEMS)
                             .add(
                                     new ListItem(
                                             BANK_ACCOUNT, createBankAccountModel(BANK_ACCOUNT_1)));
+                    runOnUiThreadBlocking(() -> mModel.set(VISIBLE_STATE, SHOWN));
                 });
-        runOnUiThreadBlocking(() -> mModel.set(VISIBLE, true));
         BottomSheetTestSupport.waitForOpen(mBottomSheetController);
+
+        // Verify that the bottom sheet is opened, and shows the view.
+        assertThat(mBottomSheetController.isSheetOpen(), is(true));
         assertThat(mView.getContentView().isShown(), is(true));
+    }
+
+    @Test
+    @MediumTest
+    public void testViewCanBeHiddenUsingTheModel() {
+        runOnUiThreadBlocking(
+                () -> {
+                    mModel.set(SCREEN, FOP_SELECTOR);
+                    mModel.get(SCREEN_VIEW_MODEL)
+                            .get(SCREEN_ITEMS)
+                            .add(
+                                    new ListItem(
+                                            BANK_ACCOUNT, createBankAccountModel(BANK_ACCOUNT_1)));
+                    runOnUiThreadBlocking(() -> mModel.set(VISIBLE_STATE, SHOWN));
+                });
+
+        BottomSheetTestSupport.waitForOpen(mBottomSheetController);
+
+        // Confirm that the bottom sheet is opened, and shows the view.
+        assertThat(mBottomSheetController.isSheetOpen(), is(true));
+        assertThat(mView.getContentView().isShown(), is(true));
+
+        runOnUiThreadBlocking(
+                () -> {
+                    mModel.set(VISIBLE_STATE, HIDDEN);
+                });
+
+        BottomSheetTestSupport.waitForState(mBottomSheetController, SheetState.HIDDEN);
+
+        // Verify that the view is hidden, and the bottom sheet is closed.
+        assertThat(mView.getContentView().isShown(), is(false));
+        assertThat(mBottomSheetController.isSheetOpen(), is(false));
     }
 
     @Test
@@ -125,15 +189,18 @@ public final class FacilitatedPaymentsPaymentMethodsViewTest {
     public void testBankAccountShown() {
         runOnUiThreadBlocking(
                 () -> {
-                    mModel.get(SHEET_ITEMS)
+                    mModel.set(SCREEN, FOP_SELECTOR);
+                    mModel.get(SCREEN_VIEW_MODEL)
+                            .get(SCREEN_ITEMS)
                             .add(
                                     new ListItem(
                                             BANK_ACCOUNT, createBankAccountModel(BANK_ACCOUNT_1)));
-                    mModel.set(VISIBLE, true);
-                    mModel.get(SHEET_ITEMS)
+                    mModel.get(SCREEN_VIEW_MODEL)
+                            .get(SCREEN_ITEMS)
                             .add(
                                     new ListItem(
                                             BANK_ACCOUNT, createBankAccountModel(BANK_ACCOUNT_2)));
+                    mModel.set(VISIBLE_STATE, SHOWN);
                 });
 
         BottomSheetTestSupport.waitForOpen(mBottomSheetController);
@@ -149,16 +216,176 @@ public final class FacilitatedPaymentsPaymentMethodsViewTest {
         assertThat(getBankAccountSummaryAt(1).getText(), is(expectedBankAccountSummary2));
     }
 
-    private PropertyModel createFacilitatedPaymentsPaymentMethodsModel() {
-        return new PropertyModel.Builder(FacilitatedPaymentsPaymentMethodsProperties.ALL_KEYS)
-                .with(VISIBLE, false)
-                .with(SHEET_ITEMS, new ModelList())
-                .build();
+    @Test
+    @MediumTest
+    public void testDescriptionLine() {
+        runOnUiThreadBlocking(
+                () -> {
+                    mModel.set(SCREEN, FOP_SELECTOR);
+                    mModel.get(SCREEN_VIEW_MODEL)
+                            .get(SCREEN_ITEMS)
+                            .add(mMediator.buildAdditionalInfo());
+                    mModel.set(VISIBLE_STATE, SHOWN);
+                });
+        BottomSheetTestSupport.waitForOpen(mBottomSheetController);
+
+        TextView descriptionLine1 = mView.getContentView().findViewById(R.id.description_line);
+        assertThat(
+                descriptionLine1.getText(),
+                hasToString(
+                        containsString(
+                                "By continuing, you agree to have your precise device location"
+                                    + " collected and shared with your account holder for fraud"
+                                    + " prevention purposes. To turn off Pix in Chrome, go to your"
+                                    + " payment settings")));
+    }
+
+    @Test
+    @MediumTest
+    public void testContinueButtonText() {
+        runOnUiThreadBlocking(
+                () -> {
+                    PropertyModel bankAccountModel = createBankAccountModel(BANK_ACCOUNT_1);
+                    mModel.set(SCREEN, FOP_SELECTOR);
+                    mModel.get(SCREEN_VIEW_MODEL)
+                            .get(SCREEN_ITEMS)
+                            .add(new ListItem(BANK_ACCOUNT, bankAccountModel));
+                    mModel.get(SCREEN_VIEW_MODEL)
+                            .get(SCREEN_ITEMS)
+                            .add(new ListItem(CONTINUE_BUTTON, bankAccountModel));
+                    mModel.set(VISIBLE_STATE, SHOWN);
+                });
+        BottomSheetTestSupport.waitForOpen(mBottomSheetController);
+
+        TextView buttonText =
+                mView.getContentView()
+                        .findViewById(R.id.facilitated_payments_continue_button_title);
+        assertThat(buttonText.getText(), is("Continue"));
+    }
+
+    @Test
+    @MediumTest
+    public void testProgressScreenShown() {
+        runOnUiThreadBlocking(
+                () -> {
+                    mModel.set(SCREEN, PROGRESS_SCREEN);
+                    mModel.set(VISIBLE_STATE, SHOWN);
+                });
+        BottomSheetTestSupport.waitForOpen(mBottomSheetController);
+
+        // Verify that the {@link ProgressBar} is shown.
+        assertThat(
+                containsViewOfClass((ViewGroup) mView.getContentView(), ProgressBar.class),
+                is(true));
+    }
+
+    @Test
+    @MediumTest
+    public void testErrorScreenShown() {
+        runOnUiThreadBlocking(
+                () -> {
+                    mModel.set(SCREEN, ERROR_SCREEN);
+                    mModel.set(VISIBLE_STATE, SHOWN);
+                });
+        BottomSheetTestSupport.waitForOpen(mBottomSheetController);
+
+        // Verify that the error screen is shown.
+        assertThat(
+                containsViewWithId((ViewGroup) mView.getContentView(), R.id.error_screen),
+                is(true));
+    }
+
+    @Test
+    @MediumTest
+    public void testErrorScreenContents() {
+        runOnUiThreadBlocking(
+                () -> {
+                    mModel.set(SCREEN, ERROR_SCREEN);
+                    mModel.set(VISIBLE_STATE, SHOWN);
+                });
+        BottomSheetTestSupport.waitForOpen(mBottomSheetController);
+
+        TextView title = mView.getContentView().findViewById(R.id.title);
+        assertThat(title.getText(), is("Something went wrong"));
+        TextView description = mView.getContentView().findViewById(R.id.description);
+        assertThat(
+                description.getText(),
+                is(
+                        "Your transaction didn’t go through. No funds were withdrawn from your"
+                                + " account."));
+        ButtonCompat primaryButton = mView.getContentView().findViewById(R.id.primary_button);
+        assertThat(primaryButton.getText(), is("OK"));
+    }
+
+    @Test
+    @MediumTest
+    public void testFopSelectorToProgressScreenSwapUpdatesView() {
+        // Show the FOP selector.
+        runOnUiThreadBlocking(
+                () -> {
+                    mModel.set(SCREEN, FOP_SELECTOR);
+                    mModel.get(SCREEN_VIEW_MODEL)
+                            .get(SCREEN_ITEMS)
+                            .add(
+                                    new ListItem(
+                                            BANK_ACCOUNT, createBankAccountModel(BANK_ACCOUNT_1)));
+                    mModel.set(VISIBLE_STATE, SHOWN);
+                });
+        BottomSheetTestSupport.waitForOpen(mBottomSheetController);
+
+        // Confirm the FOP selector is shown.
+        assertThat(mView.getContentView().isShown(), is(true));
+        assertNotNull(mView.getContentView().findViewById(R.id.sheet_item_list));
+
+        // Show the progress screen.
+        runOnUiThreadBlocking(
+                () -> {
+                    mModel.set(VISIBLE_STATE, SWAPPING_SCREEN);
+                    mModel.set(SCREEN, PROGRESS_SCREEN);
+                    mModel.set(VISIBLE_STATE, SHOWN);
+                });
+
+        // Verify that the progress screen is shown.
+        assertThat(mView.getContentView().isShown(), is(true));
+        assertThat(
+                containsViewOfClass((ViewGroup) mView.getContentView(), ProgressBar.class),
+                is(true));
+    }
+
+    @Test
+    @MediumTest
+    public void testProgressScreenToErrorScreenSwapUpdatesView() {
+        // Show the progress screen.
+        runOnUiThreadBlocking(
+                () -> {
+                    mModel.set(SCREEN, PROGRESS_SCREEN);
+                    mModel.set(VISIBLE_STATE, SHOWN);
+                });
+        BottomSheetTestSupport.waitForOpen(mBottomSheetController);
+
+        // Confirm the progress screen is shown.
+        assertThat(mView.getContentView().isShown(), is(true));
+        assertThat(
+                containsViewOfClass((ViewGroup) mView.getContentView(), ProgressBar.class),
+                is(true));
+
+        // Show the error screen.
+        runOnUiThreadBlocking(
+                () -> {
+                    mModel.set(VISIBLE_STATE, SWAPPING_SCREEN);
+                    mModel.set(SCREEN, ERROR_SCREEN);
+                    mModel.set(VISIBLE_STATE, SHOWN);
+                });
+
+        // Verify that the error screen is shown.
+        assertThat(mView.getContentView().isShown(), is(true));
+        assertThat(
+                containsViewWithId((ViewGroup) mView.getContentView(), R.id.error_screen),
+                is(true));
     }
 
     private PropertyModel createBankAccountModel(BankAccount bankAccount) {
-        return FacilitatedPaymentsPaymentMethodsMediator.createBankAccountModel(
-                mActivityTestRule.getActivity(), bankAccount);
+        return mMediator.createBankAccountModel(mActivityTestRule.getActivity(), bankAccount);
     }
 
     private RecyclerView getBankAccounts() {
@@ -171,5 +398,35 @@ public final class FacilitatedPaymentsPaymentMethodsViewTest {
 
     private TextView getBankAccountSummaryAt(int index) {
         return getBankAccounts().getChildAt(index).findViewById(R.id.bank_account_summary);
+    }
+
+    private static boolean containsViewOfClass(ViewGroup parent, Class<?> clazz) {
+        for (int i = 0; i < parent.getChildCount(); i++) {
+            View child = parent.getChildAt(i);
+            if (clazz.isInstance(child)) {
+                return true;
+            }
+            if (child instanceof ViewGroup) {
+                if (containsViewOfClass((ViewGroup) child, clazz)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean containsViewWithId(ViewGroup parent, int id) {
+        for (int i = 0; i < parent.getChildCount(); i++) {
+            View child = parent.getChildAt(i);
+            if (child.getId() == id) {
+                return true;
+            }
+            if (child instanceof ViewGroup) {
+                if (containsViewWithId((ViewGroup) child, id)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

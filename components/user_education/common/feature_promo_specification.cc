@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 #include "base/functional/callback_forward.h"
 #include "base/notreached.h"
+#include "base/time/time.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/interaction/element_identifier.h"
@@ -25,10 +26,7 @@ namespace {
 // It is not to be modified except by the Frizzle team.
 bool IsAllowedLegalNotice(const base::Feature& promo_feature) {
   // Add the text names of allowlisted critical promos here:
-  static const char* const kAllowedPromoNames[] = {
-      "IPH_TrackingProtectionOnboarding",
-      "IPH_TrackingProtectionOffboarding",
-  };
+  static const char* const kAllowedPromoNames[] = {};
   for (const auto* promo_name : kAllowedPromoNames) {
     if (!strcmp(promo_feature.name, promo_name)) {
       return true;
@@ -88,7 +86,6 @@ bool IsAllowedLegacyPromo(const base::Feature& promo_feature) {
       "IPH_DesktopPwaInstall",
       "IPH_DesktopSharedHighlighting",
       "IPH_GMCCastStartStop",
-      "IPH_PasswordsAccountStorage",
       "IPH_PriceTrackingInSidePanel",
       "IPH_ReadingListDiscovery",
       "IPH_ReadingListInSidePanel",
@@ -137,6 +134,31 @@ bool IsAllowedToastWithoutScreenreaderText(const base::Feature& promo_feature) {
   return false;
 }
 
+// Common check logic for gating reshow-ability of promos. Generates an error if
+// `subtype` is not allowed to reshow.
+void CheckReshowAllowedFor(FeaturePromoSpecification::PromoSubtype subtype) {
+  CHECK(subtype == FeaturePromoSpecification::PromoSubtype::kKeyedNotice ||
+        subtype == FeaturePromoSpecification::PromoSubtype::kLegalNotice)
+      << "Reshow only allowed for certain promo subtypes; subtype was "
+      << subtype;
+}
+
+// Gets the minimum allowed reshow delay for specific promo types and
+// `subtypes`.
+//
+// Note that currently, the subtype parameter does not affect the delay; it is
+// here for sanity checking and so we can tune policy later if necessary.
+base::TimeDelta GetMinReshowDelay(
+    FeaturePromoSpecification::PromoType type,
+    FeaturePromoSpecification::PromoSubtype subtype) {
+  CheckReshowAllowedFor(subtype);
+  if (type == FeaturePromoSpecification::PromoType::kToast) {
+    return base::Days(14);
+  } else {
+    return base::Days(90);
+  }
+}
+
 }  // namespace
 
 FeaturePromoSpecification::AdditionalConditions::AdditionalConditions() =
@@ -149,9 +171,11 @@ FeaturePromoSpecification::AdditionalConditions::operator=(
 FeaturePromoSpecification::AdditionalConditions::~AdditionalConditions() =
     default;
 
-void FeaturePromoSpecification::AdditionalConditions::AddAdditionalCondition(
+FeaturePromoSpecification::AdditionalConditions&
+FeaturePromoSpecification::AdditionalConditions::AddAdditionalCondition(
     const AdditionalCondition& additional_condition) {
   additional_conditions_.emplace_back(additional_condition);
+  return *this;
 }
 
 void FeaturePromoSpecification::AdditionalConditions::AddAdditionalCondition(
@@ -420,6 +444,8 @@ FeaturePromoSpecification& FeaturePromoSpecification::SetPromoSubtype(
       << "Rotating is not compatible with other promo subtypes.";
   CHECK_NE(promo_type_, PromoType::kSnooze)
       << "Basic snooze is not compatible with other promo subtypes.";
+  CHECK_EQ(promo_subtype_, PromoSubtype::kNormal)
+      << "Promo subtype cannot be set multiple times.";
   switch (promo_subtype) {
     case PromoSubtype::kLegalNotice:
       CHECK(feature_);
@@ -438,6 +464,17 @@ FeaturePromoSpecification& FeaturePromoSpecification::SetPromoSubtype(
       break;
   }
   promo_subtype_ = promo_subtype;
+  return *this;
+}
+
+FeaturePromoSpecification& FeaturePromoSpecification::SetReshowPolicy(
+    base::TimeDelta reshow_delay,
+    std::optional<int> max_show_count) {
+  CheckReshowAllowedFor(promo_subtype_);
+  CHECK_GE(reshow_delay, GetMinReshowDelay(promo_type_, promo_subtype_));
+  CHECK(!max_show_count || max_show_count > 1);
+  reshow_delay_ = reshow_delay;
+  max_show_count_ = max_show_count;
   return *this;
 }
 

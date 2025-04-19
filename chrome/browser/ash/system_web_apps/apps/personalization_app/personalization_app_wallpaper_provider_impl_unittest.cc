@@ -218,9 +218,10 @@ class PersonalizationAppWallpaperProviderImplTest : public testing::Test {
     ASSERT_TRUE(profile_manager_.SetUp());
     profile_ = profile_manager_.CreateTestingProfile(
         kFakeTestEmail,
-        {{ash::personalization_app::PersonalizationAppManagerFactory::
-              GetInstance(),
-          base::BindRepeating(&MakeMockPersonalizationAppManager)}});
+        {TestingProfile::TestingFactory{
+            ash::personalization_app::PersonalizationAppManagerFactory::
+                GetInstance(),
+            base::BindRepeating(&MakeMockPersonalizationAppManager)}});
 
     AddAndLoginUser(GetTestAccountId());
     test_wallpaper_controller()->SetCurrentUser(GetTestAccountId());
@@ -497,8 +498,8 @@ TEST_F(PersonalizationAppWallpaperProviderImplTest, ValidSeaPenAttribution) {
   }
 
   // Set the image as user wallpaper.
-  test_wallpaper_controller()->SetSeaPenWallpaper(GetTestAccountId(), 111u,
-                                                  base::DoNothing());
+  test_wallpaper_controller()->SetSeaPenWallpaper(
+      GetTestAccountId(), 111u, /*preview_mode=*/false, base::DoNothing());
 
   SetWallpaperObserver();
   test_wallpaper_observer()->WaitForAttributionChange();
@@ -521,8 +522,8 @@ TEST_F(PersonalizationAppWallpaperProviderImplTest, MissingSeaPenAttribution) {
   ASSERT_TRUE(base::CreateDirectory(jpg_path.DirName()));
   ASSERT_TRUE(base::WriteFile(jpg_path, CreateJpgBytes()));
 
-  test_wallpaper_controller()->SetSeaPenWallpaper(GetTestAccountId(), 111u,
-                                                  base::DoNothing());
+  test_wallpaper_controller()->SetSeaPenWallpaper(
+      GetTestAccountId(), 111u, /*preview_mode=*/false, base::DoNothing());
 
   SetWallpaperObserver();
   test_wallpaper_observer()->WaitForAttributionChange();

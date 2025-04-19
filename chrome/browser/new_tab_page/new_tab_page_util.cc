@@ -27,33 +27,16 @@ bool IsOsSupportedForDrive() {
 #endif
 }
 
-std::string GetCountryCode() {
-  std::string country_code;
-  auto* variations_service = g_browser_process->variations_service();
-  if (!variations_service)
-    return country_code;
-  country_code = variations_service->GetStoredPermanentCountry();
-  return country_code.empty() ? variations_service->GetLatestCountry()
-                              : country_code;
-}
-
 bool IsInUS() {
   return g_browser_process->GetApplicationLocale() == "en-US" &&
-         GetCountryCode() == "us";
+         GetVariationsServiceCountryCode(
+             g_browser_process->variations_service()) == "us";
 }
+
 }  // namespace
 
 // If feature is overridden manually or by finch, read the feature flag value.
 // Otherwise filter by os, locale and country code.
-bool IsRecipeTasksModuleEnabled() {
-  if (base::FeatureList::GetInstance()->IsFeatureOverridden(
-          ntp_features::kNtpRecipeTasksModule.name)) {
-    return base::FeatureList::IsEnabled(ntp_features::kNtpRecipeTasksModule);
-  }
-
-  return false;
-}
-
 bool IsCartModuleEnabled() {
   if (base::FeatureList::GetInstance()->IsFeatureOverridden(
           ntp_features::kNtpChromeCartModule.name)) {
@@ -70,18 +53,20 @@ bool IsDriveModuleEnabled() {
   return IsOsSupportedForDrive();
 }
 
-bool IsHistoryClustersModuleEnabled() {
-  if (base::FeatureList::GetInstance()->IsFeatureOverridden(
-          ntp_features::kNtpHistoryClustersModule.name)) {
-    return base::FeatureList::IsEnabled(
-        ntp_features::kNtpHistoryClustersModule);
-  }
-  return IsInUS();
-}
-
 bool IsEnUSLocaleOnlyFeatureEnabled(const base::Feature& ntp_feature) {
   if (base::FeatureList::GetInstance()->IsFeatureOverridden(ntp_feature.name)) {
     return base::FeatureList::IsEnabled(ntp_feature);
   }
   return IsInUS();
+}
+
+std::string GetVariationsServiceCountryCode(
+    variations::VariationsService* variations_service) {
+  std::string country_code;
+  if (!variations_service) {
+    return country_code;
+  }
+  country_code = variations_service->GetStoredPermanentCountry();
+  return country_code.empty() ? variations_service->GetLatestCountry()
+                              : country_code;
 }

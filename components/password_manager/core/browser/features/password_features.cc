@@ -21,8 +21,12 @@ BASE_FEATURE(kAutofillPasswordUserPerceptionSurvey,
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
 #if BUILDFLAG(IS_WIN)
-BASE_FEATURE(kAuthenticateUsingNewWindowsHelloApi,
-             "AuthenticateUsingNewWindowsHelloApi",
+BASE_FEATURE(kAuthenticateUsingUserConsentVerifierInteropApi,
+             "AuthenticateUsingUserConsentVerifierInteropApi",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kAuthenticateUsingUserConsentVerifierApi,
+             "AuthenticateUsingUserConsentVerifierApi",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
@@ -30,23 +34,14 @@ BASE_FEATURE(kBiometricTouchToFill,
              "BiometricTouchToFill",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)  // Desktop
-BASE_FEATURE(kButterOnDesktopFollowup,
-             "ButterOnDesktopFollowup",
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#else
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
-#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-
 BASE_FEATURE(kClearUndecryptablePasswords,
              "ClearUndecryptablePasswords",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kClearUndecryptablePasswordsOnSync,
              "ClearUndecryptablePasswordsInSync",
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_IOS)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_IOS) || \
+    BUILDFLAG(IS_WIN)
              base::FEATURE_ENABLED_BY_DEFAULT
 #else
              base::FEATURE_DISABLED_BY_DEFAULT
@@ -66,12 +61,15 @@ BASE_FEATURE(kFillOnAccountSelect,
 #if BUILDFLAG(IS_IOS)
 BASE_FEATURE(kIOSPasswordSignInUff,
              "IOSPasswordSignInUff",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kIosDetectUsernameInUff,
              "IosSaveUsernameInUff",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kIOSProactivePasswordGenerationBottomSheet,
+             "kIOSProactivePasswordGenerationBottomSheet",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // IS_IOS
 
 BASE_FEATURE(kLocalStateEnterprisePasswordHashes,
@@ -83,22 +81,6 @@ BASE_FEATURE(kPasswordGenerationExperiment,
              "PasswordGenerationExperiment",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
-
-BASE_FEATURE(kPasswordManagerEnableReceiverService,
-             "PasswordManagerEnableReceiverService",
-#if BUILDFLAG(IS_ANDROID)
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#else
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#endif  // BUILDFLAG(IS_ANDROID)
-
-BASE_FEATURE(kPasswordManagerEnableSenderService,
-             "PasswordManagerEnableSenderService",
-#if BUILDFLAG(IS_ANDROID)
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#else
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#endif  // BUILDFLAG(IS_ANDROID)
 
 BASE_FEATURE(kPasswordManagerLogToTerminal,
              "PasswordManagerLogToTerminal",
@@ -124,13 +106,9 @@ BASE_FEATURE(kScreenlockReauthPromoCard,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 
-BASE_FEATURE(kSharedPasswordNotificationUI,
-             "SharedPasswordNotificationUI",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kSkipUndecryptablePasswords,
              "SkipUndecryptablePasswords",
-#if BUILDFLAG(IS_IOS)
+#if BUILDFLAG(IS_IOS) || BUILDFLAG(IS_WIN)
              base::FEATURE_ENABLED_BY_DEFAULT
 #else
              base::FEATURE_DISABLED_BY_DEFAULT
@@ -145,47 +123,10 @@ BASE_FEATURE(kTriggerPasswordResyncAfterDeletingUndecryptablePasswords,
 BASE_FEATURE(kUnifiedPasswordManagerLocalPasswordsAndroidAccessLossWarning,
              "UnifiedPasswordManagerLocalPasswordsAndroidAccessLossWarning",
              base::FEATURE_DISABLED_BY_DEFAULT);
-BASE_FEATURE(kUnifiedPasswordManagerLocalPasswordsAndroidNoMigration,
-             "UnifiedPasswordManagerLocalPasswordsAndroidNoMigration",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-BASE_FEATURE(kUnifiedPasswordManagerLocalPasswordsAndroidWithMigration,
-             "UnifiedPasswordManagerLocalPasswordsAndroidWithMigration",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-// A parameter which reflects the delay when the local passwords migration is
-// triggered after Chrome startup in seconds.
-constexpr base::FeatureParam<int>
-    kLocalPasswordsMigrationToAndroidBackendDelayParam{
-        &kUnifiedPasswordManagerLocalPasswordsAndroidWithMigration,
-        /* name= */ "local_pwd_migration_delay_seconds",
-        /* default_value= */ 5};
 
-int GetLocalPasswordsMigrationToAndroidBackendDelay() {
-  return kLocalPasswordsMigrationToAndroidBackendDelayParam.Get();
-}
-
-BASE_FEATURE(kUnifiedPasswordManagerSyncOnlyInGMSCore,
-             "UnifiedPasswordManagerSyncOnlyInGMSCore",
+BASE_FEATURE(kClearLoginDatabaseForAllMigratedUPMUsers,
+             "ClearLoginDatabaseForAllMigratedUPMUsers",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kClearLoginDatabaseForUPMUsers,
-             "ClearLoginDatabaseForUPMUsers",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-bool IsUnifiedPasswordManagerSyncOnlyInGMSCoreEnabled() {
-#if BUILDFLAG(USE_LOGIN_DATABASE_AS_BACKEND)
-  return false;
-#else
-  return base::FeatureList::IsEnabled(kUnifiedPasswordManagerSyncOnlyInGMSCore);
-#endif
-}
-#endif
-
-BASE_FEATURE(kUseExtensionListForPSLMatching,
-             "UseExtensionListForPSLMatching",
-#if BUILDFLAG(IS_ANDROID)
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#else
-             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
 BASE_FEATURE(kUsernameFirstFlowFallbackCrowdsourcing,
@@ -213,5 +154,9 @@ BASE_FEATURE(kUsernameFirstFlowWithIntermediateValuesPredictions,
 BASE_FEATURE(kUsernameFirstFlowWithIntermediateValuesVoting,
              "UsernameFirstFlowWithIntermediateValuesVoting",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kUseAsyncOsCryptInLoginDatabase,
+             "UseAsyncOsCryptInLoginDatabase",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace password_manager::features

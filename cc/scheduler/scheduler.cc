@@ -87,13 +87,15 @@ void Scheduler::Stop() {
 }
 
 void Scheduler::SetNeedsImplSideInvalidation(
-    bool needs_first_draw_on_activation) {
+    bool needs_first_draw_on_activation,
+    RedrawReason reason) {
   {
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler"),
                  "Scheduler::SetNeedsImplSideInvalidation",
                  "needs_first_draw_on_activation",
                  needs_first_draw_on_activation);
-    state_machine_.SetNeedsImplSideInvalidation(needs_first_draw_on_activation);
+    state_machine_.SetNeedsImplSideInvalidation(needs_first_draw_on_activation,
+                                                reason);
   }
   ProcessScheduledActions();
 }
@@ -172,8 +174,8 @@ void Scheduler::SetNeedsOneBeginImplFrame() {
   ProcessScheduledActions();
 }
 
-void Scheduler::SetNeedsRedraw() {
-  state_machine_.SetNeedsRedraw();
+void Scheduler::SetNeedsRedraw(RedrawReason reason) {
+  state_machine_.SetNeedsRedraw(reason);
   ProcessScheduledActions();
 }
 
@@ -248,12 +250,7 @@ void Scheduler::BeginMainFrameAborted(CommitEarlyOutReason reason) {
   ProcessScheduledActions();
 }
 
-void Scheduler::WillPrepareTiles() {
-  compositor_timing_history_->WillPrepareTiles();
-}
-
 void Scheduler::DidPrepareTiles() {
-  compositor_timing_history_->DidPrepareTiles();
   state_machine_.DidPrepareTiles();
 }
 
@@ -582,19 +579,23 @@ void Scheduler::BeginImplFrameWithDeadline(const viz::BeginFrameArgs& args) {
             ->BeginMainFrameStartToReadyToCommitNotCriticalEstimate();
   }
 
-  bool main_thread_response_expected_before_deadline;
+  bool main_thread_response_expected_soon;
+  // Allow the main thread to delay N impl frame before we decide to give up
+  // and create a pending tree instead.
+  time_since_main_frame_sent -=
+      args.interval * settings_.delay_impl_invalidation_frames;
   if (time_since_main_frame_sent > bmf_to_activate_threshold) {
     // If the response to a main frame is pending past the desired duration
     // then proactively assume that the main thread is slow instead of late
     // correction through the frame history.
-    main_thread_response_expected_before_deadline = false;
+    main_thread_response_expected_soon = false;
   } else {
-    main_thread_response_expected_before_deadline =
+    main_thread_response_expected_soon =
         bmf_sent_to_ready_to_commit_estimate - time_since_main_frame_sent <
         bmf_to_activate_threshold;
   }
   state_machine_.set_should_defer_invalidation_for_fast_main_frame(
-      main_thread_response_expected_before_deadline);
+      main_thread_response_expected_soon);
 
   BeginImplFrame(adjusted_args, now);
 }
@@ -703,7 +704,6 @@ void Scheduler::BeginImplFrame(const viz::BeginFrameArgs& args,
 
     begin_impl_frame_tracker_.Start(args);
     state_machine_.OnBeginImplFrame(args.frame_id, args.animate_only);
-    compositor_timing_history_->WillBeginImplFrame(args, now);
     compositor_frame_reporting_controller_->WillBeginImplFrame(args);
     bool has_damage =
         client_->WillBeginImplFrame(begin_impl_frame_tracker_.Current());
@@ -818,6 +818,7 @@ void Scheduler::OnBeginImplFrameDeadline() {
     }
 
     state_machine_.OnBeginImplFrameDeadline();
+    client_->OnBeginImplFrameDeadline();
   }
   ProcessScheduledActions();
 
@@ -1061,6 +1062,10 @@ size_t Scheduler::CommitDurationSampleCountForTesting() const {
 
 viz::BeginFrameAck Scheduler::CurrentBeginFrameAckForActiveTree() const {
   return viz::BeginFrameAck(begin_main_frame_args_, true);
+}
+
+RedrawReasonSet Scheduler::GetRedrawReasons() const {
+  return state_machine_.GetRedrawReasons();
 }
 
 void Scheduler::ClearHistory() {

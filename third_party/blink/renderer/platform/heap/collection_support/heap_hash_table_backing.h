@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_COLLECTION_SUPPORT_HEAP_HASH_TABLE_BACKING_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_COLLECTION_SUPPORT_HEAP_HASH_TABLE_BACKING_H_
 
@@ -187,14 +192,29 @@ struct TraceHashTableBackingInCollectionTrait {
                     self)) /
         sizeof(Value);
     for (size_t i = 0; i < length; ++i) {
-      internal::ConcurrentBucket<Value> concurrent_bucket(
-          array[i], Extractor::ExtractKeyToMemory);
-      if (!WTF::IsHashTraitsEmptyOrDeletedValue<typename Table::KeyTraitsType>(
-              *concurrent_bucket.key())) {
-        blink::TraceCollectionIfEnabled<
-            weak_handling,
-            typename internal::ConcurrentBucket<Value>::BucketType,
-            Traits>::Trace(visitor, concurrent_bucket.bucket());
+      if constexpr (Traits::kCanTraceConcurrently) {
+        internal::ConcurrentBucket<Value> concurrent_bucket(
+            array[i], Extractor::ExtractKeyToMemory);
+        if (!WTF::IsHashTraitsEmptyOrDeletedValue<
+                typename Table::KeyTraitsType>(*concurrent_bucket.key())) {
+          blink::TraceCollectionIfEnabled<
+              weak_handling,
+              typename internal::ConcurrentBucket<Value>::BucketType,
+              Traits>::Trace(visitor, concurrent_bucket.bucket());
+        }
+      } else {
+        // Use single-threaded tracing in case we don't support concurrent
+        // tracing. For GC semantics this could use the `ConcurrentBucket` as
+        // well. We simply use the bucket in the data structure though to avoid
+        // copying possibly ASAN-poisened fields. Such fields can exist in keys
+        // in form of an `std::string` that uses container annotations to detect
+        // OOB. A side effect is that we also avoid copying the key.
+        if (!WTF::IsHashTraitsEmptyOrDeletedValue<
+                typename Table::KeyTraitsType>(
+                Extractor::ExtractKey(array[i]))) {
+          blink::TraceCollectionIfEnabled<weak_handling, Value, Traits>::Trace(
+              visitor, &array[i]);
+        }
       }
     }
   }

@@ -17,6 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.base.test.util.Batch;
@@ -33,8 +34,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
-import org.chromium.content_public.browser.test.util.KeyUtils;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
 
 /** Tests system and application interaction with Contextual Search using instrumentation tests. */
@@ -58,28 +57,16 @@ public class ContextualSearchSystemTest extends ContextualSearchInstrumentationB
 
     /** Simulates pressing the App Menu button. */
     private void pressAppMenuKey() {
-        pressKey(KeyEvent.KEYCODE_MENU);
+        InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_MENU);
     }
 
     /** Simulates pressing back button. */
     private void pressBackButton() {
-        pressKey(KeyEvent.KEYCODE_BACK);
-    }
-
-    /**
-     * Simulates a key press.
-     *
-     * @param keycode The key's code.
-     */
-    private void pressKey(int keycode) {
-        KeyUtils.singleKeyEventActivity(
-                InstrumentationRegistry.getInstrumentation(),
-                sActivityTestRule.getActivity(),
-                keycode);
+        InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_BACK);
     }
 
     private void closeAppMenu() {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> sActivityTestRule.getAppMenuCoordinator().getAppMenuHandler().hideAppMenu());
     }
 
@@ -138,10 +125,9 @@ public class ContextualSearchSystemTest extends ContextualSearchInstrumentationB
         final Tab tab2 =
                 TabModelUtils.getCurrentTab(sActivityTestRule.getActivity().getCurrentTabModel());
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
-                    TabModelUtils.setIndex(
-                            sActivityTestRule.getActivity().getCurrentTabModel(), 0, false);
+                    TabModelUtils.setIndex(sActivityTestRule.getActivity().getCurrentTabModel(), 0);
                 });
 
         triggerResolve(SEARCH_NODE);

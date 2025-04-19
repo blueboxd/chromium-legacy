@@ -184,20 +184,19 @@ IN_PROC_BROWSER_TEST_F(WebAppPolicyManagerBrowserTest, DontOverrideManifest) {
 IN_PROC_BROWSER_TEST_F(WebAppPolicyManagerBrowserTest, AppIdWhenNoManifestId) {
   WebAppProvider& provider = *WebAppProvider::GetForTest(profile());
 
-  base::test::TestFuture<void> future;
-  provider.policy_manager().SetOnAppsSynchronizedCompletedCallbackForTesting(
-      future.GetCallback());
+  const GURL start_url = https_server()->GetURL("/web_apps/basic.html");
+  const webapps::AppId app_id = GenerateAppIdFromManifestId(
+      GenerateManifestIdFromStartUrlOnly(start_url));
+  web_app::WebAppTestInstallObserver observer(profile());
+  observer.BeginListening({});
   const GURL install_url =
       https_server()->GetURL("/web_apps/get_manifest.html?no_manifest_id.json");
   profile()->GetPrefs()->SetList(
       prefs::kWebAppInstallForceList,
       base::Value::List().Append(
           base::Value::Dict().Set(kUrlKey, install_url.spec())));
-  future.Get();
+  ASSERT_EQ(app_id, observer.Wait());
 
-  const GURL start_url = https_server()->GetURL("/web_apps/basic.html");
-  const webapps::AppId app_id = GenerateAppIdFromManifestId(
-      GenerateManifestIdFromStartUrlOnly(start_url));
   const WebApp* app = provider.registrar_unsafe().GetAppById(app_id);
 
   ASSERT_TRUE(app) << provider.registrar_unsafe().AsDebugValue();
@@ -212,8 +211,8 @@ IN_PROC_BROWSER_TEST_F(WebAppPolicyManagerBrowserTest, AppIdWhenNoManifestId) {
 // specified in manifest. Next time we navigate to kStartUrl, but we still
 // need to override the manifest even though the policy key is kInstallUrl.
 // This is done by matching the webapps::AppId.
-// TODO(crbug.com/40256661): Flaky on Mac.
-#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/40256661): Flaky on Mac and Linux.
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 #define MAYBE_MismatchedInstallAndStartUrl DISABLED_MismatchedInstallAndStartUrl
 #else
 #define MAYBE_MismatchedInstallAndStartUrl MismatchedInstallAndStartUrl
@@ -231,6 +230,7 @@ IN_PROC_BROWSER_TEST_F(WebAppPolicyManagerBrowserTest,
 
   // Create manifest:
   blink::mojom::ManifestPtr manifest = blink::mojom::Manifest::New();
+  manifest->manifest_url = GURL(kManifestUrl);
   manifest->name = base::UTF8ToUTF16(std::string(kDefaultAppName));
   manifest->start_url = GURL(kStartUrl);
   manifest->id = GenerateManifestIdFromStartUrlOnly(manifest->start_url);
@@ -247,8 +247,7 @@ IN_PROC_BROWSER_TEST_F(WebAppPolicyManagerBrowserTest,
   std::unique_ptr<WebAppInstallInfo> install_info =
       WebAppInstallInfo::CreateWithStartUrlForTesting(GURL(kStartUrl));
   install_info->install_url = GURL(kInstallUrl);
-  UpdateWebAppInfoFromManifest(*manifest, GURL(kManifestUrl),
-                               install_info.get());
+  UpdateWebAppInfoFromManifest(*manifest, install_info.get());
 
   auto* provider = WebAppProvider::GetForTest(profile());
   provider->scheduler().InstallFromInfoNoIntegrationForTesting(
@@ -330,15 +329,13 @@ IN_PROC_BROWSER_TEST_F(WebAppPolicyManagerGuestModeTest,
   Profile* test_profile = browser()->profile();
   WebAppProvider* test_provider = WebAppProvider::GetForTest(test_profile);
 
-  base::test::TestFuture<void> future;
-  test_provider->policy_manager()
-      .SetOnAppsSynchronizedCompletedCallbackForTesting(future.GetCallback());
-  test_profile->GetPrefs()->SetList(prefs::kWebAppInstallForceList,
-                                    std::move(app_list));
-  EXPECT_TRUE(future.Wait());
-
   const webapps::AppId& app_id =
       GenerateAppId(/*manifest_id=*/std::nullopt, GURL(kInstallUrl));
+  web_app::WebAppTestInstallObserver observer(browser()->profile());
+  observer.BeginListening({app_id});
+  test_profile->GetPrefs()->SetList(prefs::kWebAppInstallForceList,
+                                    std::move(app_list));
+  ASSERT_EQ(app_id, observer.Wait());
 
   // This test should pass on all platforms, including on a ChromeOS
   // guest session.

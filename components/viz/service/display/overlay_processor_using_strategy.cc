@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "components/viz/service/display/overlay_processor_using_strategy.h"
 
 #include <algorithm>
@@ -71,9 +76,6 @@ enum class PromotingMaskCandidates {
   kMaxValue = kNoDrmRejected
 };
 
-constexpr char kShouldAttemptMultipleOverlaysHistogramName[] =
-    "Compositing.Display.OverlayProcessorUsingStrategy."
-    "ShouldAttemptMultipleOverlays";
 constexpr char kNumOverlaysPromotedHistogramName[] =
     "Compositing.Display.OverlayProcessorUsingStrategy.NumOverlaysPromoted";
 constexpr char kNumOverlaysAttemptedHistogramName[] =
@@ -408,7 +410,6 @@ void OverlayProcessorUsingStrategy::ProcessForOverlays(
         resource_provider, render_passes, &surface_damage_rect_list,
         output_surface_plane, candidates, content_bounds, damage_rect);
   }
-  LogCheckOverlaySupportMetrics();
 
   DCHECK(candidates->empty() || success);
   UMA_HISTOGRAM_COUNTS_100(kNumOverlaysPromotedHistogramName,
@@ -439,18 +440,7 @@ void OverlayProcessorUsingStrategy::CheckOverlaySupport(
     primary_plane_color_space_ = primary_plane->color_space;
 #endif
 
-  base::ElapsedTimer timer;
   CheckOverlaySupportImpl(primary_plane, candidate_list);
-  check_overlay_support_call_count_++;
-
-  base::TimeDelta time = timer.Elapsed();
-
-  static constexpr base::TimeDelta kMinTime = base::Microseconds(1);
-  static constexpr base::TimeDelta kMaxTime = base::Milliseconds(10);
-  static constexpr int kTimeBuckets = 50;
-  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-      "Compositing.Display.OverlayProcessorUsingStrategy.CheckOverlaySupportUs",
-      time, kMinTime, kMaxTime, kTimeBuckets);
 }
 
 void OverlayProcessorUsingStrategy::ClearOverlayCombinationCache() {
@@ -928,8 +918,6 @@ bool OverlayProcessorUsingStrategy::AttemptWithStrategies(
 bool OverlayProcessorUsingStrategy::ShouldAttemptMultipleOverlays(
     const std::vector<OverlayProposedCandidate>& sorted_candidates) {
   if (max_overlays_config_ <= 1) {
-    UMA_HISTOGRAM_ENUMERATION(kShouldAttemptMultipleOverlaysHistogramName,
-                              AttemptingMultipleOverlays::kNoFeatureDisabled);
     return false;
   }
 
@@ -938,8 +926,6 @@ bool OverlayProcessorUsingStrategy::ShouldAttemptMultipleOverlays(
     // different scale factors. This becomes complicated when using multiple
     // overlays at once so we won't attempt multiple in that case.
     if (proposed.candidate.requires_overlay) {
-      UMA_HISTOGRAM_ENUMERATION(kShouldAttemptMultipleOverlaysHistogramName,
-                                AttemptingMultipleOverlays::kNoRequiredOverlay);
       return false;
     }
     // Using multiple overlays only makes sense with SingleOnTop and Underlay
@@ -947,15 +933,10 @@ bool OverlayProcessorUsingStrategy::ShouldAttemptMultipleOverlays(
     OverlayStrategy type = proposed.strategy->GetUMAEnum();
     if (type != OverlayStrategy::kSingleOnTop &&
         type != OverlayStrategy::kUnderlay) {
-      UMA_HISTOGRAM_ENUMERATION(
-          kShouldAttemptMultipleOverlaysHistogramName,
-          AttemptingMultipleOverlays::kNoUnsupportedStrategy);
       return false;
     }
   }
 
-  UMA_HISTOGRAM_ENUMERATION(kShouldAttemptMultipleOverlaysHistogramName,
-                            AttemptingMultipleOverlays::kYes);
   return true;
 }
 
@@ -1194,14 +1175,6 @@ void OverlayProcessorUsingStrategy::UpdateDownscalingCapabilities(
   // legitimate.
   constexpr float kMaxFailedScaleMin = 0.70f;
   max_failed_scale_ = std::min(max_failed_scale_, kMaxFailedScaleMin);
-}
-
-void OverlayProcessorUsingStrategy::LogCheckOverlaySupportMetrics() {
-  UMA_HISTOGRAM_COUNTS_100(
-      "Compositing.Display.OverlayProcessorUsingStrategy."
-      "CheckOverlaySupportCallCount",
-      check_overlay_support_call_count_);
-  check_overlay_support_call_count_ = 0;
 }
 
 }  // namespace viz

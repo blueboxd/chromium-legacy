@@ -38,6 +38,7 @@ using signin_metrics::PromoAction;
   self = [super initWithBaseViewController:viewController browser:browser];
   if (self) {
     _accessPoint = accessPoint;
+    _creationTimeTicks = base::TimeTicks::Now();
   }
   return self;
 }
@@ -132,7 +133,7 @@ using signin_metrics::PromoAction;
                          browser:browser
                      accessPoint:accessPoint
                      promoAction:promoAction
-                    signinIntent:AddAccountSigninIntent::kSigninAndSyncReauth];
+                    signinIntent:AddAccountSigninIntent::kResignin];
 }
 
 + (instancetype)
@@ -143,6 +144,10 @@ using signin_metrics::PromoAction;
                                                            intent:
                                                                (SigninTrustedVaultDialogIntent)
                                                                    intent
+                                                 securityDomainID:
+                                                     (trusted_vault::
+                                                          SecurityDomainId)
+                                                         securityDomainID
                                                           trigger:
                                                               (syncer::
                                                                    TrustedVaultUserActionTriggerForUMA)
@@ -156,6 +161,7 @@ using signin_metrics::PromoAction;
       initWithBaseViewController:viewController
                          browser:browser
                           intent:intent
+                securityDomainID:securityDomainID
                          trigger:trigger
                      accessPoint:accessPoint];
 }

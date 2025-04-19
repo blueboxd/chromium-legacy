@@ -14,15 +14,11 @@
 #include "base/synchronization/lock.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/thread_annotations.h"
-#include "partition_alloc/partition_alloc_buildflags.h"
+#include "partition_alloc/buildflags.h"
 #include "partition_alloc/partition_alloc_config.h"
 #include "partition_alloc/thread_cache.h"
 
 namespace base::allocator {
-
-#if PA_BUILDFLAG(USE_STARSCAN)
-BASE_EXPORT void RegisterPCScanStatsReporter();
-#endif
 
 // Starts a periodic timer on the current thread to purge all thread caches.
 BASE_EXPORT void StartThreadCachePeriodicPurge();

@@ -72,13 +72,33 @@ public interface LocationBarDataProvider {
 
     /** Returns whether the currently active page is loading. */
     default boolean isLoading() {
-        if (isInOverviewAndShowingOmnibox()) return false;
         Tab tab = getTab();
         return tab != null && tab.isLoading();
     }
 
-    /** Returns whether the current page is in an incognito browser context. */
+    /**
+     * TODO(crbug.com/350654700): clean up usages and remove isIncognito.
+     *
+     * <p>Returns whether the current page is in an incognito browser context.
+     *
+     * @deprecated Use {@link #isIncognitoBranded()} or {@link #isOffTheRecord()}.
+     */
+    @Deprecated
     boolean isIncognito();
+
+    /**
+     * Returns whether the current page is in an incognito branded browser context.
+     *
+     * @see {@link Profile#isIncognitoBranded()}
+     */
+    boolean isIncognitoBranded();
+
+    /**
+     * Returns whether the current page is in an off the record browser context.
+     *
+     * @see {@link Profile#isOffTheRecord()}
+     */
+    boolean isOffTheRecord();
 
     /** Returns the currently active tab, if there is one. */
     @Nullable
@@ -86,12 +106,6 @@ public interface LocationBarDataProvider {
 
     /** Returns whether the LocationBarDataProvider currently has an active tab. */
     boolean hasTab();
-
-    /**
-     * Returns whether the LocationBar's embedder is currently being displayed in overview mode and
-     * showing the omnibox.
-     */
-    boolean isInOverviewAndShowingOmnibox();
 
     /** Returns the contents of the {@link UrlBar}. */
     UrlBarData getUrlBarData();

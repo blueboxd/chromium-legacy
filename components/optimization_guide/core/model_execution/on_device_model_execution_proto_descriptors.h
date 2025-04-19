@@ -11,6 +11,7 @@
 #include "base/check_op.h"
 #include "base/memory/raw_ptr.h"
 #include "base/notreached.h"
+#include "base/values.h"
 #include "components/optimization_guide/proto/descriptors.pb.h"
 #include "components/optimization_guide/proto/model_execution.pb.h"
 
@@ -70,6 +71,11 @@ std::optional<proto::Value> GetProtoValue(
     const google::protobuf::MessageLite& msg,
     const proto::ProtoField& proto_field);
 
+// Casts the serialized proto in `msg` to the type in `msg.type_url`.
+// Returns a unique_ptr to the casted proto field.
+std::unique_ptr<google::protobuf::MessageLite> GetProtoFromAny(
+    const proto::Any& msg);
+
 // Constructs a new proto of `proto_name` type, and sets `value` in it's
 // `proto_field` and returns it wrapped in a proto::Any.
 // Returns nullopt if `proto_field` is not a valid string type field.
@@ -84,6 +90,11 @@ std::optional<proto::Any> SetProtoValue(const std::string& proto_name,
 std::optional<NestedMessageIterator> GetProtoRepeated(
     const google::protobuf::MessageLite* msg,
     const proto::ProtoField& proto_field);
+
+// Converts a base::Value to a proto of the given type, wrapped in a proto::Any.
+std::optional<proto::Any> ConvertToAnyWrappedProto(
+    const base::Value& object,
+    const std::string& type_name);
 
 }  // namespace optimization_guide
 

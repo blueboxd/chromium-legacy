@@ -52,7 +52,7 @@ bool Clipboard::IsSupportedClipboardBuffer(ClipboardBuffer buffer) {
     case ClipboardBuffer::kDrag:
       return false;
   }
-  NOTREACHED_IN_MIGRATION();
+  NOTREACHED();
 }
 
 // static
@@ -434,12 +434,13 @@ void Clipboard::ReadRTF(ClipboardBuffer buffer,
   std::move(callback).Run(std::move(result));
 }
 
-void Clipboard::ReadCustomData(ClipboardBuffer buffer,
-                               const std::u16string& type,
-                               const DataTransferEndpoint* data_dst,
-                               ReadCustomDataCallback callback) const {
+void Clipboard::ReadDataTransferCustomData(
+    ClipboardBuffer buffer,
+    const std::u16string& type,
+    const DataTransferEndpoint* data_dst,
+    ReadDataTransferCustomDataCallback callback) const {
   std::u16string result;
-  ReadCustomData(buffer, type, data_dst, &result);
+  ReadDataTransferCustomData(buffer, type, data_dst, &result);
   std::move(callback).Run(std::move(result));
 }
 

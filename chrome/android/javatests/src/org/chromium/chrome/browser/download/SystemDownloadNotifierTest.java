@@ -18,20 +18,22 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.components.browser_ui.notifications.ThrottlingNotificationScheduler;
 import org.chromium.components.offline_items_collection.ContentId;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.UUID;
 
 /** Tests of {@link SystemDownloadNotifier}. */
 @RunWith(BaseJUnit4ClassRunner.class)
 @Batch(Batch.PER_CLASS)
+@DisabledTest(message = "https://crbug.com/349630317")
 public class SystemDownloadNotifierTest {
     private final SystemDownloadNotifier mSystemDownloadNotifier = new SystemDownloadNotifier();
     private MockDownloadNotificationService mMockDownloadNotificationService;
@@ -47,7 +49,7 @@ public class SystemDownloadNotifierTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     DownloadManagerService.setDownloadManagerService(mDownloadManagerService);
                     mMockDownloadNotificationService = new MockDownloadNotificationService();
@@ -59,7 +61,7 @@ public class SystemDownloadNotifierTest {
     @After
     public void tearDown() {
         ThrottlingNotificationScheduler.getInstance().clear();
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     DownloadManagerService.setDownloadManagerService(null);
                 });

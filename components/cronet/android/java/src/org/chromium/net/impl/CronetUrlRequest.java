@@ -7,7 +7,9 @@ package org.chromium.net.impl;
 import static java.lang.Math.max;
 
 import android.os.Build;
+import android.os.Process;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.VisibleForTesting;
 
@@ -18,11 +20,13 @@ import org.jni_zero.NativeMethods;
 
 import org.chromium.base.Log;
 import org.chromium.net.CallbackException;
+import org.chromium.net.ConnectionCloseSource;
 import org.chromium.net.CronetException;
 import org.chromium.net.ExperimentalUrlRequest;
 import org.chromium.net.Idempotency;
 import org.chromium.net.InlineExecutionProhibitedException;
 import org.chromium.net.NetworkException;
+import org.chromium.net.QuicException;
 import org.chromium.net.RequestFinishedInfo;
 import org.chromium.net.RequestPriority;
 import org.chromium.net.UploadDataProvider;
@@ -98,6 +102,10 @@ public final class CronetUrlRequest extends ExperimentalUrlRequest {
     private final boolean mTrafficStatsUidSet;
     private final int mTrafficStatsUid;
     private final VersionSafeCallbacks.RequestFinishedInfoListener mRequestFinishedListener;
+    // See {@link org.chromium.net.UrlRequest.Builder#setRawCompressionDictionary}.
+    private byte[] mDictionarySha256Hash;
+    private ByteBuffer mDictionary;
+    private final String mDictionaryId;
     private final long mNetworkHandle;
     private final CronetLogger mLogger;
 
@@ -170,10 +178,15 @@ public final class CronetUrlRequest extends ExperimentalUrlRequest {
             String method,
             ArrayList<Map.Entry<String, String>> requestHeaders,
             UploadDataProvider uploadDataProvider,
-            Executor uploadDataProviderExecutor) {
+            Executor uploadDataProviderExecutor,
+            byte[] dictionarySha256Hash,
+            ByteBuffer dictionary,
+            @NonNull String dictionaryId) {
         Objects.requireNonNull(url, "URL is required");
         Objects.requireNonNull(callback, "Listener is required");
         Objects.requireNonNull(executor, "Executor is required");
+        Objects.requireNonNull(
+                dictionaryId, "Dictionary ID is expect to be an empty string if not specified");
 
         mAllowDirectExecutor = allowDirectExecutor;
         mRequestContext = requestContext;
@@ -195,6 +208,9 @@ public final class CronetUrlRequest extends ExperimentalUrlRequest {
                         ? new VersionSafeCallbacks.RequestFinishedInfoListener(
                                 requestFinishedListener)
                         : null;
+        mDictionarySha256Hash = dictionarySha256Hash;
+        mDictionary = dictionary;
+        mDictionaryId = dictionaryId;
         mIdempotency = convertIdempotency(idempotency);
         mNetworkHandle = networkHandle;
         mInitialMethod = method;
@@ -226,6 +242,11 @@ public final class CronetUrlRequest extends ExperimentalUrlRequest {
                                         mTrafficStatsUidSet,
                                         mTrafficStatsUid,
                                         mIdempotency,
+                                        mDictionarySha256Hash,
+                                        mDictionary,
+                                        mDictionary != null ? mDictionary.position() : 0,
+                                        mDictionary != null ? mDictionary.limit() : 0,
+                                        mDictionaryId,
                                         mNetworkHandle);
                 mRequestContext.onRequestStarted();
                 if (!CronetUrlRequestJni.get()
@@ -729,10 +750,10 @@ public final class CronetUrlRequest extends ExperimentalUrlRequest {
     /**
      * Called when error has occurred, no callbacks will be called afterwards.
      *
-     * @param errorCode Error code represented by {@code UrlRequestError} that should be mapped
-     *                  to one of {@link NetworkException#ERROR_HOSTNAME_NOT_RESOLVED
-     *                  NetworkException.ERROR_*}.
+     * @param errorCode Error code represented by {@code UrlRequestError} that should be mapped to
+     *     one of {@link NetworkException#ERROR_HOSTNAME_NOT_RESOLVED NetworkException.ERROR_*}.
      * @param nativeError native net error code.
+     * @param source Represented by {@code ErrorSource} which is the initiator of the error.
      * @param errorString textual representation of the error code.
      * @param receivedByteCount number of bytes received.
      */
@@ -742,6 +763,7 @@ public final class CronetUrlRequest extends ExperimentalUrlRequest {
             int errorCode,
             int nativeError,
             int nativeQuicError,
+            @ConnectionCloseSource int source,
             String errorString,
             long receivedByteCount) {
         if (mResponseInfo != null) {
@@ -754,7 +776,8 @@ public final class CronetUrlRequest extends ExperimentalUrlRequest {
                             "Exception in CronetUrlRequest: " + errorString,
                             errorCode,
                             nativeError,
-                            nativeQuicError));
+                            nativeQuicError,
+                            source));
         } else {
             int javaError = mapUrlRequestErrorToApiErrorCode(errorCode);
             failWithException(
@@ -1008,6 +1031,22 @@ public final class CronetUrlRequest extends ExperimentalUrlRequest {
             totalLatency = Duration.ofSeconds(0);
         }
 
+        int networkInternalErrorCode = 0;
+        int quicNetworkErrorCode = 0;
+        @ConnectionCloseSource int source = ConnectionCloseSource.UNKNOWN;
+        CronetTrafficInfo.RequestFailureReason failureReason =
+                CronetTrafficInfo.RequestFailureReason.UNKNOWN;
+        if (mException instanceof NetworkException networkException) {
+            networkInternalErrorCode = networkException.getCronetInternalErrorCode();
+            failureReason = CronetTrafficInfo.RequestFailureReason.NETWORK;
+            if (mException instanceof QuicException quicException) {
+                quicNetworkErrorCode = quicException.getQuicDetailedErrorCode();
+                source = quicException.getConnectionCloseSource();
+            }
+        } else if (mException != null) {
+            failureReason = CronetTrafficInfo.RequestFailureReason.OTHER;
+        }
+
         return new CronetTrafficInfo(
                 requestHeaderSizeInBytes,
                 requestBodySizeInBytes,
@@ -1025,7 +1064,13 @@ public final class CronetUrlRequest extends ExperimentalUrlRequest {
                 mReadCount,
                 mUploadDataStream == null ? 0 : mUploadDataStream.getReadCount(),
                 /* isBidiStream= */ false,
-                mFinalUserCallbackThrew);
+                mFinalUserCallbackThrew,
+                Process.myUid(),
+                networkInternalErrorCode,
+                quicNetworkErrorCode,
+                source,
+                failureReason,
+                mMetrics.getSocketReused());
     }
 
     // Maybe report metrics. This method should only be called on Callback's executor thread and
@@ -1085,6 +1130,12 @@ public final class CronetUrlRequest extends ExperimentalUrlRequest {
                 boolean trafficStatsUidSet,
                 int trafficStatsUid,
                 int idempotency,
+                byte[] dictionarySha256Hash,
+                ByteBuffer dictionary,
+                // TODO(b/358568022): Stop passing position and capacity via JNI.
+                int dictionaryPosition,
+                int dictionaryCapacity,
+                String dictionaryId,
                 long networkHandle);
 
         @NativeClassQualifiedName("CronetURLRequestAdapter")
@@ -1105,6 +1156,7 @@ public final class CronetUrlRequest extends ExperimentalUrlRequest {
                 long nativePtr,
                 CronetUrlRequest caller,
                 ByteBuffer byteBuffer,
+                // TODO(b/358568022): Stop passing position and capacity via JNI.
                 int position,
                 int capacity);
 

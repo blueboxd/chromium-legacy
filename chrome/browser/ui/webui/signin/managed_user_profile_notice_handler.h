@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/values.h"
 #include "build/chromeos_buildflags.h"
@@ -38,13 +39,21 @@ class ManagedUserProfileNoticeHandler
       public BrowserListObserver,
       public signin::IdentityManager::Observer {
  public:
+  enum State {
+    kDisclosure = 0,
+    kProcessing = 1,
+    kSuccess = 2,
+    kTimeout = 3,
+    kError = 4,
+  };
   ManagedUserProfileNoticeHandler(
       Browser* browser,
       ManagedUserProfileNoticeUI::ScreenType type,
       bool profile_creation_required_by_policy,
       bool show_link_data_option,
       const AccountInfo& account_info,
-      signin::SigninChoiceCallback proceed_callback);
+      signin::SigninChoiceCallbackVariant process_user_choice_callback,
+      base::OnceClosure done_callback);
   ~ManagedUserProfileNoticeHandler() override;
 
   ManagedUserProfileNoticeHandler(const ManagedUserProfileNoticeHandler&) =
@@ -113,6 +122,7 @@ class ManagedUserProfileNoticeHandler
   ProfileAttributesEntry* GetProfileEntry() const;
 
   std::string GetPictureUrl();
+  void OnUserChoiceHandled(signin::SigninChoiceOperationResult result);
 
   base::FilePath profile_path_;
   base::ScopedObservation<ProfileAttributesStorage,
@@ -132,7 +142,10 @@ class ManagedUserProfileNoticeHandler
   const std::u16string email_;
   const std::string domain_name_;
   const CoreAccountId account_id_;
-  signin::SigninChoiceCallback proceed_callback_;
+  signin::SigninChoiceWithConfirmationCallback
+      process_user_choice_with_confirmation_callback_;
+  base::OnceClosure done_callback_;
+  base::WeakPtrFactory<ManagedUserProfileNoticeHandler> weak_ptr_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_SIGNIN_MANAGED_USER_PROFILE_NOTICE_HANDLER_H_

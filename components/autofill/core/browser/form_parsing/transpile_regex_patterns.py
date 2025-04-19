@@ -7,26 +7,9 @@
 import argparse
 from collections import defaultdict
 import io
-import os
 import re
 import sys
-
-_FILE_PATH = os.path.dirname(os.path.realpath(__file__))
-
-_JSON5_PATH = os.path.join(
-    _FILE_PATH,
-    os.pardir,
-    os.pardir,
-    os.pardir,
-    os.pardir,
-    os.pardir,
-    "third_party",
-    "pyjson5",
-    "src",
-)
-sys.path.insert(1, _JSON5_PATH)
-
-import json5 as json
+import json
 
 # Generates a function AreMatchingPatternsEqualImpl(a, b, lang_code), which
 # tests whether the patterns for PatternSources a and b in language lang_code
@@ -251,15 +234,11 @@ def generate_cpp_constants(id_to_name_to_lang_to_patterns):
 
   # Generate the C++ constants.
   yield '// The patterns. Referred to by their index in MatchPatternRef.'
-  yield '//'
-  yield '// We use C-style arrays rather than std::array because the template'
-  yield '// parameter inference may exceed the default bracket depth limit'
-  yield '// on some (?) clang versions. See crbug.com/1319987.'
-  yield 'constexpr MatchingPattern kPatterns[] {'
+  yield 'constexpr auto kPatterns = std::to_array<MatchingPattern>({'
   for cpp_expr, index in sorted(
       pattern_to_index.items(), key=lambda item: item[1]):
     yield f'/*[{index}]=*/{cpp_expr},'
-  yield '};'
+  yield '});'
   yield ''
 
   min_pattern_id = min(id_to_name_to_lang_to_patterns.keys())

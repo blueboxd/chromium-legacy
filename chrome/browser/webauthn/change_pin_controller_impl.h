@@ -6,19 +6,19 @@
 #define CHROME_BROWSER_WEBAUTHN_CHANGE_PIN_CONTROLLER_IMPL_H_
 
 #include <memory>
+#include <optional>
+#include <string>
 
-#include "base/supports_user_data.h"
+#include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "base/scoped_observation.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
 #include "chrome/browser/webauthn/change_pin_controller.h"
-#include "content/public/browser/web_contents_user_data.h"
+#include "content/public/browser/document_user_data.h"
 
 namespace content {
-class WebContents;
+class RenderFrameHost;
 }  // namespace content
-
-namespace syncer {
-class SyncService;
-}  // namespace syncer
 
 struct AuthenticatorRequestDialogModel;
 class EnclaveManager;
@@ -29,25 +29,25 @@ class EnclaveManager;
 // paste it in asciiflow.com.
 //
 //         ChangePinController                   AuthenticatorRequestDialogModel
-// ┌─────────────────────────────────┐             ┌───────────────────────┐
-// │                                 │             │                       │
-// │ StartChangePin ─────────────────┼─────────────┼───────────┐           │
-// │                                 │             │           │           │
-// │                                 │ Cancelled   │           ▼           │
-// │ OnRecoverSecurityDomainClosed ◄─┼─────────────┼── kGpmReauthAccount   │
-// │                                 │             │           │           │
-// │        ┌────────────────────────┼─────────────┼───────────┘           │
-// │        │                        │ Success     │                       │
-// │        ▼                        │             │                       │
-// │ OnReauthComplete ───────────────┼─────────────┼───────────┐           │
-// │                                 │             │           │           │
-// │                                 │ Cancelled   │           ▼           │
-// │ CancelAuthenticatorRequest ◄────┼─────────────┼── kGPMCreatePin*      │
-// │                                 │             │           │           │
-// │                                 │ PIN entered │           │           │
-// │        ┌────────────────────────┼─────────────┼───────────┘           │
-// │        │                        │             │                       │
-// │        ▼                        │             └───────────────────────┘
+// ┌─────────────────────────────────┐             ┌─────────────────────────┐
+// │                                 │             │                         │
+// │ StartChangePin ─────────────────┼─────────────┼───────────┐             │
+// │                                 │             │           │             │
+// │                                 │ Cancelled   │           ▼             │
+// │ OnRecoverSecurityDomainClosed ◄─┼─────────────┼── kGpmReauthForPinReset │
+// │                                 │             │           │             │
+// │        ┌────────────────────────┼─────────────┼───────────┘             │
+// │        │                        │ Success     │                         │
+// │        ▼                        │             │                         │
+// │ OnReauthComplete ───────────────┼─────────────┼───────────┐             │
+// │                                 │             │           │             │
+// │                                 │ Cancelled   │           ▼             │
+// │ CancelAuthenticatorRequest ◄────┼─────────────┼── kGPMChangePin*        │
+// │                                 │             │           │             │
+// │                                 │ PIN entered │           │             │
+// │        ┌────────────────────────┼─────────────┼───────────┘             │
+// │        │                        │             │                         │
+// │        ▼                        │             └─────────────────────────┘
 // │ OnGPMPinEntered ────────────────┼─────┐         EnclaveManager
 // │                                 │     │       ┌────────────────┐
 // │                                 │     │       │                │
@@ -61,23 +61,32 @@ class EnclaveManager;
 // │                                 │             │                │
 // └─────────────────────────────────┘             └────────────────┘
 //
-// *: this can also be kGPMCreateArbitraryPin when the user switches the step in
+// *: this can also be kGPMChangeArbitraryPin when the user switches the step in
 // the view.
 class ChangePinControllerImpl
     : public ChangePinController,
-      public content::WebContentsUserData<ChangePinControllerImpl>,
+      public content::DocumentUserData<ChangePinControllerImpl>,
       public AuthenticatorRequestDialogModel::Observer {
  public:
+  enum class ChangePinEvent {
+    kFlowStartedFromSettings = 0,
+    kFlowStartedFromPinDialog = 1,
+    kReauthCompleted = 2,
+    kReauthCancelled = 3,
+    kNewPinEntered = 4,
+    kNewPinCancelled = 5,
+    kCompletedSuccessfully = 6,
+    kFailed = 7,
+    kMaxValue = kFailed,
+  };
+
   ChangePinControllerImpl(const ChangePinControllerImpl&) = delete;
   ChangePinControllerImpl& operator=(const ChangePinControllerImpl&) = delete;
 
   ~ChangePinControllerImpl() override;
 
-  // Checks whether changing PIN flow is available. Changing the PIN is only
-  // possible when the `EnclaveManager` is ready and has a wrapped PIN.
-  bool IsChangePinFlowAvailable() override;
-
-  // Starts the change PIN flow. Returns true if the flow has started.
+  // ChangePinController:
+  void IsChangePinFlowAvailable(PinAvailableCallback callback) override;
   void StartChangePin(SuccessCallback callback) override;
 
   // AuthenticatorRequestDialogModel::Observer
@@ -87,21 +96,22 @@ class ChangePinControllerImpl
   void OnGPMPinEntered(const std::u16string& pin) override;
   void OnGPMPinOptionChanged(bool is_arbitrary) override;
 
+  static void RecordHistogram(ChangePinEvent event);
+
  private:
-  explicit ChangePinControllerImpl(content::WebContents* web_contents);
-  friend class content::WebContentsUserData<ChangePinControllerImpl>;
-  WEB_CONTENTS_USER_DATA_KEY_DECL();
+  explicit ChangePinControllerImpl(content::RenderFrameHost* render_frame_host);
+  friend class content::DocumentUserData<ChangePinControllerImpl>;
+  DOCUMENT_USER_DATA_KEY_DECL();
 
   void OnGpmPinChanged(bool success);
   void Reset(bool success);
+  void NotifyPinAvailability(PinAvailableCallback callback);
 
   const bool enclave_enabled_;
-  std::unique_ptr<AuthenticatorRequestDialogModel> model_;
+  scoped_refptr<AuthenticatorRequestDialogModel> model_;
   SuccessCallback notify_pin_change_callback_;
   // EnclaveManager is a KeyedService.
   raw_ptr<EnclaveManager> enclave_manager_ = nullptr;
-  // SyncService is a KeyedService.
-  raw_ptr<syncer::SyncService> sync_service_ = nullptr;
   std::optional<std::string> rapt_ = std::nullopt;
 
   base::ScopedObservation<AuthenticatorRequestDialogModel,

@@ -17,7 +17,6 @@ import {CoverPhoto} from '../../cover_photo.js';
 import {I18nString} from '../../i18n_string.js';
 import {getI18nMessage} from '../../models/load_time_data.js';
 import {State} from '../../state.js';
-import {PerfEvent} from '../../type.js';
 import {withTooltip} from '../directives/with_tooltip.js';
 import {StateObserverController} from '../state_observer_controller.js';
 import {DEFAULT_STYLE} from '../styles.js';
@@ -89,11 +88,15 @@ export class GalleryButton extends LitElement {
   private readonly superResZoomState =
       new StateObserverController(this, State.SUPER_RES_ZOOM);
 
-  private readonly photoTakingState =
-      new StateObserverController(this, PerfEvent.PHOTO_TAKING);
+  private readonly takingState =
+      new StateObserverController(this, State.TAKING);
+
+  private readonly timerTickState =
+      new StateObserverController(this, State.TIMER_TICK);
 
   isSuperResZoomCapture(): boolean {
-    return this.superResZoomState.value && this.photoTakingState.value;
+    return this.superResZoomState.value && this.takingState.value &&
+        !this.timerTickState.value;
   }
 
   override render(): RenderResult {
@@ -109,10 +112,10 @@ export class GalleryButton extends LitElement {
     return html`
     <div id="container" class=${classMap(containerClass)}>
       <super-res-loading-indicator id="loading-indicator"
-        .photoProcessing=${this.photoTakingState.value}
+        .photoProcessing=${this.takingState.value && !this.timerTickState.value}
         style=${styleMap({
-          visibility: this.superResZoomState.value ? 'visible' : 'hidden',
-      })}>
+      visibility: this.superResZoomState.value ? 'visible' : 'hidden',
+    })}>
       </super-res-loading-indicator>
       <button
           aria-label=${getI18nMessage(I18nString.GALLERY_BUTTON)}

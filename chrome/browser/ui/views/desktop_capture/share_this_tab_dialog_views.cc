@@ -32,9 +32,11 @@
 #include "media/base/media_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/color/color_id.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/layout/box_layout.h"
@@ -165,9 +167,9 @@ ShareThisTabDialogView::ShareThisTabDialogView(
     constrained_window::ShowWebModalDialogViews(this, params.web_contents);
   } else {
 #if BUILDFLAG(IS_MAC)
-    // On Mac, MODAL_TYPE_CHILD with a null parent isn't allowed - fall back to
-    // MODAL_TYPE_WINDOW.
-    SetModalType(ui::MODAL_TYPE_WINDOW);
+    // On Mac, ModalType::kChild with a null parent isn't allowed - fall back to
+    // ModalType::kWindow.
+    SetModalType(ui::mojom::ModalType::kWindow);
 #endif
     CreateDialogWidget(this, params.context, nullptr)->Show();
   }
@@ -284,7 +286,7 @@ void ShareThisTabDialogView::SetupAudioToggle() {
 
   audio_toggle_button_ = audio_toggle_container->AddChildView(
       std::make_unique<views::ToggleButton>());
-  audio_toggle_button_->SetAccessibleName(
+  audio_toggle_button_->GetViewAccessibility().SetName(
       l10n_util::GetStringUTF16(IDS_SHARE_THIS_TAB_AUDIO_SHARE));
   audio_toggle_button_->SetIsOn(
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -366,7 +368,7 @@ void ShareThisTabDialogViews::Show(
   CHECK(!callback_);
   CHECK(!dialog_);
 
-  DesktopMediaPickerManager::Get()->OnShowDialog();
+  DesktopMediaPickerManager::Get()->OnShowDialog(params);
   callback_ = std::move(done_callback);
   dialog_ = new ShareThisTabDialogView(params, this);
 }

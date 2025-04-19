@@ -94,6 +94,11 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
           # crbug.com/338574390, flaky on Mac/ASan.
           'ContextLost_WebGLContextRestoredInHiddenTab',
       }
+    if host_information.IsMac() or host_information.IsWindows():
+      serial_tests |= {
+          # Flaky timeout http://crbug.com/352077583
+          'GpuNormalTermination_WebGPUNotBlocked',
+      }
     return serial_tests
 
   @classmethod
@@ -123,6 +128,8 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     # yapf: disable
     tests: Tuple[Tuple[str, str], ...] = (
              ('GpuCrash_GPUProcessCrashesExactlyOncePerVisitToAboutGpuCrash',
+              'gpu_process_crash.html'),
+             ('GpuCrash_GPUProcessCrashesExactlyOnce_SurfaceControlDisabled',
               'gpu_process_crash.html'),
              ('ContextLost_WebGPUContextLostFromGPUProcessExit',
               'webgpu-context-lost.html?query=kill_after_notification'),
@@ -341,6 +348,21 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     self._KillGPUProcess(2, True)
     self._RestartBrowser('must restart after tests that kill the GPU process')
 
+  def _GpuCrash_GPUProcessCrashesExactlyOnce_SurfaceControlDisabled(
+      self, test_path: str) -> None:
+    os_name = self.browser.platform.GetOSName()
+    if os_name != 'android':
+      logging.info('Skipping test because not running on Android')
+      return
+
+    self.RestartBrowserIfNecessaryWithArgs([
+        cba.DISABLE_DOMAIN_BLOCKING_FOR_3D_APIS,
+        '--disable-features=AndroidSurfaceControl'
+    ])
+    self._NavigateAndWaitForLoad(test_path)
+    self._KillGPUProcess(1, True)
+    self._RestartBrowser('must restart after tests that kill the GPU process')
+
   def _ContextLost_WebGLContextLostFromGPUProcessExit(self,
                                                       test_path: str) -> None:
     self.RestartBrowserIfNecessaryWithArgs(
@@ -556,8 +578,7 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     self._RestartBrowser('must restart after tests that kill the GPU process')
 
   def _ContextLost_WebGL2Blocked(self, test_path: str) -> None:
-    self.RestartBrowserIfNecessaryWithArgs(
-        ['--gpu-driver-bug-list-test-group=3'])
+    self.RestartBrowserIfNecessaryWithArgs(['--disable_es3_gl_context=1'])
     self._NavigateAndWaitForLoad(test_path)
     tab = self.tab
     tab.EvaluateJavaScript('runTest()')

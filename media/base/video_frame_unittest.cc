@@ -2,12 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "media/base/video_frame.h"
 
 #include <stddef.h>
 #include <stdint.h>
 
+#include <array>
 #include <memory>
+#include <numeric>
 
 #include "base/format_macros.h"
 #include "base/functional/bind.h"
@@ -357,6 +364,38 @@ static void FrameNoLongerNeededCallback(bool* triggered) {
   *triggered = true;
 }
 
+TEST(VideoFrame, DestructChainOfWrappedVideoFrames) {
+  constexpr int kWidth = 4;
+  constexpr int kHeight = 4;
+  constexpr int kFramesInChain = 50000;
+  auto frame = VideoFrame::CreateBlackFrame(gfx::Size(kWidth, kHeight));
+  bool base_frame_done_callback_was_run = false;
+  frame->AddDestructionObserver(base::BindOnce(
+      &FrameNoLongerNeededCallback, &base_frame_done_callback_was_run));
+  std::array<bool, kFramesInChain> wrapped_frame_done_callback_was_run = {};
+  std::vector<scoped_refptr<VideoFrame>> frames;
+
+  for (int i = 0; i < kFramesInChain; i++) {
+    frames.push_back(frame);
+    frame = VideoFrame::WrapVideoFrame(
+        frame, frame->format(), frame->visible_rect(), frame->natural_size());
+    frame->AddDestructionObserver(base::BindOnce(
+        &FrameNoLongerNeededCallback, &wrapped_frame_done_callback_was_run[i]));
+  }
+  frames.clear();
+
+  EXPECT_FALSE(base_frame_done_callback_was_run);
+  EXPECT_FALSE(std::accumulate(wrapped_frame_done_callback_was_run.begin(),
+                               wrapped_frame_done_callback_was_run.end(), true,
+                               std::logical_and<bool>()));
+
+  frame.reset();
+  EXPECT_TRUE(base_frame_done_callback_was_run);
+  EXPECT_TRUE(std::accumulate(wrapped_frame_done_callback_was_run.begin(),
+                              wrapped_frame_done_callback_was_run.end(), true,
+                              std::logical_and<bool>()));
+}
+
 TEST(VideoFrame, WrapVideoFrame) {
   const int kWidth = 4;
   const int kHeight = 4;
@@ -510,11 +549,10 @@ TEST(VideoFrame, WrapExternalGpuMemoryBuffer) {
       std::make_unique<FakeGpuMemoryBuffer>(
           coded_size, gfx::BufferFormat::YUV_420_BIPLANAR, modifier);
   gfx::GpuMemoryBuffer* gmb_raw_ptr = gmb.get();
-  scoped_refptr<gpu::ClientSharedImage> shared_images[VideoFrame::kMaxPlanes] =
-      {gpu::ClientSharedImage::CreateForTesting(),
-       gpu::ClientSharedImage::CreateForTesting()};
+  scoped_refptr<gpu::ClientSharedImage> shared_image =
+      gpu::ClientSharedImage::CreateForTesting();
   auto frame = VideoFrame::WrapExternalGpuMemoryBuffer(
-      visible_rect, coded_size, std::move(gmb), shared_images, gpu::SyncToken(),
+      visible_rect, coded_size, std::move(gmb), shared_image, gpu::SyncToken(),
       5, base::DoNothing(), timestamp);
 
   EXPECT_EQ(frame->layout().format(), PIXEL_FORMAT_NV12);
@@ -526,15 +564,13 @@ TEST(VideoFrame, WrapExternalGpuMemoryBuffer) {
   }
   EXPECT_EQ(frame->layout().modifier(), modifier);
   EXPECT_EQ(frame->storage_type(), VideoFrame::STORAGE_GPU_MEMORY_BUFFER);
-  EXPECT_TRUE(frame->HasGpuMemoryBuffer());
   EXPECT_EQ(frame->GetGpuMemoryBuffer(), gmb_raw_ptr);
   EXPECT_EQ(frame->coded_size(), coded_size);
   EXPECT_EQ(frame->visible_rect(), visible_rect);
   EXPECT_EQ(frame->timestamp(), timestamp);
   EXPECT_EQ(frame->HasTextures(), true);
   EXPECT_EQ(frame->HasReleaseMailboxCB(), true);
-  EXPECT_EQ(frame->mailbox_holder(0).mailbox, shared_images[0]->mailbox());
-  EXPECT_EQ(frame->mailbox_holder(1).mailbox, shared_images[1]->mailbox());
+  EXPECT_EQ(frame->mailbox_holder(0).mailbox, shared_image->mailbox());
 }
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
@@ -643,26 +679,23 @@ TEST(VideoFrame, TextureNoLongerNeededCallbackIsCalled) {
 // (i.e. the compositor, webgl).
 TEST(VideoFrame,
      TexturesNoLongerNeededCallbackAfterTakingAndReleasingMailboxes) {
-  const int kPlanesNum = 3;
   const gpu::CommandBufferNamespace kNamespace =
       gpu::CommandBufferNamespace::GPU_IO;
   const gpu::CommandBufferId kCommandBufferId =
       gpu::CommandBufferId::FromUnsafeValue(0x123);
-  scoped_refptr<gpu::ClientSharedImage> shared_images[VideoFrame::kMaxPlanes];
-  for (int i = 0; i < kPlanesNum; ++i) {
-    shared_images[i] = gpu::ClientSharedImage::CreateForTesting();
-  };
+  scoped_refptr<gpu::ClientSharedImage> shared_image =
+      gpu::ClientSharedImage::CreateForTesting();
 
   gpu::SyncToken sync_token(kNamespace, kCommandBufferId, 7);
   sync_token.SetVerifyFlush();
-  uint32_t target = 9;
+  uint32_t target = shared_image->GetTextureTarget();
   gpu::SyncToken release_sync_token(kNamespace, kCommandBufferId, 111);
   release_sync_token.SetVerifyFlush();
 
   gpu::SyncToken called_sync_token;
   {
-    scoped_refptr<VideoFrame> frame = VideoFrame::WrapSharedImages(
-        PIXEL_FORMAT_I420, shared_images, sync_token, target,
+    scoped_refptr<VideoFrame> frame = VideoFrame::WrapSharedImage(
+        PIXEL_FORMAT_I420, shared_image, sync_token, target,
         base::BindOnce(&TextureCallback, &called_sync_token),
         gfx::Size(10, 10),   // coded_size
         gfx::Rect(10, 10),   // visible_rect
@@ -673,13 +706,10 @@ TEST(VideoFrame,
     EXPECT_EQ(PIXEL_FORMAT_I420, frame->format());
     EXPECT_EQ(3u, VideoFrame::NumPlanes(frame->format()));
     EXPECT_TRUE(frame->HasTextures());
-    for (size_t i = 0; i < VideoFrame::NumPlanes(frame->format()); ++i) {
-      const gpu::MailboxHolder& mailbox_holder = frame->mailbox_holder(i);
-      EXPECT_EQ(shared_images[i]->mailbox().name[0],
-                mailbox_holder.mailbox.name[0]);
-      EXPECT_EQ(target, mailbox_holder.texture_target);
-      EXPECT_EQ(sync_token, mailbox_holder.sync_token);
-    }
+    const gpu::MailboxHolder& mailbox_holder = frame->mailbox_holder(0);
+    EXPECT_EQ(shared_image->mailbox().name[0], mailbox_holder.mailbox.name[0]);
+    EXPECT_EQ(target, mailbox_holder.texture_target);
+    EXPECT_EQ(sync_token, mailbox_holder.sync_token);
 
     SimpleSyncTokenClient client(release_sync_token);
     frame->UpdateReleaseSyncToken(&client);
@@ -739,63 +769,68 @@ TEST(VideoFrame, AllocationSize_OddSize) {
   for (unsigned int i = 1u; i <= PIXEL_FORMAT_MAX; ++i) {
     const VideoPixelFormat format = static_cast<VideoPixelFormat>(i);
     switch (format) {
-      case PIXEL_FORMAT_YUV444AP10:
-        EXPECT_EQ(192u, VideoFrame::AllocationSize(format, size))
-            << VideoPixelFormatToString(format);
-        break;
       case PIXEL_FORMAT_YUV444P9:
       case PIXEL_FORMAT_YUV444P10:
       case PIXEL_FORMAT_YUV444P12:
+      case PIXEL_FORMAT_P410LE:
+        EXPECT_EQ(90u, VideoFrame::AllocationSize(format, size))
+            << VideoPixelFormatToString(format);
+        break;
       case PIXEL_FORMAT_YUV422AP10:
-      case PIXEL_FORMAT_P416LE:
-        EXPECT_EQ(144u, VideoFrame::AllocationSize(format, size))
+        EXPECT_EQ(100u, VideoFrame::AllocationSize(format, size))
             << VideoPixelFormatToString(format);
         break;
       case PIXEL_FORMAT_RGBAF16:
-      case PIXEL_FORMAT_YUV420AP10:
+      case PIXEL_FORMAT_YUV444AP10:
         EXPECT_EQ(120u, VideoFrame::AllocationSize(format, size))
+            << VideoPixelFormatToString(format);
+        break;
+      case PIXEL_FORMAT_YUV420AP10:
+        EXPECT_EQ(84u, VideoFrame::AllocationSize(format, size))
             << VideoPixelFormatToString(format);
         break;
       case PIXEL_FORMAT_YUV422P9:
       case PIXEL_FORMAT_YUV422P10:
       case PIXEL_FORMAT_YUV422P12:
-      case PIXEL_FORMAT_I444A:
-      case PIXEL_FORMAT_P216LE:
-        EXPECT_EQ(96u, VideoFrame::AllocationSize(format, size))
+      case PIXEL_FORMAT_P210LE:
+        EXPECT_EQ(70u, VideoFrame::AllocationSize(format, size))
             << VideoPixelFormatToString(format);
         break;
       case PIXEL_FORMAT_I444:
+      case PIXEL_FORMAT_NV24:
+      case PIXEL_FORMAT_RGB24:
+        EXPECT_EQ(45u, VideoFrame::AllocationSize(format, size))
+            << VideoPixelFormatToString(format);
+        break;
       case PIXEL_FORMAT_YUV420P9:
       case PIXEL_FORMAT_YUV420P10:
       case PIXEL_FORMAT_YUV420P12:
-      case PIXEL_FORMAT_P016LE:
-      case PIXEL_FORMAT_I422A:
-      case PIXEL_FORMAT_NV24:
-        EXPECT_EQ(72u, VideoFrame::AllocationSize(format, size))
+      case PIXEL_FORMAT_P010LE:
+        EXPECT_EQ(54u, VideoFrame::AllocationSize(format, size))
             << VideoPixelFormatToString(format);
         break;
-      case PIXEL_FORMAT_NV12A:
-        EXPECT_EQ(60u, VideoFrame::AllocationSize(format, size))
-            << VideoPixelFormatToString(format);
-        break;
+      case PIXEL_FORMAT_Y16:
       case PIXEL_FORMAT_UYVY:
       case PIXEL_FORMAT_YUY2:
-      case PIXEL_FORMAT_I422:
+        EXPECT_EQ(30u, VideoFrame::AllocationSize(format, size))
+            << VideoPixelFormatToString(format);
+        break;
       case PIXEL_FORMAT_NV16:
-        EXPECT_EQ(48u, VideoFrame::AllocationSize(format, size))
+      case PIXEL_FORMAT_I422:
+        EXPECT_EQ(35u, VideoFrame::AllocationSize(format, size))
             << VideoPixelFormatToString(format);
         break;
       case PIXEL_FORMAT_YV12:
       case PIXEL_FORMAT_I420:
       case PIXEL_FORMAT_NV12:
       case PIXEL_FORMAT_NV21:
-        EXPECT_EQ(36u, VideoFrame::AllocationSize(format, size))
+        EXPECT_EQ(27u, VideoFrame::AllocationSize(format, size))
             << VideoPixelFormatToString(format);
         break;
+      case PIXEL_FORMAT_I444A:
       case PIXEL_FORMAT_ARGB:
       case PIXEL_FORMAT_BGRA:
       case PIXEL_FORMAT_XRGB:
-      case PIXEL_FORMAT_I420A:
       case PIXEL_FORMAT_ABGR:
       case PIXEL_FORMAT_XBGR:
       case PIXEL_FORMAT_XR30:
@@ -803,12 +838,13 @@ TEST(VideoFrame, AllocationSize_OddSize) {
         EXPECT_EQ(60u, VideoFrame::AllocationSize(format, size))
             << VideoPixelFormatToString(format);
         break;
-      case PIXEL_FORMAT_RGB24:
-        EXPECT_EQ(45u, VideoFrame::AllocationSize(format, size))
+      case PIXEL_FORMAT_NV12A:
+      case PIXEL_FORMAT_I420A:
+        EXPECT_EQ(42u, VideoFrame::AllocationSize(format, size))
             << VideoPixelFormatToString(format);
         break;
-      case PIXEL_FORMAT_Y16:
-        EXPECT_EQ(30u, VideoFrame::AllocationSize(format, size))
+      case PIXEL_FORMAT_I422A:
+        EXPECT_EQ(50u, VideoFrame::AllocationSize(format, size))
             << VideoPixelFormatToString(format);
         break;
       case PIXEL_FORMAT_MJPEG:
@@ -881,7 +917,7 @@ TEST(VideoFrameMetadata, ClearTextureMetadata) {
   VideoFrameMetadata copy_md;
   copy_md.MergeMetadataFrom(reference_md);
 
-  copy_md.ClearTextureFrameMedatada();
+  copy_md.ClearTextureFrameMetadata();
   EXPECT_FALSE(copy_md.is_webgpu_compatible);
   EXPECT_TRUE(copy_md.texture_origin_is_top_left);
   EXPECT_FALSE(copy_md.read_lock_fences_enabled);

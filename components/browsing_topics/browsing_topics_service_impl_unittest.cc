@@ -417,6 +417,44 @@ TEST_F(BrowsingTopicsServiceImplTest, EmptyInitialState_CalculationScheduling) {
       kTime2 - kTime1, 1);
 }
 
+TEST_F(BrowsingTopicsServiceImplTest, WallTimeScheduling) {
+  base::queue<EpochTopics> mock_calculator_results;
+  mock_calculator_results.emplace(CreateTestEpochTopics({{Topic(1), {}},
+                                                         {Topic(2), {}},
+                                                         {Topic(3), {}},
+                                                         {Topic(4), {}},
+                                                         {Topic(5), {}}},
+                                                        kTime1));
+  mock_calculator_results.emplace(CreateTestEpochTopics({{Topic(6), {}},
+                                                         {Topic(7), {}},
+                                                         {Topic(8), {}},
+                                                         {Topic(9), {}},
+                                                         {Topic(10), {}}},
+                                                        kTime2));
+
+  InitializeBrowsingTopicsService(std::move(mock_calculator_results));
+
+  EXPECT_EQ(browsing_topics_service_->started_calculations_count(), 0u);
+
+  // Finish file loading.
+  task_environment()->RunUntilIdle();
+
+  EXPECT_EQ(browsing_topics_service_->started_calculations_count(), 1u);
+
+  EXPECT_TRUE(browsing_topics_state().epochs().empty());
+
+  // Finish the calculation.
+  task_environment()->FastForwardBy(kCalculatorDelay);
+
+  EXPECT_EQ(browsing_topics_state().epochs().size(), 1u);
+
+  // Advance the time to the scheduled calculation time and simulate system
+  // sleep for this period. A calculation should happen.
+  task_environment()->SuspendedFastForwardBy(kEpoch);
+
+  EXPECT_EQ(browsing_topics_service_->started_calculations_count(), 2u);
+}
+
 TEST_F(BrowsingTopicsServiceImplTest,
        StartFromPreexistingState_CalculateAtScheduledTime) {
   base::Time start_time = base::Time::Now();
@@ -935,11 +973,11 @@ TEST_F(BrowsingTopicsServiceImplTest, TimeoutRetry_Success) {
   // Finish the calculation.
   task_environment()->FastForwardBy(kCalculatorDelay);
 
-  // Epochs and `next_scheduled_calculation_time` are not updated, because the
-  // first calculation timed out, and a retry was scheduled.
+  // Epochs were not updated, because the first calculation timed out. A retry
+  // was scheduled and `next_scheduled_calculation_time` was updated.
   EXPECT_TRUE(browsing_topics_state().epochs().empty());
   EXPECT_EQ(browsing_topics_state().next_scheduled_calculation_time(),
-            base::Time());
+            base::Time::Now() + kFirstTimeoutRetryDelay);
   EXPECT_EQ(browsing_topics_service_->started_calculations_count(), 1u);
 
   // Forward the time right before the timeout retry.
@@ -992,11 +1030,11 @@ TEST_F(BrowsingTopicsServiceImplTest, TimeoutRetry_TimeoutAgain) {
   // Finish the calculation.
   task_environment()->FastForwardBy(kCalculatorDelay);
 
-  // Epochs and `next_scheduled_calculation_time` are not updated, because the
-  // first calculation timed out, and a retry was scheduled.
+  // Epochs were not updated, because the first calculation timed out. A retry
+  // was scheduled and `next_scheduled_calculation_time` was updated.
   EXPECT_TRUE(browsing_topics_state().epochs().empty());
   EXPECT_EQ(browsing_topics_state().next_scheduled_calculation_time(),
-            base::Time());
+            base::Time::Now() + kFirstTimeoutRetryDelay);
   EXPECT_EQ(browsing_topics_service_->started_calculations_count(), 1u);
 
   // Forward the time to the timeout retry.
@@ -1006,11 +1044,11 @@ TEST_F(BrowsingTopicsServiceImplTest, TimeoutRetry_TimeoutAgain) {
   // Finish the timeout retry.
   task_environment()->FastForwardBy(kCalculatorDelay);
 
-  // Epochs and `next_scheduled_calculation_time` are still not updated, because
-  // the calculation timed out again, and a retry was scheduled.
+  // Epochs were still not updated, because the calculation timed out again. A
+  // retry was scheduled and `next_scheduled_calculation_time` was updated.
   EXPECT_TRUE(browsing_topics_state().epochs().empty());
   EXPECT_EQ(browsing_topics_state().next_scheduled_calculation_time(),
-            base::Time());
+            base::Time::Now() + kFirstTimeoutRetryDelay * 2);
   EXPECT_EQ(browsing_topics_service_->started_calculations_count(), 2u);
 
   // Forward the time right before the second timeout retry.
@@ -1096,11 +1134,11 @@ TEST_F(BrowsingTopicsServiceImplTest,
   // Finish the calculation.
   task_environment()->FastForwardBy(kCalculatorDelay);
 
-  // Epochs and `next_scheduled_calculation_time` are not updated, because the
-  // first calculation timed out, and a retry was scheduled.
+  // Epochs were not updated, because the first calculation timed out. A retry
+  // was scheduled and `next_scheduled_calculation_time` was updated.
   EXPECT_TRUE(browsing_topics_state().epochs().empty());
   EXPECT_EQ(browsing_topics_state().next_scheduled_calculation_time(),
-            base::Time());
+            base::Time::Now() + kFirstTimeoutRetryDelay);
 
   // Forward the time to the timeout retry.
   task_environment()->FastForwardBy(kFirstTimeoutRetryDelay);
@@ -1125,13 +1163,13 @@ TEST_F(BrowsingTopicsServiceImplTest,
   EXPECT_EQ(browsing_topics_state().epochs().size(), 0u);
   EXPECT_EQ(browsing_topics_service_->started_calculations_count(), 3u);
 
-  // Finish the re-started calculation. Epochs and
-  // `next_scheduled_calculation_time` are still not updated, because the
-  // calculation timed out again, and a retry was scheduled.
+  // Finish the re-started calculation. Epochs were still not updated, because
+  // the calculation timed out again. A retry was scheduled and
+  // `next_scheduled_calculation_time` was updated.
   task_environment()->FastForwardBy(kCalculatorDelay - base::Microseconds(1));
   EXPECT_TRUE(browsing_topics_state().epochs().empty());
   EXPECT_EQ(browsing_topics_state().next_scheduled_calculation_time(),
-            base::Time());
+            base::Time::Now() + kFirstTimeoutRetryDelay * 2);
   EXPECT_EQ(browsing_topics_service_->started_calculations_count(), 3u);
 
   // Forward the time by `kFirstTimeoutRetryDelay`. No new calculation has

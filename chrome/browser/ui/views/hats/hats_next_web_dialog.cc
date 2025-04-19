@@ -225,6 +225,10 @@ void HatsNextWebDialog::OnSurveyClosed() {
   CloseWidget();
 }
 
+void HatsNextWebDialog::OnSurveyQuestionAnswered(std::string& state) {
+  // do nothing
+}
+
 HatsNextWebDialog::HatsNextWebDialog(
     Browser* browser,
     const std::string& trigger_id,
@@ -264,7 +268,7 @@ HatsNextWebDialog::HatsNextWebDialog(
   // with native UI elements, rather than web content.
   content::HostZoomMap::GetDefaultForBrowserContext(otr_profile_)
       ->SetZoomLevelForHost(hats_survey_url_.host(),
-                            blink::PageZoomFactorToZoomLevel(1.0f));
+                            blink::ZoomFactorToZoomLevel(1.0f));
 
   SetButtons(ui::DIALOG_BUTTON_NONE);
 
@@ -368,6 +372,8 @@ void HatsNextWebDialog::OnSurveyStateUpdateReceived(std::string state) {
     OnSurveyClosed();
   } else if (state == "completed") {
     OnSurveyCompleted();
+  } else if (base::StartsWith(state, "answer-")) {
+    OnSurveyQuestionAnswered(state);
   } else {
     LOG(ERROR) << "Unknown state provided in URL fragment by HaTS survey:"
                << state;

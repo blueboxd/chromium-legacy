@@ -96,7 +96,6 @@
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
-#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
@@ -347,11 +346,11 @@ float WebPluginContainerImpl::PageScaleFactor() {
   return page->PageScaleFactor();
 }
 
-float WebPluginContainerImpl::PageZoomFactor() {
+float WebPluginContainerImpl::LayoutZoomFactor() {
   LocalFrame* frame = element_->GetDocument().GetFrame();
   if (!frame)
     return 1.0;
-  return frame->PageZoomFactor();
+  return frame->LayoutZoomFactor();
 }
 
 void WebPluginContainerImpl::SetCcLayer(cc::Layer* new_layer) {

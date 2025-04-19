@@ -17,6 +17,7 @@
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -118,11 +119,13 @@ Widget::InitParams DialogDelegate::GetDialogWidgetInitParams(
     gfx::NativeWindow context,
     gfx::NativeView parent,
     const gfx::Rect& bounds) {
+  DialogDelegate* dialog = delegate->AsDialogDelegate();
+
   views::Widget::InitParams params(
-      Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET);
+      dialog ? dialog->ownership_of_new_widget_
+             : Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET);
   params.delegate = delegate;
   params.bounds = bounds;
-  DialogDelegate* dialog = delegate->AsDialogDelegate();
 
   if (dialog)
     dialog->params_.custom_frame &= CanSupportCustomFrame(parent);
@@ -139,17 +142,14 @@ Widget::InitParams DialogDelegate::GetDialogWidgetInitParams(
   params.context = context;
   params.parent = parent;
 #if !BUILDFLAG(IS_APPLE)
-  // Web-modal (ui::MODAL_TYPE_CHILD) dialogs with parents are marked as child
-  // widgets to prevent top-level window behavior (independent movement, etc).
-  // On Mac, however, the parent may be a native window (not a views::Widget),
-  // and so the dialog must be considered top-level to gain focus and input
-  // method behaviors.
-  params.child = parent && (delegate->GetModalType() == ui::MODAL_TYPE_CHILD);
+  // Web-modal (ui::mojom::ModalType::kChild) dialogs with parents are marked as
+  // child widgets to prevent top-level window behavior (independent movement,
+  // etc). On Mac, however, the parent may be a native window (not a
+  // views::Widget), and so the dialog must be considered top-level to gain
+  // focus and input method behaviors.
+  params.child =
+      parent && (delegate->GetModalType() == ui::mojom::ModalType::kChild);
 #endif
-
-  if (dialog && dialog->widget_owns_native_widget_) {
-    params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  }
 
   if (BubbleDialogDelegate* bubble = delegate->AsBubbleDialogDelegate()) {
     // TODO(crbug.com/41493925): Remove this CHECK once native frame dialogs
@@ -165,10 +165,12 @@ Widget::InitParams DialogDelegate::GetDialogWidgetInitParams(
 int DialogDelegate::GetDefaultDialogButton() const {
   if (GetParams().default_button.has_value())
     return *GetParams().default_button;
-  if (GetDialogButtons() & ui::DIALOG_BUTTON_OK)
+  if (buttons() & ui::DIALOG_BUTTON_OK) {
     return ui::DIALOG_BUTTON_OK;
-  if (GetDialogButtons() & ui::DIALOG_BUTTON_CANCEL)
+  }
+  if (buttons() & ui::DIALOG_BUTTON_CANCEL) {
     return ui::DIALOG_BUTTON_CANCEL;
+  }
   return ui::DIALOG_BUTTON_NONE;
 }
 
@@ -180,7 +182,7 @@ std::u16string DialogDelegate::GetDialogButtonLabel(
   if (button == ui::DIALOG_BUTTON_OK)
     return l10n_util::GetStringUTF16(IDS_APP_OK);
   CHECK_EQ(button, ui::DIALOG_BUTTON_CANCEL);
-  return GetDialogButtons() & ui::DIALOG_BUTTON_OK
+  return buttons() & ui::DIALOG_BUTTON_OK
              ? l10n_util::GetStringUTF16(IDS_APP_CANCEL)
              : l10n_util::GetStringUTF16(IDS_APP_CLOSE);
 }
@@ -256,7 +258,7 @@ View* DialogDelegate::GetInitiallyFocusedView() {
     return nullptr;
 
   // The default button should be a button we have.
-  CHECK(default_button & GetDialogButtons());
+  CHECK(default_button & buttons());
 
   if (default_button & ui::DIALOG_BUTTON_OK)
     return dcv->ok_button();
@@ -466,9 +468,10 @@ void DialogDelegate::SetCloseCallback(base::OnceClosure callback) {
   close_callback_ = std::move(callback);
 }
 
-void DialogDelegate::SetWidgetOwnsNativeWidget() {
+void DialogDelegate::SetOwnershipOfNewWidget(
+    Widget::InitParams::Ownership ownership) {
   CHECK(!GetWidget());
-  widget_owns_native_widget_ = true;
+  ownership_of_new_widget_ = ownership;
 }
 
 std::optional<std::unique_ptr<View>> DialogDelegate::DisownExtraView() {
@@ -523,12 +526,16 @@ ax::mojom::Role DialogDelegate::GetAccessibleWindowRole() {
 }
 
 int DialogDelegate::GetCornerRadius() const {
+  if (!Widget::IsWindowCompositingSupported()) {
+    return 0;
+  }
 #if BUILDFLAG(IS_MAC)
   // TODO(crbug.com/40144839): On Mac MODAL_TYPE_WINDOW is implemented using
   // sheets which causes visual artifacts when corner radius is increased for
   // modal types. Remove this after this issue has been addressed.
-  if (GetModalType() == ui::MODAL_TYPE_WINDOW)
+  if (GetModalType() == ui::mojom::ModalType::kWindow) {
     return 2;
+  }
 #endif
   if (params_.corner_radius)
     return *params_.corner_radius;

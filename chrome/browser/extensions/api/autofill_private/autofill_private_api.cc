@@ -23,7 +23,6 @@
 #include "chrome/common/extensions/api/autofill_private.h"
 #include "components/autofill/content/browser/content_autofill_client.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
-#include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/address_data_manager.h"
 #include "components/autofill/core/browser/autofill_address_util.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
@@ -100,8 +99,8 @@ autofill::BrowserAutofillManager* GetBrowserAutofillManager(
     return nullptr;
   }
   autofill::ContentAutofillDriver* autofill_driver =
-      autofill::ContentAutofillDriverFactory::FromWebContents(web_contents)
-          ->DriverForFrame(web_contents->GetPrimaryMainFrame());
+      autofill::ContentAutofillDriver::GetForRenderFrameHost(
+          web_contents->GetPrimaryMainFrame());
   if (!autofill_driver)
     return nullptr;
   // This cast is safe, since `AutofillManager` is always a
@@ -215,8 +214,7 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveAddressFunction::Run() {
   for (const api::autofill_private::AddressField& field : address->fields) {
     if (field.type == autofill_private::FieldType::kNameFull) {
       profile.SetInfoWithVerificationStatus(
-          autofill::AutofillType(autofill::NAME_FULL),
-          base::UTF8ToUTF16(field.value),
+          autofill::NAME_FULL, base::UTF8ToUTF16(field.value),
           g_browser_process->GetApplicationLocale(), kUserVerified);
     } else {
       profile.SetRawInfoWithVerificationStatus(
@@ -245,6 +243,9 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveAddressFunction::Run() {
 // AutofillPrivateGetCountryListFunction
 
 ExtensionFunction::ResponseAction AutofillPrivateGetCountryListFunction::Run() {
+  std::optional<api::autofill_private::GetCountryList::Params> parameters =
+      api::autofill_private::GetCountryList::Params::Create(args());
+  EXTENSION_FUNCTION_VALIDATE(parameters);
   autofill::ContentAutofillClient* client =
       autofill::ContentAutofillClient::FromWebContents(GetSenderWebContents());
   if (!client) {
@@ -263,7 +264,8 @@ ExtensionFunction::ResponseAction AutofillPrivateGetCountryListFunction::Run() {
   }
 
   autofill_util::CountryEntryList country_list =
-      autofill_util::GenerateCountryList(*personal_data);
+      autofill_util::GenerateCountryList(
+          *personal_data, parameters->for_account_address_profile);
 
   return RespondNow(ArgumentList(
       api::autofill_private::GetCountryList::Results::Create(country_list)));

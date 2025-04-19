@@ -18,6 +18,7 @@
 #include "cc/metrics/submit_info.h"
 #include "cc/scheduler/begin_frame_tracker.h"
 #include "cc/scheduler/draw_result.h"
+#include "cc/scheduler/redraw_reason.h"
 #include "cc/scheduler/scheduler_settings.h"
 #include "cc/scheduler/scheduler_state_machine.h"
 #include "cc/tiles/tile_priority.h"
@@ -89,6 +90,7 @@ class SchedulerClient {
   virtual void ScheduledActionBeginMainFrameNotExpectedUntil(
       base::TimeTicks time) = 0;
   virtual void FrameIntervalUpdated(base::TimeDelta interval) = 0;
+  virtual void OnBeginImplFrameDeadline() = 0;
 
  protected:
   virtual ~SchedulerClient() {}
@@ -160,7 +162,7 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
   // active).
   void SetNeedsOneBeginImplFrame();
 
-  void SetNeedsRedraw();
+  void SetNeedsRedraw(RedrawReason reason);
   void SetNeedsUpdateDisplayTree();
 
   void SetNeedsPrepareTiles();
@@ -175,7 +177,9 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
   // If |needs_first_draw_on_activation| is set to true, an impl-side pending
   // tree creates for this invalidation must be drawn at least once before a
   // new tree can be activated.
-  void SetNeedsImplSideInvalidation(bool needs_first_draw_on_activation);
+  // |reason| will be applied to draw if this ends up being drawn.
+  void SetNeedsImplSideInvalidation(bool needs_first_draw_on_activation,
+                                    RedrawReason reason);
 
   bool pending_tree_is_ready_for_activation() const {
     return state_machine_.pending_tree_is_ready_for_activation();
@@ -201,11 +205,6 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
   // In the PrepareTiles step, compositor thread divides the layers into tiles
   // to reduce cost of raster large layers. Then, each tile is rastered by a
   // dedicated thread.
-  // |WillPrepareTiles| is called before PrepareTiles step to have the scheduler
-  // track when PrepareTiles starts.
-  void WillPrepareTiles();
-  // |DidPrepareTiles| is called after PrepareTiles step to have the scheduler
-  // track how long PrepareTiles takes.
   void DidPrepareTiles();
 
   // |DidPresentCompositorFrame| is called when the renderer receives
@@ -272,6 +271,8 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
   }
 
   viz::BeginFrameAck CurrentBeginFrameAckForActiveTree() const;
+
+  RedrawReasonSet GetRedrawReasons() const;
 
   const viz::BeginFrameArgs& last_dispatched_begin_main_frame_args() const {
     return last_dispatched_begin_main_frame_args_;

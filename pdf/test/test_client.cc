@@ -9,6 +9,7 @@
 #include "base/time/time.h"
 #include "pdf/document_layout.h"
 #include "pdf/loader/url_loader.h"
+#include "pdf/pdfium/pdfium_engine.h"
 #include "pdf/test/test_helpers.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -47,7 +48,7 @@ v8::Isolate* TestClient::GetIsolate() {
   return GetBlinkIsolate();
 }
 
-std::vector<PDFEngine::Client::SearchStringResult> TestClient::SearchString(
+std::vector<PDFiumEngineClient::SearchStringResult> TestClient::SearchString(
     const char16_t* string,
     const char16_t* term,
     bool case_sensitive) {

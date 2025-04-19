@@ -15,6 +15,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/check.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/json/json_writer.h"
@@ -22,15 +23,17 @@
 #include "base/logging.h"
 #include "base/metrics/user_metrics.h"
 #include "base/threading/scoped_blocking_call.h"
+#include "cc/input/android/offset_tag_android.h"
+#include "cc/input/browser_controls_offset_tags_info.h"
 #include "content/browser/android/java/gin_java_bridge_dispatcher_host.h"
 #include "content/browser/media/media_web_contents_observer.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/browser/renderer_host/view_transition_opt_in_state.h"
 #include "content/browser/web_contents/view_structure_builder_android.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view_android.h"
 #include "content/common/frame.mojom.h"
-#include "content/public/android/content_jni_headers/WebContentsImpl_jni.h"
 #include "content/public/browser/back_forward_transition_animation_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -48,8 +51,12 @@
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/snapshot/snapshot.h"
 #include "url/android/gurl_android.h"
 #include "url/gurl.h"
+
+// Must come after all headers that specialize FromJniType() / ToJniType().
+#include "content/public/android/content_jni_headers/WebContentsImpl_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF16;
@@ -243,6 +250,7 @@ WebContentsAndroid::~WebContentsAndroid() {
   DCHECK(g_allocated_web_contents_androids.Get().find(this) !=
       g_allocated_web_contents_androids.Get().end());
   g_allocated_web_contents_androids.Get().erase(this);
+  offset_tag_mediator_ = nullptr;
   for (auto& observer : destruction_observers_)
     observer.WebContentsAndroidDestroyed(this);
   Java_WebContentsImpl_clearNativePtr(AttachCurrentThread(), obj_);
@@ -251,6 +259,33 @@ WebContentsAndroid::~WebContentsAndroid() {
 base::android::ScopedJavaLocalRef<jobject>
 WebContentsAndroid::GetJavaObject() {
   return base::android::ScopedJavaLocalRef<jobject>(obj_);
+}
+
+void WebContentsAndroid::CaptureContentAsBitmapForTesting(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcallback) {
+  ui::GrabViewSnapshot(
+      web_contents_->GetNativeView(), gfx::Rect(web_contents_->GetSize()),
+      base::BindOnce(
+          &WebContentsAndroid::OnFinishGetContentBitmapForTesting,
+          weak_factory_.GetWeakPtr(),
+          base::android::ScopedJavaGlobalRef<jobject>(env, jcallback)));
+}
+
+void WebContentsAndroid::OnFinishGetContentBitmapForTesting(
+    const base::android::JavaRef<jobject>& callback,
+    gfx::Image snapshot) {
+  const SkBitmap bitmap = snapshot.AsBitmap();
+  CHECK(!bitmap.isNull());
+  CHECK(!bitmap.empty());
+  base::android::RunObjectCallbackAndroid(
+      callback,
+      gfx::ConvertToJavaBitmap(bitmap, gfx::OomBehavior::kReturnNullOnOom));
+}
+
+void WebContentsAndroid::Init() {
+  offset_tag_mediator_ = new BrowserControlsOffsetTagMediator(web_contents_);
+  offset_tag_mediator_->Initialize();
 }
 
 void WebContentsAndroid::ClearNativeReference(JNIEnv* env) {
@@ -421,22 +456,6 @@ ScopedJavaLocalRef<jobject> WebContentsAndroid::GetRenderWidgetHostView(
   if (!rwhva)
     return nullptr;
   return rwhva->GetJavaObject();
-}
-
-ScopedJavaLocalRef<jobjectArray> WebContentsAndroid::GetInnerWebContents(
-    JNIEnv* env) {
-  std::vector<WebContents*> inner_web_contents =
-      web_contents_->GetInnerWebContents();
-  jclass clazz =
-      org_chromium_content_browser_webcontents_WebContentsImpl_clazz(env);
-  jobjectArray array =
-      env->NewObjectArray(inner_web_contents.size(), clazz, nullptr);
-  for (size_t i = 0; i < inner_web_contents.size(); i++) {
-    ScopedJavaLocalRef<jobject> contents_java =
-        inner_web_contents[i]->GetJavaWebContents();
-    env->SetObjectArrayElement(array, i, contents_java.obj());
-  }
-  return ScopedJavaLocalRef<jobjectArray>(env, array);
 }
 
 jint WebContentsAndroid::GetVisibility(JNIEnv* env) {
@@ -738,7 +757,8 @@ void WebContentsAndroid::RequestAccessibilitySnapshot(
               std::move(j_view_structure_builder), std::move(j_callback)),
           ui::AXMode(ui::kAXModeComplete.flags() | ui::AXMode::kHTMLMetadata),
           /* max_nodes= */ 5000,
-          /* timeout= */ base::Seconds(2));
+          /* timeout= */ base::Seconds(2),
+          WebContents::AXTreeSnapshotPolicy::kAll);
 }
 
 ScopedJavaLocalRef<jstring> WebContentsAndroid::GetEncoding(JNIEnv* env) const {
@@ -926,6 +946,52 @@ jint WebContentsAndroid::GetCurrentBackForwardTransitionStage(JNIEnv* env) {
     stage = animation->GetCurrentAnimationStage();
   }
   return static_cast<jint>(stage);
+}
+
+void WebContentsAndroid::SetLongPressLinkSelectText(JNIEnv* env,
+                                                    jboolean enabled) {
+  web_contents_->SetLongPressLinkSelectText((bool)enabled);
+}
+
+void WebContentsAndroid::NotifyControlsConstraintsChanged(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jold_tags_info,
+    const base::android::JavaParamRef<jobject>& jtags_info) {
+  cc::BrowserControlsOffsetTagsInfo tags_info =
+      cc::android::FromJavaBrowserControlsOffsetTagsInfo(env, jtags_info);
+  if (!offset_tag_mediator_) {
+    Init();
+  }
+  offset_tag_mediator_->SetOffsetTagsInfo(tags_info);
+}
+
+WebContentsAndroid::BrowserControlsOffsetTagMediator::
+    BrowserControlsOffsetTagMediator(WebContents* web_contents)
+    : RenderWidgetHostConnector(web_contents) {}
+
+WebContentsAndroid::BrowserControlsOffsetTagMediator::
+    ~BrowserControlsOffsetTagMediator() = default;
+
+void WebContentsAndroid::BrowserControlsOffsetTagMediator::SetOffsetTagsInfo(
+    const cc::BrowserControlsOffsetTagsInfo& new_offset_tags_info) {
+  if (rwhva_) {
+    rwhva_->UnregisterOffsetTags(offset_tags_info_);
+    rwhva_->RegisterOffsetTags(new_offset_tags_info);
+  }
+
+  offset_tags_info_ = new_offset_tags_info;
+}
+
+void WebContentsAndroid::BrowserControlsOffsetTagMediator::
+    UpdateRenderProcessConnection(RenderWidgetHostViewAndroid* old_rwhva,
+                                  RenderWidgetHostViewAndroid* new_rwhva) {
+  if (old_rwhva) {
+    old_rwhva->UnregisterOffsetTags(offset_tags_info_);
+  }
+  if (new_rwhva) {
+    new_rwhva->RegisterOffsetTags(offset_tags_info_);
+  }
+  rwhva_ = new_rwhva;
 }
 
 }  // namespace content

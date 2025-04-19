@@ -9,15 +9,14 @@
 #include <cstdint>
 
 #include "partition_alloc/build_config.h"
+#include "partition_alloc/buildflags.h"
 #include "partition_alloc/freeslot_bitmap.h"
 #include "partition_alloc/partition_alloc-inl.h"
 #include "partition_alloc/partition_alloc_base/compiler_specific.h"
-#include "partition_alloc/partition_alloc_base/debug/debugging_buildflags.h"
-#include "partition_alloc/partition_alloc_buildflags.h"
 #include "partition_alloc/partition_alloc_config.h"
 #include "partition_alloc/partition_alloc_constants.h"
 
-#if !defined(ARCH_CPU_BIG_ENDIAN)
+#if !PA_BUILDFLAG(PA_ARCH_CPU_BIG_ENDIAN)
 #include "partition_alloc/reverse_bytes.h"
 #endif
 
@@ -57,7 +56,7 @@ class EncodedFreelistPtr {
     //    corrupt a freelist pointer, partial pointer overwrite attacks are
     //    thwarted.
     // For big endian, similar guarantees are arrived at with a negation.
-#if defined(ARCH_CPU_BIG_ENDIAN)
+#if PA_BUILDFLAG(PA_ARCH_CPU_BIG_ENDIAN)
     uintptr_t transformed = ~address;
 #else
     uintptr_t transformed = ReverseBytes(address);
@@ -177,16 +176,16 @@ class EncodedNextFreelistEntry {
     // SetNext() is either called on the freelist head, when provisioning new
     // slots, or when GetNext() has been called before, no need to pass the
     // size.
-#if PA_BUILDFLAG(PA_DCHECK_IS_ON)
+#if PA_BUILDFLAG(DCHECKS_ARE_ON)
     // Regular freelists always point to an entry within the same super page.
     //
     // This is most likely a PartitionAlloc bug if this triggers.
-    if (PA_UNLIKELY(entry &&
-                    (SlotStartPtr2Addr(this) & kSuperPageBaseMask) !=
-                        (SlotStartPtr2Addr(entry) & kSuperPageBaseMask))) {
+    if (entry && (SlotStartPtr2Addr(this) & kSuperPageBaseMask) !=
+                     (SlotStartPtr2Addr(entry) & kSuperPageBaseMask))
+        [[unlikely]] {
       FreelistCorruptionDetected(0);
     }
-#endif  // PA_BUILDFLAG(PA_DCHECK_IS_ON)
+#endif  // PA_BUILDFLAG(DCHECKS_ARE_ON)
 
     encoded_next_ = EncodedFreelistPtr(entry);
 #if PA_CONFIG(HAS_FREELIST_SHADOW_ENTRY)
@@ -221,7 +220,7 @@ class EncodedNextFreelistEntry {
     }
 
     auto* ret = encoded_next_.Decode();
-    if (PA_UNLIKELY(!IsWellFormed<for_thread_cache>(this, ret))) {
+    if (!IsWellFormed<for_thread_cache>(this, ret)) [[unlikely]] {
       if constexpr (crash_on_corruption) {
         // Put the corrupted data on the stack, it may give us more information
         // about what kind of corruption that was.

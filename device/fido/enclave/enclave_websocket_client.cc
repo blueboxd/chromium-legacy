@@ -11,6 +11,7 @@
 #include "device/fido/fido_parsing_utils.h"
 #include "device/fido/network_context_factory.h"
 #include "net/http/http_request_headers.h"
+#include "net/storage_access_api/status.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace device::enclave {
@@ -130,7 +131,7 @@ void EnclaveWebSocketClient::Connect() {
 
   network_context_factory_.Run()->CreateWebSocket(
       service_url_, {kEnclaveWebSocketProtocol}, net::SiteForCookies(),
-      /*has_storage_access=*/false,
+      net::StorageAccessApiStatus::kNone,
       net::IsolationInfo::CreateForInternalRequest(
           url::Origin::Create(service_url_)),
       std::move(additional_headers), network::mojom::kBrowserProcessId,
@@ -149,10 +150,7 @@ void EnclaveWebSocketClient::InternalWrite(base::span<const uint8_t> data) {
 
   websocket_->SendMessage(network::mojom::WebSocketMessageType::BINARY,
                           data.size());
-  size_t num_bytes = data.size();
-  MojoResult result = writable_->WriteData(data.data(), &num_bytes,
-                                           MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
-  CHECK(result != MOJO_RESULT_OK || data.size() == num_bytes);
+  MojoResult result = writable_->WriteAllData(data);
   if (result != MOJO_RESULT_OK) {
     FIDO_LOG(ERROR) << "Failed to write to WebSocket.";
     ClosePipe(SocketStatus::kError);
@@ -258,17 +256,19 @@ void EnclaveWebSocketClient::OnClosingHandshake() {}
 
 void EnclaveWebSocketClient::ReadFromDataPipe(MojoResult,
                                               const mojo::HandleSignalsState&) {
-  size_t todo = pending_read_data_.size() - pending_read_data_index_;
-  CHECK_GT(todo, 0u);
-  const MojoResult result =
-      readable_->ReadData(&pending_read_data_.data()[pending_read_data_index_],
-                          &todo, MOJO_READ_DATA_FLAG_NONE);
+  CHECK_LT(pending_read_data_index_, pending_read_data_.size());
+
+  size_t actually_read_bytes = 0;
+  const MojoResult result = readable_->ReadData(
+      MOJO_READ_DATA_FLAG_NONE,
+      base::span(pending_read_data_).subspan(pending_read_data_index_),
+      actually_read_bytes);
   if (result == MOJO_RESULT_OK) {
-    pending_read_data_index_ += todo;
+    pending_read_data_index_ += actually_read_bytes;
     DCHECK_LE(pending_read_data_index_, pending_read_data_.size());
 
     if (pending_read_data_index_ < pending_read_data_.size()) {
-      readable_watcher_.Arm();
+      readable_watcher_.ArmOrNotify();
     } else {
       client_receiver_.Resume();
       if (pending_read_finished_) {
@@ -276,7 +276,7 @@ void EnclaveWebSocketClient::ReadFromDataPipe(MojoResult,
       }
     }
   } else if (result == MOJO_RESULT_SHOULD_WAIT) {
-    readable_watcher_.Arm();
+    readable_watcher_.ArmOrNotify();
   } else {
     FIDO_LOG(ERROR) << "Reading WebSocket frame failed: "
                     << static_cast<int>(result);

@@ -373,14 +373,9 @@ class BackgroundURLLoader::Context
       CHECK(background_task_runner_->RunsTasksInCurrentSequence());
       background_response_processor_.reset();
       waiting_for_background_response_processor_ = false;
-      if (absl::holds_alternative<Deque<Vector<char>>>(body)) {
-        size_t raw_data_size = 0u;
-        for (const auto& data : absl::get<Deque<Vector<char>>>(body)) {
-          raw_data_size =
-              base::CheckAdd(raw_data_size, data.size()).ValueOrDie();
-        }
+      if (absl::holds_alternative<SegmentedBuffer>(body)) {
         context_->DidReadDataByBackgroundResponseProcessorOnBackground(
-            raw_data_size);
+            absl::get<SegmentedBuffer>(body).size());
       }
       context_->PostTaskToMainThread(CrossThreadBindOnce(
           &Context::DidFinishBackgroundResponseProcessor, context_,
@@ -562,7 +557,7 @@ class BackgroundURLLoader::Context
     }
   }
   void OnReceivedResponse(network::mojom::URLResponseHeadPtr head,
-                          mojo::ScopedDataPipeConsumerHandle body,
+                          BodyVariant body,
                           std::optional<mojo_base::BigBuffer> cached_metadata,
                           int request_id) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(main_thread_sequence_checker_);
@@ -580,22 +575,8 @@ class BackgroundURLLoader::Context
       int request_id) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(main_thread_sequence_checker_);
 
-    OnReceivedResponse(
-        std::move(head),
-        absl::holds_alternative<mojo::ScopedDataPipeConsumerHandle>(body)
-            ? std::move(absl::get<mojo::ScopedDataPipeConsumerHandle>(body))
-            : mojo::ScopedDataPipeConsumerHandle(),
-        std::move(cached_metadata), request_id);
-    if (absl::holds_alternative<Deque<Vector<char>>>(body)) {
-      Deque<Vector<char>> raw_data =
-          std::move(absl::get<Deque<Vector<char>>>(body));
-      while (!raw_data.empty()) {
-        Vector<char> data = raw_data.TakeFirst();
-        if (client_) {
-          client_->DidReceiveData(data);
-        }
-      }
-    }
+    OnReceivedResponse(std::move(head), std::move(body),
+                       std::move(cached_metadata), request_id);
     if (client_ && deferred_transfer_size_diff > 0) {
       OnTransferSizeUpdated(deferred_transfer_size_diff);
     }

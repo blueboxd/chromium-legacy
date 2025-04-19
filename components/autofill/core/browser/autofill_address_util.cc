@@ -11,6 +11,7 @@
 #include "autofill_address_util.h"
 #include "base/check.h"
 #include "base/memory/ptr_util.h"
+#include "base/not_fatal_until.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
@@ -131,7 +132,7 @@ void ExtendAddressComponents(
           return component.literal.empty() &&
                  component.field == rule.placed_after;
         });
-    DCHECK(prev_component != components.end());
+    CHECK(prev_component != components.end(), base::NotFatalUntil::M130);
 
     // Insert the separator and `rule.type` after `prev_component`.
     if (include_literals) {
@@ -263,7 +264,7 @@ std::vector<ProfileValueDifference> GetProfileDifferenceForUi(
     const AutofillProfile& first_profile,
     const AutofillProfile& second_profile,
     const std::string& app_locale) {
-  static constexpr FieldType kTypeToCompare[] = {
+  static constexpr auto kTypeToCompare = std::array{
       NAME_FULL, ADDRESS_HOME_ADDRESS, EMAIL_ADDRESS, PHONE_HOME_WHOLE_NUMBER};
 
   base::flat_map<FieldType, std::pair<std::u16string, std::u16string>>

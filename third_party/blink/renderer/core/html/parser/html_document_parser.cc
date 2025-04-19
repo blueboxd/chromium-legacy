@@ -561,9 +561,6 @@ void HTMLDocumentParser::PrepareToStopParsing() {
   if (IsDetached())
     return;
 
-  if (script_runner_)
-    script_runner_->RecordMetricsAtParseEnd();
-
   GetDocument()->OnPrepareToStopParsing();
 
   AttemptToRunDeferredScriptsAndEnd();
@@ -1269,17 +1266,6 @@ void HTMLDocumentParser::NotifyScriptLoaded() {
     ResumeParsingAfterPause();
 }
 
-// This method is called from |ScriptRunner::ExecuteAsyncPendingScript| after
-// all async scripts are evaluated, which means that
-// |ExecuteScriptsWaitingForParsing()| might return true, so call
-// |AttemptToRunDeferredScriptsAndEnd()| to possibly proceed to |end()|.
-void HTMLDocumentParser::NotifyNoRemainingAsyncScripts() {
-  DCHECK(base::FeatureList::IsEnabled(
-      features::kDOMContentLoadedWaitForAsyncScript));
-  if (IsStopping())
-    AttemptToRunDeferredScriptsAndEnd();
-}
-
 // static
 void HTMLDocumentParser::ResetCachedFeaturesForTesting() {
   ThreadedPreloadScannerEnabled(FeatureResetMode::kResetForTesting);
@@ -1372,18 +1358,19 @@ void HTMLDocumentParser::ParseDocumentFragment(
   parser->Detach();
 }
 
-void HTMLDocumentParser::AppendBytes(const char* data, size_t length) {
-  TRACE_EVENT_WITH_FLOW2("blink", "HTMLDocumentParser::appendBytes",
-                         TRACE_ID_LOCAL(this),
-                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
-                         "size", (unsigned)length, "parser", (void*)this);
+void HTMLDocumentParser::AppendBytes(base::span<const uint8_t> data) {
+  TRACE_EVENT_WITH_FLOW2(
+      "blink", "HTMLDocumentParser::appendBytes", TRACE_ID_LOCAL(this),
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "size",
+      static_cast<unsigned>(data.size()), "parser", (void*)this);
 
   DCHECK(IsMainThread());
 
-  if (!length || IsStopped())
+  if (data.empty() || IsStopped()) {
     return;
+  }
 
-  DecodedDataDocumentParser::AppendBytes(data, length);
+  DecodedDataDocumentParser::AppendBytes(data);
 }
 
 void HTMLDocumentParser::Flush() {

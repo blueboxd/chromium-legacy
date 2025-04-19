@@ -40,7 +40,7 @@
 #include "components/android_autofill/browser/android_autofill_manager.h"
 #include "components/android_autofill/browser/android_autofill_provider.h"
 #include "components/android_autofill/browser/autofill_provider.h"
-#include "components/autofill/content/browser/content_autofill_driver_factory.h"
+#include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/infobars/content/content_infobar_manager.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
 #include "components/sessions/content/session_tab_helper.h"
@@ -58,7 +58,7 @@
 #include "url/android/gurl_android.h"
 #include "url/gurl.h"
 
-// Must come after other includes, because FromJniType() uses Profile.
+// Must come after all headers that specialize FromJniType() / ToJniType().
 #include "chrome/android/chrome_jni_headers/TabImpl_jni.h"
 
 using base::android::AttachCurrentThread;
@@ -156,13 +156,12 @@ TabAndroid::~TabAndroid() {
   Java_TabImpl_clearNativePtr(env, weak_java_tab_.get(env));
 }
 
-base::android::ScopedJavaLocalRef<jobject> TabAndroid::GetJavaObject() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  return weak_java_tab_.get(env);
+SessionID TabAndroid::GetWindowId() const {
+  return session_window_id_;
 }
 
-scoped_refptr<cc::slim::Layer> TabAndroid::GetContentLayer() const {
-  return content_layer_;
+int TabAndroid::GetAndroidId() const {
+  return tab_id_;
 }
 
 std::unique_ptr<WebContentsStateByteBuffer>
@@ -182,12 +181,17 @@ TabAndroid::GetWebContentsByteBuffer() {
   return std::make_unique<WebContentsStateByteBuffer>(state, version);
 }
 
-base::WeakPtr<TabAndroid> TabAndroid::GetWeakPtr() {
-  return weak_ptr_factory_.GetWeakPtr();
+base::android::ScopedJavaLocalRef<jobject> TabAndroid::GetJavaObject() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return weak_java_tab_.get(env);
 }
 
-int TabAndroid::GetAndroidId() const {
-  return tab_id_;
+scoped_refptr<cc::slim::Layer> TabAndroid::GetContentLayer() const {
+  return content_layer_;
+}
+
+base::WeakPtr<TabAndroid> TabAndroid::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 int TabAndroid::GetLaunchType() const {
@@ -358,6 +362,10 @@ void TabAndroid::InitializeAutofillIfNecessary(JNIEnv* env) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(autofill::AutofillProvider::FromWebContents(web_contents_.get()));
   if (autofill::ContentAutofillClient::FromWebContents(web_contents_.get())) {
+    // We need to initialize the keyboard suppressor before creating any
+    // AutofillManagers and after the autofill client is available.
+    autofill::AutofillProvider::FromWebContents(web_contents_.get())
+        ->MaybeInitKeyboardSuppressor();
     return;
   }
   android_autofill::AndroidAutofillClient::CreateForWebContents(
@@ -368,8 +376,8 @@ void TabAndroid::InitializeAutofillIfNecessary(JNIEnv* env) {
   autofill::AutofillProvider::FromWebContents(web_contents_.get())
       ->MaybeInitKeyboardSuppressor();
 
-  autofill::ContentAutofillDriverFactory::FromWebContents(web_contents_.get())
-      ->DriverForFrame(web_contents_->GetPrimaryMainFrame());
+  autofill::ContentAutofillDriver::GetForRenderFrameHost(
+      web_contents_->GetPrimaryMainFrame());
 }
 
 void TabAndroid::UpdateDelegates(
@@ -460,7 +468,7 @@ void TabAndroid::SetActiveNavigationEntryTitleForUrl(
   content::NavigationEntry* entry =
       web_contents()->GetController().GetVisibleEntry();
   if (entry && url == entry->GetVirtualURL().spec())
-    entry->SetTitle(title);
+    entry->SetTitle(std::move(title));
 }
 
 void TabAndroid::LoadOriginalImage(JNIEnv* env) {
@@ -501,6 +509,11 @@ scoped_refptr<content::DevToolsAgentHost> TabAndroid::GetDevToolsAgentHost() {
 void TabAndroid::SetDevToolsAgentHost(
     scoped_refptr<content::DevToolsAgentHost> host) {
   devtools_host_ = std::move(host);
+}
+
+bool TabAndroid::IsTrustedWebActivity() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_TabImpl_isTrustedWebActivity(env, weak_java_tab_.get(env));
 }
 
 base::android::ScopedJavaLocalRef<jobject> JNI_TabImpl_FromWebContents(

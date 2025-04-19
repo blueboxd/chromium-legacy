@@ -49,7 +49,8 @@ class PopupRowWithButtonViewTest : public ChromeViewsTestBase {
   // views::ViewsTestBase:
   void SetUp() override {
     ChromeViewsTestBase::SetUp();
-    widget_ = CreateTestWidget();
+    widget_ =
+        CreateTestWidget(views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET);
     generator_ = std::make_unique<ui::test::EventGenerator>(
         GetRootWindow(widget_.get()));
     controller_.set_suggestions({SuggestionType::kAddressEntry});
@@ -68,7 +69,7 @@ class PopupRowWithButtonViewTest : public ChromeViewsTestBase {
   }
 
   void SimulateKeyPress(int windows_key_code) {
-    content::NativeWebKeyboardEvent event(
+    input::NativeWebKeyboardEvent event(
         blink::WebKeyboardEvent::Type::kRawKeyDown,
         blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow());
     event.windows_key_code = windows_key_code;

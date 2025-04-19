@@ -45,6 +45,7 @@ from __future__ import annotations
 import abc
 import argparse
 import dataclasses
+import json
 import os
 import pathlib
 import re
@@ -62,6 +63,7 @@ from mojom import fileutil
 from mojom.generate import module
 
 fileutil.AddLocalRepoThirdPartyDirToModulePath()
+CHROME_SRC_DIR = fileutil._GetDirAbove('mojo')
 
 import jinja2
 
@@ -104,6 +106,8 @@ class MojoLPMActionType(enum.Enum):
   DATA_PIPE_WRITE = 'DataPipeWrite'
   DATA_PIPE_CONSUMER_CLOSE = 'DataPipeConsumerClose'
   DATA_PIPE_PRODUCER_CLOSE = 'DataPipeProducerClose'
+  SHARED_BUFFER_WRITE = 'SharedBufferWrite'
+  SHARED_BUFFER_RELEASE = 'SharedBufferRelease'
 
 
 @dataclasses.dataclass(frozen=True)
@@ -204,6 +208,20 @@ _EMULATED_HANDLE_ACTION_MAP = {
             dependencies=_DEFAULT_ACTION_DEPS,
         ),
     ],
+    MojomHandleType.SHARED_BUFFER: [
+        MojoLPMAction(
+            type=MojoLPMActionType.SHARED_BUFFER_WRITE,
+            namespace=None,
+            identifier="shared_buffer_write",
+            dependencies=_DEFAULT_ACTION_DEPS,
+        ),
+        MojoLPMAction(
+            type=MojoLPMActionType.SHARED_BUFFER_RELEASE,
+            namespace=None,
+            identifier="shared_buffer_release",
+            dependencies=_DEFAULT_ACTION_DEPS,
+        ),
+    ],
 }
 
 _REMOTE_HANDLE_ACTION_MAP = {
@@ -232,6 +250,20 @@ _REMOTE_HANDLE_ACTION_MAP = {
             type=MojoLPMActionType.DATA_PIPE_PRODUCER_CLOSE,
             namespace=None,
             identifier="data_pipe_producer_close_action",
+            dependencies=_DEFAULT_ACTION_DEPS,
+        ),
+    ],
+    MojomHandleType.SHARED_BUFFER: [
+        MojoLPMAction(
+            type=MojoLPMActionType.SHARED_BUFFER_WRITE,
+            namespace=None,
+            identifier="shared_buffer_write",
+            dependencies=_DEFAULT_ACTION_DEPS,
+        ),
+        MojoLPMAction(
+            type=MojoLPMActionType.SHARED_BUFFER_RELEASE,
+            namespace=None,
+            identifier="shared_buffer_release",
             dependencies=_DEFAULT_ACTION_DEPS,
         ),
     ],
@@ -285,7 +317,8 @@ def is_interesting_kind(kind: module.Kind) -> bool:
   interested in data_pipe kinds, pending kinds, struct kinds or union kinds.
   """
   return is_data_pipe_kind(kind) or is_pending_kind(
-      kind) or module.IsStructKind(kind) or module.IsUnionKind(kind)
+      kind) or module.IsStructKind(kind) or module.IsUnionKind(
+          kind) or module.IsSharedBufferKind(kind)
 
 
 def get_interesting_kind_deps(
@@ -516,7 +549,6 @@ def build_handle_actions(handle_type: MojomHandleType,
   # Not meaningful in the context of mojolpm
   if handle_type in (
       MojomHandleType.MESSAGE_PIPE,
-      MojomHandleType.SHARED_BUFFER,
       MojomHandleType.PLATFORM,
   ):
     return MojoLPMActionSet()
@@ -609,6 +641,10 @@ def build(interface: module.Interface,
           handle_type = MojomHandleType.DATA_PIPE_CONSUMER
         actions.update(build_handle_actions(handle_type, def_type))
         continue
+      if module.IsSharedBufferKind(kind):
+        actions.update(
+            build_handle_actions(MojomHandleType.SHARED_BUFFER, def_type))
+        continue
 
       child_def_type = def_type
       if is_pending_kind(kind):
@@ -654,17 +690,48 @@ def build(interface: module.Interface,
   return actions
 
 
+def get_interface_list_from_file(
+    file_path: str) -> typing.List[typing.List[str]]:
+  """Reads the JSON input file and returns the interfaces list that it
+  contains.
+
+  Args:
+      file_path: the path to the input file.
+
+  Returns:
+      the list of interfaces.
+  """
+  with open(file_path, 'r') as f:
+    data = json.load(f)
+    return data['interfaces']
+
+
+def get_interface_list_from_input(
+    interfaces: typing.List[str]) -> typing.List[typing.List[str]]:
+  """Parses the input list of interfaces and returns a list of list that
+  matches the expected format.
+
+  Args:
+      interfaces: the list of strings listing the interfaces.
+
+  Returns:
+      the list of interfaces.
+  """
+  return [interface.split(':') for interface in interfaces]
+
+
 def main():
   parser = argparse.ArgumentParser(
       description='Generate MojoLPM proto and cpp/h files.')
-  parser.add_argument(
+  group = parser.add_mutually_exclusive_group(required=True)
+  group.add_argument(
       '-i',
       '--input',
       default=[],
       nargs='+',
-      required=True,
       help="input(s) with format: "
       "path/to/interface.mojom-module:InterfaceName:{Remote|AssociatedRemote}")
+  group.add_argument('-f', '--file', help="")
   parser.add_argument('--output_file_format',
                       required=True,
                       help="output file format. Files with extensions '.h' and"
@@ -677,11 +744,11 @@ def main():
       [MojoLPMProtoGenerator(output_file),
        MojoLPMCppGenerator(output_file)])
   actions = MojoLPMActionSet()
-  for file_interface in args.input:
-    custom_format = file_interface.split(':')
-    if len(custom_format) != 3:
-      print(f"Wrong format: {file_interface}. See help for usage.")
-      return
+  if args.file:
+    interfaces = get_interface_list_from_file(args.file)
+  else:
+    interfaces = get_interface_list_from_input(args.input)
+  for custom_format in interfaces:
     (file, interface_name, remote_type_str) = custom_format
     if remote_type_str == 'Remote':
       remote_type = MojoLPMActionType.REMOTE_ACTION

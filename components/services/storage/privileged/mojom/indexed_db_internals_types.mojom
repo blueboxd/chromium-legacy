@@ -34,6 +34,9 @@ struct IdbBucketMetadata {
   array<mojo_base.mojom.FilePath> paths;
   uint64 connection_count;
   array<IdbDatabaseMetadata> databases;
+  // For snapshot recorings, stores the number of milliseconds since the
+  // recording was started.
+  uint64 delta_recording_start_ms;
 };
 
 // Metadata for an IndexedDB database.
@@ -50,7 +53,7 @@ struct IdbTransactionMetadata{
   IdbTransactionMode mode;
   IdbTransactionState status;
   int64 tid;
-  uint64 client_id;
+  string client_token;
   double age;
   double runtime;
   double tasks_scheduled;

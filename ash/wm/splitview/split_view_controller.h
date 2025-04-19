@@ -355,7 +355,7 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
                          aura::Window* lost_active) override;
 
   // LayoutDividerController:
-  aura::Window* GetRootWindow() override;
+  aura::Window* GetRootWindow() const override;
   void StartResizeWithDivider(const gfx::Point& location_in_screen) override;
   void UpdateResizeWithDivider(const gfx::Point& location_in_screen) override;
   bool EndResizeWithDivider(const gfx::Point& location_in_screen) override;
@@ -388,6 +388,7 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
     kWindowDragged,
     kWindowFloated,
     kWindowMovedToAnotherDisplay,
+    kAddedToSnapGroup,
   };
 
   // These functions return the snapped window in the specified snap position
@@ -420,10 +421,6 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
 
   // Notifies observers that the windows are swappped.
   void NotifyWindowSwapped();
-
-  // Creates a snap group and ends split view. Returns true if a snap group was
-  // created, false otherwise.
-  bool MaybeCreateSnapGroup();
 
   // Updates the black scrim layer's bounds and opacity while dragging the
   // divider. The opacity increases as the split divider gets closer to the edge

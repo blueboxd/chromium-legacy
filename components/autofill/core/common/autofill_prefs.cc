@@ -10,6 +10,7 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "crypto/sha2.h"
@@ -69,7 +70,8 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterIntegerPref(prefs::kAutocompleteLastVersionRetentionPolicy,
                                 0);
   registry->RegisterStringPref(prefs::kAutofillUploadEncodingSeed, "");
-  registry->RegisterDictionaryPref(prefs::kAutofillUploadEvents);
+  registry->RegisterDictionaryPref(prefs::kAutofillVoteUploadEvents);
+  registry->RegisterDictionaryPref(prefs::kAutofillMetadataUploadEvents);
   registry->RegisterTimePref(prefs::kAutofillUploadEventsLastResetTimestamp,
                              base::Time());
   registry->RegisterDictionaryPref(prefs::kAutofillSyncTransportOptIn);
@@ -103,6 +105,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kAutofillLastVersionDisusedAddressesDeleted, 0);
   registry->RegisterIntegerPref(
       prefs::kAutofillLastVersionDisusedCreditCardsDeleted, 0);
+  registry->RegisterStringPref(kAutofillAblationSeedPref, "");
 
 #if BUILDFLAG(IS_ANDROID)
   registry->RegisterBooleanPref(prefs::kAutofillUsingVirtualViewStructure,
@@ -122,9 +125,15 @@ void MigrateDeprecatedAutofillPrefs(PrefService* pref_service) {
   pref_service->ClearPref(prefs::kAutofillOrphanRowsRemoved);
   // Added 09/2023.
   pref_service->ClearPref(prefs::kAutofillIbanEnabled);
-  // Added 10/2024
+  // Added 10/2023
   pref_service->ClearPref(prefs::kAutofillLastVersionDisusedAddressesDeleted);
   pref_service->ClearPref(prefs::kAutofillLastVersionDisusedCreditCardsDeleted);
+  // Added 07/2024 (moved from profile pref to local state)
+  pref_service->ClearPref(prefs::kAutofillAblationSeedPref);
+}
+
+void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
+  registry->RegisterStringPref(kAutofillAblationSeedPref, "");
 }
 
 bool IsAutocompleteEnabled(const PrefService* prefs) {

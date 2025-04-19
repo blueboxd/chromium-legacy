@@ -15,6 +15,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.OneshotSupplier;
+import org.chromium.chrome.browser.back_press.BackPressManager;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
@@ -54,6 +55,7 @@ public class TabSwitcherPaneCoordinatorFactory {
     private final ModalDialogManager mModalDialogManager;
     private final @TabListMode int mMode;
     private final @NonNull BottomSheetController mBottomSheetController;
+    private final @NonNull BackPressManager mBackPressManager;
 
     private @Nullable TabSwitcherMessageManager mMessageManager;
 
@@ -71,6 +73,7 @@ public class TabSwitcherPaneCoordinatorFactory {
      * @param snackbarManager The activity level snackbar manager.
      * @param modalDialogManager The modal dialog manager for the activity.
      * @param bottomSheetController The {@link BottomSheetController} for the current activity.
+     * @param backPressManager Manages the different back press handlers throughout the app.
      */
     TabSwitcherPaneCoordinatorFactory(
             @NonNull Activity activity,
@@ -84,7 +87,8 @@ public class TabSwitcherPaneCoordinatorFactory {
             @NonNull ScrimCoordinator rootUiScrimCoordinator,
             @NonNull SnackbarManager snackbarManager,
             @NonNull ModalDialogManager modalDialogManager,
-            @NonNull BottomSheetController bottomSheetController) {
+            @NonNull BottomSheetController bottomSheetController,
+            @NonNull BackPressManager backPressManager) {
         mActivity = activity;
         mLifecycleDispatcher = lifecycleDispatcher;
         mProfileProviderSupplier = profileProviderSupplier;
@@ -104,6 +108,7 @@ public class TabSwitcherPaneCoordinatorFactory {
                 TabUiFeatureUtilities.shouldUseListMode()
                         ? TabListCoordinator.TabListMode.LIST
                         : TabListCoordinator.TabListMode.GRID;
+        mBackPressManager = backPressManager;
     }
 
     /**
@@ -115,7 +120,9 @@ public class TabSwitcherPaneCoordinatorFactory {
      * @param isVisibleSupplier Supplies visibility information to the tab switcher.
      * @param isAnimatingSupplier Supplies animation information to the tab switcher.
      * @param onTabClickCallback Callback to be invoked with the tab ID of the selected tab.
+     * @param setHairlineVisibilityCallback Callback to be invoked to show or hide the hairline.
      * @param isIncognito Whether this is for the incognito tab switcher.
+     * @param onTabGroupCreation Should be run when the UI is used to create a tab group.
      * @return a {@link TabSwitcherPaneCoordinator} to use.
      */
     TabSwitcherPaneCoordinator create(
@@ -124,7 +131,9 @@ public class TabSwitcherPaneCoordinatorFactory {
             @NonNull ObservableSupplier<Boolean> isVisibleSupplier,
             @NonNull ObservableSupplier<Boolean> isAnimatingSupplier,
             @NonNull Callback<Integer> onTabClickCallback,
-            boolean isIncognito) {
+            @NonNull Callback<Boolean> setHairlineVisibilityCallback,
+            boolean isIncognito,
+            @Nullable Runnable onTabGroupCreation) {
         int token = mMessageManagerTokenHolder.acquireToken();
         assert mMessageManager != null;
         return new TabSwitcherPaneCoordinator(
@@ -143,8 +152,10 @@ public class TabSwitcherPaneCoordinatorFactory {
                 isVisibleSupplier,
                 isAnimatingSupplier,
                 onTabClickCallback,
+                setHairlineVisibilityCallback,
                 mMode,
                 /* supportsEmptyState= */ !isIncognito,
+                onTabGroupCreation,
                 () -> mMessageManagerTokenHolder.releaseToken(token));
     }
 
@@ -223,7 +234,13 @@ public class TabSwitcherPaneCoordinatorFactory {
                                     .getCurrentTabModelFilterSupplier(),
                             mMultiWindowModeStateDispatcher,
                             mSnackbarManager,
-                            mModalDialogManager);
+                            mModalDialogManager,
+                            mBrowserControlsStateProvider,
+                            mTabContentManager,
+                            mMode,
+                            mActivity.findViewById(R.id.coordinator),
+                            mTabCreatorManager.getTabCreator(/* incognito= */ false),
+                            mBackPressManager);
             if (mLifecycleDispatcher.isNativeInitializationFinished()) {
                 mMessageManager.initWithNative(
                         mProfileProviderSupplier.get().getOriginalProfile(), getTabListMode());

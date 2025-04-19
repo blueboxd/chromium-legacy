@@ -28,10 +28,11 @@ class COMPONENT_EXPORT(DLCSERVICE_CLIENT) FakeDlcserviceClient
                InstallCallback callback,
                ProgressCallback progress_callback) override;
   // Uninstalling disables the DLC.
-  void Uninstall(std::string_view dlc_id, UninstallCallback callback) override;
+  void Uninstall(const std::string& dlc_id,
+                 UninstallCallback callback) override;
   // Purging removes the DLC entirely from disk.
-  void Purge(std::string_view dlc_id, PurgeCallback callback) override;
-  void GetDlcState(std::string_view dlc_id,
+  void Purge(const std::string& dlc_id, PurgeCallback callback) override;
+  void GetDlcState(const std::string& dlc_id,
                    GetDlcStateCallback callback) override;
   void GetExistingDlcs(GetExistingDlcsCallback callback) override;
   void DlcStateChangedForTest(dbus::Signal* signal) override;
@@ -51,6 +52,13 @@ class COMPONENT_EXPORT(DLCSERVICE_CLIENT) FakeDlcserviceClient
   // returned repeatedly.
   void set_install_errors(base::circular_deque<std::string> errs) {
     extra_install_errs_ = std::move(errs);
+  }
+
+  // When `true`, only record DLC `Install` calls that return `kErrorNone` in
+  // `dlcs_with_content_`. Otherwise, record all DLC `Install` calls as
+  // successful, even when it returns an error.
+  void set_skip_adding_dlc_info_on_error(bool skip) {
+    skip_adding_dlc_info_on_error_ = skip;
   }
 
   void set_install_root_path(std::string_view path) {
@@ -84,6 +92,7 @@ class COMPONENT_EXPORT(DLCSERVICE_CLIENT) FakeDlcserviceClient
 
   std::string install_err_ = dlcservice::kErrorNone;
   base::circular_deque<std::string> extra_install_errs_;
+  bool skip_adding_dlc_info_on_error_ = false;
   std::string uninstall_err_ = dlcservice::kErrorNone;
   std::string purge_err_ = dlcservice::kErrorNone;
   std::string get_existing_dlcs_err_ = dlcservice::kErrorNone;

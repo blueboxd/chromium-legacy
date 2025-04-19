@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/chrome_browser_main_win.h"
 
 // windows.h must be included before shellapi.h
@@ -13,6 +18,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -50,7 +56,6 @@
 #include "chrome/browser/enterprise/browser_management/management_service_factory.h"
 #include "chrome/browser/enterprise/platform_auth/platform_auth_policy_observer.h"
 #include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/os_crypt/app_bound_encryption_metrics_win.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/browser/shell_integration_win.h"
@@ -107,6 +112,9 @@
 #include "sandbox/policy/switches.h"
 #include "sandbox/win/src/sandbox.h"
 #include "sandbox/win/src/sandbox_factory.h"
+#include "services/device/public/cpp/device_features.h"
+#include "services/device/public/cpp/geolocation/geolocation_system_permission_manager.h"
+#include "services/device/public/cpp/geolocation/system_geolocation_source_win.h"
 #include "ui/accessibility/platform/ax_platform.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
@@ -495,11 +503,10 @@ void ChromeBrowserMainPartsWin::PreCreateMainMessageLoop() {
 }
 
 int ChromeBrowserMainPartsWin::PreCreateThreads() {
-  // Record whether the machine is enterprise managed in a crash key. This will
-  // be used to better identify whether crashes are from enterprise users.
-  static crash_reporter::CrashKeyString<4> is_enterprise_managed(
-      "is-enterprise-managed");
-  is_enterprise_managed.Set(
+  static constexpr std::string_view kIsEnterpriseManaged =
+      "is-enterprise-managed";
+  crash_keys::AllocateCrashKeyInBrowserAndChildren(
+      kIsEnterpriseManaged,
       policy::ManagementServiceFactory::GetForPlatform()
                   ->GetManagementAuthorityTrustworthiness() >=
               policy::ManagementAuthorityTrustworthiness::TRUSTED
@@ -549,6 +556,8 @@ void ChromeBrowserMainPartsWin::PostMainMessageLoopRun() {
 
 void ChromeBrowserMainPartsWin::PostEarlyInitialization() {
   MaybeBlockDynamicCodeForBrowserProcess();
+
+  ChromeBrowserMainParts::PostEarlyInitialization();
 }
 
 void ChromeBrowserMainPartsWin::ShowMissingLocaleMessageBox() {
@@ -570,6 +579,13 @@ void ChromeBrowserMainPartsWin::PreProfileInit() {
   if (local_state)
     platform_auth_policy_observer_ =
         std::make_unique<PlatformAuthPolicyObserver>(local_state);
+
+  if (base::FeatureList::IsEnabled(features::kWinSystemLocationPermission) &&
+      !device::GeolocationSystemPermissionManager::GetInstance()) {
+    device::GeolocationSystemPermissionManager::SetInstance(
+        device::SystemGeolocationSourceWin::
+            CreateGeolocationSystemPermissionManager());
+  }
 }
 
 void ChromeBrowserMainPartsWin::PostProfileInit(Profile* profile,
@@ -605,16 +621,6 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
     did_run_updater_.emplace();
   }
 #endif
-
-  if (base::FeatureList::IsEnabled(features::kAppBoundEncryptionMetrics)) {
-    // Only record full metrics if the App-Bound provider is not registered. The
-    // App-Bound provider records these itself, and only one place should record
-    // them to accurately reflect the final production environment.
-    os_crypt::MeasureAppBoundEncryptionStatus(
-        g_browser_process->local_state(),
-        /*record_full_metrics=*/!base::FeatureList::IsEnabled(
-            features::kRegisterAppBoundEncryptionProvider));
-  }
 
   // Record Processor Metrics. This is very low priority, hence posting as
   // BEST_EFFORT to start after Chrome startup has completed.
@@ -659,6 +665,14 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
           RemoveAppCompatEntries(current_exe);
         }
       }));
+
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  // os_update_handler is a separate process, so mirror the status of the
+  // feature to the local state on its behalf.
+  g_browser_process->local_state()->SetBoolean(
+      prefs::kOsUpdateHandlerEnabled,
+      base::FeatureList::IsEnabled(features::kRegisterOsUpdateHandlerWin));
+#endif  // GOOGLE_CHROME_BRANDING
 
   base::ImportantFileWriterCleaner::GetInstance().Start();
 }

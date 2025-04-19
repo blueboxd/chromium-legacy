@@ -60,6 +60,7 @@ import("//third_party/blink/renderer/core/paint/build.gni")
 import("//third_party/blink/renderer/core/permissions_policy/build.gni")
 import("//third_party/blink/renderer/core/preferences/build.gni")
 import("//third_party/blink/renderer/core/resize_observer/build.gni")
+import("//third_party/blink/renderer/core/scheduler/build.gni")
 import(
     "//third_party/blink/renderer/core/scheduler_integration_tests/build.gni")
 import("//third_party/blink/renderer/core/script/build.gni")
@@ -309,6 +310,7 @@ component("core") {
       rebase_path(blink_core_sources_resize_observer, "", "resize_observer")
   sources +=
       rebase_path(blink_core_sources_speculation_rules, "", "speculation_rules")
+  sources += rebase_path(blink_core_sources_scheduler, "", "scheduler")
   sources += rebase_path(blink_core_sources_script, "", "script")
   sources += rebase_path(blink_core_sources_scroll, "", "scroll")
   sources += rebase_path(blink_core_sources_shadow_realm, "", "shadow_realm")
@@ -458,6 +460,7 @@ blink_core_sources("core_hot") {
   }
 
   deps = [
+    ":buildflags",
     "//build:chromeos_buildflags",
     "//components/miracle_parameter/common",
     "//services/metrics/public/cpp:ukm_builders",
@@ -718,7 +721,6 @@ css_properties("make_core_generated_computed_style_base") {
   script = "../build/scripts/core/style/make_computed_style_base.py"
   in_files = [
     "style/computed_style_extra_fields.json5",
-    "style/computed_style_diff_functions.json5",
     "css/css_value_keywords.json5",
     "css/css_properties_ranking.json5",
     "css/css_group_config.json5",
@@ -1431,6 +1433,7 @@ source_set("unit_tests") {
       rebase_path(blink_core_tests_permissions_policy, "", "permissions_policy")
   sources +=
       rebase_path(blink_core_tests_resize_observer, "", "resize_observer")
+  sources += rebase_path(blink_core_tests_scheduler, "", "scheduler")
   sources += rebase_path(blink_core_tests_scheduler_integration_tests,
                          "",
                          "scheduler_integration_tests")
@@ -1590,6 +1593,8 @@ source_set("unit_test_support") {
     "editing/testing/selection_sample.h",
     "frame/frame_test_helpers.cc",
     "frame/frame_test_helpers.h",
+    "html/canvas/recording_test_utils.cc",
+    "html/canvas/recording_test_utils.h",
     "html/media/html_media_test_helper.cc",
     "html/media/html_media_test_helper.h",
     "script/mock_script_element_base.h",

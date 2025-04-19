@@ -110,7 +110,6 @@ class WebSettings {
   virtual void SetRequireTransientActivationForGetDisplayMedia(bool) = 0;
   virtual void SetRequireTransientActivationForShowFileOrDirectoryPicker(
       bool) = 0;
-  virtual void SetRequireTransientActivationForHtmlFullscreen(bool) = 0;
   virtual void SetAutoZoomFocusedEditableToLegibleScale(bool) = 0;
   virtual void SetCaretBrowsingEnabled(bool) = 0;
   virtual void SetClobberUserAgentInitialScaleQuirk(bool) = 0;
@@ -141,6 +140,8 @@ class WebSettings {
                                     UScriptCode = USCRIPT_COMMON) = 0;
   virtual void SetMathFontFamily(const WebString&,
                                  UScriptCode = USCRIPT_COMMON) = 0;
+  // Osaka font should be represented as "Osaka", not "Osaka-Mono" in the
+  // first argument.
   virtual void SetFixedFontFamily(const WebString&,
                                   UScriptCode = USCRIPT_COMMON) = 0;
   virtual void SetNetworkQuietTimeout(double timeout) = 0;
@@ -269,6 +270,7 @@ class WebSettings {
   virtual void SetLazyLoadingImageMarginPx4G(int) = 0;
   virtual void SetForceDarkModeEnabled(bool) = 0;
   virtual void SetInForcedColors(bool) = 0;
+  virtual void SetIsForcedColorsDisabled(bool) = 0;
   virtual void SetPreferredRootScrollbarColorScheme(
       blink::mojom::PreferredColorScheme) = 0;
   virtual void SetPreferredColorScheme(blink::mojom::PreferredColorScheme) = 0;

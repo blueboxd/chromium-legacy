@@ -37,6 +37,7 @@
 #include "base/dcheck_is_on.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ref.h"
+#include "base/memory/stack_allocated.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/web/web_ax_enums.h"
 #include "third_party/blink/renderer/core/accessibility/axid.h"
@@ -191,8 +192,9 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // Iterator for the ancestors of an |AXObject|.
   // Walks through all the unignored parents of the object up to the root.
   // Does not include the object itself in the list of ancestors.
-  class MODULES_EXPORT AncestorsIterator final
-      : public GarbageCollected<AncestorsIterator> {
+  class MODULES_EXPORT AncestorsIterator final {
+    STACK_ALLOCATED();
+
    public:
     using iterator_category = std::forward_iterator_tag;
     using value_type = AXObject;
@@ -233,8 +235,6 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
       return static_cast<AXObject*>(current_);
     }
 
-    void Trace(Visitor* visitor) const { visitor->Trace(current_); }
-
     MODULES_EXPORT friend void swap(AncestorsIterator& left,
                                     AncestorsIterator& right) {
       std::swap(left.current_, right.current_);
@@ -258,7 +258,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
     friend class AXObject;
     friend class AXObjectCacheImpl;
 
-    Member<AXObject> current_;
+    AXObject* current_;
   };
 
  protected:
@@ -510,6 +510,15 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   bool IsIgnored();
 
   // Whether an ignored object should still be included in the serialized tree.
+  // Reasons for doing this:
+  // - An object is in a hidden subtree that will be recursive name computation,
+  // which traverses the AXObject hierarchy.
+  // - Internal bookkeeping reasons, e.g. keeping children that cannot be
+  // reached via NodeTraversal, as LayoutTreeBuilderTraversal is not always
+  // safe.
+  // - Line breaking objects and objects with an associated language, which
+  // although not exposed via a11y APIs, are useful in browser-side property
+  // computations for nodes that are exposed.
   bool IsIgnoredButIncludedInTree() const;
   bool IsIgnoredButIncludedInTree();
 
@@ -619,7 +628,9 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
 
   // Returns result of Accessible Name Calculation algorithm.
   // This is a simpler high-level interface to |name| used by Inspector.
-  String ComputedName() const;
+  // If name_from_out is non-null, it will contain the source of the name.
+  String ComputedName(
+      ax::mojom::blink::NameFrom* name_from_out = nullptr) const;
 
   // Internal function used to determine whether the element supports deriving
   // its accessible name from its descendants. The result of calling |GetName|
@@ -1279,10 +1290,6 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // Works for all nodes.
   AXObject* ParentObjectUnignored() const;
 
-  // Get or create the first ancestor that's not accessibility ignored and also
-  // not a generic container. Works for all nodes.
-  AXObject* ParentObjectUnignoredNonGeneric() const;
-
   // Get or create the first ancestor that's included in the accessibility tree.
   // Works for all nodes, and may return nodes that are accessibility ignored.
   AXObject* ParentObjectIncludedInTree() const;
@@ -1342,7 +1349,13 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   LocalFrameView* DocumentFrameView() const;
   virtual Element* AnchorElement() const { return nullptr; }
   virtual Element* ActionElement() const { return nullptr; }
-  virtual AtomicString Language() const;
+
+  // For non-root nodes, this returns the language attribute value. For the
+  // root node (kRootWebArea), this returns the first non-empty value from the
+  // following list: the language attribute in the <html> element, the language
+  // specified in the <meta> tag, the Accept-Language HTTP header, the default
+  // language of the browser's UI.
+  AtomicString Language() const;
   virtual bool HasAttribute(const QualifiedName&) const { return false; }
   virtual const AtomicString& GetAttribute(const QualifiedName&) const {
     return g_null_atom;
@@ -1488,7 +1501,15 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   virtual void AddChildren() = 0;
 
   // Collapses multiple whitespace characters into one. Used by GetName().
-  String SimplifyName(const String&) const;
+  String SimplifyName(const String&,
+                      ax::mojom::blink::NameFrom& name_from) const;
+  // Returns true if the object's role prohibits it from being named, even by
+  // the author. See https://w3c.github.io/aria/#namefromprohibited
+  bool IsNameProhibited() const;
+  std::string GetProhibitedNameError(
+      const String& prohibited_name,
+      ax::mojom::blink::NameFrom& prohibited_name_from) const;
+
   static String RecursiveTextAlternative(
       const AXObject&,
       const AXObject* aria_label_or_description_root,
@@ -1541,7 +1562,8 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   void SerializeChooserPopupAttributes(ui::AXNodeData* node_data) const;
   void SerializeColorAttributes(ui::AXNodeData* node_data) const;
   void SerializeElementAttributes(ui::AXNodeData* node_data) const;
-  void SerializeHTMLIdTagAndClass(ui::AXNodeData* node_data) const;
+  void SerializeHTMLTagAndClass(ui::AXNodeData* node_data) const;
+  void SerializeHTMLId(ui::AXNodeData* node_data) const;
   void SerializeHTMLAttributes(ui::AXNodeData* node_data) const;
   void SerializeInlineTextBoxAttributes(ui::AXNodeData* node_data) const;
   void SerializeLangAttribute(ui::AXNodeData* node_data) const;
@@ -1550,8 +1572,9 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   void SerializeLiveRegionAttributes(ui::AXNodeData* node_data) const;
   void SerializeNameAndDescriptionAttributes(ui::AXMode accessibility_mode,
                                              ui::AXNodeData* node_data) const;
-  void SerializeOtherScreenReaderAttributes(ui::AXNodeData* node_data) const;
   void SerializeScreenReaderAttributes(ui::AXNodeData* node_data) const;
+  void SerializeOtherScreenReaderAttributes(ui::AXNodeData* node_data) const;
+  void SerializeMathContent(ui::AXNodeData* node_data) const;
   void SerializeScrollAttributes(ui::AXNodeData* node_data) const;
   void SerializeSparseAttributes(ui::AXNodeData* node_data) const;
   void SerializeStyleAttributes(ui::AXNodeData* node_data) const;
@@ -1600,7 +1623,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   bool cached_can_set_focus_attribute_ : 1 = false;
 
   Member<AXObject> cached_live_region_root_;
-  gfx::RectF cached_local_bounding_box_rect_for_accessibility_;
+  gfx::RectF cached_local_bounding_box_;
 
   Member<AXObjectCacheImpl> ax_object_cache_;
 

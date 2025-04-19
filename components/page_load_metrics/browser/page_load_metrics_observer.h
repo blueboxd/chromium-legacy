@@ -128,6 +128,8 @@ class PageLoadMetricsObserver : public PageLoadMetricsObserverInterface {
                         bool started_in_foreground) override;
   ObservePolicy OnPreviewStart(content::NavigationHandle* navigation_handle,
                                const GURL& currently_committed_url) override;
+  ObservePolicy OnNavigationHandleTimingUpdated(
+      content::NavigationHandle* navigation_handle) override;
   ObservePolicy OnRedirect(
       content::NavigationHandle* navigation_handle) override;
   ObservePolicy OnCommit(content::NavigationHandle* navigation_handle) override;
@@ -170,6 +172,9 @@ class PageLoadMetricsObserver : public PageLoadMetricsObserverInterface {
   void OnLoadEventStart(const mojom::PageLoadTiming& timing) override {}
   void OnParseStart(const mojom::PageLoadTiming& timing) override {}
   void OnParseStop(const mojom::PageLoadTiming& timing) override {}
+  void OnConnectStart(const mojom::PageLoadTiming& timing) override {}
+  void OnDomainLookupStart(const mojom::PageLoadTiming& timing) override {}
+  void OnDomainLookupEnd(const mojom::PageLoadTiming& timing) override {}
   void OnFirstPaintInPage(const mojom::PageLoadTiming& timing) override {}
   void OnFirstImagePaintInPage(const mojom::PageLoadTiming& timing) override {}
   void OnFirstContentfulPaintInPage(
@@ -252,10 +257,11 @@ class PageLoadMetricsObserver : public PageLoadMetricsObserverInterface {
       const std::vector<MemoryUpdate>& memory_updates) override {}
   void OnSharedStorageWorkletHostCreated() override {}
   void OnSharedStorageSelectURLCalled() override {}
+  void OnCustomUserTimingMarkObserved(
+      const std::vector<mojom::CustomUserTimingMarkPtr>& timings) override {}
 
  private:
-  raw_ptr<PageLoadMetricsObserverDelegate, DanglingUntriaged> delegate_ =
-      nullptr;
+  raw_ptr<PageLoadMetricsObserverDelegate> delegate_ = nullptr;
 };
 
 }  // namespace page_load_metrics

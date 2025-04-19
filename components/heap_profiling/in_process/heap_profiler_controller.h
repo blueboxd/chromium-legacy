@@ -8,16 +8,15 @@
 #include <memory>
 #include <optional>
 
-#include "base/feature_list.h"
 #include "base/functional/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/profiler/process_type.h"
 #include "base/sequence_checker.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/types/pass_key.h"
-#include "components/metrics/call_stacks/call_stack_profile_params.h"
 #include "components/version_info/channel.h"
 
 namespace base {
@@ -25,15 +24,6 @@ class CommandLine;
 }
 
 namespace heap_profiling {
-
-// If this is enabled, reports with 0 samples (from clients who allocated less
-// than the sampling rate threshold) will be uploaded so that they're included
-// in the average as 0 bytes allocated.
-BASE_DECLARE_FEATURE(kHeapProfilerIncludeZero);
-
-// If this is enabled, heap profiling in subprocesses is controlled centrally
-// from the browser process.
-BASE_DECLARE_FEATURE(kHeapProfilerCentralControl);
 
 class BrowserProcessSnapshotController;
 class ChildProcessSnapshotController;
@@ -50,9 +40,9 @@ class HeapProfilerController {
   // the samples until StartIfEnabled() is called. `channel` is used to
   // determine the probability that this client will be opted in to profiling.
   // `process_type` is the current process, which can be retrieved with
-  // GetProfileParamsProcess in chrome/common/profiler/process_type.h.
+  // GetProfilerProcessType in base/profiler/process_type.h.
   HeapProfilerController(version_info::Channel channel,
-                         metrics::CallStackProfileParams::Process process_type);
+                         base::ProfilerProcessType process_type);
 
   HeapProfilerController(const HeapProfilerController&) = delete;
   HeapProfilerController& operator=(const HeapProfilerController&) = delete;
@@ -83,7 +73,7 @@ class HeapProfilerController {
   // `child_process_type` to `command_line`.
   void AppendCommandLineSwitchForChildProcess(
       base::CommandLine* command_line,
-      metrics::CallStackProfileParams::Process child_process_type,
+      base::ProfilerProcessType child_process_type,
       int child_process_id) const;
 
   // Returns the BrowserProcessSnapshotController or nullptr if none exists (if
@@ -92,11 +82,11 @@ class HeapProfilerController {
 
   // Triggers an immediate snapshot in a child process. In the browser process,
   // snapshots are scheduled internally by the HeapProfilerController.
-  // `process_probability` and `process_index` will be recorded in the profile
-  // metadata so that samples from a single profile can be distinguished and
-  // scaled to represent the full population.
+  // `process_probability_pct` and `process_index` will be recorded in the
+  // profile metadata so that samples from a single profile can be distinguished
+  // and scaled to represent the full population.
   void TakeSnapshotInChildProcess(base::PassKey<ChildProcessSnapshotController>,
-                                  double process_probability,
+                                  uint32_t process_probability_pct,
                                   size_t process_index);
 
   // Allows unit tests to call AppendCommandLineSwitchForChildProcess without
@@ -104,12 +94,12 @@ class HeapProfilerController {
   // profiling is disabled in the browser process.
   static void AppendCommandLineSwitchForTesting(
       base::CommandLine* command_line,
-      metrics::CallStackProfileParams::Process child_process_type,
+      base::ProfilerProcessType child_process_type,
       int child_process_id,
       BrowserProcessSnapshotController* snapshot_controller);
 
  private:
-  using ProcessType = metrics::CallStackProfileParams::Process;
+  using ProcessType = base::ProfilerProcessType;
   using StoppedFlag = base::RefCountedData<base::AtomicFlag>;
 
   // Parameters to control the snapshot sampling and reporting. This is
@@ -128,7 +118,7 @@ class HeapProfilerController {
     SnapshotParams(scoped_refptr<StoppedFlag> stopped,
                    ProcessType process_type,
                    base::TimeTicks profiler_creation_time,
-                   double process_probability,
+                   uint32_t process_probability_pct,
                    size_t process_index,
                    base::OnceClosure on_first_snapshot_callback);
 
@@ -160,7 +150,7 @@ class HeapProfilerController {
     // Metadata to record with the profile. The default values are correct for
     // the browser process and child processes with kHeapProfilerCentralControl
     // disabled, where one HeapProfiler always samples one process.
-    double process_probability = 1.0;
+    uint32_t process_probability_pct = 100;
     size_t process_index = 0;
 
     // A callback to invoke for the first snapshot. Will be null for the
@@ -192,7 +182,7 @@ class HeapProfilerController {
   static void RetrieveAndSendSnapshot(
       ProcessType process_type,
       base::TimeDelta time_since_profiler_creation,
-      double process_probability,
+      uint32_t process_probability_pct,
       size_t process_index);
 
   const ProcessType process_type_;

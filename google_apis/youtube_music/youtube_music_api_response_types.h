@@ -53,7 +53,7 @@ class Owner {
 
   static void RegisterJSONConverter(base::JSONValueConverter<Owner>* converter);
 
-  const std::string title() const { return title_; }
+  const std::string& title() const { return title_; }
 
   std::string ToString() const;
 
@@ -73,13 +73,15 @@ class Playlist {
   static void RegisterJSONConverter(
       base::JSONValueConverter<Playlist>* converter);
 
-  const std::string name() const { return name_; }
-  const std::string title() const { return title_; }
-  const std::string description() const { return description_; }
+  static std::unique_ptr<Playlist> CreateFrom(const base::Value& value);
+
+  const std::string& name() const { return name_; }
+  const std::string& title() const { return title_; }
+  const std::string& description() const { return description_; }
   int item_count() const { return item_count_; }
   const std::vector<std::unique_ptr<Image>>& images() const { return images_; }
   std::vector<std::unique_ptr<Image>>* mutable_images() { return &images_; }
-  Owner& owner() { return owner_; }
+  const Owner& owner() const { return owner_; }
 
   std::string ToString() const;
 
@@ -105,7 +107,7 @@ class MusicRecommendation {
   static void RegisterJSONConverter(
       base::JSONValueConverter<MusicRecommendation>* converter);
 
-  Playlist& playlist() { return playlist_; }
+  const Playlist& playlist() const { return playlist_; }
 
   std::string ToString() const;
 
@@ -163,7 +165,7 @@ class TopLevelMusicRecommendation {
   static std::unique_ptr<TopLevelMusicRecommendation> CreateFrom(
       const base::Value& value);
 
-  MusicSection& music_section() { return music_section_; }
+  const MusicSection& music_section() const { return music_section_; }
 
   std::string ToString() const;
 
@@ -204,6 +206,31 @@ class TopLevelMusicRecommendations {
       top_level_music_recommendations_;
 };
 
+// Artist reference object from the API response. For object details, check
+// below:
+//   https://developers.google.com/youtube/mediaconnect/reference/rest/v1/ArtistReference
+class ArtistReference {
+ public:
+  ArtistReference();
+  ArtistReference(const ArtistReference&) = delete;
+  ArtistReference& operator=(const ArtistReference&) = delete;
+  ~ArtistReference();
+
+  static void RegisterJSONConverter(
+      base::JSONValueConverter<ArtistReference>* converter);
+
+  static std::unique_ptr<ArtistReference> CreateFrom(const base::Value& value);
+
+  const std::string& artist() const { return artist_; }
+  const std::string& title() const { return title_; }
+
+  std::string ToString() const;
+
+ private:
+  std::string artist_;
+  std::string title_;
+};
+
 // Track object from the API response. For object details, check below:
 //   https://developers.google.com/youtube/mediaconnect/reference/rest/v1/tracks#Track
 class Track {
@@ -223,6 +250,13 @@ class Track {
   const std::string& explicit_type() const { return explicit_type_; }
   const std::vector<std::unique_ptr<Image>>& images() const { return images_; }
   std::vector<std::unique_ptr<Image>>* mutable_images() { return &images_; }
+  const std::vector<std::unique_ptr<ArtistReference>>& artist_references()
+      const {
+    return artist_references_;
+  }
+  std::vector<std::unique_ptr<ArtistReference>>* mutable_artist_references() {
+    return &artist_references_;
+  }
 
   std::string ToString() const;
 
@@ -232,6 +266,7 @@ class Track {
   std::string duration_;
   std::string explicit_type_;
   std::vector<std::unique_ptr<Image>> images_;
+  std::vector<std::unique_ptr<ArtistReference>> artist_references_;
 };
 
 // Queue item object from the API response. For object details, check below:
@@ -248,7 +283,7 @@ class QueueItem {
 
   static std::unique_ptr<QueueItem> CreateFrom(const base::Value& value);
 
-  Track& track() { return track_; }
+  const Track& track() const { return track_; }
 
   std::string ToString() const;
 
@@ -270,12 +305,16 @@ class Stream {
 
   static std::unique_ptr<Stream> CreateFrom(const base::Value& value);
 
+  const std::string& playback_reporting_token() const {
+    return playback_reporting_token_;
+  }
   const GURL& url() const { return url_; }
 
   std::string ToString() const;
 
  private:
   GURL url_;
+  std::string playback_reporting_token_;
 };
 
 // Playback manifest object from the API response. For object details, check
@@ -319,8 +358,10 @@ class PlaybackContext {
 
   static std::unique_ptr<PlaybackContext> CreateFrom(const base::Value& value);
 
-  QueueItem& queue_item() { return queue_item_; }
-  PlaybackManifest& playback_manifest() { return playback_manifest_; }
+  const QueueItem& queue_item() const { return queue_item_; }
+  const PlaybackManifest& playback_manifest() const {
+    return playback_manifest_;
+  }
 
   std::string ToString() const;
 
@@ -344,7 +385,7 @@ class Queue {
 
   const std::string name() const { return name_; }
   int size() const { return size_; }
-  PlaybackContext& playback_context() { return playback_context_; }
+  const PlaybackContext& playback_context() const { return playback_context_; }
 
   std::string ToString() const;
 
@@ -369,12 +410,38 @@ class QueueContainer {
 
   static std::unique_ptr<QueueContainer> CreateFrom(const base::Value& value);
 
-  Queue& queue() { return queue_; }
+  const Queue& queue() const { return queue_; }
 
   std::string ToString() const;
 
  private:
   Queue queue_;
+};
+
+// Report playback result object from the API response. For object details,
+// check below:
+//   https://developers.google.com/youtube/mediaconnect/reference/rest/v1/reports/playback#response-body
+class ReportPlaybackResult {
+ public:
+  ReportPlaybackResult();
+  ReportPlaybackResult(const ReportPlaybackResult&) = delete;
+  ReportPlaybackResult& operator=(const ReportPlaybackResult&) = delete;
+  ~ReportPlaybackResult();
+
+  static void RegisterJSONConverter(
+      base::JSONValueConverter<ReportPlaybackResult>* converter);
+
+  static std::unique_ptr<ReportPlaybackResult> CreateFrom(
+      const base::Value& value);
+
+  const std::string& playback_reporting_token() const {
+    return playback_reporting_token_;
+  }
+
+  std::string ToString() const;
+
+ private:
+  std::string playback_reporting_token_;
 };
 
 }  // namespace google_apis::youtube_music

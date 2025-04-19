@@ -67,10 +67,6 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   void DidReceiveReleasedOverlays(
       const std::vector<gpu::Mailbox>& released_overlays) override;
 
-  void SetDisablePictureQuadImageFiltering(bool disable) {
-    disable_picture_quad_image_filtering_ = disable;
-  }
-
   DelegatedInkPointRendererBase* GetDelegatedInkPointRenderer(
       bool create_if_necessary) override;
   void SetDelegatedInkMetadata(
@@ -99,15 +95,12 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
       const gfx::Rect& drawn_rect) override;
 
   gfx::Rect GetRenderPassBackingDrawnRect(
-      const AggregatedRenderPassId& render_pass_id) override;
-  void BindFramebufferToOutputSurface() override;
-  void BindFramebufferToTexture(
-      const AggregatedRenderPassId render_pass_id) override;
+      const AggregatedRenderPassId& render_pass_id) const override;
   void SetScissorTestRect(const gfx::Rect& scissor_rect) override;
-  void BeginDrawingRenderPass(
-    const AggregatedRenderPass* render_pass,
-      bool needs_clear,
-      const gfx::Rect& render_pass_update_rect) override;
+  void BeginDrawingRenderPass(const AggregatedRenderPass* render_pass,
+                              bool needs_clear,
+                              const gfx::Rect& render_pass_update_rect,
+                              const gfx::Size& viewport_size) override;
   void DoDrawQuad(const DrawQuad* quad, const gfx::QuadF* draw_region) override;
   void FinishDrawingRenderPass() override;
   void BeginDrawingFrame() override;
@@ -262,7 +255,8 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   // skia_renderer can draw most single-quad passes directly, regardless of
   // blend mode or image filtering.
   const DrawQuad* CanPassBeDrawnDirectly(
-      const AggregatedRenderPass* pass) override;
+      const AggregatedRenderPass* pass,
+      const RenderPassRequirements& requirements) override;
 
   void DrawDelegatedInkTrail() override;
 
@@ -360,6 +354,11 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
         .ToSkColorSpace();
   }
 
+  // Contains every render pass ID that this renderer has allocated. Values are
+  // never evicted-- every 1 million entries takes up about 8MB space.
+  // TODO(crbug.com/347909405): Remove this
+  base::flat_set<AggregatedRenderPassId> seen_render_pass_ids_;
+
   // Interface used for drawing. Common among different draw modes.
   raw_ptr<SkCanvas> current_canvas_ = nullptr;
 
@@ -368,8 +367,6 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
       current_gpu_commands_completed_fence_;
   class FrameResourceReleaseFence;
   scoped_refptr<FrameResourceReleaseFence> current_release_fence_;
-
-  bool disable_picture_quad_image_filtering_ = false;
 
   // The rect for the current render pass containing pixels that we intend to
   // update this frame.
@@ -574,7 +571,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   bool is_protected_pool_idle_ = true;
   std::unique_ptr<BufferQueue> protected_buffer_queue_ = nullptr;
 
-  gpu::Mailbox GetProtectedSharedImage();
+  gpu::Mailbox GetProtectedSharedImage(bool is_10bit);
   void MaybeFreeProtectedPool();
 #endif
 };

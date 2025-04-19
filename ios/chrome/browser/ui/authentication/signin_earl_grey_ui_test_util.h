@@ -22,6 +22,7 @@ typedef NS_ENUM(NSInteger, SignOutConfirmationChoice) {
 
 // Calls
 // +[SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity enableHistorySync:NO].
+// `fakeIdentity` is added if it was not added yet.
 + (void)signinWithFakeIdentity:(FakeSystemIdentity*)fakeIdentity;
 
 // Signs the account for `fakeIdentity` into Chrome through the Settings screen,
@@ -29,13 +30,16 @@ typedef NS_ENUM(NSInteger, SignOutConfirmationChoice) {
 // tests should not require it).
 // There will be a GREYAssert if the tools menus is open when calling this
 // method or if the account is not successfully signed in.
+// `fakeIdentity` is added if it was not added yet.
 + (void)signinWithFakeIdentity:(FakeSystemIdentity*)fakeIdentity
              enableHistorySync:(BOOL)enableHistorySync;
 
 // Signs the primary account out of Chrome through the accounts list screen.
-// Taps the "Sign Out" button and dismisses the confirmation snackbar. Assumes
-// that sync is replaced by sign-in.
+// Taps the "Sign Out" button and dismisses the confirmation snackbar.
 + (void)signOut;
+
+// dismisses the confirmation snackbar on sign-out.
++ (void)dismissSignoutSnackbar;
 
 // Opens the confirmation dialog to remove an account from the device, without
 // confirming it.

@@ -5,6 +5,10 @@
 #ifndef COMPONENTS_SAFE_BROWSING_CORE_BROWSER_DB_FAKE_DATABASE_MANAGER_H_
 #define COMPONENTS_SAFE_BROWSING_CORE_BROWSER_DB_FAKE_DATABASE_MANAGER_H_
 
+#include <set>
+#include <string>
+#include <vector>
+
 #include "base/containers/flat_map.h"
 #include "base/task/sequenced_task_runner.h"
 #include "components/safe_browsing/core/browser/db/test_database_manager.h"
@@ -39,9 +43,9 @@ class FakeSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
                         Client* client) override;
   bool CheckExtensionIDs(const std::set<std::string>& extension_ids,
                          Client* client) override;
-  void CheckUrlForHighConfidenceAllowlist(
+  std::optional<HighConfidenceAllowlistCheckLoggingDetails>
+  CheckUrlForHighConfidenceAllowlist(
       const GURL& url,
-      const std::string& metric_variation,
       base::OnceCallback<void(bool)> callback) override;
   bool CheckUrlForSubresourceFilter(const GURL& url, Client* client) override;
   safe_browsing::ThreatSource GetBrowseUrlThreatSource(

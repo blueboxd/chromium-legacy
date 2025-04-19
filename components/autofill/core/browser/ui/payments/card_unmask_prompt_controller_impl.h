@@ -9,6 +9,7 @@
 
 #include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -16,6 +17,7 @@
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/payments/card_unmask_challenge_option.h"
 #include "components/autofill/core/browser/payments/card_unmask_delegate.h"
+#include "components/autofill/core/browser/payments/payments_autofill_client.h"
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_controller.h"
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_options.h"
 
@@ -49,7 +51,8 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
   // returns, i.e., the callback will not outlive the stack frame of ShowPrompt.
   virtual void ShowPrompt(CardUnmaskPromptViewFactory view_factory);
   // The CVC the user entered went through validation.
-  void OnVerificationResult(AutofillClient::PaymentsRpcResult result);
+  void OnVerificationResult(
+      payments::PaymentsAutofillClient::PaymentsRpcResult result);
 
   // CardUnmaskPromptController implementation.
   void OnUnmaskDialogClosed() override;
@@ -84,14 +87,15 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
   int GetExpectedCvcLength() const override;
   bool IsChallengeOptionPresent() const override;
   base::TimeDelta GetSuccessMessageDuration() const override;
-  AutofillClient::PaymentsRpcResult GetVerificationResult() const override;
+  payments::PaymentsAutofillClient::PaymentsRpcResult GetVerificationResult()
+      const override;
   bool IsVirtualCard() const override;
   const CreditCard& GetCreditCard() const override;
 #if !BUILDFLAG(IS_IOS)
   int GetCvcTooltipResourceId() override;
 #endif
 
-  PrefService* pref_service_for_testing() const { return pref_service_; }
+  PrefService* pref_service_for_testing() const { return &pref_service_.get(); }
   CreditCard card_for_testing() const { return card_; }
   CardUnmaskPromptOptions card_unmask_prompt_options_for_testing() const {
     return card_unmask_prompt_options_;
@@ -105,22 +109,22 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
   CardUnmaskPromptView* view() { return card_unmask_view_; }
 
  private:
-  bool AllowsRetry(AutofillClient::PaymentsRpcResult result);
+  bool AllowsRetry(payments::PaymentsAutofillClient::PaymentsRpcResult result);
   bool IsCvcInFront() const;
   bool ShouldDismissUnmaskPromptUponResult(
-      AutofillClient::PaymentsRpcResult result);
+      payments::PaymentsAutofillClient::PaymentsRpcResult result);
   void LogOnCloseEvents();
   AutofillMetrics::UnmaskPromptEvent GetCloseReasonEvent();
 
-  raw_ptr<PrefService, DanglingUntriaged> pref_service_;
+  const raw_ref<PrefService> pref_service_;
   CreditCard card_;
   CardUnmaskPromptOptions card_unmask_prompt_options_;
   base::WeakPtr<CardUnmaskDelegate> delegate_;
   bool new_card_link_clicked_ = false;
   raw_ptr<CardUnmaskPromptView> card_unmask_view_ = nullptr;
 
-  AutofillClient::PaymentsRpcResult unmasking_result_ =
-      AutofillClient::PaymentsRpcResult::kNone;
+  payments::PaymentsAutofillClient::PaymentsRpcResult unmasking_result_ =
+      payments::PaymentsAutofillClient::PaymentsRpcResult::kNone;
   int unmasking_number_of_attempts_ = 0;
   base::Time shown_timestamp_;
   // Timestamp of the last time the user clicked the Verify button.

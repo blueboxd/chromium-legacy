@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "components/nacl/zygote/nacl_fork_delegate_linux.h"
 
 #include <signal.h>
@@ -12,6 +17,7 @@
 
 #include <memory>
 #include <set>
+#include <string>
 
 #include "base/command_line.h"
 #include "base/cpu.h"
@@ -295,7 +301,7 @@ void NaClForkDelegate::Init(const int sandboxdesc,
   if (IGNORE_EINTR(close(fds[1])) != 0)
     LOG(ERROR) << "close(fds[1]) failed";
   if (status_ == kNaClHelperUnused) {
-    const ssize_t kExpectedLength = strlen(kNaClHelperStartupAck);
+    constexpr ssize_t kExpectedLength = sizeof(kNaClHelperStartupAck) - 1;
     char buf[kExpectedLength];
 
     // Wait for ack from nacl_helper, indicating it is ready to help

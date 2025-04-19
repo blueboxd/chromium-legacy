@@ -70,13 +70,11 @@ scoped_refptr<const Extension>
 SiteAccessRequestsHelperUnittest::InstallExtensionAndWithholdHostPermissions(
     const std::string& name,
     const std::string& host_permission) {
-  auto extension =
-      ExtensionBuilder(name)
-          .SetManifestVersion(3)
-          .SetManifestKey("host_permissions",
-                          base::Value::List().Append(host_permission))
-          .SetID(crx_file::id_util::GenerateId(name))
-          .Build();
+  auto extension = ExtensionBuilder(name)
+                       .SetManifestVersion(3)
+                       .AddHostPermission(host_permission)
+                       .SetID(crx_file::id_util::GenerateId(name))
+                       .Build();
   service()->AddExtension(extension.get());
 
   ScriptingPermissionsModifier(profile(), extension)
@@ -91,7 +89,7 @@ SiteAccessRequestsHelperUnittest::InstallExtensionWithActiveTab(
   auto extension = ExtensionBuilder(name)
                        .SetManifestVersion(3)
                        .SetID(crx_file::id_util::GenerateId(name))
-                       .AddPermission("activeTab")
+                       .AddAPIPermission("activeTab")
                        .Build();
   service()->AddExtension(extension.get());
 
@@ -153,6 +151,14 @@ TEST_F(SiteAccessRequestsHelperUnittest, AddAndRemoveRequests) {
   content::WebContents* web_contents = AddTab(GURL("http://www.example.com/"));
   int tab_id = ExtensionTabUtil::GetTabId(web_contents);
 
+  // Try to remove a non-existent site access request. Verify nothing happens.
+  EXPECT_FALSE(permissions_manager()->RemoveSiteAccessRequest(
+      tab_id, extension_A->id()));
+  EXPECT_FALSE(permissions_manager()->HasActiveSiteAccessRequest(
+      tab_id, extension_A->id()));
+  EXPECT_FALSE(permissions_manager()->HasActiveSiteAccessRequest(
+      tab_id, extension_B->id()));
+
   // Add site access request for extension A. Verify only extension A has an
   // active request.
   permissions_manager()->AddSiteAccessRequest(web_contents, tab_id,
@@ -173,7 +179,8 @@ TEST_F(SiteAccessRequestsHelperUnittest, AddAndRemoveRequests) {
 
   // Remove site access request for extension A. Verify only extension B has an
   // active request.
-  permissions_manager()->RemoveSiteAccessRequest(tab_id, extension_A->id());
+  EXPECT_TRUE(permissions_manager()->RemoveSiteAccessRequest(
+      tab_id, extension_A->id()));
   EXPECT_FALSE(permissions_manager()->HasActiveSiteAccessRequest(
       tab_id, extension_A->id()));
   EXPECT_TRUE(permissions_manager()->HasActiveSiteAccessRequest(

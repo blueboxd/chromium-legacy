@@ -6,43 +6,21 @@
 
 #include <algorithm>
 
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/stringprintf.h"
 #include "sql/transaction.h"
 
-// Current version number.  Note: when changing the current version number,
-// corresponding changes must happen in the unit tests, and new migration test
-// added.  See `WebDatabaseMigrationTest::kCurrentTestedVersionNumber`.
-// static
-const int WebDatabase::kCurrentVersionNumber = 128;
-
-// To support users who are upgrading from older versions of Chrome, we enable
-// migrating from any database version newer than `kDeprecatedVersionNumber`.
-// If an upgrading user has a database version of `kDeprecatedVersionNumber` or
-// lower, their database will be fully deleted and recreated instead (losing all
-// data previously in it).
-//
-// To determine this migration window, we support the same Chrome versions that
-// Chrome Sync does. Any database version that was added before the oldest
-// Chrome version that sync supports can be dropped from the Chromium codebase
-// (i.e., increment `kDeprecatedVersionNumber` and remove related tests +
-// support files).
-//
-// Note the difference between database version and Chrome version! To determine
-// the database version for a given Chrome version, check out the git branch for
-// the Chrome version, and look at `kCurrentVersionNumber` in that branch.
-//
-// To determine the versions of Chrome that Chrome Sync supports, see
-// `max_client_version_to_reject` in server_chrome_sync_config.proto (internal
-// only).
-const int WebDatabase::kDeprecatedVersionNumber = 82;
-
 const base::FilePath::CharType WebDatabase::kInMemoryPath[] =
     FILE_PATH_LITERAL(":memory");
 
 namespace {
+
+BASE_FEATURE(kSqlWALModeOnWebDatabase,
+             "SqlWALModeOnWebDatabase",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // These values are logged as histogram buckets and most not be changed nor
 // reused.
@@ -64,9 +42,10 @@ void LogInitResult(WebDatabaseInitResult result) {
   base::UmaHistogramEnumeration("WebDatabase.InitResult", result);
 }
 
-// Version 128 changes the primary key of 'plus_addresses', and thus is no
-// longer compatible with version 127.
-const int kCompatibleVersionNumber = 128;
+// Version 131 drops the 'payment_instrument_type' column of
+// 'generic_payment_instruments', and thus is no longer compatible with version
+// 130.
+const int kCompatibleVersionNumber = 131;
 
 // Change the version number and possibly the compatibility version of
 // |meta_table_|.
@@ -94,7 +73,8 @@ sql::InitStatus FailedMigrationTo(int version_num) {
 }  // namespace
 
 WebDatabase::WebDatabase()
-    : db_({// We don't store that much data in the tables so use a small page
+    : db_({.wal_mode = base::FeatureList::IsEnabled(kSqlWALModeOnWebDatabase),
+           // We don't store that much data in the tables so use a small page
            // size. This provides a large benefit for empty tables (which is
            // very likely with the tables we create).
            .page_size = 2048,
@@ -148,9 +128,9 @@ sql::InitStatus WebDatabase::Init(const base::FilePath& db_name) {
   // Clobber really old databases.
   static_assert(kDeprecatedVersionNumber < kCurrentVersionNumber,
                 "Deprecation version must be less than current");
-  if (!sql::MetaTable::RazeIfIncompatible(
+  if (sql::MetaTable::RazeIfIncompatible(
           &db_, /*lowest_supported_version=*/kDeprecatedVersionNumber + 1,
-          kCurrentVersionNumber)) {
+          kCurrentVersionNumber) == sql::RazeIfIncompatibleResult::kFailed) {
     LogInitResult(WebDatabaseInitResult::kCouldNotRazeIncompatibleVersion);
     return sql::INIT_FAILURE;
   }

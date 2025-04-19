@@ -63,6 +63,7 @@
 #include "third_party/blink/renderer/core/css/media_list.h"
 #include "third_party/blink/renderer/core/css/media_query.h"
 #include "third_party/blink/renderer/core/css/media_values.h"
+#include "third_party/blink/renderer/core/css/out_of_flow_data.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 #include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
@@ -1034,33 +1035,39 @@ protocol::Response InspectorCSSAgent::getLocationForSelector(
     if (css_style_rule == nullptr) {
       continue;
     }
+    CHECK(css_style_rule->GetStyleRule());
 
-    const String curr_selector_text = css_style_rule->selectorText();
-    if (selector_text != curr_selector_text) {
-      continue;
-    }
+    // Iterate over selector list. (eg. `.box, .alert` => ['.box', '.alert'])
+    for (const CSSSelector* selector =
+             css_style_rule->GetStyleRule()->FirstSelector();
+         selector; selector = CSSSelectorList::Next(*selector)) {
+      if (selector->SelectorText() == selector_text) {
+        const CSSRuleSourceData* source_data =
+            style_sheet->SourceDataForRule(css_style_rule);
+        if (source_data == nullptr) {
+          continue;
+        }
+        std::unique_ptr<protocol::CSS::SourceRange> range =
+            style_sheet->BuildSourceRangeObject(source_data->rule_header_range);
 
-    const CSSRuleSourceData* source_data =
-        style_sheet->SourceDataForRule(css_style_rule);
-    std::unique_ptr<protocol::CSS::SourceRange> range =
-        style_sheet->BuildSourceRangeObject(source_data->rule_header_range);
-
-    const CSSStyleSheet* page_style_sheet = style_sheet->PageStyleSheet();
-    const TextPosition start_position =
-        page_style_sheet->StartPositionInSource();
-    if (range->getStartLine() == 0) {
-      range->setStartColumn(range->getStartColumn() +
-                            start_position.column_.ZeroBasedInt());
+        const CSSStyleSheet* page_style_sheet = style_sheet->PageStyleSheet();
+        const TextPosition start_position =
+            page_style_sheet->StartPositionInSource();
+        if (range->getStartLine() == 0) {
+          range->setStartColumn(range->getStartColumn() +
+                                start_position.column_.ZeroBasedInt());
+        }
+        if (range->getEndLine() == 0) {
+          range->setEndColumn(range->getEndColumn() +
+                              start_position.column_.ZeroBasedInt());
+        }
+        range->setStartLine(range->getStartLine() +
+                            start_position.line_.ZeroBasedInt());
+        range->setEndLine(range->getEndLine() +
+                          start_position.line_.ZeroBasedInt());
+        (*ranges)->emplace_back(std::move(range));
+      }
     }
-    if (range->getEndLine() == 0) {
-      range->setEndColumn(range->getEndColumn() +
-                          start_position.column_.ZeroBasedInt());
-    }
-    range->setStartLine(range->getStartLine() +
-                        start_position.line_.ZeroBasedInt());
-    range->setEndLine(range->getEndLine() +
-                      start_position.line_.ZeroBasedInt());
-    (*ranges)->emplace_back(std::move(range));
   }
 
   if ((*ranges)->empty()) {
@@ -1085,16 +1092,15 @@ protocol::Response InspectorCSSAgent::getMatchedStylesForNode(
         inherited_pseudo_id_matches,
     Maybe<protocol::Array<protocol::CSS::CSSKeyframesRule>>*
         css_keyframes_rules,
-    Maybe<protocol::Array<protocol::CSS::CSSPositionFallbackRule>>*
-        css_position_fallback_rules,
     Maybe<protocol::Array<protocol::CSS::CSSPositionTryRule>>*
         css_position_try_rules,
+    Maybe<int>* active_position_fallback_index,
     Maybe<protocol::Array<protocol::CSS::CSSPropertyRule>>* css_property_rules,
     Maybe<protocol::Array<protocol::CSS::CSSPropertyRegistration>>*
         css_property_registrations,
     Maybe<protocol::CSS::CSSFontPaletteValuesRule>*
         css_font_palette_values_rule,
-    Maybe<int>* parentLayoutNodeId) {
+    Maybe<int>* parent_layout_node_id) {
   protocol::Response response = AssertEnabled();
   if (!response.IsSuccess())
     return response;
@@ -1225,16 +1231,28 @@ protocol::Response InspectorCSSAgent::getMatchedStylesForNode(
         std::move(inherited_pseudo_element_matches));
   }
 
-  *css_position_try_rules = PositionTryRulesForElement(element);
+  // Get the index of the active position try fallback index.
+  std::optional<size_t> successful_position_fallback_index;
+  if (OutOfFlowData* out_of_flow_data = element->GetOutOfFlowData()) {
+    successful_position_fallback_index =
+        out_of_flow_data->GetNewSuccessfulPositionFallbackIndex();
+    if (successful_position_fallback_index.has_value()) {
+      *active_position_fallback_index =
+          static_cast<int>(successful_position_fallback_index.value());
+    }
+  }
+  *css_position_try_rules =
+      PositionTryRulesForElement(element, successful_position_fallback_index);
 
   if (auto rule = FontPalettesForNode(*element)) {
     *css_font_palette_values_rule = std::move(rule);
   }
 
-  auto* parentLayoutNode = LayoutTreeBuilderTraversal::LayoutParent(*element);
-  if (parentLayoutNode) {
-    if (int boundNodeId = dom_agent_->BoundNodeId(parentLayoutNode))
-      *parentLayoutNodeId = boundNodeId;
+  auto* parent_layout_node = LayoutTreeBuilderTraversal::LayoutParent(*element);
+  if (parent_layout_node) {
+    if (int bound_node_id = dom_agent_->BoundNodeId(parent_layout_node)) {
+      *parent_layout_node_id = bound_node_id;
+    }
   }
 
   return protocol::Response::Success();
@@ -1288,7 +1306,9 @@ static CSSPositionTryRule* FindPositionTryRule(
 }
 
 std::unique_ptr<protocol::Array<protocol::CSS::CSSPositionTryRule>>
-InspectorCSSAgent::PositionTryRulesForElement(Element* element) {
+InspectorCSSAgent::PositionTryRulesForElement(
+    Element* element,
+    std::optional<size_t> active_position_try_index) {
   Document& document = element->GetDocument();
   CHECK(!document.NeedsLayoutTreeUpdateForNode(*element));
 
@@ -1297,17 +1317,20 @@ InspectorCSSAgent::PositionTryRulesForElement(Element* element) {
     return nullptr;
   }
 
-  const PositionTryOptions* position_try_options =
-      style->GetPositionTryOptions();
-  if (!position_try_options) {
+  const PositionTryFallbacks* position_try_fallbacks_ =
+      style->GetPositionTryFallbacks();
+  if (!position_try_fallbacks_) {
     return nullptr;
   }
 
   auto css_position_try_rules =
       std::make_unique<protocol::Array<protocol::CSS::CSSPositionTryRule>>();
   StyleResolver& style_resolver = document.GetStyleResolver();
-  for (const PositionTryOption& option : position_try_options->GetOptions()) {
-    if (const ScopedCSSName* scoped_name = option.GetPositionTryName()) {
+  const HeapVector<PositionTryFallback>& fallbacks =
+      position_try_fallbacks_->GetFallbacks();
+  for (wtf_size_t i = 0; i < fallbacks.size(); ++i) {
+    const PositionTryFallback& fallback = fallbacks[i];
+    if (const ScopedCSSName* scoped_name = fallback.GetPositionTryName()) {
       const TreeScope* tree_scope = scoped_name->GetTreeScope();
       if (!tree_scope) {
         tree_scope = &document;
@@ -1325,6 +1348,8 @@ InspectorCSSAgent::PositionTryRulesForElement(Element* element) {
           document_to_css_style_sheets_.end()) {
         continue;
       }
+      bool is_active = active_position_try_index.has_value() &&
+                       active_position_try_index.value() == i;
       for (CSSStyleSheet* style_sheet :
            *css_style_sheets_for_document_it->value) {
         if (CSSPositionTryRule* css_position_try_rule =
@@ -1333,7 +1358,7 @@ InspectorCSSAgent::PositionTryRulesForElement(Element* element) {
               BindStyleSheet(css_position_try_rule->parentStyleSheet());
           css_position_try_rules->emplace_back(
               inspector_style_sheet->BuildObjectForPositionTryRule(
-                  css_position_try_rule));
+                  css_position_try_rule, is_active));
           break;
         }
       }
@@ -2448,14 +2473,15 @@ std::unique_ptr<protocol::CSS::CSSMedia> InspectorCSSAgent::BuildMediaObject(
     for (wtf_size_t j = 0; j < expressions.size(); ++j) {
       const MediaQueryExp& media_query_exp = expressions.at(j);
       MediaQueryExpValue exp_value = media_query_exp.Bounds().right.value;
-      if (!exp_value.IsNumeric())
+      if (!exp_value.IsNumericLiteralValue()) {
         continue;
+      }
       const char* value_name =
-          CSSPrimitiveValue::UnitTypeToString(exp_value.Unit());
+          CSSPrimitiveValue::UnitTypeToString(exp_value.GetUnitType());
       std::unique_ptr<protocol::CSS::MediaQueryExpression>
           media_query_expression =
               protocol::CSS::MediaQueryExpression::create()
-                  .setValue(exp_value.Value())
+                  .setValue(exp_value.GetDoubleValue())
                   .setUnit(String(value_name))
                   .setFeature(media_query_exp.MediaFeature())
                   .build();
@@ -2467,9 +2493,11 @@ std::unique_ptr<protocol::CSS::CSSMedia> InspectorCSSAgent::BuildMediaObject(
       }
 
       int computed_length;
-      if (media_values->ComputeLength(exp_value.Value(), exp_value.Unit(),
-                                      computed_length))
+      if (media_values->ComputeLength(exp_value.GetDoubleValue(),
+                                      exp_value.GetUnitType(),
+                                      computed_length)) {
         media_query_expression->setComputedLength(computed_length);
+      }
 
       expression_array->emplace_back(std::move(media_query_expression));
       has_expression_items = true;

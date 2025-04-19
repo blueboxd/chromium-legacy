@@ -16,7 +16,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
-#include "chrome/android/chrome_jni_headers/SigninManagerImpl_jni.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_constants.h"
 #include "chrome/browser/enterprise/util/managed_browser_utils.h"
@@ -44,6 +43,9 @@
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/storage_partition.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+
+// Must come after all headers that specialize FromJniType() / ToJniType().
+#include "chrome/android/chrome_jni_headers/SigninManagerImpl_jni.h"
 
 using base::android::JavaParamRef;
 
@@ -137,11 +139,10 @@ class ProfileDataRemover : public content::BrowsingDataRemover::Observer {
   raw_ptr<content::BrowsingDataRemover> remover_;
 };
 
-// Returns whether the user is a managed user or not.
+// Returns whether the user *may* be a managed user.
 bool ShouldLoadPolicyForUser(const std::string& username) {
-  return signin::AccountManagedStatusFinder::IsEnterpriseUserBasedOnEmail(
-             username) ==
-         signin::AccountManagedStatusFinder::EmailEnterpriseStatus::kUnknown;
+  return signin::AccountManagedStatusFinder::MayBeEnterpriseUserBasedOnEmail(
+      username);
 }
 
 }  // namespace
@@ -203,11 +204,11 @@ bool SigninManagerAndroid::IsSigninAllowed() const {
   return signin_allowed_.GetValue();
 }
 
-jboolean SigninManagerAndroid::IsSigninAllowedByPolicy(JNIEnv* env) const {
+bool SigninManagerAndroid::IsSigninAllowedByPolicy(JNIEnv* env) const {
   return IsSigninAllowed();
 }
 
-jboolean SigninManagerAndroid::IsForceSigninEnabled(JNIEnv* env) {
+bool SigninManagerAndroid::IsForceSigninEnabled(JNIEnv* env) {
   return force_browser_signin_.GetValue();
 }
 
@@ -256,12 +257,8 @@ void SigninManagerAndroid::RegisterPolicyWithAccount(
 void SigninManagerAndroid::FetchAndApplyCloudPolicy(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& j_account_info,
-    const base::android::JavaParamRef<jobject>& j_callback) {
+    const base::RepeatingClosure& callback) {
   CoreAccountInfo account = ConvertFromJavaCoreAccountInfo(env, j_account_info);
-  auto callback =
-      base::BindOnce(base::android::RunRunnableAndroid,
-                     base::android::ScopedJavaGlobalRef<jobject>(j_callback));
-
   RegisterPolicyWithAccount(
       account,
       base::BindOnce(&SigninManagerAndroid::OnPolicyRegisterDone,
@@ -315,8 +312,7 @@ void SigninManagerAndroid::IsAccountManaged(
     return;
   }
 
-  if (!base::FeatureList::IsEnabled(switches::kSeedAccountsRevamp) &&
-      base::FeatureList::IsEnabled(switches::kEnterprisePolicyOnSignin)) {
+  if (!base::FeatureList::IsEnabled(switches::kSeedAccountsRevamp)) {
     // Force seed the account, since requesting management status would require
     // access token, and this operation would result in a crash if done on a
     // non seeded account. See https://crbug.com/332900316.
@@ -367,20 +363,14 @@ SigninManagerAndroid::GetManagementDomain(JNIEnv* env) {
 
 void SigninManagerAndroid::WipeProfileData(
     JNIEnv* env,
-    const JavaParamRef<jobject>& j_callback) {
-  WipeData(
-      profile_, true /* all data */,
-      base::BindOnce(base::android::RunRunnableAndroid,
-                     base::android::ScopedJavaGlobalRef<jobject>(j_callback)));
+    const base::RepeatingClosure& callback) {
+  WipeData(profile_, true /* all data */, callback);
 }
 
 void SigninManagerAndroid::WipeGoogleServiceWorkerCaches(
     JNIEnv* env,
-    const JavaParamRef<jobject>& j_callback) {
-  WipeData(
-      profile_, false /* only Google service worker caches */,
-      base::BindOnce(base::android::RunRunnableAndroid,
-                     base::android::ScopedJavaGlobalRef<jobject>(j_callback)));
+    const base::RepeatingClosure& callback) {
+  WipeData(profile_, false /* only Google service worker caches */, callback);
 }
 
 // static
@@ -398,11 +388,11 @@ std::string JNI_SigninManagerImpl_ExtractDomainName(JNIEnv* env,
 
 void SigninManagerAndroid::SetUserAcceptedAccountManagement(
     JNIEnv* env,
-    jboolean acceptedAccountManagement) {
-  chrome::enterprise_util::SetUserAcceptedAccountManagement(
-      profile_, acceptedAccountManagement);
+    bool accepted_account_management) {
+  enterprise_util::SetUserAcceptedAccountManagement(
+      profile_, accepted_account_management);
 }
 
 bool SigninManagerAndroid::GetUserAcceptedAccountManagement(JNIEnv* env) {
-  return chrome::enterprise_util::UserAcceptedAccountManagement(profile_);
+  return enterprise_util::UserAcceptedAccountManagement(profile_);
 }

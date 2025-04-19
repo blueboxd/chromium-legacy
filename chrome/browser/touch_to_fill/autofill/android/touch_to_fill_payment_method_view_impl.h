@@ -5,10 +5,9 @@
 #ifndef CHROME_BROWSER_TOUCH_TO_FILL_AUTOFILL_ANDROID_TOUCH_TO_FILL_PAYMENT_METHOD_VIEW_IMPL_H_
 #define CHROME_BROWSER_TOUCH_TO_FILL_AUTOFILL_ANDROID_TOUCH_TO_FILL_PAYMENT_METHOD_VIEW_IMPL_H_
 
-#include "chrome/browser/touch_to_fill/autofill/android/touch_to_fill_payment_method_view.h"
-
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/raw_ptr.h"
+#include "chrome/browser/touch_to_fill/autofill/android/touch_to_fill_payment_method_view.h"
 
 namespace content {
 class WebContents;
@@ -18,6 +17,7 @@ namespace autofill {
 
 class CreditCard;
 class Iban;
+struct Suggestion;
 class TouchToFillPaymentMethodViewController;
 
 // Android implementation of the surface to select a credit card or IBAN to fill.
@@ -38,6 +38,7 @@ class TouchToFillPaymentMethodViewImpl : public TouchToFillPaymentMethodView {
   // TouchToFillPaymentMethodView:
   bool Show(TouchToFillPaymentMethodViewController* controller,
             base::span<const autofill::CreditCard> cards_to_suggest,
+            base::span<const Suggestion> suggestions,
             bool should_show_scan_credit_card) override;
   bool Show(TouchToFillPaymentMethodViewController* controller,
             base::span<const autofill::Iban> ibans_to_suggest) override;

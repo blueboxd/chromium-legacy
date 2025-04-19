@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, Alliance for Open Media. All rights reserved
+ * Copyright (c) 2024, Alliance for Open Media. All rights reserved.
  *
  * This source code is subject to the terms of the BSD 2 Clause License and
  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License
@@ -94,6 +94,5 @@
 #define HAVE_UNISTD_H  0
 #define HAVE_VSX 0
 #define HAVE_WXWIDGETS 0
-#define INLINE  __inline
 #define STATIC_LINK_JXL 0
 #endif  // AOM_CONFIG_H_

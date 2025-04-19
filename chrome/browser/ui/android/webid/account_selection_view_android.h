@@ -10,6 +10,7 @@
 #include "base/functional/callback.h"
 #include "chrome/browser/ui/webid/account_selection_view.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/blink/public/mojom/webid/federated_auth_request.mojom-shared.h"
 
 using TokenError = content::IdentityCredentialTokenError;
 
@@ -23,28 +24,25 @@ class AccountSelectionViewAndroid : public AccountSelectionView {
 
   // AccountSelectionView:
   bool Show(
-      const std::string& top_frame_for_display,
-      const std::optional<std::string>& iframe_for_display,
+      const std::string& rp_for_display,
       const std::vector<content::IdentityProviderData>& identity_provider_data,
       Account::SignInMode sign_in_mode,
       blink::mojom::RpMode rp_mode,
       const std::optional<content::IdentityProviderData>& new_account_idp)
       override;
   bool ShowFailureDialog(
-      const std::string& top_frame_for_display,
-      const std::optional<std::string>& iframe_for_display,
+      const std::string& rp_for_display,
       const std::string& idp_for_display,
       blink::mojom::RpContext rp_context,
       blink::mojom::RpMode rp_mode,
       const content::IdentityProviderMetadata& idp_metadata) override;
-  bool ShowErrorDialog(const std::string& top_frame_for_display,
-                       const std::optional<std::string>& iframe_for_display,
+  bool ShowErrorDialog(const std::string& rp_for_display,
                        const std::string& idp_for_display,
                        blink::mojom::RpContext rp_context,
                        blink::mojom::RpMode rp_mode,
                        const content::IdentityProviderMetadata& idp_metadata,
                        const std::optional<TokenError>& error) override;
-  bool ShowLoadingDialog(const std::string& top_frame_for_display,
+  bool ShowLoadingDialog(const std::string& rp_for_display,
                          const std::string& idp_for_display,
                          blink::mojom::RpContext rp_context,
                          blink::mojom::RpMode rp_mode) override;
@@ -52,26 +50,27 @@ class AccountSelectionViewAndroid : public AccountSelectionView {
   std::string GetTitle() const override;
   std::optional<std::string> GetSubtitle() const override;
   void ShowUrl(LinkType link_type, const GURL& url) override;
-  content::WebContents* ShowModalDialog(const GURL& url) override;
+  content::WebContents* ShowModalDialog(const GURL& url,
+                                        blink::mojom::RpMode rp_mode) override;
   void CloseModalDialog() override;
+  content::WebContents* GetRpWebContents() override;
 
-  void OnAccountSelected(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& idp_config_url,
-      const base::android::JavaParamRef<jobjectArray>& account_string_fields,
-      const base::android::JavaParamRef<jobject>& account_picture_url,
-      bool is_sign_in);
+  void OnAccountSelected(JNIEnv* env,
+                         const GURL& idp_config_url,
+                         const std::vector<std::string>& account_string_fields,
+                         const GURL& account_picture_url,
+                         bool is_sign_in);
   void OnDismiss(JNIEnv* env, jint dismiss_reason);
   void OnLoginToIdP(JNIEnv* env,
-                    const base::android::JavaParamRef<jobject>& idp_config_url,
-                    const base::android::JavaParamRef<jobject>& idp_login_url);
+                    const GURL& idp_config_url,
+                    const GURL& idp_login_url);
   void OnMoreDetails(JNIEnv* env);
   void OnAccountsDisplayed(JNIEnv* env);
 
  private:
   // Returns either true if the java counterpart of this bridge is initialized
   // successfully or false if the creation failed.
-  bool MaybeCreateJavaObject();
+  bool MaybeCreateJavaObject(std::optional<blink::mojom::RpMode> rp_mode);
 
   base::android::ScopedJavaGlobalRef<jobject> java_object_internal_;
 };

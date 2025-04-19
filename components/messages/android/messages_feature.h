@@ -13,10 +13,6 @@ namespace messages {
 // Infobars infrastructure.
 BASE_DECLARE_FEATURE(kMessagesForAndroidAdsBlocked);
 
-// Feature that controls whether "popup blocked" prompts use Messages or
-// Infobars infrastructure.
-BASE_DECLARE_FEATURE(kMessagesForAndroidPopupBlocked);
-
 // Feature that controls whether "save card" prompts use Messages or
 // Infobars infrastructure.
 BASE_DECLARE_FEATURE(kMessagesForAndroidSaveCard);
@@ -36,8 +32,6 @@ bool IsAdsBlockedMessagesUiEnabled();
 
 bool IsPermissionUpdateMessagesUiEnabled();
 
-bool IsPopupBlockedMessagesUiEnabled();
-
 bool IsSafetyTipMessagesUiEnabled();
 
 bool IsSaveCardMessagesUiEnabled();
@@ -47,8 +41,6 @@ bool UseFollowupButtonTextForSaveCardMessage();
 bool UseGPayIconForSaveCardMessage();
 
 bool UseDialogV2ForSaveCardMessage();
-
-bool IsStackingAnimationEnabled();
 
 }  // namespace messages
 

@@ -162,6 +162,7 @@ suite('<settings-internet-detail-subpage>', () => {
       managedNetworkAvailable: false,
       serial: undefined,
       isCarrierLocked: false,
+      isFlashing: false,
     };
   }
 
@@ -285,6 +286,49 @@ suite('<settings-internet-detail-subpage>', () => {
       await flushTasks();
       await mojoApi.whenCalled('getManagedProperties');
     });
+
+    test('Connect button disabled when WiFi is out of range', async () => {
+      init();
+      mojoApi.setNetworkTypeEnabledState(NetworkType.kWiFi, true);
+      const wifiNetwork =
+          getManagedProperties(NetworkType.kWiFi, 'out_of_range_wifi');
+      wifiNetwork.source = OncSource.kUser;
+      wifiNetwork.connectable = true;
+      mojoApi.setManagedPropertiesForTest(wifiNetwork);
+      mojoApi.setWifiNetworkVisibleForTest('out_of_range_wifi_guid', false);
+
+      internetDetailPage.init(
+          'out_of_range_wifi_guid', 'WiFi', 'out_of_range_wifi');
+      await flushTasks();
+      const connectButton = getButton('connectDisconnect');
+      assertFalse(connectButton.hidden);
+      assertTrue(connectButton.disabled);
+    });
+
+    test(
+        'Connect button enabled on hidden network even when WiFi is out' +
+            ' of range',
+        async () => {
+          init();
+          mojoApi.setNetworkTypeEnabledState(NetworkType.kWiFi, true);
+          const wifiNetwork = getManagedProperties(
+              NetworkType.kWiFi, 'out_of_range_hidden_wifi');
+          wifiNetwork.source = OncSource.kUser;
+          wifiNetwork.connectable = true;
+          wifiNetwork.typeProperties.wifi!.hiddenSsid =
+              OncMojo.createManagedBool(true);
+          mojoApi.setManagedPropertiesForTest(wifiNetwork);
+          mojoApi.setWifiNetworkVisibleForTest(
+              'out_of_range_hidden_wifi_guid', false);
+
+          internetDetailPage.init(
+              'out_of_range_hidden_wifi_guid', 'WiFi',
+              'out_of_range_hidden_wifi');
+          await flushTasks();
+          const connectButton = getButton('connectDisconnect');
+          assertFalse(connectButton.hidden);
+          assertFalse(connectButton.disabled);
+        });
 
     test('WiFi in a portal portalState', async () => {
       init();
@@ -1104,9 +1148,6 @@ suite('<settings-internet-detail-subpage>', () => {
 
     test('carrier locked subtext when carrier locked', async () => {
       const TEST_ICCID = '11111111111111111';
-      loadTimeData.overrideValues({
-        isCellularCarrierLockEnabled: true,
-      });
       init();
       mojoApi.setNetworkTypeEnabledState(NetworkType.kCellular, true);
       mojoApi.setDeviceStateForTest({
@@ -1151,46 +1192,6 @@ suite('<settings-internet-detail-subpage>', () => {
           internetDetailPage.i18n('networkMobileProviderLocked'),
           networkStateText.textContent!.trim());
     });
-
-    test(
-        'carrier locked subtext not displayed when carrier lock disabled',
-        async () => {
-          const TEST_ICCID = '11111111111111111';
-          loadTimeData.overrideValues({
-            isCellularCarrierLockEnabled: false,
-          });
-          init();
-          mojoApi.setNetworkTypeEnabledState(NetworkType.kCellular, true);
-          mojoApi.setDeviceStateForTest({
-            ...getDefaultDeviceStateProps(),
-            deviceState: DeviceStateType.kEnabled,
-            simLockStatus: {
-              lockEnabled: true,
-              lockType: 'network-pin',
-              retriesLeft: 0,
-            },
-            simInfos: [{
-              iccid: TEST_ICCID,
-              isPrimary: true,
-              slotId: 0,
-              eid: '',
-            }],
-          });
-
-          const cellularNetwork =
-              getManagedProperties(NetworkType.kCellular, 'cellular');
-          cellularNetwork.connectable = false;
-          cellularNetwork.typeProperties.cellular!.iccid = TEST_ICCID;
-          cellularNetwork.typeProperties.cellular!.simLocked = true;
-          mojoApi.setManagedPropertiesForTest(cellularNetwork);
-
-          internetDetailPage.init('cellular_guid', 'Cellular', 'cellular');
-          await flushTasks();
-          const carrierLockedText = internetDetailPage.shadowRoot!
-                                        .querySelector<LocalizedLinkElement>(
-                                            '#carrierLockedNoticeLink');
-          assertNull(carrierLockedText);
-        });
 
     test(
         'Connect button disabled when not connectable and locked', async () => {
@@ -1963,14 +1964,16 @@ suite('<settings-internet-detail-subpage>', () => {
       });
     });
 
-    [true, false].forEach(isApnRevampAndPoliciesEnabled => {
+    [true, false].forEach(isApnRevampAndAllowApnModificationPolicyEnabled => {
       test(
-          `Managed APN icon visibility when isApnRevampAndPoliciesEnabled is ${
-              isApnRevampAndPoliciesEnabled}`,
+          `Managed APN icon visibility when ` +
+              `isApnRevampAndAllowApnModificationPolicyEnabled is ${
+                  isApnRevampAndAllowApnModificationPolicyEnabled}`,
           async () => {
             loadTimeData.overrideValues({
               isApnRevampEnabled: true,
-              isApnRevampAndPoliciesEnabled: isApnRevampAndPoliciesEnabled,
+              isApnRevampAndAllowApnModificationPolicyEnabled:
+                  isApnRevampAndAllowApnModificationPolicyEnabled,
             });
             init();
             mojoApi.setNetworkTypeEnabledState(NetworkType.kCellular, true);
@@ -2032,7 +2035,9 @@ suite('<settings-internet-detail-subpage>', () => {
               allowApnModification: false,
             };
             await flushTasks();
-            assertEquals(isApnRevampAndPoliciesEnabled, !!getApnManagedIcon());
+            assertEquals(
+                isApnRevampAndAllowApnModificationPolicyEnabled,
+                !!getApnManagedIcon());
           });
     });
 

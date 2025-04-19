@@ -25,6 +25,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/overlay_window.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/storage_partition.h"
@@ -67,18 +68,43 @@
 
 namespace headless {
 
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 namespace {
 
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 int GetCrashSignalFD(const base::CommandLine& command_line,
                      const HeadlessBrowser::Options& options) {
   int fd;
   pid_t pid;
   return crash_reporter::GetHandlerSocket(&fd, &pid) ? fd : -1;
 }
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+
+class HeadlessVideoOverlayWindow : public content::VideoOverlayWindow {
+ public:
+  bool IsActive() const override { return false; }
+  void Close() override {}
+  void ShowInactive() override {}
+  void Hide() override {}
+  bool IsVisible() const override { return false; }
+  gfx::Rect GetBounds() override { return gfx::Rect(); }
+  void UpdateNaturalSize(const gfx::Size& natural_size) override {}
+  void SetPlaybackState(PlaybackState playback_state) override {}
+  void SetPlayPauseButtonVisibility(bool is_visible) override {}
+  void SetSkipAdButtonVisibility(bool is_visible) override {}
+  void SetNextTrackButtonVisibility(bool is_visible) override {}
+  void SetPreviousTrackButtonVisibility(bool is_visible) override {}
+  void SetMicrophoneMuted(bool muted) override {}
+  void SetCameraState(bool turned_on) override {}
+  void SetToggleMicrophoneButtonVisibility(bool is_visible) override {}
+  void SetToggleCameraButtonVisibility(bool is_visible) override {}
+  void SetHangUpButtonVisibility(bool is_visible) override {}
+  void SetNextSlideButtonVisibility(bool is_visible) override {}
+  void SetPreviousSlideButtonVisibility(bool is_visible) override {}
+
+  void SetSurfaceId(const viz::SurfaceId& surface_id) override {}
+};
 
 }  // namespace
-#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
 // Implements a stub BadgeService. This implementation does nothing, but is
 // required because inbound Mojo messages which do not have a registered
@@ -182,7 +208,9 @@ void HeadlessContentBrowserClient::AppendExtraCommandLineSwitches(
   // NOTE: We may be called on the UI or IO thread. If called on the IO thread,
   // |browser_| may have already been destroyed.
 
-  command_line->AppendSwitch(::switches::kHeadless);
+  if (!command_line->HasSwitch(::switches::kHeadless)) {
+    command_line->AppendSwitchASCII(::switches::kHeadless, "old");
+  }
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   int fd;
@@ -265,6 +293,7 @@ void HeadlessContentBrowserClient::AllowCertificateError(
 
 base::OnceClosure HeadlessContentBrowserClient::SelectClientCertificate(
     content::BrowserContext* browser_context,
+    int process_id,
     content::WebContents* web_contents,
     net::SSLCertRequestInfo* cert_request_info,
     net::ClientCertIdentityList client_certs,
@@ -280,6 +309,23 @@ bool HeadlessContentBrowserClient::ShouldEnableStrictSiteIsolation() {
   // production cases like screenshot or pdf generation) based on //headless
   // will use a mode that is actually shipping in Chrome.
   return false;
+}
+
+bool HeadlessContentBrowserClient::IsInterestGroupAPIAllowed(
+    content::RenderFrameHost* render_frame_host,
+    content::InterestGroupApiOperation operation,
+    const url::Origin& top_frame_origin,
+    const url::Origin& api_origin) {
+  return true;
+}
+
+bool HeadlessContentBrowserClient::IsPrivacySandboxReportingDestinationAttested(
+    content::BrowserContext* browser_context,
+    const url::Origin& destination_origin,
+    content::PrivacySandboxInvokingAPI invoking_api,
+    bool post_impression_reporting) {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  return command_line->HasSwitch(switches::kForceReportingDestinationAttested);
 }
 
 bool HeadlessContentBrowserClient::IsSharedStorageAllowed(
@@ -405,6 +451,12 @@ void HeadlessContentBrowserClient::GetHyphenationDictionary(
     dir = dir.AppendASCII("hyphen-data");
     std::move(callback).Run(dir);
   }
+}
+
+std::unique_ptr<content::VideoOverlayWindow>
+HeadlessContentBrowserClient::CreateWindowForVideoPictureInPicture(
+    content::VideoPictureInPictureWindowController* controller) {
+  return std::make_unique<HeadlessVideoOverlayWindow>();
 }
 
 }  // namespace headless

@@ -5,11 +5,14 @@
 #ifndef BASE_SYNCHRONIZATION_LOCK_IMPL_H_
 #define BASE_SYNCHRONIZATION_LOCK_IMPL_H_
 
+#include <utility>
+
 #include "base/base_export.h"
 #include "base/check.h"
 #include "base/dcheck_is_on.h"
 #include "base/memory/raw_ptr_exclusion.h"
 #include "base/memory/stack_allocated.h"
+#include "base/synchronization/lock_subtle.h"
 #include "base/thread_annotations.h"
 #include "build/build_config.h"
 
@@ -84,10 +87,10 @@ class BASE_EXPORT LockImpl {
 void LockImpl::Lock() {
   // Try the lock first to acquire it cheaply if it's not contended. Try() is
   // cheap on platforms with futex-type locks, as it doesn't call into the
-  // kernel. Not marked LIKELY(), as:
+  // kernel. Not marked `[[likely]]`, as:
   // 1. We don't know how much contention the lock would experience
   // 2. This may lead to weird-looking code layout when inlined into a caller
-  // with (UN)LIKELY() annotations.
+  // with `[[(un)likely]]` attributes.
   if (Try()) {
     return;
   }
@@ -131,12 +134,17 @@ void LockImpl::Unlock() {
 // This is an implementation used for AutoLock templated on the lock type.
 template <class LockType>
 class SCOPED_LOCKABLE BasicAutoLock {
+  STACK_ALLOCATED();
+
  public:
   struct AlreadyAcquired {};
 
-  explicit BasicAutoLock(LockType& lock) EXCLUSIVE_LOCK_FUNCTION(lock)
+  explicit BasicAutoLock(
+      LockType& lock,
+      subtle::LockTracking tracking = subtle::LockTracking::kDisabled)
+      EXCLUSIVE_LOCK_FUNCTION(lock)
       : lock_(lock) {
-    lock_.Acquire();
+    lock_.Acquire(tracking);
   }
 
   BasicAutoLock(LockType& lock, const AlreadyAcquired&)
@@ -154,8 +162,39 @@ class SCOPED_LOCKABLE BasicAutoLock {
   }
 
  private:
-  // RAW_PTR_EXCLUSION: crbug.com/1521343 crbug.com/1520734 crbug.com/1519816
-  RAW_PTR_EXCLUSION LockType& lock_;
+  LockType& lock_;
+};
+
+// This is an implementation used for MovableAutoLock templated on the lock
+// type.
+template <class LockType>
+class SCOPED_LOCKABLE BasicMovableAutoLock {
+ public:
+  explicit BasicMovableAutoLock(
+      LockType& lock,
+      subtle::LockTracking tracking = subtle::LockTracking::kDisabled)
+      EXCLUSIVE_LOCK_FUNCTION(lock)
+      : lock_(&lock) {
+    lock_->Acquire(tracking);
+  }
+
+  BasicMovableAutoLock(const BasicMovableAutoLock&) = delete;
+  BasicMovableAutoLock& operator=(const BasicMovableAutoLock&) = delete;
+  BasicMovableAutoLock(BasicMovableAutoLock&& other) :
+      lock_(std::exchange(other.lock_, nullptr)) {}
+  BasicMovableAutoLock& operator=(BasicMovableAutoLock&& other) = delete;
+
+  ~BasicMovableAutoLock() UNLOCK_FUNCTION() {
+    // The lock may have been moved out.
+    if (lock_) {
+      lock_->AssertAcquired();
+      lock_->Release();
+    }
+  }
+
+ private:
+  // RAW_PTR_EXCLUSION: Stack-scoped.
+  RAW_PTR_EXCLUSION LockType* lock_;
 };
 
 // This is an implementation used for AutoTryLock templated on the lock type.
@@ -170,8 +209,11 @@ class SCOPED_LOCKABLE BasicAutoTryLock {
   // caller that checks `is_acquired()` before writing to guarded data would be
   // flagged with "writing variable 'foo' requires holding 'lock' exclusively."
   // See <https://crbug.com/340196356>.
-  explicit BasicAutoTryLock(LockType& lock) LOCKS_EXCLUDED(lock)
-      : lock_(lock), is_acquired_(lock_.Try()) {}
+  explicit BasicAutoTryLock(
+      LockType& lock,
+      subtle::LockTracking tracking = subtle::LockTracking::kDisabled)
+      LOCKS_EXCLUDED(lock)
+      : lock_(lock), is_acquired_(lock_.Try(tracking)) {}
 
   BasicAutoTryLock(const BasicAutoTryLock&) = delete;
   BasicAutoTryLock& operator=(const BasicAutoTryLock&) = delete;
@@ -219,10 +261,13 @@ class SCOPED_LOCKABLE BasicAutoLockMaybe {
   STACK_ALLOCATED();
 
  public:
-  explicit BasicAutoLockMaybe(LockType* lock) EXCLUSIVE_LOCK_FUNCTION(lock)
+  explicit BasicAutoLockMaybe(
+      LockType* lock,
+      subtle::LockTracking tracking = subtle::LockTracking::kDisabled)
+      EXCLUSIVE_LOCK_FUNCTION(lock)
       : lock_(lock) {
     if (lock_)
-      lock_->Acquire();
+      lock_->Acquire(tracking);
   }
 
   BasicAutoLockMaybe(const BasicAutoLockMaybe&) = delete;
@@ -246,10 +291,13 @@ class SCOPED_LOCKABLE BasicReleasableAutoLock {
   STACK_ALLOCATED();
 
  public:
-  explicit BasicReleasableAutoLock(LockType* lock) EXCLUSIVE_LOCK_FUNCTION(lock)
+  explicit BasicReleasableAutoLock(
+      LockType* lock,
+      subtle::LockTracking tracking = subtle::LockTracking::kDisabled)
+      EXCLUSIVE_LOCK_FUNCTION(lock)
       : lock_(lock) {
     DCHECK(lock_);
-    lock_->Acquire();
+    lock_->Acquire(tracking);
   }
 
   BasicReleasableAutoLock(const BasicReleasableAutoLock&) = delete;

@@ -95,6 +95,7 @@ class FieldInfoManager;
 class PasswordFeatureManager;
 class PasswordFormManagerForUI;
 class PasswordManagerDriver;
+class PasswordManagerInterface;
 class PasswordManagerMetricsRecorder;
 class HttpAuthManager;
 class PasswordRequirementsService;
@@ -222,7 +223,9 @@ class PasswordManagerClient {
       base::OnceCallback<void(bool)> shown_cb);
 #endif
 
-  virtual bool CanUseBiometricAuthForFilling(
+  // Checks whether user re-authentication should be triggered before password
+  // filling.
+  virtual bool IsReauthBeforeFillingRequired(
       device_reauth::DeviceAuthenticator* authenticator);
 
   // Returns a pointer to a DeviceAuthenticator. Might be null if
@@ -370,8 +373,8 @@ class PasswordManagerClient {
 
   // Returns the PasswordManager associated with this client. The non-const
   // version calls the const one.
-  PasswordManager* GetPasswordManager();
-  virtual const PasswordManager* GetPasswordManager() const;
+  PasswordManagerInterface* GetPasswordManager();
+  virtual const PasswordManagerInterface* GetPasswordManager() const;
 
   // Returns the PasswordFeatureManager associated with this client. The
   // non-const version calls the const one.
@@ -412,6 +415,16 @@ class PasswordManagerClient {
   virtual safe_browsing::PasswordProtectionService*
   GetPasswordProtectionService() const = 0;
 
+  // Maybe triggers a hats survey that measures the user's perception of
+  // Autofill for passwords. When triggering happens, the survey dialog will be
+  // displayed with a 5s delay. This survey should be triggered after form
+  // submissions.
+  // `filling_assistance` will be logged together with the responses as
+  // in-product data and should be a string representation of the
+  // `FillingAssistance` enum, i.e "Manually filled".
+  virtual void TriggerUserPerceptionOfPasswordManagerSurvey(
+      const std::string& filling_assistance);
+
 #if defined(ON_FOCUS_PING_ENABLED)
   // Checks the safe browsing reputation of the webpage when the
   // user focuses on a username/password field. This is used for reporting
@@ -425,7 +438,7 @@ class PasswordManagerClient {
   virtual void MaybeReportEnterpriseLoginEvent(
       const GURL& url,
       bool is_federated,
-      const url::Origin& federated_origin,
+      const url::SchemeHostPort& federated_origin,
       const std::u16string& login_user_name) const {}
 
   // If the feature is enabled send an event to the enterprise reporting
@@ -508,6 +521,11 @@ class PasswordManagerClient {
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || \
     BUILDFLAG(IS_CHROMEOS)
+
+  // Shows the bubble with the details of the `form`.
+  virtual void OpenPasswordDetailsBubble(
+      const password_manager::PasswordForm& form) = 0;
+
   // Creates and show the cross domain confirmation popup.
   virtual std::unique_ptr<PasswordCrossDomainConfirmationPopupController>
   ShowCrossDomainConfirmationPopup(const gfx::RectF& element_bounds,

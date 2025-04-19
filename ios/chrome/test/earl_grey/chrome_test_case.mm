@@ -64,9 +64,8 @@ NSArray* multitaskingTests() {
     @"testSignInPopUpAccountOnSyncSettings",   // AccountCollectionsTestCase
     @"testAutofillProfileEditing",             // AutofillSettingsTestCase
     @"testAccessibilityOfBlockPopupSettings",  // BlockPopupsTestCase
-    // TODO(crbug.com/40282512): Failing on ios-simulator-full-configs.
-    // @"testClearCookies",                       // SettingsTestCase
-    @"testAccessibilityOfTranslateSettings",  // TranslateUITestCase
+    @"testClearCookies",                       // SettingsTestCase
+    @"testAccessibilityOfTranslateSettings",   // TranslateUITestCase
 
     // UI tests
     @"testActivityServiceControllerPrintAfterRedirectionToUnprintablePage",
@@ -224,6 +223,7 @@ void ResetAuthentication() {
   ResetAuthentication();
 
   // Reset any remaining sign-in state from previous tests.
+  [ChromeEarlGrey killWebKitNetworkProcess];
   [ChromeEarlGrey signOutAndClearIdentities];
   if (![ChromeTestCase isStartupTest]) {
     [ChromeEarlGrey openNewTab];
@@ -256,6 +256,7 @@ void ResetAuthentication() {
     [ChromeEarlGrey stopAllWebStatesLoading];
 
     // Clear any remaining test accounts and signed in users.
+    [ChromeEarlGrey killWebKitNetworkProcess];
     [ChromeEarlGrey signOutAndClearIdentities];
 
     [[self class] enableMockAuthentication];

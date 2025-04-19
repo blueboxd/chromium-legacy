@@ -252,6 +252,10 @@ bool WaylandDataDragController::ShouldReleaseCaptureForDrag(
   return !IsWindowDraggingSession(*data);
 }
 
+bool WaylandDataDragController::IsWindowDragSessionRunning() const {
+  return !!pointer_grabber_for_window_drag_;
+}
+
 void WaylandDataDragController::DumpState(std::ostream& out) const {
   constexpr auto kStateToString = base::MakeFixedFlatMap<State, const char*>(
       {{State::kIdle, "idle"},
@@ -555,6 +559,15 @@ void WaylandDataDragController::OnDataSourceSend(WaylandDataSource* source,
   CHECK_EQ(data_source_.get(), source);
   CHECK(buffer);
   VLOG(1) << __FUNCTION__ << " mime=" << mime_type;
+
+  // We don't actually have any data to send. Nothing except Chrome itself
+  // should accept this MIME type, and Chrome won't request the non-existent
+  // data; but the KDE desktop seems to accept and request the data. To prevent
+  // hitting a CHECK in ExtractData() due to the MIME type, we exit early here.
+  if (mime_type == ui::kMimeTypeWindowDrag) {
+    return;
+  }
+
   if (!GetOfferedExchangeDataProvider()->ExtractData(mime_type, buffer)) {
     LOG(WARNING) << "Cannot deliver data of type " << mime_type
                  << " and no text representation is available.";
@@ -567,6 +580,10 @@ void WaylandDataDragController::OnWindowRemoved(WaylandWindow* window) {
   }
 
   if (window == origin_window_) {
+    // See the declaration of TakeWaylandSurface() for why this is needed.
+    if (IsWindowDragSessionRunning()) {
+      origin_surface_ = origin_window_->TakeWaylandSurface();
+    }
     origin_window_ = nullptr;
   }
 
@@ -695,6 +712,8 @@ void WaylandDataDragController::Reset() {
 
   data_source_.reset();
   data_offer_.reset();
+  origin_window_ = nullptr;
+  origin_surface_.reset();
   icon_buffer_.reset();
   icon_surface_.reset();
   icon_surface_buffer_scale_ = 1.0f;
@@ -758,8 +777,7 @@ WaylandDataDragController::GetAndValidateSerialForDrag(DragEventSource source) {
   switch (source) {
     case DragEventSource::kMouse:
       serial_type = wl::SerialType::kMousePress;
-      should_drag =
-          pointer_delegate_->IsPointerButtonPressed(EF_LEFT_MOUSE_BUTTON);
+      should_drag = pointer_delegate_->IsPointerButtonPressed(EF_MOUSE_BUTTON);
       break;
     case DragEventSource::kTouch:
       serial_type = wl::SerialType::kTouchPress;
@@ -803,7 +821,7 @@ void WaylandDataDragController::DispatchPointerRelease(
     base::TimeTicks timestamp) {
   DCHECK(pointer_grabber_for_window_drag_);
   pointer_delegate_->OnPointerButtonEvent(
-      ET_MOUSE_RELEASED, EF_LEFT_MOUSE_BUTTON, timestamp,
+      EventType::kMouseReleased, EF_LEFT_MOUSE_BUTTON, timestamp,
       pointer_grabber_for_window_drag_, wl::EventDispatchPolicy::kImmediate,
       /*allow_release_of_unpressed_button=*/true,
       /*is_synthesized=*/true);

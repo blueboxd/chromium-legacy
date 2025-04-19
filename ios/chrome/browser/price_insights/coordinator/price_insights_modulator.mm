@@ -5,11 +5,19 @@
 #import "ios/chrome/browser/price_insights/coordinator/price_insights_modulator.h"
 
 #import "base/i18n/number_formatting.h"
+#import "base/metrics/histogram_functions.h"
+#import "base/metrics/user_metrics.h"
+#import "base/metrics/user_metrics_action.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/commerce/core/commerce_constants.h"
+#import "components/commerce/core/price_tracking_utils.h"
+#import "components/commerce/core/shopping_service.h"
 #import "components/image_fetcher/core/image_data_fetcher.h"
 #import "components/payments/core/currency_formatter.h"
+#import "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/bookmarks/model/bookmark_model_factory.h"
 #import "ios/chrome/browser/commerce/model/shopping_service_factory.h"
+#import "ios/chrome/browser/contextual_panel/utils/contextual_panel_metrics.h"
 #import "ios/chrome/browser/price_insights/model/price_insights_model.h"
 #import "ios/chrome/browser/price_insights/ui/price_insights_cell.h"
 #import "ios/chrome/browser/shared/coordinator/alert/alert_coordinator.h"
@@ -17,6 +25,10 @@
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
+#import "ios/chrome/browser/shared/public/commands/contextual_sheet_commands.h"
+#import "ios/chrome/browser/shared/public/commands/price_notifications_commands.h"
+#import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/price_notifications/price_notifications_price_tracking_mediator.h"
 #import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -26,16 +38,10 @@
 
 namespace {
 
-NSString* getFormattedCurrentPrice(int64_t amount_micro,
-                                   std::string currency_code,
-                                   std::string country_code) {
-  float price = static_cast<float>(amount_micro) /
-                static_cast<float>(commerce::kToMicroCurrency);
-  payments::CurrencyFormatter formatter(currency_code, country_code);
-  formatter.SetMaxFractionalDigits(2);
-  return base::SysUTF16ToNSString(
-      formatter.Format(base::NumberToString(price)));
-}
+// The histogram used to record the current price bucket of the product when the
+// user clicks on buying options.
+const char kPriceInsightsBuyingOptionsClicked[] =
+    "Commerce.PriceInsights.BuyingOptionsClicked";
 
 NSDate* getNSDateFromString(std::string date) {
   NSDateFormatter* date_format = [[NSDateFormatter alloc] init];
@@ -57,6 +63,9 @@ NSDate* getNSDateFromString(std::string date) {
 @property(nonatomic, strong) PriceNotificationsPriceTrackingMediator* mediator;
 // A weak reference to a PriceInsightsCell.
 @property(nonatomic, weak) PriceInsightsCell* priceInsightsCell;
+// The service responsible for interacting with commerce's price data
+// infrastructure.
+@property(nonatomic, assign) commerce::ShoppingService* shoppingService;
 
 @end
 
@@ -70,8 +79,10 @@ NSDate* getNSDateFromString(std::string date) {
 - (void)start {
   PushNotificationService* pushNotificationService =
       GetApplicationContext()->GetPushNotificationService();
-  commerce::ShoppingService* shoppingService =
-      commerce::ShoppingServiceFactory::GetForBrowserState(
+  self.shoppingService = commerce::ShoppingServiceFactory::GetForBrowserState(
+      self.browser->GetBrowserState());
+  bookmarks::BookmarkModel* bookmarkModel =
+      ios::BookmarkModelFactory::GetForBrowserState(
           self.browser->GetBrowserState());
   web::WebState* webState =
       self.browser->GetWebStateList()->GetActiveWebState();
@@ -79,14 +90,17 @@ NSDate* getNSDateFromString(std::string date) {
       std::make_unique<image_fetcher::ImageDataFetcher>(
           self.browser->GetBrowserState()->GetSharedURLLoaderFactory());
   self.mediator = [[PriceNotificationsPriceTrackingMediator alloc]
-      initWithShoppingService:shoppingService
+      initWithShoppingService:self.shoppingService
+                bookmarkModel:bookmarkModel
                  imageFetcher:std::move(imageFetcher)
                      webState:webState
       pushNotificationService:pushNotificationService];
+  self.mediator.priceInsightsConsumer = self;
 }
 
 - (void)stop {
   self.mediator = nil;
+  self.shoppingService = nil;
   [self dismissAlertCoordinator];
 }
 
@@ -109,15 +123,18 @@ NSDate* getNSDateFromString(std::string date) {
 
 #pragma mark - PriceInsightsConsumer
 
-- (void)didStartPriceTracking {
-  [self.priceInsightsCell updateTrackButton:YES];
+- (void)didStartPriceTrackingWithNotification:(BOOL)granted {
+  [self.priceInsightsCell updateTrackStatus:YES];
+  [self displaySnackbar:granted];
 }
 
 - (void)didStopPriceTracking {
-  [self.priceInsightsCell updateTrackButton:NO];
+  [self.priceInsightsCell updateTrackStatus:NO];
 }
 
-- (void)didStartNavigationToWebpage {
+- (void)didStartNavigationToWebpageWithPriceBucket:
+    (commerce::PriceBucket)bucket {
+  base::UmaHistogramEnumeration(kPriceInsightsBuyingOptionsClicked, bucket);
 }
 
 - (void)presentPushNotificationPermissionAlert {
@@ -231,15 +248,17 @@ NSDate* getNSDateFromString(std::string date) {
 - (void)configureCell:(PriceInsightsCell*)cell {
   cell.viewController = self.baseViewController;
   cell.mutator = self.mediator;
-  [cell configureWithItem:[self getPriceInsightsItemFromConfig]];
+  [cell configureWithItem:[self priceInsightsItemFromConfig]];
 }
 
+// Dismisses and removes the current alert coordinator.
 - (void)dismissAlertCoordinator {
   [_alertCoordinator stop];
   _alertCoordinator = nil;
 }
 
-- (PriceInsightsItem*)getPriceInsightsItemFromConfig {
+/// Creates a PriceInsightsItem object from the current item configuration.
+- (PriceInsightsItem*)priceInsightsItemFromConfig {
   PriceInsightsItemConfiguration* config =
       static_cast<PriceInsightsItemConfiguration*>(
           self.itemConfiguration.get());
@@ -249,30 +268,22 @@ NSDate* getNSDateFromString(std::string date) {
   item.title = base::SysUTF8ToNSString(config->product_info->title);
   item.variants =
       base::SysUTF8ToNSString(config->product_info->product_cluster_title);
-  item.currency = base::SysUTF8ToNSString(config->product_info->currency_code);
+  item.currency = config->product_info->currency_code;
+  item.country = config->product_info->country_code;
   item.canPriceTrack = config->can_price_track;
-  item.isPriceTracked = config->is_subscribed;
   item.productURL =
       self.browser->GetWebStateList()->GetActiveWebState()->GetVisibleURL();
 
+  if (item.canPriceTrack &&
+      config->product_info->product_cluster_id.has_value()) {
+    item.clusterId = config->product_info->product_cluster_id.value();
+    // TODO: b/355423868 - Use the async version of IsSubscribed.
+    item.isPriceTracked = self.shoppingService->IsSubscribedFromCache(
+        commerce::BuildUserSubscriptionForClusterId(item.clusterId));
+  }
+
   if (!config->price_insights_info.has_value()) {
     return item;
-  }
-
-  std::string currencyCode = config->product_info->currency_code;
-  std::string countryCode = config->product_info->country_code;
-  if (config->price_insights_info->typical_low_price_micros.has_value()) {
-    int64_t amountMicro =
-        config->price_insights_info->typical_low_price_micros.value();
-    item.lowPrice =
-        getFormattedCurrentPrice(amountMicro, currencyCode, countryCode);
-  }
-
-  if (config->price_insights_info->typical_high_price_micros.has_value()) {
-    int64_t amountMicro =
-        config->price_insights_info->typical_high_price_micros.value();
-    item.highPrice =
-        getFormattedCurrentPrice(amountMicro, currencyCode, countryCode);
   }
 
   NSMutableDictionary* priceHistory = [[NSMutableDictionary alloc] init];
@@ -288,6 +299,36 @@ NSDate* getNSDateFromString(std::string date) {
                               ? config->price_insights_info->jackpot_url.value()
                               : GURL();
   return item;
+}
+
+// Displays a snackbar message to inform the user about the successful price
+// tracking, with a button to open the price tracking UI.
+- (void)displaySnackbar:(BOOL)granted {
+  CommandDispatcher* dispatcher = self.browser->GetCommandDispatcher();
+  id<SnackbarCommands> snackbarHandler =
+      HandlerForProtocol(dispatcher, SnackbarCommands);
+  __weak id<PriceNotificationsCommands> weakPriceNotificationsHandler =
+      HandlerForProtocol(dispatcher, PriceNotificationsCommands);
+  __weak id<ContextualSheetCommands> weakContextualSheetHandler =
+      HandlerForProtocol(dispatcher, ContextualSheetCommands);
+  [snackbarHandler
+      showSnackbarWithMessage:
+          l10n_util::GetNSString(
+              granted
+                  ? IDS_PRICE_INSIGHTS_SNACKBAR_MESSAGE_TITLE_NOTIFICATION_ENABLED
+                  : IDS_PRICE_INSIGHTS_SNACKBAR_MESSAGE_TITLE_NOTIFICATION_DISABLED)
+                   buttonText:l10n_util::GetNSString(
+                                  IDS_PRICE_INSIGHTS_SNACKBAR_BUTTON_TITLE)
+                messageAction:^{
+                  base::RecordAction(
+                      base::UserMetricsAction("MobileMenuPriceNotifications"));
+                  base::UmaHistogramEnumeration(
+                      "IOS.ContextualPanel.DismissedReason",
+                      ContextualPanelDismissedReason::BlockInteraction);
+                  [weakContextualSheetHandler closeContextualSheet];
+                  [weakPriceNotificationsHandler showPriceNotifications];
+                }
+             completionAction:nil];
 }
 
 @end

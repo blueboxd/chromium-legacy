@@ -11,6 +11,7 @@ static_library("privacy_sandbox_prefs") {
   ]
 
   deps = [
+    ":privacy_sandbox_notice_storage",
     ":tracking_protection_prefs",
     "//components/pref_registry:pref_registry",
     "//components/prefs",
@@ -32,6 +33,12 @@ component("features") {
   public_deps = [ "//base" ]
 }
 
+source_set("privacy_sandbox_notice_constants") {
+  sources = [ "privacy_sandbox_notice_constants.h" ]
+
+  public_deps = [ "//base" ]
+}
+
 source_set("tracking_protection_onboarding") {
   sources = [
     "tracking_protection_onboarding.cc",
@@ -45,22 +52,6 @@ source_set("tracking_protection_onboarding") {
     "//components/pref_registry:pref_registry",
     "//components/prefs",
     "//components/version_info",
-  ]
-
-  public_deps = [ "//base" ]
-}
-
-source_set("tracking_protection_reminder_service") {
-  sources = [
-    "tracking_protection_reminder_service.cc",
-    "tracking_protection_reminder_service.h",
-  ]
-
-  deps = [
-    ":features",
-    ":privacy_sandbox_prefs",
-    "//components/keyed_service/core:core",
-    "//components/prefs",
   ]
 
   public_deps = [ "//base" ]
@@ -110,6 +101,22 @@ source_set("privacy_sandbox_notice_storage") {
   ]
 
   deps = [
+    ":privacy_sandbox_notice_constants",
+    "//components/pref_registry:pref_registry",
+    "//components/prefs",
+  ]
+
+  public_deps = [ "//base" ]
+}
+
+source_set("tpcd") {
+  sources = [
+    "tpcd_pref_names.cc",
+    "tpcd_pref_names.h",
+    "tpcd_utils.h",
+  ]
+
+  deps = [
     "//components/pref_registry:pref_registry",
     "//components/prefs",
   ]
@@ -156,7 +163,6 @@ if (use_blink) {
 
     deps = [
       ":privacy_sandbox_prefs",
-      ":tracking_protection_reminder_service",
       ":tracking_protection_settings",
       "//components/browsing_topics/common:common",
       "//components/content_settings/core/browser",
@@ -216,8 +222,11 @@ source_set("unit_tests") {
     "tracking_protection_onboarding_unittest.cc",
   ]
 
+  data = [ "//tools/metrics/histograms/metadata/privacy/histograms.xml" ]
+
   deps = [
     ":features",
+    ":privacy_sandbox_notice_constants",
     ":privacy_sandbox_notice_storage",
     ":privacy_sandbox_prefs",
     ":tracking_protection_onboarding",

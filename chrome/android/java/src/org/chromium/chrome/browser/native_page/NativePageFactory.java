@@ -207,6 +207,7 @@ public class NativePageFactory {
                     mActivity,
                     mBrowserControlsManager,
                     mCurrentTabSupplier,
+                    mWindowAndroid.getModalDialogManager(),
                     mSnackbarManagerSupplier.get(),
                     mLifecycleDispatcher,
                     mTabModelSelector,
@@ -295,7 +296,7 @@ public class NativePageFactory {
      * @param url The URL to be handled.
      * @param candidatePage A NativePage to be reused if it matches the url, or null.
      * @param tab The Tab that will show the page.
-     * @param pdfInfo Information of the pdf, or null if not pdf.
+     * @param pdfInfo Information of the pdf, or null if there is no associated pdf download.
      * @return A NativePage showing the specified url or null.
      */
     public NativePage createNativePage(

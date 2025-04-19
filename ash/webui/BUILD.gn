@@ -20,6 +20,7 @@ test("ash_webui_unittests") {
   ]
 
   deps = [
+    "//ash/webui/boca_ui:unit_tests",
     "//ash/webui/camera_app_ui:unit_tests",
     "//ash/webui/common/backend:unit_tests",
     "//ash/webui/demo_mode_app_ui:unit_tests",
@@ -34,6 +35,7 @@ test("ash_webui_unittests") {
     "//ash/webui/os_feedback_ui/backend:unit_tests",
     "//ash/webui/personalization_app:unit_tests",
     "//ash/webui/print_management/backend:unit_tests",
+    "//ash/webui/print_preview_cros:unit_tests",
     "//ash/webui/projector_app:unit_tests",
     "//ash/webui/scanning:unit_tests",
     "//ash/webui/scanning/mojom:unit_tests",

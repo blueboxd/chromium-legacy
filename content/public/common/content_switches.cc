@@ -213,9 +213,6 @@ const char kDisableNotifications[]          = "disable-notifications";
 // Disable Pepper3D.
 const char kDisablePepper3d[]               = "disable-pepper-3d";
 
-// Disables the Permissions API.
-const char kDisablePermissionsAPI[]         = "disable-permissions-api";
-
 // Disables compositor-accelerated touch-screen pinch gestures.
 const char kDisablePinch[]                  = "disable-pinch";
 
@@ -833,9 +830,6 @@ const char kUtilityStartupDialog[] = "utility-startup-dialog";
 // services offered by the process, but is added to the command line for
 // debugging and profiling purposes.
 const char kUtilitySubType[] = "utility-sub-type";
-
-// In debug builds, asserts that the stream of input events is valid.
-const char kValidateInputEventStream[] = "validate-input-event-stream";
 
 // Causes tests to attempt to verify pixel output.
 const char kVerifyPixels[] = "browser-ui-tests-verify-pixels";

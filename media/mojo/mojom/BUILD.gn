@@ -56,7 +56,10 @@ mojom("mojom") {
   }
 
   if (is_android) {
-    sources += [ "android_overlay.mojom" ]
+    sources += [
+      "android_overlay.mojom",
+      "mediadrm_support.mojom",
+    ]
   } else {
     sources += [ "speech_recognition_service.mojom" ]
   }
@@ -78,6 +81,7 @@ mojom("mojom") {
   public_deps = [
     ":audio_data",
     ":encryption_pattern",
+    ":speech_recognition",
     ":web_speech_recognition",
     "//gpu/ipc/common:interfaces",
     "//media/learning/mojo/public/mojom",
@@ -87,6 +91,7 @@ mojom("mojom") {
     "//services/media_session/public/mojom",
     "//services/network/public/mojom",
     "//services/network/public/mojom:cookies_mojom",
+    "//services/network/public/mojom:mojom_storage_access_api",
     "//services/service_manager/public/mojom",
     "//services/viz/public/mojom:shared_image_format",
     "//ui/gfx/geometry/mojom",
@@ -101,10 +106,6 @@ mojom("mojom") {
     # TODO(xhwang): Ideally media should not worry about sandbox. Find a way to
     # remove this dependency.
     public_deps += [ "//sandbox/mac/mojom" ]
-  }
-
-  if (!is_android) {
-    public_deps += [ ":speech_recognition" ]
   }
 
   enabled_features = []
@@ -447,6 +448,20 @@ mojom("mojom") {
     {
       types = [
         {
+          mojom = "media.mojom.SupportedAudioDecoderConfig"
+          cpp = "::media::SupportedAudioDecoderConfig"
+        },
+      ]
+      traits_headers = [ "supported_audio_decoder_config_mojom_traits.h" ]
+      traits_sources = [ "supported_audio_decoder_config_mojom_traits.cc" ]
+      traits_public_deps = [
+        "//base",
+        "//media",
+      ]
+    },
+    {
+      types = [
+        {
           mojom = "media.mojom.BitstreamBufferMetadata"
           cpp = "::media::BitstreamBufferMetadata"
         },
@@ -669,6 +684,15 @@ mojom("mojom") {
       ]
       traits_headers = [ "media_types_enum_mojom_traits.h" ]
     },
+    {
+      types = [
+        {
+          mojom = "media.mojom.CreateCdmStatus"
+          cpp = "::media::CreateCdmStatus"
+        },
+      ]
+      traits_headers = [ "media_types_enum_mojom_traits.h" ]
+    },
   ]
 
   if (is_win) {
@@ -777,6 +801,7 @@ mojom("speech_recognition_audio_forwarder") {
 # Speech recognition API used between renderer/browser/service and between
 # LaCrOS/Ash.
 mojom("speech_recognition") {
+  generate_java = true
   sources = [ "speech_recognition.mojom" ]
   cpp_typemaps = [
     {
@@ -870,6 +895,7 @@ source_set("unit_tests") {
   }
 
   deps = [
+    ":speech_recognition",
     "//base",
     "//base/test:test_support",
     "//media:test_support",
@@ -879,10 +905,6 @@ source_set("unit_tests") {
     "//testing/gtest",
     "//ui/gfx:test_support",
   ]
-
-  if (!is_android) {
-    deps += [ ":speech_recognition" ]
-  }
 }
 
 mojom("web_speech_recognition") {
@@ -896,7 +918,8 @@ mojom("web_speech_recognition") {
     "speech_recognizer.mojom",
   ]
 
-  public_deps = [
+  deps = [
+    ":speech_recognition_audio_forwarder",
     "//mojo/public/mojom/base",
     "//url/mojom:url_mojom_gurl",
   ]

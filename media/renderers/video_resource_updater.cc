@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "media/renderers/video_resource_updater.h"
 
 #include <stddef.h>
@@ -12,6 +17,7 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/containers/contains.h"
+#include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
@@ -65,6 +71,12 @@
 namespace media {
 namespace {
 
+// Kill switch for using MultiPlaneFormat that prefers external sampler for
+// hardware planes when default SharedImageFormatType::Legacy is used.
+BASE_FEATURE(kUseMultiPlaneFormatForLegacySIFType,
+             "UseMultiPlaneFormatForLegacySIFType",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 bool MediaSharedBitmapConversionEnabled() {
   return base::FeatureList::IsEnabled(features::kSharedBitmapToSharedImage) &&
          base::FeatureList::IsEnabled(kMediaSharedBitmapToSharedImage);
@@ -96,24 +108,32 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
     DCHECK(target == 0 || target == GL_TEXTURE_EXTERNAL_OES)
         << "Unsupported target " << gl::GLEnums::GetStringEnum(target);
     DCHECK_EQ(num_textures, 1u);
-    std::optional<gfx::BufferFormat> buffer_format =
-        VideoPixelFormatToGfxBufferFormat(format);
-    DCHECK(buffer_format.has_value());
-    if (frame.shared_image_format_type() == SharedImageFormatType::kLegacy) {
-      si_formats[0] =
-          viz::GetSinglePlaneSharedImageFormat(buffer_format.value());
+    // Use viz::LegacyMultiPlaneFormat when default
+    // SharedImageFormatType::Legacy is used and
+    // kUseMultiPlaneFormatForLegacySIFType feature is NOT enabled.
+    if (frame.shared_image_format_type() == SharedImageFormatType::kLegacy &&
+        !base::FeatureList::IsEnabled(kUseMultiPlaneFormatForLegacySIFType)) {
+      switch (format) {
+        case PIXEL_FORMAT_NV12:
+          si_formats[0] = viz::LegacyMultiPlaneFormat::kNV12;
+          break;
+        case PIXEL_FORMAT_YV12:
+          si_formats[0] = viz::LegacyMultiPlaneFormat::kYV12;
+          break;
+        case PIXEL_FORMAT_P010LE:
+          si_formats[0] = viz::LegacyMultiPlaneFormat::kP010;
+          break;
+        case PIXEL_FORMAT_NV12A:
+          si_formats[0] = viz::LegacyMultiPlaneFormat::kNV12A;
+          break;
+        default:
+          NOTREACHED_NORETURN();
+      }
     } else {
 #if BUILDFLAG(IS_OZONE)
-      CHECK_EQ(frame.shared_image_format_type(),
-               SharedImageFormatType::kSharedImageFormatExternalSampler);
-
-      // The format must be one of NV12/YV12/P016LE, as these are the only
+      // The format must be one of NV12/YV12/P010LE/NV12A, as these are the only
       // formats for which VideoFrame::RequiresExternalSampler() will return
       // true.
-      // NOTE: If this is ever expanded to include NV12A, it will be necessary
-      // to decide whether the value returned in that case should be RGB (as is
-      // done for other values here) or RGBA (as is done for the handling of
-      // NV12A with per-plane sampling below).
       switch (format) {
         case PIXEL_FORMAT_NV12:
           si_formats[0] = viz::MultiPlaneFormat::kNV12;
@@ -121,8 +141,11 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
         case PIXEL_FORMAT_YV12:
           si_formats[0] = viz::MultiPlaneFormat::kYV12;
           break;
-        case PIXEL_FORMAT_P016LE:
+        case PIXEL_FORMAT_P010LE:
           si_formats[0] = viz::MultiPlaneFormat::kP010;
+          break;
+        case PIXEL_FORMAT_NV12A:
+          si_formats[0] = viz::MultiPlaneFormat::kNV12A;
           break;
         default:
           NOTREACHED_NORETURN();
@@ -130,14 +153,14 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
       si_formats[0].SetPrefersExternalSampler();
 #else
       // MultiplanarSharedImage with external sampling is supported only on
-      // Ozone, and VideoFrames with format type
-      // kSharedImageFormatExternalSampler should not be created on other
-      // platforms.
+      // Ozone, and VideoFrames with external sampler should not be created on
+      // other platforms.
       NOTREACHED_NORETURN();
 #endif
     }
 
-    return VideoFrameResourceType::RGB;
+    return format == PIXEL_FORMAT_NV12A ? VideoFrameResourceType::RGBA
+                                        : VideoFrameResourceType::RGB;
   }
 
   CHECK(!frame.RequiresExternalSampler());
@@ -250,7 +273,7 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
         return VideoFrameResourceType::RGBA;
       }
 
-    case PIXEL_FORMAT_P016LE:
+    case PIXEL_FORMAT_P010LE:
       if (frame.shared_image_format_type() == SharedImageFormatType::kLegacy) {
         DCHECK_EQ(num_textures, 2u);
         // TODO(mcasas): Support other formats such as e.g. P012.
@@ -269,12 +292,12 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
         return VideoFrameResourceType::RGB;
       }
 
-    case PIXEL_FORMAT_P216LE:
+    case PIXEL_FORMAT_P210LE:
       DCHECK_EQ(num_textures, 1u);
       si_formats[0] = viz::MultiPlaneFormat::kP210;
       return VideoFrameResourceType::RGB;
 
-    case PIXEL_FORMAT_P416LE:
+    case PIXEL_FORMAT_P410LE:
       DCHECK_EQ(num_textures, 1u);
       si_formats[0] = viz::MultiPlaneFormat::kP410;
       return VideoFrameResourceType::RGB;
@@ -482,9 +505,9 @@ viz::SharedImageFormat VideoPixelFormatToMultiPlanarSharedImageFormat(
       return viz::MultiPlaneFormat::kI420A;
     case PIXEL_FORMAT_NV16:
     case PIXEL_FORMAT_NV24:
-    case PIXEL_FORMAT_P016LE:
-    case PIXEL_FORMAT_P216LE:
-    case PIXEL_FORMAT_P416LE:
+    case PIXEL_FORMAT_P010LE:
+    case PIXEL_FORMAT_P210LE:
+    case PIXEL_FORMAT_P410LE:
     case PIXEL_FORMAT_ARGB:
     case PIXEL_FORMAT_XRGB:
     case PIXEL_FORMAT_ABGR:
@@ -761,8 +784,9 @@ class VideoResourceUpdater::HardwarePlaneResource
     // These SharedImages will be sent over to the display compositor as
     // TransferableResources. RasterInterface which in turn uses RasterDecoder
     // writes the contents of video frames into SharedImages.
-    uint32_t shared_image_usage = gpu::SHARED_IMAGE_USAGE_DISPLAY_READ |
-                                  gpu::SHARED_IMAGE_USAGE_RASTER_WRITE;
+    gpu::SharedImageUsageSet shared_image_usage =
+        gpu::SHARED_IMAGE_USAGE_DISPLAY_READ |
+        gpu::SHARED_IMAGE_USAGE_RASTER_WRITE;
     if (overlay_candidate_) {
       shared_image_usage |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
     }
@@ -770,13 +794,8 @@ class VideoResourceUpdater::HardwarePlaneResource
         {format, size, color_space, shared_image_usage, "VideoResourceUpdater"},
         gpu::kNullSurfaceHandle);
     CHECK(shared_image_);
-    // Determine if a platform-specific target for overlays is needed if this SI
-    // is an overlay candidate (note that if this SI is *not* an overlay
-    // candidate, i.e., it does not have SCANOUT in its own usage, this call
-    // will return GL_TEXTURE_2D and hence will leave `texture_target_`
-    // unchanged).
-    texture_target_ =
-        shared_image_->GetTextureTarget(gfx::BufferUsage::SCANOUT);
+    // Determine if a platform-specific target is needed.
+    texture_target_ = shared_image_->GetTextureTarget();
     RasterInterface()->WaitSyncTokenCHROMIUM(
         sii->GenUnverifiedSyncToken().GetConstData());
   }
@@ -944,7 +963,7 @@ void VideoResourceUpdater::AppendQuads(
       if (frame->HasTextures()) {
         if (frame_resource_type_ == VideoFrameResourceType::YUV) {
           DCHECK(frame->format() == PIXEL_FORMAT_NV12 ||
-                 frame->format() == PIXEL_FORMAT_P016LE ||
+                 frame->format() == PIXEL_FORMAT_P010LE ||
                  frame->format() == PIXEL_FORMAT_I420);
         } else {
           DCHECK_EQ(frame->format(), PIXEL_FORMAT_NV12A);
@@ -1445,7 +1464,8 @@ bool VideoResourceUpdater::WriteRGBPixelsToTexture(
                      video_frame->visible_rect().y() * bytes_per_row +
                      video_frame->visible_rect().x() * sizeof(uint32_t);
     PaintCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
-        video_frame.get(), dest_ptr, bytes_per_row);
+        video_frame.get(), dest_ptr, bytes_per_row,
+        /*premultiply_alpha=*/false);
     source_pixels = upload_pixels_[0].get();
   }
 

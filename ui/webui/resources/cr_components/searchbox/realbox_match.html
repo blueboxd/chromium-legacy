@@ -105,6 +105,10 @@
     position: absolute;
   }
 
+  :host([show-thumbnail]) #ellipsis {
+    position: relative;
+  }
+
   #focus-indicator {
     background-color: var(--color-realbox-results-focus-indicator);
     border-radius: 3px;
@@ -170,7 +174,20 @@
   }
 
   .match {
-    font-weight: 600;
+    font-weight: var(--cr-realbox-match-font-weight, 600);
+  }
+
+  /* In the lens side panel searchbox, the typed prefix of the match should
+   * have a different color than the rest of the autocomplete suggestion. */
+  #contents span:not(.match),
+  #ellipsis {
+    color: var(--color-realbox-results-typed-prefix, --color-realbox-results-foreground);
+  }
+
+  /* Used to override contents color in zero prefix matches */
+  :host-context([has-empty-input]) #contents span,
+  :host-context([has-empty-input]) #ellipsis {
+    color: var(--color-realbox-results-foreground);
   }
 
   /* Use dimmed color for descriptions. */
@@ -286,6 +303,9 @@
            prepended to the match content in other surfaces-->
       <span id="ellipsis">...&nbsp</span>
     </span>
+    <!-- When a thumbnail is in the searchbox all results should have an
+         ellipsis prepended to the suggestion. -->
+    <span id="ellipsis" hidden$="[[!showThumbnail]]">...&nbsp</span>
     <span id="contents" inner-h-t-m-l="[[contentsHtml_]]"></span>
     <span id="separator" class="dim">[[separatorText_]]</span>
     <span id="description" inner-h-t-m-l="[[descriptionHtml_]]"></span>

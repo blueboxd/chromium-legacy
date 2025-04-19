@@ -6,6 +6,7 @@
 
 #include "base/containers/contains.h"
 #include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-shared.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/layout/fragmentation_utils.h"
 #include "third_party/blink/renderer/core/layout/physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/physical_fragment.h"
@@ -75,6 +76,9 @@ PhysicalFragment::BoxType FragmentBuilder::GetBoxType() const {
   }
   if (layout_object_->IsRenderedLegend()) {
     return PhysicalFragment::BoxType::kRenderedLegend;
+  }
+  if (layout_object_->StyleRef().IsPageMarginBox()) {
+    return PhysicalFragment::BoxType::kPageMargin;
   }
   if (layout_object_->IsInline()) {
     // Check |IsAtomicInlineLevel()| after |IsInline()| because |LayoutReplaced|
@@ -164,23 +168,36 @@ LogicalAnchorQuery& FragmentBuilder::EnsureAnchorQuery() {
 void FragmentBuilder::PropagateChildAnchors(const PhysicalFragment& child,
                                             const LogicalOffset& child_offset) {
   std::optional<LogicalAnchorQuery::SetOptions> options;
+  Element* context = nullptr;
+  if (auto* node = child.GetNode()) {
+    if (auto* element = DynamicTo<Element>(node)) {
+      if (auto* display_lock = element->GetDisplayLockContext()) {
+        // An element can't anchor to the skipped contents of an element.
+        // https://drafts.csswg.org/css-anchor-position-1/#target
+        if (display_lock->IsLocked()) {
+          return;
+        }
+        context = element;
+      }
+    }
+  }
   if (child.IsBox() &&
       (child.Style().AnchorName() || child.IsImplicitAnchor())) {
     // Set the child's `anchor-name` before propagating its descendants', so
     // that ancestors have precedence over their descendants.
-    DCHECK(RuntimeEnabledFeatures::CSSAnchorPositioningEnabled());
     LogicalRect rect{child_offset,
                      child.Size().ConvertToLogical(GetWritingMode())};
     options = AnchorQuerySetOptions(
         child, node_, IsBlockFragmentationContextRoot() || HasItems());
     if (child.Style().AnchorName()) {
       for (const ScopedCSSName* name : child.Style().AnchorName()->GetNames()) {
-        EnsureAnchorQuery().Set(name, *child.GetLayoutObject(), rect, *options);
+        EnsureAnchorQuery().Set(name, *child.GetLayoutObject(), rect, *options,
+                                context);
       }
     }
     if (child.IsImplicitAnchor()) {
       EnsureAnchorQuery().Set(child.GetLayoutObject(), *child.GetLayoutObject(),
-                              rect, *options);
+                              rect, *options, context);
     }
   }
 
@@ -192,7 +209,7 @@ void FragmentBuilder::PropagateChildAnchors(const PhysicalFragment& child,
     }
     const WritingModeConverter converter(GetWritingDirection(), child.Size());
     EnsureAnchorQuery().SetFromPhysical(*anchor_query, converter, child_offset,
-                                        *options);
+                                        *options, context);
   }
 }
 
@@ -551,7 +568,7 @@ void FragmentBuilder::MoveOutOfFlowDescendantCandidatesToDescendants() {
 LayoutUnit FragmentBuilder::BlockOffsetAdjustmentForFragmentainer(
     LayoutUnit fragmentainer_consumed_block_size) const {
   if (IsFragmentainerBoxType() && PreviousBreakToken()) {
-    return PreviousBreakToken()->ConsumedBlockSize();
+    return To<BlockBreakToken>(PreviousBreakToken())->ConsumedBlockSize();
   }
   return fragmentainer_consumed_block_size;
 }

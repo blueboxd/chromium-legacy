@@ -11,6 +11,8 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/payments/credit_card_save_manager.h"
+#include "components/autofill/core/browser/payments/iban_save_manager.h"
+#include "components/autofill/core/browser/payments/local_card_migration_manager.h"
 
 namespace autofill {
 
@@ -99,11 +101,10 @@ class FormDataImporterTestApi {
   bool ProcessExtractedCreditCard(
       const FormStructure& submitted_form,
       const std::optional<CreditCard>& credit_card_import_candidate,
-      bool payment_methods_autofill_enabled,
       bool is_credit_card_upstream_enabled) {
-    return fdi_->ProcessExtractedCreditCard(
-        submitted_form, credit_card_import_candidate,
-        payment_methods_autofill_enabled, is_credit_card_upstream_enabled);
+    return fdi_->ProcessExtractedCreditCard(submitted_form,
+                                            credit_card_import_candidate,
+                                            is_credit_card_upstream_enabled);
   }
 
   std::optional<int64_t> fetched_card_instrument_id() {

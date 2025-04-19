@@ -384,8 +384,8 @@ HeapVector<Member<Element>> ComputeIntersectionList(
                ? common_subtree_root->contains(item)
                : item->IsDescendantOf(common_subtree_root);
   };
-  auto* to_remove = std::stable_partition(elements.begin(), elements.end(),
-                                          partition_condition);
+  auto to_remove = std::stable_partition(elements.begin(), elements.end(),
+                                         partition_condition);
   elements.erase(to_remove, elements.end());
   // Hit-testing traverses the tree from last to first child for each
   // container, so the result needs to be reversed.
@@ -765,16 +765,16 @@ void SVGSVGElement::SetViewSpec(const SVGViewSpec* view_spec) {
     MarkForLayoutAndParentResourceInvalidation(*layout_object);
 }
 
-void SVGSVGElement::SetupInitialView(const String& fragment_identifier,
-                                     Element* anchor_node) {
+const SVGViewSpec* SVGSVGElement::ParseViewSpec(
+    const String& fragment_identifier,
+    Element* anchor_node) const {
   if (fragment_identifier.StartsWith("svgView(")) {
     const SVGViewSpec* view_spec =
         SVGViewSpec::CreateFromFragment(fragment_identifier);
     if (view_spec) {
       UseCounter::Count(GetDocument(),
                         WebFeature::kSVGSVGElementFragmentSVGView);
-      SetViewSpec(view_spec);
-      return;
+      return view_spec;
     }
   }
   if (auto* svg_view_element = DynamicTo<SVGViewElement>(anchor_node)) {
@@ -787,10 +787,9 @@ void SVGSVGElement::SetupInitialView(const String& fragment_identifier,
         SVGViewSpec::CreateForViewElement(*svg_view_element);
     UseCounter::Count(GetDocument(),
                       WebFeature::kSVGSVGElementFragmentSVGViewElement);
-    SetViewSpec(view_spec);
-    return;
+    return view_spec;
   }
-  SetViewSpec(nullptr);
+  return nullptr;
 }
 
 void SVGSVGElement::FinishParsingChildren() {

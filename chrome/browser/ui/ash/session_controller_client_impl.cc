@@ -348,15 +348,17 @@ base::FilePath SessionControllerClientImpl::GetProfilePath(
   return user_profile->GetPath();
 }
 
-bool SessionControllerClientImpl::IsEligibleForSeaPen(
+std::tuple<bool, bool> SessionControllerClientImpl::IsEligibleForSeaPen(
     const AccountId& account_id) {
   Profile* const user_profile =
       multi_user_util::GetProfileFromAccountId(account_id);
   if (!user_profile) {
-    return false;
+    return {false, false};
   }
 
-  return ash::personalization_app::IsEligibleForSeaPen(user_profile);
+  return {ash::personalization_app::IsEligibleForSeaPen(user_profile),
+          ash::personalization_app::IsManagedSeaPenVcBackgroundEnabled(
+              user_profile)};
 }
 
 std::optional<int> SessionControllerClientImpl::GetExistingUsersCount() const {
@@ -554,6 +556,10 @@ void SessionControllerClientImpl::OnUserProfileLoaded(
     const AccountId& account_id) {
   OnLoginUserProfilePrepared(
       ash::ProfileHelper::Get()->GetProfileByAccountId(account_id));
+}
+
+void SessionControllerClientImpl::OnUserSessionStartUpTaskCompleted() {
+  session_controller_->NotifyFirstSessionReady();
 }
 
 void SessionControllerClientImpl::OnCustodianInfoChanged() {

@@ -4,14 +4,19 @@
 
 #include "components/optimization_guide/core/model_execution/on_device_model_feature_adapter.h"
 
+#include <optional>
 #include <string>
 
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
 #include "base/timer/elapsed_timer.h"
+#include "base/types/expected.h"
 #include "components/optimization_guide/core/model_execution/on_device_model_execution_proto_descriptors.h"
 #include "components/optimization_guide/core/model_execution/on_device_model_execution_proto_value_utils.h"
 #include "components/optimization_guide/core/model_execution/redactor.h"
+#include "components/optimization_guide/core/model_execution/response_parser.h"
+#include "components/optimization_guide/core/model_execution/response_parser_registry.h"
+#include "components/optimization_guide/core/model_execution/simple_response_parser.h"
 #include "components/optimization_guide/core/optimization_guide_constants.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/optimization_guide/core/optimization_guide_util.h"
@@ -20,13 +25,10 @@ namespace optimization_guide {
 
 OnDeviceModelFeatureAdapter::OnDeviceModelFeatureAdapter(
     proto::OnDeviceModelExecutionFeatureConfig&& config)
-    : config_(config) {
-  if (config_.has_output_config() &&
-      config_.output_config().has_redact_rules() &&
-      config_.output_config().redact_rules().fields_to_check_size() &&
-      !config_.output_config().redact_rules().rules().empty()) {
-    redactor_ = Redactor::FromProto(config.output_config().redact_rules());
-  }
+    : config_(config),
+      redactor_(Redactor::FromProto(config.output_config().redact_rules())),
+      parser_(
+          ResponseParserRegistry::Get().CreateParser(config_.output_config())) {
 }
 
 OnDeviceModelFeatureAdapter::~OnDeviceModelFeatureAdapter() = default;
@@ -62,31 +64,35 @@ OnDeviceModelFeatureAdapter::ConstructInputString(
                                   : input_config.execute_substitutions());
 }
 
-std::optional<proto::Any> OnDeviceModelFeatureAdapter::ConstructOutputMetadata(
-    const std::string& output) const {
-  if (!config_.has_output_config()) {
-    return std::nullopt;
-  }
-  auto output_config = config_.output_config();
-
-  return SetProtoValue(output_config.proto_type(), output_config.proto_field(),
-                       output);
-}
-
 RedactResult OnDeviceModelFeatureAdapter::Redact(
     const google::protobuf::MessageLite& last_message,
     std::string& current_response) const {
-  if (!redactor_) {
-    return RedactResult::kContinue;
-  }
   auto redact_string_input = GetStringToCheckForRedacting(last_message);
   base::ElapsedTimer elapsed_timer;
-  auto redact_result = redactor_->Redact(redact_string_input, current_response);
+  auto redact_result = redactor_.Redact(redact_string_input, current_response);
   base::UmaHistogramMicrosecondsTimes(
       base::StrCat({"OptimizationGuide.ModelExecution.TimeToProcessRedactions.",
                     GetStringNameForModelExecutionFeature(config_.feature())}),
       elapsed_timer.Elapsed());
   return redact_result;
+}
+
+void OnDeviceModelFeatureAdapter::ParseResponse(
+    const google::protobuf::MessageLite& request,
+    const std::string& model_response,
+    ResponseParser::ResultCallback callback) const {
+  std::string redacted_response = model_response;
+  auto redact_result = Redact(request, redacted_response);
+  if (redact_result != RedactResult::kContinue) {
+    std::move(callback).Run(
+        base::unexpected(ResponseParsingError::kRejectedPii));
+    return;
+  }
+  if (!parser_) {
+    std::move(callback).Run(base::unexpected(ResponseParsingError::kFailed));
+    return;
+  }
+  parser_->ParseAsync(redacted_response, std::move(callback));
 }
 
 std::optional<proto::TextSafetyRequest>
@@ -114,6 +120,17 @@ OnDeviceModelFeatureAdapter::ConstructTextSafetyRequest(
   }
 
   return text_safety_request;
+}
+
+std::optional<SamplingParams> OnDeviceModelFeatureAdapter::MaybeSamplingParams()
+    const {
+  if (!config_.has_sampling_params()) {
+    return std::nullopt;
+  }
+  return SamplingParams{
+      .top_k = config_.sampling_params().top_k(),
+      .temperature = config_.sampling_params().temperature(),
+  };
 }
 
 }  // namespace optimization_guide

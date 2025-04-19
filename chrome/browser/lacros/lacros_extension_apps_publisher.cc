@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/not_fatal_until.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/extension_apps_utils.h"
@@ -35,6 +36,7 @@
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/cpp/intent_filter.h"
+#include "components/services/app_service/public/cpp/package_id.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
@@ -309,6 +311,8 @@ class LacrosExtensionAppsPublisher::ProfileTracker
     app->readiness = is_app_disabled ? Readiness::kDisabledByPolicy : readiness;
     app->name = extension->name();
     app->short_name = extension->short_name();
+    app->installer_package_id =
+        apps::PackageId(apps::PackageType::kChromeApp, extension->id());
 
     // TODO(crbug.com/40240007): Work out how pinning interacts with Lacros
     // multi-profile support once there is a product decision on what that looks
@@ -633,7 +637,7 @@ void LacrosExtensionAppsPublisher::UpdateAppWindowMode(
 
   // Republish the app.
   auto matched = profile_trackers_.find(profile);
-  DCHECK(matched != profile_trackers_.end());
+  CHECK(matched != profile_trackers_.end(), base::NotFatalUntil::M130);
   matched->second->Publish(extension, apps::Readiness::kReady);
 }
 

@@ -369,7 +369,6 @@ void V8ContextTracker::OnPassedToGraph(Graph* graph) {
   DCHECK_ON_GRAPH_SEQUENCE(graph);
 
   graph->AddProcessNodeObserver(this);
-  graph->RegisterObject(this);
   graph->GetNodeDataDescriberRegistry()->RegisterDescriber(this,
                                                            "V8ContextTracker");
   auto* registry =
@@ -388,7 +387,6 @@ void V8ContextTracker::OnTakenFromGraph(Graph* graph) {
   registry->RemoveObserver(this);
 
   graph->GetNodeDataDescriberRegistry()->UnregisterDescriber(this);
-  graph->UnregisterObject(this);
   graph->RemoveProcessNodeObserver(this);
 }
 
@@ -440,7 +438,7 @@ base::Value::Dict V8ContextTracker::DescribeWorkerNodeData(
   DCHECK_ON_GRAPH_SEQUENCE(node->GetGraph());
   size_t v8_context_count = 0;
   const auto* ec_data =
-      data_store_->Get(ToExecutionContextToken(node->GetWorkerToken()));
+      data_store_->Get(blink::ExecutionContextToken(node->GetWorkerToken()));
   if (ec_data)
     v8_context_count = ec_data->v8_context_count();
 

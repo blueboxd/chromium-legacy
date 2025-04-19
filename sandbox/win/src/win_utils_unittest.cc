@@ -120,75 +120,6 @@ void TestCurrentProcessHandles(std::optional<ProcessHandleMap> (*func)()) {
 
 }  // namespace
 
-TEST(WinUtils, IsReparsePoint) {
-  using sandbox::IsReparsePoint;
-  // Create a temp file because we need write access to it.
-  wchar_t temp_directory[MAX_PATH];
-  wchar_t my_folder[MAX_PATH];
-  ASSERT_NE(::GetTempPath(MAX_PATH, temp_directory), 0u);
-  ASSERT_NE(::GetTempFileName(temp_directory, L"test", 0, my_folder), 0u);
-
-  // Delete the file and create a directory instead.
-  ASSERT_TRUE(::DeleteFile(my_folder));
-  ASSERT_TRUE(::CreateDirectory(my_folder, nullptr));
-
-  EXPECT_EQ(static_cast<DWORD>(ERROR_NOT_A_REPARSE_POINT),
-            IsReparsePoint(my_folder));
-
-  std::wstring not_found = std::wstring(my_folder) + L"\\foo\\bar";
-  EXPECT_EQ(static_cast<DWORD>(ERROR_NOT_A_REPARSE_POINT),
-            IsReparsePoint(not_found));
-
-  std::wstring new_file = std::wstring(my_folder) + L"\\foo";
-  EXPECT_EQ(static_cast<DWORD>(ERROR_NOT_A_REPARSE_POINT),
-            IsReparsePoint(new_file));
-
-  // Replace the directory with a reparse point to %temp%.
-  HANDLE dir = ::CreateFile(my_folder, FILE_WRITE_DATA,
-                            FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
-                            OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
-  EXPECT_NE(INVALID_HANDLE_VALUE, dir);
-
-  std::wstring temp_dir_nt = std::wstring(L"\\??\\") + temp_directory;
-  EXPECT_TRUE(SetReparsePoint(dir, temp_dir_nt.c_str()));
-
-  EXPECT_EQ(static_cast<DWORD>(ERROR_SUCCESS), IsReparsePoint(new_file));
-
-  EXPECT_TRUE(DeleteReparsePoint(dir));
-  EXPECT_TRUE(::CloseHandle(dir));
-  EXPECT_TRUE(::RemoveDirectory(my_folder));
-}
-
-TEST(WinUtils, SameObject) {
-  using sandbox::SameObject;
-
-  // Create a temp file because we need write access to it.
-  wchar_t temp_directory[MAX_PATH];
-  wchar_t my_folder[MAX_PATH];
-  ASSERT_NE(::GetTempPath(MAX_PATH, temp_directory), 0u);
-  ASSERT_NE(::GetTempFileName(temp_directory, L"test", 0, my_folder), 0u);
-
-  // Delete the file and create a directory instead.
-  ASSERT_TRUE(::DeleteFile(my_folder));
-  ASSERT_TRUE(::CreateDirectory(my_folder, nullptr));
-
-  std::wstring folder(my_folder);
-  std::wstring file_name = folder + L"\\foo.txt";
-  const ULONG kSharing = FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE;
-  base::win::ScopedHandle file(CreateFile(file_name.c_str(), GENERIC_WRITE,
-                                          kSharing, nullptr, CREATE_ALWAYS,
-                                          FILE_FLAG_DELETE_ON_CLOSE, nullptr));
-
-  EXPECT_TRUE(file.is_valid());
-  std::wstring file_name_nt1 = std::wstring(L"\\??\\") + file_name;
-  std::wstring file_name_nt2 = std::wstring(L"\\??\\") + folder + L"\\FOO.txT";
-  EXPECT_TRUE(SameObject(file.get(), file_name_nt1.c_str()));
-  EXPECT_TRUE(SameObject(file.get(), file_name_nt2.c_str()));
-
-  file.Close();
-  EXPECT_TRUE(::RemoveDirectory(my_folder));
-}
-
 TEST(WinUtils, IsPipe) {
   using sandbox::IsPipe;
 
@@ -264,57 +195,6 @@ TEST(WinUtils, GetProcessBaseAddress) {
   EXPECT_EQ(base_address, modules[0]);
 }
 
-// This test requires an elevated prompt to setup.
-TEST(WinUtils, ConvertToLongPath) {
-  // Test setup.
-  base::FilePath orig_path;
-  ASSERT_TRUE(base::PathService::Get(base::DIR_SYSTEM, &orig_path));
-  orig_path = orig_path.Append(L"calc.exe");
-
-  base::ScopedTempDir temp_dir;
-  base::FilePath base_path;
-  ASSERT_TRUE(base::PathService::Get(base::DIR_COMMON_APP_DATA, &base_path));
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDirUnderPath(base_path));
-
-  base::FilePath temp_path = temp_dir.GetPath().Append(L"test_calc.exe");
-  ASSERT_TRUE(base::CopyFile(orig_path, temp_path));
-
-  // WIN32 long path: "C:\ProgramData\%TEMP%\test_calc.exe"
-  wchar_t short_path[MAX_PATH] = {};
-  DWORD size =
-      ::GetShortPathNameW(temp_path.value().c_str(), short_path, MAX_PATH);
-  EXPECT_TRUE(size > 0 && size < MAX_PATH);
-  // WIN32 short path: "C:\PROGRA~3\%TEMP%\TEST_C~1.exe"
-
-  // Sanity check that we actually got a short path above!  Small chance
-  // it was disabled in the filesystem setup.
-  EXPECT_NE(temp_path.value().length(), ::wcslen(short_path));
-
-  auto short_form_native_path =
-      sandbox::GetNtPathFromWin32Path(std::wstring(short_path));
-  EXPECT_TRUE(short_form_native_path);
-  // NT short path: "\Device\HarddiskVolume4\PROGRA~3\%TEMP%\TEST_C~1.EXE"
-
-  // Test 1: convert win32 short path to long:
-  std::wstring test1(short_path);
-  EXPECT_TRUE(sandbox::ConvertToLongPath(&test1));
-  EXPECT_TRUE(::wcsicmp(temp_path.value().c_str(), test1.c_str()) == 0);
-  // Expected result: "C:\ProgramData\%TEMP%\test_calc.exe"
-
-  // Test 2: convert native short path to long:
-  std::wstring drive_letter = temp_path.value().substr(0, 3);
-  std::wstring test2(short_form_native_path.value());
-  EXPECT_TRUE(sandbox::ConvertToLongPath(&test2, &drive_letter));
-
-  size_t index = short_form_native_path->find_first_of(
-      L'\\', ::wcslen(L"\\Device\\HarddiskVolume"));
-  EXPECT_TRUE(index != std::wstring::npos);
-  std::wstring expected_result = short_form_native_path->substr(0, index + 1);
-  expected_result.append(temp_path.value().substr(3));
-  EXPECT_TRUE(::wcsicmp(expected_result.c_str(), test2.c_str()) == 0);
-  // Expected result: "\Device\HarddiskVolumeX\ProgramData\%TEMP%\test_calc.exe"
-}
-
 TEST(WinUtils, GetPathAndTypeFromHandle) {
   EXPECT_FALSE(GetPathFromHandle(nullptr));
   EXPECT_FALSE(GetTypeNameFromHandle(nullptr));
@@ -337,6 +217,15 @@ TEST(WinUtils, GetPathAndTypeFromHandle) {
 
 TEST(WinUtils, GetCurrentProcessHandles) {
   TestCurrentProcessHandles(GetCurrentProcessHandles);
+}
+
+TEST(WinUtils, ContainsNulCharacter) {
+  std::wstring str = L"ABC";
+  EXPECT_FALSE(ContainsNulCharacter(str));
+  str.push_back('\0');
+  EXPECT_TRUE(ContainsNulCharacter(str));
+  str += L"XYZ";
+  EXPECT_TRUE(ContainsNulCharacter(str));
 }
 
 }  // namespace sandbox

@@ -11,8 +11,6 @@
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
-#include "ash/wm/overview/overview_focus_cycler_old.h"
-#include "ash/wm/overview/overview_focusable_view.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_group_container_view.h"
 #include "ash/wm/overview/overview_item.h"
@@ -335,15 +333,12 @@ void OverviewGroupItem::EnsureVisible() {
   }
 }
 
-std::vector<OverviewFocusableView*> OverviewGroupItem::GetFocusableViews()
-    const {
-  std::vector<OverviewFocusableView*> focusable_views;
+std::vector<views::Widget*> OverviewGroupItem::GetFocusableWidgets() {
+  std::vector<views::Widget*> focusable_widgets;
   for (const auto& overview_item : overview_items_) {
-    if (auto* overview_item_view = overview_item->overview_item_view()) {
-      focusable_views.push_back(overview_item_view);
-    }
+    focusable_widgets.push_back(overview_item->item_widget());
   }
-  return focusable_views;
+  return focusable_widgets;
 }
 
 views::View* OverviewGroupItem::GetBackDropView() const {
@@ -390,14 +385,10 @@ void OverviewGroupItem::OnStartingAnimationComplete() {
   }
 }
 
-void OverviewGroupItem::CloseWindows() {
-  for (const auto& overview_item : overview_items_) {
-    overview_item->CloseWindows();
-  }
-}
-
 void OverviewGroupItem::Restack() {
-  CHECK(!overview_items_.empty());
+  if (overview_items_.empty() || !item_widget_) {
+    return;
+  }
 
   // Sort the items in `sorted_items` based on their stacking order, starting
   // with the lowest.
@@ -483,7 +474,13 @@ void OverviewGroupItem::Shutdown() {
   }
 }
 
-void OverviewGroupItem::AnimateAndCloseItem(bool up) {}
+void OverviewGroupItem::AnimateAndCloseItem(bool up) {
+  animating_to_close_ = true;
+
+  for (const auto& overview_item : overview_items_) {
+    overview_item->AnimateAndCloseItem(up);
+  }
+}
 
 void OverviewGroupItem::StopWidgetAnimation() {
   for (const auto& overview_item : overview_items_) {
@@ -502,25 +499,6 @@ void OverviewGroupItem::UpdateOverviewItemFillMode() {
   for (const auto& overview_item : overview_items_) {
     overview_item->UpdateOverviewItemFillMode();
   }
-}
-
-gfx::Point OverviewGroupItem::GetMagnifierFocusPointInScreen() const {
-  CHECK(!overview_items_.empty());
-
-  OverviewSession* overview_session =
-      OverviewController::Get()->overview_session();
-  CHECK(overview_session);
-  OverviewFocusCyclerOld* focus_cycler_old =
-      overview_session->focus_cycler_old();
-  for (const auto& overview_item : overview_items_) {
-    if (overview_item->overview_item_view() ==
-        focus_cycler_old->focused_view()) {
-      return overview_item->GetMagnifierFocusPointInScreen();
-    }
-  }
-
-  NOTREACHED_IN_MIGRATION();
-  return gfx::Point();
 }
 
 const gfx::RoundedCornersF OverviewGroupItem::GetRoundedCorners() const {

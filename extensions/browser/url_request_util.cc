@@ -9,7 +9,6 @@
 #include "base/types/optional_util.h"
 #include "extensions/browser/extension_navigation_ui_data.h"
 #include "extensions/browser/extensions_browser_client.h"
-#include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -21,13 +20,17 @@
 #include "services/network/public/cpp/request_destination.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "third_party/blink/public/common/loader/resource_type_util.h"
+#include "url/gurl.h"
+
+#if BUILDFLAG(ENABLE_GUEST_VIEW)
+#include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
+#endif
 
 #if BUILDFLAG(ENABLE_PDF)
 #include "pdf/pdf_features.h"
 #endif  // BUILDFLAG(ENABLE_PDF)
 
-namespace extensions {
-namespace url_request_util {
+namespace extensions::url_request_util {
 
 bool AllowCrossRendererResourceLoad(
     const network::ResourceRequest& request,
@@ -38,6 +41,7 @@ bool AllowCrossRendererResourceLoad(
     const Extension* extension,
     const ExtensionSet& extensions,
     const ProcessMap& process_map,
+    const GURL& upstream_url,
     bool* allowed) {
   const GURL& url = request.url;
   std::string_view resource_path = url.path_piece();
@@ -49,14 +53,19 @@ bool AllowCrossRendererResourceLoad(
     // Extensions with webview: allow loading certain resources by guest
     // renderers with privileged partition IDs as specified in owner's extension
     // the manifest file.
-    std::string owner_extension_id;
+    bool is_guest = false;
+    std::string partition_id;
+    const Extension* owner_extension = nullptr;
+
+#if BUILDFLAG(ENABLE_GUEST_VIEW)
     int owner_process_id;
+    std::string owner_extension_id;
     WebViewRendererState::GetInstance()->GetOwnerInfo(
         child_id, &owner_process_id, &owner_extension_id);
-    const Extension* owner_extension = extensions.GetByID(owner_extension_id);
-    std::string partition_id;
-    bool is_guest = WebViewRendererState::GetInstance()->GetPartitionID(
+    owner_extension = extensions.GetByID(owner_extension_id);
+    is_guest = WebViewRendererState::GetInstance()->GetPartitionID(
         child_id, &partition_id);
+#endif
 
     if (AllowCrossRendererResourceLoadHelper(
             is_guest, extension, owner_extension, partition_id, resource_path,
@@ -121,9 +130,9 @@ bool AllowCrossRendererResourceLoad(
 
   // Allow web accessible extension resources to be loaded as
   // subresources/sub-frames.
-  if (WebAccessibleResourcesInfo::IsResourceWebAccessible(
-          extension, std::string(resource_path),
-          base::OptionalToPtr(request.request_initiator))) {
+  if (url.SchemeIs(extensions::kExtensionScheme) &&
+      WebAccessibleResourcesInfo::IsResourceWebAccessibleRedirect(
+          extension, url, request.request_initiator, upstream_url)) {
     *allowed = true;
     return true;
   }
@@ -169,5 +178,4 @@ bool AllowCrossRendererResourceLoadHelper(bool is_guest,
   return false;
 }
 
-}  // namespace url_request_util
-}  // namespace extensions
+}  // namespace extensions::url_request_util

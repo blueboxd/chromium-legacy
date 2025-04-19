@@ -105,7 +105,7 @@ class RendererSavePasswordProgressLogger;
 class PasswordGenerationAgent;
 
 // This class is responsible for filling password forms.
-// TODO(b/40281981): Remove FormTracker::Observer after launching
+// TODO(crbug.com/40281981): Remove FormTracker::Observer after launching
 // kAutofillUnifyAndFixFormTracking.
 class PasswordAutofillAgent : public content::RenderFrameObserver,
                               public FormTracker::Observer,
@@ -216,10 +216,10 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // JavaScript.
   void UserGestureObserved();
 
-  std::unique_ptr<FormData> GetFormDataFromWebForm(
+  std::optional<FormData> GetFormDataFromWebForm(
       const blink::WebFormElement& web_form);
 
-  std::unique_ptr<FormData> GetFormDataFromUnownedInputElements();
+  std::optional<FormData> GetFormDataFromUnownedInputElements();
 
   // Notification that form element was cleared by HTMLFormElement::reset()
   // method. This can be used as a signal of a successful submission for change
@@ -339,7 +339,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
 
     // Call this for every autofilled username and password field, so that
     // the gatekeeper protects the value accordingly.
-    void RegisterElement(blink::WebInputElement* element);
+    void RegisterElement(blink::WebInputElement element);
 
     // Call this to notify the gatekeeper that the user interacted with the
     // page.
@@ -350,7 +350,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
 
    private:
     // Make the value of `element` accessible to JavaScript code.
-    void ShowValue(blink::WebInputElement* element);
+    void ShowValue(blink::WebInputElement element);
 
     bool was_user_gesture_seen_;
     std::vector<FieldRef> elements_;
@@ -422,18 +422,18 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
 
   // Sets suggested value of the `input` to `credential`. Persists the
   // information about `input` to clear the previewed value in the future.
-  void DoPreviewField(blink::WebInputElement& input,
+  void DoPreviewField(blink::WebInputElement input,
                       const std::u16string& credential,
                       bool is_password);
 
   // Checks that a given input field is valid before filling the given `input`
   // with the given `credential` and marking the field as auto-filled.
-  void DoFillField(blink::WebInputElement& input,
+  void DoFillField(blink::WebInputElement input,
                    const std::u16string& credential);
 
   // Uses `FillField` to fill the given `credential` into the `password_input`.
   // Saves the password for its associated form.
-  void FillPasswordFieldAndSave(blink::WebInputElement& password_input,
+  void FillPasswordFieldAndSave(blink::WebInputElement password_input,
                                 const std::u16string& credential);
 
   // This function attempts to fill `username_element` and `password_element`
@@ -485,7 +485,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   bool WasFormStructureChanged(const FormStructureInfo& form_data) const;
   // Tries to restore `control_elements` values with cached values.
   void TryFixAutofilledForm(
-      std::vector<blink::WebFormControlElement>* control_elements) const;
+      std::vector<blink::WebFormControlElement>& control_elements) const;
 
   // Autofills `field` with `value` and updates `gatekeeper_`,
   // `field_data_manager_`, `autofilled_elements_cache_`. `field` should be
@@ -532,6 +532,8 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   PasswordToLoginMap password_to_username_;
   // The chronologically last insertion into `web_input_to_password_info_`.
   WebInputToPasswordInfoMap::iterator last_supplied_password_info_iter_;
+  // Set of fields that are reliably identified as non-credential fields.
+  base::flat_set<FieldRendererId> suggestion_banned_fields_;
 
   bool should_show_popup_without_passwords_ = false;
 
@@ -553,7 +555,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
 
   raw_ptr<AutofillAgent> autofill_agent_ = nullptr;
 
-  raw_ptr<PasswordGenerationAgent, DanglingUntriaged>
+  raw_ptr<PasswordGenerationAgent>
       password_generation_agent_;  // Weak reference.
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)

@@ -11,17 +11,16 @@
 
 #include "partition_alloc/address_space_stats.h"
 #include "partition_alloc/build_config.h"
+#include "partition_alloc/buildflags.h"
 #include "partition_alloc/page_allocator.h"
 #include "partition_alloc/page_allocator_constants.h"
-#include "partition_alloc/partition_alloc_base/debug/debugging_buildflags.h"
 #include "partition_alloc/partition_alloc_base/notreached.h"
-#include "partition_alloc/partition_alloc_buildflags.h"
 #include "partition_alloc/partition_alloc_check.h"
 #include "partition_alloc/partition_alloc_constants.h"
 #include "partition_alloc/reservation_offset_table.h"
 #include "partition_alloc/thread_isolation/alignment.h"
 
-#if BUILDFLAG(IS_APPLE) || PA_BUILDFLAG(ENABLE_THREAD_ISOLATION)
+#if PA_BUILDFLAG(IS_APPLE) || PA_BUILDFLAG(ENABLE_THREAD_ISOLATION)
 #include <sys/mman.h>
 #endif
 
@@ -125,7 +124,7 @@ void AddressPoolManager::Pool::Initialize(uintptr_t ptr, size_t length) {
   PA_CHECK(!(ptr & kSuperPageOffsetMask));
   PA_CHECK(!(length & kSuperPageOffsetMask));
   address_begin_ = ptr;
-#if PA_BUILDFLAG(PA_DCHECK_IS_ON)
+#if PA_BUILDFLAG(DCHECKS_ARE_ON)
   address_end_ = ptr + length;
   PA_DCHECK(address_begin_ < address_end_);
 #endif
@@ -204,7 +203,7 @@ uintptr_t AddressPoolManager::Pool::FindChunk(size_t requested_size) {
         bit_hint_ = end_bit;
       }
       uintptr_t address = address_begin_ + beg_bit * kSuperPageSize;
-#if PA_BUILDFLAG(PA_DCHECK_IS_ON)
+#if PA_BUILDFLAG(DCHECKS_ARE_ON)
       PA_DCHECK(address + requested_size <= address_end_);
 #endif
       return address;
@@ -246,7 +245,7 @@ void AddressPoolManager::Pool::FreeChunk(uintptr_t address, size_t free_size) {
   PA_DCHECK(!(free_size & kSuperPageOffsetMask));
 
   PA_DCHECK(address_begin_ <= address);
-#if PA_BUILDFLAG(PA_DCHECK_IS_ON)
+#if PA_BUILDFLAG(DCHECKS_ARE_ON)
   PA_DCHECK(address + free_size <= address_end_);
 #endif
 
@@ -557,7 +556,7 @@ void AddressPoolManager::DumpStats(AddressSpaceStatsDumper* dumper) {
 
 #if PA_BUILDFLAG(ENABLE_THREAD_ISOLATION)
 // This function just exists to static_assert the layout of the private fields
-// in Pool.
+// in Pool. It is never called.
 void AddressPoolManager::AssertThreadIsolatedLayout() {
   constexpr size_t last_pool_offset =
       offsetof(AddressPoolManager, pools_) + sizeof(Pool) * (kNumPools - 1);

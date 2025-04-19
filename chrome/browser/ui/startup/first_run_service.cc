@@ -108,8 +108,8 @@ enum class PolicyEffect {
 
 PolicyEffect ComputeDevicePolicyEffect(Profile& profile) {
   const PrefService* const local_state = g_browser_process->local_state();
-  if (!local_state->GetBoolean(prefs::kPromotionalTabsEnabled)) {
-    // Corresponding policy: PromotionalTabsEnabled=false
+  if (!local_state->GetBoolean(prefs::kPromotionsEnabled)) {
+    // Corresponding policy: PromotionsEnabled=false
     return PolicyEffect::kDisabled;
   }
 
@@ -172,7 +172,6 @@ bool IsFirstRunMarkedFinishedInPrefs() {
 // static
 void FirstRunService::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kFirstRunFinished, false);
-  registry->RegisterStringPref(prefs::kFirstRunStudyGroup, "");
 }
 
 FirstRunService::FirstRunService(Profile& profile,
@@ -234,13 +233,12 @@ void FirstRunService::TryMarkFirstRunAlreadyFinished(
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   switch (policy_effect) {
     case PolicyEffect::kDisabled:
-      if (!chrome::enterprise_util::UserAcceptedAccountManagement(
-              &profile_.get())) {
+      if (!enterprise_util::UserAcceptedAccountManagement(&profile_.get())) {
         // Management had to be accepted to create the session. Normally this
         // gets set during the FRE (TurnSyncOn flow), but since it is skipped,
         // set the flag here.
-        chrome::enterprise_util::SetUserAcceptedAccountManagement(
-            &profile_.get(), true);
+        enterprise_util::SetUserAcceptedAccountManagement(&profile_.get(),
+                                                          true);
       }
       break;
     case PolicyEffect::kSilenced:

@@ -17,14 +17,15 @@
 #include "components/safe_browsing/core/browser/db/v4_protocol_manager_util.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_web_contents_helper.h"
+#include "components/subresource_filter/content/browser/safe_browsing_ruleset_publisher.h"
 #include "components/subresource_filter/content/browser/subresource_filter_content_settings_manager.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_test_utils.h"
 #include "components/subresource_filter/content/browser/subresource_filter_profile_context.h"
 #include "components/subresource_filter/content/browser/test_ruleset_publisher.h"
 #include "components/subresource_filter/content/shared/browser/ruleset_service.h"
-#include "components/subresource_filter/core/browser/subresource_filter_constants.h"
 #include "components/subresource_filter/core/common/activation_decision.h"
 #include "components/subresource_filter/core/common/activation_list.h"
+#include "components/subresource_filter/core/common/constants.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
 #include "components/subresource_filter/core/common/test_ruleset_utils.h"
 #include "components/subresource_filter/core/mojom/subresource_filter.mojom.h"
@@ -77,7 +78,8 @@ void SubresourceFilterTestHarness::SetUp() {
       kSafeBrowsingRulesetConfig, &pref_service_,
       base::SingleThreadTaskRunner::GetCurrentDefault(),
       ruleset_service_dir_.GetPath(),
-      base::SingleThreadTaskRunner::GetCurrentDefault());
+      base::SingleThreadTaskRunner::GetCurrentDefault(),
+      SafeBrowsingRulesetPublisher::Factory());
 
   // Publish the test ruleset.
   testing::TestRulesetCreator ruleset_creator;

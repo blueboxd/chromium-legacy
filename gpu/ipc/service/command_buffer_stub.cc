@@ -20,7 +20,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/constants.h"
-#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/decoder_context.h"
 #include "gpu/command_buffer/service/gpu_command_buffer_memory_tracker.h"
@@ -321,13 +320,10 @@ void CommandBufferStub::Destroy() {
     sync_point_client_state_ = nullptr;
   }
 
-  bool have_context = false;
-  if (decoder_context_ && decoder_context_->GetGLContext()) {
-    // Try to make the context current regardless of whether it was lost, so we
-    // don't leak resources.
-    have_context =
-        decoder_context_->GetGLContext()->MakeCurrent(surface_.get());
-  }
+  // Try to make the context current regardless of whether it was lost, so we
+  // don't leak resources. Don't use GetGLContext()->MakeCurrent() since that
+  // will make |have_context| false when RasterDecoder doesn't use GL.
+  const bool have_context = decoder_context_ && decoder_context_->MakeCurrent();
 
   std::optional<gles2::ProgramCache::ScopedCacheUse> cache_use;
   if (have_context)
@@ -623,6 +619,10 @@ void CommandBufferStub::HandleReturnData(base::span<const uint8_t> data) {
   client_->OnReturnData(std::vector<uint8_t>(data.begin(), data.end()));
 }
 
+bool CommandBufferStub::ShouldYield() {
+  return channel_->scheduler()->ShouldYield(sequence_id_);
+}
+
 void CommandBufferStub::OnConsoleMessage(int32_t id,
                                          const std::string& message) {
   client_->OnConsoleMessage(message);
@@ -746,19 +746,20 @@ CommandBufferStub::SetOrGetMemoryTrackerFactory(MemoryTrackerFactory factory) {
 CommandBufferStub::ScopedContextOperation::ScopedContextOperation(
     CommandBufferStub& stub)
     : stub_(stub) {
-  stub_->UpdateActiveUrl();
-  if (stub_->decoder_context_ && stub_->MakeCurrent()) {
+  stub_.UpdateActiveUrl();
+  if (stub_.decoder_context_ && stub_.MakeCurrent()) {
     have_context_ = true;
-    stub_->CreateCacheUse(cache_use_);
+    stub_.CreateCacheUse(cache_use_);
   }
 }
 
 CommandBufferStub::ScopedContextOperation::~ScopedContextOperation() {
-  stub_->CheckCompleteWaits();
+  stub_.CheckCompleteWaits();
   if (have_context_) {
-    if (stub_->decoder_context_)
-      stub_->decoder_context_->ProcessPendingQueries(/*did_finish=*/false);
-    stub_->ScheduleDelayedWork(base::Milliseconds(kHandleMoreWorkPeriodMs));
+    if (stub_.decoder_context_) {
+      stub_.decoder_context_->ProcessPendingQueries(/*did_finish=*/false);
+    }
+    stub_.ScheduleDelayedWork(base::Milliseconds(kHandleMoreWorkPeriodMs));
   }
 }
 

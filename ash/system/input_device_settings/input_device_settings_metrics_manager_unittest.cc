@@ -13,6 +13,7 @@
 #include "ash/public/mojom/input_device_settings.mojom-forward.h"
 #include "ash/public/mojom/input_device_settings.mojom-shared.h"
 #include "ash/public/mojom/input_device_settings.mojom.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/input_device_settings/input_device_settings_pref_names.h"
 #include "ash/system/input_device_settings/settings_updated_metrics_info.h"
@@ -26,6 +27,7 @@
 #include "base/values.h"
 #include "device/udev_linux/fake_udev_loader.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/events/ash/keyboard_info_metrics.h"
 #include "ui/events/ash/mojom/extended_fkeys_modifier.mojom-shared.h"
 #include "ui/events/ash/mojom/simulate_right_click_modifier.mojom-shared.h"
 #include "ui/events/ash/mojom/six_pack_shortcut_modifier.mojom-shared.h"
@@ -57,6 +59,7 @@ constexpr int kSampleMaxSensitivity = 5;
 
 constexpr char kUser1[] = "user1@gmail.com";
 constexpr char kUser2[] = "user2@gmail.com";
+constexpr char kUser3[] = "user3@gmail.com";
 
 constexpr char kKbdTopRowPropertyName[] = "CROS_KEYBOARD_TOP_ROW_LAYOUT";
 constexpr char kKbdTopRowLayout1Tag[] = "1";
@@ -151,7 +154,7 @@ TEST_F(InputDeviceSettingsMetricsManagerTest, RecordsKeyboardSettings) {
   mojom::Keyboard keyboard_external;
   keyboard_external.device_key = kExternalKeyboardId;
   keyboard_external.is_external = true;
-  keyboard_external.meta_key = mojom::MetaKey::kCommand;
+  keyboard_external.meta_key = ui::mojom::MetaKey::kCommand;
   keyboard_external.settings = CreateNewKeyboardSettings();
   auto& settings_external = *keyboard_external.settings;
   settings_external.top_row_are_fkeys = true;
@@ -162,7 +165,7 @@ TEST_F(InputDeviceSettingsMetricsManagerTest, RecordsKeyboardSettings) {
   mojom::Keyboard keyboard_external_chromeos;
   keyboard_external_chromeos.device_key = kExternalChromeOSKeyboardId;
   keyboard_external_chromeos.is_external = true;
-  keyboard_external_chromeos.meta_key = mojom::MetaKey::kSearch;
+  keyboard_external_chromeos.meta_key = ui::mojom::MetaKey::kSearch;
   keyboard_external_chromeos.settings = CreateNewKeyboardSettings();
   auto& settings_external_chromeos = *keyboard_external_chromeos.settings;
   settings_external_chromeos.top_row_are_fkeys = false;
@@ -343,7 +346,7 @@ TEST_F(InputDeviceSettingsMetricsManagerTest, RecordMetricOncePerKeyboard) {
   mojom::Keyboard keyboard_external;
   keyboard_external.device_key = kExternalKeyboardId;
   keyboard_external.is_external = true;
-  keyboard_external.meta_key = mojom::MetaKey::kCommand;
+  keyboard_external.meta_key = ui::mojom::MetaKey::kCommand;
   keyboard_external.settings = CreateNewKeyboardSettings();
   auto& settings_external = *keyboard_external.settings;
   settings_external.top_row_are_fkeys = true;
@@ -444,6 +447,18 @@ TEST_F(InputDeviceSettingsMetricsManagerTest, RecordMouseSettings) {
                          key_event_for_mouse->get_key_event()->vkey),
       /*expected_count=*/1u);
 
+  // Total number of devices remapped button.
+  histogram_tester.ExpectTotalCount(
+      "ChromeOS.Settings.Device.ButtonRemapping.DeviceTypeOfRemappedButton",
+      /*expected_count=*/1u);
+  // Number of mice remapped mouse button.
+  histogram_tester.ExpectBucketCount(
+      "ChromeOS.Settings.Device.ButtonRemapping.DeviceTypeOfRemappedButton",
+      /*sample=*/
+      InputDeviceSettingsMetricsManager::PeripheralCustomizationMetricsType::
+          kMouse,
+      /*expected_count=*/1u);
+
   // Call RecordMouseInitialMetrics with the same user and same mouse,
   // ExpectTotalCount for mouse metric won't increase.
   manager_.get()->RecordMouseInitialMetrics(mouse);
@@ -464,6 +479,18 @@ TEST_F(InputDeviceSettingsMetricsManagerTest, RecordMouseSettings) {
       /*expected_count=*/1u);
   histogram_tester.ExpectTotalCount(
       "ChromeOS.Settings.Device.Mouse.ButtonRemapping.KeyEvent.Initial",
+      /*expected_count=*/1u);
+
+  // Total number of devices remapped button.
+  histogram_tester.ExpectTotalCount(
+      "ChromeOS.Settings.Device.ButtonRemapping.DeviceTypeOfRemappedButton",
+      /*expected_count=*/1u);
+  // Number of mice remapped mouse button.
+  histogram_tester.ExpectBucketCount(
+      "ChromeOS.Settings.Device.ButtonRemapping.DeviceTypeOfRemappedButton",
+      /*sample=*/
+      InputDeviceSettingsMetricsManager::PeripheralCustomizationMetricsType::
+          kMouse,
       /*expected_count=*/1u);
 
   // Call RecordMouseInitialMetrics with the different user but same
@@ -487,6 +514,18 @@ TEST_F(InputDeviceSettingsMetricsManagerTest, RecordMouseSettings) {
       /*expected_count=*/2u);
   histogram_tester.ExpectTotalCount(
       "ChromeOS.Settings.Device.Mouse.ButtonRemapping.KeyEvent.Initial",
+      /*expected_count=*/2u);
+
+  // Total number of devices remapped buttons.
+  histogram_tester.ExpectTotalCount(
+      "ChromeOS.Settings.Device.ButtonRemapping.DeviceTypeOfRemappedButton",
+      /*expected_count=*/2u);
+  // Number of mice remapped mouse buttons.
+  histogram_tester.ExpectBucketCount(
+      "ChromeOS.Settings.Device.ButtonRemapping.DeviceTypeOfRemappedButton",
+      /*sample=*/
+      InputDeviceSettingsMetricsManager::PeripheralCustomizationMetricsType::
+          kMouse,
       /*expected_count=*/2u);
 
   // Call record changed settings metrics.
@@ -789,6 +828,18 @@ TEST_F(InputDeviceSettingsMetricsManagerTest, RecordGraphicsTabletSettings) {
       /*sample=*/mojom::StaticShortcutAction::kCopy,
       /*expected_count=*/0u);
 
+  // Total number of devices remapped button.
+  histogram_tester.ExpectTotalCount(
+      "ChromeOS.Settings.Device.ButtonRemapping.DeviceTypeOfRemappedButton",
+      /*expected_count=*/1u);
+  // Number of graphics tablets remapped graphics tablet button.
+  histogram_tester.ExpectBucketCount(
+      "ChromeOS.Settings.Device.ButtonRemapping.DeviceTypeOfRemappedButton",
+      /*sample=*/
+      InputDeviceSettingsMetricsManager::PeripheralCustomizationMetricsType::
+          kGraphicsTablet,
+      /*expected_count=*/1u);
+
   // Call RecordGraphicsTabletInitialMetrics with the same user and same
   // graphics tablet, ExpectTotalCount for the metric won't increase.
   manager_.get()->RecordGraphicsTabletInitialMetrics(graphics_tablet);
@@ -803,6 +854,18 @@ TEST_F(InputDeviceSettingsMetricsManagerTest, RecordGraphicsTabletSettings) {
   histogram_tester.ExpectTotalCount(
       "ChromeOS.Settings.Device.GraphicsTablet.ButtonRemapping."
       "StaticShortcutAction.Initial",
+      /*expected_count=*/1u);
+
+  // Total number of devices remapped button.
+  histogram_tester.ExpectTotalCount(
+      "ChromeOS.Settings.Device.ButtonRemapping.DeviceTypeOfRemappedButton",
+      /*expected_count=*/1u);
+  // Number of graphics tablets remapped graphics tablet button.
+  histogram_tester.ExpectBucketCount(
+      "ChromeOS.Settings.Device.ButtonRemapping.DeviceTypeOfRemappedButton",
+      /*sample=*/
+      InputDeviceSettingsMetricsManager::PeripheralCustomizationMetricsType::
+          kGraphicsTablet,
       /*expected_count=*/1u);
 
   // Call RecordGraphicsTabletInitialMetrics with the different user but same
@@ -820,6 +883,18 @@ TEST_F(InputDeviceSettingsMetricsManagerTest, RecordGraphicsTabletSettings) {
   histogram_tester.ExpectTotalCount(
       "ChromeOS.Settings.Device.GraphicsTablet.ButtonRemapping."
       "StaticShortcutAction.Initial",
+      /*expected_count=*/2u);
+
+  // Total number of devices remapped buttons.
+  histogram_tester.ExpectTotalCount(
+      "ChromeOS.Settings.Device.ButtonRemapping.DeviceTypeOfRemappedButton",
+      /*expected_count=*/2u);
+  // Number of graphics tablets remapped graphics tablet buttons.
+  histogram_tester.ExpectBucketCount(
+      "ChromeOS.Settings.Device.ButtonRemapping.DeviceTypeOfRemappedButton",
+      /*sample=*/
+      InputDeviceSettingsMetricsManager::PeripheralCustomizationMetricsType::
+          kGraphicsTablet,
       /*expected_count=*/2u);
 
   // Call RecordGraphicsTabletInitialMetrics with the same user but
@@ -855,6 +930,18 @@ TEST_F(InputDeviceSettingsMetricsManagerTest, RecordGraphicsTabletSettings) {
       "DefaultRemapping.Vkey",
       /*sample=*/66,
       /*expected_count=*/1u);
+
+  // Total number of graphics tablets which remapped buttons doesn't change
+  // since there is no button remapping for default graphics tablets.
+  histogram_tester.ExpectTotalCount(
+      "ChromeOS.Settings.Device.ButtonRemapping.DeviceTypeOfRemappedButton",
+      /*expected_count=*/2u);
+  histogram_tester.ExpectBucketCount(
+      "ChromeOS.Settings.Device.ButtonRemapping.DeviceTypeOfRemappedButton",
+      /*sample=*/
+      InputDeviceSettingsMetricsManager::PeripheralCustomizationMetricsType::
+          kGraphicsTablet,
+      /*expected_count=*/2u);
 
   // Call record changed settings metrics.
   auto old_setting = graphics_tablet.settings->Clone();
@@ -1004,6 +1091,18 @@ TEST_F(InputDeviceSettingsMetricsManagerTest, RecordGraphicsTabletPenSettings) {
       /*sample=*/mojom::StaticShortcutAction::kPaste,
       /*expected_count=*/0u);
 
+  // Total number of devices remapped button.
+  histogram_tester.ExpectTotalCount(
+      "ChromeOS.Settings.Device.ButtonRemapping.DeviceTypeOfRemappedButton",
+      /*expected_count=*/1u);
+  // Number of graphics tablets remapped graphics tablet pen button.
+  histogram_tester.ExpectBucketCount(
+      "ChromeOS.Settings.Device.ButtonRemapping.DeviceTypeOfRemappedButton",
+      /*sample=*/
+      InputDeviceSettingsMetricsManager::PeripheralCustomizationMetricsType::
+          kGraphicsTabletPen,
+      /*expected_count=*/1u);
+
   // Call RecordGraphicsTabletInitialMetrics with the same user and same
   // graphics tablet, ExpectTotalCount for the metric won't increase.
   manager_.get()->RecordGraphicsTabletInitialMetrics(graphics_tablet);
@@ -1018,6 +1117,18 @@ TEST_F(InputDeviceSettingsMetricsManagerTest, RecordGraphicsTabletPenSettings) {
   histogram_tester.ExpectTotalCount(
       "ChromeOS.Settings.Device.GraphicsTabletPen.ButtonRemapping."
       "StaticShortcutAction.Initial",
+      /*expected_count=*/1u);
+
+  // Total number of devices remapped button.
+  histogram_tester.ExpectTotalCount(
+      "ChromeOS.Settings.Device.ButtonRemapping.DeviceTypeOfRemappedButton",
+      /*expected_count=*/1u);
+  // Number of graphics tablets remapped graphics tablet pen button.
+  histogram_tester.ExpectBucketCount(
+      "ChromeOS.Settings.Device.ButtonRemapping.DeviceTypeOfRemappedButton",
+      /*sample=*/
+      InputDeviceSettingsMetricsManager::PeripheralCustomizationMetricsType::
+          kGraphicsTabletPen,
       /*expected_count=*/1u);
 
   // Call RecordGraphicsTabletInitialMetrics with the different user but same
@@ -1035,6 +1146,18 @@ TEST_F(InputDeviceSettingsMetricsManagerTest, RecordGraphicsTabletPenSettings) {
   histogram_tester.ExpectTotalCount(
       "ChromeOS.Settings.Device.GraphicsTabletPen.ButtonRemapping."
       "StaticShortcutAction.Initial",
+      /*expected_count=*/2u);
+
+  // Total number of devices remapped buttons.
+  histogram_tester.ExpectTotalCount(
+      "ChromeOS.Settings.Device.ButtonRemapping.DeviceTypeOfRemappedButton",
+      /*expected_count=*/2u);
+  // Number of graphics tablets remapped graphics tablet pen buttons.
+  histogram_tester.ExpectBucketCount(
+      "ChromeOS.Settings.Device.ButtonRemapping.DeviceTypeOfRemappedButton",
+      /*sample=*/
+      InputDeviceSettingsMetricsManager::PeripheralCustomizationMetricsType::
+          kGraphicsTabletPen,
       /*expected_count=*/2u);
 
   // Call record changed settings metrics.
@@ -1165,6 +1288,46 @@ TEST_F(InputDeviceSettingsMetricsManagerTest, RecordModifierRemappingMetrics) {
       /*expected_count*/ 1u);
 }
 
+TEST_F(InputDeviceSettingsMetricsManagerTest, RecordKeyPresenseMetrics) {
+  mojom::Keyboard keyboard;
+  keyboard.device_key = kInternalKeyboardDeviceKey;
+  keyboard.is_external = false;
+  keyboard.modifier_keys = {
+      ui::mojom::ModifierKey::kBackspace, ui::mojom::ModifierKey::kControl,
+      ui::mojom::ModifierKey::kMeta,      ui::mojom::ModifierKey::kEscape,
+      ui::mojom::ModifierKey::kAlt,
+  };
+  keyboard.settings = CreateNewKeyboardSettings();
+  keyboard.settings->modifier_remappings = {
+      {ui::mojom::ModifierKey::kEscape, ui::mojom::ModifierKey::kAssistant},
+  };
+  base::HistogramTester histogram_tester;
+  manager_.get()->RecordKeyboardInitialMetrics(keyboard);
+
+  // Escape remapped so not present at all.
+  histogram_tester.ExpectTotalCount("ChromeOS.Inputs.KeyUsage.Internal.Escape",
+                                    /*expected_count=*/0u);
+
+  histogram_tester.ExpectUniqueSample(
+      "ChromeOS.Inputs.KeyUsage.Internal.Backspace",
+      ui::KeyUsageCategory::kPhysicallyPresent,
+      /*expected_bucket_count=*/1u);
+  histogram_tester.ExpectUniqueSample(
+      "ChromeOS.Inputs.KeyUsage.Internal.Control",
+      ui::KeyUsageCategory::kPhysicallyPresent,
+      /*expected_bucket_count=*/1u);
+  histogram_tester.ExpectUniqueSample("ChromeOS.Inputs.KeyUsage.Internal.Meta",
+                                      ui::KeyUsageCategory::kPhysicallyPresent,
+                                      /*expected_bucket_count=*/1u);
+  histogram_tester.ExpectUniqueSample("ChromeOS.Inputs.KeyUsage.Internal.Alt",
+                                      ui::KeyUsageCategory::kPhysicallyPresent,
+                                      /*expected_bucket_count=*/1u);
+  histogram_tester.ExpectUniqueSample(
+      "ChromeOS.Inputs.KeyUsage.Internal.Assistant",
+      ui::KeyUsageCategory::kVirtuallyPresent,
+      /*expected_bucket_count=*/1u);
+}
+
 TEST_F(InputDeviceSettingsMetricsManagerTest,
        RecordModifierRemappingHashMetrics) {
   mojom::Keyboard keyboard;
@@ -1212,6 +1375,25 @@ TEST_F(InputDeviceSettingsMetricsManagerTest,
       1);
   histogram_tester.ExpectTotalCount(
       "ChromeOS.Settings.Device.Keyboard.Internal.Modifiers.Hash", 2u);
+
+  keyboard.modifier_keys = {
+      ui::mojom::ModifierKey::kMeta,      ui::mojom::ModifierKey::kControl,
+      ui::mojom::ModifierKey::kAlt,       ui::mojom::ModifierKey::kCapsLock,
+      ui::mojom::ModifierKey::kEscape,    ui::mojom::ModifierKey::kBackspace,
+      ui::mojom::ModifierKey::kFunction,  ui::mojom::ModifierKey::kRightAlt,
+      ui::mojom::ModifierKey::kAssistant,
+  };
+
+  SimulateUserLogin(kUser3);
+
+  manager_.get()->RecordKeyboardInitialMetrics(keyboard);
+  // Test the hash code is correct with manually computed value.
+  histogram_tester.ExpectUniqueSample(
+      "ChromeOS.Settings.Device.Keyboard.InternalSplitModifier.Modifiers.Hash",
+      0x93747501, 1u);
+  histogram_tester.ExpectTotalCount(
+      "ChromeOS.Settings.Device.Keyboard.InternalSplitModifier.Modifiers.Hash",
+      1u);
 }
 
 TEST_F(InputDeviceSettingsMetricsManagerTest,
@@ -1219,7 +1401,7 @@ TEST_F(InputDeviceSettingsMetricsManagerTest,
   mojom::KeyboardPtr keyboard = mojom::Keyboard::New();
   keyboard->device_key = kExternalKeyboardId;
   keyboard->is_external = true;
-  keyboard->meta_key = mojom::MetaKey::kCommand;
+  keyboard->meta_key = ui::mojom::MetaKey::kCommand;
   keyboard->modifier_keys = {
       ui::mojom::ModifierKey::kMeta,      ui::mojom::ModifierKey::kControl,
       ui::mojom::ModifierKey::kAlt,       ui::mojom::ModifierKey::kCapsLock,
@@ -1250,8 +1432,10 @@ TEST_F(InputDeviceSettingsMetricsManagerTest,
       mojom::Button::NewCustomizableButton(mojom::CustomizableButton::kMiddle);
   base::HistogramTester histogram_tester;
 
-  manager_->RecordNewButtonRegisteredMetrics(*mouse_customizable_button,
-                                             "Mouse");
+  manager_->RecordNewButtonRegisteredMetrics(
+      *mouse_customizable_button,
+      InputDeviceSettingsMetricsManager::PeripheralCustomizationMetricsType::
+          kMouse);
   histogram_tester.ExpectTotalCount(
       "ChromeOS.Settings.Device.Mouse.ButtonRemapping.Registered."
       "CustomizableButton",
@@ -1262,7 +1446,9 @@ TEST_F(InputDeviceSettingsMetricsManagerTest,
       mojom::CustomizableButton::kMiddle, 1);
 
   const auto vkey_button = mojom::Button::NewVkey(ui::VKEY_B);
-  manager_->RecordNewButtonRegisteredMetrics(*vkey_button, "GraphicsTabletPen");
+  manager_->RecordNewButtonRegisteredMetrics(
+      *vkey_button, InputDeviceSettingsMetricsManager::
+                        PeripheralCustomizationMetricsType::kGraphicsTabletPen);
   histogram_tester.ExpectTotalCount(
       "ChromeOS.Settings.Device.GraphicsTabletPen.ButtonRemapping.Registered."
       "Vkey",
@@ -1277,17 +1463,46 @@ TEST_F(InputDeviceSettingsMetricsManagerTest,
        RecordRemappingActionWhenButtonPressed) {
   const auto remappingAction = mojom::RemappingAction::NewStaticShortcutAction(
       mojom::StaticShortcutAction::kPaste);
+  const auto remappingAction2 = mojom::RemappingAction::NewAcceleratorAction(
+      AcceleratorAction::kBrightnessDown);
   base::HistogramTester histogram_tester;
   histogram_tester.ExpectTotalCount(
       "ChromeOS.Settings.Device.Mouse.ButtonRemapping.StaticShortcutAction."
       "Pressed",
       /*expected_count=*/0);
+  histogram_tester.ExpectTotalCount(
+      "ChromeOS.Settings.Device.ButtonRemapping.Pressed",
+      /*expected_count=*/0);
 
-  manager_->RecordRemappingActionWhenButtonPressed(*remappingAction,
-                                                   /*peripheral_kind=*/"Mouse");
+  manager_->RecordRemappingActionWhenButtonPressed(
+      *remappingAction, InputDeviceSettingsMetricsManager::
+                            PeripheralCustomizationMetricsType::kMouse);
   histogram_tester.ExpectTotalCount(
       "ChromeOS.Settings.Device.Mouse.ButtonRemapping.StaticShortcutAction."
       "Pressed",
+      /*expected_count=*/1u);
+  histogram_tester.ExpectTotalCount(
+      "ChromeOS.Settings.Device.ButtonRemapping.Pressed",
+      /*expected_count=*/1u);
+  histogram_tester.ExpectBucketCount(
+      "ChromeOS.Settings.Device.ButtonRemapping.Pressed",
+      /*sample=*/
+      InputDeviceSettingsMetricsManager::PeripheralCustomizationMetricsType::
+          kMouse,
+      /*expected_count=*/1u);
+
+  manager_->RecordRemappingActionWhenButtonPressed(
+      *remappingAction2,
+      /*peripheral_kind=*/InputDeviceSettingsMetricsManager::
+          PeripheralCustomizationMetricsType::kGraphicsTablet);
+  histogram_tester.ExpectTotalCount(
+      "ChromeOS.Settings.Device.ButtonRemapping.Pressed",
+      /*expected_count=*/2u);
+  histogram_tester.ExpectBucketCount(
+      "ChromeOS.Settings.Device.ButtonRemapping.Pressed",
+      /*sample=*/
+      InputDeviceSettingsMetricsManager::PeripheralCustomizationMetricsType::
+          kGraphicsTablet,
       /*expected_count=*/1u);
 }
 

@@ -24,7 +24,6 @@ android_library("java") {
     "android/java/src/org/chromium/chrome/browser/incognito/reauth/IncognitoReauthProperties.java",
     "android/java/src/org/chromium/chrome/browser/incognito/reauth/IncognitoReauthSettingSwitchPreference.java",
     "android/java/src/org/chromium/chrome/browser/incognito/reauth/IncognitoReauthSettingUtils.java",
-    "android/java/src/org/chromium/chrome/browser/incognito/reauth/IncognitoReauthTopToolbarDelegate.java",
     "android/java/src/org/chromium/chrome/browser/incognito/reauth/IncognitoReauthViewBinder.java",
     "android/java/src/org/chromium/chrome/browser/incognito/reauth/TabSwitcherIncognitoReauthCoordinator.java",
   ]
@@ -41,6 +40,7 @@ android_library("java") {
     "//chrome/browser/hub:java",
     "//chrome/browser/preferences:java",
     "//chrome/browser/profiles/android:java",
+    "//chrome/browser/settings:factory_java",
     "//chrome/browser/tab:java",
     "//chrome/browser/tab_ui/android:java",
     "//chrome/browser/tabmodel:java",
@@ -106,6 +106,7 @@ android_library("incognito_java_tests") {
     "//chrome/browser/hub/internal:java_resources",
     "//chrome/browser/preferences:java",
     "//chrome/browser/profiles/android:java",
+    "//chrome/browser/settings:factory_java",
     "//chrome/browser/settings:test_support_java",
     "//chrome/browser/tab:java",
     "//chrome/browser/tabmodel:java",

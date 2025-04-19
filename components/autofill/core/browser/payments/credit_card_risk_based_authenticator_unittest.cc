@@ -12,6 +12,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/metrics/payments/card_unmask_authentication_metrics.h"
+#include "components/autofill/core/browser/payments/payments_autofill_client.h"
 #include "components/autofill/core/browser/payments/test_authentication_requester.h"
 #include "components/autofill/core/browser/payments/test_payments_network_interface.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
@@ -79,11 +80,11 @@ class CreditCardRiskBasedAuthenticatorTest : public testing::Test {
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   std::unique_ptr<TestAuthenticationRequester> requester_;
+  syncer::TestSyncService sync_service_;
   TestPersonalDataManager personal_data_manager_;
   TestAutofillClient autofill_client_;
   std::unique_ptr<CreditCardRiskBasedAuthenticator> authenticator_;
   CreditCard card_;
-  syncer::TestSyncService sync_service_;
 };
 
 // Ensure the UnmaskRequestDetails is populated with the correct contents when
@@ -115,12 +116,13 @@ TEST_F(CreditCardRiskBasedAuthenticatorTest,
 
   // Mock server response with valid masked server card information.
   payments::PaymentsNetworkInterface::UnmaskResponseDetails response;
-  response.card_type = AutofillClient::PaymentsRpcCardType::kServerCard;
+  response.card_type =
+      payments::PaymentsAutofillClient::PaymentsRpcCardType::kServerCard;
   response.real_pan = kTestNumber;
 
   task_environment_.FastForwardBy(base::Minutes(1));
   authenticator_->OnUnmaskResponseReceivedForTesting(
-      AutofillClient::PaymentsRpcResult::kSuccess, response);
+      payments::PaymentsAutofillClient::PaymentsRpcResult::kSuccess, response);
 
   histogram_tester.ExpectTimeBucketCount(
       "Autofill.RiskBasedAuth.ServerCard.Latency", base::Minutes(1), 1);
@@ -133,11 +135,12 @@ TEST_F(CreditCardRiskBasedAuthenticatorTest, AuthenticateServerCardSuccess) {
 
   // Mock server response with valid masked server card information.
   payments::PaymentsNetworkInterface::UnmaskResponseDetails response;
-  response.card_type = AutofillClient::PaymentsRpcCardType::kServerCard;
+  response.card_type =
+      payments::PaymentsAutofillClient::PaymentsRpcCardType::kServerCard;
   response.real_pan = kTestNumber;
 
   authenticator_->OnUnmaskResponseReceivedForTesting(
-      AutofillClient::PaymentsRpcResult::kSuccess, response);
+      payments::PaymentsAutofillClient::PaymentsRpcResult::kSuccess, response);
   EXPECT_EQ(requester_->risk_based_authentication_response().result,
             CreditCardRiskBasedAuthenticator::RiskBasedAuthenticationResponse::
                 Result::kNoAuthenticationRequired);
@@ -162,7 +165,8 @@ TEST_F(CreditCardRiskBasedAuthenticatorTest, AuthenticateServerCardFailure) {
   payments::PaymentsNetworkInterface::UnmaskResponseDetails response;
 
   authenticator_->OnUnmaskResponseReceivedForTesting(
-      AutofillClient::PaymentsRpcResult::kPermanentFailure, response);
+      payments::PaymentsAutofillClient::PaymentsRpcResult::kPermanentFailure,
+      response);
   EXPECT_EQ(requester_->risk_based_authentication_response().result,
             CreditCardRiskBasedAuthenticator::RiskBasedAuthenticationResponse::
                 Result::kError);
@@ -202,7 +206,7 @@ TEST_F(CreditCardRiskBasedAuthenticatorTest,
   response.context_token = "fake_context_token";
 
   authenticator_->OnUnmaskResponseReceivedForTesting(
-      AutofillClient::PaymentsRpcResult::kSuccess, response);
+      payments::PaymentsAutofillClient::PaymentsRpcResult::kSuccess, response);
   EXPECT_EQ(requester_->risk_based_authentication_response().result,
             CreditCardRiskBasedAuthenticator::RiskBasedAuthenticationResponse::
                 Result::kAuthenticationRequired);
@@ -227,7 +231,7 @@ TEST_F(CreditCardRiskBasedAuthenticatorTest,
   response.fido_request_options = GetTestRequestOptions();
 
   authenticator_->OnUnmaskResponseReceivedForTesting(
-      AutofillClient::PaymentsRpcResult::kSuccess, response);
+      payments::PaymentsAutofillClient::PaymentsRpcResult::kSuccess, response);
   EXPECT_EQ(requester_->risk_based_authentication_response().result,
             CreditCardRiskBasedAuthenticator::RiskBasedAuthenticationResponse::
                 Result::kAuthenticationRequired);
@@ -276,13 +280,15 @@ TEST_F(CreditCardRiskBasedAuthenticatorTest, VirtualCardUnmaskSuccess) {
   // Mock server response with valid virtual card information.
   payments::PaymentsNetworkInterface::UnmaskResponseDetails mocked_response;
   mocked_response.real_pan = kTestVirtualCardNumber;
-  mocked_response.card_type = AutofillClient::PaymentsRpcCardType::kVirtualCard;
+  mocked_response.card_type =
+      payments::PaymentsAutofillClient::PaymentsRpcCardType::kVirtualCard;
   mocked_response.expiration_year = test::NextYear();
   mocked_response.expiration_month = "10";
   mocked_response.dcvv = "123";
 
   authenticator_->OnUnmaskResponseReceivedForTesting(
-      AutofillClient::PaymentsRpcResult::kSuccess, mocked_response);
+      payments::PaymentsAutofillClient::PaymentsRpcResult::kSuccess,
+      mocked_response);
   ASSERT_TRUE(requester_->did_succeed().has_value());
   EXPECT_TRUE(requester_->did_succeed().value());
   EXPECT_EQ(mocked_response.real_pan, requester_->response_details().real_pan);
@@ -317,11 +323,12 @@ TEST_F(CreditCardRiskBasedAuthenticatorTest, VirtualCardUnmaskFailure) {
   payments::PaymentsNetworkInterface::UnmaskResponseDetails mocked_response;
 
   authenticator_->OnUnmaskResponseReceivedForTesting(
-      AutofillClient::PaymentsRpcResult::kPermanentFailure, mocked_response);
+      payments::PaymentsAutofillClient::PaymentsRpcResult::kPermanentFailure,
+      mocked_response);
   ASSERT_TRUE(requester_->did_succeed().has_value());
   EXPECT_FALSE(requester_->did_succeed().value());
   EXPECT_TRUE(requester_->response_details().real_pan.empty());
-  EXPECT_EQ(AutofillClient::PaymentsRpcCardType::kUnknown,
+  EXPECT_EQ(payments::PaymentsAutofillClient::PaymentsRpcCardType::kUnknown,
             requester_->response_details().card_type);
   EXPECT_TRUE(requester_->response_details().expiration_year.empty());
   EXPECT_TRUE(requester_->response_details().expiration_month.empty());

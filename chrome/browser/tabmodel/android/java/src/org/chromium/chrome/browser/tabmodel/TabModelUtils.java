@@ -9,7 +9,6 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.base.supplier.ObservableSupplier;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.content_public.browser.WebContents;
@@ -33,20 +32,20 @@ public class TabModelUtils {
         Tab tab = model.getTabAt(index);
         if (tab == null) return false;
 
-        return model.closeTab(tab);
+        return model.closeTabs(TabClosureParams.closeTab(tab).allowUndo(false).build());
     }
 
     /**
      * @param model The {@link TabModel} to act on.
      * @param tabId The id of the {@link Tab} to close.
-     * @param canUndo Whether or not this closure can be undone.
+     * @param allowUndo Whether or not this closure is allowed to be undone.
      * @return {@code true} if the {@link Tab} was found.
      */
-    public static boolean closeTabById(TabModel model, int tabId, boolean canUndo) {
-        Tab tab = TabModelUtils.getTabById(model, tabId);
+    public static boolean closeTabById(TabModel model, int tabId, boolean allowUndo) {
+        Tab tab = model.getTabById(tabId);
         if (tab == null || tab.isClosing()) return false;
 
-        return model.closeTab(tab, false, canUndo);
+        return model.closeTabs(TabClosureParams.closeTab(tab).allowUndo(allowUndo).build());
     }
 
     /**
@@ -57,15 +56,16 @@ public class TabModelUtils {
         Tab tab = TabModelUtils.getCurrentTab(model);
         if (tab == null) return false;
 
-        return model.closeTab(tab);
+        return model.closeTabs(TabClosureParams.closeTab(tab).allowUndo(false).build());
     }
 
     /**
      * Find the index of the {@link Tab} with the specified id.
+     *
      * @param model The {@link TabModel} to act on.
      * @param tabId The id of the {@link Tab} to find.
-     * @return      Specified {@link Tab} index or {@link TabList#INVALID_TAB_INDEX} if the
-     *              {@link Tab} is not found
+     * @return Specified {@link Tab} index or {@link TabList#INVALID_TAB_INDEX} if the {@link Tab}
+     *     is not found
      */
     public static int getTabIndexById(TabList model, int tabId) {
         int count = model.getCount();
@@ -77,23 +77,6 @@ public class TabModelUtils {
         }
 
         return TabModel.INVALID_TAB_INDEX;
-    }
-
-    /**
-     * Find the {@link Tab} with the specified id.
-     *
-     * @param model The {@link TabModel} to act on.
-     * @param tabId The id of the {@link Tab} to find.
-     * @return Specified {@link Tab} or {@code null} if the {@link Tab} is not found
-     */
-    public static Tab getTabById(TabList model, int tabId) {
-        if (ChromeFeatureList.sTabIdMap.isEnabled() && model instanceof TabModel tabModel) {
-            return tabModel.getTabById(tabId);
-        } else {
-            int index = getTabIndexById(model, tabId);
-            if (index == TabModel.INVALID_TAB_INDEX) return null;
-            return model.getTabAt(index);
-        }
     }
 
     /**
@@ -155,43 +138,38 @@ public class TabModelUtils {
      * @param selector The {@link TabModelSelector} to act on.
      * @param tabId The tab ID to select.
      * @param type {@link TabSelectionType} how the tab selection was initiated.
-     * @param skipLoadingTab Whether to skip loading the Tab.
      */
     public static void selectTabById(
-            @NonNull TabModelSelector selector,
-            int tabId,
-            @TabSelectionType int tabSelectionType,
-            boolean skipLoadingTab) {
+            @NonNull TabModelSelector selector, int tabId, @TabSelectionType int tabSelectionType) {
         if (tabId == Tab.INVALID_TAB_ID) return;
 
         TabModel model = selector.getModelForTabId(tabId);
         if (model == null) return;
 
-        model.setIndex(getTabIndexById(model, tabId), tabSelectionType, skipLoadingTab);
+        model.setIndex(getTabIndexById(model, tabId), tabSelectionType);
     }
 
     /**
      * A helper method that automatically passes {@link TabSelectionType#FROM_USER} as the selection
      * type to {@link TabModel#setIndex(int, TabSelectionType)}.
+     *
      * @param model The {@link TabModel} to act on.
      * @param index The index of the {@link Tab} to select.
-     * @param skipLoadingTab Whether to skip loading the Tab.
      */
-    public static void setIndex(TabModel model, int index, boolean skipLoadingTab) {
-        setIndex(model, index, skipLoadingTab, TabSelectionType.FROM_USER);
+    public static void setIndex(TabModel model, int index) {
+        setIndex(model, index, TabSelectionType.FROM_USER);
     }
 
     /**
-     * A helper method that allows specifying a {@link TabSelectionType}
-     * type to {@link TabModel#setIndex(int, TabSelectionType)}.
+     * A helper method that allows specifying a {@link TabSelectionType} type to {@link
+     * TabModel#setIndex(int, TabSelectionType)}.
+     *
      * @param model The {@link TabModel} to act on.
      * @param index The index of the {@link Tab} to select.
-     * @param skipLoadingTab Whether to skip loading the Tab.
      * @param type {@link TabSelectionType} how the tab selection was initiated.
      */
-    public static void setIndex(
-            TabModel model, int index, boolean skipLoadingTab, @TabSelectionType int type) {
-        model.setIndex(index, type, skipLoadingTab);
+    public static void setIndex(TabModel model, int index, @TabSelectionType int type) {
+        model.setIndex(index, type);
     }
 
     /**
@@ -240,6 +218,11 @@ public class TabModelUtils {
                             tabModelSelector.removeObserver(this);
                             callback.onResult(tabModelSelector);
                         }
+
+                        @Override
+                        public void onDestroyed() {
+                            tabModelSelector.removeObserver(this);
+                        }
                     };
 
             tabModelSelector.addObserver(observer);
@@ -271,6 +254,20 @@ public class TabModelUtils {
 
         for (int i = 0; i < tabList.getCount(); i++) {
             list.add(tabList.getTabAt(i));
+        }
+        return list;
+    }
+
+    /**
+     * Converts a {@link TabList} to a {@link List<Integer>} tab ids. A null input returns an empty
+     * list.
+     */
+    public static @Nullable List<Integer> convertTabListToListOfTabIds(@Nullable TabList tabList) {
+        ArrayList<Integer> list = new ArrayList<>();
+        if (tabList == null) return list;
+
+        for (int i = 0; i < tabList.getCount(); i++) {
+            list.add(tabList.getTabAt(i).getId());
         }
         return list;
     }

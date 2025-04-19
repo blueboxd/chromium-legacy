@@ -48,6 +48,7 @@
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/layout/outline_type.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
+#include "third_party/blink/renderer/core/style/border_edge.h"
 #include "third_party/blink/renderer/core/style/computed_style_base.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/style/computed_style_initial_values.h"
@@ -87,7 +88,6 @@ namespace blink {
 using std::max;
 
 class AppliedTextDecoration;
-class BorderEdge;
 class ContentData;
 class CounterDirectives;
 class CSSAnimationData;
@@ -304,9 +304,6 @@ class ComputedStyle final : public ComputedStyleBase {
   Vector<AtomicString>* GetVariableNamesCache() const;
   Vector<AtomicString>& EnsureVariableNamesCache() const;
 
-  PositionFallbackStyleCache& EnsurePositionFallbackStyleCache(
-      unsigned ensure_size) const;
-
   CORE_EXPORT base::RefCountedData<Vector<AppliedTextDecoration, 1>>*
   EnsureAppliedTextDecorationsCache() const;
 
@@ -430,10 +427,6 @@ class ComputedStyle final : public ComputedStyleBase {
       PseudoId pseudo_id,
       const AtomicString& pseudo_argument) const;
   void ClearCachedPseudoElementStyles() const;
-
-  const ComputedStyle* GetCachedPositionFallbackStyle(unsigned index) const;
-  const ComputedStyle* AddCachedPositionFallbackStyle(const ComputedStyle*,
-                                                      unsigned index) const;
 
   // If this ComputedStyle is affected by animation/transitions, then the
   // unanimated "base" style can be retrieved with this function.
@@ -630,7 +623,8 @@ class ComputedStyle final : public ComputedStyleBase {
       return true;
     }
     return OutlineWidthInternal() == other.OutlineWidthInternal() &&
-           OutlineColor() == other.OutlineColor() &&
+           ResolvedColor(OutlineColor()) ==
+               other.ResolvedColor(other.OutlineColor()) &&
            OutlineStyle() == other.OutlineStyle() &&
            OutlineOffset() == other.OutlineOffset() &&
            OutlineStyleIsAuto() == other.OutlineStyleIsAuto();
@@ -768,7 +762,8 @@ class ComputedStyle final : public ComputedStyleBase {
   // Returns true if ::marker should be rendered inline.
   // In some cases, it should be inline even if `list-style-position` property
   // value is `outside`.
-  bool MarkerShouldBeInside(const Element& parent) const;
+  bool MarkerShouldBeInside(const Element& parent,
+                            const DisplayStyle& marker_style) const;
 
   // Text emphasis properties.
   TextEmphasisMark GetTextEmphasisMark() const;
@@ -797,7 +792,24 @@ class ComputedStyle final : public ComputedStyleBase {
     return HasGlyphRelativeUnits() || HasFontSizeAdjust() ||
            CustomStyleCallbackDependsOnFont();
   }
-  bool CachedPseudoElementStylesDependOnFontMetrics() const;
+
+  template <typename Functor>
+  bool HasCachedPseudoElementStyle(Functor& func) const {
+    if (!func || !HasCachedPseudoElementStyles()) {
+      return false;
+    }
+
+    DCHECK_EQ(StyleType(), kPseudoIdNone);
+
+    for (const auto& pseudo_style : *GetPseudoElementStyleCache()) {
+      if (func(*pseudo_style)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   bool HighlightPseudoElementStylesDependOnRelativeUnits() const;
   bool HighlightPseudoElementStylesDependOnContainerUnits() const;
   bool HighlightPseudoElementStylesDependOnViewportUnits() const;
@@ -976,7 +988,7 @@ class ComputedStyle final : public ComputedStyleBase {
   }
   bool ColumnRuleEquivalent(const ComputedStyle& other_style) const;
   bool HasColumnRule() const {
-    if (LIKELY(!SpecifiesColumns())) {
+    if (!SpecifiesColumns()) [[likely]] {
       return false;
     }
     return ColumnRuleWidth() && !ColumnRuleIsTransparent() &&
@@ -1149,6 +1161,15 @@ class ComputedStyle final : public ComputedStyleBase {
   }
   const Length& LogicalMinHeight() const {
     return IsHorizontalWritingMode() ? MinHeight() : MinWidth();
+  }
+
+  const StyleIntrinsicLength& ContainIntrinsicInlineSize() const {
+    return IsHorizontalWritingMode() ? ContainIntrinsicWidth()
+                                     : ContainIntrinsicHeight();
+  }
+  const StyleIntrinsicLength& ContainIntrinsicBlockSize() const {
+    return IsHorizontalWritingMode() ? ContainIntrinsicHeight()
+                                     : ContainIntrinsicWidth();
   }
 
   // Margin utility functions.
@@ -1406,10 +1427,10 @@ class ComputedStyle final : public ComputedStyleBase {
 
   // Whether or not a positioned element requires normal flow x/y to be computed
   // to determine its position.
-  bool HasAutoLeftAndRightIgnoringInsetArea() const {
+  bool HasAutoLeftAndRightIgnoringPositionArea() const {
     return Left().IsAuto() && Right().IsAuto();
   }
-  bool HasAutoTopAndBottomIgnoringInsetArea() const {
+  bool HasAutoTopAndBottomIgnoringPositionArea() const {
     return Top().IsAuto() && Bottom().IsAuto();
   }
 
@@ -1417,18 +1438,20 @@ class ComputedStyle final : public ComputedStyleBase {
   // fallback calculation purposes.
   // https://drafts.csswg.org/css-anchor-position-1/#determine-the-position-fallback-styles
   bool IsTopInsetNonAuto() const {
-    return !Top().IsAuto() || (InsetAreaOffsets() && InsetAreaOffsets()->top);
+    return !Top().IsAuto() ||
+           (PositionAreaOffsets() && PositionAreaOffsets()->top);
   }
   bool IsRightInsetNonAuto() const {
     return !Right().IsAuto() ||
-           (InsetAreaOffsets() && InsetAreaOffsets()->right);
+           (PositionAreaOffsets() && PositionAreaOffsets()->right);
   }
   bool IsBottomInsetNonAuto() const {
     return !Bottom().IsAuto() ||
-           (InsetAreaOffsets() && InsetAreaOffsets()->bottom);
+           (PositionAreaOffsets() && PositionAreaOffsets()->bottom);
   }
   bool IsLeftInsetNonAuto() const {
-    return !Left().IsAuto() || (InsetAreaOffsets() && InsetAreaOffsets()->left);
+    return !Left().IsAuto() ||
+           (PositionAreaOffsets() && PositionAreaOffsets()->left);
   }
 
   // Content utility functions.
@@ -1456,12 +1479,16 @@ class ComputedStyle final : public ComputedStyleBase {
 
     if (container_type & kContainerTypeInlineSize) {
       effective |= kContainsStyle;
-      effective |= kContainsLayout;
+      if (!RuntimeEnabledFeatures::ContainerTypeNoLayoutContainmentEnabled()) {
+        effective |= kContainsLayout;
+      }
       effective |= kContainsInlineSize;
     }
     if (container_type & kContainerTypeBlockSize) {
       effective |= kContainsStyle;
-      effective |= kContainsLayout;
+      if (!RuntimeEnabledFeatures::ContainerTypeNoLayoutContainmentEnabled()) {
+        effective |= kContainsLayout;
+      }
       effective |= kContainsBlockSize;
     }
     if (!IsContentVisibilityVisible(content_visibility)) {
@@ -1672,13 +1699,13 @@ class ComputedStyle final : public ComputedStyleBase {
   // `text-box-trim` utility functions.
   bool ShouldTextBoxTrimStart() const {
     const ETextBoxTrim text_box_trim = TextBoxTrim();
-    return text_box_trim == ETextBoxTrim::kStart ||
-           text_box_trim == ETextBoxTrim::kBoth;
+    return text_box_trim == ETextBoxTrim::kTrimStart ||
+           text_box_trim == ETextBoxTrim::kTrimBoth;
   }
   bool ShouldTextBoxTrimEnd() const {
     const ETextBoxTrim text_box_trim = TextBoxTrim();
-    return text_box_trim == ETextBoxTrim::kEnd ||
-           text_box_trim == ETextBoxTrim::kBoth;
+    return text_box_trim == ETextBoxTrim::kTrimEnd ||
+           text_box_trim == ETextBoxTrim::kTrimBoth;
   }
 
   // Text decoration utility functions.
@@ -1853,8 +1880,7 @@ class ComputedStyle final : public ComputedStyleBase {
   bool IsFixedTableLayout() const {
     // https://www.w3.org/TR/css-tables-3/#table-layout-property
     return TableLayout() == ETableLayout::kFixed &&
-           (LogicalWidth().IsSpecified() || LogicalWidth().IsMinContent() ||
-            LogicalWidth().IsFitContent());
+           (!LogicalWidth().HasAuto() && !LogicalWidth().HasMaxContent());
   }
 
   LogicalSize TableBorderSpacing() const {
@@ -2078,20 +2104,6 @@ class ComputedStyle final : public ComputedStyleBase {
     return GetPosition() != EPosition::kStatic;
   }
 
-  // Whitespace utility functions.
-  // Don't use these `EWhiteSpace` static functions directly, because the
-  // `white-space` property may become a shorthand in future.
-  // https://drafts.csswg.org/css-text-4/#white-space-property
-  static bool DeprecatedAutoWrap(EWhiteSpace ws) {
-    return blink::ShouldWrapLine(ToTextWrap(ws));
-  }
-  static bool DeprecatedPreserveNewline(EWhiteSpace ws) {
-    return blink::ShouldPreserveBreaks(ToWhiteSpaceCollapse(ws));
-  }
-  static bool DeprecatedCollapseWhiteSpace(EWhiteSpace ws) {
-    return blink::ShouldCollapseWhiteSpaces(ToWhiteSpaceCollapse(ws));
-  }
-
   // This function may return values not defined as the enum values. See
   // `EWhiteSpace`. Prefer using semantic functions below.
   EWhiteSpace WhiteSpace() const {
@@ -2151,7 +2163,7 @@ class ComputedStyle final : public ComputedStyleBase {
   }
   bool BorderObscuresBackground() const;
   void GetBorderEdgeInfo(
-      BorderEdge edges[],
+      BorderEdgeArray& edges,
       PhysicalBoxSides sides_to_include = PhysicalBoxSides()) const;
 
   bool HasBoxDecorations() const {
@@ -2228,11 +2240,6 @@ class ComputedStyle final : public ComputedStyleBase {
   bool HasEffectiveAppearance() const {
     return HasEffectiveAppearance(EffectiveAppearance());
   }
-  bool IsCheckboxOrRadioPart() const {
-    return HasEffectiveAppearance() &&
-           (EffectiveAppearance() == kCheckboxPart ||
-            EffectiveAppearance() == kRadioPart);
-  }
 
   // Other utility functions.
   bool RequireTransformOrigin(ApplyTransformOrigin apply_origin,
@@ -2254,10 +2261,12 @@ class ComputedStyle final : public ComputedStyleBase {
       return false;
     }
     if (pseudo == kPseudoIdScrollMarkerGroupBefore) {
-      return ScrollMarkers() == EScrollMarkers::kBefore && IsScrollContainer();
+      return ScrollMarkerGroup() == EScrollMarkerGroup::kBefore &&
+             IsScrollContainer();
     }
     if (pseudo == kPseudoIdScrollMarkerGroupAfter) {
-      return ScrollMarkers() == EScrollMarkers::kAfter && IsScrollContainer();
+      return ScrollMarkerGroup() == EScrollMarkerGroup::kAfter &&
+             IsScrollContainer();
     }
     if (!HasPseudoElementStyle(pseudo)) {
       return false;
@@ -2271,20 +2280,25 @@ class ComputedStyle final : public ComputedStyleBase {
     return pseudo == kPseudoIdBefore || pseudo == kPseudoIdAfter;
   }
 
-  bool HasScrollMarkersBefore() const {
-    return ScrollMarkers() == EScrollMarkers::kBefore;
+  bool HasScrollMarkerGroupBefore() const {
+    return ScrollMarkerGroup() == EScrollMarkerGroup::kBefore;
   }
 
-  bool HasScrollMarkersAfter() const {
-    return ScrollMarkers() == EScrollMarkers::kAfter;
+  bool HasScrollMarkerGroupAfter() const {
+    return ScrollMarkerGroup() == EScrollMarkerGroup::kAfter;
   }
 
-  bool ScrollMarkersNone() const {
-    return ScrollMarkers() == EScrollMarkers::kNone;
+  bool ScrollMarkerGroupNone() const {
+    return ScrollMarkerGroup() == EScrollMarkerGroup::kNone;
   }
 
-  bool ScrollMarkersEqual(const ComputedStyle& other) const {
-    return ScrollMarkers() == other.ScrollMarkers();
+  bool ScrollMarkerGroupEqual(const ComputedStyle& other) const {
+    return ScrollMarkerGroup() == other.ScrollMarkerGroup();
+  }
+
+  PhysicalBoxStrut ScrollMarginStrut() const {
+    return {LayoutUnit(ScrollMarginTop()), LayoutUnit(ScrollMarginRight()),
+            LayoutUnit(ScrollMarginBottom()), LayoutUnit(ScrollMarginLeft())};
   }
 
   // Returns true if the element is rendered in the top layer. That is the case

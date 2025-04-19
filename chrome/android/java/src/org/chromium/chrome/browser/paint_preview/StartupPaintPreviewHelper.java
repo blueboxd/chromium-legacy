@@ -49,9 +49,8 @@ public class StartupPaintPreviewHelper {
      * @param windowAndroid The WindowAndroid that corresponds to the tabModelSelector.
      * @param activityCreationTime The time the ChromeActivity was created.
      * @param browserControlsManager The BrowserControlsManager which is used to fetch the browser
-     *         visibility delegate
+     *     visibility delegate
      * @param tabModelSelector The TabModelSelector to observe.
-     * @param willShowStartSurface Whether the start surface will be shown.
      * @param progressBarCoordinatorSupplier Supplier for the progress bar.
      */
     public StartupPaintPreviewHelper(
@@ -59,15 +58,13 @@ public class StartupPaintPreviewHelper {
             long activityCreationTime,
             BrowserControlsManager browserControlsManager,
             TabModelSelector tabModelSelector,
-            boolean willShowStartSurface,
             Supplier<LoadProgressCoordinator> progressBarCoordinatorSupplier) {
         mActivityCreationTime = activityCreationTime;
         mBrowserControlsManager = browserControlsManager;
         mProgressBarCoordinatorSupplier = progressBarCoordinatorSupplier;
 
         if (MultiWindowUtils.getInstance()
-                        .areMultipleChromeInstancesRunning(windowAndroid.getContext().get())
-                || willShowStartSurface) {
+                .areMultipleChromeInstancesRunning(windowAndroid.getContext().get())) {
             sShouldShowOnRestore = false;
         }
 
@@ -108,12 +105,9 @@ public class StartupPaintPreviewHelper {
                 });
     }
 
-    /**
-     * Sets whether a Paint Preview should attempt to be shown on restoration of a tab. If the
-     * feature is not enabled this is effectively a no-op.
-     */
-    public static void setShouldShowOnRestore(boolean shouldShowOnRestore) {
-        sShouldShowOnRestore = shouldShowOnRestore;
+    /** Enables Paint Preview show attempt on restoration of a tab. */
+    public static void enableShowOnRestore() {
+        sShouldShowOnRestore = true;
     }
 
     /** Attempts to display the Paint Preview representation for the given Tab. */

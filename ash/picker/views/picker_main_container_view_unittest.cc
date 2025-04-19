@@ -33,12 +33,13 @@ class MockPickerPageView : public PickerPageView {
   ~MockPickerPageView() override = default;
 
   // PickerPageView:
-  bool DoPseudoFocusedAction() override { return true; }
-  bool MovePseudoFocusUp() override { return true; }
-  bool MovePseudoFocusDown() override { return true; }
-  bool MovePseudoFocusLeft() override { return true; }
-  bool MovePseudoFocusRight() override { return true; }
-  void AdvancePseudoFocus(PseudoFocusDirection direction) override { return; }
+  views::View* GetTopItem() override { return nullptr; }
+  views::View* GetBottomItem() override { return nullptr; }
+  views::View* GetItemAbove(views::View* item) override { return nullptr; }
+  views::View* GetItemBelow(views::View* item) override { return nullptr; }
+  views::View* GetItemLeftOf(views::View* item) override { return nullptr; }
+  views::View* GetItemRightOf(views::View* item) override { return nullptr; }
+  bool ContainsItem(views::View* item) override { return true; }
 };
 
 BEGIN_METADATA(MockPickerPageView)
@@ -47,25 +48,27 @@ END_METADATA
 using PickerMainContainerViewTest = views::ViewsTestBase;
 
 TEST_F(PickerMainContainerViewTest, BackgroundColor) {
-  std::unique_ptr<views::Widget> widget = CreateTestWidget();
+  std::unique_ptr<views::Widget> widget =
+      CreateTestWidget(views::Widget::InitParams::CLIENT_OWNS_WIDGET);
   auto* container =
       widget->SetContentsView(std::make_unique<PickerMainContainerView>());
 
   EXPECT_EQ(container->background()->get_color(),
             container->GetColorProvider()->GetColor(
-                cros_tokens::kCrosSysSystemBaseElevated));
+                cros_tokens::kCrosSysSystemBaseElevatedOpaque));
 }
 
 TEST_F(PickerMainContainerViewTest, LayoutWithContentsBelowSearchField) {
   PickerKeyEventHandler key_event_handler;
   PickerPerformanceMetrics metrics;
-  std::unique_ptr<views::Widget> widget = CreateTestWidget();
+  std::unique_ptr<views::Widget> widget =
+      CreateTestWidget(views::Widget::InitParams::CLIENT_OWNS_WIDGET);
   auto* container =
       widget->SetContentsView(std::make_unique<PickerMainContainerView>());
 
   auto* search_field =
       container->AddSearchFieldView(std::make_unique<PickerSearchFieldView>(
-          base::DoNothing(), &key_event_handler, &metrics));
+          base::DoNothing(), base::DoNothing(), &key_event_handler, &metrics));
   PickerContentsView* contents = container->AddContentsView(
       PickerLayoutType::kMainResultsBelowSearchField);
 
@@ -76,13 +79,14 @@ TEST_F(PickerMainContainerViewTest, LayoutWithContentsBelowSearchField) {
 TEST_F(PickerMainContainerViewTest, LayoutWithContentsAboveSearchField) {
   PickerKeyEventHandler key_event_handler;
   PickerPerformanceMetrics metrics;
-  std::unique_ptr<views::Widget> widget = CreateTestWidget();
+  std::unique_ptr<views::Widget> widget =
+      CreateTestWidget(views::Widget::InitParams::CLIENT_OWNS_WIDGET);
   auto* container =
       widget->SetContentsView(std::make_unique<PickerMainContainerView>());
 
   auto* search_field =
       container->AddSearchFieldView(std::make_unique<PickerSearchFieldView>(
-          base::DoNothing(), &key_event_handler, &metrics));
+          base::DoNothing(), base::DoNothing(), &key_event_handler, &metrics));
   PickerContentsView* contents = container->AddContentsView(
       PickerLayoutType::kMainResultsAboveSearchField);
 
@@ -91,7 +95,8 @@ TEST_F(PickerMainContainerViewTest, LayoutWithContentsAboveSearchField) {
 }
 
 TEST_F(PickerMainContainerViewTest, SetsActivePage) {
-  std::unique_ptr<views::Widget> widget = CreateTestWidget();
+  std::unique_ptr<views::Widget> widget =
+      CreateTestWidget(views::Widget::InitParams::CLIENT_OWNS_WIDGET);
   auto* container =
       widget->SetContentsView(std::make_unique<PickerMainContainerView>());
   container->AddContentsView(PickerLayoutType::kMainResultsBelowSearchField);

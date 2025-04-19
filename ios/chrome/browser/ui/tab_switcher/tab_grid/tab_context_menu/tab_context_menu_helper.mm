@@ -6,7 +6,7 @@
 
 #import "base/check.h"
 #import "base/metrics/histogram_functions.h"
-#import "components/bookmarks/browser/core_bookmark_model.h"
+#import "components/bookmarks/browser/bookmark_model.h"
 #import "components/bookmarks/common/bookmark_pref_names.h"
 #import "components/prefs/pref_service.h"
 #import "ios/chrome/browser/bookmarks/model/bookmark_model_factory.h"
@@ -106,7 +106,7 @@ using PinnedState = WebStateSearchCriteria::PinnedState;
 - (NSArray<UIMenuElement*>*)menuElementsForTabCell:(TabCell*)cell
                                       menuScenario:
                                           (MenuScenarioHistogram)scenario {
-  CHECK(cell.itemIdentifier.type == GridItemType::Tab);
+  CHECK(cell.itemIdentifier.type == GridItemType::kTab);
   // Record that this context menu was shown to the user.
   RecordMenuShown(scenario);
 
@@ -307,7 +307,7 @@ using PinnedState = WebStateSearchCriteria::PinnedState;
 - (NSArray<UIMenuElement*>*)menuElementsForTabGroupCell:(TabCell*)cell
                                            menuScenario:
                                                (MenuScenarioHistogram)scenario {
-  CHECK(cell.itemIdentifier.type == GridItemType::Group);
+  CHECK(cell.itemIdentifier.type == GridItemType::kGroup);
   // Record that this context menu was shown to the user.
   RecordMenuShown(scenario);
 
@@ -327,12 +327,29 @@ using PinnedState = WebStateSearchCriteria::PinnedState;
                 }]];
   [menuElements addObject:[actionFactory actionToUngroupTabGroupWithBlock:^{
                   [weakSelf.contextMenuDelegate ungroupTabGroup:group
+                                                      incognito:incognito
+                                                     sourceView:cell];
+                }]];
+
+  if (IsTabGroupSyncEnabled()) {
+    [menuElements addObject:[actionFactory actionToCloseTabGroupWithBlock:^{
+                    [weakSelf.contextMenuDelegate closeTabGroup:group
                                                       incognito:incognito];
-                }]];
-  [menuElements addObject:[actionFactory actionToDeleteTabGroupWithBlock:^{
-                  [weakSelf.contextMenuDelegate closeTabGroup:group
-                                                    incognito:incognito];
-                }]];
+                  }]];
+    if (!incognito) {
+      [menuElements addObject:[actionFactory actionToDeleteTabGroupWithBlock:^{
+                      [weakSelf.contextMenuDelegate deleteTabGroup:group
+                                                         incognito:incognito
+                                                        sourceView:cell];
+                    }]];
+    }
+  } else {
+    [menuElements addObject:[actionFactory actionToDeleteTabGroupWithBlock:^{
+                    [weakSelf.contextMenuDelegate deleteTabGroup:group
+                                                       incognito:incognito
+                                                      sourceView:cell];
+                  }]];
+  }
 
   return menuElements;
 }
@@ -341,21 +358,22 @@ using PinnedState = WebStateSearchCriteria::PinnedState;
 
 // Returns `YES` if the tab `item` is already bookmarked.
 - (BOOL)isTabItemBookmarked:(TabItem*)item {
-  bookmarks::CoreBookmarkModel* bookmarkModel =
+  bookmarks::BookmarkModel* bookmarkModel =
       ios::BookmarkModelFactory::GetForBrowserState(_browserState);
   return item && bookmarkModel->IsBookmarked(item.URL);
 }
 
 // Returns `YES` if the tab for the given `identifier` is pinned.
 - (BOOL)isTabPinnedForIdentifier:(GridItemIdentifier*)identifier {
-  if (!identifier || (identifier.type != GridItemType::Tab)) {
+  if (!identifier || (identifier.type != GridItemType::kTab)) {
     return NO;
   }
 
   BrowserList* browserList =
       BrowserListFactory::GetForBrowserState(_browserState);
 
-  for (Browser* browser : browserList->AllRegularBrowsers()) {
+  for (Browser* browser :
+       browserList->BrowsersOfType(BrowserList::BrowserType::kRegular)) {
     WebStateList* webStateList = browser->GetWebStateList();
     web::WebState* webState = GetWebState(
         webStateList, WebStateSearchCriteria{
@@ -373,8 +391,10 @@ using PinnedState = WebStateSearchCriteria::PinnedState;
 - (TabItem*)tabItemForIdentifier:(web::WebStateID)identifier {
   BrowserList* browserList =
       BrowserListFactory::GetForBrowserState(_browserState);
-  std::set<Browser*> browsers = _incognito ? browserList->AllIncognitoBrowsers()
-                                           : browserList->AllRegularBrowsers();
+  const BrowserList::BrowserType browser_types =
+      _incognito ? BrowserList::BrowserType::kIncognito
+                 : BrowserList::BrowserType::kRegularAndInactive;
+  std::set<Browser*> browsers = browserList->BrowsersOfType(browser_types);
   for (Browser* browser : browsers) {
     WebStateList* webStateList = browser->GetWebStateList();
     TabItem* item = GetTabItem(
@@ -402,7 +422,8 @@ using PinnedState = WebStateSearchCriteria::PinnedState;
   BrowserList* browserList =
       BrowserListFactory::GetForBrowserState(_browserState);
 
-  for (Browser* browser : browserList->AllRegularBrowsers()) {
+  for (Browser* browser :
+       browserList->BrowsersOfType(BrowserList::BrowserType::kRegular)) {
     WebStateList* webStateList = browser->GetWebStateList();
     int index = GetWebStateIndex(
         webStateList,
@@ -420,7 +441,8 @@ using PinnedState = WebStateSearchCriteria::PinnedState;
   BrowserList* browserList =
       BrowserListFactory::GetForBrowserState(_browserState);
 
-  for (Browser* browser : browserList->AllRegularBrowsers()) {
+  for (Browser* browser :
+       browserList->BrowsersOfType(BrowserList::BrowserType::kRegular)) {
     WebStateList* webStateList = browser->GetWebStateList();
     int index = GetWebStateIndex(
         webStateList,

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/modules/webgpu/gpu_shader_module.h"
 
 #include "base/command_line.h"
@@ -113,13 +118,8 @@ GPUShaderModule::GPUShaderModule(GPUDevice* device,
 
 void GPUShaderModule::OnCompilationInfoCallback(
     ScriptPromiseResolver<GPUCompilationInfo>* resolver,
-    WGPUCompilationInfoRequestStatus cStatus,
-    const WGPUCompilationInfo* cInfo) {
-  wgpu::CompilationInfoRequestStatus status =
-      static_cast<wgpu::CompilationInfoRequestStatus>(cStatus);
-  const wgpu::CompilationInfo* info =
-      reinterpret_cast<const wgpu::CompilationInfo*>(cInfo);
-
+    wgpu::CompilationInfoRequestStatus status,
+    const wgpu::CompilationInfo* info) {
   if (status != wgpu::CompilationInfoRequestStatus::Success || !info) {
     const char* message = nullptr;
     switch (status) {
@@ -171,7 +171,8 @@ ScriptPromise<GPUCompilationInfo> GPUShaderModule::getCompilationInfo(
       MakeWGPUOnceCallback(resolver->WrapCallbackInScriptScope(WTF::BindOnce(
           &GPUShaderModule::OnCompilationInfoCallback, WrapPersistent(this))));
 
-  GetHandle().GetCompilationInfo(callback->UnboundCallback(),
+  GetHandle().GetCompilationInfo(wgpu::CallbackMode::AllowSpontaneous,
+                                 callback->UnboundCallback(),
                                  callback->AsUserdata());
   // WebGPU guarantees that promises are resolved in finite time so we
   // need to ensure commands are flushed.

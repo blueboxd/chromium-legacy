@@ -9,6 +9,7 @@
 #include "ash/style/typography.h"
 #include "base/memory/raw_ptr.h"
 #include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/gfx/font_list.h"
 #include "ui/views/controls/button/label_button.h"
 
 namespace gfx {
@@ -41,11 +42,11 @@ class ASH_EXPORT OptionButtonBase : public views::LabelButton {
     virtual ~Delegate() = default;
   };
 
-  explicit OptionButtonBase(int button_width,
-                            PressedCallback callback,
-                            const std::u16string& label = std::u16string(),
-                            const gfx::Insets& insets = kDefaultPadding,
-                            int image_label_spacing = kImageLabelSpacingDP);
+  OptionButtonBase(int button_width,
+                   PressedCallback callback,
+                   const std::u16string& label = std::u16string(),
+                   const gfx::Insets& insets = kDefaultPadding,
+                   int image_label_spacing = kImageLabelSpacingDP);
   OptionButtonBase(const OptionButtonBase&) = delete;
   OptionButtonBase& operator=(const OptionButtonBase&) = delete;
   ~OptionButtonBase() override;
@@ -60,6 +61,7 @@ class ASH_EXPORT OptionButtonBase : public views::LabelButton {
   void SetLabelStyle(TypographyToken token);
   // Sets a color_id as the color_id of the label.
   void SetLabelColorId(ui::ColorId color_id);
+  void SetLabelFontList(const gfx::FontList& font_list);
 
   // views::LabelButton:
   gfx::Size CalculatePreferredSize(
@@ -69,7 +71,6 @@ class ASH_EXPORT OptionButtonBase : public views::LabelButton {
   void Layout(PassKey) override;
   void OnThemeChanged() override;
   void NotifyClick(const ui::Event& event) override;
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
  protected:
   // `icon_state` is a bitmask using the IconState enum.
@@ -84,6 +85,8 @@ class ASH_EXPORT OptionButtonBase : public views::LabelButton {
  private:
   // Update the label's color based on the enable state.
   void UpdateTextColor();
+
+  void SetAndUpdateAccessibleDefaultActionVerb();
 
   const int min_width_;
 

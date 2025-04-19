@@ -78,6 +78,10 @@ enum LayoutConstant {
   // with the chrome refresh flag.
   LOCATION_BAR_TRAILING_DECORATION_EDGE_PADDING,
 
+  // The padding between trailing edge decorations and the inner views of the
+  // omnibox.
+  LOCATION_BAR_TRAILING_DECORATION_INNER_PADDING,
+
   // The size of the icons used inside the LocationBar.
   // TODO(crbug.com/40883435): Deprecate this after the size of all location bar
   // icons have moved to
@@ -135,10 +139,6 @@ enum LayoutConstant {
   // TODO(tbergquist): Remove this after pixel canvas or any deeper fix to
   // non-pixel-aligned drawing goes in.  See https://crbug.com/765723.
   TABSTRIP_TOOLBAR_OVERLAP,
-
-  // The horizontal padding between any right aligned controls and the end of
-  // the TabStripRegionView.
-  TABSTRIP_REGION_VIEW_CONTROL_PADDING,
 
   // The total height, including icons and insets, of buttons in the toolbar.
   TOOLBAR_BUTTON_HEIGHT,

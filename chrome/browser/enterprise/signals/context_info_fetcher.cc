@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/enterprise/signals/context_info_fetcher.h"
 
 #include <memory>
@@ -279,7 +284,7 @@ std::vector<std::string> ContextInfoFetcher::GetAnalysisConnectorProviders(
   return connectors_service_->GetAnalysisServiceProviderNames(connector);
 }
 
-safe_browsing::EnterpriseRealTimeUrlCheckMode
+enterprise_connectors::EnterpriseRealTimeUrlCheckMode
 ContextInfoFetcher::GetRealtimeUrlCheckMode() {
   return connectors_service_->GetAppliedRealTimeUrlCheck();
 }

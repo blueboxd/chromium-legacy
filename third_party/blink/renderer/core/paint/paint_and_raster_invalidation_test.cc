@@ -1160,6 +1160,12 @@ TEST_P(PaintAndRasterInvalidationTest,
 }
 
 TEST_P(PaintAndRasterInvalidationTest, RepaintScrollbarThumbOnHover) {
+  // In RasterInducingScroll the scrollbar is composited, not using blink
+  // raster invalidation.
+  if (RuntimeEnabledFeatures::RasterInducingScrollEnabled()) {
+    return;
+  }
+
   USE_NON_OVERLAY_SCROLLBARS_OR_QUIT();
   SetBodyInnerHTML(R"HTML(
     <style>body {margin: 0}</style>
@@ -1179,6 +1185,35 @@ TEST_P(PaintAndRasterInvalidationTest, RepaintScrollbarThumbOnHover) {
       UnorderedElementsAre(RasterInvalidationInfo{
           scrollbar->Id(), scrollbar->DebugName(), scrollbar->FrameRect(),
           PaintInvalidationReason::kScrollControl}));
+}
+
+// This tests an optimization for motionmark suits, where changing styles of
+// elements with a clip path should not, by itself, require a full paint
+// invalidation. For example, transform changes can skip paint invalidation.
+TEST_P(PaintAndRasterInvalidationTest,
+       StyleChangesWithClipPathDoNotInvalidate) {
+  SetBodyInnerHTML(R"HTML(
+    <svg width='300' height='300'>
+      <defs>
+        <clipPath id='c' clipPathUnits='objectBoundingBox'>
+          <rect />
+        </clipPath>
+      </defs>
+      <rect id='rect'
+          width='100'
+          height='100'
+          transform='translate(100,100)'
+          clip-path='url(#c)' />
+    </svg>
+  )HTML");
+
+  auto* rect = GetDocument().getElementById(AtomicString("rect"));
+  EXPECT_FALSE(rect->GetLayoutObject()->ShouldDoFullPaintInvalidation());
+  rect->setAttribute(svg_names::kTransformAttr,
+                     AtomicString("translate(200,100)"));
+  GetDocument().View()->UpdateLifecycleToLayoutClean(
+      DocumentUpdateReason::kTest);
+  EXPECT_FALSE(rect->GetLayoutObject()->ShouldDoFullPaintInvalidation());
 }
 
 class PaintInvalidatorTestClient : public RenderingTestChromeClient {

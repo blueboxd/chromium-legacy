@@ -61,9 +61,9 @@
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "extensions/browser/extension_pref_store.h"
-#include "extensions/browser/extension_pref_value_map_factory.h"
-#include "extensions/browser/pref_names.h"
+#include "extensions/browser/extension_pref_store.h"              // nogncheck
+#include "extensions/browser/extension_pref_value_map_factory.h"  // nogncheck
+#include "extensions/browser/pref_names.h"                        // nogncheck
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -356,8 +356,6 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(prefs::kPartitionDefaultZoomLevel);
   registry->RegisterDictionaryPref(prefs::kPartitionPerHostZoomLevels);
   registry->RegisterStringPref(prefs::kPreinstalledApps, "install");
-  registry->RegisterBooleanPref(prefs::kSpeechRecognitionFilterProfanities,
-                                true);
   registry->RegisterIntegerPref(prefs::kProfileIconVersion, 0);
   registry->RegisterBooleanPref(prefs::kAllowDinosaurEasterEgg, true);
 #if BUILDFLAG(IS_CHROMEOS)

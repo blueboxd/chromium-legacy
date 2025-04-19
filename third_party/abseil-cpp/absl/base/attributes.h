@@ -133,12 +133,14 @@
 // Tags a function as weak for the purposes of compilation and linking.
 // Weak attributes did not work properly in LLVM's Windows backend before
 // 9.0.0, so disable them there. See https://bugs.llvm.org/show_bug.cgi?id=37598
-// for further information.
+// for further information. Weak attributes do not work across DLL boundary.
 // The MinGW compiler doesn't complain about the weak attribute until the link
 // step, presumably because Windows doesn't use ELF binaries.
-#if (ABSL_HAVE_ATTRIBUTE(weak) ||                                         \
-     (defined(__GNUC__) && !defined(__clang__))) &&                       \
-    (!defined(_WIN32) || (defined(__clang__) && __clang_major__ >= 9)) && \
+#if (ABSL_HAVE_ATTRIBUTE(weak) ||                                 \
+     (defined(__GNUC__) && !defined(__clang__))) &&               \
+    (!defined(_WIN32) ||                                          \
+     (defined(__clang__) && __clang_major__ >= 9 &&               \
+      !defined(ABSL_BUILD_DLL) && !defined(ABSL_CONSUME_DLL))) && \
     !defined(__MINGW32__)
 #undef ABSL_ATTRIBUTE_WEAK
 #define ABSL_ATTRIBUTE_WEAK __attribute__((weak))
@@ -195,6 +197,9 @@
 // ABSL_ATTRIBUTE_NORETURN
 //
 // Tells the compiler that a given function never returns.
+//
+// Deprecated: Prefer the `[[noreturn]]` attribute standardized by C++11 over
+// this macro.
 #if ABSL_HAVE_ATTRIBUTE(noreturn) || (defined(__GNUC__) && !defined(__clang__))
 #define ABSL_ATTRIBUTE_NORETURN __attribute__((noreturn))
 #elif defined(_MSC_VER)
@@ -813,8 +818,11 @@
 //
 // See also the upstream documentation:
 // https://clang.llvm.org/docs/AttributeReference.html#lifetimebound
+// https://learn.microsoft.com/en-us/cpp/code-quality/c26816?view=msvc-170
 #if ABSL_HAVE_CPP_ATTRIBUTE(clang::lifetimebound)
 #define ABSL_ATTRIBUTE_LIFETIME_BOUND [[clang::lifetimebound]]
+#elif ABSL_HAVE_CPP_ATTRIBUTE(msvc::lifetimebound)
+#define ABSL_ATTRIBUTE_LIFETIME_BOUND [[msvc::lifetimebound]]
 #elif ABSL_HAVE_ATTRIBUTE(lifetimebound)
 #define ABSL_ATTRIBUTE_LIFETIME_BOUND __attribute__((lifetimebound))
 #else

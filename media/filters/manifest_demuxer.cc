@@ -146,7 +146,7 @@ void ManifestDemuxer::Initialize(DemuxerHost* host,
 void ManifestDemuxer::AbortPendingReads() {
   DCHECK(media_task_runner_->RunsTasksInCurrentSequence());
   chunk_demuxer_->AbortPendingReads();
-  impl_->AbortPendingReads();
+  impl_->AbortPendingReads(base::DoNothing());
 }
 
 void ManifestDemuxer::StartWaitingForSeek(base::TimeDelta seek_time) {
@@ -376,19 +376,16 @@ void ManifestDemuxer::EvictCodedFrames(std::string_view role,
 }
 
 bool ManifestDemuxer::AppendAndParseData(std::string_view role,
-                                         base::TimeDelta start,
                                          base::TimeDelta end,
                                          base::TimeDelta* offset,
-                                         const uint8_t* data,
-                                         size_t data_size) {
+                                         base::span<const uint8_t> data) {
   CHECK(chunk_demuxer_);
-  if (!chunk_demuxer_->AppendToParseBuffer(std::string(role), data,
-                                           data_size)) {
+  if (!chunk_demuxer_->AppendToParseBuffer(std::string(role), data)) {
     return false;
   }
   while (true) {
-    switch (chunk_demuxer_->RunSegmentParserLoop(std::string(role), start, end,
-                                                 offset)) {
+    switch (chunk_demuxer_->RunSegmentParserLoop(
+        std::string(role), base::TimeDelta(), end, offset)) {
       case StreamParser::ParseStatus::kSuccess:
         return true;
       case StreamParser::ParseStatus::kSuccessHasMoreData:
@@ -397,6 +394,14 @@ bool ManifestDemuxer::AppendAndParseData(std::string_view role,
         return false;
     }
   }
+}
+
+void ManifestDemuxer::ResetParserState(std::string_view role,
+                                       base::TimeDelta end,
+                                       base::TimeDelta* offset) {
+  CHECK(chunk_demuxer_);
+  return chunk_demuxer_->ResetParserState(std::string(role), base::TimeDelta(),
+                                          end, offset);
 }
 
 void ManifestDemuxer::OnError(PipelineStatus error) {
@@ -598,9 +603,7 @@ void ManifestDemuxer::OnChunkDemuxerTracksChanged(
 void ManifestDemuxer::OnEncryptedMediaData(EmeInitDataType type,
                                            const std::vector<uint8_t>& data) {
   DCHECK(media_task_runner_->RunsTasksInCurrentSequence());
-  // TODO(crbug.com/40057824): This will be required for iOS support in the
-  // future.
-  NOTIMPLEMENTED();
+  OnError(PIPELINE_ERROR_INVALID_STATE);
 }
 
 void ManifestDemuxer::OnDemuxerStreamRead(

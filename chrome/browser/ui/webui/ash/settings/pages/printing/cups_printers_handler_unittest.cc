@@ -103,14 +103,6 @@ class FakePpdProvider : public chromeos::PpdProvider {
   ~FakePpdProvider() override {}
 };
 
-class TestSelectFilePolicy : public ui::SelectFilePolicy {
- public:
-  TestSelectFilePolicy& operator=(const TestSelectFilePolicy&) = delete;
-
-  bool CanOpenSelectFileDialog() override { return true; }
-  void SelectFileDenied() override {}
-};
-
 // A fake ui::SelectFileDialog, which will cancel the file selection instead of
 // selecting a file and verify that the extensions are correctly set.
 class FakeSelectFileDialog : public ui::SelectFileDialog {
@@ -132,13 +124,12 @@ class FakeSelectFileDialog : public ui::SelectFileDialog {
                       int file_type_index,
                       const base::FilePath::StringType& default_extension,
                       gfx::NativeWindow owning_window,
-                      void* params,
                       const GURL* caller) override {
     // Check that the extensions we expect match the actual extensions passed
     // from the CupsPrintersHandler.
     VerifyExtensions(file_types);
     // Close the file select dialog.
-    listener_->FileSelectionCanceled(params);
+    listener_->FileSelectionCanceled();
   }
 
   bool IsRunning(gfx::NativeWindow owning_window) const override {
@@ -188,8 +179,7 @@ class TestSelectFileDialogFactory : public ui::SelectFileDialogFactory {
       std::unique_ptr<ui::SelectFilePolicy> policy) override {
     // TODO(jimmyxgong): Investigate why using |policy| created by
     // CupsPrintersHandler crashes the test.
-    return new FakeSelectFileDialog(listener,
-                                    std::make_unique<TestSelectFilePolicy>(),
+    return new FakeSelectFileDialog(listener, nullptr,
                                     expected_file_type_info_);
   }
 
@@ -291,8 +281,8 @@ class CupsPrintersHandlerTest : public testing::Test {
   std::unique_ptr<TestingProfile> profile_;
   base::test::ScopedFeatureList feature_list_;
   content::TestWebUI web_ui_;
-  std::unique_ptr<CupsPrintersHandler> printers_handler_;
   FakeCupsPrintersManager printers_manager_;
+  std::unique_ptr<CupsPrintersHandler> printers_handler_;
   base::RunLoop run_loop_;
   scoped_refptr<printing::TestPrintBackend> print_backend_ =
       base::MakeRefCounted<printing::TestPrintBackend>();

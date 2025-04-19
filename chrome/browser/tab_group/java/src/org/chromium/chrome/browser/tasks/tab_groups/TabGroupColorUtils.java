@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tasks.tab_groups;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import androidx.annotation.VisibleForTesting;
 import androidx.collection.ArrayMap;
 
 import org.chromium.base.ContextUtils;
@@ -56,30 +57,9 @@ public class TabGroupColorUtils {
      * @param tabRootId The tab root ID whose related tab group color will be fetched.
      * @return The stored color of the target tab group, default value is -1 (INVALID_COLOR_ID).
      */
-    public static int getTabGroupColor(int tabRootId) {
+    static int getTabGroupColor(int tabRootId) {
         assert tabRootId != Tab.INVALID_TAB_ID;
         return getSharedPreferences().getInt(String.valueOf(tabRootId), INVALID_COLOR_ID);
-    }
-
-    /**
-     * This method fetches tab group colors for the related tab group root ID. If the color does not
-     * exist, the next suggested color will be fetched, stored and returned for that root ID.
-     *
-     * @param tabRootId The tab root ID whose related tab group color will be fetched if found.
-     * @param filter The {@link TabGroupModelFilter} used to fetch the next suggested color.
-     * @return The stored or newly created color for the target tab group.
-     */
-    public static @TabGroupColorId int getOrCreateTabGroupColor(
-            int tabRootId, TabGroupModelFilter filter) {
-        assert tabRootId != Tab.INVALID_TAB_ID;
-        int color = getTabGroupColor(tabRootId);
-
-        if (color == INVALID_COLOR_ID) {
-            color = getNextSuggestedColorId(filter);
-            storeTabGroupColor(tabRootId, color);
-        }
-
-        return color;
     }
 
     /**
@@ -128,6 +108,7 @@ public class TabGroupColorUtils {
      *
      * @param tabGroupModelFilter The {@link TabGroupModelFilter} that governs all tab groups.
      */
+    @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
     public static int getNextSuggestedColorId(TabGroupModelFilter tabGroupModelFilter) {
         // Generate the currentColorCountMap.
         Map<Integer, Integer> currentColorCountMap = getCurrentColorCountMap(tabGroupModelFilter);

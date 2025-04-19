@@ -106,20 +106,16 @@ class CmdBufFuzz : public base::TestSuite {
     gpu_service_holder_->ScheduleGpuMainTask(std::move(callback));
   }
 
-  void WaitForCompletion(wgpu::Device device) {
+  void WaitForCompletion(wgpu::Instance instance, wgpu::Device device) {
     // Wait for any work submitted to the queue to be finished. The guarantees
     // of Dawn are that all previous operations will have been completed and
     // more importantly the callbacks will have been called.
     wgpu::Queue queue = device.GetQueue();
-    bool done = false;
-    queue.OnSubmittedWorkDone(
-        [](WGPUQueueWorkDoneStatus, void* userdata) {
-          *static_cast<bool*>(userdata) = true;
-        },
-        &done);
+    wgpu::FutureWaitInfo wait_info = {queue.OnSubmittedWorkDone(
+        wgpu::CallbackMode::WaitAnyOnly, [](wgpu::QueueWorkDoneStatus) {})};
 
-    while (!done) {
-      device.Tick();
+    while (!wait_info.completed) {
+      instance.WaitAny(1, &wait_info, 0u);
       webgpu()->FlushCommands();
       RunPendingTasks();
       base::PlatformThread::Sleep(kTinyTimeout);
@@ -130,8 +126,6 @@ class CmdBufFuzz : public base::TestSuite {
   GpuPreferences gpu_preferences_;
   std::unique_ptr<viz::TestGpuServiceHolder> gpu_service_holder_;
   std::unique_ptr<WebGPUInProcessContext> webgpu_context_;
-  raw_ptr<gl::GLDisplay> gl_display_;
-  scoped_refptr<gl::GLSurface> surface_;
   // std::unique_ptr<CommandBufferDirect> command_buffer_;
   raw_ptr<InProcessCommandBuffer> command_buffer_ = nullptr;
   std::unique_ptr<CommandBufferService> command_buffer_service_;

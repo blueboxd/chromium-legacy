@@ -17,6 +17,7 @@
 #include "base/functional/callback_forward.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/color/color_id.h"
 #include "ui/compositor/layer.h"
@@ -50,7 +51,7 @@ constexpr int kMarginBetweenButtons = 8;
 AppsCollectionsDismissDialog::AppsCollectionsDismissDialog(
     base::OnceClosure confirm_callback)
     : confirm_callback_(std::move(confirm_callback)) {
-  SetModalType(ui::MODAL_TYPE_WINDOW);
+  SetModalType(ui::mojom::ModalType::kWindow);
 
   SetPaintToLayer();
   layer()->SetBackgroundBlur(ColorProvider::kBackgroundBlurSigma);
@@ -139,8 +140,8 @@ AppsCollectionsDismissDialog::AppsCollectionsDismissDialog(
           IDS_ASH_LAUNCHER_APPS_COLLECTIONS_DISMISS_DIALOG_EXIT),
       PillButton::Type::kPrimaryWithoutIcon, nullptr));
 
-  SetAccessibleRole(ax::mojom::Role::kAlertDialog);
-  SetAccessibleName(base::JoinString(
+  GetViewAccessibility().SetRole(ax::mojom::Role::kAlertDialog);
+  GetViewAccessibility().SetName(base::JoinString(
       {l10n_util::GetStringUTF16(
            IDS_ASH_LAUNCHER_APPS_COLLECTIONS_DISMISS_DIALOG_TITLE),
        l10n_util::GetStringUTF16(

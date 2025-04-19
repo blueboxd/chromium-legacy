@@ -11,7 +11,9 @@
 #include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state_observer.h"
+#include "base/containers/flat_map.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "ui/aura/window_observer.h"
 #include "ui/display/display_observer.h"
@@ -22,8 +24,6 @@ class Window;
 }  // namespace aura
 
 namespace ash {
-
-class ScopedOverviewHideWindows;
 
 // Takes over snap group management after the creation in `SplitViewController`.
 // Observes window and window state changes. Implements the
@@ -50,9 +50,20 @@ class SnapGroup : public aura::WindowObserver,
   aura::Window* window1() const { return window1_; }
   aura::Window* window2() const { return window2_; }
   SplitViewDivider* snap_group_divider() { return &snap_group_divider_; }
+  base::TimeTicks carry_over_creation_time() const {
+    return carry_over_creation_time_;
+  }
 
   // Cleans up prior to deletion. Must be called before the object is destroyed.
   void Shutdown();
+
+  // Given `window` which belongs to this snap group, the snapped `state_type`
+  // and `snap_ratio`, returns the current snapped window bounds in root window
+  // coordinates.
+  gfx::Rect GetSnappedWindowBoundsInRoot(
+      aura::Window* window,
+      const chromeos::WindowStateType state_type,
+      float snap_ratio);
 
   // These functions return the snapped window in the specified snap position
   // (left/top or right/bottom) based on the display's orientation.
@@ -67,15 +78,12 @@ class SnapGroup : public aura::WindowObserver,
   aura::Window* GetPhysicallyLeftOrTopWindow();
   aura::Window* GetPhysicallyRightOrBottomWindow();
 
-  // Gets the window snapped at `snap_type`.
-  const aura::Window* GetWindowOfSnapViewType(SnapViewType snap_type) const;
-
   void ShowDivider();
   void HideDivider();
 
   // Returns true if snap group is configured in a vertical split-screen layout.
   // Returns false otherwise.
-  bool IsSnapGroupLayoutHorizontal();
+  bool IsSnapGroupLayoutHorizontal() const;
 
   // Unified helper to handle mouse/touch events received from
   // `ToplevelWindowEventHandler` to hide `snap_group_divider_` when either of
@@ -85,8 +93,10 @@ class SnapGroup : public aura::WindowObserver,
   // Returns the topmost window in the snap group.
   aura::Window* GetTopMostWindowInGroup() const;
 
-  // Minimizes the windows in the snap group.
-  void MinimizeWindows();
+  // Refreshes the window and divider bounds. Note `this` may be destroyed if
+  // the windows are no longer valid for a snap group.
+  // TODO(b/346624805): See if we can private this again.
+  void RefreshSnapGroup();
 
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
@@ -96,9 +106,11 @@ class SnapGroup : public aura::WindowObserver,
   // WindowStateObserver:
   void OnPreWindowStateTypeChange(WindowState* window_state,
                                   chromeos::WindowStateType old_type) override;
+  void OnPostWindowStateTypeChange(WindowState* window_state,
+                                   chromeos::WindowStateType old_type) override;
 
   // LayoutDividerController:
-  aura::Window* GetRootWindow() override;
+  aura::Window* GetRootWindow() const override;
   void StartResizeWithDivider(const gfx::Point& location_in_screen) override;
   void UpdateResizeWithDivider(const gfx::Point& location_in_screen) override;
   bool EndResizeWithDivider(const gfx::Point& location_in_screen) override;
@@ -149,15 +161,6 @@ class SnapGroup : public aura::WindowObserver,
   // `primary_snap_ratio`. Note the windows and divider must fit the work area.
   void ApplyPrimarySnapRatio(float primary_snap_ratio);
 
-  // Refreshes the window and divider bounds. Note `this` may be destroyed if
-  // the windows are no longer valid for a snap group.
-  void RefreshSnapGroup();
-
-  // Hides scoped windows in a snap group in partial overview, restores their
-  // visibility when partial overview ends.
-  void OnOverviewModeStarting();
-  void OnOverviewModeEnding();
-
   // True while the snap group is being moved due to parent window change.
   bool is_moving_snap_group_ = false;
 
@@ -167,8 +170,6 @@ class SnapGroup : public aura::WindowObserver,
   // stacking order, `snap_group_divider_` is the bottom-most transient child of
   // the top-most window of the two windows.
   SplitViewDivider snap_group_divider_;
-
-  std::unique_ptr<ScopedOverviewHideWindows> hide_windows_in_partial_overview_;
 
   // Window that has state type of `chromeos::WindowStateType::kPrimarySnapped`.
   // Physically it is left/top for primary screen orientation, however it will
@@ -181,6 +182,17 @@ class SnapGroup : public aura::WindowObserver,
   // for secondary screen orientation.
   raw_ptr<aura::Window> window2_;
 
+  // True if the shutting down process has been triggered.
+  bool is_shutting_down_ = false;
+
+  // True if the two windows are being swapped with double tap.
+  bool swapping_windows_ = false;
+
+  // Queues asynchronous snap events until the target position is reached.
+  // Ensures post-processing happens only after the snap is complete.
+  base::flat_map<aura::Window*, SnapPosition>
+      window_to_target_snap_position_map_;
+
   // Tracks the timestamp of the original Snap Group's creation time, preserved
   // when using 'Snap to Replace'.
   const base::TimeTicks carry_over_creation_time_;
@@ -190,8 +202,7 @@ class SnapGroup : public aura::WindowObserver,
   // the two snapped windows remain unchanged throughout its existence.
   const base::TimeTicks actual_creation_time_;
 
-  // True if the shutting down process has been triggered.
-  bool is_shutting_down_ = false;
+  base::WeakPtrFactory<SnapGroup> weak_ptr_factory_{this};
 };
 
 }  // namespace ash

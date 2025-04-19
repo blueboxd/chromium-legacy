@@ -137,9 +137,8 @@ class ChromeLabsCoordinatorTest : public TestWithBrowserView {
     profile()->GetPrefs()->SetBoolean(
         chrome_labs_prefs::kBrowserLabsEnabledEnterprisePolicy, true);
 
-    ChromeLabsButton* button = browser_view()->toolbar()->chrome_labs_button();
-    chrome_labs_coordinator_ = std::make_unique<ChromeLabsCoordinator>(
-        button, browser_view()->browser(), chrome_labs_model());
+    chrome_labs_coordinator_ =
+        std::make_unique<ChromeLabsCoordinator>(browser_view()->browser());
   }
 
   void TearDown() override {
@@ -275,7 +274,8 @@ class ChromeLabsViewControllerTest : public TestWithBrowserView {
 #endif
 
     std::unique_ptr<ChromeLabsBubbleView> bubble_view =
-        std::make_unique<ChromeLabsBubbleView>(chrome_labs_button());
+        std::make_unique<ChromeLabsBubbleView>(GetChromeLabsButton(),
+                                               browser());
     bubble_view_ = bubble_view.get();
     bubble_widget_ =
         views::BubbleDialogDelegateView::CreateBubble(std::move(bubble_view));
@@ -289,8 +289,8 @@ class ChromeLabsViewControllerTest : public TestWithBrowserView {
 
   ChromeLabsBubbleView* chrome_labs_bubble() { return bubble_view_; }
 
-  ChromeLabsButton* chrome_labs_button() {
-    return browser_view()->toolbar()->chrome_labs_button();
+  views::Button* GetChromeLabsButton() {
+    return browser_view()->toolbar()->GetChromeLabsButton();
   }
 
   views::View* chrome_labs_menu_item_container() {
@@ -564,7 +564,7 @@ TEST_F(ChromeLabsViewControllerTest, DISABLED_ShowFeedbackPage) {
 
   views::MdTextButton* feedback_button =
       first_lab_item()->GetFeedbackButtonForTesting();
-  ui::MouseEvent e(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+  ui::MouseEvent e(ui::EventType::kMousePressed, gfx::Point(), gfx::Point(),
                    ui::EventTimeForNow(), 0, 0);
   views::test::ButtonTestApi test_api(feedback_button);
   test_api.NotifyClick(e);

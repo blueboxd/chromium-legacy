@@ -13,30 +13,41 @@
 #include "components/plus_addresses/mock_plus_address_http_client.h"
 #include "components/plus_addresses/plus_address_http_client.h"
 #include "components/plus_addresses/plus_address_service.h"
+#include "components/plus_addresses/plus_address_test_environment.h"
 #include "components/plus_addresses/plus_address_test_utils.h"
 #include "components/plus_addresses/plus_address_types.h"
+#include "components/plus_addresses/settings/fake_plus_address_setting_service.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 namespace plus_addresses {
+
 namespace {
+
 using ::affiliations::FacetURI;
 using ::affiliations::MockAffiliationSourceObserver;
 using ::testing::AssertionFailure;
 using ::testing::AssertionSuccess;
 using ::testing::ElementsAre;
+using ::testing::NiceMock;
 using ::testing::UnorderedElementsAreArray;
+
 }  // namespace
 
 class PlusAddressAffiliationSourceAdapterTest : public testing::Test {
  protected:
   PlusAddressAffiliationSourceAdapterTest() {
     service_ = std::make_unique<PlusAddressService>(
-        /*identity_manager=*/nullptr,
-        std::make_unique<testing::NiceMock<MockPlusAddressHttpClient>>(),
+        &plus_environment_.pref_service(),
+        plus_environment_.identity_env().identity_manager(),
+        &plus_environment_.setting_service(),
+        std::make_unique<NiceMock<MockPlusAddressHttpClient>>(),
         /*webdata_service=*/nullptr,
-        /*affiliation_service=*/&mock_affiliation_service_);
+        &plus_environment_
+             .affiliation_service(), /*feature_enabled_for_profile_check=*/
+        base::BindRepeating(&base::FeatureList::IsEnabled));
     adapter_ =
         std::make_unique<PlusAddressAffiliationSourceAdapter>(service_.get());
   }
@@ -63,9 +74,8 @@ class PlusAddressAffiliationSourceAdapterTest : public testing::Test {
  protected:
   base::test::SingleThreadTaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+  test::PlusAddressTestEnvironment plus_environment_;
   testing::StrictMock<MockAffiliationSourceObserver> mock_source_observer_;
-  testing::NiceMock<affiliations::MockAffiliationService>
-      mock_affiliation_service_;
   std::unique_ptr<PlusAddressAffiliationSourceAdapter> adapter_;
   std::unique_ptr<PlusAddressService> service_;
 };
@@ -118,7 +128,8 @@ TEST_F(PlusAddressAffiliationSourceAdapterTest, OnPlusAddressesChanged) {
 
   // Simulate update of `profile1`.
   PlusProfile updated_profile1 = profile1;
-  updated_profile1.plus_address = "new-" + updated_profile1.plus_address;
+  updated_profile1.plus_address =
+      PlusAddress("new-" + *updated_profile1.plus_address);
 
   service_->OnWebDataChangedBySync(
       {PlusAddressDataChange(PlusAddressDataChange::Type::kRemove, profile1),

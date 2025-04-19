@@ -41,7 +41,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -60,14 +59,12 @@ import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.base.task.test.ShadowPostTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browser_controls.BrowserStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTabFeatureOverridesManager;
 import org.chromium.chrome.browser.customtabs.features.minimizedcustomtab.MinimizedFeatureUtils;
-import org.chromium.chrome.browser.customtabs.features.partialcustomtab.SimpleHandleStrategy;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbar.CustomTabLocationBar;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
@@ -80,6 +77,7 @@ import org.chromium.chrome.browser.toolbar.ToolbarTabController;
 import org.chromium.chrome.browser.toolbar.menu_button.MenuButtonCoordinator;
 import org.chromium.chrome.browser.toolbar.top.CaptureReadinessResult;
 import org.chromium.chrome.browser.toolbar.top.NavigationPopup.HistoryDelegate;
+import org.chromium.chrome.browser.toolbar.top.ToggleTabStackButtonCoordinator;
 import org.chromium.chrome.browser.toolbar.top.ToolbarSnapshotDifference;
 import org.chromium.chrome.browser.toolbar.top.ToolbarTablet.OfflineDownloader;
 import org.chromium.chrome.browser.user_education.UserEducationHelper;
@@ -111,7 +109,6 @@ public class CustomTabToolbarUnitTest {
             new GURL("https://www.google.com/amp/s/www.nyt.com/ampthml/blogs.html");
 
     @Rule public MockitoRule mRule = MockitoJUnit.rule();
-    @Rule public TestRule mProcessor = new Features.JUnitProcessor();
 
     @Mock LocationBarModel mLocationBarModel;
     @Mock ActionMode.Callback mActionModeCallback;
@@ -120,6 +117,7 @@ public class CustomTabToolbarUnitTest {
     @Mock ToolbarDataProvider mToolbarDataProvider;
     @Mock ToolbarTabController mTabController;
     @Mock MenuButtonCoordinator mMenuButtonCoordinator;
+    @Mock private ToggleTabStackButtonCoordinator mTabSwitcherButtonCoordinator;
     @Mock HistoryDelegate mHistoryDelegate;
     @Mock BooleanSupplier mPartnerHomepageEnabledSupplier;
     @Mock OfflineDownloader mOfflineDownloader;
@@ -167,6 +165,7 @@ public class CustomTabToolbarUnitTest {
                 mToolbarDataProvider,
                 mTabController,
                 mMenuButtonCoordinator,
+                mTabSwitcherButtonCoordinator,
                 mHistoryDelegate,
                 mPartnerHomepageEnabledSupplier,
                 mOfflineDownloader,
@@ -357,8 +356,7 @@ public class CustomTabToolbarUnitTest {
         assertFalse(mToolbar.isMaximizeButtonEnabledForTesting());
         mToolbar.initSideSheetMaximizeButton(/* maximizedOnInit= */ false, () -> true);
         assertTrue(mToolbar.isMaximizeButtonEnabledForTesting());
-        var maximizeButton =
-                (ImageButton) mToolbar.findViewById(R.id.custom_tabs_sidepanel_maximize);
+        var maximizeButton = mToolbar.findViewById(R.id.custom_tabs_sidepanel_maximize);
 
         mToolbar.onFinishInflate();
         View titleUrlContainer = Mockito.mock(View.class);
@@ -397,7 +395,7 @@ public class CustomTabToolbarUnitTest {
         MinimizedFeatureUtils.setDeviceEligibleForMinimizedCustomTabForTesting(true);
         setup();
         LinearLayout closeMinimizeLayout = mToolbar.findViewById(R.id.close_minimize_layout);
-        var minimizeButton = (ImageButton) mToolbar.findViewById(R.id.custom_tabs_minimize_button);
+        ImageButton minimizeButton = mToolbar.findViewById(R.id.custom_tabs_minimize_button);
         View titleUrlContainer = Mockito.mock(View.class);
         when(titleUrlContainer.getLayoutParams())
                 .thenReturn(
@@ -432,8 +430,8 @@ public class CustomTabToolbarUnitTest {
     @DisableFeatures({ChromeFeatureList.CCT_MINIMIZED})
     public void testMinimizeButtonDisabled() {
         LinearLayout closeMinimizeLayout = mToolbar.findViewById(R.id.close_minimize_layout);
-        var minimizeButton = (ImageButton) mToolbar.findViewById(R.id.custom_tabs_minimize_button);
-        var closeButton = (ImageButton) mToolbar.findViewById(R.id.close_button);
+        ImageButton minimizeButton = mToolbar.findViewById(R.id.custom_tabs_minimize_button);
+        ImageButton closeButton = mToolbar.findViewById(R.id.close_button);
 
         // Button on left side
         assertNull("Minimize button should never be initialized", minimizeButton);
@@ -488,22 +486,6 @@ public class CustomTabToolbarUnitTest {
                 "Close button should be visible",
                 View.VISIBLE,
                 closeMinimizeLayout.getChildAt(0).getVisibility());
-    }
-
-    @Test
-    public void testHandleStrategy_ClickCloseListener() {
-        var strategy1 = new SimpleHandleStrategy(r -> {});
-        mToolbar.setHandleStrategy(strategy1);
-
-        View.OnClickListener listener = v -> {};
-        mToolbar.setCustomTabCloseClickHandler(listener);
-        assertNotNull(strategy1.getClickCloseHandlerForTesting());
-
-        var strategy2 = new SimpleHandleStrategy(r -> {});
-        // Another call to #setHandleStrategy which can come from device rotation.
-        // HandleStrategy should be initialized properly in response.
-        mToolbar.setHandleStrategy(strategy2);
-        assertNotNull(strategy2.getClickCloseHandlerForTesting());
     }
 
     @Test

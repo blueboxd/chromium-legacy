@@ -6,6 +6,9 @@
 
 #import "base/apple/foundation_util.h"
 #import "base/test/task_environment.h"
+#import "ios/chrome/browser/account_picker/ui_bundled/account_picker_configuration.h"
+#import "ios/chrome/browser/account_picker/ui_bundled/account_picker_coordinator.h"
+#import "ios/chrome/browser/account_picker/ui_bundled/account_picker_coordinator_delegate.h"
 #import "ios/chrome/browser/drive/model/drive_service_factory.h"
 #import "ios/chrome/browser/shared/model/browser/test/test_browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
@@ -20,9 +23,6 @@
 #import "ios/chrome/browser/shared/public/commands/show_signin_command.h"
 #import "ios/chrome/browser/signin/model/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/model/fake_system_identity.h"
-#import "ios/chrome/browser/ui/account_picker/account_picker_configuration.h"
-#import "ios/chrome/browser/ui/account_picker/account_picker_coordinator.h"
-#import "ios/chrome/browser/ui/account_picker/account_picker_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_completion_info.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/save_to_drive/save_to_drive_coordinator.h"
@@ -52,7 +52,7 @@ class SaveToDriveCoordinatorTest : public PlatformTest {
   void SetUp() final {
     PlatformTest::SetUp();
     TestChromeBrowserState::Builder builder;
-    browser_state_ = builder.Build();
+    browser_state_ = std::move(builder).Build();
     drive_service_ =
         drive::DriveServiceFactory::GetForBrowserState(browser_state_.get());
     account_manager_service_ =

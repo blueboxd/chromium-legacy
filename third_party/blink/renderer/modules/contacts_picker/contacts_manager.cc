@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/modules/contacts_picker/contacts_manager.h"
 
-#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/platform/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_traits.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_contact_info.h"
@@ -78,8 +78,7 @@ TypeConverter<blink::ContactInfo*, blink::mojom::blink::ContactInfoPtr>::
   if (contact->icon) {
     blink::HeapVector<blink::Member<blink::Blob>> icons;
     for (blink::mojom::blink::ContactIconBlobPtr& icon : *contact->icon) {
-      icons.push_back(blink::Blob::Create(icon->data.data(), icon->data.size(),
-                                          icon->mime_type));
+      icons.push_back(blink::Blob::Create(icon->data, icon->mime_type));
     }
 
     contact_info->setIcon(icons);

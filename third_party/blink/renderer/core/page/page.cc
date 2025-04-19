@@ -21,6 +21,7 @@
 
 #include "third_party/blink/renderer/core/page/page.h"
 
+#include "base/check.h"
 #include "base/compiler_specific.h"
 #include "base/feature_list.h"
 #include "third_party/blink/public/common/features.h"
@@ -40,6 +41,7 @@
 #include "third_party/blink/renderer/core/editing/drag_caret.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
 #include "third_party/blink/renderer/core/frame/browser_controls.h"
+#include "third_party/blink/renderer/core/frame/display_cutout_client_impl.h"
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -54,6 +56,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/viewport_data.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/fenced_frame/document_fenced_frames.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -94,6 +97,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/agent_group_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
@@ -114,6 +118,20 @@ const int kMaxNumberOfFrames = 1000;
 const int kTenFrames = 10;
 
 bool g_limit_max_frames_to_ten_for_testing = false;
+
+// static
+void SetSafeAreaEnvVariables(LocalFrame* frame, const gfx::Insets& safe_area) {
+  DocumentStyleEnvironmentVariables& vars =
+      frame->GetDocument()->GetStyleEngine().EnsureEnvironmentVariables();
+  vars.SetVariable(UADefinedVariable::kSafeAreaInsetTop,
+                   StyleEnvironmentVariables::FormatPx(safe_area.top()));
+  vars.SetVariable(UADefinedVariable::kSafeAreaInsetLeft,
+                   StyleEnvironmentVariables::FormatPx(safe_area.left()));
+  vars.SetVariable(UADefinedVariable::kSafeAreaInsetBottom,
+                   StyleEnvironmentVariables::FormatPx(safe_area.bottom()));
+  vars.SetVariable(UADefinedVariable::kSafeAreaInsetRight,
+                   StyleEnvironmentVariables::FormatPx(safe_area.right()));
+}
 
 }  // namespace
 
@@ -153,12 +171,14 @@ HeapVector<Member<Page>> Page::RelatedPages() {
   return result;
 }
 
-Page* Page::CreateNonOrdinary(ChromeClient& chrome_client,
-                              AgentGroupScheduler& agent_group_scheduler) {
+Page* Page::CreateNonOrdinary(
+    ChromeClient& chrome_client,
+    AgentGroupScheduler& agent_group_scheduler,
+    const ColorProviderColorMaps* color_provider_colors) {
   return MakeGarbageCollected<Page>(
       base::PassKey<Page>(), chrome_client, agent_group_scheduler,
-      BrowsingContextGroupInfo::CreateUnique(),
-      /*color_provider_colors=*/nullptr, /*is_ordinary=*/false);
+      BrowsingContextGroupInfo::CreateUnique(), color_provider_colors,
+      /*is_ordinary=*/false);
 }
 
 Page* Page::CreateOrdinary(
@@ -425,7 +445,7 @@ void Page::LinkRelatedPagesIfNeeded() {
   next->prev_related_page_ = this;
 }
 
-void Page::TakeCloseTaskHandler(Page* old_page) {
+void Page::TakePropertiesForLocalMainFrameSwap(Page* old_page) {
   // Setting the CloseTaskHandler using this function should only be done
   // when transferring the CloseTaskHandler from a previous Page to the new
   // Page during LocalFrame <-> LocalFrame swap. The new Page should not have
@@ -436,6 +456,33 @@ void Page::TakeCloseTaskHandler(Page* old_page) {
   if (close_task_handler_) {
     close_task_handler_->SetPage(this);
   }
+  CHECK_EQ(prev_related_page_, this);
+  CHECK_EQ(next_related_page_, this);
+
+  // Make the related pages list include `this` in place of `old_page`.
+  if (old_page->prev_related_page_ != old_page) {
+    prev_related_page_ = old_page->prev_related_page_;
+    prev_related_page_->next_related_page_ = this;
+    old_page->prev_related_page_ = old_page;
+  }
+  if (old_page->next_related_page_ != old_page) {
+    next_related_page_ = old_page->next_related_page_;
+    next_related_page_->prev_related_page_ = this;
+    old_page->next_related_page_ = old_page;
+  }
+
+  // If the previous page is an opener for other pages, make sure that the
+  // openees point to the new page instead.
+  for (auto page : RelatedPages()) {
+    if (page->opener_ == old_page) {
+      page->opener_ = this;
+    }
+  }
+
+  // Note that we don't update the `opener_` member here, since the
+  // renderer-side opener is only set during construction and might be stale.
+  // When we create the new page, we get the latest opener frame token, so the
+  // new page's opener should be the most up-to-date opener.
 }
 
 LocalFrame* Page::DeprecatedLocalMainFrame() const {
@@ -489,6 +536,11 @@ void Page::UsesOverlayScrollbarsChanged() {
   }
 }
 
+void Page::ForcedColorsChanged() {
+  PlatformColorsChanged();
+  ColorSchemeChanged();
+}
+
 void Page::PlatformColorsChanged() {
   for (const Page* page : AllPages()) {
     for (Frame* frame = page->MainFrame(); frame;
@@ -519,10 +571,8 @@ void Page::ColorSchemeChanged() {
 void Page::EmulateForcedColors(bool is_dark_theme) {
   emulated_forced_colors_provider_ =
       WebTestSupport::IsRunningWebTest()
-          ? std::make_unique<ui::ColorProvider>(
-                ui::CreateEmulatedForcedColorsColorProviderForTest())
-          : std::make_unique<ui::ColorProvider>(
-                ui::CreateEmulatedForcedColorsColorProvider(is_dark_theme));
+          ? ui::CreateEmulatedForcedColorsColorProviderForTest()
+          : ui::CreateEmulatedForcedColorsColorProvider(is_dark_theme);
 }
 
 void Page::DisableEmulatedForcedColors() {
@@ -539,16 +589,14 @@ bool Page::UpdateColorProviders(
   if (!ui::IsRendererColorMappingEquivalent(
           light_color_provider_.get(),
           color_provider_colors.light_colors_map)) {
-    light_color_provider_ = std::make_unique<ui::ColorProvider>(
-        ui::CreateColorProviderFromRendererColorMap(
-            color_provider_colors.light_colors_map));
+    light_color_provider_ = ui::CreateColorProviderFromRendererColorMap(
+        color_provider_colors.light_colors_map);
     did_color_provider_update = true;
   }
   if (!ui::IsRendererColorMappingEquivalent(
           dark_color_provider_.get(), color_provider_colors.dark_colors_map)) {
-    dark_color_provider_ = std::make_unique<ui::ColorProvider>(
-        ui::CreateColorProviderFromRendererColorMap(
-            color_provider_colors.dark_colors_map));
+    dark_color_provider_ = ui::CreateColorProviderFromRendererColorMap(
+        color_provider_colors.dark_colors_map);
     did_color_provider_update = true;
   }
   if (!ui::IsRendererColorMappingEquivalent(
@@ -556,24 +604,26 @@ bool Page::UpdateColorProviders(
           color_provider_colors.forced_colors_map)) {
     forced_colors_color_provider_ =
         WebTestSupport::IsRunningWebTest()
-            ? std::make_unique<ui::ColorProvider>(
-                  ui::CreateEmulatedForcedColorsColorProviderForTest())
-            : std::make_unique<ui::ColorProvider>(
-                  ui::CreateColorProviderFromRendererColorMap(
-                      color_provider_colors.forced_colors_map));
+            ? ui::CreateEmulatedForcedColorsColorProviderForTest()
+            : ui::CreateColorProviderFromRendererColorMap(
+                  color_provider_colors.forced_colors_map);
     did_color_provider_update = true;
+  }
+
+  if (did_color_provider_update) {
+    SetColorProviderColorMaps(color_provider_colors);
   }
 
   return did_color_provider_update;
 }
 
 void Page::UpdateColorProvidersForTest() {
-  light_color_provider_ = std::make_unique<ui::ColorProvider>(
-      ui::CreateDefaultColorProviderForBlink(/*dark_mode=*/false));
-  dark_color_provider_ = std::make_unique<ui::ColorProvider>(
-      ui::CreateDefaultColorProviderForBlink(/*dark_mode=*/true));
-  forced_colors_color_provider_ = std::make_unique<ui::ColorProvider>(
-      ui::CreateEmulatedForcedColorsColorProviderForTest());
+  light_color_provider_ =
+      ui::CreateDefaultColorProviderForBlink(/*dark_mode=*/false);
+  dark_color_provider_ =
+      ui::CreateDefaultColorProviderForBlink(/*dark_mode=*/true);
+  forced_colors_color_provider_ =
+      ui::CreateEmulatedForcedColorsColorProviderForTest();
 }
 
 const ui::ColorProvider* Page::GetColorProviderForPainting(
@@ -811,8 +861,9 @@ bool Page::IsCursorVisible() const {
 
 // static
 int Page::MaxNumberOfFrames() {
-  if (UNLIKELY(g_limit_max_frames_to_ten_for_testing))
+  if (g_limit_max_frames_to_ten_for_testing) [[unlikely]] {
     return kTenFrames;
+  }
   return kMaxNumberOfFrames;
 }
 
@@ -851,6 +902,51 @@ int Page::SubframeCount() const {
   CheckFrameCountConsistency(subframe_count_ + 1, MainFrame());
 #endif
   return subframe_count_;
+}
+
+void Page::UpdateSafeAreaInsetWithBrowserControls(
+    const BrowserControls& browser_controls,
+    bool force_update) {
+  DCHECK(RuntimeEnabledFeatures::DynamicSafeAreaInsetsEnabled());
+
+  if (Fullscreen::HasFullscreenElements() && !force_update) {
+    LOG(WARNING) << "Attempt to set SAI with browser controls in fullscreen.";
+    return;
+  }
+
+  // Adjust the top / left / right is not needed, since they are set when
+  // display insets was received at |SetSafeArea()|.
+  int inset_bottom = GetMaxSafeAreaInsets().bottom();
+  int bottom_controls_full_height = browser_controls.BottomHeight();
+  float control_ratio = browser_controls.BottomShownRatio();
+  float dip_scale = GetVisualViewport().ScaleFromDIP();
+
+  // As control_ratio decrease, safe_area_inset_bottom will be added to the web
+  // page to keep the bottom element out from the display cutout area.
+  float safe_area_inset_bottom =
+      std::max(0.f, inset_bottom - control_ratio * bottom_controls_full_height /
+                                       dip_scale);
+
+  gfx::Insets new_safe_area = gfx::Insets().TLBR(
+      max_safe_area_insets_.top(), max_safe_area_insets_.left(),
+      safe_area_inset_bottom, max_safe_area_insets_.right());
+  if (new_safe_area != applied_safe_area_insets_ || force_update) {
+    applied_safe_area_insets_ = new_safe_area;
+    SetSafeAreaEnvVariables(DeprecatedLocalMainFrame(), new_safe_area);
+  }
+}
+
+void Page::SetMaxSafeAreaInsets(LocalFrame* setter, gfx::Insets max_safe_area) {
+  max_safe_area_insets_ = max_safe_area;
+
+  // When the SAI is changed when DynamicSafeAreaInsetsEnabled, the SAI for the
+  // main frame needs to be set per browser controls state.
+  if (RuntimeEnabledFeatures::DynamicSafeAreaInsetsEnabled() &&
+      setter->IsMainFrame()) {
+    UpdateSafeAreaInsetWithBrowserControls(GetBrowserControls(), true);
+  } else {
+    SetSafeAreaEnvVariables(setter, max_safe_area);
+  }
 }
 
 void Page::SettingsChanged(ChangeType change_type) {
@@ -909,7 +1005,7 @@ void Page::SettingsChanged(ChangeType change_type) {
       // The new text-size-adjust implementation requires the text autosizing
       // setting but applies the adjustment in style rather than via the text
       // autosizer, so we need to invalidate style.
-      if (RuntimeEnabledFeatures::NewTextSizeAdjustEnabled()) {
+      if (RuntimeEnabledFeatures::TextSizeAdjustImprovementsEnabled()) {
         InitialStyleChanged();
       }
       break;
@@ -1052,6 +1148,10 @@ void Page::SettingsChanged(ChangeType change_type) {
         main_local_frame->GetDocument()->VisionDeficiencyChanged();
       break;
     }
+    case ChangeType::kForcedColors: {
+      ForcedColorsChanged();
+      break;
+    }
   }
 }
 
@@ -1096,11 +1196,14 @@ void Page::UpdateAcceleratedCompositingSettings() {
       continue;
     // Mark all scrollable areas as needing a paint property update because the
     // compositing reasons may have changed.
-    if (const auto* areas = local_frame->View()->UserScrollableAreas()) {
-      for (const auto& scrollable_area : *areas) {
-        if (scrollable_area->ScrollsOverflow()) {
-          if (auto* layout_box = scrollable_area->GetLayoutBox())
-            layout_box->SetNeedsPaintPropertyUpdate();
+    if (LocalFrameView* view = local_frame->View()) {
+      if (const auto* areas = view->UserScrollableAreas()) {
+        for (const auto& scrollable_area : *areas) {
+          if (scrollable_area->ScrollsOverflow()) {
+            if (auto* layout_box = scrollable_area->GetLayoutBox()) {
+              layout_box->SetNeedsPaintPropertyUpdate();
+            }
+          }
         }
       }
     }

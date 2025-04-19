@@ -65,7 +65,7 @@ WebDatabaseTable::TypeKey GetKey() {
   return reinterpret_cast<void*>(&table_key);
 }
 
-time_t GetEndTime(const base::Time& end) {
+time_t GetEndTime(base::Time end) {
   if (end.is_null() || end == base::Time::Max()) {
     return std::numeric_limits<time_t>::max();
   }
@@ -151,8 +151,8 @@ bool AutocompleteTable::GetFormValuesForElementName(
 }
 
 bool AutocompleteTable::RemoveFormElementsAddedBetween(
-    const base::Time& delete_begin,
-    const base::Time& delete_end,
+    base::Time delete_begin,
+    base::Time delete_end,
     std::vector<AutocompleteChange>& changes) {
   const time_t delete_begin_time_t = delete_begin.ToTimeT();
   const time_t delete_end_time_t = GetEndTime(delete_end);
@@ -407,11 +407,12 @@ bool AutocompleteTable::AddFormFieldValueTime(
     std::vector<std::string> message_parts = {base::StringPrintf(
         "(Failure during %s, SQL error code = %d, table_exists = %d, ",
         failure_location, sql_error_code, autofill_table_exists)};
-    for (const char* kColumnName :
-         {"count", "date_last_used", "name", "value"}) {
+    static constexpr auto kColumnNames = std::to_array<base::cstring_view>(
+        {"count", "date_last_used", "name", "value"});
+    for (base::cstring_view column_name : kColumnNames) {
       message_parts.push_back(
-          base::StringPrintf("column %s exists = %d,", kColumnName,
-                             db_->DoesColumnExist("autofill", kColumnName)));
+          base::StringPrintf("column %s exists = %d,", column_name.c_str(),
+                             db_->DoesColumnExist("autofill", column_name)));
     }
     return base::StrCat(message_parts);
   };
@@ -434,7 +435,7 @@ bool AutocompleteTable::AddFormFieldValueTime(
       ntstatus_key.Set(base::NumberToString(
           static_cast<uint32_t>(base::win::GetLastNtStatus())));
 #endif
-      DUMP_WILL_BE_NOTREACHED_NORETURN() << create_debug_info("UPDATE");
+      DUMP_WILL_BE_NOTREACHED() << create_debug_info("UPDATE");
       return false;
     }
   } else {
@@ -442,7 +443,7 @@ bool AutocompleteTable::AddFormFieldValueTime(
     if (!InsertAutocompleteEntry({{element.name(), element.value()},
                                   /*date_created=*/time,
                                   /*date_last_used=*/time})) {
-      DUMP_WILL_BE_NOTREACHED_NORETURN() << create_debug_info("INSERT");
+      DUMP_WILL_BE_NOTREACHED() << create_debug_info("INSERT");
       return false;
     }
   }

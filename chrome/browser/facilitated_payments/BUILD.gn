@@ -4,9 +4,13 @@
 
 static_library("facilitated_payments") {
   sources = [
+    "payment_link_handler_factory.cc",
+    "payment_link_handler_factory.h",
     "ui/chrome_facilitated_payments_client.cc",
     "ui/chrome_facilitated_payments_client.h",
   ]
+
+  public_deps = [ "//chrome/browser:browser_public_dependencies" ]
 
   deps = [
     "//chrome/browser/autofill",

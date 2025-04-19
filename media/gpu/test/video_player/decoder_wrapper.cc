@@ -198,7 +198,7 @@ void DecoderWrapper::InitializeTask(const VideoBitstream* video,
   ASSERT_TRUE(video);
 
   encoded_data_helper_ =
-      std::make_unique<EncodedDataHelper>(video->Data(), video->Codec());
+      EncodedDataHelper::Create(video->Data(), video->Codec());
 
   // (Re-)initialize the decoder.
   VideoDecoderConfig config(
@@ -291,8 +291,7 @@ void DecoderWrapper::DecodeNextFragmentTask() {
   if (input_video_codec_ == media::VideoCodec::kH264 ||
       input_video_codec_ == media::VideoCodec::kHEVC) {
     has_config_info = media::test::EncodedDataHelper::HasConfigInfo(
-        bitstream_buffer->data(), bitstream_buffer->size(),
-        input_video_profile_);
+        bitstream_buffer->data(), bitstream_buffer->size(), input_video_codec_);
   }
 
   VideoDecoder::DecodeCB decode_cb = base::BindOnce(

@@ -7,12 +7,14 @@
 #include "ash/clipboard/clipboard_history_controller_impl.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
+#include "ash/constants/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
 #include "base/time/time.h"
@@ -69,30 +71,28 @@ ui::KeyEvent GenerateKeyEvent(const ui::DomCode& code,
 }
 
 ui::KeyEvent ReleaseKey(const ui::DomCode& code) {
-  return GenerateKeyEvent(code, ui::EventType::ET_KEY_RELEASED, ui::EF_NONE);
+  return GenerateKeyEvent(code, ui::EventType::kKeyReleased, ui::EF_NONE);
 }
 
 ui::KeyEvent PressKey(const ui::DomCode& code) {
-  return GenerateKeyEvent(code, ui::EventType::ET_KEY_PRESSED, ui::EF_NONE);
+  return GenerateKeyEvent(code, ui::EventType::kKeyPressed, ui::EF_NONE);
 }
 
 ui::KeyEvent PressKeyWithAlt(const ui::DomCode& code) {
-  return GenerateKeyEvent(code, ui::EventType::ET_KEY_PRESSED, ui::EF_ALT_DOWN);
+  return GenerateKeyEvent(code, ui::EventType::kKeyPressed, ui::EF_ALT_DOWN);
 }
 
 ui::KeyEvent PressKeyWithCtrl(const ui::DomCode& code) {
-  return GenerateKeyEvent(code, ui::EventType::ET_KEY_PRESSED,
+  return GenerateKeyEvent(code, ui::EventType::kKeyPressed,
                           ui::EF_CONTROL_DOWN);
 }
 
 ui::KeyEvent PressKeyWithShift(const ui::DomCode& code) {
-  return GenerateKeyEvent(code, ui::EventType::ET_KEY_PRESSED,
-                          ui::EF_SHIFT_DOWN);
+  return GenerateKeyEvent(code, ui::EventType::kKeyPressed, ui::EF_SHIFT_DOWN);
 }
 
 ui::KeyEvent CreateRepeatKeyEvent(const ui::DomCode& code) {
-  return GenerateKeyEvent(code, ui::EventType::ET_KEY_PRESSED,
-                          ui::EF_IS_REPEAT);
+  return GenerateKeyEvent(code, ui::EventType::kKeyPressed, ui::EF_IS_REPEAT);
 }
 
 void SetInputMethodOptions(Profile& profile,
@@ -321,9 +321,13 @@ TEST_F(AssistiveSuggesterTest,
 }
 
 TEST_F(AssistiveSuggesterTest,
-       AssistiveControlVLongpressFlagEnabled_AssistiveFeatureEnabled) {
+       OnlyAssistiveControlVLongpressFlagEnabled_AssistiveFeatureEnabled) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kClipboardHistoryLongpress);
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{features::kClipboardHistoryLongpress},
+      /*disabled_features=*/{features::kAssistMultiWord,
+                             features::kAssistEmojiEnhanced,
+                             features::kDiacriticsOnPhysicalKeyboardLongpress});
   SetInputMethodOptions(*profile_, /*predictive_writing_enabled=*/false,
                         /*diacritics_on_longpress_enabled=*/false);
   EXPECT_TRUE(assistive_suggester_->IsAssistiveFeatureEnabled());
@@ -332,7 +336,11 @@ TEST_F(AssistiveSuggesterTest,
 TEST_F(AssistiveSuggesterTest,
        AssistiveControlVLongpressFlagDisabled_AssistiveFeatureDisabled) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(features::kClipboardHistoryLongpress);
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{}, /*disabled_features=*/{
+          features::kClipboardHistoryLongpress, features::kAssistMultiWord,
+          features::kAssistEmojiEnhanced,
+          features::kDiacriticsOnPhysicalKeyboardLongpress});
   SetInputMethodOptions(*profile_, /*predictive_writing_enabled=*/false,
                         /*diacritics_on_longpress_enabled=*/false);
   EXPECT_FALSE(assistive_suggester_->IsAssistiveFeatureEnabled());
@@ -437,6 +445,9 @@ TEST_F(AssistiveSuggesterTest, RecordsMultiWordTextInputAsEnabledByLacros) {
       ash::standalone_browser::GetFeatureRefs();
   enabled.push_back(features::kAssistMultiWord);
   feature_list.InitWithFeatures(enabled, {});
+  base::test::ScopedCommandLine scoped_command_line;
+  scoped_command_line.GetProcessCommandLine()->AppendSwitch(
+      ash::switches::kEnableLacrosForTesting);
 
   // Set up a user, necessary for Lacros.
   auto fake_user_manager = std::make_unique<user_manager::FakeUserManager>();
@@ -1450,7 +1461,7 @@ class AssistiveSuggesterControlVLongpressTest : public AshTestBase {
   }
 
   ui::KeyEvent CreateControlVEvent(int extra_flags = ui::EF_NONE) {
-    return ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_V,
+    return ui::KeyEvent(ui::EventType::kKeyPressed, ui::VKEY_V,
                         ui::EF_CONTROL_DOWN | extra_flags);
   }
 
@@ -1550,7 +1561,7 @@ TEST_F(AssistiveSuggesterControlVLongpressTest,
       base::Milliseconds(100));  // Not long enough to trigger longpress.
 
   EXPECT_EQ(assistive_suggester_.OnKeyEvent(ui::KeyEvent(
-                ui::ET_KEY_RELEASED, ui::VKEY_V, ui::EF_CONTROL_DOWN)),
+                ui::EventType::kKeyReleased, ui::VKEY_V, ui::EF_CONTROL_DOWN)),
             AssistiveSuggesterKeyResult::kNotHandled);
   EXPECT_FALSE(Shell::Get()->clipboard_history_controller()->IsMenuShowing());
 }

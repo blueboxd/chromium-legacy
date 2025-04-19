@@ -91,6 +91,7 @@ void WaitforPDFExtensionView() {
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   AppLaunchConfiguration config;
   config.features_disabled.push_back(web::features::kSmoothScrollingDefault);
+  config.features_disabled.push_back(kDisableFullscreenScrolling);
   return config;
 }
 
@@ -101,7 +102,7 @@ void WaitforPDFExtensionView() {
   [ChromeEarlGrey setBoolValue:NO
                    forUserPref:translate::prefs::kOfferTranslateEnabled];
 
-  [ChromeEarlGrey setBoolValue:NO forUserPref:prefs::kBottomOmnibox];
+  [ChromeEarlGrey setBoolValue:NO forLocalStatePref:prefs::kBottomOmnibox];
 }
 
 - (void)tearDown {
@@ -450,6 +451,7 @@ void WaitforPDFExtensionView() {
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   AppLaunchConfiguration config;
   config.features_enabled.push_back(web::features::kSmoothScrollingDefault);
+  config.features_disabled.push_back(kDisableFullscreenScrolling);
   return config;
 }
 
@@ -469,7 +471,7 @@ void WaitforPDFExtensionView() {
 
 - (void)setUp {
   [super setUp];
-  [ChromeEarlGrey setBoolValue:YES forUserPref:prefs::kBottomOmnibox];
+  [ChromeEarlGrey setBoolValue:YES forLocalStatePref:prefs::kBottomOmnibox];
 }
 
 // This is currently needed to prevent this test case from being ignored.

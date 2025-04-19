@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/banners/app_banner_manager_desktop.h"
+
 #include <memory>
 #include <string>
 #include <utility>
@@ -17,7 +19,6 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/banners/app_banner_manager_browsertest_base.h"
-#include "chrome/browser/banners/app_banner_manager_desktop.h"
 #include "chrome/browser/banners/test_app_banner_manager_desktop.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -40,6 +41,7 @@
 #include "components/webapps/browser/banners/app_banner_metrics.h"
 #include "components/webapps/browser/banners/app_banner_settings_helper.h"
 #include "components/webapps/browser/install_result_code.h"
+#include "components/webapps/browser/uninstall_result_code.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -343,13 +345,14 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
     base::RunLoop run_loop;
     web_app::WebAppProvider::GetForTest(profile)
         ->externally_managed_app_manager()
-        .UninstallApps({GetBannerURL()},
-                       web_app::ExternalInstallSource::kExternalPolicy,
-                       base::BindLambdaForTesting(
-                           [&run_loop](const GURL& app_url, bool succeeded) {
-                             EXPECT_TRUE(succeeded);
-                             run_loop.Quit();
-                           }));
+        .UninstallApps(
+            {GetBannerURL()}, web_app::ExternalInstallSource::kExternalPolicy,
+            base::BindLambdaForTesting(
+                [&run_loop](const GURL& app_url,
+                            webapps::UninstallResultCode code) {
+                  EXPECT_EQ(code, webapps::UninstallResultCode::kAppRemoved);
+                  run_loop.Quit();
+                }));
     run_loop.Run();
   }
 
@@ -499,6 +502,27 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTestForPasswordManagerPage,
 
   EXPECT_EQ(InstallableWebAppCheckResult::kYes_Promotable,
             manager->GetInstallableWebAppCheckResult());
+}
+
+IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
+                       PipelineRunsAfterStop) {
+  TestAppBannerManagerDesktop* manager =
+      TestAppBannerManagerDesktop::FromWebContents(
+          browser()->tab_strip_model()->GetActiveWebContents());
+
+  {
+    base::RunLoop run_loop;
+    manager->PrepareDone(run_loop.QuitClosure());
+
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(
+        browser(),
+        embedded_test_server()->GetURL("/web_apps/stop-loading-early.html")));
+    run_loop.Run();
+  }
+
+  EXPECT_EQ(InstallableWebAppCheckResult::kYes_Promotable,
+            manager->GetInstallableWebAppCheckResult())
+      << manager->debug_log();
 }
 
 }  // namespace webapps

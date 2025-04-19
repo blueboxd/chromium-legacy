@@ -6,13 +6,12 @@ source_set("browser_state") {
   sources = [
     "browser_state_info_cache.cc",
     "browser_state_info_cache.h",
-    "browser_state_info_cache_observer.h",
-    "browser_state_info_cache_observer.mm",
     "browser_state_otr_helper.cc",
     "browser_state_otr_helper.h",
     "chrome_browser_state.h",
     "chrome_browser_state.mm",
     "chrome_browser_state_manager.h",
+    "chrome_browser_state_manager_observer.h",
   ]
 
   public_deps = [
@@ -32,24 +31,52 @@ source_set("browser_state") {
     "//components/webdata_services",
     "//ios/chrome/browser/net/model:net_types",
     "//ios/chrome/browser/shared/model/prefs:pref_names",
+    "//ios/chrome/browser/shared/model/profile",
     "//ios/chrome/browser/shared/model/url:constants",
     "//ios/components/webui:url_constants",
     "//ios/web/public/webui",
     "//ios/web/webui",
+  ]
+
+  # TODO(crbug.com/358267438): Remove once forwarding headers are removed.
+  allow_circular_includes_from = [ "//ios/chrome/browser/shared/model/profile" ]
+}
+
+source_set("incognito_session_tracker") {
+  sources = [
+    "incognito_session_tracker.h",
+    "incognito_session_tracker.mm",
+  ]
+  deps = [
+    ":browser_state",
+    "//base",
+    "//ios/chrome/browser/shared/model/browser",
+    "//ios/chrome/browser/shared/model/profile",
+    "//ios/chrome/browser/shared/model/web_state_list",
   ]
 }
 
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "browser_state_info_cache_unittest.cc",
     "chrome_browser_state_unittest.cc",
+    "incognito_session_tracker_unittest.mm",
     "test_chrome_browser_state_manager_unittest.cc",
   ]
   deps = [
     ":browser_state",
+    ":incognito_session_tracker",
     ":test_support",
     "//base",
+    "//base/test:test_support",
+    "//components/prefs:test_support",
     "//components/variations/net",
+    "//ios/chrome/browser/shared/model/browser",
+    "//ios/chrome/browser/shared/model/browser/test:test_support",
+    "//ios/chrome/browser/shared/model/profile",
+    "//ios/chrome/browser/shared/model/web_state_list",
+    "//ios/chrome/test:test_support",
     "//ios/web/public/test",
     "//testing/gtest",
   ]
@@ -60,13 +87,15 @@ source_set("test_support") {
   sources = [
     "test_chrome_browser_state.h",
     "test_chrome_browser_state.mm",
-    "test_chrome_browser_state_manager.cc",
     "test_chrome_browser_state_manager.h",
+    "test_chrome_browser_state_manager.mm",
   ]
 
   public_deps = [
     ":browser_state",
     "//base",
+    "//components/signin/core/browser",
+    "//third_party/abseil-cpp:absl",
   ]
 
   deps = [
@@ -86,7 +115,10 @@ source_set("test_support") {
     "//ios/chrome/browser/net/model",
     "//ios/chrome/browser/policy/model:model",
     "//ios/chrome/browser/prefs/model",
+    "//ios/chrome/browser/shared/model/application_context",
     "//ios/chrome/browser/shared/model/prefs:browser_prefs",
+    "//ios/chrome/browser/shared/model/profile",
+    "//ios/chrome/browser/shared/model/profile/test",
     "//ios/chrome/browser/supervised_user/model:sync_settings_factory",
     "//ios/chrome/browser/ui/ntp:logo",
     "//ios/chrome/browser/webdata_services/model",
@@ -94,4 +126,8 @@ source_set("test_support") {
     "//ios/web/public",
     "//net:test_support",
   ]
+
+  # TODO(crbug.com/358267438): Remove once forwarding headers are removed.
+  allow_circular_includes_from =
+      [ "//ios/chrome/browser/shared/model/profile/test" ]
 }

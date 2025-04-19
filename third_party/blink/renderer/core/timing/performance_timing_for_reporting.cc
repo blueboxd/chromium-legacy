@@ -377,15 +377,6 @@ uint64_t PerformanceTimingForReporting::
       cross_origin_isolated_capability_);
 }
 
-std::optional<base::TimeTicks>
-PerformanceTimingForReporting::LastPortalActivatedPaint() const {
-  const PaintTiming* timing = GetPaintTiming();
-  if (!timing)
-    return std::nullopt;
-
-  return timing->LastPortalActivatedPaint();
-}
-
 std::optional<base::TimeDelta>
 PerformanceTimingForReporting::PrerenderActivationStart() const {
   DocumentLoadTiming* timing = GetDocumentLoadTiming();
@@ -451,6 +442,16 @@ PerformanceTimingForReporting::UserTimingMarkInteractive() const {
     return std::nullopt;
 
   return timing->UserTimingMarkInteractive();
+}
+
+std::optional<std::tuple<AtomicString, base::TimeDelta>>
+PerformanceTimingForReporting::CustomUserTimingMark() const {
+  DocumentLoadTiming* timing = GetDocumentLoadTiming();
+  if (!timing) {
+    return std::nullopt;
+  }
+
+  return timing->CustomUserTimingMark();
 }
 
 DocumentLoader* PerformanceTimingForReporting::GetDocumentLoader() const {

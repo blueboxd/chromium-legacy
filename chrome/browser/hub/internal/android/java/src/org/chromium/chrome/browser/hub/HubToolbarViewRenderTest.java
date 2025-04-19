@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.hub;
 
 import android.app.Activity;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 
 import androidx.annotation.DrawableRes;
@@ -16,16 +17,18 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseActivityTestRule;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.toolbar.TabSwitcherDrawable;
+import org.chromium.chrome.browser.toolbar.TabSwitcherDrawable.TabSwitcherDrawableLocation;
+import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import org.chromium.ui.test.util.BlankUiTestActivity;
-import org.chromium.ui.test.util.DisableAnimationsTestRule;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,9 +38,6 @@ import java.util.List;
 @Batch(Batch.PER_CLASS)
 public class HubToolbarViewRenderTest {
     @Rule
-    public final DisableAnimationsTestRule mDisableAnimationsRule = new DisableAnimationsTestRule();
-
-    @Rule
     public BaseActivityTestRule<BlankUiTestActivity> mActivityTestRule =
             new BaseActivityTestRule<>(BlankUiTestActivity.class);
 
@@ -45,7 +45,7 @@ public class HubToolbarViewRenderTest {
     public ChromeRenderTestRule mRenderTestRule =
             ChromeRenderTestRule.Builder.withPublicCorpus()
                     .setBugComponent(ChromeRenderTestRule.Component.UI_BROWSER_MOBILE_HUB)
-                    .setRevision(5)
+                    .setRevision(6)
                     .build();
 
     private Activity mActivity;
@@ -57,7 +57,7 @@ public class HubToolbarViewRenderTest {
         mActivityTestRule.launchActivity(null);
         mActivity = mActivityTestRule.getActivity();
         mActivity.setTheme(R.style.Theme_BrowserUI_DayNight);
-        TestThreadUtils.runOnUiThreadBlocking(this::setUpOnUi);
+        ThreadUtils.runOnUiThreadBlocking(this::setUpOnUi);
     }
 
     private void setUpOnUi() {
@@ -85,6 +85,12 @@ public class HubToolbarViewRenderTest {
         return new DelegateButtonData(displayButtonData, onPress);
     }
 
+    private FullButtonData makeButtonData(Drawable drawable, @Nullable Runnable onPress) {
+        DisplayButtonData displayButtonData =
+                new DrawableButtonData(R.string.button_new_tab, R.string.button_new_tab, drawable);
+        return new DelegateButtonData(displayButtonData, onPress);
+    }
+
     @Test
     @MediumTest
     @Feature({"RenderTest"})
@@ -92,28 +98,28 @@ public class HubToolbarViewRenderTest {
         FullButtonData enabledButtonData = enabledButtonData(R.drawable.new_tab_icon);
         FullButtonData disabledButtonData = disabledButtonData(R.drawable.new_tab_icon);
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     mPropertyModel.set(HubToolbarProperties.ACTION_BUTTON_DATA, enabledButtonData);
                     mPropertyModel.set(HubToolbarProperties.SHOW_ACTION_BUTTON_TEXT, true);
                 });
         mRenderTestRule.render(mToolbar, "actionButtonWithText");
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> mPropertyModel.set(HubToolbarProperties.SHOW_ACTION_BUTTON_TEXT, false));
         mRenderTestRule.render(mToolbar, "actionButtonOnlyImage");
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () ->
                         mPropertyModel.set(
                                 HubToolbarProperties.ACTION_BUTTON_DATA, disabledButtonData));
         mRenderTestRule.render(mToolbar, "disabledButtonOnlyImage");
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> mPropertyModel.set(HubToolbarProperties.ACTION_BUTTON_DATA, null));
         mRenderTestRule.render(mToolbar, "noActionButton");
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     mPropertyModel.set(HubToolbarProperties.ACTION_BUTTON_DATA, enabledButtonData);
                     mPropertyModel.set(HubToolbarProperties.MENU_BUTTON_VISIBLE, true);
@@ -122,7 +128,7 @@ public class HubToolbarViewRenderTest {
                 });
         mRenderTestRule.render(mToolbar, "actionButtonIncognito");
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     mPropertyModel.set(HubToolbarProperties.ACTION_BUTTON_DATA, disabledButtonData);
                 });
@@ -138,7 +144,7 @@ public class HubToolbarViewRenderTest {
         paneSwitcherButtonData.add(enabledButtonData(R.drawable.new_tab_icon));
         paneSwitcherButtonData.add(enabledButtonData(R.drawable.incognito_small));
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     mPropertyModel.set(HubToolbarProperties.ACTION_BUTTON_DATA, actionButtonData);
                     mPropertyModel.set(HubToolbarProperties.MENU_BUTTON_VISIBLE, true);
@@ -148,11 +154,11 @@ public class HubToolbarViewRenderTest {
                 });
         mRenderTestRule.render(mToolbar, "paneSwitcher");
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> mPropertyModel.set(HubToolbarProperties.PANE_SWITCHER_INDEX, 1));
         mRenderTestRule.render(mToolbar, "paneSwitcherSelectedIndex");
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () ->
                         mPropertyModel.set(
                                 HubToolbarProperties.COLOR_SCHEME, HubColorScheme.INCOGNITO));
@@ -168,7 +174,7 @@ public class HubToolbarViewRenderTest {
         paneSwitcherButtonData.add(enabledButtonData(R.drawable.new_tab_icon));
         paneSwitcherButtonData.add(enabledButtonData(R.drawable.incognito_small));
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     mPropertyModel.set(HubToolbarProperties.ACTION_BUTTON_DATA, actionButtonData);
                     mPropertyModel.set(HubToolbarProperties.MENU_BUTTON_VISIBLE, false);
@@ -177,5 +183,68 @@ public class HubToolbarViewRenderTest {
                             HubToolbarProperties.PANE_SWITCHER_BUTTON_DATA, paneSwitcherButtonData);
                 });
         mRenderTestRule.render(mToolbar, "menuButtonHidden");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    public void testTabSwitcherDrawable_toggleNotificationStatus() throws Exception {
+        TabSwitcherDrawable tabSwitcherDrawable =
+                TabSwitcherDrawable.createTabSwitcherDrawable(
+                        mActivity,
+                        BrandedColorScheme.APP_DEFAULT,
+                        TabSwitcherDrawableLocation.HUB_TOOLBAR);
+        tabSwitcherDrawable.updateForTabCount(/* tabCount= */ 1, /* incognito= */ false);
+        tabSwitcherDrawable.setNotificationIconStatus(/* shouldShow= */ true);
+
+        FullButtonData actionButtonData = enabledButtonData(R.drawable.new_tab_icon);
+        List<FullButtonData> paneSwitcherButtonData = new ArrayList<>();
+        paneSwitcherButtonData.add(makeButtonData(tabSwitcherDrawable, () -> {}));
+        paneSwitcherButtonData.add(enabledButtonData(R.drawable.incognito_small));
+
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    mPropertyModel.set(HubToolbarProperties.ACTION_BUTTON_DATA, actionButtonData);
+                    mPropertyModel.set(HubToolbarProperties.MENU_BUTTON_VISIBLE, true);
+                    mPropertyModel.set(HubToolbarProperties.PANE_SWITCHER_INDEX, 0);
+                    mPropertyModel.set(
+                            HubToolbarProperties.PANE_SWITCHER_BUTTON_DATA, paneSwitcherButtonData);
+                });
+        mRenderTestRule.render(mToolbar, "onGTSTabSwitcherDrawableNotificationOn");
+
+        tabSwitcherDrawable.setNotificationIconStatus(/* shouldShow= */ false);
+        mRenderTestRule.render(mToolbar, "onGTSTabSwitcherDrawableNotificationOff");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    public void testTabSwitcherDrawable_toggleNotificationStatusIncognito() throws Exception {
+        TabSwitcherDrawable tabSwitcherDrawable =
+                TabSwitcherDrawable.createTabSwitcherDrawable(
+                        mActivity,
+                        BrandedColorScheme.INCOGNITO,
+                        TabSwitcherDrawableLocation.HUB_TOOLBAR);
+        tabSwitcherDrawable.updateForTabCount(/* tabCount= */ 1, /* incognito= */ true);
+        tabSwitcherDrawable.setNotificationIconStatus(/* shouldShow= */ true);
+
+        FullButtonData actionButtonData = enabledButtonData(R.drawable.new_tab_icon);
+        List<FullButtonData> paneSwitcherButtonData = new ArrayList<>();
+        paneSwitcherButtonData.add(makeButtonData(tabSwitcherDrawable, () -> {}));
+        paneSwitcherButtonData.add(enabledButtonData(R.drawable.incognito_small));
+
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    mPropertyModel.set(HubToolbarProperties.ACTION_BUTTON_DATA, actionButtonData);
+                    mPropertyModel.set(HubToolbarProperties.MENU_BUTTON_VISIBLE, true);
+                    mPropertyModel.set(HubToolbarProperties.PANE_SWITCHER_INDEX, 1);
+                    mPropertyModel.set(
+                            HubToolbarProperties.PANE_SWITCHER_BUTTON_DATA, paneSwitcherButtonData);
+                    mPropertyModel.set(HubToolbarProperties.COLOR_SCHEME, HubColorScheme.INCOGNITO);
+                });
+        mRenderTestRule.render(mToolbar, "onIncognitoTabSwitcherDrawableNotificationOn");
+
+        tabSwitcherDrawable.setNotificationIconStatus(/* shouldShow= */ false);
+        mRenderTestRule.render(mToolbar, "onIncognitoTabSwitcherDrawableNotificationOff");
     }
 }

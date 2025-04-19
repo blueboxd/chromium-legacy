@@ -504,6 +504,7 @@ class BrowserManager : public session_manager::SessionManagerObserver,
                            LacrosKeepAliveDoesNotBlockRestart);
   FRIEND_TEST_ALL_PREFIXES(BrowserManagerTest,
                            NewWindowReloadsWhenUpdateAvailable);
+  FRIEND_TEST_ALL_PREFIXES(BrowserManagerTest, OnLacrosUserDataDirRemoved);
   friend class apps::StandaloneBrowserExtensionApps;
   friend class BrowserManagerScopedKeepAlive;
   // App service require the lacros-chrome to keep alive for web apps to:
@@ -671,6 +672,17 @@ class BrowserManager : public session_manager::SessionManagerObserver,
 
   void PerformAction(std::unique_ptr<BrowserAction> action);
 
+  // Start a sequence to clear Lacros related data. It posts a task to remove
+  // Lacros user data directory and if that is successful, calls
+  // `OnLacrosUserDataDirRemoved()` to clear some prefs set by Lacros in Ash.
+  // Call if Lacros is disabled and not running.
+  void ClearLacrosData();
+
+  // Called as a callback to `RemoveLacrosUserDataDir()`. `cleared` is set to
+  // true if the directory existed and was removed successfully.
+  void OnLacrosUserDataDirRemoved(bool cleared);
+
+  base::ObserverList<BrowserManagerObserver> observers_;
 
   // NOTE: The state is exposed to tests via autotest_private.
   State state_ = State::NOT_INITIALIZED;
@@ -739,8 +751,6 @@ class BrowserManager : public session_manager::SessionManagerObserver,
 
   // The features that are currently registered to keep Lacros alive.
   std::set<Feature> keep_alive_features_;
-
-  base::ObserverList<BrowserManagerObserver> observers_;
 
   const bool launch_at_login_screen_;
 

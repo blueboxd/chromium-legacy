@@ -44,23 +44,32 @@ chromium-metrics-reviews@google.com.
   <int value="11" label="Browser went into fullscreen"/>
   <int value="12" label="Tab dragged into new window"/>
   <int value="13" label="Tab closed"/>
+  <int value="14" label="Error: Renderer exited"/>
+  <int value="15" label="Find in page invoked"/>
+  <int value="16" label="Preselection toast exit button"/>
+  <int value="17" label="Side panel entry replaced"/>
+  <int value="18" label="Search bubble close button"/>
 </enum>
 
 <!-- LINT.ThenChange(//chrome/browser/ui/lens/lens_overlay_dismissal_source.h:LensOverlayDismissalSource) -->
 
-<!-- LINT.IfChange(LensOverlayInvocationSource) -->
+<!-- LINT.IfChange(LensOverlayUserAction) -->
 
-<enum name="LensOverlayInvocationSource">
-  <summary>The UI source of a Lens Overlay invocation.</summary>
-  <int value="0" label="App menu"/>
-  <int value="1" label="Content area page context menu"/>
-  <int value="2" label="Content area image context menu"/>
-  <int value="3" label="Toolbar button"/>
-  <int value="4" label="Find in page dialog button"/>
-  <int value="5" label="Omnibox button"/>
+<enum name="LensOverlayUserAction">
+  <summary>The user interaction with the Lens Overlay</summary>
+  <int value="0" label="Region selection"/>
+  <int value="1" label="Region selection change"/>
+  <int value="2" label="Text selection"/>
+  <int value="3" label="Object click"/>
+  <int value="4" label="Translate text action"/>
+  <int value="5" label="Copy text action"/>
+  <int value="6" label="My Activity action"/>
+  <int value="7" label="Learn more action"/>
+  <int value="8" label="Send feedback action"/>
+  <int value="9" label="Tap region selection"/>
 </enum>
 
-<!-- LINT.ThenChange(//chrome/browser/ui/lens/lens_overlay_invocation_source.h:LensOverlayInvocationSource) -->
+<!-- LINT.ThenChange(//chrome/browser/lens/core/mojom/lens.mojom:UserAction) -->
 
 <!-- LINT.IfChange(LensPermissionBubbleUserAction) -->
 
@@ -73,13 +82,6 @@ chromium-metrics-reviews@google.com.
 </enum>
 
 <!-- LINT.ThenChange(//chrome/browser/ui/lens/lens_permission_bubble_controller.h:UserAction) -->
-
-<!-- TODO(crbug.com/336793181): `git cl format` deletes the ThenChange above
-     unless this enum is here. Fix the issue and delete this fake enum.  -->
-
-<enum name="ZZZZZZZ">
-  <int value="0" label="Z"/>
-</enum>
 
 </enums>
 

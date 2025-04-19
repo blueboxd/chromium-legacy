@@ -3,10 +3,13 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <optional>
 #include <utility>
 
 #include "base/test/bind.h"
 #include "chrome/browser/optimization_guide/mock_optimization_guide_keyed_service.h"
+#include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
+#include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -69,10 +72,20 @@ class MockSession
               (const google::protobuf::MessageLite& request_metadata));
   MOCK_METHOD(
       void,
+      Score,
+      (const std::string& text,
+       optimization_guide::OptimizationGuideModelScoreCallback callback));
+  MOCK_METHOD(
+      void,
       ExecuteModel,
       (const google::protobuf::MessageLite& request_metadata,
        optimization_guide::
            OptimizationGuideModelExecutionResultStreamingCallback callback));
+  MOCK_METHOD(
+      void,
+      GetSizeInTokens,
+      (const std::string& text,
+       optimization_guide::OptimizationGuideModelSizeInTokenCallback callback));
 };
 
 // A wrapper that passes through calls to the underlying MockSession. Allows for
@@ -86,11 +99,22 @@ class MockSessionWrapper
       const google::protobuf::MessageLite& request_metadata) override {
     session_->AddContext(request_metadata);
   }
+  void Score(const std::string& text,
+             optimization_guide::OptimizationGuideModelScoreCallback callback)
+      override {
+    std::move(callback).Run(std::nullopt);
+  }
   void ExecuteModel(
       const google::protobuf::MessageLite& request_metadata,
       optimization_guide::OptimizationGuideModelExecutionResultStreamingCallback
           callback) override {
     session_->ExecuteModel(request_metadata, std::move(callback));
+  }
+  void GetSizeInTokens(
+      const std::string& text,
+      optimization_guide::OptimizationGuideModelSizeInTokenCallback callback)
+      override {
+    session_->GetSizeInTokens(text, std::move(callback));
   }
 
  private:

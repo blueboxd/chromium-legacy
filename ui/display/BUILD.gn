@@ -4,6 +4,7 @@
 
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/ui.gni")
+import("//remoting/remoting_enable.gni")
 import("//testing/test.gni")
 
 component("display_features") {
@@ -65,8 +66,12 @@ component("display") {
 
   if (is_mac) {
     sources += [
-      "mac/display_link_mac.cc",
+      "mac/ca_display_link_mac.h",
+      "mac/ca_display_link_mac.mm",
+      "mac/cv_display_link_mac.h",
+      "mac/cv_display_link_mac.mm",
       "mac/display_link_mac.h",
+      "mac/display_link_mac.mm",
       "mac/screen_mac.mm",
     ]
   }
@@ -253,7 +258,7 @@ static_library("test_support") {
     ]
   }
 
-  if (is_linux && ozone_platform_x11) {
+  if (is_linux && ozone_platform_x11 && enable_remoting) {
     sources += [
       "linux/test/virtual_display_util_linux.cc",
       "linux/test/virtual_display_util_linux.h",
@@ -261,6 +266,7 @@ static_library("test_support") {
     deps += [
       "//remoting/host:display_layout",
       "//remoting/host:x11_display_utils",
+      "//ui/gfx/x:x",
     ]
   }
 
@@ -295,7 +301,8 @@ static_library("test_support") {
     public_deps += [ "//ui/display:managed_display_info" ]
   }
 
-  if (!is_mac && !is_win && !(is_linux && ozone_platform_x11)) {
+  if (!is_mac && !is_win &&
+      !(is_linux && ozone_platform_x11 && enable_remoting)) {
     sources += [
       # Virtual display util stub for unimplemented platforms.
       "test/virtual_display_util_stub.cc",

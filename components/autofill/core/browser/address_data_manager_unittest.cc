@@ -17,6 +17,7 @@
 #include "build/buildflag.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/autofill_profile_test_api.h"
 #include "components/autofill/core/browser/personal_data_manager_test_base.h"
 #include "components/autofill/core/browser/profile_token_quality_test_api.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
@@ -197,9 +198,9 @@ TEST_F(AddressDataManagerTest, UpdateProfile_ModificationDate) {
 // If duplicates exist across sources, they should be considered distinct.
 TEST_F(AddressDataManagerTest, GetProfiles) {
   AutofillProfile kAccountProfile = test::GetFullProfile();
-  kAccountProfile.set_source_for_testing(AutofillProfile::Source::kAccount);
+  test_api(kAccountProfile).set_source(AutofillProfile::Source::kAccount);
   AutofillProfile kAccountProfile2 = test::GetFullProfile2();
-  kAccountProfile2.set_source_for_testing(AutofillProfile::Source::kAccount);
+  test_api(kAccountProfile2).set_source(AutofillProfile::Source::kAccount);
   AutofillProfile kLocalProfile = test::GetFullProfile();
 
   AddProfileToAddressDataManager(kAccountProfile);
@@ -336,12 +337,12 @@ TEST_F(AddressDataManagerTest, GetProfilesForSettings) {
   TestAutofillClock test_clock;
 
   AutofillProfile kAccountProfile = test::GetFullProfile();
-  kAccountProfile.set_source_for_testing(AutofillProfile::Source::kAccount);
+  test_api(kAccountProfile).set_source(AutofillProfile::Source::kAccount);
   AddProfileToAddressDataManager(kAccountProfile);
 
   AutofillProfile kLocalOrSyncableProfile = test::GetFullProfile2();
-  kLocalOrSyncableProfile.set_source_for_testing(
-      AutofillProfile::Source::kLocalOrSyncable);
+  test_api(kLocalOrSyncableProfile)
+      .set_source(AutofillProfile::Source::kLocalOrSyncable);
   test_clock.Advance(base::Minutes(123));
   AddProfileToAddressDataManager(kLocalOrSyncableProfile);
 
@@ -444,7 +445,7 @@ TEST_F(AddressDataManagerTest, AddProfile_CrazyCharacters) {
                       u"\u898f\u7ba1\u5c0e\u904a");
   profile1.SetRawInfo(ADDRESS_HOME_ZIP, u"YOHO_54676");
   profile1.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, u"861088828000");
-  profile1.SetInfo(AutofillType(ADDRESS_HOME_COUNTRY), u"India", "en-US");
+  profile1.SetInfo(ADDRESS_HOME_COUNTRY, u"India", "en-US");
   profile1.FinalizeAfterImport();
   profiles.push_back(profile1);
 
@@ -515,8 +516,7 @@ TEST_F(AddressDataManagerTest, AddProfile_CrazyCharacters) {
   profile7.SetRawInfo(ADDRESS_HOME_STATE, u"CA");
   profile7.SetRawInfo(ADDRESS_HOME_ZIP, u"94086");
   profile7.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, u"15466784565");
-  profile7.SetInfo(AutofillType(ADDRESS_HOME_COUNTRY), u"United States",
-                   "en-US");
+  profile7.SetInfo(ADDRESS_HOME_COUNTRY, u"United States", "en-US");
   profile7.FinalizeAfterImport();
   profiles.push_back(profile7);
 
@@ -541,8 +541,7 @@ TEST_F(AddressDataManagerTest, AddProfile_Invalid) {
   without_invalid.SetRawInfo(ADDRESS_HOME_CITY, u"Sunnyvale");
   without_invalid.SetRawInfo(ADDRESS_HOME_STATE, u"CA");
   without_invalid.SetRawInfo(ADDRESS_HOME_ZIP, u"my_zip");
-  without_invalid.SetInfo(AutofillType(ADDRESS_HOME_COUNTRY), u"United States",
-                          "en-US");
+  without_invalid.SetInfo(ADDRESS_HOME_COUNTRY, u"United States", "en-US");
 
   AutofillProfile with_invalid = without_invalid;
   with_invalid.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, u"Invalid_Phone_Number");
@@ -1087,7 +1086,7 @@ TEST_F(AddressDataManagerTest,
   identity_test_env_.UpdatePersistentErrorOfRefreshTokenForAccount(
       account_info.account_id,
       GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
-  sync_service_.SetTransportState(syncer::SyncService::TransportState::PAUSED);
+  sync_service_.SetPersistentAuthError();
 
   // User is still signed in.
   ASSERT_TRUE(identity_test_env_.identity_manager()->HasPrimaryAccount(

@@ -5,10 +5,12 @@
 import {mojoString16ToString} from 'chrome://resources/js/mojo_type_util.js';
 
 import {StandardAcceleratorProperties} from './accelerator_info.mojom-webui.js';
+import * as MetaKeyTypes from './meta_key.mojom-webui.js';
 import {ShortcutInputKeyElement} from './shortcut_input_key.js';
 
 export interface ShortcutLabelProperties extends StandardAcceleratorProperties {
   shortcutLabelText: TrustedHTML;
+  metaKey: MetaKey;
 }
 
 /**
@@ -55,6 +57,14 @@ export const ModifierKeyCodes: AllowedModifierKeyCodes[] = [
   AllowedModifierKeyCodes.FN_KEY,
 ];
 
+/**
+ * Enumeration of meta key denoting all the possible options deducable from
+ * the users keyboard. Used to show the correct key to the user in the settings
+ * UI.
+ */
+export type MetaKey = MetaKeyTypes.MetaKey;
+export const MetaKey = MetaKeyTypes.MetaKey;
+
 export const getSortedModifiers = (modifierStrings: string[]): string[] => {
   const sortOrder = ['meta', 'ctrl', 'alt', 'shift', 'fn'];
   if (modifierStrings.length <= 1) {
@@ -67,6 +77,7 @@ export const getSortedModifiers = (modifierStrings: string[]): string[] => {
 // The keys in this map are pulled from the file:
 // ui/events/keycodes/dom/dom_code_data.inc
 export const KeyToIconNameMap: {[key: string]: string|undefined} = {
+  'Accessibility': 'accessibility',
   'ArrowDown': 'arrow-down',
   'ArrowLeft': 'arrow-left',
   'ArrowRight': 'arrow-right',
@@ -108,6 +119,18 @@ export const KeyToIconNameMap: {[key: string]: string|undefined} = {
   'ZoomToggle': 'fullscreen',
 };
 
+// <if expr="_google_chrome" >
+export const KeyToInternalIconNameMap: {[key: string]: string|undefined} = {
+  'RightAlt': 'right-alt',
+};
+
+export const KeyToInternalIconNameRefreshOnlyMap:
+    {[key: string]: string|undefined} = {
+      'LaunchApplication1': 'overview-refresh',
+      'BrightnessUp': 'brightness-up-refresh',
+    };
+// </if>
+
 /**
  * Map the modifier keys to the bit value. Currently the modifiers only
  * contains the following four.
@@ -119,7 +142,6 @@ export const modifierBitMaskToString = new Map<number, string>([
   [Modifier.COMMAND, 'command'],
 ]);
 
-// TODO(yyhyyh@): Add HasLauncherKey as follow up.
 export function createInputKeyParts(
     shortcutLabelProperties: ShortcutLabelProperties,
     useNarrowLayout: boolean = false): ShortcutInputKeyElement[] {
@@ -130,7 +152,10 @@ export function createInputKeyParts(
       const key: ShortcutInputKeyElement =
           document.createElement('shortcut-input-key');
       key.keyState = KeyInputState.MODIFIER_SELECTED;
-      key.key = modifierName;
+      // Current use cases outside keyboard page or shortcut page only consider
+      // 'meta' instead of 'command'.
+      key.key = modifierName === 'command' ? 'meta' : modifierName;
+      key.metaKey = shortcutLabelProperties.metaKey;
       key.narrow = useNarrowLayout;
       inputKeys.push(key);
       pressedModifiers.push(modifierName);

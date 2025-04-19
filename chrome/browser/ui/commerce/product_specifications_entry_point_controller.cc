@@ -5,15 +5,23 @@
 #include "chrome/browser/ui/commerce/product_specifications_entry_point_controller.h"
 
 #include "base/functional/bind.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/commerce/shopping_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/views/commerce/product_specifications_button.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/webui/commerce/product_specifications_disclosure_dialog.h"
+#include "components/commerce/core/commerce_feature_list.h"
 #include "components/commerce/core/commerce_types.h"
 #include "components/commerce/core/commerce_utils.h"
+#include "components/commerce/core/feature_utils.h"
+#include "components/commerce/core/pref_names.h"
 #include "components/commerce/core/shopping_service.h"
+#include "components/strings/grit/components_strings.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/webui/resources/cr_components/commerce/shopping_service.mojom.h"
 
 namespace {
 
@@ -23,27 +31,32 @@ constexpr int kEligibleWindowUrlCountForValidation = 2;
 // Number of URLs of the same cluster that a window needs to contain in order
 // for the entry point to trigger for navigation.
 constexpr int kEligibleWindowUrlCountForNavigationTriggering = 3;
+// The maximum enforced interval (in days) between two triggering of the entry
+// point.
+constexpr int kMaxEntryPointTriggeringInterval = 64;
+// The maximum length of the entry point title.
+constexpr int kEntryPointTitleMaxLength = 24;
 
 bool CheckWindowContainsEntryPointURLs(
     TabStripModel* tab_strip_model,
     commerce::EntryPointInfo entry_point_info,
     size_t threshold) {
-  std::set<GURL> similar_urls =
-      entry_point_info.similar_candidate_products_urls;
-  if (similar_urls.size() < threshold) {
+  std::map<GURL, uint64_t> similar_products =
+      entry_point_info.similar_candidate_products;
+  if (similar_products.size() < threshold) {
     return false;
   }
-  std::set<GURL> eligible_urls_in_current_window;
+  std::set<uint64_t> similar_product_ids;
   for (int i = 0; i < tab_strip_model->count(); i++) {
     GURL tab_url = tab_strip_model->GetWebContentsAt(i)->GetLastCommittedURL();
-    if (similar_urls.find(tab_url) != similar_urls.end()) {
-      eligible_urls_in_current_window.insert(tab_url);
-      if (eligible_urls_in_current_window.size() >= threshold) {
+    if (similar_products.find(tab_url) != similar_products.end()) {
+      similar_product_ids.insert(similar_products[tab_url]);
+      if (similar_product_ids.size() >= threshold) {
         return true;
       }
     }
   }
-  return eligible_urls_in_current_window.size() >= threshold;
+  return similar_product_ids.size() >= threshold;
 }
 
 bool IsWindowValidForEntryPoint(TabStripModel* tab_strip_model,
@@ -69,12 +82,12 @@ ProductSpecificationsEntryPointController::
     : browser_(browser) {
   CHECK(browser_);
   browser->tab_strip_model()->AddObserver(this);
-  ShoppingService* shopping_service =
+  shopping_service_ =
       ShoppingServiceFactory::GetForBrowserContext(browser->profile());
-  if (shopping_service) {
+  if (shopping_service_) {
     product_specifications_service_ =
-        shopping_service->GetProductSpecificationsService();
-    cluster_manager_ = shopping_service->GetClusterManager();
+        shopping_service_->GetProductSpecificationsService();
+    cluster_manager_ = shopping_service_->GetClusterManager();
     if (cluster_manager_) {
       cluster_manager_observations_.Observe(cluster_manager_);
     }
@@ -97,22 +110,23 @@ void ProductSpecificationsEntryPointController::OnTabStripModelChanged(
       !selection.new_contents || !cluster_manager_) {
     return;
   }
+  const GURL old_url = selection.old_contents->GetLastCommittedURL();
+  const GURL new_url = selection.new_contents->GetLastCommittedURL();
 
   cluster_manager_->GetEntryPointInfoForSelection(
-      selection.old_contents->GetLastCommittedURL(),
-      selection.new_contents->GetLastCommittedURL(),
+      old_url, new_url,
       base::BindOnce(&ProductSpecificationsEntryPointController::
-                         ShowEntryPointWithTitleForSelection,
-                     weak_ptr_factory_.GetWeakPtr()));
+                         CheckEntryPointInfoForSelection,
+                     weak_ptr_factory_.GetWeakPtr(), old_url, new_url));
 }
 
 void ProductSpecificationsEntryPointController::TabChangedAt(
     content::WebContents* contents,
     int index,
     TabChangeType change_type) {
-  if (change_type == TabChangeType::kAll &&
-      contents->GetLastCommittedURL() != last_committed_url_) {
-    last_committed_url_ = contents->GetLastCommittedURL();
+  if (change_type == TabChangeType::kAll) {
+    // TODO(b/343109556): Instead of hiding, sometimes we'll need to update the
+    // showing entry point.
     MaybeHideEntryPoint();
   }
 }
@@ -131,13 +145,42 @@ void ProductSpecificationsEntryPointController::OnEntryPointExecuted() {
   if (!current_entry_point_info_.has_value()) {
     return;
   }
-  DCHECK(product_specifications_service_);
-  std::vector<GURL> urls(
-      current_entry_point_info_->similar_candidate_products_urls.begin(),
-      current_entry_point_info_->similar_candidate_products_urls.end());
+  std::set<GURL> urls;
+  auto candidate_products =
+      current_entry_point_info_->similar_candidate_products;
+  for (auto url_info : shopping_service_->GetUrlInfosForActiveWebWrappers()) {
+    if (base::Contains(candidate_products, url_info.url)) {
+      urls.insert(url_info.url);
+    }
+  }
+  std::vector<GURL> urls_in_set(urls.begin(), urls.end());
+  auto* prefs = browser_->profile()->GetPrefs();
+  if (!prefs) {
+    return;
+  }
+  // If user has not accepted the latest disclosure, show the disclosure dialog
+  // first.
+  if (prefs->GetInteger(kProductSpecificationsAcceptedDisclosureVersion) !=
+      static_cast<int>(shopping_service::mojom::
+                           ProductSpecificationsDisclosureVersion::kV1)) {
+    DialogArgs dialog_args(urls_in_set, current_entry_point_info_->title,
+                           /*in_new_tab=*/true);
+    ProductSpecificationsDisclosureDialog::ShowDialog(
+        browser_->profile(),
+        browser_->tab_strip_model()->GetActiveWebContents(),
+        std::move(dialog_args));
+    return;
+  }
+  // Reset entry point show gap time.
+  browser_->profile()->GetPrefs()->SetInteger(
+      commerce::kProductSpecificationsEntryPointShowIntervalInDays, 0);
+  std::vector<commerce::UrlInfo> url_infos;
+  for (const auto& url : urls_in_set) {
+    url_infos.emplace_back(url, std::u16string());
+  }
   const std::optional<ProductSpecificationsSet> set =
       product_specifications_service_->AddProductSpecificationsSet(
-          current_entry_point_info_->title, std::move(urls));
+          current_entry_point_info_->title, std::move(url_infos));
   if (set.has_value()) {
     chrome::AddTabAt(browser_,
                      commerce::GetProductSpecsTabUrlForID(set->uuid()),
@@ -146,7 +189,24 @@ void ProductSpecificationsEntryPointController::OnEntryPointExecuted() {
 }
 
 void ProductSpecificationsEntryPointController::OnEntryPointDismissed() {
-  // TODO(b/325661685): Add implementation for back-off mechanism.
+  DCHECK(current_entry_point_info_.has_value());
+  current_entry_point_info_.reset();
+
+  auto* prefs = browser_->profile()->GetPrefs();
+  int current_gap_time = prefs->GetInteger(
+      commerce::kProductSpecificationsEntryPointShowIntervalInDays);
+  // Double the gap time for every dismiss, starting from one day.
+  if (current_gap_time == 0) {
+    current_gap_time = 1;
+  } else {
+    current_gap_time =
+        std::min(2 * current_gap_time, kMaxEntryPointTriggeringInterval);
+  }
+  prefs->SetInteger(
+      commerce::kProductSpecificationsEntryPointShowIntervalInDays,
+      current_gap_time);
+  prefs->SetTime(commerce::kProductSpecificationsEntryPointLastDismissedTime,
+                 base::Time::Now());
 }
 
 void ProductSpecificationsEntryPointController::OnEntryPointHidden() {
@@ -154,29 +214,107 @@ void ProductSpecificationsEntryPointController::OnEntryPointHidden() {
   current_entry_point_info_.reset();
 }
 
+bool ProductSpecificationsEntryPointController::ShouldExecuteEntryPointShow() {
+  DCHECK(current_entry_point_info_.has_value());
+  GURL current_url = browser_->tab_strip_model()
+                         ->GetActiveWebContents()
+                         ->GetLastCommittedURL();
+  std::map<GURL, uint64_t> candidate_products =
+      current_entry_point_info_->similar_candidate_products;
+  return base::Contains(candidate_products, current_url);
+}
+
 void ProductSpecificationsEntryPointController::OnClusterFinishedForNavigation(
     const GURL& url) {
-  // Cluster finished for a navigation that didn't happen in this window.
-  if (last_committed_url_ != url || !cluster_manager_) {
+  // Cluster finished for a navigation that didn't happen in this window, or the
+  // clustering took so long to finish that the user has navigated away.
+  GURL current_url = browser_->tab_strip_model()
+                         ->GetActiveWebContents()
+                         ->GetLastCommittedURL();
+  if (current_url != url || !cluster_manager_) {
     return;
   }
 
   cluster_manager_->GetEntryPointInfoForNavigation(
       url, base::BindOnce(&ProductSpecificationsEntryPointController::
-                              ShowEntryPointWithTitleForNavigation,
+                              CheckEntryPointInfoForNavigation,
                           weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ProductSpecificationsEntryPointController::CheckEntryPointInfoForSelection(
+    const GURL old_url,
+    const GURL new_url,
+    std::optional<EntryPointInfo> entry_point_info) {
+  if (!entry_point_info.has_value()) {
+    return;
+  }
+
+  std::map<GURL, uint64_t> similar_products =
+      entry_point_info->similar_candidate_products;
+  if (similar_products.find(old_url) == similar_products.end() ||
+      similar_products.find(new_url) == similar_products.end()) {
+    return;
+  }
+  if (similar_products[old_url] == similar_products[new_url]) {
+    return;
+  }
+
+  // Skip server-side check unless specified by feature param.
+  if (kProductSpecificationsUseServerClustering.Get()) {
+    // TODO(qinmin): we should check whether tabstrips have changed while
+    // waiting for the callback.
+    cluster_manager_->GetComparableProducts(
+        entry_point_info.value(),
+        base::BindOnce(&ProductSpecificationsEntryPointController::
+                           ShowEntryPointWithTitleForSelection,
+                       weak_ptr_factory_.GetWeakPtr(), old_url, new_url));
+  } else {
+    ShowEntryPointWithTitle(std::move(entry_point_info));
+  }
 }
 
 void ProductSpecificationsEntryPointController::
     ShowEntryPointWithTitleForSelection(
+        const GURL old_url,
+        const GURL new_url,
         std::optional<EntryPointInfo> entry_point_info) {
   if (!entry_point_info.has_value()) {
     return;
   }
 
-  // TODO(qinmin): we should check whether tabstrips have changed while
-  // waiting for the callback.
+  std::map<GURL, uint64_t> similar_products =
+      entry_point_info->similar_candidate_products;
+  if (similar_products.find(old_url) == similar_products.end() ||
+      similar_products.find(new_url) == similar_products.end()) {
+    return;
+  }
   ShowEntryPointWithTitle(std::move(entry_point_info));
+}
+
+void ProductSpecificationsEntryPointController::
+    CheckEntryPointInfoForNavigation(
+        std::optional<EntryPointInfo> entry_point_info) {
+  if (!entry_point_info.has_value()) {
+    return;
+  }
+
+  if (!IsNavigationEligibleForEntryPoint(browser_->tab_strip_model(),
+                                         entry_point_info.value())) {
+    return;
+  }
+
+  // Skip server-side check unless specified by feature param.
+  if (kProductSpecificationsUseServerClustering.Get()) {
+    // TODO(qinmin): we should check whether tabstrips have changed while
+    // waiting for the callback.
+    cluster_manager_->GetComparableProducts(
+        entry_point_info.value(),
+        base::BindOnce(&ProductSpecificationsEntryPointController::
+                           ShowEntryPointWithTitleForNavigation,
+                       weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    ShowEntryPointWithTitle(std::move(entry_point_info));
+  }
 }
 
 void ProductSpecificationsEntryPointController::
@@ -186,8 +324,6 @@ void ProductSpecificationsEntryPointController::
     return;
   }
 
-  // TODO(qinmin): we should check whether tabstrips have changed while
-  // waiting for the callback.
   if (!IsNavigationEligibleForEntryPoint(browser_->tab_strip_model(),
                                          entry_point_info.value())) {
     return;
@@ -197,9 +333,34 @@ void ProductSpecificationsEntryPointController::
 
 void ProductSpecificationsEntryPointController::ShowEntryPointWithTitle(
     std::optional<EntryPointInfo> entry_point_info) {
+  // Using the entry point UI will initiate a data fetch for the product
+  // specifications feature. If we're not allowed to fetch this data, don't
+  // offer the entry point.
+  if (!CanFetchProductSpecificationsData(
+          shopping_service_->GetAccountChecker())) {
+    return;
+  }
+
+  auto* prefs = browser_->profile()->GetPrefs();
+  int current_gap_time = prefs->GetInteger(
+      commerce::kProductSpecificationsEntryPointShowIntervalInDays);
+  // Back off triggering if gap time is not finished yet.
+  if (base::Time::Now() -
+          prefs->GetTime(
+              commerce::kProductSpecificationsEntryPointLastDismissedTime) <=
+      base::Days(current_gap_time)) {
+    return;
+  }
   current_entry_point_info_ = entry_point_info;
+  // Show the default title if the set title is too long.
+  std::u16string title =
+      entry_point_info->title.size() > kEntryPointTitleMaxLength
+          ? l10n_util::GetStringUTF16(IDS_COMPARE_ENTRY_POINT_DEFAULT)
+          : l10n_util::GetStringFUTF16(
+                IDS_COMPARE_ENTRY_POINT,
+                base::UTF8ToUTF16(entry_point_info->title));
   for (auto& observer : observers_) {
-    observer.ShowEntryPointWithTitle(entry_point_info->title);
+    observer.ShowEntryPointWithTitle(std::move(title));
   }
 }
 

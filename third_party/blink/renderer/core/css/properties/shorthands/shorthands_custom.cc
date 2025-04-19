@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "base/memory/values_equivalent.h"
 #include "third_party/blink/renderer/core/animation/timeline_offset.h"
 #include "third_party/blink/renderer/core/css/css_content_distribution_value.h"
@@ -197,8 +202,8 @@ bool ParseBackgroundOrMaskPosition(
           three_value_position, result_x, result_y)) {
     return false;
   }
-  const CSSProperty** longhands = shorthand.properties();
-  DCHECK_EQ(2u, shorthand.length());
+  const StylePropertyShorthand::Properties& longhands = shorthand.properties();
+  DCHECK_EQ(2u, longhands.size());
   css_parsing_utils::AddProperty(
       longhands[0]->PropertyID(), shorthand.id(), *result_x, important,
       css_parsing_utils::IsImplicitProperty::kNotImplicit, properties);
@@ -1548,6 +1553,7 @@ bool FontVariant::ParseShorthand(
             FontVariantEastAsianParser::ParseResult::kConsumedValue ||
         alternates_parse_result ==
             FontVariantAlternatesParser::ParseResult::kConsumedValue) {
+      first_value = false;
       continue;
     }
 
@@ -2985,12 +2991,16 @@ const CSSValue* PlaceSelf::CSSValueFromComputedStyleInternal(
       value_phase);
 }
 
-bool PositionTry::ParseShorthand(
-    bool important,
-    CSSParserTokenStream& stream,
-    const CSSParserContext& context,
-    const CSSParserLocalContext& local_context,
-    HeapVector<CSSPropertyValue, 64>& properties) const {
+namespace {
+
+bool ParsePositionTryShorthand(const StylePropertyShorthand& shorthand,
+                               bool important,
+                               CSSParserTokenStream& stream,
+                               const CSSParserContext& context,
+                               const CSSParserLocalContext& local_context,
+                               HeapVector<CSSPropertyValue, 64>& properties) {
+  CHECK_EQ(shorthand.length(), 2u);
+  CHECK_EQ(shorthand.properties()[0], &GetCSSPropertyPositionTryOrder());
   const CSSValue* order = css_parsing_utils::ParseLonghand(
       CSSPropertyID::kPositionTryOrder, CSSPropertyID::kPositionTry, context,
       stream);
@@ -3001,16 +3011,27 @@ bool PositionTry::ParseShorthand(
               *order, important,
               css_parsing_utils::IsImplicitProperty::kNotImplicit, properties);
 
-  if (const CSSValue* options = css_parsing_utils::ParseLonghand(
-          CSSPropertyID::kPositionTryOptions, CSSPropertyID::kPositionTry,
-          context, stream)) {
+  CSSPropertyID fallbacks_id = shorthand.properties()[1]->PropertyID();
+  if (const CSSValue* fallbacks = css_parsing_utils::ParseLonghand(
+          fallbacks_id, CSSPropertyID::kPositionTry, context, stream)) {
     css_parsing_utils::AddProperty(
-        CSSPropertyID::kPositionTryOptions, CSSPropertyID::kPositionTry,
-        *options, important,
+        fallbacks_id, CSSPropertyID::kPositionTry, *fallbacks, important,
         css_parsing_utils::IsImplicitProperty::kNotImplicit, properties);
     return true;
   }
   return false;
+}
+
+}  // namespace
+
+bool PositionTry::ParseShorthand(
+    bool important,
+    CSSParserTokenStream& stream,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context,
+    HeapVector<CSSPropertyValue, 64>& properties) const {
+  return ParsePositionTryShorthand(positionTryShorthand(), important, stream,
+                                   context, local_context, properties);
 }
 
 const CSSValue* PositionTry::CSSValueFromComputedStyleInternal(
@@ -3023,8 +3044,31 @@ const CSSValue* PositionTry::CSSValueFromComputedStyleInternal(
       order != ComputedStyleInitialValues::InitialPositionTryOrder()) {
     list->Append(*CSSIdentifierValue::Create(order));
   }
-  list->Append(*CSSIdentifierValue::Create(style.PositionTryOrder()));
+  if (const PositionTryFallbacks* fallbacks = style.GetPositionTryFallbacks()) {
+    list->Append(*ComputedStyleUtils::ValueForPositionTryFallbacks(*fallbacks));
+  } else {
+    list->Append(*CSSIdentifierValue::Create(CSSValueID::kNone));
+  }
   return list;
+}
+
+bool AlternativePositionTry::ParseShorthand(
+    bool important,
+    CSSParserTokenStream& stream,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context,
+    HeapVector<CSSPropertyValue, 64>& properties) const {
+  return ParsePositionTryShorthand(alternativePositionTryShorthand(), important,
+                                   stream, context, local_context, properties);
+}
+
+const CSSValue* AlternativePositionTry::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject* layout_object,
+    bool allow_visited_style,
+    CSSValuePhase value_phase) const {
+  return GetCSSPropertyPositionTry().CSSValueFromComputedStyleInternal(
+      style, layout_object, allow_visited_style, value_phase);
 }
 
 bool ScrollMarginBlock::ParseShorthand(
@@ -3420,15 +3464,13 @@ const CSSValue* TextDecoration::CSSValueFromComputedStyleInternal(
       shorthandForProperty(CSSPropertyID::kTextDecoration);
 
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  for (unsigned i = 0; i < shorthand.length(); ++i) {
-    const CSSValue* value =
-        shorthand.properties()[i]->CSSValueFromComputedStyle(
-            style, layout_object, allow_visited_style, value_phase);
+  for (const CSSProperty* const longhand : shorthand.properties()) {
+    const CSSValue* value = longhand->CSSValueFromComputedStyle(
+        style, layout_object, allow_visited_style, value_phase);
     // Do not include initial value 'auto' for thickness.
     // TODO(https://crbug.com/1093826): general shorthand serialization issues
     // remain, in particular for text-decoration.
-    if (shorthand.properties()[i]->PropertyID() ==
-        CSSPropertyID::kTextDecorationThickness) {
+    if (longhand->PropertyID() == CSSPropertyID::kTextDecorationThickness) {
       if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
         CSSValueID value_id = identifier_value->GetValueID();
         if (value_id == CSSValueID::kAuto) {

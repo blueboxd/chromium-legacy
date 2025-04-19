@@ -5,7 +5,6 @@
 <translation id="1036348656032585052">Искључи</translation>
 <translation id="1044891598689252897">Сајтови ће нормално радити</translation>
 <translation id="1073417869336441572">Помозите нам да побољшамо Chrome тако што ћете нам рећи зашто сте дозволили колачиће треће стране. <ph name="BEGIN_LINK" />Пошаљите повратне информације<ph name="END_LINK" /></translation>
-<translation id="1113435009358629918">Сакријте картицу за снижење</translation>
 <translation id="1178581264944972037">Паузирај</translation>
 <translation id="1181037720776840403">Уклони</translation>
 <translation id="1192844206376121885">Овим бришете све податке и колачиће које чува сајт <ph name="ORIGIN" />.</translation>
@@ -24,6 +23,7 @@
 <translation id="1415402041810619267">URL је скраћен</translation>
 <translation id="1448064542941920355">Смањите зумирање</translation>
 <translation id="146867109637325312">{COUNT,plural, =1{<ph name="SITE_COUNT" /> сајт}one{<ph name="SITE_COUNT" /> сајт}few{<ph name="SITE_COUNT" /> сајта}other{<ph name="SITE_COUNT" /> сајтова}}</translation>
+<translation id="1500473259453106018">Сакриј снижења на картицама</translation>
 <translation id="1510341833810331442">Сајтовима није дозвољено да чувају податке на уређају</translation>
 <translation id="1547123415014299762">Колачићи трећих страна су дозвољени</translation>
 <translation id="1568470248891039841">Сајтови које посећујете могу да уграде садржај са других сајтова, на пример, слике, огласе и текст. Ови други сајтови могу да траже дозволу за коришћење информација које су сачували током прегледања сајта. <ph name="BEGIN_LINK" />Сазнајте више о уграђеном садржају<ph name="END_LINK" /></translation>
@@ -91,13 +91,11 @@
 <translation id="2498359688066513246">Помоћ и повратне информације</translation>
 <translation id="2501278716633472235">Назад</translation>
 <translation id="2546283357679194313">Колачићи и подаци о сајтовима</translation>
-<translation id="2550801787432930915">Картица снижења</translation>
 <translation id="2570922361219980984">Приступ локацији је искључен и за овај уређај. Укључите га у <ph name="BEGIN_LINK" />Android подешавањима<ph name="END_LINK" />.</translation>
 <translation id="257931822824936280">Проширено је – Кликните да бисте скупили.</translation>
 <translation id="2586657967955657006">Меморија</translation>
 <translation id="2597457036804169544">Тамна тема се не примењује за сајтове</translation>
 <translation id="2606760465469169465">Аутоматска верификација</translation>
-<translation id="2613007545732217283"><ph name="HOST_NAME" /> <ph name="SEPARATOR" /> <ph name="RECENCY" /></translation>
 <translation id="2621115761605608342">Дозволите JavaScript за одређени сајт.</translation>
 <translation id="2653659639078652383">Пошаљи</translation>
 <translation id="2677748264148917807">Затвори</translation>
@@ -114,6 +112,7 @@
 <translation id="2891975107962658722">Онемогућите да сајт чува податке на уређају</translation>
 <translation id="2903493209154104877">Адресе</translation>
 <translation id="2910701580606108292">Питај пре него што дозволиш сајтовима да пуштају заштићени садржај</translation>
+<translation id="2918484639460781603">Иди на подешавања</translation>
 <translation id="2932883381142163287">Пријави злоупотребу</translation>
 <translation id="2939338015096024043">Када је укључено, сајтови могу да траже да прате положај камере и сазнају више о окружењу. Када је искључено, сајтови не могу да прате положај камере нити да сазнају више о окружењу.</translation>
 <translation id="2968755619301702150">Приказивач сертификата</translation>
@@ -134,6 +133,7 @@
 <translation id="3227137524299004712">Микрофон</translation>
 <translation id="3232293466644486101">Избриши податке прегледања…</translation>
 <translation id="3242646949159196181">Када је укључено, сајтови могу да пуштају звук. Када је искључено, сајтови не могу да пуштају звук.</translation>
+<translation id="3273479183583863618">Снижења на картицама</translation>
 <translation id="3277252321222022663">Дозволи сајтовима да приступају сензорима (препоручено)</translation>
 <translation id="3285500645985761267">Дозволите сродним сајтовима да виде ваше активности у групи</translation>
 <translation id="3295019059349372795">11. поглавље: Чудесни Смарагдни град Оза</translation>
@@ -162,6 +162,7 @@
 <translation id="3721953990244350188">Одбаците и прегледајте следећу доступну радњу</translation>
 <translation id="3744111561329211289">Синхронизација у позадини</translation>
 <translation id="3763247130972274048">Двапут додирните видео лево или десно да бисте прескочили 10 сек</translation>
+<translation id="3779154269823594982">Промените лозинке</translation>
 <translation id="3797520601150691162">Не примењујте тамну тему за одређени сајт</translation>
 <translation id="3803367742635802571">Сајтови које посећујете могу да престану са радом како је замишљено</translation>
 <translation id="3804247818991980532"><ph name="TYPE_1" />. <ph name="TYPE_2" />.</translation>
@@ -172,7 +173,9 @@
 <translation id="385051799172605136">Назад</translation>
 <translation id="3859306556332390985">Премотај унапред</translation>
 <translation id="3895926599014793903">Принудно омогући зумирање</translation>
+<translation id="3905475044299942653">Зауставите много обавештења</translation>
 <translation id="3908288065506437185">Блокирај колачиће треће стране у режиму без архивирања</translation>
+<translation id="3913461097001554748"><ph name="DOMAIN_URL" /> <ph name="SEPARATOR1" /> <ph name="DEVICE_NAME" /></translation>
 <translation id="3918378745482005425">Неке функције можда неће радити. Сродни сајтови и даље могу да користе колачиће треће стране.</translation>
 <translation id="3933121352599513978">Скупи нежељене захтеве (препоручено)</translation>
 <translation id="3955193568934677022">Дозволи сајтовима да пуштају заштићени садржај (препоручено)</translation>
@@ -190,7 +193,6 @@
 <translation id="4169549551965910670">Повезано са USB уређајем</translation>
 <translation id="4194328954146351878">Пре него што дозволите сајтовима да виде и мењају информације на NFC уређајима приказује се упит (препоручено)</translation>
 <translation id="4200726100658658164">Отворите подешавања локације</translation>
-<translation id="4206661981211220935"><ph name="RECENCY" /> <ph name="SEPARATOR" /> Са уређаја <ph name="FROM_DEVICE" /></translation>
 <translation id="4226663524361240545">Уређај ће вибрирати када примате обавештења</translation>
 <translation id="4259722352634471385">Навигација је блокирана: <ph name="URL" /></translation>
 <translation id="4278390842282768270">Дозвољено</translation>
@@ -198,7 +200,6 @@
 <translation id="42981349822642051">Проширите</translation>
 <translation id="4336219115486912529">{COUNT,plural, =1{Истиче сутра}one{Истиче за # дан}few{Истиче за # дана}other{Истиче за # дана}}</translation>
 <translation id="4336566011000459927">Chrome ће данас поново ограничити колачиће</translation>
-<translation id="4336836404251800362"><ph name="RECENCY" /> <ph name="SEPARATOR" /> Последња картица</translation>
 <translation id="4338831206024587507">Сви сајтови у оквиру домена <ph name="DOMAIN" /></translation>
 <translation id="4402755511846832236">Не дозволите сајтовима да знају када активно користите овај уређај</translation>
 <translation id="4412992751769744546">Дозволи колачиће треће стране</translation>
@@ -220,6 +221,7 @@
 <translation id="4751476147751820511">Сензори за покрет или светло</translation>
 <translation id="4755971844837804407">Када је укључено, сајтови могу да вам прикажу било који оглас. Када је искључено, сајтови не могу да приказују огласе који ометају или обмањујуће огласе.</translation>
 <translation id="4779083564647765204">Зумирање</translation>
+<translation id="4807122856660838973">Укључите Безбедно прегледање</translation>
 <translation id="4811450222531576619">Сазнајте више о њеном извору и теми</translation>
 <translation id="4836046166855586901">Питај када сајт жели да зна када активно користим овај уређај</translation>
 <translation id="483914009762354899">Уврсти све сајтове у оквиру овог домена</translation>
@@ -233,6 +235,7 @@
 <translation id="4994033804516042629">Није пронађен ниједан контакт</translation>
 <translation id="4996978546172906250">Дељење преко</translation>
 <translation id="5001526427543320409">Колачићи треће стране</translation>
+<translation id="5007392906805964215">Прегледај</translation>
 <translation id="5039804452771397117">Дозволи</translation>
 <translation id="5048398596102334565">Дозволи сајтовима да приступају сензорима за покрет (препоручено)</translation>
 <translation id="5050380848339752099">Овај сајт ће делити информације са апликацијом изван режима без архивирања.</translation>
@@ -304,7 +307,6 @@
 <translation id="6015775454662021376">Контролишите приступ овог сајта уређају</translation>
 <translation id="6040143037577758943">Затвори</translation>
 <translation id="6042308850641462728">Још</translation>
-<translation id="6060464773477604108"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> Последња картица</translation>
 <translation id="6064125863973209585">Довршена преузимања</translation>
 <translation id="6071501408666570960">Можда ћете бити одјављени са овог сајта</translation>
 <translation id="6120483543004435978">Када је укључено, сајтови могу да затраже да знају када активно користите уређај. Када је искључено, сајтови не могу да знају када активно користите уређај.</translation>
@@ -349,7 +351,6 @@
 <translation id="6612358246767739896">Заштићени садржај</translation>
 <translation id="662080504995468778">Не затварај</translation>
 <translation id="6653342741369270081">Додирните дугме Назад да бисте изашли из режима целог екрана.</translation>
-<translation id="6670377348676659110">{TILE_COUNT,plural, =1{Сакриј опцију Настави са овом картицом}one{Сакриј опцију Настави са овим картицама}few{Сакриј опцију Настави са овим картицама}other{Сакриј опцију Настави са овим картицама}}</translation>
 <translation id="6689172468748959065">Слике профила</translation>
 <translation id="6697925417670533197">Активна преузимања</translation>
 <translation id="6722828510648505498">Блокирајте упите за пријављивање које приказују услуге за идентитет.</translation>
@@ -359,12 +360,14 @@
 <translation id="6787751205395685251">Изаберите опцију за <ph name="SITE_NAME" /></translation>
 <translation id="6790428901817661496">Пусти</translation>
 <translation id="6818926723028410516">Изаберите ставке</translation>
+<translation id="6840760312327750441">Да бисте груписали картице, додирните картицу и задржите је. Затим је превуците на другу картицу.</translation>
 <translation id="6864395892908308021">Овај уређај не може да чита NFC</translation>
-<translation id="6867014948848323204">Са уређаја <ph name="FROM_DEVICE" /></translation>
+<translation id="6870169401250095575">Сакриј картицу Провера безбедности</translation>
 <translation id="6912998170423641340">Блокирај сајтове тако да не читају текст и слике из привремене меморије</translation>
 <translation id="6945221475159498467">Изабери</translation>
 <translation id="6950072572526089586">Сајт који посећујете може да чува информације о томе шта радите како би радио на очекивани начин – на пример, да бисте остали пријављени на сајт или да бисте сачували ставке у корпи за куповину. Сајтови често привремено чувају те информације на уређају.</translation>
 <translation id="6965382102122355670">Потврди</translation>
+<translation id="6980861169612950611">Желите да избришете податке сајта? <ph name="SITE_NAME" /></translation>
 <translation id="6981982820502123353">Приступачност</translation>
 <translation id="6992289844737586249">Питај пре него што дозволиш сајтовима да користе микрофон (препоручено)</translation>
 <translation id="7000754031042624318">Искључено је у Android подешавањима</translation>
@@ -392,6 +395,7 @@
 <translation id="7366415735885268578">Додајте сајт</translation>
 <translation id="7368695150573390554">Сви офлајн подаци ће бити избрисани</translation>
 <translation id="7383715096023715447">Подешавања за <ph name="DOMAIN" /></translation>
+<translation id="7399802613464275309">Безбедносна провера</translation>
 <translation id="7406113532070524618">Ово подешавање ради, а да не мора да вас идентификује или да дозволи сајтовима да виде историју прегледања, иако сајтови могу да деле малу количину података у оквиру верификације</translation>
 <translation id="7423098979219808738">Прво питај</translation>
 <translation id="7423538860840206698">Читање привремене меморије је блокирано</translation>
@@ -426,7 +430,7 @@
 <translation id="7986741934819883144">Изаберите контакт</translation>
 <translation id="7990211076305263060">Када је укључено, сајтови могу да траже да користе микрофон. Кад је искључено, сајтови не могу да користе микрофон.</translation>
 <translation id="8007176423574883786">Искључено је за овај уређај</translation>
-<translation id="8009579582995973057"><ph name="HOST_NAME" /> <ph name="SEPARATOR1" /> <ph name="RECENCY" /> <ph name="SEPARATOR2" /> Са уређаја <ph name="FROM_DEVICE" /></translation>
+<translation id="8010630645305864042">{TILE_COUNT,plural, =1{Сакриј картицу Настави са овом картицом}one{Сакриј картицу Настави са овим картицама}few{Сакриј картицу Настави са овим картицама}other{Сакриј картицу Настави са овим картицама}}</translation>
 <translation id="802154636333426148">Преузимање није успело</translation>
 <translation id="8042586301629853791">Сортирај према:</translation>
 <translation id="8067883171444229417">Пусти видео</translation>
@@ -461,6 +465,7 @@
 <translation id="8441146129660941386">Премотај уназад</translation>
 <translation id="8444433999583714703">Да бисте дозволили да <ph name="APP_NAME" /> приступа локацији, укључите локацију и у <ph name="BEGIN_LINK" />Android подешавањима<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Опозови дозволу за уређај</translation>
+<translation id="8473055640493819707">Апликација <ph name="APP_NAME" /> је застарела. Поново инсталирајте апликацију.</translation>
 <translation id="8487700953926739672">Доступно ван мреже</translation>
 <translation id="848952951823693243">Увек се захтева мобилни сајт</translation>
 <translation id="8499083585497694743">Укључи звук микрофона</translation>
@@ -477,6 +482,7 @@
 <translation id="8681886425883659911">Огласи су блокирани на сајтовима за које је познато да приказују огласе који ометају активности или обмањујуће огласе</translation>
 <translation id="868929229000858085">Претражите контакте</translation>
 <translation id="8712637175834984815">Важи</translation>
+<translation id="8715862698998036666">Превуците од врха и превуците од леве или десне ивице да бисте изашли из режима целог екрана.</translation>
 <translation id="8719283222052720129">Укључите дозволу за апликацију <ph name="APP_NAME" /> у <ph name="BEGIN_LINK" />Android подешавањима<ph name="END_LINK" />.</translation>
 <translation id="8721719390026067591">Када је укључено, сајтови могу да питају да траже Bluetooth уређаје. Када је искључено, сајтови не могу да траже Bluetooth уређаје.</translation>
 <translation id="8725066075913043281">Пробајте поново</translation>
@@ -513,5 +519,6 @@
 <translation id="9162462602695099906">Ова страница је опасна</translation>
 <translation id="930525582205581608">Желите да заборавите овај сајт?</translation>
 <translation id="947156494302904893">Сајтови које посећујете могу да потврде да сте стварна особа, а не бот</translation>
+<translation id="959682366969460160">Боља организација</translation>
 <translation id="967624055006145463">Сачувани подаци</translation>
 </translationbundle>

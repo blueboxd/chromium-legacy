@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/hats/hats_service_factory.h"
 #include "chrome/browser/ui/hats/mock_hats_service.h"
 #include "chrome/browser/ui/hats/survey_config.h"
+#include "chrome/browser/ui/webui/side_panel/customize_chrome/wallpaper_search/wallpaper_search_string_map.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -39,6 +40,7 @@
 #include "components/optimization_guide/core/model_execution/feature_keys.h"
 #include "components/optimization_guide/core/model_quality/feature_type_map.h"
 #include "components/optimization_guide/core/model_quality/model_quality_log_entry.h"
+#include "components/optimization_guide/core/model_quality/test_model_quality_logs_uploader_service.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/optimization_guide/proto/features/wallpaper_search.pb.h"
 #include "components/optimization_guide/proto/model_execution.pb.h"
@@ -61,6 +63,8 @@
 
 namespace {
 
+using optimization_guide::ModelQualityLogEntry;
+using optimization_guide::proto::LogAiDataRequest;
 using testing::_;
 using testing::An;
 using testing::DoAll;
@@ -112,6 +116,20 @@ class MockWallpaperSearchBackgroundManager
   MOCK_METHOD1(IsCurrentBackground, bool(const base::Token& id));
 };
 
+class MockWallpaperSearchStringMap : public WallpaperSearchStringMap {
+ public:
+  MOCK_CONST_METHOD1(FindCategory,
+                     std::optional<std::string>(std::string_view key));
+  MOCK_CONST_METHOD1(FindDescriptorA,
+                     std::optional<std::string>(std::string_view key));
+  MOCK_CONST_METHOD1(FindDescriptorB,
+                     std::optional<std::string>(std::string_view key));
+  MOCK_CONST_METHOD1(FindDescriptorC,
+                     std::optional<std::string>(std::string_view key));
+  MOCK_CONST_METHOD1(FindInspirationDescription,
+                     std::optional<std::string>(std::string_view key));
+};
+
 std::unique_ptr<TestingProfile> MakeTestingProfile(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     TestingPrefServiceSimple* local_state) {
@@ -131,11 +149,6 @@ std::unique_ptr<TestingProfile> MakeTestingProfile(
   return profile;
 }
 
-std::unique_ptr<optimization_guide::ModelQualityLogEntry> ModelQuality() {
-  return std::make_unique<optimization_guide::ModelQualityLogEntry>(
-      std::make_unique<optimization_guide::proto::LogAiDataRequest>(), nullptr);
-}
-
 }  // namespace
 
 class WallpaperSearchHandlerTest : public testing::Test {
@@ -144,6 +157,7 @@ class WallpaperSearchHandlerTest : public testing::Test {
       : profile_(
             MakeTestingProfile(test_url_loader_factory_.GetSafeWeakWrapper(),
                                &local_state_)),
+        logs_uploader_(&local_state_),
         mock_optimization_guide_keyed_service_(
             static_cast<MockOptimizationGuideKeyedService*>(
                 OptimizationGuideKeyedServiceFactory::GetForProfile(
@@ -197,15 +211,60 @@ class WallpaperSearchHandlerTest : public testing::Test {
     test_url_loader_factory_.AddResponse(kInspirationsLoadURL, std::string(),
                                          net::HTTP_NOT_FOUND);
   }
+  void MockTranslations(
+      const std::vector<std::pair<std::string_view, std::string>>& categories,
+      const std::vector<std::pair<std::string_view, std::string>>&
+          descriptor_as,
+      const std::vector<std::pair<std::string_view, std::string>>&
+          descriptor_bs,
+      const std::vector<std::pair<std::string_view, std::string>>&
+          descriptor_cs,
+      const std::vector<std::pair<std::string_view, std::string>>&
+          inspiration_descriptions = {}) {
+    for (const auto& category : categories) {
+      ON_CALL(mock_wallpaper_search_string_map(), FindCategory(category.first))
+          .WillByDefault(Return(category.second));
+    }
+    for (const auto& descriptor_a : descriptor_as) {
+      ON_CALL(mock_wallpaper_search_string_map(),
+              FindDescriptorA(descriptor_a.first))
+          .WillByDefault(Return(descriptor_a.second));
+    }
+    for (const auto& descriptor_b : descriptor_bs) {
+      ON_CALL(mock_wallpaper_search_string_map(),
+              FindDescriptorB(descriptor_b.first))
+          .WillByDefault(Return(descriptor_b.second));
+    }
+    for (const auto& descriptor_c : descriptor_cs) {
+      ON_CALL(mock_wallpaper_search_string_map(),
+              FindDescriptorC(descriptor_c.first))
+          .WillByDefault(Return(descriptor_c.second));
+    }
+    for (const auto& description : inspiration_descriptions) {
+      ON_CALL(mock_wallpaper_search_string_map(),
+              FindInspirationDescription(description.first))
+          .WillByDefault(Return(description.second));
+    }
+  }
 
   std::unique_ptr<WallpaperSearchHandler> MakeHandler(int64_t session_id) {
     auto handler = std::make_unique<WallpaperSearchHandler>(
         mojo::PendingReceiver<
             side_panel::customize_chrome::mojom::WallpaperSearchHandler>(),
         mock_client_.BindAndGetRemote(), profile_.get(), &mock_image_decoder_,
-        &mock_wallpaper_search_background_manager_, session_id);
+        &mock_wallpaper_search_background_manager_, session_id,
+        &mock_wallpaper_search_string_map_);
     mock_client_.FlushForTesting();
     return handler;
+  }
+
+  std::unique_ptr<ModelQualityLogEntry> ModelQuality() {
+    return std::make_unique<ModelQualityLogEntry>(
+        std::make_unique<LogAiDataRequest>(), logs_uploader_.GetWeakPtr());
+  }
+
+  const std::vector<std::unique_ptr<LogAiDataRequest>>& uploaded_logs() {
+    return logs_uploader_.uploaded_logs();
   }
 
   base::HistogramTester& histogram_tester() { return histogram_tester_; }
@@ -229,6 +288,9 @@ class WallpaperSearchHandlerTest : public testing::Test {
   }
   MockHatsService& mock_hats_service() { return *mock_hats_service_; }
   signin::IdentityManager& identity_manager() { return *identity_manager_; }
+  MockWallpaperSearchStringMap& mock_wallpaper_search_string_map() {
+    return mock_wallpaper_search_string_map_;
+  }
 
  private:
   // NOTE: The initialization order of these members matters.
@@ -238,6 +300,7 @@ class WallpaperSearchHandlerTest : public testing::Test {
   TestingPrefServiceSimple local_state_;
   std::unique_ptr<TestingProfile> profile_;
   base::test::ScopedFeatureList feature_list_;
+  optimization_guide::TestModelQualityLogsUploaderService logs_uploader_;
   raw_ptr<MockOptimizationGuideKeyedService>
       mock_optimization_guide_keyed_service_;
   image_fetcher::MockImageDecoder mock_image_decoder_;
@@ -248,6 +311,8 @@ class WallpaperSearchHandlerTest : public testing::Test {
   data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
   raw_ptr<MockHatsService> mock_hats_service_;
   raw_ptr<signin::IdentityManager> identity_manager_;
+  testing::NiceMock<MockWallpaperSearchStringMap>
+      mock_wallpaper_search_string_map_;
 };
 
 TEST_F(WallpaperSearchHandlerTest, GetHistory) {
@@ -341,6 +406,13 @@ TEST_F(WallpaperSearchHandlerTest,
           ],
           "descriptor_c":["foo","bar","baz"]
         })");
+  MockTranslations(
+      /*categories=*/{{"foo", "foo label"}, {"qux", "qux label"}},
+      /*descriptor_as=*/
+      {{"bar", "bar label"}, {"baz", "baz label"}, {"foobar", "foobar label"}},
+      /*descriptor_bs=*/{{"foo", "foo label"}},
+      /*descriptor_cs=*/
+      {{"foo", "foo label"}, {"bar", "bar label"}, {"baz", "baz label"}});
   auto handler = MakeHandler(/*session_id=*/123);
 
   ASSERT_FALSE(descriptors);
@@ -349,29 +421,36 @@ TEST_F(WallpaperSearchHandlerTest,
 
   EXPECT_TRUE(descriptors);
 
-  const auto& descriptor_a = descriptors->descriptor_a;
-  EXPECT_EQ(2u, descriptor_a.size());
-  const auto& foo_descriptor = descriptor_a[0];
-  EXPECT_EQ(foo_descriptor->category, "foo");
-  EXPECT_EQ(2u, foo_descriptor->labels.size());
-  EXPECT_EQ("bar", foo_descriptor->labels[0]);
-  EXPECT_EQ("baz", foo_descriptor->labels[1]);
-  const auto& qux_descriptor = descriptor_a[1];
-  EXPECT_EQ(qux_descriptor->category, "qux");
-  EXPECT_EQ(1u, qux_descriptor->labels.size());
-  EXPECT_EQ("foobar", qux_descriptor->labels[0]);
+  const auto& groups = descriptors->groups;
+  EXPECT_EQ(2u, groups.size());
+  const auto& foo_descriptor = groups[0];
+  EXPECT_EQ(foo_descriptor->category, "foo label");
+  EXPECT_EQ(2u, foo_descriptor->descriptor_as.size());
+  EXPECT_EQ("bar", foo_descriptor->descriptor_as[0]->key);
+  EXPECT_EQ("bar label", foo_descriptor->descriptor_as[0]->label);
+  EXPECT_EQ("baz", foo_descriptor->descriptor_as[1]->key);
+  EXPECT_EQ("baz label", foo_descriptor->descriptor_as[1]->label);
+  const auto& qux_descriptor = groups[1];
+  EXPECT_EQ(qux_descriptor->category, "qux label");
+  EXPECT_EQ(1u, qux_descriptor->descriptor_as.size());
+  EXPECT_EQ("foobar", qux_descriptor->descriptor_as[0]->key);
+  EXPECT_EQ("foobar label", qux_descriptor->descriptor_as[0]->label);
 
   const auto& descriptor_b = descriptors->descriptor_b;
   EXPECT_EQ(1u, descriptor_b.size());
-  EXPECT_EQ("foo", descriptor_b[0]->label);
+  EXPECT_EQ("foo", descriptor_b[0]->key);
+  EXPECT_EQ("foo label", descriptor_b[0]->label);
   EXPECT_EQ(base::StrCat({kGstaticBaseURL, "bar.png"}),
             descriptor_b[0]->image_path);
 
   const auto& descriptor_c = descriptors->descriptor_c;
   EXPECT_EQ(3u, descriptor_c.size());
-  EXPECT_EQ("foo", descriptor_c[0]);
-  EXPECT_EQ("bar", descriptor_c[1]);
-  EXPECT_EQ("baz", descriptor_c[2]);
+  EXPECT_EQ("foo", descriptor_c[0]->key);
+  EXPECT_EQ("foo label", descriptor_c[0]->label);
+  EXPECT_EQ("bar", descriptor_c[1]->key);
+  EXPECT_EQ("bar label", descriptor_c[1]->label);
+  EXPECT_EQ("baz", descriptor_c[2]->key);
+  EXPECT_EQ("baz label", descriptor_c[2]->label);
 }
 
 TEST_F(WallpaperSearchHandlerTest,
@@ -405,6 +484,11 @@ TEST_F(WallpaperSearchHandlerTest,
           ],
           "descriptor_c":["foo"]
         })");
+  MockTranslations(
+      /*categories=*/{{"foo", "foo label"}},
+      /*descriptor_as=*/{{"bar", "bar label"}},
+      /*descriptor_bs=*/{{"foo", "foo label"}},
+      /*descriptor_cs=*/{{"foo", "foo label"}});
   auto handler = MakeHandler(/*session_id=*/123);
 
   handler->GetDescriptors(callback.Get());
@@ -413,20 +497,23 @@ TEST_F(WallpaperSearchHandlerTest,
 
   EXPECT_FALSE(descriptors);
   EXPECT_TRUE(descriptors_2);
-  const auto& descriptor_a = descriptors_2->descriptor_a;
-  EXPECT_EQ(1u, descriptor_a.size());
-  const auto& foo_descriptor = descriptor_a[0];
-  EXPECT_EQ(foo_descriptor->category, "foo");
-  EXPECT_EQ(1u, foo_descriptor->labels.size());
-  EXPECT_EQ("bar", foo_descriptor->labels[0]);
+  const auto& groups = descriptors_2->groups;
+  EXPECT_EQ(1u, groups.size());
+  const auto& foo_descriptor = groups[0];
+  EXPECT_EQ(foo_descriptor->category, "foo label");
+  EXPECT_EQ(1u, foo_descriptor->descriptor_as.size());
+  EXPECT_EQ("bar", foo_descriptor->descriptor_as[0]->key);
+  EXPECT_EQ("bar label", foo_descriptor->descriptor_as[0]->label);
   const auto& descriptor_b = descriptors_2->descriptor_b;
   EXPECT_EQ(1u, descriptor_b.size());
-  EXPECT_EQ("foo", descriptor_b[0]->label);
+  EXPECT_EQ("foo", descriptor_b[0]->key);
+  EXPECT_EQ("foo label", descriptor_b[0]->label);
   EXPECT_EQ(base::StrCat({kGstaticBaseURL, "bar.png"}),
             descriptor_b[0]->image_path);
   const auto& descriptor_c = descriptors_2->descriptor_c;
   EXPECT_EQ(1u, descriptor_c.size());
-  EXPECT_EQ("foo", descriptor_c[0]);
+  EXPECT_EQ("foo", descriptor_c[0]->key);
+  EXPECT_EQ("foo label", descriptor_c[0]->label);
 }
 
 TEST_F(WallpaperSearchHandlerTest,
@@ -445,6 +532,11 @@ TEST_F(WallpaperSearchHandlerTest,
         {"descriptor_a":[
           {"category":"foo"}
       ]})");
+  MockTranslations(
+      /*categories=*/{{"foo", "foo label"}},
+      /*descriptor_as=*/{},
+      /*descriptor_bs=*/{},
+      /*descriptor_cs=*/{});
   ASSERT_FALSE(descriptors);
   auto handler = MakeHandler(/*session_id=*/123);
 
@@ -470,6 +562,12 @@ TEST_F(WallpaperSearchHandlerTest, GetDescriptors_Failure_NoValidDescriptors) {
           {"category":"foo","labels":["bar","baz"]},
           {"category":"qux","labels":["foobar"]}
       ]})");
+  MockTranslations(
+      /*categories=*/{{"foo", "foo label"}, {"qux", "qux label"}},
+      /*descriptor_as=*/
+      {{"bar", "bar label"}, {"baz", "baz label"}, {"foobar", "foobar label"}},
+      /*descriptor_bs=*/{},
+      /*descriptor_cs=*/{});
   ASSERT_FALSE(descriptors);
   auto handler = MakeHandler(/*session_id=*/123);
 
@@ -477,6 +575,61 @@ TEST_F(WallpaperSearchHandlerTest, GetDescriptors_Failure_NoValidDescriptors) {
   task_environment().RunUntilIdle();
 
   EXPECT_FALSE(descriptors);
+}
+
+TEST_F(WallpaperSearchHandlerTest, GetDescriptors_Success_MissingTranslations) {
+  side_panel::customize_chrome::mojom::DescriptorsPtr descriptors;
+  base::MockCallback<WallpaperSearchHandler::GetDescriptorsCallback> callback;
+  EXPECT_CALL(callback, Run(_))
+      .Times(1)
+      .WillOnce(testing::Invoke(
+          [&descriptors](side_panel::customize_chrome::mojom::DescriptorsPtr
+                             descriptors_ptr_arg) {
+            descriptors = std::move(descriptors_ptr_arg);
+          }));
+  SetUpDescriptorsResponseWithData(
+      R"()]}'
+        {
+          "descriptor_a":[
+            {"category":"foo","labels":["bar","baz"]},
+            {"category":"qux","labels":["foobar"]}
+          ],
+          "descriptor_b":[
+            {"label":"foo","image":"bar.png"}
+          ],
+          "descriptor_c":["foo","bar","baz"]
+        })");
+  // Not mocking a translation for descriptor B. Hence, the missing translation.
+  MockTranslations(
+      /*categories=*/{{"foo", "foo label"}},
+      /*descriptor_as=*/{{"bar", "bar label"}},
+      /*descriptor_bs=*/{},
+      /*descriptor_cs=*/{{"foo", "foo label"}, {"bar", "bar label"}});
+  auto handler = MakeHandler(/*session_id=*/123);
+
+  ASSERT_FALSE(descriptors);
+  handler->GetDescriptors(callback.Get());
+  task_environment().RunUntilIdle();
+
+  ASSERT_TRUE(descriptors);
+
+  const auto& groups = descriptors->groups;
+  ASSERT_EQ(1u, groups.size());
+  const auto& foo_descriptor = groups[0];
+  EXPECT_EQ(foo_descriptor->category, "foo label");
+  ASSERT_EQ(1u, foo_descriptor->descriptor_as.size());
+  EXPECT_EQ("bar", foo_descriptor->descriptor_as[0]->key);
+  EXPECT_EQ("bar label", foo_descriptor->descriptor_as[0]->label);
+
+  const auto& descriptor_b = descriptors->descriptor_b;
+  EXPECT_EQ(0u, descriptor_b.size());
+
+  const auto& descriptor_c = descriptors->descriptor_c;
+  ASSERT_EQ(2u, descriptor_c.size());
+  EXPECT_EQ("foo", descriptor_c[0]->key);
+  EXPECT_EQ("foo label", descriptor_c[0]->label);
+  EXPECT_EQ("bar", descriptor_c[1]->key);
+  EXPECT_EQ("bar label", descriptor_c[1]->label);
 }
 
 TEST_F(WallpaperSearchHandlerTest, GetDescriptors_Failure_DataIsUnreachable) {
@@ -546,10 +699,10 @@ TEST_F(WallpaperSearchHandlerTest, GetWallpaperSearchResults_Success) {
           SK_ColorWHITE);
   handler->GetWallpaperSearchResults(std::move(result_descriptors),
                                      callback.Get());
-  EXPECT_EQ("foo", request.descriptors().descriptor_a());
-  EXPECT_EQ("bar", request.descriptors().descriptor_b());
-  EXPECT_EQ("baz", request.descriptors().descriptor_c());
-  EXPECT_EQ("#FFFFFF", request.descriptors().descriptor_d());
+  EXPECT_EQ("foo", request.descriptors().subject());
+  EXPECT_EQ("bar", request.descriptors().style());
+  EXPECT_EQ("baz", request.descriptors().mood());
+  EXPECT_EQ("#FFFFFF", request.descriptors().color());
 
   optimization_guide::proto::WallpaperSearchResponse response;
 
@@ -622,46 +775,27 @@ TEST_F(WallpaperSearchHandlerTest, GetWallpaperSearchResults_Success) {
   histogram_tester().ExpectBucketCount(
       "NewTabPage.WallpaperSearch.GetResultProcessingLatency", 345, 1);
 
-  // Expect upload is called once during destruction.
-  std::vector<
-      std::unique_ptr<optimization_guide::proto::WallpaperSearchQuality>>
-      qualities;
-  ON_CALL(mock_optimization_guide_keyed_service(), UploadModelQualityLogs(_))
-      .WillByDefault(Invoke(
-          [&qualities](std::unique_ptr<optimization_guide::ModelQualityLogEntry>
-                           log_entry) {
-            EXPECT_TRUE(log_entry->log_ai_data_request()
-                            ->mutable_wallpaper_search()
-                            ->has_quality_data());
-            // Images should be cleared for logging.
-            EXPECT_EQ(log_entry->log_ai_data_request()
-                          ->mutable_wallpaper_search()
-                          ->mutable_response_data()
-                          ->images_size(),
-                      0);
-
-            qualities.push_back(
-                std::make_unique<
-                    optimization_guide::proto::WallpaperSearchQuality>(
-                    log_entry->log_ai_data_request()
-                        ->mutable_wallpaper_search()
-                        ->quality_data()));
-          }));
-
   // Quality logs on destruction.
   handler.reset();
-  EXPECT_EQ(1u, qualities.size());
-  EXPECT_EQ(123, qualities[0]->session_id());
-  EXPECT_EQ(0, qualities[0]->index());
-  EXPECT_TRUE(qualities[0]->final_request_in_session());
-  EXPECT_EQ(321, qualities[0]->request_latency_ms());
-  ASSERT_EQ(2, qualities[0]->images_quality_size());
-  EXPECT_EQ(111, qualities[0]->images_quality(0).image_id());
-  EXPECT_FALSE(qualities[0]->images_quality(0).previewed());
-  EXPECT_FALSE(qualities[0]->images_quality(0).selected());
-  EXPECT_EQ(222, qualities[0]->images_quality(1).image_id());
-  EXPECT_FALSE(qualities[0]->images_quality(1).previewed());
-  EXPECT_FALSE(qualities[0]->images_quality(1).selected());
+
+  const auto& logs = uploaded_logs();
+  EXPECT_EQ(1u, logs.size());
+  EXPECT_TRUE(logs[0]->mutable_wallpaper_search()->has_quality());
+  EXPECT_EQ(
+      0,
+      logs[0]->mutable_wallpaper_search()->mutable_response()->images_size());
+  const auto& log = logs[0]->mutable_wallpaper_search()->quality();
+  EXPECT_EQ(123, log.session_id());
+  EXPECT_EQ(0, log.index());
+  EXPECT_TRUE(log.final_request_in_session());
+  EXPECT_EQ(321, log.request_latency_ms());
+  ASSERT_EQ(2, log.images_quality_size());
+  EXPECT_EQ(111, log.images_quality(0).image_id());
+  EXPECT_FALSE(log.images_quality(0).previewed());
+  EXPECT_FALSE(log.images_quality(0).selected());
+  EXPECT_EQ(222, log.images_quality(1).image_id());
+  EXPECT_FALSE(log.images_quality(1).previewed());
+  EXPECT_FALSE(log.images_quality(1).selected());
 }
 
 TEST_F(WallpaperSearchHandlerTest, GetWallpaperSearchResults_MultipleRequests) {
@@ -694,10 +828,10 @@ TEST_F(WallpaperSearchHandlerTest, GetWallpaperSearchResults_MultipleRequests) {
           SK_ColorWHITE);
   handler->GetWallpaperSearchResults(std::move(result_descriptors),
                                      callback1.Get());
-  EXPECT_EQ("foo1", request1.descriptors().descriptor_a());
-  EXPECT_EQ("bar1", request1.descriptors().descriptor_b());
-  EXPECT_EQ("baz1", request1.descriptors().descriptor_c());
-  EXPECT_EQ("#FFFFFF", request1.descriptors().descriptor_d());
+  EXPECT_EQ("foo1", request1.descriptors().subject());
+  EXPECT_EQ("bar1", request1.descriptors().style());
+  EXPECT_EQ("baz1", request1.descriptors().mood());
+  EXPECT_EQ("#FFFFFF", request1.descriptors().color());
 
   // Serialize and set result to later send to done_callback.
   optimization_guide::proto::WallpaperSearchResponse response1;
@@ -755,10 +889,10 @@ TEST_F(WallpaperSearchHandlerTest, GetWallpaperSearchResults_MultipleRequests) {
           SK_ColorRED);
   handler->GetWallpaperSearchResults(std::move(result_descriptors2),
                                      callback2.Get());
-  EXPECT_EQ("foo2", request2.descriptors().descriptor_a());
-  EXPECT_EQ("bar2", request2.descriptors().descriptor_b());
-  EXPECT_EQ("baz2", request2.descriptors().descriptor_c());
-  EXPECT_EQ("#FF0000", request2.descriptors().descriptor_d());
+  EXPECT_EQ("foo2", request2.descriptors().subject());
+  EXPECT_EQ("bar2", request2.descriptors().style());
+  EXPECT_EQ("baz2", request2.descriptors().mood());
+  EXPECT_EQ("#FF0000", request2.descriptors().color());
 
   optimization_guide::proto::WallpaperSearchResponse response2;
   std::string serialized_metadata2;
@@ -782,27 +916,6 @@ TEST_F(WallpaperSearchHandlerTest, GetWallpaperSearchResults_MultipleRequests) {
             side_panel::customize_chrome::mojom::WallpaperSearchStatus::kError);
   ASSERT_EQ(static_cast<int>(images2.size()), response2.images_size());
 
-  // We upload two log entries corresponding to the two requests in a
-  // session.
-  // Expect upload is called once during destruction.
-  std::vector<
-      std::unique_ptr<optimization_guide::proto::WallpaperSearchQuality>>
-      qualities;
-  ON_CALL(mock_optimization_guide_keyed_service(), UploadModelQualityLogs(_))
-      .WillByDefault(Invoke(
-          [&qualities](std::unique_ptr<optimization_guide::ModelQualityLogEntry>
-                           log_entry) {
-            EXPECT_TRUE(log_entry->log_ai_data_request()
-                            ->mutable_wallpaper_search()
-                            ->has_quality_data());
-            qualities.push_back(
-                std::make_unique<
-                    optimization_guide::proto::WallpaperSearchQuality>(
-                    log_entry->log_ai_data_request()
-                        ->mutable_wallpaper_search()
-                        ->quality_data()));
-          }));
-
   // Simulate that front-end has received the images and rendered them.
   handler->SetResultRenderTime(
       {}, base::Time::Now().InMillisecondsFSinceUnixEpoch());
@@ -812,21 +925,30 @@ TEST_F(WallpaperSearchHandlerTest, GetWallpaperSearchResults_MultipleRequests) {
 
   // Quality logs on destruction and when a second request is made.
   handler.reset();
-  EXPECT_EQ(2u, qualities.size());
+
+  // We upload two log entries corresponding to the two requests in a
+  // session.
+  // Expect upload is called once during destruction.
+  const auto& logs = uploaded_logs();
+  EXPECT_EQ(2u, logs.size());
+  EXPECT_TRUE(logs[0]->mutable_wallpaper_search()->has_quality());
+  EXPECT_TRUE(logs[1]->mutable_wallpaper_search()->has_quality());
+  const auto& log1 = logs[0]->mutable_wallpaper_search()->quality();
+  const auto& log2 = logs[1]->mutable_wallpaper_search()->quality();
   // First request.
-  EXPECT_EQ(123, qualities[0]->session_id());
-  EXPECT_EQ(0, qualities[0]->index());
-  EXPECT_FALSE(qualities[0]->final_request_in_session());
-  EXPECT_EQ(321, qualities[0]->request_latency_ms());
-  EXPECT_EQ(456, qualities[0]->complete_latency_ms());
-  EXPECT_EQ(0, qualities[0]->images_quality_size());
+  EXPECT_EQ(123, log1.session_id());
+  EXPECT_EQ(0, log1.index());
+  EXPECT_FALSE(log1.final_request_in_session());
+  EXPECT_EQ(321, log1.request_latency_ms());
+  EXPECT_EQ(456, log1.complete_latency_ms());
+  EXPECT_EQ(0, log1.images_quality_size());
   // Second request.
-  EXPECT_EQ(123, qualities[1]->session_id());
-  EXPECT_EQ(1, qualities[1]->index());
-  EXPECT_TRUE(qualities[1]->final_request_in_session());
-  EXPECT_EQ(456, qualities[1]->request_latency_ms());
-  EXPECT_EQ(567, qualities[1]->complete_latency_ms());
-  EXPECT_EQ(0, qualities[1]->images_quality_size());
+  EXPECT_EQ(123, log2.session_id());
+  EXPECT_EQ(1, log2.index());
+  EXPECT_TRUE(log2.final_request_in_session());
+  EXPECT_EQ(456, log2.request_latency_ms());
+  EXPECT_EQ(567, log2.complete_latency_ms());
+  EXPECT_EQ(0, log2.images_quality_size());
 }
 
 TEST_F(WallpaperSearchHandlerTest,
@@ -858,10 +980,10 @@ TEST_F(WallpaperSearchHandlerTest,
   handler->GetWallpaperSearchResults(std::move(result_descriptors),
                                      callback.Get());
 
-  EXPECT_EQ("foo", request.descriptors().descriptor_a());
-  EXPECT_TRUE(request.descriptors().descriptor_b().empty());
-  EXPECT_TRUE(request.descriptors().descriptor_c().empty());
-  EXPECT_EQ("#FF0000", request.descriptors().descriptor_d());
+  EXPECT_EQ("foo", request.descriptors().subject());
+  EXPECT_TRUE(request.descriptors().style().empty());
+  EXPECT_TRUE(request.descriptors().mood().empty());
+  EXPECT_EQ("#FF0000", request.descriptors().color());
 }
 
 TEST_F(WallpaperSearchHandlerTest, GetWallpaperSearchResults_ConvertsHueToHex) {
@@ -891,10 +1013,10 @@ TEST_F(WallpaperSearchHandlerTest, GetWallpaperSearchResults_ConvertsHueToHex) {
   handler->GetWallpaperSearchResults(std::move(result_descriptors),
                                      callback.Get());
 
-  EXPECT_EQ("foo", request.descriptors().descriptor_a());
-  EXPECT_TRUE(request.descriptors().descriptor_b().empty());
-  EXPECT_TRUE(request.descriptors().descriptor_c().empty());
-  EXPECT_EQ("#FF0000", request.descriptors().descriptor_d());
+  EXPECT_EQ("foo", request.descriptors().subject());
+  EXPECT_TRUE(request.descriptors().style().empty());
+  EXPECT_TRUE(request.descriptors().mood().empty());
+  EXPECT_EQ("#FF0000", request.descriptors().color());
 }
 
 TEST_F(WallpaperSearchHandlerTest, GetWallpaperSearchResults_NoResponse) {
@@ -923,10 +1045,10 @@ TEST_F(WallpaperSearchHandlerTest, GetWallpaperSearchResults_NoResponse) {
   result_descriptors->subject = "foo";
   handler->GetWallpaperSearchResults(std::move(result_descriptors),
                                      callback.Get());
-  EXPECT_EQ("foo", request.descriptors().descriptor_a());
-  EXPECT_TRUE(request.descriptors().descriptor_b().empty());
-  EXPECT_TRUE(request.descriptors().descriptor_c().empty());
-  EXPECT_TRUE(request.descriptors().descriptor_d().empty());
+  EXPECT_EQ("foo", request.descriptors().subject());
+  EXPECT_TRUE(request.descriptors().style().empty());
+  EXPECT_TRUE(request.descriptors().mood().empty());
+  EXPECT_TRUE(request.descriptors().color().empty());
 
   std::vector<side_panel::customize_chrome::mojom::WallpaperSearchResultPtr>
       images;
@@ -950,31 +1072,18 @@ TEST_F(WallpaperSearchHandlerTest, GetWallpaperSearchResults_NoResponse) {
             side_panel::customize_chrome::mojom::WallpaperSearchStatus::kError);
   EXPECT_EQ(images.size(), 0u);
 
-  std::vector<
-      std::unique_ptr<optimization_guide::proto::WallpaperSearchQuality>>
-      qualities;
-  ON_CALL(mock_optimization_guide_keyed_service(), UploadModelQualityLogs(_))
-      .WillByDefault(Invoke(
-          [&qualities](std::unique_ptr<optimization_guide::ModelQualityLogEntry>
-                           log_entry) {
-            EXPECT_TRUE(log_entry->log_ai_data_request()
-                            ->mutable_wallpaper_search()
-                            ->has_quality_data());
-            qualities.push_back(
-                std::make_unique<
-                    optimization_guide::proto::WallpaperSearchQuality>(
-                    log_entry->log_ai_data_request()
-                        ->mutable_wallpaper_search()
-                        ->quality_data()));
-          }));
-
   // Quality logs on destruction.
   handler.reset();
-  EXPECT_EQ(123, qualities[0]->session_id());
-  EXPECT_EQ(0, qualities[0]->index());
-  EXPECT_TRUE(qualities[0]->final_request_in_session());
-  EXPECT_EQ(321, qualities[0]->request_latency_ms());
-  EXPECT_EQ(0, qualities[0]->images_quality_size());
+
+  const auto& logs = uploaded_logs();
+  EXPECT_EQ(1u, logs.size());
+  EXPECT_TRUE(logs[0]->mutable_wallpaper_search()->has_quality());
+  const auto& log = logs[0]->mutable_wallpaper_search()->quality();
+  EXPECT_EQ(123, log.session_id());
+  EXPECT_EQ(0, log.index());
+  EXPECT_TRUE(log.final_request_in_session());
+  EXPECT_EQ(321, log.request_latency_ms());
+  EXPECT_EQ(0, log.images_quality_size());
 }
 
 TEST_F(WallpaperSearchHandlerTest, GetWallpaperSearchResults_NoImages) {
@@ -1003,10 +1112,10 @@ TEST_F(WallpaperSearchHandlerTest, GetWallpaperSearchResults_NoImages) {
   result_descriptors->subject = "foo";
   handler->GetWallpaperSearchResults(std::move(result_descriptors),
                                      callback.Get());
-  EXPECT_EQ("foo", request.descriptors().descriptor_a());
-  EXPECT_TRUE(request.descriptors().descriptor_b().empty());
-  EXPECT_TRUE(request.descriptors().descriptor_c().empty());
-  EXPECT_TRUE(request.descriptors().descriptor_d().empty());
+  EXPECT_EQ("foo", request.descriptors().subject());
+  EXPECT_TRUE(request.descriptors().style().empty());
+  EXPECT_TRUE(request.descriptors().mood().empty());
+  EXPECT_TRUE(request.descriptors().color().empty());
 
   optimization_guide::proto::WallpaperSearchResponse response;
   std::string serialized_metadata;
@@ -1026,35 +1135,22 @@ TEST_F(WallpaperSearchHandlerTest, GetWallpaperSearchResults_NoImages) {
 
   std::move(done_callback).Run(base::ok(result), ModelQuality());
 
-  std::vector<
-      std::unique_ptr<optimization_guide::proto::WallpaperSearchQuality>>
-      qualities;
-  ON_CALL(mock_optimization_guide_keyed_service(), UploadModelQualityLogs(_))
-      .WillByDefault(Invoke(
-          [&qualities](std::unique_ptr<optimization_guide::ModelQualityLogEntry>
-                           log_entry) {
-            EXPECT_TRUE(log_entry->log_ai_data_request()
-                            ->mutable_wallpaper_search()
-                            ->has_quality_data());
-            qualities.push_back(
-                std::make_unique<
-                    optimization_guide::proto::WallpaperSearchQuality>(
-                    log_entry->log_ai_data_request()
-                        ->mutable_wallpaper_search()
-                        ->quality_data()));
-          }));
-
   EXPECT_EQ(status,
             side_panel::customize_chrome::mojom::WallpaperSearchStatus::kError);
   EXPECT_EQ(static_cast<int>(images.size()), response.images_size());
 
   // Quality logs on destruction.
   handler.reset();
-  EXPECT_EQ(123, qualities[0]->session_id());
-  EXPECT_EQ(0, qualities[0]->index());
-  EXPECT_TRUE(qualities[0]->final_request_in_session());
-  EXPECT_EQ(321, qualities[0]->request_latency_ms());
-  EXPECT_EQ(0, qualities[0]->images_quality_size());
+
+  const auto& logs = uploaded_logs();
+  EXPECT_EQ(1u, logs.size());
+  EXPECT_TRUE(logs[0]->mutable_wallpaper_search()->has_quality());
+  const auto& log = logs[0]->mutable_wallpaper_search()->quality();
+  EXPECT_EQ(123, log.session_id());
+  EXPECT_EQ(0, log.index());
+  EXPECT_TRUE(log.final_request_in_session());
+  EXPECT_EQ(321, log.request_latency_ms());
+  EXPECT_EQ(0, log.images_quality_size());
 }
 
 TEST_F(WallpaperSearchHandlerTest, GetWallpaperSearchResults_RequestThrottled) {
@@ -1083,10 +1179,10 @@ TEST_F(WallpaperSearchHandlerTest, GetWallpaperSearchResults_RequestThrottled) {
   result_descriptors->subject = "foo";
   handler->GetWallpaperSearchResults(std::move(result_descriptors),
                                      callback.Get());
-  EXPECT_EQ("foo", request.descriptors().descriptor_a());
-  EXPECT_TRUE(request.descriptors().descriptor_b().empty());
-  EXPECT_TRUE(request.descriptors().descriptor_c().empty());
-  EXPECT_TRUE(request.descriptors().descriptor_d().empty());
+  EXPECT_EQ("foo", request.descriptors().subject());
+  EXPECT_TRUE(request.descriptors().style().empty());
+  EXPECT_TRUE(request.descriptors().mood().empty());
+  EXPECT_TRUE(request.descriptors().color().empty());
 
   std::vector<side_panel::customize_chrome::mojom::WallpaperSearchResultPtr>
       images;
@@ -1110,31 +1206,18 @@ TEST_F(WallpaperSearchHandlerTest, GetWallpaperSearchResults_RequestThrottled) {
                         kRequestThrottled);
   EXPECT_EQ(images.size(), 0u);
 
-  std::vector<
-      std::unique_ptr<optimization_guide::proto::WallpaperSearchQuality>>
-      qualities;
-  ON_CALL(mock_optimization_guide_keyed_service(), UploadModelQualityLogs(_))
-      .WillByDefault(Invoke(
-          [&qualities](std::unique_ptr<optimization_guide::ModelQualityLogEntry>
-                           log_entry) {
-            EXPECT_TRUE(log_entry->log_ai_data_request()
-                            ->mutable_wallpaper_search()
-                            ->has_quality_data());
-            qualities.push_back(
-                std::make_unique<
-                    optimization_guide::proto::WallpaperSearchQuality>(
-                    log_entry->log_ai_data_request()
-                        ->mutable_wallpaper_search()
-                        ->quality_data()));
-          }));
-
   // Quality logs on destruction.
   handler.reset();
-  EXPECT_EQ(123, qualities[0]->session_id());
-  EXPECT_EQ(0, qualities[0]->index());
-  EXPECT_TRUE(qualities[0]->final_request_in_session());
-  EXPECT_EQ(321, qualities[0]->request_latency_ms());
-  EXPECT_EQ(0, qualities[0]->images_quality_size());
+
+  const auto& logs = uploaded_logs();
+  EXPECT_EQ(1u, logs.size());
+  EXPECT_TRUE(logs[0]->mutable_wallpaper_search()->has_quality());
+  const auto& log = logs[0]->mutable_wallpaper_search()->quality();
+  EXPECT_EQ(123, log.session_id());
+  EXPECT_EQ(0, log.index());
+  EXPECT_TRUE(log.final_request_in_session());
+  EXPECT_EQ(321, log.request_latency_ms());
+  EXPECT_EQ(0, log.images_quality_size());
 }
 
 TEST_F(WallpaperSearchHandlerTest, GetWallpaperSearchResults_SignedOut) {
@@ -1168,12 +1251,9 @@ TEST_F(WallpaperSearchHandlerTest, GetWallpaperSearchResults_SignedOut) {
       side_panel::customize_chrome::mojom::WallpaperSearchStatus::kSignedOut);
   EXPECT_EQ(images.size(), 0u);
 
-  // No quality logs should be created on destruction.
-  EXPECT_CALL(mock_optimization_guide_keyed_service(),
-              UploadModelQualityLogs(_))
-      .Times(0);
-
   handler.reset();
+
+  EXPECT_EQ(0u, uploaded_logs().size());
 }
 
 TEST_F(WallpaperSearchHandlerTest, SetBackgroundToHistoryImage) {
@@ -1299,10 +1379,10 @@ TEST_F(WallpaperSearchHandlerTest, SetBackgroundToWallpaperSearchResult) {
   result_descriptors->subject = "foo";
   handler->GetWallpaperSearchResults(std::move(result_descriptors),
                                      callback.Get());
-  EXPECT_EQ("foo", request.descriptors().descriptor_a());
-  EXPECT_TRUE(request.descriptors().descriptor_b().empty());
-  EXPECT_TRUE(request.descriptors().descriptor_c().empty());
-  EXPECT_TRUE(request.descriptors().descriptor_d().empty());
+  EXPECT_EQ("foo", request.descriptors().subject());
+  EXPECT_TRUE(request.descriptors().style().empty());
+  EXPECT_TRUE(request.descriptors().mood().empty());
+  EXPECT_TRUE(request.descriptors().color().empty());
 
   optimization_guide::proto::WallpaperSearchResponse response;
 
@@ -1393,42 +1473,29 @@ TEST_F(WallpaperSearchHandlerTest, SetBackgroundToWallpaperSearchResult) {
       .WillOnce(
           MoveArgAndReturn(&history_entry_arg, std::make_optional(token)));
 
-  std::vector<
-      std::unique_ptr<optimization_guide::proto::WallpaperSearchQuality>>
-      qualities;
-  ON_CALL(mock_optimization_guide_keyed_service(), UploadModelQualityLogs(_))
-      .WillByDefault(Invoke(
-          [&qualities](std::unique_ptr<optimization_guide::ModelQualityLogEntry>
-                           log_entry) {
-            EXPECT_TRUE(log_entry->log_ai_data_request()
-                            ->mutable_wallpaper_search()
-                            ->has_quality_data());
-            qualities.push_back(
-                std::make_unique<
-                    optimization_guide::proto::WallpaperSearchQuality>(
-                    log_entry->log_ai_data_request()
-                        ->mutable_wallpaper_search()
-                        ->quality_data()));
-          }));
-
   // Advance clock to test complete latency.
   task_environment().AdvanceClock(base::Milliseconds(432));
 
   // Quality logs on destruction.
   handler.reset();
-  EXPECT_EQ(123, qualities[0]->session_id());
-  EXPECT_EQ(0, qualities[0]->index());
-  EXPECT_TRUE(qualities[0]->final_request_in_session());
-  EXPECT_EQ(321, qualities[0]->request_latency_ms());
-  EXPECT_EQ(555, qualities[0]->complete_latency_ms());
-  ASSERT_EQ(2, qualities[0]->images_quality_size());
-  EXPECT_EQ(111, qualities[0]->images_quality(0).image_id());
-  EXPECT_FALSE(qualities[0]->images_quality(0).previewed());
-  EXPECT_FALSE(qualities[0]->images_quality(0).selected());
-  EXPECT_EQ(222, qualities[0]->images_quality(1).image_id());
-  EXPECT_TRUE(qualities[0]->images_quality(1).previewed());
-  EXPECT_TRUE(qualities[0]->images_quality(1).selected());
-  EXPECT_EQ(123, qualities[0]->images_quality(1).preview_latency_ms());
+
+  const auto& logs = uploaded_logs();
+  EXPECT_EQ(1u, logs.size());
+  EXPECT_TRUE(logs[0]->mutable_wallpaper_search()->has_quality());
+  const auto& log = logs[0]->mutable_wallpaper_search()->quality();
+  EXPECT_EQ(123, log.session_id());
+  EXPECT_EQ(0, log.index());
+  EXPECT_TRUE(log.final_request_in_session());
+  EXPECT_EQ(321, log.request_latency_ms());
+  EXPECT_EQ(555, log.complete_latency_ms());
+  ASSERT_EQ(2, log.images_quality_size());
+  EXPECT_EQ(111, log.images_quality(0).image_id());
+  EXPECT_FALSE(log.images_quality(0).previewed());
+  EXPECT_FALSE(log.images_quality(0).selected());
+  EXPECT_EQ(222, log.images_quality(1).image_id());
+  EXPECT_TRUE(log.images_quality(1).previewed());
+  EXPECT_TRUE(log.images_quality(1).selected());
+  EXPECT_EQ(123, log.images_quality(1).preview_latency_ms());
 
   // Set background saves to history and histogram on destruction.
   EXPECT_EQ(history_entry_arg.id, token);
@@ -1527,30 +1594,20 @@ TEST_F(WallpaperSearchHandlerTest, SetUserFeedback) {
   handler->SetUserFeedback(
       side_panel::customize_chrome::mojom::UserFeedback::kThumbsUp);
 
-  std::vector<
-      std::unique_ptr<optimization_guide::proto::WallpaperSearchQuality>>
-      qualities;
-  ON_CALL(mock_optimization_guide_keyed_service(), UploadModelQualityLogs(_))
-      .WillByDefault(Invoke(
-          [&qualities](std::unique_ptr<optimization_guide::ModelQualityLogEntry>
-                           log_entry) {
-            EXPECT_TRUE(log_entry->log_ai_data_request()
-                            ->mutable_wallpaper_search()
-                            ->has_quality_data());
-            qualities.push_back(
-                std::make_unique<
-                    optimization_guide::proto::WallpaperSearchQuality>(
-                    log_entry->log_ai_data_request()
-                        ->mutable_wallpaper_search()
-                        ->quality_data()));
-          }));
-
   // Quality logs on destruction.
   handler.reset();
+
+  const auto& logs = uploaded_logs();
+  EXPECT_EQ(2u, logs.size());
+  EXPECT_TRUE(logs[0]->mutable_wallpaper_search()->has_quality());
+  EXPECT_TRUE(logs[1]->mutable_wallpaper_search()->has_quality());
+  const auto& log1 = logs[0]->mutable_wallpaper_search()->quality();
+  const auto& log2 = logs[1]->mutable_wallpaper_search()->quality();
+
   EXPECT_EQ(optimization_guide::proto::UserFeedback::USER_FEEDBACK_THUMBS_DOWN,
-            qualities[0]->user_feedback());
+            log1.user_feedback());
   EXPECT_EQ(optimization_guide::proto::UserFeedback::USER_FEEDBACK_THUMBS_UP,
-            qualities[1]->user_feedback());
+            log2.user_feedback());
 }
 
 TEST_F(WallpaperSearchHandlerTest, LaunchHatsSurvey) {
@@ -1589,13 +1646,13 @@ TEST_F(WallpaperSearchHandlerTest, GetInspirations_Success) {
             "images": [
                 {
                     "id": "00000000000000000000000000000000",
-                    "description": "Description foo",
+                    "description": "Description foo ignore",
                     "background_image": "foo_1.png",
                     "thumbnail_image": "foo_2.png"
                 },
                 {
                     "id": "10000000000000000000000000000000",
-                    "description": "Description bar",
+                    "description": "Description bar ignore",
                     "background_image": "bar_1.png",
                     "thumbnail_image": "bar_2.png"
                 }
@@ -1606,13 +1663,22 @@ TEST_F(WallpaperSearchHandlerTest, GetInspirations_Success) {
             "images": [
                 {
                     "id": "20000000000000000000000000000000",
-                    "description": "Description baz",
+                    "description": "Description baz ignore",
                     "background_image": "baz_1.png",
                     "thumbnail_image": "baz_2.png"
                 }
             ]
         }]
       )");
+  MockTranslations(
+      /*categories=*/{},
+      /*descriptor_as=*/{{"foobar", "foobar label"}, {"baz", "baz label"}},
+      /*descriptor_bs=*/{},
+      /*descriptor_cs=*/{},
+      /*inspiration_descriptions=*/
+      {{"00000000000000000000000000000000", "Description foo"},
+       {"10000000000000000000000000000000", "Description bar"},
+       {"20000000000000000000000000000000", "Description baz"}});
 
   auto handler = MakeHandler(/*session_id=*/123);
   handler->GetInspirations(callback.Get());
@@ -1620,7 +1686,8 @@ TEST_F(WallpaperSearchHandlerTest, GetInspirations_Success) {
 
   EXPECT_EQ(2u, inspiration_groups.size());
   const auto& inspiration_group_a = inspiration_groups[0];
-  EXPECT_EQ("foobar", inspiration_group_a->descriptors->subject);
+  EXPECT_EQ("foobar", inspiration_group_a->descriptors->subject->key);
+  EXPECT_EQ("foobar label", inspiration_group_a->descriptors->subject->label);
   const auto& inspiration_a = inspiration_group_a->inspirations;
   EXPECT_EQ(2u, inspiration_a.size());
   const auto& foo_inspiration = inspiration_a[0];
@@ -1642,7 +1709,8 @@ TEST_F(WallpaperSearchHandlerTest, GetInspirations_Success) {
       bar_inspiration->id,
       base::Token::FromString("10000000000000000000000000000000").value());
   const auto& inspiration_group_b = inspiration_groups[1];
-  EXPECT_EQ("baz", inspiration_group_b->descriptors->subject);
+  EXPECT_EQ("baz", inspiration_group_b->descriptors->subject->key);
+  EXPECT_EQ("baz label", inspiration_group_b->descriptors->subject->label);
   const auto& inspiration_b = inspiration_group_b->inspirations;
   EXPECT_EQ(1u, inspiration_b.size());
   const auto& baz_inspiration = inspiration_b[0];
@@ -1682,13 +1750,20 @@ TEST_F(WallpaperSearchHandlerTest, GetInspirations_Success_Descriptors) {
             "images": [
                 {
                     "id": "00000000000000000000000000000000",
-                    "description": "test inspiration",
+                    "description": "test inspiration ignore",
                     "background_image": "foo_1.png",
                     "thumbnail_image": "foo_2.png"
                 }
             ]
         }
       ])");
+  MockTranslations(
+      /*categories=*/{},
+      /*descriptor_as=*/{{"foo", "foo label"}},
+      /*descriptor_bs=*/{{"bar", "bar label"}},
+      /*descriptor_cs=*/{{"baz", "baz label"}},
+      /*inspiration_descriptions=*/
+      {{"00000000000000000000000000000000", "test inspiration"}});
 
   auto handler = MakeHandler(/*session_id=*/123);
   handler->GetInspirations(callback.Get());
@@ -1696,9 +1771,12 @@ TEST_F(WallpaperSearchHandlerTest, GetInspirations_Success_Descriptors) {
 
   EXPECT_EQ(1u, inspiration_groups.size());
   const auto& inspiration_descriptors = inspiration_groups[0]->descriptors;
-  EXPECT_EQ("foo", inspiration_descriptors->subject);
-  EXPECT_EQ("bar", inspiration_descriptors->style);
-  EXPECT_EQ("baz", inspiration_descriptors->mood);
+  EXPECT_EQ("foo", inspiration_descriptors->subject->key);
+  EXPECT_EQ("foo label", inspiration_descriptors->subject->label);
+  EXPECT_EQ("bar", inspiration_descriptors->style->key);
+  EXPECT_EQ("bar label", inspiration_descriptors->style->label);
+  EXPECT_EQ("baz", inspiration_descriptors->mood->key);
+  EXPECT_EQ("baz label", inspiration_descriptors->mood->label);
   EXPECT_EQ(side_panel::customize_chrome::mojom::DescriptorDValue::NewName(
                 side_panel::customize_chrome::mojom::DescriptorDName::kYellow),
             inspiration_descriptors->color);
@@ -1719,7 +1797,7 @@ TEST_F(WallpaperSearchHandlerTest,
             inspiration_groups = std::move(inspiration_groups_ptr_arg.value());
           }));
   // First group has one valid inspiration. Second group has no "descriptor_a".
-  // Third group has no images.
+  // Third group has no images. Fourth group has no translation.
   SetUpInspirationsResponseWithData(
       R"()]}'[
         {
@@ -1727,12 +1805,12 @@ TEST_F(WallpaperSearchHandlerTest,
             "images": [
             {
                 "id": "00000000000000000000000000000000",
-                "description": "test inspiration 1",
+                "description": "test inspiration 1 ignore",
                 "background_image": "foo_1.png",
                 "thumbnail_image": "foo_2.png"
             },
             {
-                "description": "test inspiration 2",
+                "description": "test inspiration 2 ignore",
                 "background_image": "bar_1.png",
                 "thumbnail_image": "bar_2.png"
             },
@@ -1743,12 +1821,12 @@ TEST_F(WallpaperSearchHandlerTest,
             },
             {
                 "id": "30000000000000000000000000000000",
-                "description": "test inspiration 4",
+                "description": "test inspiration 4 ignore",
                 "thumbnail_image": "qux_2.png"
             },
             {
                 "id": "40000000000000000000000000000000",
-                "description": "test inspiration 5",
+                "description": "test inspiration 5 ignore",
                 "background_image": "qux_1.png"
             }
             ]
@@ -1763,7 +1841,7 @@ TEST_F(WallpaperSearchHandlerTest,
             },
             "images": [
             {
-                "description": "test inspiration 6",
+                "description": "test inspiration 6 ignore",
                 "background_image": "foo_1.png",
                 "thumbnail_image": "foo_2.png"
             }
@@ -1771,8 +1849,32 @@ TEST_F(WallpaperSearchHandlerTest,
         },
         {
             "descriptor_a": "qux"
+        },
+        {
+            "id": "11000000000000000000000000000000",
+            "descriptor_a": "foobar",
+            "descriptor_b": "bar",
+            "descriptor_c": "baz",
+            "descriptor_d": {
+            "hex": "#f9cc18",
+            "name": "Yellow"
+            },
+            "images": [
+            {
+                "description": "test inspiration 7 ignore",
+                "background_image": "foo_1.png",
+                "thumbnail_image": "foo_2.png"
+            }
+            ]
         }
     ])");
+  MockTranslations(
+      /*categories=*/{},
+      /*descriptor_as=*/{{"foo", "foo label"}, {"qux", "qux label"}},
+      /*descriptor_bs=*/{{"bar", "bar label"}},
+      /*descriptor_cs=*/{{"baz", "baz label"}},
+      /*inspiration_descriptions=*/
+      {{"00000000000000000000000000000000", "test inspiration 1"}});
 
   auto handler = MakeHandler(/*session_id=*/123);
   handler->GetInspirations(callback.Get());
@@ -1781,7 +1883,8 @@ TEST_F(WallpaperSearchHandlerTest,
   // There should only be one inspiration.
   EXPECT_EQ(1u, inspiration_groups.size());
   const auto& inspiration_group_a = inspiration_groups[0];
-  EXPECT_EQ("foo", inspiration_group_a->descriptors->subject);
+  EXPECT_EQ("foo", inspiration_group_a->descriptors->subject->key);
+  EXPECT_EQ("foo label", inspiration_group_a->descriptors->subject->label);
   const auto& inspiration_a = inspiration_group_a->inspirations;
   EXPECT_EQ(1u, inspiration_a.size());
   EXPECT_EQ(inspiration_a[0]->description, "test inspiration 1");

@@ -58,7 +58,13 @@ namespace ash {
 // DeskButton:
 DeskButton::DeskButton()
     : views::Button(base::BindRepeating(&DeskButton::OnButtonPressed,
-                                        base::Unretained(this))) {}
+                                        base::Unretained(this))) {
+  // Avoid failing accessibility checks if we don't have a name.
+  if (GetViewAccessibility().GetCachedName().empty()) {
+    GetViewAccessibility().SetName(
+        "", ax::mojom::NameFrom::kAttributeExplicitlyEmpty);
+  }
+}
 
 DeskButton::~DeskButton() {}
 
@@ -153,11 +159,7 @@ void DeskButton::Layout(PassKey) {
 }
 
 void DeskButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  // Avoid failing accessibility checks if we don't have a name.
   Button::GetAccessibleNodeData(node_data);
-  if (GetAccessibleName().empty()) {
-    node_data->SetNameExplicitlyEmpty();
-  }
 
   ShelfWidget* shelf_widget =
       Shelf::ForWindow(GetWidget()->GetNativeWindow())->shelf_widget();
@@ -166,7 +168,7 @@ void DeskButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 void DeskButton::OnMouseEvent(ui::MouseEvent* event) {
-  if (event->type() == ui::ET_MOUSE_PRESSED &&
+  if (event->type() == ui::EventType::kMousePressed &&
       event->IsOnlyRightMouseButton()) {
     desk_button_container_->MaybeShowContextMenu(this, event);
     return;
@@ -176,8 +178,8 @@ void DeskButton::OnMouseEvent(ui::MouseEvent* event) {
 }
 
 void DeskButton::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() == ui::ET_GESTURE_LONG_PRESS ||
-      event->type() == ui::ET_GESTURE_LONG_TAP) {
+  if (event->type() == ui::EventType::kGestureLongPress ||
+      event->type() == ui::EventType::kGestureLongTap) {
     desk_button_container_->MaybeShowContextMenu(this, event);
     return;
   }
@@ -308,13 +310,13 @@ void DeskButton::UpdateLocaleSpecificSettings() {
   DesksController* desk_controller = DesksController::Get();
   const Desk* active_desk = desk_controller->active_desk();
   if (IsShowingAvatar()) {
-    SetAccessibleName(l10n_util::GetStringFUTF16(
+    GetViewAccessibility().SetName(l10n_util::GetStringFUTF16(
         IDS_SHELF_DESK_BUTTON_TITLE_WITH_PROFILE_AVATAR, active_desk->name(),
         profile_.name, profile_.email,
         base::NumberToString16(desk_controller->GetDeskIndex(active_desk) + 1),
         base::NumberToString16(desk_controller->GetNumberOfDesks())));
   } else {
-    SetAccessibleName(l10n_util::GetStringFUTF16(
+    GetViewAccessibility().SetName(l10n_util::GetStringFUTF16(
         IDS_SHELF_DESK_BUTTON_TITLE_NO_PROFILE_AVATAR, active_desk->name(),
         base::NumberToString16(desk_controller->GetDeskIndex(active_desk) + 1),
         base::NumberToString16(desk_controller->GetNumberOfDesks())));

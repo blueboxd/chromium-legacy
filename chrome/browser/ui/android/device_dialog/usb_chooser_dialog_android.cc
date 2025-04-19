@@ -11,13 +11,13 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/functional/bind.h"
+#include "base/not_fatal_until.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/android/chrome_jni_headers/UsbChooserDialog_jni.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/common/url_constants.h"
 #include "components/permissions/permission_util.h"
+#include "components/security_state/content/security_state_tab_helper.h"
 #include "components/security_state/core/security_state.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/render_frame_host.h"
@@ -25,6 +25,9 @@
 #include "device/vr/buildflags/buildflags.h"
 #include "ui/android/window_android.h"
 #include "url/gurl.h"
+
+// Must come after all headers that specialize FromJniType() / ToJniType().
+#include "chrome/android/chrome_jni_headers/UsbChooserDialog_jni.h"
 
 namespace {
 
@@ -171,7 +174,7 @@ void UsbChooserDialogAndroid::OnItemSelected(
   std::string item_id =
       base::android::ConvertJavaStringToUTF8(env, item_id_jstring);
   auto it = base::ranges::find(item_id_map_, item_id);
-  DCHECK(it != item_id_map_.end());
+  CHECK(it != item_id_map_.end(), base::NotFatalUntil::M130);
   controller_->Select(
       {static_cast<size_t>(std::distance(item_id_map_.begin(), it))});
   std::move(on_close_).Run();

@@ -15,6 +15,8 @@ static_library("android") {
   deps = [
     ":jni_headers",
     "//base:base",
+    "//chrome/android:chrome_jni_headers",
+    "//chrome/browser/autofill",
     "//content/public/browser:browser",
     "//ui/android:android",
   ]
@@ -29,6 +31,7 @@ source_set("unit_tests") {
 
   deps = [
     ":android",
+    "//base",
     "//chrome/test:test_support",
     "//content/public/browser:browser",
     "//testing/gtest",
@@ -42,10 +45,15 @@ group("jni_headers") {
 }
 
 android_library("public_java") {
-  sources = [ "java/src/org/chromium/chrome/browser/facilitated_payments/FacilitatedPaymentsPaymentMethodsComponent.java" ]
+  sources = [
+    "java/src/org/chromium/chrome/browser/facilitated_payments/FacilitatedPaymentsPaymentMethodsComponent.java",
+    "java/src/org/chromium/chrome/browser/facilitated_payments/FacilitatedPaymentsSequenceView.java",
+  ]
 
   deps = [
+    "//chrome/browser/profiles/android:java",
     "//components/autofill/android:payments_autofill_java",
     "//components/browser_ui/bottomsheet/android:java",
+    "//ui/android:ui_no_recycler_view_java",
   ]
 }

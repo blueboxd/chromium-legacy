@@ -47,9 +47,11 @@
 #import "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #import "components/sync_preferences/testing_pref_service_syncable.h"
 #import "ios/chrome/browser/autofill/model/form_suggestion_controller.h"
+#import "ios/chrome/browser/autofill/ui_bundled/form_input_accessory/form_input_accessory_mediator.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
-#import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_mediator.h"
+#import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state_manager.h"
 #import "ios/chrome/browser/web/model/chrome_web_client.h"
+#import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #import "ios/web/public/js_messaging/web_frame.h"
 #import "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/navigation/navigation_item.h"
@@ -234,7 +236,8 @@ struct TestPasswordFormData {
 class PasswordControllerTest : public PlatformTest {
  public:
   PasswordControllerTest() : web_client_(std::make_unique<ChromeWebClient>()) {
-    browser_state_ = TestChromeBrowserState::Builder().Build();
+    browser_state_ = browser_state_manager_.AddBrowserStateWithBuilder(
+        TestChromeBrowserState::Builder());
 
     web::WebState::CreateParams params(browser_state_.get());
     web_state_ = web::WebState::Create(params);
@@ -483,7 +486,9 @@ class PasswordControllerTest : public PlatformTest {
 
   web::ScopedTestingWebClient web_client_;
   web::WebTaskEnvironment task_environment_;
-  std::unique_ptr<TestChromeBrowserState> browser_state_;
+  IOSChromeScopedTestingLocalState scoped_testing_local_state_;
+  TestChromeBrowserStateManager browser_state_manager_;
+  raw_ptr<ChromeBrowserState> browser_state_;
   // `autofill_client_` mocks KeyedServices, which need to outlive the
   // `BrowserAutofillManager` owned by frame (`web_state`).
   autofill::TestAutofillClient autofill_client_;
@@ -608,7 +613,7 @@ void PasswordControllerTest::FillFormAndValidate(TestPasswordFormData test_data,
       suggestionWithValue:suggestion_text
        displayDescription:nil
                      icon:nil
-              popupItemId:autofill::SuggestionType::kAutocompleteEntry
+                     type:autofill::SuggestionType::kAutocompleteEntry
         backendIdentifier:nil
            requiresReauth:NO];
 
@@ -720,7 +725,7 @@ TEST_F(PasswordControllerTest, FindPasswordFormsInView) {
         }));
     if (data.expected_form_found) {
       ASSERT_EQ(1U, forms.size());
-      EXPECT_EQ(data.expected_number_of_fields, forms[0].fields.size());
+      EXPECT_EQ(data.expected_number_of_fields, forms[0].fields().size());
       EXPECT_EQ(data.expected_form_name, base::UTF16ToUTF8(forms[0].name()));
     } else {
       ASSERT_TRUE(forms.empty());
@@ -1250,9 +1255,6 @@ class PasswordControllerTestSimple : public PlatformTest {
         {autofill::FormUtilJavaScriptFeature::GetInstance(),
          password_manager::PasswordManagerJavaScriptFeature::GetInstance()});
 
-    autofill::AutofillDriverIOSFactory::CreateForWebState(
-        &web_state_, &autofill_client_, /*bridge=*/nil, /*locale=*/"en");
-
     web::ContentWorld content_world =
         password_manager::PasswordManagerJavaScriptFeature::GetInstance()
             ->GetSupportedContentWorld();
@@ -1261,6 +1263,9 @@ class PasswordControllerTestSimple : public PlatformTest {
     web_frames_manager_ = web_frames_manager.get();
     web_state_.SetWebFramesManager(content_world,
                                    std::move(web_frames_manager));
+
+    autofill::AutofillDriverIOSFactory::CreateForWebState(
+        &web_state_, &autofill_client_, /*bridge=*/nil, /*locale=*/"en");
 
     passwordController_ = CreatePasswordController(&pref_service_, &web_state_,
                                                    store_.get(), &weak_client_);

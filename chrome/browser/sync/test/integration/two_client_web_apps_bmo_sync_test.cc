@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
-#include "chrome/browser/web_applications/os_integration/web_app_shortcut_manager.h"
 #include "chrome/browser/web_applications/test/fake_os_integration_manager.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
@@ -52,7 +51,8 @@ using testing::Not;
 std::unique_ptr<KeyedService> CreateFakeWebAppProvider(Profile* profile) {
   auto provider = std::make_unique<FakeWebAppProvider>(profile);
   provider->SetOsIntegrationManager(std::make_unique<FakeOsIntegrationManager>(
-      profile, nullptr, nullptr, nullptr));
+      profile, /*file_handler_manager=*/nullptr,
+      /*protocol_handling_manager=*/nullptr));
   provider->StartWithSubsystems();
   DCHECK(provider);
   return provider;
@@ -137,8 +137,7 @@ class TwoClientWebAppsBMOSyncTest : public WebAppsSyncTestBase {
 
   webapps::AppId InstallApp(std::unique_ptr<WebAppInstallInfo> info,
                             Profile* profile) {
-    DCHECK(info->start_url.is_valid());
-    GURL start_url = info->start_url;
+    GURL start_url = info->start_url();
     std::u16string title = info->title;
 
     base::RunLoop run_loop;

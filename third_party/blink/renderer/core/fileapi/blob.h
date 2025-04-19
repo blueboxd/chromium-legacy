@@ -66,8 +66,7 @@ class CORE_EXPORT Blob : public ScriptWrappable,
                       const HeapVector<Member<V8BlobPart>>& blob_parts,
                       const BlobPropertyBag* options);
 
-  static Blob* Create(const unsigned char* data,
-                      size_t size,
+  static Blob* Create(base::span<const uint8_t> data,
                       const String& content_type);
 
   explicit Blob(scoped_refptr<BlobDataHandle>);
@@ -100,9 +99,15 @@ class CORE_EXPORT Blob : public ScriptWrappable,
   ScriptPromise<DOMArrayBuffer> arrayBuffer(ScriptState* script_state);
   String type() const { return blob_data_handle_->GetType(); }
   String Uuid() const { return blob_data_handle_->Uuid(); }
+  // Returns the BlobDataHandle this `Blob` was created with. Note that the size
+  // of the returned BlobDataHandle might be `BlobUtils::kUnknownSize`. If it is
+  // important for the returned BlobDataHandle to contain a known size, use
+  // `GetBlobDataHandleWithKnownSize()` instead.
   scoped_refptr<BlobDataHandle> GetBlobDataHandle() const {
     return blob_data_handle_;
   }
+  scoped_refptr<BlobDataHandle> GetBlobDataHandleWithKnownSize() const;
+
   // True for all File instances, including the user-built ones.
   virtual bool IsFile() const { return false; }
   // Only true for File instances that are backed by platform files.

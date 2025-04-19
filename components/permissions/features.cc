@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/permissions/features.h"
+
 #include "base/feature_list.h"
 #include "base/time/time.h"
 
@@ -53,8 +54,8 @@ BASE_FEATURE(kFailFastQuietChip,
 // Enables different positioning of the permission dialog, so that it's placed
 // near the permission element, if possible.
 // This feature should be enabled with blink::features::kPermissionElement.
-BASE_FEATURE(kPermissionElementDialogPositioning,
-             "PermissionElementDialogPositioning",
+BASE_FEATURE(kPermissionElementPromptPositioning,
+             "PermissionElementPromptPositioning",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // When enabled, use the value of the `service_url` FeatureParam as the url
@@ -95,6 +96,13 @@ BASE_FEATURE(kPermissionsPromptSurvey,
              "PermissionsPromptSurvey",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// When enabled, use the value of the `allowlist_urls` FeatureParam as the
+// list of origins which would be allowed to access browser permission and
+// device attribute API for a web kiosk session.
+BASE_FEATURE(kAllowMultipleOriginsForWebKioskPermissions,
+             "AllowMultipleOriginsForWebKioskPermissions",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 #if BUILDFLAG(IS_ANDROID)
 
 // When enabled, blocks notifications permission prompt when Chrome doesn't
@@ -111,7 +119,7 @@ BASE_FEATURE(kPermissionDedicatedCpssSettingAndroid,
 // an expiration date set.
 BASE_FEATURE(kRecordPermissionExpirationTimestamps,
              "RecordPermissionExpirationTimestamps",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 #else
 
@@ -161,6 +169,19 @@ const base::FeatureParam<base::TimeDelta> kOneTimePermissionTimeout{
 const base::FeatureParam<base::TimeDelta> kOneTimePermissionLongTimeout{
     &features::kOneTimePermission, "one_time_permission_long_timeout",
     base::Hours(16)};
+
+const base::FeatureParam<PermissionElementPromptPosition>::Option
+    kPromptPositioningOptions[] = {
+        {PermissionElementPromptPosition::kWindowMiddle, "window_middle"},
+        {PermissionElementPromptPosition::kNearElement, "near_element"},
+        {PermissionElementPromptPosition::kLegacyPrompt, "legacy_prompt"}};
+
+const base::FeatureParam<PermissionElementPromptPosition>
+    kPermissionElementPromptPositioningParam = {
+        &features::kPermissionElementPromptPositioning,
+        "PermissionElementPromptPositioningParam",
+        PermissionElementPromptPosition::kWindowMiddle,
+        &kPromptPositioningOptions};
 
 const base::FeatureParam<std::string> kPermissionPredictionServiceUrlOverride{
     &permissions::features::kPermissionPredictionServiceUseUrlOverride,
@@ -312,6 +333,35 @@ const base::FeatureParam<std::string>
     kPermissionPromptSurveyOneTimePromptsDecidedBucket{
         &permissions::features::kPermissionsPromptSurvey,
         "one_time_prompts_decided_bucket", ""};
+
+// This parameter specifies which prompt position should have been used for a
+// HaTS survery to be allowed to trigger. It only applies to permission element
+// prompts (PEPC). Valid values are the values in the
+// |kPromptPositioningOptions| array. Multiple values can be configured by
+// providing a comma separated list and an empty value means no filtering (all
+// allowed).
+const base::FeatureParam<std::string>
+    kPermissionPromptSurveyPepcPromptPositionFilter{
+        &permissions::features::kPermissionsPromptSurvey,
+        "pepc_prompt_position_filter", ""};
+
+// This parameter specifies what the initial permission status was before a
+// permission prompt was displayed. It's only relevant to permission element
+// prompts (PEPC), since other prompts will always report "ask". Valid values
+// are the values returned by |content_settings::ContentSettingToString| util
+// function. Multiple values can be configured by providing a comma separated
+// list and an empty value means no filtering (all allowed).
+const base::FeatureParam<std::string>
+    kPermissionPromptSurveyInitialPermissionStatusFilter{
+        &permissions::features::kPermissionsPromptSurvey,
+        "initial_permission_status_filter", ""};
+
+// Comma separated url patterns which should be allowed for accessing web kiosk
+// browser permissions and device attributes API. If left empty no URL patterns
+// will be allowed.
+const base::FeatureParam<std::string> kWebKioskBrowserPermissionsAllowlist{
+    &permissions::features::kAllowMultipleOriginsForWebKioskPermissions,
+    "allowlist_urls", ""};
 
 }  // namespace feature_params
 }  // namespace permissions

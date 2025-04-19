@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "device/fido/virtual_ctap2_device.h"
 
 #include <array>
@@ -14,6 +19,7 @@
 #include "base/containers/span.h"
 #include "base/functional/bind.h"
 #include "base/logging.h"
+#include "base/not_fatal_until.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
@@ -1398,8 +1404,14 @@ std::optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
 
     // Simulate some security keys that return an error if user.displayName is
     // empty.
-    if (request.user.display_name && request.user.display_name->empty()) {
+    if (request.user.display_name && request.user.display_name->empty() &&
+        config_.reject_empty_display_name) {
       return CtapDeviceResponseCode::kCtap1ErrInvalidLength;
+    }
+
+    // Simulate iPhones returning an error if user.displayName is missing.
+    if (!request.user.display_name && config_.reject_missing_display_name) {
+      return CtapDeviceResponseCode::kCtap2ErrInvalidCBOR;
     }
 
     registration.is_resident = true;
@@ -2700,7 +2712,7 @@ CtapDeviceResponseCode VirtualCtap2Device::OnLargeBlobs(
     *response =
         cbor::Writer::Write(cbor::Value(std::move(response_map))).value();
   } else {
-    DCHECK(set_it != request_map.end());
+    CHECK(set_it != request_map.end(), base::NotFatalUntil::M130);
     const std::vector<uint8_t>& set = set_it->second.GetBytestring();
     if (set.size() > max_fragment_length) {
       return CtapDeviceResponseCode::kCtap1ErrInvalidLength;

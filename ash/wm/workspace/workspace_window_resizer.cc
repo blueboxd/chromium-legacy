@@ -21,8 +21,6 @@
 #include "ash/wm/float/tablet_mode_float_window_resizer.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/pip/pip_window_resizer.h"
-#include "ash/wm/snap_group/snap_group.h"
-#include "ash/wm/snap_group/snap_group_controller.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tile_group/window_splitter.h"
 #include "ash/wm/toplevel_window_event_handler.h"
@@ -486,21 +484,6 @@ bool IsTransitionFromTopToMaximize(WorkspaceWindowResizer::SnapType from_type,
                     : from_type == WorkspaceWindowResizer::SnapType::kSecondary;
 }
 
-// Returns the target snap ratio to be used by the snap phantom window.
-float GetTargetSnapRatio(const aura::Window* root_window,
-                         SnapViewType snap_type) {
-  if (IsSnapGroupEnabledInClamshellMode()) {
-    if (auto* snap_group =
-            SnapGroupController::Get()->GetTopmostVisibleSnapGroup(
-                root_window)) {
-      const WindowState* window_state =
-          WindowState::Get(snap_group->GetWindowOfSnapViewType(snap_type));
-      return window_state->snap_ratio().value_or(chromeos::kDefaultSnapRatio);
-    }
-  }
-  return chromeos::kDefaultSnapRatio;
-}
-
 }  // namespace
 
 std::unique_ptr<WindowResizer> CreateWindowResizer(
@@ -744,13 +727,19 @@ void WorkspaceWindowResizer::Drag(const gfx::PointF& location_in_parent,
   if (!attached_windows_.empty()) {
     LayoutAttachedWindows(&bounds);
   }
-  if (bounds != GetTarget()->bounds()) {
+  if (aura::Window* window = GetTarget(); bounds != window->bounds()) {
     // SetBounds needs to be called to update the layout which affects where the
     // phantom window is drawn. Keep track if the window was destroyed during
     // the drag and quit early if so.
     base::WeakPtr<WorkspaceWindowResizer> resizer(
         weak_ptr_factory_.GetWeakPtr());
+    // If a window is snapped, then starts drag to unsnap, at this point its
+    // state type hasn't been updated yet. Suppress from force updating the snap
+    // ratio which would be using the restore or normal bounds.
+    auto* window_state = WindowState::Get(window);
+    window_state->set_can_update_snap_ratio(false);
     SetBoundsDuringResize(bounds);
+    window_state->set_can_update_snap_ratio(true);
     if (!resizer) {
       return;
     }
@@ -881,12 +870,16 @@ void WorkspaceWindowResizer::CompleteDrag() {
 
     // TODO(oshima): Add event source type to WMEvent and move
     // metrics recording inside WindowState::OnWMEvent.
+    // Use the target auto-snap ratio.
     WMEventType type;
+    aura::Window* window = window_state()->window();
     switch (snap_type_) {
       case SnapType::kPrimary: {
         base::RecordAction(base::UserMetricsAction("WindowDrag_MaximizeLeft"));
         const WindowSnapWMEvent snap_primary_event(
             WM_EVENT_SNAP_PRIMARY,
+            GetAutoSnapRatio(window, window->GetRootWindow(),
+                             SnapViewType::kPrimary),
             WindowSnapActionSource::kDragWindowToEdgeToSnap);
         window_state()->OnWMEvent(&snap_primary_event);
         return;
@@ -895,6 +888,8 @@ void WorkspaceWindowResizer::CompleteDrag() {
         base::RecordAction(base::UserMetricsAction("WindowDrag_MaximizeRight"));
         const WindowSnapWMEvent snap_secondary_event(
             WM_EVENT_SNAP_SECONDARY,
+            GetAutoSnapRatio(window, window->GetRootWindow(),
+                             SnapViewType::kSecondary),
             WindowSnapActionSource::kDragWindowToEdgeToSnap);
         window_state()->OnWMEvent(&snap_secondary_event);
         return;
@@ -907,7 +902,6 @@ void WorkspaceWindowResizer::CompleteDrag() {
         // window is still maximized, telling window state to maximize will be a
         // no-op, so reset the bounds manually here.
         if (window_state()->IsMaximized()) {
-          aura::Window* window = window_state()->window();
           CrossFadeAnimation(
               window, screen_util::GetMaximizedWindowBoundsInParent(window),
               /*maximize=*/true);
@@ -950,8 +944,8 @@ void WorkspaceWindowResizer::CompleteDrag() {
     return;
   }
 
-  // Maximized to normal. State doesn't change during a drag so restore the
-  // window here.
+  // Maximized to normal. State doesn't change during a drag so set the
+  // window to normal state here.
   if (window_state()->IsMaximized()) {
     DCHECK_EQ(HTCAPTION, details().window_component);
     // Reaching here the only running animation should be the drag to
@@ -965,7 +959,11 @@ void WorkspaceWindowResizer::CompleteDrag() {
     // animation will use the current bounds as the target bounds, so we can
     // disable the animation here.
     wm::ScopedAnimationDisabler disabler(window_state()->window());
-    window_state()->Restore();
+
+    // Set the maximized window to normal state since it's being resized/dragged
+    // by the user now.
+    const WMEvent event(WM_EVENT_NORMAL);
+    window_state()->OnWMEvent(&event);
     return;
   }
 
@@ -1025,12 +1023,12 @@ void WorkspaceWindowResizer::RevertDrag() {
 }
 
 void WorkspaceWindowResizer::FlingOrSwipe(ui::GestureEvent* event) {
-  if (event->type() != ui::ET_SCROLL_FLING_START &&
-      event->type() != ui::ET_GESTURE_SWIPE) {
+  if (event->type() != ui::EventType::kScrollFlingStart &&
+      event->type() != ui::EventType::kGestureSwipe) {
     return;
   }
 
-  if (event->type() == ui::ET_SCROLL_FLING_START) {
+  if (event->type() == ui::EventType::kScrollFlingStart) {
     CompleteDrag();
 
     if (details().bounds_change != WindowResizer::kBoundsChange_Repositions ||
@@ -1053,7 +1051,7 @@ void WorkspaceWindowResizer::FlingOrSwipe(ui::GestureEvent* event) {
                                     WindowStateType::kPrimarySnapped);
     }
   } else {
-    DCHECK_EQ(event->type(), ui::ET_GESTURE_SWIPE);
+    DCHECK_EQ(event->type(), ui::EventType::kGestureSwipe);
     DCHECK_GT(event->details().touch_points(), 0);
     if (event->details().touch_points() == 1) {
       return;
@@ -1588,18 +1586,19 @@ void WorkspaceWindowResizer::UpdateSnapPhantomWindow(
   gfx::Rect phantom_bounds;
   // Note that `target_root` is of the target display, not the currently dragged
   // window of `GetTarget()`.
-  const aura::Window* target_root =
+  aura::Window* window = GetTarget();
+  aura::Window* target_root =
       Shell::Get()->GetRootWindowForDisplayId(display.id());
   switch (snap_type_) {
     case SnapType::kPrimary:
       phantom_bounds = GetSnappedWindowBounds(
-          display.work_area(), display, GetTarget(), SnapViewType::kPrimary,
-          GetTargetSnapRatio(target_root, SnapViewType::kPrimary));
+          display.work_area(), display, window, SnapViewType::kPrimary,
+          GetAutoSnapRatio(window, target_root, SnapViewType::kPrimary));
       break;
     case SnapType::kSecondary:
       phantom_bounds = GetSnappedWindowBounds(
-          display.work_area(), display, GetTarget(), SnapViewType::kSecondary,
-          GetTargetSnapRatio(target_root, SnapViewType::kSecondary));
+          display.work_area(), display, window, SnapViewType::kSecondary,
+          GetAutoSnapRatio(window, target_root, SnapViewType::kSecondary));
       break;
     case SnapType::kMaximize:
       phantom_bounds = display.work_area();

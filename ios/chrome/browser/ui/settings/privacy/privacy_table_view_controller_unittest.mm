@@ -13,6 +13,8 @@
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/scoped_feature_list.h"
 #import "components/content_settings/core/common/features.h"
+#import "components/feature_engagement/public/event_constants.h"
+#import "components/feature_engagement/test/mock_tracker.h"
 #import "components/handoff/pref_names_ios.h"
 #import "components/policy/core/common/policy_pref_names.h"
 #import "components/prefs/pref_service.h"
@@ -24,6 +26,7 @@
 #import "components/sync_preferences/pref_service_mock_factory.h"
 #import "components/sync_preferences/pref_service_syncable.h"
 #import "components/sync_preferences/testing_pref_service_syncable.h"
+#import "ios/chrome/browser/feature_engagement/model/tracker_factory.h"
 #import "ios/chrome/browser/policy/model/policy_util.h"
 #import "ios/chrome/browser/shared/model/browser/test/test_browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
@@ -41,6 +44,7 @@
 #import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #import "ios/components/security_interstitials/https_only_mode/feature.h"
 #import "ios/web/public/test/web_task_environment.h"
+#import "testing/gmock/include/gmock/gmock.h"
 #import "testing/gtest/include/gtest/gtest.h"
 #import "ui/base/l10n/l10n_util.h"
 
@@ -55,6 +59,11 @@ BOOL DeviceSupportsAuthentication() {
   LAContext* context = [[LAContext alloc] init];
   return [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthentication
                               error:nil];
+}
+
+std::unique_ptr<KeyedService> BuildFeatureEngagementMockTracker(
+    web::BrowserState* browser_state) {
+  return std::make_unique<feature_engagement::test::MockTracker>();
 }
 
 struct PrivacyTableViewControllerTestConfig {
@@ -75,7 +84,10 @@ class PrivacyTableViewControllerTest
     test_cbs_builder.AddTestingFactory(
         SyncServiceFactory::GetInstance(),
         base::BindRepeating(&CreateMockSyncService));
-    chrome_browser_state_ = test_cbs_builder.Build();
+    test_cbs_builder.AddTestingFactory(
+        feature_engagement::TrackerFactory::GetInstance(),
+        base::BindRepeating(&BuildFeatureEngagementMockTracker));
+    chrome_browser_state_ = std::move(test_cbs_builder).Build();
 
     browser_ = std::make_unique<TestBrowser>(chrome_browser_state_.get());
 
@@ -133,7 +145,7 @@ class PrivacyTableViewControllerTest
   }
 
   web::WebTaskEnvironment task_environment_;
-  IOSChromeScopedTestingLocalState local_state_;
+  IOSChromeScopedTestingLocalState scoped_testing_local_state_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   std::unique_ptr<Browser> browser_;
   NSString* initialValueForSpdyProxyEnabled_;
@@ -235,22 +247,13 @@ TEST_P(PrivacyTableViewControllerTest, TestModel) {
       l10n_util::GetNSString(IDS_IOS_SETTING_OFF), currentSection, 0);
 
   // Testing section index and text of the privacy footer.
-  if (base::FeatureList::IsEnabled(kLinkAccountSettingsToPrivacyFooter)) {
-    CheckSectionFooter(
-        l10n_util::GetNSString(IDS_IOS_PRIVACY_SIGNED_OUT_FOOTER),
-        /* section= */ expectedNumberOfSections - 1);
-  } else {
-    CheckSectionFooter(
-        l10n_util::GetNSString(IDS_IOS_PRIVACY_GOOGLE_SERVICES_FOOTER),
-        /* section= */ expectedNumberOfSections - 1);
-  }
+  CheckSectionFooter(l10n_util::GetNSString(IDS_IOS_PRIVACY_SIGNED_OUT_FOOTER),
+                     /* section= */ expectedNumberOfSections - 1);
 }
 
 // Tests PrivacyTableViewController sets the correct privacy footer for a
 // non-syncing user.
 TEST_P(PrivacyTableViewControllerTest, TestModelFooterWithSyncDisabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(kLinkAccountSettingsToPrivacyFooter);
 
   ON_CALL(*mock_sync_service()->GetMockUserSettings(),
           IsInitialSyncFeatureSetupComplete())
@@ -270,9 +273,8 @@ TEST_P(PrivacyTableViewControllerTest, TestModelFooterWithSyncDisabled) {
   EXPECT_EQ(expectedNumberOfSections, NumberOfSections());
 
   // Testing section index and text of the privacy footer.
-  CheckSectionFooter(
-      l10n_util::GetNSString(IDS_IOS_PRIVACY_GOOGLE_SERVICES_FOOTER),
-      /* section= */ expectedNumberOfSections - 1);
+  CheckSectionFooter(l10n_util::GetNSString(IDS_IOS_PRIVACY_SIGNED_OUT_FOOTER),
+                     /* section= */ expectedNumberOfSections - 1);
 }
 
 // Tests PrivacyTableViewController sets the correct privacy footer for a
@@ -300,6 +302,31 @@ TEST_P(PrivacyTableViewControllerTest, TestModelFooterWithSyncEnabled) {
   CheckSectionFooter(
       l10n_util::GetNSString(IDS_IOS_PRIVACY_SYNC_AND_GOOGLE_SERVICES_FOOTER),
       /* section= */ expectedNumberOfSections - 1);
+}
+
+// Tests that the Enhanced Safe Browsing Inline Promo is triggered when a
+// Privacy & Security Setting is changed.
+TEST_P(PrivacyTableViewControllerTest,
+       TestInlinePromoTriggerIsMetWhenModifyingPrivacyAndSecuritySettings) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      feature_engagement::kIPHiOSInlineEnhancedSafeBrowsingPromoFeature);
+  PrefService* prefService = chrome_browser_state_->GetPrefs();
+  feature_engagement::test::MockTracker* tracker =
+      static_cast<feature_engagement::test::MockTracker*>(
+          feature_engagement::TrackerFactory::GetForBrowserState(
+              chrome_browser_state_.get()));
+
+  CreateController();
+  CheckController();
+  EXPECT_CALL(
+      *tracker,
+      NotifyEvent(
+          feature_engagement::events::kEnhancedSafeBrowsingPromoCriterionMet))
+      .Times(2);
+
+  prefService->Set(prefs::kIosHandoffToOtherDevices, base::Value(true));
+  prefService->Set(prefs::kBrowserLockdownModeEnabled, base::Value(true));
 }
 
 INSTANTIATE_TEST_SUITE_P(

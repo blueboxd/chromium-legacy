@@ -6,14 +6,15 @@
 
 #include "ash/accelerators/accelerator_prefs.h"
 #include "ash/accelerators/ash_accelerator_configuration.h"
+#include "ash/accelerators/system_shortcut_behavior_policy.h"
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/magnifier/docked_magnifier_controller.h"
 #include "ash/ambient/ambient_controller.h"
 #include "ash/ambient/managed/screensaver_images_policy_handler.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/views/app_list_nudge_controller.h"
-#include "ash/app_list/views/search_notifier_controller.h"
 #include "ash/assistant/assistant_controller_impl.h"
+#include "ash/birch/birch_item.h"
 #include "ash/birch/birch_model.h"
 #include "ash/calendar/calendar_controller.h"
 #include "ash/capture_mode/capture_mode_controller.h"
@@ -32,6 +33,8 @@
 #include "ash/login/ui/login_expanded_public_account_view.h"
 #include "ash/media/media_controller_impl.h"
 #include "ash/metrics/feature_discovery_duration_reporter_impl.h"
+#include "ash/picker/metrics/picker_session_metrics.h"
+#include "ash/picker/views/picker_feature_tour.h"
 #include "ash/projector/projector_controller_impl.h"
 #include "ash/public/cpp/holding_space/holding_space_prefs.h"
 #include "ash/quick_pair/feature_status_tracker/scanning_enabled_provider.h"
@@ -41,6 +44,7 @@
 #include "ash/shelf/shelf_controller.h"
 #include "ash/style/color_palette_controller.h"
 #include "ash/style/dark_light_mode_controller_impl.h"
+#include "ash/system/bluetooth/bluetooth_device_status_ui_handler.h"
 #include "ash/system/brightness/brightness_controller_chromeos.h"
 #include "ash/system/camera/autozoom_controller_impl.h"
 #include "ash/system/camera/autozoom_nudge_controller.h"
@@ -56,6 +60,8 @@
 #include "ash/system/input_device_settings/input_device_tracker.h"
 #include "ash/system/input_device_settings/keyboard_modifier_metrics_recorder.h"
 #include "ash/system/keyboard_brightness/keyboard_backlight_color_controller.h"
+#include "ash/system/keyboard_brightness/keyboard_brightness_controller.h"
+#include "ash/system/mahi/mahi_nudge_controller.h"
 #include "ash/system/media/media_tray.h"
 #include "ash/system/network/cellular_setup_notifier.h"
 #include "ash/system/network/vpn_detailed_view.h"
@@ -87,9 +93,12 @@
 #include "ash/wm/float/tablet_mode_tuck_education.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/overview/birch/birch_bar_controller.h"
+#include "ash/wm/overview/birch/birch_privacy_nudge_controller.h"
 #include "ash/wm/window_cycle/window_cycle_controller.h"
 #include "ash/wm/window_util.h"
+#include "chromeos/ash/components/growth/campaigns_manager.h"
 #include "chromeos/ash/services/assistant/public/cpp/assistant_prefs.h"
+#include "chromeos/components/magic_boost/public/cpp/magic_boost_state.h"
 #include "chromeos/components/quick_answers/public/cpp/quick_answers_prefs.h"
 #include "chromeos/ui/frame/multitask_menu/multitask_menu_nudge_controller.h"
 #include "chromeos/ui/wm/fullscreen/pref_names.h"
@@ -116,7 +125,9 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry,
   AutozoomNudgeController::RegisterProfilePrefs(registry);
   AmbientController::RegisterProfilePrefs(registry);
   BirchBarController::RegisterProfilePrefs(registry);
+  BirchItem::RegisterProfilePrefs(registry);
   BirchModel::RegisterProfilePrefs(registry);
+  BirchPrivacyNudgeController::RegisterProfilePrefs(registry);
   CalendarController::RegisterProfilePrefs(registry);
   camera_app_prefs::RegisterProfilePrefs(registry);
   CameraEffectsController::RegisterProfilePrefs(registry);
@@ -149,23 +160,27 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry,
   KeyboardBacklightColorController::RegisterPrefs(registry);
   KeyboardControllerImpl::RegisterProfilePrefs(registry, country);
   KeyboardModifierMetricsRecorder::RegisterProfilePrefs(registry, for_test);
+  MahiNudgeController::RegisterProfilePrefs(registry);
   MediaControllerImpl::RegisterProfilePrefs(registry);
   MessageCenterController::RegisterProfilePrefs(registry);
   NightLightControllerImpl::RegisterProfilePrefs(registry);
   OnboardingNudgeController::RegisterProfilePrefs(registry);
   PaletteTray::RegisterProfilePrefs(registry);
   PaletteWelcomeBubble::RegisterProfilePrefs(registry);
+  PickerFeatureTour::RegisterProfilePrefs(registry);
+  PickerSessionMetrics::RegisterProfilePrefs(registry);
   PciePeripheralNotificationController::RegisterProfilePrefs(registry);
   PrivacyHubController::RegisterProfilePrefs(registry);
   PrivacyScreenController::RegisterProfilePrefs(registry);
   ProjectorControllerImpl::RegisterProfilePrefs(registry);
   quick_pair::Mediator::RegisterProfilePrefs(registry);
+  RegisterSystemShortcutBehaviorProfilePrefs(registry);
   ScreensaverImagesPolicyHandler::RegisterPrefs(registry);
   SeaPenWallpaperManager::RegisterProfilePrefs(registry);
-  SearchNotifierController::RegisterProfilePrefs(registry);
   ShelfController::RegisterProfilePrefs(registry);
   SnoopingProtectionController::RegisterProfilePrefs(registry);
   system::BrightnessControllerChromeos::RegisterProfilePrefs(registry);
+  KeyboardBrightnessController::RegisterProfilePrefs(registry);
   TabletModeTuckEducation::RegisterProfilePrefs(registry);
   TouchDevicesController::RegisterProfilePrefs(registry, for_test);
   UserEducationController::RegisterProfilePrefs(registry);
@@ -177,6 +192,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry,
   WallpaperTimeOfDayScheduler::RegisterProfilePrefs(registry);
   WallpaperPrefManager::RegisterProfilePrefs(registry);
   WindowCycleController::RegisterProfilePrefs(registry);
+  growth::CampaignsManager::RegisterProfilePrefs(registry);
 
   // Provide prefs registered in the browser for ash_unittests.
   if (for_test) {
@@ -185,7 +201,9 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry,
     registry->RegisterBooleanPref(prefs::kMouseReverseScroll, false);
     registry->RegisterBooleanPref(prefs::kSendFunctionKeys, false);
     registry->RegisterBooleanPref(prefs::kSuggestedContentEnabled, true);
-    registry->RegisterBooleanPref(prefs::kMahiEnabled, true);
+    registry->RegisterBooleanPref(prefs::kMagicBoostEnabled, true);
+    registry->RegisterBooleanPref(prefs::kHmrEnabled, true);
+    registry->RegisterBooleanPref(prefs::kOrcaEnabled, true);
     registry->RegisterBooleanPref(::prefs::kLiveCaptionEnabled, false);
     registry->RegisterListPref(
         chromeos::prefs::kKeepFullscreenWithoutNotificationUrlAllowList);
@@ -196,15 +214,20 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry,
     registry->RegisterStringPref(language::prefs::kPreferredLanguages,
                                  std::string());
     registry->RegisterIntegerPref(prefs::kAltEventRemappedToRightClick, 0);
+    registry->RegisterIntegerPref(
+        prefs::kHMRConsentStatus,
+        base::to_underlying(chromeos::HMRConsentStatus::kUnset));
+    registry->RegisterIntegerPref(prefs::kHMRConsentWindowDismissCount, 0);
     registry->RegisterIntegerPref(prefs::kSearchEventRemappedToRightClick, 0);
     registry->RegisterIntegerPref(prefs::kKeyEventRemappedToSixPackDelete, 0);
     registry->RegisterIntegerPref(prefs::kKeyEventRemappedToSixPackEnd, 0);
     registry->RegisterIntegerPref(prefs::kKeyEventRemappedToSixPackHome, 0);
     registry->RegisterIntegerPref(prefs::kKeyEventRemappedToSixPackPageUp, 0);
     registry->RegisterIntegerPref(prefs::kKeyEventRemappedToSixPackPageDown, 0);
-    registry->RegisterBooleanPref(prefs::kShouldShowPineOnboarding, false);
-    registry->RegisterIntegerPref(prefs::kPineNudgeShownCount, 0);
-    registry->RegisterTimePref(prefs::kPineNudgeLastShown, base::Time());
+    registry->RegisterBooleanPref(prefs::kShowInformedRestoreOnboarding, false);
+    registry->RegisterIntegerPref(prefs::kInformedRestoreNudgeShownCount, 0);
+    registry->RegisterTimePref(prefs::kInformedRestoreNudgeLastShown,
+                               base::Time());
   }
 }
 
@@ -228,6 +251,7 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry, bool for_test) {
   PowerNotificationController::RegisterLocalStatePrefs(registry);
   quick_pair::ScanningEnabledProvider::RegisterLocalStatePrefs(registry);
   InputDeviceSettingsMetadataManager::RegisterLocalStatePrefs(registry);
+  BluetoothDeviceStatusUiHandler::RegisterLocalStatePrefs(registry);
 
   if (for_test) {
     registry->RegisterBooleanPref(prefs::kOwnerPrimaryMouseButtonRight, false);

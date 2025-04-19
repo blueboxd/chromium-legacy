@@ -70,6 +70,9 @@ class AuthenticatorRequestDialogView
     return sheet_;
   }
 
+  // views::View:
+  void AddedToWidget() override;
+
   // views::DialogDelegateView:
   bool Accept() override;
   bool Cancel() override;
@@ -90,11 +93,12 @@ class AuthenticatorRequestDialogView
   friend class test::AuthenticatorRequestDialogViewTestApi;
   friend void ShowAuthenticatorRequestDialog(
       content::WebContents* web_contents,
-      AuthenticatorRequestDialogModel* model);
+      scoped_refptr<AuthenticatorRequestDialogModel> model);
 
   // Show by calling ShowAuthenticatorRequestDialog().
-  AuthenticatorRequestDialogView(content::WebContents* web_contents,
-                                 AuthenticatorRequestDialogModel* model);
+  AuthenticatorRequestDialogView(
+      content::WebContents* web_contents,
+      scoped_refptr<AuthenticatorRequestDialogModel> model);
 
   // Shows the dialog after creation or after being hidden.
   void Show();
@@ -103,8 +107,9 @@ class AuthenticatorRequestDialogView
   void ManageDevicesButtonPressed();
   void ForgotGPMPinPressed();
   void GPMPinOptionChosen(bool is_arbitrary);
+  void UpdateFooter();
 
-  raw_ptr<AuthenticatorRequestDialogModel> model_;
+  scoped_refptr<AuthenticatorRequestDialogModel> model_;
 
   raw_ptr<AuthenticatorRequestSheetView, DanglingUntriaged> sheet_ = nullptr;
   std::unique_ptr<views::MenuRunner> other_mechanisms_menu_runner_;

@@ -33,7 +33,6 @@
 #include "gpu/command_buffer/client/client_shared_image.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
-#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "ppapi/c/pp_bool.h"
@@ -699,8 +698,8 @@ bool PepperGraphics2DHost::PrepareTransferableResource(
       // We will potentially write to this SharedImage via the raster interface
       // (which might be going over GLES2) and will later send it off to the
       // display compositor.
-      uint32_t usage = gpu::SHARED_IMAGE_USAGE_GLES2_WRITE |
-                       gpu::SHARED_IMAGE_USAGE_DISPLAY_READ;
+      gpu::SharedImageUsageSet usage = gpu::SHARED_IMAGE_USAGE_GLES2_WRITE |
+                                       gpu::SHARED_IMAGE_USAGE_DISPLAY_READ;
       if (overlays_supported)
         usage |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
       shared_image = sii->CreateSharedImage(
@@ -728,8 +727,7 @@ bool PepperGraphics2DHost::PrepareTransferableResource(
         kUnknown_SkAlphaType);
     ri->WaitSyncTokenCHROMIUM(in_sync_token.GetConstData());
 
-    uint32_t texture_target =
-        shared_image->GetTextureTarget(gfx::BufferUsage::SCANOUT);
+    uint32_t texture_target = shared_image->GetTextureTarget();
 
     ri->WritePixels(shared_image->mailbox(), /*dst_x_offset=*/0,
                     /*dst_y_offset=*/0, texture_target,

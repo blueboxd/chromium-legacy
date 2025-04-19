@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/notreached.h"
 #include "base/strings/strcat.h"
 #include "base/task/thread_pool.h"
 #include "components/optimization_guide/core/model_execution/feature_keys.h"
@@ -26,7 +27,9 @@
 #include "components/optimization_guide/core/model_execution/session_impl.h"
 #include "components/optimization_guide/core/model_util.h"
 #include "components/optimization_guide/core/optimization_guide_constants.h"
+#include "components/optimization_guide/core/optimization_guide_enums.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
+#include "components/optimization_guide/core/optimization_guide_model_executor.h"
 #include "components/optimization_guide/core/optimization_guide_switches.h"
 #include "components/optimization_guide/core/optimization_guide_util.h"
 #include "components/optimization_guide/proto/model_execution.pb.h"
@@ -42,14 +45,25 @@ namespace {
 
 proto::OnDeviceModelVersions GetModelVersions(
     const OnDeviceModelMetadata& model_metadata,
-    const SafetyModelInfo* safety_model_info) {
+    const SafetyModelInfo* safety_model_info,
+    std::optional<int64_t> adaptation_version) {
   proto::OnDeviceModelVersions versions;
-  versions.mutable_on_device_model_service_version()->set_component_version(
-      model_metadata.version());
+  auto* on_device_model_version =
+      versions.mutable_on_device_model_service_version();
+  on_device_model_version->set_component_version(model_metadata.version());
+  on_device_model_version->mutable_on_device_base_model_metadata()
+      ->set_base_model_name(model_metadata.model_spec().model_name);
+  on_device_model_version->mutable_on_device_base_model_metadata()
+      ->set_base_model_version(model_metadata.model_spec().model_version);
 
   if (safety_model_info) {
     versions.set_text_safety_model_version(safety_model_info->GetVersion());
   }
+
+  if (adaptation_version) {
+    on_device_model_version->set_model_adaptation_version(*adaptation_version);
+  }
+
   return versions;
 }
 
@@ -74,12 +88,28 @@ void OnDeviceModelServiceController::Init() {
 
 OnDeviceModelEligibilityReason OnDeviceModelServiceController::CanCreateSession(
     ModelBasedCapabilityKey feature) {
-  if (on_device_component_state_manager_) {
-    on_device_component_state_manager_->OnDeviceEligibleFeatureUsed();
+  if (!features::internal::IsOnDeviceModelEnabled(feature)) {
+    return OnDeviceModelEligibilityReason::kFeatureExecutionNotEnabled;
   }
 
   if (!model_metadata_) {
-    return OnDeviceModelEligibilityReason::kModelNotAvailable;
+    if (!on_device_component_state_manager_) {
+      return OnDeviceModelEligibilityReason::kModelNotAvailable;
+    }
+
+    switch (on_device_component_state_manager_->GetOnDeviceModelStatus()) {
+      case optimization_guide::OnDeviceModelStatus::kNotEligible:
+        return OnDeviceModelEligibilityReason::kModelNotAvailable;
+      case optimization_guide::OnDeviceModelStatus::kInstallNotComplete:
+      case optimization_guide::OnDeviceModelStatus::
+          kModelInstallerNotRegisteredForUnknownReason:
+      case optimization_guide::OnDeviceModelStatus::kModelInstalledTooLate:
+      case optimization_guide::OnDeviceModelStatus::kNotReadyForUnknownReason:
+        return OnDeviceModelEligibilityReason::kModelToBeInstalled;
+      case optimization_guide::OnDeviceModelStatus::kReady:
+        // This case shouldn't be reached as the model_metadata_ is null.
+        NOTREACHED_IN_MIGRATION();
+    }
   }
 
   // Check feature config.
@@ -108,15 +138,6 @@ OnDeviceModelEligibilityReason OnDeviceModelServiceController::CanCreateSession(
     }
   }
 
-  if (!features::internal::IsOnDeviceModelEnabled(feature)) {
-    return OnDeviceModelEligibilityReason::kFeatureExecutionNotEnabled;
-  }
-
-  if (features::internal::IsOnDeviceModelAdaptationEnabled(feature) &&
-      !base::Contains(model_adaptation_metadata_, feature)) {
-    return OnDeviceModelEligibilityReason::kModelAdaptationNotAvailable;
-  }
-
   return access_controller_->ShouldStartNewSession();
 }
 
@@ -135,26 +156,21 @@ OnDeviceModelServiceController::CreateSession(
           {"OptimizationGuide.ModelExecution.OnDeviceModelEligibilityReason.",
            GetStringNameForModelExecutionFeature(feature)}),
       reason);
+
+  if (on_device_component_state_manager_) {
+    on_device_component_state_manager_->OnDeviceEligibleFeatureUsed(feature);
+  }
+
+  // Return if we cannot do anything more for right now.
   if (reason != OnDeviceModelEligibilityReason::kSuccess) {
     return nullptr;
   }
 
   CHECK(model_metadata_);
-  on_device_model::ModelAssetPaths model_paths;
-  model_paths.weights = model_metadata_->model_path().Append(kWeightsFile);
+  on_device_model::ModelAssetPaths model_paths = PopulateModelPaths();
 
   auto adapter = GetFeatureAdapter(feature);
   CHECK(adapter);
-
-  // Populate the model paths even if they are not needed for the current
-  // feature, since the base model remote could be used for subsequent features.
-  if (safety_model_info_) {
-    model_paths.ts_data = safety_model_info_->GetDataPath();
-    model_paths.ts_sp_model = safety_model_info_->GetSpModelPath();
-  }
-  if (language_detection_model_path_) {
-    model_paths.language_detection_model = *language_detection_model_path_;
-  }
 
   std::optional<proto::FeatureTextSafetyConfiguration> safety_config;
   if (features::ShouldUseTextSafetyClassifierModel() &&
@@ -170,20 +186,24 @@ OnDeviceModelServiceController::CreateSession(
   }
 
   std::optional<on_device_model::AdaptationAssetPaths> adaptation_assets;
-  if (features::internal::IsOnDeviceModelAdaptationEnabled(feature)) {
-    auto it = model_adaptation_metadata_.find(feature);
-    CHECK(it != model_adaptation_metadata_.end());
-    adaptation_assets = it->second.asset_paths();
+  std::optional<int64_t> adaptation_version;
+  auto adaptation_metadata_it = model_adaptation_metadata_.find(feature);
+  if (adaptation_metadata_it != model_adaptation_metadata_.end()) {
+    CHECK(features::internal::IsOnDeviceModelAdaptationEnabled(feature));
+    adaptation_assets =
+        base::OptionalFromPtr(adaptation_metadata_it->second.asset_paths());
+    adaptation_version = adaptation_metadata_it->second.version();
   }
 
   SessionImpl::OnDeviceOptions opts;
   opts.model_client = std::make_unique<OnDeviceModelClient>(
       feature, weak_ptr_factory_.GetWeakPtr(), model_paths, adaptation_assets);
-  opts.model_versions =
-      GetModelVersions(*model_metadata_, safety_model_info_.get());
+  opts.model_versions = GetModelVersions(
+      *model_metadata_, safety_model_info_.get(), adaptation_version);
   opts.adapter = std::move(adapter);
   opts.safety_cfg = SafetyConfig(safety_config);
 
+  has_started_session_ = true;
   return std::make_unique<SessionImpl>(
       feature, std::move(opts), std::move(execute_remote_fn),
       optimization_guide_logger, model_quality_uploader_service, config_params);
@@ -209,7 +229,13 @@ OnDeviceModelServiceController::GetOrCreateModelRemote(
         adaptation_assets) {
   MaybeCreateBaseModelRemote(model_paths);
   if (!adaptation_assets.has_value()) {
-    CHECK(!features::internal::IsOnDeviceModelAdaptationEnabled(feature));
+    // The base model is being used by a feature directly, so set the idle
+    // handler.
+    base_model_remote_.set_idle_handler(
+        features::GetOnDeviceModelIdleTimeout(),
+        base::BindRepeating(
+            &OnDeviceModelServiceController::OnBaseModelRemoteIdle,
+            base::Unretained(this)));
     return base_model_remote_;
   }
   auto it = model_adaptation_controllers_.find(feature);
@@ -229,18 +255,21 @@ void OnDeviceModelServiceController::MaybeCreateBaseModelRemote(
     return;
   }
   LaunchService();
+  // We want the service to start while loading the model assets, so set a
+  // longish idle timeout to make sure it doesn't get shut down.
+  service_remote_.reset_on_idle_timeout(base::Minutes(1));
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock()},
       base::BindOnce(&on_device_model::LoadModelAssets, model_paths),
       base::BindOnce(&OnDeviceModelServiceController::OnModelAssetsLoaded,
-                     weak_ptr_factory_.GetWeakPtr(),
+                     base_model_scoped_weak_ptr_factory_.GetWeakPtr(),
                      base_model_remote_.BindNewPipeAndPassReceiver()));
-  base_model_remote_.set_disconnect_handler(base::BindOnce(
-      &OnDeviceModelServiceController::OnDisconnected, base::Unretained(this)));
-  base_model_remote_.set_idle_handler(
-      features::GetOnDeviceModelIdleTimeout(),
-      base::BindRepeating(&OnDeviceModelServiceController::OnRemoteIdle,
-                          base::Unretained(this)));
+  base_model_remote_.set_disconnect_handler(
+      base::BindOnce(&OnDeviceModelServiceController::OnBaseModelDisconnected,
+                     base::Unretained(this)));
+  // By default the model will be reset immediately when idle. If a feature is
+  // going using the base model, the idle handler will be set explicitly there.
+  base_model_remote_.reset_on_idle_timeout(base::TimeDelta());
 }
 
 void OnDeviceModelServiceController::OnModelAssetsLoaded(
@@ -263,10 +292,14 @@ void OnDeviceModelServiceController::OnModelAssetsLoaded(
     params->ts_dimension = safety_model_info_->num_output_categories();
   }
   params->adaptation_ranks = features::GetOnDeviceModelAllowedAdaptationRanks();
+  params->support_multiple_sessions =
+      features::GetOnDeviceModelSupportMultipleSessions();
   service_remote_->LoadModel(
       std::move(params), std::move(model),
       base::BindOnce(&OnDeviceModelServiceController::OnLoadModelResult,
                      weak_ptr_factory_.GetWeakPtr()));
+  // Now that the model has been loaded, the idle timeout is no longer needed.
+  service_remote_.reset_on_idle_timeout(base::TimeDelta());
 }
 
 void OnDeviceModelServiceController::SetLanguageDetectionModel(
@@ -284,11 +317,90 @@ void OnDeviceModelServiceController::MaybeUpdateSafetyModel(
   safety_model_info_ = SafetyModelInfo::Load(model_info);
 }
 
+on_device_model::ModelAssetPaths
+OnDeviceModelServiceController::PopulateModelPaths() {
+  on_device_model::ModelAssetPaths model_paths;
+  model_paths.weights = model_metadata_->model_path().Append(kWeightsFile);
+
+  // Populate the model paths even if they are not needed for the current
+  // feature, since the base model remote could be used for subsequent features.
+  if (safety_model_info_) {
+    model_paths.ts_data = safety_model_info_->GetDataPath();
+    model_paths.ts_sp_model = safety_model_info_->GetSpModelPath();
+  }
+  if (language_detection_model_path_) {
+    model_paths.language_detection_model = *language_detection_model_path_;
+  }
+  return model_paths;
+}
+
 void OnDeviceModelServiceController::UpdateModel(
     std::unique_ptr<OnDeviceModelMetadata> model_metadata) {
+  bool did_model_change = !model_metadata.get() != !model_metadata_.get();
   model_adaptation_controllers_.clear();
   base_model_remote_.reset();
+  base_model_scoped_weak_ptr_factory_.InvalidateWeakPtrs();
   model_metadata_ = std::move(model_metadata);
+  has_started_session_ = false;
+  model_validator_ = nullptr;
+
+  if (did_model_change) {
+    for (const auto& entry : model_availability_change_observers_) {
+      NotifyModelAvailabilityChange(entry.first);
+    }
+  }
+
+  if (!model_metadata_ || !features::IsOnDeviceModelValidationEnabled()) {
+    return;
+  }
+
+  if (model_metadata_->validation_config().validation_prompts().empty()) {
+    // Immediately succeed in validation if there are no prompts specified.
+    if (access_controller_->ShouldValidateModel(model_metadata_->version())) {
+      access_controller_->OnValidationFinished(
+          OnDeviceModelValidationResult::kSuccess);
+    }
+    return;
+  }
+
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&OnDeviceModelServiceController::StartValidation,
+                     base_model_scoped_weak_ptr_factory_.GetWeakPtr()),
+      features::GetOnDeviceModelValidationDelay());
+}
+
+void OnDeviceModelServiceController::StartValidation() {
+  // Skip validation if a session has started to avoid interrupting.
+  if (has_started_session_) {
+    return;
+  }
+
+  if (!access_controller_->ShouldValidateModel(model_metadata_->version())) {
+    return;
+  }
+
+  MaybeCreateBaseModelRemote(PopulateModelPaths());
+  mojo::Remote<on_device_model::mojom::Session> session;
+  base_model_remote_->StartSession(session.BindNewPipeAndPassReceiver());
+  model_validator_ = std::make_unique<OnDeviceModelValidator>(
+      model_metadata_->validation_config(),
+      base::BindOnce(&OnDeviceModelServiceController::FinishValidation,
+                     GetWeakPtr()),
+      std::move(session));
+}
+
+void OnDeviceModelServiceController::FinishValidation(
+    OnDeviceModelValidationResult result) {
+  if (!model_validator_) {
+    return;
+  }
+
+  base::UmaHistogramEnumeration(
+      "OptimizationGuide.ModelExecution.OnDeviceModelValidationResult", result);
+
+  model_validator_ = nullptr;
+  access_controller_->OnValidationFinished(result);
 }
 
 void OnDeviceModelServiceController::MaybeUpdateModelAdaptation(
@@ -303,6 +415,7 @@ void OnDeviceModelServiceController::MaybeUpdateModelAdaptation(
   if (it != model_adaptation_controllers_.end()) {
     model_adaptation_controllers_.erase(it);
   }
+  NotifyModelAvailabilityChange(feature);
 }
 
 void OnDeviceModelServiceController::OnLoadModelResult(
@@ -323,21 +436,15 @@ void OnDeviceModelServiceController::OnLoadModelResult(
   }
 }
 
-void OnDeviceModelServiceController::OnDisconnected() {
+void OnDeviceModelServiceController::OnBaseModelDisconnected() {
   model_adaptation_controllers_.clear();
   base_model_remote_.reset();
   access_controller_->OnDisconnectedFromRemote();
+  FinishValidation(OnDeviceModelValidationResult::kServiceCrash);
 }
 
-void OnDeviceModelServiceController::ShutdownServiceIfNoModelLoaded() {
-  if (!base_model_remote_) {
-    service_remote_.reset();
-  }
-}
-
-void OnDeviceModelServiceController::OnRemoteIdle() {
+void OnDeviceModelServiceController::OnBaseModelRemoteIdle() {
   model_adaptation_controllers_.clear();
-  service_remote_.reset();
   base_model_remote_.reset();
 }
 
@@ -408,6 +515,33 @@ OnDeviceModelServiceController::GetFeatureAdapter(
     return adaptation_metadata_it->second.adapter();
   }
   return model_metadata_->GetAdapter(ToModelExecutionFeatureProto(feature));
+}
+
+void OnDeviceModelServiceController::AddOnDeviceModelAvailabilityChangeObserver(
+    ModelBasedCapabilityKey feature,
+    OnDeviceModelAvailabilityObserver* observer) {
+  DCHECK(features::internal::IsOnDeviceModelEnabled(feature));
+  model_availability_change_observers_[feature].AddObserver(observer);
+}
+
+void OnDeviceModelServiceController::
+    RemoveOnDeviceModelAvailabilityChangeObserver(
+        ModelBasedCapabilityKey feature,
+        OnDeviceModelAvailabilityObserver* observer) {
+  DCHECK(features::internal::IsOnDeviceModelEnabled(feature));
+  model_availability_change_observers_[feature].RemoveObserver(observer);
+}
+
+void OnDeviceModelServiceController::NotifyModelAvailabilityChange(
+    ModelBasedCapabilityKey feature) {
+  auto entry_it = model_availability_change_observers_.find(feature);
+  if (entry_it == model_availability_change_observers_.end()) {
+    return;
+  }
+  auto can_create_session = CanCreateSession(feature);
+  for (auto& observer : entry_it->second) {
+    observer.OnDeviceModelAvailablityChanged(feature, can_create_session);
+  }
 }
 
 }  // namespace optimization_guide

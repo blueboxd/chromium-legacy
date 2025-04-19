@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ash/login/ui/lock_screen_media_controls_view.h"
 
 #include "ash/constants/ash_features.h"
@@ -31,6 +36,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/vector_icons.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/animation/bounds_animator_observer.h"
 #include "ui/views/controls/image_view.h"
@@ -208,7 +214,8 @@ class LockScreenMediaControlsViewTest : public LoginTestBase {
   }
 
   void SimulateTab() {
-    ui::KeyEvent pressed_tab(ui::ET_KEY_PRESSED, ui::VKEY_TAB, ui::EF_NONE);
+    ui::KeyEvent pressed_tab(ui::EventType::kKeyPressed, ui::VKEY_TAB,
+                             ui::EF_NONE);
     media_controls_view_->GetFocusManager()->OnKeyEvent(pressed_tab);
   }
 
@@ -393,7 +400,10 @@ TEST_F(LockScreenMediaControlsViewTest, ButtonsSanityCheck) {
         kActionButtonOrder[i]);
 
     EXPECT_TRUE(child->GetVisible());
-    EXPECT_FALSE(views::Button::AsButton(child)->GetAccessibleName().empty());
+    EXPECT_FALSE(views::Button::AsButton(child)
+                     ->GetViewAccessibility()
+                     .GetCachedName()
+                     .empty());
   }
 
   EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kPause));

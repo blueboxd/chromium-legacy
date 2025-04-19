@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "components/viz/test/test_context_provider.h"
 
 #include <stddef.h>
@@ -199,17 +204,6 @@ scoped_refptr<TestContextProvider> TestContextProvider::Create(
       std::make_unique<TestContextSupport>(),
       std::make_unique<TestGLES2InterfaceForContextProvider>(),
       /*raster=*/nullptr, std::move(sii), support_locking);
-}
-
-// static
-scoped_refptr<TestContextProvider> TestContextProvider::Create(
-    std::unique_ptr<TestContextSupport> support) {
-  DCHECK(support);
-  constexpr bool support_locking = false;
-  return new TestContextProvider(
-      std::move(support),
-      std::make_unique<TestGLES2InterfaceForContextProvider>(),
-      /*raster=*/nullptr, /*sii=*/nullptr, support_locking);
 }
 
 TestContextProvider::TestContextProvider(

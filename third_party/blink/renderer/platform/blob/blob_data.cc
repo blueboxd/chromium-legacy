@@ -33,6 +33,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/containers/span.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/task/single_thread_task_runner.h"
@@ -79,12 +80,13 @@ bool IsValidBlobType(const String& type) {
 mojom::blink::BlobRegistry* g_blob_registry_for_testing = nullptr;
 
 mojom::blink::BlobRegistry* GetThreadSpecificRegistry() {
-  if (UNLIKELY(g_blob_registry_for_testing))
+  if (g_blob_registry_for_testing) [[unlikely]] {
     return g_blob_registry_for_testing;
+  }
 
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       ThreadSpecific<mojo::Remote<mojom::blink::BlobRegistry>>, registry, ());
-  if (UNLIKELY(!registry.IsSet())) {
+  if (!registry.IsSet()) [[unlikely]] {
     // TODO(mek): Going through BrowserInterfaceBroker to get a
     // mojom::blink::BlobRegistry ends up going through the main thread. Ideally
     // workers wouldn't need to do that.
@@ -123,7 +125,7 @@ void BlobData::SetContentType(const String& content_type) {
 }
 
 void BlobData::AppendData(scoped_refptr<RawData> data) {
-  AppendDataInternal(base::make_span(data->data(), data->length()), data);
+  AppendDataInternal(base::span(*data), data);
 }
 
 void BlobData::AppendBlob(scoped_refptr<BlobDataHandle> data_handle,
@@ -153,20 +155,19 @@ void BlobData::AppendText(const String& text,
         BlobBytesProvider::kMaxConsolidatedItemSizeInBytes) {
       auto raw_data = RawData::Create();
       NormalizeLineEndingsToNative(utf8_text, *raw_data->MutableData());
-      AppendDataInternal(base::make_span(raw_data->data(), raw_data->length()),
-                         raw_data);
+      AppendDataInternal(base::span(*raw_data), raw_data);
     } else {
       Vector<char> buffer;
       NormalizeLineEndingsToNative(utf8_text, buffer);
       AppendDataInternal(base::make_span(buffer));
     }
   } else {
-    AppendDataInternal(base::make_span(utf8_text.data(), utf8_text.length()));
+    AppendDataInternal(base::span(utf8_text));
   }
 }
 
-void BlobData::AppendBytes(const void* bytes, size_t length) {
-  AppendDataInternal(base::make_span(static_cast<const char*>(bytes), length));
+void BlobData::AppendBytes(base::span<const uint8_t> bytes) {
+  AppendDataInternal(base::as_chars(bytes));
 }
 
 uint64_t BlobData::length() const {

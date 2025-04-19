@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "gpu/ipc/in_process_command_buffer.h"
 
 #include <stddef.h>
@@ -853,6 +858,10 @@ void InProcessCommandBuffer::HandleReturnData(base::span<const uint8_t> data) {
   PostOrRunClientCallback(
       base::BindOnce(&InProcessCommandBuffer::HandleReturnDataOnOriginThread,
                      client_thread_weak_ptr_, std::move(vec)));
+}
+
+bool InProcessCommandBuffer::ShouldYield() {
+  return task_sequence_->ShouldYield();
 }
 
 void InProcessCommandBuffer::PostOrRunClientCallback(

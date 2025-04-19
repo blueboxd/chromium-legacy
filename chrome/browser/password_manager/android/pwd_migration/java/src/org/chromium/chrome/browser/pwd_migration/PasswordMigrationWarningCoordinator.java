@@ -21,14 +21,16 @@ import org.chromium.chrome.browser.password_manager.PasswordStoreBridge;
 import org.chromium.chrome.browser.password_manager.PasswordStoreBridge.PasswordStoreObserver;
 import org.chromium.chrome.browser.password_manager.PasswordStoreCredential;
 import org.chromium.chrome.browser.password_manager.settings.DialogManager;
+import org.chromium.chrome.browser.password_manager.settings.ExportFlowInterface;
+import org.chromium.chrome.browser.password_manager.settings.NonCancelableProgressBar;
 import org.chromium.chrome.browser.password_manager.settings.PasswordListObserver;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningMediator.MigrationWarningOptionsHandler;
 import org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningProperties.ScreenType;
+import org.chromium.chrome.browser.settings.SettingsLauncherFactory;
 import org.chromium.chrome.browser.ui.signin.SyncConsentActivityLauncher;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.StateChangeReason;
-import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -44,7 +46,6 @@ public class PasswordMigrationWarningCoordinator
             "PasswordManager.PasswordMigrationWarning.Export";
     private final PasswordMigrationWarningMediator mMediator;
     private final SyncConsentActivityLauncher mSyncConsentActivityLauncher;
-    private final SettingsLauncher mSettingsLauncher;
     private final Context mContext;
     private final Profile mProfile;
     private final Class<? extends Fragment> mSyncSettingsFragment;
@@ -60,7 +61,6 @@ public class PasswordMigrationWarningCoordinator
             Profile profile,
             BottomSheetController sheetController,
             SyncConsentActivityLauncher syncConsentActivityLauncher,
-            SettingsLauncher settingsLauncher,
             Class<? extends Fragment> syncSettingsFragment,
             ExportFlowInterface exportFlow,
             Callback<PasswordListObserver> passwordListObserverCallback,
@@ -70,7 +70,6 @@ public class PasswordMigrationWarningCoordinator
         mContext = context;
         mProfile = profile;
         mSyncConsentActivityLauncher = syncConsentActivityLauncher;
-        mSettingsLauncher = settingsLauncher;
         mSyncSettingsFragment = syncSettingsFragment;
         mExportFlow = exportFlow;
         mMediator = new PasswordMigrationWarningMediator(profile, this, referrer);
@@ -111,7 +110,8 @@ public class PasswordMigrationWarningCoordinator
 
     @Override
     public void openSyncSettings() {
-        mSettingsLauncher.launchSettingsActivity(mContext, mSyncSettingsFragment);
+        SettingsLauncherFactory.createSettingsLauncher()
+                .launchSettingsActivity(mContext, mSyncSettingsFragment);
     }
 
     @Override

@@ -106,6 +106,8 @@ class UpdateService : public base::RefCountedThreadSafe<UpdateService> {
     kInstall = 3,
     kService = 4,
     kUpdateCheck = 5,
+    // kUnknown = 6, defined in `updater_service.mojom`.
+    kInstaller = 7,
     // Update EnumTraits<UpdateService::ErrorCategory> when adding new values.
   };
 
@@ -210,6 +212,7 @@ class UpdateService : public base::RefCountedThreadSafe<UpdateService> {
     std::string brand_code;
     base::FilePath brand_path;
     base::FilePath ecp;
+    std::string cohort;
   };
 
   using Callback = base::OnceCallback<void(Result)>;
@@ -360,7 +363,7 @@ template <>
 struct EnumTraits<UpdateService::ErrorCategory> {
   using ErrorCategory = UpdateService::ErrorCategory;
   static constexpr ErrorCategory first_elem = ErrorCategory::kNone;
-  static constexpr ErrorCategory last_elem = ErrorCategory::kUpdateCheck;
+  static constexpr ErrorCategory last_elem = ErrorCategory::kInstaller;
 };
 
 std::ostream& operator<<(std::ostream& os,

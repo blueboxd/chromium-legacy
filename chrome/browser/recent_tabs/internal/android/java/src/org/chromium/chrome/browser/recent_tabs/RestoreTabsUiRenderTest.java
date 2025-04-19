@@ -31,6 +31,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseActivityTestRule;
 import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterSet;
@@ -52,12 +53,10 @@ import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.sync_device_info.FormFactor;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.test.util.BlankUiTestActivity;
-import org.chromium.ui.test.util.DisableAnimationsTestRule;
 import org.chromium.ui.test.util.NightModeTestUtils;
 import org.chromium.ui.test.util.RenderTestRule;
 import org.chromium.ui.test.util.ViewUtils;
@@ -89,9 +88,6 @@ public class RestoreTabsUiRenderTest {
 
     @Rule public JniMocker jniMocker = new JniMocker();
 
-    @Rule
-    public final DisableAnimationsTestRule mDisableAnimationsRule = new DisableAnimationsTestRule();
-
     @Mock ForeignSessionHelper.Natives mForeignSessionHelperJniMock;
     @Mock FaviconHelper.Natives mFaviconHelperJniMock;
     @Mock private Profile mProfile;
@@ -117,7 +113,7 @@ public class RestoreTabsUiRenderTest {
         mActivityTestRule.launchActivity(null);
         when(mFaviconHelperJniMock.init()).thenReturn(1L);
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     Activity activity = mActivityTestRule.getActivity();
 
@@ -140,7 +136,7 @@ public class RestoreTabsUiRenderTest {
 
     @After
     public void tearDownTest() throws Exception {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> NightModeTestUtils.tearDownNightModeForBlankUiTestActivity());
     }
 
@@ -148,7 +144,7 @@ public class RestoreTabsUiRenderTest {
     @MediumTest
     @Feature("RenderTest")
     public void testPromoScreenSheet_allOptionsEnabled() throws IOException, InterruptedException {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     // 0 devices in DEVICE_MODEL_LIST and 1 selected tab in REVIEW_TABS_MODEL_LIST.
                     // Restore tabs button enabled and chevron/onClickListener for device view.
@@ -186,7 +182,7 @@ public class RestoreTabsUiRenderTest {
     @Feature("RenderTest")
     public void testPromoScreenSheet_disabledDeviceViewAndRestoreButtonWithTabletIcon()
             throws IOException, InterruptedException {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     // 1 device in DEVICE_MODEL_LIST and 0 selected tabs in REVIEW_TABS_MODEL_LIST.
                     // Restore tabs button disabled, tablet icon and no chevron/onClickListener for
@@ -227,7 +223,7 @@ public class RestoreTabsUiRenderTest {
             throws IOException, InterruptedException {
         // For simplicity, this test sets all listed devices as selected to test UI elements
         // instead of calling core logic functions to select the most recently accessed device.
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     ForeignSession session1 =
                             new ForeignSession(
@@ -278,7 +274,7 @@ public class RestoreTabsUiRenderTest {
             throws IOException, InterruptedException {
         // For simplicity, this test sets all listed devices as deselected instead of calling
         // core logic functions to select the most recently accessed device.
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     ForeignSession session1 =
                             new ForeignSession(
@@ -335,7 +331,7 @@ public class RestoreTabsUiRenderTest {
     @Feature("RenderTest")
     public void testReviewTabsScreenSheet_allTabsSelected()
             throws IOException, InterruptedException {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     ForeignSessionTab tab1 =
                             new ForeignSessionTab(JUnitTestGURLs.URL_1, "title", 32L, 32L, 0);
@@ -374,7 +370,7 @@ public class RestoreTabsUiRenderTest {
     @Feature("RenderTest")
     public void testReviewTabsScreenSheet_noTabsSelectedSingleTab()
             throws IOException, InterruptedException {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     ForeignSessionTab tab1 =
                             new ForeignSessionTab(JUnitTestGURLs.URL_1, "title", 32L, 32L, 0);
@@ -409,7 +405,7 @@ public class RestoreTabsUiRenderTest {
     @Feature("RenderTest")
     public void testReviewTabsScreenSheet_fillScreenWithTabsScrolledToBottom()
             throws IOException, InterruptedException {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     ForeignSessionTab tab1 =
                             new ForeignSessionTab(JUnitTestGURLs.URL_1, "title", 32L, 32L, 0);

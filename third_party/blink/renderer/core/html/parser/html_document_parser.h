@@ -122,10 +122,9 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
 
   HTMLParserReentryPermit* ReentryPermit() { return reentry_permit_.Get(); }
 
-  void AppendBytes(const char* bytes, size_t length) override;
+  void AppendBytes(base::span<const uint8_t> bytes) override;
   void Flush() final;
   void SetDecoder(std::unique_ptr<TextResourceDecoder>) final;
-  void NotifyNoRemainingAsyncScripts() final;
 
   static void ResetCachedFeaturesForTesting();
   static void FlushPreloadScannerThreadForTesting();

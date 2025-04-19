@@ -10,7 +10,7 @@
 #include "content/public/browser/storage_partition_config.h"
 #include "content/public/browser/web_contents.h"
 
-// Must come after other includes, because FromJniType() uses Profile.
+// Must come after all headers that specialize FromJniType() / ToJniType().
 #include "chrome/browser/android/content/jni_headers/WebContentsFactory_jni.h"
 
 using base::android::JavaParamRef;
@@ -21,6 +21,7 @@ static ScopedJavaLocalRef<jobject> JNI_WebContentsFactory_CreateWebContents(
     Profile* profile,
     jboolean initially_hidden,
     jboolean initialize_renderer,
+    jlong j_target_network,
     const JavaParamRef<jthrowable>& j_creator_location) {
   content::WebContents::CreateParams params(profile);
   params.initially_hidden = static_cast<bool>(initially_hidden);
@@ -29,6 +30,7 @@ static ScopedJavaLocalRef<jobject> JNI_WebContentsFactory_CreateWebContents(
           ? content::WebContents::CreateParams::
                 kInitializeAndWarmupRendererProcess
           : content::WebContents::CreateParams::kOkayToHaveRendererProcess;
+  params.target_network = j_target_network;
   params.java_creator_location = j_creator_location;
 
   // Ownership is passed into java, and then to TabAndroid::InitWebContents.

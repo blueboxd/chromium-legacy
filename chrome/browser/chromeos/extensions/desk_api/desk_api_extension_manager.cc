@@ -58,6 +58,9 @@ DeskApiExtensionManagerFactory::DeskApiExtensionManagerFactory()
               // TODO(crbug.com/40257657): Check if this service is needed in
               // Guest mode.
               .WithGuest(ProfileSelection::kOriginalOnly)
+              // TODO(crbug.com/41488885): Check if this service is needed for
+              // Ash Internals.
+              .WithAshInternals(ProfileSelection::kOriginalOnly)
               .Build()) {}
 
 DeskApiExtensionManagerFactory::~DeskApiExtensionManagerFactory() = default;
@@ -101,7 +104,7 @@ bool DeskApiExtensionManager::Delegate::IsProfileAffiliated(
   if (profile->IsOffTheRecord())
     return false;
 
-  return ::chrome::enterprise_util::IsProfileAffiliated(profile);
+  return ::enterprise_util::IsProfileAffiliated(profile);
 }
 
 bool DeskApiExtensionManager::Delegate::IsExtensionInstalled(

@@ -16,6 +16,7 @@
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram.h"
+#include "base/not_fatal_until.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/stringprintf.h"
@@ -79,12 +80,13 @@ LayerDebugInfo::LayerDebugInfo() = default;
 LayerDebugInfo::LayerDebugInfo(const LayerDebugInfo&) = default;
 LayerDebugInfo::~LayerDebugInfo() = default;
 
-Layer::Inputs::Inputs() = default;
+Layer::RareInputs::RareInputs() = default;
+Layer::RareInputs::~RareInputs() = default;
 
+Layer::Inputs::Inputs() = default;
 Layer::Inputs::~Inputs() = default;
 
 Layer::LayerTreeInputs::LayerTreeInputs() = default;
-
 Layer::LayerTreeInputs::~LayerTreeInputs() = default;
 
 scoped_refptr<Layer> Layer::Create() {
@@ -372,7 +374,7 @@ void Layer::ReplaceChild(Layer* reference, scoped_refptr<Layer> new_layer) {
   auto& inputs = inputs_.Write(*this);
   auto reference_it = base::ranges::find(inputs.children, reference,
                                          &scoped_refptr<Layer>::get);
-  DCHECK(reference_it != inputs.children.end());
+  CHECK(reference_it != inputs.children.end(), base::NotFatalUntil::M130);
   size_t reference_index = reference_it - inputs.children.begin();
   reference->RemoveFromParent();
 
@@ -1114,15 +1116,32 @@ bool Layer::IsScrollbarLayerForTesting() const {
   return false;
 }
 
-void Layer::SetNonFastScrollableRegion(const Region& region) {
+void Layer::SetMainThreadScrollHitTestRegion(const Region& region) {
   DCHECK(IsPropertyChangeAllowed());
   const auto& rare_inputs = inputs_.Read(*this).rare_inputs;
   if (!rare_inputs && region.IsEmpty())
     return;
-  if (rare_inputs && rare_inputs->non_fast_scrollable_region == region)
+  if (rare_inputs &&
+      rare_inputs->main_thread_scroll_hit_test_region == region) {
     return;
-  EnsureRareInputs().non_fast_scrollable_region = region;
+  }
+  EnsureRareInputs().main_thread_scroll_hit_test_region = region;
   SetPropertyTreesNeedRebuild();
+  SetNeedsCommit();
+}
+
+void Layer::SetNonCompositedScrollHitTestRects(
+    std::vector<ScrollHitTestRect> rects) {
+  DCHECK(IsPropertyChangeAllowed());
+  const auto& rare_inputs = inputs_.Read(*this).rare_inputs;
+  if (!rare_inputs && rects.empty()) {
+    return;
+  }
+  if (rare_inputs &&
+      rare_inputs->non_composited_scroll_hit_test_rects == rects) {
+    return;
+  }
+  EnsureRareInputs().non_composited_scroll_hit_test_rects = std::move(rects);
   SetNeedsCommit();
 }
 
@@ -1459,8 +1478,10 @@ void Layer::PushPropertiesTo(LayerImpl* layer,
   layer->UpdateDebugInfo(debug_info_.Write(*this).get());
 
   if (inputs.rare_inputs) {
-    layer->SetNonFastScrollableRegion(
-        inputs.rare_inputs->non_fast_scrollable_region);
+    layer->SetMainThreadScrollHitTestRegion(
+        inputs.rare_inputs->main_thread_scroll_hit_test_region);
+    layer->SetNonCompositedScrollHitTestRects(
+        inputs.rare_inputs->non_composited_scroll_hit_test_rects);
     layer->SetCaptureBounds(inputs.rare_inputs->capture_bounds);
     layer->SetWheelEventHandlerRegion(inputs.rare_inputs->wheel_event_region);
   } else {

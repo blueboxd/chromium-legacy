@@ -21,6 +21,7 @@
 #include "chrome/browser/ash/growth/open_url_action_performer.h"
 #include "chrome/browser/ash/growth/show_notification_action_performer.h"
 #include "chrome/browser/ash/growth/show_nudge_action_performer.h"
+#include "chrome/browser/ash/growth/update_user_pref_action_performer.h"
 #include "chrome/browser/ash/login/demo_mode/demo_components.h"
 #include "chrome/browser/ash/login/demo_mode/demo_mode_dimensions.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
@@ -38,6 +39,7 @@
 #include "components/feature_engagement/public/tracker.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/variations/service/variations_service.h"
 #include "components/variations/synthetic_trials.h"
 
 namespace {
@@ -81,6 +83,20 @@ void CampaignsManagerClientImpl::LoadCampaignsComponent(
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
+void CampaignsManagerClientImpl::AddOnTrackerInitializedCallback(
+    growth::OnTrackerInitializedCallback callback) {
+  auto* tracker =
+      feature_engagement::TrackerFactory::GetForBrowserContext(GetProfile());
+  if (!tracker) {
+    LOG(ERROR) << "Feature Engagement tracer is not available";
+    std::move(callback).Run(false);
+  }
+
+  tracker->AddOnInitializedCallback(
+      base::BindOnce(&CampaignsManagerClientImpl::OnTrackerInitialized,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
 bool CampaignsManagerClientImpl::IsDeviceInDemoMode() const {
   return ash::DemoSession::IsDeviceInDemoMode();
 }
@@ -106,6 +122,10 @@ const std::string& CampaignsManagerClientImpl::GetUserLocale() const {
   // resolved using `l10n_util::CheckAndResolveLocale`.
   return GetProfile()->GetPrefs()->GetString(
       language::prefs::kApplicationLocale);
+}
+
+const std::string CampaignsManagerClientImpl::GetCountryCode() const {
+  return g_browser_process->variations_service()->GetStoredPermanentCountry();
 }
 
 const base::Version& CampaignsManagerClientImpl::GetDemoModeAppVersion() const {
@@ -142,6 +162,9 @@ growth::ActionMap CampaignsManagerClientImpl::GetCampaignsActions() {
       show_notification_performer.get());
   action_map.emplace(make_pair(growth::ActionType::kShowNotification,
                                std::move(show_notification_performer)));
+  action_map.emplace(
+      make_pair(growth::ActionType::kUpdateUserPref,
+                std::make_unique<UpdateUserPrefActionPerformer>()));
   return action_map;
 }
 
@@ -157,6 +180,8 @@ void CampaignsManagerClientImpl::RecordEvent(const std::string& event_name) {
       feature_engagement::TrackerFactory::GetForBrowserContext(GetProfile());
   if (!tracker || !tracker->IsInitialized()) {
     LOG(ERROR) << "Feature Engagement tracer is not available";
+    growth::RecordCampaignsManagerError(
+        growth::CampaignsManagerError::kTrackerNotAvailableInSession);
     return;
   }
 
@@ -169,6 +194,8 @@ void CampaignsManagerClientImpl::ClearConfig(
       feature_engagement::TrackerFactory::GetForBrowserContext(GetProfile());
   if (!tracker || !tracker->IsInitialized()) {
     LOG(ERROR) << "Feature Engagement tracer is not available";
+    growth::RecordCampaignsManagerError(
+        growth::CampaignsManagerError::kTrackerNotAvailableInSession);
     return;
   }
 
@@ -182,6 +209,8 @@ bool CampaignsManagerClientImpl::WouldTriggerHelpUI(
       feature_engagement::TrackerFactory::GetForBrowserContext(GetProfile());
   if (!tracker || !tracker->IsInitialized()) {
     LOG(ERROR) << "Feature Engagement tracer is not available";
+    growth::RecordCampaignsManagerError(
+        growth::CampaignsManagerError::kTrackerNotAvailableInSession);
     return false;
   }
 
@@ -194,20 +223,39 @@ signin::IdentityManager* CampaignsManagerClientImpl::GetIdentityManager()
   return IdentityManagerFactory::GetForProfile(GetProfile());
 }
 
-void CampaignsManagerClientImpl::OnReadyToLogImpression(int campaign_id) {
-  RecordImpression(campaign_id);
-  campaigns_manager_->RecordEventForTargeting(
-      growth::CampaignEvent::kImpression, base::NumberToString(campaign_id));
+void CampaignsManagerClientImpl::OnReadyToLogImpression(
+    int campaign_id,
+    std::optional<int> group_id,
+    bool should_log_cros_events) {
+  // Records impression UMA metrics.
+  // TODO: b/348495965 - Verify group metrics when ready.
+  RecordImpression(campaign_id, should_log_cros_events);
+  RecordImpressionEvents(campaign_id, group_id);
 }
 
-void CampaignsManagerClientImpl::OnDismissed(int campaign_id) {
-  RecordDismissed(campaign_id);
+void CampaignsManagerClientImpl::OnDismissed(int campaign_id,
+                                             std::optional<int> group_id,
+                                             bool should_mark_dismissed,
+                                             bool should_log_cros_events) {
+  // Records dismissal UMA metrics.
+  // TODO: b/348495965 - Verify group metrics when ready.
+  RecordDismissed(campaign_id, should_log_cros_events);
+
+  if (!should_mark_dismissed) {
+    return;
+  }
+
+  RecordDismissalEvents(campaign_id, group_id);
 }
 
 void CampaignsManagerClientImpl::OnButtonPressed(int campaign_id,
+                                                 std::optional<int> group_id,
                                                  CampaignButtonId button_id,
-                                                 bool should_mark_dismissed) {
-  RecordButtonPressed(campaign_id, button_id);
+                                                 bool should_mark_dismissed,
+                                                 bool should_log_cros_events) {
+  // TODO: b/348495965 - Verify group metrics when ready.
+  RecordButtonPressed(campaign_id, button_id, should_log_cros_events);
+
   if (!should_mark_dismissed) {
     return;
   }
@@ -217,9 +265,10 @@ void CampaignsManagerClientImpl::OnButtonPressed(int campaign_id,
   switch (button_id) {
     case CampaignButtonId::kPrimary:
     case CampaignButtonId::kSecondary:
-      // Primary and Secondary button press will treated as user dismissal.
-      campaigns_manager_->RecordEventForTargeting(
-          growth::CampaignEvent::kDismissed, base::NumberToString(campaign_id));
+    case CampaignButtonId::kClose:
+      // Primary, Secondary and close button press will treated as user
+      // dismissal.
+      RecordDismissalEvents(campaign_id, group_id);
       break;
     case CampaignButtonId::kOthers:
       break;
@@ -238,16 +287,50 @@ void CampaignsManagerClientImpl::OnComponentDownloaded(
   std::move(loaded_callback).Run(path);
 }
 
+void CampaignsManagerClientImpl::OnTrackerInitialized(
+    growth::OnTrackerInitializedCallback callback,
+    bool init_success) {
+  std::move(callback).Run(init_success);
+}
+
 void CampaignsManagerClientImpl::UpdateConfig(
     const std::map<std::string, std::string>& params) {
   auto* tracker =
       feature_engagement::TrackerFactory::GetForBrowserContext(GetProfile());
   if (!tracker || !tracker->IsInitialized()) {
     LOG(ERROR) << "Feature Engagement tracer is not available";
+    growth::RecordCampaignsManagerError(
+        growth::CampaignsManagerError::kTrackerNotAvailableInSession);
     return;
   }
 
   config_provider_.SetConfig(params);
   tracker->UpdateConfig(feature_engagement::kIPHGrowthFramework,
                         &config_provider_);
+}
+
+void CampaignsManagerClientImpl::RecordImpressionEvents(
+    int campaign_id,
+    std::optional<int> group_id) {
+  campaigns_manager_->RecordEventForTargeting(
+      growth::CampaignEvent::kImpression, base::NumberToString(campaign_id));
+
+  if (group_id) {
+    campaigns_manager_->RecordEventForTargeting(
+        growth::CampaignEvent::kGroupImpression,
+        base::NumberToString(group_id.value()));
+  }
+}
+
+void CampaignsManagerClientImpl::RecordDismissalEvents(
+    int campaign_id,
+    std::optional<int> group_id) {
+  campaigns_manager_->RecordEventForTargeting(
+      growth::CampaignEvent::kDismissed, base::NumberToString(campaign_id));
+
+  if (group_id) {
+    campaigns_manager_->RecordEventForTargeting(
+        growth::CampaignEvent::kGroupDismissed,
+        base::NumberToString(group_id.value()));
+  }
 }

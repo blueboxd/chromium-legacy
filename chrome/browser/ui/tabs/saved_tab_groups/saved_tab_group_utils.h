@@ -12,6 +12,8 @@
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_deletion_dialog_controller.h"
 #include "components/saved_tab_groups/saved_tab_group.h"
+#include "ui/base/interaction/element_identifier.h"
+#include "ui/base/interaction/element_tracker.h"
 #include "ui/base/models/dialog_model.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
@@ -20,6 +22,7 @@ class Browser;
 class Profile;
 
 namespace content {
+class NavigationHandle;
 class WebContents;
 }
 
@@ -33,6 +36,7 @@ class SavedTabGroupUtils {
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kMoveGroupToNewWindowMenuItem);
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kToggleGroupPinStateMenuItem);
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kTabsTitleItem);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kTab);
 
   SavedTabGroupUtils() = delete;
   SavedTabGroupUtils(const SavedTabGroupUtils&) = delete;
@@ -47,30 +51,21 @@ class SavedTabGroupUtils {
                                const base::Uuid& saved_group_guid);
 
   // Open the `url` to the end of `browser` tab strip.
-  static void OpenUrlToBrowser(Browser* browser,
-                               const GURL& url,
-                               int event_flags);
+  static void OpenUrlToBrowser(Browser* browser, const GURL& url);
 
-  static void OpenOrMoveSavedGroupToNewWindow(Browser* browser,
-                                              const SavedTabGroup* saved_group,
-                                              int event_flags);
-
-  // Delete the `saved_group`.
-  static void DeleteSavedTabGroup(Browser* browser,
-                                  const SavedTabGroup* saved_group,
-                                  int event_flags);
+  static void OpenOrMoveSavedGroupToNewWindow(
+      Browser* browser,
+      const base::Uuid& saved_group_guid);
 
   // Pin the saved tab group if it's unpinned, or unpin the saved tab group if
   // it's pinned.
   static void ToggleGroupPinState(Browser* browser,
-                                  base::Uuid id,
-                                  int event_flags);
+                                  const base::Uuid& saved_group_guid);
 
-  // Helper method to show the deletion dialog, if its needed. a return value of
-  // true means that a synchronous deletion is allowed, and the callback wasnt
-  // called. A return value of false means that the dialog was shown and the
-  // callback may be called asynchronously based on the dialog response.
-  static bool MaybeShowSavedTabGroupDeletionDialog(
+  // Helper method to show the deletion dialog, if its needed. It either
+  // runs the callback if the dialog is not shown or it shows the dialog
+  // and the callback is run asynchronously through the dialog.
+  static void MaybeShowSavedTabGroupDeletionDialog(
       Browser* browser,
       DeletionDialogController::DialogType type,
       const std::vector<TabGroupId>& group_ids,
@@ -79,12 +74,9 @@ class SavedTabGroupUtils {
   // Create the the context menu model for a saved tab group button or a saved
   // tab group menu item in the Everything menu. `browser` is the one from
   // which this method is invoked. `saved_guid` is the saved tab group's Uuid.
-  // Show a "Pin / Unpin group from bookmarks bar" option if
-  // `show_pin_unpin_option` is true.
   static std::unique_ptr<ui::DialogModel> CreateSavedTabGroupContextMenuModel(
       Browser* browser,
-      const base::Uuid& saved_guid,
-      bool show_pin_unpin_option);
+      const base::Uuid& saved_guid);
 
   // Converts a webcontents into a SavedTabGroupTab.
   static SavedTabGroupTab CreateSavedTabGroupTabFromWebContents(
@@ -111,7 +103,7 @@ class SavedTabGroupUtils {
 
   // Returns the set of urls currently stored in the saved tab group.
   static std::unordered_set<std::string> GetURLsInSavedTabGroup(
-      const tab_groups::SavedTabGroupKeyedService& saved_tab_group_service,
+      Profile* profile,
       const base::Uuid& saved_id);
 
   // Moves an open saved tab group from `source_browser` to `target_browser`.
@@ -126,9 +118,13 @@ class SavedTabGroupUtils {
   static void FocusFirstTabOrWindowInOpenGroup(
       tab_groups::TabGroupId local_group_id);
 
-  // Returns whether the tab's URL is viable for saving in a saved tab
-  // group.
-  static bool IsURLValidForSavedTabGroups(const GURL& gurl);
+  // Returns the correct element for showing the IPH for Saved Groups V2. Either
+  // the SavedTabGroupBar::EverythingMenuButton or the AppMenuButton.
+  static ui::TrackedElement* GetAnchorElementForTabGroupsV2IPH(
+      const ui::ElementTracker::ElementList& elements);
+
+  // Returns true if new tab groups should be pinned.
+  static bool ShouldAutoPinNewTabGroups(Profile* profile);
 };
 
 }  // namespace tab_groups

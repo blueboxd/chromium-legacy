@@ -18,28 +18,22 @@
 #include "components/password_manager/core/browser/password_store/password_store_change.h"
 #include "components/password_manager/core/browser/password_store/password_store_interface.h"
 #include "components/password_manager/core/browser/password_sync_util.h"
+#include "components/sync/base/user_selectable_type.h"
 #include "components/sync/service/sync_service.h"
+#include "components/sync/service/sync_user_settings.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_ANDROID)
-#include "base/android/build_info.h"
 #include "components/password_manager/core/browser/password_store/split_stores_and_local_upm.h"
 #endif  // BUILDFLAG(IS_ANDROID)
 
 namespace browsing_data {
 namespace {
 
-// This predicate is only about profile (non-account) passwords, so it is only
-// concerned about whether sync-the-feature is on or off. Account passwords are
-// counted separately.
+// This predicate is only about passwords in the profile store.
 bool IsProfilePasswordSyncEnabled(PrefService* pref_service,
                                   const syncer::SyncService* sync_service) {
-  // TODO(crbug.com/40067058): Clean this up once Sync-the-feature is gone on
-  // all platforms.
-  bool is_pwd_sync_enabled =
-      password_manager::sync_util::IsSyncFeatureEnabledIncludingPasswords(
-          sync_service);
 #if BUILDFLAG(IS_ANDROID)
   // If UsesSplitStoresAndUPMForLocal() is true, the profile store is never
   // synced, only the account store is.
@@ -47,15 +41,21 @@ bool IsProfilePasswordSyncEnabled(PrefService* pref_service,
     return false;
   }
 
-  std::string gms_version_str =
-      base::android::BuildInfo::GetInstance()->gms_version_code();
-  if (password_manager::IsGmsCoreUpdateRequired(
-          pref_service, is_pwd_sync_enabled, gms_version_str)) {
+  // TODO(crbug.com/344640768): The IsGmsCoreUpdateRequired() check isn't
+  // perfect, it causes the string to say "synced" in cases when it shouldn't.
+  if (password_manager::IsGmsCoreUpdateRequired(pref_service, sync_service)) {
     return false;
   }
-#endif  // BUILDFLAG(IS_ANDROID)
 
-  return is_pwd_sync_enabled;
+  return sync_service &&
+         sync_service->GetUserSettings()->GetSelectedTypes().Has(
+             syncer::UserSelectableType::kPasswords);
+#else
+  // TODO(crbug.com/40067058): Clean this up once Sync-the-feature is gone on
+  // all platforms.
+  return password_manager::sync_util::IsSyncFeatureEnabledIncludingPasswords(
+      sync_service);
+#endif
 }
 
 }  // namespace

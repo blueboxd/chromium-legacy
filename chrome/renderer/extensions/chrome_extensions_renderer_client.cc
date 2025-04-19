@@ -9,13 +9,11 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/features.h"
 #include "base/functional/bind.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram_functions.h"
 #include "chrome/common/chrome_isolated_world_ids.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/chrome_render_thread_observer.h"
@@ -28,7 +26,6 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
-#include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/mojom/context_type.mojom.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/switches.h"
@@ -107,29 +104,6 @@ void ChromeExtensionsRendererClient::OnExtensionLoaded(
 void ChromeExtensionsRendererClient::OnExtensionUnloaded(
     const extensions::ExtensionId& extension_id) {
   resource_request_policy_->OnExtensionUnloaded(extension_id);
-}
-
-bool ChromeExtensionsRendererClient::ExtensionAPIEnabledForServiceWorkerScript(
-    const GURL& scope,
-    const GURL& script_url) const {
-  if (!script_url.SchemeIs(extensions::kExtensionScheme))
-    return false;
-
-  const Extension* extension =
-      extensions::RendererExtensionRegistry::Get()->GetExtensionOrAppByURL(
-          script_url);
-
-  if (!extension ||
-      !extensions::BackgroundInfo::IsServiceWorkerBased(extension))
-    return false;
-
-  if (scope != extension->url())
-    return false;
-
-  const std::string& sw_script =
-      extensions::BackgroundInfo::GetBackgroundServiceWorkerScript(extension);
-
-  return extension->GetResourceURL(sw_script) == script_url;
 }
 
 void ChromeExtensionsRendererClient::RenderThreadStarted() {
@@ -235,7 +209,8 @@ ChromeExtensionsRendererClient::GetProtocolHandlerSecurityLevel() {
 void ChromeExtensionsRendererClient::WillSendRequest(
     blink::WebLocalFrame* frame,
     ui::PageTransition transition_type,
-    const blink::WebURL& url,
+    const blink::WebURL& upstream_url,
+    const blink::WebURL& target_url,
     const net::SiteForCookies& site_for_cookies,
     const url::Origin* initiator_origin,
     GURL* new_url) {
@@ -263,20 +238,19 @@ void ChromeExtensionsRendererClient::WillSendRequest(
   }
 
   // The rest of this method is only concerned with extensions URLs.
-  if (base::FeatureList::IsEnabled(base::features::kOptimizeDataUrls) &&
-      !url.ProtocolIs(extensions::kExtensionScheme)) {
+  if (!target_url.ProtocolIs(extensions::kExtensionScheme)) {
     return;
   }
 
-  if (url.ProtocolIs(extensions::kExtensionScheme) &&
+  if (target_url.ProtocolIs(extensions::kExtensionScheme) &&
       !resource_request_policy_->CanRequestResource(
-          GURL(url), frame, transition_type, initiator_origin)) {
+          upstream_url, target_url, frame, transition_type, initiator_origin)) {
     *new_url = GURL(chrome::kExtensionInvalidRequestURL);
   }
 
   // TODO(crbug.com/41240557): Remove metrics after bug is fixed.
-  GURL request_url(url);
-  if (url.ProtocolIs(extensions::kExtensionScheme) &&
+  GURL request_url(target_url);
+  if (target_url.ProtocolIs(extensions::kExtensionScheme) &&
       request_url.host_piece() == extension_misc::kDocsOfflineExtensionId) {
     if (!ukm_recorder_) {
       mojo::Remote<ukm::mojom::UkmRecorderFactory> factory;

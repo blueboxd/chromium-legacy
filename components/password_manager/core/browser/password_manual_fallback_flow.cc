@@ -4,8 +4,15 @@
 
 #include "components/password_manager/core/browser/password_manual_fallback_flow.h"
 
+#include <optional>
+
+#include "base/check.h"
+#include "base/containers/contains.h"
 #include "base/functional/bind.h"
+#include "base/ranges/algorithm.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/ui/popup_open_enums.h"
+#include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/password_manager/core/browser/form_fetcher_impl.h"
 #include "components/password_manager/core/browser/form_parsing/form_data_parser.h"
 #include "components/password_manager/core/browser/manage_passwords_referrer.h"
@@ -15,7 +22,9 @@
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
+#include "components/password_manager/core/browser/password_manual_fallback_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
+#include "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #include "url/gurl.h"
 
 namespace password_manager {
@@ -30,22 +39,65 @@ std::u16string GetUsernameFromLabel(const std::u16string& label) {
              ? std::u16string()
              : label;
 }
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || \
+    BUILDFLAG(IS_CHROMEOS)
+// Returns the password form corresponding to the `payload` data. In most
+// cases there is only one such form stored, but having more than one or no
+// forms is also possible. If there is more than one form, showing any of them
+// is acceptable and the first one found is returned. The absence of forms is
+// expected to be even rarer, `std::nullopt` is returned in this case (no bubble
+// is triggered).
+std::optional<password_manager::PasswordForm> GetCorrespondingPasswordForm(
+    const Suggestion::PasswordSuggestionDetails& payload,
+    const SavedPasswordsPresenter& presenter) {
+  const std::vector<CredentialUIEntry>& credential_ui_entries =
+      presenter.GetSavedCredentials();
+  const auto& found_credential_it = base::ranges::find_if(
+      credential_ui_entries, [&payload](const CredentialUIEntry& ui_entry) {
+        return ui_entry.username == payload.username &&
+               ui_entry.password == payload.password &&
+               base::Contains(ui_entry.GetAffiliatedDomains(),
+                              payload.signon_realm,
+                              &CredentialUIEntry::DomainInfo::signon_realm);
+      });
+
+  if (found_credential_it == credential_ui_entries.end()) {
+    return std::nullopt;
+  }
+
+  const std::vector<PasswordForm> forms =
+      presenter.GetCorrespondingPasswordForms(*found_credential_it);
+  const std::vector<PasswordForm>::const_iterator& found_form_it =
+      base::ranges::find_if(forms, [&payload](const PasswordForm& form) {
+        return form.signon_realm == payload.signon_realm;
+      });
+  CHECK(found_form_it != forms.end());
+  return *found_form_it;
+}
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) ||
+        // BUILDFLAG(IS_CHROMEOS)
+
 }  // namespace
 
 PasswordManualFallbackFlow::PasswordManualFallbackFlow(
     PasswordManagerDriver* password_manager_driver,
     autofill::AutofillClient* autofill_client,
     PasswordManagerClient* password_client,
+    PasswordManualFallbackMetricsRecorder* manual_fallback_metrics_recorder,
     const PasswordFormCache* password_form_cache,
     std::unique_ptr<SavedPasswordsPresenter> passwords_presenter)
     : suggestion_generator_(password_manager_driver, password_client),
       password_manager_driver_(password_manager_driver),
       autofill_client_(autofill_client),
       password_client_(password_client),
+      manual_fallback_metrics_recorder_(manual_fallback_metrics_recorder),
       password_form_cache_(password_form_cache),
       passwords_presenter_(std::move(passwords_presenter)) {
   passwords_presenter_observation_.Observe(passwords_presenter_.get());
   passwords_presenter_->Init();
+
+  manual_fallback_metrics_recorder_->DataFetchingStarted();
 
   const GURL origin_as_gurl = password_manager_driver_->GetLastCommittedURL();
   password_manager::PasswordFormDigest form_digest(
@@ -85,7 +137,7 @@ void PasswordManualFallbackFlow::OnFetchCompleted() {
     flow_state_ = FlowState::kFlowInitialized;
     // The flow state transition to `FlowState::kFlowInitialized` can happen
     // only once.
-    metrics_recorder_.RecordDataFetchingLatency();
+    manual_fallback_metrics_recorder_->RecordDataFetchingLatency();
     if (on_all_password_data_ready_) {
       std::move(on_all_password_data_ready_).Run();
     }
@@ -100,7 +152,7 @@ void PasswordManualFallbackFlow::OnSavedPasswordsChanged(
     flow_state_ = FlowState::kFlowInitialized;
     // The flow state transition to `FlowState::kFlowInitialized` can happen
     // only once.
-    metrics_recorder_.RecordDataFetchingLatency();
+    manual_fallback_metrics_recorder_->RecordDataFetchingLatency();
     if (on_all_password_data_ready_) {
       std::move(on_all_password_data_ready_).Run();
     }
@@ -129,7 +181,11 @@ PasswordManualFallbackFlow::GetDriver() {
   return password_manager_driver_.get();
 }
 
-void PasswordManualFallbackFlow::OnSuggestionsShown() {}
+void PasswordManualFallbackFlow::OnSuggestionsShown() {
+  manual_fallback_metrics_recorder_->OnDidShowSuggestions(
+      password_form_cache_->HasPasswordForm(password_manager_driver_,
+                                            field_id_));
+}
 
 void PasswordManualFallbackFlow::OnSuggestionsHidden() {}
 
@@ -168,6 +224,10 @@ void PasswordManualFallbackFlow::DidAcceptSuggestion(
   if (!suggestion.is_acceptable) {
     return;
   }
+  manual_fallback_metrics_recorder_->OnDidFillSuggestion(
+      password_form_cache_->HasPasswordForm(password_manager_driver_,
+                                            field_id_));
+
   switch (suggestion.type) {
     case autofill::SuggestionType::kPasswordEntry:
       MaybeAuthenticateBeforeFilling(base::BindOnce(
@@ -178,8 +238,7 @@ void PasswordManualFallbackFlow::DidAcceptSuggestion(
               .password));
       break;
     case autofill::SuggestionType::kPasswordFieldByFieldFilling:
-      password_manager_driver_->FillField(field_id_,
-                                          suggestion.main_text.value);
+      password_manager_driver_->FillField(suggestion.main_text.value);
       break;
     case autofill::SuggestionType::kFillPassword: {
       Suggestion::PasswordSuggestionDetails payload =
@@ -188,7 +247,7 @@ void PasswordManualFallbackFlow::DidAcceptSuggestion(
           &PasswordManualFallbackFlow::MaybeAuthenticateBeforeFilling,
           weak_ptr_factory_.GetWeakPtr(),
           base::BindOnce(&PasswordManagerDriver::FillField,
-                         base::Unretained(password_manager_driver_), field_id_,
+                         base::Unretained(password_manager_driver_),
                          payload.password));
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || \
@@ -207,9 +266,20 @@ void PasswordManualFallbackFlow::DidAcceptSuggestion(
       std::move(filling_callback).Run();
       break;
     }
-    case autofill::SuggestionType::kViewPasswordDetails:
-      // TODO(b/324242001): Trigger password details dialog.
+    case autofill::SuggestionType::kViewPasswordDetails: {
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || \
+    BUILDFLAG(IS_CHROMEOS)
+      std::optional<password_manager::PasswordForm> form =
+          GetCorrespondingPasswordForm(
+              suggestion.GetPayload<Suggestion::PasswordSuggestionDetails>(),
+              *passwords_presenter_);
+      if (form) {
+        password_client_->OpenPasswordDetailsBubble(*form);
+      }
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) ||
+        // BUILDFLAG(IS_CHROMEOS)
       break;
+    }
     case autofill::SuggestionType::kAllSavedPasswordsEntry:
       password_client_->NavigateToManagePasswordsPage(
           ManagePasswordsReferrer::kPasswordDropdown);
@@ -278,7 +348,7 @@ void PasswordManualFallbackFlow::MaybeAuthenticateBeforeFilling(
       password_client_->GetDeviceAuthenticator();
   // Note: this is currently only implemented on Android, Mac and Windows.
   // For other platforms, the `authenticator` will be null.
-  if (!password_client_->CanUseBiometricAuthForFilling(authenticator.get())) {
+  if (!password_client_->IsReauthBeforeFillingRequired(authenticator.get())) {
     std::move(fill_fields).Run();
   } else {
     authenticator_ = std::move(authenticator);

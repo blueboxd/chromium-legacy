@@ -84,6 +84,7 @@ class AwSettings : public content::WebContentsObserver {
   MixedContentMode GetMixedContentMode();
   AttributionBehavior GetAttributionBehavior();
   bool IsPrerender2Allowed();
+  bool IsBackForwardCacheEnabled();
 
   // Called from Java. Methods with "Locked" suffix require that the settings
   // access lock is held during their execution.
@@ -132,6 +133,12 @@ class AwSettings : public content::WebContentsObserver {
   void UpdateSpeculativeLoadingAllowedLocked(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
+  void UpdateBackForwardCacheEnabledLocked(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  void UpdateGeolocationEnabledLocked(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
 
   void PopulateWebPreferences(blink::web_pref::WebPreferences* web_prefs);
   bool GetAllowFileAccess();
@@ -158,6 +165,8 @@ class AwSettings : public content::WebContentsObserver {
       const base::android::JavaParamRef<jobjectArray>& rules);
   scoped_refptr<AwContentsOriginMatcher> xrw_allowlist_matcher();
 
+  bool geolocation_enabled() { return geolocation_enabled_; }
+
  private:
   AwRenderViewHostExt* GetAwRenderViewHostExt();
   void UpdateEverything();
@@ -178,12 +187,16 @@ class AwSettings : public content::WebContentsObserver {
   bool enterprise_authentication_app_link_policy_enabled_{true};
   MixedContentMode mixed_content_mode_;
   AttributionBehavior attribution_behavior_;
-  SpeculativeLoadingAllowedFlags spculative_loading_allowed_flags_{
+  SpeculativeLoadingAllowedFlags speculative_loading_allowed_flags_{
       SpeculativeLoadingAllowedFlags::SPECULATIVE_LOADING_DISABLED};
+  bool bfcache_enabled_in_java_settings_{false};
+  bool geolocation_enabled_{false};
 
   scoped_refptr<AwContentsOriginMatcher> xrw_allowlist_matcher_;
 
   JavaObjectWeakGlobalRef aw_settings_;
+
+  bool in_update_everything_locked_{false};
 };
 
 }  // namespace android_webview

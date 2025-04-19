@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/plus_addresses/model/plus_address_service_factory.h"
 
 #import <memory>
+#import <utility>
 
 #import "base/no_destructor.h"
 #import "components/affiliations/core/browser/affiliation_service.h"
@@ -14,7 +15,10 @@
 #import "components/plus_addresses/features.h"
 #import "components/plus_addresses/plus_address_http_client_impl.h"
 #import "components/plus_addresses/plus_address_service.h"
+#import "components/variations/service/google_groups_manager.h"
 #import "ios/chrome/browser/affiliations/model/ios_chrome_affiliation_service_factory.h"
+#import "ios/chrome/browser/metrics/model/google_groups_manager_factory.h"
+#import "ios/chrome/browser/plus_addresses/model/plus_address_setting_service_factory.h"
 #import "ios/chrome/browser/shared/model/browser_state/browser_state_otr_helper.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/signin/model/identity_manager_factory.h"
@@ -42,6 +46,8 @@ PlusAddressServiceFactory::PlusAddressServiceFactory()
   DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(ios::WebDataServiceFactory::GetInstance());
   DependsOn(IOSChromeAffiliationServiceFactory::GetInstance());
+  DependsOn(PlusAddressSettingServiceFactory::GetInstance());
+  DependsOn(GoogleGroupsManagerFactory::GetInstance());
 }
 
 PlusAddressServiceFactory::~PlusAddressServiceFactory() {}
@@ -59,30 +65,40 @@ PlusAddressServiceFactory::BuildServiceInstanceFor(
       ChromeBrowserState::FromBrowserState(context);
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForBrowserState(browser_state);
+  affiliations::AffiliationService* affiliation_service =
+      IOSChromeAffiliationServiceFactory::GetForBrowserState(context);
+
+  // `groups_manager` can be null in tests.
+  GoogleGroupsManager* groups_manager =
+      GoogleGroupsManagerFactory::GetForBrowserState(browser_state);
+  plus_addresses::PlusAddressService::FeatureEnabledForProfileCheck
+      feature_check =
+          (groups_manager &&
+           base::FeatureList::IsEnabled(
+               plus_addresses::features::kPlusAddressProfileAwareFeatureCheck))
+              ? base::BindRepeating(
+                    &GoogleGroupsManager::IsFeatureEnabledForProfile,
+                    base::Unretained(groups_manager))
+              : base::BindRepeating(&base::FeatureList::IsEnabled);
 
   std::unique_ptr<plus_addresses::PlusAddressService> plus_address_service =
       std::make_unique<plus_addresses::PlusAddressService>(
-          identity_manager,
+          browser_state->GetPrefs(), identity_manager,
+          PlusAddressSettingServiceFactory::GetForBrowserState(browser_state),
           std::make_unique<plus_addresses::PlusAddressHttpClientImpl>(
               identity_manager, browser_state->GetSharedURLLoaderFactory()),
           ios::WebDataServiceFactory::GetPlusAddressWebDataForBrowserState(
               browser_state, ServiceAccessType::EXPLICIT_ACCESS),
-          // TODO(b/340494671): Pass a valid instance of affiliation service.
-          nullptr);
+          affiliation_service, std::move(feature_check));
 
   if (base::FeatureList::IsEnabled(
           plus_addresses::features::kPlusAddressAffiliations)) {
-    IOSChromeAffiliationServiceFactory::GetForBrowserState(context)
-        ->RegisterSource(std::make_unique<
-                         plus_addresses::PlusAddressAffiliationSourceAdapter>(
+    affiliation_service->RegisterSource(
+        std::make_unique<plus_addresses::PlusAddressAffiliationSourceAdapter>(
             plus_address_service.get()));
   }
 
   return plus_address_service;
-}
-
-bool PlusAddressServiceFactory::ServiceIsCreatedWithBrowserState() const {
-  return true;
 }
 
 bool PlusAddressServiceFactory::ServiceIsNULLWhileTesting() const {

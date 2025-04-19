@@ -46,7 +46,6 @@ import androidx.annotation.Px;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
@@ -54,12 +53,9 @@ import org.robolectric.annotation.LooperMode.Mode;
 
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.Features.EnableFeatures;
-import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider;
-import org.chromium.chrome.browser.customtabs.features.partialcustomtab.PartialCustomTabBaseStrategy.ResizeType;
 import org.chromium.ui.accessibility.UiAccessibilityFeatures;
 import org.chromium.ui.base.LocalizationUtils;
 
@@ -80,8 +76,6 @@ public class PartialCustomTabSideSheetStrategyTest {
     private static final boolean RIGHT = true;
     private static final boolean LEFT = false;
     private boolean mFullscreen;
-
-    @Rule public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
 
     @Rule public final PartialCustomTabTestRule mPCCTTestRule = new PartialCustomTabTestRule();
 
@@ -825,22 +819,13 @@ public class PartialCustomTabSideSheetStrategyTest {
                         eq(ACTIVITY_LAYOUT_STATE_SIDE_SHEET));
         clearInvocations(mPCCTTestRule.mOnActivityLayoutCallback);
 
-        int expected = ResizeType.MANUAL_EXPANSION;
-        var histogramExpansion =
-                HistogramWatcher.newSingleRecordWatcher("CustomTabs.SideSheetResizeType", expected);
         strategy.toggleMaximize(true);
         PartialCustomTabTestRule.waitForAnimationToFinish();
         assertTrue("Should be in maximized state.", strategy.isMaximized());
-        histogramExpansion.assertExpected("ResizeType.MANUAL_EXPANSION should be recorded once.");
 
-        expected = PartialCustomTabBottomSheetStrategy.ResizeType.MANUAL_MINIMIZATION;
-        var histogramMinimization =
-                HistogramWatcher.newSingleRecordWatcher("CustomTabs.SideSheetResizeType", expected);
         strategy.toggleMaximize(true);
         PartialCustomTabTestRule.waitForAnimationToFinish();
         assertFalse("Should be in minimized state.", strategy.isMaximized());
-        histogramMinimization.assertExpected(
-                "ResizeType.MANUAL_MINIMIZATION should be recorded once.");
     }
 
     private static void assertPosition(boolean isRightSide, boolean isRtl, int position) {

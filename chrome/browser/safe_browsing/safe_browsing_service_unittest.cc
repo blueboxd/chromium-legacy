@@ -48,9 +48,8 @@ class SafeBrowsingServiceTest : public testing::Test {
  public:
   SafeBrowsingServiceTest() {
     feature_list_.InitWithFeatures(
-        {safe_browsing::kDownloadReportWithoutUserDecision,
-         safe_browsing::kExtendedReportingRemovePrefDependency},
-        {});
+        {safe_browsing::kDownloadReportWithoutUserDecision},
+        {safe_browsing::kExtendedReportingRemovePrefDependency});
   }
 
   void SetUp() override {
@@ -352,6 +351,10 @@ TEST_F(SafeBrowsingServiceTest, WhenUserIsInNoProtectionNormallyoReturnsFalse) {
 
 TEST_F(SafeBrowsingServiceTest,
        SaveExtendedReportingPrefValueOnProfileAddedFeatureFlagEnabled) {
+  ResetAndReinitFeatures(
+      {safe_browsing::kDownloadReportWithoutUserDecision,
+       safe_browsing::kExtendedReportingRemovePrefDependency},
+      {});
   SetExtendedReportingPrefForTests(profile_->GetPrefs(), true);
   sb_service_->OnProfileAdded(profile());
   // Since the user enabled Extended Reporting, the preference value used to
@@ -456,6 +459,25 @@ TEST_F(SafeBrowsingServiceAntiPhishingTelemetryTest,
 
   EXPECT_TRUE(sb_service_->SendPhishyInteractionsReport(
       profile(), test_url, test_page_url, test_map));
+}
+
+TEST_F(SafeBrowsingServiceAntiPhishingTelemetryTest,
+       WhenUserIsIncognitoDontSendReport) {
+  // Set profile to incognito
+  otr_profile_ = std::move(profile_builder_.BuildIncognito(profile_.get()));
+
+  const int kExpectedClickEventCount = 5;
+  const int kExpectedKeyEventCount = 2;
+  const int kExpectedPasteEventCount = 0;
+  SetExtendedReportingPrefForTests(otr_profile_->GetPrefs(), true);
+  GURL test_url("http://phishing.com");
+  GURL test_page_url("http://page_url.com");
+  PhishySiteInteractionMap test_map = SetUpPhishyInteractionMap(
+      kExpectedClickEventCount, kExpectedKeyEventCount,
+      kExpectedPasteEventCount);
+
+  EXPECT_FALSE(sb_service_->SendPhishyInteractionsReport(
+      otr_profile_.get(), test_url, test_page_url, test_map));
 }
 
 class SendNotificationsAcceptedTest : public SafeBrowsingServiceTest {
@@ -576,6 +598,22 @@ TEST_F(SendNotificationsAcceptedTest, DontSendReportWhenFeatureIsNotEnabled) {
           &test_url_loader_factory));
   EXPECT_FALSE(sb_service_->MaybeSendNotificationsAcceptedReport(
       nullptr, profile(), notification_url1, notification_url2,
+      notification_url3, display_duration));
+}
+
+TEST_F(SendNotificationsAcceptedTest, DontSendReportWhenUserIsIncognito) {
+  // Set profile to incognito
+  otr_profile_ = std::move(profile_builder_.BuildIncognito(profile_.get()));
+  SetExtendedReportingPrefForTests(otr_profile_->GetPrefs(), true);
+  EnableNotificationsAcceptedFeature();
+  SetUrlIsAllowlistedForTesting();
+
+  GURL notification_url1("http://www.notification1.com/");
+  GURL notification_url2("http://www.notification2.com/");
+  GURL notification_url3("http://www.notification3.com/");
+  base::TimeDelta display_duration = base::Seconds(10);
+  EXPECT_FALSE(sb_service_->MaybeSendNotificationsAcceptedReport(
+      nullptr, otr_profile_.get(), notification_url1, notification_url2,
       notification_url3, display_duration));
 }
 

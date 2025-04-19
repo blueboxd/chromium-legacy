@@ -8,7 +8,9 @@
 #include <memory>
 
 #include "base/time/time.h"
+#include "base/types/optional_ref.h"
 #include "cc/input/actively_scrolling_type.h"
+#include "cc/input/browser_controls_offset_tags_info.h"
 #include "cc/input/browser_controls_state.h"
 #include "cc/paint/element_id.h"
 #include "ui/gfx/geometry/size.h"
@@ -54,6 +56,7 @@ class InputDelegateForCompositor {
   virtual void DidCommit() = 0;
   virtual void DidActivatePendingTree() = 0;
   virtual void DidFinishImplFrame() = 0;
+  virtual void OnBeginImplFrameDeadline() = 0;
 
   // Called when the state of the "root layer" may have changed from outside
   // the input system. The state includes: scroll offset, scrollable size,
@@ -135,9 +138,12 @@ class CompositorDelegateForInput {
   virtual float PageScaleFactor() const = 0;
   virtual gfx::Size VisualDeviceViewportSize() const = 0;
   virtual const LayerTreeSettings& GetSettings() const = 0;
-  virtual void UpdateBrowserControlsState(BrowserControlsState constraints,
-                                          BrowserControlsState current,
-                                          bool animate) = 0;
+  virtual void UpdateBrowserControlsState(
+      BrowserControlsState constraints,
+      BrowserControlsState current,
+      bool animate,
+      base::optional_ref<const BrowserControlsOffsetTagsInfo>
+          offset_tags_info) = 0;
   virtual bool HasScrollLinkedAnimation(ElementId for_scroller) const = 0;
 
   // TODO(bokan): Temporary escape hatch for code that hasn't yet been

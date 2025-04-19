@@ -69,6 +69,17 @@ bool IsPDFWebContents(content::WebContents* web_contents) {
   return web_contents->GetContentsMimeType() == pdf::kPDFMimeType;
 }
 
+// Check if |web_contents| is from a incognito profile
+bool IsFromIncognito(content::WebContents* web_contents) {
+  auto* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  if (!profile) {
+    return false;
+  }
+
+  return profile->IsIncognitoProfile();
+}
+
 // Get the RenderFrameHost that contains the PDF content.
 content::RenderFrameHost* GetPDFRenderFrameHost(
     content::WebContents* contents) {
@@ -86,7 +97,12 @@ content::RenderFrameHost* GetPDFRenderFrameHost(
 
 // When the size of the AXTreeUpdate meets this threshold, we consider them
 // contain enough content and start extraction without subsequence updates.
-constexpr int kAXTreeUpdateByteSizeThreshold = 3000;
+constexpr int kAXTreeUpdateByteSizeThreshold = 2000;
+
+// When total observation time for accessibility changes for PDF greater than
+// this limit, we stop observing the changes, and processes whatever updates
+// received so far.
+constexpr base::TimeDelta kPdfObservationTimeLimit = base::Seconds(30);
 
 }  // namespace
 
@@ -96,6 +112,10 @@ MahiPDFObserver::MahiPDFObserver(content::WebContents* web_contents,
                                  PDFContentObservedCallback callback)
     : tree_id_(tree_id), callback_(std::move(callback)) {
   Observe(web_contents);
+
+  timer_.Start(FROM_HERE, kPdfObservationTimeLimit,
+               base::BindOnce(&MahiPDFObserver::OnTimerFired,
+                              weak_ptr_factory_.GetWeakPtr()));
 
   // Enable accessibility for the top level render frame and all descendants.
   // This causes AXTreeSerializer to reset and send accessibility events of
@@ -135,6 +155,13 @@ void MahiPDFObserver::AccessibilityEventReceived(
   }
 }
 
+void MahiPDFObserver::OnTimerFired() {
+  if (!callback_) {
+    return;
+  }
+  std::move(callback_).Run(updates_);
+}
+
 // static
 MahiWebContentsManager* MahiWebContentsManager::Get() {
   if (g_mahi_web_content_manager_for_testing) {
@@ -156,8 +183,6 @@ void MahiWebContentsManager::Initialize() {
                              base::BindRepeating(
                                  &MahiWebContentsManager::RequestContent,
                                  weak_pointer_factory_.GetWeakPtr()));
-  content_extraction_delegate_ =
-      std::make_unique<MahiContentExtractionDelegate>();
 
   is_initialized_ = true;
 }
@@ -182,6 +207,8 @@ void MahiWebContentsManager::OnFocusedPageLoadComplete(
   focused_web_content_state_.favicon = GetFavicon(focused_web_contents_);
   focused_web_content_state_.top_level_native_window =
       web_contents->GetTopLevelNativeWindow();
+  focused_web_content_state_.is_incognito =
+      IsFromIncognito(focused_web_contents_);
 
   // Skip the distillable check for PDF content.
   if (IsPDFWebContents(web_contents)) {
@@ -233,9 +260,11 @@ void MahiWebContentsManager::WebContentsDestroyed(
 void MahiWebContentsManager::OnContextMenuClicked(
     int64_t display_id,
     ButtonType button_type,
-    const std::u16string& question) {
+    const std::u16string& question,
+    const gfx::Rect& mahi_menu_bounds) {
   // Forwards the UI request to `MahiBrowserDelegate`.
-  client_->OnContextMenuClicked(display_id, button_type, question);
+  client_->OnContextMenuClicked(display_id, button_type, question,
+                                mahi_menu_bounds);
 
   // Records the `button_type` has been clicked.
   base::UmaHistogramEnumeration(chromeos::mahi::kMahiContextMenuActivated,
@@ -257,7 +286,7 @@ bool MahiWebContentsManager::GetPrefValue() const {
     return false;
   }
   return session_controller->GetActivePrefService()->GetBoolean(
-      ash::prefs::kMahiEnabled);
+      ash::prefs::kHmrEnabled);
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -322,6 +351,11 @@ void MahiWebContentsManager::RequestContent(
     return;
   }
 
+  if (!content_extraction_delegate_) {
+    content_extraction_delegate_ =
+        std::make_unique<MahiContentExtractionDelegate>();
+  }
+
   if (IsPDFWebContents(focused_web_contents_)) {
     RequestPDFContent(page_id, std::move(callback));
   } else {
@@ -339,7 +373,8 @@ void MahiWebContentsManager::RequestWebContent(
                      focused_web_content_state_.page_id, focused_web_contents_,
                      start_time, std::move(callback)),
       ui::kAXModeWebContentsOnly,
-      /* max_nodes= */ 5000, /* timeout= */ {});
+      /* max_nodes= */ 5000, /* timeout= */ {},
+      content::WebContents::AXTreeSnapshotPolicy::kAll);
 }
 
 void MahiWebContentsManager::RequestPDFContent(
@@ -353,18 +388,26 @@ void MahiWebContentsManager::RequestPDFContent(
     return;
   }
 
-  std::vector<content::WebContents*> inner_contents =
-      focused_web_contents_ ? focused_web_contents_->GetInnerWebContents()
-                            : std::vector<content::WebContents*>();
+  // If OOPIF PDF is enabled, we need to observe the focused web contents for
+  // a11y changes. Otherwise, we need to observe the inner web contents.
+  content::WebContents* web_contents_to_observe = focused_web_contents_;
+  if (!base::FeatureList::IsEnabled(chrome_pdf::features::kPdfOopif)) {
+    std::vector<content::WebContents*> inner_contents =
+        focused_web_contents_ ? focused_web_contents_->GetInnerWebContents()
+                              : std::vector<content::WebContents*>();
 
-  if (inner_contents.size() != 1u) {
-    LOG(ERROR) << "Couldn't find inner WebContents contains PDF.";
-    std::move(callback).Run(nullptr);
-    return;
+    if (inner_contents.size() != 1u) {
+      LOG(ERROR) << "Couldn't find inner WebContents contains PDF.";
+      std::move(callback).Run(nullptr);
+      return;
+    }
+
+    web_contents_to_observe = inner_contents[0];
   }
 
   pdf_observer_ = std::make_unique<MahiPDFObserver>(
-      inner_contents[0], ui::kAXModeWebContentsOnly, rfh_pdf->GetAXTreeID(),
+      web_contents_to_observe, ui::kAXModeWebContentsOnly,
+      rfh_pdf->GetAXTreeID(),
       base::BindOnce(&MahiWebContentsManager::OnGetAXTreeUpdatesForPDF,
                      weak_pointer_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -386,22 +429,31 @@ gfx::ImageSkia MahiWebContentsManager::GetFavicon(
 }
 
 bool MahiWebContentsManager::ShouldSkip(content::WebContents* web_contents) {
-  const std::string& url = web_contents->GetURL().spec();
+  const auto url = web_contents->GetURL();
 
-  static constexpr auto kSkipUrls = base::MakeFixedFlatSet<std::string_view>({
-      // blank and default pages.
-      "about:blank",
-      "chrome://newtab/",
-  });
-  // A tab should be skipped if it is empty, blank or default page.
-  if (url.empty() || base::Contains(kSkipUrls, url)) {
+  static constexpr auto kSkipUrls = base::MakeFixedFlatSet<std::string_view>(
+      {// blank and default pages.
+       "about:blank", "chrome://newtab/",
+       // Workspace
+       "mail.google.com", "meet.google.com", "calendar.google.com",
+       "tasks.google.com", "drive.google.com", "docs.google.com",
+       "keep.google.com", "script.google.com", "voice.google.com"});
+  // A tab should be skipped if it is empty, or have the domain in the
+  // `kSkipUrls` list
+  if (url.spec().empty()) {
     return true;
   }
+  for (const auto& skip_url : kSkipUrls) {
+    if (url.DomainIs(skip_url)) {
+      return true;
+    }
+  }
 
-  // Also skip urls that begins with `chrome`. They are usually web UI and
-  // internal pages. E.g., `chrome://`, `chrome-internal://` and
-  // `chrome-untrusted://`.
-  return url.rfind("chrome", 0) == 0;
+  // Also skip urls that begins with `chrome` and `view-source`. They are
+  // usually web UI and internal pages. E.g., `chrome://`, `chrome-internal://`
+  // and `chrome-untrusted://`.
+  return (url.spec().rfind("chrome", 0) == 0) ||
+         (url.spec().rfind("view-source", 0) == 0);
 }
 
 }  // namespace mahi

@@ -163,6 +163,13 @@ BASE_FEATURE(kZeroSuggestInMemoryCaching,
              "ZeroSuggestInMemoryCaching",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables the use of a request debouncer to throttle the number of ZPS prefetch
+// requests initiated over a given period of time (to help minimize the
+// performance impact of ZPS prefetching on the remote Suggest service).
+BASE_FEATURE(kZeroSuggestPrefetchDebouncing,
+             "ZeroSuggestPrefetchDebouncing",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables prefetching of the zero prefix suggestions for eligible users on NTP.
 BASE_FEATURE(kZeroSuggestPrefetching,
              "ZeroSuggestPrefetching",
@@ -178,13 +185,6 @@ BASE_FEATURE(kZeroSuggestPrefetchingOnSRP,
 BASE_FEATURE(kZeroSuggestPrefetchingOnWeb,
              "ZeroSuggestPrefetchingOnWeb",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables storing successful query/match in the shortcut database.
-// Desktop will populate db regardless of this feature.
-// Android will not populate db regardless of this feature.
-BASE_FEATURE(kOmniboxPopulateShortcutsDatabase,
-             "OmniboxPopulateShortcutsDatabase",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Features to provide head and tail non personalized search suggestion from
 // compact on device models. More specifically, feature name with suffix
@@ -247,11 +247,6 @@ BASE_FEATURE(kClipboardSuggestionContentHidden,
              "ClipboardSuggestionContentHidden",
              enabled_by_default_android_only);
 
-// If enabled, company entity icons may be replaced by a search loupe.
-BASE_FEATURE(kCompanyEntityIconAdjustment,
-             "CompanyEntityIconAdjustment",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // If enabled, uses the Chrome Refresh 2023 design's shape for action chips in
 // the omnibox suggestion popup.
 BASE_FEATURE(kCr2023ActionChips,
@@ -283,11 +278,6 @@ BASE_FEATURE(kRichAutocompletion,
 // Feature used to enable Pedals in the NTP Realbox.
 BASE_FEATURE(kNtpRealboxPedals,
              "NtpRealboxPedals",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Feature used to synchronize the toolbar's and status bar's color.
-BASE_FEATURE(kOmniboxMatchToolbarAndStatusBarColor,
-             "OmniboxMatchToolbarAndStatusBarColor",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, appends Query Tiles to the Omnibox ZPS on New Tab Page.
@@ -406,6 +396,12 @@ BASE_FEATURE(kDefaultTypedNavigationsToHttps,
              "OmniboxDefaultTypedNavigationsToHttps",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Override the delay to create a spare renderer when the omnibox is focused
+// on Android.
+BASE_FEATURE(kOverrideAndroidOmniboxSpareRendererDelay,
+             "OverrideAndroidOmniboxSpareRendererDelay",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Parameter name used to look up the delay before falling back to the HTTP URL
 // while trying an HTTPS URL. The parameter is treated as a TimeDelta, so the
 // unit must be included in the value as well (e.g. 3s for 3 seconds).
@@ -420,11 +416,18 @@ BASE_FEATURE(kLogUrlScoringSignals,
              "LogUrlScoringSignals",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// If enabled, (floating-point) ML model scores are mapped to (integral)
+// relevance scores by means of a piecewise function. This allows for the
+// integration of URL model scores with search traditional scores.
+BASE_FEATURE(kMlUrlPiecewiseMappedSearchBlending,
+             "MlUrlPiecewiseMappedSearchBlending",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // If enabled, the ML scoring service will make use of an in-memory ML score
 // cache in order to speed up the overall scoring process.
 BASE_FEATURE(kMlUrlScoreCaching,
              "MlUrlScoreCaching",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             enabled_by_default_desktop_only);
 
 // If enabled, runs the ML scoring model to assign new relevance scores to the
 // URL suggestions and reranks them.
@@ -441,12 +444,6 @@ BASE_FEATURE(kMlUrlSearchBlending,
 BASE_FEATURE(kUrlScoringModel,
              "UrlScoringModel",
              enabled_by_default_desktop_only);
-
-// If enabled, skips ML scoring for those autocomplete matches which were
-// constructed by deduping an ML-eligible and ML-ineligible match.
-BASE_FEATURE(kEnableForceSkipMlScoring,
-             "EnableForceSkipMlScoring",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Actions in Suggest is a data-driven feature; it's considered enabled when the
 // data is available.
@@ -497,12 +494,23 @@ BASE_FEATURE(kShowFeaturedEnterpriseSiteSearch,
              "ShowFeaturedEnterpriseSiteSearch",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables an informational IPH message at the bottom of the Omnibox directing
+// users to featured Enterprise search engines created by policy.
+BASE_FEATURE(kShowFeaturedEnterpriseSiteSearchIPH,
+             "ShowFeaturedEnterpriseSiteSearchIPH",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // If enabled, site search engines defined by policy are saved into prefs and
 // committed to the keyword database, so that they can be accessed from the
 // Omnibox and the Settings page.
+// This feature only has any effect if the policy is set by the administrator,
+// so it's safe to keep it enabled by default - in case of errors, disabling
+// the policy should be enough.
+// Keeping the feature as a kill switch in case we identify any major regression
+// in the implementation.
 BASE_FEATURE(kSiteSearchSettingsPolicy,
              "SiteSearchSettingsPolicy",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             enabled_by_default_desktop_only);
 
 // Enables additional site search providers for the Site search Starter Pack.
 BASE_FEATURE(kStarterPackExpansion,
@@ -520,6 +528,15 @@ BASE_FEATURE(kAblateSearchProviderWarmup,
              "AblateSearchProviderWarmup",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// When enabled, removes unrecognized TemplateURL parameters, rather than
+// keeping them verbatim. This feature will ensure that the new versions of
+// Chrome will properly behave when supplied with Template URLs featuring
+// unknown parameters; rather than inlining the verbatim unexpanded placeholder,
+// the placeholder will be replaced with an empty string.
+BASE_FEATURE(kDropUnrecognizedTemplateUrlParameters,
+             "DropUnrecognizedTemplateUrlParameters",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // If enabled, hl= is reported in search requests (applicable to iOS only).
 BASE_FEATURE(kReportApplicationLanguageInSearchRequest,
              "ReportApplicationLanguageInSearchRequest",
@@ -528,7 +545,7 @@ BASE_FEATURE(kReportApplicationLanguageInSearchRequest,
 // Enables storing successful query/match in the shortcut database On Android.
 BASE_FEATURE(kOmniboxShortcutsAndroid,
              "OmniboxShortcutsAndroid",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable asynchronous Omnibox/Suggest view inflation.
 BASE_FEATURE(kOmniboxAsyncViewInflation,
@@ -541,6 +558,13 @@ BASE_FEATURE(kUseFusedLocationProvider,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_ANDROID)
+// Enable the Elegant Text Height attribute on the UrlBar.
+// This attribute increases line height by up to 60% to accommodate certain
+// scripts (e.g. Burmese).
+BASE_FEATURE(kOmniboxElegantTextHeight,
+             "OmniboxElegantTextHeight",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 namespace android {
 static jlong JNI_OmniboxFeatureMap_GetNativeMap(JNIEnv* env) {
   static base::NoDestructor<base::android::FeatureMap> kFeatureMap(
@@ -549,10 +573,11 @@ static jlong JNI_OmniboxFeatureMap_GetNativeMap(JNIEnv* env) {
           &kQueryTilesInZPSOnNTP,
           &kAnimateSuggestionsListAppearance,
           &kGroupingFrameworkForNonZPS,
-          &kOmniboxMatchToolbarAndStatusBarColor,
           &kOmniboxTouchDownTriggerForPrefetch,
           &kOmniboxAsyncViewInflation,
+          &kRichAutocompletion,
           &kUseFusedLocationProvider,
+          &kOmniboxElegantTextHeight,
       }});
 
   return reinterpret_cast<jlong>(kFeatureMap.get());

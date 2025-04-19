@@ -38,6 +38,19 @@ static_assert(FILTERING_BEHAVIOR_MAX * kHistogramFilteringBehaviorSpacing +
                   kSupervisedUserURLFilteringResultHistogramMax,
               "Invalid kSupervisedUserURLFilteringResultHistogramMax value");
 
+std::string WebFilterTypeToDisplayString(WebFilterType web_filter_type) {
+  switch (web_filter_type) {
+    case WebFilterType::kAllowAllSites:
+      return "allow_all_sites";
+    case WebFilterType::kCertainSites:
+      return "allow_certain_sites";
+    case WebFilterType::kTryToBlockMatureSites:
+      return "block_mature_sites";
+    case WebFilterType::kMixed:
+      NOTREACHED_NORETURN();
+  }
+}
+
 int GetHistogramValueForTransitionType(ui::PageTransition transition_type) {
   int value =
       static_cast<int>(ui::PageTransitionStripQualifier(transition_type));
@@ -110,6 +123,9 @@ const char kFamilyLinkUserLogSegmentHistogramName[] =
 const char kFamilyLinkUserLogSegmentWebFilterHistogramName[] =
     "FamilyUser.WebFilterType.PerRecord";
 
+extern const char kSitesMayRequestCameraMicLocationHistogramName[] =
+    "SupervisedUsers.SitesMayRequestCameraMicLocation.PerRecord";
+
 const char kSkipParentApprovalToInstallExtensionsHistogramName[] =
     "SupervisedUsers.SkipParentApprovalToInstallExtensions.PerRecord";
 
@@ -122,7 +138,14 @@ const char kSupervisedUserTopLevelURLFilteringResultHistogramName[] =
 const char kManagedByParentUiMoreInfoUrl[] =
     "https://familylink.google.com/setting/resource/94";
 
+const char kDefaultEmptyFamilyMemberRole[] = "not_in_family";
+
 // LINT.IfChange
 const char kFamilyMemberRoleFeedbackTag[] = "Family_Member_Role";
 // LINT.ThenChange(//chrome/browser/feedback/android/java/src/org/chromium/chrome/browser/feedback/FamilyInfoFeedbackSource.java)
+
+const char kClassifiedEarlierThanContentResponseHistogramName[] =
+    "SupervisedUsers.ClassifyUrlThrottle.EarlierThanContentResponse";
+const char kClassifiedLaterThanContentResponseHistogramName[] =
+    "SupervisedUsers.ClassifyUrlThrottle.LaterThanContentResponse";
 }  // namespace supervised_user

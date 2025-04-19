@@ -7,6 +7,7 @@
 #include <memory>
 #include <optional>
 
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/headless/headless_mode_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -66,6 +67,13 @@ UserEducationServiceFactory::UserEducationServiceFactory()
               // TODO(crbug.com/40257657): Check if this service is needed in
               // Guest mode.
               .WithGuest(ProfileSelection::kOriginalOnly)
+              // The service is needed by the System Profile OTR (that manages
+              // the Profile Picker) to control the IPHs displayed in the
+              // Profile Picker.
+              .WithSystem(ProfileSelection::kOffTheRecordOnly)
+              // TODO(crbug.com/41488885): Check if this service is needed for
+              // Ash Internals.
+              .WithAshInternals(ProfileSelection::kOriginalOnly)
               .Build()) {}
 
 UserEducationServiceFactory::~UserEducationServiceFactory() = default;
@@ -101,6 +109,10 @@ UserEducationServiceFactory::BuildServiceInstanceForBrowserContextImpl(
 
 // static
 bool UserEducationServiceFactory::ProfileAllowsUserEducation(Profile* profile) {
+#if BUILDFLAG(CHROME_FOR_TESTING)
+  // IPH is always disabled in Chrome for Testing.
+  return false;
+#else
   // In order to do user education, the browser must have a UI and not be an
   // "off-the-record" or in a demo or guest mode.
   if (profile->IsIncognitoProfile() || profile->IsGuestSession() ||
@@ -121,6 +133,7 @@ bool UserEducationServiceFactory::ProfileAllowsUserEducation(Profile* profile) {
     return false;
   }
   return true;
+#endif  // BUILDFLAG(CHROME_FOR_TESTING)
 }
 
 std::unique_ptr<KeyedService>

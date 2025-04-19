@@ -23,6 +23,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
+#include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_processor.h"
 #include "ui/events/event_utils.h"
@@ -54,9 +55,8 @@ TEST_F(DesktopNativeWidgetAuraTest, CreateWithParentNotInRootWindow) {
   std::unique_ptr<aura::Window> window(new aura::Window(nullptr));
   window->Init(ui::LAYER_NOT_DRAWN);
   Widget widget;
-  Widget::InitParams params =
-      CreateParams(Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
-                   Widget::InitParams::TYPE_WINDOW);
+  Widget::InitParams params = CreateParams(
+      Widget::InitParams::CLIENT_OWNS_WIDGET, Widget::InitParams::TYPE_WINDOW);
   params.bounds = gfx::Rect(0, 0, 200, 200);
   params.parent = window.get();
   widget.Init(std::move(params));
@@ -70,12 +70,11 @@ TEST_F(DesktopNativeWidgetAuraTest, DesktopAuraWindowSizeTest) {
   // On Linux we test this with popup windows because the WM may ignore the size
   // suggestion for normal windows.
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-  Widget::InitParams init_params =
-      CreateParams(Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
-                   Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams init_params = CreateParams(
+      Widget::InitParams::CLIENT_OWNS_WIDGET, Widget::InitParams::TYPE_POPUP);
 #else
   Widget::InitParams init_params =
-      CreateParams(Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
+      CreateParams(Widget::InitParams::CLIENT_OWNS_WIDGET,
                    Widget::InitParams::TYPE_WINDOW_FRAMELESS);
 #endif
 
@@ -104,9 +103,8 @@ TEST_F(DesktopNativeWidgetAuraTest, DesktopAuraWindowSizeTest) {
 // shown then animations can not be disabled.
 TEST_F(DesktopNativeWidgetAuraTest, NativeViewInitiallyHidden) {
   Widget widget;
-  Widget::InitParams init_params =
-      CreateParams(Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
-                   Widget::InitParams::TYPE_WINDOW);
+  Widget::InitParams init_params = CreateParams(
+      Widget::InitParams::CLIENT_OWNS_WIDGET, Widget::InitParams::TYPE_WINDOW);
   widget.Init(std::move(init_params));
   EXPECT_FALSE(widget.GetNativeView()->IsVisible());
 }
@@ -115,9 +113,8 @@ TEST_F(DesktopNativeWidgetAuraTest, NativeViewInitiallyHidden) {
 TEST_F(DesktopNativeWidgetAuraTest, NativeViewNoActivate) {
   // Widget of TYPE_POPUP can't be activated.
   Widget widget;
-  Widget::InitParams init_params =
-      CreateParams(Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
-                   Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams init_params = CreateParams(
+      Widget::InitParams::CLIENT_OWNS_WIDGET, Widget::InitParams::TYPE_POPUP);
   widget.Init(std::move(init_params));
 
   EXPECT_FALSE(widget.CanActivate());
@@ -130,9 +127,8 @@ TEST_F(DesktopNativeWidgetAuraTest, NativeViewNoActivate) {
 // still reports not visible as we haven't shown the content window.
 TEST_F(DesktopNativeWidgetAuraTest, WidgetNotVisibleOnlyWindowTreeHostShown) {
   Widget widget;
-  Widget::InitParams init_params =
-      CreateParams(Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
-                   Widget::InitParams::TYPE_WINDOW);
+  Widget::InitParams init_params = CreateParams(
+      Widget::InitParams::CLIENT_OWNS_WIDGET, Widget::InitParams::TYPE_WINDOW);
   widget.Init(std::move(init_params));
   ShowWindow(widget.GetNativeView()->GetHost()->GetAcceleratedWidget(),
              SW_SHOWNORMAL);
@@ -151,15 +147,13 @@ TEST_F(DesktopNativeWidgetAuraTest, WidgetNotVisibleOnlyWindowTreeHostShown) {
 TEST_F(DesktopNativeWidgetAuraTest, MAYBE_GlobalCursorState) {
   // Create two native widgets, each owning different root windows.
   Widget widget_a;
-  Widget::InitParams init_params_a =
-      CreateParams(Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
-                   Widget::InitParams::TYPE_WINDOW);
+  Widget::InitParams init_params_a = CreateParams(
+      Widget::InitParams::CLIENT_OWNS_WIDGET, Widget::InitParams::TYPE_WINDOW);
   widget_a.Init(std::move(init_params_a));
 
   Widget widget_b;
-  Widget::InitParams init_params_b =
-      CreateParams(Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
-                   Widget::InitParams::TYPE_WINDOW);
+  Widget::InitParams init_params_b = CreateParams(
+      Widget::InitParams::CLIENT_OWNS_WIDGET, Widget::InitParams::TYPE_WINDOW);
   widget_b.Init(std::move(init_params_b));
 
   aura::client::CursorClient* cursor_client_a = aura::client::GetCursorClient(
@@ -244,7 +238,7 @@ TEST_F(DesktopNativeWidgetAuraTest, DontAccessContentWindowDuringDestruction) {
   {
     Widget widget;
     Widget::InitParams init_params =
-        CreateParams(Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
+        CreateParams(Widget::InitParams::CLIENT_OWNS_WIDGET,
                      Widget::InitParams::TYPE_WINDOW);
     widget.Init(std::move(init_params));
 
@@ -256,13 +250,18 @@ TEST_F(DesktopNativeWidgetAuraTest, DontAccessContentWindowDuringDestruction) {
 
     widget.Show();
   }
+  // Widget is destroyed at this point, however the NativeWidget and
+  // aura::Window still exist. This will ensure the aura::Window is destroyed
+  // before the TestWindowDelegate is destroyed.
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
 }
 
 namespace {
 
 std::unique_ptr<Widget> CreateAndShowControlWidget(aura::Window* parent) {
   auto widget = std::make_unique<Widget>();
-  Widget::InitParams params(Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
+  Widget::InitParams params(Widget::InitParams::CLIENT_OWNS_WIDGET,
                             Widget::InitParams::TYPE_CONTROL);
   params.parent = parent;
   params.native_widget =
@@ -285,9 +284,8 @@ std::unique_ptr<Widget> CreateAndShowControlWidget(aura::Window* parent) {
 TEST_F(DesktopNativeWidgetAuraTest, MAYBE_ReorderDoesntRecomputeOcclusion) {
   // Create the parent widget.
   Widget parent;
-  Widget::InitParams init_params =
-      CreateParams(Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
-                   Widget::InitParams::TYPE_WINDOW);
+  Widget::InitParams init_params = CreateParams(
+      Widget::InitParams::CLIENT_OWNS_WIDGET, Widget::InitParams::TYPE_WINDOW);
   parent.Init(std::move(init_params));
   parent.Show();
 
@@ -332,9 +330,8 @@ void QuitNestedLoopAndCloseWidget(std::unique_ptr<Widget> widget,
 // Verifies that a widget can be destroyed when running a nested message-loop.
 TEST_F(DesktopNativeWidgetAuraTest, WidgetCanBeDestroyedFromNestedLoop) {
   std::unique_ptr<Widget> widget(new Widget);
-  Widget::InitParams params =
-      CreateParams(Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
-                   Widget::InitParams::TYPE_WINDOW);
+  Widget::InitParams params = CreateParams(
+      Widget::InitParams::CLIENT_OWNS_WIDGET, Widget::InitParams::TYPE_WINDOW);
   params.bounds = gfx::Rect(0, 0, 200, 200);
   widget->Init(std::move(params));
   widget->Show();
@@ -441,8 +438,9 @@ TEST_F(DesktopNativeWidgetAuraWithNoDelegateTest, OnCaptureLostTest) {
 }
 
 TEST_F(DesktopNativeWidgetAuraWithNoDelegateTest, OnGestureEventTest) {
-  ui::GestureEvent gesture(0, 0, 0, ui::EventTimeForNow(),
-                           ui::GestureEventDetails(ui::ET_GESTURE_TAP_DOWN));
+  ui::GestureEvent gesture(
+      0, 0, 0, ui::EventTimeForNow(),
+      ui::GestureEventDetails(ui::EventType::kGestureTapDown));
   static_cast<ui::EventHandler*>(desktop_native_widget_)
       ->OnGestureEvent(&gesture);
 }
@@ -463,12 +461,12 @@ TEST_F(DesktopNativeWidgetAuraWithNoDelegateTest, OnHostWorkspaceChangedTest) {
 }
 
 TEST_F(DesktopNativeWidgetAuraWithNoDelegateTest, OnKeyEventTest) {
-  ui::KeyEvent key(ui::ET_KEY_PRESSED, ui::VKEY_0, ui::EF_NONE);
+  ui::KeyEvent key(ui::EventType::kKeyPressed, ui::VKEY_0, ui::EF_NONE);
   static_cast<ui::EventHandler*>(desktop_native_widget_)->OnKeyEvent(&key);
 }
 
 TEST_F(DesktopNativeWidgetAuraWithNoDelegateTest, OnMouseEventTest) {
-  ui::MouseEvent move(ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(),
+  ui::MouseEvent move(ui::EventType::kMouseMoved, gfx::Point(), gfx::Point(),
                       ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
   static_cast<ui::EventHandler*>(desktop_native_widget_)->OnMouseEvent(&move);
 }
@@ -479,8 +477,8 @@ TEST_F(DesktopNativeWidgetAuraWithNoDelegateTest, OnPaintTest) {
 }
 
 TEST_F(DesktopNativeWidgetAuraWithNoDelegateTest, OnScrollEventTest) {
-  ui::ScrollEvent scroll(ui::ET_SCROLL, gfx::Point(), ui::EventTimeForNow(), 0,
-                         0, 0, 0, 0, 0);
+  ui::ScrollEvent scroll(ui::EventType::kScroll, gfx::Point(),
+                         ui::EventTimeForNow(), 0, 0, 0, 0, 0, 0);
   static_cast<ui::EventHandler*>(desktop_native_widget_)
       ->OnScrollEvent(&scroll);
 }
@@ -542,9 +540,8 @@ class DesktopAuraTopLevelWindowTest : public aura::WindowObserver {
   }
 
   void CreateTopLevelWindow(const gfx::Rect& bounds, bool fullscreen) {
-    Widget::InitParams init_params(
-        Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
-        Widget::InitParams::TYPE_WINDOW);
+    Widget::InitParams init_params(Widget::InitParams::CLIENT_OWNS_WIDGET,
+                                   Widget::InitParams::TYPE_WINDOW);
     init_params.bounds = bounds;
     init_params.layer_type = ui::LAYER_NOT_DRAWN;
     init_params.accept_events = fullscreen;
@@ -708,34 +705,42 @@ TEST_F(DesktopNativeWidgetAuraTest, TopLevelOwnedPopupRepositionTest) {
 // and release stopping at |last_event_type|.
 void GenerateMouseEvents(Widget* widget, ui::EventType last_event_type) {
   const gfx::Rect screen_bounds(widget->GetWindowBoundsInScreen());
-  ui::MouseEvent move_event(ui::ET_MOUSE_MOVED, screen_bounds.CenterPoint(),
-                            screen_bounds.CenterPoint(), ui::EventTimeForNow(),
-                            0, 0);
+  ui::MouseEvent move_event(
+      ui::EventType::kMouseMoved, screen_bounds.CenterPoint(),
+      screen_bounds.CenterPoint(), ui::EventTimeForNow(), 0, 0);
   ui::EventSink* sink = WidgetTest::GetEventSink(widget);
   ui::EventDispatchDetails details = sink->OnEventFromSource(&move_event);
-  if (last_event_type == ui::ET_MOUSE_ENTERED || details.dispatcher_destroyed)
+  if (last_event_type == ui::EventType::kMouseEntered ||
+      details.dispatcher_destroyed) {
     return;
+  }
   details = sink->OnEventFromSource(&move_event);
-  if (last_event_type == ui::ET_MOUSE_MOVED || details.dispatcher_destroyed)
+  if (last_event_type == ui::EventType::kMouseMoved ||
+      details.dispatcher_destroyed) {
     return;
+  }
 
-  ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, screen_bounds.CenterPoint(),
-                             screen_bounds.CenterPoint(), ui::EventTimeForNow(),
-                             0, 0);
+  ui::MouseEvent press_event(
+      ui::EventType::kMousePressed, screen_bounds.CenterPoint(),
+      screen_bounds.CenterPoint(), ui::EventTimeForNow(), 0, 0);
   details = sink->OnEventFromSource(&press_event);
-  if (last_event_type == ui::ET_MOUSE_PRESSED || details.dispatcher_destroyed)
+  if (last_event_type == ui::EventType::kMousePressed ||
+      details.dispatcher_destroyed) {
     return;
+  }
 
   gfx::Point end_point(screen_bounds.CenterPoint());
   end_point.Offset(1, 1);
-  ui::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, end_point, end_point,
+  ui::MouseEvent drag_event(ui::EventType::kMouseDragged, end_point, end_point,
                             ui::EventTimeForNow(), 0, 0);
   details = sink->OnEventFromSource(&drag_event);
-  if (last_event_type == ui::ET_MOUSE_DRAGGED || details.dispatcher_destroyed)
+  if (last_event_type == ui::EventType::kMouseDragged ||
+      details.dispatcher_destroyed) {
     return;
+  }
 
-  ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, end_point, end_point,
-                               ui::EventTimeForNow(), 0, 0);
+  ui::MouseEvent release_event(ui::EventType::kMouseReleased, end_point,
+                               end_point, ui::EventTimeForNow(), 0, 0);
   details = sink->OnEventFromSource(&release_event);
   if (details.dispatcher_destroyed)
     return;
@@ -758,12 +763,12 @@ void RunCloseWidgetDuringDispatchTest(WidgetTest* test,
 
 // Verifies deleting the widget from a mouse pressed event doesn't crash.
 TEST_F(DesktopNativeWidgetAuraTest, CloseWidgetDuringMousePress) {
-  RunCloseWidgetDuringDispatchTest(this, ui::ET_MOUSE_PRESSED);
+  RunCloseWidgetDuringDispatchTest(this, ui::EventType::kMousePressed);
 }
 
 // Verifies deleting the widget from a mouse released event doesn't crash.
 TEST_F(DesktopNativeWidgetAuraTest, CloseWidgetDuringMouseReleased) {
-  RunCloseWidgetDuringDispatchTest(this, ui::ET_MOUSE_RELEASED);
+  RunCloseWidgetDuringDispatchTest(this, ui::EventType::kMouseReleased);
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -778,9 +783,8 @@ TEST_F(DesktopNativeWidgetAuraTest, CloseWidgetDuringMouseReleased) {
 TEST_F(DesktopNativeWidgetAuraTest, MAYBE_WindowMouseModalityTest) {
   // Create a top level widget.
   Widget top_level_widget;
-  Widget::InitParams init_params =
-      CreateParams(Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
-                   Widget::InitParams::TYPE_WINDOW);
+  Widget::InitParams init_params = CreateParams(
+      Widget::InitParams::CLIENT_OWNS_WIDGET, Widget::InitParams::TYPE_WINDOW);
   init_params.show_state = ui::SHOW_STATE_NORMAL;
   gfx::Rect initial_bounds(0, 0, 500, 500);
   init_params.bounds = initial_bounds;
@@ -794,14 +798,14 @@ TEST_F(DesktopNativeWidgetAuraTest, MAYBE_WindowMouseModalityTest) {
   top_level_widget.GetRootView()->AddChildView(widget_view);
 
   gfx::Point cursor_location_main(5, 5);
-  ui::MouseEvent move_main(ui::ET_MOUSE_MOVED, cursor_location_main,
+  ui::MouseEvent move_main(ui::EventType::kMouseMoved, cursor_location_main,
                            cursor_location_main, ui::EventTimeForNow(),
                            ui::EF_NONE, ui::EF_NONE);
   ui::EventDispatchDetails details =
       GetEventSink(&top_level_widget)->OnEventFromSource(&move_main);
   ASSERT_FALSE(details.dispatcher_destroyed);
 
-  EXPECT_EQ(1, widget_view->GetEventCount(ui::ET_MOUSE_ENTERED));
+  EXPECT_EQ(1, widget_view->GetEventCount(ui::EventType::kMouseEntered));
   widget_view->ResetCounts();
 
   // Create a modal dialog and validate that a mouse down message makes it to
@@ -809,7 +813,7 @@ TEST_F(DesktopNativeWidgetAuraTest, MAYBE_WindowMouseModalityTest) {
 
   // This instance will be destroyed when the dialog is destroyed.
   auto dialog_delegate = std::make_unique<DialogDelegateView>();
-  dialog_delegate->SetModalType(ui::MODAL_TYPE_WINDOW);
+  dialog_delegate->SetModalType(ui::mojom::ModalType::kWindow);
 
   Widget* modal_dialog_widget = views::DialogDelegate::CreateDialogWidget(
       dialog_delegate.release(), nullptr, top_level_widget.GetNativeView());
@@ -822,23 +826,23 @@ TEST_F(DesktopNativeWidgetAuraTest, MAYBE_WindowMouseModalityTest) {
 
   gfx::Point cursor_location_dialog(100, 100);
   ui::MouseEvent mouse_down_dialog(
-      ui::ET_MOUSE_PRESSED, cursor_location_dialog, cursor_location_dialog,
-      ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
+      ui::EventType::kMousePressed, cursor_location_dialog,
+      cursor_location_dialog, ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
   details =
       GetEventSink(&top_level_widget)->OnEventFromSource(&mouse_down_dialog);
   ASSERT_FALSE(details.dispatcher_destroyed);
-  EXPECT_EQ(1, dialog_widget_view->GetEventCount(ui::ET_MOUSE_PRESSED));
+  EXPECT_EQ(1, dialog_widget_view->GetEventCount(ui::EventType::kMousePressed));
 
   // Send a mouse move message to the main window. It should not be received by
   // the main window as the modal dialog is still active.
   gfx::Point cursor_location_main2(6, 6);
-  ui::MouseEvent mouse_down_main(ui::ET_MOUSE_MOVED, cursor_location_main2,
-                                 cursor_location_main2, ui::EventTimeForNow(),
-                                 ui::EF_NONE, ui::EF_NONE);
+  ui::MouseEvent mouse_down_main(
+      ui::EventType::kMouseMoved, cursor_location_main2, cursor_location_main2,
+      ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
   details =
       GetEventSink(&top_level_widget)->OnEventFromSource(&mouse_down_main);
   ASSERT_FALSE(details.dispatcher_destroyed);
-  EXPECT_EQ(0, widget_view->GetEventCount(ui::ET_MOUSE_MOVED));
+  EXPECT_EQ(0, widget_view->GetEventCount(ui::EventType::kMouseMoved));
 
   modal_dialog_widget->CloseNow();
   top_level_widget.CloseNow();
@@ -865,7 +869,7 @@ TEST_F(DesktopNativeWidgetAuraTest, WindowModalityActivationTest) {
   widget_delegate.SetCanActivate(false);
 
   auto dialog_delegate = std::make_unique<DialogDelegateView>();
-  dialog_delegate->SetModalType(ui::MODAL_TYPE_WINDOW);
+  dialog_delegate->SetModalType(ui::mojom::ModalType::kWindow);
 
   Widget* modal_dialog_widget = views::DialogDelegate::CreateDialogWidget(
       dialog_delegate.release(), nullptr, top_level_widget->GetNativeView());
@@ -888,9 +892,8 @@ TEST_F(DesktopNativeWidgetAuraTest, WindowModalityActivationTest) {
 TEST_F(DesktopNativeWidgetAuraTest,
        CharMessagesAsKeyboardMessagesDoesNotCrash) {
   Widget widget;
-  Widget::InitParams params =
-      CreateParams(Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
-                   Widget::InitParams::TYPE_WINDOW);
+  Widget::InitParams params = CreateParams(
+      Widget::InitParams::CLIENT_OWNS_WIDGET, Widget::InitParams::TYPE_WINDOW);
   widget.Init(std::move(params));
   widget.Show();
 
@@ -912,12 +915,10 @@ TEST_F(DesktopNativeWidgetAuraTest,
 // crash.
 TEST_F(DesktopNativeWidgetAuraTest, Reparent) {
   Widget root, widget;
-  Widget::InitParams root_params =
-      CreateParams(Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
-                   Widget::InitParams::TYPE_WINDOW);
-  Widget::InitParams widget_params =
-      CreateParams(Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
-                   Widget::InitParams::TYPE_WINDOW);
+  Widget::InitParams root_params = CreateParams(
+      Widget::InitParams::CLIENT_OWNS_WIDGET, Widget::InitParams::TYPE_WINDOW);
+  Widget::InitParams widget_params = CreateParams(
+      Widget::InitParams::CLIENT_OWNS_WIDGET, Widget::InitParams::TYPE_WINDOW);
   root.Init(std::move(root_params));
   widget.Init(std::move(widget_params));
 

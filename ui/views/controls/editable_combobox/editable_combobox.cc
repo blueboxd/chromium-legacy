@@ -9,10 +9,12 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_list.h"
 #include "base/check_op.h"
 #include "base/functional/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_action_data.h"
@@ -40,6 +42,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/scoped_canvas.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_host.h"
@@ -84,7 +87,8 @@ class Arrow : public Button {
         ButtonController::NotifyAction::kOnPress);
 
     ConfigureComboboxButtonInkDrop(this);
-    SetAccessibilityProperties(ax::mojom::Role::kButton);
+    GetViewAccessibility().SetProperties(ax::mojom::Role::kButton);
+    UpdateAccessibleDefaultActionVerb();
   }
   Arrow(const Arrow&) = delete;
   Arrow& operator=(const Arrow&) = delete;
@@ -111,10 +115,21 @@ class Arrow : public Button {
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
     Button::GetAccessibleNodeData(node_data);
     node_data->SetHasPopup(ax::mojom::HasPopup::kMenu);
+  }
+
+  void UpdateAccessibleDefaultActionVerb() {
     if (GetEnabled()) {
-      node_data->SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kOpen);
+      GetViewAccessibility().SetDefaultActionVerb(
+          ax::mojom::DefaultActionVerb::kOpen);
+    } else {
+      GetViewAccessibility().RemoveDefaultActionVerb();
     }
   }
+
+  base::CallbackListSubscription enabled_changed_subscription_ =
+      AddEnabledChangedCallback(
+          base::BindRepeating(&Arrow::UpdateAccessibleDefaultActionVerb,
+                              base::Unretained(this)));
 };
 
 BEGIN_METADATA(Arrow)
@@ -129,7 +144,7 @@ std::u16string EditableCombobox::MenuDecorationStrategy::DecorateItemText(
 
 // Adapts a ui::ComboboxModel to a ui::MenuModel to be used by EditableCombobox.
 // Also provides a filtering capability.
-class EditableCombobox::EditableComboboxMenuModel
+class EditableCombobox::EditableComboboxMenuModel final
     : public ui::MenuModel,
       public ui::ComboboxModelObserver {
  public:
@@ -205,6 +220,10 @@ class EditableCombobox::EditableComboboxMenuModel
 
   void OnComboboxModelDestroying(ui::ComboboxModel* model) override {
     observation_.Reset();
+  }
+
+  base::WeakPtr<ui::MenuModel> AsWeakPtr() override {
+    return weak_ptr_factory_.GetWeakPtr();
   }
 
   size_t GetItemCount() const override { return items_shown_.size(); }
@@ -288,6 +307,8 @@ class EditableCombobox::EditableComboboxMenuModel
 
   base::ScopedObservation<ui::ComboboxModel, ui::ComboboxModelObserver>
       observation_{this};
+
+  base::WeakPtrFactory<EditableComboboxMenuModel> weak_ptr_factory_{this};
 };
 
 // This class adds itself as the pre-target handler for the RootView of the
@@ -310,14 +331,14 @@ class EditableCombobox::EditableComboboxPreTargetHandler
 
   // ui::EventHandler overrides.
   void OnMouseEvent(ui::MouseEvent* event) override {
-    if (event->type() == ui::ET_MOUSE_PRESSED &&
+    if (event->type() == ui::EventType::kMousePressed &&
         event->button_flags() == event->changed_button_flags()) {
       HandlePressEvent(event->root_location());
     }
   }
 
   void OnTouchEvent(ui::TouchEvent* event) override {
-    if (event->type() == ui::ET_TOUCH_PRESSED) {
+    if (event->type() == ui::EventType::kTouchPressed) {
       HandlePressEvent(event->root_location());
     }
   }
@@ -375,7 +396,8 @@ EditableCombobox::EditableCombobox(
   }
 
   SetLayoutManager(std::make_unique<DelegatingLayoutManager>(this));
-  SetAccessibilityProperties(ax::mojom::Role::kComboBoxGrouping);
+  GetViewAccessibility().SetProperties(ax::mojom::Role::kComboBoxGrouping);
+  GetViewAccessibility().SetValue(GetText());
 }
 
 EditableCombobox::~EditableCombobox() {
@@ -417,9 +439,9 @@ void EditableCombobox::SelectRange(const gfx::Range& range) {
 }
 
 void EditableCombobox::OnAccessibleNameChanged(const std::u16string& new_name) {
-  textfield_->SetAccessibleName(new_name);
+  textfield_->GetViewAccessibility().SetName(new_name);
   if (arrow_) {
-    arrow_->SetAccessibleName(new_name);
+    arrow_->GetViewAccessibility().SetName(new_name);
   }
 }
 
@@ -431,11 +453,6 @@ void EditableCombobox::SetMenuDecorationStrategy(
 
 void EditableCombobox::UpdateMenu() {
   menu_model_->UpdateItemsShown();
-}
-
-void EditableCombobox::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  View::GetAccessibleNodeData(node_data);
-  node_data->SetValue(GetText());
 }
 
 void EditableCombobox::RequestFocus() {
@@ -458,7 +475,7 @@ void EditableCombobox::ContentsChanged(Textfield* sender,
 
 bool EditableCombobox::HandleKeyEvent(Textfield* sender,
                                       const ui::KeyEvent& key_event) {
-  if (key_event.type() == ui::ET_KEY_PRESSED &&
+  if (key_event.type() == ui::EventType::kKeyPressed &&
       (key_event.key_code() == ui::VKEY_UP ||
        key_event.key_code() == ui::VKEY_DOWN)) {
     ShowDropDownMenu(ui::MENU_SOURCE_KEYBOARD);
@@ -524,8 +541,6 @@ void EditableCombobox::OnItemSelected(size_t index) {
   // SetText does not actually notify the TextfieldController, so we call the
   // handling code directly.
   HandleNewContent(selected_item_text);
-  NotifyAccessibilityEvent(ax::mojom::Event::kValueChanged,
-                           /*send_native_event=*/true);
 }
 
 void EditableCombobox::HandleNewContent(const std::u16string& new_content) {
@@ -542,6 +557,7 @@ void EditableCombobox::HandleNewContent(const std::u16string& new_content) {
     menu_model_->EnableUpdateItemsShown();
   }
   UpdateMenu();
+  GetViewAccessibility().SetValue(GetText());
 }
 
 void EditableCombobox::ArrowButtonPressed(const ui::Event& event) {

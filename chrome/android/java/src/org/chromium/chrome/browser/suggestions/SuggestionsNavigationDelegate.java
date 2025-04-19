@@ -9,10 +9,16 @@ import android.app.Activity;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegateImpl;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabSelectionType;
+import org.chromium.chrome.browser.tabmodel.TabClosureParams;
+import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.chrome.browser.tasks.tab_management.TabGroupCreationDialogManager;
 import org.chromium.chrome.browser.ui.native_page.NativePageHost;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.url.GURL;
 
 /** Extension of {@link NativePageNavigationDelegate} with suggestions-specific methods. */
 public class SuggestionsNavigationDelegate extends NativePageNavigationDelegateImpl {
@@ -21,8 +27,9 @@ public class SuggestionsNavigationDelegate extends NativePageNavigationDelegateI
             Profile profile,
             NativePageHost host,
             TabModelSelector tabModelSelector,
+            TabGroupCreationDialogManager tabGroupCreationDialogManager,
             Tab tab) {
-        super(activity, profile, host, tabModelSelector, tab);
+        super(activity, profile, host, tabModelSelector, tabGroupCreationDialogManager, tab);
     }
 
     /**
@@ -39,5 +46,22 @@ public class SuggestionsNavigationDelegate extends NativePageNavigationDelegateI
         } else {
             openUrl(windowOpenDisposition, loadUrlParams);
         }
+    }
+
+    /**
+     * Searches for a tab whose URL matches the specified URL. If found, selects the first (by
+     * tabId) matching tab, closes `mTab` (assumed to be the NTP), and returns true. Otherwise does
+     * nothing and returns false.
+     *
+     * @param keyUrl The URL to search for.
+     */
+    public boolean maybeSelectTabWithUrl(GURL keyUrl) {
+        TabModel tabModel = mTabModelSelector.getModel(/* incognito= */ false);
+        int index = TabModelUtils.getTabIndexByUrl(tabModel, keyUrl.getSpec());
+        if (index == TabModel.INVALID_TAB_INDEX) return false;
+
+        tabModel.setIndex(index, TabSelectionType.FROM_USER);
+        tabModel.closeTabs(TabClosureParams.closeTab(mTab).allowUndo(false).build());
+        return true;
     }
 }

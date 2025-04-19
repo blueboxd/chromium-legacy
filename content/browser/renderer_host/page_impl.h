@@ -31,11 +31,18 @@
 #include "ui/base/ime/mojom/virtual_keyboard_types.mojom.h"
 #include "url/gurl.h"
 
+namespace cc {
+struct BrowserControlsOffsetTagsInfo;
+}  // namespace cc
+
+namespace input {
+class PeakGpuMemoryTracker;
+}  // namespace input
+
 namespace content {
 
 class NavigationRequest;
 class PageDelegate;
-class PeakGpuMemoryTracker;
 class RenderFrameHostImpl;
 
 // This implements the Page interface that is exposed to embedders of content,
@@ -172,9 +179,11 @@ class CONTENT_EXPORT PageImpl : public Page {
   // Hide or show the browser controls for the given Page, based on allowed
   // states, desired state and whether the transition should be animated or
   // not.
-  void UpdateBrowserControlsState(cc::BrowserControlsState constraints,
-                                  cc::BrowserControlsState current,
-                                  bool animate);
+  void UpdateBrowserControlsState(
+      cc::BrowserControlsState constraints,
+      cc::BrowserControlsState current,
+      bool animate,
+      const std::optional<cc::BrowserControlsOffsetTagsInfo>& offset_tags_info);
 
   float GetPageScaleFactor() const;
 
@@ -367,7 +376,7 @@ class CONTENT_EXPORT PageImpl : public Page {
   // Created by NavigationRequest; ownership is maintained until the frame has
   // stopped loading, or we navigate away from the page before it finishes
   // loading.
-  std::unique_ptr<PeakGpuMemoryTracker> loading_memory_tracker_;
+  std::unique_ptr<input::PeakGpuMemoryTracker> loading_memory_tracker_;
 
   // Whether the page is overriding the user agent or not.
   bool is_overriding_user_agent_ = false;

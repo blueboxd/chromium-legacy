@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/modules/indexeddb/idb_request_loader.h"
 
 #include <algorithm>
@@ -100,12 +105,11 @@ FileErrorCode IDBRequestLoader::DidStartLoading(uint64_t) {
   return FileErrorCode::kOK;
 }
 
-FileErrorCode IDBRequestLoader::DidReceiveData(const char* data,
-                                               unsigned data_length) {
-  DCHECK_LE(wrapped_data_.size() + data_length, wrapped_data_.capacity())
+FileErrorCode IDBRequestLoader::DidReceiveData(base::span<const uint8_t> data) {
+  DCHECK_LE(wrapped_data_.size() + data.size(), wrapped_data_.capacity())
       << "The reader returned more data than we were prepared for";
 
-  wrapped_data_.Append(data, data_length);
+  wrapped_data_.AppendSpan(base::as_chars(data));
   return FileErrorCode::kOK;
 }
 
@@ -120,8 +124,7 @@ void IDBRequestLoader::DidFinishLoading() {
   file_reader_loading_ = false;
 #endif  // DCHECK_IS_ON()
 
-  IDBValueUnwrapper::Unwrap(SharedBuffer::AdoptVector(wrapped_data_),
-                            current_value_->get());
+  IDBValueUnwrapper::Unwrap(std::move(wrapped_data_), **current_value_);
   ++current_value_;
 
   StartNextValue();
@@ -137,6 +140,7 @@ void IDBRequestLoader::DidFail(FileErrorCode) {
   DCHECK(file_reader_loading_);
   file_reader_loading_ = false;
 #endif  // DCHECK_IS_ON()
+
   OnLoadComplete(/*error=*/true);
 }
 

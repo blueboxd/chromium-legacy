@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "components/exo/shell_surface.h"
 
 #include <sstream>
@@ -43,10 +48,13 @@
 #include "components/exo/test/exo_test_helper.h"
 #include "components/exo/test/mock_security_delegate.h"
 #include "components/exo/test/shell_surface_builder.h"
+#include "components/exo/test/surface_tree_host_test_util.h"
 #include "components/exo/test/test_security_delegate.h"
 #include "components/exo/window_properties.h"
 #include "components/exo/wm_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/window.h"
@@ -55,6 +63,7 @@
 #include "ui/aura/window_targeter.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -67,9 +76,12 @@
 #include "ui/display/types/display_constants.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/rounded_corners_f.h"
+#include "ui/gfx/geometry/rrect_f.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/widget/any_widget_observer.h"
 #include "ui/views/widget/widget.h"
@@ -126,6 +138,15 @@ std::unique_ptr<ShellSurface> CreateX11TransientShellSurface(
       .SetParent(parent)
       .SetOrigin(origin)
       .BuildShellSurface();
+}
+
+const viz::CompositorFrame& GetFrameFromSurface(ShellSurface* shell_surface,
+                                                viz::SurfaceManager* manager) {
+  viz::SurfaceId surface_id =
+      *shell_surface->host_window()->layer()->GetSurfaceId();
+  const viz::CompositorFrame& frame =
+      manager->GetSurfaceForId(surface_id)->GetActiveFrame();
+  return frame;
 }
 
 struct ConfigureData {
@@ -272,6 +293,45 @@ TEST_F(ShellSurfaceTest, SetParent) {
   EXPECT_EQ(gfx::Rect(10, 10, 256, 256),
             shell_surface->GetWidget()->GetWindowBoundsInScreen());
   EXPECT_FALSE(shell_surface->CanActivate());
+}
+
+// Tests that pareting the shell surface to its transient ancestor is not
+// allowed.
+TEST_F(ShellSurfaceTest, DoNotParentToTransientAncestor) {
+  constexpr gfx::Size kBufferSize(256, 256);
+  auto grandparent_shell_surface =
+      test::ShellSurfaceBuilder(kBufferSize).BuildShellSurface();
+
+  auto parent_shell_surface = test::ShellSurfaceBuilder(kBufferSize)
+                                  .SetParent(grandparent_shell_surface.get())
+                                  .BuildShellSurface();
+  EXPECT_EQ(grandparent_shell_surface->GetWidget()->GetNativeWindow(),
+            wm::GetTransientParent(
+                parent_shell_surface->GetWidget()->GetNativeWindow()));
+
+  auto shell_surface = test::ShellSurfaceBuilder(kBufferSize)
+                           .SetParent(parent_shell_surface.get())
+                           .BuildShellSurface();
+  EXPECT_EQ(
+      parent_shell_surface->GetWidget()->GetNativeWindow(),
+      wm::GetTransientParent(shell_surface->GetWidget()->GetNativeWindow()));
+
+  // Cannot parent to grandparent or parent.
+  grandparent_shell_surface->SetParent(shell_surface.get());
+  EXPECT_NE(shell_surface->GetWidget()->GetNativeWindow(),
+            wm::GetTransientParent(
+                grandparent_shell_surface->GetWidget()->GetNativeWindow()));
+  EXPECT_EQ(
+      parent_shell_surface->GetWidget()->GetNativeWindow(),
+      wm::GetTransientParent(shell_surface->GetWidget()->GetNativeWindow()));
+
+  parent_shell_surface->SetParent(shell_surface.get());
+  EXPECT_NE(shell_surface->GetWidget()->GetNativeWindow(),
+            wm::GetTransientParent(
+                parent_shell_surface->GetWidget()->GetNativeWindow()));
+  EXPECT_EQ(
+      parent_shell_surface->GetWidget()->GetNativeWindow(),
+      wm::GetTransientParent(shell_surface->GetWidget()->GetNativeWindow()));
 }
 
 TEST_F(ShellSurfaceTest, DeleteShellSurfaceWithTransientChildren) {
@@ -941,7 +1001,7 @@ TEST_F(ShellSurfaceTest, EventTargetWithNegativeHostWindowOrigin) {
 
   {
     // Mouse is in the middle of the root surface.
-    ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(120, 120),
+    ui::MouseEvent event(ui::EventType::kMouseMoved, gfx::Point(120, 120),
                          gfx::Point(120, 120), ui::EventTimeForNow(),
                          ui::EF_NONE, ui::EF_NONE);
     EXPECT_EQ(root_surface->window(),
@@ -950,7 +1010,7 @@ TEST_F(ShellSurfaceTest, EventTargetWithNegativeHostWindowOrigin) {
 
   {
     // Mouse is on upper-left of the root surface.
-    ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(21, 21),
+    ui::MouseEvent event(ui::EventType::kMousePressed, gfx::Point(21, 21),
                          gfx::Point(21, 21), ui::EventTimeForNow(), ui::EF_NONE,
                          ui::EF_NONE);
     EXPECT_EQ(root_surface->window(),
@@ -959,7 +1019,7 @@ TEST_F(ShellSurfaceTest, EventTargetWithNegativeHostWindowOrigin) {
 
   {
     // Mouse is on bottom-right of the root surface.
-    ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(275, 275),
+    ui::MouseEvent event(ui::EventType::kMousePressed, gfx::Point(275, 275),
                          gfx::Point(275, 275), ui::EventTimeForNow(),
                          ui::EF_NONE, ui::EF_NONE);
     EXPECT_EQ(root_surface->window(),
@@ -968,7 +1028,7 @@ TEST_F(ShellSurfaceTest, EventTargetWithNegativeHostWindowOrigin) {
 
   {
     // Mouse is outside of the root surface and host window.
-    ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(300, 300),
+    ui::MouseEvent event(ui::EventType::kMousePressed, gfx::Point(300, 300),
                          gfx::Point(300, 300), ui::EventTimeForNow(),
                          ui::EF_NONE, ui::EF_NONE);
     EXPECT_FALSE(window->Contains(static_cast<aura::Window*>(
@@ -977,7 +1037,7 @@ TEST_F(ShellSurfaceTest, EventTargetWithNegativeHostWindowOrigin) {
 
   {
     // Mouse is on the left side of the root surface but inside host window.
-    ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(19, 100),
+    ui::MouseEvent event(ui::EventType::kMousePressed, gfx::Point(19, 100),
                          gfx::Point(19, 100), ui::EventTimeForNow(),
                          ui::EF_NONE, ui::EF_NONE);
     EXPECT_FALSE(window->Contains(static_cast<aura::Window*>(
@@ -986,7 +1046,7 @@ TEST_F(ShellSurfaceTest, EventTargetWithNegativeHostWindowOrigin) {
 
   {
     // Mouse is on the right side of the root surface but inside host window.
-    ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(277, 100),
+    ui::MouseEvent event(ui::EventType::kMousePressed, gfx::Point(277, 100),
                          gfx::Point(277, 100), ui::EventTimeForNow(),
                          ui::EF_NONE, ui::EF_NONE);
     EXPECT_FALSE(window->Contains(static_cast<aura::Window*>(
@@ -995,7 +1055,7 @@ TEST_F(ShellSurfaceTest, EventTargetWithNegativeHostWindowOrigin) {
 
   {
     // Mouse is above the root surface but inside host window.
-    ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(100, 19),
+    ui::MouseEvent event(ui::EventType::kMousePressed, gfx::Point(100, 19),
                          gfx::Point(100, 19), ui::EventTimeForNow(),
                          ui::EF_NONE, ui::EF_NONE);
     EXPECT_FALSE(window->Contains(static_cast<aura::Window*>(
@@ -1004,7 +1064,7 @@ TEST_F(ShellSurfaceTest, EventTargetWithNegativeHostWindowOrigin) {
 
   {
     // Mouse is below the root surface but inside host window.
-    ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(100, 277),
+    ui::MouseEvent event(ui::EventType::kMousePressed, gfx::Point(100, 277),
                          gfx::Point(100, 277), ui::EventTimeForNow(),
                          ui::EF_NONE, ui::EF_NONE);
     EXPECT_FALSE(window->Contains(static_cast<aura::Window*>(
@@ -1013,7 +1073,7 @@ TEST_F(ShellSurfaceTest, EventTargetWithNegativeHostWindowOrigin) {
 
   {
     // Mouse is on `child_surface1` but not on the root surface.
-    ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(19, 19),
+    ui::MouseEvent event(ui::EventType::kMousePressed, gfx::Point(19, 19),
                          gfx::Point(19, 19), ui::EventTimeForNow(), ui::EF_NONE,
                          ui::EF_NONE);
     EXPECT_FALSE(window->Contains(static_cast<aura::Window*>(
@@ -1022,7 +1082,7 @@ TEST_F(ShellSurfaceTest, EventTargetWithNegativeHostWindowOrigin) {
 
   {
     // Mouse is on `child_surface2` but not on the root surface.
-    ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(277, 277),
+    ui::MouseEvent event(ui::EventType::kMousePressed, gfx::Point(277, 277),
                          gfx::Point(277, 277), ui::EventTimeForNow(),
                          ui::EF_NONE, ui::EF_NONE);
     EXPECT_FALSE(window->Contains(static_cast<aura::Window*>(
@@ -1071,7 +1131,7 @@ TEST_F(ShellSurfaceTest,
 
   {
     // Mouse is in the middle of the root surface.
-    ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(80, 80),
+    ui::MouseEvent event(ui::EventType::kMouseMoved, gfx::Point(80, 80),
                          gfx::Point(80, 80), ui::EventTimeForNow(), ui::EF_NONE,
                          ui::EF_NONE);
     EXPECT_EQ(root_surface->window(),
@@ -1080,7 +1140,7 @@ TEST_F(ShellSurfaceTest,
 
   {
     // Mouse is on upper-left of the root surface.
-    ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(21, 21),
+    ui::MouseEvent event(ui::EventType::kMousePressed, gfx::Point(21, 21),
                          gfx::Point(21, 21), ui::EventTimeForNow(), ui::EF_NONE,
                          ui::EF_NONE);
     EXPECT_EQ(root_surface->window(),
@@ -1089,7 +1149,7 @@ TEST_F(ShellSurfaceTest,
 
   {
     // Mouse is on bottom-right of the root surface.
-    ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(147, 147),
+    ui::MouseEvent event(ui::EventType::kMousePressed, gfx::Point(147, 147),
                          gfx::Point(147, 147), ui::EventTimeForNow(),
                          ui::EF_NONE, ui::EF_NONE);
     EXPECT_EQ(root_surface->window(),
@@ -1098,7 +1158,7 @@ TEST_F(ShellSurfaceTest,
 
   {
     // Mouse is outside of the root surface and host window.
-    ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(200, 200),
+    ui::MouseEvent event(ui::EventType::kMousePressed, gfx::Point(200, 200),
                          gfx::Point(200, 200), ui::EventTimeForNow(),
                          ui::EF_NONE, ui::EF_NONE);
     EXPECT_FALSE(window->Contains(static_cast<aura::Window*>(
@@ -1107,7 +1167,7 @@ TEST_F(ShellSurfaceTest,
 
   {
     // Mouse is on the left side of the root surface but inside host window.
-    ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(19, 100),
+    ui::MouseEvent event(ui::EventType::kMousePressed, gfx::Point(19, 100),
                          gfx::Point(19, 100), ui::EventTimeForNow(),
                          ui::EF_NONE, ui::EF_NONE);
     EXPECT_FALSE(window->Contains(static_cast<aura::Window*>(
@@ -1116,7 +1176,7 @@ TEST_F(ShellSurfaceTest,
 
   {
     // Mouse is on the right side of the root surface but inside host window.
-    ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(149, 100),
+    ui::MouseEvent event(ui::EventType::kMousePressed, gfx::Point(149, 100),
                          gfx::Point(149, 100), ui::EventTimeForNow(),
                          ui::EF_NONE, ui::EF_NONE);
     EXPECT_FALSE(window->Contains(static_cast<aura::Window*>(
@@ -1125,7 +1185,7 @@ TEST_F(ShellSurfaceTest,
 
   {
     // Mouse is above the root surface but inside host window.
-    ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(100, 19),
+    ui::MouseEvent event(ui::EventType::kMousePressed, gfx::Point(100, 19),
                          gfx::Point(100, 19), ui::EventTimeForNow(),
                          ui::EF_NONE, ui::EF_NONE);
     EXPECT_FALSE(window->Contains(static_cast<aura::Window*>(
@@ -1134,7 +1194,7 @@ TEST_F(ShellSurfaceTest,
 
   {
     // Mouse is below the root surface but inside host window.
-    ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(100, 149),
+    ui::MouseEvent event(ui::EventType::kMousePressed, gfx::Point(100, 149),
                          gfx::Point(100, 149), ui::EventTimeForNow(),
                          ui::EF_NONE, ui::EF_NONE);
     EXPECT_FALSE(window->Contains(static_cast<aura::Window*>(
@@ -1143,7 +1203,7 @@ TEST_F(ShellSurfaceTest,
 
   {
     // Mouse is on `child_surface1` but not on the root surface.
-    ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(19, 19),
+    ui::MouseEvent event(ui::EventType::kMousePressed, gfx::Point(19, 19),
                          gfx::Point(19, 19), ui::EventTimeForNow(), ui::EF_NONE,
                          ui::EF_NONE);
     EXPECT_FALSE(window->Contains(static_cast<aura::Window*>(
@@ -1152,7 +1212,7 @@ TEST_F(ShellSurfaceTest,
 
   {
     // Mouse is on `child_surface2` but not on the root surface.
-    ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(149, 149),
+    ui::MouseEvent event(ui::EventType::kMousePressed, gfx::Point(149, 149),
                          gfx::Point(149, 149), ui::EventTimeForNow(),
                          ui::EF_NONE, ui::EF_NONE);
     EXPECT_FALSE(window->Contains(static_cast<aura::Window*>(
@@ -1702,6 +1762,35 @@ TEST_F(ShellSurfaceTest, SetMaximumSize) {
   }
 }
 
+TEST_F(ShellSurfaceTest, MinimumSizeAlwaysEqualOrSmallerThanMaximumSize) {
+  constexpr gfx::Size kBufferSize(256, 256);
+  auto shell_surface =
+      test::ShellSurfaceBuilder(kBufferSize).BuildShellSurface();
+  auto* surface = shell_surface->root_surface();
+
+  constexpr gfx::Size kMinSize = {300, 300};
+  constexpr gfx::Size kMaxSize = {100, 100};
+  ConfigureData config_data;
+  shell_surface->set_configure_callback(
+      base::BindRepeating(&Configure, base::Unretained(&config_data)));
+
+  shell_surface->SetMinimumSize(kMinSize);
+  shell_surface->SetMaximumSize(kMaxSize);
+  surface->Commit();
+
+  // The maximum size smaller than the minimum size is ignored and the minimum
+  // size is returned by GetMaximumSize() instead.
+  EXPECT_EQ(kMinSize, shell_surface->GetMaximumSize());
+  EXPECT_EQ(kMinSize, shell_surface->GetMinimumSize());
+
+  // Reset minimum size
+  shell_surface->SetMinimumSize(gfx::Size(0, 0));
+  surface->Commit();
+  // Previously ignored maximum size is restored automatically because it's
+  // stored in |pending_maximum_size_|.
+  EXPECT_EQ(kMaxSize, shell_surface->GetMaximumSize());
+}
+
 void PreClose(int* pre_close_count, int* close_count) {
   EXPECT_EQ(*pre_close_count, *close_count);
   (*pre_close_count)++;
@@ -2222,21 +2311,21 @@ TEST_F(ShellSurfaceTest, Popup) {
 
   {
     // Mouse is on the top most popup.
-    ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(0, 0),
+    ui::MouseEvent event(ui::EventType::kMouseMoved, gfx::Point(0, 0),
                          gfx::Point(100, 50), ui::EventTimeForNow(), 0, 0);
     ui::Event::DispatcherApi(&event).set_target(target);
     EXPECT_EQ(sub_popup_surface.get(), GetTargetSurfaceForLocatedEvent(&event));
   }
   {
     // Move the mouse to the parent popup.
-    ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(-25, 0),
+    ui::MouseEvent event(ui::EventType::kMouseMoved, gfx::Point(-25, 0),
                          gfx::Point(75, 50), ui::EventTimeForNow(), 0, 0);
     ui::Event::DispatcherApi(&event).set_target(target);
     EXPECT_EQ(popup_surface.get(), GetTargetSurfaceForLocatedEvent(&event));
   }
   {
     // Move the mouse to the main window.
-    ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(-25, -25),
+    ui::MouseEvent event(ui::EventType::kMouseMoved, gfx::Point(-25, -25),
                          gfx::Point(75, 25), ui::EventTimeForNow(), 0, 0);
     ui::Event::DispatcherApi(&event).set_target(target);
     EXPECT_EQ(surface, GetTargetSurfaceForLocatedEvent(&event));
@@ -2248,7 +2337,7 @@ TEST_F(ShellSurfaceTest, Popup) {
 
   {
     // Targetting should still work.
-    ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(0, 0),
+    ui::MouseEvent event(ui::EventType::kMouseMoved, gfx::Point(0, 0),
                          gfx::Point(50, 50), ui::EventTimeForNow(), 0, 0);
     ui::Event::DispatcherApi(&event).set_target(
         popup_shell_surface->GetWidget()->GetNativeWindow());
@@ -2583,7 +2672,7 @@ TEST_F(ShellSurfaceTest, PopupWithInputRegion) {
 
   {
     // Mouse is on the popup.
-    ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(0, 0),
+    ui::MouseEvent event(ui::EventType::kMouseMoved, gfx::Point(0, 0),
                          gfx::Point(50, 50), ui::EventTimeForNow(), 0, 0);
     ui::Event::DispatcherApi(&event).set_target(target);
     EXPECT_EQ(popup_surface.get(), GetTargetSurfaceForLocatedEvent(&event));
@@ -2591,7 +2680,7 @@ TEST_F(ShellSurfaceTest, PopupWithInputRegion) {
 
   {
     // If it matches the parent's sub surface, use it.
-    ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(-25, 0),
+    ui::MouseEvent event(ui::EventType::kMouseMoved, gfx::Point(-25, 0),
                          gfx::Point(25, 50), ui::EventTimeForNow(), 0, 0);
     ui::Event::DispatcherApi(&event).set_target(target);
     EXPECT_EQ(child_surface.get(), GetTargetSurfaceForLocatedEvent(&event));
@@ -2599,7 +2688,7 @@ TEST_F(ShellSurfaceTest, PopupWithInputRegion) {
   {
     // If it didnt't match any surface in the parent, fallback to
     // the popup's surface.
-    ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(-50, 0),
+    ui::MouseEvent event(ui::EventType::kMouseMoved, gfx::Point(-50, 0),
                          gfx::Point(0, 50), ui::EventTimeForNow(), 0, 0);
     ui::Event::DispatcherApi(&event).set_target(target);
     EXPECT_EQ(popup_surface.get(), GetTargetSurfaceForLocatedEvent(&event));
@@ -2617,7 +2706,7 @@ TEST_F(ShellSurfaceTest, PopupWithInputRegion) {
   {
     // If non surface window covers the window,
     /// GetTargetSurfaceForLocatedEvent should return nullptr.
-    ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(0, 0),
+    ui::MouseEvent event(ui::EventType::kMouseMoved, gfx::Point(0, 0),
                          gfx::Point(50, 50), ui::EventTimeForNow(), 0, 0);
     ui::Event::DispatcherApi(&event).set_target(window.get());
     EXPECT_EQ(nullptr, GetTargetSurfaceForLocatedEvent(&event));
@@ -2712,8 +2801,8 @@ TEST_F(ShellSurfaceTest, Caption) {
             shell_surface->GetWidget()->GetNativeWindow());
   {
     // Move the mouse at the caption of the captured window.
-    ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(5, 5), gfx::Point(5, 5),
-                         ui::EventTimeForNow(), 0, 0);
+    ui::MouseEvent event(ui::EventType::kMouseMoved, gfx::Point(5, 5),
+                         gfx::Point(5, 5), ui::EventTimeForNow(), 0, 0);
     ui::Event::DispatcherApi(&event).set_target(target);
     EXPECT_EQ(nullptr, GetTargetSurfaceForLocatedEvent(&event));
   }
@@ -2722,8 +2811,9 @@ TEST_F(ShellSurfaceTest, Caption) {
     // Move the mouse at the center of the captured window.
     gfx::Rect bounds = shell_surface->GetWidget()->GetWindowBoundsInScreen();
     gfx::Point center = bounds.CenterPoint();
-    ui::MouseEvent event(ui::ET_MOUSE_MOVED, center - bounds.OffsetFromOrigin(),
-                         center, ui::EventTimeForNow(), 0, 0);
+    ui::MouseEvent event(ui::EventType::kMouseMoved,
+                         center - bounds.OffsetFromOrigin(), center,
+                         ui::EventTimeForNow(), 0, 0);
     ui::Event::DispatcherApi(&event).set_target(target);
     EXPECT_EQ(surface, GetTargetSurfaceForLocatedEvent(&event));
   }
@@ -2788,7 +2878,7 @@ TEST_F(ShellSurfaceTest, CaptionWithPopup) {
             target);
   {
     // Move the mouse at the popup window.
-    ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(5, 5),
+    ui::MouseEvent event(ui::EventType::kMouseMoved, gfx::Point(5, 5),
                          gfx::Point(55, 55), ui::EventTimeForNow(), 0, 0);
     ui::Event::DispatcherApi(&event).set_target(target);
     EXPECT_EQ(popup_surface.get(), GetTargetSurfaceForLocatedEvent(&event));
@@ -2796,7 +2886,7 @@ TEST_F(ShellSurfaceTest, CaptionWithPopup) {
 
   {
     // Move the mouse at the caption of the main window.
-    ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(-45, -45),
+    ui::MouseEvent event(ui::EventType::kMouseMoved, gfx::Point(-45, -45),
                          gfx::Point(5, 5), ui::EventTimeForNow(), 0, 0);
     ui::Event::DispatcherApi(&event).set_target(target);
     EXPECT_EQ(nullptr, GetTargetSurfaceForLocatedEvent(&event));
@@ -2804,7 +2894,7 @@ TEST_F(ShellSurfaceTest, CaptionWithPopup) {
 
   {
     // Move the mouse in the main window.
-    ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(-25, 0),
+    ui::MouseEvent event(ui::EventType::kMouseMoved, gfx::Point(-25, 0),
                          gfx::Point(25, 50), ui::EventTimeForNow(), 0, 0);
     ui::Event::DispatcherApi(&event).set_target(target);
     EXPECT_EQ(surface, GetTargetSurfaceForLocatedEvent(&event));
@@ -3151,8 +3241,11 @@ TEST_F(ShellSurfaceTest, ShadowRoundedCorners) {
   constexpr gfx::Point kOrigin(20, 20);
   constexpr int kWindowCornerRadius = 12;
 
-  base::test::ScopedFeatureList scoped_feature_list(
-      chromeos::features::kRoundedWindows);
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {chromeos::features::kRoundedWindows,
+       chromeos::features::kFeatureManagementRoundedWindows},
+      /*disabled_features=*/{});
 
   std::unique_ptr<ShellSurface> shell_surface =
       test::ShellSurfaceBuilder({256, 256})
@@ -3190,6 +3283,82 @@ TEST_F(ShellSurfaceTest, ShadowRoundedCorners) {
   shadow = wm::ShadowController::GetShadowForWindow(window);
   ASSERT_TRUE(shadow);
   EXPECT_EQ(shadow->rounded_corner_radius_for_testing(), 0);
+}
+
+TEST_F(ShellSurfaceTest, RoundedWindows) {
+  constexpr gfx::Point kOrigin(20, 20);
+  constexpr int kWindowCornerRadius = 12;
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {chromeos::features::kRoundedWindows,
+       chromeos::features::kFeatureManagementRoundedWindows},
+      /*disabled_features=*/{});
+
+  std::unique_ptr<ShellSurface> shell_surface =
+      test::ShellSurfaceBuilder({256, 256})
+          .SetOrigin(kOrigin)
+          .SetWindowState(chromeos::WindowStateType::kNormal)
+          .SetFrame(SurfaceFrameType::NORMAL)
+          .BuildShellSurface();
+
+  Surface* root_surface = shell_surface->root_surface();
+
+  // Add a sub-surface.
+  constexpr gfx::Size kChildBufferSize(32, 32);
+  auto child_buffer1 = test::ExoTestHelper::CreateBuffer(kChildBufferSize);
+  auto child_surface1 = std::make_unique<Surface>();
+  child_surface1->Attach(child_buffer1.get());
+  auto subsurface1 = std::make_unique<SubSurface>(
+      child_surface1.get(), shell_surface->root_surface());
+  subsurface1->SetPosition(gfx::PointF(kOrigin));
+  child_surface1->SetRoundedCorners(
+      gfx::RRectF({32, 32}, gfx::RoundedCornersF(1)),
+      /*commit_override=*/false);
+  child_surface1->Commit();
+
+  root_surface->Commit();
+
+  shell_surface->SetWindowCornersRadii(
+      gfx::RoundedCornersF(kWindowCornerRadius));
+  root_surface->Commit();
+
+  auto mask_filter_info_at([](int index, const viz::CompositorFrame& frame) {
+    return frame.render_pass_list.back()
+        ->quad_list.ElementAt(index)
+        ->shared_quad_state->mask_filter_info;
+  });
+
+  test::WaitForLastFrameAck(shell_surface.get());
+  {
+    const viz::CompositorFrame& frame =
+        GetFrameFromSurface(shell_surface.get(), GetSurfaceManager());
+    ASSERT_EQ(1u, frame.render_pass_list.size());
+    ASSERT_EQ(2u, frame.render_pass_list.back()->quad_list.size());
+
+    gfx::RRectF expected_bounds({256, 256}, gfx::RoundedCornersF(0, 0, 12, 12));
+    EXPECT_EQ(mask_filter_info_at(0, frame).rounded_corner_bounds(),
+              expected_bounds);
+
+    // `SetWindowCornersRadii` overrides the window rounded corner bounds of the
+    // either surface tree rooted at `root_surface()`.
+    EXPECT_EQ(mask_filter_info_at(1, frame).rounded_corner_bounds(),
+              expected_bounds);
+  }
+
+  shell_surface->SetWindowCornersRadii(gfx::RoundedCornersF(0));
+  root_surface->Commit();
+
+  test::WaitForLastFrameAck(shell_surface.get());
+  {
+    const viz::CompositorFrame& frame =
+        GetFrameFromSurface(shell_surface.get(), GetSurfaceManager());
+
+    ASSERT_EQ(1u, frame.render_pass_list.size());
+    ASSERT_EQ(2u, frame.render_pass_list.back()->quad_list.size());
+    EXPECT_TRUE(mask_filter_info_at(0, frame).IsEmpty());
+    EXPECT_TRUE(mask_filter_info_at(1, frame).IsEmpty());
+  }
 }
 
 // Make sure that resize shadow does not update until commit when the window
@@ -3549,6 +3718,14 @@ TEST_F(ShellSurfaceTest, OverlayOverlapsFrame) {
                                 ->GetWindowBoundsInScreen()
                                 .size());
   }
+}
+
+TEST_F(ShellSurfaceTest, AccessibleProperties) {
+  auto shell_surface = test::ShellSurfaceBuilder({100, 100})
+                           .SetFrame(SurfaceFrameType::NORMAL)
+                           .BuildShellSurface();
+  EXPECT_EQ(shell_surface->GetViewAccessibility().GetCachedRole(),
+            ax::mojom::Role::kClient);
 }
 
 TEST_F(ShellSurfaceTest, OverlayCanResize) {
@@ -4044,7 +4221,7 @@ TEST_F(ShellSurfaceTest, SetSystemModal) {
   shell_surface->SetSystemModal(true);
   shell_surface->root_surface()->Commit();
 
-  EXPECT_EQ(ui::MODAL_TYPE_SYSTEM, shell_surface->GetModalType());
+  EXPECT_EQ(ui::mojom::ModalType::kSystem, shell_surface->GetModalType());
   EXPECT_FALSE(shell_surface->frame_enabled());
 }
 
@@ -4237,7 +4414,7 @@ TEST_F(ShellSurfaceTest, SetShapeAppliedAfterSurfaceCommit) {
     // Send an event to the point just outside of the region, it should not
     // target the root surface.
     gfx::Point location = target_bounds.origin() + gfx::Vector2d(9, 9);
-    ui::MouseEvent event(ui::ET_MOUSE_MOVED, location, location,
+    ui::MouseEvent event(ui::EventType::kMouseMoved, location, location,
                          ui::EventTimeForNow(), 0, 0);
     event_generator->Dispatch(&event);
     EXPECT_NE(shell_surface->root_surface(),
@@ -4247,7 +4424,7 @@ TEST_F(ShellSurfaceTest, SetShapeAppliedAfterSurfaceCommit) {
     // Send an event to the point just within of the region, it should target
     // the root surface.
     gfx::Point location = target_bounds.origin() + gfx::Vector2d(11, 11);
-    ui::MouseEvent event(ui::ET_MOUSE_MOVED, location, location,
+    ui::MouseEvent event(ui::EventType::kMouseMoved, location, location,
                          ui::EventTimeForNow(), 0, 0);
     event_generator->Dispatch(&event);
     EXPECT_EQ(shell_surface->root_surface(),
@@ -5034,6 +5211,29 @@ TEST_F(ShellSurfaceTest, HandlesDisplayChangeNoWidget) {
   // Trigger an update to the display configuration, the shell surface should
   // handle this without crashing.
   UpdateDisplay("1200x800");
+}
+
+TEST_F(ShellSurfaceTest, AccessibleChildTreeNodeAppId) {
+  std::unique_ptr<ShellSurface> shell_surface =
+      test::ShellSurfaceBuilder({256, 256}).BuildShellSurface();
+  ui::AXNodeData data;
+
+  shell_surface->GetViewAccessibility().GetAccessibleNodeData(&data);
+  EXPECT_FALSE(
+      data.HasStringAttribute(ax::mojom::StringAttribute::kChildTreeNodeAppId));
+
+  data = ui::AXNodeData();
+  shell_surface->SetApplicationId("child_app_id");
+  shell_surface->GetViewAccessibility().GetAccessibleNodeData(&data);
+  EXPECT_EQ(
+      "child_app_id",
+      data.GetStringAttribute(ax::mojom::StringAttribute::kChildTreeNodeAppId));
+
+  data = ui::AXNodeData();
+  shell_surface->SetApplicationId(nullptr);
+  shell_surface->GetViewAccessibility().GetAccessibleNodeData(&data);
+  EXPECT_FALSE(
+      data.HasStringAttribute(ax::mojom::StringAttribute::kChildTreeNodeAppId));
 }
 
 }  // namespace exo

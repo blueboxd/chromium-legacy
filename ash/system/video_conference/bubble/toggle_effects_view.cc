@@ -36,6 +36,7 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
@@ -131,7 +132,10 @@ class ToggleEffectsButtonLabel : public views::Label {
     // TODO(crbug.com/40233803): The size constraint is not passed down from
     // the views tree in the first round of layout, so multiline label might
     // be broken here. We need to explicitly set the size to fix this.
-    return gfx::Size(label_max_width_, GetHeightForWidth(label_max_width_));
+    return gfx::Size(label_max_width_,
+                     views::Label::CalculatePreferredSize(
+                         views::SizeBounds(label_max_width_, {}))
+                         .height());
   }
 
  private:
@@ -228,7 +232,7 @@ ToggleEffectsButton::ToggleEffectsButton(
       l10n_util::GetStringUTF16(
           toggled_ ? VIDEO_CONFERENCE_TOGGLE_BUTTON_STATE_ON
                    : VIDEO_CONFERENCE_TOGGLE_BUTTON_STATE_OFF)));
-  SetAccessibleRole(ax::mojom::Role::kToggleButton);
+  GetViewAccessibility().SetRole(ax::mojom::Role::kToggleButton);
   SetFocusBehavior(FocusBehavior::ALWAYS);
 
   UpdateColorsAndBackground();
@@ -310,6 +314,9 @@ ToggleEffectsView::ToggleEffectsView(
                     gfx::Insets::TLBR(0, kButtonContainerSpacing / 2, 0,
                                       kButtonContainerSpacing / 2))
         .SetIgnoreDefaultMainAxisMargins(true);
+
+    // TODO(crbug.com/40232718): See View::SetLayoutManagerUseConstrainedSpace.
+    row_view->SetLayoutManagerUseConstrainedSpace(false);
 
     // Add a button for each item in the row.
     for (auto* tile : row) {

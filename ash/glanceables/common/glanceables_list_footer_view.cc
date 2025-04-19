@@ -24,6 +24,7 @@
 #include "ui/base/models/image_model.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/gfx/text_constants.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/focus_ring.h"
@@ -43,8 +44,7 @@ class SeeAllButton : public views::LabelButton {
   METADATA_HEADER(SeeAllButton, views::LabelButton)
 
  public:
-  SeeAllButton(const std::u16string& see_all_accessible_name,
-               base::RepeatingClosure on_see_all_pressed) {
+  explicit SeeAllButton(base::RepeatingClosure on_see_all_pressed) {
     const bool stable_launch =
         features::AreAnyGlanceablesTimeManagementViewsEnabled();
     SetText(stable_launch
@@ -71,7 +71,6 @@ class SeeAllButton : public views::LabelButton {
     SetTextColorId(views::Button::STATE_NORMAL, cros_tokens::kCrosSysOnSurface);
     TypographyProvider::Get()->StyleLabel(TypographyToken::kCrosButton2,
                                           *label());
-    SetAccessibilityProperties(ax::mojom::Role::kLink, see_all_accessible_name);
     views::FocusRing::Get(this)->SetColorId(cros_tokens::kCrosSysFocusRing);
   }
 
@@ -86,16 +85,13 @@ END_METADATA
 }  // namespace
 
 GlanceablesListFooterView::GlanceablesListFooterView(
-    const std::u16string& see_all_accessible_name,
     base::RepeatingClosure on_see_all_pressed) {
   SetCrossAxisAlignment(views::LayoutAlignment::kCenter);
 
   const auto* const typography_provider = TypographyProvider::Get();
-
-  items_count_label_ = AddChildView(
+  title_label_ = AddChildView(
       views::Builder<views::Label>()
-          .SetID(base::to_underlying(
-              GlanceablesViewId::kListFooterItemsCountLabel))
+          .SetID(base::to_underlying(GlanceablesViewId::kListFooterTitleLabel))
           .SetEnabledColorId(cros_tokens::kCrosSysSecondary)
           .SetFontList(typography_provider->ResolveTypographyToken(
               TypographyToken::kCrosBody2))
@@ -108,22 +104,18 @@ GlanceablesListFooterView::GlanceablesListFooterView(
                                        views::MaximumFlexSizeRule::kUnbounded))
           .Build());
 
-  if (features::AreAnyGlanceablesTimeManagementViewsEnabled()) {
-    items_count_label_->SetText(l10n_util::GetStringUTF16(
-        IDS_GLANCEABLES_LIST_FOOTER_SEE_ALL_TASKS_LABEL));
-  }
-
-  see_all_button_ = AddChildView(std::make_unique<SeeAllButton>(
-      see_all_accessible_name, on_see_all_pressed));
+  see_all_button_ =
+      AddChildView(std::make_unique<SeeAllButton>(on_see_all_pressed));
 }
 
-void GlanceablesListFooterView::UpdateItemsCount(size_t visible_items_count,
-                                                 size_t total_items_count) {
-  CHECK_LE(visible_items_count, total_items_count);
-  items_count_label_->SetText(
-      l10n_util::GetStringFUTF16(IDS_GLANCEABLES_LIST_FOOTER_ITEMS_COUNT_LABEL,
-                                 base::NumberToString16(visible_items_count),
-                                 base::NumberToString16(total_items_count)));
+void GlanceablesListFooterView::SetTitleText(const std::u16string& title_text) {
+  title_label_->SetText(title_text);
+}
+
+void GlanceablesListFooterView::SetSeeAllAccessibleName(
+    const std::u16string& see_all_accessible_name) {
+  see_all_button_->GetViewAccessibility().SetProperties(
+      ax::mojom::Role::kLink, see_all_accessible_name);
 }
 
 BEGIN_METADATA(GlanceablesListFooterView)

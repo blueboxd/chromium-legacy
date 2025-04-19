@@ -8,14 +8,16 @@
 #include <vector>
 
 #include "base/metrics/histogram_functions.h"
+#include "base/not_fatal_until.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/uuid.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
-#include "services/on_device_model/platform_model_loader.h"
 #include "services/on_device_model/public/cpp/on_device_model.h"
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "services/on_device_model/platform_model_loader_chromeos.h"
+#if defined(ENABLE_ML_INTERNAL)
+#include "services/on_device_model/ml/on_device_model_internal.h"  //nogncheck
+#else
+#include "services/on_device_model/on_device_model_fake.h"  //nogncheck
 #endif
 
 namespace on_device_model {
@@ -43,10 +45,14 @@ class SessionWrapper final : public mojom::Session {
       mojo::PendingRemote<mojom::StreamingResponder> response) override;
   void GetSizeInTokens(const std::string& text,
                        GetSizeInTokensCallback callback) override;
+  void Score(const std::string& text, ScoreCallback callback) override;
+  void Clone(mojo::PendingReceiver<mojom::Session> session) override;
 
   mojo::Receiver<mojom::Session>& receiver() { return receiver_; }
 
-  void ReplayPreviousContext();
+  void AddPreviousContext(mojom::InputOptionsPtr input) {
+    previous_contexts_.push_back(std::move(input));
+  }
 
  private:
   void AddContextInternal(mojom::InputOptionsPtr input,
@@ -70,9 +76,13 @@ class SessionWrapper final : public mojom::Session {
                            std::move(callback).Then(std::move(on_complete)));
   }
 
-  void AddPreviousContext(mojom::InputOptionsPtr input) {
-    previous_contexts_.push_back(std::move(input));
+  void ScoreInternal(const std::string& text,
+                     ScoreCallback callback,
+                     base::OnceClosure on_complete) {
+    session_->Score(text, std::move(callback).Then(std::move(on_complete)));
   }
+
+  void CloneInternal(mojo::PendingReceiver<mojom::Session> session);
 
   base::WeakPtr<ModelWrapper> model_;
   mojo::Receiver<mojom::Session> receiver_;
@@ -122,19 +132,8 @@ class ModelWrapper final : public mojom::OnDeviceModel {
   }
 
   void StartSession(mojo::PendingReceiver<mojom::Session> session) override {
-    auto current_session = std::make_unique<SessionWrapper>(
-        weak_ptr_factory_.GetWeakPtr(), std::move(session),
-        model_->CreateSession(receivers_.current_context()));
-    SessionWrapper* current_session_ptr = current_session.get();
-
-    if (!support_multiple_sessions_) {
-      sessions_.clear();
-    }
-
-    sessions_.insert(std::move(current_session));
-    current_session_ptr->receiver().set_disconnect_handler(
-        base::BindOnce(&ModelWrapper::SessionDisconnected,
-                       base::Unretained(this), current_session_ptr));
+    AddSession(std::move(session),
+               model_->CreateSession(receivers_.current_context()), {});
   }
 
   void ClassifyTextSafety(const std::string& text,
@@ -161,6 +160,28 @@ class ModelWrapper final : public mojom::OnDeviceModel {
         base::IgnoreArgs<base::OnceClosure>(std::move(load_adaptation)));
   }
 
+  void AddSession(
+      mojo::PendingReceiver<mojom::Session> receiver,
+      std::unique_ptr<on_device_model::OnDeviceModel::Session> session,
+      const std::vector<mojom::InputOptionsPtr>& previous_contexts) {
+    auto current_session = std::make_unique<SessionWrapper>(
+        weak_ptr_factory_.GetWeakPtr(), std::move(receiver),
+        std::move(session));
+    for (const auto& context : previous_contexts) {
+      current_session->AddPreviousContext(context.Clone());
+    }
+    SessionWrapper* current_session_ptr = current_session.get();
+
+    if (!support_multiple_sessions_) {
+      sessions_.clear();
+    }
+
+    sessions_.insert(std::move(current_session));
+    current_session_ptr->receiver().set_disconnect_handler(
+        base::BindOnce(&ModelWrapper::SessionDisconnected,
+                       base::Unretained(this), current_session_ptr));
+  }
+
  private:
   struct PendingTask {
     base::WeakPtr<SessionWrapper> session;
@@ -183,14 +204,20 @@ class ModelWrapper final : public mojom::OnDeviceModel {
   void LoadAdaptationInternal(mojom::LoadAdaptationParamsPtr params,
                               mojo::PendingReceiver<mojom::OnDeviceModel> model,
                               LoadAdaptationCallback callback) {
-    base::ElapsedTimer timer;
-    auto result = model_->LoadAdaptation(std::move(params));
+    auto start = base::TimeTicks::Now();
+    auto result = model_->LoadAdaptation(
+        std::move(params),
+        base::BindOnce(
+            [](base::TimeTicks start) {
+              base::UmaHistogramMediumTimes(
+                  "OnDeviceModel.LoadAdaptationModelDuration",
+                  base::TimeTicks::Now() - start);
+            },
+            start));
     if (!result.has_value()) {
       std::move(callback).Run(result.error());
       return;
     }
-    base::UmaHistogramMediumTimes("OnDeviceModel.LoadAdaptationModelDuration",
-                                  timer.Elapsed());
     receivers_.Add(this, std::move(model), *result);
     std::move(callback).Run(mojom::LoadModelResult::kSuccess);
   }
@@ -213,10 +240,6 @@ class ModelWrapper final : public mojom::OnDeviceModel {
 
     is_running_ = true;
     running_session_ = pending_task.session;
-    if (running_session_ && running_session_.get() != last_session_.get()) {
-      running_session_->ReplayPreviousContext();
-    }
-
     std::move(pending_task.task).Run();
   }
 
@@ -299,24 +322,56 @@ void SessionWrapper::GetSizeInTokens(const std::string& text,
                                weak_ptr_factory_.GetWeakPtr());
 }
 
-void SessionWrapper::ReplayPreviousContext() {
-  session_->ClearContext();
-  for (const auto& context : previous_contexts_) {
-    AddContextInternal(context.Clone(),
-                       mojo::PendingRemote<mojom::ContextClient>(),
-                       base::DoNothing());
+void SessionWrapper::Score(const std::string& text, ScoreCallback callback) {
+  if (!model_) {
+    return;
   }
+
+  model_->AddAndRunPendingTask(
+      base::BindOnce(&SessionWrapper::ScoreInternal,
+                     weak_ptr_factory_.GetWeakPtr(), text, std::move(callback)),
+      weak_ptr_factory_.GetWeakPtr());
+}
+
+void SessionWrapper::Clone(mojo::PendingReceiver<mojom::Session> session) {
+  if (!model_) {
+    return;
+  }
+
+  model_->AddAndRunPendingTask(
+      base::IgnoreArgs<base::OnceClosure>(
+          base::BindOnce(&SessionWrapper::CloneInternal,
+                         weak_ptr_factory_.GetWeakPtr(), std::move(session))),
+      weak_ptr_factory_.GetWeakPtr());
+}
+
+void SessionWrapper::CloneInternal(
+    mojo::PendingReceiver<mojom::Session> session) {
+  if (!model_) {
+    return;
+  }
+
+  model_->AddSession(std::move(session), session_->Clone(), previous_contexts_);
+}
+
+const OnDeviceModelShim* DefaultImpl() {
+#if defined(ENABLE_ML_INTERNAL)
+  return ml::GetOnDeviceModelInternalImpl();
+#else
+  return GetOnDeviceModelFakeImpl();
+#endif
 }
 
 }  // namespace
 
 OnDeviceModelService::OnDeviceModelService(
     mojo::PendingReceiver<mojom::OnDeviceModelService> receiver)
-    : receiver_(this, std::move(receiver)) {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  platform_model_loader_ = std::make_unique<ChromeosPlatformModelLoader>(*this);
-#endif
-}
+    : OnDeviceModelService(std::move(receiver), DefaultImpl()) {}
+
+OnDeviceModelService::OnDeviceModelService(
+    mojo::PendingReceiver<mojom::OnDeviceModelService> receiver,
+    const OnDeviceModelShim* impl)
+    : receiver_(this, std::move(receiver)), impl_(impl) {}
 
 OnDeviceModelService::~OnDeviceModelService() = default;
 
@@ -324,16 +379,21 @@ void OnDeviceModelService::LoadModel(
     mojom::LoadModelParamsPtr params,
     mojo::PendingReceiver<mojom::OnDeviceModel> model,
     LoadModelCallback callback) {
-  base::ElapsedTimer timer;
+  auto start = base::TimeTicks::Now();
   bool support_multiple_sessions = params->support_multiple_sessions;
-  auto model_impl = CreateModel(std::move(params));
+  auto model_impl = impl_->CreateModel(
+      std::move(params), base::BindOnce(
+                             [](base::TimeTicks start) {
+                               base::UmaHistogramMediumTimes(
+                                   "OnDeviceModel.LoadModelDuration",
+                                   base::TimeTicks::Now() - start);
+                             },
+                             start));
   if (!model_impl.has_value()) {
     std::move(callback).Run(model_impl.error());
     return;
   }
 
-  base::UmaHistogramMediumTimes("OnDeviceModel.LoadModelDuration",
-                                timer.Elapsed());
   models_.insert(std::make_unique<ModelWrapper>(
       support_multiple_sessions, std::move(model_impl.value()),
       std::move(model),
@@ -342,26 +402,10 @@ void OnDeviceModelService::LoadModel(
   std::move(callback).Run(mojom::LoadModelResult::kSuccess);
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-void OnDeviceModelService::LoadPlatformModel(
-    const base::Uuid& uuid,
-    mojo::PendingReceiver<mojom::OnDeviceModel> model,
-    LoadModelCallback callback) {
-  if (!platform_model_loader_) {
-    LOG(ERROR) << "No valid platform model loader.";
-    std::move(callback).Run(mojom::LoadModelResult::kFailedToLoadLibrary);
-    return;
-  }
-
-  platform_model_loader_->LoadModelWithUuid(uuid, std::move(model),
-                                            std::move(callback));
-}
-#endif
-
 void OnDeviceModelService::GetEstimatedPerformanceClass(
     GetEstimatedPerformanceClassCallback callback) {
   base::ElapsedTimer timer;
-  std::move(callback).Run(GetEstimatedPerformanceClass());
+  std::move(callback).Run(impl_->GetEstimatedPerformanceClass());
   base::UmaHistogramTimes("OnDeviceModel.BenchmarkDuration", timer.Elapsed());
 }
 
@@ -371,7 +415,7 @@ void OnDeviceModelService::DeleteModel(
     return;
   }
   auto it = models_.find(model.get());
-  DCHECK(it != models_.end());
+  CHECK(it != models_.end(), base::NotFatalUntil::M130);
   models_.erase(it);
 }
 

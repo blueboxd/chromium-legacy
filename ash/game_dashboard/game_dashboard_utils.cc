@@ -7,6 +7,7 @@
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/app_types_util.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/icon_button.h"
@@ -65,7 +66,8 @@ views::Widget* GetNextWidgetToFocus(
   return nullptr;
 }
 
-std::optional<ArcGameControlsFlag> GetGameControlsFlag(aura::Window* window) {
+std::optional<ArcGameControlsFlag> GetGameControlsFlag(
+    const aura::Window* window) {
   if (!IsArcWindow(window)) {
     return std::nullopt;
   }

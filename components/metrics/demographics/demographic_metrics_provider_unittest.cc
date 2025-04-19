@@ -66,8 +66,7 @@ class TestProfileClient : public DemographicMetricsProvider::ProfileClient {
         sync_service_ = std::make_unique<syncer::TestSyncService>();
         // Set an arbitrary disable reason to mimic sync feature being unable to
         // start.
-        sync_service_->SetDisableReasons(
-            {syncer::SyncService::DISABLE_REASON_UNRECOVERABLE_ERROR});
+        sync_service_->SetHasUnrecoverableError(true);
         break;
 
       case SYNC_FEATURE_ENABLED:
@@ -91,7 +90,7 @@ class TestProfileClient : public DemographicMetricsProvider::ProfileClient {
 
       case SYNC_FEATURE_DISABLED_BUT_PREFERENCES_ENABLED:
         sync_service_ = std::make_unique<syncer::TestSyncService>();
-        sync_service_->SetHasSyncConsent(false);
+        sync_service_->SetSignedIn(signin::ConsentLevel::kSignin);
         CHECK(sync_service_->GetUserSettings()->GetSelectedTypes().Has(
             syncer::UserSelectableType::kPreferences));
         CHECK(!sync_service_->IsSyncFeatureEnabled());

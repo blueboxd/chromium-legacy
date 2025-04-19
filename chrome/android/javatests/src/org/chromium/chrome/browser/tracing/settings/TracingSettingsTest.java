@@ -30,6 +30,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
@@ -38,7 +39,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
-import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
+import org.chromium.chrome.browser.settings.SettingsLauncherFactory;
 import org.chromium.chrome.browser.tracing.TracingController;
 import org.chromium.chrome.browser.tracing.TracingNotificationManager;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -47,7 +48,6 @@ import org.chromium.components.browser_ui.notifications.MockNotificationManagerP
 import org.chromium.components.browser_ui.settings.ButtonPreference;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.browser_ui.settings.TextMessagePreference;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.io.File;
 import java.util.Arrays;
@@ -119,7 +119,7 @@ public class TracingSettingsTest {
                 fragment.findPreference(TracingSettings.UI_PREF_START_RECORDING);
 
         CallbackHelper callbackHelper = new CallbackHelper();
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     if (TracingController.getInstance().getState()
                             == TracingController.State.INITIALIZING) {
@@ -167,7 +167,7 @@ public class TracingSettingsTest {
         Assert.assertEquals(0, mMockNotificationManager.getNotifications().size());
 
         CallbackHelper callbackHelper = new CallbackHelper();
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     Assert.assertEquals(
                             TracingController.State.IDLE,
@@ -303,7 +303,7 @@ public class TracingSettingsTest {
 
         waitForTracingControllerInitialization(fragment);
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     Assert.assertTrue(defaultCategoriesPref.isEnabled());
                     Assert.assertTrue(nonDefaultCategoriesPref.isEnabled());
@@ -323,7 +323,7 @@ public class TracingSettingsTest {
             Context context = ApplicationProvider.getApplicationContext();
             Assert.assertNotNull(categoriesPref.getExtras());
             Assert.assertFalse(categoriesPref.getExtras().isEmpty());
-            SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+            SettingsLauncher settingsLauncher = SettingsLauncherFactory.createSettingsLauncher();
             Intent intent =
                     settingsLauncher.createSettingsActivityIntent(
                             context, TracingCategoriesSettings.class, categoriesPref.getExtras());
@@ -344,7 +344,7 @@ public class TracingSettingsTest {
             Assert.assertEquals(originallyEnabled, sampleCategoryPref.isChecked());
 
             // Simulate selecting / deselecting the category.
-            TestThreadUtils.runOnUiThreadBlocking(sampleCategoryPref::performClick);
+            ThreadUtils.runOnUiThreadBlocking(sampleCategoryPref::performClick);
             Assert.assertNotEquals(originallyEnabled, sampleCategoryPref.isChecked());
             boolean finallyEnabled =
                     TracingSettings.getEnabledCategories().contains(sampleCategoryName);
@@ -363,7 +363,7 @@ public class TracingSettingsTest {
 
         waitForTracingControllerInitialization(fragment);
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     Assert.assertTrue(modePref.isEnabled());
 

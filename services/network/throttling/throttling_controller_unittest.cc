@@ -95,8 +95,8 @@ class ThrottlingControllerTestHelper {
     if (with_upload) {
       upload_data_stream_ =
           std::make_unique<net::ChunkedUploadDataStream>(kUploadIdentifier);
-      upload_data_stream_->AppendData(kUploadData, std::size(kUploadData),
-                                      true);
+      upload_data_stream_->AppendData(
+          base::byte_span_with_nul_from_cstring(kUploadData), true);
       request_->upload_data_stream = upload_data_stream_.get();
     }
 
@@ -121,7 +121,7 @@ class ThrottlingControllerTestHelper {
     return interceptor->IsOffline();
   }
 
-  bool HasStarted() { return !!transaction_->request_; }
+  bool HasStarted() { return transaction_->started_; }
 
   bool HasFailed() { return transaction_->failed_; }
 

@@ -20,6 +20,8 @@ class ComposeManager;
 // An interface for embedder actions, e.g. Chrome on Desktop.
 class ComposeClient {
  public:
+  using FieldIdentifier =
+      std::pair<autofill::FieldGlobalId, autofill::FormGlobalId>;
   // The callback to Autofill. When run, it fills the passed string into the
   // form field on which it was triggered.
   using ComposeCallback = base::OnceCallback<void(const std::u16string&)>;
@@ -47,7 +49,7 @@ class ComposeClient {
       autofill::AutofillSuggestionTriggerSource trigger_source) = 0;
 
   // Getter for the PageUkmTracker instance for the currently loaded page.
-  virtual PageUkmTracker* getPageUkmTracker() = 0;
+  virtual PageUkmTracker* GetPageUkmTracker() = 0;
 
   // Disable the global preference controlling the proactive nudge.
   virtual void DisableProactiveNudge() = 0;

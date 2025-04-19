@@ -21,8 +21,8 @@
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "mojo/public/cpp/bindings/union_traits.h"
 #include "net/base/request_priority.h"
+#include "net/storage_access_api/status.h"
 #include "net/url_request/referrer_policy.h"
-#include "services/network/public/cpp/attribution_mojom_traits.h"
 #include "services/network/public/cpp/cookie_manager_shared_mojom_traits.h"
 #include "services/network/public/cpp/data_element.h"
 #include "services/network/public/cpp/network_isolation_key_mojom_traits.h"
@@ -377,8 +377,9 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
       const network::ResourceRequest& request) {
     return request.target_ip_address_space;
   }
-  static bool has_storage_access(const network::ResourceRequest& request) {
-    return request.has_storage_access;
+  static net::StorageAccessApiStatus storage_access_api_status(
+      const network::ResourceRequest& request) {
+    return request.storage_access_api_status;
   }
   static network::mojom::AttributionSupport attribution_reporting_support(
       const network::ResourceRequest& request) {
@@ -387,11 +388,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   static network::mojom::AttributionReportingEligibility
   attribution_reporting_eligibility(const network::ResourceRequest& request) {
     return request.attribution_reporting_eligibility;
-  }
-  static const network::AttributionReportingRuntimeFeatures&
-  attribution_reporting_runtime_features(
-      const network::ResourceRequest& request) {
-    return request.attribution_reporting_runtime_features;
   }
   static const std::optional<base::UnguessableToken>&
   attribution_reporting_src_token(const network::ResourceRequest& request) {

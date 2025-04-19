@@ -6,18 +6,22 @@
 #define UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_CONNECTION_H_
 
 #include <time.h>
+
 #include <memory>
 #include <ostream>
 #include <string>
 #include <vector>
 
 #include "base/containers/flat_map.h"
+#include "base/feature_list.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/display/tablet_state.h"
 #include "ui/events/event.h"
+#include "ui/gl/gl_display.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
 #include "ui/ozone/platform/wayland/host/single_pixel_buffer.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
@@ -115,17 +119,6 @@ class WaylandConnection {
   // is the Ash Chrome version.
   base::Version GetServerVersion() const;
 
-  // A correct display must be chosen when creating objects or calling
-  // roundrips.  That is, all the methods that deal with polling, pulling event
-  // queues, etc, must use original display. All the other methods that create
-  // various wayland objects must use |display_wrapper_| so that the new objects
-  // are associated with the correct event queue. Otherwise, they will use a
-  // default event queue, which we do not use. See the comment below about the
-  // |event_queue_|.
-  wl_display* display() const { return display_.get(); }
-  wl_display* display_wrapper() const {
-    return reinterpret_cast<wl_display*>(wrapped_display_.get());
-  }
   wl_compositor* compositor() const { return compositor_.get(); }
   // The server version of the compositor interface (might be higher than the
   // version binded).
@@ -154,6 +147,9 @@ class WaylandConnection {
   zcr_text_input_extension_v1* text_input_extension_v1() const {
     return text_input_extension_v1_.get();
   }
+  zwp_text_input_manager_v3* text_input_manager_v3() const {
+    return text_input_manager_v3_.get();
+  }
   zwp_linux_explicit_synchronization_v1* linux_explicit_synchronization_v1()
       const {
     return linux_explicit_synchronization_.get();
@@ -171,6 +167,10 @@ class WaylandConnection {
 
   wp_fractional_scale_manager_v1* fractional_scale_manager_v1() const {
     return fractional_scale_manager_v1_.get();
+  }
+
+  xdg_toplevel_icon_manager_v1* toplevel_icon_manager_v1() const {
+    return toplevel_icon_manager_v1_.get();
   }
 
   void SetPlatformCursor(wl_cursor* cursor_data, int buffer_scale);
@@ -326,9 +326,14 @@ class WaylandConnection {
     supports_viewporter_surface_scaling_ = enabled;
   }
 
-  bool UseViewporterSurfaceScaling() {
+  bool UseViewporterSurfaceScaling() const {
     return supports_viewporter_surface_scaling_ &&
            !surface_submission_in_pixel_coordinates_;
+  }
+
+  bool UsePerSurfaceScaling() const {
+    return base::FeatureList::IsEnabled(features::kWaylandPerSurfaceScale) &&
+           UseViewporterSurfaceScaling();
   }
 
   bool ShouldUseOverlayDelegation() const;
@@ -359,6 +364,14 @@ class WaylandConnection {
            WaylandBufferManagerHost::SupportsImplicitSyncInterop();
   }
 
+  // Returns a sync callback, which is invoked when the server has processed all
+  // pending events prior to this sync point.
+  struct wl_callback* GetSyncCallback();
+
+  gl::EGLDisplayPlatform GetNativeDisplay();
+
+  struct wl_registry* GetRegistry();
+
  private:
   friend class WaylandConnectionTestApi;
 
@@ -375,6 +388,7 @@ class WaylandConnection {
   friend class OverlayPrioritizer;
   friend class SinglePixelBuffer;
   friend class SurfaceAugmenter;
+  friend class ToplevelIconManager;
   friend class WaylandDataDeviceManager;
   friend class WaylandOutput;
   friend class WaylandSeat;
@@ -391,6 +405,18 @@ class WaylandConnection {
   friend class XdgForeignWrapper;
   friend class ZwpIdleInhibitManager;
   friend class ZwpPrimarySelectionDeviceManager;
+
+  // A correct display must be chosen when creating objects or calling
+  // roundrips.  That is, all the methods that deal with polling, pulling event
+  // queues, etc, must use original display. All the other methods that create
+  // various wayland objects must use |display_wrapper_| so that the new objects
+  // are associated with the correct event queue. Otherwise, they will use a
+  // default event queue, which we do not use. See the comment below about the
+  // |event_queue_|.
+  wl_display* display() const { return display_.get(); }
+  wl_display* display_wrapper() const {
+    return reinterpret_cast<wl_display*>(wrapped_display_.get());
+  }
 
   void RegisterGlobalObjectFactory(const char* interface_name,
                                    wl::GlobalObjectFactory factory);
@@ -460,6 +486,7 @@ class WaylandConnection {
       keyboard_shortcuts_inhibit_manager_v1_;
   wl::Object<zcr_stylus_v2> zcr_stylus_v2_;
   wl::Object<zwp_text_input_manager_v1> text_input_manager_v1_;
+  wl::Object<zwp_text_input_manager_v3> text_input_manager_v3_;
   wl::Object<zcr_text_input_extension_v1> text_input_extension_v1_;
   wl::Object<zwp_linux_explicit_synchronization_v1>
       linux_explicit_synchronization_;
@@ -467,6 +494,7 @@ class WaylandConnection {
   wl::Object<zcr_extended_drag_v1> extended_drag_v1_;
   wl::Object<zxdg_output_manager_v1> xdg_output_manager_;
   wl::Object<wp_fractional_scale_manager_v1> fractional_scale_manager_v1_;
+  wl::Object<xdg_toplevel_icon_manager_v1> toplevel_icon_manager_v1_;
 
   // Manages Wayland windows.
   WaylandWindowManager window_manager_{this};

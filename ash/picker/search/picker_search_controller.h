@@ -7,7 +7,7 @@
 
 #include <memory>
 #include <optional>
-#include <string>
+#include <string_view>
 #include <vector>
 
 #include "ash/ash_export.h"
@@ -26,17 +26,24 @@ class PickerClient;
 
 class ASH_EXPORT PickerSearchController {
  public:
-  explicit PickerSearchController(
-      PickerClient* client,
-      base::TimeDelta burn_in_period);
+  explicit PickerSearchController(PickerClient* client,
+                                  base::TimeDelta burn_in_period);
   PickerSearchController(const PickerSearchController&) = delete;
   PickerSearchController& operator=(const PickerSearchController&) = delete;
   ~PickerSearchController();
 
-  void StartSearch(const std::u16string& query,
+  void LoadEmojiLanguagesFromPrefs();
+
+  void StartSearch(std::u16string_view query,
                    std::optional<PickerCategory> category,
-                   base::span<const PickerCategory> available_categories,
+                   PickerSearchRequest::Options search_options,
                    PickerViewDelegate::SearchResultsCallback callback);
+
+  void StopSearch();
+
+  void StartEmojiSearch(
+      std::u16string_view query,
+      PickerViewDelegate::EmojiSearchResultsCallback callback);
 
  private:
   const raw_ref<PickerClient> client_;

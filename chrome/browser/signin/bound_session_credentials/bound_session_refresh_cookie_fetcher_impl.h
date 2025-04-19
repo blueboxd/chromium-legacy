@@ -43,8 +43,11 @@ class BoundSessionRefreshCookieFetcherImpl
   ~BoundSessionRefreshCookieFetcherImpl() override;
 
   // BoundSessionRefreshCookieFetcher:
-  void Start(RefreshCookieCompleteCallback callback) override;
+  void Start(
+      RefreshCookieCompleteCallback callback,
+      std::optional<std::string> sec_session_challenge_response) override;
   bool IsChallengeReceived() const override;
+  std::optional<std::string> TakeSecSessionChallengeResponseIfAny() override;
 
  private:
   friend class BoundSessionRefreshCookieFetcherImplTest;
@@ -95,18 +98,10 @@ class BoundSessionRefreshCookieFetcherImpl
   void Clone(mojo::PendingReceiver<network::mojom::CookieAccessObserver>
                  observer) override;
 
-  // TODO(b/325441004): remove after `refresh_url_` is always valid.
-  const GURL& GetRefreshUrl();
-
   const scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   const raw_ref<SessionBindingHelper> session_binding_helper_;
 
   const std::string session_id_;
-
-  // Temporarily, this URL might be empty, meaning that the hardcoded URL must
-  // be used instead. Use `GetRefreshUrl()` instead of reading this value
-  // directly.
-  // TODO(b/325441004): require URL to be valid after migrating the storage.
   const GURL refresh_url_;
 
   // Used to check whether the refresh request has set the required cookie.
@@ -128,6 +123,7 @@ class BoundSessionRefreshCookieFetcherImpl
   Result result_;
   bool cookie_refresh_completed_ = false;
   size_t assertion_requests_count_ = 0;
+  std::optional<std::string> sec_session_challenge_response_;
   bound_session_credentials::RotationDebugInfo debug_info_;
 
   // Non-null after a fetch has started.

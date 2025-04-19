@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "sql/statement.h"
 
 #include <stddef.h>
@@ -337,8 +342,8 @@ void Statement::BindString(int param_index, std::string_view value) {
   DCHECK_LT(param_index, sqlite3_bind_parameter_count(ref_->stmt()))
       << "Invalid parameter index";
 
-  // base::StringPiece::data() may return null for empty pieces. In particular,
-  // this may happen when the StringPiece is created from the default
+  // std::string_view::data() may return null for empty pieces. In particular,
+  // this may happen when the std::string_view is created from the default
   // constructor.
   //
   // However, sqlite3_bind_text() always interprets a nullptr data argument as a

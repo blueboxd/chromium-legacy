@@ -34,6 +34,8 @@
 #include "components/enterprise/browser/reporting/common_pref_names.h"
 #include "components/enterprise/browser/reporting/real_time_report_type.h"
 #include "components/enterprise/common/proto/connectors.pb.h"
+#include "components/enterprise/connectors/core/common.h"
+#include "components/enterprise/connectors/core/connectors_prefs.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/dm_token.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -59,6 +61,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_pref_names.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/crostini/crostini_features.h"
@@ -70,6 +73,7 @@
 #include "chrome/browser/ash/policy/enrollment/device_cloud_policy_initializer.h"
 #include "chrome/browser/ash/policy/remote_commands/crd/fake_start_crd_session_job_delegate.h"
 #include "chrome/browser/ash/policy/reporting/metrics_reporting/metric_reporting_prefs.h"
+#include "chrome/browser/ash/policy/skyvault/policy_utils.h"
 #include "chrome/browser/ash/policy/status_collector/device_status_collector.h"
 #include "chrome/browser/ash/policy/status_collector/status_collector.h"
 #include "chrome/browser/ash/policy/uploading/status_uploader.h"
@@ -284,6 +288,10 @@ class TestManagementUIHandler : public ManagementUIHandlerBase {
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+  std::u16string GetFilesUploadToCloudInfo(Profile* profile) {
+    return ManagementUIHandlerBase::GetFilesUploadToCloudInfo(profile);
+  }
+
   MOCK_METHOD(policy::DeviceCloudPolicyManagerAsh*,
               GetDeviceCloudPolicyManager,
               (),
@@ -418,6 +426,7 @@ class ManagementUIHandlerTests : public TestingBaseClass {
     base::FilePath crostini_ansible_playbook_filepath;
     bool insights_extension_enabled;
     bool legacy_tech_reporting_enabled;
+    bool real_time_url_check_connector_enabled;
     base::Value::List report_app_inventory;
     base::Value::List report_app_usage;
     base::Value::List report_website_telemetry;
@@ -456,6 +465,7 @@ class ManagementUIHandlerTests : public TestingBaseClass {
     setup_config_.report_website_activity_allowlist = base::Value::List();
     setup_config_.report_website_telemetry_allowlist = base::Value::List();
     setup_config_.legacy_tech_reporting_enabled = false;
+    setup_config_.real_time_url_check_connector_enabled = default_value;
   }
 
   void SetUpLocalState() {
@@ -529,6 +539,11 @@ class ManagementUIHandlerTests : public TestingBaseClass {
         GetTestConfig().crostini_report_usage);
     local_state_.SetBoolean(enterprise_reporting::kCloudReportingEnabled,
                             GetTestConfig().cloud_reporting_enabled);
+    profile_->GetPrefs()->SetInteger(
+        enterprise_connectors::kEnterpriseRealTimeUrlCheckMode, 1);
+    profile_->GetPrefs()->SetInteger(
+        enterprise_connectors::kEnterpriseRealTimeUrlCheckScope,
+        policy::POLICY_SCOPE_MACHINE);
     if (GetTestConfig().legacy_tech_reporting_enabled) {
       base::Value::List allowlist;
       allowlist.Append("www.example.com");
@@ -1586,14 +1601,22 @@ TEST_F(ManagementUIHandlerTests, CloudReportingPolicy) {
   local_state_.SetBoolean(enterprise_reporting::kCloudReportingEnabled, true);
   SetUpProfileAndHandler();
 
+  profile_->GetPrefs()->SetInteger(
+      enterprise_connectors::kEnterpriseRealTimeUrlCheckMode, 1);
+  profile_->GetPrefs()->SetInteger(
+      enterprise_connectors::kEnterpriseRealTimeUrlCheckScope,
+      policy::POLICY_SCOPE_MACHINE);
+
   std::set<std::string> expected_messages = {
       kManagementExtensionReportMachineName, kManagementExtensionReportUsername,
       kManagementExtensionReportVersion,
-      kManagementExtensionReportExtensionsPlugin};
+      kManagementExtensionReportExtensionsPlugin,
+      kManagementExtensionReportVisitedUrl};
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
   expected_messages.insert(kManagementDeviceSignalsDisclosure);
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 
+  policy::SetDMTokenForTesting(policy::DMToken::CreateValidToken("fake-token"));
   ASSERT_PRED_FORMAT2(MessagesToBeEQ, handler_.GetReportingInfo(),
                       expected_messages);
 }
@@ -1629,11 +1652,19 @@ TEST_F(ManagementUIHandlerTests,
   EXPECT_CALL(policy_service_, GetPolicies(_))
       .WillRepeatedly(ReturnRef(policies));
   local_state_.SetBoolean(enterprise_reporting::kCloudReportingEnabled, true);
+  profile_->GetPrefs()->SetInteger(
+      enterprise_connectors::kEnterpriseRealTimeUrlCheckMode, 1);
+  profile_->GetPrefs()->SetInteger(
+      enterprise_connectors::kEnterpriseRealTimeUrlCheckScope,
+      policy::POLICY_SCOPE_MACHINE);
 
   std::set<std::string> expected_messages = {
       kManagementExtensionReportMachineName, kManagementExtensionReportUsername,
       kManagementExtensionReportVersion,
-      kManagementExtensionReportExtensionsPlugin};
+      kManagementExtensionReportExtensionsPlugin,
+      kManagementExtensionReportVisitedUrl};
+
+  policy::SetDMTokenForTesting(policy::DMToken::CreateValidToken("fake-token"));
   ASSERT_PRED_FORMAT2(MessagesToBeEQ,
                       handler_.GetReportingInfo(/*can_collect_signals=*/false),
                       expected_messages);
@@ -1701,6 +1732,11 @@ TEST_F(ManagementUIHandlerTests, ExtensionReportingInfoPoliciesMerge) {
               GetPolicies(on_prem_reporting_extension_beta_policy_namespace))
       .WillOnce(ReturnRef(on_prem_reporting_extension_beta_policies));
   local_state_.SetBoolean(enterprise_reporting::kCloudReportingEnabled, true);
+  profile_->GetPrefs()->SetInteger(
+      enterprise_connectors::kEnterpriseRealTimeUrlCheckMode, 1);
+  profile_->GetPrefs()->SetInteger(
+      enterprise_connectors::kEnterpriseRealTimeUrlCheckScope,
+      policy::POLICY_SCOPE_MACHINE);
 
   std::set<std::string> expected_messages = {
       kManagementExtensionReportMachineNameAddress,
@@ -1709,8 +1745,10 @@ TEST_F(ManagementUIHandlerTests, ExtensionReportingInfoPoliciesMerge) {
       kManagementExtensionReportExtensionsPlugin,
       kManagementExtensionReportUserBrowsingData,
       kManagementExtensionReportPerfCrash,
-      kManagementLegacyTechReport};
+      kManagementLegacyTechReport,
+      kManagementExtensionReportVisitedUrl};
 
+  policy::SetDMTokenForTesting(policy::DMToken::CreateValidToken("fake-token"));
   ASSERT_PRED_FORMAT2(MessagesToBeEQ,
                       handler_.GetReportingInfo(/*can_collect_signals=*/false),
                       expected_messages);
@@ -1775,7 +1813,7 @@ TEST_F(ManagementUIHandlerTests, ThreatReportingInfo) {
   SetConnectorPolicyValue(policy::key::kOnSecurityEventEnterpriseConnector,
                           "[]", chrome_policies);
   profile_no_domain->GetPrefs()->SetInteger(
-      prefs::kSafeBrowsingEnterpriseRealTimeUrlCheckMode, 0);
+      enterprise_connectors::kEnterpriseRealTimeUrlCheckMode, 0);
 
   info = handler_.GetThreatProtectionInfo(profile_no_domain.get());
   EXPECT_TRUE(info.FindList("info")->empty());
@@ -1806,9 +1844,9 @@ TEST_F(ManagementUIHandlerTests, ThreatReportingInfo) {
   enterprise_connectors::test::SetOnSecurityEventReporting(
       profile_no_domain->GetPrefs(), true);
   profile_no_domain->GetPrefs()->SetInteger(
-      prefs::kSafeBrowsingEnterpriseRealTimeUrlCheckMode, 1);
+      enterprise_connectors::kEnterpriseRealTimeUrlCheckMode, 1);
   profile_no_domain->GetPrefs()->SetInteger(
-      prefs::kSafeBrowsingEnterpriseRealTimeUrlCheckScope,
+      enterprise_connectors::kEnterpriseRealTimeUrlCheckScope,
       policy::POLICY_SCOPE_MACHINE);
 
   info = handler_.GetThreatProtectionInfo(profile_no_domain.get());
@@ -1880,3 +1918,17 @@ TEST_F(ManagementUIHandlerTests, ThreatReportingInfo) {
 
   EXPECT_EQ(expected_info, *info.FindList("info"));
 }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+TEST_F(ManagementUIHandlerTests, GetFilesUploadToCloud) {
+  ResetTestConfig();
+  SetUpProfileAndHandler();
+  EXPECT_TRUE(handler_.GetFilesUploadToCloudInfo(profile_.get()).empty());
+  profile_->GetTestingPrefService()->SetManagedPref(
+      ash::prefs::kCaptureModePolicySavePath,
+      std::make_unique<base::Value>(
+          policy::local_user_files::kOneDrivePolicyVariableName));
+
+  EXPECT_FALSE(handler_.GetFilesUploadToCloudInfo(profile_.get()).empty());
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)

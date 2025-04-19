@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "device/fido/cable/v2_test_util.h"
 
 #include <string>
@@ -11,9 +16,11 @@
 #include "base/base64url.h"
 #include "base/check.h"
 #include "base/containers/contains.h"
+#include "base/containers/span.h"
 #include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "components/cbor/reader.h"
@@ -31,6 +38,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
+#include "net/storage_access_api/status.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/test/test_network_context.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
@@ -53,7 +61,7 @@ class TestNetworkContext : public network::TestNetworkContext {
       const GURL& url,
       const std::vector<std::string>& requested_protocols,
       const net::SiteForCookies& site_for_cookies,
-      bool has_storage_access,
+      net::StorageAccessApiStatus storage_access_api_status,
       const net::IsolationInfo& isolation_info,
       std::vector<network::mojom::HttpHeaderPtr> additional_headers,
       int32_t process_id,
@@ -300,13 +308,13 @@ class TestNetworkContext : public network::TestNetworkContext {
     }
 
     void OnInPipeReady(MojoResult, const mojo::HandleSignalsState&) {
-      size_t todo = buffer_.size() - buffer_i_;
-      CHECK_GT(todo, 0u);
-
-      const MojoResult result = in_->ReadData(&buffer_.data()[buffer_i_], &todo,
-                                              MOJO_READ_DATA_FLAG_NONE);
+      size_t actually_read_bytes = 0;
+      const MojoResult result =
+          in_->ReadData(MOJO_READ_DATA_FLAG_NONE,
+                        base::as_writable_byte_span(buffer_).subspan(buffer_i_),
+                        actually_read_bytes);
       if (result == MOJO_RESULT_OK) {
-        buffer_i_ += todo;
+        buffer_i_ += actually_read_bytes;
         CHECK_LE(buffer_i_, buffer_.size());
 
         if (peer_ && buffer_i_ > 0) {
@@ -326,24 +334,24 @@ class TestNetworkContext : public network::TestNetworkContext {
     }
 
     void OnOutPipeReady(MojoResult, const mojo::HandleSignalsState&) {
-      size_t original_todo = peer_->buffer_.size();
-      if (original_todo == 0) {
+      if (peer_->buffer_.empty()) {
         return;
       }
 
-      size_t todo = original_todo;
-      const MojoResult result = out_->WriteData(peer_->buffer_.data(), &todo,
-                                                MOJO_WRITE_DATA_FLAG_NONE);
+      size_t actually_written_bytes = 0;
+      const MojoResult result = out_->WriteData(
+          peer_->buffer_, MOJO_WRITE_DATA_FLAG_NONE, actually_written_bytes);
       if (result == MOJO_RESULT_OK) {
-        if (todo == original_todo) {
+        if (actually_written_bytes == peer_->buffer_.size()) {
           peer_->buffer_.clear();
           peer_->buffer_i_ = 0;
         } else {
-          const size_t new_length = original_todo - todo;
-          memmove(peer_->buffer_.data(), &peer_->buffer_.data()[todo],
-                  new_length);
+          const size_t new_length =
+              peer_->buffer_.size() - actually_written_bytes;
+          memmove(peer_->buffer_.data(),
+                  &peer_->buffer_.data()[actually_written_bytes], new_length);
           peer_->buffer_.resize(new_length);
-          peer_->buffer_i_ -= todo;
+          peer_->buffer_i_ -= actually_written_bytes;
         }
 
         if (!peer_->buffer_.empty()) {
@@ -668,7 +676,7 @@ class LateLinkingDevice : public authenticator::Transaction {
 
     network_context_factory_.Run()->CreateWebSocket(
         target, {device::kCableWebSocketProtocol}, net::SiteForCookies(),
-        /*has_storage_access=*/false, net::IsolationInfo(),
+        net::StorageAccessApiStatus::kNone, net::IsolationInfo(),
         /*additional_headers=*/{}, network::mojom::kBrowserProcessId,
         url::Origin::Create(target),
         network::mojom::kWebSocketOptionBlockAllCookies,
@@ -776,6 +784,9 @@ class LateLinkingDevice : public authenticator::Transaction {
             websocket_client_->Write(response);
             break;
           }
+
+          case MessageType::kJSON:
+            NOTREACHED_NORETURN();
 
           case MessageType::kShutdown:
             state_ = State::kShutdownReceived;
@@ -887,7 +898,7 @@ class HandshakeErrorDevice : public authenticator::Transaction {
 
     network_context_factory_.Run()->CreateWebSocket(
         target, {device::kCableWebSocketProtocol}, net::SiteForCookies(),
-        /*has_storage_access=*/false, net::IsolationInfo(),
+        net::StorageAccessApiStatus::kNone, net::IsolationInfo(),
         /*additional_headers=*/{}, network::mojom::kBrowserProcessId,
         url::Origin::Create(target),
         network::mojom::kWebSocketOptionBlockAllCookies,

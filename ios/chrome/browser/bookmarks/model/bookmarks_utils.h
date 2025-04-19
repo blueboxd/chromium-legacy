@@ -9,14 +9,11 @@
 #include <set>
 #include <vector>
 
-#include "base/location.h"
-
-enum class BookmarkModelType;
-class ChromeBrowserState;
-class LegacyBookmarkModel;
+enum class BookmarkStorageType;
 class PrefService;
 
 namespace bookmarks {
+class BookmarkModel;
 class BookmarkNode;
 }  // namespace bookmarks
 
@@ -37,29 +34,21 @@ enum class DefaultBookmarkFolderOutcomeForMetrics {
 // It means that the user has not set a folder for bookmarks explicitly.
 extern const int64_t kLastUsedBookmarkFolderNone;
 
-// Checks whether all available bookmark models are loaded.
-// Return true if the bookmarks model are loaded, false otherwise.
-// TODO(crbug.com/326185948): Inline this trivial helper function.
-[[nodiscard]] bool AreAllAvailableBookmarkModelsLoaded(
-    ChromeBrowserState* browser_state);
-
-// Removes all user bookmarks and clears bookmark-related pref. Requires
-// bookmark model to be loaded.
-// Return true if the bookmarks were successfully removed and false otherwise.
-// TODO(crbug.com/326185948): Inline this trivial helper function.
-[[nodiscard]] bool RemoveAllUserBookmarksIOS(ChromeBrowserState* browser_state,
-                                             const base::Location& location);
-
-// Returns the permanent nodes whose url children are considered uncategorized
-// and whose folder children should be shown in the bookmark menu.
-// `model` must be loaded.
+// Returns the permanent bookmark folders that match `type`.
+// `model` must not be null and must be loaded. The returned list follows the
+// ordering used to display the folders in the management UI. Note that the
+// managed bookmarks folder is never included.
+//
+// Additional caveats if `BookmarkStorageType::kAccount` is used:
+// 1. The function may return an empty result if account bookmarks don't
+//    actually exist (e.g. the user is signed out).
+// 2. In rare cases, it may also return a non-empty but partial list, if this
+//    function is exercised *during* the creation of account permanent folders,
+//    which report BookmarkModelObserver::BookmarkNodeAdded() individually. The
+//    same is true during their destruction (during signout).
 std::vector<const bookmarks::BookmarkNode*> PrimaryPermanentNodes(
-    LegacyBookmarkModel* model);
-
-// Returns whether `node` is a primary permanent node in the sense of
-// `PrimaryPermanentNodes`.
-bool IsPrimaryPermanentNode(const bookmarks::BookmarkNode* node,
-                            LegacyBookmarkModel* model);
+    const bookmarks::BookmarkModel* model,
+    BookmarkStorageType type);
 
 // Whether a bookmark was manually moved by the user to a different folder since
 // last signin/signout.
@@ -72,7 +61,7 @@ void ResetLastUsedBookmarkFolder(PrefService* prefs);
 // or move bookmarks.
 void SetLastUsedBookmarkFolder(PrefService* prefs,
                                const bookmarks::BookmarkNode* folder,
-                               BookmarkModelType type);
+                               BookmarkStorageType type);
 
 // It returns the first bookmark folder that exists, with the following
 // priority:
@@ -81,9 +70,7 @@ void SetLastUsedBookmarkFolder(PrefService* prefs,
 //- Local mobile folder
 const bookmarks::BookmarkNode* GetDefaultBookmarkFolder(
     PrefService* prefs,
-    bool is_account_bookmark_model_available,
-    LegacyBookmarkModel* profile_bookmark_model,
-    LegacyBookmarkModel* account_bookmark_model);
+    const bookmarks::BookmarkModel* bookmark_model);
 
 // Used when on-disk bookmark IDs have been reassigned and therefore the prefs
 // need to be migrated accordingly.

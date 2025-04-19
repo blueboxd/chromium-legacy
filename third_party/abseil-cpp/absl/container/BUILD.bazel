@@ -252,7 +252,7 @@ cc_library(
         ":raw_hash_map",
         "//absl/algorithm:container",
         "//absl/base:core_headers",
-        "//absl/memory",
+        "//absl/meta:type_traits",
     ],
 )
 
@@ -265,11 +265,13 @@ cc_test(
     deps = [
         ":flat_hash_map",
         ":hash_generator_testing",
+        ":hash_policy_testing",
         ":test_allocator",
         ":unordered_map_constructor_test",
         ":unordered_map_lookup_test",
         ":unordered_map_members_test",
         ":unordered_map_modifiers_test",
+        "//absl/base:config",
         "//absl/log:check",
         "//absl/meta:type_traits",
         "//absl/types:any",
@@ -290,6 +292,7 @@ cc_library(
         "//absl/algorithm:container",
         "//absl/base:core_headers",
         "//absl/memory",
+        "//absl/meta:type_traits",
     ],
 )
 
@@ -330,6 +333,7 @@ cc_library(
         "//absl/algorithm:container",
         "//absl/base:core_headers",
         "//absl/memory",
+        "//absl/meta:type_traits",
     ],
 )
 
@@ -340,13 +344,14 @@ cc_test(
     linkopts = ABSL_DEFAULT_LINKOPTS,
     tags = ["no_test_loonix"],
     deps = [
-        ":hash_generator_testing",
+        ":hash_policy_testing",
         ":node_hash_map",
         ":tracked",
         ":unordered_map_constructor_test",
         ":unordered_map_lookup_test",
         ":unordered_map_members_test",
         ":unordered_map_modifiers_test",
+        "//absl/base:config",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
@@ -365,6 +370,7 @@ cc_library(
         "//absl/algorithm:container",
         "//absl/base:core_headers",
         "//absl/memory",
+        "//absl/meta:type_traits",
     ],
 )
 
@@ -375,11 +381,15 @@ cc_test(
     linkopts = ABSL_DEFAULT_LINKOPTS,
     tags = ["no_test_loonix"],
     deps = [
+        ":hash_generator_testing",
+        ":hash_policy_testing",
         ":node_hash_set",
         ":unordered_set_constructor_test",
         ":unordered_set_lookup_test",
         ":unordered_set_members_test",
         ":unordered_set_modifiers_test",
+        "//absl/base:config",
+        "//absl/memory",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
@@ -707,8 +717,10 @@ cc_test(
         ":hash_policy_testing",
         ":hashtable_debug",
         ":hashtablez_sampler",
+        ":node_hash_set",
         ":raw_hash_set",
         ":test_allocator",
+        ":test_instance_tracker",
         "//absl/base",
         "//absl/base:config",
         "//absl/base:core_headers",

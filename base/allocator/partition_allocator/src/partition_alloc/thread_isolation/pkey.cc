@@ -16,7 +16,7 @@
 #include "partition_alloc/partition_alloc_check.h"
 #include "partition_alloc/thread_isolation/thread_isolation.h"
 
-#if !BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS)
+#if !PA_BUILDFLAG(IS_LINUX) && !PA_BUILDFLAG(IS_CHROMEOS)
 #error "This pkey code is currently only supported on Linux and ChromeOS"
 #endif
 
@@ -61,7 +61,7 @@ void Wrpkru(uint32_t pkru) {
   asm volatile(".byte 0x0f,0x01,0xef\n" : : "a"(pkru), "c"(0), "d"(0));
 }
 
-#if PA_BUILDFLAG(PA_DCHECK_IS_ON)
+#if PA_BUILDFLAG(DCHECKS_ARE_ON)
 
 LiftPkeyRestrictionsScope::LiftPkeyRestrictionsScope()
     : saved_pkey_value_(kDefaultPkeyValue) {
@@ -83,7 +83,7 @@ LiftPkeyRestrictionsScope::~LiftPkeyRestrictionsScope() {
   }
 }
 
-#endif  // PA_BUILDFLAG(PA_DCHECK_IS_ON)
+#endif  // PA_BUILDFLAG(DCHECKS_ARE_ON)
 
 }  // namespace partition_alloc::internal
 

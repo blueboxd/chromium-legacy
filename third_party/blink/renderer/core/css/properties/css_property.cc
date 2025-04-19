@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 
 #include "third_party/blink/renderer/core/css/cssom/cross_thread_unsupported_value.h"
@@ -61,7 +66,7 @@ const CSSValue* CSSProperty::CSSValueFromComputedStyle(
     bool allow_visited_style,
     CSSValuePhase value_phase) const {
   const CSSProperty& resolved_property =
-      ResolveDirectionAwareProperty(style.Direction(), style.GetWritingMode());
+      ResolveDirectionAwareProperty(style.GetWritingDirection());
   return resolved_property.CSSValueFromComputedStyleInternal(
       style, layout_object, allow_visited_style, value_phase);
 }

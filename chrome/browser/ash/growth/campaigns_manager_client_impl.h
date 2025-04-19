@@ -37,11 +37,18 @@ class CampaignsManagerClientImpl : public growth::CampaignsManagerClient,
   // growth::CampaignsManagerClient:
   void LoadCampaignsComponent(
       growth::CampaignComponentLoadedCallback callback) override;
+  void AddOnTrackerInitializedCallback(
+      growth::OnTrackerInitializedCallback callback) override;
   bool IsDeviceInDemoMode() const override;
   bool IsCloudGamingDevice() const override;
   bool IsFeatureAwareDevice() const override;
   const std::string& GetApplicationLocale() const override;
   const std::string& GetUserLocale() const override;
+
+  // Returns the permanent country code stored for this client. See
+  // chrome://translate-internal. Country code is in the format of lowercase ISO
+  // 3166-1 alpha-2. Example: `us`, `br`, `in`.
+  const std::string GetCountryCode() const override;
   const base::Version& GetDemoModeAppVersion() const override;
   growth::ActionMap GetCampaignsActions() override;
   void RegisterSyntheticFieldTrial(
@@ -54,18 +61,29 @@ class CampaignsManagerClientImpl : public growth::CampaignsManagerClient,
   signin::IdentityManager* GetIdentityManager() const override;
 
   // UiActionPerformer::Observer:
-  void OnReadyToLogImpression(int campaign_id) override;
-  void OnDismissed(int campaign_id) override;
+  void OnReadyToLogImpression(int campaign_id,
+                              std::optional<int> group_id,
+                              bool should_log_cros_events) override;
+  void OnDismissed(int campaign_id,
+                   std::optional<int> group_id,
+                   bool should_mark_dismissed,
+                   bool should_log_cros_events) override;
   void OnButtonPressed(int campaign_id,
+                       std::optional<int> group_id,
                        CampaignButtonId button_id,
-                       bool should_mark_dismissed) override;
+                       bool should_mark_dismissed,
+                       bool should_log_cros_events) override;
 
  private:
   void OnComponentDownloaded(
       growth::CampaignComponentLoadedCallback loaded_callback,
       component_updater::ComponentManagerAsh::Error error,
       const base::FilePath& path);
+  void OnTrackerInitialized(growth::OnTrackerInitializedCallback callback,
+                            bool init_success);
   void UpdateConfig(const std::map<std::string, std::string>& params);
+  void RecordImpressionEvents(int campaign_id, std::optional<int> group_id);
+  void RecordDismissalEvents(int campaign_id, std::optional<int> group_id);
 
   growth::CampaignsConfigurationProvider config_provider_;
   std::unique_ptr<growth::CampaignsManager> campaigns_manager_;

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/containers/span.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/read_only_shared_memory_region.h"
@@ -75,7 +76,7 @@ class ResumableUploadRequestTest : public testing::Test {
     base::FilePath path = temp_dir_.GetPath().AppendASCII(file_name);
     base::File file(path, base::File::FLAG_CREATE_ALWAYS |
                               base::File::FLAG_READ | base::File::FLAG_WRITE);
-    file.WriteAtCurrentPos(content.data(), content.size());
+    file.WriteAtCurrentPos(base::as_byte_span(content));
     return path;
   }
 
@@ -114,29 +115,25 @@ class ResumableUploadRequestTest : public testing::Test {
   void VerifyMetadataRequestHeaders(
       const network::ResourceRequest& resource_request,
       std::string expected_size) {
-    std::string header_value;
-
     ASSERT_TRUE(resource_request.headers.HasHeader("X-Goog-Upload-Protocol"));
-    ASSERT_TRUE(resource_request.headers.GetHeader("X-Goog-Upload-Protocol",
-                                                   &header_value));
-    ASSERT_EQ(header_value, "resumable");
+    ASSERT_THAT(resource_request.headers.GetHeader("X-Goog-Upload-Protocol"),
+                testing::Optional(std::string("resumable")));
 
     ASSERT_TRUE(resource_request.headers.HasHeader("X-Goog-Upload-Command"));
-    ASSERT_TRUE(resource_request.headers.GetHeader("X-Goog-Upload-Command",
-                                                   &header_value));
-    ASSERT_EQ(header_value, "start");
+    ASSERT_THAT(resource_request.headers.GetHeader("X-Goog-Upload-Command"),
+                testing::Optional(std::string("start")));
 
     ASSERT_TRUE(resource_request.headers.HasHeader(
         "X-Goog-Upload-Header-Content-Type"));
-    ASSERT_TRUE(resource_request.headers.GetHeader(
-        "X-Goog-Upload-Header-Content-Type", &header_value));
-    ASSERT_EQ(header_value, "application/octet-stream");
+    ASSERT_THAT(
+        resource_request.headers.GetHeader("X-Goog-Upload-Header-Content-Type"),
+        testing::Optional(std::string("application/octet-stream")));
 
     ASSERT_TRUE(resource_request.headers.HasHeader(
         "X-Goog-Upload-Header-Content-Length"));
-    ASSERT_TRUE(resource_request.headers.GetHeader(
-        "X-Goog-Upload-Header-Content-Length", &header_value));
-    ASSERT_EQ(header_value, expected_size);
+    ASSERT_THAT(resource_request.headers.GetHeader(
+                    "X-Goog-Upload-Header-Content-Length"),
+                testing::Optional(expected_size));
   }
 
  protected:
@@ -228,8 +225,9 @@ TEST_P(ResumableUploadSendMetadataRequestTest, SendsCorrectRequest) {
 
   test_url_loader_factory_.SetInterceptor(
       base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
-        request.headers.GetHeader(net::HttpRequestHeaders::kContentType,
-                                  &metadata_content_type);
+        metadata_content_type =
+            request.headers.GetHeader(net::HttpRequestHeaders::kContentType)
+                .value_or(std::string());
         method = request.method;
         url = request.url;
         body = network::GetUploadData(request);
@@ -359,10 +357,12 @@ TEST_P(ResumableUploadSendContentRequestTest, HandlesSuccessfulContentScan) {
               "metadata_response", network::URLLoaderCompletionStatus(net::OK));
         } else if (request.url == GURL(kUploadUrl)) {
           content_upload_method = request.method;
-          request.headers.GetHeader("X-Goog-Upload-Command",
-                                    &content_upload_command);
-          request.headers.GetHeader("X-Goog-Upload-Offset",
-                                    &content_upload_offset);
+          content_upload_command =
+              request.headers.GetHeader("X-Goog-Upload-Command")
+                  .value_or(std::string());
+          content_upload_offset =
+              request.headers.GetHeader("X-Goog-Upload-Offset")
+                  .value_or(std::string());
           auto content_response_head =
               network::CreateURLResponseHead(net::HTTP_OK);
           content_response_head->headers->AddHeader("X-Goog-Upload-Status",
@@ -485,10 +485,12 @@ TEST_P(ResumableUploadSendContentRequestTest, HandlesFailedContentScan) {
               "metadata_response", network::URLLoaderCompletionStatus(net::OK));
         } else if (request.url == GURL(kUploadUrl)) {
           content_upload_method = request.method;
-          request.headers.GetHeader("X-Goog-Upload-Command",
-                                    &content_upload_command);
-          request.headers.GetHeader("X-Goog-Upload-Offset",
-                                    &content_upload_offset);
+          content_upload_command =
+              request.headers.GetHeader("X-Goog-Upload-Command")
+                  .value_or(std::string());
+          content_upload_offset =
+              request.headers.GetHeader("X-Goog-Upload-Offset")
+                  .value_or(std::string());
           test_url_loader_factory_.AddResponse(
               GURL(kUploadUrl),
               network::CreateURLResponseHead(net::HTTP_UNAUTHORIZED),

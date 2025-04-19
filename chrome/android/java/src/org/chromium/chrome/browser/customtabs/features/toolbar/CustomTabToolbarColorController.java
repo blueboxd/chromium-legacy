@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.customtabs.features.toolbar;
 
+import static org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.CustomTabProfileType.INCOGNITO;
+
 import android.app.Activity;
 import android.content.res.ColorStateList;
 
@@ -22,7 +24,6 @@ import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar.CustomTabTabObserver;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
-import org.chromium.chrome.browser.page_insights.PageInsightsCoordinator;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.theme.ThemeUtils;
@@ -198,13 +199,6 @@ public class CustomTabToolbarColorController {
                         .shouldEnableGoogleBottomBarForIntent(mIntentDataProvider)) {
             return mActivity.getColor(R.color.google_bottom_bar_background_color);
         }
-        // TODO(b/300419189): Pass the CCT Top Bar Color in AGSA intent after Page Insights Hub is
-        // launched
-        else if (PageInsightsCoordinator.isFeatureEnabled()
-                && CustomTabsConnection.getInstance()
-                        .shouldEnablePageInsightsForIntent(mIntentDataProvider)) {
-            return mActivity.getColor(R.color.gm3_baseline_surface_container);
-        }
         return switch (toolbarColorType) {
             case ToolbarColorType.THEME_COLOR -> mTopUiThemeColorProvider.calculateColor(
                     tab, tab.getThemeColor());
@@ -218,10 +212,11 @@ public class CustomTabToolbarColorController {
 
     private @BrandedColorScheme int computeBrandedColorScheme(
             @ToolbarColorType int toolbarColorType, @ColorInt int toolbarColor) {
+        final boolean isIncognitoBranded = mIntentDataProvider.getCustomTabMode() == INCOGNITO;
         return switch (toolbarColorType) {
             case ToolbarColorType.THEME_COLOR -> OmniboxResourceProvider.getBrandedColorScheme(
-                    mActivity, mIntentDataProvider.isIncognito(), toolbarColor);
-            case ToolbarColorType.DEFAULT_COLOR -> mIntentDataProvider.isIncognito()
+                    mActivity, isIncognitoBranded, toolbarColor);
+            case ToolbarColorType.DEFAULT_COLOR -> isIncognitoBranded
                     ? BrandedColorScheme.INCOGNITO
                     : BrandedColorScheme.APP_DEFAULT;
             case ToolbarColorType.INTENT_TOOLBAR_COLOR -> ColorUtils
@@ -233,7 +228,8 @@ public class CustomTabToolbarColorController {
     }
 
     private int getDefaultColor() {
-        return ChromeColors.getDefaultThemeColor(mActivity, mIntentDataProvider.isIncognito());
+        return ChromeColors.getDefaultThemeColor(
+                mActivity, mIntentDataProvider.getCustomTabMode() == INCOGNITO);
     }
 
     private static boolean shouldUseDefaultThemeColorForFullscreen(

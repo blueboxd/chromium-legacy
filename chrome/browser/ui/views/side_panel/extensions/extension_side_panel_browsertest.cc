@@ -12,11 +12,11 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_actions.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/browser_window/public/browser_window_features.h"
 #include "chrome/browser/ui/extensions/extension_action_test_helper.h"
 #include "chrome/browser/ui/extensions/extensions_container.h"
 #include "chrome/browser/ui/tabs/tab_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
-#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/side_panel/extensions/extension_side_panel_coordinator.h"
@@ -92,8 +92,6 @@ class TestSidePanelEntryWaiter : public SidePanelEntryObserver {
 
   void WaitForEntryHidden() { entry_hidden_run_loop_.Run(); }
 
-  void WaitForIconUpdated() { icon_updated_run_loop_.Run(); }
-
  private:
   void OnEntryShown(SidePanelEntry* entry) override {
     entry_shown_run_loop_.QuitWhenIdle();
@@ -103,13 +101,8 @@ class TestSidePanelEntryWaiter : public SidePanelEntryObserver {
     entry_hidden_run_loop_.QuitWhenIdle();
   }
 
-  void OnEntryIconUpdated(SidePanelEntry* entry) override {
-    icon_updated_run_loop_.QuitWhenIdle();
-  }
-
   base::RunLoop entry_shown_run_loop_;
   base::RunLoop entry_hidden_run_loop_;
-  base::RunLoop icon_updated_run_loop_;
   base::ScopedObservation<SidePanelEntry, SidePanelEntryObserver>
       side_panel_entry_observation_{this};
 };
@@ -163,9 +156,7 @@ class ExtensionSidePanelBrowserTest : public ExtensionBrowserTest {
  public:
   ExtensionSidePanelBrowserTest() {
     feature_list_.InitWithFeatures(
-        {extensions_features::kExtensionSidePanelIntegration,
-         features::kSidePanelPinning},
-        {});
+        {extensions_features::kExtensionSidePanelIntegration}, {});
   }
 
  protected:
@@ -175,7 +166,7 @@ class ExtensionSidePanelBrowserTest : public ExtensionBrowserTest {
   }
 
   SidePanelRegistry* GetCurrentTabRegistry() {
-    return SidePanelRegistry::Get(
+    return SidePanelRegistry::GetDeprecated(
         browser()->tab_strip_model()->GetActiveWebContents());
   }
 
@@ -251,7 +242,7 @@ class ExtensionSidePanelBrowserTest : public ExtensionBrowserTest {
   // Displays the contextual entry correspodning to `key` in the currently-
   // active tab.
   void ShowContextualEntryAndWait(const SidePanelEntry::Key& key) {
-    ShowEntryAndWait(*SidePanelRegistry::Get(
+    ShowEntryAndWait(*SidePanelRegistry::GetDeprecated(
                          browser()->tab_strip_model()->GetActiveWebContents()),
                      key);
   }
@@ -311,10 +302,10 @@ class ExtensionSidePanelBrowserTest : public ExtensionBrowserTest {
       content::WebContents* web_contents) {
     auto* extension_coordinator =
         web_contents
-            ? extensions::ExtensionSidePanelManager::GetOrCreateForWebContents(
-                  browser()->profile(), web_contents)
+            ? extensions::ExtensionSidePanelManager::GetForTabForTesting(
+                  web_contents)
                   ->GetExtensionCoordinatorForTesting(extension_id)
-            : extensions::ExtensionSidePanelManager::GetOrCreateForBrowser(
+            : extensions::ExtensionSidePanelManager::GetForBrowserForTesting(
                   browser())
                   ->GetExtensionCoordinatorForTesting(extension_id);
 
@@ -334,10 +325,10 @@ class ExtensionSidePanelBrowserTest : public ExtensionBrowserTest {
                                              const std::string& value) {
     auto* extension_coordinator =
         web_contents
-            ? extensions::ExtensionSidePanelManager::GetOrCreateForWebContents(
-                  browser()->profile(), web_contents)
+            ? extensions::ExtensionSidePanelManager::GetForTabForTesting(
+                  web_contents)
                   ->GetExtensionCoordinatorForTesting(extension_id)
-            : extensions::ExtensionSidePanelManager::GetOrCreateForBrowser(
+            : extensions::ExtensionSidePanelManager::GetForBrowserForTesting(
                   browser())
                   ->GetExtensionCoordinatorForTesting(extension_id);
 
@@ -348,15 +339,18 @@ class ExtensionSidePanelBrowserTest : public ExtensionBrowserTest {
   }
 
   SidePanelRegistry* global_registry() {
-    return SidePanelCoordinator::GetGlobalSidePanelRegistry(browser());
+    return browser()
+        ->GetFeatures()
+        .side_panel_coordinator()
+        ->GetWindowRegistry();
   }
 
   SidePanelCoordinator* side_panel_coordinator() {
-    return SidePanelUtil::GetSidePanelCoordinatorForBrowser(browser());
+    return browser()->GetFeatures().side_panel_coordinator();
   }
 
   SidePanelCoordinator* side_panel_coordinator(Browser* browser) {
-    return SidePanelUtil::GetSidePanelCoordinatorForBrowser(browser);
+    return browser->GetFeatures().side_panel_coordinator();
   }
 
  private:
@@ -483,8 +477,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionSidePanelBrowserTest, MultipleBrowsers) {
   BrowserActions* browser_actions_second_browser =
       second_browser->browser_actions();
 
-  SidePanelRegistry* second_global_registry =
-      SidePanelCoordinator::GetGlobalSidePanelRegistry(second_browser);
+  SidePanelRegistry* second_global_registry = second_browser->GetFeatures()
+                                                  .side_panel_coordinator()
+                                                  ->GetWindowRegistry();
   EXPECT_TRUE(second_global_registry->GetEntryForKey(extension_key));
   EXPECT_TRUE(global_registry()->GetEntryForKey(extension_key));
 
@@ -500,7 +495,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionSidePanelBrowserTest, MultipleBrowsers) {
   UnloadExtension(extension->id());
   EXPECT_FALSE(global_registry()->GetEntryForKey(
       SidePanelEntry::Key(SidePanelEntry::Id::kExtension, extension->id())));
-  EXPECT_FALSE(SidePanelCoordinator::GetGlobalSidePanelRegistry(second_browser)
+  EXPECT_FALSE(second_browser->GetFeatures()
+                   .side_panel_coordinator()
+                   ->GetWindowRegistry()
                    ->GetEntryForKey(SidePanelEntry::Key(
                        SidePanelEntry::Id::kExtension, extension->id())));
 
@@ -547,16 +544,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionSidePanelBrowserTest,
       test_data_dir_.AppendASCII("api_test/side_panel/simple_default"));
   ASSERT_TRUE(extension);
 
-  SidePanelEntry::Key extension_key = GetKey(extension->id());
-  SidePanelEntry* extension_entry =
-      global_registry()->GetEntryForKey(extension_key);
+  BrowserActions* browser_actions = browser()->browser_actions();
+  actions::ActionItem* action_item =
+      GetActionItemForExtension(extension.get(), browser_actions);
 
   // Check that the entry's icon bitmap is identical to the bitmap of the
   // extension's icon scaled down to `extension_misc::EXTENSION_ICON_BITTY`.
   SkBitmap expected_icon_bitmap = TestImageLoader::LoadAndGetExtensionBitmap(
       extension.get(), "icon.png", extension_misc::EXTENSION_ICON_BITTY);
   const SkBitmap& actual_icon_bitmap =
-      *extension_entry->icon().GetImage().ToSkBitmap();
+      *action_item->GetImage().GetImage().ToSkBitmap();
   EXPECT_TRUE(
       gfx::test::AreBitmapsEqual(expected_icon_bitmap, actual_icon_bitmap));
 }
@@ -636,7 +633,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSidePanelBrowserTest, SetOptions_Path) {
       test_data_dir_.AppendASCII("api_test/side_panel/simple_default"));
   ASSERT_TRUE(extension);
   auto* extension_coordinator =
-      extensions::ExtensionSidePanelManager::GetOrCreateForBrowser(browser())
+      extensions::ExtensionSidePanelManager::GetForBrowserForTesting(browser())
           ->GetExtensionCoordinatorForTesting(extension->id());
 
   SidePanelEntry::Key extension_key = GetKey(extension->id());
@@ -701,7 +698,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSidePanelBrowserTest, WindowCloseCalled) {
   }
 
   auto* extension_coordinator =
-      extensions::ExtensionSidePanelManager::GetOrCreateForBrowser(browser())
+      extensions::ExtensionSidePanelManager::GetForBrowserForTesting(browser())
           ->GetExtensionCoordinatorForTesting(extension->id());
 
   // Call window.close() from the extension's side panel page and wait for the
@@ -758,7 +755,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSidePanelBrowserTest,
   // Call setOptions({enabled: true}) with a tab ID and new path, and wait for
   // the extension's SidePanelEntry to be registered.
   ExtensionSidePanelRegistryWaiter waiter(
-      SidePanelRegistry::Get(active_web_contents), extension->id());
+      SidePanelRegistry::GetDeprecated(active_web_contents), extension->id());
   RunSetOptions(*extension, GetCurrentTabId(), "panel_2.html",
                 /*enabled=*/true);
   waiter.WaitForRegistration();
@@ -772,8 +769,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionSidePanelBrowserTest,
   EXPECT_TRUE(side_panel_coordinator()->IsSidePanelShowing());
 
   auto* extension_coordinator =
-      extensions::ExtensionSidePanelManager::GetOrCreateForWebContents(
-          browser()->profile(), active_web_contents)
+      extensions::ExtensionSidePanelManager::GetForTabForTesting(
+          active_web_contents)
           ->GetExtensionCoordinatorForTesting(extension->id());
   content::WebContentsDestroyedWatcher destroyed_watcher(
       extension_coordinator->GetHostWebContentsForTesting());
@@ -786,13 +783,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionSidePanelBrowserTest,
 // Test that calling window.close() from an extension side panel when it is
 // shown closes the side panel even if another entry is loading and will be
 // shown.
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
-#define MAYBE_WindowCloseCalledWhenLoading DISABLED_WindowCloseCalledWhenLoading
-#else
-#define MAYBE_WindowCloseCalledWhenLoading WindowCloseCalledWhenLoading
-#endif
+// TODO(crbug.com/347643170) Test is flaky.
 IN_PROC_BROWSER_TEST_F(ExtensionSidePanelBrowserTest,
-                       MAYBE_WindowCloseCalledWhenLoading) {
+                       DISABLED_WindowCloseCalledWhenLoading) {
   // Install an extension and show its side panel.
   scoped_refptr<const extensions::Extension> extension = LoadExtension(
       test_data_dir_.AppendASCII("api_test/side_panel/simple_default"));
@@ -808,7 +801,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSidePanelBrowserTest,
   }
 
   auto* extension_coordinator =
-      extensions::ExtensionSidePanelManager::GetOrCreateForBrowser(browser())
+      extensions::ExtensionSidePanelManager::GetForBrowserForTesting(browser())
           ->GetExtensionCoordinatorForTesting(extension->id());
 
   // Start showing another entry and call window.close() from the extension's
@@ -912,7 +905,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSidePanelBrowserTest,
       test_data_dir_.AppendASCII("api_test/side_panel/simple_default"));
   ASSERT_TRUE(extension);
   auto* extension_coordinator =
-      extensions::ExtensionSidePanelManager::GetOrCreateForBrowser(browser())
+      extensions::ExtensionSidePanelManager::GetForBrowserForTesting(browser())
           ->GetExtensionCoordinatorForTesting(extension->id());
 
   SidePanelEntry::Key extension_key = GetKey(extension->id());
@@ -1039,7 +1032,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSidePanelBrowserTest,
     // panel should then show the new entry for the first tab which displays
     // `panel_1.html`.
     ExtensionSidePanelRegistryWaiter waiter(
-        SidePanelRegistry::Get(
+        SidePanelRegistry::GetDeprecated(
             browser()->tab_strip_model()->GetActiveWebContents()),
         extension->id());
     RunSetOptions(*extension, GetCurrentTabId(), "panel_1.html",
@@ -1082,7 +1075,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionSidePanelBrowserTest,
 
   // Call setOptions for the second tab.
   ExtensionSidePanelRegistryWaiter waiter(
-      SidePanelRegistry::Get(browser()->tab_strip_model()->GetWebContentsAt(1)),
+      SidePanelRegistry::GetDeprecated(
+          browser()->tab_strip_model()->GetWebContentsAt(1)),
       extension->id());
   RunSetOptions(*extension, second_tab_id, "panel_1.html",
                 /*enabled=*/true);
@@ -1148,7 +1142,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSidePanelBrowserTest,
     ExtensionTestMessageListener default_path_listener("default_path");
 
     SidePanelRegistry* first_tab_registry =
-        SidePanelRegistry::Get(first_tab_contents);
+        SidePanelRegistry::GetDeprecated(first_tab_contents);
     ExtensionSidePanelRegistryWaiter waiter(first_tab_registry,
                                             extension->id());
     RunSetOptions(*extension, first_tab_id, "default_path.html",
@@ -1170,7 +1164,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSidePanelBrowserTest,
     // Set a local variable's value to "TAB 2" for the extension's side panel's
     // view on the second tab.
     SidePanelRegistry* second_tab_registry =
-        SidePanelRegistry::Get(second_tab_contents);
+        SidePanelRegistry::GetDeprecated(second_tab_contents);
     ExtensionSidePanelRegistryWaiter waiter(second_tab_registry,
                                             extension->id());
     RunSetOptions(*extension, second_tab_id, "default_path.html",
@@ -1220,7 +1214,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSidePanelBrowserTest,
   {
     // Register a SidePanelEntry for the extension for the second tab.
     SidePanelRegistry* second_tab_registry =
-        SidePanelRegistry::Get(second_tab->contents());
+        SidePanelRegistry::GetDeprecated(second_tab->contents());
     ExtensionSidePanelRegistryWaiter waiter(second_tab_registry,
                                             extension->id());
     RunSetOptions(*extension, second_tab_id, "panel_1.html",
@@ -2156,7 +2150,10 @@ class ExtensionSidePanelDisabledBrowserTest : public ExtensionBrowserTest {
 
  protected:
   SidePanelRegistry* global_registry() {
-    return SidePanelCoordinator::GetGlobalSidePanelRegistry(browser());
+    return browser()
+        ->GetFeatures()
+        .side_panel_coordinator()
+        ->GetWindowRegistry();
   }
 
  private:

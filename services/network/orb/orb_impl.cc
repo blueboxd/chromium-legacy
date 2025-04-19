@@ -4,6 +4,7 @@
 
 #include "services/network/orb/orb_impl.h"
 
+#include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/rand_util.h"
@@ -217,8 +218,10 @@ bool HasNoSniff(
 }  // namespace
 
 OpaqueResponseBlockingAnalyzer::OpaqueResponseBlockingAnalyzer(
-    PerFactoryState& state)
-    : per_factory_state_(&state) {}
+    PerFactoryState* state)
+    : per_factory_state_(*state) {
+  CHECK(state);
+}
 
 OpaqueResponseBlockingAnalyzer::~OpaqueResponseBlockingAnalyzer() {
   // TODO(crbug.com/40169301): Add UMA tracking the size of ORB state
@@ -495,8 +498,7 @@ OpaqueResponseBlockingAnalyzer::ShouldHandleBlockedResponseAs() const {
     return BlockedResponseHandling::kNetworkError;
   }
 
-  if (base::FeatureList::IsEnabled(features::kOpaqueResponseBlockingV02) &&
-      request_destination_from_renderer_ != mojom::RequestDestination::kEmpty) {
+  if (request_destination_from_renderer_ != mojom::RequestDestination::kEmpty) {
     return BlockedResponseHandling::kNetworkError;
   }
 

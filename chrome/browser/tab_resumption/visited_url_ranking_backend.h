@@ -16,6 +16,9 @@
 
 namespace tab_resumption::jni {
 
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.tab_resumption
+enum class SuggestionEntryType { kLocalTab, kForeignTab, kHistory };
+
 // Provides the fetch and rank services of the Tab resumption backend to Java.
 class VisitedUrlRankingBackend {
  public:
@@ -35,10 +38,17 @@ class VisitedUrlRankingBackend {
   // Computes ranked suggestions using synced data available on-device. Writes
   // result to |suggestion| and calls |callback| on completion.
   void GetRankedSuggestions(JNIEnv* env,
-                            jlong before_time_ms,
+                            jlong current_time_ms,
                             jboolean fetch_local_tabs,
+                            jboolean fetch_history,
                             const jni_zero::JavaParamRef<jobject>& suggestions,
                             const jni_zero::JavaParamRef<jobject>& callback);
+
+  // Sends feedback on a suggestion from GetRankedSuggestions() to train model.
+  void RecordAction(JNIEnv* env,
+                    jint scored_url_user_action,
+                    jstring visit_id,
+                    jlong visit_request_id);
 
  private:
   // Called when sync completes, to trigger refresh in Java.

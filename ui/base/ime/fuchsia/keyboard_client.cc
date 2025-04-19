@@ -116,17 +116,16 @@ std::optional<EventType> ConvertKeyEventType(
     fuchsia_ui_input3::KeyEventType type) {
   switch (type) {
     case fuchsia_ui_input3::KeyEventType::kPressed:
-      return ET_KEY_PRESSED;
+      return EventType::kKeyPressed;
     case fuchsia_ui_input3::KeyEventType::kReleased:
-      return ET_KEY_RELEASED;
+      return EventType::kKeyReleased;
     case fuchsia_ui_input3::KeyEventType::kSync:
     case fuchsia_ui_input3::KeyEventType::kCancel:
       // SYNC and CANCEL should not generate ui::Events.
       return std::nullopt;
     default:
-      NOTREACHED_IN_MIGRATION()
-          << "Unknown KeyEventType received: " << static_cast<int>(type);
-      return std::nullopt;
+      NOTREACHED() << "Unknown KeyEventType received: "
+                   << static_cast<int>(type);
   }
 }
 

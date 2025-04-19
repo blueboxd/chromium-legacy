@@ -10,7 +10,9 @@ import org.json.JSONObject;
 
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
+import org.chromium.components.safe_browsing.SafeBrowsingResult;
 import org.chromium.components.safe_browsing.SafetyNetApiHandler;
+import org.chromium.components.safe_browsing.VerifyAppsResult;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -87,5 +89,15 @@ public class MockSafetyNetApiHandler implements SafetyNetApiHandler {
      */
     public static void clearMockResponses() {
         sResponseMap.clear();
+    }
+
+    @Override
+    public void isVerifyAppsEnabled(long callbackId) {
+        mObserver.onVerifyAppsEnabledDone(callbackId, VerifyAppsResult.SUCCESS_ENABLED);
+    }
+
+    @Override
+    public void enableVerifyApps(long callbackId) {
+        mObserver.onVerifyAppsEnabledDone(callbackId, VerifyAppsResult.SUCCESS_ENABLED);
     }
 }

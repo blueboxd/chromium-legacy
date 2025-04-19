@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 
 #include <stddef.h>
@@ -1108,19 +1113,16 @@ TEST_F(ProfileAttributesStorageTest, SupervisedUsersAccessors) {
 
   entry->SetSupervisedUserId("");
   ASSERT_FALSE(entry->IsSupervised());
-  ASSERT_FALSE(entry->IsChild());
 
   EXPECT_CALL(observer(), OnProfileSupervisedUserIdChanged(path)).Times(1);
   entry->SetSupervisedUserId("some_supervised_user_id");
   VerifyAndResetCallExpectations();
   ASSERT_TRUE(entry->IsSupervised());
-  ASSERT_FALSE(entry->IsChild());
 
   EXPECT_CALL(observer(), OnProfileSupervisedUserIdChanged(path)).Times(1);
   entry->SetSupervisedUserId(supervised_user::kChildAccountSUID);
   VerifyAndResetCallExpectations();
   ASSERT_TRUE(entry->IsSupervised());
-  ASSERT_TRUE(entry->IsChild());
 }
 
 TEST_F(ProfileAttributesStorageTest, CreateSupervisedTestingProfile) {
@@ -1586,18 +1588,18 @@ TEST_F(ProfileAttributesStorageTest, ProfilesState_ActiveMultiProfile) {
   storage()->RecordProfilesState();
 
   // There are 5 profiles all together.
-  histogram_tester.ExpectTotalCount("Profile.State.Avatar_All", 5);
-  histogram_tester.ExpectTotalCount("Profile.State.Avatar_ActiveMultiProfile",
+  histogram_tester.ExpectTotalCount("Profile.State.LastUsed_All", 5);
+  histogram_tester.ExpectTotalCount("Profile.State.LastUsed_ActiveMultiProfile",
                                     5);
 
   // Other user segments get 0 records.
-  histogram_tester.ExpectTotalCount("Profile.State.Avatar_SingleProfile", 0);
-  histogram_tester.ExpectTotalCount("Profile.State.Avatar_LatentMultiProfile",
+  histogram_tester.ExpectTotalCount("Profile.State.LastUsed_SingleProfile", 0);
+  histogram_tester.ExpectTotalCount("Profile.State.LastUsed_LatentMultiProfile",
                                     0);
   histogram_tester.ExpectTotalCount(
-      "Profile.State.Avatar_LatentMultiProfileActive", 0);
+      "Profile.State.LastUsed_LatentMultiProfileActive", 0);
   histogram_tester.ExpectTotalCount(
-      "Profile.State.Avatar_LatentMultiProfileOthers", 0);
+      "Profile.State.LastUsed_LatentMultiProfileOthers", 0);
 }
 
 // On Android (at least on KitKat), all profiles are considered active (because
@@ -1617,17 +1619,17 @@ TEST_F(ProfileAttributesStorageTest, ProfilesState_LatentMultiProfile) {
   storage()->RecordProfilesState();
 
   // There are 5 profiles all together.
-  histogram_tester.ExpectTotalCount("Profile.State.Avatar_All", 5);
-  histogram_tester.ExpectTotalCount("Profile.State.Avatar_LatentMultiProfile",
+  histogram_tester.ExpectTotalCount("Profile.State.LastUsed_All", 5);
+  histogram_tester.ExpectTotalCount("Profile.State.LastUsed_LatentMultiProfile",
                                     5);
   histogram_tester.ExpectTotalCount(
-      "Profile.State.Avatar_LatentMultiProfileActive", 1);
+      "Profile.State.LastUsed_LatentMultiProfileActive", 1);
   histogram_tester.ExpectTotalCount(
-      "Profile.State.Avatar_LatentMultiProfileOthers", 4);
+      "Profile.State.LastUsed_LatentMultiProfileOthers", 4);
 
   // Other user segments get 0 records.
-  histogram_tester.ExpectTotalCount("Profile.State.Avatar_SingleProfile", 0);
-  histogram_tester.ExpectTotalCount("Profile.State.Avatar_ActiveMultiProfile",
+  histogram_tester.ExpectTotalCount("Profile.State.LastUsed_SingleProfile", 0);
+  histogram_tester.ExpectTotalCount("Profile.State.LastUsed_ActiveMultiProfile",
                                     0);
 }
 #endif

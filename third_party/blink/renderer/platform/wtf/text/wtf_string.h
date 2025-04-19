@@ -20,6 +20,11 @@
  *
  */
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_WTF_STRING_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_WTF_STRING_H_
 
@@ -61,6 +66,7 @@ class WTF_EXPORT String {
   String() = default;
 
   // Construct a string with UTF-16 data.
+  explicit String(base::span<const UChar> utf16_data);
   String(const UChar* characters, unsigned length);
 
   // Construct a string by copying the contents of a vector.
@@ -77,6 +83,7 @@ class WTF_EXPORT String {
   String(const UChar*);
 
   // Construct a string with latin1 data.
+  explicit String(base::span<const LChar> latin1_data);
   String(const LChar* characters, unsigned length);
   String(const char* characters, unsigned length);
   explicit String(const std::string& s) : String(s.c_str(), s.length()) {}
@@ -277,6 +284,10 @@ class WTF_EXPORT String {
   }
   bool StartsWithIgnoringCase(const StringView& prefix) const {
     return impl_ ? impl_->StartsWithIgnoringCase(prefix) : prefix.empty();
+  }
+  bool StartsWithIgnoringCaseAndAccents(const StringView& prefix) const {
+    return impl_ ? impl_->StartsWithIgnoringCaseAndAccents(prefix)
+                 : prefix.empty();
   }
   bool StartsWithIgnoringASCIICase(const StringView& prefix) const {
     return impl_ ? impl_->StartsWithIgnoringASCIICase(prefix) : prefix.empty();

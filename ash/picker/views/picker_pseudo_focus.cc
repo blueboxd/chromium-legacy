@@ -6,6 +6,7 @@
 
 #include "ash/picker/views/picker_item_view.h"
 #include "ash/picker/views/picker_list_item_view.h"
+#include "ash/picker/views/picker_search_bar_textfield.h"
 #include "base/functional/bind.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -13,6 +14,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/types/event_type.h"
 #include "ui/views/controls/focus_ring.h"
+#include "ui/views/focus/focus_manager.h"
 #include "ui/views/view.h"
 #include "ui/views/view_utils.h"
 
@@ -24,12 +26,17 @@ void ApplyPickerPseudoFocusToView(views::View* view) {
   }
 
   // PickerItemView has special pseudo focus behavior, so handle it separately.
-  if (views::IsViewClass<PickerItemView>(view)) {
-    views::AsViewClass<PickerItemView>(view)->SetItemState(
-        PickerItemView::ItemState::kPseudoFocused);
-    if (views::IsViewClass<PickerListItemView>(view)) {
-      views::AsViewClass<PickerListItemView>(view)->SetBadgeVisible(true);
+  if (auto* item_view = views::AsViewClass<PickerItemView>(view)) {
+    item_view->SetItemState(PickerItemView::ItemState::kPseudoFocused);
+    if (auto* list_item_view = views::AsViewClass<PickerListItemView>(view)) {
+      list_item_view->SetBadgeVisible(true);
     }
+    return;
+  }
+
+  // PickerSearchBarTextfield has special pseudo focus appearance.
+  if (auto* textfield = views::AsViewClass<PickerSearchBarTextfield>(view)) {
+    textfield->SetShouldShowFocusIndicator(true);
     return;
   }
 
@@ -49,12 +56,17 @@ void RemovePickerPseudoFocusFromView(views::View* view) {
   }
 
   // PickerItemView has special pseudo focus behavior, so handle it separately.
-  if (views::IsViewClass<PickerItemView>(view)) {
-    views::AsViewClass<PickerItemView>(view)->SetItemState(
-        PickerItemView::ItemState::kNormal);
-    if (views::IsViewClass<PickerListItemView>(view)) {
-      views::AsViewClass<PickerListItemView>(view)->SetBadgeVisible(false);
+  if (auto* item_view = views::AsViewClass<PickerItemView>(view)) {
+    item_view->SetItemState(PickerItemView::ItemState::kNormal);
+    if (auto* list_item_view = views::AsViewClass<PickerListItemView>(view)) {
+      list_item_view->SetBadgeVisible(false);
     }
+    return;
+  }
+
+  // PickerSearchBarTextfield has special pseudo focus appearance.
+  if (auto* textfield = views::AsViewClass<PickerSearchBarTextfield>(view)) {
+    textfield->SetShouldShowFocusIndicator(false);
     return;
   }
 
@@ -73,9 +85,14 @@ bool DoPickerPseudoFocusedActionOnView(views::View* view) {
     return false;
   }
 
+  // PickerSearchBarTextfield has no pseudo focus action.
+  if (views::IsViewClass<PickerSearchBarTextfield>(view)) {
+    return true;
+  }
+
   // PickerItemView has special pseudo focus behavior, so handle it separately.
-  if (views::IsViewClass<PickerItemView>(view)) {
-    views::AsViewClass<PickerItemView>(view)->SelectItem();
+  if (auto* item_view = views::AsViewClass<PickerItemView>(view)) {
+    item_view->SelectItem();
     return true;
   }
 
@@ -85,10 +102,22 @@ bool DoPickerPseudoFocusedActionOnView(views::View* view) {
   // calling `OnKeyEvent` (since the focused view may forward key events to be
   // handled by the pseudo focused view).
   CHECK(!view->HasFocus());
-  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_RETURN,
+  ui::KeyEvent key_event(ui::EventType::kKeyPressed, ui::VKEY_RETURN,
                          ui::DomCode::ENTER, ui::EF_NONE);
   view->OnKeyEvent(&key_event);
   return key_event.handled();
+}
+
+views::View* GetNextPickerPseudoFocusableView(
+    views::View* view,
+    PickerPseudoFocusDirection direction,
+    bool should_loop) {
+  return view == nullptr || view->GetFocusManager() == nullptr
+             ? nullptr
+             : view->GetFocusManager()->GetNextFocusableView(
+                   view, view->GetWidget(),
+                   direction == PickerPseudoFocusDirection::kBackward,
+                   !should_loop);
 }
 
 }  // namespace ash

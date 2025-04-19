@@ -37,9 +37,9 @@
 
 using base::ASCIIToUTF16;
 using signin::GaiaIdHash;
-using std::string_view;
 using testing::_;
 using testing::IsEmpty;
+using testing::Optional;
 using testing::Pointee;
 using testing::Property;
 using testing::Return;
@@ -63,6 +63,9 @@ constexpr const char kTestFederatedRealm[] =
 constexpr const char kTestFederationURL[] = "https://accounts.google.com/";
 
 constexpr const char kTestGroupedURL[] = "https://grouped.match.com/";
+
+constexpr const char kTestAndroidFacetURI[] =
+    "android://hash@com.example.android/";
 
 class MockConsumer : public FormFetcher::Consumer {
  public:
@@ -206,7 +209,7 @@ PasswordForm CreateFederated(const std::string& username_value = "user",
   PasswordForm form = CreateNonFederated(username_value, date_last_used);
   form.signon_realm = kTestFederatedRealm;
   form.password_value.clear();
-  form.federation_origin = url::Origin::Create(GURL(kTestFederationURL));
+  form.federation_origin = url::SchemeHostPort(GURL(kTestFederationURL));
   form.match_type = PasswordForm::MatchType::kExact;
   return form;
 }
@@ -218,7 +221,7 @@ PasswordForm CreateAndroidFederated(
   PasswordForm form =
       CreateHTMLForm("android://hash@com.example.android/", username_value,
                      /*password_value=*/"", date_last_used);
-  form.federation_origin = url::Origin::Create(GURL(kTestFederationURL));
+  form.federation_origin = url::SchemeHostPort(GURL(kTestFederationURL));
   form.match_type = PasswordForm::MatchType::kAffiliated;
   return form;
 }
@@ -238,6 +241,12 @@ PasswordForm CreateBlockedPsl() {
 
 PasswordForm CreateGrouped() {
   PasswordForm form = CreateHTMLForm(kTestGroupedURL, "user", "password");
+  form.match_type = PasswordForm::MatchType::kGrouped;
+  return form;
+}
+
+PasswordForm CreateGroupedApp() {
+  PasswordForm form = CreateHTMLForm(kTestAndroidFacetURI, "user", "password");
   form.match_type = PasswordForm::MatchType::kGrouped;
   return form;
 }
@@ -347,6 +356,10 @@ TEST_P(FormFetcherImplTest, NoStoreResults) {
   EXPECT_CALL(consumer_, OnFetchCompleted).Times(0);
   form_fetcher_->AddConsumer(&consumer_);
   EXPECT_EQ(FormFetcher::State::WAITING, form_fetcher_->GetState());
+  EXPECT_THAT(form_fetcher_->GetNonFederatedMatches(), IsEmpty());
+  EXPECT_THAT(form_fetcher_->GetAllRelevantMatches(), IsEmpty());
+  EXPECT_THAT(form_fetcher_->GetFederatedMatches(), IsEmpty());
+  EXPECT_FALSE(form_fetcher_->IsBlocklisted());
 }
 
 // Check that empty PasswordStore results are handled correctly.
@@ -358,6 +371,7 @@ TEST_P(FormFetcherImplTest, Empty) {
                               /*account_store_results=*/{});
   EXPECT_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
   EXPECT_THAT(form_fetcher_->GetNonFederatedMatches(), IsEmpty());
+  EXPECT_THAT(form_fetcher_->GetAllRelevantMatches(), IsEmpty());
   EXPECT_THAT(form_fetcher_->GetFederatedMatches(), IsEmpty());
   EXPECT_FALSE(form_fetcher_->IsBlocklisted());
 }
@@ -374,6 +388,27 @@ TEST_P(FormFetcherImplTest, NonFederated) {
   EXPECT_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
   EXPECT_THAT(form_fetcher_->GetNonFederatedMatches(),
               UnorderedElementsAre(non_federated));
+  EXPECT_THAT(form_fetcher_->GetAllRelevantMatches(),
+              UnorderedElementsAre(non_federated));
+  EXPECT_THAT(form_fetcher_->GetFederatedMatches(), IsEmpty());
+  EXPECT_FALSE(form_fetcher_->IsBlocklisted());
+}
+
+// Check that PasswordStore results not having non-federated same schema matches
+// are handled correctly.
+TEST_P(FormFetcherImplTest, NonFederatedOtherSchemasOnly) {
+  Fetch();
+  PasswordForm non_federated = CreateNonFederated();
+  non_federated.scheme = PasswordForm::Scheme::kOther;
+  form_fetcher_->AddConsumer(&consumer_);
+  std::vector<PasswordForm> results = {non_federated};
+  EXPECT_CALL(consumer_, OnFetchCompleted);
+  DeliverPasswordStoreResults(/*profile_store_results=*/std::move(results),
+                              /*account_store_results=*/{});
+  EXPECT_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
+  EXPECT_THAT(form_fetcher_->GetNonFederatedMatches(),
+              UnorderedElementsAre(non_federated));
+  EXPECT_THAT(form_fetcher_->GetAllRelevantMatches(), IsEmpty());
   EXPECT_THAT(form_fetcher_->GetFederatedMatches(), IsEmpty());
   EXPECT_FALSE(form_fetcher_->IsBlocklisted());
 }
@@ -390,6 +425,7 @@ TEST_P(FormFetcherImplTest, Federated) {
                               /*account_store_results=*/{});
   EXPECT_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
   EXPECT_THAT(form_fetcher_->GetNonFederatedMatches(), IsEmpty());
+  EXPECT_THAT(form_fetcher_->GetAllRelevantMatches(), IsEmpty());
   EXPECT_THAT(form_fetcher_->GetFederatedMatches(),
               UnorderedElementsAre(federated, android_federated));
   EXPECT_FALSE(form_fetcher_->IsBlocklisted());
@@ -406,6 +442,7 @@ TEST_P(FormFetcherImplTest, Blocked) {
                               /*account_store_results=*/{});
   EXPECT_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
   EXPECT_THAT(form_fetcher_->GetNonFederatedMatches(), IsEmpty());
+  EXPECT_THAT(form_fetcher_->GetAllRelevantMatches(), IsEmpty());
   EXPECT_THAT(form_fetcher_->GetFederatedMatches(), IsEmpty());
   EXPECT_TRUE(form_fetcher_->IsBlocklisted());
 }
@@ -439,7 +476,7 @@ TEST_P(FormFetcherImplTest, BlockedDifferentScheme) {
 // Grouped credentials should be filtered out unless `FormFetcher` is configured
 // explicitly to include them.
 TEST_P(FormFetcherImplTest, FiltersGroupedCredentials) {
-  EXPECT_FALSE(form_fetcher_->WereGroupedCredentialsAvailable());
+  EXPECT_FALSE(form_fetcher_->GetPreferredOrPotentialMatchedFormType());
   Fetch();
   form_fetcher_->AddConsumer(&consumer_);
   PasswordForm non_federated = CreateNonFederated();
@@ -450,30 +487,86 @@ TEST_P(FormFetcherImplTest, FiltersGroupedCredentials) {
   EXPECT_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
   EXPECT_THAT(form_fetcher_->GetNonFederatedMatches(),
               UnorderedElementsAre(non_federated));
+  EXPECT_THAT(form_fetcher_->GetAllRelevantMatches(),
+              UnorderedElementsAre(non_federated));
   EXPECT_THAT(form_fetcher_->GetFederatedMatches(), IsEmpty());
   EXPECT_FALSE(form_fetcher_->IsBlocklisted());
-  EXPECT_TRUE(form_fetcher_->WereGroupedCredentialsAvailable());
+  EXPECT_THAT(
+      form_fetcher_->GetPreferredOrPotentialMatchedFormType(),
+      Optional(PasswordFormMetricsRecorder::MatchedFormType::kExactMatch));
 }
 
 // Grouped credentials should be returned if `FormFetcher` is configured to do
 // keep them in the result set.
 TEST_P(FormFetcherImplTest, ReturnsGroupedCredentialsIfConfigured) {
   form_fetcher_->set_filter_grouped_credentials(false);
-  EXPECT_FALSE(form_fetcher_->WereGroupedCredentialsAvailable());
+  EXPECT_FALSE(form_fetcher_->GetPreferredOrPotentialMatchedFormType());
   Fetch();
   form_fetcher_->AddConsumer(&consumer_);
-  PasswordForm non_federated = CreateNonFederated();
-  PasswordForm grouped = CreateGrouped();
-  std::vector<PasswordForm> results = {non_federated, grouped};
+  PasswordForm grouped_app = CreateGroupedApp();
+  std::vector<PasswordForm> results = {grouped_app};
   EXPECT_CALL(consumer_, OnFetchCompleted);
   DeliverPasswordStoreResults(/*profile_store_results=*/std::move(results),
                               /*account_store_results=*/{});
   EXPECT_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
   EXPECT_THAT(form_fetcher_->GetNonFederatedMatches(),
-              UnorderedElementsAre(non_federated, grouped));
+              UnorderedElementsAre(grouped_app));
+  EXPECT_THAT(form_fetcher_->GetAllRelevantMatches(),
+              UnorderedElementsAre(grouped_app));
   EXPECT_THAT(form_fetcher_->GetFederatedMatches(), IsEmpty());
   EXPECT_FALSE(form_fetcher_->IsBlocklisted());
-  EXPECT_FALSE(form_fetcher_->WereGroupedCredentialsAvailable());
+  EXPECT_THAT(
+      form_fetcher_->GetPreferredOrPotentialMatchedFormType(),
+      Optional(PasswordFormMetricsRecorder::MatchedFormType::kGroupedApp));
+}
+
+// Grouped credentials should be returned if `FormFetcher` is configured to do
+// keep them in the result set.
+TEST_P(FormFetcherImplTest, ReturnsMultipleGroupedCredentialsIfConfigured) {
+  form_fetcher_->set_filter_grouped_credentials(false);
+  EXPECT_FALSE(form_fetcher_->GetPreferredOrPotentialMatchedFormType());
+  Fetch();
+  form_fetcher_->AddConsumer(&consumer_);
+  PasswordForm grouped = CreateGrouped();
+  PasswordForm grouped_app = CreateGroupedApp();
+  std::vector<PasswordForm> results = {grouped_app, grouped};
+  EXPECT_CALL(consumer_, OnFetchCompleted);
+  DeliverPasswordStoreResults(/*profile_store_results=*/std::move(results),
+                              /*account_store_results=*/{});
+  EXPECT_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
+  EXPECT_THAT(form_fetcher_->GetNonFederatedMatches(),
+              UnorderedElementsAre(grouped, grouped_app));
+  EXPECT_THAT(form_fetcher_->GetAllRelevantMatches(),
+              UnorderedElementsAre(grouped, grouped_app));
+  EXPECT_THAT(form_fetcher_->GetFederatedMatches(), IsEmpty());
+  EXPECT_FALSE(form_fetcher_->IsBlocklisted());
+  EXPECT_THAT(
+      form_fetcher_->GetPreferredOrPotentialMatchedFormType(),
+      Optional(PasswordFormMetricsRecorder::MatchedFormType::kGroupedApp));
+}
+
+// Check that grouped website credentials are prioritized over grouped app
+// credentials if the `FormFetcher` is configured to ignore grouped credentials.
+TEST_P(
+    FormFetcherImplTest,
+    PrioritisesGroupedWebsiteOverGroupedAppWhenGroupedCredenetialsAreFiltered) {
+  EXPECT_FALSE(form_fetcher_->GetPreferredOrPotentialMatchedFormType());
+  Fetch();
+  form_fetcher_->AddConsumer(&consumer_);
+  PasswordForm grouped = CreateGrouped();
+  PasswordForm grouped_app = CreateGroupedApp();
+  std::vector<PasswordForm> results = {grouped_app, grouped};
+  EXPECT_CALL(consumer_, OnFetchCompleted);
+  DeliverPasswordStoreResults(/*profile_store_results=*/std::move(results),
+                              /*account_store_results=*/{});
+  EXPECT_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
+  EXPECT_THAT(form_fetcher_->GetNonFederatedMatches(), IsEmpty());
+  EXPECT_THAT(form_fetcher_->GetAllRelevantMatches(), IsEmpty());
+  EXPECT_THAT(form_fetcher_->GetFederatedMatches(), IsEmpty());
+  EXPECT_FALSE(form_fetcher_->IsBlocklisted());
+  EXPECT_THAT(
+      form_fetcher_->GetPreferredOrPotentialMatchedFormType(),
+      Optional(PasswordFormMetricsRecorder::MatchedFormType::kGroupedWebsites));
 }
 
 // Check that mixed PasswordStore results are handled correctly.
@@ -491,6 +584,7 @@ TEST_P(FormFetcherImplTest, Mixed) {
   non_federated2.username_value = u"user_C";
   PasswordForm non_federated3 = CreateNonFederated();
   non_federated3.username_value = u"user_D";
+  non_federated3.scheme = PasswordForm::Scheme::kOther;
   PasswordForm blocked = CreateBlocked();
 
   form_fetcher_->AddConsumer(&consumer_);
@@ -504,6 +598,8 @@ TEST_P(FormFetcherImplTest, Mixed) {
   EXPECT_THAT(
       form_fetcher_->GetNonFederatedMatches(),
       UnorderedElementsAre(non_federated1, non_federated2, non_federated3));
+  EXPECT_THAT(form_fetcher_->GetAllRelevantMatches(),
+              UnorderedElementsAre(non_federated1, non_federated2));
   EXPECT_THAT(form_fetcher_->GetFederatedMatches(),
               UnorderedElementsAre(federated1, federated2, federated3));
   EXPECT_TRUE(form_fetcher_->IsBlocklisted());
@@ -532,6 +628,8 @@ TEST_P(FormFetcherImplTest, Filtered) {
   // Expect that nothing got filtered out, since CredentialsFilter no longer
   // filters things out:
   EXPECT_THAT(form_fetcher_->GetNonFederatedMatches(),
+              UnorderedElementsAre(non_federated1, non_federated2));
+  EXPECT_THAT(form_fetcher_->GetAllRelevantMatches(),
               UnorderedElementsAre(non_federated1, non_federated2));
   EXPECT_THAT(form_fetcher_->GetFederatedMatches(),
               UnorderedElementsAre(federated));
@@ -915,6 +1013,8 @@ TEST_P(FormFetcherImplTest, Clone_EmptyResults) {
   EXPECT_THAT(clone->GetInteractionsStats(), IsEmpty());
   EXPECT_THAT(clone->GetInsecureCredentials(), IsEmpty());
   EXPECT_THAT(clone->GetFederatedMatches(), IsEmpty());
+  EXPECT_THAT(form_fetcher_->GetNonFederatedMatches(), IsEmpty());
+  EXPECT_THAT(form_fetcher_->GetAllRelevantMatches(), IsEmpty());
   MockConsumer consumer;
   EXPECT_CALL(consumer, OnFetchCompleted);
   clone->AddConsumer(&consumer);
@@ -936,6 +1036,8 @@ TEST_P(FormFetcherImplTest, Clone_NonEmptyResults) {
   DeliverPasswordStoreResults(/*profile_store_results=*/std::move(results),
                               /*account_store_results=*/{});
   EXPECT_THAT(form_fetcher_->GetNonFederatedMatches(),
+              UnorderedElementsAre(non_federated));
+  EXPECT_THAT(form_fetcher_->GetAllRelevantMatches(),
               UnorderedElementsAre(non_federated));
   EXPECT_THAT(form_fetcher_->GetFederatedMatches(),
               UnorderedElementsAre(federated, android_federated));
@@ -1293,16 +1395,14 @@ TEST_P(FormFetcherImplTest, ProfileBackendErrorResetsOnNewFetch) {
   Fetch();
 
   PasswordStoreBackendError error_results = PasswordStoreBackendError(
-      PasswordStoreBackendErrorType::kAuthErrorResolvable,
-      PasswordStoreBackendErrorRecoveryType::kRecoverable);
+      PasswordStoreBackendErrorType::kAuthErrorResolvable);
   DeliverPasswordStoreResults(
       /*profile_store_results=*/std::move(error_results),
       /*account_store_results=*/{});
 
   EXPECT_EQ(form_fetcher_->GetProfileStoreBackendError().value(),
             PasswordStoreBackendError(
-                PasswordStoreBackendErrorType::kAuthErrorResolvable,
-                PasswordStoreBackendErrorRecoveryType::kRecoverable));
+                PasswordStoreBackendErrorType::kAuthErrorResolvable));
 
   Fetch();
 
@@ -1322,16 +1422,14 @@ TEST_F(MultiStoreFormFetcherTest, AccountBackendErrorResetsOnNewFetch) {
   Fetch();
 
   PasswordStoreBackendError error_results = PasswordStoreBackendError(
-      PasswordStoreBackendErrorType::kAuthErrorResolvable,
-      PasswordStoreBackendErrorRecoveryType::kRecoverable);
+      PasswordStoreBackendErrorType::kAuthErrorResolvable);
   DeliverPasswordStoreResults(
       /*profile_store_results=*/{},
       /*account_store_results=*/std::move(error_results));
 
   EXPECT_EQ(form_fetcher_->GetAccountStoreBackendError().value(),
             PasswordStoreBackendError(
-                PasswordStoreBackendErrorType::kAuthErrorResolvable,
-                PasswordStoreBackendErrorRecoveryType::kRecoverable));
+                PasswordStoreBackendErrorType::kAuthErrorResolvable));
 
   Fetch();
 

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "media/filters/ffmpeg_demuxer.h"
 
 #include <algorithm>
@@ -1393,19 +1398,6 @@ void FFmpegDemuxer::OnFindStreamInfoDone(int result) {
       continue;
     }
 
-    // Discard disabled streams, if there is at least one that is enabled.
-    if (has_enabled_stream && !IsStreamEnabled(container(), stream)) {
-      if (codec_type == AVMEDIA_TYPE_AUDIO) {
-        MEDIA_LOG(INFO, media_log_)
-            << GetDisplayName() << ": skipping disabled audio track";
-      } else if (codec_type == AVMEDIA_TYPE_VIDEO) {
-        MEDIA_LOG(INFO, media_log_)
-            << GetDisplayName() << ": skipping disabled video track";
-      }
-      stream->discard = AVDISCARD_ALL;
-      continue;
-    }
-
     // Attempt to create a FFmpegDemuxerStream from the AVStream. This will
     // return nullptr if the AVStream is invalid. Validity checks will verify
     // things like: codec, channel layout, sample/pixel format, etc...
@@ -1441,15 +1433,29 @@ void FFmpegDemuxer::OnFindStreamInfoDone(int result) {
       track_label = MediaTrack::Label(streams_[i]->GetMetadata("title"));
     }
 
+    // Enable the first non-disabled stream for each of audio and video.
+    // If all streams are disabled, they are treated as enabled instead.
+    bool stream_enabled = true;
     if (codec_type == AVMEDIA_TYPE_AUDIO) {
-      ++supported_audio_track_count;
-      streams_[i]->SetEnabled(supported_audio_track_count == 1,
-                              base::TimeDelta());
+      if (has_enabled_stream && !IsStreamEnabled(container(), stream)) {
+        MEDIA_LOG(INFO, media_log_)
+            << GetDisplayName() << ": skipping disabled audio track";
+        stream_enabled = false;
+      } else {
+        ++supported_audio_track_count;
+        stream_enabled = supported_audio_track_count == 1;
+      }
     } else if (codec_type == AVMEDIA_TYPE_VIDEO) {
-      ++supported_video_track_count;
-      streams_[i]->SetEnabled(supported_video_track_count == 1,
-                              base::TimeDelta());
+      if (has_enabled_stream && !IsStreamEnabled(container(), stream)) {
+        MEDIA_LOG(INFO, media_log_)
+            << GetDisplayName() << ": skipping disabled video track";
+        stream_enabled = false;
+      } else {
+        ++supported_video_track_count;
+        stream_enabled = supported_video_track_count == 1;
+      }
     }
+    streams_[i]->SetEnabled(stream_enabled, base::TimeDelta());
 
     // TODO(chcunningham): Remove the IsValidConfig() checks below. If the
     // config isn't valid we shouldn't have created a demuxer stream nor
@@ -1471,9 +1477,9 @@ void FFmpegDemuxer::OnFindStreamInfoDone(int result) {
       AudioDecoderConfig audio_config = streams_[i]->audio_decoder_config();
       RecordAudioCodecStats(audio_config);
 
-      media_track = media_tracks->AddAudioTrack(audio_config, track_id,
-                                                MediaTrack::Kind("main"),
-                                                track_label, track_language);
+      media_track = media_tracks->AddAudioTrack(
+          audio_config, stream_enabled, track_id, MediaTrack::Kind("main"),
+          track_label, track_language);
       media_track->set_id(MediaTrack::Id(base::NumberToString(track_id)));
       DCHECK(track_id_to_demux_stream_map_.find(media_track->id()) ==
              track_id_to_demux_stream_map_.end());
@@ -1484,9 +1490,9 @@ void FFmpegDemuxer::OnFindStreamInfoDone(int result) {
       RecordVideoCodecStats(glue_->container(), video_config,
                             stream->codecpar->color_range, media_log_);
 
-      media_track = media_tracks->AddVideoTrack(video_config, track_id,
-                                                MediaTrack::Kind("main"),
-                                                track_label, track_language);
+      media_track = media_tracks->AddVideoTrack(
+          video_config, stream_enabled, track_id, MediaTrack::Kind("main"),
+          track_label, track_language);
       media_track->set_id(MediaTrack::Id(base::NumberToString(track_id)));
       DCHECK(track_id_to_demux_stream_map_.find(media_track->id()) ==
              track_id_to_demux_stream_map_.end());

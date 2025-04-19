@@ -176,6 +176,11 @@ class MODULES_EXPORT IDBRequest : public EventTarget,
     // instance, so the instance is cleared.
     void RecordAndReset();
 
+    // Records the trace end event and resets the instance, and also emits to
+    // histograms that are relevant to this request type. `success` is true when
+    // the dispatch result is not an error.
+    void WillDispatchResult(bool success);
+
    protected:  // For testing
     std::optional<TypeForMetrics> type() const { return type_; }
     const base::TimeTicks& start_time() const { return start_time_; }
@@ -291,9 +296,10 @@ class MODULES_EXPORT IDBRequest : public EventTarget,
   void OnCount(bool success, uint32_t count);
   void OnPut(mojom::blink::IDBTransactionPutResultPtr result);
   void OnGet(mojom::blink::IDBDatabaseGetResultPtr result);
-  void OnGetAll(bool key_only,
-                mojo::PendingReceiver<mojom::blink::IDBDatabaseGetAllResultSink>
-                    receiver);
+  void OnGetAll(
+      bool key_only,
+      mojo::PendingAssociatedReceiver<mojom::blink::IDBDatabaseGetAllResultSink>
+          receiver);
   void OnOpenCursor(mojom::blink::IDBDatabaseOpenCursorResultPtr result);
   void OnAdvanceCursor(mojom::blink::IDBCursorResultPtr result);
   void OnGotKeyGeneratorCurrentNumber(int64_t number,

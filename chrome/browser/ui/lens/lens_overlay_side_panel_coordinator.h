@@ -6,15 +6,17 @@
 #define CHROME_BROWSER_UI_LENS_LENS_OVERLAY_SIDE_PANEL_COORDINATOR_H_
 
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_entry_observer.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents_observer.h"
 
-class Browser;
 class GURL;
 class LensOverlayController;
 class LensOverlaySidePanelWebView;
-class SidePanelUI;
+
+enum class SidePanelEntryHideReason;
 
 namespace content {
 class WebContents;
@@ -36,35 +38,37 @@ namespace lens {
 //   avoids re-entrancy into the code that is in turn calling (2).
 //   (2b) Clearing local state associated with `side_panel_web_view_` must be
 //   done synchronously.
-class LensOverlaySidePanelCoordinator : public SidePanelEntryObserver,
-                                        public content::WebContentsObserver {
+class LensOverlaySidePanelCoordinator
+    : public SidePanelEntryObserver,
+      public content::WebContentsObserver,
+      public ChromeWebModalDialogManagerDelegate {
  public:
-  LensOverlaySidePanelCoordinator(
-      Browser* browser,
-      LensOverlayController* lens_overlay_controller,
-      SidePanelUI* side_panel_ui,
-      content::WebContents* web_contents);
+  explicit LensOverlaySidePanelCoordinator(
+      LensOverlayController* lens_overlay_controller);
   LensOverlaySidePanelCoordinator(const LensOverlaySidePanelCoordinator&) =
       delete;
   LensOverlaySidePanelCoordinator& operator=(
       const LensOverlaySidePanelCoordinator&) = delete;
   ~LensOverlaySidePanelCoordinator() override;
 
-  // Handles activations of the Lens overlay side panel entry.
-  static actions::ActionItem::InvokeActionCallback
-  CreateSidePanelActionCallback(Browser* browser);
-
   // Registers the side panel entry in the side panel if it doesn't already
   // exist and then shows it.
   void RegisterEntryAndShow();
 
   // SidePanelEntryObserver:
+  void OnEntryWillHide(SidePanelEntry* entry,
+                       SidePanelEntryHideReason reason) override;
   void OnEntryHidden(SidePanelEntry* entry) override;
 
   // Called by the destructor of the side panel web view.
   void WebViewClosing();
 
   content::WebContents* GetSidePanelWebContents();
+
+  // Return the LensOverlayController that owns this side panel coordinator.
+  LensOverlayController* GetLensOverlayController() {
+    return lens_overlay_controller_.get();
+  }
 
   // Whether the lens overlay entry is currently the active entry in the side
   // panel UI.
@@ -84,28 +88,26 @@ class LensOverlaySidePanelCoordinator : public SidePanelEntryObserver,
       content::NavigationHandle* navigation_handle) override;
   void DOMContentLoaded(content::RenderFrameHost* render_frame_host) override;
 
+  // ChromeWebModalDialogManagerDelegate:
+  web_modal::WebContentsModalDialogHost* GetWebContentsModalDialogHost()
+      override;
+
+  // Opens the provided url params in the main browser as a new tab.
+  void OpenURLInBrowser(const content::OpenURLParams& params);
+
   // Registers the entry in the side panel if it doesn't already exist.
   void RegisterEntry();
 
   // Called to get the URL for the "open in new tab" button.
   GURL GetOpenInNewTabUrl();
 
-  // Gets the tab web contents where this side panel was opened.
-  content::WebContents* GetTabWebContents();
-
   std::unique_ptr<views::View> CreateLensOverlayResultsView();
-
-  // The browser of the tab web contents passed by the overlay.
-  const raw_ptr<Browser> tab_browser_;
 
   // Owns this.
   const raw_ptr<LensOverlayController> lens_overlay_controller_;
 
-  // The side panel UI corresponding to the tab's browser.
-  const raw_ptr<SidePanelUI> side_panel_ui_;
-
-  base::WeakPtr<content::WebContents> tab_web_contents_;
   raw_ptr<LensOverlaySidePanelWebView> side_panel_web_view_;
+  base::WeakPtrFactory<LensOverlaySidePanelCoordinator> weak_ptr_factory_{this};
 };
 
 }  // namespace lens

@@ -49,6 +49,7 @@
 <translation id="2295140143284145483">Khảo sát</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/giây</translation>
 <translation id="2353636109065292463">Kiểm tra kết nối Internet</translation>
+<translation id="2359808026110333948">Tiếp tục</translation>
 <translation id="2388990488038464401">Gọi cho số này bằng điện thoại của bạn?</translation>
 <translation id="2435457462613246316">Hiện mật khẩu</translation>
 <translation id="24452542372838207">Mở rộng thông báo</translation>
@@ -129,6 +130,7 @@
 <translation id="5574202486608032840">Hệ thống <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">Mũi tên trái</translation>
+<translation id="5633029987065897167">Trống</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 phút}other{# phút}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Hoạt động hôm nay}=1{Hoạt động 1 ngày trước}other{Hoạt động # ngày trước}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 ngày và }other{# ngày và }}</translation>

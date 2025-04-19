@@ -22,7 +22,9 @@ import {GeolocationAccessLevel} from '../../os_privacy_page/privacy_hub_geolocat
 type Constructor<T> = new (...args: any[]) => T;
 
 export interface PrivacyHubMixinInterface {
+  cameraSwitchForceDisabled: boolean;
   microphoneHardwareToggleActive: boolean;
+  microphoneMutedBySecurityCurtain: boolean;
   isSensorBlocked(permissionType: PermissionTypeIndex|undefined): boolean;
 }
 
@@ -35,14 +37,26 @@ export const PrivacyHubMixin = dedupingMixin(
           PrivacyHubMixinInterface {
         static get properties() {
           return {
+            cameraSwitchForceDisabled: {
+              type: Boolean,
+              value: false,
+            },
+
             microphoneHardwareToggleActive: {
+              type: Boolean,
+              value: false,
+            },
+
+            microphoneMutedBySecurityCurtain: {
               type: Boolean,
               value: false,
             },
           };
         }
 
+        cameraSwitchForceDisabled: boolean;
         microphoneHardwareToggleActive: boolean;
+        microphoneMutedBySecurityCurtain: boolean;
         private privacyHubBrowserProxy_: PrivacyHubBrowserProxy;
 
         constructor() {
@@ -55,12 +69,32 @@ export const PrivacyHubMixin = dedupingMixin(
           super.connectedCallback();
 
           this.addWebUiListener(
+              'force-disable-camera-switch', (disabled: boolean) => {
+                this.cameraSwitchForceDisabled = disabled;
+              });
+          this.privacyHubBrowserProxy_
+              .getInitialCameraSwitchForceDisabledState()
+              .then((disabled) => {
+                this.cameraSwitchForceDisabled = disabled;
+              });
+
+          this.addWebUiListener(
               'microphone-hardware-toggle-changed', (enabled: boolean) => {
                 this.microphoneHardwareToggleActive = enabled;
               });
           this.privacyHubBrowserProxy_.getInitialMicrophoneHardwareToggleState()
               .then((enabled: boolean) => {
                 this.microphoneHardwareToggleActive = enabled;
+              });
+          this.addWebUiListener(
+              'microphone-muted-by-security-curtain-changed',
+              (muted: boolean) => {
+                this.microphoneMutedBySecurityCurtain = muted;
+              });
+          this.privacyHubBrowserProxy_
+              .getInitialMicrophoneMutedBySecurityCurtainState()
+              .then((muted: boolean) => {
+                this.microphoneHardwareToggleActive = muted;
               });
         }
 

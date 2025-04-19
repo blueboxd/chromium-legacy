@@ -20,7 +20,6 @@
 #include "base/memory/raw_ptr.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "ui/accessibility/ax_enums.mojom-shared.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/events/event_utils.h"
@@ -71,9 +70,7 @@ class AppListItemViewTest : public AshTestBase,
   void SetUp() override {
     scoped_feature_list_.InitWithFeatureStates(
         {{app_list_features::kDragAndDropRefactor, IsUsingDragDropController()},
-         {features::kPromiseIcons, true},
-         {chromeos::features::kCrosWebAppShortcutUiUpdate, true},
-         {features::kSeparateWebAppShortcutBadgeIcon, true}});
+         {features::kPromiseIcons, true}});
 
     AshTestBase::SetUp();
 
@@ -110,15 +107,6 @@ class AppListItemViewTest : public AshTestBase,
     AppListItem* item =
         GetAppListTestHelper()->model()->CreateAndPopulateFolderWithApps(
             num_apps);
-    return item;
-  }
-
-  AppListItem* CreateWebAppShortcutItemWithHostBadge(const std::string& name) {
-    AppListItem* item =
-        GetAppListTestHelper()
-            ->model()
-            ->CreateAndAddWebAppShortcutItemWithHostBadge(name + "_id");
-    item->SetName(name);
     return item;
   }
 
@@ -283,12 +271,12 @@ TEST_P(AppListItemViewTest, AppItemDragStateAfterLongPress) {
   // Verify that actual drag state is not started until the item is moved.
   ui::GestureEvent long_press(
       from.x(), from.y(), 0, ui::EventTimeForNow(),
-      ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
+      ui::GestureEventDetails(ui::EventType::kGestureLongPress));
   generator->Dispatch(&long_press);
   EXPECT_EQ(GetDragState(view), AppListItemView::DragState::kInitialized);
 
-  // After a long press, the first event type is ET_GESTURE_SCROLL_BEGIN
-  // but drag does not start until ET_GESTURE_SCROLL_UPDATE, so do the
+  // After a long press, the first event type is EventType::kGestureScrollBegin
+  // but drag does not start until EventType::kGestureScrollUpdate, so do the
   // movement in two steps.
   generator->MoveTouchBy(5, 5);
   generator->MoveTouchBy(5, 5);
@@ -350,7 +338,7 @@ TEST_P(AppListItemViewTest, AppItemReleaseTouchBeforeDragStartWithLongPress) {
 
   ui::GestureEvent long_press(
       from.x(), from.y(), 0, ui::EventTimeForNow(),
-      ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
+      ui::GestureEventDetails(ui::EventType::kGestureLongPress));
   generator->Dispatch(&long_press);
 
   generator->ReleaseTouch();
@@ -546,78 +534,6 @@ TEST_P(AppListItemViewTest, UpdateProgressOnPromiseIcon) {
   item->SetProgress(1.5f);
   EXPECT_EQ(view->item()->progress(), 1.5f);
   ProgressIndicatorWaiter().WaitForProgress(progress_indicator, 1.0f);
-}
-
-TEST_P(AppListItemViewTest, ShortcutIconEffectsShowOnShorcutItemWithHostBadge) {
-  AppListItem* item = CreateWebAppShortcutItemWithHostBadge("TestItem 1");
-
-  auto* helper = GetAppListTestHelper();
-  helper->ShowAppList();
-
-  auto* apps_grid_view = helper->GetScrollableAppsGridView();
-  AppListItemView* view = apps_grid_view->GetItemViewAt(0);
-
-  EXPECT_FALSE(item->GetHostBadgeIcon().isNull());
-  EXPECT_TRUE(view->has_host_badge_for_test());
-}
-
-TEST_P(AppListItemViewTest, NoShortcutIconEffectOntItemWithoutHostBadge) {
-  AppListItem* item = CreateAppListItem("TestItem 1");
-
-  auto* helper = GetAppListTestHelper();
-  helper->ShowAppList();
-
-  auto* apps_grid_view = helper->GetScrollableAppsGridView();
-  AppListItemView* view = apps_grid_view->GetItemViewAt(0);
-
-  EXPECT_TRUE(item->GetHostBadgeIcon().isNull());
-  EXPECT_FALSE(view->has_host_badge_for_test());
-}
-
-TEST_P(AppListItemViewTestWithDragDropController,
-       ShortcutIconEffectsPersistThroughDragDrop) {
-  AppListItem* item = CreateWebAppShortcutItemWithHostBadge("TestItem 1");
-
-  auto* helper = GetAppListTestHelper();
-  helper->ShowAppList();
-
-  auto* apps_grid_view = helper->GetScrollableAppsGridView();
-  AppListItemView* view = apps_grid_view->GetItemViewAt(0);
-  auto* generator = GetEventGenerator();
-  ASSERT_EQ(GetDragState(view), AppListItemView::DragState::kNone);
-
-  SetAppListItemViewForTest(view);
-
-  gfx::Point from = view->GetBoundsInScreen().CenterPoint();
-  generator->MoveTouch(from);
-  generator->PressTouch();
-  view->FireTouchDragTimerForTest();
-  EXPECT_EQ(GetDragState(view), AppListItemView::DragState::kInitialized);
-
-  // Make sure that the item view has a started drag state during drag.
-  ShellTestApi().drag_drop_controller()->SetLoopClosureForTesting(
-      base::BindLambdaForTesting([&]() {
-        drag_started_on_controller_++;
-        generator->MoveTouchBy(10, 10);
-        EXPECT_EQ(GetDragState(view), AppListItemView::DragState::kStarted);
-        generator->MoveMouseTo(apps_grid_view->GetBoundsInScreen().top_right());
-        generator->MoveTouchBy(10, 10);
-        EXPECT_EQ(GetDragState(view), AppListItemView::DragState::kStarted);
-        EXPECT_EQ(GetDragState(view), AppListItemView::DragState::kStarted);
-        generator->ReleaseTouch();
-      }),
-      base::DoNothing());
-
-  generator->MoveTouchBy(10, 10);
-
-  EXPECT_EQ(GetDragState(view), AppListItemView::DragState::kNone);
-  EXPECT_FALSE(view->FireTouchDragTimerForTest());
-  EXPECT_FALSE(IsIconScaled(view));
-
-  EXPECT_FALSE(item->GetHostBadgeIcon().isNull());
-  EXPECT_TRUE(view->has_host_badge_for_test());
-
-  MaybeCheckDragStartedOnControllerCount(1);
 }
 
 }  // namespace ash

@@ -42,10 +42,21 @@ class ShoppingUiHandlerDelegate : public ShoppingServiceHandler::Delegate {
 
   void ShowBookmarkEditorForCurrentUrl() override;
 
-  void ShowFeedback() override;
+  void ShowFeedbackForPriceInsights() override;
+
+  void ShowFeedbackForProductSpecifications(const std::string& log_id) override;
+
+  void ShowSyncSetupFlow() override;
 
   // Get the main frame source id from the page load.
   ukm::SourceId GetCurrentTabUkmSourceId() override;
+
+  void ShowProductSpecificationsDisclosureDialog(
+      const std::vector<GURL>& urls,
+      const std::string& name) override;
+
+  void ShowProductSpecificationsSetForUuid(const base::Uuid& uuid,
+                                           bool in_new_tab) override;
 
  private:
   void NavigateToUrl(Browser* browser, const GURL& url);

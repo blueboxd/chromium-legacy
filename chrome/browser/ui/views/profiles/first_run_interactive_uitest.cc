@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/profiles/profile_picker.h"
 #include "chrome/browser/ui/startup/first_run_service.h"
 #include "chrome/browser/ui/startup/first_run_test_util.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/profiles/profile_picker_interactive_uitest_base.h"
 #include "chrome/browser/ui/views/profiles/profile_picker_view.h"
 #include "chrome/browser/ui/webui/intro/intro_ui.h"
@@ -70,8 +71,10 @@ const DeepQuery kSignInButton{"intro-app", "sign-in-promo",
                               "#acceptSignInButton"};
 const DeepQuery kDontSignInButton{"intro-app", "sign-in-promo",
                                   "#declineSignInButton"};
-const DeepQuery kDeclineManagementButton{
+const DeepQuery kLegacyDeclineManagementButton{
     "legacy-managed-user-profile-notice-app", "#cancel-button"};
+const DeepQuery kDeclineManagementButton{"managed-user-profile-notice-app",
+                                         "#cancel-button"};
 const DeepQuery kOptInSyncButton{"sync-confirmation-app", "#confirmButton"};
 const DeepQuery kDontSyncButton{"sync-confirmation-app", "#notNowButton"};
 const DeepQuery kSettingsButton{"sync-confirmation-app", "#settingsButton"};
@@ -81,8 +84,7 @@ const DeepQuery kSearchEngineChoiceActionButton{"search-engine-choice-app",
                                                 "#actionButton"};
 
 enum class SyncButtonsFeatureConfig : int {
-  // The kMinorModeRestrictionsForHistorySyncOptIn feature shall be disabled.
-  kDisabled = 0,
+  // Deprecated: kDisabled = 0,
   // For the rest of the cases the kMinorModeRestrictionsForHistorySyncOptIn
   // feature shall be enabled.
   // Simulate async load resulting in not-equal buttons.
@@ -100,7 +102,8 @@ struct TestParam {
   bool with_search_engine_choice_step = false;
   bool with_privacy_sandbox_enabled = false;
   SyncButtonsFeatureConfig sync_buttons_feature_config =
-      SyncButtonsFeatureConfig::kDisabled;
+      SyncButtonsFeatureConfig::kAsyncNotEqualButtons;
+  bool with_updated_profile_creation_screen = false;
 };
 
 // Returned type is optional, because for the kButtonsStillLoading no buttons
@@ -108,7 +111,6 @@ struct TestParam {
 std::optional<::signin_metrics::SyncButtonsType> ExpectedButtonShownMetric(
     SyncButtonsFeatureConfig config) {
   switch (config) {
-    case SyncButtonsFeatureConfig::kDisabled:
     case SyncButtonsFeatureConfig::kAsyncNotEqualButtons:
       return ::signin_metrics::SyncButtonsType::kSyncNotEqualWeighted;
     case SyncButtonsFeatureConfig::kAsyncEqualButtons:
@@ -124,7 +126,6 @@ std::optional<::signin_metrics::SyncButtonsType> ExpectedButtonShownMetric(
 ::signin_metrics::SyncButtonClicked ExpectedOptInButtonClickedMetric(
     SyncButtonsFeatureConfig config) {
   switch (config) {
-    case SyncButtonsFeatureConfig::kDisabled:
     case SyncButtonsFeatureConfig::kAsyncNotEqualButtons:
       return ::signin_metrics::SyncButtonClicked::kSyncOptInNotEqualWeighted;
     case SyncButtonsFeatureConfig::kAsyncEqualButtons:
@@ -138,7 +139,6 @@ std::optional<::signin_metrics::SyncButtonsType> ExpectedButtonShownMetric(
 ::signin_metrics::SyncButtonClicked ExpectedDeclinedButtonClickedMetric(
     SyncButtonsFeatureConfig config) {
   switch (config) {
-    case SyncButtonsFeatureConfig::kDisabled:
     case SyncButtonsFeatureConfig::kAsyncNotEqualButtons:
       return ::signin_metrics::SyncButtonClicked::kSyncCancelNotEqualWeighted;
     case SyncButtonsFeatureConfig::kAsyncEqualButtons:
@@ -152,7 +152,6 @@ std::optional<::signin_metrics::SyncButtonsType> ExpectedButtonShownMetric(
 ::signin_metrics::SyncButtonClicked ExpectedSettingsButtonClickedMetric(
     SyncButtonsFeatureConfig config) {
   switch (config) {
-    case SyncButtonsFeatureConfig::kDisabled:
     case SyncButtonsFeatureConfig::kAsyncNotEqualButtons:
       return ::signin_metrics::SyncButtonClicked::kSyncSettingsNotEqualWeighted;
     case SyncButtonsFeatureConfig::kAsyncEqualButtons:
@@ -170,6 +169,8 @@ std::string ParamToTestSuffix(const ::testing::TestParamInfo<TestParam>& info) {
 // Permutations of supported parameters.
 const TestParam kTestParams[] = {
     {.test_suffix = "Default"},
+    {.test_suffix = "WithUpdatedProfileCreationScreen",
+     .with_updated_profile_creation_screen = true},
     {.test_suffix = "AsyncCapabilitiesToNotEqualButtons",
      .sync_buttons_feature_config =
          SyncButtonsFeatureConfig::kAsyncEqualButtons},
@@ -329,22 +330,20 @@ class FirstRunParameterizedInteractiveUiTest
       disabled_features.push_back(switches::kSearchEngineChoiceTrigger);
     }
 
+    if (WithUpdatedProfileCreationScreen()) {
+      enabled_features_and_params.push_back(
+          {features::kEnterpriseUpdatedProfileCreationScreen, {}});
+    } else {
+      disabled_features.push_back(
+          features::kEnterpriseUpdatedProfileCreationScreen);
+    }
+
     if (WithPrivacySandboxEnabled()) {
       enabled_features_and_params.push_back(
           {privacy_sandbox::kPrivacySandboxSettings4,
            {{privacy_sandbox::kPrivacySandboxSettings4ForceShowConsentForTesting
                  .name,
              "true"}}});
-    }
-
-    if (SyncButtonsFeatureConfig() == SyncButtonsFeatureConfig::kDisabled) {
-      disabled_features.push_back(
-          ::switches::kMinorModeRestrictionsForHistorySyncOptIn);
-    } else {
-      // Set long deadline to ensure that all interactions will complete before.
-      enabled_features_and_params.push_back(
-          {::switches::kMinorModeRestrictionsForHistorySyncOptIn,
-           {{::switches::kMinorModeRestrictionsFetchDeadlineMs.name, "5000"}}});
     }
 
     scoped_feature_list_.InitWithFeaturesAndParameters(
@@ -358,6 +357,9 @@ class FirstRunParameterizedInteractiveUiTest
     // Change the country to belgium so that the search engine choice test works
     // as intended.
     command_line->AppendSwitchASCII(switches::kSearchEngineChoiceCountry, "BE");
+
+    command_line->AppendSwitch(
+        switches::kIgnoreNoFirstRunForSearchEngineChoiceScreen);
 
     // The default browser step is normally only shown on Windows. If it's
     // forced, it should be shown on the other platforms for testing.
@@ -394,6 +396,9 @@ class FirstRunParameterizedInteractiveUiTest
 
   static bool WithSearchEngineChoiceStep() {
     return GetParam().with_search_engine_choice_step;
+  }
+  static bool WithUpdatedProfileCreationScreen() {
+    return GetParam().with_updated_profile_creation_screen;
   }
 
   static bool WithPrivacySandboxEnabled() {
@@ -479,7 +484,6 @@ class FirstRunParameterizedInteractiveUiTest
         break;
       case SyncButtonsFeatureConfig::kDeadlined:
       case SyncButtonsFeatureConfig::kButtonsStillLoading:
-      case SyncButtonsFeatureConfig::kDisabled:
         // Screen configures itself without capabilities.
         break;
     }
@@ -626,7 +630,8 @@ IN_PROC_BROWSER_TEST_P(FirstRunParameterizedInteractiveUiTest, SignInAndSync) {
   SimulateSignIn(kTestEmail, kTestGivenName);
 
   GURL sync_page_url = AppendSyncConfirmationQueryParams(
-      GURL("chrome://sync-confirmation/"), SyncConfirmationStyle::kWindow);
+      GURL("chrome://sync-confirmation/"), SyncConfirmationStyle::kWindow,
+      /*is_sync_promo=*/true);
   histogram_tester().ExpectUniqueSample(
       "Signin.SignIn.Completed",
       signin_metrics::AccessPoint::ACCESS_POINT_FOR_YOU_FRE, 1);
@@ -675,9 +680,9 @@ IN_PROC_BROWSER_TEST_P(FirstRunParameterizedInteractiveUiTest, SignInAndSync) {
       "Signin.SyncOptIn.Completed",
       signin_metrics::AccessPoint::ACCESS_POINT_FOR_YOU_FRE, 1);
 
-  histogram_tester().ExpectUniqueSample(
-      "ProfilePicker.FirstRun.DefaultBrowser",
-      DefaultBrowserChoice::kClickSetAsDefault, 1);
+  histogram_tester().ExpectBucketCount("ProfilePicker.FirstRun.DefaultBrowser",
+                                       DefaultBrowserChoice::kClickSetAsDefault,
+                                       1);
 
   if (WithSearchEngineChoiceStep()) {
     histogram_tester().ExpectBucketCount(
@@ -751,7 +756,8 @@ IN_PROC_BROWSER_TEST_P(FirstRunParameterizedInteractiveUiTest, DeclineSync) {
       WaitForWebContentsNavigation(
           kWebContentsId,
           AppendSyncConfirmationQueryParams(GURL("chrome://sync-confirmation/"),
-                                            SyncConfirmationStyle::kWindow)),
+                                            SyncConfirmationStyle::kWindow,
+                                            /*is_sync_promo=*/true)),
 
       // Button is visible once capabilities are loaded or defaulted.
       WaitForButtonVisible(kWebContentsId, kDontSyncButton),
@@ -822,7 +828,8 @@ IN_PROC_BROWSER_TEST_P(FirstRunParameterizedInteractiveUiTest, GoToSettings) {
       WaitForWebContentsNavigation(
           kWebContentsId,
           AppendSyncConfirmationQueryParams(GURL("chrome://sync-confirmation/"),
-                                            SyncConfirmationStyle::kWindow)),
+                                            SyncConfirmationStyle::kWindow,
+                                            /*is_sync_promo=*/true)),
 
       // Wait for opt-in button to appear for all test cases except for
       // kButtonsStillLoadings.
@@ -848,7 +855,7 @@ IN_PROC_BROWSER_TEST_P(FirstRunParameterizedInteractiveUiTest, GoToSettings) {
     SearchEngineChoiceDialogService* search_engine_choice_dialog_service =
         SearchEngineChoiceDialogServiceFactory::GetForProfile(profile());
     EXPECT_FALSE(
-        search_engine_choice_dialog_service->IsShowingDialog(browser()));
+        search_engine_choice_dialog_service->IsShowingDialog(*browser()));
   }
 
   EXPECT_TRUE(proceed_future.Get());
@@ -966,6 +973,9 @@ IN_PROC_BROWSER_TEST_P(FirstRunParameterizedInteractiveUiTest,
   ASSERT_TRUE(
       identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSignin));
 
+  auto& decline_button = WithUpdatedProfileCreationScreen()
+                             ? kDeclineManagementButton
+                             : kLegacyDeclineManagementButton;
   RunTestSequenceInContext(
       views::ElementTrackerViews::GetContextForView(view()),
       // Initially the loading screen is shown.
@@ -974,15 +984,14 @@ IN_PROC_BROWSER_TEST_P(FirstRunParameterizedInteractiveUiTest,
           AppendSyncConfirmationQueryParams(
               GURL(chrome::kChromeUISyncConfirmationURL)
                   .Resolve(chrome::kChromeUISyncConfirmationLoadingPath),
-              SyncConfirmationStyle::kWindow)),
+              SyncConfirmationStyle::kWindow, /*is_sync_promo=*/true)),
 
       // The FakeUserPolicySigninService resolves, indicating the the account
       // is managed and requiring to show the enterprise management opt-in.
       WaitForWebContentsNavigation(
           kWebContentsId, GURL(chrome::kChromeUIManagedUserProfileNoticeUrl)),
-
-      EnsurePresent(kWebContentsId, kDeclineManagementButton),
-      PressJsButton(kWebContentsId, kDeclineManagementButton),
+      EnsurePresent(kWebContentsId, decline_button),
+      PressJsButton(kWebContentsId, decline_button),
 
       If([&] { return WithSearchEngineChoiceStep(); },
          CompleteSearchEngineChoiceStep()),
@@ -996,8 +1005,7 @@ IN_PROC_BROWSER_TEST_P(FirstRunParameterizedInteractiveUiTest,
 
   EXPECT_FALSE(
       identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSignin));
-  EXPECT_FALSE(
-      chrome::enterprise_util::UserAcceptedAccountManagement(profile()));
+  EXPECT_FALSE(enterprise_util::UserAcceptedAccountManagement(profile()));
   EXPECT_EQ(u"Person 1", GetProfileName());
   EXPECT_TRUE(IsUsingDefaultProfileName());
 

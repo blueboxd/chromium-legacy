@@ -59,9 +59,11 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext,
   AudioContext(LocalDOMWindow&,
                const WebAudioLatencyHint&,
                std::optional<float> sample_rate,
-               WebAudioSinkDescriptor sink_descriptor);
+               WebAudioSinkDescriptor sink_descriptor,
+               bool update_echo_cancellation_on_first_start);
   ~AudioContext() override;
 
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(sinkchange, kSinkchange)
 
   void Trace(Visitor*) const override;
@@ -99,8 +101,6 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext,
   // notify their associated AudioContext when start() is called. It may resume
   // the AudioContext if it is now allowed to start.
   void NotifySourceNodeStart() final;
-
-  void set_was_audible_for_testing(bool value) { was_audible_ = value; }
 
   bool HandlePreRenderTasks(uint32_t frames_to_process,
                             const AudioIOPosition* output_position,
@@ -147,6 +147,10 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext,
 
   void OnRenderError();
 
+  // Methods for unit tests
+  void set_was_audible_for_testing(bool value) { was_audible_ = value; }
+  void invoke_onrendererror_from_platform_for_testing();
+
  protected:
   void Uninitialize() final;
 
@@ -155,6 +159,8 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext,
   friend class AudioContextAutoplayTest;
   friend class AudioContextTest;
   FRIEND_TEST_ALL_PREFIXES(AudioContextTest, MediaDevicesService);
+  FRIEND_TEST_ALL_PREFIXES(AudioContextTest,
+                           OnRenderErrorFromPlatformDestination);
 
   // Corresponds to
   // https://wicg.github.io/web_audio_playout/#audioplayoutstats-interface.
@@ -302,6 +308,8 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext,
   // Passes `audio_frame_stats_` to be absorbed by `receiver`.
   void TransferAudioFrameStatsTo(AudioFrameStats& receiver);
 
+  void HandleRenderError();
+
   unsigned context_id_;
   Member<ScriptPromiseResolver<IDLUndefined>> close_resolver_;
 
@@ -391,6 +399,14 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext,
   // `wasRunning` flag for `setSinkId()` state transition. See the
   // implementation of `NotifySetSinkIdBegins()` for details.
   bool sink_transition_flag_was_running_ = false;
+
+  // To keep the record of any render errors reported from the infra during
+  // the life cycle of the context.
+  bool render_error_occurred_ = false;
+
+  // If a sink ID is given via the constructor or `setSinkId()` method,
+  // this is set to `true`.
+  bool is_sink_id_given_ = false;
 };
 
 }  // namespace blink

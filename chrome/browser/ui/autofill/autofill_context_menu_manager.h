@@ -66,6 +66,10 @@ class AutofillContextMenuManager : public RenderViewContextMenuObserver {
   // available for the field.
   void MaybeAddAutofillFeedbackItem();
 
+  // Conditionally adds the item to trigger filling with prediction
+  // improvements.
+  void MaybeAddAutofillPredictionImprovementsItem();
+
   // Conditionally adds the address, payments and / or passwords Autofill manual
   // fallbacks to the context menu model depending on whether there's data to
   // suggest.
@@ -75,6 +79,9 @@ class AutofillContextMenuManager : public RenderViewContextMenuObserver {
   // currently focused field.
   bool ShouldAddPlusAddressManualFallbackItem(
       ContentAutofillDriver& autofill_driver);
+
+  // Returns if the item to trigger prediction improvements should be added.
+  bool ShouldAddPredictionImprovementsItem();
 
   // Checks if the manual fallback context menu entry can be shown for the
   // currently focused field.
@@ -87,30 +94,56 @@ class AutofillContextMenuManager : public RenderViewContextMenuObserver {
       password_manager::ContentPasswordManagerDriver& password_manager_driver);
 
   // Adds the passwords manual fallback context menu entries.
-  // If the user has passwords saved, display "Select password" (if the user
-  // is syncing) or "Passwords" (if the user is not syncing) option.
-  // The latter doesn't open a submenu, instead it behaves like the "Select
-  // password" entry.
-  // If the user doesn't have passwords saved, display "Import passwords".
-  // Additionally, a syncing user will have a "Suggest password" entry.
+  //
+  // Regardless of the state of the user, only one entry is displayed in the
+  // top-level context menu: "Passwords".
+  //
+  // If the user has passwords saved and cannot generate passwords, clicking on
+  // the "Passwords" entry behaves exactly like "Select password" (it will
+  // trigger password suggestions).
+  //
+  // In all the other cases, the "Passwords" entry doesn't do anything upon
+  // clicking, but hovering on it opens a sub-menu.
+  //
+  // In the sub-menu, if the user doesn't have passwords saved, the first entry
+  // is "No saved passwords". This entry is greyed out and doesn't do anything
+  // upon clicking. It is just informative. If the user has passwords saved,
+  // this entry is missing.
+  //
+  // The next entry in the sub-menu is either "Select password" (which triggers
+  // password suggestions) or "Import passwords" (which opens
+  // chrome://password-manager), depending on whether the user has passwords
+  // saved or not.
+  //
+  // If the user can also generate passwords for the current field, the final
+  // entry is "Suggest password...". Otherwise, this entry is missing.
   void AddPasswordsManualFallbackItems(
       password_manager::ContentPasswordManagerDriver& password_manager_driver);
 
-  // Emits metrics about showing the manual fallback context menu entries to the
-  // user.
-  // `address_option_shown` specifies whether address manual fallback was
-  // available, same for `payments_option_shown`.
-  void LogManualFallbackContextMenuEntryShown(
-      ContentAutofillDriver* autofill_driver,
-      bool address_option_shown,
-      bool payments_option_shown);
+  void LogAddressManualFallbackContextMenuEntryShown(
+      ContentAutofillDriver& autofill_driver);
 
-  // Emits metrics about accepting the manual fallback context menu entries
-  // shown to the user. `filling_product` defines which manual fallback option
-  // was accepted.
-  void LogManualFallbackContextMenuEntryAccepted(
-      AutofillDriver& autofill_driver,
-      const FillingProduct filling_product);
+  void LogPaymentsManualFallbackContextMenuEntryShown(
+      ContentAutofillDriver& autofill_driver);
+
+  // Out of all password entries, this method is only interested in the "select
+  // password" entry, because the rest of them don't trigger suggestions and are
+  // recorded by default separately (outside `AutofillContextMenuManager`).
+  void LogSelectPasswordManualFallbackContextMenuEntryShown(
+      password_manager::ContentPasswordManagerDriver& password_manager_drivern);
+
+  void LogAddressManualFallbackContextMenuEntryAccepted(
+      AutofillDriver& autofill_driver);
+
+  void LogPaymentsManualFallbackContextMenuEntryAccepted(
+      AutofillDriver& autofill_driver);
+
+  void LogSelectPasswordManualFallbackContextMenuEntryAccepted();
+
+  // Triggers the filling with prediction improvements flow.
+  void ExecutePredictionImprovementsCommand(
+      const LocalFrameToken& frame_token,
+      ContentAutofillDriver& autofill_driver);
 
   // Triggers the feedback flow for Autofill command.
   void ExecuteAutofillFeedbackCommand(const LocalFrameToken& frame_token,
@@ -126,18 +159,16 @@ class AutofillContextMenuManager : public RenderViewContextMenuObserver {
 
   // Triggers passwords suggestions on the field that the context menu was
   // opened on.
-  void ExecuteFallbackForPasswordsCommand(AutofillDriver& driver);
+  void ExecuteFallbackForSelectPasswordCommand(AutofillDriver& driver);
 
   // Triggers Autofill address suggestions on the field that the context menu
   // was opened on.
   void ExecuteFallbackForAddressesCommand(
       ContentAutofillDriver& autofill_driver);
 
-  // Gets the `AutofillField` described by the `params_` from the `manager`.
-  // The `frame_token` is used to map from the `params_` renderer id to a global
-  // id.
-  AutofillField* GetAutofillField(AutofillManager& manager,
-                                  const LocalFrameToken& frame_token) const;
+  // Gets the `AutofillField` described by the `params_` from the
+  // `autofill_driver`'s manager.
+  AutofillField* GetAutofillField(AutofillDriver& autofill_driver) const;
 
   // Dangling on linux-lacros-rel in:
   // AutofillContextMenuManagerFeedbackUILacrosBrowserTest

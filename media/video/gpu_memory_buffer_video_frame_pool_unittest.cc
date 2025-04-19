@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include <stdint.h>
 #include <memory>
 
@@ -771,7 +776,7 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareP010Frame) {
   RunUntilIdle();
 
   EXPECT_NE(software_frame.get(), frame.get());
-  EXPECT_EQ(PIXEL_FORMAT_P016LE, frame->format());
+  EXPECT_EQ(PIXEL_FORMAT_P010LE, frame->format());
   EXPECT_EQ(1u, frame->NumTextures());
   EXPECT_EQ(1u, sii_->shared_image_count());
   EXPECT_TRUE(frame->metadata().read_lock_fences_enabled);
@@ -809,7 +814,7 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest,
   if (gfx::IsOddWidthMultiPlanarBuffersAllowed() &&
       gfx::IsOddHeightMultiPlanarBuffersAllowed()) {
     EXPECT_NE(software_frame.get(), frame.get());
-    EXPECT_EQ(PIXEL_FORMAT_P016LE, frame->format());
+    EXPECT_EQ(PIXEL_FORMAT_P010LE, frame->format());
     EXPECT_EQ(1u, frame->NumTextures());
     EXPECT_EQ(1u, sii_->shared_image_count());
     EXPECT_TRUE(frame->metadata().read_lock_fences_enabled);

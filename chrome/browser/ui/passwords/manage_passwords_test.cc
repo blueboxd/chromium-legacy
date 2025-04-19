@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/autofill/core/common/form_data_test_api.h"
 #include "components/password_manager/core/browser/form_saver.h"
 #include "components/password_manager/core/browser/form_saver_impl.h"
 #include "components/password_manager/core/browser/mock_password_form_manager_for_ui.h"
@@ -116,7 +117,7 @@ void ManagePasswordsTest::SetupManagingPasswords(
                                 "/somelongeroriginurl.com";
   federated_form.url = embedded_test_server()->GetURL("/empty.html");
   federated_form.federation_origin =
-      url::Origin::Create(GURL("https://somelongeroriginurl.com/"));
+      url::SchemeHostPort(GURL("https://somelongeroriginurl.com/"));
   federated_form.username_value = u"test_federation_username";
   federated_form.match_type = password_manager::PasswordForm::MatchType::kExact;
   // Overrides url to a defined value to avoid flakiness in pixel tests.
@@ -198,8 +199,7 @@ void ManagePasswordsTest::SetupMovingPasswords() {
   ON_CALL(*form_manager, GetPendingCredentials)
       .WillByDefault(ReturnRef(*test_form()));
   ON_CALL(*form_manager, GetFederatedMatches)
-      .WillByDefault(
-          Return(std::vector<const password_manager::PasswordForm>{}));
+      .WillByDefault(Return(std::vector<password_manager::PasswordForm>{}));
   ON_CALL(*form_manager, GetURL).WillByDefault(ReturnRef(test_form()->url));
   GetController()->OnShowMoveToAccountBubble(std::move(form_manager));
   // Clearing the mock here ensures that |GetBestMatches| won't be called with a
@@ -209,41 +209,25 @@ void ManagePasswordsTest::SetupMovingPasswords() {
 
 void ManagePasswordsTest::ConfigurePasswordSync(
     SyncConfiguration configuration) {
-  // Some tests (such as move password to account) require a signed in users.
-  // Make sure there is always one.
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(browser()->profile());
-  AccountInfo info = signin::MakePrimaryAccountAvailable(
-      identity_manager, "test@email.com",
-      configuration == SyncConfiguration::kSyncing
-          ? signin::ConsentLevel::kSync
-          : signin::ConsentLevel::kSignin);
-
   syncer::TestSyncService* sync_service = static_cast<syncer::TestSyncService*>(
       SyncServiceFactory::GetForProfile(browser()->profile()));
-  sync_service->SetAccountInfo(info);
-  sync_service->SetTransportState(syncer::SyncService::TransportState::ACTIVE);
-
   switch (configuration) {
-    case SyncConfiguration::kNotSyncing:
-      sync_service->SetHasSyncConsent(false);
-      sync_service->GetUserSettings()->SetSelectedTypes(
-          /*sync_everything=*/false,
-          /*types=*/syncer::UserSelectableTypeSet());
+    case SyncConfiguration::kNotSyncing: {
+      sync_service->SetSignedOut();
       break;
-    case SyncConfiguration::kSyncing:
-      sync_service->SetHasSyncConsent(true);
-      sync_service->GetUserSettings()->SetSelectedTypes(
-          /*sync_everything=*/false,
-          /*types=*/{syncer::UserSelectableType::kPasswords});
-      break;
+    }
     case SyncConfiguration::kAccountStorageOnly:
-      sync_service->SetLocalSyncEnabled(false);
-      sync_service->SetHasSyncConsent(false);
-
-      sync_service->GetUserSettings()->SetSelectedTypes(
-          /* sync_everything = */ true, {});
+    case SyncConfiguration::kSyncing: {
+      auto consent_level = configuration == SyncConfiguration::kSyncing
+                               ? signin::ConsentLevel::kSync
+                               : signin::ConsentLevel::kSignin;
+      AccountInfo info = signin::MakePrimaryAccountAvailable(
+          identity_manager, "test@email.com", consent_level);
+      sync_service->SetSignedIn(consent_level, info);
       break;
+    }
   }
 }
 
@@ -266,9 +250,9 @@ std::unique_ptr<PasswordFormManager> ManagePasswordsTest::CreateFormManager(
   observed_form.set_url(password_form_.url);
   autofill::FormFieldData field;
   field.set_form_control_type(autofill::FormControlType::kInputText);
-  observed_form.fields.push_back(field);
+  test_api(observed_form).Append(field);
   field.set_form_control_type(autofill::FormControlType::kInputPassword);
-  observed_form.fields.push_back(field);
+  test_api(observed_form).Append(field);
 
   std::unique_ptr<password_manager::FormSaver> form_saver;
   if (profile_store) {
@@ -298,7 +282,7 @@ std::unique_ptr<PasswordFormManager> ManagePasswordsTest::CreateFormManager(
   fetcher_.NotifyFetchCompleted();
 
   autofill::FormData submitted_form = observed_form;
-  submitted_form.fields[1].set_value(u"new_password");
+  test_api(submitted_form).field(1).set_value(u"new_password");
   form_manager->ProvisionallySave(
       submitted_form, &driver_,
       base::LRUCache<PossibleUsernameFieldIdentifier, PossibleUsernameData>(

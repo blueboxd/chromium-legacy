@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "gpu/command_buffer/service/buffer_manager.h"
 
 #include <stdint.h>
@@ -10,6 +15,7 @@
 #include <memory>
 
 #include "base/check_op.h"
+#include "base/containers/heap_array.h"
 #include "base/format_macros.h"
 #include "base/notreached.h"
 #include "base/numerics/checked_math.h"
@@ -23,7 +29,6 @@
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/transform_feedback_manager.h"
 #include "ui/gl/gl_bindings.h"
-#include "ui/gl/gl_version_info.h"
 #include "ui/gl/trace_util.h"
 
 namespace gpu {
@@ -402,14 +407,10 @@ bool BufferManager::UseNonZeroSizeForClientSideArrayBuffer() {
 
 bool BufferManager::UseShadowBuffer(GLenum target, GLenum usage) {
   const bool is_client_side_array = IsUsageClientSideArray(usage);
-  // feature_info_ can be null in some unit tests.
-  const bool support_fixed_attribs =
-      !feature_info_ || feature_info_->gl_version_info().SupportsFixedType();
 
   // TODO(zmo): Don't shadow buffer data on ES3. crbug.com/491002.
-  return (
-      target == GL_ELEMENT_ARRAY_BUFFER || allow_buffers_on_multiple_targets_ ||
-      (allow_fixed_attribs_ && !support_fixed_attribs) || is_client_side_array);
+  return (target == GL_ELEMENT_ARRAY_BUFFER ||
+          allow_buffers_on_multiple_targets_ || is_client_side_array);
 }
 
 void BufferManager::SetInfo(Buffer* buffer,
@@ -494,9 +495,8 @@ void BufferManager::DoBufferData(
     if (data || !size) {
       glBufferData(target, size, data, usage);
     } else {
-      std::unique_ptr<char[]> zero(new char[size]);
-      memset(zero.get(), 0, size);
-      glBufferData(target, size, zero.get(), usage);
+      auto zero = base::HeapArray<char>::WithSize(size);
+      glBufferData(target, size, zero.data(), usage);
     }
   }
   GLenum error = ERRORSTATE_PEEK_GL_ERROR(error_state, "glBufferData");

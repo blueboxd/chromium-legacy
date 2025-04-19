@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/check_op.h"
+#include "base/containers/flat_map.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
 #include "base/functional/callback_helpers.h"
@@ -219,7 +220,7 @@ TEST_F(CpuHealthTrackerTest, RecordCpuAndUpdateHealthStatus) {
   std::unique_ptr<CpuHealthTracker> health_tracker =
       std::make_unique<CpuHealthTracker>(base::DoNothing(), base::DoNothing());
 
-  EXPECT_EQ(health_tracker->GetHealthLevelForTesting(),
+  EXPECT_EQ(health_tracker->GetCurrentHealthLevel(),
             CpuHealthTracker::HealthLevel::kHealthy);
 
   // Simulate continuously receiving system cpu
@@ -228,7 +229,7 @@ TEST_F(CpuHealthTrackerTest, RecordCpuAndUpdateHealthStatus) {
   for (int i = 0; i < kNumHealthStatusForChange - 1; i++) {
     health_tracker->RecordAndUpdateHealthStatus(
         kUnhealthySystemCpuUsagePercentage);
-    EXPECT_EQ(health_tracker->GetHealthLevelForTesting(),
+    EXPECT_EQ(health_tracker->GetCurrentHealthLevel(),
               CpuHealthTracker::HealthLevel::kHealthy);
   }
 
@@ -236,13 +237,13 @@ TEST_F(CpuHealthTrackerTest, RecordCpuAndUpdateHealthStatus) {
   // unhealthy
   health_tracker->RecordAndUpdateHealthStatus(
       kUnhealthySystemCpuUsagePercentage);
-  EXPECT_EQ(health_tracker->GetHealthLevelForTesting(),
+  EXPECT_EQ(health_tracker->GetCurrentHealthLevel(),
             CpuHealthTracker::HealthLevel::kUnhealthy);
 
   // simulate medium but doesn't meet continuous requirement
   health_tracker->RecordAndUpdateHealthStatus(
       kDegradedSystemCpuUsagePercentage);
-  EXPECT_EQ(health_tracker->GetHealthLevelForTesting(),
+  EXPECT_EQ(health_tracker->GetCurrentHealthLevel(),
             CpuHealthTracker::HealthLevel::kDegraded);
 
   // Status should stay as medium even when receiving unhealthy cpu usage
@@ -251,7 +252,7 @@ TEST_F(CpuHealthTrackerTest, RecordCpuAndUpdateHealthStatus) {
   for (int i = 0; i < kNumHealthStatusForChange - 1; i++) {
     health_tracker->RecordAndUpdateHealthStatus(
         kUnhealthySystemCpuUsagePercentage);
-    EXPECT_EQ(health_tracker->GetHealthLevelForTesting(),
+    EXPECT_EQ(health_tracker->GetCurrentHealthLevel(),
               CpuHealthTracker::HealthLevel::kDegraded);
   }
 
@@ -259,23 +260,23 @@ TEST_F(CpuHealthTrackerTest, RecordCpuAndUpdateHealthStatus) {
   // while now
   health_tracker->RecordAndUpdateHealthStatus(
       kUnhealthySystemCpuUsagePercentage);
-  EXPECT_EQ(health_tracker->GetHealthLevelForTesting(),
+  EXPECT_EQ(health_tracker->GetCurrentHealthLevel(),
             CpuHealthTracker::HealthLevel::kUnhealthy);
 
   // Health status stays as medium when oscillating between medium and unhealthy
   health_tracker->RecordAndUpdateHealthStatus(
       kDegradedSystemCpuUsagePercentage);
-  EXPECT_EQ(health_tracker->GetHealthLevelForTesting(),
+  EXPECT_EQ(health_tracker->GetCurrentHealthLevel(),
             CpuHealthTracker::HealthLevel::kDegraded);
 
   health_tracker->RecordAndUpdateHealthStatus(
       kUnhealthySystemCpuUsagePercentage);
-  EXPECT_EQ(health_tracker->GetHealthLevelForTesting(),
+  EXPECT_EQ(health_tracker->GetCurrentHealthLevel(),
             CpuHealthTracker::HealthLevel::kDegraded);
 
   health_tracker->RecordAndUpdateHealthStatus(
       kDegradedSystemCpuUsagePercentage);
-  EXPECT_EQ(health_tracker->GetHealthLevelForTesting(),
+  EXPECT_EQ(health_tracker->GetCurrentHealthLevel(),
             CpuHealthTracker::HealthLevel::kDegraded);
 }
 
@@ -378,9 +379,10 @@ class CpuHealthTrackerBrowserTest : public BrowserWithTestWindowTest,
 
   // Adds a tab at index 0 that is in the background. The current active tab
   // will be the tab at the highest index.
-  resource_attribution::PageContext AddBackgroundTab(std::string url) {
-    AddTab(browser(), GURL(url));
-    TabStripModel* const tab_strip_model = browser()->tab_strip_model();
+  resource_attribution::PageContext AddBackgroundTab(std::string url,
+                                                     Browser* browser) {
+    AddTab(browser, GURL(url));
+    TabStripModel* const tab_strip_model = browser->tab_strip_model();
     const int num_tabs = tab_strip_model->count();
     CHECK_GT(num_tabs, 0);
     // Activate tab at doesn't hide the newly added tab so we manually hide the
@@ -440,7 +442,7 @@ class CpuHealthTrackerBrowserTest : public BrowserWithTestWindowTest,
 
 TEST_F(CpuHealthTrackerBrowserTest, HealthStatusUpdates) {
   resource_attribution::PageContext first_page_context =
-      AddBackgroundTab("http://b.com");
+      AddBackgroundTab("http://b.com", browser());
   StartFirstCpuInterval();
 
   StatusWaiter observer;
@@ -470,52 +472,50 @@ TEST_F(CpuHealthTrackerBrowserTest, HealthStatusUpdates) {
 }
 
 TEST_F(CpuHealthTrackerBrowserTest, PagesMeetMinimumCpuUsage) {
-  std::map<resource_attribution::ResourceContext, double> page_contexts_cpu;
+  base::flat_map<resource_attribution::PageContext,
+                 CpuHealthTracker::CpuPercent>
+      page_contexts_cpu;
 
-  const CpuHealthTracker::CpuPercent minimum_percent_cpu_usage{
-      performance_manager::features::kMinimumActionableTabCPUPercentage.Get()};
-  const double minimum_decimal_cpu_usage =
-      minimum_percent_cpu_usage.value() / 100.0;
-
-  // Generate a map of page contexts and decimal CPU usage where half the page
-  // contexts are below the minimum cpu usage for a tab to be actionable, and
-  // half above it
-  for (int i = 0; i < 10; i++) {
+  // Populate a map of page contexts with CPU usage below the minimum required
+  // to be considered as actionable.
+  for (int i = 0; i < 3; i++) {
     resource_attribution::PageContext page_context =
-        AddBackgroundTab("http://b.com");
-    const double cpu_usage = (i % 2 == 0) ? minimum_decimal_cpu_usage - 0.01
-                                          : minimum_decimal_cpu_usage;
-    page_contexts_cpu[page_context] =
-        cpu_usage * base::SysInfo::NumberOfProcessors();
+        AddBackgroundTab("http://b.com", browser());
+    page_contexts_cpu.insert(
+        {page_context,
+         CpuHealthTracker::CpuPercent(
+             performance_manager::features::kMinimumActionableTabCPUPercentage
+                 .Get() -
+             1)});
   }
 
   PerformanceManager::CallOnGraph(
       FROM_HERE,
       base::BindOnce(
-          [](std::map<resource_attribution::ResourceContext, double>
-                 page_contexts_cpu,
-             CpuHealthTracker::CpuPercent minimum_percent_cpu_usage,
+          [](base::flat_map<resource_attribution::PageContext,
+                            CpuHealthTracker::CpuPercent> page_contexts_cpu,
              Graph* graph) {
-            const CpuHealthTracker::PageResourceMeasurements
-                filtered_measurements =
-                    CpuHealthTracker::GetFromGraph(graph)
-                        ->FilterForPossibleActionablePages(page_contexts_cpu);
-            EXPECT_EQ(filtered_measurements.size(),
-                      (page_contexts_cpu.size() / 2));
-
-            for (const auto& [context, cpu_percentage] :
-                 filtered_measurements) {
-              EXPECT_EQ(cpu_percentage, minimum_percent_cpu_usage);
-            }
+            CpuHealthTracker::GetFromGraph(graph)->GetFilteredActionableTabs(
+                page_contexts_cpu,
+                CpuHealthTracker::CpuPercent(
+                    performance_manager::features::
+                        kCPUDegradedHealthPercentageThreshold.Get()),
+                base::BindOnce(
+                    [](CpuHealthTracker::ActionableTabsResult result) {
+                      // The actionable tab list should be empty because each
+                      // page's CPU usage is below the minimum needed to  be
+                      // considered as actionable.
+                      EXPECT_TRUE(result.empty());
+                    }));
           },
-          std::move(page_contexts_cpu), minimum_percent_cpu_usage));
+          std::move(page_contexts_cpu)));
 }
 
 // The PerformanceDetectionManager should properly notify observers
 // when a tab is actionable.
 TEST_F(CpuHealthTrackerBrowserTest, UpdateActionableTabs) {
   resource_attribution::PageContext first_page_context =
-      AddBackgroundTab("http://b.com");
+      AddBackgroundTab("http://b.com", browser());
   StartFirstCpuInterval();
   SetHealthLevel(PerformanceDetectionManager::HealthLevel::kDegraded);
 
@@ -545,9 +545,9 @@ TEST_F(CpuHealthTrackerBrowserTest, UpdateActionableTabs) {
 // higher CPU usage is sent to observers
 TEST_F(CpuHealthTrackerBrowserTest, HigherCPUTabIsActionable) {
   resource_attribution::PageContext first_page_context =
-      AddBackgroundTab("http://b.com");
+      AddBackgroundTab("http://b.com", browser());
   resource_attribution::PageContext second_page_context =
-      AddBackgroundTab("http://c.com");
+      AddBackgroundTab("http://c.com", browser());
   StartFirstCpuInterval();
   SetHealthLevel(PerformanceDetectionManager::HealthLevel::kDegraded);
 
@@ -579,7 +579,7 @@ TEST_F(CpuHealthTrackerBrowserTest, HigherCPUTabIsActionable) {
 // actionable.
 TEST_F(CpuHealthTrackerBrowserTest, NotifyWhenNoTabsAreActionable) {
   resource_attribution::PageContext first_page_context =
-      AddBackgroundTab("http://b.com");
+      AddBackgroundTab("http://b.com", browser());
   StartFirstCpuInterval();
   SetHealthLevel(PerformanceDetectionManager::HealthLevel::kUnhealthy);
 
@@ -619,9 +619,9 @@ TEST_F(CpuHealthTrackerBrowserTest, NotifyWhenNoTabsAreActionable) {
 
 TEST_F(CpuHealthTrackerBrowserTest, NeedMultipleTabsToBeActionable) {
   resource_attribution::PageContext first_page_context =
-      AddBackgroundTab("http://b.com");
+      AddBackgroundTab("http://b.com", browser());
   resource_attribution::PageContext second_page_context =
-      AddBackgroundTab("http://c.com");
+      AddBackgroundTab("http://c.com", browser());
   StartFirstCpuInterval();
   SetHealthLevel(PerformanceDetectionManager::HealthLevel::kUnhealthy);
 
@@ -658,9 +658,9 @@ TEST_F(CpuHealthTrackerBrowserTest, NeedMultipleTabsToBeActionable) {
 // Tabs on the discard exceptions list should not be actionable
 TEST_F(CpuHealthTrackerBrowserTest, ActionableTabsRespectExceptionsList) {
   resource_attribution::PageContext first_page_context =
-      AddBackgroundTab("http://b.com");
+      AddBackgroundTab("http://b.com", browser());
   resource_attribution::PageContext second_page_context =
-      AddBackgroundTab("http://c.com");
+      AddBackgroundTab("http://c.com", browser());
   StartFirstCpuInterval();
   SetHealthLevel(PerformanceDetectionManager::HealthLevel::kUnhealthy);
 
@@ -691,6 +691,57 @@ TEST_F(CpuHealthTrackerBrowserTest, ActionableTabsRespectExceptionsList) {
   EXPECT_EQ(actionable_tabs.size(), 1u);
   EXPECT_EQ(actionable_tabs.front(), first_page_context);
   manager()->RemoveActionableTabsObserver(&observer);
+}
+
+TEST_F(CpuHealthTrackerBrowserTest, ActionableTabsIgnoreIncognitoTabs) {
+  Profile* const default_profile = profile();
+  Profile* const incognito_profile =
+      default_profile->GetPrimaryOTRProfile(true);
+  auto browser_window = CreateBrowserWindow();
+  auto incognito_browser = CreateBrowser(
+      incognito_profile, Browser::TYPE_NORMAL, false, browser_window.get());
+  AddTab(incognito_browser.get(), GURL("http://a.com"));
+
+  // This is usually called when the profile is created. Fake it here since it
+  // doesn't happen in tests.
+  RunInGraph([&](Graph* graph) {
+    policies::PageDiscardingHelper::GetFromGraph(graph)
+        ->SetNoDiscardPatternsForProfile(incognito_profile->UniqueId(), {});
+  });
+
+  resource_attribution::PageContext default_page_context =
+      AddBackgroundTab("http://b.com", browser());
+  resource_attribution::PageContext incognito_page_context =
+      AddBackgroundTab("http://c.com", incognito_browser.get());
+  StartFirstCpuInterval();
+  SetHealthLevel(PerformanceDetectionManager::HealthLevel::kUnhealthy);
+
+  task_environment()->FastForwardBy(base::Seconds(60));
+  resource_attribution::QueryResultMap result_map;
+  result_map[default_page_context] = {
+      .cpu_time_result = CreateFakeCpuResult(
+          base::Seconds(20 * base::SysInfo::NumberOfProcessors()))};
+  result_map[incognito_page_context] = {
+      .cpu_time_result = CreateFakeCpuResult(
+          base::Seconds(30 * base::SysInfo::NumberOfProcessors()))};
+
+  ActionabilityWaiter observer;
+  manager()->AddActionableTabsObserver(
+      {PerformanceDetectionManager::ResourceType::kCpu}, &observer);
+  ProcessQueryResultMap(kUnhealthySystemCpuUsagePercentage, result_map);
+  observer.Wait();
+
+  std::vector<resource_attribution::PageContext> actionable_tabs =
+      observer.actionable_tabs().value();
+
+  // Even though the incognito page is hidden and using more CPU, it should not
+  // be included in the actionable tab list because it is an incognito tab.
+  EXPECT_EQ(actionable_tabs.size(), 1u);
+  EXPECT_EQ(actionable_tabs.front(), default_page_context);
+  manager()->RemoveActionableTabsObserver(&observer);
+
+  incognito_browser->tab_strip_model()->CloseAllTabs();
+  incognito_browser.reset();
 }
 
 }  // namespace performance_manager::user_tuning

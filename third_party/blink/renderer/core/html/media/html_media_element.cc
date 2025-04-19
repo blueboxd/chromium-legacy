@@ -28,12 +28,14 @@
 
 #include <algorithm>
 #include <limits>
+#include <utility>
 
 #include "base/auto_reset.h"
 #include "base/debug/crash_logging.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/not_fatal_until.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "cc/layers/layer.h"
@@ -215,7 +217,7 @@ void RemoveElementFromDocumentMap(HTMLMediaElement* element,
                                   Document* document) {
   DocumentElementSetMap& map = DocumentToElementSetMap();
   auto it = map.find(document);
-  DCHECK(it != map.end());
+  CHECK(it != map.end(), base::NotFatalUntil::M130);
   WeakMediaElementSet* set = it->value;
   set->erase(element);
   if (set->empty())
@@ -607,7 +609,14 @@ void HTMLMediaElement::DidMoveToNewDocument(Document& old_document) {
       DCHECK(!opener_document_);
       // Only set this when we're going from "original opener" to "elsewhere",
       // in case we're moved from one same-origin window to another.
+      //
+      // This assumes that the first move is from the opener to the pip window.
+      // If `ShouldReusePlayer()` lets the first move be in the other direction,
+      // then we'll get this wrong.  Somebody would have to set
+      // `opener_document_` correctly before we get here, so we'd end up in the
+      // case above, instead.  They'd also have to create the context observer.
       opener_document_ = old_document;
+      CHECK(!opener_document_->domWindow()->IsPictureInPictureWindow());
       opener_context_observer_ =
           MakeGarbageCollected<OpenerContextObserver>(this);
     }
@@ -652,12 +661,34 @@ bool HTMLMediaElement::ShouldReusePlayer(Document& old_document,
     return false;
   }
 
-  // Reuse player if the two documents have opener-pip relationship (for either
-  // direction).
-  return (new_document.domWindow()->IsPictureInPictureWindow() &&
-          new_document.GetFrame()->Opener() == old_document.GetFrame()) ||
-         (old_document.domWindow()->IsPictureInPictureWindow() &&
-          old_document.GetFrame()->Opener() == new_document.GetFrame());
+  // If we're moving from the opener to pip window, then the player is already
+  // connected to the opener and should stay connected to prevent jank.
+  if (new_document.domWindow()->IsPictureInPictureWindow() &&
+      new_document.GetFrame()->Opener() == old_document.GetFrame()) {
+    return true;
+  }
+
+  // If we're moving from the pip window to the opener, then we should only
+  // reuse the player if it's already associated with the opener.  In practice,
+  // this means that `opener_document_` has been set, since
+  // `LocalFrameForOpener()` uses that to decide which frame owns the player.
+  //
+  // Since we don't currently check if the original document is a pip window in
+  // the ctor, that means that creating a video element in the pip window will
+  // not be jankless when moved to the opener the first time.  Once it's in the
+  // opener (either by being moved there or being created there), moves in both
+  // directions will be jankless.
+  //
+  // It could be made jankless in both directions if we noticed (e.g., in the
+  // ctor) that we're being created in a pip document, and set
+  // `opener_document_` correctly and create the context observer for it.
+  //
+  // This logic works whether or not we make the ctor smarter about pip.
+  // However, it can be simiplified to skip the `opener_document_` check if
+  // we're guaranteed that it's always set properly.
+  return (old_document.domWindow()->IsPictureInPictureWindow() &&
+          old_document.GetFrame()->Opener() == new_document.GetFrame()) &&
+         opener_document_ == &new_document;
 }
 
 void HTMLMediaElement::AttachToNewFrame() {
@@ -1440,29 +1471,31 @@ LocalFrame* HTMLMediaElement::LocalFrameForPlayer() {
                           : GetDocument().GetFrame();
 }
 
-bool HTMLMediaElement::IsValidInvokeAction(HTMLElement& invoker,
-                                           InvokeAction action) {
+bool HTMLMediaElement::IsValidCommand(HTMLElement& invoker,
+                                      CommandEventType command) {
   if (!RuntimeEnabledFeatures::HTMLInvokeActionsV2Enabled()) {
-    return HTMLElement::IsValidInvokeAction(invoker, action);
+    return HTMLElement::IsValidCommand(invoker, command);
   }
 
-  return HTMLElement::IsValidInvokeAction(invoker, action) ||
-         action == InvokeAction::kPlaypause || action == InvokeAction::kPause ||
-         action == InvokeAction::kPlay || action == InvokeAction::kToggleMuted;
+  return HTMLElement::IsValidCommand(invoker, command) ||
+         command == CommandEventType::kPlaypause ||
+         command == CommandEventType::kPause ||
+         command == CommandEventType::kPlay ||
+         command == CommandEventType::kToggleMuted;
 }
 
-bool HTMLMediaElement::HandleInvokeInternal(HTMLElement& invoker,
-                                            InvokeAction action) {
-  CHECK(IsValidInvokeAction(invoker, action));
+bool HTMLMediaElement::HandleCommandInternal(HTMLElement& invoker,
+                                             CommandEventType command) {
+  CHECK(IsValidCommand(invoker, command));
 
-  if (HTMLElement::HandleInvokeInternal(invoker, action)) {
+  if (HTMLElement::HandleCommandInternal(invoker, command)) {
     return true;
   }
 
   Document& document = GetDocument();
   LocalFrame* frame = document.GetFrame();
 
-  if (action == InvokeAction::kPlaypause) {
+  if (command == CommandEventType::kPlaypause) {
     if (paused_) {
       if (LocalFrame::HasTransientUserActivation(frame)) {
         Play();
@@ -1478,12 +1511,12 @@ bool HTMLMediaElement::HandleInvokeInternal(HTMLElement& invoker,
       pause();
       return true;
     }
-  } else if (action == InvokeAction::kPause) {
+  } else if (command == CommandEventType::kPause) {
     if (!paused_) {
       pause();
     }
     return true;
-  } else if (action == InvokeAction::kPlay) {
+  } else if (command == CommandEventType::kPlay) {
     if (paused_) {
       if (LocalFrame::HasTransientUserActivation(frame)) {
         Play();
@@ -1496,7 +1529,7 @@ bool HTMLMediaElement::HandleInvokeInternal(HTMLElement& invoker,
       }
     }
     return true;
-  } else if (action == InvokeAction::kToggleMuted) {
+  } else if (command == CommandEventType::kToggleMuted) {
     // No user activation check as `setMuted` already handles the autoplay
     // policy check.
     setMuted(!muted_);
@@ -4384,10 +4417,11 @@ void HTMLMediaElement::SetCcLayer(cc::Layer* cc_layer) {
   cc_layer_ = cc_layer;
 }
 
-void HTMLMediaElement::MediaSourceOpened(WebMediaSource* web_media_source) {
+void HTMLMediaElement::MediaSourceOpened(
+    std::unique_ptr<WebMediaSource> web_media_source) {
   SetShouldDelayLoadEvent(false);
   media_source_attachment_->CompleteAttachingToMediaElement(
-      media_source_tracer_, base::WrapUnique(web_media_source));
+      media_source_tracer_, std::move(web_media_source));
 }
 
 bool HTMLMediaElement::IsInteractiveContent() const {

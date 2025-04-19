@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/public/common/origin_trials/trial_token.h"
 
 #include <memory>
@@ -149,9 +154,9 @@ OriginTrialTokenStatus TrialToken::Extract(
 
   // Extract the length of the signed data (Big-endian).
   uint32_t payload_length =
-      base::numerics::U32FromBigEndian(base::as_byte_span(token_contents)
-                                           .subspan(kPayloadLengthOffset)
-                                           .first<4>());
+      base::U32FromBigEndian(base::as_byte_span(token_contents)
+                                 .subspan(kPayloadLengthOffset)
+                                 .first<4>());
 
   // Validate that the stated length matches the actual payload length.
   if (payload_length != token_contents.length() - kPayloadOffset) {

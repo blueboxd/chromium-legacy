@@ -6,13 +6,9 @@
 
 #import "base/metrics/field_trial_params.h"
 
-BASE_FEATURE(kLensCircleToSearchEnabled,
-             "LensCircleToSearchEnabled",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kLensWebPageEarlyTransitionEnabled,
              "LensWebPageEarlyTransitionEnabled",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 const char kLoadingProgressThreshold[] = "LoadingProgressThreshold";
 
@@ -20,3 +16,29 @@ double LensWebPageEarlyTransitionLoadingProgressThreshold() {
   return base::GetFieldTrialParamByFeatureAsDouble(
       kLensWebPageEarlyTransitionEnabled, kLoadingProgressThreshold, 0.5);
 }
+
+BASE_FEATURE(kLensFiltersAblationModeEnabled,
+             "LensFiltersAblationModeEnabled",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+const char kLensFiltersAblationMode[] = "LensFilterAblationMode";
+
+int LensFiltersAblationMode() {
+  return base::GetFieldTrialParamByFeatureAsInt(kLensFiltersAblationModeEnabled,
+                                                kLensFiltersAblationMode, 0);
+}
+
+BASE_FEATURE(kLensTranslateToggleModeEnabled,
+             "LensTranslateToggleModeEnabled",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+const char kLensTranslateToggleMode[] = "LensTranslateToggleMode";
+
+int LensTranslateToggleMode() {
+  return base::GetFieldTrialParamByFeatureAsInt(kLensTranslateToggleModeEnabled,
+                                                kLensTranslateToggleMode, 0);
+}
+
+BASE_FEATURE(kLensWebPageLoadOptimizationEnabled,
+             "LensWebPageLoadOptimizationEnabled",
+             base::FEATURE_DISABLED_BY_DEFAULT);

@@ -8,7 +8,7 @@
 
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
-#include "partition_alloc/partition_alloc_buildflags.h"
+#include "partition_alloc/buildflags.h"
 #include "partition_alloc/shim/allocator_shim_default_dispatch_to_partition_alloc.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
@@ -30,7 +30,16 @@ class ExtremeLightweightDetectorMallocShimsTest
     : public base::MultiProcessTest {
  public:
   static void MultiprocessTestSetup() {
-    allocator_shim::ConfigurePartitionsForTesting();
+    allocator_shim::ConfigurePartitions(
+        allocator_shim::EnableBrp(true),
+        allocator_shim::EnableMemoryTagging(false),
+        partition_alloc::TagViolationReportingMode::kDisabled,
+        allocator_shim::BucketDistribution::kNeutral,
+        allocator_shim::SchedulerLoopQuarantine(false),
+        /*scheduler_loop_quarantine_capacity_in_bytes=*/0,
+        allocator_shim::ZappingByFreeFlags(false),
+        allocator_shim::UsePoolOffsetFreelists(true),
+        allocator_shim::UseSmallSingleSlotSpans(true));
     InstallExtremeLightweightDetectorHooks(
         {.sampling_frequency = kSamplingFrequency,
          .quarantine_capacity_in_bytes = kQuarantineCapacityInBytes});

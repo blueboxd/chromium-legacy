@@ -30,6 +30,7 @@
 #include "ui/base/models/dialog_model.h"
 #include "ui/base/models/dialog_model_field.h"
 #include "ui/base/models/image_model.h"
+#include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/color/color_id.h"
 #include "ui/compositor/layer.h"
@@ -39,6 +40,7 @@
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/bubble/bubble_dialog_model_host.h"
@@ -200,12 +202,12 @@ class InstallerDialogView : public views::BoxLayoutView {
     SetInsideBorderInsets(views::LayoutProvider::Get()->GetInsetsMetric(
         views::InsetsMetric::INSETS_DIALOG));
     SetCollapseMarginsSpacing(true);
-    SetAccessibleRole(ax::mojom::Role::kMain);
+    GetViewAccessibility().SetRole(ax::mojom::Role::kMain);
 
     auto* header = AddChildView(std::make_unique<views::BoxLayoutView>());
     header->SetOrientation(views::BoxLayout::Orientation::kVertical);
     header->SetDefaultFlex(0);
-    header->SetAccessibleRole(
+    header->GetViewAccessibility().SetRole(
         ax::mojom::Role::kRegion,
         l10n_util::GetStringUTF16(IDS_IWA_INSTALLER_BODY_SCREENREADER_NAME));
 
@@ -219,7 +221,7 @@ class InstallerDialogView : public views::BoxLayoutView {
 
     title_label_ = header->AddChildView(CreateLabelWithContextAndStyle(
         views::style::CONTEXT_DIALOG_TITLE, views::style::STYLE_PRIMARY));
-    title_label_->SetAccessibleRole(ax::mojom::Role::kHeading);
+    title_label_->GetViewAccessibility().SetRole(ax::mojom::Role::kHeading);
     SetTitle(title);
 
     subtitle_label_ = header->AddChildView(CreateLabelWithContextAndStyle(
@@ -273,11 +275,12 @@ class InstallerDialogView : public views::BoxLayoutView {
                             views::DISTANCE_UNRELATED_CONTROL_VERTICAL),
                         0));
     if (region_name_id.has_value()) {
-      contents_wrapper_->SetAccessibleRole(
+      contents_wrapper_->GetViewAccessibility().SetRole(
           ax::mojom::Role::kRegion,
           l10n_util::GetStringUTF16(region_name_id.value()));
     } else {
-      contents_wrapper_->SetAccessibleRole(ax::mojom::Role::kRegion);
+      contents_wrapper_->GetViewAccessibility().SetRole(
+          ax::mojom::Role::kRegion);
     }
     SetFlexForView(contents_wrapper_, 1);
     return contents_wrapper_->AddChildView(std::move(contents_view));
@@ -667,7 +670,7 @@ views::Widget* IsolatedWebAppInstallerViewImpl::ShowChildDialog(
 
   std::unique_ptr<views::BubbleDialogModelHost> bubble =
       views::BubbleDialogModelHost::CreateModal(dialog_model_builder.Build(),
-                                                ui::MODAL_TYPE_CHILD);
+                                                ui::mojom::ModalType::kChild);
   bubble->SetAnchorView(GetWidget()->GetContentsView());
   bubble->SetArrow(views::BubbleBorder::FLOAT);
   bubble->set_fixed_width(ChromeLayoutProvider::Get()->GetDistanceMetric(

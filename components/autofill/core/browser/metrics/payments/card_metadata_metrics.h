@@ -7,6 +7,7 @@
 
 #include "base/containers/flat_set.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
+#include "components/autofill/core/browser/metrics/form_events/form_events.h"
 
 namespace autofill::autofill_metrics {
 
@@ -56,8 +57,19 @@ using HasBeenLogged = base::StrongAlias<class HasBeenLoggedTag, bool>;
 struct CardMetadataLoggingContext {
   CardMetadataLoggingContext();
   CardMetadataLoggingContext(const CardMetadataLoggingContext&);
+  CardMetadataLoggingContext(CardMetadataLoggingContext&&);
   CardMetadataLoggingContext& operator=(const CardMetadataLoggingContext&);
+  CardMetadataLoggingContext& operator=(CardMetadataLoggingContext&&);
   ~CardMetadataLoggingContext();
+
+  // Returns if any shown suggestion's card has a benefit available.
+  bool DidShowCardWithBenefitAvailable() const;
+
+  // Returns if the selected suggestion's card has a benefit available.
+  bool SelectedCardHasBenefitAvailable() const;
+
+  // Returns if the selected suggestion's card has card metadata shown.
+  bool SelectedCardHasMetadataAvailable() const;
 
   // Updates `selected_card_has_metadata_available` and
   // `selected_issuer_or_network_to_metadata_availability` with the
@@ -84,18 +96,22 @@ struct CardMetadataLoggingContext {
   // available.
   base::flat_set<int64_t> instruments_with_metadata_available;
 
-  // Keeps record on if the selected card had metadata available.
-  bool selected_card_has_metadata_available = false;
-
   // Keeps record of the selected card's issuer and network and if the card had
   // metadata available. If there is no selected card,
   // `selected_issuer_or_network_to_metadata_availability` has no value.
   std::optional<base::flat_map<std::string, bool>>
       selected_issuer_or_network_to_metadata_availability;
 
-  // Keeps record of credit card suggestions that included a benefit being
-  // available to show.
-  base::flat_set<int64_t> instrument_ids_with_benefits_available;
+  // Keeps record of the instrument ids to issuer ids for credit card
+  // suggestions shown to the user with a card benefit.
+  base::flat_map<int64_t, std::string>
+      instrument_ids_to_issuer_ids_with_benefits_available;
+
+  // Keeps record of the issuer of a selected card suggestion.
+  std::string selected_issuer_id;
+
+  // Keeps record of the selected card instrument id for later events logging.
+  int64_t selected_card_instrument_id;
 };
 
 // Get histogram suffix based on given card issuer id or network.
@@ -113,6 +129,12 @@ void LogCardWithMetadataFormEventMetric(
     const CardMetadataLoggingContext& context,
     HasBeenLogged has_been_logged);
 
+// Log the suggestion event for card benefits on an issuer level. Metrics are
+// only logged once per page load.
+void LogCardWithBenefitFormEventMetric(
+    CardMetadataLoggingEvent event,
+    const CardMetadataLoggingContext& context);
+
 // Log the latency between suggestions being shown and a suggestion was
 // selected, in milliseconds, and it is broken down by metadata availability
 // provided by the `suggestion_context`.
@@ -122,6 +144,16 @@ void LogAcceptanceLatency(base::TimeDelta latency,
 
 // Logs if credit card benefits are enabled when a new profile is launched.
 void LogIsCreditCardBenefitsEnabledAtStartup(bool enabled);
+
+void LogBenefitFormEventToIssuerHistogram(const std::string& issuer_id,
+                                          FormEvent event);
+
+// Log the given `event` for every issuer with card with benefits available
+// shown.
+void LogBenefitFormEventForAllIssuersWithBenefitAvailable(
+    const base::flat_map<int64_t, std::string>&
+        instrument_ids_to_issuer_ids_with_benefits_available,
+    FormEvent event);
 
 }  // namespace autofill::autofill_metrics
 

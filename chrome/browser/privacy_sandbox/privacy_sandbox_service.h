@@ -36,6 +36,16 @@ class Widget;
 // Sandbox APIs.
 class PrivacySandboxService : public KeyedService {
  public:
+  // Possible areas where the pref kPrivacySandboxM1AdMeasurement would be set.
+  // LINT.IfChange(M1AdMeasurementSetReason)
+  enum class M1AdMeasurementSetReason {
+    kDisabled_RestrictedNoNotice = 0,
+    kDisabled_PolicySettings = 1,
+    kEnabled = 2,
+    kMaxValue = kEnabled,
+  };
+  // LINT.ThenChange(//tools/metrics/histograms/enums.xml:M1AdMeasurementSetReason)
+
   // Possible types of Privacy Sandbox prompts that may be shown to the user.
   // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.privacy_sandbox
   enum class PromptType {
@@ -263,8 +273,10 @@ class PrivacySandboxService : public KeyedService {
 
   // Inform the service that the user changed the Topics toggle in settings,
   // so that the current topics consent information can be updated.
-  // TODO (crbug.com/1378703): Determine whether changes to the preference,
-  // such as by policy or extensions, should also call here.
+  // This is not fired for changes to the preference for policy or extensions,
+  // and so consent information only represents direct user actions. Note that
+  // extensions and policy can only _disable_ topics, and so cannot bypass the
+  // need for user consent where required.
   // Virtual for mocking in tests.
   virtual void TopicsToggleChanged(bool new_value) const = 0;
 
@@ -276,7 +288,6 @@ class PrivacySandboxService : public KeyedService {
 
   // Functions which returns the details of the currently recorded Topics
   // consent.
-  // TODO (crbug.com/1378703): Display the output of these functions in WebUI.
   virtual privacy_sandbox::TopicsConsentUpdateSource
   TopicsConsentLastUpdateSource() const = 0;
   virtual base::Time TopicsConsentLastUpdateTime() const = 0;
@@ -285,7 +296,7 @@ class PrivacySandboxService : public KeyedService {
 #if BUILDFLAG(IS_ANDROID)
   // On Clank startup, the RecordActivityType function will be called once,
   // passing in the corresponding PrivacySandboxStorageActivityType. Each time
-  // the function is called, the kPrivacySandboxActivityTypeRecord preference
+  // the function is called, the kPrivacySandboxActivityTypeRecord2 preference
   // will be updated with a new list of activity type launches. This list is
   // limited in size and by the timestamps of recordable launches
   // (kPrivacySandboxActivityTypeStorageLastNLaunches and
@@ -294,17 +305,21 @@ class PrivacySandboxService : public KeyedService {
   // groups based on their Chrome usage patterns. This will enable us to tailor
   // the user experience for specific launches in the near future.
   //
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.privacy_sandbox
   // LINT.IfChange(PrivacySandboxStorageActivityType)
   enum class PrivacySandboxStorageActivityType {
-    kTabbed,              // BrApp
-    kAGSACustomTab,       // AGSA-CCT
-    kNonAGSACustomTab,    // Non-AGSA-CCT
-    kTrustedWebActivity,  // TWA
+    kOther = 0,               // Partial CCT and all other unknowns
+    kTabbed = 1,              // BrApp
+    kAGSACustomTab = 2,       // AGSA-CCT
+    kNonAGSACustomTab = 3,    // Non-AGSA-CCT
+    kTrustedWebActivity = 4,  // TWA
     //   https://chromium.googlesource.com/chromium/src/+/HEAD/docs/webapps/README.md
-    kWebapp,
+    kWebapp = 5,  // Shortcut
     //   - https://web.dev/webapks/
-    kWebApk,  // PWA
-    kMaxValue = kWebApk,
+    kWebApk = 6,  // PWA
+    kPreFirstTab =
+        7,  // Chrome has started running, but no tab has yet become visible.
+    kMaxValue = kPreFirstTab,
   };
   // LINT.ThenChange(/tools/metrics/histograms/enums.xml)
 
@@ -315,14 +330,15 @@ class PrivacySandboxService : public KeyedService {
   //
   // LINT.IfChange(PrivacySandboxStorageUserSegmentByRecentActivity)
   enum class PrivacySandboxStorageUserSegmentByRecentActivity {
-    kHasBrowserApp,
-    kHasAGSACCT,
-    kHasNonAGSACCT,
-    kHasPWA,
-    kHasTWA,
-    kHasWebapp,
-    kOther,
-    kMaxValue = kOther,
+    kHasOther = 0,
+    kHasBrowserApp = 1,
+    kHasAGSACCT = 2,
+    kHasNonAGSACCT = 3,
+    kHasPWA = 4,
+    kHasTWA = 5,
+    kHasWebapp = 6,
+    kHasPreFirstTab = 7,
+    kMaxValue = kHasPreFirstTab,
   };
   // LINT.ThenChange(/tools/metrics/histograms/enums.xml)
 #endif  // BUILDFLAG(IS_ANDROID)

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ui/display/util/edid_parser.h"
 
 #include <stddef.h>
@@ -100,8 +105,9 @@ BlockZeroSerialNumberType GetSerialNumberType(
 }
 }  // namespace
 
-EdidParser::EdidParser(const std::vector<uint8_t>& edid_blob, bool is_external)
-    : is_external_display_(is_external),
+EdidParser::EdidParser(std::vector<uint8_t>&& edid_blob, bool is_external)
+    : edid_blob_(std::move(edid_blob)),
+      is_external_display_(is_external),
       manufacturer_id_(0),
       product_id_(0),
       year_of_manufacture_(display::kInvalidYearOfManufacture),
@@ -109,9 +115,11 @@ EdidParser::EdidParser(const std::vector<uint8_t>& edid_blob, bool is_external)
       bits_per_channel_(-1),
       primaries_({0}),
       audio_formats_(0) {
-  ParseEdid(edid_blob);
+  ParseEdid(edid_blob_);
 }
 
+EdidParser::EdidParser(EdidParser&& other) = default;
+EdidParser& EdidParser::operator=(EdidParser&& other) = default;
 EdidParser::~EdidParser() = default;
 
 uint32_t EdidParser::GetProductCode() const {
@@ -591,7 +599,30 @@ void EdidParser::ParseEdid(const std::vector<uint8_t>& edid) {
           {gfx::ColorSpace::PrimaryID::BT2020,
            gfx::ColorSpace::MatrixID::BT2020_NCL},
           // BT2020RGB. Colorimetry based on ITU-R BT.2020 R’G’B’.
-          {gfx::ColorSpace::PrimaryID::BT2020, gfx::ColorSpace::MatrixID::RGB}};
+          {gfx::ColorSpace::PrimaryID::BT2020, gfx::ColorSpace::MatrixID::RGB},
+          // MD0. Metadata bit.
+          {gfx::ColorSpace::PrimaryID::INVALID,
+           gfx::ColorSpace::MatrixID::INVALID},
+          // MD1. Metadata bit.
+          {gfx::ColorSpace::PrimaryID::INVALID,
+           gfx::ColorSpace::MatrixID::INVALID},
+          // MD2. Metadata bit.
+          {gfx::ColorSpace::PrimaryID::INVALID,
+           gfx::ColorSpace::MatrixID::INVALID},
+          // MD3. Metadata bit.
+          {gfx::ColorSpace::PrimaryID::INVALID,
+           gfx::ColorSpace::MatrixID::INVALID},
+          // F44=0.
+          {gfx::ColorSpace::PrimaryID::INVALID,
+           gfx::ColorSpace::MatrixID::INVALID},
+          // F45=0.
+          {gfx::ColorSpace::PrimaryID::INVALID,
+           gfx::ColorSpace::MatrixID::INVALID},
+          // F46=0.
+          {gfx::ColorSpace::PrimaryID::INVALID,
+           gfx::ColorSpace::MatrixID::INVALID},
+          // DCI-P3. Colorimetry based on DCI-P3.
+          {gfx::ColorSpace::PrimaryID::P3, gfx::ColorSpace::MatrixID::RGB}};
   // See CEA 861.G-2018, Sec.7.5.13, "HDR Static Metadata Data Block" for these.
   constexpr uint8_t kHDRStaticMetadataCapabilityTag = 0x6;
   constexpr gfx::ColorSpace::TransferID kTransferIDMap[] = {
@@ -691,9 +722,17 @@ void EdidParser::ParseEdid(const std::vector<uint8_t>& edid) {
           break;
 
         case kColorimetryDataBlockCapabilityTag: {
-          constexpr size_t kMaxNumColorimetryEntries = 8;
+          constexpr size_t kMaxNumColorimetryEntries = 16;
+          // The Colorimetry Data Block bitfield is 2 bytes long, the second
+          // byte containing the most significant bit (MSB), so it needs to be
+          // shifted to the left to create a 16 bit long value that can be
+          // passed to the bitset constructor.
+          long cdb_bits = edid[data_offset + 2];
+          if (edid.size() > data_offset + 3) {
+            cdb_bits += edid[data_offset + 3] << 8;
+          }
           const std::bitset<kMaxNumColorimetryEntries>
-              supported_primaries_bitfield(edid[data_offset + 2]);
+              supported_primaries_bitfield(cdb_bits);
           static_assert(
               kMaxNumColorimetryEntries == std::size(kPrimaryMatrixIDMap),
               "kPrimaryIDMap should describe all possible colorimetry entries");

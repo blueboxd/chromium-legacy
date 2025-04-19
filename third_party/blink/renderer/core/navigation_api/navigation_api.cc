@@ -9,7 +9,6 @@
 
 #include "base/check_op.h"
 #include "base/feature_list.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/capture_source_location.h"
@@ -50,6 +49,16 @@
 #include "third_party/blink/renderer/platform/scheduler/public/task_attribution_tracker.h"
 
 namespace blink {
+
+namespace {
+
+// Kill switch feature for fixing https://crbug.com/40283021.
+// TODO(domenic): clean this up after that fix has baked in stable for a few
+// milestones.
+BASE_FEATURE(kUtf8OnlyNavigationApiNavigations,
+             "Utf8OnlyNavigationApiNavigations",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+}  // namespace
 
 template <typename... DOMExceptionArgs>
 NavigationResult* EarlyErrorResult(ScriptState* script_state,
@@ -116,7 +125,7 @@ NavigationActivation* NavigationApi::activation() const {
 }
 
 void NavigationApi::setOnnavigate(EventListener* listener) {
-  UseCounter::Count(window_, WebFeature::kAppHistory);
+  UseCounter::Count(window_, WebFeature::kNavigationAPI);
   SetAttributeEventListener(event_type_names::kNavigate, listener);
 }
 
@@ -461,7 +470,10 @@ void NavigationApi::updateCurrentEntry(
 NavigationResult* NavigationApi::navigate(ScriptState* script_state,
                                           const String& url,
                                           NavigationNavigateOptions* options) {
-  KURL completed_url = window_->CompleteURL(url);
+  KURL completed_url =
+      base::FeatureList::IsEnabled(kUtf8OnlyNavigationApiNavigations)
+          ? KURL(window_->BaseURL(), url)
+          : window_->CompleteURL(url);
   if (!completed_url.IsValid()) {
     return EarlyErrorResult(script_state, DOMExceptionCode::kSyntaxError,
                             "Invalid URL '" + completed_url.GetString() + "'.");
@@ -471,7 +483,7 @@ NavigationResult* NavigationApi::navigate(ScriptState* script_state,
   {
     if (options->hasState()) {
       ExceptionState exception_state(script_state->GetIsolate(),
-                                     ExceptionContextType::kOperationInvoke,
+                                     v8::ExceptionContext::kOperation,
                                      "Navigation", "navigate");
       serialized_state = SerializeState(options->state(), exception_state);
       if (exception_state.HadException()) {
@@ -484,7 +496,7 @@ NavigationResult* NavigationApi::navigate(ScriptState* script_state,
   }
 
   FrameLoadRequest request(window_, ResourceRequest(completed_url));
-  request.SetClientRedirectReason(ClientNavigationReason::kFrameNavigation);
+  request.SetClientNavigationReason(ClientNavigationReason::kFrameNavigation);
 
   if (options->history() == V8NavigationHistoryBehavior::Enum::kPush) {
     LocalFrame* frame = window_->GetFrame();
@@ -535,7 +547,7 @@ NavigationResult* NavigationApi::reload(ScriptState* script_state,
   {
     if (options->hasState()) {
       ExceptionState exception_state(script_state->GetIsolate(),
-                                     ExceptionContextType::kOperationInvoke,
+                                     v8::ExceptionContext::kOperation,
                                      "Navigation", "reload");
       serialized_state = SerializeState(options->state(), exception_state);
       if (exception_state.HadException()) {
@@ -550,7 +562,7 @@ NavigationResult* NavigationApi::reload(ScriptState* script_state,
   }
 
   FrameLoadRequest request(window_, ResourceRequest(window_->Url()));
-  request.SetClientRedirectReason(ClientNavigationReason::kFrameNavigation);
+  request.SetClientNavigationReason(ClientNavigationReason::kFrameNavigation);
 
   return PerformNonTraverseNavigation(script_state, request,
                                       std::move(serialized_state), options,
@@ -841,25 +853,24 @@ NavigationApi::DispatchResult NavigationApi::DispatchNavigateEvent(
       params->source_element->GetExecutionContext() == window_) {
     init->setSourceElement(params->source_element);
   }
+  init->setHasUAVisualTransition(params->has_ua_visual_transition);
 
-  std::optional<SoftNavigationHeuristics::EventScope> soft_navigation_scope;
-  if (params->frame_load_type != WebFrameLoadType::kReplaceCurrentItem &&
-      base::FeatureList::IsEnabled(features::kSoftNavigationDetection)) {
-    if (auto* heuristics = SoftNavigationHeuristics::From(*window_)) {
-      if (init->userInitiated() && !init->downloadRequest() &&
-          init->canIntercept()) {
-        // If these conditions are met, create a SoftNavigationEventScope to
-        // consider this a "user initiated click", and the dispatched event
-        // handlers as potential soft navigation tasks.
-        soft_navigation_scope = heuristics->CreateEventScope(
-            SoftNavigationHeuristics::EventScope::Type::kNavigate,
-            /*is_new_interaction=*/true, script_state);
-      }
-    }
-  }
   auto* navigate_event = NavigateEvent::Create(
       window_, event_type_names::kNavigate, init, controller);
   navigate_event->SetDispatchParams(params);
+
+  std::optional<SoftNavigationHeuristics::EventScope> soft_navigation_scope;
+  if (params->frame_load_type != WebFrameLoadType::kReplaceCurrentItem &&
+      init->userInitiated() && !init->downloadRequest() &&
+      init->canIntercept()) {
+    if (auto* heuristics = SoftNavigationHeuristics::From(*window_)) {
+      // If these conditions are met, create a SoftNavigationEventScope to
+      // consider this a "user initiated click", and the dispatched event
+      // handlers as potential soft navigation tasks.
+      soft_navigation_scope =
+          heuristics->MaybeCreateEventScopeForEvent(*navigate_event);
+    }
+  }
 
   CHECK(!ongoing_navigate_event_);
   ongoing_navigate_event_ = navigate_event;

@@ -18,9 +18,10 @@
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/test/gtest_tags.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_switches.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/test/base/chromeos/crosier/interactive_ash_test.h"
+#include "chrome/test/base/ash/interactive/interactive_ash_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/env.h"
 #include "ui/base/interaction/element_identifier.h"
@@ -53,6 +54,10 @@ DEFINE_LOCAL_STATE_IDENTIFIER_VALUE(DeskBarExpandedObserver,
 
 class DesksInteractiveUiTest : public InteractiveAshTest {
  public:
+  DesksInteractiveUiTest() {
+    scoped_feature_list_.InitAndDisableFeature({features::kForestFeature});
+  }
+
   // This function is used to name the DeskMiniView that is associated with the
   // desk at `desk_index`. This will find the right view regardless of how the
   // mini views may be organized as child views.
@@ -72,6 +77,9 @@ class DesksInteractiveUiTest : public InteractiveAshTest {
             },
             desk_index));
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(DesksInteractiveUiTest, DesksBasic) {

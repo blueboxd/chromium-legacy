@@ -28,7 +28,7 @@ void LogAddNewAddressPromptOutcome(AutofillAddNewAddressPromptOutcome outcome);
 // other form event loggers, the lifetime of this class is attached to that of
 // the BrowserAutofillManager. It collects events until it is destroyed, at
 // which point metrics are emitted. Context menu related tests are in
-// autofill_context_menu_manager_unittest.cc.
+// autofill_context_menu_manager_browsertest.cc.
 class ManualFallbackEventLogger {
  public:
   // Emits metrics before destruction.
@@ -43,14 +43,12 @@ class ManualFallbackEventLogger {
   void OnDidFillSuggestion(FillingProduct target_filling_product);
 
   // Called when context menu was opened on a qualifying field.
-  // `address_fallback_present` indicates where the address fallback was
-  // added. Similarly, `credit_cards_fallback_present` indicates whether a
-  // credit_card fallback option was added.
-  void ContextMenuEntryShown(bool address_fallback_present,
-                             bool credit_cards_fallback_present);
+  // `target_filling_product` indicates which of the available options was
+  // shown.
+  void ContextMenuEntryShown(FillingProduct target_filling_product);
 
   // Called when a fallback option was accepted (not just hovered).
-  // `target_filling_product` specifies of the available options was
+  // `target_filling_product` specifies which of the available options was
   // chosen.
   void ContextMenuEntryAccepted(FillingProduct target_filling_product);
 
@@ -58,8 +56,25 @@ class ManualFallbackEventLogger {
   enum class ContextMenuEntryState { kNotShown = 0, kShown = 1, kAccepted = 2 };
   enum class SuggestionState { kNotShown = 0, kShown = 1, kFilled = 2 };
 
+  // Tries to change `old_state `to `new_state`. The context menu
+  // state should always be updated in the following order: `kNotShown` ->
+  // `kShown` -> `kAccepted`. Jumping over states (i.e. `kNotShown` ->
+  // 'kAccepted`) is not allowed. Trying to "decrease" the state (i.e.
+  // `kAccepted` -> `kShown`) is not possible.
+  // Note that a user can accept a context menu entry and then, on the same
+  // page, open another context menu. In this scenario, the code will try to
+  // change the state from `kAccepted` to `kShown`. This method will be called,
+  // but will not make the change.
+  static void UpdateContextMenuEntryState(ContextMenuEntryState new_state,
+                                          ContextMenuEntryState& old_state);
+
+  // Updates the `SuggestionState` corresponding to `filling_product` to
+  // `new_state`.
+  void UpdateSuggestionStateForFillingProduct(FillingProduct filling_product,
+                                              SuggestionState new_state);
+
   // If according to the `state` the context menu was used, emits into the
-  // `bucket` (address or credit_card) whether an entry was accepted or not
+  // `bucket` (address or credit_card) whether an entry was accepted or not.
   void EmitExplicitlyTriggeredMetric(ContextMenuEntryState state,
                                      std::string_view bucket);
 
@@ -72,9 +87,9 @@ class ManualFallbackEventLogger {
 
   // For addresses and credit cards filling, tracks if the manual fallback
   // context menu entry was shown or accepted.
-  ContextMenuEntryState not_classified_as_target_filling_address =
+  ContextMenuEntryState address_context_menu_state_ =
       ContextMenuEntryState::kNotShown;
-  ContextMenuEntryState not_classified_as_target_filling_credit_card =
+  ContextMenuEntryState credit_card_context_menu_state_ =
       ContextMenuEntryState::kNotShown;
 
   // Tracks if address suggestions were shown/filled.

@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
+#include "ui/display/types/display_configuration_params.h"
 #include "ui/gfx/linux/drm_util_linux.h"
 // For standard Linux/system libgbm
 #include "ui/gfx/linux/gbm_defines.h"
@@ -325,8 +326,6 @@ void DrmThread::CheckOverlayCapabilitiesSync(
     const OverlaySurfaceCandidateList& overlays,
     std::vector<OverlayStatus>* result) {
   TRACE_EVENT0("drm,hwoverlays", "DrmThread::CheckOverlayCapabilitiesSync");
-  base::ElapsedTimer timer;
-
   DrmWindow* window = screen_manager_->GetWindow(widget);
   if (!window) {
     result->clear();
@@ -334,14 +333,6 @@ void DrmThread::CheckOverlayCapabilitiesSync(
     return;
   }
   *result = window->TestPageFlip(overlays);
-
-  base::TimeDelta time = timer.Elapsed();
-  static constexpr base::TimeDelta kMinTime = base::Microseconds(1);
-  static constexpr base::TimeDelta kMaxTime = base::Milliseconds(10);
-  static constexpr int kTimeBuckets = 50;
-  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-      "Compositing.Display.DrmThread.CheckOverlayCapabilitiesSyncUs", time,
-      kMinTime, kMaxTime, kTimeBuckets);
 }
 
 void DrmThread::GetHardwareCapabilities(
@@ -356,7 +347,8 @@ void DrmThread::GetHardwareCapabilities(
       device_manager_->GetDrmDevice(widget)->plane_manager();
 
   if (!hdc || !plane_manager) {
-    HardwareCapabilities hardware_capabilities{.is_valid = false};
+    HardwareCapabilities hardware_capabilities;
+    hardware_capabilities.is_valid = false;
     std::move(receive_callback).Run(hardware_capabilities);
     return;
   }
@@ -371,7 +363,8 @@ void DrmThread::GetHardwareCapabilities(
   } else {
     // If there are multiple CRTCs for this widget we shouldn't rely on overlays
     // working.
-    HardwareCapabilities hardware_capabilities{.is_valid = false};
+    HardwareCapabilities hardware_capabilities;
+    hardware_capabilities.is_valid = false;
     std::move(receive_callback).Run(hardware_capabilities);
   }
 }
@@ -390,12 +383,13 @@ void DrmThread::RefreshNativeDisplays(
 void DrmThread::ConfigureNativeDisplays(
     const std::vector<display::DisplayConfigurationParams>& config_requests,
     display::ModesetFlags modeset_flags,
-    base::OnceCallback<void(bool)> callback) {
+    ConfigureNativeDisplaysCallback callback) {
   TRACE_EVENT0("drm", "DrmThread::ConfigureNativeDisplays");
 
-  bool config_success =
-      display_manager_->ConfigureDisplays(config_requests, modeset_flags);
-  std::move(callback).Run(config_success);
+  std::vector<display::DisplayConfigurationParams> request_results;
+  bool config_success = display_manager_->ConfigureDisplays(
+      config_requests, modeset_flags, request_results);
+  std::move(callback).Run(request_results, config_success);
 }
 
 void DrmThread::TakeDisplayControl(base::OnceCallback<void(bool)> callback) {
@@ -482,19 +476,6 @@ void DrmThread::SetColorCalibration(
 void DrmThread::SetGammaAdjustment(int64_t display_id,
                                    const display::GammaAdjustment& adjustment) {
   display_manager_->SetGammaAdjustment(display_id, adjustment);
-}
-
-void DrmThread::SetColorMatrix(int64_t display_id,
-                               const std::vector<float>& color_matrix) {
-  TRACE_EVENT0("drm", "DrmThread::SetColorMatrix");
-  display_manager_->SetColorMatrix(display_id, color_matrix);
-}
-
-void DrmThread::SetGammaCorrection(int64_t display_id,
-                                   const display::GammaCurve& degamma,
-                                   const display::GammaCurve& gamma) {
-  TRACE_EVENT0("drm", "DrmThread::SetGammaCorrection");
-  display_manager_->SetGammaCorrection(display_id, degamma, gamma);
 }
 
 void DrmThread::SetPrivacyScreen(int64_t display_id,

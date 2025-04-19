@@ -41,7 +41,6 @@
 #include "ui/base/interaction/element_identifier.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/color/color_id.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -123,11 +122,7 @@ TabGroupHeader::TabGroupHeader(TabSlotController& tab_slot_controller,
   title_->SetAutoColorReadabilityEnabled(false);
   title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_->SetElideBehavior(gfx::FADE_TAIL);
-  if (features::IsChromeRefresh2023()) {
-    title_->SetLineHeight(20);
-  } else {
-    title_->SetTextStyle(views::style::STYLE_BODY_4);
-  }
+  title_->SetLineHeight(20);
 
   // Enable keyboard focus.
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
@@ -144,7 +139,7 @@ TabGroupHeader::TabGroupHeader(TabSlotController& tab_slot_controller,
 
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
 
-  is_collapsed_ = tab_slot_controller_->IsGroupCollapsed(group);
+  UpdateIsCollapsed();
 }
 
 TabGroupHeader::~TabGroupHeader() = default;
@@ -155,11 +150,7 @@ bool TabGroupHeader::OnKeyPressed(const ui::KeyEvent& event) {
       !editor_bubble_tracker_.is_open()) {
     tab_slot_controller_->ToggleTabGroupCollapsedState(
         group().value(), ToggleTabGroupCollapsedStateOrigin::kKeyboard);
-#if BUILDFLAG(IS_WIN)
     NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
-#else
-    NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
-#endif
     return true;
   }
 
@@ -170,7 +161,8 @@ bool TabGroupHeader::OnKeyPressed(const ui::KeyEvent& event) {
       ui::EF_CONTROL_DOWN;
 #endif
 
-  if (event.type() == ui::ET_KEY_PRESSED && (event.flags() & kModifiedFlag)) {
+  if (event.type() == ui::EventType::kKeyPressed &&
+      (event.flags() & kModifiedFlag)) {
     if (event.key_code() == ui::VKEY_RIGHT) {
       tab_slot_controller_->ShiftGroupRight(group().value());
       return true;
@@ -245,16 +237,16 @@ void TabGroupHeader::OnGestureEvent(ui::GestureEvent* event) {
   tab_slot_controller_->UpdateHoverCard(
       nullptr, TabSlotController::HoverCardUpdateType::kEvent);
   switch (event->type()) {
-    case ui::ET_GESTURE_TAP:
+    case ui::EventType::kGestureTap:
       tab_slot_controller_->ToggleTabGroupCollapsedState(
           group().value(), ToggleTabGroupCollapsedStateOrigin::kGesture);
       break;
-    case ui::ET_GESTURE_LONG_TAP: {
+    case ui::EventType::kGestureLongTap: {
       editor_bubble_tracker_.Opened(TabGroupEditorBubbleView::Show(
           tab_slot_controller_->GetBrowser(), group().value(), this));
       break;
     }
-    case ui::ET_GESTURE_SCROLL_BEGIN: {
+    case ui::EventType::kGestureScrollBegin: {
       tab_slot_controller_->MaybeStartDrag(
           this, *event, tab_slot_controller_->GetSelectionModel());
       break;
@@ -274,14 +266,6 @@ void TabGroupHeader::OnFocus() {
 void TabGroupHeader::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kTabList;
   node_data->AddState(ax::mojom::State::kEditable);
-  bool is_collapsed = tab_slot_controller_->IsGroupCollapsed(group().value());
-  if (is_collapsed) {
-    node_data->AddState(ax::mojom::State::kCollapsed);
-    node_data->RemoveState(ax::mojom::State::kExpanded);
-  } else {
-    node_data->AddState(ax::mojom::State::kExpanded);
-    node_data->RemoveState(ax::mojom::State::kCollapsed);
-  }
 
   std::u16string title = tab_slot_controller_->GetGroupTitle(group().value());
   std::u16string contents =
@@ -294,6 +278,7 @@ void TabGroupHeader::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 // will be reread with the updated state when the header's collapsed state is
 // toggled.
 #if !BUILDFLAG(IS_WIN)
+  bool is_collapsed = tab_slot_controller_->IsGroupCollapsed(group().value());
   collapsed_state =
       is_collapsed ? l10n_util::GetStringUTF16(IDS_GROUP_AX_LABEL_COLLAPSED)
                    : l10n_util::GetStringUTF16(IDS_GROUP_AX_LABEL_EXPANDED);
@@ -403,38 +388,8 @@ bool TabGroupHeader::DoesIntersectRect(const views::View* target,
 }
 
 int TabGroupHeader::GetDesiredWidth() const {
-  if (features::IsChromeRefresh2023()) {
     const int overlap_margin = group_style_->GetTabGroupViewOverlap() * 2;
     return overlap_margin + title_chip_->width();
-  }
-
-  // If the tab group is collapsed, we want the right margin of the title to
-  // match the left margin. The left margin is always the group stroke inset.
-  // Using these values also guarantees the chip aligns with the collapsed
-  // stroke.
-  if (tab_slot_controller_->IsGroupCollapsed(group().value())) {
-    return title_chip_->width() + 2 * TabGroupUnderline::GetStrokeInset();
-  }
-
-  // We don't want tabs to visually overlap group headers, so we add that space
-  // to the width to compensate. We don't want to actually remove the overlap
-  // during layout however; that would cause an the margin to be visually uneven
-  // when the header is in the first slot and thus wouldn't overlap anything to
-  // the left.
-  const int overlap_margin = group_style_->GetTabGroupViewOverlap() * 2;
-
-  // The empty and non-empty chips have different sizes and corner radii, but
-  // both should look nestled against the group stroke of the tab to the right.
-  // This requires a +/- 2px adjustment to the width, which causes the tab to
-  // the right to be positioned in the right spot. For ChromeRefresh23 the shape
-  // is going to be a rounded rect for both cases and they will have the same
-  // right adjust values.
-  const std::u16string title =
-      tab_slot_controller_->GetGroupTitle(group().value());
-  const int right_adjust =
-      group_style_->GetTitleAdjustmentToTabGroupHeaderDesiredWidth(title);
-
-  return overlap_margin + title_chip_->width() + right_adjust;
 }
 
 void TabGroupHeader::VisualsChanged() {
@@ -512,8 +467,7 @@ void TabGroupHeader::VisualsChanged() {
     // horizontal and vertical insets of the title chip.
     const gfx::Insets title_chip_insets =
         group_style_->GetInsetsForHeaderChip(ShouldShowSyncIcon());
-    const int title_chip_vertical_inset =
-        features::IsChromeRefresh2023() ? 0 : title_chip_insets.top();
+    const int title_chip_vertical_inset = 0;
     const int title_chip_horizontal_inset_left = title_chip_insets.left();
     const int title_chip_horizontal_inset_right = title_chip_insets.right();
 
@@ -559,23 +513,13 @@ void TabGroupHeader::VisualsChanged() {
     if (element_id) {
       views::ElementTrackerViews::GetInstance()->NotifyViewActivated(element_id,
                                                                      this);
-      is_collapsed_ = collapsed_state;
+      UpdateIsCollapsed();
     }
   }
 }
 
 int TabGroupHeader::GetCollapsedHeaderWidth() const {
-  if (features::IsChromeRefresh2023()) {
-    return GetTabSizeInfo().standard_width;
-  }
-
-  const int title_adjustment =
-      group_style_->GetTitleAdjustmentToTabGroupHeaderDesiredWidth(
-          title_->GetText());
-  const int title_chip_width = GetTabSizeInfo().standard_width -
-                               2 * tab_style_->GetTabOverlap() -
-                               title_adjustment;
-  return title_chip_width + 2 * TabGroupUnderline::GetStrokeInset();
+  return GetTabSizeInfo().standard_width;
 }
 
 bool TabGroupHeader::ShouldShowSyncIcon() const {
@@ -585,6 +529,16 @@ bool TabGroupHeader::ShouldShowSyncIcon() const {
 
   return saved_tab_group_service_ && saved_tab_group_service_->model() &&
          saved_tab_group_service_->model()->Contains(group().value());
+}
+
+void TabGroupHeader::UpdateIsCollapsed() {
+  is_collapsed_ = tab_slot_controller_->IsGroupCollapsed(group().value());
+
+  if (is_collapsed_) {
+    GetViewAccessibility().SetIsCollapsed();
+  } else {
+    GetViewAccessibility().SetIsExpanded();
+  }
 }
 
 void TabGroupHeader::RemoveObserverFromWidget(views::Widget* widget) {

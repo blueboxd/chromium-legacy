@@ -7,23 +7,35 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/ui/views/webauthn/reveal_button_util.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
 
-AuthenticatorGPMPinView::AuthenticatorGPMPinView(int pin_digits_count,
-                                                 bool ui_disabled,
-                                                 const std::u16string& pin,
-                                                 Delegate* delegate)
+namespace {
+constexpr int kBetweenChildSpacing = 8;
+}  // namespace
+
+AuthenticatorGPMPinView::AuthenticatorGPMPinView(
+    int pin_digits_count,
+    bool ui_disabled,
+    const std::u16string& pin,
+    const std::u16string& pin_accessible_description,
+    Delegate* delegate)
     : delegate_(delegate) {
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>());
   layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
+  layout->set_between_child_spacing(kBetweenChildSpacing);
 
   auto pin_textfield = std::make_unique<PinTextfield>(pin_digits_count);
   pin_textfield->SetController(this);
-  pin_textfield->SetAccessibleName(u"Pin field (UNTRANSLATED)");
-  pin_textfield->SetObscured(true);
+  pin_textfield->GetViewAccessibility().SetName(
+      delegate_->GetPinAccessibleName());
+  if (!pin_accessible_description.empty()) {
+    pin_textfield->GetViewAccessibility().SetDescription(
+        pin_accessible_description);
+  }
   pin_textfield->SetDisabled(ui_disabled);
   pin_textfield->SetPin(pin);
   pin_textfield->SetEnabled(!ui_disabled);
@@ -43,13 +55,16 @@ void AuthenticatorGPMPinView::RequestFocus() {
 
 bool AuthenticatorGPMPinView::HandleKeyEvent(views::Textfield* textfield,
                                              const ui::KeyEvent& event) {
-  if (event.type() != ui::ET_KEY_PRESSED) {
+  if (event.type() != ui::EventType::kKeyPressed) {
     return false;
   }
 
+  base::WeakPtr<AuthenticatorGPMPinView> weak_this =
+      weak_ptr_factory_.GetWeakPtr();
   bool pin_changed = false;
   char16_t c = event.GetCharacter();
-  if (base::IsAsciiDigit(c)) {
+  bool is_digit = base::IsAsciiDigit(c);
+  if (is_digit) {
     pin_changed = pin_textfield_->AppendDigit(std::u16string(1, c));
   } else if (event.key_code() == ui::VKEY_BACK) {
     pin_changed = pin_textfield_->RemoveDigit();
@@ -57,6 +72,23 @@ bool AuthenticatorGPMPinView::HandleKeyEvent(views::Textfield* textfield,
 
   if (pin_changed) {
     delegate_->OnPinChanged(pin_textfield_->GetPin());
+
+    // The view might be destroyed in `OnPinChanged` (e.g. after typing last
+    // digit during UV).
+    if (!weak_this) {
+      return true;
+    }
+
+    // Pin textfield accessibility label contains information about the
+    // currently focused digit.
+    pin_textfield_->GetViewAccessibility().SetName(
+        delegate_->GetPinAccessibleName());
+  }
+
+  // This might result in recreating this view if the hint visibility changes,
+  // hence it should be the last call in this function.
+  if (base::IsAsciiPrintable(c)) {
+    delegate_->PinCharTyped(is_digit);
   }
 
   return true;

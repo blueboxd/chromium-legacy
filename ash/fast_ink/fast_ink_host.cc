@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ash/fast_ink/fast_ink_host.h"
 
 #include <algorithm>
@@ -128,9 +133,10 @@ void FastInkHost::InitializeFastInkBuffer(aura::Window* host_window) {
 
   // This SharedImage will be used by the display compositor, will be updated
   // in parallel with being read, and will potentially be used in overlays.
-  constexpr uint32_t usage = gpu::SHARED_IMAGE_USAGE_DISPLAY_READ |
-                             gpu::SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE |
-                             gpu::SHARED_IMAGE_USAGE_SCANOUT;
+  constexpr gpu::SharedImageUsageSet usage =
+      gpu::SHARED_IMAGE_USAGE_DISPLAY_READ |
+      gpu::SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE |
+      gpu::SHARED_IMAGE_USAGE_SCANOUT;
 
   CHECK(!client_shared_image_);
   client_shared_image_ = fast_ink_internal::CreateMappableSharedImage(

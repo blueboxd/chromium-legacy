@@ -275,7 +275,8 @@ void HTMLIFrameElement::ParseAttribute(
       UseCounter::Count(GetDocument(), WebFeature::kIFrameCSPAttribute);
     }
   } else if (name == html_names::kBrowsingtopicsAttr) {
-    if (RuntimeEnabledFeatures::TopicsAPIEnabled(GetExecutionContext()) &&
+    if (GetExecutionContext() &&
+        RuntimeEnabledFeatures::TopicsAPIEnabled(GetExecutionContext()) &&
         GetExecutionContext()->IsSecureContext()) {
       bool old_browsing_topics = !params.old_value.IsNull();
       bool new_browsing_topics = !params.new_value.IsNull();
@@ -290,8 +291,7 @@ void HTMLIFrameElement::ParseAttribute(
       }
     }
   } else if (name == html_names::kAdauctionheadersAttr &&
-             RuntimeEnabledFeatures::FledgeNegativeTargetingEnabled(
-                 GetExecutionContext())) {
+             GetExecutionContext()) {
     if (!GetExecutionContext()->IsSecureContext()) {
       GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
           mojom::blink::ConsoleMessageSource::kOther,
@@ -308,6 +308,7 @@ void HTMLIFrameElement::ParseAttribute(
       }
     }
   } else if (name == html_names::kSharedstoragewritableAttr &&
+             GetExecutionContext() &&
              RuntimeEnabledFeatures::SharedStorageAPIM118Enabled(
                  GetExecutionContext())) {
     if (!GetExecutionContext()->IsSecureContext()) {
@@ -626,9 +627,7 @@ void HTMLIFrameElement::DidChangeAttributes() {
         !FastGetAttribute(html_names::kBrowsingtopicsAttr).IsNull();
   }
 
-  if (RuntimeEnabledFeatures::FledgeNegativeTargetingEnabled(
-          GetExecutionContext()) &&
-      GetExecutionContext()->IsSecureContext()) {
+  if (GetExecutionContext()->IsSecureContext()) {
     attributes->ad_auction_headers =
         !FastGetAttribute(html_names::kAdauctionheadersAttr).IsNull();
   }

@@ -20,6 +20,7 @@
 #include "url/gurl.h"
 
 namespace commerce {
+class ClusterServerProxy;
 class ProductSpecificationsService;
 struct CandidateProduct;
 struct ProductGroup;
@@ -42,6 +43,7 @@ class ClusterManager : public ProductSpecificationsSet::Observer {
   };
 
   ClusterManager(ProductSpecificationsService* product_specification_service,
+                 std::unique_ptr<ClusterServerProxy> cluster_server_proxy,
                  const GetProductInfoCallback& get_product_info_cb,
                  const GetOpenUrlInfosCallback& get_open_url_infos_cb);
   ~ClusterManager() override;
@@ -92,6 +94,10 @@ class ClusterManager : public ProductSpecificationsSet::Observer {
   std::vector<GURL> FindSimilarCandidateProductsForProductGroup(
       const base::Uuid& uuid);
 
+  // Finds comparable products from an EntryPointInfo.
+  virtual void GetComparableProducts(const EntryPointInfo& entry_point_info,
+                                     GetEntryPointInfoCallback callback);
+
   // Registers an observer for cluster manager.
   void AddObserver(Observer* observer);
 
@@ -100,6 +106,9 @@ class ClusterManager : public ProductSpecificationsSet::Observer {
 
  private:
   friend class ClusterManagerTest;
+
+  void OnGetAllProductSpecificationsSets(
+      const std::vector<ProductSpecificationsSet> sets);
 
   // Called when information about a product is retrieved.
   void OnProductInfoRetrieved(
@@ -123,6 +132,33 @@ class ClusterManager : public ProductSpecificationsSet::Observer {
   // Finds similar candidate products for a candidate product. The returned
   // URLs doesn't include the `product_url`.
   std::set<GURL> FindSimilarCandidateProducts(const GURL& product_url);
+
+  void OnGetComparableProducts(
+      const EntryPointInfo& entry_point_info,
+      GetEntryPointInfoCallback callback,
+      const std::vector<uint64_t>& cluster_product_ids);
+
+  void OnProductInfoFetchedForSimilarUrls(
+      GetEntryPointInfoCallback callback,
+      const std::vector<std::pair<GURL, const ProductInfo>>& product_infos);
+
+  // Check if product set is still eligible for clustering recommendations given
+  // its uuid and last updated time. Please note that this method can be used
+  // for both `ProductSpecificationSet` and `ProductGroup`.
+  bool IsSetEligibleForClustering(const base::Uuid& uuid,
+                                  const base::Time& update_time);
+
+  // A ProductGroup might become ineligible for clustering because it hasn't
+  // been updated for a long time. This method will be scheduled to run every
+  // day after ClusterManager is constructed to remove the ineiligible
+  // ProductGroups.
+  //
+  // Please note that this doesn't mean the underlying ProductSpecificationsSet
+  // will be removed; only the ProductGroup is removed in ClusterManager so that
+  // we'll stop making clustering recommendations for these ProductGroups.
+  void RemoveIneligibleGroupsForClustering();
+
+  std::unique_ptr<ClusterServerProxy> cluster_server_proxy_;
 
   // Callback to get product info.
   GetProductInfoCallback get_product_info_cb_;

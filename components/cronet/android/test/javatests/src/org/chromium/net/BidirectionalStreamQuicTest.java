@@ -18,7 +18,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.util.Batch;
 import org.chromium.net.CronetTestRule.CronetImplementation;
 import org.chromium.net.CronetTestRule.IgnoreFor;
 
@@ -27,7 +26,7 @@ import java.util.Date;
 
 /** Tests functionality of BidirectionalStream's QUIC implementation. */
 @RunWith(AndroidJUnit4.class)
-@Batch(Batch.UNIT_TESTS)
+// TODO(b/344966604): Fix and batch afterwards.
 @IgnoreFor(
         implementations = {CronetImplementation.FALLBACK, CronetImplementation.AOSP_PLATFORM},
         reason =

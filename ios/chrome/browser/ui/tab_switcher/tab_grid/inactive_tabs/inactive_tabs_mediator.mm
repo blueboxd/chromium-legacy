@@ -335,7 +335,9 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
   NOTREACHED_NORETURN();
 }
 
-- (void)closeItemsWithIDs:(const std::set<web::WebStateID>&)itemIDs {
+- (void)closeItemsWithTabIDs:(const std::set<web::WebStateID>&)tabIDs
+                    groupIDs:(const std::set<tab_groups::TabGroupId>&)groupIDs
+                    tabCount:(int)tabCount {
   NOTREACHED_NORETURN();
 }
 
@@ -392,11 +394,6 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
   NOTREACHED_NORETURN();
 }
 
-- (void)fetchSearchHistoryResultsCountForText:(NSString*)searchText
-                                   completion:(void (^)(size_t))completion {
-  NOTREACHED_NORETURN();
-}
-
 - (void)selectItemWithID:(web::WebStateID)itemID
                     pinned:(BOOL)pinned
     isFirstActionOnTabGrid:(BOOL)isFirstActionOnTabGrid {
@@ -421,11 +418,15 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
   NOTREACHED_NORETURN();
 }
 
+- (void)deleteTabGroup:(const TabGroup*)group sourceView:(UIView*)sourceView {
+  NOTREACHED_NORETURN();
+}
+
 - (void)closeTabGroup:(const TabGroup*)group {
   NOTREACHED_NORETURN();
 }
 
-- (void)ungroupTabGroup:(const TabGroup*)group {
+- (void)ungroupTabGroup:(const TabGroup*)group sourceView:(UIView*)sourceView {
   NOTREACHED_NORETURN();
 }
 
@@ -435,7 +436,6 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
   TabGridToolbarsConfiguration* toolbarsConfiguration =
       [[TabGridToolbarsConfiguration alloc]
           initWithPage:TabGridPageRegularTabs];
-  toolbarsConfiguration.mode = TabGridModeInactive;
   toolbarsConfiguration.closeAllButton = [self canCloseTabs];
   toolbarsConfiguration.searchButton = YES;
   toolbarsConfiguration.undoButton = [self canUndoCloseAllTabs];
@@ -471,7 +471,7 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
 }
 
 - (void)closeItemWithIdentifier:(GridItemIdentifier*)identifier {
-  CHECK(identifier.type == GridItemType::Tab);
+  CHECK(identifier.type == GridItemType::kTab);
   [self closeItemWithID:identifier.tabSwitcherItem.identifier];
 }
 

@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "ui/aura/window_tree_host_platform.h"
+#include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/platform_window/extensions/workspace_extension_delegate.h"
 #include "ui/views/views_export.h"
@@ -128,7 +129,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
                       const gfx::Size& excluded_margin) override;
   void SetWindowIcons(const gfx::ImageSkia& window_icon,
                       const gfx::ImageSkia& app_icon) override;
-  void InitModalType(ui::ModalType modal_type) override;
+  void InitModalType(ui::mojom::ModalType modal_type) override;
   void FlashFrame(bool flash_frame) override;
   bool IsAnimatingClosed() const override;
   void SizeConstraintsChanged() override;
@@ -137,6 +138,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
   bool ShouldCreateVisibilityController() const override;
   void UpdateWindowShapeIfNeeded(const ui::PaintContext& context) override;
   void SetBoundsInDIP(const gfx::Rect& bounds) override;
+  void SetAllowScreenshots(bool allow) override;
+  bool AreScreenshotsAllowed() override;
 
   // WindowTreeHost:
   gfx::Transform GetRootTransform() const override;
@@ -174,6 +177,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
   gfx::Rect ConvertRectToDIP(const gfx::Rect& rect_in_pixels) const override;
   gfx::PointF ConvertScreenPointToLocalDIP(
       const gfx::Point& screen_in_pixels) const override;
+  gfx::Insets ConvertInsetsToPixels(
+      const gfx::Insets& insets_dip) const override;
 
   // ui::WorkspaceExtensionDelegate:
   void OnWorkspaceChanged() override;

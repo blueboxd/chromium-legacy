@@ -26,6 +26,9 @@ enum class ActionType {
   kOpenUrl = 3,
   kShowNudge = 4,
   kShowNotification = 5,
+  kUpdateUserPref = 6,
+
+  kMaxValue = kUpdateUserPref
 };
 
 enum class ActionResult {
@@ -40,6 +43,9 @@ enum class ActionResultReason {
   // For kInstallWebApp action
   kWebAppProviderNotAvailable = 2,
   kWebAppInstallFailedOther = 3,
+
+  // For kUpdateUserPref action
+  kUpdateUserPrefFailed = 4,
 };
 
 // Abstract interface for the different actions that Growth framework
@@ -54,6 +60,7 @@ class ActionPerformer {
   virtual ~ActionPerformer() = default;
 
   virtual void Run(int campaign_id,
+                   std::optional<int> group_id,
                    const base::Value::Dict* action_params,
                    Callback callback) = 0;
 

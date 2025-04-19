@@ -21,6 +21,7 @@
 #include "base/sequence_checker.h"
 #include "base/strings/strcat.h"
 #include "base/types/expected.h"
+#include "base/types/expected_macros.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/callback_utils.h"
@@ -122,18 +123,11 @@ void IsolatedWebAppApplyUpdateCommand::CheckIfUpdateIsStillPending(
     base::OnceClosure next_step_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  const WebApp* installed_app =
-      lock_->registrar().GetAppById(url_info_.app_id());
-  if (installed_app == nullptr) {
-    ReportFailure("App is no longer installed.");
-    return;
-  }
-  if (!installed_app->isolation_data().has_value()) {
-    ReportFailure("Installed app is not an Isolated Web App.");
-    return;
-  }
-  const WebApp::IsolationData& isolation_data =
-      *installed_app->isolation_data();
+  ASSIGN_OR_RETURN(
+      const WebApp& iwa,
+      GetIsolatedWebAppById(lock_->registrar(), url_info_.app_id()),
+      [&](const std::string& error) { ReportFailure(error); });
+  const WebApp::IsolationData& isolation_data = *iwa.isolation_data();
 
   if (!isolation_data.pending_update_info().has_value()) {
     ReportFailure("Installed app does not have a pending update.");
@@ -144,13 +138,41 @@ void IsolatedWebAppApplyUpdateCommand::CheckIfUpdateIsStillPending(
   GetMutableDebugValue().Set("pending_update_info",
                              pending_update_info_->AsDebugValue());
 
-  if (isolation_data.version >= pending_update_info_->version) {
+  bool same_version_update_allowed_by_key_rotation = false;
+  switch (LookupRotatedKey(url_info_.web_bundle_id(), GetMutableDebugValue())) {
+    case KeyRotationLookupResult::kNoKeyRotation:
+      break;
+    case KeyRotationLookupResult::kKeyBlocked:
+      ReportFailure(
+          "The web bundle id for this app's bundle has been blocked by the key "
+          "distribution component.");
+      return;
+    case KeyRotationLookupResult::kKeyFound: {
+      KeyRotationData data =
+          GetKeyRotationData(url_info_.web_bundle_id(), isolation_data);
+      if (!data.pending_update_has_rk) {
+        ReportFailure(
+            "The update's integrity block data doesn't contain the required "
+            "public key as instructed by the key distribution component -- the "
+            "update won't succeed.");
+        return;
+      }
+      if (!data.current_installation_has_rk) {
+        same_version_update_allowed_by_key_rotation = true;
+      }
+    } break;
+  }
+
+  if (isolation_data.version > pending_update_info_->version ||
+      (isolation_data.version == pending_update_info_->version &&
+       !same_version_update_allowed_by_key_rotation)) {
     ReportFailure(base::StrCat({"Installed app is already on version ",
                                 isolation_data.version.GetString(),
                                 ". Cannot update to version ",
                                 pending_update_info_->version.GetString()}));
     return;
   }
+
   if (isolation_data.location.dev_mode() !=
       pending_update_info_->location.dev_mode()) {
     std::stringstream s;
@@ -201,24 +223,23 @@ void IsolatedWebAppApplyUpdateCommand::LoadInstallUrl(
 }
 
 void IsolatedWebAppApplyUpdateCommand::CheckInstallabilityAndRetrieveManifest(
-    base::OnceCallback<void(IsolatedWebAppInstallCommandHelper::ManifestAndUrl)>
-        next_step_callback) {
+    base::OnceCallback<void(blink::mojom::ManifestPtr)> next_step_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   command_helper_->CheckInstallabilityAndRetrieveManifest(
       *web_contents_.get(),
       base::BindOnce(&IsolatedWebAppApplyUpdateCommand::RunNextStepOnSuccess<
-                         IsolatedWebAppInstallCommandHelper::ManifestAndUrl>,
+                         blink::mojom::ManifestPtr>,
                      weak_factory_.GetWeakPtr(),
                      std::move(next_step_callback)));
 }
 
 void IsolatedWebAppApplyUpdateCommand::ValidateManifestAndCreateInstallInfo(
     base::OnceCallback<void(WebAppInstallInfo)> next_step_callback,
-    IsolatedWebAppInstallCommandHelper::ManifestAndUrl manifest_and_url) {
+    blink::mojom::ManifestPtr manifest) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::expected<WebAppInstallInfo, std::string> install_info =
       command_helper_->ValidateManifestAndCreateInstallInfo(
-          pending_update_info_->version, manifest_and_url);
+          pending_update_info_->version, *manifest);
   RunNextStepOnSuccess(std::move(next_step_callback), std::move(install_info));
 }
 
@@ -288,17 +309,17 @@ void IsolatedWebAppApplyUpdateCommand::CleanupOnFailure(
           : std::move(next_step_callback);
 
   ScopedRegistryUpdate update = lock_->sync_bridge().BeginUpdate(
-      // We don't really care whether committing the update succeeds or fails.
-      // However, we want to wait for the write of the database to disk, so that
-      // a potential crash during that write happens before the
-      // to-be-implemented cleanup system for no longer referenced Web Bundles
-      // kicks in.
+      // We don't really care whether committing the update succeeds or
+      // fails. However, we want to wait for the write of the database to
+      // disk, so that a potential crash during that write happens before
+      // the to-be-implemented cleanup system for no longer referenced Web
+      // Bundles kicks in.
       base::IgnoreArgs<bool>(std::move(update_callback)));
 
   WebApp* web_app = update->UpdateApp(url_info_.app_id());
 
-  // This command might fail because the app is no longer installed, or because
-  // it does not have `WebApp::IsolationData` or
+  // This command might fail because the app is no longer installed, or
+  // because it does not have `WebApp::IsolationData` or
   // `WebApp::IsolationData::PendingUpdateInfo`, in which case there is no
   // pending update info for us to delete.
   if (!web_app || !web_app->isolation_data().has_value() ||

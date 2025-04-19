@@ -5,9 +5,8 @@
 #include "components/remote_cocoa/app_shim/select_file_dialog_bridge.h"
 
 #import <AppKit/AppKit.h>
-#include <CoreServices/CoreServices.h>  // pre-macOS 11
 #import <Foundation/Foundation.h>
-#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>  // macOS 11
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 #include <stddef.h>
 
 #include "base/apple/bridging.h"

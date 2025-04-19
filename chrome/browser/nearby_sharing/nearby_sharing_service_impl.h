@@ -196,6 +196,8 @@ class NearbySharingServiceImpl
   void OnEndpointLost(const std::string& endpoint_id) override;
 
   // NearbyConnectionsManager::BandwidthUpgradeListener:
+  void OnInitialMedium(const std::string& endpoint_id,
+                       const Medium medium) override;
   void OnBandwidthUpgrade(const std::string& endpoint_id,
                           const Medium medium) override;
   void OnBandwidthUpgradeV3(nearby::presence::PresenceDevice remote_device,
@@ -255,7 +257,8 @@ class NearbySharingServiceImpl
 
   bool IsBluetoothPresent() const;
   bool IsBluetoothPowered() const;
-  bool HasAvailableConnectionMediums();
+  bool HasAvailableAdvertisingMediums();
+  bool HasAvailableDiscoveryMediums();
   void InvalidateSurfaceState();
   bool ShouldStopNearbyProcess();
   void OnProcessShutdownTimerFired();

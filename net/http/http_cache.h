@@ -24,6 +24,7 @@
 #include <unordered_set>
 
 #include "base/containers/lru_cache.h"
+#include "base/containers/span.h"
 #include "base/files/file_path.h"
 #include "base/functional/callback.h"
 #include "base/gtest_prod_util.h"
@@ -175,21 +176,21 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
 
   HttpTransactionFactory* network_layer() { return network_layer_.get(); }
 
+  using GetBackendResult = std::pair<int, raw_ptr<disk_cache::Backend>>;
+  using GetBackendCallback = base::OnceCallback<void(GetBackendResult)>;
   // Retrieves the cache backend for this HttpCache instance. If the backend
-  // is not initialized yet, this method will initialize it. The return value is
-  // a network error code, and it could be ERR_IO_PENDING, in which case the
-  // `callback` will be notified when the operation completes. The pointer that
-  // receives the `backend` must remain valid until the operation completes.
+  // is not initialized yet, this method will initialize it. The integer portion
+  // of the return value is a network error code, and it could be
+  // ERR_IO_PENDING, in which case the `callback` will be notified when the
+  // operation completes.
   // `callback` will get cancelled if the HttpCache is destroyed.
-  int GetBackend(disk_cache::Backend** backend,
-                 CompletionOnceCallback callback);
+  GetBackendResult GetBackend(GetBackendCallback callback);
 
   // Returns the current backend (can be NULL).
   disk_cache::Backend* GetCurrentBackend() const;
 
   // Given a header data blob, convert it to a response info object.
-  static bool ParseResponseInfo(const char* data,
-                                int len,
+  static bool ParseResponseInfo(base::span<const uint8_t> data,
                                 HttpResponseInfo* response_info,
                                 bool* response_truncated);
 
@@ -210,11 +211,11 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   void CloseIdleConnections(const char* net_log_reason_utf8);
 
   // Called whenever an external cache in the system reuses the resource
-  // referred to by |url| and |http_method| and |network_isolation_key|.
+  // referred to by `url`, `http_method`, `network_isolation_key`, and
+  // `include_credentials`.
   void OnExternalCacheHit(const GURL& url,
                           const std::string& http_method,
                           const NetworkIsolationKey& network_isolation_key,
-                          bool is_subframe_document_resource,
                           bool include_credentials);
 
   // Causes all transactions created after this point to simulate lock timeout
@@ -505,9 +506,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   // operation completes. Returns an error code.
   int CreateBackend(CompletionOnceCallback callback);
 
-  void ReportGetBackendResult(disk_cache::Backend** backend,
-                              CompletionOnceCallback callback,
-                              int net_error);
+  void ReportGetBackendResult(GetBackendCallback callback, int net_error);
 
   // Makes sure that the backend creation is complete before allowing the
   // provided transaction to use the object. Returns an error code.

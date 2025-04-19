@@ -6,9 +6,9 @@
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_FLING_SCHEDULER_ANDROID_H_
 
 #include "base/memory/raw_ptr.h"
+#include "components/input/fling_scheduler_base.h"
 #include "content/browser/renderer_host/compositor_impl_android.h"
 #include "content/common/content_export.h"
-#include "content/common/input/fling_scheduler_base.h"
 #include "ui/android/view_android_observer.h"
 #include "ui/android/window_android.h"
 #include "ui/android/window_android_observer.h"
@@ -19,7 +19,7 @@ namespace content {
 class RenderWidgetHostImpl;
 
 class CONTENT_EXPORT FlingSchedulerAndroid
-    : public FlingSchedulerBase,
+    : public input::FlingSchedulerBase,
       public ui::ViewAndroidObserver,
       public ui::WindowAndroidObserver,
       public ui::HostBeginFrameObserver::SimpleBeginFrameObserver {
@@ -33,17 +33,20 @@ class CONTENT_EXPORT FlingSchedulerAndroid
 
   // FlingControllerSchedulerClient
   void ScheduleFlingProgress(
-      base::WeakPtr<FlingController> fling_controller) override;
+      base::WeakPtr<input::FlingController> fling_controller) override;
   void DidStopFlingingOnBrowser(
-      base::WeakPtr<FlingController> fling_controller) override;
+      base::WeakPtr<input::FlingController> fling_controller) override;
   bool NeedsBeginFrameForFlingProgress() override;
+  bool ShouldUseMobileFlingCurve() override;
+  gfx::Vector2dF GetPixelsPerInch(
+      const gfx::PointF& position_in_screen) override;
 
   // FlingSchedulerBase
   void ProgressFlingOnBeginFrameIfneeded(base::TimeTicks current_time) override;
 
  protected:
   raw_ptr<RenderWidgetHostImpl> host_;
-  base::WeakPtr<FlingController> fling_controller_;
+  base::WeakPtr<input::FlingController> fling_controller_;
 
  private:
   ui::WindowAndroid* GetRootWindow();

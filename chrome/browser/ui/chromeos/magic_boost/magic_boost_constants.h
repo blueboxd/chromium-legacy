@@ -9,10 +9,10 @@ namespace chromeos::magic_boost {
 
 // The view ids for Magic Boost related views.
 enum ViewId {
-  DisclaimerViewAcceptButton = 1,
-  DisclaimerViewDeclineButton,
-  OptInCardSecondaryButton,
+  OptInCardSecondaryButton = 1,
   OptInCardPrimaryButton,
+  OptInCardTitleLabel,
+  OptInCardBodyLabel,
 };
 
 }  // namespace chromeos::magic_boost

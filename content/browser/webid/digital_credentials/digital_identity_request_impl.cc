@@ -14,6 +14,7 @@
 #include "content/browser/webid/flags.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/digital_identity_interstitial_type.h"
 #include "content/public/browser/digital_identity_provider.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -23,17 +24,28 @@
 
 using base::Value;
 using blink::mojom::RequestDigitalIdentityStatus;
+using InterstitialType = content::DigitalIdentityInterstitialType;
 using RequestStatusForMetrics =
     content::DigitalIdentityProvider::RequestStatusForMetrics;
 using DigitalIdentityInterstitialAbortCallback =
-    content::ContentBrowserClient::DigitalIdentityInterstitialAbortCallback;
+    content::DigitalIdentityProvider::DigitalIdentityInterstitialAbortCallback;
 
 namespace content {
 namespace {
 
 constexpr char kMdlDocumentType[] = "org.iso.18013.5.1.mDL";
-constexpr char kOpenid4vpAgeOverPathRegex[] =
-    R"(\$\['org\.iso\.18013\.5\.1'\]\['age_over_\d\d'\])";
+
+constexpr char kOpenid4vpPathRegex[] =
+    R"(\$\['org\.iso\.18013\.5\.1'\]\['([^\)]*)'\])";
+constexpr char kMdocAgeOverDataElementRegex[] = R"(age_over_\d\d)";
+constexpr char kMdocAgeInYearsDataElement[] = "age_in_years";
+constexpr char kMdocAgeBirthYearDataElement[] = "age_birth_year";
+constexpr char kMdocBirthDateDataElement[] = "birth_date";
+
+constexpr char kDigitalIdentityDialogParam[] = "dialog";
+constexpr char kDigitalIdentityNoDialogParamValue[] = "no_dialog";
+constexpr char kDigitalIdentityLowRiskDialogParamValue[] = "low_risk";
+constexpr char kDigitalIdentityHighRiskDialogParamValue[] = "high_risk";
 
 // Returns entry if `dict` has a list with a single dict element for key
 // `list_key`.
@@ -45,6 +57,80 @@ const base::Value::Dict* FindSingleElementListEntry(
     return nullptr;
   }
   return list->front().GetIfDict();
+}
+
+// Returns whether an intertitial should be shown for a request which solely
+// requests the passed-in mdoc data element.
+bool CanMdocDataElementBypassInterstitial(const std::string& data_element) {
+  if (re2::RE2::FullMatch(data_element,
+                          re2::RE2(kMdocAgeOverDataElementRegex))) {
+    return true;
+  }
+
+  const std::string kDataElementsCanBypassInterstitial[] = {
+      kMdocAgeInYearsDataElement,
+      kMdocAgeBirthYearDataElement,
+      kMdocBirthDateDataElement,
+  };
+  return std::find(std::begin(kDataElementsCanBypassInterstitial),
+                   std::end(kDataElementsCanBypassInterstitial),
+                   data_element) !=
+         std::end(kDataElementsCanBypassInterstitial);
+}
+
+// Returns whether an interstitial should be shown based on the assertions being
+// requested.
+bool CanRequestCredentialBypassInterstitial(const base::Value& request) {
+  if (!request.is_dict()) {
+    return false;
+  }
+
+  const base::Value::Dict& request_dict = request.GetDict();
+  const base::Value::Dict* presentation_dict =
+      request_dict.FindDict("presentation_definition");
+  if (!presentation_dict) {
+    return false;
+  }
+
+  const base::Value::Dict* input_descriptor_dict =
+      FindSingleElementListEntry(*presentation_dict, "input_descriptors");
+  if (!input_descriptor_dict) {
+    return false;
+  }
+
+  const std::string* input_descriptor_id =
+      input_descriptor_dict->FindString("id");
+  if (!input_descriptor_id || *input_descriptor_id != kMdlDocumentType) {
+    return false;
+  }
+
+  const base::Value::Dict* constraints_dict =
+      input_descriptor_dict->FindDict("constraints");
+  if (!constraints_dict) {
+    return false;
+  }
+
+  const base::Value::Dict* field_dict =
+      FindSingleElementListEntry(*constraints_dict, "fields");
+  if (!field_dict) {
+    return false;
+  }
+
+  const base::Value::List* field_paths = field_dict->FindList("path");
+  if (!field_paths) {
+    return false;
+  }
+
+  if (!field_paths || field_paths->size() != 1u ||
+      !field_paths->front().is_string()) {
+    return false;
+  }
+
+  std::string mdoc_data_element;
+  return re2::RE2::FullMatch(field_paths->front().GetString(),
+                             re2::RE2(kOpenid4vpPathRegex),
+                             &mdoc_data_element) &&
+         CanMdocDataElementBypassInterstitial(mdoc_data_element);
 }
 
 }  // anonymous namespace
@@ -94,51 +180,33 @@ void DigitalIdentityRequestImpl::Create(
 }
 
 // static
-bool DigitalIdentityRequestImpl::IsOnlyRequestingAge(
-    const base::Value& request) {
-  if (!request.is_dict()) {
-    return false;
+std::optional<InterstitialType>
+DigitalIdentityRequestImpl::ComputeInterstitialType(
+    const url::Origin& rp_origin,
+    const DigitalIdentityProvider* provider,
+    const data_decoder::DataDecoder::ValueOrError& request) {
+  std::string dialog_param_value = base::GetFieldTrialParamValueByFeature(
+      features::kWebIdentityDigitalCredentials, kDigitalIdentityDialogParam);
+  if (dialog_param_value == kDigitalIdentityNoDialogParamValue) {
+    return std::nullopt;
   }
 
-  const base::Value::Dict& request_dict = request.GetDict();
-  const base::Value::Dict* presentation_dict =
-      request_dict.FindDict("presentation_definition");
-  if (!presentation_dict) {
-    return false;
+  if (dialog_param_value == kDigitalIdentityHighRiskDialogParamValue) {
+    return InterstitialType::kHighRisk;
   }
 
-  const base::Value::Dict* input_descriptor_dict =
-      FindSingleElementListEntry(*presentation_dict, "input_descriptors");
-  if (!input_descriptor_dict) {
-    return false;
+  if (dialog_param_value == kDigitalIdentityLowRiskDialogParamValue) {
+    return InterstitialType::kLowRisk;
   }
 
-  const std::string* input_descriptor_id =
-      input_descriptor_dict->FindString("id");
-  if (!input_descriptor_id || *input_descriptor_id != kMdlDocumentType) {
-    return false;
+  if (provider->IsLowRiskOrigin(rp_origin)) {
+    return std::nullopt;
   }
 
-  const base::Value::Dict* constraints_dict =
-      input_descriptor_dict->FindDict("constraints");
-  if (!constraints_dict) {
-    return false;
-  }
-
-  const base::Value::Dict* field_dict =
-      FindSingleElementListEntry(*constraints_dict, "fields");
-  if (!field_dict) {
-    return false;
-  }
-
-  const base::Value::List* field_paths = field_dict->FindList("path");
-  if (!field_paths || field_paths->size() != 1u ||
-      !field_paths->front().is_string()) {
-    return false;
-  }
-
-  return re2::RE2::FullMatch(field_paths->front().GetString(),
-                             re2::RE2(kOpenid4vpAgeOverPathRegex));
+  return (request.has_value() &&
+          CanRequestCredentialBypassInterstitial(*request))
+             ? std::nullopt
+             : std::optional<InterstitialType>(InterstitialType::kLowRisk);
 }
 
 DigitalIdentityRequestImpl::DigitalIdentityRequestImpl(
@@ -283,43 +351,43 @@ void DigitalIdentityRequestImpl::OnRequestJsonParsed(
     return;
   }
 
-  bool is_only_requesting_age =
-      parsed_result.has_value() && IsOnlyRequestingAge(*parsed_result);
-  provider_->Request(
-      WebContents::FromRenderFrameHost(&render_frame_host()), origin(),
-      request_to_send,
-      base::BindOnce(&DigitalIdentityRequestImpl::ShowInterstitialIfNeeded,
-                     weak_ptr_factory_.GetWeakPtr(), is_only_requesting_age));
-}
-
-void DigitalIdentityRequestImpl::ShowInterstitialIfNeeded(
-    bool is_only_requesting_age,
-    base::expected<std::string, RequestStatusForMetrics> response) {
-  if (!response.has_value()) {
-    CompleteRequest(response);
-    return;
-  }
-
-  if (!render_frame_host().IsActive()) {
+  if (!render_frame_host().IsActive() ||
+      render_frame_host().GetVisibilityState() !=
+          content::PageVisibilityState::kVisible) {
     CompleteRequest(base::unexpected(RequestStatusForMetrics::kErrorOther));
     return;
   }
 
+  std::optional<InterstitialType> interstitial_type = ComputeInterstitialType(
+      render_frame_host().GetMainFrame()->GetLastCommittedOrigin(),
+      provider_.get(), parsed_result);
+
+  if (!interstitial_type) {
+    OnInterstitialDone(request_to_send, RequestStatusForMetrics::kSuccess);
+    return;
+  }
+
   update_interstitial_on_abort_callback_ =
-      GetContentClient()->browser()->ShowDigitalIdentityInterstitialIfNeeded(
+      provider_->ShowDigitalIdentityInterstitial(
           *WebContents::FromRenderFrameHost(&render_frame_host()), origin(),
-          is_only_requesting_age,
+          *interstitial_type,
           base::BindOnce(&DigitalIdentityRequestImpl::OnInterstitialDone,
-                         weak_ptr_factory_.GetWeakPtr(), response.value()));
+                         weak_ptr_factory_.GetWeakPtr(), request_to_send));
 }
 
 void DigitalIdentityRequestImpl::OnInterstitialDone(
-    const std::string& response,
+    const std::string& request_to_send,
     RequestStatusForMetrics status_after_interstitial) {
-  CompleteRequest(
-      status_after_interstitial == RequestStatusForMetrics::kSuccess
-          ? base::expected<std::string, RequestStatusForMetrics>(response)
-          : base::unexpected(status_after_interstitial));
+  if (status_after_interstitial != RequestStatusForMetrics::kSuccess) {
+    CompleteRequest(base::unexpected(status_after_interstitial));
+    return;
+  }
+
+  provider_->Request(
+      WebContents::FromRenderFrameHost(&render_frame_host()), origin(),
+      request_to_send,
+      base::BindOnce(&DigitalIdentityRequestImpl::CompleteRequest,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 }  // namespace content

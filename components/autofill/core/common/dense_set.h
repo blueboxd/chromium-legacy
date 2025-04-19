@@ -141,7 +141,7 @@ class Bitset<Word, 1u> {
   friend constexpr bool operator==(Bitset lhs, Bitset rhs) = default;
 
   constexpr base::span<const Word, 1> data() const {
-    return base::span<const Word, 1>(&word_, 1u);
+    return base::span_from_ref(word_);
   }
 
  private:

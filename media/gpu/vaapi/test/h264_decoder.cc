@@ -2,7 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "media/gpu/vaapi/test/h264_decoder.h"
+
+#include <va/va.h>
 
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
@@ -10,9 +17,7 @@
 #include "media/gpu/macros.h"
 #include "media/gpu/vaapi/test/h264_dpb.h"
 #include "media/gpu/vaapi/test/video_decoder.h"
-#include "media/video/h264_parser.h"
-
-#include <va/va.h>
+#include "media/parsers/h264_parser.h"
 
 namespace media::vaapi_test {
 

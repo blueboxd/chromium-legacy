@@ -35,6 +35,18 @@ void MahiMediaAppContentManagerImpl::OnPdfGetFocus(
   }
 }
 
+void MahiMediaAppContentManagerImpl::OnPdfClosed(
+    const base::UnguessableToken client_id) {
+  // Notifies Mahi manager.
+  auto* manager = chromeos::MahiManager::Get();
+  if (manager) {
+    manager->MediaAppPDFClosed(client_id);
+  } else {
+    // TODO(b/335741382): UMA metrics
+    LOG(ERROR) << "No mahi manager to response OnPdfClosed";
+  }
+}
+
 std::optional<std::string> MahiMediaAppContentManagerImpl::GetFileName(
     const base::UnguessableToken client_id) {
   auto it = client_id_to_client_.find(client_id);
@@ -61,7 +73,8 @@ void MahiMediaAppContentManagerImpl::GetContent(
 void MahiMediaAppContentManagerImpl::OnMahiContextMenuClicked(
     int64_t display_id,
     chromeos::mahi::ButtonType button_type,
-    const std::u16string& question) {
+    const std::u16string& question,
+    const gfx::Rect& mahi_menu_bounds) {
   auto it = client_id_to_client_.find(active_client_id_);
   if (it == client_id_to_client_.end()) {
     // This should not happen because the mahi context menu widget should hide
@@ -79,7 +92,7 @@ void MahiMediaAppContentManagerImpl::OnMahiContextMenuClicked(
       crosapi::mojom::MahiContextMenuRequest::New(
           /*display_id=*/display_id,
           /*action_type=*/MatchButtonTypeToActionType(button_type),
-          /*question=*/std::nullopt);
+          /*question=*/std::nullopt, mahi_menu_bounds);
   if (button_type == chromeos::mahi::ButtonType::kQA) {
     context_menu_request->question = question;
   }
@@ -96,7 +109,7 @@ void MahiMediaAppContentManagerImpl::OnMahiContextMenuClicked(
 void MahiMediaAppContentManagerImpl::AddClient(base::UnguessableToken client_id,
                                                MahiMediaAppClient* client) {
   client_id_to_client_[client_id] = client;
-  observed_windows_.insert(client->media_app_window());
+  windows_of_live_clients_.insert(client->media_app_window());
 }
 
 void MahiMediaAppContentManagerImpl::RemoveClient(
@@ -107,13 +120,26 @@ void MahiMediaAppContentManagerImpl::RemoveClient(
     return;
   }
 
-  observed_windows_.erase(it->second->media_app_window());
+  windows_of_live_clients_.erase(it->second->media_app_window());
   client_id_to_client_.erase(it);
 }
 
 bool MahiMediaAppContentManagerImpl::ObservingWindow(
     const aura::Window* window) const {
-  return observed_windows_.contains(window);
+  return windows_of_live_clients_.contains(window);
+}
+
+bool MahiMediaAppContentManagerImpl::ActivateClientWindow(
+    const base::UnguessableToken client_id) {
+  auto it = client_id_to_client_.find(client_id);
+  if (it == client_id_to_client_.end()) {
+    DVLOG(1) << "Tried to activate a removed client, do nothing";
+    return false;
+  }
+  CHECK(it->second->media_app_window());
+
+  it->second->media_app_window()->Focus();
+  return true;
 }
 
 }  // namespace ash

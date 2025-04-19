@@ -70,6 +70,19 @@ enum class ShouldShowChromeSigninBubbleWithReason {
   kMaxValue = kShouldNotShowUserChoice,
 };
 
+// Supervision state of the user who is shown the sign-in intercept bubble.
+// These values are logged to UMA. Entries should not be renumbered and
+// numeric values should never be reused.
+//
+// LINT.IfChange(SinginInterceptSupervisionState)
+enum class SinginInterceptSupervisionState {
+  kRegularUser = 0,
+  kSupervisedUser = 1,
+  kUnknownSupervision = 2,
+  kMaxValue = kUnknownSupervision,
+};
+// LINT.ThenChange(//tools/metrics/histograms/metadata/signin/enums.xml:SinginInterceptSupervisionState)
+
 // Called after web signed in, after a successful token exchange through Dice.
 // The DiceWebSigninInterceptor may offer the user to create a new profile or
 // switch to another existing profile.
@@ -157,6 +170,10 @@ class DiceWebSigninInterceptor : public KeyedService,
         std::move(value);
   }
 
+  static base::TimeDelta GetTimeSinceLastChromeSigninDeclineForTesting(
+      const SigninPrefs& signin_prefs,
+      const std::string& gaia_id);
+
   // KeyedService:
   void Shutdown() override;
 
@@ -234,11 +251,6 @@ class DiceWebSigninInterceptor : public KeyedService,
   void ShowSigninInterceptionBubble(
       const WebSigninInterceptor::Delegate::BubbleParameters& bubble_parameters,
       base::OnceCallback<void(SigninInterceptionResult)> callback);
-
-  // Attempts showing the In-Product-Help for remembering the explicit browser
-  // sign-in preference.
-  void MaybeShowExplicitBrowserSigninPreferenceRememberedIPH(
-      const AccountInfo& account_info);
 
   // Ensure that we are observing changes in extended account info. Idempotent.
   void EnsureObservingExtendedAccountInfo();

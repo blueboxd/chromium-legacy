@@ -21,18 +21,15 @@ inline constexpr base::FeatureParam<int>
         &kDeferredSyncStartupCustomDelay,
         "DeferredSyncStartupCustomDelayInSeconds", 1};
 
-// Controls whether to enable bootstrapping Public-private keys in Nigori
-// key-bag.
-BASE_DECLARE_FEATURE(kSharingOfferKeyPairBootstrap);
-
-// Kill switch to read sharing-offer related keys.
-BASE_DECLARE_FEATURE(kSharingOfferKeyPairRead);
-
 #if BUILDFLAG(IS_ANDROID)
 BASE_DECLARE_FEATURE(kSyncAndroidLimitNTPPromoImpressions);
 inline constexpr base::FeatureParam<int> kSyncAndroidNTPPromoMaxImpressions{
     &kSyncAndroidLimitNTPPromoImpressions, "SyncAndroidNTPPromoMaxImpressions",
     5};
+
+// Controls whether to show a batch upload card in Android unified settings
+// panel.
+BASE_DECLARE_FEATURE(kEnableBatchUploadFromSettings);
 #endif  // BUILDFLAG(IS_ANDROID)
 
 // Controls whether to enable syncing of Autofill Wallet Usage Data.
@@ -61,12 +58,6 @@ BASE_DECLARE_FEATURE(kSyncChromeOSAppsToggleSharing);
 // Whether SyncedSessions are updated by Lacros to Ash.
 BASE_DECLARE_FEATURE(kChromeOSSyncedSessionSharing);
 #endif  // BUILDFLAG(IS_CHROMEOS)
-
-// If enabled, all incoming invalidations will be stored in ModelTypeState
-// proto message.
-// TODO(crbug.com/40239360): Add more information about this feature after
-// upload/download invalidations support from ModelTypeState msg will be added.
-BASE_DECLARE_FEATURE(kSyncPersistInvalidations);
 
 // When enabled, optimization flags (single client and a list of FCM
 // registration tokens) will be disabled if during the current sync cycle
@@ -100,11 +91,6 @@ BASE_DECLARE_FEATURE(kEnablePasswordsAccountStorageForNonSyncingUsers);
 // have any effect for signed-in non-syncing users!)
 BASE_DECLARE_FEATURE(kEnablePreferencesAccountStorage);
 
-// If enabled, Sync will send a poll GetUpdates request on every browser
-// startup. This is a temporary hack; see crbug.com/1425026.
-// TODO(crbug.com/40260698): Remove this.
-BASE_DECLARE_FEATURE(kSyncPollImmediatelyOnEveryStartup);
-
 #if !BUILDFLAG(IS_ANDROID)
 // Enables syncing the WEBAUTHN_CREDENTIAL data type.
 // Enabled by default on M123. Remove on or after M126 on all platforms,
@@ -133,7 +119,7 @@ BASE_DECLARE_FEATURE(kReplaceSyncPromosWithSignInPromos);
 // sync namespace as it controls whether BOOKMARKS datatype is enabled in the
 // transport mode.
 // TODO(crbug.com/40943550): Remove this.
-BASE_DECLARE_FEATURE(kEnableBookmarkFoldersForAccountStorage);
+BASE_DECLARE_FEATURE(kSyncEnableBookmarksInTransportMode);
 
 // Feature flag used for enabling sync (transport mode) for signed-in users that
 // haven't turned on full sync.
@@ -198,13 +184,13 @@ inline constexpr base::FeatureParam<double>
         &kSyncIncreaseNudgeDelayForSingleClient,
         "SyncIncreaseNudgeDelayForSingleClientFactor", 2.0};
 
-// If enabled, SyncSchedulerImpl uses a WallClockTimer instead of a OneShotTimer
-// to schedule poll requests.
-BASE_DECLARE_FEATURE(kSyncSchedulerUseWallClockTimer);
-
 // Guards the registration of synthetic field trials based on information in
 // Nigori's TrustedVaultDebugInfo.
 BASE_DECLARE_FEATURE(kTrustedVaultAutoUpgradeSyntheticFieldTrial);
+
+// If enabled, uses new fields ThemeSpecifics to replace theme prefs, thus
+// avoiding use of preferences to sync themes.
+BASE_DECLARE_FEATURE(kMoveThemePrefsToSpecifics);
 
 #if BUILDFLAG(IS_ANDROID)
 // If enabled, WebAPK data will be synced for Backup&Restore purposes.
@@ -214,7 +200,6 @@ BASE_DECLARE_FEATURE(kWebApkBackupAndRestoreBackend);
 // If enabled, SyncTransportDataPrefs are account-keyed (instead of just for the
 // currently-signed-in account).
 BASE_DECLARE_FEATURE(kSyncAccountKeyedTransportPrefs);
-
 }  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_BASE_FEATURES_H_

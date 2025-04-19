@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/installer/util/lzma_util.h"
 
 #include <windows.h>
@@ -88,6 +93,7 @@ void SevenZipDelegateImpl::OnOpenError(seven_zip::Result result) {
     case seven_zip::Result::kSuccess:
     case seven_zip::Result::kMemoryMappingFailed:
     case seven_zip::Result::kNoFilename:
+    case seven_zip::Result::kEncryptedHeaders:
       NOTREACHED_IN_MIGRATION();
       return;
   }
@@ -215,6 +221,7 @@ bool SevenZipDelegateImpl::EntryDone(seven_zip::Result result,
       case seven_zip::Result::kMemoryMappingFailed:
       case seven_zip::Result::kMalformedArchive:
       case seven_zip::Result::kUnsupported:
+      case seven_zip::Result::kEncryptedHeaders:
         unpack_error_ = UNPACK_EXTRACT_ERROR;
         break;
     }

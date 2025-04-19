@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "components/lookalikes/core/lookalike_url_util.h"
 
 #include <algorithm>
@@ -1374,12 +1379,9 @@ bool IsHeuristicEnabledForHostname(
   if (!config_proto) {
     return false;
   }
-  const unsigned char* bytes =
-      reinterpret_cast<const unsigned char*>(lookalike_etld_plus_one.c_str());
-  unsigned char data[base::kSHA1Length];
-  base::SHA1HashBytes(bytes, lookalike_etld_plus_one.length(), data);
-
-  float cohort = data[0] / 2.56;
+  base::SHA1Digest hash =
+      base::SHA1Hash(base::as_byte_span(lookalike_etld_plus_one));
+  float cohort = hash[0u] / 2.56;
   for (const reputation::HeuristicLaunchConfig& config :
        config_proto->launch_config()) {
     if (heuristic == config.heuristic()) {

@@ -440,6 +440,10 @@ def install_runtime_dmg(mac_toolchain, runtime_cache_folder, ios_version,
     LOGGER.debug(
         'Runtime %s already exists, no need to install from mac_toolchain',
         runtime_build_to_install)
+  # TODO(crbug.com/349660173): See if this can be removed after the release of
+  # subsequent Xcode16 betas
+  if using_xcode_16_or_higher():
+    iossim_util.delete_other_ios18_runtimes(runtime_build_to_install)
 
 
 def version():
@@ -488,6 +492,13 @@ def using_xcode_15_or_higher():
   LOGGER.debug('Checking if Xcode version is 15 or higher')
   return distutils.version.LooseVersion(
       '15.0') <= distutils.version.LooseVersion(version()[0])
+
+
+def using_xcode_16_or_higher():
+  """Returns true if using Xcode version 16 or higher."""
+  LOGGER.debug('Checking if Xcode version is 16 or higher')
+  return distutils.version.LooseVersion(
+      '16.0') <= distutils.version.LooseVersion(version()[0])
 
 
 def install_xcode(mac_toolchain_cmd, xcode_build_version, xcode_path,

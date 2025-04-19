@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.autofill;
 
+import static org.chromium.base.ThreadUtils.runOnUiThreadBlocking;
 import static org.chromium.base.test.util.Criteria.checkThat;
 import static org.chromium.base.test.util.CriteriaHelper.pollUiThread;
 import static org.chromium.base.test.util.Matchers.containsString;
@@ -13,7 +14,6 @@ import static org.chromium.chrome.test.R.id.card_name;
 import static org.chromium.chrome.test.R.id.card_number;
 import static org.chromium.chrome.test.R.id.description_line_2;
 import static org.chromium.chrome.test.R.id.sheet_item_list;
-import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
 
 import android.view.View;
 import android.widget.TextView;
@@ -26,13 +26,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.FakeTimeTestRule;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.Features;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.password_manager.PasswordManagerTestUtilsBridge;
@@ -61,8 +59,6 @@ import java.util.concurrent.TimeoutException;
 public class TouchToFillCreditCardTest {
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
-
-    @Rule public TestRule mProcessor = new Features.JUnitProcessor();
 
     @Rule public FakeTimeTestRule mFakeTimeTestRule = new FakeTimeTestRule();
 
@@ -168,9 +164,9 @@ public class TouchToFillCreditCardTest {
     }
 
     private void verifyCardIsCorrectlyDisplayed(View cardItemLayout) {
-        TextView cardNameLayout = (TextView) cardItemLayout.findViewById(card_name);
-        TextView cardNumberLayout = (TextView) cardItemLayout.findViewById(card_number);
-        TextView cardDescLayout = (TextView) cardItemLayout.findViewById(description_line_2);
+        TextView cardNameLayout = cardItemLayout.findViewById(card_name);
+        TextView cardNumberLayout = cardItemLayout.findViewById(card_number);
+        TextView cardDescLayout = cardItemLayout.findViewById(description_line_2);
         // Check that the card name is displayed
         checkThat(cardNameLayout.getText().toString(), is(CARD_NAME));
         // Check that the last four digits of the card are displayed

@@ -19,7 +19,6 @@
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/qr_code.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/target_device_connection_broker.h"
 #include "chrome/browser/ash/login/oobe_quick_start/second_device_auth_broker.h"
-#include "chromeos/ash/components/nearby/common/connections_manager/nearby_connections_manager.h"
 #include "chromeos/ash/components/quick_start/types.h"
 #include "chromeos/ash/services/nearby/public/mojom/quick_start_decoder_types.mojom.h"
 #include "mojo/public/cpp/bindings/shared_remote.h"
@@ -167,7 +166,6 @@ class TargetDeviceBootstrapController
   void OnConnectionRejected() override;
   void OnConnectionClosed(ConnectionClosedReason reason) override;
 
-  std::string GetDiscoverableName();
   void AttemptWifiCredentialTransfer();
 
   // The first step in the account transfer is to request basic account info via

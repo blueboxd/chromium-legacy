@@ -208,10 +208,6 @@ id<GREYMatcher> OmniboxContainingAutocompleteText(NSString* text) {
   return [ChromeMatchersAppInterface omniboxContainingAutocompleteText:text];
 }
 
-id<GREYMatcher> OmniboxAutocompleteLabel() {
-  return [ChromeMatchersAppInterface omniboxAutocompleteLabel];
-}
-
 id<GREYMatcher> LocationViewContainingText(const std::string& text) {
   return [ChromeMatchersAppInterface
       locationViewContainingText:base::SysUTF8ToNSString(text)];
@@ -227,6 +223,10 @@ id<GREYMatcher> NewTabButton() {
 
 id<GREYMatcher> ShareButton() {
   return [ChromeMatchersAppInterface shareButton];
+}
+
+id<GREYMatcher> ShowFullURLFromWebContextMenuButton() {
+  return [ChromeMatchersAppInterface showFullURLFromWebContextMenu];
 }
 
 id<GREYMatcher> TabShareButton() {
@@ -429,10 +429,6 @@ id<GREYMatcher> ManageSyncSettingsButton() {
 
 id<GREYMatcher> InactiveTabsSettingsButton() {
   return [ChromeMatchersAppInterface inactiveTabsSettingsButton];
-}
-
-id<GREYMatcher> TabPickupSettingsButton() {
-  return [ChromeMatchersAppInterface tabPickupSettingsButton];
 }
 
 id<GREYMatcher> TabsSettingsButton() {
@@ -643,6 +639,10 @@ id<GREYMatcher> HistoryClearBrowsingDataButton() {
 
 id<GREYMatcher> OpenInButton() {
   return [ChromeMatchersAppInterface openInButton];
+}
+
+id<GREYMatcher> OpenPDFButton() {
+  return [ChromeMatchersAppInterface openPDFButton];
 }
 
 id<GREYMatcher> TabGridCellAtIndex(unsigned int index) {

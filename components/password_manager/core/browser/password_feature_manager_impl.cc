@@ -123,20 +123,13 @@ bool PasswordFeatureManagerImpl::
 
 bool PasswordFeatureManagerImpl::ShouldChangeDefaultPasswordStore() const {
   return IsOptedInForAccountStorage() && IsDefaultPasswordStoreSet() &&
-         GetDefaultPasswordStore() == PasswordForm::Store::kProfileStore &&
-         base::FeatureList::IsEnabled(
-             password_manager::features::kButterOnDesktopFollowup);
+         GetDefaultPasswordStore() == PasswordForm::Store::kProfileStore;
 }
 #endif  // !BUILDFLAG(IS_IOS) && !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_ANDROID)
 bool PasswordFeatureManagerImpl::ShouldUpdateGmsCore() {
-  bool is_pwd_sync_enabled =
-      sync_util::IsSyncFeatureEnabledIncludingPasswords(sync_service_);
-  std::string gms_version_str =
-      base::android::BuildInfo::GetInstance()->gms_version_code();
-  return IsGmsCoreUpdateRequired(pref_service_, is_pwd_sync_enabled,
-                                 gms_version_str);
+  return IsGmsCoreUpdateRequired(pref_service_, sync_service_);
 }
 #endif  // BUILDFLAG(IS_ANDROID)
 

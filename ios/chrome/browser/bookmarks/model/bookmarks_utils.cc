@@ -7,12 +7,11 @@
 #include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/metrics/histogram_functions.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
-#include "components/bookmarks/browser/core_bookmark_model.h"
 #include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/bookmarks/model/bookmark_model_factory.h"
-#include "ios/chrome/browser/bookmarks/model/bookmark_model_type.h"
-#include "ios/chrome/browser/bookmarks/model/legacy_bookmark_model.h"
+#include "ios/chrome/browser/bookmarks/model/bookmark_storage_type.h"
 #include "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/shared/model/prefs/pref_names.h"
 
@@ -26,75 +25,36 @@ void LogDefaultBookmarkFolderOutcome(
                                 value);
 }
 
-// Returns the bookmark model designed by `type`.
-LegacyBookmarkModel* GetBookmarkModelForType(
-    BookmarkModelType type,
-    LegacyBookmarkModel* local_or_syncable_bookmark_model,
-    LegacyBookmarkModel* account_bookmark_model) {
-  switch (type) {
-    case BookmarkModelType::kAccount:
-      return account_bookmark_model;
-    case BookmarkModelType::kLocalOrSyncable:
-      return local_or_syncable_bookmark_model;
-  }
-  NOTREACHED_NORETURN();
-}
-
 }  // namespace
 
 const int64_t kLastUsedBookmarkFolderNone = -1;
 
-bool AreAllAvailableBookmarkModelsLoaded(ChromeBrowserState* browser_state) {
-  bookmarks::CoreBookmarkModel* model =
-      ios::BookmarkModelFactory::GetForBrowserState(browser_state);
+std::vector<const bookmarks::BookmarkNode*> PrimaryPermanentNodes(
+    const bookmarks::BookmarkModel* model,
+    BookmarkStorageType type) {
   CHECK(model);
-  return model->loaded();
-}
+  CHECK(model->loaded());
 
-bool RemoveAllUserBookmarksIOS(ChromeBrowserState* browser_state,
-                               const base::Location& location) {
-  bookmarks::CoreBookmarkModel* bookmark_model =
-      ios::BookmarkModelFactory::GetForBrowserState(browser_state);
-
-  if (!bookmark_model->loaded()) {
-    return false;
+  switch (type) {
+    case BookmarkStorageType::kLocalOrSyncable:
+      return {model->mobile_node(), model->bookmark_bar_node(),
+              model->other_node()};
+    case BookmarkStorageType::kAccount: {
+      std::vector<const bookmarks::BookmarkNode*> nodes;
+      // Normally either all account permanent nodes exists or none does, but
+      // during transitional states (i.e. during creation or removal of account
+      // permanent nodes) it is also possible that a subset exists.
+      for (const bookmarks::BookmarkNode* node :
+           {model->account_mobile_node(), model->account_bookmark_bar_node(),
+            model->account_other_node()}) {
+        if (node) {
+          nodes.push_back(node);
+        }
+      }
+      return nodes;
+    }
   }
-
-  bookmark_model->RemoveAllUserBookmarks(location);
-
-  ResetLastUsedBookmarkFolder(browser_state->GetPrefs());
-  return true;
-}
-
-std::vector<const BookmarkNode*> PrimaryPermanentNodes(
-    LegacyBookmarkModel* model) {
-  DCHECK(model->loaded());
-  std::vector<const BookmarkNode*> nodes;
-
-  // When dealing with account bookmarks, it is possible that they don't
-  // actually exist (e.g. the user is signed out). It is guaranteed that all
-  // exist or none.
-  if (!model->mobile_node()) {
-    // Account bookmarks do not exist, no need to return them.
-    DCHECK(!model->bookmark_bar_node());
-    DCHECK(!model->other_node());
-    return nodes;
-  }
-
-  // Account bookmarks do exist (all three). Return them.
-  DCHECK(model->bookmark_bar_node());
-  DCHECK(model->other_node());
-
-  nodes.push_back(model->mobile_node());
-  nodes.push_back(model->bookmark_bar_node());
-  nodes.push_back(model->other_node());
-  return nodes;
-}
-
-bool IsPrimaryPermanentNode(const BookmarkNode* node,
-                            LegacyBookmarkModel* model) {
-  std::vector<const BookmarkNode*> primary_nodes(PrimaryPermanentNodes(model));
-  return base::Contains(primary_nodes, node);
+  NOTREACHED_NORETURN();
 }
 
 bool IsLastUsedBookmarkFolderSet(PrefService* prefs) {
@@ -109,7 +69,7 @@ void ResetLastUsedBookmarkFolder(PrefService* prefs) {
 
 void SetLastUsedBookmarkFolder(PrefService* prefs,
                                const bookmarks::BookmarkNode* folder,
-                               BookmarkModelType type) {
+                               BookmarkStorageType type) {
   CHECK(folder);
   CHECK(folder->is_folder()) << "node type: " << folder->type()
                              << ", storage type: " << static_cast<int>(type);
@@ -121,9 +81,7 @@ void SetLastUsedBookmarkFolder(PrefService* prefs,
 
 const bookmarks::BookmarkNode* GetDefaultBookmarkFolder(
     PrefService* prefs,
-    bool is_account_bookmark_model_available,
-    LegacyBookmarkModel* local_or_syncable_bookmark_model,
-    LegacyBookmarkModel* account_bookmark_model) {
+    const bookmarks::BookmarkModel* bookmark_model) {
   int64_t node_id =
       prefs->GetInt64(prefs::kIosBookmarkLastUsedFolderReceivingBookmarks);
 
@@ -131,22 +89,23 @@ const bookmarks::BookmarkNode* GetDefaultBookmarkFolder(
     LogDefaultBookmarkFolderOutcome(
         DefaultBookmarkFolderOutcomeForMetrics::kUnset);
   } else {
-    BookmarkModelType type = static_cast<BookmarkModelType>(prefs->GetInteger(
-        prefs::kIosBookmarkLastUsedStorageReceivingBookmarks));
-    LegacyBookmarkModel* bookmark_model = GetBookmarkModelForType(
-        type, local_or_syncable_bookmark_model, account_bookmark_model);
-    const BookmarkNode* result = bookmark_model->GetNodeById(node_id);
+    BookmarkStorageType type =
+        static_cast<BookmarkStorageType>(prefs->GetInteger(
+            prefs::kIosBookmarkLastUsedStorageReceivingBookmarks));
+
+    const BookmarkNode* result =
+        bookmarks::GetBookmarkNodeByID(bookmark_model, node_id);
     if (result && result->is_folder()) {
       // Make sure the bookmark node is a folder. See crbug.com/1450146.
       LogDefaultBookmarkFolderOutcome(
-          (bookmark_model == local_or_syncable_bookmark_model)
+          bookmark_model->IsLocalOnlyNode(*result)
               ? DefaultBookmarkFolderOutcomeForMetrics::kExistingLocalFolderSet
               : DefaultBookmarkFolderOutcomeForMetrics::
                     kExistingAccountFolderSet);
       return result;
     } else {
       LogDefaultBookmarkFolderOutcome(
-          (bookmark_model == local_or_syncable_bookmark_model)
+          (type == BookmarkStorageType::kLocalOrSyncable)
               ? DefaultBookmarkFolderOutcomeForMetrics::kMissingLocalFolderSet
               : DefaultBookmarkFolderOutcomeForMetrics::
                     kMissingAccountFolderSet);
@@ -154,13 +113,9 @@ const bookmarks::BookmarkNode* GetDefaultBookmarkFolder(
   }
 
   // Either preferences is not set, or refers to a non-existing folder.
-  BookmarkModelType type = (is_account_bookmark_model_available &&
-                            account_bookmark_model->mobile_node() != nullptr)
-                               ? BookmarkModelType::kAccount
-                               : BookmarkModelType::kLocalOrSyncable;
-  LegacyBookmarkModel* bookmark_model = GetBookmarkModelForType(
-      type, local_or_syncable_bookmark_model, account_bookmark_model);
-  return bookmark_model->mobile_node();
+  return (bookmark_model->account_mobile_node() != nullptr)
+             ? bookmark_model->account_mobile_node()
+             : bookmark_model->mobile_node();
 }
 
 void MigrateLastUsedBookmarkFolderUponLocalIdsReassigned(
@@ -174,9 +129,9 @@ void MigrateLastUsedBookmarkFolderUponLocalIdsReassigned(
     return;
   }
 
-  const BookmarkModelType type = static_cast<BookmarkModelType>(
+  const BookmarkStorageType type = static_cast<BookmarkStorageType>(
       prefs->GetInteger(prefs::kIosBookmarkLastUsedStorageReceivingBookmarks));
-  if (type != BookmarkModelType::kLocalOrSyncable) {
+  if (type != BookmarkStorageType::kLocalOrSyncable) {
     // Account bookmarks don't get their IDs reassigned as a result of the
     // migration covered here (the adoption of a single BookmarkModel on iOS,
     // whereas previously this client may have used two of them).

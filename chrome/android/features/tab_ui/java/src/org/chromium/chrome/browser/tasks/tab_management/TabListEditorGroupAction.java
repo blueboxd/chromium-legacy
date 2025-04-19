@@ -23,23 +23,30 @@ import java.util.List;
 
 /** Group action for the {@link TabListEditorMenu}. */
 public class TabListEditorGroupAction extends TabListEditorAction {
+    private final TabGroupCreationDialogManager mTabGroupCreationDialogManager;
+
     /**
      * Create an action for grouping tabs.
+     *
      * @param context for loading resources.
+     * @param tabGroupCreationDialogManager the manager for showing a dialog on group creation.
      * @param showMode whether to show an action view.
      * @param buttonType the type of the action view.
      * @param iconPosition the position of the icon in the action view.
      */
     public static TabListEditorAction createAction(
             Context context,
+            TabGroupCreationDialogManager tabGroupCreationDialogManager,
             @ShowMode int showMode,
             @ButtonType int buttonType,
             @IconPosition int iconPosition) {
         Drawable drawable = AppCompatResources.getDrawable(context, R.drawable.ic_widgets);
-        return new TabListEditorGroupAction(showMode, buttonType, iconPosition, drawable);
+        return new TabListEditorGroupAction(
+                tabGroupCreationDialogManager, showMode, buttonType, iconPosition, drawable);
     }
 
     private TabListEditorGroupAction(
+            TabGroupCreationDialogManager tabGroupCreationDialogManager,
             @ShowMode int showMode,
             @ButtonType int buttonType,
             @IconPosition int iconPosition,
@@ -52,33 +59,44 @@ public class TabListEditorGroupAction extends TabListEditorAction {
                 R.plurals.tab_selection_editor_group_tabs,
                 R.plurals.accessibility_tab_selection_editor_group_tabs,
                 drawable);
+
+        mTabGroupCreationDialogManager = tabGroupCreationDialogManager;
     }
 
     @Override
     public void onSelectionStateChange(List<Integer> tabIds) {
-        int size =
+        int tabCount =
                 editorSupportsActionOnRelatedTabs()
                         ? getTabCountIncludingRelatedTabs(getTabGroupModelFilter(), tabIds)
                         : tabIds.size();
 
-        boolean isEnabled = tabIds.size() > 1;
-        if (ChromeFeatureList.sAndroidTabGroupStableIds.isEnabled() && tabIds.size() == 1) {
+        boolean isEnabled = false;
+        int tabIdsSize = tabIds.size();
+        if (tabIdsSize == 1) {
             TabGroupModelFilter filter = getTabGroupModelFilter();
-            Tab tab = TabModelUtils.getTabById(filter.getTabModel(), tabIds.get(0));
+            Tab tab = filter.getTabModel().getTabById(tabIds.get(0));
             isEnabled = tab != null && !filter.isTabInTabGroup(tab);
+        } else {
+            isEnabled = tabIdsSize > 1;
         }
-        setEnabledAndItemCount(isEnabled, size);
+        setEnabledAndItemCount(isEnabled, tabCount);
     }
 
     @Override
     public boolean performAction(List<Tab> tabs) {
         TabGroupModelFilter tabGroupModelFilter = getTabGroupModelFilter();
 
-        if (ChromeFeatureList.sAndroidTabGroupStableIds.isEnabled() && tabs.size() == 1) {
+        if (tabs.size() == 1) {
             Tab tab = tabs.get(0);
             if (tabGroupModelFilter.isTabInTabGroup(tab)) return true;
 
             tabGroupModelFilter.createSingleTabGroup(tab, /* notify= */ true);
+            if (ChromeFeatureList.sTabGroupParityAndroid.isEnabled()
+                    && !TabGroupCreationDialogManager.shouldSkipGroupCreationDialog(
+                            /* shouldShow= */ TabGroupCreationDialogManager
+                                    .shouldShowGroupCreationDialogViaSettingsSwitch())) {
+                mTabGroupCreationDialogManager.showDialog(tab.getRootId(), tabGroupModelFilter);
+            }
             return true;
         }
 
@@ -101,7 +119,21 @@ public class TabListEditorGroupAction extends TabListEditorAction {
             sortedTabs.add(tab);
         }
 
+        List<Tab> tabsToMerge = new ArrayList<>();
+        tabsToMerge.addAll(sortedTabs);
+        tabsToMerge.add(destinationTab);
+        boolean willMergingCreateNewGroup =
+                tabGroupModelFilter.willMergingCreateNewGroup(tabsToMerge);
         tabGroupModelFilter.mergeListOfTabsToGroup(sortedTabs, destinationTab, /* notify= */ true);
+
+        if (ChromeFeatureList.sTabGroupParityAndroid.isEnabled()
+                && willMergingCreateNewGroup
+                && !TabGroupCreationDialogManager.shouldSkipGroupCreationDialog(
+                        /* shouldShow= */ TabGroupCreationDialogManager
+                                .shouldShowGroupCreationDialogViaSettingsSwitch())) {
+            mTabGroupCreationDialogManager.showDialog(
+                    destinationTab.getRootId(), tabGroupModelFilter);
+        }
 
         TabUiMetricsHelper.recordSelectionEditorActionMetrics(
                 TabListEditorActionMetricGroups.GROUP);

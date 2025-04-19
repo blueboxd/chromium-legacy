@@ -9,6 +9,7 @@
 #include "base/i18n/character_encoding.h"
 #include "base/trace_event/optional_trace_event.h"
 #include "cc/base/features.h"
+#include "cc/input/browser_controls_offset_tags_info.h"
 #include "content/browser/manifest/manifest_manager_host.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/page_delegate.h"
@@ -18,9 +19,10 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/peak_gpu_memory_tracker.h"
+#include "content/public/browser/peak_gpu_memory_tracker_factory.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/content_client.h"
+#include "services/viz/public/mojom/compositing/offset_tag.mojom.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/loader_constants.h"
 #include "third_party/blink/public/common/shared_storage/shared_storage_utils.h"
@@ -69,8 +71,6 @@ void PageImpl::GetManifest(GetManifestCallback callback) {
 }
 
 bool PageImpl::IsPrimary() const {
-  // TODO(crbug.com/40787700): Check for portals as well, once they are migrated
-  // to MPArch.
   if (main_document_->IsFencedFrameRoot())
     return false;
 
@@ -258,15 +258,8 @@ void PageImpl::Activate(
   }
 
   // Prepare each RenderFrameHostImpl in this Page for activation.
-  // TODO(crbug.com/40191159): Currently we check GetPage() below because
-  // RenderFrameHostImpls may be in a different Page, if, e.g., they are in an
-  // inner WebContents. These are in a different FrameTree which might not know
-  // it is being prerendered. We should teach these FrameTrees that they are
-  // being prerendered, or ban inner FrameTrees in a prerendering page.
   main_document_->ForEachRenderFrameHostIncludingSpeculative(
-      [this](RenderFrameHostImpl* rfh) {
-        if (&rfh->GetPage() != this)
-          return;
+      [](RenderFrameHostImpl* rfh) {
         rfh->RendererWillActivateForPrerenderingOrPreview();
       });
 }
@@ -321,9 +314,11 @@ RenderFrameHostImpl& PageImpl::GetMainDocument() const {
   return *main_document_;
 }
 
-void PageImpl::UpdateBrowserControlsState(cc::BrowserControlsState constraints,
-                                          cc::BrowserControlsState current,
-                                          bool animate) {
+void PageImpl::UpdateBrowserControlsState(
+    cc::BrowserControlsState constraints,
+    cc::BrowserControlsState current,
+    bool animate,
+    const std::optional<cc::BrowserControlsOffsetTagsInfo>& offset_tags_info) {
   // TODO(crbug.com/40159655): Asking for the LocalMainFrame interface
   // before the RenderFrame is created is racy.
   if (!GetMainDocument().IsRenderFrameLive())
@@ -332,10 +327,10 @@ void PageImpl::UpdateBrowserControlsState(cc::BrowserControlsState constraints,
   if (base::FeatureList::IsEnabled(
           features::kUpdateBrowserControlsWithoutProxy)) {
     GetMainDocument().GetRenderWidgetHost()->UpdateBrowserControlsState(
-        constraints, current, animate);
+        constraints, current, animate, offset_tags_info);
   } else {
     GetMainDocument().GetAssociatedLocalMainFrame()->UpdateBrowserControlsState(
-        constraints, current, animate);
+        constraints, current, animate, offset_tags_info);
   }
 }
 

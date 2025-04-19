@@ -11,7 +11,8 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_path_override.h"
+#include "base/test/with_feature_override.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
@@ -29,10 +30,6 @@ namespace privacy_sandbox {
 class PrivacySandboxAttestationsBrowserTest
     : public MixinBasedInProcessBrowserTest {
  public:
-  PrivacySandboxAttestationsBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        kPrivacySandboxAttestationSentinel);
-  }
 
   void SetUp() override {
     MixinBasedInProcessBrowserTest::SetUp();
@@ -66,7 +63,6 @@ class PrivacySandboxAttestationsBrowserTest
   PrivacySandboxAttestationsMixin privacy_sandbox_attestations_mixin_{
       &mixin_host_};
 
-  base::test::ScopedFeatureList scoped_feature_list_;
   base::HistogramTester histogram_tester_;
 };
 
@@ -83,7 +79,11 @@ IN_PROC_BROWSER_TEST_F(
   site_attestation.add_attested_apis(TOPICS);
   (*proto.mutable_site_attestations())[site] = site_attestation;
 
-  base::Version version("0.0.0.1");
+  // There is a pre-installed attestations component. Choose a version number
+  // that is sure to be higher than the pre-installed one. This makes sure that
+  // the component installer will choose the attestations file in the user-wide
+  // component directory.
+  base::Version version("12345.0.0.0");
 
   ASSERT_TRUE(
       component_updater::InstallPrivacySandboxAttestationsComponentForTesting(
@@ -110,129 +110,10 @@ IN_PROC_BROWSER_TEST_F(
       PrivacySandboxAttestations::GetInstance()->IsSiteAttested(
           net::SchemefulSite(GURL(site)),
           PrivacySandboxAttestationsGatedAPI::kTopics)));
-}
 
-// When parsing fails or crashes, a sentinel file is left in the installation
-// directory. This file prevents further parsing attempts.
-IN_PROC_BROWSER_TEST_F(PrivacySandboxAttestationsBrowserTest,
-                       SentinelFilePreventsSubsequentParsings) {
-  std::string site = "https://example.com";
-
-  // Allow blocking for file IO.
-  base::ScopedAllowBlockingForTesting allow_blocking;
-
-  base::Version version("0.0.0.1");
-
-  ASSERT_TRUE(
-      component_updater::InstallPrivacySandboxAttestationsComponentForTesting(
-          "invalid proto", version));
-
-  base::FilePath install_dir =
-      component_updater::GetPrivacySandboxAtteststionsComponentInstallDir(
-          version);
-  ASSERT_FALSE(base::PathExists(install_dir.Append(kSentinelFileName)));
-
-  base::RunLoop parsing_invalid_attestations;
-  PrivacySandboxAttestations::GetInstance()
-      ->SetLoadAttestationsDoneCallbackForTesting(
-          parsing_invalid_attestations.QuitClosure());
-
-  // Register the privacy sandbox attestations component, which should detect
-  // the existing attestations file on disk and start parsing.
-  RegisterPrivacySandboxAttestationsComponent(
-      g_browser_process->component_updater());
-
-  // Wait until the attestations parsing is done.
-  parsing_invalid_attestations.Run();
-
-  // Verify the parsing is failed because of the invalid attestations file.
-  EXPECT_FALSE(PrivacySandboxAttestations::GetInstance()
-                   ->GetVersionForTesting()
-                   .IsValid());
-  EXPECT_EQ(PrivacySandboxSettingsImpl::Status::kAttestationsFileCorrupt,
-            PrivacySandboxAttestations::GetInstance()->IsSiteAttested(
-                net::SchemefulSite(GURL(site)),
-                PrivacySandboxAttestationsGatedAPI::kTopics));
-  ASSERT_TRUE(base::PathExists(install_dir.Append(kSentinelFileName)));
-
-  // Overwrite the attestations file with a serialized proto.
-  PrivacySandboxAttestationsProto proto;
-  PrivacySandboxAttestationsProto::PrivacySandboxAttestedAPIsProto
-      site_attestation;
-  site_attestation.add_attested_apis(TOPICS);
-  (*proto.mutable_site_attestations())[site] = site_attestation;
-
-  // Serialize proto to string.
-  std::string serialized_proto;
-  proto.SerializeToString(&serialized_proto);
-
-  ASSERT_TRUE(component_updater::WritePrivacySandboxAttestationsFileForTesting(
-      install_dir, serialized_proto));
-
-  // Try to load the attestations file again. This time its content is valid.
-  // However, the sentinel file from previous run should prevent it from being
-  // parsed.
-  base::RunLoop parsing_valid_attestations_with_sentinel;
-  PrivacySandboxAttestations::GetInstance()
-      ->SetLoadAttestationsDoneCallbackForTesting(
-          parsing_valid_attestations_with_sentinel.QuitClosure());
-
-  // Register the privacy sandbox attestations component, which should detect
-  // the existing attestations file on disk and start parsing.
-  RegisterPrivacySandboxAttestationsComponent(
-      g_browser_process->component_updater());
-
-  parsing_valid_attestations_with_sentinel.Run();
-
-  // Sentinel file should prevent parsing. The query result should stay the same
-  // as before.
-  EXPECT_FALSE(PrivacySandboxAttestations::GetInstance()
-                   ->GetVersionForTesting()
-                   .IsValid());
-  EXPECT_EQ(PrivacySandboxSettingsImpl::Status::kAttestationsFileCorrupt,
-            PrivacySandboxAttestations::GetInstance()->IsSiteAttested(
-                net::SchemefulSite(GURL(site)),
-                PrivacySandboxAttestationsGatedAPI::kTopics));
-  EXPECT_TRUE(base::PathExists(install_dir.Append(kSentinelFileName)));
-
-  base::Version newer_version("0.0.0.2");
-
-  // Install newer version attestations.
-  ASSERT_TRUE(
-      component_updater::InstallPrivacySandboxAttestationsComponentForTesting(
-          proto, newer_version));
-
-  // The sentinel file still exists in the old version installation directory.
-  EXPECT_TRUE(base::PathExists(install_dir.Append(kSentinelFileName)));
-
-  // Try to load the attestations file again.
-  base::RunLoop parsing_new_version;
-  PrivacySandboxAttestations::GetInstance()
-      ->SetLoadAttestationsDoneCallbackForTesting(
-          parsing_new_version.QuitClosure());
-
-  // Register the privacy sandbox attestations component, which should detect
-  // the existing attestations file on disk and start parsing.
-  RegisterPrivacySandboxAttestationsComponent(
-      g_browser_process->component_updater());
-
-  parsing_new_version.Run();
-
-  // Expect the loading to be successful. The sentinel file in the old version
-  // directory should not prevent the parsing in the new version directory.
-  EXPECT_TRUE(PrivacySandboxAttestations::GetInstance()
-                  ->GetVersionForTesting()
-                  .IsValid());
-  EXPECT_EQ(PrivacySandboxSettingsImpl::Status::kAllowed,
-            PrivacySandboxAttestations::GetInstance()->IsSiteAttested(
-                net::SchemefulSite(GURL(site)),
-                PrivacySandboxAttestationsGatedAPI::kTopics));
-  EXPECT_EQ(PrivacySandboxAttestations::GetInstance()->GetVersionForTesting(),
-            base::Version("0.0.0.2"));
-
-  // Component updater should delete the old version directory, see
-  // `ComponentInstaller::DeleteUnselectedComponentVersions`.
-  EXPECT_FALSE(base::PathExists(install_dir));
+  histogram_tester().ExpectTotalCount(kAttestationsFileSource, 1);
+  histogram_tester().ExpectBucketCount(kAttestationsFileSource,
+                                       FileSource::kDownloaded, 1);
 }
 
 // Depending on whether the component installer has checked the attestations
@@ -240,6 +121,17 @@ IN_PROC_BROWSER_TEST_F(PrivacySandboxAttestationsBrowserTest,
 // histogram buckets.
 IN_PROC_BROWSER_TEST_F(PrivacySandboxAttestationsBrowserTest,
                        DifferentHistogramAfterAttestationsFileCheck) {
+  // Allow blocking for file IO.
+  base::ScopedAllowBlockingForTesting allow_blocking;
+
+  // Override the pre-install component directory and its alternative directory
+  // so that the component update will not find the pre-installed attestations
+  // file.
+  base::ScopedPathOverride preinstalled_dir_override(
+      component_updater::DIR_COMPONENT_PREINSTALLED);
+  base::ScopedPathOverride preinstalled_alt_dir_override(
+      component_updater::DIR_COMPONENT_PREINSTALLED_ALT);
+
   std::string site = "https://example.com";
   EXPECT_FALSE(PrivacySandboxSettingsImpl::IsAllowed(
       PrivacySandboxAttestations::GetInstance()->IsSiteAttested(
@@ -277,5 +169,71 @@ IN_PROC_BROWSER_TEST_F(PrivacySandboxAttestationsBrowserTest,
       kAttestationStatusUMA,
       PrivacySandboxSettingsImpl::Status::kAttestationsFileNotPresent, 1);
 }
+
+class PrivacySandboxAttestationPreInstallBrowserTest
+    : public PrivacySandboxAttestationsBrowserTest,
+      public base::test::WithFeatureOverride {
+ public:
+  PrivacySandboxAttestationPreInstallBrowserTest()
+      : base::test::WithFeatureOverride(
+            kPrivacySandboxAttestationsLoadPreInstalledComponent) {}
+};
+
+// If there is no attestation list in user directory and feature
+// "PrivacySandboxAttestationsLoadPreInstalledComponent" is enabled, the
+// pre-installed version should be used.
+IN_PROC_BROWSER_TEST_P(PrivacySandboxAttestationPreInstallBrowserTest,
+                       PreinstalledAttestationListPresent) {
+  // Allow blocking for file IO.
+  base::ScopedAllowBlockingForTesting allow_blocking;
+
+  // Override the user-wide component directory to make sure there is no
+  // downloaded attestation list.
+  base::ScopedPathOverride user_dir_override(
+      component_updater::DIR_COMPONENT_USER);
+
+  base::RunLoop run_loop;
+  PrivacySandboxAttestations::GetInstance()
+      ->SetLoadAttestationsDoneCallbackForTesting(run_loop.QuitClosure());
+
+  // Register the privacy sandbox attestations component, which should parse
+  // the pre-installed attestations file on disk if feature
+  // "PrivacySandboxAttestationsLoadPreInstalledComponent" is enabled.
+  RegisterPrivacySandboxAttestationsComponent(
+      g_browser_process->component_updater());
+
+  if (IsParamFeatureEnabled()) {
+    // Wait until the attestations parsing is done.
+    run_loop.Run();
+
+    EXPECT_TRUE(PrivacySandboxAttestations::GetInstance()
+                    ->GetVersionForTesting()
+                    .IsValid());
+
+    // Make an attestation check to verify the data point is recorded to the
+    // correct histogram bucket.
+    PrivacySandboxAttestations::GetInstance()->IsSiteAttested(
+        net::SchemefulSite(GURL("https://example.com")),
+        PrivacySandboxAttestationsGatedAPI::kTopics);
+    histogram_tester().ExpectTotalCount(kAttestationsFileSource, 1);
+    histogram_tester().ExpectBucketCount(kAttestationsFileSource,
+                                         FileSource::kPreInstalled, 1);
+  } else {
+    // If feature off, the attestation component should not parse the
+    // pre-installed file.
+    run_loop.RunUntilIdle();
+
+    ASSERT_FALSE(PrivacySandboxAttestations::GetInstance()
+                     ->GetVersionForTesting()
+                     .IsValid());
+    PrivacySandboxAttestations::GetInstance()->IsSiteAttested(
+        net::SchemefulSite(GURL("https://example.com")),
+        PrivacySandboxAttestationsGatedAPI::kTopics);
+    histogram_tester().ExpectTotalCount(kAttestationsFileSource, 0);
+  }
+}
+
+INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(
+    PrivacySandboxAttestationPreInstallBrowserTest);
 
 }  // namespace privacy_sandbox

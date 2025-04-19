@@ -9,15 +9,21 @@
 #include <vector>
 
 #include "ash/constants/ash_switches.h"
+#include "base/check_deref.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/callback_helpers.h"
 #include "base/json/json_writer.h"
+#include "base/run_loop.h"
 #include "base/strings/strcat.h"
+#include "base/task/thread_pool.h"
 #include "base/test/bind.h"
+#include "base/test/run_until.h"
 #include "base/test/test_future.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/types/cxx23_to_underlying.h"
+#include "base/types/expected.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/ash/login/existing_user_controller.h"
 #include "chrome/browser/ash/login/login_manager_test.h"
@@ -30,19 +36,24 @@
 #include "chrome/browser/ash/policy/core/device_local_account_policy_service.h"
 #include "chrome/browser/ash/policy/core/device_policy_cros_browser_test.h"
 #include "chrome/browser/ash/policy/test_support/embedded_policy_test_server_mixin.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_ash.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/policy/developer_tools_policy_handler.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/web_applications/test/isolated_web_app_test_utils.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/isolated_web_apps/test/policy_generator.h"
+#include "chrome/browser/web_applications/isolated_web_apps/test/test_iwa_installer_factory.h"
 #include "chrome/browser/web_applications/isolated_web_apps/test/test_signed_web_bundle_builder.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
+#include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/ash/components/dbus/session_manager/fake_session_manager_client.h"
 #include "components/policy/core/common/cloud/test/policy_builder.h"
@@ -51,6 +62,7 @@
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/policy_constants.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
+#include "components/webapps/common/web_app_id.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
@@ -76,6 +88,8 @@ constexpr char kUpdateManifestTemplate2[] = R"(
 constexpr char kUserMail[] = "dla@example.com";
 constexpr char kDisplayName[] = "display name";
 
+constexpr char kOrphanedBundleDirectory[] = "6zsr4hjoudsu6ihf";
+
 using policy::DeveloperToolsPolicyHandler;
 
 }  // namespace
@@ -91,10 +105,16 @@ class IsolatedWebAppPolicyManagerAshBrowserTestBase
  protected:
   explicit IsolatedWebAppPolicyManagerAshBrowserTestBase(bool is_user_session)
       : is_user_session_(is_user_session) {
-    scoped_feature_list_.InitAndEnableFeature(features::kIsolatedWebApps);
+    std::vector<base::test::FeatureRef> enabled_features = {
+        features::kIsolatedWebApps};
     if (is_user_session_) {
       login_manager_mixin_.AppendRegularUsers(1);
+    } else {
+      enabled_features.push_back(
+          features::kIsolatedWebAppManagedGuestSessionInstall);
     }
+    scoped_feature_list_.InitWithFeatures(enabled_features,
+                                          /*disabled_features=*/{});
   }
 
   ~IsolatedWebAppPolicyManagerAshBrowserTestBase() override = default;
@@ -306,7 +326,7 @@ class IsolatedWebAppPolicyManagerAshBrowserTestBase
       web_app::TestSignedWebBundleBuilder::BuildDefault(
           TestSignedWebBundleBuilder::BuildOptions()
               .SetVersion(base::Version("7.0.6"))
-              .SetKeyPair(web_package::WebBundleSigner::Ed25519KeyPair::
+              .AddKeyPair(web_package::WebBundleSigner::Ed25519KeyPair::
                               CreateRandom()));
   const web_app::TestSignedWebBundle iwa_bundle_2_ =
       web_app::TestSignedWebBundleBuilder::BuildDefault(
@@ -539,5 +559,132 @@ INSTANTIATE_TEST_SUITE_P(
             DeveloperToolsPolicyHandler::Availability::
                 kDisallowedForForceInstalledExtensions,
             DeveloperToolsPolicyHandler::Availability::kDisallowed)));
+
+class CleanupOrphanedBundlesTest
+    : public IsolatedWebAppPolicyManagerAshBrowserTestBase,
+      public ProfileManagerObserver,
+      public testing::WithParamInterface<bool> {
+ public:
+  CleanupOrphanedBundlesTest()
+      : IsolatedWebAppPolicyManagerAshBrowserTestBase(
+            /*is_user_session=*/GetParam()) {}
+
+  void SetUpOnMainThread() override {
+    iwa_installer_factory_.SetUp(GetProfileForTest());
+    IsolatedWebAppPolicyManagerAshBrowserTestBase::SetUpOnMainThread();
+    profile_manager_observation_.Observe(g_browser_process->profile_manager());
+  }
+
+  void TearDownOnMainThread() override {
+    last_simulate_orphaned_bundle_profile_ = nullptr;
+  }
+
+  void SimulateOrphanedBundle(Profile* profile,
+                              const std::string& bundle_directory) {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    auto base_path = CHECK_DEREF(profile)
+                         .GetPath()
+                         .Append(kIwaDirName)
+                         .Append(bundle_directory);
+    ASSERT_TRUE(base::CreateDirectory(base_path));
+    ASSERT_TRUE(
+        base::WriteFile(base_path.Append("main.swbn"), "Sample content"));
+  }
+
+  bool CheckBundleDirectoryExists(Profile* profile,
+                                  const std::string& bundle_directory) {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    return base::DirectoryExists(CHECK_DEREF(profile)
+                                     .GetPath()
+                                     .Append(kIwaDirName)
+                                     .Append(bundle_directory));
+  }
+
+  // ProfileManagerObserver:
+  void OnProfileAdded(Profile* profile) override {
+    last_simulate_orphaned_bundle_profile_ = profile;
+    SimulateOrphanedBundle(profile, kOrphanedBundleDirectory);
+    ASSERT_TRUE(CheckBundleDirectoryExists(profile, kOrphanedBundleDirectory));
+  }
+
+  void OnProfileManagerDestroying() override {
+    profile_manager_observation_.Reset();
+  }
+
+ protected:
+  TestIwaInstallerFactory iwa_installer_factory_;
+  raw_ptr<Profile> last_simulate_orphaned_bundle_profile_ = nullptr;
+  base::ScopedObservation<ProfileManager, ProfileManagerObserver>
+      profile_manager_observation_{this};
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_P(CleanupOrphanedBundlesTest,
+                       CleanUpSuccessfulOnSessionStart) {
+  SetupServer();
+
+  AddUser(/*set_iwa_policy_on_login=*/false);
+
+  // Login to the session.
+  ASSERT_NO_FATAL_FAILURE(StartLogin());
+  WaitForSessionStart();
+
+  Profile* const profile = GetProfileForTest();
+  WebAppProvider::GetForTest(profile)
+      ->command_manager()
+      .AwaitAllCommandsCompleteForTesting();
+
+  // Make sure we simulated the orphaned bundle for the profile we run the
+  // cleanup command on.
+  EXPECT_EQ(last_simulate_orphaned_bundle_profile_, profile);
+  EXPECT_FALSE(CheckBundleDirectoryExists(profile, kOrphanedBundleDirectory));
+}
+
+IN_PROC_BROWSER_TEST_P(CleanupOrphanedBundlesTest,
+                       CleanUpSuccessfulOnFailedInstall) {
+  SetupServer();
+
+  base::test::TestFuture<void> future;
+  iwa_installer_factory_.SetInstallCompletedClosure(
+      future.GetRepeatingCallback());
+
+  AddUser(/*set_iwa_policy_on_login=*/false);
+
+  // Login to the session.
+  ASSERT_NO_FATAL_FAILURE(StartLogin());
+  WaitForSessionStart();
+
+  Profile* const profile = GetProfileForTest();
+  WebAppProvider* provider = WebAppProvider::GetForTest(profile);
+  WebAppCommandManager& command_manager = provider->command_manager();
+  command_manager.AwaitAllCommandsCompleteForTesting();
+
+  SimulateOrphanedBundle(profile, kOrphanedBundleDirectory);
+  ASSERT_TRUE(CheckBundleDirectoryExists(profile, kOrphanedBundleDirectory));
+
+  // Try to install an isolated web app, which should fail. This should trigger
+  // a cleanup.
+  iwa_installer_factory_.SetCommandBehavior(
+      iwa_bundle_1_.id.id(), /*execution_mode=*/
+      MockIsolatedWebAppInstallCommandWrapper::ExecutionMode::kSimulateFailure,
+      /*execute_immediately=*/true);
+  SetPolicyWithOneApp();
+  ASSERT_TRUE(future.Wait());
+  webapps::AppId id =
+      IsolatedWebAppUrlInfo::CreateFromSignedWebBundleId(iwa_bundle_1_.id)
+          .app_id();
+  EXPECT_FALSE(provider->registrar_unsafe().IsInstalled(id));
+
+  // Wait until the cleanup is done.
+  command_manager.AwaitAllCommandsCompleteForTesting();
+  EXPECT_EQ(0u, command_manager.GetCommandCountForTesting());
+  EXPECT_FALSE(CheckBundleDirectoryExists(profile, kOrphanedBundleDirectory));
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    /***/,
+    CleanupOrphanedBundlesTest,
+    // Is a user session (true) or a managed guest session (false).
+    testing::Bool());
 
 }  // namespace web_app

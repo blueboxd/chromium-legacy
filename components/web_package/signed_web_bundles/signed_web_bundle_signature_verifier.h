@@ -20,11 +20,8 @@ namespace web_package {
 class SignedWebBundleIntegrityBlock;
 
 // This class can be used to verify the signatures contained in a Signed Web
-// Bundle's integrity block. Currently, only one signature is supported, as
-// described in the explainer here:
+// Bundle's integrity block.
 // github.com/WICG/webpackage/blob/main/explainers/integrity-signature.md
-//
-// TODO(crbug.com/40239682): Support more than one signature.
 class SignedWebBundleSignatureVerifier {
  public:
   struct Error {
@@ -34,22 +31,29 @@ class SignedWebBundleSignatureVerifier {
     static Error ForInvalidSignature(const std::string& message) {
       return {.type = Type::kSignatureInvalidError, .message = message};
     }
+    static Error ForWebBundleIdError(const std::string& message) {
+      return {.type = Type::kWebBundleIdError, .message = message};
+    }
 
-    enum class Type { kInternalError, kSignatureInvalidError };
-    Type type;
+    enum class Type {
+      kInternalError,
+      kSignatureInvalidError,
+      kWebBundleIdError,
+    } type;
     std::string message;
   };
 
-  // Takes the chunk size in which the Signed Web Bundle is read for calculating
-  // its SHA512 hash. Higher values use more RAM, but may potentially be a bit
-  // faster. It is exposed here instead of being a constant mainly for testing.
-  explicit SignedWebBundleSignatureVerifier(
-      uint64_t web_bundle_chunk_size = 10 * 1000 * 1000);
+  SignedWebBundleSignatureVerifier();
+
+  // Changes the chunk size in which the Signed Web Bundle is read for
+  // calculating its SHA512 hash. Higher values use more RAM, but may
+  // potentially be a bit faster. Only used in tests.
+  void SetWebBundleChunkSizeForTesting(uint64_t web_bundle_chunk_size);
 
   virtual ~SignedWebBundleSignatureVerifier();
 
   using SignatureVerificationCallback =
-      base::OnceCallback<void(std::optional<Error>)>;
+      base::OnceCallback<void(base::expected<void, Error>)>;
 
   // Verifies the signatures of the Signed Web Bundle `file` with the integrity
   // block `integrity_block`. Executes the `callback` with `std::nullopt` on
@@ -59,7 +63,7 @@ class SignedWebBundleSignatureVerifier {
   // TODO(crbug.com/40239682): Support more than one signature.
   virtual void VerifySignatures(base::File file,
                                 SignedWebBundleIntegrityBlock integrity_block,
-                                SignatureVerificationCallback callback);
+                                SignatureVerificationCallback callback) const;
 
  private:
   // We don't use `SHA512_DIGEST_LENGTH` here, because we don't want to include
@@ -78,9 +82,19 @@ class SignedWebBundleSignatureVerifier {
   void OnHashOfUnsignedWebBundleCalculated(
       SignedWebBundleIntegrityBlock integrity_block,
       SignatureVerificationCallback callback,
-      base::expected<SHA512Digest, std::string> unsigned_web_bundle_hash);
+      base::expected<SHA512Digest, std::string> unsigned_web_bundle_hash) const;
 
-  const uint64_t web_bundle_chunk_size_;
+  base::expected<void, Error> VerifyWithHashForIntegrityBlockV1(
+      SHA512Digest unsigned_web_bundle_hash,
+      SignedWebBundleIntegrityBlock integrity_block_v1) const;
+
+  base::expected<void, Error> VerifyWithHashForIntegrityBlockV2(
+      SHA512Digest unsigned_web_bundle_hash,
+      SignedWebBundleIntegrityBlock integrity_block_v2) const;
+
+  // The chunk size in which the Signed Web Bundle is read for calculating its
+  // SHA512 hash. Default is ~10mb.
+  uint64_t web_bundle_chunk_size_ = 10 * 1000 * 1000;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

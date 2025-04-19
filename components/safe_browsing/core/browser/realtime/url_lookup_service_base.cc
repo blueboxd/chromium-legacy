@@ -7,6 +7,7 @@
 #include "base/base64url.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/not_fatal_until.h"
 #include "base/rand_util.h"
 #include "base/strings/strcat.h"
 #include "base/task/sequenced_task_runner.h"
@@ -104,8 +105,6 @@ RTLookupRequest::OSType GetRTLookupRequestOSType() {
   return RTLookupRequest::OS_TYPE_ANDROID;
 #elif BUILDFLAG(IS_CHROMEOS)
   return RTLookupRequest::OS_TYPE_CHROME_OS;
-#elif BUILDFLAG(IS_FUCHSIA)
-  return RTLookupRequest::OS_TYPE_FUCHSIA;
 #elif BUILDFLAG(IS_IOS)
   return RTLookupRequest::OS_TYPE_IOS;
 #elif BUILDFLAG(IS_LINUX)
@@ -491,7 +490,8 @@ void RealTimeUrlLookupServiceBase::OnURLLoaderComplete(
   CHECK(first_request_start_time_);
 
   auto it = pending_requests_.find(url);
-  DCHECK(it != pending_requests_.end()) << "Request not found";
+  CHECK(it != pending_requests_.end(), base::NotFatalUntil::M130)
+      << "Request not found";
 
   RecordTimesWithAndWithoutSuffix("SafeBrowsing.RT.Network.Time",
                                   GetMetricSuffix(),
@@ -606,6 +606,23 @@ std::unique_ptr<RTLookupRequest> RealTimeUrlLookupServiceBase::FillRequestProto(
   std::optional<std::string> dm_token_string = GetDMTokenString();
   if (dm_token_string.has_value()) {
     request->set_dm_token(dm_token_string.value());
+
+    std::string email = GetUserEmail();
+    if (!email.empty()) {
+      request->set_email(std::move(email));
+    }
+
+    // Check for the profile token here because we want to avoid cases where the
+    // value is populated in the non-enterprise case.
+    std::string profile_dm_token = GetProfileDMTokenString();
+    if (!profile_dm_token.empty()) {
+      request->set_profile_dm_token(std::move(profile_dm_token));
+    }
+  }
+
+  std::string browser_dm_token = GetBrowserDMTokenString();
+  if (!browser_dm_token.empty()) {
+    request->set_browser_dm_token(std::move(browser_dm_token));
   }
 
   *request->mutable_population() = get_user_population_callback_.Run();

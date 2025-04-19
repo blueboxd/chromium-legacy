@@ -81,7 +81,6 @@ class InputEventBrowserTest : public ContentBrowserTest {
 
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ContentBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kExposeInternalsForTesting);
   }
 
@@ -148,7 +147,7 @@ class InputEventBrowserTest : public ContentBrowserTest {
   void SimulateSyntheticKeyDown(base::TimeTicks event_time) {
     DCHECK(URLLoaded());
 
-    content::NativeWebKeyboardEvent event(
+    input::NativeWebKeyboardEvent event(
         blink::WebKeyboardEvent::Type::kRawKeyDown,
         blink::WebInputEvent::kNoModifiers, event_time);
     event.windows_key_code = ui::VKEY_DOWN;

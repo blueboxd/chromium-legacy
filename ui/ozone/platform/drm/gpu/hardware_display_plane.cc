@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane.h"
 
 #include <drm_fourcc.h>
@@ -115,6 +120,8 @@ bool HardwareDisplayPlane::Initialize(DrmDevice* drm) {
   if (properties_.plane_color_encoding.id) {
     color_encoding_bt601_ = GetEnumValueForName(
         *drm, properties_.plane_color_encoding.id, "ITU-R BT.601 YCbCr");
+    color_encoding_bt709_ = GetEnumValueForName(
+        *drm, properties_.plane_color_encoding.id, "ITU-R BT.709 YCbCr");
     color_range_limited_ = GetEnumValueForName(
         *drm, properties_.plane_color_range.id, "YCbCr limited range");
   }

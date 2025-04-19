@@ -27,15 +27,16 @@ through `builders.cpu` and `builders.os` respectively.
 
 load("//project.star", "settings")
 load("./args.star", "args")
+load("./bootstrap.star", "register_bootstrap")
 load("./branches.star", "branches")
+load("./builder_config.star", "register_builder_config")
+load("./builder_exemptions.star", "exempted_from_description_builders")
+load("./builder_health_indicators.star", "register_health_spec")
 load("./consoles.star", "register_builder_to_console_view")
 load("./gn_args.star", "register_gn_args")
-load("./bootstrap.star", "register_bootstrap")
-load("./builder_config.star", "register_builder_config")
-load("./builder_health_indicators.star", "register_health_spec")
+load("./nodes.star", "nodes")
 load("./recipe_experiments.star", "register_recipe_experiments_ref")
-load("./sheriff_rotations.star", "register_sheriffed_builder")
-load("./description_exceptions.star", "exempted_from_description_builders")
+load("./sheriff_rotations.star", "register_gardener_builder")
 
 ################################################################################
 # Constants for use with the builder function                                  #
@@ -78,6 +79,7 @@ os = struct(
     # A migration off of bionic is in progress, builders identified in
     # linux-default.json will have a different os dimension
     LINUX_DEFAULT = os_enum(os_category.LINUX, "Ubuntu-22.04", json.decode(io.read_file("./linux-default.json"))),
+    LINUX_NOBLE = os_enum(os_category.LINUX, "Ubuntu-24.04"),
     LINUX_UBUNTU_ANY = os_enum(os_category.LINUX, "Ubuntu"),
     LINUX_ANY = os_enum(os_category.LINUX, "Linux"),
     MAC_10_15 = os_enum(os_category.MAC, "Mac-10.15"),
@@ -86,7 +88,10 @@ os = struct(
     MAC_14 = os_enum(os_category.MAC, "Mac-14"),
     MAC_DEFAULT = os_enum(os_category.MAC, "Mac-14"),
     MAC_ANY = os_enum(os_category.MAC, "Mac"),
-    MAC_BETA = os_enum(os_category.MAC, "Mac-14"),
+    MAC_BETA = os_enum(
+        os_category.MAC,
+        "Mac-15" if settings.project.startswith("chromium") else "Mac-14",
+    ),
     WINDOWS_10 = os_enum(os_category.WINDOWS, "Windows-10"),
     # TODO(crbug.com/41492657): remove after slow compile issue resolved.
     WINDOWS_10_1909 = os_enum(os_category.WINDOWS, "Windows-10-18363"),
@@ -101,6 +106,11 @@ siso = struct(
         TEST_TRUSTED = "rbe-chromium-trusted-test",
         DEFAULT_UNTRUSTED = "rbe-chromium-untrusted",
         TEST_UNTRUSTED = "rbe-chromium-untrusted-test",
+    ) if settings.project.startswith("chromium") else struct(
+        DEFAULT_TRUSTED = "rbe-chrome-trusted",
+        TEST_TRUSTED = "rbe-chrome-trusted-test",
+        DEFAULT_UNTRUSTED = "rbe-chrome-untrusted",
+        TEST_UNTRUSTED = "rbe-chrome-untrusted-test",
     ),
     remote_jobs = struct(
         DEFAULT = 250,
@@ -108,7 +118,7 @@ siso = struct(
         HIGH_JOBS_FOR_CI = 500,
         LOW_JOBS_FOR_CQ = 150,
         # Calculated based on the number of CPUs inside Siso.
-        HIGH_JOBS_FOR_CQ = -1,
+        HIGH_JOBS_FOR_CQ = -1 if settings.project.startswith("chromium") else 300,
     ),
 )
 
@@ -118,10 +128,10 @@ def _rotation(name):
         value = [name],
     )
 
-# Sheriff rotations that a builder can be added to (only takes effect on trunk)
+# Gardener rotations that a builder can be added to (only takes effect on trunk)
 # New rotations can be added, but won't automatically show up in SoM without
 # changes to SoM code.
-sheriff_rotations = struct(
+gardener_rotations = struct(
     ANDROID = _rotation("android"),
     ANGLE = _rotation("angle"),
     CHROMIUM = _rotation("chromium"),
@@ -323,14 +333,14 @@ defaults = args.defaults(
     free_space = None,
     cores = None,
     cpu = None,
-    disallow_gce = False,
+    gce = None,
     fully_qualified_builder_dimension = False,
     console_view = args.COMPUTE,
     list_view = args.COMPUTE,
     os = None,
     pool = None,
     skip_profile_upload = False,
-    sheriff_rotations = None,
+    gardener_rotations = None,
     xcode = None,
     ssd = args.COMPUTE,
     coverage_gs_bucket = None,
@@ -362,6 +372,8 @@ defaults = args.defaults(
     siso_enable_cloud_trace = True,
     siso_experiments = [],
     siso_remote_jobs = None,
+    siso_fail_if_reapi_used = None,
+    siso_output_local_strategy = None,
     health_spec = None,
     builder_config_settings = None,
 
@@ -382,6 +394,21 @@ defaults = args.defaults(
     contact_team_email = None,
 )
 
+# This node won't actually be accessed, but creating it for builders that have
+# builder_group set will enforce that there can't be builders with the same name
+# in different buckets that use the same builder group since lucicfg will check
+# that there aren't two graphs with the same ID
+_BUILDER_GROUP_ID_NODE = nodes.create_unscoped_node_type("builder-group-id")
+
+# For staging, we specifically want to reuse the same builder group so that the
+# staging builders look up the same GN args and targets that the prod official
+# builders use
+_BUILDER_GROUP_REUSE_BUCKET_ALLOWLIST = [
+    "official.diffs.staging",
+    "official.infra.staging",
+    "official.staging",
+] if settings.project.startswith("chrome") else []
+
 def builder(
         *,
         name,
@@ -397,7 +424,7 @@ def builder(
         override_builder_dimension = None,
         auto_builder_dimension = args.DEFAULT,
         fully_qualified_builder_dimension = args.DEFAULT,
-        disallow_gce = args.DEFAULT,
+        gce = args.DEFAULT,
         cores = args.DEFAULT,
         cpu = args.DEFAULT,
         bootstrap = args.DEFAULT,
@@ -407,7 +434,7 @@ def builder(
         builder_config_settings = args.DEFAULT,
         pool = args.DEFAULT,
         ssd = args.DEFAULT,
-        sheriff_rotations = None,
+        gardener_rotations = None,
         xcode = args.DEFAULT,
         console_view_entry = None,
         list_view = args.DEFAULT,
@@ -440,6 +467,8 @@ def builder(
         siso_enable_cloud_trace = args.DEFAULT,
         siso_experiments = args.DEFAULT,
         siso_remote_jobs = args.DEFAULT,
+        siso_fail_if_reapi_used = None,
+        siso_output_local_strategy = args.DEFAULT,
         skip_profile_upload = args.DEFAULT,
         health_spec = args.DEFAULT,
         shadow_builderless = args.DEFAULT,
@@ -550,7 +579,7 @@ def builder(
             If True, emits a 'ssd:1' dimension. If False, emits a 'ssd:0'
             parameter. By default, considered False if builderless is considered
             True and otherwise None.
-        sheriff_rotations: A string or list of strings identifying the sheriff
+        gardener_rotations: A string or list of strings identifying the gardener
             rotations that the builder should be included in. Will be merged
             with the module-level default.
         xcode: a member of the `xcode` enum indicating the xcode version the
@@ -567,9 +596,10 @@ def builder(
         list_view: A string or a list of strings identifying the ID(s) of the
             list view(s) to add an entry to. Supports a module-level default
             that defaults to no list views.
-        disallow_gce: A boolean indicating whether the builder can run on GCE
-            machines. If True, emits a 'gce:0' dimension. By default, gce is
-            allowed.
+        gce: A boolean indicating whether the builder runs on GCE machines.
+            If True, emits a 'gce:1' dimension. If False, emits a 'gce:0'
+            dimension. If None, 'gce' dimension is not emitted, meaning don't
+            care if running on GCE machines or not. By default, considered None.
         coverage_gs_bucket: a string specifying the GS bucket to upload
             coverage data to. Will be copied to '$build/code_coverage' property.
             By default, considered None.
@@ -645,6 +675,10 @@ def builder(
         siso_experiments: a list of experiment flags for siso.
         siso_remote_jobs: an integer indicating the number of concurrent remote jobs
             to run when building with Siso.
+        siso_fail_if_reapi_used: If True, check siso_metrics.json to see if the build
+            used remote execution and fail the build if any step used it.
+        siso_output_local_strategy: a string indicating the output strategy
+            for `--output_local_strategy`. full, greedy or minimum.
         health_spec: a health spec instance describing the threshold for when
             the builder should be considered unhealthy.
         shadow_builderless: If set to True, then led builds created for this
@@ -699,9 +733,9 @@ def builder(
     dimensions = {}
 
     properties = kwargs.pop("properties", {})
-    if "sheriff_rotations" in properties:
-        fail('Setting "sheriff_rotations" property is not supported: ' +
-             "use sheriff_rotations instead")
+    if "gardener_rotations" in properties:
+        fail('Setting "gardener_rotations" property is not supported: ' +
+             "use gardener_rotations instead")
     if "$build/code_coverage" in properties:
         fail('Setting "$build/code_coverage" property is not supported: ' +
              "use coverage_gs_bucket, use_clang_coverage, use_java_coverage, " +
@@ -755,8 +789,10 @@ def builder(
             else:
                 dimensions["builder"] = name
 
-    if not kwargs.get("description_html", "").strip() and name not in exempted_from_description_builders.get(bucket, []):
+    if not kwargs.get("description_html", "").strip() and name not in exempted_from_description_builders.get(bucket, []) and not mirrors:
         fail("Builder " + name + " must have a description_html. All new builders must specify a description.")
+    elif kwargs.get("description_html", "").strip() and name in exempted_from_description_builders.get(bucket, []):
+        fail("Need to remove builder " + bucket + "/" + name + " from exempted_from_description_builders")
 
     cores = defaults.get_value("cores", cores)
     if cores != None:
@@ -774,9 +810,11 @@ def builder(
     if pool:
         dimensions["pool"] = pool
 
-    sheriff_rotations = defaults.get_value("sheriff_rotations", sheriff_rotations, merge = args.MERGE_LIST)
-    if sheriff_rotations:
-        properties["sheriff_rotations"] = sheriff_rotations
+    gardener_rotations = defaults.get_value("gardener_rotations", gardener_rotations, merge = args.MERGE_LIST)
+    if gardener_rotations:
+        # TODO(343503161): Remove gardener_rotations after SoM is updated.
+        properties["sheriff_rotations"] = gardener_rotations
+        properties["gardener_rotations"] = gardener_rotations
 
     ssd = defaults.get_value("ssd", ssd)
     if ssd == args.COMPUTE:
@@ -785,11 +823,11 @@ def builder(
             os.category not in _EXCLUDE_BUILDERLESS_SSD_OS_CATEGORIES):
             ssd = False
     if ssd != None:
-        dimensions["ssd"] = str(int(ssd))
+        dimensions["ssd"] = "1" if ssd else "0"
 
-    disallow_gce = defaults.get_value("disallow_gce", disallow_gce)
-    if disallow_gce:
-        dimensions["gce"] = "0"
+    gce = defaults.get_value("gce", gce)
+    if gce != None:
+        dimensions["gce"] = "1" if gce else "0"
 
     code_coverage = _code_coverage_property(
         coverage_gs_bucket = coverage_gs_bucket,
@@ -809,9 +847,9 @@ def builder(
         reclient_scandeps_server,
     )
 
-    # Enable scandeps_server by default.
+    # Enable scandeps_server by default for Chromium.
     if reclient_scandeps_server == args.COMPUTE:
-        reclient_scandeps_server = True
+        reclient_scandeps_server = settings.project.startswith("chromium") or (os and os.category == os_category.MAC)
 
     rbe_project = defaults.get_value("siso_project", siso_project)
     shadow_rbe_project = defaults.get_value("shadow_siso_project", shadow_siso_project)
@@ -859,6 +897,11 @@ def builder(
         remote_jobs = defaults.get_value("siso_remote_jobs", siso_remote_jobs)
         if remote_jobs:
             siso["remote_jobs"] = remote_jobs
+        if siso_fail_if_reapi_used:
+            siso["fail_if_reapi_used"] = siso_fail_if_reapi_used
+        siso_output_local_strategy = defaults.get_value("siso_output_local_strategy", siso_output_local_strategy)
+        if siso_output_local_strategy:
+            siso["output_local_strategy"] = siso_output_local_strategy
         properties["$build/siso"] = siso
         if shadow_rbe_project:
             shadow_siso = dict(siso)
@@ -942,7 +985,12 @@ def builder(
     if builder == None:
         return None
 
-    register_sheriffed_builder(bucket, name, sheriff_rotations)
+    # Define a node to ensure there's only one builder using the
+    # (builder_group, builder)
+    if builder_group != None and bucket not in _BUILDER_GROUP_REUSE_BUCKET_ALLOWLIST:
+        _BUILDER_GROUP_ID_NODE.add("{}:{}".format(builder_group, name))
+
+    register_gardener_builder(bucket, name, gardener_rotations)
 
     register_recipe_experiments_ref(bucket, name, executable)
 
@@ -962,6 +1010,7 @@ def builder(
         targets,
         targets_settings,
         additional_exclusions,
+        kwargs.get("description_html", "").strip(),
     )
 
     bootstrap = defaults.get_value("bootstrap", bootstrap)
@@ -1039,6 +1088,6 @@ builders = struct(
     cpu = cpu,
     defaults = defaults,
     os = os,
-    sheriff_rotations = sheriff_rotations,
+    gardener_rotations = gardener_rotations,
     free_space = free_space,
 )

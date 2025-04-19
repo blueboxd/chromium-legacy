@@ -21,9 +21,13 @@ constexpr char kApiResponseMusicSectionKey[] = "musicSection";
 constexpr char kApiResponseWidthKey[] = "widthPixels";
 constexpr char kApiResponseHeightKey[] = "heightPixels";
 constexpr char kApiResponseUriKey[] = "uri";
+constexpr char kApiResponsePlaybackReportingTokenKey[] =
+    "playbackReportingToken";
 constexpr char kApiResponseDescriptionKey[] = "description";
 constexpr char kApiResponseItemCountKey[] = "itemCount";
 constexpr char kApiResponseImagesKey[] = "images";
+constexpr char kApiResponseArtistKey[] = "artist";
+constexpr char kApiResponseArtistReferencesKey[] = "artistReferences";
 constexpr char kApiResponseOwnerKey[] = "owner";
 constexpr char kApiResponsePlaylistKey[] = "playlist";
 constexpr char kApiResponseContextKey[] = "context";
@@ -84,6 +88,17 @@ void Playlist::RegisterJSONConverter(JSONValueConverter<Playlist>* converter) {
   converter->RegisterRepeatedMessage<Image>(kApiResponseImagesKey,
                                             &Playlist::images_);
   converter->RegisterNestedField(kApiResponseOwnerKey, &Playlist::owner_);
+}
+
+// static
+std::unique_ptr<Playlist> Playlist::CreateFrom(const base::Value& value) {
+  auto playlist = std::make_unique<Playlist>();
+  JSONValueConverter<Playlist> converter;
+  if (!converter.Convert(value, playlist.get())) {
+    DVLOG(1) << "Unable to construct `Playlist` from parsed json.";
+    return nullptr;
+  }
+  return playlist;
 }
 
 std::string Playlist::ToString() const {
@@ -213,6 +228,35 @@ std::string TopLevelMusicRecommendations::ToString() const {
       s.c_str());
 }
 
+ArtistReference::ArtistReference() = default;
+ArtistReference::~ArtistReference() = default;
+
+// static
+void ArtistReference::RegisterJSONConverter(
+    JSONValueConverter<ArtistReference>* converter) {
+  converter->RegisterStringField(kApiResponseArtistKey,
+                                 &ArtistReference::artist_);
+  converter->RegisterStringField(kApiResponseTitleKey,
+                                 &ArtistReference::title_);
+}
+
+// static
+std::unique_ptr<ArtistReference> ArtistReference::CreateFrom(
+    const base::Value& value) {
+  auto artist_reference = std::make_unique<ArtistReference>();
+  JSONValueConverter<ArtistReference> converter;
+  if (!converter.Convert(value, artist_reference.get())) {
+    DVLOG(1) << "Unable to construct `ArtistReference` from parsed json.";
+    return nullptr;
+  }
+  return artist_reference;
+}
+
+std::string ArtistReference::ToString() const {
+  return base::StringPrintf("ArtistReference(artist=\"%s\", title=\"%s\"",
+                            artist_.c_str(), title_.c_str());
+}
+
 Track::Track() = default;
 Track::~Track() = default;
 
@@ -225,6 +269,8 @@ void Track::RegisterJSONConverter(JSONValueConverter<Track>* converter) {
                                  &Track::explicit_type_);
   converter->RegisterRepeatedMessage<Image>(kApiResponseImagesKey,
                                             &Track::images_);
+  converter->RegisterRepeatedMessage<ArtistReference>(
+      kApiResponseArtistReferencesKey, &Track::artist_references_);
 }
 
 // static
@@ -281,6 +327,8 @@ Stream::~Stream() = default;
 void Stream::RegisterJSONConverter(JSONValueConverter<Stream>* converter) {
   converter->RegisterCustomField<GURL>(kApiResponseUriKey, &Stream::url_,
                                        &ConvertToGurl);
+  converter->RegisterStringField(kApiResponsePlaybackReportingTokenKey,
+                                 &Stream::playback_reporting_token_);
 }
 
 // static
@@ -295,7 +343,9 @@ std::unique_ptr<Stream> Stream::CreateFrom(const base::Value& value) {
 }
 
 std::string Stream::ToString() const {
-  return base::StringPrintf("Stream(url=\"%s\")", url_.spec().c_str());
+  return base::StringPrintf(
+      "Stream(url=\"%s\", playback_reporting_token=\"%s\")",
+      url_.spec().c_str(), playback_reporting_token_.c_str());
 }
 
 PlaybackManifest::PlaybackManifest() = default;
@@ -410,6 +460,34 @@ std::unique_ptr<QueueContainer> QueueContainer::CreateFrom(
 std::string QueueContainer::ToString() const {
   return base::StringPrintf("QueueContainer(queue=%s)",
                             queue_.ToString().c_str());
+}
+
+ReportPlaybackResult::ReportPlaybackResult() = default;
+ReportPlaybackResult::~ReportPlaybackResult() = default;
+
+// static
+void ReportPlaybackResult::RegisterJSONConverter(
+    JSONValueConverter<ReportPlaybackResult>* converter) {
+  converter->RegisterStringField(
+      kApiResponsePlaybackReportingTokenKey,
+      &ReportPlaybackResult::playback_reporting_token_);
+}
+
+// static
+std::unique_ptr<ReportPlaybackResult> ReportPlaybackResult::CreateFrom(
+    const base::Value& value) {
+  auto report_playback_result = std::make_unique<ReportPlaybackResult>();
+  JSONValueConverter<ReportPlaybackResult> converter;
+  if (!converter.Convert(value, report_playback_result.get())) {
+    DVLOG(1) << "Unable to construct `ReportPlaybackResult` from parsed json.";
+    return nullptr;
+  }
+  return report_playback_result;
+}
+
+std::string ReportPlaybackResult::ToString() const {
+  return base::StringPrintf("ReportPlaybackResult(playback_reporting_token=%s)",
+                            playback_reporting_token_.c_str());
 }
 
 }  // namespace google_apis::youtube_music

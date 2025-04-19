@@ -107,9 +107,13 @@ class BucketManagerHostTest : public testing::Test {
     GlobalRenderFrameHostId GetAssociatedRenderFrameHostId() const override {
       return GlobalRenderFrameHostId();
     }
+    base::UnguessableToken GetDevToolsToken() const override {
+      return base::UnguessableToken::Null();
+    }
 
     void GetSandboxedFileSystemForBucket(
         const storage::BucketInfo& bucket,
+        const std::vector<std::string>& directory_path_components,
         blink::mojom::FileSystemAccessManager::GetSandboxedFileSystemCallback
             callback) override {
       std::move(callback).Run(file_system_access_error::Ok(), {});

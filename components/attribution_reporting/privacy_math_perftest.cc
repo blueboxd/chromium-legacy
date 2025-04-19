@@ -16,7 +16,6 @@
 #include "components/attribution_reporting/trigger_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_result_reporter.h"
-#include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/google_benchmark/src/include/benchmark/benchmark.h"
 
 namespace attribution_reporting {
@@ -52,11 +51,12 @@ class PrivacyMathPerfTest
 
 TEST_P(PrivacyMathPerfTest, NumStates) {
   const auto [collapse, test_case] = GetParam();
-  const auto specs = SpecsFromWindowList(test_case.windows_per_type, collapse);
+  const auto specs = SpecsFromWindowList(test_case.windows_per_type, collapse,
+                                         test_case.max_reports);
 
   base::LapTimer timer;
   do {
-    auto result = GetNumStates(specs, test_case.max_reports);
+    auto result = GetNumStates(specs);
 
     ::benchmark::DoNotOptimize(result);
 
@@ -72,13 +72,14 @@ TEST_P(PrivacyMathPerfTest, NumStates) {
 
 TEST_P(PrivacyMathPerfTest, RandomizedResponse) {
   const auto [collapse, test_case] = GetParam();
-  const auto specs = SpecsFromWindowList(test_case.windows_per_type, collapse);
+  const auto specs = SpecsFromWindowList(test_case.windows_per_type, collapse,
+                                         test_case.max_reports);
 
   base::LapTimer timer;
   do {
     auto result = DoRandomizedResponse(
-        specs, test_case.max_reports,
-        /*epsilon=*/0, /*max_trigger_state_cardinality=*/absl::Uint128Max(),
+        specs,
+        /*epsilon=*/0,
         /*max_channel_capacity=*/std::numeric_limits<double>::infinity());
 
     ::benchmark::DoNotOptimize(result);

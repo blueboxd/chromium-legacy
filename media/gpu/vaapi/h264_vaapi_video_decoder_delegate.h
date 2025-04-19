@@ -12,7 +12,7 @@
 #include "build/chromeos_buildflags.h"
 #include "media/gpu/h264_decoder.h"
 #include "media/gpu/vaapi/vaapi_video_decoder_delegate.h"
-#include "media/video/h264_parser.h"
+#include "media/parsers/h264_parser.h"
 
 // Verbatim from va/va.h, where typedef is used.
 typedef struct _VAPictureH264 VAPictureH264;
@@ -26,7 +26,7 @@ class H264VaapiVideoDecoderDelegate : public H264Decoder::H264Accelerator,
                                       public VaapiVideoDecoderDelegate {
  public:
   H264VaapiVideoDecoderDelegate(
-      DecodeSurfaceHandler<VASurface>* vaapi_dec,
+      VaapiDecodeSurfaceHandler* vaapi_dec,
       scoped_refptr<VaapiWrapper> vaapi_wrapper,
       ProtectedSessionUpdateCB on_protected_session_update_cb =
           base::DoNothing(),

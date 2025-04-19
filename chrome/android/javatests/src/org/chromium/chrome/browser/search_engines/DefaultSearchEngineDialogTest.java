@@ -33,6 +33,7 @@ import org.mockito.junit.MockitoRule;
 import org.mockito.quality.Strictness;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseActivityTestRule;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CallbackHelper;
@@ -47,13 +48,12 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.search_engines.FakeTemplateUrl;
 import org.chromium.components.search_engines.TemplateUrl;
 import org.chromium.components.search_engines.TemplateUrlService;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.BlankUiTestActivity;
 
 import java.util.Arrays;
 import java.util.List;
 
-/** Integration tests for the {@link DefaultSearchEnginePromoDialog}. */
+/** Integration tests for the {@link DefaultSearchEngineDialogCoordinator}. */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @Batch(Batch.PER_CLASS)
@@ -74,7 +74,7 @@ public class DefaultSearchEngineDialogTest {
     @Before
     public void setUp() throws Exception {
         final CallbackHelper templateUrlServiceInit = new CallbackHelper();
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
 
@@ -98,7 +98,7 @@ public class DefaultSearchEngineDialogTest {
                                         }
                                     });
                 });
-        templateUrlServiceInit.waitForFirst();
+        templateUrlServiceInit.waitForOnly();
         mActivityTestRule.launchActivity(null);
         mUserActionTester = new UserActionTester();
     }
@@ -219,7 +219,7 @@ public class DefaultSearchEngineDialogTest {
                             List<String> keywords,
                             String keyword) {}
                 };
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     new DefaultSearchEngineDialogCoordinator(
                                     mActivityTestRule.getActivity(),

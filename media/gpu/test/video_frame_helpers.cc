@@ -4,7 +4,6 @@
 
 #include "media/gpu/test/video_frame_helpers.h"
 
-#include <sys/mman.h>
 #include <utility>
 #include <vector>
 
@@ -22,6 +21,10 @@
 #include "third_party/libyuv/include/libyuv.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/gpu_memory_buffer.h"
+
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
+#include <sys/mman.h>
+#endif  // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
 
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 #include "media/gpu/chromeos/chromeos_compressed_gpu_memory_buffer_video_frame_utils.h"
@@ -98,16 +101,16 @@ bool ConvertVideoFrameToI420(const VideoFrame* src_frame,
 
 bool ConvertVideoFrameToYUV420P10(const VideoFrame* src_frame,
                                   VideoFrame* dst_frame) {
-  if (src_frame->format() != PIXEL_FORMAT_P016LE) {
+  if (src_frame->format() != PIXEL_FORMAT_P010LE) {
     LOG(ERROR) << "Unsupported input format: "
                << VideoPixelFormatToString(src_frame->format());
     return false;
   }
-  // Both P016LE and I010 store 10 bit pixels unpacked as 16-bit little endian
-  // values. In P016LE the pixel data is stored in the MSB. It is a bi-planar
+  // Both P010LE and I010 store 10 bit pixels unpacked as 16-bit little endian
+  // values. In P010LE the pixel data is stored in the MSB. It is a bi-planar
   // format with the same Y U/V layout as NV12. I010 is a tri-planar format with
   // the same layout as YUV420.
-  // P010 is P016LE with the lower 6 bits zeroed out.
+  // P010 is P010LE with the lower 6 bits zeroed out.
   // |15|14|13|12|11|10| 9| 8| 7| 6| 5| 4| 3| 2| 1| 0|
   // |          valid data         | 0| 0| 0| 0| 0| 0|
   //
@@ -179,7 +182,7 @@ bool ConvertVideoFrameToARGB(const VideoFrame* src_frame,
                                 src_frame->visible_data(VideoFrame::Plane::kU),
                                 src_frame->stride(VideoFrame::Plane::kU),
                                 dst_argb, dst_stride, width, height) == 0;
-    case PIXEL_FORMAT_P016LE: {
+    case PIXEL_FORMAT_P010LE: {
       auto i010_frame = VideoFrame::CreateFrame(
           PIXEL_FORMAT_YUV420AP10, src_frame->coded_size(),
           src_frame->visible_rect(), src_frame->natural_size(),
@@ -439,11 +442,9 @@ scoped_refptr<VideoFrame> CreateGpuMemoryBufferVideoFrame(
     return nullptr;
   }
 
-  scoped_refptr<gpu::ClientSharedImage> dummy_shared_image;
   return media::VideoFrame::WrapExternalGpuMemoryBuffer(
       frame->visible_rect(), frame->natural_size(),
-      std::move(gpu_memory_buffer), dummy_shared_image, gpu::SyncToken(), 0,
-      base::NullCallback(), frame->timestamp());
+      std::move(gpu_memory_buffer), frame->timestamp());
 }
 
 scoped_refptr<const VideoFrame> CreateVideoFrameFromImage(const Image& image) {

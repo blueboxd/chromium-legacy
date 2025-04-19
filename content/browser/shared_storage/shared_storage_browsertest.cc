@@ -58,7 +58,6 @@
 #include "content/public/test/test_select_url_fenced_frame_config_observer.h"
 #include "content/public/test/test_shared_storage_header_observer.h"
 #include "content/public/test/test_utils.h"
-#include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/fenced_frame_test_utils.h"
@@ -249,6 +248,7 @@ class TestSharedStorageWorkletHost : public SharedStorageWorkletHost {
   TestSharedStorageWorkletHost(
       SharedStorageDocumentServiceImpl& document_service,
       const url::Origin& frame_origin,
+      const url::Origin& data_origin,
       const GURL& script_source_url,
       network::mojom::CredentialsMode credentials_mode,
       const std::vector<blink::mojom::OriginTrialFeature>&
@@ -260,6 +260,7 @@ class TestSharedStorageWorkletHost : public SharedStorageWorkletHost {
       bool should_defer_worklet_messages)
       : SharedStorageWorkletHost(document_service,
                                  frame_origin,
+                                 data_origin,
                                  script_source_url,
                                  credentials_mode,
                                  origin_trial_features,
@@ -748,6 +749,7 @@ class TestSharedStorageWorkletHostManager
   std::unique_ptr<SharedStorageWorkletHost> CreateWorkletHostHelper(
       SharedStorageDocumentServiceImpl& document_service,
       const url::Origin& frame_origin,
+      const url::Origin& data_origin,
       const GURL& script_source_url,
       network::mojom::CredentialsMode credentials_mode,
       const std::vector<blink::mojom::OriginTrialFeature>&
@@ -757,9 +759,9 @@ class TestSharedStorageWorkletHostManager
       blink::mojom::SharedStorageDocumentService::CreateWorkletCallback
           callback) override {
     return std::make_unique<TestSharedStorageWorkletHost>(
-        document_service, frame_origin, script_source_url, credentials_mode,
-        origin_trial_features, std::move(worklet_host), std::move(callback),
-        should_defer_worklet_messages_);
+        document_service, frame_origin, data_origin, script_source_url,
+        credentials_mode, origin_trial_features, std::move(worklet_host),
+        std::move(callback), should_defer_worklet_messages_);
   }
 
   // Precondition: there's only one eligible worklet host.
@@ -862,7 +864,10 @@ class SharedStorageBrowserTestBase : public ContentBrowserTest {
               {"SharedStorageStalenessThreshold",
                TimeDeltaToString(base::Days(kStalenessThresholdDays))},
           }},
-         {blink::features::kSharedStorageAPIM125, {}}},
+         {blink::features::kSharedStorageAPIM125, {}},
+         {blink::features::kSharedStorageCrossOriginScript, {}},
+         {blink::features::kSharedStorageCreateWorkletUseContextOriginByDefault,
+          {}}},
         /*disabled_features=*/{});
 
     fenced_frame_feature_.InitAndEnableFeature(blink::features::kFencedFrames);
@@ -4824,8 +4829,9 @@ IN_PROC_BROWSER_TEST_P(SharedStorageBrowserTest,
             worklet_host->GetProcessHost());
 }
 
-IN_PROC_BROWSER_TEST_P(SharedStorageBrowserTest,
-                       CreateWorklet_CrossOrigin_FailedCors) {
+IN_PROC_BROWSER_TEST_P(
+    SharedStorageBrowserTest,
+    CreateWorklet_CrossOriginScript_DefaultDataOrigin_FailedCors) {
   GURL url = https_server()->GetURL("a.test", kSimplePagePath);
   EXPECT_TRUE(NavigateToURL(shell(), url));
 
@@ -4845,7 +4851,51 @@ IN_PROC_BROWSER_TEST_P(SharedStorageBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(
     SharedStorageBrowserTest,
-    CreateWorklet_CrossOrigin_FailedSharedStorageWorkletAllowedResponseHeaderCheck) {
+    CreateWorklet_CrossOriginScript_ContextDataOrigin_FailedCors) {
+  GURL url = https_server()->GetURL("a.test", kSimplePagePath);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  GURL module_script_url = https_server()->GetURL(
+      "b.test", net::test_server::GetFilePathWithReplacements(
+                    "/shared_storage/module_with_custom_header.js",
+                    SharedStorageCrossOriginWorkletResponseHeaderReplacement(
+                        kEmptyAccessControlAllowOriginReplacement,
+                        "Shared-Storage-Cross-Origin-Worklet-Allowed: ?1")));
+
+  EvalJsResult result = EvalJs(
+      shell(),
+      JsReplace(
+          "sharedStorage.createWorklet($1, {dataOrigin: 'context-origin'})",
+          module_script_url.spec()));
+
+  EXPECT_THAT(result.error, testing::HasSubstr("Failed to load"));
+}
+
+IN_PROC_BROWSER_TEST_P(
+    SharedStorageBrowserTest,
+    CreateWorklet_CrossOriginScript_ScriptDataOrigin_FailedCors) {
+  GURL url = https_server()->GetURL("a.test", kSimplePagePath);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  GURL module_script_url = https_server()->GetURL(
+      "b.test", net::test_server::GetFilePathWithReplacements(
+                    "/shared_storage/module_with_custom_header.js",
+                    SharedStorageCrossOriginWorkletResponseHeaderReplacement(
+                        kEmptyAccessControlAllowOriginReplacement,
+                        "Shared-Storage-Cross-Origin-Worklet-Allowed: ?1")));
+
+  EvalJsResult result = EvalJs(
+      shell(),
+      JsReplace(
+          "sharedStorage.createWorklet($1, {dataOrigin: 'script-origin'})",
+          module_script_url.spec()));
+
+  EXPECT_THAT(result.error, testing::HasSubstr("Failed to load"));
+}
+
+IN_PROC_BROWSER_TEST_P(
+    SharedStorageBrowserTest,
+    CreateWorklet_CrossOriginScript_ScriptDataOrigin_FailedSharedStorageWorkletAllowedResponseHeaderCheck) {
   GURL url = https_server()->GetURL("a.test", kSimplePagePath);
   EXPECT_TRUE(NavigateToURL(shell(), url));
 
@@ -4858,13 +4908,75 @@ IN_PROC_BROWSER_TEST_P(
 
   EvalJsResult result = EvalJs(
       shell(),
-      JsReplace("sharedStorage.createWorklet($1)", module_script_url.spec()));
+      JsReplace(
+          "sharedStorage.createWorklet($1, {dataOrigin: 'script-origin'})",
+          module_script_url.spec()));
 
   EXPECT_THAT(result.error, testing::HasSubstr("Failed to load"));
 }
 
-IN_PROC_BROWSER_TEST_P(SharedStorageBrowserTest,
-                       CreateWorklet_CrossOrigin_Success) {
+IN_PROC_BROWSER_TEST_P(
+    SharedStorageBrowserTest,
+    CreateWorklet_CrossOriginScript_ContextDataOrigin_NoSharedStorageWorkletAllowedResponseHeader_Success) {
+  GURL url = https_server()->GetURL("a.test", kSimplePagePath);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  GURL module_script_url = https_server()->GetURL(
+      "b.test", net::test_server::GetFilePathWithReplacements(
+                    "/shared_storage/module_with_custom_header.js",
+                    SharedStorageCrossOriginWorkletResponseHeaderReplacement(
+                        "Access-Control-Allow-Origin: *",
+                        kEmptySharedStorageCrossOriginAllowedReplacement)));
+
+  EXPECT_TRUE(ExecJs(
+      shell(),
+      JsReplace(
+          "sharedStorage.createWorklet($1, {dataOrigin: 'context-origin'})",
+          module_script_url.spec())));
+
+  TestSharedStorageWorkletHost* worklet_host =
+      test_worklet_host_manager().GetAttachedWorkletHost();
+
+  // The worklet host should reuse the main frame's process because the context
+  // origin is being used as the data origin.
+  bool use_new_process =
+      (shell()->web_contents()->GetPrimaryMainFrame()->GetProcess() !=
+       worklet_host->GetProcessHost());
+
+  EXPECT_FALSE(use_new_process);
+}
+
+IN_PROC_BROWSER_TEST_P(
+    SharedStorageBrowserTest,
+    CreateWorklet_CrossOriginScript_DefaultDataOrigin_NoSharedStorageWorkletAllowedResponseHeader_Success) {
+  GURL url = https_server()->GetURL("a.test", kSimplePagePath);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  GURL module_script_url = https_server()->GetURL(
+      "b.test", net::test_server::GetFilePathWithReplacements(
+                    "/shared_storage/module_with_custom_header.js",
+                    SharedStorageCrossOriginWorkletResponseHeaderReplacement(
+                        "Access-Control-Allow-Origin: *",
+                        kEmptySharedStorageCrossOriginAllowedReplacement)));
+
+  EXPECT_TRUE(ExecJs(shell(), JsReplace("sharedStorage.createWorklet($1)",
+                                        module_script_url.spec())));
+
+  TestSharedStorageWorkletHost* worklet_host =
+      test_worklet_host_manager().GetAttachedWorkletHost();
+
+  // The worklet host should reuse the main frame's process because the context
+  // origin is being used as the data origin.
+  bool use_new_process =
+      (shell()->web_contents()->GetPrimaryMainFrame()->GetProcess() !=
+       worklet_host->GetProcessHost());
+
+  EXPECT_FALSE(use_new_process);
+}
+
+IN_PROC_BROWSER_TEST_P(
+    SharedStorageBrowserTest,
+    CreateWorklet_CrossOriginScript_ScriptDataOrigin_Success) {
   GURL url = https_server()->GetURL("a.test", kSimplePagePath);
   EXPECT_TRUE(NavigateToURL(shell(), url));
 
@@ -4875,8 +4987,11 @@ IN_PROC_BROWSER_TEST_P(SharedStorageBrowserTest,
                         "Access-Control-Allow-Origin: *",
                         "Shared-Storage-Cross-Origin-Worklet-Allowed: ?1")));
 
-  EXPECT_TRUE(ExecJs(shell(), JsReplace("sharedStorage.createWorklet($1)",
-                                        module_script_url.spec())));
+  EXPECT_TRUE(ExecJs(
+      shell(),
+      JsReplace(
+          "sharedStorage.createWorklet($1, {dataOrigin: 'script-origin'})",
+          module_script_url.spec())));
 
   TestSharedStorageWorkletHost* worklet_host =
       test_worklet_host_manager().GetAttachedWorkletHost();
@@ -4891,8 +5006,9 @@ IN_PROC_BROWSER_TEST_P(SharedStorageBrowserTest,
   EXPECT_EQ(expected_use_new_process, actual_use_new_process);
 }
 
-// Start a worklet under b.test (cross-origin to the main frame's origin), and
-// then append a subframe under b.test. Assert that they share the same process.
+// Start a worklet under b.test using the script origin as the data
+// originb(cross-origin to the main frame's origin), and then append a subframe
+// under b.test. Assert that they share the same process.
 IN_PROC_BROWSER_TEST_P(SharedStorageBrowserTest,
                        CreateWorkletAndSubframe_CrossOrigin) {
   GURL url = https_server()->GetURL("a.test", kSimplePagePath);
@@ -4905,8 +5021,11 @@ IN_PROC_BROWSER_TEST_P(SharedStorageBrowserTest,
                         "Access-Control-Allow-Origin: *",
                         "Shared-Storage-Cross-Origin-Worklet-Allowed: ?1")));
 
-  EXPECT_TRUE(ExecJs(shell(), JsReplace("sharedStorage.createWorklet($1)",
-                                        module_script_url.spec())));
+  EXPECT_TRUE(ExecJs(
+      shell(),
+      JsReplace(
+          "sharedStorage.createWorklet($1, {dataOrigin: 'script-origin'})",
+          module_script_url.spec())));
 
   TestSharedStorageWorkletHost* worklet_host =
       test_worklet_host_manager().GetAttachedWorkletHost();
@@ -4920,7 +5039,8 @@ IN_PROC_BROWSER_TEST_P(SharedStorageBrowserTest,
 }
 
 // Append a subframe under b.test (cross-origin to the main frame's origin), and
-// then start a worklet under b.test. Assert that they share the same process.
+// then start a worklet under b.test using the script origin as the data origin.
+// Assert that they share the same process.
 IN_PROC_BROWSER_TEST_P(SharedStorageBrowserTest,
                        CreateSubframeAndWorklet_CrossOrigin) {
   GURL url = https_server()->GetURL("a.test", kSimplePagePath);
@@ -4937,8 +5057,11 @@ IN_PROC_BROWSER_TEST_P(SharedStorageBrowserTest,
                         "Access-Control-Allow-Origin: *",
                         "Shared-Storage-Cross-Origin-Worklet-Allowed: ?1")));
 
-  EXPECT_TRUE(ExecJs(shell(), JsReplace("sharedStorage.createWorklet($1)",
-                                        module_script_url.spec())));
+  EXPECT_TRUE(ExecJs(
+      shell(),
+      JsReplace(
+          "sharedStorage.createWorklet($1, {dataOrigin: 'script-origin'})",
+          module_script_url.spec())));
 
   TestSharedStorageWorkletHost* worklet_host =
       test_worklet_host_manager().GetAttachedWorkletHost();
@@ -4947,9 +5070,9 @@ IN_PROC_BROWSER_TEST_P(SharedStorageBrowserTest,
             iframe_node->current_frame_host()->GetProcess());
 }
 
-// Start one worklet under b.test (cross-origin to the main frame's origin),
-// and then start another worklet under b.test. Assert that they share the same
-// process.
+// Start one worklet under b.test using the script origin as the data origin
+// (cross-origin to the main frame's origin), and then start another worklet
+// under b.test. Assert that they share the same process.
 IN_PROC_BROWSER_TEST_P(SharedStorageBrowserTest,
                        CreateTwoWorklets_CrossOrigin) {
   GURL url = https_server()->GetURL("a.test", kSimplePagePath);
@@ -4962,11 +5085,17 @@ IN_PROC_BROWSER_TEST_P(SharedStorageBrowserTest,
                         "Access-Control-Allow-Origin: *",
                         "Shared-Storage-Cross-Origin-Worklet-Allowed: ?1")));
 
-  EXPECT_TRUE(ExecJs(shell(), JsReplace("sharedStorage.createWorklet($1)",
-                                        module_script_url.spec())));
+  EXPECT_TRUE(ExecJs(
+      shell(),
+      JsReplace(
+          "sharedStorage.createWorklet($1, {dataOrigin: 'script-origin'})",
+          module_script_url.spec())));
 
-  EXPECT_TRUE(ExecJs(shell(), JsReplace("sharedStorage.createWorklet($1)",
-                                        module_script_url.spec())));
+  EXPECT_TRUE(ExecJs(
+      shell(),
+      JsReplace(
+          "sharedStorage.createWorklet($1, {dataOrigin: 'script-origin'})",
+          module_script_url.spec())));
 
   std::vector<TestSharedStorageWorkletHost*> worklet_hosts =
       test_worklet_host_manager().GetAttachedWorkletHosts();
@@ -4976,9 +5105,9 @@ IN_PROC_BROWSER_TEST_P(SharedStorageBrowserTest,
             worklet_hosts[1]->GetProcessHost());
 }
 
-// Start a worklet under b.test via createWorklet(), and then start a worklet
-// under b.test's iframe. Assert that the data stored in the first worklet can
-// be retrieved in the second worklet.
+// Start a worklet under b.test via createWorklet() using the script origin as
+// the data origin, and then start a worklet under b.test's iframe. Assert that
+// the data stored in the first worklet can be retrieved in the second worklet.
 IN_PROC_BROWSER_TEST_P(SharedStorageBrowserTest,
                        CrossOriginWorklet_VerifyDataOrigin) {
   GURL url = https_server()->GetURL("a.test", kSimplePagePath);
@@ -4993,7 +5122,8 @@ IN_PROC_BROWSER_TEST_P(SharedStorageBrowserTest,
 
   EXPECT_TRUE(ExecJs(shell(), JsReplace(R"(
       new Promise((resolve, reject) => {
-        sharedStorage.createWorklet($1).then((worklet) => {
+        sharedStorage.createWorklet($1, {dataOrigin: 'script-origin'})
+        .then((worklet) => {
           window.testWorklet = worklet;
           resolve();
         });
@@ -5021,6 +5151,250 @@ IN_PROC_BROWSER_TEST_P(SharedStorageBrowserTest,
       ->WaitForWorkletResponses();
 
   GURL iframe_url = https_server()->GetURL("b.test", "/empty.thml");
+  FrameTreeNode* iframe_node =
+      CreateIFrame(PrimaryFrameTreeNodeRoot(), iframe_url);
+
+  WebContentsConsoleObserver console_observer(shell()->web_contents());
+
+  GURL out_script_url;
+  ExecuteScriptInWorklet(iframe_node->current_frame_host(), R"(
+      console.log(await sharedStorage.get('key0'));
+    )",
+                         &out_script_url, /*expected_total_host_count=*/2);
+
+  EXPECT_EQ(1u, console_observer.messages().size());
+  EXPECT_EQ("value0",
+            base::UTF16ToUTF8(console_observer.messages()[0].message));
+}
+
+// Start a worklet with b.test script in a.test's context via createWorklet(),
+// and then start a worklet with same-origin script in a.test's context. Assert
+// that the data stored in the first worklet can be retrieved in the second
+// worklet.
+IN_PROC_BROWSER_TEST_P(SharedStorageBrowserTest,
+                       CrossOriginScript_ContextDataOrigin_VerifyDataOrigin) {
+  GURL url = https_server()->GetURL("a.test", kSimplePagePath);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  GURL module_script_url = https_server()->GetURL(
+      "b.test", net::test_server::GetFilePathWithReplacements(
+                    "/shared_storage/module_with_custom_header.js",
+                    SharedStorageCrossOriginWorkletResponseHeaderReplacement(
+                        "Access-Control-Allow-Origin: *",
+                        "Shared-Storage-Cross-Origin-Worklet-Allowed: ?1")));
+
+  EXPECT_TRUE(ExecJs(shell(), JsReplace(R"(
+      new Promise((resolve, reject) => {
+        sharedStorage.createWorklet($1, {dataOrigin: 'context-origin'})
+        .then((worklet) => {
+          window.testWorklet = worklet;
+          resolve();
+        });
+      })
+    )",
+                                        module_script_url.spec())));
+
+  // Expect the run() operation.
+  test_worklet_host_manager()
+      .GetAttachedWorkletHost()
+      ->SetExpectedWorkletResponsesCount(1);
+
+  EXPECT_TRUE(ExecJs(shell(), R"(
+      window.testWorklet.run('test-operation', {
+        data: {
+          'set-key': 'key0',
+          'set-value': 'value0'
+        },
+        keepAlive: true
+      });
+    )"));
+
+  test_worklet_host_manager()
+      .GetAttachedWorkletHost()
+      ->WaitForWorkletResponses();
+
+  GURL iframe_url = https_server()->GetURL("a.test", "/empty.thml");
+  FrameTreeNode* iframe_node =
+      CreateIFrame(PrimaryFrameTreeNodeRoot(), iframe_url);
+
+  WebContentsConsoleObserver console_observer(shell()->web_contents());
+
+  GURL out_script_url;
+  ExecuteScriptInWorklet(iframe_node->current_frame_host(), R"(
+      console.log(await sharedStorage.get('key0'));
+    )",
+                         &out_script_url, /*expected_total_host_count=*/2);
+
+  EXPECT_EQ(1u, console_observer.messages().size());
+  EXPECT_EQ("value0",
+            base::UTF16ToUTF8(console_observer.messages()[0].message));
+}
+
+// Start a worklet with b.test script in a.test's context via createWorklet(),
+// and then start a worklet with same-origin script in a.test's context. Assert
+// that the data stored in the first worklet can be retrieved in the second
+// worklet.
+IN_PROC_BROWSER_TEST_P(SharedStorageBrowserTest,
+                       CrossOriginScript_DefaultDataOrigin_VerifyDataOrigin) {
+  GURL url = https_server()->GetURL("a.test", kSimplePagePath);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  GURL module_script_url = https_server()->GetURL(
+      "b.test", net::test_server::GetFilePathWithReplacements(
+                    "/shared_storage/module_with_custom_header.js",
+                    SharedStorageCrossOriginWorkletResponseHeaderReplacement(
+                        "Access-Control-Allow-Origin: *",
+                        "Shared-Storage-Cross-Origin-Worklet-Allowed: ?1")));
+
+  EXPECT_TRUE(ExecJs(shell(), JsReplace(R"(
+      new Promise((resolve, reject) => {
+        sharedStorage.createWorklet($1)
+        .then((worklet) => {
+          window.testWorklet = worklet;
+          resolve();
+        });
+      })
+    )",
+                                        module_script_url.spec())));
+
+  // Expect the run() operation.
+  test_worklet_host_manager()
+      .GetAttachedWorkletHost()
+      ->SetExpectedWorkletResponsesCount(1);
+
+  EXPECT_TRUE(ExecJs(shell(), R"(
+      window.testWorklet.run('test-operation', {
+        data: {
+          'set-key': 'key0',
+          'set-value': 'value0'
+        },
+        keepAlive: true
+      });
+    )"));
+
+  test_worklet_host_manager()
+      .GetAttachedWorkletHost()
+      ->WaitForWorkletResponses();
+
+  GURL iframe_url = https_server()->GetURL("a.test", "/empty.thml");
+  FrameTreeNode* iframe_node =
+      CreateIFrame(PrimaryFrameTreeNodeRoot(), iframe_url);
+
+  WebContentsConsoleObserver console_observer(shell()->web_contents());
+
+  GURL out_script_url;
+  ExecuteScriptInWorklet(iframe_node->current_frame_host(), R"(
+      console.log(await sharedStorage.get('key0'));
+    )",
+                         &out_script_url, /*expected_total_host_count=*/2);
+
+  EXPECT_EQ(1u, console_observer.messages().size());
+  EXPECT_EQ("value0",
+            base::UTF16ToUTF8(console_observer.messages()[0].message));
+}
+
+IN_PROC_BROWSER_TEST_P(SharedStorageBrowserTest,
+                       AddModule_CrossOriginScript_FailedCors) {
+  GURL url = https_server()->GetURL("a.test", kSimplePagePath);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  GURL module_script_url = https_server()->GetURL(
+      "b.test", net::test_server::GetFilePathWithReplacements(
+                    "/shared_storage/module_with_custom_header.js",
+                    SharedStorageCrossOriginWorkletResponseHeaderReplacement(
+                        kEmptyAccessControlAllowOriginReplacement,
+                        kEmptySharedStorageCrossOriginAllowedReplacement)));
+
+  EvalJsResult result =
+      EvalJs(shell(), JsReplace("sharedStorage.worklet.addModule($1)",
+                                module_script_url.spec()));
+
+  EXPECT_THAT(result.error, testing::HasSubstr("Failed to load"));
+}
+
+IN_PROC_BROWSER_TEST_P(SharedStorageBrowserTest,
+                       AddModule_CrossOriginScript_Success) {
+  GURL url = https_server()->GetURL("a.test", kSimplePagePath);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  GURL module_script_url = https_server()->GetURL(
+      "b.test", net::test_server::GetFilePathWithReplacements(
+                    "/shared_storage/module_with_custom_header.js",
+                    SharedStorageCrossOriginWorkletResponseHeaderReplacement(
+                        "Access-Control-Allow-Origin: *",
+                        kEmptySharedStorageCrossOriginAllowedReplacement)));
+
+  EXPECT_TRUE(ExecJs(shell(), JsReplace("sharedStorage.worklet.addModule($1)",
+                                        module_script_url.spec())));
+}
+
+// Start a worklet with b.test script (cross-origin to the main frame's origin),
+// but a.test data and then append a subframe under b.test. Assert that they
+// share the same process.
+IN_PROC_BROWSER_TEST_P(SharedStorageBrowserTest,
+                       CreateWorkletAndSubframe_AddModule_CrossOriginScript) {
+  GURL url = https_server()->GetURL("a.test", kSimplePagePath);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  GURL module_script_url = https_server()->GetURL(
+      "b.test", net::test_server::GetFilePathWithReplacements(
+                    "/shared_storage/module_with_custom_header.js",
+                    SharedStorageCrossOriginWorkletResponseHeaderReplacement(
+                        "Access-Control-Allow-Origin: *",
+                        kEmptySharedStorageCrossOriginAllowedReplacement)));
+
+  EXPECT_TRUE(ExecJs(shell(), JsReplace("sharedStorage.worklet.addModule($1)",
+                                        module_script_url.spec())));
+
+  TestSharedStorageWorkletHost* worklet_host =
+      test_worklet_host_manager().GetAttachedWorkletHost();
+
+  GURL iframe_url = https_server()->GetURL("a.test", "/empty.thml");
+  FrameTreeNode* iframe_node =
+      CreateIFrame(PrimaryFrameTreeNodeRoot(), iframe_url);
+
+  EXPECT_EQ(worklet_host->GetProcessHost(),
+            iframe_node->current_frame_host()->GetProcess());
+}
+
+// Start a worklet with b.test script but a.test data, and then start a worklet
+// under a.test's iframe. Assert that the data stored in the first worklet can
+// be retrieved in the second worklet.
+IN_PROC_BROWSER_TEST_P(SharedStorageBrowserTest,
+                       AddModule_CrossOriginScript_VerifyDataOrigin) {
+  GURL url = https_server()->GetURL("a.test", kSimplePagePath);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  GURL module_script_url = https_server()->GetURL(
+      "b.test", net::test_server::GetFilePathWithReplacements(
+                    "/shared_storage/module_with_custom_header.js",
+                    SharedStorageCrossOriginWorkletResponseHeaderReplacement(
+                        "Access-Control-Allow-Origin: *",
+                        kEmptySharedStorageCrossOriginAllowedReplacement)));
+
+  EXPECT_TRUE(ExecJs(shell(), JsReplace("sharedStorage.worklet.addModule($1)",
+                                        module_script_url.spec())));
+
+  // Expect the run() operation.
+  test_worklet_host_manager()
+      .GetAttachedWorkletHost()
+      ->SetExpectedWorkletResponsesCount(1);
+
+  EXPECT_TRUE(ExecJs(shell(), R"(
+      sharedStorage.run('test-operation', {
+        data: {
+          'set-key': 'key0',
+          'set-value': 'value0'
+        },
+        keepAlive: true
+      });
+    )"));
+
+  test_worklet_host_manager()
+      .GetAttachedWorkletHost()
+      ->WaitForWorkletResponses();
+
+  GURL iframe_url = https_server()->GetURL("a.test", "/empty.thml");
   FrameTreeNode* iframe_node =
       CreateIFrame(PrimaryFrameTreeNodeRoot(), iframe_url);
 
@@ -6127,7 +6501,7 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(
     SharedStorageFencedFrameInteractionBrowserTest,
-    SelectURLNotAllowedInFencedFrameNotOriginatedFromSharedStorage) {
+    SharedStorageNotAllowedInFencedFrameNotOriginatedFromSharedStorage) {
   GURL main_url = https_server()->GetURL("a.test", kSimplePagePath);
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
@@ -6141,30 +6515,14 @@ IN_PROC_BROWSER_TEST_F(
               net::OK, blink::FencedFrame::DeprecatedFencedFrameMode::kDefault))
           ->frame_tree_node();
 
-  EXPECT_TRUE(ExecJs(fenced_frame_root_node_1,
-                     JsReplace("window.resolveSelectURLToConfig = $1;",
-                               ResolveSelectURLToConfig())));
-
   EvalJsResult result = EvalJs(fenced_frame_root_node_1, R"(
-      sharedStorage.selectURL(
-        'test-url-selection-operation',
-        [
-          {
-            url: "fenced_frames/title0.html"
-          }
-        ],
-        {
-          data: {'mockResult': 0},
-          resolveToConfig: resolveSelectURLToConfig
-        }
-      );
+      sharedStorage.worklet.addModule('/shared_storage/simple_module.js');
     )");
 
   EXPECT_THAT(
       result.error,
       testing::HasSubstr(
-          "The \"shared-storage\" Permissions Policy denied the method on "
-          "window.sharedStorage."));
+          "The \"shared-storage\" Permissions Policy denied the method"));
 }
 
 IN_PROC_BROWSER_TEST_F(SharedStorageFencedFrameInteractionBrowserTest,
@@ -11121,7 +11479,7 @@ IN_PROC_BROWSER_TEST_F(SharedStorageHeaderObserverBrowserTest,
 
   EXPECT_THAT(result.error,
               testing::HasSubstr("The \"shared-storage\" Permissions Policy "
-                                 "denied the method on window.sharedStorage."));
+                                 "denied the method"));
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -11236,7 +11594,7 @@ IN_PROC_BROWSER_TEST_F(
   // c.test does not have permission to use shared storage.
   EXPECT_THAT(result.error,
               testing::HasSubstr("The \"shared-storage\" Permissions Policy "
-                                 "denied the method on window.sharedStorage."));
+                                 "denied the method"));
 
   // Create an iframe that's same-origin to the second redirect URL.
   FrameTreeNode* iframe_node3 =
@@ -11316,7 +11674,7 @@ IN_PROC_BROWSER_TEST_F(
 
   EXPECT_THAT(result.error,
               testing::HasSubstr("The \"shared-storage\" Permissions Policy "
-                                 "denied the method on window.sharedStorage."));
+                                 "denied the method"));
 
   // Create an iframe that's same-origin to the redirect URL.
   FrameTreeNode* iframe_node2 =
@@ -12395,7 +12753,7 @@ IN_PROC_BROWSER_TEST_F(SharedStorageHeaderObserverBrowserTest,
 
   EXPECT_THAT(result.error,
               testing::HasSubstr("The \"shared-storage\" Permissions Policy "
-                                 "denied the method on window.sharedStorage."));
+                                 "denied the method"));
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -12510,7 +12868,7 @@ IN_PROC_BROWSER_TEST_F(
   // c.test does not have permission to use shared storage.
   EXPECT_THAT(result.error,
               testing::HasSubstr("The \"shared-storage\" Permissions Policy "
-                                 "denied the method on window.sharedStorage."));
+                                 "denied the method"));
 
   // Create an iframe that's same-origin to the second redirect URL.
   FrameTreeNode* iframe_node3 =
@@ -12590,7 +12948,7 @@ IN_PROC_BROWSER_TEST_F(
 
   EXPECT_THAT(result.error,
               testing::HasSubstr("The \"shared-storage\" Permissions Policy "
-                                 "denied the method on window.sharedStorage."));
+                                 "denied the method"));
 
   // Create an iframe that's same-origin to the redirect URL.
   FrameTreeNode* iframe_node2 =
@@ -13336,7 +13694,7 @@ IN_PROC_BROWSER_TEST_F(
 
   EXPECT_THAT(result.error,
               testing::HasSubstr("The \"shared-storage\" Permissions Policy "
-                                 "denied the method on window.sharedStorage."));
+                                 "denied the method"));
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -13451,7 +13809,7 @@ IN_PROC_BROWSER_TEST_F(
   // c.test does not have permission to use shared storage.
   EXPECT_THAT(result.error,
               testing::HasSubstr("The \"shared-storage\" Permissions Policy "
-                                 "denied the method on window.sharedStorage."));
+                                 "denied the method"));
 
   // Create an iframe that's same-origin to the second redirect URL.
   FrameTreeNode* iframe_node4 =
@@ -13531,7 +13889,7 @@ IN_PROC_BROWSER_TEST_F(
 
   EXPECT_THAT(result.error,
               testing::HasSubstr("The \"shared-storage\" Permissions Policy "
-                                 "denied the method on window.sharedStorage."));
+                                 "denied the method"));
 
   // Create an iframe that's same-origin to the redirect URL.
   FrameTreeNode* iframe_node3 =
@@ -13619,74 +13977,6 @@ IN_PROC_BROWSER_TEST_F(SharedStorageHeaderObserverBrowserTest,
   ASSERT_TRUE(observer_);
   EXPECT_TRUE(observer_->header_results().empty());
   EXPECT_TRUE(observer_->operations().empty());
-}
-
-class SharedStorageOriginTrialBrowserTest : public ContentBrowserTest {
- public:
-  SharedStorageOriginTrialBrowserTest() {
-    feature_list_.InitWithFeatures(
-        /*enabled_features=*/{blink::features::kPrivacySandboxAdsAPIs,
-                              blink::features::kSharedStorageAPI},
-        /*disabled_features=*/{features::kPrivacySandboxAdsAPIsM1Override});
-  }
-
-  void SetUpOnMainThread() override {
-    ContentBrowserTest::SetUpOnMainThread();
-
-    // We use a URLLoaderInterceptor, rather than the EmbeddedTestServer, since
-    // the origin trial token in the response is associated with a fixed
-    // origin, whereas EmbeddedTestServer serves content on a random port.
-    url_loader_interceptor_ =
-        std::make_unique<URLLoaderInterceptor>(base::BindLambdaForTesting(
-            [](URLLoaderInterceptor::RequestParams* params) -> bool {
-              base::ScopedAllowBlockingForTesting allow_blocking;
-
-              base::FilePath test_data_dir;
-              CHECK(base::PathService::Get(DIR_TEST_DATA, &test_data_dir));
-
-              std::string relative_path =
-                  params->url_request.url.path().substr(1);
-
-              base::FilePath file_path =
-                  test_data_dir.AppendASCII(relative_path);
-
-              URLLoaderInterceptor::WriteResponse(file_path,
-                                                  params->client.get());
-
-              return true;
-            }));
-  }
-
-  void TearDownOnMainThread() override {
-    // Resetting `URLLoaderInterceptor` needs a single-threaded context. Thus,
-    // reset it here instead of during destruction of `this`.
-    url_loader_interceptor_.reset();
-  }
-
- private:
-  std::unique_ptr<URLLoaderInterceptor> url_loader_interceptor_;
-
-  base::test::ScopedFeatureList feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(SharedStorageOriginTrialBrowserTest,
-                       OriginTrialEnabled_SharedStorageClassExposedInWorklet) {
-  EXPECT_TRUE(
-      NavigateToURL(shell(), GURL("https://example.test/attribution_reporting/"
-                                  "page_with_ads_apis_ot.html")));
-
-  EXPECT_TRUE(ExecJs(shell(), R"(
-      // Try accessing the `SharedStorage` interface which is gated by
-      // [RuntimeEnabled=SharedStorageAPI] which has an associated Origin Trial
-      // feature. If the OT features are correctly propagated to the worklet
-      // environment, the module script should execute successfully.
-      let module_content = `
-        SharedStorage;
-      `;
-
-      let blob = new Blob([module_content], {type: 'text/javascript'});
-      sharedStorage.worklet.addModule(URL.createObjectURL(blob));
-    )"));
 }
 
 }  // namespace content

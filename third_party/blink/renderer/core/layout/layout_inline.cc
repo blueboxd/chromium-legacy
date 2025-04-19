@@ -36,7 +36,7 @@
 #include "third_party/blink/renderer/core/layout/inline/fragment_item.h"
 #include "third_party/blink/renderer/core/layout/inline/inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
-#include "third_party/blink/renderer/core/layout/layout_ng_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/outline_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 #include "ui/gfx/geometry/quad_f.h"
 
@@ -237,9 +238,10 @@ bool LayoutInline::ComputeInitialShouldCreateBoxFragment() const {
     return true;
 
   const ComputedStyle& first_line_style = FirstLineStyleRef();
-  if (UNLIKELY(&style != &first_line_style &&
-               ComputeInitialShouldCreateBoxFragment(first_line_style)))
+  if (&style != &first_line_style &&
+      ComputeInitialShouldCreateBoxFragment(first_line_style)) [[unlikely]] {
     return true;
+  }
 
   return false;
 }
@@ -621,7 +623,7 @@ bool LayoutInline::NodeAtPoint(HitTestResult& result,
   if (IsInLayoutNGInlineFormattingContext()) {
     // TODO(crbug.com/965976): We should fix the root cause of the missed
     // layout.
-    if (UNLIKELY(NeedsLayout())) {
+    if (NeedsLayout()) [[unlikely]] {
       NOTREACHED_IN_MIGRATION();
       return false;
     }
@@ -695,7 +697,7 @@ bool LayoutInline::HitTestCulledInline(HitTestResult& result,
     // painting-order-wise. Don't include it as part of the culled inline
     // region. https://www.w3.org/TR/CSS22/zindex.html#painting-order
     if (const auto* fragment = cursor.Current().BoxFragment()) {
-      if (UNLIKELY(fragment->IsOpaque())) {
+      if (fragment->IsOpaque()) [[unlikely]] {
         continue;
       }
     }

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder_base_test.h"
 
 #include <stddef.h>
@@ -67,8 +72,7 @@ void SaveMD5Sum(const base::FilePath& path,
   base::MD5Digest digest = ComputeMD5Sum(*frame_buffer);
 
   // Write sum to disk.
-  ASSERT_TRUE(
-      base::WriteFile(path, base::as_bytes(base::make_span(&digest, 1u))));
+  ASSERT_TRUE(base::WriteFile(path, base::byte_span_from_ref(digest)));
 }
 #endif
 

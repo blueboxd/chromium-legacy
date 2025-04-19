@@ -19,6 +19,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_RULE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_RULE_H_
 
@@ -74,6 +79,8 @@ class CORE_EXPORT StyleRuleBase : public GarbageCollected<StyleRuleBase> {
     kStartingStyle,
     kViewTransition,
     kFunction,
+    kMixin,
+    kApplyMixin,
     kPositionTry,
   };
 
@@ -116,6 +123,8 @@ class CORE_EXPORT StyleRuleBase : public GarbageCollected<StyleRuleBase> {
            GetType() == kSupports || GetType() == kStartingStyle;
   }
   bool IsFunctionRule() const { return GetType() == kFunction; }
+  bool IsMixinRule() const { return GetType() == kMixin; }
+  bool IsApplyMixinRule() const { return GetType() == kApplyMixin; }
   bool IsPositionTryRule() const { return GetType() == kPositionTry; }
 
   StyleRuleBase* Copy() const;
@@ -129,11 +138,10 @@ class CORE_EXPORT StyleRuleBase : public GarbageCollected<StyleRuleBase> {
                               CSSRule* parent_rule,
                               bool trigger_use_counters = false) const;
 
-  // Move this rule from being a child of old_parent (which is only given for
-  // sake of DCHECK) to being a child of new_parent, updating parent pointers
-  // in the selector. This happens only when we need to reallocate a StyleRule
-  // because its selector changed.
-  void Reparent(StyleRule* old_parent, StyleRule* new_parent);
+  // Move this rule to being a child of new_parent, updating parent
+  // pointers in the selector. This happens only when we need to reallocate a
+  // StyleRule because its selector changed.
+  void Reparent(StyleRule* new_parent);
 
   void Trace(Visitor*) const;
   void TraceAfterDispatch(blink::Visitor* visitor) const {}
@@ -182,9 +190,13 @@ class CORE_EXPORT StyleRuleBase : public GarbageCollected<StyleRuleBase> {
 
     Iterator begin() const {
       // The AdjustedIndex call ensures that we skip leading invisible rules.
-      return Iterator(rules_.begin() + AdjustedIndex(0), rules_.end());
+      return Iterator(rules_.data() + AdjustedIndex(0),
+                      rules_.data() + rules_.size());
     }
-    Iterator end() const { return Iterator(rules_.end(), rules_.end()); }
+    Iterator end() const {
+      const Member<StyleRuleBase>* end = rules_.data() + rules_.size();
+      return Iterator(end, end);
+    }
 
     const Member<StyleRuleBase>& operator[](wtf_size_t i) const {
       return rules_.at(AdjustedIndex(i));
@@ -194,6 +206,7 @@ class CORE_EXPORT StyleRuleBase : public GarbageCollected<StyleRuleBase> {
     }
 
     wtf_size_t size() const { return rules_.size() - num_invisible_rules_; }
+    bool empty() const { return !size(); }
 
     void AddChildRule(StyleRuleBase* rule);
     void WrapperInsertRule(unsigned index, StyleRuleBase*);
@@ -729,6 +742,39 @@ class CORE_EXPORT StyleRuleFunction : public StyleRuleBase {
   Type return_type_;
 };
 
+// An @mixin rule, representing a CSS mixin. We store all of the rules
+// and declarations under a dummy rule that serves as the parent;
+// when @apply comes, we clone all the children below that rule and
+// reparent them into the point of @apply.
+class CORE_EXPORT StyleRuleMixin : public StyleRuleBase {
+ public:
+  StyleRuleMixin(AtomicString name, StyleRule* fake_parent_rule);
+  StyleRuleMixin(const StyleRuleMixin&) = delete;
+
+  const AtomicString& GetName() const { return name_; }
+  StyleRule& FakeParentRule() const { return *fake_parent_rule_; }
+
+  void TraceAfterDispatch(blink::Visitor*) const;
+
+ private:
+  AtomicString name_;
+  Member<StyleRule> fake_parent_rule_;
+};
+
+// An @apply rule, representing applying a mixin.
+class CORE_EXPORT StyleRuleApplyMixin : public StyleRuleBase {
+ public:
+  explicit StyleRuleApplyMixin(AtomicString name);
+  StyleRuleApplyMixin(const StyleRuleMixin&) = delete;
+
+  const AtomicString& GetName() const { return name_; }
+
+  void TraceAfterDispatch(blink::Visitor*) const;
+
+ private:
+  AtomicString name_;
+};
+
 template <>
 struct DowncastTraits<StyleRule> {
   static bool AllowFrom(const StyleRuleBase& rule) {
@@ -831,6 +877,20 @@ template <>
 struct DowncastTraits<StyleRuleFunction> {
   static bool AllowFrom(const StyleRuleBase& rule) {
     return rule.IsFunctionRule();
+  }
+};
+
+template <>
+struct DowncastTraits<StyleRuleMixin> {
+  static bool AllowFrom(const StyleRuleBase& rule) {
+    return rule.IsMixinRule();
+  }
+};
+
+template <>
+struct DowncastTraits<StyleRuleApplyMixin> {
+  static bool AllowFrom(const StyleRuleBase& rule) {
+    return rule.IsApplyMixinRule();
   }
 };
 

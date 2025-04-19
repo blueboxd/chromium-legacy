@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ui/accessibility/platform/ax_platform_node_auralinux.h"
 
 #include <dlfcn.h>
@@ -20,6 +25,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
+#include "base/not_fatal_until.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -2343,7 +2349,7 @@ bool AtkTableCellInterface::Exists() {
 void AXPlatformNodeAuraLinux::EnsureGTypeInit() {
 #if !GLIB_CHECK_VERSION(2, 36, 0)
   static bool first_time = true;
-  if (UNLIKELY(first_time)) {
+  if (first_time) [[unlikely]] {
     g_type_init();
     first_time = false;
   }
@@ -2557,7 +2563,7 @@ AtkObject* AXPlatformNodeAuraLinux::CreateAtkObject() {
 void AXPlatformNodeAuraLinux::DestroyAtkObjects() {
   if (atk_hyperlink_) {
     ax_platform_atk_hyperlink_set_object(
-        AX_PLATFORM_ATK_HYPERLINK(atk_hyperlink_), nullptr);
+        AX_PLATFORM_ATK_HYPERLINK(atk_hyperlink_.get()), nullptr);
     g_object_unref(atk_hyperlink_);
     atk_hyperlink_ = nullptr;
   }
@@ -2567,7 +2573,7 @@ void AXPlatformNodeAuraLinux::DestroyAtkObjects() {
     // reference to atk_object_ somewhere.
     if (atk_object_ == g_current_focused)
       SetWeakGPtrToAtkObject(&g_current_focused, nullptr);
-    atk_object::Detach(AX_PLATFORM_NODE_AURALINUX(atk_object_));
+    atk_object::Detach(AX_PLATFORM_NODE_AURALINUX(atk_object_.get()));
 
     g_object_unref(atk_object_);
     atk_object_ = nullptr;
@@ -2780,6 +2786,8 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() const {
       return ATK_ROLE_IMAGE;
     case ax::mojom::Role::kGrid:
       return ATK_ROLE_TABLE;
+    case ax::mojom::Role::kGridCell:
+      return ATK_ROLE_TABLE_CELL;
     case ax::mojom::Role::kGroup:
       return ATK_ROLE_PANEL;
     case ax::mojom::Role::kHeading:
@@ -2921,8 +2929,6 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() const {
       return ATK_ROLE_EMBEDDED;
     case ax::mojom::Role::kPopUpButton:
       return ATK_ROLE_PUSH_BUTTON;
-    case ax::mojom::Role::kPortal:
-      return ATK_ROLE_PUSH_BUTTON;
     case ax::mojom::Role::kProgressIndicator:
       return ATK_ROLE_PROGRESS_BAR;
     case ax::mojom::Role::kRadioButton:
@@ -3037,6 +3043,7 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() const {
       return ATK_ROLE_REDUNDANT_OBJECT;
     case ax::mojom::Role::kDescriptionListTermDeprecated:
     case ax::mojom::Role::kPreDeprecated:
+    case ax::mojom::Role::kPortalDeprecated:
     case ax::mojom::Role::kDescriptionListDetailDeprecated:
     case ax::mojom::Role::kDirectoryDeprecated:
       NOTREACHED_NORETURN();
@@ -3678,8 +3685,9 @@ void AXPlatformNodeAuraLinux::OnSelectedChildrenChanged() {
 
 bool AXPlatformNodeAuraLinux::EmitsAtkTextEvents() const {
   // Objects which do not implement AtkText cannot emit AtkText events.
-  if (!atk_object_ || !ATK_IS_TEXT(atk_object_))
+  if (!atk_object_ || !ATK_IS_TEXT(atk_object_.get())) {
     return false;
+  }
 
   // Objects which do implement AtkText, but are ignored or invisible should not
   // emit AtkText events.
@@ -3974,7 +3982,7 @@ void AXPlatformNodeAuraLinux::OnParentChanged() {
   property_values.new_value = G_VALUE_INIT;
   g_value_init(&property_values.new_value, G_TYPE_OBJECT);
   g_value_set_object(&property_values.new_value, GetParent());
-  g_signal_emit_by_name(G_OBJECT(atk_object_),
+  g_signal_emit_by_name(G_OBJECT(atk_object_.get()),
                         "property-change::accessible-parent", &property_values,
                         nullptr);
   g_value_unset(&property_values.new_value);
@@ -4572,7 +4580,7 @@ AtkHyperlink* AXPlatformNodeAuraLinux::GetAtkHyperlink() {
   atk_hyperlink_ =
       ATK_HYPERLINK(g_object_new(AX_PLATFORM_ATK_HYPERLINK_TYPE, 0));
   ax_platform_atk_hyperlink_set_object(
-      AX_PLATFORM_ATK_HYPERLINK(atk_hyperlink_), this);
+      AX_PLATFORM_ATK_HYPERLINK(atk_hyperlink_.get()), this);
   return atk_hyperlink_;
 }
 
@@ -4946,7 +4954,8 @@ const TextAttributeList& AXPlatformNodeAuraLinux::GetTextAttributes(
       FindStartOfStyle(utf16_offset, ax::mojom::MoveDirection::kForward);
 
   auto iterator = offset_to_text_attributes_.find(style_start);
-  DCHECK(iterator != offset_to_text_attributes_.end());
+  CHECK(iterator != offset_to_text_attributes_.end(),
+        base::NotFatalUntil::M130);
 
   SetIntPointerValueIfNotNull(start_offset,
                               UTF16ToUnicodeOffsetInText(style_start));

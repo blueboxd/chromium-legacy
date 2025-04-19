@@ -27,6 +27,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 
 #include "base/memory/values_equivalent.h"
@@ -267,6 +272,7 @@ FontCacheKey FontDescription::CacheKey(
     const FontFaceCreationParams& creation_params,
     bool is_unique_match) const {
   unsigned options =
+      static_cast<unsigned>(fields_.variant_emoji_) << 10 |         // bit 11-12
       static_cast<unsigned>(fields_.font_synthesis_style_) << 9 |   // bit 10
       static_cast<unsigned>(fields_.font_synthesis_weight_) << 8 |  // bit 9
       static_cast<unsigned>(fields_.font_optical_sizing_) << 7 |    // bit 8
@@ -282,7 +288,7 @@ FontCacheKey FontDescription::CacheKey(
   float device_scale_factor_for_key = 1.0f;
 #endif
   FontCacheKey cache_key(creation_params, EffectiveFontSize(),
-                         options | font_selection_request_.GetHash() << 11,
+                         options | font_selection_request_.GetHash() << 13,
                          device_scale_factor_for_key, size_adjust_,
                          variation_settings_, font_palette_,
                          font_variant_alternates_, is_unique_match);
@@ -354,8 +360,9 @@ namespace {
 // This converts -0.0 to 0.0, so that they have the same hash value. This
 // ensures that equal FontDescription have the same hash value.
 float NormalizeSign(float number) {
-  if (UNLIKELY(number == 0.0))
+  if (number == 0.0) [[unlikely]] {
     return 0.0;
+  }
   return number;
 }
 
@@ -363,7 +370,6 @@ float NormalizeSign(float number) {
 
 unsigned FontDescription::StyleHashWithoutFamilyList() const {
   unsigned hash = 0;
-  StringHasher string_hasher;
   const FontFeatureSettings* settings = FeatureSettings();
   if (settings) {
     unsigned num_features = settings->size();
@@ -383,10 +389,8 @@ unsigned FontDescription::StyleHashWithoutFamilyList() const {
 
   if (locale_) {
     const AtomicString& locale = locale_->LocaleString();
-    for (unsigned i = 0; i < locale.length(); i++)
-      string_hasher.AddCharacter(locale[i]);
+    WTF::AddIntToHash(hash, locale.Hash());
   }
-  WTF::AddIntToHash(hash, string_hasher.GetHash());
 
   WTF::AddFloatToHash(hash, NormalizeSign(specified_size_));
   WTF::AddFloatToHash(hash, NormalizeSign(computed_size_));

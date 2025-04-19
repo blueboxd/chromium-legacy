@@ -10,10 +10,10 @@
 #include "components/autofill/core/browser/autofill_ablation_study.h"
 #include "components/autofill/core/browser/autofill_compose_delegate.h"
 #include "components/autofill/core/browser/autofill_plus_address_delegate.h"
+#include "components/autofill/core/browser/autofill_prediction_improvements_delegate.h"
 #include "components/autofill/core/browser/filling_product.h"
 #include "components/autofill/core/browser/payments/credit_card_access_manager.h"
 #include "components/autofill/core/browser/payments/mandatory_reauth_manager.h"
-#include "components/autofill/core/browser/ui/payments/bubble_show_options.h"
 #include "components/autofill/core/browser/ui/popup_open_enums.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/version_info/channel.h"
@@ -78,20 +78,29 @@ AutofillPlusAddressDelegate* AutofillClient::GetPlusAddressDelegate() {
   return nullptr;
 }
 
+AutofillPredictionImprovementsDelegate*
+AutofillClient::GetAutofillPredictionImprovementsDelegate() {
+  return nullptr;
+}
+
 void AutofillClient::OfferPlusAddressCreation(
     const url::Origin& main_frame_origin,
     PlusAddressCallback callback) {}
-
-MerchantPromoCodeManager* AutofillClient::GetMerchantPromoCodeManager() {
-  return nullptr;
-}
 
 payments::PaymentsAutofillClient* AutofillClient::GetPaymentsAutofillClient() {
   return nullptr;
 }
 
-AutofillOfferManager* AutofillClient::GetAutofillOfferManager() {
-  return nullptr;
+const payments::PaymentsAutofillClient*
+AutofillClient::GetPaymentsAutofillClient() const {
+  // Gets a pointer to a non-const implementation of
+  // payments::PaymentsAutofillClient for the given platform this is called on,
+  // which is then converted to a pointer to a const implementation. The
+  // implementation returned will already be an existing object that is created
+  // when the given implementation of AutofillClient is created. If there is no
+  // payments::PaymentsAutofillClient for a given platform this will return
+  // nullptr.
+  return const_cast<AutofillClient*>(this)->GetPaymentsAutofillClient();
 }
 
 GeoIpCountryCode AutofillClient::GetVariationConfigCountryCode() const {
@@ -107,34 +116,11 @@ profile_metrics::BrowserProfileType AutofillClient::GetProfileType() const {
 FastCheckoutClient* AutofillClient::GetFastCheckoutClient() {
   return nullptr;
 }
-void AutofillClient::ShowVirtualCardEnrollDialog(
-    const VirtualCardEnrollmentFields& virtual_card_enrollment_fields,
-    base::OnceClosure accept_virtual_card_callback,
-    base::OnceClosure decline_virtual_card_callback) {
-}
 
 payments::MandatoryReauthManager*
 AutofillClient::GetOrCreatePaymentsMandatoryReauthManager() {
   return nullptr;
 }
-
-void AutofillClient::ShowMandatoryReauthOptInConfirmation() {}
-
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-void AutofillClient::HideVirtualCardEnrollBubbleAndIconIfVisible() {
-}
-
-#else
-void AutofillClient::ConfirmAccountNameFixFlow(
-    base::OnceCallback<void(const std::u16string&)> callback) {
-}
-
-void AutofillClient::ConfirmExpirationDateFixFlow(
-    const CreditCard& card,
-    base::OnceCallback<void(const std::u16string&, const std::u16string&)>
-        callback) {
-}
-#endif
 
 #if !BUILDFLAG(IS_IOS)
 std::unique_ptr<webauthn::InternalAuthenticator>
@@ -143,53 +129,16 @@ AutofillClient::CreateCreditCardInternalAuthenticator(AutofillDriver* driver) {
 }
 #endif
 
-void AutofillClient::ConfirmSaveCreditCardLocally(
-    const CreditCard& card,
-    AutofillClient::SaveCreditCardOptions options,
-    LocalSaveCardPromptCallback callback) {
-}
-
-void AutofillClient::ConfirmSaveCreditCardToCloud(
-    const CreditCard& card,
-    const LegalMessageLines& legal_message_lines,
-    SaveCreditCardOptions options,
-    UploadSaveCardPromptCallback callback) {
-}
-
-bool AutofillClient::ShowTouchToFillIban(
-    base::WeakPtr<TouchToFillDelegate> delegate,
-    base::span<const autofill::Iban> ibans_to_suggest) {
-  return false;
-}
-
-void AutofillClient::UpdateOfferNotification(
-    const AutofillOfferData* offer,
-    const OfferNotificationOptions& options) {
-}
-
-void AutofillClient::DismissOfferNotification() {
-}
-
-void AutofillClient::OnVirtualCardDataAvailable(
-    const VirtualCardManualFallbackBubbleOptions& options) {
-}
-
 LogManager* AutofillClient::GetLogManager() const {
   return nullptr;
 }
 
-const AutofillAblationStudy& AutofillClient::GetAblationStudy() const {
-  // As finch configs are profile independent we can use a static instance here.
-  static base::NoDestructor<AutofillAblationStudy> ablation_study;
-  return *ablation_study;
-}
-
-void AutofillClient::OpenPromoCodeOfferDetailsURL(const GURL& url) {
-  NOTIMPLEMENTED();
-}
-
 bool AutofillClient::ShouldFormatForLargeKeyboardAccessory() const {
   return false;
+}
+
+const AutofillAblationStudy& AutofillClient::GetAblationStudy() const {
+  return AutofillAblationStudy::disabled_study();
 }
 
 void AutofillClient::TriggerUserPerceptionOfAutofillSurvey(
@@ -228,11 +177,11 @@ base::span<const AutofillProfile> AutofillClient::GetTestAddresses() const {
   return {};
 }
 
-AutofillClient::PasswordFormType AutofillClient::ClassifyAsPasswordForm(
-    AutofillManager& manager,
-    FormGlobalId form_id,
-    FieldGlobalId field_id) const {
-  return PasswordFormType::kNoPasswordForm;
+AutofillClient::PasswordFormClassification
+AutofillClient::ClassifyAsPasswordForm(AutofillManager& manager,
+                                       FormGlobalId form_id,
+                                       FieldGlobalId field_id) const {
+  return {};
 }
 
 }  // namespace autofill

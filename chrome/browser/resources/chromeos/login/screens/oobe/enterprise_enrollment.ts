@@ -24,16 +24,16 @@ import {assert} from '//resources/js/assert.js';
 import {sendWithPromise} from '//resources/js/cr.js';
 import {loadTimeData} from '//resources/js/load_time_data.js';
 import {PolymerElementProperties} from '//resources/polymer/v3_0/polymer/interfaces.js';
-import {mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {LoginScreenBehavior, LoginScreenBehaviorInterface} from '../../components/behaviors/login_screen_behavior.js';
-import {MultiStepBehavior, MultiStepBehaviorInterface} from '../../components/behaviors/multi_step_behavior.js';
-import {OobeI18nMixin, OobeI18nMixinInterface} from '../../components/mixins/oobe_i18n_mixin.js';
 import {OobeModalDialog} from '../../components/dialogs/oobe_modal_dialog.js';
 import {OobeUiState} from '../../components/display_manager_types.js';
 import {GaiaDialog} from '../../components/gaia_dialog.js';
 import {InjectedKeyboardUtils} from '../../components/keyboard_utils.js';
 import {globalOobeKeyboard, KEYBOARD_UTILS_FOR_INJECTION} from '../../components/keyboard_utils_oobe.js';
+import {LoginScreenMixin} from '../../components/mixins/login_screen_mixin.js';
+import {MultiStepMixin} from '../../components/mixins/multi_step_mixin.js';
+import {OobeI18nMixin} from '../../components/mixins/oobe_i18n_mixin.js';
 import {OobeTypes} from '../../components/oobe_types.js';
 import {Oobe} from '../../cr_ui.js';
 import * as OobeDebugger from '../../debug/debug.js';
@@ -41,12 +41,7 @@ import * as OobeDebugger from '../../debug/debug.js';
 import {getTemplate} from './enterprise_enrollment.html.js';
 
 const EnterpriseEnrollmentElementBase =
-    mixinBehaviors(
-        [LoginScreenBehavior, MultiStepBehavior],
-        OobeI18nMixin(PolymerElement)) as {
-      new (): PolymerElement & OobeI18nMixinInterface &
-          LoginScreenBehaviorInterface & MultiStepBehaviorInterface,
-    };
+    LoginScreenMixin(MultiStepMixin(OobeI18nMixin(PolymerElement)));
 
 /**
  * Data that is passed to the screen during onBeforeShow.
@@ -61,6 +56,7 @@ interface EnterpriseEnrollmentScreenData {
   gaiaPath: string|undefined;
   gaia_buttons_type: string|undefined;
   clientId: string|undefined;
+  clientVersion: string|undefined;
   hl: string|undefined;
   management_domain: string|undefined;
   email: string|undefined;
@@ -311,8 +307,9 @@ export class EnterpriseEnrollmentElement extends
    * Event handler that is invoked just before the frame is shown.
    * @param data Screen init payload, contains the signin frame URL.
    */
-  onBeforeShow(data?: EnterpriseEnrollmentScreenData): void {
+  override onBeforeShow(data?: EnterpriseEnrollmentScreenData): void {
     if (data === undefined) {
+      super.onBeforeShow(data);
       return;
     }
 
@@ -361,6 +358,9 @@ export class EnterpriseEnrollmentElement extends
         gaiaParams.readOnlyEmail = true;
         gaiaParams.email = data.email;
       }
+      if (data.clientVersion) {
+        gaiaParams.clientVersion = data.clientVersion;
+      }
 
       assert(this.authenticator);
       this.authenticator.setWebviewPartition(
@@ -382,6 +382,8 @@ export class EnterpriseEnrollmentElement extends
           this.isAutoEnroll ? OobeTypes.EnrollmentStep.WORKING :
                               OobeTypes.EnrollmentStep.LOADING);
     }
+
+    super.onBeforeShow(data);
   }
 
   /**
@@ -503,8 +505,15 @@ export class EnterpriseEnrollmentElement extends
   }
 
   private onEnrollKiosk(): void {
-    chrome.send(
-        'oauthEnrollCompleteLogin', [this.email, OobeTypes.LicenseType.KIOSK]);
+    // Kiosk enrollment only requires an email address, but the callback is
+    // shared with the enterprise enrollment, so empty credentials are passed.
+    chrome.send('oauthEnrollCompleteLogin', [
+      this.email,
+      /* gaia_id */ '',
+      /* password */ '',
+      /* using_saml */ false,
+      OobeTypes.LicenseType.KIOSK,
+    ]);
   }
 
   /**
@@ -535,13 +544,21 @@ export class EnterpriseEnrollmentElement extends
       return;
     }
     if (this.licenseType === OobeTypes.LicenseType.ENTERPRISE) {
-      chrome.send(
-          'oauthEnrollCompleteLogin',
-          [detail.email, OobeTypes.LicenseType.ENTERPRISE]);
+      chrome.send('oauthEnrollCompleteLogin', [
+        detail.email,
+        detail.gaiaId,
+        detail.password,
+        detail.usingSAML,
+        OobeTypes.LicenseType.ENTERPRISE,
+      ]);
     } else if (this.licenseType === OobeTypes.LicenseType.EDUCATION) {
-      chrome.send(
-          'oauthEnrollCompleteLogin',
-          [detail.email, OobeTypes.LicenseType.EDUCATION]);
+      chrome.send('oauthEnrollCompleteLogin', [
+        detail.email,
+        detail.gaiaId,
+        detail.password,
+        detail.usingSAML,
+        OobeTypes.LicenseType.EDUCATION,
+      ]);
     } else {
       this.email = detail.email;
       this.showStep(OobeTypes.EnrollmentStep.KIOSK_ENROLLMENT);
@@ -564,8 +581,8 @@ export class EnterpriseEnrollmentElement extends
   }
 
   private openedFromDebugOverlay(): boolean {
-    if (OobeDebugger.DebuggerUI &&
-        OobeDebugger.DebuggerUI.getInstance().currentScreenId ===
+    if (OobeDebugger.DebuggerUi &&
+        OobeDebugger.DebuggerUi.getInstance().currentScreenId ===
             'enterprise-enrollment') {
       console.warn(
           'Enrollment screen was opened using debug overlay: ' +

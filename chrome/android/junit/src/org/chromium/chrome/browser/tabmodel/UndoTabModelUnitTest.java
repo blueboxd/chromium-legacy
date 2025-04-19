@@ -24,7 +24,6 @@ import androidx.test.filters.SmallTest;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
@@ -34,7 +33,6 @@ import org.robolectric.shadows.ShadowLooper;
 import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.homepage.HomepageManager;
@@ -65,8 +63,6 @@ public class UndoTabModelUnitTest {
 
     /** Disable native calls from {@link TabModelJniBridge}. */
     @Rule public JniMocker mJniMocker = new JniMocker();
-
-    @Rule public TestRule mProcessor = new Features.JUnitProcessor();
 
     @Mock private TabModelJniBridge.Natives mTabModelJniBridge;
 
@@ -214,7 +210,7 @@ public class UndoTabModelUnitTest {
     }
 
     private void selectTab(final TabModel model, final Tab tab) {
-        model.setIndex(model.indexOf(tab), TabSelectionType.FROM_USER, false);
+        model.setIndex(model.indexOf(tab), TabSelectionType.FROM_USER);
     }
 
     private void closeTab(final TabModel model, final Tab tab, final boolean undoable)
@@ -223,7 +219,7 @@ public class UndoTabModelUnitTest {
         assertFalse(tab.isClosing());
         assertTrue(tab.isInitialized());
         assertFalse(model.isClosurePending(tab.getId()));
-        assertNotNull(TabModelUtils.getTabById(model, tab.getId()));
+        assertNotNull(model.getTabById(tab.getId()));
 
         final CallbackHelper didReceivePendingClosureHelper = new CallbackHelper();
         model.addObserver(
@@ -235,7 +231,7 @@ public class UndoTabModelUnitTest {
                 });
 
         // Take action.
-        model.closeTab(tab, false, undoable);
+        model.closeTabs(TabClosureParams.closeTab(tab).allowUndo(undoable).build());
 
         boolean didMakePending = undoable && model.supportsPendingClosures();
 
@@ -244,7 +240,7 @@ public class UndoTabModelUnitTest {
 
         // Check post conditions
         assertEquals(didMakePending, model.isClosurePending(tab.getId()));
-        assertNull(TabModelUtils.getTabById(model, tab.getId()));
+        assertNull(model.getTabById(tab.getId()));
         assertTrue(tab.isClosing());
         assertEquals(didMakePending, tab.isInitialized());
     }
@@ -271,11 +267,15 @@ public class UndoTabModelUnitTest {
     private void closeMultipleTabs(
             final TabModel model, final List<Tab> tabs, final boolean undoable)
             throws TimeoutException {
-        closeMultipleTabsInternal(model, () -> model.closeMultipleTabs(tabs, undoable), undoable);
+        closeMultipleTabsInternal(
+                model,
+                () -> model.closeTabs(TabClosureParams.closeTabs(tabs).allowUndo(undoable).build()),
+                undoable);
     }
 
     private void closeAllTabs(final TabModel model) throws TimeoutException {
-        closeMultipleTabsInternal(model, () -> model.closeAllTabs(), true);
+        closeMultipleTabsInternal(
+                model, () -> model.closeTabs(TabClosureParams.closeAllTabs().build()), true);
     }
 
     private void cancelTabClosure(final TabModel model, final Tab tab) throws TimeoutException {
@@ -283,7 +283,7 @@ public class UndoTabModelUnitTest {
         assertTrue(tab.isClosing());
         assertTrue(tab.isInitialized());
         assertTrue(model.isClosurePending(tab.getId()));
-        assertNull(TabModelUtils.getTabById(model, tab.getId()));
+        assertNull(model.getTabById(tab.getId()));
 
         final CallbackHelper didReceiveClosureCancelledHelper = new CallbackHelper();
         model.addObserver(
@@ -302,7 +302,7 @@ public class UndoTabModelUnitTest {
 
         // Check post conditions.
         assertFalse(model.isClosurePending(tab.getId()));
-        assertNotNull(TabModelUtils.getTabById(model, tab.getId()));
+        assertNotNull(model.getTabById(tab.getId()));
         assertFalse(tab.isClosing());
         assertTrue(tab.isInitialized());
     }
@@ -317,7 +317,7 @@ public class UndoTabModelUnitTest {
             assertTrue(tab.isClosing());
             assertTrue(tab.isInitialized());
             assertTrue(model.isClosurePending(tab.getId()));
-            assertNull(TabModelUtils.getTabById(model, tab.getId()));
+            assertNull(model.getTabById(tab.getId()));
 
             // Make sure that this TabModel throws the right events.
             model.addObserver(
@@ -346,7 +346,7 @@ public class UndoTabModelUnitTest {
         for (int i = 0; i < expectedToClose.length; i++) {
             final Tab tab = expectedToClose[i];
             assertFalse(model.isClosurePending(tab.getId()));
-            assertNotNull(TabModelUtils.getTabById(model, tab.getId()));
+            assertNotNull(model.getTabById(tab.getId()));
             assertFalse(tab.isClosing());
             assertTrue(tab.isInitialized());
         }
@@ -357,7 +357,7 @@ public class UndoTabModelUnitTest {
         assertTrue(tab.isClosing());
         assertTrue(tab.isInitialized());
         assertTrue(model.isClosurePending(tab.getId()));
-        assertNull(TabModelUtils.getTabById(model, tab.getId()));
+        assertNull(model.getTabById(tab.getId()));
 
         final CallbackHelper didReceiveClosureCommittedHelper = new CallbackHelper();
         model.addObserver(
@@ -376,7 +376,7 @@ public class UndoTabModelUnitTest {
 
         // Check post conditions
         assertFalse(model.isClosurePending(tab.getId()));
-        assertNull(TabModelUtils.getTabById(model, tab.getId()));
+        assertNull(model.getTabById(tab.getId()));
         assertTrue(tab.isClosing());
         assertFalse(tab.isInitialized());
     }

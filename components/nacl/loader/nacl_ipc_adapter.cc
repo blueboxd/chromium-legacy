@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "components/nacl/loader/nacl_ipc_adapter.h"
 
 #include <limits.h>
@@ -492,7 +497,6 @@ bool NaClIPCAdapter::OnMessageReceived(const IPC::Message& msg) {
   if (type == IPC_REPLY_ID) {
     int id = IPC::SyncMessage::GetMessageId(msg);
     auto it = io_thread_data_.pending_sync_msgs_.find(id);
-    DCHECK(it != io_thread_data_.pending_sync_msgs_.end());
     if (it != io_thread_data_.pending_sync_msgs_.end()) {
       type = it->second;
       io_thread_data_.pending_sync_msgs_.erase(it);

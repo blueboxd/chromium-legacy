@@ -604,6 +604,11 @@ void AudioRendererImpl::OnDeviceInfoReceived(
                                 AudioParameters::MULTIZONE);
 
   audio_parameters_.set_latency_tag(AudioLatency::Type::kPlayback);
+  if (!audio_parameters_.IsBitstreamFormat()) {
+    // Requesting audio offload if it is supported on output.
+    media::AudioParameters::HardwareCapabilities hardware_caps(0, 0, 0, true);
+    audio_parameters_.set_hardware_capabilities(hardware_caps);
+  }
 
   audio_decoder_stream_ = std::make_unique<AudioDecoderStream>(
       std::make_unique<AudioDecoderStream::StreamTraits>(
@@ -1189,7 +1194,11 @@ int AudioRendererImpl::Render(base::TimeDelta delay,
                               base::TimeTicks delay_timestamp,
                               const AudioGlitchInfo& glitch_info,
                               AudioBus* audio_bus) {
-  TRACE_EVENT1("media", "AudioRendererImpl::Render", "id", player_id_);
+  TRACE_EVENT("media", "AudioRendererImpl::Render", "id", player_id_,
+              "playout_delay (ms)", delay.InMillisecondsF(),
+              "delay_timestamp (ms)",
+              (delay_timestamp - base::TimeTicks()).InMillisecondsF());
+
   int frames_requested = audio_bus->frames();
   DVLOG(4) << __func__ << " delay:" << delay << " glitch_info:["
            << glitch_info.ToString() << "]"
@@ -1222,6 +1231,11 @@ int AudioRendererImpl::Render(base::TimeDelta delay,
       stop_rendering_time_ = base::TimeTicks();
     }
 
+    // When WSOLA is used for playback rate changes, its effect is non-linear,
+    // so we need to adjust the playback rate given to AudioClock to avoid a/v
+    // sync issues over time.
+    double effective_playback_rate = playback_rate_;
+
     // Ensure Stop() hasn't destroyed our |algorithm_| on the pipeline thread.
     if (!algorithm_) {
       audio_clock_->WroteAudio(0, frames_requested, frames_delayed,
@@ -1243,6 +1257,8 @@ int AudioRendererImpl::Render(base::TimeDelta delay,
     }
 
     if (is_passthrough_ && algorithm_->BufferedFrames() > 0) {
+      DCHECK_EQ(playback_rate_, 1.0);
+
       // TODO(tsunghung): For compressed bitstream formats, play zeroed buffer
       // won't generate delay. It could be discarded immediately. Need another
       // way to generate audio delay.
@@ -1291,9 +1307,18 @@ int AudioRendererImpl::Render(base::TimeDelta delay,
       // If there's any space left, actually render the audio; this is where the
       // aural magic happens.
       if (frames_written < frames_requested) {
-        frames_written += algorithm_->FillBuffer(
+        DVLOG(4) << __func__ << ": drift="
+                 << CalculateClockAndAlgorithmDrift().InMicroseconds() << "us";
+
+        const auto frames_filled = algorithm_->FillBuffer(
             audio_bus, frames_written, frames_requested - frames_written,
             playback_rate_);
+        frames_written += frames_filled;
+        effective_playback_rate = algorithm_->effective_playback_rate();
+
+        DVLOG(4) << __func__ << ": frames_filled=" << frames_filled
+                 << ", playback_rate_=" << playback_rate_
+                 << ", effective_playback_rate=" << effective_playback_rate;
       }
     }
 
@@ -1349,8 +1374,18 @@ int AudioRendererImpl::Render(base::TimeDelta delay,
       SetBufferingState_Locked(BUFFERING_HAVE_NOTHING);
     }
 
+    // Note: effective_playback_rate() is used here because WSOLA is a
+    // non-linear operation. E.g., for a `playback_rate_` of 2.0 WSOLA may end
+    // up with effective rates between 1 and 3 and a/v sync drift of +/- 20ms.
+    // This effect is normally cyclical, so it doesn't build over time... except
+    // during repeated playback changes. https://crbug.com/40190553
+    //
+    // Teaching AudioClock about non-linear time would be difficult, but luckily
+    // we can approximate it well enough by just calculating an effective rate
+    // as frames consumed / frames produced for each FillBuffer() call.
     audio_clock_->WroteAudio(frames_written + frames_after_end_of_stream,
-                             frames_requested, frames_delayed, playback_rate_);
+                             frames_requested, frames_delayed,
+                             effective_playback_rate);
 
     if (CanRead_Locked()) {
       task_runner_->PostTask(FROM_HERE,
@@ -1497,6 +1532,11 @@ void AudioRendererImpl::TranscribeAudio(
   if (speech_recognition_client_)
     speech_recognition_client_->AddAudio(std::move(buffer));
 #endif
+}
+
+base::TimeDelta AudioRendererImpl::CalculateClockAndAlgorithmDrift() const {
+  return algorithm_->FrontTimestamp().value_or(audio_clock_->back_timestamp()) -
+         audio_clock_->back_timestamp();
 }
 
 }  // namespace media

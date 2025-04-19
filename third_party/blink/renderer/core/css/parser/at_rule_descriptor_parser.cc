@@ -272,12 +272,18 @@ CSSValue* ConsumeDescriptor(StyleRule::RuleType rule_type,
   switch (rule_type) {
     case StyleRule::kFontFace:
       return Parser::ParseFontFaceDescriptor(id, tokenized_value, context);
-    case StyleRule::kFontPaletteValues:
-      return Parser::ParseAtFontPaletteValuesDescriptor(id, range, context);
+    case StyleRule::kFontPaletteValues: {
+      CSSTokenizer tokenizer(tokenized_value.text);
+      CSSParserTokenStream stream(tokenizer);
+      return Parser::ParseAtFontPaletteValuesDescriptor(id, stream, context);
+    }
     case StyleRule::kProperty:
       return Parser::ParseAtPropertyDescriptor(id, tokenized_value, context);
-    case StyleRule::kCounterStyle:
-      return Parser::ParseAtCounterStyleDescriptor(id, range, context);
+    case StyleRule::kCounterStyle: {
+      CSSTokenizer tokenizer(tokenized_value.text);
+      CSSParserTokenStream stream(tokenizer);
+      return Parser::ParseAtCounterStyleDescriptor(id, stream, context);
+    }
     case StyleRule::kViewTransition:
       return Parser::ParseAtViewTransitionDescriptor(id, range, context);
     case StyleRule::kCharset:
@@ -298,6 +304,8 @@ CSSValue* ConsumeDescriptor(StyleRule::RuleType rule_type,
     case StyleRule::kSupports:
     case StyleRule::kStartingStyle:
     case StyleRule::kFunction:
+    case StyleRule::kMixin:
+    case StyleRule::kApplyMixin:
     case StyleRule::kPositionTry:
       // TODO(andruud): Handle other descriptor types here.
       NOTREACHED_IN_MIGRATION();

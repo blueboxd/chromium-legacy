@@ -34,10 +34,9 @@ const nearby::connections::mojom::Strategy kStrategy =
 // Timeout for initiating a connection to a remote device.
 constexpr base::TimeDelta kInitiateNearbyConnectionTimeout = base::Seconds(60);
 
-// Whether or not WifiLan is supported for advertising or discovery. Support as
+// Whether or not WifiLan is supported for advertising. Support as
 // a bandwidth upgrade medium is behind a feature flag.
 constexpr bool kIsWifiLanAdvertisingSupported = false;
-constexpr bool kIsWifiLanDiscoverySupported = false;
 
 bool ShouldUseInternet(NearbyConnectionsManager::DataUsage data_usage,
                        NearbyConnectionsManager::PowerLevel power_level) {
@@ -300,7 +299,7 @@ void NearbyConnectionsManagerImpl::StartDiscovery(
                          NearbyConnectionsManager::PowerLevel::kHighPower),
       /*wifi_lan=*/
       ShouldEnableWifiLan(data_usage, PowerLevel::kHighPower) &&
-          kIsWifiLanDiscoverySupported,
+          ::features::IsNearbyMdnsEnabled(),
       /*wifi_direct=*/
       base::FeatureList::IsEnabled(features::kNearbySharingWifiDirect));
   CD_LOG(VERBOSE, Feature::NEARBY_INFRA)
@@ -358,7 +357,8 @@ void NearbyConnectionsManagerImpl::Connect(
 
   auto allowed_mediums = MediumSelection::New(
       /*bluetooth=*/true,
-      /*ble=*/false, ShouldEnableWebRtc(data_usage, PowerLevel::kHighPower),
+      /*ble=*/false,
+      /*web_rtc=*/ShouldEnableWebRtc(data_usage, PowerLevel::kHighPower),
       /*wifi_lan=*/ShouldEnableWifiLan(data_usage, PowerLevel::kHighPower),
       /*wifi_direct=*/
       base::FeatureList::IsEnabled(features::kNearbySharingWifiDirect));
@@ -927,6 +927,9 @@ void NearbyConnectionsManagerImpl::OnBandwidthChanged(
     CD_LOG(VERBOSE, Feature::NEARBY_INFRA)
         << __func__ << ": Initial call with medium=" << medium
         << "; endpoint_id=" << endpoint_id;
+    if (bandwidth_upgrade_listener_) {
+      bandwidth_upgrade_listener_->OnInitialMedium(endpoint_id, medium);
+    }
     on_bandwidth_changed_endpoint_ids_.emplace(endpoint_id);
   } else {
     CD_LOG(VERBOSE, Feature::NEARBY_INFRA)

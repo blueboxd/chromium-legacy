@@ -36,6 +36,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
@@ -60,7 +61,6 @@ import org.chromium.components.omnibox.AutocompleteResult;
 import org.chromium.components.omnibox.GroupsProto.GroupsInfo;
 import org.chromium.components.omnibox.OmniboxSuggestionType;
 import org.chromium.components.omnibox.suggestions.OmniboxSuggestionUiType;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
@@ -193,7 +193,7 @@ public class MostVisitedTilesTest {
         doReturn(true).when(autocompleteResult).verifyCoherency(anyInt(), anyInt());
 
         mOmnibox.requestFocus();
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     mListener.getValue().onSuggestionsReceived(autocompleteResult, true);
                 });
@@ -201,7 +201,7 @@ public class MostVisitedTilesTest {
     }
 
     private void clickTileAtPosition(int position) {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     LayoutManager manager = mCarousel.view.getLayoutManager();
                     Assert.assertTrue(position < manager.getItemCount());
@@ -213,7 +213,7 @@ public class MostVisitedTilesTest {
     }
 
     private void longClickTileAtPosition(int position) {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     LayoutManager manager = mCarousel.view.getLayoutManager();
                     Assert.assertTrue(position < manager.getItemCount());
@@ -233,15 +233,15 @@ public class MostVisitedTilesTest {
         mOmnibox.sendKey(KeyEvent.KEYCODE_DPAD_DOWN);
         mOmnibox.checkText(equalTo(mMatch1.getUrl().getSpec()), null);
 
-        mOmnibox.sendKey(KeyEvent.KEYCODE_DPAD_RIGHT);
+        mOmnibox.sendKey(KeyEvent.KEYCODE_TAB);
         mOmnibox.checkText(equalTo(mMatch2.getUrl().getSpec()), null);
 
-        mOmnibox.sendKey(KeyEvent.KEYCODE_DPAD_RIGHT);
+        mOmnibox.sendKey(KeyEvent.KEYCODE_TAB);
         mOmnibox.checkText(equalTo(mMatch3.getUrl().getSpec()), null);
 
-        // Note: the carousel does not wrap around.
-        mOmnibox.sendKey(KeyEvent.KEYCODE_DPAD_RIGHT);
-        mOmnibox.checkText(equalTo(mMatch3.getUrl().getSpec()), null);
+        // Note: the carousel does not wrap around, and Tab takes user to the next suggestion.
+        mOmnibox.sendKey(KeyEvent.KEYCODE_TAB);
+        mOmnibox.checkText(equalTo(SEARCH_QUERY), null);
     }
 
     @Test
@@ -253,15 +253,16 @@ public class MostVisitedTilesTest {
         mOmnibox.sendKey(KeyEvent.KEYCODE_DPAD_DOWN);
         mOmnibox.checkText(equalTo(mMatch1.getUrl().getSpec()), null);
 
-        mOmnibox.sendKey(KeyEvent.KEYCODE_DPAD_RIGHT);
+        mOmnibox.sendKey(KeyEvent.KEYCODE_TAB);
         mOmnibox.checkText(equalTo(mMatch2.getUrl().getSpec()), null);
 
-        mOmnibox.sendKey(KeyEvent.KEYCODE_DPAD_LEFT);
+        mOmnibox.sendKey(KeyEvent.KEYCODE_TAB, KeyEvent.META_SHIFT_ON);
         mOmnibox.checkText(equalTo(mMatch1.getUrl().getSpec()), null);
 
-        // Note: the carousel does not wrap around.
-        mOmnibox.sendKey(KeyEvent.KEYCODE_DPAD_LEFT);
-        mOmnibox.checkText(equalTo(mMatch1.getUrl().getSpec()), null);
+        // Note: the carousel does not wrap around, and Shift-Tab takes user to the previous
+        // suggestion.
+        mOmnibox.sendKey(KeyEvent.KEYCODE_TAB, KeyEvent.META_SHIFT_ON);
+        mOmnibox.checkText(equalTo(START_PAGE_LOCATION), null);
     }
 
     @Test
@@ -273,10 +274,10 @@ public class MostVisitedTilesTest {
         mOmnibox.sendKey(KeyEvent.KEYCODE_DPAD_DOWN);
         mOmnibox.checkText(equalTo(mMatch1.getUrl().getSpec()), null);
 
-        mOmnibox.sendKey(KeyEvent.KEYCODE_DPAD_RIGHT);
+        mOmnibox.sendKey(KeyEvent.KEYCODE_TAB);
         mOmnibox.checkText(equalTo(mMatch2.getUrl().getSpec()), null);
 
-        mOmnibox.sendKey(KeyEvent.KEYCODE_DPAD_RIGHT);
+        mOmnibox.sendKey(KeyEvent.KEYCODE_TAB);
         mOmnibox.checkText(equalTo(mMatch3.getUrl().getSpec()), null);
 
         // Move to the search suggestion skipping the header.

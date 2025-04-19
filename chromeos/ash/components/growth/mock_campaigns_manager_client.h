@@ -25,11 +25,16 @@ class MockCampaignsManagerClient : public CampaignsManagerClient {
               LoadCampaignsComponent,
               (CampaignComponentLoadedCallback callback),
               (override));
+  MOCK_METHOD(void,
+              AddOnTrackerInitializedCallback,
+              (OnTrackerInitializedCallback callback),
+              (override));
   MOCK_METHOD(bool, IsDeviceInDemoMode, (), (const, override));
   MOCK_METHOD(bool, IsCloudGamingDevice, (), (const, override));
   MOCK_METHOD(bool, IsFeatureAwareDevice, (), (const, override));
   MOCK_METHOD(std::string&, GetApplicationLocale, (), (const, override));
   MOCK_METHOD(std::string&, GetUserLocale, (), (const, override));
+  MOCK_METHOD(const std::string, GetCountryCode, (), (const, override));
   MOCK_METHOD(const base::Version&,
               GetDemoModeAppVersion,
               (),

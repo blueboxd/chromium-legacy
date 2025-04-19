@@ -98,6 +98,11 @@ class SerialChooserContext
   void OnPortConnectedStateChanged(
       device::mojom::SerialPortInfoPtr port) override;
 
+  // KeyedService:
+  void Shutdown() override;
+
+  Profile* profile() { return profile_.get(); }
+
  private:
   void EnsurePortManagerConnection();
   void SetUpPortManagerConnection(

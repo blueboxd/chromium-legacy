@@ -288,6 +288,7 @@ void SchedulerStateMachine::AsProtozeroInto(
       processing_animation_worklets_for_pending_tree_);
   minor_state->set_processing_paint_worklets_for_pending_tree(
       processing_paint_worklets_for_pending_tree_);
+  minor_state->set_processing_paint_worklets_for_pending_tree(should_warm_up_);
 }
 
 bool SchedulerStateMachine::PendingDrawsShouldBeAborted() const {
@@ -863,6 +864,8 @@ void SchedulerStateMachine::WillPerformImplSideInvalidationInternal() {
 
   needs_impl_side_invalidation_ = false;
   has_pending_tree_ = true;
+  activate_reasons_.PutAll(impl_side_invalidation_reasons_);
+  impl_side_invalidation_reasons_.Clear();
   did_perform_impl_side_invalidation_ = true;
   pending_tree_needs_first_draw_on_activation_ =
       next_invalidation_needs_first_draw_on_activation_;
@@ -973,6 +976,7 @@ void SchedulerStateMachine::WillCommit(bool commit_has_no_updates) {
 
     // We have a new pending tree.
     has_pending_tree_ = true;
+    activate_reasons_.Put(RedrawReason::kUntracked);
     pending_tree_needs_first_draw_on_activation_ = true;
     pending_tree_is_ready_for_activation_ = false;
     if (!active_tree_needs_first_draw_ ||
@@ -1017,13 +1021,16 @@ void SchedulerStateMachine::WillActivate() {
 
   has_pending_tree_ = false;
   pending_tree_is_ready_for_activation_ = false;
-  active_tree_needs_first_draw_ = pending_tree_needs_first_draw_on_activation_;
-  pending_tree_needs_first_draw_on_activation_ = false;
   if (settings_.use_layer_context_for_display) {
     needs_update_display_tree_ = true;
     did_update_display_tree_ = false;
   } else {
     needs_redraw_ = true;
+    redraw_reasons_.PutAll(activate_reasons_);
+    activate_reasons_.Clear();
+    active_tree_needs_first_draw_ =
+        pending_tree_needs_first_draw_on_activation_;
+    pending_tree_needs_first_draw_on_activation_ = false;
   }
   waiting_for_activation_after_rendering_resumed_ = false;
 
@@ -1063,16 +1070,21 @@ void SchedulerStateMachine::DidDrawInternal(DrawResult draw_result) {
       if (consecutive_cant_draw_count_++ < 3u) {
         needs_redraw_ = true;
       } else {
-        DUMP_WILL_BE_NOTREACHED_NORETURN()
+        DUMP_WILL_BE_NOTREACHED()
             << consecutive_cant_draw_count_ << " consecutve draws"
             << " with DrawResult::kAbortedCantDraw result";
       }
       break;
     case DrawResult::kAbortedDrainingPipeline:
+      consecutive_checkerboard_animations_ = 0;
+      consecutive_cant_draw_count_ = 0;
+      forced_redraw_state_ = ForcedRedrawOnTimeoutState::IDLE;
+      break;
     case DrawResult::kSuccess:
       consecutive_checkerboard_animations_ = 0;
       consecutive_cant_draw_count_ = 0;
       forced_redraw_state_ = ForcedRedrawOnTimeoutState::IDLE;
+      redraw_reasons_.Clear();
       break;
     case DrawResult::kAbortedCheckerboardAnimations:
       DCHECK(!did_submit_in_last_frame_);
@@ -1121,10 +1133,12 @@ void SchedulerStateMachine::DidDraw(DrawResult draw_result) {
 }
 
 void SchedulerStateMachine::SetNeedsImplSideInvalidation(
-    bool needs_first_draw_on_activation) {
+    bool needs_first_draw_on_activation,
+    RedrawReason reason) {
   needs_impl_side_invalidation_ = true;
   next_invalidation_needs_first_draw_on_activation_ |=
       needs_first_draw_on_activation;
+  impl_side_invalidation_reasons_.Put(reason);
 }
 
 void SchedulerStateMachine::SetMainThreadWantsBeginMainFrameNotExpectedMessages(
@@ -1548,8 +1562,13 @@ void SchedulerStateMachine::SetSkipDraw(bool skip_draw) {
   skip_draw_ = skip_draw;
 }
 
-void SchedulerStateMachine::SetNeedsRedraw() {
+void SchedulerStateMachine::SetNeedsRedraw(RedrawReason reason) {
   needs_redraw_ = true;
+  redraw_reasons_.Put(reason);
+}
+
+RedrawReasonSet SchedulerStateMachine::GetRedrawReasons() const {
+  return redraw_reasons_;
 }
 
 void SchedulerStateMachine::SetNeedsUpdateDisplayTree() {
@@ -1567,7 +1586,20 @@ void SchedulerStateMachine::DidSubmitCompositorFrame() {
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("cc", "Scheduler:pending_submit_frames",
                                     TRACE_ID_LOCAL(this), "pending_frames",
                                     pending_submit_frames_);
-  DCHECK_LT(pending_submit_frames_, kMaxPendingSubmitFrames);
+
+  // If we are running with no frame rate limits, the GPU process can submit
+  // a new BeginFrame request if the deadline for the pending BeginFrame
+  // request expires. It will basically cause this DCHECK to fire as we may
+  // not have received acks for previously submitted requests.
+  // Please see SchedulerStateMachine::IsDrawThrottled() where throttling
+  // is disabled when the disable_frame_rate_limit setting is enabled.
+  // TODO(ananta/jonross/sunnyps)
+  // http://crbug.com/346931323
+  // We should remove or change this once VRR support is implemented for
+  // Windows and other platforms potentially.
+  if (!settings_.disable_frame_rate_limit) {
+    DCHECK_LT(pending_submit_frames_, kMaxPendingSubmitFrames);
+  }
 
   pending_submit_frames_++;
   submit_frames_with_current_layer_tree_frame_sink_++;

@@ -164,8 +164,9 @@ bool AllowedStreamTypeCombination(
     case blink::mojom::MediaStreamType::DISPLAY_AUDIO_CAPTURE:
       return video_stream_type ==
                  blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE ||
-             video_stream_type ==
-                 blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE_THIS_TAB;
+             video_stream_type == blink::mojom::MediaStreamType::
+                                      DISPLAY_VIDEO_CAPTURE_THIS_TAB ||
+             video_stream_type == blink::mojom::MediaStreamType::NO_SERVICE;
     case blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE:
     case blink::mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE:
     case blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE:
@@ -180,18 +181,18 @@ bool AllowedStreamTypeCombination(
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 bool IsValidZoomLevel(int zoom_level) {
-  if (blink::kPresetZoomFactors.size() == 0u) {
+  if (blink::kPresetBrowserZoomFactors.size() == 0u) {
     return false;
   }
 
   if (zoom_level ==
-      static_cast<int>(std::ceil(100 * blink::kPresetZoomFactors[0]))) {
+      static_cast<int>(std::ceil(100 * blink::kPresetBrowserZoomFactors[0]))) {
     return true;
   }
 
-  for (size_t i = 1; i < blink::kPresetZoomFactors.size(); ++i) {
-    if (zoom_level ==
-        static_cast<int>(std::floor(100 * blink::kPresetZoomFactors[i]))) {
+  for (size_t i = 1; i < blink::kPresetBrowserZoomFactors.size(); ++i) {
+    if (zoom_level == static_cast<int>(std::floor(
+                          100 * blink::kPresetBrowserZoomFactors[i]))) {
       return true;
     }
   }

@@ -106,6 +106,8 @@ TEST_F(NetworkSessionConfiguratorTest, Defaults) {
   EXPECT_FALSE(quic_params_.delay_main_job_with_available_spdy_session);
   EXPECT_FALSE(quic_params_.use_new_alps_codepoint);
   EXPECT_FALSE(quic_params_.report_ecn);
+  EXPECT_FALSE(quic_params_.enable_origin_frame);
+  EXPECT_FALSE(quic_params_.skip_dns_with_origin_frame);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, Http2FieldTrialGroupNameDoesNotMatter) {
@@ -308,6 +310,50 @@ TEST_F(NetworkSessionConfiguratorTest,
   ParseFieldTrials();
 
   EXPECT_FALSE(quic_params_.delay_main_job_with_available_spdy_session);
+}
+
+TEST_F(NetworkSessionConfiguratorTest, EnableOriginFrame) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["enable_origin_frame"] = "true";
+  base::AssociateFieldTrialParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_TRUE(quic_params_.enable_origin_frame);
+}
+
+TEST_F(NetworkSessionConfiguratorTest, DonotEnableOriginFrame) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["enable_origin_frame"] = "false";
+  base::AssociateFieldTrialParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_FALSE(quic_params_.enable_origin_frame);
+}
+
+TEST_F(NetworkSessionConfiguratorTest, SkipDnsWithOriginFrame) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["skip_dns_with_origin_frame"] = "true";
+  base::AssociateFieldTrialParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_TRUE(quic_params_.skip_dns_with_origin_frame);
+}
+
+TEST_F(NetworkSessionConfiguratorTest, DonotSkipDnsWithOriginFrame) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["skip_dns_with_origin_frame"] = "false";
+  base::AssociateFieldTrialParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_FALSE(quic_params_.skip_dns_with_origin_frame);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
@@ -628,19 +674,19 @@ TEST_F(NetworkSessionConfiguratorTest, QuicHostAllowlistEmpty) {
 }
 
 TEST_F(NetworkSessionConfiguratorTest, QuicFlags) {
-  FLAGS_quic_reloadable_flag_quic_testonly_default_false = false;
-  FLAGS_quic_restart_flag_quic_testonly_default_true = true;
+  FLAGS_quiche_reloadable_flag_quic_testonly_default_false = false;
+  FLAGS_quiche_restart_flag_quic_testonly_default_true = true;
   std::map<std::string, std::string> field_trial_params;
   field_trial_params["set_quic_flags"] =
-      "FLAGS_quic_reloadable_flag_quic_testonly_default_false=true,"
-      "FLAGS_quic_restart_flag_quic_testonly_default_true=false";
+      "FLAGS_quiche_reloadable_flag_quic_testonly_default_false=true,"
+      "FLAGS_quiche_restart_flag_quic_testonly_default_true=false";
   base::AssociateFieldTrialParams("QUIC", "Enabled", field_trial_params);
   base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
 
   ParseFieldTrials();
 
-  EXPECT_TRUE(FLAGS_quic_reloadable_flag_quic_testonly_default_false);
-  EXPECT_FALSE(FLAGS_quic_restart_flag_quic_testonly_default_true);
+  EXPECT_TRUE(FLAGS_quiche_reloadable_flag_quic_testonly_default_false);
+  EXPECT_FALSE(FLAGS_quiche_restart_flag_quic_testonly_default_true);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, Http2SettingsFromFieldTrialParams) {

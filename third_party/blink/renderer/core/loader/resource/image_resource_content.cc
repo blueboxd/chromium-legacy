@@ -8,6 +8,7 @@
 
 #include "base/auto_reset.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/not_fatal_until.h"
 #include "base/time/time.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -87,10 +88,7 @@ class NullImageResourceInfo final
 }  // namespace
 
 ImageResourceContent::ImageResourceContent(scoped_refptr<blink::Image> image)
-    : is_refetchable_data_from_disk_cache_(true),
-      device_pixel_ratio_header_value_(1.0),
-      has_device_pixel_ratio_header_value_(false),
-      image_(std::move(image)) {
+    : image_(std::move(image)) {
   DEFINE_STATIC_LOCAL(Persistent<NullImageResourceInfo>, null_info,
                       (MakeGarbageCollected<NullImageResourceInfo>()));
   info_ = null_info;
@@ -180,7 +178,7 @@ void ImageResourceContent::RemoveObserver(ImageResourceObserver* observer) {
                                                finished_observers_.end();
   } else {
     it = finished_observers_.find(observer);
-    DCHECK(it != finished_observers_.end());
+    CHECK(it != finished_observers_.end(), base::NotFatalUntil::M130);
     fully_erased = finished_observers_.erase(it);
   }
   DidRemoveObserver();

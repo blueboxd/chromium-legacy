@@ -16,6 +16,7 @@
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/ash_test_util.h"
 #include "ash/test/test_widget_builder.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/float/float_controller.h"
@@ -25,9 +26,13 @@
 #include "ash/wm/overview/overview_test_util.h"
 #include "ash/wm/pip/pip_positioner.h"
 #include "ash/wm/screen_pinning_controller.h"
+#include "ash/wm/snap_group/snap_group.h"
+#include "ash/wm/snap_group/snap_group_controller.h"
+#include "ash/wm/snap_group/snap_group_test_util.h"
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_divider.h"
+#include "ash/wm/splitview/split_view_test_util.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/test/fake_window_state.h"
 #include "ash/wm/window_positioning_utils.h"
@@ -77,12 +82,7 @@ constexpr gfx::Rect kInitialBounds(0, 0, 100, 100);
 class TestClientControlledStateDelegate
     : public ClientControlledState::Delegate {
  public:
-  TestClientControlledStateDelegate() {
-    scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{features::kFasterSplitScreenSetup,
-                              features::kOsSettingsRevampWayfinding},
-        /*disabled_features=*/{});
-  }
+  TestClientControlledStateDelegate() = default;
 
   TestClientControlledStateDelegate(const TestClientControlledStateDelegate&) =
       delete;
@@ -144,7 +144,6 @@ class TestClientControlledStateDelegate
   void mark_as_deleted() { deleted_ = true; }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
   WindowStateType old_state_ = WindowStateType::kDefault;
   WindowStateType new_state_ = WindowStateType::kDefault;
   int64_t display_id_ = display::kInvalidDisplayId;
@@ -180,6 +179,17 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
   }
 };
 
+class TestEmptyState : public WindowState::State {
+ public:
+  void OnWMEvent(WindowState* window_state, const WMEvent* event) override {}
+  chromeos::WindowStateType GetType() const override {
+    return chromeos::WindowStateType::kDefault;
+  }
+  void AttachState(WindowState* window_state, State* previous_state) override {}
+  void DetachState(WindowState* window_state) override {}
+  void OnWindowDestroying(WindowState* window_state) override {}
+};
+
 void VerifySnappedBounds(aura::Window* window, float expected_snap_ratio) {
   const WindowState* window_state = WindowState::Get(window);
   // `window` must be in any snapped state to use this method.
@@ -205,8 +215,14 @@ void VerifySnappedBounds(aura::Window* window, float expected_snap_ratio) {
       (rotation == display::Display::ROTATE_180 && !is_primary) ||
       (rotation == display::Display::ROTATE_270 && is_primary);
 
+  // Also consider the divider width if the window is in a snap group.
+  const bool in_snap_group = [&]() {
+    auto* snap_group_controller = SnapGroupController::Get();
+    return snap_group_controller &&
+           snap_group_controller->GetSnapGroupForGivenWindow(window);
+  }();
   const int divider_margin =
-      in_tablet ? kSplitviewDividerShortSideLength / 2 : 0;
+      (in_tablet || in_snap_group) ? kSplitviewDividerShortSideLength / 2 : 0;
   const gfx::Size expected_size =
       is_landscape
           ? gfx::Size(work_area.width() * expected_snap_ratio - divider_margin,
@@ -226,7 +242,9 @@ void VerifySnappedBounds(aura::Window* window, float expected_snap_ratio) {
                            : work_area.bottom() - expected_size.height());
 
   const gfx::Rect bounds = window->GetTargetBounds();
-  // Allow 1px (3px in clamshell) rounding errors for partial snap.
+  // Allow 1px (3px in clamshell) rounding errors for partial snap. Note even if
+  // `SnapGroup` is enabled, the window may not be in a snap group, so allow 3px
+  // rounding errors.
   // TODO(b/319342277): Investigate why eps can't be 1 when clamshell mode.
   const int eps = in_tablet ? 1 : 3;
   EXPECT_NEAR(expected_size.width(), bounds.width(), is_landscape ? eps : 0);
@@ -366,6 +384,19 @@ class ClientControlledStateTest : public AshTestBase {
   std::unique_ptr<views::Widget> widget_;
 };
 
+class SnapGroupClientControlledStateTest : public ClientControlledStateTest {
+ public:
+  SnapGroupClientControlledStateTest() = default;
+  SnapGroupClientControlledStateTest(
+      const SnapGroupClientControlledStateTest&) = delete;
+  SnapGroupClientControlledStateTest& operator=(
+      const SnapGroupClientControlledStateTest&) = delete;
+  ~SnapGroupClientControlledStateTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_{features::kSnapGroup};
+};
+
 // This suite runs test cases both in clamshell mode and tablet mode.
 class ClientControlledStateTestClamshellAndTablet
     : public ClientControlledStateTest,
@@ -393,6 +424,19 @@ class ClientControlledStateTestClamshellAndTablet
 INSTANTIATE_TEST_SUITE_P(All,
                          ClientControlledStateTestClamshellAndTablet,
                          testing::Bool());
+
+TEST_F(ClientControlledStateTest, ClientControlledFlag) {
+  ASSERT_TRUE(window_state()->is_client_controlled());
+
+  // Attach `TestEmptyState` to detach `ClientControlledState`.
+  window_state()->SetStateObject(std::make_unique<TestEmptyState>());
+  EXPECT_FALSE(window_state()->is_client_controlled());
+
+  // Attach `ClientControlledState` to detach `TestEmptyState`.
+  window_state()->SetStateObject(std::make_unique<ClientControlledState>(
+      std::make_unique<TestClientControlledStateDelegate>()));
+  EXPECT_TRUE(window_state()->is_client_controlled());
+}
 
 // Make sure that calling Maximize()/Minimize()/Fullscreen() result in
 // sending the state change request and won't change the state immediately.
@@ -616,6 +660,331 @@ TEST_F(ClientControlledStateTest, CycleSnapWindow) {
   EXPECT_EQ(WindowStateType::kSecondarySnapped, window_state()->GetStateType());
 }
 
+// Tests the entry point via selecting a window from partial overview.
+TEST_F(SnapGroupClientControlledStateTest, SelectFromOverviewEntryPoint) {
+  UpdateDisplay("800x600");
+
+  // Set the client-controlled window app type so it can be recognized in
+  // `GetActiveDeskAppWindowsInZOrder()`.
+  window()->SetProperty(chromeos::kAppTypeKey, chromeos::AppType::ARC_APP);
+
+  // Create at least 1 other app window so we can start faster splitview.
+  widget_delegate()->EnableSnap();
+  auto non_client_controlled_window = CreateAppWindow();
+
+  // Snap the client-controlled window using a snap action source that can start
+  // faster splitview. Note `SnapOneTestWindow()` would not work here since it
+  // expects the state type to be updated immediately.
+  const WindowSnapWMEvent snap_primary_event(
+      WM_EVENT_SNAP_PRIMARY, chromeos::kDefaultSnapRatio,
+      WindowSnapActionSource::kSnapByWindowLayoutMenu);
+  window_state()->OnWMEvent(&snap_primary_event);
+
+  // Apply pending requests.
+  ApplyPendingRequestedBounds();
+  state()->EnterNextState(window_state(), delegate()->new_state());
+  EXPECT_EQ(WindowStateType::kPrimarySnapped, window_state()->GetStateType());
+  VerifySnappedBounds(window(), chromeos::kDefaultSnapRatio);
+
+  // Test we start faster splitview, then select the normal window.
+  VerifySplitViewOverviewSession(window());
+  ClickOnOverviewItem(non_client_controlled_window.get());
+  EXPECT_EQ(
+      WindowStateType::kSecondarySnapped,
+      WindowState::Get(non_client_controlled_window.get())->GetStateType());
+
+  // Apply pending bounds changes and verify the state doesn't change.
+  ApplyPendingRequestedBounds();
+  EXPECT_EQ(WindowStateType::kPrimarySnapped, window_state()->GetStateType());
+
+  // Test a snap group is created.
+  auto* snap_group_controller = SnapGroupController::Get();
+  ASSERT_TRUE(snap_group_controller->AreWindowsInSnapGroup(
+      window(), non_client_controlled_window.get()));
+  UnionBoundsEqualToWorkAreaBounds(
+      snap_group_controller->GetSnapGroupForGivenWindow(window()));
+}
+
+// Tests the entry point via auto grouping on window snapped.
+TEST_F(SnapGroupClientControlledStateTest, AutoGroupEntryPoint) {
+  UpdateDisplay("800x600");
+
+  // Set the client-controlled window app type so it can be recognized in
+  // `GetActiveDeskAppWindowsInZOrder()`.
+  window()->SetProperty(chromeos::kAppTypeKey, chromeos::AppType::ARC_APP);
+  widget_delegate()->EnableSnap();
+
+  // Snap the client-controlled window. Since it's the only window, we don't
+  // start faster splitview.
+  const WindowSnapWMEvent snap_primary_event(
+      WM_EVENT_SNAP_PRIMARY, chromeos::kDefaultSnapRatio,
+      WindowSnapActionSource::kSnapByWindowLayoutMenu);
+  window_state()->OnWMEvent(&snap_primary_event);
+
+  // Apply pending requests.
+  ApplyPendingRequestedBounds();
+  state()->EnterNextState(window_state(), delegate()->new_state());
+  EXPECT_EQ(WindowStateType::kPrimarySnapped, window_state()->GetStateType());
+  VerifySnappedBounds(window(), chromeos::kDefaultSnapRatio);
+  VerifyNotSplitViewOrOverviewSession(window());
+
+  // Open a normal window, then snap it to the opposite side of `window()`.
+  auto non_client_controlled_window = CreateAppWindow();
+  SnapOneTestWindow(non_client_controlled_window.get(),
+                    WindowStateType::kSecondarySnapped,
+                    chromeos::kDefaultSnapRatio,
+                    WindowSnapActionSource::kSnapByWindowLayoutMenu);
+
+  // Apply pending bounds changes and verify the state doesn't change.
+  ApplyPendingRequestedBounds();
+  EXPECT_EQ(WindowStateType::kPrimarySnapped, window_state()->GetStateType());
+
+  // Test a snap group is created.
+  auto* snap_group_controller = SnapGroupController::Get();
+  ASSERT_TRUE(snap_group_controller->AreWindowsInSnapGroup(
+      window(), non_client_controlled_window.get()));
+  UnionBoundsEqualToWorkAreaBounds(
+      snap_group_controller->GetSnapGroupForGivenWindow(window()));
+}
+
+// Tests basic snap group divider resizing.
+TEST_F(SnapGroupClientControlledStateTest, ResizeViaDivider) {
+  UpdateDisplay("900x600");
+  // Create a snap group with a client-controlled and normal state window.
+  widget_delegate()->EnableSnap();
+  auto non_client_controlled_window = CreateAppWindow();
+  SnapOneTestWindow(non_client_controlled_window.get(),
+                    WindowStateType::kSecondarySnapped,
+                    chromeos::kDefaultSnapRatio,
+                    WindowSnapActionSource::kSnapByWindowLayoutMenu);
+  VerifySplitViewOverviewSession(non_client_controlled_window.get());
+  ClickOnOverviewItem(window());
+
+  // Apply pending requests.
+  ApplyPendingRequestedBounds();
+  state()->EnterNextState(window_state(), delegate()->new_state());
+  EXPECT_EQ(WindowStateType::kPrimarySnapped, window_state()->GetStateType());
+  SnapGroupController* snap_group_controller = SnapGroupController::Get();
+  auto* snap_group =
+      snap_group_controller->GetSnapGroupForGivenWindow(window());
+  ASSERT_TRUE(snap_group);
+  auto* snap_group_divider = snap_group->snap_group_divider();
+
+  VerifySnappedBounds(window(), chromeos::kDefaultSnapRatio);
+
+  // Start a drag on the divider.
+  auto* event_generator = GetEventGenerator();
+
+  // Resize to arbitrary locations with the divider.
+  for (const float target_width : {300, 450, 600}) {
+    const gfx::Point divider_center(snap_group_divider
+                                        ->GetDividerBoundsInScreen(
+                                            /*is_dragging=*/false)
+                                        .CenterPoint());
+    event_generator->MoveMouseTo(divider_center);
+    event_generator->PressLeftButton();
+    const gfx::Rect bounds_before_resizing(delegate()->requested_bounds());
+    delegate()->set_bounds_request_callback(
+        base::BindLambdaForTesting([&](const gfx::Rect& bounds) {
+          if (bounds == bounds_before_resizing) {
+            return;
+          }
+          // When any new bounds is requested, `OnDragStarted()` should be
+          // called already.
+          EXPECT_TRUE(window_state_delegate()->drag_in_progress());
+          EXPECT_TRUE(window_state()->drag_details()->bounds_change &
+                      WindowResizer::kBoundsChange_Resizes);
+          delegate()->set_bounds_request_callback(base::NullCallback());
+        }));
+    ApplyPendingRequestedBounds();
+
+    // Resize with at least 2 steps to simulate the real CUJ of dragging the
+    // mouse. The default test EventGenerator sends only the start and end
+    // points which is an abrupt jump between points.
+    event_generator->MoveMouseTo(gfx::Point(target_width, divider_center.y()),
+                                 /*count=*/2);
+    ASSERT_TRUE(snap_group_divider->is_resizing_with_divider());
+    EXPECT_TRUE(window_state_delegate()->drag_in_progress());
+    EXPECT_TRUE(window_state()->drag_details()->bounds_change &
+                WindowResizer::kBoundsChange_Resizes);
+
+    // Apply pending requests.
+    ApplyPendingRequestedBounds();
+    const float expected_snap_ratio = target_width / 900;
+    VerifySnappedBounds(window(), expected_snap_ratio);
+    EXPECT_NEAR(target_width, window()->GetTargetBounds().width(),
+                /*abs_error=*/kSplitviewDividerShortSideLength / 2);
+    event_generator->ReleaseLeftButton();
+
+    VerifySnappedBounds(window(), expected_snap_ratio);
+    // The following drag info is used by client to determine how to handle the
+    // bounds change.
+    EXPECT_FALSE(window_state_delegate()->drag_in_progress());
+  }
+}
+
+// Tests the basic functionalities of snap-to-replace.
+TEST_F(SnapGroupClientControlledStateTest, SnapToReplace) {
+  // Create a snap group with 2 normal windows.
+  auto w1 = CreateAppWindow();
+  auto w2 = CreateAppWindow();
+  SnapOneTestWindow(w1.get(), WindowStateType::kPrimarySnapped,
+                    chromeos::kDefaultSnapRatio);
+  SnapOneTestWindow(w2.get(), WindowStateType::kSecondarySnapped,
+                    chromeos::kDefaultSnapRatio);
+  SnapGroupController* snap_group_controller = SnapGroupController::Get();
+  ASSERT_TRUE(snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
+
+  // Snap `window()` on top of `w1`.
+  widget_delegate()->EnableSnap();
+  const WindowSnapWMEvent snap_primary_event(
+      WM_EVENT_SNAP_PRIMARY, chromeos::kDefaultSnapRatio,
+      WindowSnapActionSource::kSnapByWindowLayoutMenu);
+  window_state()->OnWMEvent(&snap_primary_event);
+  state()->EnterNextState(window_state(), delegate()->new_state());
+  EXPECT_EQ(WindowStateType::kPrimarySnapped, window_state()->GetStateType());
+
+  // Test it replaces `w1` in the group.
+  EXPECT_FALSE(
+      snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
+  EXPECT_TRUE(snap_group_controller->AreWindowsInSnapGroup(window(), w2.get()));
+}
+
+// Tests that double click on the divider swaps the windows.
+TEST_F(SnapGroupClientControlledStateTest, DoubleClickToSwap) {
+  // Create a snap group.
+  widget_delegate()->EnableSnap();
+  auto non_client_controlled_window = CreateAppWindow();
+  SnapOneTestWindow(non_client_controlled_window.get(),
+                    WindowStateType::kSecondarySnapped,
+                    chromeos::kDefaultSnapRatio,
+                    WindowSnapActionSource::kSnapByWindowLayoutMenu);
+  VerifySplitViewOverviewSession(non_client_controlled_window.get());
+  ClickOnOverviewItem(window());
+  ApplyPendingRequestedBounds();
+  state()->EnterNextState(window_state(), delegate()->new_state());
+  EXPECT_EQ(WindowStateType::kPrimarySnapped, window_state()->GetStateType());
+  SnapGroupController* snap_group_controller = SnapGroupController::Get();
+  ASSERT_TRUE(snap_group_controller->AreWindowsInSnapGroup(
+      window(), non_client_controlled_window.get()));
+  auto* snap_group =
+      snap_group_controller->GetSnapGroupForGivenWindow(window());
+  ASSERT_TRUE(snap_group);
+  EXPECT_EQ(window(), snap_group->window1());
+  EXPECT_EQ(non_client_controlled_window.get(), snap_group->window2());
+  UnionBoundsEqualToWorkAreaBounds(snap_group);
+
+  // Double click on the divider.
+  const gfx::Rect divider_bounds(
+      snap_group->snap_group_divider()->GetDividerBoundsInScreen(
+          /*is_dragging=*/false));
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(divider_bounds.CenterPoint());
+  event_generator->DoubleClickLeftButton();
+
+  // Apply pending requests.
+  ApplyPendingRequestedBounds();
+  state()->EnterNextState(window_state(), delegate()->new_state());
+
+  // Test the state types and windows are swapped.
+  ASSERT_TRUE(snap_group_controller->AreWindowsInSnapGroup(
+      window(), non_client_controlled_window.get()));
+  EXPECT_EQ(WindowStateType::kSecondarySnapped, window_state()->GetStateType());
+  EXPECT_EQ(
+      WindowStateType::kPrimarySnapped,
+      WindowState::Get(non_client_controlled_window.get())->GetStateType());
+  EXPECT_EQ(non_client_controlled_window.get(), snap_group->window1());
+  EXPECT_EQ(window(), snap_group->window2());
+
+  // TODO(b/352621475): Verify `UnionBoundsEqualToWorkAreaBounds()`. Currently
+  // there may be a 1-px overlap, likely due to rounding.
+}
+
+// Tests the snap group window bounds are correct after minimize then
+// unminimize.
+TEST_F(SnapGroupClientControlledStateTest, SnapThenMinimize) {
+  UpdateDisplay("800x600");
+
+  // Create a snap group with a client-controlled and normal state window.
+  widget_delegate()->EnableSnap();
+  auto non_client_controlled_window = CreateAppWindow();
+  SnapOneTestWindow(non_client_controlled_window.get(),
+                    WindowStateType::kSecondarySnapped,
+                    chromeos::kDefaultSnapRatio,
+                    WindowSnapActionSource::kSnapByWindowLayoutMenu);
+  VerifySplitViewOverviewSession(non_client_controlled_window.get());
+  ClickOnOverviewItem(window());
+
+  // Apply pending requests. Test the bounds are at 1/2.
+  ApplyPendingRequestedBounds();
+  state()->EnterNextState(window_state(), delegate()->new_state());
+  EXPECT_EQ(WindowStateType::kPrimarySnapped, window_state()->GetStateType());
+  SnapGroupController* snap_group_controller = SnapGroupController::Get();
+  ASSERT_TRUE(snap_group_controller->AreWindowsInSnapGroup(
+      window(), non_client_controlled_window.get()));
+  VerifySnappedBounds(window(), chromeos::kDefaultSnapRatio);
+
+  // Minimize the client-controlled window.
+  window_state()->Minimize();
+  ApplyPendingRequestedBounds();
+  state()->EnterNextState(window_state(), delegate()->new_state());
+
+  // Test the group is broken.
+  ASSERT_FALSE(snap_group_controller->AreWindowsInSnapGroup(
+      window(), non_client_controlled_window.get()));
+
+  // Unminimize the client-controlled window. Test the bounds are back at 1/2.
+  window_state()->Unminimize();
+  ApplyPendingRequestedBounds();
+  state()->EnterNextState(window_state(), delegate()->new_state());
+  VerifySnappedBounds(window(), chromeos::kDefaultSnapRatio);
+}
+
+// Tests that a client-controlled window in a snap group, when snapped to the
+// opposite side, will set the correct bounds. Regression test for
+// http://b/349774996.
+TEST_F(SnapGroupClientControlledStateTest, SnapToOppositeSide) {
+  UpdateDisplay("800x600");
+
+  // Create a snap group with a client-controlled and normal state window.
+  widget_delegate()->EnableSnap();
+  auto non_client_controlled_window = CreateAppWindow();
+  SnapOneTestWindow(non_client_controlled_window.get(),
+                    WindowStateType::kSecondarySnapped,
+                    chromeos::kDefaultSnapRatio,
+                    WindowSnapActionSource::kSnapByWindowLayoutMenu);
+  VerifySplitViewOverviewSession(non_client_controlled_window.get());
+  ClickOnOverviewItem(window());
+
+  // Apply pending requests. Test the bounds are at 1/2.
+  ApplyPendingRequestedBounds();
+  state()->EnterNextState(window_state(), delegate()->new_state());
+  EXPECT_EQ(WindowStateType::kPrimarySnapped, window_state()->GetStateType());
+  SnapGroupController* snap_group_controller = SnapGroupController::Get();
+  ASSERT_TRUE(snap_group_controller->AreWindowsInSnapGroup(
+      window(), non_client_controlled_window.get()));
+  VerifySnappedBounds(window(), chromeos::kDefaultSnapRatio);
+  VerifySnappedBounds(non_client_controlled_window.get(),
+                      chromeos::kDefaultSnapRatio);
+  auto* snap_group =
+      snap_group_controller->GetSnapGroupForGivenWindow(window());
+  ASSERT_TRUE(snap_group);
+  UnionBoundsEqualToWorkAreaBounds(window(), non_client_controlled_window.get(),
+                                   snap_group->snap_group_divider());
+
+  // Snap to secondary 1/3.
+  const WindowSnapWMEvent snap_partial_secondary(
+      WM_EVENT_SNAP_SECONDARY, chromeos::kOneThirdSnapRatio,
+      WindowSnapActionSource::kSnapByWindowLayoutMenu);
+  window_state()->OnWMEvent(&snap_partial_secondary);
+
+  // Apply pending requests. Test the bounds are at 1/3.
+  ApplyPendingRequestedBounds();
+  state()->EnterNextState(window_state(), delegate()->new_state());
+  EXPECT_EQ(WindowStateType::kSecondarySnapped, window_state()->GetStateType());
+  VerifySnappedBounds(window(), chromeos::kOneThirdSnapRatio);
+}
+
 TEST_P(ClientControlledStateTestClamshellAndTablet, SnapWindow) {
   // Snap disabled.
   ASSERT_FALSE(window_state()->CanResize());
@@ -767,7 +1136,6 @@ TEST_F(ClientControlledStateTest, SnapInSecondaryDisplay) {
 
 TEST_P(ClientControlledStateTestClamshellAndTablet, SnapMinimizeAndUnminimize) {
   UpdateDisplay("900x600");
-  window()->SetProperty(chromeos::kAppTypeKey, chromeos::AppType::ARC_APP);
   widget_delegate()->EnableSnap();
 
   const WindowSnapWMEvent snap_left_event(WM_EVENT_SNAP_PRIMARY);
@@ -1035,8 +1403,6 @@ TEST_P(ClientControlledStateTestClamshellAndTablet, SnapAndRotate) {
       display::test::DisplayManagerTestApi(display_manager())
           .SetFirstDisplayAsInternalDisplay();
 
-  window()->SetProperty(chromeos::kAppTypeKey, chromeos::AppType::ARC_APP);
-
   ScreenOrientationControllerTestApi orientation_test_api(
       Shell::Get()->screen_orientation_controller());
   // Snap enabled.
@@ -1093,7 +1459,6 @@ TEST_F(ClientControlledStateTest, ResizeToDismissSplitView) {
   ASSERT_TRUE(display::Screen::GetScreen()->InTabletMode());
   auto* const split_view_controller = SplitViewController::Get(window());
 
-  window()->SetProperty(chromeos::kAppTypeKey, chromeos::AppType::ARC_APP);
   widget_delegate()->EnableSnap();
   ASSERT_TRUE(window_state()->CanResize());
   ASSERT_TRUE(window_state()->CanSnap());
@@ -1148,7 +1513,6 @@ TEST_F(ClientControlledStateTest, ResizeToDismissSplitView) {
 TEST_F(ClientControlledStateTest, DragCaptionToSnap) {
   auto* const event_generator = GetEventGenerator();
 
-  window()->SetProperty(chromeos::kAppTypeKey, chromeos::AppType::ARC_APP);
   widget_delegate()->EnableSnap();
   ASSERT_TRUE(window_state()->CanResize());
   ASSERT_TRUE(window_state()->CanSnap());
@@ -1220,6 +1584,72 @@ TEST_F(ClientControlledStateTest, DragCaptionToSnap) {
   }
 }
 
+// Tests that drag-caption-to-unsnap works for client-controlled windows. The
+// order of emitted drag events and state change events matters for a client so
+// this test strictly verifies the order of events.
+TEST_F(ClientControlledStateTest, DragCaptionToUnsnap) {
+  auto* const event_generator = GetEventGenerator();
+
+  widget_delegate()->EnableSnap();
+  ASSERT_TRUE(window_state()->CanResize());
+  ASSERT_TRUE(window_state()->CanSnap());
+
+  // Snap `window()` to left.
+  const WindowSnapWMEvent snap_primary(WM_EVENT_SNAP_PRIMARY);
+  window_state()->OnWMEvent(&snap_primary);
+  state()->EnterNextState(window_state(), delegate()->new_state());
+  ApplyPendingRequestedBounds();
+
+  // Start dragging in the center of the header.
+  auto* const header_view = GetHeaderView();
+  gfx::Point next_cursor_point = header_view->GetBoundsInScreen().CenterPoint();
+  event_generator->set_current_screen_location(next_cursor_point);
+  event_generator->PressLeftButton();
+
+  // Keep slightly (5px) dragging...
+  delegate()->set_bounds_request_callback(
+      base::BindLambdaForTesting([&](const gfx::Rect& bounds) {
+        // When any new bounds is requested, `OnDragStarted()` should be
+        // called already.
+        EXPECT_TRUE(window_state_delegate()->drag_in_progress());
+        EXPECT_TRUE(window_state()->drag_details()->bounds_change &
+                    WindowResizer::kBoundsChange_Repositions);
+      }));
+  next_cursor_point.Offset(5, 0);
+  event_generator->MoveMouseTo(next_cursor_point);
+  // The following drag info is used by client to determine how to handle the
+  // bounds change.
+  EXPECT_TRUE(window_state_delegate()->drag_in_progress());
+  EXPECT_TRUE(window_state()->drag_details()->bounds_change &
+              WindowResizer::kBoundsChange_Repositions);
+  ApplyPendingRequestedBounds();
+  delegate()->set_bounds_request_callback(base::NullCallback());
+
+  // Drag it to the center of the screen.
+  const auto work_area =
+      display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
+  next_cursor_point = work_area.CenterPoint();
+  event_generator->MoveMouseTo(next_cursor_point);
+  delegate()->set_window_state_request_callback(
+      base::BindLambdaForTesting([&](WindowStateType new_state) {
+        if (new_state != chromeos::WindowStateType::kPrimarySnapped) {
+          return;
+        }
+        // When a new state (i.e., normal) is requested, `OnDragFinished()`
+        // should be called already.
+        EXPECT_FALSE(window_state_delegate()->drag_in_progress());
+      }));
+  event_generator->ReleaseLeftButton();
+  // The following drag info is used by client to determine how to handle the
+  // bounds change.
+  EXPECT_FALSE(window_state_delegate()->drag_in_progress());
+
+  // Accept the restore request.
+  state()->EnterNextState(window_state(), delegate()->new_state());
+  ApplyPendingRequestedBounds();
+  EXPECT_EQ(chromeos::WindowStateType::kNormal, window_state()->GetStateType());
+}
+
 // Tests that swapping snapped windows works for client-controlled windows
 TEST_F(ClientControlledStateTest, SwapSnappedWindows) {
   ShellTestApi().SetTabletModeEnabledForTest(true);
@@ -1227,7 +1657,6 @@ TEST_F(ClientControlledStateTest, SwapSnappedWindows) {
   UpdateDisplay("900x600");
   auto* const split_view_controller = SplitViewController::Get(window());
 
-  window()->SetProperty(chromeos::kAppTypeKey, chromeos::AppType::ARC_APP);
   widget_delegate()->EnableSnap();
   ASSERT_TRUE(window_state()->CanResize());
   ASSERT_TRUE(window_state()->CanSnap());
@@ -1277,7 +1706,6 @@ TEST_F(ClientControlledStateTest, ClamshellTabletConversionWithSnappedWindow) {
   UpdateDisplay("900x600");
   auto* const split_view_controller = SplitViewController::Get(window());
 
-  window()->SetProperty(chromeos::kAppTypeKey, chromeos::AppType::ARC_APP);
   widget_delegate()->EnableSnap();
   ASSERT_TRUE(window_state()->CanResize());
   ASSERT_TRUE(window_state()->CanSnap());
@@ -1391,7 +1819,8 @@ TEST_F(ClientControlledStateTest, Pinned) {
   EXPECT_FALSE(GetScreenPinningController()->IsPinned());
 
   // Two windows cannot be pinned simultaneously.
-  auto widget2 = CreateTestWidget();
+  auto widget2 =
+      CreateTestWidget(views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET);
   WindowState* window_state_2 = WindowState::Get(widget2->GetNativeWindow());
   window_state_2->OnWMEvent(&pin_event);
   EXPECT_TRUE(window_state_2->IsPinned());
@@ -1455,7 +1884,8 @@ TEST_F(ClientControlledStateTest, TrustedPinnedBasic) {
   EXPECT_FALSE(GetScreenPinningController()->IsPinned());
 
   // Two windows cannot be trusted-pinned simultaneously.
-  auto widget2 = CreateTestWidget();
+  auto widget2 =
+      CreateTestWidget(views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET);
   WindowState* window_state_2 = WindowState::Get(widget2->GetNativeWindow());
   window_state_2->OnWMEvent(&trusted_pin_event);
   EXPECT_TRUE(window_state_2->IsTrustedPinned());
@@ -1594,7 +2024,6 @@ TEST_P(ClientControlledStateTestClamshellAndTablet, ResizeSnappedWindow) {
   // Set screen width.
   UpdateDisplay("1200x600");
 
-  window()->SetProperty(chromeos::kAppTypeKey, chromeos::AppType::ARC_APP);
   ASSERT_EQ(chromeos::OrientationType::kLandscapePrimary,
             GetCurrentScreenOrientation());
 
@@ -1665,7 +2094,6 @@ TEST_P(ClientControlledStateTestClamshellAndTablet, ResizeSnappedWindow) {
 TEST_P(ClientControlledStateTestClamshellAndTablet,
        LeaveSnappedStateByNewStateChange) {
   auto* const split_view_controller = SplitViewController::Get(window());
-  window()->SetProperty(chromeos::kAppTypeKey, chromeos::AppType::ARC_APP);
   widget_delegate()->EnableSnap();
 
   for (const auto new_state_type :
@@ -1722,7 +2150,7 @@ TEST_F(ClientControlledStateTest, FlingFloatedWindowInTabletMode) {
       start, start + offset, base::Milliseconds(10), /*steps=*/2,
       base::BindLambdaForTesting(
           [&](ui::EventType event_type, const gfx::Vector2dF& delta) {
-            if (event_type != ui::ET_GESTURE_SCROLL_UPDATE) {
+            if (event_type != ui::EventType::kGestureScrollUpdate) {
               return;
             }
             EXPECT_TRUE(window_state_delegate()->drag_in_progress());

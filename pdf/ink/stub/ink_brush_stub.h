@@ -20,11 +20,13 @@ class InkBrushStub : public InkBrush {
                SkColor color,
                float size,
                float epsilon);
+  InkBrushStub(const InkBrushStub&) = delete;
+  InkBrushStub& operator=(const InkBrushStub&) = delete;
   ~InkBrushStub() override;
 
   // InkBrush:
-  SkColor GetColorForTesting() const override;
-  float GetSizeForTesting() const override;
+  float GetSize() const override;
+  SkColor GetColor() const override;
   float GetOpacityForTesting() const override;
 
  private:

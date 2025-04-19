@@ -21,6 +21,7 @@
 #include "base/version.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/web_applications/features.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_integrity_block_data.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_storage_location.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom-forward.h"
 #include "chrome/browser/web_applications/proto/web_app.pb.h"
@@ -137,10 +138,16 @@ class WebApp {
 
   ClientData* client_data() { return &client_data_; }
 
-  // Locally installed apps have shortcuts installed on various UI surfaces.
-  // If app isn't locally installed, it is excluded from UIs and only listed as
-  // a part of user's app library.
-  bool is_locally_installed() const { return is_locally_installed_; }
+  // Installation status:
+  // - Not locally installed: The app is not installed at all on this device,
+  //   but does exist in the user's sync profile (and only is listed as part of
+  //   the user's app library).
+  // - Fully installed: The app is fully installed on this device.
+  // - Partially installed no integration: The app is considered installed, but
+  // does not have any OS integration with the operating system (no shortcuts,
+  // etc). This is used for preinstalled apps on non-CrOS device.
+  proto::InstallState install_state() const { return install_state_; }
+
   // Sync-initiated installation produces a stub app awaiting for full
   // installation process. The |is_from_sync_and_pending_installation| app has
   // only app_id, launch_url and sync_fallback_data fields defined, no icons. If
@@ -182,10 +189,6 @@ class WebApp {
 
   ApiApprovalState file_handler_approval_state() const {
     return file_handler_approval_state_;
-  }
-
-  OsIntegrationState file_handler_os_integration_state() const {
-    return file_handler_os_integration_state_;
   }
 
   const std::optional<apps::ShareTarget>& share_target() const {
@@ -230,10 +233,6 @@ class WebApp {
 
   RunOnOsLoginMode run_on_os_login_mode() const {
     return run_on_os_login_mode_;
-  }
-
-  std::optional<RunOnOsLoginMode> run_on_os_login_os_integration_state() const {
-    return run_on_os_login_os_integration_state_;
   }
 
   bool window_controls_overlay_enabled() const {
@@ -298,6 +297,8 @@ class WebApp {
     ExternalManagementConfig(
         const ExternalManagementConfig& external_management_config);
     ExternalManagementConfig& operator=(
+        const ExternalManagementConfig& external_management_config);
+    ExternalManagementConfig& operator=(
         ExternalManagementConfig&& external_management_config);
 
     base::Value::Dict AsDebugValue() const;
@@ -340,8 +341,10 @@ class WebApp {
   // IWA-specific information like from where the contents should be served.
   struct IsolationData {
     struct PendingUpdateInfo {
-      PendingUpdateInfo(IsolatedWebAppStorageLocation location,
-                        base::Version version);
+      PendingUpdateInfo(
+          IsolatedWebAppStorageLocation location,
+          base::Version version,
+          std::optional<IsolatedWebAppIntegrityBlockData> integrity_block_data);
       ~PendingUpdateInfo();
       PendingUpdateInfo(const PendingUpdateInfo&);
       PendingUpdateInfo& operator=(const PendingUpdateInfo&);
@@ -358,6 +361,8 @@ class WebApp {
       IsolatedWebAppStorageLocation location;
       base::Version version;
 
+      std::optional<IsolatedWebAppIntegrityBlockData> integrity_block_data;
+
       // TODO(cmfcmf): Add further information about the update here, such as
       // whether it should be applied immediately, or only once the IWA is
       // closed.
@@ -365,10 +370,12 @@ class WebApp {
 
     IsolationData(IsolatedWebAppStorageLocation location,
                   base::Version version);
-    IsolationData(IsolatedWebAppStorageLocation location,
-                  base::Version version,
-                  const std::set<std::string>& controlled_frame_partitions,
-                  const std::optional<PendingUpdateInfo>& pending_update_info);
+    IsolationData(
+        IsolatedWebAppStorageLocation location,
+        base::Version version,
+        const std::set<std::string>& controlled_frame_partitions,
+        const std::optional<PendingUpdateInfo>& pending_update_info,
+        std::optional<IsolatedWebAppIntegrityBlockData> integrity_block_data);
     ~IsolationData();
     IsolationData(const IsolationData&);
     IsolationData& operator=(const IsolationData&);
@@ -398,6 +405,13 @@ class WebApp {
     IsolatedWebAppStorageLocation location;
     base::Version version;
     std::set<std::string> controlled_frame_partitions;
+
+    // Might be nullopt if this IWA is not backed by a signed web bundle (for
+    // instance, in case of a proxy mode installation).
+    // This field is used to prevent redundant update attempts in case of key
+    // rotation by comparing the stored public keys against the rotated key.
+    // key. Please don't rely on it for anything security-critical!
+    std::optional<IsolatedWebAppIntegrityBlockData> integrity_block_data;
 
    private:
     // If present, signals that an update for this app is available locally and
@@ -468,7 +482,7 @@ class WebApp {
   void SetUserDisplayMode(mojom::UserDisplayMode user_display_mode);
   void SetDisplayModeOverride(std::vector<DisplayMode> display_mode_override);
   void SetWebAppChromeOsData(std::optional<WebAppChromeOsData> chromeos_data);
-  void SetIsLocallyInstalled(bool is_locally_installed);
+  void SetInstallState(proto::InstallState install_state);
   void SetIsFromSyncAndPendingInstallation(
       bool is_from_sync_and_pending_installation);
   void SetIsUninstalling(bool is_uninstalling);
@@ -481,8 +495,6 @@ class WebApp {
       std::vector<WebAppShortcutsMenuItemInfo> shortcuts_menu_infos);
   void SetFileHandlers(apps::FileHandlers file_handlers);
   void SetFileHandlerApprovalState(ApiApprovalState approval_state);
-  void SetFileHandlerOsIntegrationState(
-      OsIntegrationState os_integration_state);
   void SetShareTarget(std::optional<apps::ShareTarget> share_target);
   void SetAdditionalSearchTerms(
       std::vector<std::string> additional_search_terms);
@@ -503,7 +515,6 @@ class WebApp {
   void SetFirstInstallTime(const base::Time& time);
   void SetManifestUpdateTime(const base::Time& time);
   void SetRunOnOsLoginMode(RunOnOsLoginMode mode);
-  void SetRunOnOsLoginOsIntegrationState(RunOnOsLoginMode os_integration_state);
   void SetSyncProto(sync_pb::WebAppSpecifics sync_proto);
   void SetCaptureLinks(blink::mojom::CaptureLinks capture_links);
   void SetManifestUrl(const GURL& manifest_url);
@@ -589,7 +600,8 @@ class WebApp {
   DisplayMode display_mode_ = DisplayMode::kUndefined;
   std::vector<DisplayMode> display_mode_override_;
   std::optional<WebAppChromeOsData> chromeos_data_;
-  bool is_locally_installed_ = false;
+  proto::InstallState install_state_ =
+      proto::InstallState::INSTALLED_WITHOUT_OS_INTEGRATION;
   bool is_from_sync_and_pending_installation_ = false;
   // Note: This field is not persisted in the database.
   // TODO(crbug.com/40162790): Add this field to the protocol buffer file and
@@ -619,12 +631,6 @@ class WebApp {
   base::Time first_install_time_;
   base::Time manifest_update_time_;
   RunOnOsLoginMode run_on_os_login_mode_ = RunOnOsLoginMode::kNotRun;
-  // Tracks if the app run on os login mode has been registered with the OS.
-  // This might go out of sync with actual OS integration status, as Chrome does
-  // not actively monitor OS registries.
-  // TODO(crbug.com/40250591): Remove after all OS Integration sub managers have
-  // been implemented and Synchronize() is running fine.
-  std::optional<RunOnOsLoginMode> run_on_os_login_os_integration_state_;
   sync_pb::WebAppSpecifics sync_proto_;
   blink::mojom::CaptureLinks capture_links_ =
       blink::mojom::CaptureLinks::kUndefined;
@@ -634,11 +640,6 @@ class WebApp {
   // The state of the user's approval of the app's use of the File Handler API.
   ApiApprovalState file_handler_approval_state_ =
       ApiApprovalState::kRequiresPrompt;
-  // Tracks whether file handling has been or should be enabled at the OS level.
-  // This might go out of sync with actual OS integration status, as Chrome does
-  // not actively monitor OS registries.
-  OsIntegrationState file_handler_os_integration_state_ =
-      OsIntegrationState::kDisabled;
   bool window_controls_overlay_enabled_ = false;
   std::optional<LaunchHandler> launch_handler_;
   std::optional<webapps::AppId> parent_app_id_;

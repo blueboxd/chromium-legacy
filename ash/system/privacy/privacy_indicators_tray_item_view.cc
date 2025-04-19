@@ -174,6 +174,7 @@ PrivacyIndicatorsTrayItemView::PrivacyIndicatorsTrayItemView(Shelf* shelf)
   layer()->SetFillsBoundsOpaquely(false);
   layer()->SetRoundedCornerRadius(
       gfx::RoundedCornersF{kPrivacyIndicatorsViewExpandedShorterSideSize / 2});
+  layer()->SetIsFastRoundedCorner(true);
 
   auto add_icon_to_container = [&container_view]() {
     auto icon = std::make_unique<views::ImageView>();
@@ -270,14 +271,14 @@ std::u16string PrivacyIndicatorsTrayItemView::GetTooltipText(
   auto* controller = PrivacyIndicatorsController::Get();
   auto cam_and_mic_status = std::u16string();
   if (controller->IsCameraUsed() && controller->IsMicrophoneUsed()) {
-    cam_and_mic_status = l10n_util::GetStringUTF16(
-        IDS_PRIVACY_NOTIFICATION_TITLE_CAMERA_AND_MIC);
+    cam_and_mic_status =
+        l10n_util::GetStringUTF16(IDS_PRIVACY_INDICATORS_STATUS_CAMERA_AND_MIC);
   } else if (controller->IsCameraUsed()) {
     cam_and_mic_status =
-        l10n_util::GetStringUTF16(IDS_PRIVACY_NOTIFICATION_TITLE_CAMERA);
+        l10n_util::GetStringUTF16(IDS_PRIVACY_INDICATORS_STATUS_CAMERA);
   } else if (controller->IsMicrophoneUsed()) {
     cam_and_mic_status =
-        l10n_util::GetStringUTF16(IDS_PRIVACY_NOTIFICATION_TITLE_MIC);
+        l10n_util::GetStringUTF16(IDS_PRIVACY_INDICATORS_STATUS_MIC);
   }
 
   auto screen_share_status =

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_mediator.h"
-#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_mediator+Testing.h"
 
 #import <memory>
 #import <vector>
@@ -19,14 +18,19 @@
 #import "components/omnibox/browser/mock_autocomplete_provider_client.h"
 #import "components/omnibox/common/omnibox_features.h"
 #import "components/password_manager/core/browser/manage_passwords_referrer.h"
+#import "components/search_engines/search_engines_test_environment.h"
 #import "components/search_engines/template_url_service.h"
 #import "components/search_engines/template_url_service_client.h"
+#import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state_manager.h"
 #import "ios/chrome/browser/ui/omnibox/popup/autocomplete_result_consumer.h"
 #import "ios/chrome/browser/ui/omnibox/popup/autocomplete_suggestion.h"
 #import "ios/chrome/browser/ui/omnibox/popup/favicon_retriever.h"
 #import "ios/chrome/browser/ui/omnibox/popup/image_retriever.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_mediator+Testing.h"
 #import "ios/chrome/browser/ui/omnibox/popup/pedal_suggestion_wrapper.h"
 #import "ios/chrome/browser/ui/omnibox/popup/popup_swift.h"
+#import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #import "services/network/public/cpp/shared_url_loader_factory.h"
 #import "testing/gmock/include/gmock/gmock.h"
 #import "testing/gtest_mac.h"
@@ -66,6 +70,7 @@ class MockOmniboxPopupMediatorDelegate : public OmniboxPopupMediatorDelegate {
               (const AutocompleteMatch& match),
               (override));
   MOCK_METHOD(void, OnScroll, (), (override));
+  MOCK_METHOD(void, OnCallActionTap, (), (override));
 };
 
 // Structure to configure fake AutocompleteMatch for tests.
@@ -113,13 +118,9 @@ class OmniboxPopupMediatorTest : public PlatformTest {
     PlatformTest::SetUp();
 
     // Setup for AutocompleteController.
-    auto template_url_service = std::make_unique<TemplateURLService>(
-        /*prefs=*/nullptr, /*search_engine_search_service=*/nullptr,
-        std::make_unique<SearchTermsData>(),
-        /*web_data_service=*/nullptr,
-        std::unique_ptr<TemplateURLServiceClient>(), base::RepeatingClosure());
     auto client = std::make_unique<MockAutocompleteProviderClient>();
-    client->set_template_url_service(std::move(template_url_service));
+    client->set_template_url_service(
+        search_engines_test_environment_.template_url_service());
     auto autocomplete_controller =
         std::make_unique<testing::StrictMock<AutocompleteController>>(
             std::move(client), 0);
@@ -172,6 +173,8 @@ class OmniboxPopupMediatorTest : public PlatformTest {
         .andReturn(&autocomplete_result_);
   }
 
+  void TearDown() override { [mediator_ disconnect]; }
+
   void SetVisibleSuggestionCount(NSUInteger visibleSuggestionCount) {
     OCMStub([mockResultConsumer_ newResultsAvailable])
         .andDo(^(NSInvocation* invocation) {
@@ -212,6 +215,8 @@ class OmniboxPopupMediatorTest : public PlatformTest {
 
   // Message loop for the main test thread.
   base::test::TaskEnvironment environment_;
+  IOSChromeScopedTestingLocalState scoped_testing_local_state_;
+  search_engines::SearchEnginesTestEnvironment search_engines_test_environment_;
   OmniboxPopupMediator* mediator_;
   MockOmniboxPopupMediatorDelegate delegate_;
   AutocompleteResult autocomplete_result_;

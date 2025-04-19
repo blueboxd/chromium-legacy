@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "components/policy/core/common/registry_dict.h"
 
 #include <memory>
@@ -11,6 +16,7 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/numerics/byte_conversions.h"
+#include "base/strings/cstring_view.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -20,6 +26,7 @@
 
 #if BUILDFLAG(IS_WIN)
 #include "base/win/registry.h"
+#include "base/win/win_util.h"
 
 using base::win::RegistryKeyIterator;
 using base::win::RegistryValueIterator;
@@ -250,8 +257,14 @@ void RegistryDict::ReadRegistry(HKEY hive, const std::wstring& root) {
   for (RegistryValueIterator it(hive, root.c_str()); it.Valid(); ++it) {
     const std::string name = base::WideToUTF8(it.Name());
     switch (it.Type()) {
-      case REG_SZ:
       case REG_EXPAND_SZ:
+        if (auto expanded_path = base::win::ExpandEnvironmentVariables(
+                base::wcstring_view{it.Value(), wcslen(it.Value())})) {
+          SetValue(name, base::Value(base::WideToUTF8(*expanded_path)));
+          continue;
+        }
+        [[fallthrough]];
+      case REG_SZ:
         SetValue(name, base::Value(base::WideToUTF8(it.Value())));
         continue;
       case REG_DWORD_LITTLE_ENDIAN:
@@ -268,8 +281,8 @@ void RegistryDict::ReadRegistry(HKEY hive, const std::wstring& root) {
                              it.ValueSize()))
                   .first<sizeof(DWORD)>();
           DWORD dword_value = it.Type() == REG_DWORD_BIG_ENDIAN
-                                  ? base::numerics::U32FromBigEndian(value)
-                                  : base::numerics::U32FromLittleEndian(value);
+                                  ? base::U32FromBigEndian(value)
+                                  : base::U32FromLittleEndian(value);
           SetValue(name, base::Value(static_cast<int>(dword_value)));
           continue;
         }

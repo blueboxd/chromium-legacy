@@ -7,6 +7,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/quick_settings_catalogs.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/focus_mode/focus_mode_controller.h"
@@ -40,10 +41,18 @@ std::unique_ptr<FeatureTile> FocusModeFeaturePodController::CreateTile(
                           weak_factory_.GetWeakPtr()));
   tile_ = tile.get();
 
-  const bool target_visibility =
-      !Shell::Get()->session_controller()->IsUserSessionBlocked();
-  tile_->SetVisible(target_visibility);
-  if (target_visibility) {
+  const auto* session_controller = Shell::Get()->session_controller();
+  std::optional<user_manager::UserType> user_type =
+      session_controller->GetUserType();
+  // Only show the focus mode tile if it is a regular user or if the user
+  // session is not blocked (e.g. lock screen).
+  const bool should_show_tile =
+      (user_type && (*user_type == user_manager::UserType::kRegular ||
+                     *user_type == user_manager::UserType::kChild)) &&
+      !session_controller->IsUserSessionBlocked();
+
+  tile_->SetVisible(should_show_tile);
+  if (should_show_tile) {
     TrackVisibilityUMA();
   }
 
@@ -103,8 +112,13 @@ void FocusModeFeaturePodController::OnInactiveSessionDurationChanged(
     return;
   }
 
-  tile_->SetSubLabel(focus_mode_util::GetDurationString(
-      session_duration, /*digital_format=*/false));
+  const std::u16string duration_string = focus_mode_util::GetDurationString(
+      session_duration, /*digital_format=*/false);
+  tile_->SetSubLabel(duration_string);
+  tile_->SetTooltipText(l10n_util::GetStringFUTF16(
+      IDS_ASH_STATUS_TRAY_FOCUS_MODE_TILE_INACTIVE, duration_string));
+  tile_->SetIconButtonTooltipText(l10n_util::GetStringFUTF16(
+      IDS_ASH_STATUS_TRAY_FOCUS_MODE_TOGGLE_BUTTON_INACTIVE, duration_string));
 }
 
 void FocusModeFeaturePodController::OnActiveSessionDurationChanged(
@@ -145,15 +159,21 @@ void FocusModeFeaturePodController::UpdateUI(
           ? l10n_util::GetStringFUTF16(
                 IDS_ASH_STATUS_TRAY_FOCUS_MODE_TIME_SUBLABEL, duration_string)
           : duration_string);
+
+  const std::u16string tooltip_duration_string =
+      session_duration_remaining < base::Minutes(1)
+          ? l10n_util::GetStringUTF16(
+                IDS_ASH_STATUS_TRAY_FOCUS_MODE_SESSION_LESS_THAN_ONE_MINUTE)
+          : duration_string;
   tile_->SetTooltipText(l10n_util::GetStringFUTF16(
       in_focus_session ? IDS_ASH_STATUS_TRAY_FOCUS_MODE_TILE_ACTIVE
                        : IDS_ASH_STATUS_TRAY_FOCUS_MODE_TILE_INACTIVE,
-      duration_string));
+      tooltip_duration_string));
   tile_->SetIconClickable(true);
   tile_->SetIconButtonTooltipText(l10n_util::GetStringFUTF16(
       in_focus_session ? IDS_ASH_STATUS_TRAY_FOCUS_MODE_TILE_BUTTON_ACTIVE
                        : IDS_ASH_STATUS_TRAY_FOCUS_MODE_TOGGLE_BUTTON_INACTIVE,
-      duration_string));
+      tooltip_duration_string));
 }
 
 }  // namespace ash

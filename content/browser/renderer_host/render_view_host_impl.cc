@@ -22,6 +22,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/not_fatal_until.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -35,6 +36,7 @@
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "components/input/native_web_keyboard_event.h"
+#include "components/input/timeout_monitor.h"
 #include "components/viz/common/features.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -43,6 +45,7 @@
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
+#include "content/browser/preloading/prerender/prerender_host.h"
 #include "content/browser/renderer_host/agent_scheduling_group_host.h"
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
@@ -58,7 +61,6 @@
 #include "content/common/agent_scheduling_group.mojom.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/features.h"
-#include "content/common/input/timeout_monitor.h"
 #include "content/common/render_message_filter.mojom.h"
 #include "content/common/renderer.mojom.h"
 #include "content/public/browser/browser_accessibility_state.h"
@@ -84,6 +86,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/page/browsing_context_group_info.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
+#include "third_party/blink/public/mojom/page/prerender_page_param.mojom.h"
 #include "third_party/perfetto/include/perfetto/tracing/traced_value.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -164,7 +167,7 @@ class PerProcessRenderViewHostSet : public base::SupportsUserData::Data {
 
   void Erase(const RenderViewHostImpl* rvh) {
     auto it = render_view_host_instances_.find(rvh);
-    DCHECK(it != render_view_host_instances_.end());
+    CHECK(it != render_view_host_instances_.end(), base::NotFatalUntil::M130);
     render_view_host_instances_.erase(it);
   }
 
@@ -323,6 +326,8 @@ RenderViewHostImpl::RenderViewHostImpl(
               ? std::make_optional(main_browsing_context_state->GetSafeRef())
               : std::nullopt),
       is_speculative_(create_case == CreateRenderViewHostCase::kSpeculative) {
+  base::ScopedUmaHistogramTimer histogram_timer(
+      "Navigation.RenderViewHostConstructor");
   TRACE_EVENT("navigation", "RenderViewHostImpl::RenderViewHostImpl",
               ChromeTrackEvent::kRenderViewHost, *this);
   TRACE_EVENT_BEGIN("navigation", "RenderViewHost",
@@ -369,6 +374,8 @@ RenderViewHostImpl::RenderViewHostImpl(
 RenderViewHostImpl::~RenderViewHostImpl() {
   TRACE_EVENT_INSTANT("navigation", "~RenderViewHostImpl()",
                       ChromeTrackEvent::kRenderViewHost, *this);
+  base::ScopedUmaHistogramTimer histogram_timer(
+      "Navigation.RenderViewHostDestructor");
 
   PerProcessRenderViewHostSet::GetOrCreateForProcess(GetProcess())->Erase(this);
 
@@ -458,8 +465,25 @@ bool RenderViewHostImpl::CreateRenderView(
   params->devtools_main_frame_token =
       frame_tree_node->current_frame_host()->devtools_frame_token();
   DCHECK_EQ(&frame_tree_node->frame_tree(), frame_tree_);
-  params->is_prerendering = frame_tree_->is_prerendering() ||
-                            frame_tree_->page_delegate()->IsPageInPreviewMode();
+
+  if (frame_tree_->is_prerendering() ||
+      frame_tree_->page_delegate()->IsPageInPreviewMode()) {
+    auto prerender_param = blink::mojom::PrerenderParam::New();
+    if (frame_tree_->is_prerendering()) {
+      auto* prerender_host =
+          static_cast<PrerenderHost*>(frame_tree_->delegate());
+      CHECK(prerender_host);
+      prerender_param->page_metric_suffix =
+          prerender_host->GetHistogramSuffix();
+      prerender_param->should_warm_up_compositor =
+          prerender_host->should_warm_up_compositor();
+    } else {
+      prerender_param->page_metric_suffix = ".Preview";
+      prerender_param->should_warm_up_compositor = false;
+    }
+    params->prerender_param = std::move(prerender_param);
+  }
+
   params->attribution_support = delegate_->GetAttributionSupport();
 
   if (main_rfh) {
@@ -594,6 +618,7 @@ bool RenderViewHostImpl::CreateRenderView(
 
 void RenderViewHostImpl::SetMainFrameRoutingId(int routing_id) {
   main_frame_routing_id_ = routing_id;
+  render_widget_host_->ClearVisualProperties();
   GetWidget()->UpdatePriority();
   // TODO(crbug.com/40387047): If a local main frame is no longer attached to
   // this `blink::WebView` then the RenderWidgetHostImpl owned by this class
@@ -847,7 +872,7 @@ void RenderViewHostImpl::RenderWidgetDidForwardMouseEvent(
 }
 
 bool RenderViewHostImpl::MayRenderWidgetForwardKeyboardEvent(
-    const NativeWebKeyboardEvent& key_event) {
+    const input::NativeWebKeyboardEvent& key_event) {
   if (GetWidget()->IsIgnoringWebInputEvents(key_event)) {
     if (key_event.GetType() == WebInputEvent::Type::kRawKeyDown)
       delegate_->OnIgnoredUIEvent();

@@ -86,6 +86,12 @@ void OffsetMappingBuilder::AppendIdentityMapping(unsigned length) {
   has_open_unit_ = true;
 }
 
+void OffsetMappingBuilder::RevertIdentityMapping1() {
+  CHECK(!current_layout_object_);
+  --current_offset_;
+  --destination_length_;
+}
+
 void OffsetMappingBuilder::AppendCollapsedMapping(unsigned length) {
   DCHECK_GT(length, 0u);
   const unsigned dom_start = current_offset_;
@@ -184,7 +190,7 @@ void OffsetMappingBuilder::CollapseTrailingSpace(unsigned space_offset) {
 
   // TODO(xiaochengh): Optimize if this becomes performance bottleneck.
   wtf_size_t position = base::checked_cast<wtf_size_t>(
-      std::distance(mapping_units_.begin(), container_unit));
+      std::distance(mapping_units_.data(), container_unit));
   mapping_units_.EraseAt(position);
   mapping_units_.InsertVector(position, new_units);
   wtf_size_t new_unit_end = position + new_units.size();
@@ -226,7 +232,7 @@ void OffsetMappingBuilder::RestoreTrailingCollapsibleSpace(
     // When we collapsed multiple spaces, e.g. <b>   </b>.
     mapping_units_.insert(
         base::checked_cast<wtf_size_t>(
-            std::distance(mapping_units_.begin(), &unit) + 1),
+            std::distance(mapping_units_.data(), &unit) + 1),
         OffsetMappingUnit(OffsetMappingUnitType::kCollapsed, layout_text,
                           unit.dom_end_, original_dom_end,
                           unit.text_content_end_, unit.text_content_end_));

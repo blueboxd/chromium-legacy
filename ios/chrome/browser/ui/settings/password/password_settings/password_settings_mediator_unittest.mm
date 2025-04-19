@@ -12,7 +12,7 @@
 #import "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
 #import "components/password_manager/core/common/password_manager_features.h"
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
-#import "components/sync/base/model_type.h"
+#import "components/sync/base/data_type.h"
 #import "components/sync/base/passphrase_enums.h"
 #import "components/sync/test/mock_sync_service.h"
 #import "ios/chrome/browser/passwords/model/ios_chrome_profile_password_store_factory.h"
@@ -44,11 +44,9 @@ void SetSyncStatus(SyncServiceForPasswordTests* sync_service,
                               ? syncer::SyncService::TransportState::ACTIVE
                               : syncer::SyncService::TransportState::DISABLED));
   ON_CALL(*sync_service, GetActiveDataTypes())
-      .WillByDefault(
-          testing::Return(syncer::ModelTypeSet({syncer::PASSWORDS})));
+      .WillByDefault(testing::Return(syncer::DataTypeSet({syncer::PASSWORDS})));
   ON_CALL(*(sync_service->GetMockUserSettings()), GetAllEncryptedDataTypes())
-      .WillByDefault(
-          testing::Return(syncer::ModelTypeSet({syncer::PASSWORDS})));
+      .WillByDefault(testing::Return(syncer::DataTypeSet({syncer::PASSWORDS})));
   ON_CALL(*(sync_service->GetMockUserSettings()), GetPassphraseType())
       .WillByDefault(testing::Return(passphrase_type));
 }
@@ -62,7 +60,7 @@ class PasswordSettingsMediatorTest : public PlatformTest {
         base::BindRepeating(
             &password_manager::BuildPasswordStore<web::BrowserState,
                                                   TestPasswordStore>));
-    browser_state_ = builder.Build();
+    browser_state_ = std::move(builder).Build();
 
     store_ =
         base::WrapRefCounted(static_cast<password_manager::TestPasswordStore*>(

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
 
 #include <xdg-shell-client-protocol.h>
@@ -92,10 +97,11 @@ bool DrawBitmap(const SkBitmap& bitmap, ui::WaylandShmBuffer* out_buffer) {
 
 void ReadDataFromFD(base::ScopedFD fd, std::vector<uint8_t>* contents) {
   DCHECK(contents);
-  uint8_t buffer[1 << 10];  // 1 kB in bytes.
+  std::array<uint8_t, 1 << 10> buffer;  // 1 kB in bytes.
   ssize_t length;
-  while ((length = read(fd.get(), buffer, sizeof(buffer))) > 0)
-    contents->insert(contents->end(), buffer, buffer + length);
+  while ((length = read(fd.get(), buffer.data(), buffer.size())) > 0) {
+    contents->insert(contents->end(), buffer.begin(), buffer.begin() + length);
+  }
 }
 
 gfx::Rect TranslateBoundsToParentCoordinates(const gfx::Rect& child_bounds,
@@ -327,8 +333,10 @@ void TransformToWlArray(
   }
 
   gfx::Transform t = absl::get<gfx::Transform>(transform);
-  constexpr int rcs[][2] = {{0, 0}, {1, 0}, {0, 1}, {1, 1}, {0, 3}, {1, 3}};
-  for (auto* rc : rcs) {
+  constexpr std::array<std::array<int, 2>, 6> rcs = {
+      {{0, 0}, {1, 0}, {0, 1}, {1, 1}, {0, 3}, {1, 3}}};
+
+  for (const auto& rc : rcs) {
     float* ptr = static_cast<float*>(wl_array_add(&array, sizeof(float)));
     DCHECK(ptr);
     *ptr = static_cast<float>(t.rc(rc[0], rc[1]));
@@ -365,8 +373,9 @@ bool MaybeHandlePlatformEventForDrag(const ui::PlatformEvent& event,
   //    in addition to the actual dnd drop events, in which case the event is
   //    suppressed, otherwise it leads to broken UI state, as observed for
   //    example in https://crbug.com/329703410.
-  if (!event->IsSynthesized() && (event->type() == ui::ET_MOUSE_RELEASED ||
-                                  event->type() == ui::ET_TOUCH_RELEASED)) {
+  if (!event->IsSynthesized() &&
+      (event->type() == ui::EventType::kMouseReleased ||
+       event->type() == ui::EventType::kTouchReleased)) {
     if (!start_drag_ack_received) {
       std::move(cancel_drag_cb).Run();
     } else {

@@ -13,10 +13,12 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
+#include "base/not_fatal_until.h"
 #include "base/values.h"
 #include "extensions/browser/api/declarative_net_request/composite_matcher.h"
 #include "extensions/browser/api/declarative_net_request/file_backed_ruleset_source.h"
 #include "extensions/browser/api/declarative_net_request/indexed_rule.h"
+#include "extensions/browser/api/declarative_net_request/prefs_helper.h"
 #include "extensions/browser/api/declarative_net_request/request_params.h"
 #include "extensions/browser/api/declarative_net_request/rule_counts.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
@@ -388,14 +390,17 @@ bool AreAllIndexedStaticRulesetsValid(
   std::vector<FileBackedRulesetSource> sources =
       FileBackedRulesetSource::CreateStatic(extension, ruleset_filter);
 
-  const ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context);
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context);
+  PrefsHelper helper(*prefs);
+
   for (const auto& source : sources) {
-    if (prefs->ShouldIgnoreDNRRuleset(extension.id(), source.id()))
+    if (helper.ShouldIgnoreRuleset(extension.id(), source.id())) {
       continue;
+    }
 
     int expected_checksum = -1;
-    if (!prefs->GetDNRStaticRulesetChecksum(extension.id(), source.id(),
-                                            &expected_checksum)) {
+    if (!helper.GetStaticRulesetChecksum(extension.id(), source.id(),
+                                         expected_checksum)) {
       return false;
     }
 
@@ -559,7 +564,7 @@ base::flat_set<int> GetDisabledRuleIdsFromMatcherForTesting(
   const DNRManifestData::ManifestIDToRulesetMap& public_id_map =
       DNRManifestData::GetManifestIDToRulesetMap(extension);
   auto it = public_id_map.find(ruleset_id_string);
-  DCHECK(public_id_map.end() != it);
+  CHECK(public_id_map.end() != it, base::NotFatalUntil::M130);
   RulesetID ruleset_id = it->second->id;
 
   const CompositeMatcher* composite_matcher =

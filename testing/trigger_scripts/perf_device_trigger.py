@@ -44,8 +44,6 @@ This script is normally called from the swarming recipe module in tools/build.
 
 """
 
-from __future__ import print_function
-
 import argparse
 import copy
 import os
@@ -54,12 +52,12 @@ import logging
 import random
 
 import base_test_triggerer
-import six
 
 SRC_DIR = os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(os.path.join(SRC_DIR, 'tools', 'perf'))
 
+# //tools/perf imports.
 import generate_perf_sharding
 from core import bot_platforms
 
@@ -364,8 +362,8 @@ class PerfDeviceTriggerer(base_test_triggerer.BaseTestTriggerer):
 
     # pylint: disable=inconsistent-return-statements
     def _get_swarming_server(self, args):
-        for i in range(len(args)):
-            if '--swarming' in args[i]:
+        for i, argument in enumerate(args):
+            if '--swarming' in argument:
                 server = args[i + 1]
                 slashes_index = server.index('//') + 2
                 # Strip out the protocol

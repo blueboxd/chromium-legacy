@@ -5,7 +5,7 @@
 
 load("//lib/builder_config.star", "builder_config")
 load("//lib/builder_health_indicators.star", "health_spec")
-load("//lib/builders.star", "cpu", "os", "sheriff_rotations", "siso")
+load("//lib/builders.star", "cpu", "gardener_rotations", "os", "siso")
 load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
 load("//lib/gn_args.star", "gn_args")
@@ -16,7 +16,7 @@ ci.defaults.set(
     pool = ci.DEFAULT_POOL,
     builderless = True,
     cores = 8,
-    sheriff_rotations = sheriff_rotations.CFT,
+    gardener_rotations = gardener_rotations.CFT,
     tree_closing = False,
     execution_timeout = ci.DEFAULT_EXECUTION_TIMEOUT,
     health_spec = health_spec.DEFAULT,
@@ -68,6 +68,7 @@ ci.builder(
             "minimal_symbols",
             "chrome_for_testing",
             "chrome_with_codecs",
+            "mac",
             "x64",
         ],
     ),
@@ -98,6 +99,8 @@ ci.builder(
             "minimal_symbols",
             "chrome_for_testing",
             "chrome_with_codecs",
+            "linux",
+            "x64",
         ],
     ),
     os = os.LINUX_DEFAULT,
@@ -125,6 +128,8 @@ ci.builder(
             "minimal_symbols",
             "chrome_for_testing",
             "chrome_with_codecs",
+            "win",
+            "x64",
         ],
     ),
     os = os.WINDOWS_DEFAULT,

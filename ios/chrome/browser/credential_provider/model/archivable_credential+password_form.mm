@@ -31,7 +31,7 @@ password_manager::PasswordForm PasswordFormFromCredential(
 
   form.url = password_manager_util::StripAuthAndParams(url);
   form.signon_realm = form.url.DeprecatedGetOriginAsURL().spec();
-  form.username_value = SysNSStringToUTF16(credential.user);
+  form.username_value = SysNSStringToUTF16(credential.username);
   form.password_value = SysNSStringToUTF16(credential.password);
   form.times_used_in_html_form = credential.rank;
   form.SetNoteWithEmptyUniqueDisplayName(SysNSStringToUTF16(credential.note));
@@ -43,7 +43,8 @@ password_manager::PasswordForm PasswordFormFromCredential(
 
 - (instancetype)initWithPasswordForm:
                     (const password_manager::PasswordForm&)passwordForm
-                             favicon:(NSString*)favicon {
+                             favicon:(NSString*)favicon
+                                gaia:(NSString*)gaia {
   if (passwordForm.blocked_by_user) {
     return nil;
   }
@@ -87,12 +88,13 @@ password_manager::PasswordForm PasswordFormFromCredential(
   DCHECK(serviceIdentifier.length);
 
   return [self initWithFavicon:favicon
+                          gaia:gaia
                       password:SysUTF16ToNSString(passwordForm.password_value)
                           rank:passwordForm.times_used_in_html_form
               recordIdentifier:RecordIdentifierForPasswordForm(passwordForm)
              serviceIdentifier:serviceIdentifier
                    serviceName:serviceName
-                          user:SysUTF16ToNSString(passwordForm.username_value)
+                      username:SysUTF16ToNSString(passwordForm.username_value)
                           note:note];
 }
 

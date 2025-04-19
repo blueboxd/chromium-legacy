@@ -70,6 +70,11 @@ bool immediate_close_for_tests = false;
 // Delay closing window to allow it to shrink and fade out.
 constexpr int kCloseWindowDelayInMilliseconds = 150;
 
+void ClearWindowProperties(aura::Window* window) {
+  window->ClearProperty(chromeos::kIsShowingInOverviewKey);
+  window->ClearProperty(kHideInOverviewKey);
+}
+
 // Layer animation observer that is attached to a clip and/or rounded corners
 // animation. We need this for the exit animation, where we want to animate
 // properties but the overview session has been destroyed. We want to use this
@@ -152,7 +157,7 @@ ScopedOverviewTransformWindow::ScopedOverviewTransformWindow(
       (new RasterScaleLayerObserver(window_, window_->layer(), window_))
           ->Lock());
 
-  fill_mode_ = GetOverviewItemFillMode(window->bounds().size());
+  fill_mode_ = GetOverviewItemFillModeForWindow(window);
 
   std::vector<raw_ptr<aura::Window, VectorExperimental>>
       transient_children_to_hide;
@@ -160,16 +165,20 @@ ScopedOverviewTransformWindow::ScopedOverviewTransformWindow(
     event_targeting_blocker_map_[transient] =
         std::make_unique<aura::ScopedWindowEventTargetingBlocker>(transient);
 
-    transient->SetProperty(chromeos::kIsShowingInOverviewKey, true);
-
-    // Add this as |aura::WindowObserver| for observing |kHideInOverviewKey|
-    // property changes.
-    window_observations_.AddObservation(transient);
+    if (window_util::AsBubbleDialogDelegate(transient)) {
+      transient->SetProperty(kHideInOverviewKey, true);
+    } else {
+      transient->SetProperty(chromeos::kIsShowingInOverviewKey, true);
+      // Add this as `aura::WindowObserver` for observing `kHideInOverviewKey`
+      // property changes.
+      window_observations_.AddObservation(transient);
+    }
 
     // Hide transient children which have been specified to be hidden in
     // overview mode.
-    if (transient != window && transient->GetProperty(kHideInOverviewKey))
+    if (transient != window && transient->GetProperty(kHideInOverviewKey)) {
       transient_children_to_hide.push_back(transient);
+    }
   }
 
   if (!transient_children_to_hide.empty())
@@ -225,7 +234,7 @@ ScopedOverviewTransformWindow::~ScopedOverviewTransformWindow() {
   }
 
   for (auto* transient : GetTransientTreeIterator(window_)) {
-    transient->ClearProperty(chromeos::kIsShowingInOverviewKey);
+    ClearWindowProperties(transient);
     DCHECK(event_targeting_blocker_map_.contains(transient));
     event_targeting_blocker_map_.erase(transient);
   }
@@ -509,7 +518,7 @@ void ScopedOverviewTransformWindow::EnsureVisible() {
 }
 
 void ScopedOverviewTransformWindow::UpdateOverviewItemFillMode() {
-  fill_mode_ = ash::GetOverviewItemFillMode(window_->bounds().size());
+  fill_mode_ = GetOverviewItemFillModeForWindow(window_);
 }
 
 void ScopedOverviewTransformWindow::UpdateRoundedCorners(bool show) {
@@ -600,7 +609,7 @@ void ScopedOverviewTransformWindow::OnTransientChildWindowRemoved(
   if (parent != window_ && !::wm::HasTransientAncestor(parent, window_))
     return;
 
-  transient_child->ClearProperty(chromeos::kIsShowingInOverviewKey);
+  ClearWindowProperties(transient_child);
   DCHECK(event_targeting_blocker_map_.contains(transient_child));
   event_targeting_blocker_map_.erase(transient_child);
 
@@ -675,8 +684,7 @@ void ScopedOverviewTransformWindow::SetImmediateCloseForTests(bool immediate) {
 }
 
 void ScopedOverviewTransformWindow::CloseWidget() {
-  aura::Window* parent_window = wm::GetTransientRoot(window_);
-  if (parent_window) {
+  if (aura::Window* parent_window = wm::GetTransientRoot(window_)) {
     window_util::CloseWidgetForWindow(parent_window);
   }
 }

@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.compositor.overlays.strip;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -13,6 +15,7 @@ import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.util.FloatProperty;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnDragListener;
@@ -21,12 +24,16 @@ import android.view.animation.Interpolator;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.DrawableRes;
+import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.content.res.AppCompatResources;
 
+import org.chromium.base.Callback;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
@@ -40,16 +47,19 @@ import org.chromium.chrome.browser.compositor.layouts.components.TintedComposito
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.AreaMotionEventFilter;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.MotionEventHandler;
 import org.chromium.chrome.browser.compositor.scene_layer.TabStripSceneLayer;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.layouts.EventFilter;
 import org.chromium.chrome.browser.layouts.LayoutStateProvider.LayoutStateObserver;
 import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.layouts.SceneOverlay;
+import org.chromium.chrome.browser.layouts.animation.CompositorAnimator;
 import org.chromium.chrome.browser.layouts.components.VirtualView;
 import org.chromium.chrome.browser.layouts.scene_layer.SceneOverlayLayer;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
 import org.chromium.chrome.browser.lifecycle.TopResumedActivityChangedObserver;
 import org.chromium.chrome.browser.multiwindow.MultiInstanceManager;
+import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.LoadUrlResult;
 import org.chromium.chrome.browser.tab.TabCreationState;
@@ -66,11 +76,10 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_management.ActionConfirmationManager;
-import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiThemeUtil;
 import org.chromium.chrome.browser.toolbar.ToolbarFeatures;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
-import org.chromium.chrome.browser.toolbar.top.TabStripTransitionCoordinator.TabStripHeightObserver;
+import org.chromium.chrome.browser.toolbar.top.tab_strip.TabStripTransitionCoordinator.TabStripTransitionDelegate;
 import org.chromium.chrome.browser.ui.desktop_windowing.AppHeaderState;
 import org.chromium.chrome.browser.ui.desktop_windowing.AppHeaderUtils;
 import org.chromium.chrome.browser.ui.desktop_windowing.DesktopWindowStateProvider;
@@ -89,6 +98,8 @@ import org.chromium.ui.resources.ResourceManager;
 import org.chromium.ui.util.ColorUtils;
 import org.chromium.url.GURL;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -99,7 +110,7 @@ import java.util.List;
 public class StripLayoutHelperManager
         implements SceneOverlay,
                 PauseResumeWithNativeObserver,
-                TabStripHeightObserver,
+                TabStripTransitionDelegate,
                 TopResumedActivityChangedObserver,
                 AppHeaderObserver {
 
@@ -132,6 +143,34 @@ public class StripLayoutHelperManager
         }
     }
 
+    /** Defines if the strip is visible or hidden. */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({
+        StripVisibilityState.UNKNOWN,
+        StripVisibilityState.VISIBLE,
+        StripVisibilityState.GONE,
+        StripVisibilityState.INVISIBLE,
+    })
+    @interface StripVisibilityState {
+        int UNKNOWN = 0; // Strip visibility is unknown.
+        int VISIBLE = 1; // Strip is visible.
+        int GONE = 2; // Strip is hidden by a height transition.
+        int INVISIBLE = 3; // Strip is hidden by an in-place fade transition.
+    }
+
+    private static final FloatProperty<StripLayoutHelperManager> SCRIM_OPACITY =
+            new FloatProperty<>("scrimOpacity") {
+                @Override
+                public void setValue(StripLayoutHelperManager object, float value) {
+                    object.mStripTransitionScrimOpacity = value;
+                }
+
+                @Override
+                public Float get(StripLayoutHelperManager object) {
+                    return object.mStripTransitionScrimOpacity;
+                }
+            };
+
     // Model selector buttons constants.
     private static final float MODEL_SELECTOR_BUTTON_BACKGROUND_Y_OFFSET_DP = 3.f;
     private static final float MODEL_SELECTOR_BUTTON_BACKGROUND_WIDTH_DP = 32.f;
@@ -140,8 +179,6 @@ public class StripLayoutHelperManager
     private static final float MODEL_SELECTOR_BUTTON_HOVER_BACKGROUND_DEFAULT_OPACITY = 0.08f;
     private static final float MODEL_SELECTOR_BUTTON_CLICK_SLOP_DP = 12.f;
     private static final float BUTTON_DESIRED_TOUCH_TARGET_SIZE = 48.f;
-    private static final float EXPERIMENT_LEFT_MARGIN_DP = 10f;
-    private static final float EXPERIMENT_RIGHT_MARGIN_DP = 20f;
 
     // Tab strip transition constants.
     @VisibleForTesting
@@ -180,12 +217,12 @@ public class StripLayoutHelperManager
     private float mTopPadding; // in dp units
     private final float mDensity;
     private int mOrientation;
-    private TintedCompositorButton mModelSelectorButton;
+    @Nullable private TintedCompositorButton mModelSelectorButton;
     private Context mContext;
     private boolean mTabStripObscured;
-    private boolean mIsHidden;
     private float mStripTransitionScrimOpacity;
-    private boolean mIsTransitioning;
+    private Animator mFadeTransitionAnimator;
+    private boolean mIsHeightTransitioning;
     private final ToolbarManager mToolbarManager;
     private final StatusBarColorController mStatusBarColorController;
     private TabStripSceneLayer mTabStripTreeProvider;
@@ -196,7 +233,6 @@ public class StripLayoutHelperManager
     private float mModelSelectorWidth;
     private float mLastVisibleViewportOffsetY;
 
-    // Desktop windowing mode constants.
     /**
      * Whether the current activity is the top resumed activity. This is only relevant for use in
      * the desktop windowing mode, to determine the tab strip background color.
@@ -209,12 +245,9 @@ public class StripLayoutHelperManager
     private float mStripEndPadding;
     private TabModelSelectorTabModelObserver mTabModelSelectorTabModelObserver;
     private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
-    private final TabModelSelectorObserver mTabModelSelectorObserver =
-            new TabModelSelectorObserver() {
-                @Override
-                public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
-                    tabModelSwitched(newModel.isIncognito());
-                }
+    private final Callback<TabModel> mCurrentTabModelObserver =
+            (tabModel) -> {
+                tabModelSwitched(tabModel.isIncognito());
             };
 
     private TabModelObserver mTabModelObserver;
@@ -222,6 +255,9 @@ public class StripLayoutHelperManager
     private final String mDefaultTitle;
     private final ObservableSupplier<LayerTitleCache> mLayerTitleCacheSupplier;
     private final BrowserControlsStateProvider mBrowserControlsStateProvider;
+    private final Callback<Integer> mStripVisibilityStateObserver;
+    private ObservableSupplierImpl<Integer> mStripVisibilityStateSupplier;
+    private boolean mAnimationsDisabledForTesting;
 
     // Drag-Drop
     @Nullable private TabDragSource mTabDragSource;
@@ -232,7 +268,8 @@ public class StripLayoutHelperManager
             if (DragDropGlobalState.hasValue()) {
                 return;
             }
-            if (mModelSelectorButton.onDown(x, y, fromMouse)) {
+            if (mModelSelectorButton != null
+                    && mModelSelectorButton.onDown(x, y, fromMouse, buttons)) {
                 return;
             }
             getActiveStripLayoutHelper().onDown(time(), x, y, fromMouse, buttons);
@@ -240,7 +277,9 @@ public class StripLayoutHelperManager
 
         @Override
         public void onUpOrCancel() {
-            if (mModelSelectorButton.onUpOrCancel() && mTabModelSelector != null) {
+            if (mModelSelectorButton != null
+                    && mModelSelectorButton.onUpOrCancel()
+                    && mTabModelSelector != null) {
                 getActiveStripLayoutHelper().finishAnimationsAndPushTabUpdates();
                 if (!mModelSelectorButton.isVisible()) return;
                 mTabModelSelector.selectModel(!mTabModelSelector.isIncognitoSelected());
@@ -254,7 +293,9 @@ public class StripLayoutHelperManager
             if (DragDropGlobalState.hasValue()) {
                 return;
             }
-            mModelSelectorButton.drag(x, y);
+            if (mModelSelectorButton != null) {
+                mModelSelectorButton.drag(x, y);
+            }
             getActiveStripLayoutHelper().drag(time(), x, y, dx);
         }
 
@@ -264,7 +305,8 @@ public class StripLayoutHelperManager
                 return;
             }
             long time = time();
-            if (mModelSelectorButton.click(x, y)) {
+            if (mModelSelectorButton != null
+                    && mModelSelectorButton.click(x, y, fromMouse, buttons)) {
                 mModelSelectorButton.handleClick(time);
                 return;
             }
@@ -335,6 +377,10 @@ public class StripLayoutHelperManager
         public void onStartedHiding(@LayoutType int layoutType) {
             if (layoutType != LayoutType.TAB_SWITCHER) return;
             mTabStripObscured = false;
+
+            // Expand tab group on GTS exit.
+            mNormalHelper.expandGroupOnGtsExit();
+            mIncognitoHelper.expandGroupOnGtsExit();
         }
     }
 
@@ -411,80 +457,27 @@ public class StripLayoutHelperManager
                         : mScrollableStripHeight;
         mTopPadding = mHeight - mScrollableStripHeight;
         mDesktopWindowStateProvider = desktopWindowStateProvider;
+        mStripVisibilityStateSupplier = new ObservableSupplierImpl<>(StripVisibilityState.UNKNOWN);
+        mStripVisibilityStateObserver =
+                state -> {
+                    // Consume motion events only on a visible strip.
+                    mEventFilter.setEventArea(
+                            state == StripVisibilityState.VISIBLE ? mStripFilterArea : null);
+                };
+        mStripVisibilityStateSupplier.addObserver(mStripVisibilityStateObserver);
 
-        CompositorOnClickHandler selectorClickHandler = time -> handleModelSelectorButtonClick();
-        createModelSelectorButton(context, selectorClickHandler);
-        // Model selector button background color.
-        // Default bg color is surface inverse.
-        @ColorInt
-        int backgroundDefaultColor = context.getColor(R.color.model_selector_button_bg_color);
-
-        // Incognito bg color is surface 1 baseline.
-        @ColorInt
-        int backgroundIncognitoColor =
-                context.getColor(R.color.default_bg_color_dark_elev_1_baseline);
-
-        @ColorInt
-        int apsBackgroundHoveredColor =
-                ColorUtils.setAlphaComponentWithFloat(
-                        SemanticColorUtils.getDefaultTextColor(context),
-                        MODEL_SELECTOR_BUTTON_HOVER_BACKGROUND_DEFAULT_OPACITY);
-        @ColorInt
-        int apsBackgroundPressedColor =
-                ColorUtils.setAlphaComponentWithFloat(
-                        SemanticColorUtils.getDefaultTextColor(context),
-                        MODEL_SELECTOR_BUTTON_HOVER_BACKGROUND_PRESSED_OPACITY);
-        @ColorInt
-        int apsBackgroundHoveredIncognitoColor =
-                ColorUtils.setAlphaComponentWithFloat(
-                        context.getColor(R.color.tab_strip_button_hover_bg_color),
-                        MODEL_SELECTOR_BUTTON_HOVER_BACKGROUND_DEFAULT_OPACITY);
-        @ColorInt
-        int apsBackgroundPressedIncognitoColor =
-                ColorUtils.setAlphaComponentWithFloat(
-                        context.getColor(R.color.tab_strip_button_hover_bg_color),
-                        MODEL_SELECTOR_BUTTON_HOVER_BACKGROUND_PRESSED_OPACITY);
-
-        @ColorInt
-        int iconDefaultColor =
-                AppCompatResources.getColorStateList(context, R.color.default_icon_color_tint_list)
-                        .getDefaultColor();
-        @ColorInt
-        int iconIncognitoColor = context.getColor(R.color.default_icon_color_secondary_light);
-
-        mModelSelectorButton.setTint(
-                iconDefaultColor, iconDefaultColor, iconIncognitoColor, iconIncognitoColor);
-
-        mModelSelectorButton.setBackgroundTint(
-                backgroundDefaultColor,
-                backgroundDefaultColor,
-                backgroundIncognitoColor,
-                backgroundIncognitoColor,
-                apsBackgroundHoveredColor,
-                apsBackgroundPressedColor,
-                apsBackgroundHoveredIncognitoColor,
-                apsBackgroundPressedIncognitoColor);
-
-        // y-offset for folio = lowered tab container + (tab container size - bg size)/2 -
-        // folio tab title y-offset = 2 + (38 - 32)/2 - 2 = 3dp
-        mModelSelectorButton.setDrawY(MODEL_SELECTOR_BUTTON_BACKGROUND_Y_OFFSET_DP + mTopPadding);
-
+        if (!ChromeFeatureList.sTabStripIncognitoMigration.isEnabled()) {
+            CompositorOnClickHandler selectorClickHandler =
+                    time -> handleModelSelectorButtonClick();
+            createModelSelectorButton(context, selectorClickHandler);
+        }
         // Use toolbar menu button padding to align MSB with menu button.
         mStripEndPadding = res.getDimension(R.dimen.button_end_padding) / mDensity;
-
-        mModelSelectorButton.setIncognito(false);
-        mModelSelectorButton.setVisible(false);
-        // Pressed resources are the same as the unpressed resources.
-        mModelSelectorButton.setClickSlop(MODEL_SELECTOR_BUTTON_CLICK_SLOP_DP);
-
-        mModelSelectorButton.setAccessibilityDescription(
-                res.getString(R.string.accessibility_tabstrip_btn_incognito_toggle_standard),
-                res.getString(R.string.accessibility_tabstrip_btn_incognito_toggle_incognito));
 
         mTabStripObscured = false;
 
         mTabHoverCardViewStub = tabHoverCardViewStub;
-        if (TabUiFeatureUtilities.isTabDragEnabled()) {
+        if (MultiWindowUtils.isMultiInstanceApi31Enabled()) {
             mTabDragSource =
                     new TabDragSource(
                             context,
@@ -513,7 +506,12 @@ public class StripLayoutHelperManager
                         mTabDragSource,
                         toolbarContainerView,
                         windowAndroid,
-                        actionConfirmationManager);
+                        actionConfirmationManager,
+                        toolbarManager.getTabStripHeightSupplier().get(),
+                        () ->
+                                !mTabStripObscured
+                                        && getStripVisibilityState()
+                                                == StripVisibilityState.VISIBLE);
         mIncognitoHelper =
                 new StripLayoutHelper(
                         context,
@@ -525,7 +523,12 @@ public class StripLayoutHelperManager
                         mTabDragSource,
                         toolbarContainerView,
                         windowAndroid,
-                        actionConfirmationManager);
+                        actionConfirmationManager,
+                        toolbarManager.getTabStripHeightSupplier().get(),
+                        () ->
+                                !mTabStripObscured
+                                        && getStripVisibilityState()
+                                                == StripVisibilityState.VISIBLE);
 
         tabHoverCardViewStub.setOnInflateListener(
                 (viewStub, view) -> {
@@ -587,6 +590,72 @@ public class StripLayoutHelperManager
         mModelSelectorButton.setBackgroundResourceId(R.drawable.bg_circle_tab_strip_button);
 
         mModelSelectorWidth = MODEL_SELECTOR_BUTTON_BACKGROUND_WIDTH_DP;
+
+        // Model selector button background color.
+        // Default bg color is surface inverse.
+        @ColorInt
+        int backgroundDefaultColor = context.getColor(R.color.model_selector_button_bg_color);
+
+        // Incognito bg color is surface 1 baseline.
+        @ColorInt
+        int backgroundIncognitoColor =
+                context.getColor(R.color.default_bg_color_dark_elev_1_baseline);
+
+        @ColorInt
+        int apsBackgroundHoveredColor =
+                ColorUtils.setAlphaComponentWithFloat(
+                        SemanticColorUtils.getDefaultTextColor(context),
+                        MODEL_SELECTOR_BUTTON_HOVER_BACKGROUND_DEFAULT_OPACITY);
+        @ColorInt
+        int apsBackgroundPressedColor =
+                ColorUtils.setAlphaComponentWithFloat(
+                        SemanticColorUtils.getDefaultTextColor(context),
+                        MODEL_SELECTOR_BUTTON_HOVER_BACKGROUND_PRESSED_OPACITY);
+        @ColorInt
+        int apsBackgroundHoveredIncognitoColor =
+                ColorUtils.setAlphaComponentWithFloat(
+                        context.getColor(R.color.tab_strip_button_hover_bg_color),
+                        MODEL_SELECTOR_BUTTON_HOVER_BACKGROUND_DEFAULT_OPACITY);
+        @ColorInt
+        int apsBackgroundPressedIncognitoColor =
+                ColorUtils.setAlphaComponentWithFloat(
+                        context.getColor(R.color.tab_strip_button_hover_bg_color),
+                        MODEL_SELECTOR_BUTTON_HOVER_BACKGROUND_PRESSED_OPACITY);
+
+        @ColorInt
+        int iconDefaultColor =
+                AppCompatResources.getColorStateList(context, R.color.default_icon_color_tint_list)
+                        .getDefaultColor();
+        @ColorInt
+        int iconIncognitoColor = context.getColor(R.color.default_icon_color_secondary_light);
+
+        mModelSelectorButton.setTint(
+                iconDefaultColor, iconDefaultColor, iconIncognitoColor, iconIncognitoColor);
+
+        mModelSelectorButton.setBackgroundTint(
+                backgroundDefaultColor,
+                backgroundDefaultColor,
+                backgroundIncognitoColor,
+                backgroundIncognitoColor,
+                apsBackgroundHoveredColor,
+                apsBackgroundPressedColor,
+                apsBackgroundHoveredIncognitoColor,
+                apsBackgroundPressedIncognitoColor);
+
+        // y-offset for folio = lowered tab container + (tab container size - bg size)/2 -
+        // folio tab title y-offset = 2 + (38 - 32)/2 - 2 = 3dp
+        mModelSelectorButton.setDrawY(MODEL_SELECTOR_BUTTON_BACKGROUND_Y_OFFSET_DP + mTopPadding);
+
+        mModelSelectorButton.setIncognito(false);
+        mModelSelectorButton.setVisible(false);
+        // Pressed resources are the same as the unpressed resources.
+        mModelSelectorButton.setClickSlop(MODEL_SELECTOR_BUTTON_CLICK_SLOP_DP);
+
+        mModelSelectorButton.setAccessibilityDescription(
+                context.getResources()
+                        .getString(R.string.accessibility_tabstrip_btn_incognito_toggle_standard),
+                context.getResources()
+                        .getString(R.string.accessibility_tabstrip_btn_incognito_toggle_incognito));
     }
 
     /** Cleans up internal state. */
@@ -601,7 +670,7 @@ public class StripLayoutHelperManager
                     .getTabModelFilterProvider()
                     .removeTabModelFilterObserver(mTabModelObserver);
 
-            mTabModelSelector.removeObserver(mTabModelSelectorObserver);
+            mTabModelSelector.getCurrentTabModelSupplier().removeObserver(mCurrentTabModelObserver);
             mTabModelSelectorTabModelObserver.destroy();
             mTabModelSelectorTabObserver.destroy();
         }
@@ -609,12 +678,14 @@ public class StripLayoutHelperManager
         if (mDesktopWindowStateProvider != null) {
             mDesktopWindowStateProvider.removeObserver(this);
         }
+        mStripVisibilityStateSupplier.removeObserver(mStripVisibilityStateObserver);
     }
 
-    /** Mark whether tab strip |isHidden|. */
+    /** Mark whether tab strip is hidden by a height transition. */
     public void setIsTabStripHidden(boolean isHidden) {
-        mIsHidden = isHidden;
-        mStatusBarColorController.setTabStripHiddenOnTablet(mIsHidden);
+        mStripVisibilityStateSupplier.set(
+                isHidden ? StripVisibilityState.GONE : StripVisibilityState.VISIBLE);
+        mStatusBarColorController.setTabStripHiddenOnTablet(isHidden);
     }
 
     @Override
@@ -636,6 +707,7 @@ public class StripLayoutHelperManager
         getActiveStripLayoutHelper().finishAnimationsAndPushTabUpdates();
         if (!mModelSelectorButton.isVisible()) return;
         mTabModelSelector.selectModel(!mTabModelSelector.isIncognitoSelected());
+        RecordUserAction.record("MobileToolbarModelSelected");
     }
 
     @VisibleForTesting
@@ -663,10 +735,9 @@ public class StripLayoutHelperManager
                         ? TabModel.INVALID_TAB_INDEX
                         : getActiveStripLayoutHelper().getLastHoveredTab().getId();
 
-        float scrimOpacity = 0.0f;
         // When tab strip is hiding, animation will trigger the toolbar moving up and tab
         // strip fade-out in place. In this case the tab strip should not move at all.
-        if (duringTabStripTransition()) {
+        if (duringTabStripHeightTransition()) {
             // During tab strip transition, make the yOffset stick to the top of the browser
             // controls. This assumes on tablet there are no other components on top of the control
             // container.
@@ -675,14 +746,14 @@ public class StripLayoutHelperManager
 
             // The fade-out is implemented by adding a scrim layer on top of the tab strip, with the
             // same bg as the toolbar background color.
-            scrimOpacity = calculateScrimOpacityDuringTransition(visibleHeight);
+            calculateScrimOpacityDuringHeightTransition(visibleHeight);
             mStatusBarColorController.setTabStripColorOverlay(
-                    getStripTransitionScrimColor(), scrimOpacity);
+                    getStripTransitionScrimColor(), mStripTransitionScrimOpacity);
 
             yOffset = 0;
-        } else if (mIsHidden) {
-            // When tab strip is hidden, the stable offset of this scene layer should be a negative
-            // value.
+        } else if (getStripVisibilityState() == StripVisibilityState.GONE) {
+            // When the tab strip is hidden by a height transition, the stable offset of this scene
+            // layer should be a negative value.
             yOffset -= getHeight();
         }
         mTabStripTreeProvider.pushAndUpdateStrip(
@@ -695,7 +766,7 @@ public class StripLayoutHelperManager
                 selectedTabId,
                 hoveredTabId,
                 getStripTransitionScrimColor(),
-                scrimOpacity,
+                mStripTransitionScrimOpacity,
                 mLeftPadding,
                 mRightPadding,
                 mTopPadding);
@@ -703,9 +774,6 @@ public class StripLayoutHelperManager
     }
 
     private int getStripTransitionScrimColor() {
-        if (!ToolbarFeatures.shouldUseToolbarBgColorForStripTransitionScrim()) {
-            return getBackgroundColor();
-        }
         return mToolbarManager.getPrimaryColor();
     }
 
@@ -731,15 +799,18 @@ public class StripLayoutHelperManager
             mOrientation = orientation;
             orientationChanged = true;
         }
-        mModelSelectorButton.setDrawY(mTopPadding + MODEL_SELECTOR_BUTTON_BACKGROUND_Y_OFFSET_DP);
-        if (!LocalizationUtils.isLayoutRtl()) {
-            mModelSelectorButton.setDrawX(
-                    mWidth - mRightPadding - getModelSelectorButtonWidthWithEndPadding());
-        } else {
-            mModelSelectorButton.setDrawX(
-                    mLeftPadding
-                            + getModelSelectorButtonWidthWithEndPadding()
-                            - mModelSelectorWidth);
+        if (mModelSelectorButton != null) {
+            mModelSelectorButton.setDrawY(
+                    mTopPadding + MODEL_SELECTOR_BUTTON_BACKGROUND_Y_OFFSET_DP);
+            if (!LocalizationUtils.isLayoutRtl()) {
+                mModelSelectorButton.setDrawX(
+                        mWidth - mRightPadding - getModelSelectorButtonWidthWithEndPadding());
+            } else {
+                mModelSelectorButton.setDrawX(
+                        mLeftPadding
+                                + getModelSelectorButtonWidthWithEndPadding()
+                                - mModelSelectorWidth);
+            }
         }
 
         mNormalHelper.onSizeChanged(
@@ -762,20 +833,25 @@ public class StripLayoutHelperManager
                 mTopPadding,
                 mWidth - mRightPadding,
                 Math.min(getHeight(), visibleViewportOffsetY));
-        mEventFilter.setEventArea(mStripFilterArea);
+        // Avoid handling motion events when invisible strip state persists after a size change.
+        if (getStripVisibilityState() == StripVisibilityState.VISIBLE) {
+            mEventFilter.setEventArea(mStripFilterArea);
+        }
     }
 
-    // Implements TabStripHeightObserver
+    // Implements TabStripTransitionDelegate.
 
     @Override
     public void onHeightChanged(int newHeightPx) {
-        mIsTransitioning = true;
-        mIsHidden = newHeightPx == 0;
-        mStripTransitionScrimOpacity = mIsHidden ? 0f : 1f;
+        mIsHeightTransitioning = true;
+        boolean hideStrip = newHeightPx == 0;
+        mStripVisibilityStateSupplier.set(
+                hideStrip ? StripVisibilityState.GONE : StripVisibilityState.VISIBLE);
+        mStripTransitionScrimOpacity = hideStrip ? 0f : 1f;
         // Update the strip visibility state in StatusBarController just after the margins are
         // updated during a hide->show transition so that the status bar assumes the base tab strip
         // color for the remaining duration of the transition while a scrim is applied.
-        if (!mIsHidden) {
+        if (!hideStrip) {
             mStatusBarColorController.setTabStripHiddenOnTablet(false);
         }
         // Set the status bar color and scrim overlay at the start of the transition.
@@ -793,31 +869,72 @@ public class StripLayoutHelperManager
     }
 
     @Override
-    public void onTransitionFinished() {
-        mIsTransitioning = false;
+    public void onFadeTransitionRequested(float startOpacity, float endOpacity, int durationMs) {
+        boolean showStrip = endOpacity == 0f;
+        if (mAnimationsDisabledForTesting) {
+            onFadeTransitionEnd(showStrip);
+            return;
+        }
+        if (mFadeTransitionAnimator != null && mFadeTransitionAnimator.isRunning()) {
+            mFadeTransitionAnimator.cancel();
+        }
+        mFadeTransitionAnimator =
+                CompositorAnimator.ofFloatProperty(
+                        mUpdateHost.getAnimationHandler(),
+                        this,
+                        StripLayoutHelperManager.SCRIM_OPACITY,
+                        startOpacity,
+                        endOpacity,
+                        durationMs);
+        mFadeTransitionAnimator.addListener(
+                new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(@NonNull Animator animation) {
+                        onFadeTransitionEnd(showStrip);
+                    }
+                });
+        mFadeTransitionAnimator.start();
+    }
+
+    private void onFadeTransitionEnd(boolean showStrip) {
+        mFadeTransitionAnimator = null;
+        mStripVisibilityStateSupplier.set(
+                showStrip ? StripVisibilityState.VISIBLE : StripVisibilityState.INVISIBLE);
+    }
+
+    @Override
+    public void onHeightTransitionFinished() {
+        mIsHeightTransitioning = false;
         mStripTransitionScrimOpacity = 0f;
         //  Update the strip visibility state in StatusBarColorController only after a show->hide
         // transition, so that the status bar assumes the toolbar color when the strip is hidden.
-        if (mIsHidden) {
+        if (getStripVisibilityState() == StripVisibilityState.GONE) {
             mStatusBarColorController.setTabStripHiddenOnTablet(true);
         }
         mStatusBarColorController.setTabStripColorOverlay(
                 ScrimProperties.INVALID_COLOR, mStripTransitionScrimOpacity);
     }
 
-    private boolean duringTabStripTransition() {
-        return mIsTransitioning;
+    private boolean duringTabStripHeightTransition() {
+        return mIsHeightTransitioning;
     }
 
     @VisibleForTesting
-    float calculateScrimOpacityDuringTransition(float visibleHeight) {
-        if (!duringTabStripTransition()) {
+    float calculateScrimOpacityDuringHeightTransition(float visibleHeight) {
+        if (!duringTabStripHeightTransition()) {
             return 0.0f;
+        }
+
+        // Stop any running fade transition animation that is updating the scrim opacity.
+        if (mFadeTransitionAnimator != null && mFadeTransitionAnimator.isRunning()) {
+            mFadeTransitionAnimator.cancel();
         }
 
         // Otherwise, the alpha fraction is based on the percent of the tab strip visibility.
         float ratio = 1 - visibleHeight / mHeight;
         float newOpacity = TAB_STRIP_TRANSITION_INTERPOLATOR.getInterpolation(ratio);
+
+        boolean isHidden = getStripVisibilityState() == StripVisibilityState.GONE;
 
         // There is a known issue where the scrim opacity for a hide->show transition incorrectly
         // gets updated to 1f (when yOffset = 0) in concluding frame updates during the transition,
@@ -828,8 +945,8 @@ public class StripLayoutHelperManager
         // If the tab strip is hiding, new opacity should be >= current opacity; if the tab strip is
         // showing, new opacity should be <= current opacity. Otherwise, ignore the new value and
         // use the current value.
-        if ((mIsHidden && newOpacity >= mStripTransitionScrimOpacity)
-                || (!mIsHidden && newOpacity <= mStripTransitionScrimOpacity)) {
+        if ((isHidden && newOpacity >= mStripTransitionScrimOpacity)
+                || (!isHidden && newOpacity <= mStripTransitionScrimOpacity)) {
             mStripTransitionScrimOpacity = newOpacity;
         }
 
@@ -853,7 +970,7 @@ public class StripLayoutHelperManager
      *     for touch target.
      */
     private float getButtonStartPaddingForTouchTarget() {
-        if (mModelSelectorButton.isVisible()) {
+        if (mModelSelectorButton != null && mModelSelectorButton.isVisible()) {
             return BUTTON_DESIRED_TOUCH_TARGET_SIZE
                     - mModelSelectorButton.getWidth()
                     - mStripEndPadding;
@@ -888,12 +1005,17 @@ public class StripLayoutHelperManager
     @Override
     public void getVirtualViews(List<VirtualView> views) {
         if (mTabStripObscured) return;
-        if (duringTabStripTransition() || mIsHidden) return;
+        if (duringTabStripHeightTransition()
+                || getStripVisibilityState() == StripVisibilityState.GONE) {
+            return;
+        }
         // Remove the a11y views when top controls is partially invisible.
         if (mBrowserControlsStateProvider.getTopControlOffset() < 0) return;
 
         getActiveStripLayoutHelper().getVirtualViews(views);
-        if (mModelSelectorButton.isVisible()) views.add(mModelSelectorButton);
+        if (mModelSelectorButton != null && mModelSelectorButton.isVisible()) {
+            views.add(mModelSelectorButton);
+        }
     }
 
     @Override
@@ -901,11 +1023,20 @@ public class StripLayoutHelperManager
         return false;
     }
 
-    /** Update the touchable area on the strip and exclude those from system gesture area. */
+    /** Allow / disallow system gestures on touchable areas on the strip. */
     private void updateTouchableAreas() {
         // #setSystemGestureExclusionRects requires API Q.
         if (VERSION.SDK_INT < VERSION_CODES.Q || !mIsLayoutOptimizationsEnabled) return;
 
+        if (getStripVisibilityState() == StripVisibilityState.INVISIBLE) {
+            // Reset the system gesture exclusion rects to allow system gestures on the tab strip
+            // area.
+            mToolbarControlContainer.setSystemGestureExclusionRects(List.of(new Rect(0, 0, 0, 0)));
+            return;
+        }
+
+        // #setSystemGestureExclusionRects allows Chrome to receive touch events on the tab strip
+        // when it is drawn under the system gesture area so that the strip remains accessible.
         List<Rect> rects = new ArrayList<>();
         RectF tabStripRectDp = new RectF(getActiveStripLayoutHelper().getTouchableRect());
         tabStripRectDp.top = mTopPadding;
@@ -919,7 +1050,7 @@ public class StripLayoutHelperManager
                         (int) Math.ceil(tabStripRectDp.bottom * mDensity));
         rects.add(tabStripRect);
 
-        if (mModelSelectorButton.isVisible()) {
+        if (mModelSelectorButton != null && mModelSelectorButton.isVisible()) {
             var msbTouchRect = new RectF();
             mModelSelectorButton.getTouchTarget(msbTouchRect);
             Rect msbRect =
@@ -950,7 +1081,7 @@ public class StripLayoutHelperManager
     public int getLeftFadeDrawable() {
         int leftFadeDrawable;
         if (LocalizationUtils.isLayoutRtl()) {
-            if (mModelSelectorButton.isVisible()) {
+            if (mModelSelectorButton != null && mModelSelectorButton.isVisible()) {
                 leftFadeDrawable = R.drawable.tab_strip_fade_long;
                 mNormalHelper.setLeftFadeWidth(FADE_LONG_WIDTH_DP);
                 mIncognitoHelper.setLeftFadeWidth(FADE_LONG_WIDTH_DP);
@@ -972,7 +1103,7 @@ public class StripLayoutHelperManager
     public @DrawableRes int getRightFadeDrawable() {
         @DrawableRes int rightFadeDrawable;
         if (!LocalizationUtils.isLayoutRtl()) {
-            if (mModelSelectorButton.isVisible()) {
+            if (mModelSelectorButton != null && mModelSelectorButton.isVisible()) {
                 rightFadeDrawable = R.drawable.tab_strip_fade_long;
                 mNormalHelper.setRightFadeWidth(FADE_LONG_WIDTH_DP);
                 mIncognitoHelper.setRightFadeWidth(FADE_LONG_WIDTH_DP);
@@ -1187,23 +1318,8 @@ public class StripLayoutHelperManager
                     }
 
                     @Override
-                    public void onPageLoadStarted(Tab tab, GURL url) {
-                        getStripLayoutHelper(tab.isIncognito()).tabPageLoadStarted(tab.getId());
-                    }
-
-                    @Override
-                    public void onPageLoadFinished(Tab tab, GURL url) {
-                        getStripLayoutHelper(tab.isIncognito()).tabPageLoadFinished(tab.getId());
-                    }
-
-                    @Override
-                    public void onPageLoadFailed(Tab tab, int errorCode) {
-                        getStripLayoutHelper(tab.isIncognito()).tabPageLoadFinished(tab.getId());
-                    }
-
-                    @Override
                     public void onCrash(Tab tab) {
-                        getStripLayoutHelper(tab.isIncognito()).tabPageLoadFinished(tab.getId());
+                        getStripLayoutHelper(tab.isIncognito()).tabLoadFinished(tab.getId());
                     }
 
                     @Override
@@ -1217,7 +1333,7 @@ public class StripLayoutHelperManager
                     }
                 };
 
-        mTabModelSelector.addObserver(mTabModelSelectorObserver);
+        mTabModelSelector.getCurrentTabModelSupplier().addObserver(mCurrentTabModelObserver);
         if (mTabDragSource != null) {
             mTabDragSource.setTabModelSelector(mTabModelSelector);
         }
@@ -1321,6 +1437,7 @@ public class StripLayoutHelperManager
     }
 
     private void updateModelSwitcherButton() {
+        if (mModelSelectorButton == null) return;
         mModelSelectorButton.setIncognito(mIsIncognito);
         if (mTabModelSelector != null) {
             boolean isVisible = mTabModelSelector.getModel(true).getCount() != 0;
@@ -1362,6 +1479,12 @@ public class StripLayoutHelperManager
         return mIsIncognito ? mNormalHelper : mIncognitoHelper;
     }
 
+    @VisibleForTesting
+    @StripVisibilityState
+    int getStripVisibilityState() {
+        return mStripVisibilityStateSupplier.get();
+    }
+
     void simulateHoverEventForTesting(int event, float x, float y) {
         if (event == MotionEvent.ACTION_HOVER_ENTER) {
             mTabStripEventHandler.onHoverEnter(x, y);
@@ -1384,11 +1507,19 @@ public class StripLayoutHelperManager
         return mTabHoverCardViewStub;
     }
 
+    void disableAnimationsForTesting() {
+        mAnimationsDisabledForTesting = true;
+    }
+
     public TabDragSource getTabDragSourceForTesting() {
         return mTabDragSource;
     }
 
     public void setIsIncognitoForTesting(boolean isIncognito) {
         mIsIncognito = isIncognito;
+    }
+
+    public boolean isStripScrimVisibleForTesting() {
+        return mStripTransitionScrimOpacity == 1f;
     }
 }

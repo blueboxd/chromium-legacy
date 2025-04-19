@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
+import("//services/device/public/cpp/compute_pressure/buildflags.gni")
 import("//services/device/public/cpp/geolocation/buildflags.gni")
 
 component("device_features") {
@@ -12,7 +13,10 @@ component("device_features") {
     "device_features_export.h",
   ]
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
-  deps = [ "//services/device/public/mojom:geolocation_internals" ]
+  deps = [
+    "//services/device/public/cpp/geolocation:buildflags",
+    "//services/device/public/mojom:geolocation_internals",
+  ]
   public_deps = [ "//base" ]
 
   defines = [ "DEVICE_FEATURES_IMPLEMENTATION" ]
@@ -51,8 +55,6 @@ source_set("test_support") {
     "test/mock_usb_mojo_device.h",
     "test/scoped_geolocation_overrider.cc",
     "test/scoped_geolocation_overrider.h",
-    "test/scoped_pressure_manager_overrider.cc",
-    "test/scoped_pressure_manager_overrider.h",
     "test/test_wake_lock_provider.cc",
     "test/test_wake_lock_provider.h",
   ]
@@ -77,7 +79,7 @@ source_set("test_support") {
     "//url",
   ]
 
-  if (os_level_geolocation_permission_supported || is_ios) {
+  if (os_level_geolocation_permission_supported) {
     sources += [
       "test/fake_geolocation_system_permission_manager.cc",
       "test/fake_geolocation_system_permission_manager.h",
@@ -108,5 +110,12 @@ source_set("test_support") {
     public_deps += [ "//services/device/public/cpp/hid" ]
 
     deps += [ "//services/device/hid" ]
+  }
+
+  if (enable_compute_pressure) {
+    sources += [
+      "test/scoped_pressure_manager_overrider.cc",
+      "test/scoped_pressure_manager_overrider.h",
+    ]
   }
 }

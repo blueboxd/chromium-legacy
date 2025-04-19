@@ -47,8 +47,8 @@ TEST(VideoLayerImplTest, Occlusion) {
   FakeVideoFrameProvider provider;
   provider.set_frame(video_frame);
 
-  VideoLayerImpl* video_layer_impl =
-      impl.AddLayer<VideoLayerImpl>(&provider, media::VIDEO_ROTATION_0);
+  VideoLayerImpl* video_layer_impl = impl.AddLayerInActiveTree<VideoLayerImpl>(
+      &provider, media::VIDEO_ROTATION_0);
   video_layer_impl->SetBounds(layer_size);
   video_layer_impl->SetDrawsContent(true);
   video_layer_impl->set_visible_layer_rect(gfx::Rect(layer_size));
@@ -111,8 +111,8 @@ TEST(VideoLayerImplTest, OccludesOtherLayers) {
   const auto& draw_properties = root->draw_properties();
 
   FakeVideoFrameProvider provider;
-  VideoLayerImpl* video_layer_impl =
-      impl.AddLayer<VideoLayerImpl>(&provider, media::VIDEO_ROTATION_0);
+  VideoLayerImpl* video_layer_impl = impl.AddLayerInActiveTree<VideoLayerImpl>(
+      &provider, media::VIDEO_ROTATION_0);
   video_layer_impl->SetBounds(layer_size);
   video_layer_impl->SetDrawsContent(true);
   video_layer_impl->SetContentsOpaque(true);
@@ -128,7 +128,8 @@ TEST(VideoLayerImplTest, OccludesOtherLayers) {
       gfx::Size(10, 10), base::TimeDelta());
   provider.set_frame(video_frame);
   active_tree->set_needs_update_draw_properties();
-  active_tree->UpdateDrawProperties();
+  active_tree->UpdateDrawProperties(
+      /*update_tiles=*/true, /*update_image_animation_controller=*/true);
 
   // We have a frame now, so the video occludes the layer below it.
   EXPECT_TRUE(draw_properties.occlusion_in_content_space.IsOccluded(visible));
@@ -139,8 +140,8 @@ TEST(VideoLayerImplTest, DidBecomeActiveShouldSetActiveVideoLayer) {
   DebugSetImplThreadAndMainThreadBlocked(impl.task_runner_provider());
 
   FakeVideoFrameProvider provider;
-  VideoLayerImpl* video_layer_impl =
-      impl.AddLayer<VideoLayerImpl>(&provider, media::VIDEO_ROTATION_0);
+  VideoLayerImpl* video_layer_impl = impl.AddLayerInActiveTree<VideoLayerImpl>(
+      &provider, media::VIDEO_ROTATION_0);
   CopyProperties(impl.root_layer(), video_layer_impl);
 
   VideoFrameProviderClientImpl* client =
@@ -165,8 +166,8 @@ TEST(VideoLayerImplTest, Rotated0) {
   FakeVideoFrameProvider provider;
   provider.set_frame(video_frame);
 
-  VideoLayerImpl* video_layer_impl =
-      impl.AddLayer<VideoLayerImpl>(&provider, media::VIDEO_ROTATION_0);
+  VideoLayerImpl* video_layer_impl = impl.AddLayerInActiveTree<VideoLayerImpl>(
+      &provider, media::VIDEO_ROTATION_0);
   video_layer_impl->SetBounds(layer_size);
   video_layer_impl->SetDrawsContent(true);
   CopyProperties(impl.root_layer(), video_layer_impl);
@@ -202,8 +203,8 @@ TEST(VideoLayerImplTest, Rotated90) {
   FakeVideoFrameProvider provider;
   provider.set_frame(video_frame);
 
-  VideoLayerImpl* video_layer_impl =
-      impl.AddLayer<VideoLayerImpl>(&provider, media::VIDEO_ROTATION_90);
+  VideoLayerImpl* video_layer_impl = impl.AddLayerInActiveTree<VideoLayerImpl>(
+      &provider, media::VIDEO_ROTATION_90);
   video_layer_impl->SetBounds(layer_size);
   video_layer_impl->SetDrawsContent(true);
   CopyProperties(impl.root_layer(), video_layer_impl);
@@ -239,8 +240,8 @@ TEST(VideoLayerImplTest, Rotated180) {
   FakeVideoFrameProvider provider;
   provider.set_frame(video_frame);
 
-  VideoLayerImpl* video_layer_impl =
-      impl.AddLayer<VideoLayerImpl>(&provider, media::VIDEO_ROTATION_180);
+  VideoLayerImpl* video_layer_impl = impl.AddLayerInActiveTree<VideoLayerImpl>(
+      &provider, media::VIDEO_ROTATION_180);
   video_layer_impl->SetBounds(layer_size);
   video_layer_impl->SetDrawsContent(true);
   CopyProperties(impl.root_layer(), video_layer_impl);
@@ -278,8 +279,8 @@ TEST(VideoLayerImplTest, Rotated270) {
   FakeVideoFrameProvider provider;
   provider.set_frame(video_frame);
 
-  VideoLayerImpl* video_layer_impl =
-      impl.AddLayer<VideoLayerImpl>(&provider, media::VIDEO_ROTATION_270);
+  VideoLayerImpl* video_layer_impl = impl.AddLayerInActiveTree<VideoLayerImpl>(
+      &provider, media::VIDEO_ROTATION_270);
   video_layer_impl->SetBounds(layer_size);
   video_layer_impl->SetDrawsContent(true);
   CopyProperties(impl.root_layer(), video_layer_impl);
@@ -320,8 +321,8 @@ TEST(VideoLayerImplTest, SoftwareVideoFrameGeneratesYUVQuad) {
   FakeVideoFrameProvider provider;
   provider.set_frame(video_frame);
 
-  VideoLayerImpl* video_layer_impl =
-      impl.AddLayer<VideoLayerImpl>(&provider, media::VIDEO_ROTATION_0);
+  VideoLayerImpl* video_layer_impl = impl.AddLayerInActiveTree<VideoLayerImpl>(
+      &provider, media::VIDEO_ROTATION_0);
   video_layer_impl->SetBounds(layer_size);
   video_layer_impl->SetDrawsContent(true);
   video_layer_impl->set_visible_layer_rect(gfx::Rect(layer_size));
@@ -367,8 +368,8 @@ TEST(VideoLayerImplTest, HibitSoftwareVideoFrameGeneratesYUVQuad) {
   FakeVideoFrameProvider provider;
   provider.set_frame(video_frame);
 
-  VideoLayerImpl* video_layer_impl =
-      impl.AddLayer<VideoLayerImpl>(&provider, media::VIDEO_ROTATION_0);
+  VideoLayerImpl* video_layer_impl = impl.AddLayerInActiveTree<VideoLayerImpl>(
+      &provider, media::VIDEO_ROTATION_0);
   video_layer_impl->SetBounds(layer_size);
   video_layer_impl->SetDrawsContent(true);
   video_layer_impl->set_visible_layer_rect(gfx::Rect(layer_size));
@@ -402,31 +403,24 @@ TEST(VideoLayerImplTest, NativeYUVFrameGeneratesYUVQuad) {
   LayerTreeImplTestBase impl;
   DebugSetImplThreadAndMainThreadBlocked(impl.task_runner_provider());
 
-  scoped_refptr<gpu::ClientSharedImage>
-      shared_images[media::VideoFrame::kMaxPlanes];
-  shared_images[0] = gpu::ClientSharedImage::CreateForTesting();
-  // Continue legacy path if feature is not enabled.
-  if (!media::IsWritePixelsYUVEnabled()) {
-    shared_images[1] = gpu::ClientSharedImage::CreateForTesting();
-    shared_images[2] = gpu::ClientSharedImage::CreateForTesting();
-  }
+  scoped_refptr<gpu::ClientSharedImage> shared_image =
+      gpu::ClientSharedImage::CreateForTesting();
 
   scoped_refptr<media::VideoFrame> video_frame =
-      media::VideoFrame::WrapSharedImages(
-          media::PIXEL_FORMAT_I420, shared_images, gpu::SyncToken(),
-          GL_TEXTURE_2D, base::DoNothing(), gfx::Size(10, 10),
-          gfx::Rect(10, 10), gfx::Size(10, 10), base::TimeDelta());
+      media::VideoFrame::WrapSharedImage(
+          media::PIXEL_FORMAT_I420, shared_image, gpu::SyncToken(),
+          shared_image->GetTextureTarget(), base::DoNothing(),
+          gfx::Size(10, 10), gfx::Rect(10, 10), gfx::Size(10, 10),
+          base::TimeDelta());
   ASSERT_TRUE(video_frame);
   video_frame->metadata().allow_overlay = true;
-  if (media::IsWritePixelsYUVEnabled()) {
-    video_frame->set_shared_image_format_type(
-        media::SharedImageFormatType::kSharedImageFormat);
-  }
+  video_frame->set_shared_image_format_type(
+      media::SharedImageFormatType::kSharedImageFormat);
   FakeVideoFrameProvider provider;
   provider.set_frame(video_frame);
 
-  VideoLayerImpl* video_layer_impl =
-      impl.AddLayer<VideoLayerImpl>(&provider, media::VIDEO_ROTATION_0);
+  VideoLayerImpl* video_layer_impl = impl.AddLayerInActiveTree<VideoLayerImpl>(
+      &provider, media::VIDEO_ROTATION_0);
   video_layer_impl->SetBounds(layer_size);
   video_layer_impl->SetDrawsContent(true);
   video_layer_impl->set_visible_layer_rect(gfx::Rect(layer_size));
@@ -439,21 +433,10 @@ TEST(VideoLayerImplTest, NativeYUVFrameGeneratesYUVQuad) {
   EXPECT_EQ(1u, impl.quad_list().size());
   const viz::DrawQuad* draw_quad = impl.quad_list().ElementAt(0);
 
-  if (media::IsWritePixelsYUVEnabled()) {
-    ASSERT_EQ(viz::DrawQuad::Material::kTextureContent, draw_quad->material);
-    const auto* texture_draw_quad =
-        static_cast<const viz::TextureDrawQuad*>(draw_quad);
-    EXPECT_TRUE(texture_draw_quad->is_video_frame);
-  } else {
-    ASSERT_EQ(viz::DrawQuad::Material::kYuvVideoContent, draw_quad->material);
-
-    const auto* yuv_draw_quad =
-        static_cast<const viz::YUVVideoDrawQuad*>(draw_quad);
-    EXPECT_EQ(yuv_draw_quad->uv_tex_size().height(),
-              (yuv_draw_quad->ya_tex_size().height() + 1) / 2);
-    EXPECT_EQ(yuv_draw_quad->uv_tex_size().width(),
-              (yuv_draw_quad->ya_tex_size().width() + 1) / 2);
-  }
+  ASSERT_EQ(viz::DrawQuad::Material::kTextureContent, draw_quad->material);
+  const auto* texture_draw_quad =
+      static_cast<const viz::TextureDrawQuad*>(draw_quad);
+  EXPECT_TRUE(texture_draw_quad->is_video_frame);
 }
 
 TEST(VideoLayerImplTest, NativeARGBFrameGeneratesTextureQuad) {
@@ -469,15 +452,15 @@ TEST(VideoLayerImplTest, NativeARGBFrameGeneratesTextureQuad) {
   scoped_refptr<media::VideoFrame> video_frame =
       media::VideoFrame::WrapSharedImage(
           media::PIXEL_FORMAT_ARGB, shared_image, gpu::SyncToken(),
-          GL_TEXTURE_2D, base::DoNothing(), resource_size, gfx::Rect(10, 10),
-          resource_size, base::TimeDelta());
+          shared_image->GetTextureTarget(), base::DoNothing(), resource_size,
+          gfx::Rect(10, 10), resource_size, base::TimeDelta());
   ASSERT_TRUE(video_frame);
   video_frame->metadata().allow_overlay = true;
   FakeVideoFrameProvider provider;
   provider.set_frame(video_frame);
 
-  VideoLayerImpl* video_layer_impl =
-      impl.AddLayer<VideoLayerImpl>(&provider, media::VIDEO_ROTATION_0);
+  VideoLayerImpl* video_layer_impl = impl.AddLayerInActiveTree<VideoLayerImpl>(
+      &provider, media::VIDEO_ROTATION_0);
   video_layer_impl->SetBounds(layer_size);
   video_layer_impl->SetDrawsContent(true);
   video_layer_impl->set_visible_layer_rect(gfx::Rect(layer_size));

@@ -67,15 +67,14 @@ class AccountCapabilitiesFetcherIOSTest : public PlatformTest {
     // Register a fake identity and set the expected capabilities.
     id<SystemIdentity> identity = [FakeSystemIdentity
         identityWithEmail:base::SysUTF8ToNSString(account_info.email)
-                   gaiaID:base::SysUTF8ToNSString(account_info.gaia)
-                     name:@"Jane Doe"];
+                   gaiaID:base::SysUTF8ToNSString(account_info.gaia)];
     system_identity_manager->AddIdentity(identity);
 
     if (capability_fetched.has_value() &&
         capability_fetched.value() !=
             SystemIdentityCapabilityResult::kUnknown) {
       AccountCapabilitiesTestMutator* mutator =
-          system_identity_manager->GetCapabilitiesMutator(identity);
+          system_identity_manager->GetPendingCapabilitiesMutator(identity);
       bool has_capability =
           capability_fetched.value() == SystemIdentityCapabilityResult::kTrue;
       mutator->set_can_have_email_address_displayed(has_capability);

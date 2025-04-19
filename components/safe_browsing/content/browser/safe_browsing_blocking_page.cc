@@ -68,6 +68,8 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
     bool is_safe_browsing_surveys_enabled,
     base::OnceCallback<void(bool, SBThreatType)>
         trust_safety_sentiment_service_trigger,
+    base::OnceCallback<void(bool, SBThreatType)>
+        ignore_auto_revocation_notifications_trigger,
     network::SharedURLLoaderFactory* url_loader_for_testing)
     : BaseBlockingPage(ui_manager,
                        web_contents,
@@ -78,7 +80,6 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
       threat_details_in_progress_(false),
       threat_source_(unsafe_resources[0].threat_source),
       threat_type_(unsafe_resources[0].threat_type),
-      is_subresource_(unsafe_resources[0].is_subresource),
       history_service_(history_service),
       navigation_observer_manager_(navigation_observer_manager),
       metrics_collector_(metrics_collector),
@@ -86,10 +87,12 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
       is_proceed_anyway_disabled_(is_proceed_anyway_disabled),
       is_safe_browsing_surveys_enabled_(is_safe_browsing_surveys_enabled),
       trust_safety_sentiment_service_trigger_(
-          std::move(trust_safety_sentiment_service_trigger)) {
+          std::move(trust_safety_sentiment_service_trigger)),
+      ignore_auto_revocation_notifications_trigger_(
+          std::move(ignore_auto_revocation_notifications_trigger)) {
   if (unsafe_resources.size() == 1) {
-    UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.BlockingPage.RequestDestination",
-                              unsafe_resources[0].request_destination);
+    UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.BlockingPage.ThreatType",
+                              unsafe_resources[0].threat_type);
   }
   LogSafeBrowsingInterstitialShownUKM(web_contents);
 
@@ -159,6 +162,15 @@ void SafeBrowsingBlockingPage::OnInterstitialClosing() {
     LogSafeBrowsingInterstitialBypassedUKM(web_contents());
   }
 
+  // If the user proceeded past a social engineering threat interstitial,
+  // ignore the origin in future auto-revocation of abusive notifications.
+  if (ignore_auto_revocation_notifications_trigger_) {
+    DCHECK(base::FeatureList::IsEnabled(
+        safe_browsing::kSafetyHubAbusiveNotificationRevocation));
+    std::move(ignore_auto_revocation_notifications_trigger_)
+        .Run(proceeded(), threat_type_);
+  }
+
   // With committed interstitials OnProceed and OnDontProceed don't get
   // called, so call FinishThreatDetails from here.
   FinishThreatDetails(
@@ -213,8 +225,8 @@ void SafeBrowsingBlockingPage::FinishThreatDetails(const base::TimeDelta& delay,
                                                    bool did_proceed,
                                                    int num_visits) {
   base::UmaHistogramBoolean(
-      "SafeBrowsing.ClientSafeBrowsingReport.HasThreatDetailsAtFinish" +
-          std::string(is_subresource_ ? ".Subresource" : ".Mainframe"),
+      "SafeBrowsing.ClientSafeBrowsingReport.HasThreatDetailsAtFinish."
+      "Mainframe",
       threat_details_in_progress_);
   // Not all interstitials collect threat details (eg., incognito mode).
   if (!threat_details_in_progress_) {

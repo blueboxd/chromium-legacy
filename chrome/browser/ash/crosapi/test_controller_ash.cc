@@ -60,6 +60,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/tabs/tab_scrubber_chromeos.h"
 #include "chrome/browser/ui/webui/ash/app_install/app_install_page_handler.h"
+#include "chromeos/ash/components/cryptohome/cryptohome_parameters.h"
 #include "chromeos/ash/components/dbus/shill/shill_profile_client.h"
 #include "chromeos/ash/components/dbus/shill/shill_third_party_vpn_driver_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/cryptohome_misc_client.h"
@@ -348,9 +349,10 @@ void TestControllerAsh::ClickWindow(const std::string& window_id) {
   if (!window)
     return;
   const gfx::Point center = window->bounds().CenterPoint();
-  bool destroyed = DispatchMouseEvent(window, ui::ET_MOUSE_PRESSED, center);
+  bool destroyed =
+      DispatchMouseEvent(window, ui::EventType::kMousePressed, center);
   if (!destroyed) {
-    DispatchMouseEvent(window, ui::ET_MOUSE_RELEASED, center);
+    DispatchMouseEvent(window, ui::EventType::kMouseReleased, center);
   }
 }
 
@@ -537,8 +539,9 @@ void TestControllerAsh::SelectItemInShelf(const std::string& item_id,
   }
 
   auto mouse_event = std::make_unique<ui::MouseEvent>(
-      ui::ET_MOUSE_PRESSED, gfx::PointF(), gfx::PointF(), ui::EventTimeForNow(),
-      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+      ui::EventType::kMousePressed, gfx::PointF(), gfx::PointF(),
+      ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+      ui::EF_LEFT_MOUSE_BUTTON);
   delegate->ItemSelected(std::move(mouse_event), display::kInvalidDisplayId,
                          ash::LAUNCH_FROM_SHELF,
                          /*callback=*/base::DoNothing(),
@@ -584,16 +587,16 @@ void TestControllerAsh::SendTouchEvent(const std::string& window_id,
       NOTREACHED_IN_MIGRATION();
       return;
     case mojom::TouchEventType::kPressed:
-      event_type = ui::ET_TOUCH_PRESSED;
+      event_type = ui::EventType::kTouchPressed;
       break;
     case mojom::TouchEventType::kMoved:
-      event_type = ui::ET_TOUCH_MOVED;
+      event_type = ui::EventType::kTouchMoved;
       break;
     case mojom::TouchEventType::kReleased:
-      event_type = ui::ET_TOUCH_RELEASED;
+      event_type = ui::EventType::kTouchReleased;
       break;
     case mojom::TouchEventType::kCancelled:
-      event_type = ui::ET_TOUCH_CANCELLED;
+      event_type = ui::EventType::kTouchCancelled;
       break;
   }
   // Compute location relative to display root window.

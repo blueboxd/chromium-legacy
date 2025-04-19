@@ -1,8 +1,28 @@
-(function() {
+(function(global_scope) {
   "use strict";
 
   let gAsyncTest;
   let gPostAssertsFunc;
+
+
+  /** Returns the <title> or filename or "Untitled" */
+  function get_title() {
+    if ('document' in global_scope) {
+      //Don't use document.title to work around an Opera/Presto bug in XHTML documents
+      var title = document.getElementsByTagName("title")[0];
+      if (title && title.firstChild && title.firstChild.data) {
+        return title.firstChild.data;
+      }
+    }
+    if ('META_TITLE' in global_scope && META_TITLE) {
+      return META_TITLE;
+    }
+    if ('location' in global_scope && 'pathname' in location) {
+      let lastSlash = location.pathname.lastIndexOf('/');
+      return location.pathname.substring(lastSlash + 1, location.pathname.indexOf('.', lastSlash));
+    }
+    return "Untitled";
+  }
 
   // TODO: Use WebDriver's API instead of eventSender.
   //       Hopefully something like:
@@ -45,6 +65,13 @@
     return null;
   }
 
+  function focusedElement() {
+    let focused_document = focusedDocument();
+    if (focused_document)
+      return focused_document.activeElement;
+    return null;
+  }
+
   // Allows us to query element ids also in iframes' documents.
   function findElement(searchString) {
     let searchPath = searchString.split(",");
@@ -80,9 +107,10 @@
     let receivingDoc = wanted.ownerDocument;
     let verifyAndAdvance = gAsyncTest.step_func(function() {
       clearTimeout(failureTimer);
-      let focused = focusedDocument().activeElement;
+      let focused = focusedElement();
       assert_equals(focused, wanted,
-                    'step ' + step + ': expected focus ' + expectedId + ', actual focus ' + focused.id);
+                    'step ' + step + ' ' + JSON.stringify(move) + ':');
+
       // Kick off another async test step.
       stepAndAssertMoves(expectedMoves);
     });
@@ -96,7 +124,7 @@
     // Start a timer to catch the failure of missing keyup event.
     failureTimer = setTimeout(gAsyncTest.step_func(function() {
       assert_unreached('step ' + step + ': timeout when waiting for focus on ' + expectedId +
-                       ', actual focus on ' + focusedDocument().activeElement.id);
+                       ', actual focus on ' + (focusedElement() ? focusedElement().id : '<null>'));
       gAsyncTest.done();
     }), 1000);
     triggerMove(direction);
@@ -123,19 +151,17 @@
         snav.assertSnavEnabledAndTestable();
       if (postAssertsFunc)
         gPostAssertsFunc = postAssertsFunc;
-      gAsyncTest = async_test("Focus movements:\n" +
-          JSON.stringify(expectedMoves).replace(/],/g, ']\n') + '\n');
+      gAsyncTest = async_test("["+ get_title() + "] Focus movements: " +
+          JSON.stringify(expectedMoves));
 
       // All iframes must be loaded before trying to navigate to them.
       window.addEventListener('load', gAsyncTest.step_func(() => {
+        // Some test pages give focus to arbitrary element as start point.
+        // Otherwise, ensure root document as start point.
+        if (!focusedElement())
+          document.focus();
         stepAndAssertMoves(expectedMoves);
       }));
-    },
-
-    rAF: function() {
-      return new Promise((resolve) => {
-        window.requestAnimationFrame(resolve);
-      });
     }
   }
-})();
+})(self);

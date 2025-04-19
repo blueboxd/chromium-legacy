@@ -28,8 +28,8 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/base/signin_switches.h"
+#include "components/sync/base/data_type.h"
 #include "components/sync/base/features.h"
-#include "components/sync/base/model_type.h"
 #include "components/sync/base/user_selectable_type.h"
 #include "components/sync/service/sync_service.h"
 #include "components/sync/service/sync_user_settings.h"
@@ -139,9 +139,9 @@ void AddressDataManager::AddChangeCallback(base::OnceClosure callback) {
   change_callbacks_.push_back(std::move(callback));
 }
 
-void AddressDataManager::OnAutofillChangedBySync(syncer::ModelType model_type) {
-  if (model_type == syncer::ModelType::AUTOFILL_PROFILE ||
-      model_type == syncer::ModelType::CONTACT_INFO) {
+void AddressDataManager::OnAutofillChangedBySync(syncer::DataType data_type) {
+  if (data_type == syncer::DataType::AUTOFILL_PROFILE ||
+      data_type == syncer::DataType::CONTACT_INFO) {
     LoadProfiles();
   }
 }
@@ -316,7 +316,7 @@ bool AddressDataManager::IsEligibleForAddressAccountStorage() const {
   }
 
   // The CONTACT_INFO data type is only running for eligible users. See
-  // ContactInfoModelTypeController.
+  // ContactInfoDataTypeController.
   return sync_service_->GetActiveDataTypes().Has(syncer::CONTACT_INFO);
 }
 
@@ -339,6 +339,12 @@ void AddressDataManager::MigrateProfileToAccount(
   // Update the database (and this way indirectly Sync).
   RemoveProfile(profile.guid());
   AddProfile(account_profile);
+}
+
+void AddressDataManager::OnAutofillProfilePrefChanged() {
+  LoadProfiles();
+  autofill_metrics::MaybeLogAutofillProfileDisabled(
+      CHECK_DEREF(pref_service_.get()));
 }
 
 void AddressDataManager::LoadProfiles() {
@@ -509,7 +515,7 @@ void AddressDataManager::SetPrefService(PrefService* pref_service) {
   if (pref_service_) {
     profile_enabled_pref_->Init(
         prefs::kAutofillProfileEnabled, pref_service_,
-        base::BindRepeating(&AddressDataManager::LoadProfiles,
+        base::BindRepeating(&AddressDataManager::OnAutofillProfilePrefChanged,
                             base::Unretained(this)));
   }
 }
@@ -635,7 +641,7 @@ bool AddressDataManager::IsAutofillSyncToggleAvailable() const {
 
   return contact_info_precondition_checker_ &&
          contact_info_precondition_checker_->GetPreconditionState() ==
-             syncer::ModelTypeController::PreconditionState::kPreconditionsMet;
+             syncer::DataTypeController::PreconditionState::kPreconditionsMet;
 }
 
 void AddressDataManager::SetAutofillSelectableTypeEnabled(bool enabled) {

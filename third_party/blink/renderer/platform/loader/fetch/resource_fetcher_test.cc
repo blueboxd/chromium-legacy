@@ -72,7 +72,6 @@
 #include "third_party/blink/renderer/platform/loader/testing/test_loader_factory.h"
 #include "third_party/blink/renderer/platform/loader/testing/test_resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/testing/mock_context_lifecycle_notifier.h"
-#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/scoped_mocked_url.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -142,7 +141,7 @@ class ResourceFetcherTest : public testing::Test {
                             const Resource* resource,
                             ResponseSource source) override {}
     void DidReceiveData(uint64_t identifier,
-                        base::span<const char> chunk) override {}
+                        base::SpanOrSize<const char> chunk) override {}
     void DidReceiveTransferSizeUpdate(uint64_t identifier,
                                       int transfer_size_diff) override {}
     void DidDownloadToBlob(uint64_t identifier, BlobDataHandle*) override {}
@@ -158,6 +157,12 @@ class ResourceFetcherTest : public testing::Test {
     void DidChangeRenderBlockingBehavior(
         Resource* resource,
         const FetchParameters& params) override {}
+    bool InterestedInAllRequests() override {
+      return interested_in_all_requests_;
+    }
+    void SetInterestedInAllRequests(bool interested_in_all_requests) {
+      interested_in_all_requests_ = interested_in_all_requests;
+    }
     const std::optional<PartialResourceRequest>& GetLastRequest() const {
       return request_;
     }
@@ -166,6 +171,7 @@ class ResourceFetcherTest : public testing::Test {
 
    private:
     std::optional<PartialResourceRequest> request_;
+    bool interested_in_all_requests_ = false;
   };
 
  protected:
@@ -2062,4 +2068,168 @@ TEST_P(DeferUnusedPreloadWithPreloadedReasonResourceFetcherTest,
   EXPECT_TRUE(resource->IsLoaded());
   EXPECT_TRUE(MemoryCache::Get()->Contains(resource));
 }
+
+class DeferUnusedPreloadWithExcludedResourceTypeResourceFetcherTest
+    : public DeferUnusedPreloadResourceFetcherTest,
+      public testing::WithParamInterface<
+          features::LcppDeferUnusedPreloadExcludedResourceType> {
+ public:
+  DeferUnusedPreloadWithExcludedResourceTypeResourceFetcherTest() {
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {{features::kLCPPDeferUnusedPreload,
+          {{features::kLcppDeferUnusedPreloadExcludedResourceType.name,
+            GetParamString()}}}},
+        {});
+  }
+
+  features::LcppDeferUnusedPreloadExcludedResourceType ExcludedResourceType() {
+    return GetParam();
+  }
+
+  std::string GetParamString() {
+    switch (ExcludedResourceType()) {
+      case features::LcppDeferUnusedPreloadExcludedResourceType::kNone:
+        return "none";
+      case features::LcppDeferUnusedPreloadExcludedResourceType::kStyleSheet:
+        return "stylesheet";
+      case features::LcppDeferUnusedPreloadExcludedResourceType::kScript:
+        return "script";
+      case features::LcppDeferUnusedPreloadExcludedResourceType::kMock:
+        return "mock";
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    DeferUnusedPreloadWithExcludedResourceTypeResourceFetcherTest,
+    testing::Values(
+        features::LcppDeferUnusedPreloadExcludedResourceType::kNone,
+        features::LcppDeferUnusedPreloadExcludedResourceType::kStyleSheet,
+        features::LcppDeferUnusedPreloadExcludedResourceType::kScript));
+
+TEST_P(DeferUnusedPreloadWithExcludedResourceTypeResourceFetcherTest,
+       LinkPreload) {
+  ResourceFetcher* fetcher = CreateFetcher();
+  fetcher->SetDeferUnusedPreloadExcludedResourceType(ExcludedResourceType());
+  KURL url = potentially_unused_preloads()[0];
+  FetchParameters fetch_params =
+      FetchParameters::CreateForTest(ResourceRequest(url));
+  fetch_params.SetLinkPreload(/*is_link_preload=*/true);
+  ResourceResponse response(url);
+  response.SetHttpStatusCode(200);
+
+  platform_->GetURLLoaderMockFactory()->RegisterURL(
+      url, WrappedResourceResponse(response),
+      test::PlatformTestDataPath(kTestResourceFilename));
+
+  Resource* resource = MockResource::Fetch(fetch_params, fetcher, nullptr);
+  ASSERT_TRUE(resource);
+
+  platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  switch (ExcludedResourceType()) {
+    case features::LcppDeferUnusedPreloadExcludedResourceType::kNone:
+      EXPECT_FALSE(resource->IsLoaded());
+      break;
+    case features::LcppDeferUnusedPreloadExcludedResourceType::kStyleSheet:
+      EXPECT_FALSE(resource->IsLoaded());
+      break;
+    case features::LcppDeferUnusedPreloadExcludedResourceType::kScript:
+      EXPECT_FALSE(resource->IsLoaded());
+      break;
+    case features::LcppDeferUnusedPreloadExcludedResourceType::kMock:
+      EXPECT_TRUE(resource->IsLoaded());
+      break;
+  }
+
+  EXPECT_TRUE(MemoryCache::Get()->Contains(resource));
+
+  static_cast<scheduler::FakeTaskRunner*>(fetcher->GetTaskRunner().get())
+      ->RunUntilIdle();
+  platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  EXPECT_TRUE(resource->IsLoaded());
+  EXPECT_TRUE(MemoryCache::Get()->Contains(resource));
+}
+
+class TransparentPlaceholderResourceFetcherTest
+    : public ResourceFetcherTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  TransparentPlaceholderResourceFetcherTest() {
+    if (GetParam()) {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kSimplifyLoadingTransparentPlaceholderImage);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kSimplifyLoadingTransparentPlaceholderImage);
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(TransparentPlaceholderResourceFetcherTest,
+                         TransparentPlaceholderResourceFetcherTest,
+                         testing::Bool());
+
+TEST_P(TransparentPlaceholderResourceFetcherTest, InspectorAttached) {
+  auto* observer = MakeGarbageCollected<TestResourceLoadObserver>();
+  observer->SetInterestedInAllRequests(true);
+
+  auto* fetcher = CreateFetcher();
+  fetcher->SetResourceLoadObserver(observer);
+  KURL url(
+      "data:image/gif;base64,R0lGODlhAQABAIAAAP///////"
+      "yH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==");
+  ResourceRequest request(url);
+  request.SetKnownTransparentPlaceholderImageIndex(0);
+
+  FetchParameters fetch_params =
+      FetchParameters::CreateForTest(std::move(request));
+  Resource* resource = MockResource::Fetch(fetch_params, fetcher, nullptr);
+  ASSERT_TRUE(resource);
+  platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  EXPECT_TRUE(resource->IsLoaded());
+  EXPECT_TRUE(MemoryCache::Get()->Contains(resource));
+
+  // Use the presence of |last_request| as an indicator that WillSendRequest()
+  // was called, which will happen if the feature is disabled or the inspector
+  // is open.
+  std::optional<PartialResourceRequest> last_request =
+      observer->GetLastRequest();
+  EXPECT_TRUE(last_request.has_value());
+}
+
+TEST_P(TransparentPlaceholderResourceFetcherTest, InspectorNotAttached) {
+  auto* observer = MakeGarbageCollected<TestResourceLoadObserver>();
+  observer->SetInterestedInAllRequests(false);
+
+  auto* fetcher = CreateFetcher();
+  fetcher->SetResourceLoadObserver(observer);
+  KURL url(
+      "data:image/gif;base64,R0lGODlhAQABAIAAAP///////"
+      "yH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==");
+  ResourceRequest request(url);
+  request.SetKnownTransparentPlaceholderImageIndex(0);
+
+  FetchParameters fetch_params =
+      FetchParameters::CreateForTest(std::move(request));
+  Resource* resource = MockResource::Fetch(fetch_params, fetcher, nullptr);
+  ASSERT_TRUE(resource);
+  platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  EXPECT_TRUE(resource->IsLoaded());
+  EXPECT_TRUE(MemoryCache::Get()->Contains(resource));
+
+  // Use the presence of |last_request| as an indicator that WillSendRequest()
+  // was called, which will happen if the feature is disabled or the inspector
+  // is open.
+  std::optional<PartialResourceRequest> last_request =
+      observer->GetLastRequest();
+  EXPECT_EQ(last_request.has_value(), !GetParam());
+}
+
 }  // namespace blink

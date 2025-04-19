@@ -49,6 +49,7 @@
 <translation id="2295140143284145483">ແບບສຳຫຼວດ</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/ວິນາທີ</translation>
 <translation id="2353636109065292463">ກຳລັງກວດການເຊື່ອມຕໍ່ອິນເຕີເນັດຂອງທ່ານ</translation>
+<translation id="2359808026110333948">ສືບຕໍ່</translation>
 <translation id="2388990488038464401">ໂທຫາເບີນີ້ຈາກໂທລະສັບຂອງທ່ານບໍ?</translation>
 <translation id="2435457462613246316">ສະ​ແດງ​ລະ​ຫັດ​ຜ່ານ</translation>
 <translation id="24452542372838207">ຂະຫຍາຍການແຈ້ງເຕືອນ</translation>
@@ -129,6 +130,7 @@
 <translation id="5574202486608032840">ລະບົບ <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="5583640892426849032">ລຶບຄືນຫຼັງ</translation>
 <translation id="5613020302032141669">ລູກສອນຊ້າຍ</translation>
+<translation id="5633029987065897167">ຫວ່າງເປົ່າ</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 ນາ​ທີ}other{# ນາ​ທີ}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{ເປີດນຳໃຊ້ມື້ນີ້}=1{ເປີດນຳໃຊ້ເມື່ອ 1 ມື້ກ່ອນ}other{ເປີດນຳໃຊ້ເມື່ອ # ມື້ກ່ອນ}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 ວັນ​ ແລະ }other{# ວັນ ແລະ }}</translation>

@@ -48,11 +48,12 @@
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_switches.h"
+#include "components/autofill/core/common/credit_card_network_identifiers.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/signin/public/base/signin_switches.h"
 #include "components/signin/public/identity_manager/account_managed_status_finder.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
-#include "components/sync/base/model_type.h"
+#include "components/sync/base/data_type.h"
 #include "components/sync/base/user_selectable_type.h"
 #include "components/sync/test/test_sync_service.h"
 #include "components/version_info/version_info.h"
@@ -67,8 +68,6 @@
 namespace autofill {
 
 namespace {
-
-constexpr char kPrimaryAccountEmail[] = "syncuser@example.com";
 
 using testing::Pointee;
 
@@ -142,16 +141,6 @@ class PaymentsDataManagerHelper : public PersonalDataManagerTestBase {
 
   PaymentsDataManager& payments_data_manager() {
     return *payments_data_manager_;
-  }
-
-  bool TurnOnSyncFeature() {
-    sync_service_.SetHasSyncConsent(true);
-    if (!sync_service_.IsSyncFeatureEnabled()) {
-      return false;
-    }
-    payments_data_manager().OnStateChanged(&sync_service_);
-    return payments_data_manager()
-        .IsSyncFeatureEnabledForPaymentsServerMetrics();
   }
 
   // Adds three local cards to the `payments_data_manager_`. The three cards are
@@ -348,7 +337,6 @@ TEST_F(PaymentsDataManagerTest,
   Iban server_iban(Iban::InstrumentId(1234567));
   server_iban.set_prefix(u"FR76");
   server_iban.set_suffix(u"0189");
-  server_iban.set_length(27);
   server_iban.set_use_date(AutofillClock::Now() - base::Days(2));
 
   AddLocalIban(local_iban);
@@ -598,7 +586,7 @@ TEST_F(PaymentsDataManagerTest, AddUpdateRemoveCreditCards) {
   cards.push_back(&credit_card2);
   ExpectSameElements(cards, payments_data_manager().GetCreditCards());
 
-  // Add a full server card.
+  // Add a server card.
   CreditCard credit_card3(base::Uuid::GenerateRandomV4().AsLowercaseString(),
                           test::kEmptyOrigin);
   test::SetCreditCardInfo(&credit_card3, "Jane Doe", "1111", "04", "2999", "1");
@@ -672,6 +660,8 @@ TEST_F(PaymentsDataManagerTest, UpdateLocalCvc) {
 
 // Test that verify add, update, remove server cvc function working as expected.
 TEST_F(PaymentsDataManagerTest, ServerCvc) {
+  base::test::ScopedFeatureList features(
+      features::kAutofillEnableCvcStorageAndFilling);
   const std::u16string kCvc = u"111";
   CreditCard credit_card = test::GetMaskedServerCard();
   SetServerCards({credit_card});
@@ -705,6 +695,8 @@ TEST_F(PaymentsDataManagerTest, ServerCvc) {
 
 // Test that verify clear server cvc function working as expected.
 TEST_F(PaymentsDataManagerTest, ClearServerCvc) {
+  base::test::ScopedFeatureList features(
+      features::kAutofillEnableCvcStorageAndFilling);
   // Add a server card cvc.
   const std::u16string kCvc = u"111";
   CreditCard credit_card = test::GetMaskedServerCard();
@@ -1195,40 +1187,10 @@ TEST_F(PaymentsDataManagerTest,
   EXPECT_EQ(0U, payments_data_manager().GetCreditCards().size());
 }
 
-// Tests that only the full server card is kept when deduping with a local
-// duplicate of it.
-TEST_F(PaymentsDataManagerTest,
-       DedupeCreditCardToSuggest_FullServerShadowsLocal) {
-  std::list<CreditCard*> credit_cards;
-
-  // Create 3 different local credit cards.
-  CreditCard local_card("287151C8-6AB1-487C-9095-28E80BE5DA15",
-                        test::kEmptyOrigin);
-  test::SetCreditCardInfo(&local_card, "Homer Simpson",
-                          "4234567890123456" /* Visa */, "01", "2999", "1");
-  local_card.set_use_count(3);
-  local_card.set_use_date(AutofillClock::Now() - base::Days(1));
-  credit_cards.push_back(&local_card);
-
-  // Create a full server card that is a duplicate of one of the local cards.
-  CreditCard full_server_card(CreditCard::RecordType::kFullServerCard, "c789");
-  test::SetCreditCardInfo(&full_server_card, "Homer Simpson",
-                          "4234567890123456" /* Visa */, "01", "2999", "1");
-  full_server_card.set_use_count(1);
-  full_server_card.set_use_date(AutofillClock::Now() - base::Days(15));
-  credit_cards.push_back(&full_server_card);
-
-  PaymentsDataManager::DedupeCreditCardToSuggest(&credit_cards);
-  ASSERT_EQ(1U, credit_cards.size());
-
-  const CreditCard* deduped_card = credit_cards.front();
-  EXPECT_TRUE(*deduped_card == full_server_card);
-}
-
-// Tests that only the local card is kept when deduping with a masked server
-// duplicate of it or vice-versa. This is checked based on the value assigned
-// during the for loop.
-TEST_F(PaymentsDataManagerTest, DedupeLocalCreditCardToSuggest) {
+// Tests that only the masked card is kept when deduping with a local duplicate
+// of it or vice-versa. This is checked based on the value assigned during the
+// for loop.
+TEST_F(PaymentsDataManagerTest, DedupeCreditCardToSuggest_MaskedIsKept) {
   std::list<CreditCard*> credit_cards;
 
   CreditCard local_card("1141084B-72D7-4B73-90CF-3D6AC154673B",
@@ -1251,8 +1213,7 @@ TEST_F(PaymentsDataManagerTest, DedupeLocalCreditCardToSuggest) {
   EXPECT_EQ(*credit_cards.front(), masked_card);
 }
 
-// Tests that different local, masked, and full server credit cards are not
-// deduped.
+// Tests that different local and server credit cards are not deduped.
 TEST_F(PaymentsDataManagerTest, DedupeCreditCardToSuggest_DifferentCards) {
   std::list<CreditCard*> credit_cards;
 
@@ -1270,21 +1231,10 @@ TEST_F(PaymentsDataManagerTest, DedupeCreditCardToSuggest_DifferentCards) {
                           "1");
   masked_card.set_use_count(3);
   masked_card.set_use_date(AutofillClock::Now() - base::Days(15));
-  // credit_card4.SetNetworkForMaskedCard(kVisaCard);
   credit_cards.push_back(&masked_card);
 
-  // Create a full server card that is slightly different of the two other
-  // cards.
-  CreditCard full_server_card(CreditCard::RecordType::kFullServerCard, "c789");
-  test::SetCreditCardInfo(&full_server_card, "Homer Simpson",
-                          "378282246310005" /* American Express */, "04",
-                          "2999", "1");
-  full_server_card.set_use_count(1);
-  full_server_card.set_use_date(AutofillClock::Now() - base::Days(15));
-  credit_cards.push_back(&full_server_card);
-
   PaymentsDataManager::DedupeCreditCardToSuggest(&credit_cards);
-  EXPECT_EQ(3U, credit_cards.size());
+  EXPECT_EQ(2U, credit_cards.size());
 }
 
 TEST_F(PaymentsDataManagerTest, DeleteLocalCreditCards) {
@@ -1461,7 +1411,7 @@ TEST_F(PaymentsDataManagerSyncTransportModeTest, SwitchServerStorages) {
   ASSERT_EQ(1U, payments_data_manager().GetServerCreditCards().size());
 
   // Switch to persistent storage.
-  sync_service_.SetHasSyncConsent(true);
+  sync_service_.SetSignedIn(signin::ConsentLevel::kSync);
   payments_data_manager().OnStateChanged(&sync_service_);
   WaitForOnPaymentsDataChanged();
 
@@ -1482,7 +1432,7 @@ TEST_F(PaymentsDataManagerSyncTransportModeTest, SwitchServerStorages) {
 
   // Switch back to the account storage, and verify that we are back to the
   // original card.
-  sync_service_.SetHasSyncConsent(false);
+  sync_service_.SetSignedIn(signin::ConsentLevel::kSignin);
   payments_data_manager().OnStateChanged(&sync_service_);
   WaitForOnPaymentsDataChanged();
 
@@ -1604,7 +1554,7 @@ TEST_F(PaymentsDataManagerSyncTransportModeTest,
 TEST_F(PaymentsDataManagerTest, KeepExistingLocalDataOnSignIn) {
   // Sign out.
   identity_test_env_.ClearPrimaryAccount();
-  sync_service_.SetAccountInfo(CoreAccountInfo());
+  sync_service_.SetSignedOut();
   EXPECT_TRUE(sync_service_.GetAccountInfo().IsEmpty());
   EXPECT_EQ(0U, payments_data_manager().GetCreditCards().size());
 
@@ -1621,16 +1571,15 @@ TEST_F(PaymentsDataManagerTest, KeepExistingLocalDataOnSignIn) {
   EXPECT_EQ(1U, payments_data_manager().GetCreditCards().size());
 
   // Sign in.
-  identity_test_env_.MakePrimaryAccountAvailable("test@gmail.com",
-                                                 signin::ConsentLevel::kSync);
-  sync_service_.SetAccountInfo(
-      identity_test_env_.identity_manager()->GetPrimaryAccountInfo(
-          signin::ConsentLevel::kSync));
-  sync_service_.SetHasSyncConsent(true);
+  AccountInfo account = identity_test_env_.MakePrimaryAccountAvailable(
+      "test@gmail.com", signin::ConsentLevel::kSync);
+  sync_service_.SetSignedIn(signin::ConsentLevel::kSync, account);
   EXPECT_TRUE(
       sync_service_.IsSyncFeatureEnabled() &&
       sync_service_.GetActiveDataTypes().Has(syncer::AUTOFILL_WALLET_DATA));
-  ASSERT_TRUE(TurnOnSyncFeature());
+  payments_data_manager().OnStateChanged(&sync_service_);
+  ASSERT_TRUE(
+      payments_data_manager().IsSyncFeatureEnabledForPaymentsServerMetrics());
 
   // Check saved local card should be not lost.
   EXPECT_EQ(1U, payments_data_manager().GetCreditCards().size());
@@ -2507,7 +2456,7 @@ TEST_F(PaymentsDataManagerTest, IsServerCard_DuplicateOfMaskedServerCard) {
 
   SetServerCards(server_cards);
 
-  // Add a dupe local card of a full server card.
+  // Add a dupe local card of the masked server card.
   CreditCard local_card("287151C8-6AB1-487C-9095-28E80BE5DA15",
                         test::kEmptyOrigin);
   test::SetCreditCardInfo(&local_card, "Emmet Dalton",
@@ -2562,7 +2511,10 @@ TEST_F(PaymentsDataManagerTest, IsServerCard_UniqueLocalCard) {
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS) && !BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(PaymentsDataManagerSyncTransportModeTest,
-       ShouldShowCardsFromAccountOption) {
+       ShouldShowCardsFromAccountOption_FlagOff) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      features::kAutofillRemovePaymentsButterDropdown);
   // The method should return false if one of these is not respected:
   //   * The sync_service is not null
   //   * The sync feature is not enabled
@@ -2615,17 +2567,79 @@ TEST_F(PaymentsDataManagerSyncTransportModeTest,
 
   // Set that the user enabled the sync feature. Check that the function now
   // returns false.
-  sync_service_.SetHasSyncConsent(true);
+  sync_service_.SetSignedIn(signin::ConsentLevel::kSync);
   EXPECT_FALSE(payments_data_manager().ShouldShowCardsFromAccountOption());
 
   // Re-disable the sync feature. Check that the function now returns true.
-  sync_service_.SetHasSyncConsent(false);
+  sync_service_.SetSignedIn(signin::ConsentLevel::kSignin);
   EXPECT_TRUE(payments_data_manager().ShouldShowCardsFromAccountOption());
 
   // Set a null sync service. Check that the function now returns false.
   payments_data_manager().SetSyncServiceForTest(nullptr);
   EXPECT_FALSE(payments_data_manager().ShouldShowCardsFromAccountOption());
 }
+
+TEST_F(PaymentsDataManagerSyncTransportModeTest,
+       ShouldShowCardsFromAccountOption_FlagOn) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kAutofillRemovePaymentsButterDropdown);
+  // Set up a new, non-sync-consented account, with a card, in transport mode.
+  std::vector<CreditCard> server_cards;
+  server_cards.emplace_back(CreditCard::RecordType::kMaskedServerCard, "c789");
+  test::SetCreditCardInfo(&server_cards.back(), "Clyde Barrow",
+                          "0005" /* American Express */, "04", "2999", "1");
+  server_cards.back().SetNetworkForMaskedCard(kAmericanExpressCard);
+  SetServerCards(server_cards);
+  payments_data_manager().Refresh();
+  WaitForOnPaymentsDataChanged();
+
+  // The function should returns false because the
+  // kAutofillRemovePaymentsButterDropdown flag is enabled.
+  EXPECT_FALSE(payments_data_manager().ShouldShowCardsFromAccountOption());
+}
+
+TEST_F(PaymentsDataManagerSyncTransportModeTest,
+       ShouldSuggestServerPaymentMethods_FlagOff) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      features::kAutofillRemovePaymentsButterDropdown);
+
+  // Set up a new, non-sync-consented account in transport mode.
+  ASSERT_TRUE(identity_test_env_.identity_manager()->HasPrimaryAccount(
+      signin::ConsentLevel::kSignin));
+  ASSERT_FALSE(sync_service_.HasSyncConsent());
+  sync_service_.GetUserSettings()->SetSelectedTypes(
+      /*sync_everything=*/false,
+      /*types=*/{syncer::UserSelectableType::kAutofill,
+                 syncer::UserSelectableType::kPayments});
+
+  // Server payment methods should not be suggested because the user has not
+  // acknowledged the notice to begin seeing them.
+  EXPECT_FALSE(
+      test_api(payments_data_manager()).ShouldSuggestServerPaymentMethods());
+}
+
+TEST_F(PaymentsDataManagerSyncTransportModeTest,
+       ShouldSuggestServerPaymentMethods_FlagOn) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kAutofillRemovePaymentsButterDropdown);
+
+  // Set up a new, non-sync-consented account in transport mode.
+  ASSERT_TRUE(identity_test_env_.identity_manager()->HasPrimaryAccount(
+      signin::ConsentLevel::kSignin));
+  ASSERT_FALSE(sync_service_.HasSyncConsent());
+  sync_service_.GetUserSettings()->SetSelectedTypes(
+      /*sync_everything=*/false,
+      /*types=*/{syncer::UserSelectableType::kAutofill,
+                 syncer::UserSelectableType::kPayments});
+
+  // Server payment methods should be suggested because the flag is enabled.
+  EXPECT_TRUE(
+      test_api(payments_data_manager()).ShouldSuggestServerPaymentMethods());
+}
+
 #else   // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS) &&
         // !BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(PaymentsDataManagerSyncTransportModeTest,
@@ -2682,11 +2696,11 @@ TEST_F(PaymentsDataManagerSyncTransportModeTest,
 
   // Set that the user enabled the sync feature. Check that the function still
   // returns false.
-  sync_service_.SetHasSyncConsent(true);
+  sync_service_.SetSignedIn(signin::ConsentLevel::kSync);
   EXPECT_FALSE(payments_data_manager().ShouldShowCardsFromAccountOption());
 
   // Re-disable the sync feature. Check that the function still returns false.
-  sync_service_.SetHasSyncConsent(false);
+  sync_service_.SetSignedIn(signin::ConsentLevel::kSignin);
   EXPECT_FALSE(payments_data_manager().ShouldShowCardsFromAccountOption());
 
   // Set a null sync service. Check that the function still returns false.
@@ -2732,22 +2746,20 @@ TEST_F(PaymentsDataManagerSyncTransportModeTest,
   // Check that the sync state is |SignedOut| when the account info is empty.
   {
     identity_test_env_.ClearPrimaryAccount();
-    sync_service_.SetAccountInfo(CoreAccountInfo());
-    sync_service_.SetHasSyncConsent(false);
+    sync_service_.SetSignedOut();
     EXPECT_EQ(AutofillMetrics::PaymentsSigninState::kSignedOut,
               payments_data_manager().GetPaymentsSigninStateForMetrics());
   }
 #endif
 
   // Simulate that the user has enabled the sync feature.
-  AccountInfo primary_account_info;
-  primary_account_info.email = kPrimaryAccountEmail;
-  sync_service_.SetAccountInfo(primary_account_info);
-  sync_service_.SetHasSyncConsent(true);
-// MakePrimaryAccountAvailable is not supported on CrOS.
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
-  identity_test_env_.MakePrimaryAccountAvailable(primary_account_info.email,
-                                                 signin::ConsentLevel::kSync);
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // MakePrimaryAccountAvailable is not supported on CrOS.
+  sync_service_.SetSignedIn(signin::ConsentLevel::kSync);
+#else
+  AccountInfo account_info = identity_test_env_.MakePrimaryAccountAvailable(
+      "syncuser@example.com", signin::ConsentLevel::kSync);
+  sync_service_.SetSignedIn(signin::ConsentLevel::kSync, account_info);
 #endif
 
   // Check that the sync state is |SignedInAndSyncFeature| if the sync feature
@@ -2773,8 +2785,7 @@ TEST_F(PaymentsDataManagerSyncTransportModeTest, OnUserAcceptedUpstreamOffer) {
   CoreAccountInfo active_info =
       identity_test_env_.identity_manager()->GetPrimaryAccountInfo(
           signin::ConsentLevel::kSignin);
-  sync_service_.SetAccountInfo(active_info);
-  sync_service_.SetHasSyncConsent(false);
+  sync_service_.SetSignedIn(signin::ConsentLevel::kSignin, active_info);
 
   sync_service_.GetUserSettings()->SetSelectedTypes(
       /*sync_everything=*/false,
@@ -2826,8 +2837,7 @@ TEST_F(PaymentsDataManagerSyncTransportModeTest, OnUserAcceptedUpstreamOffer) {
   // kSignedOut
   ///////////////////////////////////////////////////////////
   identity_test_env_.ClearPrimaryAccount();
-  sync_service_.SetAccountInfo(CoreAccountInfo());
-  sync_service_.SetHasSyncConsent(false);
+  sync_service_.SetSignedOut();
   {
     EXPECT_TRUE(sync_service_.GetAccountInfo().IsEmpty());
 
@@ -2844,8 +2854,7 @@ TEST_F(PaymentsDataManagerSyncTransportModeTest, OnUserAcceptedUpstreamOffer) {
   ///////////////////////////////////////////////////////////
   identity_test_env_.MakePrimaryAccountAvailable(active_info.email,
                                                  signin::ConsentLevel::kSync);
-  sync_service_.SetAccountInfo(active_info);
-  sync_service_.SetHasSyncConsent(true);
+  sync_service_.SetSignedIn(signin::ConsentLevel::kSync, active_info);
   {
     EXPECT_TRUE(sync_service_.IsSyncFeatureEnabled());
 

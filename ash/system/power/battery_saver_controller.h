@@ -75,6 +75,8 @@ class ASH_EXPORT BatterySaverController : public PowerStatus::Observer {
 
   void ClearBatterySaverModeToast();
 
+  void StopObservingPowerStatusForTest();
+
  private:
   // Types used for metrics tracking.
   struct EnableRecord {
@@ -92,8 +94,8 @@ class ASH_EXPORT BatterySaverController : public PowerStatus::Observer {
 
   std::optional<int> GetRemainingMinutes(const PowerStatus* status);
 
-  raw_ptr<PrefService> local_state_;  // Non-owned and must
-                                      // out-live this.
+  // Non-owned and must out-live this. May be null in some test contexts.
+  raw_ptr<PrefService> local_state_;
 
   base::ScopedObservation<PowerStatus, PowerStatus::Observer>
       power_status_observation_{this};

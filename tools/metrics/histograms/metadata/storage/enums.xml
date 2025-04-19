@@ -38,17 +38,6 @@ chromium-metrics-reviews@google.com.
   <int value="1" label="Inherited"/>
 </enum>
 
-<enum name="ClearDataSiteBlacklistCrossedReason">
-  <int value="0" label="Durable"/>
-  <int value="1" label="Notifications"/>
-  <int value="2" label="Engagement"/>
-  <int value="3" label="Notifications and Engagement"/>
-  <int value="4" label="Durable and Engagement"/>
-  <int value="5" label="Notifications and Durable"/>
-  <int value="6" label="Notifications, Durable, and Engagement"/>
-  <int value="7" label="Unknown"/>
-</enum>
-
 <enum name="ClearSiteDataParameters">
   <int value="0" label="No valid types"/>
   <int value="1" label="Cookies"/>
@@ -112,6 +101,41 @@ chromium-metrics-reviews@google.com.
   <int value="9" label="Filenames"/>
 </enum>
 
+<enum name="FileReaderLoaderFailureType">
+  <int value="0" label="Mojo pipe creation failed"/>
+  <int value="1" label="Data incomplete after synchronous reading"/>
+  <int value="2" label="OnComplete never called after synchronous reading"/>
+  <int value="3"
+      label="Backend read error, see Storage.Blob.FileReaderLoader.ReadError"/>
+  <int value="4" label="The size read does not match the size reported"/>
+  <int value="5"
+      label="The data pipe is not readable and there are bytes left to read"/>
+  <int value="6" label="The data pipe closed early"/>
+  <int value="7" label="Data pipe reading failed with an unexpected error"/>
+  <int value="8" label="File reader client reporter a problem"/>
+</enum>
+
+<enum name="FileReaderLoaderMojoResult">
+  <int value="0" label="MOJO_RESULT_OK"/>
+  <int value="1" label="MOJO_RESULT_CANCELLED"/>
+  <int value="2" label="MOJO_RESULT_UNKNOWN"/>
+  <int value="3" label="MOJO_RESULT_INVALID_ARGUMENT"/>
+  <int value="4" label="MOJO_RESULT_DEADLINE_EXCEEDED"/>
+  <int value="5" label="MOJO_RESULT_NOT_FOUND"/>
+  <int value="6" label="MOJO_RESULT_ALREADY_EXISTS"/>
+  <int value="7" label="MOJO_RESULT_PERMISSION_DENIED"/>
+  <int value="8" label="MOJO_RESULT_RESOURCE_EXHAUSTED"/>
+  <int value="9" label="MOJO_RESULT_FAILED_PRECONDITION"/>
+  <int value="10" label="MOJO_RESULT_ABORTED"/>
+  <int value="11" label="MOJO_RESULT_OUT_OF_RANGE"/>
+  <int value="12" label="MOJO_RESULT_UNIMPLEMENTED"/>
+  <int value="13" label="MOJO_RESULT_INTERNAL"/>
+  <int value="14" label="MOJO_RESULT_UNAVAILABLE"/>
+  <int value="15" label="MOJO_RESULT_DATA_LOSS"/>
+  <int value="16" label="MOJO_RESULT_BUSY"/>
+  <int value="17" label="MOJO_RESULT_SHOULD_WAIT"/>
+</enum>
+
 <enum name="FileSystemAccessPermissionRequestOutcome">
   <int value="0" label="Blocked by Content Setting"/>
   <int value="1" label="Blocked from invalid frame"/>
@@ -133,6 +157,18 @@ chromium-metrics-reviews@google.com.
   <int value="4" label="Dismissed by user"/>
 </enum>
 
+<enum name="FileSystemAccessWatchWithChangeInfoResult">
+  <int value="0" label="Successfully setup watch"/>
+  <int value="1" label="Linux, the OS inotify limit was reached"/>
+  <int value="2"
+      label="Windows, a fatal error occured when trying to open a file entry
+             to watch"/>
+  <int value="3"
+      label="Windows, reached the root directory and couldn't watch it"/>
+  <int value="4" label="Windows, error when calling CreateIoCompletionPort"/>
+  <int value="5" label="Windows, error when calling ReadDirectoryChangesW"/>
+</enum>
+
 <enum name="ImportantSitesReason">
   <int value="0" label="Engagement"/>
   <int value="1" label="Durable"/>
@@ -140,6 +176,73 @@ chromium-metrics-reviews@google.com.
   <int value="3" label="Home Screen"/>
   <int value="4" label="Notifications"/>
 </enum>
+
+<!-- LINT.IfChange(InterestGroupStorageInitializationResult) -->
+
+<enum name="InterestGroupStorageInitializationResult">
+  <int value="0" label="SuccessAlreadyCurrent"/>
+  <int value="1" label="SuccessUpgraded"/>
+  <int value="2" label="SuccessCreateSchema"/>
+  <int value="3" label="SuccessCreateSchemaAfterIncompatibleRaze"/>
+  <int value="4" label="SuccessCreateSchemaAfterNoMetaTableRaze"/>
+  <int value="5" label="FailedCreateInMemory"/>
+  <int value="6" label="FailedCreateDirectory"/>
+  <int value="7" label="FailedCreateFile"/>
+  <int value="8" label="FailedToRazeIncompatible"/>
+  <int value="9" label="FailedToRazeNoMetaTable"/>
+  <int value="10" label="FailedMetaTableInit"/>
+  <int value="11" label="FailedCreateSchema"/>
+  <int value="12" label="FailedCreateSchemaAfterIncompatibleRaze"/>
+  <int value="13" label="FailedCreateSchemaAfterNoMetaTableRaze"/>
+  <int value="14" label="FailedUpgradeDB"/>
+</enum>
+
+<!-- LINT.ThenChange(//content/browser/interest_group/interest_group_storage.cc:InterestGroupStorageInitializationResult) -->
+
+<!-- LINT.IfChange(InterestGroupStorageJSONDeserializationResult) -->
+
+<enum name="InterestGroupStorageJSONDeserializationResult">
+  <int value="0" label="Succeeded"/>
+  <int value="1" label="Failed"/>
+</enum>
+
+<!-- LINT.ThenChange(//content/browser/interest_group/interest_group_storage.cc:InterestGroupStorageJSONDeserializationResult) -->
+
+<!-- LINT.IfChange(InterestGroupStorageJSONSerializationResult) -->
+
+<enum name="InterestGroupStorageJSONSerializationResult">
+  <int value="0" label="Succeeded"/>
+  <int value="1" label="Failed"/>
+</enum>
+
+<!-- LINT.ThenChange(//content/browser/interest_group/interest_group_storage.cc:InterestGroupStorageJSONSerializationResult) -->
+
+<!-- LINT.IfChange(InterestGroupStorageProtoDeserializationResult) -->
+
+<enum name="InterestGroupStorageProtoDeserializationResult">
+  <int value="0" label="Succeeded"/>
+  <int value="1" label="Failed"/>
+</enum>
+
+<!-- LINT.ThenChange(//content/browser/interest_group/interest_group_storage.cc:InterestGroupStorageProtoDeserializationResult) -->
+
+<!-- LINT.IfChange(InterestGroupStorageProtoSerializationResult) -->
+
+<enum name="InterestGroupStorageProtoSerializationResult">
+  <int value="0" label="Succeeded"/>
+  <int value="1" label="Failed"/>
+</enum>
+
+<!-- LINT.ThenChange(//content/browser/interest_group/interest_group_storage.cc:InterestGroupStorageProtoSerializationResult) -->
+
+<!-- LINT.IfChange(InterestGroupStorageVacuumResult) -->
+
+<enum name="InterestGroupStorageVacuumResult">
+  <int value="0" label="Succeeded"/>
+  <int value="1" label="Failed"/>
+</enum>
+
+<!-- LINT.ThenChange(//content/browser/interest_group/interest_group_storage.cc:InterestGroupStorageVacuumResult) -->
 
 <enum name="RequestStorageResult">
   <int value="0" label="Approved due to existing storage access"/>
@@ -448,6 +551,18 @@ chromium-metrics-reviews@google.com.
   <int value="2" label="The user clicked on the positive button."/>
 </enum>
 
+<enum name="SyncFileSystemNotificationSource">
+  <int value="0" label="XMPP"/>
+  <int value="1" label="Polling"/>
+</enum>
+
+<enum name="SyncFileSystemSyncAction">
+  <int value="0" label="None"/>
+  <int value="1" label="Added"/>
+  <int value="2" label="Updated"/>
+  <int value="3" label="Deleted"/>
+</enum>
+
 <enum name="TopLevelStorageAccessRequestOutcome">
   <summary>
     Possible outcomes of a Top-Level Storage Access API permission request.
@@ -461,6 +576,7 @@ chromium-metrics-reviews@google.com.
       label="Denied by missing prerequisite (user gesture, feature enabled)"/>
   <int value="6" label="(Obsolete) Dismissed by user"/>
   <int value="7" label="(Obsolete) Reused previous decision (made by user)"/>
+  <int value="8" label="Access was denied through cookie settings"/>
 </enum>
 
 </enums>

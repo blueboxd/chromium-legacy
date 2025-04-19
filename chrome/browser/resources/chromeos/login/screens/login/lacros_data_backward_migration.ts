@@ -14,12 +14,14 @@ import '../../components/oobe_icons.html.js';
 import '../../components/oobe_slide.js';
 
 import {PolymerElementProperties} from '//resources/polymer/v3_0/polymer/interfaces.js';
-import {mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {LoginScreenBehavior, LoginScreenBehaviorInterface} from '../../components/behaviors/login_screen_behavior.js';
-import {MultiStepBehavior, MultiStepBehaviorInterface} from '../../components/behaviors/multi_step_behavior.js';
-import {OobeDialogHostBehavior, OobeDialogHostBehaviorInterface} from '../../components/behaviors/oobe_dialog_host_behavior.js';
-import {OobeI18nMixin, OobeI18nMixinInterface} from '../../components/mixins/oobe_i18n_mixin.js';
+import {LoginScreenMixin} from '../../components/mixins/login_screen_mixin.js';
+import {MultiStepMixin} from '../../components/mixins/multi_step_mixin.js';
+import {OobeDialogHostMixin} from '../../components/mixins/oobe_dialog_host_mixin.js';
+import {OobeI18nMixin} from '../../components/mixins/oobe_i18n_mixin.js';
+import {LacrosDataBackwardMigrationPageCallbackRouter, LacrosDataBackwardMigrationPageHandlerRemote} from '../../mojom-webui/screens_login.mojom-webui.js';
+import {OobeScreensFactoryBrowserProxy} from '../../oobe_screens_factory_proxy.js';
 
 import {getTemplate} from './lacros_data_backward_migration.html.js';
 
@@ -28,18 +30,8 @@ enum LacrosDataBackwardMigrationStep {
   ERROR = 'error',
 }
 
-const LacrosDataBackwardMigrationScreenElementBase = mixinBehaviors(
-    [
-      OobeDialogHostBehavior,
-      LoginScreenBehavior,
-      MultiStepBehavior,
-    ],
-    OobeI18nMixin(PolymerElement)) as { new (): PolymerElement
-      & OobeDialogHostBehaviorInterface
-      & OobeI18nMixinInterface
-      & LoginScreenBehaviorInterface
-      & MultiStepBehaviorInterface,
-  };
+const LacrosDataBackwardMigrationScreenElementBase = OobeDialogHostMixin(
+    LoginScreenMixin(MultiStepMixin(OobeI18nMixin(PolymerElement))));
 
 export class LacrosDataBackwardMigrationScreen extends
     LacrosDataBackwardMigrationScreenElementBase {
@@ -61,6 +53,25 @@ export class LacrosDataBackwardMigrationScreen extends
   }
 
   private progressValue: number;
+  private callbackRouter: LacrosDataBackwardMigrationPageCallbackRouter;
+  private handler: LacrosDataBackwardMigrationPageHandlerRemote;
+
+  constructor() {
+    super();
+    this.callbackRouter = new LacrosDataBackwardMigrationPageCallbackRouter();
+    this.handler = new LacrosDataBackwardMigrationPageHandlerRemote();
+    OobeScreensFactoryBrowserProxy.getInstance()
+        .screenFactory
+        .establishLacrosDataBackwardMigrationScreenPipe(
+            this.handler.$.bindNewPipeAndPassReceiver())
+        .then((response: any) => {
+          this.callbackRouter.$.bindHandle(response.pending.handle);
+        });
+    this.callbackRouter.setProgressValue.addListener(
+        this.setProgressValue.bind(this));
+    this.callbackRouter.setFailureStatus.addListener(
+        this.setFailureStatus.bind(this));
+  }
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
   override defaultUIStep(): string {
@@ -69,13 +80,6 @@ export class LacrosDataBackwardMigrationScreen extends
 
   override get UI_STEPS() {
     return LacrosDataBackwardMigrationStep;
-  }
-
-  override get EXTERNAL_API(): string[] {
-    return [
-      'setProgressValue',
-      'setFailureStatus',
-    ];
   }
 
   /**
@@ -99,7 +103,7 @@ export class LacrosDataBackwardMigrationScreen extends
   }
 
   private onCancelButtonClicked() {
-    this.userActed('cancel');
+    this.handler.onCancelButtonClicked();
   }
 }
 

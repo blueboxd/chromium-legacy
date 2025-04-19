@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/ui/prefs/pref_watcher.h"
 
 #include "base/functional/bind.h"
@@ -69,6 +74,7 @@ const char* const kWebPrefsToObserve[] = {
 #else
     prefs::kAccessibilityFocusHighlightEnabled,
 #endif
+    prefs::kPageColorsBlockList,
 };
 
 const int kWebPrefsToObserveLength = std::size(kWebPrefsToObserve);
@@ -198,6 +204,9 @@ PrefWatcherFactory::PrefWatcherFactory()
               // TODO(crbug.com/40257657): Check if this service is needed in
               // Guest mode.
               .WithGuest(ProfileSelection::kOwnInstance)
+              // TODO(crbug.com/41488885): Check if this service is needed for
+              // Ash Internals.
+              .WithAshInternals(ProfileSelection::kOwnInstance)
               .Build()) {
   DependsOn(TrackingProtectionSettingsFactory::GetInstance());
 }

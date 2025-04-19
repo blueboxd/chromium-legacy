@@ -83,12 +83,9 @@ struct UnsafeResource {
   GURL navigation_url;
   GURL referrer_url;
   std::vector<GURL> redirect_urls;
-  bool is_subresource;
-  bool is_subframe;
   safe_browsing::SBThreatType threat_type;
   safe_browsing::ThreatMetadata threat_metadata;
   safe_browsing::RTLookupResponse rt_lookup_response;
-  network::mojom::RequestDestination request_destination;
   UrlCheckCallback callback;  // This is called back on |callback_sequence|.
   scoped_refptr<base::SequencedTaskRunner> callback_sequence;
   // TODO(crbug.com/40686246): |weak_web_state| is only used on iOS, and

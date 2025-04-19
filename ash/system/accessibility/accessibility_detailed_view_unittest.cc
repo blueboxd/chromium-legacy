@@ -27,6 +27,7 @@
 #include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/ax_enums.mojom-shared.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/view.h"
 #include "ui/views/view_utils.h"
@@ -123,6 +124,11 @@ void EnableColorCorrection(bool enabled) {
       enabled);
 }
 
+void EnableReducedAnimations(bool enabled) {
+  Shell::Get()->accessibility_controller()->reduced_animations().SetEnabled(
+      enabled);
+}
+
 speech::LanguageCode en_us() {
   return speech::LanguageCode::kEnUs;
 }
@@ -134,7 +140,7 @@ speech::LanguageCode fr_fr() {
 // Returns true if `view` is marked checked for accessibility.
 bool IsCheckedForAccessibility(views::View* view) {
   ui::AXNodeData node_data;
-  view->GetAccessibleNodeData(&node_data);
+  view->GetViewAccessibility().GetAccessibleNodeData(&node_data);
   return node_data.GetCheckedState() == ax::mojom::CheckedState::kTrue;
 }
 
@@ -155,7 +161,8 @@ class AccessibilityDetailedViewTest : public AshTestBase,
   AccessibilityDetailedViewTest() {
     scoped_feature_list_.InitWithFeatures(
         {media::kLiveCaption, ash::features::kOnDeviceSpeechRecognition,
-         ::features::kAccessibilityFaceGaze},
+         ::features::kAccessibilityFaceGaze,
+         ::features::kAccessibilityReducedAnimationsInKiosk},
         {});
   }
   AccessibilityDetailedViewTest(const AccessibilityDetailedViewTest&) = delete;
@@ -252,6 +259,10 @@ class AccessibilityDetailedViewTest : public AshTestBase,
     ClickView(detailed_menu_->sticky_keys_view_);
   }
 
+  void ClickReducedAnimationsOnDetailMenu() {
+    ClickView(detailed_menu_->reduced_animations_view_);
+  }
+
   void ClickSwitchAccessOnDetailMenu() {
     ClickView(detailed_menu_->switch_access_view_);
   }
@@ -334,6 +345,10 @@ class AccessibilityDetailedViewTest : public AshTestBase,
 
   bool IsStickyKeysMenuShownOnDetailMenu() const {
     return detailed_menu_->sticky_keys_view_;
+  }
+
+  bool IsReducedAnimationsShownOnDetailMenu() const {
+    return detailed_menu_->reduced_animations_view_;
   }
 
   bool IsSwitchAccessShownOnDetailMenu() const {
@@ -461,6 +476,11 @@ class AccessibilityDetailedViewTest : public AshTestBase,
                                  detailed_menu_->sticky_keys_view_);
   }
 
+  bool IsReducedAnimationsEnabledOnDetailMenu() const {
+    return IsEnabledOnDetailMenu(controller_->reduced_animations().enabled(),
+                                 detailed_menu_->reduced_animations_view_);
+  }
+
   bool IsSwitchAccessEnabledOnDetailMenu() const {
     return IsEnabledOnDetailMenu(controller_->switch_access().enabled(),
                                  detailed_menu_->switch_access_view_);
@@ -473,6 +493,14 @@ class AccessibilityDetailedViewTest : public AshTestBase,
 
   const char* GetDetailedViewClassName() {
     return detailed_menu_->GetClassName();
+  }
+
+  void SetUpKioskSession() {
+    auto* session_controller = Shell::Get()->session_controller();
+    SessionInfo info;
+    info.state = session_controller->GetSessionState();
+    info.is_running_in_app_mode = true;
+    session_controller->SetSessionInfo(info);
   }
 
   AccessibilityController* controller() { return controller_; }
@@ -525,6 +553,9 @@ class AccessibilityDetailedViewTest : public AshTestBase,
   }
   views::View* sticky_keys_view() const {
     return detailed_menu_->sticky_keys_view_;
+  }
+  views::View* reduced_animations_view() const {
+    return detailed_menu_->reduced_animations_view_;
   }
   views::View* switch_access_view() const {
     return detailed_menu_->switch_access_view_;
@@ -581,6 +612,9 @@ class AccessibilityDetailedViewTest : public AshTestBase,
   }
   HoverHighlightView* sticky_keys_top_view() const {
     return detailed_menu_->sticky_keys_top_view_;
+  }
+  HoverHighlightView* reduced_animations_top_view() const {
+    return detailed_menu_->reduced_animations_top_view_;
   }
   HoverHighlightView* switch_access_top_view() const {
     return detailed_menu_->switch_access_top_view_;
@@ -982,6 +1016,8 @@ TEST_F(AccessibilityDetailedViewTest, CheckMenuVisibilityOnDetailMenu) {
   EXPECT_TRUE(IsSwitchAccessShownOnDetailMenu());
   EXPECT_TRUE(IsColorCorrectionShownOnDetailMenu());
   EXPECT_TRUE(IsFaceGazeShownOnDetailMenu());
+  // Reduced animations not available outside of kiosk.
+  EXPECT_FALSE(IsReducedAnimationsShownOnDetailMenu());
   CloseDetailMenu();
 
   // Simulate screen lock.
@@ -1007,6 +1043,8 @@ TEST_F(AccessibilityDetailedViewTest, CheckMenuVisibilityOnDetailMenu) {
   EXPECT_TRUE(IsSwitchAccessShownOnDetailMenu());
   EXPECT_TRUE(IsColorCorrectionShownOnDetailMenu());
   EXPECT_TRUE(IsFaceGazeShownOnDetailMenu());
+  // Reduced animations not available outside of kiosk.
+  EXPECT_FALSE(IsReducedAnimationsShownOnDetailMenu());
   CloseDetailMenu();
   UnblockUserSession();
 
@@ -1033,6 +1071,8 @@ TEST_F(AccessibilityDetailedViewTest, CheckMenuVisibilityOnDetailMenu) {
   EXPECT_TRUE(IsSwitchAccessShownOnDetailMenu());
   EXPECT_TRUE(IsColorCorrectionShownOnDetailMenu());
   EXPECT_TRUE(IsFaceGazeShownOnDetailMenu());
+  // Reduced animations not available outside of kiosk.
+  EXPECT_FALSE(IsReducedAnimationsShownOnDetailMenu());
   CloseDetailMenu();
   UnblockUserSession();
 }
@@ -1239,6 +1279,114 @@ TEST_F(AccessibilityDetailedViewTest, ClickDetailMenu) {
   EXPECT_FALSE(accessibility_controller->face_gaze().enabled());
 }
 
+TEST_F(AccessibilityDetailedViewTest, KioskModeShowsReducedAnimations) {
+  SetUpKioskSession();
+
+  CreateDetailedMenu();
+  EXPECT_TRUE(IsSpokenFeedbackMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsSelectToSpeakShownOnDetailMenu());
+  EXPECT_TRUE(IsDictationShownOnDetailMenu());
+  EXPECT_TRUE(IsHighContrastMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsScreenMagnifierMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsDockedMagnifierShownOnDetailMenu());
+  EXPECT_TRUE(IsAutoclickMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsVirtualKeyboardMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsHelpAvailableOnDetailMenu());
+  EXPECT_TRUE(IsSettingsAvailableOnDetailMenu());
+  EXPECT_TRUE(IsLargeCursorMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsLiveCaptionShownOnDetailMenu());
+  EXPECT_TRUE(IsMonoAudioMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsCaretHighlightMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsHighlightMouseCursorMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsHighlightKeyboardFocusMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsStickyKeysMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsSwitchAccessShownOnDetailMenu());
+  EXPECT_TRUE(IsColorCorrectionShownOnDetailMenu());
+  EXPECT_TRUE(IsFaceGazeShownOnDetailMenu());
+  EXPECT_TRUE(IsReducedAnimationsShownOnDetailMenu());
+  CloseDetailMenu();
+}
+
+TEST_F(AccessibilityDetailedViewTest, KioskModeReducedAnimationsView) {
+  SetUpKioskSession();
+  // Enabling reduced animations.
+  EnableReducedAnimations(true);
+  CreateDetailedMenu();
+  EXPECT_FALSE(IsSpokenFeedbackEnabledOnDetailMenu());
+  EXPECT_FALSE(IsSelectToSpeakEnabledOnDetailMenu());
+  EXPECT_FALSE(IsDictationEnabledOnDetailMenu());
+  EXPECT_FALSE(IsFaceGazeEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighContrastEnabledOnDetailMenu());
+  EXPECT_FALSE(IsScreenMagnifierEnabledOnDetailMenu());
+  EXPECT_FALSE(IsDockedMagnifierEnabledOnDetailMenu());
+  EXPECT_FALSE(IsLargeCursorEnabledOnDetailMenu());
+  EXPECT_FALSE(IsLiveCaptionEnabledOnDetailMenu());
+  EXPECT_FALSE(IsAutoclickEnabledOnDetailMenu());
+  EXPECT_FALSE(IsVirtualKeyboardEnabledOnDetailMenu());
+  EXPECT_FALSE(IsMonoAudioEnabledOnDetailMenu());
+  EXPECT_FALSE(IsCaretHighlightEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightMouseCursorEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightKeyboardFocusEnabledOnDetailMenu());
+  EXPECT_FALSE(IsStickyKeysEnabledOnDetailMenu());
+  ASSERT_TRUE(IsReducedAnimationsShownOnDetailMenu());
+  EXPECT_TRUE(IsReducedAnimationsEnabledOnDetailMenu());
+  CloseDetailMenu();
+
+  // Disabling reduced animations.
+  EnableReducedAnimations(false);
+  CreateDetailedMenu();
+  EXPECT_FALSE(IsSpokenFeedbackEnabledOnDetailMenu());
+  EXPECT_FALSE(IsSelectToSpeakEnabledOnDetailMenu());
+  EXPECT_FALSE(IsDictationEnabledOnDetailMenu());
+  EXPECT_FALSE(IsFaceGazeEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighContrastEnabledOnDetailMenu());
+  EXPECT_FALSE(IsScreenMagnifierEnabledOnDetailMenu());
+  EXPECT_FALSE(IsDockedMagnifierEnabledOnDetailMenu());
+  EXPECT_FALSE(IsLargeCursorEnabledOnDetailMenu());
+  EXPECT_FALSE(IsLiveCaptionEnabledOnDetailMenu());
+  EXPECT_FALSE(IsAutoclickEnabledOnDetailMenu());
+  EXPECT_FALSE(IsVirtualKeyboardEnabledOnDetailMenu());
+  EXPECT_FALSE(IsMonoAudioEnabledOnDetailMenu());
+  EXPECT_FALSE(IsCaretHighlightEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightMouseCursorEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightKeyboardFocusEnabledOnDetailMenu());
+  EXPECT_FALSE(IsStickyKeysEnabledOnDetailMenu());
+  ASSERT_TRUE(IsReducedAnimationsShownOnDetailMenu());
+  EXPECT_FALSE(IsReducedAnimationsEnabledOnDetailMenu());
+  CloseDetailMenu();
+}
+
+TEST_F(AccessibilityDetailedViewTest, KioskModeReducedAnimationsTopView) {
+  SetUpKioskSession();
+  EnableReducedAnimations(true);
+  CreateDetailedMenu();
+  ASSERT_TRUE(reduced_animations_top_view());
+  EXPECT_TRUE(IsSwitchToggled(reduced_animations_top_view()));
+  EXPECT_TRUE(IsCheckedForAccessibility(reduced_animations_top_view()));
+
+  ClickView(reduced_animations_top_view());
+  EXPECT_FALSE(IsSwitchToggled(reduced_animations_top_view()));
+  EXPECT_FALSE(IsCheckedForAccessibility(reduced_animations_top_view()));
+  EXPECT_FALSE(controller()->reduced_animations().enabled());
+}
+
+TEST_F(AccessibilityDetailedViewTest, KioskModeClickReducedAnimations) {
+  SetUpKioskSession();
+
+  AccessibilityController* accessibility_controller =
+      Shell::Get()->accessibility_controller();
+  // Confirms that the check item toggles reduced animations.
+  EXPECT_FALSE(accessibility_controller->reduced_animations().enabled());
+
+  CreateDetailedMenu();
+  ClickReducedAnimationsOnDetailMenu();
+  EXPECT_TRUE(accessibility_controller->reduced_animations().enabled());
+
+  CreateDetailedMenu();
+  ClickReducedAnimationsOnDetailMenu();
+  EXPECT_FALSE(accessibility_controller->reduced_animations().enabled());
+}
+
 class AccessibilityDetailedViewSodaTest
     : public AccessibilityDetailedViewTest,
       public testing::WithParamInterface<SodaFeature> {
@@ -1429,6 +1577,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, NothingCheckedByDefault) {
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
   // Color correction cannot be enabled from the login screen.
   EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
+  // Reduced animations not available from the login screen.
+  EXPECT_FALSE(IsReducedAnimationsShownOnDetailMenu());
   CloseDetailMenu();
 }
 
@@ -1457,6 +1607,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, SpokenFeedback) {
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
   // Color correction cannot be enabled from the login screen.
   EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
+  // Reduced animations not available from the login screen.
+  EXPECT_FALSE(IsReducedAnimationsShownOnDetailMenu());
   CloseDetailMenu();
 
   // Disabling spoken feedback.
@@ -1483,6 +1635,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, SpokenFeedback) {
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
   // Color correction cannot be enabled from the login screen.
   EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
+  // Reduced animations not available from the login screen.
+  EXPECT_FALSE(IsReducedAnimationsShownOnDetailMenu());
   CloseDetailMenu();
 }
 
@@ -1535,6 +1689,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, SelectToSpeak) {
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
   // Color correction cannot be enabled from the login screen.
   EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
+  // Reduced animations not available from the login screen.
+  EXPECT_FALSE(IsReducedAnimationsShownOnDetailMenu());
   CloseDetailMenu();
 
   // Disabling select to speak.
@@ -1561,6 +1717,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, SelectToSpeak) {
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
   // Color correction cannot be enabled from the login screen.
   EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
+  // Reduced animations not available from the login screen.
+  EXPECT_FALSE(IsReducedAnimationsShownOnDetailMenu());
   CloseDetailMenu();
 }
 
@@ -1589,6 +1747,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, Dictation) {
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
   // Color correction cannot be enabled from the login screen.
   EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
+  // Reduced animations not available from the login screen.
+  EXPECT_FALSE(IsReducedAnimationsShownOnDetailMenu());
   CloseDetailMenu();
 
   // Disabling dictation.
@@ -1615,6 +1775,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, Dictation) {
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
   // Color correction cannot be enabled from the login screen.
   EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
+  // Reduced animations not available from the login screen.
+  EXPECT_FALSE(IsReducedAnimationsShownOnDetailMenu());
   CloseDetailMenu();
 }
 
@@ -1643,6 +1805,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, HighContrast) {
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
   // Color correction cannot be enabled from the login screen.
   EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
+  // Reduced animations not available from the login screen.
+  EXPECT_FALSE(IsReducedAnimationsShownOnDetailMenu());
   CloseDetailMenu();
 
   // Disabling high contrast.
@@ -1669,6 +1833,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, HighContrast) {
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
   // Color correction cannot be enabled from the login screen.
   EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
+  // Reduced animations not available from the login screen.
+  EXPECT_FALSE(IsReducedAnimationsShownOnDetailMenu());
   CloseDetailMenu();
 }
 
@@ -1697,6 +1863,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, FullScreenMagnifier) {
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
   // Color correction cannot be enabled from the login screen.
   EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
+  // Reduced animations not available from the login screen.
+  EXPECT_FALSE(IsReducedAnimationsShownOnDetailMenu());
   CloseDetailMenu();
 
   // Disabling screen magnifier.
@@ -1723,6 +1891,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, FullScreenMagnifier) {
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
   // Color correction cannot be enabled from the login screen.
   EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
+  // Reduced animations not available from the login screen.
+  EXPECT_FALSE(IsReducedAnimationsShownOnDetailMenu());
   CloseDetailMenu();
 }
 
@@ -1751,6 +1921,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, DockedMagnifier) {
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
   // Color correction cannot be enabled from the login screen.
   EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
+  // Reduced animations not available from the login screen.
+  EXPECT_FALSE(IsReducedAnimationsShownOnDetailMenu());
   CloseDetailMenu();
 
   // Disabling docked magnifier.
@@ -1777,6 +1949,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, DockedMagnifier) {
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
   // Color correction cannot be enabled from the login screen.
   EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
+  // Reduced animations not available from the login screen.
+  EXPECT_FALSE(IsReducedAnimationsShownOnDetailMenu());
   CloseDetailMenu();
 }
 
@@ -1805,6 +1979,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, LargeCursor) {
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
   // Color correction cannot be enabled from the login screen.
   EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
+  // Reduced animations not available from the login screen.
+  EXPECT_FALSE(IsReducedAnimationsShownOnDetailMenu());
   CloseDetailMenu();
 
   // Disabling large cursor.
@@ -1831,6 +2007,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, LargeCursor) {
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
   // Color correction cannot be enabled from the login screen.
   EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
+  // Reduced animations not available from the login screen.
+  EXPECT_FALSE(IsReducedAnimationsShownOnDetailMenu());
   CloseDetailMenu();
 }
 
@@ -1859,6 +2037,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, LiveCaption) {
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
   // Color correction cannot be enabled from the login screen.
   EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
+  // Reduced animations not available from the login screen.
+  EXPECT_FALSE(IsReducedAnimationsShownOnDetailMenu());
   CloseDetailMenu();
 
   // Disabling Live Caption.
@@ -1885,6 +2065,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, LiveCaption) {
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
   // Color correction cannot be enabled from the login screen.
   EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
+  // Reduced animations not available from the login screen.
+  EXPECT_FALSE(IsReducedAnimationsShownOnDetailMenu());
   CloseDetailMenu();
 }
 
@@ -1913,6 +2095,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, VirtualKeyboard) {
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
   // Color correction cannot be enabled from the login screen.
   EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
+  // Reduced animations not available from the login screen.
+  EXPECT_FALSE(IsReducedAnimationsShownOnDetailMenu());
   CloseDetailMenu();
 
   // Disable on-screen keyboard.
@@ -1939,6 +2123,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, VirtualKeyboard) {
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
   // Color correction cannot be enabled from the login screen.
   EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
+  // Reduced animations not available from the login screen.
+  EXPECT_FALSE(IsReducedAnimationsShownOnDetailMenu());
   CloseDetailMenu();
 }
 
@@ -1967,6 +2153,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, MonoAudio) {
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
   // Color correction cannot be enabled from the login screen.
   EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
+  // Reduced animations not available from the login screen.
+  EXPECT_FALSE(IsReducedAnimationsShownOnDetailMenu());
   CloseDetailMenu();
 
   // Disabling mono audio.
@@ -1993,6 +2181,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, MonoAudio) {
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
   // Color correction cannot be enabled from the login screen.
   EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
+  // Reduced animations not available from the login screen.
+  EXPECT_FALSE(IsReducedAnimationsShownOnDetailMenu());
   CloseDetailMenu();
 }
 
@@ -2021,6 +2211,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, CaretHighlight) {
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
   // Color correction cannot be enabled from the login screen.
   EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
+  // Reduced animations not available from the login screen.
+  EXPECT_FALSE(IsReducedAnimationsShownOnDetailMenu());
   CloseDetailMenu();
 
   // Disabling caret highlight.
@@ -2047,6 +2239,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, CaretHighlight) {
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
   // Color correction cannot be enabled from the login screen.
   EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
+  // Reduced animations not available from the login screen.
+  EXPECT_FALSE(IsReducedAnimationsShownOnDetailMenu());
   CloseDetailMenu();
 }
 
@@ -2075,6 +2269,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, CursorHighlight) {
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
   // Color correction cannot be enabled from the login screen.
   EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
+  // Reduced animations not available from the login screen.
+  EXPECT_FALSE(IsReducedAnimationsShownOnDetailMenu());
   CloseDetailMenu();
 
   // Disabling highlight mouse cursor.
@@ -2101,6 +2297,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, CursorHighlight) {
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
   // Color correction cannot be enabled from the login screen.
   EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
+  // Reduced animations not available from the login screen.
+  EXPECT_FALSE(IsReducedAnimationsShownOnDetailMenu());
   CloseDetailMenu();
 }
 
@@ -2129,6 +2327,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, FocusHighlight) {
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
   // Color correction cannot be enabled from the login screen.
   EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
+  // Reduced animations not available from the login screen.
+  EXPECT_FALSE(IsReducedAnimationsShownOnDetailMenu());
   CloseDetailMenu();
 
   // Disabling highlight keyboard focus.
@@ -2155,6 +2355,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, FocusHighlight) {
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
   // Color correction cannot be enabled from the login screen.
   EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
+  // Reduced animations not available from the login screen.
+  EXPECT_FALSE(IsReducedAnimationsShownOnDetailMenu());
   CloseDetailMenu();
 }
 
@@ -2183,6 +2385,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, StickyKeys) {
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
   // Color correction cannot be enabled from the login screen.
   EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
+  // Reduced animations not available from the login screen.
+  EXPECT_FALSE(IsReducedAnimationsShownOnDetailMenu());
   CloseDetailMenu();
 
   // Disabling sticky keys.
@@ -2209,6 +2413,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, StickyKeys) {
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
   // Color correction cannot be enabled from the login screen.
   EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
+  // Reduced animations not available from the login screen.
+  EXPECT_FALSE(IsReducedAnimationsShownOnDetailMenu());
   CloseDetailMenu();
 }
 
@@ -2341,6 +2547,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, AllFeatures) {
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
   // Color correction cannot be enabled from the login screen.
   EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
+  // Reduced animations not available from the login screen.
+  EXPECT_FALSE(IsReducedAnimationsShownOnDetailMenu());
   CloseDetailMenu();
 }
 
@@ -2369,6 +2577,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, Autoclick) {
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
   // Color correction cannot be enabled from the login screen.
   EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
+  // Reduced animations not available from the login screen.
+  EXPECT_FALSE(IsReducedAnimationsShownOnDetailMenu());
   CloseDetailMenu();
 
   // Disabling autoclick.
@@ -2395,6 +2605,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, Autoclick) {
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
   // Color correction cannot be enabled from the login screen.
   EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
+  // Reduced animations not available from the login screen.
+  EXPECT_FALSE(IsReducedAnimationsShownOnDetailMenu());
   CloseDetailMenu();
 }
 
@@ -2423,6 +2635,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, FaceGaze) {
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
   // Color correction cannot be enabled from the login screen.
   EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
+  // Reduced animations not available from the login screen.
+  EXPECT_FALSE(IsReducedAnimationsShownOnDetailMenu());
   CloseDetailMenu();
 
   // Disabling facegaze.
@@ -2449,6 +2663,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, FaceGaze) {
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
   // Color correction cannot be enabled from the login screen.
   EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
+  // Reduced animations not available from the login screen.
+  EXPECT_FALSE(IsReducedAnimationsShownOnDetailMenu());
   CloseDetailMenu();
 }
 

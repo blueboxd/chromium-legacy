@@ -28,6 +28,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/observer_list.h"
 #include "base/run_loop.h"
 #include "base/task/sequenced_task_runner.h"
@@ -77,6 +78,7 @@
 #include "content/browser/indexed_db/indexed_db_control_wrapper.h"
 #include "content/browser/interest_group/interest_group_manager_impl.h"
 #include "content/browser/loader/keep_alive_url_loader_service.h"
+#include "content/browser/loader/reconnectable_url_loader_factory.h"
 #include "content/browser/loader/subresource_proxying_url_loader_service.h"
 #include "content/browser/loader/url_loader_factory_utils.h"
 #include "content/browser/locks/lock_manager.h"
@@ -94,7 +96,7 @@
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/navigation_state_keep_alive.h"
-#include "content/browser/service_worker/service_worker_container_host.h"
+#include "content/browser/service_worker/service_worker_client.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/shared_storage/shared_storage_header_observer.h"
 #include "content/browser/shared_storage/shared_storage_worklet_host_manager.h"
@@ -138,7 +140,6 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
-#include "services/network/public/cpp/cross_thread_pending_shared_url_loader_factory.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/ip_address_space_util.h"
 #include "services/network/public/cpp/url_loader_factory_builder.h"
@@ -450,8 +451,8 @@ class LoginHandlerDelegate {
       content::BrowserContext* browser_context,
       const net::AuthChallengeInfo& auth_info,
       bool is_request_for_primary_main_frame,
-      uint32_t process_id,
-      uint32_t request_id,
+      base::StrictNumeric<int32_t> process_id,
+      base::StrictNumeric<int32_t> request_id,
       const GURL& url,
       scoped_refptr<net::HttpResponseHeaders> response_headers,
       bool first_auth_attempt)
@@ -551,6 +552,7 @@ class SSLClientAuthDelegate : public SSLClientAuthHandler::Delegate {
       mojo::PendingRemote<network::mojom::ClientCertificateResponder>
           client_cert_responder_remote,
       BrowserContext* browser_context,
+      int process_id,
       base::WeakPtr<WebContents> web_contents,
       const scoped_refptr<net::SSLCertRequestInfo>& cert_info)
       : client_cert_responder_(std::move(client_cert_responder_remote)),
@@ -558,6 +560,7 @@ class SSLClientAuthDelegate : public SSLClientAuthHandler::Delegate {
             GetContentClient()->browser()->CreateClientCertStore(
                 browser_context),
             browser_context->GetWeakPtr(),
+            process_id,
             web_contents,
             std::move(cert_info.get()),
             this)) {
@@ -757,63 +760,6 @@ StoragePartition::StorageKeyMatcherFunction CreateGenericStorageKeyMatcher(
 
 }  // namespace
 
-class StoragePartitionImpl::URLLoaderFactoryForBrowserProcess
-    : public network::SharedURLLoaderFactory {
- public:
-  explicit URLLoaderFactoryForBrowserProcess(
-      StoragePartitionImpl* storage_partition)
-      : storage_partition_(storage_partition) {}
-
-  URLLoaderFactoryForBrowserProcess(const URLLoaderFactoryForBrowserProcess&) =
-      delete;
-  URLLoaderFactoryForBrowserProcess& operator=(
-      const URLLoaderFactoryForBrowserProcess&) = delete;
-
-  // mojom::URLLoaderFactory implementation:
-
-  void CreateLoaderAndStart(
-      mojo::PendingReceiver<network::mojom::URLLoader> receiver,
-      int32_t request_id,
-      uint32_t options,
-      const network::ResourceRequest& url_request,
-      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
-      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
-      override {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    if (!storage_partition_) {
-      return;
-    }
-    storage_partition_->GetURLLoaderFactoryForBrowserProcessInternal()
-        ->CreateLoaderAndStart(std::move(receiver), request_id, options,
-                               url_request, std::move(client),
-                               traffic_annotation);
-  }
-
-  void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
-      override {
-    if (!storage_partition_) {
-      return;
-    }
-    storage_partition_->GetURLLoaderFactoryForBrowserProcessInternal()->Clone(
-        std::move(receiver));
-  }
-
-  // SharedURLLoaderFactory implementation:
-  std::unique_ptr<network::PendingSharedURLLoaderFactory> Clone() override {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    return std::make_unique<network::CrossThreadPendingSharedURLLoaderFactory>(
-        this);
-  }
-
-  void Shutdown() { storage_partition_ = nullptr; }
-
- private:
-  friend class base::RefCounted<URLLoaderFactoryForBrowserProcess>;
-  ~URLLoaderFactoryForBrowserProcess() override = default;
-
-  raw_ptr<StoragePartitionImpl> storage_partition_;
-};
-
 // Static.
 storage::QuotaClientTypes StoragePartitionImpl::GenerateQuotaClientTypes(
     uint32_t remove_mask) {
@@ -963,7 +909,7 @@ class StoragePartitionImpl::DataDeletionHelper {
  private:
   // For debugging purposes. Please add new deletion tasks at the end.
   // This enum is recorded in a histogram, so don't change or reuse ids.
-  // Entries must also be added to StoragePartitionRemoverTasks in enums.xml.
+  // LINT.IfChange(TracingDataType)
   enum class TracingDataType {
     kSynchronous = 1,
     kCookies = 2,
@@ -981,6 +927,7 @@ class StoragePartitionImpl::DataDeletionHelper {
     kCdmStorage = 14,
     kMaxValue = kCdmStorage,
   };
+  // LINT.ThenChange(//tools/metrics/histograms/metadata/history/enums.xml:StoragePartitionRemoverTasks)
 
   base::OnceClosure CreateTaskCompletionClosure(TracingDataType data_type);
 
@@ -1184,14 +1131,6 @@ StoragePartitionImpl::~StoragePartitionImpl() {
   DCHECK(on_browser_context_will_be_destroyed_called_);
 #endif
   browser_context_ = nullptr;
-
-  if (url_loader_factory_getter_) {
-    url_loader_factory_getter_->OnStoragePartitionDestroyed();
-  }
-
-  if (shared_url_loader_factory_for_browser_process_) {
-    shared_url_loader_factory_for_browser_process_->Shutdown();
-  }
 
   scoped_refptr<storage::DatabaseTracker> database_tracker(
       GetDatabaseTracker());
@@ -1439,9 +1378,10 @@ void StoragePartitionImpl::Initialize(
   bluetooth_allowed_devices_map_ =
       std::make_unique<BluetoothAllowedDevicesMap>();
 
-  // Must be initialized before the `url_loader_factory_getter_`.
-  // Cookie deprecation traffic labels should not be sent for off-the-record
-  // profiles, unless the "enable_otr_profiles" feature parameter is true.
+  // Must be initialized before the
+  // `shared_url_loader_factory_for_browser_process_`. Cookie deprecation
+  // traffic labels should not be sent for off-the-record profiles, unless the
+  // "enable_otr_profiles" feature parameter is true.
   if (base::FeatureList::IsEnabled(
           features::kCookieDeprecationFacilitatedTesting) &&
       (!is_in_memory() ||
@@ -1450,8 +1390,12 @@ void StoragePartitionImpl::Initialize(
         std::make_unique<CookieDeprecationLabelManagerImpl>(browser_context_);
   }
 
-  url_loader_factory_getter_ = new URLLoaderFactoryGetter();
-  url_loader_factory_getter_->Initialize(this);
+  shared_url_loader_factory_for_browser_process_ = std::make_unique<
+      ReconnectableURLLoaderFactoryForIOThreadWrapper>(base::BindRepeating(
+      &StoragePartitionImpl::CreateURLLoaderFactoryForBrowserProcessInternal,
+      GetWeakPtr()));
+  shared_url_loader_factory_for_browser_process_->factory_for_io_thread()
+      ->Initialize();
 
   service_worker_context_->Init(path, quota_manager_proxy.get(),
                                 browser_context_->GetSpecialStoragePolicy(),
@@ -1462,13 +1406,7 @@ void StoragePartitionImpl::Initialize(
           ? fallback_for_blob_urls->GetBlobUrlRegistry()->AsWeakPtr()
           : nullptr);
 
-  if (base::FeatureList::IsEnabled(net::features::kSupportPartitionedBlobUrl)) {
-    blob_registry_ = BlobRegistryWrapper::Create(blob_context);
-
-  } else {
-    blob_registry_ = BlobRegistryWrapper::Create(
-        blob_context, blob_url_registry_->AsWeakPtr());
-  }
+  blob_registry_ = BlobRegistryWrapper::Create(blob_context);
 
   subresource_proxying_url_loader_service_ =
       std::make_unique<SubresourceProxyingURLLoaderService>(browser_context_);
@@ -1640,18 +1578,15 @@ StoragePartitionImpl::GetCertVerifierServiceUpdater() {
 
 scoped_refptr<network::SharedURLLoaderFactory>
 StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcess() {
-  DCHECK(initialized_);
-  if (!shared_url_loader_factory_for_browser_process_) {
-    shared_url_loader_factory_for_browser_process_ =
-        new URLLoaderFactoryForBrowserProcess(this);
-  }
-  return shared_url_loader_factory_for_browser_process_;
+  CHECK(shared_url_loader_factory_for_browser_process_);
+  return shared_url_loader_factory_for_browser_process_->factory();
 }
 
 std::unique_ptr<network::PendingSharedURLLoaderFactory>
 StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcessIOThread() {
-  DCHECK(initialized_);
-  return url_loader_factory_getter_->GetPendingNetworkFactory();
+  CHECK(shared_url_loader_factory_for_browser_process_);
+  return shared_url_loader_factory_for_browser_process_->factory_for_io_thread()
+      ->CloneForIOThread();
 }
 
 network::mojom::CookieManager*
@@ -1972,6 +1907,27 @@ StoragePartitionImpl::GetCookieDeprecationLabelManager() {
   return cookie_deprecation_label_manager_.get();
 }
 
+void StoragePartitionImpl::DeleteStaleSessionOnlyCookiesAfterDelay() {
+  // We need to delay deleting stale session cookies until after the cookie db
+  // has initialized, otherwise we will bypass lazy loading and block.
+  // See crbug.com/40285083 for more info.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(
+          &StoragePartitionImpl::DeleteStaleSessionOnlyCookiesAfterDelayCallback,
+          weak_factory_.GetWeakPtr()),
+      delete_stale_session_only_cookies_delay_);
+}
+
+void StoragePartitionImpl::DeleteStaleSessionOnlyCookiesAfterDelayCallback() {
+  GetCookieManagerForBrowserProcess()->DeleteStaleSessionOnlyCookies(
+      base::BindOnce([](const uint32_t num_deleted) {
+        base::UmaHistogramCounts10M(
+            "Cookie.StaleSessionCookiesDeletedOnStartup", num_deleted);
+      }));
+}
+
 void StoragePartitionImpl::OpenLocalStorage(
     const blink::StorageKey& storage_key,
     const blink::LocalFrameToken& local_frame_token,
@@ -2010,7 +1966,7 @@ void StoragePartitionImpl::BindSessionStorageArea(
 
 void StoragePartitionImpl::OnAuthRequired(
     const std::optional<base::UnguessableToken>& window_id,
-    uint32_t request_id,
+    int32_t request_id,
     const GURL& url,
     bool first_auth_attempt,
     const net::AuthChallengeInfo& auth_info,
@@ -2029,9 +1985,9 @@ void StoragePartitionImpl::OnAuthRequired(
     // routing_id are invalid. It can't be added yet because somehow routing_id
     // is valid here.
     if (service_worker_context_->context()) {
-      auto* container_host =
-          service_worker_context_->context()->GetServiceWorkerClientByWindowId(
-              *window_id);
+      auto* container_host = service_worker_context_->context()
+                                 ->service_worker_client_owner()
+                                 .GetServiceWorkerClientByWindowId(*window_id);
       if (container_host) {
         if (container_host->GetRenderFrameHostId()) {
           // Use ServiceWorkerContainerHost's GlobalRenderFrameHostId when
@@ -2203,9 +2159,9 @@ void StoragePartitionImpl::OnCertificateRequested(
     // routing_id are invalid. It can't be added yet because somehow routing_id
     // is valid here.
     if (service_worker_context_->context()) {
-      auto* container_host =
-          service_worker_context_->context()->GetServiceWorkerClientByWindowId(
-              *window_id);
+      auto* container_host = service_worker_context_->context()
+                                 ->service_worker_client_owner()
+                                 .GetServiceWorkerClientByWindowId(*window_id);
       if (container_host) {
         if (container_host->GetRenderFrameHostId()) {
           // Use ServiceWorkerContainerHost's GlobalRenderFrameHostId when
@@ -2243,7 +2199,10 @@ void StoragePartitionImpl::OnCertificateRequested(
   }
 
   base::WeakPtr<WebContents> web_contents_weak;
-  if (context.type() != ContextType::kServiceWorkerContext) {
+  int process_id = network::mojom::kInvalidProcessId;
+  if (context.type() == ContextType::kServiceWorkerContext) {
+    process_id = context.process_id();
+  } else {
     WebContents* web_contents = context.GetWebContents();
     // The WebContents is already invalid. Bail.
     if (!web_contents) {
@@ -2252,11 +2211,18 @@ void StoragePartitionImpl::OnCertificateRequested(
     }
     CHECK_EQ(web_contents->GetBrowserContext(), browser_context_.get());
     web_contents_weak = web_contents->GetWeakPtr();
+
+    if (context.navigation_or_document()) {
+      auto* render_frame_host = context.navigation_or_document()->GetDocument();
+      if (render_frame_host) {
+        process_id = render_frame_host->GetProcess()->GetID();
+      }
+    }
   }
 
   // SSLClientAuthDelegate handles its own lifetime.
   new SSLClientAuthDelegate(std::move(cert_responder), browser_context(),
-                            web_contents_weak, cert_info);
+                            process_id, web_contents_weak, cert_info);
 }
 
 void StoragePartitionImpl::OnSSLCertificateError(
@@ -3113,10 +3079,11 @@ void StoragePartitionImpl::Flush() {
 }
 
 void StoragePartitionImpl::ResetURLLoaderFactories() {
-  DCHECK(initialized_);
+  CHECK(initialized_);
   GetNetworkContext()->ResetURLLoaderFactories();
-  url_loader_factory_for_browser_process_.reset();
-  url_loader_factory_getter_->Initialize(this);
+  shared_url_loader_factory_for_browser_process_->factory()->Reset();
+  shared_url_loader_factory_for_browser_process_->factory_for_io_thread()
+      ->Reset();
 }
 
 void StoragePartitionImpl::ClearBluetoothAllowedDevicesMapForTesting() {
@@ -3133,15 +3100,21 @@ void StoragePartitionImpl::RemoveObserver(DataRemovalObserver* observer) {
 }
 
 void StoragePartitionImpl::FlushNetworkInterfaceForTesting() {
-  DCHECK(initialized_);
+  CHECK(initialized_);
   DCHECK(network_context_owner_->network_context);
-  network_context_owner_->network_context.FlushForTesting();
-  if (url_loader_factory_for_browser_process_) {
-    url_loader_factory_for_browser_process_.FlushForTesting();
-  }
+  network_context_owner_->network_context.FlushForTesting();  // IN-TEST
+  shared_url_loader_factory_for_browser_process_->factory()
+      ->FlushForTesting();  // IN-TEST
   if (cookie_manager_for_browser_process_) {
-    cookie_manager_for_browser_process_.FlushForTesting();
+    cookie_manager_for_browser_process_.FlushForTesting();  // IN-TEST
   }
+}
+
+void StoragePartitionImpl::FlushNetworkInterfaceOnIOThreadForTesting() {
+  CHECK(initialized_);
+  CHECK(shared_url_loader_factory_for_browser_process_);
+  shared_url_loader_factory_for_browser_process_->factory_for_io_thread()
+      ->FlushForTesting();  // IN-TEST
 }
 
 void StoragePartitionImpl::FlushCertVerifierInterfaceForTesting() {
@@ -3191,6 +3164,11 @@ void StoragePartitionImpl::SetNetworkContextForTesting(
       std::move(network_context_remote));
 }
 
+void StoragePartitionImpl::OverrideDeleteStaleSessionOnlyCookiesDelayForTesting(
+    const base::TimeDelta& delay) {
+  delete_stale_session_only_cookies_delay_ = delay;
+}
+
 base::WeakPtr<StoragePartitionImpl> StoragePartitionImpl::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
@@ -3225,9 +3203,10 @@ void StoragePartitionImpl::BindIndexedDB(
     const storage::BucketLocator& bucket_locator,
     mojo::PendingRemote<storage::mojom::IndexedDBClientStateChecker>
         client_state_checker_remote,
+    const base::UnguessableToken& client_token,
     mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) {
   indexed_db_control_wrapper_->BindIndexedDB(
-      bucket_locator, std::move(client_state_checker_remote),
+      bucket_locator, std::move(client_state_checker_remote), client_token,
       std::move(receiver));
 }
 
@@ -3417,15 +3396,6 @@ void StoragePartitionImpl::InitNetworkContext() {
       network_context_client_receiver_.BindNewPipeAndPassRemote());
   network_context_owner_->network_context.set_disconnect_handler(base::BindOnce(
       &StoragePartitionImpl::InitNetworkContext, weak_factory_.GetWeakPtr()));
-
-  if (base::FeatureList::IsEnabled(features::kPreloadCookies)) {
-    mojo::Remote<::network::mojom::CookieManager> cookie_manager;
-    mojo::PendingRemote<::network::mojom::CookieManager> cookie_manager_remote;
-    network_context_owner_->network_context->GetCookieManager(
-        cookie_manager_remote.InitWithNewPipeAndPassReceiver());
-    cookie_manager.Bind(std::move(cookie_manager_remote));
-    cookie_manager->GetAllCookies(base::NullCallback());
-  }
 }
 
 network::mojom::URLLoaderFactoryParamsPtr
@@ -3446,32 +3416,19 @@ StoragePartitionImpl::CreateURLLoaderFactoryParams() {
   return params;
 }
 
-network::mojom::URLLoaderFactory*
-StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcessInternal() {
-  // Create the URLLoaderFactory as needed, but make sure not to reuse a
-  // previously created one if the test override has changed.
-  if (url_loader_factory_for_browser_process_ &&
-      url_loader_factory_for_browser_process_.is_connected() &&
-      is_test_url_loader_factory_for_browser_process_ ==
-          !!url_loader_factory::GetTestingInterceptor()) {
-    return url_loader_factory_for_browser_process_.get();
-  }
-
-  is_test_url_loader_factory_for_browser_process_ =
-      !!url_loader_factory::GetTestingInterceptor();
+void StoragePartitionImpl::CreateURLLoaderFactoryForBrowserProcessInternal(
+    mojo::PendingRemote<network::mojom::URLLoaderFactory>* out_factory) {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   network::URLLoaderFactoryBuilder factory_builder;
   if (url_loader_factory::GetTestingInterceptor()) {
     url_loader_factory::GetTestingInterceptor().Run(
         network::mojom::kBrowserProcessId, factory_builder);
   }
-  url_loader_factory_for_browser_process_ =
-      mojo::Remote<network::mojom::URLLoaderFactory>(
-          std::move(factory_builder)
-              .Finish<mojo::PendingRemote<network::mojom::URLLoaderFactory>>(
-                  GetNetworkContext(), CreateURLLoaderFactoryParams()));
-
-  return url_loader_factory_for_browser_process_.get();
+  *out_factory =
+      std::move(factory_builder)
+          .Finish<mojo::PendingRemote<network::mojom::URLLoaderFactory>>(
+              GetNetworkContext(), CreateURLLoaderFactoryParams());
 }
 
 void StoragePartition::SetDefaultQuotaSettingsForTesting(

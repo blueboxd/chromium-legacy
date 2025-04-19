@@ -6,16 +6,18 @@
 
 #import "base/test/ios/wait_util.h"
 #import "base/time/time.h"
-#import "ios/chrome/browser/bookmarks/model/bookmark_model_type.h"
+#import "ios/chrome/browser/bookmarks/model/bookmark_storage_type.h"
+#import "ios/chrome/browser/bookmarks/ui_bundled/bookmark_earl_grey.h"
+#import "ios/chrome/browser/bookmarks/ui_bundled/bookmark_earl_grey_ui.h"
 #import "ios/chrome/browser/policy/model/cloud/user_policy_constants.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/elements/activity_overlay_egtest_util.h"
 #import "ios/chrome/browser/shared/ui/elements/elements_constants.h"
 #import "ios/chrome/browser/signin/model/fake_system_identity.h"
+#import "ios/chrome/browser/signin/model/test_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/authentication/signin_matchers.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_accounts/accounts_table_view_controller_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_constants.h"
 #import "ios/chrome/grit/ios_branded_strings.h"
@@ -49,7 +51,7 @@ constexpr base::TimeDelta kSyncOperationTimeout = base::Seconds(10);
 @implementation AccountsTableTestCase
 
 - (void)tearDown {
-  [BookmarkEarlGrey waitForBookmarkModelsLoaded];
+  [BookmarkEarlGrey waitForBookmarkModelLoaded];
   [BookmarkEarlGrey clearBookmarks];
   [BookmarkEarlGrey clearBookmarksPositionCache];
 
@@ -60,11 +62,11 @@ constexpr base::TimeDelta kSyncOperationTimeout = base::Seconds(10);
 - (void)setUp {
   [super setUp];
 
-  [BookmarkEarlGrey waitForBookmarkModelsLoaded];
+  [BookmarkEarlGrey waitForBookmarkModelLoaded];
   [BookmarkEarlGrey clearBookmarks];
   GREYAssertEqual(
       [ChromeEarlGrey numberOfSyncEntitiesWithType:syncer::BOOKMARKS], 0,
-      @"No bookmarks should exist before tests start.");
+      @"No bookmarks should exist befoe tests start.");
 }
 
 - (AppLaunchConfiguration)appConfigurationForTestCase {
@@ -74,6 +76,13 @@ constexpr base::TimeDelta kSyncOperationTimeout = base::Seconds(10);
   // merged.
   config.features_enabled.push_back(
       policy::kUserPolicyForSigninAndNoSyncConsentLevel);
+  if ([self isRunningTest:@selector
+            (testSignOutWithManagedAccountFromNoneSyncingAccount)]) {
+    // Disable `kClearDeviceDataOnSignOutForManagedUsers` because the feature
+    // shows a different dialog
+    config.features_disabled.push_back(
+        kClearDeviceDataOnSignOutForManagedUsers);
+  }
 
   return config;
 }
@@ -129,6 +138,7 @@ constexpr base::TimeDelta kSyncOperationTimeout = base::Seconds(10);
   [SigninEarlGrey signinWithFakeIdentity:fakeIdentity];
   [self openAccountSettings];
   [ChromeEarlGreyUI tapAccountsMenuButton:SignOutAccountsButton()];
+  [SigninEarlGreyUI dismissSignoutSnackbar];
 
   // Forget `fakeIdentity`, screens should be popped back to the Main Settings.
   [ChromeEarlGreyUI waitForAppToIdle];
@@ -252,6 +262,35 @@ constexpr base::TimeDelta kSyncOperationTimeout = base::Seconds(10);
       performAction:grey_tap()];
 }
 
+// Tests to open the account details twice in a row.
+// TODO(crbug.com/357145635): Test failing on builders.
+- (void)DISABLED_testOpenTwiceAccountDetails {
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
+
+  // Sign In `fakeIdentity`, then open the Account Settings.
+  [SigninEarlGrey signinWithFakeIdentity:fakeIdentity];
+  [self openAccountSettings];
+  // Open the account details view twice.
+  for (int i = 0; i < 2; ++i) {
+    [[EarlGrey
+        selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabel(
+                                     fakeIdentity.userEmail)]
+        performAction:grey_tap()];
+    [[EarlGrey selectElementWithMatcher:
+                   chrome_test_util::ButtonWithAccessibilityLabel(
+                       l10n_util::GetNSString(
+                           IDS_IOS_MANAGE_YOUR_GOOGLE_ACCOUNT_TITLE))]
+        performAction:grey_tap()];
+    [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                            kFakeAccountDetailsViewIdentifier)]
+        assertWithMatcher:grey_sufficientlyVisible()];
+    [[EarlGrey
+        selectElementWithMatcher:grey_accessibilityID(
+                                     kFakeAccountDetailsDoneButtonIdentifier)]
+        performAction:grey_tap()];
+  }
+}
+
 // Tests that selecting sign-out from a non-managed account keeps the user's
 // local data.
 - (void)testSignOutFromNonManagedAccountKeepsLocalData {
@@ -263,9 +302,9 @@ constexpr base::TimeDelta kSyncOperationTimeout = base::Seconds(10);
   // Add a bookmark after sync is initialized.
   [ChromeEarlGrey waitForSyncEngineInitialized:YES
                                    syncTimeout:kSyncOperationTimeout];
-  [BookmarkEarlGrey waitForBookmarkModelsLoaded];
+  [BookmarkEarlGrey waitForBookmarkModelLoaded];
   [BookmarkEarlGrey
-      setupStandardBookmarksInStorage:BookmarkModelType::kLocalOrSyncable];
+      setupStandardBookmarksInStorage:BookmarkStorageType::kLocalOrSyncable];
 
   [SigninEarlGreyUI signOut];
 
@@ -288,9 +327,9 @@ constexpr base::TimeDelta kSyncOperationTimeout = base::Seconds(10);
   // Add a bookmark after sync is initialized.
   [ChromeEarlGrey waitForSyncEngineInitialized:YES
                                    syncTimeout:kSyncOperationTimeout];
-  [BookmarkEarlGrey waitForBookmarkModelsLoaded];
+  [BookmarkEarlGrey waitForBookmarkModelLoaded];
   [BookmarkEarlGrey
-      setupStandardBookmarksInStorage:BookmarkModelType::kAccount];
+      setupStandardBookmarksInStorage:BookmarkStorageType::kAccount];
 
   [SigninEarlGreyUI signOut];
 
@@ -313,9 +352,9 @@ constexpr base::TimeDelta kSyncOperationTimeout = base::Seconds(10);
   // Add a bookmark after sync is initialized.
   [ChromeEarlGrey waitForSyncEngineInitialized:YES
                                    syncTimeout:kSyncOperationTimeout];
-  [BookmarkEarlGrey waitForBookmarkModelsLoaded];
+  [BookmarkEarlGrey waitForBookmarkModelLoaded];
   [BookmarkEarlGrey
-      setupStandardBookmarksInStorage:BookmarkModelType::kLocalOrSyncable];
+      setupStandardBookmarksInStorage:BookmarkStorageType::kLocalOrSyncable];
 
   [SigninEarlGreyUI signOut];
 
@@ -338,9 +377,9 @@ constexpr base::TimeDelta kSyncOperationTimeout = base::Seconds(10);
   // Add a bookmark after sync is initialized.
   [ChromeEarlGrey waitForSyncEngineInitialized:YES
                                    syncTimeout:kSyncOperationTimeout];
-  [BookmarkEarlGrey waitForBookmarkModelsLoaded];
+  [BookmarkEarlGrey waitForBookmarkModelLoaded];
   [BookmarkEarlGrey
-      setupStandardBookmarksInStorage:BookmarkModelType::kAccount];
+      setupStandardBookmarksInStorage:BookmarkStorageType::kAccount];
 
   [SigninEarlGreyUI signOut];
 
@@ -370,8 +409,15 @@ constexpr base::TimeDelta kSyncOperationTimeout = base::Seconds(10);
 
 // Tests that users data is not cleared when the signed in account disappear and
 // it is a managed account.
-// TODO(crbug.com/331778550): Flaky. Re-enable when fixed.
-- (void)DISABLED_testManagedAccountRemovedFromAnotherGoogleApp {
+// TODO(crbug.com/355243751): This test is flaky on simulator.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testManagedAccountRemovedFromAnotherGoogleApp \
+  FLAKY_testManagedAccountRemovedFromAnotherGoogleApp
+#else
+#define MAYBE_testManagedAccountRemovedFromAnotherGoogleApp \
+  testManagedAccountRemovedFromAnotherGoogleApp
+#endif
+- (void)MAYBE_testManagedAccountRemovedFromAnotherGoogleApp {
   // Sign In `fakeManagedIdentity`.
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeManagedIdentity];
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
@@ -379,9 +425,9 @@ constexpr base::TimeDelta kSyncOperationTimeout = base::Seconds(10);
   // Add a bookmark after sync is initialized.
   [ChromeEarlGrey waitForSyncEngineInitialized:YES
                                    syncTimeout:kSyncOperationTimeout];
-  [BookmarkEarlGrey waitForBookmarkModelsLoaded];
+  [BookmarkEarlGrey waitForBookmarkModelLoaded];
   [BookmarkEarlGrey
-      setupStandardBookmarksInStorage:BookmarkModelType::kLocalOrSyncable];
+      setupStandardBookmarksInStorage:BookmarkStorageType::kLocalOrSyncable];
 
   // Simulate that the user remove their primary account from another Google
   // app.
@@ -411,6 +457,7 @@ constexpr base::TimeDelta kSyncOperationTimeout = base::Seconds(10);
   // Opens the sign out confirmation dialog.
   [ChromeEarlGreyUI
       tapAccountsMenuButton:chrome_test_util::SignOutAccountsButton()];
+  [SigninEarlGreyUI dismissSignoutSnackbar];
   // Wait until the sheet is fully presented before removing the identity.
   [ChromeEarlGreyUI waitForAppToIdle];
   // Remove the primary accounts.
@@ -433,7 +480,7 @@ constexpr base::TimeDelta kSyncOperationTimeout = base::Seconds(10);
 
   // Add a bookmark.
   [BookmarkEarlGrey
-      setupStandardBookmarksInStorage:BookmarkModelType::kLocalOrSyncable];
+      setupStandardBookmarksInStorage:BookmarkStorageType::kLocalOrSyncable];
 
   [SigninEarlGreyUI signOut];
 
@@ -452,7 +499,7 @@ constexpr base::TimeDelta kSyncOperationTimeout = base::Seconds(10);
   [SigninEarlGrey signinWithFakeIdentity:fakeIdentity];
 
   [BookmarkEarlGrey
-      setupStandardBookmarksInStorage:BookmarkModelType::kLocalOrSyncable];
+      setupStandardBookmarksInStorage:BookmarkStorageType::kLocalOrSyncable];
 
   [SigninEarlGreyUI signOut];
 

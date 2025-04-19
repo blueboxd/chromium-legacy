@@ -16,6 +16,10 @@ ChromeDemoModeAppDelegate::ChromeDemoModeAppDelegate(content::WebUI* web_ui)
     : web_ui_(web_ui) {}
 
 void ChromeDemoModeAppDelegate::LaunchApp(const std::string& app_id) {
+  if (DemoSession::IsDeviceInDemoMode()) {
+    DemoSession::RecordAppLaunchSource(
+        DemoSession::AppLaunchSource::kDemoModeApp);
+  }
   apps::AppServiceProxyFactory::GetForProfile(Profile::FromWebUI(web_ui_))
       ->Launch(app_id, 0, apps::LaunchSource::kFromOtherApp);
 }

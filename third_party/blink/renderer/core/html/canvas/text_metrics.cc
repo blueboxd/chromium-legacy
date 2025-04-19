@@ -11,6 +11,10 @@
 #include "third_party/blink/renderer/platform/fonts/character_range.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
 #include "third_party/blink/renderer/platform/fonts/font_metrics.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_shaper.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_spacing.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 #include "third_party/blink/renderer/platform/text/bidi_paragraph.h"
 
 namespace blink {
@@ -60,6 +64,7 @@ float TextMetrics::GetFontBaseline(const TextBaseline& text_baseline,
 void TextMetrics::Trace(Visitor* visitor) const {
   visitor->Trace(baselines_);
   visitor->Trace(font_);
+  visitor->Trace(runs_with_offset_);
   ScriptWrappable::Trace(visitor);
 }
 
@@ -83,9 +88,11 @@ void TextMetrics::Update(const Font& font,
   if (!font_data)
     return;
 
-  text_runs_.clear();
   font_ = font;
   text_length_ = text.length();
+  direction_ = direction;
+  runs_with_offset_.clear();
+  shaping_needed_ = true;
 
   // x direction
   // Run bidi algorithm on the given text. Step 5 of:
@@ -96,9 +103,9 @@ void TextMetrics::Update(const Font& font,
   BidiParagraph bidi;
   bidi.SetParagraph(text16, direction);
   BidiParagraph::Runs runs;
-  bidi.GetLogicalRuns(text16, &runs);
+  bidi.GetVisualRuns(text16, &runs);
   float xpos = 0;
-  text_runs_.reserve(runs.size());
+  runs_with_offset_.reserve(runs.size());
   for (const auto& run : runs) {
     // Measure each run.
     TextRun text_run(StringView(text, run.start, run.Length()), run.Direction(),
@@ -107,13 +114,21 @@ void TextMetrics::Update(const Font& font,
     gfx::RectF run_glyph_bounds;
     float run_width = font.Width(text_run, &run_glyph_bounds);
 
+    // Save the run for computing selection boxes. It will be shaped the first
+    // time it is used.
+    RunWithOffset run_with_offset = {
+        .shape_result_ = nullptr,
+        .text_ = text_run.ToStringView().ToString(),
+        .direction_ = run.Direction(),
+        .character_offset_ = run.start,
+        .num_characters_ = run.Length(),
+        .x_position_ = xpos};
+    runs_with_offset_.push_back(run_with_offset);
+
     // Accumulate the position and the glyph bounding box.
     run_glyph_bounds.Offset(xpos, 0);
     glyph_bounds.Union(run_glyph_bounds);
     xpos += run_width;
-
-    // Save the run for computing selection boxes.
-    text_runs_.push_back(text_run);
   }
   double real_width = xpos;
   width_ = real_width;
@@ -135,7 +150,7 @@ void TextMetrics::Update(const Font& font,
       kAlphabeticBaseline, FontMetrics::ApplyBaselineTable(true));
   const float descent = font_metrics.FloatDescent(
       kAlphabeticBaseline, FontMetrics::ApplyBaselineTable(true));
-  const float baseline_y = GetFontBaseline(baseline, *font_data);
+  baseline_y = GetFontBaseline(baseline, *font_data);
   font_bounding_box_ascent_ = ascent - baseline_y;
   font_bounding_box_descent_ = descent + baseline_y;
   actual_bounding_box_ascent_ = -glyph_bounds.y() - baseline_y;
@@ -170,6 +185,28 @@ void TextMetrics::Update(const Font& font,
   }
 }
 
+const ShapeResult* ShapeWord(const TextRun& word_run, const Font& font) {
+  ShapeResultSpacing<TextRun> spacing(word_run);
+  spacing.SetSpacingAndExpansion(font.GetFontDescription());
+  HarfBuzzShaper shaper(word_run.ToStringView().ToString());
+  ShapeResult* shape_result = shaper.Shape(&font, word_run.Direction());
+  if (!spacing.HasSpacing()) {
+    return shape_result;
+  }
+  return shape_result->ApplySpacingToCopy(spacing, word_run);
+}
+
+void TextMetrics::ShapeTextIfNeeded() {
+  if (!shaping_needed_) {
+    return;
+  }
+  for (auto& run : runs_with_offset_) {
+    TextRun word_run(run.text_, run.direction_, false);
+    run.shape_result_ = ShapeWord(word_run, font_);
+  }
+  shaping_needed_ = false;
+}
+
 const HeapVector<Member<DOMRectReadOnly>> TextMetrics::getSelectionRects(
     uint32_t start,
     uint32_t end,
@@ -182,73 +219,183 @@ const HeapVector<Member<DOMRectReadOnly>> TextMetrics::getSelectionRects(
     exception_state.ThrowDOMException(
         DOMExceptionCode::kIndexSizeError,
         String::Format("The %s index is out of bounds.",
-                       start >= text_length_ ? "start" : "end"));
+                       start > text_length_ ? "start" : "end"));
     return selection_rects;
   }
 
+  ShapeTextIfNeeded();
   const double height = font_bounding_box_ascent_ + font_bounding_box_descent_;
   const double y = -font_bounding_box_ascent_;
-  double accumulated_width = 0.0;
-  unsigned int accumulated_string_length = 0;
 
-  // Handle start >= end case with end = 0 the same way the DOM does, returning
-  // a zero-width rect before the start of the text.
-  if (start >= end && end == 0) {
-    selection_rects.push_back(DOMRectReadOnly::Create(
-        -text_align_dx_, -font_bounding_box_ascent_, /*width=*/0, height));
-    return selection_rects;
-  }
-
-  for (const auto& text_run : text_runs_) {
-    // Accumulate string length to know the indexes of this run on the input
-    // string.
-    const unsigned int run_start_index = accumulated_string_length;
+  for (const auto& run_with_offset : runs_with_offset_) {
+    const unsigned int run_start_index = run_with_offset.character_offset_;
     const unsigned int run_end_index =
-        accumulated_string_length + text_run.length();
-    accumulated_string_length += text_run.length();
-
-    // Past the selection interval.
-    if (run_start_index >= end) {
-      break;
-    }
-
-    // Position of the left border for this run.
-    const double left_border = accumulated_width;
-    accumulated_width += font_.Width(text_run);
+        run_start_index + run_with_offset.num_characters_;
 
     // Handle start >= end case the same way the DOM does, returning a
     // zero-width rect after the advance of the character right before the end
-    // position.
-    if (start >= end && run_start_index < end && end <= run_end_index) {
-      const unsigned index =
-          base::CheckSub(end - 1, run_start_index).ValueOrDie();
-      gfx::RectF rect = font_.SelectionRectForText(
-          text_run, gfx::PointF(left_border - text_align_dx_, y), height, index,
-          index + 1);
-      rect.set_x(rect.right());
-      rect.set_width(0);
-      selection_rects.push_back(DOMRectReadOnly::FromRectF(rect));
-      break;
+    // position. If the position is mid-cluster, the whole cluster is added as a
+    // rect.
+    if (start >= end) {
+      if (run_start_index <= end && end <= run_end_index) {
+        const unsigned int index =
+            base::CheckSub(end, run_start_index).ValueOrDie();
+        float from_x =
+            run_with_offset.shape_result_->CaretPositionForOffset(
+                index, run_with_offset.text_, AdjustMidCluster::kToStart) +
+            run_with_offset.x_position_;
+        float to_x =
+            run_with_offset.shape_result_->CaretPositionForOffset(
+                index, run_with_offset.text_, AdjustMidCluster::kToEnd) +
+            run_with_offset.x_position_;
+        if (from_x < to_x) {
+          selection_rects.push_back(DOMRectReadOnly::Create(
+              from_x - text_align_dx_, y, to_x - from_x, height));
+        } else {
+          selection_rects.push_back(DOMRectReadOnly::Create(
+              to_x - text_align_dx_, y, from_x - to_x, height));
+        }
+      }
+      continue;
     }
 
-    // Before the selection interval.
-    if (run_end_index <= start) {
+    // Outside the required interval.
+    if (run_end_index <= start || run_start_index >= end) {
       continue;
     }
 
     // Calculate the required indexes for this specific run.
     const unsigned int starting_index =
         start > run_start_index ? start - run_start_index : 0;
-    const unsigned int ending_index =
-        end <= run_end_index ? end - run_start_index : text_run.length();
+    const unsigned int ending_index = end < run_end_index
+                                          ? end - run_start_index
+                                          : run_with_offset.num_characters_;
 
-    gfx::RectF selection_rect = font_.SelectionRectForText(
-        text_run, gfx::PointF(left_border - text_align_dx_, y), height,
-        starting_index, ending_index);
-    selection_rects.push_back(DOMRectReadOnly::FromRectF(selection_rect));
+    // Use caret positions to determine the start and end of the selection rect.
+    float from_x =
+        run_with_offset.shape_result_->CaretPositionForOffset(
+            starting_index, run_with_offset.text_, AdjustMidCluster::kToStart) +
+        run_with_offset.x_position_;
+    float to_x =
+        run_with_offset.shape_result_->CaretPositionForOffset(
+            ending_index, run_with_offset.text_, AdjustMidCluster::kToEnd) +
+        run_with_offset.x_position_;
+    if (from_x < to_x) {
+      selection_rects.push_back(DOMRectReadOnly::Create(
+          from_x - text_align_dx_, y, to_x - from_x, height));
+    } else {
+      selection_rects.push_back(DOMRectReadOnly::Create(
+          to_x - text_align_dx_, y, from_x - to_x, height));
+    }
   }
 
   return selection_rects;
+}
+
+const DOMRectReadOnly* TextMetrics::getActualBoundingBox(
+    uint32_t start,
+    uint32_t end,
+    ExceptionState& exception_state) {
+  gfx::RectF bounding_box;
+
+  // Checks indexes that go over the maximum for the text. For indexes less than
+  // 0, an exception is thrown by [EnforceRange] in the idl binding.
+  if (start >= text_length_ || end > text_length_) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kIndexSizeError,
+        String::Format("The %s index is out of bounds.",
+                       start >= text_length_ ? "start" : "end"));
+    return DOMRectReadOnly::FromRectF(bounding_box);
+  }
+
+  ShapeTextIfNeeded();
+
+  for (const auto& run_with_offset : runs_with_offset_) {
+    const unsigned int run_start_index = run_with_offset.character_offset_;
+    const unsigned int run_end_index =
+        run_start_index + run_with_offset.num_characters_;
+
+    // Outside the required interval.
+    if (run_end_index <= start || run_start_index >= end) {
+      continue;
+    }
+
+    // Position of the left border for this run.
+    const double left_border = run_with_offset.x_position_;
+
+    // Calculate the required indexes for this specific run.
+    const unsigned int starting_index =
+        start > run_start_index ? start - run_start_index : 0;
+    const unsigned int ending_index = end < run_end_index
+                                          ? end - run_start_index
+                                          : run_with_offset.num_characters_;
+
+    const ShapeResultView* view = ShapeResultView::Create(
+        run_with_offset.shape_result_, 0, run_with_offset.num_characters_);
+    view->ForEachGlyph(
+        left_border, starting_index, ending_index, 0,
+        [](void* context, unsigned character_index, Glyph glyph,
+           gfx::Vector2dF glyph_offset, float total_advance, bool is_horizontal,
+           CanvasRotationInVertical rotation, const SimpleFontData* font_data) {
+          auto* bounding_box = static_cast<gfx::RectF*>(context);
+          gfx::RectF glyph_bounds = font_data->BoundsForGlyph(glyph);
+          glyph_bounds.Offset(total_advance, 0.0);
+          glyph_bounds.Offset(glyph_offset);
+          bounding_box->Union(glyph_bounds);
+        },
+        static_cast<void*>(&bounding_box));
+  }
+  bounding_box.Offset(-text_align_dx_, baseline_y);
+  return DOMRectReadOnly::FromRectF(bounding_box);
+}
+
+unsigned TextMetrics::caretPositionFromPoint(double x) {
+  if (runs_with_offset_.empty()) {
+    return 0;
+  }
+
+  // x is visual direction from the alignment point, regardless of the text
+  // direction. Note x can be negative, to enable positions to the left of the
+  // alignment point.
+  float target_x = text_align_dx_ + x;
+
+  // If to the left (or right), return the leftmost (or rightmost) index
+  if (target_x <= 0) {
+    const auto& run_with_offset = runs_with_offset_.front();
+    if (IsLtr(run_with_offset.direction_)) {
+      // The 0 offset within the run is leftmost
+      return run_with_offset.character_offset_;
+    } else {
+      // The highest offset is leftmost.
+      return run_with_offset.num_characters_ +
+             run_with_offset.character_offset_;
+    }
+  }
+  if (target_x >= width_) {
+    const auto& run_with_offset = runs_with_offset_.back();
+    if (IsLtr(run_with_offset.direction_)) {
+      // The max offset within the run is rightmost
+      return run_with_offset.num_characters_ +
+             run_with_offset.character_offset_;
+    } else {
+      // The 0 offset is rightmost.
+      return run_with_offset.character_offset_;
+    }
+  }
+
+  ShapeTextIfNeeded();
+
+  for (HeapVector<RunWithOffset>::reverse_iterator riter =
+           runs_with_offset_.rbegin();
+       riter != runs_with_offset_.rend(); riter++) {
+    if (riter->x_position_ <= target_x) {
+      float run_x = target_x - riter->x_position_;
+      unsigned run_offset = riter->shape_result_->CaretOffsetForHitTest(
+          run_x, StringView(riter->text_), BreakGlyphsOption(true));
+      return run_offset + riter->character_offset_;
+    }
+  }
+  return 0;
 }
 
 }  // namespace blink

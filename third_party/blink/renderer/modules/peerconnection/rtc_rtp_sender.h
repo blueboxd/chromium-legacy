@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_set_parameter_options.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_send_stream.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
@@ -102,6 +103,11 @@ class RTCRtpSender final : public ScriptWrappable,
   void set_transceiver(RTCRtpTransceiver*);
   void set_transport(RTCDtlsTransport*);
 
+  ScriptPromise<HeapVector<Member<RTCRtpSendStream>>> replaceSendStreams() {
+    // TODO(crbug.com/345101934): Implement me.
+    return {};
+  }
+
   // ExecutionContextLifecycleObserver
   void ContextDestroyed() override;
 
@@ -109,11 +115,9 @@ class RTCRtpSender final : public ScriptWrappable,
 
  private:
   // Insertable Streams audio support methods
-  RTCInsertableStreams* CreateEncodedAudioStreams(ScriptState*,
-                                                  ExceptionState&);
+  RTCInsertableStreams* CreateEncodedAudioStreams(ScriptState*);
   void RegisterEncodedAudioStreamCallback();
   void UnregisterEncodedAudioStreamCallback();
-  void InitializeEncodedAudioStreams(ScriptState*);
   void SetAudioUnderlyingSource(
       RTCEncodedAudioUnderlyingSource* new_underlying_source,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
@@ -123,11 +127,9 @@ class RTCRtpSender final : public ScriptWrappable,
       std::unique_ptr<webrtc::TransformableAudioFrameInterface> frame);
 
   // Insertable Streams video support methods
-  RTCInsertableStreams* CreateEncodedVideoStreams(ScriptState*,
-                                                  ExceptionState&);
+  RTCInsertableStreams* CreateEncodedVideoStreams(ScriptState*);
   void RegisterEncodedVideoStreamCallback();
   void UnregisterEncodedVideoStreamCallback();
-  void InitializeEncodedVideoStreams(ScriptState*);
   void SetVideoUnderlyingSource(
       RTCEncodedVideoUnderlyingSource* new_underlying_source,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
@@ -152,6 +154,7 @@ class RTCRtpSender final : public ScriptWrappable,
   Member<RTCRtpSendParameters> last_returned_parameters_;
   Member<RTCRtpTransceiver> transceiver_;
   bool transform_shortcircuited_ = false;
+  Member<RTCInsertableStreams> encoded_streams_;
 
   // Insertable Streams audio support
   base::Lock audio_underlying_source_lock_;
@@ -162,7 +165,6 @@ class RTCRtpSender final : public ScriptWrappable,
   CrossThreadPersistent<RTCEncodedAudioUnderlyingSink>
       audio_to_packetizer_underlying_sink_
           GUARDED_BY(audio_underlying_sink_lock_);
-  Member<RTCInsertableStreams> encoded_audio_streams_;
   const scoped_refptr<blink::RTCEncodedAudioStreamTransformer::Broker>
       encoded_audio_transformer_;
 
@@ -175,7 +177,6 @@ class RTCRtpSender final : public ScriptWrappable,
   CrossThreadPersistent<RTCEncodedVideoUnderlyingSink>
       video_to_packetizer_underlying_sink_
           GUARDED_BY(video_underlying_sink_lock_);
-  Member<RTCInsertableStreams> encoded_video_streams_;
   const scoped_refptr<blink::RTCEncodedVideoStreamTransformer::Broker>
       encoded_video_transformer_;
 

@@ -19,6 +19,7 @@
 #include "base/memory/raw_ref.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -37,7 +38,6 @@
 #include "services/network/attribution/attribution_request_helper.h"
 #include "services/network/keepalive_statistics_recorder.h"
 #include "services/network/network_service.h"
-#include "services/network/network_service_memory_cache.h"
 #include "services/network/private_network_access_checker.h"
 #include "services/network/public/cpp/cors/cors_error_status.h"
 #include "services/network/public/cpp/initiator_lock_compatibility.h"
@@ -79,11 +79,27 @@ namespace cors {
 class OriginAccessList;
 }
 
+namespace internal {
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+//
+// LINT.IfChange(FetchKeepAliveRequestNetworkMetricType)
+enum class FetchKeepAliveRequestNetworkMetricType {
+  kOnCreate = 0,
+  kOnResponse = 1,
+  kMaxValue = kOnResponse
+};
+// LINT.ThenChange(//tools/metrics/histograms/enums.xml:FetchKeepAliveRequestNetworkMetricType)
+
+}  // namespace internal
+
 constexpr size_t kMaxFileUploadRequestsPerBatch = 64;
 
 class KeepaliveStatisticsRecorder;
 class NetToMojoPendingBuffer;
 class ScopedThrottlingToken;
+class SharedDictionaryManager;
 class SlopBucket;
 
 class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
@@ -164,11 +180,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       mojo::PendingRemote<mojom::URLLoaderClient> url_loader_client,
       base::WeakPtr<mojom::URLLoaderClient> sync_url_loader_client,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
-      uint32_t request_id,
+      base::StrictNumeric<int32_t> request_id,
       int keepalive_request_size,
       base::WeakPtr<KeepaliveStatisticsRecorder> keepalive_statistics_recorder,
       std::unique_ptr<TrustTokenRequestHelperFactory>
           trust_token_helper_factory,
+      SharedDictionaryManager* shared_dictionary_manager,
       std::unique_ptr<SharedDictionaryAccessChecker> shared_dictionary_checker,
       mojo::PendingRemote<mojom::CookieAccessObserver> cookie_observer,
       mojo::PendingRemote<mojom::TrustTokenAccessObserver> trust_token_observer,
@@ -185,10 +202,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   URLLoader& operator=(const URLLoader&) = delete;
 
   ~URLLoader() override;
-
-  void SetMemoryCache(base::WeakPtr<NetworkServiceMemoryCache> memory_cache) {
-    memory_cache_ = std::move(memory_cache);
-  }
 
   // mojom::URLLoader implementation:
   void FollowRedirect(
@@ -614,7 +627,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   // This also belongs to URLLoaderFactory and outlives this loader.
   const raw_ptr<mojom::CrossOriginEmbedderPolicyReporter> coep_reporter_;
 
-  const uint32_t request_id_;
+  const int32_t request_id_;
   const int keepalive_request_size_;
   const bool keepalive_;
   const bool do_not_prompt_for_login_;
@@ -696,11 +709,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
 
   base::WeakPtr<KeepaliveStatisticsRecorder> keepalive_statistics_recorder_;
 
-  base::WeakPtr<NetworkServiceMemoryCache> memory_cache_;
-  std::unique_ptr<NetworkServiceMemoryCacheWriter> memory_cache_writer_;
-  // Passed to `memory_cache_writer_`. Do not use other purposes.
-  net::TransportInfo transport_info_;
-
   bool first_auth_attempt_ = true;
 
   std::unique_ptr<ScopedThrottlingToken> throttling_token_;
@@ -729,6 +737,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   // operations, the field remains null, as does |trust_token_helper_factory_|.
   std::unique_ptr<TrustTokenRequestHelper> trust_token_helper_;
   std::unique_ptr<TrustTokenRequestHelperFactory> trust_token_helper_factory_;
+
+  // The current Trust Token operation being processed by the request.
+  std::optional<mojom::TrustTokenOperationType> trust_token_operation_;
 
   // The cached result of the request's Trust Tokens protocol operation, if any.
   // This can describe the result of either an outbound (request-annotating)

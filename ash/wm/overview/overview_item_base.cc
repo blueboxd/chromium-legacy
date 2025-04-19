@@ -24,6 +24,7 @@
 #include "ash/wm/snap_group/snap_group.h"
 #include "ash/wm/snap_group/snap_group_controller.h"
 #include "ash/wm/splitview/split_view_utils.h"
+#include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_constants.h"
 #include "base/memory/raw_ptr.h"
@@ -125,7 +126,7 @@ void OverviewItemBase::HandleGestureEventForTabletModeLayout(
       overview_grid()->grid_event_handler();
   const bool is_drag_item = IsDragItem();
   switch (event->type()) {
-    case ui::ET_SCROLL_FLING_START:
+    case ui::EventType::kScrollFlingStart:
       if (is_drag_item) {
         HandleFlingStartEvent(location, event->details().velocity_x(),
                               event->details().velocity_y());
@@ -133,7 +134,7 @@ void OverviewItemBase::HandleGestureEventForTabletModeLayout(
         grid_event_handler->OnGestureEvent(event);
       }
       break;
-    case ui::ET_GESTURE_SCROLL_BEGIN:
+    case ui::EventType::kGestureScrollBegin:
       if (std::abs(event->details().scroll_y_hint()) >
           std::abs(event->details().scroll_x_hint())) {
         HandlePressEvent(location, /*from_touch_gesture=*/true,
@@ -142,29 +143,29 @@ void OverviewItemBase::HandleGestureEventForTabletModeLayout(
         grid_event_handler->OnGestureEvent(event);
       }
       break;
-    case ui::ET_GESTURE_SCROLL_UPDATE:
+    case ui::EventType::kGestureScrollUpdate:
       if (is_drag_item) {
         HandleDragEvent(location);
       } else {
         grid_event_handler->OnGestureEvent(event);
       }
       break;
-    case ui::ET_GESTURE_SCROLL_END:
+    case ui::EventType::kGestureScrollEnd:
       if (is_drag_item) {
         HandleReleaseEvent(location);
       } else {
         grid_event_handler->OnGestureEvent(event);
       }
       break;
-    case ui::ET_GESTURE_LONG_PRESS:
+    case ui::EventType::kGestureLongPress:
       HandlePressEvent(location, /*from_touch_gesture=*/true,
                        event_source_item);
       HandleLongPressEvent(location);
       break;
-    case ui::ET_GESTURE_TAP:
+    case ui::EventType::kGestureTap:
       HandleTapEvent(location, event_source_item);
       break;
-    case ui::ET_GESTURE_END:
+    case ui::EventType::kGestureEnd:
       HandleGestureEndEvent();
       break;
     default:
@@ -187,14 +188,14 @@ void OverviewItemBase::HandleMouseEvent(const ui::MouseEvent& event,
       event.target() ? event.target()->GetScreenLocationF(event)
                      : gfx::PointF(GetWindowsUnionScreenBounds().CenterPoint());
   switch (event.type()) {
-    case ui::ET_MOUSE_PRESSED:
+    case ui::EventType::kMousePressed:
       HandlePressEvent(screen_location, /*from_touch_gesture=*/false,
                        event_source_item);
       break;
-    case ui::ET_MOUSE_RELEASED:
+    case ui::EventType::kMouseReleased:
       HandleReleaseEvent(screen_location);
       break;
-    case ui::ET_MOUSE_DRAGGED:
+    case ui::EventType::kMouseDragged:
       HandleDragEvent(screen_location);
       break;
     default:
@@ -218,27 +219,27 @@ void OverviewItemBase::HandleGestureEvent(ui::GestureEvent* event,
 
   const gfx::PointF location = event->details().bounding_box_f().CenterPoint();
   switch (event->type()) {
-    case ui::ET_GESTURE_TAP_DOWN:
+    case ui::EventType::kGestureTapDown:
       HandlePressEvent(location, /*from_touch_gesture=*/true,
                        event_source_item);
       break;
-    case ui::ET_GESTURE_SCROLL_UPDATE:
+    case ui::EventType::kGestureScrollUpdate:
       HandleDragEvent(location);
       break;
-    case ui::ET_SCROLL_FLING_START:
+    case ui::EventType::kScrollFlingStart:
       HandleFlingStartEvent(location, event->details().velocity_x(),
                             event->details().velocity_y());
       break;
-    case ui::ET_GESTURE_SCROLL_END:
+    case ui::EventType::kGestureScrollEnd:
       HandleReleaseEvent(location);
       break;
-    case ui::ET_GESTURE_LONG_PRESS:
+    case ui::EventType::kGestureLongPress:
       HandleLongPressEvent(location);
       break;
-    case ui::ET_GESTURE_TAP:
+    case ui::EventType::kGestureTap:
       HandleTapEvent(location, event_source_item);
       break;
-    case ui::ET_GESTURE_END:
+    case ui::EventType::kGestureEnd:
       HandleGestureEndEvent();
       break;
     default:
@@ -336,6 +337,7 @@ views::Widget::InitParams OverviewItemBase::CreateOverviewItemWidgetParams(
   params.accept_events = accept_event;
   params.parent = parent_window;
   params.init_properties_container.SetProperty(kHideInDeskMiniViewKey, true);
+  params.init_properties_container.SetProperty(kOverviewUiKey, true);
   return params;
 }
 
@@ -402,9 +404,9 @@ void OverviewItemBase::HandleReleaseEvent(
 
 void OverviewItemBase::HandleLongPressEvent(
     const gfx::PointF& location_in_screen) {
-  if (IsDragItem() &&
-      (ShouldAllowSplitView() || (desks_util::ShouldDesksBarBeCreated() &&
-                                  overview_grid_->IsDesksBarViewActive()))) {
+  if (IsDragItem() && (IsEligibleForDraggingToSnapInOverview(this) ||
+                       (desks_util::ShouldDesksBarBeCreated() &&
+                        overview_grid_->IsDesksBarViewActive()))) {
     overview_session_->StartNormalDragMode(location_in_screen);
   }
 }

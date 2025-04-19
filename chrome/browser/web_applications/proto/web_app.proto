@@ -8,8 +8,9 @@ import "components/sync/protocol/web_app_specifics.proto";
 import "chrome/browser/ash/system_web_apps/types/proto/system_web_app_data.proto";
 import "chrome/browser/web_applications/proto/web_app_launch_handler.proto";
 import "chrome/browser/web_applications/proto/web_app_os_integration_state.proto";
-import "chrome/browser/web_applications/proto/web_app_proto_package.proto";
+import "chrome/browser/web_applications/proto/web_app_install_state.proto";
 import "chrome/browser/web_applications/proto/web_app_isolation_data.proto";
+import "chrome/browser/web_applications/proto/web_app_proto_package.proto";
 import "chrome/browser/web_applications/proto/web_app_share_target.proto";
 import "chrome/browser/web_applications/proto/web_app_tab_strip.proto";
 
@@ -179,10 +180,12 @@ message GeneratedIconFix {
 // Full WebApp object data. See detailed comments in
 // chrome/browser/web_applications/web_app.h. Note on database identities:
 // app_id is a hash of launch_url. app_id is the client tag for sync system.
-// app_id is the storage key in ModelTypeStore.
+// app_id is the storage key in DataTypeStore.
 message WebAppProto {
-  reserved "handle_links", "is_in_sync_install", "is_placeholder";
-  // Synced data. It is replicated across all devices with WEB_APPS.
+  reserved "handle_links", "is_in_sync_install", "is_placeholder",
+      "file_handler_os_integration_state",
+      "run_on_os_login_os_integration_state";
+  // Synced data. It is replicated across , all devices with WEB_APPS.
   //
   // |sync_data.name| and |sync_data.theme_color| are read by a device to
   // generate a placeholder icon. Any device may write new values to synced
@@ -211,7 +214,8 @@ message WebAppProto {
   optional DisplayMode display_mode = 5;
   optional string scope = 6;
   optional SourcesProto sources = 7;       // Required.
-  optional bool is_locally_installed = 8;  // Required.
+  // This used to be `bool is_locally_installed`.
+  required proto.InstallState install_state = 8;  // Required.
 
   // Installation state:
   // Specifies if this web app is from sync and has not completed installation.
@@ -357,15 +361,7 @@ message WebAppProto {
   // uninstallation, and the uninstallation will be tried again.
   optional bool is_uninstalling = 45;
 
-  // Should be kept in sync with `OsIntegrationState` in web_app_constants.h.
-  enum OsIntegrationState {
-    ENABLED = 0;
-    DISABLED = 1;
-  }
-
-  // Whether the file handling abilities of the app should be registered with
-  // the OS.
-  optional OsIntegrationState file_handler_os_integration_state = 46;
+  reserved 46;
 
   // Whether the app should show up in file-open intent and picking surfaces.
   optional bool handles_file_open_intents = 47;
@@ -379,8 +375,7 @@ message WebAppProto {
   // `webapps::WebappInstallSource` encoded as an integer.
   optional uint32 latest_install_source = 50;
 
-  // Whether the app should be registered to run during OS Login time.
-  optional RunOnOsLoginMode run_on_os_login_os_integration_state = 51;
+  reserved 51;
 
   // Map of WebAppManagement enum to placeholder info and install_urls.
   // There should be only one entry per WebAppManagement source.

@@ -9,15 +9,14 @@
 #include <type_traits>
 
 #include "base/time/time.h"
-#include "chrome/browser/ui/side_panel/side_panel_entry_id.h"
-#include "chrome/browser/ui/side_panel/side_panel_enums.h"
+#include "chrome/browser/ui/views/side_panel/side_panel_entry_id.h"
+#include "chrome/browser/ui/views/side_panel/side_panel_enums.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_entry.h"
 #include "ui/base/class_property.h"
 
 class Browser;
 class SidePanelRegistry;
 class SidePanelContentProxy;
-class SidePanelCoordinator;
 
 namespace views {
 class View;
@@ -41,9 +40,6 @@ class SidePanelUtil {
   static std::unique_ptr<views::View> DeregisterAndReturnView(
       SidePanelRegistry* registry,
       SidePanelEntry::Key key);
-
-  static SidePanelCoordinator* GetSidePanelCoordinatorForBrowser(
-      Browser* browser);
 
   static void RecordNewTabButtonClicked(SidePanelEntry::Id id);
   static void RecordSidePanelOpen(std::optional<SidePanelOpenTrigger> trigger);

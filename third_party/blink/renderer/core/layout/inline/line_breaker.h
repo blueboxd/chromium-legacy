@@ -228,8 +228,7 @@ class CORE_EXPORT LineBreaker {
   //
   // `retry_size` - If this is not kIndefiniteSize, the function tries to break
   //   the ruby column so that its inline-size is less than `retry_size`.
-  NOINLINE bool HandleRuby(const RubyBreakTokenData* ruby_token,
-                           LineInfo* line_info,
+  NOINLINE bool HandleRuby(LineInfo* line_info,
                            LayoutUnit retry_size = kIndefiniteSize);
   bool IsMonolithicRuby(
       const LineInfo& base_line,
@@ -302,7 +301,10 @@ class CORE_EXPORT LineBreaker {
   LayoutUnit RemainingAvailableWidth() const {
     return AvailableWidthToFit() - position_;
   }
-  bool CanFitOnLine() const { return position_ <= AvailableWidthToFit(); }
+  bool CanFitOnLine() const {
+    return (parent_breaker_ && !auto_wrap_) ||
+           position_ <= AvailableWidthToFit();
+  }
   void UpdateAvailableWidth();
 
   // True if the current line is hyphenated.

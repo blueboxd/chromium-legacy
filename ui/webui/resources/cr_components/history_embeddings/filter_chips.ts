@@ -3,9 +3,12 @@
 // found in the LICENSE file.
 
 import '//resources/cr_elements/cr_chip/cr_chip.js';
+import '//resources/cr_elements/cr_icon/cr_icon.js';
 import '//resources/cr_elements/cr_shared_vars.css.js';
+import '//resources/cr_elements/icons_lit.html.js';
 import '//resources/cr_elements/md_select.css.js';
 
+import {I18nMixin} from '//resources/cr_elements/i18n_mixin.js';
 import {loadTimeData} from '//resources/js/load_time_data.js';
 import {PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import type {DomRepeatEvent} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -15,6 +18,7 @@ import {getTemplate} from './filter_chips.html.js';
 export interface Suggestion {
   label: string;
   timeRangeStart: Date;
+  ariaLabel: string;
 }
 
 function generateSuggestions(): Suggestion[] {
@@ -32,14 +36,20 @@ function generateSuggestions(): Suggestion[] {
     {
       label: loadTimeData.getString('historyEmbeddingsSuggestion1'),
       timeRangeStart: yesterday,
+      ariaLabel:
+          loadTimeData.getString('historyEmbeddingsSuggestion1AriaLabel'),
     },
     {
       label: loadTimeData.getString('historyEmbeddingsSuggestion2'),
       timeRangeStart: last7Days,
+      ariaLabel:
+          loadTimeData.getString('historyEmbeddingsSuggestion2AriaLabel'),
     },
     {
       label: loadTimeData.getString('historyEmbeddingsSuggestion3'),
       timeRangeStart: last30Days,
+      ariaLabel:
+          loadTimeData.getString('historyEmbeddingsSuggestion3AriaLabel'),
     },
   ];
 }
@@ -49,7 +59,11 @@ export interface HistoryEmbeddingsFilterChips {
     showByGroupSelectMenu: HTMLSelectElement,
   };
 }
-export class HistoryEmbeddingsFilterChips extends PolymerElement {
+
+const HistoryEmbeddingsFilterChipsElementBase = I18nMixin(PolymerElement);
+
+export class HistoryEmbeddingsFilterChips extends
+    HistoryEmbeddingsFilterChipsElementBase {
   static get is() {
     return 'cr-history-embeddings-filter-chips';
   }
@@ -60,6 +74,7 @@ export class HistoryEmbeddingsFilterChips extends PolymerElement {
 
   static get properties() {
     return {
+      enableShowResultsByGroupOption: Boolean,
       timeRangeStart: {
         type: Object,
         observer: 'onTimeRangeStartChanged_',
@@ -80,6 +95,7 @@ export class HistoryEmbeddingsFilterChips extends PolymerElement {
     };
   }
 
+  enableShowResultsByGroupOption: boolean;
   selectedSuggestion?: Suggestion;
   showResultsByGroup: boolean;
   private suggestions_: Suggestion[];

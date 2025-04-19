@@ -34,7 +34,7 @@ class OnDeviceTailModelService;
 struct ProviderStateService;
 
 namespace bookmarks {
-class CoreBookmarkModel;
+class BookmarkModel;
 }
 
 namespace history {
@@ -85,7 +85,7 @@ class AutocompleteProviderClient : public OmniboxAction::Client {
   virtual history_embeddings::HistoryEmbeddingsService*
   GetHistoryEmbeddingsService();
   virtual scoped_refptr<history::TopSites> GetTopSites() = 0;
-  virtual bookmarks::CoreBookmarkModel* GetBookmarkModel() = 0;
+  virtual bookmarks::BookmarkModel* GetBookmarkModel() = 0;
   virtual history::URLDatabase* GetInMemoryDatabase() = 0;
   virtual InMemoryURLIndex* GetInMemoryURLIndex() = 0;
   virtual TemplateURLService* GetTemplateURLService() = 0;
@@ -200,6 +200,12 @@ class AutocompleteProviderClient : public OmniboxAction::Client {
 
   // Returns true if the sharing hub command is enabled.
   virtual bool IsSharingHubAvailable() const;
+
+  // Returns true if history embeddings is enabled and user has opted in.
+  virtual bool IsHistoryEmbeddingsEnabled() const;
+
+  // Returns true if history embeddings is enabled and user can opt in/out.
+  virtual bool IsHistoryEmbeddingsSettingVisible() const;
 
   // Returns whether the app is currently in the background state (Mobile only).
   virtual bool in_background_state() const;

@@ -8,8 +8,6 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
-#include "chrome/browser/apps/app_service/app_service_proxy_ash.h"
-#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/metrics/app_platform_metrics_utils.h"
 #include "chrome/browser/ash/borealis/borealis_util.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service.h"
@@ -23,7 +21,7 @@
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/instance.h"
 #include "components/services/app_service/public/cpp/package_id.h"
-#include "components/sync/base/model_type.h"
+#include "components/sync/base/data_type.h"
 #include "components/sync/service/sync_service.h"
 #include "components/ukm/app_source_url_recorder.h"
 
@@ -53,7 +51,8 @@ AppDiscoveryMetrics::AppDiscoveryMetrics(
     Profile* profile,
     const apps::AppRegistryCache& app_registry_cache,
     InstanceRegistry& instance_registry,
-    AppPlatformMetrics* app_platform_metrics)
+    AppPlatformMetrics* app_platform_metrics,
+    apps::AppCapabilityAccessCache& app_capability_access_cache)
     : profile_(profile),
       app_registry_cache_(app_registry_cache),
       app_platform_metrics_(app_platform_metrics) {
@@ -67,6 +66,8 @@ AppDiscoveryMetrics::AppDiscoveryMetrics(
 
   instance_registry_observation_.Observe(&instance_registry);
   app_platform_metrics_->AddObserver(this);
+
+  app_capability_observation_.Observe(&app_capability_access_cache);
 }
 
 AppDiscoveryMetrics::~AppDiscoveryMetrics() {
@@ -100,6 +101,8 @@ std::optional<std::string> AppDiscoveryMetrics::GetAppStringToRecordForPackage(
           GURL(package_id.identifier()));
     case apps::PackageType::kGeForceNow:
       // GFN is not currently supported by the metrics system.
+    case apps::PackageType::kWebsite:
+    case apps::PackageType::kSystem:
     case apps::PackageType::kUnknown:
       return std::nullopt;
   }
@@ -415,6 +418,52 @@ std::string AppDiscoveryMetrics::GetAppStringToRecord(
     default:
       return "";
   }
+}
+
+void AppDiscoveryMetrics::OnCapabilityAccessUpdate(
+    const CapabilityAccessUpdate& update) {
+  // Records when the app gains camera access (either for the first time or
+  // after it was previously denied/lost).
+
+  // Note:
+  // - The 'state' is initially nullopt on the first app opening, as there is no
+  // previous state to reference.
+  // - 'state' reflects the last known access state when the app is closed or
+  // reopened.
+
+  // This condition is met when:
+  // 1. CameraChanged(): This indicates a change in camera access state
+  // between the previous state ('state') and the current update ('delta').
+  // 2. update.Camera().value_or(false): This indicates the app currently has
+  // access to the camera after applying 'delta'.
+
+  // In simpler terms, a notification is sent only when:
+  // - The app is first granted camera access ('state' is nullopt, 'delta' is
+  // true).
+  // - The app regains camera access after being denied or losing it ('state'
+  // is false, 'delta' is true).
+  if (!(update.CameraChanged() && update.Camera().value_or(false))) {
+    return;
+  }
+
+  std::string app_id = update.AppId();
+  // Do not record cros-events if app-sync is disabled.
+  if (!ShouldRecordAppKMForAppId(app_id)) {
+    return;
+  }
+
+  AppType app_type = GetAppType(profile_, app_id);
+  if (app_type == AppType::kArc) {
+    std::string arc_app_name = GetAppStringToRecord(app_id, app_type);
+    metrics::structured::StructuredMetricsClient::Record(
+        std::move(cros_events::AppDiscovery_ArcAppCameraAccessed().SetAppId(
+            arc_app_name)));
+  }
+}
+
+void AppDiscoveryMetrics::OnAppCapabilityAccessCacheWillBeDestroyed(
+    AppCapabilityAccessCache* cache) {
+  app_capability_observation_.Reset();
 }
 
 bool AppDiscoveryMetrics::AddAppInstall(const std::string& id) {

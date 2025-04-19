@@ -25,6 +25,11 @@
     sheets and html pages from the web. It has a memory cache for these objects.
 */
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 
 #include <algorithm>
@@ -388,6 +393,10 @@ ResourceFetcherInit::ResourceFetcherInit(
   DCHECK(this->unfreezable_task_runner);
   DCHECK(loader_factory || properties.IsDetached());
   DCHECK(context_lifecycle_notifier || properties.IsDetached());
+}
+
+bool ResourceFetcher::IsSimplifyLoadingTransparentPlaceholderImageEnabled() {
+  return transparent_image_optimization_enabled_;
 }
 
 mojom::blink::RequestContextType ResourceFetcher::DetermineRequestContext(
@@ -769,7 +778,9 @@ ResourceFetcher::ResourceFetcher(const ResourceFetcherInit& init)
       context_lifecycle_notifier_(init.context_lifecycle_notifier),
       auto_load_images_(true),
       allow_stale_resources_(false),
-      image_fetched_(false) {
+      image_fetched_(false),
+      transparent_image_optimization_enabled_(base::FeatureList::IsEnabled(
+          features::kSimplifyLoadingTransparentPlaceholderImage)) {
   InstanceCounters::IncrementCounter(InstanceCounters::kResourceFetcherCounter);
 
   // Determine the number of images that should get a boosted priority and the
@@ -850,7 +861,7 @@ ResourceFetcher::DeferPolicy ResourceFetcher::GetDeferPolicy(
   }
 
   // Check if the resource is marked as a potentially unused preload request.
-  if (IsPotentiallyUnusedPreload(params)) {
+  if (IsPotentiallyUnusedPreload(type, params)) {
     return DeferPolicy::kDeferAndSchedule;
   }
 
@@ -890,22 +901,28 @@ void ResourceFetcher::DidLoadResourceFromMemoryCache(
                                   resource->GetResponse());
   }
 
-  resource_load_observer_->WillSendRequest(
-      request, ResourceResponse() /* redirects */, resource->GetType(),
-      resource->Options(), render_blocking_behavior, resource);
-  resource_load_observer_->DidReceiveResponse(
-      request.InspectorId(), request, resource->GetResponse(), resource,
-      ResourceLoadObserver::ResponseSource::kFromMemoryCache);
-  if (resource->EncodedSize() > 0) {
-    resource_load_observer_->DidReceiveData(
-        request.InspectorId(),
-        base::make_span(static_cast<const char*>(nullptr),
-                        resource->EncodedSize()));
+  // Only call ResourceLoadObserver callbacks for placeholder images when
+  // devtools is opened to get maximum performance.
+  // TODO(crbug.com/41496436): Explore optimizing this in general for
+  // `is_static_data`.
+  if (!IsSimplifyLoadingTransparentPlaceholderImageEnabled() ||
+      (request.GetKnownTransparentPlaceholderImageIndex() == kNotFound) ||
+      (resource_load_observer_->InterestedInAllRequests())) {
+    resource_load_observer_->WillSendRequest(
+        request, ResourceResponse() /* redirects */, resource->GetType(),
+        resource->Options(), render_blocking_behavior, resource);
+    resource_load_observer_->DidReceiveResponse(
+        request.InspectorId(), request, resource->GetResponse(), resource,
+        ResourceLoadObserver::ResponseSource::kFromMemoryCache);
+    if (resource->EncodedSize() > 0) {
+      resource_load_observer_->DidReceiveData(
+          request.InspectorId(),
+          base::SpanOrSize<const char>(resource->EncodedSize()));
+    }
+    resource_load_observer_->DidFinishLoading(
+        request.InspectorId(), base::TimeTicks(), 0,
+        resource->GetResponse().DecodedBodyLength());
   }
-
-  resource_load_observer_->DidFinishLoading(
-      request.InspectorId(), base::TimeTicks(), 0,
-      resource->GetResponse().DecodedBodyLength());
 
   if (!is_static_data) {
     base::TimeTicks now = base::TimeTicks::Now();
@@ -939,11 +956,17 @@ void ResourceFetcher::DidLoadResourceFromMemoryCache(
     AtomicString initiator_type = resource->IsPreloadedByEarlyHints()
                                       ? AtomicString(kEarlyHintsInitiatorType)
                                       : resource->Options().initiator_info.name;
-    scheduled_resource_timing_reports_.push_back(
-        ScheduledResourceTimingInfo{std::move(info), initiator_type});
+    // If the fetch originated from user agent CSS we do not emit a resource
+    // timing entry.
+    if (initiator_type != fetch_initiator_type_names::kUacss) {
+      scheduled_resource_timing_reports_.push_back(
+          ScheduledResourceTimingInfo{std::move(info), initiator_type});
 
-    if (!resource_timing_report_timer_.IsActive())
-      resource_timing_report_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
+      if (!resource_timing_report_timer_.IsActive()) {
+        resource_timing_report_timer_.StartOneShot(base::TimeDelta(),
+                                                   FROM_HERE);
+      }
+    }
   }
   resource->SetIsLoadedFromMemoryCache();
 }
@@ -973,10 +996,20 @@ Resource* ResourceFetcher::CreateResourceForStaticData(
 
   ResourceResponse response;
   scoped_refptr<SharedBuffer> data;
-  if (url.ProtocolIsData()) {
+  if (IsSimplifyLoadingTransparentPlaceholderImageEnabled() &&
+      (params.GetResourceRequest().GetKnownTransparentPlaceholderImageIndex() !=
+       kNotFound)) {
+    // Skip the construction of `data`, since we won't use it.
+
+    // We can defer the construction of `response`, but that would result in
+    // `ImageResource` instantiation even in the data url parse failure
+    // cases. Probably that's okay.
+    // TODO(crbug.com/41496436): Revisit this.
+  } else if (url.ProtocolIsData()) {
     int result;
     std::tie(result, response, data) = network_utils::ParseDataURL(
-        url, params.GetResourceRequest().HttpMethod());
+        url, params.GetResourceRequest().HttpMethod(),
+        params.GetResourceRequest().GetUkmSourceId(), UkmRecorder());
     if (result != net::OK) {
       return nullptr;
     }
@@ -987,9 +1020,11 @@ Resource* ResourceFetcher::CreateResourceForStaticData(
   } else {
     ArchiveResource* archive_resource =
         archive_->SubresourceForURL(params.Url());
-    // The archive doesn't contain the resource, the request must be aborted.
-    if (!archive_resource)
+    // The archive doesn't contain the resource, the request must be
+    // aborted.
+    if (!archive_resource) {
       return nullptr;
+    }
     data = archive_resource->Data();
     response.SetCurrentRequestUrl(url);
     response.SetMimeType(archive_resource->MimeType());
@@ -1000,14 +1035,50 @@ Resource* ResourceFetcher::CreateResourceForStaticData(
 
   Resource* resource = factory.Create(
       params.GetResourceRequest(), params.Options(), params.DecoderOptions());
-  resource->NotifyStartLoad();
-  // FIXME: We should provide a body stream here.
-  resource->ResponseReceived(response);
-  resource->SetDataBufferingPolicy(kBufferData);
-  if (data->size())
-    resource->SetResourceBuffer(data);
-  resource->SetCacheIdentifier(cache_identifier);
-  resource->Finish(base::TimeTicks(), freezable_task_runner_.get());
+  switch (resource->GetStatus()) {
+    case ResourceStatus::kNotStarted:
+      // We should not reach here on the transparent placeholder image
+      // fast-path.
+      CHECK(!IsSimplifyLoadingTransparentPlaceholderImageEnabled() ||
+            (params.GetResourceRequest()
+                 .GetKnownTransparentPlaceholderImageIndex() == kNotFound));
+
+      // The below code, with the exception of `NotifyStartLoad()` and
+      // `Finish()`, is the same as in
+      // `CreateResourceForTransparentPlaceholderImage()`.
+      resource->NotifyStartLoad();
+      // FIXME: We should provide a body stream here.
+      resource->ResponseReceived(response);
+      resource->SetDataBufferingPolicy(kBufferData);
+      if (data->size()) {
+        resource->SetResourceBuffer(data);
+      }
+      resource->SetCacheIdentifier(cache_identifier);
+      resource->Finish(base::TimeTicks(), freezable_task_runner_.get());
+      break;
+
+    case ResourceStatus::kCached:
+      // The constructed resource already has a synthetic response set.
+
+      // We should only reach here on the transparent placeholder image
+      // fast-path.
+      CHECK(IsSimplifyLoadingTransparentPlaceholderImageEnabled());
+      CHECK_NE(params.GetResourceRequest()
+                   .GetKnownTransparentPlaceholderImageIndex(),
+               kNotFound);
+
+      use_counter_->CountUse(
+          WebFeature::kSimplifyLoadingTransparentPlaceholderImage);
+
+      // There shouldn't be any `ResourceClient`s that need to be
+      // notified of synthetic response received steps.
+      CHECK(!resource->HasClientsOrObservers());
+      break;
+
+    default:
+      CHECK(false) << "Unexpected resource status: "
+                   << (int)resource->GetStatus();
+  }
 
   AddToMemoryCacheIfNeeded(params, resource);
   return resource;
@@ -1129,6 +1200,32 @@ std::optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
     const ResourceFactory& factory,
     WebScopedVirtualTimePauser& virtual_time_pauser) {
   ResourceRequest& resource_request = params.MutableResourceRequest();
+
+  if (IsSimplifyLoadingTransparentPlaceholderImageEnabled() &&
+      (resource_request.GetKnownTransparentPlaceholderImageIndex() !=
+       kNotFound)) {
+    // Since we are not actually sending the request to the server,
+    // we skip construction of the full ResourceRequest for performance,
+    // and only set the properties needed for observer callbacks.
+    // TODO(crbug.com/41496436): We need additional work to expand to
+    // generic data urls.
+    resource_request.SetPriority(ResourceLoadPriority::kLow);
+    SetReferrer(resource_request, properties_->GetFetchClientSettingsObject());
+
+    // We check the report-only and enforced headers here to ensure we report
+    // and block things we ought to block.
+    if (Context().CheckAndEnforceCSPForRequest(
+            resource_request.GetRequestContext(),
+            resource_request.GetRequestDestination(), params.Url(),
+            params.Options(), ReportingDisposition::kReport, params.Url(),
+            ResourceRequestHead::RedirectStatus::kNoRedirect) ==
+        ResourceRequestBlockedReason::kCSP) {
+      return ResourceRequestBlockedReason::kCSP;
+    }
+
+    return std::nullopt;
+  }
+
   ResourceType resource_type = factory.GetType();
   const ResourceLoaderOptions& options = params.Options();
 
@@ -1242,6 +1339,12 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
     if (params.Url().ProtocolIsData()) {
       base::UmaHistogramMicrosecondsTimes(
           "Blink.Fetch.RequestResourceTime2.Data", elapsed);
+      if (params.GetResourceRequest()
+              .GetKnownTransparentPlaceholderImageIndex() != kNotFound) {
+        base::UmaHistogramMicrosecondsTimes(
+            "Blink.Fetch.RequestResourceTime2.TransparentPlaceholderImage",
+            elapsed);
+      }
     }
     if (params.IsSpeculativePreload() || params.IsLinkPreload()) {
       base::UmaHistogramMicrosecondsTimes(
@@ -3023,6 +3126,7 @@ void ResourceFetcher::MarkEarlyHintConsumedIfNeeded(
 }
 
 bool ResourceFetcher::IsPotentiallyUnusedPreload(
+    ResourceType type,
     const FetchParameters& params) const {
   static const bool kDeferUnusedPreload =
       base::FeatureList::IsEnabled(features::kLCPPDeferUnusedPreload);
@@ -3057,6 +3161,36 @@ bool ResourceFetcher::IsPotentiallyUnusedPreload(
   }
   if (!reason_matched) {
     return false;
+  }
+
+  static const LcppDeferUnusedPreloadExcludedResourceType
+      kExcludedResourceType =
+          features::kLcppDeferUnusedPreloadExcludedResourceType.Get();
+  LcppDeferUnusedPreloadExcludedResourceType excluded_resource_type;
+  if (defer_unused_preload_enabled_for_testing_) {
+    excluded_resource_type =
+        defer_unused_preload_excluded_resource_type_for_testing_;
+  } else {
+    excluded_resource_type = kExcludedResourceType;
+  }
+  switch (excluded_resource_type) {
+    case LcppDeferUnusedPreloadExcludedResourceType::kNone:
+      break;
+    case LcppDeferUnusedPreloadExcludedResourceType::kStyleSheet:
+      if (type == ResourceType::kCSSStyleSheet) {
+        return false;
+      }
+      break;
+    case LcppDeferUnusedPreloadExcludedResourceType::kScript:
+      if (type == ResourceType::kScript) {
+        return false;
+      }
+      break;
+    case LcppDeferUnusedPreloadExcludedResourceType::kMock:
+      if (type == ResourceType::kMock) {
+        return false;
+      }
+      break;
   }
 
   return base::Contains(context_->GetPotentiallyUnusedPreloads(), params.Url());
@@ -3229,6 +3363,9 @@ void ResourceFetcher::UpdateServiceWorkerSubresourceMetrics(
   if (!router_info || !router_info->MatchedSourceType()) {
     return;
   }
+
+  metrics.total_router_evaluation_time_for_subresources +=
+      router_info->RouterEvaluationTime();
 
   switch (*router_info->MatchedSourceType()) {
     case network::mojom::ServiceWorkerRouterSourceType::kCache:

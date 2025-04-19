@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ui/events/gesture_detection/gesture_detector.h"
 
 #include <stddef.h>
@@ -313,7 +318,7 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev,
         if (ev.GetToolType(0) == MotionEvent::ToolType::STYLUS &&
             stylus_button_accelerated_longpress_enabled_ &&
             (ev.GetFlags() & ui::EF_LEFT_MOUSE_BUTTON)) {
-          // This will generate a ET_GESTURE_LONG_PRESS event with
+          // This will generate a EventType::kGestureLongPress event with
           // EF_LEFT_MOUSE_BUTTON.
           ActivateShortPressGesture(ev);
           ActivateLongPressGesture(ev);

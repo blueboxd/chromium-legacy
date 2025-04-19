@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
+#import "ui/base/device_form_factor.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
 namespace {
@@ -17,6 +18,14 @@ struct ContentIDs {
   int title;
   int body;
 };
+
+// Returns the string id of the body text for the Docking promo notification.
+int DockingBodyID() {
+  if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
+    return IDS_IOS_NOTIFICATIONS_TIPS_DOCKING_BODY_IPAD;
+  }
+  return IDS_IOS_NOTIFICATIONS_TIPS_DOCKING_BODY_IPHONE;
+}
 
 // Returns the ContentIDs for the given `type`.
 ContentIDs ContentIDsForType(TipsNotificationType type) {
@@ -33,15 +42,23 @@ ContentIDs ContentIDsForType(TipsNotificationType type) {
     case TipsNotificationType::kSetUpListContinuation:
       return {IDS_IOS_NOTIFICATIONS_TIPS_SETUPLIST_CONTINUATION_TITLE,
               IDS_IOS_NOTIFICATIONS_TIPS_SETUPLIST_CONTINUATION_BODY};
+    case TipsNotificationType::kDocking:
+      return {IDS_IOS_NOTIFICATIONS_TIPS_DOCKING_TITLE, DockingBodyID()};
+    case TipsNotificationType::kOmniboxPosition:
+      return {IDS_IOS_NOTIFICATIONS_TIPS_OMNIBOX_POSITION_TITLE,
+              IDS_IOS_NOTIFICATIONS_TIPS_OMNIBOX_POSITION_BODY};
     case TipsNotificationType::kError:
       NOTREACHED_NORETURN();
   }
 }
 
-// A bitfield with all notification types enabled.
-// TODO(crbug.com/342621716) Enable SetUpList Continuation Notif by setting
-// kEnableAllNotifications to 23.
-const int kEnableAllNotifications = 7;
+// A bitfield with all notification types from the enum enabled.
+constexpr int kAllNotificationBits =
+    (1 << (int(TipsNotificationType::kMaxValue) + 1)) - 1;
+// A bitfield with all notification types from the enum enabled, except for
+// kError.
+constexpr int kEnableAllNotifications =
+    kAllNotificationBits - (1 << int(TipsNotificationType::kError));
 
 }  // namespace
 
@@ -52,6 +69,9 @@ const char kTipsNotificationsSentPref[] = "tips_notifications.sent_bitfield";
 const char kTipsNotificationsLastSent[] = "tips_notifiations.last_sent";
 const char kTipsNotificationsLastTriggered[] =
     "tips_notifiations.last_triggered";
+const char kTipsNotificationsLastRequestedTime[] =
+    "tips_notifications.last_requested.time";
+const char kTipsNotificationsUserType[] = "tips_notifications.user_type";
 
 bool IsTipsNotification(UNNotificationRequest* request) {
   return [request.identifier isEqualToString:kTipsNotificationId];
@@ -93,14 +113,15 @@ UNNotificationContent* ContentForTipsNotificationType(
   return content;
 }
 
+base::TimeDelta TipsNotificationTriggerDelta() {
+  return GetFieldTrialParamByFeatureAsTimeDelta(
+      kIOSTipsNotifications, kIOSTipsNotificationsTriggerTimeParam,
+      kTipsNotificationDefaultTriggerDelta);
+}
+
 UNNotificationTrigger* TipsNotificationTrigger() {
-  NSTimeInterval trigger_interval =
-      GetFieldTrialParamByFeatureAsTimeDelta(
-          kIOSTipsNotifications, kIOSTipsNotificationsTriggerTimeParam,
-          kTipsNotificationDefaultTriggerDelta)
-          .InSecondsF();
   return [UNTimeIntervalNotificationTrigger
-      triggerWithTimeInterval:trigger_interval
+      triggerWithTimeInterval:TipsNotificationTriggerDelta().InSecondsF()
                       repeats:NO];
 }
 

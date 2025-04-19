@@ -9,8 +9,10 @@ option optimize_for = LITE_RUNTIME;
 package reporting;
 
 // |Destination| indicates which handler a |Record| should be delivered to.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 // This must be kept in sync with EnterpriseCloudReportingDestination in
-// //tools/metrics/histograms/metadata/browser/enums.xml in the Chromium repo.
+// //tools/metrics/histograms/enums.xml in the Chromium repo.
 // You must also add any new destinations to
 // `Browser.ERP.EventEnqueueResult.{Destination}` in
 // //tools/metrics/histograms/metadata/browser/histograms.xml
@@ -121,6 +123,9 @@ enum Destination {
 
   // |CHROME_CRASH_EVENTS| is for fatal chrome crash events.
   CHROME_CRASH_EVENTS = 32;
+
+  // |CROS_SECURITY_FILE| is for events that read or modify sensitive files.
+  CROS_SECURITY_FILE = 33;
 
   reserved 8;
 }

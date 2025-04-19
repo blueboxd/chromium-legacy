@@ -18,10 +18,7 @@ android_library("sample_java") {
     "java/src/org/jni_zero/sample/SampleActivity.java",
   ]
 
-  deps = [
-    "//build/android:build_java",
-    "//third_party/jni_zero:jni_zero_java",
-  ]
+  deps = [ "//third_party/jni_zero:jni_zero_java" ]
 }
 
 source_set("sample_native_side") {
@@ -30,7 +27,7 @@ source_set("sample_native_side") {
 }
 
 shared_library_with_jni("libjni_zero_sample") {
-  if (allow_jni_multiplexing) {
+  if (enable_jni_multiplexing) {
     _linker_script = "sample_lib_multiplexing_version_script.txt"
   } else {
     _linker_script = "sample_lib_version_script.txt"

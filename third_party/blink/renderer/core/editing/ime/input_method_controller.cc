@@ -24,6 +24,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/core/editing/ime/input_method_controller.h"
 
 #include <tuple>
@@ -979,6 +984,10 @@ void InputMethodController::SetComposition(
 
   SelectComposition();
 
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
+  // needs to be audited. see http://crbug.com/590369 for more details.
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
+
   if (GetFrame().Selection().ComputeVisibleSelectionInDOMTree().IsNone()) {
     return;
   }
@@ -986,10 +995,6 @@ void InputMethodController::SetComposition(
   Element* target = GetDocument().FocusedElement();
   if (!target)
     return;
-
-  // TODO(editing-dev): The use of UpdateStyleAndLayout
-  // needs to be audited. see http://crbug.com/590369 for more details.
-  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
 
   PlainTextRange selected_range = CreateSelectionRangeForSetComposition(
       selection_start, selection_end, text.length());

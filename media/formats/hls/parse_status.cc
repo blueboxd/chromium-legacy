@@ -28,6 +28,7 @@ std::string_view ParseStatusCodeToString(ParseStatusCode code) {
     PARSE_STATUS_CODE_CASE(kFailedToParseStableId);
     PARSE_STATUS_CODE_CASE(kFailedToParseInstreamId);
     PARSE_STATUS_CODE_CASE(kFailedToParseAudioChannels);
+    PARSE_STATUS_CODE_CASE(kFailedToParseHexadecimalString);
     PARSE_STATUS_CODE_CASE(kInvalidPlaylistVersion);
     PARSE_STATUS_CODE_CASE(kUnknownPlaylistType);
     PARSE_STATUS_CODE_CASE(kMalformedAttributeList);
@@ -66,6 +67,7 @@ std::string_view ParseStatusCodeToString(ParseStatusCode code) {
     PARSE_STATUS_CODE_CASE(kRenditionGroupHasMultipleDefaultRenditions);
     PARSE_STATUS_CODE_CASE(kRenditionGroupHasDuplicateRenditionNames);
     PARSE_STATUS_CODE_CASE(kRenditionGroupDoesNotExist);
+    PARSE_STATUS_CODE_CASE(kUnsupportedEncryptionMethod);
   }
 
   NOTREACHED_NORETURN();

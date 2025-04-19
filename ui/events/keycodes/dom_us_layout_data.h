@@ -5,6 +5,8 @@
 #ifndef UI_EVENTS_KEYCODES_DOM_US_LAYOUT_DATA_H_
 #define UI_EVENTS_KEYCODES_DOM_US_LAYOUT_DATA_H_
 
+#include <array>
+
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 
@@ -15,7 +17,7 @@ namespace ui {
 // interpretation when there is no other way to map a physical key.
 const struct PrintableCodeEntry {
   DomCode dom_code;
-  char16_t character[2];  // normal, shift
+  std::array<char16_t, 2> character;  // normal, shifted
 } kPrintableCodeMap[] = {
     {DomCode::US_A, {'a', 'A'}},
     {DomCode::US_B, {'b', 'B'}},
@@ -426,6 +428,8 @@ const struct DomCodeToKeyboardCodeEntry {
 #if BUILDFLAG(IS_POSIX)
     {DomCode::MICROPHONE_MUTE_TOGGLE,
      VKEY_MICROPHONE_MUTE_TOGGLE},  // 0x0100A9 MicrophoneMuteToggle
+    {DomCode::ACCESSIBILITY,
+     VKEY_ACCESSIBILITY},  // 0x0100AA System Accessibility Binding
 #endif
     {DomCode::US_A, VKEY_A},                    // 0x070004 KeyA
     {DomCode::US_B, VKEY_B},                    // 0x070005 KeyB

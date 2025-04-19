@@ -11,9 +11,11 @@
 #include "base/memory/raw_ref.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/label.h"
@@ -89,7 +91,7 @@ ColoredDialog::ColoredDialog(AcceptCallback accept_callback) {
       },
       base::Unretained(this), std::move(accept_callback)));
 
-  SetModalType(ui::MODAL_TYPE_WINDOW);
+  SetModalType(ui::mojom::ModalType::kWindow);
   SetTitle(l10n_util::GetStringUTF16(IDS_COLORED_DIALOG_TITLE));
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
@@ -99,7 +101,7 @@ ColoredDialog::ColoredDialog(AcceptCallback accept_callback) {
   textfield_ = AddChildView(std::make_unique<views::Textfield>());
   textfield_->SetPlaceholderText(
       l10n_util::GetStringUTF16(IDS_COLORED_DIALOG_TEXTFIELD_PLACEHOLDER));
-  textfield_->SetAccessibleName(
+  textfield_->GetViewAccessibility().SetName(
       l10n_util::GetStringUTF16(IDS_COLORED_DIALOG_TEXTFIELD_AX_LABEL));
   textfield_->set_controller(this);
 
@@ -109,7 +111,9 @@ ColoredDialog::ColoredDialog(AcceptCallback accept_callback) {
 }
 
 ColoredDialog::~ColoredDialog() {
-  textfield_->set_controller(nullptr);
+  if (textfield_) {
+    textfield_->set_controller(nullptr);
+  }
 }
 
 bool ColoredDialog::ShouldShowCloseButton() const {

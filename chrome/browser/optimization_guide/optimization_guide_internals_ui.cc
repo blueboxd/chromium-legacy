@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/optimization_guide/optimization_guide_internals_ui.h"
 
 #include <cstdint>
@@ -18,6 +23,7 @@
 #include "components/grit/optimization_guide_internals_resources.h"
 #include "components/grit/optimization_guide_internals_resources_map.h"
 #include "components/optimization_guide/core/model_execution/feature_keys.h"
+#include "components/optimization_guide/core/model_quality/model_quality_util.h"
 #include "components/optimization_guide/core/optimization_guide_prefs.h"
 #include "components/optimization_guide/core/prediction_manager.h"
 #include "components/optimization_guide/optimization_guide_internals/webui/optimization_guide_internals.mojom.h"
@@ -95,8 +101,9 @@ void OptimizationGuideInternalsUI::RequestLoggedModelQualityClientIds(
   std::vector<optimization_guide_internals::mojom::LoggedClientIdsPtr>
       logged_client_ids;
 
-  int64_t client_id = local_state->GetInt64(
-      optimization_guide::prefs::localstate::kModelQualityLogggingClientId);
+  int64_t client_id =
+      local_state->GetInt64(optimization_guide::model_execution::prefs::
+                                localstate::kModelQualityLogggingClientId);
 
   // If the client id is zero no client id is set, in that case do nothing.
   if (client_id == 0) {

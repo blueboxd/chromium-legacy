@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stddef.h>
-#include <stdint.h>
+#include "testing/libfuzzer/fuzzers/command_buffer_lpm_fuzzer/cmd_buf_lpm_fuzz.h"
 
 #include <dawn/dawn_proc.h>
 #include <dawn/webgpu_cpp.h>
+#include <stddef.h>
+#include <stdint.h>
+
 #include <memory>
 #include <vector>
 
@@ -30,19 +32,14 @@
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/config/gpu_switches.h"
-#include "gpu/ipc/host/gpu_memory_buffer_support.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "gpu/ipc/webgpu_in_process_context.h"
 #include "mojo/core/embedder/embedder.h"
-#include "ui/gl/gl_switches.h"
-#include "ui/gl/init/gl_factory.h"
-#include "ui/gl/test/gl_surface_test_support.h"
-
-#include "testing/libfuzzer/fuzzers/command_buffer_lpm_fuzzer/cmd_buf_lpm_fuzz.h"
 #include "testing/libfuzzer/fuzzers/command_buffer_lpm_fuzzer/cmd_buf_lpm_fuzz.pb.h"
 #include "testing/libfuzzer/fuzzers/command_buffer_lpm_fuzzer/webgpu_support.h"
 #include "testing/libfuzzer/libfuzzer_exports.h"
 #include "testing/libfuzzer/proto/lpm_interface.h"
+#include "ui/gl/test/gl_surface_test_support.h"
 
 namespace gpu::cmdbuf::fuzzing {
 
@@ -89,19 +86,10 @@ void CmdBufFuzz::GfxInit() {
   preferences.enable_unsafe_webgpu = true;
   preferences.enable_gpu_service_logging_gpu = true;
 
-  // Initializing some portion of Chromium's windowing feature seems to be
-  // required to use gpu::CreateBufferUsageAndFormatExceptionList().
+  // Configure the GL implementation to use stub bindings to ensure that any
+  // later creation of the GL surface succeeds.
+  CHECK(gl::GLSurfaceTestSupport::InitializeOneOffWithStubBindings());
 
-  // TODO(bookholt): It's not obvious whether having legit values from
-  // gpu::CreateBufferUsageAndFormatExceptionList() is really desired for
-  // fuzzing, but it's a starting point.
-
-  // TODO(bookholt): OS specific windowing init.
-  VLOG(3) << "Aura + Ozone init";
-  gl_display_ = gl::GLSurfaceTestSupport::InitializeOneOffWithStubBindings();
-  CHECK(gl_display_);
-  preferences.texture_target_exception_list =
-      gpu::CreateBufferUsageAndFormatExceptionList();
   VLOG(3) << "TestGpuServiceHolder: starting GPU threads";
   gpu_service_holder_ =
       std::make_unique<viz::TestGpuServiceHolder>(preferences);
@@ -161,8 +149,6 @@ void CmdBufFuzz::GfxInit() {
       std::make_unique<webgpu::WebGPUCmdHelper>(command_buffer_.get());
   task_executor_ = command_buffer_->service_for_testing();
   // task_executor_->GetSharedContextState()->surface();
-  surface_ = gl::init::CreateOffscreenGLSurface(gl_display_, gfx::Size());
-  CHECK(surface_.get());
   decoder_ = command_buffer_->GetWebGPUDecoderForTest();
   webgpu_instance_ = wgpu::Instance(wire_channel_->GetWGPUInstance());
   buffer_ = cmd_helper_->get_ring_buffer();

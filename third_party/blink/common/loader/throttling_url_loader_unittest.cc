@@ -338,9 +338,9 @@ class TestURLLoaderThrottle : public blink::URLLoaderThrottle {
                            network::mojom::URLResponseHead* response_head,
                            bool* defer) override {
     will_process_response_called_++;
+    response_url_ = response_url;
     if (will_process_response_callback_)
       will_process_response_callback_.Run(delegate_.get(), defer);
-    response_url_ = response_url;
   }
 
   void BeforeWillProcessResponse(
@@ -422,6 +422,11 @@ class ThrottlingURLLoaderTest : public testing::Test {
     factory_.factory_remote().FlushForTesting();
   }
 
+  void ResetLoader() {
+    ResetThrottleRawPointer();
+    loader_.reset();
+  }
+
   void ResetThrottleRawPointer() { throttle_ = nullptr; }
 
   // Be the first member so it is destroyed last.
@@ -465,6 +470,25 @@ TEST_F(ThrottlingURLLoaderTest, CancelBeforeStart) {
   EXPECT_EQ(0u, client_.on_received_response_called());
   EXPECT_EQ(0u, client_.on_received_redirect_called());
   EXPECT_EQ(1u, client_.on_complete_called());
+}
+
+TEST_F(ThrottlingURLLoaderTest, DeleteBeforeStart) {
+  base::RunLoop run_loop;
+  throttle_->set_will_start_request_callback(base::BindLambdaForTesting(
+      [this, &run_loop](blink::URLLoaderThrottle::Delegate* delegate,
+                        bool* defer) {
+        ResetLoader();
+        run_loop.Quit();
+      }));
+
+  CreateLoaderAndStart();
+  run_loop.Run();
+
+  EXPECT_EQ(1u, factory_.create_loader_and_start_called());
+
+  EXPECT_EQ(0u, client_.on_received_response_called());
+  EXPECT_EQ(0u, client_.on_received_redirect_called());
+  EXPECT_EQ(0u, client_.on_complete_called());
 }
 
 TEST_F(ThrottlingURLLoaderTest, DeferBeforeStart) {
@@ -667,6 +691,88 @@ TEST_F(ThrottlingURLLoaderTest, CancelBeforeRedirect) {
   EXPECT_EQ(1u, client_.on_complete_called());
 }
 
+TEST_F(ThrottlingURLLoaderTest, DeleteBeforeRedirect) {
+  base::RunLoop run_loop;
+  throttle_->set_will_redirect_request_callback(base::BindLambdaForTesting(
+      [this, &run_loop](
+          blink::URLLoaderThrottle::Delegate* delegate, bool* /* defer */,
+          std::vector<std::string>* /* removed_headers */,
+          net::HttpRequestHeaders* /* modified_headers */,
+          net::HttpRequestHeaders* /* modified_cors_exempt_headers */) {
+        ResetLoader();
+        run_loop.Quit();
+      }));
+
+  CreateLoaderAndStart();
+
+  factory_.NotifyClientOnReceiveRedirect();
+
+  run_loop.Run();
+
+  EXPECT_EQ(0u, client_.on_received_response_called());
+  EXPECT_EQ(0u, client_.on_received_redirect_called());
+  EXPECT_EQ(0u, client_.on_complete_called());
+}
+
+TEST_F(ThrottlingURLLoaderTest, CancelBeforeWillRedirect) {
+  throttle_->set_before_will_redirect_request_callback(
+      base::BindLambdaForTesting(
+          [](blink::URLLoaderThrottle::Delegate* delegate,
+             RestartWithURLReset* restart_with_url_reset,
+             std::vector<std::string>* /* removed_headers */,
+             net::HttpRequestHeaders* /* modified_headers */,
+             net::HttpRequestHeaders* /* modified_cors_exempt_headers */) {
+            delegate->CancelWithError(net::ERR_ACCESS_DENIED);
+          }));
+
+  base::RunLoop run_loop;
+  client_.set_on_complete_callback(
+      base::BindLambdaForTesting([&run_loop](int error) {
+        EXPECT_EQ(net::ERR_ACCESS_DENIED, error);
+        run_loop.Quit();
+      }));
+
+  CreateLoaderAndStart();
+
+  factory_.NotifyClientOnReceiveRedirect();
+
+  run_loop.Run();
+
+  EXPECT_EQ(1u, throttle_->will_start_request_called());
+  EXPECT_EQ(1u, throttle_->will_redirect_request_called());
+  EXPECT_EQ(0u, throttle_->before_will_process_response_called());
+  EXPECT_EQ(0u, throttle_->will_process_response_called());
+
+  EXPECT_EQ(0u, client_.on_received_response_called());
+  EXPECT_EQ(0u, client_.on_received_redirect_called());
+  EXPECT_EQ(1u, client_.on_complete_called());
+}
+
+TEST_F(ThrottlingURLLoaderTest, DeleteBeforeWillRedirect) {
+  base::RunLoop run_loop;
+  throttle_->set_before_will_redirect_request_callback(
+      base::BindLambdaForTesting(
+          [this, &run_loop](
+              blink::URLLoaderThrottle::Delegate* delegate,
+              RestartWithURLReset* restart_with_url_reset,
+              std::vector<std::string>* /* removed_headers */,
+              net::HttpRequestHeaders* /* modified_headers */,
+              net::HttpRequestHeaders* /* modified_cors_exempt_headers */) {
+            ResetLoader();
+            run_loop.Quit();
+          }));
+
+  CreateLoaderAndStart();
+
+  factory_.NotifyClientOnReceiveRedirect();
+
+  run_loop.Run();
+
+  EXPECT_EQ(0u, client_.on_received_response_called());
+  EXPECT_EQ(0u, client_.on_received_redirect_called());
+  EXPECT_EQ(0u, client_.on_complete_called());
+}
+
 TEST_F(ThrottlingURLLoaderTest, DeferBeforeRedirect) {
   base::RunLoop run_loop1;
   throttle_->set_will_redirect_request_callback(base::BindLambdaForTesting(
@@ -762,49 +868,6 @@ TEST_F(ThrottlingURLLoaderTest, ModifyHeadersBeforeRedirect) {
             factory_.cors_exempt_headers_modified_on_redirect().ToString());
 }
 
-TEST_F(ThrottlingURLLoaderTest, RemoveAcceptLanguageHeader) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {network::features::kReduceAcceptLanguageOriginTrial}, {});
-
-  // Remove Accept-Language header if new header has no Accept-Language header.
-  throttle_->set_will_redirect_request_callback(base::BindLambdaForTesting(
-      [](blink::URLLoaderThrottle::Delegate* delegate, bool* /* defer */,
-         std::vector<std::string>* removed_headers,
-         net::HttpRequestHeaders* modified_headers,
-         net::HttpRequestHeaders* modified_cors_exempt_headers) {
-        modified_headers->SetHeader("Accept-Language", "en");
-        modified_headers->SetHeader("X-Test-Header-1", "Foo");
-        modified_cors_exempt_headers->SetHeader("X-Test-Cors-Exempt-Header-1",
-                                                "Bubble");
-      }));
-
-  // New header without Accept-Language header.
-  client_.set_on_received_redirect_callback(base::BindLambdaForTesting([&]() {
-    net::HttpRequestHeaders modified_headers;
-    modified_headers.SetHeader("X-Test-Header-2", "Bar");
-    net::HttpRequestHeaders modified_cors_exempt_headers;
-    modified_cors_exempt_headers.SetHeader("X-Test-Cors-Exempt-Header-1",
-                                           "Bobble");
-    loader_->FollowRedirect({"Accept-Language"} /* removed_headers */,
-                            std::move(modified_headers),
-                            std::move(modified_cors_exempt_headers));
-  }));
-
-  CreateLoaderAndStart();
-  factory_.NotifyClientOnReceiveRedirect();
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_THAT(factory_.headers_removed_on_redirect(),
-              testing::ElementsAre("Accept-Language"));
-  EXPECT_EQ(
-      "X-Test-Header-1: Foo\r\n"
-      "X-Test-Header-2: Bar\r\n\r\n",
-      factory_.headers_modified_on_redirect().ToString());
-  EXPECT_EQ("X-Test-Cors-Exempt-Header-1: Bobble\r\n\r\n",
-            factory_.cors_exempt_headers_modified_on_redirect().ToString());
-}
-
 TEST_F(ThrottlingURLLoaderTest, MultipleThrottlesModifyHeadersBeforeRedirect) {
   auto* throttle2 = new TestURLLoaderThrottle();
   throttles_.push_back(base::WrapUnique(throttle2));
@@ -878,6 +941,77 @@ TEST_F(ThrottlingURLLoaderTest, CancelBeforeResponse) {
   EXPECT_EQ(0u, client_.on_received_response_called());
   EXPECT_EQ(0u, client_.on_received_redirect_called());
   EXPECT_EQ(1u, client_.on_complete_called());
+}
+
+TEST_F(ThrottlingURLLoaderTest, DeleteBeforeResponse) {
+  base::RunLoop run_loop;
+  throttle_->set_will_process_response_callback(base::BindLambdaForTesting(
+      [this, &run_loop](blink::URLLoaderThrottle::Delegate* delegate,
+                        bool* defer) {
+        ResetLoader();
+        run_loop.Quit();
+      }));
+
+  CreateLoaderAndStart();
+
+  factory_.NotifyClientOnReceiveResponse();
+
+  run_loop.Run();
+
+  EXPECT_EQ(0u, client_.on_received_response_called());
+  EXPECT_EQ(0u, client_.on_received_redirect_called());
+  EXPECT_EQ(0u, client_.on_complete_called());
+}
+
+TEST_F(ThrottlingURLLoaderTest, CancelBeforeWillProcessResponse) {
+  throttle_->set_before_will_process_response_callback(
+      base::BindLambdaForTesting(
+          [](blink::URLLoaderThrottle::Delegate* delegate,
+             RestartWithURLReset* restart_with_url_reset) {
+            delegate->CancelWithError(net::ERR_ACCESS_DENIED);
+          }));
+
+  base::RunLoop run_loop;
+  client_.set_on_complete_callback(
+      base::BindLambdaForTesting([&run_loop](int error) {
+        EXPECT_EQ(net::ERR_ACCESS_DENIED, error);
+        run_loop.Quit();
+      }));
+
+  CreateLoaderAndStart();
+
+  factory_.NotifyClientOnReceiveResponse();
+
+  run_loop.Run();
+
+  EXPECT_EQ(1u, throttle_->will_start_request_called());
+  EXPECT_EQ(0u, throttle_->will_redirect_request_called());
+  EXPECT_EQ(1u, throttle_->before_will_process_response_called());
+  EXPECT_EQ(0u, throttle_->will_process_response_called());
+  EXPECT_EQ(0u, client_.on_received_response_called());
+  EXPECT_EQ(0u, client_.on_received_redirect_called());
+  EXPECT_EQ(1u, client_.on_complete_called());
+}
+
+TEST_F(ThrottlingURLLoaderTest, DeleteBeforeWillProcessResponse) {
+  base::RunLoop run_loop;
+  throttle_->set_before_will_process_response_callback(
+      base::BindLambdaForTesting(
+          [this, &run_loop](blink::URLLoaderThrottle::Delegate* delegate,
+                            RestartWithURLReset* restart_with_url_reset) {
+            ResetLoader();
+            run_loop.Quit();
+          }));
+
+  CreateLoaderAndStart();
+
+  factory_.NotifyClientOnReceiveResponse();
+
+  run_loop.Run();
+
+  EXPECT_EQ(0u, client_.on_received_response_called());
+  EXPECT_EQ(0u, client_.on_received_redirect_called());
+  EXPECT_EQ(0u, client_.on_complete_called());
 }
 
 TEST_F(ThrottlingURLLoaderTest, DeferBeforeResponse) {

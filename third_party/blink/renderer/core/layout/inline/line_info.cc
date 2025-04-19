@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/core/layout/inline/line_info.h"
 
 #include "base/containers/adapters.h"
@@ -173,6 +178,25 @@ bool LineInfo::ComputeNeedsAccurateEndPosition() const {
   return false;
 }
 
+unsigned LineInfo::InflowStartOffset() const {
+  for (const auto& item_result : Results()) {
+    const InlineItem& item = *item_result.item;
+    if ((item.Type() == InlineItem::kText ||
+         item.Type() == InlineItem::kControl ||
+         item.Type() == InlineItem::kAtomicInline) &&
+        item.Length() > 0) {
+      return item_result.StartOffset();
+    } else if (item_result.IsRubyColumn()) {
+      const LineInfo& base_line = item_result.ruby_column->base_line;
+      unsigned start_offset = base_line.InflowStartOffset();
+      if (start_offset != base_line.EndTextOffset()) {
+        return start_offset;
+      }
+    }
+  }
+  return EndTextOffset();
+}
+
 InlineItemTextIndex LineInfo::End() const {
   if (GetBreakToken()) {
     return GetBreakToken()->Start();
@@ -197,9 +221,13 @@ unsigned LineInfo::InflowEndOffsetInternal(bool skip_forced_break) const {
   for (const auto& item_result : base::Reversed(Results())) {
     DCHECK(item_result.item);
     const InlineItem& item = *item_result.item;
-    if (skip_forced_break && item.Type() == InlineItem::kControl &&
-        ItemsData().text_content[item.StartOffset()] == kNewlineCharacter) {
-      continue;
+    if (skip_forced_break) {
+      if (item.Type() == InlineItem::kControl &&
+          ItemsData().text_content[item.StartOffset()] == kNewlineCharacter) {
+        continue;
+      } else if (item.Type() == InlineItem::kText && item.Length() == 0) {
+        continue;
+      }
     }
     if (item.Type() == InlineItem::kText ||
         item.Type() == InlineItem::kControl ||
@@ -560,7 +588,7 @@ void LineInfo::RemoveParallelFlowBreakToken(unsigned item_index) {
                           return a->StartItemIndex() < b->StartItemIndex();
                         }));
 #endif  //  EXPENSIVE_DCHECKS_ARE_ON()
-  for (auto* iter = parallel_flow_break_tokens_.begin();
+  for (auto iter = parallel_flow_break_tokens_.begin();
        iter != parallel_flow_break_tokens_.end(); ++iter) {
     const InlineBreakToken* break_token = *iter;
     DCHECK(break_token->IsInParallelBlockFlow());

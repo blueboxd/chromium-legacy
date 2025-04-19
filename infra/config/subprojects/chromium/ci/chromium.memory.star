@@ -7,7 +7,7 @@ load("//lib/args.star", "args")
 load("//lib/branches.star", "branches")
 load("//lib/builder_config.star", "builder_config")
 load("//lib/builder_health_indicators.star", "health_spec")
-load("//lib/builders.star", "os", "sheriff_rotations", "siso")
+load("//lib/builders.star", "gardener_rotations", "os", "siso")
 load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
 load("//lib/gn_args.star", "gn_args")
@@ -22,7 +22,7 @@ ci.defaults.set(
     pool = ci.DEFAULT_POOL,
     cores = 8,
     os = os.LINUX_DEFAULT,
-    sheriff_rotations = sheriff_rotations.CHROMIUM,
+    gardener_rotations = gardener_rotations.CHROMIUM,
     tree_closing = True,
     main_console_view = "main",
     contact_team_email = "chrome-sanitizer-builder-owners@google.com",
@@ -81,6 +81,8 @@ linux_memory_builder(
             "release_try_builder",
             "minimal_symbols",
             "remoteexec",
+            "linux",
+            "x64",
         ],
     ),
     ssd = True,
@@ -147,6 +149,8 @@ linux_memory_builder(
             "fail_on_san_warnings",
             "release_builder",
             "remoteexec",
+            "linux",
+            "x64",
         ],
     ),
     console_view_entry = consoles.console_view_entry(
@@ -183,6 +187,8 @@ linux_memory_builder(
             "static",
             "dcheck_always_on",
             "remoteexec",
+            "linux",
+            "x64",
         ],
     ),
     cores = 32,
@@ -223,6 +229,7 @@ linux_memory_builder(
             "release_try_builder",
             "minimal_symbols",
             "remoteexec",
+            "x64",
         ],
     ),
     cores = 16,
@@ -292,12 +299,10 @@ linux_memory_builder(
             "msan",
             "release_builder",
             "remoteexec",
+            "x64",
         ],
     ),
     cores = 16,
-    # At this time, MSan is only compatibly with Focal. See
-    # //docs/linux/instrumented_libraries.md.
-    os = os.LINUX_FOCAL,
     ssd = True,
     console_view_entry = consoles.console_view_entry(
         category = "cros|msan",
@@ -328,9 +333,6 @@ linux_memory_builder(
         ),
         build_gs_bucket = "chromium-memory-archive",
     ),
-    # At this time, MSan is only compatibly with Focal. See
-    # //docs/linux/instrumented_libraries.md.
-    os = os.LINUX_FOCAL,
     console_view_entry = consoles.console_view_entry(
         category = "cros|msan",
         short_name = "tst",
@@ -361,13 +363,15 @@ linux_memory_builder(
     gn_args = gn_args.config(
         configs = [
             "msan",
+            "fail_on_san_warnings",
             "release_builder",
             "remoteexec",
+            "linux",
+            "x64",
         ],
     ),
-    # At this time, MSan is only compatibly with Focal. See
-    # //docs/linux/instrumented_libraries.md.
-    os = os.LINUX_FOCAL,
+    # Requires dedicated extra memory builder (crbug.com/352281723).
+    builderless = False,
     ssd = True,
     console_view_entry = consoles.console_view_entry(
         category = "linux|msan",
@@ -396,55 +400,11 @@ linux_memory_builder(
         ),
         build_gs_bucket = "chromium-memory-archive",
     ),
-    # At this time, MSan is only compatibly with Focal. See
-    # //docs/linux/instrumented_libraries.md.
-    os = os.LINUX_FOCAL,
     console_view_entry = consoles.console_view_entry(
         category = "linux|msan",
         short_name = "tst",
     ),
     siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CI,
-)
-
-linux_memory_builder(
-    name = "linux-lacros-asan-lsan-rel",
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(
-            config = "chromium_no_telemetry_dependencies",
-            apply_configs = [
-                "chromeos",
-            ],
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = [
-                "mb",
-            ],
-            build_config = builder_config.build_config.RELEASE,
-            target_arch = builder_config.target_arch.INTEL,
-            target_bits = 64,
-            target_platform = builder_config.target_platform.CHROMEOS,
-        ),
-        build_gs_bucket = "chromium-memory-archive",
-    ),
-    gn_args = gn_args.config(
-        configs = [
-            "asan",
-            "lsan",
-            "release_try_builder",
-            "minimal_symbols",
-            "remoteexec",
-            "lacros_on_linux",
-            "also_build_ash_chrome",
-        ],
-    ),
-    cores = 16,
-    ssd = True,
-    console_view_entry = consoles.console_view_entry(
-        category = "lacros|asan",
-        short_name = "asan",
-    ),
-    execution_timeout = 4 * time.hour,
 )
 
 ci.builder(
@@ -474,6 +434,8 @@ ci.builder(
             "release_builder",
             "remoteexec",
             "dcheck_always_on",
+            "mac",
+            "x64",
         ],
     ),
     builderless = False,
@@ -570,6 +532,8 @@ ci.builder(
             "lsan",
             "release_builder_blink",
             "remoteexec",
+            "linux",
+            "x64",
         ],
     ),
     console_view_entry = consoles.console_view_entry(
@@ -601,6 +565,8 @@ ci.builder(
         configs = [
             "release_builder_blink",
             "remoteexec",
+            "linux",
+            "x64",
         ],
     ),
     console_view_entry = consoles.console_view_entry(
@@ -634,11 +600,10 @@ ci.builder(
             "msan",
             "release_builder_blink",
             "remoteexec",
+            "linux",
+            "x64",
         ],
     ),
-    # At this time, MSan is only compatibly with Focal. See
-    # //docs/linux/instrumented_libraries.md.
-    os = os.LINUX_FOCAL,
     console_view_entry = consoles.console_view_entry(
         category = "linux|webkit",
         short_name = "msn",
@@ -671,10 +636,11 @@ ci.builder(
             "remoteexec",
             "strip_debug_info",
             "minimal_symbols",
+            "arm",
         ],
     ),
     os = os.LINUX_DEFAULT,
-    sheriff_rotations = args.ignore_default(None),
+    gardener_rotations = args.ignore_default(None),
     tree_closing = False,
     console_view_entry = consoles.console_view_entry(
         category = "android",
@@ -707,6 +673,8 @@ ci.builder(
             "ubsan_vptr_no_recover_hack",
             "release_builder",
             "remoteexec",
+            "linux",
+            "x64",
         ],
     ),
     builderless = 1,
@@ -745,6 +713,8 @@ ci.builder(
             "minimal_symbols",
             "release_builder",
             "remoteexec",
+            "win",
+            "x64",
         ],
     ),
     builderless = True,
@@ -795,7 +765,7 @@ ci.builder(
     ),
     cores = None,
     os = os.MAC_DEFAULT,
-    sheriff_rotations = args.ignore_default(sheriff_rotations.IOS),
+    gardener_rotations = args.ignore_default(gardener_rotations.IOS),
     console_view_entry = consoles.console_view_entry(
         category = "iOS",
         short_name = "asn",
@@ -811,7 +781,7 @@ ci.builder(
     schedule = "0 13 * * *",
     cores = 32,
     ssd = True,
-    sheriff_rotations = args.ignore_default(None),
+    gardener_rotations = args.ignore_default(None),
     console_view_entry = [
         consoles.console_view_entry(
             category = "codeql-linux",
@@ -819,6 +789,6 @@ ci.builder(
         ),
     ],
     contact_team_email = "chrome-memory-safety-team@google.com",
-    execution_timeout = 15 * time.hour,
+    execution_timeout = 18 * time.hour,
     notifies = ["codeql-infra"],
 )

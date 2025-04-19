@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/html/forms/text_control_element.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
-#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
@@ -1040,6 +1039,26 @@ TEST_F(VisibleUnitsLineTest, InSameLineWithZeroWidthSpace) {
   EXPECT_EQ(after_zws_up, EndOfLine(before_zws_down));
   EXPECT_EQ(after_zws_up, EndOfLine(before_zws_up));
   EXPECT_TRUE(InSameLine(before_zws_up, before_zws_down));
+}
+
+// https://issues.chromium.org/issues/41497469
+TEST_F(VisibleUnitsLineTest, InSameLineWithInlineBlock) {
+  SetBodyContent(
+      "<span id=one>start</span>"
+      "<span id=two style='display: inline-block;'>test</span>"
+      "<span id=three>end</span>");
+
+  const PositionWithAffinity position =
+      PositionWithAffinity(Position(*GetElementById("two")->firstChild(), 0),
+                           TextAffinity::kUpstream);
+  EXPECT_TRUE(InSameLine(
+      position,
+      PositionWithAffinity(Position(*GetElementById("one")->firstChild(), 0),
+                           TextAffinity::kUpstream)));
+  EXPECT_TRUE(InSameLine(
+      position,
+      PositionWithAffinity(Position(*GetElementById("three")->firstChild(), 0),
+                           TextAffinity::kUpstream)));
 }
 
 // http://crbug.com/1358235

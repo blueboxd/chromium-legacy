@@ -52,7 +52,6 @@
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
-#include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/content/browser/test_autofill_manager_injector.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/browser_autofill_manager.h"
@@ -328,7 +327,7 @@ template <typename Arg, typename Fun>
 }
 
 [[nodiscard]] auto FieldsAre(auto matcher) {
-  return Field(&FormData::fields, ElementsAreArray(matcher));
+  return Property(&FormData::fields, ElementsAreArray(matcher));
 }
 
 // An object that waits for an observed form-control element to change its value
@@ -519,7 +518,7 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
     // "fr" instead of "en").
     feature_list_.InitWithFeatures(
         /*enabled_features=*/
-        {features::kAutofillTextAreaChangeEvents},
+        {},
         /*disabled_features=*/{features::kAutofillPageLanguageDetection});
   }
   ~AutofillInteractiveTestBase() override = default;
@@ -982,8 +981,10 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, BasicUndoAutofill) {
                                 kEmptyAddress, {"firstname", "M"}))}));
   EXPECT_THAT(GetFormValues(), ValuesAre(kDefaultAddress));
 
-  ASSERT_TRUE(
-      AutofillFlow(GetElementById("firstname"), this, {.target_index = 1}));
+  ASSERT_TRUE(AutofillFlow(GetElementById("firstname"), this,
+                           {.expect_previews = false,
+                            .show_method = ShowMethod::ByClick(),
+                            .target_index = 1}));
 
   std::vector<FieldValue> expected_values = kEmptyAddress;
   expected_values[0].value = "M";
@@ -2484,8 +2485,7 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveFencedFrameTest,
   ASSERT_TRUE(cross_frame_host);
 
   ContentAutofillDriver* cross_driver =
-      ContentAutofillDriverFactory::FromWebContents(GetWebContents())
-          ->DriverForFrame(cross_frame_host);
+      ContentAutofillDriver::GetForRenderFrameHost(cross_frame_host);
   ASSERT_TRUE(cross_driver);
   // Let |test_delegate()| also observe autofill events in the iframe.
   test_delegate()->Observe(cross_driver->GetAutofillManager());
@@ -2511,8 +2511,7 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveFencedFrameTest,
   ASSERT_TRUE(cross_frame_host);
 
   ContentAutofillDriver* cross_driver =
-      ContentAutofillDriverFactory::FromWebContents(GetWebContents())
-          ->DriverForFrame(cross_frame_host);
+      ContentAutofillDriver::GetForRenderFrameHost(cross_frame_host);
   ASSERT_TRUE(cross_driver);
   // Let |test_delegate()| also observe autofill events in the iframe.
   test_delegate()->Observe(cross_driver->GetAutofillManager());
@@ -2546,8 +2545,7 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveFencedFrameTest,
   }
 
   ContentAutofillDriver* cross_driver =
-      ContentAutofillDriverFactory::FromWebContents(GetWebContents())
-          ->DriverForFrame(cross_frame_host);
+      ContentAutofillDriver::GetForRenderFrameHost(cross_frame_host);
   ASSERT_TRUE(cross_driver);
   // Let |test_delegate()| also observe autofill events in the iframe.
   test_delegate()->Observe(cross_driver->GetAutofillManager());
@@ -2685,33 +2683,33 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestDynamicForm,
       "a.com", "/autofill/double_dynamic_form.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
-  ValueWaiter refill = ListenForRefill("firstname_form2");
+  ValueWaiter refill = ListenForRefill("firstname_form");
   ASSERT_TRUE(AutofillFlow(GetElementById("firstname"), this));
   ASSERT_FALSE(std::move(refill).Wait());
 
   // Make sure the new form was not filled.
-  EXPECT_EQ("", GetFieldValueById("firstname_form2"));
-  EXPECT_EQ("", GetFieldValueById("address_form2"));
-  EXPECT_EQ("CA", GetFieldValueById("state_form2"));  // Default value.
-  EXPECT_EQ("", GetFieldValueById("city_form2"));
-  EXPECT_EQ("", GetFieldValueById("company_form2"));
-  EXPECT_EQ("", GetFieldValueById("email_form2"));
-  EXPECT_EQ("", GetFieldValueById("phone_form2"));
+  EXPECT_EQ("", GetFieldValueById("firstname_form"));
+  EXPECT_EQ("", GetFieldValueById("address_form"));
+  EXPECT_EQ("CA", GetFieldValueById("state_form"));  // Default value.
+  EXPECT_EQ("", GetFieldValueById("city_form"));
+  EXPECT_EQ("", GetFieldValueById("company_form"));
+  EXPECT_EQ("", GetFieldValueById("email_form"));
+  EXPECT_EQ("", GetFieldValueById("phone_form"));
 }
 
 // Test that forms that dynamically change after the refill limit do not get
 // filled.
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestDynamicForm,
                        DynamicChangingFormFill_AfterDelay) {
-  // Lower the refill limit, so the test doesn't have to wait forever.
-  constexpr base::TimeDelta kLimitBeforeRefillForTest = base::Milliseconds(100);
-  test_api(test_api(*GetBrowserAutofillManager()).form_filler())
-      .set_limit_before_refill(kLimitBeforeRefillForTest);
-
   CreateTestProfile();
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/dynamic_form_after_delay.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+
+  // Lower the refill limit, so the test doesn't have to wait forever.
+  constexpr base::TimeDelta kLimitBeforeRefillForTest = base::Milliseconds(100);
+  test_api(test_api(*GetBrowserAutofillManager()).form_filler())
+      .set_limit_before_refill(kLimitBeforeRefillForTest);
 
   ValueWaiter refill = ListenForRefill("firstname_form1");
   ASSERT_TRUE(AutofillFlow(GetElementById("firstname"), this));
@@ -3533,8 +3531,15 @@ class MAYBE_AutofillInteractiveFormSubmissionTest
 
 // Tests that user-triggered submission triggers a submission event in
 // BrowserAutofillManager.
+// TODO(crbug.com/346982005): The test is showing flakiness.
+// Flaky on Win; crbug.com/334206428
+#if BUILDFLAG(IS_WIN)
+#define MAYBE_Submission DISABLED_Submission
+#else
+#define MAYBE_Submission Submission
+#endif
 IN_PROC_BROWSER_TEST_F(MAYBE_AutofillInteractiveFormSubmissionTest,
-                       Submission) {
+                       MAYBE_Submission) {
   EnterValues();
 
   base::RunLoop run_loop;
@@ -3552,8 +3557,14 @@ IN_PROC_BROWSER_TEST_F(MAYBE_AutofillInteractiveFormSubmissionTest,
 
 // Tests that non-link-click, renderer-initiated navigation triggers a
 // submission event in BrowserAutofillManager.
+// Flaky on Win; crbug.com/334206428
+#if BUILDFLAG(IS_WIN)
+#define MAYBE_ProbableSubmission DISABLED_ProbableSubmission
+#else
+#define MAYBE_ProbableSubmission ProbableSubmission
+#endif
 IN_PROC_BROWSER_TEST_F(MAYBE_AutofillInteractiveFormSubmissionTest,
-                       ProbableSubmission) {
+                       MAYBE_ProbableSubmission) {
   EnterValues();
 
   base::RunLoop run_loop;
@@ -3574,8 +3585,14 @@ IN_PROC_BROWSER_TEST_F(MAYBE_AutofillInteractiveFormSubmissionTest,
 }
 
 // Tests that a same document navigation can trigger a form submission.
+// Flaky on Win; crbug.com/334206428
+#if BUILDFLAG(IS_WIN)
+#define MAYBE_SameDocumentNavigation DISABLED_SameDocumentNavigation
+#else
+#define MAYBE_SameDocumentNavigation SameDocumentNavigation
+#endif
 IN_PROC_BROWSER_TEST_F(MAYBE_AutofillInteractiveFormSubmissionTest,
-                       SameDocumentNavigation) {
+                       MAYBE_SameDocumentNavigation) {
   EnterValues();
 
   base::RunLoop run_loop;
@@ -3607,8 +3624,14 @@ IN_PROC_BROWSER_TEST_F(MAYBE_AutofillInteractiveFormSubmissionTest,
 }
 
 // Tests that an XHR request can indicate a form submission.
+// Flaky on Win; crbug.com/334206428
+#if BUILDFLAG(IS_WIN)
+#define MAYBE_XhrSucceededAndHideForm DISABLED_XhrSucceededAndHideForm
+#else
+#define MAYBE_XhrSucceededAndHideForm XhrSucceededAndHideForm
+#endif
 IN_PROC_BROWSER_TEST_F(MAYBE_AutofillInteractiveFormSubmissionTest,
-                       XhrSucceededAndHideForm) {
+                       MAYBE_XhrSucceededAndHideForm) {
   EnterValues();
 
   base::RunLoop run_loop;
@@ -3674,8 +3697,15 @@ IN_PROC_BROWSER_TEST_F(MAYBE_AutofillInteractiveFormSubmissionTest,
 }
 
 // Tests that a DOM mutation after an XHR can indicate a form submission.
+// TODO(crbug.com/346982005): The test is showing flakiness.
+// Flaky on Win; crbug.com/334206428
+#if BUILDFLAG(IS_WIN)
+#define MAYBE_DomMutationAfterXhr DISABLED_DomMutationAfterXhr
+#else
+#define MAYBE_DomMutationAfterXhr DomMutationAfterXhr
+#endif
 IN_PROC_BROWSER_TEST_F(MAYBE_AutofillInteractiveFormSubmissionTest,
-                       DomMutationAfterXhr) {
+                       MAYBE_DomMutationAfterXhr) {
   EnterValues();
 
   base::RunLoop run_loop;
@@ -3709,8 +3739,14 @@ IN_PROC_BROWSER_TEST_F(MAYBE_AutofillInteractiveFormSubmissionTest,
 // Tests that FormFieldData::user_input has the text that the user typed into
 // the field. This is needed in order to show the save-card dialog when the
 // page replaces the <input> value with '***'.
+// Flaky on Win; crbug.com/334206428
+#if BUILDFLAG(IS_WIN)
+#define MAYBE_RememberUserInput DISABLED_RememberUserInput
+#else
+#define MAYBE_RememberUserInput RememberUserInput
+#endif
 IN_PROC_BROWSER_TEST_F(MAYBE_AutofillInteractiveFormSubmissionTest,
-                       RememberUserInput) {
+                       MAYBE_RememberUserInput) {
   const std::vector<NameValueUserInput> kExpectedSubmittedValues{
       {u"name", u"JS Modified Name", u"Sarah"},
       {u"address", u"JS Modified Address", u"123 Main Road"},

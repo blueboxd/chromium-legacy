@@ -18,6 +18,11 @@
  *
  */
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/platform/fonts/font_platform_data.h"
 
 #include "base/feature_list.h"
@@ -206,6 +211,10 @@ String FontPlatformData::FontFamilyName() const {
   font_family_iterator->unref();
   return String::FromUTF8(localized_string.fString.c_str(),
                           localized_string.fString.size());
+}
+
+bool FontPlatformData::IsAhem() const {
+  return EqualIgnoringASCIICase(FontFamilyName(), "ahem");
 }
 
 SkTypeface* FontPlatformData::Typeface() const {

@@ -8,6 +8,7 @@
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/system/toast_data.h"
 #include "ash/public/cpp/system/toast_manager.h"
+#include "base/json/values_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
@@ -33,6 +34,7 @@ namespace {
 
 constexpr char kEmojiPickerToastId[] = "emoji_picker_toast";
 constexpr char kPrefsHistoryTextFieldName[] = "text";
+constexpr char kPrefsHistoryTimestampFieldName[] = "timestamp";
 constexpr char kPrefsPreferredVariantsFieldName[] = "preferred_variants";
 
 // Keep in sync with entry in enums.xml.
@@ -439,11 +441,13 @@ void EmojiPageHandler::GetInitialQuery(GetInitialQueryCallback callback) {
 
 void EmojiPageHandler::UpdateHistoryInPrefs(
     emoji_picker::mojom::Category category,
-    const std::vector<std::string>& history) {
+    std::vector<emoji_picker::mojom::HistoryItemPtr> history) {
   base::Value::List history_value;
-  for (const std::string& text : history) {
-    history_value.Append(
-        base::Value::Dict().Set(kPrefsHistoryTextFieldName, text));
+  for (const auto& item : history) {
+    history_value.Append(base::Value::Dict()
+                             .Set(kPrefsHistoryTextFieldName, item->emoji)
+                             .Set(kPrefsHistoryTimestampFieldName,
+                                  base::TimeToValue(item->timestamp)));
   }
   ScopedDictPrefUpdate update(profile_->GetPrefs(), prefs::kEmojiPickerHistory);
   update->Set(ConvertCategoryToPrefString(category), std::move(history_value));
@@ -463,27 +467,35 @@ void EmojiPageHandler::UpdatePreferredVariantsInPrefs(
 void EmojiPageHandler::GetHistoryFromPrefs(
     emoji_picker::mojom::Category category,
     GetHistoryFromPrefsCallback callback) {
+  if (profile_ == nullptr || profile_->GetPrefs() == nullptr) {
+    std::move(callback).Run({});
+    return;
+  }
   const base::Value::List* history =
       profile_->GetPrefs()
           ->GetDict(prefs::kEmojiPickerHistory)
           .FindList(ConvertCategoryToPrefString(category));
-  if (!history) {
+  if (history == nullptr) {
     std::move(callback).Run({});
     return;
   }
-  std::vector<std::string> results;
+  std::vector<emoji_picker::mojom::HistoryItemPtr> results;
   for (const auto& it : *history) {
     const base::Value::Dict* value_dict = it.GetIfDict();
-    if (!value_dict) {
+    if (value_dict == nullptr) {
       continue;
     }
     const std::string* text =
         value_dict->FindString(kPrefsHistoryTextFieldName);
-    if (text) {
-      results.push_back(*text);
+    std::optional<base::Time> timestamp =
+        base::ValueToTime(value_dict->Find(kPrefsHistoryTimestampFieldName));
+
+    if (text != nullptr) {
+      results.push_back(emoji_picker::mojom::HistoryItem::New(
+          *text, timestamp.has_value() ? *timestamp : base::Time::UnixEpoch()));
     }
   }
-  std::move(callback).Run(results);
+  std::move(callback).Run(std::move(results));
 }
 
 }  // namespace ash

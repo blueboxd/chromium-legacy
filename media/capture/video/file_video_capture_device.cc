@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "media/capture/video/file_video_capture_device.h"
 
 #include <stddef.h>
@@ -91,8 +96,8 @@ void ParseY4MTags(const std::string& file_header,
          std::string::npos) {
     // Every token is supposed to have an identifier letter and a bunch of
     // information immediately after, which we extract into a |token| here.
-    token =
-        std::string_view(&file_header[index + 1], blank_position - index - 1);
+    token = std::string_view(file_header)
+                .substr(index + 1, blank_position - index - 1);
     CHECK(!token.empty());
     switch (file_header[index]) {
       case 'W':

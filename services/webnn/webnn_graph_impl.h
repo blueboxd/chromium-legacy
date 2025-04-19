@@ -5,46 +5,48 @@
 #ifndef SERVICES_WEBNN_WEBNN_GRAPH_IMPL_H_
 #define SERVICES_WEBNN_WEBNN_GRAPH_IMPL_H_
 
+#include <optional>
 #include <string>
 
 #include "base/component_export.h"
 #include "base/containers/flat_map.h"
+#include "base/types/pass_key.h"
 #include "mojo/public/cpp/base/big_buffer.h"
+#include "services/webnn/public/cpp/operand_descriptor.h"
 #include "services/webnn/public/mojom/webnn_context_provider.mojom.h"
 #include "services/webnn/public/mojom/webnn_graph.mojom.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 
 namespace webnn {
 
 class WebNNBufferImpl;
 class WebNNContextImpl;
+class WebNNGraphBuilderImpl;
 
 class COMPONENT_EXPORT(WEBNN_SERVICE) WebNNGraphImpl
     : public mojom::WebNNGraph {
  public:
-  // The members of `ComputeResourceInfo` are used to validate the inputs
-  // of a graph execution. The input name and byte length of computation must
-  // match graph's expectation, the output name and byte length are used to
-  // create the result of computation.
+  // Describes the constraints of a graph's inputs and outputs.
   struct COMPONENT_EXPORT(WEBNN_SERVICE) ComputeResourceInfo {
-    explicit ComputeResourceInfo(const mojom::GraphInfoPtr& graph_info);
+    ComputeResourceInfo(base::flat_map<std::string, OperandDescriptor>
+                            input_names_to_descriptors,
+                        base::flat_map<std::string, OperandDescriptor>
+                            output_names_to_descriptors,
+                        base::PassKey<WebNNGraphBuilderImpl> pass_key);
     ~ComputeResourceInfo();
 
-    ComputeResourceInfo(const ComputeResourceInfo&) = delete;
-    ComputeResourceInfo& operator=(const ComputeResourceInfo&) = delete;
+    ComputeResourceInfo(const ComputeResourceInfo&);
+    ComputeResourceInfo& operator=(const ComputeResourceInfo&);
 
     ComputeResourceInfo(ComputeResourceInfo&&);
     ComputeResourceInfo& operator=(ComputeResourceInfo&&);
 
-    base::flat_map<std::string, size_t> input_name_to_byte_length_map;
-    base::flat_map<std::string, size_t> output_name_to_byte_length_map;
+    base::flat_map<std::string, OperandDescriptor> input_names_to_descriptors;
+    base::flat_map<std::string, OperandDescriptor> output_names_to_descriptors;
   };
 
-  // TODO(crbug.com/333188631): remove once no GraphImpls need to be created as
-  // self-receiver.
-  explicit WebNNGraphImpl(ComputeResourceInfo compute_resource_info);
-
   // Constructs a graph where the receiever and implementation is owned by the
-  // context upon calling WebNNContextImpl::OnWebNNGraphImplCreated.
+  // context.
   WebNNGraphImpl(WebNNContextImpl* context,
                  ComputeResourceInfo compute_resource_info);
 
@@ -52,12 +54,11 @@ class COMPONENT_EXPORT(WEBNN_SERVICE) WebNNGraphImpl
   WebNNGraphImpl& operator=(const WebNNGraphImpl&) = delete;
   ~WebNNGraphImpl() override;
 
-  // Return false if the graph is invalid.
-  static bool ValidateGraph(const mojom::GraphInfoPtr& graph_info);
-
   const ComputeResourceInfo& compute_resource_info() const {
     return compute_resource_info_;
   }
+
+  WebNNContextImpl* context() const { return context_.get(); }
 
  private:
   // The validator is to make sure the inputs from a compute call match the
@@ -72,8 +73,8 @@ class COMPONENT_EXPORT(WEBNN_SERVICE) WebNNGraphImpl
                mojom::WebNNGraph::ComputeCallback callback) override;
 
   void Dispatch(
-      const base::flat_map<std::string, base::UnguessableToken>& named_inputs,
-      const base::flat_map<std::string, base::UnguessableToken>& named_outputs)
+      const base::flat_map<std::string, blink::WebNNBufferToken>& named_inputs,
+      const base::flat_map<std::string, blink::WebNNBufferToken>& named_outputs)
       override;
 
   // An WebNNGraph backend should implement this method to execute the compiled

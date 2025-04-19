@@ -20,6 +20,7 @@ using std::optional;
 using syncer::ModelError;
 
 // Simplify checking for optional errors and returning only when present.
+#undef RETURN_IF_ERROR
 #define RETURN_IF_ERROR(x)              \
   if (optional<ModelError> error = x) { \
     return error;                       \
@@ -218,7 +219,7 @@ bool AutofillProfileSyncDifferenceTracker::
 
   std::vector<std::unique_ptr<AutofillProfile>> entries;
   if (!table_->GetAutofillProfiles(AutofillProfile::Source::kLocalOrSyncable,
-                                   &entries)) {
+                                   entries)) {
     return false;
   }
 

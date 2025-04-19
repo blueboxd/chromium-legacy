@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chromeos/ash/services/quick_pair/fast_pair_data_parser.h"
 
 #include <cstdint>
@@ -19,7 +24,6 @@
 #include "chromeos/ash/services/quick_pair/public/cpp/not_discoverable_advertisement.h"
 #include "chromeos/ash/services/quick_pair/public/mojom/fast_pair_data_parser.mojom.h"
 #include "components/cross_device/logging/logging.h"
-#include "crypto/openssl_util.h"
 #include "device/bluetooth/public/cpp/bluetooth_address.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 
@@ -146,9 +150,7 @@ mojom::BatteryInfoPtr CreateBatteryInfo(uint8_t battery_byte) {
 
 FastPairDataParser::FastPairDataParser(
     mojo::PendingReceiver<mojom::FastPairDataParser> receiver)
-    : receiver_(this, std::move(receiver)) {
-  crypto::EnsureOpenSSLInit();
-}
+    : receiver_(this, std::move(receiver)) {}
 
 FastPairDataParser::~FastPairDataParser() = default;
 
@@ -314,8 +316,8 @@ void FastPairDataParser::ParseMessageStreamMessages(
     return;
   }
 
-  base::circular_deque<uint8_t> remaining_bytes(message_bytes.begin(),
-                                                message_bytes.end());
+  base::circular_deque<uint8_t> remaining_bytes(base::from_range,
+                                                message_bytes);
   while (remaining_bytes.size() >= kMinMessageByteCount) {
     uint8_t message_group_byte = remaining_bytes.front();
     remaining_bytes.pop_front();

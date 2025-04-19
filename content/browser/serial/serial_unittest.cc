@@ -5,7 +5,6 @@
 #include "base/barrier_closure.h"
 #include "base/command_line.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/raw_ptr_exclusion.h"
 #include "base/run_loop.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/repeating_test_future.h"
@@ -31,6 +30,7 @@ namespace content {
 
 namespace {
 
+using ::base::test::InvokeFuture;
 using ::base::test::TestFuture;
 using ::testing::_;
 using ::testing::Invoke;
@@ -69,6 +69,10 @@ class SerialTest : public RenderViewHostImplTestHarness {
     ON_CALL(delegate(), GetPortManager).WillByDefault(Return(&port_manager_));
     ON_CALL(delegate(), AddObserver)
         .WillByDefault(testing::SaveArg<1>(&observer_));
+    ON_CALL(delegate(), RemoveObserver)
+        .WillByDefault([&](RenderFrameHost*, SerialDelegate::Observer*) {
+          observer_ = nullptr;
+        });
   }
 
   SerialTest(const SerialTest&) = delete;
@@ -97,9 +101,7 @@ class SerialTest : public RenderViewHostImplTestHarness {
   SerialTestContentBrowserClient test_client_;
   raw_ptr<ContentBrowserClient> original_client_ = nullptr;
   device::FakeSerialPortManager port_manager_;
-  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
-  // #addr-of
-  RAW_PTR_EXCLUSION SerialDelegate::Observer* observer_ = nullptr;
+  raw_ptr<SerialDelegate::Observer> observer_ = nullptr;
 };
 
 }  // namespace
@@ -385,9 +387,7 @@ TEST_F(SerialTest, PortConnectedState) {
   // Connect the port.
   TestFuture<blink::mojom::SerialPortInfoPtr> connect_future;
   EXPECT_CALL(client, OnPortConnectedStateChanged)
-      .WillOnce([&connect_future](blink::mojom::SerialPortInfoPtr port) {
-        connect_future.SetValue(std::move(port));
-      });
+      .WillOnce(InvokeFuture(connect_future));
   port->connected = true;
   observer()->OnPortConnectedStateChanged(*port);
   EXPECT_EQ(connect_future.Get()->token, port->token);
@@ -396,9 +396,7 @@ TEST_F(SerialTest, PortConnectedState) {
   // Disconnect the port.
   TestFuture<blink::mojom::SerialPortInfoPtr> disconnect_future;
   EXPECT_CALL(client, OnPortConnectedStateChanged)
-      .WillOnce([&disconnect_future](blink::mojom::SerialPortInfoPtr port) {
-        disconnect_future.SetValue(std::move(port));
-      });
+      .WillOnce(InvokeFuture(disconnect_future));
   port->connected = false;
   observer()->OnPortConnectedStateChanged(*port);
   EXPECT_EQ(disconnect_future.Get()->token, port->token);

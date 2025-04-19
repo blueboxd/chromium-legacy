@@ -8,13 +8,12 @@
 #include <cstdint>
 
 #include "partition_alloc/build_config.h"
+#include "partition_alloc/buildflags.h"
 #include "partition_alloc/page_allocator_constants.h"
 #include "partition_alloc/partition_alloc_base/check.h"
 #include "partition_alloc/partition_alloc_base/compiler_specific.h"
 #include "partition_alloc/partition_alloc_base/debug/alias.h"
-#include "partition_alloc/partition_alloc_base/debug/debugging_buildflags.h"
 #include "partition_alloc/partition_alloc_base/immediate_crash.h"
-#include "partition_alloc/partition_alloc_buildflags.h"
 
 // When PartitionAlloc is used as the default allocator, we cannot use the
 // regular (D)CHECK() macros, as they allocate internally. When an assertion is
@@ -29,15 +28,13 @@
 
 // For official build discard log strings to reduce binary bloat.
 // See base/check.h for implementation details.
-#define PA_CHECK(condition)                        \
-  PA_UNLIKELY(!(condition)) ? PA_IMMEDIATE_CRASH() \
-                            : PA_EAT_CHECK_STREAM_PARAMS()
+#define PA_CHECK(condition) PA_BASE_CHECK(condition)
 
-#if PA_BUILDFLAG(PA_DCHECK_IS_ON)
+#if PA_BUILDFLAG(DCHECKS_ARE_ON)
 #define PA_DCHECK(condition) PA_CHECK(condition)
 #else
 #define PA_DCHECK(condition) PA_EAT_CHECK_STREAM_PARAMS(!(condition))
-#endif  // PA_BUILDFLAG(PA_DCHECK_IS_ON)
+#endif  // PA_BUILDFLAG(DCHECKS_ARE_ON)
 
 #define PA_PCHECK(condition)                                 \
   if (!(condition)) {                                        \
@@ -47,11 +44,11 @@
   }                                                          \
   static_assert(true)
 
-#if PA_BUILDFLAG(PA_DCHECK_IS_ON)
+#if PA_BUILDFLAG(DCHECKS_ARE_ON)
 #define PA_DPCHECK(condition) PA_PCHECK(condition)
 #else
 #define PA_DPCHECK(condition) PA_EAT_CHECK_STREAM_PARAMS(!(condition))
-#endif  // PA_BUILDFLAG(PA_DCHECK_IS_ON)
+#endif  // PA_BUILDFLAG(DCHECKS_ARE_ON)
 
 #else  // PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) &&
        // !PA_BASE_CHECK_WILL_STREAM()
@@ -65,7 +62,7 @@
 // Expensive dchecks that run within *Scan. These checks are only enabled in
 // debug builds with dchecks enabled.
 #if !defined(NDEBUG)
-#define PA_SCAN_DCHECK_IS_ON() PA_BUILDFLAG(PA_DCHECK_IS_ON)
+#define PA_SCAN_DCHECK_IS_ON() PA_BUILDFLAG(DCHECKS_ARE_ON)
 #else
 #define PA_SCAN_DCHECK_IS_ON() 0
 #endif
@@ -99,8 +96,8 @@
 
 // alignas(16) DebugKv causes breakpad_unittests and sandbox_linux_unittests
 // failures on android-marshmallow-x86-rel because of SIGSEGV.
-#if BUILDFLAG(IS_ANDROID) && defined(ARCH_CPU_X86_FAMILY) && \
-    defined(ARCH_CPU_32_BITS)
+#if PA_BUILDFLAG(IS_ANDROID) && PA_BUILDFLAG(PA_ARCH_CPU_X86_FAMILY) && \
+    PA_BUILDFLAG(PA_ARCH_CPU_32_BITS)
 #define PA_DEBUGKV_ALIGN alignas(8)
 #else
 #define PA_DEBUGKV_ALIGN alignas(16)

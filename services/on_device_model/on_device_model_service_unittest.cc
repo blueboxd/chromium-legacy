@@ -6,7 +6,9 @@
 
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
+#include "base/test/test_future.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/on_device_model/on_device_model_fake.h"
 #include "services/on_device_model/public/cpp/model_assets.h"
 #include "services/on_device_model/public/cpp/test_support/test_response_holder.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -42,7 +44,8 @@ class ContextClientWaiter : public mojom::ContextClient {
 class OnDeviceModelServiceTest : public testing::Test {
  public:
   OnDeviceModelServiceTest()
-      : service_impl_(service_.BindNewPipeAndPassReceiver()) {}
+      : service_impl_(service_.BindNewPipeAndPassReceiver(),
+                      GetOnDeviceModelFakeImpl()) {}
 
   mojo::Remote<mojom::OnDeviceModelService>& service() { return service_; }
 
@@ -123,6 +126,73 @@ TEST_F(OnDeviceModelServiceTest, AddContext) {
   EXPECT_THAT(
       response.responses(),
       ElementsAre("Context: cheese\n", "Context: more\n", "Input: cheddar\n"));
+}
+
+TEST_F(OnDeviceModelServiceTest, CloneContext) {
+  auto model = LoadModel();
+
+  TestResponseHolder response;
+  mojo::Remote<mojom::Session> session;
+  model->StartSession(session.BindNewPipeAndPassReceiver());
+  session->AddContext(MakeInput("cheese"), {});
+  session->AddContext(MakeInput("more"), {});
+
+  mojo::Remote<mojom::Session> cloned;
+  session->Clone(cloned.BindNewPipeAndPassReceiver());
+  cloned->Execute(MakeInput("cheddar"), response.BindRemote());
+  response.WaitForCompletion();
+
+  EXPECT_THAT(
+      response.responses(),
+      ElementsAre("Context: cheese\n", "Context: more\n", "Input: cheddar\n"));
+}
+
+TEST_F(OnDeviceModelServiceTest, MultipleSessionsCloneContextAndContinue) {
+  auto model = LoadModel(/*support_multiple_sessions=*/true);
+
+  mojo::Remote<mojom::Session> session;
+  model->StartSession(session.BindNewPipeAndPassReceiver());
+  session->AddContext(MakeInput("cheese"), {});
+  session->AddContext(MakeInput("more"), {});
+
+  mojo::Remote<mojom::Session> cloned;
+  session->Clone(cloned.BindNewPipeAndPassReceiver());
+
+  {
+    TestResponseHolder response;
+    cloned->Execute(MakeInput("cheddar"), response.BindRemote());
+    response.WaitForCompletion();
+    EXPECT_THAT(response.responses(),
+                ElementsAre("Context: cheese\n", "Context: more\n",
+                            "Input: cheddar\n"));
+  }
+  {
+    TestResponseHolder response;
+    session->Execute(MakeInput("swiss"), response.BindRemote());
+    response.WaitForCompletion();
+    EXPECT_THAT(
+        response.responses(),
+        ElementsAre("Context: cheese\n", "Context: more\n", "Input: swiss\n"));
+  }
+
+  session->AddContext(MakeInput("foo"), {});
+  cloned->AddContext(MakeInput("bar"), {});
+  {
+    TestResponseHolder response;
+    session->Execute(MakeInput("swiss"), response.BindRemote());
+    response.WaitForCompletion();
+    EXPECT_THAT(response.responses(),
+                ElementsAre("Context: cheese\n", "Context: more\n",
+                            "Context: foo\n", "Input: swiss\n"));
+  }
+  {
+    TestResponseHolder response;
+    cloned->Execute(MakeInput("cheddar"), response.BindRemote());
+    response.WaitForCompletion();
+    EXPECT_THAT(response.responses(),
+                ElementsAre("Context: cheese\n", "Context: more\n",
+                            "Context: bar\n", "Input: cheddar\n"));
+  }
 }
 
 TEST_F(OnDeviceModelServiceTest, MultipleSessionsAddContext) {
@@ -388,6 +458,25 @@ TEST_F(OnDeviceModelServiceTest, DeletesModel) {
   adaptation3.reset();
   FlushService();
   EXPECT_EQ(GetNumModels(), 0u);
+}
+
+TEST_F(OnDeviceModelServiceTest, Score) {
+  auto model = LoadModel();
+
+  mojo::Remote<mojom::Session> session;
+  model->StartSession(session.BindNewPipeAndPassReceiver());
+  session->AddContext(MakeInput("hi"), {});
+
+  {
+    base::test::TestFuture<float> future;
+    session->Score("x", future.GetCallback());
+    EXPECT_EQ(future.Get(), float('x'));
+  }
+  {
+    base::test::TestFuture<float> future;
+    session->Score("y", future.GetCallback());
+    EXPECT_EQ(future.Get(), float('y'));
+  }
 }
 
 }  // namespace

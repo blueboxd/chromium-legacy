@@ -11,7 +11,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.components.tab_group_sync.TabGroupSyncService;
 import org.chromium.content_public.browser.NavigationHandle;
-import org.chromium.ui.base.PageTransition;
 import org.chromium.url.GURL;
 
 /**
@@ -56,15 +55,11 @@ public class NavigationObserver extends TabModelSelectorTabObserver {
             Tab tab, NavigationHandle navigationHandle) {
         if (!mEnableObservers) return;
 
-        // Ignore redirects, incognito, and non-tabgroup tabs.
-        boolean isRedirect =
-                (navigationHandle.pageTransition() & PageTransition.IS_REDIRECT_MASK) != 0;
-
-        if (tab.isIncognito() || isRedirect || tab.getTabGroupId() == null) {
+        if (tab.isIncognito() || tab.getTabGroupId() == null) {
             return;
         }
 
-        if (!navigationHandle.shouldUpdateHistory()) {
+        if (!navigationHandle.isSaveableNavigation()) {
             return;
         }
 

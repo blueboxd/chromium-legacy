@@ -235,6 +235,7 @@ chromium-metrics-reviews@google.com.
   <int value="610" label="Search: Quick Answers Translation"/>
   <int value="611" label="Search: Quick Answers Unit Conversion"/>
   <int value="612" label="Mahi: On/Off"/>
+  <int value="613" label="MagicBoost: On/Off"/>
   <int value="700" label="Manage Android Preferences"/>
   <int value="701" label="Remove Play Store"/>
   <int value="702" label="Turn On Play Store"/>
@@ -245,6 +246,7 @@ chromium-metrics-reviews@google.com.
   <int value="707" label="App Notification: On/Off"/>
   <int value="708" label="App Pin To Shelf: On/Off"/>
   <int value="709" label="App Resize Lock: On/Off"/>
+  <int value="710" label="App Parental Controls"/>
   <int value="800" label="Set Up Crostini"/>
   <int value="801" label="Uninstall Crostini"/>
   <int value="802" label="Backup Linux Apps And Files"/>
@@ -253,6 +255,8 @@ chromium-metrics-reviews@google.com.
   <int value="805" label="Crostini: Disk Resize"/>
   <int value="806" label="Crostini: Mic Access"/>
   <int value="807" label="Crostini: Container Upgrade"/>
+  <int value="808" label="Bruschetta: Mic Access"/>
+  <int value="809" label="Guest OS: Show USB device notifications"/>
   <int value="1000" label="24Hour Clock"/>
   <int value="1001" label="Change Time Zone"/>
   <int value="1101" label="Verified Access"/>
@@ -358,8 +362,12 @@ chromium-metrics-reviews@google.com.
   <int value="1543" label="Mouse Keys: Left Handed"/>
   <int value="1544" label="Caret blink rate"/>
   <int value="1545" label="Magnifier follows select to speak words"/>
-  <int value="1546" label="PDF OCR"/>
+  <int value="1546" label="(deprecated) PDF OCR"/>
   <int value="1547" label="Enable overscroll to navigate"/>
+  <int value="1548" label="Caret browsing"/>
+  <int value="1549" label="Magnifier follows ChromeVox focus"/>
+  <int value="1550" label="Main node annotations enabled"/>
+  <int value="1551" label="Flash screen for notifications"/>
   <int value="1600" label="Powerwash"/>
   <int value="1601" label="Sanitize ChromeOS"/>
   <int value="1700" label="Change Chrome Channel"/>
@@ -589,6 +597,12 @@ chromium-metrics-reviews@google.com.
   <int value="3" label="Medium"/>
   <int value="4" label="Fast"/>
   <int value="5" label="Fastest"/>
+</enum>
+
+<enum name="UserInitiatedAmbientLightSensorDisabledCause">
+  <int value="0" label="UserRequestSettingsApp"/>
+  <int value="1" label="BrightnessUserRequest"/>
+  <int value="2" label="BrightnessUserRequestSettingsApp"/>
 </enum>
 
 <enum name="WebUIOSSettingsPathHashes">

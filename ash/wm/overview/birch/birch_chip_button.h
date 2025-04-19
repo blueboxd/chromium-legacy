@@ -5,6 +5,7 @@
 #ifndef ASH_WM_OVERVIEW_BIRCH_BIRCH_CHIP_BUTTON_H_
 #define ASH_WM_OVERVIEW_BIRCH_BIRCH_CHIP_BUTTON_H_
 
+#include "ash/birch/birch_item.h"
 #include "ash/wm/overview/birch/birch_chip_button_base.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/models/image_model.h"
@@ -37,18 +38,10 @@ class BirchChipButton : public BirchChipButtonBase,
   // Chip configuration methods.
   void Init(BirchItem* item);
 
-  template <typename T>
-  T* SetAddon(std::unique_ptr<T> addon_view) {
-    T* ptr = addon_view.get();
-    SetAddonInternal(std::move(addon_view));
-    return ptr;
-  }
-
   // BirchChipButtonBase:
   const BirchItem* GetItem() const override;
   BirchItem* GetItem() override;
   void Shutdown() override;
-  void OnGestureEvent(ui::GestureEvent* event) override;
 
   // ui::SimpleMenuModel::Delegate:
   void ExecuteCommand(int command_id, int event_flags) override;
@@ -56,13 +49,14 @@ class BirchChipButton : public BirchChipButtonBase,
  private:
   class ChipMenuController;
 
-  void SetAddonInternal(std::unique_ptr<views::View> addon_view);
+  void SetAddon(std::unique_ptr<views::View> addon_view);
 
-  // The callback when the removal button or removal panel is pressed.
-  void OnRemoveComponentPressed();
+  void StylizeIconForItemType(BirchItemType type,
+                              SecondaryIconType secondary_icon_type);
 
   // Sets the item icon.
-  void SetIconImage(const ui::ImageModel& icon_image);
+  void SetIconImage(const ui::ImageModel& icon_image,
+                    SecondaryIconType secondary_icon_image);
 
   // The chip context menu controller.
   std::unique_ptr<ChipMenuController> chip_menu_controller_;
@@ -72,7 +66,9 @@ class BirchChipButton : public BirchChipButtonBase,
 
   // The components owned by the chip view.
   raw_ptr<views::FlexLayout> flex_layout_ = nullptr;
-  raw_ptr<views::ImageView> icon_ = nullptr;
+  raw_ptr<views::View> icon_parent_view_ = nullptr;
+  raw_ptr<views::ImageView> primary_icon_view_ = nullptr;
+  raw_ptr<views::ImageView> secondary_icon_view_ = nullptr;
   raw_ptr<views::Label> title_ = nullptr;
   raw_ptr<views::Label> subtitle_ = nullptr;
   raw_ptr<views::View> addon_view_ = nullptr;
@@ -82,7 +78,6 @@ class BirchChipButton : public BirchChipButtonBase,
 
 BEGIN_VIEW_BUILDER(/*no export*/, BirchChipButton, BirchChipButtonBase)
 VIEW_BUILDER_METHOD(Init, BirchItem*)
-VIEW_BUILDER_VIEW_TYPE_PROPERTY(views::View, Addon)
 END_VIEW_BUILDER
 
 }  // namespace ash

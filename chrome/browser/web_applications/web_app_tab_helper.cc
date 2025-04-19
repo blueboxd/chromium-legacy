@@ -13,9 +13,11 @@
 #include "chrome/browser/web_applications/manifest_update_manager.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
+#include "chrome/browser/web_applications/proto/web_app_install_state.pb.h"
 #include "chrome/browser/web_applications/web_app_audio_focus_id_map.h"
 #include "chrome/browser/web_applications/web_app_launch_queue.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_ui_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/media_session.h"
@@ -35,8 +37,9 @@ void WebAppTabHelper::CreateForWebContents(content::WebContents* contents) {
 const webapps::AppId* WebAppTabHelper::GetAppId(
     content::WebContents* web_contents) {
   auto* tab_helper = WebAppTabHelper::FromWebContents(web_contents);
-  if (!tab_helper)
+  if (!tab_helper) {
     return nullptr;
+  }
   return tab_helper->app_id_.has_value() ? &tab_helper->app_id_.value()
                                          : nullptr;
 }
@@ -57,7 +60,8 @@ WebAppTabHelper::GetAppIdForNotificationAttribution(
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   WebAppProvider* web_app_provider = WebAppProvider::GetForWebApps(profile);
   if (!web_app_provider ||
-      !web_app_provider->registrar_unsafe().IsLocallyInstalled(*app_id)) {
+      !web_app_provider->registrar_unsafe().IsInstallState(
+          *app_id, {proto::INSTALLED_WITH_OS_INTEGRATION})) {
     return std::nullopt;
   }
   // Default apps are locally installed but unless an app shim has been created
@@ -176,14 +180,16 @@ void WebAppTabHelper::OnWebAppInstalled(
   // Check if current web_contents url is in scope for the newly installed app.
   std::optional<webapps::AppId> app_id =
       FindAppWithUrlInScope(web_contents()->GetURL());
-  if (app_id == installed_app_id)
+  if (app_id == installed_app_id) {
     SetAppId(app_id);
+  }
 }
 
 void WebAppTabHelper::OnWebAppWillBeUninstalled(
     const webapps::AppId& uninstalled_app_id) {
-  if (app_id_ == uninstalled_app_id)
+  if (app_id_ == uninstalled_app_id) {
     SetAppId(std::nullopt);
+  }
 }
 
 void WebAppTabHelper::OnWebAppInstallManagerDestroyed() {

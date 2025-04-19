@@ -115,7 +115,7 @@ ContentSettingImageView::ContentSettingImageView(
                                           ->AccessibilityAnnouncementStringId())
           : std::u16string();
 
-  SetAccessibilityProperties(
+  GetViewAccessibility().SetProperties(
       /*role*/ std::nullopt, accessible_name,
       /*description=*/std::nullopt,
       /*role_description*/ std::nullopt,
@@ -147,17 +147,17 @@ void ContentSettingImageView::Update() {
   UpdateImage();
   SetVisible(true);
   GetViewAccessibility().SetIsIgnored(false);
-  // An alert role is required in order to fire the alert event.
-  SetAccessibleRole(ax::mojom::Role::kAlert);
+  GetViewAccessibility().SetRole(ax::mojom::Role::kButton);
 
   if (content_setting_image_model_->ShouldNotifyAccessibility(web_contents)) {
     auto name = l10n_util::GetStringUTF16(
         content_setting_image_model_->AccessibilityAnnouncementStringId());
-    SetAccessibleName(name);
-    const std::u16string& accessible_description =
-        l10n_util::GetStringUTF16(IDS_A11Y_OMNIBOX_CHIP_HINT);
-    GetViewAccessibility().SetDescription(accessible_description);
-    NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
+    GetViewAccessibility().SetName(name);
+
+    GetViewAccessibility().AnnounceAlert(l10n_util::GetStringFUTF16(
+        IDS_A11Y_INDICATORS_ANNOUNCEMENT, name,
+        l10n_util::GetStringUTF16(IDS_A11Y_OMNIBOX_CHIP_HINT)));
+
     content_setting_image_model_->AccessibilityWasNotified(web_contents);
   }
 
@@ -178,19 +178,9 @@ void ContentSettingImageView::Update() {
   // mechanism to show one after the other, but it doesn't seem important now.
   int string_id = content_setting_image_model_->explanatory_string_id();
   if (string_id) {
-    // If this is part of the mac location permissions experiment, show a
-    // persistent label.
-    if (content_setting_image_model_
-            ->IsMacRestoreLocationPermissionExperimentActive()) {
-      SetLabel(l10n_util::GetStringUTF16(string_id));
-      // Reset the slide animation so that the label is persistent and won't
-      // animate out.
-      ResetSlideAnimation(true);
-    } else {
-      // Reset the slide animation so that the label's show/hide animation runs.
-      ResetSlideAnimation(false);
-      AnimateIn(string_id);
-    }
+    // Reset the slide animation so that the label's show/hide animation runs.
+    ResetSlideAnimation(false);
+    AnimateIn(string_id);
   }
 
   content_setting_image_model_->SetAnimationHasRun(web_contents);

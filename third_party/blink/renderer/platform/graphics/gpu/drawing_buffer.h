@@ -56,6 +56,7 @@
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -399,7 +400,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
     bool pixel_pack_buffer_binding_dirty_ = false;
   };
 
-  struct ColorBuffer : public base::RefCountedThreadSafe<ColorBuffer> {
+  struct ColorBuffer : public ThreadSafeRefCounted<ColorBuffer> {
     ColorBuffer(base::WeakPtr<DrawingBuffer> drawing_buffer,
                 const gfx::Size&,
                 const gfx::ColorSpace& color_space,
@@ -411,7 +412,6 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
                 scoped_refptr<gpu::ClientSharedImage> shared_image);
     ColorBuffer(const ColorBuffer&) = delete;
     ColorBuffer& operator=(const ColorBuffer&) = delete;
-    ~ColorBuffer();
 
     // The thread on which the ColorBuffer is created and the DrawingBuffer is
     // bound to.
@@ -425,7 +425,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
     const gfx::ColorSpace color_space;
     const viz::SharedImageFormat format;
     const SkAlphaType alpha_type;
-    const GLenum texture_target;
+    GLenum texture_target;
     const GLuint texture_id;
     const bool is_overlay_candidate;
 
@@ -438,6 +438,10 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
     // The sync token for when this buffer was received back from the
     // compositor.
     gpu::SyncToken receive_sync_token;
+
+   private:
+    friend class ThreadSafeRefCounted<ColorBuffer>;
+    ~ColorBuffer();
   };
 
   using CopyFunctionRef = base::FunctionRef<bool(const gpu::MailboxHolder&,
@@ -498,6 +502,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
 
   bool PrepareTransferableResourceInternal(
       cc::SharedBitmapIdRegistrar* bitmap_registrar,
+      scoped_refptr<gpu::ClientSharedImage>* client_si,
       viz::TransferableResource* out_resource,
       viz::ReleaseCallback* out_release_callback,
       bool force_gpu_result);
@@ -505,6 +510,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   // Helper functions to be called only by PrepareTransferableResourceInternal.
   bool FinishPrepareTransferableResourceGpu(
       viz::TransferableResource* out_resource,
+      scoped_refptr<gpu::ClientSharedImage>* client_si,
       viz::ReleaseCallback* out_release_callback);
   bool FinishPrepareTransferableResourceSoftware(
       cc::SharedBitmapIdRegistrar* bitmap_registrar,

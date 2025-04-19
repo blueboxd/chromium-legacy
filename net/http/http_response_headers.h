@@ -150,6 +150,13 @@ class NET_EXPORT HttpResponseHeaders
   static scoped_refptr<HttpResponseHeaders> TryToCreate(
       std::string_view headers);
 
+  // Takes content_type as an ASCII string and tries to combine it with the HTTP
+  // status line for data: URLs. Returns nullptr on failure. Unlike TryToCreate,
+  // HttpUtil::AssembleRawHeaders does not need to be called as the raw headers
+  // are already known.
+  static scoped_refptr<HttpResponseHeaders> TryToCreateForDataURL(
+      std::string_view content_type);
+
   HttpResponseHeaders(const HttpResponseHeaders&) = delete;
   HttpResponseHeaders& operator=(const HttpResponseHeaders&) = delete;
 
@@ -303,6 +310,14 @@ class NET_EXPORT HttpResponseHeaders
   // Returns true if this response corresponds to a redirect.  The target
   // location of the redirect is optionally returned if location is non-null.
   bool IsRedirect(std::string* location) const;
+
+  // Returns true if this response included the `Activate-Storage-Access: retry`
+  // header.
+  bool HasStorageAccessRetryHeader() const;
+
+  // Returns true if this response included the `Activate-Storage-Access: load`
+  // header.
+  bool HasStorageAccessLoadHeader() const;
 
   // Returns true if the HTTP response code passed in corresponds to a
   // redirect.

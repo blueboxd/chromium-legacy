@@ -59,6 +59,7 @@
 #include "components/optimization_guide/core/optimization_guide_navigation_data.h"
 #include "components/optimization_guide/core/optimization_guide_prefs.h"
 #include "components/optimization_guide/core/optimization_guide_store.h"
+#include "components/optimization_guide/core/optimization_guide_switches.h"
 #include "components/optimization_guide/core/optimization_guide_util.h"
 #include "components/optimization_guide/core/prediction_manager.h"
 #include "components/optimization_guide/core/tab_url_provider.h"
@@ -205,8 +206,15 @@ class OnDeviceModelComponentStateManagerDelegate
 
   void GetFreeDiskSpace(const base::FilePath& path,
                         base::OnceCallback<void(int64_t)> callback) override {
+    base::TaskTraits traits = {base::MayBlock(),
+                               base::TaskPriority::BEST_EFFORT};
+    if (optimization_guide::switches::
+            ShouldGetFreeDiskSpaceWithUserVisiblePriorityTask()) {
+      traits.UpdatePriority(base::TaskPriority::USER_VISIBLE);
+    }
+
     base::ThreadPool::PostTaskAndReplyWithResult(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+        FROM_HERE, traits,
         base::BindOnce(&base::SysInfo::AmountOfFreeDiskSpace, path),
         std::move(callback));
   }
@@ -254,9 +262,7 @@ void OptimizationGuideKeyedService::DeterminePerformanceClass(
   auto controller =
       GetOnDeviceModelServiceController(on_device_component_state_manager);
   controller->GetEstimatedPerformanceClass(base::BindOnce(
-      [](scoped_refptr<optimization_guide::OnDeviceModelServiceController>
-             controller,
-         base::WeakPtr<optimization_guide::OnDeviceModelComponentStateManager>
+      [](base::WeakPtr<optimization_guide::OnDeviceModelComponentStateManager>
              on_device_component_state_manager,
          std::optional<on_device_model::mojom::PerformanceClass>
              performance_class) {
@@ -274,9 +280,8 @@ void OptimizationGuideKeyedService::DeterminePerformanceClass(
             OnDeviceModelPerformanceClassToString(
                 optimization_guide_performance_class),
             variations::SyntheticTrialAnnotationMode::kCurrentLog);
-        controller->ShutdownServiceIfNoModelLoaded();
       },
-      controller, on_device_component_state_manager));
+      on_device_component_state_manager));
 }
 
 OptimizationGuideKeyedService::OptimizationGuideKeyedService(
@@ -444,7 +449,7 @@ void OptimizationGuideKeyedService::Initialize() {
       model_execution_features_controller_ = std::make_unique<
           optimization_guide::ModelExecutionFeaturesController>(
           profile->GetPrefs(), IdentityManagerFactory::GetForProfile(profile),
-          dogfood_status);
+          g_browser_process->local_state(), dogfood_status);
 
       // Don't create logs uploader service when feature is disabled. All the
       // logs upload get route through this service which exists one per
@@ -469,6 +474,10 @@ void OptimizationGuideKeyedService::Initialize() {
               model_quality_logs_uploader_service_
                   ? model_quality_logs_uploader_service_->GetWeakPtr()
                   : nullptr);
+
+      RecordModelExecutionFeatureSyntheticFieldTrial(
+          optimization_guide::UserVisibleFeatureKey::kHistorySearch,
+          "HistorySearch");
     }
   }
 
@@ -640,29 +649,33 @@ void OptimizationGuideKeyedService::ExecuteModel(
                                          std::move(callback));
 }
 
-void OptimizationGuideKeyedService::UploadModelQualityLogs(
-    std::unique_ptr<optimization_guide::ModelQualityLogEntry> log_entry) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  if (!model_quality_logs_uploader_service_) {
+void OptimizationGuideKeyedService::AddOnDeviceModelAvailabilityChangeObserver(
+    optimization_guide::ModelBasedCapabilityKey feature,
+    optimization_guide::OnDeviceModelAvailabilityObserver* observer) {
+  if (!on_device_component_manager_) {
     return;
   }
+  auto service_controller = GetOnDeviceModelServiceController(
+      on_device_component_manager_->GetWeakPtr());
+  if (service_controller) {
+    service_controller->AddOnDeviceModelAvailabilityChangeObserver(feature,
+                                                                   observer);
+  }
+}
 
-  // Don't trigger upload for an empty log entry.
-  if (!log_entry || !log_entry->log_ai_data_request()) {
+void OptimizationGuideKeyedService::
+    RemoveOnDeviceModelAvailabilityChangeObserver(
+        optimization_guide::ModelBasedCapabilityKey feature,
+        optimization_guide::OnDeviceModelAvailabilityObserver* observer) {
+  if (!on_device_component_manager_) {
     return;
   }
-
-  auto feature = optimization_guide::GetModelExecutionFeature(
-      log_entry->log_ai_data_request()->feature_case());
-
-  TRACE_EVENT1(
-      "browser", "OptimizationGuideKeyedService::UploadModelQualityLogs",
-      "feature",
-      optimization_guide::GetStringNameForModelExecutionFeature(feature));
-
-  // This uploads the logs on ModelQualityLogEntry destruction.
-  log_entry.reset();
+  auto service_controller = GetOnDeviceModelServiceController(
+      on_device_component_manager_->GetWeakPtr());
+  if (service_controller) {
+    service_controller->RemoveOnDeviceModelAvailabilityChangeObserver(feature,
+                                                                      observer);
+  }
 }
 
 void OptimizationGuideKeyedService::OnProfileInitializationComplete(
@@ -703,13 +716,11 @@ void OptimizationGuideKeyedService::OverrideTargetModelForTesting(
       optimization_target, std::move(model_info));
 }
 
-bool OptimizationGuideKeyedService::IsSettingVisible(
-    optimization_guide::UserVisibleFeatureKey feature) const {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!model_execution_features_controller_) {
-    return false;
-  }
-  return model_execution_features_controller_->IsSettingVisible(feature);
+void OptimizationGuideKeyedService::
+    SetModelQualityLogsUploaderServiceForTesting(
+        std::unique_ptr<optimization_guide::ModelQualityLogsUploaderService>
+            uploader) {
+  model_quality_logs_uploader_service_ = std::move(uploader);
 }
 
 bool OptimizationGuideKeyedService::ShouldFeatureBeCurrentlyEnabledForUser(
@@ -739,6 +750,15 @@ bool OptimizationGuideKeyedService::ShouldFeatureBeCurrentlyAllowedForFeedback(
   bool is_dogfood_client =
       !!variations_service && variations_service->IsLikelyDogfoodClient();
   return is_dogfood_client && ShouldFeatureBeCurrentlyEnabledForUser(feature);
+}
+
+bool OptimizationGuideKeyedService::IsSettingVisible(
+    optimization_guide::UserVisibleFeatureKey feature) const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!model_execution_features_controller_) {
+    return false;
+  }
+  return model_execution_features_controller_->IsSettingVisible(feature);
 }
 
 bool OptimizationGuideKeyedService::ShouldShowExperimentalAIPromo() const {
@@ -785,4 +805,14 @@ void OptimizationGuideKeyedService::RemoveModelExecutionSettingsEnabledObserver(
     return;
   }
   model_execution_features_controller_->RemoveObserver(observer);
+}
+
+void OptimizationGuideKeyedService::
+    RecordModelExecutionFeatureSyntheticFieldTrial(
+        optimization_guide::UserVisibleFeatureKey feature,
+        const std::string_view feature_name) {
+  ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+      base::StrCat({"SyntheticModelExecutionFeature", feature_name}),
+      ShouldFeatureBeCurrentlyEnabledForUser(feature) ? "Enabled" : "Disabled",
+      variations::SyntheticTrialAnnotationMode::kCurrentLog);
 }

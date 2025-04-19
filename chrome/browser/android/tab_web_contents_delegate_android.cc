@@ -18,7 +18,6 @@
 #include "base/functional/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
-#include "chrome/android/chrome_jni_headers/TabWebContentsDelegateAndroidImpl_jni.h"
 #include "chrome/browser/android/customtabs/client_data_header_web_contents_observer.h"
 #include "chrome/browser/android/framebust_intervention/framebust_blocked_delegate_android.h"
 #include "chrome/browser/android/tab_android.h"
@@ -84,6 +83,9 @@
 #include "components/paint_preview/browser/paint_preview_client.h"
 #endif
 
+// Must come after all headers that specialize FromJniType() / ToJniType().
+#include "chrome/android/chrome_jni_headers/TabWebContentsDelegateAndroidImpl_jni.h"
+
 using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;
 using base::android::JavaRef;
@@ -136,9 +138,8 @@ void ShowFramebustBlockMessageInternal(content::WebContents* web_contents,
 namespace android {
 
 TabWebContentsDelegateAndroid::TabWebContentsDelegateAndroid(JNIEnv* env,
-                                                                   jobject obj)
-    : WebContentsDelegateAndroid(env, obj) {
-}
+                                                             jobject obj)
+    : WebContentsDelegateAndroid(env, obj) {}
 
 TabWebContentsDelegateAndroid::~TabWebContentsDelegateAndroid() = default;
 
@@ -406,7 +407,8 @@ void TabWebContentsDelegateAndroid::ExitPictureInPicture() {
   PictureInPictureWindowManager::GetInstance()->ExitPictureInPicture();
 }
 
-bool TabWebContentsDelegateAndroid::IsBackForwardCacheSupported() {
+bool TabWebContentsDelegateAndroid::IsBackForwardCacheSupported(
+    content::WebContents& web_contents) {
   return true;
 }
 

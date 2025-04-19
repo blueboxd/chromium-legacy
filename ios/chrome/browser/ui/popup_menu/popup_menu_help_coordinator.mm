@@ -13,6 +13,8 @@
 #import "components/feature_engagement/public/tracker.h"
 #import "components/segmentation_platform/embedder/default_model/device_switcher_result_dispatcher.h"
 #import "ios/chrome/app/tests_hook.h"
+#import "ios/chrome/browser/bubble/ui_bundled/bubble_constants.h"
+#import "ios/chrome/browser/bubble/ui_bundled/bubble_view_controller_presenter.h"
 #import "ios/chrome/browser/feature_engagement/model/tracker_factory.h"
 #import "ios/chrome/browser/iph_for_new_chrome_user/model/utils.h"
 #import "ios/chrome/browser/segmentation_platform/model/segmentation_platform_service_factory.h"
@@ -23,8 +25,6 @@
 #import "ios/chrome/browser/shared/ui/util/layout_guide_names.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/shared/ui/util/util_swift.h"
-#import "ios/chrome/browser/ui/bubble/bubble_constants.h"
-#import "ios/chrome/browser/ui/bubble/bubble_view_controller_presenter.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/feature_flags.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/overflow_menu_action_provider.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/overflow_menu_constants.h"
@@ -35,6 +35,7 @@
 #import "ui/base/l10n/l10n_util.h"
 
 namespace {
+
 base::TimeDelta kPromoDisplayDelayForTests = base::Seconds(1);
 }  // namespace
 
@@ -175,7 +176,6 @@ base::TimeDelta kPromoDisplayDelayForTests = base::Seconds(1);
   self.inSessionWithHistoryMenuItemIPH = NO;
 
   [self.overflowMenuBubblePresenter presentInViewController:menu
-                                                       view:menu.view
                                                 anchorPoint:anchorPoint];
   return YES;
 }
@@ -207,7 +207,6 @@ base::TimeDelta kPromoDisplayDelayForTests = base::Seconds(1);
   }
 
   [self.overflowMenuBubblePresenter presentInViewController:menu
-                                                       view:menu.view
                                                 anchorPoint:anchorPoint];
 
   OverflowMenuAction* editActionsAction = [self.actionProvider
@@ -247,7 +246,6 @@ base::TimeDelta kPromoDisplayDelayForTests = base::Seconds(1);
           initDefaultBubbleWithText:text
                      arrowDirection:arrowDirection
                           alignment:BubbleAlignmentBottomOrTrailing
-               isLongDurationBubble:NO
                   dismissalCallback:dismissalCallback];
   std::u16string menuButtonA11yLabel = base::SysNSStringToUTF16(
       l10n_util::GetNSString(IDS_IOS_TOOLBAR_SETTINGS));
@@ -337,7 +335,6 @@ base::TimeDelta kPromoDisplayDelayForTests = base::Seconds(1);
   self.popupMenuBubblePresenter = bubblePresenter;
   [self.popupMenuBubblePresenter
       presentInViewController:self.baseViewController
-                         view:self.baseViewController.view
                   anchorPoint:anchorPoint
               anchorViewFrame:anchorFrame];
   [self.UIUpdater updateUIForOverflowMenuIPHDisplayed];
@@ -370,7 +367,6 @@ base::TimeDelta kPromoDisplayDelayForTests = base::Seconds(1);
           initDefaultBubbleWithText:text
                      arrowDirection:arrowDirection
                           alignment:alignment
-               isLongDurationBubble:NO
                   dismissalCallback:dismissalCallback];
   std::u16string historyButtonA11yLabel = base::SysNSStringToUTF16(
       l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_HISTORY));
@@ -412,8 +408,10 @@ base::TimeDelta kPromoDisplayDelayForTests = base::Seconds(1);
           initDefaultBubbleWithText:text
                      arrowDirection:arrowDirection
                           alignment:alignment
-               isLongDurationBubble:YES
                   dismissalCallback:dismissalCallback];
+
+  bubbleViewControllerPresenter.customBubbleVisibilityDuration =
+      kDefaultLongDurationBubbleVisibility;
 
   return bubbleViewControllerPresenter;
 }

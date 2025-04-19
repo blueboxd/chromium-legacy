@@ -10,13 +10,13 @@
 #include "third_party/blink/renderer/core/page/page_animator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
-class AnchorPositionScrollDataTest : public RenderingTest,
-                                     private ScopedCSSAnchorPositioningForTest {
+class AnchorPositionScrollDataTest : public RenderingTest {
  public:
-  AnchorPositionScrollDataTest() : ScopedCSSAnchorPositioningForTest(true) {}
+  AnchorPositionScrollDataTest() = default;
 
   void SimulateFrame() {
     // Advance time by 100 ms.

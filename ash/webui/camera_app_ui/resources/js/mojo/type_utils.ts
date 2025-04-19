@@ -13,6 +13,7 @@ import {
   IntentResultType,
   LaunchType,
   LowStorageActionType,
+  OcrEventType,
   RecordType,
   ShutterType,
 } from '../metrics.js';
@@ -24,6 +25,7 @@ import {
   Mode,
   PerfEvent,
   PhotoResolutionLevel,
+  Pressure,
   VideoResolutionLevel,
 } from '../type.js';
 
@@ -35,8 +37,6 @@ import * as mojoType from './type.js';
 export function convertLaunchTypeToMojo(launchType: LaunchType):
     mojoType.LaunchType {
   switch (launchType) {
-    case LaunchType.ASSISTANT:
-      return mojoType.LaunchType.kAssistant;
     case LaunchType.DEFAULT:
       return mojoType.LaunchType.kDefault;
     default:
@@ -79,6 +79,24 @@ export function convertFacingToMojo(facing: Facing|null): mojoType.Facing {
 }
 
 /**
+ * Converts the CPU pressure to the mojo enum to be used in metrics.
+ */
+export function convertPressureToMojo(pressure: Pressure): mojoType.Pressure {
+  switch (pressure) {
+    case Pressure.NOMINAL:
+      return mojoType.Pressure.kNominal;
+    case Pressure.FAIR:
+      return mojoType.Pressure.kFair;
+    case Pressure.SERIOUS:
+      return mojoType.Pressure.kSerious;
+    case Pressure.CRITICAL:
+      return mojoType.Pressure.kCritical;
+    default:
+      assertNotReached();
+  }
+}
+
+/**
  * Converts the grid type to the mojo enum to be used in metrics.
  */
 export function convertGridTypeToMojo(gridType: string): mojoType.GridType {
@@ -114,8 +132,6 @@ export function convertTimerTypeToMojo(timerType: string): mojoType.TimerType {
 export function convertShutterTypeToMojo(shutterType: ShutterType):
     mojoType.ShutterType {
   switch (shutterType) {
-    case ShutterType.ASSISTANT:
-      return mojoType.ShutterType.kAssistant;
     case ShutterType.KEYBOARD:
       return mojoType.ShutterType.kKeyboard;
     case ShutterType.MOUSE:
@@ -354,8 +370,14 @@ export function convertPerfEventTypeToMojo(perfEventType: PerfEvent):
   switch (perfEventType) {
     case PerfEvent.CAMERA_SWITCHING:
       return mojoType.PerfEventType.kCameraSwitching;
+    case PerfEvent.DOCUMENT_CAPTURE_POST_PROCESSING:
+      return mojoType.PerfEventType.kDocumentCapturePostProcessing;
+    case PerfEvent.DOCUMENT_PDF_SAVING:
+      return mojoType.PerfEventType.kDocumentPdfSaving;
     case PerfEvent.GIF_CAPTURE_POST_PROCESSING:
       return mojoType.PerfEventType.kGifCapturePostProcessing;
+    case PerfEvent.GIF_CAPTURE_SAVING:
+      return mojoType.PerfEventType.kGifCaptureSaving;
     case PerfEvent.LAUNCHING_FROM_LAUNCH_APP_COLD:
       return mojoType.PerfEventType.kLaunchingFromLaunchAppCold;
     case PerfEvent.LAUNCHING_FROM_LAUNCH_APP_WARM:
@@ -364,18 +386,20 @@ export function convertPerfEventTypeToMojo(perfEventType: PerfEvent):
       return mojoType.PerfEventType.kLaunchingFromWindowCreation;
     case PerfEvent.MODE_SWITCHING:
       return mojoType.PerfEventType.kModeSwitching;
-    case PerfEvent.PHOTO_CAPTURE_POST_PROCESSING:
-      return mojoType.PerfEventType.kPhotoCapturePostProcessing;
+    case PerfEvent.OCR_SCANNING:
+      return mojoType.PerfEventType.kOcrScanning;
+    case PerfEvent.PHOTO_CAPTURE_POST_PROCESSING_SAVING:
+      return mojoType.PerfEventType.kPhotoCapturePostProcessingSaving;
     case PerfEvent.PHOTO_CAPTURE_SHUTTER:
       return mojoType.PerfEventType.kPhotoCaptureShutter;
-    case PerfEvent.PHOTO_TAKING:
-      return mojoType.PerfEventType.kPhotoTaking;
-    case PerfEvent.PORTRAIT_MODE_CAPTURE_POST_PROCESSING:
-      return mojoType.PerfEventType.kPortraitModeCapturePostProcessing;
-    case PerfEvent.TIME_LAPSE_CAPTURE_POST_PROCESSING:
-      return mojoType.PerfEventType.kTimelapseCapturePostProcessing;
-    case PerfEvent.VIDEO_CAPTURE_POST_PROCESSING:
-      return mojoType.PerfEventType.kVideoCapturePostProcessing;
+    case PerfEvent.PORTRAIT_MODE_CAPTURE_POST_PROCESSING_SAVING:
+      return mojoType.PerfEventType.kPortraitModeCapturePostProcessingSaving;
+    case PerfEvent.SNAPSHOT_TAKING:
+      return mojoType.PerfEventType.kSnapshotTaking;
+    case PerfEvent.TIME_LAPSE_CAPTURE_POST_PROCESSING_SAVING:
+      return mojoType.PerfEventType.kTimelapseCapturePostProcessingSaving;
+    case PerfEvent.VIDEO_CAPTURE_POST_PROCESSING_SAVING:
+      return mojoType.PerfEventType.kVideoCapturePostProcessingSaving;
     default:
       assertNotReached();
   }
@@ -409,4 +433,19 @@ export function convertSessionBehaviorToMojo(sessionBehavior: number): number {
     mojoBehaviors |= mojoType.UserBehavior.kRecordTimelapseVideo;
   }
   return mojoBehaviors;
+}
+
+/**
+ * Converts the OCR event type to the mojo enum to be used in metrics.
+ */
+export function convertOcrEventTypeToMojo(ocrEventType: OcrEventType):
+    mojoType.OcrEventType {
+  switch (ocrEventType) {
+    case OcrEventType.COPY_TEXT:
+      return mojoType.OcrEventType.kCopyText;
+    case OcrEventType.TEXT_DETECTED:
+      return mojoType.OcrEventType.kTextDetected;
+    default:
+      assertNotReached();
+  }
 }

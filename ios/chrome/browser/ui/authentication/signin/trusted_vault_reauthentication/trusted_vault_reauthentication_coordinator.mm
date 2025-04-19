@@ -7,6 +7,7 @@
 #import "base/strings/sys_string_conversions.h"
 #import "components/strings/grit/components_strings.h"
 #import "components/sync/service/sync_service_utils.h"
+#import "components/trusted_vault/trusted_vault_server_constants.h"
 #import "ios/chrome/browser/shared/coordinator/alert/alert_coordinator.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
@@ -30,12 +31,17 @@ using l10n_util::GetNSStringF;
 
 @end
 
-@implementation TrustedVaultReauthenticationCoordinator
+@implementation TrustedVaultReauthenticationCoordinator {
+  base::OnceCallback<void(BOOL animated, ProceduralBlock cancel_done)>
+      _dialogCancelCallback;
+  trusted_vault::SecurityDomainId _securityDomainID;
+}
 
 - (instancetype)
     initWithBaseViewController:(UIViewController*)viewController
                        browser:(Browser*)browser
                         intent:(SigninTrustedVaultDialogIntent)intent
+              securityDomainID:(trusted_vault::SecurityDomainId)securityDomainID
                        trigger:
                            (syncer::TrustedVaultUserActionTriggerForUMA)trigger
                    accessPoint:(signin_metrics::AccessPoint)accessPoint {
@@ -45,6 +51,7 @@ using l10n_util::GetNSStringF;
                                accessPoint:accessPoint];
   if (self) {
     _intent = intent;
+    _securityDomainID = securityDomainID;
     switch (intent) {
       case SigninTrustedVaultDialogIntentFetchKeys:
         syncer::RecordKeyRetrievalTrigger(trigger);
@@ -93,15 +100,15 @@ using l10n_util::GetNSStringF;
       animated = YES;
       break;
   }
+  // This coordinator should be either showing an error dialog or the trusted
+  // vault dialog.
   if (self.errorAlertCoordinator) {
     CHECK(!self.errorAlertCoordinator.noInteractionAction);
     self.errorAlertCoordinator.noInteractionAction = cancelCompletion;
     [self.errorAlertCoordinator stop];
     self.errorAlertCoordinator = nil;
   } else {
-    TrustedVaultClientBackendFactory::GetForBrowserState(
-        self.browser->GetBrowserState())
-        ->CancelDialog(animated, cancelCompletion);
+    std::move(_dialogCancelCallback).Run(animated, cancelCompletion);
   }
 }
 
@@ -125,28 +132,37 @@ using l10n_util::GetNSStringF;
   __weak __typeof(self) weakSelf = self;
   void (^callback)(BOOL success, NSError* error) =
       ^(BOOL success, NSError* error) {
-        if (error) {
-          [weakSelf displayError:error];
-        } else {
-          [weakSelf reauthentificationCompletedWithSuccess:success];
-        }
+        [weakSelf trustedVaultDialogDoneWithSuccess:success error:error];
       };
+  std::string securityDomainPath = GetSecurityDomainPath(_securityDomainID);
   switch (self.intent) {
     case SigninTrustedVaultDialogIntentFetchKeys:
-      TrustedVaultClientBackendFactory::GetForBrowserState(
-          self.browser->GetBrowserState())
-          ->Reauthentication(self.identity, self.baseViewController, callback);
+      _dialogCancelCallback =
+          TrustedVaultClientBackendFactory::GetForBrowserState(
+              self.browser->GetBrowserState())
+              ->Reauthentication(self.identity, securityDomainPath,
+                                 self.baseViewController, callback);
       break;
     case SigninTrustedVaultDialogIntentDegradedRecoverability:
-      TrustedVaultClientBackendFactory::GetForBrowserState(
-          self.browser->GetBrowserState())
-          ->FixDegradedRecoverability(self.identity, self.baseViewController,
-                                      callback);
+      _dialogCancelCallback =
+          TrustedVaultClientBackendFactory::GetForBrowserState(
+              self.browser->GetBrowserState())
+              ->FixDegradedRecoverability(self.identity, securityDomainPath,
+                                          self.baseViewController, callback);
       break;
   }
 }
 
 #pragma mark - Private
+
+- (void)trustedVaultDialogDoneWithSuccess:(BOOL)success error:(NSError*)error {
+  _dialogCancelCallback.Reset();
+  if (error) {
+    [self displayError:error];
+  } else {
+    [self reauthentificationCompletedWithSuccess:success];
+  }
+}
 
 - (void)displayError:(NSError*)error {
   DCHECK(error);

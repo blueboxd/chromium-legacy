@@ -28,6 +28,7 @@ import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Pair;
 import android.util.SparseArray;
+import android.view.DragAndDropPermissions;
 import android.view.DragEvent;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -60,14 +61,13 @@ import org.chromium.android_webview.autofill.AndroidAutofillSafeModeAction;
 import org.chromium.android_webview.common.AwFeatures;
 import org.chromium.android_webview.common.AwSwitches;
 import org.chromium.android_webview.common.Lifetime;
-import org.chromium.android_webview.common.PlatformServiceBridge;
 import org.chromium.android_webview.gfx.AwDrawFnImpl;
 import org.chromium.android_webview.gfx.AwFunctor;
 import org.chromium.android_webview.gfx.AwGLFunctor;
 import org.chromium.android_webview.gfx.AwPicture;
 import org.chromium.android_webview.gfx.RectUtils;
 import org.chromium.android_webview.metrics.AwOriginVisitLogger;
-import org.chromium.android_webview.metrics.AwSiteVisitLogger;
+import org.chromium.android_webview.metrics.BackForwardCacheNotRestoredReason;
 import org.chromium.android_webview.permission.AwGeolocationCallback;
 import org.chromium.android_webview.permission.AwPermissionRequest;
 import org.chromium.android_webview.renderer_priority.RendererPriority;
@@ -103,6 +103,7 @@ import org.chromium.components.embedder_support.util.WebResourceResponseInfo;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.stylus_handwriting.StylusWritingController;
 import org.chromium.components.url_formatter.UrlFormatter;
+import org.chromium.components.viz.common.VizFeatures;
 import org.chromium.components.zoom.ZoomConstants;
 import org.chromium.content_public.browser.ChildProcessImportance;
 import org.chromium.content_public.browser.ContentViewStatics;
@@ -432,6 +433,7 @@ public class AwContents implements SmartClipProvider {
     private boolean mIsViewVisible;
     private boolean mIsWindowVisible;
     private boolean mIsAttachedToWindow;
+    private long mPreferredFrameIntervalNanos;
 
     // Visibility state of |mWebContents|.
     private boolean mIsContentVisible;
@@ -558,6 +560,10 @@ public class AwContents implements SmartClipProvider {
     private AwWebContentsMetricsRecorder mAwWebContentsMetricsRecorder;
 
     private StylusWritingController mStylusWritingController;
+
+    // Permissions are requested on a drop event, and are released when another drag starts
+    // (drag-started event) or when the current page navigates to a new URL.
+    private DragAndDropPermissions mDragAndDropPermissions;
 
     private static class WebContentsInternalsHolder implements WebContents.InternalsHolder {
         private final WeakReference<AwContents> mAwContentsRef;
@@ -712,6 +718,11 @@ public class AwContents implements SmartClipProvider {
         @Override
         public boolean shouldBlockNetworkLoads() {
             return mSettings.getBlockNetworkLoads();
+        }
+
+        @Override
+        public boolean shouldAcceptCookies() {
+            return mBrowserContext.getCookieManager().acceptCookie();
         }
 
         @Override
@@ -1424,12 +1435,6 @@ public class AwContents implements SmartClipProvider {
             setNewAwContents(
                     AwContentsJni.get().init(mBrowserContext.getNativeBrowserContextPointer()));
 
-            if (AwFeatureMap.isEnabled(AwFeatures.WEBVIEW_INJECT_PLATFORM_JS_APIS)) {
-                PlatformServiceBridge.getInstance()
-                        .injectPlatformJsInterfaces(
-                                mContext, new PlatformServiceBridgeAwContentsWrapper(this));
-            }
-
             onContainerViewChanged();
         }
         long delta = SystemClock.uptimeMillis() - startTime;
@@ -2119,8 +2124,17 @@ public class AwContents implements SmartClipProvider {
     }
 
     public void flushBackForwardCache() {
+        flushBackForwardCache(BackForwardCacheNotRestoredReason.CACHE_FLUSHED);
+    }
+
+    public void flushBackForwardCache(int reason) {
         if (isDestroyed(NO_WARN)) return;
-        AwContentsJni.get().flushBackForwardCache(mNativeAwContents);
+        AwContentsJni.get().flushBackForwardCache(mNativeAwContents, reason);
+    }
+
+    public void cancelAllPrerendering() {
+        if (isDestroyed(NO_WARN)) return;
+        AwContentsJni.get().cancelAllPrerendering(mNativeAwContents);
     }
 
     /** Destroys this object and deletes its native counterpart. */
@@ -2297,6 +2311,14 @@ public class AwContents implements SmartClipProvider {
             mOnscreenContentProvider.destroy();
         }
         mOnscreenContentProvider = onscreenContentProvider;
+    }
+
+    /** Release any DragAndDropPermissions currently held. */
+    protected void releaseDragAndDropPermissions() {
+        if (mDragAndDropPermissions != null) {
+            mDragAndDropPermissions.release();
+            mDragAndDropPermissions = null;
+        }
     }
 
     // --------------------------------------------------------------------------------------------
@@ -4124,13 +4146,6 @@ public class AwContents implements SmartClipProvider {
     }
 
     @CalledByNative
-    private void logSiteVisit(long siteHash) {
-        if (isDestroyed(NO_WARN)) return;
-        PostTask.postTask(
-                TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> AwSiteVisitLogger.logVisit(siteHash));
-    }
-
-    @CalledByNative
     public void onFindResultReceived(
             int activeMatchOrdinal, int numberOfMatches, boolean isDoneCounting) {
         mContentsClient.onFindResultReceived(activeMatchOrdinal, numberOfMatches, isDoneCounting);
@@ -4142,6 +4157,11 @@ public class AwContents implements SmartClipProvider {
         // the callback helper, to avoid doubling back into the renderer compositor in the middle
         // of the notification it is sending up to here.
         mContentsClient.getCallbackHelper().postOnNewPicture(mPictureListenerContentProvider);
+    }
+
+    @CalledByNative
+    public void onPreferredFrameIntervalChanged(long preferredFrameIntervalNanos) {
+        mPreferredFrameIntervalNanos = preferredFrameIntervalNanos;
     }
 
     /**
@@ -4562,6 +4582,18 @@ public class AwContents implements SmartClipProvider {
                 setFunctor(newFunctor);
             }
 
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM
+                    && AwFeatureMap.isEnabled(VizFeatures.WEBVIEW_FRAME_RATE_HINTS)) {
+                float frame_rate = View.REQUESTED_FRAME_RATE_CATEGORY_NO_PREFERENCE;
+                if (mPreferredFrameIntervalNanos > 0) {
+                    frame_rate = (float) 1e9 / mPreferredFrameIntervalNanos;
+                }
+                mContainerView.setRequestedFrameRate(frame_rate);
+                float velocity =
+                        AwContentsJni.get().getVelocityInPixelsPerSecond(mNativeAwContents);
+                mContainerView.setFrameContentVelocity(velocity);
+            }
+
             mScrollOffsetManager.syncScrollOffsetFromOnDraw();
             int scrollX = mContainerView.getScrollX();
             int scrollY = mContainerView.getScrollY();
@@ -4671,9 +4703,21 @@ public class AwContents implements SmartClipProvider {
 
         @Override
         public boolean onDragEvent(DragEvent event) {
-            return isDestroyed(NO_WARN)
-                    ? false
-                    : mWebContents.getEventForwarder().onDragEvent(event, mContainerView);
+            if (isDestroyed(NO_WARN)) {
+                return false;
+            }
+
+            if (AwFeatureMap.isEnabled(AwFeatures.WEBVIEW_DRAG_DROP_FILES)) {
+                if (event.getAction() == DragEvent.ACTION_DRAG_STARTED) {
+                    releaseDragAndDropPermissions();
+                } else if (event.getAction() == DragEvent.ACTION_DROP) {
+                    Activity activity = ContextUtils.activityFromContext(mContext);
+                    if (activity != null) {
+                        mDragAndDropPermissions = activity.requestDragAndDropPermissions(event);
+                    }
+                }
+            }
+            return mWebContents.getEventForwarder().onDragEvent(event, mContainerView);
         }
 
         @Override
@@ -5010,6 +5054,8 @@ public class AwContents implements SmartClipProvider {
                 int visibleBottom,
                 boolean forceAuxiliaryBitmapRendering);
 
+        float getVelocityInPixelsPerSecond(long nativeAwContents);
+
         boolean needToDrawBackgroundColor(long nativeAwContents);
 
         void findAllAsync(long nativeAwContents, String searchString);
@@ -5121,6 +5167,8 @@ public class AwContents implements SmartClipProvider {
 
         void onConfigurationChanged(long nativeAwContents);
 
-        void flushBackForwardCache(long nativeAwContents);
+        void flushBackForwardCache(long nativeAwContents, int reason);
+
+        void cancelAllPrerendering(long nativeAwContents);
     }
 }

@@ -7,13 +7,11 @@
 
 #include <stdint.h>
 
+#include <array>
 #include <map>
 #include <memory>
 #include <unordered_set>
-#include <utility>
-#include <vector>
 
-#include "base/functional/function_ref.h"
 #include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/process/process_handle.h"
@@ -25,6 +23,7 @@
 #include "components/performance_manager/public/graph/graph_registered.h"
 #include "components/performance_manager/public/graph/node_attached_data.h"
 #include "components/performance_manager/public/graph/node_state.h"
+#include "components/performance_manager/public/graph/node_type.h"
 #include "components/performance_manager/public/render_process_host_id.h"
 #include "components/performance_manager/registered_objects.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -44,13 +43,6 @@ class WorkerNodeImpl;
 // a list of observers that are notified of node addition and removal.
 class GraphImpl : public Graph {
  public:
-  using FrameNodeImplVisitor = base::FunctionRef<bool(FrameNodeImpl*)>;
-  using PageNodeImplVisitor = base::FunctionRef<bool(PageNodeImpl*)>;
-  using ProcessNodeImplVisitor = base::FunctionRef<bool(ProcessNodeImpl*)>;
-  using WorkerNodeImplVisitor = base::FunctionRef<bool(WorkerNodeImpl*)>;
-
-  using NodeSet = std::unordered_set<raw_ptr<NodeBase, CtnExperimental>>;
-
   // An ObserverList that DCHECK's if any observers are still in it when the
   // graph is deleted. `allow_reentrancy` is true because some observers update
   // node properties that also trigger observers. (For example
@@ -90,14 +82,10 @@ class GraphImpl : public Graph {
   void RegisterObject(GraphRegistered* object) override;
   void UnregisterObject(GraphRegistered* object) override;
   const SystemNode* GetSystemNode() const override;
-  std::vector<const ProcessNode*> GetAllProcessNodes() const override;
-  std::vector<const FrameNode*> GetAllFrameNodes() const override;
-  std::vector<const PageNode*> GetAllPageNodes() const override;
-  std::vector<const WorkerNode*> GetAllWorkerNodes() const override;
-  bool VisitAllProcessNodes(ProcessNodeVisitor visitor) const override;
-  bool VisitAllFrameNodes(FrameNodeVisitor visitor) const override;
-  bool VisitAllPageNodes(PageNodeVisitor visitor) const override;
-  bool VisitAllWorkerNodes(WorkerNodeVisitor visitor) const override;
+  NodeSetView<const ProcessNode*> GetAllProcessNodes() const override;
+  NodeSetView<const FrameNode*> GetAllFrameNodes() const override;
+  NodeSetView<const PageNode*> GetAllPageNodes() const override;
+  NodeSetView<const WorkerNode*> GetAllWorkerNodes() const override;
 
   bool HasOnlySystemNode() const override;
   ukm::UkmRecorder* GetUkmRecorder() const override;
@@ -130,16 +118,10 @@ class GraphImpl : public Graph {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return system_node_.get();
   }
-  std::vector<ProcessNodeImpl*> GetAllProcessNodeImpls() const;
-  std::vector<FrameNodeImpl*> GetAllFrameNodeImpls() const;
-  std::vector<PageNodeImpl*> GetAllPageNodeImpls() const;
-  std::vector<WorkerNodeImpl*> GetAllWorkerNodeImpls() const;
-  bool VisitAllProcessNodeImpls(ProcessNodeImplVisitor visitor) const;
-  bool VisitAllFrameNodeImpls(FrameNodeImplVisitor visitor) const;
-  bool VisitAllPageNodeImpls(PageNodeImplVisitor visitor) const;
-  bool VisitAllWorkerNodeImpls(WorkerNodeImplVisitor visitor) const;
-
-  const NodeSet& nodes() { return nodes_; }
+  NodeSetView<ProcessNodeImpl*> GetAllProcessNodeImpls() const;
+  NodeSetView<FrameNodeImpl*> GetAllFrameNodeImpls() const;
+  NodeSetView<PageNodeImpl*> GetAllPageNodeImpls() const;
+  NodeSetView<WorkerNodeImpl*> GetAllWorkerNodeImpls() const;
 
   // Retrieves the process node with PID |pid|, if any.
   ProcessNodeImpl* GetProcessNodeByPid(base::ProcessId pid);
@@ -149,7 +131,7 @@ class GraphImpl : public Graph {
                                   int render_frame_id);
 
   // Returns true if |node| is in this graph.
-  bool NodeInGraph(const NodeBase* node);
+  bool NodeInGraph(const NodeBase* node) const;
 
   // Management functions for node owners, any node added to the graph must be
   // removed from the graph before it's deleted.
@@ -161,12 +143,6 @@ class GraphImpl : public Graph {
   // InitializingFrameNodeObserver for details).
   void NotifyFrameNodeInitializing(const FrameNode* frame_node);
   void NotifyFrameNodeTearingDown(const FrameNode* frame_node);
-
-  // A |key| of nullptr counts all instances associated with the |node|. A
-  // |node| of null counts all instances associated with the |key|. If both are
-  // null then the entire map size is provided.
-  size_t GetNodeAttachedDataCountForTesting(const Node* node,
-                                            const void* key) const;
 
   // Allows explicitly invoking SystemNode destruction for testing.
   void ReleaseSystemNodeForTesting() {
@@ -189,6 +165,10 @@ class GraphImpl : public Graph {
 
  protected:
   friend class NodeBase;
+
+  // Returns the underlying set holding all nodes of type `node_type`.
+  NodeSet& GetNodesOfType(NodeTypeEnum node_type);
+  const NodeSet& GetNodesOfType(NodeTypeEnum node_type) const;
 
   // Used to implement `NodeBase::GetNodeState()` and `Node::GetNodeState()`.
   NodeState GetNodeState(const NodeBase* node) const;
@@ -217,7 +197,6 @@ class GraphImpl : public Graph {
 
   void DispatchNodeAddedNotifications(NodeBase* node);
   void DispatchNodeRemovedNotifications(NodeBase* node);
-  void RemoveNodeAttachedData(NodeBase* node);
 
   // Returns a new serialization ID.
   friend class NodeBase;
@@ -237,13 +216,6 @@ class GraphImpl : public Graph {
                                 int render_frame_id,
                                 FrameNodeImpl* frame_node);
 
-  template <typename NodeType, typename ReturnNodeType>
-  std::vector<ReturnNodeType> GetAllNodesOfType() const;
-
-  template <typename NodeType, typename VisitedNodeType>
-  bool VisitAllNodesOfType(
-      base::FunctionRef<bool(VisitedNodeType)> visitor) const;
-
   void CreateSystemNode() VALID_CONTEXT_REQUIRED(sequence_checker_);
   void ReleaseSystemNode() VALID_CONTEXT_REQUIRED(sequence_checker_);
 
@@ -259,7 +231,8 @@ class GraphImpl : public Graph {
 
   std::unique_ptr<SystemNodeImpl> system_node_
       GUARDED_BY_CONTEXT(sequence_checker_);
-  NodeSet nodes_ GUARDED_BY_CONTEXT(sequence_checker_);
+  std::array<NodeSet, kValidNodeTypeCount> nodes_
+      GUARDED_BY_CONTEXT(sequence_checker_);
   ProcessByPidMap processes_by_pid_ GUARDED_BY_CONTEXT(sequence_checker_);
   FrameById frames_by_id_ GUARDED_BY_CONTEXT(sequence_checker_);
   raw_ptr<ukm::UkmRecorder> ukm_recorder_
@@ -281,20 +254,12 @@ class GraphImpl : public Graph {
   // flat_map.
   OwnedObjects<GraphOwned,
                /* CallbackArgType = */ Graph*,
-               &GraphOwned::OnPassedToGraph,
-               &GraphOwned::OnTakenFromGraph>
+               &GraphOwned::PassToGraphImpl,
+               &GraphOwned::TakeFromGraphImpl>
       graph_owned_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   // Allocated on first use.
   mutable std::unique_ptr<NodeDataDescriberRegistry> describer_registry_
-      GUARDED_BY_CONTEXT(sequence_checker_);
-
-  // User data storage for the graph.
-  friend class NodeAttachedDataMapHelper;
-  using NodeAttachedDataKey = std::pair<const Node*, const void*>;
-  using NodeAttachedDataMap =
-      std::map<NodeAttachedDataKey, std::unique_ptr<NodeAttachedData>>;
-  NodeAttachedDataMap node_attached_data_map_
       GUARDED_BY_CONTEXT(sequence_checker_);
 
   // Storage for GraphRegistered objects.

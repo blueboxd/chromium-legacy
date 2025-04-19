@@ -9,8 +9,7 @@
 namespace views {
 
 void MenuConfig::InitPlatform() {
-  use_bubble_border =
-      ui::OzonePlatform::GetInstance()->IsWindowCompositingSupported();
+  use_bubble_border = true;
 }
 
 }  // namespace views

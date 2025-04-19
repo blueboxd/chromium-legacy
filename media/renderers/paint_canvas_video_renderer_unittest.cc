@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include <GLES3/gl3.h>
 #include <stdint.h>
 
@@ -411,8 +416,7 @@ uint32_t MaybeConvertABGRToARGB(uint32_t abgr) {
     SK_A32_SHIFT == 24
   return abgr;
 #else
-  return (base::numerics::ByteSwap(abgr & 0x00FFFFFF) >> 8) |
-         (abgr & 0xFF000000);
+  return (base::ByteSwap(abgr & 0x00FFFFFF) >> 8) | (abgr & 0xFF000000);
 #endif
 }
 
@@ -899,14 +903,22 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
       texsubimage2d_callback_;
 };
 
+#if !BUILDFLAG(IS_ANDROID)
 void MailboxHoldersReleased(const gpu::SyncToken& sync_token) {}
+#endif
 }  // namespace
 
+// NOTE: The below test tests behavior when PaintCanvasVideoRenderer is used
+// without GPU raster. It is not relevant on Android, where GPU raster is
+// always used.
+#if !BUILDFLAG(IS_ANDROID)
 // Test that PaintCanvasVideoRenderer::Paint doesn't crash when GrContext is
 // unable to wrap a video frame texture (eg due to being abandoned).
 TEST_F(PaintCanvasVideoRendererTest, ContextLost) {
   auto context_provider = viz::TestContextProvider::Create();
+  CHECK(context_provider);
   context_provider->BindToCurrentSequence();
+  CHECK(context_provider->GrContext());
   context_provider->GrContext()->abandonContext();
 
   cc::SkiaPaintCanvas canvas(AllocBitmap(kWidth, kHeight));
@@ -924,6 +936,7 @@ TEST_F(PaintCanvasVideoRendererTest, ContextLost) {
   renderer_.Paint(std::move(video_frame), &canvas, kNaturalRect, flags,
                   kNoTransformation, context_provider.get());
 }
+#endif
 
 void EmptyCallback(const gpu::SyncToken& sync_token) {}
 
@@ -1045,7 +1058,7 @@ TEST_F(PaintCanvasVideoRendererTest, TexSubImage2D_Y16_R32F) {
       2 /*xoffset*/, 1 /*yoffset*/, false /*flip_y*/, true);
 }
 
-// Fixture for tests that require a GL context.
+// Fixture for tests that require a GL context as destination.
 class PaintCanvasVideoRendererWithGLTest : public testing::Test {
  public:
   using GetColorCallback = base::RepeatingCallback<SkColor(int, int)>;
@@ -1058,9 +1071,9 @@ class PaintCanvasVideoRendererWithGLTest : public testing::Test {
     gpu::ContextResult result = media_context_->BindToCurrentSequence();
     ASSERT_EQ(result, gpu::ContextResult::kSuccess);
 
-    gles2_context_ = base::MakeRefCounted<viz::TestInProcessContextProvider>(
-        viz::TestContextType::kGLES2, /*support_locking=*/false);
-    result = gles2_context_->BindToCurrentSequence();
+    raster_context_ = base::MakeRefCounted<viz::TestInProcessContextProvider>(
+        viz::TestContextType::kGpuRaster, /*support_locking=*/false);
+    result = raster_context_->BindToCurrentSequence();
     ASSERT_EQ(result, gpu::ContextResult::kSuccess);
 
     destination_context_ =
@@ -1074,7 +1087,7 @@ class PaintCanvasVideoRendererWithGLTest : public testing::Test {
   void TearDown() override {
     renderer_.ResetCache();
     destination_context_.reset();
-    gles2_context_.reset();
+    raster_context_.reset();
     media_context_.reset();
     enable_pixels_.reset();
     viz::TestGpuServiceHolder::ResetInstance();
@@ -1135,7 +1148,7 @@ class PaintCanvasVideoRendererWithGLTest : public testing::Test {
   // Creates a cropped RGBA VideoFrame. |closure| is run once the shared images
   // backing the VideoFrame have been destroyed.
   scoped_refptr<VideoFrame> CreateTestRGBAFrame(base::OnceClosure closure) {
-    return CreateSharedImageRGBAFrame(gles2_context_, gfx::Size(16, 8),
+    return CreateSharedImageRGBAFrame(raster_context_, gfx::Size(16, 8),
                                       gfx::Rect(3, 3, 12, 4),
                                       std::move(closure));
   }
@@ -1167,7 +1180,7 @@ class PaintCanvasVideoRendererWithGLTest : public testing::Test {
   // Creates a cropped I420 VideoFrame. |closure| is run once the shared images
   // backing the VideoFrame have been destroyed.
   scoped_refptr<VideoFrame> CreateTestI420Frame(base::OnceClosure closure) {
-    return CreateSharedImageI420Frame(gles2_context_, gfx::Size(16, 8),
+    return CreateSharedImageI420Frame(raster_context_, gfx::Size(16, 8),
                                       gfx::Rect(2, 2, 12, 4),
                                       std::move(closure));
   }
@@ -1175,7 +1188,7 @@ class PaintCanvasVideoRendererWithGLTest : public testing::Test {
   // backing the VideoFrame have been destroyed.
   scoped_refptr<VideoFrame> CreateTestI420FrameNotSubset(
       base::OnceClosure closure) {
-    return CreateSharedImageI420Frame(gles2_context_, gfx::Size(16, 8),
+    return CreateSharedImageI420Frame(raster_context_, gfx::Size(16, 8),
                                       gfx::Rect(0, 0, 16, 8),
                                       std::move(closure));
   }
@@ -1218,7 +1231,7 @@ class PaintCanvasVideoRendererWithGLTest : public testing::Test {
   // not available. |closure| is run once the shared images backing the
   // VideoFrame have been destroyed.
   scoped_refptr<VideoFrame> CreateTestNV12Frame(base::OnceClosure closure) {
-    return CreateSharedImageNV12Frame(gles2_context_, gfx::Size(16, 8),
+    return CreateSharedImageNV12Frame(raster_context_, gfx::Size(16, 8),
                                       gfx::Rect(2, 2, 12, 4),
                                       std::move(closure));
   }
@@ -1236,7 +1249,7 @@ class PaintCanvasVideoRendererWithGLTest : public testing::Test {
  protected:
   std::optional<gl::DisableNullDrawGLBindings> enable_pixels_;
   scoped_refptr<viz::TestInProcessContextProvider> media_context_;
-  scoped_refptr<viz::TestInProcessContextProvider> gles2_context_;
+  scoped_refptr<viz::TestInProcessContextProvider> raster_context_;
   scoped_refptr<viz::TestInProcessContextProvider> destination_context_;
 
   PaintCanvasVideoRenderer renderer_;

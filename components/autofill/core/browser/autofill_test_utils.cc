@@ -21,16 +21,19 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/autofill_profile_test_api.h"
 #include "components/autofill/core/browser/data_model/bank_account.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/data_model/credit_card_test_api.h"
 #include "components/autofill/core/browser/data_model/iban.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/metrics/suggestions_list_metrics.h"
 #include "components/autofill/core/browser/payments/card_unmask_challenge_option.h"
 #include "components/autofill/core/browser/payments_data_manager.h"
 #include "components/autofill/core/browser/randomized_encoder.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
+#include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/browser/ui/suggestion_type.h"
 #include "components/autofill/core/browser/webdata/payments/payments_autofill_table.h"
 #include "components/autofill/core/common/autofill_clock.h"
@@ -38,8 +41,10 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_util.h"
+#include "components/autofill/core/common/credit_card_network_identifiers.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_data_predictions.h"
+#include "components/autofill/core/common/form_data_test_api.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/form_field_data_predictions.h"
 #include "components/autofill/core/common/unique_ids.h"
@@ -157,28 +162,27 @@ std::unique_ptr<PrefService> PrefServiceForTesting(
   form.set_submission_event(
       mojom::SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION);
 
-  form.fields.push_back(CreateTestFormField("First Name", "firstname", "",
-                                            FormControlType::kInputText));
-  form.fields.push_back(CreateTestFormField("Middle Name", "middlename", "",
-                                            FormControlType::kInputText));
-  form.fields.push_back(CreateTestFormField("Last Name", "lastname", "",
-                                            FormControlType::kInputText));
-  form.fields.push_back(CreateTestFormField("Address Line 1", "addr1", "",
-                                            FormControlType::kInputText));
-  form.fields.push_back(CreateTestFormField("Address Line 2", "addr2", "",
-                                            FormControlType::kInputText));
-  form.fields.push_back(
-      CreateTestFormField("City", "city", "", FormControlType::kInputText));
-  form.fields.push_back(
-      CreateTestFormField("State", "state", "", FormControlType::kInputText));
-  form.fields.push_back(CreateTestFormField("Postal Code", "zipcode", "",
-                                            FormControlType::kInputText));
-  form.fields.push_back(CreateTestFormField("Country", "country", "",
-                                            FormControlType::kInputText));
-  form.fields.push_back(CreateTestFormField("Phone Number", "phonenumber", "",
-                                            FormControlType::kInputTelephone));
-  form.fields.push_back(
-      CreateTestFormField("Email", "email", "", FormControlType::kInputEmail));
+  form.set_fields(
+      {CreateTestFormField("First Name", "firstname", "",
+                           FormControlType::kInputText),
+       CreateTestFormField("Middle Name", "middlename", "",
+                           FormControlType::kInputText),
+       CreateTestFormField("Last Name", "lastname", "",
+                           FormControlType::kInputText),
+       CreateTestFormField("Address Line 1", "addr1", "",
+                           FormControlType::kInputText),
+       CreateTestFormField("Address Line 2", "addr2", "",
+                           FormControlType::kInputText),
+       CreateTestFormField("City", "city", "", FormControlType::kInputText),
+       CreateTestFormField("State", "state", "", FormControlType::kInputText),
+       CreateTestFormField("Postal Code", "zipcode", "",
+                           FormControlType::kInputText),
+       CreateTestFormField("Country", "country", "",
+                           FormControlType::kInputText),
+       CreateTestFormField("Phone Number", "phonenumber", "",
+                           FormControlType::kInputTelephone),
+       CreateTestFormField("Email", "email", "",
+                           FormControlType::kInputEmail)});
   return form;
 }
 
@@ -245,11 +249,11 @@ void SetProfileCategory(
     autofill_metrics::AutofillProfileSourceCategory category) {
   switch (category) {
     case autofill_metrics::AutofillProfileSourceCategory::kLocalOrSyncable:
-      profile.set_source_for_testing(AutofillProfile::Source::kLocalOrSyncable);
+      test_api(profile).set_source(AutofillProfile::Source::kLocalOrSyncable);
       break;
     case autofill_metrics::AutofillProfileSourceCategory::kAccountChrome:
     case autofill_metrics::AutofillProfileSourceCategory::kAccountNonChrome:
-      profile.set_source_for_testing(AutofillProfile::Source::kAccount);
+      test_api(profile).set_source(AutofillProfile::Source::kAccount);
       // Any value that is not kInitialCreatorOrModifierChrome works.
       const int kInitialCreatorOrModifierNonChrome =
           AutofillProfile::kInitialCreatorOrModifierChrome + 1;
@@ -287,7 +291,6 @@ Iban GetServerIban() {
   Iban iban(Iban::InstrumentId(1234567));
   iban.set_prefix(u"FR76");
   iban.set_suffix(u"0189");
-  iban.set_length(27);
   iban.set_nickname(u"My doctor's IBAN");
   return iban;
 }
@@ -296,7 +299,6 @@ Iban GetServerIban2() {
   Iban iban(Iban::InstrumentId(1234568));
   iban.set_prefix(u"BE71");
   iban.set_suffix(u"8676");
-  iban.set_length(16);
   iban.set_nickname(u"My sister's IBAN");
   return iban;
 }
@@ -305,7 +307,6 @@ Iban GetServerIban3() {
   Iban iban(Iban::InstrumentId(1234569));
   iban.set_prefix(u"DE91");
   iban.set_suffix(u"6789");
-  iban.set_length(22);
   iban.set_nickname(u"My IBAN");
   return iban;
 }
@@ -439,12 +440,12 @@ CreditCard GetVirtualCard() {
   credit_card.set_record_type(CreditCard::RecordType::kVirtualCard);
   credit_card.set_virtual_card_enrollment_state(
       CreditCard::VirtualCardEnrollmentState::kEnrolled);
-  test_api(credit_card).set_network_for_virtual_card(kMasterCard);
+  test_api(credit_card).set_network_for_card(kMasterCard);
   return credit_card;
 }
 
 CreditCard GetRandomCreditCard(CreditCard::RecordType record_type) {
-  static const char* const kNetworks[] = {
+  constexpr static std::array<std::string_view, 10> kNetworks = {
       kAmericanExpressCard,
       kDinersCard,
       kDiscoverCard,
@@ -456,7 +457,6 @@ CreditCard GetRandomCreditCard(CreditCard::RecordType record_type) {
       kUnionPay,
       kVisaCard,
   };
-  constexpr size_t kNumNetworks = sizeof(kNetworks) / sizeof(kNetworks[0]);
   base::Time::Exploded now;
   AutofillClock::Now().LocalExplode(&now);
 
@@ -473,7 +473,7 @@ CreditCard GetRandomCreditCard(CreditCard::RecordType record_type) {
       base::StringPrintf("%d", now.year + base::RandInt(1, 4)).c_str(), "1");
   if (record_type == CreditCard::RecordType::kMaskedServerCard) {
     credit_card.SetNetworkForMaskedCard(
-        kNetworks[base::RandInt(0, kNumNetworks - 1)]);
+        kNetworks[base::RandInt(0, kNetworks.size() - 1)]);
   }
 
   return credit_card;
@@ -871,8 +871,9 @@ void GenerateTestAutofillPopup(
 
   std::vector<Suggestion> suggestions;
   suggestions.push_back(Suggestion(u"Test suggestion"));
-  autofill_external_delegate->OnSuggestionsReturned(field.global_id(),
-                                                    suggestions);
+  autofill_metrics::SuggestionRankingContext context;
+  autofill_external_delegate->OnSuggestionsReturned(
+      field.global_id(), suggestions, std::move(context));
 }
 
 std::string ObfuscatedCardDigitsAsUTF8(const std::string& str,
@@ -1002,11 +1003,47 @@ Suggestion CreateAutofillSuggestion(SuggestionType type,
   return suggestion;
 }
 
+Suggestion CreateAutofillSuggestion(const std::u16string& main_text_value,
+                                    const std::u16string& minor_text_value,
+                                    bool apply_deactivated_style) {
+  Suggestion suggestion;
+  suggestion.main_text.value = main_text_value;
+  suggestion.minor_text.value = minor_text_value;
+  suggestion.apply_deactivated_style = apply_deactivated_style;
+  return suggestion;
+}
+
 BankAccount CreatePixBankAccount(int64_t instrument_id) {
   BankAccount bank_account(
       instrument_id, u"nickname", GURL("http://www.example.com"), u"bank_name",
       u"account_number", BankAccount::AccountType::kChecking);
   return bank_account;
+}
+
+sync_pb::PaymentInstrument CreatePaymentInstrumentWithBankAccount(
+    int64_t instrument_id) {
+  sync_pb::PaymentInstrument payment_instrument;
+  payment_instrument.set_instrument_id(instrument_id);
+  sync_pb::BankAccountDetails* bank_account =
+      payment_instrument.mutable_bank_account();
+  bank_account->set_bank_name("bank_name");
+  bank_account->set_account_number_suffix("1234");
+  bank_account->set_account_type(
+      sync_pb::BankAccountDetails_AccountType_CHECKING);
+  return payment_instrument;
+}
+
+sync_pb::PaymentInstrument CreatePaymentInstrumentWithIban(
+    int64_t instrument_id) {
+  sync_pb::PaymentInstrument payment_instrument;
+  payment_instrument.set_instrument_id(instrument_id);
+  sync_pb::WalletMaskedIban* iban = payment_instrument.mutable_iban();
+  iban->set_instrument_id("instrument_id");
+  iban->set_prefix("FR76");
+  iban->set_suffix("0189");
+  iban->set_length(27);
+  iban->set_nickname("nickname");
+  return payment_instrument;
 }
 
 }  // namespace test

@@ -23,6 +23,11 @@
  *
  */
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/platform/geometry/length.h"
 
 #include "third_party/blink/renderer/platform/geometry/blend.h"
@@ -256,6 +261,27 @@ bool Length::HasStretch() const {
     return GetCalculationValue().HasStretch();
   }
   return GetType() == kFillAvailable;
+}
+
+bool Length::HasMinContent() const {
+  if (GetType() == kCalculated) {
+    return GetCalculationValue().HasMinContent();
+  }
+  return GetType() == kMinContent;
+}
+
+bool Length::HasMaxContent() const {
+  if (GetType() == kCalculated) {
+    return GetCalculationValue().HasMaxContent();
+  }
+  return GetType() == kMaxContent;
+}
+
+bool Length::HasFitContent() const {
+  if (GetType() == kCalculated) {
+    return GetCalculationValue().HasFitContent();
+  }
+  return GetType() == kFitContent;
 }
 
 bool Length::IsCalculatedEqual(const Length& o) const {

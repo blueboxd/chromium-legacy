@@ -14,6 +14,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/ui/hats/hats_service.h"
 #include "chrome/browser/ui/hats/hats_service_factory.h"
+#include "chrome/browser/ui/hats/survey_config.h"
 #include "chrome/browser/ui/safety_hub/card_data_helper.h"
 #include "chrome/browser/ui/safety_hub/menu_notification_service_factory.h"
 #include "chrome/browser/ui/safety_hub/safety_hub_constants.h"
@@ -234,8 +235,6 @@ TrustSafetySentimentService::TrustSafetySentimentService(Profile* profile)
     metrics::DesktopSessionDurationTracker::Get()->AddObserver(this);
     performed_control_group_dice_roll_ = false;
   }
-
-  safety_hub_interaction_state_ = std::make_unique<SafetyHubInteractionState>();
 }
 
 TrustSafetySentimentService::~TrustSafetySentimentService() {
@@ -354,7 +353,9 @@ void TrustSafetySentimentService::InteractedWithPageInfo() {
 }
 
 void TrustSafetySentimentService::PageInfoClosed() {
-  DCHECK(page_info_state_);
+  if (!page_info_state_) {
+    return;
+  }
 
   base::TimeDelta threshold =
       base::FeatureList::IsEnabled(features::kTrustSafetySentimentSurveyV2)
@@ -680,63 +681,21 @@ void TrustSafetySentimentService::MaybeTriggerPasswordProtectionSurvey(
   TriggerOccurred(FeatureArea::kPasswordProtectionUI, product_specific_data);
 }
 
-std::map<std::string, bool>
-TrustSafetySentimentService::GetSafetyHubProductSpecificData() {
-  std::map<std::string, bool> product_specific_data;
-  product_specific_data["User visited Safety Hub page"] =
-      safety_hub_interaction_state_->has_visited;
-  product_specific_data["User clicked Safety Hub notification"] =
-      safety_hub_interaction_state_->has_clicked_notification;
-  product_specific_data["User interacted with Safety Hub"] =
-      safety_hub_interaction_state_->has_interacted_with_module;
-
-  auto* notification_service =
-      SafetyHubMenuNotificationServiceFactory::GetForProfile(profile_);
-  std::optional<safety_hub::SafetyHubModuleType> last_module =
-      notification_service->GetLastShownNotificationModule();
-
-  const std::vector<std::pair<safety_hub::SafetyHubModuleType, std::string>>
-      modules = {
-          {safety_hub::SafetyHubModuleType::EXTENSIONS, "extensions"},
-          {safety_hub::SafetyHubModuleType::NOTIFICATION_PERMISSIONS,
-           "notification permissions"},
-          {safety_hub::SafetyHubModuleType::PASSWORDS, "passwords"},
-          {safety_hub::SafetyHubModuleType::UNUSED_SITE_PERMISSIONS,
-           "unused site permissions"},
-          {safety_hub::SafetyHubModuleType::SAFE_BROWSING, "safe browsing"},
-      };
-  for (const auto& module : modules) {
-    product_specific_data["Is notification module " + std::get<1>(module)] =
-        last_module.has_value() && last_module.value() == std::get<0>(module);
+void TrustSafetySentimentService::TriggerSafetyHubSurvey(
+    TrustSafetySentimentService::FeatureArea feature_area,
+    std::map<std::string, bool> product_specific_data) {
+  if (!base::FeatureList::IsEnabled(
+          features::kSafetyHubTrustSafetySentimentSurvey)) {
+    return;
   }
-
-  safety_hub::SafetyHubCardState card_state =
-      safety_hub::GetOverallState(profile_);
-  const std::vector<std::pair<safety_hub::SafetyHubCardState, std::string>>
-      states = {
-          {safety_hub::SafetyHubCardState::kSafe, "safe"},
-          {safety_hub::SafetyHubCardState::kInfo, "info"},
-          {safety_hub::SafetyHubCardState::kWeak, "weak"},
-          {safety_hub::SafetyHubCardState::kWarning, "warning"},
-      };
-  for (const auto& state : states) {
-    product_specific_data["Global state is " + std::get<1>(state)] =
-        card_state == std::get<0>(state);
-  }
-
-  return product_specific_data;
-}
-
-void TrustSafetySentimentService::SafetyHubModuleInteracted() {
-  safety_hub_interaction_state_->has_interacted_with_module = true;
-}
-
-void TrustSafetySentimentService::SafetyHubNotificationClicked() {
-  safety_hub_interaction_state_->has_clicked_notification = true;
-}
-
-void TrustSafetySentimentService::SafetyHubVisited() {
-  safety_hub_interaction_state_->has_visited = true;
+  // Delay the trigger to determine whether the user interacted with Safety Hub
+  // soon after the trigger occurred.
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&TrustSafetySentimentService::TriggerOccurred,
+                     weak_ptr_factory_.GetWeakPtr(), feature_area,
+                     product_specific_data),
+      kSafetyHubSurveyDelay);
 }
 
 // static
@@ -750,6 +709,8 @@ bool TrustSafetySentimentService::VersionCheck(FeatureArea feature_area) {
       return isV2 == false;
     // Version 2 only
     case (FeatureArea::kSafetyCheck):
+    case (FeatureArea::kSafetyHubInteracted):
+    case (FeatureArea::kSafetyHubNotification):
     case (FeatureArea::kPasswordCheck):
     case (FeatureArea::kBrowsingData):
     case (FeatureArea::kPrivacyGuide):
@@ -783,6 +744,10 @@ std::string TrustSafetySentimentService::GetHatsTriggerForFeatureArea(
         return kHatsSurveyTriggerTrustSafetyV2TrustedSurface;
       case (FeatureArea::kSafetyCheck):
         return kHatsSurveyTriggerTrustSafetyV2SafetyCheck;
+      case (FeatureArea::kSafetyHubInteracted):
+        return kHatsSurveyTriggerTrustSafetyV2SafetyHubInteraction;
+      case (FeatureArea::kSafetyHubNotification):
+        return kHatsSurveyTriggerTrustSafetyV2SafetyHubNotification;
       case (FeatureArea::kPasswordCheck):
         return kHatsSurveyTriggerTrustSafetyV2PasswordCheck;
       case (FeatureArea::kBrowsingData):
@@ -847,6 +812,16 @@ bool TrustSafetySentimentService::ProbabilityCheck(FeatureArea feature_area) {
         return base::RandDouble() <
                features::kTrustSafetySentimentSurveyV2SafetyCheckProbability
                    .Get();
+      case (FeatureArea::kSafetyHubInteracted):
+        return base::RandDouble() <
+               features::
+                   kTrustSafetySentimentSurveyV2SafetyHubInteractionProbability
+                       .Get();
+      case (FeatureArea::kSafetyHubNotification):
+        return base::RandDouble() <
+               features::
+                   kTrustSafetySentimentSurveyV2SafetyHubNotificationProbability
+                       .Get();
       case (FeatureArea::kPasswordCheck):
         return base::RandDouble() <
                features::kTrustSafetySentimentSurveyV2PasswordCheckProbability

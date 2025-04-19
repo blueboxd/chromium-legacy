@@ -12,7 +12,7 @@
 #ifndef PARTITION_ALLOC_SHIM_ALLOCATOR_SHIM_OVERRIDE_UCRT_SYMBOLS_WIN_H_
 #define PARTITION_ALLOC_SHIM_ALLOCATOR_SHIM_OVERRIDE_UCRT_SYMBOLS_WIN_H_
 
-#include "partition_alloc/partition_alloc_buildflags.h"
+#include "partition_alloc/buildflags.h"
 
 #if PA_BUILDFLAG(USE_ALLOCATOR_SHIM)
 #include "partition_alloc/partition_alloc_base/component_export.h"
@@ -210,6 +210,14 @@ PA_COMPONENT_EXPORT(ALLOCATOR_SHIM)
 char* _strdup(const char* strSource) {
   char* dest = static_cast<char*>(malloc(strlen(strSource) + 1));
   strcpy(dest, strSource);
+  return dest;
+}
+
+PA_COMPONENT_EXPORT(ALLOCATOR_SHIM)
+wchar_t* _wcsdup(const wchar_t* strSource) {
+  wchar_t* dest =
+      static_cast<wchar_t*>(malloc(sizeof(wchar_t) * (wcslen(strSource) + 1)));
+  wcscpy(dest, strSource);
   return dest;
 }
 

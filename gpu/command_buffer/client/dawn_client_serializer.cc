@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "gpu/command_buffer/client/dawn_client_serializer.h"
 
 #include "base/numerics/checked_math.h"
@@ -52,7 +57,7 @@ void* DawnClientSerializer::GetCmdSpace(size_t size) {
   const bool overflows_remaining_space =
       size > static_cast<size_t>(buffer_.size() - put_offset_);
 
-  if (LIKELY(buffer_.valid() && !overflows_remaining_space)) {
+  if (buffer_.valid() && !overflows_remaining_space) [[likely]] {
     // If the buffer is valid and has sufficient space, return the
     // pointer and increment the offset.
     uint8_t* ptr = static_cast<uint8_t*>(buffer_.address());

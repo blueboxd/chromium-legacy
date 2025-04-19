@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/ash/arc/enterprise/cert_store/cert_store_service.h"
 
 #include <algorithm>
@@ -78,6 +83,9 @@ class CertStoreServiceFactory : public ProfileKeyedServiceFactory {
                 // TODO(crbug.com/40257657): Check if this service is needed in
                 // Guest mode.
                 .WithGuest(ProfileSelection::kOwnInstance)
+                // TODO(crbug.com/41488885): Check if this service is needed for
+                // Ash Internals.
+                .WithAshInternals(ProfileSelection::kOwnInstance)
                 .Build()) {
     DependsOn(NssServiceFactory::GetInstance());
   }

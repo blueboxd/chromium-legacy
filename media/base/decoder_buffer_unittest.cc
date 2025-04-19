@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "media/base/decoder_buffer.h"
 
 #include <stdint.h>
@@ -14,6 +19,7 @@
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "media/base/test_data_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -55,11 +61,8 @@ TEST(DecoderBufferTest, CopyFrom) {
 TEST(DecoderBufferTest, FromArray) {
   const uint8_t kData[] = "hello";
   const size_t kDataSize = std::size(kData);
-  auto ptr = base::HeapArray<uint8_t>::Uninit(kDataSize);
-  memcpy(ptr.data(), kData, kDataSize);
-
-  scoped_refptr<DecoderBuffer> buffer(
-      DecoderBuffer::FromArray(std::move(ptr), kDataSize));
+  auto ptr = base::HeapArray<uint8_t>::CopiedFrom(kData);
+  auto buffer = DecoderBuffer::FromArray(std::move(ptr));
   ASSERT_TRUE(buffer.get());
   EXPECT_EQ(buffer->size(), kDataSize);
   EXPECT_EQ(base::span(*buffer), base::span(kData));
@@ -170,7 +173,8 @@ TEST(DecoderBufferTest, FromSharedMemoryRegion_ZeroSize) {
 TEST(DecoderBufferTest, FromExternalMemory) {
   constexpr uint8_t kData[] = "hello";
   constexpr size_t kDataSize = std::size(kData);
-  auto external_memory = std::make_unique<DecoderBuffer::ExternalMemory>(
+
+  auto external_memory = std::make_unique<ExternalMemoryAdapterForTesting>(
       base::make_span(kData, kDataSize));
   auto buffer = DecoderBuffer::FromExternalMemory(std::move(external_memory));
   ASSERT_TRUE(buffer.get());

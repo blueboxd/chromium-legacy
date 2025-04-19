@@ -16,7 +16,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.matches;
 
-import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
+import static org.chromium.base.ThreadUtils.runOnUiThreadBlocking;
 
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.espresso.Espresso;
@@ -26,14 +26,12 @@ import androidx.test.filters.SmallTest;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.DoNotBatch;
-import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.Restriction;
@@ -48,12 +46,13 @@ import org.chromium.chrome.test.util.BookmarkTestRule;
 import org.chromium.chrome.test.util.BookmarkTestUtil;
 import org.chromium.components.browser_ui.widget.RecyclerViewTestUtils;
 import org.chromium.components.sync.SyncFeatureMap;
+import org.chromium.components.sync.UserSelectableType;
 import org.chromium.ui.test.util.UiRestriction;
 import org.chromium.url.GURL;
 
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-@EnableFeatures({SyncFeatureMap.ENABLE_BOOKMARK_FOLDERS_FOR_ACCOUNT_STORAGE})
+@EnableFeatures({SyncFeatureMap.SYNC_ENABLE_BOOKMARKS_IN_TRANSPORT_MODE})
 // TODO(crbug.com/40743432): Once SyncTestRule supports batching, investigate batching this suite.
 @DoNotBatch(reason = "SyncTestRule doesn't support batching.")
 public class AccountBookmarkTest {
@@ -61,7 +60,6 @@ public class AccountBookmarkTest {
 
     @Rule public SyncTestRule mSyncTestRule = new SyncTestRule();
     @Rule public BookmarkTestRule mBookmarkTestRule = new BookmarkTestRule();
-    @Rule public TestRule mProcessor = new Features.JUnitProcessor();
 
     private BookmarkManagerCoordinator mBookmarkManagerCoordinator;
     private BookmarkModel mBookmarkModel;
@@ -95,7 +93,15 @@ public class AccountBookmarkTest {
     @SmallTest
     @DisableFeatures({ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS})
     public void testEnableDatatypesManually() {
-        mSyncTestRule.setSelectedTypes(true, null);
+        runOnUiThreadBlocking(
+                () -> {
+                    mSyncTestRule
+                            .getSyncService()
+                            .setSelectedType(UserSelectableType.BOOKMARKS, true);
+                    mSyncTestRule
+                            .getSyncService()
+                            .setSelectedType(UserSelectableType.READING_LIST, true);
+                });
         CriteriaHelper.pollUiThread(() -> mBookmarkModel.getAccountMobileFolderId() != null);
         RecyclerViewTestUtils.waitForStableMvcRecyclerView(
                 mBookmarkManagerCoordinator.getRecyclerViewForTesting());
@@ -110,7 +116,6 @@ public class AccountBookmarkTest {
             message =
                     "Enable this test when reading list is available w/o restart crbug.com/1510547")
     public void testOpenFromReadingListAndNavigateBack() throws Exception {
-        mSyncTestRule.setSelectedTypes(true, null);
         CriteriaHelper.pollUiThread(() -> mBookmarkModel.getAccountReadingListFolder() != null);
         RecyclerViewTestUtils.waitForStableMvcRecyclerView(
                 mBookmarkManagerCoordinator.getRecyclerViewForTesting());
@@ -148,10 +153,17 @@ public class AccountBookmarkTest {
         // folder doesn't show up without a restart. This should be updated once that folder is
         // available.
         checkToolbarTitleMatches("Bookmarks");
-        onView(withText("In your Google Account")).check(matches(isDisplayed()));
+        if (!ChromeFeatureList.isEnabled(
+                ChromeFeatureList.READING_LIST_ENABLE_SYNC_TRANSPORT_MODE_UPON_SIGNIN)) {
+            onView(withText("In your Google Account")).check(matches(isDisplayed()));
+        }
         BookmarkTestUtil.getRecyclerRowViewInteraction("Mobile bookmarks", true)
                 .check(matches(isDisplayed()));
-        BookmarkTestUtil.getRecyclerRowViewInteraction("Reading list", false)
+        BookmarkTestUtil.getRecyclerRowViewInteraction(
+                        "Reading list",
+                        ChromeFeatureList.isEnabled(
+                                ChromeFeatureList
+                                        .READING_LIST_ENABLE_SYNC_TRANSPORT_MODE_UPON_SIGNIN))
                 .check(matches(isDisplayed()));
     }
 

@@ -218,6 +218,13 @@ public abstract class BaseSuggestionViewProcessor implements SuggestionProcessor
                 () -> mSuggestionHost.setOmniboxEditingText(suggestion.getFillIntoEdit()));
         setActionButtons(model, null);
 
+        model.set(BaseSuggestionViewProperties.USE_LARGE_DECORATION, false);
+        model.set(BaseSuggestionViewProperties.SHOW_DECORATION, true);
+        model.set(
+                BaseSuggestionViewProperties.ACTION_CHIP_LEAD_IN_SPACING,
+                OmniboxResourceProvider.getSuggestionDecorationIconSizeWidth(mContext));
+        model.set(BaseSuggestionViewProperties.TOP_PADDING, 0);
+
         if (OmniboxFeatures.isTouchDownTriggerForPrefetchEnabled()
                 && !OmniboxFeatures.isLowMemoryDevice()
                 && suggestion.isSearchSuggestion()) {

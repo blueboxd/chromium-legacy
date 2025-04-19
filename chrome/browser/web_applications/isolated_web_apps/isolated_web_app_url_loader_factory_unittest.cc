@@ -24,6 +24,7 @@
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
 #include "chrome/browser/web_applications/isolated_web_apps/pending_install_info.h"
 #include "chrome/browser/web_applications/isolated_web_apps/test/isolated_web_app_builder.h"
+#include "chrome/browser/web_applications/proto/web_app_install_state.pb.h"
 #include "chrome/browser/web_applications/test/fake_web_app_database_factory.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
@@ -118,7 +119,6 @@ std::unique_ptr<WebApp> CreateWebApp(const GURL& start_url) {
   web_app->SetScope(start_url.DeprecatedGetOriginAsURL());
   web_app->SetManifestId(start_url.DeprecatedGetOriginAsURL());
   web_app->AddSource(WebAppManagement::Type::kIwaUserInstalled);
-  web_app->SetIsLocallyInstalled(true);
   web_app->SetUserDisplayMode(mojom::UserDisplayMode::kStandalone);
   return web_app;
 }
@@ -214,7 +214,7 @@ class IsolatedWebAppURLLoaderFactoryTestBase : public WebAppTest {
   const GURL kDevAppOriginUrl = GURL("isolated-app://" + kDevWebBundleId);
   const GURL kDevAppStartUrl = kDevAppOriginUrl.Resolve("/ix.html");
   const url::Origin kProxyOrigin =
-      url::Origin::Create(GURL("https://proxy.example.com"));
+      url::Origin::Create(GURL("http://proxy.example.com"));
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -348,7 +348,7 @@ TEST_F(IsolatedWebAppURLLoaderFactoryTest,
   std::unique_ptr<WebApp> iwa = CreateIsolatedWebApp(
       kDevAppStartUrl, WebApp::IsolationData{IwaStorageProxy{kProxyOrigin},
                                              base::Version("1.0.0")});
-  iwa->SetIsLocallyInstalled(false);
+  iwa->SetInstallState(proto::InstallState::SUGGESTED_FROM_ANOTHER_DEVICE);
   RegisterWebApp(std::move(iwa));
 
   // Verify that a PWA is installed at kAppStartUrl's origin.
@@ -608,11 +608,9 @@ TEST_F(IsolatedWebAppURLLoaderFactoryTest, ProxyRequestCopiesAcceptHeader) {
   request->headers.SetHeader(net::HttpRequestHeaders::kAccept, "text/html");
   CreateLoaderAndRun(std::move(request));
 
-  std::string accept_header_value;
-  ASSERT_THAT(url_handler().request()->headers.GetHeader(
-                  net::HttpRequestHeaders::kAccept, &accept_header_value),
-              IsTrue());
-  EXPECT_THAT(accept_header_value, Eq("text/html"));
+  EXPECT_THAT(url_handler().request()->headers.GetHeader(
+                  net::HttpRequestHeaders::kAccept),
+              testing::Optional(std::string("text/html")));
 }
 
 TEST_F(IsolatedWebAppURLLoaderFactoryTest, ProxyRequestDisablesCaching) {
@@ -628,12 +626,9 @@ TEST_F(IsolatedWebAppURLLoaderFactoryTest, ProxyRequestDisablesCaching) {
   request->url = GURL("isolated-app://" + kDevWebBundleId + "/foo/bar.html");
   CreateLoaderAndRun(std::move(request));
 
-  std::string cache_control_header_value;
-  ASSERT_THAT(
-      url_handler().request()->headers.GetHeader(
-          net::HttpRequestHeaders::kCacheControl, &cache_control_header_value),
-      IsTrue());
-  EXPECT_THAT(cache_control_header_value, Eq("no-cache"));
+  EXPECT_THAT(url_handler().request()->headers.GetHeader(
+                  net::HttpRequestHeaders::kCacheControl),
+              testing::Optional(std::string("no-cache")));
 }
 
 TEST_F(IsolatedWebAppURLLoaderFactoryTest, ProxyRequestDefaultsToAcceptingAll) {
@@ -649,11 +644,9 @@ TEST_F(IsolatedWebAppURLLoaderFactoryTest, ProxyRequestDefaultsToAcceptingAll) {
   request->url = GURL("isolated-app://" + kDevWebBundleId + "/foo/bar.html");
   CreateLoaderAndRun(std::move(request));
 
-  std::string accept_header_value;
-  ASSERT_THAT(url_handler().request()->headers.GetHeader(
-                  net::HttpRequestHeaders::kAccept, &accept_header_value),
-              IsTrue());
-  EXPECT_THAT(accept_header_value, Eq("*/*"));
+  EXPECT_THAT(url_handler().request()->headers.GetHeader(
+                  net::HttpRequestHeaders::kAccept),
+              testing::Optional(std::string("*/*")));
 }
 
 TEST_F(IsolatedWebAppURLLoaderFactoryTest,
@@ -1215,8 +1208,10 @@ class IsolatedWebAppURLLoaderFactoryHeaderTest
                                                base::Version("1.0.0")}));
   }
 
+  bool is_bundle() { return is_bundle_; }
+
   GURL GetAppOriginUrl() {
-    return is_bundle_ ? kEd25519AppOriginUrl : kDevAppStartUrl;
+    return is_bundle() ? kEd25519AppOriginUrl : kDevAppStartUrl;
   }
 
  private:
@@ -1268,8 +1263,6 @@ TEST_P(IsolatedWebAppURLLoaderFactoryHeaderTest, CspInjected) {
   EXPECT_THAT(csp->raw_directives[Directive::ObjectSrc], Eq("'none'"));
   EXPECT_THAT(csp->raw_directives[Directive::FrameSrc],
               Eq("'self' https: blob: data:"));
-  EXPECT_THAT(csp->raw_directives[Directive::ConnectSrc],
-              Eq("'self' https: wss: blob: data:"));
   EXPECT_THAT(csp->raw_directives[Directive::ScriptSrc],
               Eq("'self' 'wasm-unsafe-eval'"));
   EXPECT_THAT(csp->raw_directives[Directive::ImgSrc],
@@ -1283,6 +1276,13 @@ TEST_P(IsolatedWebAppURLLoaderFactoryHeaderTest, CspInjected) {
   EXPECT_THAT(csp->raw_directives[Directive::RequireTrustedTypesFor],
               Eq("'script'"));
   EXPECT_THAT(csp->raw_directives[Directive::FrameAncestors], Eq("'self'"));
+  if (is_bundle()) {
+    EXPECT_THAT(csp->raw_directives[Directive::ConnectSrc],
+                Eq("'self' https: wss: blob: data:"));
+  } else {
+    EXPECT_THAT(csp->raw_directives[Directive::ConnectSrc],
+                Eq("'self' https: wss: blob: data: ws://proxy.example.com:80"));
+  }
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

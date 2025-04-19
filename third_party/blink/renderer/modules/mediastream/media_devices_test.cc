@@ -48,6 +48,7 @@
 #include "third_party/blink/renderer/modules/mediastream/media_device_info.h"
 #include "third_party/blink/renderer/modules/mediastream/restriction_target.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -634,8 +635,9 @@ TEST_F(MediaDevicesTest, SetCaptureHandleConfigAfterConnectionError) {
   platform()->RunUntilIdle();
 
   // Note: SetCaptureHandleConfigEmpty proves the following is a valid call.
-  CaptureHandleConfig input_config;
-  media_devices->setCaptureHandleConfig(scope.GetScriptState(), &input_config,
+  CaptureHandleConfig* input_config =
+      MakeGarbageCollected<CaptureHandleConfig>();
+  media_devices->setCaptureHandleConfig(scope.GetScriptState(), input_config,
                                         scope.GetExceptionState());
   platform()->RunUntilIdle();
 }
@@ -745,7 +747,8 @@ TEST_F(MediaDevicesTest, SetCaptureHandleConfigEmpty) {
   V8TestingScope scope;
   auto* media_devices = GetMediaDevices(*GetDocument().domWindow());
 
-  CaptureHandleConfig input_config;
+  CaptureHandleConfig* input_config =
+      MakeGarbageCollected<CaptureHandleConfig>();
 
   // Expected output.
   auto expected_config = mojom::blink::CaptureHandleConfig::New();
@@ -755,7 +758,7 @@ TEST_F(MediaDevicesTest, SetCaptureHandleConfigEmpty) {
   expected_config->permitted_origins = {};
   dispatcher_host().ExpectSetCaptureHandleConfig(std::move(expected_config));
 
-  media_devices->setCaptureHandleConfig(scope.GetScriptState(), &input_config,
+  media_devices->setCaptureHandleConfig(scope.GetScriptState(), input_config,
                                         scope.GetExceptionState());
 
   platform()->RunUntilIdle();
@@ -767,8 +770,9 @@ TEST_F(MediaDevicesTest, SetCaptureHandleConfigWithExposeOrigin) {
   V8TestingScope scope;
   auto* media_devices = GetMediaDevices(*GetDocument().domWindow());
 
-  CaptureHandleConfig input_config;
-  input_config.setExposeOrigin(true);
+  CaptureHandleConfig* input_config =
+      MakeGarbageCollected<CaptureHandleConfig>();
+  input_config->setExposeOrigin(true);
 
   // Expected output.
   auto expected_config = mojom::blink::CaptureHandleConfig::New();
@@ -778,7 +782,7 @@ TEST_F(MediaDevicesTest, SetCaptureHandleConfigWithExposeOrigin) {
   expected_config->permitted_origins = {};
   dispatcher_host().ExpectSetCaptureHandleConfig(std::move(expected_config));
 
-  media_devices->setCaptureHandleConfig(scope.GetScriptState(), &input_config,
+  media_devices->setCaptureHandleConfig(scope.GetScriptState(), input_config,
                                         scope.GetExceptionState());
 
   platform()->RunUntilIdle();
@@ -790,8 +794,9 @@ TEST_F(MediaDevicesTest, SetCaptureHandleConfigCaptureWithHandle) {
   V8TestingScope scope;
   auto* media_devices = GetMediaDevices(*GetDocument().domWindow());
 
-  CaptureHandleConfig input_config;
-  input_config.setHandle("0xabcdef0123456789");
+  CaptureHandleConfig* input_config =
+      MakeGarbageCollected<CaptureHandleConfig>();
+  input_config->setHandle("0xabcdef0123456789");
 
   // Expected output.
   auto expected_config = mojom::blink::CaptureHandleConfig::New();
@@ -801,7 +806,7 @@ TEST_F(MediaDevicesTest, SetCaptureHandleConfigCaptureWithHandle) {
   expected_config->permitted_origins = {};
   dispatcher_host().ExpectSetCaptureHandleConfig(std::move(expected_config));
 
-  media_devices->setCaptureHandleConfig(scope.GetScriptState(), &input_config,
+  media_devices->setCaptureHandleConfig(scope.GetScriptState(), input_config,
                                         scope.GetExceptionState());
 
   platform()->RunUntilIdle();
@@ -815,8 +820,9 @@ TEST_F(MediaDevicesTest, SetCaptureHandleConfigCaptureWithMaxHandle) {
 
   const String maxHandle = MaxLengthCaptureHandle();
 
-  CaptureHandleConfig input_config;
-  input_config.setHandle(maxHandle);
+  CaptureHandleConfig* input_config =
+      MakeGarbageCollected<CaptureHandleConfig>();
+  input_config->setHandle(maxHandle);
 
   // Expected output.
   auto expected_config = mojom::blink::CaptureHandleConfig::New();
@@ -826,7 +832,7 @@ TEST_F(MediaDevicesTest, SetCaptureHandleConfigCaptureWithMaxHandle) {
   expected_config->permitted_origins = {};
   dispatcher_host().ExpectSetCaptureHandleConfig(std::move(expected_config));
 
-  media_devices->setCaptureHandleConfig(scope.GetScriptState(), &input_config,
+  media_devices->setCaptureHandleConfig(scope.GetScriptState(), input_config,
                                         scope.GetExceptionState());
 
   platform()->RunUntilIdle();
@@ -839,12 +845,13 @@ TEST_F(MediaDevicesTest,
   V8TestingScope scope;
   auto* media_devices = GetMediaDevices(*GetDocument().domWindow());
 
-  CaptureHandleConfig input_config;
-  input_config.setHandle(MaxLengthCaptureHandle() + "a");  // Over max length.
+  CaptureHandleConfig* input_config =
+      MakeGarbageCollected<CaptureHandleConfig>();
+  input_config->setHandle(MaxLengthCaptureHandle() + "a");  // Over max length.
 
   // Note: dispatcher_host().ExpectSetCaptureHandleConfig() not called.
 
-  media_devices->setCaptureHandleConfig(scope.GetScriptState(), &input_config,
+  media_devices->setCaptureHandleConfig(scope.GetScriptState(), input_config,
                                         scope.GetExceptionState());
 
   platform()->RunUntilIdle();
@@ -859,8 +866,9 @@ TEST_F(MediaDevicesTest,
   V8TestingScope scope;
   auto* media_devices = GetMediaDevices(*GetDocument().domWindow());
 
-  CaptureHandleConfig input_config;
-  input_config.setPermittedOrigins({"*"});
+  CaptureHandleConfig* input_config =
+      MakeGarbageCollected<CaptureHandleConfig>();
+  input_config->setPermittedOrigins({"*"});
 
   // Expected output.
   auto expected_config = mojom::blink::CaptureHandleConfig::New();
@@ -870,7 +878,7 @@ TEST_F(MediaDevicesTest,
   expected_config->permitted_origins = {};
   dispatcher_host().ExpectSetCaptureHandleConfig(std::move(expected_config));
 
-  media_devices->setCaptureHandleConfig(scope.GetScriptState(), &input_config,
+  media_devices->setCaptureHandleConfig(scope.GetScriptState(), input_config,
                                         scope.GetExceptionState());
 
   platform()->RunUntilIdle();
@@ -882,8 +890,9 @@ TEST_F(MediaDevicesTest, SetCaptureHandleConfigCaptureWithPermittedOrigins) {
   V8TestingScope scope;
   auto* media_devices = GetMediaDevices(*GetDocument().domWindow());
 
-  CaptureHandleConfig input_config;
-  input_config.setPermittedOrigins(
+  CaptureHandleConfig* input_config =
+      MakeGarbageCollected<CaptureHandleConfig>();
+  input_config->setPermittedOrigins(
       {"https://chromium.org", "ftp://chromium.org:1234"});
 
   // Expected output.
@@ -896,7 +905,7 @@ TEST_F(MediaDevicesTest, SetCaptureHandleConfigCaptureWithPermittedOrigins) {
       SecurityOrigin::CreateFromString("ftp://chromium.org:1234")};
   dispatcher_host().ExpectSetCaptureHandleConfig(std::move(expected_config));
 
-  media_devices->setCaptureHandleConfig(scope.GetScriptState(), &input_config,
+  media_devices->setCaptureHandleConfig(scope.GetScriptState(), input_config,
                                         scope.GetExceptionState());
 
   platform()->RunUntilIdle();
@@ -909,12 +918,13 @@ TEST_F(MediaDevicesTest,
   V8TestingScope scope;
   auto* media_devices = GetMediaDevices(*GetDocument().domWindow());
 
-  CaptureHandleConfig input_config;
-  input_config.setPermittedOrigins({"*", "https://chromium.org"});
+  CaptureHandleConfig* input_config =
+      MakeGarbageCollected<CaptureHandleConfig>();
+  input_config->setPermittedOrigins({"*", "https://chromium.org"});
 
   // Note: dispatcher_host().ExpectSetCaptureHandleConfig() not called.
 
-  media_devices->setCaptureHandleConfig(scope.GetScriptState(), &input_config,
+  media_devices->setCaptureHandleConfig(scope.GetScriptState(), input_config,
                                         scope.GetExceptionState());
 
   platform()->RunUntilIdle();
@@ -929,12 +939,14 @@ TEST_F(MediaDevicesTest,
   V8TestingScope scope;
   auto* media_devices = GetMediaDevices(*GetDocument().domWindow());
 
-  CaptureHandleConfig input_config;
-  input_config.setPermittedOrigins({"https://chromium.org:99999"});  // Invalid.
+  CaptureHandleConfig* input_config =
+      MakeGarbageCollected<CaptureHandleConfig>();
+  input_config->setPermittedOrigins(
+      {"https://chromium.org:99999"});  // Invalid.
 
   // Note: dispatcher_host().ExpectSetCaptureHandleConfig() not called.
 
-  media_devices->setCaptureHandleConfig(scope.GetScriptState(), &input_config,
+  media_devices->setCaptureHandleConfig(scope.GetScriptState(), input_config,
                                         scope.GetExceptionState());
 
   platform()->RunUntilIdle();

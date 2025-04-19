@@ -80,8 +80,7 @@ bool WebCodecsEncodedChunkStreamParser::GetGenerateTimestampsFlag() const {
 }
 
 bool WebCodecsEncodedChunkStreamParser::AppendToParseBuffer(
-    const uint8_t* /* buf */,
-    size_t /* size */) {
+    base::span<const uint8_t> /* buf */) {
   // TODO(crbug.com/40155657): Protect against app reaching this (and similer
   // inverse case in other parsers) simply by using the wrong append method on
   // the SourceBuffer. Maybe a better MEDIA_LOG here would be sufficient?  Or
@@ -118,13 +117,15 @@ bool WebCodecsEncodedChunkStreamParser::ProcessChunks(
            (video_config_ && !audio_config_));
     auto media_tracks = std::make_unique<MediaTracks>();
     if (audio_config_) {
-      media_tracks->AddAudioTrack(
-          *audio_config_, kWebCodecsAudioTrackId, MediaTrack::Kind("main"),
-          MediaTrack::Label(""), MediaTrack::Language(""));
+      media_tracks->AddAudioTrack(*audio_config_, true, kWebCodecsAudioTrackId,
+                                  MediaTrack::Kind("main"),
+                                  MediaTrack::Label(""),
+                                  MediaTrack::Language(""));
     } else if (video_config_) {
-      media_tracks->AddVideoTrack(
-          *video_config_, kWebCodecsVideoTrackId, MediaTrack::Kind("main"),
-          MediaTrack::Label(""), MediaTrack::Language(""));
+      media_tracks->AddVideoTrack(*video_config_, true, kWebCodecsVideoTrackId,
+                                  MediaTrack::Kind("main"),
+                                  MediaTrack::Label(""),
+                                  MediaTrack::Language(""));
     }
 
     if (!config_cb_.Run(std::move(media_tracks))) {

@@ -12,9 +12,11 @@ enum class BirchSuggestionType {
   kWeather,
   kCalendar,
   kDrive,
-  kTab,
+  kChromeTab,
+  kMedia,
   kExplore,
   kUndefined,
+  kCoral,
 };
 
 }  // namespace ash

@@ -96,8 +96,6 @@
 #include "remoting/host/security_key/security_key_extension.h"
 #include "remoting/host/shutdown_watchdog.h"
 #include "remoting/host/test_echo_extension.h"
-#include "remoting/host/third_party_auth_config.h"
-#include "remoting/host/token_validator_factory_impl.h"
 #include "remoting/host/usage_stats_consent.h"
 #include "remoting/host/zombie_host_detector.h"
 #include "remoting/protocol/authenticator.h"
@@ -109,7 +107,6 @@
 #include "remoting/protocol/network_settings.h"
 #include "remoting/protocol/pairing_registry.h"
 #include "remoting/protocol/port_range.h"
-#include "remoting/protocol/token_validator.h"
 #include "remoting/protocol/transport_context.h"
 #include "remoting/signaling/ftl_host_device_id_provider.h"
 #include "remoting/signaling/ftl_signal_strategy.h"
@@ -341,6 +338,9 @@ class HostProcess : public ConfigWatcher::Delegate,
   // Applies the host config, returning true if successful.
   bool ApplyConfig(const base::Value::Dict& config);
 
+  // Update the host owner (and dependent fields).
+  void UpdateHostOwner(const std::string& host_owner);
+
   // Handles policy updates, by calling On*PolicyUpdate methods.
   void OnPolicyUpdate(base::Value::Dict policies);
   void OnPolicyError();
@@ -355,7 +355,6 @@ class HostProcess : public ConfigWatcher::Delegate,
   bool OnRelayPolicyUpdate(const base::Value::Dict& policies);
   bool OnUdpPortPolicyUpdate(const base::Value::Dict& policies);
   bool OnCurtainPolicyUpdate(const base::Value::Dict& policies);
-  bool OnHostTokenUrlPolicyUpdate(const base::Value::Dict& policies);
   bool OnPairingPolicyUpdate(const base::Value::Dict& policies);
   bool OnGnubbyAuthPolicyUpdate(const base::Value::Dict& policies);
   bool OnFileTransferPolicyUpdate(const base::Value::Dict& policies);
@@ -373,6 +372,7 @@ class HostProcess : public ConfigWatcher::Delegate,
 
   // HeartbeatSender::Delegate implementation.
   void OnFirstHeartbeatSuccessful() override;
+  void OnUpdateHostOwner(const std::string& host_owner) override;
   void OnHostNotFound() override;
   void OnAuthFailed() override;
 
@@ -442,7 +442,6 @@ class HostProcess : public ConfigWatcher::Delegate,
   std::optional<bool> allow_pin_auth_;
 
   DesktopEnvironmentOptions desktop_environment_options_;
-  ThirdPartyAuthConfig third_party_auth_config_;
   bool security_key_auth_policy_enabled_ = false;
   bool security_key_extension_supported_ = true;
   std::optional<int> max_session_duration_minutes_;
@@ -817,6 +816,16 @@ void HostProcess::CreateAuthenticatorFactory() {
         base::MakeRefCounted<CorpSessionAuthzServiceClientFactory>(
             context_->url_loader_factory(), service_account_email_,
             oauth_refresh_token_));
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+    if (!cert_watcher_) {
+      cert_watcher_ = std::make_unique<CertificateWatcher>(
+          base::BindRepeating(&HostProcess::ShutdownHost,
+                              base::Unretained(this), kSuccessExitCode),
+          context_->file_task_runner());
+      cert_watcher_->Start();
+    }
+    cert_watcher_->SetMonitor(host_->status_monitor());
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   }
   if (allow_pin_auth_.value_or(!is_googler_) && !pin_hash_.empty()) {
     scoped_refptr<PairingRegistry> pairing_registry;
@@ -841,28 +850,6 @@ void HostProcess::CreateAuthenticatorFactory() {
     auth_config->AddPairingAuth(pairing_registry);
     auth_config->AddSharedSecretAuth(pin_hash_);
     host_->set_pairing_registry(pairing_registry);
-  }
-  if (!third_party_auth_config_.is_null()) {
-    // ThirdPartyAuthConfig::Parse() leaves the config in a valid state, so
-    // these URLs are both valid.
-    DCHECK(third_party_auth_config_.token_url.is_valid());
-    DCHECK(third_party_auth_config_.token_validation_url.is_valid());
-
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-    if (!cert_watcher_) {
-      cert_watcher_ = std::make_unique<CertificateWatcher>(
-          base::BindRepeating(&HostProcess::ShutdownHost,
-                              base::Unretained(this), kSuccessExitCode),
-          context_->file_task_runner());
-      cert_watcher_->Start();
-    }
-    cert_watcher_->SetMonitor(host_->status_monitor());
-#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-
-    scoped_refptr<protocol::TokenValidatorFactory> token_validator_factory =
-        new TokenValidatorFactoryImpl(third_party_auth_config_, key_pair_,
-                                      context_->url_request_context_getter());
-    auth_config->AddThirdPartyAuth(token_validator_factory);
   }
   HOST_LOG << "Host's supported authentication methods: ";
   for (const auto& method : auth_config->GetSupportedMethods()) {
@@ -1022,10 +1009,11 @@ void HostProcess::StartOnUiThread() {
           context_->network_task_runner(), std::move(remote));
   desktop_session_connector_ = desktop_environment_factory;
 #else   // !defined(REMOTING_MULTI_PROCESS)
-  BasicDesktopEnvironmentFactory* desktop_environment_factory;
-  desktop_environment_factory = new Me2MeDesktopEnvironmentFactory(
-      context_->network_task_runner(), context_->video_capture_task_runner(),
-      context_->input_task_runner(), context_->ui_task_runner());
+  BasicDesktopEnvironmentFactory* desktop_environment_factory =
+      new Me2MeDesktopEnvironmentFactory(context_->network_task_runner(),
+                                         context_->video_capture_task_runner(),
+                                         context_->input_task_runner(),
+                                         context_->ui_task_runner());
 #endif  // !defined(REMOTING_MULTI_PROCESS)
 
   desktop_environment_factory_.reset(desktop_environment_factory);
@@ -1048,6 +1036,10 @@ void HostProcess::ShutdownOnUiThread() {
   daemon_channel_.reset();
   desktop_session_connector_ = nullptr;
 #endif  // defined(REMOTING_MULTI_PROCESS)
+
+  // Release the remotes after the daemon channel has been closed.
+  remoting_host_control_.reset();
+  worker_process_control_.reset();
 
   // It is now safe for the HostProcess to be deleted.
   self_ = nullptr;
@@ -1084,6 +1076,10 @@ void HostProcess::OnFirstHeartbeatSuccessful() {
     signal_parent_ = false;
   }
 #endif
+}
+
+void HostProcess::OnUpdateHostOwner(const std::string& host_owner) {
+  UpdateHostOwner(host_owner);
 }
 
 void HostProcess::OnHostDeleted() {
@@ -1205,9 +1201,10 @@ bool HostProcess::ApplyConfig(const base::Value::Dict& config) {
                << kHostOwnerConfigPath << "`";
     return false;
   }
-  host_owner_ = *host_owner;
+  UpdateHostOwner(*host_owner);
 
   // Check if the host owner's email is Google-internal.
+  // TODO: Remove references to this and replace them with more specific checks.
   is_googler_ = IsGoogleEmail(host_owner_);
 
   const std::string* host_secret_hash =
@@ -1230,6 +1227,10 @@ bool HostProcess::ApplyConfig(const base::Value::Dict& config) {
   return true;
 }
 
+void HostProcess::UpdateHostOwner(const std::string& host_owner) {
+  host_owner_ = host_owner;
+}
+
 void HostProcess::OnPolicyUpdate(base::Value::Dict policies) {
   if (!context_->network_task_runner()->BelongsToCurrentThread()) {
     context_->network_task_runner()->PostTask(
@@ -1247,7 +1248,6 @@ void HostProcess::OnPolicyUpdate(base::Value::Dict policies) {
   restart_required |= OnNatPolicyUpdate(policies);
   restart_required |= OnRelayPolicyUpdate(policies);
   restart_required |= OnUdpPortPolicyUpdate(policies);
-  restart_required |= OnHostTokenUrlPolicyUpdate(policies);
   restart_required |= OnPairingPolicyUpdate(policies);
   restart_required |= OnGnubbyAuthPolicyUpdate(policies);
   restart_required |= OnFileTransferPolicyUpdate(policies);
@@ -1528,25 +1528,6 @@ bool HostProcess::OnCurtainPolicyUpdate(const base::Value::Dict& policies) {
   return true;
 }
 
-bool HostProcess::OnHostTokenUrlPolicyUpdate(
-    const base::Value::Dict& policies) {
-  switch (ThirdPartyAuthConfig::Parse(policies, &third_party_auth_config_)) {
-    case ThirdPartyAuthConfig::NoPolicy:
-      return false;
-    case ThirdPartyAuthConfig::ParsingSuccess:
-      HOST_LOG << "Policy sets third-party token URLs: "
-               << third_party_auth_config_;
-      return true;
-    case ThirdPartyAuthConfig::InvalidPolicy:
-    default:
-      // Unreachable, because PolicyWatcher::OnPolicyUpdated() enforces that
-      // the policy is well-formed (including checks specific to
-      // ThirdPartyAuthConfig), before notifying of policy updates.
-      NOTREACHED_IN_MIGRATION();
-      return false;
-  }
-}
-
 bool HostProcess::OnPairingPolicyUpdate(const base::Value::Dict& policies) {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
@@ -1817,14 +1798,17 @@ void HostProcess::StartHost() {
   // This thread is used as a network thread in WebRTC.
   webrtc::ThreadWrapper::EnsureForCurrentMessageLoop();
 
-  // Initialize global field trials.
-  field_trial_list_ = std::make_unique<base::FieldTrialList>();
+  // Initialize global field trials. In case this code runs a second time,
+  // check for any previous instance - see crbug.com/349062464.
+  if (!field_trial_list_) {
+    field_trial_list_ = std::make_unique<base::FieldTrialList>();
 
-  // Override LossBasedBweV2 trial.
-  // TODO(b/266103942): Remove this override once we figure out why the BWE is
-  // crashing for some users and have a fix available.
-  base::FieldTrialList::CreateTrialsFromString(
-      "WebRTC-Bwe-LossBasedBweV2/Enabled:false/");
+    // Override LossBasedBweV2 trial.
+    // TODO(b/266103942): Remove this override once we figure out why the BWE is
+    // crashing for some users and have a fix available.
+    base::FieldTrialList::CreateTrialsFromString(
+        "WebRTC-Bwe-LossBasedBweV2/Enabled:false/");
+  }
 
   SetState(HOST_STARTED);
 

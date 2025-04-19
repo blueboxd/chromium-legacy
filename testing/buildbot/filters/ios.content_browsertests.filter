@@ -615,8 +615,7 @@
 -SecurityExploitBrowserTestFencedFrames.ChangeFencedFrameSandboxFlags
 -SecurityExploitBrowserTestFencedFrames.NavigateFencedFrameToInvalidURL
 -SecurityExploitBrowserTestFencedFrames.PullFocusAcrossFencedBoundary
--SecurityExploitBrowserTestMojoBlobURLs/SecurityExploitBrowserTestMojoBlobURLsP.CreateMojoBlobURLInDifferentOrigin/0
--SecurityExploitBrowserTestMojoBlobURLs/SecurityExploitBrowserTestMojoBlobURLsP.CreateMojoBlobURLInDifferentOrigin/1
+-SecurityExploitBrowserTestMojoBlobURLs.CreateMojoBlobURLInDifferentOrigin
 -SecurityExploitBrowserTestWithTrustTokensEnabled.BrowserForbidsTrustTokenIssuanceWithoutPermissionsPolicy
 -SecurityExploitBrowserTestWithTrustTokensEnabled.BrowserForbidsTrustTokenParamsOnMainFrameNav
 -SecurityExploitBrowserTestWithTrustTokensEnabled.BrowserForbidsTrustTokenRedemptionWithoutPermissionsPolicy
@@ -676,3 +675,16 @@
 # TODO(crbug.com/342866174): The test has been failing since
 # https://crrev.com/c/5545059.
 -FoldableAPIsOriginTrialBrowserTest.ValidOriginTrialToken
+
+# TODO(crbug.com/343248827): The test has been failing since
+# https://crrev.com/c/5467603. The CL removed
+# AllowBFCacheWhenClosedMediaStreamTrack feature.
+-BackForwardCacheBrowserTest.CacheIfMediaStreamTrackUsingGetDisplayMediaEnded
+
+# TODO(crbug.com/343101485): The test has been failing since
+# https://crrev.com/c/5468575.
+-NavigationBrowserTest.CommitBadNavigationInPendingCommitRFHCleanup
+
+# TODO(crbug.com/347803432): Timeout happens in these tests.
+-All/NavigationBrowserTestPaintHoldingSubframe.CrashSubframe/0
+-All/NavigationBrowserTestPaintHoldingSubframe.CrashSubframe/1

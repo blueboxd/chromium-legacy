@@ -134,6 +134,9 @@ size_t EstimateBlinkInterestGroupSize(
   }
   size += sizeof(group.trusted_bidding_signals_slot_size_mode);
   size += sizeof(group.max_trusted_bidding_signals_url_length);
+  if (group.trusted_bidding_signals_coordinator) {
+    size += group.trusted_bidding_signals_coordinator->ToString().length();
+  }
   size += group.user_bidding_signals.length();
 
   if (group.ads) {
@@ -142,6 +145,11 @@ size_t EstimateBlinkInterestGroupSize(
       size += ad->size_group.length();
       size += ad->buyer_reporting_id.length();
       size += ad->buyer_and_seller_reporting_id.length();
+      if (ad->selectable_buyer_and_seller_reporting_ids) {
+        for (const auto& id : *ad->selectable_buyer_and_seller_reporting_ids) {
+          size += id.length();
+        }
+      }
       size += ad->metadata.length();
       size += ad->ad_render_id.length();
       if (ad->allowed_reporting_origins) {
@@ -311,6 +319,16 @@ bool ValidateBlinkInterestGroup(const mojom::blink::InterestGroup& group,
     return false;
   }
 
+  if (group.trusted_bidding_signals_coordinator) {
+    if (group.trusted_bidding_signals_coordinator->Protocol() !=
+        url::kHttpsScheme) {
+      error_field_name = "trustedBiddingSignalsCoordinator";
+      error_field_value = group.trusted_bidding_signals_coordinator->ToString();
+      error = "trustedBiddingSignalsCoordinator origin must be HTTPS.";
+      return false;
+    }
+  }
+
   if (group.ads) {
     for (WTF::wtf_size_t i = 0; i < group.ads.value().size(); ++i) {
       const KURL& render_url = KURL(group.ads.value()[i]->render_url);
@@ -408,6 +426,8 @@ bool ValidateBlinkInterestGroup(const mojom::blink::InterestGroup& group,
       DCHECK(group.ad_components.value()[i]->buyer_reporting_id.IsNull());
       DCHECK(group.ad_components.value()[i]
                  ->buyer_and_seller_reporting_id.IsNull());
+      DCHECK(!group.ad_components.value()[i]
+                  ->selectable_buyer_and_seller_reporting_ids.has_value());
       DCHECK(!group.ad_components.value()[i]
                   ->allowed_reporting_origins.has_value());
     }

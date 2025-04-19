@@ -326,9 +326,11 @@ IN_PROC_BROWSER_TEST_F(DesktopPaymentsWindowManagerInteractiveUiTest,
   response_details.expiration_year = "2030";
   test_api(window_manager())
       .OnVcn3dsAuthenticationResponseReceived(
-          AutofillClient::PaymentsRpcResult::kSuccess, response_details);
+          PaymentsAutofillClient::PaymentsRpcResult::kSuccess,
+          response_details);
 
   EXPECT_EQ(unmask_request->context_token, kTestContextToken);
+  EXPECT_FALSE(unmask_request->risk_data.empty());
   ASSERT_TRUE(unmask_request->selected_challenge_option.has_value());
   EXPECT_EQ(
       unmask_request->selected_challenge_option->vcn_3ds_metadata->url_to_open,
@@ -381,7 +383,8 @@ IN_PROC_BROWSER_TEST_F(
   response_details.expiration_year = "2030";
   test_api(window_manager())
       .OnVcn3dsAuthenticationResponseReceived(
-          AutofillClient::PaymentsRpcResult::kSuccess, response_details);
+          PaymentsAutofillClient::PaymentsRpcResult::kSuccess,
+          response_details);
 
   histogram_tester_.ExpectBucketCount(
       kVcn3dsFlowEventsHistogramName,
@@ -481,7 +484,7 @@ IN_PROC_BROWSER_TEST_F(DesktopPaymentsWindowManagerInteractiveUiTest,
   // run with the correct information.
   test_api(window_manager())
       .OnVcn3dsAuthenticationResponseReceived(
-          AutofillClient::PaymentsRpcResult::kPermanentFailure,
+          PaymentsAutofillClient::PaymentsRpcResult::kPermanentFailure,
           PaymentsNetworkInterface::UnmaskResponseDetails());
 
   std::optional<PaymentsWindowManager::Vcn3dsAuthenticationResponse> response =
@@ -513,7 +516,7 @@ IN_PROC_BROWSER_TEST_F(
   // run with the correct information.
   test_api(window_manager())
       .OnVcn3dsAuthenticationResponseReceived(
-          AutofillClient::PaymentsRpcResult::kPermanentFailure,
+          PaymentsAutofillClient::PaymentsRpcResult::kPermanentFailure,
           PaymentsNetworkInterface::UnmaskResponseDetails());
 
   histogram_tester_.ExpectBucketCount(

@@ -290,15 +290,6 @@ class PrerenderDevToolsProtocolTest : public DevToolsProtocolTest {
   std::unique_ptr<test::PrerenderTestHelper> prerender_helper_;
 };
 
-class MultiplePrerendersDevToolsProtocolTest
-    : public PrerenderDevToolsProtocolTest {
- public:
-  MultiplePrerendersDevToolsProtocolTest() = default;
-
- private:
-  test::ScopedPrerenderFeatureList prerender_feature_list_;
-};
-
 class SyntheticMouseEventTest : public DevToolsProtocolTest {
  public:
   SyntheticMouseEventTest() {
@@ -464,7 +455,7 @@ IN_PROC_BROWSER_TEST_F(SyntheticMouseEventTest, MouseEventCoordinatesWithZoom) {
   HostZoomMap* host_zoom_map =
       HostZoomMap::GetForWebContents(shell()->web_contents());
   host_zoom_map->SetZoomLevelForHost(test_url.host(),
-                                     blink::PageZoomFactorToZoomLevel(2.5));
+                                     blink::ZoomFactorToZoomLevel(2.5));
   WaitForNotification("Page.frameResized", true);
 
   // In about 1 out of 1000 runs, the event gets lost on the way to the
@@ -3106,7 +3097,10 @@ class DevToolsProtocolBackForwardCacheTest : public DevToolsProtocolTest {
   ~DevToolsProtocolBackForwardCacheTest() override = default;
 
   // content::WebContentsDelegate:
-  bool IsBackForwardCacheSupported() override { return true; }
+  bool IsBackForwardCacheSupported(
+      content::WebContents& web_contents) override {
+    return true;
+  }
 
   std::string Evaluate(const std::string& script,
                        const base::Location& location) {

@@ -21,6 +21,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/core/css/style_property_serializer.h"
 
 #include <bitset>
@@ -75,7 +80,8 @@ inline TextWrap ToTextWrap(const CSSValue* value) {
 
 bool IsZeroPercent(const CSSValue* value) {
   if (const auto* num = DynamicTo<CSSNumericLiteralValue>(value)) {
-    return num->IsZero() && num->IsPercentage();
+    return num->IsZero() == CSSPrimitiveValue::BoolStatus::kTrue &&
+           num->IsPercentage();
   }
 
   return false;
@@ -347,9 +353,9 @@ String StylePropertySerializer::AsText() const {
 
       shorthand_appeared.set(shorthand_property_index);
       bool serialized_other_longhand = false;
-      for (unsigned i = 0; i < shorthand.length(); i++) {
-        if (longhand_serialized.test(GetCSSPropertyIDIndex(
-                shorthand.properties()[i]->PropertyID()))) {
+      for (const CSSProperty* const longhand : shorthand.properties()) {
+        if (longhand_serialized.test(
+                GetCSSPropertyIDIndex(longhand->PropertyID()))) {
           serialized_other_longhand = true;
           break;
         }
@@ -367,9 +373,8 @@ String StylePropertySerializer::AsText() const {
           CSSProperty::Get(shorthand_property).GetCSSPropertyName(),
           shorthand_result, property.IsImportant(), num_decls++));
       serialized_as_shorthand = true;
-      for (unsigned i = 0; i < shorthand.length(); i++) {
-        longhand_serialized.set(
-            GetCSSPropertyIDIndex(shorthand.properties()[i]->PropertyID()));
+      for (const CSSProperty* const longhand : shorthand.properties()) {
+        longhand_serialized.set(GetCSSPropertyIDIndex(longhand->PropertyID()));
       }
       break;
     }
@@ -699,7 +704,9 @@ String StylePropertySerializer::SerializeShorthand(
     case CSSPropertyID::kScrollStartTarget:
       return ScrollStartTargetValue();
     case CSSPropertyID::kPositionTry:
-      return PositionTryValue();
+      return PositionTryValue(positionTryShorthand());
+    case CSSPropertyID::kAlternativePositionTry:
+      return PositionTryValue(alternativePositionTryShorthand());
     default:
       NOTREACHED_IN_MIGRATION()
           << "Shorthand property "
@@ -1175,21 +1182,20 @@ String StylePropertySerializer::FontValue() const {
   }
 
   const StylePropertyShorthand& shorthand = fontShorthand();
-  const CSSProperty** longhands = shorthand.properties();
-  unsigned length = shorthand.length();
+  const StylePropertyShorthand::Properties& longhands = shorthand.properties();
   const CSSValue* first = property_set_.GetPropertyCSSValue(*longhands[0]);
   if (const auto* system_font =
           DynamicTo<cssvalue::CSSPendingSystemFontValue>(first)) {
-    for (unsigned i = 1; i < length; i++) {
-      const CSSValue* value = property_set_.GetPropertyCSSValue(*longhands[i]);
+    for (const CSSProperty* const longhand : longhands.subspan(1)) {
+      const CSSValue* value = property_set_.GetPropertyCSSValue(*longhand);
       if (!base::ValuesEquivalent(first, value)) {
         return g_empty_string;
       }
     }
     return getValueName(system_font->SystemFontId());
   } else {
-    for (unsigned i = 1; i < length; i++) {
-      const CSSValue* value = property_set_.GetPropertyCSSValue(*longhands[i]);
+    for (const CSSProperty* const longhand : longhands.subspan(1)) {
+      const CSSValue* value = property_set_.GetPropertyCSSValue(*longhand);
       if (value->IsPendingSystemFontValue()) {
         return g_empty_string;
       }
@@ -1409,15 +1415,13 @@ String StylePropertySerializer::OffsetValue() const {
 String StylePropertySerializer::TextDecorationValue() const {
   StringBuilder result;
   const auto& shorthand = shorthandForProperty(CSSPropertyID::kTextDecoration);
-  for (unsigned i = 0; i < shorthand.length(); ++i) {
-    const CSSValue* value =
-        property_set_.GetPropertyCSSValue(*shorthand.properties()[i]);
+  for (const CSSProperty* const longhand : shorthand.properties()) {
+    const CSSValue* value = property_set_.GetPropertyCSSValue(*longhand);
     String value_text = value->CssText();
     if (value->IsInitialValue()) {
       continue;
     }
-    if (shorthand.properties()[i]->PropertyID() ==
-        CSSPropertyID::kTextDecorationThickness) {
+    if (longhand->PropertyID() == CSSPropertyID::kTextDecorationThickness) {
       if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
         // Do not include initial value 'auto' for thickness.
         // TODO(https://crbug.com/1093826): general shorthand serialization
@@ -1670,7 +1674,8 @@ String StylePropertySerializer::GetLayeredShorthandValue(
         if (property->IDEquals(CSSPropertyID::kTransitionDelay) ||
             property->IDEquals(CSSPropertyID::kTransitionDuration)) {
           auto* numeric_value = DynamicTo<CSSNumericLiteralValue>(value);
-          if (numeric_value && numeric_value->IsZero()) {
+          if (numeric_value &&
+              numeric_value->IsZero() == CSSPrimitiveValue::BoolStatus::kTrue) {
             omit_value = true;
           }
         } else if (property->IDEquals(
@@ -1810,9 +1815,8 @@ String StylePropertySerializer::GetShorthandValue(
     const StylePropertyShorthand& shorthand,
     String separator) const {
   StringBuilder result;
-  for (unsigned i = 0; i < shorthand.length(); ++i) {
-    const CSSValue* value =
-        property_set_.GetPropertyCSSValue(*shorthand.properties()[i]);
+  for (const CSSProperty* const longhand : shorthand.properties()) {
+    const CSSValue* value = property_set_.GetPropertyCSSValue(*longhand);
     String value_text = value->CssText();
     if (value->IsInitialValue()) {
       continue;
@@ -1881,9 +1885,8 @@ String StylePropertySerializer::GetShorthandValueForColumns(
   DCHECK_EQ(shorthand.length(), 2u);
 
   StringBuilder result;
-  for (unsigned i = 0; i < shorthand.length(); ++i) {
-    const CSSValue* value =
-        property_set_.GetPropertyCSSValue(*shorthand.properties()[i]);
+  for (const CSSProperty* const longhand : shorthand.properties()) {
+    const CSSValue* value = property_set_.GetPropertyCSSValue(*longhand);
     String value_text = value->CssText();
     if (const auto* ident_value = DynamicTo<CSSIdentifierValue>(value);
         ident_value && ident_value->GetValueID() == CSSValueID::kAuto) {
@@ -1905,8 +1908,8 @@ String StylePropertySerializer::GetShorthandValueForColumns(
 String StylePropertySerializer::GetShorthandValueForDoubleBarCombinator(
     const StylePropertyShorthand& shorthand) const {
   StringBuilder result;
-  for (unsigned i = 0; i < shorthand.length(); ++i) {
-    const Longhand* longhand = To<Longhand>(shorthand.properties()[i]);
+  for (const CSSProperty* const property : shorthand.properties()) {
+    const Longhand* longhand = To<Longhand>(property);
     DCHECK(!longhand->InitialValue()->IsInitialValue())
         << "Without InitialValue() implemented, 'initial' will show up in the "
            "serialization below.";
@@ -2157,9 +2160,8 @@ String StylePropertySerializer::GetShorthandValueForGridTemplate(
 String StylePropertySerializer::GetCommonValue(
     const StylePropertyShorthand& shorthand) const {
   String res;
-  for (unsigned i = 0; i < shorthand.length(); ++i) {
-    const CSSValue* value =
-        property_set_.GetPropertyCSSValue(*shorthand.properties()[i]);
+  for (const CSSProperty* const longhand : shorthand.properties()) {
+    const CSSValue* value = property_set_.GetPropertyCSSValue(*longhand);
     // FIXME: CSSInitialValue::CssText should generate the right value.
     String text = value->CssText();
     if (res.IsNull()) {
@@ -2432,27 +2434,25 @@ String StylePropertySerializer::ScrollStartTargetValue() const {
   return list->CssText();
 }
 
-String StylePropertySerializer::PositionTryValue() const {
-  CHECK_EQ(positionTryShorthand().length(), 2u);
-  CHECK_EQ(positionTryShorthand().properties()[0],
-           &GetCSSPropertyPositionTryOrder());
-  CHECK_EQ(positionTryShorthand().properties()[1],
-           &GetCSSPropertyPositionTryOptions());
+String StylePropertySerializer::PositionTryValue(
+    const StylePropertyShorthand& shorthand) const {
+  CHECK_EQ(shorthand.length(), 2u);
+  CHECK_EQ(shorthand.properties()[0], &GetCSSPropertyPositionTryOrder());
 
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   const CSSValue* order_value =
       property_set_.GetPropertyCSSValue(GetCSSPropertyPositionTryOrder());
-  const CSSValue* options_value =
-      property_set_.GetPropertyCSSValue(GetCSSPropertyPositionTryOptions());
+  const CSSValue* fallbacks_value =
+      property_set_.GetPropertyCSSValue(*shorthand.properties()[1]);
 
   CHECK(order_value);
-  CHECK(options_value);
+  CHECK(fallbacks_value);
 
   if (To<CSSIdentifierValue>(*order_value).GetValueID() !=
       CSSValueID::kNormal) {
     list->Append(*order_value);
   }
-  list->Append(*options_value);
+  list->Append(*fallbacks_value);
   return list->CssText();
 }
 

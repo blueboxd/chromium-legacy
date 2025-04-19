@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "components/url_pattern_index/url_pattern_index.h"
 
 #include <algorithm>
@@ -273,6 +278,16 @@ TEST_F(UrlPatternIndexTest, OneRuleWithoutMetaInfo) {
       {{"ex.com", kSubdomain, kAnchorNone}, "https://test.ex.com.com", true},
       {{"ex.com", kSubdomain, kAnchorNone}, "https://test.rest.ex.com", true},
       {{"ex.com", kSubdomain, kAnchorNone}, "https://test_ex.com", false},
+      {{"abcd.ex.com/", kSubdomain, kAnchorNone},
+       "http://abcd.ex.com?xyz=1",
+       true},
+      {{"abcd.ex.com/", kSubdomain, kAnchorNone},
+       "http://abcd.ex.com#xyz",
+       true},
+      {{"ex.co/", kSubdomain, kAnchorNone}, "https://test.ex.co", true},
+      {{"abcd.ex.com/", kSubdomain, kAnchorNone},
+       "https://abcd.ex.com.",
+       false},
 
       {{"http://ex.com", kBoundary, kAnchorNone}, "http://ex.com/", true},
       {{"http://ex.com", kBoundary, kAnchorNone}, "http://ex.com/42", true},

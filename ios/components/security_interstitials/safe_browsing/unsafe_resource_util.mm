@@ -56,8 +56,6 @@ std::string GetUnsafeResourceMetricPrefix(
       break;
   }
   DCHECK(prefix.length());
-  if (resource.is_subresource)
-    prefix += "_subresource";
   return prefix;
 }
 
@@ -71,8 +69,5 @@ SafeBrowsingUrlAllowList* GetAllowListForResource(
 
 const GURL GetMainFrameUrl(
     const security_interstitials::UnsafeResource& resource) {
-  if (resource.request_destination ==
-      network::mojom::RequestDestination::kDocument)
-    return resource.url;
-  return resource.weak_web_state.get()->GetLastCommittedURL();
+  return resource.url;
 }

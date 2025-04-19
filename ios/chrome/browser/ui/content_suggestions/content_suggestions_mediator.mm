@@ -33,13 +33,13 @@
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/public/features/system_flags.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/most_visited_tiles_config.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/most_visited_tiles_mediator.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/shortcuts_mediator.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_delegate.h"
 #import "ios/chrome/browser/ui/content_suggestions/magic_stack/magic_stack_consumer.h"
 #import "ios/chrome/browser/ui/content_suggestions/magic_stack/magic_stack_ranking_model.h"
-#import "ios/chrome/browser/ui/content_suggestions/magic_stack/most_visited_tiles_config.h"
 #import "ios/chrome/browser/ui/content_suggestions/magic_stack/placeholder_config.h"
 #import "ios/chrome/browser/ui/content_suggestions/set_up_list/set_up_list_mediator.h"
 #import "ios/chrome/browser/ui/ntp/metrics/home_metrics.h"
@@ -103,14 +103,16 @@
   [self.magicStackConsumer removeItem:item];
 }
 
+- (void)magicStackRankingModel:(MagicStackRankingModel*)model
+            didReconfigureItem:(MagicStackModule*)item {
+  [self.magicStackConsumer reconfigureItem:item];
+}
+
 #pragma mark - Private
 
 - (void)configureConsumer {
   if (!self.consumer) {
     return;
-  }
-  if (!IsIOSMagicStackCollectionViewEnabled()) {
-    [self.magicStackRankingModel fetchLatestMagicStackRanking];
   }
   if (!ShouldPutMostVisitedSitesInMagicStack() &&
       self.mostVisitedTilesMediator.mostVisitedConfig) {

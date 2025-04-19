@@ -153,7 +153,7 @@ class ChromePasswordManagerClient
       base::OnceCallback<void(bool)> shown_cb) override;
 #endif
 
-  bool CanUseBiometricAuthForFilling(
+  bool IsReauthBeforeFillingRequired(
       device_reauth::DeviceAuthenticator* authenticator) override;
   // Returns a pointer to the DeviceAuthenticator which is created on demand.
   // This is currently only implemented for Android, Mac and Windows. On all
@@ -235,9 +235,10 @@ class ChromePasswordManagerClient
   autofill::LogManager* GetLogManager() override;
   void AnnotateNavigationEntry(bool has_password_field) override;
   autofill::LanguageCode GetPageLanguage() const override;
-
   safe_browsing::PasswordProtectionService* GetPasswordProtectionService()
       const override;
+  void TriggerUserPerceptionOfPasswordManagerSurvey(
+      const std::string& filling_assistance) override;
 
 #if defined(ON_FOCUS_PING_ENABLED)
   void CheckSafeBrowsingReputation(const GURL& form_action,
@@ -249,7 +250,7 @@ class ChromePasswordManagerClient
   void MaybeReportEnterpriseLoginEvent(
       const GURL& url,
       bool is_federated,
-      const url::Origin& federated_origin,
+      const url::SchemeHostPort& federated_origin,
       const std::u16string& login_user_name) const override;
   void MaybeReportEnterprisePasswordBreachEvent(
       const std::vector<std::pair<GURL, std::u16string>>& identities)
@@ -288,6 +289,8 @@ class ChromePasswordManagerClient
   version_info::Channel GetChannel() const override;
   void RefreshPasswordManagerSettingsIfNeeded() const override;
 #if !BUILDFLAG(IS_ANDROID)
+  void OpenPasswordDetailsBubble(
+      const password_manager::PasswordForm& form) override;
   std::unique_ptr<
       password_manager::PasswordCrossDomainConfirmationPopupController>
   ShowCrossDomainConfirmationPopup(
@@ -397,10 +400,6 @@ class ChromePasswordManagerClient
   // Checks if the current page specified in |url| fulfils the conditions for
   // the password manager to be active on it.
   bool IsPasswordManagementEnabledForCurrentPage(const GURL& url) const;
-
-  // Returns true if this profile has metrics reporting and active sync
-  // without custom sync passphrase.
-  static bool ShouldAnnotateNavigationEntries(Profile* profile);
 
   // Called back by the PasswordGenerationAgent when the generation flow is
   // completed. If |ui_data| is non-empty, will create a UI to display the

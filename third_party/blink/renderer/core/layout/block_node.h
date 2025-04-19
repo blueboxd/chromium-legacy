@@ -27,6 +27,7 @@ class PhysicalBoxFragment;
 class PhysicalFragment;
 enum class BaselineAlgorithmType;
 enum class MathScriptType;
+enum class SizeType;
 struct LayoutAlgorithmParams;
 
 // Represents a node to be laid out.
@@ -108,7 +109,7 @@ class CORE_EXPORT BlockNode : public LayoutInputNode {
   // space is not optional.
   MinMaxSizesResult ComputeMinMaxSizes(
       WritingMode container_writing_mode,
-      const MinMaxSizesType,
+      const SizeType,
       const ConstraintSpace&,
       const MinMaxSizesFloatInput float_input = MinMaxSizesFloatInput()) const;
 
@@ -178,6 +179,15 @@ class CORE_EXPORT BlockNode : public LayoutInputNode {
   // Returns true if the custom layout node is in its loaded state (all script
   // for the web-developer defined layout is ready).
   bool IsCustomLayoutLoaded() const;
+
+  // Return the ::scroll-marker-group associated with this node, if any.
+  BlockNode GetScrollMarkerGroup() const {
+    return BlockNode(DynamicTo<LayoutBlock>(box_->GetScrollMarkerGroup()));
+  }
+
+  // Populate with scroll markers (and relayout if necessary)
+  // the::scroll-marker-group associated with this node, if any.
+  void HandleScrollMarkerGroup() const;
 
   // Get script type for scripts (msub, msup, msubsup, munder, mover and
   // munderover).

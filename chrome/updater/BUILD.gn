@@ -48,8 +48,6 @@ group("all") {
   }
 }
 
-# Conditional build is needed, otherwise the analyze script on Linux
-# requires all targets and it is going to include the targets below.
 if (is_win || is_mac || is_linux) {
   source_set("base") {
     sources = [
@@ -91,16 +89,12 @@ if (is_win || is_mac || is_linux) {
       "crash_reporter.cc",
       "crash_reporter.h",
       "crx_downloader_factory.h",
-      "device_management/dm_cached_policy_info.cc",
-      "device_management/dm_cached_policy_info.h",
       "device_management/dm_client.cc",
       "device_management/dm_client.h",
       "device_management/dm_message.cc",
       "device_management/dm_message.h",
       "device_management/dm_response_validator.cc",
       "device_management/dm_response_validator.h",
-      "device_management/dm_storage.cc",
-      "device_management/dm_storage.h",
       "find_unregistered_apps_task.cc",
       "find_unregistered_apps_task.h",
       "installer.cc",
@@ -109,6 +103,8 @@ if (is_win || is_mac || is_linux) {
       "ipc/update_service_internal_proxy.h",
       "lock.cc",
       "lock.h",
+      "net/fallback_net_fetcher.cc",
+      "net/fallback_net_fetcher.h",
       "net/network.h",
       "persisted_data.cc",
       "persisted_data.h",
@@ -157,6 +153,7 @@ if (is_win || is_mac || is_linux) {
       "//base",
       "//base:i18n",
       "//build:chromeos_buildflags",
+      "//chrome/enterprise_companion/device_management_storage",
       "//chrome/updater/protos:omaha_proto",
       "//components/crash/core/common",
       "//components/crx_file",
@@ -193,8 +190,9 @@ if (is_win || is_mac || is_linux) {
     if (is_mac) {
       sources += [
         "activity_impl_util_mac.cc",
+        "app/app_net_worker.cc",
+        "app/app_net_worker.h",
         "app/app_server_posix_mac.cc",
-        "device_management/dm_storage_mac.mm",
         "installer_mac.cc",
         "ipc/ipc_security_mac.cc",
         "mac/install_from_archive.h",
@@ -202,7 +200,10 @@ if (is_win || is_mac || is_linux) {
         "mac/setup/setup.mm",
         "mac/setup/wake_task.h",
         "mac/setup/wake_task.mm",
+        "net/fetcher_callback_adapter.cc",
+        "net/fetcher_callback_adapter.h",
         "net/network_fetcher_mac.mm",
+        "net/network_file_fetcher.h",
         "policy/mac/managed_preference_policy_manager.h",
         "policy/mac/managed_preference_policy_manager.mm",
         "policy/mac/managed_preference_policy_manager_impl.h",
@@ -214,6 +215,7 @@ if (is_win || is_mac || is_linux) {
 
       deps += [
         ":ks_ticket",
+        "//chrome/updater/net/mac/mojom",
         "//mojo/public/cpp/platform",
         "//net",
       ]
@@ -248,7 +250,6 @@ if (is_win || is_mac || is_linux) {
         "app/server/win/update_service_stub_win.h",
         "app/server/win/wrl_classes.cc",
         "change_owners_task_win.cc",
-        "device_management/dm_storage_win.cc",
         "ipc/update_service_internal_proxy_win.cc",
         "ipc/update_service_internal_proxy_win.h",
         "net/network_fetcher_win.cc",
@@ -360,7 +361,6 @@ if (is_win || is_mac || is_linux) {
       sources += [
         "activity_impl_util_linux.cc",
         "app/app_server_posix_linux.cc",
-        "device_management/dm_storage_linux.cc",
         "installer_linux.cc",
         "ipc/ipc_security_linux.cc",
         "linux/setup/setup.cc",
@@ -371,9 +371,10 @@ if (is_win || is_mac || is_linux) {
         "update_service_internal_impl_qualifying_linux.cc",
         "update_usage_stats_task_linux.cc",
       ]
-      public_configs = [
-        "linux:libcurl",
-        "linux:libsystemd",
+
+      libs = [
+        "curl",
+        "systemd",
       ]
     }
   }
@@ -537,6 +538,8 @@ if (is_win || is_mac || is_linux) {
       "//chrome/browser",
       "//chrome/browser/ui",
       "//chrome/browser/updater:*",
+      "//chrome/enterprise_companion:*",
+      "//chrome/enterprise_companion/device_management_storage:*",
       "//chrome/test:*",
       "//chrome/test:unit_tests",
     ]
@@ -755,13 +758,13 @@ if (is_win || is_mac || is_linux) {
       "device_management/dm_policy_builder_for_testing.cc",
       "device_management/dm_policy_builder_for_testing.h",
       "device_management/dm_response_validator_unittest.cc",
-      "device_management/dm_storage_unittest.cc",
       "enum_traits_unittest.cc",
       "external_constants_builder.cc",
       "external_constants_builder.h",
       "external_constants_builder_unittest.cc",
       "external_constants_override_unittest.cc",
       "installer_unittest.cc",
+      "net/fallback_net_fetcher_unittest.cc",
       "net/network_unittest.cc",
       "persisted_data_unittest.cc",
       "policy/dm_policy_manager_unittest.cc",
@@ -775,7 +778,6 @@ if (is_win || is_mac || is_linux) {
       "test/integration_test_commands.h",
       "test/integration_test_commands_system.cc",
       "test/integration_test_commands_user.cc",
-      "test/integration_tests.cc",
       "test/integration_tests_impl.cc",
       "test/integration_tests_impl.h",
       "test/request_matcher.cc",
@@ -791,6 +793,9 @@ if (is_win || is_mac || is_linux) {
       "updater_unittest.cc",
       "util/util_unittest.cc",
     ]
+    if (!is_component_build) {
+      sources += [ "test/integration_tests.cc" ]
+    }
 
     deps = [
       ":base",
@@ -803,6 +808,7 @@ if (is_win || is_mac || is_linux) {
       "//base",
       "//base/test:test_support",
       "//chrome/common:constants",
+      "//chrome/enterprise_companion/device_management_storage",
       "//chrome/updater/protos:omaha_proto",
       "//components/crx_file",
       "//components/policy/proto",
@@ -898,17 +904,35 @@ if (is_win || is_mac || is_linux) {
         "//chrome/test/data/updater/updater_qualification_app_exe.crx",
       ]
 
+      if (target_cpu == "arm64") {
+        data += [
+          "//third_party/updater/chrome_win_arm64/cipd/UpdaterSetup_test.exe",
+          "//third_party/updater/chromium_win_arm64/cipd/UpdaterSetup_test.exe",
+        ]
+      }
+
       if (target_cpu == "x64") {
         data += [
-          "//third_party/updater/chrome_win_x86_64/UpdaterSetup_test.exe",
-          "//third_party/updater/chromium_win_x86_64/UpdaterSetup_test.exe",
+          "//third_party/updater/chrome_win_x86_64/cipd/UpdaterSetup_test.exe",
+          "//third_party/updater/chromium_win_x86_64/cipd/UpdaterSetup_test.exe",
         ]
       }
 
       if (target_cpu == "x86") {
         data += [
-          "//third_party/updater/chrome_win_x86/UpdaterSetup_test.exe",
-          "//third_party/updater/chromium_win_x86/UpdaterSetup_test.exe",
+          "//third_party/updater/chrome_win_x86/cipd/UpdaterSetup_test.exe",
+          "//third_party/updater/chromium_win_x86/cipd/UpdaterSetup_test.exe",
+        ]
+      }
+
+      if (is_chrome_branded) {
+        sources +=
+            [ "enterprise/win/google/build_group_policy_template_unittest.cc" ]
+        data += [
+          "enterprise/win/google/build_group_policy_template_unittest.py",
+          "enterprise/win/google/generate_group_policy_template_admx.py",
+          "test/data/enterprise/win/google/test_gold.admx",
+          "test/data/enterprise/win/google/test_gold.adml",
         ]
       }
 
@@ -923,6 +947,7 @@ if (is_win || is_mac || is_linux) {
 
     if (is_mac) {
       sources += [
+        "app/app_net_worker_unittest.cc",
         "mac/keystone/ksadmin_unittest.cc",
         "mac/privileged_helper/privileged_helper_unittests.mm",
         "mac/setup/keystone_unittest.mm",
@@ -931,6 +956,7 @@ if (is_win || is_mac || is_linux) {
         "mac/setup/wake_task_unittest.mm",
         "policy/mac/managed_preference_policy_manager_impl_unittest.mm",
         "policy/mac/managed_preference_policy_manager_unittest.cc",
+        "test/integration_tests_mac.h",
         "test/integration_tests_mac.mm",
         "util/util_mac_unittest.mm",
       ]
@@ -939,7 +965,9 @@ if (is_win || is_mac || is_linux) {
         ":ks_ticket",
         "//chrome/updater/mac:ksadmin_lib",
         "//chrome/updater/mac:privileged_helper_sources",
+        "//chrome/updater/mac/client_lib:public_sources",
         "//chrome/updater/mac/client_lib:test_sources",
+        "//chrome/updater/net/mac/mojom",
         "//third_party/ocmock",
       ]
 
@@ -969,28 +997,28 @@ if (is_win || is_mac || is_linux) {
         "//chrome/test/data/updater/setup_test_envcheck/.install",
         "//chrome/test/data/updater/setup_test_envcheck/marker.app",
         "//chrome/test/data/updater/updater_qualification_app_dmg.crx",
-        "//third_party/updater/chrome_mac_universal/GoogleUpdater_test.app/Contents/MacOS/GoogleUpdater_test",
-        "//third_party/updater/chrome_mac_universal/GoogleUpdater_test.app/Contents/Info.plist",
-        "//third_party/updater/chrome_mac_universal/GoogleUpdater_test.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/MacOS/GoogleSoftwareUpdate",
-        "//third_party/updater/chrome_mac_universal/GoogleUpdater_test.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/Resources/GoogleSoftwareUpdateAgent.app/Contents/MacOS/GoogleSoftwareUpdateAgent",
-        "//third_party/updater/chrome_mac_universal/GoogleUpdater_test.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/Resources/GoogleSoftwareUpdateAgent.app/Contents/Info.plist",
-        "//third_party/updater/chrome_mac_universal/GoogleUpdater_test.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/Helpers/ksinstall",
-        "//third_party/updater/chrome_mac_universal/GoogleUpdater_test.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/Helpers/ksadmin",
-        "//third_party/updater/chrome_mac_universal/GoogleUpdater_test.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/Info.plist",
-        "//third_party/updater/chrome_mac_universal_prod/GoogleUpdater.app/Contents/CodeResources",
-        "//third_party/updater/chrome_mac_universal_prod/GoogleUpdater.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/Helpers/ksadmin",
-        "//third_party/updater/chrome_mac_universal_prod/GoogleUpdater.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/Helpers/ksinstall",
-        "//third_party/updater/chrome_mac_universal_prod/GoogleUpdater.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/Info.plist",
-        "//third_party/updater/chrome_mac_universal_prod/GoogleUpdater.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/MacOS/GoogleSoftwareUpdate",
-        "//third_party/updater/chrome_mac_universal_prod/GoogleUpdater.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/MacOS/ksadmin",
-        "//third_party/updater/chrome_mac_universal_prod/GoogleUpdater.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/Resources/GoogleSoftwareUpdateAgent.app/Contents/Info.plist",
-        "//third_party/updater/chrome_mac_universal_prod/GoogleUpdater.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/Resources/GoogleSoftwareUpdateAgent.app/Contents/MacOS/GoogleSoftwareUpdateAgent",
-        "//third_party/updater/chrome_mac_universal_prod/GoogleUpdater.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/Resources/GoogleSoftwareUpdateAgent.app/Contents/_CodeSignature",
-        "//third_party/updater/chrome_mac_universal_prod/GoogleUpdater.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/_CodeSignature",
-        "//third_party/updater/chrome_mac_universal_prod/GoogleUpdater.app/Contents/Helpers/launcher",
-        "//third_party/updater/chrome_mac_universal_prod/GoogleUpdater.app/Contents/Info.plist",
-        "//third_party/updater/chrome_mac_universal_prod/GoogleUpdater.app/Contents/MacOS/GoogleUpdater",
-        "//third_party/updater/chrome_mac_universal_prod/GoogleUpdater.app/Contents/_CodeSignature",
+        "//third_party/updater/chrome_mac_universal/cipd/GoogleUpdater_test.app/Contents/MacOS/GoogleUpdater_test",
+        "//third_party/updater/chrome_mac_universal/cipd/GoogleUpdater_test.app/Contents/Info.plist",
+        "//third_party/updater/chrome_mac_universal/cipd/GoogleUpdater_test.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/MacOS/GoogleSoftwareUpdate",
+        "//third_party/updater/chrome_mac_universal/cipd/GoogleUpdater_test.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/Resources/GoogleSoftwareUpdateAgent.app/Contents/MacOS/GoogleSoftwareUpdateAgent",
+        "//third_party/updater/chrome_mac_universal/cipd/GoogleUpdater_test.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/Resources/GoogleSoftwareUpdateAgent.app/Contents/Info.plist",
+        "//third_party/updater/chrome_mac_universal/cipd/GoogleUpdater_test.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/Helpers/ksinstall",
+        "//third_party/updater/chrome_mac_universal/cipd/GoogleUpdater_test.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/Helpers/ksadmin",
+        "//third_party/updater/chrome_mac_universal/cipd/GoogleUpdater_test.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/Info.plist",
+        "//third_party/updater/chrome_mac_universal_prod/cipd/GoogleUpdater.app/Contents/CodeResources",
+        "//third_party/updater/chrome_mac_universal_prod/cipd/GoogleUpdater.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/Helpers/ksadmin",
+        "//third_party/updater/chrome_mac_universal_prod/cipd/GoogleUpdater.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/Helpers/ksinstall",
+        "//third_party/updater/chrome_mac_universal_prod/cipd/GoogleUpdater.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/Info.plist",
+        "//third_party/updater/chrome_mac_universal_prod/cipd/GoogleUpdater.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/MacOS/GoogleSoftwareUpdate",
+        "//third_party/updater/chrome_mac_universal_prod/cipd/GoogleUpdater.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/MacOS/ksadmin",
+        "//third_party/updater/chrome_mac_universal_prod/cipd/GoogleUpdater.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/Resources/GoogleSoftwareUpdateAgent.app/Contents/Info.plist",
+        "//third_party/updater/chrome_mac_universal_prod/cipd/GoogleUpdater.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/Resources/GoogleSoftwareUpdateAgent.app/Contents/MacOS/GoogleSoftwareUpdateAgent",
+        "//third_party/updater/chrome_mac_universal_prod/cipd/GoogleUpdater.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/Resources/GoogleSoftwareUpdateAgent.app/Contents/_CodeSignature",
+        "//third_party/updater/chrome_mac_universal_prod/cipd/GoogleUpdater.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/_CodeSignature",
+        "//third_party/updater/chrome_mac_universal_prod/cipd/GoogleUpdater.app/Contents/Helpers/launcher",
+        "//third_party/updater/chrome_mac_universal_prod/cipd/GoogleUpdater.app/Contents/Info.plist",
+        "//third_party/updater/chrome_mac_universal_prod/cipd/GoogleUpdater.app/Contents/MacOS/GoogleUpdater",
+        "//third_party/updater/chrome_mac_universal_prod/cipd/GoogleUpdater.app/Contents/_CodeSignature",
       ]
 
       data_deps += [
@@ -1000,27 +1028,27 @@ if (is_win || is_mac || is_linux) {
 
       if (target_cpu == "arm64") {
         data += [
-          "//third_party/updater/chromium_mac_arm64/ChromiumUpdater_test.app/Contents/MacOS/ChromiumUpdater_test",
-          "//third_party/updater/chromium_mac_arm64/ChromiumUpdater_test.app/Contents/Info.plist",
-          "//third_party/updater/chromium_mac_arm64/ChromiumUpdater_test.app/Contents/Helpers/ChromiumSoftwareUpdate.bundle/Contents/MacOS/ChromiumSoftwareUpdate",
-          "//third_party/updater/chromium_mac_arm64/ChromiumUpdater_test.app/Contents/Helpers/ChromiumSoftwareUpdate.bundle/Contents/Resources/ChromiumSoftwareUpdateAgent.app/Contents/MacOS/ChromiumSoftwareUpdateAgent",
-          "//third_party/updater/chromium_mac_arm64/ChromiumUpdater_test.app/Contents/Helpers/ChromiumSoftwareUpdate.bundle/Contents/Resources/ChromiumSoftwareUpdateAgent.app/Contents/Info.plist",
-          "//third_party/updater/chromium_mac_arm64/ChromiumUpdater_test.app/Contents/Helpers/ChromiumSoftwareUpdate.bundle/Contents/Helpers/ksinstall",
-          "//third_party/updater/chromium_mac_arm64/ChromiumUpdater_test.app/Contents/Helpers/ChromiumSoftwareUpdate.bundle/Contents/Helpers/ksadmin",
-          "//third_party/updater/chromium_mac_arm64/ChromiumUpdater_test.app/Contents/Helpers/ChromiumSoftwareUpdate.bundle/Contents/Info.plist",
+          "//third_party/updater/chromium_mac_arm64/cipd/ChromiumUpdater_test.app/Contents/MacOS/ChromiumUpdater_test",
+          "//third_party/updater/chromium_mac_arm64/cipd/ChromiumUpdater_test.app/Contents/Info.plist",
+          "//third_party/updater/chromium_mac_arm64/cipd/ChromiumUpdater_test.app/Contents/Helpers/ChromiumSoftwareUpdate.bundle/Contents/MacOS/ChromiumSoftwareUpdate",
+          "//third_party/updater/chromium_mac_arm64/cipd/ChromiumUpdater_test.app/Contents/Helpers/ChromiumSoftwareUpdate.bundle/Contents/Resources/ChromiumSoftwareUpdateAgent.app/Contents/MacOS/ChromiumSoftwareUpdateAgent",
+          "//third_party/updater/chromium_mac_arm64/cipd/ChromiumUpdater_test.app/Contents/Helpers/ChromiumSoftwareUpdate.bundle/Contents/Resources/ChromiumSoftwareUpdateAgent.app/Contents/Info.plist",
+          "//third_party/updater/chromium_mac_arm64/cipd/ChromiumUpdater_test.app/Contents/Helpers/ChromiumSoftwareUpdate.bundle/Contents/Helpers/ksinstall",
+          "//third_party/updater/chromium_mac_arm64/cipd/ChromiumUpdater_test.app/Contents/Helpers/ChromiumSoftwareUpdate.bundle/Contents/Helpers/ksadmin",
+          "//third_party/updater/chromium_mac_arm64/cipd/ChromiumUpdater_test.app/Contents/Helpers/ChromiumSoftwareUpdate.bundle/Contents/Info.plist",
         ]
       }
 
       if (target_cpu == "x64") {
         data += [
-          "//third_party/updater/chromium_mac_amd64/ChromiumUpdater_test.app/Contents/MacOS/ChromiumUpdater_test",
-          "//third_party/updater/chromium_mac_amd64/ChromiumUpdater_test.app/Contents/Info.plist",
-          "//third_party/updater/chromium_mac_amd64/ChromiumUpdater_test.app/Contents/Helpers/ChromiumSoftwareUpdate.bundle/Contents/MacOS/ChromiumSoftwareUpdate",
-          "//third_party/updater/chromium_mac_amd64/ChromiumUpdater_test.app/Contents/Helpers/ChromiumSoftwareUpdate.bundle/Contents/Resources/ChromiumSoftwareUpdateAgent.app/Contents/MacOS/ChromiumSoftwareUpdateAgent",
-          "//third_party/updater/chromium_mac_amd64/ChromiumUpdater_test.app/Contents/Helpers/ChromiumSoftwareUpdate.bundle/Contents/Resources/ChromiumSoftwareUpdateAgent.app/Contents/Info.plist",
-          "//third_party/updater/chromium_mac_amd64/ChromiumUpdater_test.app/Contents/Helpers/ChromiumSoftwareUpdate.bundle/Contents/Helpers/ksinstall",
-          "//third_party/updater/chromium_mac_amd64/ChromiumUpdater_test.app/Contents/Helpers/ChromiumSoftwareUpdate.bundle/Contents/Helpers/ksadmin",
-          "//third_party/updater/chromium_mac_amd64/ChromiumUpdater_test.app/Contents/Helpers/ChromiumSoftwareUpdate.bundle/Contents/Info.plist",
+          "//third_party/updater/chromium_mac_amd64/cipd/ChromiumUpdater_test.app/Contents/MacOS/ChromiumUpdater_test",
+          "//third_party/updater/chromium_mac_amd64/cipd/ChromiumUpdater_test.app/Contents/Info.plist",
+          "//third_party/updater/chromium_mac_amd64/cipd/ChromiumUpdater_test.app/Contents/Helpers/ChromiumSoftwareUpdate.bundle/Contents/MacOS/ChromiumSoftwareUpdate",
+          "//third_party/updater/chromium_mac_amd64/cipd/ChromiumUpdater_test.app/Contents/Helpers/ChromiumSoftwareUpdate.bundle/Contents/Resources/ChromiumSoftwareUpdateAgent.app/Contents/MacOS/ChromiumSoftwareUpdateAgent",
+          "//third_party/updater/chromium_mac_amd64/cipd/ChromiumUpdater_test.app/Contents/Helpers/ChromiumSoftwareUpdate.bundle/Contents/Resources/ChromiumSoftwareUpdateAgent.app/Contents/Info.plist",
+          "//third_party/updater/chromium_mac_amd64/cipd/ChromiumUpdater_test.app/Contents/Helpers/ChromiumSoftwareUpdate.bundle/Contents/Helpers/ksinstall",
+          "//third_party/updater/chromium_mac_amd64/cipd/ChromiumUpdater_test.app/Contents/Helpers/ChromiumSoftwareUpdate.bundle/Contents/Helpers/ksadmin",
+          "//third_party/updater/chromium_mac_amd64/cipd/ChromiumUpdater_test.app/Contents/Helpers/ChromiumSoftwareUpdate.bundle/Contents/Info.plist",
         ]
       }
     }
@@ -1030,7 +1058,7 @@ if (is_win || is_mac || is_linux) {
 
       data += [ "//chrome/test/data/updater/updater_qualification_app.crx" ]
       data_deps += [ "//chrome/updater/linux:updater_test" ]
-      public_configs = [ "linux:libsystemd" ]
+      libs = [ "systemd" ]
     }
 
     if (is_posix) {

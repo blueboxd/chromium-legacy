@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/test/chromedriver/capabilities.h"
 
 #include <map>
@@ -28,6 +33,7 @@
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/constants/version.h"
 #include "chrome/test/chromedriver/logging.h"
+#include "chrome/test/chromedriver/prompt_behavior.h"
 #include "chrome/test/chromedriver/session.h"
 #include "chrome/test/chromedriver/util.h"
 
@@ -491,23 +497,18 @@ Status ParsePageLoadStrategy(const base::Value& option,
   return Status(kInvalidArgument, "invalid 'pageLoadStrategy'");
 }
 
-Status ParseUnhandledPromptBehavior(const base::Value& option,
+Status ParseUnhandledPromptBehavior(bool w3c_compliant,
+                                    const base::Value& option,
                                     Capabilities* capabilities) {
-  if (!option.is_string()) {
-    return Status(kInvalidArgument,
-                  "'unhandledPromptBehavior' must be a string");
+  PromptBehavior unhandled_prompt_behavior(w3c_compliant);
+  Status status =
+      PromptBehavior::Create(w3c_compliant, option, unhandled_prompt_behavior);
+  if (status.IsError()) {
+    return status;
   }
-  capabilities->unhandled_prompt_behavior = option.GetString();
-  if (capabilities->unhandled_prompt_behavior == prompt_behavior::kDismiss ||
-      capabilities->unhandled_prompt_behavior == prompt_behavior::kAccept ||
-      capabilities->unhandled_prompt_behavior ==
-          prompt_behavior::kDismissAndNotify ||
-      capabilities->unhandled_prompt_behavior ==
-          prompt_behavior::kAcceptAndNotify ||
-      capabilities->unhandled_prompt_behavior == prompt_behavior::kIgnore) {
-    return Status(kOk);
-  }
-  return Status(kInvalidArgument, "invalid 'unhandledPromptBehavior'");
+  capabilities->unhandled_prompt_behavior =
+      std::move(unhandled_prompt_behavior);
+  return Status(kOk);
 }
 
 Status ParseTimeouts(const base::Value& option, Capabilities* capabilities) {
@@ -815,7 +816,7 @@ Status ParseWindowTypes(const base::Value& option, Capabilities* capabilities) {
       return Status(kInvalidArgument, "each window type must be a string");
     }
     WebViewInfo::Type type;
-    Status status = WebViewInfo::ParseType(window_type.GetString(), &type);
+    Status status = WebViewInfo::ParseType(window_type.GetString(), type);
     if (status.IsError())
       return status;
     window_types_tmp.insert(type);
@@ -1124,10 +1125,10 @@ Status Capabilities::Parse(const base::Value::Dict& desired_caps,
     // legacy name of "unhandledPromptBehavior", remove when we stop supporting
     // legacy mode.
     parser_map["unexpectedAlertBehaviour"] =
-        base::BindRepeating(&ParseUnhandledPromptBehavior);
+        base::BindRepeating(&ParseUnhandledPromptBehavior, w3c_compliant);
   }
   parser_map["unhandledPromptBehavior"] =
-      base::BindRepeating(&ParseUnhandledPromptBehavior);
+      base::BindRepeating(&ParseUnhandledPromptBehavior, w3c_compliant);
 
   // W3C defined extension capabilities.
   // See https://w3c.github.io/webauthn/#sctn-automation-webdriver-capability

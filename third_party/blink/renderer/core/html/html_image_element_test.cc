@@ -8,6 +8,7 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
@@ -241,11 +242,30 @@ TEST_F(HTMLImageElementSimTest,
       << ConsoleMessages().front();
 }
 
-TEST_F(HTMLImageElementSimTest, OnloadTransparentPlaceholderImage) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      features::kSimplifyLoadingTransparentPlaceholderImage);
+class TransparentPlaceholderImageSimTest
+    : public SimTest,
+      public ::testing::WithParamInterface<bool> {
+ protected:
+  void SetUp() override {
+    SimTest::SetUp();
+    if (GetParam()) {
+      feature_list_.InitAndEnableFeature(
+          features::kSimplifyLoadingTransparentPlaceholderImage);
+    } else {
+      feature_list_.InitAndDisableFeature(
+          features::kSimplifyLoadingTransparentPlaceholderImage);
+    }
+  }
 
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(TransparentPlaceholderImageSimTest,
+                         TransparentPlaceholderImageSimTest,
+                         testing::Bool());
+
+TEST_P(TransparentPlaceholderImageSimTest, OnloadTransparentPlaceholderImage) {
   SimRequest main_resource("http://example.com/index.html", "text/html");
   LoadURL("http://example.com/index.html");
   main_resource.Complete(R"(
@@ -260,6 +280,28 @@ TEST_F(HTMLImageElementSimTest, OnloadTransparentPlaceholderImage) {
   // Ensure that both body and image are successfully loaded.
   EXPECT_TRUE(ConsoleMessages().Contains("main body onload"));
   EXPECT_TRUE(ConsoleMessages().Contains("image element onload"));
+}
+
+TEST_P(TransparentPlaceholderImageSimTest,
+       CurrentSrcForTransparentPlaceholderImage) {
+  const String image_source =
+      "data:image/gif;base64,R0lGODlhAQABAIAAAP///////"
+      "yH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+
+  SimRequest main_resource("http://example.com/index.html", "text/html");
+  LoadURL("http://example.com/index.html");
+  main_resource.Complete(R"(
+    <img id="myimg" src=)" +
+                         image_source + R"(>
+    <script>
+      console.log(myimg.currentSrc);
+    </script>)");
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  // Ensure that currentSrc is correctly set as the image source.
+  EXPECT_TRUE(ConsoleMessages().Contains(image_source));
 }
 
 class HTMLImageElementUseCounterTest : public HTMLImageElementTest {

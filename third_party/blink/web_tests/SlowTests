@@ -1,4 +1,4 @@
-# tags: [ Android Fuchsia Linux Mac Mac10.15 Mac11 Mac11-arm64 Mac12 Mac12-arm64 Mac13 Mac13-arm64 Mac14 Mac14-arm64 Win Win10.20h2 Win11 Win11-arm64 ]
+# tags: [ Android Fuchsia Linux Mac Mac11 Mac11-arm64 Mac12 Mac12-arm64 Mac13 Mac13-arm64 Mac14 Mac14-arm64 Win Win10.20h2 Win11 Win11-arm64 ]
 # tags: [ Release Debug ]
 # results: [ Slow ]
 
@@ -678,7 +678,6 @@ crbug.com/874695 [ Mac11 Release ] http/tests/inspector-protocol/accessibility/a
 crbug.com/874695 [ Mac12 Release ] http/tests/inspector-protocol/accessibility/accessibility-nameSources-input-buttons.js [ Slow ]
 crbug.com/874695 [ Mac13 Release ] http/tests/inspector-protocol/accessibility/accessibility-nameSources-input-buttons.js [ Slow ]
 crbug.com/874695 [ Win ] http/tests/inspector-protocol/accessibility/accessibility-nameSources-input-buttons.js [ Slow ]
-crbug.com/874695 inspector-protocol/debugger/debugger-evaluate-in-worker-while-pause-in-page.js [ Slow ]
 crbug.com/874695 [ Release ] media/audio-controls-do-not-fade-out.html [ Slow ]
 crbug.com/874695 media/autoplay-muted.html [ Slow ]
 crbug.com/874695 media/color-profile-video-seek-filter.html [ Slow ]
@@ -985,7 +984,7 @@ crbug.com/991243 [ Linux ] external/wpt/workers/semantics/multiple-workers/003.h
 crbug.com/999799 [ Mac11 Release ] external/wpt/html/rendering/dimension-attributes.html [ Slow ]
 crbug.com/999799 [ Mac12 ] external/wpt/html/rendering/dimension-attributes.html [ Slow ]
 crbug.com/999799 [ Linux ] external/wpt/html/rendering/dimension-attributes.html [ Slow ]
-crbug.com/990900 external/wpt/cookie-store/idlharness.tentative.https.any.serviceworker.html [ Slow ]
+crbug.com/990900 external/wpt/cookie-store/idlharness.https.any.serviceworker.html [ Slow ]
 crbug.com/1014327 [ Mac Release ] external/wpt/preload/onerror-event.html [ Slow ]
 crbug.com/1017626 [ Linux ] external/wpt/compat/idlharness.window.html [ Slow ]
 crbug.com/1019662 external/wpt/html/dom/idlharness.worker.html [ Slow ]
@@ -1269,7 +1268,7 @@ crbug.com/1195814 [ Mac11 Release ] external/wpt/IndexedDB/idb-explicit-commit.a
 crbug.com/1195814 [ Mac12 Release ] external/wpt/IndexedDB/idb-explicit-commit.any.html [ Slow ]
 crbug.com/1195814 [ Mac12-arm64 Release ] external/wpt/IndexedDB/idb-explicit-commit.any.html [ Slow ]
 crbug.com/1195814 [ Mac13 Release ] external/wpt/IndexedDB/idb-explicit-commit.any.html [ Slow ]
-crbug.com/1418947 [ Mac ] virtual/third-party-storage-partitioning/external/wpt/IndexedDB/idb-partitioned-coverage.tentative.sub.html [ Slow ]
+crbug.com/1418947 [ Mac ] virtual/third-party-storage-partitioning/external/wpt/IndexedDB/idb-partitioned-coverage.sub.html [ Slow ]
 
 crbug.com/1263580 editing/deleting/delete-many-lines-of-text.html [ Slow ]
 
@@ -1326,7 +1325,7 @@ crbug.com/1381545 [ Mac12-arm64 Release ] virtual/wasm-code-caching/http/tests/w
 crbug.com/1381545 [ Release Win ] virtual/wasm-code-caching/http/tests/wasm/caching/code-cache.html [ Slow ]
 
 crbug.com/1410608 http/tests/inspector-protocol/storage/dom-storage-set-items-by-storage-key.js [ Slow ]
-
+crbug.com/349636595 inspector-protocol/layout-fonts/generic-font-families.js [ Slow ]
 
 crbug.com/1376679 [ Mac12 Release ] virtual/threaded/external/wpt/scroll-animations/css/scroll-timeline-dynamic.tentative.html [ Slow ]
 crbug.com/1450858 virtual/threaded/external/wpt/scroll-animations/css/animation-timeline-view-functional-notation.tentative.html [ Slow ]
@@ -1341,24 +1340,19 @@ crbug.com/1412278 [ Debug Linux ] http/tests/inspector-protocol/issues/third-par
 crbug.com/1412278 [ Debug Mac13 ] http/tests/inspector-protocol/issues/third-party-cookie-blocking-first-party-set-enabled.js [ Slow ]
 crbug.com/1412278 [ Release ] http/tests/inspector-protocol/issues/third-party-cookie-blocking-first-party-set-enabled.js [ Slow ]
 
-crbug.com/1404951 [ Debug Mac ] external/wpt/credential-management/fedcm-iframe.https.html [ Slow ]
-crbug.com/1404951 [ Linux ] external/wpt/credential-management/fedcm-iframe.https.html [ Slow ]
-crbug.com/1404951 [ Mac11 Release ] external/wpt/credential-management/fedcm-iframe.https.html [ Slow ]
-crbug.com/1404951 [ Mac12 Release ] external/wpt/credential-management/fedcm-iframe.https.html [ Slow ]
-crbug.com/1404951 [ Mac13 Release ] external/wpt/credential-management/fedcm-iframe.https.html [ Slow ]
-crbug.com/1404951 [ Release Win ] external/wpt/credential-management/fedcm-iframe.https.html [ Slow ]
-crbug.com/1494119 [ Debug Mac13-arm64 ] virtual/fedcm-login-status/external/wpt/credential-management/fedcm-login-status/confirm-idp-login.https.html [ Slow ]
-crbug.com/1494119 [ Linux ] virtual/fedcm-login-status/external/wpt/credential-management/fedcm-login-status/confirm-idp-login.https.html [ Slow ]
-crbug.com/1494119 [ Mac11 Release ] virtual/fedcm-login-status/external/wpt/credential-management/fedcm-login-status/confirm-idp-login.https.html [ Slow ]
-crbug.com/1494119 [ Mac12 Release ] virtual/fedcm-login-status/external/wpt/credential-management/fedcm-login-status/confirm-idp-login.https.html [ Slow ]
-crbug.com/1494119 [ Mac13 ] virtual/fedcm-login-status/external/wpt/credential-management/fedcm-login-status/confirm-idp-login.https.html [ Slow ]
-crbug.com/1494119 [ Win ] virtual/fedcm-login-status/external/wpt/credential-management/fedcm-login-status/confirm-idp-login.https.html [ Slow ]
-crbug.com/1489239 [ Debug Mac13-arm64 ] virtual/fedcm-authz/external/wpt/credential-management/fedcm-authz/fedcm-continue-on.https.html [ Slow ]
-crbug.com/1489239 [ Linux ] virtual/fedcm-authz/external/wpt/credential-management/fedcm-authz/fedcm-continue-on.https.html [ Slow ]
-crbug.com/1489239 [ Mac11 Release ] virtual/fedcm-authz/external/wpt/credential-management/fedcm-authz/fedcm-continue-on.https.html [ Slow ]
-crbug.com/1489239 [ Mac12 Release ] virtual/fedcm-authz/external/wpt/credential-management/fedcm-authz/fedcm-continue-on.https.html [ Slow ]
-crbug.com/1489239 [ Mac13 ] virtual/fedcm-authz/external/wpt/credential-management/fedcm-authz/fedcm-continue-on.https.html [ Slow ]
-crbug.com/1489239 [ Release Win ] virtual/fedcm-authz/external/wpt/credential-management/fedcm-authz/fedcm-continue-on.https.html [ Slow ]
+crbug.com/1404951 [ Debug Mac ] external/wpt/fedcm/fedcm-iframe.https.html [ Slow ]
+crbug.com/1404951 [ Linux ] external/wpt/fedcm/fedcm-iframe.https.html [ Slow ]
+crbug.com/1404951 [ Mac11 Release ] external/wpt/fedcm/fedcm-iframe.https.html [ Slow ]
+crbug.com/1404951 [ Mac12 Release ] external/wpt/fedcm/fedcm-iframe.https.html [ Slow ]
+crbug.com/1404951 [ Mac13 Release ] external/wpt/fedcm/fedcm-iframe.https.html [ Slow ]
+crbug.com/1404951 [ Release Win ] external/wpt/fedcm/fedcm-iframe.https.html [ Slow ]
+crbug.com/1494119 external/wpt/fedcm/fedcm-login-status/confirm-idp-login.https.html [ Slow ]
+crbug.com/1489239 [ Debug Mac13-arm64 ] virtual/fedcm-authz/external/wpt/fedcm/fedcm-authz/fedcm-continue-on.https.html [ Slow ]
+crbug.com/1489239 [ Linux ] virtual/fedcm-authz/external/wpt/fedcm/fedcm-authz/fedcm-continue-on.https.html [ Slow ]
+crbug.com/1489239 [ Mac11 Release ] virtual/fedcm-authz/external/wpt/fedcm/fedcm-authz/fedcm-continue-on.https.html [ Slow ]
+crbug.com/1489239 [ Mac12 Release ] virtual/fedcm-authz/external/wpt/fedcm/fedcm-authz/fedcm-continue-on.https.html [ Slow ]
+crbug.com/1489239 [ Mac13 ] virtual/fedcm-authz/external/wpt/fedcm/fedcm-authz/fedcm-continue-on.https.html [ Slow ]
+crbug.com/1489239 [ Release Win ] virtual/fedcm-authz/external/wpt/fedcm/fedcm-authz/fedcm-continue-on.https.html [ Slow ]
 
 # Slow because it contains thousands of subtests
 crbug.com/1423483 [ Linux ] external/wpt/css/css-color/parsing/color-computed-hsl.html [ Slow ]
@@ -1462,4 +1456,22 @@ crbug.com/327390559 [ Win11-arm64 ] virtual/keepalive-in-browser-migration/exter
 crbug.com/328860404 virtual/disable-intersection-optimization/external/wpt/html/semantics/embedded-content/the-iframe-element/sandbox-top-navigation-escalate-privileges.tentative.sub.window.html [ Slow ]
 crbug.com/328849073 virtual/no-auto-wpt-origin-isolation/external/wpt/html/semantics/embedded-content/the-iframe-element/sandbox-top-navigation-escalate-privileges.tentative.sub.window.html [ Slow ]
 
+crbug.com/350628679 [ Mac ] external/wpt/css/css-sizing/min-content-negative-margin-crash.html [ Slow ]
+crbug.com/350628679 [ Mac ] external/wpt/css/css-tables/crashtests/textarea-intrinsic-size-crash.html [ Slow ]
+
 crbug.com/328501805 external/wpt/html/semantics/interactive-elements/the-summary-element/interactive-content.html [ Slow ]
+
+# Slow because the test is huge
+crbug.com/352097024 external/wpt/service-workers/service-worker/same-site-cookies.https.html [ Slow ]
+crbug.com/352097024 virtual/plz-dedicated-worker-disabled/external/wpt/service-workers/service-worker/same-site-cookies.https.html [ Slow ]
+
+crbug.com/341380030 [ Mac ] external/wpt/css/css-pseudo/text-selection.html [ Slow ]
+
+crbug.com/352489143 virtual/third-party-storage-partitioning/external/wpt/IndexedDB/interleaved-cursors-large.html [ Slow ]
+
+crbug.com/349639998 virtual/attribution-reporting-aggregatable-debug/external/wpt/attribution-reporting/aggregatable-debug/simple-source-aggregatable-debug-report.sub.https.html [ Slow ]
+crbug.com/349639998 virtual/attribution-reporting-aggregatable-debug/external/wpt/attribution-reporting/aggregatable-debug/simple-trigger-aggregatable-debug-report.sub.https.html [ Slow ]
+
+crbug.com/351944362 external/wpt/fetch/metadata/generated/element-iframe.https.sub.html [ Slow ]
+
+crbug.com/354579691 fast/events/touch/gesture/long-press-drag-drop-touch-editing-combined-in-iframe.html [ Slow ]

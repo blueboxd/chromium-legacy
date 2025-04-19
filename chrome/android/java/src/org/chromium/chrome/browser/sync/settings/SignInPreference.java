@@ -18,7 +18,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.signin.SigninAndHistoryOptInActivityLauncherImpl;
+import org.chromium.chrome.browser.signin.SigninAndHistorySyncActivityLauncherImpl;
 import org.chromium.chrome.browser.signin.SyncConsentActivityLauncherImpl;
 import org.chromium.chrome.browser.signin.services.DisplayableProfileData;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
@@ -27,7 +27,7 @@ import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.signin.services.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.sync.SyncServiceFactory;
 import org.chromium.chrome.browser.sync.settings.SyncSettingsUtils.SyncError;
-import org.chromium.chrome.browser.ui.signin.SigninAndHistoryOptInCoordinator;
+import org.chromium.chrome.browser.ui.signin.SigninAndHistorySyncCoordinator;
 import org.chromium.chrome.browser.ui.signin.account_picker.AccountPickerBottomSheetStrings;
 import org.chromium.components.browser_ui.settings.ManagedPreferencesUtils;
 import org.chromium.components.prefs.PrefService;
@@ -71,6 +71,7 @@ public class SignInPreference extends Preference
     public SignInPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
         setLayoutResource(R.layout.account_management_account_row);
+        setViewId(R.id.account_management_account_row);
         mIsShowingSigninPromo = false;
     }
 
@@ -154,10 +155,17 @@ public class SignInPreference extends Preference
     }
 
     private void setupSigninDisabledByPolicy() {
-        setTitle(R.string.sync_promo_turn_on_sync);
-        setSummary(R.string.sign_in_to_chrome_disabled_summary);
         setFragment(null);
-        setIcon(ManagedPreferencesUtils.getManagedByEnterpriseIconId());
+        if (ChromeFeatureList.isEnabled(
+                ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)) {
+            setTitle(R.string.signin_settings_title);
+            setSummary(R.string.settings_signin_disabled_by_administrator);
+            setIcon(R.drawable.ic_business_small_with_bg);
+        } else {
+            setTitle(R.string.sync_promo_turn_on_sync);
+            setSummary(R.string.sign_in_to_chrome_disabled_summary);
+            setIcon(ManagedPreferencesUtils.getManagedByEnterpriseIconId());
+        }
         setViewEnabledAndShowAlertIcon(/* enabled= */ false, /* alertIconVisible= */ false);
         setOnPreferenceClickListener(
                 pref -> {
@@ -182,7 +190,14 @@ public class SignInPreference extends Preference
         }
 
         setFragment(null);
-        setIcon(AppCompatResources.getDrawable(getContext(), R.drawable.logo_avatar_anonymous));
+        if (ChromeFeatureList.isEnabled(
+                ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)) {
+            setIcon(
+                    AppCompatResources.getDrawable(
+                            getContext(), R.drawable.account_circle_with_bg));
+        } else {
+            setIcon(AppCompatResources.getDrawable(getContext(), R.drawable.logo_avatar_anonymous));
+        }
         setViewEnabledAndShowAlertIcon(/* enabled= */ true, /* alertIconVisible= */ false);
         OnPreferenceClickListener clickListener =
                 pref -> {
@@ -192,16 +207,16 @@ public class SignInPreference extends Preference
                                 new AccountPickerBottomSheetStrings.Builder(
                                                 R.string.signin_account_picker_bottom_sheet_title)
                                         .build();
-                        SigninAndHistoryOptInActivityLauncherImpl.get()
+                        SigninAndHistorySyncActivityLauncherImpl.get()
                                 .launchActivityIfAllowed(
                                         getContext(),
                                         mProfile,
                                         bottomSheetStrings,
-                                        SigninAndHistoryOptInCoordinator.NoAccountSigninMode
+                                        SigninAndHistorySyncCoordinator.NoAccountSigninMode
                                                 .BOTTOM_SHEET,
-                                        SigninAndHistoryOptInCoordinator.WithAccountSigninMode
+                                        SigninAndHistorySyncCoordinator.WithAccountSigninMode
                                                 .DEFAULT_ACCOUNT_BOTTOM_SHEET,
-                                        SigninAndHistoryOptInCoordinator.HistoryOptInMode.OPTIONAL,
+                                        SigninAndHistorySyncCoordinator.HistoryOptInMode.OPTIONAL,
                                         SigninAccessPoint.SETTINGS);
                     } else {
                         SyncConsentActivityLauncherImpl.get()

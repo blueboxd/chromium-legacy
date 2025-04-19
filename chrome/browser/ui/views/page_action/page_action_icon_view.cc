@@ -22,6 +22,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
@@ -52,9 +53,9 @@ bool PageActionIconView::Delegate::ShouldHidePageActionIcons() const {
   return false;
 }
 
-const OmniboxView* PageActionIconView::Delegate::GetOmniboxView() const {
-  // Should not reach here: should call subclass's implementation.
-  NOTREACHED_NORETURN();
+bool PageActionIconView::Delegate::ShouldHidePageActionIcon(
+    PageActionIconView* icon_view) const {
+  return false;
 }
 
 PageActionIconView::PageActionIconView(
@@ -63,7 +64,8 @@ PageActionIconView::PageActionIconView(
     IconLabelBubbleView::Delegate* parent_delegate,
     PageActionIconView::Delegate* delegate,
     const char* name_for_histograms,
-    actions::ActionId action_id,
+    std::optional<actions::ActionId> action_id,
+    Browser* browser,
     bool ephemeral,
     const gfx::FontList& font_list)
     : IconLabelBubbleView(font_list, parent_delegate),
@@ -72,7 +74,8 @@ PageActionIconView::PageActionIconView(
       command_id_(command_id),
       action_id_(action_id),
       name_for_histograms_(name_for_histograms),
-      ephemeral_(ephemeral) {
+      ephemeral_(ephemeral),
+      browser_(browser) {
   DCHECK(delegate_);
 
   image_container_view()->SetFlipCanvasOnPaintForRTLUI(true);
@@ -123,7 +126,7 @@ void PageActionIconView::InstallLoadingIndicatorForTesting() {
 }
 
 std::u16string PageActionIconView::GetTextForTooltipAndAccessibleName() const {
-  return GetAccessibleName();
+  return GetViewAccessibility().GetCachedName();
 }
 
 std::u16string PageActionIconView::GetTooltipText(const gfx::Point& p) const {
@@ -275,9 +278,8 @@ void PageActionIconView::UpdateIconImage() {
   // Fall back to the vector icon if no icon image was provided.
   SkColor icon_color =
       active_ ? views::GetCascadingAccentColor(this) : icon_color_;
-  if (GetCustomForegroundColorId().has_value()) {
-    icon_color =
-        GetColorProvider()->GetColor(GetCustomForegroundColorId().value());
+  if (IconColorShouldMatchForeground()) {
+    icon_color = GetForegroundColor();
   }
   const gfx::ImageSkia image = gfx::CreateVectorIconWithBadge(
       GetVectorIcon(), icon_size, icon_color, GetVectorIconBadge());
@@ -320,7 +322,7 @@ void PageActionIconView::InstallLoadingIndicator() {
 }
 
 void PageActionIconView::SetVisible(bool visible) {
-  bool was_visible = GetVisible();
+  const bool was_visible = GetVisible();
   IconLabelBubbleView::SetVisible(visible);
   if (!was_visible && visible) {
     for (PageActionIconViewObserver& observer : observer_list_) {

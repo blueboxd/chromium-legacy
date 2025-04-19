@@ -99,6 +99,12 @@ void HTMLLinkElement::ParseAttribute(
     }
     if (rel_attribute_.IsPayment() && GetDocument().IsInOutermostMainFrame()) {
       UseCounter::Count(&GetDocument(), WebFeature::kLinkRelPayment);
+#if BUILDFLAG(IS_ANDROID)
+      if (RuntimeEnabledFeatures::PaymentLinkDetectionEnabled()) {
+        GetDocument().HandlePaymentLink(
+            GetNonEmptyURLAttribute(html_names::kHrefAttr));
+      }
+#endif
     }
     rel_list_->DidUpdateAttributeValue(params.old_value, value);
     Process();
@@ -445,8 +451,9 @@ bool HTMLLinkElement::MediaQueryMatches() const {
   if (LocalFrame* frame = GetDocument().GetFrame(); frame && !media_.empty()) {
     auto* media_queries =
         MediaQuerySet::Create(media_, GetDocument().GetExecutionContext());
-    MediaQueryEvaluator evaluator(frame);
-    return evaluator.Eval(*media_queries);
+    MediaQueryEvaluator* evaluator =
+        MakeGarbageCollected<MediaQueryEvaluator>(frame);
+    return evaluator->Eval(*media_queries);
   }
   return true;
 }

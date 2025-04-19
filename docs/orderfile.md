@@ -1,8 +1,16 @@
 # Orderfile
 
-An orderfile is a list of symbols that defines an ordering of functions which is
-respected by the linker when generating a binary. It can improve performance by
-reducing the number of random reads and improving the usefulness of readahead.
+An orderfile is a list of symbols that defines an ordering of functions. One can
+make a static linker, such as LLD, respect this ordering when generating a
+binary.
+
+Reordering code this way can improve startup performance by fetching machine
+code to memory more efficiently, since it requires fetching fewer pages from
+disk, and a big part of the I/O work is done sequentially by the readahead.
+
+Code reordering can also improve memory usage by keeping the used code in a
+smaller number of memory pages. It can also reduce TLB and L1i cache misses by
+placing functions commonly called together closely in memory.
 
 ## Generating Orderfiles Manually
 
@@ -39,36 +47,54 @@ be added to the local branch and uploaded to Gerrit along with
 `build/config/compiler/BUILD.gn`. This Gerrit change can then be used as an
 "experiment patch" for a Pinpoint try job.
 
+## Triaging Performance Regressions
+
+Occasionally, an orderfile roll will cause performance problems on perfbots.
+This typically triggers an alert in the form of a bug report, which contains a
+group of related regressions like the one shown
+[here](https://crbug.com/344654892).
+
+In such cases it is important to keep in mind that effectiveness of the
+orderfile is coupled with using a recent PGO profile when building the native
+code. As a result some orderfile improvements (or effective no-ops) register as
+regressions on perfbots using non-PGO builds, which is the most common perfbot
+configuration.
+
+If a new regression does not include alerts from the
+[android-pixel6-perf-pgo](https://ci.chromium.org/ui/p/chrome/builders/luci.chrome.ci/android-pixel6-perf-pgo)
+(the only Android PGO perfbot as of 2024-06) then the first thing to check is to
+query the same benchmark+metric combinations for the PGO bot. If the graphs
+demonstrate no regression, feel free to close the issue as WontFix(Intended
+Behavior). However, not all benchmarks are exercised on the PGO bot
+continuously. If there is no PGO coverage for a particular benchmark+metric
+combination, this combination can be checked on Pinpoint with the right perfbot
+choice ([example](https://crbug.com/344665295)).
+
+Finally, the PGO+orderfile coupling exists only on arm64. Most speed
+optimization efforts on Android are focused on this configuration. On arm32 the
+most important orderfile optimization is for reducing memory used by machine
+code. Only one benchmark measures it: `system_health.memory_mobile`.
+
 ## Orderfile Pipeline
 
 The `orderfile_generator_backend.py` script runs several key steps:
 
 1. **Build and install Chrome with orderfile instrumentation.** This uses the
-[`-finstrument-function-entry-bare`](https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html#index-finstrument-functions)
-gcc flag to insert instrumentation for function entry. The build will be
-generated in `out/arm_instrumented_out/` or `out/arm64_instrumented_out`,
-depending on the architecture.
-
+[`-finstrument-function-entry-bare`](https://clang.llvm.org/docs/ClangCommandLineReference.html#cmdoption-clang-finstrument-function-entry-bare)
+Clang command line option to insert instrumentation for function entry. The
+build will be generated in `out/arm_instrumented_out/` or
+`out/arm64_instrumented_out`, depending on the CPU architecture (instruction
+set).
 
 2. **Run the benchmarks and collect profiles.** These benchmarks can be found
 in [orderfile.py](../tools/perf/contrib/orderfile/orderfile.py). These profiles
 are a list of function offsets into the binary that were called during execution
 of the benchmarks.
 
-3. **Cluster the symbols from the profiles to generate the unpatched orderfile.**
+3. **Cluster the symbols from the profiles to generate the orderfile.**
 The offsets are processed and merged using a
 [clustering](../tools/cygprofile/cluster.py) algorithm to produce an orderfile.
 
-4. **Build an uninstrumented Chrome and patch the orderfile with it.** The
-orderfile based on an instrumented build cannot be applied directly to an
-uninstrumented build. The orderfile needs to be
-[patched](../tools/cygprofile/patch_orderfile.py) with an uninstrumented build
-because the instrumentation has a non-trivial impact on inlining decisions and
-has identical code folding disabled. The patching step produces the final
-orderfile which will be in `clank/orderfiles/` for internal builds, or in
-`orderfiles/` if running the generator script with `--public`. The
-uninstrumented build will be in `out/orderfile_arm64_uninstrumented_out`.
-
-5. **Run benchmarks on the final orderfile.** We run some benchmarks to compare
+4. **Run benchmarks on the final orderfile.** We run some benchmarks to compare
 the performance with/without the orderfile. You can supply the `--no-benchmark`
 flag to skip this step.

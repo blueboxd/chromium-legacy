@@ -22,6 +22,7 @@
 #include "ash/system/video_conference/video_conference_utils.h"
 #include "base/check_is_test.h"
 #include "base/check_op.h"
+#include "base/command_line.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -37,6 +38,7 @@
 #include "components/prefs/pref_service.h"
 #include "media/capture/video/chromeos/camera_hal_dispatcher_impl.h"
 #include "media/capture/video/chromeos/mojom/cros_camera_service.mojom-shared.h"
+#include "media/capture/video/chromeos/video_capture_features_chromeos.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image_util.h"
 #include "ui/gfx/vector_icon_types.h"
@@ -373,6 +375,21 @@ void SetBackgroundReplaceUiVisible(bool visible) {
   }
 }
 
+cros::mojom::InferenceBackend GetInferenceBackend(
+    const base::Feature& feature) {
+  const std::string value =
+      GetFieldTrialParamValueByFeature(feature, "inference_backend");
+  if (value == "GPU") {
+    return cros::mojom::InferenceBackend::kGpu;
+  } else if (value == "NPU") {
+    return cros::mojom::InferenceBackend::kNpu;
+  } else {
+    // If the feature is disabled, or enabled without a specific value, we will
+    // get an empty string and fall into this case.
+    return cros::mojom::InferenceBackend::kDefaultValue;
+  }
+}
+
 }  // namespace
 
 // static
@@ -426,8 +443,8 @@ CameraEffectsController::CameraEffectsController()
 
   // The effects are not applied when this is constructed, observe for changes
   // that will come later.
-  media::CameraHalDispatcherImpl::GetInstance()->AddCameraEffectObserver(
-      this, base::DoNothing());
+  scoped_camera_effect_observation_.Observe(
+      media::CameraHalDispatcherImpl::GetInstance());
 
   Shell::Get()->autozoom_controller()->AddObserver(this);
 }
@@ -442,8 +459,6 @@ CameraEffectsController::~CameraEffectsController() {
   }
 
   Shell::Get()->autozoom_controller()->RemoveObserver(this);
-  media::CameraHalDispatcherImpl::GetInstance()->RemoveCameraEffectObserver(
-      this);
 }
 
 cros::mojom::EffectsConfigPtr CameraEffectsController::GetCameraEffects() {
@@ -570,7 +585,11 @@ void CameraEffectsController::OnActiveUserSessionChanged(
     const AccountId& account_id) {
   is_eligible_for_background_replace_ =
       features::IsVcBackgroundReplaceEnabled() &&
-      Shell::Get()->session_controller()->IsEligibleForSeaPen(account_id);
+      std::get<0>(
+          Shell::Get()->session_controller()->IsEligibleForSeaPen(account_id));
+
+  is_background_replace_disabled_by_enterprise_ = !std::get<1>(
+      Shell::Get()->session_controller()->IsEligibleForSeaPen(account_id));
 
   const base::FilePath profile_path =
       Shell::Get()->session_controller()->GetProfilePath(account_id);
@@ -629,6 +648,7 @@ std::optional<int> CameraEffectsController::GetEffectState(
       return Shell::Get()->autozoom_controller()->GetState() !=
              cros::mojom::CameraAutoFramingState::OFF;
     case VcEffectId::kNoiseCancellation:
+    case VcEffectId::kStyleTransfer:
     case VcEffectId::kLiveCaption:
     case VcEffectId::kTestEffect:
       NOTREACHED_IN_MIGRATION();
@@ -685,6 +705,7 @@ void CameraEffectsController::OnEffectControlActivated(
       break;
     }
     case VcEffectId::kNoiseCancellation:
+    case VcEffectId::kStyleTransfer:
     case VcEffectId::kLiveCaption:
     case VcEffectId::kTestEffect:
       NOTREACHED_IN_MIGRATION();
@@ -809,6 +830,11 @@ void CameraEffectsController::SetCameraEffects(
   if (intensity > 0.0) {
     config->light_intensity = intensity;
   }
+
+  config->segmentation_inference_backend =
+      GetInferenceBackend(ash::features::kVcSegmentationInferenceBackend);
+  config->relighting_inference_backend =
+      GetInferenceBackend(ash::features::kVcRelightingInferenceBackend);
 
   if (config->replace_enabled &&
       config->background_filepath != current_effects_->background_filepath) {
@@ -975,18 +1001,21 @@ void CameraEffectsController::InitializeEffectControls() {
         effect.get(), kVideoConferenceBackgroundBlurOffIcon,
         /*state_value=*/BackgroundBlurPrefValue::kOff,
         /*string_id=*/IDS_ASH_VIDEO_CONFERENCE_BUBBLE_BACKGROUND_BLUR_OFF,
-        video_conference::BubbleViewID::kBackgroundBlurOffButton);
+        video_conference::BubbleViewID::kBackgroundBlurOffButton,
+        /*is_disabled_by_enterprise=*/false);
     AddBackgroundBlurStateToEffect(
         effect.get(), kVideoConferenceBackgroundBlurLightIcon,
         /*state_value=*/BackgroundBlurPrefValue::kLight,
         /*string_id=*/IDS_ASH_VIDEO_CONFERENCE_BUBBLE_BACKGROUND_BLUR_LIGHT,
-        video_conference::BubbleViewID::kBackgroundBlurLightButton);
+        video_conference::BubbleViewID::kBackgroundBlurLightButton,
+        /*is_disabled_by_enterprise=*/false);
     AddBackgroundBlurStateToEffect(
         effect.get(), kVideoConferenceBackgroundBlurMaximumIcon,
         /*state_value=*/BackgroundBlurPrefValue::kMaximum,
         /*string_id=*/
         IDS_ASH_VIDEO_CONFERENCE_BUBBLE_BACKGROUND_BLUR_FULL,
-        video_conference::BubbleViewID::kBackgroundBlurFullButton);
+        video_conference::BubbleViewID::kBackgroundBlurFullButton,
+        /*is_disabled_by_enterprise=*/false);
 
     if (is_eligible_for_background_replace_) {
       AddBackgroundBlurStateToEffect(
@@ -994,7 +1023,9 @@ void CameraEffectsController::InitializeEffectControls() {
           /*state_value=*/BackgroundBlurPrefValue::kImage,
           /*string_id=*/
           IDS_ASH_VIDEO_CONFERENCE_BUBBLE_BACKGROUND_BLUR_IMAGE,
-          video_conference::BubbleViewID::kBackgroundBlurImageButton);
+          video_conference::BubbleViewID::kBackgroundBlurImageButton,
+          /*is_disabled_by_enterprise=*/
+          is_background_replace_disabled_by_enterprise_);
     }
     effect->set_dependency_flags(VcHostedEffect::ResourceDependency::kCamera);
     AddEffect(std::move(effect));
@@ -1011,11 +1042,25 @@ void CameraEffectsController::InitializeEffectControls() {
                             VcEffectId::kPortraitRelighting),
         /*effect_id=*/VcEffectId::kPortraitRelighting);
 
+    const base::CommandLine* command_line =
+        base::CommandLine::ForCurrentProcess();
+    std::string face_retouch_override = command_line->GetSwitchValueASCII(
+        media::switches::kFaceRetouchOverride);
+    bool is_studio_look_enabled =
+        face_retouch_override ==
+            media::switches::kFaceRetouchForceEnabledWithRelighting ||
+        face_retouch_override ==
+            media::switches::kFaceRetouchForceEnabledWithoutRelighting;
+
     auto effect_state = std::make_unique<VcEffectState>(
-        /*icon=*/&kVideoConferencePortraitRelightOnIcon,
+        /*icon=*/is_studio_look_enabled
+            ? &kVideoConferenceStudioLookIcon
+            : &kVideoConferencePortraitRelightOnIcon,
         /*label_text=*/
         l10n_util::GetStringUTF16(
-            IDS_ASH_VIDEO_CONFERENCE_BUBBLE_PORTRAIT_RELIGHT_NAME),
+            is_studio_look_enabled
+                ? IDS_ASH_VIDEO_CONFERENCE_BUBBLE_STUDIO_LOOK_NAME
+                : IDS_ASH_VIDEO_CONFERENCE_BUBBLE_PORTRAIT_RELIGHT_NAME),
         /*accessible_name_id=*/
         IDS_ASH_VIDEO_CONFERENCE_BUBBLE_PORTRAIT_RELIGHT_NAME,
         /*button_callback=*/
@@ -1042,7 +1087,8 @@ void CameraEffectsController::AddBackgroundBlurStateToEffect(
     const gfx::VectorIcon& icon,
     int state_value,
     int string_id,
-    int view_id) {
+    int view_id,
+    bool is_disabled_by_enterprise) {
   DCHECK(effect);
   effect->AddState(std::make_unique<VcEffectState>(
       &icon,
@@ -1053,7 +1099,7 @@ void CameraEffectsController::AddBackgroundBlurStateToEffect(
                           weak_factory_.GetWeakPtr(),
                           /*effect_id=*/VcEffectId::kBackgroundBlur,
                           /*value=*/state_value),
-      /*state=*/state_value, view_id));
+      /*state=*/state_value, view_id, is_disabled_by_enterprise));
 }
 
 void CameraEffectsController::SetCameraEffectsInCameraHalDispatcherImpl(

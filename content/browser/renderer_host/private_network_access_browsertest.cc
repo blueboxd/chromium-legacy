@@ -553,6 +553,10 @@ class PrivateNetworkAccessBrowserTestBase : public ContentBrowserTest {
     return secure_public_server_.Get().GetURL(kPublicHost, path);
   }
 
+  GURL NullIPURL(const std::string& path) {
+    return insecure_public_server_.Get().GetURL("0.0.0.0", path);
+  }
+
  private:
   base::test::ScopedFeatureList feature_list_;
 
@@ -606,7 +610,6 @@ class PrivateNetworkAccessBrowserTestBlockFromPrivate
                 features::kBlockInsecurePrivateNetworkRequests,
                 features::kBlockInsecurePrivateNetworkRequestsFromPrivate,
                 features::kPrivateNetworkAccessRespectPreflightResults,
-                network::features::kNetworkServiceMemoryCache,
             },
             {}) {}
 };
@@ -622,7 +625,6 @@ class PrivateNetworkAccessBrowserTestBlockFromUnknown
                 features::kBlockInsecurePrivateNetworkRequests,
                 features::kBlockInsecurePrivateNetworkRequestsFromUnknown,
                 features::kPrivateNetworkAccessRespectPreflightResults,
-                network::features::kNetworkServiceMemoryCache,
             },
             {}) {}
 };
@@ -638,7 +640,6 @@ class PrivateNetworkAccessBrowserTestForNavigations
                 features::kBlockInsecurePrivateNetworkRequestsFromPrivate,
                 features::kPrivateNetworkAccessForNavigations,
                 features::kPrivateNetworkAccessRespectPreflightResults,
-                network::features::kNetworkServiceMemoryCache,
             },
             {}) {}
 };
@@ -660,7 +661,6 @@ class PrivateNetworkAccessBrowserTestNoPreflights
       : PrivateNetworkAccessBrowserTestBase(
             {
                 features::kBlockInsecurePrivateNetworkRequests,
-                network::features::kNetworkServiceMemoryCache,
             },
             {
                 features::kPrivateNetworkAccessSendPreflights,
@@ -677,7 +677,6 @@ class PrivateNetworkAccessBrowserTestRespectPreflightResults
             {
                 features::kBlockInsecurePrivateNetworkRequests,
                 features::kPrivateNetworkAccessRespectPreflightResults,
-                network::features::kNetworkServiceMemoryCache,
             },
             {}) {}
 };
@@ -691,7 +690,6 @@ class PrivateNetworkAccessBrowserTestForWorkers
             {
                 features::kBlockInsecurePrivateNetworkRequests,
                 features::kPrivateNetworkAccessForWorkers,
-                network::features::kNetworkServiceMemoryCache,
             },
             {
                 features::kPrivateNetworkAccessForWorkersWarningOnly,
@@ -709,7 +707,6 @@ class PrivateNetworkAccessBrowserTestRespectPreflightResultsForWorkers
                 features::kBlockInsecurePrivateNetworkRequests,
                 features::kPrivateNetworkAccessRespectPreflightResults,
                 features::kPrivateNetworkAccessForWorkers,
-                network::features::kNetworkServiceMemoryCache,
             },
             {
                 features::kPrivateNetworkAccessForWorkersWarningOnly,
@@ -729,7 +726,6 @@ class
                 features::kPrivateNetworkAccessRespectPreflightResults,
                 features::kPrivateNetworkAccessForWorkers,
                 features::kPrivateNetworkAccessForWorkersWarningOnly,
-                network::features::kNetworkServiceMemoryCache,
             },
             {}) {}
 };
@@ -747,7 +743,6 @@ class PrivateNetworkAccessBrowserTestNoBlocking
                 features::kPrivateNetworkAccessForNavigations,
                 features::kPrivateNetworkAccessForWorkers,
                 features::kPrivateNetworkAccessSendPreflights,
-                network::features::kNetworkServiceMemoryCache,
             }) {}
 };
 
@@ -900,6 +895,54 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
       root_frame_host()->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
   EXPECT_TRUE(security_state->is_web_secure_context);
+  EXPECT_EQ(network::mojom::IPAddressSpace::kPublic,
+            security_state->ip_address_space);
+}
+
+// Tests that a top-level navigation to 0.0.0.0 is in the kLocal address space.
+IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
+                       ClientSecurityStateForNullIP) {
+  if constexpr (BUILDFLAG(IS_WIN)) {
+    GTEST_SKIP() << "0.0.0.0 behavior varies across platforms and is "
+                    "unreachable on Windows.";
+  }
+
+  EXPECT_TRUE(NavigateToURL(shell(), NullIPURL(kDefaultPath)));
+
+  const network::mojom::ClientSecurityStatePtr security_state =
+      root_frame_host()->BuildClientSecurityState();
+  ASSERT_FALSE(security_state.is_null());
+  EXPECT_FALSE(security_state->is_web_secure_context);
+  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
+            security_state->ip_address_space);
+}
+
+class PrivateNetworkAccessBrowserTestNullIPKillswitch
+    : public PrivateNetworkAccessBrowserTestBase {
+ public:
+  PrivateNetworkAccessBrowserTestNullIPKillswitch()
+      : PrivateNetworkAccessBrowserTestBase(
+            {
+                network::features::kTreatNullIPAsPublicAddressSpace,
+            },
+            {}) {}
+};
+
+// Tests that a top-level navigation to 0.0.0.0 is in the kPublic address space
+// when a killswitch is enabled to specifically treat it as public.
+IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTestNullIPKillswitch,
+                       ClientSecurityStateForNullIPKillswitch) {
+  if constexpr (BUILDFLAG(IS_WIN)) {
+    GTEST_SKIP() << "0.0.0.0 behavior varies across platforms and is "
+                    "unreachable on Windows.";
+  }
+
+  EXPECT_TRUE(NavigateToURL(shell(), NullIPURL(kDefaultPath)));
+
+  const network::mojom::ClientSecurityStatePtr security_state =
+      root_frame_host()->BuildClientSecurityState();
+  ASSERT_FALSE(security_state.is_null());
+  EXPECT_FALSE(security_state->is_web_secure_context);
   EXPECT_EQ(network::mojom::IPAddressSpace::kPublic,
             security_state->ip_address_space);
 }

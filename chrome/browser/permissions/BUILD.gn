@@ -2,7 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/ui.gni")
 import("//components/optimization_guide/features.gni")
+import("//services/device/public/cpp/geolocation/buildflags.gni")
 import("//third_party/protobuf/proto_library.gni")
 
 source_set("permissions") {
@@ -52,6 +54,15 @@ source_set("permissions") {
     "quiet_notification_permission_ui_config.h",
     "quiet_notification_permission_ui_state.cc",
     "quiet_notification_permission_ui_state.h",
+    "system/platform_handle.h",
+    "system/system_permission_settings.cc",
+    "system/system_permission_settings.h",
+  ]
+
+  public_deps = [
+    "//chrome/browser:browser_public_dependencies",
+    "//chrome/browser/media/webrtc",
+    "//chrome/browser/resource_coordinator:tab_lifecycle_observer",
   ]
 
   deps = [
@@ -62,6 +73,7 @@ source_set("permissions") {
     "//chrome/browser/profiles:profile",
     "//chrome/browser/profiles:profiles",
     "//chrome/browser/safe_browsing",
+    "//chrome/browser/search_engines",
     "//chrome/browser/storage_access_api",
     "//chrome/browser/top_level_storage_access_api:permissions",
     "//chrome/common",
@@ -119,9 +131,29 @@ source_set("permissions") {
       "//ui/android",
     ]
   }
+  allow_circular_includes_from = []
 
   if (is_chromeos_ash) {
-    deps += [ "//chrome/browser/ash" ]
+    deps += [
+      "//chrome/browser/ash",
+      "//chrome/browser/ash/app_mode/web_app",
+      "//chrome/browser/ash/shimless_rma",
+    ]
+    allow_circular_includes_from += [
+      "//chrome/browser/ash/app_mode/web_app",
+      "//chrome/browser/ash/shimless_rma",
+    ]
+  }
+
+  if (is_mac) {
+    sources += [ "system/system_permission_settings_mac.cc" ]
+    deps += [ "//chrome//browser/web_applications" ]
+  } else if (is_chromeos_ash) {
+    sources += [ "system/system_permission_settings_chromeos.cc" ]
+  } else if (is_win) {
+    sources += [ "system/system_permission_settings_win.cc" ]
+  } else {
+    sources += [ "system/system_permission_settings_default.cc" ]
   }
 
   if (build_with_tflite_lib) {
@@ -134,6 +166,13 @@ source_set("permissions") {
     }
     deps += [ "//components/segmentation_platform/internal:optimization_guide_segmentation_handler" ]
   }
+
+  if (os_level_geolocation_permission_supported) {
+    sources += [
+      "system/geolocation_observation.cc",
+      "system/geolocation_observation.h",
+    ]
+  }
 }
 
 proto_library("permissions_proto") {
@@ -142,6 +181,7 @@ proto_library("permissions_proto") {
 
 source_set("unit_tests") {
   testonly = true
+
   sources = [
     "adaptive_quiet_notification_permission_ui_enabler_unittest.cc",
     "chrome_permission_manager_unittest.cc",
@@ -154,11 +194,14 @@ source_set("unit_tests") {
     "permission_revocation_request_unittests.cc",
     "prediction_based_permission_ui_selector_unittest.cc",
     "pref_based_quiet_permission_ui_selector_unittest.cc",
+    "system/mock_platform_handle.cc",
+    "system/mock_platform_handle.h",
   ]
 
   deps = [
     ":permissions",
     ":permissions_proto",
+    "//chrome/browser/search_engines",
     "//chrome/test:test_support",
     "//components/site_engagement/content",
     "//components/ukm/content",
@@ -183,7 +226,10 @@ source_set("unit_tests") {
   }
 
   if (is_chromeos_ash) {
-    deps += [ "//chrome/browser/ash:test_support" ]
+    deps += [
+      "//chrome/browser/ash/app_mode/web_app",
+      "//chrome/browser/ash/login/users:test_support",
+    ]
   }
 }
 
@@ -203,6 +249,7 @@ if (!is_android) {
     ]
     deps = [
       ":permissions",
+      "//chrome/browser/media/webrtc",
       "//chrome/browser/optimization_guide:test_support",
       "//chrome/browser/ui:browser_element_identifiers",
       "//chrome/test:test_support",

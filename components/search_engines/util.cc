@@ -17,6 +17,7 @@
 #include "base/check_is_test.h"
 #include "base/check_op.h"
 #include "base/feature_list.h"
+#include "base/not_fatal_until.h"
 #include "base/ranges/algorithm.h"
 #include "base/time/time.h"
 #include "base/version_info/version_info.h"
@@ -26,6 +27,7 @@
 #include "components/search_engines/search_engine_choice/search_engine_choice_service.h"
 #include "components/search_engines/search_engine_choice/search_engine_choice_utils.h"
 #include "components/search_engines/search_engines_pref_names.h"
+#include "components/search_engines/search_engines_switches.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
@@ -100,7 +102,9 @@ MergeEngineRequirements ComputeMergeEnginesRequirements(
     // We started writing the pref while we were not checking the country
     // before. Once the feature flag is removed, we can clean up this pref.
     update_builtin_keywords = true;
-  } else if (should_keywords_use_extended_list &&
+  } else if (!base::FeatureList::IsEnabled(
+                 switches::kSearchEnginesSortingCleanup) &&
+             should_keywords_use_extended_list &&
              keywords_metadata.builtin_keyword_milestone != 0 &&
              keywords_metadata.builtin_keyword_milestone < milestone) {
     // The milestone changed and we need to recompute the list of visible search
@@ -432,34 +436,19 @@ ActionsFromCurrentData CreateActionsFromCurrentPrepopulateData(
   return actions;
 }
 
-const std::string& GetDefaultSearchProviderPrefValue(PrefService& prefs) {
-  if (search_engines::IsChoiceScreenFlagEnabled(
-          search_engines::ChoicePromo::kAny)) {
-    const auto& default_search_provider =
-        prefs.GetString(prefs::kDefaultSearchProviderGUID);
-
-    if (!default_search_provider.empty()) {
-      return default_search_provider;
-    }
-
-    const auto& synced_default_search_provider =
-        prefs.GetString(prefs::kSyncedDefaultSearchProviderGUID);
-    if (!synced_default_search_provider.empty()) {
-      prefs.SetString(prefs::kDefaultSearchProviderGUID,
-                      synced_default_search_provider);
-    }
-    return synced_default_search_provider;
-  }
-  return prefs.GetString(prefs::kSyncedDefaultSearchProviderGUID);
+const std::string& GetDefaultSearchProviderGuidFromPrefs(PrefService& prefs) {
+  return search_engines::IsChoiceScreenFlagEnabled(
+             search_engines::ChoicePromo::kAny)
+             ? prefs.GetString(prefs::kDefaultSearchProviderGUID)
+             : prefs.GetString(prefs::kSyncedDefaultSearchProviderGUID);
 }
 
-void SetDefaultSearchProviderPrefValue(PrefService& prefs,
-                                       const std::string& value) {
+void SetDefaultSearchProviderGuidToPrefs(PrefService& prefs,
+                                         const std::string& value) {
+  prefs.SetString(prefs::kSyncedDefaultSearchProviderGUID, value);
   if (search_engines::IsChoiceScreenFlagEnabled(
           search_engines::ChoicePromo::kAny)) {
     prefs.SetString(prefs::kDefaultSearchProviderGUID, value);
-  } else {
-    prefs.SetString(prefs::kSyncedDefaultSearchProviderGUID, value);
   }
 }
 
@@ -549,7 +538,7 @@ void ApplyActionsFromCurrentData(
   // Remove items.
   for (const TemplateURL* removed_engine : actions.removed_engines) {
     auto j = FindTemplateURL(template_urls, removed_engine);
-    DCHECK(j != template_urls->end());
+    CHECK(j != template_urls->end(), base::NotFatalUntil::M130);
     DCHECK(!default_search_provider ||
            (*j)->prepopulate_id() != default_search_provider->prepopulate_id());
     std::unique_ptr<TemplateURL> template_url = std::move(*j);
@@ -635,7 +624,7 @@ void GetSearchProvidersUsingLoadedEngines(
   DCHECK(template_urls);
   std::vector<std::unique_ptr<TemplateURLData>> prepopulated_urls =
       TemplateURLPrepopulateData::GetPrepopulatedEngines(
-          prefs, search_engine_choice_service, nullptr);
+          prefs, search_engine_choice_service);
   RemoveDuplicatePrepopulateIDs(service, prepopulated_urls,
                                 default_search_provider, template_urls,
                                 search_terms_data, removed_keyword_guids);

@@ -245,8 +245,7 @@ class FakeWebContentsManager::FakeWebAppDataRetriever
     }
     std::unique_ptr<WebAppInstallInfo> install_info =
         std::make_unique<WebAppInstallInfo>(
-            GenerateManifestIdFromStartUrlOnly(url));
-    install_info->start_url = url;
+            GenerateManifestIdFromStartUrlOnly(url), url);
     install_info->title = page.title.value_or(base::UTF8ToUTF16(url.spec()));
     if (page.opt_metadata) {
       WebAppDataRetriever::PopulateWebAppInfoFromMetadata(install_info.get(),
@@ -275,7 +274,7 @@ class FakeWebContentsManager::FakeWebAppDataRetriever
       base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE,
           base::BindOnce(std::move(callback), blink::mojom::ManifestPtr(),
-                         GURL(), /*valid_manifest_for_web_app=*/false,
+                         /*valid_manifest_for_web_app=*/false,
                          webapps::InstallableStatusCode::NO_MANIFEST));
       return;
     }
@@ -290,6 +289,7 @@ class FakeWebContentsManager::FakeWebAppDataRetriever
         page.manifest_before_default_processing
             ? page.manifest_before_default_processing->Clone()
             : blink::mojom::Manifest::New();
+    manifest->manifest_url = page.manifest_url;
     if (manifest->start_url.is_empty()) {
       manifest->start_url = url;
     }
@@ -304,8 +304,7 @@ class FakeWebContentsManager::FakeWebAppDataRetriever
     base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback), std::move(manifest),
-                       page.manifest_url, page.valid_manifest_for_web_app,
-                       page.error_code));
+                       page.valid_manifest_for_web_app, page.error_code));
   }
 
   void GetIcons(content::WebContents* web_contents,
@@ -416,6 +415,8 @@ webapps::AppId FakeWebContentsManager::CreateBasicInstallPageState(
 
   install_page_state.manifest_before_default_processing =
       blink::mojom::Manifest::New();
+  install_page_state.manifest_before_default_processing->id =
+      start_url.GetWithoutRef();
   install_page_state.manifest_before_default_processing->start_url = start_url;
   install_page_state.manifest_before_default_processing->display =
       blink::mojom::DisplayMode::kStandalone;

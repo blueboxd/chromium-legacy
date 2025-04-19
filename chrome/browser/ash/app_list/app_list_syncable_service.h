@@ -21,6 +21,7 @@
 #include "base/one_shot_event.h"
 #include "base/scoped_observation_traits.h"
 #include "build/build_config.h"
+#include "chrome/browser/apps/app_preload_service/preload_app_definition.h"
 #include "chrome/browser/ash/app_list/reorder/app_list_reorder_delegate.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -33,7 +34,6 @@
 class AppListModelUpdater;
 class AppServiceAppModelBuilder;
 class AppServicePromiseAppModelBuilder;
-class AppServiceShortcutModelBuilder;
 class ChromeAppListItem;
 class Profile;
 
@@ -300,6 +300,16 @@ class AppListSyncableService : public syncer::SyncableService,
     return oem_folder_name_;
   }
 
+  // Receives launcher ordering when AppPreloadService is ready, and merges with
+  // `preload_service_ordinals_` to precalculate the ordinals for any of the
+  // default apps to be installed by APS.
+  void OnGetLauncherOrdering(const apps::LauncherOrdering& launcher_ordering);
+
+  const std::map<apps::LauncherItem, syncer::StringOrdinal>&
+  GetDefaultOrdinalsForTest() const {
+    return preload_service_ordinals_;
+  }
+
   void PopulateSyncItemsForTest(std::vector<std::unique_ptr<SyncItem>>&& items);
 
   virtual const SyncItemMap& sync_items() const;
@@ -307,10 +317,10 @@ class AppListSyncableService : public syncer::SyncableService,
   // syncer::SyncableService
   void WaitUntilReadyToSync(base::OnceClosure done) override;
   std::optional<syncer::ModelError> MergeDataAndStartSyncing(
-      syncer::ModelType type,
+      syncer::DataType type,
       const syncer::SyncDataList& initial_sync_data,
       std::unique_ptr<syncer::SyncChangeProcessor> sync_processor) override;
-  void StopSyncing(syncer::ModelType type) override;
+  void StopSyncing(syncer::DataType type) override;
   syncer::SyncDataList GetAllSyncDataForTesting() const;
   std::optional<syncer::ModelError> ProcessSyncChanges(
       const base::Location& from_here,
@@ -387,10 +397,8 @@ class AppListSyncableService : public syncer::SyncableService,
   // after a sync item is removed (which may result in an empty folder).
   void PruneEmptySyncFolders();
 
-  // Creates or updates a SyncItem from |specifics|. Returns true if a new item
-  // was created.
-  // TODO(crbug.com/40677489): Change return type to void.
-  bool ProcessSyncItemSpecifics(const sync_pb::AppListSpecifics& specifics);
+  // Creates or updates a SyncItem from |specifics|.
+  void ProcessSyncItemSpecifics(const sync_pb::AppListSpecifics& specifics);
 
   // Handles a newly created sync item (e.g. creates a new AppItem and adds it
   // to the model or uninstalls a deleted default item.
@@ -447,6 +455,19 @@ class AppListSyncableService : public syncer::SyncableService,
   bool UpdateSyncItemFromAppItem(const ChromeAppListItem* app_item,
                                  AppListSyncableService::SyncItem* sync_item);
 
+  // If `new_item` is found in AppPreloadServer `launcher_ordering`, this
+  // function returns true and sets `position`. Additionally sets `folder_id`,
+  // `folder_name`, and `folder_position` if the item is not in the root folder.
+  bool GetAppPreloadServiceInfo(const ChromeAppListItem* new_item,
+                                syncer::StringOrdinal* position,
+                                std::string* folder_id,
+                                std::string* folder_name,
+                                syncer::StringOrdinal* folder_position) const;
+
+  // Sets OEM folder name if any OEM folder is specified in the root folder.
+  void SetOemFolderNameFromAppPreloadService(
+      const apps::LauncherOrdering& launcher_ordering);
+
   // Initializes `new_item`'s position. This function should be called before
   // adding `new_item` to `model_updater_`.
   void InitNewItemPosition(ChromeAppListItem* new_item);
@@ -458,9 +479,12 @@ class AppListSyncableService : public syncer::SyncableService,
   void ApplyAppAttributes(const std::string& app_id,
                           std::unique_ptr<SyncItem> attributes);
 
-  // Creates a `ChromeAppListItem` and a sync item for OEM folder, if they don't
-  // already exist.
-  void EnsureOemFolderExists();
+  // Creates a `ChromeAppListItem` and a sync item for the specified folder if
+  // it doesn't already exist. `folder_position` is used if it is valid, and
+  // this item does not already have sync data.
+  void EnsureFolderExists(const std::string& folder_id,
+                          const std::string& folder_name,
+                          syncer::StringOrdinal folder_position);
 
   // Creates or updates a GuestOS folder's sync data if the folder is
   // missing.
@@ -487,8 +511,6 @@ class AppListSyncableService : public syncer::SyncableService,
   std::unique_ptr<AppServiceAppModelBuilder> app_service_apps_builder_;
   std::unique_ptr<AppServicePromiseAppModelBuilder>
       app_service_promise_apps_builder_;
-  std::unique_ptr<AppServiceShortcutModelBuilder>
-      app_service_shortcuts_builder_;
   std::unique_ptr<syncer::SyncChangeProcessor> sync_processor_;
   SyncItemMap sync_items_;
   // Map that keeps pending request to transfer attributes from one app to
@@ -521,6 +543,12 @@ class AppListSyncableService : public syncer::SyncableService,
   // users only. `IsAppDefaultPositionedForNewUsersOnly()` will return true for
   // this app.
   std::optional<std::string> app_default_positioned_for_new_users_only_;
+
+  // Launcher ordering from AppPreloadService.
+  apps::LauncherOrdering preload_service_order_;
+
+  // Map of ordinals for AppPreloadService ordering.
+  std::map<apps::LauncherItem, syncer::StringOrdinal> preload_service_ordinals_;
 
   // List of observers.
   base::ObserverList<Observer> observer_list_;

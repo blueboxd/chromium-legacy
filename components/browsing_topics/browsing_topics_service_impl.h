@@ -8,7 +8,7 @@
 #include "base/functional/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
-#include "base/timer/timer.h"
+#include "base/timer/wall_clock_timer.h"
 #include "components/browsing_topics/annotator.h"
 #include "components/browsing_topics/browsing_topics_calculator.h"
 #include "components/browsing_topics/browsing_topics_service.h"
@@ -58,6 +58,8 @@ class BrowsingTopicsServiceImpl
 
   std::vector<privacy_sandbox::CanonicalTopic> GetTopTopicsForDisplay()
       const override;
+
+  void ValidateCalculationSchedule() override;
 
   Annotator* GetAnnotator() override;
 
@@ -128,7 +130,8 @@ class BrowsingTopicsServiceImpl
 
   void ScheduleBrowsingTopicsCalculation(bool is_manually_triggered,
                                          int previous_timeout_count,
-                                         base::TimeDelta delay);
+                                         base::TimeDelta delay,
+                                         bool persist_calculation_time);
 
   // Initialize `topics_calculator_` to start calculating this epoch's top
   // topics and context observed topics. `is_manually_triggered`  is true if
@@ -201,11 +204,13 @@ class BrowsingTopicsServiceImpl
   std::vector<mojom::PageHandler::GetBrowsingTopicsStateCallback>
       get_state_for_webui_callbacks_;
 
-  base::OneShotTimer schedule_calculate_timer_;
+  base::WallClockTimer schedule_calculate_timer_;
 
   TopicAccessedCallback topic_accessed_callback_;
 
   base::Time session_start_time_;
+
+  bool recorded_calculation_did_not_occur_metrics_ = false;
 
   base::ScopedObservation<privacy_sandbox::PrivacySandboxSettings,
                           privacy_sandbox::PrivacySandboxSettings::Observer>

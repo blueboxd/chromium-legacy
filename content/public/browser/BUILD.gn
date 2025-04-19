@@ -44,6 +44,7 @@ source_set("browser_sources") {
     "ax_inspect_factory.cc",
     "ax_inspect_factory.h",
     "back_forward_cache.h",
+    "back_forward_transition_animation_manager.cc",
     "back_forward_transition_animation_manager.h",
     "background_fetch_delegate.cc",
     "background_fetch_delegate.h",
@@ -151,6 +152,8 @@ source_set("browser_sources") {
     "devtools_manager_delegate.h",
     "devtools_network_transaction_factory.h",
     "devtools_socket_factory.h",
+    "digital_credentials_cross_device.h",
+    "digital_identity_interstitial_type.h",
     "digital_identity_provider.cc",
     "digital_identity_provider.h",
     "dips_delegate.cc",
@@ -265,6 +268,7 @@ source_set("browser_sources") {
     "navigation_controller.h",
     "navigation_details.cc",
     "navigation_details.h",
+    "navigation_discard_reason.h",
     "navigation_entry.h",
     "navigation_entry_restore_context.h",
     "navigation_handle.cc",
@@ -282,15 +286,10 @@ source_set("browser_sources") {
     "network_service_util.h",
     "notification_database_data.cc",
     "notification_database_data.h",
-    "notification_details.h",
     "notification_event_dispatcher.h",
-    "notification_observer.h",
-    "notification_registrar.cc",
-    "notification_registrar.h",
     "notification_resource_data.h",
-    "notification_service.h",
-    "notification_source.h",
-    "notification_types.h",
+    "origin_trial_status_change_details.cc",
+    "origin_trial_status_change_details.h",
     "origin_trials_controller_delegate.h",
     "overlay_window.h",
     "overscroll_configuration.h",
@@ -300,7 +299,7 @@ source_set("browser_sources") {
     "page_user_data.h",
     "payment_app_provider.h",
     "payment_app_provider_util.h",
-    "peak_gpu_memory_tracker.h",
+    "peak_gpu_memory_tracker_factory.h",
     "peer_connection_tracker_host_observer.cc",
     "peer_connection_tracker_host_observer.h",
     "per_web_ui_browser_interface_broker.h",
@@ -409,6 +408,8 @@ source_set("browser_sources") {
     "site_isolation_policy.h",
     "sms_fetcher.h",
     "speculation_host_delegate.h",
+    "speech_recognition_audio_forwarder_config.cc",
+    "speech_recognition_audio_forwarder_config.h",
     "speech_recognition_event_listener.h",
     "speech_recognition_manager.h",
     "speech_recognition_manager_delegate.h",
@@ -706,8 +707,6 @@ source_set("browser_sources") {
   if (is_chromeos_ash) {
     sources += [
       "chromeos/delegate_to_browser_gpu_service_accelerator_factory.h",
-      "on_device_model_service_instance.cc",
-      "on_device_model_service_instance.h",
       "tts_controller_delegate.cc",
       "tts_controller_delegate.h",
     ]
@@ -745,7 +744,10 @@ if (is_android) {
     sources = [ "bluetooth_chooser.h" ]
   }
   java_cpp_enum("digital_identity_enum") {
-    sources = [ "digital_identity_provider.h" ]
+    sources = [
+      "digital_identity_interstitial_type.h",
+      "digital_identity_provider.h",
+    ]
   }
 }
 

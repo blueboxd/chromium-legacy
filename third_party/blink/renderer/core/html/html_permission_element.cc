@@ -77,6 +77,7 @@ constexpr int kMaxHorizontalPaddingToFontSizeRatio = 5;
 // Needed to avoid IntersectionObserver false-positives caused by other elements
 // being too close.
 constexpr int kMinMargin = 4;
+constexpr float kIntersectionThreshold = 1.0f;
 
 PermissionDescriptorPtr CreatePermissionDescriptor(PermissionName name) {
   auto descriptor = PermissionDescriptor::New();
@@ -262,7 +263,10 @@ HTMLPermissionElement::HTMLPermissionElement(Document& document)
       permission_service_(document.GetExecutionContext()),
       permission_observer_receivers_(this, document.GetExecutionContext()),
       embedded_permission_control_receiver_(this,
-                                            document.GetExecutionContext()) {
+                                            document.GetExecutionContext()),
+      disable_reason_expire_timer_(
+          this,
+          &HTMLPermissionElement::DisableReasonExpireTimerFired) {
   DCHECK(RuntimeEnabledFeatures::PermissionElementEnabled(
       document.GetExecutionContext()));
   SetHasCustomStyleCallbacks();
@@ -272,10 +276,10 @@ HTMLPermissionElement::HTMLPermissionElement(Document& document)
                          WrapWeakPersistent(this)),
       LocalFrameUkmAggregator::kPermissionElementIntersectionObserver,
       IntersectionObserver::Params{
-          .thresholds = {1.0f},
+          .thresholds = {kIntersectionThreshold},
           .semantics = IntersectionObserver::kFractionOfTarget,
           .behavior = IntersectionObserver::kDeliverDuringPostLifecycleSteps,
-          .delay = 100,
+          .delay = base::Milliseconds(100),
           .track_visibility = true,
       });
 
@@ -290,12 +294,21 @@ const AtomicString& HTMLPermissionElement::GetType() const {
   return type_.IsNull() ? g_empty_atom : type_;
 }
 
+String HTMLPermissionElement::invalidReason() const {
+  return clicking_enabled_state_.invalid_reason;
+}
+
+bool HTMLPermissionElement::isValid() const {
+  return clicking_enabled_state_.is_valid;
+}
+
 void HTMLPermissionElement::Trace(Visitor* visitor) const {
   visitor->Trace(permission_service_);
   visitor->Trace(permission_observer_receivers_);
   visitor->Trace(embedded_permission_control_receiver_);
   visitor->Trace(permission_text_span_);
   visitor->Trace(intersection_observer_);
+  visitor->Trace(disable_reason_expire_timer_);
   HTMLElement::Trace(visitor);
 }
 
@@ -355,6 +368,10 @@ void HTMLPermissionElement::DetachLayoutTree(bool performing_reattach) {
   permission_observer_receivers_.Clear();
   permission_status_map_.clear();
   permissions_granted_ = false;
+  if (disable_reason_expire_timer_.IsActive()) {
+    disable_reason_expire_timer_.Stop();
+  }
+  intersection_rect_ = std::nullopt;
   if (auto* view = GetDocument().View()) {
     view->UnregisterFromLifecycleNotifications(this);
   }
@@ -409,10 +426,18 @@ String HTMLPermissionElement::DisableReasonToString(DisableReason reason) {
   switch (reason) {
     case DisableReason::kRecentlyAttachedToLayoutTree:
       return "being recently attached to layout tree";
-    case DisableReason::kIntersectionChanged:
-      return "intersection change";
+    case DisableReason::kIntersectionRecentlyFullyVisible:
+      return "being recently fully visible";
+    case DisableReason::kIntersectionWithViewportChanged:
+      return "intersection with viewport changed";
+    case DisableReason::kIntersectionVisibilityOutOfViewPortOrClipped:
+      return "intersection out of viewport or clipped";
+    case DisableReason::kIntersectionVisibilityOccludedOrDistorted:
+      return "intersection occluded or distorted";
     case DisableReason::kInvalidStyle:
       return "invalid style";
+    case DisableReason::kUnknown:
+      NOTREACHED_NORETURN();
   }
 }
 
@@ -423,10 +448,41 @@ HTMLPermissionElement::DisableReasonToUserInteractionDeniedReason(
   switch (reason) {
     case DisableReason::kRecentlyAttachedToLayoutTree:
       return UserInteractionDeniedReason::kRecentlyAttachedToLayoutTree;
-    case DisableReason::kIntersectionChanged:
-      return UserInteractionDeniedReason::kIntersectionChanged;
+    case DisableReason::kIntersectionRecentlyFullyVisible:
+      return UserInteractionDeniedReason::kIntersectionRecentlyFullyVisible;
+    case DisableReason::kIntersectionWithViewportChanged:
+      return UserInteractionDeniedReason::kIntersectionWithViewportChanged;
+    case DisableReason::kIntersectionVisibilityOutOfViewPortOrClipped:
+      return UserInteractionDeniedReason::
+          kIntersectionVisibilityOutOfViewPortOrClipped;
+    case DisableReason::kIntersectionVisibilityOccludedOrDistorted:
+      return UserInteractionDeniedReason::
+          kIntersectionVisibilityOccludedOrDistorted;
     case DisableReason::kInvalidStyle:
       return UserInteractionDeniedReason::kInvalidStyle;
+    case DisableReason::kUnknown:
+      NOTREACHED_NORETURN();
+  }
+}
+
+// static
+AtomicString HTMLPermissionElement::DisableReasonToInvalidReasonString(
+    DisableReason reason) {
+  switch (reason) {
+    case DisableReason::kRecentlyAttachedToLayoutTree:
+      return AtomicString("recently_attached");
+    case DisableReason::kIntersectionRecentlyFullyVisible:
+      return AtomicString("intersection_visible");
+    case DisableReason::kIntersectionWithViewportChanged:
+      return AtomicString("intersection_changed");
+    case DisableReason::kIntersectionVisibilityOutOfViewPortOrClipped:
+      return AtomicString("intersection_out_of_viewport_or_clipped");
+    case DisableReason::kIntersectionVisibilityOccludedOrDistorted:
+      return AtomicString("intersection_occluded_or_distorted");
+    case DisableReason::kInvalidStyle:
+      return AtomicString("style_invalid");
+    case DisableReason::kUnknown:
+      NOTREACHED_NORETURN();
   }
 }
 
@@ -497,22 +553,25 @@ void HTMLPermissionElement::AdjustStyle(ComputedStyleBuilder& builder) {
 
   builder.SetOutlineOffset(builder.OutlineOffset().ClampNegativeToZero());
 
-  builder.SetMarginLeft(
-      AdjustedBoundedLength(builder.MarginLeft(), /*lower_bound=*/kMinMargin,
-                            /*upper_bound=*/std::nullopt,
-                            /*should_multiply_by_content_size=*/false));
-  builder.SetMarginRight(
-      AdjustedBoundedLength(builder.MarginRight(), /*lower_bound=*/kMinMargin,
-                            /*upper_bound=*/std::nullopt,
-                            /*should_multiply_by_content_size=*/false));
-  builder.SetMarginTop(
-      AdjustedBoundedLength(builder.MarginTop(), /*lower_bound=*/kMinMargin,
-                            /*upper_bound=*/std::nullopt,
-                            /*should_multiply_by_content_size=*/false));
-  builder.SetMarginBottom(
-      AdjustedBoundedLength(builder.MarginBottom(), /*lower_bound=*/kMinMargin,
-                            /*upper_bound=*/std::nullopt,
-                            /*should_multiply_by_content_size=*/false));
+  auto device_pixel_ratio =
+      GetDocument().GetFrame()->LocalFrameRoot().DevicePixelRatio();
+
+  builder.SetMarginLeft(AdjustedBoundedLength(
+      builder.MarginLeft(), /*lower_bound=*/kMinMargin * device_pixel_ratio,
+      /*upper_bound=*/std::nullopt,
+      /*should_multiply_by_content_size=*/false));
+  builder.SetMarginRight(AdjustedBoundedLength(
+      builder.MarginRight(), /*lower_bound=*/kMinMargin * device_pixel_ratio,
+      /*upper_bound=*/std::nullopt,
+      /*should_multiply_by_content_size=*/false));
+  builder.SetMarginTop(AdjustedBoundedLength(
+      builder.MarginTop(), /*lower_bound=*/kMinMargin * device_pixel_ratio,
+      /*upper_bound=*/std::nullopt,
+      /*should_multiply_by_content_size=*/false));
+  builder.SetMarginBottom(AdjustedBoundedLength(
+      builder.MarginBottom(), /*lower_bound=*/kMinMargin * device_pixel_ratio,
+      /*upper_bound=*/std::nullopt,
+      /*should_multiply_by_content_size=*/false));
 
   // Check and modify (if needed) properties related to the font.
   std::optional<FontDescription> new_font_description;
@@ -628,12 +687,20 @@ void HTMLPermissionElement::AdjustStyle(ComputedStyleBuilder& builder) {
 }
 
 void HTMLPermissionElement::DidRecalcStyle(const StyleRecalcChange change) {
-  if (IsStyleValid()) {
-    EnableClickingAfterDelay(DisableReason::kInvalidStyle,
-                             kDefaultDisableTimeout);
-  } else {
+  if (!IsStyleValid()) {
     DisableClickingIndefinitely(DisableReason::kInvalidStyle);
+    return;
   }
+  EnableClickingAfterDelay(DisableReason::kInvalidStyle,
+                           kDefaultDisableTimeout);
+  gfx::Rect intersection_rect =
+      ComputeIntersectionRectWithViewport(GetDocument().GetPage());
+  if (intersection_rect_.has_value() &&
+      intersection_rect_.value() != intersection_rect) {
+    DisableClickingTemporarily(DisableReason::kIntersectionWithViewportChanged,
+                               kDefaultDisableTimeout);
+  }
+  intersection_rect_ = intersection_rect;
 }
 
 void HTMLPermissionElement::DefaultEventHandler(Event& event) {
@@ -641,6 +708,18 @@ void HTMLPermissionElement::DefaultEventHandler(Event& event) {
     event.SetDefaultHandled();
     if (event.IsFullyTrusted() ||
         RuntimeEnabledFeatures::BypassPepcSecurityForTestingEnabled()) {
+      // TODO(crbug.com/352496162): After confirming all permission requests
+      // eventually call |OnEmbeddedPermissionsDecided|, block multiple
+      // permission requests when one is in progress, instead of temporairly
+      // disallowing them.
+      if (pending_request_created_ &&
+          base::TimeTicks::Now() - *pending_request_created_ <
+              kDefaultDisableTimeout) {
+        AddConsoleError(
+            "The permission element already has a request in progress.");
+        return;
+      }
+
       if (IsClickingEnabled()) {
         RequestPageEmbededPermissions();
       }
@@ -672,6 +751,9 @@ void HTMLPermissionElement::RequestPageEmbededPermissions() {
   // rect to calculate expected prompt position in screen coordinates.
   descriptor->element_position = GetBoundingClientRect()->ToEnclosingRect();
   descriptor->permissions = mojo::Clone(permission_descriptors_);
+
+  pending_request_created_ = base::TimeTicks::Now();
+
   GetPermissionService()->RequestPageEmbeddedPermission(
       std::move(descriptor),
       WTF::BindOnce(&HTMLPermissionElement::OnEmbeddedPermissionsDecided,
@@ -726,17 +808,19 @@ void HTMLPermissionElement::OnEmbeddedPermissionControlRegistered(
   }
 
   UpdateAppearance();
+  MaybeDispatchValidationChangeEvent();
 }
 
 void HTMLPermissionElement::OnEmbeddedPermissionsDecided(
     EmbeddedPermissionControlResult result) {
+  pending_request_created_ = std::nullopt;
+
   switch (result) {
     case EmbeddedPermissionControlResult::kDismissed:
       DispatchEvent(*Event::Create(event_type_names::kDismiss));
       return;
     case EmbeddedPermissionControlResult::kGranted:
       permissions_granted_ = true;
-      UpdateAppearance();
       DispatchEvent(*Event::Create(event_type_names::kResolve));
       return;
     case EmbeddedPermissionControlResult::kDenied:
@@ -752,6 +836,20 @@ void HTMLPermissionElement::OnEmbeddedPermissionsDecided(
       return;
   }
   NOTREACHED_IN_MIGRATION();
+}
+
+void HTMLPermissionElement::DisableReasonExpireTimerFired(TimerBase* timer) {
+  EnableClicking(static_cast<DisableReasonExpireTimer*>(timer)->reason());
+}
+
+void HTMLPermissionElement::MaybeDispatchValidationChangeEvent() {
+  auto state = GetClickingEnabledState();
+  if (clicking_enabled_state_ != state) {
+    DispatchEvent(*Event::Create(event_type_names::kValidationstatuschange));
+  }
+
+  // Always keep `clicking_enabled_state_` up-to-date
+  clicking_enabled_state_ = state;
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
@@ -810,6 +908,10 @@ bool HTMLPermissionElement::IsClickingEnabled() {
 
 void HTMLPermissionElement::DisableClickingIndefinitely(DisableReason reason) {
   clicking_disabled_reasons_.Set(reason, base::TimeTicks::Max());
+  if (disable_reason_expire_timer_.IsActive()) {
+    disable_reason_expire_timer_.Stop();
+  }
+  MaybeDispatchValidationChangeEvent();
 }
 
 void HTMLPermissionElement::DisableClickingTemporarily(
@@ -823,7 +925,23 @@ void HTMLPermissionElement::DisableClickingTemporarily(
     return;
   }
 
+  // An active timer indicates that the element is temporarily disabled with a
+  // reason, which is the longest alive temporary reason in
+  // `clicking_disabled_reasons_`. If the timer's next fire time is less than
+  // the `timeout_time` (`NextFireInterval() < duration`), a new "longest alive
+  // temporary reason" emerges and we need an adjustment to the timer.
   clicking_disabled_reasons_.Set(reason, timeout_time);
+  if (!disable_reason_expire_timer_.IsActive() ||
+      disable_reason_expire_timer_.NextFireInterval() < duration) {
+    disable_reason_expire_timer_.StartOrRestartWithReason(reason, duration);
+  }
+
+  MaybeDispatchValidationChangeEvent();
+}
+
+void HTMLPermissionElement::EnableClicking(DisableReason reason) {
+  clicking_disabled_reasons_.erase(reason);
+  RefreshDisableReasonsAndUpdateTimer();
 }
 
 void HTMLPermissionElement::EnableClickingAfterDelay(
@@ -831,11 +949,94 @@ void HTMLPermissionElement::EnableClickingAfterDelay(
     const base::TimeDelta& delay) {
   if (clicking_disabled_reasons_.Contains(reason)) {
     clicking_disabled_reasons_.Set(reason, base::TimeTicks::Now() + delay);
+    RefreshDisableReasonsAndUpdateTimer();
   }
 }
 
-void HTMLPermissionElement::EnableClicking(DisableReason reason) {
-  clicking_disabled_reasons_.erase(reason);
+HTMLPermissionElement::ClickingEnabledState
+HTMLPermissionElement::GetClickingEnabledState() const {
+  if (permission_descriptors_.empty()) {
+    return {false, AtomicString("type_invalid")};
+  }
+
+  if (GetDocument().GetFrame()->IsInFencedFrameTree()) {
+    return {false, AtomicString("illegal_subframe")};
+  }
+
+  if (GetDocument().GetFrame()->IsCrossOriginToOutermostMainFrame() &&
+      !GetExecutionContext()
+           ->GetContentSecurityPolicy()
+           ->HasEnforceFrameAncestorsDirectives()) {
+    return {false, AtomicString("illegal_subframe")};
+  }
+
+  for (const PermissionDescriptorPtr& descriptor : permission_descriptors_) {
+    if (!GetExecutionContext()->IsFeatureEnabled(
+            PermissionNameToPermissionsPolicyFeature(descriptor->name))) {
+      return {false, AtomicString("illegal_subframe")};
+    }
+  }
+
+  if (!IsRegisteredInBrowserProcess()) {
+    return {false, AtomicString("unsuccessful_registration")};
+  }
+
+  if (RuntimeEnabledFeatures::BypassPepcSecurityForTestingEnabled()) {
+    return {true, AtomicString()};
+  }
+
+  // If there's an "indefinitely disabling" for any reason, return that reason.
+  // Otherwise, we will look into the reason of the current active timer.
+  for (const auto& it : clicking_disabled_reasons_) {
+    if (it.value == base::TimeTicks::Max()) {
+      return {false, DisableReasonToInvalidReasonString(it.key)};
+    }
+  }
+
+  if (disable_reason_expire_timer_.IsActive()) {
+    return {false, DisableReasonToInvalidReasonString(
+                       disable_reason_expire_timer_.reason())};
+  }
+
+  return {true, AtomicString()};
+}
+
+void HTMLPermissionElement::RefreshDisableReasonsAndUpdateTimer() {
+  base::TimeTicks now = base::TimeTicks::Now();
+  base::TimeTicks max_time_ticks = base::TimeTicks::Min();
+  DisableReason reason = DisableReason::kUnknown;
+  HashMap<DisableReason, base::TimeTicks> swap_clicking_disabled_reasons;
+  for (auto it = clicking_disabled_reasons_.begin();
+       it != clicking_disabled_reasons_.end(); ++it) {
+    if (it->value == base::TimeTicks::Max()) {
+      if (disable_reason_expire_timer_.IsActive()) {
+        disable_reason_expire_timer_.Stop();
+      }
+      return;
+    }
+
+    if (it->value < now) {
+      continue;
+    }
+
+    swap_clicking_disabled_reasons.Set(it->key, it->value);
+    if (it->value <= max_time_ticks) {
+      continue;
+    }
+
+    max_time_ticks = it->value;
+    reason = it->key;
+  }
+  // Restart the timer to match with  "longest alive, not indefinitely disabling
+  // reason". That's the one has the max timeticks on
+  // `clicking_disabled_reasons_`.
+  if (max_time_ticks != base::TimeTicks::Min()) {
+    disable_reason_expire_timer_.StartOrRestartWithReason(reason,
+                                                          max_time_ticks - now);
+  }
+
+  clicking_disabled_reasons_.swap(swap_clicking_disabled_reasons);
+  MaybeDispatchValidationChangeEvent();
 }
 
 void HTMLPermissionElement::UpdateAppearance() {
@@ -874,18 +1075,45 @@ void HTMLPermissionElement::OnIntersectionChanged(
     const HeapVector<Member<IntersectionObserverEntry>>& entries) {
   CHECK(!entries.empty());
   Member<IntersectionObserverEntry> latest_observation = entries.back();
-
   CHECK_EQ(this, latest_observation->target());
-  if (!latest_observation->isVisible() && is_fully_visible_) {
-    is_fully_visible_ = false;
-    DisableClickingIndefinitely(DisableReason::kIntersectionChanged);
-    return;
+  IntersectionVisibility intersection_visibility =
+      IntersectionVisibility::kFullyVisible;
+  // `intersectionRatio` >= `kIntersectionThreshold` (1.0f) means the element is
+  // fully visible on the viewport (vs `intersectionRatio` < 1.0f means its
+  // bound is clipped by the viewport or styling effects). In this case, the
+  // `isVisible` false means the element is occluded by something else or has
+  // distorted visual effect applied.
+  if (!latest_observation->isVisible()) {
+    intersection_visibility =
+        latest_observation->intersectionRatio() >= kIntersectionThreshold
+            ? IntersectionVisibility::kOccludedOrDistorted
+            : IntersectionVisibility::kOutOfViewportOrClipped;
   }
 
-  if (latest_observation->isVisible() && !is_fully_visible_) {
-    is_fully_visible_ = true;
-    EnableClickingAfterDelay(DisableReason::kIntersectionChanged,
-                             kDefaultDisableTimeout);
+  if (intersection_visibility_ == intersection_visibility) {
+    return;
+  }
+  intersection_visibility_ = intersection_visibility;
+  switch (intersection_visibility_) {
+    case IntersectionVisibility::kFullyVisible: {
+      std::optional<base::TimeDelta> interval =
+          GetRecentlyAttachedTimeoutRemaining();
+      DisableClickingTemporarily(
+          DisableReason::kIntersectionRecentlyFullyVisible,
+          interval ? interval.value() : kDefaultDisableTimeout);
+      EnableClicking(DisableReason::kIntersectionVisibilityOccludedOrDistorted);
+      EnableClicking(
+          DisableReason::kIntersectionVisibilityOutOfViewPortOrClipped);
+      break;
+    }
+    case IntersectionVisibility::kOccludedOrDistorted:
+      DisableClickingIndefinitely(
+          DisableReason::kIntersectionVisibilityOccludedOrDistorted);
+      break;
+    case IntersectionVisibility::kOutOfViewportOrClipped:
+      DisableClickingIndefinitely(
+          DisableReason::kIntersectionVisibilityOutOfViewPortOrClipped);
+      break;
   }
 }
 
@@ -895,13 +1123,19 @@ bool HTMLPermissionElement::IsStyleValid() {
     AddConsoleWarning(
         String::Format("Cannot compute style for the permission element '%s'",
                        GetType().Utf8().c_str()));
+    base::UmaHistogramEnumeration("Blink.PermissionElement.InvalidStyleReason",
+                                  InvalidStyleReason::kNoComputedStyle);
     return false;
   }
 
   if (AreColorsNonOpaque(GetComputedStyle())) {
-    AddConsoleWarning(String::Format(
-        "Color or background color of the permission element '%s' is opaque",
-        GetType().Utf8().c_str()));
+    AddConsoleWarning(
+        String::Format("Color or background color of the permission element "
+                       "'%s' is non-opaque",
+                       GetType().Utf8().c_str()));
+    base::UmaHistogramEnumeration(
+        "Blink.PermissionElement.InvalidStyleReason",
+        InvalidStyleReason::kNonOpaqueColorOrBackgroundColor);
     return false;
   }
 
@@ -911,26 +1145,51 @@ bool HTMLPermissionElement::IsStyleValid() {
         String::Format("Contrast between color and background color of the "
                        "permission element '%s' is too low",
                        GetType().Utf8().c_str()));
+    base::UmaHistogramEnumeration(
+        "Blink.PermissionElement.InvalidStyleReason",
+        InvalidStyleReason::kLowConstrastColorAndBackgroundColor);
     return false;
   }
 
-  if (GetComputedStyle()->ComputedFontSize() <
-      FontSizeFunctions::FontSizeForKeyword(
-          &GetDocument(), FontSizeFunctions::KeywordSize(CSSValueID::kSmall),
-          GetComputedStyle()->GetFontDescription().IsMonospace())) {
+  // Compute the font size but reverse browser zoom as it should not affect font
+  // size validation. The same font size value should always pass regardless of
+  // what the user's browser zoom is.
+  // TODO(crbug.com/352046941): This does not currently distinguish between
+  // browser zoom and cross-origin iframe zoom (set via CSS).
+  float font_size_dip = GetComputedStyle()->ComputedFontSize() /
+                        GetComputedStyle()->EffectiveZoom();
+
+  float css_zoom_factor =
+      GetComputedStyle()->EffectiveZoom() /
+      GetDocument().GetFrame()->LocalFrameRoot().LayoutZoomFactor();
+
+  // The min size is what `font-size:small` looks like when rendered in the
+  // document element of the local root frame, without any intervening CSS
+  // zoom factors applied.
+  float min_font_size_dip = FontSizeFunctions::FontSizeForKeyword(
+      &GetDocument(), FontSizeFunctions::KeywordSize(CSSValueID::kSmall),
+      GetComputedStyle()->GetFontDescription().IsMonospace());
+  if (font_size_dip < min_font_size_dip / css_zoom_factor) {
     AddConsoleWarning(
         String::Format("Font size of the permission element '%s' is too small",
                        GetType().Utf8().c_str()));
+    base::UmaHistogramEnumeration("Blink.PermissionElement.InvalidStyleReason",
+                                  InvalidStyleReason::kTooSmallFontSize);
     return false;
   }
 
-  if (GetComputedStyle()->ComputedFontSize() >
-      FontSizeFunctions::FontSizeForKeyword(
-          &GetDocument(), FontSizeFunctions::KeywordSize(CSSValueID::kXxxLarge),
-          GetComputedStyle()->GetFontDescription().IsMonospace())) {
+  // The max size is what `font-size:xxxlarge` looks like when rendered in the
+  // document element of the local root frame, without any intervening CSS
+  // zoom factors applied.
+  float max_font_size_dip = FontSizeFunctions::FontSizeForKeyword(
+      &GetDocument(), FontSizeFunctions::KeywordSize(CSSValueID::kXxxLarge),
+      GetComputedStyle()->GetFontDescription().IsMonospace());
+  if (font_size_dip > max_font_size_dip / css_zoom_factor) {
     AddConsoleWarning(
         String::Format("Font size of the permission element '%s' is too large",
                        GetType().Utf8().c_str()));
+    base::UmaHistogramEnumeration("Blink.PermissionElement.InvalidStyleReason",
+                                  InvalidStyleReason::kTooLargeFontSize);
     return false;
   }
 
@@ -1037,25 +1296,42 @@ void HTMLPermissionElement::DidFinishLifecycleUpdate(
   // "Unstable state" in this context occurs when the intersection rectangle
   // between the viewport and the element's layout box changes, indicating that
   // the element has been moved or resized.
+  gfx::Rect intersection_rect = ComputeIntersectionRectWithViewport(
+      local_frame_view.GetFrame().GetPage());
+  if (intersection_rect_.has_value() &&
+      intersection_rect_.value() != intersection_rect) {
+    DisableClickingTemporarily(DisableReason::kIntersectionWithViewportChanged,
+                               kDefaultDisableTimeout);
+  }
+  intersection_rect_ = intersection_rect;
+}
+
+gfx::Rect HTMLPermissionElement::ComputeIntersectionRectWithViewport(
+    const Page* page) {
   LayoutObject* layout_object = GetLayoutObject();
   if (!layout_object) {
-    return;
+    return gfx::Rect();
   }
 
-  gfx::Rect viewport_in_root_frame = ToEnclosingRect(
-      local_frame_view.GetFrame().GetPage()->GetVisualViewport().VisibleRect());
+  gfx::Rect viewport_in_root_frame =
+      ToEnclosingRect(page->GetVisualViewport().VisibleRect());
   PhysicalRect rect = To<LayoutBox>(layout_object)->PhysicalBorderBoxRect();
   // `MapToVisualRectInAncestorSpace` with a null `ancestor` argument will
   // mutate `rect` to visible rect in the root frame's coordinate space.
   layout_object->MapToVisualRectInAncestorSpace(/*ancestor*/ nullptr, rect);
-  gfx::Rect intersection_rect =
-      IntersectRects(viewport_in_root_frame, ToEnclosingRect(rect));
+  return IntersectRects(viewport_in_root_frame, ToEnclosingRect(rect));
+}
 
-  if (intersection_rect_ != intersection_rect) {
-    intersection_rect_ = intersection_rect;
-    DisableClickingTemporarily(DisableReason::kRecentlyAttachedToLayoutTree,
-                               kDefaultDisableTimeout);
+std::optional<base::TimeDelta>
+HTMLPermissionElement::GetRecentlyAttachedTimeoutRemaining() const {
+  base::TimeTicks now = base::TimeTicks::Now();
+  auto it = clicking_disabled_reasons_.find(
+      DisableReason::kRecentlyAttachedToLayoutTree);
+  if (it == clicking_disabled_reasons_.end()) {
+    return std::nullopt;
   }
+
+  return it->value - now;
 }
 
 }  // namespace blink

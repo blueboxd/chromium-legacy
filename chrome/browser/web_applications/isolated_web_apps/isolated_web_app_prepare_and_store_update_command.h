@@ -22,6 +22,7 @@
 #include "chrome/browser/web_applications/commands/web_app_command.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_install_command_helper.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_install_source.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_integrity_block_data.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_storage_location.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
 #include "chrome/browser/web_applications/locks/app_lock.h"
@@ -167,20 +168,24 @@ class IsolatedWebAppUpdatePrepareAndStoreCommand
 
   void CheckIfUpdateIsStillApplicable(base::OnceClosure next_step_callback);
 
-  void CheckTrustAndSignatures(base::OnceClosure next_step_callback);
+  void CheckTrustAndSignatures(
+      base::OnceCallback<
+          void(std::optional<web_package::SignedWebBundleIntegrityBlock>)>
+          next_step_callback);
 
-  void CreateStoragePartition(base::OnceClosure next_step_callback);
+  void CreateStoragePartition(
+      base::OnceClosure next_step_callback,
+      std::optional<web_package::SignedWebBundleIntegrityBlock>
+          integrity_block);
 
   void LoadInstallUrl(base::OnceClosure next_step_callback);
 
   void CheckInstallabilityAndRetrieveManifest(
-      base::OnceCallback<
-          void(IsolatedWebAppInstallCommandHelper::ManifestAndUrl)>
-          next_step_callback);
+      base::OnceCallback<void(blink::mojom::ManifestPtr)> next_step_callback);
 
   void ValidateManifestAndCreateInstallInfo(
       base::OnceCallback<void(WebAppInstallInfo)> next_step_callback,
-      IsolatedWebAppInstallCommandHelper::ManifestAndUrl manifest_and_url);
+      blink::mojom::ManifestPtr manifest);
 
   void RetrieveIconsAndPopulateInstallInfo(
       base::OnceCallback<void(WebAppInstallInfo)> next_step_callback,
@@ -199,6 +204,13 @@ class IsolatedWebAppUpdatePrepareAndStoreCommand
 
   const IsolatedWebAppUrlInfo url_info_;
   const std::optional<base::Version> expected_version_;
+
+  // The inferred integrity block data of the update bundle being processed.
+  std::optional<IsolatedWebAppIntegrityBlockData> integrity_block_data_;
+
+  bool same_version_update_allowed_by_key_rotation_ = false;
+  // Key Rotation data for this IWA.
+  std::optional<std::vector<uint8_t>> rotated_key_;
 
   std::optional<IwaSourceWithModeAndFileOp> update_source_;
   std::optional<IwaSourceWithMode> destination_location_;

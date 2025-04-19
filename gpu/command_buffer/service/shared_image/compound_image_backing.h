@@ -8,6 +8,7 @@
 #include "base/containers/enum_set.h"
 #include "base/memory/scoped_refptr.h"
 #include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_backing.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_manager.h"
@@ -40,7 +41,7 @@ using AccessStreamSet = base::EnumSet<SharedImageAccessStream,
 
 // A compound backing that combines a shared memory backing and real GPU
 // backing. The real GPU backing must implement `UploadFromMemory()` and not
-// have it's own shared memory segment.
+// have its own shared memory segment.
 // TODO(crbug.com/40213543): Support multiple GPU backings.
 class GPU_GLES2_EXPORT CompoundImageBacking : public SharedImageBacking {
  public:
@@ -49,15 +50,14 @@ class GPU_GLES2_EXPORT CompoundImageBacking : public SharedImageBacking {
 
   static bool IsValidSharedMemoryBufferFormat(const gfx::Size& size,
                                               viz::SharedImageFormat format);
-  static bool IsValidSharedMemoryBufferFormat(const gfx::Size& size,
-                                              gfx::BufferFormat buffer_format,
-                                              gfx::BufferPlane plane);
+
+  // Remove the SCANOUT flag if |kAllowShmOverlays|.
+  static SharedImageUsageSet GetGpuSharedImageUsage(SharedImageUsageSet usage);
 
   // Creates a backing that contains a shared memory backing and GPU backing
   // provided by `gpu_backing_factory`.
   static std::unique_ptr<SharedImageBacking> CreateSharedMemory(
       SharedImageBackingFactory* gpu_backing_factory,
-      bool allow_shm_overlays,
       const Mailbox& mailbox,
       gfx::GpuMemoryBufferHandle handle,
       viz::SharedImageFormat format,
@@ -65,23 +65,7 @@ class GPU_GLES2_EXPORT CompoundImageBacking : public SharedImageBacking {
       const gfx::ColorSpace& color_space,
       GrSurfaceOrigin surface_origin,
       SkAlphaType alpha_type,
-      uint32_t usage,
-      std::string debug_label);
-
-  // Creates a backing that contains a shared memory backing and GPU backing
-  // provided by `gpu_backing_factory`.
-  static std::unique_ptr<SharedImageBacking> CreateSharedMemory(
-      SharedImageBackingFactory* gpu_backing_factory,
-      bool allow_shm_overlays,
-      const Mailbox& mailbox,
-      gfx::GpuMemoryBufferHandle handle,
-      gfx::BufferFormat buffer_format,
-      gfx::BufferPlane plane,
-      const gfx::Size& size,
-      const gfx::ColorSpace& color_space,
-      GrSurfaceOrigin surface_origin,
-      SkAlphaType alpha_type,
-      uint32_t usage,
+      SharedImageUsageSet usage,
       std::string debug_label);
 
   // Creates a backing that contains a shared memory backing and GPU backing
@@ -93,14 +77,13 @@ class GPU_GLES2_EXPORT CompoundImageBacking : public SharedImageBacking {
   // BufferUsage.
   static std::unique_ptr<SharedImageBacking> CreateSharedMemory(
       SharedImageBackingFactory* gpu_backing_factory,
-      bool allow_shm_overlays,
       const Mailbox& mailbox,
       viz::SharedImageFormat format,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
       GrSurfaceOrigin surface_origin,
       SkAlphaType alpha_type,
-      uint32_t usage,
+      SharedImageUsageSet usage,
       std::string debug_label,
       gfx::BufferUsage buffer_usage);
 
@@ -183,9 +166,8 @@ class GPU_GLES2_EXPORT CompoundImageBacking : public SharedImageBacking {
       const gfx::ColorSpace& color_space,
       GrSurfaceOrigin surface_origin,
       SkAlphaType alpha_type,
-      uint32_t usage,
+      SharedImageUsageSet usage,
       std::string debug_label,
-      bool allow_shm_overlays,
       std::unique_ptr<SharedMemoryImageBacking> shm_backing,
       base::WeakPtr<SharedImageBackingFactory> gpu_backing_factory,
       std::optional<gfx::BufferUsage> buffer_usage = std::nullopt);

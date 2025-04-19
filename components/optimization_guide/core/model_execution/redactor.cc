@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/containers/heap_array.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/strcat.h"
@@ -37,8 +38,7 @@ Redactor::Redactor(std::vector<Rule>&& rules) {
 Redactor::~Redactor() = default;
 
 // static
-std::unique_ptr<Redactor> Redactor::FromProto(
-    const proto::RedactRules& proto_rules) {
+Redactor Redactor::FromProto(const proto::RedactRules& proto_rules) {
   std::vector<Redactor::Rule> rules;
   for (const auto& proto_rule : proto_rules.rules()) {
     if (proto_rule.regex().empty() ||
@@ -72,7 +72,7 @@ std::unique_ptr<Redactor> Redactor::FromProto(
                        proto_rule.min_pattern_length(),
                        proto_rule.max_pattern_length());
   }
-  return base::WrapUnique(new Redactor(std::move(rules)));
+  return Redactor(std::move(rules));
 }
 
 RedactResult Redactor::Redact(const std::string& input,
@@ -90,13 +90,13 @@ RedactResult Redactor::Rule::Process(const std::string& input,
   std::string_view output_view(output);
   const int group = matching_group_;
   // The first match gives the whole region.
-  std::string_view matches[group + 1];
+  auto matches = base::HeapArray<std::string_view>::WithSize(group + 1);
   size_t last_match_start = 0;
   std::string new_output;
   size_t next_start_offset = 0;
   while (next_start_offset < output_view.length() &&
          re_->Match(output_view, next_start_offset, output_view.length(),
-                    re2::RE2::UNANCHORED, matches, group + 1)) {
+                    re2::RE2::UNANCHORED, matches.data(), group + 1)) {
     const std::string_view& match(matches[group]);
     if (IsValidMatch(match)) {
       if (behavior_ == Redactor::Behavior::kReject) {

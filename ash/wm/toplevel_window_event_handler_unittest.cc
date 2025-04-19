@@ -44,6 +44,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/display/display_layout_builder.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
@@ -467,7 +468,7 @@ TEST_F(ToplevelWindowEventHandlerTest, DontDragIfModalChild) {
   std::unique_ptr<aura::Window> w1(CreateWindow(HTCAPTION));
   std::unique_ptr<aura::Window> w2(CreateWindow(HTCAPTION));
   w2->SetBounds(gfx::Rect(100, 0, 100, 100));
-  w2->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
+  w2->SetProperty(aura::client::kModalKey, ui::mojom::ModalType::kWindow);
   ::wm::AddTransientChild(w1.get(), w2.get());
   gfx::Size size = w1->bounds().size();
 
@@ -1024,8 +1025,8 @@ void SendMouseReleaseAndReleaseCapture(ui::test::EventGenerator* generator,
 
 }  // namespace
 
-// Test that a drag is successful even if ET_MOUSE_CAPTURE_CHANGED is sent
-// immediately after the mouse release. views::Widget has this behavior.
+// Test that a drag is successful even if EventType::kMouseCaptureChanged is
+// sent immediately after the mouse release. views::Widget has this behavior.
 TEST_F(ToplevelWindowEventHandlerTest, CaptureLossAfterMouseRelease) {
   std::unique_ptr<aura::Window> window(CreateWindow(HTNOWHERE));
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
@@ -1279,9 +1280,9 @@ TEST_F(ToplevelWindowEventHandlerDragTest,
   dragged_window_->SetProperty(aura::client::kResizeBehaviorKey,
                                aura::client::kResizeBehaviorNone);
 
-  SendGestureEvent(gfx::Point(0, 0), 0, 5, ui::ET_GESTURE_SCROLL_BEGIN);
+  SendGestureEvent(gfx::Point(0, 0), 0, 5, ui::EventType::kGestureScrollBegin);
   SendGestureEvent(gfx::Point(700, 500), 700, 500,
-                   ui::ET_GESTURE_SCROLL_UPDATE);
+                   ui::EventType::kGestureScrollUpdate);
   EXPECT_FALSE(WindowState::Get(dragged_window_.get())->is_dragged());
 
   EXPECT_FALSE(OverviewController::Get()->InOverviewSession());
@@ -1289,9 +1290,9 @@ TEST_F(ToplevelWindowEventHandlerDragTest,
 
 // Test that if window destroyed during resize/dragging, no crash should happen.
 TEST_F(ToplevelWindowEventHandlerDragTest, WindowDestroyedDuringDragging) {
-  SendGestureEvent(gfx::Point(0, 0), 0, 5, ui::ET_GESTURE_SCROLL_BEGIN);
+  SendGestureEvent(gfx::Point(0, 0), 0, 5, ui::EventType::kGestureScrollBegin);
   SendGestureEvent(gfx::Point(700, 500), 700, 500,
-                   ui::ET_GESTURE_SCROLL_UPDATE);
+                   ui::EventType::kGestureScrollUpdate);
   EXPECT_TRUE(WindowState::Get(dragged_window_.get())->is_dragged());
   ToplevelWindowEventHandler* event_handler =
       Shell::Get()->toplevel_window_event_handler();
@@ -1302,12 +1303,12 @@ TEST_F(ToplevelWindowEventHandlerDragTest, WindowDestroyedDuringDragging) {
 }
 
 // Test that `gesture_target_` is set immediately with
-// `ET_GESTURE_BEGIN`. The client may call `AttemptToStartDrag()` after
-// `ET_GESTURE_BEGIN` but before `ET_GESTURE_SCROLL_BEGIN` or
-// `ET_GESTURE_PINCH_BEGIN`.
+// `EventType::kGestureBegin`. The client may call `AttemptToStartDrag()` after
+// `EventType::kGestureBegin` but before `EventType::kGestureScrollBegin` or
+// `EventType::kGesturePinchBegin`.
 TEST_F(ToplevelWindowEventHandlerDragTest,
        GestureTargetIsSetAsSoonAsGestureStarts) {
-  SendGestureEvent(gfx::Point(0, 0), ui::ET_GESTURE_BEGIN);
+  SendGestureEvent(gfx::Point(0, 0), ui::EventType::kGestureBegin);
   ToplevelWindowEventHandler* event_handler =
       Shell::Get()->toplevel_window_event_handler();
 

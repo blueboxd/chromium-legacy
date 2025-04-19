@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/functional/callback_helpers.h"
@@ -88,6 +89,7 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace blink {
+
 namespace {
 
 using ::base::test::RunClosure;
@@ -175,7 +177,7 @@ class MockWebMediaPlayerClient : public WebMediaPlayerClient {
                                        const WebString&,
                                        bool));
   MOCK_METHOD1(RemoveVideoTrack, void(WebMediaPlayer::TrackId));
-  MOCK_METHOD1(MediaSourceOpened, void(WebMediaSource*));
+  MOCK_METHOD1(MediaSourceOpened, void(std::unique_ptr<WebMediaSource>));
   MOCK_METHOD2(RemotePlaybackCompatibilityChanged, void(const WebURL&, bool));
   MOCK_METHOD0(WasAlwaysMuted, bool());
   MOCK_METHOD0(HasSelectedVideoTrack, bool());
@@ -282,7 +284,7 @@ class MockWebMediaPlayerDelegate : public WebMediaPlayerDelegate {
     return is_stale_;
   }
 
-  bool IsFrameHidden() override { return is_hidden_; }
+  bool IsPageHidden() override { return is_page_hidden_; }
 
   void SetIdleForTesting(bool is_idle) { is_idle_ = is_idle; }
 
@@ -301,7 +303,9 @@ class MockWebMediaPlayerDelegate : public WebMediaPlayerDelegate {
     return is_stale_;
   }
 
-  void SetFrameHiddenForTesting(bool is_hidden) { is_hidden_ = is_hidden; }
+  void SetPageHiddenForTesting(bool is_page_hidden) {
+    is_page_hidden_ = is_page_hidden;
+  }
 
   int player_id() { return player_id_; }
 
@@ -310,7 +314,7 @@ class MockWebMediaPlayerDelegate : public WebMediaPlayerDelegate {
   int player_id_ = 1234;
   bool is_idle_ = false;
   bool is_stale_ = false;
-  bool is_hidden_ = false;
+  bool is_page_hidden_ = false;
 };
 
 class MockSurfaceLayerBridge : public WebSurfaceLayerBridge {
@@ -620,10 +624,10 @@ class WebMediaPlayerImplTest
     EXPECT_CALL(*compositor_, SetIsPageVisible(false))
         .WillOnce(RunClosure(loop.QuitClosure()));
 
-    delegate_.SetFrameHiddenForTesting(true);
+    delegate_.SetPageHiddenForTesting(true);
     SetWasSuspendedForFrameClosed(false);
 
-    wmpi_->OnFrameHidden();
+    wmpi_->OnPageHidden();
 
     loop.Run();
 
@@ -636,10 +640,10 @@ class WebMediaPlayerImplTest
     EXPECT_CALL(*compositor_, SetIsPageVisible(true))
         .WillOnce(RunClosure(loop.QuitClosure()));
 
-    delegate_.SetFrameHiddenForTesting(false);
+    delegate_.SetPageHiddenForTesting(false);
     SetWasSuspendedForFrameClosed(false);
 
-    wmpi_->OnFrameShown();
+    wmpi_->OnPageShown();
 
     loop.Run();
 
@@ -840,11 +844,12 @@ class WebMediaPlayerImplTest
   void OnProgress() { wmpi_->OnProgress(); }
 
   void OnCdmCreated(base::RepeatingClosure quit_closure,
-                    WebContentDecryptionModule* cdm,
-                    const std::string& error_message) {
-    LOG_IF(ERROR, !error_message.empty()) << error_message;
+                    std::unique_ptr<WebContentDecryptionModule> cdm,
+                    media::CreateCdmStatus status) {
+    LOG_IF(ERROR, status != media::CreateCdmStatus::kSuccess)
+        << "status = " << static_cast<int>(status);
     EXPECT_TRUE(cdm);
-    web_cdm_.reset(cdm);
+    web_cdm_ = std::move(cdm);
     quit_closure.Run();
   }
 

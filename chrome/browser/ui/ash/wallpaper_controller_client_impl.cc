@@ -12,12 +12,14 @@
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/wallpaper/online_wallpaper_params.h"
 #include "ash/public/cpp/wallpaper/wallpaper_controller.h"
+#include "ash/public/cpp/window_backdrop.h"
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom.h"
 #include "ash/webui/personalization_app/personalization_app_url_constants.h"
 #include "ash/webui/personalization_app/proto/backdrop_wallpaper.pb.h"
 #include "ash/webui/system_apps/public/system_web_app_type.h"
 #include "base/check_is_test.h"
 #include "base/command_line.h"
+#include "base/containers/extend.h"
 #include "base/functional/bind.h"
 #include "base/hash/hash.h"
 #include "base/hash/sha1.h"
@@ -26,6 +28,7 @@
 #include "base/rand_util.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -33,6 +36,8 @@
 #include "chrome/browser/ash/customization/customization_wallpaper_util.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
 #include "chrome/browser/ash/drive/file_system_util.h"
+#include "chrome/browser/ash/file_manager/volume.h"
+#include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ash/wallpaper/wallpaper_drivefs_delegate_impl.h"
 #include "chrome/browser/ash/wallpaper_handlers/wallpaper_fetcher_delegate.h"
@@ -42,11 +47,14 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/contents_web_view.h"
 #include "chrome/browser/ui/webui/ash/settings/pref_names.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/ash/components/cryptohome/system_salt_getter.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
+#include "chromeos/ui/base/window_properties.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/core/common/device_local_account_type.h"
 #include "components/prefs/pref_service.h"
@@ -56,6 +64,7 @@
 #include "components/sync/service/sync_user_settings.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "ui/display/screen.h"
 #include "url/gurl.h"
 
@@ -99,7 +108,7 @@ user_manager::UserType GetUserType(const AccountId& id) {
 //    and we may lose user => wallpaper files mapping at that point.
 // So this function gives WallpaperManager independent hashing method to break
 // this dependency.
-std::string HashWallpaperFilesIdStr(const std::string& files_id_unhashed) {
+std::string HashWallpaperFilesIdStr(std::string_view files_id_unhashed) {
   ash::SystemSaltGetter* salt_getter = ash::SystemSaltGetter::Get();
   DCHECK(salt_getter);
 
@@ -108,15 +117,12 @@ std::string HashWallpaperFilesIdStr(const std::string& files_id_unhashed) {
   if (!salt)
     LOG(FATAL) << "WallpaperManager HashWallpaperFilesIdStr(): no salt!";
 
-  unsigned char binmd[base::kSHA1Length];
-  std::string lowercase(files_id_unhashed);
-  base::ranges::transform(lowercase, lowercase.begin(), ::tolower);
   std::vector<uint8_t> data = *salt;
-  base::ranges::copy(files_id_unhashed, std::back_inserter(data));
-  base::SHA1HashBytes(data.data(), data.size(), binmd);
-  std::string result = base::HexEncode(binmd);
-  base::ranges::transform(result, result.begin(), ::tolower);
-  return result;
+  // Note: The original code in https://codereview.chromium.org/1886653002/
+  // presumably meant to lowercase the input string before hashing, but it did
+  // not.
+  base::Extend(data, base::as_byte_span(files_id_unhashed));
+  return base::ToLowerASCII(base::HexEncode(base::SHA1Hash(data)));
 }
 
 // Returns true if wallpaper files id can be returned successfully.
@@ -138,7 +144,12 @@ void GetFilesIdSaltReady(
 
   const std::string wallpaper_files_id =
       HashWallpaperFilesIdStr(account_id.GetUserEmail());
-  known_user.SetStringPref(account_id, kWallpaperFilesId, wallpaper_files_id);
+  if (known_user.UserExists(account_id)) {
+    // This is async call, so during the operation (i.e. waiting for salt
+    // is updated via D-Bus), the user may be deleted. Do not cache for
+    // such cases, but still returns the value.
+    known_user.SetStringPref(account_id, kWallpaperFilesId, wallpaper_files_id);
+  }
   std::move(files_id_callback).Run(wallpaper_files_id);
 }
 
@@ -338,6 +349,55 @@ bool WallpaperControllerClientImpl::IsWallpaperSyncEnabled(
   return user_settings->IsSyncAllOsTypesEnabled() ||
          profile->GetPrefs()->GetBoolean(
              ash::settings::prefs::kSyncOsWallpaper);
+}
+
+void WallpaperControllerClientImpl::CancelPreviewWallpaper(Profile* profile) {
+  wallpaper_controller_->CancelPreviewWallpaper();
+  user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(profile);
+  wallpaper_controller_->RestoreMinimizedWindows(user->username_hash());
+}
+
+void WallpaperControllerClientImpl::ConfirmPreviewWallpaper(Profile* profile) {
+  wallpaper_controller_->ConfirmPreviewWallpaper();
+  user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(profile);
+  wallpaper_controller_->RestoreMinimizedWindows(user->username_hash());
+}
+
+void WallpaperControllerClientImpl::MakeTransparent(
+    content::WebContents* web_contents) {
+  // Disable the window backdrop that creates an opaque layer in tablet mode.
+  ash::WindowBackdrop* window_backdrop =
+      ash::WindowBackdrop::Get(web_contents->GetTopLevelNativeWindow());
+  window_backdrop->SetBackdropMode(
+      ash::WindowBackdrop::BackdropMode::kDisabled);
+
+  // Set transparency on the top level native window and tell the WM not to
+  // change it when window state changes.
+  aura::Window* top_level_window = web_contents->GetTopLevelNativeWindow();
+  top_level_window->SetProperty(::chromeos::kWindowManagerManagesOpacityKey,
+                                false);
+  top_level_window->SetTransparent(true);
+
+  // Set the background color to transparent.
+  web_contents->GetRenderWidgetHostView()->SetBackgroundColor(
+      SK_ColorTRANSPARENT);
+
+  // Turn off the web contents background.
+  static_cast<ContentsWebView*>(BrowserView::GetBrowserViewForNativeWindow(
+                                    web_contents->GetTopLevelNativeWindow())
+                                    ->contents_web_view())
+      ->SetBackgroundVisible(false);
+}
+
+void WallpaperControllerClientImpl::MakeOpaque(
+    content::WebContents* web_contents) {
+  // Reversing `contents_web_view` is sufficient to make the view opaque,
+  // as `window_backdrop`, `top_level_window` and `web_contents` are not
+  // highly impactful to the animated theme change effect.
+  static_cast<ContentsWebView*>(BrowserView::GetBrowserViewForNativeWindow(
+                                    web_contents->GetTopLevelNativeWindow())
+                                    ->contents_web_view())
+      ->SetBackgroundVisible(true);
 }
 
 void WallpaperControllerClientImpl::OnVolumeMounted(

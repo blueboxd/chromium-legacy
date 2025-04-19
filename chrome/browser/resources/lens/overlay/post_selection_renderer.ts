@@ -4,16 +4,19 @@
 
 import {assert, assertNotReached} from '//resources/js/assert.js';
 import {EventTracker} from '//resources/js/event_tracker.js';
-import {loadTimeData} from '//resources/js/load_time_data.js';
 import {PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BrowserProxyImpl} from './browser_proxy.js';
+import type {BrowserProxy} from './browser_proxy.js';
 import {CenterRotatedBox_CoordinateType} from './geometry.mojom-webui.js';
 import type {CenterRotatedBox} from './geometry.mojom-webui.js';
-import {focusShimmerOnRegion, ShimmerControlRequester, unfocusShimmer} from './overlay_shimmer.js';
+import {UserAction} from './lens.mojom-webui.js';
+import {INVOCATION_SOURCE} from './lens_overlay_app.js';
+import {recordLensOverlayInteraction} from './metrics_utils.js';
 import {getTemplate} from './post_selection_renderer.html.js';
+import {focusShimmerOnRegion, ShimmerControlRequester, unfocusShimmer} from './selection_utils.js';
 import type {GestureEvent} from './selection_utils.js';
-import {toPercent} from './values_converter.js';
+import {toPercent, toPixels} from './values_converter.js';
 
 // Bounding box send to PostSelectionRendererElement to render a bounding box.
 // The numbers should be normalized to the image dimensions, between 0 and 1
@@ -27,7 +30,6 @@ export interface PostSelectionBoundingBox {
 // The target currently being dragged on by the user.
 enum DragTarget {
   NONE,
-  WHOLE_BOX,
   TOP_LEFT,
   TOP_RIGHT,
   BOTTOM_RIGHT,
@@ -37,10 +39,17 @@ enum DragTarget {
 // The amount of pixels around the edge leave as a buffer so user can't drag too
 // far. Exported for testing.
 export const PERIMETER_SELECTION_PADDING_PX = 4;
-
-// The value for the corner length when the animation finishes and the box is
-// in a resting state. Exported for testing.
-export const RESTING_CORNER_LENGTH_PX = 22;
+// The maximum length of a corner. Exported for testing.
+export const MAX_CORNER_LENGTH_PX = 22;
+// The maximum radius of a corner. Exported for testing.
+export const MAX_CORNER_RADIUS_PX = 14;
+// Cutout radius used with larger corner radii. Exported for testing.
+export const CUTOUT_RADIUS_PX = 5;
+// A cutout radius will only be used when the corner radius is above this
+// threshold.
+const CUTOUT_RADIUS_THRESHOLD_PX = 12;
+// Minimum box size allowed. Exported for testing.
+export const MIN_BOX_SIZE_PX = 12;
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
@@ -50,6 +59,12 @@ export interface PostSelectionRendererElement {
   $: {
     postSelection: HTMLElement,
   };
+}
+
+interface CornerDimensions {
+  length: number;
+  radius: number;
+  cutoutRadius: number;
 }
 
 /*
@@ -75,10 +90,6 @@ export class PostSelectionRendererElement extends PolymerElement {
       screenshotDataUri: String,
       currentDragTarget: Number,
       cornerIds: Array,
-      enableSelectionDragging: {
-        type: Boolean,
-        reflectToAttribute: true,
-      },
     };
   }
 
@@ -100,8 +111,12 @@ export class PostSelectionRendererElement extends PolymerElement {
   // The original bounds from the start of a drag.
   private originalBounds:
       PostSelectionBoundingBox = {left: 0, top: 0, width: 0, height: 0};
-  private enableSelectionDragging: boolean =
-      loadTimeData.getBoolean('enableSelectionDragging');
+  private browserProxy: BrowserProxy = BrowserProxyImpl.getInstance();
+  private resizeObserver: ResizeObserver = new ResizeObserver(() => {
+    this.handleResize();
+  });
+  private newBoxAnimation: Animation|null = null;
+  private animateOnResize = false;
 
   override connectedCallback() {
     super.connectedCallback();
@@ -110,26 +125,34 @@ export class PostSelectionRendererElement extends PolymerElement {
         (e: CustomEvent<PostSelectionBoundingBox>) => {
           this.onRenderPostSelection(e);
         });
+    this.eventTracker_.add(document, 'finished-receiving-text', () => {
+      if (this.hasSelection()) {
+        // Check for selectable text
+        this.dispatchEvent(new CustomEvent('detect-text-in-region', {
+          bubbles: true,
+          composed: true,
+          detail: this.getNormalizedCenterRotatedBox(),
+        }));
+      }
+    });
+    this.resizeObserver.observe(this);
     // Set up listener to listen to events from C++.
     this.listenerIds = [
-      BrowserProxyImpl.getInstance()
-          .callbackRouter.clearAllSelections.addListener(
-              this.clearSelection.bind(this)),
-      BrowserProxyImpl.getInstance()
-          .callbackRouter.clearRegionSelection.addListener(
-              this.clearSelection.bind(this)),
-      BrowserProxyImpl.getInstance()
-          .callbackRouter.setPostRegionSelection.addListener(
-              this.setSelection.bind(this)),
+      this.browserProxy.callbackRouter.clearAllSelections.addListener(
+          this.clearSelection.bind(this)),
+      this.browserProxy.callbackRouter.clearRegionSelection.addListener(
+          this.clearSelection.bind(this)),
+      this.browserProxy.callbackRouter.setPostRegionSelection.addListener(
+          this.setSelection.bind(this)),
     ];
   }
 
   override disconnectedCallback() {
     super.disconnectedCallback();
     this.eventTracker_.removeAll();
+    this.resizeObserver.unobserve(this);
     this.listenerIds.forEach(
-        id => assert(
-            BrowserProxyImpl.getInstance().callbackRouter.removeListener(id)));
+        id => assert(this.browserProxy.callbackRouter.removeListener(id)));
     this.listenerIds = [];
   }
 
@@ -139,6 +162,7 @@ export class PostSelectionRendererElement extends PolymerElement {
     this.width = 0;
     this.dispatchEvent(new CustomEvent(
         'hide-detected-text-context-menu', {bubbles: true, composed: true}));
+    this.notifyPostSelectionUpdated();
   }
 
   handleDownGesture(event: GestureEvent): boolean {
@@ -162,20 +186,8 @@ export class PostSelectionRendererElement extends PolymerElement {
     const imageBounds = this.getBoundingClientRect();
     const normalizedX = (event.clientX - imageBounds.left) / imageBounds.width;
     const normalizedY = (event.clientY - imageBounds.top) / imageBounds.height;
-    const normalizedStartX =
-        (event.startX - imageBounds.left) / imageBounds.width;
-    const normalizedStartY =
-        (event.startY - imageBounds.top) / imageBounds.height;
-    const normalizedMinBoxWidth = this.getMinBoxSize() / imageBounds.width;
-    const normalizedMinBoxHeight = this.getMinBoxSize() / imageBounds.height;
-    const normalizedPerimeterPaddingWidth =
-        PERIMETER_SELECTION_PADDING_PX / imageBounds.width;
-    const normalizedPerimeterPaddingHeight =
-        PERIMETER_SELECTION_PADDING_PX / imageBounds.height;
-    const minXValue = normalizedPerimeterPaddingWidth;
-    const minYValue = normalizedPerimeterPaddingHeight;
-    const maxXValue = 1 - normalizedPerimeterPaddingWidth;
-    const maxYValue = 1 - normalizedPerimeterPaddingHeight;
+    const normalizedMinBoxWidth = MIN_BOX_SIZE_PX / imageBounds.width;
+    const normalizedMinBoxHeight = MIN_BOX_SIZE_PX / imageBounds.height;
 
     const currentLeft = this.left;
     const currentTop = this.top;
@@ -211,83 +223,27 @@ export class PostSelectionRendererElement extends PolymerElement {
         newRight = currentRight;
         newBottom = Math.max(normalizedY, currentTop + normalizedMinBoxHeight);
         break;
-      case DragTarget.WHOLE_BOX:
-        // Only adjust if the drag will keep the image in bounds horizontally.
-        const dragDeltaX = normalizedX - normalizedStartX;
-        const originalRight =
-            this.originalBounds.left + this.originalBounds.width;
-
-        if (dragDeltaX >= 0) {
-          // Drag is left to right
-          if (dragDeltaX + originalRight <= maxXValue) {
-            // Drag is in bounds
-            newLeft = this.originalBounds.left + dragDeltaX;
-            newRight = originalRight + dragDeltaX;
-          } else {
-            // Drag is out of bounds. Set the box as far right as possible.
-            newLeft = maxXValue - this.width;
-            newRight = maxXValue;
-          }
-        } else {
-          // Drag is right to left
-          if (dragDeltaX + this.originalBounds.left >= minXValue) {
-            // Drag is in bounds
-            newLeft = this.originalBounds.left + dragDeltaX;
-            newRight = originalRight + dragDeltaX;
-          } else {
-            // Drag is out of bounds. Set the box as far left as possible.
-            newLeft = minXValue;
-            newRight = minXValue + this.width;
-          }
-        }
-
-        // Only adjust if the drag will keep the image in bounds vertically.
-        const dragDeltaY = normalizedY - normalizedStartY;
-        const originalBottom =
-            this.originalBounds.top + this.originalBounds.height;
-        if (dragDeltaY >= 0) {
-          // Drag is top to bottom
-          if (dragDeltaY + originalBottom <= maxYValue) {
-            // Drag is in bounds
-            newTop = this.originalBounds.top + dragDeltaY;
-            newBottom = originalBottom + dragDeltaY;
-          } else {
-            // Drag is out of bounds. Set the box as far down as possible.
-            newTop = maxYValue - this.height;
-            newBottom = maxYValue;
-          }
-        } else {
-          // Drag is bottom to top
-          if (dragDeltaY + this.originalBounds.top >= minYValue) {
-            // Drag is in bounds
-            newTop = this.originalBounds.top + dragDeltaY;
-            newBottom = originalBottom + dragDeltaY;
-          } else {
-            // Drag is out of bounds. Set the box as far up as possible.
-            newTop = minYValue;
-            newBottom = minYValue + this.height;
-          }
-        }
-        break;
       default:
         assertNotReached();
     }
-    assert(newLeft);
-    assert(newTop);
-    assert(newRight);
-    assert(newBottom);
+    assert(newLeft !== undefined);
+    assert(newTop !== undefined);
+    assert(newRight !== undefined);
+    assert(newBottom !== undefined);
 
     // Ensure the new region is within the image bounds.
-    newLeft = clamp(newLeft, minXValue, maxXValue - normalizedMinBoxWidth);
-    newTop = clamp(newTop, minYValue, maxYValue - normalizedMinBoxHeight);
-    newRight = clamp(newRight, minXValue + normalizedMinBoxWidth, maxXValue);
-    newBottom = clamp(newBottom, minYValue + normalizedMinBoxHeight, maxYValue);
+    const clampedBounds = this.getClampedBounds({
+      left: newLeft,
+      top: newTop,
+      width: newRight - newLeft,
+      height: newBottom - newTop,
+    });
 
     // Set the new dimensions.
-    this.left = newLeft;
-    this.top = newTop;
-    this.width = newRight - newLeft;
-    this.height = newBottom - newTop;
+    this.left = clampedBounds.left;
+    this.top = clampedBounds.top;
+    this.width = clampedBounds.width;
+    this.height = clampedBounds.height;
 
     this.rerender();
   }
@@ -295,8 +251,8 @@ export class PostSelectionRendererElement extends PolymerElement {
   handleUpGesture() {
     if (this.areBoundsChanging()) {
       // Issue Lens request for new bounds
-      BrowserProxyImpl.getInstance().handler.issueLensRequest(
-          this.getNormalizedCenterRotatedBox());
+      BrowserProxyImpl.getInstance().handler.issueLensRegionRequest(
+          this.getNormalizedCenterRotatedBox(), /*is_click=*/ false);
 
       // Check for selectable text
       this.dispatchEvent(new CustomEvent('detect-text-in-region', {
@@ -304,6 +260,9 @@ export class PostSelectionRendererElement extends PolymerElement {
         composed: true,
         detail: this.getNormalizedCenterRotatedBox(),
       }));
+
+      recordLensOverlayInteraction(
+          INVOCATION_SOURCE, UserAction.kRegionSelectionChange);
     }
 
     this.originalBounds = {left: 0, top: 0, width: 0, height: 0};
@@ -313,10 +272,6 @@ export class PostSelectionRendererElement extends PolymerElement {
   cancelGesture() {
     this.originalBounds = {left: 0, top: 0, width: 0, height: 0};
     this.currentDragTarget = DragTarget.NONE;
-  }
-
-  enableSelectionDraggingForTesting() {
-    this.enableSelectionDragging = true;
   }
 
   private setSelection(region: CenterRotatedBox) {
@@ -343,40 +298,171 @@ export class PostSelectionRendererElement extends PolymerElement {
     this.triggerNewBoxAnimation();
   }
 
+  // Returns the bounds of the post selection clamped to the edges of the image,
+  // including the post selection corners. If no bounds are given, uses those
+  // currently being rendered.
+  private getClampedBounds(bounds?: PostSelectionBoundingBox):
+      PostSelectionBoundingBox {
+    const imageBounds = this.getBoundingClientRect();
+    const left = bounds ? bounds.left : this.left;
+    const top = bounds ? bounds.top : this.top;
+    const right = bounds ? bounds.left + bounds.width : this.left + this.width;
+    const bottom = bounds ? bounds.top + bounds.height : this.top + this.height;
+
+    // Helper values to clamp to within the bounds.
+    const normalizedMinBoxWidth = MIN_BOX_SIZE_PX / imageBounds.width;
+    const normalizedMinBoxHeight = MIN_BOX_SIZE_PX / imageBounds.height;
+    const normalizedPerimeterPaddingWidth =
+        PERIMETER_SELECTION_PADDING_PX / imageBounds.width;
+    const normalizedPerimeterPaddingHeight =
+        PERIMETER_SELECTION_PADDING_PX / imageBounds.height;
+    const minXValue = normalizedPerimeterPaddingWidth;
+    const minYValue = normalizedPerimeterPaddingHeight;
+    const maxXValue = 1 - normalizedPerimeterPaddingWidth;
+    const maxYValue = 1 - normalizedPerimeterPaddingHeight;
+
+    // Clamp the values to within the selection overlay bounds.
+    const clampedLeft =
+        clamp(left, minXValue, maxXValue - normalizedMinBoxWidth);
+    const clampedTop =
+        clamp(top, minYValue, maxYValue - normalizedMinBoxHeight);
+    const clampedRight =
+        clamp(right, minXValue + normalizedMinBoxWidth, maxXValue);
+    const clampedBottom =
+        clamp(bottom, minYValue + normalizedMinBoxHeight, maxYValue);
+
+    return {
+      left: clampedLeft,
+      top: clampedTop,
+      width: clampedRight - clampedLeft,
+      height: clampedBottom - clampedTop,
+    };
+  }
+
+  private handleResize() {
+    // Only update properties defined absolutely, i.e. corner dimensions.
+    // Properties that are defined relatively do not need to be updated.
+    this.updateCornerDimensions();
+    if (this.newBoxAnimation) {
+      (this.newBoxAnimation.effect as KeyframeEffect)
+          .setKeyframes(this.getNewBoxAnimationKeyframes());
+    } else if (this.animateOnResize) {
+      this.animateOnResize = false;
+      this.triggerNewBoxAnimation();
+    }
+    this.rerender();
+  }
+
   private rerender() {
+    // rerender() can be called when there is not a selection present. This
+    // should be a no-op otherwise the shimmer will be set to focus on the post
+    // selection region without a selection.
+    if (!this.hasSelection()) {
+      return;
+    }
+
+    const clampedBounds = this.getClampedBounds();
     // Set the CSS properties to reflect current bounds and force rerender.
-    this.style.setProperty('--selection-width', toPercent(this.width));
-    this.style.setProperty('--selection-height', toPercent(this.height));
-    this.style.setProperty('--selection-top', toPercent(this.top));
-    this.style.setProperty('--selection-left', toPercent(this.left));
+    this.style.setProperty('--selection-width', toPercent(clampedBounds.width));
+    this.style.setProperty(
+        '--selection-height', toPercent(clampedBounds.height));
+    this.style.setProperty('--selection-top', toPercent(clampedBounds.top));
+    this.style.setProperty('--selection-left', toPercent(clampedBounds.left));
+
+    this.updateCornerDimensions();
 
     // Focus the shimmer on the new post selection region.
     focusShimmerOnRegion(
-        this, this.top, this.left, this.width, this.height,
-        ShimmerControlRequester.POST_SELECTION);
+        this, clampedBounds.top, clampedBounds.left, clampedBounds.width,
+        clampedBounds.height, ShimmerControlRequester.POST_SELECTION);
+
+    this.notifyPostSelectionUpdated();
+  }
+
+  private updateCornerDimensions() {
+    const cornerDimensions = this.getCornerDimensions();
+    this.style.setProperty(
+        '--post-selection-corner-horizontal-length',
+        toPixels(cornerDimensions.length));
+    this.style.setProperty(
+        '--post-selection-corner-vertical-length',
+        toPixels(cornerDimensions.length));
+    this.style.setProperty(
+        '--post-selection-corner-radius', toPixels(cornerDimensions.radius));
+    this.style.setProperty(
+        '--post-selection-cutout-corner-radius',
+        toPixels(cornerDimensions.cutoutRadius));
   }
 
   private triggerNewBoxAnimation() {
     const parentBoundingRect = this.getBoundingClientRect();
-    this.animate(
-        [
-          {
-            [`--post-selection-corner-horizontal-length`]:
-                `${parentBoundingRect.width * this.width / 2}px`,
-            [`--post-selection-corner-vertical-length`]:
-                `${parentBoundingRect.height * this.height / 2}px`,
-          },
-          {
-            [`--post-selection-corner-horizontal-length`]:
-                `${RESTING_CORNER_LENGTH_PX}px`,
-            [`--post-selection-corner-vertical-length`]:
-                `${RESTING_CORNER_LENGTH_PX}px`,
-          },
-        ],
-        {
-          duration: 450,
-          easing: 'cubic-bezier(0.2, 0.0, 0, 1.0)',
-        });
+    if (parentBoundingRect.width === 0 || parentBoundingRect.height === 0) {
+      // Renderer has probably not been sized yet. Defer until resize.
+      this.animateOnResize = true;
+      return;
+    }
+
+    this.newBoxAnimation = this.animate(this.getNewBoxAnimationKeyframes(), {
+      duration: 450,
+      easing: 'cubic-bezier(0.2, 0.0, 0, 1.0)',
+    });
+    this.newBoxAnimation.onfinish = () => {
+      this.newBoxAnimation = null;
+    };
+  }
+
+  private getNewBoxAnimationKeyframes() {
+    const parentBoundingRect = this.getBoundingClientRect();
+    const cornerDimensions = this.getCornerDimensions();
+    return [
+      {
+        [`--post-selection-corner-horizontal-length`]:
+            toPixels(parentBoundingRect.width * this.width / 2),
+        [`--post-selection-corner-vertical-length`]:
+            toPixels(parentBoundingRect.height * this.height / 2),
+      },
+      {
+        [`--post-selection-corner-horizontal-length`]:
+            toPixels(cornerDimensions.length),
+        [`--post-selection-corner-vertical-length`]:
+            toPixels(cornerDimensions.length),
+      },
+    ];
+  }
+
+  private getCornerDimensions(): CornerDimensions {
+    const imageBounds = this.getBoundingClientRect();
+    if (imageBounds.width === 0 || imageBounds.height === 0) {
+      // Renderer has probably not been sized yet. Return default values.
+      return {
+        length: MAX_CORNER_LENGTH_PX,
+        radius: MAX_CORNER_RADIUS_PX,
+        cutoutRadius: CUTOUT_RADIUS_PX,
+      };
+    }
+
+    const shortestSide = Math.min(
+        this.width * imageBounds.width, this.height * imageBounds.height);
+    const length = Math.min(shortestSide / 2, MAX_CORNER_LENGTH_PX);
+    const radius = Math.min(shortestSide / 3, MAX_CORNER_RADIUS_PX);
+    // Do not use a cutout radius at small radii to prevent gaps.
+    const cutoutRadius =
+        radius > CUTOUT_RADIUS_THRESHOLD_PX ? CUTOUT_RADIUS_PX : 0;
+
+    return {length, radius, cutoutRadius};
+  }
+
+  private notifyPostSelectionUpdated() {
+    this.dispatchEvent(new CustomEvent('post-selection-updated', {
+      bubbles: true,
+      composed: true,
+      detail: {
+        top: this.top,
+        left: this.left,
+        width: this.width,
+        height: this.height,
+      },
+    }));
   }
 
   // Returns if the current bounds are being updated.
@@ -393,7 +479,8 @@ export class PostSelectionRendererElement extends PolymerElement {
   private dragTargetFromPoint(x: number, y: number): DragTarget {
     const topMostElements = this.shadowRoot!.elementsFromPoint(x, y);
     const topMostDraggableElement = topMostElements.find(el => {
-      return (el instanceof HTMLElement) && el.classList.contains('draggable');
+      return (el instanceof HTMLElement) &&
+          el.classList.contains('corner-hit-box');
     });
     if (!topMostDraggableElement) {
       return DragTarget.NONE;
@@ -407,8 +494,6 @@ export class PostSelectionRendererElement extends PolymerElement {
         return DragTarget.BOTTOM_RIGHT;
       case 'bottomLeft':
         return DragTarget.BOTTOM_LEFT;
-      case 'selectionCorners':
-        return DragTarget.WHOLE_BOX;
       default:
         // Did not click on a target we care about.
         break;
@@ -417,11 +502,7 @@ export class PostSelectionRendererElement extends PolymerElement {
   }
 
   private shouldHandleDownGesture(): boolean {
-    if (this.enableSelectionDragging) {
-      return this.currentDragTarget !== DragTarget.NONE;
-    }
-    return this.currentDragTarget !== DragTarget.NONE &&
-        this.currentDragTarget !== DragTarget.WHOLE_BOX;
+    return this.currentDragTarget !== DragTarget.NONE;
   }
 
   // Converts the current region to a CenterRotatedBox
@@ -447,11 +528,6 @@ export class PostSelectionRendererElement extends PolymerElement {
   // Used in HTML template to know if there is currently a selection to render.
   private hasSelection(): boolean {
     return this.width > 0 && this.height > 0;
-  }
-
-  // Gets the minimum size the selected region can be. Public for testing.
-  private getMinBoxSize(): number {
-    return RESTING_CORNER_LENGTH_PX * 2;
   }
 }
 
@@ -490,5 +566,5 @@ CSS.registerProperty({
   name: '--post-selection-corner-radius',
   syntax: '<length>',
   inherits: true,
-  initialValue: '12px',
+  initialValue: '14px',
 });

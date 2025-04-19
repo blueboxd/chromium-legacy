@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_handler.h"
 
 #include <string.h>
@@ -775,7 +780,8 @@ bool RTCPeerConnectionHandler::Initialize(
     const webrtc::PeerConnectionInterface::RTCConfiguration&
         server_configuration,
     WebLocalFrame* frame,
-    ExceptionState& exception_state) {
+    ExceptionState& exception_state,
+    RTCRtpTransport* rtp_transport) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK(dependency_factory_);
 
@@ -814,7 +820,8 @@ bool RTCPeerConnectionHandler::Initialize(
   peer_connection_observer_ =
       MakeGarbageCollected<Observer>(weak_factory_.GetWeakPtr(), task_runner_);
   native_peer_connection_ = dependency_factory_->CreatePeerConnection(
-      configuration_, frame_, peer_connection_observer_, exception_state);
+      configuration_, frame_, peer_connection_observer_, exception_state,
+      rtp_transport);
   if (!native_peer_connection_.get()) {
     LOG(ERROR) << "Failed to initialize native PeerConnection.";
     return false;
@@ -835,7 +842,8 @@ bool RTCPeerConnectionHandler::InitializeForTest(
     const webrtc::PeerConnectionInterface::RTCConfiguration&
         server_configuration,
     PeerConnectionTracker* peer_connection_tracker,
-    ExceptionState& exception_state) {
+    ExceptionState& exception_state,
+    RTCRtpTransport* rtp_transport) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK(dependency_factory_);
 
@@ -848,7 +856,8 @@ bool RTCPeerConnectionHandler::InitializeForTest(
       MakeGarbageCollected<Observer>(weak_factory_.GetWeakPtr(), task_runner_);
 
   native_peer_connection_ = dependency_factory_->CreatePeerConnection(
-      configuration_, nullptr, peer_connection_observer_, exception_state);
+      configuration_, nullptr, peer_connection_observer_, exception_state,
+      rtp_transport);
   if (!native_peer_connection_.get()) {
     LOG(ERROR) << "Failed to initialize native PeerConnection.";
     return false;
@@ -1528,7 +1537,7 @@ webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
 RTCPeerConnectionHandler::RemoveTrack(blink::RTCRtpSenderPlatform* web_sender) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::RemoveTrack");
-  auto* it = FindSender(web_sender->Id());
+  auto it = FindSender(web_sender->Id());
   if (it == rtp_senders_.end())
     return webrtc::RTCError(webrtc::RTCErrorType::INVALID_PARAMETER);
   const auto& sender = *it;
@@ -1899,7 +1908,7 @@ void RTCPeerConnectionHandler::OnModifyTransceivers(
     uintptr_t transceiver_id = blink::RTCRtpTransceiverImpl::GetId(
         transceiver_states[i].webrtc_transceiver().get());
     ids[i] = transceiver_id;
-    auto* it = FindTransceiver(transceiver_id);
+    auto it = FindTransceiver(transceiver_id);
     bool transceiver_is_new = (it == rtp_transceivers_.end());
     bool transceiver_was_modified = false;
     if (!transceiver_is_new) {
@@ -2055,30 +2064,22 @@ void RTCPeerConnectionHandler::ReportFirstSessionDescriptions(
 
 Vector<std::unique_ptr<blink::RTCRtpSenderImpl>>::iterator
 RTCPeerConnectionHandler::FindSender(uintptr_t id) {
-  for (auto* it = rtp_senders_.begin(); it != rtp_senders_.end(); ++it) {
-    if ((*it)->Id() == id)
-      return it;
-  }
-  return rtp_senders_.end();
+  return base::ranges::find_if(
+      rtp_senders_, [id](const auto& sender) { return sender->Id() == id; });
 }
 
 Vector<std::unique_ptr<blink::RTCRtpReceiverImpl>>::iterator
 RTCPeerConnectionHandler::FindReceiver(uintptr_t id) {
-  for (auto* it = rtp_receivers_.begin(); it != rtp_receivers_.end(); ++it) {
-    if ((*it)->Id() == id)
-      return it;
-  }
-  return rtp_receivers_.end();
+  return base::ranges::find_if(rtp_receivers_, [id](const auto& receiver) {
+    return receiver->Id() == id;
+  });
 }
 
 Vector<std::unique_ptr<blink::RTCRtpTransceiverImpl>>::iterator
 RTCPeerConnectionHandler::FindTransceiver(uintptr_t id) {
-  for (auto* it = rtp_transceivers_.begin(); it != rtp_transceivers_.end();
-       ++it) {
-    if ((*it)->Id() == id)
-      return it;
-  }
-  return rtp_transceivers_.end();
+  return base::ranges::find_if(
+      rtp_transceivers_,
+      [id](const auto& transceiver) { return transceiver->Id() == id; });
 }
 
 wtf_size_t RTCPeerConnectionHandler::GetTransceiverIndex(
@@ -2104,7 +2105,7 @@ RTCPeerConnectionHandler::CreateOrUpdateTransceiver(
   auto webrtc_receiver = transceiver_state.receiver_state()->webrtc_receiver();
 
   std::unique_ptr<blink::RTCRtpTransceiverImpl> transceiver;
-  auto* it = FindTransceiver(
+  auto it = FindTransceiver(
       blink::RTCRtpTransceiverImpl::GetId(webrtc_transceiver.get()));
   if (it == rtp_transceivers_.end()) {
     // Create a new transceiver, including a sender and a receiver.

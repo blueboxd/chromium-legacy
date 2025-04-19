@@ -19,18 +19,12 @@ namespace password_manager::features {
 // alongside the definition of their values in the .cc file.
 BASE_DECLARE_FEATURE(kEnableOverwritingPlaceholderUsernames);
 
-BASE_DECLARE_FEATURE(kForgotPasswordFormSupport);
 #if BUILDFLAG(IS_IOS)
-BASE_DECLARE_FEATURE(kIOSPasswordBottomSheet);
 BASE_DECLARE_FEATURE(kIOSPasswordBottomSheetAutofocus);
 #endif  // IS_IOS
-BASE_DECLARE_FEATURE(kPasswordIssuesInSpecificsMetadata);
-BASE_DECLARE_FEATURE(kSendPasswords);
-BASE_DECLARE_FEATURE(kShadowDomSupport);
-BASE_DECLARE_FEATURE(kPasswordChangeWellKnown);
 BASE_DECLARE_FEATURE(kPasswordReuseDetectionEnabled);
 BASE_DECLARE_FEATURE(kNoPasswordSuggestionFiltering);
-BASE_DECLARE_FEATURE(kShowWebauthnSuggestionsOnAutofocus);
+BASE_DECLARE_FEATURE(kShowSuggestionsOnAutofocus);
 
 #if BUILDFLAG(IS_ANDROID)
 BASE_DECLARE_FEATURE(kPasswordSuggestionBottomSheetV2);
@@ -40,8 +34,6 @@ BASE_DECLARE_FEATURE(kUnifiedPasswordManagerLocalPasswordsMigrationWarning);
 // All features parameters are in alphabetical order.
 
 #if BUILDFLAG(IS_ANDROID)
-extern const base::FeatureParam<int> kSaveUpdatePromptSyncingStringVersion;
-
 // Whether to ignore the 1 month timeout in between migration warning prompts.
 // Used for manual testing.
 inline constexpr base::FeatureParam<bool> kIgnoreMigrationWarningTimeout = {
@@ -62,11 +54,6 @@ extern const char kGenerationRequirementsFieldTrial[];
 extern const char kGenerationRequirementsVersion[];
 extern const char kGenerationRequirementsPrefixLength[];
 extern const char kGenerationRequirementsTimeout[];
-
-#if BUILDFLAG(IS_ANDROID)
-// Touch To Fill submission feature's variations.
-extern const char kTouchToFillPasswordSubmissionWithConservativeHeuristics[];
-#endif  // IS_ANDROID
 
 }  // namespace password_manager::features
 

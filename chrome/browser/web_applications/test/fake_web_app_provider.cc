@@ -18,6 +18,7 @@
 #include "chrome/browser/web_applications/file_utils_wrapper.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_installation_manager.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_update_manager.h"
+#include "chrome/browser/web_applications/isolated_web_apps/iwa_identity_validator.h"
 #include "chrome/browser/web_applications/manifest_update_manager.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
@@ -45,7 +46,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/sync/test/mock_model_type_change_processor.h"
+#include "components/sync/test/mock_data_type_local_change_processor.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -104,11 +105,9 @@ void FakeWebAppProvider::UseRealOsIntegrationManager() {
       std::make_unique<WebAppFileHandlerManager>(profile_);
   auto protocol_handler_manager =
       std::make_unique<WebAppProtocolHandlerManager>(profile_);
-  auto shortcut_manager = std::make_unique<WebAppShortcutManager>(
-      profile_, file_handler_manager.get(), protocol_handler_manager.get());
 
   SetOsIntegrationManager(std::make_unique<OsIntegrationManager>(
-      profile_, std::move(shortcut_manager), std::move(file_handler_manager),
+      profile_, std::move(file_handler_manager),
       std::move(protocol_handler_manager)));
 }
 
@@ -299,7 +298,7 @@ void FakeWebAppProvider::CreateFakeSubsystems() {
   SetWebContentsManager(std::make_unique<FakeWebContentsManager>());
 
   SetOsIntegrationManager(std::make_unique<FakeOsIntegrationManager>(
-      profile_, /*app_shortcut_manager=*/nullptr,
+      profile_,
       /*file_handler_manager=*/nullptr,
       /*protocol_handler_manager=*/nullptr));
 
@@ -312,6 +311,8 @@ void FakeWebAppProvider::CreateFakeSubsystems() {
 
   SetExternallyManagedAppManager(
       std::make_unique<FakeExternallyManagedAppManager>(profile_));
+
+  IwaIdentityValidator::CreateSingleton();
 
   // Do not create real subsystems here. That will be done already by
   // WebAppProvider::CreateSubsystems in the WebAppProvider constructor.
@@ -345,8 +346,9 @@ void FakeWebAppProvider::Shutdown() {
     icon_manager_->Shutdown();
   if (install_finalizer_)
     install_finalizer_->Shutdown();
-  if (registrar_)
-    registrar_->Shutdown();
+  if (os_integration_manager_) {
+    os_integration_manager_->Shutdown();
+  }
   is_registry_ready_ = false;
 }
 

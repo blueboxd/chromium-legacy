@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/ash/file_system_provider/fake_provided_file_system.h"
 
 #include <stddef.h>
@@ -194,6 +199,12 @@ AbortCallback FakeProvidedFileSystem::GetMetadata(
       entry_it->second->metadata->thumbnail.get()) {
     metadata->thumbnail =
         std::make_unique<std::string>(*entry_it->second->metadata->thumbnail);
+  }
+  // Make a copy of the `CloudFileInfo` to pass to the callback.
+  if (fields & ProvidedFileSystemInterface::METADATA_FIELD_CLOUD_FILE_INFO &&
+      entry_it->second->metadata->cloud_file_info.get()) {
+    metadata->cloud_file_info = std::make_unique<CloudFileInfo>(
+        entry_it->second->metadata->cloud_file_info->version_tag);
   }
 
   return PostAbortableTask(base::BindOnce(
@@ -493,6 +504,10 @@ AbortCallback FakeProvidedFileSystem::WriteFile(
     if (!entry->write_buffer) {
       // Only update metadata if we are writing contents directly.
       *entry->metadata->size = offset + length;
+      // Update the version when the contents change.
+      if (entry->metadata->cloud_file_info.get()) {
+        entry->metadata->cloud_file_info->version_tag += "1";
+      }
     }
     write_buffer.resize(*entry->metadata->size);
   }
@@ -662,6 +677,10 @@ FakeProvidedFileSystem::GetWeakPtr() {
 std::unique_ptr<ScopedUserInteraction>
 FakeProvidedFileSystem::StartUserInteraction() {
   return nullptr;
+}
+
+base::WeakPtr<FakeProvidedFileSystem> FakeProvidedFileSystem::GetFakeWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 AbortCallback FakeProvidedFileSystem::PostAbortableTask(

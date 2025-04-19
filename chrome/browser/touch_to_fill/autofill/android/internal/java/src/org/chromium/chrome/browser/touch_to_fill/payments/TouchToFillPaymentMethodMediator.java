@@ -21,6 +21,7 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.metrics.RecordHistogram;
@@ -32,6 +33,7 @@ import org.chromium.chrome.browser.touch_to_fill.common.FillableItemCollectionIn
 import org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillPaymentMethodComponent.Delegate;
 import org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillPaymentMethodProperties.FooterProperties;
 import org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillPaymentMethodProperties.HeaderProperties;
+import org.chromium.components.autofill.AutofillSuggestion;
 import org.chromium.components.autofill.IbanRecordType;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.StateChangeReason;
@@ -141,6 +143,7 @@ class TouchToFillPaymentMethodMediator {
 
     void showSheet(
             List<CreditCard> cards,
+            List<AutofillSuggestion> suggestions,
             boolean shouldShowScanCreditCard,
             Function<TouchToFillPaymentMethodProperties.CardImageMetaData, Drawable>
                     cardImageFunction) {
@@ -149,21 +152,24 @@ class TouchToFillPaymentMethodMediator {
         assert cards != null;
         mCards = cards;
         mIbans = null;
+        assert mCards.size() == suggestions.size()
+                : "The number of cards and suggestions should be same.";
 
         ModelList sheetItems = mModel.get(SHEET_ITEMS);
         sheetItems.clear();
 
         for (int i = 0; i < mCards.size(); ++i) {
-            CreditCard card = cards.get(i);
+            CreditCard card = mCards.get(i);
             final PropertyModel model =
                     createCardModel(
                             card,
+                            /* isAcceptable= */ !suggestions.get(i).applyDeactivatedStyle(),
                             new FillableItemCollectionInfo(i + 1, mCards.size()),
                             cardImageFunction);
             sheetItems.add(new ListItem(CREDIT_CARD, model));
         }
 
-        if (cards.size() == 1) {
+        if (mCards.size() == 1) {
             // Use the credit card model as the property model for the fill button too
             assert sheetItems.get(0).type == CREDIT_CARD;
             sheetItems.add(new ListItem(FILL_BUTTON, sheetItems.get(0).model));
@@ -279,6 +285,7 @@ class TouchToFillPaymentMethodMediator {
 
     private PropertyModel createCardModel(
             CreditCard card,
+            boolean isAcceptable,
             FillableItemCollectionInfo itemCollectionInfo,
             Function<TouchToFillPaymentMethodProperties.CardImageMetaData, Drawable>
                     cardImageFunction) {
@@ -308,7 +315,11 @@ class TouchToFillPaymentMethodMediator {
                                 TouchToFillPaymentMethodProperties.CreditCardProperties.CARD_NUMBER,
                                 card.getObfuscatedLastFourDigits())
                         .with(ON_CREDIT_CARD_CLICK_ACTION, () -> this.onSelectedCreditCard(card))
-                        .with(ITEM_COLLECTION_INFO, itemCollectionInfo);
+                        .with(ITEM_COLLECTION_INFO, itemCollectionInfo)
+                        .with(
+                                TouchToFillPaymentMethodProperties.CreditCardProperties
+                                        .IS_ACCEPTABLE,
+                                isAcceptable);
 
         // If a card has a nickname, the network name should also be announced, otherwise the name
         // of the card will be the network name and it will be announced.
@@ -322,9 +333,16 @@ class TouchToFillPaymentMethodMediator {
         // For virtual cards, show the "Virtual card" label on the second line, and for non-virtual
         // cards, show the expiration date.
         if (card.getIsVirtual()) {
+            // If the merchant has opted-out for the virtual card, on the second line we convey
+            // that merchant does not accept this virtual card.
+            @StringRes
+            int virtualCardLabel =
+                    isAcceptable
+                            ? R.string.autofill_virtual_card_number_switch_label
+                            : R.string.autofill_virtual_card_disabled_suggestion_option_value;
             creditCardModelBuilder.with(
                     TouchToFillPaymentMethodProperties.CreditCardProperties.VIRTUAL_CARD_LABEL,
-                    mContext.getString(R.string.autofill_virtual_card_number_switch_label));
+                    mContext.getString(virtualCardLabel));
         } else {
             creditCardModelBuilder.with(
                     TouchToFillPaymentMethodProperties.CreditCardProperties.CARD_EXPIRATION,

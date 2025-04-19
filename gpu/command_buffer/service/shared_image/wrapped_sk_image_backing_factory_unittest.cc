@@ -35,9 +35,10 @@ namespace {
 constexpr GrSurfaceOrigin kSurfaceOrigin = kTopLeft_GrSurfaceOrigin;
 constexpr SkAlphaType kAlphaType = kPremul_SkAlphaType;
 constexpr auto kColorSpace = gfx::ColorSpace::CreateSRGB();
-constexpr uint32_t kUsage =
+constexpr SharedImageUsageSet kUsage =
     SHARED_IMAGE_USAGE_DISPLAY_READ | SHARED_IMAGE_USAGE_RASTER_READ |
     SHARED_IMAGE_USAGE_RASTER_WRITE | SHARED_IMAGE_USAGE_CPU_UPLOAD;
+
 class WrappedSkImageBackingFactoryTest
     : public SharedImageTestBase,
       public testing::WithParamInterface<
@@ -51,12 +52,9 @@ class WrappedSkImageBackingFactoryTest
 
   void SetUp() override {
     auto gr_context_type = GetGrContextType();
-    if (gr_context_type == GrContextType::kGraphiteDawn) {
-      // TODO(crbug.com/40266937): Enable these tests for Windows once
-      // DawnMultiPlanarFormats is supported on D3D11.
-#if !BUILDFLAG(IS_MAC)
-      GTEST_SKIP();
-#endif
+    if (gr_context_type == GrContextType::kGraphiteDawn &&
+        !IsGraphiteDawnSupported()) {
+      GTEST_SKIP() << "Graphite/Dawn not supported";
     }
     ASSERT_NO_FATAL_FAILURE(InitializeContext(gr_context_type));
 
@@ -195,12 +193,7 @@ TEST_P(WrappedSkImageBackingFactoryTest, Upload) {
   std::unique_ptr<SharedImageRepresentationFactoryRef> shared_image =
       shared_image_manager_.Register(std::move(backing), &memory_type_tracker_);
 
-  if (gr_context()) {
-    VerifyPixelsWithReadbackGanesh(mailbox, bitmaps);
-  } else {
-    ASSERT_TRUE(context_state_->graphite_context());
-    VerifyPixelsWithReadbackGraphite(mailbox, bitmaps);
-  }
+  VerifyPixelsWithReadback(mailbox, bitmaps);
 }
 
 std::string TestParamToString(

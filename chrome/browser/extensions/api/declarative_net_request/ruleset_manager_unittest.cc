@@ -15,8 +15,10 @@
 #include "chrome/browser/extensions/api/declarative_net_request/dnr_test_base.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "components/version_info/channel.h"
 #include "extensions/browser/api/declarative_net_request/composite_matcher.h"
 #include "extensions/browser/api/declarative_net_request/file_backed_ruleset_source.h"
+#include "extensions/browser/api/declarative_net_request/prefs_helper.h"
 #include "extensions/browser/api/declarative_net_request/request_action.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
 #include "extensions/browser/api/declarative_net_request/test_utils.h"
@@ -29,6 +31,7 @@
 #include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/api/declarative_net_request/test_utils.h"
 #include "extensions/common/extension_features.h"
+#include "extensions/common/features/feature_channel.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/url_pattern.h"
@@ -95,10 +98,9 @@ class RulesetManagerTest : public DNRTestBase {
     ASSERT_EQ(1u, sources.size());
 
     int expected_checksum;
-    EXPECT_TRUE(ExtensionPrefs::Get(browser_context())
-                    ->GetDNRStaticRulesetChecksum(last_loaded_extension_->id(),
-                                                  sources[0].id(),
-                                                  &expected_checksum));
+    PrefsHelper helper(*ExtensionPrefs::Get(browser_context()));
+    EXPECT_TRUE(helper.GetStaticRulesetChecksum(
+        last_loaded_extension_->id(), sources[0].id(), expected_checksum));
 
     std::vector<std::unique_ptr<RulesetMatcher>> matchers(1);
     EXPECT_EQ(
@@ -794,7 +796,11 @@ class RulesetManagerResponseHeadersTest : public RulesetManagerTest {
   }
 
  private:
+  // TODO(crbug.com/40727004): Once feature is launched to stable and feature
+  // flag can be removed, replace usages of this test class with just
+  // DeclarativeNetRequestBrowserTest.
   base::test::ScopedFeatureList scoped_feature_list_;
+  ScopedCurrentChannel current_channel_override_{version_info::Channel::DEV};
 };
 
 // Test that multiple lists of modify header actions can be merged into a single
@@ -944,6 +950,76 @@ TEST_P(RulesetManagerResponseHeadersTest, MergeModifyHeaderActions) {
                            std::make_pair(*e2_hr_rule.id, extension_2_id),
                            std::make_pair(*e2_br_rule2.id, extension_2_id),
                            std::make_pair(*e1_hr_rule.id, extension_1_id)));
+}
+
+// Tests that extensions can't block requests initiated by other extensions by
+// default.
+// Note: The --extensions-on-chrome-urls switch isn't tested here, see the
+///      CrossExtensionRequestBlocking browser test.
+TEST_P(RulesetManagerTest, CrossExtensionRequestBlocking) {
+  const Extension* extension_1 = nullptr;
+  const Extension* extension_2 = nullptr;
+  // Add an extension with a background page that blocks all requests.
+  {
+    std::unique_ptr<CompositeMatcher> matcher;
+    TestRule rule = CreateGenericRule();
+    rule.condition->url_filter = std::string("*");
+    ASSERT_NO_FATAL_FAILURE(CreateMatcherForRules(
+        {rule}, "test extension_1", &matcher,
+        std::vector<std::string>({URLPattern::kAllUrlsPattern}),
+        true /* has_background_script */));
+    extension_1 = last_loaded_extension();
+    manager()->AddRuleset(extension_1->id(), std::move(matcher));
+  }
+
+  // Add a second extension which doesn't do anything.
+  {
+    std::unique_ptr<CompositeMatcher> matcher;
+    ASSERT_NO_FATAL_FAILURE(CreateMatcherForRules(
+        {}, "test extension_2", &matcher,
+        std::vector<std::string>({URLPattern::kAllUrlsPattern}),
+        true /* has_background_script */));
+    extension_2 = last_loaded_extension();
+  }
+
+  EXPECT_EQ(1u, manager()->GetMatcherCountForTest());
+
+  // Extensions should be able to block requests that they initiated.
+  WebRequestInfo request_1(
+      GetRequestParamsForURL("http://example.com", extension_1->origin()));
+
+  manager()->EvaluateBeforeRequest(request_1, false /*is_incognito_context*/);
+  ASSERT_EQ(1u, request_1.dnr_actions->size());
+  EXPECT_EQ(CreateRequestActionForTesting(
+                RequestActionType::BLOCK, kMinValidID, kDefaultPriority,
+                kMinValidStaticRulesetID, extension_1->id()),
+            (*request_1.dnr_actions)[0]);
+
+  // Extensions should be able to block requests that they initiated from a
+  // manifest sandbox page.
+  WebRequestInfo request_2(GetRequestParamsForURL(
+      "http://example.com", extension_1->origin().DeriveNewOpaqueOrigin()));
+
+  manager()->EvaluateBeforeRequest(request_2, false /*is_incognito_context*/);
+  ASSERT_EQ(1u, request_2.dnr_actions->size());
+  EXPECT_EQ(CreateRequestActionForTesting(
+                RequestActionType::BLOCK, kMinValidID, kDefaultPriority,
+                kMinValidStaticRulesetID, extension_1->id()),
+            (*request_2.dnr_actions)[0]);
+
+  // Extensions should not be able to block requests initiated by other
+  // extensions.
+  WebRequestInfo request_3(
+      GetRequestParamsForURL("http://example.com", extension_2->origin()));
+  manager()->EvaluateBeforeRequest(request_3, false /*is_incognito_context*/);
+  EXPECT_TRUE(request_3.dnr_actions->empty());
+
+  // Extensions should not be able to block requests initiated by other
+  // extensions, even if they initiated from within a manifest sandbox page.
+  WebRequestInfo request_4(GetRequestParamsForURL(
+      "http://example.com", extension_2->origin().DeriveNewOpaqueOrigin()));
+  manager()->EvaluateBeforeRequest(request_4, false /*is_incognito_context*/);
+  EXPECT_TRUE(request_4.dnr_actions->empty());
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

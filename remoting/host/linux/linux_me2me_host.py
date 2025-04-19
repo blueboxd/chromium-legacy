@@ -1452,9 +1452,8 @@ class XDesktop(Desktop):
       self.randr_add_sizes = True
 
   def _launch_xorg(self, display, x_auth_file, extra_x_args):
-    with tempfile.NamedTemporaryFile(
-        prefix="chrome_remote_desktop_",
-        suffix=".conf", delete=False) as config_file:
+    config_dir = tempfile.mkdtemp(prefix="chrome_remote_desktop_")
+    with open(os.path.join(config_dir, "xorg.conf"), "wb") as config_file:
       config_file.write(gen_xorg_config().encode())
 
     self.server_supports_randr = True
@@ -1480,7 +1479,10 @@ class XDesktop(Desktop):
          # so the equivalent information gets logged in our main log file.
          "-logfile", "/dev/null",
          "-verbose", "3",
-         "-config", config_file.name
+         "-configdir", config_dir,
+         # Pass a non-existent file, to prevent Xorg from reading the default
+         # config file: /etc/X11/xorg.conf
+         "-config", os.path.join(config_dir, "none")
         ] + extra_x_args, env=self._x_env())
     if not self.server_proc.pid:
       raise Exception("Could not start Xorg.")
@@ -2043,6 +2045,7 @@ def cleanup():
     g_desktop.cleanup()
     if getattr(g_desktop, 'xorg_conf', None) is not None:
       os.remove(g_desktop.xorg_conf)
+      os.rmdir(os.path.dirname(g_desktop.xorg_conf))
 
   g_desktop = None
   ParentProcessLogger.release_parent_if_connected(False)
@@ -2523,7 +2526,7 @@ def main():
   extra_start_host_args = []
   if HOST_EXTRA_PARAMS_ENV_VAR in os.environ:
       extra_start_host_args = \
-          re.split('\s+', os.environ[HOST_EXTRA_PARAMS_ENV_VAR].strip())
+          re.split(r"\s+", os.environ[HOST_EXTRA_PARAMS_ENV_VAR].strip())
   is_wayland = any([opt == '--enable-wayland' for opt in extra_start_host_args])
   if is_wayland:
     desktop = WaylandDesktop(sizes, host_config)

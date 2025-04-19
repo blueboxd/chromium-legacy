@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "chrome/browser/serial/serial_chooser_context.h"
 
 #include <string_view>
@@ -637,6 +642,11 @@ void SerialChooserContext::OnPortConnectedStateChanged(
   for (auto& observer : port_observer_list_) {
     observer.OnPortConnectedStateChanged(*port);
   }
+}
+
+void SerialChooserContext::Shutdown() {
+  FlushScheduledSaveSettingsCalls();
+  permissions::ObjectPermissionContextBase::Shutdown();
 }
 
 void SerialChooserContext::EnsurePortManagerConnection() {

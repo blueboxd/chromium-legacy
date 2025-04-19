@@ -48,10 +48,11 @@
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "third_party/metrics_proto/omnibox_focus_type.pb.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
+#include "third_party/metrics_proto/omnibox_scoring_signals.pb.h"
 #include "third_party/omnibox_proto/groups.pb.h"
 
 #if !BUILDFLAG(IS_IOS)
-#include "components/history_clusters/core/config.h"
+#include "components/history_clusters/core/config.h"  // nogncheck
 #endif  // !BUILDFLAG(IS_IOS)
 
 constexpr bool kIsDesktop = !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS);
@@ -59,7 +60,7 @@ constexpr bool kIsDesktop = !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS);
 namespace {
 
 using ShortcutMatch = ShortcutsProvider::ShortcutMatch;
-using ScoringSignals = ::metrics::OmniboxEventProto::Suggestion::ScoringSignals;
+using ScoringSignals = ::metrics::OmniboxScoringSignals;
 
 class DestinationURLEqualsURL {
  public:
@@ -393,8 +394,7 @@ void ShortcutsProvider::DoAutocomplete(const AutocompleteInput& input,
           --max_relevance;
         auto match = ShortcutMatchToACMatch(shortcut_match, relevance, input,
                                             fixed_up_input, lower_input);
-        if (populate_scoring_signals &&
-            AutocompleteScoringSignalsAnnotator::IsEligibleMatch(match)) {
+        if (populate_scoring_signals && match.IsMlSignalLoggingEligible()) {
           PopulateScoringSignals(shortcut_match, &match);
         }
         return match;
@@ -551,18 +551,6 @@ AutocompleteMatch ShortcutsProvider::ShortcutMatchToACMatch(
   // allows, for example, the input of "foo.c" to autocomplete to "foo.com" for
   // a fill_into_edit of "http://foo.com".
   const bool is_search_type = AutocompleteMatch::IsSearchType(match.type);
-
-  const bool is_featured_search =
-      AutocompleteMatch::IsFeaturedSearchType(match.type);
-  if (kIsDesktop) {
-    DCHECK(!is_featured_search);
-    DCHECK(is_search_type != match.keyword.empty())
-        << "type: " << match.type << ", keyword: " << match.keyword;
-  } else {
-    DCHECK(is_search_type != match.keyword.empty() || is_featured_search)
-        << "type: " << match.type << ", keyword: " << match.keyword;
-  }
-
   const bool keyword_matches =
       base::StartsWith(base::UTF16ToUTF8(input.text()),
                        base::StrCat({base::UTF16ToUTF8(match.keyword), " "}),

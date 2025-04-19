@@ -18,11 +18,9 @@
 #include <map>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_root.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_stats.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/thread_cache.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/debug/proc_maps_linux.h"
@@ -41,6 +39,9 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "partition_alloc/partition_root.h"
+#include "partition_alloc/partition_stats.h"
+#include "partition_alloc/thread_cache.h"
 #include "tools/memory/partition_allocator/inspect_utils.h"
 
 namespace partition_alloc::tools {
@@ -101,7 +102,7 @@ std::map<base::PlatformThreadId, std::string> ThreadNames(pid_t pid) {
     buffer[bytes_read] = '\0';
     auto lines = SplitString(buffer, "\n", base::TRIM_WHITESPACE,
                              base::SPLIT_WANT_NONEMPTY);
-    for (base::StringPiece sp : lines) {
+    for (std::string_view sp : lines) {
       if (sp.rfind("NSpid:\t", 0) == 0) {
         auto line_parts = SplitString(sp, "\t", base::TRIM_WHITESPACE,
                                       base::SPLIT_WANT_NONEMPTY);

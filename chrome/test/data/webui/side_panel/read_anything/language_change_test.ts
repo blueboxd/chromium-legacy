@@ -8,12 +8,12 @@
 import 'chrome-untrusted://read-anything-side-panel.top-chrome/read_anything.js';
 
 import {flush} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {BrowserProxy} from 'chrome-untrusted://read-anything-side-panel.top-chrome/read_anything.js';
-import type {ReadAnythingElement} from 'chrome-untrusted://read-anything-side-panel.top-chrome/read_anything.js';
-import {AVAILABLE_GOOGLE_TTS_LOCALES, convertLangOrLocaleForVoicePackManager, PACK_MANAGER_SUPPORTED_LANGS_AND_LOCALES, VoicePackStatus} from 'chrome-untrusted://read-anything-side-panel.top-chrome/read_anything.js';
+import {BrowserProxy, ToolbarEvent} from 'chrome-untrusted://read-anything-side-panel.top-chrome/read_anything.js';
+import type {AppElement} from 'chrome-untrusted://read-anything-side-panel.top-chrome/read_anything.js';
+import {AVAILABLE_GOOGLE_TTS_LOCALES, convertLangOrLocaleForVoicePackManager, PACK_MANAGER_SUPPORTED_LANGS_AND_LOCALES} from 'chrome-untrusted://read-anything-side-panel.top-chrome/read_anything.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome-untrusted://webui-test/chai_assert.js';
 
-import {suppressInnocuousErrors} from './common.js';
+import {createSpeechSynthesisVoice, emitEvent, setVoices, suppressInnocuousErrors} from './common.js';
 import {FakeReadingMode} from './fake_reading_mode.js';
 import {FakeSpeechSynthesis} from './fake_speech_synthesis.js';
 import {TestColorUpdaterBrowserProxy} from './test_color_updater_browser_proxy.js';
@@ -22,21 +22,27 @@ suite('LanguageChanged', () => {
   const langForDefaultVoice = 'en';
   const lang1 = 'zh';
   const lang2 = 'tr';
+  const lang3 = 'pt-br';
   const langWithNoVoices = 'elvish';
 
-  const defaultVoice = {
+  const defaultVoice = createSpeechSynthesisVoice({
     lang: langForDefaultVoice,
     name: 'Kristi',
     default: true,
-  } as SpeechSynthesisVoice;
-  const firstVoiceWithLang1 = {lang: lang1, name: 'Lauren'} as
-      SpeechSynthesisVoice;
-  const defaultVoiceWithLang1 = {lang: lang1, name: 'Eitan', default: true} as
-      SpeechSynthesisVoice;
-  const firstVoiceWithLang2 = {lang: lang2, name: 'Yu'} as SpeechSynthesisVoice;
-  const secondVoiceWithLang2 = {lang: lang2, name: 'Xiang'} as
-      SpeechSynthesisVoice;
-  const otherVoice = {lang: 'it', name: 'Shari'} as SpeechSynthesisVoice;
+  });
+  const firstVoiceWithLang1 =
+      createSpeechSynthesisVoice({lang: lang1, name: 'Lauren'});
+  const defaultVoiceWithLang1 =
+      createSpeechSynthesisVoice({lang: lang1, name: 'Eitan', default: true});
+  const firstVoiceWithLang2 =
+      createSpeechSynthesisVoice({lang: lang2, name: 'Yu'});
+  const secondVoiceWithLang2 =
+      createSpeechSynthesisVoice({lang: lang2, name: 'Xiang'});
+  const firstVoiceWithLang3 =
+      createSpeechSynthesisVoice({lang: lang3, name: 'Kristi'});
+  const naturalVoiceWithLang3 =
+      createSpeechSynthesisVoice({lang: lang3, name: 'Kristi (Natural)'});
+  const otherVoice = createSpeechSynthesisVoice({lang: 'it', name: 'Shari'});
   const voices = [
     defaultVoice,
     firstVoiceWithLang1,
@@ -44,21 +50,24 @@ suite('LanguageChanged', () => {
     otherVoice,
     firstVoiceWithLang2,
     secondVoiceWithLang2,
+    firstVoiceWithLang3,
+    naturalVoiceWithLang3,
   ];
 
   let testBrowserProxy: TestColorUpdaterBrowserProxy;
-  let app: ReadAnythingElement;
+  let app: AppElement;
+  let speechSynthesis: FakeSpeechSynthesis;
 
-  function selectedVoice(): SpeechSynthesisVoice {
-    // Bypass Typescript compiler to allow us to set a private property
-    // @ts-ignore
-    return app.selectedVoice;
+  function enableLangs(...langs: string[]) {
+    for (const l of langs) {
+      if (!app.enabledLangs.includes(l)) {
+        app.enabledLangs.push(l);
+      }
+    }
   }
 
-  function voicePackInstallStatus(): {[language: string]: VoicePackStatus} {
-    // Bypass Typescript compiler to allow us to set a private property
-    // @ts-ignore
-    return app.voicePackInstallStatus;
+  function setInstalled(lang: string) {
+    app.updateVoicePackStatus(lang, 'kInstalled');
   }
 
   setup(() => {
@@ -71,10 +80,11 @@ suite('LanguageChanged', () => {
 
     app = document.createElement('read-anything-app');
     document.body.appendChild(app);
-
-    // @ts-ignore
-    app.availableVoices = voices;
     flush();
+
+    speechSynthesis = new FakeSpeechSynthesis();
+    app.synth = speechSynthesis;
+    setVoices(app, speechSynthesis, voices);
   });
 
   test('updates toolbar fonts', () => {
@@ -93,18 +103,41 @@ suite('LanguageChanged', () => {
 
     chrome.readingMode.getStoredVoice = () => otherVoice.name;
     app.languageChanged();
-    assertEquals(selectedVoice(), startingVoice);
+    assertEquals(startingVoice, app.getSpeechSynthesisVoice());
   });
 
   suite('with flag updates selected voice', () => {
     setup(() => {
       chrome.readingMode.isAutoVoiceSwitchingEnabled = true;
+      chrome.readingMode.isLanguagePackDownloadingEnabled = true;
+
+      for (const v of voices) {
+        setInstalled(v.lang);
+        enableLangs(v.lang);
+      }
     });
 
     test('to the stored voice for this language if there is one', () => {
       chrome.readingMode.getStoredVoice = () => otherVoice.name;
+      chrome.readingMode.baseLanguageForSpeech = otherVoice.lang;
+
       app.languageChanged();
-      assertEquals(selectedVoice(), otherVoice);
+
+      assertEquals(otherVoice, app.getSpeechSynthesisVoice());
+    });
+
+    test('and enables the stored voice language', () => {
+      const voice = createSpeechSynthesisVoice({lang: 'es-us', name: 'Mush'});
+      chrome.readingMode.getStoredVoice = () => voice.name;
+      chrome.readingMode.baseLanguageForSpeech = 'es';
+      setInstalled(voice.lang);
+      setVoices(app, speechSynthesis, [voice]);
+      assertFalse(app.enabledLangs.includes(voice.lang));
+
+      app.languageChanged();
+
+      assertTrue(app.enabledLangs.includes(voice.lang));
+      assertEquals(voice, app.getSpeechSynthesisVoice());
     });
 
     suite('when there is no stored voice for this language', () => {
@@ -118,75 +151,148 @@ suite('LanguageChanged', () => {
         });
 
         test('to the current voice if there is one', () => {
-          // @ts-ignore
-          app.selectedVoice = otherVoice;
+          emitEvent(
+              app, ToolbarEvent.VOICE, {detail: {selectedVoice: otherVoice}});
           app.languageChanged();
-          assertEquals(selectedVoice(), otherVoice);
+          assertEquals(otherVoice, app.getSpeechSynthesisVoice());
         });
-        test('to the device default if there\'s no current voice', () => {
+
+        test('to a natural voice if there\'s no current voice', () => {
           app.languageChanged();
-          assertEquals(selectedVoice(), defaultVoice);
+          assertEquals(naturalVoiceWithLang3, app.getSpeechSynthesisVoice());
+        });
+
+        test('to the device default if there\'s no natural', () => {
+          setVoices(
+              app, speechSynthesis,
+              voices.filter(v => v !== naturalVoiceWithLang3));
+          app.languageChanged();
+          assertEquals(defaultVoice, app.getSpeechSynthesisVoice());
         });
       });
 
+      test('to a voice in the enabled locale for this base language', () => {
+        const voice =
+            createSpeechSynthesisVoice({lang: 'es-us', name: 'Spanish'});
+        app.enabledLangs = ['es-us'];
+        setVoices(app, speechSynthesis, [voice]);
+        flush();
+        chrome.readingMode.baseLanguageForSpeech = 'es';
+
+        app.languageChanged();
+
+        assertEquals(voice, app.getSpeechSynthesisVoice());
+      });
+
+      test('to a voice in the available locale for this base language', () => {
+        const voice =
+            createSpeechSynthesisVoice({lang: 'en-au', name: 'Australian'});
+        app.enabledLangs = [];
+        setVoices(app, speechSynthesis, [voice]);
+        setInstalled('en-au');
+        flush();
+        chrome.readingMode.baseLanguageForSpeech = 'en';
+
+        app.languageChanged();
+
+        assertEquals(voice, app.getSpeechSynthesisVoice());
+      });
+
       suite('and this locale is enabled', () => {
-        test('to the default voice for this language', () => {
-          // @ts-ignore
-          app.enabledLanguagesInPref = [lang1];
-          chrome.readingMode.baseLanguageForSpeech = lang1;
+        test('to a natural voice for this language', () => {
+          chrome.readingMode.baseLanguageForSpeech = lang3;
           app.languageChanged();
-          assertEquals(selectedVoice(), defaultVoiceWithLang1);
+          assertEquals(naturalVoiceWithLang3, app.getSpeechSynthesisVoice());
         });
+
+        test(
+            'to the default voice for this language if there\'s no natural voice',
+            () => {
+              chrome.readingMode.baseLanguageForSpeech = lang1;
+              app.languageChanged();
+              assertEquals(
+                  defaultVoiceWithLang1, app.getSpeechSynthesisVoice());
+            });
 
         test(
             'to the first listed voice for this language if there\'s no default',
             () => {
-              // @ts-ignore
-              app.enabledLanguagesInPref = [lang2];
               chrome.readingMode.baseLanguageForSpeech = lang2;
               app.languageChanged();
-              assertEquals(selectedVoice(), firstVoiceWithLang2);
+              assertEquals(firstVoiceWithLang2, app.getSpeechSynthesisVoice());
             });
       });
 
       suite('and this locale is disabled', () => {
+        test('and it enables pack manager locale', () => {
+          app.enabledLangs = [];
+          flush();
+          chrome.readingMode.baseLanguageForSpeech = lang3;
+
+          app.languageChanged();
+
+          assertTrue(app.enabledLangs.includes(lang3));
+          assertEquals(naturalVoiceWithLang3, app.getSpeechSynthesisVoice());
+        });
+
+        test(
+            'and it enables other locale if not supported by pack manager',
+            () => {
+              app.enabledLangs = [];
+              flush();
+              chrome.readingMode.baseLanguageForSpeech = lang1;
+
+              app.languageChanged();
+
+              assertTrue(app.enabledLangs.includes(lang1));
+              assertEquals(
+                  defaultVoiceWithLang1, app.getSpeechSynthesisVoice());
+            });
+
+
         test('to voice in different locale and same language', () => {
-          const voice = {lang: 'en-GB', name: 'British', default: true} as
-              SpeechSynthesisVoice;
-          // @ts-ignore
-          app.enabledLanguagesInPref = ['en-gb'];
-          // @ts-ignore
-          app.availableVoices = [voice];
+          const voice = createSpeechSynthesisVoice(
+              {lang: 'en-GB', name: 'British', default: true});
+          app.enabledLangs = ['en-gb'];
+          setVoices(app, speechSynthesis, [voice]);
+          setInstalled('en-gb');
+          setInstalled('en-us');
           flush();
           chrome.readingMode.baseLanguageForSpeech = 'en-US';
 
           app.languageChanged();
 
-          assertEquals(selectedVoice(), voice);
+          assertEquals(voice, app.getSpeechSynthesisVoice());
         });
 
-        test('to default enabled voice if no same locale', () => {
-          // @ts-ignore
-          app.enabledLanguagesInPref = [lang1];
-          // @ts-ignore
-          app.availableVoices = [defaultVoiceWithLang1];
-          flush();
+        test('to natural enabled voice if no same locale', () => {
+          app.enabledLangs = [lang3];
+          setVoices(app, speechSynthesis, [naturalVoiceWithLang3]);
           chrome.readingMode.baseLanguageForSpeech = lang2;
 
           app.languageChanged();
 
-          assertEquals(selectedVoice(), defaultVoiceWithLang1);
+          assertEquals(naturalVoiceWithLang3, app.getSpeechSynthesisVoice());
+        });
+
+        test('to default enabled voice if no natural voice', () => {
+          app.enabledLangs = [lang1];
+          setVoices(app, speechSynthesis, [defaultVoiceWithLang1]);
+          chrome.readingMode.baseLanguageForSpeech = lang2;
+
+          app.languageChanged();
+
+          assertEquals(defaultVoiceWithLang1, app.getSpeechSynthesisVoice());
         });
 
         test('to undefined if no enabled languages', () => {
-          // @ts-ignore
-          app.enabledLanguagesInPref = [];
+          app.enabledLangs = [];
           flush();
           chrome.readingMode.baseLanguageForSpeech = lang2;
 
           app.languageChanged();
 
-          assertEquals(selectedVoice(), undefined);
+          assertEquals(undefined, app.getSpeechSynthesisVoice());
         });
       });
     });
@@ -194,11 +300,6 @@ suite('LanguageChanged', () => {
 
   suite('with flag tries to install voice pack', () => {
     let sentRequest: boolean;
-
-    function setInstallStatus(lang: string, status: VoicePackStatus) {
-      // @ts-ignore
-      app.setVoicePackStatus_(lang, status);
-    }
 
     setup(() => {
       chrome.readingMode.isLanguagePackDownloadingEnabled = true;
@@ -218,9 +319,6 @@ suite('LanguageChanged', () => {
       assertFalse(PACK_MANAGER_SUPPORTED_LANGS_AND_LOCALES.has(
           chrome.readingMode.baseLanguageForSpeech));
       assertFalse(sentRequest);
-      assertEquals(
-          voicePackInstallStatus()[chrome.readingMode.baseLanguageForSpeech],
-          VoicePackStatus.NONE);
     });
 
     test('if the language is unsupported but has valid voice pack code', () => {
@@ -235,33 +333,17 @@ suite('LanguageChanged', () => {
       assertFalse(AVAILABLE_GOOGLE_TTS_LOCALES.has(
           chrome.readingMode.baseLanguageForSpeech));
       assertTrue(sentRequest);
-      assertEquals(
-          voicePackInstallStatus()[chrome.readingMode.baseLanguageForSpeech],
-          VoicePackStatus.EXISTS);
     });
 
-    test('and refreshes voice list if already downloaded', () => {
+    test('but doesn\'t if the language is already installing', () => {
       const lang = 'bn-bd';
-      chrome.readingMode.baseLanguageForSpeech = lang;
-      app.synth = new FakeSpeechSynthesis();
-      const voices = app.synth.getVoices();
-      app.synth.getVoices = () => {
-        return voices.concat(
-            {lang: lang, name: 'Wall-e (Natural)'} as SpeechSynthesisVoice,
-            {lang: lang, name: 'Andy (Natural)'} as SpeechSynthesisVoice,
-        );
-      };
-
       const voicePackLang = convertLangOrLocaleForVoicePackManager(lang);
       assertTrue(voicePackLang !== undefined);
 
-      setInstallStatus(voicePackLang, VoicePackStatus.DOWNLOADED);
-
+      app.updateVoicePackStatus(lang, 'kInstalling');
       app.languageChanged();
 
       assertFalse(sentRequest);
-      assertEquals(
-          voicePackInstallStatus()[voicePackLang], VoicePackStatus.INSTALLED);
     });
 
     test('and gets voice pack info if no status yet', () => {
@@ -271,10 +353,6 @@ suite('LanguageChanged', () => {
       app.languageChanged();
 
       assertTrue(sentRequest);
-      assertEquals(
-          voicePackInstallStatus()[convertLangOrLocaleForVoicePackManager(lang)!
-      ],
-          VoicePackStatus.EXISTS);
     });
 
     test('and gets voice pack info if we know it exists', () => {
@@ -284,10 +362,6 @@ suite('LanguageChanged', () => {
       app.languageChanged();
 
       assertTrue(sentRequest);
-      assertEquals(
-          voicePackInstallStatus()[convertLangOrLocaleForVoicePackManager(lang)!
-      ],
-          VoicePackStatus.EXISTS);
     });
   });
 

@@ -230,9 +230,9 @@ sql::InitStatus DIPSDatabase::InitImpl() {
   }
   DCHECK(db_->is_open());
 
-  if (!sql::MetaTable::RazeIfIncompatible(
+  if (sql::MetaTable::RazeIfIncompatible(
           db_.get(), sql::MetaTable::kNoLowestSupportedVersion,
-          kLatestSchemaVersion)) {
+          kLatestSchemaVersion) == sql::RazeIfIncompatibleResult::kFailed) {
     return sql::INIT_FAILURE;
   }
 
@@ -326,7 +326,7 @@ bool DIPSDatabase::CheckDBInit() {
   return true;
 }
 
-bool DIPSDatabase::ExecuteSqlForTesting(const char* sql) {
+bool DIPSDatabase::ExecuteSqlForTesting(const base::cstring_view sql) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!CheckDBInit()) {
     return false;
@@ -734,14 +734,12 @@ std::set<std::string> DIPSDatabase::FilterSitesWithProtectiveEvent(
 
   ClearExpiredRows();
 
-  sql::Statement statement(db_->GetUniqueStatement(
-      base::StrCat({"SELECT site,last_user_interaction_time,"
-                    "last_web_authn_assertion_time FROM bounces "
-                    "WHERE site IN(",
-                    base::JoinString(
-                        std::vector<std::string_view>(sites.size(), "?"), ","),
-                    ")"})
-          .c_str()));
+  sql::Statement statement(db_->GetUniqueStatement(base::StrCat(
+      {"SELECT site,last_user_interaction_time,"
+       "last_web_authn_assertion_time FROM bounces "
+       "WHERE site IN(",
+       base::JoinString(std::vector<std::string_view>(sites.size(), "?"), ","),
+       ")"})));
 
   int i = 0;
   for (const auto& site : sites) {
@@ -858,9 +856,8 @@ bool DIPSDatabase::RemoveRows(const DIPSDatabaseTable table,
       base::JoinString(std::vector<std::string_view>(sites.size(), "?"), ",");
 
   if (table == DIPSDatabaseTable::kBounces) {
-    sql::Statement statement(db_->GetUniqueStatement(
-        base::StrCat({"DELETE FROM bounces ", "WHERE site IN(", site_list, ")"})
-            .c_str()));
+    sql::Statement statement(db_->GetUniqueStatement(base::StrCat(
+        {"DELETE FROM bounces ", "WHERE site IN(", site_list, ")"})));
     for (size_t i = 0; i < sites.size(); i++) {
       statement.BindString(i, sites[i]);
     }
@@ -868,8 +865,7 @@ bool DIPSDatabase::RemoveRows(const DIPSDatabaseTable table,
   } else if (table == DIPSDatabaseTable::kPopups) {
     sql::Statement statement(db_->GetUniqueStatement(
         base::StrCat({"DELETE FROM popups ", "WHERE opener_site IN(", site_list,
-                      ") OR popup_site IN(", site_list, ")"})
-            .c_str()));
+                      ") OR popup_site IN(", site_list, ")"})));
     for (size_t i = 0; i < sites.size(); i++) {
       // There are 2 * sites.size() total bind locations, in the first and
       // second site_list. Each site should be bound in both lists.
@@ -1292,7 +1288,7 @@ bool DIPSDatabase::ClearTimestampsBySite(bool preserve,
                           "last_bounce_time=NULL "
                           "WHERE site ", (preserve ? "NOT " : ""),
                               "IN(", placeholders, ")" })  // clang-format on
-            .c_str()));
+        ));
 
     for (size_t i = 0; i < sites.size(); i++) {
       s_clear_storage.BindString(i, sites[i]);
@@ -1502,25 +1498,6 @@ std::vector<std::string> DIPSDatabase::GetGarbageCollectOldestSitesForTesting(
   }
 
   return sites;
-}
-
-bool DIPSDatabase::MarkAsPrepopulated() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!CheckDBInit()) {
-    return false;
-  }
-  return SetConfigValue(kPrepopulatedKey, 1);
-}
-
-bool DIPSDatabase::IsPrepopulated() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!CheckDBInit()) {
-    return false;
-  }
-  std::optional<int64_t> value = GetConfigValue(kPrepopulatedKey);
-  DCHECK(!value.has_value() || *value == 0 || *value == 1)
-      << "key '" << kPrepopulatedKey << "' has illegal value " << *value;
-  return value.value_or(0);
 }
 
 bool DIPSDatabase::SetConfigValue(std::string_view key, int64_t value) {

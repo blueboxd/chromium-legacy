@@ -4,7 +4,7 @@
 
 #include "chromeos/ash/components/kiosk/vision/kiosk_vision.h"
 
-#include <iterator>
+#include <cstdint>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -18,6 +18,7 @@
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_future.h"
+#include "base/time/time.h"
 #include "chromeos/ash/components/dbus/dlcservice/dlcservice.pb.h"
 #include "chromeos/ash/components/dbus/dlcservice/dlcservice_client.h"
 #include "chromeos/ash/components/dbus/dlcservice/fake_dlcservice_client.h"
@@ -33,10 +34,7 @@
 #include "content/public/test/test_image_transport_factory.h"
 #include "media/capture/video/chromeos/mojom/cros_camera_service.mojom-forward.h"
 #include "media/capture/video/chromeos/mojom/cros_camera_service.mojom.h"
-#include "services/video_capture/public/cpp/mock_push_subscription.h"
 #include "services/video_capture/public/cpp/mock_video_capture_service.h"
-#include "services/video_capture/public/cpp/mock_video_frame_handler.h"
-#include "services/video_capture/public/cpp/mock_video_source.h"
 #include "services/video_capture/public/cpp/mock_video_source_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -66,7 +64,7 @@ DlcserviceClient::InstallResult InstallKioskVisionDlc(
     FakeDlcserviceClient& service) {
   base::test::TestFuture<const DlcserviceClient::InstallResult&> future;
   dlcservice::InstallRequest request;
-  request.set_id(std::string(kKioskVisionDlcId));
+  request.set_id(kKioskVisionDlcId);
   service.Install(request, future.GetCallback(), base::DoNothing());
   return future.Take();
 }
@@ -88,13 +86,38 @@ bool IsKioskVisionDlcInstalled(FakeDlcserviceClient& service) {
   });
 }
 
+cros::mojom::KioskVisionAppearancePtr NewFakeAppearance(int person_id) {
+  auto appearance = cros::mojom::KioskVisionAppearance::New();
+  appearance->person_id = person_id;
+  appearance->face = cros::mojom::KioskVisionFaceDetection::New();
+  appearance->face->box = cros::mojom::KioskVisionBoundingBox::New();
+  return appearance;
+}
+
 cros::mojom::KioskVisionDetectionPtr NewFakeDetectionOfPersons(
     std::vector<int> person_ids) {
+  constexpr int64_t kFakeTimestamp = 1718727537817601;
+
   std::vector<cros::mojom::KioskVisionAppearancePtr> appearances;
   for (int person_id : person_ids) {
-    appearances.push_back(cros::mojom::KioskVisionAppearance::New(person_id));
+    appearances.emplace_back(NewFakeAppearance(person_id));
   }
-  return cros::mojom::KioskVisionDetection::New(std::move(appearances));
+
+  return cros::mojom::KioskVisionDetection::New(kFakeTimestamp,
+                                                std::move(appearances));
+}
+
+cros::mojom::KioskVisionTrackPtr NewFakeTrackOfPerson(int person_id,
+                                                      int count) {
+  constexpr int64_t kFakeTimestamp = 1719215767226132;
+
+  std::vector<cros::mojom::KioskVisionAppearancePtr> appearances;
+  for (int i = 0; i < count; i++) {
+    appearances.emplace_back(NewFakeAppearance(person_id));
+  }
+
+  return cros::mojom::KioskVisionTrack::New(
+      person_id, kFakeTimestamp, kFakeTimestamp, std::move(appearances));
 }
 
 media::VideoCaptureFormat CreateCaptureFormat(const gfx::Size& frame_size,
@@ -133,6 +156,9 @@ class KioskVisionTest : public testing::Test {
   void SetUp() override {
     RegisterKioskVisionPrefs(local_state_);
 
+    // Tell the fake DLC service to only record successful installs.
+    fake_dlcservice_.set_skip_adding_dlc_info_on_error(true);
+
     content::ImageTransportFactory::SetFactory(
         std::make_unique<content::TestImageTransportFactory>());
 
@@ -155,7 +181,10 @@ class KioskVisionTest : public testing::Test {
         .WillByDefault(
             testing::Invoke([this](video_capture::mojom::VideoSourceProvider::
                                        GetSourceInfosCallback& callback) {
-              std::move(callback).Run(device_infos_);
+              std::move(callback).Run(
+                  video_capture::mojom::VideoSourceProvider::
+                      GetSourceInfosResult::kSuccess,
+                  device_infos_);
             }));
 
     ON_CALL(mock_source_provider_, DoGetVideoSource(testing::_, testing::_))
@@ -172,7 +201,8 @@ class KioskVisionTest : public testing::Test {
   KioskVisionTest() : source_provider_receiver_(&mock_source_provider_) {}
 
  protected:
-  content::BrowserTaskEnvironment browser_task_environment_;
+  content::BrowserTaskEnvironment browser_task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   FakeCrosCameraService fake_cros_camera_service_;
   TestingPrefServiceSimple local_state_;
   FakeDlcserviceClient fake_dlcservice_;
@@ -202,6 +232,23 @@ TEST_F(KioskVisionTest, InstallsDlcWhenEnabled) {
   EXPECT_TRUE(IsKioskVisionDlcInstalled(fake_dlcservice_));
 }
 
+TEST_F(KioskVisionTest, RetriesToInstallDlcOnErrorAfterDelay) {
+  ASSERT_FALSE(IsKioskVisionDlcInstalled(fake_dlcservice_));
+  EnableKioskVisionTelemetryPref(local_state_);
+
+  // Prepare one install error, such that a second install attempt should work.
+  fake_dlcservice_.set_install_errors({dlcservice::kErrorNoImageFound});
+
+  KioskVision vision(&local_state_);
+
+  EXPECT_FALSE(IsKioskVisionDlcInstalled(fake_dlcservice_))
+      << "First install attempt should fail";
+
+  browser_task_environment_.FastForwardBy(base::Seconds(1));
+  EXPECT_TRUE(IsKioskVisionDlcInstalled(fake_dlcservice_))
+      << "Second install didn't work, or there was no retry";
+}
+
 TEST_F(KioskVisionTest, UninstallsDlcWhenDisabled) {
   DisableKioskVisionTelemetryPref(local_state_);
 
@@ -219,6 +266,7 @@ TEST_F(KioskVisionTest, BindsDetectionObserver) {
   EnableKioskVisionTelemetryPref(local_state_);
 
   KioskVision vision(&local_state_);
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(fake_cros_camera_service_.WaitForObserver());
   ASSERT_TRUE(fake_cros_camera_service_.HasObserver());
@@ -285,6 +333,23 @@ TEST_F(KioskVisionTest, TelemetryProcessorReceivesDetections) {
 
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(processor.TakeIdsProcessed(), ElementsAreArray({123, 45}));
+  EXPECT_THAT(processor.TakeErrors(), IsEmpty());
+}
+
+TEST_F(KioskVisionTest, TelemetryProcessorReceivesTracks) {
+  EnableKioskVisionTelemetryPref(local_state_);
+
+  KioskVision vision(&local_state_);
+
+  ASSERT_TRUE(fake_cros_camera_service_.WaitForObserver());
+
+  auto& processor = CHECK_DEREF(vision.GetTelemetryProcessor());
+
+  fake_cros_camera_service_.EmitFakeTrack(
+      NewFakeTrackOfPerson(123, /*count=*/3));
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(processor.TakeIdsProcessed(), ElementsAreArray({123}));
   EXPECT_THAT(processor.TakeErrors(), IsEmpty());
 }
 

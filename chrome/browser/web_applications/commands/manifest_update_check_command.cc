@@ -163,12 +163,12 @@ void ManifestUpdateCheckCommand::DownloadNewManifestJson(
 void ManifestUpdateCheckCommand::StashNewManifestJson(
     base::OnceClosure next_step_callback,
     blink::mojom::ManifestPtr opt_manifest,
-    const GURL& manifest_url,
     bool valid_manifest_for_web_app,
     webapps::InstallableStatusCode installable_status) {
   DCHECK_EQ(stage_, ManifestUpdateCheckStage::kDownloadingNewManifestData);
 
-  GetMutableDebugValue().Set("manifest_url", manifest_url.spec());
+  GetMutableDebugValue().Set(
+      "manifest_url", opt_manifest ? opt_manifest->manifest_url.spec() : "");
   GetMutableDebugValue().Set("manifest_installable_result",
                              base::ToString(installable_status));
 
@@ -180,10 +180,10 @@ void ManifestUpdateCheckCommand::StashNewManifestJson(
   CHECK(!new_install_info_);
 
   new_install_info_ = std::make_unique<WebAppInstallInfo>(
-      CreateWebAppInfoFromManifest(*opt_manifest, manifest_url));
-  CHECK(new_install_info_->manifest_id.is_valid());
+      CreateWebAppInfoFromManifest(*opt_manifest));
 
-  if (app_id_ != GenerateAppIdFromManifestId(new_install_info_->manifest_id)) {
+  if (app_id_ !=
+      GenerateAppIdFromManifestId(new_install_info_->manifest_id())) {
     CompleteCommandAndSelfDestruct(ManifestUpdateCheckResult::kAppIdMismatch);
     return;
   }
@@ -244,11 +244,10 @@ void ManifestUpdateCheckCommand::ValidateNewScopeExtensions(
   }
 
   CHECK(new_install_info_);
-  CHECK(new_install_info_->manifest_id.is_valid());
   ScopeExtensions new_scope_extensions = new_install_info_->scope_extensions;
 
   lock_->origin_association_manager().GetWebAppOriginAssociations(
-      new_install_info_->manifest_id, std::move(new_scope_extensions),
+      new_install_info_->manifest_id(), std::move(new_scope_extensions),
       std::move(next_step_callback));
 }
 

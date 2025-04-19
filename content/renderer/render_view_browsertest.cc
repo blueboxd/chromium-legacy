@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/342213636): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -407,20 +412,20 @@ class RenderViewImplTest : public RenderViewTest {
                         std::u16string* output) {
     int flags = ConvertMockKeyboardModifier(modifiers);
 
-    ui::KeyEvent keydown_event(ui::ET_KEY_PRESSED,
+    ui::KeyEvent keydown_event(ui::EventType::kKeyPressed,
                                static_cast<ui::KeyboardCode>(key_code), flags);
-    NativeWebKeyboardEvent keydown_web_event(keydown_event);
+    input::NativeWebKeyboardEvent keydown_web_event(keydown_event);
     SendNativeKeyEvent(keydown_web_event);
 
     ui::KeyEvent char_event = ui::KeyEvent::FromCharacter(
         keydown_event.GetCharacter(), static_cast<ui::KeyboardCode>(key_code),
         ui::DomCode::NONE, flags);
-    NativeWebKeyboardEvent char_web_event(char_event);
+    input::NativeWebKeyboardEvent char_web_event(char_event);
     SendNativeKeyEvent(char_web_event);
 
-    ui::KeyEvent keyup_event(ui::ET_KEY_RELEASED,
+    ui::KeyEvent keyup_event(ui::EventType::kKeyReleased,
                              static_cast<ui::KeyboardCode>(key_code), flags);
-    NativeWebKeyboardEvent keyup_web_event(keyup_event);
+    input::NativeWebKeyboardEvent keyup_web_event(keyup_event);
     SendNativeKeyEvent(keyup_web_event);
 
     char16_t c = DomCodeToUsLayoutCharacter(
@@ -457,17 +462,17 @@ class RenderViewImplTest : public RenderViewTest {
     // WM_CHAR sends a composed Unicode character.
     CHROME_MSG msg1 = {NULL, WM_KEYDOWN, static_cast<WPARAM>(key_code), 0};
     ui::KeyEvent evt1(msg1);
-    NativeWebKeyboardEvent keydown_event(evt1);
+    input::NativeWebKeyboardEvent keydown_event(evt1);
     SendNativeKeyEvent(keydown_event);
 
     CHROME_MSG msg2 = {NULL, WM_CHAR, (*output)[0], 0};
     ui::KeyEvent evt2(msg2);
-    NativeWebKeyboardEvent char_event(evt2);
+    input::NativeWebKeyboardEvent char_event(evt2);
     SendNativeKeyEvent(char_event);
 
     CHROME_MSG msg3 = {NULL, WM_KEYUP, static_cast<WPARAM>(key_code), 0};
     ui::KeyEvent evt3(msg3);
-    NativeWebKeyboardEvent keyup_event(evt3);
+    input::NativeWebKeyboardEvent keyup_event(evt3);
     SendNativeKeyEvent(keyup_event);
 
     return length;
@@ -691,10 +696,9 @@ TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
 
   // Set up post data.
   const char raw_data[] = "post \0\ndata";
-  const size_t length = std::size(raw_data);
   scoped_refptr<network::ResourceRequestBody> post_data(
       new network::ResourceRequestBody);
-  post_data->AppendBytes(raw_data, length);
+  post_data->AppendBytes(raw_data, sizeof(raw_data));
   common_params->post_data = post_data;
 
   frame()->Navigate(std::move(common_params), DummyCommitNavigationParams());
@@ -712,17 +716,18 @@ TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
   bool successful = body.ElementAt(0, element);
   EXPECT_TRUE(successful);
   EXPECT_EQ(blink::HTTPBodyElementType::kTypeData, element.type);
-  EXPECT_EQ(length, element.data.size());
 
   auto flat_data = base::HeapArray<char>::Uninit(element.data.size());
   element.data.ForEachSegment([&flat_data](const char* segment,
                                            size_t segment_size,
                                            size_t segment_offset) {
-    std::copy(segment, segment + segment_size,
-              flat_data.data() + segment_offset);
+    flat_data.subspan(segment_offset, segment_size)
+        .copy_from(
+            // TODO(crbug.com/40284755): ForEachSegment should be given a span.
+            UNSAFE_BUFFERS(base::span(segment, segment_size)));
     return true;
   });
-  EXPECT_EQ(base::span(raw_data), flat_data.as_span());
+  EXPECT_EQ(base::span_with_nul_from_cstring(raw_data), flat_data.as_span());
 }
 
 #if BUILDFLAG(IS_ANDROID)
@@ -1687,7 +1692,7 @@ TEST_F(RenderViewImplTextInputStateChanged,
   base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, run_loop.QuitClosure());
   run_loop.Run();
-  double zoom_level = blink::PageZoomFactorToZoomLevel(1.25);
+  double zoom_level = blink::ZoomFactorToZoomLevel(1.25);
   // Change the zoom level to 125% and check if the view gets the change.
   main_frame_widget()->SetZoomLevelForTesting(zoom_level);
   // Update the IME status and verify if our IME backend sends an IPC message
@@ -2801,7 +2806,7 @@ TEST_F(RenderViewImplTest, PreferredSizeZoomed) {
   EXPECT_EQ(gfx::Size(400 + scrollbar_width, 400), size);
 
   main_frame_widget()->SetZoomLevelForTesting(
-      blink::PageZoomFactorToZoomLevel(2.0));
+      blink::ZoomFactorToZoomLevel(2.0));
   web_view_->MainFrameWidget()->UpdateAllLifecyclePhases(
       blink::DocumentUpdateReason::kTest);
   size = GetPreferredSize();
@@ -3200,13 +3205,13 @@ TEST_F(RenderViewImplScaleFactorTest, AutoResize) {
 TEST_F(RenderViewImplTest, ZoomLevelUpdate) {
   // 0 will use the minimum zoom level, which is the default, nothing will
   // change.
-  EXPECT_FLOAT_EQ(0u, web_view_->ZoomLevel());
+  EXPECT_FLOAT_EQ(0u, web_view_->MainFrameWidget()->GetZoomLevel());
 
-  double zoom_level = blink::PageZoomFactorToZoomLevel(0.25);
+  double zoom_level = blink::ZoomFactorToZoomLevel(0.25);
   // Change the zoom level to 25% and check if the view gets the change.
   main_frame_widget()->SetZoomLevelForTesting(zoom_level);
   // Use EXPECT_FLOAT_EQ here because view()->GetZoomLevel returns a float.
-  EXPECT_FLOAT_EQ(zoom_level, web_view_->ZoomLevel());
+  EXPECT_FLOAT_EQ(zoom_level, web_view_->MainFrameWidget()->GetZoomLevel());
 }
 
 #endif

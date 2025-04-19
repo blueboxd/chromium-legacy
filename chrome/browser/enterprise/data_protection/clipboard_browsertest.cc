@@ -9,14 +9,14 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_future.h"
-#include "chrome/browser/enterprise/data_controls/data_controls_dialog.h"
-#include "chrome/browser/enterprise/data_controls/data_controls_dialog_test_helper.h"
+#include "chrome/browser/enterprise/data_controls/desktop_data_controls_dialog.h"
+#include "chrome/browser/enterprise/data_controls/desktop_data_controls_dialog_test_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/enterprise/data_controls/features.h"
-#include "components/enterprise/data_controls/test_utils.h"
+#include "components/enterprise/data_controls/core/browser/features.h"
+#include "components/enterprise/data_controls/core/browser/test_utils.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/permissions_test_utils.h"
@@ -109,7 +109,7 @@ IN_PROC_BROWSER_TEST_F(DataProtectionClipboardBrowserTest,
                       {"class": "CLIPBOARD", "level": "BLOCK"}
                     ]
                   })"});
-  data_controls::DataControlsDialogTestHelper helper(
+  data_controls::DesktopDataControlsDialogTestHelper helper(
       data_controls::DataControlsDialog::Type::kClipboardCopyBlock);
 
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url()));
@@ -125,7 +125,7 @@ IN_PROC_BROWSER_TEST_F(DataProtectionClipboardBrowserTest,
   EXPECT_TRUE(first_future.Wait());
   EXPECT_TRUE(first_future.Get().empty());
 
-  helper.CancelDialog();
+  helper.CloseDialogWithoutBypass();
   helper.WaitForDialogToClose();
 
   // No data should be in the clipboard after closing the dialog since the
@@ -146,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(DataProtectionClipboardBrowserTest,
                       {"class": "CLIPBOARD", "level": "WARN"}
                     ]
                   })"});
-  data_controls::DataControlsDialogTestHelper helper(
+  data_controls::DesktopDataControlsDialogTestHelper helper(
       data_controls::DataControlsDialog::Type::kClipboardCopyWarn);
 
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url()));
@@ -162,7 +162,7 @@ IN_PROC_BROWSER_TEST_F(DataProtectionClipboardBrowserTest,
   EXPECT_TRUE(first_future.Wait());
   EXPECT_TRUE(first_future.Get().empty());
 
-  helper.CancelDialog();
+  helper.CloseDialogWithoutBypass();
   helper.WaitForDialogToClose();
 
   // No data should be in the clipboard after closing the dialog since it wasn't
@@ -183,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(DataProtectionClipboardBrowserTest,
                       {"class": "CLIPBOARD", "level": "WARN"}
                     ]
                   })"});
-  data_controls::DataControlsDialogTestHelper helper(
+  data_controls::DesktopDataControlsDialogTestHelper helper(
       data_controls::DataControlsDialog::Type::kClipboardCopyWarn);
 
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url()));
@@ -199,7 +199,7 @@ IN_PROC_BROWSER_TEST_F(DataProtectionClipboardBrowserTest,
   EXPECT_TRUE(first_future.Wait());
   EXPECT_TRUE(first_future.Get().empty());
 
-  helper.AcceptDialog();
+  helper.BypassWarning();
   helper.WaitForDialogToClose();
   base::RunLoop().RunUntilIdle();
 
@@ -221,7 +221,7 @@ IN_PROC_BROWSER_TEST_F(DataProtectionClipboardBrowserTest,
                       {"class": "CLIPBOARD", "level": "WARN"}
                     ]
                   })"});
-  data_controls::DataControlsDialogTestHelper helper(
+  data_controls::DesktopDataControlsDialogTestHelper helper(
       data_controls::DataControlsDialog::Type::kClipboardCopyWarn);
 
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url()));
@@ -246,7 +246,7 @@ IN_PROC_BROWSER_TEST_F(DataProtectionClipboardBrowserTest,
                       {"class": "CLIPBOARD", "level": "BLOCK"}
                     ]
                   })"});
-  data_controls::DataControlsDialogTestHelper helper(
+  data_controls::DesktopDataControlsDialogTestHelper helper(
       data_controls::DataControlsDialog::Type::kClipboardPasteBlock);
 
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url()));
@@ -259,7 +259,7 @@ IN_PROC_BROWSER_TEST_F(DataProtectionClipboardBrowserTest,
       rfh(), R"(var pasted_text = navigator.clipboard.readText();)");
 
   helper.WaitForDialogToInitialize();
-  helper.CancelDialog();
+  helper.CloseDialogWithoutBypass();
   helper.WaitForDialogToClose();
 
   // No data should have been read from the clipboard after closing the dialog
@@ -275,7 +275,7 @@ IN_PROC_BROWSER_TEST_F(DataProtectionClipboardBrowserTest,
                       {"class": "CLIPBOARD", "level": "WARN"}
                     ]
                   })"});
-  data_controls::DataControlsDialogTestHelper helper(
+  data_controls::DesktopDataControlsDialogTestHelper helper(
       data_controls::DataControlsDialog::Type::kClipboardPasteWarn);
 
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url()));
@@ -288,7 +288,7 @@ IN_PROC_BROWSER_TEST_F(DataProtectionClipboardBrowserTest,
       rfh(), R"(var pasted_text = navigator.clipboard.readText();)");
 
   helper.WaitForDialogToInitialize();
-  helper.CancelDialog();
+  helper.CloseDialogWithoutBypass();
   helper.WaitForDialogToClose();
 
   // No data should have been read from the clipboard after closing the dialog
@@ -304,7 +304,7 @@ IN_PROC_BROWSER_TEST_F(DataProtectionClipboardBrowserTest,
                       {"class": "CLIPBOARD", "level": "WARN"}
                     ]
                   })"});
-  data_controls::DataControlsDialogTestHelper helper(
+  data_controls::DesktopDataControlsDialogTestHelper helper(
       data_controls::DataControlsDialog::Type::kClipboardPasteWarn);
 
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url()));
@@ -317,7 +317,7 @@ IN_PROC_BROWSER_TEST_F(DataProtectionClipboardBrowserTest,
       rfh(), R"(var pasted_text = navigator.clipboard.readText();)");
 
   helper.WaitForDialogToInitialize();
-  helper.AcceptDialog();
+  helper.BypassWarning();
   helper.WaitForDialogToClose();
 
   // Data should be pasted in the page after closing the dialog since it was
@@ -333,7 +333,7 @@ IN_PROC_BROWSER_TEST_F(DataProtectionClipboardBrowserTest,
                       {"class": "CLIPBOARD", "level": "BLOCK"}
                     ]
                   })"});
-  data_controls::DataControlsDialogTestHelper helper(
+  data_controls::DesktopDataControlsDialogTestHelper helper(
       data_controls::DataControlsDialog::Type::kClipboardPasteBlock);
 
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url()));

@@ -9,12 +9,14 @@
 #include <string>
 #include <vector>
 
+#include "ash/accelerators/accelerator_commands.h"
 #include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/capture_mode/capture_mode_controller.h"
 #include "ash/capture_mode/capture_mode_test_util.h"
 #include "ash/capture_mode/capture_mode_types.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
+#include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/game_dashboard/game_dashboard_button.h"
 #include "ash/game_dashboard/game_dashboard_constants.h"
 #include "ash/game_dashboard/game_dashboard_context_test_api.h"
@@ -29,27 +31,36 @@
 #include "ash/public/cpp/capture_mode/capture_mode_test_api.h"
 #include "ash/public/cpp/style/dark_light_mode_controller.h"
 #include "ash/public/cpp/tablet_mode.h"
+#include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/color_palette_controller.h"
 #include "ash/style/icon_button.h"
 #include "ash/style/pill_button.h"
 #include "ash/style/switch.h"
+#include "ash/system/model/system_tray_model.h"
+#include "ash/system/time/time_view.h"
 #include "ash/system/toast/anchored_nudge_manager_impl.h"
 #include "ash/system/toast/toast_manager_impl.h"
 #include "ash/system/unified/feature_tile.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_observer.h"
+#include "ash/wm/snap_group/snap_group_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_util.h"
 #include "base/check.h"
+#include "base/i18n/time_formatting.h"
 #include "base/notreached.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chromeos/ui/base/window_properties.h"
+#include "chromeos/ui/frame/caption_buttons/frame_caption_button_container_view.h"
+#include "chromeos/ui/frame/frame_header.h"
 #include "chromeos/ui/wm/window_util.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "extensions/common/constants.h"
@@ -58,6 +69,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/animation/ink_drop.h"
@@ -306,6 +318,26 @@ class EventCapturer : public ui::EventHandler {
   }
 
   std::unique_ptr<ui::MouseEvent> last_mouse_event_;
+};
+
+// Test model mimicking a default `chromeos::CaptionButtonModel` that ensures
+// there's no maximize button within the frame header buttons.
+class NonResizableButtonModel : public chromeos::CaptionButtonModel {
+ public:
+  NonResizableButtonModel() = default;
+  NonResizableButtonModel(const NonResizableButtonModel&) = delete;
+  NonResizableButtonModel& operator=(const NonResizableButtonModel&) = delete;
+  ~NonResizableButtonModel() override = default;
+
+  // chromeos::CaptionButtonModel:
+  bool IsVisible(views::CaptionButtonIcon type) const override {
+    if (type == views::CAPTION_BUTTON_ICON_MINIMIZE) {
+      return true;
+    }
+    return false;
+  }
+  bool IsEnabled(views::CaptionButtonIcon type) const override { return true; }
+  bool InZoomMode() const override { return false; }
 };
 
 }  // namespace
@@ -735,6 +767,40 @@ class GameDashboardContextTest : public GameDashboardTestBase {
                          GameDashboardToolbarSnapLocation desired_location) {
     GetEventGenerator()->PressAndReleaseKey(key);
     EXPECT_EQ(test_api_->GetToolbarSnapLocation(), desired_location);
+  }
+
+  void CreateAnArcAppInFullscreen(std::unique_ptr<chromeos::CaptionButtonModel>
+                                      caption_button_model = nullptr) {
+    // Create an ARC game window.
+    SetAppBounds(gfx::Rect(50, 50, 800, 700));
+    CreateGameWindow(/*is_arc_window=*/true,
+                     /*set_arc_game_controls_flags_prop=*/true);
+
+    auto* window_state = WindowState::Get(game_window_.get());
+    ASSERT_TRUE(window_state->IsNormalStateType());
+    views::Widget* button_widget = test_api_->GetGameDashboardButtonWidget();
+    CHECK(button_widget);
+
+    if (caption_button_model) {
+      // Override the caption button model and ensure the values referencing the
+      // model are updated.
+      auto* frame_view = NonClientFrameViewAsh::Get(game_window_.get());
+      ASSERT_TRUE(frame_view);
+      frame_view->SetCaptionButtonModel(std::move(caption_button_model));
+    }
+
+    // Set initial state to fullscreen, ensure the animations are complete after
+    // toggling the fullscreen state, and verify Game Dashboard button widget is
+    // not visible.
+    ASSERT_FALSE(test_api_->GetGameDashboardButtonRevealController());
+    ToggleFullScreen(window_state, /*delegate=*/nullptr);
+    auto* frame_view = NonClientFrameViewAsh::Get(game_window_.get());
+    chromeos::FrameCaptionButtonContainerView::TestApi test_api(
+        frame_view->GetHeaderView()->caption_button_container());
+    test_api.EndAnimations();
+    ASSERT_TRUE(window_state->IsFullscreen());
+    ASSERT_FALSE(button_widget->IsVisible());
+    ASSERT_TRUE(test_api_->GetGameDashboardButtonRevealController());
   }
 
  protected:
@@ -1219,6 +1285,130 @@ TEST_F(GameDashboardContextTest, CompatModeArcGame) {
   EXPECT_TRUE(screen_size_button->GetEnabled());
 }
 
+// Verifies the screen size row isn't shown on O4C ARC game windows.
+TEST_F(GameDashboardContextTest, ScreenSizeRowAvailability) {
+  // Create an ARC game window that is O4C.
+  CreateGameWindow(/*is_arc_window=*/true);
+  game_window_->SetProperty(kArcResizeLockTypeKey, ArcResizeLockType::NONE);
+  game_window_->SetProperty(
+      kArcGameControlsFlagsKey,
+      static_cast<ArcGameControlsFlag>(ArcGameControlsFlag::kKnown |
+                                       ArcGameControlsFlag::kO4C));
+
+  test_api_->OpenTheMainMenu();
+
+  EXPECT_FALSE(test_api_->GetMainMenuScreenSizeSettingsButton());
+}
+
+// Verifies a not O4C resizable app in portrait mode displays the expected
+// description within the screen size row.
+TEST_F(GameDashboardContextTest, ScreenSizeRowSubtitle_PortraitResizable) {
+  // Create an ARC game window in portrait mode that is resizable.
+  SetAppBounds(gfx::Rect(50, 50, 400, 700));
+  CreateGameWindow(/*is_arc_window=*/true);
+  game_window_->SetProperty(kArcResizeLockTypeKey,
+                            ArcResizeLockType::RESIZE_DISABLED_TOGGLABLE);
+
+  test_api_->OpenTheMainMenu();
+
+  EXPECT_EQ(u"Portrait", test_api_->GetMainMenuScreenSizeSubtitle());
+}
+
+// Verifies a not O4C resizable app in landscape mode displays the expected
+// description within the screen size row.
+TEST_F(GameDashboardContextTest, ScreenSizeRowSubtitle_LandscapeResizable) {
+  // Create an ARC game window in landscape mode that is resizable.
+  CreateGameWindow(/*is_arc_window=*/true);
+  game_window_->SetProperty(kArcResizeLockTypeKey,
+                            ArcResizeLockType::RESIZE_DISABLED_TOGGLABLE);
+
+  test_api_->OpenTheMainMenu();
+
+  EXPECT_EQ(u"Landscape", test_api_->GetMainMenuScreenSizeSubtitle());
+}
+
+// Verifies a not O4C resizable app in resizable mode displays the expected
+// description within the screen size row.
+TEST_F(GameDashboardContextTest, ScreenSizeRowSubtitle_FreeformResizable) {
+  // Create an ARC game window in free resizing mode.
+  CreateGameWindow(/*is_arc_window=*/true);
+  game_window_->SetProperty(kArcResizeLockTypeKey,
+                            ArcResizeLockType::RESIZE_ENABLED_TOGGLABLE);
+
+  test_api_->OpenTheMainMenu();
+
+  EXPECT_EQ(u"Resizable", test_api_->GetMainMenuScreenSizeSubtitle());
+}
+
+// Verifies a not O4C non-resizable app in portrait mode displays the expected
+// description within the screen size row.
+TEST_F(GameDashboardContextTest, ScreenSizeRowSubtitle_PortraitNonTogglable) {
+  // Create an ARC game window that only supports portrait mode.
+  SetAppBounds(gfx::Rect(50, 50, 400, 700));
+  CreateGameWindow(/*is_arc_window=*/true);
+  game_window_->SetProperty(kArcResizeLockTypeKey,
+                            ArcResizeLockType::RESIZE_DISABLED_NONTOGGLABLE);
+
+  test_api_->OpenTheMainMenu();
+
+  EXPECT_EQ(u"Only portrait available",
+            test_api_->GetMainMenuScreenSizeSubtitle());
+}
+
+// Verifies a not O4C non-resizable app in landscape mode displays the expected
+// description within the screen size row.
+TEST_F(GameDashboardContextTest, ScreenSizeRowSubtitle_LandscapeNonTogglable) {
+  // Create an ARC game window that only supports landscape mode.
+  CreateGameWindow(/*is_arc_window=*/true);
+  game_window_->SetProperty(kArcResizeLockTypeKey,
+                            ArcResizeLockType::RESIZE_DISABLED_NONTOGGLABLE);
+
+  test_api_->OpenTheMainMenu();
+
+  EXPECT_EQ(u"Only landscape available",
+            test_api_->GetMainMenuScreenSizeSubtitle());
+}
+
+// Verifies a not O4C resizable app in fullscreen displays the expected
+// description within the screen size row.
+TEST_F(GameDashboardContextTest, ScreenSizeRowSubtitle_FullscreenTogglable) {
+  // Create an ARC game window in fullscreen that can be resized via the size
+  // button in the frame header.
+  CreateAnArcAppInFullscreen();
+
+  // Open the Game Dashboard menu with the accelerator.
+  AcceleratorControllerImpl* controller =
+      Shell::Get()->accelerator_controller();
+  const ui::Accelerator gd_accelerator(ui::VKEY_G, ui::EF_COMMAND_DOWN);
+  auto* button_widget = test_api_->GetGameDashboardButtonWidget();
+  CHECK(button_widget);
+  ASSERT_TRUE(controller->Process(gd_accelerator));
+  ASSERT_TRUE(button_widget->IsVisible());
+
+  EXPECT_EQ(u"Exit fullscreen to resize",
+            test_api_->GetMainMenuScreenSizeSubtitle());
+}
+
+// Verifies a not O4C non-resizable app in fullscreen displays the expected
+// description within the screen size row.
+TEST_F(GameDashboardContextTest, ScreenSizeRowSubtitle_FullscreenNonTogglable) {
+  // Create an ARC game window in fullscreen that can't be resized.
+  CreateAnArcAppInFullscreen(
+      /*caption_button_model=*/std::make_unique<NonResizableButtonModel>());
+
+  // Open the Game Dashboard menu with the accelerator.
+  AcceleratorControllerImpl* controller =
+      Shell::Get()->accelerator_controller();
+  const ui::Accelerator gd_accelerator(ui::VKEY_G, ui::EF_COMMAND_DOWN);
+  auto* button_widget = test_api_->GetGameDashboardButtonWidget();
+  CHECK(button_widget);
+  ASSERT_TRUE(controller->Process(gd_accelerator));
+  ASSERT_TRUE(button_widget->IsVisible());
+
+  EXPECT_EQ(u"Only fullscreen available",
+            test_api_->GetMainMenuScreenSizeSubtitle());
+}
+
 TEST_F(GameDashboardContextTest, NonCompatModeArcGame) {
   // Create an ARC game window that doesn't support Compat Mode.
   CreateGameWindow(/*is_arc_window=*/true);
@@ -1285,6 +1475,67 @@ TEST_F(GameDashboardContextTest, TwoGameWindowsRecordingState) {
   RecordGameAndVerifyButtons(
       /*recording_window_test_api=*/&gfn_window_test_api,
       /*other_window_test_api=*/test_api_.get());
+}
+
+TEST_F(GameDashboardContextTest, MainMenuClockView) {
+  // Enable Game Dashboard utilities flag.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature({features::kGameDashboardUtilities});
+  // Create an ARC game window.
+  CreateGameWindow(/*is_arc_window=*/true);
+
+  // Set current time to 08:00.
+  task_environment()->AdvanceClock(base::Time::Now().LocalMidnight() +
+                                   base::Hours(32) - base::Time::Now());
+
+  test_api_->OpenTheMainMenu();
+  auto* clock_view = test_api_->GetMainMenuClockView();
+  // Ensure that the time and "AM/PM" text is visible and that a 12 hour clock
+  // is used by default.
+  ASSERT_TRUE(clock_view);
+  ASSERT_TRUE(clock_view->GetVisible());
+  ASSERT_EQ(clock_view->GetAmPmClockTypeForTesting(),
+            base::AmPmClockType::kKeepAmPm);
+  ASSERT_EQ(clock_view->GetHourTypeForTesting(),
+            base::HourClockType::k12HourClock);
+
+  const auto* horizontal_time_label =
+      clock_view->GetHorizontalTimeLabelForTesting();
+  const auto current_time = horizontal_time_label->GetText();
+  // Verify that the "AM/PM" text is visible.
+  ASSERT_NE(current_time.ends_with(u"AM"), current_time.ends_with(u"PM"));
+  // Ensure that the clock increments as the time changes.
+  AdvanceClock(base::Hours(12));
+  const auto next_time = horizontal_time_label->GetText();
+  const std::u16string next_am_pm =
+      current_time.ends_with(u"AM") ? u"PM" : u"AM";
+  ASSERT_NE(current_time, next_time);
+  // Verify that the "AM/PM" text changes after advancing 12 hours.
+  ASSERT_TRUE(next_time.ends_with(next_am_pm));
+
+  // Change the clock to a 24 hour view.
+  Shell::Get()->system_tray_model()->SetUse24HourClock(true);
+  // Verify that the clock is still visible.
+  ASSERT_TRUE(clock_view->GetVisible());
+  // Verify that the clock view is 24 hours.
+  ASSERT_EQ(clock_view->GetHourTypeForTesting(),
+            base::HourClockType::k24HourClock);
+  const auto hour_24_current_time = horizontal_time_label->GetText();
+  // Verify that the "AM/PM" text is not visible.
+  ASSERT_FALSE(hour_24_current_time.ends_with(u"AM") ||
+               hour_24_current_time.ends_with(u"PM"));
+
+  // Revert to the default 12 hour view.
+  Shell::Get()->system_tray_model()->SetUse24HourClock(false);
+  // Verify that the clock is still visible.
+  ASSERT_TRUE(clock_view->GetVisible());
+  // Verify that the clock view is 12 hours.
+  ASSERT_EQ(clock_view->GetHourTypeForTesting(),
+            base::HourClockType::k12HourClock);
+  const auto reverted_current_time = horizontal_time_label->GetText();
+  // Verify that the "AM/PM" text is visible.
+  ASSERT_NE(reverted_current_time.ends_with(u"AM"),
+            reverted_current_time.ends_with(u"PM"));
 }
 
 TEST_F(GameDashboardContextTest, RecordingTimerStringFormat) {
@@ -1480,7 +1731,7 @@ TEST_F(GameDashboardContextTest, GameDashboardButtonFullscreen) {
 
   AcceleratorControllerImpl* controller =
       Shell::Get()->accelerator_controller();
-  ui::Accelerator gd_accelerator(ui::VKEY_G, ui::EF_COMMAND_DOWN);
+  const ui::Accelerator gd_accelerator(ui::VKEY_G, ui::EF_COMMAND_DOWN);
   auto* window_state = WindowState::Get(game_window_.get());
   auto* button_widget = test_api_->GetGameDashboardButtonWidget();
   CHECK(button_widget);
@@ -1489,7 +1740,8 @@ TEST_F(GameDashboardContextTest, GameDashboardButtonFullscreen) {
   ASSERT_FALSE(window_state->IsFullscreen());
   ASSERT_TRUE(button_widget->IsVisible());
 
-  // Switch to fullscreen and verify Game Dashboard button widget is visible.
+  // Switch to fullscreen and verify Game Dashboard button widget is not
+  // visible.
   ToggleFullScreen(window_state, /*delegate=*/nullptr);
   ASSERT_TRUE(window_state->IsFullscreen());
   ASSERT_FALSE(button_widget->IsVisible());
@@ -1524,7 +1776,7 @@ TEST_F(GameDashboardContextTest, GameDashboardButtonFullscreenWithMainMenu) {
 
   AcceleratorControllerImpl* controller =
       Shell::Get()->accelerator_controller();
-  ui::Accelerator gd_accelerator(ui::VKEY_G, ui::EF_COMMAND_DOWN);
+  const ui::Accelerator gd_accelerator(ui::VKEY_G, ui::EF_COMMAND_DOWN);
   auto* window_state = WindowState::Get(game_window_.get());
   auto* button_widget = test_api_->GetGameDashboardButtonWidget();
   CHECK(button_widget);
@@ -1556,41 +1808,23 @@ TEST_F(GameDashboardContextTest, GameDashboardButtonFullscreenWithMainMenu) {
 
 TEST_F(GameDashboardContextTest,
        GameDashboardButtonFullscreen_MouseOverAndTouchGesture) {
-  // Create an ARC game window.
-  SetAppBounds(gfx::Rect(50, 50, 800, 700));
-  CreateGameWindow(/*is_arc_window=*/true,
-                   /*set_arc_game_controls_flags_prop=*/true);
-
-  auto* event_generator = GetEventGenerator();
-  auto app_bounds = game_window_->GetBoundsInScreen();
-  auto* window_state = WindowState::Get(game_window_.get());
-  ASSERT_TRUE(window_state->IsNormalStateType());
+  CreateAnArcAppInFullscreen();
   views::Widget* button_widget = test_api_->GetGameDashboardButtonWidget();
   CHECK(button_widget);
 
-  // Set initial state to fullscreen and verify Game Dashboard button widget is
-  // not visible.
-  ASSERT_FALSE(test_api_->GetGameDashboardButtonRevealController());
-  ToggleFullScreen(window_state, /*delegate=*/nullptr);
-  ASSERT_TRUE(window_state->IsFullscreen());
-  ASSERT_FALSE(button_widget->IsVisible());
-  ASSERT_TRUE(test_api_->GetGameDashboardButtonRevealController());
-  ASSERT_FALSE(test_api_->GetGameDashboardButtonWidget()->IsVisible());
-
   // Move mouse to top edge of window.
-  app_bounds = game_window_->GetBoundsInScreen();
+  const auto app_bounds = game_window_->GetBoundsInScreen();
+  auto* event_generator = GetEventGenerator();
   event_generator->MoveMouseTo(app_bounds.top_center());
   base::OneShotTimer& top_edge_hover_timer =
       test_api_->GetRevealControllerTopEdgeHoverTimer();
   ASSERT_TRUE(top_edge_hover_timer.IsRunning());
   top_edge_hover_timer.FireNow();
   ASSERT_TRUE(button_widget->IsVisible());
-  ASSERT_TRUE(test_api_->GetGameDashboardButtonWidget()->IsVisible());
 
   // Move mouse to the center of the app, and verify Game Dashboard button
   // widget is not visible.
   event_generator->MoveMouseTo(app_bounds.CenterPoint());
-  ASSERT_FALSE(test_api_->GetGameDashboardButtonWidget()->IsVisible());
   ASSERT_FALSE(button_widget->IsVisible());
 
   // Touch drag from top edge of window.
@@ -1598,13 +1832,11 @@ TEST_F(GameDashboardContextTest,
                                          app_bounds.CenterPoint(),
                                          kTouchDragDuration, kTouchDragSteps);
   ASSERT_TRUE(button_widget->IsVisible());
-  ASSERT_TRUE(test_api_->GetGameDashboardButtonWidget()->IsVisible());
 
   // Touch drag to top edge of window.
   event_generator->GestureScrollSequence(app_bounds.CenterPoint(),
                                          app_bounds.top_center(),
                                          kTouchDragDuration, kTouchDragSteps);
-  ASSERT_FALSE(test_api_->GetGameDashboardButtonWidget()->IsVisible());
   ASSERT_FALSE(button_widget->IsVisible());
 
   // Re-open the game dashboard button and touch drag to bottom edge of window.
@@ -1612,12 +1844,10 @@ TEST_F(GameDashboardContextTest,
                                          app_bounds.CenterPoint(),
                                          kTouchDragDuration, kTouchDragSteps);
   ASSERT_TRUE(button_widget->IsVisible());
-  ASSERT_TRUE(test_api_->GetGameDashboardButtonWidget()->IsVisible());
 
   event_generator->GestureScrollSequence(app_bounds.CenterPoint(),
                                          app_bounds.bottom_center(),
                                          kTouchDragDuration, kTouchDragSteps);
-  ASSERT_FALSE(test_api_->GetGameDashboardButtonWidget()->IsVisible());
   ASSERT_FALSE(button_widget->IsVisible());
 
   // Touch drag to bottom edge of window while the game dashboard button is
@@ -1625,8 +1855,158 @@ TEST_F(GameDashboardContextTest,
   event_generator->GestureScrollSequence(app_bounds.CenterPoint(),
                                          app_bounds.bottom_center(),
                                          kTouchDragDuration, kTouchDragSteps);
-  ASSERT_FALSE(test_api_->GetGameDashboardButtonWidget()->IsVisible());
   ASSERT_FALSE(button_widget->IsVisible());
+}
+
+TEST_F(GameDashboardContextTest, GameDashboardButtonFullscreen_TouchEvent) {
+  CreateAnArcAppInFullscreen();
+  views::Widget* button_widget = test_api_->GetGameDashboardButtonWidget();
+  CHECK(button_widget);
+
+  // Move mouse to top edge of window, and verify Game Dashboard button
+  // widget is visible.
+  const auto app_bounds = game_window_->GetBoundsInScreen();
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(app_bounds.top_center());
+  base::OneShotTimer& top_edge_hover_timer =
+      test_api_->GetRevealControllerTopEdgeHoverTimer();
+  ASSERT_TRUE(top_edge_hover_timer.IsRunning());
+  top_edge_hover_timer.FireNow();
+  ASSERT_TRUE(button_widget->IsVisible());
+
+  // Touch outside the Game Dashboard button widget's bounds and verify the
+  // widget is hidden.
+  event_generator->PressTouch(app_bounds.right_center());
+  event_generator->ReleaseTouch();
+  ASSERT_FALSE(button_widget->IsVisible());
+}
+
+TEST_F(GameDashboardContextTest,
+       GameDashboardOverviewModeStaticWidgetPosition_ZoomEvent) {
+  CreateGameWindow(/*is_arc_window=*/true);
+  // Open the Game Dashboard Main Menu and Toolbar widgets, and then enter
+  // overview mode.
+  test_api_->OpenTheMainMenu();
+  test_api_->OpenTheToolbar();
+  EnterOverview();
+
+  // Slightly zoom in.
+  Shell::Get()->accelerator_controller()->PerformActionIfEnabled(
+      AcceleratorAction::kScaleUiDown, {});
+
+  ExitOverview();
+
+  // Verify that the default snap position is `kTopRight` and toolbar is placed
+  // in the top right quadrant.
+  EXPECT_EQ(test_api_->GetToolbarSnapLocation(),
+            GameDashboardToolbarSnapLocation::kTopRight);
+
+  // Verify that the position of the Game Dashboard Main Menu widget is still
+  // centered at the top of the game window.
+  const gfx::Point expected_button_center_point(
+      game_window_->GetBoundsInScreen().top_center().x(),
+      app_bounds().y() + frame_header_height_ / 2);
+  EXPECT_EQ(expected_button_center_point,
+            test_api_->GetGameDashboardButtonWidget()
+                ->GetNativeWindow()
+                ->GetBoundsInScreen()
+                .CenterPoint());
+}
+
+// Verifies that during a snap animation, the Game Dashboard and toolbar widgets
+// are not visible.
+TEST_F(GameDashboardContextTest, UIVisibilityWithWindowSnapAnimation) {
+  // Prevent short-circuit animations in this test.
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+
+  // Create an ARC game window.
+  CreateGameWindow(/*is_arc_window=*/true);
+
+  // Extract animation layer.
+  ui::LayerAnimator* animator = game_window_->layer()->GetAnimator();
+  // Prevent animation from automatically running.
+  animator->set_disable_timer_for_test(true);
+
+  // Ensure that widgets exist and are visible before animation occurs.
+  const auto* game_dashboard_button_widget =
+      test_api_->GetGameDashboardButtonWidget();
+  ASSERT_TRUE(game_dashboard_button_widget);
+  ASSERT_TRUE(game_dashboard_button_widget->IsVisible());
+  test_api_->OpenTheMainMenu();
+  test_api_->OpenTheToolbar();
+
+  // Snap Left.
+  Shell::Get()->accelerator_controller()->PerformActionIfEnabled(
+      AcceleratorAction::kWindowCycleSnapLeft, {});
+  // Ensure that the animation is occurring.
+  ASSERT_TRUE(animator->is_animating());
+  // Manually take a step through the animation while it is running. The
+  // animation is still incomplete 10 milliseconds in.
+  animator->Step(animator->last_step_time() + base::Milliseconds(10));
+
+  // Verify that the widgets are not visible during the animation.
+  ASSERT_FALSE(game_dashboard_button_widget->IsVisible());
+  const auto* toolbar_widget = test_api_->GetToolbarWidget();
+  ASSERT_FALSE(toolbar_widget->IsVisible());
+
+  // Run the animation to completion.
+  animator->StopAnimating();
+
+  // Verify that the animation is complete.
+  ASSERT_FALSE(animator->is_animating());
+  // Ensure that the widgets are visible at the conclusion of the animation.
+  ASSERT_TRUE(game_dashboard_button_widget->IsVisible());
+  ASSERT_TRUE(toolbar_widget->IsVisible());
+  // Ensure that the window is snapped.
+  ASSERT_TRUE(WindowState::Get(game_window_.get())->IsSnapped());
+}
+
+// Verifies that during a float animation, the Game Dashboard and toolbar
+// widgets are not visible.
+TEST_F(GameDashboardContextTest, UIVisibilityWithWindowFloatAnimation) {
+  // Do not short-circuit animations in this test.
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+
+  // Create an ARC game window.
+  CreateGameWindow(/*is_arc_window=*/true);
+
+  // Extract animation layer.
+  ui::LayerAnimator* animator = game_window_->layer()->GetAnimator();
+
+  // Prevent animation from automatically running.
+  animator->set_disable_timer_for_test(true);
+
+  const auto* game_dashboard_button_widget =
+      test_api_->GetGameDashboardButtonWidget();
+  ASSERT_TRUE(game_dashboard_button_widget);
+  ASSERT_TRUE(game_dashboard_button_widget->IsVisible());
+
+  test_api_->OpenTheMainMenu();
+  test_api_->OpenTheToolbar();
+
+  // Trigger the float animation.
+  PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
+
+  // Ensure that the animation is occurring.
+  ASSERT_TRUE(animator->is_animating());
+
+  // Manually take a step through the animation.
+  animator->Step(animator->last_step_time() + base::Milliseconds(10));
+
+  // Verify that the widgets are not visible.
+  ASSERT_FALSE(game_dashboard_button_widget->IsVisible());
+  ASSERT_FALSE(test_api_->GetToolbarWidget()->IsVisible());
+
+  // Run the animation to completion.
+  ShellTestApi().WaitForWindowFinishAnimating(game_window_.get());
+
+  // Ensure that the widgets are visible at the conclusion of the animation.
+  EXPECT_TRUE(game_dashboard_button_widget->IsVisible());
+  ASSERT_TRUE(test_api_->GetToolbarWidget()->IsVisible());
+
+  ASSERT_TRUE(WindowState::Get(game_window_.get())->IsFloated());
 }
 
 // Verifies that at startup and with the welcome dialog is visible, opening
@@ -1831,6 +2211,51 @@ TEST_F(GameDashboardContextTest, TabNavigationToolbar) {
   // in the toolbar.
   TabNavigateBackward();
   EXPECT_TRUE(test_api_->GetToolbarScreenshotButton()->HasFocus());
+}
+
+class SnapGroupGameDashboardContextTest : public GameDashboardContextTest {
+ public:
+  SnapGroupGameDashboardContextTest()
+      : scoped_feature_list_(features::kSnapGroup) {}
+
+  SnapGroupGameDashboardContextTest(const SnapGroupGameDashboardContextTest&) =
+      delete;
+  SnapGroupGameDashboardContextTest& operator=(
+      const SnapGroupGameDashboardContextTest&) = delete;
+  ~SnapGroupGameDashboardContextTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Tests no crash when the game window in a snap group is fullscreen'ed then
+// forces a work area change. Regression test for http://b/348668590.
+TEST_F(SnapGroupGameDashboardContextTest, NoCrashOnSnapGroupWorkAreaChange) {
+  // Create a snap group with the game window.
+  CreateGameWindow(/*is_arc_window=*/false);
+  std::unique_ptr<aura::Window> w2(AshTestBase::CreateAppWindow());
+
+  WindowState* window_state2 = WindowState::Get(w2.get());
+  const WindowSnapWMEvent secondary_snap_event(
+      WM_EVENT_SNAP_SECONDARY, chromeos::kDefaultSnapRatio,
+      WindowSnapActionSource::kSnapByWindowLayoutMenu);
+  window_state2->OnWMEvent(&secondary_snap_event);
+  EXPECT_TRUE(window_state2->IsSnapped());
+
+  WindowState* window_state1 = WindowState::Get(game_window_.get());
+  const WindowSnapWMEvent primary_snap_event(
+      WM_EVENT_SNAP_PRIMARY, chromeos::kDefaultSnapRatio,
+      WindowSnapActionSource::kSnapByWindowLayoutMenu);
+  window_state1->OnWMEvent(&primary_snap_event);
+  EXPECT_TRUE(window_state1->IsSnapped());
+
+  ASSERT_TRUE(SnapGroupController::Get()->AreWindowsInSnapGroup(
+      game_window_.get(), w2.get()));
+  ASSERT_TRUE(test_api_->GetGameDashboardButtonWidget()->IsVisible());
+
+  // Fullscreen the game window. Test no crash.
+  wm::ActivateWindow(game_window_.get());
+  ToggleFullScreen(window_state1, /*delegate=*/nullptr);
 }
 
 // -----------------------------------------------------------------------------
@@ -2657,7 +3082,7 @@ TEST_P(GameTypeGameDashboardContextTest, OverviewModeWithTabletMode) {
   test_api_->OpenTheToolbar();
   const auto* overview_controller = OverviewController::Get();
 
-  // 1. Clamshell -> overrview -> tablet-> exit overview.
+  // 1. Clamshell -> overview -> tablet-> exit overview.
   ASSERT_FALSE(display::Screen::GetScreen()->InTabletMode());
   EnterOverview();
   ASSERT_TRUE(overview_controller->InOverviewSession());

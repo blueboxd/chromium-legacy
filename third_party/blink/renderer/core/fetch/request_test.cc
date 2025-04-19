@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/core/fetch/request.h"
 
 #include <memory>
@@ -138,7 +143,7 @@ TEST_F(RequestBodyTest, InitWithUrlSearchParams) {
 TEST_F(RequestBodyTest, InitWithBlob) {
   V8TestingScope scope;
   String body = "test body!";
-  auto* blob = Blob::Create(body.Span8().data(), body.length(), "text/html");
+  auto* blob = Blob::Create(body.Span8(), "text/html");
   auto* init = CreateRequestInit(
       scope, ToV8Traits<Blob>::ToV8(scope.GetScriptState(), blob));
 

@@ -1900,21 +1900,6 @@ Called by update_net_trust_anchors.py.-->
   <int value="64" label="SCHEME_QUIC"/>
 </enum>
 
-<enum name="PushedStreamVaryResponseHeaderValues">
-  <int value="0" label="There is no Vary header."/>
-  <int value="1" label="The value of Vary is empty."/>
-  <int value="2" label="The value of Vary is &quot;*&quot;."/>
-  <int value="3"
-      label="The value of Vary is &quot;accept-encoding&quot; (case
-             insensitive)."/>
-  <int value="4"
-      label="The value of Vary contains &quot;accept-encoding&quot; (case
-             insensitive) and some other field names as well."/>
-  <int value="5"
-      label="The value of Vary does not contain &quot;accept-encoding&quot;,
-             is not empty, and is not &quot;*&quot;."/>
-</enum>
-
 <enum name="QuicAddressMismatch">
   <int value="0" label="Address mismatch: IPv4 IPv4"/>
   <int value="1" label="Address mismatch: IPv6 IPv6"/>
@@ -2206,6 +2191,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="204" label="QUIC_TOO_MANY_CONNECTION_ID_WAITING_TO_RETIRE"/>
   <int value="205" label="QUIC_HTTP_RECEIVE_SERVER_PUSH"/>
   <int value="206" label="QUIC_INVALID_CHARACTER_IN_FIELD_VALUE"/>
+</enum>
+
+<enum name="QuicFindMatchingIpSessionResult">
+  <int value="0" label="MATCHING_IP_SESSION_FOUND"/>
+  <int value="1" label="CAN_POOL_BUT_DIFFERENT_IP"/>
+  <int value="2" label="CANNOT_POOL_WITH_EXISTING_SESSIONS"/>
+  <int value="3" label="POOLED_WITH_DIFFERENT_IP_SESSION"/>
 </enum>
 
 <enum name="QuicHandshakeFailureReason">
@@ -2528,31 +2520,6 @@ Called by update_net_trust_anchors.py.-->
   <int value="58" label="Total compressed HPACK data size exceeds limit."/>
 </enum>
 
-<enum name="SpdyPushedStreamFate">
-  <int value="0" label="TOO_MANY_PUSHED_STREAMS"/>
-  <int value="1" label="TIMEOUT"/>
-  <int value="2" label="PROMISED_STREAM_ID_PARITY_ERROR"/>
-  <int value="3" label="ASSOCIATED_STREAM_ID_PARITY_ERROR"/>
-  <int value="4" label="STREAM_ID_OUT_OF_ORDER"/>
-  <int value="5" label="GOING_AWAY"/>
-  <int value="6" label="INVALID_URL"/>
-  <int value="7" label="INACTIVE_ASSOCIATED_STREAM"/>
-  <int value="8" label="NON_HTTP_SCHEME_FROM_TRUSTED_PROXY"/>
-  <int value="9" label="NON_HTTPS_PUSHED_SCHEME"/>
-  <int value="10" label="NON_HTTPS_ASSOCIATED_SCHEME"/>
-  <int value="11" label="CERTIFICATE_MISMATCH"/>
-  <int value="12" label="DUPLICATE_URL"/>
-  <int value="13" label="CLIENT_REQUEST_NOT_RANGE"/>
-  <int value="14" label="PUSHED_REQUEST_NOT_RANGE"/>
-  <int value="15" label="RANGE_MISMATCH"/>
-  <int value="16" label="VARY_MISMATCH"/>
-  <int value="17" label="ACCEPTED_NO_VARY"/>
-  <int value="18" label="ACCEPTED_MATCHING_VARY"/>
-  <int value="19" label="PUSH_DISABLED"/>
-  <int value="20" label="ALREADY_IN_CACHE"/>
-  <int value="21" label="UNSUPPORTED_STATUS_CODE"/>
-</enum>
-
 <enum name="SpdySessionGet">
   <int value="0" label="created new"/>
   <int value="1" label="found existing"/>
@@ -2656,6 +2623,25 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Virtual"/>
   <int value="3" label="Both"/>
 </enum>
+
+<!-- LINT.IfChange(TrustTokenOperationStatus) -->
+
+<enum name="TrustTokenOperationStatus">
+  <int value="0" label="PST succeeded"/>
+  <int value="1" label="Invalid argument"/>
+  <int value="2" label="Missing issuer keys"/>
+  <int value="3" label="Failed precondition"/>
+  <int value="4" label="Resource exhausted"/>
+  <int value="5" label="PST already exists"/>
+  <int value="6" label="Resource limited"/>
+  <int value="7" label="PST unauthorized"/>
+  <int value="8" label="Bad response"/>
+  <int value="9" label="Internal error"/>
+  <int value="10" label="Unknown error"/>
+  <int value="11" label="Operation fulfilled locally"/>
+</enum>
+
+<!-- LINT.ThenChange(//services/network/public/mojom/trust_tokens.mojom:TrustTokenOperationStatus) -->
 
 <enum name="TrustTokenRequestHelperFactoryOutcome">
   <int value="0" label="Successfully created an issuance helper"/>

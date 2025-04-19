@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_WINDOW_DIALOG_DELEGATE_H_
 #define UI_VIEWS_WINDOW_DIALOG_DELEGATE_H_
 
+#include <array>
 #include <memory>
 #include <optional>
 #include <string>
@@ -14,6 +15,7 @@
 #include "base/time/time.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/metadata/view_factory.h"
@@ -68,10 +70,11 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
     // here will get the default text for its type from GetDialogButtonLabel.
     // Prefer to use this field (via SetButtonLabel) rather than override
     // GetDialogButtonLabel - see https://crbug.com/1011446
-    std::u16string button_labels[ui::DIALOG_BUTTON_LAST + 1];
+    std::array<std::u16string, ui::DIALOG_BUTTON_LAST + 1> button_labels;
 
     // Styles of each button on this dialog. If empty a style will be derived.
-    std::optional<ui::ButtonStyle> button_styles[ui::DIALOG_BUTTON_LAST + 1];
+    std::array<std::optional<ui::ButtonStyle>, ui::DIALOG_BUTTON_LAST + 1>
+        button_styles;
 
     // A bitmask of buttons (from ui::DialogButton) that are enabled in this
     // dialog. It's legal for a button to be marked enabled that isn't present
@@ -115,8 +118,7 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
 
   // Returns a mask specifying which of the available DialogButtons are visible
   // for the dialog.
-  // TODO(crbug.com/40101916): Rename this to buttons().
-  int GetDialogButtons() const { return params_.buttons; }
+  int buttons() const { return params_.buttons; }
 
   // Returns the default dialog button. This should not be a mask as only
   // one button should ever be the default button.  Return
@@ -280,9 +282,8 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // use is if the dialog's parent widget is closed.
   void SetCloseCallback(base::OnceClosure callback);
 
-  // By default the NativeWidget owns the Widget. Calling this method will
-  // instead cause the reverse. Must be called before creating the Widget.
-  void SetWidgetOwnsNativeWidget();
+  // Sets the ownership of the views::Widget created by CreateDialogWidget().
+  void SetOwnershipOfNewWidget(Widget::InitParams::Ownership ownership);
 
   // Returns ownership of the extra view for this dialog, if one was provided
   // via SetExtraView(). This is only for use by DialogClientView; don't call
@@ -403,7 +404,9 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // returned true.
   bool already_started_close_ = false;
 
-  bool widget_owns_native_widget_ = false;
+  // Ownership of the views::Widget created by CreateDialogWidget().
+  Widget::InitParams::Ownership ownership_of_new_widget_ =
+      Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET;
 };
 
 // A DialogDelegate implementation that is-a View. Used to override GetWidget()
@@ -448,7 +451,7 @@ VIEW_BUILDER_PROPERTY(bool, FocusTraversesOut)
 VIEW_BUILDER_PROPERTY(bool, EnableArrowKeyTraversal)
 VIEW_BUILDER_PROPERTY(ui::ImageModel, Icon)
 VIEW_BUILDER_PROPERTY(ui::ImageModel, AppIcon)
-VIEW_BUILDER_PROPERTY(ui::ModalType, ModalType)
+VIEW_BUILDER_PROPERTY(ui::mojom::ModalType, ModalType)
 VIEW_BUILDER_PROPERTY(bool, OwnedByWidget)
 VIEW_BUILDER_PROPERTY(bool, ShowCloseButton)
 VIEW_BUILDER_PROPERTY(bool, ShowIcon)

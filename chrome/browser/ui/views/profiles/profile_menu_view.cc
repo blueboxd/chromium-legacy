@@ -93,7 +93,7 @@
 
 #if BUILDFLAG(IS_MAC)
 #include "chrome/browser/apps/app_shim/app_shim_manager_mac.h"
-#include "chrome/browser/web_applications/app_shim_registry_mac.h"
+#include "chrome/browser/web_applications/os_integration/mac/app_shim_registry.h"
 #endif
 
 namespace {
@@ -200,31 +200,20 @@ gfx::ImageSkia ProfileMenuView::GetSyncIcon() const {
     // This is done regardless of GetAvatarSyncErrorType() because the icon
     // should reflect that sync-the-feature is off. The error will still be
     // highlighted by other parts of the UI.
-    return features::IsChromeRefresh2023()
-               ? ColoredImageForMenu(kSyncDisabledChromeRefreshIcon,
-                                     kColorProfileMenuSyncOffIcon)
-               : ColoredImageForMenu(kSyncPausedCircleIcon, ui::kColorIcon);
+    return ColoredImageForMenu(kSyncDisabledChromeRefreshIcon,
+                               kColorProfileMenuSyncOffIcon);
   }
 
   std::optional<AvatarSyncErrorType> error = GetAvatarSyncErrorType(profile);
   if (!error) {
-    return features::IsChromeRefresh2023()
-               ? ColoredImageForMenu(kSyncChromeRefreshIcon,
-                                     kColorProfileMenuSyncIcon)
-               : ColoredImageForMenu(kSyncCircleIcon,
-                                     ui::kColorAlertLowSeverity);
+    return ColoredImageForMenu(kSyncChromeRefreshIcon,
+                               kColorProfileMenuSyncIcon);
   }
 
   ui::ColorId color_id = error == AvatarSyncErrorType::kSyncPaused
-                             ? ui::kColorButtonBackgroundProminent
-                             : ui::kColorAlertHighSeverity;
-  ui::ColorId refreshed_color_id = error == AvatarSyncErrorType::kSyncPaused
                                        ? kColorProfileMenuSyncPausedIcon
                                        : kColorProfileMenuSyncErrorIcon;
-  return features::IsChromeRefresh2023()
-             ? ColoredImageForMenu(kSyncDisabledChromeRefreshIcon,
-                                   refreshed_color_id)
-             : ColoredImageForMenu(kSyncPausedCircleIcon, color_id);
+  return ColoredImageForMenu(kSyncDisabledChromeRefreshIcon, color_id);
 }
 
 std::u16string ProfileMenuView::GetAccessibleWindowTitle() const {
@@ -283,7 +272,7 @@ void ProfileMenuView::OnGuestProfileButtonClicked() {
   RecordClick(ActionableItem::kGuestProfileButton);
   if (!perform_menu_actions())
     return;
-  DCHECK(profiles::IsGuestModeEnabled());
+  DCHECK(profiles::IsGuestModeEnabled(*browser()->profile()));
   profiles::SwitchToGuestProfile();
 }
 
@@ -379,8 +368,10 @@ void ProfileMenuView::OnSyncErrorButtonClicked(AvatarSyncErrorType error) {
 #endif
 }
 
-void ProfileMenuView::OnSigninButtonClicked(CoreAccountInfo account,
-                                            ActionableItem button_type) {
+void ProfileMenuView::OnSigninButtonClicked(
+    CoreAccountInfo account,
+    ActionableItem button_type,
+    signin_metrics::AccessPoint access_point) {
   RecordClick(button_type);
 
   if (!perform_menu_actions())
@@ -389,15 +380,13 @@ void ProfileMenuView::OnSigninButtonClicked(CoreAccountInfo account,
 
   if (button_type == ActionableItem::kSigninReauthButton) {
     // The reauth button does not trigger a sync opt in.
-    signin_ui_util::ShowReauthForAccount(
-        browser()->profile(), account.email,
-        signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN);
+    signin_ui_util::ShowReauthForAccount(browser()->profile(), account.email,
+                                         access_point);
     return;
   }
 
-  signin_ui_util::EnableSyncFromSingleAccountPromo(
-      browser()->profile(), account,
-      signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN);
+  signin_ui_util::EnableSyncFromSingleAccountPromo(browser()->profile(),
+                                                   account, access_point);
 }
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -532,8 +521,7 @@ void ProfileMenuView::BuildIdentity() {
   if (!web_app::AppBrowserController::IsWebApp(browser()) &&
       !switches::IsExplicitBrowserSigninUIOnDesktopEnabled()) {
     edit_button_params = EditButtonParams(
-        features::IsChromeRefresh2023() ? &kEditChromeRefreshIcon
-                                        : &vector_icons::kEditIcon,
+        &kEditChromeRefreshIcon,
         l10n_util::GetStringUTF16(
             IDS_PROFILES_CUSTOMIZE_PROFILE_BUTTON_TOOLTIP),
         base::BindRepeating(&ProfileMenuView::OnEditProfileButtonClicked,
@@ -553,33 +541,22 @@ void ProfileMenuView::BuildIdentity() {
     std::u16string management_label;
     ui::ImageModel badge_image_model;
 
-    if (chrome::enterprise_util::CanShowEnterpriseBadging(
-            browser()->profile())) {
+    if (enterprise_util::CanShowEnterpriseBadging(browser()->profile())) {
       management_label =
           account_manager
               ? l10n_util::GetStringFUTF16(IDS_PROFILES_MANAGED_BY,
                                            base::UTF8ToUTF16(*account_manager))
               : std::u16string();
 
-      auto management_environment =
-          chrome::enterprise_util::GetManagementEnvironment(
-              profile, identity_manager->FindExtendedAccountInfoByAccountId(
-                           identity_manager->GetPrimaryAccountId(
-                               signin::ConsentLevel::kSignin)));
+      auto management_environment = enterprise_util::GetManagementEnvironment(
+          profile, identity_manager->FindExtendedAccountInfoByAccountId(
+                       identity_manager->GetPrimaryAccountId(
+                           signin::ConsentLevel::kSignin)));
 
       if (management_environment !=
-          chrome::enterprise_util::ManagementEnvironment::kNone) {
-        policy::BrowserManagementService* management_service =
-            static_cast<policy::BrowserManagementService*>(
-                policy::ManagementServiceFactory::GetForProfile(
-                    browser()->profile()));
-        if (management_service->GetMetadata().GetManagementLogo().IsEmpty()) {
-          badge_image_model = ui::ImageModel::FromVectorIcon(
-              vector_icons::kBusinessIcon, ui::kColorMenuIcon, 16);
-        } else {
-          badge_image_model = ui::ImageModel::FromImage(
-              management_service->GetMetadata().GetManagementLogo());
-        }
+          enterprise_util::ManagementEnvironment::kNone) {
+        badge_image_model = ui::ImageModel::FromVectorIcon(
+            vector_icons::kBusinessIcon, ui::kColorMenuIcon, 16);
       }
     }
 
@@ -644,24 +621,20 @@ void ProfileMenuView::BuildGuestIdentity() {
 
 void ProfileMenuView::BuildAutofillButtons() {
   AddShortcutFeatureButton(
-      features::IsChromeRefresh2023() ? vector_icons::kPasswordManagerIcon
-                                      : kKeyIcon,
+      vector_icons::kPasswordManagerIcon,
       l10n_util::GetStringUTF16(
           IDS_PASSWORD_BUBBLES_PASSWORD_MANAGER_LINK_TEXT_SAVING_ON_DEVICE),
       base::BindRepeating(&ProfileMenuView::OnPasswordsButtonClicked,
                           base::Unretained(this)));
 
   AddShortcutFeatureButton(
-      features::IsChromeRefresh2023() ? kCreditCardChromeRefreshIcon
-                                      : kCreditCardIcon,
+      kCreditCardChromeRefreshIcon,
       l10n_util::GetStringUTF16(IDS_PROFILES_CREDIT_CARDS_LINK),
       base::BindRepeating(&ProfileMenuView::OnCreditCardsButtonClicked,
                           base::Unretained(this)));
 
   AddShortcutFeatureButton(
-      features::IsChromeRefresh2023()
-          ? vector_icons::kLocationOnChromeRefreshIcon
-          : vector_icons::kLocationOnIcon,
+      vector_icons::kLocationOnChromeRefreshIcon,
       l10n_util::GetStringUTF16(IDS_PROFILES_ADDRESSES_LINK),
       base::BindRepeating(&ProfileMenuView::OnAddressesButtonClicked,
                           base::Unretained(this)));
@@ -688,9 +661,6 @@ void ProfileMenuView::BuildSyncInfo() {
     BuildSyncInfoWithCallToAction(
         GetAvatarSyncErrorDescription(*error, is_sync_feature_enabled),
         GetSyncErrorButtonText(*error),
-        error == AvatarSyncErrorType::kSyncPaused
-            ? ui::kColorSyncInfoBackgroundPaused
-            : ui::kColorSyncInfoBackgroundError,
         base::BindRepeating(&ProfileMenuView::OnSyncErrorButtonClicked,
                             base::Unretained(this), *error),
         /*show_sync_badge=*/is_sync_feature_enabled);
@@ -721,6 +691,8 @@ void ProfileMenuView::BuildSyncInfo() {
   ActionableItem button_type = ActionableItem::kSigninAccountButton;
   bool show_sync_badge = false;
   bool show_account_card = false;
+  signin_metrics::AccessPoint access_point =
+      signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN;
 
   if (!account_info.IsEmpty()) {
     if (switches::IsExplicitBrowserSigninUIOnDesktopEnabled() &&
@@ -745,6 +717,8 @@ void ProfileMenuView::BuildSyncInfo() {
              !account_info_for_promos.IsEmpty()) {
     // Web-only signed-in state.
     account_info = account_info_for_promos;
+    access_point = signin_metrics::AccessPoint::
+        ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN_WITH_SYNC_PROMO;
     description = l10n_util::GetStringUTF16(
         switches::IsExplicitBrowserSigninUIOnDesktopEnabled()
             ? IDS_PROFILE_MENU_SIGNIN_PROMO_DESCRIPTION
@@ -763,6 +737,8 @@ void ProfileMenuView::BuildSyncInfo() {
 #else
     // Not signed in state.
     if (switches::IsExplicitBrowserSigninUIOnDesktopEnabled()) {
+      access_point = signin_metrics::AccessPoint::
+          ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN_WITH_SYNC_PROMO;
       description =
           l10n_util::GetStringUTF16(IDS_PROFILE_MENU_SIGNIN_PROMO_DESCRIPTION);
       button_text =
@@ -778,15 +754,23 @@ void ProfileMenuView::BuildSyncInfo() {
   CHECK(!description.empty());
   CHECK(!button_text.empty());
   BuildSyncInfoWithCallToAction(
-      description, button_text, ui::kColorSyncInfoBackground,
+      description, button_text,
       base::BindRepeating(&ProfileMenuView::OnSigninButtonClicked,
-                          base::Unretained(this), account_info, button_type),
+                          base::Unretained(this), account_info, button_type,
+                          access_point),
       show_sync_badge,
       show_account_card ? account_info_for_promos : AccountInfo());
 }
 
 void ProfileMenuView::BuildFeatureButtons() {
   Profile* profile = browser()->profile();
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
+  bool has_sync_consent =
+      identity_manager &&
+      identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync);
+  bool has_unconsented_account = HasUnconstentedProfile(profile);
+
   if (switches::IsExplicitBrowserSigninUIOnDesktopEnabled() &&
       !profile->IsGuestSession()) {
     AddFeatureButton(
@@ -794,9 +778,23 @@ void ProfileMenuView::BuildFeatureButtons() {
         base::BindRepeating(&ProfileMenuView::OnEditProfileButtonClicked,
                             base::Unretained(this)),
         vector_icons::kEditChromeRefreshIcon);
+
+    // Show the settings button when signed in to Chrome or to the web. Do not
+    // show if sync is enabled.
+    bool should_show_settings_button =
+        !has_sync_consent && identity_manager &&
+        !identity_manager->GetExtendedAccountInfoForAccountsWithRefreshToken()
+             .empty();
+
+    if (should_show_settings_button) {
+      AddFeatureButton(
+          l10n_util::GetStringUTF16(IDS_PROFILE_MENU_OPEN_ACCOUNT_SETTINGS),
+          base::BindRepeating(&ProfileMenuView::OnSyncSettingsButtonClicked,
+                              base::Unretained(this)),
+          vector_icons::kSettingsChromeRefreshIcon);
+    }
   }
 
-  bool has_unconsented_account = HasUnconstentedProfile(profile);
   if (has_unconsented_account && !IsSyncPaused(profile)) {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     // The Google G icon needs to be shrunk, so it won't look too big compared
@@ -824,8 +822,7 @@ void ProfileMenuView::BuildFeatureButtons() {
                                          window_count),
         base::BindRepeating(&ProfileMenuView::OnExitProfileButtonClicked,
                             base::Unretained(this)),
-        features::IsChromeRefresh2023() ? vector_icons::kCloseChromeRefreshIcon
-                                        : vector_icons::kCloseIcon);
+        vector_icons::kCloseChromeRefreshIcon);
   } else if (switches::IsExplicitBrowserSigninUIOnDesktopEnabled() &&
              window_count > 0) {
     AddFeatureButton(
@@ -833,27 +830,22 @@ void ProfileMenuView::BuildFeatureButtons() {
             IDS_PROFILE_MENU_CLOSE_PROFILE_X_WINDOWS_BUTTON, window_count),
         base::BindRepeating(&ProfileMenuView::OnExitProfileButtonClicked,
                             base::Unretained(this)),
-        features::IsChromeRefresh2023() ? vector_icons::kCloseChromeRefreshIcon
-                                        : vector_icons::kCloseIcon);
+        vector_icons::kCloseChromeRefreshIcon);
   } else if (window_count > 1) {
     AddFeatureButton(
         l10n_util::GetPluralStringFUTF16(IDS_PROFILES_CLOSE_X_WINDOWS_BUTTON,
                                          window_count),
         base::BindRepeating(&ProfileMenuView::OnExitProfileButtonClicked,
                             base::Unretained(this)),
-        features::IsChromeRefresh2023() ? vector_icons::kCloseChromeRefreshIcon
-                                        : vector_icons::kCloseIcon);
+        vector_icons::kCloseChromeRefreshIcon);
   }
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
-  signin::IdentityManager* identity_manager =
-      IdentityManagerFactory::GetForProfile(profile);
   const bool has_primary_account =
-      !profile->IsGuestSession() &&
-      identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync);
+      !profile->IsGuestSession() && has_sync_consent;
 
   bool hide_signout_button_for_managed_profiles =
-      chrome::enterprise_util::UserAcceptedAccountManagement(profile) &&
+      enterprise_util::UserAcceptedAccountManagement(profile) &&
       base::FeatureList::IsEnabled(kDisallowManagedProfileSignout);
 
   bool add_sign_out_button = has_unconsented_account && !has_primary_account &&
@@ -864,11 +856,23 @@ void ProfileMenuView::BuildFeatureButtons() {
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
   // The sign-out button is always at the bottom.
   if (add_sign_out_button) {
+    std::u16string signout_button_text;
+    if (switches::IsExplicitBrowserSigninUIOnDesktopEnabled()) {
+      // Note: Sign out button is only added if there is a signed profile with
+      // no sync consent, so there is no need to check these conditions for the
+      // sign in pending state.
+      bool signin_pending =
+          identity_manager->HasAccountWithRefreshTokenInPersistentErrorState(
+              identity_manager->GetPrimaryAccountId(
+                  signin::ConsentLevel::kSignin));
+      signout_button_text = l10n_util::GetStringUTF16(
+          signin_pending ? IDS_PROFILE_MENU_SIGN_OUT_WHEN_SIGNIN_PENDING
+                         : IDS_PROFILE_MENU_SIGN_OUT);
+    } else {
+      signout_button_text = l10n_util::GetStringUTF16(IDS_SCREEN_LOCK_SIGN_OUT);
+    }
     AddFeatureButton(
-        l10n_util::GetStringUTF16(
-            switches::IsExplicitBrowserSigninUIOnDesktopEnabled()
-                ? IDS_PROFILE_MENU_SIGN_OUT
-                : IDS_SCREEN_LOCK_SIGN_OUT),
+        signout_button_text,
         base::BindRepeating(&ProfileMenuView::OnSignoutButtonClicked,
                             base::Unretained(this)),
         kSignOutIcon);
@@ -914,8 +918,11 @@ void ProfileMenuView::BuildAvailableProfiles() {
 #endif
 
     AddAvailableProfile(
-        ui::ImageModel::FromImage(
-            profile_entry->GetAvatarIcon(profiles::kMenuAvatarIconSize)),
+        ui::ImageModel::FromImage(profile_entry->GetAvatarIcon(
+            profiles::kMenuAvatarIconSize, /*use_high_res_file=*/true,
+            GetPlaceholderAvatarIconParamsVisibleAgainstColor(
+                browser()->window()->GetColorProvider()->GetColor(
+                    ui::kColorMenuBackground)))),
         profile_entry->GetName(),
         /*is_guest=*/false,
         /*is_enabled=*/profiles_selectable,
@@ -926,7 +933,7 @@ void ProfileMenuView::BuildAvailableProfiles() {
                         profile_entries.size() > 1);
 
   if (!browser()->profile()->IsGuestSession() &&
-      profiles::IsGuestModeEnabled() &&
+      profiles::IsGuestModeEnabled(*browser()->profile()) &&
       !web_app::AppBrowserController::IsWebApp(browser())) {
     AddAvailableProfile(
         profiles::GetGuestAvatar(),
@@ -975,9 +982,7 @@ void ProfileMenuView::BuildProfileManagementFeatureButtons() {
   } else {
     if (profiles_selectable) {
       AddProfileManagementShortcutFeatureButton(
-          features::IsChromeRefresh2023()
-              ? vector_icons::kSettingsChromeRefreshIcon
-              : vector_icons::kSettingsIcon,
+          vector_icons::kSettingsChromeRefreshIcon,
           l10n_util::GetStringUTF16(
               IDS_PROFILES_MANAGE_PROFILES_BUTTON_TOOLTIP),
           base::BindRepeating(&ProfileMenuView::OnManageProfilesButtonClicked,
@@ -990,9 +995,7 @@ void ProfileMenuView::BuildProfileManagementFeatureButtons() {
     }
     if (profiles::IsProfileCreationAllowed()) {
       AddProfileManagementFeatureButton(
-          features::IsChromeRefresh2023() ? vector_icons::kAddChromeRefreshIcon
-                                          : kAddIcon,
-          l10n_util::GetStringUTF16(IDS_ADD),
+          vector_icons::kAddIcon, l10n_util::GetStringUTF16(IDS_ADD),
           base::BindRepeating(&ProfileMenuView::OnAddNewProfileButtonClicked,
                               base::Unretained(this)));
     }

@@ -11,9 +11,12 @@
 
 #include "base/check_op.h"
 #include "base/memory/ptr_util.h"
+#include "base/types/optional_ref.h"
 #include "cc/input/browser_controls_offset_manager_client.h"
+#include "cc/input/browser_controls_offset_tags_info.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
+#include "components/viz/common/quads/offset_tag.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/geometry/vector2d_f.h"
@@ -80,6 +83,10 @@ float BrowserControlsOffsetManager::TopControlsMinHeight() const {
   return client_->TopControlsMinHeight();
 }
 
+viz::OffsetTag BrowserControlsOffsetManager::TopControlsOffsetTag() const {
+  return top_controls_offset_tag_;
+}
+
 float BrowserControlsOffsetManager::TopControlsMinShownRatio() const {
   return TopControlsHeight() ? TopControlsMinHeight() / TopControlsHeight()
                              : 0.f;
@@ -137,7 +144,8 @@ BrowserControlsOffsetManager::BottomControlsShownRatioRange() {
 void BrowserControlsOffsetManager::UpdateBrowserControlsState(
     BrowserControlsState constraints,
     BrowserControlsState current,
-    bool animate) {
+    bool animate,
+    base::optional_ref<const BrowserControlsOffsetTagsInfo> offset_tags_info) {
   DCHECK(!(constraints == BrowserControlsState::kShown &&
            current == BrowserControlsState::kHidden));
   DCHECK(!(constraints == BrowserControlsState::kHidden &&
@@ -155,6 +163,10 @@ void BrowserControlsOffsetManager::UpdateBrowserControlsState(
   }
 
   permitted_state_ = constraints;
+
+  if (offset_tags_info.has_value()) {
+    top_controls_offset_tag_ = offset_tags_info.value().top_controls_offset_tag;
+  }
 
   // Don't do anything if it doesn't matter which state the controls are in.
   if (constraints == BrowserControlsState::kBoth &&
@@ -492,8 +504,9 @@ void BrowserControlsOffsetManager::ScrollEnd() {
     return;
 
   // See if we should animate the top bar in, in case there was a race between
-  // chrome showing the controls and the user performing a scroll.
-  if (show_controls_when_scroll_completes_) {
+  // chrome showing the controls and the user performing a scroll. We only need
+  // to animate the top control if it's not fully shown.
+  if (show_controls_when_scroll_completes_ && TopControlsShownRatio() != 1.f) {
     SetupAnimation(AnimationDirection::kShowingControls);
     return;
   }

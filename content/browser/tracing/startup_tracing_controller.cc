@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/browser/tracing/startup_tracing_controller.h"
+
 #include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
@@ -18,12 +19,12 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/typed_macros.h"
 #include "build/build_config.h"
-#include "components/tracing/common/trace_startup_config.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_config.h"
 #include "services/tracing/public/cpp/perfetto/trace_packet_tokenizer.h"
+#include "services/tracing/public/cpp/trace_startup_config.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_packet.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/trace_config.h"
 #include "third_party/perfetto/include/perfetto/tracing/tracing.h"
@@ -416,16 +417,8 @@ void StartupTracingController::StartIfNeeded() {
           : BackgroundTracer::WriteMode::kAfterStopping;
 #endif
 
-  const auto& chrome_config =
-      tracing::TraceStartupConfig::GetInstance().GetTraceConfig();
-  perfetto::TraceConfig perfetto_config = tracing::GetDefaultPerfettoConfig(
-      chrome_config, /*privacy_filtering_enabled=*/false,
-      /*convert_to_legacy_json=*/output_format ==
-          tracing::TraceStartupConfig::OutputFormat::kLegacyJSON);
-
-  int duration_in_seconds =
-      tracing::TraceStartupConfig::GetInstance().GetStartupDuration();
-  perfetto_config.set_duration_ms(duration_in_seconds * 1000);
+  auto perfetto_config =
+      tracing::TraceStartupConfig::GetInstance().GetPerfettoConfig();
 
   background_tracer_ = base::SequenceBound<BackgroundTracer>(
       std::move(background_task_runner), write_mode, temp_file_policy_,

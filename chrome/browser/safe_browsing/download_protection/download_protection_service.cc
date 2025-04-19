@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/functional/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/not_fatal_until.h"
 #include "base/strings/string_split.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -66,6 +67,10 @@ using ReportThreatDetailsResult =
 namespace safe_browsing {
 
 namespace {
+
+inline constexpr int kDownloadAttributionUserGestureLimit = 2;
+inline constexpr int kDownloadAttributionUserGestureLimitForExtendedReporting =
+    5;
 
 const int64_t kDownloadRequestTimeoutMs = 7000;
 // We sample 1% of allowlisted downloads to still send out download pings.
@@ -394,7 +399,7 @@ void DownloadProtectionService::PPAPIDownloadCheckRequestFinished(
     PPAPIDownloadRequest* request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto it = ppapi_download_requests_.find(request);
-  DCHECK(it != ppapi_download_requests_.end());
+  CHECK(it != ppapi_download_requests_.end(), base::NotFatalUntil::M130);
   ppapi_download_requests_.erase(it);
 }
 
@@ -555,6 +560,34 @@ void DownloadProtectionService::ReportDelayedBypassEvent(
   download_protection_observer_.ReportDelayedBypassEvent(download, danger_type);
 }
 
+void DownloadProtectionService::AddReferrerChainToPPAPIClientDownloadRequest(
+    content::WebContents* web_contents,
+    const GURL& initiating_frame_url,
+    const content::GlobalRenderFrameHostId& initiating_outermost_main_frame_id,
+    const GURL& initiating_main_frame_url,
+    SessionID tab_id,
+    bool has_user_gesture,
+    ClientDownloadRequest* out_request) {
+  // If web_contents is null, return immediately. This could happen in tests.
+  if (!web_contents) {
+    return;
+  }
+
+  SafeBrowsingNavigationObserverManager::AttributionResult result =
+      GetNavigationObserverManager(web_contents)
+          ->IdentifyReferrerChainByHostingPage(
+              initiating_frame_url, initiating_main_frame_url,
+              initiating_outermost_main_frame_id, tab_id, has_user_gesture,
+              GetDownloadAttributionUserGestureLimit(),
+              out_request->mutable_referrer_chain());
+  UMA_HISTOGRAM_COUNTS_100(
+      "SafeBrowsing.ReferrerURLChainSize.PPAPIDownloadAttribution",
+      out_request->referrer_chain_size());
+  UMA_HISTOGRAM_ENUMERATION(
+      "SafeBrowsing.ReferrerAttributionResult.PPAPIDownloadAttribution", result,
+      SafeBrowsingNavigationObserverManager::ATTRIBUTION_FAILURE_TYPE_MAX);
+}
+
 void DownloadProtectionService::OnDangerousDownloadOpened(
     const download::DownloadItem* item,
     Profile* profile) {
@@ -621,8 +654,7 @@ bool DownloadProtectionService::MaybeBeginFeedbackForDownload(
     download::DownloadItem* download,
     DownloadCommands::Command download_command) {
   PrefService* prefs = profile->GetPrefs();
-  bool is_extended_reporting =
-      ExtendedReportingPrefExists(*prefs) && IsExtendedReportingEnabled(*prefs);
+  bool is_extended_reporting = IsExtendedReportingEnabled(*prefs);
   if (!profile->IsOffTheRecord() && is_extended_reporting) {
     feedback_service_->BeginFeedbackForDownload(profile, download,
                                                 download_command);
@@ -783,9 +815,32 @@ void DownloadProtectionService::RemovePendingDownloadRequests(
   context_download_requests_.erase(browser_context);
 }
 
+// static
+int DownloadProtectionService::GetDownloadAttributionUserGestureLimit(
+    download::DownloadItem* item) {
+  if (!item) {
+    return kDownloadAttributionUserGestureLimit;
+  }
+
+  content::WebContents* web_contents =
+      content::DownloadItemUtils::GetWebContents(item);
+  if (!web_contents) {
+    return kDownloadAttributionUserGestureLimit;
+  }
+
+  if (Profile* profile =
+          Profile::FromBrowserContext(web_contents->GetBrowserContext());
+      profile && profile->GetPrefs() &&
+      IsExtendedReportingEnabled(*profile->GetPrefs())) {
+    return kDownloadAttributionUserGestureLimitForExtendedReporting;
+  }
+
+  return kDownloadAttributionUserGestureLimit;
+}
+
 void DownloadProtectionService::RequestFinished(DeepScanningRequest* request) {
   auto it = deep_scanning_requests_.find(request);
-  DCHECK(it != deep_scanning_requests_.end());
+  CHECK(it != deep_scanning_requests_.end(), base::NotFatalUntil::M130);
   deep_scanning_requests_.erase(it);
 }
 

@@ -70,8 +70,12 @@ ExtensionViewHost::~ExtensionViewHost() {
   auto* const manager =
       web_modal::WebContentsModalDialogManager::FromWebContents(
           host_contents());
-  if (manager)
+  if (manager) {
     manager->SetDelegate(nullptr);
+  }
+  for (auto& observer : modal_dialog_host_observers_) {
+    observer.OnHostDestroying();
+  }
 }
 
 Browser* ExtensionViewHost::GetBrowser() {
@@ -80,7 +84,7 @@ Browser* ExtensionViewHost::GetBrowser() {
 
 bool ExtensionViewHost::UnhandledKeyboardEvent(
     content::WebContents* source,
-    const content::NativeWebKeyboardEvent& event) {
+    const input::NativeWebKeyboardEvent& event) {
   return view_->HandleKeyboardEvent(source, event);
 }
 
@@ -149,7 +153,7 @@ bool ExtensionViewHost::ShouldAllowRendererInitiatedCrossProcessNavigation(
 content::KeyboardEventProcessingResult
 ExtensionViewHost::PreHandleKeyboardEvent(
     content::WebContents* source,
-    const content::NativeWebKeyboardEvent& event) {
+    const input::NativeWebKeyboardEvent& event) {
   if (IsEscapeInPopup(event))
     return content::KeyboardEventProcessingResult::NOT_HANDLED_IS_SHORTCUT;
 
@@ -160,7 +164,7 @@ ExtensionViewHost::PreHandleKeyboardEvent(
 
 bool ExtensionViewHost::HandleKeyboardEvent(
     content::WebContents* source,
-    const content::NativeWebKeyboardEvent& event) {
+    const input::NativeWebKeyboardEvent& event) {
   if (IsEscapeInPopup(event)) {
     Close();
     return true;
@@ -230,10 +234,12 @@ gfx::Size ExtensionViewHost::GetMaximumDialogSize() {
 
 void ExtensionViewHost::AddObserver(
     web_modal::ModalDialogHostObserver* observer) {
+  modal_dialog_host_observers_.AddObserver(observer);
 }
 
 void ExtensionViewHost::RemoveObserver(
     web_modal::ModalDialogHostObserver* observer) {
+  modal_dialog_host_observers_.RemoveObserver(observer);
 }
 
 WindowController* ExtensionViewHost::GetExtensionWindowController() const {
@@ -266,10 +272,9 @@ void ExtensionViewHost::OnExtensionHostDocumentElementAvailable(
 }
 
 bool ExtensionViewHost::IsEscapeInPopup(
-    const content::NativeWebKeyboardEvent& event) const {
+    const input::NativeWebKeyboardEvent& event) const {
   return extension_host_type() == mojom::ViewType::kExtensionPopup &&
-         event.GetType() ==
-             content::NativeWebKeyboardEvent::Type::kRawKeyDown &&
+         event.GetType() == input::NativeWebKeyboardEvent::Type::kRawKeyDown &&
          event.windows_key_code == ui::VKEY_ESCAPE;
 }
 

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "media/filters/vpx_video_decoder.h"
 
 #include <stddef.h>
@@ -230,17 +235,6 @@ bool VpxVideoDecoder::ConfigureDecoder(const VideoDecoderConfig& config) {
   if (config.codec() != VideoCodec::kVP8 && config.codec() != VideoCodec::kVP9)
     return false;
 
-#if BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
-  // When enabled, ffmpeg handles VP8 that doesn't have alpha, and
-  // VpxVideoDecoder will handle VP8 with alpha. FFvp8 is being deprecated.
-  // See http://crbug.com/992235.
-  if (config.codec() == VideoCodec::kVP8 &&
-      FFmpegVideoDecoder::IsCodecSupported(config.codec()) &&
-      config.alpha_mode() == VideoDecoderConfig::AlphaMode::kIsOpaque) {
-    return false;
-  }
-#endif
-
   DCHECK(!vpx_codec_);
   vpx_codec_ = InitializeVpxContext(config);
   if (!vpx_codec_)
@@ -431,7 +425,7 @@ VpxVideoDecoder::AlphaDecodeStatus VpxVideoDecoder::DecodeAlphaPlane(
   }
 
   // First 8 bytes of side data is |side_data_id| in big endian.
-  const uint64_t side_data_id = base::numerics::U64FromBigEndian(
+  const uint64_t side_data_id = base::U64FromBigEndian(
       base::span(buffer->side_data()->alpha_data).first<8u>());
   if (side_data_id != 1) {
     return kAlphaPlaneProcessed;

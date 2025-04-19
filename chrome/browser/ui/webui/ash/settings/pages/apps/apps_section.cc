@@ -222,13 +222,18 @@ const std::vector<SearchConcept>& GetManageIsolatedWebAppsSearchConcepts() {
 }
 
 const std::vector<SearchConcept>& GetParentalControlsSearchConcepts() {
+  // Redirect search queries to the parental controls row in the Apps section
+  // because the app parental controls page should only be accessed after the
+  // user has entered their PIN, which is triggered from the settings row.
   static const base::NoDestructor<std::vector<SearchConcept>> tags(
       {{IDS_OS_SETTINGS_TAG_APPS_PARENTAL_CONTROLS,
-        mojom::kAppParentalControlsSubpagePath,
+        mojom::kAppsSectionPath,
         mojom::SearchResultIcon::kAppsParentalControls,
         mojom::SearchResultDefaultRank::kMedium,
-        mojom::SearchResultType::kSubpage,
-        {.subpage = mojom::Subpage::kAppParentalControls}}});
+        mojom::SearchResultType::kSetting,
+        {.setting = mojom::Setting::kAppParentalControls},
+        {IDS_OS_SETTINGS_TAG_APPS_PARENTAL_CONTROLS_ALT1,
+         SearchConcept::kAltTagEnd}}});
   return *tags;
 }
 
@@ -403,6 +408,14 @@ void AddGuestOsStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_GUEST_OS_SHARED_USB_DEVICES_ADD_TITLE},
       {"guestOsSharedUsbDevicesNoneAttached",
        IDS_SETTINGS_GUEST_OS_SHARED_USB_DEVICES_NONE_ATTACHED},
+      {"guestOsSharedUsbDevicesNotificationDialogTitleEnable",
+       IDS_SETTINGS_GUEST_OS_SHARED_USB_DEVICES_NOTIFICATION_DIALOG_TITLE_ENABLE},
+      {"guestOsSharedUsbDevicesNotificationDialogTitleDisable",
+       IDS_SETTINGS_GUEST_OS_SHARED_USB_DEVICES_NOTIFICATION_DIALOG_TITLE_DISABLE},
+      {"guestOsSharedUsbDevicesNotificationDialogAccept",
+       IDS_SETTINGS_GUEST_OS_SHARED_USB_DEVICES_NOTIFICATION_DIALOG_ACCEPT},
+      {"guestOsSharedUsbDevicesNotificationsLabel",
+       IDS_SETTINGS_GUEST_OS_SHARED_USB_DEVICES_NOTIFICATION_LABEL},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 }
@@ -421,6 +434,8 @@ void AddAppParentalControlsStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"appParentalControlsAccessDialogTitle",
        IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_ACCESS_DIALOG_TITLE},
+      {"appParentalControlsBlockedAppsCountText",
+       IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_BLOCKED_APPS_COUNT_TEXT},
       {"appParentalControlsChoosePinSubtitle",
        IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_CHOOSE_PIN_SUBTITLE},
       {"appParentalControlsChoosePinTitle",
@@ -429,8 +444,12 @@ void AddAppParentalControlsStrings(content::WebUIDataSource* html_source) {
        IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_CONFIRM_PIN_TITLE},
       {"appParentalControlsForgotPinLinkName",
        IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_FORGOT_PIN_LINK_NAME},
+      {"appParentalControlsHeaderText",
+       IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_APPS_TITLE_TEXT},
       {"appParentalControlsNoAppsText",
        IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_NO_APPS_FOUND_TEXT},
+      {"appParentalControlsPinIncorrectErrorText",
+       IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_PIN_INCORRECT_ERROR_TEXT},
       {"appParentalControlsPinMismatchErrorText",
        IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_PIN_MISMATCH_ERROR_TEXT},
       {"appParentalControlsSearchPrompt",
@@ -456,6 +475,11 @@ void AddAppParentalControlsStrings(content::WebUIDataSource* html_source) {
       l10n_util::GetStringFUTF16(IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_SUBLABEL,
                                  ui::GetChromeOSDeviceName(),
                                  chrome::kAppParentalControlsLearnMoreUrl));
+  html_source->AddString(
+      "appParentalControlsSubtitleDescription",
+      l10n_util::GetStringFUTF16(
+          IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_SUBLABEL_DESCRIPTION,
+          ui::GetChromeOSDeviceName()));
 }
 
 bool ShowPluginVm(const Profile* profile, const PrefService& pref_service) {
@@ -700,6 +724,7 @@ bool AppsSection::LogMetric(mojom::Setting setting, base::Value& value) const {
 
 void AppsSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   generator->RegisterTopLevelSetting(mojom::Setting::kTurnOnPlayStore);
+  generator->RegisterTopLevelSetting(mojom::Setting::kAppParentalControls);
 
   // Manage apps.
   generator->RegisterTopLevelSubpage(IDS_SETTINGS_APPS_LINK_TEXT,
@@ -858,6 +883,16 @@ void AppsSection::AddAndroidAppStrings(content::WebUIDataSource* html_source) {
           : l10n_util::GetStringFUTF16(
                 IDS_SETTINGS_ANDROID_APPS_SUBTEXT, ui::GetChromeOSDeviceName(),
                 GetHelpUrlWithBoard(chrome::kAndroidAppsLearnMoreURL)));
+  if (kIsRevampEnabled) {
+    html_source->AddLocalizedString(
+        "androidAppsSubtextDescription",
+        IDS_OS_SETTINGS_REVAMP_ANDROID_APPS_SUBTEXT_DESCRIPTION);
+  } else {
+    html_source->AddString("androidAppsSubtextDescription",
+                           l10n_util::GetStringFUTF16(
+                               IDS_SETTINGS_ANDROID_APPS_SUBTEXT_DESCRIPTION,
+                               ui::GetChromeOSDeviceName()));
+  }
 }
 
 void AppsSection::AddPluginVmLoadTimeData(

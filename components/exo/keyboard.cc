@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "components/exo/keyboard.h"
 
 #include "ash/accelerators/accelerator_controller_impl.h"
@@ -340,7 +345,7 @@ void Keyboard::OnKeyEvent(ui::KeyEvent* event) {
   }
 
   switch (event->type()) {
-    case ui::ET_KEY_PRESSED: {
+    case ui::EventType::kKeyPressed: {
       auto it = pressed_keys_.find(physical_code);
       const bool should_handle =
           (it == pressed_keys_.end()) ||
@@ -388,7 +393,7 @@ void Keyboard::OnKeyEvent(ui::KeyEvent* event) {
           event->SetHandled();
       }
     } break;
-    case ui::ET_KEY_RELEASED: {
+    case ui::EventType::kKeyReleased: {
       // Process key release event if currently pressed.
       auto key_state_set_iter = pressed_keys_.find(physical_code);
       if (key_state_set_iter == pressed_keys_.end()) {
@@ -497,7 +502,7 @@ void Keyboard::OnKeyRepeatSettingsChanged(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ash::ImeControllerImpl::Observer overrides:
+// ash::ImeController::Observer overrides:
 
 void Keyboard::OnCapsLockChanged(bool enabled) {}
 

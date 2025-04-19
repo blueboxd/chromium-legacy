@@ -43,12 +43,10 @@ import org.chromium.chrome.browser.accessibility.settings.ChromeAccessibilitySet
 import org.chromium.chrome.browser.autofill.options.AutofillOptionsCoordinator;
 import org.chromium.chrome.browser.autofill.options.AutofillOptionsFragment;
 import org.chromium.chrome.browser.autofill.settings.AutofillCreditCardEditor;
-import org.chromium.chrome.browser.autofill.settings.AutofillIbanEditor;
+import org.chromium.chrome.browser.autofill.settings.AutofillLocalIbanEditor;
 import org.chromium.chrome.browser.back_press.BackPressHelper;
 import org.chromium.chrome.browser.back_press.SecondaryActivityBackPressUma.SecondaryActivity;
-import org.chromium.chrome.browser.browsing_data.ClearBrowsingDataFragment;
 import org.chromium.chrome.browser.browsing_data.ClearBrowsingDataFragmentBasic;
-import org.chromium.chrome.browser.feedback.FragmentHelpAndFeedbackLauncher;
 import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncherImpl;
 import org.chromium.chrome.browser.image_descriptions.ImageDescriptionsController;
 import org.chromium.chrome.browser.image_descriptions.ImageDescriptionsSettings;
@@ -61,9 +59,9 @@ import org.chromium.chrome.browser.password_check.PasswordCheckFragmentView;
 import org.chromium.chrome.browser.password_entry_edit.CredentialEditUiFactory;
 import org.chromium.chrome.browser.password_entry_edit.CredentialEntryFragmentViewBase;
 import org.chromium.chrome.browser.password_manager.PasswordManagerHelper;
+import org.chromium.chrome.browser.password_manager.PasswordStoreBridge;
 import org.chromium.chrome.browser.password_manager.settings.PasswordSettings;
 import org.chromium.chrome.browser.privacy_guide.PrivacyGuideFragment;
-import org.chromium.chrome.browser.privacy_sandbox.ChromeIpProtectionDelegate;
 import org.chromium.chrome.browser.privacy_sandbox.ChromeTrackingProtectionDelegate;
 import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxSettingsBaseFragment;
 import org.chromium.chrome.browser.privacy_sandbox.TopicsManageFragment;
@@ -75,9 +73,11 @@ import org.chromium.chrome.browser.safety_check.SafetyCheckBridge;
 import org.chromium.chrome.browser.safety_check.SafetyCheckCoordinator;
 import org.chromium.chrome.browser.safety_check.SafetyCheckSettingsFragment;
 import org.chromium.chrome.browser.safety_check.SafetyCheckUpdatesDelegateImpl;
+import org.chromium.chrome.browser.safety_hub.SafetyHubBaseFragment;
 import org.chromium.chrome.browser.safety_hub.SafetyHubFragment;
 import org.chromium.chrome.browser.safety_hub.SafetyHubModuleDelegateImpl;
 import org.chromium.chrome.browser.search_engines.settings.SearchEngineSettings;
+import org.chromium.chrome.browser.signin.SigninAndHistorySyncActivityLauncherImpl;
 import org.chromium.chrome.browser.signin.SyncConsentActivityLauncherImpl;
 import org.chromium.chrome.browser.site_settings.ChromeSiteSettingsDelegate;
 import org.chromium.chrome.browser.sync.SyncServiceFactory;
@@ -94,7 +94,6 @@ import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
 import org.chromium.components.browser_ui.settings.CustomDividerFragment;
 import org.chromium.components.browser_ui.settings.FragmentSettingsLauncher;
 import org.chromium.components.browser_ui.settings.PaddedItemDecorationWithDivider;
-import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.browser_ui.site_settings.BaseSiteSettingsFragment;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsCategory;
 import org.chromium.components.browser_ui.util.TraceEventVectorDrawableCompat;
@@ -105,6 +104,7 @@ import org.chromium.components.browser_ui.widget.displaystyle.ViewResizer;
 import org.chromium.components.browser_ui.widget.displaystyle.ViewResizerUtil;
 import org.chromium.components.browser_ui.widget.gesture.BackPressHandler;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
+import org.chromium.components.privacy_sandbox.FingerprintingProtectionSettingsFragment;
 import org.chromium.components.privacy_sandbox.IpProtectionSettingsFragment;
 import org.chromium.components.privacy_sandbox.TrackingProtectionSettings;
 import org.chromium.components.user_prefs.UserPrefs;
@@ -138,9 +138,6 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
     private boolean mIsNewlyCreated;
 
     private static boolean sActivityNotExportedChecked;
-
-    /** An instance of settings launcher that can be injected into a fragment */
-    private SettingsLauncher mSettingsLauncher = new SettingsLauncherImpl();
 
     private SnackbarManager mSnackbarManager;
 
@@ -214,6 +211,8 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
 
         setStatusBarColor();
         initBottomSheet();
+
+        mSnackbarManager = new SnackbarManager(this, findViewById(android.R.id.content), null);
     }
 
     @Override
@@ -356,11 +355,7 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
     @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
-        ViewGroup contentView = findViewById(android.R.id.content);
-        mSnackbarManager = new SnackbarManager(this, contentView, null);
-
         Fragment fragment = getMainFragment();
-
         if (fragment instanceof BaseSiteSettingsFragment) {
             ChromeSiteSettingsDelegate delegate =
                     (ChromeSiteSettingsDelegate)
@@ -371,9 +366,6 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
             ((PrivacySandboxSettingsBaseFragment) fragment)
                     .setSnackbarManager(getSnackbarManager());
         }
-        if (fragment instanceof ClearBrowsingDataFragment) {
-            ((ClearBrowsingDataFragment) fragment).setSnackbarManager(mSnackbarManager);
-        }
         if (fragment instanceof AccountManagementFragment) {
             ((AccountManagementFragment) fragment).setSnackbarManager(mSnackbarManager);
         }
@@ -382,6 +374,9 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
         }
         if (fragment instanceof ManageSyncSettings) {
             ((ManageSyncSettings) fragment).setSnackbarManager(mSnackbarManager);
+        }
+        if (fragment instanceof SafetyHubBaseFragment) {
+            ((SafetyHubBaseFragment) fragment).setSnackbarManager(mSnackbarManager);
         }
         initBackPressHandler();
     }
@@ -525,13 +520,8 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
         }
         if (fragment instanceof FragmentSettingsLauncher) {
             FragmentSettingsLauncher fragmentSettingsLauncher = (FragmentSettingsLauncher) fragment;
-            fragmentSettingsLauncher.setSettingsLauncher(mSettingsLauncher);
-        }
-        if (fragment instanceof FragmentHelpAndFeedbackLauncher) {
-            FragmentHelpAndFeedbackLauncher fragmentHelpAndFeedbackLauncher =
-                    (FragmentHelpAndFeedbackLauncher) fragment;
-            fragmentHelpAndFeedbackLauncher.setHelpAndFeedbackLauncher(
-                    HelpAndFeedbackLauncherImpl.getForProfile(mProfile));
+            fragmentSettingsLauncher.setSettingsLauncher(
+                    SettingsLauncherFactory.createSettingsLauncher());
         }
 
         // Settings screen specific attachments.
@@ -550,34 +540,31 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
         if (fragment instanceof SafetyCheckSettingsFragment) {
             SafetyCheckCoordinator.create(
                     (SafetyCheckSettingsFragment) fragment,
+                    mProfile,
                     new SafetyCheckUpdatesDelegateImpl(),
                     new SafetyCheckBridge(mProfile),
-                    mSettingsLauncher,
+                    SigninAndHistorySyncActivityLauncherImpl.get(),
                     SyncConsentActivityLauncherImpl.get(),
                     getModalDialogManagerSupplier(),
                     SyncServiceFactory.getForProfile(mProfile),
                     UserPrefs.get(mProfile),
+                    new PasswordStoreBridge(mProfile),
                     PasswordManagerHelper.getForProfile(mProfile));
         }
         if (fragment instanceof PasswordCheckFragmentView) {
             PasswordCheckComponentUiFactory.create(
                     (PasswordCheckFragmentView) fragment,
-                    HelpAndFeedbackLauncherImpl.getForProfile(mProfile),
-                    mSettingsLauncher,
                     LaunchIntentDispatcher::createCustomTabActivityIntent,
                     IntentUtils::addTrustedIntentExtras,
                     mProfile);
         }
         if (fragment instanceof CredentialEntryFragmentViewBase) {
-            CredentialEditUiFactory.create(
-                    (CredentialEntryFragmentViewBase) fragment,
-                    HelpAndFeedbackLauncherImpl.getForProfile(mProfile));
+            CredentialEditUiFactory.create((CredentialEntryFragmentViewBase) fragment, mProfile);
         }
         if (fragment instanceof SearchEngineSettings) {
             SearchEngineSettings settings = (SearchEngineSettings) fragment;
             settings.setDisableAutoSwitchRunnable(
                     () -> LocaleManager.getInstance().setSearchEngineAutoSwitch(false));
-            settings.setSettingsLauncher(mSettingsLauncher);
         }
         if (fragment instanceof ImageDescriptionsSettings) {
             ImageDescriptionsSettings imageFragment = (ImageDescriptionsSettings) fragment;
@@ -660,20 +647,33 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
         if (fragment instanceof IpProtectionSettingsFragment) {
             IpProtectionSettingsFragment ipProtectionSettingsFragment =
                     ((IpProtectionSettingsFragment) fragment);
-            ipProtectionSettingsFragment.setIProtectionDelegate(
-                    new ChromeIpProtectionDelegate(mProfile));
+            ipProtectionSettingsFragment.setTrackingProtectionDelegate(
+                    new ChromeTrackingProtectionDelegate(mProfile));
             ipProtectionSettingsFragment.setCustomTabIntentHelper(
                     LaunchIntentDispatcher::createCustomTabActivityIntent);
         }
-        if (fragment instanceof AutofillIbanEditor) {
-            ((AutofillIbanEditor) fragment)
+        if (fragment
+                instanceof FingerprintingProtectionSettingsFragment fpProtectionSettingsFragment) {
+            fpProtectionSettingsFragment.setTrackingProtectionDelegate(
+                    new ChromeTrackingProtectionDelegate(mProfile));
+            fpProtectionSettingsFragment.setCustomTabIntentHelper(
+                    LaunchIntentDispatcher::createCustomTabActivityIntent);
+        }
+        if (fragment instanceof AutofillLocalIbanEditor) {
+            ((AutofillLocalIbanEditor) fragment)
                     .setModalDialogManagerSupplier(getModalDialogManagerSupplier());
         }
-        if (fragment instanceof SafetyHubFragment) {
-            ((SafetyHubFragment) fragment)
-                    .setDelegate(
-                            new SafetyHubModuleDelegateImpl(
-                                    mProfile, getModalDialogManagerSupplier()));
+        if (fragment instanceof SafetyHubFragment safetyHubFragment) {
+            safetyHubFragment.setDelegate(
+                    new SafetyHubModuleDelegateImpl(
+                            mProfile,
+                            getModalDialogManagerSupplier(),
+                            SigninAndHistorySyncActivityLauncherImpl.get(),
+                            SyncConsentActivityLauncherImpl.get()));
+            // TODO(crbug.com/40751023): Create a shared interface for fragments that need access to
+            // LaunchIntentDispatcher::createCustomTabActivityIntent.
+            safetyHubFragment.setCustomTabIntentHelper(
+                    LaunchIntentDispatcher::createCustomTabActivityIntent);
         }
     }
 

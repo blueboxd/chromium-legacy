@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/core/context_features/context_feature_settings.h"
 
 #include "base/memory/protected_memory.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 
@@ -18,7 +17,7 @@ ContextFeatureSettings::ContextFeatureSettings(ExecutionContext& context)
 const char ContextFeatureSettings::kSupplementName[] = "ContextFeatureSettings";
 
 DEFINE_PROTECTED_DATA base::ProtectedMemory<bool>
-    ContextFeatureSettings::mojo_js_allowed_(false);
+    ContextFeatureSettings::mojo_js_allowed_;
 
 // static
 ContextFeatureSettings* ContextFeatureSettings::From(
@@ -34,6 +33,12 @@ ContextFeatureSettings* ContextFeatureSettings::From(
 }
 
 // static
+void ContextFeatureSettings::InitializeMojoJSAllowedProtectedMemory() {
+  static base::ProtectedMemoryInitializer mojo_js_allowed_initializer(
+      mojo_js_allowed_, false);
+}
+
+// static
 void ContextFeatureSettings::AllowMojoJSForProcess() {
   if (*mojo_js_allowed_) {
     // Already allowed. No need to make protected memory writable.
@@ -46,9 +51,7 @@ void ContextFeatureSettings::AllowMojoJSForProcess() {
 
 // static
 void ContextFeatureSettings::CrashIfMojoJSNotAllowed() {
-  if (blink::features::IsEnableMojoJSProtectedMemoryEnabled()) {
-    CHECK(*mojo_js_allowed_);
-  }
+  CHECK(*mojo_js_allowed_);
 }
 
 void ContextFeatureSettings::Trace(Visitor* visitor) const {

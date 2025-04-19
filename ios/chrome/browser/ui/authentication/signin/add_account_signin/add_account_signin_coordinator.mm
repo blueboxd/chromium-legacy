@@ -40,8 +40,7 @@ using signin_metrics::PromoAction;
 // Coordinator to handle additional steps after the identity is added, i.e.
 // after `addAccountSigninManager` does its job.
 @property(nonatomic, strong) SigninCoordinator* postSigninManagerCoordinator;
-// Coordinator for history sync opt-in, if
-// kHistoryOptInForRestoreShortyAndReSignin is enabled.
+// Coordinator for history sync opt-in.
 @property(nonatomic, strong)
     HistorySyncPopupCoordinator* historySyncPopupCoordinator;
 // Manager that handles sign-in add account UI.
@@ -191,7 +190,7 @@ using signin_metrics::PromoAction;
             (SigninCoordinatorResult)signinResult
                                       identity:(id<SystemIdentity>)identity {
   switch (self.signinIntent) {
-    case AddAccountSigninIntent::kSigninAndSyncReauth:
+    case AddAccountSigninIntent::kResignin:
       if (signinResult == SigninCoordinatorResultSuccess) {
         [self presentPostSigninManagerCoordinatorWithIdentity:identity];
       } else {
@@ -274,10 +273,7 @@ using signin_metrics::PromoAction;
   [self.postSigninManagerCoordinator stop];
   self.postSigninManagerCoordinator = nil;
 
-  const bool history_opt_in_flags_enabled =
-      base::FeatureList::IsEnabled(kHistoryOptInForRestoreShortyAndReSignin);
-  if (result != SigninCoordinatorResultSuccess ||
-      !history_opt_in_flags_enabled) {
+  if (result != SigninCoordinatorResultSuccess) {
     [self addAccountDoneWithSigninResult:result identity:info.identity];
     return;
   }
@@ -317,11 +313,13 @@ using signin_metrics::PromoAction;
       stringWithFormat:
           @"<%@: %p, signinIntent: %d, accessPoint: %d, "
           @"postSigninManagerCoordinator: %p, addAccountSigninManager: "
-          @"%p, historySyncPopupCoordinator: %p, alertCoordinator: %p>",
+          @"%p, historySyncPopupCoordinator: %p, alertCoordinator: %p, base "
+          @"view controller: %@>",
           self.class.description, self, static_cast<int>(self.signinIntent),
           static_cast<int>(self.accessPoint), self.postSigninManagerCoordinator,
           self.addAccountSigninManager, self.historySyncPopupCoordinator,
-          self.alertCoordinator];
+          self.alertCoordinator,
+          NSStringFromClass(self.baseViewController.class)];
 }
 
 @end

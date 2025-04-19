@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include <stddef.h>
 
 #include <algorithm>
@@ -68,6 +73,7 @@
 #include "components/privacy_sandbox/privacy_sandbox_settings.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
+#include "components/version_info/channel.h"
 #include "components/web_package/web_bundle_builder.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -90,6 +96,7 @@
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/declarative_net_request_api.h"
 #include "extensions/browser/api/declarative_net_request/file_backed_ruleset_source.h"
+#include "extensions/browser/api/declarative_net_request/prefs_helper.h"
 #include "extensions/browser/api/declarative_net_request/rules_monitor_service.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
@@ -114,8 +121,10 @@
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension_features.h"
 #include "extensions/common/extension_id.h"
+#include "extensions/common/features/feature_channel.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "extensions/common/switches.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
 #include "extensions/test/extension_test_message_listener.h"
@@ -186,7 +195,8 @@ class RulesetLoadObserver : public RulesMonitorService::TestObserver {
 
 class DeclarativeNetRequestBrowserTest
     : public ExtensionBrowserTest,
-      public ::testing::WithParamInterface<ExtensionLoadType> {
+      public ::testing::WithParamInterface<
+          ::testing::tuple<ExtensionLoadType, bool>> {
  public:
   DeclarativeNetRequestBrowserTest() {
     feature_list_.InitWithFeatures(
@@ -216,6 +226,16 @@ class DeclarativeNetRequestBrowserTest
     test_root_path = test_root_path.AppendASCII("extensions")
                          .AppendASCII("declarative_net_request");
     return test_root_path;
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ExtensionBrowserTest::SetUpCommandLine(command_line);
+
+    if (GetAllowChromeURLs()) {
+      command_line->AppendSwitch(switches::kExtensionsOnChromeURLs);
+    } else {
+      command_line->RemoveSwitch(switches::kExtensionsOnChromeURLs);
+    }
   }
 
   // ExtensionBrowserTest overrides:
@@ -260,6 +280,10 @@ class DeclarativeNetRequestBrowserTest
   }
 
  protected:
+  ExtensionLoadType GetLoadType() { return testing::get<0>(GetParam()); }
+
+  bool GetAllowChromeURLs() { return testing::get<1>(GetParam()); }
+
   // Returns the number of extensions with active rulesets.
   size_t extensions_with_rulesets_count() {
     return ruleset_manager()->GetMatcherCountForTest();
@@ -831,7 +855,7 @@ class DeclarativeNetRequestBrowserTest
                              bool has_dynamic_ruleset,
                              bool is_extension_update,
                              bool is_delayed_update) {
-    CHECK(!is_extension_update || GetParam() == ExtensionLoadType::PACKED);
+    CHECK(!is_extension_update || GetLoadType() == ExtensionLoadType::PACKED);
 
     // The "crx" directory is reserved for use by this test fixture.
     CHECK_NE("crx", directory);
@@ -850,7 +874,7 @@ class DeclarativeNetRequestBrowserTest
     size_t current_ruleset_count = extensions_with_rulesets_count();
 
     const Extension* extension = nullptr;
-    switch (GetParam()) {
+    switch (GetLoadType()) {
       case ExtensionLoadType::PACKED: {
         base::FilePath crx_dir =
             temp_dir_.GetPath().AppendASCII("crx").AppendASCII(directory);
@@ -921,7 +945,7 @@ class DeclarativeNetRequestBrowserTest
     }
 
     // The histograms below are not logged for unpacked extensions.
-    if (GetParam() == ExtensionLoadType::PACKED) {
+    if (GetLoadType() == ExtensionLoadType::PACKED) {
       size_t expected_histogram_counts = has_enabled_rulesets ? 1 : 0;
 
       tester.ExpectTotalCount(kIndexAndPersistRulesTimeHistogram,
@@ -938,7 +962,7 @@ class DeclarativeNetRequestBrowserTest
                               expected_enabled_rulesets_count);
 
     auto ruleset_filter = FileBackedRulesetSource::RulesetFilter::kIncludeAll;
-    if (GetParam() == ExtensionLoadType::PACKED) {
+    if (GetLoadType() == ExtensionLoadType::PACKED) {
       ruleset_filter =
           FileBackedRulesetSource::RulesetFilter::kIncludeManifestEnabled;
     }
@@ -2272,7 +2296,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
                        PRE_BrowserRestart) {
   // This is not tested for unpacked extensions since the unpacked extension
   // directory won't be persisted across browser restarts.
-  ASSERT_EQ(ExtensionLoadType::PACKED, GetParam());
+  ASSERT_EQ(ExtensionLoadType::PACKED, GetLoadType());
 
   set_config_flags(ConfigFlag::kConfig_HasBackgroundScript);
 
@@ -2313,7 +2337,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
                        BrowserRestart) {
   // This is not tested for unpacked extensions since the unpacked extension
   // directory won't be persisted across browser restarts.
-  ASSERT_EQ(ExtensionLoadType::PACKED, GetParam());
+  ASSERT_EQ(ExtensionLoadType::PACKED, GetLoadType());
 
   const Extension* extension = nullptr;
   for (const auto& ext : extension_registry()->enabled_extensions()) {
@@ -2828,9 +2852,10 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   std::vector<int> corrupted_ruleset_indices = {0, 2, 3};
   std::vector<int> non_corrupted_ruleset_indices = {1};
 
+  PrefsHelper helper(*ExtensionPrefs::Get(profile()));
   for (int index : corrupted_ruleset_indices) {
-    ExtensionPrefs::Get(profile())->SetDNRStaticRulesetChecksum(
-        extension_id, sources[index].id(), kInvalidRulesetChecksum);
+    helper.SetStaticRulesetChecksum(extension_id, sources[index].id(),
+                                    kInvalidRulesetChecksum);
   }
 
   DisableExtension(extension_id);
@@ -2938,7 +2963,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
                                   LoadRulesetResult::kSuccess /*sample*/));
 
   // Ensure that the new checksum was correctly persisted in prefs.
-  const ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
   const Extension* extension = last_loaded_extension();
   std::vector<FileBackedRulesetSource> static_sources =
       FileBackedRulesetSource::CreateStatic(
@@ -2946,16 +2971,18 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   ASSERT_EQ(static_cast<size_t>(kNumStaticRulesets), static_sources.size());
 
   int checksum = kTestChecksum + 1;
+
+  PrefsHelper helper(*prefs);
   for (const FileBackedRulesetSource& source : static_sources) {
-    EXPECT_TRUE(prefs->GetDNRStaticRulesetChecksum(extension_id, source.id(),
-                                                   &checksum));
+    EXPECT_TRUE(
+        helper.GetStaticRulesetChecksum(extension_id, source.id(), checksum));
     EXPECT_EQ(kTestChecksum, checksum);
 
     // Reset checksum for the next test.
     checksum = kTestChecksum + 1;
   }
 
-  EXPECT_TRUE(prefs->GetDNRDynamicRulesetChecksum(extension_id, &checksum));
+  EXPECT_TRUE(helper.GetDynamicRulesetChecksum(extension_id, checksum));
   EXPECT_EQ(kTestChecksum, checksum);
 }
 
@@ -2977,10 +3004,11 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   DisableExtension(extension_id);
   WaitForExtensionsWithRulesetsCount(0);
 
-  const ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+  PrefsHelper helper(*prefs);
   int checksum = -1;
-  EXPECT_TRUE(prefs->GetDNRStaticRulesetChecksum(
-      extension_id, static_sources[0].id(), &checksum));
+  EXPECT_TRUE(helper.GetStaticRulesetChecksum(
+      extension_id, static_sources[0].id(), checksum));
 
   // Now change the current indexed ruleset format version. This should cause a
   // version mismatch when the extension is loaded again, but re-indexing should
@@ -3012,8 +3040,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
       true /*sample*/, 1 /*count*/);
 
   // Verify that the prefs for the static ruleset were deleted successfully.
-  EXPECT_FALSE(prefs->GetDNRStaticRulesetChecksum(
-      extension_id, static_sources[0].id(), &checksum));
+  EXPECT_FALSE(helper.GetStaticRulesetChecksum(
+      extension_id, static_sources[0].id(), checksum));
 }
 
 // Tests that redirecting requests using the declarativeNetRequest API works
@@ -3418,8 +3446,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   const ExtensionId& extension_id = last_loaded_extension_id();
   const Extension* dnr_extension = last_loaded_extension();
 
-  ExtensionPrefs::Get(profile())->SetDNRUseActionCountAsBadgeText(extension_id,
-                                                                  true);
+  PrefsHelper helper(*ExtensionPrefs::Get(profile()));
+  helper.SetUseActionCountAsBadgeText(extension_id, true);
 
   ExtensionAction* action =
       ExtensionActionManager::Get(web_contents()->GetBrowserContext())
@@ -4001,8 +4029,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   const ExtensionId& extension_id = last_loaded_extension_id();
   util::SetIsIncognitoEnabled(extension_id, profile(), true /*enabled*/);
 
-  ExtensionPrefs::Get(profile())->SetDNRUseActionCountAsBadgeText(extension_id,
-                                                                  true);
+  PrefsHelper helper(*ExtensionPrefs::Get(profile()));
+  helper.SetUseActionCountAsBadgeText(extension_id, true);
 
   Browser* incognito_browser = CreateIncognitoBrowser();
   ASSERT_TRUE(
@@ -4081,8 +4109,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
 
   const Extension* dnr_extension = last_loaded_extension();
 
-  ExtensionPrefs::Get(profile())->SetDNRUseActionCountAsBadgeText(
-      last_loaded_extension_id(), true);
+  PrefsHelper helper(*ExtensionPrefs::Get(profile()));
+  helper.SetUseActionCountAsBadgeText(last_loaded_extension_id(), true);
 
   ExtensionAction* action =
       ExtensionActionManager::Get(web_contents()->GetBrowserContext())
@@ -4183,8 +4211,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
       "extension_1", {URLPattern::kAllUrlsPattern}));
 
   const ExtensionId& extension_1_id = last_loaded_extension_id();
-  ExtensionPrefs::Get(profile())->SetDNRUseActionCountAsBadgeText(
-      extension_1_id, true);
+  PrefsHelper helper(*ExtensionPrefs::Get(profile()));
+  helper.SetUseActionCountAsBadgeText(extension_1_id, true);
 
   ExtensionAction* extension_1_action =
       ExtensionActionManager::Get(web_contents()->GetBrowserContext())
@@ -4216,8 +4244,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
       "extension_2", {URLPattern::kAllUrlsPattern}));
 
   const ExtensionId& extension_2_id = last_loaded_extension_id();
-  ExtensionPrefs::Get(profile())->SetDNRUseActionCountAsBadgeText(
-      extension_2_id, true);
+  helper.SetUseActionCountAsBadgeText(extension_2_id, true);
 
   ExtensionAction* extension_2_action =
       ExtensionActionManager::Get(web_contents()->GetBrowserContext())
@@ -4423,7 +4450,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
           last_loaded_extension_id(), kGetOnRuleMatchedDebugScript);
 
   std::string expected_event_availability =
-      GetParam() == ExtensionLoadType::UNPACKED ? "true" : "false";
+      GetLoadType() == ExtensionLoadType::UNPACKED ? "true" : "false";
 
   ASSERT_EQ(expected_event_availability, actual_event_availability);
 }
@@ -4434,7 +4461,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Unpacked,
                        OnRuleMatchedDebugMultipleRules) {
   // This is only tested for unpacked extensions since the onRuleMatchedDebug
   // event is only available for unpacked extensions.
-  ASSERT_EQ(ExtensionLoadType::UNPACKED, GetParam());
+  ASSERT_EQ(ExtensionLoadType::UNPACKED, GetLoadType());
 
   // Load the extension with a background script so scripts can be run from its
   // generated background page. Also grant the feedback permission for the
@@ -4959,14 +4986,13 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   // first enabled. The second ruleset has not been enabled yet, so it shouldn't
   // have been indexed yet either.
   int checksum = -1;
-  EXPECT_TRUE(prefs->GetDNRStaticRulesetChecksum(
-      extension_id, kMinValidStaticRulesetID, &checksum));
-  EXPECT_FALSE(prefs->GetDNRStaticRulesetChecksum(
-      extension_id, RulesetID(kMinValidStaticRulesetID.value() + 1),
-      &checksum));
-  EXPECT_TRUE(prefs->GetDNRStaticRulesetChecksum(
-      extension_id, RulesetID(kMinValidStaticRulesetID.value() + 2),
-      &checksum));
+  PrefsHelper helper(*prefs);
+  EXPECT_TRUE(helper.GetStaticRulesetChecksum(
+      extension_id, kMinValidStaticRulesetID, checksum));
+  EXPECT_FALSE(helper.GetStaticRulesetChecksum(
+      extension_id, RulesetID(kMinValidStaticRulesetID.value() + 1), checksum));
+  EXPECT_TRUE(helper.GetStaticRulesetChecksum(
+      extension_id, RulesetID(kMinValidStaticRulesetID.value() + 2), checksum));
 
   // Also add a dynamic rule.
   ASSERT_NO_FATAL_FAILURE(
@@ -4986,21 +5012,18 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   // the second static ruleset now should have been indexed since it has now
   // been enabled.
   int dynamic_checksum_1 = -1;
-  EXPECT_TRUE(prefs->GetDNRStaticRulesetChecksum(
-      extension_id, kMinValidStaticRulesetID, &checksum));
-  EXPECT_TRUE(prefs->GetDNRStaticRulesetChecksum(
-      extension_id, RulesetID(kMinValidStaticRulesetID.value() + 1),
-      &checksum));
-  EXPECT_TRUE(prefs->GetDNRStaticRulesetChecksum(
-      extension_id, RulesetID(kMinValidStaticRulesetID.value() + 2),
-      &checksum));
-  EXPECT_FALSE(prefs->GetDNRStaticRulesetChecksum(
-      extension_id, RulesetID(kMinValidStaticRulesetID.value() + 3),
-      &checksum));
+  EXPECT_TRUE(helper.GetStaticRulesetChecksum(
+      extension_id, kMinValidStaticRulesetID, checksum));
+  EXPECT_TRUE(helper.GetStaticRulesetChecksum(
+      extension_id, RulesetID(kMinValidStaticRulesetID.value() + 1), checksum));
+  EXPECT_TRUE(helper.GetStaticRulesetChecksum(
+      extension_id, RulesetID(kMinValidStaticRulesetID.value() + 2), checksum));
+  EXPECT_FALSE(helper.GetStaticRulesetChecksum(
+      extension_id, RulesetID(kMinValidStaticRulesetID.value() + 3), checksum));
   EXPECT_TRUE(
-      prefs->GetDNRDynamicRulesetChecksum(extension_id, &dynamic_checksum_1));
+      helper.GetDynamicRulesetChecksum(extension_id, dynamic_checksum_1));
   std::optional<std::set<RulesetID>> enabled_static_rulesets =
-      prefs->GetDNREnabledStaticRulesets(extension_id);
+      helper.GetEnabledStaticRulesets(extension_id);
   ASSERT_TRUE(enabled_static_rulesets);
   EXPECT_THAT(
       *enabled_static_rulesets,
@@ -5025,21 +5048,19 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
               UnorderedElementsAre("id1", dnr_api::DYNAMIC_RULESET_ID));
 
   int dynamic_checksum_2;
-  EXPECT_TRUE(prefs->GetDNRStaticRulesetChecksum(
-      extension_id, kMinValidStaticRulesetID, &checksum));
-  EXPECT_FALSE(prefs->GetDNRStaticRulesetChecksum(
-      extension_id, RulesetID(kMinValidStaticRulesetID.value() + 1),
-      &checksum));
-  EXPECT_FALSE(prefs->GetDNRStaticRulesetChecksum(
-      extension_id, RulesetID(kMinValidStaticRulesetID.value() + 2),
-      &checksum));
+  EXPECT_TRUE(helper.GetStaticRulesetChecksum(
+      extension_id, kMinValidStaticRulesetID, checksum));
+  EXPECT_FALSE(helper.GetStaticRulesetChecksum(
+      extension_id, RulesetID(kMinValidStaticRulesetID.value() + 1), checksum));
+  EXPECT_FALSE(helper.GetStaticRulesetChecksum(
+      extension_id, RulesetID(kMinValidStaticRulesetID.value() + 2), checksum));
   EXPECT_TRUE(
-      prefs->GetDNRDynamicRulesetChecksum(extension_id, &dynamic_checksum_2));
+      helper.GetDynamicRulesetChecksum(extension_id, dynamic_checksum_2));
   EXPECT_EQ(dynamic_checksum_2, dynamic_checksum_1);
 
   // Ensure the preference for enabled static rulesets is cleared on extension
   // update.
-  EXPECT_FALSE(prefs->GetDNREnabledStaticRulesets(extension_id));
+  EXPECT_FALSE(helper.GetEnabledStaticRulesets(extension_id));
 }
 
 // Tests extension update for an extension using declarativeNetRequest.
@@ -5073,13 +5094,13 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   // Also sanity check the extension prefs entry for the rulesets.
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
   ASSERT_TRUE(prefs);
+  PrefsHelper helper(*prefs);
   int checksum = -1;
-  EXPECT_TRUE(prefs->GetDNRStaticRulesetChecksum(
-      extension_id, kMinValidStaticRulesetID, &checksum));
-  EXPECT_TRUE(prefs->GetDNRStaticRulesetChecksum(
-      extension_id, RulesetID(kMinValidStaticRulesetID.value() + 1),
-      &checksum));
-  EXPECT_FALSE(prefs->GetDNRDynamicRulesetChecksum(extension_id, &checksum));
+  EXPECT_TRUE(helper.GetStaticRulesetChecksum(
+      extension_id, kMinValidStaticRulesetID, checksum));
+  EXPECT_TRUE(helper.GetStaticRulesetChecksum(
+      extension_id, RulesetID(kMinValidStaticRulesetID.value() + 1), checksum));
+  EXPECT_FALSE(helper.GetDynamicRulesetChecksum(extension_id, checksum));
 
   const char* kDirectory2 = "dir2";
   ASSERT_NO_FATAL_FAILURE(UpdateLastLoadedExtension(
@@ -5092,12 +5113,11 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   EXPECT_FALSE(composite_matcher);
 
   // Ensure the prefs entry are cleared appropriately.
-  EXPECT_FALSE(prefs->GetDNRStaticRulesetChecksum(
-      extension_id, kMinValidStaticRulesetID, &checksum));
-  EXPECT_FALSE(prefs->GetDNRStaticRulesetChecksum(
-      extension_id, RulesetID(kMinValidStaticRulesetID.value() + 1),
-      &checksum));
-  EXPECT_FALSE(prefs->GetDNRDynamicRulesetChecksum(extension_id, &checksum));
+  EXPECT_FALSE(helper.GetStaticRulesetChecksum(
+      extension_id, kMinValidStaticRulesetID, checksum));
+  EXPECT_FALSE(helper.GetStaticRulesetChecksum(
+      extension_id, RulesetID(kMinValidStaticRulesetID.value() + 1), checksum));
+  EXPECT_FALSE(helper.GetDynamicRulesetChecksum(extension_id, checksum));
 }
 
 // Tests that persisted disabled static rule ids are no longer kept after an
@@ -5159,12 +5179,12 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
                        RemoveStalePrefsOnDelayedUpdate) {
   set_config_flags(ConfigFlag::kConfig_HasBackgroundScript |
                    ConfigFlag::kConfig_ListenForOnUpdateAvailable);
-  const ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
-
-  auto is_checksum_in_prefs = [this, prefs](const RulesetID& ruleset_id) {
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+  PrefsHelper helper(*prefs);
+  auto is_checksum_in_prefs = [this, &helper](const RulesetID& ruleset_id) {
     int checksum;
-    return prefs->GetDNRStaticRulesetChecksum(last_loaded_extension_id(),
-                                              ruleset_id, &checksum);
+    return helper.GetStaticRulesetChecksum(last_loaded_extension_id(),
+                                           ruleset_id, checksum);
   };
 
   // Load one extension with one ruleset that is disabled by default.
@@ -5184,7 +5204,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
 
   VerifyPublicRulesetIds(last_loaded_extension(), {ruleset_id});
   std::optional<std::set<RulesetID>> enabled_static_rulesets =
-      prefs->GetDNREnabledStaticRulesets(last_loaded_extension_id());
+      helper.GetEnabledStaticRulesets(last_loaded_extension_id());
   EXPECT_THAT(
       enabled_static_rulesets.value_or(std::set<RulesetID>()),
       UnorderedElementsAre(RulesetID(kMinValidStaticRulesetID.value())));
@@ -5202,7 +5222,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   // Verify that no rulesets are enabled and the prefs contain no checksums nor
   // any enabled ruleset ids.
   VerifyPublicRulesetIds(last_loaded_extension(), {});
-  EXPECT_FALSE(prefs->GetDNREnabledStaticRulesets(last_loaded_extension_id()));
+  EXPECT_FALSE(helper.GetEnabledStaticRulesets(last_loaded_extension_id()));
   EXPECT_FALSE(is_checksum_in_prefs(kMinValidStaticRulesetID));
 
   // Enable the ruleset again (this operation should succeed) and check the
@@ -5212,7 +5232,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
 
   VerifyPublicRulesetIds(last_loaded_extension(), {ruleset_id});
   enabled_static_rulesets =
-      prefs->GetDNREnabledStaticRulesets(last_loaded_extension_id());
+      helper.GetEnabledStaticRulesets(last_loaded_extension_id());
   EXPECT_THAT(
       enabled_static_rulesets.value_or(std::set<RulesetID>()),
       UnorderedElementsAre(RulesetID(kMinValidStaticRulesetID.value())));
@@ -6249,12 +6269,12 @@ class DeclarativeNetRequestGlobalRulesBrowserTest
  protected:
   void VerifyExtensionAllocationInPrefs(
       const ExtensionId& extension_id,
-      const std::optional<size_t>& expected_rules_count) {
-    size_t actual_rules_count = 0;
+      std::optional<int> expected_rules_count) {
+    int actual_rules_count = 0;
 
-    const ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
-    bool has_allocated_rules_count = prefs->GetDNRAllocatedGlobalRuleCount(
-        extension_id, &actual_rules_count);
+    PrefsHelper helper(*ExtensionPrefs::Get(profile()));
+    bool has_allocated_rules_count =
+        helper.GetAllocatedGlobalRuleCount(extension_id, actual_rules_count);
 
     EXPECT_EQ(expected_rules_count.has_value(), has_allocated_rules_count);
     if (expected_rules_count.has_value())
@@ -6263,9 +6283,9 @@ class DeclarativeNetRequestGlobalRulesBrowserTest
 
   void VerifyKeepExcessAllocation(const ExtensionId& extension_id,
                                   bool expected_keep_allocation) {
-    const ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+    PrefsHelper helper(*ExtensionPrefs::Get(profile()));
     EXPECT_EQ(expected_keep_allocation,
-              prefs->GetDNRKeepExcessAllocation(extension_id));
+              helper.GetKeepExcessAllocation(extension_id));
   }
 
  private:
@@ -6288,7 +6308,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestGlobalRulesBrowserTest_Packed,
                        PRE_GlobalRulesBrowserRestart) {
   // This is not tested for unpacked extensions since the unpacked extension
   // directory won't be persisted across browser restarts.
-  ASSERT_EQ(ExtensionLoadType::PACKED, GetParam());
+  ASSERT_EQ(ExtensionLoadType::PACKED, GetLoadType());
 
   // Sanity check that the extension can index and enable up to
   // |rule_limit_override_| + |global_limit_override_| rules.
@@ -6333,21 +6353,22 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestGlobalRulesBrowserTest_Packed,
                        GlobalRulesBrowserRestart) {
   // This is not tested for unpacked extensions since the unpacked extension
   // directory won't be persisted across browser restarts.
-  ASSERT_EQ(ExtensionLoadType::PACKED, GetParam());
+  ASSERT_EQ(ExtensionLoadType::PACKED, GetLoadType());
 
   // Sanity check that the extension can index and enable up to
   // |rule_limit_override| + |global_limit_override| rules.
   ASSERT_EQ(3, GetMaximumRulesPerRuleset());
 
-  const ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+  PrefsHelper helper(*ExtensionPrefs::Get(profile()));
   std::map<std::string, size_t> allocated_rule_counts;
   std::map<std::string, const Extension*> extensions_by_name;
   for (const auto& extension : extension_registry()->enabled_extensions()) {
     extensions_by_name[extension->name()] = extension.get();
 
-    size_t allocated_rule_count = 0;
-    if (prefs->GetDNRAllocatedGlobalRuleCount(extension->id(),
-                                              &allocated_rule_count)) {
+    int allocated_rule_count = 0;
+    if (helper.GetAllocatedGlobalRuleCount(extension->id(),
+                                           allocated_rule_count)) {
+      DCHECK_GE(allocated_rule_count, 0);
       allocated_rule_counts[extension->name()] = allocated_rule_count;
     }
   }
@@ -6371,7 +6392,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestGlobalRulesBrowserTest_Packed,
                        PackedUpdateAndReload) {
   // This is not tested for unpacked extensions since the unpacked extension
   // directory won't be persisted across browser restarts.
-  ASSERT_EQ(ExtensionLoadType::PACKED, GetParam());
+  ASSERT_EQ(ExtensionLoadType::PACKED, GetLoadType());
 
   // Load the extension with a background page so updateEnabledRulesets can be
   // called.
@@ -6425,7 +6446,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestGlobalRulesBrowserTest_Packed,
                        UpdateEnabledRulesetsAfterPackedUpdate) {
   // This is not tested for unpacked extensions since the unpacked extension
   // directory won't be persisted across browser restarts.
-  ASSERT_EQ(ExtensionLoadType::PACKED, GetParam());
+  ASSERT_EQ(ExtensionLoadType::PACKED, GetLoadType());
 
   // Load the extension with a background page so updateEnabledRulesets can be
   // called.
@@ -6503,7 +6524,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestGlobalRulesBrowserTest_Packed,
                        DISABLED_GetAvailableStaticRuleCountAfterPackedUpdate) {
   // This is not tested for unpacked extensions since the unpacked extension
   // directory won't be persisted across browser restarts.
-  ASSERT_EQ(ExtensionLoadType::PACKED, GetParam());
+  ASSERT_EQ(ExtensionLoadType::PACKED, GetLoadType());
 
   // Load the extension with a background page so updateEnabledRulesets can be
   // called.
@@ -7153,15 +7174,16 @@ class DNRMatchResponseHeadersBrowserTest
     : public DeclarativeNetRequestBrowserTest {
  public:
   DNRMatchResponseHeadersBrowserTest() {
-    // TODO(crbug.com/40727004): Once feature is launched to stable and feature
-    // flag can be removed, replace usages of this test class with just
-    // DeclarativeNetRequestBrowserTest.
     scoped_feature_list_.InitAndEnableFeature(
         extensions_features::kDeclarativeNetRequestResponseHeaderMatching);
   }
 
  private:
+  // TODO(crbug.com/40727004): Once feature is launched to stable and feature
+  // flag can be removed, replace usages of this test class with just
+  // DeclarativeNetRequestBrowserTest.
   base::test::ScopedFeatureList scoped_feature_list_;
+  ScopedCurrentChannel current_channel_override_{version_info::Channel::DEV};
 };
 
 // Test that requests matching rules' response header conditions will be
@@ -8179,60 +8201,218 @@ IN_PROC_BROWSER_TEST_P(DNRMatchResponseHeadersBrowserTest,
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         DeclarativeNetRequestBrowserTest,
-                         ::testing::Values(ExtensionLoadType::PACKED,
-                                           ExtensionLoadType::UNPACKED));
+// Fixture for use by tests that care about the --extensions-on-chrome-urls
+// switch.
+using DeclarativeNetRequestAllowChromeURLsBrowserTest =
+    DeclarativeNetRequestBrowserTest;
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         DeclarativeNetRequestHostPermissionsBrowserTest,
-                         ::testing::Values(ExtensionLoadType::PACKED,
-                                           ExtensionLoadType::UNPACKED));
-INSTANTIATE_TEST_SUITE_P(All,
-                         DeclarativeNetRequestResourceTypeBrowserTest,
-                         ::testing::Values(ExtensionLoadType::PACKED,
-                                           ExtensionLoadType::UNPACKED));
-INSTANTIATE_TEST_SUITE_P(All,
-                         DeclarativeNetRequestSubresourceWebBundlesBrowserTest,
-                         ::testing::Values(ExtensionLoadType::PACKED,
-                                           ExtensionLoadType::UNPACKED));
+// Ensure that an extension can block requests that it initiated, but not
+// requests that other extensions initiated, unless the
+// --extensions-on-chrome-urls switch is used.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestAllowChromeURLsBrowserTest,
+                       CrossExtensionRequestBlocking) {
+  set_config_flags(ConfigFlag::kConfig_HasBackgroundScript |
+                   ConfigFlag::kConfig_HasFeedbackPermission |
+                   ConfigFlag::kConfig_HasManifestSandbox);
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         DeclarativeNetRequestBrowserTest_Packed,
-                         ::testing::Values(ExtensionLoadType::PACKED));
+  DeclarativeNetRequestGetMatchedRulesFunction::
+      set_disable_throttling_for_tests(true);
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         DeclarativeNetRequestBrowserTest_Unpacked,
-                         ::testing::Values(ExtensionLoadType::UNPACKED));
+  constexpr char kFetchTemplate[] = R"(
+    fetch('%s').then(response =>
+      response.ok ? 'success' : ('Unexpected Server Error: ' + response.status)
+    ).catch(e =>
+      'failed'
+    ).then(result => {
+      // EvalJs uses the return value, but
+      // ExecuteScriptInBackgroundPageAndReturnString waits for the
+      // sendScriptResult call. Both are needed here since EvalJs can't be used
+      // for the background ServiceWorkers and
+      // ExecuteScriptInBackgroundPageAndReturnString can't be used for the
+      // manifest sandbox pages.
+      if (typeof chrome?.test?.sendScriptResult === 'function') {
+        chrome.test.sendScriptResult(result);
+      }
+      return result;
+    });
+  )";
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         DeclarativeNetRequestGlobalRulesBrowserTest_Packed,
-                         ::testing::Values(ExtensionLoadType::PACKED));
+  // Extension 1 - Blocks requests to google.com.
+  TestRule blocking_rule = CreateGenericRule(kMinValidID);
+  blocking_rule.id = 1;
+  blocking_rule.action->type = "block";
+  blocking_rule.condition->url_filter = "google.com";
+  blocking_rule.condition->resource_types =
+      std::vector<std::string>({"xmlhttprequest"});
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         DeclarativeNetRequestAllowAllRequestsBrowserTest,
-                         ::testing::Values(ExtensionLoadType::PACKED,
-                                           ExtensionLoadType::UNPACKED));
+  ASSERT_NO_FATAL_FAILURE(
+      LoadExtensionWithRules({std::move(blocking_rule)}, "test_extension_1",
+                             {URLPattern::kAllUrlsPattern}));
+  const Extension* extension_1 = last_loaded_extension();
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         DeclarativeNetRequestWebTransportTest,
-                         ::testing::Values(ExtensionLoadType::PACKED,
-                                           ExtensionLoadType::UNPACKED));
+  content::RenderFrameHost* extension_1_sandbox =
+      ui_test_utils::NavigateToURLWithDisposition(
+          browser(), extension_1->GetResourceURL(kManifestSandboxPageFilepath),
+          WindowOpenDisposition::NEW_FOREGROUND_TAB,
+          ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         DeclarativeNetRequestBackForwardCacheBrowserTest,
-                         ::testing::Values(ExtensionLoadType::PACKED,
-                                           ExtensionLoadType::UNPACKED));
+  // Extension 2 - Doesn't block any requests.
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
+      {}, "test_extension_2", {URLPattern::kAllUrlsPattern}));
+  const Extension* extension_2 = last_loaded_extension();
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         DeclarativeNetRequestControllableResponseTest,
-                         ::testing::Values(ExtensionLoadType::PACKED,
-                                           ExtensionLoadType::UNPACKED));
+  content::RenderFrameHost* extension_2_sandbox =
+      ui_test_utils::NavigateToURLWithDisposition(
+          browser(), extension_2->GetResourceURL(kManifestSandboxPageFilepath),
+          WindowOpenDisposition::NEW_FOREGROUND_TAB,
+          ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         DNRMatchResponseHeadersBrowserTest,
-                         ::testing::Values(ExtensionLoadType::PACKED,
-                                           ExtensionLoadType::UNPACKED));
+  struct {
+    std::string hostname;
+    bool rule_matches;
+  } test_cases[] = {{"google.com", true}, {"google.ca", false}};
+
+  for (const auto& test_case : test_cases) {
+    base::Time start_time = base::Time::Now();
+
+    GURL fetch_url =
+        embedded_test_server()->GetURL(test_case.hostname, "/cors-ok.txt");
+
+    SCOPED_TRACE(
+        base::StringPrintf("Testing %s, (Cross-extension blocking allowed: %d)",
+                           fetch_url.spec().c_str(), GetAllowChromeURLs()));
+
+    std::string script =
+        base::StringPrintf(kFetchTemplate, fetch_url.spec().c_str());
+
+    bool expected_same_extension_blocked = test_case.rule_matches;
+    bool expected_cross_extension_blocked =
+        test_case.rule_matches && GetAllowChromeURLs();
+    std::string expected_same_extension_outcome =
+        expected_same_extension_blocked ? "failed" : "success";
+    std::string expected_cross_extension_outcome =
+        expected_cross_extension_blocked ? "failed" : "success";
+    // Each request is attempted twice, once from the extension's background
+    // ServiceWorker and again from the extension's manifest sandbox page. The
+    // blocking rule will match both or neither, so the match count is always
+    // incremented by two.
+    std::string expected_match_count =
+        base::NumberToString((expected_same_extension_blocked ? 2 : 0) +
+                             (expected_cross_extension_blocked ? 2 : 0));
+
+    // Test requests from the extension background pages.
+    std::string actual_same_extension_outcome =
+        ExecuteScriptInBackgroundPageAndReturnString(extension_1->id(), script);
+    std::string actual_cross_extension_outcome =
+        ExecuteScriptInBackgroundPageAndReturnString(extension_2->id(), script);
+
+    EXPECT_EQ(expected_same_extension_outcome, actual_same_extension_outcome);
+    EXPECT_EQ(expected_cross_extension_outcome, actual_cross_extension_outcome);
+
+    // Test requests from the extension manifest sandbox pages.
+    std::string actual_same_extension_sandbox_outcome =
+        content::EvalJs(extension_1_sandbox, script).ExtractString();
+    std::string actual_cross_extension_sandbox_outcome =
+        content::EvalJs(extension_2_sandbox, script).ExtractString();
+
+    EXPECT_EQ(expected_same_extension_outcome,
+              actual_same_extension_sandbox_outcome);
+    EXPECT_EQ(expected_cross_extension_outcome,
+              actual_cross_extension_sandbox_outcome);
+
+    // Also check the rule match count looks right, should be either "4", "2" or
+    // "0".
+    EXPECT_EQ(expected_match_count,
+              GetMatchedRuleCount(extension_1->id(), std::nullopt /* tab_id */,
+                                  start_time));
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    DeclarativeNetRequestBrowserTest,
+    ::testing::Combine(::testing::Values(ExtensionLoadType::PACKED,
+                                         ExtensionLoadType::UNPACKED),
+                       ::testing::Values(false)));
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    DeclarativeNetRequestHostPermissionsBrowserTest,
+    ::testing::Combine(::testing::Values(ExtensionLoadType::PACKED,
+                                         ExtensionLoadType::UNPACKED),
+                       ::testing::Values(false)));
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    DeclarativeNetRequestResourceTypeBrowserTest,
+    ::testing::Combine(::testing::Values(ExtensionLoadType::PACKED,
+                                         ExtensionLoadType::UNPACKED),
+                       ::testing::Values(false)));
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    DeclarativeNetRequestSubresourceWebBundlesBrowserTest,
+    ::testing::Combine(::testing::Values(ExtensionLoadType::PACKED,
+                                         ExtensionLoadType::UNPACKED),
+                       ::testing::Values(false)));
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    DeclarativeNetRequestBrowserTest_Packed,
+    ::testing::Combine(::testing::Values(ExtensionLoadType::PACKED),
+                       ::testing::Values(false)));
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    DeclarativeNetRequestBrowserTest_Unpacked,
+    ::testing::Combine(::testing::Values(ExtensionLoadType::UNPACKED),
+                       ::testing::Values(false)));
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    DeclarativeNetRequestGlobalRulesBrowserTest_Packed,
+    ::testing::Combine(::testing::Values(ExtensionLoadType::PACKED),
+                       ::testing::Values(false)));
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    DeclarativeNetRequestAllowAllRequestsBrowserTest,
+    ::testing::Combine(::testing::Values(ExtensionLoadType::PACKED,
+                                         ExtensionLoadType::UNPACKED),
+                       ::testing::Values(false)));
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    DeclarativeNetRequestWebTransportTest,
+    ::testing::Combine(::testing::Values(ExtensionLoadType::PACKED,
+                                         ExtensionLoadType::UNPACKED),
+                       ::testing::Values(false)));
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    DeclarativeNetRequestBackForwardCacheBrowserTest,
+    ::testing::Combine(::testing::Values(ExtensionLoadType::PACKED,
+                                         ExtensionLoadType::UNPACKED),
+                       ::testing::Values(false)));
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    DeclarativeNetRequestControllableResponseTest,
+    ::testing::Combine(::testing::Values(ExtensionLoadType::PACKED,
+                                         ExtensionLoadType::UNPACKED),
+                       ::testing::Values(false)));
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    DNRMatchResponseHeadersBrowserTest,
+    ::testing::Combine(::testing::Values(ExtensionLoadType::PACKED,
+                                         ExtensionLoadType::UNPACKED),
+                       ::testing::Values(false)));
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    DeclarativeNetRequestAllowChromeURLsBrowserTest,
+    ::testing::Combine(::testing::Values(ExtensionLoadType::PACKED,
+                                         ExtensionLoadType::UNPACKED),
+                       ::testing::Bool()));
 
 }  // namespace
 }  // namespace declarative_net_request

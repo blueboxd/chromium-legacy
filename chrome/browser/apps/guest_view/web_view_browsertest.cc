@@ -4130,13 +4130,20 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestLoadDataAPI) {
       guest_main_frame->GetProcess()->IsProcessLockedToSiteForTesting());
 
   auto* security_policy = content::ChildProcessSecurityPolicy::GetInstance();
-  url::Origin base_origin = url::Origin::Create(GURL("http://localhost"));
+  url::Origin base_origin =
+      content::SiteIsolationPolicy::AreOriginKeyedProcessesEnabledByDefault()
+          ? url::Origin::Create(
+                embedded_test_server()->GetURL("localhost", "/"))
+          : url::Origin::Create(GURL("http://localhost"));
   EXPECT_TRUE(security_policy->CanAccessDataForOrigin(
       guest_main_frame->GetProcess()->GetID(), base_origin));
 
   // Ensure the process doesn't have access to some other origin. This
   // verifies that site isolation is enforced.
-  url::Origin another_origin = url::Origin::Create(GURL("http://foo.com"));
+  url::Origin another_origin =
+      content::SiteIsolationPolicy::AreOriginKeyedProcessesEnabledByDefault()
+          ? url::Origin::Create(embedded_test_server()->GetURL("foo.com", "/"))
+          : url::Origin::Create(GURL("http://foo.com"));
   EXPECT_FALSE(security_policy->CanAccessDataForOrigin(
       guest_main_frame->GetProcess()->GetID(), another_origin));
 }
@@ -5326,7 +5333,7 @@ IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTest,
   scroll_begin.data.scroll_begin.delta_x_hint = 0;
   scroll_begin.data.scroll_begin.delta_y_hint = 5;
   content::SimulateGestureEvent(guest_rfh->GetRenderWidgetHost(), scroll_begin,
-                                ui::LatencyInfo(ui::SourceEventType::WHEEL));
+                                ui::LatencyInfo());
 
   content::InputEventAckWaiter update_waiter(
       guest_rfh->GetRenderWidgetHost(),
@@ -5350,7 +5357,7 @@ IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTest,
   scroll_update.data.scroll_update.delta_y =
       scroll_begin.data.scroll_begin.delta_y_hint;
   content::SimulateGestureEvent(guest_rfh->GetRenderWidgetHost(), scroll_update,
-                                ui::LatencyInfo(ui::SourceEventType::WHEEL));
+                                ui::LatencyInfo());
   update_waiter.Wait();
   update_waiter.Reset();
 
@@ -5365,7 +5372,7 @@ IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTest,
   // direction, but since we're bubbling, the guest should not consume this.
   scroll_update.data.scroll_update.delta_y = -5;
   content::SimulateGestureEvent(guest_rfh->GetRenderWidgetHost(), scroll_update,
-                                ui::LatencyInfo(ui::SourceEventType::WHEEL));
+                                ui::LatencyInfo());
   update_waiter.Wait();
 
   guest_frame_observer.WaitForScrollOffset(default_offset);
@@ -5864,8 +5871,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, LoadDisallowedExtensionURLInSubframe) {
   LoadAppWithGuest("web_view/simple");
   content::RenderFrameHost* guest = GetGuestView()->GetGuestMainFrame();
 
-  const extensions::Extension* extension =
-      LoadExtension(test_data_dir_.AppendASCII("web_accessible_resources"));
+  const extensions::Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("web_accessible_resources/subframe"));
   ASSERT_TRUE(extension);
   GURL extension_url = extension->GetResourceURL("web_accessible_page.html");
 
@@ -6153,14 +6160,13 @@ IN_PROC_BROWSER_TEST_P(WebstoreWebViewTest, NoRendererKillWithChromeWebStore) {
   EXPECT_TRUE(guest->IsRenderFrameLive());
 
   // Double-check that after the attempted navigation the <webview> is not
-  // considered an extension process and does not have privileged webstore
-  // APIs.
+  // considered an extension process and does not have the privileged webstore
+  // API.
   auto* process_map = extensions::ProcessMap::Get(guest->GetBrowserContext());
   EXPECT_FALSE(process_map->Contains(guest->GetProcess()->GetID()));
   EXPECT_FALSE(
       process_map->GetExtensionIdForProcess(guest->GetProcess()->GetID()));
   EXPECT_EQ(false, content::EvalJs(guest, "!!chrome.webstorePrivate"));
-  EXPECT_EQ(false, content::EvalJs(guest, "!!chrome.dashboardPrivate"));
 }
 
 // This is a group of tests that check site isolation properties in <webview>

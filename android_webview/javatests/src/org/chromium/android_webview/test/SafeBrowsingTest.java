@@ -22,7 +22,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.UseParametersRunnerFactory;
@@ -55,14 +54,14 @@ import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.CriteriaNotSatisfiedException;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.components.safe_browsing.SafeBrowsingApiBridge;
 import org.chromium.components.safe_browsing.SafeBrowsingApiHandler;
 import org.chromium.components.safe_browsing.SafeBrowsingFeatures;
+import org.chromium.components.safe_browsing.SafeBrowsingResult;
 import org.chromium.components.safe_browsing.SafetyNetApiHandler;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.components.safe_browsing.VerifyAppsResult;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.ArrayList;
@@ -92,8 +91,6 @@ public class SafeBrowsingTest extends AwParameterizedTest {
                     }
                 };
     }
-
-    @Rule public TestRule mProcessor = new Features.InstrumentationProcessor();
 
     private SafeBrowsingContentsClient mContentsClient;
     private AwTestContainerView mContainerView;
@@ -203,6 +200,16 @@ public class SafeBrowsingTest extends AwParameterizedTest {
         @Override
         public boolean startAllowlistLookup(final String uri, int threatType) {
             return false;
+        }
+
+        @Override
+        public void isVerifyAppsEnabled(long callbackId) {
+            mObserver.onVerifyAppsEnabledDone(callbackId, VerifyAppsResult.SUCCESS_ENABLED);
+        }
+
+        @Override
+        public void enableVerifyApps(long callbackId) {
+            throw new RuntimeException("WebView should not be able to enable Verify Apps");
         }
     }
 
@@ -733,7 +740,7 @@ public class SafeBrowsingTest extends AwParameterizedTest {
     private void verifyAllowlistRule(final String rule, boolean expected) throws Throwable {
         final AllowlistHelper helper = new AllowlistHelper();
         final int count = helper.getCallCount();
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     ArrayList<String> s = new ArrayList<String>();
                     s.add(rule);
@@ -1159,7 +1166,7 @@ public class SafeBrowsingTest extends AwParameterizedTest {
     }
 
     private String getSafeBrowsingLocaleOnUiThreadForTesting() throws Exception {
-        return TestThreadUtils.runOnUiThreadBlocking(
+        return ThreadUtils.runOnUiThreadBlocking(
                 () -> AwContents.getSafeBrowsingLocaleForTesting());
     }
 
@@ -1284,7 +1291,7 @@ public class SafeBrowsingTest extends AwParameterizedTest {
                         .appendQueryParameter("hl", getSafeBrowsingLocaleOnUiThreadForTesting())
                         .fragment("safe-browsing-policies")
                         .build();
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     mPrivacyPolicyUrl = AwContentsStatics.getSafeBrowsingPrivacyPolicyUrl();
                 });
@@ -1310,7 +1317,7 @@ public class SafeBrowsingTest extends AwParameterizedTest {
                 () -> {
                     try {
                         int awContentsCount =
-                                TestThreadUtils.runOnUiThreadBlocking(
+                                ThreadUtils.runOnUiThreadBlocking(
                                         () -> AwContents.getNativeInstanceCount());
                         Criteria.checkThat(awContentsCount, Matchers.is(0));
                     } catch (Exception e) {

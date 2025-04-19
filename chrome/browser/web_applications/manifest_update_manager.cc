@@ -24,10 +24,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/manifest_update_utils.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
+#include "chrome/browser/web_applications/proto/web_app_install_state.pb.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/chrome_features.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -40,10 +42,6 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/web_applications/web_app_system_web_app_delegate_map_utils.h"
-#endif
-
-#if BUILDFLAG(IS_CHROMEOS)
-#include "chromeos/constants/chromeos_features.h"
 #endif
 
 class Profile;
@@ -93,9 +91,7 @@ class ManifestUpdateManager::PreUpdateWebContentsObserver
 
  private:
   bool IsInvalidRenderFrameHost(content::RenderFrameHost* render_frame_host) {
-    return (!render_frame_host ||
-            render_frame_host->GetParentOrOuterDocument() ||
-            !render_frame_host->IsInPrimaryMainFrame());
+    return !render_frame_host || !render_frame_host->IsInPrimaryMainFrame();
   }
 
   // content::WebContentsObserver:
@@ -214,7 +210,9 @@ void ManifestUpdateManager::MaybeUpdate(
   }
 
   if (!app_id.has_value() ||
-      !provider_->registrar_unsafe().IsLocallyInstalled(*app_id)) {
+      !provider_->registrar_unsafe().IsInstallState(
+          *app_id, {proto::INSTALLED_WITHOUT_OS_INTEGRATION,
+                    proto::INSTALLED_WITH_OS_INTEGRATION})) {
     NotifyResult(url, app_id, ManifestUpdateResult::kNoAppInScope);
     return;
   }
@@ -242,16 +240,6 @@ void ManifestUpdateManager::MaybeUpdate(
     NotifyResult(url, *app_id, ManifestUpdateResult::kAppIsIsolatedWebApp);
     return;
   }
-
-#if BUILDFLAG(IS_CHROMEOS)
-  if (provider_->registrar_unsafe().IsShortcutApp(*app_id) &&
-      chromeos::features::IsCrosShortstandEnabled()) {
-    // When create shortcut ignores manifest, we should not update manifest for
-    // shortcuts.
-    NotifyResult(url, *app_id, ManifestUpdateResult::kShortcutIgnoresManifest);
-    return;
-  }
-#endif
 
   if (base::Contains(update_stages_, *app_id)) {
     return;

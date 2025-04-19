@@ -9,6 +9,7 @@
 #include <functional>
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/memory/raw_ref.h"
@@ -18,6 +19,8 @@
 #include "base/types/pass_key.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/on_device_model/ml/chrome_ml.h"
+#include "services/on_device_model/ml/session_accessor.h"
+#include "services/on_device_model/ml/ts_model.h"
 #include "services/on_device_model/public/cpp/model_assets.h"
 #include "services/on_device_model/public/cpp/on_device_model.h"
 #include "services/on_device_model/public/mojom/on_device_model.mojom.h"
@@ -29,9 +32,8 @@ class LanguageDetector;
 
 // Uses the ChromeML API to create a model based on the params passed to
 // |Create()|. This is the main interface for interacting with the model.
-class OnDeviceModelExecutor
-    : public on_device_model::OnDeviceModel,
-      public base::SupportsWeakPtr<OnDeviceModelExecutor> {
+class COMPONENT_EXPORT(ON_DEVICE_MODEL_ML) OnDeviceModelExecutor
+    : public on_device_model::OnDeviceModel {
  public:
   explicit OnDeviceModelExecutor(base::PassKey<OnDeviceModelExecutor>,
                                  const ChromeML& chrome_ml);
@@ -40,7 +42,8 @@ class OnDeviceModelExecutor
   static base::expected<std::unique_ptr<OnDeviceModelExecutor>,
                         on_device_model::mojom::LoadModelResult>
   CreateWithResult(const ChromeML& chrome_ml,
-                   on_device_model::mojom::LoadModelParamsPtr params);
+                   on_device_model::mojom::LoadModelParamsPtr params,
+                   base::OnceClosure on_complete);
 
   // on_device_model::OnDeviceModel:
   std::unique_ptr<Session> CreateSession(
@@ -50,26 +53,30 @@ class OnDeviceModelExecutor
   on_device_model::mojom::LanguageDetectionResultPtr DetectLanguage(
       const std::string& text) override;
   base::expected<uint32_t, on_device_model::mojom::LoadModelResult>
-  LoadAdaptation(
-      on_device_model::mojom::LoadAdaptationParamsPtr params) override;
+  LoadAdaptation(on_device_model::mojom::LoadAdaptationParamsPtr params,
+                 base::OnceClosure on_complete) override;
 
  private:
   on_device_model::mojom::LoadModelResult Init(
-      on_device_model::mojom::LoadModelParamsPtr params);
+      on_device_model::mojom::LoadModelParamsPtr params,
+      base::OnceClosure on_complete);
 
   static void Schedule(uintptr_t context, std::function<void()>* fn);
 
   const raw_ref<const ChromeML> chrome_ml_;
 
-  base::MemoryMappedFile ts_data_;
-  base::MemoryMappedFile ts_sp_model_;
   scoped_refptr<LanguageDetector> language_detector_;
+  std::unique_ptr<TsModel> ts_model_;
 
   // TODO(b/323572952): Allow disposing of adaptation weights.
   std::vector<std::unique_ptr<base::MemoryMappedFile>> adaptation_data_;
 
+  // Empty sessions keyed by the adaptation ID that can be cloned from.
+  std::map<std::optional<uint32_t>, SessionAccessor::Ptr> base_sessions_;
+
   ChromeMLModel model_ = 0;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> model_task_runner_;
   uint32_t max_tokens_ = 0;
 };
 

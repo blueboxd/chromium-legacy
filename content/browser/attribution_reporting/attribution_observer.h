@@ -11,7 +11,9 @@
 
 #include "base/observer_list_types.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "content/browser/attribution_reporting/attribution_reporting.mojom-forward.h"
+#include "content/browser/attribution_reporting/process_aggregatable_debug_report_result.mojom-forward.h"
 #include "content/browser/attribution_reporting/store_source_result.mojom-forward.h"
 
 namespace attribution_reporting {
@@ -24,11 +26,13 @@ class Origin;
 
 namespace content {
 
+class AggregatableDebugReport;
 class AttributionDebugReport;
 class AttributionReport;
 class CreateReportResult;
 class StorableSource;
 
+struct SendAggregatableDebugReportResult;
 struct SendResult;
 
 // Observes events in the Attribution Reporting API. Observers are registered on
@@ -63,6 +67,14 @@ class AttributionObserver : public base::CheckedObserver {
                                  int status,
                                  base::Time) {}
 
+  // Called when an aggregatable debug report is assembled and sent, regardless
+  // of success.
+  virtual void OnAggregatableDebugReportSent(
+      const AggregatableDebugReport&,
+      base::ValueView report_body,
+      attribution_reporting::mojom::ProcessAggregatableDebugReportResult,
+      const SendAggregatableDebugReportResult&) {}
+
   // Called when a trigger is registered, regardless of success.
   virtual void OnTriggerHandled(std::optional<uint64_t> cleared_debug_key,
                                 const CreateReportResult& result) {}
@@ -76,6 +88,8 @@ class AttributionObserver : public base::CheckedObserver {
       attribution_reporting::mojom::RegistrationType,
       bool is_debug_key_allowed,
       attribution_reporting::mojom::OsRegistrationResult) {}
+
+  virtual void OnDebugModeChanged(bool debug_mode) {}
 };
 
 }  // namespace content

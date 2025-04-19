@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Base class for states with conditions for entering and exiting them.
+ * Base class representing a state with conditions for entering and exiting.
  *
  * <p>Conditions include the existence of {@link Elements}, e.g. Views.
  *
@@ -75,9 +75,10 @@ public abstract class ConditionalState {
 
     private void initElements() {
         if (mElements == null) {
-            Elements.Builder builder = Elements.newBuilder();
+            mElements = new Elements();
+            Elements.Builder builder = mElements.newBuilder();
             declareElements(builder);
-            mElements = builder.build();
+            builder.consolidate();
         }
     }
 
@@ -145,7 +146,7 @@ public abstract class ConditionalState {
 
         List<Condition> enterConditions = new ArrayList<>();
         Elements elements = getElements();
-        for (ElementInState element : elements.getElementsInState()) {
+        for (Element<?> element : elements.getElements()) {
             Condition enterCondition = element.getEnterCondition();
             if (enterCondition != null) {
                 enterConditions.add(enterCondition);
@@ -196,5 +197,15 @@ public abstract class ConditionalState {
     /** Should be used only by {@link EntryPointSentinelStation}. */
     void setStateActiveWithoutTransition() {
         mLifecyclePhase = Phase.ACTIVE;
+    }
+
+    protected void assertSuppliersCanBeUsed() {
+        int phase = getPhase();
+        if (phase != Phase.ACTIVE && phase != Phase.TRANSITIONING_FROM) {
+            fail(
+                    String.format(
+                            "%s should have been ACTIVE or TRANSITIONING_FROM, but was %s",
+                            this, phaseToString(phase)));
+        }
     }
 }

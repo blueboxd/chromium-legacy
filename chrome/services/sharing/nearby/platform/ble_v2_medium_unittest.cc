@@ -769,7 +769,8 @@ TEST_F(BleV2MediumTest, StartGattServer_DualRoleSupported_FlagEnabled) {
 TEST_F(BleV2MediumTest, StartGattServer_DualRoleNotSupported) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
-      /*enabled_features=*/{::features::kEnableNearbyBleV2},
+      /*enabled_features=*/{::features::kEnableNearbyBleV2,
+                            ::features::kEnableNearbyBleV2GattServer},
       /*disabled_features=*/{});
 
   fake_adapter_->is_dual_role_supported_ = false;
@@ -783,7 +784,8 @@ TEST_F(BleV2MediumTest, StartGattServer_DualRoleNotSupported) {
 TEST_F(BleV2MediumTest, StartAdvertising_RegisterGattServer_Success) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
-      /*enabled_features=*/{::features::kEnableNearbyBleV2},
+      /*enabled_features=*/{::features::kEnableNearbyBleV2,
+                            ::features::kEnableNearbyBleV2GattServer},
       /*disabled_features=*/{});
 
   SetUpGattServerForAdvertising(/*should_register_succeed=*/true);
@@ -796,12 +798,19 @@ TEST_F(BleV2MediumTest, StartAdvertising_RegisterGattServer_Success) {
                          base::Unretained(this), /*expected_result=*/true),
           run_loop.QuitClosure());
   run_loop.Run();
+
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Connections.BleV2.StartAdvertising.Result",
+      /*bucket: Success=*/1, 1);
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Connections.BleV2.StartAdvertising.FailureReason", 0);
 }
 
 TEST_F(BleV2MediumTest, StartAdvertising_RegisterGattServer_Failure) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
-      /*enabled_features=*/{::features::kEnableNearbyBleV2},
+      /*enabled_features=*/{::features::kEnableNearbyBleV2,
+                            ::features::kEnableNearbyBleV2GattServer},
       /*disabled_features=*/{});
 
   SetUpGattServerForAdvertising(/*should_register_succeed=*/false);
@@ -814,6 +823,17 @@ TEST_F(BleV2MediumTest, StartAdvertising_RegisterGattServer_Failure) {
                          base::Unretained(this), /*expected_result=*/false),
           run_loop.QuitClosure());
   run_loop.Run();
+
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Connections.BleV2.StartAdvertising.Result",
+      /*bucket: Failure=*/0, 1);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Connections.BleV2.StartAdvertising.Result."
+      "RegularAdvertisement",
+      /*bucket: Failure=*/0, 1);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Connections.BleV2.StartAdvertising.FailureReason",
+      metrics::StartAdvertisingFailureReason::kFailedToRegisterGattServices, 1);
 }
 
 TEST_F(BleV2MediumTest, ConnectToGattServer_Success) {
@@ -833,6 +853,11 @@ TEST_F(BleV2MediumTest, ConnectToGattServer_Success) {
                          base::Unretained(this), /*expected_result=*/true),
           run_loop.QuitClosure());
   run_loop.Run();
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Connections.BleV2.ConnectToGattServer.Result",
+      /*bucket: success=*/1, 1);
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Connections.BleV2.ConnectToGattServer.Duration", 1);
 }
 
 TEST_F(BleV2MediumTest, ConnectToGattServer_Failure) {
@@ -851,6 +876,14 @@ TEST_F(BleV2MediumTest, ConnectToGattServer_Failure) {
                          base::Unretained(this), /*expected_result=*/false),
           run_loop.QuitClosure());
   run_loop.Run();
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Connections.BleV2.ConnectToGattServer.Result",
+      /*bucket: failure=*/0, 1);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Connections.BleV2.ConnectToGattServer.FailureReason",
+      /*bucket: FAILED=*/5, 1);
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Connections.BleV2.ConnectToGattServer.Duration", 0);
 }
 
 }  // namespace nearby::chrome

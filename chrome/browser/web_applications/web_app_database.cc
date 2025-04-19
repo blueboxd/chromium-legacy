@@ -23,12 +23,14 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/web_applications/generated_icon_fix_util.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_integrity_block_data.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_storage_location.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_version.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom-shared.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/os_integration/web_app_file_handler_manager.h"
 #include "chrome/browser/web_applications/proto/web_app.pb.h"
+#include "chrome/browser/web_applications/proto/web_app_install_state.pb.h"
 #include "chrome/browser/web_applications/proto/web_app_url_pattern.pb.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -43,7 +45,7 @@
 #include "components/services/app_service/public/cpp/file_handler.h"
 #include "components/services/app_service/public/cpp/protocol_handler_info.h"
 #include "components/services/app_service/public/cpp/share_target.h"
-#include "components/sync/base/model_type.h"
+#include "components/sync/base/data_type.h"
 #include "components/sync/base/time.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/metadata_change_list.h"
@@ -206,26 +208,6 @@ WebAppProto::ApiApprovalState ApiApprovalStateToProto(
       return WebAppProto_ApiApprovalState_ALLOWED;
     case ApiApprovalState::kDisallowed:
       return WebAppProto_ApiApprovalState_DISALLOWED;
-  }
-}
-
-OsIntegrationState ProtoToOsIntegrationState(
-    WebAppProto::OsIntegrationState state) {
-  switch (state) {
-    case WebAppProto_OsIntegrationState_ENABLED:
-      return OsIntegrationState::kEnabled;
-    case WebAppProto_OsIntegrationState_DISABLED:
-      return OsIntegrationState::kDisabled;
-  }
-}
-
-WebAppProto::OsIntegrationState OsIntegrationStateToProto(
-    OsIntegrationState state) {
-  switch (state) {
-    case OsIntegrationState::kEnabled:
-      return WebAppProto_OsIntegrationState_ENABLED;
-    case OsIntegrationState::kDisabled:
-      return WebAppProto_OsIntegrationState_DISABLED;
   }
 }
 
@@ -426,7 +408,7 @@ void WebAppDatabase::OpenDatabase(RegistryOpenedCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!store_);
 
-  syncer::OnceModelTypeStoreFactory store_factory =
+  syncer::OnceDataTypeStoreFactory store_factory =
       database_factory_->GetStoreFactory();
 
   std::move(store_factory)
@@ -442,7 +424,7 @@ void WebAppDatabase::Write(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(opened_);
 
-  std::unique_ptr<syncer::ModelTypeStore::WriteBatch> write_batch =
+  std::unique_ptr<syncer::DataTypeStore::WriteBatch> write_batch =
       store_->CreateWriteBatch();
 
   // |update_data| can be empty here but we should write |metadata_change_list|
@@ -514,7 +496,7 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
   local_data->mutable_sources()->set_aps_default(
       web_app.sources_.Has(WebAppManagement::kApsDefault));
 
-  local_data->set_is_locally_installed(web_app.is_locally_installed());
+  local_data->set_install_state(web_app.install_state());
 
   // Optional fields:
   if (web_app.launch_query_params())
@@ -594,11 +576,6 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
 
   local_data->set_user_run_on_os_login_mode(
       ToWebAppProtoRunOnOsLoginMode(web_app.run_on_os_login_mode()));
-  if (web_app.run_on_os_login_os_integration_state()) {
-    local_data->set_run_on_os_login_os_integration_state(
-        ToWebAppProtoRunOnOsLoginMode(
-            *web_app.run_on_os_login_os_integration_state()));
-  }
   local_data->set_is_from_sync_and_pending_installation(
       web_app.is_from_sync_and_pending_installation());
   local_data->set_is_uninstalling(web_app.is_uninstalling());
@@ -788,9 +765,6 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
   local_data->set_file_handler_approval_state(
       ApiApprovalStateToProto(web_app.file_handler_approval_state()));
 
-  local_data->set_file_handler_os_integration_state(
-      OsIntegrationStateToProto(web_app.file_handler_os_integration_state()));
-
   local_data->set_window_controls_overlay_enabled(
       web_app.window_controls_overlay_enabled());
 
@@ -890,19 +864,19 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
       web_app.always_show_toolbar_in_fullscreen());
 
   if (web_app.isolation_data().has_value()) {
+    const auto& isolation_data = *web_app.isolation_data();
     auto* mutable_data = local_data->mutable_isolation_data();
 
-    IsolationDataLocationToProto(web_app.isolation_data()->location,
-                                 mutable_data);
-    mutable_data->set_version(web_app.isolation_data()->version.GetString());
+    IsolationDataLocationToProto(isolation_data.location, mutable_data);
+    mutable_data->set_version(isolation_data.version.GetString());
     for (const std::string& partition :
-         web_app.isolation_data()->controlled_frame_partitions) {
+         isolation_data.controlled_frame_partitions) {
       mutable_data->add_controlled_frame_partitions(partition);
     }
 
-    if (web_app.isolation_data()->pending_update_info().has_value()) {
+    if (isolation_data.pending_update_info().has_value()) {
       const WebApp::IsolationData::PendingUpdateInfo& pending_update_info =
-          *web_app.isolation_data()->pending_update_info();
+          *isolation_data.pending_update_info();
       auto* mutable_pending_update_info =
           mutable_data->mutable_pending_update_info();
 
@@ -910,6 +884,15 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
                                    mutable_pending_update_info);
       mutable_pending_update_info->set_version(
           pending_update_info.version.GetString());
+      if (pending_update_info.integrity_block_data) {
+        *mutable_pending_update_info->mutable_integrity_block_data() =
+            pending_update_info.integrity_block_data->ToProto();
+      }
+    }
+
+    if (isolation_data.integrity_block_data) {
+      *mutable_data->mutable_integrity_block_data() =
+          isolation_data.integrity_block_data->ToProto();
     }
   }
 
@@ -1036,11 +1019,16 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
   }
   web_app->SetName(local_data.name());
 
-  if (!local_data.has_is_locally_installed()) {
-    DLOG(ERROR) << "WebApp proto parse error: no is_locally_installed field";
+  if (!local_data.has_install_state()) {
+    DLOG(ERROR) << "WebApp proto parse error: no install_state field";
     return nullptr;
   }
-  web_app->SetIsLocallyInstalled(local_data.is_locally_installed());
+  if (!proto::InstallState_IsValid(local_data.install_state())) {
+    DLOG(ERROR) << "WebApp proto parse error: invalid install_state field: "
+                << local_data.install_state();
+    return nullptr;
+  }
+  web_app->SetInstallState(local_data.install_state());
 
   auto& chromeos_data_proto = local_data.chromeos_data();
 
@@ -1514,11 +1502,6 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
         ToRunOnOsLoginMode(local_data.user_run_on_os_login_mode()));
   }
 
-  if (local_data.has_run_on_os_login_os_integration_state()) {
-    web_app->SetRunOnOsLoginOsIntegrationState(
-        ToRunOnOsLoginMode(local_data.run_on_os_login_os_integration_state()));
-  }
-
   if (local_data.has_capture_links())
     web_app->SetCaptureLinks(ProtoToCaptureLinks(local_data.capture_links()));
   else
@@ -1537,11 +1520,6 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
   if (local_data.has_file_handler_approval_state()) {
     web_app->SetFileHandlerApprovalState(
         ProtoToApiApprovalState(local_data.file_handler_approval_state()));
-  }
-
-  if (local_data.has_file_handler_os_integration_state()) {
-    web_app->SetFileHandlerOsIntegrationState(ProtoToOsIntegrationState(
-        local_data.file_handler_os_integration_state()));
   }
 
   if (local_data.has_window_controls_overlay_enabled()) {
@@ -1705,12 +1683,42 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
           std::vector(pending_version_components->begin(),
                       pending_version_components->end()));
 
+      std::optional<IsolatedWebAppIntegrityBlockData>
+          pending_integrity_block_data;
+      if (pending_update_info_proto.has_integrity_block_data()) {
+        auto result = IsolatedWebAppIntegrityBlockData::FromProto(
+            pending_update_info_proto.integrity_block_data());
+        if (!result.has_value()) {
+          DLOG(ERROR) << "WebApp proto "
+                         "isolation_data.pending_update_info.integrity_block "
+                         "data parse error: "
+                      << result.error();
+          return nullptr;
+        }
+        pending_integrity_block_data = std::move(result.value());
+      }
+
       pending_update_info = WebApp::IsolationData::PendingUpdateInfo(
-          *pending_location, pending_version);
+          *pending_location, pending_version,
+          std::move(pending_integrity_block_data));
+    }
+
+    std::optional<IsolatedWebAppIntegrityBlockData> integrity_block_data;
+    if (local_data.isolation_data().has_integrity_block_data()) {
+      auto result = IsolatedWebAppIntegrityBlockData::FromProto(
+          local_data.isolation_data().integrity_block_data());
+      if (!result.has_value()) {
+        DLOG(ERROR)
+            << "WebApp proto isolation_data.integrity_block_data parse error: "
+            << result.error();
+        return nullptr;
+      }
+      integrity_block_data = std::move(result.value());
     }
 
     web_app->SetIsolationData(WebApp::IsolationData(
-        *location, version, controlled_frame_partitions, pending_update_info));
+        *location, version, controlled_frame_partitions, pending_update_info,
+        std::move(integrity_block_data)));
   }
 
   if (local_data.has_user_link_capturing_preference()) {
@@ -1749,7 +1757,7 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
 void WebAppDatabase::OnDatabaseOpened(
     RegistryOpenedCallback callback,
     const std::optional<syncer::ModelError>& error,
-    std::unique_ptr<syncer::ModelTypeStore> store) {
+    std::unique_ptr<syncer::DataTypeStore> store) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (error) {
     error_callback_.Run(*error);
@@ -1758,42 +1766,26 @@ void WebAppDatabase::OnDatabaseOpened(
   }
 
   store_ = std::move(store);
-  store_->ReadAllData(base::BindOnce(&WebAppDatabase::OnAllDataRead,
-                                     weak_ptr_factory_.GetWeakPtr(),
-                                     std::move(callback)));
+  store_->ReadAllDataAndMetadata(
+      base::BindOnce(&WebAppDatabase::OnAllDataAndMetadataRead,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void WebAppDatabase::OnAllDataRead(
+void WebAppDatabase::OnAllDataAndMetadataRead(
     RegistryOpenedCallback callback,
     const std::optional<syncer::ModelError>& error,
-    std::unique_ptr<syncer::ModelTypeStore::RecordList> data_records) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (error) {
-    error_callback_.Run(*error);
-    DLOG(ERROR) << "WebApps LevelDB data read error: " << error->ToString();
-    return;
-  }
-
-  store_->ReadAllMetadata(base::BindOnce(
-      &WebAppDatabase::OnAllMetadataRead, weak_ptr_factory_.GetWeakPtr(),
-      std::move(data_records), std::move(callback)));
-}
-
-void WebAppDatabase::OnAllMetadataRead(
-    std::unique_ptr<syncer::ModelTypeStore::RecordList> data_records,
-    RegistryOpenedCallback callback,
-    const std::optional<syncer::ModelError>& error,
+    std::unique_ptr<syncer::DataTypeStore::RecordList> data_records,
     std::unique_ptr<syncer::MetadataBatch> metadata_batch) {
   TRACE_EVENT0("ui", "WebAppDatabase::OnAllMetadataRead");
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (error) {
     error_callback_.Run(*error);
-    DLOG(ERROR) << "WebApps LevelDB metadata read error: " << error->ToString();
+    DLOG(ERROR) << "WebApps LevelDB read error: " << error->ToString();
     return;
   }
 
   Registry registry;
-  for (const syncer::ModelTypeStore::Record& record : *data_records) {
+  for (const syncer::DataTypeStore::Record& record : *data_records) {
     const webapps::AppId app_id = record.id;
     std::unique_ptr<WebApp> web_app = ParseWebApp(app_id, record.value);
     if (web_app)

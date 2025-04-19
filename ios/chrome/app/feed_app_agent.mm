@@ -14,6 +14,8 @@
 #import "components/search_engines/template_url_service.h"
 #import "components/signin/public/identity_manager/identity_manager.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
+#import "ios/chrome/app/background_refresh_constants.h"
+#import "ios/chrome/app/profile/profile_state.h"
 #import "ios/chrome/browser/content_notification/model/content_notification_util.h"
 #import "ios/chrome/browser/discover_feed/model/discover_feed_service.h"
 #import "ios/chrome/browser/discover_feed/model/discover_feed_service_factory.h"
@@ -28,14 +30,7 @@
 #import "ios/chrome/browser/signin/model/authentication_service.h"
 #import "ios/chrome/browser/signin/model/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/model/identity_manager_factory.h"
-#import "ios/chrome/browser/ui/ntp/metrics/feed_metrics_constants.h"
 #import "ios/chrome/browser/ui/ntp/metrics/feed_metrics_recorder.h"
-
-namespace {
-// NSUserDefaults key for the last time background refresh was called.
-NSString* const kFeedLastBackgroundRefreshTimestamp =
-    @"FeedLastBackgroundRefreshTimestamp";
-}  // namespace
 
 @implementation FeedAppAgent {
   // Set to YES when the app is foregrounded.
@@ -74,11 +69,11 @@ NSString* const kFeedLastBackgroundRefreshTimestamp =
       // able to be instantiated here.
       AuthenticationService* authService =
           AuthenticationServiceFactory::GetForBrowserState(
-              self.appState.mainBrowserState);
+              self.appState.mainProfile.browserState);
       if (authService &&
           authService->HasPrimaryIdentity(signin::ConsentLevel::kSignin)) {
         DiscoverFeedServiceFactory::GetForBrowserState(
-            self.appState.mainBrowserState);
+            self.appState.mainProfile.browserState);
       }
     }
 
@@ -88,35 +83,34 @@ NSString* const kFeedLastBackgroundRefreshTimestamp =
       // content notification experiment is enabled.
       AuthenticationService* authService =
           AuthenticationServiceFactory::GetForBrowserState(
-              self.appState.mainBrowserState);
+              self.appState.mainProfile.browserState);
       bool isUserSignedIn = authService && authService->HasPrimaryIdentity(
                                                signin::ConsentLevel::kSignin);
 
       const TemplateURL* defaultSearchURLTemplate =
           ios::TemplateURLServiceFactory::GetForBrowserState(
-              self.appState.mainBrowserState)
+              self.appState.mainProfile.browserState)
               ->GetDefaultSearchProvider();
 
       bool isDefaultSearchEngine = defaultSearchURLTemplate &&
                                    defaultSearchURLTemplate->prepopulate_id() ==
                                        TemplateURLPrepopulateData::google.id;
 
-      PrefService* pref_service = self.appState.mainBrowserState->GetPrefs();
+      PrefService* pref_service =
+          self.appState.mainProfile.browserState->GetPrefs();
 
       isContentNotificationProvisionalEnabled =
           IsContentNotificationProvisionalEnabled(
               isUserSignedIn, isDefaultSearchEngine, pref_service);
     }
 
-    if ((!IsFirstRunRecent(base::Days(30)) &&
-         isContentNotificationProvisionalEnabled) ||
-        IsContentPushNotificationsProvisionalBypass()) {
+    if (isContentNotificationProvisionalEnabled) {
       // This method does not show a UI prompt to the user. Provisional
       // notifications are authorized without any user input if the user hasn't
       // previously disabled notifications.
       AuthenticationService* authService =
           AuthenticationServiceFactory::GetForBrowserState(
-              self.appState.mainBrowserState);
+              self.appState.mainProfile.browserState);
       std::vector<PushNotificationClientId> clientIds = {
           PushNotificationClientId::kContent,
           PushNotificationClientId::kSports};
@@ -145,8 +139,6 @@ NSString* const kFeedLastBackgroundRefreshTimestamp =
     // This is not strictly necessary, but it makes it more explicit. The OS
     // limits to 1 refresh task at any time, and a new request will replace a
     // previous request. Tasks are only executed in the background.
-    // TODO(crbug.com/40231943): Coordinate background tasks when more are
-    // added.
     [BGTaskScheduler.sharedScheduler cancelAllTaskRequests];
   }
 }
@@ -159,13 +151,13 @@ NSString* const kFeedLastBackgroundRefreshTimestamp =
   // should create background objects before this method is called. This line is
   // intended to crash if DiscoverFeedService is not available.
   return DiscoverFeedServiceFactory::GetForBrowserState(
-      self.appState.mainBrowserState, /*create=*/true);
+      self.appState.mainProfile.browserState, /*create=*/true);
 }
 
 // Returns the DiscoverFeedService if created.
 - (DiscoverFeedService*)feedServiceIfCreated {
   return DiscoverFeedServiceFactory::GetForBrowserState(
-      self.appState.mainBrowserState, /*create=*/false);
+      self.appState.mainProfile.browserState, /*create=*/false);
 }
 
 // Returns the FeedMetricsRecorder.

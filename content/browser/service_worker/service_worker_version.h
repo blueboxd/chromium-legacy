@@ -52,6 +52,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
+#include "services/network/public/cpp/document_isolation_policy.h"
 #include "services/network/public/mojom/client_security_state.mojom.h"
 #include "services/network/public/mojom/cross_origin_embedder_policy.mojom-forward.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
@@ -257,10 +258,12 @@ class CONTENT_EXPORT ServiceWorkerVersion
   bool has_usb_event_handlers() const { return has_usb_event_handlers_; }
   void set_has_usb_event_handlers(bool has_usb_event_handlers);
 
-  // Returns true on setup success.
-  // Otherwise, setup error, and subsequent `router_evaluator()` will return
-  // `std::nullopt`.
-  bool SetupRouterEvaluator(const blink::ServiceWorkerRouterRules& rules);
+  // Returns `ServiceWorkerRouterEvaluatorErrorEnums::kNoError` on setup
+  // success.
+  // Otherwise, we encountered an setup error with the returned error code,
+  // and subsequent `router_evaluator()` will return `std::nullptr`.
+  ServiceWorkerRouterEvaluatorErrorEnums SetupRouterEvaluator(
+      const blink::ServiceWorkerRouterRules& rules);
   const ServiceWorkerRouterEvaluator* router_evaluator() const {
     return router_evaluator_.get();
   }
@@ -527,6 +530,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   blink::ServiceWorkerStatusCode DeduceStartWorkerFailureReason(
       blink::ServiceWorkerStatusCode default_code);
 
+  // Gets the main script net::Error. If there isn't an error, returns net::OK.
+  net::Error GetMainScriptNetError();
+
   // Returns nullptr if the main script is not loaded yet and:
   //  1) The worker is a new one.
   //  OR
@@ -591,6 +597,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   const scoped_refptr<PolicyContainerHost> policy_container_host() const {
     return policy_container_host_;
   }
+
+  // Returns a pointer to the DIP stored in `client_security_state()`.
+  // Returns nullptr if `client_security_state()` is nullptr.
+  const network::DocumentIsolationPolicy* document_isolation_policy() const;
 
   // Returns a client security state built from this service worker's policy
   // container policies.

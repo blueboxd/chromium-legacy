@@ -18,6 +18,7 @@
 #include "components/content_settings/core/common/content_settings_constraints.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/page_info/page_info_ui.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -30,8 +31,9 @@ PermissionsData FromJavaPermissionsData(
     const base::android::JavaRef<jobject>& jobject) {
   PermissionsData permissions_data;
 
-  permissions_data.origin = ContentSettingsPattern::FromString(
+  permissions_data.primary_pattern = ContentSettingsPattern::FromString(
       Java_PermissionsData_getOrigin(env, jobject));
+  CHECK(permissions_data.primary_pattern.IsValid());
 
   for (const int32_t permission_type :
        Java_PermissionsData_getPermissions(env, jobject)) {
@@ -57,8 +59,16 @@ base::android::ScopedJavaLocalRef<jobject> ToJavaPermissionsData(
   for (ContentSettingsType type : obj.permission_types) {
     permissions.push_back(static_cast<int32_t>(type));
   }
+
+  // Converting a primary pattern to an origin is normally an anti-pattern
+  // but here it is ok since the primary pattern belongs to a single
+  // origin. Therefore, it has a fully defined URL+scheme+port which makes
+  // converting primary pattern to origin successful.
+  url::Origin origin =
+      UnusedSitePermissionsService::ConvertPrimaryPatternToOrigin(
+          obj.primary_pattern);
   return Java_PermissionsData_create(
-      env, obj.origin.ToString(), permissions,
+      env, origin.Serialize(), permissions,
       obj.constraints.expiration().ToDeltaSinceWindowsEpoch().InMicroseconds(),
       obj.constraints.lifetime().InMicroseconds());
 }
@@ -73,12 +83,12 @@ std::vector<PermissionsData> GetRevokedPermissions(Profile* profile) {
                                       service_result.end());
 }
 
-void RegrantPermissions(Profile* profile, std::string& primary_pattern) {
+void RegrantPermissions(Profile* profile, std::string& origin_str) {
   UnusedSitePermissionsService* service =
       UnusedSitePermissionsServiceFactory::GetForProfile(profile);
   CHECK(service);
 
-  url::Origin origin = url::Origin::Create(GURL(primary_pattern));
+  url::Origin origin = url::Origin::Create(GURL(origin_str));
   service->RegrantPermissionsForOrigin(origin);
 }
 
@@ -111,6 +121,16 @@ void RestoreRevokedPermissionsReviewList(
   }
 }
 
+std::vector<std::u16string> ContentSettingsTypeToString(
+    std::vector<int32_t>& content_settings_type_list) {
+  std::vector<std::u16string> content_settings_string_list;
+  for (int32_t content_settings_type : content_settings_type_list) {
+    content_settings_string_list.push_back(PageInfoUI::PermissionTypeToUIString(
+        static_cast<ContentSettingsType>(content_settings_type)));
+  }
+  return content_settings_string_list;
+}
+
 static std::vector<PermissionsData>
 JNI_UnusedSitePermissionsBridge_GetRevokedPermissions(JNIEnv* env,
                                                       Profile* profile) {
@@ -120,8 +140,8 @@ JNI_UnusedSitePermissionsBridge_GetRevokedPermissions(JNIEnv* env,
 static void JNI_UnusedSitePermissionsBridge_RegrantPermissions(
     JNIEnv* env,
     Profile* profile,
-    std::string& primary_pattern) {
-  RegrantPermissions(profile, primary_pattern);
+    std::string& origin_str) {
+  RegrantPermissions(profile, origin_str);
 }
 
 static void JNI_UnusedSitePermissionsBridge_UndoRegrantPermissions(
@@ -142,4 +162,11 @@ static void JNI_UnusedSitePermissionsBridge_RestoreRevokedPermissionsReviewList(
     Profile* profile,
     std::vector<PermissionsData>& permissions_data_list) {
   RestoreRevokedPermissionsReviewList(profile, permissions_data_list);
+}
+
+static std::vector<std::u16string>
+JNI_UnusedSitePermissionsBridge_ContentSettingsTypeToString(
+    JNIEnv* env,
+    std::vector<std::int32_t>& content_settings_type_list) {
+  return ContentSettingsTypeToString(content_settings_type_list);
 }

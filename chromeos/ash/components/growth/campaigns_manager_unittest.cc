@@ -10,6 +10,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
+#include "ash/constants/ash_switches.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -50,6 +51,41 @@ inline constexpr char kValidCampaignsFileTemplate[] = R"(
         {
           "id": 3,
           "studyId":1,
+          "targetings": [
+            {
+              %s
+            }
+          ],
+          "payload": {
+            "demoModeApp": {
+              "attractionLoop": {
+                "videoSrcLang1": "/asset/peripherals_lang1.mp4",
+                "videoSrcLang2": "/asset/peripherals_lang2.mp4"
+              }
+            }
+          }
+        }
+      ]
+    }
+)";
+
+inline constexpr char kValidCampaignsFileWithGroupIdTemplate[] = R"(
+    {
+      "0": [
+        // List is an invalid targeting.
+        {
+          "id": 1,
+          "targetings": [
+            []
+          ],
+          "payload": {}
+        },
+        // String is an invalid campaign.
+        "Invalid campaign",
+        {
+          "id": 3,
+          "studyId":1,
+          "groupId": 1,
           "targetings": [
             {
               %s
@@ -186,6 +222,10 @@ inline constexpr char kGetCampaignBySlotHistogramName[] =
 
 inline const base::Version kDefaultVersion("1.0.0.0");
 
+inline constexpr char kTestPref1[] = "pref1";
+inline constexpr char kTestPref2[] = "pref2";
+inline constexpr char kTestPref3[] = "pref3";
+
 // testing::InvokeArgument<N> does not work with base::OnceCallback. Use this
 // gmock action template to invoke base::OnceCallback. `k` is the k-th argument
 // and `T` is the callback's type.
@@ -227,6 +267,7 @@ class CampaignsManagerTest : public testing::Test {
     campaigns_manager_ =
         std::make_unique<CampaignsManager>(&mock_client_, local_state_.get());
     campaigns_manager_->SetPrefs(pref_.get());
+    campaigns_manager_->SetTrackerInitializedForTesting();
   }
 
  protected:
@@ -285,19 +326,56 @@ class CampaignsManagerTest : public testing::Test {
   }
 
   void MockLocales(const std::string& user_locale,
-                   const std::string& application_locale) {
+                   const std::string& application_locale,
+                   const std::string& country) {
     EXPECT_CALL(mock_client_, GetUserLocale())
         .WillRepeatedly(testing::ReturnRefOfCopy(std::string(user_locale)));
     EXPECT_CALL(mock_client_, GetApplicationLocale())
         .WillRepeatedly(
             testing::ReturnRefOfCopy(std::string(application_locale)));
+    EXPECT_CALL(mock_client_, GetCountryCode())
+        .WillRepeatedly(testing::Return(std::string(country)));
   }
 
-  void InitilizeCampaignsExperimentTag(const std::string& exp_tag) {
+  void MockFeatueEngagementCheckOnCaps(bool reach_impression_cap,
+                                       bool reach_dismissal_cap,
+                                       bool reach_group_impression_cap,
+                                       bool reach_group_dismissal_cap) {
+    ON_CALL(mock_client_, WouldTriggerHelpUI)
+        .WillByDefault([=](const std::map<std::string, std::string>& params) {
+          auto event_to_be_checked = params.at("event_to_be_checked");
+          if (event_to_be_checked ==
+              "name:ChromeOSAshGrowthCampaigns_Campaign3_Impression;comparator:"
+              "<6;window:3650;storage:3650") {
+            return !reach_impression_cap;
+          }
+
+          if (event_to_be_checked ==
+              "name:ChromeOSAshGrowthCampaigns_Campaign3_Dismissed;comparator:<"
+              "3;window:3650;storage:3650") {
+            return !reach_dismissal_cap;
+          }
+          if (event_to_be_checked ==
+              "name:ChromeOSAshGrowthCampaigns_Group1_Impression;comparator:<3;"
+              "window:3650;storage:3650") {
+            return !reach_group_impression_cap;
+          }
+
+          if (event_to_be_checked ==
+              "name:ChromeOSAshGrowthCampaigns_Group1_Dismissed;comparator:<2;"
+              "window:3650;storage:3650") {
+            return !reach_group_dismissal_cap;
+          }
+
+          return false;
+        });
+  }
+
+  void InitilizeCampaignsExperimentTag(const base::Feature& feature,
+                                       const std::string& exp_tag) {
     base::FieldTrialParams params;
     params[kCampaignsExperimentTag] = exp_tag;
-    base::test::FeatureRefAndParams campaigns_experiment_tag(
-        ash::features::kGrowthCampaignsExperimentTagTargeting, params);
+    base::test::FeatureRefAndParams campaigns_experiment_tag(feature, params);
 
     scoped_feature_list_.InitWithFeaturesAndParameters(
         {campaigns_experiment_tag}, {});
@@ -350,6 +428,18 @@ class CampaignsManagerTest : public testing::Test {
         kValidCampaignsFileTemplate, device_targeting.c_str()));
   }
 
+  void LoadComponentWithCountryTargetings(const std::string& countries) {
+    std::string feature_aware_targeting = "";
+    auto device_targeting = base::StringPrintf(R"(
+            "device": {
+              %s
+            }
+          )",
+                                               countries.c_str());
+    LoadComponentAndVerifyLoadComplete(base::StringPrintf(
+        kValidCampaignsFileTemplate, device_targeting.c_str()));
+  }
+
   void LoadComponentWithRegisteredTimeTargeting(
       const std::string& registerd_time_targeting) {
     auto device_targeting =
@@ -382,48 +472,64 @@ class CampaignsManagerTest : public testing::Test {
         kValidCampaignsFileTemplate, session_targeting.c_str()));
   }
 
-  void LoadComponentWithExperimentTagTargeting(const std::string& exp_tags) {
-    auto session_targeting = base::StringPrintf(R"(
+  void LoadComponentWithExperimentTagTargeting(
+      const std::string& feature_index_targeting,
+      const std::string& exp_tags) {
+    auto session_targeting =
+        base::StringPrintf(R"(
             "session": {
+              %s,
               "experimentTags": %s
             }
           )",
-                                                exp_tags.c_str());
+                           feature_index_targeting.c_str(), exp_tags.c_str());
     LoadComponentAndVerifyLoadComplete(base::StringPrintf(
         kValidCampaignsFileTemplate, session_targeting.c_str()));
   }
 
   void LoadComponentWithScheduling(const std::string& schedulings) {
-    auto session_targeting = base::StringPrintf(R"(
+    auto runtime_targeting = base::StringPrintf(R"(
             "runtime": {
               "schedulings": %s
             }
           )",
                                                 schedulings.c_str());
     LoadComponentAndVerifyLoadComplete(base::StringPrintf(
-        kValidCampaignsFileTemplate, session_targeting.c_str()));
+        kValidCampaignsFileTemplate, runtime_targeting.c_str()));
   }
 
   void LoadComponentWithTriggerTargeting(const std::string& triggers) {
-    auto session_targeting = base::StringPrintf(R"(
+    auto runtime_targeting = base::StringPrintf(R"(
             "runtime": {
               "triggerList": %s
             }
           )",
                                                 triggers.c_str());
     LoadComponentAndVerifyLoadComplete(base::StringPrintf(
-        kValidCampaignsFileTemplate, session_targeting.c_str()));
+        kValidCampaignsFileTemplate, runtime_targeting.c_str()));
   }
 
   void LoadComponentWithAppsOpenedTargeting(const std::string& apps_opened) {
-    auto session_targeting = base::StringPrintf(R"(
+    auto runtime_targeting = base::StringPrintf(R"(
             "runtime": {
               "appsOpened": %s
             }
           )",
                                                 apps_opened.c_str());
     LoadComponentAndVerifyLoadComplete(base::StringPrintf(
-        kValidCampaignsFileTemplate, session_targeting.c_str()));
+        kValidCampaignsFileTemplate, runtime_targeting.c_str()));
+  }
+
+  void LoadComponentWithRunTimeTargeting(const std::string& runtime_targeting,
+                                         bool has_group_id = false) {
+    auto targeting = base::StringPrintf(R"(
+            "runtime": %s
+          )",
+                                        runtime_targeting.c_str());
+    LoadComponentAndVerifyLoadComplete(
+        base::StringPrintf(has_group_id ? kValidCampaignsFileWithGroupIdTemplate
+                                        : kValidCampaignsFileTemplate,
+                           targeting.c_str()));
   }
 
   void LoadComponentWithMultiTargetings(const std::string& targetings) {
@@ -440,6 +546,19 @@ class CampaignsManagerTest : public testing::Test {
                                                 active_url.c_str());
     LoadComponentAndVerifyLoadComplete(base::StringPrintf(
         kValidCampaignsFileTemplate, session_targeting.c_str()));
+  }
+
+  void LoadComponentWithUserPrefTargeting(const std::string& values) {
+    auto pref_targeting = base::StringPrintf(R"(
+            "runtime": {
+              "userPrefs": [
+                %s
+              ]
+            }
+          )",
+                                             values.c_str());
+    LoadComponentAndVerifyLoadComplete(base::StringPrintf(
+        kValidCampaignsFileTemplate, pref_targeting.c_str()));
   }
 
   base::Version GetNewVersion(const base::Version& version,
@@ -471,6 +590,10 @@ class CampaignsManagerTest : public testing::Test {
         ash::prefs::kDemoModeRetailerId, std::string());
     local_state_->registry()->RegisterStringPref(ash::prefs::kDemoModeStoreId,
                                                  std::string());
+    pref_->registry()->RegisterListPref(
+        kTestPref1, base::Value::List().Append("v0").Append("v1"));
+    pref_->registry()->RegisterStringPref(kTestPref2, "v2");
+    pref_->registry()->RegisterStringPref(kTestPref3, "v3");
   }
 };
 
@@ -978,14 +1101,16 @@ TEST_F(CampaignsManagerTest, GetCampaignDeviceTargeting) {
       "max": %d
     )",
       current_version, current_version + 1));
-  MockLocales(/*user_locale=*/"en-US", /*application_locale=*/"en-US");
+  MockLocales(/*user_locale=*/"en-US", /*application_locale=*/"en-US",
+              /*country=*/"us");
 
   VerifyDemoModePayload(
       campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
 }
 
 TEST_F(CampaignsManagerTest, GetCampaignUserLocaleTargeting) {
-  MockLocales(/*user_locale=*/"en-IN", /*application_locale=*/"en-GB");
+  MockLocales(/*user_locale=*/"en-IN", /*application_locale=*/"en-GB",
+              /*country=*/"in");
   LoadComponentWithUserLocaleTargetings(R"(["en-AU", "en-IN"])");
 
   VerifyDemoModePayload(
@@ -993,8 +1118,43 @@ TEST_F(CampaignsManagerTest, GetCampaignUserLocaleTargeting) {
 }
 
 TEST_F(CampaignsManagerTest, GetCampaignUserLocaleTargetingMismatch) {
-  MockLocales(/*user_locale=*/"en-IN", /*application_locale=*/"en-GB");
+  MockLocales(/*user_locale=*/"en-IN", /*application_locale=*/"en-GB",
+              /*country=*/"in");
   LoadComponentWithUserLocaleTargetings(R"(["en-GB", "en-AU"])");
+
+  ASSERT_EQ(nullptr, campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignWithIncludedCountryTargeting) {
+  MockLocales(/*user_locale=*/"en-IN", /*application_locale=*/"en-GB",
+              /*country=*/"in");
+  LoadComponentWithCountryTargetings(R"("includedCountries": ["us", "in"])");
+
+  VerifyDemoModePayload(
+      campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignIncludedCountryTargetingMismatch) {
+  MockLocales(/*user_locale=*/"en-IN", /*application_locale=*/"en-GB",
+              /*country=*/"in");
+  LoadComponentWithCountryTargetings(R"("includedCountries": ["us", "ca"])");
+
+  ASSERT_EQ(nullptr, campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, CampaignWithExcludedCountryTargeting) {
+  MockLocales(/*user_locale=*/"en-IN", /*application_locale=*/"en-GB",
+              /*country=*/"in");
+  LoadComponentWithCountryTargetings(R"("excludedCountries": ["us", "ca"])");
+
+  VerifyDemoModePayload(
+      campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignExcludedCountryTargetingMismatch) {
+  MockLocales(/*user_locale=*/"en-IN", /*application_locale=*/"en-GB",
+              /*country=*/"in");
+  LoadComponentWithCountryTargetings(R"("excludedCountries": ["us", "in"])");
 
   ASSERT_EQ(nullptr, campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
 }
@@ -1010,13 +1170,15 @@ TEST_F(CampaignsManagerTest, GetCampaignMilestoneMinMismatch) {
       "max": %d
     )",
       current_version + 1, current_version + 1));
-  MockLocales(/*user_locale=*/"en-US", /*application_locale=*/"en-US");
+  MockLocales(/*user_locale=*/"en-US", /*application_locale=*/"en-US",
+              /*country=*/"us");
 
   ASSERT_EQ(nullptr, campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
 }
 
 TEST_F(CampaignsManagerTest, GetCampaignMilestoneMaxMismatch) {
-  MockLocales(/*user_locale=*/"en-US", /*application_locale=*/"en-US");
+  MockLocales(/*user_locale=*/"en-US", /*application_locale=*/"en-US",
+              /*country=*/"us");
 
   auto current_version = version_info::GetMajorVersionNumberAsInt();
   LoadComponentWithBasicDeviceTargetings(base::StringPrintf(
@@ -1034,7 +1196,8 @@ TEST_F(CampaignsManagerTest, GetCampaignMinMilestoneOnly) {
       .WillRepeatedly(testing::ReturnRefOfCopy(std::string("en-US")));
 
   auto current_version = version_info::GetMajorVersionNumberAsInt();
-  MockLocales(/*user_locale=*/"en-US", /*application_locale=*/"en-US");
+  MockLocales(/*user_locale=*/"en-US", /*application_locale=*/"en-US",
+              /*country=*/"us");
   LoadComponentWithBasicDeviceTargetings(
       base::StringPrintf(R"("min": %d)", current_version));
 
@@ -1043,7 +1206,8 @@ TEST_F(CampaignsManagerTest, GetCampaignMinMilestoneOnly) {
 }
 
 TEST_F(CampaignsManagerTest, GetCampaignMinMilestoneOnlyMismatch) {
-  MockLocales(/*user_locale=*/"en-US", /*application_locale=*/"en-US");
+  MockLocales(/*user_locale=*/"en-US", /*application_locale=*/"en-US",
+              /*country=*/"us");
 
   auto current_version = version_info::GetMajorVersionNumberAsInt();
   LoadComponentWithBasicDeviceTargetings(
@@ -1053,7 +1217,8 @@ TEST_F(CampaignsManagerTest, GetCampaignMinMilestoneOnlyMismatch) {
 }
 
 TEST_F(CampaignsManagerTest, GetCampaignMaxMilestoneOnly) {
-  MockLocales(/*user_locale=*/"en-US", /*application_locale=*/"en-US");
+  MockLocales(/*user_locale=*/"en-US", /*application_locale=*/"en-US",
+              /*country=*/"us");
 
   auto current_version = version_info::GetMajorVersionNumberAsInt();
   LoadComponentWithBasicDeviceTargetings(
@@ -1064,7 +1229,8 @@ TEST_F(CampaignsManagerTest, GetCampaignMaxMilestoneOnly) {
 }
 
 TEST_F(CampaignsManagerTest, GetCampaignMaxMilestoneOnlyMismatch) {
-  MockLocales(/*user_locale=*/"en-US", /*application_locale=*/"en-US");
+  MockLocales(/*user_locale=*/"en-US", /*application_locale=*/"en-US",
+              /*country=*/"us");
 
   auto current_version = version_info::GetMajorVersionNumberAsInt();
   LoadComponentWithBasicDeviceTargetings(
@@ -1216,7 +1382,8 @@ TEST_F(CampaignsManagerTest, GetCampaignTargetFeatureAwareDevice) {
   LoadComponentWithBasicDeviceTargetings(
       base::StringPrintf(R"("max": %d)", current_version),
       /*target_feature_aware_device=*/true);
-  MockLocales(/*user_locale=*/"en-US", /*application_locale=*/"en-US");
+  MockLocales(/*user_locale=*/"en-US", /*application_locale=*/"en-US",
+              /*country=*/"us");
 
   VerifyDemoModePayload(
       campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
@@ -1252,7 +1419,8 @@ TEST_F(CampaignsManagerTest, GetCampaignTargetNotFeatureAwareDevice) {
 }
 
 TEST_F(CampaignsManagerTest, GetCampaignTargetNotFeatureAwareDeviceMismatch) {
-  MockLocales(/*user_locale=*/"en-US", /*application_locale=*/"en-US");
+  MockLocales(/*user_locale=*/"en-US", /*application_locale=*/"en-US",
+              /*country=*/"us");
 
   scoped_feature_list_.InitWithFeatures(
       {}, {ash::features::kFeatureManagementGrowthFramework});
@@ -1344,27 +1512,102 @@ TEST_F(CampaignsManagerTest, GetCampaignTargetDeviceAgeEndOnlyMismatch) {
 }
 
 TEST_F(CampaignsManagerTest, GetCampaignExperimentTag) {
-  InitilizeCampaignsExperimentTag(/*exp_tag=*/"1");
+  InitilizeCampaignsExperimentTag(
+      /*feature*/ ash::features::kGrowthCampaignsExperiment2, /*exp_tag=*/"1");
 
-  LoadComponentWithExperimentTagTargeting(R"(["1", "2", "3"])");
+  LoadComponentWithExperimentTagTargeting(
+      /*feature_index_targeting=*/R"("predefinedFeatureIndex": 1)",
+      R"(["1", "2", "3"])");
 
   VerifyDemoModePayload(
       campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
 }
 
 TEST_F(CampaignsManagerTest, GetCampaignExperimentTagOrRelationship) {
-  InitilizeCampaignsExperimentTag(/*exp_tag=*/"2");
+  InitilizeCampaignsExperimentTag(
+      /*feature*/ ash::features::kGrowthCampaignsExperiment2,
+      /*exp_tag=*/"2");
 
-  LoadComponentWithExperimentTagTargeting(R"(["1", "2", "3"])");
+  LoadComponentWithExperimentTagTargeting(
+      /*feature_index_targeting=*/R"("predefinedFeatureIndex": 1)",
+      R"(["1", "2", "3"])");
 
   VerifyDemoModePayload(
       campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
 }
 
 TEST_F(CampaignsManagerTest, GetCampaignExperimentTagMismatch) {
-  InitilizeCampaignsExperimentTag(/*exp_tag=*/"4");
+  InitilizeCampaignsExperimentTag(
+      /*feature*/ ash::features::kGrowthCampaignsExperiment2,
+      /*exp_tag=*/"4");
 
-  LoadComponentWithExperimentTagTargeting(R"(["1", "2", "3"])");
+  LoadComponentWithExperimentTagTargeting(
+      /*feature_index_targeting=*/R"("predefinedFeatureIndex": 1)",
+      R"(["1", "2", "3"])");
+
+  ASSERT_EQ(nullptr, campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest,
+       GetCampaignExperimentTagMismatchedFeatureFlagIndex) {
+  InitilizeCampaignsExperimentTag(
+      /*feature*/ ash::features::kGrowthCampaignsExperiment1,
+      /*exp_tag=*/"3");
+
+  LoadComponentWithExperimentTagTargeting(
+      /*feature_index_targeting=*/R"("predefinedFeatureIndex": 1)",
+      R"(["1", "2", "3"])");
+
+  ASSERT_EQ(nullptr, campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignExperimentTagInvalidFeatureFlagIndex) {
+  InitilizeCampaignsExperimentTag(
+      /*feature*/ ash::features::kGrowthCampaignsExperiment1,
+      /*exp_tag=*/"3");
+
+  LoadComponentWithExperimentTagTargeting(
+      /*feature_index_targeting=*/R"("predefinedFeatureIndex": 100)",
+      R"(["1", "2", "3"])");
+
+  ASSERT_EQ(nullptr, campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignExperimentTagWithOneOffFeature) {
+  InitilizeCampaignsExperimentTag(
+      /*feature*/ ash::features::kGrowthCampaignsExperimentFileAppGamgee,
+      /*exp_tag=*/"1");
+
+  LoadComponentWithExperimentTagTargeting(
+      /*feature_index_targeting=*/R"("oneOffExpFeatureIndex": 1)",
+      R"(["1", "2", "3"])");
+
+  VerifyDemoModePayload(
+      campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest,
+       GetCampaignExperimentTagMismatchedOneOffFeatureFlagIndex) {
+  InitilizeCampaignsExperimentTag(
+      /*feature*/ ash::features::kGrowthCampaignsExperimentFileAppGamgee,
+      /*exp_tag=*/"3");
+
+  LoadComponentWithExperimentTagTargeting(
+      /*feature_index_targeting=*/R"("oneOffExpFeatureIndex": 0)",
+      R"(["1", "2", "3"])");
+
+  ASSERT_EQ(nullptr, campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest,
+       GetCampaignExperimentTagInvalidOneOffFeatureFlagIndex) {
+  InitilizeCampaignsExperimentTag(
+      /*feature*/ ash::features::kGrowthCampaignsExperimentFileAppGamgee,
+      /*exp_tag=*/"3");
+
+  LoadComponentWithExperimentTagTargeting(
+      /*feature_index_targeting=*/R"("oneOffExpFeatureIndex": 100)",
+      R"(["1", "2", "3"])");
 
   ASSERT_EQ(nullptr, campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
 }
@@ -1678,7 +1921,8 @@ TEST_F(CampaignsManagerTest, GetCampaignActiveUrlEmptyActiveUrl) {
         "https://www\\.google\\.com/\\?foo=bar2"
     ])");
 
-  ASSERT_EQ(nullptr, campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+  VerifyDemoModePayload(
+      campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
 }
 
 TEST_F(CampaignsManagerTest, GetCampaignActiveUrlNoActiveUrl) {
@@ -1689,7 +1933,8 @@ TEST_F(CampaignsManagerTest, GetCampaignActiveUrlNoActiveUrl) {
         "https://www\\.google\\.com/\\?foo=bar2"
     ])");
 
-  ASSERT_EQ(nullptr, campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+  VerifyDemoModePayload(
+      campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
 }
 
 TEST_F(CampaignsManagerTest, GetCampaignTriggersWithAppOpened) {
@@ -1822,8 +2067,63 @@ TEST_F(CampaignsManagerTest, GetCampaignMatchMultiTargetingsMismatch) {
   ASSERT_EQ(nullptr, campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
 }
 
+TEST_F(CampaignsManagerTest, GetCampaignWithInvalidPrefTargeting) {
+  LoadComponentWithUserPrefTargeting(R"(
+    [
+      {
+        "name": "pref1",
+        "value": "v0"
+      }
+    ])");
+
+  ASSERT_EQ(nullptr, campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignWithPrefTargetingMismatch) {
+  LoadComponentWithUserPrefTargeting(R"(
+    [
+      {
+        "name": "pref1",
+        "value": ["v1"]
+      }
+    ],
+    [
+      {
+        "name": "pref2",
+        "value": ["v"]
+      }
+    ])");
+
+  ASSERT_EQ(nullptr, campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignWithPrefTargetingMatch) {
+  // This 2nd set of considtion match pref1 = value_0 and pref2 = value_2.
+  LoadComponentWithUserPrefTargeting(R"(
+    [
+      {
+        "name": "pref1",
+        "value": ["v", "v1"]
+      },
+      {
+        "name": "pref2",
+        "value": ["v2"]
+      }
+    ],
+    [
+      {
+        "name": "pref3",
+        "value": ["v3"]
+      }
+    ])");
+
+  VerifyDemoModePayload(
+      campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
 TEST_F(CampaignsManagerTest, CampaignsFilteringTest) {
-  MockLocales(/*user_locale=*/"en-US", /*application_locale=*/"en-US");
+  MockLocales(/*user_locale=*/"en-US", /*application_locale=*/"en-US",
+              /*country=*/"us");
 
   LoadComponentAndVerifyLoadComplete(
       R"({
@@ -2026,6 +2326,176 @@ TEST_F(CampaignsManagerTest,
 
   VerifyDemoModePayload(
       campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignUnderCap) {
+  MockFeatueEngagementCheckOnCaps(
+      /*reach_impression_cap=*/false,
+      /*reach_dismissal_cap=*/false,
+      // For campaigns that don't specify group impression cap and dismissal.
+      // These params are no-ops.
+      /*reach_group_impression_cap=*/true,
+      /*reach_group_dismissal_cap=*/true);
+
+  LoadComponentWithRunTimeTargeting(
+      R"({
+        "events": {
+          "impressionCap": 6,
+          "dismissalCap": 3
+        }
+      })");
+
+  VerifyDemoModePayload(
+      campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignUnderCapNoGroupId) {
+  MockFeatueEngagementCheckOnCaps(
+      /*reach_impression_cap=*/false,
+      /*reach_dismissal_cap=*/false,
+      // For campaigns that don't have group ID specified. Group impression cap
+      // and dismissal cap are no-op.
+      /*reach_group_impression_cap=*/true,
+      /*reach_group_dismissal_cap=*/true);
+
+  LoadComponentWithRunTimeTargeting(
+      R"({
+        "events": {
+          "impressionCap": 6,
+          "dismissalCap": 3,
+          "groupImpressionCap": 3,
+          "groupDismissalCap": 2
+        }
+      })");
+
+  VerifyDemoModePayload(
+      campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignReachImpressionCap) {
+  MockFeatueEngagementCheckOnCaps(
+      /*reach_impression_cap=*/true,
+      /*reach_dismissal_cap=*/false,
+      // For campaigns that don't specify group impression cap and dismissal.
+      // These params are no-ops.
+      /*reach_group_impression_cap=*/true,
+      /*reach_group_dismissal_cap=*/true);
+
+  LoadComponentWithRunTimeTargeting(
+      R"({
+        "events": {
+          "impressionCap": 6,
+          "dismissalCap": 3
+        }
+      })");
+
+  ASSERT_EQ(nullptr, campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignReachDismissalCap) {
+  MockFeatueEngagementCheckOnCaps(
+      /*reach_impression_cap=*/false,
+      /*reach_dismissal_cap=*/true,
+      // For campaigns that don't specify group impression cap and dismissal.
+      // These params are no-ops.
+      /*reach_group_impression_cap=*/true,
+      /*reach_group_dismissal_cap=*/true);
+
+  LoadComponentWithRunTimeTargeting(
+      R"({
+        "events": {
+          "impressionCap": 6,
+          "dismissalCap": 3
+        }
+      })");
+
+  ASSERT_EQ(nullptr, campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignUnderGroupImpressionCap) {
+  MockFeatueEngagementCheckOnCaps(
+      /*reach_impression_cap=*/false,
+      /*reach_dismissal_cap=*/false,
+      /*reach_group_impression_cap=*/false,
+      /*reach_group_dismissal_cap=*/false);
+
+  LoadComponentWithRunTimeTargeting(
+      R"({
+        "events": {
+          "impressionCap": 6,
+          "dismissalCap": 3,
+          "groupImpressionCap": 3,
+          "groupDismissalCap": 2
+        }
+      })",
+      /*has_group_id=*/true);
+
+  VerifyDemoModePayload(
+      campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignReachGroupImpressionCap) {
+  MockFeatueEngagementCheckOnCaps(
+      /*reach_impression_cap=*/false,
+      /*reach_dismissal_cap=*/false,
+      /*reach_group_impression_cap=*/true,
+      /*reach_group_dismissal_cap=*/false);
+
+  LoadComponentWithRunTimeTargeting(
+      R"({
+        "events": {
+          "impressionCap": 6,
+          "dismissalCap": 3,
+          "groupImpressionCap": 3,
+          "groupDismissalCap": 2
+        }
+      })",
+      /*has_group_id=*/true);
+
+  ASSERT_EQ(nullptr, campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignReachGroupDismissalCap) {
+  MockFeatueEngagementCheckOnCaps(
+      /*reach_impression_cap=*/false,
+      /*reach_dismissal_cap=*/false,
+      /*reach_group_impression_cap=*/false,
+      /*reach_group_dismissal_cap=*/true);
+
+  LoadComponentWithRunTimeTargeting(
+      R"({
+        "events": {
+          "impressionCap": 6,
+          "dismissalCap": 3,
+          "groupImpressionCap": 3,
+          "groupDismissalCap": 2
+        }
+      })",
+      /*has_group_id=*/true);
+
+  ASSERT_EQ(nullptr, campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetTestingRegisteredTimeWithSwitch) {
+  // Timestamp of "2024-08-01".
+  const std::string seconds_since_epoch = "1722495600";
+  const double seconds_since_epoch_double = 1722495600;
+  base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
+  command_line.AppendSwitchASCII(
+      ash::switches::kGrowthCampaignsRegisteredTimeSecondsSinceUnixEpoch,
+      seconds_since_epoch);
+
+  auto registered_time = campaigns_manager_->GetRegisteredTimeForTesting();
+  EXPECT_TRUE(registered_time);
+
+  const auto expected_time =
+      base::Time::FromSecondsSinceUnixEpoch(seconds_since_epoch_double);
+  EXPECT_EQ(expected_time, registered_time);
+}
+
+TEST_F(CampaignsManagerTest, GetTestingRegisteredTimeWithoutSwitch) {
+  auto registered_time = campaigns_manager_->GetRegisteredTimeForTesting();
+  EXPECT_FALSE(registered_time);
 }
 
 }  // namespace growth

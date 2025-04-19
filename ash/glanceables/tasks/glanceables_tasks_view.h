@@ -6,6 +6,7 @@
 #define ASH_GLANCEABLES_TASKS_GLANCEABLES_TASKS_VIEW_H_
 
 #include <memory>
+#include <optional>
 
 #include "ash/api/tasks/tasks_client.h"
 #include "ash/api/tasks/tasks_types.h"
@@ -15,14 +16,11 @@
 #include "ash/glanceables/tasks/glanceables_tasks_error_type.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observation.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/models/list_model.h"
 #include "ui/gfx/animation/animation_delegate.h"
-#include "ui/views/layout/flex_layout_view.h"
 #include "ui/views/view.h"
 #include "ui/views/view_model.h"
-#include "ui/views/view_observer.h"
 
 class GURL;
 
@@ -32,19 +30,12 @@ class LabelButton;
 
 namespace ash {
 
-class Combobox;
-class CounterExpandButton;
-class GlanceablesContentsScrollView;
-class GlanceablesListFooterView;
-class GlanceablesProgressBarView;
 class GlanceablesTasksComboboxModel;
 class GlanceablesTaskView;
 
 // Glanceables view responsible for interacting with Google Tasks.
 class ASH_EXPORT GlanceablesTasksView
-    : public GlanceablesTimeManagementBubbleView,
-      public gfx::AnimationDelegate,
-      public views::ViewObserver {
+    : public GlanceablesTimeManagementBubbleView {
   METADATA_HEADER(GlanceablesTasksView, GlanceablesTimeManagementBubbleView)
  public:
   explicit GlanceablesTasksView(const ui::ListModel<api::TaskList>* task_lists);
@@ -57,13 +48,8 @@ class ASH_EXPORT GlanceablesTasksView
   gfx::Size CalculatePreferredSize(
       const views::SizeBounds& available_size) const override;
 
-  // gfx::AnimationDelegate:
+  // GlanceablesTimeManagementBubbleView:
   void AnimationEnded(const gfx::Animation* animation) override;
-  void AnimationProgressed(const gfx::Animation* animation) override;
-  void AnimationCanceled(const gfx::Animation* animation) override;
-
-  // views::ViewObserver:
-  void OnViewFocused(views::View* view) override;
 
   // Invalidates any pending tasks, or tasks lists requests. Called when the
   // glanceables bubble widget starts closing to avoid unnecessary UI updates.
@@ -73,31 +59,9 @@ class ASH_EXPORT GlanceablesTasksView
   // supposed to show.
   void UpdateTaskLists(const ui::ListModel<api::TaskList>* task_lists);
 
-  // Creates `this` view's own background and updates layout accordingly.
-  void CreateElevatedBackground();
-
-  void SetExpandState(bool is_expanded);
-  bool is_expanded() const { return is_expanded_; }
-
   void EndResizeAnimationForTest();
 
  private:
-  // Linear animation to track tasks bubble resize animation - as the animation
-  // progresses, the bubble view preferred size will change causing bubble
-  // bounds updates. `ResizeAnimation` will provide the expected preferred
-  // tasks bubble height.
-  class ResizeAnimation : public gfx::LinearAnimation {
-   public:
-    ResizeAnimation(int start_height,
-                    int end_height,
-                    gfx::AnimationDelegate* delegate);
-    int GetCurrentHeight() const;
-
-   private:
-    const int start_height_;
-    const int end_height_;
-  };
-
   // The context of why the current task list is shown.
   enum class ListShownContext {
     // The list is a cached one that will be updated later after the lists data
@@ -110,8 +74,10 @@ class ASH_EXPORT GlanceablesTasksView
     kUserSelectedList
   };
 
-  // Toggles `is_expanded_` and updates the layout.
-  void ToggleExpandState();
+  // GlanceablesTimeManagementBubbleView:
+  void OnFooterButtonPressed() override;
+  void SelectedListChanged() override;
+  void AnimateResize(ResizeAnimation::Type resize_type) override;
 
   // Handles press behavior for `add_new_task_button_`.
   void AddNewTaskButtonPressed();
@@ -122,7 +88,6 @@ class ASH_EXPORT GlanceablesTasksView
       const api::Task* task);
 
   // Handles switching between tasks lists.
-  void SelectedTasksListChanged();
   void ScheduleUpdateTasks(ListShownContext context);
   void RetryUpdateTasks(ListShownContext context);
   void UpdateTasksInTaskList(const std::string& task_list_id,
@@ -185,17 +150,10 @@ class ASH_EXPORT GlanceablesTasksView
   // Removes `task_view` from the tasks container.
   void RemoveTaskView(base::WeakPtr<GlanceablesTaskView> task_view);
 
-  // Creates and initializes `task_list_combo_box_view_`.
-  void CreateComboBoxView();
-
   // This function should be called with `is_loading` = true if `this` is
   // waiting for fetched data to be returned. After the data arrives, resets the
   // states by calling with `is_loading` = false.
   void SetIsLoading(bool is_loading);
-
-  // Triggers tasks bubble resize animation to new preferred size, if an
-  // animation is required.
-  void AnimateResize();
 
   // Animates visibility updates for a task view. It assumes that at most one
   // task view changes visibility at the time - currently, this is exclusively
@@ -207,8 +165,8 @@ class ASH_EXPORT GlanceablesTasksView
   void AnimateTaskViewVisibility(views::View* task, bool visible);
   void OnTaskViewAnimationCompleted();
 
-  // Model for the combobox used to change the active task list.
-  std::unique_ptr<GlanceablesTasksComboboxModel> tasks_combobox_model_;
+  // Caching `combobox_model_` from GlanceablesTimeManagementBubbleView.
+  raw_ptr<GlanceablesTasksComboboxModel> tasks_combobox_model_;
 
   // The number of times that the tasks list has been changed during the
   // lifetime of this view.
@@ -219,18 +177,7 @@ class ASH_EXPORT GlanceablesTasksView
   bool first_task_list_shown_ = false;
 
   // Owned by views hierarchy.
-  raw_ptr<views::FlexLayoutView> tasks_header_view_ = nullptr;
-  // This is a simple label that copies the label style on
-  // `task_list_combo_box_view_` so that it can visually replace it when
-  // `task_list_combo_box_view_` is hidden.
-  raw_ptr<views::Label> combobox_replacement_label_ = nullptr;
-  raw_ptr<Combobox> task_list_combo_box_view_ = nullptr;
-  raw_ptr<GlanceablesContentsScrollView> content_scroll_view_ = nullptr;
-  raw_ptr<views::View> task_items_container_view_ = nullptr;
   raw_ptr<views::LabelButton> add_new_task_button_ = nullptr;
-  raw_ptr<GlanceablesListFooterView> list_footer_view_ = nullptr;
-  raw_ptr<GlanceablesProgressBarView> progress_bar_ = nullptr;
-  raw_ptr<CounterExpandButton> expand_button_ = nullptr;
 
   // An invisible view added at the last element to the task list container to
   // more easily track the offset of the bottom of the list from the target
@@ -248,9 +195,8 @@ class ASH_EXPORT GlanceablesTasksView
   // hierarchy immediately.
   std::unique_ptr<ui::Layer> animating_task_view_layer_;
 
-  // Whether the view is expanded and showing the contents in
-  // `content_scroll_view_`.
-  bool is_expanded_ = true;
+  // The type of resize animation that is currently running.
+  std::optional<ResizeAnimation::Type> running_resize_animation_ = std::nullopt;
 
   // Records the time when the bubble was about to request a task list. Used for
   // metrics.
@@ -275,11 +221,6 @@ class ASH_EXPORT GlanceablesTasksView
   // Time stamp of when the view was created.
   const base::Time shown_time_;
 
-  // Linear animation that drive tasks bubble resize animation - the animation
-  // updates the tasks bubble view preferred size, which causes layout updates.
-  // Runs when the bubble preferred size changes.
-  std::unique_ptr<ResizeAnimation> resize_animation_;
-
   // The model containing task views shown within the tasks bubble. Used to set
   // up task view animations in response to a task view change. When animating
   // task views, their transform is calculated relative to expected view bounds
@@ -292,9 +233,6 @@ class ASH_EXPORT GlanceablesTasksView
 
   // Callback that recreates `task_list_combo_box_view_`.
   base::OnceClosure recreate_combobox_callback_;
-
-  base::ScopedObservation<views::View, views::ViewObserver>
-      combobox_view_observation_{this};
 
   base::WeakPtrFactory<GlanceablesTasksView> weak_ptr_factory_{this};
 };

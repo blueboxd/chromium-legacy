@@ -46,7 +46,6 @@
 #include "media/gpu/macros.h"
 #include "media/gpu/vaapi/av1_vaapi_video_encoder_delegate.h"
 #include "media/gpu/vaapi/h264_vaapi_video_encoder_delegate.h"
-#include "media/gpu/vaapi/va_surface.h"
 #include "media/gpu/vaapi/vaapi_common.h"
 #include "media/gpu/vaapi/vaapi_utils.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
@@ -106,14 +105,12 @@ class VaapiVideoEncodeAccelerator::ScopedVASurfaceWrapper {
   ScopedVASurfaceWrapper(const ScopedVASurfaceWrapper&) = delete;
 
   const ScopedVASurface& surface() const { return *surface_.get(); }
-  // TODO(339518553): Try and remove this method.
-  scoped_refptr<VASurface> ReleaseAsVASurface() {
+
+  std::unique_ptr<VASurfaceHandle> ReleaseAsVASurfaceHandle() {
     const auto id = surface_->id();
-    const auto size = surface_->size();
-    const auto format = surface_->format();
-    return base::MakeRefCounted<VASurface>(
-        id, size, format,
-        // This lambda is an adapter to VASurface::ReleaseCB which uses a
+    return std::make_unique<VASurfaceHandle>(
+        id,
+        // This lambda is an adapter to ScopedID::ReleaseCB which uses a
         // VASurfaceID parameter.
         base::BindOnce(
             [](std::unique_ptr<ScopedVASurface> surface, ReleaseCB release_cb,
@@ -891,21 +888,21 @@ VaapiVideoEncodeAccelerator::CreateEncodeJob(
   scoped_refptr<CodecPicture> picture;
   switch (output_codec_) {
     case VideoCodec::kH264:
-      picture =
-          new VaapiH264Picture(reconstructed_surface->ReleaseAsVASurface());
+      picture = new VaapiH264Picture(
+          reconstructed_surface->ReleaseAsVASurfaceHandle());
       break;
     case VideoCodec::kVP8:
-      picture =
-          new VaapiVP8Picture(reconstructed_surface->ReleaseAsVASurface());
+      picture = new VaapiVP8Picture(
+          reconstructed_surface->ReleaseAsVASurfaceHandle());
       break;
     case VideoCodec::kVP9:
-      picture =
-          new VaapiVP9Picture(reconstructed_surface->ReleaseAsVASurface());
+      picture = new VaapiVP9Picture(
+          reconstructed_surface->ReleaseAsVASurfaceHandle());
       break;
     case VideoCodec::kAV1:
-      picture =
-          new VaapiAV1Picture(/*display_va_surface=*/nullptr,
-                              reconstructed_surface->ReleaseAsVASurface());
+      picture = new VaapiAV1Picture(
+          /*display_va_surface=*/nullptr,
+          reconstructed_surface->ReleaseAsVASurfaceHandle());
       break;
     default:
       return nullptr;
@@ -1069,8 +1066,9 @@ void VaapiVideoEncodeAccelerator::RequestEncodingParametersChange(
     const std::optional<gfx::Size>& size) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(child_sequence_checker_);
 
-  VideoBitrateAllocation allocation;
+  VideoBitrateAllocation allocation(bitrate.mode());
   allocation.SetBitrate(0, 0, bitrate.target_bps());
+  allocation.SetPeakBps(bitrate.peak_bps());
   encoder_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(

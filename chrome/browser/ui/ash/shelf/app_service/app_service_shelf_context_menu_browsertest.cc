@@ -6,7 +6,7 @@
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "base/functional/callback_helpers.h"
-#include "base/memory/raw_ptr_exclusion.h"
+#include "base/memory/stack_allocated.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
+#include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
@@ -50,10 +51,11 @@ class AppServiceShelfContextMenuBrowserTest : public InProcessBrowserTest {
   ~AppServiceShelfContextMenuBrowserTest() override = default;
 
   struct MenuSection {
+    STACK_ALLOCATED();
+
+   public:
     std::unique_ptr<ui::SimpleMenuModel> menu_model;
-    // This field is not a raw_ptr<> because it was filtered by the rewriter
-    // for: #addr-of, #union
-    RAW_PTR_EXCLUSION ui::MenuModel* sub_model = nullptr;
+    ui::MenuModel* sub_model = nullptr;
     size_t command_index = 0;
   };
 
@@ -94,13 +96,10 @@ class AppServiceShelfContextMenuWebAppBrowserTest
       public testing::WithParamInterface<bool> {
  public:
   AppServiceShelfContextMenuWebAppBrowserTest() {
-    base::flat_map<base::test::FeatureRef, bool> features;
-    features.insert({blink::features::kDesktopPWAsTabStrip, true});
-    features.insert({features::kDesktopPWAsTabStripSettings, true});
-    features.insert(
-        {chromeos::features::kCrosShortstand, IsShortstandEnabled()});
-
-    scoped_feature_list_.InitWithFeatureStates(features);
+    scoped_feature_list_.InitWithFeatures(
+        {blink::features::kDesktopPWAsTabStrip,
+         features::kDesktopPWAsTabStripSettings},
+        {});
   }
   ~AppServiceShelfContextMenuWebAppBrowserTest() override = default;
 
@@ -206,6 +205,8 @@ IN_PROC_BROWSER_TEST_P(AppServiceShelfContextMenuWebAppBrowserTest,
   auto web_app_install_info =
       web_app::WebAppInstallInfo::CreateWithStartUrlForTesting(
           GURL("https://example.org"));
+  web_app_install_info->user_display_mode =
+      web_app::mojom::UserDisplayMode::kStandalone;
   webapps::AppId app_id =
       web_app::test::InstallWebApp(profile, std::move(web_app_install_info));
 

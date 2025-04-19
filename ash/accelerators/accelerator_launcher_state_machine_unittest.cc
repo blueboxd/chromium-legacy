@@ -132,14 +132,15 @@ class MockInputController : public ui::InputController {
       override {
     return nullptr;
   }
+  void DisableKeyboardImposterCheck() override {}
 };
 
 ui::KeyEvent KeyPress(ui::KeyboardCode key_code) {
-  return ui::KeyEvent(ui::ET_KEY_PRESSED, key_code, ui::EF_NONE);
+  return ui::KeyEvent(ui::EventType::kKeyPressed, key_code, ui::EF_NONE);
 }
 
 ui::KeyEvent KeyRelease(ui::KeyboardCode key_code) {
-  return ui::KeyEvent(ui::ET_KEY_RELEASED, key_code, ui::EF_NONE);
+  return ui::KeyEvent(ui::EventType::kKeyReleased, key_code, ui::EF_NONE);
 }
 
 ui::Event& GetEventFromVariant(EventTypeVariant& event) {

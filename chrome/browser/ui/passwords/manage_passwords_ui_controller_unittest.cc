@@ -4,6 +4,7 @@
 
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -337,7 +338,7 @@ void ManagePasswordsUIControllerTest::SetUp() {
       test_federated_form_.url.DeprecatedGetOriginAsURL().spec();
   test_federated_form_.username_value = u"username";
   test_federated_form_.federation_origin =
-      url::Origin::Create(GURL("https://federation.test/"));
+      url::SchemeHostPort(GURL("https://federation.test/"));
   test_federated_form_.match_type = PasswordForm::MatchType::kExact;
 
   submitted_form_ = test_local_form_;
@@ -1523,6 +1524,92 @@ TEST_F(ManagePasswordsUIControllerTest,
   }
 }
 
+TEST_F(ManagePasswordsUIControllerTest,
+       PasswordDetails_OnShowPasswordIsInitialBubbleCredential) {
+  std::unique_ptr<base::AutoReset<bool>> bypass_user_auth =
+      controller()->BypassUserAuthtForTesting();
+  password_manager::PasswordForm form;
+  form.username_value = u"user";
+  form.password_value = u"passw0rd";
+  controller()->OnOpenPasswordDetailsBubble(form);
+
+  EXPECT_EQ(
+      controller()->GetManagePasswordsSingleCredentialDetailsModeCredential(),
+      form);
+  EXPECT_EQ(controller()->GetState(), password_manager::ui::MANAGE_STATE);
+}
+
+TEST_F(ManagePasswordsUIControllerTest,
+       PasswordDetails_BubbleIsInactiveAfterClosingPasswordDetails) {
+  std::unique_ptr<base::AutoReset<bool>> bypass_user_auth =
+      controller()->BypassUserAuthtForTesting();
+  password_manager::PasswordForm details_form;
+  details_form.username_value = u"user";
+  details_form.password_value = u"passw0rd";
+  controller()->OnOpenPasswordDetailsBubble(details_form);
+  ASSERT_EQ(
+      controller()->GetManagePasswordsSingleCredentialDetailsModeCredential(),
+      details_form);
+
+  controller()->OnBubbleHidden();
+
+  EXPECT_EQ(
+      controller()->GetManagePasswordsSingleCredentialDetailsModeCredential(),
+      std::nullopt);
+  EXPECT_EQ(controller()->GetState(), password_manager::ui::INACTIVE_STATE);
+}
+
+TEST_F(ManagePasswordsUIControllerTest,
+       PasswordDetails_BubbleSwitchesToListAfterClosingPasswordDetails) {
+  std::unique_ptr<base::AutoReset<bool>> bypass_user_auth =
+      controller()->BypassUserAuthtForTesting();
+  std::vector<std::unique_ptr<PasswordForm>> local_credentials;
+  local_credentials.emplace_back(new PasswordForm(test_local_form()));
+  controller()->OnAutoSignin(std::move(local_credentials),
+                             url::Origin::Create(test_local_form().url));
+  ASSERT_FALSE(controller()->GetCurrentForms().empty());
+
+  password_manager::PasswordForm details_form;
+  details_form.username_value = u"user";
+  details_form.password_value = u"passw0rd";
+  controller()->OnOpenPasswordDetailsBubble(details_form);
+  ASSERT_EQ(
+      controller()->GetManagePasswordsSingleCredentialDetailsModeCredential(),
+      details_form);
+
+  controller()->OnBubbleHidden();
+
+  EXPECT_EQ(
+      controller()->GetManagePasswordsSingleCredentialDetailsModeCredential(),
+      std::nullopt);
+  EXPECT_EQ(controller()->GetState(), password_manager::ui::MANAGE_STATE);
+}
+
+// The following test is being run on platforms that support device
+// authentication, as on others the callback is stubbed to return `true`.
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS)
+TEST_F(ManagePasswordsUIControllerTest, PasswordDetails_IsntShownIfAuthFailed) {
+  auto mock_authenticator =
+      std::make_unique<device_reauth::MockDeviceAuthenticator>();
+  EXPECT_CALL(*mock_authenticator, AuthenticateWithMessage)
+      .WillOnce([](const std::u16string&,
+                   device_reauth::DeviceAuthenticator::AuthenticateCallback
+                       callback) { std::move(callback).Run(false); });
+  EXPECT_CALL(client(), GetDeviceAuthenticator)
+      .WillOnce(Return(testing::ByMove(std::move(mock_authenticator))));
+
+  password_manager::PasswordForm form;
+  form.username_value = u"user";
+  form.password_value = u"passw0rd";
+  controller()->OnOpenPasswordDetailsBubble(form);
+
+  EXPECT_EQ(
+      controller()->GetManagePasswordsSingleCredentialDetailsModeCredential(),
+      std::nullopt);
+  EXPECT_EQ(controller()->GetState(), password_manager::ui::INACTIVE_STATE);
+}
+#endif
+
 TEST_F(ManagePasswordsUIControllerTest, AutofillDuringSignInPromo) {
   std::vector<PasswordForm> matches;
   auto test_form_manager =
@@ -1729,10 +1816,6 @@ TEST_F(ManagePasswordsUIControllerTest, DiscardUnsyncedCredentials) {
 
 TEST_F(ManagePasswordsUIControllerTest, OpenBubbleForMovableForm) {
   base::HistogramTester histogram_tester;
-  // TODO crbug/40943570: Remove after feature is fully rolled out.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      password_manager::features::kButterOnDesktopFollowup);
 
   std::vector<PasswordForm> matches = {test_local_form()};
   auto test_form_manager =
@@ -1763,9 +1846,6 @@ TEST_F(ManagePasswordsUIControllerTest, OpenBubbleForMovableForm) {
 }
 
 TEST_F(ManagePasswordsUIControllerTest, OpenMoveBubbleFromManagementBubble) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      password_manager::features::kButterOnDesktopFollowup);
   const PasswordForm* test_form_ptr = &test_local_form();
   std::vector<PasswordForm> forms = {*test_form_ptr};
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
@@ -1793,9 +1873,6 @@ TEST_F(ManagePasswordsUIControllerTest, OpenMoveBubbleFromManagementBubble) {
 }
 
 TEST_F(ManagePasswordsUIControllerTest, CloseMoveBubble) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      password_manager::features::kButterOnDesktopFollowup);
   const PasswordForm* test_form_ptr = &test_local_form();
   std::vector<PasswordForm> forms = {*test_form_ptr};
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
@@ -1966,6 +2043,34 @@ TEST_F(ManagePasswordsUIControllerTest, IsDeviceAuthenticatorObtained) {
 #endif
   controller()->AuthenticateUserWithMessage(
       /*message=*/u"Do you want to enable this feature", result_callback.Get());
+}
+
+TEST_F(ManagePasswordsUIControllerTest, PasskeySavedWithoutGpmPinCreation) {
+  EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
+  controller()->OnPasskeySaved(kExampleUsername, /*gpm_pin_created=*/false);
+  EXPECT_TRUE(controller()->opened_automatic_bubble());
+  ExpectIconAndControllerStateIs(
+      password_manager::ui::PASSKEY_SAVED_CONFIRMATION_STATE);
+  EXPECT_EQ(controller()->GetRecentlySavedPasskeyUsername(), kExampleUsername);
+  EXPECT_FALSE(controller()->GpmPinCreatedDuringRecentPasskeyCreation());
+}
+
+TEST_F(ManagePasswordsUIControllerTest, PasskeySavedWithGpmPinCreation) {
+  EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
+  controller()->OnPasskeySaved(kExampleUsername, /*gpm_pin_created=*/true);
+  EXPECT_TRUE(controller()->opened_automatic_bubble());
+  ExpectIconAndControllerStateIs(
+      password_manager::ui::PASSKEY_SAVED_CONFIRMATION_STATE);
+  EXPECT_EQ(controller()->GetRecentlySavedPasskeyUsername(), kExampleUsername);
+  EXPECT_TRUE(controller()->GpmPinCreatedDuringRecentPasskeyCreation());
+}
+
+TEST_F(ManagePasswordsUIControllerTest, InvalidPasskeyDeleted) {
+  EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
+  controller()->OnPasskeyDeleted();
+  EXPECT_TRUE(controller()->opened_automatic_bubble());
+  ExpectIconAndControllerStateIs(
+      password_manager::ui::PASSKEY_DELETED_CONFIRMATION_STATE);
 }
 
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
@@ -2270,8 +2375,6 @@ class ManagePasswordsUIControllerWithBrowserTest
   }
 
  private:
-  base::test::ScopedFeatureList feature_list_{
-      password_manager::features::kSharedPasswordNotificationUI};
   TestPasswordManagerClient client_;
 };
 

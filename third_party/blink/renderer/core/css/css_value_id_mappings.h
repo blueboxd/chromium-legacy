@@ -125,24 +125,18 @@ inline EResize CssValueIDToPlatformEnum(CSSValueID v) {
 template <>
 inline WritingMode CssValueIDToPlatformEnum(CSSValueID v) {
   switch (v) {
-    case CSSValueID::kHorizontalTb:
     case CSSValueID::kLr:
     case CSSValueID::kLrTb:
     case CSSValueID::kRl:
     case CSSValueID::kRlTb:
       return WritingMode::kHorizontalTb;
-    case CSSValueID::kVerticalRl:
     case CSSValueID::kTb:
     case CSSValueID::kTbRl:
       return WritingMode::kVerticalRl;
-    case CSSValueID::kVerticalLr:
-      return WritingMode::kVerticalLr;
     default:
       break;
   }
-
-  NOTREACHED_IN_MIGRATION();
-  return WritingMode::kHorizontalTb;
+  return detail::cssValueIDToPlatformEnumGenerated<WritingMode>(v);
 }
 
 template <>
@@ -248,6 +242,12 @@ inline EDisplay CssValueIDToPlatformEnum(CSSValueID v) {
   if (v == CSSValueID::kRubyText) {
     return EDisplay::kRubyText;
   }
+  if (v == CSSValueID::kMasonry) {
+    return EDisplay::kMasonry;
+  }
+  if (v == CSSValueID::kInlineMasonry) {
+    return EDisplay::kInlineMasonry;
+  }
 
   NOTREACHED_IN_MIGRATION();
   return EDisplay::kInline;
@@ -340,6 +340,12 @@ inline CSSValueID PlatformEnumToCSSValueID(EDisplay v) {
   }
   if (v == EDisplay::kRubyText) {
     return CSSValueID::kRubyText;
+  }
+  if (v == EDisplay::kMasonry) {
+    return CSSValueID::kMasonry;
+  }
+  if (v == EDisplay::kInlineMasonry) {
+    return CSSValueID::kInlineMasonry;
   }
 
   NOTREACHED_IN_MIGRATION();
@@ -455,8 +461,8 @@ inline CSSValueID PlatformEnumToCSSValueID(WhiteSpaceCollapse v) {
 template <>
 inline TextBoxEdge::Type CssValueIDToPlatformEnum(CSSValueID id) {
   switch (id) {
-    case CSSValueID::kLeading:
-      return TextBoxEdge::Type::kLeading;
+    case CSSValueID::kAuto:
+      return TextBoxEdge::Type::kAuto;
     case CSSValueID::kText:
       return TextBoxEdge::Type::kText;
     case CSSValueID::kCap:
@@ -474,8 +480,8 @@ template <>
 inline CSSValueID PlatformEnumToCSSValueID(TextBoxEdge::Type type) {
   using enum TextBoxEdge::Type;
   switch (type) {
-    case kLeading:
-      return CSSValueID::kLeading;
+    case kAuto:
+      return CSSValueID::kAuto;
     case kText:
       return CSSValueID::kText;
     case kCap:

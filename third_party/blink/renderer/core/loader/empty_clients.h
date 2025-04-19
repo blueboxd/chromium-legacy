@@ -36,13 +36,13 @@
 #include "cc/trees/paint_holding_reason.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/input/web_menu_source_type.h"
 #include "third_party/blink/public/common/scheduler/task_attribution_id.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-forward.h"
 #include "third_party/blink/public/mojom/frame/viewport_intersection_state.mojom-blink.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
+#include "third_party/blink/public/platform/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/web_spell_check_panel_host_client.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -114,10 +114,6 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
             LocalFrame& opener_frame,
             NavigationPolicy navigation_policy,
             bool consumed_user_gesture) override {}
-  void DidOverscroll(const gfx::Vector2dF&,
-                     const gfx::Vector2dF&,
-                     const gfx::PointF&,
-                     const gfx::Vector2dF&) override {}
   void SetOverscrollBehavior(LocalFrame& frame,
                              const cc::OverscrollBehavior&) override {}
   void BeginLifecycleUpdates(LocalFrame& main_frame) override {}
@@ -354,7 +350,7 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
       std::unique_ptr<SourceLocation>,
       mojo::PendingRemote<mojom::blink::NavigationStateKeepAliveHandle>,
       bool is_container_initiated,
-      bool is_fullscreen_requested) override;
+      bool has_rel_opener) override;
 
   void DispatchWillSendSubmitEvent(HTMLFormElement*) override;
 
@@ -416,10 +412,6 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
                                 int32_t world_id) override {}
   bool AllowScriptExtensions() override { return false; }
 
-  BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() override {
-    return GetEmptyBrowserInterfaceBroker();
-  }
-
   AssociatedInterfaceProvider* GetRemoteNavigationAssociatedInterfaces()
       override;
 
@@ -471,9 +463,17 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
     return base::MakeRefCounted<EmptyWebWorkerFetchContext>();
   }
 
+  scoped_refptr<WebWorkerFetchContext>
+  CreateWorkerFetchContextForPlzDedicatedWorker(
+      WebDedicatedWorkerHostFactoryClient*) override {
+    return base::MakeRefCounted<EmptyWebWorkerFetchContext>();
+  }
+
   blink::ChildURLLoaderFactoryBundle* GetLoaderFactoryBundle() override {
     return nullptr;
   }
+
+  bool IsDomStorageDisabled() const override { return false; }
 
  protected:
   // Not owned

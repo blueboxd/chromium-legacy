@@ -13,7 +13,7 @@
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/dbus/dlp/dlp_service.pb.h"
-#include "components/enterprise/data_controls/component.h"
+#include "components/enterprise/data_controls/core/browser/component.h"
 #include "components/file_access/scoped_file_access.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/file_system/file_system_context.h"
@@ -62,7 +62,8 @@ class DlpFilesController {
 
   // Gets all files inside |root| recursively and runs |callback_| with the
   // files list.
-  class FolderRecursionDelegate : public storage::RecursiveOperationDelegate {
+  class FolderRecursionDelegate final
+      : public storage::RecursiveOperationDelegate {
    public:
     using FileURLsCallback =
         base::OnceCallback<void(std::vector<storage::FileSystemURL>)>;
@@ -85,6 +86,7 @@ class DlpFilesController {
                           StatusCallback callback) override;
     void PostProcessDirectory(const storage::FileSystemURL& url,
                               StatusCallback callback) override;
+    base::WeakPtr<storage::RecursiveOperationDelegate> AsWeakPtr() override;
 
    private:
     void OnGetMetadata(const storage::FileSystemURL& url,

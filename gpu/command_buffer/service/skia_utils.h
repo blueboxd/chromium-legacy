@@ -21,6 +21,9 @@
 
 #if BUILDFLAG(ENABLE_VULKAN)
 #include "third_party/skia/include/gpu/vk/GrVkTypes.h"
+namespace skgpu {
+struct VulkanYcbcrConversionInfo;
+}
 #endif
 
 // Forwardly declare a few GL types to avoid including GL header files.
@@ -31,6 +34,12 @@ typedef unsigned int GLuint;
 class GrBackendTexture;
 class GrContextThreadSafeProxy;
 class SkImage;
+
+namespace base {
+namespace trace_event {
+class ProcessMemoryDump;
+}
+}  // namespace base
 
 namespace gfx {
 class Size;
@@ -43,6 +52,8 @@ class VulkanContextProvider;
 }  // namespace viz
 
 namespace skgpu::graphite {
+class Context;
+class Recorder;
 struct InsertRecordingInfo;
 }  // namespace skgpu::graphite
 
@@ -63,6 +74,17 @@ GPU_GLES2_EXPORT GrContextOptions GetDefaultGrContextOptions();
 
 GPU_GLES2_EXPORT skgpu::graphite::ContextOptions
 GetDefaultGraphiteContextOptions(const GpuDriverBugWorkarounds& workarounds);
+
+// Dumps "skia/gpu_resources/graphite_context{&context}" and
+// "skia/gpu_resources/gpu_main_graphite_recorder{&recorder}" with total cache
+// usage of each. For the latter, dumps the statistics of the recorder's
+// ImageProvider under
+// "skia/gpu_resources/gpu_main_graphite_image_provider{&recorder-clientImageProvider()}".
+// Designed for background dumps.
+void DumpBackgroundGraphiteMemoryStatistics(
+    const skgpu::graphite::Context* context,
+    const skgpu::graphite::Recorder* recorder,
+    base::trace_event::ProcessMemoryDump* pmd);
 
 // Returns internal gl format of texture for Skia for given `gl_storage_format`.
 GPU_GLES2_EXPORT GLuint GetGrGLBackendTextureFormat(
@@ -112,13 +134,14 @@ CreateGrVkImageInfo(VulkanImage* image,
                     const viz::SharedImageFormat& si_format,
                     const gfx::ColorSpace& color_space);
 
-GPU_GLES2_EXPORT GrVkYcbcrConversionInfo
-CreateGrVkYcbcrConversionInfo(VkPhysicalDevice physical_device,
-                              VkImageTiling tiling,
-                              VkFormat format,
-                              const viz::SharedImageFormat& si_format,
-                              const gfx::ColorSpace& color_space,
-                              const std::optional<VulkanYCbCrInfo>& ycbcr_info);
+GPU_GLES2_EXPORT skgpu::VulkanYcbcrConversionInfo
+CreateVulkanYcbcrConversionInfo(
+    VkPhysicalDevice physical_device,
+    VkImageTiling tiling,
+    VkFormat format,
+    const viz::SharedImageFormat& si_format,
+    const gfx::ColorSpace& color_space,
+    const std::optional<VulkanYCbCrInfo>& ycbcr_info);
 #endif  // BUILDFLAG(ENABLE_VULKAN)
 
 // Helper that returns true when Vulkan memory usage is high enough

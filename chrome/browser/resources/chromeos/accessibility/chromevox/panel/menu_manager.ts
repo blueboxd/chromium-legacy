@@ -5,9 +5,6 @@
 /**
  * @fileoverview Class to manage the ChromeVox menus.
  */
-import {AsyncUtil} from '/common/async_util.js';
-import {EventGenerator} from '/common/event_generator.js';
-import {KeyCode} from '/common/key_code.js';
 import {StringUtil} from '/common/string_util.js';
 import {TestImportManager} from '/common/testing/test_import_manager.js';
 
@@ -39,7 +36,8 @@ export class MenuManager {
   private activeMenu_: PanelMenu | null = null;
   private lastMenu_ = '';
   private menus_: PanelMenu[] = [];
-  private nodeMenuDictionary_: Record<PanelNodeMenuId, PanelNodeMenu> = {};
+  private nodeMenuDictionary_:
+      Partial<Record<PanelNodeMenuId, PanelNodeMenu>> = {};
   private searchMenu_: PanelSearchMenu | null = null;
 
   static disableMissingMsgsErrorsForTesting = false;
@@ -165,21 +163,7 @@ export class MenuManager {
   }
 
   addNodeMenuItem(itemData: PanelNodeMenuItemData): void {
-    this.nodeMenuDictionary_[itemData.menuId].addItemFromData(itemData);
-  }
-
-  async addOSKeyboardShortcutsMenuItem(menu: PanelMenu): Promise<void> {
-    let localizedSlash =
-        await AsyncUtil.getLocalizedDomKeyStringForKeyCode(KeyCode.OEM_2);
-    if (!localizedSlash) {
-      localizedSlash = '/';
-    }
-    menu.addMenuItem(
-        Msgs.getMsg('open_keyboard_shortcuts_menu'),
-        `Ctrl+Alt+${localizedSlash}`, '', '', async () => {
-          EventGenerator.sendKeyPress(
-              KeyCode.OEM_2 /* forward slash */, {'ctrl': true, 'alt': true});
-        });
+    this.nodeMenuDictionary_[itemData.menuId]?.addItemFromData(itemData);
   }
 
   /**
@@ -471,6 +455,13 @@ export class MenuManager {
         break;
       case 'Enter':
       case ' ':
+        if (!this.getCallbackForCurrentItem()) {
+          // If there's no callback for the current menu item, then we shouldn't
+          // perform any special logic. Return false here and let the key event
+          // propagate so that it can potentially be handled elsewhere.
+          return false;
+        }
+
         // TODO(b/314203187): Not null asserted, check that this is correct.
         PanelInterface.instance!.setPendingCallback(
             this.getCallbackForCurrentItem());
@@ -567,10 +558,6 @@ export class MenuManager {
         touchScreen ? this.addMenu('panel_menu_touchgestures') : null;
     const chromevoxMenu = this.addMenu('panel_menu_chromevox');
     const actionsMenu = this.addMenu('panel_menu_actions');
-
-    // Add a menu item that opens the full list of ChromeBook keyboard
-    // shortcuts. We want this to be at the top of the ChromeVox menu.
-    await this.addOSKeyboardShortcutsMenuItem(chromevoxMenu);
 
     // Create a mapping between categories from CommandStore, and our
     // top-level menus. Some categories aren't mapped to any menu.
@@ -696,7 +683,7 @@ export class MenuManager {
     return this.menus_;
   }
 
-  get nodeMenuDictionary(): Record<PanelNodeMenuId, PanelNodeMenu> {
+  get nodeMenuDictionary(): Partial<Record<PanelNodeMenuId, PanelNodeMenu>> {
     return this.nodeMenuDictionary_;
   }
 

@@ -578,6 +578,7 @@ TEST_F(CellularESimProfileHandlerImplTest,
 
 TEST_F(CellularESimProfileHandlerImplTest, IgnoresESimProfilesWithNoIccid) {
   const char kTestIccid[] = "1245671234567";
+  AddCellularDevice();
   AddEuicc(/*euicc_num=*/1, /*also_add_to_prefs=*/false);
   Init();
   SetDevicePrefs();
@@ -733,11 +734,11 @@ TEST_F(CellularESimProfileHandlerImplTest, RequestAvailableProfiles) {
   }
 
   histogram_tester()->ExpectTotalCount(
-      CellularNetworkMetricsLogger::kSmdsScanProfileCount,
+      CellularNetworkMetricsLogger::kSmdsScanViaUserProfileCount,
       /*expected_count=*/1);
   EXPECT_EQ(static_cast<int64_t>(smds_activation_codes.size()),
             histogram_tester()->GetTotalSum(
-                CellularNetworkMetricsLogger::kSmdsScanProfileCount));
+                CellularNetworkMetricsLogger::kSmdsScanViaUserProfileCount));
 }
 
 TEST_F(CellularESimProfileHandlerImplTest,
@@ -886,11 +887,11 @@ TEST_F(CellularESimProfileHandlerImplTest,
   EXPECT_EQ(smds_activation_codes.size(), profile_list->size());
 
   histogram_tester.ExpectTotalCount(
-      CellularNetworkMetricsLogger::kSmdsScanProfileCount,
+      CellularNetworkMetricsLogger::kSmdsScanViaUserProfileCount,
       /*expected_count=*/1);
   EXPECT_EQ(static_cast<int64_t>(smds_activation_codes.size()),
             histogram_tester.GetTotalSum(
-                CellularNetworkMetricsLogger::kSmdsScanProfileCount));
+                CellularNetworkMetricsLogger::kSmdsScanViaUserProfileCount));
 }
 
 TEST_F(CellularESimProfileHandlerImplTest,
@@ -934,10 +935,10 @@ TEST_F(CellularESimProfileHandlerImplTest,
   EXPECT_TRUE(profile_list->empty());
 
   histogram_tester()->ExpectTotalCount(
-      CellularNetworkMetricsLogger::kSmdsScanProfileCount,
+      CellularNetworkMetricsLogger::kSmdsScanViaUserProfileCount,
       /*expected_count=*/0);
   EXPECT_EQ(0, histogram_tester()->GetTotalSum(
-                   CellularNetworkMetricsLogger::kSmdsScanProfileCount));
+                   CellularNetworkMetricsLogger::kSmdsScanViaUserProfileCount));
 
   histogram_state.smds_scan_android_user_errors_filtered.inhibit_failed_count++;
   histogram_state.smds_scan_android_user_errors_included.inhibit_failed_count++;
@@ -973,12 +974,12 @@ TEST_F(CellularESimProfileHandlerImplTest,
                                  /*gsma_counts=*/1, /*success=*/true);
 
   histogram_tester()->ExpectTotalCount(
-      CellularNetworkMetricsLogger::kSmdsScanProfileCount,
+      CellularNetworkMetricsLogger::kSmdsScanViaUserProfileCount,
       /*expected_count=*/1);
   EXPECT_EQ(
       static_cast<int64_t>(cellular_utils::GetSmdsActivationCodes().size()),
       histogram_tester()->GetTotalSum(
-          CellularNetworkMetricsLogger::kSmdsScanProfileCount));
+          CellularNetworkMetricsLogger::kSmdsScanViaUserProfileCount));
 }
 
 TEST_F(CellularESimProfileHandlerImplTest,
@@ -1031,11 +1032,11 @@ TEST_F(CellularESimProfileHandlerImplTest,
                                  /*gsma_counts=*/0, /*success=*/true);
 
   histogram_tester()->ExpectTotalCount(
-      CellularNetworkMetricsLogger::kSmdsScanProfileCount,
+      CellularNetworkMetricsLogger::kSmdsScanViaUserProfileCount,
       /*expected_count=*/1);
   EXPECT_EQ(static_cast<int64_t>(smds_activation_codes.size()),
             histogram_tester()->GetTotalSum(
-                CellularNetworkMetricsLogger::kSmdsScanProfileCount));
+                CellularNetworkMetricsLogger::kSmdsScanViaUserProfileCount));
 }
 
 TEST_F(CellularESimProfileHandlerImplTest,

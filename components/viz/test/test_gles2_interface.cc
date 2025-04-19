@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "components/viz/test/test_gles2_interface.h"
 
 #include "base/containers/contains.h"
@@ -428,14 +433,6 @@ void TestGLES2Interface::ReadPixels(GLint x,
   memset(pixels, 0, pixels_size);
 }
 
-void TestGLES2Interface::set_support_texture_format_bgra8888(bool support) {
-  test_capabilities_.texture_format_bgra8888 = support;
-}
-
-void TestGLES2Interface::set_support_sync_query(bool support) {
-  test_capabilities_.sync_query = support;
-}
-
 void TestGLES2Interface::set_support_texture_half_float_linear(bool support) {
   test_capabilities_.texture_half_float_linear = support;
 }
@@ -444,16 +441,8 @@ void TestGLES2Interface::set_support_texture_norm16(bool support) {
   test_capabilities_.texture_norm16 = support;
 }
 
-void TestGLES2Interface::set_msaa_is_slow(bool msaa_is_slow) {
-  test_capabilities_.msaa_is_slow = msaa_is_slow;
-}
-
 void TestGLES2Interface::set_gpu_rasterization(bool gpu_rasterization) {
   test_capabilities_.gpu_rasterization = gpu_rasterization;
-}
-
-void TestGLES2Interface::set_avoid_stencil_buffers(bool avoid_stencil_buffers) {
-  test_capabilities_.avoid_stencil_buffers = avoid_stencil_buffers;
 }
 
 void TestGLES2Interface::set_max_texture_size(int size) {

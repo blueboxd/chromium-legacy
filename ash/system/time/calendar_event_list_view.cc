@@ -82,15 +82,10 @@ class CalendarEmptyEventListView : public PillButton {
                        &CalendarEmptyEventListView::OpenCalendarDefault,
                        base::Unretained(this))),
                    l10n_util::GetStringUTF16(IDS_ASH_CALENDAR_NO_EVENTS),
-                   chromeos::features::IsJellyEnabled()
-                       ? PillButton::Type::kSecondaryWithoutIcon
-                       : PillButton::Type::kFloatingWithoutIcon,
+                   PillButton::Type::kSecondaryWithoutIcon,
                    /*icon=*/nullptr),
         controller_(controller) {
     SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_CENTER);
-    if (!chromeos::features::IsJellyEnabled()) {
-      label()->SetTextContext(CONTEXT_CALENDAR_DATE);
-    }
 
     SetBorder(views::CreateThemedRoundedRectBorder(
         kOpenGoogleCalendarBorderThickness, GetPreferredSize().height() / 2,
@@ -368,7 +363,7 @@ void CalendarEventListView::UpdateListItems() {
   if (!calendar_view_controller_->selected_date().has_value()) {
     return;
   }
-  empty_button->SetAccessibleName(l10n_util::GetStringFUTF16(
+  empty_button->GetViewAccessibility().SetName(l10n_util::GetStringFUTF16(
       IDS_ASH_CALENDAR_NO_EVENT_BUTTON_ACCESSIBLE_DESCRIPTION,
       calendar_utils::GetMonthNameAndDayOfMonth(
           calendar_view_controller_->selected_date().value())));

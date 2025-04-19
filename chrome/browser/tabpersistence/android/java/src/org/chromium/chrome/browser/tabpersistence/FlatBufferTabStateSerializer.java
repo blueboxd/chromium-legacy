@@ -56,14 +56,18 @@ public class FlatBufferTabStateSerializer implements TabStateSerializer {
         /** FlatBuffer deserialization failed because of an index out of bounds exception. */
         int FAILURE_INDEX_OUT_OF_BOUNDS_EXCEPTION = 2;
 
-        int NUM_ENTRIES = 3;
+        /** FlatBuffer deserialization failed because of an illegal argument exception. */
+        int FAILURE_ILLEGAL_ARGUMENT_EXCEPTION = 3;
+
+        int NUM_ENTRIES = 4;
     }
 
     @Override
     public ByteBuffer serialize(TabState state, byte[] contentsStateBytes) {
         FlatBufferBuilder fbb = new FlatBufferBuilder();
         int webContentsState =
-                TabStateFlatBufferV1.createWebContentsStateBytesVector(fbb, contentsStateBytes);
+                TabStateFlatBufferV1.createWebContentsStateBytesVector(
+                        fbb, ByteBuffer.wrap(contentsStateBytes));
         int openerAppId =
                 fbb.createString(
                         state.openerAppId == null ? NULL_OPENER_APP_ID : state.openerAppId);
@@ -139,6 +143,11 @@ public class FlatBufferTabStateSerializer implements TabStateSerializer {
                     "Tabs.TabState.FlatBufferDeserializeResult",
                     TabStateFlatBufferDeserializeResult.FAILURE_INDEX_OUT_OF_BOUNDS_EXCEPTION,
                     TabStateFlatBufferDeserializeResult.NUM_ENTRIES);
+        } catch (IllegalArgumentException e) {
+            RecordHistogram.recordEnumeratedHistogram(
+                    "Tabs.TabState.FlatBufferDeserializeResult",
+                    TabStateFlatBufferDeserializeResult.FAILURE_ILLEGAL_ARGUMENT_EXCEPTION,
+                    TabStateFlatBufferDeserializeResult.NUM_ENTRIES);
         } catch (Exception e) {
             RecordHistogram.recordEnumeratedHistogram(
                     "Tabs.TabState.FlatBufferDeserializeResult",
@@ -202,6 +211,8 @@ public class FlatBufferTabStateSerializer implements TabStateSerializer {
                 return TabLaunchType.UNSET;
             case TabLaunchTypeAtCreation.FROM_SYNC_BACKGROUND:
                 return TabLaunchType.FROM_SYNC_BACKGROUND;
+            case TabLaunchTypeAtCreation.FROM_RECENT_TABS_FOREGROUND:
+                return TabLaunchType.FROM_RECENT_TABS_FOREGROUND;
             case TabLaunchTypeAtCreation.SIZE:
                 return TabLaunchType.SIZE;
             case TabLaunchTypeAtCreation.UNKNOWN:
@@ -269,6 +280,8 @@ public class FlatBufferTabStateSerializer implements TabStateSerializer {
                 return TabLaunchTypeAtCreation.UNSET;
             case TabLaunchType.FROM_SYNC_BACKGROUND:
                 return TabLaunchTypeAtCreation.FROM_SYNC_BACKGROUND;
+            case TabLaunchType.FROM_RECENT_TABS_FOREGROUND:
+                return TabLaunchTypeAtCreation.FROM_RECENT_TABS_FOREGROUND;
             case TabLaunchType.SIZE:
                 return TabLaunchTypeAtCreation.SIZE;
             default:

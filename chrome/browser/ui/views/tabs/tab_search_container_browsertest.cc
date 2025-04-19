@@ -34,18 +34,6 @@ class TabSearchContainerBrowserTest : public InProcessBrowserTest {
     TabOrganizationUtils::GetInstance()->SetIgnoreOptGuideForTesting(true);
   }
 
-  void EnableOptGuide() {
-    optimization_guide::EnableSigninAndModelExecutionCapability(
-        browser()->profile());
-
-    PrefService* prefs = browser()->profile()->GetPrefs();
-    prefs->SetInteger(
-        optimization_guide::prefs::GetSettingEnabledPrefName(
-            optimization_guide::UserVisibleFeatureKey::kTabOrganization),
-        static_cast<int>(
-            optimization_guide::prefs::FeatureOptInState::kEnabled));
-  }
-
   TabStripModel* tab_strip_model() { return browser()->tab_strip_model(); }
 
   BrowserView* browser_view() {
@@ -69,6 +57,9 @@ IN_PROC_BROWSER_TEST_F(TabSearchContainerBrowserTest, TogglesActionUIState) {
   TabOrganizationService* service =
       tab_search_container()->tab_organization_service_for_testing();
 
+  tab_search_container()->SetLockedExpansionModeForTesting(
+      LockedExpansionMode::kNone);
+  tab_strip_model()->ForceShowingModalUIForTesting(false);
   service->OnTriggerOccured(browser());
 
   ASSERT_TRUE(
@@ -92,6 +83,12 @@ IN_PROC_BROWSER_TEST_F(TabSearchContainerBrowserTest,
   ASSERT_EQ(service,
             second_search_container->tab_organization_service_for_testing());
 
+  tab_search_container()->SetLockedExpansionModeForTesting(
+      LockedExpansionMode::kNone);
+  tab_strip_model()->ForceShowingModalUIForTesting(false);
+  second_search_container->SetLockedExpansionModeForTesting(
+      LockedExpansionMode::kNone);
+  second_browser->tab_strip_model()->ForceShowingModalUIForTesting(false);
   service->OnTriggerOccured(browser());
 
   EXPECT_TRUE(
@@ -105,14 +102,15 @@ IN_PROC_BROWSER_TEST_F(TabSearchContainerBrowserTest,
   ASSERT_FALSE(
       tab_search_container()->expansion_animation_for_testing()->IsShowing());
 
-  std::unique_ptr<ScopedTabStripModalUI> scoped_tab_strip_modal_ui =
-      browser()->tab_strip_model()->ShowModalUI();
+  tab_strip_model()->ForceShowingModalUIForTesting(true);
+  tab_search_container()->SetLockedExpansionModeForTesting(
+      LockedExpansionMode::kNone);
   tab_search_container()->ShowTabOrganization();
 
   EXPECT_FALSE(
       tab_search_container()->expansion_animation_for_testing()->IsShowing());
 
-  scoped_tab_strip_modal_ui.reset();
+  tab_strip_model()->ForceShowingModalUIForTesting(false);
   tab_search_container()->ShowTabOrganization();
 
   EXPECT_TRUE(

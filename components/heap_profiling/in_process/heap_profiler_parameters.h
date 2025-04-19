@@ -9,10 +9,14 @@
 
 #include "base/feature_list.h"
 #include "base/json/json_value_converter.h"
+#include "base/profiler/process_type.h"
 #include "base/time/time.h"
-#include "components/metrics/call_stacks/call_stack_profile_params.h"
 
 namespace heap_profiling {
+
+// If this is enabled, heap profiling in subprocesses is controlled centrally
+// from the browser process.
+BASE_DECLARE_FEATURE(kHeapProfilerCentralControl);
 
 // If this is disabled, the client will not collect heap profiles. If it is
 // enabled, the client may enable the sampling heap profiler (with probability
@@ -60,7 +64,7 @@ HeapProfilerParameters GetDefaultHeapProfilerParameters();
 // identical to the result of GetDefaultHeapProfilerParameters() unless
 // overridden by a field trial.
 HeapProfilerParameters GetHeapProfilerParametersForProcess(
-    metrics::CallStackProfileParams::Process process_type);
+    base::ProfilerProcessType process_type);
 
 }  // namespace heap_profiling
 

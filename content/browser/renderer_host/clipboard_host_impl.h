@@ -102,8 +102,10 @@ class CONTENT_EXPORT ClipboardHostImpl
   FRIEND_TEST_ALL_PREFIXES(ClipboardHostImplWriteTest, WriteSvg_Empty);
   FRIEND_TEST_ALL_PREFIXES(ClipboardHostImplWriteTest, WriteBitmap);
   FRIEND_TEST_ALL_PREFIXES(ClipboardHostImplWriteTest, WriteBitmap_Empty);
-  FRIEND_TEST_ALL_PREFIXES(ClipboardHostImplWriteTest, WriteCustomData);
-  FRIEND_TEST_ALL_PREFIXES(ClipboardHostImplWriteTest, WriteCustomData_Empty);
+  FRIEND_TEST_ALL_PREFIXES(ClipboardHostImplWriteTest,
+                           WriteDataTransferCustomData);
+  FRIEND_TEST_ALL_PREFIXES(ClipboardHostImplWriteTest,
+                           WriteDataTransferCustomData_Empty);
   FRIEND_TEST_ALL_PREFIXES(ClipboardHostImplWriteTest,
                            PerformPasteIfAllowed_EmptyData);
   FRIEND_TEST_ALL_PREFIXES(ClipboardHostImplWriteTest, MainFrameURL);
@@ -133,9 +135,10 @@ class CONTENT_EXPORT ClipboardHostImpl
                ReadPngCallback callback) override;
   void ReadFiles(ui::ClipboardBuffer clipboard_buffer,
                  ReadFilesCallback callback) override;
-  void ReadCustomData(ui::ClipboardBuffer clipboard_buffer,
-                      const std::u16string& type,
-                      ReadCustomDataCallback callback) override;
+  void ReadDataTransferCustomData(
+      ui::ClipboardBuffer clipboard_buffer,
+      const std::u16string& type,
+      ReadDataTransferCustomDataCallback callback) override;
   void ReadAvailableCustomAndStandardFormats(
       ReadAvailableCustomAndStandardFormatsCallback callback) override;
   void ReadUnsanitizedCustomFormat(
@@ -147,7 +150,7 @@ class CONTENT_EXPORT ClipboardHostImpl
   void WriteHtml(const std::u16string& markup, const GURL& url) override;
   void WriteSvg(const std::u16string& markup) override;
   void WriteSmartPasteMarker() override;
-  void WriteCustomData(
+  void WriteDataTransferCustomData(
       const base::flat_map<std::u16string, std::u16string>& data) override;
   void WriteBookmark(const std::string& url,
                      const std::u16string& title) override;

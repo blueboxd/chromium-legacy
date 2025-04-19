@@ -168,9 +168,6 @@ id<GREYMatcher> OmniboxContainingText(const std::string& text);
 // Returns a matcher for `text` being inline autocomplete text in the omnibox.
 id<GREYMatcher> OmniboxContainingAutocompleteText(NSString* text);
 
-// Returns a matcher for omnibox autocomplete.
-id<GREYMatcher> OmniboxAutocompleteLabel();
-
 // Returns a matcher for `text` being a substring of the text in the location
 // view.
 id<GREYMatcher> LocationViewContainingText(const std::string& text);
@@ -184,6 +181,9 @@ id<GREYMatcher> NewTabButton();
 
 // Returns a matcher for the Share menu button.
 id<GREYMatcher> ShareButton();
+
+// Returns a matcher for the Show full URL button.
+id<GREYMatcher> ShowFullURLFromWebContextMenuButton();
 
 // Returns a matcher for the tab Share button (either in the omnibox or
 // toolbar).
@@ -348,10 +348,6 @@ id<GREYMatcher> ManageSyncSettingsButton();
 // Returns a matcher for the Inactive Tabs Settings button on the Tabs Settings
 // screen.
 id<GREYMatcher> InactiveTabsSettingsButton();
-
-// Returns a matcher for the Tab Pickup Settings button on the Tabs Settings
-// screen.
-id<GREYMatcher> TabPickupSettingsButton();
 
 // Returns a matcher for the Tabs Settings button on the main Settings screen.
 id<GREYMatcher> TabsSettingsButton();
@@ -522,6 +518,9 @@ id<GREYMatcher> HistoryClearBrowsingDataButton();
 
 // Returns a matcher for "Open In..." button.
 id<GREYMatcher> OpenInButton();
+
+// Returns a matcher for "Open" button.
+id<GREYMatcher> OpenPDFButton();
 
 // Returns a matcher for the cell at `index` in the tab grid.
 id<GREYMatcher> TabGridCellAtIndex(unsigned int index);

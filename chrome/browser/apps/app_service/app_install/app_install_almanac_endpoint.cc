@@ -10,6 +10,7 @@
 #include "chrome/browser/apps/app_service/app_install/app_install.pb.h"
 #include "chrome/browser/apps/app_service/app_install/app_install_types.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/package_id.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -95,7 +96,8 @@ std::optional<AppInstallData> ParseAppInstallResponseProto(
         .width_in_pixels = instance.icon().width_in_pixels(),
         .mime_type = instance.icon().mime_type(),
         .is_masking_allowed = instance.icon().is_masking_allowed()};
-    if (icon.url.is_valid() && icon.width_in_pixels > 0) {
+    // SVG icons have 0 width.
+    if (icon.url.is_valid() && icon.width_in_pixels >= 0) {
       result.icon = std::move(icon);
     }
   }
@@ -117,12 +119,11 @@ std::optional<AppInstallData> ParseAppInstallResponseProto(
     result.install_url = GURL(instance.install_url());
   }
 
-  if (instance.has_android_extras()) {
-    if (result.package_id.package_type() != PackageType::kArc) {
-      return std::nullopt;
-    }
-  } else if (instance.has_web_extras()) {
-    if (result.package_id.package_type() != PackageType::kWeb) {
+  if (result.package_id.package_type() == PackageType::kArc) {
+    result.app_type_data.emplace<AndroidAppInstallData>();
+  } else if (result.package_id.package_type() == PackageType::kWeb ||
+             result.package_id.package_type() == PackageType::kWebsite) {
+    if (!instance.has_web_extras()) {
       return std::nullopt;
     }
     WebAppInstallData& web_app_data =
@@ -140,16 +141,11 @@ std::optional<AppInstallData> ParseAppInstallResponseProto(
     if (!web_app_data.proxied_manifest_url.is_valid()) {
       return std::nullopt;
     }
-  } else if (instance.has_gfn_extras()) {
-    if (result.package_id.package_type() != PackageType::kGeForceNow) {
-      return std::nullopt;
-    }
-  } else if (instance.has_steam_extras()) {
-    if (result.package_id.package_type() != PackageType::kBorealis) {
-      return std::nullopt;
-    }
-  } else {
-    return std::nullopt;
+    web_app_data.open_as_window = instance.web_extras().open_as_window();
+  } else if (result.package_id.package_type() == PackageType::kGeForceNow) {
+    result.app_type_data.emplace<GeForceNowAppInstallData>();
+  } else if (result.package_id.package_type() == PackageType::kBorealis) {
+    result.app_type_data.emplace<SteamAppInstallData>();
   }
 
   return result;
@@ -192,11 +188,10 @@ GURL GetEndpointUrlForTesting() {
   return GetAlmanacEndpointUrl(kAlmanacAppInstallEndpoint);
 }
 
-void GetAppInstallInfo(
-    PackageId package_id,
-    DeviceInfo device_info,
-    network::mojom::URLLoaderFactory& url_loader_factory,
-    GetAppInstallInfoCallback callback) {
+void GetAppInstallInfo(PackageId package_id,
+                       DeviceInfo device_info,
+                       network::mojom::URLLoaderFactory& url_loader_factory,
+                       GetAppInstallInfoCallback callback) {
   QueryAlmanacApi<proto::AppInstallResponse>(
       url_loader_factory, kTrafficAnnotation,
       BuildRequestBody(device_info, package_id.ToString()),

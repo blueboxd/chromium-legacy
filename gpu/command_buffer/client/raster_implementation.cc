@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "gpu/command_buffer/client/raster_implementation.h"
 
 #include <GLES2/gl2.h>
@@ -190,7 +195,7 @@ class RasterImplementation::TransferCacheSerializeHelperImpl final
   }
 
   uint32_t CreateEntryInternal(const cc::ClientTransferCacheEntry& entry,
-                               char* memory) final {
+                               uint8_t* memory) final {
     uint32_t size = entry.SerializedSize();
     // Cap the entries inlined to a specific size.
     if (size <= ri_->max_inlined_entry_size_ && ri_->raster_mapped_buffer_) {
@@ -224,7 +229,7 @@ class RasterImplementation::TransferCacheSerializeHelperImpl final
   // Writes the entry into |memory| if there is enough space. Returns the number
   // of bytes written on success or 0u on failure due to insufficient size.
   uint32_t InlineEntry(const cc::ClientTransferCacheEntry& entry,
-                       char* memory) {
+                       uint8_t* memory) {
     DCHECK(memory);
     DCHECK(SkIsAlign4(reinterpret_cast<uintptr_t>(memory)));
 
@@ -233,10 +238,10 @@ class RasterImplementation::TransferCacheSerializeHelperImpl final
     const auto& buffer = ri_->raster_mapped_buffer_;
     DCHECK(buffer->BelongsToBuffer(memory));
 
-    DCHECK(base::CheckedNumeric<uint32_t>(memory -
-                                          static_cast<char*>(buffer->address()))
+    DCHECK(base::CheckedNumeric<uint32_t>(
+               memory - static_cast<uint8_t*>(buffer->address()))
                .IsValid());
-    uint32_t memory_offset = memory - static_cast<char*>(buffer->address());
+    uint32_t memory_offset = memory - static_cast<uint8_t*>(buffer->address());
     uint32_t bytes_to_write = entry.SerializedSize();
     uint32_t bytes_remaining = buffer->size() - memory_offset;
     DCHECK_GT(bytes_to_write, 0u);
@@ -428,7 +433,11 @@ struct RasterImplementation::AsyncARGBReadbackRequest {
         query(finished_query),
         done(false),
         readback_successful(false) {}
-  ~AsyncARGBReadbackRequest() { std::move(callback).Run(readback_successful); }
+  ~AsyncARGBReadbackRequest() {
+    // Sometimes `callback` owns `dst_pixels`, this prevents dangling raw ptr
+    dst_pixels = nullptr;
+    std::move(callback).Run(readback_successful);
+  }
 
   raw_ptr<void> dst_pixels;
   GLuint dst_size;
@@ -470,6 +479,10 @@ struct RasterImplementation::AsyncYUVReadbackRequest {
         release_mailbox(std::move(release_mailbox)),
         readback_done(std::move(readback_done)) {}
   ~AsyncYUVReadbackRequest() {
+    // Sometimes `callback` owns plane ptrs, this prevents dangling raw ptrs
+    y_plane_data = nullptr;
+    u_plane_data = nullptr;
+    v_plane_data = nullptr;
     std::move(release_mailbox).Run();
     std::move(readback_done).Run(readback_successful);
   }
@@ -838,7 +851,7 @@ GLenum RasterImplementation::GetGLError() {
 #if defined(RASTER_CLIENT_FAIL_GL_ERRORS)
 void RasterImplementation::FailGLError(GLenum error) {
   if (error != GL_NO_ERROR) {
-    NOTREACHED_IN_MIGRATION() << "Error";
+    NOTREACHED_IN_MIGRATION() << "Error:" << error;
   }
 }
 // NOTE: Calling GetGLError overwrites data in the result buffer.
@@ -1450,7 +1463,7 @@ void RasterImplementation::RasterCHROMIUM(
 
   gfx::Rect query_rect = gfx::ScaleToEnclosingRect(
       playback_rect, 1.f / post_scale.x(), 1.f / post_scale.y());
-  list->rtree_.Search(query_rect, &temp_raster_offsets_);
+  list->SearchOpsByRect(query_rect, &temp_raster_offsets_);
   // We can early out if we have nothing to draw and we don't need a clear. Note
   // that if there is nothing to draw, but a clear is required, then those
   // commands would be serialized in the preamble and it's important to play
@@ -1492,7 +1505,8 @@ void RasterImplementation::RasterCHROMIUM(
           raster_properties_->can_use_lcd_text,
           capabilities().context_supports_distance_field_text,
           capabilities().max_texture_size, raster_inducing_scroll_offsets));
-  serializer.Serialize(list->paint_op_buffer_, &temp_raster_offsets_, preamble);
+  serializer.Serialize(list->paint_op_buffer(), &temp_raster_offsets_,
+                       preamble);
   // TODO(piman): raise error if !serializer.valid()?
   op_serializer.SendSerializedData();
 }

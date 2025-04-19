@@ -9,12 +9,14 @@
 
 #include "base/functional/callback_forward.h"
 #include "base/no_destructor.h"
+#include "base/scoped_multi_source_observation.h"
 #include "base/unguessable_token.h"
 #include "chrome/browser/ash/mahi/media_app/mahi_media_app_client.h"
 #include "chromeos/components/mahi/public/cpp/mahi_media_app_content_manager.h"
 #include "chromeos/components/mahi/public/cpp/mahi_media_app_events_proxy.h"
 #include "chromeos/components/mahi/public/cpp/mahi_util.h"
 #include "chromeos/crosapi/mojom/mahi.mojom.h"
+#include "ui/aura/window_observer.h"
 
 namespace ash {
 
@@ -35,6 +37,7 @@ class MahiMediaAppContentManagerImpl
 
   // chromeos::MahiMediaAppEventsProxy::Observer
   void OnPdfGetFocus(const base::UnguessableToken client_id) override;
+  void OnPdfClosed(const base::UnguessableToken client_id) override;
 
   // chromeos::MahiMediaAppContentManager::
   std::optional<std::string> GetFileName(
@@ -43,16 +46,19 @@ class MahiMediaAppContentManagerImpl
                   chromeos::GetMediaAppContentCallback callback) override;
   void OnMahiContextMenuClicked(int64_t display_id,
                                 chromeos::mahi::ButtonType button_type,
-                                const std::u16string& question) override;
+                                const std::u16string& question,
+                                const gfx::Rect& mahi_menu_bounds) override;
   void AddClient(base::UnguessableToken client_id,
                  MahiMediaAppClient* client) override;
   void RemoveClient(base::UnguessableToken client_id) override;
   bool ObservingWindow(const aura::Window* window) const override;
+  bool ActivateClientWindow(const base::UnguessableToken client_id) override;
 
  private:
   std::map<base::UnguessableToken, raw_ptr<MahiMediaAppClient>>
       client_id_to_client_;
-  std::set<raw_ptr<const aura::Window, SetExperimental>> observed_windows_;
+  std::set<raw_ptr<const aura::Window, SetExperimental>>
+      windows_of_live_clients_;
 };
 
 }  // namespace ash

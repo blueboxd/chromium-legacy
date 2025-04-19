@@ -651,6 +651,8 @@ TEST_F(NetworkConnectionHandlerImplTest,
   EXPECT_TRUE(network_connection_observer()->GetRequested(wifi0_service_path));
   EXPECT_EQ(kSuccessResult,
             network_connection_observer()->GetResult(wifi0_service_path));
+  EXPECT_EQ("wifi0",
+            GetServiceStringProperty(wifi0_service_path, shill::kGuidProperty));
 }
 
 TEST_F(NetworkConnectionHandlerImplTest,
@@ -1251,8 +1253,6 @@ TEST_F(NetworkConnectionHandlerImplTest, SimLocked) {
 }
 
 TEST_F(NetworkConnectionHandlerImplTest, SimCarrierLocked) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kCellularCarrierLock);
   Init();
   AddNonConnectablePSimService();
   SetCellularSimCarrierLocked();

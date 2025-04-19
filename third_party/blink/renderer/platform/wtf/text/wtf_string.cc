@@ -20,6 +20,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 #include <locale.h>
@@ -53,6 +58,9 @@ namespace WTF {
 ASSERT_SIZE(String, void*);
 
 // Construct a string with UTF-16 data.
+String::String(base::span<const UChar> utf16_data)
+    : impl_(utf16_data.data() ? StringImpl::Create(utf16_data) : nullptr) {}
+
 String::String(const UChar* characters, unsigned length)
     : impl_(characters ? StringImpl::Create(characters, length) : nullptr) {}
 
@@ -64,6 +72,9 @@ String::String(const UChar* str) {
 }
 
 // Construct a string with latin1 data.
+String::String(base::span<const LChar> latin1_data)
+    : impl_(latin1_data.data() ? StringImpl::Create(latin1_data) : nullptr) {}
+
 String::String(const LChar* characters, unsigned length)
     : impl_(characters ? StringImpl::Create(characters, length) : nullptr) {}
 

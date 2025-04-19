@@ -61,7 +61,7 @@
 #include "components/history/core/browser/url_utils.h"
 #include "components/sync/base/features.h"
 #include "components/sync/base/report_unrecoverable_error.h"
-#include "components/sync/model/client_tag_based_model_type_processor.h"
+#include "components/sync/model/client_tag_based_data_type_processor.h"
 #include "components/url_formatter/url_formatter.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "sql/error_delegate_util.h"
@@ -84,7 +84,7 @@ using favicon::FaviconBitmapID;
 using favicon::FaviconBitmapIDSize;
 using favicon::FaviconBitmapType;
 using favicon::IconMapping;
-using syncer::ClientTagBasedModelTypeProcessor;
+using syncer::ClientTagBasedDataTypeProcessor;
 
 /* The HistoryBackend consists of two components:
 
@@ -415,7 +415,7 @@ void HistoryBackend::Init(
 
   history_sync_bridge_ = std::make_unique<HistorySyncBridge>(
       this, db_ ? db_->GetHistoryMetadataDB() : nullptr,
-      std::make_unique<ClientTagBasedModelTypeProcessor>(
+      std::make_unique<ClientTagBasedDataTypeProcessor>(
           syncer::HISTORY,
           base::BindRepeating(&syncer::ReportUnrecoverableError,
                               history_database_params.channel)));
@@ -443,9 +443,10 @@ void HistoryBackend::SetOnBackendDestroyTask(
 
 void HistoryBackend::Closing() {
   TRACE_EVENT0("browser", "HistoryBackend::Closing");
-  // Any scheduled commit will have a reference to us, we must make it
-  // release that reference before we can be destroyed.
+  // The history system is shutting down. Cancel any pending/scheduled work.
   CancelScheduledCommit();
+  queued_history_db_tasks_.clear();
+  posted_history_db_task_.Cancel();
 }
 
 #if BUILDFLAG(IS_IOS)
@@ -2014,7 +2015,7 @@ std::vector<QueryURLResult> HistoryBackend::QueryURLs(
   return results;
 }
 
-base::WeakPtr<syncer::ModelTypeControllerDelegate>
+base::WeakPtr<syncer::DataTypeControllerDelegate>
 HistoryBackend::GetHistorySyncControllerDelegate() {
   if (history_sync_bridge_) {
     return history_sync_bridge_->change_processor()->GetControllerDelegate();
@@ -2922,7 +2923,7 @@ void HistoryBackend::GetRedirectsFromSpecificVisit(VisitID cur_visit,
   visit_set.insert(cur_visit);
   while (db_->GetRedirectFromVisit(cur_visit, &cur_visit, &cur_url)) {
     if (visit_set.find(cur_visit) != visit_set.end()) {
-      DUMP_WILL_BE_NOTREACHED_NORETURN() << "Loop in visit chain, giving up";
+      DUMP_WILL_BE_NOTREACHED() << "Loop in visit chain, giving up";
       return;
     }
     visit_set.insert(cur_visit);
@@ -2943,7 +2944,7 @@ void HistoryBackend::GetRedirectsToSpecificVisit(VisitID cur_visit,
   visit_set.insert(cur_visit);
   while (db_->GetRedirectToVisit(cur_visit, &cur_visit, &cur_url)) {
     if (visit_set.find(cur_visit) != visit_set.end()) {
-      DUMP_WILL_BE_NOTREACHED_NORETURN() << "Loop in visit chain, giving up";
+      DUMP_WILL_BE_NOTREACHED() << "Loop in visit chain, giving up";
       return;
     }
     visit_set.insert(cur_visit);
@@ -3294,10 +3295,17 @@ void HistoryBackend::ProcessDBTaskImpl() {
     task->DoneRun();
   } else {
     // The task wants to run some more. Schedule it at the end of the current
-    // tasks, and process it after an invoke later.
+    // tasks.
     queued_history_db_tasks_.push_back(std::move(task));
-    task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&HistoryBackend::ProcessDBTaskImpl, this));
+  }
+
+  // If there are more tasks queued, schedule the next one.
+  // Note: Using PostTask() ensures the history sequence gets unblocked for
+  // other work.
+  if (!queued_history_db_tasks_.empty()) {
+    posted_history_db_task_.Reset(
+        base::BindOnce(&HistoryBackend::ProcessDBTaskImpl, this));
+    task_runner_->PostTask(FROM_HERE, posted_history_db_task_.callback());
   }
 }
 

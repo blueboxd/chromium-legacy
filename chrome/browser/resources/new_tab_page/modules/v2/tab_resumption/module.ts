@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 import 'chrome://resources/cr_elements/cr_shared_style.css.js';
-import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
-import '../../history_clusters/page_favicon.js';
+import './page_favicon.js';
 
 import type {CrLazyRenderElement} from 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.js';
 import type {DomRepeatEvent} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -14,7 +13,7 @@ import type {Tab} from '../../../history_types.mojom-webui.js';
 import {I18nMixin, loadTimeData} from '../../../i18n_setup.js';
 import type {InfoDialogElement} from '../../info_dialog.js';
 import {ModuleDescriptor} from '../../module_descriptor.js';
-import type {MenuItem, ModuleHeaderElementV2} from '../module_header.js';
+import type {MenuItem, ModuleHeaderElement} from '../module_header.js';
 
 import {getTemplate} from './module.html.js';
 import {TabResumptionProxyImpl} from './tab_resumption_proxy.js';
@@ -25,7 +24,7 @@ export const MAX_TABS =
 export interface TabResumptionModuleElement {
   $: {
     infoDialogRender: CrLazyRenderElement<InfoDialogElement>,
-    moduleHeaderElementV2: ModuleHeaderElementV2,
+    moduleHeaderElementV2: ModuleHeaderElement,
   };
 }
 
@@ -161,7 +160,7 @@ tabs:
     return domain;
   }
 
-  private computeDeviceName_(tab: Tab): string {
+  private computeDeviceName_(tab: Tab): string|null {
     return loadTimeData.getBoolean('modulesRedesignedEnabled') ?
         tab.sessionName :
         this.i18n('modulesTabResumptionDevicePrefix') + ` ${tab.sessionName}`;

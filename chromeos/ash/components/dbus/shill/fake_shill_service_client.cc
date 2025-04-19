@@ -328,9 +328,8 @@ void FakeShillServiceClient::Disconnect(const dbus::ObjectPath& service_path,
       base::BindOnce(&FakeShillServiceClient::SetProperty,
                      weak_ptr_factory_.GetWeakPtr(), service_path,
                      shill::kStateProperty, base::Value(shill::kStateIdle),
-                     base::DoNothing(), std::move(error_callback)),
+                     std::move(callback), std::move(error_callback)),
       GetInteractiveDelay());
-  std::move(callback).Run();
 }
 
 void FakeShillServiceClient::Remove(const dbus::ObjectPath& service_path,
@@ -440,7 +439,6 @@ ShillServiceClient::TestInterface* FakeShillServiceClient::GetTestInterface() {
 }
 
 // ShillServiceClient::TestInterface overrides.
-
 void FakeShillServiceClient::AddService(const std::string& service_path,
                                         const std::string& guid,
                                         const std::string& name,
@@ -599,6 +597,30 @@ bool FakeShillServiceClient::SetServiceProperty(const std::string& service_path,
       profile_test->UpdateService(*profile_path, service_path);
   }
 
+  if (property == shill::kCellularCustomApnListProperty) {
+    const std::string* type = dict->FindString(shill::kTypeProperty);
+    CHECK(type && *type == shill::kTypeCellular);
+    bool deafult_apn_found = false;
+    // Set connected APN to the latest custom default type APN to simulate the
+    // behavior in Shill. When no default type custom APNs are found, the
+    // default Modb APN should be used for connection.
+    for (const auto& custom_apn : value.GetList()) {
+      CHECK(custom_apn.is_dict());
+      const std::string* apn_types =
+          custom_apn.GetDict().FindString(shill::kApnTypesProperty);
+      if (!apn_types || *apn_types == shill::kApnTypeIA) {
+        continue;
+      }
+      dict->Set(shill::kCellularLastGoodApnProperty, custom_apn.Clone());
+      deafult_apn_found = true;
+      break;
+    }
+    if (!deafult_apn_found) {
+      dict->Set(shill::kCellularLastGoodApnProperty,
+                GetFakeDefaultModbApnDict());
+    }
+  }
+
   // Notify the Manager if the state changed (affects DefaultService).
   if (property == shill::kStateProperty) {
     ShillManagerClient::Get()->GetTestInterface()->ServiceStateChanged(
@@ -668,16 +690,38 @@ bool FakeShillServiceClient::ClearConfiguredServiceProperties(
   return true;
 }
 
+base::Value::Dict FakeShillServiceClient::GetFakeDefaultModbApnDict() {
+  return base::Value::Dict()
+      .Set(shill::kApnProperty, "default_apn")
+      .Set(shill::kApnNameProperty, "default_apn")
+      .Set(shill::kApnLocalizedNameProperty, "localized test apn")
+      .Set(shill::kApnUsernameProperty, "user name")
+      .Set(shill::kApnPasswordProperty, "password")
+      .Set(shill::kApnAuthenticationProperty, "chap")
+      .Set(shill::kApnTypesProperty, shill::kApnTypeDefault)
+      .Set(shill::kApnSourceProperty, shill::kApnSourceMoDb);
+}
+
 std::string FakeShillServiceClient::FindServiceMatchingGUID(
     const std::string& guid) {
-  for (const auto service_pair : stub_services_) {
-    const auto& service_path = service_pair.first;
-    const auto& service_properties = service_pair.second;
-
+  for (const auto [service_path, service_properties] : stub_services_) {
     const std::string* service_guid =
         service_properties.GetDict().FindString(shill::kGuidProperty);
     if (service_guid && *service_guid == guid)
       return service_path;
+  }
+
+  return std::string();
+}
+
+std::string FakeShillServiceClient::FindServiceMatchingName(
+    const std::string& name) {
+  for (const auto [service_path, service_properties] : stub_services_) {
+    const std::string* service_name =
+        service_properties.GetDict().FindString(shill::kNameProperty);
+    if (service_name && *service_name == name) {
+      return service_path;
+    }
   }
 
   return std::string();

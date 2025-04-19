@@ -62,7 +62,8 @@ LabelButton::LabelButton(
           style::STYLE_DIALOG_BUTTON_DEFAULT)),
       appear_disabled_in_inactive_widget_(
           PlatformStyle::kInactiveWidgetControlsAppearDisabled) {
-  ink_drop_container_ = AddChildView(std::make_unique<InkDropContainerView>());
+  ink_drop_container_ = AddChildView(
+      Builder<InkDropContainerView>().SetAutoMatchParentBounds(true).Build());
   ink_drop_container_->SetVisible(false);
   ink_drop_container_->SetProperty(kViewIgnoredByLayoutKey, true);
 
@@ -76,6 +77,7 @@ LabelButton::LabelButton(
   SetAnimationDuration(base::Milliseconds(170));
   SetTextInternal(text);
   SetLayoutManager(std::make_unique<DelegatingLayoutManager>(this));
+  GetViewAccessibility().SetIsDefault(is_default_);
 }
 
 LabelButton::~LabelButton() {
@@ -262,6 +264,7 @@ void LabelButton::SetIsDefault(bool is_default) {
     AddAccelerator(accel);
   else
     RemoveAccelerator(accel);
+  GetViewAccessibility().SetIsDefault(is_default);
   OnPropertyChanged(&is_default_, UpdateStyleToIndicateDefaultStatus());
 }
 
@@ -361,10 +364,6 @@ gfx::Size LabelButton::GetMinimumSize() const {
   return size;
 }
 
-int LabelButton::GetHeightForWidth(int width) const {
-  return CalculatePreferredSize(SizeBounds(width, {})).height();
-}
-
 ProposedLayout LabelButton::CalculateProposedLayout(
     const SizeBounds& size_bounds) const {
   ProposedLayout layouts;
@@ -374,13 +373,6 @@ ProposedLayout LabelButton::CalculateProposedLayout(
   }
 
   gfx::Rect image_area = GetLocalBounds();
-
-  layouts.child_layouts.emplace_back(
-      ink_drop_container_.get(),
-      static_cast<DelegatingLayoutManager*>(GetLayoutManager())
-          ->CanBeVisible(ink_drop_container_.get()),
-      image_area, SizeBounds());
-
   gfx::Insets insets = GetInsets();
   // If the button have a limited space to fit in, the image and the label
   // may overlap with the border, which often times contains a lot of empty
@@ -462,9 +454,6 @@ ProposedLayout LabelButton::CalculateProposedLayout(
 
 void LabelButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   Button::GetAccessibleNodeData(node_data);
-  if (GetIsDefault()) {
-    node_data->AddState(ax::mojom::State::kDefault);
-  }
 }
 
 ui::NativeTheme::Part LabelButton::GetThemePart() const {
@@ -607,7 +596,7 @@ void LabelButton::StateChanged(ButtonState old_state) {
 }
 
 void LabelButton::SetTextInternal(const std::u16string& text) {
-  SetAccessibleName(text);
+  GetViewAccessibility().SetName(text);
   label_->SetText(text);
 
   // Setting text cancels ShrinkDownThenClearText().
@@ -674,9 +663,9 @@ void LabelButton::VisualStateChanged() {
 
 void LabelButton::ResetColorsFromNativeTheme() {
   // Since this is a LabelButton, use the label colors.
-  ui::ColorId color_ids[STATE_COUNT] = {
-      ui::kColorLabelForeground, ui::kColorLabelForeground,
-      ui::kColorLabelForeground, ui::kColorLabelForegroundDisabled};
+  constexpr std::array<ui::ColorId, STATE_COUNT> color_ids{
+      {ui::kColorLabelForeground, ui::kColorLabelForeground,
+       ui::kColorLabelForeground, ui::kColorLabelForegroundDisabled}};
 
   label_->SetBackground(nullptr);
   label_->SetAutoColorReadabilityEnabled(false);

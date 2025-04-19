@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/accessibility/accessibility_controller.h"
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
@@ -14,17 +15,16 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
-#include "ash/utility/forest_util.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
 #include "ash/wm/overview/delayed_animation_observer_impl.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
-#include "ash/wm/overview/overview_focus_cycler_old.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
+#include "ash/wm/snap_group/snap_group_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_overview_session.h"
 #include "ash/wm/splitview/split_view_types.h"
@@ -51,6 +51,8 @@
 
 namespace ash {
 
+constexpr int kBirchBarHotseatSpacing = 10;
+
 bool IsInOverviewSession() {
   OverviewController* overview_controller = OverviewController::Get();
   return overview_controller && overview_controller->InOverviewSession();
@@ -73,17 +75,29 @@ bool CanCoverAvailableWorkspace(aura::Window* window) {
   return WindowState::Get(window)->IsMaximizedOrFullscreenOrPinned();
 }
 
-void FadeInWidgetToOverview(views::Widget* widget,
-                            OverviewAnimationType animation_type,
-                            bool observe) {
+void FadeInAndTransformWidgetToOverview(views::Widget* widget,
+                                        const gfx::Transform& target_transform,
+                                        OverviewAnimationType animation_type,
+                                        bool observe) {
   aura::Window* window = widget->GetNativeWindow();
-  if (window->layer()->GetTargetOpacity() == 1.f)
+  auto* window_layer = window->layer();
+  const bool animate_opacity = window_layer->GetTargetOpacity() != 1;
+  const bool animate_transform =
+      window_layer->GetTargetTransform() != target_transform;
+  if (!animate_opacity && !animate_transform) {
     return;
+  }
 
   // Fade in the widget from its current opacity.
   ScopedOverviewAnimationSettings scoped_overview_animation_settings(
       animation_type, window);
-  window->layer()->SetOpacity(1.0f);
+  if (animate_opacity) {
+    window_layer->SetOpacity(1.0f);
+  }
+
+  if (animate_transform) {
+    window_layer->SetTransform(target_transform);
+  }
 
   if (observe) {
     auto enter_observer = std::make_unique<EnterAnimationObserver>();
@@ -93,7 +107,15 @@ void FadeInWidgetToOverview(views::Widget* widget,
   }
 }
 
-void PrepareWidgetForOverviewShutdown(views::Widget* widget) {
+void FadeInWidgetToOverview(views::Widget* widget,
+                            OverviewAnimationType animation_type,
+                            bool observe) {
+  FadeInAndTransformWidgetToOverview(widget,
+                                     widget->GetLayer()->GetTargetTransform(),
+                                     animation_type, observe);
+}
+
+void PrepareWidgetForShutdownAnimation(views::Widget* widget) {
   // The widget should no longer process events at this point.
   widget->SetVisibilityChangedAnimationsEnabled(false);
   widget->widget_delegate()->SetCanActivate(false);
@@ -105,7 +127,7 @@ void PrepareWidgetForOverviewShutdown(views::Widget* widget) {
 
 void FadeOutWidgetFromOverview(std::unique_ptr<views::Widget> widget,
                                OverviewAnimationType animation_type) {
-  PrepareWidgetForOverviewShutdown(widget.get());
+  PrepareWidgetForShutdownAnimation(widget.get());
 
   // The overview controller may be nullptr on shutdown.
   OverviewController* controller = OverviewController::Get();
@@ -161,6 +183,16 @@ OverviewItemFillMode GetOverviewItemFillMode(const gfx::Size& size) {
 
   if (size.height() > size.width() * kExtremeWindowRatioThreshold) {
     return OverviewItemFillMode::kPillarBoxed;
+  }
+
+  return OverviewItemFillMode::kNormal;
+}
+
+OverviewItemFillMode GetOverviewItemFillModeForWindow(aura::Window* window) {
+  SnapGroupController* snap_group_controller = SnapGroupController::Get();
+  if (!snap_group_controller ||
+      !snap_group_controller->GetSnapGroupForGivenWindow(window)) {
+    return GetOverviewItemFillMode(window->bounds().size());
   }
 
   return OverviewItemFillMode::kNormal;
@@ -262,43 +294,34 @@ gfx::Rect GetGridBoundsInScreen(
         Shelf::ForWindow(target_root)->shelf_layout_manager()->hotseat_state();
 
     const bool hotseat_extended = hotseat_state == HotseatState::kExtended;
-    // When a window is dragged from the top of the screen, overview gets
-    // entered immediately but the window does not get deactivated right away so
-    // the hotseat state does not get updated until the window gets dragged a
-    // bit. In this case, determine whether the hotseat will be extended to
-    // avoid doing a expensive double grid layout.
-    auto* overview_session = OverviewController::Get()->overview_session();
-    const bool hotseat_will_extend =
-        overview_session && overview_session->ShouldEnterWithoutAnimations() &&
-        !split_view_controller->InSplitViewMode();
-
     const bool show_home_launcher =
         hotseat_state == HotseatState::kShownHomeLauncher;
 
-    const bool oak_enabled =
-        features::IsOakFeatureEnabled() || IsForestFeatureEnabled();
+    const bool forest_enabled = features::IsForestFeatureEnabled();
 
-    // Use the default hotseat size here to avoid the possible re-layout
-    // due to the update in HotseatWidget::is_forced_dense_.
     const int hotseat_bottom_inset =
-        ShelfConfig::Get()->GetHotseatSize(
-            /*density=*/HotseatDensity::kNormal) +
+        ShelfConfig::Get()->GetHotseatSize(HotseatDensity::kNormal) +
         ShelfConfig::Get()->hotseat_bottom_padding();
 
-    if (!oak_enabled && (hotseat_extended || hotseat_will_extend)) {
+    if (!forest_enabled && hotseat_extended) {
       bounds.Inset(gfx::Insets::TLBR(0, 0, hotseat_bottom_inset, 0));
-    } else if (oak_enabled && show_home_launcher) {
-      bounds.Inset(gfx::Insets::TLBR(
-          0, 0, hotseat_bottom_inset - ShelfConfig::Get()->in_app_shelf_size(),
-          0));
+    } else if (forest_enabled && show_home_launcher) {
+      // If the home launcher is shown, add some extra spacing between the birch
+      // bar and the hotseat. Subtract the in app shelf size since it is already
+      // factored in the work area calculations.
+      bounds.Inset(
+          gfx::Insets::TLBR(0, 0,
+                            hotseat_bottom_inset + kBirchBarHotseatSpacing -
+                                ShelfConfig::Get()->in_app_shelf_size(),
+                            0));
     }
   }
 
-  // Clamp the bounds of the overview grid such that it doesn't go below 1/3 of
-  // the work area length
+  // Clamp the bounds of the overview grid such that it doesn't go below
+  // `kOverviewGridClampThresholdRatio` of the work area length.
   const bool horizontal = IsLayoutHorizontal(target_root);
-  const int min_length =
-      (horizontal ? work_area.width() : work_area.height()) / 3;
+  const int min_length = (horizontal ? work_area.width() : work_area.height()) *
+                         kOverviewGridClampThresholdRatio;
   const int current_length = horizontal ? bounds.width() : bounds.height();
 
   if (current_length > min_length)
@@ -366,19 +389,8 @@ gfx::Rect ToStableSizeRoundedRect(const gfx::RectF& rect) {
                    gfx::ToRoundedSize(rect.size()));
 }
 
-void MoveFocusToView(OverviewFocusableView* target_view) {
-  auto* overview_session = OverviewController::Get()->overview_session();
-  // Events should not be processed on overview widgets after it has shutdown.
-  // However, there are some edge cases where the gesture stream has started
-  // almost immediately before overview shutdown, and the rest of the stream
-  // still reaches the widget. See http://b/302708219.
-  if (!overview_session) {
-    return;
-  }
-
-  if (auto* focus_cycler_old = overview_session->focus_cycler_old()) {
-    focus_cycler_old->MoveFocusToView(target_view);
-  }
+bool IsEligibleForDraggingToSnapInOverview(OverviewItemBase* item) {
+  return (item->GetWindows().size() == 1u) && ShouldAllowSplitView();
 }
 
 void SetWindowsVisibleDuringItemDragging(const aura::Window::Windows& windows,

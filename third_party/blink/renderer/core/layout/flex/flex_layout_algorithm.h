@@ -90,13 +90,13 @@ class CORE_EXPORT FlexLayoutAlgorithm
 
   // This is same method as FlexItem but we need that logic before FlexItem is
   // constructed.
-  bool MainAxisIsInlineAxis(const BlockNode& child) const;
   LayoutUnit MainAxisContentExtent(LayoutUnit sum_hypothetical_main_size) const;
 
   void HandleOutOfFlowPositionedItems(
       HeapVector<Member<LayoutBox>>& oof_children);
 
-  void AdjustButtonBaseline(LayoutUnit final_content_cross_size);
+  // Set reading flow so they can be accessed by LayoutBox.
+  void SetReadingFlowElements(const HeapVector<NGFlexLine>& flex_line_outputs);
 
   MinMaxSizesResult ComputeMinMaxSizeOfRowContainerV3();
   MinMaxSizesResult ComputeMinMaxSizeOfMultilineColumnContainer();
@@ -110,9 +110,22 @@ class CORE_EXPORT FlexLayoutAlgorithm
   //
   // https://www.w3.org/TR/css-break-3/#box-splitting
   void ConsumeRemainingFragmentainerSpace(
-      LayoutUnit previously_consumed_block_size,
+      LayoutUnit offset_in_stitched_container,
       NGFlexLine* flex_line,
       const FlexColumnBreakInfo* column_break_info = nullptr);
+
+  BreakStatus BreakBeforeChildIfNeeded(
+      LayoutInputNode child,
+      const LayoutResult& layout_result,
+      LayoutUnit fragmentainer_block_offset,
+      bool has_container_separation,
+      bool is_row_item,
+      FlexColumnBreakInfo* flex_column_break_info) {
+    return ::blink::BreakBeforeChildIfNeeded(
+        GetConstraintSpace(), child, layout_result, fragmentainer_block_offset,
+        FragmentainerCapacityForChildren(), has_container_separation,
+        &container_builder_, is_row_item, flex_column_break_info);
+  }
 
   // Insert a fragmentainer break before a row if necessary. Rows do not produce
   // a layout result, so when breaking before a row, we will insert a

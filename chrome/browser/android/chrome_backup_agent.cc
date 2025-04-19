@@ -9,16 +9,19 @@
 #include "base/android/jni_string.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/values.h"
-#include "chrome/android/chrome_jni_headers/ChromeBackupAgentImpl_jni.h"
 #include "components/prefs/android/pref_service_android.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/gaia_id_hash.h"
-#include "components/sync/base/model_type.h"
+#include "components/sync/base/data_type.h"
 #include "components/sync/service/sync_prefs.h"
 
-static_assert(53 == syncer::GetNumModelTypes(),
-              "If the new type has a corresponding pref, add it to "
-              "ChromeBackupAgentImpl.BACKUP_NATIVE_BOOL_PREFS");
+// Must come after all headers that specialize FromJniType() / ToJniType().
+#include "chrome/android/chrome_jni_headers/ChromeBackupAgentImpl_jni.h"
+
+static_assert(14 == static_cast<int>(syncer::UserSelectableType::kLastType),
+              "When adding a new selectable type, add its pref to"
+              "ChromeBackupAgentImpl.BACKUP_NATIVE_SYNC_TYPE_BOOL_PREFS if the"
+              "type exists on Android");
 
 void JNI_ChromeBackupAgentImpl_CommitPendingPrefWrites(
     JNIEnv* env,

@@ -252,6 +252,15 @@ class IdentityManager : public KeyedService,
   bool HasAccountWithRefreshTokenInPersistentErrorState(
       const CoreAccountId& account_id) const;
 
+#if BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
+  // Returns the wrapped binding key of a refresh token associated with
+  // `account_id`, if any.
+  // Returns a non-empty vector iff (a) a refresh token exists for `account_id`,
+  // and (b) the refresh token is bound to a device.
+  std::vector<uint8_t> GetWrappedBindingKeyOfRefreshTokenForAccount(
+      const CoreAccountId& account_id) const;
+#endif
+
   // Returns the error state of the refresh token associated with |account_id|.
   // In particular: Returns GoogleServiceAuthError::AuthErrorNone() if either
   // (a) no refresh token exists for |account_id|, or (b) the refresh token is
@@ -317,11 +326,12 @@ class IdentityManager : public KeyedService,
 
     // Called when an access token request is completed. Contains diagnostic
     // information about the access token request.
-    virtual void OnAccessTokenRequestCompleted(const CoreAccountId& account_id,
-                                               const std::string& consumer_id,
-                                               const ScopeSet& scopes,
-                                               GoogleServiceAuthError error,
-                                               base::Time expiration_time) {}
+    virtual void OnAccessTokenRequestCompleted(
+        const CoreAccountId& account_id,
+        const std::string& consumer_id,
+        const ScopeSet& scopes,
+        const GoogleServiceAuthError& error,
+        base::Time expiration_time) {}
 
     // Called when an access token was removed.
     virtual void OnAccessTokenRemovedFromCache(const CoreAccountId& account_id,
@@ -492,9 +502,15 @@ class IdentityManager : public KeyedService,
       const AccountAvailabilityOptions& options);
   friend void SetAutomaticIssueOfAccessTokens(IdentityManager* identity_manager,
                                               bool grant);
-  friend void SetRefreshTokenForAccount(IdentityManager* identity_manager,
-                                        const CoreAccountId& account_id,
-                                        const std::string& token_value);
+  friend void SetRefreshTokenForAccount(
+      IdentityManager* identity_manager,
+      const CoreAccountId& account_id,
+      const std::string& token_value
+#if BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
+      ,
+      const std::vector<uint8_t>& wrapped_binding_key
+#endif  // BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
+  );
   friend void SetInvalidRefreshTokenForAccount(
       IdentityManager* identity_manager,
       const CoreAccountId& account_id,
@@ -650,7 +666,7 @@ class IdentityManager : public KeyedService,
   void OnFetchAccessTokenComplete(const CoreAccountId& account_id,
                                   const std::string& consumer_id,
                                   const ScopeSet& scopes,
-                                  GoogleServiceAuthError error,
+                                  const GoogleServiceAuthError& error,
                                   base::Time expiration_time) override;
   void OnAccessTokenRemoved(const CoreAccountId& account_id,
                             const ScopeSet& scopes) override;

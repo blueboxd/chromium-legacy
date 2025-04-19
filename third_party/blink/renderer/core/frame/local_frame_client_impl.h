@@ -54,7 +54,6 @@
 
 namespace blink {
 
-class BrowserInterfaceBrokerProxy;
 class WebDevToolsAgentImpl;
 class WebLocalFrameImpl;
 class WebSpellCheckPanelHostClient;
@@ -142,7 +141,7 @@ class CORE_EXPORT LocalFrameClientImpl final : public LocalFrameClient {
       mojo::PendingRemote<mojom::blink::NavigationStateKeepAliveHandle>
           initiator_navigation_state_keep_alive_handle,
       bool is_container_initiated,
-      bool is_fullscreen_requested) override;
+      bool has_rel_opener) override;
   void DispatchWillSendSubmitEvent(HTMLFormElement*) override;
   void DidStartLoading() override;
   void DidStopLoading() override;
@@ -167,9 +166,6 @@ class CORE_EXPORT LocalFrameClientImpl final : public LocalFrameClient {
   void DidObserveNewFeatureUsage(const UseCounterFeature&) override;
   void DidObserveSoftNavigation(SoftNavigationMetrics metrics) override;
   void DidObserveLayoutShift(double score, bool after_input_or_scroll) override;
-  void PreloadSubresourceOptimizationsForOrigins(
-      const WTF::HashSet<scoped_refptr<const SecurityOrigin>>& origins)
-      override;
   void SelectorMatchChanged(const Vector<String>& added_selectors,
                             const Vector<String>& removed_selectors) override;
 
@@ -234,8 +230,6 @@ class CORE_EXPORT LocalFrameClientImpl final : public LocalFrameClient {
   scoped_refptr<WebBackgroundResourceFetchAssets>
   MaybeGetBackgroundResourceFetchAssets() override;
 
-  blink::BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() override;
-
   AssociatedInterfaceProvider* GetRemoteNavigationAssociatedInterfaces()
       override;
 
@@ -294,9 +288,11 @@ class CORE_EXPORT LocalFrameClientImpl final : public LocalFrameClient {
       mojo::PendingAssociatedReceiver<mojom::blink::DevToolsAgent> receiver)
       override;
 
+  bool IsDomStorageDisabled() const override;
+
  private:
   bool IsLocalFrameClientImpl() const override { return true; }
-  WebDevToolsAgentImpl* DevToolsAgent();
+  WebDevToolsAgentImpl* DevToolsAgent(bool create_if_necessary);
 
   // The WebFrame that owns this object and manages its lifetime. Therefore,
   // the web frame object is guaranteed to exist.

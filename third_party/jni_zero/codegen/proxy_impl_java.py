@@ -37,6 +37,9 @@ public {return_type_str} {native.name}({sig_params})""")
   with sb.block():
     if native.first_param_cpp_type:
       sb(f'assert {native.params[0].name} != 0;\n')
+    for p in native.params:
+      if not p.java_type.nullable:
+        sb(f'assert {p.name} != null;\n')
     with sb.statement():
       if not native.return_type.is_void():
         sb(f'return ({return_type_str}) ')
@@ -118,6 +121,9 @@ def _imports(sb, ctx):
     classes.add(ctx.gen_jni_class.full_name_with_dots)
 
   for c in ctx.type_resolver.imports:
+    # Since this is pure Java, the class generated here will go through jarjar
+    # and thus we want to avoid prefixes.
+    c = c.class_without_prefix
     if c.is_nested:
       # We will refer to all nested classes by OuterClass.InnerClass. We do this
       # to reduce risk of naming collisions.

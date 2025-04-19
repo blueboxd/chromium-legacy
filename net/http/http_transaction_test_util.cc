@@ -27,6 +27,7 @@
 #include "net/base/load_timing_info.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_isolation_key.h"
+#include "net/base/proxy_chain.h"
 #include "net/base/schemeful_site.h"
 #include "net/cert/x509_certificate.h"
 #include "net/disk_cache/disk_cache.h"
@@ -439,6 +440,10 @@ int64_t MockNetworkTransaction::GetTotalSentBytes() const {
   return sent_bytes_;
 }
 
+int64_t MockNetworkTransaction::GetReceivedBodyBytes() const {
+  return received_body_bytes_;
+}
+
 void MockNetworkTransaction::DoneReading() {
   CHECK(!done_reading_called_);
   done_reading_called_ = true;
@@ -501,6 +506,9 @@ const int64_t MockNetworkTransaction::kTotalReceivedBytes = 1000;
 
 // static
 const int64_t MockNetworkTransaction::kTotalSentBytes = 100;
+
+// static
+const int64_t MockNetworkTransaction::kReceivedBodyBytes = 500;
 
 int MockNetworkTransaction::StartInternal(HttpRequestInfo request,
                                           CompletionOnceCallback callback) {
@@ -598,6 +606,7 @@ int MockNetworkTransaction::DoSendRequest() {
 
   sent_bytes_ = kTotalSentBytes;
   received_bytes_ = kTotalReceivedBytes;
+  received_body_bytes_ = kReceivedBodyBytes;
 
   const MockTransaction* t = FindMockTransaction(current_request_.url);
   CHECK(t);
@@ -620,8 +629,14 @@ int MockNetworkTransaction::DoSendRequest() {
   response_.was_cached = false;
   response_.network_accessed = true;
   response_.remote_endpoint = t->transport_info.endpoint;
-  response_.was_fetched_via_proxy =
-      t->transport_info.type == TransportType::kProxied;
+  if (t->transport_info.type == TransportType::kDirect) {
+    response_.proxy_chain = ProxyChain::Direct();
+  } else if (t->transport_info.type == TransportType::kProxied) {
+    response_.proxy_chain = ProxyChain::FromSchemeHostAndPort(
+        ProxyServer::SCHEME_HTTP,
+        t->transport_info.endpoint.ToStringWithoutPort(),
+        t->transport_info.endpoint.port());
+  }
 
   response_.response_time = transaction_factory_->Now();
   if (!t->response_time.is_null())
@@ -643,7 +658,7 @@ int MockNetworkTransaction::DoSendRequest() {
     response_.unused_since_prefetch = true;
   }
 
-  if (current_request_.load_flags & LOAD_RESTRICTED_PREFETCH) {
+  if (current_request_.load_flags & LOAD_RESTRICTED_PREFETCH_FOR_MAIN_FRAME) {
     DCHECK(response_.unused_since_prefetch);
     response_.restricted_prefetch = true;
   }

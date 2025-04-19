@@ -12,6 +12,7 @@ import org.chromium.base.Callback;
 import org.chromium.chrome.browser.profiles.Profile;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /** Bridge, providing access to the native-side Privacy Sandbox configuration. */
@@ -61,13 +62,13 @@ public class PrivacySandboxBridge {
         return new Topic(topicId, taxonomyVersion, name, description);
     }
 
-    private static List<Topic> sortTopics(Object[] topics) {
-        Arrays.sort(
+    private static List<Topic> sortTopics(List<Topic> topics) {
+        Collections.sort(
                 topics,
                 (o1, o2) -> {
                     return ((Topic) o1).getName().compareTo(((Topic) o2).getName());
                 });
-        return (List<Topic>) (List<?>) Arrays.asList(topics);
+        return topics;
     }
 
     public void getFledgeJoiningEtldPlusOneForDisplay(Callback<List<String>> callback) {
@@ -78,8 +79,7 @@ public class PrivacySandboxBridge {
     }
 
     public List<String> getBlockedFledgeJoiningTopFramesForDisplay() {
-        return Arrays.asList(
-                PrivacySandboxBridgeJni.get().getBlockedFledgeJoiningTopFramesForDisplay(mProfile));
+        return PrivacySandboxBridgeJni.get().getBlockedFledgeJoiningTopFramesForDisplay(mProfile);
     }
 
     public void setFledgeJoiningAllowed(String topFrameEtldPlus1, boolean allowed) {
@@ -128,6 +128,14 @@ public class PrivacySandboxBridge {
         PrivacySandboxBridgeJni.get().setAllPrivacySandboxAllowedForTesting(mProfile); // IN-TEST
     }
 
+    public void recordActivityType(@PrivacySandboxStorageActivityType int activityType) {
+        PrivacySandboxBridgeJni.get().recordActivityType(mProfile, activityType);
+    }
+
+    public boolean isConsentCountry() {
+        return PrivacySandboxBridgeJni.get().isConsentCountry();
+    }
+
     @NativeMethods
     public interface Natives {
         boolean isPrivacySandboxRestricted(Profile profile);
@@ -145,22 +153,24 @@ public class PrivacySandboxBridge {
         String getFirstPartySetOwner(Profile profile, String memberOrigin);
 
         @JniType("std::vector")
-        Object[] getCurrentTopTopics(Profile profile);
+        List<Topic> getCurrentTopTopics(Profile profile);
 
         @JniType("std::vector")
-        Object[] getBlockedTopics(Profile profile);
+        List<Topic> getBlockedTopics(Profile profile);
 
         @JniType("std::vector")
-        Object[] getFirstLevelTopics(Profile profile);
+        List<Topic> getFirstLevelTopics(Profile profile);
 
         @JniType("std::vector")
-        Object[] getChildTopicsCurrentlyAssigned(Profile profile, int topicId, int taxonomyVersion);
+        List<Topic> getChildTopicsCurrentlyAssigned(
+                Profile profile, int topicId, int taxonomyVersion);
 
         void setTopicAllowed(Profile profile, int topicId, int taxonomyVersion, boolean allowed);
 
         void getFledgeJoiningEtldPlusOneForDisplay(Profile profile, Callback<String[]> callback);
 
-        String[] getBlockedFledgeJoiningTopFramesForDisplay(Profile profile);
+        @JniType("std::vector<std::string>")
+        List<String> getBlockedFledgeJoiningTopFramesForDisplay(Profile profile);
 
         void setFledgeJoiningAllowed(Profile profile, String topFrameEtldPlus1, boolean allowed);
 
@@ -171,5 +181,9 @@ public class PrivacySandboxBridge {
         void topicsToggleChanged(Profile profile, boolean newValue);
 
         void setAllPrivacySandboxAllowedForTesting(Profile profile); // IN-TEST
+
+        void recordActivityType(Profile profile, int activityType);
+
+        boolean isConsentCountry();
     }
 }

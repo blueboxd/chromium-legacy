@@ -12,12 +12,13 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
+#include "chrome/browser/ui/color/chrome_color_id.h"
+#include "chrome/browser/ui/performance_controls/performance_controls_metrics.h"
 #include "chrome/browser/ui/performance_controls/performance_intervention_button_controller.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/performance_controls/performance_intervention_bubble.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/grit/generated_resources.h"
-#include "ui/accessibility/ax_enums.mojom-shared.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
@@ -36,10 +37,10 @@ PerformanceInterventionButton::PerformanceInterventionButton(
   button_controller()->set_notify_action(
       views::ButtonController::NotifyAction::kOnPress);
   SetFlipCanvasOnPaintForRTLUI(false);
-  // TODO(crbug.com/338620692): Replace placeholder accessibility name when
-  // strings finalize.
-  SetAccessibleName(std::u16string(),
-                    ax::mojom::NameFrom::kAttributeExplicitlyEmpty);
+  GetViewAccessibility().SetName(
+      l10n_util::GetStringUTF16(IDS_PERFORMANCE_INTERVENTION_BUTTON_ACCNAME));
+  SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_PERFORMANCE_INTERVENTION_BUTTON_TOOLTIP));
   SetProperty(views::kElementIdentifierKey,
               kToolbarPerformanceInterventionButtonElementId);
   SetVisible(false);
@@ -51,6 +52,7 @@ PerformanceInterventionButton::PerformanceInterventionButton(
 PerformanceInterventionButton::~PerformanceInterventionButton() = default;
 
 void PerformanceInterventionButton::Show() {
+  is_active_ = true;
   SetVisible(true);
   PreferredSizeChanged();
   CreateBubble();
@@ -70,24 +72,50 @@ bool PerformanceInterventionButton::IsBubbleShowing() {
 }
 
 void PerformanceInterventionButton::OnWidgetDestroying(views::Widget* widget) {
+  InterventionBubbleActionType type = InterventionBubbleActionType::kUnknown;
+  switch (widget->closed_reason()) {
+    case views::Widget::ClosedReason::kUnspecified:
+      type = InterventionBubbleActionType::kUnknown;
+      break;
+    case views::Widget::ClosedReason::kEscKeyPressed:
+      type = InterventionBubbleActionType::kClose;
+      break;
+    case views::Widget::ClosedReason::kCloseButtonClicked:
+      type = InterventionBubbleActionType::kClose;
+      break;
+    case views::Widget::ClosedReason::kLostFocus:
+      type = InterventionBubbleActionType::kIgnore;
+      break;
+    case views::Widget::ClosedReason::kCancelButtonClicked:
+      type = InterventionBubbleActionType::kDismiss;
+      break;
+    case views::Widget::ClosedReason::kAcceptButtonClicked:
+      type = InterventionBubbleActionType::kAccept;
+      break;
+  }
+
+  RecordInterventionBubbleClosedReason(
+      performance_manager::user_tuning::PerformanceDetectionManager::
+          ResourceType::kCpu,
+      type);
+
   bubble_dialog_model_host_ = nullptr;
   scoped_widget_observation_.Reset();
 }
 
 void PerformanceInterventionButton::OnThemeChanged() {
   ToolbarButton::OnThemeChanged();
-  SetImageModel(
-      ButtonState::STATE_NORMAL,
-      ui::ImageModel::FromVectorIcon(
-          kMemorySaverChromeRefreshIcon,
-          GetColorProvider()->GetColor(kColorDownloadToolbarButtonActive)));
+  UpdateIconColor();
 }
 
 void PerformanceInterventionButton::OnClicked() {
+  is_active_ = false;
+  UpdateIconColor();
   if (IsBubbleShowing()) {
     PerformanceInterventionBubble::CloseBubble(bubble_dialog_model_host_);
   } else {
     CreateBubble();
+    RecordInterventionToolbarButtonClicked();
   }
 }
 
@@ -96,6 +124,17 @@ void PerformanceInterventionButton::CreateBubble() {
   bubble_dialog_model_host_ = PerformanceInterventionBubble::CreateBubble(
       browser_view_->browser(), this, controller_.get());
   scoped_widget_observation_.Observe(bubble_dialog_model_host_->GetWidget());
+}
+
+void PerformanceInterventionButton::UpdateIconColor() {
+  const ui::ColorId icon_color =
+      is_active_ ? kColorPerformanceInterventionButtonIconActive
+                 : kColorPerformanceInterventionButtonIconInactive;
+
+  SetImageModel(
+      ButtonState::STATE_NORMAL,
+      ui::ImageModel::FromVectorIcon(kPerformanceSpeedometerIcon,
+                                     GetColorProvider()->GetColor(icon_color)));
 }
 
 BEGIN_METADATA(PerformanceInterventionButton)

@@ -26,7 +26,7 @@
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/platform/browser_interface_broker_proxy.h"
 
 using testing::_;
 using testing::AtLeast;
@@ -117,7 +117,7 @@ class VisualQueryClassifierAgentTest : public ChromeRenderViewTest {
     agent_ = VisualQueryClassifierAgent::Create(render_frame);
     model_file_ = LoadModelFile(model_file_path());
     base::DiscardableMemoryAllocator::SetInstance(&test_allocator_);
-    render_frame->GetBrowserInterfaceBroker()->SetBinderForTesting(
+    render_frame->GetBrowserInterfaceBroker().SetBinderForTesting(
         mojom::VisualSuggestionsModelProvider::Name_,
         base::BindRepeating(&FakeModelProvider::BindHandle,
                             base::Unretained(&fake_provider_)));
@@ -128,7 +128,7 @@ class VisualQueryClassifierAgentTest : public ChromeRenderViewTest {
     base::DiscardableMemoryAllocator::SetInstance(nullptr);
     // Simulate RenderFrame OnDestruct() call.
     agent_->OnDestruct();
-    GetMainRenderFrame()->GetBrowserInterfaceBroker()->SetBinderForTesting(
+    GetMainRenderFrame()->GetBrowserInterfaceBroker().SetBinderForTesting(
         mojom::VisualSuggestionsModelProvider::Name_, {});
     ChromeRenderViewTest::TearDown();
   }

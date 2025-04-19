@@ -35,7 +35,8 @@ namespace gpu {
 
 class ImageTransportSurfaceOverlayMacEGL : public gl::Presenter {
  public:
-  ImageTransportSurfaceOverlayMacEGL();
+  ImageTransportSurfaceOverlayMacEGL(
+      DawnContextProvider* dawn_context_provider);
 
   // Presenter implementation
   bool Resize(const gfx::Size& size,
@@ -53,8 +54,6 @@ class ImageTransportSurfaceOverlayMacEGL : public gl::Presenter {
       const gfx::OverlayPlaneData& overlay_plane_data) override;
 
   bool ScheduleCALayer(const ui::CARendererLayerParams& params) override;
-
-  void SetCALayerErrorCode(gfx::CALayerResult ca_layer_error_code) override;
 
   void SetMaxPendingSwaps(int max_pending_swaps) override;
 
@@ -107,6 +106,8 @@ class ImageTransportSurfaceOverlayMacEGL : public gl::Presenter {
 #endif
 
   int cap_max_pending_swaps_ = 1;
+
+  raw_ptr<DawnContextProvider> dawn_context_provider_ = nullptr;
 
   base::WeakPtrFactory<ImageTransportSurfaceOverlayMacEGL> weak_ptr_factory_;
 };

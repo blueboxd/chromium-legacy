@@ -3,14 +3,15 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/content_suggestions/set_up_list/set_up_list_item_view.h"
-#import "ios/chrome/browser/ui/content_suggestions/set_up_list/set_up_list_item_view+Testing.h"
 
+#import "base/feature_list.h"
 #import "base/notreached.h"
 #import "base/task/sequenced_task_runner.h"
 #import "base/time/time.h"
 #import "components/password_manager/core/common/password_manager_features.h"
 #import "ios/chrome/browser/ntp/model/set_up_list_item.h"
 #import "ios/chrome/browser/ntp/model/set_up_list_item_type.h"
+#import "ios/chrome/browser/segmentation_platform/model/segmented_default_browser_utils.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/elements/crossfade_label.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
@@ -18,6 +19,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_audience.h"
 #import "ios/chrome/browser/ui/content_suggestions/set_up_list/constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/set_up_list/set_up_list_item_icon.h"
+#import "ios/chrome/browser/ui/content_suggestions/set_up_list/set_up_list_item_view+Testing.h"
 #import "ios/chrome/browser/ui/content_suggestions/set_up_list/set_up_list_item_view_data.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
@@ -81,6 +83,7 @@ struct ViewConfig {
   if (self) {
     _type = data.type;
     _complete = data.complete;
+
     if (data.compactLayout) {
       // ViewConfig for a compact layout.
       int syncString =
@@ -89,11 +92,15 @@ struct ViewConfig {
           IsIOSTipsNotificationsEnabled()
               ? IDS_IOS_SET_UP_LIST_NOTIFICATIONS_SHORT_DESCRIPTION
               : IDS_IOS_SET_UP_LIST_CONTENT_NOTIFICATION_SHORT_DESCRIPTION;
+      int defaultBrowserString =
+          IsSegmentedDefaultBrowserPromoEnabled()
+              ? GetSetUpListDefaultBrowserDescriptionStringID(data.userSegment)
+              : IDS_IOS_SET_UP_LIST_DEFAULT_BROWSER_SHORT_DESCRIPTION;
       _config = {
           YES,
           NO,
           syncString,
-          IDS_IOS_SET_UP_LIST_DEFAULT_BROWSER_SHORT_DESCRIPTION,
+          defaultBrowserString,
           IDS_IOS_SET_UP_LIST_AUTOFILL_SHORT_DESCRIPTION,
           notificationsString,
           UIFontTextStyleFootnote,
@@ -106,11 +113,15 @@ struct ViewConfig {
           IsIOSTipsNotificationsEnabled()
               ? IDS_IOS_SET_UP_LIST_NOTIFICATIONS_DESCRIPTION
               : IDS_IOS_SET_UP_LIST_CONTENT_NOTIFICATION_DESCRIPTION;
+      int defaultBrowserString =
+          IsSegmentedDefaultBrowserPromoEnabled()
+              ? GetSetUpListDefaultBrowserDescriptionStringID(data.userSegment)
+              : IDS_IOS_SET_UP_LIST_DEFAULT_BROWSER_MAGIC_STACK_DESCRIPTION;
       _config = {
           NO,
           YES,
           syncString,
-          IDS_IOS_SET_UP_LIST_DEFAULT_BROWSER_MAGIC_STACK_DESCRIPTION,
+          defaultBrowserString,
           IDS_IOS_SET_UP_LIST_AUTOFILL_MAGIC_STACK_DESCRIPTION,
           notificationsString,
           UIFontTextStyleSubheadline,
@@ -124,11 +135,15 @@ struct ViewConfig {
           IsIOSTipsNotificationsEnabled()
               ? IDS_IOS_SET_UP_LIST_NOTIFICATIONS_DESCRIPTION
               : IDS_IOS_SET_UP_LIST_CONTENT_NOTIFICATION_DESCRIPTION;
+      int defaultBrowserString =
+          IsSegmentedDefaultBrowserPromoEnabled()
+              ? GetSetUpListDefaultBrowserDescriptionStringID(data.userSegment)
+              : IDS_IOS_SET_UP_LIST_DEFAULT_BROWSER_DESCRIPTION;
       _config = {
           NO,
           NO,
           syncString,
-          IDS_IOS_SET_UP_LIST_DEFAULT_BROWSER_DESCRIPTION,
+          defaultBrowserString,
           IDS_IOS_SET_UP_LIST_AUTOFILL_DESCRIPTION,
           notificationsString,
           UIFontTextStyleSubheadline,
@@ -348,7 +363,10 @@ struct ViewConfig {
       return l10n_util::GetNSString(
           IDS_IOS_CONSISTENCY_PROMO_DEFAULT_ACCOUNT_TITLE);
     case SetUpListItemType::kDefaultBrowser:
-      return l10n_util::GetNSString(IDS_IOS_SET_UP_LIST_DEFAULT_BROWSER_TITLE);
+      return l10n_util::GetNSString(
+          UseIPadTailoredStringForDefaultBrowserPromo()
+              ? IDS_IOS_SET_UP_LIST_DEFAULT_BROWSER_TITLE_IPAD
+              : IDS_IOS_SET_UP_LIST_DEFAULT_BROWSER_TITLE);
     case SetUpListItemType::kAutofill:
       return l10n_util::GetNSString(IDS_IOS_SET_UP_LIST_AUTOFILL_TITLE);
     case SetUpListItemType::kNotifications:

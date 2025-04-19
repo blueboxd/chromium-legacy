@@ -546,9 +546,11 @@ void FormStructureRationalizer::RationalizeCreditCardNumberOffsets(
       begin = end + 1;
       continue;
     }
-    if (has_reasonable_length({begin, end})) {
+    // SAFETY: The iterators are from the same container.
+    Group fields = Group(UNSAFE_BUFFERS({begin, end}));
+    if (has_reasonable_length(fields)) {
       size_t offset = 0;
-      for (auto& field : Group{begin, end}) {
+      for (auto& field : fields) {
         field->set_credit_card_number_offset(offset);
         offset += field->max_length();
       }
@@ -956,7 +958,8 @@ void FormStructureRationalizer::RationalizeRepeatedFields(
   // sectioned_field_indexes_by_type[|type|] is predicted by server as |type|.
   // Example: sectioned_field_indexes_by_type[FULL_NAME] is a sectioned fields
   // indexes of fields whose types are predicted as FULL_NAME by the server.
-  SectionedFieldsIndexes sectioned_field_indexes_by_type[MAX_VALID_FIELD_TYPE];
+  std::array<SectionedFieldsIndexes, MAX_VALID_FIELD_TYPE>
+      sectioned_field_indexes_by_type;
 
   for (size_t i = 0; i < fields_->size(); ++i) {
     const AutofillField& field = *(*fields_)[i];

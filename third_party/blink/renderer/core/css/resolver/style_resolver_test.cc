@@ -2472,8 +2472,6 @@ TEST_F(StyleResolverTest, IsInertWithFrameAndFullscreen) {
 }
 
 TEST_F(StyleResolverTest, IsInertWithBackdrop) {
-  ScopedBackdropInheritOriginatingForTest backdrop_inherit(true);
-
   Document& document = GetDocument();
   NonThrowableExceptionState exception_state;
 
@@ -2984,8 +2982,6 @@ TEST_F(StyleResolverTest, LegacyOverlapBorderImageWidth_Last_Style) {
 }
 
 TEST_F(StyleResolverTest, PositionTryStylesBasic_Cascade) {
-  ScopedCSSAnchorPositioningForTest enabled(true);
-
   SetBodyInnerHTML(R"HTML(
     <style>
       @position-try --f1 { left: 100px; }
@@ -2993,7 +2989,7 @@ TEST_F(StyleResolverTest, PositionTryStylesBasic_Cascade) {
       @position-try --f3 { inset: 50px; }
       #target {
         position: absolute;
-        position-try-options: --f1, --f2, --f3;
+        position-try-fallbacks: --f1, --f2, --f3;
       }
     </style>
     <div id="target"></div>
@@ -3030,8 +3026,6 @@ TEST_F(StyleResolverTest, PositionTryStylesBasic_Cascade) {
 }
 
 TEST_F(StyleResolverTest, PositionTryStylesResolveLogicalProperties_Cascade) {
-  ScopedCSSAnchorPositioningForTest enabled(true);
-
   SetBodyInnerHTML(R"HTML(
     <style>
       @position-try --f1 { inset-inline-start: 100px; }
@@ -3041,7 +3035,7 @@ TEST_F(StyleResolverTest, PositionTryStylesResolveLogicalProperties_Cascade) {
         writing-mode: vertical-rl;
         direction: rtl;
         inset: 50px;
-        position-try-options: --f1, --f2;
+        position-try-fallbacks: --f1, --f2;
       }
     </style>
     <div id="target"></div>
@@ -3077,15 +3071,13 @@ TEST_F(StyleResolverTest, PositionTryStylesResolveLogicalProperties_Cascade) {
 }
 
 TEST_F(StyleResolverTest, PositionTryStylesResolveRelativeLengthUnits_Cascade) {
-  ScopedCSSAnchorPositioningForTest enabled(true);
-
   SetBodyInnerHTML(R"HTML(
     <style>
       @position-try --f1 { top: 2em; }
       #target {
         position: absolute;
         font-size: 20px;
-        position-try-options: --f1;
+        position-try-fallbacks: --f1;
       }
     </style>
     <div id="target"></div>
@@ -3106,8 +3098,6 @@ TEST_F(StyleResolverTest, PositionTryStylesResolveRelativeLengthUnits_Cascade) {
 }
 
 TEST_F(StyleResolverTest, PositionTryStylesInBeforePseudoElement_Cascade) {
-  ScopedCSSAnchorPositioningForTest enabled(true);
-
   SetBodyInnerHTML(R"HTML(
     <style>
       @position-try --f1 { top: 50px; }
@@ -3115,7 +3105,7 @@ TEST_F(StyleResolverTest, PositionTryStylesInBeforePseudoElement_Cascade) {
         display: block;
         content: 'before';
         position: absolute;
-        position-try-options: --f1;
+        position-try-fallbacks: --f1;
       }
     </style>
     <div id="target"></div>
@@ -3131,7 +3121,7 @@ TEST_F(StyleResolverTest, PositionTryStylesInBeforePseudoElement_Cascade) {
   ASSERT_TRUE(base_style);
   EXPECT_EQ(Length::Auto(), GetTop(*base_style));
 
-  // 'position-try-options' applies to ::before pseudo-element.
+  // 'position-try-fallbacks' applies to ::before pseudo-element.
   UpdateStyleForOutOfFlow(*before, AtomicString("--f1"));
   const ComputedStyle* try1 = before->GetComputedStyle();
   ASSERT_TRUE(try1);
@@ -3139,8 +3129,6 @@ TEST_F(StyleResolverTest, PositionTryStylesInBeforePseudoElement_Cascade) {
 }
 
 TEST_F(StyleResolverTest, PositionTryStylesCSSWideKeywords_Cascade) {
-  ScopedCSSAnchorPositioningForTest enabled(true);
-
   SetBodyInnerHTML(R"HTML(
     <style>
       /* 'revert' and 'revert-layer' are already rejected by parser */
@@ -3150,7 +3138,7 @@ TEST_F(StyleResolverTest, PositionTryStylesCSSWideKeywords_Cascade) {
       #target {
         position: absolute;
         inset: 50px;
-        position-try-options: --f1, --f2, --f3;
+        position-try-fallbacks: --f1, --f2, --f3;
       }
       #container {
         position: absolute;
@@ -3198,15 +3186,13 @@ TEST_F(StyleResolverTest, PositionTryStylesCSSWideKeywords_Cascade) {
 }
 
 TEST_F(StyleResolverTest, PositionTryPropertyValueChange_Cascade) {
-  ScopedCSSAnchorPositioningForTest enabled(true);
-
   SetBodyInnerHTML(R"HTML(
     <style>
       @position-try --foo { top: 100px }
       @position-try --bar { left: 100px }
       #target {
         position: absolute;
-        position-try-options: --foo;
+        position-try-fallbacks: --foo;
       }
     </style>
     <div id="target"></div>
@@ -3229,7 +3215,7 @@ TEST_F(StyleResolverTest, PositionTryPropertyValueChange_Cascade) {
     EXPECT_EQ(Length::Auto(), GetLeft(*fallback));
   }
 
-  target->SetInlineStyleProperty(CSSPropertyID::kPositionTryOptions, "--bar");
+  target->SetInlineStyleProperty(CSSPropertyID::kPositionTryFallbacks, "--bar");
   UpdateAllLifecyclePhasesForTest();
 
   {
@@ -3248,8 +3234,6 @@ TEST_F(StyleResolverTest, PositionTryPropertyValueChange_Cascade) {
 }
 
 TEST_F(StyleResolverTest, PositionTry_PaintInvalidation) {
-  ScopedCSSAnchorPositioningForTest enabled(true);
-
   SetBodyInnerHTML(R"HTML(
     <style>
       @position-try --f1 { left: 2222222px; }
@@ -3258,7 +3242,7 @@ TEST_F(StyleResolverTest, PositionTry_PaintInvalidation) {
       #target {
         position: absolute;
         left: 1111111px;
-        position-try-options: --f1, --f2, --f3;
+        position-try-fallbacks: --f1, --f2, --f3;
       }
     </style>
     <div id="target"></div>
@@ -3949,6 +3933,38 @@ TEST_F(StyleResolverTest, CursorHandNotApplied) {
     )HTML");
   EXPECT_TRUE(IsUseCounted(WebFeature::kQuirksModeCursorHand));
   EXPECT_FALSE(IsUseCounted(WebFeature::kQuirksModeCursorHandApplied));
+}
+
+TEST_F(StyleResolverTest, TextSizeAdjustUseCounter) {
+  EXPECT_FALSE(IsUseCounted(WebFeature::kTextSizeAdjustNotAuto));
+  EXPECT_FALSE(IsUseCounted(WebFeature::kTextSizeAdjustPercentNot100));
+
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      .text-size-adjust-100 { text-size-adjust: 100%; }
+      .text-size-adjust-101 { text-size-adjust: 101%; }
+    </style>
+    <div id="target">target</div>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_FALSE(IsUseCounted(WebFeature::kTextSizeAdjustNotAuto));
+  EXPECT_FALSE(IsUseCounted(WebFeature::kTextSizeAdjustPercentNot100));
+
+  Element* target = GetDocument().getElementById(AtomicString("target"));
+  target->setAttribute(html_names::kClassAttr,
+                       AtomicString("text-size-adjust-100"));
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_TRUE(IsUseCounted(WebFeature::kTextSizeAdjustNotAuto));
+  EXPECT_FALSE(IsUseCounted(WebFeature::kTextSizeAdjustPercentNot100));
+
+  target->setAttribute(html_names::kClassAttr,
+                       AtomicString("text-size-adjust-101"));
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_TRUE(IsUseCounted(WebFeature::kTextSizeAdjustNotAuto));
+  EXPECT_TRUE(IsUseCounted(WebFeature::kTextSizeAdjustPercentNot100));
 }
 
 }  // namespace blink

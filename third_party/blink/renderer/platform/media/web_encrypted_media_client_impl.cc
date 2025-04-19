@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/platform/media/web_content_decryption_module_impl.h"
 
 namespace blink {
+
 namespace {
 
 // Used to name UMAs in Reporter.
@@ -33,18 +34,18 @@ const char kKeySystemSupportUMAPrefix[] =
 // to convert WebContentDecryptionModuleResult to a callback.
 void CompleteWebContentDecryptionModuleResult(
     std::unique_ptr<WebContentDecryptionModuleResult> result,
-    WebContentDecryptionModule* cdm,
-    const std::string& error_message) {
+    std::unique_ptr<WebContentDecryptionModule> cdm,
+    media::CreateCdmStatus status) {
   DCHECK(result);
 
   if (!cdm) {
     result->CompleteWithError(
         kWebContentDecryptionModuleExceptionNotSupportedError, 0,
-        WebString::FromUTF8(error_message));
+        WebString::FromASCII(base::ToString(status)));
     return;
   }
 
-  result->CompleteWithContentDecryptionModule(cdm);
+  result->CompleteWithContentDecryptionModule(std::move(cdm));
 }
 
 }  // namespace

@@ -14,6 +14,7 @@
 
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
+#include "base/check_deref.h"
 #include "base/check_is_test.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -22,6 +23,7 @@
 #include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/ranges/algorithm.h"
@@ -101,6 +103,14 @@ BASE_FEATURE(kRemoveLegacySupervisedUsersOnStartup,
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // static
+const char UserManagerBase::kDeprecatedArcKioskUsersHistogramName[] =
+    "Kiosk.DeprecatedArcKioskUsers";
+// static
+BASE_FEATURE(kRemoveDeprecatedArcKioskUsersOnStartup,
+             "RemoveDeprecatedArcKioskUsersOnStartup",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// static
 void UserManagerBase::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(prefs::kRegularUsersPref);
   registry->RegisterStringPref(prefs::kLastLoggedInGaiaUser, std::string());
@@ -159,7 +169,6 @@ void UserManagerBase::Shutdown() {
 }
 
 const UserList& UserManagerBase::GetUsers() const {
-  const_cast<UserManagerBase*>(this)->EnsureUsersLoaded();
   return users_;
 }
 
@@ -199,7 +208,7 @@ UserList UserManagerBase::FindLoginAllowedUsersFrom(
   for (User* user : users) {
     // Skip kiosk apps for login screen user list. Kiosk apps as pods (aka new
     // kiosk UI) is currently disabled and it gets the apps directly from
-    // KioskChromeAppManager, ArcKioskAppManager and WebKioskAppManager.
+    // KioskChromeAppManager and WebKioskAppManager.
     if (user->IsKioskType()) {
       continue;
     }
@@ -380,6 +389,7 @@ void UserManagerBase::UserLoggedIn(const AccountId& account_id,
       prefs::kLastLoggedInGaiaUser,
       active_user_->HasGaiaAccount() ? account_id.GetUserEmail() : "");
 
+  delegate_->CheckProfileOnLogin(*active_user_);
   NotifyOnLogin();
 }
 
@@ -457,11 +467,25 @@ void UserManagerBase::RemoveUser(const AccountId& account_id,
 
 void UserManagerBase::RemoveUserInternal(const AccountId& account_id,
                                          UserRemovalReason reason) {
-  RemoveNonOwnerUserInternal(account_id, reason);
-}
+  auto callback =
+      base::BindOnce(&UserManagerBase::RemoveUserInternal,
+                     weak_factory_.GetWeakPtr(), account_id, reason);
 
-void UserManagerBase::RemoveNonOwnerUserInternal(AccountId account_id,
-                                                 UserRemovalReason reason) {
+  // Ensure the value of owner email has been fetched.
+  if (cros_settings()->PrepareTrustedValues(std::move(callback)) !=
+      ash::CrosSettingsProvider::TRUSTED) {
+    // Value of owner email is not fetched yet.  RemoveUserInternal will be
+    // called again after fetch completion.
+    return;
+  }
+  std::string owner;
+  cros_settings()->GetString(ash::kDeviceOwner, &owner);
+  if (account_id == AccountId::FromUserEmail(owner)) {
+    // Owner is not allowed to be removed from the device.
+    return;
+  }
+  delegate_->RemoveProfileByAccountId(account_id);
+
   RemoveUserFromListImpl(account_id, reason,
                          /*trigger_cryptohome_removal=*/true);
 }
@@ -499,8 +523,11 @@ void UserManagerBase::CleanStaleUserInformationFor(
   RemoveUserFromList(account_id);
 }
 
+// Use AccountId instead of const AccountId& here, since the account_id maybe
+// originated from the one stored in the User being removed, and the removed ID
+// will be kept using after the actual deletion for observer call.
 void UserManagerBase::RemoveUserFromListImpl(
-    const AccountId& account_id,
+    AccountId account_id,
     std::optional<UserRemovalReason> reason,
     bool trigger_cryptohome_removal) {
   DCHECK(!task_runner_ || task_runner_->RunsTasksInCurrentSequence());
@@ -508,21 +535,17 @@ void UserManagerBase::RemoveUserFromListImpl(
     NotifyUserToBeRemoved(account_id);
   }
   if (trigger_cryptohome_removal) {
-    AsyncRemoveCryptohome(account_id);
+    delegate_->RemoveCryptohomeAsync(account_id);
   }
 
   RemoveNonCryptohomeData(account_id);
   KnownUser(local_state_.get()).RemovePrefs(account_id);
-  if (user_loading_stage_ == STAGE_LOADED) {
-    // After the User object is deleted from memory in DeleteUser() here,
-    // the account_id reference will be invalid if the reference points
-    // to the account_id in the User object.
-    DeleteUser(
-        RemoveRegularOrSupervisedUserFromList(account_id, reason.has_value()));
-  } else {
-    NOTREACHED_IN_MIGRATION() << "Users are not loaded yet.";
-    return;
-  }
+
+  // After the User object is deleted from memory in DeleteUser() here,
+  // the account_id reference will be invalid if the reference points
+  // to the account_id in the User object.
+  DeleteUser(
+      RemoveRegularOrSupervisedUserFromList(account_id, reason.has_value()));
 
   if (reason.has_value()) {
     NotifyUserRemoved(account_id, reason.value());
@@ -674,6 +697,23 @@ void UserManagerBase::SaveUserType(const User* user) {
   user_type_update->Set(user->GetAccountId().GetAccountIdKey(),
                         static_cast<int>(user->GetType()));
   local_state_->CommitPendingWrite();
+}
+
+void UserManagerBase::SetUserUsingSaml(const AccountId& account_id,
+                                       bool using_saml,
+                                       bool using_saml_principals_api) {
+  DCHECK(!task_runner_ || task_runner_->RunsTasksInCurrentSequence());
+
+  auto& user = CHECK_DEREF(FindUserAndModify(account_id));
+  user.set_using_saml(using_saml);
+
+  user_manager::KnownUser known_user(local_state_);
+  known_user.UpdateUsingSAML(account_id, using_saml);
+  known_user.UpdateIsUsingSAMLPrincipalsAPI(
+      account_id, using_saml && using_saml_principals_api);
+  if (!using_saml) {
+    known_user.ClearPasswordSyncToken(account_id);
+  }
 }
 
 std::optional<std::string> UserManagerBase::GetOwnerEmail() {
@@ -829,11 +869,6 @@ bool UserManagerBase::IsLoggedInAsKioskApp() const {
   return IsUserLoggedIn() && active_user_->GetType() == UserType::kKioskApp;
 }
 
-bool UserManagerBase::IsLoggedInAsArcKioskApp() const {
-  // TODO(b/336756417): Remove this method
-  return false;
-}
-
 bool UserManagerBase::IsLoggedInAsWebKioskApp() const {
   DCHECK(!task_runner_ || task_runner_->RunsTasksInCurrentSequence());
   return IsUserLoggedIn() && active_user_->GetType() == UserType::kWebKioskApp;
@@ -917,7 +952,12 @@ bool UserManagerBase::IsEphemeralAccountId(const AccountId& account_id) const {
     return true;
   }
 
-  return IsEphemeralAccountIdByPolicy(account_id);
+  const bool device_is_owned =
+      ash::InstallAttributes::Get()->IsEnterpriseManaged() ||
+      GetOwnerAccountId().is_valid();
+
+  return device_is_owned &&
+         GetEphemeralModeConfig().IsAccountIdIncluded(account_id);
 }
 
 void UserManagerBase::AddObserver(UserManager::Observer* obs) {
@@ -1010,6 +1050,45 @@ void UserManagerBase::NotifyUserNotAllowed(const std::string& user_email) {
   }
 }
 
+bool UserManagerBase::IsGuestSessionAllowed() const {
+  // In tests CrosSettings might not be initialized.
+  if (!cros_settings()) {
+    return false;
+  }
+
+  bool is_guest_allowed = false;
+  cros_settings()->GetBoolean(ash::kAccountsPrefAllowGuest, &is_guest_allowed);
+  return is_guest_allowed;
+}
+
+bool UserManagerBase::IsGaiaUserAllowed(const User& user) const {
+  DCHECK(user.HasGaiaAccount());
+  return cros_settings()->IsUserAllowlisted(user.GetAccountId().GetUserEmail(),
+                                            nullptr, user.GetType());
+}
+
+bool UserManagerBase::IsUserAllowed(const User& user) const {
+  DCHECK(user.GetType() == UserType::kRegular ||
+         user.GetType() == UserType::kGuest ||
+         user.GetType() == UserType::kChild);
+
+  return UserManager::IsUserAllowed(
+      user, IsGuestSessionAllowed(),
+      user.HasGaiaAccount() && IsGaiaUserAllowed(user));
+}
+
+bool UserManagerBase::IsDeprecatedSupervisedAccountId(
+    const AccountId& account_id) const {
+  return gaia::ExtractDomainName(account_id.GetUserEmail()) ==
+         kSupervisedUserDomain;
+}
+
+bool UserManagerBase::IsDeviceLocalAccountMarkedForRemoval(
+    const AccountId& account_id) const {
+  return account_id == AccountId::FromUserEmail(GetLocalState()->GetString(
+                           prefs::kDeviceLocalAccountPendingDataRemoval));
+}
+
 bool UserManagerBase::CanUserBeRemoved(const User* user) const {
   // Only regular users are allowed to be manually removed.
   if (!user || !user->HasGaiaAccount()) {
@@ -1073,10 +1152,6 @@ void UserManagerBase::EnsureUsersLoaded() {
   if (!local_state_) {
     return;
   }
-
-  if (user_loading_stage_ != STAGE_NOT_LOADED)
-    return;
-  user_loading_stage_ = STAGE_LOADING;
 
   const base::Value::List& prefs_regular_users =
       local_state_->GetList(prefs::kRegularUsersPref);
@@ -1149,15 +1224,40 @@ void UserManagerBase::EnsureUsersLoaded() {
       user->set_display_email(*display_email);
     }
   }
-  user_loading_stage_ = STAGE_LOADED;
 
   for (auto& observer : observer_list_) {
     observer.OnUserListLoaded();
   }
 }
 
+void UserManagerBase::LoadDeviceLocalAccounts(
+    std::set<AccountId>* device_local_accounts_set) {
+  const base::Value::List& prefs_device_local_accounts =
+      GetLocalState()->GetList(prefs::kDeviceLocalAccountsWithSavedData);
+  std::vector<AccountId> device_local_accounts;
+  ParseUserList(prefs_device_local_accounts, std::set<AccountId>(),
+                &device_local_accounts, device_local_accounts_set);
+  for (const AccountId& account_id : device_local_accounts) {
+    if (IsDeprecatedArcKioskAccountId(account_id)) {
+      RemoveDeprecatedArcKioskUser(account_id);
+      // Remove or hide deprecated ARC kiosk users from the login screen.
+      continue;
+    }
+
+    auto type =
+        delegate_->GetDeviceLocalAccountUserType(account_id.GetUserEmail());
+    if (!type.has_value()) {
+      NOTREACHED_IN_MIGRATION();
+      continue;
+    }
+
+    // Using `new` to access a non-public constructor.
+    user_storage_.push_back(base::WrapUnique(new User(account_id, *type)));
+    users_.push_back(user_storage_.back().get());
+  }
+}
+
 UserList& UserManagerBase::GetUsersAndModify() {
-  EnsureUsersLoaded();
   return users_;
 }
 
@@ -1193,7 +1293,7 @@ User* UserManagerBase::FindUserInListAndModify(const AccountId& account_id) {
 void UserManagerBase::GuestUserLoggedIn() {
   DCHECK(!task_runner_ || task_runner_->RunsTasksInCurrentSequence());
   auto* user = User::CreateGuestUser(GuestAccountId());
-  user->SetStubImage(CreateStubImage(), User::USER_IMAGE_INVALID,
+  user->SetStubImage(CreateStubImage(), UserImage::Type::kInvalid,
                      /*is_loading=*/false);
   user_storage_.emplace_back(user);
   active_user_ = user;
@@ -1266,7 +1366,7 @@ void UserManagerBase::PublicAccountUserLoggedIn(user_manager::User* user) {
 void UserManagerBase::KioskAppLoggedIn(user_manager::User* user) {
   DCHECK(!task_runner_ || task_runner_->RunsTasksInCurrentSequence());
 
-  user->SetStubImage(CreateStubImage(), User::USER_IMAGE_INVALID,
+  user->SetStubImage(CreateStubImage(), UserImage::Type::kInvalid,
                      /*is_loading=*/false);
   active_user_ = user;
 }
@@ -1467,6 +1567,7 @@ void UserManagerBase::Initialize() {
       known_user.CleanObsoletePrefs();
     }
   }
+  EnsureUsersLoaded();
   NotifyLoginStateUpdated();
 }
 
@@ -1592,6 +1693,26 @@ void UserManagerBase::RemoveLegacySupervisedUser(const AccountId& account_id) {
   } else {
     base::UmaHistogramEnumeration(kLegacySupervisedUsersHistogramName,
                                   LegacySupervisedUserStatus::kLSUHidden);
+  }
+}
+
+bool UserManagerBase::IsDeprecatedArcKioskAccountId(
+    const AccountId& account_id) const {
+  return gaia::ExtractDomainName(account_id.GetUserEmail()) == kArcKioskDomain;
+}
+
+// TODO(b/355590943): Remove dormant deprecated ARC kiosk user cryptohomes.
+// Remove this once confident that all ARC kiosk cryptohomes are cleaned up.
+void UserManagerBase::RemoveDeprecatedArcKioskUser(
+    const AccountId& account_id) {
+  CHECK(IsDeprecatedArcKioskAccountId(account_id));
+  if (base::FeatureList::IsEnabled(kRemoveDeprecatedArcKioskUsersOnStartup)) {
+    RemoveUserInternal(account_id, UserRemovalReason::UNKNOWN);
+    base::UmaHistogramEnumeration(kDeprecatedArcKioskUsersHistogramName,
+                                  DeprecatedArcKioskUserStatus::kDeleted);
+  } else {
+    base::UmaHistogramEnumeration(kDeprecatedArcKioskUsersHistogramName,
+                                  DeprecatedArcKioskUserStatus::kHidden);
   }
 }
 

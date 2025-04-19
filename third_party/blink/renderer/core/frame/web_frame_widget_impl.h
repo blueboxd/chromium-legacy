@@ -35,9 +35,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
+#include "base/types/optional_ref.h"
 #include "base/types/pass_key.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
+#include "cc/input/browser_controls_offset_tags_info.h"
 #include "cc/input/event_listener_properties.h"
 #include "cc/input/overscroll_behavior.h"
 #include "cc/trees/layer_tree_host.h"
@@ -169,12 +171,8 @@ class CORE_EXPORT WebFrameWidgetImpl
   // If this widget is for the top most main frame. This is different than
   // |ForMainFrame| because |ForMainFrame| could return true but this method
   // returns false. If this widget is a MainFrame widget embedded in another
-  // widget, for example embedding a portal.
+  // widget, for example embedding a <webview>.
   bool ForTopMostMainFrame() const;
-
-  // Adjusts whether the widget is nested or not. This is called during portal
-  // transitions.
-  void SetIsNestedMainFrameWidget(bool is_nested);
 
   // Returns true if this widget is for a local root that is a child frame,
   // false otherwise.
@@ -235,9 +233,12 @@ class CORE_EXPORT WebFrameWidgetImpl
   void RequestBeginMainFrameNotExpected(bool request) final;
   int GetLayerTreeId() final;
   const cc::LayerTreeSettings* GetLayerTreeSettings() final;
-  void UpdateBrowserControlsState(cc::BrowserControlsState constraints,
-                                  cc::BrowserControlsState current,
-                                  bool animate) final;
+  void UpdateBrowserControlsState(
+      cc::BrowserControlsState constraints,
+      cc::BrowserControlsState current,
+      bool animate,
+      base::optional_ref<const cc::BrowserControlsOffsetTagsInfo>
+          offset_tags_info) final;
   void SetEventListenerProperties(cc::EventListenerClass,
                                   cc::EventListenerProperties) final;
   cc::EventListenerProperties EventListenerProperties(
@@ -248,10 +249,6 @@ class CORE_EXPORT WebFrameWidgetImpl
   const WebVector<gfx::Rect>& ViewportSegments() const override;
   void SetDelegatedInkMetadata(
       std::unique_ptr<gfx::DelegatedInkMetadata> metadata) final;
-  void DidOverscroll(const gfx::Vector2dF& overscroll_delta,
-                     const gfx::Vector2dF& accumulated_overscroll,
-                     const gfx::PointF& position,
-                     const gfx::Vector2dF& velocity) override;
   void InjectScrollbarGestureScroll(const gfx::Vector2dF& delta,
                                     ui::ScrollGranularity granularity,
                                     cc::ElementId scrollable_area_element_id,
@@ -389,6 +386,7 @@ class CORE_EXPORT WebFrameWidgetImpl
   void SetDeviceScaleFactorForTesting(float factor) override;
   FrameWidgetTestHelper* GetFrameWidgetTestHelperForTesting() override;
   void PrepareForFinalLifecyclUpdateForTesting() override;
+  void ApplyLocalSurfaceIdUpdate(const viz::LocalSurfaceId& id) override;
 
   // Called when a drag-n-drop operation should begin.
   virtual void StartDragging(LocalFrame* source_frame,
@@ -502,7 +500,9 @@ class CORE_EXPORT WebFrameWidgetImpl
   // Called when the FrameView for this Widget's local root is created.
   void DidCreateLocalRootView();
 
-  void SetZoomLevel(double zoom_level);
+  double GetZoomLevel() override;
+  void SetZoomLevel(double zoom_level) override;
+  double GetCSSZoomFactor() const override;
 
   // Called when the View has auto resized.
   virtual void DidAutoResize(const gfx::Size& size);
@@ -696,8 +696,10 @@ class CORE_EXPORT WebFrameWidgetImpl
   // Return if there is a pending scale animation.
   bool HasPendingPageScaleAnimation();
 
-  // Set the source URL for the compositor.
-  void SetSourceURLForCompositor(ukm::SourceId source_id, const KURL& url);
+  // Set the source URL and the `primary_main_frame_item_sequence_number`
+  // (if the compositor is rendering the primary main frame) for the compositor.
+  void UpdateNavigationStateForCompositor(ukm::SourceId source_id,
+                                          const KURL& url);
 
   // Ask compositor to create the shared memory for smoothness ukm region.
   base::ReadOnlySharedMemoryRegion CreateSharedMemoryForSmoothnessUkm();
@@ -907,6 +909,8 @@ class CORE_EXPORT WebFrameWidgetImpl
                                        const WebMouseWheelEvent&) override;
   WebInputEventResult HandleCharEvent(const WebKeyboardEvent&) override;
 
+  void SetZoomInternal(double zoom_level, double css_zoom_factor);
+
   WebInputEventResult HandleCapturedMouseEvent(const WebCoalescedInputEvent&);
   void MouseContextMenu(const WebMouseEvent&);
   void CancelDrag();
@@ -1006,8 +1010,6 @@ class CORE_EXPORT WebFrameWidgetImpl
   // change the fullscreen state (e.g. on/off or current display).
   bool DidChangeFullscreenState(
       const VisualProperties& visual_properties) const;
-
-  void NotifyZoomLevelChanged(LocalFrame* root);
 
   // Satisfy the render blocking condition for cross-document view transitions.
   void NotifyViewTransitionRenderingHasBegun();
@@ -1188,8 +1190,8 @@ class CORE_EXPORT WebFrameWidgetImpl
     // Last background color sent to the browser. Only set for main frames.
     std::optional<SkColor> last_background_color;
     // This bit is used to tell if this is a nested widget (an "inner web
-    // contents") like a <webview> or <portal> widget. If false, the widget is
-    // the top level widget.
+    // contents") like a <webview>. If false, the widget is the top level
+    // widget.
     bool is_for_nested_main_frame = false;
   } main_frame_data_;
 
@@ -1209,7 +1211,7 @@ class CORE_EXPORT WebFrameWidgetImpl
   // all embedded scenarios).
   const bool is_for_child_local_root_;
 
-  // Whether this widget is for a portal, guest view, or top level frame.
+  // Whether this widget is for a guest view, or top level frame.
   // These may have a page scale node, so it is important to plumb this
   // information through to avoid breaking assumptions.
   const bool is_for_scalable_page_;
@@ -1224,6 +1226,9 @@ class CORE_EXPORT WebFrameWidgetImpl
 
   base::WeakPtrFactory<mojom::blink::FrameWidgetInputHandler>
       input_handler_weak_ptr_factory_{this};
+
+  double zoom_level_ = 0;
+  double css_zoom_factor_ = 1;
 };
 
 }  // namespace blink

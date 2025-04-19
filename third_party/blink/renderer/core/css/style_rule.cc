@@ -19,6 +19,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/core/css/style_rule.h"
 
 #include "third_party/blink/renderer/core/css/cascade_layer.h"
@@ -32,6 +37,8 @@
 #include "third_party/blink/renderer/core/css/css_keyframes_rule.h"
 #include "third_party/blink/renderer/core/css/css_layer_block_rule.h"
 #include "third_party/blink/renderer/core/css/css_layer_statement_rule.h"
+#include "third_party/blink/renderer/core/css/css_margin_rule.h"
+#include "third_party/blink/renderer/core/css/css_markup.h"
 #include "third_party/blink/renderer/core/css/css_media_rule.h"
 #include "third_party/blink/renderer/core/css/css_namespace_rule.h"
 #include "third_party/blink/renderer/core/css/css_page_rule.h"
@@ -170,11 +177,17 @@ void StyleRuleBase::Trace(Visitor* visitor) const {
     case kFunction:
       To<StyleRuleFunction>(this)->TraceAfterDispatch(visitor);
       return;
+    case kMixin:
+      To<StyleRuleMixin>(this)->TraceAfterDispatch(visitor);
+      return;
+    case kApplyMixin:
+      To<StyleRuleApplyMixin>(this)->TraceAfterDispatch(visitor);
+      return;
     case kPositionTry:
       To<StyleRulePositionTry>(this)->TraceAfterDispatch(visitor);
       return;
   }
-  DUMP_WILL_BE_NOTREACHED_NORETURN();
+  DUMP_WILL_BE_NOTREACHED();
 }
 
 void StyleRuleBase::FinalizeGarbageCollectedObject() {
@@ -248,6 +261,12 @@ void StyleRuleBase::FinalizeGarbageCollectedObject() {
     case kFunction:
       To<StyleRuleFunction>(this)->~StyleRuleFunction();
       return;
+    case kMixin:
+      To<StyleRuleMixin>(this)->~StyleRuleMixin();
+      return;
+    case kApplyMixin:
+      To<StyleRuleApplyMixin>(this)->~StyleRuleApplyMixin();
+      return;
     case kPositionTry:
       To<StyleRulePositionTry>(this)->~StyleRulePositionTry();
       return;
@@ -294,6 +313,8 @@ StyleRuleBase* StyleRuleBase::Copy() const {
     case kCharset:
     case kKeyframe:
     case kFunction:
+    case kMixin:
+    case kApplyMixin:
       NOTREACHED_IN_MIGRATION();
       return nullptr;
     case kContainer:
@@ -329,6 +350,10 @@ CSSRule* StyleRuleBase::CreateCSSOMWrapper(wtf_size_t position_hint,
       }
       rule = MakeGarbageCollected<CSSPageRule>(To<StyleRulePage>(self),
                                                parent_sheet);
+      break;
+    case kPageMargin:
+      rule = MakeGarbageCollected<CSSMarginRule>(To<StyleRulePageMargin>(self),
+                                                 parent_sheet);
       break;
     case kProperty:
       rule = MakeGarbageCollected<CSSPropertyRule>(To<StyleRuleProperty>(self),
@@ -401,8 +426,9 @@ CSSRule* StyleRuleBase::CreateCSSOMWrapper(wtf_size_t position_hint,
     case kFontFeature:
     case kKeyframe:
     case kCharset:
-    case kPageMargin:
     case kFunction:
+    case kMixin:
+    case kApplyMixin:
       NOTREACHED_IN_MIGRATION();
       return nullptr;
   }
@@ -577,11 +603,11 @@ void StyleRule::TraceAfterDispatch(blink::Visitor* visitor) const {
   StyleRuleBase::TraceAfterDispatch(visitor);
 }
 
-void StyleRuleBase::Reparent(StyleRule* old_parent, StyleRule* new_parent) {
+void StyleRuleBase::Reparent(StyleRule* new_parent) {
   switch (GetType()) {
     case kStyle:
       CSSSelectorList::Reparent(To<StyleRule>(this)->SelectorArray(),
-                                old_parent, new_parent);
+                                new_parent);
       break;
     case kScope:
     case kLayerBlock:
@@ -591,14 +617,19 @@ void StyleRuleBase::Reparent(StyleRule* old_parent, StyleRule* new_parent) {
     case kStartingStyle:
       for (StyleRuleBase* child :
            DynamicTo<StyleRuleGroup>(this)->ChildRules()) {
-        child->Reparent(old_parent, new_parent);
+        child->Reparent(new_parent);
       }
       break;
     case kPage:
       for (StyleRuleBase* child :
            DynamicTo<StyleRulePage>(this)->ChildRules()) {
-        child->Reparent(old_parent, new_parent);
+        child->Reparent(new_parent);
       }
+      break;
+    case kMixin:
+    case kApplyMixin:
+      // The parent pointers in mixins don't really matter;
+      // they are always replaced during application anyway.
       break;
     case kPageMargin:
     case kProperty:
@@ -710,13 +741,12 @@ void StyleRuleScope::SetPreludeText(const ExecutionContext* execution_context,
   CSSTokenizer tokenizer(value);
   Vector<CSSParserToken, 32> tokens = tokenizer.TokenizeToEOF();
 
-  StyleRule* old_parent = style_scope_->RuleForNesting();
   style_scope_ =
       StyleScope::Parse(tokens, parser_context, nesting_type,
                         parent_rule_for_nesting, is_within_scope, style_sheet);
 
   // Reparent rules within the @scope's body.
-  Reparent(old_parent, style_scope_->RuleForNesting());
+  Reparent(style_scope_->RuleForNesting());
 }
 
 StyleRuleGroup::StyleRuleGroup(RuleType type,
@@ -767,7 +797,7 @@ String StyleRuleBase::LayerNameAsString(
     if (result.length()) {
       result.Append(".");
     }
-    result.Append(part);
+    SerializeIdentifier(part, result);
   }
   return result.ReleaseString();
 }
@@ -950,6 +980,23 @@ StyleRuleFunction::StyleRuleFunction(
 
 void StyleRuleFunction::TraceAfterDispatch(blink::Visitor* visitor) const {
   visitor->Trace(function_body_);
+  StyleRuleBase::TraceAfterDispatch(visitor);
+}
+
+StyleRuleMixin::StyleRuleMixin(AtomicString name, StyleRule* fake_parent_rule)
+    : StyleRuleBase(kMixin),
+      name_(std::move(name)),
+      fake_parent_rule_(fake_parent_rule) {}
+
+void StyleRuleMixin::TraceAfterDispatch(blink::Visitor* visitor) const {
+  StyleRuleBase::TraceAfterDispatch(visitor);
+  visitor->Trace(fake_parent_rule_);
+}
+
+StyleRuleApplyMixin::StyleRuleApplyMixin(AtomicString name)
+    : StyleRuleBase(kApplyMixin), name_(std::move(name)) {}
+
+void StyleRuleApplyMixin::TraceAfterDispatch(blink::Visitor* visitor) const {
   StyleRuleBase::TraceAfterDispatch(visitor);
 }
 

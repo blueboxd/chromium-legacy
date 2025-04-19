@@ -2,12 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "gpu/command_buffer/service/gles2_cmd_copy_texture_chromium.h"
 
 #include <stddef.h>
 
 #include <unordered_map>
 
+#include "base/containers/heap_array.h"
 #include "base/ranges/algorithm.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/gles2_cmd_copy_texture_chromium_utils.h"
@@ -319,10 +325,8 @@ void InsertVersionDirective(std::string* source, unsigned glslVersion) {
 unsigned ChooseGLSLVersion(const gl::GLVersionInfo& gl_version_info,
                            GLenum dest_format) {
   bool use_essl300_features = CopyTextureCHROMIUMNeedsESSL3(dest_format);
-  if (use_essl300_features && gl_version_info.is_es) {
+  if (use_essl300_features) {
     return GLSL_ESSL300;
-  } else if (gl_version_info.IsAtLeastGL(3, 2)) {
-    return GLSL_CORE_PROFILE;
   } else {
     return GLSL_ESSL100_OR_COMPATIBILITY_PROFILE;
   }
@@ -669,8 +673,7 @@ void convertToRGBFloat(const uint8_t* source,
 }
 
 // Prepare the image data to be uploaded to a texture in pixel unpack buffer.
-void prepareUnpackBuffer(GLuint buffer[2],
-                         bool is_es,
+void PrepareUnpackBuffer(GLuint buffer[2],
                          GLenum format,
                          GLenum type,
                          GLsizei width,
@@ -680,9 +683,7 @@ void prepareUnpackBuffer(GLuint buffer[2],
   // Result of glReadPixels with format == GL_RGB and type == GL_UNSIGNED_BYTE
   // from read framebuffer in RGBA fromat is not correct on desktop core
   // profile on both Linux Mesa and Linux NVIDIA. This may be a driver bug.
-  bool is_rgb_unsigned_byte = format == GL_RGB && type == GL_UNSIGNED_BYTE;
-  if ((!is_es && !is_rgb_unsigned_byte) ||
-      (format == GL_RGBA && type == GL_UNSIGNED_BYTE)) {
+  if (format == GL_RGBA && type == GL_UNSIGNED_BYTE) {
     uint32_t bytes_per_group =
         gpu::gles2::GLES2Util::ComputeImageGroupSize(format, type);
     glBindBuffer(GL_PIXEL_PACK_BUFFER, buffer[0]);
@@ -703,15 +704,15 @@ void prepareUnpackBuffer(GLuint buffer[2],
     // GLCopyTextureCHROMIUMES3Test.FormatCombinations in gl_tests. This is seen
     // on Nexus 5 but not Nexus 4. Read pixels to client memory, then upload to
     // pixel unpack buffer with glBufferData.
-    std::unique_ptr<uint8_t[]> pixels(new uint8_t[width * height * 4]);
-    glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels.get());
-    std::unique_ptr<float[]> data(new float[width * height * 3]);
-    convertToRGBFloat(pixels.get(), data.get(), pixel_num);
+    auto pixels = base::HeapArray<uint8_t>::Uninit(width * height * 4);
+    glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
+    auto data = base::HeapArray<float>::Uninit(width * height * 3);
+    convertToRGBFloat(pixels.data(), data.data(), pixel_num);
     bytes_per_group =
         gpu::gles2::GLES2Util::ComputeImageGroupSize(format, type);
     buf_size = pixel_num * bytes_per_group;
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, buffer[1]);
-    glBufferData(GL_PIXEL_UNPACK_BUFFER, buf_size, data.get(), GL_STATIC_DRAW);
+    glBufferData(GL_PIXEL_UNPACK_BUFFER, buf_size, data.data(), GL_STATIC_DRAW);
 #else
     glBindBuffer(GL_PIXEL_PACK_BUFFER, buffer[0]);
     glBufferData(GL_PIXEL_PACK_BUFFER, buf_size, 0, GL_STATIC_READ);
@@ -805,13 +806,12 @@ void DoReadbackAndTexImage(TexImageCommandType command_type,
 
     // TODO(qiankun.miao@intel.com): PIXEL_PACK_BUFFER and PIXEL_UNPACK_BUFFER
     // are not supported in ES2.
-    bool is_es = decoder->GetFeatureInfo()->gl_version_info().is_es;
     DCHECK(!decoder->GetFeatureInfo()->gl_version_info().is_es2);
 
-    uint32_t buffer_num = is_es && format == GL_RGB && type == GL_FLOAT ? 2 : 1;
+    uint32_t buffer_num = format == GL_RGB && type == GL_FLOAT ? 2 : 1;
     GLuint buffer[2] = {0u};
     glGenBuffersARB(buffer_num, buffer);
-    prepareUnpackBuffer(buffer, is_es, format, type, width, height);
+    PrepareUnpackBuffer(buffer, format, type, width, height);
 
     if (command_type == kTexImage) {
       glTexImage2D(dest_target, dest_level, dest_internal_format, width, height,
@@ -1245,9 +1245,7 @@ void CopyTextureResourceManagerImpl::DoCopyTextureInternal(
   if (vertex_array_object_id_) {
     glBindVertexArrayOES(vertex_array_object_id_);
   } else {
-    if (!gl_version_info.is_desktop_core_profile) {
-      decoder->ClearAllAttributes();
-    }
+    decoder->ClearAllAttributes();
     glEnableVertexAttribArray(kVertexPositionAttrib);
     glBindBuffer(GL_ARRAY_BUFFER, buffer_id_);
     glVertexAttribPointer(kVertexPositionAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);

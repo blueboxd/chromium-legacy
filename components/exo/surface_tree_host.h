@@ -17,6 +17,7 @@
 #include "components/viz/common/gpu/context_lost_observer.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/display_manager_observer.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -154,6 +155,8 @@ class SurfaceTreeHost : public SurfaceDelegate,
   // viz::ContextLostObserver:
   void OnContextLost() override;
 
+  void OnFrameSinkLost();
+
   void set_client_submits_surfaces_in_pixel_coordinates(bool enabled) {
     client_submits_surfaces_in_pixel_coordinates_ = enabled;
   }
@@ -179,6 +182,7 @@ class SurfaceTreeHost : public SurfaceDelegate,
 
   // Applies rounded_corner_bounds (bounds + radii_in_dps) to the surface tree.
   // `rounded_corner_bounds` should be in the coordinate space of the
+  // `root_surface`.
   void ApplyRoundedCornersToSurfaceTree(
       const gfx::RectF& bounds,
       const gfx::RoundedCornersF& radii_in_dps);
@@ -277,6 +281,7 @@ class SurfaceTreeHost : public SurfaceDelegate,
   viz::CompositorFrame PrepareToSubmitCompositorFrame();
 
   void HandleContextLost();
+  void HandleFrameSinkLost();
 
   void CleanUpCallbacks();
 

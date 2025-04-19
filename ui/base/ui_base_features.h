@@ -33,6 +33,11 @@ BASE_DECLARE_FEATURE(kUiCompositorScrollWithLayers);
 
 COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsUiGpuRasterizationEnabled();
 
+#if BUILDFLAG(IS_ANDROID)
+COMPONENT_EXPORT(UI_BASE_FEATURES) BASE_DECLARE_FEATURE(kClipboardFiles);
+COMPONENT_EXPORT(UI_BASE_FEATURES) BASE_DECLARE_FEATURE(kDragDropFiles);
+#endif  // BUILDFLAG(IS_ANDROID)
+
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
 COMPONENT_EXPORT(UI_BASE_FEATURES) BASE_DECLARE_FEATURE(kElasticOverscroll);
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
@@ -84,8 +89,6 @@ COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsForcedColorsEnabled();
 
 // Used to enable the eye-dropper in the refresh color-picker.
 COMPONENT_EXPORT(UI_BASE_FEATURES) BASE_DECLARE_FEATURE(kEyeDropper);
-// TODO(https://crbug.com/329678163): This flag should be removed.
-COMPONENT_EXPORT(UI_BASE_FEATURES) extern const char kEyeDropperNotSupported[];
 COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsEyeDropperEnabled();
 
 COMPONENT_EXPORT(UI_BASE_FEATURES)
@@ -130,7 +133,18 @@ COMPONENT_EXPORT(UI_BASE_FEATURES) bool AreF11AndF12ShortcutsEnabled();
 #if BUILDFLAG(IS_OZONE)
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 BASE_DECLARE_FEATURE(kOzoneBubblesUsePlatformWidgets);
+
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+BASE_DECLARE_FEATURE(kWaylandPerSurfaceScale);
+
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+BASE_DECLARE_FEATURE(kWaylandTextInputV3);
 #endif  // BUILDFLAG(IS_OZONE)
+
+#if BUILDFLAG(IS_LINUX)
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+BASE_DECLARE_FEATURE(kOverrideDefaultOzonePlatformHintToAuto);
+#endif  // BUILDFLAG(IS_LINUX)
 
 // Indicates whether DrmOverlayManager should used the synchronous API to
 // perform pageflip tests.
@@ -191,22 +205,15 @@ COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsRawDrawUsingMSAA();
 
 COMPONENT_EXPORT(UI_BASE_FEATURES) BASE_DECLARE_FEATURE(kStylusSpecificTapSlop);
 
-// This feature indicates that this device is approved for utilizing variable
-// refresh rates. This flag is added by cros-config and not exposed in the
-// chrome://flags UI.
-COMPONENT_EXPORT(UI_BASE_FEATURES)
-BASE_DECLARE_FEATURE(kVariableRefreshRateAvailable);
-// Enables the variable refresh rate feature for Borealis gaming only. If this
-// flag is set by Finch, it requires the availability flag to also be true. If
-// this flag is overridden by the user, then the availability flag is ignored.
-COMPONENT_EXPORT(UI_BASE_FEATURES)
-BASE_DECLARE_FEATURE(kEnableVariableRefreshRate);
 // This feature indicates that this device should have variable refresh rates
 // enabled by default if available. This overrides the default value of
-// |kEnableVariableRefreshRate|. This flag is added by USE and not exposed in
-// the chrome://flags UI.
+// |kEnableVariableRefreshRate|. This flag is added by cros-config and not
+// exposed in the chrome://flags UI.
 COMPONENT_EXPORT(UI_BASE_FEATURES)
-BASE_DECLARE_FEATURE(kVariableRefreshRateDefaultEnabled);
+BASE_DECLARE_FEATURE(kVariableRefreshRateAvailable);
+// Enables the variable refresh rate feature for Borealis gaming only.
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+BASE_DECLARE_FEATURE(kEnableVariableRefreshRate);
 COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsVariableRefreshRateEnabled();
 // Enables the variable refresh rate feature at all times.
 COMPONENT_EXPORT(UI_BASE_FEATURES)
@@ -216,20 +223,6 @@ COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsVariableRefreshRateAlwaysOn();
 COMPONENT_EXPORT(UI_BASE_FEATURES) BASE_DECLARE_FEATURE(kLacrosColorManagement);
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 bool IsLacrosColorManagementEnabled();
-
-// Exposed for testing and flags integration. For actual checks please use
-// IsChromeRefresh2023().
-COMPONENT_EXPORT(UI_BASE_FEATURES) BASE_DECLARE_FEATURE(kChromeRefresh2023);
-COMPONENT_EXPORT(UI_BASE_FEATURES)
-BASE_DECLARE_FEATURE(kChromeRefreshSecondary2023);
-
-COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsChromeRefresh2023();
-
-// Exposed for testing and flags integration. For actual checks please use
-// IsChromeWebuiRefresh2023().
-COMPONENT_EXPORT(UI_BASE_FEATURES) BASE_DECLARE_FEATURE(kChromeRefresh2023);
-
-COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsChromeWebuiRefresh2023();
 
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 BASE_DECLARE_FEATURE(kBubbleMetricsApi);
@@ -254,10 +247,25 @@ BASE_DECLARE_FEATURE(kCr2023MacFontSmoothing);
 // If not set, these values fall back to the pre-defined Skia defaults.
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 BASE_DECLARE_FEATURE(kUseGammaContrastRegistrySettings);
+
+// Increases the contrast of text to align more closely with contemporary
+// applications.
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+BASE_DECLARE_FEATURE(kIncreaseWindowsTextContrast);
 #endif  // BUILDFLAG(IS_WIN)
 
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 BASE_DECLARE_FEATURE(kBubbleFrameViewTitleIsHeading);
+
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+BASE_DECLARE_FEATURE(kEnableGestureBeginEndTypes);
+
+// Use the UTF-8 encoding for SVG images instead of UTF-16.
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+BASE_DECLARE_FEATURE(kUseUtf8EncodingForSvgImage);
+
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+BASE_DECLARE_FEATURE(kAsyncFullscreenWindowState);
 
 }  // namespace features
 

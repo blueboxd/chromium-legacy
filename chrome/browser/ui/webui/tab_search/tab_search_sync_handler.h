@@ -35,15 +35,10 @@ class TabSearchSyncHandler : public content::WebUIMessageHandler,
   void OnJavascriptAllowed() override;
   void OnJavascriptDisallowed() override;
 
-  // Retrieves sync related information from the SyncService.
-  base::Value::Dict GetSyncInfo() const;
-  // Handles the request for sync information.
-  void HandleGetSyncInfo(const base::Value::List& args);
-
-  // Retrieves information about the primary account.
-  base::Value::Dict GetAccountInfo() const;
-  // Handles the request for the primary account information.
-  void HandleGetAccountInfo(const base::Value::List& args);
+  // Returns whether or not the user is currently signed in.
+  bool GetSignInState() const;
+  // Handles the request for the sign in state.
+  void HandleGetSignInState(const base::Value::List& args);
 
   // syncer::SyncServiceObserver implementation.
   void OnStateChanged(syncer::SyncService* sync_service) override;

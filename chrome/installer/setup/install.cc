@@ -298,6 +298,30 @@ bool HasVisualElementAssets(const base::FilePath& base_path,
   return true;
 }
 
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+void LaunchOSUpdateHandlerIfNeeded(const InstallerState& installer_state,
+                                   const std::wstring& installed_version) {
+  auto os_update_handler_cmd = GetOsUpdateHandlerCommand(
+      installer_state.target_path(), installed_version,
+      *base::CommandLine::ForCurrentProcess());
+  if (!os_update_handler_cmd.has_value()) {
+    return;
+  }
+  base::LaunchOptions launch_options;
+  launch_options.feedback_cursor_off = true;
+  launch_options.force_breakaway_from_job_ = true;
+
+  ::SetLastError(ERROR_SUCCESS);
+  base::Process process =
+      base::LaunchProcess(os_update_handler_cmd.value(), launch_options);
+  if (!process.IsValid()) {
+    PLOG(ERROR) << "Failed to launch \""
+                << os_update_handler_cmd->GetCommandLineString() << "\"";
+  }
+  // There's no need to wait for this to finish.
+}
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+
 }  // namespace
 
 bool CreateVisualElementsManifest(const base::FilePath& src_path,
@@ -321,6 +345,28 @@ bool CreateVisualElementsManifest(const base::FilePath& src_path,
               << src_path.value();
   return false;
 }
+
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+// Returns a CommandLine to run if os_update_handler.exe should be run,
+// i.e.. a Windows update has been detected, absl::nullopt otherwise.
+// Use the Windows version update string set by Omaha on the command line
+// as the version update string to pass to os_update_handler.exe.
+std::optional<base::CommandLine> GetOsUpdateHandlerCommand(
+    const base::FilePath& target_path,
+    const std::wstring& installed_version,
+    const base::CommandLine& command_line) {
+  const auto args = command_line.GetArgs();
+  if (args.size() != 1) {
+    return std::nullopt;
+  }
+  base::CommandLine os_update_handler_cmd(
+      target_path.Append(installed_version).Append(kOsUpdateHandlerExe));
+  InstallUtil::AppendModeAndChannelSwitches(&os_update_handler_cmd);
+  // args[0] has the form "<prev_windows_version>-<new_windows_version>".
+  os_update_handler_cmd.AppendArgNative(args[0]);
+  return os_update_handler_cmd;
+}
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 void CreateOrUpdateShortcuts(const base::FilePath& target,
                              const InitialPreferences& prefs,
@@ -664,6 +710,10 @@ void HandleOsUpgradeForBrowser(const InstallerState& installer_state,
     LOG(WARNING) << "Failed to reinstall Active Setup keys.";
     work_item_list->Rollback();
   }
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  LaunchOSUpdateHandlerIfNeeded(
+      installer_state, base::ASCIIToWide(installed_version.GetString()));
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
   UpdateOsUpgradeBeacon();
 

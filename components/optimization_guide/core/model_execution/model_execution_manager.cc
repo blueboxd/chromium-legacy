@@ -117,11 +117,11 @@ GetRequiredModelAdaptationLoaders(
     OptimizationGuideModelProvider* model_provider,
     base::WeakPtr<OnDeviceModelComponentStateManager>
         on_device_component_state_manager,
+    PrefService* local_state,
     base::WeakPtr<OnDeviceModelServiceController>
         on_device_model_service_controller) {
   std::map<ModelBasedCapabilityKey, OnDeviceModelAdaptationLoader> loaders;
-  for (const auto user_visible_feature : kAllUserVisibleFeatureKeys) {
-    const auto feature = ToModelBasedCapabilityKey(user_visible_feature);
+  for (const auto feature : kAllModelBasedCapabilityKeys) {
     if (!features::internal::IsOnDeviceModelEnabled(feature) ||
         !features::internal::IsOnDeviceModelAdaptationEnabled(feature)) {
       continue;
@@ -130,6 +130,7 @@ GetRequiredModelAdaptationLoaders(
         std::piecewise_construct, std::forward_as_tuple(feature),
         std::forward_as_tuple(
             feature, model_provider, on_device_component_state_manager,
+            local_state,
             base::BindRepeating(
                 &OnDeviceModelServiceController::MaybeUpdateModelAdaptation,
                 on_device_model_service_controller, feature)));
@@ -165,6 +166,7 @@ ModelExecutionManager::ModelExecutionManager(
       model_adaptation_loaders_(GetRequiredModelAdaptationLoaders(
           model_provider,
           on_device_component_state_manager,
+          local_state,
           on_device_model_service_controller
               ? on_device_model_service_controller->GetWeakPtr()
               : nullptr)),
@@ -178,7 +180,8 @@ ModelExecutionManager::ModelExecutionManager(
     return;
   }
   if (GetGenAILocalFoundationalModelEnterprisePolicySettings(local_state) !=
-      prefs::GenAILocalFoundationalModelEnterprisePolicySettings::kAllowed) {
+      model_execution::prefs::
+          GenAILocalFoundationalModelEnterprisePolicySettings::kAllowed) {
     return;
   }
 
@@ -335,19 +338,22 @@ void ModelExecutionManager::OnModelExecuteResponse(
   active_model_execution_fetchers_.erase(feature);
   ScopedModelExecutionResponseLogger scoped_logger(feature,
                                                    optimization_guide_logger_);
-  if (!execute_response.has_value()) {
-    scoped_logger.set_message("Error: No Response");
-    RecordModelExecutionResultHistogram(feature, false);
-    std::move(callback).Run(base::unexpected(execute_response.error()),
-                            nullptr);
-    return;
-  }
 
   // Create corresponding log entry for `log_ai_data_request` to pass it with
   // the callback.
   std::unique_ptr<ModelQualityLogEntry> log_entry =
       std::make_unique<ModelQualityLogEntry>(std::move(log_ai_data_request),
                                              model_quality_uploader_service_);
+
+  if (!execute_response.has_value()) {
+    scoped_logger.set_message("Error: No Response");
+    RecordModelExecutionResultHistogram(feature, false);
+    auto error = execute_response.error();
+    // TODO(b/350546291): move this logging code to a ModelExecute wrapper.
+    log_entry->set_model_execution_error(error);
+    std::move(callback).Run(base::unexpected(error), std::move(log_entry));
+    return;
+  }
 
   // Set the id if present.
   if (execute_response->has_server_execution_id()) {
@@ -361,14 +367,17 @@ void ModelExecutionManager::OnModelExecuteResponse(
     auto error =
         OptimizationGuideModelExecutionError::FromModelExecutionServerError(
             execute_response->error_response());
-    if (!error.ShouldLogModelQuality()) {
-      log_entry = nullptr;
-    }
     RecordModelExecutionResultHistogram(feature, false);
     base::UmaHistogramEnumeration(
         base::StrCat({"OptimizationGuide.ModelExecution.ServerError.",
                       GetStringNameForModelExecutionFeature(feature)}),
         error.error());
+    // TODO(b/350546291): move this logging code to a ModelExecute wrapper.
+    log_entry->set_model_execution_error(error);
+
+    if (!error.ShouldLogModelQuality()) {
+      log_entry = nullptr;
+    }
     std::move(callback).Run(base::unexpected(error), std::move(log_entry));
     return;
   }
@@ -376,13 +385,13 @@ void ModelExecutionManager::OnModelExecuteResponse(
   if (!execute_response->has_response_metadata()) {
     scoped_logger.set_message("Error: No Response Metadata");
     RecordModelExecutionResultHistogram(feature, false);
+    auto error = OptimizationGuideModelExecutionError::FromModelExecutionError(
+        ModelExecutionError::kGenericFailure);
+    // TODO(b/350546291): move this logging code to a ModelExecute wrapper.
+    log_entry->set_model_execution_error(error);
     // Log the request in case response is not present by passing the
     // `log_entry`.
-    std::move(callback).Run(
-        base::unexpected(
-            OptimizationGuideModelExecutionError::FromModelExecutionError(
-                ModelExecutionError::kGenericFailure)),
-        std::move(log_entry));
+    std::move(callback).Run(base::unexpected(error), std::move(log_entry));
     return;
   }
 

@@ -27,9 +27,12 @@ class MockAutofillPopupView : public AutofillPopupView {
   MOCK_METHOD(void, Hide, (), (override));
   MOCK_METHOD(bool,
               HandleKeyPressEvent,
-              (const content::NativeWebKeyboardEvent&),
+              (const input::NativeWebKeyboardEvent&),
               (override));
-  MOCK_METHOD(void, OnSuggestionsChanged, (), (override));
+  MOCK_METHOD(void,
+              OnSuggestionsChanged,
+              (bool prefer_prev_arrow_side),
+              (override));
   MOCK_METHOD(bool, OverlapsWithPictureInPictureWindow, (), (const override));
   MOCK_METHOD(std::optional<int32_t>, GetAxUniqueId, (), (override));
   MOCK_METHOD(void, AxAnnounce, (const std::u16string&), (override));

@@ -19,17 +19,21 @@
 
 namespace partition_alloc {
 
+namespace {
+PartitionOptions GwpAsanPartitionOptions() {
+  PartitionOptions options;
+  options.backup_ref_ptr = PartitionOptions::kEnabled;
+  return options;
+}
+}  // namespace
+
 // static
 void* GwpAsanSupport::MapRegion(size_t slot_count,
                                 std::vector<uint16_t>& free_list) {
   PA_CHECK(slot_count > 0);
 
-  constexpr PartitionOptions kConfig = []() {
-    PartitionOptions opts;
-    opts.backup_ref_ptr = PartitionOptions::kEnabled;
-    return opts;
-  }();
-  static internal::base::NoDestructor<PartitionRoot> root(kConfig);
+  static internal::base::NoDestructor<PartitionRoot> root(
+      GwpAsanPartitionOptions());
 
   const size_t kSlotSize = 2 * internal::SystemPageSize();
   uint16_t bucket_index = PartitionRoot::SizeToBucketIndex(
@@ -64,14 +68,14 @@ void* GwpAsanSupport::MapRegion(size_t slot_count,
       return nullptr;
     }
 
-#if defined(ARCH_CPU_64_BITS)
+#if PA_BUILDFLAG(PA_ARCH_CPU_64_BITS)
     // Mapping the GWP-ASan region in to the lower 32-bits of address space
     // makes it much more likely that a bad pointer dereference points into
     // our region and triggers a false positive report. We rely on the fact
     // that PA address pools are never allocated in the first 4GB due to
     // their alignment requirements.
     PA_CHECK(super_page_span_start >= (1ULL << 32));
-#endif  // defined(ARCH_CPU_64_BITS)
+#endif  // PA_BUILDFLAG(PA_ARCH_CPU_64_BITS)
 
     uintptr_t super_page_span_end =
         super_page_span_start + super_page_count * kSuperPageSize;
@@ -98,7 +102,7 @@ void* GwpAsanSupport::MapRegion(size_t slot_count,
           auto slot_start = slot_span_start + slot_idx * kSlotSize;
           PartitionRoot::InSlotMetadataPointerFromSlotStartAndSize(slot_start,
                                                                    kSlotSize)
-              ->InitalizeForGwpAsan();
+              ->InitializeForGwpAsan();
           size_t global_slot_idx = (slot_start - super_page_span_start -
                                     kSuperPageGwpAsanSlotAreaBeginOffset) /
                                    kSlotSize;

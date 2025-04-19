@@ -8,13 +8,16 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "base/observer_list_types.h"
 #include "base/supports_user_data.h"
+#include "base/uuid.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/saved_tab_groups/saved_tab_group.h"
-#include "components/sync/model/model_type_sync_bridge.h"
+#include "components/saved_tab_groups/types.h"
+#include "components/sync/model/data_type_sync_bridge.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "components/tab_groups/tab_group_visual_data.h"
 #include "ui/gfx/range/range.h"
@@ -26,15 +29,11 @@
 
 namespace tab_groups {
 
-// Whether the update was originated by a change in the local or remote
-// client.
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.tab_group_sync
-enum class TriggerSource {
-  // The source is a remote chrome client.
-  REMOTE = 0,
-
-  // The source is the local chrome client.
-  LOCAL = 1,
+// A RAII class that pauses local tab model observers when required.
+class ScopedLocalObservationPauser {
+ public:
+  ScopedLocalObservationPauser() = default;
+  virtual ~ScopedLocalObservationPauser() = default;
 };
 
 // The core service class for handling tab group sync across devices. Provides
@@ -46,7 +45,7 @@ class TabGroupSyncService : public KeyedService, public base::SupportsUserData {
   // either the local or remote clients.
   class Observer : public base::CheckedObserver {
    public:
-    // The data from sync ModelTypeStore has been loaded to memory.
+    // The data from sync DataTypeStore has been loaded to memory.
     virtual void OnInitialized() = 0;
 
     // A new tab group was added at the given |source|.
@@ -90,12 +89,17 @@ class TabGroupSyncService : public KeyedService, public base::SupportsUserData {
   // as revisit surface to update their UI accordingly.
 
   // Mutator methods that result in group metadata mutation.
-  virtual void AddGroup(const SavedTabGroup& group) = 0;
+  virtual void AddGroup(SavedTabGroup group) = 0;
   virtual void RemoveGroup(const LocalTabGroupID& local_id) = 0;
   virtual void RemoveGroup(const base::Uuid& sync_id) = 0;
   virtual void UpdateVisualData(
       const LocalTabGroupID local_group_id,
       const tab_groups::TabGroupVisualData* visual_data) = 0;
+  // Updates the pinned state of the group when `is_pinned` is provided.
+  // Updates the index of the group when `new_index` is provided.
+  virtual void UpdateGroupPosition(const base::Uuid& sync_id,
+                                   std::optional<bool> is_pinned,
+                                   std::optional<int> new_index) = 0;
 
   // Mutator methods that result in tab metadata mutation.
   virtual void AddTab(const LocalTabGroupID& group_id,
@@ -114,11 +118,28 @@ class TabGroupSyncService : public KeyedService, public base::SupportsUserData {
                        const LocalTabID& tab_id,
                        int new_group_index) = 0;
 
+  // For metrics only.
+  virtual void OnTabSelected(const LocalTabGroupID& group_id,
+                             const LocalTabID& tab_id) = 0;
+
+  // Mutator methods for shared tab groups.
+  // Converts the saved tab group to shared tab group and associates it with the
+  // given `collaboration_id` (this is the same as data_sharing::GroupId). The
+  // tab group must not be shared.
+  // TODO(crbug.com/351022699): consider using data_sharing::GroupId.
+  virtual void MakeTabGroupShared(const LocalTabGroupID& local_group_id,
+                                  std::string_view collaboration_id) = 0;
+
   // Accessor methods.
   virtual std::vector<SavedTabGroup> GetAllGroups() = 0;
   virtual std::optional<SavedTabGroup> GetGroup(const base::Uuid& guid) = 0;
-  virtual std::optional<SavedTabGroup> GetGroup(LocalTabGroupID& local_id) = 0;
+  virtual std::optional<SavedTabGroup> GetGroup(
+      const LocalTabGroupID& local_id) = 0;
   virtual std::vector<LocalTabGroupID> GetDeletedGroupIds() = 0;
+
+  // Method invoked from UI to open a remote tab group in the local tab model.
+  virtual void OpenTabGroup(const base::Uuid& sync_group_id,
+                            std::unique_ptr<TabGroupActionContext> context) = 0;
 
   // Book-keeping methods to maintain in-memory mapping of sync and local IDs.
   virtual void UpdateLocalTabGroupMapping(const base::Uuid& sync_id,
@@ -128,11 +149,35 @@ class TabGroupSyncService : public KeyedService, public base::SupportsUserData {
                                 const base::Uuid& sync_tab_id,
                                 const LocalTabID& local_tab_id) = 0;
 
+  // Called from the UI layer such as tab group restore from recent tabs or undo
+  // tab group closure to reconnect a local tab group to a saved tab group.
+  virtual void ConnectLocalTabGroup(const base::Uuid& sync_id,
+                                    const LocalTabGroupID& local_id) = 0;
+
+  // Attribution related methods.
+  // Helper method to determine whether a given cache guid corresponds to a
+  // remote device. Empty value or string is considered local device.
+  virtual bool IsRemoteDevice(
+      const std::optional<std::string>& cache_guid) const = 0;
+
+  // Helper method to record metrics for certain tab group events.
+  // While metrics are implicitly recorded in the native for most of the tab
+  // group events, there are certain events that don't have a clean way of
+  // passing additional information from the event source call site. That's
+  // where this method comes in handy that can be directly invoked from the
+  // event source call site i.e. UI layer. Currently required to record open and
+  // close tab group events only, but see implementation for more details.
+  virtual void RecordTabGroupEvent(const EventDetails& event_details) = 0;
+
   // For connecting to sync engine.
-  virtual base::WeakPtr<syncer::ModelTypeControllerDelegate>
+  virtual base::WeakPtr<syncer::DataTypeControllerDelegate>
   GetSavedTabGroupControllerDelegate() = 0;
-  virtual base::WeakPtr<syncer::ModelTypeControllerDelegate>
+  virtual base::WeakPtr<syncer::DataTypeControllerDelegate>
   GetSharedTabGroupControllerDelegate() = 0;
+
+  // Helper method to pause / resume local observer.
+  virtual std::unique_ptr<ScopedLocalObservationPauser>
+  CreateScopedLocalObserverPauser() = 0;
 
   // Add / remove observers.
   virtual void AddObserver(Observer* observer) = 0;

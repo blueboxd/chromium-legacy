@@ -17,23 +17,22 @@
 #include "ui/views/view.h"
 
 namespace views {
+class BoxLayoutView;
 class Label;
 }  // namespace views
 
 namespace ash {
 
 class PickerAssetFetcher;
-class PickerEmojiItemView;
-class PickerEmoticonItemView;
 class PickerImageItemGridView;
 class PickerImageItemView;
+class PickerItemWithSubmenuView;
 class PickerItemView;
 class PickerListItemContainerView;
 class PickerListItemView;
 class PickerPreviewBubbleController;
 class PickerSearchResult;
-class PickerSmallItemGridView;
-class PickerSymbolItemView;
+class PickerSubmenuController;
 class PickerTraversableItemContainer;
 enum class PickerActionType;
 
@@ -45,13 +44,27 @@ class ASH_EXPORT PickerSectionView : public views::View {
   using SelectResultCallback = base::RepeatingClosure;
 
   explicit PickerSectionView(int section_width,
-                             PickerAssetFetcher* asset_fetcher);
+                             PickerAssetFetcher* asset_fetcher,
+                             PickerSubmenuController* submenu_controller);
   PickerSectionView(const PickerSectionView&) = delete;
   PickerSectionView& operator=(const PickerSectionView&) = delete;
   ~PickerSectionView() override;
 
+  // Creates an item based on `result` and adds it to the section view.
+  // `preview_controller` can be null if previews are not needed.
+  // `asset_fetcher` can be null for most result types.
+  // Both `preview_controller` and `asset_fetcher` must outlive the return
+  // value.
+  static std::unique_ptr<PickerItemView> CreateItemFromResult(
+      const PickerSearchResult& result,
+      PickerPreviewBubbleController* preview_controller,
+      PickerAssetFetcher* asset_fetcher,
+      int available_width,
+      SelectResultCallback select_result_callback);
+
   void AddTitleLabel(const std::u16string& title_text);
   void AddTitleTrailingLink(const std::u16string& link_text,
+                            const std::u16string& accessible_name,
                             views::Link::ClickedCallback link_callback);
 
   // Adds a list item. These are displayed in a vertical list, each item
@@ -59,23 +72,20 @@ class ASH_EXPORT PickerSectionView : public views::View {
   PickerListItemView* AddListItem(
       std::unique_ptr<PickerListItemView> list_item);
 
-  // Adds a emoji, symbol or emoticon. These are treated collectively as small
-  // grid items and are displayed in rows.
-  PickerEmojiItemView* AddEmojiItem(
-      std::unique_ptr<PickerEmojiItemView> emoji_item);
-  PickerSymbolItemView* AddSymbolItem(
-      std::unique_ptr<PickerSymbolItemView> symbol_item);
-  PickerEmoticonItemView* AddEmoticonItem(
-      std::unique_ptr<PickerEmoticonItemView> emoticon_item);
-
   // Adds an image item to the section. These are displayed in a grid with two
   // columns.
   PickerImageItemView* AddImageItem(
       std::unique_ptr<PickerImageItemView> image_item);
 
-  // Creates an item based on `result` and adds it to the section view.
-  // `preview_controller` can be null if previews are not needed. If it's not
-  // null, it must outlive this class.
+  // Adds a generic item to the section.
+  PickerItemView* AddItem(std::unique_ptr<PickerItemView> item);
+
+  // Adds an item with submenu to the section.
+  PickerItemWithSubmenuView* AddItemWithSubmenu(
+      std::unique_ptr<PickerItemWithSubmenuView> item_with_submenu);
+
+  // Same as `CreateItemFromResult`, but additionally adds the item to this
+  // section.
   PickerItemView* AddResult(const PickerSearchResult& result,
                             PickerPreviewBubbleController* preview_controller,
                             SelectResultCallback select_result_callback);
@@ -125,8 +135,6 @@ class ASH_EXPORT PickerSectionView : public views::View {
   }
 
  private:
-  void CreateSmallItemGridIfNeeded();
-
   // Returns a non-null item container if the section has one, otherwise returns
   // nullptr.
   // TODO: b/322900302 - Determine whether sections can have multiple item
@@ -141,12 +149,11 @@ class ASH_EXPORT PickerSectionView : public views::View {
 
   // Container for the section title contents, which can have a title label and
   // a trailing link.
-  raw_ptr<views::View> title_container_ = nullptr;
+  raw_ptr<views::BoxLayoutView> title_container_ = nullptr;
   raw_ptr<views::Label> title_label_ = nullptr;
   raw_ptr<views::Link> title_trailing_link_ = nullptr;
 
   raw_ptr<PickerListItemContainerView> list_item_container_ = nullptr;
-  raw_ptr<PickerSmallItemGridView> small_item_grid_ = nullptr;
   raw_ptr<PickerImageItemGridView> image_item_grid_ = nullptr;
 
   // The views for each result item.
@@ -154,6 +161,9 @@ class ASH_EXPORT PickerSectionView : public views::View {
 
   // `asset_fetcher` outlives `this`.
   raw_ptr<PickerAssetFetcher> asset_fetcher_ = nullptr;
+
+  // `submenu_controller` outlives `this`.
+  raw_ptr<PickerSubmenuController> submenu_controller_ = nullptr;
 };
 
 }  // namespace ash

@@ -20,6 +20,7 @@ enum FeatureName {
   CHROMEOS_READER_TOC = 312;
   CHROMEOS_READER_Q_AND_A = 313;
   CHROMEOS_SPARKY = 314;
+  CHROMEOS_LOBSTER = 315;
   reserved 304 to 311;
 
   ACCESSIBILITY_IMAGE_DESCRIPTION = 700;
@@ -39,6 +40,16 @@ message ClientInfo {
 message ChromeClientInfo {
   optional string chrome_version = 1;
   optional string locale = 4;
+
+  // The channel of the Chrome client.
+  enum Channel {
+    UNKNOWN = 0;
+    CANARY = 1;
+    DEV = 2;
+    BETA = 3;
+    STABLE = 4;
+  }
+  optional Channel chrome_channel = 5;
   reserved 2, 3;
 }
 
@@ -79,6 +90,7 @@ message RequestConfig {
     EMOJIFY = 5;
     FREEFORM_REWRITE = 6;
     FREEFORM_WRITE = 7;
+    PROOFREAD = 8;
   }
 
   optional Tone tone = 5;
@@ -86,13 +98,15 @@ message RequestConfig {
   optional ImageDimensions image_dimensions = 7;
 
   optional AspectRatio aspect_ratio = 8;
+
+  optional Proto3Any specific_options = 9;
 }
 
 message InputData {
-  reserved 2;
 
   oneof input_data {
     string text = 1;
+    Image image = 2;
     Proto3Any custom = 3;
     SparkyContextData sparky_context_data = 5;
   }
@@ -106,12 +120,8 @@ message Request {
   repeated InputData input_data = 4;
 }
 
-message Image {
-  optional bytes serialized_bytes = 1;
-}
-
 message OutputData {
-  reserved 4, 5;
+  reserved 4;
   oneof output_data {
     string text = 1;
     Image image = 2;
@@ -119,16 +129,19 @@ message OutputData {
     SparkyResponse sparky_response = 7;
   }
 
+  optional float score = 5;
+
   optional uint32 generation_seed = 6;
 }
 
 enum FilteredReason {
   UNSPECIFIED = 0;
+  IMAGE_SAFETY = 1;
   TEXT_SAFETY = 2;
   TEXT_LOW_QUALITY = 3;
   TEXT_BLOCKLIST = 4;
 
-  reserved 1, 5, 6, 7;
+  reserved 5, 6, 7;
 }
 
 message FilteredData {

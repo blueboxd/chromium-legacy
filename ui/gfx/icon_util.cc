@@ -2,9 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/354829279): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "ui/gfx/icon_util.h"
 
 #include "base/check_op.h"
+#include "base/containers/heap_array.h"
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
 #include "base/memory/ref_counted_memory.h"
@@ -416,7 +422,7 @@ SkBitmap IconUtil::CreateSkBitmapFromHICONHelper(HICON icon,
 
   // Capture boolean opacity. We may not use it if we find out the bitmap has
   // an alpha channel.
-  bool opaque[num_pixels];
+  auto opaque = base::HeapArray<bool>::Uninit(num_pixels);
   for (size_t i = 0; i < num_pixels; ++i)
     opaque[i] = !static_cast<uint32_t*>(bits)[i];
 

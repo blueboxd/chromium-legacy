@@ -13,11 +13,10 @@ import android.os.Environment;
 import android.text.TextUtils;
 
 import org.junit.Assert;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
 import org.chromium.chrome.browser.profiles.ProfileKey;
@@ -28,7 +27,6 @@ import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemState;
 import org.chromium.components.offline_items_collection.UpdateDelta;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -194,7 +192,7 @@ public class DownloadTestRule extends ChromeTabbedActivityTestRule {
     }
 
     public List<DownloadItem> getAllDownloads() {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     DownloadManagerService.getDownloadManagerService().getAllDownloads(null);
                 });
@@ -244,23 +242,11 @@ public class DownloadTestRule extends ChromeTabbedActivityTestRule {
     }
 
     @Override
-    public Statement apply(final Statement base, Description description) {
-        return super.apply(
-                new Statement() {
-                    @Override
-                    public void evaluate() throws Throwable {
-                        setUp();
-                        base.evaluate();
-                        tearDown();
-                    }
-                },
-                description);
-    }
-
-    private void setUp() throws Exception {
+    protected void before() throws Throwable {
+        super.before();
         mActivityStart.customMainActivityStart();
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     DownloadDialogBridge.setPromptForDownloadAndroid(
                             getActivity().getProfileProviderSupplier().get().getOriginalProfile(),
@@ -269,7 +255,7 @@ public class DownloadTestRule extends ChromeTabbedActivityTestRule {
 
         cleanUpAllDownloads();
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     mDownloadManagerServiceObserver = new TestDownloadManagerServiceObserver();
                     DownloadManagerService.getDownloadManagerService()
@@ -279,13 +265,15 @@ public class DownloadTestRule extends ChromeTabbedActivityTestRule {
                 });
     }
 
-    private void tearDown() {
+    @Override
+    protected void after() {
         cleanUpAllDownloads();
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     DownloadManagerService.getDownloadManagerService()
                             .removeDownloadObserver(mDownloadManagerServiceObserver);
                 });
+        super.after();
     }
 
     public void deleteFilesInDownloadDirectory(String... filenames) {

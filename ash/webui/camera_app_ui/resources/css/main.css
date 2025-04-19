@@ -3,6 +3,8 @@
  * found in the LICENSE file. */
 
 :root {
+  color-scheme: only dark;
+
   --fast1-duration: 100ms;
   --fast2-duration: 200ms;
   --moderate1-duration: 250ms;
@@ -109,7 +111,7 @@ input[type=checkbox] {
   width: 40px;
 }
 
-.menu-item > input.icon {
+.menu-item input.icon {
   outline-offset: -4px;
 }
 input[type=radio].icon {
@@ -656,6 +658,7 @@ html[dir=rtl] body.view-expert-settings .right-stripe {
 }
 
 #preview-viewport {
+  anchor-name: --preview-viewport;
   height: var(--preview-viewport-height);
   overflow: hidden;
   position: relative;
@@ -1356,4 +1359,81 @@ body.hide-floating-ui-for-testing
   :is(#nudge, #toast, text-tooltip, .custom-toast, .no-document-toast) {
   /* TODO(b/289342383): Use CSS layering so we don't need to use !important. */
   display: none !important;
+}
+
+.snackbar {
+  align-items: center;
+  background: var(--cros-sys-inverse_surface);
+  border-radius: 12px;
+  /*
+   * TODO(pihsun): Move the snackbar to the position as the design after jelly
+   * is default on.
+   */
+  bottom: anchor(bottom);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 4px 8px rgba(0, 0, 0, 0.15);
+  box-sizing: border-box;
+  color: var(--cros-sys-inverse_on_surface);
+  display: flex;
+  font: var(--cros-body-2-font);
+  height: 48px;
+  left: anchor(left);
+  margin: 4px;
+  opacity: 0;
+  padding: 14px 16px;
+  pointer-events: none;
+  position: absolute;
+  position-anchor: --preview-viewport;
+  width: 256px;
+}
+
+.snackbar.animate {
+  animation: 3s show-snackbar linear;
+}
+
+@keyframes show-snackbar {
+  0% {
+    opacity: 0;
+  }
+  /* 100ms fade-in */
+  3.33% {
+    opacity: 1;
+  }
+  97.33% {
+    opacity: 1;
+  }
+  /* 80ms fade-out */
+  100% {
+    opacity: 0;
+  }
+}
+
+body:not(.photo) #settings-preview-ocr {
+  display: none;
+}
+
+#settings-preview-ocr-option {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  margin-inline: auto 12px;
+  position: relative;
+}
+
+#settings-preview-ocr-option svg-wrapper {
+  color: transparent;
+  height: 0;
+  position: absolute;
+  transition: all var(--fast1-duration) ease-in;
+  width: 0;
+}
+
+/* Hide default check mark since it's using custom icon. */
+#settings-preview-ocr-option input::before {
+  background: transparent;
+}
+
+#settings-preview-ocr-option:has(input:checked) svg-wrapper {
+  color: var(--cros-sys-primary);
+  height: 14px;
+  width: 14px;
 }

@@ -37,7 +37,7 @@ std::u16string GetLabelForPickerCategory(PickerCategory category) {
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
     case PickerCategory::kLinks:
       return l10n_util::GetStringUTF16(IDS_PICKER_LINKS_CATEGORY_LABEL);
-    case PickerCategory::kExpressions:
+    case PickerCategory::kEmojisGifs:
       return l10n_util::GetStringUTF16(IDS_PICKER_EXPRESSIONS_CATEGORY_LABEL);
     case PickerCategory::kClipboard:
       return l10n_util::GetStringUTF16(IDS_PICKER_CLIPBOARD_CATEGORY_LABEL);
@@ -49,18 +49,6 @@ std::u16string GetLabelForPickerCategory(PickerCategory category) {
       return l10n_util::GetStringUTF16(IDS_PICKER_DATES_TIMES_CATEGORY_LABEL);
     case PickerCategory::kUnitsMaths:
       return l10n_util::GetStringUTF16(IDS_PICKER_UNITS_MATHS_CATEGORY_LABEL);
-    case PickerCategory::kUpperCase:
-      return l10n_util::GetStringUTF16(IDS_PICKER_UPPER_CASE_CATEGORY_LABEL);
-    case PickerCategory::kLowerCase:
-      return l10n_util::GetStringUTF16(IDS_PICKER_LOWER_CASE_CATEGORY_LABEL);
-    case PickerCategory::kSentenceCase:
-      return l10n_util::GetStringUTF16(IDS_PICKER_SENTENCE_CASE_CATEGORY_LABEL);
-    case PickerCategory::kTitleCase:
-      return l10n_util::GetStringUTF16(IDS_PICKER_TITLE_CASE_CATEGORY_LABEL);
-    case PickerCategory::kCapsOn:
-      return l10n_util::GetStringUTF16(IDS_PICKER_CAPS_ON_CATEGORY_LABEL);
-    case PickerCategory::kCapsOff:
-      return l10n_util::GetStringUTF16(IDS_PICKER_CAPS_OFF_CATEGORY_LABEL);
   }
 }
 
@@ -87,13 +75,7 @@ std::u16string GetSearchFieldPlaceholderTextForPickerCategory(
           IDS_PICKER_UNITS_MATHS_CATEGORY_SEARCH_FIELD_PLACEHOLDER_TEXT);
     case PickerCategory::kEditorWrite:
     case PickerCategory::kEditorRewrite:
-    case PickerCategory::kExpressions:
-    case PickerCategory::kUpperCase:
-    case PickerCategory::kLowerCase:
-    case PickerCategory::kSentenceCase:
-    case PickerCategory::kTitleCase:
-    case PickerCategory::kCapsOn:
-    case PickerCategory::kCapsOff:
+    case PickerCategory::kEmojisGifs:
       NOTREACHED_NORETURN();
   }
 }
@@ -118,12 +100,12 @@ std::u16string GetSectionTitleForPickerCategoryType(
     case PickerCategoryType::kGeneral:
       return l10n_util::GetStringUTF16(
           IDS_PICKER_GENERAL_CATEGORY_TYPE_SECTION_TITLE);
-    case PickerCategoryType::kCalculations:
+    case PickerCategoryType::kMore:
       return l10n_util::GetStringUTF16(
-          IDS_PICKER_CALCULATIONS_CATEGORY_TYPE_SECTION_TITLE);
+          IDS_PICKER_MORE_CATEGORY_TYPE_SECTION_TITLE);
     case PickerCategoryType::kCaseTransformations:
       return l10n_util::GetStringUTF16(
-          IDS_PICKER_CASE_TRANSFORMATIONS_CATEGORY_TYPE_SECTION_TITLE);
+          IDS_PICKER_EDIT_TEXT_CATEGORY_TYPE_SECTION_TITLE);
     case PickerCategoryType::kNone:
       return u"";
   }
@@ -131,24 +113,14 @@ std::u16string GetSectionTitleForPickerCategoryType(
 
 std::u16string GetSectionTitleForPickerSectionType(
     PickerSectionType section_type) {
-  // TODO: b/325870358 - Finalize strings and use a GRD file.
   switch (section_type) {
     case PickerSectionType::kNone:
       return u"";
-    case PickerSectionType::kCategories:
-      return u"Matching categories";
-    case PickerSectionType::kSuggestions:
-      return u"Suggested";
-    case PickerSectionType::kExpressions:
-      return u"Matching expressions";
-    case PickerSectionType::kLinks:
-      return u"Matching links";
-    case PickerSectionType::kFiles:
-      return u"Matching files";
-    case PickerSectionType::kDriveFiles:
-      return u"Matching Google Drive files";
-    case PickerSectionType::kGifs:
-      return u"Other expressions";
+    case PickerSectionType::kClipboard:
+      return l10n_util::GetStringUTF16(IDS_PICKER_CLIPBOARD_CATEGORY_LABEL);
+    case PickerSectionType::kExamples:
+      return l10n_util::GetStringUTF16(
+          IDS_PICKER_EXAMPLES_CATEGORY_TYPE_SECTION_TITLE);
     case PickerSectionType::kEditorWrite:
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
       return l10n_util::GetStringUTF16(
@@ -163,6 +135,12 @@ std::u16string GetSectionTitleForPickerSectionType(
 #else
       return u"";
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+    case PickerSectionType::kLinks:
+      return l10n_util::GetStringUTF16(IDS_PICKER_LINKS_CATEGORY_LABEL);
+    case PickerSectionType::kLocalFiles:
+      return l10n_util::GetStringUTF16(IDS_PICKER_LOCAL_FILES_CATEGORY_LABEL);
+    case PickerSectionType::kDriveFiles:
+      return l10n_util::GetStringUTF16(IDS_PICKER_DRIVE_FILES_CATEGORY_LABEL);
   }
 }
 

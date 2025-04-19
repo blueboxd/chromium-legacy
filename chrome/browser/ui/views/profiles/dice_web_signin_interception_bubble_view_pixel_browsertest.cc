@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/profiles/dice_web_signin_interception_bubble_view.h"
+#include <string>
 
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/enterprise/browser_management/management_service_factory.h"
@@ -17,12 +17,15 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/profiles/avatar_toolbar_button.h"
+#include "chrome/browser/ui/views/profiles/dice_web_signin_interception_bubble_view.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/profile_destruction_waiter.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/policy/core/common/management/scoped_management_service_override_for_testing.h"
 #include "components/signin/public/base/signin_switches.h"
+#include "components/signin/public/identity_manager/account_capabilities_test_mutator.h"
 #include "components/signin/public/identity_manager/account_info.h"
+#include "components/supervised_user/core/common/features.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -34,8 +37,6 @@
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/any_widget_observer.h"
 #include "ui/views/widget/widget.h"
-
-#include <string>
 
 namespace {
 
@@ -51,6 +52,12 @@ AvatarToolbarButton* GetAvatarButton(Browser* browser) {
 
 enum class NameFormat { Regular, LongName, LongNameSingleWord };
 
+enum class ManagedAccountState : int {
+  kNonManagedAccount = 0,
+  kEnterpriseAccount = 1,
+  kSupervisedAccount = 2
+};
+
 struct TestParam {
   std::string test_suffix = "";
   WebSigninInterceptor::SigninInterceptionType interception_type =
@@ -58,11 +65,14 @@ struct TestParam {
   policy::EnterpriseManagementAuthority management_authority =
       policy::EnterpriseManagementAuthority::NONE;
   // Note: changes strings for kEnterprise type, otherwise adds badge on pic.
-  bool is_intercepted_account_managed = false;
+  ManagedAccountState intercepted_account_management_state =
+      ManagedAccountState::kNonManagedAccount;
+  ManagedAccountState primary_account_management_state =
+      ManagedAccountState::kNonManagedAccount;
+
   bool use_dark_theme = false;
   SkColor4f intercepted_profile_color = SkColors::kLtGray;
   SkColor4f primary_profile_color = SkColors::kBlue;
-  bool enable_webui_refresh = false;
   bool with_explicit_browser_signin_design = false;
   NameFormat name_format = NameFormat::Regular;
 };
@@ -85,13 +95,12 @@ const TestParam kTestParams[] = {
         .intercepted_profile_color = SkColors::kMagenta,
     },
 
-    // Ditto, with ChromeRefresh2023.
+    // Ditto, with explicit browser signin.
     {
-        .test_suffix = "ConsumerSimpleChromeRefresh2023",
+        .test_suffix = "ConsumerSimpleExplicitBrowserSignin",
         .interception_type =
             WebSigninInterceptor::SigninInterceptionType::kMultiUser,
         .intercepted_profile_color = SkColors::kMagenta,
-        .enable_webui_refresh = true,
         .with_explicit_browser_signin_design = true,
     },
 
@@ -122,15 +131,17 @@ const TestParam kTestParams[] = {
         .test_suffix = "EnterpriseSimple",
         .interception_type =
             WebSigninInterceptor::SigninInterceptionType::kEnterprise,
+        .primary_account_management_state =
+            ManagedAccountState::kEnterpriseAccount,
     },
-
     // Managed account signing in to a profile having a regular account on a
     // non-managed device.
     {
         .test_suffix = "EnterpriseManagedIntercepted",
         .interception_type =
             WebSigninInterceptor::SigninInterceptionType::kEnterprise,
-        .is_intercepted_account_managed = true,
+        .intercepted_account_management_state =
+            ManagedAccountState::kEnterpriseAccount,
     },
 
     // Ditto, with a different color scheme
@@ -138,19 +149,38 @@ const TestParam kTestParams[] = {
         .test_suffix = "EnterpriseManagedInterceptedDark",
         .interception_type =
             WebSigninInterceptor::SigninInterceptionType::kEnterprise,
-        .is_intercepted_account_managed = true,
+        .intercepted_account_management_state =
+            ManagedAccountState::kEnterpriseAccount,
         .use_dark_theme = true,
     },
 
+    // Supervised user sign-in intercept bubble, when user signs in in secondary
+    // profile.
+    {
+        .test_suffix = "SecondaryProfileSupervisedIntercepted",
+        .interception_type =
+            WebSigninInterceptor::SigninInterceptionType::kMultiUser,
+        .intercepted_account_management_state =
+            ManagedAccountState::kSupervisedAccount,
+    },
+    {.test_suffix =
+         "SecondaryProfileSupervisedInterceptedFromPrimaryEnterprize",
+     .interception_type =
+         WebSigninInterceptor::SigninInterceptionType::kMultiUser,
+     .intercepted_account_management_state =
+         ManagedAccountState::kSupervisedAccount,
+     .primary_account_management_state =
+         ManagedAccountState::kEnterpriseAccount},
+
     // Regular account signing in to a profile having a managed account on a
     // managed device.
-    {
-        .test_suffix = "EntepriseManagedDevice",
-        .interception_type =
-            WebSigninInterceptor::SigninInterceptionType::kEnterprise,
-        .management_authority =
-            policy::EnterpriseManagementAuthority::CLOUD_DOMAIN,
-    },
+    {.test_suffix = "EntepriseManagedDevice",
+     .interception_type =
+         WebSigninInterceptor::SigninInterceptionType::kEnterprise,
+     .management_authority =
+         policy::EnterpriseManagementAuthority::CLOUD_DOMAIN,
+     .primary_account_management_state =
+         ManagedAccountState::kEnterpriseAccount},
 
     // Profile switch bubble: the account used for signing in is already
     // associated with another profile.
@@ -160,13 +190,29 @@ const TestParam kTestParams[] = {
             WebSigninInterceptor::SigninInterceptionType::kProfileSwitch,
     },
 
-    // Ditto with ChromeRefresh2023.
+    // Ditto, with explicit browser signin.
     {
-        .test_suffix = "ProfileSwitchChromeRefresh2023",
+        .test_suffix = "ProfileSwitchExplicitBrowserSignin",
         .interception_type =
             WebSigninInterceptor::SigninInterceptionType::kProfileSwitch,
-        .enable_webui_refresh = true,
         .with_explicit_browser_signin_design = true,
+    },
+
+    // Supervised user sign-in intercept bubble, no accounts in chrome.
+    {
+        .test_suffix = "ChromeSignInSupervisedUserIntercepted",
+        .interception_type =
+            WebSigninInterceptor::SigninInterceptionType::kChromeSignin,
+        .intercepted_account_management_state =
+            ManagedAccountState::kSupervisedAccount,
+    },
+    // Profile switch for supervised user.
+    {
+        .test_suffix = "SupervisedUserProfileSwitch",
+        .interception_type =
+            WebSigninInterceptor::SigninInterceptionType::kProfileSwitch,
+        .intercepted_account_management_state =
+            ManagedAccountState::kSupervisedAccount,
     },
 
     // Chrome Signin bubble: no accounts in chrome, and signing triggers this
@@ -181,20 +227,6 @@ const TestParam kTestParams[] = {
         .interception_type =
             WebSigninInterceptor::SigninInterceptionType::kChromeSignin,
         .use_dark_theme = true,
-    },
-    {
-        .test_suffix = "ChromeSigninWebUIRefresh",
-        .interception_type =
-            WebSigninInterceptor::SigninInterceptionType::kChromeSignin,
-        .enable_webui_refresh = true,
-    },
-
-    {
-        .test_suffix = "ChromeSigninDarkModeWebUIRefresh",
-        .interception_type =
-            WebSigninInterceptor::SigninInterceptionType::kChromeSignin,
-        .use_dark_theme = true,
-        .enable_webui_refresh = true,
     },
 
     {
@@ -220,14 +252,12 @@ class DiceWebSigninInterceptionBubblePixelTest
  public:
   DiceWebSigninInterceptionBubblePixelTest() {
     std::vector<base::test::FeatureRef> enabled_features;
-    if (GetParam().enable_webui_refresh) {
-      enabled_features.push_back(features::kChromeRefresh2023);
-    }
-
     if (GetParam().with_explicit_browser_signin_design) {
       enabled_features.push_back(switches::kExplicitBrowserSigninUIOnDesktop);
     }
-
+    enabled_features.push_back(
+        supervised_user::kCustomWebSignInInterceptForSupervisedUsersUi);
+    enabled_features.push_back(supervised_user::kShowKiteForSupervisedUsers);
     scoped_feature_list_.InitWithFeatures(enabled_features,
                                           /*disabled_features=*/{});
   }
@@ -250,12 +280,12 @@ class DiceWebSigninInterceptionBubblePixelTest
 
     SkColor primary_highlight_color =
         GetParam().primary_profile_color.toSkColor();
+    DefaultAvatarColors avatar_colors = GetDefaultAvatarColors(
+        *browser()->window()->GetColorProvider(), primary_highlight_color);
     ProfileThemeColors colors = {
         /*profile_highlight_color=*/primary_highlight_color,
-        /*default_avatar_fill_color=*/primary_highlight_color,
-        /*default_avatar_stroke_color=*/
-        GetAvatarStrokeColor(*browser()->window()->GetColorProvider(),
-                             primary_highlight_color)};
+        /*default_avatar_fill_color=*/avatar_colors.fill_color,
+        /*default_avatar_stroke_color=*/avatar_colors.stroke_color};
     ProfileAttributesEntry* entry =
         g_browser_process->profile_manager()
             ->GetProfileAttributesStorage()
@@ -305,26 +335,29 @@ class DiceWebSigninInterceptionBubblePixelTest
     intercepted_account.full_name = intercepted_account.given_name + " Sample";
     intercepted_account.email = "sam.sample@intercepted.com";
     intercepted_account.hosted_domain =
-        GetParam().is_intercepted_account_managed ? "intercepted.com"
-                                                  : kNoHostedDomainFound;
+        GetParam().intercepted_account_management_state ==
+                ManagedAccountState::kEnterpriseAccount
+            ? "intercepted.com"
+            : kNoHostedDomainFound;
+    if (GetParam().intercepted_account_management_state ==
+        ManagedAccountState::kSupervisedAccount) {
+      AccountCapabilitiesTestMutator mutator(&intercepted_account.capabilities);
+      mutator.set_is_subject_to_parental_controls(true);
+    }
 
-    // `kEnterprise` type bubbles are used when at least one of the accounts is
-    // managed. Instead of explicitly specifying it in the test parameters, we
-    // can infer whether the primary account should be managed based on this,
-    // since no test config has both accounts being managed.
-    bool is_primary_account_managed =
-        GetParam().interception_type ==
-            WebSigninInterceptor::SigninInterceptionType::kEnterprise &&
-        !GetParam().is_intercepted_account_managed;
     AccountInfo primary_account;
     primary_account.account_id = CoreAccountId::FromGaiaId("primary_ID");
     primary_account.given_name = "Tessa";
     primary_account.full_name = "Tessa Tester";
     primary_account.email = "tessa.tester@primary.com";
     primary_account.hosted_domain =
-        is_primary_account_managed ? "primary.com" : kNoHostedDomainFound;
+        GetParam().primary_account_management_state ==
+                ManagedAccountState::kEnterpriseAccount
+            ? "primary.com"
+            : kNoHostedDomainFound;
     bool show_managed_disclaimer =
-        (GetParam().is_intercepted_account_managed ||
+        (GetParam().intercepted_account_management_state ==
+             ManagedAccountState::kEnterpriseAccount ||
          GetParam().management_authority !=
              policy::EnterpriseManagementAuthority::NONE);
 
@@ -340,14 +373,8 @@ class DiceWebSigninInterceptionBubblePixelTest
   std::unique_ptr<ScopedWebSigninInterceptionBubbleHandle> bubble_handle_;
 };
 
-// TODO(https://crbug.com/339315678): re-enable the test.
-#if BUILDFLAG(IS_WIN)
-#define MAYBE_InvokeUi_default DISABLED_InvokeUi_default
-#else
-#define MAYBE_InvokeUi_default InvokeUi_default
-#endif
 IN_PROC_BROWSER_TEST_P(DiceWebSigninInterceptionBubblePixelTest,
-                       MAYBE_InvokeUi_default) {
+                       InvokeUi_default) {
   ShowAndVerifyUi();
 }
 

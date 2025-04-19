@@ -1,8 +1,4 @@
 <style>
-  :host {
-    --color-scrim-rgb: 24, 28, 34;
-  }
-
   .app-container {
     height: 100%;
     width: 100%;
@@ -13,24 +9,39 @@
   }
 
   #backgroundScrim {
-    background-color: rgba(var(--color-scrim-rgb), 0.2);
+    background-color: rgba(0, 0 ,0, 0.3);
     inset: 0;
     position: absolute;
   }
 
-  #buttonContainer {
+  .button-container {
     display: flex;
-    gap: 12px;
-    inset-block-start: 33px;
-    inset-inline-end: 30px;
+    pointer-events: none;
     position: absolute;
+  }
+
+  :host(:not([initial-flash-animation-has-ended])) .button-container {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  #optionsButtonContainer {
+    gap: 12px;
+    inset-block-start: 28px;
+    inset-inline-end: 30px;
+  }
+
+  #translateButtonContainer {
+    inset-block-start: 21px;
+    inset-inline-start: 25px;
   }
 
   .action-button {
     --cr-icon-button-icon-size: 20px;
     --cr-icon-button-size: 36px;
-    --cr-icon-button-fill-color: white;
+    --cr-icon-button-fill-color: var(--color-overlay-icon);
     background-color: rgba(var(--color-scrim-rgb), 0.6);
+    pointer-events: all;
   }
 
   #closeButton {
@@ -41,23 +52,27 @@
     display: none;
   }
 
+  #copyToast {
+    justify-content: space-between;
+  }
+
   #moreOptions {
-    width: 130px;
+    width: 156px;
   }
 
   #moreOptionsButton {
-    margin-inline-start: 94px;
+    margin-inline-start: 120px;
   }
 
   #moreOptionsMenu {
-    background-color: #181C2299;
+    background: var(--color-selection-element);
     border-radius: 8px;
-    display: none;
-    gap: 8px;
-    margin-top: 11px;
-    padding: 16px 0px;
     /* Needed to prevent mouse flicker on option hover. */
     cursor: default;
+    display: none;
+    margin-top: 8px;
+    padding: 8px 0px;
+    pointer-events: all;
   }
 
   :host([more-options-menu-visible]) #moreOptionsMenu {
@@ -66,20 +81,48 @@
   }
 
   .menu-item {
-    margin-inline-start: 20px;
-    height: 20px;
+    align-items: center;
+    display: flex;
+    padding-inline-start: 16px;
+    height: 36px;
+  }
+
+  .menu-item:focus, .menu-item:hover {
+    background-color: rgba(var(--color-scrim-rgb), 0.05);
+  }
+
+  .menu-item:active {
+    background-color: rgba(var(--color-scrim-rgb), 0.10);
   }
 
   .menu-item-label {
-    color: #E3E3E3;
+    color: var(--color-scrim);
     font-size: 13px;
     font-style: normal;
     font-weight: 500;
     line-height: normal;
   }
 
-  .menu-item-label:hover {
-    cursor: pointer;
+  .menu-item-icon {
+    background-color: var(--color-primary);
+    height: 20px;
+    mask-position: center;
+    mask-repeat: no-repeat;
+    mask-size: 100%;
+    width: 20px;
+    margin-inline-end: 12px;
+  }
+
+  .feedback {
+    mask-image: url("feedback.svg");
+  }
+
+  .activity {
+    mask-image: url("//resources/cr_components/searchbox/icons/google_g_cr23.svg");
+  }
+
+  .learn-more {
+    mask-image: url("learn_more.svg");
   }
 
   .app-container :not(lens-selection-overlay) {
@@ -90,6 +133,11 @@
     opacity: 0;
   }
 
+  :host([is-closing]) cursor-tooltip {
+    /* When the overlay is closing, immediately hide the cursor tooltip. */
+    display: none;
+  }
+
   cursor-tooltip {
     left: 0;
     position: fixed;
@@ -97,52 +145,91 @@
     /* Don't display the tooltip until the cursor location is determined. */
     transform: scale(0);
     width: 100%;
+    z-index: 6;  /* Keep aligned with cursor and context menu. */
   }
 
-  initial-toast {
+  initial-gradient {
     pointer-events: none;
   }
 </style>
 <div class="app-container"
+    on-initial-flash-animation-end="onInitialFlashAnimationEnd"
+    on-screenshot-rendered="onScreenshotRendered"
     on-selection-overlay-clicked="handleSelectionOverlayClicked"
     on-pointer-released="handlePointerReleased"
-    on-screenshot-rendered="onScreenshotRendered"
+    on-text-copied="showTextCopiedToast"
     on-pointerenter="handlePointerEnter"
-    on-pointerleave="handlePointerLeave">
+    on-pointerleave="handlePointerLeave"
+    style="
+    --color-primary: [[skColorToHex_(theme.primary)]];
+    --color-shader-layer-1: [[skColorToHex_(theme.shaderLayer1)]];
+    --color-shader-layer-2: [[skColorToHex_(theme.shaderLayer2)]];
+    --color-shader-layer-3: [[skColorToHex_(theme.shaderLayer3)]];
+    --color-shader-layer-4: [[skColorToHex_(theme.shaderLayer4)]];
+    --color-shader-layer-5: [[skColorToHex_(theme.shaderLayer5)]];
+    --color-scrim: [[skColorToHex_(theme.scrim)]];
+    --color-scrim-rgb: [[skColorToRgb_(theme.scrim)]];
+    --color-surface-container-highest-light: [[skColorToHex_(theme.surfaceContainerHighestLight)]];
+    --color-surface-container-highest-dark: [[skColorToHex_(theme.surfaceContainerHighestDark)]];
+    --color-selection-element: [[skColorToHex_(theme.selectionElement)]];
+    --color-overlay-icon: white;
+    --color-overlay-button-label: white;">
+  <cr-toast id="copyToast" duration="4000">
+    <div>$i18n{copyToastMessage}</div>
+    <cr-button on-click="onHideToastClick">
+      $i18n{dismiss}
+    </cr-button>
+  </cr-toast>
   <div id="backgroundScrim" on-click="onBackgroundScrimClicked"
-      hidden$="[[!isImageRendered]]"></div>
-  <lens-selection-overlay screenshot-data-uri="[[screenshotDataUri]]"
-      class$="[[getSelectionOverlayClass(screenshotDataUri)]]">
+      hidden$="[[!isImageRendered]]"
+      on-pointerenter="handlePointerEnterBackgroundScrim"
+      on-pointerleave="handlePointerLeaveBackgroundScrim"></div>
+  <lens-selection-overlay id="selectionOverlay" theme="[[theme]]"
+      screenshot-data-uri="[[screenshotDataUri]]"
+      class$="[[getSelectionOverlayClass(screenshotDataUri)]]"
+      on-pointerenter="handlePointerEnterSelectionOverlay"
+      on-pointerleave="handlePointerLeaveSelectionOverlay">
   </lens-selection-overlay>
-  <initial-toast id="initialToast"></initial-toast>
-  <div id="buttonContainer">
+  <initial-gradient id="initialGradient"></initial-gradient>
+  <template is="dom-if" if="[[isTranslateButtonVisible]]">
+    <div id="translateButtonContainer" class="button-container">
+      <translate-button></translate-button>
+    </div>
+  </template>
+  <div id="optionsButtonContainer" class="button-container">
     <div id="moreOptions">
       <cr-icon-button iron-icon="cr:more-vert" id="moreOptionsButton"
           class="action-button" on-click="onMoreOptionsButtonClick"
-          aria-label="$i18n{moreOptions}"
-          on-pointerenter="handlePointerEnterActionButton"
-          on-pointerleave="handlePointerLeaveActionButton"
-          title="$i18n{moreOptions}">
+          role="button" aria-label="$i18n{moreOptions}"
+          aria-controls="moreOptionsMenu" aria-haspopup="menu"
+          aria-expanded="[[moreOptionsMenuVisible]]" title="$i18n{moreOptions}">
       </cr-icon-button>
-      <div id="moreOptionsMenu">
-        <div class="menu-item">
-          <span id="myActivity" on-click="onMyActivityClick"
+      <div id="moreOptionsMenu" role="menu" aria-labelledby="moreOptionsButton">
+        <div class="menu-item" on-click="onMyActivityClick"
+            on-keydown="onMyActivityClick" role="menuitem" tabindex="0"
+            aria-labelledby="myActivity">
+          <span class="menu-item-icon activity"></span>
+          <span id="myActivity"
               class="menu-item-label">$i18n{myActivity}</span>
         </div>
-        <div class="menu-item">
-          <span id="learnMore" on-click="onLearnMoreClick"
+        <div class="menu-item" on-click="onLearnMoreClick"
+            on-keydown="onLearnMoreClick" role="menuitem" tabindex="0"
+            aria-labelledby="learnMore">
+          <span class="menu-item-icon learn-more"></span>
+          <span id="learnMore"
               class="menu-item-label">$i18n{learnMore}</span>
         </div>
-        <div class="menu-item">
-          <span id="sendFeedback" on-click="onFeedbackClick"
+        <div class="menu-item" on-click="onFeedbackClick"
+            on-keydown="onFeedbackClick" role="menuitem" tabindex="0"
+            aria-labelledby="sendFeedback">
+          <span class="menu-item-icon feedback"></span>
+          <span id="sendFeedback"
               class="menu-item-label">$i18n{sendFeedback}</span>
         </div>
       </div>
     </div>
     <cr-icon-button id="closeButton" class="action-button"
         on-click="onCloseButtonClick" aria-label="$i18n{close}"
-        on-pointerenter="handlePointerEnterActionButton"
-        on-pointerleave="handlePointerLeaveActionButton"
         title="$i18n{close}"></cr-icon-button>
   </div>
   <cursor-tooltip id="cursorTooltip"></cursor-tooltip>

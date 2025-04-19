@@ -220,9 +220,9 @@ TEST_F(TabStripPageHandlerTest, GetGroupVisualData) {
 
   tab_strip::mojom::PageHandler::GetGroupVisualDataCallback callback =
       base::BindLambdaForTesting(
-          [=](base::flat_map<std::string,
-                             tab_strip::mojom::TabGroupVisualDataPtr>
-                  group_visual_datas) {
+          [=, this](base::flat_map<std::string,
+                                   tab_strip::mojom::TabGroupVisualDataPtr>
+                        group_visual_datas) {
             ExpectVisualData(group1_visuals,
                              *group_visual_datas[group1.ToString()]);
             ExpectVisualData(group2_visuals,
@@ -248,7 +248,8 @@ TEST_F(TabStripPageHandlerTest, GroupVisualDataChangedEvent) {
       TabGroupVisualsChanged(
           expected_group_id.ToString(),
           Truly(
-              [=](const tab_strip::mojom::TabGroupVisualDataPtr& visual_data) {
+              [=, this](
+                  const tab_strip::mojom::TabGroupVisualDataPtr& visual_data) {
                 if (visual_data->title.size() > 0) {
                   ExpectVisualData(new_visual_data, *visual_data);
                 }
@@ -320,6 +321,13 @@ TEST_F(TabStripPageHandlerTest, ValidateTabGroupEventStream) {
   AddTab(browser(), GURL("http://foo/4"));
   AddTab(browser(), GURL("http://foo/5"));
 
+  content::WebContents* first_tab_in_group =
+      tab_strip_model->GetWebContentsAt(0);
+  content::WebContents* second_tab_in_group =
+      tab_strip_model->GetWebContentsAt(1);
+  content::WebContents* third_tab_in_group =
+      tab_strip_model->GetWebContentsAt(2);
+
   // Group tabs {0, 1, 2} together.
   std::vector<int> tab_group_indicies = {0, 1, 2};
   tab_groups::TabGroupId group_id =
@@ -337,16 +345,13 @@ TEST_F(TabStripPageHandlerTest, ValidateTabGroupEventStream) {
   // Indices:  0 1   2 3 4
   // After:    3 4 { 0 1 2 }
   constexpr int kMoveIndex = 2;
-  constexpr int kIndexMovedTo = 4;
   constexpr int kNewGroupStartIndex = 2;
   {
     InSequence s;
     EXPECT_CALL(mock_observer_,
                 OnTabStripModelChanged(
                     _, Truly([&](const TabStripModelChange& change) {
-                      auto* move = change.GetMove();
-                      return change.type() == TabStripModelChange::kMoved &&
-                             move->to_index == kIndexMovedTo;
+                      return change.type() == TabStripModelChange::kMoved;
                     }),
                     _))
         .Times(3);
@@ -361,6 +366,12 @@ TEST_F(TabStripPageHandlerTest, ValidateTabGroupEventStream) {
         })));
   }
   tab_strip_model->MoveGroupTo(group_id, kMoveIndex);
+  ASSERT_EQ(first_tab_in_group,
+            browser()->tab_strip_model()->GetWebContentsAt(2));
+  ASSERT_EQ(second_tab_in_group,
+            browser()->tab_strip_model()->GetWebContentsAt(3));
+  ASSERT_EQ(third_tab_in_group,
+            browser()->tab_strip_model()->GetWebContentsAt(4));
 }
 
 TEST_F(TabStripPageHandlerTest, MoveGroupAcrossWindows) {

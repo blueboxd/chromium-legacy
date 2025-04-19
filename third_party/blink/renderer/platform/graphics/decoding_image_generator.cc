@@ -23,6 +23,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/platform/graphics/decoding_image_generator.h"
 
 #include <memory>
@@ -70,7 +75,7 @@ DecodingImageGenerator::CreateAsSkImageGenerator(sk_sp<SkData> data) {
   std::unique_ptr<ImageDecoder> decoder = ImageDecoder::Create(
       segment_reader, data_complete, ImageDecoder::kAlphaPremultiplied,
       ImageDecoder::kDefaultBitDepth, ColorBehavior::kTag,
-      Platform::GetMaxDecodedImageBytes());
+      cc::AuxImage::kDefault, Platform::GetMaxDecodedImageBytes());
   if (!decoder || !decoder->IsSizeAvailable())
     return nullptr;
 
@@ -81,7 +86,8 @@ DecodingImageGenerator::CreateAsSkImageGenerator(sk_sp<SkData> data) {
 
   scoped_refptr<ImageFrameGenerator> frame = ImageFrameGenerator::Create(
       SkISize::Make(size.width(), size.height()), false,
-      decoder->GetColorBehavior(), decoder->GetSupportedDecodeSizes());
+      decoder->GetColorBehavior(), cc::AuxImage::kDefault,
+      decoder->GetSupportedDecodeSizes());
   if (!frame)
     return nullptr;
 

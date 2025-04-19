@@ -65,16 +65,9 @@ TEST_F(ArcChromeFeatureFlagsBridgeTest, ConstructDestruct) {
   EXPECT_NE(nullptr, bridge());
 }
 
-TEST_F(ArcChromeFeatureFlagsBridgeTest, NotifyJelly_Enabled) {
-  scoped_feature_list()->InitAndEnableFeature(chromeos::features::kJelly);
+TEST_F(ArcChromeFeatureFlagsBridgeTest, NotifyJelly) {
   Connect();
   EXPECT_TRUE(instance()->flags_called_value()->jelly_colors);
-}
-
-TEST_F(ArcChromeFeatureFlagsBridgeTest, NotifyJelly_Disabled) {
-  scoped_feature_list()->InitAndDisableFeature(chromeos::features::kJelly);
-  Connect();
-  EXPECT_FALSE(instance()->flags_called_value()->jelly_colors);
 }
 
 TEST_F(ArcChromeFeatureFlagsBridgeTest, NotifyTouchscreenEmulation_Enabled) {
@@ -125,9 +118,8 @@ TEST_F(ArcChromeFeatureFlagsBridgeTest, NotifyRoundedWindowCompat_Disabled) {
 }
 
 TEST_F(ArcChromeFeatureFlagsBridgeTest, NotifyRoundedWindows_Enabled) {
-  // Currently we need to flip Jelly flag to enable the rounded windows flag.
   scoped_feature_list()->InitWithFeaturesAndParameters(
-      {{chromeos::features::kJelly, {}},
+      {{chromeos::features::kFeatureManagementRoundedWindows, {}},
        {chromeos::features::kRoundedWindows,
         {{chromeos::features::kRoundedWindowsRadius, "8"}}}},
       {});
@@ -202,6 +194,59 @@ TEST_F(ArcChromeFeatureFlagsBridgeTest, NotifyIgnoreHoverEventAnr_Disabled) {
   scoped_feature_list()->InitAndDisableFeature(arc::kIgnoreHoverEventAnr);
   Connect();
   EXPECT_FALSE(instance()->flags_called_value()->ignore_hover_event_anr);
+}
+
+TEST_F(ArcChromeFeatureFlagsBridgeTest, NotifyExtendInputAnrTimeout_Enabled) {
+  scoped_feature_list()->InitAndEnableFeature(arc::kExtendInputAnrTimeout);
+  Connect();
+  EXPECT_TRUE(instance()->flags_called_value()->extend_input_anr_timeout);
+}
+
+TEST_F(ArcChromeFeatureFlagsBridgeTest, NotifyExtendInputAnrTimeout_Disabled) {
+  scoped_feature_list()->InitAndDisableFeature(arc::kExtendInputAnrTimeout);
+  Connect();
+  EXPECT_FALSE(instance()->flags_called_value()->extend_input_anr_timeout);
+}
+
+TEST_F(ArcChromeFeatureFlagsBridgeTest, NotifyExtendIntentAnrTimeout_Enabled) {
+  scoped_feature_list()->InitAndEnableFeature(arc::kExtendIntentAnrTimeout);
+  Connect();
+  EXPECT_TRUE(instance()->flags_called_value()->extend_intent_anr_timeout);
+}
+
+TEST_F(ArcChromeFeatureFlagsBridgeTest, NotifyExtendIntentAnrTimeout_Disabled) {
+  scoped_feature_list()->InitAndDisableFeature(arc::kExtendIntentAnrTimeout);
+  Connect();
+  EXPECT_FALSE(instance()->flags_called_value()->extend_intent_anr_timeout);
+}
+
+TEST_F(ArcChromeFeatureFlagsBridgeTest, NotifyExtendServiceAnrTimeout_Enabled) {
+  scoped_feature_list()->InitAndEnableFeature(arc::kExtendServiceAnrTimeout);
+  Connect();
+  EXPECT_TRUE(instance()->flags_called_value()->extend_service_anr_timeout);
+}
+
+TEST_F(ArcChromeFeatureFlagsBridgeTest,
+       NotifyExtendServiceAnrTimeout_Disabled) {
+  scoped_feature_list()->InitAndDisableFeature(arc::kExtendServiceAnrTimeout);
+  Connect();
+  EXPECT_FALSE(instance()->flags_called_value()->extend_service_anr_timeout);
+}
+
+TEST_F(ArcChromeFeatureFlagsBridgeTest,
+       NotifyNotificationWidthIncrease_Enabled) {
+  scoped_feature_list()->InitAndEnableFeature(
+      chromeos::features::kNotificationWidthIncrease);
+  Connect();
+  EXPECT_TRUE(instance()->flags_called_value()->notification_width_increase);
+}
+
+TEST_F(ArcChromeFeatureFlagsBridgeTest,
+       NotifyNotificationWidthIncrease_Disabled) {
+  scoped_feature_list()->InitAndDisableFeature(
+      chromeos::features::kNotificationWidthIncrease);
+  Connect();
+  EXPECT_FALSE(instance()->flags_called_value()->notification_width_increase);
 }
 
 }  // namespace

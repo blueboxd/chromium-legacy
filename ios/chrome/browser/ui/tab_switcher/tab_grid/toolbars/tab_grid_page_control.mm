@@ -231,7 +231,10 @@ TabGridPage ThirdTabGridPage() {
     _regularAccessibilityElement.accessibilityTraits =
         UIAccessibilityTraitButton;
     _regularAccessibilityElement.accessibilityLabel =
-        l10n_util::GetNSString(IDS_IOS_TAB_GRID_REGULAR_TABS_TITLE);
+        IsTabGroupInGridEnabled()
+            ? l10n_util::GetNSString(
+                  IDS_IOS_TAB_GRID_REGULAR_TABS_WITH_GROUPS_TITLE)
+            : l10n_util::GetNSString(IDS_IOS_TAB_GRID_REGULAR_TABS_TITLE);
     _regularAccessibilityElement.accessibilityIdentifier =
         kTabGridRegularTabsPageButtonIdentifier;
 
@@ -305,9 +308,7 @@ TabGridPage ThirdTabGridPage() {
   } else if (sliderPosition < 0.75) {
     _selectedPage = TabGridPageRegularTabs;
   } else {
-    // TODO(crbug.com/329626033): Handle displaying Tab Groups.
-    //_selectedPage = ThirdTabGridPage();
-    _selectedPage = TabGridPageRemoteTabs;
+    _selectedPage = ThirdTabGridPage();
   }
 
   // Hide/show the separator based on the slider position. Add a delta for the

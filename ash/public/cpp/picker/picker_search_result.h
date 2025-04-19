@@ -5,6 +5,7 @@
 #ifndef ASH_PUBLIC_CPP_PICKER_PICKER_SEARCH_RESULT_H_
 #define ASH_PUBLIC_CPP_PICKER_PICKER_SEARCH_RESULT_H_
 
+#include <optional>
 #include <string>
 #include <string_view>
 #include <variant>
@@ -15,7 +16,6 @@
 #include "base/files/file_path.h"
 #include "base/unguessable_token.h"
 #include "ui/base/models/image_model.h"
-#include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
 namespace chromeos::editor_menu {
@@ -55,28 +55,21 @@ class ASH_PUBLIC_EXPORT PickerSearchResult {
   };
 
   struct SearchRequestData {
-    std::u16string text;
+    std::u16string primary_text;
+    std::u16string secondary_text;
     ui::ImageModel icon;
 
     bool operator==(const SearchRequestData&) const;
   };
 
   struct EmojiData {
-    std::u16string emoji;
+    enum class Type { kEmoji, kSymbol, kEmoticon };
+
+    Type type;
+    std::u16string text;
+    std::u16string name;
 
     bool operator==(const EmojiData&) const;
-  };
-
-  struct SymbolData {
-    std::u16string symbol;
-
-    bool operator==(const SymbolData&) const;
-  };
-
-  struct EmoticonData {
-    std::u16string emoticon;
-
-    bool operator==(const EmoticonData&) const;
   };
 
   struct ClipboardData {
@@ -92,11 +85,13 @@ class ASH_PUBLIC_EXPORT PickerSearchResult {
     DisplayFormat display_format;
     std::u16string display_text;
     std::optional<ui::ImageModel> display_image;
+    bool is_recent;
 
     ClipboardData(base::UnguessableToken item_id,
                   DisplayFormat display_format,
                   std::u16string display_text,
-                  std::optional<ui::ImageModel> display_image);
+                  std::optional<ui::ImageModel> display_image,
+                  bool is_recent);
     ClipboardData(const ClipboardData&);
     ClipboardData& operator=(const ClipboardData&);
     ~ClipboardData();
@@ -104,43 +99,19 @@ class ASH_PUBLIC_EXPORT PickerSearchResult {
     bool operator==(const ClipboardData&) const;
   };
 
-  struct GifData {
-    GifData(const GURL& preview_url,
-            const GURL& preview_image_url,
-            const gfx::Size& preview_dimensions,
-            const GURL& full_url,
-            const gfx::Size& full_dimensions,
-            std::u16string content_description);
-    GifData(const GifData&);
-    GifData& operator=(const GifData&);
-    ~GifData();
-
-    // A url to an animated preview gif media source.
-    GURL preview_url;
-
-    // A url to an unanimated preview image of the gif media source.
-    GURL preview_image_url;
-
-    // Width and height of the GIF at `preview_url`.
-    gfx::Size preview_dimensions;
-
-    // A url to a full-sized gif media source.
-    GURL full_url;
-
-    // Width and height of the GIF at `full_url`.
-    gfx::Size full_dimensions;
-
-    // A textual description of the content, primarily used for accessibility
-    // features.
-    std::u16string content_description;
-
-    bool operator==(const GifData&) const;
-  };
-
   struct BrowsingHistoryData {
     GURL url;
     std::u16string title;
     ui::ImageModel icon;
+    bool best_match;
+
+    BrowsingHistoryData(GURL url,
+                        std::u16string title,
+                        ui::ImageModel icon,
+                        bool best_match);
+    BrowsingHistoryData(const BrowsingHistoryData&);
+    BrowsingHistoryData& operator=(const BrowsingHistoryData&);
+    ~BrowsingHistoryData();
 
     bool operator==(const BrowsingHistoryData&) const;
   };
@@ -148,20 +119,23 @@ class ASH_PUBLIC_EXPORT PickerSearchResult {
   struct LocalFileData {
     base::FilePath file_path;
     std::u16string title;
+    bool best_match;
 
     bool operator==(const LocalFileData&) const;
   };
 
   struct DriveFileData {
+    std::optional<std::string> id;
     std::u16string title;
     GURL url;
     base::FilePath file_path;
-    ui::ImageModel icon;
+    bool best_match;
 
-    DriveFileData(std::u16string title,
+    DriveFileData(std::optional<std::string> id,
+                  std::u16string title,
                   GURL url,
                   base::FilePath file_path,
-                  ui::ImageModel icon);
+                  bool best_match);
     DriveFileData(const DriveFileData&);
     DriveFileData& operator=(const DriveFileData&);
     ~DriveFileData();
@@ -182,14 +156,12 @@ class ASH_PUBLIC_EXPORT PickerSearchResult {
     std::u16string display_name;
     std::optional<chromeos::editor_menu::PresetQueryCategory> category;
     std::optional<std::string> preset_query_id;
-    std::optional<std::string> freeform_text;
 
     EditorData(
         Mode mode,
         std::u16string display_name,
         std::optional<chromeos::editor_menu::PresetQueryCategory> category,
-        std::optional<std::string> preset_query_id,
-        std::optional<std::string> freeform_text);
+        std::optional<std::string> preset_query_id);
     EditorData(const EditorData&);
     EditorData& operator=(const EditorData&);
     ~EditorData();
@@ -197,18 +169,56 @@ class ASH_PUBLIC_EXPORT PickerSearchResult {
     bool operator==(const EditorData&) const;
   };
 
+  struct NewWindowData {
+    enum Type {
+      kDoc,
+      kSheet,
+      kSlide,
+      kChrome,
+    };
+
+    Type type;
+
+    bool operator==(const NewWindowData&) const;
+  };
+
+  struct CapsLockData {
+    enum class Shortcut {
+      kAltLauncher,
+      kAltSearch,
+      kFnRightAlt,
+    };
+
+    bool enabled;
+    Shortcut shortcut;
+
+    bool operator==(const CapsLockData&) const;
+  };
+
+  struct CaseTransformData {
+    enum Type {
+      kUpperCase,
+      kLowerCase,
+      kTitleCase,
+    };
+
+    Type type;
+
+    bool operator==(const CaseTransformData&) const;
+  };
+
   using Data = std::variant<TextData,
                             SearchRequestData,
                             EmojiData,
-                            SymbolData,
-                            EmoticonData,
                             ClipboardData,
-                            GifData,
                             BrowsingHistoryData,
                             LocalFileData,
                             DriveFileData,
                             CategoryData,
-                            EditorData>;
+                            EditorData,
+                            NewWindowData,
+                            CapsLockData,
+                            CaseTransformData>;
 
   PickerSearchResult(const PickerSearchResult&);
   PickerSearchResult& operator=(const PickerSearchResult&);
@@ -218,7 +228,8 @@ class ASH_PUBLIC_EXPORT PickerSearchResult {
 
   static PickerSearchResult BrowsingHistory(const GURL& url,
                                             std::u16string title,
-                                            ui::ImageModel icon);
+                                            ui::ImageModel icon,
+                                            bool best_match = false);
   static PickerSearchResult Text(
       std::u16string_view text,
       TextData::Source source = TextData::Source::kUnknown);
@@ -227,35 +238,39 @@ class ASH_PUBLIC_EXPORT PickerSearchResult {
       std::u16string_view secondary_text,
       ui::ImageModel icon,
       TextData::Source source = TextData::Source::kUnknown);
-  static PickerSearchResult SearchRequest(std::u16string_view text,
+  static PickerSearchResult SearchRequest(std::u16string_view primary_text,
+                                          std::u16string_view secondary_text,
                                           ui::ImageModel icon);
-  static PickerSearchResult Emoji(std::u16string_view emoji);
-  static PickerSearchResult Symbol(std::u16string_view symbol);
-  static PickerSearchResult Emoticon(std::u16string_view emoticon);
+  static PickerSearchResult Emoji(std::u16string_view emoji,
+                                  std::u16string name = u"");
+  static PickerSearchResult Symbol(std::u16string_view symbol,
+                                   std::u16string name = u"");
+  static PickerSearchResult Emoticon(std::u16string_view emoticon,
+                                     std::u16string name = u"");
   static PickerSearchResult Clipboard(
       base::UnguessableToken item_id,
       ClipboardData::DisplayFormat display_format,
       std::u16string display_text,
-      std::optional<ui::ImageModel> display_image);
-  static PickerSearchResult Gif(const GURL& preview_url,
-                                const GURL& preview_image_url,
-                                const gfx::Size& preview_dimensions,
-                                const GURL& full_url,
-                                const gfx::Size& full_dimensions,
-                                std::u16string content_description);
+      std::optional<ui::ImageModel> display_image,
+      bool is_recent);
   static PickerSearchResult LocalFile(std::u16string title,
-                                      base::FilePath file_path);
-  static PickerSearchResult DriveFile(std::u16string title,
+                                      base::FilePath file_path,
+                                      bool best_match = false);
+  static PickerSearchResult DriveFile(std::optional<std::string> id,
+                                      std::u16string title,
                                       const GURL& url,
                                       base::FilePath file_path,
-                                      ui::ImageModel icon);
+                                      bool best_match = false);
   static PickerSearchResult Category(PickerCategory category);
   static PickerSearchResult Editor(
       EditorData::Mode mode,
       std::u16string display_name,
       std::optional<chromeos::editor_menu::PresetQueryCategory> category,
-      std::optional<std::string> preset_query_id,
-      std::optional<std::string> freeform_text);
+      std::optional<std::string> preset_query_id);
+  static PickerSearchResult NewWindow(NewWindowData::Type type);
+  static PickerSearchResult CapsLock(bool enabled,
+                                     CapsLockData::Shortcut shortcut);
+  static PickerSearchResult CaseTransform(CaseTransformData::Type type);
 
   const Data& data() const;
 

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40285824): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "components/exo/wayland/zcr_keyboard_configuration.h"
 
 #include <linux/input.h>
@@ -45,7 +50,7 @@ class WaylandKeyboardDeviceConfigurationDelegate
     : public ash::input_method::InputMethodManager::ImeMenuObserver,
       public KeyboardDeviceConfigurationDelegate,
       public KeyboardObserver,
-      public ash::ImeControllerImpl::Observer,
+      public ash::ImeController::Observer,
       public ui::InputDeviceEventObserver {
  public:
   WaylandKeyboardDeviceConfigurationDelegate(wl_resource* resource,
@@ -93,7 +98,7 @@ class WaylandKeyboardDeviceConfigurationDelegate
     wl_client_flush(client());
   }
 
-  // Overridden from ImeControllerImpl::Observer:
+  // Overridden from ImeController::Observer:
   void OnCapsLockChanged(bool enabled) override {}
 
   void OnKeyboardLayoutNameChanged(const std::string& layout_name) override {

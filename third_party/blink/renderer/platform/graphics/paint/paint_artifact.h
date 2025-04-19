@@ -33,7 +33,7 @@ class PLATFORM_EXPORT PaintArtifact final
   PaintArtifact(PaintArtifact&& other) = delete;
   PaintArtifact& operator=(PaintArtifact&& other) = delete;
 
-  void Trace(Visitor* visitor) const {}
+  void Trace(Visitor* visitor) const { visitor->Trace(chunks_); }
 
   bool IsEmpty() const { return chunks_.empty(); }
 
@@ -69,10 +69,11 @@ class PLATFORM_EXPORT PaintArtifact final
   String IdAsString(const DisplayItem::Id& id) const;
 
   std::unique_ptr<JSONArray> ToJSON() const;
-  void AppendChunksAsJSON(wtf_size_t start_chunk_index,
-                          wtf_size_t end_chunk_index,
-                          JSONArray&,
-                          unsigned flags) const;
+  void AppendChunksAsJSON(
+      wtf_size_t start_chunk_index,
+      wtf_size_t end_chunk_index,
+      JSONArray&,
+      DisplayItemList::JsonOption = DisplayItemList::kDefault) const;
 
   void clear();
 

@@ -12,6 +12,7 @@
 #include "base/functional/callback_forward.h"
 #include "base/time/time.h"
 #include "components/policy/proto/device_management_backend.pb.h"
+#include "components/prefs/pref_service.h"
 #include "remoting/protocol/errors.h"
 
 namespace policy {
@@ -141,7 +142,11 @@ enum class ExtendedStartCrdSessionResultCode {
   // permits the connection.
   kFailureReauthzPolicyCheckFailed = 30,
 
-  kMaxValue = kFailureReauthzPolicyCheckFailed
+  // Failed to find an authentication method that is supported by both the host
+  // and the client.
+  kFailureNoCommonAuthMethod = 31,
+
+  kMaxValue = kFailureNoCommonAuthMethod
 };
 
 // Translates the error code.
@@ -166,6 +171,14 @@ bool UserSessionSupportsRemoteSupport(UserSessionType user_session);
 // Returns if a remote admin is allowed to start a 'CRD remote access' session
 // when an user session of the given type is active.
 bool UserSessionSupportsRemoteAccess(UserSessionType user_session);
+
+// Returns if a remote admin is allowed by policy to start a 'CRD remote access'
+// session when no user is present at the device.
+bool IsRemoteAccessAllowedByPolicy(const PrefService& policy_service);
+
+// Returns if a remote admin is allowed by policy to start a 'CRD remote
+// support' session when no user is present at the device.
+bool IsRemoteSupportAllowedByPolicy(const PrefService& policy_service);
 
 const char* UserSessionTypeToString(UserSessionType value);
 const char* CrdSessionTypeToString(CrdSessionType value);

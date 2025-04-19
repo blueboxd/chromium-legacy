@@ -28,6 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/core/frame/frame_serializer.h"
 
 #include "third_party/blink/renderer/core/css/css_font_face_rule.h"
@@ -462,12 +467,16 @@ void FrameSerializer::SerializeCSSRule(CSSRule* rule) {
       // when we implement it.
       break;
 
+    // TODO(crbug.com/40341678): Both page and margin rules may contain external
+    // resources (e.g. via background-image).
+    case CSSRule::kMarginRule:
+    case CSSRule::kPageRule:
+
     // Rules in which no external resources can be referenced
     case CSSRule::kCharsetRule:
     case CSSRule::kFontPaletteValuesRule:
     case CSSRule::kFontFeatureRule:
     case CSSRule::kFontFeatureValuesRule:
-    case CSSRule::kPageRule:
     case CSSRule::kPropertyRule:
     case CSSRule::kKeyframesRule:
     case CSSRule::kKeyframeRule:

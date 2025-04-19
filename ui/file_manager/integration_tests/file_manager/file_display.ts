@@ -1111,6 +1111,8 @@ export async function fileDisplayFileSystemDisabled() {
   await sendTestMessage({name: 'setLocalFilesEnabled', enabled: false});
   // Disable drive.
   await sendTestMessage({name: 'setDriveEnabled', enabled: false});
+  // Skip SkyVault migration to immediately remove My Files.
+  await sendTestMessage({name: 'skipSkyVaultMigration'});
 
   // Open Files app without specifying the initial directory/root.
   const appId = await remoteCall.openNewWindow(null, null);
@@ -1119,8 +1121,7 @@ export async function fileDisplayFileSystemDisabled() {
   // Check: the empty folder should be visible.
   await remoteCall.waitForElement(appId, '#empty-folder:not([hidden])');
   await waitForEmptyFolderMessage(
-      appId,
-      'File system has been disabled. Please contact your administrator.');
+      appId, 'The file system has been disabled by your administrator');
 
   // Mount USB volume.
   await sendTestMessage({name: 'mountFakeUsb'});

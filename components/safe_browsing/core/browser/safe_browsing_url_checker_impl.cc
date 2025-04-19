@@ -70,7 +70,8 @@ std::string GetPerformedCheckSuffix(
 }
 
 void MaybeRecordFirstRequestMetrics(SBThreatType threat_type,
-                                    std::optional<ThreatSource> threat_source) {
+                                    std::optional<ThreatSource> threat_source,
+                                    bool timed_out) {
   static bool is_first_request = true;
 
   if (!is_first_request) {
@@ -109,11 +110,17 @@ void MaybeRecordFirstRequestMetrics(SBThreatType threat_type,
       break;
   }
 
-  base::UmaHistogramEnumeration("SafeBrowsing.CheckUrl.FirstRequestThreatType",
+  base::UmaHistogramEnumeration("SafeBrowsing.CheckUrl.FirstRequestThreatType2",
                                 threat_type);
   base::UmaHistogramEnumeration(
-      "SafeBrowsing.CheckUrl.FirstRequestThreatType." + threat_source_name,
+      "SafeBrowsing.CheckUrl.FirstRequestThreatType2." + threat_source_name,
       threat_type);
+
+  base::UmaHistogramBoolean("SafeBrowsing.CheckUrl.FirstRequestTimedOut",
+                            timed_out);
+  base::UmaHistogramBoolean(
+      "SafeBrowsing.CheckUrl.FirstRequestTimedOut." + threat_source_name,
+      timed_out);
 }
 
 }  // namespace
@@ -139,27 +146,16 @@ void SafeBrowsingUrlCheckerImpl::Notifier::OnCompleteCheck(
     PerformedCheck performed_check) {
   DCHECK(performed_check != PerformedCheck::kUnknown);
   if (callback_) {
-    std::move(callback_).Run(mojo::NullReceiver(), proceed,
-                             showed_interstitial);
+    std::move(callback_).Run(proceed, showed_interstitial);
     return;
   }
 
   if (native_callback_) {
     std::move(native_callback_)
-        .Run(nullptr, proceed, showed_interstitial,
-             has_post_commit_interstitial_skipped, performed_check);
+        .Run(proceed, showed_interstitial, has_post_commit_interstitial_skipped,
+             performed_check);
     return;
   }
-
-  if (slow_check_notifier_) {
-    slow_check_notifier_->OnCompleteCheck(proceed, showed_interstitial);
-    slow_check_notifier_.reset();
-    return;
-  }
-
-  std::move(native_slow_check_notifier_)
-      .Run(proceed, showed_interstitial, has_post_commit_interstitial_skipped,
-           performed_check);
 }
 
 SafeBrowsingUrlCheckerImpl::UrlInfo::UrlInfo(const GURL& in_url,
@@ -274,7 +270,6 @@ UnsafeResource SafeBrowsingUrlCheckerImpl::MakeUnsafeResource(
   }
   resource.threat_type = threat_type;
   resource.threat_metadata = metadata;
-  resource.request_destination = network::mojom::RequestDestination::kDocument;
   resource.callback = base::BindRepeating(
       &SafeBrowsingUrlCheckerImpl::OnBlockingPageCompleteAndMaybeDeleteSelf,
       weak_factory_.GetWeakPtr(), performed_check);
@@ -331,7 +326,7 @@ void SafeBrowsingUrlCheckerImpl::OnUrlResultInternalAndMaybeDeleteSelf(
   DCHECK_EQ(urls_[next_index_].url, url);
   DCHECK(threat_source.has_value() || threat_type == SB_THREAT_TYPE_SAFE);
 
-  MaybeRecordFirstRequestMetrics(threat_type, threat_source);
+  MaybeRecordFirstRequestMetrics(threat_type, threat_source, timed_out);
   RecordCheckUrlTimeout(timed_out);
   TRACE_EVENT_NESTABLE_ASYNC_END1("safe_browsing", "CheckUrl",
                                   TRACE_ID_LOCAL(this), "url", url.spec());
@@ -354,7 +349,7 @@ void SafeBrowsingUrlCheckerImpl::OnUrlResultInternalAndMaybeDeleteSelf(
       unsafe_resource.is_delayed_warning = true;
       url_checker_delegate_
           ->StartObservingInteractionsForDelayedBlockingPageHelper(
-              unsafe_resource, /*is_main_frame=*/true);
+              unsafe_resource);
       state_ = STATE_DELAYED_BLOCKING_PAGE;
     }
     // Let the navigation continue in case of delayed warnings.
@@ -405,8 +400,7 @@ void SafeBrowsingUrlCheckerImpl::OnUrlResultInternalAndMaybeDeleteSelf(
   state_ = STATE_DISPLAYING_BLOCKING_PAGE;
 
   url_checker_delegate_->StartDisplayingBlockingPageHelper(
-      resource, urls_[next_index_].method, headers_, /*is_main_frame=*/true,
-      has_user_gesture_);
+      resource, urls_[next_index_].method, headers_, has_user_gesture_);
 }
 
 void SafeBrowsingUrlCheckerImpl::CheckUrlImplAndMaybeDeleteSelf(
@@ -475,6 +469,9 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrlsAndMaybeDeleteSelf() {
     KickOffLookupMechanismResult result = KickOffLookupMechanism(url);
 
     if (result.start_check_result.is_safe_synchronously) {
+      MaybeRecordFirstRequestMetrics(SBThreatType::SB_THREAT_TYPE_SAFE,
+                                     result.start_check_result.threat_source,
+                                     /*timed_out=*/false);
       lookup_mechanism_runner_.reset();
       RecordCheckUrlTimeout(/*timed_out=*/false);
 
@@ -516,7 +513,7 @@ SafeBrowsingUrlCheckerImpl::KickOffLookupMechanism(const GURL& url) {
   } else if (!can_check_db_) {
     return KickOffLookupMechanismResult(
         SafeBrowsingLookupMechanism::StartCheckResult(
-            /*is_safe_synchronously=*/true),
+            /*is_safe_synchronously=*/true, /*threat_source=*/std::nullopt),
         PerformedCheck::kCheckSkipped);
   } else if (hash_realtime_selection_ ==
                  HashRealTimeSelection::kHashRealTimeService &&

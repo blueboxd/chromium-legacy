@@ -33,8 +33,8 @@ using base::test::ios::kWaitForUIElementTimeout;
 using base::test::ios::WaitUntilConditionOrTimeout;
 using chrome_test_util::ActivityViewHeader;
 using chrome_test_util::CopyLinkButton;
-using chrome_test_util::OpenLinkInNewTabButton;
 using chrome_test_util::OpenLinkInIncognitoButton;
+using chrome_test_util::OpenLinkInNewTabButton;
 using chrome_test_util::OpenLinkInNewWindowButton;
 using chrome_test_util::ShareButton;
 
@@ -184,6 +184,10 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
 
 - (BOOL)isCurrentLayoutBottomOmnibox {
   return [ChromeEarlGreyAppInterface isCurrentLayoutBottomOmnibox];
+}
+
+- (BOOL)isEnhancedSafeBrowsingInfobarEnabled {
+  return [ChromeEarlGreyAppInterface isEnhancedSafeBrowsingInfobarEnabled];
 }
 
 #pragma mark - History Utilities (EG2)
@@ -849,10 +853,6 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
   [ChromeEarlGreyAppInterface connectFakeSyncServerNetwork];
 }
 
-- (void)signInWithoutSyncWithIdentity:(FakeSystemIdentity*)identity {
-  [ChromeEarlGreyAppInterface signInWithoutSyncWithIdentity:identity];
-}
-
 - (void)
     addUserDemographicsToSyncServerWithBirthYear:(int)rawBirthYear
                                           gender:
@@ -902,7 +902,7 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
   [ChromeEarlGreyAppInterface flushFakeSyncServerToDisk];
 }
 
-- (int)numberOfSyncEntitiesWithType:(syncer::ModelType)type {
+- (int)numberOfSyncEntitiesWithType:(syncer::DataType)type {
   return [ChromeEarlGreyAppInterface numberOfSyncEntitiesWithType:type];
 }
 
@@ -969,7 +969,7 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
       [ChromeEarlGreyAppInterface waitForSyncInvalidationFields]);
 }
 
-- (void)triggerSyncCycleForType:(syncer::ModelType)type {
+- (void)triggerSyncCycleForType:(syncer::DataType)type {
   [ChromeEarlGreyAppInterface triggerSyncCycleForType:type];
 }
 
@@ -1009,7 +1009,7 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
       [ChromeEarlGreyAppInterface verifySessionsOnSyncServerWithSpecs:URLs]);
 }
 
-- (void)waitForSyncServerEntitiesWithType:(syncer::ModelType)type
+- (void)waitForSyncServerEntitiesWithType:(syncer::DataType)type
                                      name:(const std::string&)UTF8Name
                                     count:(size_t)count
                                   timeout:(base::TimeDelta)timeout {
@@ -1050,6 +1050,10 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
 
 - (BOOL)isSyncHistoryDataTypeSelected {
   return [ChromeEarlGreyAppInterface isSyncHistoryDataTypeSelected];
+}
+
+- (void)addSyncPassphrase:(NSString*)syncPassphrase {
+  [ChromeEarlGreyAppInterface addSyncPassphrase:syncPassphrase];
 }
 
 #pragma mark - Window utilities (EG2)
@@ -1259,7 +1263,7 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
 
 #pragma mark - SignIn Utilities (EG2)
 
-- (void)signOutAndClearIdentitiesAndWaitForCompletion {
+- (void)signOutAndClearIdentities {
   __block BOOL isSignoutFinished = NO;
   [ChromeEarlGreyAppInterface signOutAndClearIdentitiesWithCompletion:^{
     isSignoutFinished = YES;
@@ -1274,23 +1278,11 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
                         base::Milliseconds(100));
                     return isSignoutFinished;
                   }];
-  bool success =
-      [signOutFinished waitWithTimeout:kWaitForActionTimeout.InSecondsF()];
+  bool success = [signOutFinished
+      waitWithTimeout:base::test::ios::kWaitForClearBrowsingDataTimeout
+                          .InSecondsF()];
   EG_TEST_HELPER_ASSERT_TRUE(
       success, @"Failed waiting for sign-out & cleaning completion");
-}
-
-- (void)signOutAndClearIdentities {
-  [ChromeEarlGreyAppInterface signOutAndClearIdentitiesWithCompletion:nil];
-  GREYCondition* allIdentitiesCleared = [GREYCondition
-      conditionWithName:@"All Chrome identities were cleared"
-                  block:^{
-                    return ![ChromeEarlGreyAppInterface hasIdentities];
-                  }];
-  bool success =
-      [allIdentitiesCleared waitWithTimeout:kWaitForActionTimeout.InSecondsF()];
-  EG_TEST_HELPER_ASSERT_TRUE(success,
-                             @"Failed waiting for identities to be cleared");
 }
 
 #pragma mark - Bookmarks Utilities (EG2)
@@ -1338,8 +1330,10 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
   std::string errorMessage;
   auto jsonValue = deserializer.Deserialize(&errorCode, &errorMessage);
   NSString* message = [NSString
-      stringWithFormat:@"JSON parsing failed: code=%d, message=%@", errorCode,
-                       base::SysUTF8ToNSString(errorMessage)];
+      stringWithFormat:
+          @"JSON parsing failed: code=%d, message=%@, jsonRepresentation=%@",
+          errorCode, base::SysUTF8ToNSString(errorMessage),
+          base::SysUTF8ToNSString(jsonRepresentation)];
   EG_TEST_HELPER_ASSERT_TRUE(jsonValue, message);
 
   return jsonValue ? std::move(*jsonValue) : base::Value();
@@ -1428,7 +1422,7 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
 
 - (BOOL)isUnfocusedOmniboxAtBottom {
   return !self.isIPadIdiom && self.isSplitToolbarMode &&
-         [self userBooleanPref:prefs::kBottomOmnibox];
+         [self localStateBooleanPref:prefs::kBottomOmnibox];
 }
 
 #pragma mark - ContentSettings
@@ -1460,6 +1454,28 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
 - (void)simulatePhysicalKeyboardEvent:(NSString*)input
                                 flags:(UIKeyModifierFlags)flags {
   [ChromeEarlGreyAppInterface simulatePhysicalKeyboardEvent:input flags:flags];
+}
+
+- (void)waitForKeyboardToAppear {
+  GREYCondition* waitForKeyboard = [GREYCondition
+      conditionWithName:@"Wait for keyboard to appear"
+                  block:^BOOL {
+                    return [EarlGrey isKeyboardShownWithError:nil];
+                  }];
+  bool success =
+      [waitForKeyboard waitWithTimeout:kWaitForActionTimeout.InSecondsF()];
+  EG_TEST_HELPER_ASSERT_TRUE(success, @"Keyboard didn't appear");
+}
+
+- (void)waitForKeyboardToDisappear {
+  GREYCondition* waitForKeyboard = [GREYCondition
+      conditionWithName:@"Wait for keyboard to disappear"
+                  block:^BOOL {
+                    return ![EarlGrey isKeyboardShownWithError:nil];
+                  }];
+  bool success =
+      [waitForKeyboard waitWithTimeout:kWaitForActionTimeout.InSecondsF()];
+  EG_TEST_HELPER_ASSERT_TRUE(success, @"Keyboard didn't dismiss");
 }
 
 #pragma mark - Default Utilities (EG2)
@@ -1526,6 +1542,12 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
   NSString* prefName = base::SysUTF8ToNSString(UTF8PrefName);
   return [ChromeEarlGreyAppInterface setTimeValue:value
                                 forLocalStatePref:prefName];
+}
+
+- (void)setTimeValue:(base::Time)value
+         forUserPref:(const std::string&)UTF8PrefName {
+  NSString* prefName = base::SysUTF8ToNSString(UTF8PrefName);
+  return [ChromeEarlGreyAppInterface setTimeValue:value forUserPref:prefName];
 }
 
 - (void)setStringValue:(const std::string&)UTF8Value

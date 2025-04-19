@@ -293,6 +293,9 @@ ChromeExtensionsBrowserClient::GetContextRedirectedToOriginal(
   if (force_guest_profile) {
     builder.WithGuest(ProfileSelection::kRedirectedToOriginal);
   }
+  // TODO(crbug.com/41488885): Check if this service is needed for Ash
+  // Internals.
+  builder.WithAshInternals(ProfileSelection::kRedirectedToOriginal);
 
   const ProfileSelections selections = builder.Build();
   return selections.ApplyProfileSelection(Profile::FromBrowserContext(context));
@@ -306,6 +309,9 @@ content::BrowserContext* ChromeExtensionsBrowserClient::GetContextOwnInstance(
   if (force_guest_profile) {
     builder.WithGuest(ProfileSelection::kOwnInstance);
   }
+  // TODO(crbug.com/41488885): Check if this service is needed for Ash
+  // Internals.
+  builder.WithAshInternals(ProfileSelection::kOwnInstance);
 
   const ProfileSelections selections = builder.Build();
   return selections.ApplyProfileSelection(Profile::FromBrowserContext(context));
@@ -319,6 +325,9 @@ ChromeExtensionsBrowserClient::GetContextForOriginalOnly(
   if (force_guest_profile) {
     builder.WithGuest(ProfileSelection::kOriginalOnly);
   }
+  // TODO(crbug.com/41488885): Check if this service is needed for Ash
+  // Internals.
+  builder.WithAshInternals(ProfileSelection::kOriginalOnly);
 
   ProfileSelections selections = builder.Build();
   return selections.ApplyProfileSelection(Profile::FromBrowserContext(context));
@@ -391,11 +400,12 @@ bool ChromeExtensionsBrowserClient::AllowCrossRendererResourceLoad(
     bool is_incognito,
     const Extension* extension,
     const ExtensionSet& extensions,
-    const ProcessMap& process_map) {
+    const ProcessMap& process_map,
+    const GURL& upstream_url) {
   bool allowed = false;
   if (chrome_url_request_util::AllowCrossRendererResourceLoad(
           request, destination, page_transition, child_id, is_incognito,
-          extension, extensions, process_map, &allowed)) {
+          extension, extensions, process_map, upstream_url, &allowed)) {
     return allowed;
   }
 

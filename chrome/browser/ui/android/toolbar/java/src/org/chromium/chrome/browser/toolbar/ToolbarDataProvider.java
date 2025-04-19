@@ -39,20 +39,27 @@ public interface ToolbarDataProvider {
     NewTabPageDelegate getNewTabPageDelegate();
 
     /**
+     * TODO(crbug.com/350654700): clean up usages and remove isIncognito.
+     *
      * @return Whether the toolbar is currently being displayed for incognito.
+     * @deprecated Use {@link #isIncognitoBranded()} or {@link #isOffTheRecord()}.
      */
+    @Deprecated
     boolean isIncognito();
 
     /**
-     * @return Whether the toolbar is currently being displayed in overview mode and showing the
-     *  omnibox.
+     * @return Whether the toolbar is currently being displayed for an incognito branded browser
+     *     context.
+     * @see {@link Profile#isIncognitoBranded()}
      */
-    boolean isInOverviewAndShowingOmnibox();
+    boolean isIncognitoBranded();
 
     /**
-     * @return Whether the location bar should show when in overview mode.
+     * @return Whether the toolbar is currently being displayed for an off the record browser
+     *     context.
+     * @see {@link Profile#isOffTheRecord()}
      */
-    boolean shouldShowLocationBarInOverviewMode();
+    boolean isOffTheRecord();
 
     /**
      * @return The current {@link Profile}.

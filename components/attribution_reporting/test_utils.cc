@@ -13,15 +13,19 @@
 #include "base/ranges/algorithm.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "components/attribution_reporting/aggregatable_debug_reporting_config.h"
 #include "components/attribution_reporting/aggregatable_dedup_key.h"
 #include "components/attribution_reporting/aggregatable_trigger_config.h"
 #include "components/attribution_reporting/aggregatable_trigger_data.h"
 #include "components/attribution_reporting/aggregatable_values.h"
 #include "components/attribution_reporting/aggregation_keys.h"
+#include "components/attribution_reporting/attribution_scopes_data.h"
+#include "components/attribution_reporting/attribution_scopes_set.h"
 #include "components/attribution_reporting/destination_set.h"
 #include "components/attribution_reporting/event_report_windows.h"
 #include "components/attribution_reporting/event_trigger_data.h"
 #include "components/attribution_reporting/filters.h"
+#include "components/attribution_reporting/max_event_level_reports.h"
 #include "components/attribution_reporting/os_registration.h"
 #include "components/attribution_reporting/privacy_math.h"
 #include "components/attribution_reporting/source_registration.h"
@@ -49,7 +53,8 @@ FiltersDisjunction FiltersForSourceType(
 }
 
 TriggerSpecs SpecsFromWindowList(const std::vector<int>& windows_per_type,
-                                 bool collapse_into_single_spec) {
+                                 bool collapse_into_single_spec,
+                                 MaxEventLevelReports max_event_level_reports) {
   if (windows_per_type.empty()) {
     return TriggerSpecs();
   }
@@ -85,8 +90,8 @@ TriggerSpecs SpecsFromWindowList(const std::vector<int>& windows_per_type,
     }
   }
 
-  return *attribution_reporting::TriggerSpecs::Create(std::move(indices),
-                                                      std::move(raw_specs));
+  return *attribution_reporting::TriggerSpecs::Create(
+      std::move(indices), std::move(raw_specs), max_event_level_reports);
 }
 
 std::ostream& operator<<(std::ostream& out,
@@ -113,6 +118,20 @@ std::ostream& operator<<(std::ostream& out,
                          const EventReportWindows& event_report_windows) {
   base::Value::Dict dict;
   event_report_windows.Serialize(dict);
+  return out << dict;
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const AttributionScopesSet& attribution_scopes_set) {
+  base::Value::Dict dict;
+  attribution_scopes_set.Serialize(dict);
+  return out << dict;
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const AttributionScopesData& attribution_scopes_data) {
+  base::Value::Dict dict;
+  attribution_scopes_data.Serialize(dict);
   return out << dict;
 }
 
@@ -208,6 +227,20 @@ std::ostream& operator<<(std::ostream& out, const RandomizedResponseData& r) {
   }
 
   return out << "}";
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const AggregatableDebugReportingConfig& v) {
+  base::Value::Dict dict;
+  v.Serialize(dict);
+  return out << dict;
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const SourceAggregatableDebugReportingConfig& v) {
+  base::Value::Dict dict;
+  v.Serialize(dict);
+  return out << dict;
 }
 
 }  // namespace attribution_reporting

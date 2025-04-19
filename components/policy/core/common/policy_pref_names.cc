@@ -94,10 +94,6 @@ const char kReadAloudEnabled[] = "policy.read_aloud_enabled";
 const char kUserAgentClientHintsGREASEUpdateEnabled[] =
     "policy.user_agent_client_hints_grease_update_enabled";
 
-// Boolean policy to allow isolated apps developer mode.
-const char kIsolatedAppsDeveloperModeAllowed[] =
-    "policy.isolated_apps_developer_mode_allowed";
-
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 // Last time that a check for cloud policy management was done. This time is
 // recorded on Android and iOS so that retries aren't attempted on every
@@ -140,6 +136,10 @@ const char kBeforeunloadEventCancelByPreventDefaultEnabled[] =
 // 2. Scrollers without focusable children are keyboard-focusable by default.
 const char kKeyboardFocusableScrollersEnabled[] =
     "policy.keyboard_focusable_scrollers_enabled";
+
+// Enables the newly-specified behavior of the CSS "zoom" property.
+const char kStandardizedBrowserZoomEnabled[] =
+    "policy.standardized_browser_zoom_enabled";
 
 // Boolean indicating whether Policy Test Page is Enabled.
 // The value is controlled by the PolicyTestPageEnabled policy.

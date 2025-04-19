@@ -17,6 +17,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/histogram_macros_local.h"
+#include "base/not_fatal_until.h"
 #include "base/observer_list.h"
 #include "base/path_service.h"
 #include "base/sequence_checker.h"
@@ -152,7 +153,11 @@ bool IsModelMetadataTypeOnServerAllowlist(const proto::Any& model_metadata) {
          model_metadata.type_url() ==
              "type.googleapis.com/"
              "google.internal.chrome.optimizationguide.v1."
-             "OnDeviceBaseModelMetadata";
+             "OnDeviceBaseModelMetadata" ||
+         model_metadata.type_url() ==
+             "type.googleapis.com/"
+             "google.internal.chrome.optimizationguide.v1."
+             "AutofillFieldClassificationModelMetadata";
 }
 
 void RecordModelAvailableAtRegistration(
@@ -306,7 +311,8 @@ void PredictionManager::RemoveObserverForOptimizationTargetModel(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto registration_info =
       model_registration_info_map_.find(optimization_target);
-  DCHECK(registration_info != model_registration_info_map_.end());
+  CHECK(registration_info != model_registration_info_map_.end(),
+        base::NotFatalUntil::M130);
 
   auto& observers = registration_info->second.model_observers;
   DCHECK(observers.HasObserver(observer));
@@ -349,7 +355,7 @@ void PredictionManager::FetchModels() {
   proto::ModelInfo base_model_info;
   // There should only be one supported model engine version at a time.
   base_model_info.add_supported_model_engine_versions(
-      proto::MODEL_ENGINE_VERSION_TFLITE_2_16_1);
+      proto::MODEL_ENGINE_VERSION_TFLITE_2_18);
   // This histogram is used for integration tests. Do not remove.
   // Update this to be 10000 if/when we exceed 100 model engine versions.
   LOCAL_HISTOGRAM_COUNTS_100(
@@ -774,11 +780,11 @@ void PredictionManager::MaybeInitializeModelDownloads(
 void PredictionManager::OnPredictionModelOverrideLoaded(
     proto::OptimizationTarget optimization_target,
     std::unique_ptr<proto::PredictionModel> prediction_model) {
+  const bool is_available = prediction_model != nullptr;
   OnLoadPredictionModel(optimization_target,
                         /*record_availability_metrics=*/false,
                         std::move(prediction_model));
-  RecordModelAvailableAtRegistration(optimization_target,
-                                     prediction_model != nullptr);
+  RecordModelAvailableAtRegistration(optimization_target, is_available);
 }
 
 void PredictionManager::LoadPredictionModels(

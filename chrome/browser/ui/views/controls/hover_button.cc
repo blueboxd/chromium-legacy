@@ -20,6 +20,7 @@
 #include "ui/color/color_id.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event_constants.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/background.h"
@@ -238,14 +239,6 @@ gfx::Size HoverButton::CalculatePreferredSize(
   return views::LabelButton::CalculatePreferredSize(available_size);
 }
 
-int HoverButton::GetHeightForWidth(int w) const {
-  if (label_wrapper_) {
-    return GetLayoutManager()->GetPreferredHeightForWidth(this, w);
-  }
-
-  return views::LabelButton::GetHeightForWidth(w);
-}
-
 void HoverButton::SetBorder(std::unique_ptr<views::Border> b) {
   LabelButton::SetBorder(std::move(b));
   PreferredSizeChanged();
@@ -338,7 +331,7 @@ void HoverButton::UpdateTooltipAndAccessibleName() {
   const bool needs_tooltip =
       label_wrapper_->GetPreferredSize().width() > label_wrapper_->width();
   SetTooltipText(needs_tooltip ? accessible_name : std::u16string());
-  SetAccessibleName(accessible_name);
+  GetViewAccessibility().SetName(accessible_name);
 }
 
 views::Button::KeyClickAction HoverButton::GetKeyClickActionForEvent(

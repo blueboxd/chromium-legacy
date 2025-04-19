@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/351564777): Remove this and convert code to safer constructs.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
 
 #include <inttypes.h>
@@ -203,8 +208,9 @@ void RuntimeCallStatsScopedTracer::AddBeginTraceEventIfEnabled(
   bool category_group_enabled;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(s_category_group_,
                                      &category_group_enabled);
-  if (LIKELY(!category_group_enabled))
+  if (!category_group_enabled) [[likely]] {
     return;
+  }
 
   RuntimeCallStats* stats = RuntimeCallStats::From(isolate);
   if (stats->InUse())

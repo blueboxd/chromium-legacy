@@ -20,6 +20,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/supports_user_data.h"
+#include "base/task/bind_post_task.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/traced_value.h"
 #include "cc/base/math_util.h"
@@ -123,9 +124,14 @@ BrowserViewRenderer::BrowserViewRenderer(
   root_frame_sink_proxy_ = std::make_unique<RootFrameSinkProxy>(
       ui_task_runner_, this, begin_frame_source_.get());
   UpdateBeginFrameSource();
+
+  base::OnceCallback<base::PlatformThreadId()> compute_current_thread_id =
+      base::BindOnce([]() { return base::PlatformThread::CurrentId(); });
   io_task_runner->PostTask(
-      FROM_HERE, base::BindOnce(&BrowserViewRenderer::InitBrowserIOThreadId,
-                                weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, std::move(compute_current_thread_id)
+                     .Then(base::BindPostTaskToCurrentDefault(base::BindOnce(
+                         &BrowserViewRenderer::SetBrowserIOThreadId,
+                         weak_ptr_factory_.GetWeakPtr()))));
 }
 
 BrowserViewRenderer::~BrowserViewRenderer() {
@@ -362,14 +368,18 @@ bool BrowserViewRenderer::DoUpdateParentDrawData() {
   viz::FrameTimingDetailsMap new_timing_details;
   viz::FrameSinkId id;
   uint32_t frame_token = 0u;
+  base::TimeDelta preferred_frame_interval;
   current_compositor_frame_consumer_->TakeParentDrawDataOnUI(
-      &new_constraints, &id, &new_timing_details, &frame_token);
+      &new_constraints, &id, &new_timing_details, &frame_token,
+      &preferred_frame_interval);
 
   content::SynchronousCompositor* compositor = FindCompositor(id);
   if (compositor) {
     compositor->DidPresentCompositorFrames(std::move(new_timing_details),
                                            frame_token);
   }
+
+  client_->SetPreferredFrameInterval(preferred_frame_interval);
 
   if (external_draw_constraints_ == new_constraints)
     return false;
@@ -428,6 +438,13 @@ void BrowserViewRenderer::ReturnUsedResources(
 bool BrowserViewRenderer::OnDrawSoftware(SkCanvas* canvas) {
   did_invalidate_since_last_draw_ = false;
   return CanOnDraw() && CompositeSW(canvas, /*software_canvas=*/true);
+}
+
+float BrowserViewRenderer::GetVelocityInPixelsPerSecond() {
+  if (!compositor_) {
+    return 0.f;
+  }
+  return compositor_->GetVelocityInPixelsPerSecond();
 }
 
 bool BrowserViewRenderer::NeedToDrawBackgroundColor() {
@@ -995,8 +1012,9 @@ std::string BrowserViewRenderer::ToString() const {
   return str;
 }
 
-void BrowserViewRenderer::InitBrowserIOThreadId() {
-  browser_io_thread_id_ = base::PlatformThread::CurrentId();
+void BrowserViewRenderer::SetBrowserIOThreadId(
+    base::PlatformThreadId thread_id) {
+  browser_io_thread_id_ = thread_id;
 }
 
 }  // namespace android_webview

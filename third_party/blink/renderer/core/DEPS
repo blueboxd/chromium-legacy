@@ -5,6 +5,7 @@ include_rules = [
     "+base/cancelable_callback.h",
     "+base/memory/protected_memory.h",
     "+base/memory/values_equivalent.h",
+    "+base/message_loop/message_pump.h",
     "+base/files/file.h",
     "+base/files/file_path.h",
     "+base/apple/foundation_util.h",
@@ -78,7 +79,6 @@ include_rules = [
     "+services/device/public/mojom/device_posture_provider.mojom-blink.h",
     "+services/device/public/mojom/wake_lock.mojom-blink.h",
     "+services/metrics/public",
-    "+services/network/public/cpp/attribution_reporting_runtime_features.h",
     "+services/network/public/cpp/cors/cors_error_status.h",
     "+services/network/public/cpp/cross_origin_embedder_policy.h",
     "+services/network/public/cpp/features.h",
@@ -208,6 +208,9 @@ specific_include_rules = {
     ],
     "media_values.h": [
         "+ui/base/pointer/pointer_device.h",
+    ],
+    "scripted_idle_task_controller(_test)?.(cc|h)": [
+        "+base/task/delayed_task_handle.h",
     ],
     "xml_http_request.cc": [
         "+net/base/mime_util.h",

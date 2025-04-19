@@ -24,6 +24,11 @@ class PLATFORM_EXPORT ChunkToLayerMapper {
   ChunkToLayerMapper(const PropertyTreeState& layer_state,
                      const gfx::Vector2dF& layer_offset);
 
+  void Trace(Visitor* visitor) {
+    visitor->Trace(layer_state_);
+    visitor->Trace(chunk_state_);
+  }
+
   const PropertyTreeState& LayerState() const { return layer_state_; }
   gfx::Vector2dF LayerOffset() const { return layer_offset_; }
 
@@ -36,6 +41,10 @@ class PLATFORM_EXPORT ChunkToLayerMapper {
 
   // Maps a visual rectangle in the current chunk space into the layer space.
   gfx::Rect MapVisualRect(const gfx::Rect&) const;
+
+  // Maps a visual rectangle from the give state into the layer space.
+  gfx::Rect MapVisualRectFromState(const gfx::Rect&,
+                                   const PropertyTreeState&) const;
 
   // Returns the combined transform from the current chunk to the layer.
   const gfx::Transform& Transform() const { return transform_; }

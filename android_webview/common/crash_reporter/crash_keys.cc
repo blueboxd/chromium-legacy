@@ -51,18 +51,13 @@ const char* const kWebViewCrashKeyAllowList[] = {
     "oop_read_failure",
     "gpu-gl-error-message",
 
-    // components/android_autofill
-    "crbug1523259-pw_form.username_id",
-    "crbug1523259-pw_form.password_id",
-    "crbug1523259-fs.fields.size",
-    "crbug1523259-fs.fields.global_ids",
-    "crbug1523259-fs.fields.global_ids",
-
     // components/viz
     "viz_deserialization",
 
     // content/:
     "bad_message_reason",
+    "can_access_data_failure_reason",
+    "cpspi_can_commit_url_failure_reason",
     "discardable-memory-allocated",
     "discardable-memory-free",
     "mojo-message-error",
@@ -168,6 +163,9 @@ const char* const kWebViewCrashKeyAllowList[] = {
     "variations",
     "num-experiments",
     "variations-seed-version",
+
+    // CRX components
+    "crx-components",
 
     // sandbox/linux
     "seccomp-sigsys",

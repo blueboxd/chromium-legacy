@@ -19,6 +19,7 @@
 #include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
 #include "base/location.h"
+#include "base/memory/raw_ptr.h"
 #include "base/task/single_thread_task_runner.h"
 #include "net/base/features.h"
 #include "net/base/net_errors.h"
@@ -719,11 +720,10 @@ MockHttpCache::MockHttpCache(
                   std::move(disk_cache_factory)) {}
 
 disk_cache::Backend* MockHttpCache::backend() {
-  TestCompletionCallback cb;
-  disk_cache::Backend* backend;
-  int rv = http_cache_.GetBackend(&backend, cb.callback());
-  rv = cb.GetResult(rv);
-  return (rv == OK) ? backend : nullptr;
+  TestGetBackendCompletionCallback cb;
+  HttpCache::GetBackendResult result = http_cache_.GetBackend(cb.callback());
+  result = cb.GetResult(result);
+  return (result.first == OK) ? result.second : nullptr;
 }
 
 MockDiskCache* MockHttpCache::disk_cache() {
@@ -757,7 +757,7 @@ bool MockHttpCache::ReadResponseInfo(disk_cache::Entry* disk_entry,
   rv = cb.GetResult(rv);
   EXPECT_EQ(size, rv);
 
-  return HttpCache::ParseResponseInfo(buffer->data(), size, response_info,
+  return HttpCache::ParseResponseInfo(buffer->span(), response_info,
                                       response_truncated);
 }
 

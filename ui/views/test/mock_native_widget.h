@@ -11,6 +11,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/views/widget/native_widget_private.h"
 
 namespace views {
@@ -68,7 +69,10 @@ class MockNativeWidget : public internal::NativeWidgetPrivate {
               (override));
   MOCK_METHOD(const gfx::ImageSkia*, GetWindowIcon, (), (override));
   MOCK_METHOD(const gfx::ImageSkia*, GetWindowAppIcon, (), (override));
-  MOCK_METHOD(void, InitModalType, (ui::ModalType modal_type), (override));
+  MOCK_METHOD(void,
+              InitModalType,
+              (ui::mojom::ModalType modal_type),
+              (override));
   MOCK_METHOD(gfx::Rect, GetWindowBoundsInScreen, (), (const override));
   MOCK_METHOD(gfx::Rect, GetClientAreaBoundsInScreen, (), (const override));
   MOCK_METHOD(gfx::Rect, GetRestoredBounds, (), (const override));
@@ -127,8 +131,7 @@ class MockNativeWidget : public internal::NativeWidgetPrivate {
   MOCK_METHOD(void, FlashFrame, (bool flash), (override));
   MOCK_METHOD(void,
               RunShellDrag,
-              (View * view,
-               std::unique_ptr<ui::OSExchangeData> data,
+              (std::unique_ptr<ui::OSExchangeData> data,
                const gfx::Point& location,
                int operation,
                ui::mojom::DragEventSource source),
@@ -167,6 +170,8 @@ class MockNativeWidget : public internal::NativeWidgetPrivate {
   MOCK_METHOD(void, OnSizeConstraintsChanged, (), (override));
   MOCK_METHOD(void, OnNativeViewHierarchyWillChange, (), (override));
   MOCK_METHOD(void, OnNativeViewHierarchyChanged, (), (override));
+  MOCK_METHOD(bool, SetAllowScreenshots, (bool allow), (override));
+  MOCK_METHOD(bool, AreScreenshotsAllowed, (), (override));
   MOCK_METHOD(std::string, GetName, (), (const override));
 
   base::WeakPtr<NativeWidgetPrivate> GetWeakPtr() override;
